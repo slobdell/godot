@@ -66,3 +66,268 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### REPORT (orders, round 37; updated 2026-10-22 ~05:15 PDT). Every number names its commit, machine, workload, n.
+- **Round 37 outcome, one line each:** artillery fix SHIPPED (main 98153750a, R37.31). O1 latch PASSED its re-filed bar, but
+  its ON check (f8bf6aaad, builder0 native, 3049 / 1) FAILED a lab scenario: latch keeps a one-update terrain read (an 'open'
+  pocket in a lane -> coil); default back to centre (733e024e4), latch stays an arm, fix is round 38's. O2 PASSED its bar but is HELD (re-deals
+  50 -> 105, source below). O3 FAILED, folded into O7. O4 done (tooling). O5 FAILED (-23 % v -50 %). O6 seam OFF, unjudged.
+  O7 group-lay FAILED as filed (stays OFF); at his real click it does what he asked (not judged, shots for him). Stretch
+  answered, no code.
+
+### Round 37 close notes (for round 38; R37.38)
+- **O7 v2 (round 38's lead item), what changes from v1 (badfe25c0):**
+  (1) *Open ground:* v1 calls ground open only when the scan reaches GROUP_SCAN_M (100 m) both sides, so walls inside 100 m
+  (yard_open) engaged the column 12 times and changed 52 of 96 rows. v2: open = today's body (`ranks`'s frontage) fits inside the
+  clear width read at the click; only then keep today's lay. (2) *Route legs:* route cells did not move (crossing 5 route 23 -> 23
+  places outside, 13001 -> 13051 m), because squads leave the corridor on the way, not at the last click. v2 either applies the
+  column to the queued legs' gates (round 35's gate already lays ranks) or the bar drops route cells as out of scope (his complaint
+  was a plain click). (3) *Plain street clicks:* v1 already roughly halves metres outside (crossing 5 click 7472 -> 3433, outside
+  23 -> 2) but all-in rose at locks 5 click (19.6 -> 28.8 s): ranks behind the click wait for the front rank; v2 should lay the
+  rear ranks' places first-come so a rear squad never drives through the front one. (4) *Probe:* `--probe-click=x/z` (7e9bd7fb7);
+  his click must be its own cells again. At his real point v1 already reads 5 squads outside 36 -> 0, metres 2350 -> 323, re-dealt
+  24 -> 0 (builder0 light, 3801-3812, not judged; `group-click-his-point-7e9bd7fb7/`).
+- **O3 (squads whole) is folded into O7:** v1 swaps crossing squads whole instead of re-dealing crews (re-dealt 40 -> 0 in O7's
+  read); keep that in v2. O3's Crossing 5 failure (a bridge-mouth seat re-laid 39 m across the deck mid-drive) is answered by
+  `deck_clear` on the column's places; re-check it in v2's guards (crossed no higher).
+- **(b) The deploy deal crosses a stopped squad** (ea09f3b17, both main and latch): at the deploy the deal hands the crew at one end
+  of the first halt the seat at the other end, so one tank drives ~47 m across its own stopped squad (terminus 5 click, Delta_2,
+  s3767 / s3772). He sees "one tank wanders off after they arrive". Round 38: deal seats nearest-first without crossing (the
+  deploy step's slot assignment), bar on place + twitch (o1settle's guard) and parked re-deals.
+- **O2's real re-deal source:** not the shape flicker. Latch cut relays 442 -> 95 (fight) and 143 -> 2 (no-fight) but left
+  parked re-deals flat (84 -> 88; 429 -> 428). O2's own trace (s3747) showed a parked crew shuttled between two seats three
+  times in 33 s while the squad re-laid its halt. HYPOTHESIS (not yet traced): the halt is re-laid when a crew RETURNS from an
+  O2 pull-back (the element sees a member off-seat and re-plans the whole halt), re-dealing the seats of crews that never moved. Round 38:
+  trace one return (which `ElementPlan` path re-deals; likely `_plan_form_up` re-run on the returning member) and hold the
+  other crews' `issued_slots` across a single member's return. Then O2 ships ON for his crews (the lead: a nearly dead parked
+  crew pulls back, then returns, as built).
+- **O5 v2 (CPU seats off paths):** v1 cut screen-on-screen give-ways 742 -> 438 but not screen v support_by_fire (251 -> 255): the
+  aside step reads only other screens' routes. v2: include support_by_fire (and attack) elements' routes in the aside test;
+  same bar (CPU screen give-ways <= 50 %), fresh seeds.
+- **Housekeeping:** side worktrees `~/projects/godot-orders-o1` and `~/projects/godot-orders-arty` removed at hand-over; their
+  builder0 folders (`~/tank_squad/godot-orders-o1`, `~/tank_squad/godot-orders-arty`) are left for the orchestrator's sweep.
+
+- **HAND-OVER GREEN HASH: 31e779e8e** (latch OFF, group-lay OFF; everything else this round as OFF arms + tooling): builder0
+  native `make native check exited 0`, 3050 passed / 0 failed, 27 targets all passed, ALL JUDGED (perf-judge judged
+  scenario_perf), sim-baseline 13 unmoved, 2040 s. Round 37 done for orders; the close notes below are round 38's start.
+- **Earlier green: 1ebd7e550** (stream/orders with main 98153750a merged, incl. the artillery fix and group-lay OFF):
+  builder0 native check exited 0, 3050 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge, box busy 1.4-2.0x;
+  scenario_perf unpinned), sim-baseline 13 unmoved. O7's judged read and the latch re-read run on it (scratchpad
+  `o7_series.sh`, side worktree `~/projects/godot-orders-o1` detached at 1ebd7e550). The artillery pair 53b0ee425 was green
+  (3031 / 0, 13 unmoved) and is on main (R37.31).
+- **State of the branch:** main c76469184 merged (52c15e0e1). The series hash is c14ec0d80 = 52c15e0e1 + the probe's
+  `parked_redeals`; **its full check is GREEN (builder0 native: exited 0, 3040 passed / 0 failed, 25 passed + 2 NOT JUDGED for perf on a busy box (load 22), sim-baseline 13 unmoved)**. 52c15e0e1's check was stopped at 15 min for it. The check
+  before, 42a26a17c (builder0 native, 3022 passed / 0 failed), FAILED on the engine-log gate only: `test_control_parked_hold`
+  overrode the runner's sealed `_teardown()`, and the lab<->case reference cycle leaked 14 objects at exit. Fixed (teardown()
+  hook, cycle dropped; local run clean). Last green hash: **c14ec0d80**. The judged series (scratchpad `r37_series.sh`, side worktree
+  `~/projects/godot-orders-o1` at c14ec0d80) runs on that green: O2, O3, O5, O1-latch no-fight + census, O1-latch fight. Verdicts
+  go to `references/round37/orders/*-judged-builder0-c14ec0d80/verdict.txt`.
+- **Parked re-deals (orchestrator, after R37.17's traces; reported in every verdict):** `parked_redeals` = crews parked
+  2 s or more on their seat with no order, then sent more than 6 m off it (the squad re-dealing seats; he sees a parked tank pull
+  out). It falls before the place window ends, so twitch_m never saw it. Laptop GDScript locks 5 route s3703 (n 1): main 4,
+  anchor 6.
+- **PRIORITY (the lead's playtest 2026-10-21, archipelago s44214): parked rocket trucks ignored his moves. CAUSE FOUND,
+  fix candidate 716c61310 (not merged; orchestrator's call).** A squad of nothing but Gas Rocket Trucks: parked trucks set up
+  by themselves (~3 s still), and round 33's battery seat ("a set-up crew keeps its place where it stands") seated them where
+  they stood on every NEW move: an order to their own spot, done at once, so they never drove and never packed. Lab
+  `test_control_artillery_move` (laptop GDScript): parked set-up trucks moved 0.0 m (1 and 2 trucks); `--battery-seat=off` 58.1 m.
+  Fix `--battery-seat-task` (ON): held only while standing on the seat last sent to (6 m). Lab 58.1 / 56.1 m;
+  `test_tactics_battery_seat` 7/0 (+1 case). Symmetric (CPU batteries too): needs a full check; sim-baseline may move.
+- **O1 the flicker: the judged no-fight read FAILED as filed** (builder0 native f4365153f, seeds 3701-3712, census 3701-3706;
+  `references/round37/orders/o1-judged-builder0-f4365153f/`). The deciding line passed (relays 298 -> 0, shape flips
+  114 -> 0). Two guards failed: twitch in locks 5 route (3.9 -> 10.6 m), and CPU friendly contacts (1665 -> 1933, line
+  1836.5). R37.17: it doesn't ship. Cause (traced): the anchor read changes which shape the deploy picks at halt (locks
+  coil 60 -> 52, terminus 6 -> 0), so more long herringbones crowd their neighbours. New arm `--halt-terrain=latch`
+  (ca251254a): read the centroid's terrain at arrival and keep that read while arrived (same first shape as main, no
+  flicker; lab `test_control_halt_terrain`: centre 2 flips, anchor 0, latch 0). R37.17's traces are done (edec107e0, sent in player terms):
+  latch == main at locks 5, and parade's excess contacts are moving drill crews in a longer fight. Latch bar re-filed
+  (849fced87, recorded on main): fresh seeds 3761-3784, same guards.
+  **Latch judged: FAILS as filed on one guard** (builder0 native c14ec0d80; `o1latch-judged-builder0-c14ec0d80/`,
+  `o1latch-fight-builder0-c14ec0d80/`). (a) deciding PASS: relays 128 -> 2, shape flips 34 -> 1; guard FAIL: twitch terminus
+  5 click, median worst 16.8 -> 28.0 m (other 11 cells pass). (b) CPU guards PASS: contacts 1625 -> 1569, stuck 1784 -> 1688 s.
+  (c) fight PASS: relays 442 -> 95, shape flips 90 -> 20, kills / losses within guard (36/36). Parked re-deals 447 -> 441
+  (no-fight), 84 -> 88 (fight): latch does not touch O2's re-deals. R37.37: O2-on-latch HELD; trace terminus 5 s3767 / s3772
+  squad 4 (is the slide the abreast group lay sending it into another street, or latch?); if the lay, re-read latch on top
+  of group-lay on fresh seeds (bar first).
+- **O2 parked squads: BUILT OFF, final bar filed (052f30eea).** `--parked-hold=on` (tank_brain.gd seam `_parked_move`):
+  a move of his parked crew's own that ends more than 4 m off its post becomes hold-and-face (RETREAT kept). Off its post
+  with nothing to do, it drives all the way back (arrive 1.5 m). Deciding metric off_idle_s. Base (builder0 3e5944657,
+  fight probe, 18 fights): 94.2 s a fight (sd 111.0, se 26.2). Judged read queued after the check.
+- **O3 squads whole: BUILT OFF, bar recorded on main.** `--untangle=whole`. Judged read (3713-3724) queued after the check.
+- **O4 away_m v a fixed seat: DONE (tooling).** `away_held_m` / `away_seat_m` (20005d611, 285 squads: away 820.2 m, held
+  813.8 m, seat 2411.9 m).
+- **O5 CPU seats: BUILT OFF, bar recorded on main (78c06ab1f).** `--seat-aside=on`. Sizing (builder0 baf3dbd8e, 18 fights): 542
+  seat give-ways (499 screen), 21 deaths. **Judged: FAIL** (builder0 native c14ec0d80, seat-yield-census 1811-1822, 36 fights
+  a side; `references/round37/orders/o5-judged-builder0-c14ec0d80/`): CPU screen give-ways 1277 -> 988 (-23 %, the bar asked
+  <= 50 %); seats moved aside 5456; deaths in give-ways 49 -> 45 (noise); team deaths guards pass. In player terms: the CPU's
+  screening tanks get in each other's way less (screen yielding to screen 742 -> 438) but just as often in the way of a
+  support-by-fire seat (251 -> 255); the aside step does not see a support-by-fire route. Stays OFF; no retry filed.
+- **O6 cover seat: SEAM DONE, OFF and unjudged this round** (agreed with the orchestrator; it fires once in 3 probe cells).
+- **Stretch: both answered, no code.** (1) Bridge-mouth click: re-checked on this round's tree (laptop GDScript 9de8a7d4f,
+  Crossing west deck, clicks 3 / 6 / 9 m short, 3 and 5 squads, 24 squads): crossed 0, goals across 0. Round 36's halt lay
+  covers it (`references/round37/orders/stretch-bridge-mouth-r37/`). (2) `uncross_paths` on a queued screen: round 36's
+  trace stands (a real swap, not path planning). It stays limited to plain moves; no new evidence a screen needs it.
+- **Answered by the lead (game_design.md on main, relayed by the orchestrator):** a nearly dead parked crew PULLS BACK,
+  then returns to its spot. That is O2's arm as built (RETREAT kept; the drive-back brings it home). He also kept the parked
+  scouts' circling turn-in, so O2's drive-back is what returns them. No change.
+
+### Bars (filed here; the orchestrator records them on main)
+- **O1 HALT_TERRAIN=anchor (orders, C37.5; filed 2026-10-21 ~09:10 PDT before any arm number).** What he would see: a squad he
+  has parked keeps one shape; no crew drives to a point ~15 m off and back while the squad sits. The fix: an ARRIVED element
+  reads `ElementSituation.terrain_at` at its anchor (fixed), not its crews' centroid (`--halt-terrain=centre|anchor`; GDScript
+  only, terrain_at has no native twin). **Base rate (sizing, seen; builder0 native, 20005d611, orders-probe 12 street cells x
+  seeds 3621-3626, 285 placed squads):** 4 squads flip halt shape after the place window (18 flips, 50 reseats; locks 3 x 3,
+  terminus 5 x 1), centroid terrain changes 38 (shape flips + lanes <-> dense re-spacings), anchor terrain changes 0. Lab:
+  `test_control_halt_terrain` (locks, open spot 4 m off a lanes edge, the squad nudged across 6 times: centre 2 flips, anchor 0;
+  laptop GDScript). **Judged probe:** `make native orders-probe`, arms `main:` v `anchor:--halt-terrain=anchor`, the 12 cells,
+  FRESH seeds 3701-3712 (n 12 a cell), builder0, on a hash whose full check is green. **Counter:** base relays >= 10 (else
+  "no workload") and the arms' rows differ somewhere. **Deciding:** `relays` (an update where the halt's shape or the terrain
+  the element reads changed, after the place window, within one task) summed over all placed squads: arm <= 25 % of base, and
+  shape flips arm <= 1. **Guards (each cell, medians as R36.6's):** all-in <= base x 1.2 + 3 s and no more never-in seeds;
+  twitch worst <= base + 3 m; end foreign min >= base - 3 m; crossed (far bank) no higher; `test_control_scale`'s 3-tick
+  response (in check). **CPU guard (the read is symmetric: CPU elements halt too):** `make native traffic-census`, its 3
+  default cases x seeds 3701-3706 (18 CPU v CPU fights an arm), `TRAFFIC_FLAGS=--halt-terrain=anchor` v none: friendly
+  contacts arm <= base x 1.1 + 5, stuck s arm <= base x 1.2 + 10, outcomes reported. **A pass ships ON** (default "anchor",
+  `--halt-terrain=centre` keeps main's), sim-baseline maps that move attributed with the switch OFF.
+  (Recorded on main 441d8951d by the orchestrator.)
+- **O1 addendum (R37.9; filed 2026-10-21 before any judged O1 number): a SECOND deciding workload, the fight probe.**
+  Sizing (seen; builder0 native light, 3e43c4a24, `--probe-fight=on --probe-budget=1500`, locks/crossing/terminus x 3
+  squads x click x 3621-3626, 18 fights, 51 placed squads): 175 halt-shape flips, 446 re-lays, 27 squads re-laying.
+  **Judged fight read:** arms `fight:--probe-fight=on,--probe-budget=1500` v `fightanchor:--probe-fight=on,--probe-budget=1500,
+  --halt-terrain=anchor`, the same 9 cells, FRESH seeds 3731-3742 (36 fights an arm), builder0, on a green-checked hash
+  that has the fight mode (>= 092cb34b7; f4365153f does not). **Deciding:** relays summed arm <= 25 % of base and shape
+  flips arm <= 25 % of base. **Guards (fights are not deterministic across arms once seats differ: read as per-fight
+  totals):** his kills a fight and his losses a fight each within base +/- 1.645 se (se from the base arm's per-fight sd,
+  n 36), the CPU's losses likewise. The no-fight read (f4365153f, seeds 3701-3712, + the census) stands as filed. O1
+  ships only when BOTH pass.
+- **O1 RE-FILED for the latch arm (R37.17; filed 2026-10-21 ~17:30 PDT, before any latch number).** Anchor failed as filed
+  (f4365153f) and does not ship. New arm `--halt-terrain=latch` (ca251254a): an element reads the centroid's terrain on
+  the update it arrives (the same read main makes, so it picks the same first shape and spacing) and keeps that read while
+  it stays arrived. A new task or leaving arrival takes a fresh read. What he would see: the same as main at the moment a
+  squad stops, then no flicker while it sits. Traces (edec107e0, builder0 light 52c15e0e1): locks 5 route s3703 sq2 latch
+  rows == main's (twitch 0); parade s3704 latch 238 contacts v main 136, with contacts at arrived elements flat
+  (44 / 44 / 45). The excess there is moving drill crews in a longer fight. **The same bar as filed, arm `latch:`, on
+  FRESH seeds, on a green-checked hash containing ca251254a (52c15e0e1 or later):**
+  (a) no-fight probe, arms `main:` v `latch:--halt-terrain=latch`, the 12 cells, seeds 3761-3772; counter, deciding
+  (relays arm <= 25 % of base, shape flips arm <= 1) and probe guards exactly as the O1 bar above.
+  (b) CPU guard, traffic-census 3 cases x seeds 3761-3766, `TRAFFIC_FLAGS=--halt-terrain=latch` v none: friendly contacts
+  <= base x 1.1 + 5, stuck s <= base x 1.2 + 10. **I am NOT re-arguing the contacts line.** Reported beside it, not judged:
+  contacts touching an arrived element, and contacts per fight-second.
+  (c) fight read, arms `fight:` v `fightlatch:--probe-fight=on,--probe-budget=1500,--halt-terrain=latch`, the 9 cells,
+  seeds 3773-3784 (36 fights an arm); deciding and guards as the O1 addendum. This replaces the anchor fight read (3731-3742),
+  which is not run.
+  Ships ON (default "latch") only when (a), (b) and (c) all pass.
+- **GROUP-LAY=COLUMN (R37.29; filed 2026-10-22 ~00:30 PDT, before any judged number; code badfe25c0 + probe 6bff818f3, OFF).**
+  What he would see: select all, click one point, and his squads line up one behind the other along the way they came, as wide
+  as the street there, the nearest squad in front, each with its own vehicles; on open ground they spread as today. Design:
+  `references/round37/orders/group-click-column-note.md` (approved). Lab `test_control_group_click` (his Terminus click:
+  today spread 128.8 m with 2 of 4 anchors outside the corridor; column all inside, nearest squad in front, farthest at the back).
+  **Workload:** orders probe, arms `main:` v `column:--group-lay=column`, FRESH seeds 3801-3812 (n 12 a cell), builder0, on a
+  green-checked hash, cells: the 12 street cells (locks / crossing / terminus x 3 / 5 squads x click / route) PLUS his click as
+  its own cells, `terminus --probe-click=-29.3,85.8` x 3 / 5 squads x click (laptop dev read s3790, 5 squads: anchors outside
+  3 -> 0, metres outside 189 -> 27, re-dealt 4 -> 0). (The probe's own clicks often read as open ground, where the column does
+  not engage and the rows must be identical.)
+  **Counter:** `columns_laid` > 0 and the his-click rows differ.
+  **Deciding (both, summed over all cells):** (1) squads' places outside the click's corridor (`anchor_outside`), arm <= 25 %
+  of base; (2) "drove through other streets": driven metres outside the click's corridor (`route_out_m`), arm <= 50 % of base;
+  and crews re-dealt across squads (`redealt`) arm 0.
+  **Guards (R36.6's, per cell, medians):** all-in <= base x 1.2 + 3 s, no more never-in, twitch worst <= base + 3 m, end
+  foreign min >= base - 3 m, crossed no higher; friendly contacts (probe) <= base x 1.1 + 5. **No-change cell:** yard_open
+  (3 / 5 squads x click, the same seeds): rows identical to main's.
+  **Shots, for him (R37.29 (2)):** paired top-down shots of his click (terminus, -29.3, 85.8, 5 squads), main v column, at the
+  click, at arrival and 5 s after, LOOKED at; the recording carries no camera pose, so top-down over the click. He judges "I kept
+  control".
+  A pass ships ON (his control only: the CPU issues no multi-squad click).
+  **Judged: FAIL as filed** (builder0 native 1ebd7e550, `references/round37/orders/o7-judged-builder0-1ebd7e550/`): counter
+  PASS (columns_laid 111); places outside the corridor 84 -> 45 (limit 21) FAIL; metres driven outside 33518 -> 32505 (limit
+  16759) FAIL; squads with crews re-dealt 40 -> 0 PASS; friendly contacts 16826 -> 18412 PASS; probe guards FAIL in 6 cells
+  (locks 5 click all-in 19.6 -> 28.8 s; terminus 3 route all-in 16.8 -> 24.2 s, twitch 0 -> 13.2 m; crossing 5 click twitch
+  23.0 -> 28.1 m; crossing 5 route never-in 0 -> 1); yard_open no-change FAIL (44 / 96 rows identical: the column engages on
+  open ground because the yard's walls sit inside the 100 m scan). Plain clicks improve (crossing 5 outside 23 -> 2, metres
+  ~halved); route cells do not move (the final click is not where the squads leave the corridor). The `his/` cells are NOT
+  his click (probe bug, fixed 7e9bd7fb7). Stays OFF; v2 (open = today's body fits the clear width; route legs) is round 38's.
+- **O1 LATCH RE-READ, twitch guard re-filed as PLACE + TWITCH (R37.37; filed 2026-10-22 ~03:00 PDT, before any number).**
+  Why: latch failed as filed only on terminus 5 click twitch (16.8 -> 28.0 m); the trace (ea09f3b17) showed the same 47 m
+  deploy-deal drive in both arms, which latch delays past PLACE_S (8 s), so it is counted as twitch instead of place. The
+  guard now counts the crew's whole travel after the deploy. **Read:** ONLY the no-fight probe (the census and the fight read
+  stand as passed), arms `main:` v `latch:--halt-terrain=latch`, the 12 cells (locks / crossing / terminus x 3 / 5 squads x
+  click / route), FRESH seeds 3821-3832, builder0 native, on a green-checked hash. `orders_judge.py o1settle`. Counter and
+  deciding as filed (base relays >= 10 and rows differ; relays arm <= 25 % of base, shape flips arm <= 1). Guards (per cell,
+  medians over seeds): all-in <= base x 1.2 + 3 s, no more never-in, **place + twitch of the run's worst crew <= base + 3 m**
+  (sized on the seen seeds 3761-3772: per-cell latch - main -3.6 .. +1.0 m, sd 4-20 m), end foreign min >= base - 3 m,
+  crossed no higher. A pass ships latch ON (default `latch`). (b), the deploy deal sending a stopped tank across its own
+  squad, is its own item: round 38's unless time remains after O7.
+  **Judged: PASS** (builder0 native 1ebd7e550, seeds 3821-3832, `references/round37/orders/o1latch-reread-builder0-1ebd7e550/`):
+  counter base relays 143, rows differ; deciding relays 143 -> 2 (limit 35.8), shape flips 19 -> 1; probe guards PASS in all
+  12 cells (place + twitch); parked re-deals 429 -> 428 (reported). With (b) census and (c) fight passed on c14ec0d80: latch
+  SHIPS ON. Default flipped to `latch` (e94410eb4), then **back to centre (733e024e4)**: the ON check (f8bf6aaad, builder0 native,
+  exited 2, 3049 passed / 1 failed; sim-baseline 13 unmoved, and 13 unmoved with HALT_TERRAIN=centre too) failed
+  `test_tactics_scenarios_2::test_a_move_ends_formed_up_on_the_spot_and_stops_issuing`: the squad's centroid crossed an `open`
+  pocket in a lane the update it arrived, latch kept it (coil instead of herringbone, deployed late: 4 orders in the last 10 s).
+  `references/round37/orders/latch-transient-lab/`. Round 38: latch the read the deploy decides on (all-in), or a read held
+  ~2 s; new arm, bar, seeds.
+- **O2 ON TOP OF LATCH (R37.29's thought; filed 2026-10-21 ~23:00 PDT, before any number; runs ONLY if O1-latch passes).**
+  Why: O2's judged read (c14ec0d80) passed, but its reported parked re-deals rose 50 -> 105 alongside halt re-lays 187 -> 352
+  (O1's flicker). If crews now sit on seats the squad keeps re-laying, the latch should take the extra re-deals away.
+  **Read:** the fight probe, arms `latch:--probe-fight=on,--probe-budget=1500,--halt-terrain=latch` v
+  `latchparked:--probe-fight=on,--probe-budget=1500,--halt-terrain=latch,--parked-hold=on`, the 9 cells (locks / crossing /
+  terminus x 3 squads x click), FRESH seeds 3785-3796 (36 fights an arm), builder0, on a green-checked hash.
+  **Deciding: O2's line**: off_idle_s a fight, arm <= 50 % of base, drop > 1.645 se (unpaired); counter parked_returns > 0.
+  **Guards:** his kills, his losses and the CPU's losses a fight, each within base +/- 1.645 se (O2's). **Reported, judged by
+  the orchestrator, not by a line:** parked re-deals arm v latch alone (and v O2's 105 / base 50), halt re-lays, reseats.
+  A pass + re-deals no higher than latch alone's beyond noise -> O2 + latch ship together (both ON for every side's halts;
+  parked-hold for his crews only).
+- **O2 PARKED_HOLD, FINAL BAR (orders, R37.13; filed 2026-10-21 before any judged number; supersedes the 8dc98b5f4
+  text; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and shoots
+  from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. The change
+  (tank_brain.gd `_order_move`, his idle crews at their post only): a move of its own option ending > 4 m from its post
+  is refused (it holds and faces the threat), RETREAT kept (his question is open); a crew > 3 m off its post with nothing
+  else to do drives back onto it (1.5 m). **Sizing (seen; builder0 native light, 3e5944657 = f4437d26a + evidence only, the fight probe, locks /
+  crossing / terminus x 3 squads x click x 3621-3626, 18 fights):** `off_idle_s` (an idle crew's seconds > 6 m off its
+  station, the seat his order left it on, whatever moved it) 1696.4 s, 94.2 a fight (sd 111.0, se 26.2); by what was
+  happening: face_drift 956.2 (56 %, M6's), still 579.4 (34 %), giveway 79.9 (M5's: yielding now or within 3 s),
+  brain 81.2 (moving under its own move_to). **Judged probe:** arms `fight:--probe-fight=on,--probe-budget=1500` v
+  `parked:` the same + `--parked-hold=on`, the same 9 cells, FRESH seeds 3743-3754 (36 fights an arm), builder0, on a
+  green-checked hash. **Counter:** `parked_returns` > 0 on the arm. **Deciding:** `off_idle_s` a fight, arm <= 50 % of base
+  AND base - arm > 1.645 x the unpaired se of the difference (fights diverge between arms). **Reported:** the split
+  (giveway apart for M5, face_drift apart for M6), brain-move leaves (`left_by` without +drift), RETREAT leaves.
+  **Guards (per-fight totals):** his kills, his losses, the CPU's losses a fight each within base +/- 1.645 se (se from
+  the base arm's per-fight sd, n 36). **A pass ships ON** (`--parked-hold=off` keeps today's), his crews only.
+- **O5 SEAT_ASIDE (orders, R37.5; filed 2026-10-21 before any builder0 arm number; code 8f5a8b08f, OFF).** What he would
+  see: CPU squads set up their screens off the streets other squads use, so CPU crews stop stepping aside (and dying) for
+  their own side's traffic. The change (element_commander.gd): a CPU screen point within 10 m of another living element's
+  way (its centre to its task destination, straight) steps across its own approach, 5 m steps alternating sides, up to
+  4, to the first clear point. **Sizing (seen; builder0 native light, baf3dbd8e, `make seat-yield-census`, locks / gorge /
+  terminus x 1801-1806, 18 CPU v CPU fights):** 542 give-ways by crews holding a CPU seat to another element's crew (499
+  screen, 43 hold, 0 support_by_fire), 21 deaths in them (19 screen), 705 deaths in all. Laptop dev read (locks s1801,
+  one fight): 15 -> 2. **Judged:** `make native seat-yield-census`, arms none v `SY_FLAGS=--seat-aside=on`, the same 3
+  maps x FRESH seeds 1811-1822 (36 fights an arm), builder0, on a green-checked hash. **Counter:** `seats_aside` > 0.
+  **Deciding:** screen give-ways (episodes) summed, arm <= 50 % of base. **Reported:** deaths in seat give-ways (base ~42
+  expected: too few to decide; must not rise beyond Poisson noise, arm <= base + 1.645 sqrt(base)).
+  **Guards (per-fight totals, both sides are CPU):** deaths a fight per team each within base +/- 1.645 se (se from the
+  base arm's per-fight sd, n 36). **A pass ships ON** (symmetric: every CPU commander), `--seat-aside=off` keeps today's.
+- **O3 UNTANGLE_WHOLE (orders, C37.5; filed 2026-10-21 ~10:10 PDT before any O3 number; code 092cb34b7, OFF).** What he
+  would see: squads he sends together arrive each with its own vehicles (no squad one vehicle short, no stranger in it),
+  and they do not bump each other more than today. The change: where today's untangle re-deals vehicles between squads
+  whose drives cross, the crossing squads swap whole PLACES (fewest crossing drive pairs, then least driving); each keeps
+  its element. **Base rate (seen):** 25 of 287 squads had a crew re-dealt (builder0 native, 55c973cd4, round 36's 12 cells x
+  3621-3626). **Judged probe:** `make native orders-probe`, arms `main:` v `whole:--untangle=whole`, the 12 cells, FRESH
+  seeds 3713-3724 (n 12 a cell), builder0, on a hash whose full check is green. **Counter:** `swapped_whole` > 0 on the
+  whole arm and the arms' rows differ. **Deciding:** squads arriving short (`redealt` > 0) summed: arm 0 and base >= 10
+  (else "no workload"). **Guards (his priority, contention, at no-worse-than-today):** friendly contacts summed over all
+  runs (`friend_contacts`, physics hull touches between his vehicles) arm <= base x 1.1 + 5, and the same for
+  `friend_contacts_foreign` (different squads); per cell medians: all-in <= base x 1.2 + 3 s and no more never-in seeds,
+  twitch worst <= base + 3 m, end foreign min >= base - 3 m, crossed (far bank) no higher; `whole_still_crossed` reported.
+  `test_control_untangle*` and `test_control_scale` in check. **A pass ships ON** (default whole, `--untangle=deal` keeps
+  today's); the player's path only (CPU elements are not untangled), so no CPU guard. If contacts fail, re-dealing stays
+  (his answer).
+
+### Plan (worker, 2026-10-21; start: main 9d325e291, green by the launch check named in HANDOFF)
+1. O1: probe columns first (per squad after arrival: halt-shape flips, terrain flips of the crews' centroid, reseats),
+   base rate on builder0 (native, light lane) over the 12 street cells x seeds 3621-3626 (already seen); then the fix.
+   **Choice: read the terrain at the element's fixed ANCHOR once arrived** (not the moving centroid). Stateless (no new
+   Element/Movement field, no native twin needed: terrain_at has none), and in player terms the shape belongs to the spot
+   he parked it on. Latch and hysteresis kept as fallbacks if the anchor read still flips. Switch `--halt-terrain=centre`
+   = main's rule. Bar filed before any arm number; fresh seeds for the judged read.
+2. O2 parked ADVANCE (brains' engagement grant), 3. O3 squads whole, 4. O4 away_m v a fixed seat (tooling; may land with
+   O1's columns since both are probe reads), 5. O5 CPU seats off paths, 6. O6 cover seat stub, 7. stretch.

@@ -294,6 +294,8 @@ func _on_damage(event: Dictionary, t: float) -> Array:
 		tags.append("weak_spot")
 	if event.get("face", "") == "rear":
 		tags.append("rear")
+	elif event.get("face", "") == "side" and not bool(event.get("weak_spot", false)):
+		tags.append("flank")  # round 37 (feedback F3): his approved flank lines, caller.hit.flank.*
 	if float(event["hull"]) <= 0.35:
 		tags.append("hurt")
 	var team: String = units[event["shooter"]]["team"]

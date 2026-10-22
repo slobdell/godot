@@ -1,0 +1,11 @@
+PASS deciding: off_idle_s a fight 172.6 -> 20.0 (<= 86.3), drop 152.6 v 1.645 se 40.3; fights 36/36
+  split fight    {'brain': 219.0, 'face_drift': 2111.9, 'giveway': 342.5, 'still': 3541.9}
+  split parked   {'brain': 480.6, 'giveway': 210.0, 'still': 30.4}
+  reported: brain-move leaves 18 -> 50, RETREAT leaves 11 -> 10
+PASS counter: parked_returns 35001
+  PASS guard his kills   base 5.81 arm 5.47 a fight (se 0.30, n 36/36)
+  PASS guard his losses  base 6.11 arm 6.56 a fight (se 0.42, n 36/36)
+  PASS guard CPU losses  base 5.83 arm 5.47 a fight (se 0.29, n 36/36)
+PASS fight guards
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 50 -> 105
+VERDICT o2: PASS

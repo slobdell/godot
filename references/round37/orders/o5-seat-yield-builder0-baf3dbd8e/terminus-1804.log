@@ -1,0 +1,121 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (law): 14 pursuit cruisers, 4 assault guns, 5 gas rocket trucks, 4 sonic emitters (5170 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 27 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (syndicate): 4 skimmers, 6 limousine gunships, 3 railgun platforms, 3 missile rings (5190 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 16 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=5 green=27 rust_squads=5 rust=16
+SKIRMISH_CAMERA focus=(-61, 82) zoom=0.58 vehicles=5
+DEMO_SEED 1804 arena=terminus law vs syndicate (replay: make showmatch SEED=1804)
+CONTROL_GROUPS squads=5 (Battery:5 Eyes:7 Eyes II:7 Guns:4 Sirens:4) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-21T10-25-17-terminus.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "1804", "arena": "terminus", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Rust_Guns_2 destroyed Green_Eyes II_6 (score Green 0 : 1 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 6 (26 tanks left)
+HUD_MESSAGE [warning] Eyes II lost a Pursuit Cruiser, 6 left
+Rust_Guns_2 destroyed Green_Eyes II_7 (score Green 0 : 2 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 7 (25 tanks left)
+HUD_MESSAGE [warning] Eyes II lost a Pursuit Cruiser, 5 left
+NATIVE_EXEC 18618 native, 1381 handed back (dead 0, reflexes 0, yielding 0, face 1232, drive 0, other 0), 615 stale pulls, 2190 part pulls, 0 verified, 0 verify mismatches 
+Rust_Guns_2 destroyed Green_Eyes_5 (score Green 0 : 3 Rust)
+Rust_Guns_1 destroyed Green_Eyes II_3 (score Green 0 : 4 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 3 (23 tanks left)
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 6 left
+Rust_Hunters_1 destroyed Green_Eyes_3 (score Green 0 : 5 Rust)
+HUD_MESSAGE [warning] Eyes II lost a Pursuit Cruiser, 4 left
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 5 left
+Rust_Hunters2_1 destroyed Green_Eyes II_5 (score Green 0 : 6 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 5 (21 tanks left)
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"attack","at":[3.3,80.4],"cpu":true,"died":false,"element":"Eyes","end":591,"s":18.2,"seat_m":4.1,"start":546,"team":0,"unit":"Green_Eyes_2","verb":"screen","yield_s":1.5}
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"attack","at":[5.7,76.7],"cpu":true,"died":false,"element":"Eyes II II","end":631,"s":15.1,"seat_m":0.3,"start":452,"team":0,"unit":"Green_Eyes II_2","verb":"screen","yield_s":6.0}
+HUD_MESSAGE [warning] Eyes II lost a Pursuit Cruiser, 3 left
+Rust_Battery_3 destroyed Green_Sirens_1 (score Green 0 : 7 Rust)
+HUD_MESSAGE [warning] Sirens: commander down, Sirens 2 takes command
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 3 left
+Green_Guns_3 destroyed Rust_Guns_2 (score Green 1 : 7 Rust)
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"attack","at":[2.2,68.5],"cpu":true,"died":false,"element":"Eyes II II","end":772,"s":22.0,"seat_m":9.1,"start":661,"team":0,"unit":"Green_Eyes II_2","verb":"screen","yield_s":3.7}
+HUD_MESSAGE [info] Destroyed an enemy Railgun Platform (15 left)
+Rust_Guns_1 destroyed Green_Guns_3 (score Green 1 : 8 Rust)
+Rust_Hunters_4 destroyed Green_Eyes II_1 (score Green 1 : 9 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 1 (18 tanks left)
+HUD_MESSAGE [warning] Eyes II: commander down, Eyes II 2 takes command
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 3 left
+HUD_MESSAGE [warning] Eyes II lost a Pursuit Cruiser, 2 left
+NATIVE_EXEC 36644 native, 3355 handed back (dead 0, reflexes 0, yielding 0, face 3125, drive 0, other 0), 963 stale pulls, 5472 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Green_Eyes_7","asker_verb":"screen","at":[2.3,57.7],"cpu":true,"died":false,"element":"Eyes II II","end":963,"s":30.8,"seat_m":10.4,"start":925,"team":0,"unit":"Green_Eyes II_4","verb":"screen","yield_s":1.3}
+Rust_Guns_1 destroyed Green_Sirens_4 (score Green 1 : 10 Rust)
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 2 left
+Green_Battery_5 destroyed Rust_Hunters_4 (score Green 2 : 10 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (14 left)
+Rust_Guns_3 destroyed Green_Guns_4 (score Green 2 : 11 Rust)
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 2 left
+HUD_MESSAGE [warning] Sirens: shields down
+SEAT_YIELD {"asker":"Rust_Guns_1","asker_verb":"attack","at":[5.7,-77.2],"cpu":true,"died":false,"element":"Eyes","end":1365,"s":43.9,"seat_m":1.2,"start":1318,"team":1,"unit":"Rust_Eyes_4","verb":"screen","yield_s":1.6}
+HUD_MESSAGE [warning] Guns: shields down
+Rust_Guns_3 destroyed Green_Sirens_3 (score Green 2 : 12 Rust)
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 1 left
+Rust_Guns_1 destroyed Green_Sirens_2 (score Green 2 : 13 Rust)
+Green_Battery_4 destroyed Rust_Hunters_1 (score Green 3 : 13 Rust)
+HUD_MESSAGE [error] Sirens destroyed
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (13 left)
+Green_Guns_2 destroyed Rust_Hunters_2 (score Green 4 : 13 Rust)
+NATIVE_EXEC 53419 native, 6580 handed back (dead 0, reflexes 0, yielding 0, face 6287, drive 0, other 0), 1154 stale pulls, 8192 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (12 left)
+Rust_Battery_1 destroyed Green_Guns_2 (score Green 4 : 14 Rust)
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 1 left
+Rust_Guns_1 destroyed Green_Eyes II_4 (score Green 4 : 15 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 4 (12 tanks left)
+HUD_MESSAGE [info] We hold the west ring
+HUD_MESSAGE [warning] Eyes II lost a Pursuit Cruiser, 1 left
+Rust_Hunters_5 destroyed Green_Eyes_6 (score Green 4 : 16 Rust)
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 4 left
+HUD_MESSAGE [warning] Guns: shields down
+Rust_Hunters_5 destroyed Green_Guns_1 (score Green 4 : 17 Rust)
+Rust_Guns_1 destroyed Green_Eyes II_2 (score Green 4 : 18 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 2 (9 tanks left)
+HUD_MESSAGE [error] Guns destroyed
+HUD_MESSAGE [error] Eyes II destroyed
+Rust_Guns_1 destroyed Green_Eyes_7 (score Green 4 : 19 Rust)
+NATIVE_EXEC 69826 native, 10173 handed back (dead 0, reflexes 0, yielding 0, face 9849, drive 0, other 0), 1409 stale pulls, 10938 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 3 left
+Rust_Hunters_5 destroyed Green_Eyes_2 (score Green 4 : 20 Rust)
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 2 left
+HUD_MESSAGE [warning] Contact: 2 enemies in sight
+SEAT_YIELD {"asker":"Rust_Guns_3","asker_verb":"attack","at":[-19.4,-34.6],"cpu":true,"died":false,"element":"Eyes","end":2606,"s":86.0,"seat_m":34.8,"start":2581,"team":1,"unit":"Rust_Eyes_1","verb":"screen","yield_s":0.8}
+SEAT_YIELD {"asker":"Rust_Hunters2_1","asker_verb":"support_by_fire","at":[-4.2,-22.7],"cpu":true,"died":false,"element":"Eyes","end":2650,"s":87.1,"seat_m":26.2,"start":2612,"team":1,"unit":"Rust_Eyes_2","verb":"screen","yield_s":1.3}
+SEAT_YIELD {"asker":"Rust_Hunters2_1","asker_verb":"support_by_fire","at":[-4.5,-1.1],"cpu":true,"died":false,"element":"Eyes","end":2866,"s":94.2,"seat_m":1.9,"start":2826,"team":1,"unit":"Rust_Eyes_1","verb":"screen","yield_s":1.3}
+HUD_MESSAGE [warning] Eyes: shields down
+Rust_Battery_1 destroyed Green_Eyes_4 (score Green 4 : 21 Rust)
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 1 left
+SEAT_YIELD {"asker":"Rust_Guns_1","asker_verb":"attack","at":[-15.9,14.9],"cpu":true,"died":false,"element":"Eyes","end":3016,"s":96.9,"seat_m":16.7,"start":2907,"team":1,"unit":"Rust_Eyes_3","verb":"screen","yield_s":3.6}
+Rust_Guns_1 destroyed Green_Battery_3 (score Green 4 : 22 Rust)
+HUD_MESSAGE [warning] Battery lost a Gas Rocket Truck, 4 left
+Rust_Battery_2 destroyed Green_Battery_1 (score Green 4 : 23 Rust)
+HUD_MESSAGE [warning] Battery: commander down, Battery 2 takes command
+HUD_MESSAGE [warning] Battery lost a Gas Rocket Truck, 3 left
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Rust_Guns_1 destroyed Green_Battery_5 (score Green 4 : 24 Rust)
+HUD_MESSAGE [warning] Battery: shields down
+HUD_MESSAGE [warning] Battery lost a Gas Rocket Truck, 2 left
+NATIVE_EXEC 88762 native, 11237 handed back (dead 0, reflexes 0, yielding 0, face 10913, drive 0, other 0), 1706 stale pulls, 12560 part pulls, 0 verified, 0 verify mismatches 
+Rust_Battery_1 destroyed Green_Battery_2 (score Green 4 : 25 Rust)
+HUD_MESSAGE [warning] Battery: commander down, Battery 4 takes command
+HUD_MESSAGE [warning] Battery lost a Gas Rocket Truck, 1 left
+Rust_Guns_1 destroyed Green_Battery_4 (score Green 4 : 26 Rust)
+HUD_MESSAGE [error] Battery destroyed
+HUD_MESSAGE [info] The west ring is neutral
+HUD_MESSAGE [warning] The enemy took the west ring
+SEAT_YIELD {"asker":"Rust_Hunters_3","asker_verb":"move","at":[-72.2,-34.2],"cpu":true,"died":false,"element":"Eyes","end":4472,"s":148.1,"seat_m":2.9,"start":4443,"team":1,"unit":"Rust_Eyes_1","verb":"screen","yield_s":1.0}
+HUD_MESSAGE [info] We hold the east ring
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+HUD_MESSAGE [warning] Eyes: shields down
+HUD_MESSAGE [warning] Eyes: shields down
+Rust_Hunters_3 destroyed Green_Eyes_1 (score Green 4 : 27 Rust)
+HUD_MESSAGE [error] DEFEAT
+NATIVE_EXEC 107905 native, 12094 handed back (dead 0, reflexes 0, yielding 0, face 11662, drive 0, other 0), 1975 stale pulls, 13471 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [error] Eyes destroyed
+SEAT_YIELD_CENSUS {"arena":"terminus","by_verb":{"cpu:screen":{"deaths":0,"episodes":10}},"deaths":31,"seat_aside":"off","seconds":180.0,"seed":1804}

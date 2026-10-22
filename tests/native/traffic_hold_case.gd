@@ -7,6 +7,13 @@ extends TestCase
 ## the case (the round-31 body, but for the crew split and the sample floor divided by it).
 
 var _saved_native := false
+## Round 37 (native, R37.35): the stage's points (TrafficTwin.run's `stage`), the west street at z 55 -> -60, not
+## TrafficStage's 75 -> -55. Cover's K5 barrier runs (stream/cover 3923ba026) at (-83..-77, 70) and (-65..-59, 80) sit at
+## that street's north end, where squad A started and B was sent: the hold fired approaching but never at the spot. From a
+## 4-pose sweep (builder0 light lane, crews 0/2 live), this pose held at the spot most on BOTH arenas: 638 at the spot / 499
+## approaching on main's, 771 / 428 on K5's (floor 30 each), 0 mismatches. Traffic's own stage (and its numbers) unchanged.
+const HEAD_STAGE := {"a": [Vector3(-70, 0, 55), Vector3(-70, 0, -60)], "b": [Vector3(-70, 0, -60), Vector3(-70, 0, 55)]}
+var head_stage := HEAD_STAGE
 
 
 func teardown() -> void:
@@ -29,7 +36,7 @@ func _hold_case(owned: bool, part: int, parts: int) -> void:
 	Traffic.set_off("hold", false)
 	var intent := (Manoeuvre as Script).get_script_constant_map().has("STALL_INTENT_DEFAULT")  # round 35 (W1c)
 	var intent_before: int = Manoeuvre.stall_intent_ticks if intent else 0
-	var acc: Dictionary = await TrafficTwin.run(self, owned, "terminus", "head", 30.0, part, parts)
+	var acc: Dictionary = await TrafficTwin.run(self, owned, "terminus", "head", 30.0, part, parts, head_stage)
 	var report: Dictionary = acc["report"]
 	if intent:
 		print("native traffic hold%s, crews %d/%d: stall intent ticks (the stage's own drives) %d (STALL_INTENT_DEFAULT %s)" % [

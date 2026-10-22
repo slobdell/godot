@@ -4026,8 +4026,9 @@ static func h1b_side_on() -> bool:
 # unmoved since the step began (`_side_over()` false), STANDS instead of picking again, until the friend moves more than
 # H1B_MOVED_M or the goal changes (the stand's own end). Whatever the geometry, the loop is one step. Chosen over (i), a
 # drive-v-box clearance test, because it bounds every shape of the loop, not only the one traced. `--nav-off=sidestand`
-# flips SIDE_STAND_DEFAULT (false until judged).
-const SIDE_STAND_DEFAULT := false
+# flips SIDE_STAND_DEFAULT. ON since Bar M1 passed (round 37: lab both paths + series guards, builder0 native, ON 339d3f2e2
+# v base b822e6696, 72 fight pairs + 768 hull-rest runs a side; references/round37/manoeuvre/m1-series).
+const SIDE_STAND_DEFAULT := true
 
 
 static func side_stand_on() -> bool:

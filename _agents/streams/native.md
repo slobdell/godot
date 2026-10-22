@@ -61,6 +61,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Report (round 37 worker, 2026-10-21 ~13:00 PDT)
 
+**MERGED (orchestrator):** CP37.1 (d9545d381 + 84c11a60d); the stream hand-over 6c9bc7239 + 14c10d1d4 (main 36a19ae30);
+ai_scenarios_count adopted 54,0,4,0 (4b62d2186). Main's check of 4b62d2186 is the orchestrator's. **Waiting:** a scoreboard
+row for each main the orchestrator names as shipped; twins as pairs arrive.
+
 **In player terms:** today a naive all-in rush (every squad right-clicked onto the enemy's zone) wins about **half** its fights
 against the CPU's tactics, and sitting tight on your own zone wins about **two in five**. Those are the two lines every rule this
 round is judged on; both should fall.
@@ -91,8 +95,9 @@ round is judged on; both should fall.
   0 mismatches (9/9 fire), ON 18 compared 0 mismatches (0 fire). Manoeuvre merged it (4378658cb).
 - Written answers (no twin needed): rules R1-R3 (C++ reads sight live, never computes spread, drives the throttle tank.gd hands
   it), K2 (no native hit path skips cover's seam), O2 (no C++ writes `move_order`), M1 sidestand (the far fire is GDScript-only).
-- OWED: rules' empirical run, their test_rules_* under `make native test` both arms (NATIVE=off for the GDScript arm), each
-  switch ON, on the pair commit rules declares (agreed with rules).
+- Rules' empirical run (R37.4) DONE on rules' pair 75c3e74e0 (builder0 light): `make native test FILTER=test_rules_` native ON
+  20/0 and NATIVE=off 20/0, both exited 0, every test PASS in both arms (the tests set each switch ON and OFF themselves; they
+  print no numbers, so the equality is per assertion). Rules told; its arms may start.
 
 **N3 the scoreboard:** the page has a *Guard lines* section (references/scoreboard/guards/<commit>.json); the round-37 launch
 column 9d325e291 is read (builder2, verdict ok 40/48/36): v 3d46b2884 every line inside its noise (stuck deaths 5.92 -> 5.17 a
@@ -108,8 +113,17 @@ orchestrator adopts `tests/baselines/ai_scenarios_count.txt` 53,0,5,0 -> 54,0,4,
 **N6 the judging re-render: DONE** (05e3982e0): round 36's 20 lines in `tools/judge/lines_r36.py`; `_agents/judging.md`
 *Round 37 re-render*; table unchanged (round 36's rows are on round36/* branches); 0 of 9 se lines inside the noise.
 
-**Checks:** cfb8120ba builder2 `exited 2`, 2973/0, sim-baseline unmoved, the one red N5's planned count move. Stream tip
-6c9bc7239 (main a10846307 + N2 cover twins + N4 + N5 + N6 + N3 row): full check QUEUED on builder2 behind main's.
+**perf-judge on builder2 (R37.20):** it can never judge as built: builder2's nominal is the old c4d's (now e2-highcpu-32, Intel
+Broadwell; the reference reads 2.28-2.50 ms v 0.898 at 62-96 % idle) and scenario_perf's pass line is absolute (FAIL_USEC
+20,000; the brains read 21-34k there). Ruled: one perf-judge on builder0 for main (the orchestrator's); (b) DONE 14c10d1d4:
+perf_judge.sh says "NOT JUDGED: builder2 is not a judging machine" at once (laptop test_perf_judge 7/0, check-perf-judge 10/0);
+(c) a relative line (µs per reference ms) is round 38's.
+
+**Checks:** cfb8120ba builder2 `exited 2`, 2973/0, sim-baseline unmoved, the one red N5's planned count move. **Stream hand-over: 6c9bc7239**
+(main a10846307 + N2 cover twins + N4 + N5 + N6 + N3 row) builder2 `make native check exited 2`: runner 3008/0, sim-baseline
+13/13 unmoved, determinism 8c3c1232b711a760, 25 passed + 1 NOT JUDGED (perf-judge); the ONE red is ai-scenarios-check = N5's
+planned 53,0 -> 54,0 (pending 5 -> 4): **the orchestrator adopts 54,0,4,0**. Then 14c10d1d4 (perf_judge.sh + its test only,
+laptop 7/0 + 10/0) and Status docs. No file overlaps main's commits since a10846307.
 
 **Decisions (mine):** the blob re-targets only when its zone changes (a player clicks once); the turtle's posts are the CPU's own
 hold layout without its intruder attack; a fight runs to its own end (cap 600 s never reached); the CPU v CPU control (`none`)

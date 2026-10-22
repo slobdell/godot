@@ -171,6 +171,15 @@ static var APPROACH_BATTERY := true
 ## places while three trucks were set up, and the crew sent 20 m across them was refused and never moved again.
 ## `--battery-seat=off` is main's rule.
 static var BATTERY_SEAT := true
+## Round 37 (orders, the lead's playtest 2026-10-21, archipelago s44214: "My last 2 surviving units are artillery
+## vehicles... I was directing them to move to target locations, and they did not move"): the battery seat holds a set-up
+## crew only while it stands ON the seat it was last sent to (within BATTERY_SEAT_ON_M): a re-lay or a coil swap within
+## the task, as round 33 meant. A truck that stands still sets up by itself, so an all-artillery squad parked a few
+## seconds had every crew set up, and each new move of his seated them where they stood: an order to its own spot, done
+## at once, and a truck that never wants to move never packs (lab: test_control_artillery_move, 0.0 m). Sent somewhere
+## else, it is not held; its move packs it. `--battery-seat-task=off` is round 33's rule.
+static var BATTERY_SEAT_TASK := not OS.get_cmdline_user_args().has("--battery-seat-task=off")
+const BATTERY_SEAT_ON_M := 6.0
 ## The orchestrator's ruling on (c) (C28.5, 2026-10-12): a TARGET that charges the squad has left the position the side was
 ## drawn against. When it drives at the element (APPROACH_CLOSING_MPS) and is inside any crew's reach, the flank is
 ## dropped for the task ("charged") and the attack fights where it is, as a clicked one (which kills a lone charging IFV
@@ -206,6 +215,9 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 					else String(situation.get("leader", "")),
 			"previous_seats": {} if bool(state.get("reseat", false)) else state.get("seats", {}),
 			"reseat": bool(state.get("reseat", false)),
+			# Round 37 (orders, his archipelago playtest): where each crew was last sent (the battery seat holds only a crew
+			# set up on it).
+			"previous_slots": state.get("issued_slots", {}),
 			# Round 27 (B2): the parked crews' seats this re-seat keeps (Element._parked_seats).
 			"reseat_keep": state.get("reseat_keep", {}) if bool(state.get("reseat", false)) else {},
 			"facing_sent": bool(state.get("facing_sent", false)),
@@ -847,6 +859,8 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 				false, "travel", deploy_extra)
 		if DEPLOY_COMPACT and String(plan["formation"]) == "herringbone":
 			plan["slots"] = _deploy_compact(plan["slots"], deploy["heading"])
+		if COVER_SEAT:
+			_cover_seats(plan, deploy, situation)
 		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
@@ -1901,6 +1915,61 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 	return deploy
 
 
+## O6 (round 37, C37.4; his answer (3): "short move to cover only when parking"): when the deploy lays its halt, each
+## crew's seat is offered ONCE to cover's `TacticalQuery.low_cover_seat(near, threat_dir, max_shift_m)` (a point within
+## COVER_SHIFT_M whose front faces the threat behind low cover, else null), the threat being the halt's heading. The
+## answers are kept in the deploy (`cover`) and stand for the life of the halt: never asked again, never while idle (his
+## "stay put" and "under my control"). Until cover's API is on main the call answers null (no seat moves).
+## `--cover-seat=on` (env COVER_SEAT=on) opts in.
+static var COVER_SEAT := OS.get_cmdline_user_args().has("--cover-seat=on") or OS.get_environment("COVER_SEAT") == "on"
+const COVER_SHIFT_M := 4.0
+## Measurement: seats cover's query moved, since start.
+static var cover_seats_moved := 0
+
+
+static func _cover_seats(plan: Dictionary, deploy: Dictionary, situation: Dictionary = {}) -> void:
+	if not deploy.has("cover"):
+		var found := {}
+		var threat: Vector3 = TacticsFormation.flat(deploy.get("heading", Vector3.FORWARD))
+		var units := {}
+		for member: Dictionary in situation.get("members", []):
+			units[String(member["name"])] = String(member.get("unit", ""))
+		for unit_name: String in plan["slots"]:
+			var seat: Variant = plan["slots"][unit_name]
+			if seat is Vector3:
+				var size: Variant = Units.stat(String(units.get(unit_name, "tank")), "hull_size")
+				var hull: Variant = Vector3(float(size[0]), float(size[1]), float(size[2])) \
+						if size is Array and (size as Array).size() == 3 else null
+				var moved: Variant = low_cover_seat(situation.get("cover_map"), seat, threat, COVER_SHIFT_M, hull)
+				if moved is Vector3:
+					found[unit_name] = moved
+					cover_seats_moved += 1
+		deploy["cover"] = found
+	# A crew moved behind low cover faces the threat there (cover's contract: the caller lays that facing): its sector
+	# is the halt's heading, and its order goes to the cover seat facing it.
+	var cover: Dictionary = deploy["cover"]
+	var facing: Vector3 = TacticsFormation.flat(deploy.get("heading", Vector3.FORWARD))
+	for unit_name: String in cover:
+		if plan["slots"].has(unit_name):
+			plan["slots"][unit_name] = cover[unit_name]
+			if plan.get("sectors", {}).has(unit_name):
+				plan["sectors"][unit_name] = 0.0
+			var order: Variant = plan.get("orders", {}).get(unit_name)
+			if order is Dictionary:
+				order["to"] = cover[unit_name]
+				order["facing"] = facing
+
+
+## C37.4's seam: cover's `TacticalQuery.low_cover_seat(map, near, threat_dir, max_shift_m, hull, node)` (cover's K3, on
+## main 821c7f494) when this build has it, else null. No map (a test's bare situation) or no hull size: null. `node` is
+## left null (the plan is pure: no tank to path from); cover's query then skips its navmesh reach test (merge note).
+static func low_cover_seat(map: Variant, near: Vector3, threat_dir: Vector3, max_shift_m: float, hull: Variant = null) -> Variant:
+	var query := Callable(TacticalQuery, "low_cover_seat")
+	if not query.is_valid() or map == null or hull == null:
+		return null
+	return query.call(map, near, threat_dir, max_shift_m, hull, null)
+
+
 ## The shape a deploy stands in: the task's `halt_shape` when the order priced one (D3: the pack laid its seats in it), else
 ## the table's hold pick for this situation.
 static func _deploy_shape(situation: Dictionary, state: Dictionary, table: DoctrineTable) -> String:
@@ -2535,9 +2604,19 @@ static func _battery_set_up(plan: Dictionary, members: Array, formation: String)
 	for member: Dictionary in members:
 		var seat: Variant = before.get(String(member["name"]))
 		if bool(member.get("deployed", false)) and member.has("position") and seat is Array \
-				and String(seat[0]) == formation and int(seat[1]) == members.size():
+				and String(seat[0]) == formation and int(seat[1]) == members.size() \
+				and (not BATTERY_SEAT_TASK or _set_up_on_seat(plan, member)):
 			result[String(member["name"])] = [int(seat[2]), member["position"]]
 	return result
+
+
+## Round 37: whether a crew stands within BATTERY_SEAT_ON_M of the place it was last sent to. Pure.
+static func _set_up_on_seat(plan: Dictionary, member: Dictionary) -> bool:
+	var sent: Variant = (plan.get("previous_slots", {}) as Dictionary).get(String(member["name"]))
+	if not (sent is Vector3):
+		return false
+	var at: Vector3 = member["position"]
+	return Vector2(at.x - (sent as Vector3).x, at.z - (sent as Vector3).z).length() <= BATTERY_SEAT_ON_M
 
 
 ## Last update's seating for these members in this shape, if they all had one ({} otherwise).

@@ -1,0 +1,172 @@
+tools/remote.sh native orders-probe ORDERS_PROBE_SEEDS=3821\ 3822\ 3823\ 3824\ 3825\ 3826\ 3827\ 3828\ 3829\ 3830\ 3831\ 3832 ORDERS_PROBE_ARMS=main:\ latch:--halt-terrain=latch ORDERS_PROBE_MAPS=locks\ crossing\ terminus ORDERS_PROBE_SQUADS=3\ 5 ORDERS_PROBE_ROUTES=click\ route ORDERS_PROBE_JOBS=4
+>> remote: syncing godot-orders-o1 to slobdell@builder0:~/tank_squad/godot-orders-o1
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3821 3822 3823 3824 3825 3826 3827 3828 3829 3830 3831 3832 ORDERS_PROBE_ARMS=main: latch:--halt-terrain=latch ORDERS_PROBE_MAPS=locks crossing terminus ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click route ORDERS_PROBE_JOBS=4 on slobdell@builder0
+>> native: src-sync: 0 changed
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> orders-probe on builder0 | commit 1ebd7e550 | native on
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          latch     |   27.1 /   17.6   |    9   0 |     21.6 |               1.9 |            33.2 | 1.50 | 56.8
+crossing 3 click          main      |   27.1 /   17.6   |    8   0 |     21.6 |               1.9 |            33.2 | 1.50 | 56.8
+crossing 3 route          latch     |   27.1 /   22.7   |    5   0 |     22.8 |               3.8 |            42.2 | 1.47 | 56.8
+crossing 3 route          main      |   27.1 /   22.7   |    5   0 |     22.8 |               3.8 |            42.2 | 1.47 | 56.8
+crossing 5 click          latch     |   71.0 /   26.1   |   10   0 |        - |               2.9 |            87.1 | 3.19 | 19.0
+crossing 5 click          main      |   71.0 /   26.1   |   10   0 |        - |               2.9 |            87.1 | 3.19 | 19.0
+crossing 5 route          latch     |   71.0 /   28.2   |    8   0 |     77.8 |               2.7 |            72.6 | 2.05 | 19.0
+crossing 5 route          main      |   71.0 /   28.2   |    7   0 |     55.5 |               2.7 |            72.6 | 2.05 | 19.0
+locks 3 click             latch     |   37.4 /   34.4   |   18   0 |     88.9 |               3.1 |            38.8 | 1.96 | 30.3
+locks 3 click             main      |   37.4 /   34.4   |   17   0 |     88.9 |               3.1 |            38.8 | 1.96 | 30.3
+locks 3 route             latch     |   37.4 /   34.4   |    6   0 |        - |               3.6 |            37.7 | 1.66 | 30.3
+locks 3 route             main      |   37.4 /   34.4   |    7   0 |        - |               3.6 |            39.3 | 2.11 | 30.3
+locks 5 click             latch     |   55.5 /   39.5   |    4   0 |     56.4 |               3.2 |            70.5 | 2.61 | 16.9
+locks 5 click             main      |   55.5 /   39.5   |    5   0 |     48.7 |               3.2 |            70.5 | 3.16 | 16.9
+locks 5 route             latch     |   55.5 /   39.5   |    6   1 |     45.7 |               2.9 |            67.5 | 2.41 | 16.9
+locks 5 route             main      |   55.5 /   39.5   |    4   1 |     53.7 |               2.9 |            62.4 | 2.41 | 16.9
+terminus 3 click          latch     |   36.9 /   34.4   |    0   0 |     27.3 |               2.8 |            55.5 | 1.57 | 18.5
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     28.0 |               2.8 |            55.5 | 1.63 | 18.5
+terminus 3 route          latch     |   36.9 /   34.4   |    0   0 |     22.7 |               3.3 |            36.2 | 1.80 | 18.5
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |     22.7 |               3.3 |            36.2 | 1.80 | 18.5
+terminus 5 click          latch     |   62.4 /   39.4   |    0   0 |     38.6 |               4.6 |            58.2 | 3.06 | 5.6
+terminus 5 click          main      |   62.4 /   39.4   |    0   0 |     49.9 |               7.2 |            57.7 | 2.83 | 5.6
+terminus 5 route          latch     |   62.4 /   39.4   |    0   0 |        - |               3.2 |            61.4 | 8.96 | 5.6
+terminus 5 route          main      |   62.4 /   39.4   |    0   0 |        - |               3.6 |            63.0 | 8.19 | 5.6
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          latch     |          31.6 |          22.4 |           18.7 |               2.5 |          38.0
+crossing 3 click          main      |          31.6 |          22.4 |           18.7 |               2.5 |          38.0
+crossing 3 route          latch     |          32.8 |          22.4 |           16.9 |               2.1 |          39.5
+crossing 3 route          main      |          32.8 |          14.3 |           16.9 |               2.1 |          39.5
+crossing 5 click          latch     |             - |          31.2 |              - |               3.1 |         103.3
+crossing 5 click          main      |             - |          31.2 |              - |               2.8 |         103.3
+crossing 5 route          latch     |          87.8 |          30.1 |              - |               3.4 |          99.0
+crossing 5 route          main      |          65.5 |          30.1 |           30.5 |               2.9 |          99.0
+locks 3 click             latch     |             - |          28.0 |              - |               5.4 |          51.8
+locks 3 click             main      |             - |          21.8 |              - |               4.2 |          53.1
+locks 3 route             latch     |             - |          23.1 |              - |               5.0 |          58.8
+locks 3 route             main      |             - |          23.1 |              - |               5.3 |          52.3
+locks 5 click             latch     |          64.2 |          41.0 |           41.9 |               5.3 |          80.2
+locks 5 click             main      |          57.8 |          41.0 |           43.4 |               5.7 |          80.2
+locks 5 route             latch     |          55.7 |          49.3 |           38.1 |               4.6 |          81.8
+locks 5 route             main      |          70.6 |          49.3 |           37.6 |               4.8 |          81.8
+terminus 3 click          latch     |          37.3 |          30.3 |           18.5 |              12.3 |          57.2
+terminus 3 click          main      |          38.0 |          31.9 |           21.8 |              13.8 |          57.2
+terminus 3 route          latch     |          26.2 |          25.2 |           27.1 |              10.0 |          55.6
+terminus 3 route          main      |          26.2 |          28.9 |           27.1 |              10.0 |          55.6
+terminus 5 click          latch     |          48.6 |          49.6 |           35.7 |               3.2 |          83.5
+terminus 5 click          main      |          58.4 |          46.4 |           29.9 |               5.9 |          83.9
+terminus 5 route          latch     |             - |          39.9 |              - |               4.7 |          81.6
+terminus 5 route          main      |             - |          39.9 |              - |               4.7 |          81.6
+
+MEDIANS over seeds [3821, 3822, 3823, 3824, 3825, 3826, 3827, 3828, 3829, 3830, 3831, 3832] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          latch       | 12 |         16.4 |     0 |          23.7 |          9.4 |          34.7 |               2.5 |    9   0 | 1.31
+crossing 3 click          main        | 12 |         16.4 |     0 |          23.7 |          9.4 |          34.7 |               2.5 |    8   0 | 1.31
+crossing 3 route          latch       | 12 |         16.5 |     0 |          26.4 |          7.7 |          37.6 |               2.1 |    5   0 | 1.35
+crossing 3 route          main        | 12 |         16.5 |     0 |          28.3 |          7.7 |          37.8 |               2.1 |    5   0 | 1.35
+crossing 5 click          latch       | 12 |         37.6 |     1 |          78.7 |         18.2 |          89.3 |               3.1 |   10   0 | 2.12
+crossing 5 click          main        | 12 |         37.6 |     1 |          78.7 |         18.2 |          89.3 |               2.8 |   10   0 | 2.12
+crossing 5 route          latch       | 12 |         33.1 |     0 |          39.8 |         18.2 |          83.7 |               3.4 |    8   0 | 1.86
+crossing 5 route          main        | 12 |         33.1 |     0 |          37.9 |         16.2 |          83.6 |               2.9 |    7   0 | 1.88
+locks 3 click             latch       | 12 |         32.8 |     0 |          30.2 |         20.5 |          48.6 |               5.4 |   18   0 | 1.52
+locks 3 click             main        | 12 |         34.5 |     0 |          30.2 |         18.9 |          48.5 |               4.2 |   17   0 | 1.53
+locks 3 route             latch       | 12 |         28.0 |     1 |          28.9 |         16.2 |          49.2 |               5.0 |    6   0 | 1.37
+locks 3 route             main        | 12 |         28.0 |     1 |          28.9 |         16.2 |          48.9 |               5.3 |    7   0 | 1.37
+locks 5 click             latch       | 12 |         23.1 |     0 |          48.6 |         20.6 |          76.5 |               5.3 |    4   0 | 1.77
+locks 5 click             main        | 12 |         23.1 |     0 |          49.1 |         19.3 |          76.5 |               5.7 |    5   0 | 1.77
+locks 5 route             latch       | 12 |         26.5 |     0 |          47.6 |         17.5 |          74.0 |               4.6 |    6   1 | 1.62
+locks 5 route             main        | 12 |         26.5 |     0 |          49.2 |         17.5 |          74.0 |               4.8 |    4   1 | 1.62
+terminus 3 click          latch       | 12 |         19.6 |     0 |          27.1 |          3.8 |          43.9 |              12.3 |    0   0 | 1.41
+terminus 3 click          main        | 12 |         20.4 |     0 |          27.2 |          5.3 |          46.5 |              13.8 |    0   0 | 1.41
+terminus 3 route          latch       | 12 |         18.0 |     0 |          30.2 |          0.0 |          52.6 |              10.0 |    0   0 | 1.27
+terminus 3 route          main        | 12 |         18.0 |     0 |          30.2 |          0.0 |          52.6 |              10.0 |    0   0 | 1.27
+terminus 5 click          latch       | 12 |         13.2 |     0 |          44.1 |         19.9 |          77.7 |               3.2 |    0   0 | 2.76
+terminus 5 click          main        | 12 |         13.2 |     0 |          42.0 |         16.4 |          79.3 |               5.9 |    0   0 | 2.18
+terminus 5 route          latch       | 12 |         54.8 |     2 |          43.8 |         22.7 |          73.8 |               4.7 |    0   0 | 5.09
+terminus 5 route          main        | 12 |         53.8 |     2 |          45.7 |         22.5 |          75.8 |               4.7 |    0   0 | 4.75
+
+EQUALITY click cells: 29 identical across arms, 43 differ
+  DIFFER crossing 3 click seed 3823
+  DIFFER crossing 3 click seed 3825
+  DIFFER crossing 5 click seed 3821
+  DIFFER crossing 5 click seed 3824
+  DIFFER crossing 5 click seed 3827
+  DIFFER crossing 5 click seed 3828
+  DIFFER crossing 5 click seed 3830
+  DIFFER crossing 5 click seed 3831
+  DIFFER locks 3 click seed 3823
+  DIFFER locks 3 click seed 3826
+  DIFFER locks 3 click seed 3827
+  DIFFER locks 3 click seed 3828
+  DIFFER locks 3 click seed 3830
+  DIFFER locks 3 click seed 3831
+  DIFFER locks 3 click seed 3832
+  DIFFER locks 5 click seed 3821
+  DIFFER locks 5 click seed 3822
+  DIFFER locks 5 click seed 3823
+  DIFFER locks 5 click seed 3824
+  DIFFER locks 5 click seed 3825
+  DIFFER locks 5 click seed 3826
+  DIFFER locks 5 click seed 3827
+  DIFFER locks 5 click seed 3829
+  DIFFER locks 5 click seed 3831
+  DIFFER locks 5 click seed 3832
+  DIFFER terminus 3 click seed 3822
+  DIFFER terminus 3 click seed 3823
+  DIFFER terminus 3 click seed 3825
+  DIFFER terminus 3 click seed 3826
+  DIFFER terminus 3 click seed 3831
+  DIFFER terminus 3 click seed 3832
+  DIFFER terminus 5 click seed 3821
+  DIFFER terminus 5 click seed 3822
+  DIFFER terminus 5 click seed 3823
+  DIFFER terminus 5 click seed 3824
+  DIFFER terminus 5 click seed 3825
+  DIFFER terminus 5 click seed 3826
+  DIFFER terminus 5 click seed 3827
+  DIFFER terminus 5 click seed 3828
+  DIFFER terminus 5 click seed 3829
+  DIFFER terminus 5 click seed 3830
+  DIFFER terminus 5 click seed 3831
+  DIFFER terminus 5 click seed 3832
+TOTAL latch      | placed 570.0 flipping 1.0 flips 1.0 relays 2.0 relaying 1.0 terr_c 97.0 terr_a 0.0 reseats 2.0 away 1760.9 held 1760.9 seat 5200.3
+TOTAL main       | placed 570.0 flipping 9.0 flips 19.0 relays 143.0 relaying 41.0 terr_c 124.0 terr_a 0.0 reseats 40.0 away 1933.0 held 1652.0 seat 5057.1
+>> remote: copy-back verified, 410 files, sha256
+>> remote: copy-back moved 48 stale log(s) an earlier run left beside this run's rows, into build/.stale-20261022-045450/
+   moved  build/orders-probe/logs/yard_open-3-click-column-s3810.log
+   moved  build/orders-probe/logs/yard_open-3-click-column-s3807.log
+   moved  build/orders-probe/logs/yard_open-3-click-main-s3812.log
+   moved  build/orders-probe/logs/yard_open-5-click-column-s3806.log
+   moved  build/orders-probe/logs/yard_open-3-click-column-s3802.log
+   moved  build/orders-probe/logs/yard_open-3-click-column-s3812.log
+   moved  build/orders-probe/logs/yard_open-3-click-main-s3808.log
+   moved  build/orders-probe/logs/yard_open-3-click-column-s3809.log
+   moved  build/orders-probe/logs/yard_open-5-click-column-s3812.log
+   moved  build/orders-probe/logs/yard_open-5-click-main-s3802.log
+   moved  build/orders-probe/logs/yard_open-3-click-main-s3805.log
+   moved  build/orders-probe/logs/yard_open-5-click-column-s3801.log
+   moved  build/orders-probe/logs/yard_open-5-click-column-s3810.log
+   moved  build/orders-probe/logs/yard_open-3-click-column-s3811.log
+   moved  build/orders-probe/logs/yard_open-5-click-column-s3811.log
+   moved  build/orders-probe/logs/yard_open-5-click-main-s3804.log
+   moved  build/orders-probe/logs/yard_open-5-click-main-s3811.log
+   moved  build/orders-probe/logs/yard_open-3-click-column-s3805.log
+   moved  build/orders-probe/logs/yard_open-5-click-column-s3807.log
+   moved  build/orders-probe/logs/yard_open-5-click-column-s3805.log
+   ... and 28 more
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3821 3822 3823 3824 3825 3826 3827 3828 3829 3830 3831 3832 ORDERS_PROBE_ARMS=main: latch:--halt-terrain=latch ORDERS_PROBE_MAPS=locks crossing terminus ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click route ORDERS_PROBE_JOBS=4 exited 0 (build/ copied back)

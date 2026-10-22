@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+"""Round 37 (rules): the guard lines' shots by side and motion, from rules-guard-motion's rows.jsonl (GUARD_MOTION lines).
+
+    python3 tests/rules/guard_motion_table.py rows.jsonl [results.jsonl]
+
+With the run's GUARD_RESULT rows (results.jsonl) it also splits each side by its own faction.
+
+Per line (blob / turtle) and side (the ordered guard / the CPU tactics): direct-fire shots still (< 0.15 of top speed, a
+crawl), slow, fast, and the share fired faster than a crawl, pooled and with the per-seed se of that share.
+"""
+import json
+import math
+import sys
+
+
+def faction_split(line, results):
+    """Each side's moving share by that side's faction (joined to GUARD_RESULT by guard, arena, seed, side)."""
+    fac = {}
+    for r in results:
+        f = {k.lower(): v for k, v in r["factions"].items()}
+        side = r["side"].lower()
+        fac[(r["guard"], r["arena"], int(r["seed"]), side)] = (f[side], f["rust" if side == "green" else "green"])
+    out = {}
+    for r in line:
+        pair = fac.get((r["guard"], r["arena"], int(r["seed"]), r["side"]))
+        if pair is None:
+            continue
+        for who, faction in (("guard", pair[0]), ("tactics", pair[1])):
+            t = out.setdefault((who, faction), [0, 0])
+            t[0] += r["shots"][who]["slow"] + r["shots"][who]["fast"]
+            t[1] += sum(r["shots"][who].values())
+    return out
+
+
+def main(path, results_path=None):
+    rows = [json.loads(line) for line in open(path) if line.strip()]
+    results = [json.loads(line) for line in open(results_path) if line.strip()] if results_path else []
+    print("fights %d (%s), not listening %d" % (len(rows), sorted({r["rules"] for r in rows}),
+                                                sum(1 for r in rows if not r["listening"])))
+    for kind in sorted({r["guard"] for r in rows}):
+        line = [r for r in rows if r["guard"] == kind]
+        print("%s line: %d fights" % (kind.upper(), len(line)))
+        for who in ("guard", "tactics"):
+            tot = {k: sum(r["shots"][who][k] for r in line) for k in ("still", "slow", "fast")}
+            n = sum(tot.values())
+            by_seed = {}
+            for r in line:
+                s = by_seed.setdefault(r["seed"], [0, 0])
+                s[0] += r["shots"][who]["slow"] + r["shots"][who]["fast"]
+                s[1] += sum(r["shots"][who].values())
+            shares = [m / t for m, t in by_seed.values() if t]
+            se = None
+            if len(shares) > 1:
+                mean = sum(shares) / len(shares)
+                se = math.sqrt(sum((x - mean) ** 2 for x in shares) / (len(shares) - 1)) / math.sqrt(len(shares))
+            print("  %-8s shots %6d  still %5.1f %%  slow %5.1f %%  fast %5.1f %%  | moving (>= crawl) %5.1f %% (se %s)  arc %d" % (
+                "blob" if who == "guard" and kind == "blob" else ("turtle" if who == "guard" else "CPU"), n,
+                100 * tot["still"] / n if n else 0, 100 * tot["slow"] / n if n else 0, 100 * tot["fast"] / n if n else 0,
+                100 * (tot["slow"] + tot["fast"]) / n if n else 0, "n/a" if se is None else "%.1f" % (100 * se),
+                sum(r["arc"][who] for r in line)))
+        if results:
+            split = faction_split(line, results)
+            for who in ("guard", "tactics"):
+                print("    %s by faction: %s" % ("blob" if who == "guard" and kind == "blob" else ("turtle" if who == "guard" else "CPU"),
+                      ", ".join("%s %.0f %% (%d)" % (f, 100 * m / t, t) for (w, f), (m, t) in sorted(split.items()) if w == who and t)))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(*sys.argv[1:3]))

@@ -1,0 +1,308 @@
+tools/remote.sh native orders-probe ORDERS_PROBE_SEEDS=3761\ 3762\ 3763\ 3764\ 3765\ 3766\ 3767\ 3768\ 3769\ 3770\ 3771\ 3772 ORDERS_PROBE_ARMS=main:\ latch:--halt-terrain=latch ORDERS_PROBE_MAPS=locks\ crossing\ terminus ORDERS_PROBE_SQUADS=3\ 5 ORDERS_PROBE_ROUTES=click\ route ORDERS_PROBE_JOBS=4
+>> remote: syncing godot-orders-o1 to slobdell@builder0:~/tank_squad/godot-orders-o1
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3761 3762 3763 3764 3765 3766 3767 3768 3769 3770 3771 3772 ORDERS_PROBE_ARMS=main: latch:--halt-terrain=latch ORDERS_PROBE_MAPS=locks crossing terminus ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click route ORDERS_PROBE_JOBS=4 on slobdell@builder0
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:50:12 godot-cover: make --no-print-directory container-frames
+>> waiting for a heavy-run slot (3 in use by other worktrees):
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:50:12 godot-cover: make --no-print-directory container-frames
+>> still waiting for a heavy-run slot: 1 min, position 2 of 2; holders:
+>> still waiting for a heavy-run slot: 2 min, position 2 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:50:12 godot-cover: make --no-print-directory container-frames
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:50:12 godot-cover: make --no-print-directory container-frames
+>> still waiting for a heavy-run slot: 3 min, position 2 of 2; holders:
+>> still waiting for a heavy-run slot: 4 min, position 1 of 1; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 5 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 6 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 7 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 8 min, position 1 of 2; holders:
+>> still waiting for a heavy-run slot: 9 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 10 min, position 1 of 2; holders:
+>> still waiting for a heavy-run slot: 11 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 12 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 13 min, position 1 of 2; holders:
+>> still waiting for a heavy-run slot: 14 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 15 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 16 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 17 min, position 1 of 2; holders:
+>> still waiting for a heavy-run slot: 18 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 19 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 20 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 21 min, position 1 of 2; holders:
+>> still waiting for a heavy-run slot: 22 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 23 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 24 min, position 1 of 2; holders:
+>> still waiting for a heavy-run slot: 25 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 26 min, position 1 of 2; holders:
+>> still waiting for a heavy-run slot: 27 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 28 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 29 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 30 min, position 1 of 2; holders:
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+     22:25:45 godot-orders-arty: make --no-print-directory native check
+     22:46:00 godot-feedback: make --no-print-directory check
+     22:54:39 godot-manoeuvre-m1base: make --no-print-directory native manoeuvre-hull-rest
+>> still waiting for a heavy-run slot: 31 min, position 1 of 2; holders:
+>> got heavy-run slot 3 after 31 min
+>> native: src-sync: 0 changed
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> orders-probe on builder0 | commit c14ec0d80 | native on
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          latch     |   31.0 /   15.5   |   10   0 |     20.2 |               2.4 |            38.6 | 1.43 | 51.8
+crossing 3 click          main      |   31.0 /   15.5   |   10   0 |     20.2 |               2.4 |            38.6 | 1.44 | 51.8
+crossing 3 route          latch     |   31.0 /   21.1   |    4   0 |     22.0 |               3.3 |            36.5 | 1.55 | 51.8
+crossing 3 route          main      |   31.0 /   21.1   |    4   0 |     22.0 |               3.5 |            36.5 | 1.53 | 51.8
+crossing 5 click          latch     |   72.1 /   27.6   |    7   0 |     60.8 |               2.7 |            86.6 | 2.68 | 19.7
+crossing 5 click          main      |   72.1 /   27.6   |    7   0 |     60.8 |               2.7 |            87.7 | 2.68 | 19.7
+crossing 5 route          latch     |   72.1 /   28.3   |    5   0 |     63.8 |               3.2 |            65.1 | 4.48 | 19.7
+crossing 5 route          main      |   72.1 /   28.3   |    7   0 |        - |               3.1 |            65.1 | 4.43 | 19.7
+locks 3 click             latch     |   44.4 /   34.6   |   15   0 |     63.6 |               3.0 |            50.2 | 1.94 | 29.2
+locks 3 click             main      |   44.4 /   34.6   |   15   0 |     63.6 |               3.0 |            46.7 | 1.91 | 29.2
+locks 3 route             latch     |   44.4 /   34.6   |    9   0 |        - |               2.3 |            61.8 | 2.14 | 29.2
+locks 3 route             main      |   44.4 /   34.6   |    9   0 |        - |               2.3 |            44.2 | 2.14 | 29.2
+locks 5 click             latch     |   54.4 /   39.9   |    0   0 |     48.8 |               5.8 |            50.4 | 2.53 | 16.3
+locks 5 click             main      |   54.4 /   39.9   |    4   0 |     53.2 |               5.4 |            64.2 | 2.68 | 16.3
+locks 5 route             latch     |   54.4 /   39.9   |    1   0 |     31.8 |               3.6 |            59.1 | 2.52 | 16.3
+locks 5 route             main      |   54.4 /   39.9   |    1   0 |     31.8 |               3.6 |            59.1 | 2.52 | 16.3
+terminus 3 click          latch     |   36.9 /   34.4   |    0   0 |     34.5 |               4.7 |            54.6 | 1.75 | 20.0
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     34.5 |               4.7 |            54.6 | 1.75 | 20.0
+terminus 3 route          latch     |   36.9 /   34.4   |    0   0 |     22.6 |               3.5 |            50.1 | 2.25 | 20.0
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |     22.6 |               3.5 |            50.1 | 1.96 | 20.0
+terminus 5 click          latch     |   64.4 /   39.4   |    0   0 |     44.4 |               6.6 |            54.6 | 3.50 | 7.4
+terminus 5 click          main      |   64.4 /   39.4   |    0   0 |     51.9 |               7.0 |            55.3 | 3.26 | 7.4
+terminus 5 route          latch     |   64.4 /   39.4   |    0   0 |     54.6 |               3.2 |            69.1 | 9.74 | 7.4
+terminus 5 route          main      |   64.4 /   39.4   |    0   0 |     63.1 |               3.2 |            69.5 | 9.24 | 7.4
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          latch     |          30.2 |          31.6 |           29.0 |               3.4 |          36.6
+crossing 3 click          main      |          30.2 |          31.6 |           29.0 |               3.9 |          36.6
+crossing 3 route          latch     |          32.0 |          18.8 |           16.9 |               2.7 |          38.5
+crossing 3 route          main      |          31.3 |          20.8 |           23.2 |               2.7 |          38.5
+crossing 5 click          latch     |          70.8 |          30.9 |           38.1 |               3.4 |         104.8
+crossing 5 click          main      |          70.8 |          30.9 |           38.1 |               3.3 |         104.8
+crossing 5 route          latch     |          73.8 |          30.8 |           44.6 |               3.0 |          93.6
+crossing 5 route          main      |             - |          30.8 |              - |               3.0 |          93.6
+locks 3 click             latch     |             - |          27.1 |              - |               3.6 |          55.5
+locks 3 click             main      |             - |          25.9 |              - |               3.6 |          57.8
+locks 3 route             latch     |             - |          34.7 |              - |               3.7 |          65.2
+locks 3 route             main      |             - |          24.2 |              - |               3.7 |          61.7
+locks 5 click             latch     |          52.1 |          34.1 |           30.0 |               4.6 |          79.4
+locks 5 click             main      |          63.2 |          36.3 |           46.0 |               3.7 |          79.4
+locks 5 route             latch     |          37.0 |          36.5 |           19.9 |               4.7 |          77.9
+locks 5 route             main      |             - |          36.5 |              - |               8.0 |          77.9
+terminus 3 click          latch     |          44.5 |          44.2 |           31.9 |              10.3 |          63.8
+terminus 3 click          main      |          44.5 |          44.2 |           31.9 |              10.3 |          63.8
+terminus 3 route          latch     |          32.6 |          24.9 |           13.2 |               7.2 |          58.6
+terminus 3 route          main      |          32.6 |          24.9 |           14.4 |               7.2 |          58.6
+terminus 5 click          latch     |          52.3 |          50.6 |           35.7 |               4.9 |          85.9
+terminus 5 click          main      |          55.7 |          47.9 |           42.2 |               4.8 |          85.8
+terminus 5 route          latch     |          64.6 |          40.4 |           44.8 |               5.0 |          84.3
+terminus 5 route          main      |          68.6 |          40.4 |           44.8 |               5.0 |          84.3
+
+MEDIANS over seeds [3761, 3762, 3763, 3764, 3765, 3766, 3767, 3768, 3769, 3770, 3771, 3772] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          latch       | 12 |         16.6 |     0 |          26.2 |          8.4 |          34.2 |               3.4 |   10   0 | 1.30
+crossing 3 click          main        | 12 |         16.6 |     0 |          26.5 |          8.6 |          34.2 |               3.9 |   10   0 | 1.30
+crossing 3 route          latch       | 12 |         18.2 |     0 |          30.6 |          8.0 |          37.2 |               2.7 |    4   0 | 1.33
+crossing 3 route          main        | 12 |         18.2 |     0 |          30.6 |          8.4 |          37.2 |               2.7 |    4   0 | 1.37
+crossing 5 click          latch       | 12 |         36.9 |     0 |          77.4 |         21.2 |          86.1 |               3.4 |    7   0 | 2.01
+crossing 5 click          main        | 12 |         37.2 |     0 |          77.5 |         20.7 |          86.1 |               3.3 |    7   0 | 2.01
+crossing 5 route          latch       | 12 |         38.8 |     0 |          45.9 |         17.4 |          81.0 |               3.0 |    5   0 | 1.89
+crossing 5 route          main        | 12 |         38.8 |     1 |          47.1 |         17.4 |          81.0 |               3.0 |    7   0 | 1.87
+locks 3 click             latch       | 12 |         25.6 |     0 |          31.4 |         13.8 |          49.8 |               3.6 |   15   0 | 1.45
+locks 3 click             main        | 12 |         25.6 |     0 |          31.1 |         13.8 |          49.7 |               3.6 |   15   0 | 1.43
+locks 3 route             latch       | 12 |         23.1 |     1 |          35.9 |         18.1 |          51.6 |               3.7 |    9   0 | 1.41
+locks 3 route             main        | 12 |         23.1 |     1 |          35.8 |         17.9 |          51.0 |               3.7 |    9   0 | 1.41
+locks 5 click             latch       | 12 |         13.6 |     0 |          41.0 |         14.4 |          76.7 |               4.6 |    0   0 | 1.46
+locks 5 click             main        | 12 |         13.6 |     0 |          41.0 |         17.8 |          76.7 |               3.7 |    4   0 | 1.47
+locks 5 route             latch       | 12 |         17.7 |     0 |          35.9 |          5.5 |          73.7 |               4.7 |    1   0 | 1.33
+locks 5 route             main        | 12 |         17.8 |     0 |          35.5 |          6.1 |          73.7 |               8.0 |    1   0 | 1.37
+terminus 3 click          latch       | 12 |         23.5 |     0 |          32.7 |         11.9 |          50.6 |              10.3 |    0   0 | 1.48
+terminus 3 click          main        | 12 |         23.5 |     0 |          32.7 |         14.9 |          50.6 |              10.3 |    0   0 | 1.48
+terminus 3 route          latch       | 12 |         16.8 |     0 |          32.8 |          0.0 |          52.5 |               7.2 |    0   0 | 1.22
+terminus 3 route          main        | 12 |         16.8 |     0 |          30.8 |          0.0 |          52.5 |               7.2 |    0   0 | 1.22
+terminus 5 click          latch       | 12 |         11.3 |     0 |          44.0 |         28.0 |          76.8 |               4.9 |    0   0 | 2.53
+terminus 5 click          main        | 12 |         11.3 |     0 |          43.3 |         16.8 |          78.6 |               4.8 |    0   0 | 2.35
+terminus 5 route          latch       | 12 |         44.5 |     0 |          47.5 |         23.8 |          73.2 |               5.0 |    0   0 | 5.57
+terminus 5 route          main        | 12 |         45.8 |     0 |          47.6 |         24.6 |          74.1 |               5.0 |    0   0 | 5.45
+
+EQUALITY click cells: 22 identical across arms, 50 differ
+  DIFFER crossing 3 click seed 3766
+  DIFFER crossing 3 click seed 3767
+  DIFFER crossing 3 click seed 3772
+  DIFFER crossing 5 click seed 3761
+  DIFFER crossing 5 click seed 3762
+  DIFFER crossing 5 click seed 3763
+  DIFFER crossing 5 click seed 3766
+  DIFFER crossing 5 click seed 3767
+  DIFFER crossing 5 click seed 3770
+  DIFFER crossing 5 click seed 3772
+  DIFFER locks 3 click seed 3762
+  DIFFER locks 3 click seed 3765
+  DIFFER locks 3 click seed 3766
+  DIFFER locks 3 click seed 3767
+  DIFFER locks 3 click seed 3768
+  DIFFER locks 3 click seed 3769
+  DIFFER locks 3 click seed 3770
+  DIFFER locks 3 click seed 3772
+  DIFFER locks 5 click seed 3761
+  DIFFER locks 5 click seed 3762
+  DIFFER locks 5 click seed 3763
+  DIFFER locks 5 click seed 3764
+  DIFFER locks 5 click seed 3765
+  DIFFER locks 5 click seed 3766
+  DIFFER locks 5 click seed 3767
+  DIFFER locks 5 click seed 3768
+  DIFFER locks 5 click seed 3769
+  DIFFER locks 5 click seed 3770
+  DIFFER locks 5 click seed 3771
+  DIFFER locks 5 click seed 3772
+  DIFFER terminus 3 click seed 3761
+  DIFFER terminus 3 click seed 3763
+  DIFFER terminus 3 click seed 3764
+  DIFFER terminus 3 click seed 3768
+  DIFFER terminus 3 click seed 3769
+  DIFFER terminus 3 click seed 3770
+  DIFFER terminus 3 click seed 3771
+  DIFFER terminus 3 click seed 3772
+  DIFFER terminus 5 click seed 3761
+  DIFFER terminus 5 click seed 3762
+  DIFFER terminus 5 click seed 3763
+  DIFFER terminus 5 click seed 3764
+  DIFFER terminus 5 click seed 3765
+  DIFFER terminus 5 click seed 3766
+  DIFFER terminus 5 click seed 3767
+  DIFFER terminus 5 click seed 3768
+  DIFFER terminus 5 click seed 3769
+  DIFFER terminus 5 click seed 3770
+  DIFFER terminus 5 click seed 3771
+  DIFFER terminus 5 click seed 3772
+TOTAL latch      | placed 574.0 flipping 1.0 flips 1.0 relays 2.0 relaying 1.0 terr_c 65.0 terr_a 0.0 reseats 2.0 away 1456.3 held 1441.1 seat 4640.1
+TOTAL main       | placed 572.0 flipping 11.0 flips 34.0 relays 128.0 relaying 37.0 terr_c 94.0 terr_a 0.0 reseats 65.0 away 1573.9 held 1442.8 seat 4644.4
+>> remote: copy-back verified, 410 files, sha256
+>> remote: copy-back moved 288 stale log(s) an earlier run left beside this run's rows, into build/.stale-20261022-001825/
+   moved  build/orders-probe/logs/crossing-3-click-main-s3720.log
+   moved  build/orders-probe/logs/crossing-3-click-whole-s3720.log
+   moved  build/orders-probe/logs/crossing-5-click-whole-s3718.log
+   moved  build/orders-probe/logs/crossing-3-click-main-s3715.log
+   moved  build/orders-probe/logs/crossing-3-route-main-s3718.log
+   moved  build/orders-probe/logs/crossing-5-route-whole-s3714.log
+   moved  build/orders-probe/logs/locks-5-route-whole-s3722.log
+   moved  build/orders-probe/logs/locks-3-route-whole-s3724.log
+   moved  build/orders-probe/logs/terminus-3-click-whole-s3723.log
+   moved  build/orders-probe/logs/crossing-3-route-main-s3724.log
+   moved  build/orders-probe/logs/locks-5-click-main-s3716.log
+   moved  build/orders-probe/logs/locks-3-route-whole-s3722.log
+   moved  build/orders-probe/logs/locks-3-click-whole-s3720.log
+   moved  build/orders-probe/logs/terminus-5-route-main-s3724.log
+   moved  build/orders-probe/logs/terminus-5-click-whole-s3720.log
+   moved  build/orders-probe/logs/crossing-5-route-main-s3713.log
+   moved  build/orders-probe/logs/terminus-3-click-whole-s3715.log
+   moved  build/orders-probe/logs/locks-5-click-whole-s3717.log
+   moved  build/orders-probe/logs/terminus-3-route-whole-s3721.log
+   moved  build/orders-probe/logs/locks-5-click-whole-s3715.log
+   ... and 268 more
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3761 3762 3763 3764 3765 3766 3767 3768 3769 3770 3771 3772 ORDERS_PROBE_ARMS=main: latch:--halt-terrain=latch ORDERS_PROBE_MAPS=locks crossing terminus ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click route ORDERS_PROBE_JOBS=4 exited 0 (build/ copied back)

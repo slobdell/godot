@@ -1,0 +1,32 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+yard_open 3 click         column    |   48.1 /   34.4   |    0   0 |     18.7 |               6.7 |            40.7 | 2.26 | 19.7
+yard_open 3 click         main      |   43.3 /   34.4   |    0   0 |     18.7 |               5.9 |            40.7 | 2.58 | 19.7
+yard_open 5 click         column    |   79.2 /   44.1   |    0   0 |     20.7 |               4.2 |            47.9 | 2.37 | 7.5
+yard_open 5 click         main      |   53.6 /   39.4   |    0   0 |     23.8 |               4.2 |            47.7 | 2.40 | 4.1
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+yard_open 3 click         column    |          24.6 |          16.4 |           20.7 |              12.0 |          55.2
+yard_open 3 click         main      |          25.0 |          20.9 |           20.7 |              12.0 |          50.8
+yard_open 5 click         column    |          30.7 |          34.3 |           20.3 |               6.4 |          97.5
+yard_open 5 click         main      |          30.7 |          27.9 |           25.7 |              10.5 |          78.0
+
+MEDIANS over seeds [3801, 3802, 3803, 3804, 3805, 3806, 3807, 3808, 3809, 3810, 3811, 3812] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+yard_open 3 click         column      | 12 |         14.6 |     0 |          25.4 |          0.1 |          46.9 |              12.0 |    0   0 | 2.05
+yard_open 3 click         main        | 12 |         15.8 |     0 |          26.4 |          1.1 |          43.7 |              12.0 |    0   0 | 2.16
+yard_open 5 click         column      | 12 |         13.0 |     0 |          38.8 |         13.5 |          69.8 |               6.4 |    0   0 | 1.63
+yard_open 5 click         main        | 12 |         13.1 |     0 |          34.7 |          0.3 |          73.0 |              10.5 |    0   0 | 1.79
+
+EQUALITY click cells: 12 identical across arms, 12 differ
+  DIFFER yard_open 3 click seed 3805
+  DIFFER yard_open 3 click seed 3808
+  DIFFER yard_open 3 click seed 3809
+  DIFFER yard_open 3 click seed 3810
+  DIFFER yard_open 5 click seed 3801
+  DIFFER yard_open 5 click seed 3804
+  DIFFER yard_open 5 click seed 3806
+  DIFFER yard_open 5 click seed 3808
+  DIFFER yard_open 5 click seed 3809
+  DIFFER yard_open 5 click seed 3810
+  DIFFER yard_open 5 click seed 3811
+  DIFFER yard_open 5 click seed 3812

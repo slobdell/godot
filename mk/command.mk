@@ -646,8 +646,10 @@ orders-probe: import ## O5: the multi-squad player probe, headless, ORDERS_PROBE
 		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$0 --seed=$$4 \
 			--probe-squads=$$1 --probe-route=$$2 --probe-arm=$$name $$flags > $(ORDERS_PROBE_DIR)/logs/$$0-$$1-$$2-$$name-s$$4.log 2>&1 || true'
 	@cat $(ORDERS_PROBE_DIR)/logs/*.log | grep -h '^ORDERS_PROBE_SQUAD ' | sed 's/^ORDERS_PROBE_SQUAD //' > $(ORDERS_PROBE_DIR)/rows.jsonl || true
+	@cat $(ORDERS_PROBE_DIR)/logs/*.log | grep -h '^ORDERS_PROBE {' | sed 's/^ORDERS_PROBE //' > $(ORDERS_PROBE_DIR)/runs.jsonl || true
 	@grep -L '^ORDERS_PROBE {' $(ORDERS_PROBE_DIR)/logs/*.log | sed 's/^/MISSING (no ORDERS_PROBE line): /' || true
 	@$(PYTHON) tests/control/orders_probe_table.py $(ORDERS_PROBE_DIR)/rows.jsonl | tee $(ORDERS_PROBE_DIR)/table.txt
+	@$(PYTHON) tests/control/halt_flips.py $(ORDERS_PROBE_DIR)/rows.jsonl > $(ORDERS_PROBE_DIR)/halt_flips.txt && grep '^TOTAL' $(ORDERS_PROBE_DIR)/halt_flips.txt || true
 
 ORDERS_PROBE_SHOT_SQUADS ?= 3 5
 ORDERS_PROBE_SHOT_ARMS ?= main: deploy_off:--deploy-step=off
@@ -741,3 +743,37 @@ orders-probe-trace: native-for-check import ## Round 36 (orders): traced orders-
 		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$map --seed=$$seed \
 			--probe-squads=$$n --probe-route=$$route --probe-arm=main --probe-trace=$$sq > $(BUILD_DIR)/orders-probe-trace/$$map-$$n-$$route-$$seed-sq$$sq.log 2>&1 || true; \
 		echo "$$c: $$(grep -c '^ORDERS_PROBE_TRACE' $(BUILD_DIR)/orders-probe-trace/$$map-$$n-$$route-$$seed-sq$$sq.log) trace lines"; done
+
+# Round 37 (orders O5, R36.11; measurement): crews holding a seat (screen / support_by_fire / hold) that give way to ANOTHER
+# element's crew, and those that die in it, in showmatch fights (both sides CPU): SY_AT x SY_SEEDS, SY_FLAGS for an arm ->
+# build/seat-yield/*.log + the table (tests/control/seat_yield_table.py).
+SY_AT ?= locks gorge terminus
+SY_SEEDS ?= 1801 1802 1803 1804
+SY_FLAGS ?=
+SY_JOBS ?= 4
+SY_DIR ?= $(BUILD_DIR)/seat-yield
+.PHONY: seat-yield-census
+seat-yield-census: import ## Round 37 (orders O5): seat give-ways to another element's crew and their deaths, SY_AT x SY_SEEDS showmatch fights -> build/seat-yield/ + table
+	@rm -rf $(SY_DIR); mkdir -p $(SY_DIR)
+	@echo ">> seat-yield-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | flags '$(SY_FLAGS)'"
+	@for seed in $(SY_SEEDS); do for arena in $(SY_AT); do echo "$$arena $$seed"; done; done | xargs -P $(SY_JOBS) -L 1 sh -c \
+		'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/control/seat_yield_census.gd -- \
+		--skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute --seconds=180 $(SY_FLAGS) > $(SY_DIR)/$$0-$$1.log 2>&1 || true'
+	@$(PYTHON) tests/control/seat_yield_table.py $(SY_DIR) | tee $(SY_DIR)/table.txt
+
+# Round 37 (orders O1 trace, R37.17): parade s3704's census fight per arm (tests/control/contact_trace.gd: every friendly
+# contact with both elements' state) and locks 5 route s3703 squad 2's probe trace per arm -> build/o1-trace/*.log.
+# O1_TRACE_ARMS "name:flags" (flags comma-joined).
+O1_TRACE_ARMS ?= main: anchor:--halt-terrain=anchor latch:--halt-terrain=latch
+.PHONY: o1-trace
+o1-trace: native-for-check import ## Round 37 (orders): O1's two traces (parade s3704 contacts, locks 5 route s3703 sq2) per O1_TRACE_ARMS -> build/o1-trace/
+	@rm -rf $(BUILD_DIR)/o1-trace && mkdir -p $(BUILD_DIR)/o1-trace
+	@echo ">> o1-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"
+	@for arm in $(O1_TRACE_ARMS); do name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
+		timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/control/contact_trace.gd -- \
+			--arena=parade --green=gangs --rust=law --credits=2000 --army=opponent --seed=3704 --seconds=150 $$flags \
+			> $(BUILD_DIR)/o1-trace/parade-3704-$$name.log 2>&1 || true; \
+		grep -o 'CONTACT_TRACE .*' $(BUILD_DIR)/o1-trace/parade-3704-$$name.log | cut -c1-300 || echo "$$name: no CONTACT_TRACE"; \
+		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=locks --seed=3703 \
+			--probe-squads=5 --probe-route=route --probe-arm=$$name --probe-trace=2 $$flags > $(BUILD_DIR)/o1-trace/locks-5-route-3703-$$name.log 2>&1 || true; \
+		echo "$$name locks: $$(grep -c '^ORDERS_PROBE_TRACE' $(BUILD_DIR)/o1-trace/locks-5-route-3703-$$name.log) trace lines"; done

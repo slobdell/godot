@@ -1,9 +1,10 @@
 class_name FeedbackShots
 extends Node
-## `make feedback-shots` (round 37, feedback F1): the directions page's pictures, from the real game. A skirmish runs as he
+## `make feedback-shots` (round 37, feedback): his picked looks staged in the real game, close stills and clips (the
+## directions page's pictures came from this, when every slot had three looks). A skirmish runs as he
 ## plays it (his arena, the HUD, the RTS camera, `--render-preset=laptop` when the Makefile asks), and in a quiet corner
-## of the map this stages each slot's situation with real vehicles, then shoots every look of that slot at his pose
-## (21 deg, FOV 35, 49 m) and close in, plus a short clip at his pose:
+## of the map this stages each slot's situation with real vehicles, then shoots it with the look on at his pose
+## (21 deg, FOV 35, 49 m) and close in, a short clip at his pose, and one still with it off:
 ##
 ##   hit     three enemy crews in a row, struck at the same instant on the front, the flank and the rear (the events
 ##           are staged, the effects are the game's, exactly as Match.projectile_impact drives them)
@@ -21,7 +22,7 @@ const CLIP_FPS := 12.0
 const SETTLE_S := 0.35
 
 var out_dir := ""
-var slots: Array = FeedbackLook.SLOTS.duplicate()
+var slots: Array = ["hit", "pinned", "repair", "cone"]
 var clip_frames := 24
 var _match: Match
 var _rig: RtsCamera
@@ -219,22 +220,21 @@ func _hits() -> void:
 		targets.append(_spawn("FbTarget%d" % i, Match.Team.RUST, "gang_ifv", Vector3(-9.0 + i * 9.0, 0, 0), Vector3.LEFT))
 	_spawn("FbEyes", Match.Team.GREEN, "scout", Vector3(0, 0, 26), Vector3.FORWARD)
 	await _seconds(1.0)
-	for letter: String in FeedbackLook.LETTERS:
-		FeedbackLook.use("hit:%s" % letter)
-		for distance: float in [DISTANCE_M, CLOSE_M]:
-			_pose(distance)
-			await _seconds(SETTLE_S)
-			_strike(targets)
-			await _seconds(0.12)
-			await _frames(2)
-			_save("hit_%s_%s" % [letter, "rts" if distance == DISTANCE_M else "close"])
-			await _seconds(1.4)
-		if clip_frames > 0:
-			_pose(DISTANCE_M)
-			await _seconds(SETTLE_S)
-			await _clip("hit_%s" % letter, func(frame: int) -> void:
-				if frame % roundi(CLIP_FPS * 1.2) == 2:
-					_strike(targets))
+	FeedbackLook.use("hit:on")
+	for distance: float in [DISTANCE_M, CLOSE_M]:
+		_pose(distance)
+		await _seconds(SETTLE_S)
+		_strike(targets)
+		await _seconds(0.12)
+		await _frames(2)
+		_save("hit_on_%s" % ("rts" if distance == DISTANCE_M else "close"))
+		await _seconds(1.4)
+	if clip_frames > 0:
+		_pose(DISTANCE_M)
+		await _seconds(SETTLE_S)
+		await _clip("hit_on", func(frame: int) -> void:
+			if frame % roundi(CLIP_FPS * 1.2) == 2:
+				_strike(targets))
 
 
 ## One cannon round into each target at once: from ahead (front), from its flank, from behind (rear).
@@ -292,25 +292,24 @@ func _cone() -> void:
 	await _shoot_held("cone", Vector3(0, 0, 2))
 
 
-## A held situation: each look at his pose and close in, then a clip at his pose.
+## A held situation with its look on at his pose and close in, a clip at his pose, then one still with it off.
 func _shoot_held(slot: String, centre := Vector3.ZERO) -> void:
 	await _seconds(2.5)
-	for letter: String in FeedbackLook.LETTERS:
-		FeedbackLook.use("%s:%s" % [slot, letter])
-		for distance: float in [DISTANCE_M, CLOSE_M]:
-			_pose(distance, centre)
-			await _seconds(SETTLE_S + 0.3)
-			await _frames(2)
-			_save("%s_%s_%s" % [slot, letter, "rts" if distance == DISTANCE_M else "close"])
-		if clip_frames > 0:
-			_pose(DISTANCE_M, centre)
-			await _seconds(SETTLE_S)
-			await _clip("%s_%s" % [slot, letter], Callable())
+	FeedbackLook.use("%s:on" % slot)
+	for distance: float in [DISTANCE_M, CLOSE_M]:
+		_pose(distance, centre)
+		await _seconds(SETTLE_S + 0.3)
+		await _frames(2)
+		_save("%s_on_%s" % [slot, "rts" if distance == DISTANCE_M else "close"])
+	if clip_frames > 0:
+		_pose(DISTANCE_M, centre)
+		await _seconds(SETTLE_S)
+		await _clip("%s_on" % slot, Callable())
 	FeedbackLook.use("%s:off" % slot)
 	_pose(DISTANCE_M, centre)
 	await _seconds(SETTLE_S + 0.3)
 	await _frames(2)
-	_save("%s_none_rts" % slot)
+	_save("%s_off_rts" % slot)
 
 
 ## `clip_frames` frames at CLIP_FPS into <dir>/<name>/frame_NNN.png (the Makefile joins them with ffmpeg).
@@ -333,7 +332,7 @@ func _save(file_name: String) -> void:
 	var err := get_viewport().get_texture().get_image().save_png(path)
 	_written += 1
 	var fx := FxWorld.existing()
-	print("FEEDBACK_SHOT %s %s look=%s counts=%s" % [file_name, error_string(err), FeedbackLook._picked,
+	print("FEEDBACK_SHOT %s %s look=%s counts=%s" % [file_name, error_string(err), FeedbackLook._on,
 			fx.feedback.last_counts if fx != null else {}])
 
 

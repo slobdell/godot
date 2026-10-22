@@ -1,0 +1,1 @@
+FAIL no-change cell yard_open: 44 of 96 squad rows identical (arm rows 96)

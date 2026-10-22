@@ -4,6 +4,10 @@
 usage: s1_judge.py SERIES_DIR [--bar s2a]   (s1_series.sh's folder: wedge-{base,on}, fights-{base,on}, jam-{base,on},
                                              hull-rest/{base,new}_drawn)
 
+--bar m1: Bar M1's series (round 37, sidestand ON v OFF): the same guards; (0) counter first = h1b side_restands > 0 in ON (the
+FIGHT_CENSUS h1b report), side_repeats REPORTED both arms; unstick fires read from WEDGE_TRACE's game total (M2); the player line
+REPORTED as for s2a.
+
 --bar s2a: Bar S2a's series (h1bside + yieldgap ON v both OFF): the same guards; (0) is REPORTED (the bar files no counter-first
 line, and stall_net_holds is not S2a's); far bank 0 holds on hull-rest by construction (foundry has no river deck); plus the
 player line REPORTED: left_behind.py on each hull-rest arm (crews > 25 m behind, by net motion).
@@ -91,6 +95,13 @@ def main():
     first = "REPORTED" if BAR != "S1" else ("PASS" if holds_on > 0 else "FAIL")
     print(f"{BAR} (0) counter first: stall_net_holds ON {holds_on} (base, counted the same way: {holds_base})  {first}")
     ok &= holds_on > 0 or BAR != "S1"
+    if BAR == "M1":
+        side = {arm: {k: sum(int(r.get("h1b", {}).get(k, 0)) for _, r in tagged(root / f"fights-{arm}", "FIGHT_CENSUS"))
+                      for k in ("side_restands", "side_repeats", "side_steps", "side_stands")} for arm in ("base", "on")}
+        print(f"{BAR} (0) counter first: side_restands ON {side['on']['side_restands']}  {'PASS' if side['on']['side_restands'] > 0 else 'FAIL'}")
+        print(f"{BAR} side_repeats base {side['base']['side_repeats']} ON {side['on']['side_repeats']}; steps base {side['base']['side_steps']} "
+              f"ON {side['on']['side_steps']}; stands base {side['base']['side_stands']} ON {side['on']['side_stands']}  REPORTED")
+        ok &= side["on"]["side_restands"] > 0
     bw, nw = jj.wedge_rows(root / "wedge-base"), jj.wedge_rows(root / "wedge-on")
     for f in ("open", "stuck", "jam"):
         ok &= paired_line(f"(q) {f} deaths", bw, nw, f, "within")
@@ -131,7 +142,7 @@ def main():
             out = subprocess.run([sys.executable, str(HERE / "rocking_census.py"), str(hr / arm)], capture_output=True, text=True)
             first = (out.stdout.splitlines() or ["(no output)"])[0]
             print(f"{BAR} rocking_census {arm}: {first}  REPORTED")
-            if BAR == "S2A":
+            if BAR in ("S2A", "M1"):
                 out = subprocess.run([sys.executable, str(HERE / "left_behind.py"), str(hr / arm), "--list", "0"],
                                      capture_output=True, text=True)
                 print(f"{BAR} player line {arm}: " + " / ".join(out.stdout.splitlines()[:2]) + "  REPORTED")

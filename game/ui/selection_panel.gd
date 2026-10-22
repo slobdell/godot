@@ -392,7 +392,7 @@ func _card(unit_name: String) -> Dictionary:
 ## conditions). Empty when neither, and always empty until the `marks` look is on (FeedbackLook: off by default).
 func _state_words(tank: Tank) -> String:
 	var words: Array[String] = []
-	if not FeedbackLook.has("marks", "a"):
+	if not FeedbackLook.on("marks"):
 		return ""
 	if FeedbackReader.pinned_level(tank.suppression) > 0.0:
 		words.append("PINNED")

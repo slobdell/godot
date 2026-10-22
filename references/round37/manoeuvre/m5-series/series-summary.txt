@@ -1,0 +1,57 @@
+>> 12:43 m5 series driver start: ON 7ebbc7bdd BASE 936612334 on slobdell@builder2
+>> 12:43 m5 series driver start: ON 7ebbc7bdd BASE 936612334 on slobdell@builder2
+>> 12:43 m5 series driver start: ON 7ebbc7bdd BASE 936612334 on slobdell@builder2
+>> 12:44 m5 series driver start: ON 7ebbc7bdd BASE 936612334 on slobdell@builder2
+>> 18:36 m5 series driver start: ON 7ebbc7bdd BASE 936612334 on slobdell@builder2
+>> 18:36 builder2: no rules process for 10 min; M5 series starts (load: 2.63 11.11 14.16 1/563 2035175 0 )
+>> 18:36 check start (try 1), load: 2.50 10.95 14.09 1/563 2035324 0 
+>> 19:15 check end: >> check: 24 passed, 1 FAILED, 0 NOT RUN, 2 NOT JUDGED  [test x11, lint -P16, 5 at once, builder2] >> check: failed: sim-baseline >> remote: make native check exited 2 (build/ copied back) 
+>> 19:15 jam on locks start, load: 1.53 3.05 8.00 1/555 2318417 0 
+>> 19:32 >> remote: make native traffic-jam-census JAM_AT=locks JAM_R
+>> 19:32 jam base locks start, load: 1.25 3.90 5.99 1/553 2320891 0 
+>> 19:49 >> remote: make native traffic-jam-census JAM_AT=locks JAM_R
+>> 19:49 jam on terminus start, load: 1.60 4.45 5.58 1/555 2327217 0 
+>> 20:05 >> remote: make native traffic-jam-census JAM_AT=terminus JA
+>> 20:05 jam base terminus start, load: 1.73 4.66 5.63 1/556 2329640 0 
+>> 20:20 >> remote: make native traffic-jam-census JAM_AT=terminus JA
+>> 20:20 jam on sumps start, load: 1.70 4.72 5.69 1/554 2332058 0 
+>> 20:36 >> remote: make native traffic-jam-census JAM_AT=sumps JAM_R
+>> 20:36 jam base sumps start, load: 1.74 4.54 5.49 1/552 2334517 0 
+>> 20:53 >> remote: make native traffic-jam-census JAM_AT=sumps JAM_R
+>> 20:53 hr-new_drawn-gangs-1 start, load: 1.69 4.71 5.65 1/554 2336924 0 
+>> 21:08 hr-new_drawn-gangs-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 21:08 hr-new_drawn-gangs-2 start, load: 4.54 6.43 6.33 1/556 2342482 0 
+>> 21:24 hr-new_drawn-gangs-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 21:24 hr-new_drawn-law-1 start, load: 4.17 6.22 6.48 1/559 2348126 0 
+>> 21:33 hr-new_drawn-law-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 21:33 hr-new_drawn-law-2 start, load: 4.35 6.44 6.63 1/560 2353664 0 
+>> 21:44 hr-new_drawn-law-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 21:44 hr-new_drawn-syndicate-1 start, load: 5.00 6.43 6.64 1/560 2359248 0 
+>> 21:49 hr-new_drawn-syndicate-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 21:49 hr-new_drawn-syndicate-2 start, load: 4.85 6.40 6.62 1/560 2364771 0 
+>> 21:54 hr-new_drawn-syndicate-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 21:54 hr-new_drawn-condemned-1 start, load: 6.13 6.83 6.78 1/559 2370279 0 
+>> 22:07 hr-new_drawn-condemned-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 22:07 hr-new_drawn-condemned-2 start, load: 5.51 6.71 6.80 1/562 2375821 0 
+>> 22:20 hr-new_drawn-condemned-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 22:20 hr-base_drawn-gangs-1 start, load: 4.56 6.62 6.87 1/561 2381409 0 
+>> 22:36 hr-base_drawn-gangs-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 22:36 hr-base_drawn-gangs-2 start, load: 4.46 6.37 6.69 1/561 2387152 0 
+>> 22:36 restart at J=14 (godot-b0's machine note); the step just started is re-run
+>> 22:36 m5 series driver start: ON 7ebbc7bdd BASE 936612334 on slobdell@builder2
+>> 22:36 builder2: no rules process for 10 min; M5 series starts (load: 3.34 5.99 6.56 1/564 2388406 0 )
+>> 22:36 hr-base_drawn-gangs-2 start, load: 3.07 5.89 6.52 1/564 2388503 0 
+>> 22:45 hr-base_drawn-gangs-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 22:45 hr-base_drawn-law-1 start, load: 9.04 12.40 9.89 1/561 2394082 0 
+>> 22:50 hr-base_drawn-law-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 22:50 hr-base_drawn-law-2 start, load: 10.50 13.40 11.12 1/562 2399588 0 
+>> 22:55 hr-base_drawn-law-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 22:55 hr-base_drawn-syndicate-1 start, load: 8.78 13.29 11.92 1/561 2405113 0 
+>> 22:58 hr-base_drawn-syndicate-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 22:58 hr-base_drawn-syndicate-2 start, load: 13.55 14.22 12.52 1/562 2410611 0 
+>> 23:01 hr-base_drawn-syndicate-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 23:01 hr-base_drawn-condemned-1 start, load: 12.63 14.10 12.79 1/563 2416131 0 
+>> 23:08 hr-base_drawn-condemned-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 23:08 hr-base_drawn-condemned-2 start, load: 11.43 14.51 13.58 1/560 2421649 0 
+>> 23:15 hr-base_drawn-condemned-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 23:15 series done, load: 9.63 13.97 13.85 1/560 2427127 0 

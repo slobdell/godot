@@ -29,3 +29,4 @@ settled late. Its row shows 35,394 → 35,158 (236), but batch 6 began at 34,878
 two with no request of ours, and 236 + 280 = 516, batch 5's dry-run estimate exactly. Batches 6 and 7 settled at their
 estimates (183, 205). So **batch 5's true cost is 516 credits**, the round's sound spend is **2,879 credits** (not
 2,599), and the balance after batch 7 is **34,490** (read again at the close: unchanged).
+| 2026-10-21 | ElevenLabs | eleven_text_to_sound_v2 | 5 | 14.0 | 140 | 121443 → 121303 | 140 | round 37 feedback F3: flank/rear hit + Tanker repair loop, lead approved on the directions page 2026-10-21 (sounds/* db) |

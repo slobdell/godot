@@ -1,0 +1,107 @@
+tools/remote.sh native orders-probe ORDERS_PROBE_SEEDS=3773\ 3774\ 3775\ 3776\ 3777\ 3778\ 3779\ 3780\ 3781\ 3782\ 3783\ 3784 ORDERS_PROBE_ARMS=fight:--probe-fight=on,--probe-budget=1500\ fightlatch:--probe-fight=on,--probe-budget=1500,--halt-terrain=latch ORDERS_PROBE_MAPS=locks\ crossing\ terminus ORDERS_PROBE_SQUADS=3 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=4
+>> remote: syncing godot-orders-o1 to slobdell@builder0:~/tank_squad/godot-orders-o1
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3773 3774 3775 3776 3777 3778 3779 3780 3781 3782 3783 3784 ORDERS_PROBE_ARMS=fight:--probe-fight=on,--probe-budget=1500 fightlatch:--probe-fight=on,--probe-budget=1500,--halt-terrain=latch ORDERS_PROBE_MAPS=locks crossing terminus ORDERS_PROBE_SQUADS=3 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=4 on slobdell@builder0
+>> native: src-sync: 0 changed
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> orders-probe on builder0 | commit c14ec0d80 | native on
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          fight     |   33.5 /   14.8   |   21   0 |     26.5 |               3.1 |            46.7 | 4.33 | 51.3
+crossing 3 click          fightlatch |   33.5 /   14.8   |   22   0 |     26.5 |               3.1 |            46.7 | 4.38 | 51.3
+locks 3 click             fight     |   38.1 /   34.5   |   18   1 |     33.7 |               3.0 |            59.5 | 7.39 | 29.6
+locks 3 click             fightlatch |   38.1 /   34.5   |   22   0 |     37.3 |               3.0 |            51.9 | 5.05 | 29.6
+terminus 3 click          fight     |   36.9 /   34.4   |    0   0 |     39.0 |               2.9 |            64.3 | 10.54 | 18.8
+terminus 3 click          fightlatch |   36.9 /   34.4   |    0   0 |     39.0 |               2.9 |            69.8 | 10.54 | 18.8
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          fight     |          36.5 |          32.0 |              - |               3.0 |          50.0
+crossing 3 click          fightlatch |          36.5 |          32.0 |              - |               3.0 |          34.6
+locks 3 click             fight     |             - |          35.6 |              - |              14.4 |          62.5
+locks 3 click             fightlatch |             - |          29.7 |              - |               7.4 |          59.5
+terminus 3 click          fight     |          46.3 |          36.9 |           66.7 |               3.4 |          64.0
+terminus 3 click          fightlatch |          46.3 |          36.8 |           66.7 |               3.4 |          84.0
+
+MEDIANS over seeds [3773, 3774, 3775, 3776, 3777, 3778, 3779, 3780, 3781, 3782, 3783, 3784] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          fight       | 12 |         17.5 |     0 |          37.2 |         28.1 |          31.0 |              -1.0 |   21   0 | 3.33
+crossing 3 click          fightlatch  | 12 |         17.5 |     0 |          34.2 |         31.4 |          22.4 |              -1.0 |   22   0 | 3.65
+locks 3 click             fight       | 12 |         21.9 |     0 |          40.1 |         30.1 |          26.1 |              -1.0 |   18   1 | 3.68
+locks 3 click             fightlatch  | 12 |         24.9 |     0 |          40.7 |         28.4 |          37.4 |              -1.0 |   22   0 | 3.08
+terminus 3 click          fight       | 12 |         20.8 |     0 |          40.5 |         25.6 |          43.2 |              -1.0 |    0   0 | 3.25
+terminus 3 click          fightlatch  | 12 |         20.4 |     0 |          39.9 |         26.0 |          43.8 |              -1.0 |    0   0 | 2.98
+
+EQUALITY click cells: 4 identical across arms, 32 differ
+  DIFFER crossing 3 click seed 3773
+  DIFFER crossing 3 click seed 3774
+  DIFFER crossing 3 click seed 3775
+  DIFFER crossing 3 click seed 3776
+  DIFFER crossing 3 click seed 3777
+  DIFFER crossing 3 click seed 3779
+  DIFFER crossing 3 click seed 3780
+  DIFFER crossing 3 click seed 3782
+  DIFFER crossing 3 click seed 3783
+  DIFFER crossing 3 click seed 3784
+  DIFFER locks 3 click seed 3773
+  DIFFER locks 3 click seed 3774
+  DIFFER locks 3 click seed 3775
+  DIFFER locks 3 click seed 3776
+  DIFFER locks 3 click seed 3777
+  DIFFER locks 3 click seed 3779
+  DIFFER locks 3 click seed 3780
+  DIFFER locks 3 click seed 3781
+  DIFFER locks 3 click seed 3783
+  DIFFER locks 3 click seed 3784
+  DIFFER terminus 3 click seed 3773
+  DIFFER terminus 3 click seed 3774
+  DIFFER terminus 3 click seed 3775
+  DIFFER terminus 3 click seed 3776
+  DIFFER terminus 3 click seed 3777
+  DIFFER terminus 3 click seed 3778
+  DIFFER terminus 3 click seed 3779
+  DIFFER terminus 3 click seed 3780
+  DIFFER terminus 3 click seed 3781
+  DIFFER terminus 3 click seed 3782
+  DIFFER terminus 3 click seed 3783
+  DIFFER terminus 3 click seed 3784
+TOTAL fight      | placed 103.0 flipping 8.0 flips 90.0 relays 442.0 relaying 48.0 terr_c 352.0 terr_a 0.0 reseats 192.0 away 1277.4 held 1077.5 seat 7280.2
+TOTAL fightlatch | placed 103.0 flipping 3.0 flips 20.0 relays 95.0 relaying 23.0 terr_c 276.0 terr_a 0.0 reseats 111.0 away 970.1 held 873.8 seat 6156.4
+>> remote: copy-back verified, 194 files, sha256
+>> remote: copy-back moved 288 stale log(s) an earlier run left beside this run's rows, into build/.stale-20261022-020932/
+   moved  build/orders-probe/logs/terminus-3-click-main-s3770.log
+   moved  build/orders-probe/logs/terminus-3-route-latch-s3768.log
+   moved  build/orders-probe/logs/locks-5-click-main-s3768.log
+   moved  build/orders-probe/logs/terminus-3-click-main-s3765.log
+   moved  build/orders-probe/logs/terminus-5-route-main-s3767.log
+   moved  build/orders-probe/logs/terminus-3-click-latch-s3767.log
+   moved  build/orders-probe/logs/locks-3-route-latch-s3772.log
+   moved  build/orders-probe/logs/terminus-5-route-main-s3768.log
+   moved  build/orders-probe/logs/locks-3-click-latch-s3763.log
+   moved  build/orders-probe/logs/locks-5-click-latch-s3765.log
+   moved  build/orders-probe/logs/locks-3-route-latch-s3761.log
+   moved  build/orders-probe/logs/terminus-3-click-latch-s3772.log
+   moved  build/orders-probe/logs/terminus-3-click-main-s3763.log
+   moved  build/orders-probe/logs/locks-5-click-latch-s3761.log
+   moved  build/orders-probe/logs/crossing-5-route-latch-s3771.log
+   moved  build/orders-probe/logs/terminus-5-click-main-s3767.log
+   moved  build/orders-probe/logs/crossing-5-click-main-s3768.log
+   moved  build/orders-probe/logs/crossing-5-route-latch-s3772.log
+   moved  build/orders-probe/logs/locks-3-click-latch-s3764.log
+   moved  build/orders-probe/logs/terminus-3-click-latch-s3770.log
+   ... and 268 more
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3773 3774 3775 3776 3777 3778 3779 3780 3781 3782 3783 3784 ORDERS_PROBE_ARMS=fight:--probe-fight=on,--probe-budget=1500 fightlatch:--probe-fight=on,--probe-budget=1500,--halt-terrain=latch ORDERS_PROBE_MAPS=locks crossing terminus ORDERS_PROBE_SQUADS=3 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=4 exited 0 (build/ copied back)

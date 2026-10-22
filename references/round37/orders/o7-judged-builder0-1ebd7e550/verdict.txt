@@ -1,0 +1,15 @@
+PASS counter: columns_laid 111, rows differ True
+FAIL deciding: places outside the corridor 84 -> 45 (<= 21.0)
+FAIL deciding: metres driven outside the corridor 33518 -> 32505 (<= 16759)
+PASS deciding: squads with crews re-dealt (arm) 0 (base 40)
+PASS guard friend_contacts 16826 -> 18412 (<= 18513.6)
+  FAIL guard twitch       crossing 5 click: 23.0 v 28.1
+  FAIL guard never-in     crossing 5 route: 0 v 1
+  FAIL guard all-in       locks 5 click: 19.6 v 28.8
+  FAIL guard all-in       terminus 3 route: 16.8 v 24.2
+  FAIL guard twitch       terminus 3 route: 0.0 v 13.2
+  FAIL guard twitch       terminus_his 3 click: 3.8 v 9.2
+FAIL probe guards (14 cells)
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 531 -> 529
+VERDICT gl: FAIL
+FAIL no-change cell yard_open: 44 of 96 squad rows identical (arm rows 96)

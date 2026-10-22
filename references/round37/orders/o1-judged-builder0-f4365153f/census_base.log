@@ -1,0 +1,574 @@
+tools/remote.sh native traffic-census TRAFFIC_CENSUS_SEEDS=3701\ 3702\ 3703\ 3704\ 3705\ 3706 TRAFFIC_JOBS=4
+>> remote: syncing godot-orders-o1 to slobdell@builder0:~/tank_squad/godot-orders-o1
+>> remote: make native traffic-census TRAFFIC_CENSUS_SEEDS=3701 3702 3703 3704 3705 3706 TRAFFIC_JOBS=4 on slobdell@builder0
+>> native: src-sync: 0 changed
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started Scanning actions... (511 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | autocannon_shot_1.wav[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | autocannon_shot_2.wav[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | autocannon_shot_3.wav[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | autocannon_shot~b_1.wav[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | autocannon_shot~b_2.wav[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | autocannon_shot~b_3.wav[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | autocannon_shot~b_4.wav[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | autocannon_shot~b_5.wav[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | bullet_hit_metal_1.wav[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | bullet_hit_metal_2.wav[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | bullet_hit_metal_3.wav[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | bullet_hit_metal_4.wav[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | bullet_snap~a_1.wav[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | bullet_snap~a_2.wav[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | bullet_snap~a_3.wav[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | bullet_snap~a_4.wav[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | crowd_cheer_1.wav[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | crowd_murmur_1.wav[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | dirt_impact_1.wav[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | dirt_impact_2.wav[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | dirt_impact_3.wav[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | energy_beam_1.wav[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | energy_beam_2.wav[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | energy_beam_3.wav[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | energy_hit_1.wav[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | energy_hit_2.wav[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | energy_hit_3.wav[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | explosion_big_1.wav[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | explosion_big_2.wav[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | explosion_big_3.wav[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | explosion_big~a_1.wav[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | explosion_big~a_2.wav[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | explosion_big~a_3.wav[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | explosion_big~a_4.wav[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | explosion_small_1.wav[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | explosion_small_2.wav[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | explosion_small_3.wav[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | flame_loop_1.wav[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | flame_loop_2.wav[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | flame_loop~a_1.wav[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | flame_loop~a_2.wav[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | impact_armor_medium~a_1.wav[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | impact_armor_medium~a_2.wav[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | impact_armor_medium~a_3.wav[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | impact_armor_medium~a_4.wav[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | impact_concrete_heavy~a_1.wav[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | impact_concrete_heavy~a_2.wav[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | impact_concrete_heavy~a_3.wav[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | impact_concrete_light~a_1.wav[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | impact_concrete_light~a_2.wav[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | impact_concrete_light~a_3.wav[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | impact_concrete_light~a_4.wav[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | impact_concrete_medium~a_1.wav[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | impact_concrete_medium~a_2.wav[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | impact_concrete_medium~a_3.wav[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | impact_concrete_medium~a_4.wav[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | impact_dirt_light~a_1.wav[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | impact_dirt_light~a_2.wav[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | impact_dirt_light~a_3.wav[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | impact_dirt_light~a_4.wav[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | impact_dirt_medium~a_1.wav[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | impact_dirt_medium~a_2.wav[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | impact_dirt_medium~a_3.wav[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | impact_dirt_medium~a_4.wav[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | impact_steel_heavy~a_1.wav[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | impact_steel_heavy~a_2.wav[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | impact_steel_heavy~a_3.wav[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | impact_steel_medium~a_1.wav[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | impact_steel_medium~a_2.wav[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | impact_steel_medium~a_3.wav[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | impact_steel_medium~a_4.wav[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | impact_water_heavy~a_1.wav[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | impact_water_heavy~a_2.wav[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | impact_water_heavy~a_3.wav[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | impact_water_light~a_1.wav[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | impact_water_light~a_2.wav[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | impact_water_light~a_3.wav[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | impact_water_light~a_4.wav[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | laser_pulse_1.wav[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | laser_pulse_2.wav[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | laser_pulse_3.wav[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | mg_loop_1.wav[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | mg_loop_2.wav[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | mg_loop_3.wav[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | mg_loop_4.wav[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | mg_loop~a_1.wav[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | mg_loop~a_2.wav[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | mg_loop~a_3.wav[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | mg_loop~a_4.wav[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | mg_round_1.wav[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | mg_round_2.wav[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | missile_launch_1.wav[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | missile_launch_2.wav[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | missile_launch_3.wav[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | missile_launch~a_1.wav[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | missile_launch~a_2.wav[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | missile_launch~a_3.wav[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | mortar_launch_1.wav[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | mortar_launch_2.wav[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | mortar_launch_3.wav[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | mortar_launch~d_1.wav[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | mortar_launch~d_2.wav[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | mortar_launch~d_3.wav[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | plasma_loop_1.wav[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | plasma_loop_2.wav[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | plasma_loop_3.wav[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | pulse_shot_1.wav[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | pulse_shot_2.wav[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | pulse_shot_3.wav[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | pulse_shot~a_1.wav[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | pulse_shot~a_2.wav[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | pulse_shot~a_3.wav[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | railgun_shot_1.wav[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | railgun_shot_2.wav[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | railgun_shot_3.wav[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | ricochet_1.wav[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | ricochet_2.wav[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | ricochet_3.wav[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | shell_hit_armor_1.wav[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | shell_hit_armor_2.wav[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | shell_hit_armor_3.wav[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | shell_incoming~b_1.wav[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | shell_incoming~b_2.wav[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | shell_incoming~b_3.wav[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | shell_whine_1.wav[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | shell_whine_2.wav[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | shield_down_1.wav[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | shield_down_2.wav[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | shield_hit_1.wav[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | shield_hit_2.wav[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | shield_hit_3.wav[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | shield_up~c_1.wav[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | shield_up~c_2.wav[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | shield_up~c_3.wav[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | sonic_loop_1.wav[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | tank_boom_1.wav[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | tank_boom_2.wav[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | tank_boom_3.wav[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | tank_boom~a_1.wav[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | tank_boom~a_2.wav[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | tank_boom~a_3.wav[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | tank_boom~a_4.wav[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | track_skid~b_1.wav[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | track_skid~b_2.wav[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | track_skid~b_3.wav[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | track_skid~b_4.wav[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | track_squeal~c_1.wav[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | track_squeal~c_2.wav[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | track_squeal~c_3.wav[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | track_squeal~c_4.wav[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | twin_mg_loop_1.wav[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | twin_mg_loop_2.wav[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | twin_mg_loop_3.wav[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | twin_mg_loop~a_1.wav[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | twin_mg_loop~a_2.wav[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | twin_mg_loop~a_3.wav[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | tyre_skid~a_1.wav[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | tyre_skid~a_2.wav[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | tyre_skid~a_3.wav[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | tyre_skid~a_4.wav[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | weak_spot_hit_1.wav[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | weak_spot_hit_2.wav[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | wreck_fire_loop~a_1.wav[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | wreck_fire_loop~a_2.wav[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | wreck_fire_loop~a_3.wav[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | autocannon_shot.wav[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | autocannon_shot_2.wav[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | autocannon_shot_3.wav[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | bullet_hit_metal.wav[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | bullet_hit_metal_2.wav[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | bullet_hit_metal_3.wav[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | bullet_hit_metal_4.wav[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | cannon_shot.wav[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | cannon_shot_2.wav[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | crowd_cheer.wav[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | crowd_murmur.wav[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | dirt_impact.wav[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | dirt_impact_2.wav[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | dirt_impact_3.wav[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | engine_diesel.wav[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | engine_electric.wav[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | engine_v8.wav[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | explosion_big.wav[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | explosion_small.wav[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | explosion_small_2.wav[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | explosion_small_3.wav[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | flame_loop.wav[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | laser_pulse.wav[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | mg_loop.wav[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | mg_round.wav[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | mg_round_2.wav[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | mg_round_3.wav[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | mg_round_4.wav[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | mortar_launch.wav[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | ricochet.wav[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | ricochet_2.wav[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | ricochet_3.wav[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | shell_hit_armor.wav[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | shell_hit_armor_2.wav[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | shell_hit_armor_3.wav[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | shell_whine.wav[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | shield_down.wav[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | shield_hit.wav[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | tank_boom.wav[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | tank_boom_2.wav[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | tire_loop.wav[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | tread_loop.wav[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | ui_ack_attack.wav[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | ui_ack_move.wav[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | ui_alert.wav[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | ui_blip.wav[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | ui_select.wav[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | ui_tick.wav[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | weak_spot_hit.wav[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | weak_spot_hit_2.wav[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | JetBrainsMono-Blocks.ttf[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | Oswald-Latin.ttf[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | ShareTechMono-Regular.ttf[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | bed_blues_neon.ogg[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | bed_blues_wasteland.ogg[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | bed_defeat.ogg[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | bed_defeat_hunt.ogg[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | bed_defeat_ragnarok.ogg[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | bed_garage.ogg[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | bed_last_stand.ogg[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | bed_last_stand_brass.ogg[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | bed_last_stand_rusted.ogg[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | bed_lull.ogg[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | bed_lull_factory.ogg[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | bed_lull_predator.ogg[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | bed_lull_predator_b.ogg[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | bed_pre_match.ogg[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | bed_pre_match_hymn.ogg[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | bed_pre_match_outrun.ogg[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | bed_victory.ogg[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | fight_convoy_bass.ogg[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | fight_convoy_drums.ogg[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | fight_convoy_other.ogg[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | fight_hydraulic_bass.ogg[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | fight_hydraulic_drums.ogg[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | fight_hydraulic_other.ogg[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | fight_machine_bass.ogg[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | fight_machine_drums.ogg[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | fight_machine_other.ogg[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | fight_momentum_bass.ogg[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | fight_momentum_drums.ogg[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | fight_momentum_other.ogg[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | fight_ritual_bass.ogg[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | fight_ritual_drums.ogg[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | fight_ritual_other.ogg[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | fight_rust_bass.ogg[39m[0m
+[  49% ] [90m[1m_update_scan_actions[22m | fight_rust_drums.ogg[39m[0m
+[  49% ] [90m[1m_update_scan_actions[22m | fight_rust_other.ogg[39m[0m
+[  49% ] [90m[1m_update_scan_actions[22m | sting_comeback.ogg[39m[0m
+[  49% ] [90m[1m_update_scan_actions[22m | sting_defeat.ogg[39m[0m
+[  49% ] [90m[1m_update_scan_actions[22m | sting_first_blood.ogg[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | sting_kill.ogg[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | sting_last_unit.ogg[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | sting_victory.ogg[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | artillery.png[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | artillery_chip.png[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | burner.png[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | burner_chip.png[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | gang_artillery.png[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | gang_artillery_chip.png[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | gang_ifv.png[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | gang_ifv_chip.png[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | gang_scout.png[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | gang_scout_chip.png[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | gang_support.png[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | gang_support_chip.png[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | gang_tank.png[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | gang_tank_chip.png[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | ifv.png[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | ifv_chip.png[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | lancer.png[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | lancer_chip.png[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | law_artillery.png[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | law_artillery_chip.png[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | law_ifv.png[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | law_ifv_chip.png[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | law_scout.png[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | law_scout_chip.png[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | law_suppressor.png[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | law_suppressor_chip.png[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | law_tank.png[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | law_tank_chip.png[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | scout.png[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | scout_chip.png[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | syn_artillery.png[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | syn_artillery_chip.png[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | syn_ifv.png[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | syn_ifv_chip.png[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | syn_lancer.png[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | syn_lancer_chip.png[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | syn_scout.png[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | syn_scout_chip.png[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | syn_tank.png[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | syn_tank_chip.png[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | tank.png[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | tank_chip.png[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | aquacorp.png[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | arena_live.png[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | harbor_general.png[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | meridian.png[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | neon_signs.png[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | northgrid.png[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | syndicate_housing.png[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | syndicate_life.png[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | syndicate_vision.png[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | vireo.png[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | warden.png[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | container_detail.png[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | container_stencils.png[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | container_surface.png[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | arena_airship.glb[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | arena_airship_0.png[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | arena_airship_material_0_normal.png[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | arena_airship_material_0_orm.png[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | kit_floodlight_tower.glb[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | kit_floodlight_tower_0.png[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | kit_floodlight_tower_3.png[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | kit_floodlight_tower_material_0_normal.png[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | kit_floodlight_tower_material_0_orm.png[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | kit_gate.glb[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | kit_gate_0.png[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | kit_gate_3.png[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | kit_gate_material_0_normal.png[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | kit_gate_material_0_orm.png[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | kit_stands.glb[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | kit_stands_0.png[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | kit_stands_3.png[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | kit_stands_material_0_normal.png[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | kit_stands_material_0_orm.png[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | prop_crate.glb[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | prop_crate_0.png[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | prop_crate_3.png[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | prop_crate_material_0_normal.png[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | prop_crate_material_0_orm.png[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | prop_wall.glb[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | prop_wall_0.png[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | prop_wall_3.png[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | prop_wall_material_0_normal.png[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | prop_wall_material_0_orm.png[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | prop_wreck.glb[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | prop_wreck_0.png[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | prop_wreck_3.png[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | prop_wreck_material_0_normal.png[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | prop_wreck_material_0_orm.png[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | kit_signs.png[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | crowd_atlas.png[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | arena_macro.png[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | asphalt_albedo_rough.png[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | drain.png[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | ground_detail.png[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | unit_gangs_artillery_hull.glb[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | unit_gangs_artillery_hull_0.png[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | unit_gangs_artillery_hull_3.png[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | unit_gangs_artillery_hull_material_0_normal.png[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | unit_gangs_artillery_hull_material_0_orm.png[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | unit_gangs_artillery_turret.glb[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | unit_gangs_artillery_weapon.glb[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | unit_gangs_ifv_hull.glb[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | unit_gangs_ifv_hull_0.png[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | unit_gangs_ifv_hull_3.png[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | unit_gangs_ifv_hull_material_0_normal.png[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | unit_gangs_ifv_hull_material_0_orm.png[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | unit_gangs_ifv_turret.glb[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | unit_gangs_ifv_weapon.glb[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | unit_gangs_scout_hull.glb[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | unit_gangs_scout_hull_0.png[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | unit_gangs_scout_hull_3.png[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | unit_gangs_scout_hull_material_0_normal.png[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | unit_gangs_scout_hull_material_0_orm.png[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | unit_gangs_special_hull.glb[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | unit_gangs_special_hull_0.png[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | unit_gangs_special_hull_3.png[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | unit_gangs_special_hull_material_0_normal.png[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | unit_gangs_special_hull_material_0_orm.png[39m[0m
+[  74% ] [90m[1m_update_scan_actions[22m | unit_gangs_tank_hull.glb[39m[0m
+[  74% ] [90m[1m_update_scan_actions[22m | unit_gangs_tank_hull_0.png[39m[0m
+[  74% ] [90m[1m_update_scan_actions[22m | unit_gangs_tank_hull_3.png[39m[0m
+[  74% ] [90m[1m_update_scan_actions[22m | unit_gangs_tank_hull_material_0_normal.png[39m[0m
+[  74% ] [90m[1m_update_scan_actions[22m | unit_gangs_tank_hull_material_0_orm.png[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | unit_gangs_tank_turret.glb[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | unit_law_artillery_hull.glb[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | unit_law_artillery_hull_0.png[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | unit_law_artillery_hull_3.png[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | unit_law_artillery_hull_material_0_normal.png[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | unit_law_artillery_hull_material_0_orm.png[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | unit_law_artillery_turret.glb[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | unit_law_ifv_hull.glb[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | unit_law_ifv_hull_0.png[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | unit_law_ifv_hull_material_0_normal.png[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | unit_law_ifv_hull_material_0_orm.png[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | unit_law_ifv_turret.glb[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | unit_law_ifv_weapon.glb[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | unit_law_scout_hull.glb[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | unit_law_scout_hull_0.png[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | unit_law_scout_hull_3.png[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | unit_law_scout_hull_material_0_normal.png[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | unit_law_scout_hull_material_0_orm.png[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | unit_law_special_hull.glb[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | unit_law_special_hull_0.png[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | unit_law_special_hull_3.png[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | unit_law_special_hull_material_0_normal.png[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | unit_law_special_hull_material_0_orm.png[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | unit_law_special_turret.glb[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | unit_law_special_weapon.glb[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | unit_law_tank_hull.glb[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | unit_law_tank_hull_0.png[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | unit_law_tank_hull_3.png[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | unit_law_tank_hull_material_0_normal.png[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | unit_law_tank_hull_material_0_orm.png[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | unit_law_tank_turret.glb[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | unit_law_tank_weapon.glb[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | unit_syndicate_artillery_hull.glb[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | unit_syndicate_artillery_hull_0.png[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | unit_syndicate_artillery_hull_3.png[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | unit_syndicate_artillery_hull_material_0_normal.png[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | unit_syndicate_artillery_hull_material_0_orm.png[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | unit_syndicate_ifv_hull.glb[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | unit_syndicate_ifv_hull_0.png[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | unit_syndicate_ifv_hull_3.png[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | unit_syndicate_ifv_hull_material_0_normal.png[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | unit_syndicate_ifv_hull_material_0_orm.png[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | unit_syndicate_ifv_turret.glb[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | unit_syndicate_scout_hull.glb[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | unit_syndicate_scout_hull_0.png[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | unit_syndicate_scout_hull_3.png[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | unit_syndicate_scout_hull_material_0_normal.png[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | unit_syndicate_scout_hull_material_0_orm.png[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | unit_syndicate_special_hull.glb[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | unit_syndicate_special_hull_0.png[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | unit_syndicate_special_hull_3.png[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | unit_syndicate_special_hull_material_0_normal.png[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | unit_syndicate_special_hull_material_0_orm.png[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | unit_syndicate_tank_hull.glb[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | unit_syndicate_tank_hull_0.png[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | unit_syndicate_tank_hull_3.png[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | unit_syndicate_tank_hull_material_0_normal.png[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | unit_syndicate_tank_hull_material_0_orm.png[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | unit_syndicate_tank_turret.glb[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | unit_syndicate_tank_weapon.glb[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | explosion_flipbook.png[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | kit_billboard.glb[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | kit_billboard_Texture_Sign.png[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | kit_light_pole.glb[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | prop_crate.glb[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | prop_wall.glb[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | tank_hull.glb[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | tank_turret.glb[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | weapon_cannon.glb[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | kit_barrier.glb[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | kit_barrier_concrete_albedo.png[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | kit_billboard.glb[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | kit_billboard_rust_metal_albedo.png[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | kit_billboard_sign_albedo.png[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | kit_container.glb[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | kit_container_paint_container_albedo.png[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | kit_container_rust_metal_albedo.png[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | kit_light_pole.glb[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | kit_light_pole_concrete_albedo.png[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | kit_light_pole_rust_metal_albedo.png[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | kit_scrap_pile.glb[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | kit_scrap_pile_paint_scrap_albedo.png[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | kit_scrap_pile_rust_metal_albedo.png[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | prop_crate.glb[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | prop_crate_paint_hull_albedo.png[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | prop_crate_rust_metal_albedo.png[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | prop_wall.glb[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | prop_wall_concrete_albedo.png[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | prop_wall_sign_albedo.png[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | tank_hull.glb[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | tank_hull_0.png[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | tank_hull_3.png[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | tank_hull_material_0_normal.png[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | tank_hull_material_0_orm.png[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | tank_turret.glb[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | weapon_cannon.glb[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | unit_artillery_hull.glb[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | unit_artillery_hull_0.png[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | unit_artillery_hull_3.png[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | unit_artillery_hull_material_0_normal.png[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | unit_artillery_hull_material_0_orm.png[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | unit_artillery_turret.glb[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | unit_burner_hull.glb[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | unit_burner_hull_0.png[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | unit_burner_hull_material_0_normal.png[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | unit_burner_hull_material_0_orm.png[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | unit_burner_turret.glb[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | unit_burner_weapon.glb[39m[0m
+[  96% ] [90m[1m_update_scan_actions[22m | unit_ifv_hull.glb[39m[0m
+[  96% ] [90m[1m_update_scan_actions[22m | unit_ifv_hull_0.png[39m[0m
+[  96% ] [90m[1m_update_scan_actions[22m | unit_ifv_hull_material_0_normal.png[39m[0m
+[  96% ] [90m[1m_update_scan_actions[22m | unit_ifv_hull_material_0_orm.png[39m[0m
+[  96% ] [90m[1m_update_scan_actions[22m | unit_ifv_turret.glb[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | unit_ifv_weapon.glb[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | unit_lancer_hull.glb[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | unit_lancer_hull_0.png[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | unit_lancer_hull_3.png[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | unit_lancer_hull_material_0_normal.png[39m[0m
+[  98% ] [90m[1m_update_scan_actions[22m | unit_lancer_hull_material_0_orm.png[39m[0m
+[  98% ] [90m[1m_update_scan_actions[22m | unit_lancer_turret.glb[39m[0m
+[  98% ] [90m[1m_update_scan_actions[22m | unit_lancer_weapon.glb[39m[0m
+[  98% ] [90m[1m_update_scan_actions[22m | unit_scout_hull.glb[39m[0m
+[  98% ] [90m[1m_update_scan_actions[22m | unit_scout_hull_0.png[39m[0m
+[  99% ] [90m[1m_update_scan_actions[22m | unit_scout_hull_3.png[39m[0m
+[  99% ] [90m[1m_update_scan_actions[22m | unit_scout_hull_material_0_normal.png[39m[0m
+[  99% ] [90m[1m_update_scan_actions[22m | unit_scout_hull_material_0_orm.png[39m[0m
+[  99% ] [90m[1m_update_scan_actions[22m | unit_scout_weapon.glb[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> traffic-census on builder0 | commit f4365153f | flags '' | load 11.23 15.36 15.10
+  ran        census sumps s3701
+  ran        census foundry s3701
+  ran        census sumps s3702
+  ran        census parade s3701
+  ran        census foundry s3702
+  ran        census sumps s3703
+  ran        census parade s3702
+  ran        census foundry s3703
+  ran        census sumps s3704
+  ran        census parade s3703
+  ran        census parade s3704
+  ran        census foundry s3704
+  ran        census sumps s3705
+  ran        census parade s3705
+  ran        census foundry s3705
+  ran        census sumps s3706
+  ran        census parade s3706
+  ran        census foundry s3706
+TRAFFIC_CENSUS_TABLE build/traffic-census.jsonl (18 runs, 0 missing)
+case             runs  underway    stuck   friend    enemy   static f_share contact  fast  kturn  kt_fr
+ALL                18     18497     1645      418        7     1220   0.254    1665   910    445     71
+foundry@2000        6      4745      536       86        0      450   0.160     434   208     51     12
+parade@2000         6      8351      646      198        5      443   0.306     748   427    119     21
+sumps@1000          6      5401      463      134        2      328   0.289     483   275    275     38
+set-up hulls (T1c-b): repacks (all / while giving way / while giving way from the fire post), asks refused on the post, artillery shots:
+  ALL              repacks   74 /   2 /   0  setup_refusals  107  art_shots   560
+  foundry@2000     repacks   63 /   0 /   0  setup_refusals    8  art_shots   180
+  parade@2000      repacks    8 /   2 /   0  setup_refusals   94  art_shots   234
+  sumps@1000       repacks    3 /   0 /   0  setup_refusals    5  art_shots   146
+T1c-b by side (green / rust): repacks while firing, refusals on the post, refused askers that went round / never got past in 20 s; still pending at the end:
+  ALL              rwf 0 ref 83 round 11 never 3  |  rwf 0 ref 24 round 7 never 0  pending 0
+  foundry@2000     rwf 0 ref 8 round 3 never 0  |  rwf 0 ref 0 round 0 never 0  pending 0
+  parade@2000      rwf 0 ref 75 round 8 never 3  |  rwf 0 ref 19 round 5 never 0  pending 0
+  sumps@1000       rwf 0 ref 0 round 0 never 0  |  rwf 0 ref 5 round 2 never 0  pending 0
+TRAFFIC_CENSUS_SUMMARY {"ALL": {"art_shots": 560, "by_side": [{"never_past": 3, "repacks_while_firing": 0, "setup_refusals": 83, "went_round": 11}, {"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 24, "went_round": 7}], "contacts_friend": 1665, "contacts_friend_fast": 910, "friend_share": 0.254, "go_round_pending": 0, "kturns": 445, "kturns_friend": 71, "repacks": 74, "repacks_while_firing": 0, "repacks_yield": 2, "runs": 18, "setup_refusals": 107, "stuck_enemy_s": 7.1, "stuck_friend_s": 417.7, "stuck_s": 1645.3, "stuck_static_s": 1220.5, "under_way_s": 18496.7}, "foundry@2000": {"art_shots": 180, "by_side": [{"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 8, "went_round": 3}, {"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 0, "went_round": 0}], "contacts_friend": 434, "contacts_friend_fast": 208, "friend_share": 0.16, "go_round_pending": 0, "kturns": 51, "kturns_friend": 12, "repacks": 63, "repacks_while_firing": 0, "repacks_yield": 0, "runs": 6, "setup_refusals": 8, "stuck_enemy_s": 0.3, "stuck_friend_s": 85.7, "stuck_s": 535.7, "stuck_static_s": 449.8, "under_way_s": 4745.3}, "parade@2000": {"art_shots": 234, "by_side": [{"never_past": 3, "repacks_while_firing": 0, "setup_refusals": 75, "went_round": 8}, {"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 19, "went_round": 5}], "contacts_friend": 748, "contacts_friend_fast": 427, "friend_share": 0.306, "go_round_pending": 0, "kturns": 119, "kturns_friend": 21, "repacks": 8, "repacks_while_firing": 0, "repacks_yield": 2, "runs": 6, "setup_refusals": 94, "stuck_enemy_s": 5.1000000000000005, "stuck_friend_s": 198.1, "stuck_s": 646.4, "stuck_static_s": 443.1, "under_way_s": 8350.6}, "sumps@1000": {"art_shots": 146, "by_side": [{"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 0, "went_round": 0}, {"never_past": 0, "repacks_while_firing": 0, "setup_refusals": 5, "went_round": 2}], "contacts_friend": 483, "contacts_friend_fast": 275, "friend_share": 0.289, "go_round_pending": 0, "kturns": 275, "kturns_friend": 38, "repacks": 3, "repacks_while_firing": 0, "repacks_yield": 0, "runs": 6, "setup_refusals": 5, "stuck_enemy_s": 1.7, "stuck_friend_s": 133.9, "stuck_s": 463.2, "stuck_static_s": 327.6, "under_way_s": 5400.8}}
+>> remote: copy-back verified, 330 files, sha256
+>> remote: make native traffic-census TRAFFIC_CENSUS_SEEDS=3701 3702 3703 3704 3705 3706 TRAFFIC_JOBS=4 exited 0 (build/ copied back)

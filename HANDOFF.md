@@ -26,6 +26,9 @@ briefs in `_agents/streams/`; round 36's briefs in `streams/archive/round36/`; r
 **Main at launch is GREEN** (round 36's close: eee5b0afa inherits 9ddf248f9's builder0 check, 2973/0; baselines c5e87cd50). Workers
 do NOT re-run a baseline check.
 
+**SHIPPED ON this round so far:** main 98153750a, set-up rocket trucks obey new moves (his playtest bug, R37.27/R37.31); main
+ac8cb7d92, his feedback picks + six sounds/lines + live flank/rear calls (R37.36). main da3193cf5, M1 sidestand (a crew blocked by an
+angled friend steps aside once, then waits; R37.34/R37.41).
 **Main now (2026-10-21 afternoon): 0baf6e1ff GREEN** (a10846307's builder2 check 3007/0 + manoeuvre's b822e6696 INHERIT). On main,
 all OFF: cover K1-K3, CP37.1's guard lines + base (blob wins 48 %, turtle 39 %; R37.14), rules R1-R3, manoeuvre M1/M2. **Perf-judge
 owed on main** (every check NOT JUDGED; R37.19). Running: rules' Bar R series (builder2), M1's series (builder0), orders' O1 traces.
@@ -37,7 +40,7 @@ probe now counts `parked_redeals` (c14ec0d80) and every orders verdict reports i
 R1, R2 and R3 all FAILED Bar R alone (R37.22, R37.24, R37.25: blob 48 -> 47 / 46 / 44 %, all inside noise); the CPU fires on the
 move 56 % v the blob's 70 % and fires 41 % more rounds (R37.26), so a motion tax can't favour it. Round-38 candidate: the CPU
 defender's stop-to-fire / holding doctrine (brains paths). The package arm runs after M5a. **His playtest of the rules (switches
-on main, OFF by default; once rules' tooling merges):** `make rules-skirmish` (all three ON), `make rules-skirmish RULES=sight|spread|
+on main, OFF by default; tooling merged 7d89ccb2b):** `make rules-skirmish` (all three ON), `make rules-skirmish RULES=sight|spread|
 pin_slow` (one), `ARENA=locks SEED=5`; `make skirmish` for OFF.
 Found by feedback (real CPU fights, gangs v Law, Terminus, laptop preset, seeds 3/5/7/11, n 4): in seeds 3 and 5 all three gang
 Resupply Tankers died within ~25 s of contact and never mended (the hurt friend in reach was still under fire; repair needs 3 s

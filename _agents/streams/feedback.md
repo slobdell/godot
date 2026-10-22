@@ -49,22 +49,73 @@ Simulation code (rules', cover's, orders', manoeuvre's paths), `native/**`, `tes
 
 ## Waiting on the lead
 
-F1's picks (the orchestrator relays). **The directions page: https://claude.ai/artifact/FDSA2k9cBPFfncfo2rCSHn**
-(private; published 2026-10-21 from build/feedback-page, shots builder0 `make feedback-shots FB_PRESET=laptop` on the
-a459ed338 tree + capture fixes, Terminus, 1854x1011). Picks land in its db: `picks/<hit|pinned|repair|cone>` =
-{letters, words, at}; sound and line approvals in `sounds/<flank_hit|rear_hit|repair_loop|caller.hit.flank.0N>` =
-{approved, words, at}. My recommendations: hit a, pinned a, repair a, cone b. Lead gate 1: nothing generated with
-ElevenLabs until a `sounds/*` approval. Until his pick no look draws without the flag.
+Nothing. **His picks landed 2026-10-21 ~19:55 PDT** (page db, game_design.md "his picks on feedback's directions page"): hit
+**C**, pinned **A**, repair **A**, cone **C**, all six audio items approved; the orchestrator confirmed. Built (F2-F4 below).
 
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-21/22, F2-F4 built to his picks.**
+- **His picks are the game's** (5c8845969), ON by default (`FeedbackLook.DEFAULTS`); `--feedback-look=hit:off,marks:on`
+  turns any off/on. hit C: the struck face's quarter of a ring under the tank, toward the shot (FACE_COLORS: side yellow,
+  rear red, front pale at 0.45). pinned A: one to three chevrons over the bar (`UnitBars.chevrons_for`, reads
+  `pinned_of`, which reads `pin_slow()` when R3 is on). repair A: the green beam, Tanker -> patient. cone C: the shimmer.
+  `marks` (radar ring, card words) stays OFF: not on his page. **Deleted:** every losing look (flares, hit markers, pin
+  rings, reach rings, mending glow, bar text, ripples, footprint; the ground shader is one kind now) and the directions page
+  builder; `make feedback-shots` now shoots each pick on/off.
+- **F3 sounds and lines** (e12aa27cc), his six approved items. ElevenLabs (ledgered): `eleven_text_to_sound_v2` 5 takes /
+  14 s / 140 credits (121443 -> 121303) for flank_hit x2, rear_hit x2, repair_loop x1 (sources.json; `make sfx-layer`
+  -> assets/audio/layered); `eleven_multilingual_v2` 3 requests / 175 characters for caller.hit.flank.01-03 (STT 3/3 ok;
+  the balance read 121303 both sides, the ledger row carries the 175). Played: flank_hit / rear_hit over a gun round's
+  side / rear hit (once per target per 0.4 s; never a stream or artillery), repair_loop while a beam shows (`RepairHum`,
+  2 voices, nearest patients). **Found and fixed on the way:** the live booth never knew which face a round struck
+  (MatchEventAdapter inferred damage from hull loss), so the existing rear and weak-spot calls only ever played in the
+  recorded fixtures; it now reads the K2 impact (`_struck_face`, artillery = no face), and AnnouncerMemory tags `flank`.
+- **Audio files:** what ships is committed (assets/audio/layered/{flank_hit_1,flank_hit_2,rear_hit_1,rear_hit_2,
+  repair_loop_1}.wav + .import; assets/announcer/clips/caller/caller.hit.flank.0{1,2,3}.ogg). The paid MASTERS are
+  git-ignored (backups.md) and live only in this worktree; copy them into the main checkout at merge:
+  assets/audio/elevenlabs/masters/{flank_hit_1.53ee27c251,flank_hit_2.c69e8cd824,rear_hit_1.ba6a4361f1,
+  rear_hit_2.9500a7bf63,repair_loop_1.776af65f15}.mp3 and assets/announcer/masters/caller/caller.hit.flank.0{1,2,3}.
+  {mp3,json,level.txt,norm.wav}.
+- **Looked at in a real fight** (`make remote T=feedback-fight`, laptop preset, his pose): the first capture of his picks
+  showed the ring segment blooming into a white disc under a firing line (31 hits in 3 s on a War Rig); fixed in aae7355a2
+  (one per target per 0.3 s unless the face changes, 12 m cap, clamped light).
+- **Desktop preset (F2, FX HIGH / LOOK FULL, builder0, seed 5):** the glow (threshold 0.9) still turned the
+  segments into a white pool under a firing line: they were additive and ~3 stack per face (0.9 s life, one every
+  0.3 s). The shader now blends instead (blend_mix, light as opacity), so overlaps settle at the face's colour. Seen in
+  hit-only recaptures on desktop and laptop: solid yellow side / red rear wedges, no white. Pinned chevrons and the cone
+  shimmer read the same on desktop as on the laptop. Clips: build/feedback-fight/{desktop,laptop}-seed5/, the additive
+  one kept in desktop-seed5-additive/.
+- **Green hash to merge: 4c8946fd1** (make check exited 0 on builder0: 25 passed, 2 NOT JUDGED (perf-judge refused 3x,
+  box busy at 2.55/2.34/2.48x; ai-scenarios 1 refused), 3030 passed / 0 failed, sim-baseline unmoved on 13 maps).
+  Merged as main ac8cb7d92 (R37.36). Clips of his picks: build/feedback-fight/picks/ (README.txt), rebuilt on
+  4c8946fd1 for both presets after a remote copy-back --delete wiped the local-only folder; mk/feedback.mk now exports
+  REMOTE_COPYBACK_PROTECT=feedback-fight/picks/ so it survives. The desktop hit clip is the same 30-hit firing line that
+  bloomed white before blending: now yellow side / red rear wedges.
+- **Check fixes (de57b3231, green on builder0: 25 passed, 2 NOT JUDGED (box busy), 3030 passed / 0 failed, sim-baseline
+  unmoved on 13 maps):** e35c6abcf failed announcer-transcripts-check (with the booth hearing hit faces, scouts_vs_tanks
+  seed 2 now calls "Caught broadside!": regenerated) and test_sfx_pipeline (SfxSystem.ALIAS now names a stand-in for
+  flank_hit, rear_hit and repair_loop).
+
 **2026-10-21, F1 page up, picks pending.**
+- **Real-fight clips of the recommended looks** (orchestrator's ask, kept in the tree, not published):
+  `make remote T=feedback-fight` (FB_FIGHT_SEED=, FB_FIGHT_CLIPS=, FB_FLAGS=--feedback-fight-slots=repair) runs a
+  spectated CPU fight, gangs v Law, laptop preset, his pose, and films each slot's moment as it happens (hit: a crew
+  flanked 2+ times in 2 s; pinned: the most suppressed crew; repair: a Tanker mending; cone: an Emitter blowing).
+  The picked set: build/feedback-fight/recommended/ (README.txt says which seed each is from). Looked at: the flank
+  flares, the chevrons, the green beam and the violet footprint all read at his pose. quick-remote builder0 164/0.
+  Capture lessons: a skirmish without --cinematic sits in its planning pause; the spectator's CinematicCamera cuts
+  away mid-clip unless its process is paused; runs overwrite each other unless each seed has its own folder.
+- **Finding for the lead (repair):** in seeds 3 and 5 all three gang Tankers died within ~25 s of contact and no
+  mending ever ran (FEEDBACK_FIGHT_STATE: the one hurt friend in reach was still under fire; repair needs 3 s quiet).
+  Seeds 7 and 11 showed it. In a real fight his Tankers rarely get to mend: worth a rules question, not a look one.
 - **Nothing new shows by default** (d22d6867c, orchestrator's ask): with no `--feedback-look` every slot is OFF, and
   the stretch (radar ring, PINNED / REPAIRING on the card) sits behind `marks:a`. `FeedbackLook.RECOMMENDED` keeps my
   recommendation; once he picks, DEFAULTS becomes his pick. To try them all: `--feedback-look=hit:a,pinned:a,repair:a,cone:b,marks:a`.
   Merged main 406d00623 (cca1a994b); quick-remote builder0 129 passed, 0 failed.
+- **7e2ff0a4f is green: builder0 `make remote T=check` exited 0, 3025 passed, 0 failed, "27 targets, all passed, ALL
+  JUDGED", perf-judge PASS, scenarios 53/0/4 pending/0 unexpected, every sim-baseline unmoved.**
 - **305f71a37 check: builder0 `make remote T=check` exited 0, 2985 passed, 0 failed, scenarios 52/0, every
   sim-baseline unmoved** (3811 s). Two NOT JUDGED on a busy box (perf-judge ratios 1.9-2.4x; one ai-scenario), being
   re-run alone on the merge below.

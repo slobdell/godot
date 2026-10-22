@@ -1,0 +1,145 @@
+tools/remote.sh native orders-probe ORDERS_PROBE_SEEDS=3713\ 3714\ 3715\ 3716\ 3717\ 3718\ 3719\ 3720\ 3721\ 3722\ 3723\ 3724 ORDERS_PROBE_ARMS=main:\ whole:--untangle=whole ORDERS_PROBE_MAPS=locks\ crossing\ terminus ORDERS_PROBE_SQUADS=3\ 5 ORDERS_PROBE_ROUTES=click\ route ORDERS_PROBE_JOBS=4
+>> remote: syncing godot-orders-o1 to slobdell@builder0:~/tank_squad/godot-orders-o1
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3713 3714 3715 3716 3717 3718 3719 3720 3721 3722 3723 3724 ORDERS_PROBE_ARMS=main: whole:--untangle=whole ORDERS_PROBE_MAPS=locks crossing terminus ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click route ORDERS_PROBE_JOBS=4 on slobdell@builder0
+>> native: src-sync: 0 changed
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> orders-probe on builder0 | commit c14ec0d80 | native on
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          main      |   32.3 /   14.4   |   12   0 |     17.2 |               2.1 |            36.2 | 1.48 | 51.0
+crossing 3 click          whole     |   32.3 /   14.4   |    9   0 |     23.5 |               3.1 |            36.2 | 1.48 | 51.0
+crossing 3 route          main      |   32.3 /   22.9   |    2   0 |     32.0 |               3.2 |            35.8 | 1.71 | 51.0
+crossing 3 route          whole     |   32.3 /   21.6   |    2   0 |     32.0 |               3.2 |            35.8 | 1.71 | 51.0
+crossing 5 click          main      |   73.1 /   28.4   |    5   0 |     44.4 |               3.0 |            84.8 | 2.82 | 19.4
+crossing 5 click          whole     |   73.1 /   28.4   |    7   2 |        - |               3.0 |            62.6 | 3.01 | 19.4
+crossing 5 route          main      |   73.1 /   30.8   |    4   0 |     55.3 |               3.2 |            61.3 | 2.92 | 19.4
+crossing 5 route          whole     |   73.1 /   30.8   |    5   0 |     59.2 |               2.8 |            59.4 | 2.61 | 19.4
+locks 3 click             main      |   43.3 /   34.4   |   13   0 |        - |               2.2 |            50.6 | 2.37 | 32.0
+locks 3 click             whole     |   43.3 /   34.4   |   13   0 |        - |               2.2 |            50.6 | 2.37 | 32.0
+locks 3 route             main      |   43.3 /   34.4   |    8   0 |     38.5 |               3.5 |            46.9 | 1.83 | 32.0
+locks 3 route             whole     |   43.3 /   34.4   |    8   0 |     38.5 |               3.5 |            46.9 | 1.83 | 32.0
+locks 5 click             main      |   55.8 /   39.6   |    2   0 |     42.4 |               4.7 |            63.0 | 2.34 | 18.3
+locks 5 click             whole     |   55.8 /   39.6   |    2   0 |     42.4 |               4.7 |            63.0 | 2.34 | 18.3
+locks 5 route             main      |   55.8 /   39.6   |    4   0 |     44.0 |               3.0 |            57.2 | 2.76 | 18.3
+locks 5 route             whole     |   55.8 /   39.6   |    4   0 |     44.0 |               3.0 |            57.2 | 2.76 | 18.3
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     30.0 |               5.3 |            58.8 | 1.70 | 20.4
+terminus 3 click          whole     |   36.9 /   34.4   |    0   0 |     30.0 |               5.3 |            58.8 | 1.70 | 20.4
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |     26.0 |               3.6 |            34.0 | 1.51 | 20.4
+terminus 3 route          whole     |   36.9 /   34.4   |    0   0 |     26.0 |               3.6 |            34.0 | 1.51 | 20.4
+terminus 5 click          main      |   63.5 /   39.4   |    0   0 |     14.3 |               7.2 |            57.2 | 3.08 | 5.7
+terminus 5 click          whole     |   63.5 /   39.4   |    0   0 |     14.3 |               7.2 |            57.2 | 3.08 | 5.7
+terminus 5 route          main      |   63.5 /   39.4   |    0   0 |        - |               3.5 |            65.0 | 7.74 | 5.7
+terminus 5 route          whole     |   63.5 /   39.4   |    0   0 |        - |               3.5 |            56.2 | 6.70 | 5.7
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          main      |          27.2 |          31.7 |           25.5 |               2.8 |          37.2
+crossing 3 click          whole     |          32.1 |          31.7 |           25.5 |               2.7 |          38.2
+crossing 3 route          main      |          42.0 |          21.3 |           15.4 |               2.3 |          40.2
+crossing 3 route          whole     |          42.0 |          20.9 |           12.9 |               2.3 |          41.6
+crossing 5 click          main      |          54.4 |          32.4 |           35.0 |               2.8 |         106.4
+crossing 5 click          whole     |             - |          31.7 |              - |               2.9 |          92.8
+crossing 5 route          main      |          65.3 |          35.6 |           50.9 |               3.1 |          94.0
+crossing 5 route          whole     |          69.2 |          35.6 |           50.9 |               3.1 |          94.0
+locks 3 click             main      |             - |          28.4 |              - |               3.9 |          58.8
+locks 3 click             whole     |             - |          28.4 |              - |               3.9 |          58.8
+locks 3 route             main      |          48.2 |          30.7 |           34.9 |               5.0 |          60.8
+locks 3 route             whole     |          48.2 |          30.7 |           34.9 |               5.0 |          60.8
+locks 5 click             main      |          52.4 |          41.6 |           45.6 |               3.2 |          80.8
+locks 5 click             whole     |          52.4 |          41.6 |           45.6 |               3.2 |          80.8
+locks 5 route             main      |          54.0 |          35.2 |           24.7 |               5.7 |          80.2
+locks 5 route             whole     |          54.0 |          35.2 |           24.7 |               5.7 |          80.2
+terminus 3 click          main      |          39.6 |          50.7 |           25.5 |               9.7 |          64.9
+terminus 3 click          whole     |          39.6 |          50.7 |           25.5 |               9.7 |          64.9
+terminus 3 route          main      |          36.0 |          26.5 |           12.7 |               4.7 |          55.7
+terminus 3 route          whole     |          36.0 |          26.5 |           12.7 |               4.7 |          55.7
+terminus 5 click          main      |          23.1 |          44.0 |           25.2 |               3.5 |          85.4
+terminus 5 click          whole     |          23.1 |          44.0 |           25.2 |               3.5 |          85.4
+terminus 5 route          main      |             - |          48.9 |              - |               5.3 |          86.1
+terminus 5 route          whole     |             - |          48.9 |              - |               5.3 |          86.1
+
+MEDIANS over seeds [3713, 3714, 3715, 3716, 3717, 3718, 3719, 3720, 3721, 3722, 3723, 3724] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          main        | 12 |         16.4 |     0 |          25.1 |         10.8 |          34.9 |               2.8 |   12   0 | 1.31
+crossing 3 click          whole       | 12 |         16.6 |     0 |          24.6 |          9.0 |          35.0 |               2.7 |    9   0 | 1.33
+crossing 3 route          main        | 12 |         18.8 |     0 |          29.4 |          6.3 |          38.0 |               2.3 |    2   0 | 1.31
+crossing 3 route          whole       | 12 |         17.5 |     0 |          29.0 |          4.8 |          38.2 |               2.3 |    2   0 | 1.28
+crossing 5 click          main        | 12 |         40.6 |     0 |          78.3 |         21.2 |          93.6 |               2.8 |    5   0 | 1.94
+crossing 5 click          whole       | 12 |         49.5 |     2 |          40.1 |         25.5 |          83.2 |               2.9 |    7   2 | 1.90
+crossing 5 route          main        | 12 |         36.6 |     0 |          44.9 |         17.6 |          85.2 |               3.1 |    4   0 | 1.92
+crossing 5 route          whole       | 12 |         36.6 |     0 |          43.6 |         22.3 |          85.2 |               3.1 |    5   0 | 1.96
+locks 3 click             main        | 12 |         29.8 |     1 |          33.0 |         19.8 |          49.0 |               3.9 |   13   0 | 1.50
+locks 3 click             whole       | 12 |         29.8 |     1 |          33.0 |         19.8 |          49.0 |               3.9 |   13   0 | 1.50
+locks 3 route             main        | 12 |         28.6 |     0 |          32.6 |         17.6 |          48.8 |               5.0 |    8   0 | 1.57
+locks 3 route             whole       | 12 |         28.6 |     0 |          32.6 |         17.6 |          48.8 |               5.0 |    8   0 | 1.57
+locks 5 click             main        | 12 |         30.2 |     0 |          46.3 |         23.0 |          76.8 |               3.2 |    2   0 | 1.85
+locks 5 click             whole       | 12 |         30.2 |     0 |          46.3 |         23.0 |          76.8 |               3.2 |    2   0 | 1.85
+locks 5 route             main        | 12 |         23.4 |     0 |          34.0 |         12.1 |          73.8 |               5.7 |    4   0 | 1.65
+locks 5 route             whole       | 12 |         23.4 |     0 |          34.0 |         12.1 |          73.8 |               5.7 |    4   0 | 1.65
+terminus 3 click          main        | 12 |         21.4 |     0 |          36.2 |         10.2 |          53.7 |               9.7 |    0   0 | 1.47
+terminus 3 click          whole       | 12 |         21.4 |     0 |          36.2 |         10.2 |          53.7 |               9.7 |    0   0 | 1.47
+terminus 3 route          main        | 12 |         19.1 |     0 |          27.9 |          0.3 |          50.8 |               4.7 |    0   0 | 1.30
+terminus 3 route          whole       | 12 |         19.1 |     0 |          27.9 |          0.3 |          50.8 |               4.7 |    0   0 | 1.30
+terminus 5 click          main        | 12 |         11.0 |     0 |          45.1 |         17.1 |          79.2 |               3.5 |    0   0 | 2.21
+terminus 5 click          whole       | 12 |         11.0 |     0 |          45.1 |         17.1 |          79.2 |               3.5 |    0   0 | 2.21
+terminus 5 route          main        | 12 |         43.4 |     2 |          55.5 |         22.6 |          77.1 |               5.3 |    0   0 | 4.29
+terminus 5 route          whole       | 12 |         43.1 |     1 |          43.3 |         20.5 |          76.3 |               5.3 |    0   0 | 4.29
+
+EQUALITY click cells: 56 identical across arms, 16 differ
+  DIFFER crossing 3 click seed 3713
+  DIFFER crossing 3 click seed 3715
+  DIFFER crossing 3 click seed 3716
+  DIFFER crossing 3 click seed 3719
+  DIFFER crossing 5 click seed 3713
+  DIFFER crossing 5 click seed 3714
+  DIFFER crossing 5 click seed 3715
+  DIFFER crossing 5 click seed 3716
+  DIFFER crossing 5 click seed 3717
+  DIFFER crossing 5 click seed 3718
+  DIFFER crossing 5 click seed 3719
+  DIFFER crossing 5 click seed 3720
+  DIFFER crossing 5 click seed 3721
+  DIFFER crossing 5 click seed 3722
+  DIFFER crossing 5 click seed 3723
+  DIFFER crossing 5 click seed 3724
+TOTAL main       | placed 573.0 flipping 13.0 flips 65.0 relays 207.0 relaying 35.0 terr_c 144.0 terr_a 0.0 reseats 132.0 away 1774.0 held 1619.6 seat 4907.4
+TOTAL whole      | placed 567.0 flipping 13.0 flips 65.0 relays 216.0 relaying 36.0 terr_c 153.0 terr_a 0.0 reseats 132.0 away 1782.4 held 1628.0 seat 4781.0
+>> remote: copy-back verified, 331 files, sha256
+>> remote: copy-back moved 72 stale log(s) an earlier run left beside this run's rows, into build/.stale-20261021-210153/
+   moved  build/orders-probe/logs/terminus-3-click-parked-s3746.log
+   moved  build/orders-probe/logs/terminus-3-click-fight-s3752.log
+   moved  build/orders-probe/logs/terminus-3-click-parked-s3744.log
+   moved  build/orders-probe/logs/terminus-3-click-parked-s3754.log
+   moved  build/orders-probe/logs/crossing-3-click-fight-s3747.log
+   moved  build/orders-probe/logs/locks-3-click-parked-s3747.log
+   moved  build/orders-probe/logs/crossing-3-click-fight-s3753.log
+   moved  build/orders-probe/logs/terminus-3-click-parked-s3750.log
+   moved  build/orders-probe/logs/locks-3-click-parked-s3753.log
+   moved  build/orders-probe/logs/terminus-3-click-fight-s3751.log
+   moved  build/orders-probe/logs/crossing-3-click-fight-s3744.log
+   moved  build/orders-probe/logs/terminus-3-click-fight-s3746.log
+   moved  build/orders-probe/logs/terminus-3-click-fight-s3750.log
+   moved  build/orders-probe/logs/locks-3-click-fight-s3754.log
+   moved  build/orders-probe/logs/locks-3-click-parked-s3750.log
+   moved  build/orders-probe/logs/terminus-3-click-parked-s3747.log
+   moved  build/orders-probe/logs/terminus-3-click-parked-s3745.log
+   moved  build/orders-probe/logs/locks-3-click-fight-s3744.log
+   moved  build/orders-probe/logs/terminus-3-click-parked-s3743.log
+   moved  build/orders-probe/logs/crossing-3-click-parked-s3748.log
+   ... and 52 more
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3713 3714 3715 3716 3717 3718 3719 3720 3721 3722 3723 3724 ORDERS_PROBE_ARMS=main: whole:--untangle=whole ORDERS_PROBE_MAPS=locks crossing terminus ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click route ORDERS_PROBE_JOBS=4 exited 0 (build/ copied back)

@@ -1,0 +1,12 @@
+PASS counter: swapped_whole 87
+PASS deciding: squads arriving short 46 -> 0 (base >= 10)
+PASS guard friend_contacts 12167 -> 11848 (<= 13388.7)
+PASS guard friend_contacts_foreign 6253 -> 5999 (<= 6883.3)
+  whole_still_crossed 47
+  FAIL guard never-in     crossing 5 click: 0 v 2
+  FAIL guard twitch       crossing 5 click: 21.2 v 25.5
+  FAIL guard crossed      crossing 5 click: 0 v 2
+  FAIL guard twitch       crossing 5 route: 17.6 v 22.3
+FAIL probe guards (12 cells)
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 449 -> 445
+VERDICT o3: FAIL

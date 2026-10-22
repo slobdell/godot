@@ -213,6 +213,8 @@ var goal_moves := {"task": 0, "leg": 0, "reseat": 0, "drift": 0}
 ## Round 33 (R33.9, measurement): times this element went from arrived back to not arrived within a task, and
 ## `--arrive-trace` prints each (ARRIVE_FLIP).
 var arrive_flips := 0
+## Round 37 (orders O1): the halt's latched terrain (ElementSituation.HALT_TERRAIN "latch"); "" while not arrived.
+var _halt_terrain := ""
 static var ARRIVE_TRACE := OS.get_cmdline_user_args().has("--arrive-trace")
 var following := 0
 ## Bumped whenever anything the HUD shows changes.
@@ -530,8 +532,10 @@ func update(game_match: Match, orders: Object) -> bool:
 	if commanded.is_empty():
 		return _note_changes(before)
 	var situation := ElementSituation.build(game_match, team, commanded, leader,
-			{"heading": heading, "arrived": arrived, "known": _known})
+			{"heading": heading, "arrived": arrived, "known": _known, "anchor": anchor, "halt_terrain": _halt_terrain})
 	_known = situation["known"]
+	# Round 37 (orders O1, HALT_TERRAIN "latch"): the terrain read the first update it stands arrived, kept while it stays.
+	_halt_terrain = String(situation["terrain"]) if arrived else ""
 	situation["corridor_m"] = _corridor(game_match, situation)
 	_advance_transit(game_match, situation)
 	_find_crossing(game_match, situation)
