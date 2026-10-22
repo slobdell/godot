@@ -156,6 +156,24 @@ func test_defend_reaches_further_than_a_held_zones_threat() -> void:
 			at.distance_to(Vector3(36, 0, -24)), decided])
 
 
+# D2b: an enemy sitting on a zone its side owns is home, not coming, even within DEFEND_M of our ring (the turtle line).
+func test_an_enemy_sitting_on_its_own_zone_is_attacked_not_defended_against() -> void:
+	var zones := _zones(GREEN, -1)
+	var home := Vector3(-30, 0, 20)  # on Green's west zone, ~80 m from our near ring
+	var decided := Posture.decide(RUST, [0, 0], zones, [_contact(home)], home, {}, _near(zones))
+	assert_true(home.distance_to(Vector3(36, 0, -24)) < Posture.DEFEND_M, "inside DEFEND_M, so D2 alone would defend")
+	assert_eq(String(decided["posture"]), "attack", "the turtle at home: go and get it (%s)" % decided)
+
+
+func test_an_enemy_coming_for_our_ring_is_defended_though_its_side_owns_a_zone() -> void:
+	var zones := _zones(GREEN, -1)
+	var coming := Vector3(20, 0, -10)
+	var decided := Posture.decide(RUST, [0, 0], zones, [_contact(Vector3(-36, 0, 24)), _contact(coming)], coming, {},
+			_near(zones))
+	assert_eq(String(decided["posture"]), "hold", "one sits at home, one comes for us: defend (%s)" % decided)
+	assert_eq(String(decided["zone"]["name"]), "east", "our near ring")
+
+
 # DEFEND (e): an element in contact near its post stands where it is; one far off drives to its post.
 func test_an_element_in_contact_near_its_post_stands_where_it_is() -> void:
 	var post := Vector3(10, 0, 10)

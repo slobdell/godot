@@ -22,7 +22,8 @@ extends RefCounted
 ## near ring is not the enemy's and has a known enemy within DEFEND_M of it HOLDS that ring, whatever the score and
 ## whether or not it has taken the ring yet. D1 (the guard lines, builder0): 75 % of the CPU's damage against a blob was
 ## fired in ATTACK posture from its own half because it "holds no objective" yet: the blob reached the near ring first
-## and the CPU met it as an attacker, firing on the move. A threatened zone it already holds comes first.
+## and the CPU met it as an attacker, firing on the move. A threatened zone it already holds comes first. D2b: only an
+## enemy COMING for the ring counts (nearer it than to any zone its side owns; `_coming`), not one sitting at home.
 
 ## An enemy this close to an objective we hold threatens it (m from the zone's centre; parade's zones are 15 m across
 ## and its floor about 112 m: an enemy halfway across is coming for it).
@@ -100,10 +101,23 @@ static func _defend(team: int, objectives: Array, contacts: Array, near: Diction
 			zone = objective
 	if int(zone.get("owner", -1)) == 1 - team:
 		return {}
-	var d := _nearest(contacts, zone["position"])
+	var d := _nearest(_coming(contacts, zone, objectives, team), zone["position"])
 	if d > DEFEND_M:
 		return {}
 	return {"posture": "hold", "zone": zone, "why": "defend: enemy %.0f m from %s" % [d, String(zone.get("name", "?"))]}
+
+
+## D2b: the contacts that are coming for `zone`: each nearer it than to every objective its own side owns. An enemy sitting
+## on its own zone (the turtle line's guard, within DEFEND_M of our ring on the small maps) is home, not coming: D2 counted
+## it, and the CPU stopped attacking a turtle (acbdef4c5, builder2, 160 turtle fights: kills a fight 32.4 -> 26.2, -3.8 se).
+static func _coming(contacts: Array, zone: Dictionary, objectives: Array, team: int) -> Array:
+	var theirs: Array = objectives.filter(func(o: Dictionary) -> bool: return int(o.get("owner", -1)) == 1 - team)
+	return contacts.filter(func(contact: Dictionary) -> bool:
+		var to_zone := _flat(contact["position"]).distance_to(_flat(zone["position"]))
+		for objective: Dictionary in theirs:
+			if _flat(contact["position"]).distance_to(_flat(objective["position"])) <= to_zone:
+				return false
+		return true)
 
 
 ## The ring a side reaches first: the objective nearest `own_spawn` among those nearer to it than to `enemy_spawn` by
