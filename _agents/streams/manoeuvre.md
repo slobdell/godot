@@ -109,6 +109,10 @@ jam census locks/terminus/sumps x 6840-6863 (72 pairs); hull-rest 6801-6832 x 4 
   A v2 would need a new bar filed first: the open questions are a fight-volume guard that a symmetric rule can't fail
   just by meaning fewer fights, and why parked ambushers settle less (needs a trace before any rule).
 
+**R37.30 (godot-b0):** M5a fails as filed. The v2 goes to round 38: a fight-volume guard, the ambusher-settle trace, and
+M5b's reverse-back. Close notes carry it. This round: judge M1, then, if builder0 time allows, the ambusher-settle trace
+(light lane): why faced_ambush never-settled doubles.
+
 ### Bar M5 (`seatstep`, named `seatyield2` when filed: a seated crew steps aside and comes back), filed 2026-10-21 before any number (R37.6)
 
 - **Change (traffic's give-way block, mine this round):** a SEATED yielder (its move_to arrived, within SEAT_NEAR_M 10 m of its
