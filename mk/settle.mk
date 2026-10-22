@@ -66,3 +66,28 @@ settle-fight-topup: native-for-check import ## Round 38 (settle): the S1/S2 figh
 	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ROUTES=click ORDERS_PROBE_SQUADS=3 \
 		ORDERS_PROBE_ARMS="$(foreach a,$(SETTLE_BASE) $(SETTLE_ARMS),$(a),--probe-fight=on,--probe-budget=1500)" \
 		ORDERS_PROBE_SEEDS="$(SETTLE_TOPUP_SEEDS)" ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-topup/fight > $(BUILD_DIR)/settle-topup/fight.out 2>&1 || true
+
+# R38.10: S2's re-read, once (the same arm, the same bar; the never-in guard filed by the orchestrator before numbers):
+# the no-fight probe 12 cells x SETTLE_RR_SEEDS, the fight probe's 3-squad top-up (SETTLE_TOPUP_SEEDS, read with the first
+# read's 3873-3878) and its 5-squad cells at --probe-budget=3000 (SETTLE_FIGHT_SEEDS), the census x SETTLE_RR_CENSUS_SEEDS,
+# for main and latch -> build/settle-rr/ (judged on the laptop with the first read's fight/ merged: settle.md Status).
+SETTLE_RR_SEEDS ?= $(shell seq 3903 3914)
+SETTLE_RR_CENSUS_SEEDS ?= 3903 3904 3905
+SETTLE_RR_JOBS ?= 4
+SETTLE_RR_ARMS ?= main:--deploy-trace latch:--deploy-latch=on,--deploy-trace
+SETTLE_RR := $(BUILD_DIR)/settle-rr
+.PHONY: settle-s2-reread
+settle-s2-reread: native-for-check import ## Round 38 (settle, R38.10): S2's re-read on fresh seeds (main v latch) -> build/settle-rr/
+	@rm -rf $(SETTLE_RR) && mkdir -p $(SETTLE_RR)
+	@echo ">> settle-s2-reread on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | jobs $(SETTLE_RR_JOBS)" | tee $(SETTLE_RR)/header.txt
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ARMS="$(SETTLE_RR_ARMS)" ORDERS_PROBE_SEEDS="$(SETTLE_RR_SEEDS)" \
+		ORDERS_PROBE_JOBS=$(SETTLE_RR_JOBS) ORDERS_PROBE_DIR=$(SETTLE_RR)/probe > $(SETTLE_RR)/probe.out 2>&1 || true
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ROUTES=click ORDERS_PROBE_SQUADS=3 ORDERS_PROBE_JOBS=$(SETTLE_RR_JOBS) \
+		ORDERS_PROBE_ARMS="$(foreach a,$(SETTLE_RR_ARMS),$(a),--probe-fight=on,--probe-budget=1500)" \
+		ORDERS_PROBE_SEEDS="$(SETTLE_TOPUP_SEEDS)" ORDERS_PROBE_DIR=$(SETTLE_RR)/fight3 > $(SETTLE_RR)/fight3.out 2>&1 || true
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ROUTES=click ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_JOBS=$(SETTLE_RR_JOBS) \
+		ORDERS_PROBE_ARMS="$(foreach a,$(SETTLE_RR_ARMS),$(a),--probe-fight=on,--probe-budget=3000)" \
+		ORDERS_PROBE_SEEDS="$(SETTLE_FIGHT_SEEDS)" ORDERS_PROBE_DIR=$(SETTLE_RR)/fight5 > $(SETTLE_RR)/fight5.out 2>&1 || true
+	@for arm in $(SETTLE_RR_ARMS); do name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
+		$(MAKE) --no-print-directory traffic-census TRAFFIC_JOBS=$(SETTLE_RR_JOBS) TRAFFIC_CENSUS_SEEDS="$(SETTLE_RR_CENSUS_SEEDS)" TRAFFIC_FLAGS="$$flags" > $(SETTLE_RR)/census-$$name.out 2>&1 || true; \
+		cp $(BUILD_DIR)/traffic-census.jsonl $(SETTLE_RR)/census-$$name.jsonl || true; done

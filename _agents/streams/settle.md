@@ -204,6 +204,14 @@ BEFORE reading any fight number: Bar S1 / S2's fight read = locks/crossing/termi
 fights an arm; 3873-3878 already ran, 3879-3884 run as a top-up on the same hash, the two halves read together); Bar H / S3
 = the same 3 cells x 3891-3902 (36 fights an arm). The no-fight probe and the census are read as filed.
 
+### R38.10: S2's re-read, once (filed by the orchestrator before numbers)
+Same arm (`latch:--deploy-latch=on`), same bar, FRESH seeds: the no-fight probe 12 cells x 3903-3914; the fight read = the
+3-squad cells' top-up 3879-3884 (read with the first read's 3873-3878: 36 fights) + the 5-squad cells at --probe-budget=3000 x
+3873-3884 (36 fights); the census x 3903-3905. **The never-in guard (the orchestrator's text):** latch <= main on the fresh
+seeds AND latch <= main + 1 pooled over both reads (s3866 stays counted). Every other line as filed. If the overlap never-in
+repeats, S2 fails until orders' lay stops placing spots on parked tanks. `make native settle-s2-reread` (mk/settle.mk), queued
+on builder2 behind doctrine's D2 series (builder0 full: feedback's check, orders' G1, manoeuvre's jam census).
+
 ### Questions for the lead
 None.
 
