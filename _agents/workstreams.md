@@ -447,6 +447,14 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   sim-baseline unmoved. 7e2ff0a4f contains main 4b62d2186, so this perf-judge PASS covers every OFF change on main this round
   (cover, rules, manoeuvre, native, feedback): **R37.20's owed perf-judge is closed.** Every look and the radar/card marks are OFF
   by default until his picks.
+- **R37.24 (2026-10-21) R2 moving spread: Bar R deciding NOT MET.** rules (builder2, 75c3e74e0, `--rules-on=spread`, 320/320
+  paired; Status 2cd289bb1): blob 48 -> 46 % (paired -1.2 pts, se 3.5; 15 flips to a loss, 13 to a win; McNemar p 0.43); kill ratio
+  -0.025 (se 0.017); turtle 39 -> 39 %; per faction Condemned -8.9, Gangs -6.7, Law 0, Syndicate +8.9 pts (se 4.8); G2 3 of 16 cells
+  out (noisy). Reading: the blob never halts and pays the wider spread, but most damage is close in (movers beyond 50 m 19 %) and
+  the CPU "tactics" side moves as much as the blob, so it pays the same price. No stabilised-gun victim. **Ruled:** R2 stays OFF;
+  guard 3 (contention) is skipped, informative only, and M5a takes builder2 after pin_slow. **Orchestrator's reading for the lead:**
+  with R1 and R2 both flat, a rule that taxes MOTION cannot favour a defender while the CPU defender itself never stops; the
+  defender's edge needs the side that holds to actually hold (bounding / halting doctrine), a brains-path question for round 38.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
