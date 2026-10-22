@@ -663,6 +663,10 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
 - **R37.45 (2026-10-22) main c9996f0c4 GREEN and ALL JUDGED on builder0.** `make native check exited 0`, 3055 passed / 0 failed,
   27 targets all passed, ALL JUDGED (perf-judge judged on builder0), sim-baseline 13/13 unmoved. This closes every perf-judge owed this
   round: the artillery fix, his feedback picks, M1 sidestand, every OFF arm.
+- **R37.46 (2026-10-22) SHIPPED: the K5 barrier maps; cover closed.** main 27e00de2c merges stream/cover b2a82c0ba (code = 05300509a:
+  builder0 `make check exited 2` only on sim-baseline's expected adoption, 3055/0; cover's perf-judge alone on a quiet builder0 PASS
+  1.08x). 1c484a525 adopts terminus, sumps, locks, parade (re-sited), gorge (read twice on builder0 at 27e00de2c, agreeing, equal to
+  05300509a's check hashes); 8 unmoved. K2 hull-down OFF. ONE builder0 `make native check` on 1c484a525 judges the merged main.
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His

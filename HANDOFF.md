@@ -28,7 +28,8 @@ do NOT re-run a baseline check.
 
 **SHIPPED ON this round so far:** main 98153750a, set-up rocket trucks obey new moves (his playtest bug, R37.27/R37.31); main
 ac8cb7d92, his feedback picks + six sounds/lines + live flank/rear calls (R37.36). main da3193cf5, M1 sidestand (a crew blocked by an
-angled friend steps aside once, then waits; R37.34/R37.41).
+angled friend steps aside once, then waits; R37.34/R37.41). main 1c484a525, the barrier runs on terminus, locks,
+sumps, gorge and parade (his yes; R37.44/R37.46).
 **Main now (2026-10-21 afternoon): 0baf6e1ff GREEN** (a10846307's builder2 check 3007/0 + manoeuvre's b822e6696 INHERIT). On main,
 all OFF: cover K1-K3, CP37.1's guard lines + base (blob wins 48 %, turtle 39 %; R37.14), rules R1-R3, manoeuvre M1/M2. **Perf-judge
 owed on main** (every check NOT JUDGED; R37.19). Running: rules' Bar R series (builder2), M1's series (builder0), orders' O1 traces.
