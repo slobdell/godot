@@ -113,6 +113,56 @@ losses a fight each within base +/- 1.645 se (base sd, n 36); CPU: friendly cont
   a rule whose task redraws that many runs anyway, and b + c keeps the line honest if the floor is small. D_floor per task and the
   net shift base GDScript - base native are REPORTED with the verdict.
 
+- **Bar S2 DEPLOY_LATCH (latch v2; filed 2026-10-22 before any judged number; code 44505a21c; recorded from stream/settle 4870d8ebc)**
+What he would see: a squad he parked keeps one shape and its spots; it never opens into a ring that doesn't fit the lane it
+stopped in. **The change:** the deploy records the live terrain read at its all-in (or cap), where it decides the halt's
+shape, and every later update of that deployed halt plans with it (shape and spacing); before the deploy the live read
+stands (main's). Plain AUTO moves (the deploy step's scope), every side. Lab `tests/test_settle_deploy_latch.gd` 3/0 (R37.42's
+geometry: round-37 latch coil + 4 late orders, deploy latch herringbone + 0; creep lab: centre 2 flips, latched 0).
+**Arms:** `main:--deploy-trace` v `latch:--deploy-latch=on,--deploy-trace`, run in the SAME `make native settle-series` as
+S1 (one base for both arms, the same fresh seeds and workloads as Bar S1). **Counter:** rows differ and base shape flips
+(no-fight + fight probe) >= 10. **Deciding:** shape flips after the place window summed, no-fight probe arm <= 25 % of base
+(+1) AND fight probe arm <= 25 % of base (+1); reseats no more than base. **Guards:** Bar S1's, the first-shape line read on
+each squad's FIRST halt shape (the property latch v1 broke: differs from main's in <= 3 % of squads), plus the full check
+(test_tactics_scenarios_2 runs in it) on the hash. Note: the probe's `relays` read ElementSituation's terrain, which this arm
+does not change, so relays are reported, not judged. **A pass ships ON** (`--deploy-latch=off` keeps today's).
+
+### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
+s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
+`references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
+- **Not the returning crew.** Alpha's re-deals are of two kinds: (a) `drift` goal moves on the same anchor and seat index
+  at t=79, 101, 106, 109, 111 with no loss, beside 4 relays: the terrain read flips as crews move in the fight (parked hold
+  keeps them on posts, so the centroid creeps across a feature line) and the deployed halt is re-SPACED, moving seats 7-14 m:
+  what S2's deploy latch removes; (b) a LOSS (t=117, Alpha_2): the halt is laid again at the smaller size and three
+  survivors are re-seated 11-18 m: what the stretch's DEPLOY_HOLD removes. Laptop GDScript, the same cell: the re-deals
+  came at the two losses (t=77, 102). Why parked hold doubles them: with crews held on their posts, more of them are
+  "parked" (>= 2 s on the station) when a re-lay lands, so the probe counts them; without it, they were off fighting.
+- **With both (`--deploy-latch=on --deploy-hold=on`, same tree, builder0 light, n 1 each; the fights diverge):** parked
+  re-deals s3747 7 -> 3, s3748 2 -> 0; Alpha's reseat moves 3 -> 0; one 14.3 m drift remains after a loss (residual, untraced).
+- **DEPLOY_HOLD (8bd480f96, OFF):** while every crew of a deployed halt is one the deploy dealt, a smaller squad (a loss)
+  stands on its own dealt seats (seat, sector, order kept) and the shape keeps its name; a crew joining re-lays as before.
+  Lab `tests/test_settle_deploy_hold.gd` 1/0 (laptop): one of five lost, survivors' worst seat move 16.7 m -> 0.0.
+- native (godot-native-fb, written audit on 8bd480f96): no twin needed for S1, S2 or the hold.
+
+- **Bar H DEPLOY_HOLD and Bar S3 O2-ON-SETTLE (filed 2026-10-22 before any judged number; code 8bd480f96; recorded from stream/settle 4870d8ebc)**
+`make native settle-s3`, judge `settle_judge.py s3`: the fight probe only (locks/crossing/terminus x 3/5 squads x click),
+FRESH seeds 3891-3896 (36 fights an arm), builder0, a green-checked hash, run AFTER S2's verdict. Arms: `latch`
+(--deploy-latch=on), `held` (+ --deploy-hold=on), `o2` (+ --parked-hold=on). If S2 fails, the arms drop the latch and the
+bars are re-read on the same seeds with the base `main` (said in the verdict, before the run).
+- **Bar H (held v latch).** What he would see: when a parked tank is killed, the rest of the squad stays where it is.
+  Counter: latch's parked re-deals >= 10. Deciding: parked re-deals summed held <= 60 % of latch AND reseat goal moves no
+  more. Guards: his kills, his losses, the CPU's losses a fight within latch +/- 1.645 se. A pass ships ON.
+- **Bar S3 (o2 v held).** What he would see: a squad he parked stays where he put it and shoots from there, and nobody in
+  it gets sent to a new spot. Deciding: R37.13's line (off_idle_s a fight o2 <= 50 % of held AND the drop > 1.645 se) AND
+  parked re-deals o2 <= held x 1.1 + 3 (R37.28's "no higher beyond noise", now against the settled halt). Counter:
+  parked_returns > 0. Guards: the kills / losses lines v held. A pass ships O2 ON with latch v2 and the hold (his crews only:
+  PARKED_HOLD is player-only), the seam in tank_brain.gd unchanged (orders' code; merge note to doctrine).
+  S3 trace (settle, builder0 light native, crossing 3 click s3747/s3748 fight probe, parked-hold on, n 1 each;
+  `references/round38/settle/o2-redeal-trace-builder0/`): O2's re-deals are NOT the returning crew: (a) terrain-read flips re-space
+  the deployed halt (seats 7-14 m, no loss; latch removes these); (b) each LOSS re-lays the halt smaller and re-seats survivors 11-18
+  m; parked hold doubles the count because held crews are parked when a re-lay lands. With latch + DEPLOY_HOLD: re-deals 7 -> 3, 2 -> 0.
+  Native: no twin for deploy-fit, deploy-latch or DEPLOY_HOLD.
+
 - **Bar F3 REPAIR_UNDER_FIRE (feedback, C38.4; filed in stream/feedback f0ad5a44d Status before any number).** Switch `--repair-under-fire`
   (OFF; `Match.repair_under_fire_on`): a friendly FIELD mender (the gangs' Resupply Tanker) keeps mending a vehicle under fire at HALF
   rate (2.5 hp/s), full after `REPAIR_QUIET_SECONDS`; the base's own mending still waits for quiet; a Tanker never mends itself.
