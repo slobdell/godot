@@ -581,6 +581,13 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   brains' paths; no edits) and reports in his terms; if it's staging, cover re-pins it (grant on those 3 test files); if it's
   behaviour, it's a finding for him / round 38, and parade's run moves. Bar K's OFF arm and ON arm start now at 3923ba026 on builder2
   (they read the maps, not those tests).
+- **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
+  exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
+  segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
+  six sounds/lines play (flank_hit, rear_hit, repair_loop, caller.hit.flank.01-03; paid masters copied into main, git-ignored). The
+  announcer now hears the struck face live (MatchEventAdapter reads the K2 impact): rear / weak-spot / flank calls play in real
+  matches. merge_check_needed says CHECK (main had the artillery fix and rules' tooling): ONE builder2 `make native check` on
+  ac8cb7d92 is queued.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
