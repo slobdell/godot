@@ -188,6 +188,41 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   arm's per-fight sd, n 36); the CPU's losses likewise. **A pass ships ON** (`--parked-hold=off` keeps today's), his crews only.
   Laptop mechanism read (crossing 3 s3621, one fight): own-option leaves 3 -> 1, worst crew off 44.6 -> 19.9 m; test_control_parked_hold 3/0.
 
+- **Bar O1-LATCH (orders, R37.17; re-filed in stream/orders 849fced87 Status before any latch number; replaces the anchor arm).**
+  The traces (builder0 light, native, 52c15e0e1, n 1 each; `references/round37/orders/o1-traces-builder0-52c15e0e1/`, edec107e0):
+  **locks 5 route s3703** under ANCHOR: three crews park, the fourth is held behind a neighbour whose halt differs, and 5 s later the
+  squad re-deals its seats: a parked crew drives 18 m south to the unreached seat (the twitch); under LATCH (the halt shape latched
+  per arrival) tick for tick identical to main, nobody moves again. **parade s3704** (CPU v CPU census): contacts of arrived elements
+  44 / 44 / 45 (main / anchor / latch); the excess is moving elements' drills (react_to_contact 31 -> 98, assault_through 17 -> 91;
+  the CPU's "Eyes" screen re-laid back and forth) in a longer fight (last contact 65 / 92 / 105 s; per fight-second 2.1 / 3.2 / 2.3;
+  totals 136 / 298 / 238): the halt read changes the fight's course. **Arms:** `main:` v `latch:`. **Workloads, FRESH seeds:** the
+  no-fight probe 3761-3772 + census 3761-3766 (Bar O1's deciding and guards unchanged; the contacts line kept as filed, with
+  arrived-element contacts and contacts per fight-second REPORTED beside it) and the fight read 3773-3784 (the R37.9 addendum's
+  deciding and guards; replaces 3731-3742). **Ships only if all three pass.**
+
+- **Bar O1-LATCH settle re-read (orders, R37.37; filed in stream/orders aa562ce64 Status before any number).** The twitch guard becomes
+  PLACE + TWITCH of the run's worst crew, per-cell median <= base + 3 m (sized on the seen seeds: per-cell latch - main -3.6 .. +1.0
+  m). Workload: the no-fight probe only, the 12 cells, FRESH seeds 3821-3832; judge `orders_judge.py o1settle`. The other guards, the
+  census and the fight read stand as passed (R37.37). A pass ships latch ON. Runs after O7, in orders' series (orders-o7-series).
+
+- **Bar O2-ON-LATCH (orders, R37.28; filed in stream/orders 2477c46e7 Status before any number; runs only if O1-latch passes).**
+  The fight probe, 9 cells, FRESH seeds 3785-3796 (36 fights an arm), `latch` v `latch + --parked-hold=on`. **Deciding:** O2's line
+  (off_idle_s a fight, arm <= 50 % of base AND drop > 1.645 se; parked_returns > 0). **Guards:** O2's kills / losses lines.
+  **Reported (the orchestrator judges):** parked re-deals v latch alone (and v O2's 105 / 50), halt re-lays, reseats. A pass with
+  re-deals no higher than latch alone's beyond noise ships O2 + latch together. The s3747 trace is read first.
+
+
+- **Bar O7 GROUP_LAY=column (orders, R37.29; filed in stream/orders Status before any judged number; code badfe25c0 OFF, probe
+  corridor metrics 6bff818f3).** Finding at his click (laptop lab, real Terminus navmesh): not a narrow street: the click is ~16 m
+  from a building edge on one side with clear ground to 100 m on the other; today's body put 2 of 4 places beyond that edge (the far
+  streets he drove through); the column centres each rank in its own clear width (spread 95.8 m, all on the open side), nearest
+  squad in front, farthest at the back (lab assertions). Laptop dev read (GDScript, terminus 5 squads at his point, s3790, n 1):
+  places outside the corridor 3 -> 0, metres driven outside it 189 -> 27, crews re-dealt 4 -> 0, worst twitch 19.5 -> 7.0 m.
+  **Judged:** FRESH seeds 3801-3812; the 12 street cells PLUS his click as its own cells (terminus `--probe-click=-29.3,85.8`, 3 and
+  5 squads). **Deciding:** places outside the corridor <= 25 % of base; metres driven outside it <= 50 % of base; crews re-dealt 0.
+  **Guards:** R36.6's per cell plus contacts; yard_open no-change (open-ground rows identical). Paired top-down shots of his click,
+  main v column, looked at, for him. Runs after O5, O1-latch (and O2-on-latch), on a green-checked hash with it in.
+
 - **Bar O2 PARKED_HOLD, FINAL (orders, R37.13; filed in stream/orders 052f30eea Status before any judged number; replaces the
   8dc98b5f4 text above; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and
   shoots from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. **Sizing (seen):** builder0
@@ -415,6 +450,188 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   T=perf-judge` alone, queued behind `--wait-below 1`; (b) granted to native: perf_judge.sh says at once on builder2 "NOT JUDGED:
   builder2 is not a judging machine (e2 Broadwell, absolute line)" instead of three tries; (c) the machine-relative line
   (ai_usec_per_ref_ms, nominals keyed by CPU model, an A/A) is round-38 work unless builder0 never goes quiet.
+  **First try (main 0baf6e1ff, builder0, ~14:10 PDT): NOT JUDGED**, refused 3x at ratio 2.23-2.36x (load 9-10: M1's series and
+  orders' runs); the brains read 12,681-14,402 us a tick, under the 20,000 line even loaded (evidence, not a verdict). Retried when
+  builder0's series are done.
+- **R37.21 (2026-10-21) main 4b62d2186 GREEN.** builder2 `make native check exited 0`: 3012 passed / 0 failed, 25 + 2 NOT JUDGED
+  (perf-judge: builder2 is not a judging machine; ai-scenarios' scenario_perf loaded), sim-baseline 13/13 unmoved; the scenario
+  count holds at 54,0,4,0. Covers native's hand-over (36a19ae30) and manoeuvre's merge (0baf6e1ff). Perf on builder0 still owed.
+  **Perf evidence (feedback, builder0):** perf-judge PASS 1.01x run alone on stream/feedback 6eed1f86a = main a10846307 (cover K2/K3 +
+  rules R1-R3, all OFF) + feedback's FX; control-timing 5/0 and 8/0. So cover's and rules' OFF code is judged; manoeuvre's M1/M2 and
+  native's hand-over (0baf6e1ff..4b62d2186) still owe one builder0 perf-judge.
+- **R37.22 (2026-10-21) R1 own-motion sight: Bar R deciding NOT MET.** rules (builder2, pair tree 75c3e74e0, `--rules-on=sight`,
+  320/320 paired; Status 355d11c3e): base gate OFF replays 9d325e291 with 0 flips. Blob wins 48 -> 47 % (paired -0.6 pts, se 3.5;
+  17 flips to a loss, 16 to a win; McNemar p 0.50); kill ratio +0.004 (se 0.031); turtle 39 -> 39 %; G2 3 of 16 faction cells out
+  (~chance at 2 se). Reading: sight rarely limits spotting (shared intel; a 62 m sight against ~70 m guns). **Ruled:** R1 stays OFF;
+  its one allowed re-tune is rules' call after spread and pin_slow are read (M5a may go ahead of it on builder2); the package arm
+  needs two rules passing alone (Bar R).
+- **R37.23 (2026-10-21) feedback merged OFF; main's perf now judged.** main c76469184 merges stream/feedback 7e2ff0a4f alone
+  (INHERIT): builder0 `make check exited 0`, 3025 passed / 0 failed, 27 targets ALL JUDGED (perf-judge PASS), scenarios 53/0/4/0,
+  sim-baseline unmoved. 7e2ff0a4f contains main 4b62d2186, so this perf-judge PASS covers every OFF change on main this round
+  (cover, rules, manoeuvre, native, feedback): **R37.20's owed perf-judge is closed.** Every look and the radar/card marks are OFF
+  by default until his picks.
+- **R37.24 (2026-10-21) R2 moving spread: Bar R deciding NOT MET.** rules (builder2, 75c3e74e0, `--rules-on=spread`, 320/320
+  paired; Status 2cd289bb1): blob 48 -> 46 % (paired -1.2 pts, se 3.5; 15 flips to a loss, 13 to a win; McNemar p 0.43); kill ratio
+  -0.025 (se 0.017); turtle 39 -> 39 %; per faction Condemned -8.9, Gangs -6.7, Law 0, Syndicate +8.9 pts (se 4.8); G2 3 of 16 cells
+  out (noisy). Reading: the blob never halts and pays the wider spread, but most damage is close in (movers beyond 50 m 19 %) and
+  the CPU "tactics" side moves as much as the blob, so it pays the same price. No stabilised-gun victim. **Ruled:** R2 stays OFF;
+  guard 3 (contention) is skipped, informative only, and M5a takes builder2 after pin_slow. **Orchestrator's reading for the lead:**
+  with R1 and R2 both flat, a rule that taxes MOTION cannot favour a defender while the CPU defender itself never stops; the
+  defender's edge needs the side that holds to actually hold (bounding / halting doctrine), a brains-path question for round 38.
+- **R37.25 (2026-10-21) R3 pin_slow: Bar R deciding NOT MET; no rule passes alone.** rules (builder2, 75c3e74e0,
+  `--rules-on=pin_slow`, 320/320 paired): blob 48 -> 44 % (paired -3.1 pts, se 2.5; 14 flips to a loss, 9 to a win; McNemar p 0.20);
+  kill ratio -0.019 (se 0.024); turtle 39 -> 39 %; G2 2 cells out (turtle Gangs median out in all three arms: a fragile cell). All
+  three point the intended way (sight -0.6, spread -1.2, pin_slow -3.1 pts), all inside noise, none moves the turtle. R1 re-tune
+  declined (shared spotting is set by the 110/105 m eyes, still past gun range at x0.85; a shared-picture rule is round-38 work).
+  First motion smoke (builder0 light, 2 fights, OFF blob line): blob 82 % of shots faster than a crawl, CPU 56 % (80-fight read
+  running). **Ruled:** all three stay OFF on main (switches kept); the PACKAGE arm runs on builder2 AFTER M5a, as information for
+  round 38 and for his playtest (deciding as Bar R; a pass would ship the package ON).
+- **R37.26 (2026-10-21) the CPU defender fires on the move too (rules' motion read).** builder0 light, 68bfd11c1 (all OFF), the OFF
+  blob line 5 maps x 2601-2608 x both sides = 80 fights (replays the base: blob 49 %): shots faster than a crawl (>= 0.15 top speed)
+  blob 70.1 % (se 2.4) of 42,998 direct rounds, CPU 55.5 % (se 2.3) of 60,841; fast (>= 0.5) 33 % v 18 %; by faction blob/CPU
+  Condemned 73/60, Gangs 72/59, Law 80/53, Syndicate 62/47. The CPU fires 41 % more rounds, over half on the move, so it pays most of
+  any motion tax back: consistent with R1-R3's near-null arms. **Round-38 candidate (the lead's):** a CPU defender that stops to
+  fire (doctrine in brains' paths), judged on the same guard lines; the rules stay as switches to re-read on top of it.
+  Tool: `make rules-guard-motion` (`tests/rules/guard_motion_probe.gd`).
+- **R37.27 (2026-10-21) PRIORITY: his artillery ignored his moves (his playtest).** Recording `build/recordings/2026-10-21T21-43-57-
+  archipelago.jsonl`: Green_Guns_5 and Green_Eyes_4 (law_artillery) got element task moves ("moving as ordered") at 81-184 s yet sat
+  still with order '' and phase arrived; Eyes_4 drove once (arrived 87 s) then never again. Orders traces it first (light lane),
+  reports what he saw and why, then a lab case and a fix behind its own bar; it outranks O3/O5's series for builder0 time.
+  **Cause (orders, stream/orders 716c61310):** round 33's battery seat ("a truck that has set up keeps its place where it stands")
+  also fired on NEW move orders: once a squad was artillery only, each move seated every set-up truck on its own spot, the order
+  finished at once (order '', arrived), it never packed up. Guns_5 became an all-truck squad at tick 1721 and never moved again.
+  Lab `tests/test_control_artillery_move.gd` (laptop GDScript; parked until set up, then sent 57 m): main 0.0 m; `--battery-seat=off`
+  58.1 m; fresh trucks 58.1 / 56.5 m. Fix (`element_plan.gd`, GDScript, `--battery-seat-task`, ON; =off keeps round 33's): a set-up
+  truck is held only while ON the seat it was last sent to (within 6 m); sent somewhere new it packs up and drives (lab 58.1 / 56.1
+  m; test_tactics_battery_seat 7/0 + a new case). **Ruled: ships ON as a bug fix** (his control was simply lost; round 33's intent,
+  a re-lay within one order, is kept): a pair `pair/orders-artillery` = current main + that fix + its lab case ONLY, one builder0
+  full check (priority over orders' series), merged alone; any moved sim-baseline map attributed with the switch OFF.
+- **R37.28 (2026-10-21) O2 PASSES its bar; O3 FAILS (Crossing 5).** orders (builder0 native, c14ec0d80;
+  `references/round37/orders/*-judged-builder0-c14ec0d80/`, a0332d898). **O2 PARKED_HOLD:** off_idle_s a fight 172.6 -> 20.0 (line 86.3;
+  drop 152.6 v 1.645 se 40.3; 36/36 fights); parked_returns 35,001; guards his kills 5.81 -> 5.47, his losses 6.11 -> 6.56, CPU losses
+  5.83 -> 5.47, all within 1.645 se. Split: still 3541.9 -> 30.4, face_drift 2111.9 -> 0, brain 219 -> 481 (the drive-back).
+  Reported: **parked re-deals 50 -> 105**, brain-move leaves 18 -> 50, RETREAT leaves 11 -> 10. **Ruled:** O2 passes as filed, but
+  the re-deals doubling is what he'd see: before it ships, orders explains in his terms what the extra 55 are (the drive-back counted
+  as a re-deal, or a crew sent to a NEW seat?). If they are the drive-back, O2 ships ON (his crews only); if real re-deals, a trace
+  first. **O3 UNTANGLE_WHOLE: FAILS** (deciding passes: squads arriving short 46 -> 0; contacts pass 12,167 -> 11,848, foreign 6,253 ->
+  5,999; guards fail only in Crossing 5: click crossed 0 -> 2, never-in 0 -> 2, twitch 21.2 -> 25.5 m, route twitch 17.6 -> 22.3 m:
+  squad 4's swapped place sits at the west bridge mouth and a crew drives over a bridge he didn't click across). Traced on those seeds;
+  any fix is a new arm on fresh seeds (R37.17's rule).
+  **O2's re-deals are REAL (orders, from the rows, 108 squads an arm):** the counter only sees ORDER goals, not the drive-back;
+  not more survivors (lost after placed 149 v 151); halt re-lays 187 -> 352, element reseat goal moves 103 -> 181, squads with any
+  re-deal 31 -> 55 (Crossing 27 -> 55, locks 9 -> 26, terminus 14 -> 24). Reading (untested): parked crews now sit on seats the element
+  keeps re-laying. O2 holds until the Crossing 3 click s3747 squad 1 trace; if O1-latch passes, O2 is re-read ON top of latch.
+- **R37.29 (2026-10-21) his group click: "I immediately lost control of the army" (his playtest, verbatim in game_design.md).**
+  Recording `build/recordings/2026-10-21T21-52-44-terminus.jsonl` (seed 44742, Syndicate): one click at 36.9 s became four squad
+  destinations about 130 m apart, crews re-dealt across squads; repeated at 45.1, 56.1, 58.5, 85.0 s. **Ruled:** orders (Fable) takes
+  it as its top item after the running reads: a design note first (the column of wedges he describes: squads stacked along the
+  approach, nearest in front, sized to the corridor's real width, spread only on open ground, every squad whole), with a lab of his
+  exact click, then a bar. O3 (whole squads) and the bridge-mouth lay fold into it; O3's standalone retry is dropped. Likely round
+  38's core if it can't be judged this round.
+  **Step 1 read (orders):** his click (-29.3, 85.8), all selected = Hunters, Battery, Eyes + 4 loose Lancers. `SelectionSquads.ranks`
+  laid them as a BODY: the 3 squads ABREAST across the click, each slot 57 m (a 5-vehicle halt frontage at 14 m) + a 14 m gap, anchors
+  71 m apart at (-93,54), (-29,86), (35,117): a ~200 m front on a street grid, the outer anchors in other streets; the loose Lancers a
+  rear rank 40 m back at (-7,51); then the untangle re-dealt vehicles between squads whose paths crossed (Hunters got Battery_4 +
+  Eyes_5). **O2's s3747 trace:** every parked re-deal is the squad re-seating a parked crew (one tank shuttled between two spots
+  10-14 m apart three times in 33 s): O1's flicker landing on crews that now stay put; O2 waits for the O2-on-latch read.
+  **Design approved (orders d00602e43, `references/round37/orders/group-click-column-note.md`, lab `tests/test_control_group_click.gd`;
+  laptop GDScript, real Terminus navmesh, his vehicles at tick 1080, his click): today's anchors spread 128.8 m; the corridor at the
+  click reads 60 + 16 m; 2 of 4 anchors outside it. `--group-lay=column` (OFF until a bar): lay his final click the way round 35's gate
+  lays a waypoint (`RtsControls.gate_anchors`): approach from the body's centre to the click; each rank re-read at its own point and
+  centred in its own clear width; abreast k = floor((clear + gap) / (wedge frontage + gap)), capped at today's 3 / 200 m; narrower:
+  herringbone, then single file; open ground (scan reaches 100 m both sides) = today's body unchanged; the squad nearest the click in
+  front; no crew re-deal (whole squads swap); deck_clear applies. Bar additions ruled: route metres outside the corridor ("drove
+  through other streets"), paired shots of his exact click for him, the front-to-back order as a lab assertion; yard_open no-change.
+- **R37.30 (2026-10-21) M5a seatstep FAILS as filed; not shipped.** manoeuvre (builder2 native, ON 7ebbc7bdd v BASE 936612334; jam 72
+  pairs locks/terminus/sumps x 6840-6863, hull-rest 128 pairs a task 6801-6832 x 4 factions; at J=14 from step 10; evidence
+  `references/round37/manoeuvre/m5-series/`, stream b98fd3cb6). Deciding PASSED: seat metres 43,206.5 -> 39,519.1 (-8.5 %, 1.645 se
+  3,051.3); lead-out give-ways 747 -> 436. Guards FAILED: team 1 kills 1,411 -> 1,322 (-89 v 81.0; every fight count fell: smaller
+  fights, not one-sided) and hull-rest never-settled faced_ambush 5 -> 10, faced_attack_move 17 -> 23 (limit +4.9); asker's wait,
+  timeouts, contacts, jam deaths passed. The ON check's red was N5's UNEXPECTED PASS on a tree predating 4b62d2186 (3019/0, 0 verify
+  mismatches). **Ruled:** seatstep stays OFF on its lab branch; a v2 (a fight-volume guard a symmetric rule can't fail just by
+  meaning fewer fights, a trace of why parked ambushers settle less, plus M5b's reverse-back) is round 38's.
+- **R37.31 (2026-10-22) SHIPPED ON: set-up rocket trucks obey new moves.** main 98153750a merges pair/orders-artillery 53b0ee425
+  alone (INHERIT; cut from main 764f5950b): builder0 `make native check exited 0`, 3031 passed / 0 failed, 25 + 2 NOT JUDGED
+  (perf-judge on a busy box; scenario_perf unpinned), sim-baseline 13/13 unmoved, determinism 8c3c1232b711a760; no native twin
+  (element_plan.gd GDScript; grep of native/ finds nothing). `--battery-seat-task` ON (=off keeps round 33's). Perf-judge for this
+  small GDScript change is owed on builder0 with the next shipped batch.
+- **R37.32 (2026-10-22) O5 SEAT_ASIDE FAILS as filed.** orders (builder0 native, c14ec0d80, seat-yield-census 1811-1822, 36 fights an
+  arm; `references/round37/orders/o5-judged-builder0-c14ec0d80/`, 1d96ada2a): CPU screen give-ways 1,277 -> 988 (-23 %, the bar asked
+  >= 50 %); seats moved aside 5,456; deaths in give-ways 49 -> 45 (limit 60.5); team deaths 25.86 -> 24.47 and 15.50 -> 16.42 a fight
+  (pass). Screen-to-screen yields 742 -> 438, but screen-to-support_by_fire 251 -> 255 (the aside step doesn't see a support_by_fire
+  route). **Ruled:** O5 stays OFF; a v2 that also reads support_by_fire routes is a round-38 candidate.
+- **R37.33 (2026-10-22) the rules PACKAGE: Bar R deciding NOT MET; rules closed.** rules (builder2, 75c3e74e0,
+  `--rules-on=sight,spread,pin_slow`, 320/320 paired, 0 lost): blob 48 -> 43 % (paired -4.4 pts, se 3.4; 18 flips to a loss, 11 to a
+  win; McNemar p 0.13); kill ratio -0.036 (se 0.027); turtle 39 -> 38 %; per faction Condemned -6.7, Gangs -10.0, Law -2.5, Syndicate
+  0.0 pts; G2 blob Gangs kills -1.1 (2 se 0.6) + the usual turtle Gangs median. The package is about the sum of the three (-4.4 v -4.9).
+  **Ruled:** all three stay OFF (switches on main for his playtest, `make rules-skirmish` once rules' tooling merges); rules' tooling
+  (rules-skirmish, guard_motion_probe, bar_r.py) merges on a green check of rules' tip. builder2 goes to cover.
+- **R37.34 (2026-10-22) M1 sidestand PASSES Bar M1; ships ON.** manoeuvre (builder0 native, ON 339d3f2e2 v BASE b822e6696; 72
+  fight pairs locks/terminus/sumps x 6640-6663 + 128 hull-rest pairs a task 6601-6632 x 4 factions; `references/round37/manoeuvre/
+  m1-series/`): (0) side_restands ON 9; side repeats 30 -> 9, side steps 44 -> 14; lab decided on both paths earlier. Every guard
+  passed: far loops 61 -> 38 (-23 v 1.645 se 18.9), unstick fires 2,802 -> 2,738; deaths/kills/hit rate per team, contacts, give-ways,
+  hull-rest (d)/(e)/(f) flat in all 6 tasks; left behind 54 -> 56 of 768 (reported). ON tree check 339d3f2e2: 3011/0, sim-baseline
+  13/13 unmoved. Hand-over stream/manoeuvre 76c325844 (SIDE_STAND_DEFAULT := true; game code byte-identical to 339d3f2e2); its
+  builder0 full check is running; the orchestrator merges it alone on green.
+- **R37.35 (2026-10-22) K5's check red on other streams' staged tests; option (1), with brains' parade traced first.** cover
+  (builder0, 3923ba026, 4781 s): `make check exited 2`, 3015 passed / 10 failed; sim-baseline moved exactly terminus 64e5266ef0faa245
+  (was c1e385944ff8073b), sumps f7fc6b91340c2231 (was 942300f8e7d0dcc5), locks a929186d10a30461 (was 13c33de4419afb5e), parade
+  69079de179015f0d (was 72b1c96369096248), gorge 7a911a7558729ff1 (was 4da2720fa4085f3b), switch OFF (the maps' moves); 8 unmoved.
+  The 10: test_native_traffic_hold{,_odd,_owned,_owned_odd} (terminus west street x=-70 v runs at (-80,70)/(-62,80)); test_native_yield
+  sumps plain + owned (stage at (-40,40), run at (-36,72)); test_manoeuvre_h1b_side bank (locks north bank, the mirrored run spans x
+  20..32); test_tactics_cpu_opening / cpu_hold / cpu_hold_guns (parade: the depot-bay ambush no longer sets up or springs).
+  **Ruled:** (1): the maps stay as he approved. native re-pins its traffic and yield stages (its test paths), manoeuvre its h1b bank
+  stage, both moving stage points off the runs with no logic change. **Brains' 3 parade tests are NOT re-pinned blind:** they test
+  CPU behaviour (an ambush that no longer sets up may be the CPU choosing worse on the new map). Cover traces one (read grant on
+  brains' paths; no edits) and reports in his terms; if it's staging, cover re-pins it (grant on those 3 test files); if it's
+  behaviour, it's a finding for him / round 38, and parade's run moves. Bar K's OFF arm and ON arm start now at 3923ba026 on builder2
+  (they read the maps, not those tests).
+  **Parade traced (cover, builder0, a scratch probe beside test_tactics_cpu_opening, seed 3):** NOT staging. With only
+  arenas/parade.json reverted, all 3 brains parade tests pass (3019/7); on K5's parade they fail (3016/10). The CPU's opening waits by
+  the far depot and springs only where his tanks have no cover within 12 m of the kill zone; the run (-44,-8) mirrored at (44,8),
+  ~9 m off that road, gives his column cover exactly there (spots refused "no open ground" 14 -> 68; on K5 none survive, taken 0 v 1).
+  The CPU reacting sensibly, but it kills the depot-bay ambush he is meant to see. **Ruled:** parade's run moves off both depots'
+  approach roads (no barrier within 12 m + margin of either base -> depot line), checked by the 3 brains tests; Bar K's arms finish at
+  3923ba026 and ONLY parade's fights are re-run, both arms on the re-sited tree (pairing is per fight, the other 4 maps unchanged).
+  **Re-sited (cover c02b01d83):** parade's runs now (-50,80) and (-62,4)/(62,-4) (no run within 24 m of a base -> depot road; hit share
+  2.5 % from 7.7 %); builder0 `make test FILTER=tactics_cpu exited 0` 7/0 (cpu_opening, cpu_hold, cpu_hold_guns pass), arena-test 45/45
+  + 148/0. Bar K at 3923ba026: OFF arm 320 fights done; OFF-v-OFF replay of seed 2601 0 flips. Finding: by the same rule sumps (-30,-60)
+  sits 5.6 m from a depot road, gorge (-62,6) 7.2 m, locks (-46,-16) 17.7 m (no brains test covers them). **Ruled:** measure first:
+  OFF@K5 paired against the CP37.1 base (old maps) = the maps' own effect on the guard lines; re-site those three only if the maps make
+  the blob or the turtle win more beyond noise. The map-effect line goes in Bar K's verdict.
+  **Map effect measured (cover, builder2, OFF@3923ba026 paired v 9d325e291, 320 fights):** blob 48 -> 46 % (-1.9 pts, se 3.2; McNemar
+  p 0.36), kr 0.88 -> 0.87; turtle 39 -> 38 % (-1.3, se 2.9; p 0.42), kr 0.80 -> 0.75 (-0.054, se 0.031). Per map (32 fights, win pts,
+  se): terminus blob 0 (6.5) / turtle 0 (7.9); locks -6.2 (7.7) / -9.4 (5.0); sumps +6.2 (7.7) / +3.1 (5.5); gorge 0 / 0; parade (old
+  K5 site) -9.4 / 0, to be replaced. No rise beyond noise: **sumps, gorge and locks stay.**
+- **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
+  exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
+  segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
+  six sounds/lines play (flank_hit, rear_hit, repair_loop, caller.hit.flank.01-03; paid masters copied into main, git-ignored). The
+  announcer now hears the struck face live (MatchEventAdapter reads the K2 impact): rear / weak-spot / flank calls play in real
+  matches. merge_check_needed says CHECK (main had the artillery fix and rules' tooling): ONE builder2 `make native check` on
+  ac8cb7d92 is queued.
+  **main ac8cb7d92 GREEN:** builder2 `make native check exited 0`, 3036 passed / 0 failed, 25 + 2 NOT JUDGED (perf: builder2 is
+  not a judging machine), sim-baseline 13/13 unmoved (the first try died when builder2 idle-stopped at 01:37; re-run after
+  gcp-start). Perf-judge on builder0 still owed for the artillery fix + his picks (presentation) at the next quiet window.
+- **R37.37 (2026-10-22) O1-latch FAILS as filed on one guard (terminus 5-squad click twitch); group-lay goes first.** orders (builder0
+  native c14ec0d80; no-fight 3761-3772, fight 3773-3784). No-fight deciding PASS: relays 128 -> 2 (limit 32), shape flips 34 -> 1; CPU
+  guards pass (contacts 1,625 -> 1,569; stuck 1,784 -> 1,688 s). Guard FAIL: terminus 5-squad click median worst twitch 16.8 -> 28.0 m
+  (limit base + 3); 11 cells pass. Fight read PASS: relays 442 -> 95 (limit 110.5), shape flips 90 -> 20; his kills 5.14 -> 4.72, his
+  losses 6.78 -> 7.11, CPU losses 5.22 -> 4.81 a fight, all within guard. Parked re-deals 447 -> 441 / 84 -> 88: latch does NOT remove
+  O2's re-deals. **Ruled:** the failing cell is his group click's own ground (terminus, 5 squads), where today's ABREAST layout sends
+  squads into other streets (R37.29). Order: (1) the trace of s3767 / s3772 squad 4 (light lane); (2) the group-lay check and Bar O7's
+  read; (3) latch re-read ON TOP of group-lay on fresh seeds if the trace says the twitch is the abreast layout. O2-on-latch is held
+  (O2's re-deals come from elsewhere: trace them after O7).
+  **Trace (orders ea09f3b17, `references/round37/orders/o1latch-twitch-trace-builder0-c14ec0d80/README.md`):** the ~30 m slide is
+  neither the abreast lay nor latch's shape: it is the DEPLOY'S SEAT DEAL, on main too. Squad 4 (back rank, its own street, arrived
+  1.5 s): at the deploy, both arms and both seeds, the deal sends Delta_2 from the east end of its first halt (41.7, 90.1) to the far
+  west-front seat (3.3, 63.3), 47 m across its own squad. Latch only changes timing (the crew sits, waits ~4 s behind a squadmate, so the
+  same 47 m lands after the probe's 8 s PLACE_S cut and counts as twitch): s3767 main place 34.9 + twitch 22.8 = 57.7 v latch 8.9 + 35.7
+  = 44.6; s3772 40.3 v 44.5; the judged cell's median worst crew place+twitch 46.2 -> 44.8 (twitch alone 16.8 -> 28.0). **Ruled:** the
+  guard as filed failed and is not waived on these numbers (R37.17's rule). Orders re-files the guard as PLACE + TWITCH (the crew's
+  whole post-click travel), before numbers, and re-reads ONLY the no-fight probe on fresh seeds (the census and the fight read stand).
+  A pass ships latch ON. **(b) the deploy deal crossing its own squad** (a stopped tank drives 47 m to the far seat) is a real defect
+  he'd see, on main today: its own item, round 38 unless time remains.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the

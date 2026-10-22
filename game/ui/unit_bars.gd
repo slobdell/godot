@@ -68,6 +68,9 @@ func _draw_timed() -> void:
 	var scale_factor := clampf(float(get_viewport_rect().size.y) / 1080.0, 0.6, 2.0)
 	var team: int = controls.team
 	var camera := controls.camera
+	var fx := FxWorld.existing()
+	feedback = fx.feedback if fx != null else null
+	_now = fx.now if fx != null else 0.0
 	var eye := camera.global_position  # round 16: read once a draw, not once per tank
 	if record:
 		last_drawn = []
@@ -89,7 +92,10 @@ func _draw_timed() -> void:
 		var distance := eye.distance_to(tank.global_position)
 		if distance > FAR_M:
 			continue
-		_bar(camera.unproject_position(head), tank, scale_factor)
+		var at := camera.unproject_position(head)
+		_bar(at, tank, scale_factor)
+		if feedback != null:
+			_feedback(at, tank, scale_factor)
 
 
 ## The drawn top of the hull, so the bar floats over the vehicle rather than through it.
@@ -112,6 +118,9 @@ var _tops := {}
 static var record := false
 var last_drawn: Array = []
 var _selected := {}  # StringName -> true: this draw's selection
+## Round 37 (feedback): the world half of the rules made visible; this draws their screen half over the bar.
+var feedback: FeedbackFx
+var _now := 0.0
 
 
 func _bar(at: Vector2, tank: Tank, s: float) -> void:
@@ -155,3 +164,28 @@ func _alpha_of(tank: Tank) -> float:
 	var hurt: bool = hull < 0.999 or (has_shield and shield < 0.999)
 	var selected: bool = controls != null and controls.selection.units.has(String(tank.name))
 	return 1.0 if hurt or selected else QUIET_ALPHA
+
+
+# ---- Round 37 (feedback, C37.6): the rules made visible over the bar -----------------------------------------------
+
+const PIN_COLOR := Color(1.0, 0.86, 0.25)
+
+
+## His pick "pinned A": heads down, one to three chevrons pointing at the hull over the bar, by how pinned the crew is.
+func chevrons_for(tank: Tank) -> int:
+	var level := feedback.pinned_of(tank.name) if feedback != null and FeedbackLook.on("pinned") else 0.0
+	return 0 if level <= 0.0 else 1 + int(level > 0.45) + int(level > 0.9)
+
+
+func _feedback(at: Vector2, tank: Tank, s: float) -> void:
+	var count := chevrons_for(tank)
+	if count == 0:
+		return
+	var height := (HULL_H + (SHIELD_H + GAP if tank.max_shield > 0.0 else 0.0)) * s
+	var pulse := 0.65 + 0.35 * sin(_now * 6.0)
+	for i in count:
+		var y := at.y - height * 0.5 - (7.0 + i * 9.0) * s
+		var half := 11.0 * s
+		var chevron := PackedVector2Array([Vector2(at.x - half, y - 7.0 * s), Vector2(at.x, y), Vector2(at.x + half, y - 7.0 * s)])
+		draw_polyline(chevron, Color(0.0, 0.0, 0.0, 0.6 * pulse), 6.5 * s, true)
+		draw_polyline(chevron, Color(PIN_COLOR, pulse), 4.0 * s, true)

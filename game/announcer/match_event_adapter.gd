@@ -34,6 +34,12 @@ var _watch_tanks: Array[Tank] = []
 var _watch_seen := PackedInt32Array()
 var _watch_state := PackedByteArray()
 var _last_momentum_t := 0.0
+## Round 37 (feedback F3): which face of a vehicle the round that hurt it struck, so the caller can say a flank or a rear
+## hit (and a weak spot) in a live match, not only in the recorded fixtures: target name -> {tick, face, weak_spot} of
+## its latest K2 impact; rounds from above (artillery) report no face (their "side" is not a flank).
+var _struck := {}
+var _arcing := {}
+const STRUCK_FRESH_S := 0.5
 
 
 ## Doctrine (L1) reports why an element is lining up the way it is, and the booth turns that into commentary
@@ -76,6 +82,8 @@ func _init(watched: Match, arena_name: String = Arena.DEFAULT_LAYOUT) -> void:
 	# twelve dealt maps score two rings, and the booth heard half of what happened on them.
 	game_match.objective_changed.connect(_on_objective_changed)
 	game_match.finished.connect(_on_finished)
+	game_match.weapon_fired.connect(_on_weapon_fired)
+	game_match.projectile_impact.connect(_on_impact)
 	listen_for_elements()
 
 
@@ -202,10 +210,12 @@ func _watch_health() -> void:
 				var shooter := _nearest_enemy(tank)
 				if shooter != "":
 					unit["reported"] = now
-					_emit("damage", {"shooter": shooter, "shooter_unit": _units[shooter]["unit"], "victim": id,
+					var damage := {"shooter": shooter, "shooter_unit": _units[shooter]["unit"], "victim": id,
 							"victim_unit": unit["unit"], "hull": snappedf(hull, 0.001),
 							"shield": snappedf(clampf(tank.shield / maxf(1.0, float(tank.max_shield)), 0.0, 1.0), 0.001),
-							"critical": critical, "amount": snappedf(lost, 0.001)})
+							"critical": critical, "amount": snappedf(lost, 0.001)}
+					damage.merge(_struck_face(id))
+					_emit("damage", damage)
 		if hull < CLOSE_CALL_HULL and float(unit["low_since"]) < 0.0:
 			unit["low_since"] = now
 			_watch_state[index] = 1
@@ -213,6 +223,33 @@ func _watch_health() -> void:
 			unit["close_call"] = true
 			_watch_state[index] = 0
 			_emit("close_call", {"unit_id": id, "unit": unit["unit"], "team": TEAM_KEYS[unit["team"]], "hull_left": snappedf(hull, 0.001)})
+
+
+## The face and weak spot of the round that just struck `id` ({} when no fresh impact says: a burst, a flame).
+func _struck_face(id: String) -> Dictionary:
+	var hit: Dictionary = _struck.get(id, {})
+	if hit.is_empty() or game_match.tick - int(hit["tick"]) > roundi(STRUCK_FRESH_S * Engine.physics_ticks_per_second):
+		return {}
+	var known := {"weak_spot": bool(hit["weak_spot"])}
+	if String(hit["face"]) != "":
+		known["face"] = hit["face"]
+	return known
+
+
+func _on_weapon_fired(event: Dictionary) -> void:
+	if String(event.get("fire_model", "")) == "arc":
+		_arcing[int(event.get("projectile_id", -1))] = true
+		if _arcing.size() > 512:
+			_arcing.clear()
+
+
+func _on_impact(event: Dictionary) -> void:
+	var target := String(event.get("target", ""))
+	if target == "":
+		return
+	var from_above := _arcing.erase(int(event.get("projectile_id", -1)))
+	_struck[target] = {"tick": game_match.tick, "face": "" if from_above else String(event.get("face", "")),
+			"weak_spot": bool(event.get("weak_spot", false))}
 
 
 func _nearest_enemy(tank: Tank) -> String:
