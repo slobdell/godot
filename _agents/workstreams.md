@@ -251,6 +251,16 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   to builder2, R38.2); light runs there pause. M2 (M5b) traced, not built: 9 % of seated give-ways turn round on the way back, 2/3 of
   them the scouts' kept turn-in (~1.5 others a fight): no lever. M3 not built: 82 long hull-wedges in 72 fights, 0 deaths, mostly ORCA
   slow-down.
+- **R38.9 (2026-10-22) S1 FAILS; S2 latch v2 passes deciding but FAILS one guard (never-in, crossing 5 click).** settle (builder2 native,
+  e42ff30eb; no-fight probe 12 cells x 3861-3872, 576 squads an arm). **S1 DEPLOY_FIT:** squads with a crew moved >= 25 m after the deploy
+  166 -> 125 (-25 %; line <= 83); summed place+twitch 12,022 -> 10,228 m (-15 %); 78/567 deploys turned; guard FAIL never-in locks 3 route
+  (1 v 2; s3871 squad 1); first shape 8/576, contacts 13,167 -> 13,263, foreign 6,995 -> 7,427, fights (n 18) pass. **S2 DEPLOY_LATCH:**
+  shape flips no-fight 58 -> 0, fight 37 -> 0; reseats 124 -> 0; relays 206 -> 127; first shape differs 12/576 (<= 3 %); guard FAIL never-in
+  crossing 5 click 0 v 1 (s3866 squad 4 never arrives; it does on main); contacts and fights pass (his kills 5.83 -> 6.06, losses 8.11 ->
+  7.94). **Ruled:** neither ships on this read; both traced (s3866, s3871 and the residual long movers); a fix is a new arm on fresh seeds
+  (R37.17). **Two workload defects, re-filed (57f423f44) before any fight number was read:** the fight probe ran only 3-squad armies (54
+  five-squad runs stopped at start: 18 of 36 fights; top-up 3879-3884 owed); the CPU census reads identical in every arm (the deploy step
+  never fires CPU v CPU): the CPU guard is vacuous and these switches act on his crews only.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
