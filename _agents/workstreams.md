@@ -145,6 +145,13 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   within 2 s, the first click goes back to exactly today's places (kept out of the next gate), so a chained route drives as main until its
   last click. Checked on v2's seeds only (laptop): s3889, s3891, s3886 now byte-identical to main. Seeds, guards, base unchanged.
 
+- **D2b CPU_DEFEND, the trigger (doctrine, R38.14; filed in stream/doctrine c042ca206 Status before any D2b number; copied here by the
+  orchestrator).** `--cpu-defend` with D2b's trigger (eaf4c508f: a contact counts only when nearer the CPU's near ring than to every zone
+  its own side owns), ON v OFF, both arms on tree 3310e51c4 (its full check first), builder2, guard.sh GUARD_CHUNK=8. FRESH guard seeds
+  4801-4808 + 4901-4908 x 5 maps x both sides x blob/turtle = 320 fights an arm, plus the none line 4801-4808 both arms; `guard.py --pair
+  OFF ON`. Criteria: Bar D2's text unchanged with base = this OFF arm (deciding: blob down > 2 paired se AND McNemar p < 0.05; second
+  line; mechanism; G1-G4; equality) plus **G2t:** turtle-line kills a fight, ON within 2 paired se of OFF. No re-tune. A pass ships ON.
+
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
 `references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
