@@ -72,6 +72,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   2 voices, nearest patients). **Found and fixed on the way:** the live booth never knew which face a round struck
   (MatchEventAdapter inferred damage from hull loss), so the existing rear and weak-spot calls only ever played in the
   recorded fixtures; it now reads the K2 impact (`_struck_face`, artillery = no face), and AnnouncerMemory tags `flank`.
+- **Audio files:** what ships is committed (assets/audio/layered/{flank_hit_1,flank_hit_2,rear_hit_1,rear_hit_2,
+  repair_loop_1}.wav + .import; assets/announcer/clips/caller/caller.hit.flank.0{1,2,3}.ogg). The paid MASTERS are
+  git-ignored (backups.md) and live only in this worktree; copy them into the main checkout at merge:
+  assets/audio/elevenlabs/masters/{flank_hit_1.53ee27c251,flank_hit_2.c69e8cd824,rear_hit_1.ba6a4361f1,
+  rear_hit_2.9500a7bf63,repair_loop_1.776af65f15}.mp3 and assets/announcer/masters/caller/caller.hit.flank.0{1,2,3}.
+  {mp3,json,level.txt,norm.wav}.
 - **Looked at in a real fight** (`make remote T=feedback-fight`, laptop preset, his pose): the first capture of his picks
   showed the ring segment blooming into a white disc under a firing line (31 hits in 3 s on a War Rig); fixed in aae7355a2
   (one per target per 0.3 s unless the face changes, 12 m cap, clamped light).
