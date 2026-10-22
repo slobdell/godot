@@ -98,6 +98,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **O5 CPU seats: BUILT OFF, bar recorded on main (78c06ab1f).** `--seat-aside=on`. Sizing (builder0 baf3dbd8e, 18 fights): 542
   seat give-ways (499 screen), 21 deaths. Judged read (seat-yield-census 1811-1822) queued after the check.
 - **O6 cover seat: SEAM DONE, OFF and unjudged this round** (agreed with the orchestrator; it fires once in 3 probe cells).
+- **Stretch: both answered, no code.** (1) Bridge-mouth click: re-checked on this round's tree (laptop GDScript 9de8a7d4f,
+  Crossing west deck, clicks 3 / 6 / 9 m short, 3 and 5 squads, 24 squads): crossed 0, goals across 0. Round 36's halt lay
+  covers it (`references/round37/orders/stretch-bridge-mouth-r37/`). (2) `uncross_paths` on a queued screen: round 36's
+  trace stands (a real swap, not path planning). It stays limited to plain moves; no new evidence a screen needs it.
 - **Open question for the lead (via the orchestrator):** should a parked crew about to be destroyed pull back and return,
   or stay? RETREAT stays kept until he answers.
 
