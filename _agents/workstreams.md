@@ -124,7 +124,15 @@ losses a fight each within base +/- 1.645 se (base sd, n 36); CPU: friendly cont
 
 ## Rulings (round 38)
 
-_(none yet)_
+- **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
+  595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
+  (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
+  at load 49 with feedback's F3 series on the box; both re-run ALONE on 595bb9208 at load 24 exited 0. Accepted under R36.12's rule
+  (re-run alone green on the same hash; the reds are timing under load, not the diff's logic). **The row (1c484a525, builder2):** fights
+  verdict ok 40/48/36; guard lines 320/320, blob 49 % (+-7), kr 0.86; turtle 40 % (+-16), kr 0.81; paired v 9d325e291 blob +0.013 (se
+  0.037, p 0.70), turtle +0.006: inside noise. **`references/scoreboard/guards/1c484a525.fights.jsonl` is round 38's pairing base.** N3:
+  perf-judge records the machine-relative line beside the absolute (not deciding; FAIL_RATIO 25840 = 20000 / 0.774). N4: guard.sh's
+  rolling queue (all seeds in one call, GUARD_RESUME per fight).
 
 ## Round 37: six streams (prepared 2026-10-21; briefs in `streams/archive/round37/`)
 
