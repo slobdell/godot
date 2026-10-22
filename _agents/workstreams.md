@@ -189,6 +189,16 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   per-faction kills and length. **G3 (what it could break):** CPU v CPU stalls on the `none` line, 2601-2608: cap hits ON <= OFF + 2,
   median length <= x1.2. Workload: builder2, ~2 x 320 guard fights + 2 x 80 on the none line. A pass ships ON (symmetric).
 
+- **Bar G1 AMENDED (orders, ~16:30 PDT 2026-10-22, before any judged number; only dev seeds 3801-3803 run; stream/orders 130cf487f).**
+  The column on shifted legs / gates moves to G2 (`--group-legs=on`, OFF): ten builder0 dev reads showed every route-leg rule moving the
+  route cells' guards, and his complaint was a plain click. **G1 = the plain-click column + whole squads on every group move + a 2 s
+  first-click re-lay** (a shifted click right after a column click turns it into a waypoint). **Deciding** over the 6 click cells + his
+  click cells: places outside <= 25 % of base, metres after leaving the corridor <= 50 %, re-dealt 0 over ALL cells. **Guards:** every
+  R36.6 guard + contacts over all 14 cells incl. routes; yard_open rows identical. FRESH seeds 3881-3892, builder0 at J 4 beside M5 v2
+  (R38.8), full check on builder2. Note: his-click cells are effectively n 1 (`--probe-click` disables seed jitter); their one twitch is
+  the halt flipping herringbone -> coil after deploy, which settle's `--deploy-latch` removes. Best dev read (94b00992f, n 3): places
+  outside 53 -> 9, re-dealt 20 -> 0, contacts 3,232 -> 1,716, yard_open 48/48 identical.
+
 - **Bar F3 REPAIR_UNDER_FIRE (feedback, C38.4; filed in stream/feedback f0ad5a44d Status before any number).** Switch `--repair-under-fire`
   (OFF; `Match.repair_under_fire_on`): a friendly FIELD mender (the gangs' Resupply Tanker) keeps mending a vehicle under fire at HALF
   rate (2.5 hp/s), full after `REPAIR_QUIET_SECONDS`; the base's own mending still waits for quiet; a Tanker never mends itself.
