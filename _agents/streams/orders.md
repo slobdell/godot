@@ -104,6 +104,19 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Fixes (f215b1772):** a column too long for the ground behind it is laid again with ranks closer (up to 4 squeezes, to
   half the step; at that the rest stand abreast in the last rank); a gate (a waypoint passed through) steps its column by
   the shape squads travel in (`passing`). Lab 10/0 (laptop GDScript).
+- **G1 dev reads 4-5 (builder0 light, native, n 3; `g1-dev4-builder0-f215b1772/`, `g1-dev5-builder0-e3389f1fc/`):** every
+  deciding line passes (e3389f1fc: places outside 41 -> 5, metres after leaving 4,974 -> 1,367, re-dealt 14 -> 0), contacts
+  2,842 -> 1,547, yard_open 48/48 identical, every click cell's guards pass; failing guards only on route cells (crossing 3
+  route all-in 15.5 -> 25.4 s; locks 5 route twitch 5.1 -> 21.6 m, end foreign 13.6 -> 9.7 m). quick-remote e3389f1fc:
+  builder0 277 / 0.
+- **Rules added on the way (each from a laptop trace):** e3389f1fc: a column reaches at most one rank behind its rearmost
+  squad (more = squeeze), and a group whose every squad stands within 30 m of the click keeps today's body (terminus 3
+  route's first waypoint, 14-25 m from every squad: a column only shuffled them sideways; his own click is 39-45 m).
+  e9e8397aa: a SHIFTED leg's column never reaches behind its squads' starts (locks 5 route: a rear squad's final place behind
+  its own start, so it drove on through the waypoints and back; now main's final places, twitch 0-5 m); when the last
+  squeeze still does not fit, the leftover squads join the last rank laid wider (never two squads one place).
+  Known: on the probe's route cells the FIRST waypoint is a plain click, so it stacks per his rule (rear squads may back up
+  one rank) even though the probe chains two more clicks the same tick; a running leg can't be re-laid from my paths.
 - **Settle (C38.3) asked whether O7 v2 changes the deploy heading:** no; the column changes only each squad's place; `lay`
   stays round 34's B8 approach. Settle's deploy-fit (stream/settle ac36add58, OFF) sits on top; agreed, no new key.
 
