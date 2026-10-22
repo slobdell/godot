@@ -68,6 +68,21 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   lays squads 3/4 6.3 m apart (squad 4 never in); the column lays all five >= 22 m apart. G3 is for the today's-body path; after
   G1's verdict, OFF until its own bar. Also owed: the probe prints the `--probe-budget` refusal (not "no RtsControls").
 
+- **G3 built (side worktree `~/projects/godot-orders-g3`, detached, commits 236bcd5b6 + 350939499; moves onto stream/orders
+  after G1's series):** `--place-clear=on` (OFF): no two places' footprints overlap (block width across x depth along the
+  approach, + GAP_M); nearest the click first, a later overlapping place steps back 4 m at a time onto standable ground (up
+  to 100 m). Lab +1. Laptop GDScript crossing 5 click s3866 (n 1): main squad 4 never in, end foreign 4.5 m; ON: all in by 10 s,
+  end foreign 12-17 m, twitch 0-3.8 m (but squads 4/5 step ~60 m back: the bar must guard place offsets). Probe: a budget
+  his army is over now stops with the reason (settle's report).
+- **G2 (his shift-click route) findings, NOT ready, switches OFF:** pieces: `--group-legs=on` (column on shifted legs and
+  gates), `--group-route-line=on` (stack back along the clicked route), the 2 s first-click re-lay (in G1), legs cut short
+  to a place behind the previous leg's end. Laptop GDScript, terminus 5 squads, his-style routes `--probe-points` east
+  `70/50+70/-30+25/-30`, west `-70/50+-70/-30+-25/-30`, avenue `0/30+0/-30+-50/-30`, s3801, n 1 each: metres off the drawn
+  path (`route_off_m`) main 577 / 488 / 61 v G2 430 / 256 / 293 (total 1,126 v 979); never-in squads and ~80 s all-ins in
+  BOTH arms on the side-street routes. Reading: five squads on a 20 m street route are dominated by traffic (give-ways,
+  queues: manoeuvre's paths), not by where the places are; G2's deciding line (route_off_m <= 50 %) is not in reach from the
+  lay alone. Next for G2: a bar on 3-squad routes first, and a request to manoeuvre if the traces show queues at corners.
+
 ### REPORT (orders, round 38; updated 2026-10-22 ~09:30 PDT)
 - **Start:** stream/orders = main 5b20bfd62 (round 38 docs; HANDOFF: main 1c484a525 GREEN on builder0, not re-run).
 - **Plan (in order):** G1 (a) open ground, (b) route legs, (c) whole squads -> lab -> dev read (builder0 light) -> bar filed
