@@ -115,8 +115,11 @@ func test_his_click_as_a_column_stays_in_the_corridor_nearest_squad_in_front() -
 	var blocks: Array = f["blocks"]
 	var ahead: Vector3 = f["approach"]
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
-	var anchors := SelectionSquads.column_lay(blocks, CLICK, ahead, f["width_at"], func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
-	assert_eq(anchors.size(), blocks.size(), "his street is not open ground: a column is laid")
+	# G1 (v2): today's body is what the caller would lay; the column engages because two of its places stand off the ground.
+	var today := SelectionSquads.ground_cap(SelectionSquads.ranks(blocks, CLICK, null, Match.team_frame(Match.Team.GREEN)["forward"]),
+			CLICK, f["drive"], f["crosses"], func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+	var anchors := SelectionSquads.column_lay(blocks, CLICK, ahead, f["width_at"], func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), today)
+	assert_eq(anchors.size(), blocks.size(), "today's places stand off the ground he clicked: a column is laid")
 	var spread := 0.0
 	for i in anchors.size():
 		for j in range(i + 1, anchors.size()):
@@ -158,3 +161,42 @@ func test_a_narrow_street_is_single_file() -> void:
 	assert_true(absf(out[0].x) < 0.01 and absf(out[1].x) < 0.01, "both on the approach line (%s)" % [out])
 	assert_true(out[0].z < out[1].z, "the nearer squad in front (%s)" % [out])
 
+
+
+## G1 (round 38, R37.38's yard_open failure): walls inside the 100 m scan, but every place of today's body already on the
+## clear ground: today's body stands (v1 laid a column here because the scan stopped short of 100 m).
+func test_g1_todays_body_on_clear_ground_is_kept() -> void:
+	var walled := func(_p: Vector3, _across: Vector3) -> Array: return [70.0, 70.0]
+	var blocks := [{"center": Vector3(-40, 0, 60), "width": 57.0, "depth": 30.0}, {"center": Vector3(40, 0, 60), "width": 57.0, "depth": 30.0}]
+	var today: Array[Vector3] = [Vector3(-35.5, 0, 0), Vector3(35.5, 0, 0)]
+	var kept := SelectionSquads.bodies_kept
+	assert_eq(SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), walled, func(p: Vector3) -> Vector3: return p, today).size(), 0,
+			"today's places inside the walls: [] (the caller keeps today's body)")
+	assert_eq(SelectionSquads.bodies_kept, kept + 1, "counted as a body kept")
+	assert_eq(SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), walled, func(p: Vector3) -> Vector3: return p).size(), 2,
+			"v1's test (no body given) laid a column on the same ground")
+
+
+## G1: one of today's places past a wall: the column is laid, every place inside.
+func test_g1_a_place_past_a_wall_lays_the_column() -> void:
+	var walled := func(_p: Vector3, _across: Vector3) -> Array: return [70.0, 20.0]
+	var blocks := [{"center": Vector3(-40, 0, 60), "width": 57.0, "depth": 30.0}, {"center": Vector3(40, 0, 60), "width": 57.0, "depth": 30.0}]
+	var today: Array[Vector3] = [Vector3(-35.5, 0, 0), Vector3(35.5, 0, 0)]
+	var out := SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), walled, func(p: Vector3) -> Vector3: return p, today)
+	assert_eq(out.size(), 2, "a column (%s)" % [out])
+	# across = (-ahead.z, 0, ahead.x) = (1, 0, 0) for ahead (0, 0, -1): left wall at x = -70, right at x = 20.
+	for at: Vector3 in out:
+		assert_true(at.x >= -70.5 and at.x <= 20.5, "inside the walls (%s)" % [at])
+
+
+## G1: a rear-rank place read at ITS rank: wide open at the click, a 30 m street behind it; today's rear place 40 m aside in
+## that street's wall -> the column (v1 would have kept today's body: the click's own read reaches the scan limit).
+func test_g1_a_rear_place_is_read_at_its_own_rank() -> void:
+	var street_behind := func(p: Vector3, _across: Vector3) -> Array:
+		return [100.0, 100.0] if p.z < 10.0 else [15.0, 15.0]
+	var blocks := [{"center": Vector3(0, 0, 60), "width": 29.0, "depth": 20.0}, {"center": Vector3(0, 0, 100), "width": 29.0, "depth": 20.0}]
+	var today: Array[Vector3] = [Vector3(0, 0, 0), Vector3(40, 0, 34)]
+	var out := SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), street_behind, func(p: Vector3) -> Vector3: return p, today)
+	assert_eq(out.size(), 2, "a column (%s)" % [out])
+	assert_true(SelectionSquads.on_clear_ground(out, Vector3.ZERO, Vector3(0, 0, -1), street_behind, street_behind.call(Vector3.ZERO, Vector3.RIGHT)),
+			"every place on the clear ground at its own rank (%s)" % [out])

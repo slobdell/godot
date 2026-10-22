@@ -280,19 +280,26 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 ## COLUMN OF WEDGES along the approach, as wide as the ground there, instead of the open-ground body (`ranks`): the squad
 ## farthest along the approach (nearest the click) in front, the farthest back last; each rank as many squads abreast as its
 ## own clear width holds (at most MAX_ABREAST and MAX_FRONTAGE_M), centred in that width, re-read at the rank's own point so
-## the column follows the street; narrower than a squad, single file on the approach line. Open ground (the scan reaches
-## GROUP_SCAN_M on both sides at the click) returns [] and today's body stands. Crossing squads swap places whole (no crew
-## re-deal). OFF until its bar passes.
+## the column follows the street; narrower than a squad, single file on the approach line. Crossing squads swap places whole
+## (no crew re-deal). OFF until its bar passes.
+## Round 38 (orders G1, v2): "open ground" is no longer the scan reaching GROUP_SCAN_M (yard_open's walls stand inside 100 m
+## and v1 changed 52 of its 96 rows, R37.38): today's body stands wherever every one of its places is already on the clear
+## ground read at its own rank (`today`), and the column is laid only when one of them is not. The same lay serves a queued
+## leg (each squad's block centred where its previous leg ends) and a gate.
 static var GROUP_LAY := OS.get_cmdline_user_args().has("--group-lay=column") or OS.get_environment("GROUP_LAY") == "column"
 ## How far each side the corridor is read for a group click (wider than the gate's 60 m, so a wide street is not "open").
 const GROUP_SCAN_M := 100.0
 ## Measurement: group clicks laid as a column (not open ground), since start.
 static var columns_laid := 0
+## Measurement (G1): group lays where today's body already stood on clear ground and was kept, since start.
+static var bodies_kept := 0
 
 
 ## `width_at(point, across)` -> [left, right] clear metres (RtsControls.gate_width on the navmesh, GROUP_SCAN_M); `approach`
-## the way the body comes in; `clamp(point)` -> point. One anchor per block in `blocks`' order, or [] on open ground. Pure.
-static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_at: Callable, clamp: Callable) -> Array[Vector3]:
+## the way the body comes in; `clamp(point)` -> point; `today` = the places the caller lays without the column (one per
+## block). One anchor per block in `blocks`' order, or [] when today's places all stand on clear ground. Pure.
+static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_at: Callable, clamp: Callable,
+		today: Array[Vector3] = []) -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	if blocks.size() < 2:
 		return result
@@ -302,8 +309,12 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 		ahead = Vector3.FORWARD
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
 	var at_click: Array = width_at.call(flat_click, across)
-	if float(at_click[0]) >= GROUP_SCAN_M - 0.01 and float(at_click[1]) >= GROUP_SCAN_M - 0.01:
-		return result  # open ground: today's body
+	if today.is_empty():
+		if float(at_click[0]) >= GROUP_SCAN_M - 0.01 and float(at_click[1]) >= GROUP_SCAN_M - 0.01:
+			return result  # no body given: open = the scan reaches its limit both sides (v1)
+	elif on_clear_ground(today, flat_click, ahead, width_at, at_click):
+		bodies_kept += 1
+		return result  # today's body already stands on the ground he clicked
 	var widest := 0.0
 	var deepest := 0.0
 	for block: Dictionary in blocks:
@@ -339,6 +350,25 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 		behind += deepest + GAP_M
 	columns_laid += 1
 	return result
+
+
+## G1: whether every place in `places` stands inside the clear width read across `ahead` at its own rank (the point on
+## the approach line through `click` level with it; behind the click only, a place past the click reads at the click),
+## within PLACE_SLACK_M. `at_click` = width_at's read at the click (reused). Reads are shared between places of one rank.
+const PLACE_SLACK_M := 0.5
+static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vector3, width_at: Callable, at_click: Array) -> bool:
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var reads := {0: at_click}
+	for at: Vector3 in places:
+		var offset := Vector3(at.x - click.x, 0.0, at.z - click.z)
+		var back := maxi(0, roundi(-offset.dot(ahead)))
+		if not reads.has(back):
+			reads[back] = width_at.call(click - ahead * float(back), across)
+		var sides: Array = reads[back]
+		var aside := offset.dot(across)
+		if aside < -float(sides[0]) - PLACE_SLACK_M or aside > float(sides[1]) + PLACE_SLACK_M:
+			return false
+	return true
 
 
 ## Crossing pairs between two squads' vehicle drives (each vehicle straight to its squad's place).

@@ -1104,6 +1104,9 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	var anchors: Array[Vector3] = []
 	var packed_shapes := {}  # D3: each packed anchor -> {shape, heading} its seats were packed in
 	var column := false  # R37.29: laid as a column of wedges (SelectionSquads.column_lay)
+	# Round 34 (planner's O5) / round 38 (G1): on a shifted leg each squad starts where its previous leg ends.
+	var queue_leg := bool(extra.get("queue", false)) and elements != null and REQUEUE
+	var queue_starts: Array = _leg_starts(squads, blocks) if queue_leg else []
 	if extra.has("to"):
 		var click := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 		var drawn: Variant = null
@@ -1117,21 +1120,33 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Node3D if game_match != null else null
 				if ground == null and tank != null and tank.is_inside_tree():
 					ground = tank
-		# Round 37 (orders, R37.29): his plain group click on narrow ground lays a column of wedges along the approach.
-		if SelectionSquads.GROUP_LAY and ground != null and not bool(extra.get("queue", false)) \
-				and (verb == "move" or verb == "attack_move") and blocks.size() >= 2:
+		anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"]),
+				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+		# Round 37 (orders, R37.29): his group click on narrow ground lays a column of wedges along the approach.
+		# Round 38 (G1): only when one of today's places stands off the clear ground; and a shifted leg too (his route
+		# through a street), each squad's block where its previous leg ends (`queue_starts`), approached from there.
+		var lay_blocks := blocks
+		if SelectionSquads.GROUP_LAY and ground != null and (verb == "move" or verb == "attack_move") and blocks.size() >= 2 \
+				and (not queue_leg or squads.size() == blocks.size()):
+			if queue_leg:
+				lay_blocks = []
+				for i in blocks.size():
+					var moved: Dictionary = (blocks[i] as Dictionary).duplicate()
+					moved["center"] = queue_starts[i]
+					lay_blocks.append(moved)
 			var drive_g := SelectionSquads.drive_on(ground)
 			var crosses_g := SelectionSquads.crosses_on(ground)
-			anchors = SelectionSquads.column_lay(blocks, click, SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
+			var laid := SelectionSquads.column_lay(lay_blocks, click, SelectionSquads.approach_of(lay_blocks, click, Match.team_frame(team)["forward"]),
 					func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M),
-					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
-			column = not anchors.is_empty()
-		if not column:
-			anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"]),
-					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors)
+			column = not laid.is_empty()
+			if column:
+				anchors = laid
+			else:
+				lay_blocks = blocks
 		# Round 34 (R34.12): no rank stands behind its own squad (planner's O5: the back rank drove away from his click).
-		anchors = SelectionSquads.never_behind(anchors, blocks, click,
-				SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]))  # the approach, not his drawn facing
+		anchors = SelectionSquads.never_behind(anchors, lay_blocks, click,
+				SelectionSquads.approach_of(lay_blocks, click, Match.team_frame(team)["forward"]))  # the approach, not his drawn facing
 		# Round 34 (C34.11, O1, his scouts sent over the bridge): every anchor where the click reaches it by ground, read on
 		# the navmesh of one of the ordered vehicles.
 		if ground != null:
@@ -1155,15 +1170,9 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				anchors.append(at)
 		# Round 34 (planner's O5, the Locks route): a route leg through one gate is dealt first through, farthest along,
 		# each squad starting the leg where its previous one ends.
-		if ground != null and bool(extra.get("queue", false)) and squads.size() >= 2 and anchors.size() >= squads.size():
-			var starts: Array = []
-			for i in squads.size():
-				var held_element: Element = squads[i].get("element")
-				var start: Variant = null
-				if held_element != null and is_instance_valid_element(held_element):
-					start = ElementTask.destination(held_element.queued_tasks[held_element.queued_tasks.size() - 1]) \
-							if not held_element.queued_tasks.is_empty() else ElementTask.destination(held_element.task)
-				starts.append(start if start is Vector3 else Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z))
+		# G1: a column's leg is already dealt front to back by where each squad comes from.
+		if ground != null and bool(extra.get("queue", false)) and squads.size() >= 2 and anchors.size() >= squads.size() and not column:
+			var starts: Array = _leg_starts(squads, blocks)
 			var drive := SelectionSquads.drive_on(ground)
 			var dealt := SelectionSquads.gate_order(anchors.slice(0, squads.size()), starts,
 					func(a: Vector3, b: Vector3) -> PackedVector3Array: return Pathing.find_path(ground, a, b), drive)
@@ -1192,7 +1201,12 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		# a row or the body's ranks; the control groups are not rewritten.
 		# R37.29: under a column every squad keeps its own vehicles; crossing squads swap places whole.
 		if column and anchors.size() >= squads.size():
-			SelectionSquads.untangle_whole(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
+			var from_leg := {}  # G1: a shifted leg's vehicles set off from where their squad's previous leg ends
+			for i in queue_starts.size():
+				for unit_name: String in squads[i]["units"]:
+					from_leg[unit_name] = queue_starts[i]
+			SelectionSquads.untangle_whole(squads, anchors,
+					func(n: String) -> Vector3: return from_leg[n] if from_leg.has(n) else _flat_position(n))
 		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 	var queue := bool(extra.get("queue", false))
@@ -1254,6 +1268,21 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			if first_error == "":
 				first_error = error
 	return first_error
+
+
+## Where each squad's next leg starts: its element's last queued destination, else its running task's, else the block's
+## centre (round 34's route deal; round 38 G1's column on a shifted leg). One per squad, flat.
+func _leg_starts(squads: Array, blocks: Array) -> Array:
+	var starts: Array = []
+	for i in squads.size():
+		var held_element: Element = squads[i].get("element")
+		var start: Variant = null
+		if held_element != null and is_instance_valid_element(held_element):
+			start = ElementTask.destination(held_element.queued_tasks[held_element.queued_tasks.size() - 1]) \
+					if not held_element.queued_tasks.is_empty() else ElementTask.destination(held_element.task)
+		starts.append(Vector3((start as Vector3).x, 0.0, (start as Vector3).z) if start is Vector3
+				else Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z))
+	return starts
 
 
 ## Round 26 (perf, builder0 a5ab7518): `Elements.form` refuses a group of more than one squad (C19.1) and returns null,
@@ -1744,6 +1773,14 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	var drive: Callable = SelectionSquads.drive_on(ground) if ground != null else func(a: Vector3, b: Vector3) -> float: return a.distance_to(b)
 	var crosses: Callable = SelectionSquads.crosses_on(ground) if ground != null else func(_a: Vector3, _b: Vector3) -> bool: return false
 	var gate := gate_anchors(blocks, prev, approach, drive, crosses, func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+	# Round 38 (G1): a gate whose places stand off the clear ground (its rear ranks are read at the gate's own width) is laid
+	# as the column a final click is, each rank centred in the clear width at its own point.
+	if SelectionSquads.GROUP_LAY and ground != null:
+		var laid := SelectionSquads.column_lay(blocks, prev, approach,
+				func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive, crosses, SelectionSquads.GROUP_SCAN_M),
+				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), gate)
+		if not laid.is_empty():
+			gate = laid
 	# Round 35 (D5): and no gate place behind where the squad's previous leg ends (R34.12b's rule, on the way through).
 	if GATE_DEAL:
 		gate = SelectionSquads.never_behind(gate, blocks, prev, approach)

@@ -205,7 +205,7 @@ func _run() -> void:
 				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
 				"twitch_seen": squad.get("twitch_seen", {}), "redealt": int(squad.get("redealt", 0)), "away_m": snappedf((squad.get("away", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"shape_flips": int(squad.get("shape_flips", -1)), "terrain_flips": int(squad.get("terrain_flips", -1)),
-				"anchor_terrain_flips": int(squad.get("anchor_terrain_flips", -1)), "relays": int(squad.get("relays", -1)), "reseats": int(squad.get("reseats", 0)), "parked_redeals": int(squad.get("parked_redeals", 0)), "route_m": snappedf(float(squad.get("route_m", 0.0)), 0.1), "route_out_m": snappedf(float(squad.get("route_out_m", 0.0)), 0.1), "anchor_outside": _outside_corridor(_anchor_of(squad)),
+				"anchor_terrain_flips": int(squad.get("anchor_terrain_flips", -1)), "relays": int(squad.get("relays", -1)), "reseats": int(squad.get("reseats", 0)), "parked_redeals": int(squad.get("parked_redeals", 0)), "route_m": snappedf(float(squad.get("route_m", 0.0)), 0.1), "route_out_m": snappedf(float(squad.get("route_out_m", 0.0)), 0.1), "route_left_m": snappedf(float(squad.get("route_left_m", 0.0)), 0.1), "anchor_outside": _outside_corridor(_anchor_of(squad)),
 				"shapes": squad.get("shapes", []),
 				"away_held_m": snappedf((squad.get("away_held", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"away_seat_m": snappedf((squad.get("away_seat", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
@@ -239,7 +239,7 @@ func _run() -> void:
 			# Round 35 (D5, D3): the swaps uncross_paths made and the packs laid (each A/B confirms its own counter first, R35.5)
 			"uncrossed": _static_or(SelectionSquads, "uncrossed"), "packed": _static_or(SelectionSquads, "packed"), "pack_refused": SelectionSquads.pack_refused, "deck_cleared": _static_or(SelectionSquads, "deck_cleared"),
 			"friend_contacts": _contacts, "friend_contacts_foreign": _contacts_foreign, "contact_ticks": _contact_ticks,
-			"swapped_whole": SelectionSquads.swapped_whole, "columns_laid": SelectionSquads.columns_laid, "whole_still_crossed": SelectionSquads.whole_still_crossed,
+			"swapped_whole": SelectionSquads.swapped_whole, "columns_laid": SelectionSquads.columns_laid, "bodies_kept": _static_or(SelectionSquads, "bodies_kept"), "whole_still_crossed": SelectionSquads.whole_still_crossed,
 			"untangle": "whole" if SelectionSquads.UNTANGLE_WHOLE else "deal",
 			"parked_hold": "on" if TankBrain.PARKED_HOLD else "off", "parked_refused": TankBrain.parked_refused,
 			"parked_returns": TankBrain.parked_returns,
@@ -474,17 +474,26 @@ func _outside_corridor(at: Variant) -> bool:
 	return aside < -float(_corridor["left"]) - 0.5 or aside > float(_corridor["right"]) + 0.5
 
 
+## Round 38 (orders G1): `route_left_m` = the metres a crew drives outside the strip AFTER it has once stood inside it (it
+## left the street it was sent down, his "drove through other streets"); the drive in from a wide start is not counted.
 func _watch_corridor(squad: Dictionary, alive: Array) -> void:
 	var last: Dictionary = squad.get("corridor_last", {})
+	var been_in: Dictionary = squad.get("corridor_in", {})
 	for n: String in alive:
 		var at := _tank(n).global_position
+		var outside := _outside_corridor(at)
 		if last.has(n):
 			var step := _flat_d(at, last[n])
 			squad["route_m"] = float(squad.get("route_m", 0.0)) + step
-			if _outside_corridor(at):
+			if outside:
 				squad["route_out_m"] = float(squad.get("route_out_m", 0.0)) + step
+				if been_in.has(n):
+					squad["route_left_m"] = float(squad.get("route_left_m", 0.0)) + step
+		if not outside and not _corridor.is_empty():
+			been_in[n] = true
 		last[n] = at
 	squad["corridor_last"] = last
+	squad["corridor_in"] = been_in
 
 
 ## Round 37 (orders O1, R37.17's locks 5 trace): `parked_redeals` counts crews sent off a seat they were already parked on:
