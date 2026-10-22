@@ -1,0 +1,9 @@
+PASS counter: base relays 128 (>= 10), rows differ True
+PASS deciding: relays 128 -> 2 (<= 32.0), shape flips 34 -> 1
+  FAIL guard twitch       terminus 5 click: 16.8 v 28.0
+FAIL probe guards (12 cells)
+PASS CPU guard friendly contacts 1625 -> 1569 (<= 1792.5), fights 18/18
+PASS CPU guard stuck s 1784.2 -> 1688.3 (<= 2151.0)
+  outcomes base {'None': 18} | arm {'None': 18}
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 447 -> 441
+VERDICT o1: FAIL

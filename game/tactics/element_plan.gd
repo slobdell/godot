@@ -859,6 +859,8 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 				false, "travel", deploy_extra)
 		if DEPLOY_COMPACT and String(plan["formation"]) == "herringbone":
 			plan["slots"] = _deploy_compact(plan["slots"], deploy["heading"])
+		if COVER_SEAT:
+			_cover_seats(plan, deploy, situation)
 		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
@@ -1911,6 +1913,61 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), _deploy_shape(situation, state, table),
 				deploy["heading"], table.spacing(String(situation["terrain"])))
 	return deploy
+
+
+## O6 (round 37, C37.4; his answer (3): "short move to cover only when parking"): when the deploy lays its halt, each
+## crew's seat is offered ONCE to cover's `TacticalQuery.low_cover_seat(near, threat_dir, max_shift_m)` (a point within
+## COVER_SHIFT_M whose front faces the threat behind low cover, else null), the threat being the halt's heading. The
+## answers are kept in the deploy (`cover`) and stand for the life of the halt: never asked again, never while idle (his
+## "stay put" and "under my control"). Until cover's API is on main the call answers null (no seat moves).
+## `--cover-seat=on` (env COVER_SEAT=on) opts in.
+static var COVER_SEAT := OS.get_cmdline_user_args().has("--cover-seat=on") or OS.get_environment("COVER_SEAT") == "on"
+const COVER_SHIFT_M := 4.0
+## Measurement: seats cover's query moved, since start.
+static var cover_seats_moved := 0
+
+
+static func _cover_seats(plan: Dictionary, deploy: Dictionary, situation: Dictionary = {}) -> void:
+	if not deploy.has("cover"):
+		var found := {}
+		var threat: Vector3 = TacticsFormation.flat(deploy.get("heading", Vector3.FORWARD))
+		var units := {}
+		for member: Dictionary in situation.get("members", []):
+			units[String(member["name"])] = String(member.get("unit", ""))
+		for unit_name: String in plan["slots"]:
+			var seat: Variant = plan["slots"][unit_name]
+			if seat is Vector3:
+				var size: Variant = Units.stat(String(units.get(unit_name, "tank")), "hull_size")
+				var hull: Variant = Vector3(float(size[0]), float(size[1]), float(size[2])) \
+						if size is Array and (size as Array).size() == 3 else null
+				var moved: Variant = low_cover_seat(situation.get("cover_map"), seat, threat, COVER_SHIFT_M, hull)
+				if moved is Vector3:
+					found[unit_name] = moved
+					cover_seats_moved += 1
+		deploy["cover"] = found
+	# A crew moved behind low cover faces the threat there (cover's contract: the caller lays that facing): its sector
+	# is the halt's heading, and its order goes to the cover seat facing it.
+	var cover: Dictionary = deploy["cover"]
+	var facing: Vector3 = TacticsFormation.flat(deploy.get("heading", Vector3.FORWARD))
+	for unit_name: String in cover:
+		if plan["slots"].has(unit_name):
+			plan["slots"][unit_name] = cover[unit_name]
+			if plan.get("sectors", {}).has(unit_name):
+				plan["sectors"][unit_name] = 0.0
+			var order: Variant = plan.get("orders", {}).get(unit_name)
+			if order is Dictionary:
+				order["to"] = cover[unit_name]
+				order["facing"] = facing
+
+
+## C37.4's seam: cover's `TacticalQuery.low_cover_seat(map, near, threat_dir, max_shift_m, hull, node)` (cover's K3, on
+## main 821c7f494) when this build has it, else null. No map (a test's bare situation) or no hull size: null. `node` is
+## left null (the plan is pure: no tank to path from); cover's query then skips its navmesh reach test (merge note).
+static func low_cover_seat(map: Variant, near: Vector3, threat_dir: Vector3, max_shift_m: float, hull: Variant = null) -> Variant:
+	var query := Callable(TacticalQuery, "low_cover_seat")
+	if not query.is_valid() or map == null or hull == null:
+		return null
+	return query.call(map, near, threat_dir, max_shift_m, hull, null)
 
 
 ## The shape a deploy stands in: the task's `halt_shape` when the order priced one (D3: the pack laid its seats in it), else

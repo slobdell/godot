@@ -131,8 +131,22 @@ static func deal(members: Array[String], position: Callable) -> Array:
 ## forms one for exactly those vehicles, and the next order he gives a group re-forms it from the group.
 ## `anchors[i]` is squad i's anchor; `position(name) -> Vector3`. Returns the squads in the same order, a dealt one
 ## marked "dealt": true.
+##
+## Round 37 (orders O3, his answer: "every vehicle with its own squad, PROVIDED contention is not worse"): under
+## UNTANGLE_WHOLE the squads that cross keep their vehicles and swap PLACES instead: `untangle_whole` writes the chosen
+## places into `anchors` (whole squads, each still under its own element) and returns the squads untouched.
+## `--untangle=whole` (env UNTANGLE=whole); today's deal is the default.
+static var UNTANGLE_WHOLE := OS.get_cmdline_user_args().has("--untangle=whole") or OS.get_environment("UNTANGLE") == "whole"
+## Measurement: squads given another squad's place by untangle_whole, and knots it could not uncross, since start.
+static var swapped_whole := 0
+static var whole_still_crossed := 0
+
+
 static func untangle(squads: Array, anchors: Array[Vector3], position: Callable) -> Array:
 	if squads.size() < 2 or anchors.size() < squads.size():
+		return squads
+	if UNTANGLE_WHOLE:
+		untangle_whole(squads, anchors, position)
 		return squads
 	# A deal inside one knot can, rarely, cross a squad outside it: a second pass deals that knot too.
 	var result := squads
@@ -203,6 +217,150 @@ static func _untangle_once(squads: Array, anchors: Array[Vector3], position: Cal
 			if ",".join(piece) == ",".join(PackedStringArray(own)):
 				continue
 			result[i] = {"number": int(squads[i].get("number", 0)), "units": piece, "element": null, "dealt": true}
+	return result
+
+
+## O3: the places of crossing squads permuted WHOLE: within each knot of squads whose vehicles' straight drives cross
+## (the same knots `untangle` deals), every assignment of the knot's places to its squads is tried (a knot is at most five
+## squads: 120) and the one with the fewest crossing pairs of vehicle drives between different squads wins, then the least
+## total straight driving, then the order they had (stable). `anchors` is rewritten in place; returns the squads moved.
+static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Callable) -> int:
+	var starts := {}
+	for i in squads.size():
+		for unit_name: String in squads[i]["units"]:
+			var p: Vector3 = position.call(unit_name)
+			starts[unit_name] = Vector3(p.x, 0.0, p.z)
+	var family: Array[int] = []
+	for i in squads.size():
+		family.append(i)
+	for i in squads.size():
+		for j in range(i + 1, squads.size()):
+			if _root(family, i) != _root(family, j) and _pair_crosses(squads[i]["units"], anchors[i], squads[j]["units"], anchors[j], starts) > 0:
+				family[_root(family, i)] = _root(family, j)
+	var groups := {}
+	for i in squads.size():
+		var root := _root(family, i)
+		if not groups.has(root):
+			groups[root] = []
+		(groups[root] as Array).append(i)
+	var moved := 0
+	for members: Array in groups.values():
+		if members.size() < 2:
+			continue
+		var places: Array[Vector3] = []
+		for i: int in members:
+			places.append(anchors[i])
+		var best: Array = []
+		var best_key := [INF, INF]
+		for perm: Array in _permutations(members.size()):
+			var crossings := 0
+			var drive := 0.0
+			for a in members.size():
+				var at: Vector3 = places[perm[a]]
+				for unit_name: String in squads[members[a]]["units"]:
+					drive += _xz(starts[unit_name]).distance_to(_xz(at))
+				for b in range(a + 1, members.size()):
+					crossings += _pair_crosses(squads[members[a]]["units"], at, squads[members[b]]["units"], places[perm[b]], starts)
+			if crossings < best_key[0] or (crossings == best_key[0] and drive < best_key[1] - 0.01):
+				best_key = [crossings, drive]
+				best = perm
+		if best_key[0] > 0:
+			whole_still_crossed += 1
+		for a in members.size():
+			if int(best[a]) != a:
+				moved += 1
+			anchors[members[a]] = places[best[a]]
+	swapped_whole += moved
+	return moved
+
+
+## Round 37 (orders, R37.29; the lead's playtest 2026-10-21, Terminus: "the target waypoints for each squad was all over at
+## far away places ... A bunch of units drove through streets ... I immediately lost control of the army"; design note
+## references/round37/orders/group-click-column-note.md, approved). `--group-lay=column`: one click for several squads lays a
+## COLUMN OF WEDGES along the approach, as wide as the ground there, instead of the open-ground body (`ranks`): the squad
+## farthest along the approach (nearest the click) in front, the farthest back last; each rank as many squads abreast as its
+## own clear width holds (at most MAX_ABREAST and MAX_FRONTAGE_M), centred in that width, re-read at the rank's own point so
+## the column follows the street; narrower than a squad, single file on the approach line. Open ground (the scan reaches
+## GROUP_SCAN_M on both sides at the click) returns [] and today's body stands. Crossing squads swap places whole (no crew
+## re-deal). OFF until its bar passes.
+static var GROUP_LAY := OS.get_cmdline_user_args().has("--group-lay=column") or OS.get_environment("GROUP_LAY") == "column"
+## How far each side the corridor is read for a group click (wider than the gate's 60 m, so a wide street is not "open").
+const GROUP_SCAN_M := 100.0
+## Measurement: group clicks laid as a column (not open ground), since start.
+static var columns_laid := 0
+
+
+## `width_at(point, across)` -> [left, right] clear metres (RtsControls.gate_width on the navmesh, GROUP_SCAN_M); `approach`
+## the way the body comes in; `clamp(point)` -> point. One anchor per block in `blocks`' order, or [] on open ground. Pure.
+static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_at: Callable, clamp: Callable) -> Array[Vector3]:
+	var result: Array[Vector3] = []
+	if blocks.size() < 2:
+		return result
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	var ahead := Vector3(approach.x, 0.0, approach.z).normalized()
+	if ahead == Vector3.ZERO:
+		ahead = Vector3.FORWARD
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var at_click: Array = width_at.call(flat_click, across)
+	if float(at_click[0]) >= GROUP_SCAN_M - 0.01 and float(at_click[1]) >= GROUP_SCAN_M - 0.01:
+		return result  # open ground: today's body
+	var widest := 0.0
+	var deepest := 0.0
+	for block: Dictionary in blocks:
+		widest = maxf(widest, float(block["width"]))
+		deepest = maxf(deepest, float(block.get("halt_depth", block.get("depth", 0.0))))
+	# Front to back: farthest along the approach (nearest the click) first.
+	var by_along: Array = []
+	for i in blocks.size():
+		var c: Vector3 = blocks[i]["center"]
+		by_along.append([-Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(ahead), i])
+	by_along.sort()
+	result.resize(blocks.size())
+	var behind := 0.0
+	var start := 0
+	while start < by_along.size():
+		var point := flat_click - ahead * behind
+		var sides: Array = at_click if start == 0 else width_at.call(point, across)
+		var clear := minf(float(sides[0]) + float(sides[1]), MAX_FRONTAGE_M)
+		var single := clear < widest
+		var abreast := 1 if single else mini(MAX_ABREAST, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
+		abreast = mini(abreast, by_along.size() - start)
+		var centre := point if single else point + across * ((float(sides[1]) - float(sides[0])) * 0.5)
+		var rank_members: Array = []
+		for n in range(start, start + abreast):
+			var i := int(by_along[n][1])
+			var c: Vector3 = blocks[i]["center"]
+			rank_members.append([Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(across), i])
+		rank_members.sort()
+		for k in rank_members.size():
+			var aside := (float(k) - (abreast - 1) * 0.5) * (widest + GAP_M)
+			result[int(rank_members[k][1])] = clamp.call(centre + across * aside)
+		start += abreast
+		behind += deepest + GAP_M
+	columns_laid += 1
+	return result
+
+
+## Crossing pairs between two squads' vehicle drives (each vehicle straight to its squad's place).
+static func _pair_crosses(units_a: Array, at_a: Vector3, units_b: Array, at_b: Vector3, starts: Dictionary) -> int:
+	var count := 0
+	for a: String in units_a:
+		for b: String in units_b:
+			if Geometry2D.segment_intersects_segment(_xz(starts[a]), _xz(at_a), _xz(starts[b]), _xz(at_b)) != null:
+				count += 1
+	return count
+
+
+## Every ordering of 0..n-1, the identity first (so a tie keeps the order they had).
+static func _permutations(n: int) -> Array:
+	if n <= 1:
+		return [[0]] if n == 1 else [[]]
+	var result: Array = []
+	for rest: Array in _permutations(n - 1):
+		for k in range(rest.size(), -1, -1):
+			var perm := rest.duplicate()
+			perm.insert(k, n - 1)
+			result.append(perm)
 	return result
 
 

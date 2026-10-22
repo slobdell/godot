@@ -1,0 +1,62 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          fight     |   33.2 /   18.8   |   23   0 |     23.8 |               2.8 |            48.8 | 6.64 | 50.7
+crossing 3 click          parked    |   33.2 /   18.8   |   20   0 |     27.7 |               2.6 |            49.9 | 5.14 | 50.7
+locks 3 click             fight     |   38.2 /   34.4   |   19   0 |     48.9 |               2.8 |            52.9 | 5.62 | 30.0
+locks 3 click             parked    |   38.2 /   34.4   |   12   0 |     34.3 |               2.3 |            75.8 | 4.70 | 30.0
+terminus 3 click          fight     |   36.9 /   34.4   |    0   0 |     36.3 |               3.8 |            60.5 | 7.87 | 19.9
+terminus 3 click          parked    |   36.9 /   34.4   |    0   0 |        - |               3.4 |            58.0 | 4.92 | 19.9
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          fight     |          58.8 |          28.7 |           44.2 |               2.7 |          43.3
+crossing 3 click          parked    |          31.7 |          25.8 |              - |               4.8 |          69.4
+locks 3 click             fight     |             - |          31.5 |              - |              10.6 |          53.4
+locks 3 click             parked    |             - |          29.6 |              - |              26.3 |          53.8
+terminus 3 click          fight     |          46.3 |          36.4 |           50.1 |              12.5 |          56.1
+terminus 3 click          parked    |             - |          33.7 |              - |              17.5 |          61.1
+
+MEDIANS over seeds [3743, 3744, 3745, 3746, 3747, 3748, 3749, 3750, 3751, 3752, 3753, 3754] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          fight       | 12 |         17.4 |     0 |          37.0 |         30.0 |          35.0 |              -1.0 |   23   0 | 3.17
+crossing 3 click          parked      | 12 |         17.4 |     0 |          35.8 |         33.7 |          36.5 |              -1.0 |   20   0 | 2.87
+locks 3 click             fight       | 12 |         28.9 |     0 |          34.3 |         22.5 |          46.1 |              -1.0 |   19   0 | 2.82
+locks 3 click             parked      | 12 |         26.4 |     0 |          39.6 |         20.4 |          39.4 |              -1.0 |   12   0 | 2.99
+terminus 3 click          fight       | 12 |         23.5 |     0 |          37.8 |         31.8 |          46.7 |              -1.0 |    0   0 | 2.82
+terminus 3 click          parked      | 12 |         21.9 |     1 |          41.5 |         32.3 |          45.0 |              -1.0 |    0   0 | 2.93
+
+EQUALITY click cells: 0 identical across arms, 36 differ
+  DIFFER crossing 3 click seed 3743
+  DIFFER crossing 3 click seed 3744
+  DIFFER crossing 3 click seed 3745
+  DIFFER crossing 3 click seed 3746
+  DIFFER crossing 3 click seed 3747
+  DIFFER crossing 3 click seed 3748
+  DIFFER crossing 3 click seed 3749
+  DIFFER crossing 3 click seed 3750
+  DIFFER crossing 3 click seed 3751
+  DIFFER crossing 3 click seed 3752
+  DIFFER crossing 3 click seed 3753
+  DIFFER crossing 3 click seed 3754
+  DIFFER locks 3 click seed 3743
+  DIFFER locks 3 click seed 3744
+  DIFFER locks 3 click seed 3745
+  DIFFER locks 3 click seed 3746
+  DIFFER locks 3 click seed 3747
+  DIFFER locks 3 click seed 3748
+  DIFFER locks 3 click seed 3749
+  DIFFER locks 3 click seed 3750
+  DIFFER locks 3 click seed 3751
+  DIFFER locks 3 click seed 3752
+  DIFFER locks 3 click seed 3753
+  DIFFER locks 3 click seed 3754
+  DIFFER terminus 3 click seed 3743
+  DIFFER terminus 3 click seed 3744
+  DIFFER terminus 3 click seed 3745
+  DIFFER terminus 3 click seed 3746
+  DIFFER terminus 3 click seed 3747
+  DIFFER terminus 3 click seed 3748
+  DIFFER terminus 3 click seed 3749
+  DIFFER terminus 3 click seed 3750
+  DIFFER terminus 3 click seed 3751
+  DIFFER terminus 3 click seed 3752
+  DIFFER terminus 3 click seed 3753
+  DIFFER terminus 3 click seed 3754

@@ -1,0 +1,6 @@
+PASS counter: seats_aside 5456
+FAIL deciding: CPU screen give-ways 1277 -> 988 (<= 638.5); fights 36/36
+  reported: deaths in seat give-ways 49 -> 45 (noise line <= 60.5: within)
+  PASS guard team 0 deaths a fight base 25.86 arm 24.47 (se 2.43, n 36/36)
+  PASS guard team 1 deaths a fight base 15.50 arm 16.42 (se 1.94, n 36/36)
+VERDICT o5: FAIL

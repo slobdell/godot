@@ -1103,6 +1103,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				"depth": SelectionSquads.depth("auto", loose.size())})
 	var anchors: Array[Vector3] = []
 	var packed_shapes := {}  # D3: each packed anchor -> {shape, heading} its seats were packed in
+	var column := false  # R37.29: laid as a column of wedges (SelectionSquads.column_lay)
 	if extra.has("to"):
 		var click := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 		var drawn: Variant = null
@@ -1110,19 +1111,29 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			drawn = Vector3(float(extra["facing"][0]), 0.0, float(extra["facing"][1]))
 		# Round 21 (O1): three or more squads stand as a body (at most three abreast, ranks behind), slid inward
 		# whole near a wall rather than clamped one by one onto each other.
-		anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"]),
-				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
-		# Round 34 (R34.12): no rank stands behind its own squad (planner's O5: the back rank drove away from his click).
-		anchors = SelectionSquads.never_behind(anchors, blocks, click,
-				SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]))  # the approach, not his drawn facing
-		# Round 34 (C34.11, O1, his scouts sent over the bridge): every anchor where the click reaches it by ground, read on
-		# the navmesh of one of the ordered vehicles.
 		var ground: Node3D = null
 		for squad: Dictionary in squads:
 			for unit_name: String in squad["units"]:
 				var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Node3D if game_match != null else null
 				if ground == null and tank != null and tank.is_inside_tree():
 					ground = tank
+		# Round 37 (orders, R37.29): his plain group click on narrow ground lays a column of wedges along the approach.
+		if SelectionSquads.GROUP_LAY and ground != null and not bool(extra.get("queue", false)) \
+				and (verb == "move" or verb == "attack_move") and blocks.size() >= 2:
+			var drive_g := SelectionSquads.drive_on(ground)
+			var crosses_g := SelectionSquads.crosses_on(ground)
+			anchors = SelectionSquads.column_lay(blocks, click, SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
+					func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M),
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+			column = not anchors.is_empty()
+		if not column:
+			anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"]),
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+		# Round 34 (R34.12): no rank stands behind its own squad (planner's O5: the back rank drove away from his click).
+		anchors = SelectionSquads.never_behind(anchors, blocks, click,
+				SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]))  # the approach, not his drawn facing
+		# Round 34 (C34.11, O1, his scouts sent over the bridge): every anchor where the click reaches it by ground, read on
+		# the navmesh of one of the ordered vehicles.
 		if ground != null:
 			anchors = SelectionSquads.ground_cap(anchors, click, SelectionSquads.drive_on(ground), SelectionSquads.crosses_on(ground),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
@@ -1167,7 +1178,8 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					anchors[i] = uncrossed[i]
 		# Round 35 (D6, R35.38): a shifted leg's places step back from any bridge deck their seats would reach (Crossing 5
 		# route s3643: a place at the bridge's mouth laid seats past the deck and two squads crossed). Part of D6's switch.
-		if REQUEUE and bool(extra.get("queue", false)) and verb == "move" and anchors.size() >= squads.size():
+		# R37.29: a column's places too (O3's Crossing 5 trace: a squad's place at the west mouth laid a seat over the deck).
+		if ((REQUEUE and bool(extra.get("queue", false)) and verb == "move") or column) and anchors.size() >= squads.size():
 			var reach: Array = []
 			for block: Dictionary in blocks:
 				reach.append(0.5 * maxf(float(block["width"]), float(block.get("depth", 0.0))))
@@ -1178,7 +1190,10 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
-		if untangle_rows:
+		# R37.29: under a column every squad keeps its own vehicles; crossing squads swap places whole.
+		if column and anchors.size() >= squads.size():
+			SelectionSquads.untangle_whole(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
+		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 	var queue := bool(extra.get("queue", false))
 	var element_only := ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb)
@@ -1584,13 +1599,13 @@ static var gates_laid := 0
 ## The clear ground across the approach at `click`: [left, right] metres (left = -across) reachable from the click by ground
 ## without a long way round (drive <= GATE_DETOUR x straight) and with no deck between (crosses). `drive(from, to)` -> metres
 ## by ground (< 0: unreachable); `crosses(from, to)` -> bool. Both scans stop at GATE_SCAN_M.
-static func gate_width(click: Vector3, across: Vector3, drive: Callable, crosses: Callable) -> Array[float]:
+static func gate_width(click: Vector3, across: Vector3, drive: Callable, crosses: Callable, scan := GATE_SCAN_M) -> Array[float]:
 	var out: Array[float] = []
 	var flat_click := Vector3(click.x, 0.0, click.z)
 	for side: float in [-1.0, 1.0]:
 		var reach := 0.0
 		var k := 1
-		while k * GATE_STEP_M <= GATE_SCAN_M + 0.001:
+		while k * GATE_STEP_M <= scan + 0.001:
 			var d := k * GATE_STEP_M
 			var p := flat_click + across * (side * d)
 			if bool(crosses.call(flat_click, p)):

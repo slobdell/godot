@@ -1,0 +1,166 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (law): 4 pursuit cruisers, 8 retired apcs, 4 assault guns, 4 gas rocket trucks, 4 sonic emitters (5080 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 24 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (gangs): 14 rat rods, 8 gun trucks, 14 wrecker catapults, 7 resupply tankers (5150 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 96 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=5 green=24 rust_squads=10 rust=43
+SKIRMISH_CAMERA focus=(-60, 88) zoom=0.61 vehicles=4
+DEMO_SEED 1813 arena=gorge law vs gangs (replay: make showmatch SEED=1813)
+CONTROL_GROUPS squads=5 (Battery:4 Eyes:4 Guns:4 Hunters:8 Sirens:4) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-21T21-24-07-gorge.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "1813", "arena": "gorge", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+HUD_MESSAGE [warning] Friendly fire: Eyes 1 hit Eyes 4
+HUD_MESSAGE [warning] Friendly fire: Eyes 3 hit Eyes 1
+NATIVE_EXEC 19709 native, 290 handed back (dead 0, reflexes 0, yielding 0, face 290, drive 0, other 0), 560 stale pulls, 2345 part pulls, 0 verified, 0 verify mismatches 
+Green_Guns_4 destroyed Rust_Hunters2_3 (score Green 1 : 0 Rust)
+SEAT_YIELD {"asker":"Rust_Spears2_4","asker_verb":"screen","at":[16.1,-59.6],"cpu":true,"died":false,"element":"Spears","end":241,"s":7.7,"seat_m":7.2,"start":230,"team":1,"unit":"Rust_Spears_4","verb":"screen","yield_s":0.4}
+Green_Eyes_3 destroyed Rust_Hunters2_1 (score Green 2 : 0 Rust)
+SEAT_YIELD {"asker":"Rust_Battery3_1","asker_verb":"support_by_fire","at":[-19.6,-61.3],"cpu":true,"died":false,"element":"Spears2","end":255,"s":6.7,"seat_m":5.3,"start":202,"team":1,"unit":"Rust_Spears2_1","verb":"screen","yield_s":1.8}
+HUD_MESSAGE [info] Destroyed 2 enemies (41 left)
+SEAT_YIELD {"asker":"Rust_Battery2_2","asker_verb":"support_by_fire","at":[23.2,-66.5],"cpu":true,"died":false,"element":"Spears","end":310,"s":6.4,"seat_m":13.1,"start":192,"team":1,"unit":"Rust_Spears_2","verb":"screen","yield_s":3.9}
+SEAT_YIELD {"asker":"Rust_Battery2_4","asker_verb":"support_by_fire","at":[17.5,-56.0],"cpu":true,"died":false,"element":"Spears","end":314,"s":8.4,"seat_m":3.4,"start":253,"team":1,"unit":"Rust_Spears_4","verb":"screen","yield_s":2.0}
+HUD_MESSAGE [warning] Friendly fire: Eyes 2 hit Eyes 4
+SEAT_YIELD {"asker":"Rust_Wrenches_3","asker_verb":"support_by_fire","at":[-37.5,-66.9],"cpu":true,"died":false,"element":"Spears2","end":373,"s":9.8,"seat_m":1.1,"start":293,"team":1,"unit":"Rust_Spears2_2","verb":"screen","yield_s":2.7}
+HUD_MESSAGE [warning] Friendly fire: Battery 1 hit Eyes 1
+SEAT_YIELD {"asker":"Rust_Hunters_1","asker_verb":"attack","at":[-40.1,-79.2],"cpu":true,"died":false,"element":"Spears","end":399,"s":11.0,"seat_m":2.9,"start":331,"team":1,"unit":"Rust_Spears_5","verb":"screen","yield_s":2.3}
+SEAT_YIELD {"asker":"Rust_Battery2_4","asker_verb":"support_by_fire","at":[11.9,-64.6],"cpu":true,"died":false,"element":"Spears2","end":409,"s":10.1,"seat_m":12.2,"start":302,"team":1,"unit":"Rust_Spears2_4","verb":"screen","yield_s":3.6}
+SEAT_YIELD {"asker":"Rust_Battery3_4","asker_verb":"support_by_fire","at":[-17.1,-64.2],"cpu":true,"died":false,"element":"Spears2","end":411,"s":11.4,"seat_m":1.9,"start":341,"team":1,"unit":"Rust_Spears2_1","verb":"screen","yield_s":2.3}
+SEAT_YIELD {"asker":"Rust_Battery3_2","asker_verb":"support_by_fire","at":[-12.8,-62.4],"cpu":true,"died":false,"element":"Spears","end":416,"s":11.1,"seat_m":15.0,"start":332,"team":1,"unit":"Rust_Spears_1","verb":"screen","yield_s":2.8}
+SEAT_YIELD {"asker":"Rust_Battery2_2","asker_verb":"support_by_fire","at":[23.4,-53.4],"cpu":true,"died":false,"element":"Spears","end":437,"s":12.8,"seat_m":3.5,"start":385,"team":1,"unit":"Rust_Spears_4","verb":"screen","yield_s":1.7}
+SEAT_YIELD {"asker":"Rust_Battery2_3","asker_verb":"support_by_fire","at":[22.4,-66.7],"cpu":true,"died":false,"element":"Spears","end":450,"s":13.2,"seat_m":13.2,"start":397,"team":1,"unit":"Rust_Spears_2","verb":"screen","yield_s":1.8}
+Green_Battery_3 destroyed Rust_Hunters2_2 (score Green 3 : 0 Rust)
+SEAT_YIELD {"asker":"Rust_Battery3_1","asker_verb":"support_by_fire","at":[-17.4,-61.4],"cpu":true,"died":false,"element":"Spears","end":511,"s":14.4,"seat_m":19.3,"start":431,"team":1,"unit":"Rust_Spears_1","verb":"screen","yield_s":2.7}
+SEAT_YIELD {"asker":"Rust_Battery3_4","asker_verb":"support_by_fire","at":[-37.3,-69.4],"cpu":true,"died":false,"element":"Spears2","end":513,"s":14.8,"seat_m":2.9,"start":444,"team":1,"unit":"Rust_Spears2_2","verb":"screen","yield_s":2.3}
+SEAT_YIELD {"asker":"Rust_Battery2_4","asker_verb":"support_by_fire","at":[6.3,-61.2],"cpu":true,"died":false,"element":"Spears2","end":513,"s":14.0,"seat_m":2.0,"start":419,"team":1,"unit":"Rust_Spears2_3","verb":"screen","yield_s":3.1}
+NATIVE_EXEC 37849 native, 2150 handed back (dead 0, reflexes 0, yielding 0, face 2074, drive 0, other 0), 897 stale pulls, 5927 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] Destroyed an enemy Gun Truck (40 left)
+Green_Guns_4 destroyed Rust_Wrenches2_2 (score Green 4 : 0 Rust)
+SEAT_YIELD {"asker":"Rust_Wrenches_3","asker_verb":"support_by_fire","at":[-35.3,-51.1],"cpu":true,"died":false,"element":"Spears3","end":592,"s":13.7,"seat_m":51.3,"start":412,"team":1,"unit":"Rust_Spears3_2","verb":"screen","yield_s":6.0}
+HUD_MESSAGE [info] Destroyed an enemy Resupply Tanker (39 left)
+HUD_MESSAGE [warning] Eyes: shields down
+Rust_Spears_2 destroyed Green_Eyes_1 (score Green 4 : 1 Rust)
+HUD_MESSAGE [warning] Eyes: commander down, Eyes 2 takes command
+Green_Hunters_7 destroyed Rust_Spears_2 (score Green 5 : 1 Rust)
+Rust_Spears_3 destroyed Green_Eyes_2 (score Green 5 : 2 Rust)
+HUD_MESSAGE [warning] Eyes: commander down, Eyes 3 takes command
+HUD_MESSAGE [warning] Eyes lost 2 vehicles (Pursuit Cruiser, Pursuit Cruiser), 2 left
+HUD_MESSAGE [info] Destroyed an enemy Rat Rod (38 left)
+Green_Hunters_3 destroyed Rust_Spears_4 (score Green 6 : 2 Rust)
+Rust_Spears_1 destroyed Green_Eyes_4 (score Green 6 : 3 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Rat Rod (37 left)
+Green_Guns_4 destroyed Rust_Spears_5 (score Green 7 : 3 Rust)
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 1 left
+Green_Hunters_7 destroyed Rust_Spears2_3 (score Green 8 : 3 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (35 left)
+HUD_MESSAGE [warning] Eyes: shields down
+Green_Hunters_2 destroyed Rust_Spears2_4 (score Green 9 : 3 Rust)
+Rust_Spears3_2 destroyed Green_Eyes_3 (score Green 9 : 4 Rust)
+Green_Guns_1 destroyed Rust_Wrenches2_1 (score Green 10 : 4 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (33 left)
+HUD_MESSAGE [warning] Friendly fire: Hunters 6 hit Guns 1
+HUD_MESSAGE [error] Eyes destroyed
+NATIVE_EXEC 56764 native, 3235 handed back (dead 0, reflexes 0, yielding 0, face 2427, drive 0, other 0), 1614 stale pulls, 9170 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Friendly fire: Hunters 2 hit Sirens 2
+Green_Battery_3 destroyed Rust_Spears2_1 (score Green 11 : 4 Rust)
+Green_Guns_4 destroyed Rust_Spears2_5 (score Green 12 : 4 Rust)
+Rust_Battery2_2 destroyed Green_Hunters_7 (score Green 12 : 5 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (31 left)
+Rust_Spears2_2 destroyed Green_Guns_4 (score Green 12 : 6 Rust)
+Green_Guns_2 destroyed Rust_Spears2_2 (score Green 13 : 6 Rust)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 7 left
+Green_Sirens_2 destroyed Rust_Wrenches_3 (score Green 14 : 6 Rust)
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 3 left
+HUD_MESSAGE [info] Destroyed 2 enemies (29 left)
+Rust_Battery_1 destroyed Green_Hunters_8 (score Green 14 : 7 Rust)
+Green_Guns_3 destroyed Rust_Spears3_2 (score Green 15 : 7 Rust)
+Green_Guns_2 destroyed teammate Green_Guns_3 (friendly fire)
+HUD_MESSAGE [warning] Friendly fire! Guns 2 destroyed Guns 3
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 6 left
+Green_Battery_1 destroyed Rust_Wrenches_5 (score Green 16 : 7 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (27 left)
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 2 left
+Green_Hunters_1 destroyed Rust_Spears3_4 (score Green 17 : 7 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 1 hit Sirens 1
+HUD_MESSAGE [info] Destroyed an enemy Rat Rod (26 left)
+Green_Hunters_3 destroyed Rust_Wrenches_1 (score Green 18 : 7 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Resupply Tanker (25 left)
+NATIVE_EXEC 76327 native, 3672 handed back (dead 0, reflexes 0, yielding 0, face 2429, drive 0, other 0), 2113 stale pulls, 12669 part pulls, 0 verified, 0 verify mismatches 
+Rust_Battery2_5 destroyed teammate Rust_Spears_1 (friendly fire)
+HUD_MESSAGE [warning] Hunters: shields down
+Green_Hunters_1 destroyed Rust_Hunters_1 (score Green 19 : 7 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (23 left)
+Green_Hunters_4 destroyed Rust_Hunters_3 (score Green 20 : 7 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Gun Truck (22 left)
+Green_Hunters_6 destroyed Rust_Spears3_1 (score Green 21 : 7 Rust)
+Green_Hunters_5 destroyed Rust_Hunters_2 (score Green 22 : 7 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 6 hit Sirens 4
+Rust_Wrenches_2 destroyed Green_Sirens_2 (score Green 22 : 8 Rust)
+Green_Hunters_4 destroyed Rust_Spears3_3 (score Green 23 : 8 Rust)
+Rust_Battery_5 destroyed Green_Hunters_2 (score Green 23 : 9 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 4 hit Hunters 5
+HUD_MESSAGE [info] Destroyed 3 enemies (19 left)
+HUD_MESSAGE [warning] Guns: shields down
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 3 left
+HUD_MESSAGE [warning] Friendly fire: Hunters 3 hit Hunters 5
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 5 left
+HUD_MESSAGE [warning] The enemy took the valley
+HUD_MESSAGE [warning] Sirens: shields down
+Rust_Battery3_1 destroyed Green_Hunters_3 (score Green 23 : 10 Rust)
+Green_Guns_1 destroyed Rust_Wrenches_2 (score Green 24 : 10 Rust)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 4 left
+HUD_MESSAGE [info] Destroyed an enemy Resupply Tanker (18 left)
+Green_Guns_2 destroyed Rust_Hunters_4 (score Green 25 : 10 Rust)
+Rust_Battery_5 destroyed Green_Sirens_1 (score Green 25 : 11 Rust)
+HUD_MESSAGE [warning] Sirens: commander down, Sirens 3 takes command
+Rust_Battery2_3 destroyed Green_Hunters_5 (score Green 25 : 12 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Gun Truck (17 left)
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 2 left
+Rust_Battery2_5 destroyed Green_Hunters_4 (score Green 25 : 13 Rust)
+Rust_Battery3_1 destroyed Green_Sirens_3 (score Green 25 : 14 Rust)
+HUD_MESSAGE [warning] Sirens: commander down, Sirens 4 takes command
+HUD_MESSAGE [warning] Hunters lost 2 vehicles (Retired APC, Retired APC), 2 left
+Green_Guns_2 destroyed Rust_Wrenches_4 (score Green 26 : 14 Rust)
+HUD_MESSAGE [warning] Sirens lost a Sonic Emitter, 1 left
+Rust_Battery2_4 destroyed Green_Hunters_1 (score Green 26 : 15 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 6 takes command
+HUD_MESSAGE [info] Destroyed an enemy Resupply Tanker (16 left)
+HUD_MESSAGE [warning] Guns: shields down
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 1 left
+Green_Guns_2 destroyed Rust_Hunters_5 (score Green 27 : 15 Rust)
+NATIVE_EXEC 95562 native, 4437 handed back (dead 0, reflexes 0, yielding 0, face 3046, drive 0, other 0), 2325 stale pulls, 16263 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Hunters: shields down
+HUD_MESSAGE [info] Destroyed an enemy Gun Truck (15 left)
+HUD_MESSAGE [warning] Contact: 2 enemies in sight
+HUD_MESSAGE [warning] Sirens: shields down
+Green_Guns_1 destroyed Rust_Battery_1 (score Green 28 : 15 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Wrecker Catapult (14 left)
+Rust_Battery3_4 destroyed Green_Guns_2 (score Green 28 : 16 Rust)
+Green_Guns_1 destroyed Rust_Battery_5 (score Green 29 : 16 Rust)
+HUD_MESSAGE [warning] Guns lost an Assault Gun, 1 left
+HUD_MESSAGE [info] Destroyed an enemy Wrecker Catapult (13 left)
+HUD_MESSAGE [warning] Guns: shields down
+Rust_Battery2_2 destroyed Green_Guns_1 (score Green 29 : 17 Rust)
+HUD_MESSAGE [error] Guns destroyed
+Green_Hunters_6 destroyed Rust_Battery2_2 (score Green 30 : 17 Rust)
+HUD_MESSAGE [warning] Hunters: shields down
+HUD_MESSAGE [info] Destroyed an enemy Wrecker Catapult (12 left)
+Rust_Battery_4 destroyed Green_Hunters_6 (score Green 30 : 18 Rust)
+HUD_MESSAGE [error] Hunters destroyed
+HUD_MESSAGE [warning] Sirens: shields down
+Rust_Battery_3 destroyed Green_Sirens_4 (score Green 30 : 19 Rust)
+HUD_MESSAGE [error] Sirens destroyed
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Green_Battery_4 destroyed Rust_Spears_3 (score Green 31 : 19 Rust)
+NATIVE_EXEC 114862 native, 5137 handed back (dead 0, reflexes 0, yielding 0, face 3746, drive 0, other 0), 2597 stale pulls, 17992 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] Destroyed an enemy Rat Rod (11 left)
+NATIVE_EXEC 133003 native, 6996 handed back (dead 0, reflexes 0, yielding 0, face 5605, drive 0, other 0), 2741 stale pulls, 18074 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Rust_Battery2_4","asker_verb":"hold","at":[-93.3,-52.7],"cpu":true,"died":false,"element":"Battery","end":4575,"s":150.4,"seat_m":9.3,"start":4513,"team":1,"unit":"Rust_Battery_2","verb":"hold","yield_s":2.1}
+SEAT_YIELD {"asker":"Rust_Battery2_3","asker_verb":"hold","at":[-82.6,-68.8],"cpu":true,"died":false,"element":"Battery","end":4611,"s":149.6,"seat_m":4.6,"start":4488,"team":1,"unit":"Rust_Battery_4","verb":"hold","yield_s":4.1}
+SEAT_YIELD {"asker":"Rust_Battery3_3","asker_verb":"hold","at":[-94.8,-56.4],"cpu":true,"died":false,"element":"Battery","end":4837,"s":155.2,"seat_m":0.0,"start":4657,"team":1,"unit":"Rust_Battery_3","verb":"hold","yield_s":6.0}
+SEAT_YIELD {"asker":"Rust_Battery3_3","asker_verb":"hold","at":[-94.8,-56.4],"cpu":true,"died":false,"element":"Battery","end":4995,"s":162.8,"seat_m":0.0,"start":4885,"team":1,"unit":"Rust_Battery_3","verb":"hold","yield_s":3.7}
+SEAT_YIELD_CENSUS {"arena":"gorge","by_verb":{"cpu:hold":{"deaths":0,"episodes":4},"cpu:screen":{"deaths":0,"episodes":15}},"deaths":52,"deaths_by_team":{"0":20,"1":32},"seat_aside":"off","seats_aside":0,"seats_aside_failed":0,"seconds":180.0,"seed":1813}

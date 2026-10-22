@@ -1,0 +1,5 @@
+PASS counter: base relays 143 (>= 10), rows differ True
+PASS deciding: relays 143 -> 2 (<= 35.8), shape flips 19 -> 1
+PASS probe guards (12 cells)
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 429 -> 428
+VERDICT o1settle: PASS
