@@ -593,6 +593,9 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   announcer now hears the struck face live (MatchEventAdapter reads the K2 impact): rear / weak-spot / flank calls play in real
   matches. merge_check_needed says CHECK (main had the artillery fix and rules' tooling): ONE builder2 `make native check` on
   ac8cb7d92 is queued.
+  **main ac8cb7d92 GREEN:** builder2 `make native check exited 0`, 3036 passed / 0 failed, 25 + 2 NOT JUDGED (perf: builder2 is
+  not a judging machine), sim-baseline 13/13 unmoved (the first try died when builder2 idle-stopped at 01:37; re-run after
+  gcp-start). Perf-judge on builder0 still owed for the artillery fix + his picks (presentation) at the next quiet window.
 - **R37.37 (2026-10-22) O1-latch FAILS as filed on one guard (terminus 5-squad click twitch); group-lay goes first.** orders (builder0
   native c14ec0d80; no-fight 3761-3772, fight 3773-3784). No-fight deciding PASS: relays 128 -> 2 (limit 32), shape flips 34 -> 1; CPU
   guards pass (contacts 1,625 -> 1,569; stuck 1,784 -> 1,688 s). Guard FAIL: terminus 5-squad click median worst twitch 16.8 -> 28.0 m
