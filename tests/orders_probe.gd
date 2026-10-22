@@ -78,6 +78,15 @@ func _run() -> void:
 			"--hints=off", "--no-record", "--squad-cap=%d" % count]:
 		var parts := extra.trim_prefix("--").split("=", true, 1)
 		flags.values[parts[0]] = parts[1] if parts.size() > 1 else ""
+	# Round 38 (settle's report): a budget his army is over stops the skirmish before the controls exist, and the probe used to
+	# say only "no RtsControls". Say why, and stop (C38.1: a probe that cannot run its case stops the run).
+	var player_path := "res://tests/control/orders_probe_%d.json" % count
+	var player: Variant = JSON.parse_string(FileAccess.get_file_as_string(player_path))
+	var refusal := Army.check_budget(player, int(budget.split("=")[1])) if player is Dictionary else ""
+	if refusal != "":
+		print("ORDERS_PROBE " + JSON.stringify({"error": "%s: %s (raise --probe-budget)" % [player_path, refusal]}))
+		quit(2)
+		return
 	Main.next_flags = flags
 	change_scene_to_file(MAIN)
 	for i in 40:  # the scene, the arena's navmesh and the controls (built after the mode starts)
