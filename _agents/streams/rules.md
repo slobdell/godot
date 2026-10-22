@@ -180,6 +180,11 @@ blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0
   - Read: the blob is his right-click, so it never halts (ruling (b)); it only pays the wider spread. Most of the damage
     is done close in, where spread barely matters (R2 measure: movers beyond 50 m = 19 % of direct damage), and the CPU
     defender rolls too.
+- 17:27 PDT: Guard 3 CANCELLED before it ran (unit rules-guard3 stopped while still waiting; no builder2 time used). R2 fails the
+  deciding line, so its contention guard could not change the verdict, and builder2 goes to M5a sooner. Arm commit 4c02e3d78
+  (pair/rules-r37-spread-on) stays unmerged and can be deleted.
+- Stabilised-gun exception (stretch): NOT proposed. R2's series names no faction victim: the factions that lose are losing as the
+  blob, which is the intended direction, and Syndicate gains.
 - Each arm is read by `python3 tests/rules/bar_r.py references/scoreboard/guards/9d325e291.fights.jsonl <arm raw>` (e4d139813):
   guard.py's pairing, plus the verdict lines, guard 1's McNemar in the turtle's favour, the faction report and guard 2.
 
