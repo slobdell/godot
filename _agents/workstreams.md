@@ -84,6 +84,35 @@ losses a fight each within base +/- 1.645 se (base sd, n 36); CPU: friendly cont
   shrinks >= 8 m (dev read: squad 4 place+twitch 51.2 -> 8.8 m, squad 1 20.4 -> 8.6 m). Merge note C38.3: `ElementSituation.build` adds
   a `ground_seat` Callable key.
 
+- **Bar M5 v2 (`seatstep`: a seated crew steps aside and comes back), filed 2026-10-22 before any number (recorded from stream/manoeuvre)**
+
+- **Change: M5a's, unchanged** (Bar M5 as filed in round 37, archive/round37/manoeuvre.md): a SEATED yielder (move_to arrived,
+  within SEAT_NEAR_M 10 m of its seat) takes, of the spots legal today, the whole spot nearest its seat that does not lead the asker
+  out; a lead-out only when nothing else is legal. Switch `seatstep` in Traffic.DEFAULT_OFF; native mirror = native's
+  `pair/native-m5` 156d563d9 (merged into the lab trees, not hand-edited).
+- **Why v2 (R37.30):** M5a passed deciding (-8.5 %) and failed two guards that a symmetric redraw can fail without harm: kills
+  per team down (every fight count fell: smaller fights, not one-sided) and hull-rest (e) on a hand-set +4.9 line that a laptop
+  GDScript re-run reversed (5 flips one way on native, the other way on GDScript).
+- **Fresh seeds:** jam census locks/terminus/sumps x **6940-6979** (120 pairs; round 37's 72 gave the deciding line about 60 %
+  power at its own -8.5 %, 120 gives about 85 %); hull-rest **6901-6932** x 4 factions x 6 tasks (128 pairs a task), native
+  (`native <target>`), builder0.
+- **(0) counter first:** `route_arms.yields_seated` > 0 in ON.
+- **DECIDING (unchanged):** seat metres summed over seated give-ways, paired by (arena, seed): ON < base by more than 1.645 se of
+  the paired sum. Lead-out / back / episode counts REPORTED.
+- **Guards, unchanged:** the asker's wait (ticks) and give-way timeouts, friendly contacts, jam deaths, deaths per team: each not
+  above base + 1.645 se. Hull-rest (f) squads arrived per task: not below base - 1.645 se.
+- **Guard (a), NEW: fight volume is not a harm; who wins it is.** Replaces "kills per team within 1.645 se". (a1) team 0's KILL
+  SHARE, K0 / (K0 + K1) summed over the series, within +-1.645 se of base, se from the paired linearisation (per pair
+  z = (k0 - R k)/K for each arm, se of the paired sum of z_on - z_base). (a2) TOTAL deaths, both teams, not above base + 1.645 se.
+  Total kills REPORTED (a smaller fight is allowed).
+- **Guard (e), NEW: never-settled sized by its own noise floor, measured first.** Before the ON arm is read, run the BASE tree's
+  hull-rest on the GDScript path (`M1_GD=1` = `--brains-off=native`, the same seeds, the same native-built folder) beside the base native arm. Per
+  task, D_floor = runs whose settled/never-settled differs between the two base paths (a no-rule redraw). The ON line per task:
+  never-settled ON - base <= 1.645 x sqrt(max(b + c, D_floor, 1)), where b + c = the runs discordant between ON and base (native).
+  sqrt(discordant) is the sd of a net shift when each discordant run is a coin flip; D_floor stops a one-sided handful from failing
+  a rule whose task redraws that many runs anyway, and b + c keeps the line honest if the floor is small. D_floor per task and the
+  net shift base GDScript - base native are REPORTED with the verdict.
+
 - **Bar F3 REPAIR_UNDER_FIRE (feedback, C38.4; filed in stream/feedback f0ad5a44d Status before any number).** Switch `--repair-under-fire`
   (OFF; `Match.repair_under_fire_on`): a friendly FIELD mender (the gangs' Resupply Tanker) keeps mending a vehicle under fire at HALF
   rate (2.5 hp/s), full after `REPAIR_QUIET_SECONDS`; the base's own mending still waits for quiet; a Tanker never mends itself.
