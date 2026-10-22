@@ -71,7 +71,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 since a10846307. The series ran on builder2, on pair tree **75c3e74e0** (main 0baf6e1ff + this Status). Each arm is the same
 320 guard fights as the base (5 maps x seeds 2601-2608 + 2701-2708 x both sides x blob/turtle), paired against
 `references/scoreboard/guards/9d325e291.fights.jsonl`. Base gate: OFF replays it with 0 flips. One open item:
-the **package arm** (all three ON), queued after M5a (R37.25).
+the **package arm** (all three ON). It STARTED 23:18 PDT on builder2 (unit rules-guard-package, 75c3e74e0, `--rules-on=sight,spread,pin_slow`,
+one seed per call: native's GUARD_CHUNK commit 39cb1e94b is not on this tree). Cover's K4 queues behind it.
 
 | arm (`--rules-on=`) | blob wins (base 48 %) | paired diff (se) | flips to loss / to win | McNemar p | blob kr | turtle | verdict |
 |---|---|---|---|---|---|---|---|
