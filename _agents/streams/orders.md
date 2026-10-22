@@ -102,8 +102,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   Crossing west deck, clicks 3 / 6 / 9 m short, 3 and 5 squads, 24 squads): crossed 0, goals across 0. Round 36's halt lay
   covers it (`references/round37/orders/stretch-bridge-mouth-r37/`). (2) `uncross_paths` on a queued screen: round 36's
   trace stands (a real swap, not path planning). It stays limited to plain moves; no new evidence a screen needs it.
-- **Open question for the lead (via the orchestrator):** should a parked crew about to be destroyed pull back and return,
-  or stay? RETREAT stays kept until he answers.
+- **Answered by the lead (game_design.md on main, relayed by the orchestrator):** a nearly dead parked crew PULLS BACK,
+  then returns to its spot. That is O2's arm as built (RETREAT kept; the drive-back brings it home). He also kept the parked
+  scouts' circling turn-in, so O2's drive-back is what returns them. No change.
 
 ### Bars (filed here; the orchestrator records them on main)
 - **O1 HALT_TERRAIN=anchor (orders, C37.5; filed 2026-10-21 ~09:10 PDT before any arm number).** What he would see: a squad he
