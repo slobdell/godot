@@ -21,6 +21,10 @@ const SAMPLE_TICKS := SimClock.TICK_RATE / 2
 
 var _hf_shots := {"guard": {}, "tactics": {}}
 var _hf_time := {"guard": {}, "tactics": {}}
+## The same rounds weighted by the shooter's damage a round (a scout's machine gun fires ten rounds to a cannon's one).
+var _hf_dmg := {"guard": {}, "tactics": {}}
+## CPU rounds (and damage) by why its posture is what it is, and which half of the map the shooter stood in.
+var _hf_why := {}
 var _listening := false
 
 
@@ -40,9 +44,28 @@ static func seat_bucket(distance: float) -> String:
 	return "near" if distance < NEAR_M else ("off" if distance < OFF_M else "away")
 
 
-static func tally(table: Dictionary, key: String, bucket: int) -> void:
+static func tally(table: Dictionary, key: String, bucket: int, amount := 1.0) -> void:
 	var row: Array = table.get_or_add(key, [0, 0, 0])
-	row[bucket] += 1
+	row[bucket] += amount
+
+
+## The CPU posture's reason in a word ("threatened", "ahead", "opening", "nothing", "behind", "?") and the shooter's half
+## ("own" when nearer its own spawn than the enemy's).
+static func why_key(game_match: Match, tank: Tank) -> String:
+	var commander := game_match.get_node_or_null("ElementCommander_%d" % tank.team)
+	var why := String((commander.get("posture") as Dictionary).get("why", "")) if commander != null else ""
+	var word := "?"
+	for pair in [["threatened", "threatened"], ["ahead", "ahead"], ["opening", "opening"], ["holds no", "nothing"],
+			["not ahead", "behind"]]:
+		if why.contains(String(pair[0])):
+			word = String(pair[1])
+			break
+	var here := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+	var own := Match.spawn_position(tank.team, 0)
+	var enemy := Match.spawn_position(1 - tank.team, 0)
+	var half := "own" if here.distance_to(Vector3(own.x, 0.0, own.z)) < here.distance_to(Vector3(enemy.x, 0.0, enemy.z)) \
+			else "theirs"
+	return "%s|%s" % [word, half]
 
 
 ## What `tank` was doing, as the key the tables split by.
@@ -90,8 +113,15 @@ func _listen() -> void:
 		if shooter == null or shooter.weapon["kind"] == Weapons.Kind.ARC:
 			return
 		var who := "guard" if shooter.team == guard_team else "tactics"
-		tally(_hf_shots[who], state_key(game_match, shooter, guard_team),
-				motion_bucket(shooter.speed(), shooter.max_forward_speed)))
+		var key := state_key(game_match, shooter, guard_team)
+		var bucket := motion_bucket(shooter.speed(), shooter.max_forward_speed)
+		var damage := float(shooter.weapon.get("damage", 0.0))
+		tally(_hf_shots[who], key, bucket)
+		tally(_hf_dmg[who], key, bucket, damage)
+		if who == "tactics":
+			var why := why_key(game_match, shooter)
+			tally(_hf_why, why, bucket)
+			tally(_hf_why, why + "|dmg", bucket, damage))
 	_listening = true
 	var last := -SAMPLE_TICKS
 	while is_instance_valid(game_match) and not _printed:
@@ -114,4 +144,4 @@ func _report(game_match: Match, guard: String, side: int, result: Dictionary, ca
 		return
 	print("HOLD_FIRE " + JSON.stringify({"guard": guard, "arena": String(Arena.active.get("name", "")),
 			"seed": int(_flag("seed", "0")), "side": _flag("guard-side", "green"), "listening": _listening,
-			"args": " ".join(_arm_args()), "shots": _hf_shots, "time": _hf_time}))
+			"args": " ".join(_arm_args()), "shots": _hf_shots, "time": _hf_time, "dmg": _hf_dmg, "why": _hf_why}))

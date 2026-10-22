@@ -70,7 +70,9 @@ def main(argv):
         print("%s line: %d fights" % (kind.upper(), len(line)))
         for who in ("tactics", "guard"):
             label = "CPU" if who == "tactics" else kind
-            for part, unit in (("shots", "rounds"), ("time", "crew samples at 2 Hz")):
+            for part, unit in (("shots", "rounds"), ("dmg", "damage fired (rounds x damage a round)"), ("time", "crew samples at 2 Hz")):
+                if not all(part in r for r in line):
+                    continue
                 table = merged(line, who, part)
                 total = {"n": sum(sum(c) for c in table.values()),
                          "moving": sum(c[1] + c[2] for c in table.values())}
@@ -87,6 +89,18 @@ def main(argv):
                          total, top)
                 else:
                     show("by option", by_field(table, 2), total, 6)
+        if all("why" in r for r in line):
+            why = {}
+            for r in line:
+                for key, c in r["why"].items():
+                    acc = why.setdefault(key, [0, 0, 0])
+                    for i in range(3):
+                        acc[i] += c[i]
+            for suffix, unit in (("", "rounds"), ("|dmg", "damage")):
+                part = {k[:-len(suffix)] if suffix else k: v for k, v in why.items() if k.endswith("|dmg") == bool(suffix)}
+                total = {"n": sum(sum(c) for c in part.values()), "moving": sum(c[1] + c[2] for c in part.values())}
+                if total["n"]:
+                    show("CPU %s by posture reason|shooter's half" % unit, part, total, 12)
 
 
 if __name__ == "__main__":

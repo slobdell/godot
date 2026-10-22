@@ -52,3 +52,15 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Report (2026-10-22, in progress):** D1 running.
+
+**Plan (in order; one-line reasons):**
+1. D1 the read: `make tactics-hold-fire` (tests/tactics/hold_fire_probe.gd, extends the guard line read-only): every CPU direct round
+   and a 2 Hz crew sample split by posture (hold/attack), element task verb, brain option and seat distance, with R37.26's motion
+   buckets; blob AND turtle lines, the base's seeds 2601-2608 x 5 maps x both sides (160 fights), builder0 light. Reason: the
+   brief wants the cause (which option moves a holder) before any code.
+2. D1 design note to the orchestrator: where a holder moves, which lever, and the bar (C38.1: the property it could break).
+3. D2 hold-and-fire behind a switch, lab first; quick-remote; one full check on a named hash; the paired guard series on builder2.
+4. D3 R1-R3 and K2 re-read on top of D2.
+5. Stretch: low-cover seats when defending.
