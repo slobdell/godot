@@ -278,7 +278,7 @@ var listener: Variant = null
 const ALIAS := {
 	"railgun_shot": "tank_boom", "energy_beam": "laser_pulse", "plasma_loop": "mg_loop", "pulse_shot": "autocannon_shot",
 	"missile_launch": "mortar_launch", "energy_hit": "shell_hit_armor", "sonic_loop": "mg_loop",
-	"twin_mg_loop": "mg_loop",
+	"twin_mg_loop": "mg_loop", "flank_hit": "shell_hit_armor", "rear_hit": "weak_spot_hit", "repair_loop": "engine_electric",
 }
 ## Sounds --audio-solo keeps quiet.
 var silenced := {}
