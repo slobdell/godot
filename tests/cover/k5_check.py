@@ -8,7 +8,8 @@ Regenerates every map twice in OUT_DIR (COVER_K5=none: the maps without K5; COVE
 - a / b: only the plan's maps (and their dry twins) change, only in `props`, and only barricades come in (a swap takes
   out exactly the named wreck / container and its mirror); every added run, grown by add_runs_proposal.CLEAR_M, touches
   nothing that collides and no terrain (a swap's barricade sits where the clutter stood); a shipping map keeps its shape
-  (add_runs_proposal.keeps_shape: lane widths, arena_room's ambush / chokepoint / room reads).
+  (add_runs_proposal.keeps_shape: lane widths, arena_room's ambush / chokepoint / room reads); a dry twin keeps
+  its lane widths.
 Prints one line per changed map; exit 1 on any failure.
 """
 import ast, json, os, shutil, subprocess, sys
@@ -94,6 +95,8 @@ def main():
             changed_shape = runs.keeps_shape(runs.shape(a), runs.shape(b))
             if changed_shape:
                 failures.append(f"{name}: the map's shape changed: {changed_shape}")
+        elif runs.lanes_narrowed(runs.shape(a)["lanes"], b):
+            failures.append(f"{name}: a lane got narrower (a dry twin's lanes are bounded by blocks, not water)")
         print(f"k5 {plan}: {name}: -{sum(gone.values())} clutter, +{sum(came.values())} barricades")
     if plan != "none":
         for base in sorted(expected - {c[:-len('_dry')] if c.endswith('_dry') else c for c in changed}):

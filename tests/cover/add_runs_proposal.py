@@ -140,6 +140,13 @@ def keeps_shape(before, after):
     return ""
 
 
+def lanes_narrowed(before_lanes, layout):
+    """True when a lane of `layout` is narrower than in `before_lanes` (shape()["lanes"])."""
+    import terrain_measure
+    after = {lane["name"]: lane["drivable_m"] for lane in terrain_measure.lanes_with_terrain(layout)}
+    return any(after.get(name, 0.0) < width - 0.05 for name, (width, _) in before_lanes.items())
+
+
 def propose(name, row, runs, base_dir=None):
     layout = json.load(open(Path(base_dir or ROOT / "arenas") / f"{name}.json"))
     half = float(layout.get("half_size", 120.0))
@@ -152,6 +159,12 @@ def propose(name, row, runs, base_dir=None):
     chosen = []
     before = shape(layout)
     placed = layout
+    # A terrain map's dry twin (`<name>_dry`, the same props without the water) gets the same runs; its lanes are
+    # bounded by blocks instead of water, so they are checked too (test_arena_container_joints measures them).
+    twin_path = Path(base_dir or ROOT / "arenas") / f"{name}_dry.json"
+    twin = json.load(open(twin_path)) if twin_path.exists() else None
+    twin_lanes = shape(twin)["lanes"] if twin else None
+    placed_twin = twin
     for (cx, cz), _ in sorted(pairs.items(), key=lambda kv: (-kv[1], kv[0])):
         if len(chosen) >= runs:
             break
@@ -166,10 +179,14 @@ def propose(name, row, runs, base_dir=None):
                     continue
                 sites.append((heat_near(cells, centre) + heat_near(cells, (-centre[0], -centre[1])), centre))
         for heat, centre in sorted(sites, key=lambda s: (-s[0], s[1]))[:SITES_TRIED]:
-            if not keeps_shape(before, shape(with_run(placed, centre))):
-                chosen.append((centre, heat))
-                placed = with_run(placed, centre)
-                break
+            if keeps_shape(before, shape(with_run(placed, centre))):
+                continue
+            if twin and lanes_narrowed(twin_lanes, with_run(placed_twin, centre)):
+                continue
+            chosen.append((centre, heat))
+            placed = with_run(placed, centre)
+            placed_twin = with_run(placed_twin, centre) if twin else None
+            break
     return placed, chosen
 
 

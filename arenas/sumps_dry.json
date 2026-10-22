@@ -444,64 +444,64 @@
   {
    "type": "barricade",
    "position": [
-    -23.0,
-    80.0
+    -39.0,
+    72.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "barricade",
    "position": [
-    23.0,
-    -80.0
+    39.0,
+    -72.0
    ],
    "rotation_deg": 180.0
   },
   {
    "type": "barricade",
    "position": [
-    -17.0,
-    80.0
+    -33.0,
+    72.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "barricade",
    "position": [
-    17.0,
-    -80.0
+    33.0,
+    -72.0
    ],
    "rotation_deg": 180.0
   },
   {
    "type": "barricade",
    "position": [
-    -43.0,
-    70.0
+    -33.0,
+    -60.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "barricade",
    "position": [
-    43.0,
-    -70.0
+    33.0,
+    60.0
    ],
    "rotation_deg": 180.0
   },
   {
    "type": "barricade",
    "position": [
-    -37.0,
-    70.0
+    -27.0,
+    -60.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "barricade",
    "position": [
-    37.0,
-    -70.0
+    27.0,
+    60.0
    ],
    "rotation_deg": 180.0
   }
