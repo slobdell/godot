@@ -170,7 +170,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   OFF).** Changes from v2: today's body judged at the click's width only (the yard_open container case); the 2 s first-click
   re-lay only where the column moved some squad's place > 40 m (about a rank). **Same cells, counter, deciding lines,
   thresholds and guards as the amended Bar G1** (deciding over click cells + his click; re-dealt 0 over all cells; every
-  R36.6 guard + contacts over all 14 cells; yard_open every row identical), **FRESH seeds 3901-3912**, builder0 light lane J
+  R36.6 guard + contacts over all 14 cells; yard_open every row identical), **FRESH seeds 3951-3962** (amended before any number: settle's S2 re-read uses 3903-3914), builder0 light lane J
   <= 4, judge `orders_judge.py g1`, paired top-down shots of his click (main v column, looked at). **His-click twitch guard:
   v3 does not change the lay at his click, so it cannot pass that guard on its own: the judged read WAITS for settle's
   deploy latch to ship ON on main and runs on top of it** (both arms on a tree with main merged at that checkpoint; latch-on
