@@ -867,6 +867,8 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 			plan["slots"] = _deploy_compact(plan["slots"], deploy["heading"])
 		if COVER_SEAT:
 			_cover_seats(plan, deploy, situation)
+		if DEPLOY_HOLD:
+			_deploy_hold(plan, deploy, situation)
 		if DEPLOY_TRACE and int(deploy.get("tick", -1)) == int(situation.get("tick", 0)):
 			_trace_deploy(plan, situation, stand, deploy["heading"], spacing)
 		return
@@ -1954,6 +1956,46 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 ## re-space the squad. Before the deploy the live read stands (main's). A plain AUTO move only (the deploy step's scope):
 ## holds and the CPU's other halts keep main's read. `--deploy-latch=on` (env DEPLOY_LATCH=on) opts in; OFF until its bar.
 static var DEPLOY_LATCH := OS.get_cmdline_user_args().has("--deploy-latch=on") or OS.get_environment("DEPLOY_LATCH") == "on"
+
+
+## Stretch (round 38, settle; S3's trace): A PARKED SQUAD THAT LOSES A CREW DOES NOT RE-DEAL ITS SURVIVORS. Traced
+## (laptop GDScript 44505a21c, crossing 3 click s3747, the fight probe, `--parked-hold=on`, n 1): each time one of Alpha's
+## crews died (t=77, t=102) its halt was laid again at the smaller size (herringbone 4 -> 3 -> 2) and every survivor's seat
+## moved 6-11 m: parked crews pulling out of their spots in the middle of a fight, the moment one of theirs is hit. Here the
+## deploy keeps what it dealt (`deploy["held"]`: each crew's seat, sector, seat entry and order, and the shape); while every
+## crew of the halt is one it dealt, a smaller squad (a loss) stands on its own dealt seats and the shape keeps its name.
+## A crew joining (a larger squad) lays the halt afresh as before. `--deploy-hold=on` (env DEPLOY_HOLD=on) opts in; OFF.
+static var DEPLOY_HOLD := OS.get_cmdline_user_args().has("--deploy-hold=on") or OS.get_environment("DEPLOY_HOLD") == "on"
+## Measurement: updates a held halt kept its survivors' seats after a loss, since start.
+static var deploy_held := 0
+
+
+static func _deploy_hold(plan: Dictionary, deploy: Dictionary, situation: Dictionary) -> void:
+	var names: Array = (situation.get("members", []) as Array).map(func(m: Dictionary) -> String: return String(m["name"]))
+	if int(deploy.get("tick", -1)) == int(situation.get("tick", 0)) or not deploy.has("held"):
+		var held := {}
+		for n: String in names:
+			if not plan["slots"].has(n):
+				return
+			var order: Variant = plan["orders"].get(n)
+			held[n] = {"slot": plan["slots"][n], "sector": plan["sectors"].get(n, 0.0), "seat": plan["seats"].get(n),
+					"order": (order as Dictionary).duplicate() if order is Dictionary else null}
+		deploy["held"] = held
+		deploy["held_shape"] = String(plan["formation"])
+		return
+	var held: Dictionary = deploy["held"]
+	if names.size() >= held.size() or not names.all(func(n: String) -> bool: return held.has(n)):
+		return
+	plan["formation"] = String(deploy.get("held_shape", plan["formation"]))
+	for n: String in names:
+		var entry: Dictionary = held[n]
+		plan["slots"][n] = entry["slot"]
+		plan["sectors"][n] = entry["sector"]
+		if entry["seat"] != null:
+			plan["seats"][n] = entry["seat"]
+		if entry["order"] is Dictionary:
+			plan["orders"][n] = (entry["order"] as Dictionary).duplicate()
+	deploy_held += 1
 
 
 ## `situation` with its terrain replaced by the deployed halt's latched read (DEPLOY_LATCH), else itself. Pure.
