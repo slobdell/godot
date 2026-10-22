@@ -512,6 +512,12 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   approach, nearest in front, sized to the corridor's real width, spread only on open ground, every squad whole), with a lab of his
   exact click, then a bar. O3 (whole squads) and the bridge-mouth lay fold into it; O3's standalone retry is dropped. Likely round
   38's core if it can't be judged this round.
+  **Step 1 read (orders):** his click (-29.3, 85.8), all selected = Hunters, Battery, Eyes + 4 loose Lancers. `SelectionSquads.ranks`
+  laid them as a BODY: the 3 squads ABREAST across the click, each slot 57 m (a 5-vehicle halt frontage at 14 m) + a 14 m gap, anchors
+  71 m apart at (-93,54), (-29,86), (35,117): a ~200 m front on a street grid, the outer anchors in other streets; the loose Lancers a
+  rear rank 40 m back at (-7,51); then the untangle re-dealt vehicles between squads whose paths crossed (Hunters got Battery_4 +
+  Eyes_5). **O2's s3747 trace:** every parked re-deal is the squad re-seating a parked crew (one tank shuttled between two spots
+  10-14 m apart three times in 33 s): O1's flicker landing on crews that now stay put; O2 waits for the O2-on-latch read.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
