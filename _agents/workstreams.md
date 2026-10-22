@@ -537,6 +537,14 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   herringbone, then single file; open ground (scan reaches 100 m both sides) = today's body unchanged; the squad nearest the click in
   front; no crew re-deal (whole squads swap); deck_clear applies. Bar additions ruled: route metres outside the corridor ("drove
   through other streets"), paired shots of his exact click for him, the front-to-back order as a lab assertion; yard_open no-change.
+- **R37.30 (2026-10-21) M5a seatstep FAILS as filed; not shipped.** manoeuvre (builder2 native, ON 7ebbc7bdd v BASE 936612334; jam 72
+  pairs locks/terminus/sumps x 6840-6863, hull-rest 128 pairs a task 6801-6832 x 4 factions; at J=14 from step 10; evidence
+  `references/round37/manoeuvre/m5-series/`, stream b98fd3cb6). Deciding PASSED: seat metres 43,206.5 -> 39,519.1 (-8.5 %, 1.645 se
+  3,051.3); lead-out give-ways 747 -> 436. Guards FAILED: team 1 kills 1,411 -> 1,322 (-89 v 81.0; every fight count fell: smaller
+  fights, not one-sided) and hull-rest never-settled faced_ambush 5 -> 10, faced_attack_move 17 -> 23 (limit +4.9); asker's wait,
+  timeouts, contacts, jam deaths passed. The ON check's red was N5's UNEXPECTED PASS on a tree predating 4b62d2186 (3019/0, 0 verify
+  mismatches). **Ruled:** seatstep stays OFF on its lab branch; a v2 (a fight-volume guard a symmetric rule can't fail just by
+  meaning fewer fights, a trace of why parked ambushers settle less, plus M5b's reverse-back) is round 38's.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
