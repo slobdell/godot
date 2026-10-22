@@ -5,6 +5,7 @@
     python3 tests/control/orders_judge.py o1fight rows.jsonl BASE_ARM NEW_ARM [runs.jsonl]
     python3 tests/control/orders_judge.py o2 rows.jsonl BASE_ARM NEW_ARM
     python3 tests/control/orders_judge.py o3 rows.jsonl BASE_ARM NEW_ARM runs.jsonl
+    python3 tests/control/orders_judge.py gl rows.jsonl BASE_ARM NEW_ARM runs.jsonl   (R37.29 group-lay=column)
     python3 tests/control/orders_judge.py o5 BASE_DIR NEW_DIR   (seat-yield-census folders of *.log)
 
 Probe guards (each cell, medians over seeds; R36.6's): all-in (the cell run's last squad arrival) <= base x 1.2 + 3 s and
@@ -213,6 +214,32 @@ def main(argv):
             lines.append("%s counter: parked_returns %d" % ("PASS" if pr > 0 else "FAIL", pr))
             ok = ok and pr > 0
             ok = fight_guards(runs, base, new, lines) and ok
+    elif mode == "gl":
+        # R37.29's bar: places outside the click's corridor <= 25 %, metres driven outside it <= 50 %, crews re-dealt 0.
+        runs = load(argv[4])
+        laid = sum(r.get("columns_laid", 0) for r in runs if r["arm"] == new)
+        b_rows = {(r["map"], r["squads"], r["route"], r["seed"], r["squad"]): r for r in rows if r["arm"] == base}
+        n_rows = {(r["map"], r["squads"], r["route"], r["seed"], r["squad"]): r for r in rows if r["arm"] == new}
+        differ = any(json.dumps({k: v for k, v in b_rows[k].items() if k != "arm"}, sort_keys=True)
+                     != json.dumps({k: v for k, v in n_rows[k].items() if k != "arm"}, sort_keys=True)
+                     for k in b_rows if k in n_rows)
+        lines.append("%s counter: columns_laid %d, rows differ %s" % ("PASS" if laid > 0 and differ else "FAIL", laid, differ))
+        bo = sum(1 for r in rows if r["arm"] == base and r.get("anchor_outside"))
+        no = sum(1 for r in rows if r["arm"] == new and r.get("anchor_outside"))
+        bm, nm = total(rows, base, "route_out_m"), total(rows, new, "route_out_m")
+        nr = sum(1 for r in rows if r["arm"] == new and r.get("redealt", 0) > 0)
+        d1, d2, d3 = no <= 0.25 * bo, nm <= 0.5 * bm, nr == 0
+        lines.append("%s deciding: places outside the corridor %d -> %d (<= %.1f)" % ("PASS" if d1 else "FAIL", bo, no, 0.25 * bo))
+        lines.append("%s deciding: metres driven outside the corridor %.0f -> %.0f (<= %.0f)" % ("PASS" if d2 else "FAIL", bm, nm, 0.5 * bm))
+        lines.append("%s deciding: squads with crews re-dealt (arm) %d (base %d)" % ("PASS" if d3 else "FAIL", nr,
+                     sum(1 for r in rows if r["arm"] == base and r.get("redealt", 0) > 0)))
+        ok = laid > 0 and differ and d1 and d2 and d3
+        b = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == base)
+        n = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == new)
+        passed = n <= b * 1.1 + 5
+        ok = ok and passed
+        lines.append("%s guard friend_contacts %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", b, n, b * 1.1 + 5))
+        ok = probe_guards(rows, base, new, lines) and ok
     elif mode == "o3":
         bd = sum(1 for r in rows if r["arm"] == base and r.get("redealt", 0) > 0)
         nd = sum(1 for r in rows if r["arm"] == new and r.get("redealt", 0) > 0)

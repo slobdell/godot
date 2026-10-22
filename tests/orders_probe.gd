@@ -239,7 +239,7 @@ func _run() -> void:
 			# Round 35 (D5, D3): the swaps uncross_paths made and the packs laid (each A/B confirms its own counter first, R35.5)
 			"uncrossed": _static_or(SelectionSquads, "uncrossed"), "packed": _static_or(SelectionSquads, "packed"), "pack_refused": SelectionSquads.pack_refused, "deck_cleared": _static_or(SelectionSquads, "deck_cleared"),
 			"friend_contacts": _contacts, "friend_contacts_foreign": _contacts_foreign, "contact_ticks": _contact_ticks,
-			"swapped_whole": SelectionSquads.swapped_whole, "whole_still_crossed": SelectionSquads.whole_still_crossed,
+			"swapped_whole": SelectionSquads.swapped_whole, "columns_laid": SelectionSquads.columns_laid, "whole_still_crossed": SelectionSquads.whole_still_crossed,
 			"untangle": "whole" if SelectionSquads.UNTANGLE_WHOLE else "deal",
 			"parked_hold": "on" if TankBrain.PARKED_HOLD else "off", "parked_refused": TankBrain.parked_refused,
 			"parked_returns": TankBrain.parked_returns,
