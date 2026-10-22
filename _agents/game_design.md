@@ -4285,3 +4285,12 @@ a ring segment under the tank, which teaches facing; not the recommended A), **p
 six:** the flank-hit, rear-hit and repair-loop sounds and the three announcer flank lines as written ("Caught broadside! That is
 what happens when you show them your doors!", "They went the long way round, and it paid off big!", "Right in the side panel!
 Nobody was watching that flank!"). He approved six (the brief capped "≤ 4 new sounds"; his approval supersedes the cap).
+
+## Round 37: his four answers (2026-10-21 ~20:00 PDT, the question tool; all the recommendations)
+
+1. **Barrier protection follows what it hides** ("Yes, as it looks"): low cars well protected, tall trucks little (cover's honest
+   geometry, K2). No taller rubble (it would block the sheltering crew's own shots).
+2. **Barrier lines on the five guard maps** ("Yes, trial on 5 maps"): two mirrored 12 m runs across the hottest streets of terminus,
+   locks, sumps, gorge, parade (cover's K5 plan b, lanes kept); taken out again if the maps feel cluttered when he plays.
+3. **A nearly dead parked crew pulls back, then returns to its spot** ("Pull back and return"): orders' O2 keeps RETREAT-then-return.
+4. **Parked scouts keep the circling turn-in** ("Leave the circling"): M6 stays parked; O2's drive-back returns them after the fight.
