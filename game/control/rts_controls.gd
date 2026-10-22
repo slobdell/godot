@@ -1292,6 +1292,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 ## plain group click starts it; a shifted click for the same squads adds to it; anything else starts again.
 var _route_clicks: Array = []
 var _route_squads: Array = []
+var _route_tick := -1
+## G2: a shifted click this soon after his plain group click re-lays that first click as a waypoint (the squads have barely
+## set off). Measurement: first legs re-laid so.
+const ROUTE_RELAY_S := 2.0
+static var first_legs_relaid := 0
 
 
 func _route_key(squads: Array) -> Array:
@@ -1310,6 +1315,7 @@ func _remember_route_click(squads: Array, blocks: Array, click: Vector3, queued:
 			body += Vector3((block["center"] as Vector3).x, 0.0, (block["center"] as Vector3).z) / maxf(blocks.size(), 1.0)
 		_route_clicks = [body]
 		_route_squads = key
+		_route_tick = game_match.tick if game_match != null else -1
 	_route_clicks.append(click)
 
 
@@ -1781,23 +1787,30 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	var prev := Vector3.ZERO
 	var before := Vector3.ZERO
 	var ground: Node3D = null
+	var running: Array = []  # G2: per held element, whether its waypoint is the running task (his first click, just given)
+	var fresh := SelectionSquads.GROUP_LAY and _route_key(squads) == _route_squads and game_match != null \
+			and game_match.tick - _route_tick <= int(ROUTE_RELAY_S * SimClock.TICK_RATE)
 	for squad: Dictionary in squads:
 		var held: Element = squad.get("element")
 		# A squad whose previous waypoint is RUNNING (or that has no element) keeps its anchor; the others still get the gate
 		# (planner's probe, O4 before/after: one squad queued behind its crews' orders left a 5-squad route with no gate at all).
-		if held == null or not is_instance_valid_element(held) or held.queued_tasks.is_empty():
+		# G2: unless the running waypoint is his plain group click given moments ago (`fresh`): the probe's route cells
+		# stacked a column at the first waypoint and the rear squads backed up before driving the route.
+		if held == null or not is_instance_valid_element(held) or (held.queued_tasks.is_empty() and not fresh):
 			continue
-		var last: Dictionary = held.queued_tasks[held.queued_tasks.size() - 1]
+		var on_task := held.queued_tasks.is_empty()
+		var last: Dictionary = held.task if on_task else held.queued_tasks[held.queued_tasks.size() - 1]
 		if String(last.get("verb", "")) != "move" or not last.has("to"):
 			continue
 		prev += Vector3(float(last["to"][0]), 0.0, float(last["to"][1]))
 		var earlier: Variant = null
 		if held.queued_tasks.size() >= 2:
 			earlier = ElementTask.destination(held.queued_tasks[held.queued_tasks.size() - 2])
-		if earlier == null and not held.task.is_empty():
+		if earlier == null and not on_task and not held.task.is_empty():
 			earlier = ElementTask.destination(held.task)
 		if earlier == null:
 			earlier = _middle_of(squad["units"])
+		running.append(on_task)
 		before += Vector3((earlier as Vector3).x, 0.0, (earlier as Vector3).z)
 		held_elements.append(held)
 		# Round 35 (D5, planner's Locks 5 route): the gate is dealt by where each squad's PREVIOUS leg ends (where it comes
@@ -1862,6 +1875,15 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 		gate = SelectionSquads.never_behind(gate, blocks, prev, approach)
 	for i in held_elements.size():
 		var element: Element = held_elements[i]
+		if bool(running[i]):
+			# G2: his first click, just given, becomes a waypoint passed through: the running task re-aimed at its gate place.
+			var aimed: Dictionary = element.task.duplicate(true)
+			aimed["to"] = [gate[i].x, gate[i].z]
+			for key: String in ["halt_at", "halt_shape", "lay"]:
+				aimed.erase(key)
+			element.retarget(aimed)
+			first_legs_relaid += 1
+			continue
 		element.relay_queued(element.queued_tasks.size() - 1, [gate[i].x, gate[i].z])
 		# D3: a waypoint that is no longer the last is passed as a gate, not deployed on: its packed halt goes.
 		var relayed: Dictionary = element.queued_tasks[element.queued_tasks.size() - 1]
