@@ -438,32 +438,32 @@
   {
    "type": "barricade",
    "position": [
-    -19.0,
-    22.0
+    -53.0,
+    80.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "barricade",
    "position": [
-    19.0,
-    -22.0
+    53.0,
+    -80.0
    ],
    "rotation_deg": 180.0
   },
   {
    "type": "barricade",
    "position": [
-    -13.0,
-    22.0
+    -47.0,
+    80.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "barricade",
    "position": [
-    13.0,
-    -22.0
+    47.0,
+    -80.0
    ],
    "rotation_deg": 180.0
   }

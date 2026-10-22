@@ -153,7 +153,8 @@ def wreck(x, z, rot=0):
 #       low cover, or Bar K reads a null there).
 #   "b" ADD: two mirrored 12 m runs (two barricades end to end) across each guard map's hottest streets.
 # Sites from the drafts (tests/cover/reshape_proposal.py, add_runs_proposal.py; heat 5b4e79362, builder2, 4 fights a
-# map; every run keeps 5 m clear and every lane passing R4). `make cover-k5 PLAN=a|b` checks a plan in a scratch folder.
+# map; every run keeps 5 m clear, every lane its R4 width, and the map its base-to-base ambush read --
+# add_runs_proposal --keep lanes; the arena tests pin those). `make cover-k5 PLAN=a|b` checks a plan in a scratch folder.
 # COVER_K5 env (a | b | none) overrides the constant, for that check only.
 COVER_K5 = "b"
 # (type, x, z) of one member of each mirrored pair; the barricade faces the base axis (a crew behind it faces the enemy).
@@ -168,11 +169,11 @@ COVER_K5_SWAPS = {
 }
 # Run centres (each with its mirror): long side along x, square to the base axis.
 COVER_K5_RUNS = {
-    "terminus": [(-80, -28), (-62, 28)],
+    "terminus": [(-80, 70), (-62, 80)],
     "locks": [(-26, -16), (-46, -16)],
     "sumps": [(-20, 80), (-40, 70)],
-    "gorge": [(-62, 6), (-32, 26)],
-    "parade": [(-44, -8), (-16, 22)],
+    "gorge": [(-62, 6), (-28, -6)],
+    "parade": [(-44, -8), (-50, 80)],
 }
 COVER_K5_A_RUNS = ("locks", "parade")
 

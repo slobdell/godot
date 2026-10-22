@@ -7,8 +7,8 @@ Regenerates every map twice in OUT_DIR (COVER_K5=none: the maps without K5; COVE
 - none: nothing to compare (it only proves the generator runs);
 - a / b: only the plan's maps (and their dry twins) change, only in `props`, and only barricades come in (a swap takes
   out exactly the named wreck / container and its mirror); every added run, grown by add_runs_proposal.CLEAR_M, touches
-  nothing that collides and no terrain (a swap's barricade sits where the clutter stood); every lane that passed R4
-  before (tools/terrain_measure) still passes.
+  nothing that collides and no terrain (a swap's barricade sits where the clutter stood); a shipping map keeps its shape
+  (add_runs_proposal.keeps_shape: lane widths, arena_room's ambush / chokepoint / room reads).
 Prints one line per changed map; exit 1 on any failure.
 """
 import ast, json, os, shutil, subprocess, sys
@@ -17,6 +17,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import add_runs_proposal as runs  # noqa: E402
+
+## The applied plan keeps what the arena tests pin (lane widths, the ambush read); room and chokepoint counts may move.
+runs.KEEP = "lanes"
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -87,9 +90,10 @@ def main():
             for centre in ((x, z), (-x, -z)):
                 if not runs.fits(a, centre, float(a.get("half_size", 120.0))):
                     failures.append(f"{name}: the run at {centre} does not clear {runs.CLEAR_M} m")
-        lost = runs.lanes_ok(a) - runs.lanes_ok(b)
-        if lost:
-            failures.append(f"{name}: lanes no longer pass R4: {sorted(lost)}")
+        if not a.get("fixture"):
+            changed_shape = runs.keeps_shape(runs.shape(a), runs.shape(b))
+            if changed_shape:
+                failures.append(f"{name}: the map's shape changed: {changed_shape}")
         print(f"k5 {plan}: {name}: -{sum(gone.values())} clutter, +{sum(came.values())} barricades")
     if plan != "none":
         for base in sorted(expected - {c[:-len('_dry')] if c.endswith('_dry') else c for c in changed}):

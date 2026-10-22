@@ -8,7 +8,7 @@ A RUN is RUN_PIECES barricades end to end (12 m), its long side square to the ba
 half), and its 180-degree mirror (layouts are point-symmetric). Where: the centre of a hot 10 m cell (hits summed over the cell
 and its mirror), nudged on a 2 m grid within the cell, kept only if the run grown by CLEAR_M touches nothing that collides,
 no water or pit, stays MID_Z_MAX from the base lines (out of the spawn ends) and MIN_APART_M from another run, and every
-lane that passed R4 (two widest hulls drivable, corners clear: tools/terrain_measure) still passes with it. Up to `--runs`
+lane keeps its R4 drivable width and the map keeps arena_room's reads (keeps_shape: the arena tests pin them). Up to `--runs`
 mirrored pairs a map, hottest first. Default maps: the four whose top four cell pairs hold >= 20 % of the hull hits (heat at
 5b4e79362): crossing 0.28, sumps 0.27, locks 0.20, gorge 0.20.
 """
@@ -28,6 +28,13 @@ CLEAR_M = 5.0
 MID_Z_MAX = 80.0
 MIN_APART_M = 20.0
 HEAT_RADIUS_M = 12.0
+## A run must leave the map's shape as it was (keeps_shape); the room's line share may fall this much (the run is ground
+## a line cannot stand on), no more. The SITES_TRIED hottest sites of a hot cell are tried, hottest first.
+LINE_SHARE_SLACK = 0.02
+SITES_TRIED = 8
+## "all": the above. "lanes": lane widths and the base-to-base ambush read only (what the arena tests pin as the map's
+## design: his parade's crossing line, the Terminus's no-line centre); room and chokepoint counts may move.
+KEEP = "all"
 DEFAULT_MAPS = ["crossing", "sumps", "locks", "gorge"]
 
 
@@ -101,8 +108,40 @@ def heat_near(cells, pos):
                <= HEAT_RADIUS_M)
 
 
-def propose(name, row, runs):
-    layout = json.load(open(ROOT / "arenas" / f"{name}.json"))
+def shape(layout):
+    """What a run must not change: each lane's R4 drivable width and pass, and arena_room's room and ambush reads
+    (tools/test_arena_room.py and test_arena_lanes.py pin these per map)."""
+    import arena_room
+    import terrain_measure
+    lanes = {lane["name"]: (round(lane["drivable_m"], 2), lane["pass"] and all(c["pass"] for c in lane["corners"]))
+             for lane in terrain_measure.lanes_with_terrain(layout)}
+    m = arena_room.measure(layout, with_report=False)
+    b = m["ambush"]["base_to_base"]
+    return {"lanes": lanes, "stations": b["stations"], "hulls": b["hulls"], "chokepoints": len(m["chokepoints"]),
+            "line_share": m["room"]["line_share"], "frontage": m["room"]["widest_frontage_m"]}
+
+
+def keeps_shape(before, after):
+    """'' or what the run changed. Lane widths and the ambush/chokepoint reads exactly; the room's line share within
+    LINE_SHARE_SLACK and its widest frontage within 1 m."""
+    for name, (width, ok) in before["lanes"].items():
+        w, o = after["lanes"].get(name, (0.0, False))
+        if w < width - 0.05 or (ok and not o):
+            return f"lane {name} {width} -> {w} m"
+    for key in ("stations", "hulls") + (() if KEEP == "lanes" else ("chokepoints",)):
+        if after[key] != before[key]:
+            return f"{key} {before[key]} -> {after[key]}"
+    if KEEP == "lanes":
+        return ""
+    if after["line_share"] < before["line_share"] - LINE_SHARE_SLACK:
+        return f"line share {before['line_share']} -> {after['line_share']}"
+    if after["frontage"] < before["frontage"] - 1.0:
+        return f"frontage {before['frontage']} -> {after['frontage']}"
+    return ""
+
+
+def propose(name, row, runs, base_dir=None):
+    layout = json.load(open(Path(base_dir or ROOT / "arenas") / f"{name}.json"))
     half = float(layout.get("half_size", 120.0))
     cells = (row.get("heat") or {}).get("cells", {})
     pairs = {}
@@ -111,12 +150,12 @@ def propose(name, row, runs):
         k = min((x, z), (-x - 1, -z - 1))
         pairs[k] = pairs.get(k, 0) + count
     chosen = []
-    passing = lanes_ok(layout)
+    before = shape(layout)
     placed = layout
     for (cx, cz), _ in sorted(pairs.items(), key=lambda kv: (-kv[1], kv[0])):
         if len(chosen) >= runs:
             break
-        best = None
+        sites = []
         for dx in range(0, 11, 2):
             for dz in range(0, 11, 2):
                 centre = (cx * 10 + dx, cz * 10 + dz)
@@ -125,14 +164,12 @@ def propose(name, row, runs):
                     continue
                 if not fits(layout, centre, half) or not fits(layout, (-centre[0], -centre[1]), half):
                     continue
-                heat = heat_near(cells, centre) + heat_near(cells, (-centre[0], -centre[1]))
-                if best is None or heat > best[1]:
-                    if not passing <= lanes_ok(with_run(placed, centre)):
-                        continue
-                    best = (centre, heat)
-        if best is not None:
-            chosen.append(best)
-            placed = with_run(placed, best[0])
+                sites.append((heat_near(cells, centre) + heat_near(cells, (-centre[0], -centre[1])), centre))
+        for heat, centre in sorted(sites, key=lambda s: (-s[0], s[1]))[:SITES_TRIED]:
+            if not keeps_shape(before, shape(with_run(placed, centre))):
+                chosen.append((centre, heat))
+                placed = with_run(placed, centre)
+                break
     return placed, chosen
 
 
@@ -142,20 +179,25 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--maps", default=",".join(DEFAULT_MAPS))
     ap.add_argument("--runs", type=int, default=2)
+    ap.add_argument("--keep", default="all", choices=["all", "lanes"])
+    ap.add_argument("--base", default=None, help="the maps without K5 (default arenas/; once K5 is applied, a "
+                    "COVER_K5=none generation, e.g. make cover-k5 PLAN=none -> build/cover-k5-none/none)")
     args = ap.parse_args()
+    global KEEP
+    KEEP = args.keep
     report = json.load(open(args.heat))
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     cards = []
     for name in args.maps.split(","):
         row = report[name]
-        after, chosen = propose(name, row, args.runs)
+        after, chosen = propose(name, row, args.runs, args.base)
         (out / f"{name}.json").write_text(json.dumps(after, indent=1))
         total = (row.get("heat") or {}).get("hull_hits", 0)
         what = "; ".join(f"a 12 m run at ({x:.0f}, {z:.0f}) and its mirror: {h} of {total} sampled hull hits within 12 m"
                          for (x, z), h in chosen) or "no street with room for a run near the fighting"
         cards.append(f"<section><h2>{html.escape(name)}</h2><div class='pair'><figure><img src='data:image/png;base64,"
-                     f"{cover_page.plot(name, row)}'><figcaption>today</figcaption></figure><figure><img "
+                     f"{cover_page.plot(name, row, layout=json.load(open(Path(args.base or ROOT / 'arenas') / f'{name}.json')))}'><figcaption>today</figcaption></figure><figure><img "
                      f"src='data:image/png;base64,{cover_page.plot(name, row, layout=after)}'><figcaption>proposed: "
                      f"{len(chosen) * 2 * RUN_PIECES} barriers added</figcaption></figure></div><p>{html.escape(what)}</p>"
                      f"</section>")

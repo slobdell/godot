@@ -296,32 +296,32 @@
   {
    "type": "barricade",
    "position": [
-    -35.0,
-    26.0
+    -31.0,
+    -6.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "barricade",
    "position": [
-    35.0,
-    -26.0
+    31.0,
+    6.0
    ],
    "rotation_deg": 180.0
   },
   {
    "type": "barricade",
    "position": [
-    -29.0,
-    26.0
+    -25.0,
+    -6.0
    ],
    "rotation_deg": 0.0
   },
   {
    "type": "barricade",
    "position": [
-    29.0,
-    -26.0
+    25.0,
+    6.0
    ],
    "rotation_deg": 180.0
   }
