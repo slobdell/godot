@@ -85,7 +85,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   1c484a525.fights.jsonl.
 - **guard.py --pair** (68301e6a7, doctrine's Bar G2): the guard's kills and losses a fight and median length, all and per
   guard faction, each with a paired se from the per-seed differences. test_guard 0 failed, test_scoreboard 14/0 (laptop);
-  not yet through a full check.
+  not yet through a full check. Doctrine cross-checked it against their scratch script on D2 (acbdef4c5-defend v 1c484a525):
+  turtle kills -2.91 and losses -3.30 a fight sum to their -6.21, and the medians match.
 - **N3 closed** for the round (orchestrator accepted "not switching"); an AMD sample only if builder2 comes up on one.
 
 **Side worktrees to remove at close:** ../godot-native-guard, -score, -k5 (and round 37's: -m5, -unstick, -cp371,
