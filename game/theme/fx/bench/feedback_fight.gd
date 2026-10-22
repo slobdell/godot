@@ -1,7 +1,7 @@
 class_name FeedbackFight
 extends Node
-## `make feedback-fight` (round 37, feedback F1, the orchestrator's ask): the recommended looks in a REAL fight, nothing
-## staged, so the lead can judge them in motion when he answers the directions page. A CPU-v-CPU skirmish runs as he
+## `make feedback-fight` (round 37, feedback): the looks he picked (FeedbackLook) in a REAL fight, nothing staged, so he
+## can judge them in motion. A CPU-v-CPU skirmish runs as he
 ## plays it, spectated so it starts without the planning pause (gangs, who bring the Resupply Tanker, against the Law, who bring the Sonic Emitter; `--render-preset=laptop`
 ## from the Makefile), and the camera waits at his pose (21 deg, FOV 35, 49 m) for each slot's moment to happen on its
 ## own, then follows it for a short clip:
@@ -15,6 +15,7 @@ extends Node
 ##        --feedback-fight-slots=hit,repair (all four)  --feedback-fight-clips=N per slot (2)  --feedback-fight-frames=N per clip (36)  --feedback-fight-max-s=S (300)
 ## Prints FEEDBACK_FIGHT_CLIP <name> subject=<unit> events=<n> and FEEDBACK_FIGHT_DONE clips=<n> missing=<slots>.
 
+const SLOTS := ["hit", "pinned", "repair", "cone"]
 const PITCH_DEG := 21.0
 const DISTANCE_M := 49.0
 const CLIP_FPS := 12.0
@@ -59,15 +60,9 @@ func _ready() -> void:
 	clips_per_slot = flags.integer("feedback-fight-clips", clips_per_slot)
 	clip_frames = flags.integer("feedback-fight-frames", clip_frames)
 	max_seconds = float(flags.integer("feedback-fight-max-s", int(max_seconds)))
-	var look := flags.text("feedback-fight-look")
-	if look == "":
-		var parts: Array[String] = []
-		for slot: String in FeedbackLook.SLOTS:
-			parts.append("%s:%s" % [slot, FeedbackLook.RECOMMENDED[slot]])
-		look = ",".join(parts)
-	FeedbackLook.use(look)
-	var wanted_slots := flags.text("feedback-fight-slots", ",".join(FeedbackLook.SLOTS)).split(",", false)
-	for slot: String in FeedbackLook.SLOTS:
+	FeedbackLook.use(flags.text("feedback-fight-look"))
+	var wanted_slots := flags.text("feedback-fight-slots", ",".join(SLOTS)).split(",", false)
+	for slot: String in SLOTS:
 		_taken[slot] = 0 if wanted_slots.has(slot) else clips_per_slot
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	_run.call_deferred()
@@ -79,7 +74,7 @@ func _run() -> void:
 	_match.projectile_impact.connect(_on_impact)
 	_match.weapon_fired.connect(_on_fired)
 	_match.finished.connect(func(_result: Dictionary) -> void: _ended = true)
-	print("FEEDBACK_FIGHT_START look=%s arena=%s" % [FeedbackLook._picked, Arena.active.get("name", "?")])
+	print("FEEDBACK_FIGHT_START look=%s arena=%s" % [FeedbackLook._on, Arena.active.get("name", "?")])
 	var started := Time.get_ticks_msec()
 	while _missing().size() > 0 and _match_running() and (Time.get_ticks_msec() - started) / 1000.0 < max_seconds:
 		var moment := _moment()
@@ -108,7 +103,7 @@ func _match_running() -> bool:
 
 func _missing() -> Array[String]:
 	var found: Array[String] = []
-	for slot: String in FeedbackLook.SLOTS:
+	for slot: String in SLOTS:
 		if int(_taken[slot]) < clips_per_slot:
 			found.append(slot)
 	return found

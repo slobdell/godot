@@ -1,6 +1,7 @@
 extends TestCase
 ## Round 37 (feedback stretch): the radar rings a pinned enemy the team can see, and the unit card names what the rules
-## are doing to a vehicle ("PINNED", "REPAIRING +5/s"), both behind the `marks` look, off until his pick.
+## are doing to a vehicle ("PINNED", "REPAIRING +5/s"), both behind `marks` (off: not on his page); and his pick for a
+## pinned crew, chevrons over its bar.
 
 const ARENA := preload("res://game/arena/arena.tscn")
 const MATCH := preload("res://game/match/match.tscn")
@@ -54,7 +55,7 @@ func test_a_pinned_enemy_in_sight_is_ringed_on_the_radar() -> void:
 	enemy.suppression = 1.0
 	FeedbackLook.use("")
 	assert_eq(_pinned_enemies(radar), 0, "off by default: nothing he has not picked shows")
-	FeedbackLook.use("marks:a")
+	FeedbackLook.use("marks:on")
 	assert_eq(_pinned_enemies(radar), 1, "pinned: ringed")
 	var rings: Array = radar._marks_from_blips(radar.blips())["by_shape"]["ring"]
 	assert_true(rings.any(func(r: Array) -> bool: return r[2] == Radar.PINNED_COLOR), "in the pinned colour")
@@ -71,14 +72,36 @@ func test_the_pinned_and_repairing_words() -> void:
 	var controls := RtsControls.new()
 	controls.game_match = game_match
 	panel.controls = controls
-	FeedbackLook.use("marks:a")
+	FeedbackLook.use("marks:on")
 	assert_eq(panel._state_words(patient), "", "nothing happening: no words")
 	patient.health = patient.max_health / 2
 	patient.ticks_since_hit = 1_000_000
 	patient.suppression = 0.9
 	FeedbackLook.use("")
 	assert_eq(panel._state_words(patient), "", "off by default: no words until he picks them")
-	FeedbackLook.use("marks:a")
+	FeedbackLook.use("marks:on")
 	assert_eq(panel._state_words(patient), "PINNED  REPAIRING +5/s", "both, in his words")
 	panel.free()
 	controls.free()
+
+
+## His pick "pinned A": a pinned crew wears one to three heads-down chevrons over its bar, on by default; off by the flag.
+func test_a_pinned_crew_wears_chevrons_by_how_pinned() -> void:
+	var game_match: Match = add_to_tree(MATCH.instantiate())
+	game_match.elimination = true
+	var fx: FxWorld = add_to_tree(FxWorld.new())
+	fx.link.attach(game_match)
+	var crews: Array[Tank] = []
+	for i in 4:
+		var crew := game_match.spawn_tank("Crew%d" % i, i, Match.Team.RUST)
+		crew.global_position = Vector3(60.0 + i * 10.0, 0.0, 0.0)
+		crew.suppression = [0.0, 0.4, 0.7, 1.0][i]
+		crews.append(crew)
+	fx.feedback.update(fx.now)
+	var bars := UnitBars.new()
+	bars.feedback = fx.feedback
+	assert_eq(crews.map(func(crew: Tank) -> int: return bars.chevrons_for(crew)), [0, 1, 2, 3],
+			"none, then one to three by how pinned")
+	FeedbackLook.use("pinned:off")
+	assert_eq(bars.chevrons_for(crews[3]), 0, "off: none")
+	bars.free()

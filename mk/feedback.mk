@@ -8,7 +8,7 @@ FB_SLOTS ?= hit,pinned,repair,cone
 FB_CLIP_FRAMES ?= 24
 FB_FLAGS ?=
 
-feedback-shots: import ## F1: every look of every feedback slot staged in a real skirmish, stills at his pose + close, and clips -> build/feedback-shots/<preset>/ (needs a display: make remote T=feedback-shots; FB_PRESET=laptop|desktop FB_ARENA= FB_SLOTS= FB_CLIP_FRAMES= FB_RES=)
+feedback-shots: import ## his picked looks staged in a real skirmish, stills at his pose + close, and clips -> build/feedback-shots/<preset>/ (needs a display: make remote T=feedback-shots; FB_PRESET=laptop|desktop FB_ARENA= FB_SLOTS= FB_CLIP_FRAMES= FB_RES=)
 	rm -rf $(FB_DIR)/$(FB_PRESET) && mkdir -p $(FB_DIR)/$(FB_PRESET)
 	@echo "commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null)}$$(git diff --quiet HEAD 2>/dev/null || echo ' (+ uncommitted)') host $$(hostname) preset $(FB_PRESET) arena $(FB_ARENA) res $(FB_RES)" \
 		> $(FB_DIR)/$(FB_PRESET)/SOURCE.txt
@@ -32,7 +32,7 @@ FB_FIGHT_FRAMES ?= 36
 FB_FIGHT_SEED ?= 3
 FB_FIGHT_DIR = $(BUILD_DIR)/feedback-fight/$(FB_PRESET)-seed$(FB_FIGHT_SEED)
 
-feedback-fight: import ## F1: the recommended looks in a REAL CPU fight (gangs v Law, nothing staged), clips following each slot's moment -> build/feedback-fight/<preset>-seed<N>/ (needs a display: make remote T=feedback-fight; FB_PRESET= FB_ARENA= FB_FIGHT_SEED= FB_FIGHT_CLIPS= FB_FIGHT_FRAMES= FB_FLAGS=)
+feedback-fight: import ## his picked looks in a REAL CPU fight (gangs v Law, nothing staged), clips following each slot's moment -> build/feedback-fight/<preset>-seed<N>/ (needs a display: make remote T=feedback-fight; FB_PRESET= FB_ARENA= FB_FIGHT_SEED= FB_FIGHT_CLIPS= FB_FIGHT_FRAMES= FB_FLAGS=)
 	rm -rf $(FB_FIGHT_DIR) && mkdir -p $(FB_FIGHT_DIR)
 	@echo "commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null)}$$(git diff --quiet HEAD 2>/dev/null || echo ' (+ uncommitted)') host $$(hostname) preset $(FB_PRESET) arena $(FB_ARENA) seed $(FB_FIGHT_SEED) res $(FB_RES)" \
 		> $(FB_FIGHT_DIR)/SOURCE.txt
@@ -53,7 +53,4 @@ feedback-fight: import ## F1: the recommended looks in a REAL CPU fight (gangs v
 	@cat $(FB_FIGHT_DIR)/SOURCE.txt
 	@echo "feedback-fight: $$(ls $(FB_FIGHT_DIR)/*.mp4 2>/dev/null | wc -l) clips in $(FB_FIGHT_DIR)"
 
-feedback-page: ## F1: the lead's directions page from build/feedback-shots/<preset>/ -> build/feedback-page/index.html (pure Python; FB_PRESET=)
-	python3 tests/feedback/directions_page.py --shots $(FB_DIR)/$(FB_PRESET) --out $(BUILD_DIR)/feedback-page
-
-.PHONY: feedback-shots feedback-fight feedback-page
+.PHONY: feedback-shots feedback-fight
