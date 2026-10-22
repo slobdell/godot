@@ -622,6 +622,13 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   hand-over; cover merges main after both. **His click at the real point (orders 2259e262e, NOT judged, builder0 light, 7e9bd7fb7,
   3801-3812, probe armies):** 5 squads places outside the corridor 36/60 -> 0, metres outside 2,350 -> 323, re-dealt 24 -> 0, contacts
   1,236 -> 396, all-in 12.4 -> 9.4 s; 3 squads outside 12/36 -> 0. Shots in `references/round37/orders/group-click-his-point-7e9bd7fb7/`.
+- **R37.40 (2026-10-22) O1-LATCH PASSES (the settle re-read) and ships ON.** orders (builder0 native 1ebd7e550, seeds 3821-3832,
+  `o1settle`; `references/round37/orders/o1latch-reread-builder0-1ebd7e550/`): base relays 143; deciding relays 143 -> 2 (limit 35.8),
+  shape flips 19 -> 1; all 12 cells pass place + twitch; parked re-deals 429 -> 428 (reported). Census and fight read passed on
+  c14ec0d80 (R37.37). Default flipped to `latch` (e94410eb4, `game/tactics/element_situation.gd`, every side's halts;
+  `--halt-terrain=centre` keeps round 36's); GDScript only (no native reader). Hand-over = stream/orders f8bf6aaad (latch ON; O2/O3/O5/
+  O6/O7 code OFF), its builder0 full check queued; moved sim-baseline maps are attributed with `--halt-terrain=centre` (must read
+  unmoved). O2's re-deal source recorded as a hypothesis (the halt re-planned when a pulled-back crew returns), untraced.
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
