@@ -555,6 +555,12 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   >= 50 %); seats moved aside 5,456; deaths in give-ways 49 -> 45 (limit 60.5); team deaths 25.86 -> 24.47 and 15.50 -> 16.42 a fight
   (pass). Screen-to-screen yields 742 -> 438, but screen-to-support_by_fire 251 -> 255 (the aside step doesn't see a support_by_fire
   route). **Ruled:** O5 stays OFF; a v2 that also reads support_by_fire routes is a round-38 candidate.
+- **R37.33 (2026-10-22) the rules PACKAGE: Bar R deciding NOT MET; rules closed.** rules (builder2, 75c3e74e0,
+  `--rules-on=sight,spread,pin_slow`, 320/320 paired, 0 lost): blob 48 -> 43 % (paired -4.4 pts, se 3.4; 18 flips to a loss, 11 to a
+  win; McNemar p 0.13); kill ratio -0.036 (se 0.027); turtle 39 -> 38 %; per faction Condemned -6.7, Gangs -10.0, Law -2.5, Syndicate
+  0.0 pts; G2 blob Gangs kills -1.1 (2 se 0.6) + the usual turtle Gangs median. The package is about the sum of the three (-4.4 v -4.9).
+  **Ruled:** all three stay OFF (switches on main for his playtest, `make rules-skirmish` once rules' tooling merges); rules' tooling
+  (rules-skirmish, guard_motion_probe, bar_r.py) merges on a green check of rules' tip. builder2 goes to cover.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
