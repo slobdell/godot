@@ -63,7 +63,11 @@ baseline check (contract 1).
 **builder0 use (C38.1, the orchestrator's machine note 2026-10-22):** ONE judged series at a time. Judged: the M5 v2 series
 (`manoeuvre-m5v2`) STARTED 08:41 (its ON check queued first); end will be logged here. Light/short runs beside it: the M2 trace
 tree's `make lint` (godot-manoeuvre-trace) and the M7 aside trace (18 fights, J=3, `manoeuvre-aside1`). The M2 trace census
-waits until those two end.
+waits until those two end. **10:12: the M5 v2 ON check (269d593c5) was KILLED by slot.sh after 5400 s** on a loaded builder0 (load
+~35; test / ai-scenarios-check / remote-guard-test Terminated with empty logs; sim-baseline MOVED on yard/pit/archipelago/cut, as
+expected with seatstep ON). Not a verdict. Driver patched (a slot kill = a lost try) and relaunched as `manoeuvre-m5v2b` ~11:10.
+M2 trace census (`manoeuvre-m2trace`, jam 3 maps x 7001-7008, J=3, both arms) started 11:01; M7 v2 dev read (`manoeuvre-aside2`,
+18 fights) ~11:05.
 
 **Plan (in order; smallest foundation first):**
 1. **M1 (M5 v2):** Bar M5 v2 filed below BEFORE any number. Lab trees on today's main: `lab/manoeuvre-r38-m5` (stream + M5a's
