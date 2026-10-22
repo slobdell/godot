@@ -171,6 +171,15 @@ static var APPROACH_BATTERY := true
 ## places while three trucks were set up, and the crew sent 20 m across them was refused and never moved again.
 ## `--battery-seat=off` is main's rule.
 static var BATTERY_SEAT := true
+## Round 37 (orders, the lead's playtest 2026-10-21, archipelago s44214: "My last 2 surviving units are artillery
+## vehicles... I was directing them to move to target locations, and they did not move"): the battery seat holds a set-up
+## crew only while it stands ON the seat it was last sent to (within BATTERY_SEAT_ON_M): a re-lay or a coil swap within
+## the task, as round 33 meant. A truck that stands still sets up by itself, so an all-artillery squad parked a few
+## seconds had every crew set up, and each new move of his seated them where they stood: an order to its own spot, done
+## at once, and a truck that never wants to move never packs (lab: test_control_artillery_move, 0.0 m). Sent somewhere
+## else, it is not held; its move packs it. `--battery-seat-task=off` is round 33's rule.
+static var BATTERY_SEAT_TASK := not OS.get_cmdline_user_args().has("--battery-seat-task=off")
+const BATTERY_SEAT_ON_M := 6.0
 ## The orchestrator's ruling on (c) (C28.5, 2026-10-12): a TARGET that charges the squad has left the position the side was
 ## drawn against. When it drives at the element (APPROACH_CLOSING_MPS) and is inside any crew's reach, the flank is
 ## dropped for the task ("charged") and the attack fights where it is, as a clicked one (which kills a lone charging IFV
@@ -206,6 +215,9 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 					else String(situation.get("leader", "")),
 			"previous_seats": {} if bool(state.get("reseat", false)) else state.get("seats", {}),
 			"reseat": bool(state.get("reseat", false)),
+			# Round 37 (orders, his archipelago playtest): where each crew was last sent (the battery seat holds only a crew
+			# set up on it).
+			"previous_slots": state.get("issued_slots", {}),
 			# Round 27 (B2): the parked crews' seats this re-seat keeps (Element._parked_seats).
 			"reseat_keep": state.get("reseat_keep", {}) if bool(state.get("reseat", false)) else {},
 			"facing_sent": bool(state.get("facing_sent", false)),
@@ -2592,9 +2604,19 @@ static func _battery_set_up(plan: Dictionary, members: Array, formation: String)
 	for member: Dictionary in members:
 		var seat: Variant = before.get(String(member["name"]))
 		if bool(member.get("deployed", false)) and member.has("position") and seat is Array \
-				and String(seat[0]) == formation and int(seat[1]) == members.size():
+				and String(seat[0]) == formation and int(seat[1]) == members.size() \
+				and (not BATTERY_SEAT_TASK or _set_up_on_seat(plan, member)):
 			result[String(member["name"])] = [int(seat[2]), member["position"]]
 	return result
+
+
+## Round 37: whether a crew stands within BATTERY_SEAT_ON_M of the place it was last sent to. Pure.
+static func _set_up_on_seat(plan: Dictionary, member: Dictionary) -> bool:
+	var sent: Variant = (plan.get("previous_slots", {}) as Dictionary).get(String(member["name"]))
+	if not (sent is Vector3):
+		return false
+	var at: Vector3 = member["position"]
+	return Vector2(at.x - (sent as Vector3).x, at.z - (sent as Vector3).z).length() <= BATTERY_SEAT_ON_M
 
 
 ## Last update's seating for these members in this shape, if they all had one ({} otherwise).

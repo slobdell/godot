@@ -9,6 +9,7 @@ extends TestCase
 
 func teardown() -> void:
 	ElementPlan.BATTERY_SEAT = true
+	ElementPlan.BATTERY_SEAT_TASK = true
 	super.teardown()
 
 
@@ -22,12 +23,39 @@ func _members() -> Array:
 	return members
 
 
-## The plan as `_group` reads it: last update's seats in the coil of five.
+## The plan as `_group` reads it: last update's seats in the coil of five, and (round 37) the places they were sent to:
+## the three set-up crews stand on theirs (a re-lay within the task); the two movers' are ahead of them.
 func _plan() -> Dictionary:
 	var seats := {}
+	var sent := {}
+	var at := [Vector3(-10, 0, 0), Vector3(0, 0, 0), Vector3(10, 0, 0), Vector3(-4, 0, 10), Vector3(4, 0, 10)]
 	for i in 5:
 		seats["Battery_%d" % (i + 1)] = ["coil", 5, i]
-	return {"leader": "", "previous_seats": seats, "slots": {}, "sectors": {}, "seats": {}, "orders": {}}
+		sent["Battery_%d" % (i + 1)] = at[i]
+	return {"leader": "", "previous_seats": seats, "previous_slots": sent, "slots": {}, "sectors": {}, "seats": {},
+			"orders": {}}
+
+
+## Round 37 (orders, his archipelago playtest: parked rocket trucks ignored every move): a set-up crew that has been SENT
+## ELSEWHERE (its last place is not where it stands: a new move of his) is not held where it stands.
+func test_a_set_up_crew_sent_elsewhere_is_not_held() -> void:
+	var members := _members()
+	var plan := _plan()
+	for i in 3:
+		plan["previous_slots"]["Battery_%d" % (i + 1)] = Vector3(40, 0, -60)
+	ElementPlan._group(plan, members, "coil", Vector3(40, 0, -60), Vector3.FORWARD, 10.0, "move", "", true)
+	for i in 3:
+		var name := "Battery_%d" % (i + 1)
+		var place: Vector3 = plan["slots"][name]
+		assert_true(place.distance_to(members[i]["position"]) > 30.0,
+				"%s goes to the new place, not where it stands (%s)" % [name, place])
+	ElementPlan.BATTERY_SEAT_TASK = false
+	var old := _plan()
+	for i in 3:
+		old["previous_slots"]["Battery_%d" % (i + 1)] = Vector3(40, 0, -60)
+	ElementPlan._group(old, members, "coil", Vector3(40, 0, -60), Vector3.FORWARD, 10.0, "move", "", true)
+	assert_true((old["slots"]["Battery_1"] as Vector3).distance_to(members[0]["position"]) < 0.01,
+			"--battery-seat-task=off: round 33's rule held it where it stood (the bug)")
 
 
 func test_a_mover_is_not_seated_past_a_set_up_squadmate_while_another_place_is_open() -> void:
