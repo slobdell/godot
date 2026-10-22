@@ -633,6 +633,17 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   exited 0`, 3036/0, sim-baseline 13/13 unmoved (game code byte-identical to the judged 339d3f2e2) + the h1b bank re-pin (6eda892a4).
   merge_check_needed says CHECK (native's re-pins not in manoeuvre's tree): ONE builder2 `make native check` on da3193cf5 queued.
   Cover may merge main for its hand-over once it's green.
+- **R37.42 (2026-10-22) latch does NOT ship: its hand-over check is red on a real wrong shape.** orders: f8bf6aaad (latch ON) builder0
+  `make native check exited 2`, 3049 passed / 1 failed: test_tactics_scenarios_2::test_a_move_ends_formed_up_on_the_spot_and_stops_
+  issuing (coil, 4 orders in the last 10 s, limit 2; herringbone and 0 orders on every earlier green). Deterministic (laptop: fails with
+  latch, passes with centre). Traced (`references/round37/orders/latch-transient-lab/`): four tanks drive down a lane; the live read is
+  `lanes` every second except t=11 when the centroid crosses an `open` pocket; arrived at t=12, latch keeps t=11's `open` and deploys a
+  COIL at t=22; centre re-reads `lanes` at t=12 and deploys herringbone at t=13. In his terms: a squad that stops in a lane just after
+  crossing a gap opens into a ring that doesn't fit the lane. The judged probe counted flips and relays (which latch removes), not a wrong
+  FIRST shape. sim-baseline 13/13 unmoved with latch ON and with centre (nothing to adopt). **Ruled:** default back to centre
+  (733e024e4); latch stays an arm; the test is NOT edited (it caught a real defect). Round 38: latch the read the deploy decides on (at
+  all-in) or one that has held ~2 s, as a new arm + bar + fresh seeds. **Lesson:** a bar's lines must include the property the change
+  could break (here the first shape), not only the one it fixes; the full check is the last net, and it worked.
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
