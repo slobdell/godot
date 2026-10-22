@@ -1,0 +1,8 @@
+PASS counter: base relays 442 (>= 10), rows differ True
+PASS deciding: relays 442 -> 95 (<= 110.5), shape flips 90 -> 20
+  PASS guard his kills   base 5.14 arm 4.72 a fight (se 0.29, n 36/36)
+  PASS guard his losses  base 6.78 arm 7.11 a fight (se 0.51, n 36/36)
+  PASS guard CPU losses  base 5.22 arm 4.81 a fight (se 0.28, n 36/36)
+PASS fight guards
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 84 -> 88
+VERDICT o1fight: PASS

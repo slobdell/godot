@@ -95,6 +95,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   flicker; lab `test_control_halt_terrain`: centre 2 flips, anchor 0, latch 0). R37.17's traces are done (edec107e0, sent in player terms):
   latch == main at locks 5, and parade's excess contacts are moving drill crews in a longer fight. Latch bar re-filed
   (849fced87, recorded on main): fresh seeds 3761-3784, same guards.
+  **Latch judged: FAILS as filed on one guard** (builder0 native c14ec0d80; `o1latch-judged-builder0-c14ec0d80/`,
+  `o1latch-fight-builder0-c14ec0d80/`). (a) deciding PASS: relays 128 -> 2, shape flips 34 -> 1; guard FAIL: twitch terminus
+  5 click, median worst 16.8 -> 28.0 m (other 11 cells pass). (b) CPU guards PASS: contacts 1625 -> 1569, stuck 1784 -> 1688 s.
+  (c) fight PASS: relays 442 -> 95, shape flips 90 -> 20, kills / losses within guard (36/36). Parked re-deals 447 -> 441
+  (no-fight), 84 -> 88 (fight): latch does not touch O2's re-deals. R37.37: O2-on-latch HELD; trace terminus 5 s3767 / s3772
+  squad 4 (is the slide the abreast group lay sending it into another street, or latch?); if the lay, re-read latch on top
+  of group-lay on fresh seeds (bar first).
 - **O2 parked squads: BUILT OFF, final bar filed (052f30eea).** `--parked-hold=on` (tank_brain.gd seam `_parked_move`):
   a move of his parked crew's own that ends more than 4 m off its post becomes hold-and-face (RETREAT kept). Off its post
   with nothing to do, it drives all the way back (arrive 1.5 m). Deciding metric off_idle_s. Base (builder0 3e5944657,
