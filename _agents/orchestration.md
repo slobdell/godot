@@ -230,6 +230,22 @@ reds ruled (lesson 307), 6 close steps — one orchestrator session, one day.
 
 ## Lessons (add to this list every round)
 
+- **Round 37: a bar must include what the change could BREAK, not only what it fixes.** Latch's reads counted flips and relays (which
+  it removes) and passed; the full check caught a wrong FIRST shape (a coil in a lane after a gap). Name the adjacent property a change
+  could get wrong as a guard before the numbers.
+- **Round 37: decision latency idles the boxes.** builder2 idle-stopped while a worker waited on the orchestrator's go-ahead, and the
+  orchestrator forgot to wake rules when M5a finished (the lead saw an idle box in htop). When a series ends, the next queued owner is
+  told the same minute.
+- **Round 37: test runs need parallelism sized to the box, and chunk tails cost as much as J.** builder2 (16 physical cores) ran a
+  series at J=6; guard.sh ran 20 fights a chunk but idled on each chunk's slowest fight (fixed: GUARD_CHUNK=2). remote_builds.md.
+- **Round 37: a probe flag that fails to parse must stop the run** (O7's `--probe-click=x,z` was split on the comma and silently
+  clicked the arena centre; two sets of shots shown to the orchestrator were of the wrong click).
+- **Round 37: map changes are behaviour changes.** A barrier 9 m off a road gave his column cover exactly where the CPU's ambush
+  needed open ground; staged tests caught it, and the fix was moving the map, not the test. Measure the maps' own effect (OFF on the
+  new maps v the old) before deciding a map is neutral.
+- **Round 37: a rule that taxes motion can't favour a defender that never stops.** Measure who moves when firing (both sides) before
+  building motion rules; the round's four null rules were the price of not doing so first.
+
 - **Round 35: side worktrees and their remote folders fill disks.** Each lab/pair worktree is a full copy (~0.6–1.3 GB) on the laptop
   AND on every builder it ran on (`~/tank_squad/<worktree>`). Round 35 made 17 of them: the laptop reached 885 MB free and builder0 0
   bytes (an rsync failed; a running check and series had to be re-verified). When a side worktree's series or check is done and

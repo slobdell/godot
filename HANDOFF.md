@@ -4,8 +4,52 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-21 PDT — **ROUND 37 PREPARED (six streams; see the box below).** Before that: **ROUND 36 CLOSED: T8 and S2a shipped ON; see the box below.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
+_Last updated: 2026-10-22 PDT — **ROUND 37 CLOSED (main 1c484a525; see the box below).** Before that: **ROUND 36 CLOSED: T8 and S2a shipped ON; see the box below.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
 and the scoreboard rows, which the orchestrator finishes in round 36.** Older headers below._
+
+## 🏁 ROUND 37 CLOSED (2026-10-22 morning) — read this first
+
+**Shipped main: 1c484a525, GREEN and ALL JUDGED on builder0** (`make native check exited 0`, 3055 passed / 0 failed, 27 targets,
+perf-judge PASS on attempt 1, sim-baseline 13/13 on the adopted lines). **What he'll notice, all ON:**
+1. **Set-up rocket trucks obey new moves** (his playtest bug; R37.27/R37.31): a truck that set up its rack now packs up and drives
+   when sent somewhere new (lab 0 m -> 56-58 m).
+2. **His feedback picks** (R37.36): a flank/rear hit lights a ring segment under the tank (blended, no white bloom); pinned crews show
+   chevrons; the Tanker's repair beam; the Emitter's shimmer; his six approved sounds/lines; the announcer now calls flank, rear and
+   engine-deck hits in REAL matches (before, only in fixtures).
+3. **M1 sidestand** (R37.34/R37.41): a crew blocked by an angled friend steps aside ONCE, then waits (side repeats 30 -> 9, far loops
+   61 -> 38, fights flat).
+4. **Barrier runs on terminus, locks, sumps, gorge, parade** (his yes; R37.44/R37.46): two mirrored waist-high jersey runs a map,
+   lanes kept, parade's re-sited off the depot roads so the CPU's depot ambush still springs. The maps alone: blob 48 -> 45 %, turtle
+   39 -> 36 % (both inside noise, nothing rises).
+
+**Judged and NOT shipped (switches on main, OFF; his playtest: `make rules-skirmish` [RULES=sight|spread|pin_slow]):** R1 own-motion
+sight (48 -> 47 %), R2 moving spread (48 -> 46 %), R3 pin slow (48 -> 44 %), the package (48 -> 43 %, p 0.13), K2 hull-down (45 -> 44
+%): every rule leans the right way, none clears noise. **Why (R37.26):** the CPU "defender" fires on the move 56 % of the time (blob
+70 %) and fires 41 % more rounds, so a motion tax can't favour it. Orders: O1 latch (passed its reads, then the full check caught a coil
+in a lane after a gap: R37.42), O2 parked-hold (passed; held for its own re-deals), O3 (folded into O7), O5 (-23 %, needed -50 %), O7
+group-lay column (fails as filed; at HIS click it works: outside 36/60 -> 0, R37.38/R37.39). M5a seatstep (fewer kills, R37.30). M6
+dropped (his answer: keep the scout turn-in).
+
+**His decisions this round** (game_design.md): the 11 slug-fest answers; feedback picks (hit C, pinned A, repair A, cone C, six sounds
+approved); barriers honest (low cars hidden, trucks not); barrier runs on 5 maps; a nearly dead parked crew pulls back and returns;
+parked scouts keep circling. His playtest notes: artillery ignored moves (fixed); **a group click scatters the army on Terminus
+("I immediately lost control of the army")** — NOT fixed yet: round 38's lead item.
+
+**ROUND 38 candidates (in order of what he'd notice):**
+1. **His group click (O7 v2)**: the column of wedges with "open ground = clear width fits today's body", route legs, whole squads
+   (design note `references/round37/orders/group-click-column-note.md`, lab `tests/test_control_group_click.gd`).
+2. **The CPU defender stops to fire** (doctrine, brains paths) — the lever the rules round pointed at; re-read R1-R3 and K2 on top.
+3. **The deploy deal sends a stopped tank 47 m across its own squad** (R37.37 trace; on main today).
+4. **Latch v2** (hold the read the deploy decides on, or one held ~2 s) + **O2 parked-hold** once its re-deal source is traced.
+5. **M5 v2** (fight-volume guard; ambusher read; M5b reverse-back), **O5 v2** (support_by_fire routes).
+6. **The Resupply Tanker rarely gets to repair** in real fights (3 s quiet rule; feedback's finding): a rules question for him.
+7. **The match end isn't obvious** (he kept giving orders after the game ended).
+8. Tooling: perf-judge's machine-relative line (native's close notes); guard.sh rolling queue.
+Every stream's close notes: `_agents/streams/archive/round37/<s>.md` Status; native's in `streams/native.md` until its row lands.
+
+**Close state:** five streams archived (round37/*), their worktrees + builder0 folders removed. **Still open:** native's scoreboard
+row for 1c484a525 (then archive native, remove godot-native*, rename stream/native); builder2's `~/tank_squad` leftovers (the box was
+stopped at the close); laptop disk 18 GB free after archiving old logs to `~/archive-old-logs/`.
 
 ## 🚀 ROUND 37 IS PREPARED (2026-10-21) — read this first
 
