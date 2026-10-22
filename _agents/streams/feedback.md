@@ -89,7 +89,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   one kept in desktop-seed5-additive/.
 - **Green hash to merge: 4c8946fd1** (make check exited 0 on builder0: 25 passed, 2 NOT JUDGED (perf-judge refused 3x,
   box busy at 2.55/2.34/2.48x; ai-scenarios 1 refused), 3030 passed / 0 failed, sim-baseline unmoved on 13 maps).
-  Later commits are this Status only. Clips of his picks: build/feedback-fight/picks/ (README.txt).
+  Merged as main ac8cb7d92 (R37.36). Clips of his picks: build/feedback-fight/picks/ (README.txt), rebuilt on
+  4c8946fd1 for both presets after a remote copy-back --delete wiped the local-only folder; mk/feedback.mk now exports
+  REMOTE_COPYBACK_PROTECT=feedback-fight/picks/ so it survives. The desktop hit clip is the same 30-hit firing line that
+  bloomed white before blending: now yellow side / red rear wedges.
 - **Check fixes (de57b3231, green on builder0: 25 passed, 2 NOT JUDGED (box busy), 3030 passed / 0 failed, sim-baseline
   unmoved on 13 maps):** e35c6abcf failed announcer-transcripts-check (with the booth hearing hit faces, scouts_vs_tanks
   seed 2 now calls "Caught broadside!": regenerated) and test_sfx_pipeline (SfxSystem.ALIAS now names a stand-in for
