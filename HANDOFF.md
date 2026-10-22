@@ -38,7 +38,7 @@ probe now counts `parked_redeals` (c14ec0d80) and every orders verdict reports i
 R1, R2 and R3 all FAILED Bar R alone (R37.22, R37.24, R37.25: blob 48 -> 47 / 46 / 44 %, all inside noise); the CPU fires on the
 move 56 % v the blob's 70 % and fires 41 % more rounds (R37.26), so a motion tax can't favour it. Round-38 candidate: the CPU
 defender's stop-to-fire / holding doctrine (brains paths). The package arm runs after M5a. **His playtest of the rules (switches
-on main, OFF by default; once rules' tooling merges):** `make rules-skirmish` (all three ON), `make rules-skirmish RULES=sight|spread|
+on main, OFF by default; tooling merged 7d89ccb2b):** `make rules-skirmish` (all three ON), `make rules-skirmish RULES=sight|spread|
 pin_slow` (one), `ARENA=locks SEED=5`; `make skirmish` for OFF.
 Found by feedback (real CPU fights, gangs v Law, Terminus, laptop preset, seeds 3/5/7/11, n 4): in seeds 3 and 5 all three gang
 Resupply Tankers died within ~25 s of contact and never mended (the hurt friend in reach was still under fire; repair needs 3 s
