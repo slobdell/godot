@@ -34,8 +34,11 @@ barrier runs on the 5 guard maps; a nearly dead parked crew pulls back; parked s
 Found mid-round (orders, laptop GDScript, locks 5 route s3703, n 1): TODAY's main also re-deals parked crews (a crew parked 13 s
 then sent 15 m to another seat; 4 such re-deals in that one run), before the place window ends, so twitch_m never saw it; the
 probe now counts `parked_redeals` (c14ec0d80) and every orders verdict reports it. Round-38 candidate if O1-latch doesn't remove it.
-R1 and R2 both FAILED Bar R (R37.22, R37.24): a motion tax can't favour a CPU defender that never stops; round-38 candidate:
-the CPU's holding/bounding doctrine (brains paths).
+R1, R2 and R3 all FAILED Bar R alone (R37.22, R37.24, R37.25: blob 48 -> 47 / 46 / 44 %, all inside noise); the CPU fires on the
+move 56 % v the blob's 70 % and fires 41 % more rounds (R37.26), so a motion tax can't favour it. Round-38 candidate: the CPU
+defender's stop-to-fire / holding doctrine (brains paths). The package arm runs after M5a. **His playtest of the rules (switches
+on main, OFF by default; once rules' tooling merges):** `make rules-skirmish` (all three ON), `make rules-skirmish RULES=sight|spread|
+pin_slow` (one), `ARENA=locks SEED=5`; `make skirmish` for OFF.
 
 **Lead gates expected this round:** feedback's directions page (F1); cover's map before/after page (K1/K5). The orchestrator relays.
 **At the close:** he plays each rule ON (each has a switch).
