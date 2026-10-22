@@ -483,6 +483,17 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   m; test_tactics_battery_seat 7/0 + a new case). **Ruled: ships ON as a bug fix** (his control was simply lost; round 33's intent,
   a re-lay within one order, is kept): a pair `pair/orders-artillery` = current main + that fix + its lab case ONLY, one builder0
   full check (priority over orders' series), merged alone; any moved sim-baseline map attributed with the switch OFF.
+- **R37.28 (2026-10-21) O2 PASSES its bar; O3 FAILS (Crossing 5).** orders (builder0 native, c14ec0d80;
+  `references/round37/orders/*-judged-builder0-c14ec0d80/`, a0332d898). **O2 PARKED_HOLD:** off_idle_s a fight 172.6 -> 20.0 (line 86.3;
+  drop 152.6 v 1.645 se 40.3; 36/36 fights); parked_returns 35,001; guards his kills 5.81 -> 5.47, his losses 6.11 -> 6.56, CPU losses
+  5.83 -> 5.47, all within 1.645 se. Split: still 3541.9 -> 30.4, face_drift 2111.9 -> 0, brain 219 -> 481 (the drive-back).
+  Reported: **parked re-deals 50 -> 105**, brain-move leaves 18 -> 50, RETREAT leaves 11 -> 10. **Ruled:** O2 passes as filed, but
+  the re-deals doubling is what he'd see: before it ships, orders explains in his terms what the extra 55 are (the drive-back counted
+  as a re-deal, or a crew sent to a NEW seat?). If they are the drive-back, O2 ships ON (his crews only); if real re-deals, a trace
+  first. **O3 UNTANGLE_WHOLE: FAILS** (deciding passes: squads arriving short 46 -> 0; contacts pass 12,167 -> 11,848, foreign 6,253 ->
+  5,999; guards fail only in Crossing 5: click crossed 0 -> 2, never-in 0 -> 2, twitch 21.2 -> 25.5 m, route twitch 17.6 -> 22.3 m:
+  squad 4's swapped place sits at the west bridge mouth and a crew drives over a bridge he didn't click across). Traced on those seeds;
+  any fix is a new arm on fresh seeds (R37.17's rule).
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
