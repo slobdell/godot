@@ -1,10 +1,59 @@
 # Workstreams: the current round
 
-> **ROUND 37 PREPARED (2026-10-21; launched FRESH from the docs commit: round 36's `stream/*` branches are `round36/<stream>`; no
-> agent carried over). SIX streams: orders on FABLE (the flicker and the squads that must look smart), rules, cover, feedback,
-> manoeuvre and native on Opus. Builders: builder0 AND builder2 (C37.1).** Briefs in `streams/`. Round 36's section follows.
+> **ROUND 38 PREPARED (2026-10-22 morning; launched FRESH from the docs commit: round 37's `stream/*` branches are `round37/<stream>`;
+> native continues in its old session and worktree, as in round 36). SIX streams: orders and doctrine on FABLE (his group click; the
+> CPU defender that holds), settle, manoeuvre, feedback, native on Opus. Builders: builder0 AND builder2 (C38.1).** Briefs in
+> `streams/`. Round 37's section follows.
 
-## Round 37: six streams (prepared 2026-10-21; briefs in `streams/`)
+## Round 38: six streams (prepared 2026-10-22; briefs in `streams/`)
+
+**Goal: he keeps control of his army, and the defender really defends.** From round 37 (HANDOFF *ROUND 37 CLOSED*): his playtest's
+group click on Terminus ("I immediately lost control of the army", R37.29) was traced and designed but O7 failed as filed; the four
+defender-advantage rules all leaned right but none cleared noise because the CPU "defender" fires on the move 56 % of the time
+(R37.26); and three movement defects he'd see are traced: the deploy deal sending a stopped tank 47 m across its squad (R37.37), latch's
+wrong first shape (R37.42), O2's parked re-deals (R37.28). Plus: the match end isn't obvious (he kept giving orders after it).
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **orders** | `godot-orders` (5) | **Fable** | [streams/orders.md](streams/orders.md) | a group click lands his squads stacked down the street he clicked, nearest in front, each whole | G1 O7 v2 (open ground; route legs) |
+| **doctrine** | `godot-doctrine` (1) | **Fable** | [streams/doctrine.md](streams/doctrine.md) | the CPU's defenders stop and shoot from cover; a blob charging them loses | D1 measure who halts to fire |
+| **settle** | `godot-settle` (3) | Opus | [streams/settle.md](streams/settle.md) | a parked squad keeps its shape and spots; no tank drives across its squad after stopping | S1 the deploy deal crossing |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | parked crews step aside and back for friends; CPU screens out of the way | M1 M5 v2 |
+| **feedback** | `godot-feedback` (6) | Opus | [streams/feedback.md](streams/feedback.md) | he can't miss the match ending | F1 the end of a match |
+| **native** | `godot-native` (4, continuing) | Opus | [streams/native.md](streams/native.md) | nothing alone: scoreboard rows, twins, guard tooling | N1 finish round 37's row |
+
+**Machines (C38.1):** builder0 = orders', settle's, manoeuvre's and feedback's lane; builder2 (`make gcp-start`, under systemd-run
+with ~/projects/bin on PATH; Spot: read the verdict line) = doctrine's guard-line series and native. ONE full check + ONE judged
+series per builder at a time (`tools/builder_checks.sh --wait-below 1`); series on builder2 at J ~14 (guard.sh: GUARD_CHUNK=2,
+GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series ends, say so at once: the next owner is waiting.
+
+**Ownership (round 38):**
+- **orders:** `game/control/**` (incl. `selection_squads.gd`, `rts_controls.gd` gate/lay), `tests/test_control*.gd`, `tests/control/**`,
+  `tests/orders_probe*.gd`, `mk/command.mk`; the group-lay and untangle code. NOT the deploy/halt functions (settle's).
+- **doctrine:** brains' paths (`game/ai/**` and `game/tactics/**` outside the carve-outs below: `tank_brain.gd`, `element_commander.gd`,
+  `cpu_commander.gd`, `game/ai/gunnery.gd`, doctrine tables), `tests/tactics/**`, `tests/test_tactics*.gd`, `tests/ai_scenarios/**`
+  scenarios it adds, `tests/rules/**` (re-reads), `mk/tactics.mk`.
+- **settle:** in `game/tactics/element_plan.gd` the deploy-step, halt-lay and seat-deal functions; `game/tactics/element_situation.gd`
+  (terrain read / latch); `game/tactics/deploy_passers.gd`; the PARKED_HOLD seam in `tank_brain.gd` (one guarded function, merge note to
+  doctrine); `tests/settle/**`, `tests/test_settle*.gd`, `mk/settle.mk`.
+- **manoeuvre:** `movement.gd`'s drive / unstick / side-step and traffic's give-way block, `game/ai/traffic.gd`, `tests/manoeuvre/**`,
+  `tests/traffic/**`, `tests/test_manoeuvre*.gd`, `tests/test_traffic*.gd`; GRANT: `element_commander.gd`'s screen / support_by_fire seat
+  choice for O5 v2 (merge note to doctrine).
+- **feedback:** `game/ui/**`, `game/theme/**`, `game/audio/**`, `game/announcer/**`, `tests/feedback/**`, `tests/test_feedback*.gd`.
+- **native:** `native/**`, `mk/native.mk`, `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**`, `tools/perf_judge.sh`,
+  `tests/ai_scenarios/guard_line.gd`.
+- **Nobody:** `game/match/**`, `game/tank/**`, `game/combat/**` (rules' switches stay as they are), `arenas/**` + `tools/make_arenas.py`,
+  `tests/baselines/**` (the orchestrator adopts).
+
+**Contracts (round 38):**
+- **C38.1 Fresh start; two builders; bars before numbers (C37.1's rules stand).** A bar names the property the change could BREAK as a
+  guard, not only the one it fixes (round 37's latch lesson). Probe flags that fail to parse stop the run.
+- **C38.2 Doctrine is judged on CP37.1's guard lines** (paired, `guard.py --pair`, the same 320 fights), deciding = the blob's win rate
+  down; guards = the turtle not up, kills/length per faction, perf. Then rules' R1-R3 and K2 are re-read ON TOP (switches exist).
+- **C38.3 settle and orders share `element_plan.gd`'s callers:** orders lays WHERE squads go (group lay); settle decides how a squad
+  SITS once there (deploy, halt shape, seat deal, parked hold). A change that crosses goes through a merge note both sign.
+
+## Round 37: six streams (prepared 2026-10-21; briefs in `streams/archive/round37/`)
 
 **Goal: tactics beat a blob.** His words (2026-10-20): a blob frontal assault wins too often, "one big slug fest"; "the problem is
 not the units, but the rules of the game". On 2026-10-21 he answered the 11 open questions (game_design.md *OPEN QUESTIONS for him

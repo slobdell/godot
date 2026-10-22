@@ -4328,3 +4328,10 @@ but I immediatley lost control of the army because of the computed waypoints per
 across squads (Battery and Eyes vehicles mixed into new groups); the same at 45.1, 56.1, 58.5 and 85.0 s. His proposal, in short: a
 group click lays the squads as a COLUMN OF WEDGES (stacked one behind the other, nearest squad in front, farthest at the back) sized to
 the corridor's real width; spread out only where the ground is open; every squad keeps its own vehicles. Sent to orders (R37.29).
+
+## Round 38 preparation (2026-10-22 morning)
+
+He played round 37's main ("things seemed reasonable") and asked to "enqueue a bunch of work for the day". Split from round 37's
+candidates (HANDOFF): orders (his group click, O7 v2), doctrine (the CPU defender stops to fire; re-read R1-R3/K2 on top), settle (the
+deploy deal crossing, latch v2, O2's re-deals), manoeuvre (M5 v2, M5b, O5 v2), feedback (the match end he missed), native (rows, twins,
+perf line). Open rules question for him: the Resupply Tanker rarely gets to repair in real fights (3 s quiet rule).

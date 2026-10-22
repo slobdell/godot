@@ -4,8 +4,26 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-22 PDT — **ROUND 37 CLOSED (main 1c484a525; see the box below).** Before that: **ROUND 36 CLOSED: T8 and S2a shipped ON; see the box below.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
+_Last updated: 2026-10-22 PDT — **ROUND 38 PREPARED (six streams; native continuing); round 37 closed at main 1c484a525.** Before that: **ROUND 36 CLOSED: T8 and S2a shipped ON; see the box below.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
 and the scoreboard rows, which the orchestrator finishes in round 36.** Older headers below._
+
+## 🚀 ROUND 38 IS PREPARED (2026-10-22 morning) — read this first
+
+**Goal: he keeps control of his army, and the defender really defends.** Split, ownership and contracts C38.1-C38.3 in `workstreams.md`
+*Round 38*; briefs in `_agents/streams/`; round 37's in `streams/archive/round37/`; branches `round37/<stream>`.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **orders** | `godot-orders` (5) | **Fable** | a group click lands squads stacked down the street he clicked, whole | O7 v2 |
+| **doctrine** | `godot-doctrine` (1) | **Fable** | the CPU's defenders stop and shoot from cover; a blob loses | D1 who halts to fire |
+| **settle** | `godot-settle` (3) | Opus | a parked squad keeps its shape and spots; no tank crosses its squad | S1 the deploy deal |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | parked crews step aside and back; CPU screens out of the way | M5 v2 |
+| **feedback** | `godot-feedback` (6) | Opus | he can't miss the match ending | F1 the end of a match |
+| **native** | `godot-native` (4, CONTINUING its round-37 session) | Opus | nothing alone: rows, twins, guard tooling | N1 round 37's row |
+
+**To launch (the lead):** in each NEW folder (`godot-orders`, `godot-doctrine`, `godot-settle`, `godot-manoeuvre`, `godot-feedback`)
+start a CLI (orders and doctrine on Fable, the rest Opus) and paste the kickoff prompt from `_agents/orchestration.md`. Native is NOT
+relaunched: its open session continues (the orchestrator messages it). Main at launch: 1c484a525 + docs, GREEN, ALL JUDGED (builder0).
 
 ## 🏁 ROUND 37 CLOSED (2026-10-22 morning) — read this first
 
