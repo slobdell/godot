@@ -135,6 +135,14 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   and foreign <= base x 1.1 + 5; fights within 1.645 se in each fight read, zero runs that never start. Reported only: place+twitch >= 25 m.
   No CPU census (vacuous, R38.9). builder2 after doctrine's D2 and settle's S2 re-read. A pass ships ON.
 
+- **G1 v3 (orders, R38.12; filed in stream/orders 876e15727 Status before any v3 number; code 0e169432f, OFF; copied here by the
+  orchestrator).** v3 = today's body judged open at the click's width only (the yard_open container case) + the 2 s first-click re-lay
+  only where the column moved some squad's place > 40 m (about a rank). Same cells, counter, deciding lines, thresholds and guards as the
+  amended Bar G1; `orders_judge.py g1`; builder0 light lane J <= 4; paired his-click shots (main v column, looked at). **Base:** settle's
+  deploy latch ON for both arms; the judged read waits until the latch ships ON on main (orders merges main at that checkpoint); dev reads
+  only until then. **Seeds:** the orchestrator moved them from 3901-3912 to **3951-3962**, so they never overlap the seeds that decide
+  the latch it sits on (S2 re-read 3903-3914).
+
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
 `references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
