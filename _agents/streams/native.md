@@ -80,7 +80,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   **Closed:** manoeuvre isn't building M5b. Their trace (builder0 native, c16c4a0b6, jam 3 maps x 8 seeds, 24 fights): 107 of
   1,166 seated give-ways turned round, 72 of them the scout's kept turn-in, and choose() ran for only 16 returns. No twin.
   N2 has no pending pair. It reopens if doctrine's D2 moves into a mirrored path.
-- **N5:** a row per main the round ships.
+- **N5:** a row per main the round ships. **Next: e1f558d83** (feedback F3 ON). Queued on builder2 after doctrine D2's series
+  and settle's S2 and S1 v2, once its main check is green; settle pings "builder2 free". Keep it off builder0 (R38.8). Pair against
+  1c484a525.fights.jsonl.
+- **N3 closed** for the round (orchestrator accepted "not switching"); an AMD sample only if builder2 comes up on one.
 
 **Side worktrees to remove at close:** ../godot-native-guard, -score, -k5 (and round 37's: -m5, -unstick, -cp371,
 -rulespair, if they still exist).
