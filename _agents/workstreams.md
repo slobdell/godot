@@ -189,6 +189,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
 
 ## Rulings (round 38)
 
+- **R38.2 (2026-10-22) full checks move to builder2 while builder0 is loaded.** builder0 at 11:16: load ~20, two full checks
+  running (feedback, settle) beside series; manoeuvre's M5 v2 ON check was killed by the slot timeout. builder2: 0 checks (feedback's
+  F3 series only). **Ruled:** a full check goes to whichever builder has none running (`REMOTE_HOST=slobdell@builder2
+  tools/builder_checks.sh --wait-below 1`; `make gcp-start` first if stopped); builder0 keeps the probe series. Perf-judge's verdict
+  still comes from builder0 (a merge batch's main check runs there).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
