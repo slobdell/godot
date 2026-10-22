@@ -1139,11 +1139,19 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			var body := Vector3.ZERO
 			for block: Dictionary in lay_blocks:
 				body += Vector3((block["center"] as Vector3).x, 0.0, (block["center"] as Vector3).z) / lay_blocks.size()
-			var laid := SelectionSquads.column_lay(lay_blocks, click, SelectionSquads.approach_of(lay_blocks, click, Match.team_frame(team)["forward"]),
+			var approach := SelectionSquads.approach_of(lay_blocks, click, Match.team_frame(team)["forward"])
+			var path_back := func() -> PackedVector3Array: return Pathing.find_path(ground, click, body)
+			var reached := func(p: Vector3) -> bool: return SelectionSquads.reached_from(click, p, drive_g, crosses_g)
+			# G2: a shifted leg of his route stacks back along the route he clicked (this click, the one before, ...), not
+			# the navmesh drive (on Terminus it cut through the plaza's diagonal streets, off the path he drew).
+			var line := _route_line_back(squads, click) if queue_leg and SelectionSquads.GROUP_ROUTE_LINE else PackedVector3Array()
+			if line.size() >= 2:
+				approach = line[0] - line[1]
+				path_back = func() -> PackedVector3Array: return line
+				reached = func(_p: Vector3) -> bool: return false
+			var laid := SelectionSquads.column_lay(lay_blocks, click, approach,
 					func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M),
-					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors,
-					func() -> PackedVector3Array: return Pathing.find_path(ground, click, body),
-					func(p: Vector3) -> bool: return SelectionSquads.reached_from(click, p, drive_g, crosses_g), false, queue_leg)
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors, path_back, reached, false, queue_leg)
 			column = not laid.is_empty()
 			if column:
 				anchors = laid
@@ -1217,6 +1225,8 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					func(n: String) -> Vector3: return from_leg[n] if from_leg.has(n) else _flat_position(n))
 		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
+	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
+		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)))
 	var queue := bool(extra.get("queue", false))
 	var element_only := ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb)
 	# Round 35 (D6, R35.28): a shift-click queues on the elements the squads' units belong to NOW. Round 22's untangle
@@ -1276,6 +1286,44 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			if first_error == "":
 				first_error = error
 	return first_error
+
+
+## G2: the clicks of his current group route, [where the squads stood, first click, ...], and which squads it was for. A
+## plain group click starts it; a shifted click for the same squads adds to it; anything else starts again.
+var _route_clicks: Array = []
+var _route_squads: Array = []
+
+
+func _route_key(squads: Array) -> Array:
+	var key: Array = []
+	for squad: Dictionary in squads:
+		key.append(int(squad.get("number", 0)))
+	key.sort()
+	return key
+
+
+func _remember_route_click(squads: Array, blocks: Array, click: Vector3, queued: bool) -> void:
+	var key := _route_key(squads)
+	if not queued or key != _route_squads or _route_clicks.is_empty():
+		var body := Vector3.ZERO
+		for block: Dictionary in blocks:
+			body += Vector3((block["center"] as Vector3).x, 0.0, (block["center"] as Vector3).z) / maxf(blocks.size(), 1.0)
+		_route_clicks = [body]
+		_route_squads = key
+	_route_clicks.append(click)
+
+
+## G2: his route back from `click`: [click, the click before, ..., where the squads stood], or [] when this click does not
+## continue the remembered route of these squads.
+func _route_line_back(squads: Array, click: Vector3) -> PackedVector3Array:
+	var line := PackedVector3Array([click])
+	if _route_key(squads) != _route_squads:
+		return PackedVector3Array()
+	for k in range(_route_clicks.size() - 1, -1, -1):
+		var p: Vector3 = _route_clicks[k]
+		if p.distance_to(line[line.size() - 1]) > 1.0:
+			line.append(p)
+	return line if line.size() >= 2 else PackedVector3Array()
 
 
 ## Where each squad's next leg starts: its element's last queued destination, else its running task's, else the block's
@@ -1788,11 +1836,22 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	var as_column := false
 	if SelectionSquads.GROUP_LAY and SelectionSquads.GROUP_LEGS and ground != null:
 		var crosses_e := SelectionSquads.crosses_or_edge(crosses)
+		var path_back := func() -> PackedVector3Array: return Pathing.find_path(ground, prev, before)
+		var reached := func(p: Vector3) -> bool: return SelectionSquads.reached_from(prev, p, drive, crosses_e)
+		# G2: back along his route (the clicks before this waypoint) when this waypoint is on the remembered route.
+		var line := PackedVector3Array()
+		if SelectionSquads.GROUP_ROUTE_LINE and _route_key(squads) == _route_squads and _route_clicks.size() >= 3:
+			line = PackedVector3Array([prev])
+			for k in range(_route_clicks.size() - 2, -1, -1):
+				var p: Vector3 = _route_clicks[k]
+				if p.distance_to(line[line.size() - 1]) > 1.0:
+					line.append(p)
+		if line.size() >= 2:
+			path_back = func() -> PackedVector3Array: return line
+			reached = func(_p: Vector3) -> bool: return false
 		var laid := SelectionSquads.column_lay(blocks, prev, approach,
 				func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive, crosses_e, SelectionSquads.GROUP_SCAN_M),
-				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), gate,
-				func() -> PackedVector3Array: return Pathing.find_path(ground, prev, before),
-				func(p: Vector3) -> bool: return SelectionSquads.reached_from(prev, p, drive, crosses_e), true)
+				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), gate, path_back, reached, true)
 		if not laid.is_empty():
 			gate = laid
 			as_column = true

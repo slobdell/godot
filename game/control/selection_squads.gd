@@ -293,6 +293,8 @@ static var GROUP_LAY := OS.get_cmdline_user_args().has("--group-lay=column") or 
 static var GROUP_LEGS := not OS.get_cmdline_user_args().has("--group-legs=off")
 static var GROUP_ROOM_REARMOST := OS.get_cmdline_user_args().has("--group-room=rearmost")
 static var GROUP_LEG_ROOM := OS.get_cmdline_user_args().has("--group-leg-room=starts")
+## G2 (dev): `--group-route-line=on`: a shifted leg's column (and a gate's) stacks back along his clicked route.
+static var GROUP_ROUTE_LINE := OS.get_cmdline_user_args().has("--group-route-line=on")
 ## How far each side the corridor is read for a group click (wider than the gate's 60 m, so a wide street is not "open").
 const GROUP_SCAN_M := 100.0
 ## Measurement: group clicks laid as a column (not open ground), since start.
