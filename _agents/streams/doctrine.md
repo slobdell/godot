@@ -53,23 +53,56 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-22, in progress):** D1 first read in; the damage-weighted re-read running (builder0 light, 6e049da5b).
+**Report (2026-10-22, in progress):** D1 DONE (design note below). D2 coded OFF at 6877a099c (`--cpu-defend`); its bar is FILED
+below before any arm number; the lab arm (40 blob fights ON, builder0 light J=4) is running.
 
-**D1 first read (builder0 light, native ON (NATIVE_EXEC lines), 640850023 = main 5b20bfd62 + the probe only, `make native
-tactics-hold-fire`, seeds 2601-2608 x 5 guard maps x both sides; blob 80 fights; turtle 45 of 80: the light slot's 90 min cap
-killed the rest; logs in ~/doctrine-runs/d1).** Blob line: CPU 58,805 direct rounds, 55.5 % faster than a crawl (per-seed se 1.6;
-R37.26 read 55.5 % on the same fights: the probe replays it).
-- **The CPU is not defending when the blob comes: 82.6 % of its rounds are fired in ATTACK posture** (ElementCommander's
-  Posture.decide), 17.4 % in hold. Its moving rounds by element task: screen (recon) 54 % of all moving rounds (65 % of its
-  rounds moving), support_by_fire 29 % (49 % moving), hold 9 % (46 % moving), attack 6 %.
-- By brain option: SUPPRESS 26 % of rounds (64 % moving), MOVE 22 % (77 % moving), ENGAGE 23 % (61 % moving), HOLD 26 % (21 %
-  moving). By seat: crews > 15 m from their element slot fire 49 % of rounds (69 % moving); crews within 5 m fire still 87 %.
-- **A CPU crew that is holding and on its seat already stops to fire** (hold|HOLD|near: 93 % still). Within hold posture the
-  movers are crews driving back to a post 15 m+ away (hold|MOVE|away, 76 % moving) and recon screening.
-- Turtle line (CPU the attacker, as it should be): 90 % of CPU rounds in attack posture, 56 % moving.
-- Reading: the lever is not inside the HOLD option; it is (a) the posture (the CPU meets the blob as an attacker), (b) the
-  support_by_fire line re-seated on a moving focus, (c) recon fire on the move. Re-read weights rounds by damage (a scout's MG
-  fires ~10 rounds to a cannon's 1) and splits by posture reason and map half before the design note.
+**D1 the read (DONE).** Tool: `make native tactics-hold-fire` (tests/tactics/hold_fire_probe.gd extends the guard line read-only;
+every direct round, the same weighted by damage a round, and a 2 Hz crew sample, split by posture, posture reason, map half,
+element task verb, brain option and seat distance, motion as R37.26). Reads, all builder0 native ON, light:
+(1) 640850023, blob 80 fights + turtle 45 (the slot's 90 min cap took the rest; ~/doctrine-runs/d1);
+(2) 6e049da5b with damage and reasons, blob 55 of 80 (stopped at the orchestrator's request, the box was loaded; ~/doctrine-runs/d1b).
+- **The CPU is not defending when the blob comes.** Blob line, damage-weighted (2): 81.7 % of the CPU's damage is fired in ATTACK
+  posture, and **75.0 % is ATTACK because it "holds no objective" while it stands in its OWN half**: the blob reaches the CPU's
+  near ring (the blob's target) before the CPU has taken it, and Posture.decide only holds a zone the side already owns. 17.4 %
+  "threatened" (a held zone, enemy within 60 m), 0.3 % ahead. Rounds (1): 82.6 % attack posture, 55.5 % moving (= R37.26).
+- In attack posture it fights as an attacker: by verb (damage) attack 42 % (50 % of it moving), support_by_fire 32 % (54 %),
+  screen 11 % (62 %); by option ENGAGE 39 % (48 % moving), MOVE 23 % (79 %), HOLD 24 % (23 %); by seat, crews > 15 m from their
+  slot 35 % of damage (66 % moving), within 5 m 19 % (17 % moving).
+- **A CPU crew that holds on its seat already stops to fire** (hold|HOLD|near: 83 % still by damage, 93 % by rounds). In hold
+  posture the movers are crews driving to posts 15 m+ away (hold|MOVE|away 72 % moving): `_hold` re-lays the posts across the
+  enemy's CENTRE each think, so as the blob comes on the post line swings and crews drive mid-fight.
+- Turtle line (CPU the attacker, as it should be): 90 % of its rounds in attack posture, 56 % moving.
+- Not the lever: the HOLD option itself, ENGAGE inside a hold (2 % of damage), SPOT (< 1 %).
+
+**D2 design (my paths only: posture.gd, element_commander.gd; native: no twin, confirmed by native).** `--cpu-defend`:
+(a) DEFEND posture: a side whose near ring (Posture.near_ring) is not the enemy's and has a known enemy within THREAT_M (60 m)
+of it HOLDS that ring, owned or not yet, whatever the score; a threatened held zone still comes first; the hold is kept
+(POSTURE_KEEP_TICKS) while the ring is not the enemy's. The hold is round 19's `_hold` as it is: posts across the zone facing
+the threat, recon screening out, support behind, one post on an intruder. (b) the posts keep the facing they were laid with
+until the enemy's direction from the zone swings > 45 degrees. Symmetric: every side a commander runs (both CPU sides in CPU v
+CPU); his squads are not commanded (parked = settle's). Why not the brain: a holding crew on its seat already fires still.
+Lab: tests/test_tactics_posture.gd 16/0 (6 new: off = today, defend, far enemy, enemy-owned ring attacked, mirrored, held zone first).
+
+**Bar D2 (FILED 2026-10-22 before any arm number; C38.1/C38.2).** Change: `--cpu-defend` ON v OFF.
+- **Base:** main 1c484a525's `references/scoreboard/guards/1c484a525.fights.jsonl` (320 fights, builder2). Gate: my pair tree
+  OFF replays it with 0 flips on one seed block (2601), else the base is re-run on the pair tree and paired against that.
+- **Workload:** the same 320 guard fights an arm (5 maps x 2601-2608 + 2701-2708 x both sides x blob/turtle), builder2,
+  `guard.sh`, judged `guard.py --pair`. Plus the CPU v CPU line (`GUARD_KINDS=none`, 2601-2608, both arms).
+- **Positive control:** `tactics-hold-fire` ON on the blob line: the CPU's damage share fired in "defend" posture > 0 on every
+  map, and its share in attack/"holds no objective"/own half DOWN.
+- **Deciding:** the blob's win rate DOWN v base by > 2 x paired se AND exact McNemar p < 0.05.
+- **Second line:** the blob's kill ratio not UP by > 2 x paired se (a contradiction, not a pass).
+- **Mechanism (reported, the brief's claim):** the CPU's moving share of damage fired on the blob line, ON v OFF (base 50.8 %, 55
+  fights); expected down.
+- **G1 (the CPU still attacks when it is the attacker):** turtle v tactics: the turtle's win rate not UP by > 2 x paired se and
+  its McNemar p not < 0.05 in its favour; turtle median length not up by > 2 x paired se.
+- **G2:** kills a fight and median length per faction, both lines, within base +- 2 x paired se (a faction outside is named).
+- **G3 (what DEFEND could break: two defenders stall):** CPU v CPU (none line, 40 distinct fights x 2 sides): fights reaching the
+  600 s cap ON <= OFF + 2, and median length ON <= OFF x 1.2; decisive results reported.
+- **G4:** perf: commander code is a think a second (no per-crew cost); perf-judge on builder0 when the orchestrator judges main.
+- **Equality:** sim-baseline unmoved with the switch OFF.
+- **A pass ships ON** (symmetric AI improvement: his standing rule). One re-tune allowed only on the guard lines (THREAT_M for
+  defend), then judged as it stands.
 
 **Pairing base (native, 2026-10-22):** main 1c484a525's `references/scoreboard/guards/1c484a525.fights.jsonl` (on main since
 cc7c7ef1a; 320 fights, builder2): blob 49 % (± 7), turtle 40 % (± 16). Arms pair with `guard.py --pair` against it; main's rolling
