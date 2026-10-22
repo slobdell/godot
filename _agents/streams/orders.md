@@ -196,6 +196,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   click, at arrival and 5 s after, LOOKED at; the recording carries no camera pose, so top-down over the click. He judges "I kept
   control".
   A pass ships ON (his control only: the CPU issues no multi-squad click).
+  **Judged: FAIL as filed** (builder0 native 1ebd7e550, `references/round37/orders/o7-judged-builder0-1ebd7e550/`): counter
+  PASS (columns_laid 111); places outside the corridor 84 -> 45 (limit 21) FAIL; metres driven outside 33518 -> 32505 (limit
+  16759) FAIL; squads with crews re-dealt 40 -> 0 PASS; friendly contacts 16826 -> 18412 PASS; probe guards FAIL in 6 cells
+  (locks 5 click all-in 19.6 -> 28.8 s; terminus 3 route all-in 16.8 -> 24.2 s, twitch 0 -> 13.2 m; crossing 5 click twitch
+  23.0 -> 28.1 m; crossing 5 route never-in 0 -> 1); yard_open no-change FAIL (44 / 96 rows identical: the column engages on
+  open ground because the yard's walls sit inside the 100 m scan). Plain clicks improve (crossing 5 outside 23 -> 2, metres
+  ~halved); route cells do not move (the final click is not where the squads leave the corridor). The `his/` cells are NOT
+  his click (probe bug, fixed 7e9bd7fb7). Stays OFF; v2 (open = today's body fits the clear width; route legs) is round 38's.
 - **O1 LATCH RE-READ, twitch guard re-filed as PLACE + TWITCH (R37.37; filed 2026-10-22 ~03:00 PDT, before any number).**
   Why: latch failed as filed only on terminus 5 click twitch (16.8 -> 28.0 m); the trace (ea09f3b17) showed the same 47 m
   deploy-deal drive in both arms, which latch delays past PLACE_S (8 s), so it is counted as twitch instead of place. The

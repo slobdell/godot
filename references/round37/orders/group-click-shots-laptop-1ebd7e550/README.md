@@ -1,4 +1,8 @@
-# His Terminus group click, today v `--group-lay=column` (laptop GDScript 1ebd7e550, n 1 each, seed 34)
+**WITHDRAWN (2026-10-22): these shots are NOT his click.** The make target splits an arm's flags on commas, so
+`--probe-click=-29.3,85.8` reached the probe as `-29.3`; it errored and clicked the arena centre (0, 0). Fixed in 7e9bd7fb7
+(`x/z`). The shots at his real point replace these.
+
+# (withdrawn) His Terminus group click, today v `--group-lay=column` (laptop GDScript 1ebd7e550, n 1 each, seed 34)
 
 `make orders-probe-shots ORDERS_PROBE_MAPS=terminus ORDERS_PROBE_SHOT_SQUADS="3 5"
 ORDERS_PROBE_SHOT_ARMS="main:--probe-click=-29.3,85.8 column:--probe-click=-29.3,85.8,--group-lay=column"`: the probe's own

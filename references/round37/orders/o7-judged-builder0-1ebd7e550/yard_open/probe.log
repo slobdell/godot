@@ -1,0 +1,81 @@
+tools/remote.sh native orders-probe ORDERS_PROBE_SEEDS=3801\ 3802\ 3803\ 3804\ 3805\ 3806\ 3807\ 3808\ 3809\ 3810\ 3811\ 3812 ORDERS_PROBE_ARMS=main:\ column:--group-lay=column ORDERS_PROBE_MAPS=yard_open ORDERS_PROBE_SQUADS=3\ 5 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=4
+>> remote: syncing godot-orders-o1 to slobdell@builder0:~/tank_squad/godot-orders-o1
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3801 3802 3803 3804 3805 3806 3807 3808 3809 3810 3811 3812 ORDERS_PROBE_ARMS=main: column:--group-lay=column ORDERS_PROBE_MAPS=yard_open ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=4 on slobdell@builder0
+>> native: src-sync: 0 changed
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> orders-probe on builder0 | commit 1ebd7e550 | native on
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+yard_open 3 click         column    |   48.1 /   34.4   |    0   0 |     18.7 |               6.7 |            40.7 | 2.26 | 19.7
+yard_open 3 click         main      |   43.3 /   34.4   |    0   0 |     18.7 |               5.9 |            40.7 | 2.58 | 19.7
+yard_open 5 click         column    |   79.2 /   44.1   |    0   0 |     20.7 |               4.2 |            47.9 | 2.37 | 7.5
+yard_open 5 click         main      |   53.6 /   39.4   |    0   0 |     23.8 |               4.2 |            47.7 | 2.40 | 4.1
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+yard_open 3 click         column    |          24.6 |          16.4 |           20.7 |              12.0 |          55.2
+yard_open 3 click         main      |          25.0 |          20.9 |           20.7 |              12.0 |          50.8
+yard_open 5 click         column    |          30.7 |          34.3 |           20.3 |               6.4 |          97.5
+yard_open 5 click         main      |          30.7 |          27.9 |           25.7 |              10.5 |          78.0
+
+MEDIANS over seeds [3801, 3802, 3803, 3804, 3805, 3806, 3807, 3808, 3809, 3810, 3811, 3812] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+yard_open 3 click         column      | 12 |         14.6 |     0 |          25.4 |          0.1 |          46.9 |              12.0 |    0   0 | 2.05
+yard_open 3 click         main        | 12 |         15.8 |     0 |          26.4 |          1.1 |          43.7 |              12.0 |    0   0 | 2.16
+yard_open 5 click         column      | 12 |         13.0 |     0 |          38.8 |         13.5 |          69.8 |               6.4 |    0   0 | 1.63
+yard_open 5 click         main        | 12 |         13.1 |     0 |          34.7 |          0.3 |          73.0 |              10.5 |    0   0 | 1.79
+
+EQUALITY click cells: 12 identical across arms, 12 differ
+  DIFFER yard_open 3 click seed 3805
+  DIFFER yard_open 3 click seed 3808
+  DIFFER yard_open 3 click seed 3809
+  DIFFER yard_open 3 click seed 3810
+  DIFFER yard_open 5 click seed 3801
+  DIFFER yard_open 5 click seed 3804
+  DIFFER yard_open 5 click seed 3806
+  DIFFER yard_open 5 click seed 3808
+  DIFFER yard_open 5 click seed 3809
+  DIFFER yard_open 5 click seed 3810
+  DIFFER yard_open 5 click seed 3811
+  DIFFER yard_open 5 click seed 3812
+TOTAL column     | placed 96.0 flipping 1.0 flips 2.0 relays 5.0 relaying 2.0 terr_c 3.0 terr_a 0.0 reseats 4.0 away 68.0 held 61.8 seat 324.3
+TOTAL main       | placed 96.0 flipping 1.0 flips 2.0 relays 7.0 relaying 3.0 terr_c 5.0 terr_a 0.0 reseats 4.0 away 57.7 held 51.5 seat 196.8
+>> remote: copy-back verified, 170 files, sha256
+>> remote: copy-back moved 48 stale log(s) an earlier run left beside this run's rows, into build/.stale-20261022-042254/
+   moved  build/orders-probe/logs/terminus-3-click-column-s3806.log
+   moved  build/orders-probe/logs/terminus-5-click-column-s3806.log
+   moved  build/orders-probe/logs/terminus-3-click-main-s3812.log
+   moved  build/orders-probe/logs/terminus-5-click-column-s3802.log
+   moved  build/orders-probe/logs/terminus-5-click-main-s3810.log
+   moved  build/orders-probe/logs/terminus-5-click-main-s3806.log
+   moved  build/orders-probe/logs/terminus-5-click-main-s3804.log
+   moved  build/orders-probe/logs/terminus-3-click-column-s3805.log
+   moved  build/orders-probe/logs/terminus-5-click-main-s3802.log
+   moved  build/orders-probe/logs/terminus-5-click-column-s3812.log
+   moved  build/orders-probe/logs/terminus-3-click-main-s3804.log
+   moved  build/orders-probe/logs/terminus-5-click-main-s3807.log
+   moved  build/orders-probe/logs/terminus-3-click-main-s3801.log
+   moved  build/orders-probe/logs/terminus-5-click-column-s3808.log
+   moved  build/orders-probe/logs/terminus-5-click-column-s3805.log
+   moved  build/orders-probe/logs/terminus-5-click-main-s3809.log
+   moved  build/orders-probe/logs/terminus-5-click-column-s3810.log
+   moved  build/orders-probe/logs/terminus-3-click-column-s3812.log
+   moved  build/orders-probe/logs/terminus-3-click-main-s3803.log
+   moved  build/orders-probe/logs/terminus-3-click-column-s3803.log
+   ... and 28 more
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3801 3802 3803 3804 3805 3806 3807 3808 3809 3810 3811 3812 ORDERS_PROBE_ARMS=main: column:--group-lay=column ORDERS_PROBE_MAPS=yard_open ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=4 exited 0 (build/ copied back)
