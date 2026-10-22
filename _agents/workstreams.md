@@ -545,6 +545,11 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   timeouts, contacts, jam deaths passed. The ON check's red was N5's UNEXPECTED PASS on a tree predating 4b62d2186 (3019/0, 0 verify
   mismatches). **Ruled:** seatstep stays OFF on its lab branch; a v2 (a fight-volume guard a symmetric rule can't fail just by
   meaning fewer fights, a trace of why parked ambushers settle less, plus M5b's reverse-back) is round 38's.
+- **R37.31 (2026-10-22) SHIPPED ON: set-up rocket trucks obey new moves.** main 98153750a merges pair/orders-artillery 53b0ee425
+  alone (INHERIT; cut from main 764f5950b): builder0 `make native check exited 0`, 3031 passed / 0 failed, 25 + 2 NOT JUDGED
+  (perf-judge on a busy box; scenario_perf unpinned), sim-baseline 13/13 unmoved, determinism 8c3c1232b711a760; no native twin
+  (element_plan.gd GDScript; grep of native/ finds nothing). `--battery-seat-task` ON (=off keeps round 33's). Perf-judge for this
+  small GDScript change is owed on builder0 with the next shipped batch.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
