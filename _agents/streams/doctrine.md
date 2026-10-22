@@ -118,6 +118,11 @@ at 6e049da5b; `tests/tactics/hold_fire_pair.py`).**
 - **A pass ships ON** (symmetric AI improvement: his standing rule). One re-tune allowed only on the guard lines (THREAT_M for
   defend), then judged as it stands.
 
+**D2 in pictures (`make doctrine-shots`, laptop, a656460ea's tree; locks seed 2602, blob = green, 60 s in, 1854x1011 and
+1200x540; looked at):** OFF, the CPU's rust line burns north of the bridge and the blob has crossed it. ON, the rust CPU stands
+on its own scoring ring (FAR QUAY) firing, and the blob is held at the barrier beside the building. The phone frame reads the same.
+builder0's llvmpipe can't render these (12/12 runs exited 124 at the 300 s timeout), so run it on the laptop.
+
 **builder2 hand-off:** when the D2 series ends, message settle (godot-settle-6b) AND the orchestrator "builder2 free" (settle's
 S2 re-read waits behind it, R38.10).
 

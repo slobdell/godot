@@ -1006,11 +1006,12 @@ tactics-hold-fire: import ## Round 38 (doctrine D1): the guard lines' CPU rounds
 
 # Round 38 (doctrine D2): the defend doctrine in pictures. The guard line's blob fight (his right-click army charging the CPU's
 # near ring) rendered by the showmatch's own camera, defend OFF and ON, at his window and the phone, DOCTRINE_SHOT_DELAYS seconds
-# in (wall-clock real time; the fight is the guard line's, seed and side as given). Needs a display: make remote T=doctrine-shots.
+# in (the fight is the guard line's, seed and side as given). Needs a real GPU: run it on the laptop (`make doctrine-shots`, ~5 min).
+# builder0's llvmpipe did not reach 40 s of game time inside the 300 s timeout (a656460ea, all 12 runs exited 124).
 DOCTRINE_SHOT_ARENA ?= locks
 DOCTRINE_SHOT_SEED ?= 2602
 DOCTRINE_SHOT_SIDE ?= green
-DOCTRINE_SHOT_DELAYS ?= 40 60 80
+DOCTRINE_SHOT_DELAYS ?= 60
 DOCTRINE_SHOT_DIR ?= $(BUILD_DIR)/doctrine-shots
 
 .PHONY: doctrine-shots
