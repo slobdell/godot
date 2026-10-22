@@ -60,6 +60,11 @@ baseline check (contract 1).
   ways. Reading the O5 code: `_aside` already reads EVERY other element's way, support_by_fire included, but a support_by_fire
   task's `to` is its TARGET (the enemy), not its seat, so the "way" it tests is centre -> enemy. The trace checks that.
 
+**builder0 use (C38.1, the orchestrator's machine note 2026-10-22):** ONE judged series at a time. Judged: the M5 v2 series
+(`manoeuvre-m5v2`) STARTED 08:41 (its ON check queued first); end will be logged here. Light/short runs beside it: the M2 trace
+tree's `make lint` (godot-manoeuvre-trace) and the M7 aside trace (18 fights, J=3, `manoeuvre-aside1`). The M2 trace census
+waits until those two end.
+
 **Plan (in order; smallest foundation first):**
 1. **M1 (M5 v2):** Bar M5 v2 filed below BEFORE any number. Lab trees on today's main: `lab/manoeuvre-r38-m5` (stream + M5a's
    rule from `lab/manoeuvre-r37-m5` + native's `pair/native-m5` 156d563d9, seatstep OFF) and `lab/manoeuvre-r38-m5on` (seatstep
