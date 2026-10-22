@@ -58,9 +58,11 @@ static func _diff(a: Array, b: Array) -> String:
 ## Runs the stage (`arena`, `kind`: "head" or "cross") for `seconds` with the twin compare on every tick; `owned` = the
 ## native arm on the C++-owned state. Returns the counts: drives, held (holding after the live drive), at_spot /
 ## approach (held with zero / non-zero throttle), shaped (drives whose live arm slowed a wish at the crossing),
-## unsticks, held_unsticks, mismatches, first (the first mismatch), and the stage's report. Round 32 (C32.8): only the
+## unsticks, held_unsticks, mismatches, first (the first mismatch), and the stage's report. `stage` (R37.35): the stage's
+## points instead of TrafficStage.STAGES[arena][kind] (TrafficStage.run's stage_override). Round 32 (C32.8): only the
 ## crews at `part` mod `parts` in each tick's mover list are compared (the hold's files split by crew); the rest play on.
-static func run(case: TestCase, owned: bool, arena: String, kind: String, seconds: float, part := 0, parts := 1) -> Dictionary:
+static func run(case: TestCase, owned: bool, arena: String, kind: String, seconds: float, part := 0, parts := 1,
+		stage := {}) -> Dictionary:
 	MoverState.world_reset()  # a crew an earlier test left held is not this case's world
 	var traffic: Traffic = Traffic.new()
 	var script: Script = Traffic
@@ -144,7 +146,7 @@ static func run(case: TestCase, owned: bool, arena: String, kind: String, second
 					if acc["first"] == "":
 						acc["first"] = "tick %d %s unstick: command live %s native %s; %s" % [now, name, arms[0][0],
 								arms[1][0], ud]
-	acc["report"] = await TrafficStage.run(case, 1, arena, kind, "both", seconds, "green", false, on_tick)
+	acc["report"] = await TrafficStage.run(case, 1, arena, kind, "both", seconds, "green", false, on_tick, stage)
 	return acc
 
 

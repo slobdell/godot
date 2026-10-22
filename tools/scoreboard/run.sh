@@ -17,6 +17,9 @@
 set -uo pipefail
 commit=${1:?usage: tools/scoreboard/run.sh COMMIT [HOST]}
 host=${2:-slobdell@builder2}
+# SCORE_JOBS: fights at once (mk/scoreboard.mk's default 10). builder2 (16 physical cores) takes 14, the orchestrator's
+# 2026-10-21 machine note; a SCORE_JOBS= in SCORE_VARS still wins.
+case "$host" in *builder2*) jobs=${SCORE_JOBS:-14} ;; *) jobs=${SCORE_JOBS:-} ;; esac
 src=$(git rev-parse --show-toplevel)
 short=$(git -C "$src" rev-parse --short=9 "$commit") || { echo "scoreboard: no such commit $commit" >&2; exit 2; }
 wt=${SCORE_WORKTREE:-$(dirname "$src")/godot-native-score}
@@ -54,7 +57,7 @@ for try in $(seq 1 "$tries"); do
 		ssh -o BatchMode=yes -o ConnectTimeout=10 "$host" true 2>/dev/null || make -C "$src" --no-print-directory gcp-start 2>&1 | tail -2 | tee -a "$out/driver.txt" ;;
 	esac
 	rm -rf "$wt/build/scoreboard"
-	( cd "$wt" && TANK_SQUAD_COMMIT=$short REMOTE_HOST=$host bash tools/remote.sh native scoreboard-run ${SCORE_VARS:-} ) > "$out/remote.log" 2>&1
+	( cd "$wt" && TANK_SQUAD_COMMIT=$short REMOTE_HOST=$host bash tools/remote.sh native scoreboard-run ${jobs:+SCORE_JOBS=$jobs} ${SCORE_VARS:-} ) > "$out/remote.log" 2>&1
 	status=$?
 	grep -E "^>> (remote|scoreboard-run)|MISSING" "$out/remote.log" | tail -20 | tee -a "$out/driver.txt"
 	rm -rf "$out/raw" && cp -r "$wt/build/scoreboard" "$out/raw" 2>/dev/null
