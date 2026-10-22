@@ -48,3 +48,55 @@ F1's page when it exists (the orchestrator relays).
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-22, F1/F2 built, F3 seam built (in progress).**
+- **F2 (every look):** `EndCard` (game/ui/end_card.gd), mounted by the Hud on `Match.finished` where he commands an army (the
+  controls node on the HUD layer, not spectated). From that moment a click on the field or any key stops at the card: a click
+  says MATCH OVER where it landed and the choices pulse; the wheel and middle drag still look around (RtsCamera.handle_mouse),
+  the camera's keys are polled so they still pan. Enter = PLAY AGAIN (his factions and map, a new seed), Esc = NEW MATCH (the
+  faction menu); both appear 0.6-2.5 s after the end so a click in flight cannot restart. Under the garage loop: no choices, and
+  keys go to its results screen once it is up. Tests: tests/test_feedback_end_card.gd (real pushed input), test_feedback_match_end.gd.
+- **F1 looks** (`--end-look=plain|a|b|c`; default `plain` until his pick): plain = the old centre banner text + why + the choices;
+  a = the end card (battle dims, a card: result, why, what was left, choices); b = the broadcast end (letterbox bars, the camera
+  goes to the ring the winner held / its survivors, the choices after 2.5 s); c = the banner stays (a wide band across the top
+  third, the battle stays bright). Reason lines in his words (MatchEnd): "The Syndicate held the rings: 90 points to 61", "Your
+  last vehicle was destroyed. The Syndicate kept 4", "Time's up: you led at the rings, 40 points to 22".
+- **F3 seam** (C38.4 grant, match.gd): `Match.repair_under_fire_on` (`--repair-under-fire`, OFF), `repair_under_fire_rate_for`
+  (best friendly FIELD mender at x0.5; never the base, never itself: a Tanker being shot does not mend its own hull, so it stays
+  "easy to kill" as L3 meant; a second Tanker can), stats `hp_mended` / `hp_mended_under_fire` (counters only),
+  `--repair-report` prints MATCH_MENDED at exit for the series. The beam (FeedbackReader.mending, same rule) runs its pulses at
+  half speed, fainter and thinner while mending under fire. Tests: tests/test_feedback_repair_fire.gd.
+
+**2026-10-22, started.** Launch check: main 1c484a525 + docs inherits round 37's close check (HANDOFF: GREEN, ALL JUDGED, builder0);
+not re-run. His 2026-10-21 recording (`2026-10-21T21-43-57-archipelago.jsonl`) is gone with round 37's worktrees; game_design.md's
+read of it stands (control end at 195.4 s, later clicks echoed "move").
+
+**What the end is today (read, 5b20bfd62):** `make skirmish` (his way in, faction menu) ends with `Hud.show_banner`: a plain 34 px
+label in the screen centre saying VICTORY / DEFEAT / DRAW, no reason, under the busy fight. The match keeps simulating (survivors
+drive on), RtsControls keeps taking orders, so a click still answers "Moving" with a ground marker. No results screen and no way
+on except quitting (the garage loop has its results screen 3 s later; skirmish does not).
+
+**F3's bar (C38.4), filed 2026-10-22 BEFORE any number.** Switch `--repair-under-fire` (OFF until this passes; `Match.repair_under_fire_on`).
+Rule: a friendly field mender (the gangs' Resupply Tanker) keeps mending a vehicle that is under fire at HALF its rate (2.5 hp/s);
+full rate after `REPAIR_QUIET_SECONDS` as today. The base's own mending still waits for quiet (his answer was about the Tanker).
+Run: the CP37.1 guard set (blob + turtle, both sides, the same 320 fights) through `tests/feedback/repair_probe.gd` (extends
+`guard_line.gd`, read-only, as rules' guard_motion_probe does; it adds the match's mending counters), base v ON, paired, builder2.
+- **Deciding:** hp mended by field menders per fight with a gang side, UP (paired; base and ON on the same fights). Expect a large
+  rise (base: Tankers rarely mend in a fight); a rise under ~25 % is a fail (the rule would not be something he notices).
+- **Guards (what it could BREAK):** (1) the blob line overall must not move beyond noise, and no faction's blob or turtle rate may
+  rise beyond noise; the gangs in particular must not start winning the blob line (paired, guard.py --pair, p >= 0.05 = inside
+  noise); (2) kills and fight length per faction within noise (no stalemates from immortal gang trucks: median length up < 15 %);
+  (3) perf: the repair loop already runs for every unit every INTEL tick; ON adds no loop (perf-judge in the check).
+- **Fails if** the deciding read is flat, or any guard moves beyond noise in the gangs' favour. A pass ships ON (his call, C38.4).
+
+**Plan (smallest foundation first):**
+1. `MatchEnd` (pure, `game/ui/match_end.gd`): the headline, the reason in player words ("The Syndicate held the rings: 90 points
+   to 61", "Your last vehicle was destroyed"), the score line, the next match's flags. Tests first: `tests/test_feedback_match_end.gd`.
+2. `EndCard` (`game/ui/end_card.gd`), mounted by the Hud on `Match.finished` where he commands an army: F2's guard in every look
+   (a field click or order key says "Match over" instead of ordering; the camera still looks around) and `--end-look=` for F1's
+   directions. Decision: until he picks, the default is `plain` (today's banner + the reason line + the guard): the guard is
+   F2's fix, not a look; the three directions sit behind the flag (round 37's precedent: nothing he has not picked shows).
+3. `make end-shots` (builder0 display, laptop preset): a real commanded skirmish ended by each reason, stills + a clip per look,
+   including a click after the end. The directions page from those; the orchestrator relays.
+4. F3: bar filed first (C38.4), then `--repair-under-fire` in `Match.repair_rate_for` + the tick, the beam showing the half rate,
+   the series on builder2.

@@ -248,6 +248,13 @@ const REPAIR_HP_PER_SECOND := 6.0
 ## shield's recharge delay, which is 0 for a faction with no shields at all (the road gangs) — so a gang truck
 ## mended itself while it was being shot. The longer of the two applies.
 const REPAIR_QUIET_SECONDS := 3.0
+## Round 38 (feedback F3, C38.4; his answer 2026-10-22, "yes it also repair during combat"): a friendly field mender (the
+## gangs' Resupply Tanker) keeps mending a vehicle under fire at this share of its rate, full again after REPAIR_QUIET_SECONDS.
+## The base's own mending still waits for quiet. A guarded seam: `--repair-under-fire` / `--no-repair-under-fire`, OFF until its
+## bar passes (_agents/streams/feedback.md), then REPAIR_UNDER_FIRE_DEFAULT ships it ON.
+const REPAIR_UNDER_FIRE_FACTOR := 0.5
+const REPAIR_UNDER_FIRE_DEFAULT := false
+static var repair_under_fire_on := Match._repair_under_fire_flag()
 ## G7 resupply: tanks within this distance of their own base center regain one shell every
 ## RESUPPLY_SECONDS_PER_SHELL. A full reload (45 shells) takes 45 s at base.
 const RESUPPLY_RADIUS := 30.0
@@ -272,6 +279,8 @@ var spawn_jitter := 0.0
 ## Counters for match results and experiments, indexed by team where it's a pair.
 var stats := {"shots": [0, 0], "hits": [0, 0], "damage": [0, 0], "flame_damage": [0, 0], "laser_damage": [0, 0], "mortar_damage": [0, 0], "shield_damage": [0.0, 0.0],
 		"kills": [0, 0], "shells_resupplied": [0, 0],
+		# Round 38 (feedback F3): hull points mended, by the mended unit's team: all of it, and by field menders under fire.
+		"hp_mended": [0, 0], "hp_mended_under_fire": [0, 0],
 		# R4 friendly fire, by the SHOOTER's team: hull + shield points dealt to teammates, hits, and teammates destroyed.
 		"friendly_damage": [0.0, 0.0], "friendly_hits": [0, 0], "friendly_kills": [0, 0],
 		# Stretch hazards, by the VICTIM's team: hull + shield points lost to the arena, and units it destroyed.
@@ -373,6 +382,10 @@ var _next_bot_id := 1
 ## Round 32 (planner, the orchestrator's grant: this one hook): a match's planner crews and decline windows end with it.
 func _exit_tree() -> void:
 	PlannerSeam.end_match(tanks)
+	# Round 38 (feedback F3's series): `--repair-report` prints what was mended, for the guard fights' logs (read-only).
+	if OS.get_cmdline_user_args().has("--repair-report"):
+		print("MATCH_MENDED " + JSON.stringify({"under_fire_rule": repair_under_fire_on, "hp_mended": stats["hp_mended"],
+				"hp_mended_under_fire": stats["hp_mended_under_fire"], "sim_seconds": snappedf(sim_seconds, 0.1)}))
 
 
 func _ready() -> void:
@@ -912,15 +925,19 @@ func _resupply() -> void:
 	var ticks_per_shell := roundi(RESUPPLY_SECONDS_PER_SHELL * SimClock.TICK_RATE)
 	var menders := _field_menders()
 	for tank in _sorted_tanks():
-		var rate := repair_rate_for(tank, menders)
-		if tank.is_alive() and tank.health < tank.max_health and rate > 0.0 \
-				and tank.ticks_since_hit >= roundi(maxf(tank.shield_recharge_delay, REPAIR_QUIET_SECONDS) * SimClock.TICK_RATE):
+		var quiet := tank.ticks_since_hit >= roundi(maxf(tank.shield_recharge_delay, REPAIR_QUIET_SECONDS) * SimClock.TICK_RATE)
+		var rate := repair_rate_for(tank, menders) if quiet else (repair_under_fire_rate_for(tank, menders) if repair_under_fire_on else 0.0)
+		if tank.is_alive() and tank.health < tank.max_health and rate > 0.0:
 			var ticks_per_hp := maxi(1, roundi(SimClock.TICK_RATE / rate))
 			tank.repair_ticks += INTEL_EVERY_TICKS
 			if tank.repair_ticks >= ticks_per_hp:
 				var hp := tank.repair_ticks / ticks_per_hp
 				tank.repair_ticks -= hp * ticks_per_hp
+				var before := tank.health
 				tank.repair(hp)
+				stats["hp_mended"][tank.team] += tank.health - before
+				if not quiet:
+					stats["hp_mended_under_fire"][tank.team] += tank.health - before
 		else:
 			tank.repair_ticks = 0
 		if not tank.is_alive() or tank.ammo < 0 or tank.ammo >= tank.max_ammo:
@@ -941,7 +958,7 @@ func _field_menders() -> Array:
 	for tank in _sorted_tanks():
 		var rate := float(Units.stat(tank.unit_id, "repair_hp_per_second", 0.0))
 		if tank.is_alive() and rate > 0.0:
-			menders.append({"team": tank.team, "position": tank.global_position,
+			menders.append({"team": tank.team, "position": tank.global_position, "name": tank.name,
 					"radius": float(Units.stat(tank.unit_id, "repair_radius_m", 0.0)), "rate": rate})
 	return menders
 
@@ -958,6 +975,30 @@ func repair_rate_for(tank: Tank, menders: Array) -> float:
 		if Vector2(offset.x, offset.z).length() <= float(mender["radius"]):
 			rate = maxf(rate, float(mender["rate"]))
 	return rate
+
+
+## Round 38 (feedback F3): what `tank` mends at while under fire: the best friendly FIELD mender in reach at
+## REPAIR_UNDER_FIRE_FACTOR of its rate; never the base (it waits for quiet), and never ITSELF (a Tanker being shot does not
+## mend its own hull: L3's "the vehicle that does it is easy to kill"; a second Tanker can). Only read when `repair_under_fire_on`.
+func repair_under_fire_rate_for(tank: Tank, menders: Array) -> float:
+	var rate := 0.0
+	for mender: Dictionary in menders:
+		if int(mender["team"]) != tank.team or mender.get("name") == tank.name:
+			continue
+		var offset: Vector3 = mender["position"] - tank.global_position
+		if Vector2(offset.x, offset.z).length() <= float(mender["radius"]):
+			rate = maxf(rate, float(mender["rate"]) * REPAIR_UNDER_FIRE_FACTOR)
+	return rate
+
+
+static func _repair_under_fire_flag() -> bool:
+	var on := REPAIR_UNDER_FIRE_DEFAULT
+	for arg in OS.get_cmdline_user_args():
+		if String(arg) == "--repair-under-fire":
+			on = true
+		elif String(arg) == "--no-repair-under-fire":
+			return false
+	return on
 
 
 static func resupply_center(team: int) -> Vector3:

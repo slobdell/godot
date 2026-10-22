@@ -194,7 +194,7 @@ func update(now: float) -> void:
 			var mender: Tank = link["node"]
 			var from := FxWorld.visual_transform(mender).origin + Vector3.UP * _top(mender) * 0.8
 			var to := FxWorld.visual_transform(tank).origin + Vector3.UP * _top(tank) * 0.7
-			_beam(beams, from, to)
+			_beam(beams, from, to, bool(link.get("under_fire", false)))
 			beams += 1
 			mending_points[String(tank.name)] = to
 		for cone: Dictionary in reader.active_cones(now) if FeedbackLook.on("cone") else []:
@@ -228,11 +228,19 @@ func _sector(kind: String, target: Tank, toward: Vector3, now: float) -> void:
 	_ground.multimesh.set_instance_custom_data(i, Color(now, HIT_SECTOR_S, minf(_hull_span(target) * 1.7, SEGMENT_MAX_M), 0.0))
 
 
-func _beam(i: int, from: Vector3, to: Vector3) -> void:
+## Round 38 (F3): a beam mending under fire (half rate) runs its pulses at half speed and a little fainter and thinner, so
+## the slower mending shows; once quiet it is the full beam again.
+const UNDER_FIRE_PULSE := 0.5
+const UNDER_FIRE_STRENGTH := 0.7
+const UNDER_FIRE_WIDTH := 0.5
+
+
+func _beam(i: int, from: Vector3, to: Vector3, under_fire := false) -> void:
 	var basis := Basis(Vector3.RIGHT, Vector3.UP, to - from)
 	_beams.multimesh.set_instance_transform(i, Transform3D(basis, from))
-	_beams.multimesh.set_instance_color(i, Color(MEND_COLOR, 1.0))
-	_beams.multimesh.set_instance_custom_data(i, Color(0.0, 0.0, 0.7, 1.5))
+	_beams.multimesh.set_instance_color(i, Color(MEND_COLOR, UNDER_FIRE_STRENGTH if under_fire else 1.0))
+	_beams.multimesh.set_instance_custom_data(i, Color(UNDER_FIRE_PULSE if under_fire else 1.0, 0.0,
+			UNDER_FIRE_WIDTH if under_fire else 0.7, 1.5))
 
 
 func _air_cone(cone: MeshInstance3D, origin: Vector3, direction: Vector3, reach: float, cone_deg: float) -> void:
