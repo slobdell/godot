@@ -76,6 +76,24 @@ None are my paths. Asked the orchestrator (2026-10-22): (1) owners re-pin their 
 re-site the runs clear of the stages (costs hit share), (3) hold K5. builder2 series HELD until the answer (re-siting changes
 what Bar K judges).
 
+**BAR K VERDICT (K4, 2026-10-22): FAIL on the deciding line; every guard holds. K2 stays OFF.** Paired, ON v OFF, one tree
+per fight: builder2, terminus/locks/sumps/gorge at 3923ba026 + parade's 64 fights per arm re-run at c02b01d83 (re-sited run,
+R37.35; seeds 2601-08 + 2701-08, both sides, blob + turtle, all 64 parade fights replaced in BOTH arms), 320 fights an arm,
+GUARD_JOBS 20, every log with its GUARD_RESULT (one preemption at 05:11, seed 2702 lost and re-run by the driver).
+- Deciding: blob wins 45 % -> 44 % (diff -1.3 pts, paired se 0.9 = 1.4 se, needs > 2); flips 2 to a loss, 0 to a win,
+  McNemar p 0.25 (needs < 0.05). Kill ratio 0.85 -> 0.84 (-0.016, se 0.006).
+- Guards: turtle 36 % -> 37 % (+0.6, se 1.1; not up); kr 0.75 -> 0.75. Kills/fight and length per faction within 3 %
+  (gangs 10.08 -> 10.38 kills, 144 s both; law 13.0, 142 s; syndicate 30.3, 134 -> 133 s; condemned 17.7, 152 s).
+  Positive control: cover_struck ON terminus 101, locks 241, sumps 15, gorge 79, parade 69 (OFF 0 everywhere).
+  OFF-v-OFF replay (seed 2601, 20 fights): 0 flips, identical. Perf-judge and sim-baseline: the hand-over check below.
+- **Map effect (the maps alone, OFF@K5 v 9d325e291's fights, same seeds):** blob 48 -> 45 % (-2.5, se 3.4; flips 19/15,
+  p 0.30), kr 0.88 -> 0.85; turtle 39 -> 36 % (-3.1, se 2.2; flips 14/9, p 0.20), kr 0.80 -> 0.75 (-0.057, se 0.023, 2.5 se
+  DOWN: his attackers trade a little worse on the barrier maps). Nothing rises; sumps/gorge/locks left as sited (ruling).
+- Reading: the barriers are hit (ON stops 505 shots in 320 fights) but a hull-down front-arc rule at these sites barely moves
+  who wins: too few hits land on a hull behind a run (2-15 % of a map's hull hits are within 12 m of one). The maps ship
+  (his call, OFF has no effect on play beyond the geometry); K2 stays OFF. Stretch (CPU low-cover seats) is gated on K4
+  passing: NOT started.
+
 **R37.35 (2026-10-22), option (1): the maps stay; owners re-pin their stages (native: traffic x4, yield x2; manoeuvre: h1b bank).
 Parade traced (READ grant on brains): NOT stage geometry.** With only arenas/parade.json back to pre-K5, all 3 brains parade tests
 pass (builder0 full test 3019/7, the 7 being native's 6 + h1b); on K5's parade they fail. The CPU's opening lies in wait beside
