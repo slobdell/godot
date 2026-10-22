@@ -57,6 +57,15 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 - **C38.3 settle and orders share `element_plan.gd`'s callers:** orders lays WHERE squads go (group lay); settle decides how a squad
   SITS once there (deploy, halt shape, seat deal, parked hold). A change that crosses goes through a merge note both sign.
 
+## Bars (round 38)
+
+_(each stream files its bar in its BRIEF's Status BEFORE its first number and messages the orchestrator, who copies it here; never
+edit this file on a stream branch. Rulings below as R38.x)_
+
+## Rulings (round 38)
+
+_(none yet)_
+
 ## Round 37: six streams (prepared 2026-10-21; briefs in `streams/archive/round37/`)
 
 **Goal: tactics beat a blob.** His words (2026-10-20): a blob frontal assault wins too often, "one big slug fest"; "the problem is
