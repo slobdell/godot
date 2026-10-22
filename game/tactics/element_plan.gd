@@ -855,6 +855,11 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		var pinned := _deploy_keep(ordered, String(plan["formation"]), stand, deploy["heading"], spacing)
 		if not pinned.is_empty():
 			deploy_extra["keep"] = pinned
+		# S1 (DEPLOY_FIT): the deploy's own deal seats its update, in place of the early halt's seat indices (`fixed`
+		# keeps a previous seating whatever it costs, and the early halt-shape seats are the same shape and size).
+		var dealt: Dictionary = deploy.get("keep", {})
+		if DEPLOY_FIT and dealt.size() == ordered.size() and int(deploy.get("tick", -1)) == int(situation.get("tick", 0)):
+			deploy_extra["previous"] = dealt
 		_group(plan, ordered, String(plan["formation"]), stand, deploy["heading"], spacing, "move", "", true, true, null,
 				false, "travel", deploy_extra)
 		if DEPLOY_COMPACT and String(plan["formation"]) == "herringbone":
@@ -1883,7 +1888,7 @@ static func _trace_deploy(plan: Dictionary, situation: Dictionary, stand: Vector
 	print("DEPLOY_TRACE ", JSON.stringify({"tick": int(situation.get("tick", 0)), "leader": String(situation.get("leader", "")),
 			"formation": String(plan["formation"]), "anchor": [snappedf(stand.x, 0.01), snappedf(stand.z, 0.01)],
 			"heading": [snappedf(heading.x, 0.0001), snappedf(heading.z, 0.0001)], "spacing": spacing,
-			"terrain": String(situation.get("terrain", "")), "crews": crews}))
+			"terrain": String(situation.get("terrain", "")), "fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}), "crews": crews}))
 
 
 ## D3b (R35.41): a packed squad's last stretch in a file (OFF; `--arrive-file=on` / env ARRIVE_FILE=on opts in).
@@ -1933,7 +1938,131 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 			at = Vector3(float(packed_at[0]), 0.0, float(packed_at[1]))
 		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), _deploy_shape(situation, state, table),
 				deploy["heading"], table.spacing(String(situation["terrain"])))
+		if DEPLOY_FIT:
+			_deploy_fit(deploy, situation, at, _deploy_shape(situation, state, table), table.spacing(String(situation["terrain"])))
 	return deploy
+
+
+## S1 (round 38, settle; R37.37's trace): THE DEPLOY LAID WHERE ITS CREWS STAND, AND DEALT BY THE DRIVE EACH CREW WILL MAKE.
+## Traced (terminus 5-squad click, squad 4, builder0 c14ec0d80 and laptop e5c436f46): a squad stopped strung out along an
+## east-west street; its halt (a herringbone 47 m deep) was laid on the click's heading, ACROSS the street, so its end
+## seats stood inside the blocks and grounding moved one 25 m into the next street; and the deploy kept each crew's seat
+## INDEX from the early halt-shape seats (`fixed` with a valid previous seating), so the crew at the east end was sent to
+## that seat at the far west: 47 m across its own squad after it had stopped. Here, when the deploy lays its halt:
+##   1. the halt is tried on the ordered heading and on the squad's own axis (the line its crews stand strung along, when
+##      they stand along one: DEPLOY_FIT_ELONGATION), each laid as the deploy lays it (stepped dry);
+##   2. each is dealt by the least total of the drives the crews will actually make: from where each crew stands to its
+##      seat GROUNDED as Element.ground will ground it (the situation's `ground_seat`; the nominal seat without one);
+##   3. the ordered heading stands unless the axis shortens the longest of those drives by DEPLOY_FIT_GAIN_M.
+## The deal is kept in the deploy (`keep`) and seats the deploy's update; the seating is fixed from there as before.
+## `--deploy-fit=on` (env DEPLOY_FIT=on) opts in; OFF until its bar passes.
+static var DEPLOY_FIT := OS.get_cmdline_user_args().has("--deploy-fit=on") or OS.get_environment("DEPLOY_FIT") == "on"
+const DEPLOY_FIT_GAIN_M := 8.0
+## The squad stands along a line when its crews' spread along their main axis is at least this many times the spread
+## across it (standard deviations); a squad standing round its middle has no axis to lay along.
+const DEPLOY_FIT_ELONGATION := 1.5
+## Measurement: deploys laid on the squad's axis instead of the ordered heading, since start.
+static var deploy_fit_turned := 0
+
+
+static func _deploy_fit(deploy: Dictionary, situation: Dictionary, at: Vector3, shape: String, spacing: float) -> void:
+	var members := members_of(situation)
+	if members.size() < 2:
+		return
+	var ordered: Vector3 = deploy["heading"]
+	var best := _fit_deal(members, shape, deploy["anchor"], ordered, spacing, situation)
+	best["heading"] = ordered
+	best["anchor"] = deploy["anchor"]
+	var ordered_worst := float(best["worst"])
+	var axis: Variant = crew_axis(members)
+	var turned := false
+	if axis is Vector3:
+		var along: Vector3 = axis if (axis as Vector3).dot(ordered) >= 0.0 else -(axis as Vector3)
+		var anchor := _dry_halt_anchor(at, members, shape, along, spacing)
+		var other := _fit_deal(members, shape, anchor, along, spacing, situation)
+		if float(other["worst"]) < ordered_worst - DEPLOY_FIT_GAIN_M:
+			other["heading"] = along
+			other["anchor"] = anchor
+			best = other
+			turned = true
+	deploy["heading"] = best["heading"]
+	deploy["anchor"] = best["anchor"]
+	deploy["keep"] = best["keep"]
+	deploy["fit"] = {"worst_m": snappedf(float(best["worst"]), 0.1), "ordered_worst_m": snappedf(ordered_worst, 0.1),
+			"turned": turned}
+	if turned:
+		deploy_fit_turned += 1
+
+
+## The unit axis the crews stand strung along (their positions' principal axis), or null when they stand round their
+## middle (DEPLOY_FIT_ELONGATION) or on one point. Pure.
+static func crew_axis(members: Array) -> Variant:
+	var mean := Vector2.ZERO
+	for member: Dictionary in members:
+		mean += Vector2((member["position"] as Vector3).x, (member["position"] as Vector3).z)
+	mean /= float(members.size())
+	var sxx := 0.0
+	var szz := 0.0
+	var sxz := 0.0
+	for member: Dictionary in members:
+		var d := Vector2((member["position"] as Vector3).x, (member["position"] as Vector3).z) - mean
+		sxx += d.x * d.x
+		szz += d.y * d.y
+		sxz += d.x * d.y
+	var trace := sxx + szz
+	if trace < 1e-6:
+		return null
+	var root := sqrt(maxf((sxx - szz) * (sxx - szz) * 0.25 + sxz * sxz, 0.0))
+	var big := trace * 0.5 + root
+	var small := maxf(trace * 0.5 - root, 0.0)
+	if big < DEPLOY_FIT_ELONGATION * DEPLOY_FIT_ELONGATION * small:
+		return null
+	var dir := Vector2(sxz, big - sxx) if absf(sxz) > 1e-9 else (Vector2(1, 0) if sxx >= szz else Vector2(0, 1))
+	dir = dir.normalized()
+	return Vector3(dir.x, 0.0, dir.y)
+
+
+## The deploy's deal for one lay: {"keep": {name: seat index}, "worst": the longest drive, "total"}, by the least total
+## of each crew's drive to its grounded seat (the squared drive breaks ties, as "travel" seating does). Pure but for the
+## situation's `ground_seat`.
+static func _fit_deal(members: Array, shape: String, anchor: Vector3, heading: Vector3, spacing: float,
+		situation: Dictionary) -> Dictionary:
+	var count := members.size()
+	var seats := {}
+	for entry in TacticsFormation.place(members, shape, anchor, heading, spacing, {"halt": true, "corridor_m": INF, "layout": true}):
+		var seat: Vector3 = (entry["to"] as Vector3) + TacticsFormation.rotate(heading, deg_to_rad(float(entry["sector"]))) * FACE_LEAD
+		seats[int(entry["index"])] = clamp_to_arena(seat)
+	if seats.size() != count:
+		return {"keep": {}, "worst": INF, "total": INF}
+	var grounder: Variant = situation.get("ground_seat")
+	var grounded := {}  # [unit, index] -> seat as grounded for that unit's hull
+	var legs: Array = []
+	var cost: Array = []
+	for member: Dictionary in members:
+		var at: Vector3 = member["position"]
+		var row := PackedFloat64Array()
+		var leg_row: Array = []
+		for j in count:
+			var seat: Vector3 = seats[j]
+			if grounder is Callable:
+				var key := [String(member.get("unit", "")), j]
+				if not grounded.has(key):
+					grounded[key] = (grounder as Callable).call(seat, String(member.get("unit", "")), anchor)
+				seat = grounded[key]
+			var leg := Vector2(at.x - seat.x, at.z - seat.z).length()
+			leg_row.append(leg)
+			row.append(leg + TacticsFormation.TRAVEL_ORDER_TIE * leg * leg / maxf(spacing, 1.0))
+		legs.append(leg_row)
+		cost.append(row)
+	var best := TacticsFormation._hungarian(cost)
+	var keep := {}
+	var worst := 0.0
+	var total := 0.0
+	for i in count:
+		keep[String(members[i]["name"])] = int(best[i])
+		worst = maxf(worst, float(legs[i][best[i]]))
+		total += float(legs[i][best[i]])
+	return {"keep": keep, "worst": worst, "total": total}
 
 
 ## O6 (round 37, C37.4; his answer (3): "short move to cover only when parking"): when the deploy lays its halt, each
