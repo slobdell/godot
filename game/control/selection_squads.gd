@@ -571,6 +571,12 @@ static func column_depth(block: Dictionary) -> float:
 	return deepest
 
 
+## G1 v3 (judged 4a765e6e2: yard_open 177/192 rows identical, two 5-squad clicks laid a column because today's rear rank stood
+## beside the yard's containers): today's body is judged against the click's own width only (the strip the deciding line
+## reads); `--group-clear=rank` re-reads each rank as v2 did.
+static var CLEAR_AT_CLICK := not OS.get_cmdline_user_args().has("--group-clear=rank")
+
+
 ## G1: whether every place in `places` stands inside the clear width read across `ahead` at its own rank (the point on
 ## the approach line through `click` level with it; behind the click only, a place past the click reads at the click) and
 ## inside the click's own width (the strip he clicked),
@@ -581,7 +587,7 @@ static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vecto
 	var reads := {0: at_click}
 	for at: Vector3 in places:
 		var offset := Vector3(at.x - click.x, 0.0, at.z - click.z)
-		var back := maxi(0, roundi(-offset.dot(ahead)))
+		var back := 0 if CLEAR_AT_CLICK else maxi(0, roundi(-offset.dot(ahead)))
 		if not reads.has(back):
 			reads[back] = _within_click(width_at.call(click - ahead * float(back), across), at_click)
 		var sides: Array = reads[back]

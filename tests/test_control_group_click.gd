@@ -26,6 +26,7 @@ var _lab: TacticsLab
 
 func teardown() -> void:
 	SelectionSquads.GROUP_LAY = OS.get_cmdline_user_args().has("--group-lay=column")
+	SelectionSquads.CLEAR_AT_CLICK = not OS.get_cmdline_user_args().has("--group-clear=rank")
 	if _lab != null:
 		_lab.dispose()
 	_lab = null
@@ -199,6 +200,7 @@ func test_g1_a_place_past_a_wall_lays_the_column() -> void:
 ## G1: a rear-rank place read at ITS rank: wide open at the click, a 30 m street behind it; today's rear place 40 m aside in
 ## that street's wall -> the column (v1 would have kept today's body: the click's own read reaches the scan limit).
 func test_g1_a_rear_place_is_read_at_its_own_rank() -> void:
+	SelectionSquads.CLEAR_AT_CLICK = false  # v2's per-rank read (v3 reads the click's width: the next case)
 	var street_behind := func(p: Vector3, _across: Vector3) -> Array:
 		return [100.0, 100.0] if p.z < 10.0 else [15.0, 15.0]
 	var blocks := [{"center": Vector3(0, 0, 60), "width": 29.0, "depth": 20.0}, {"center": Vector3(0, 0, 100), "width": 29.0, "depth": 20.0}]
@@ -288,3 +290,14 @@ func test_g3_a_place_on_another_squads_halt_steps_back() -> void:
 	var apart: Array[Vector3] = [Vector3(-30, 0, 0), Vector3(30, 0, 0)]
 	assert_eq(SelectionSquads.place_clear(apart, blocks, Vector3.ZERO, Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true), apart,
 			"places already clear are kept")
+
+
+## G1 v3 (judged 4a765e6e2, yard_open s3889 / s3891: today's rear rank beside the yard's containers laid a column): open at
+## the click, a rear place narrow at its own rank but inside the click's width keeps today's body.
+func test_g1v3_a_rear_place_beside_containers_keeps_todays_body() -> void:
+	var containers_behind := func(p: Vector3, _across: Vector3) -> Array:
+		return [100.0, 100.0] if p.z < 10.0 else [15.0, 15.0]
+	var blocks := [{"center": Vector3(0, 0, 60), "width": 29.0, "depth": 20.0}, {"center": Vector3(0, 0, 100), "width": 29.0, "depth": 20.0}]
+	var today: Array[Vector3] = [Vector3(0, 0, 0), Vector3(40, 0, 34)]
+	assert_eq(SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), containers_behind, func(p: Vector3) -> Vector3: return p, today).size(), 0,
+			"inside the click's width: today's body stands")

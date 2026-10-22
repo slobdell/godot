@@ -1108,6 +1108,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	var queue_leg := bool(extra.get("queue", false)) and elements != null and REQUEUE
 	var queue_starts: Array = _leg_starts(squads, blocks) if queue_leg else []
 	var column_ahead := Vector3.ZERO  # G2: the approach a column was laid on
+	var column_moved := false  # G1 v3: the column moved some squad more than RELAY_MOVED_M off today's place
 	if extra.has("to"):
 		var click := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 		var drawn: Variant = null
@@ -1155,6 +1156,10 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors, path_back, reached, false, queue_leg)
 			column = not laid.is_empty()
 			if column:
+				# G1 v3: the first-click re-lay only where the column moved some squad's place more than a rank off today's.
+				column_moved = false
+				for i in mini(laid.size(), anchors.size()):
+					column_moved = column_moved or Vector2(laid[i].x - anchors[i].x, laid[i].z - anchors[i].z).length() > RELAY_MOVED_M
 				anchors = laid
 				column_ahead = TacticsFormation.flat(approach)
 		# Round 34 (R34.12): no rank stands behind its own squad (planner's O5: the back rank drove away from his click).
@@ -1233,7 +1238,8 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
-		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)), column)
+		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
+				column and column_moved)
 	var queue := bool(extra.get("queue", false))
 	var element_only := ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb)
 	# Round 35 (D6, R35.28): a shift-click queues on the elements the squads' units belong to NOW. Round 22's untangle
@@ -1326,6 +1332,9 @@ var _route_first_column := false  # whether his plain click that started the rou
 ## G2: a shifted click this soon after his plain group click re-lays that first click as a waypoint (the squads have barely
 ## set off). Measurement: first legs re-laid so.
 const ROUTE_RELAY_S := 2.0
+## G1 v3 (judged 4a765e6e2, yard_open route s3886: a re-lay where the column barely moved anyone changed the run): the re-lay
+## only where the first click's column moved some squad's place more than about a rank (a halt's depth + GAP_M).
+const RELAY_MOVED_M := 40.0
 static var first_legs_relaid := 0
 ## G2: how far behind its previous leg's end a squad's place on a shifted leg may stand before that leg is cut short to it.
 ## Measurement: legs cut short so.
