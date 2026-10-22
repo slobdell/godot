@@ -83,6 +83,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **N5:** a row per main the round ships. **Next: e1f558d83** (feedback F3 ON). Queued LAST on builder2 (R38.14): after settle's S2
   and S1 v2, doctrine's D2b (OFF + ON) and D3, once its main check is green; doctrine pings "builder2 free". Keep it off builder0 (R38.8). Pair against
   1c484a525.fights.jsonl.
+- **guard.py --pair** (68301e6a7, doctrine's Bar G2): the guard's kills and losses a fight and median length, all and per
+  guard faction, each with a paired se from the per-seed differences. test_guard 0 failed, test_scoreboard 14/0 (laptop);
+  not yet through a full check.
 - **N3 closed** for the round (orchestrator accepted "not switching"); an AMD sample only if builder2 comes up on one.
 
 **Side worktrees to remove at close:** ../godot-native-guard, -score, -k5 (and round 37's: -m5, -unstick, -cp371,
