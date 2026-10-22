@@ -62,6 +62,28 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 _(each stream files its bar in its BRIEF's Status BEFORE its first number and messages the orchestrator, who copies it here; never
 edit this file on a stream branch. Rulings below as R38.x)_
 
+- **Bar S1 DEPLOY_FIT (filed 2026-10-22 before any judged number; code ac36add58 + the series tooling)** (recorded from stream/settle 0aed7a9f3)
+What he would see: when a squad stops, every tank settles into a spot near where it stopped; no tank drives across or out of
+its own squad to reach a seat. **Arms:** `main:--deploy-trace` v `fit:--deploy-fit=on,--deploy-trace`, one tree, builder0
+native, on a hash whose builder0 full check is green; `make native settle-series` (mk/settle.mk), judge
+`tests/settle/settle_judge.py s1`. **Workloads, FRESH seeds:** the no-fight probe, 12 cells (locks/crossing/terminus x 3/5
+squads x click/route) x 3861-3872; the fight probe (`--probe-fight=on --probe-budget=1500`, the 3 maps x 3/5 squads x click)
+x 3873-3878 (36 fights an arm); the CPU census (traffic-census' 3 default cases) x 3861-3863. **Counter:** deploys turned > 0
+on the arm (DEPLOY_TRACE) and rows differ. **Deciding (a stopped crew's longest post-arrival drive):** per squad place_m +
+twitch_m (the most any crew moved after the deploy began); squads with >= 25 m, summed over the no-fight probe: arm <= 50 %
+of base, base >= 10 (else "no workload"), and the summed place + twitch lower. **Guards:** per cell (orders' probe_guards,
+settle mode): all-in median <= base x 1.2 + 3 s, never-in no more, place + twitch median <= base + 3 m, end foreign min >=
+base - 3 m, crossed no higher; **the first shape:** squads whose halt shape differs from base's <= 2 % (the shape choice is
+not touched); friend_contacts and friend_contacts_foreign summed <= base x 1.1 + 5; fights: his kills, his losses, the CPU's
+losses a fight each within base +/- 1.645 se (base sd, n 36); CPU: friendly contacts <= base x 1.1 + 5, stuck s <= base x
+1.2 + 10. **Reported:** relays, shape flips, parked re-deals, redealt; the fight probe's >= 25 m squads. **A pass ships ON**
+(symmetric); `--deploy-fit=off` keeps today's. sim-baseline maps that move are attributed with the switch OFF.
+  Trace (settle, laptop GDScript, terminus 5 click s3767, n 1): the 47 m crossing = a 47 m-deep herringbone laid on the click's
+  heading ACROSS the street the squad stopped in (an end seat grounds 25 m into the next street) + a `fixed` group keeping old seat
+  indices; the fix tries the ordered heading and the squad's own axis, deals each by grounded drive, turns only if the longest drive
+  shrinks >= 8 m (dev read: squad 4 place+twitch 51.2 -> 8.8 m, squad 1 20.4 -> 8.6 m). Merge note C38.3: `ElementSituation.build` adds
+  a `ground_seat` Callable key.
+
 - **Bar F3 REPAIR_UNDER_FIRE (feedback, C38.4; filed in stream/feedback f0ad5a44d Status before any number).** Switch `--repair-under-fire`
   (OFF; `Match.repair_under_fire_on`): a friendly FIELD mender (the gangs' Resupply Tanker) keeps mending a vehicle under fire at HALF
   rate (2.5 hp/s), full after `REPAIR_QUIET_SECONDS`; the base's own mending still waits for quiet; a Tanker never mends itself.
