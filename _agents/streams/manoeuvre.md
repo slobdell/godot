@@ -69,6 +69,11 @@ expected with seatstep ON). Not a verdict. Driver patched (a slot kill = a lost 
 M2 trace census (`manoeuvre-m2trace`, jam 3 maps x 7001-7008, J=3, both arms) started 11:01; M7 v2 dev read (`manoeuvre-aside2`,
 18 fights) ~11:05.
 
+**Native note for M5b (native, 2026-10-22):** `Manoeuvre.choose` / `behind` / `simulate` are MIRRORED in C++ since round 33
+(drive_native.cpp `manoeuvre_decide`, `man_choose`, ~3170-3270; twin test_native_manoeuvre.gd). A change there needs native's
+mirror before any series; only a change above Movement (the order issued, the seat) needs no twin. Native writes Manoeuvre.refused
+and `_behind_plan` / `_behind_since` back, so the M2 trace's reads hold on the native path.
+
 **Plan (in order; smallest foundation first):**
 1. **M1 (M5 v2):** Bar M5 v2 filed below BEFORE any number. Lab trees on today's main: `lab/manoeuvre-r38-m5` (stream + M5a's
    rule from `lab/manoeuvre-r37-m5` + native's `pair/native-m5` 156d563d9, seatstep OFF) and `lab/manoeuvre-r38-m5on` (seatstep
