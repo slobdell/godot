@@ -334,10 +334,18 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	by_along.sort()
 	# A column longer than the ground behind it (off the map even along the road) is laid again with ranks closer, down
 	# to half the step; at that the rest stand abreast in the last rank (dev read 4e25c1eab: two squads given one place).
+	# The same when it would reach more than one rank behind where its rearmost squad stands (dev read f215b1772: a route's
+	# first waypoint 17 m ahead of the army stacked ranks 100 m back into the base; squads drove back, then on).
 	var step := deepest + GAP_M
+	var room := float(by_along[by_along.size() - 1][0]) + step
+	# Every squad already within COLUMN_NEAR_M of the click: no approach to stack along (the same trace: re-laid, they only
+	# shuffled sideways); today's body stands.
+	if float(by_along[by_along.size() - 1][0]) < COLUMN_NEAR_M:
+		bodies_kept += 1
+		return result
 	for attempt in COLUMN_SQUEEZES + 1:
 		var laid := _lay_ranks(blocks, by_along, flat_click, ahead, straight, road, at_click, width_at, clamp, reached, widest,
-				step * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)), attempt == COLUMN_SQUEEZES)
+				step * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)), room, attempt == COLUMN_SQUEEZES)
 		if not laid.is_empty():
 			result = laid
 			break
@@ -345,16 +353,22 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	return result
 
 
+## G1: a group already this close to the click (every squad, along the approach) keeps today's body: the terminus route's
+## first waypoint stood 14-25 m from every squad and a column only shuffled them sideways; his own Terminus click stood
+## 39-45 m from his squads and is the case the column is for.
+const COLUMN_NEAR_M := 30.0
+
+
 ## G1: how many times a column too long for the ground behind it is laid again with closer ranks.
 const COLUMN_SQUEEZES := 4
 
 
 ## G1: the ranks of a column `step` metres apart, front to back in `by_along`'s order: straight back along the approach
-## while reached, then along the road; [] when a rank would stand off the map (unless `last_try`: then the rest stand
-## abreast in the last rank inside).
+## while reached, then along the road; [] when a rank would stand off the map or more than `room` metres back (unless
+## `last_try`: then the rest stand abreast in the last rank inside).
 static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahead: Vector3, straight: PackedVector3Array,
 		road: PackedVector3Array, at_click: Array, width_at: Callable, clamp: Callable, reached: Callable, widest: float,
-		step: float, last_try: bool) -> Array[Vector3]:
+		step: float, room: float, last_try: bool) -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	result.resize(blocks.size())
 	var behind := 0.0
@@ -374,7 +388,7 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 				skipped += RtsControls.GATE_STEP_M
 				at = _walk_back(road, behind + skipped)
 			behind += skipped
-		var out_of_room := (clamp.call(at[0]) as Vector3).distance_to(at[0]) > 1.0
+		var out_of_room := behind > room + 0.01 or (clamp.call(at[0]) as Vector3).distance_to(at[0]) > 1.0
 		if out_of_room and not last_try:
 			return []
 		if out_of_room:
