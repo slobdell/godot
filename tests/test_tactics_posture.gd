@@ -146,3 +146,23 @@ func test_a_threatened_held_zone_still_comes_first() -> void:
 	var decided := Posture.decide(RUST, [0, 0], zones, [_contact(Vector3(-30, 0, 30)), _contact(Vector3(20, 0, -10))],
 			Vector3(0, 0, 10), {}, _near(zones))
 	assert_eq(String(decided["zone"]["name"]), "west", "the zone we hold, threatened, before the near ring (%s)" % decided)
+
+
+func test_defend_reaches_further_than_a_held_zones_threat() -> void:
+	var zones := _zones(-1, -1)
+	var at := Vector3(36, 0, 61)  # 85 m from our near ring
+	var decided := Posture.decide(RUST, [0, 0], zones, [_contact(at)], at, {}, _near(zones))
+	assert_eq(String(decided["posture"]), "hold", "%.0f m out: in place before its guns reach the posts (%s)" % [
+			at.distance_to(Vector3(36, 0, -24)), decided])
+
+
+# DEFEND (e): an element in contact near its post stands where it is; one far off drives to its post.
+func test_an_element_in_contact_near_its_post_stands_where_it_is() -> void:
+	var post := Vector3(10, 0, 10)
+	assert_eq(ElementCommander.stand_post(post, Vector3(30, 0, 10), true, null), Vector3(30, 0, 10), "20 m off, in contact: stand")
+	assert_eq(ElementCommander.stand_post(post, Vector3(60, 0, 10), true, null), post, "50 m off: drive to the post")
+	assert_eq(ElementCommander.stand_post(post, Vector3(30, 0, 10), false, null), post, "no contact: take the post")
+	assert_eq(ElementCommander.stand_post(post, Vector3(5, 0, 5), true, Vector3(30, 0, 10)), Vector3(30, 0, 10),
+			"a stand point is kept while the post is where it was")
+	assert_eq(ElementCommander.stand_post(Vector3(120, 0, 10), Vector3(5, 0, 5), false, Vector3(30, 0, 10)), Vector3(120, 0, 10),
+			"posts laid elsewhere: the old stand point is dropped")

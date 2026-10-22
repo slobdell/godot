@@ -140,13 +140,19 @@ var _opening_read := false
 ## Round 38 (doctrine D2): DEFEND. D1 (the guard lines, builder0, stream/doctrine Status): against a blob the CPU fired
 ## 75 % of its damage in ATTACK posture from its own half (it "holds no objective" yet: the blob reached its near ring
 ## first), and in hold posture its posts swung with the enemy's centre, so crews drove to new posts mid-fight. With it on:
-## (a) a side whose near ring is not the enemy's and has a known enemy within Posture.THREAT_M of it HOLDS that ring
+## (a) a side whose near ring is not the enemy's and has a known enemy within Posture.DEFEND_M of it HOLDS that ring
 ## (Posture.decide's `near`), kept like any hold while the ring is not the enemy's; (b) a hold's posts keep the facing
 ## they were laid with until the enemy's direction from the zone swings more than DEFEND_REFACE_DEG.
 static var DEFEND_ENABLED := false
 const DEFEND_REFACE_DEG := 45.0
 ## zone name -> the facing its posts were laid with (DEFEND (b)).
 var _hold_toward := {}
+## (c) a defending post does not break off to attack an intruder in the zone: every post shoots it from where it is.
+## (e) an element already in contact (an enemy within its reach + 10 m) within DEFEND_STAND_M of its post holds where it
+## stands (kept until the posts are laid elsewhere) instead of driving the last metres to the post under fire.
+const DEFEND_STAND_M := 35.0
+## element id -> the point it stands on (DEFEND (e)).
+var _stand := {}
 
 
 static func install(p_match: Match, p_team: int, p_elements: Elements = null) -> ElementCommander:
@@ -596,6 +602,7 @@ func _hold_posture(contacts: Array) -> bool:
 		_trade.clear()
 		fallen_back.clear()
 		_hold_toward.clear()
+		_stand.clear()
 		return false
 	hold_thinks += 1
 	return true
@@ -744,10 +751,19 @@ func _hold(line: Array, recon: Array, support: Array, contacts: Array) -> void:
 			intruder_d = d
 	for i in line.size():
 		var element: Element = line[i]
-		if i == 0 and not intruder.is_empty():
+		if i == 0 and not intruder.is_empty() and not DEFEND_ENABLED:
 			_give(element, {"verb": "attack", "target": String(intruder["name"])})
 			continue
 		var post := ElementPlan.clamp_to_arena(zone + across * (float(i) - float(line.size() - 1) * 0.5) * HOLD_POST_SPACING_M)
+		if DEFEND_ENABLED:
+			# DEFEND (c) above: no post breaks off for an intruder (the lab: the first post's attack was 20 % of the CPU's
+			# damage, 43 % of it on the move); (e): one already in contact near its post stands where it is.
+			var kept: Variant = _stand.get(element.id)
+			var stand := ElementCommander.stand_post(post, _center(element),
+					_nearest_contact(contacts, _center(element)) <= _reach_of(element) + 10.0, kept)
+			if stand != post:
+				_stand[element.id] = stand
+			post = stand
 		# No contact drill: a post that reacts to contact, or assaults through a near ambush, leaves the zone it holds
 		# (the first parade stage: react_to_contact took the post 30 m off the depot, assault_through 50 m). Its crews
 		# hold their places and shoot what they see; the commander decides when to go for an intruder (above).
@@ -773,6 +789,17 @@ func _hold(line: Array, recon: Array, support: Array, contacts: Array) -> void:
 			_give(element, {"verb": "support_by_fire", "to": _xz(kill_zone)})
 		else:
 			_give(element, {"verb": "support_by_fire", "to": _xz(contacts[0]["position"])})
+
+
+## DEFEND (e): where an element given `post` holds. `kept` (its stand point, or null) is kept while it is within
+## 2 x DEFEND_STAND_M of the post; else an element in contact whose centre is within DEFEND_STAND_M of the post stands at
+## its centre; else the post. Pure.
+static func stand_post(post: Vector3, center: Vector3, in_contact: bool, kept: Variant) -> Vector3:
+	if kept is Vector3 and _flat(kept).distance_to(_flat(post)) <= 2.0 * DEFEND_STAND_M:
+		return kept
+	if in_contact and _flat(center).distance_to(_flat(post)) <= DEFEND_STAND_M:
+		return ElementPlan.clamp_to_arena(_flat(center))
+	return post
 
 
 ## DEFEND (b): the facing a zone's posts were laid with, kept until the enemy's direction swings past DEFEND_REFACE_DEG

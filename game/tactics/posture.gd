@@ -19,7 +19,7 @@ extends RefCounted
 ## enemy owns it. It comes after a threatened zone and after being ahead, and before attacking.
 ##
 ## Round 38 (doctrine D2), DEFEND: given `near` (the side's near ring objective; {} when the switch is off), a side whose
-## near ring is not the enemy's and has a known enemy within THREAT_M of it HOLDS that ring, whatever the score and
+## near ring is not the enemy's and has a known enemy within DEFEND_M of it HOLDS that ring, whatever the score and
 ## whether or not it has taken the ring yet. D1 (the guard lines, builder0): 75 % of the CPU's damage against a blob was
 ## fired in ATTACK posture from its own half because it "holds no objective" yet: the blob reached the near ring first
 ## and the CPU met it as an attacker, firing on the move. A threatened zone it already holds comes first.
@@ -27,6 +27,9 @@ extends RefCounted
 ## An enemy this close to an objective we hold threatens it (m from the zone's centre; parade's zones are 15 m across
 ## and its floor about 112 m: an enemy halfway across is coming for it).
 const THREAT_M := 60.0
+## Round 38 (D2): an enemy this close to our near ring makes us DEFEND it (m). Wider than THREAT_M so the posts are
+## taken before the guns reach them (the lab at 60 m: crews drove onto posts 15 m+ away under fire, 87 % moving).
+const DEFEND_M := 100.0
 ## A ring is a side's NEAR ring when it is at least this much nearer that side's spawn than the enemy's (m).
 const NEAR_MARGIN_M := 20.0
 
@@ -87,7 +90,7 @@ static func _opening(team: int, mine: int, theirs: int, objectives: Array, openi
 
 
 ## Round 38 (D2): the hold decision for `near` (re-read from `objectives` by name, so its owner is today's) when it is
-## not the enemy's and a known enemy is within THREAT_M of it; {} otherwise, or when `near` is {} (the switch off). Pure.
+## not the enemy's and a known enemy is within DEFEND_M of it; {} otherwise, or when `near` is {} (the switch off). Pure.
 static func _defend(team: int, objectives: Array, contacts: Array, near: Dictionary) -> Dictionary:
 	if near.is_empty():
 		return {}
@@ -98,7 +101,7 @@ static func _defend(team: int, objectives: Array, contacts: Array, near: Diction
 	if int(zone.get("owner", -1)) == 1 - team:
 		return {}
 	var d := _nearest(contacts, zone["position"])
-	if d > THREAT_M:
+	if d > DEFEND_M:
 		return {}
 	return {"posture": "hold", "zone": zone, "why": "defend: enemy %.0f m from %s" % [d, String(zone.get("name", "?"))]}
 
