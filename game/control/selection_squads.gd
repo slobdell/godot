@@ -287,6 +287,12 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 ## ground read at its own rank (`today`), and the column is laid only when one of them is not. The same lay serves a queued
 ## leg (each squad's block centred where its previous leg ends) and a gate.
 static var GROUP_LAY := OS.get_cmdline_user_args().has("--group-lay=column") or OS.get_environment("GROUP_LAY") == "column"
+## G1 dev variants (read side by side on dev seeds; the judged arm uses the defaults): `--group-legs=off` lays no column on
+## shifted legs or gates; `--group-room=rearmost` lets no column reach behind its rearmost squad (default: one rank);
+## `--group-leg-room=starts` lets a shifted leg's column reach no further back than its squads' starts.
+static var GROUP_LEGS := not OS.get_cmdline_user_args().has("--group-legs=off")
+static var GROUP_ROOM_REARMOST := OS.get_cmdline_user_args().has("--group-room=rearmost")
+static var GROUP_LEG_ROOM := OS.get_cmdline_user_args().has("--group-leg-room=starts")
 ## How far each side the corridor is read for a group click (wider than the gate's 60 m, so a wide street is not "open").
 const GROUP_SCAN_M := 100.0
 ## Measurement: group clicks laid as a column (not open ground), since start.
@@ -340,7 +346,7 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	# The same when it would reach more than one rank behind where its rearmost squad stands (dev read f215b1772: a route's
 	# first waypoint 17 m ahead of the army stacked ranks 100 m back into the base; squads drove back, then on).
 	var step := deepest + GAP_M
-	var room := float(by_along[by_along.size() - 1][0]) + (0.0 if leg else step)
+	var room := float(by_along[by_along.size() - 1][0]) + (0.0 if (leg and GROUP_LEG_ROOM) or GROUP_ROOM_REARMOST else step)
 	# Every squad already within COLUMN_NEAR_M of the click: no approach to stack along (the same trace: re-laid, they only
 	# shuffled sideways); today's body stands.
 	if float(by_along[by_along.size() - 1][0]) < COLUMN_NEAR_M:

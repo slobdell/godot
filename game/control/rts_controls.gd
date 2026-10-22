@@ -1127,7 +1127,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		# through a street), each squad's block where its previous leg ends (`queue_starts`), approached from there.
 		var lay_blocks := blocks
 		if SelectionSquads.GROUP_LAY and ground != null and (verb == "move" or verb == "attack_move") and blocks.size() >= 2 \
-				and (not queue_leg or squads.size() == blocks.size()):
+				and (not queue_leg or (squads.size() == blocks.size() and SelectionSquads.GROUP_LEGS)):
 			if queue_leg:
 				lay_blocks = []
 				for i in blocks.size():
@@ -1786,7 +1786,7 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	# Round 38 (G1): a gate whose places stand off the clear ground (its rear ranks are read at the gate's own width) is laid
 	# as the column a final click is, each rank on the clear ground at its own point.
 	var as_column := false
-	if SelectionSquads.GROUP_LAY and ground != null:
+	if SelectionSquads.GROUP_LAY and SelectionSquads.GROUP_LEGS and ground != null:
 		var crosses_e := SelectionSquads.crosses_or_edge(crosses)
 		var laid := SelectionSquads.column_lay(blocks, prev, approach,
 				func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive, crosses_e, SelectionSquads.GROUP_SCAN_M),
