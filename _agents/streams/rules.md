@@ -199,6 +199,9 @@ blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0
 - **Package arm (all three ON): not run.** The bar allows it when each rule is inside its noise alone, and here every one is. But its
   best case is the sum of three null effects, about -5 pts, against 2 x se of about 5-7 pts; builder2 time now goes to M5a.
   It could go after M5a if the orchestrator wants that read before round 38.
+- **R37.25:** all three stay OFF, and R1's re-tune is declined; the shared-picture rule is round 38's. The **package arm**
+  (`--rules-on=sight,spread,pin_slow`, same 320 fights, Bar R's deciding unchanged) runs on builder2 AFTER manoeuvre's M5a.
+  A pass ships the package ON. QUEUED: I start it when the orchestrator says M5a is off builder2.
 - **R1 re-tune (stretch): not worth builder2 time.** Spotting is shared across the team, and the longest-sighted crews (110 m and
   105 m) see well past the guns' range even at x0.85. A re-tune that mattered would have to push sight under gun range, or cut what
   a moving team shares. That is a new rule (round 38's design question, the orchestrator's lever), not a re-tune.
