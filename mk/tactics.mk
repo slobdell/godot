@@ -976,3 +976,30 @@ lane-series: native-for-check import ## brains B9: the lane spread's one-sided s
 			timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/tactics/lane_census.gd -- \
 			--skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute --seconds=180 --lane-spread=$$side > $(LANE_SERIES_DIR)/$(LANE_ARM)/$$0-$$1.log 2>&1 || true'
 	@ls $(LANE_SERIES_DIR)/$(LANE_ARM) | wc -l | sed 's/^/   logs: /'
+
+# Round 38 (doctrine D1): tactics-hold-fire. The guard fights exactly as guard-run plays them (tests/tactics/hold_fire_probe.gd
+# extends tests/ai_scenarios/guard_line.gd; read-only), each direct round and a 2 Hz crew sample split by the CPU's posture,
+# element task verb, brain option and seat distance, with its motion (R37.26's buckets). TACTICS_HF_FLAGS adds an arm's
+# switches. Light: tools/remote.sh --light tactics-hold-fire.
+TACTICS_HF_KINDS ?= blob
+TACTICS_HF_AT ?= terminus locks sumps gorge parade
+TACTICS_HF_SEEDS ?= 2601 2602 2603 2604 2605 2606 2607 2608
+TACTICS_HF_SIDES ?= green rust
+TACTICS_HF_SECONDS ?= 600
+TACTICS_HF_JOBS ?= 10
+TACTICS_HF_FLAGS ?=
+TACTICS_HF_DIR ?= $(BUILD_DIR)/tactics-hold-fire
+
+.PHONY: tactics-hold-fire
+tactics-hold-fire: import ## Round 38 (doctrine D1): the guard lines' CPU rounds and crew time by posture / task / brain option / seat, still or moving (TACTICS_HF_KINDS=blob turtle, TACTICS_HF_FLAGS for an arm)
+	@rm -rf $(TACTICS_HF_DIR) && mkdir -p $(TACTICS_HF_DIR)
+	@echo ">> tactics-hold-fire on $$(hostname) | commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)} | kinds '$(TACTICS_HF_KINDS)' | flags '$(TACTICS_HF_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)" | tee $(TACTICS_HF_DIR)/run.txt
+	@for kind in $(TACTICS_HF_KINDS); do for seed in $(TACTICS_HF_SEEDS); do for arena in $(TACTICS_HF_AT); do for side in $(TACTICS_HF_SIDES); do \
+		echo "$$kind $$arena $$seed $$side"; done; done; done; done | \
+		xargs -P $(TACTICS_HF_JOBS) -L 1 sh -c 'timeout 1800 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/tactics/hold_fire_probe.gd -- --skirmish --demo-match --clean --seed=$$2 --arena=$$1 --mute \
+		--guard=$$0 --guard-side=$$3 --seconds=$(TACTICS_HF_SECONDS) $(TACTICS_HF_FLAGS) > $(TACTICS_HF_DIR)/$$0-$$1-$$2-$$3.log 2>&1 || true; \
+		grep -q "^HOLD_FIRE" $(TACTICS_HF_DIR)/$$0-$$1-$$2-$$3.log || echo "  MISSING HOLD_FIRE $$0 $$1 s$$2 $$3"'
+	@grep -h "^HOLD_FIRE" $(TACTICS_HF_DIR)/*.log | sed 's/^HOLD_FIRE //' > $(TACTICS_HF_DIR)/rows.jsonl
+	@grep -h "^GUARD_RESULT" $(TACTICS_HF_DIR)/*.log | sed 's/^GUARD_RESULT //' > $(TACTICS_HF_DIR)/results.jsonl
+	@$(PYTHON) tests/tactics/hold_fire_table.py $(TACTICS_HF_DIR)/rows.jsonl | tee $(TACTICS_HF_DIR)/table.txt
