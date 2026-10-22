@@ -561,6 +561,13 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   0.0 pts; G2 blob Gangs kills -1.1 (2 se 0.6) + the usual turtle Gangs median. The package is about the sum of the three (-4.4 v -4.9).
   **Ruled:** all three stay OFF (switches on main for his playtest, `make rules-skirmish` once rules' tooling merges); rules' tooling
   (rules-skirmish, guard_motion_probe, bar_r.py) merges on a green check of rules' tip. builder2 goes to cover.
+- **R37.34 (2026-10-22) M1 sidestand PASSES Bar M1; ships ON.** manoeuvre (builder0 native, ON 339d3f2e2 v BASE b822e6696; 72
+  fight pairs locks/terminus/sumps x 6640-6663 + 128 hull-rest pairs a task 6601-6632 x 4 factions; `references/round37/manoeuvre/
+  m1-series/`): (0) side_restands ON 9; side repeats 30 -> 9, side steps 44 -> 14; lab decided on both paths earlier. Every guard
+  passed: far loops 61 -> 38 (-23 v 1.645 se 18.9), unstick fires 2,802 -> 2,738; deaths/kills/hit rate per team, contacts, give-ways,
+  hull-rest (d)/(e)/(f) flat in all 6 tasks; left behind 54 -> 56 of 768 (reported). ON tree check 339d3f2e2: 3011/0, sim-baseline
+  13/13 unmoved. Hand-over stream/manoeuvre 76c325844 (SIDE_STAND_DEFAULT := true; game code byte-identical to 339d3f2e2); its
+  builder0 full check is running; the orchestrator merges it alone on green.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
