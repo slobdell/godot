@@ -68,20 +68,26 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### REPORT (orders, round 37; updated 2026-10-21 ~15:30 PDT). Every number names its commit, machine, workload, n.
-- **State of the branch:** HEAD 52c15e0e1 = main c76469184 merged + everything below, all OFF. Its full check (builder0,
-  native) is running. The previous check, 42a26a17c (builder0 native, 3022 passed / 0 failed), FAILED on the engine-log
-  gate only: `test_control_parked_hold` overrode the runner's sealed `_teardown()` and the lab<->case reference cycle
-  leaked 14 objects at exit. Fixed in the commit before the merge (teardown() hook, cycle dropped; local run clean).
-  Last green hash: f4365153f (the O1 series hash).
+- **State of the branch:** main c76469184 merged (52c15e0e1). The series hash is c14ec0d80 = 52c15e0e1 + the probe's
+  `parked_redeals`; its full check (builder0, native) is running, and 52c15e0e1's was stopped at 15 min for it. The check
+  before, 42a26a17c (builder0 native, 3022 passed / 0 failed), FAILED on the engine-log gate only: `test_control_parked_hold`
+  overrode the runner's sealed `_teardown()`, and the lab<->case reference cycle leaked 14 objects at exit. Fixed (teardown()
+  hook, cycle dropped; local run clean). Last green hash: f4365153f. The judged series (scratchpad `r37_series.sh`, side worktree
+  `~/projects/godot-orders-o1` at c14ec0d80) runs on that green: O2, O3, O5, O1-latch no-fight + census, O1-latch fight. Verdicts
+  go to `references/round37/orders/*-judged-builder0-c14ec0d80/verdict.txt`.
+- **Parked re-deals (orchestrator, after R37.17's traces; reported in every verdict):** `parked_redeals` = crews parked
+  2 s or more on their seat with no order, then sent more than 6 m off it (the squad re-dealing seats; he sees a parked tank pull
+  out). It falls before the place window ends, so twitch_m never saw it. Laptop GDScript locks 5 route s3703 (n 1): main 4,
+  anchor 6.
 - **O1 the flicker: the judged no-fight read FAILED as filed** (builder0 native f4365153f, seeds 3701-3712, census 3701-3706;
   `references/round37/orders/o1-judged-builder0-f4365153f/`). The deciding line passed (relays 298 -> 0, shape flips
   114 -> 0). Two guards failed: twitch in locks 5 route (3.9 -> 10.6 m), and CPU friendly contacts (1665 -> 1933, line
   1836.5). R37.17: it doesn't ship. Cause (traced): the anchor read changes which shape the deploy picks at halt (locks
   coil 60 -> 52, terminus 6 -> 0), so more long herringbones crowd their neighbours. New arm `--halt-terrain=latch`
   (ca251254a): read the centroid's terrain at arrival and keep that read while arrived (same first shape as main, no
-  flicker; lab `test_control_halt_terrain`: centre 2 flips, anchor 0, latch 0). R37.17's two traces (parade s3704 census,
-  locks 5 route s3703; arms main / anchor / latch) are running (light lane, `make o1-trace`). The latch bar gets re-filed
-  on fresh seeds before any number. The fight read (3731-3742) is still owed.
+  flicker; lab `test_control_halt_terrain`: centre 2 flips, anchor 0, latch 0). R37.17's traces are done (edec107e0, sent in player terms):
+  latch == main at locks 5, and parade's excess contacts are moving drill crews in a longer fight. Latch bar re-filed
+  (849fced87, recorded on main): fresh seeds 3761-3784, same guards.
 - **O2 parked squads: BUILT OFF, final bar filed (052f30eea).** `--parked-hold=on` (tank_brain.gd seam `_parked_move`):
   a move of his parked crew's own that ends more than 4 m off its post becomes hold-and-face (RETREAT kept). Off its post
   with nothing to do, it drives all the way back (arrive 1.5 m). Deciding metric off_idle_s. Base (builder0 3e5944657,
