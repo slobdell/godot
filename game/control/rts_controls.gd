@@ -1226,7 +1226,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
-		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)))
+		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)), column)
 	var queue := bool(extra.get("queue", false))
 	var element_only := ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb)
 	# Round 35 (D6, R35.28): a shift-click queues on the elements the squads' units belong to NOW. Round 22's untangle
@@ -1293,6 +1293,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 var _route_clicks: Array = []
 var _route_squads: Array = []
 var _route_tick := -1
+var _route_first_column := false  # whether his plain click that started the route was laid as a column
 ## G2: a shifted click this soon after his plain group click re-lays that first click as a waypoint (the squads have barely
 ## set off). Measurement: first legs re-laid so.
 const ROUTE_RELAY_S := 2.0
@@ -1307,7 +1308,7 @@ func _route_key(squads: Array) -> Array:
 	return key
 
 
-func _remember_route_click(squads: Array, blocks: Array, click: Vector3, queued: bool) -> void:
+func _remember_route_click(squads: Array, blocks: Array, click: Vector3, queued: bool, column: bool) -> void:
 	var key := _route_key(squads)
 	if not queued or key != _route_squads or _route_clicks.is_empty():
 		var body := Vector3.ZERO
@@ -1316,6 +1317,7 @@ func _remember_route_click(squads: Array, blocks: Array, click: Vector3, queued:
 		_route_clicks = [body]
 		_route_squads = key
 		_route_tick = game_match.tick if game_match != null else -1
+		_route_first_column = column
 	_route_clicks.append(click)
 
 
@@ -1788,14 +1790,14 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	var before := Vector3.ZERO
 	var ground: Node3D = null
 	var running: Array = []  # G2: per held element, whether its waypoint is the running task (his first click, just given)
-	var fresh := SelectionSquads.GROUP_LAY and _route_key(squads) == _route_squads and game_match != null \
+	var fresh := SelectionSquads.GROUP_LAY and _route_first_column and _route_key(squads) == _route_squads and game_match != null \
 			and game_match.tick - _route_tick <= int(ROUTE_RELAY_S * SimClock.TICK_RATE)
 	for squad: Dictionary in squads:
 		var held: Element = squad.get("element")
 		# A squad whose previous waypoint is RUNNING (or that has no element) keeps its anchor; the others still get the gate
 		# (planner's probe, O4 before/after: one squad queued behind its crews' orders left a 5-squad route with no gate at all).
-		# G2: unless the running waypoint is his plain group click given moments ago (`fresh`): the probe's route cells
-		# stacked a column at the first waypoint and the rear squads backed up before driving the route.
+		# G2: unless the running waypoint is his plain group click given moments ago and laid as a column (`fresh`): the
+		# probe's route cells stacked a column at the first waypoint and the rear squads backed up before driving the route.
 		if held == null or not is_instance_valid_element(held) or (held.queued_tasks.is_empty() and not fresh):
 			continue
 		var on_task := held.queued_tasks.is_empty()
