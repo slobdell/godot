@@ -200,6 +200,12 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   arrived-element contacts and contacts per fight-second REPORTED beside it) and the fight read 3773-3784 (the R37.9 addendum's
   deciding and guards; replaces 3731-3742). **Ships only if all three pass.**
 
+- **Bar O2-ON-LATCH (orders, R37.28; filed in stream/orders 2477c46e7 Status before any number; runs only if O1-latch passes).**
+  The fight probe, 9 cells, FRESH seeds 3785-3796 (36 fights an arm), `latch` v `latch + --parked-hold=on`. **Deciding:** O2's line
+  (off_idle_s a fight, arm <= 50 % of base AND drop > 1.645 se; parked_returns > 0). **Guards:** O2's kills / losses lines.
+  **Reported (the orchestrator judges):** parked re-deals v latch alone (and v O2's 105 / 50), halt re-lays, reseats. A pass with
+  re-deals no higher than latch alone's beyond noise ships O2 + latch together. The s3747 trace is read first.
+
 - **Bar O2 PARKED_HOLD, FINAL (orders, R37.13; filed in stream/orders 052f30eea Status before any judged number; replaces the
   8dc98b5f4 text above; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and
   shoots from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. **Sizing (seen):** builder0
