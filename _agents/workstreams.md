@@ -234,6 +234,13 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   one series slot) or goes to builder2. Doctrine's re-read moves to builder2.
   Correction (manoeuvre): `pgrep -f Godot_v4` also counts wrappers (bash, xargs, timeout) whose command line names Godot; manoeuvre's
   "11" was 3 Godot processes at J=3. The other counts may be inflated the same way; the load (~22) and the two killed checks stand.
+- **R38.8 (2026-10-22) two series on builder0 for his group click; manoeuvre's reads.** manoeuvre's M5 v2 series started 13:18 on
+  builder0 at J=6 (~10 h; its ON check 269d593c5 on builder2: 3,063/0, 0 twin mismatches, sim-baseline moved yard/pit/archipelago/cut,
+  web-smoke timing red re-run alone green). Waiting 10 h would hold his group click (orders' G1) back to tomorrow. **Ruled:** orders'
+  G1 series runs on builder0 ALONGSIDE M5 v2 at J <= 4 (6 + 4 of 12 threads); builder0 takes NO full checks while both run (checks go
+  to builder2, R38.2); light runs there pause. M2 (M5b) traced, not built: 9 % of seated give-ways turn round on the way back, 2/3 of
+  them the scouts' kept turn-in (~1.5 others a fight): no lever. M3 not built: 82 long hull-wedges in 72 fights, 0 deaths, mostly ORCA
+  slow-down.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
