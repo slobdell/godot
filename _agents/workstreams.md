@@ -271,6 +271,14 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   until orders' lay stops placing spots on parked tanks. The overlap (place 0.4 m from a parked tank) goes to orders as a defect; the far
   give-way lead to manoeuvre as a measured case. The fight probe's 5-squad stop was `--probe-budget` capping both armies (2970 > 1500);
   the probe should print that refusal (orders' file). S1 stays failed (R38.9); its locks never-in is a window-edge flip (82.7 s on main).
+- **R38.11 (2026-10-22) S1 v2 may be filed: the deciding line moves to the deploy leg, on fresh seeds, and the record says why.**
+  settle's residual read (judged e42ff30eb rows, not re-judged): squads with a deploy leg >= 25 m 73 (main) -> 20 (fit), latch 71; the
+  filed line also counted movement after the 8 s place window (squads with twitch >= 15 m 98 / 79 / 105), whose sources are GIVEWAY (M5's)
+  and long deploy legs still running after 8 s; 102 of fit's 125 long movers are long on main too. His defect (R37.37) is the stopped crew's
+  drive to its seat, so the deploy leg is the right line; the filed one was mis-specified. **This line was chosen after seeing e42ff30eb**,
+  so e42ff30eb's rows count for nothing: S1 v2 is judged only on seeds never read for S1 (none of 3861-3914). Deciding: squads with a
+  deploy leg >= 25 m down >= 50 %. Guards: squads with twitch >= 15 m not up, never-in (as R38.10), the first shape, contacts, fights. It
+  queues on builder2 after the S2 re-read; the bar goes to Status and to me before the series starts.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
