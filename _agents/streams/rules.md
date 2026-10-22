@@ -199,6 +199,15 @@ blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0
 - **Package arm (all three ON): not run.** The bar allows it when each rule is inside its noise alone, and here every one is. But its
   best case is the sum of three null effects, about -5 pts, against 2 x se of about 5-7 pts; builder2 time now goes to M5a.
   It could go after M5a if the orchestrator wants that read before round 38.
+- **Motion read (the orchestrator's question): the CPU defender fires on the move less than the blob, but not little.**
+  builder0 light, 68bfd11c1 (all OFF), OFF blob line, 5 maps x seeds 2601-2608 x both sides = 80 fights, all read.
+  The results replay the base block: blob wins 49 %, the same as native's 2601+ block.
+  - Shots faster than a crawl (>= 0.15 of top speed): blob 70.1 % (se 2.4) of 42 998 direct rounds; CPU 55.5 % (se 2.3) of 60 841.
+  - Fast (>= 0.5): blob 33 %, CPU 18 %.
+  - By faction, blob / CPU: Condemned 73 / 60, Gangs 72 / 59, Law 80 / 53, Syndicate 62 / 47 %.
+  - Read: a motion tax hits the blob harder per round, but only by ~15 pts of share (fast: ~2x). The CPU fires 41 % more
+    rounds, more than half of them on the move, so it pays most of the tax back. That fits the near-null arms.
+    Round 38 lever: a defender that actually stops to fire. That is the CPU doctrine, not a rule constant.
 - **R37.25:** all three stay OFF, and R1's re-tune is declined; the shared-picture rule is round 38's. The **package arm**
   (`--rules-on=sight,spread,pin_slow`, same 320 fights, Bar R's deciding unchanged) runs on builder2 AFTER manoeuvre's M5a.
   A pass ships the package ON. QUEUED: I start it when the orchestrator says M5a is off builder2.
