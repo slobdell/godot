@@ -64,6 +64,18 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### M1 VERDICT: PASS, ships ON (2026-10-22 01:35, builder0 native, ON lab/manoeuvre-m1on 339d3f2e2 v BASE stream b822e6696)
+
+`python3 tests/manoeuvre/s1_judge.py ~/overnight-manoeuvre/r37/m1 --bar m1` (evidence `references/round37/manoeuvre/m1-series/`):
+wedge/fights/jam locks/terminus/sumps x 6640-6663 (72 pairs), hull-rest 6601-6632 x 4 factions x 6 tasks (128 pairs per task).
+- (0) side_restands ON 9. PASS. side_repeats 30 -> 9, side steps 44 -> 14 (REPORTED). The lab decided earlier (both paths).
+- Every guard PASS. Notable: far loops 61 -> 38 (-23, 1.645 se 18.9), unstick fires 2802 -> 2738 (-64, 1.645 se 51.7);
+  deaths, kills and hit rate per team, contacts, give-ways, and hull-rest (d)/(e)/(f) were flat in all 6 tasks.
+- Player line (REPORTED): left behind 54 -> 56 of 768 runs (wedged:idle 34 -> 36); rocking 4 = 4.
+- ON tree check (339d3f2e2, builder0): 3011/0, sim-baseline 13/13 unmoved, 25 passed + 2 NOT JUDGED (load), the same as base.
+- Hand-over: the stream plus `SIDE_STAND_DEFAULT := true`. Its game code equals 339d3f2e2's exactly, and the only other
+  changes since b822e6696 are docs and judges. One full check on that commit follows.
+
 ### Bar M1 (manoeuvre, `sidestand`: one side step per unmoved friend, then stand), filed 2026-10-21 before any series number
 
 - **Change (my paths: the side-step rule):** in `Movement._h1b_side`, a far fire on the friend a side step was already taken on,

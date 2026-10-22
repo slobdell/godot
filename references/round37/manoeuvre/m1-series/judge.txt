@@ -1,0 +1,41 @@
+M1 (0) counter first: stall_net_holds ON 97750 (base, counted the same way: 97780)  REPORTED
+M1 (0) counter first: side_restands ON 9  PASS
+M1 side_repeats base 30 ON 9; steps base 44 ON 14; stands base 17 ON 15  REPORTED
+M1 (q) open deaths                base     2403 new     2401 diff       -2 1.645se     6.2 pairs 72  PASS
+M1 (q) stuck deaths               base      453 new      454 diff       +1 1.645se     5.0 pairs 72  PASS
+M1 (q) jam deaths                 base      194 new      192 diff       -2 1.645se     2.3 pairs 72  PASS
+M1 all deaths                     base     3050 new     3047 diff       -3 1.645se     3.7 pairs 72  REPORTED
+M1 (s) friendly contacts          base  1437567 new  1435665 diff    -1902 1.645se  2946.2 pairs 72  PASS
+M1 give-ways started              base    11945 new    11923 diff      -22 1.645se    26.9 pairs 72  PASS
+M1 asks                           base     1837 new     1805 diff      -32 1.645se    24.8 pairs 72  REPORTED
+M1 unstick fires                  base     2802 new     2738 diff      -64 1.645se    51.7 pairs 72  PASS
+M1 (r) far loops                  base       61 new       38 diff      -23 1.645se    18.9 pairs 72  PASS
+M1 deaths team 0                  base     1477 new     1479 diff       +2 1.645se     3.3 pairs 72  PASS
+M1 (i) kills team 0               base     1550 new     1546 diff       -4 1.645se     4.6 pairs 72  PASS
+M1 (i) hit rate team 0               mean diff +0.0004 1.645se 0.0011 pairs 72  PASS
+M1 deaths team 1                  base     1573 new     1568 diff       -5 1.645se     5.9 pairs 72  PASS
+M1 (i) kills team 1               base     1460 new     1462 diff       +2 1.645se     3.3 pairs 72  PASS
+M1 (i) hit rate team 1               mean diff +0.0023 1.645se 0.0024 pairs 72  PASS
+M1 (d) movers net faced_ambush    base        6 new        6 diff       +0 1.645se     0.0 pairs 128  PASS
+M1 (e) never settled faced_ambush         base 10 new 10 (+0) <= +4.9  PASS
+M1 (f) arrived faced_ambush       base        0 new        0 diff       +0 1.645se     0.0 pairs 128  PASS
+M1 (d) movers net faced_attack_move base       10 new       10 diff       +0 1.645se     0.0 pairs 128  PASS
+M1 (e) never settled faced_attack_move    base 21 new 19 (-2) <= +4.9  PASS
+M1 (f) arrived faced_attack_move  base      424 new      423 diff       -1 1.645se     1.6 pairs 128  PASS
+M1 (d) movers net faced_move      base       11 new       11 diff       +0 1.645se     0.0 pairs 128  PASS
+M1 (e) never settled faced_move           base 18 new 17 (-1) <= +4.9  PASS
+M1 (f) arrived faced_move         base      434 new      434 diff       +0 1.645se     0.0 pairs 128  PASS
+M1 (d) movers net faced_right     base        9 new        8 diff       -1 1.645se     1.6 pairs 128  PASS
+M1 (e) never settled faced_right          base 18 new 17 (-1) <= +4.9  PASS
+M1 (f) arrived faced_right        base      434 new      434 diff       +0 1.645se     0.0 pairs 128  PASS
+M1 (d) movers net faced_screen    base       10 new       10 diff       +0 1.645se     0.0 pairs 128  PASS
+M1 (e) never settled faced_screen         base 17 new 17 (+0) <= +4.9  PASS
+M1 (f) arrived faced_screen       base      423 new      423 diff       +0 1.645se     0.0 pairs 128  PASS
+M1 (d) movers net faced_support_by_fire base        7 new        7 diff       +0 1.645se     0.0 pairs 128  PASS
+M1 (e) never settled faced_support_by_fire base 12 new 12 (+0) <= +4.9  PASS
+M1 (f) arrived faced_support_by_fire base        0 new        0 diff       +0 1.645se     0.0 pairs 128  PASS
+M1 rocking_census base_drawn: runs 768 crews rocking >=10 s with the clock running, no escape: 4 {'scout': 3, 'law_tank': 1}  REPORTED
+M1 player line base_drawn: left_behind: 768 runs, 54 crews > 25 m off their slot at the element's last row /   by kind (net motion over the last 10 s): {'wedged:idle': 34, 'wander': 12, 'closing': 6, 'wedged:pressing': 1, 'unknown': 1}  REPORTED
+M1 rocking_census new_drawn: runs 768 crews rocking >=10 s with the clock running, no escape: 4 {'scout': 3, 'law_tank': 1}  REPORTED
+M1 player line new_drawn: left_behind: 768 runs, 56 crews > 25 m off their slot at the element's last row /   by kind (net motion over the last 10 s): {'wedged:idle': 36, 'wander': 13, 'closing': 5, 'wedged:pressing': 1, 'unknown': 1}  REPORTED
+M1 VERDICT (series guards) PASS
