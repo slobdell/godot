@@ -70,4 +70,56 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   v1's `route_out_m` also counts the drive in from a 200 m-wide start, which no lay can change) and `bodies_kept`.
   Lab `test_control_group_click` 7/0 (laptop GDScript, 942533413): +3 cases (body on clear ground kept although walls
   are inside the scan; a place past a wall -> column inside the walls; a rear place read at its own rank).
+- **G1 dev read 1 (builder0 light, native, 942533413, orders-probe locks/crossing/terminus/yard_open x 3/5 x click/route x
+  3801-3803, n 3; `references/round38/orders/g1-dev1-builder0-942533413/`; NOT judged, dev seeds):** places outside the
+  corridor 41 -> 10; metres outside after being in it 4,974 -> 1,516; squads re-dealt 14 -> 0; yard_open 48/48 rows identical
+  (bodies kept 30, no column laid). BUT crowding where the column engaged: contacts 2,842 -> 3,948; all-in up (crossing 5
+  click 38.2 -> 51.6 s, locks 5 click 26.4 -> 38.1); end foreign down (locks 3 click 18.3 -> 9.2 m). Traced (laptop, crossing
+  5 click s3801): ranks stepped by formation depth (a herringbone of 5 is 54.8 m deep), ranks centred in the clear width slid
+  44 m sideways into the arena's edge where the clamp piled them up, and never_behind pulls stacked ranks forward.
+- **Fixes (4141ae445):** rank depth = the priced halt's footprint (`column_depth`); a rank slides off his click's line only as
+  far as keeps it on the clear ground; the width read stops at the arena's edge (`crosses_or_edge`) and stays inside the
+  click's own width (`_within_click`: at his Terminus click a rear rank on open ground spread 3 abreast 130 m wide); never_behind
+  is skipped for a column (stacking behind the click is the point). PLACE_SLACK_M 2 m (the scan's step). Lab 8/0 + requeue /
+  two-squads / pack 40/0 (laptop GDScript, 4141ae445). His click now: one wedge abreast (the strip is 60 m: arena edge one side,
+  a block 16 m the other), four ranks stacked back from the click, nearest squad in front.
+- **G1 dev read 2 (builder0 light, native, 4141ae445, same cells/seeds, n 3; `g1-dev2-builder0-4141ae445/`):** crowding gone
+  (contacts 2,842 -> 2,291; every click cell's guards pass); places outside 41 -> 11, metres outside after being in 4,974 ->
+  2,619. Left: crossing's rear ranks stacked off the map onto the arena corner (67.7, 117.2) (two squads one point), and
+  terminus 5 route re-dealt crews (4 squads) on legs whose body was kept (round 22's crew untangle still ran there).
+- **Fixes (4e25c1eab):** ranks stand straight back along his click's line while that point is on the map and reached by
+  ground without a long way round (`reached_from`, ground_cap's rule); from the first that is not, back along the navmesh
+  drive from the click to the body (`path_back`), never past the click; still off the map -> the last inside point.
+  Decision: straight first, because "the street he clicked" is what he sees and what the bar reads; the road only where
+  straight back is a wall, a river or off the map. Every group move under the switch keeps squads whole (`untangle_whole`),
+  a kept body included. Probe (G2): `--probe-points=x/z+x/z+...` (his own shift-click route), `legs_outside`, `gate_columns`.
+  Lab 9/0 (laptop GDScript, 4e25c1eab; + a column near the army stays on the map, apart, none past the click).
+
+- **quick-remote 4e25c1eab:** builder0 `make quick exited 0`, 276 passed / 0 failed (35 touched test files + lint + smoke).
+- **G1 dev read 3 (builder0 light, native, 4e25c1eab, n 3; `g1-dev3-builder0-4e25c1eab/`):** places outside 41 -> 9, metres
+  outside after being in 4,974 -> 2,738 (limit 2,487), re-dealt 14 -> 0, contacts 2,842 -> 2,151, yard_open 48/48. Left:
+  where the column ran off the map two squads got ONE place (crossing 5, locks 5 route); route cells slower (terminus 3
+  route all-in 16.6 -> 35.8 s: same final places, driven ~110 -> ~216 m, the in-between waypoint's gate column stacked by
+  halt depth so squads near their start drove back and forth).
+- **Fixes (f215b1772):** a column too long for the ground behind it is laid again with ranks closer (up to 4 squeezes, to
+  half the step; at that the rest stand abreast in the last rank); a gate (a waypoint passed through) steps its column by
+  the shape squads travel in (`passing`). Lab 10/0 (laptop GDScript).
+- **Settle (C38.3) asked whether O7 v2 changes the deploy heading:** no; the column changes only each squad's place; `lay`
+  stays round 34's B8 approach. Settle's deploy-fit (stream/settle ac36add58, OFF) sits on top; agreed, no new key.
+
+### Bars (filed here before any judged number; the orchestrator records them on main)
+- **Bar G1 GROUP_LAY=column v2 (orders, round 38; filed 2026-10-22 ~10:15 PDT, before any judged number; dev reads above
+  are on dev seeds 3801-3803 only).** What he would see: select all, click a street: every squad lands in that street,
+  stacked back along it, nearest in front, each with its own vehicles; on open ground nothing changes.
+  **Tree:** a hash whose builder0 full check is green, switch OFF by default. **Probe:** `make native orders-probe`, arms
+  `main:` v `column:--group-lay=column`, builder0, FRESH seeds 3881-3892 (n 12 a cell). Cells: the 12 street cells (locks /
+  crossing / terminus x 3 / 5 squads x click / route); his click as its own cells (terminus `--probe-click=-29.3/85.8`, 3 and
+  5 squads, click; relabelled `terminus_his`); the open-ground cell yard_open (3 / 5 x click / route). **Judge:**
+  `tests/control/orders_judge.py g1` (street + his rows; yard_open rows as the 5th argument).
+  **Counter:** columns_laid > 0. **Deciding** (street + his cells): places outside the click's corridor, arm <= 25 % of
+  base; metres driven outside the corridor after the crew was once inside it (`route_left_m`), arm <= 50 % of base; squads
+  with crews re-dealt, arm 0. **Guards:** R36.6's per cell (all-in median <= base x 1.2 + 3 s; no more never-in; worst
+  twitch median <= base + 3 m; end foreign min median >= base - 3 m; crossed no higher); friendly contacts (probe) <= base
+  x 1.1 + 5; yard_open: every squad row identical. **Reported:** route_out_m (incl. the drive in), parked re-deals, bodies
+  kept, gate columns. **Plus:** paired top-down shots of his click, main v column, looked at, for him. A pass ships ON.
 
