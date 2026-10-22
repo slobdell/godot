@@ -58,6 +58,8 @@ var weapons: WeaponFx
 var link: MatchFxLink
 ## Ground markers, waypoint trails, selection pulses, and acknowledgements for the player's K1 orders.
 var order_feedback: OrderFeedback
+## Round 37 (feedback): flank and rear hits, pinned crews, the Tanker's mending and the Emitter's cone, made visible.
+var feedback: FeedbackFx
 ## Dust, drift marks, and lurches from vehicles on the move.
 var motion: MotionFx
 ## The slow-motion moment on a match's final kill.
@@ -84,7 +86,7 @@ const PREWARM_FRAMES := 3
 ## order marks (ground overlays), then the heat haze, then beams and tracers, then the fire last -- nothing is ever
 ## drawn over a fireball. A higher render priority renders EARLIER (Godot's Material docs); everything not listed stays
 ## at 0, between the tracers and the bursts. `test_fx_world_order` reads these back from the live systems.
-const TRANSPARENT_ORDER := {"decals": 4, "order_feedback": 3, "haze": 2, "beams": 1, "tracers": 1, "bursts": -1}
+const TRANSPARENT_ORDER := {"decals": 4, "order_feedback": 3, "feedback": 3, "haze": 2, "beams": 1, "tracers": 1, "bursts": -1}
 const MESH_LOD_THRESHOLD_PX := 4.0
 
 var _rng := RandomNumberGenerator.new()
@@ -156,6 +158,9 @@ func _init() -> void:
 	add_child(link)
 	order_feedback = OrderFeedback.new()
 	add_child(order_feedback)
+	feedback = FeedbackFx.new(self)
+	link.feedback = feedback
+	add_child(feedback)
 	motion = MotionFx.new(self)
 	add_child(motion)
 	kill_cam = KillCam.new(self)
@@ -188,6 +193,8 @@ func _init() -> void:
 		add_child(LookParityShot.new())
 	if RenderSplit.wanted():
 		add_child(RenderSplit.new())
+	if FeedbackShots.wanted():
+		add_child(FeedbackShots.new())
 
 
 func _ready() -> void:
@@ -214,6 +221,8 @@ func _process(delta: float) -> void:
 	_mark("jolts")
 	order_feedback.update(now)
 	_mark("orders")
+	feedback.update(now)
+	_mark("feedback")
 	if link.is_attached():
 		motion.update(link.unit_nodes(), eye, now, delta)
 	_mark("motion")

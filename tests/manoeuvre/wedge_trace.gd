@@ -8,7 +8,10 @@ extends SceneTree
 ##                      order (type, brain option, element), hits taken, the friends/enemies close by, and whether it died.
 ##   WEDGE_DEATH {...}  a crew lost while wedged (far_census's death_cause stuck:wedged): its last TIMELINE_S, one sample a
 ##                      SAMPLE_S, with every quantity below.
-##   WEDGE_TRACE {...}  the fight's totals.
+##   WEDGE_TRACE {...}  the fight's totals. Round 37 (M2, R36.32): `unstick_fires` is the fight's total of stall-rule fires
+##                      (`Movement.unstick_fires`, a static both paths add to: H1's escapes count there too), what
+##                      `s1_judge.py`'s unstick-fires guard reads. Caveat: WEDGE_EP's own `unstick_fires` is that same static's
+##                      rise across the episode, so it counts EVERY crew's fires in that window, not the wedged crew's alone.
 ##
 ## What shaped a tick (`force`, the first that applies): `unstick` / `press` / `kturn` / `yield` (the drive's own driver
 ## that tick), `hold` (Traffic's take-turns hold), `orca_turn` (avoidance moved the steering point more than TURN_DEG off
@@ -98,7 +101,8 @@ func _run() -> void:
 	print("WEDGE_TRACE " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"totals": _totals, "wedged_units": Movement.wedged_units,
 			"stall_intent_on": Manoeuvre.stall_intent_on(), "stall_intent_ticks": Manoeuvre.stall_intent_ticks,
-			"esc_fires_hull": Movement.esc_fires_hull, "stall_net_holds": Movement.stall_net_holds, "esc_asks": Movement.esc_asks, "yields_started": Movement.yields_started}))
+			"esc_fires_hull": Movement.esc_fires_hull, "stall_net_holds": Movement.stall_net_holds, "esc_asks": Movement.esc_asks, "yields_started": Movement.yields_started,
+			"unstick_fires": Movement.unstick_fires}))
 	quit(0)
 
 

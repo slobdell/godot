@@ -39,6 +39,9 @@ def main():
     print(f"fights {len(totals)}  deaths {n_deaths}  wedged deaths {causes['stuck:wedged']}"
           f" ({100 * causes['stuck:wedged'] / max(n_deaths, 1):.1f} %)")
     print("deaths by cause: " + share(causes))
+    fires = [t["unstick_fires"] for t in totals if "unstick_fires" in t]
+    print(f"unstick fires (WEDGE_TRACE totals): {sum(fires)} in {len(fires)} of {len(totals)} fights" if fires
+          else "unstick fires: not printed (a WEDGE_TRACE from before round 37's M2)")
     uf = Counter()
     for t in totals:
         uf.update(t["totals"].get("by_cause_under_fire", {}))
