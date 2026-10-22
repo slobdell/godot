@@ -53,10 +53,11 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-22, in progress):** D1 DONE (design note below). D2 coded OFF (`--cpu-defend`, b9f8a347c); its bar is FILED
-below before any arm number; lab 2 leans right (blob 18 -> 13 of 40). **GREEN: acbdef4c5** (builder2 `make native check exited 0`, 3063 passed / 0 failed, 26
-targets, sim-baseline 13/13 unmoved with the switch OFF; perf-judge not run: builder2 is not a judging machine). The series runs on
-that tree (builder2, ~/doctrine-runs/d2-series.sh, raw in ~/doctrine-guard-raw): OFF gate 2601 -> ON 320 -> none OFF/ON.
+**Report (2026-10-22, in progress):** D1 DONE (design note below). **D2 JUDGED: FAIL as filed, ships OFF** (verdict below:
+deciding 1.5 se; G2 broken on the turtle line). **D2b** (eaf4c508f, OFF): defend only against an enemy coming for the ring; its bar
+is filed below before any arm number; its series waits behind settle on builder2. **GREEN: acbdef4c5** (builder2 `make native
+check exited 0`, 3063 passed / 0 failed, 26 targets, sim-baseline 13/13 unmoved with the switch OFF; perf-judge not run: builder2
+is not a judging machine). Raw guard logs: ~/doctrine-guard-raw/acbdef4c5-{off,defend}.
 
 **D1 the read (DONE).** Tool: `make native tactics-hold-fire` (tests/tactics/hold_fire_probe.gd extends the guard line read-only;
 every direct round, the same weighted by damage a round, and a 2 Hz crew sample, split by posture, posture reason, map half,
@@ -117,6 +118,26 @@ at 6e049da5b; `tests/tactics/hold_fire_pair.py`).**
 - **Equality:** sim-baseline unmoved with the switch OFF.
 - **A pass ships ON** (symmetric AI improvement: his standing rule). One re-tune allowed only on the guard lines (THREAT_M for
   defend), then judged as it stands.
+
+**D2 verdict (2026-10-22; acbdef4c5, builder2, `guard.sh` J14, 320 fights, `--cpu-defend` v 1c484a525; 320/320 ON logs
+carry the switch; OFF gate 2601 0 flips): FAIL, ships OFF.**
+- Deciding: blob 49 -> 44 % (-4.4, paired se 2.9 = 1.5 se; flips 15 to a loss, 8 to a win; McNemar p 0.105). Not met. Leans right.
+- Second line: blob kill ratio 0.86 -> 0.81 (-0.051, se 0.032): not up.
+- G1: turtle 40 -> 42 % (+2.5, se 4.4), McNemar 0.79 (not in its favour), median 195 -> 194 s. Holds.
+- **G2 broken on the turtle line:** kills a fight (both sides) 32.4 -> 26.2 (-6.2, se 1.6, -3.8 se); by the guard's faction
+  condemned -9.4 (-3.5 se), gangs -10.3 (-2.5 se), law -4.5 (-3.2 se), syndicate -1.8 (-2.2 se); length +3.3 s (+0.9 se). Blob
+  line flat: kills -0.5 (-0.9 se), length -2.0 s (-0.7 se), every faction inside 2 se. Reading: defend fired on ANY contact within
+  DEFEND_M of the CPU's near ring, a turtle sitting on its own zone was often that close, and the CPU stopped attacking it.
+- G3: not run for D2. The none line OFF (seeds 2601-2608) is read and serves D2b; D2's own none-ON was skipped as moot.
+- Tool: G2's paired kills/length per faction came from a scratch script on guard.py's reader (to fold into guard.py --pair: a
+  request to native, which owns it).
+
+**Bar D2b (FILED 2026-10-22 before any D2b arm number).** Change: `--cpu-defend` with D2b's trigger (eaf4c508f: a contact counts
+only when nearer the CPU's near ring than to every zone its side owns) v OFF. Bar D2's text unchanged (base, workload, positive
+control, deciding, second line, mechanism, G1-G4, equality), plus **G2t: the turtle line's kills a fight within 2 paired se of
+base.** **Seed reuse, flagged:** the trigger was designed after reading D2 on these 320 fights; the base pairing exists only for
+them, so D2b is judged on them too. A D2b pass is confirmed on a fresh block (2801-2808, both arms) before it ships, if the
+orchestrator wants it. No re-tune left: D2b is judged as it stands.
 
 **D2 in pictures (`make doctrine-shots`, laptop, a656460ea's tree; locks seed 2602, blob = green, 60 s in, 1854x1011 and
 1200x540; looked at):** OFF, the CPU's rust line burns north of the bridge and the blob has crossed it. ON, the rust CPU stands
