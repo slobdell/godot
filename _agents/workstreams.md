@@ -287,6 +287,17 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   so e42ff30eb's rows count for nothing: S1 v2 is judged only on seeds never read for S1 (none of 3861-3914). Deciding: squads with a
   deploy leg >= 25 m down >= 50 %. Guards: squads with twitch >= 15 m not up, never-in (as R38.10), the first shape, contacts, fights. It
   queues on builder2 after the S2 re-read; the bar goes to Status and to me before the series starts.
+- **R38.12 (2026-10-22) G1 (amended) FAILS as filed; G1 v3 next, G3 after.** orders (builder0 native light J 4, tree 4a765e6e2 = code
+  130cf487f, fresh seeds 3881-3892, n 12; stream/orders 4be1edf79, references/round38/orders/g1-judged-builder0-4a765e6e2/).
+  Deciding all pass: places outside the corridor (click cells) 84 -> 18 (line 21); metres driven outside after being in 6,223 -> 1,393
+  (line 3,111); squads re-dealt 58 -> 0; contacts 14,004 -> 10,622. Guards FAIL: crossing 3 route twitch 5.8 -> 10.5 m; his 3-squad click
+  twitch 2.3 -> 11.4 m (deterministic, n 1: settle's halt flip herringbone -> coil); yard_open 177/192 rows identical (s3889, s3891 laid a
+  column beside the yard's containers; s3886 re-laid its first click). Shots of his click (laptop, looked at): main sends a squad up the
+  street and piles one on a corner; the column keeps all five on the apron. **Ruled:** G1 stays OFF. v3 goes first because it is his lead
+  item: rear ranks judged open at the click's width (the container case); the first-click re-lay only where the column moved a squad more
+  than a rank. New bar on fresh seeds, filed before numbers, with the same guards. His-click twitch is NOT excused: v3 passes it on its
+  own, or it waits for settle's latch to ship and is re-read on top of it (then that is the bar's base). G3 (`--place-clear`) after v3.
+  orders' series ended 2026-10-22 ~15:35: builder0's light lane (J <= 4) is free beside M5 v2.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
