@@ -215,6 +215,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   (sized on the seen seeds 3761-3772: per-cell latch - main -3.6 .. +1.0 m, sd 4-20 m), end foreign min >= base - 3 m,
   crossed no higher. A pass ships latch ON (default `latch`). (b), the deploy deal sending a stopped tank across its own
   squad, is its own item: round 38's unless time remains after O7.
+  **Judged: PASS** (builder0 native 1ebd7e550, seeds 3821-3832, `references/round37/orders/o1latch-reread-builder0-1ebd7e550/`):
+  counter base relays 143, rows differ; deciding relays 143 -> 2 (limit 35.8), shape flips 19 -> 1; probe guards PASS in all
+  12 cells (place + twitch); parked re-deals 429 -> 428 (reported). With (b) census and (c) fight passed on c14ec0d80: latch
+  SHIPS ON. Default flipped to `latch` in `element_situation.gd` (every side's halts; `--halt-terrain=centre` is round 36's).
 - **O2 ON TOP OF LATCH (R37.29's thought; filed 2026-10-21 ~23:00 PDT, before any number; runs ONLY if O1-latch passes).**
   Why: O2's judged read (c14ec0d80) passed, but its reported parked re-deals rose 50 -> 105 alongside halt re-lays 187 -> 352
   (O1's flicker). If crews now sit on seats the squad keeps re-laying, the latch should take the extra re-deals away.

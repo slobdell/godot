@@ -42,7 +42,8 @@ const PIECE_GAP := 1.5
 ## centroid would, coil -> herringbone in 14 of 576 squads, and the longer shapes crowded the next squad): the
 ## centroid's read as today, taken the first update the element stands arrived and kept while it stays arrived (the
 ## element passes it back as `halt_terrain`), so the shape is the one main picks at that moment and cannot flip.
-## `--halt-terrain=centre|anchor|latch` (env HALT_TERRAIN).
+## `--halt-terrain=centre|anchor|latch` (env HALT_TERRAIN). Default "latch" since R37 (judged builder0 1ebd7e550, 3821-3832);
+## "centre" is round 36's.
 static var HALT_TERRAIN := _halt_terrain_flag()
 
 
@@ -51,7 +52,7 @@ static func _halt_terrain_flag() -> String:
 		if arg.begins_with("--halt-terrain="):
 			return arg.trim_prefix("--halt-terrain=")
 	var env := OS.get_environment("HALT_TERRAIN")
-	return env if env != "" else "centre"
+	return env if env != "" else "latch"
 
 
 ## The terrain an element reads: under "latch" its latched read while arrived, else terrain_at(terrain_point).
