@@ -616,6 +616,12 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   without those cells. **Ruled:** O7 stays OFF; v2 (open ground = clear width fits today's body; route legs; whole squads kept) is
   round 38's lead item, with his click re-read at the real point for information now. **Lesson:** a probe flag that fails to parse
   must stop the run, never fall back to a default.
+- **R37.39 (2026-10-22) native's re-pins merged.** main 2fdd5bb82 merges stream/native 4238fb859 alone (INHERIT; builder2 `make check
+  exited 0`, 3036/0): the R37.35 re-pins (traffic hold stage z 55 -> -60; yield Sumps centre (-30, 46)), manoeuvre's traffic_stage seam
+  (3891cbabd, cherry-picked by native), guard.sh GUARD_CHUNK=2 and run.sh SCORE_JOBS=14. Manoeuvre's h1b re-pin rides in its M1
+  hand-over; cover merges main after both. **His click at the real point (orders 2259e262e, NOT judged, builder0 light, 7e9bd7fb7,
+  3801-3812, probe armies):** 5 squads places outside the corridor 36/60 -> 0, metres outside 2,350 -> 323, re-dealt 24 -> 0, contacts
+  1,236 -> 396, all-in 12.4 -> 9.4 s; 3 squads outside 12/36 -> 0. Shots in `references/round37/orders/group-click-his-point-7e9bd7fb7/`.
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
