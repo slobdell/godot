@@ -87,6 +87,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   hit-only recaptures on desktop and laptop: solid yellow side / red rear wedges, no white. Pinned chevrons and the cone
   shimmer read the same on desktop as on the laptop. Clips: build/feedback-fight/{desktop,laptop}-seed5/, the additive
   one kept in desktop-seed5-additive/.
+- **Green hash to merge: 4c8946fd1** (make check exited 0 on builder0: 25 passed, 2 NOT JUDGED (perf-judge refused 3x,
+  box busy at 2.55/2.34/2.48x; ai-scenarios 1 refused), 3030 passed / 0 failed, sim-baseline unmoved on 13 maps).
+  Later commits are this Status only. Clips of his picks: build/feedback-fight/picks/ (README.txt).
 - **Check fixes (de57b3231, green on builder0: 25 passed, 2 NOT JUDGED (box busy), 3030 passed / 0 failed, sim-baseline
   unmoved on 13 maps):** e35c6abcf failed announcer-transcripts-check (with the booth hearing hit faces, scouts_vs_tanks
   seed 2 now calls "Caught broadside!": regenerated) and test_sfx_pipeline (SfxSystem.ALIAS now names a stand-in for
