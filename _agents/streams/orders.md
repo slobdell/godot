@@ -104,10 +104,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **O5 v2 (CPU seats off paths):** v1 cut screen-on-screen give-ways 742 -> 438 but not screen v support_by_fire (251 -> 255): the
   aside step reads only other screens' routes. v2: include support_by_fire (and attack) elements' routes in the aside test;
   same bar (CPU screen give-ways <= 50 %), fresh seeds.
-- **Open housekeeping:** side worktree `~/projects/godot-orders-o1` (detached at 1ebd7e550) and `~/projects/godot-orders-arty`
-  (pair/orders-artillery, merged) can go once the orchestrator closes; my builder0 folders for them likewise.
+- **Housekeeping:** side worktrees `~/projects/godot-orders-o1` and `~/projects/godot-orders-arty` removed at hand-over; their
+  builder0 folders (`~/tank_squad/godot-orders-o1`, `~/tank_squad/godot-orders-arty`) are left for the orchestrator's sweep.
 
-- **Last green hash: 1ebd7e550** (stream/orders with main 98153750a merged, incl. the artillery fix and group-lay OFF):
+- **HAND-OVER GREEN HASH: 31e779e8e** (latch OFF, group-lay OFF; everything else this round as OFF arms + tooling): builder0
+  native `make native check exited 0`, 3050 passed / 0 failed, 27 targets all passed, ALL JUDGED (perf-judge judged
+  scenario_perf), sim-baseline 13 unmoved, 2040 s. Round 37 done for orders; the close notes below are round 38's start.
+- **Earlier green: 1ebd7e550** (stream/orders with main 98153750a merged, incl. the artillery fix and group-lay OFF):
   builder0 native check exited 0, 3050 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge, box busy 1.4-2.0x;
   scenario_perf unpinned), sim-baseline 13 unmoved. O7's judged read and the latch re-read run on it (scratchpad
   `o7_series.sh`, side worktree `~/projects/godot-orders-o1` detached at 1ebd7e550). The artillery pair 53b0ee425 was green
