@@ -67,7 +67,45 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### REPORT (orders, round 37; updated 2026-10-22 ~04:00 PDT). Every number names its commit, machine, workload, n.
+### REPORT (orders, round 37; updated 2026-10-22 ~05:15 PDT). Every number names its commit, machine, workload, n.
+- **Round 37 outcome, one line each:** artillery fix SHIPPED (main 98153750a, R37.31). O1 latch PASSED its re-filed bar and
+  ships ON on this branch (e94410eb4; its check is the last named check below). O2 PASSED its bar but is HELD (re-deals
+  50 -> 105, source below). O3 FAILED, folded into O7. O4 done (tooling). O5 FAILED (-23 % v -50 %). O6 seam OFF, unjudged.
+  O7 group-lay FAILED as filed (stays OFF); at his real click it does what he asked (not judged, shots for him). Stretch
+  answered, no code.
+
+### Round 37 close notes (for round 38; R37.38)
+- **O7 v2 (round 38's lead item), what changes from v1 (badfe25c0):**
+  (1) *Open ground:* v1 calls ground open only when the scan reaches GROUP_SCAN_M (100 m) both sides, so walls inside 100 m
+  (yard_open) engaged the column 12 times and changed 52 of 96 rows. v2: open = today's body (`ranks`'s frontage) fits inside the
+  clear width read at the click; only then keep today's lay. (2) *Route legs:* route cells did not move (crossing 5 route 23 -> 23
+  places outside, 13001 -> 13051 m), because squads leave the corridor on the way, not at the last click. v2 either applies the
+  column to the queued legs' gates (round 35's gate already lays ranks) or the bar drops route cells as out of scope (his complaint
+  was a plain click). (3) *Plain street clicks:* v1 already roughly halves metres outside (crossing 5 click 7472 -> 3433, outside
+  23 -> 2) but all-in rose at locks 5 click (19.6 -> 28.8 s): ranks behind the click wait for the front rank; v2 should lay the
+  rear ranks' places first-come so a rear squad never drives through the front one. (4) *Probe:* `--probe-click=x/z` (7e9bd7fb7);
+  his click must be its own cells again. At his real point v1 already reads 5 squads outside 36 -> 0, metres 2350 -> 323, re-dealt
+  24 -> 0 (builder0 light, 3801-3812, not judged; `group-click-his-point-7e9bd7fb7/`).
+- **O3 (squads whole) is folded into O7:** v1 swaps crossing squads whole instead of re-dealing crews (re-dealt 40 -> 0 in O7's
+  read); keep that in v2. O3's Crossing 5 failure (a bridge-mouth seat re-laid 39 m across the deck mid-drive) is answered by
+  `deck_clear` on the column's places; re-check it in v2's guards (crossed no higher).
+- **(b) The deploy deal crosses a stopped squad** (ea09f3b17, both main and latch): at the deploy the deal hands the crew at one end
+  of the first halt the seat at the other end, so one tank drives ~47 m across its own stopped squad (terminus 5 click, Delta_2,
+  s3767 / s3772). He sees "one tank wanders off after they arrive". Round 38: deal seats nearest-first without crossing (the
+  deploy step's slot assignment), bar on place + twitch (o1settle's guard) and parked re-deals.
+- **O2's real re-deal source:** not the shape flicker. Latch cut relays 442 -> 95 (fight) and 143 -> 2 (no-fight) but left
+  parked re-deals flat (84 -> 88; 429 -> 428). O2's own trace (s3747) showed a parked crew shuttled between two seats three
+  times in 33 s while the squad re-laid its halt: the halt is re-laid when a crew RETURNS from an O2 pull-back (the element
+  sees a member off-seat and re-plans the whole halt), and the re-plan re-deals the seats of crews that never moved. Round 38:
+  trace one return (which `ElementPlan` path re-deals; likely `_plan_form_up` re-run on the returning member) and hold the
+  other crews' `issued_slots` across a single member's return. Then O2 ships ON for his crews (the lead: a nearly dead parked
+  crew pulls back, then returns, as built).
+- **O5 v2 (CPU seats off paths):** v1 cut screen-on-screen give-ways 742 -> 438 but not screen v support_by_fire (251 -> 255): the
+  aside step reads only other screens' routes. v2: include support_by_fire (and attack) elements' routes in the aside test;
+  same bar (CPU screen give-ways <= 50 %), fresh seeds.
+- **Open housekeeping:** side worktree `~/projects/godot-orders-o1` (detached at 1ebd7e550) and `~/projects/godot-orders-arty`
+  (pair/orders-artillery, merged) can go once the orchestrator closes; my builder0 folders for them likewise.
+
 - **Last green hash: 1ebd7e550** (stream/orders with main 98153750a merged, incl. the artillery fix and group-lay OFF):
   builder0 native check exited 0, 3050 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge, box busy 1.4-2.0x;
   scenario_perf unpinned), sim-baseline 13 unmoved. O7's judged read and the latch re-read run on it (scratchpad
