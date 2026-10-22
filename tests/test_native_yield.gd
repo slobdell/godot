@@ -156,10 +156,10 @@ func _pass_stage(owned: bool) -> void:
 ## different stages: the live one forces 60 set-up compares (`set_up`) and the owned one none, so their counts differ.
 ## Here, with the same parameters, owned = live exactly.
 ## Round 37 (native, R37.35: cover's K5 barrier runs, stream/cover 3923ba026): a run at (-39..-33, 72), 32 m north of
-## (-40, 40), took the stage's spot:hold to 0. Re-pinned to (-32, 44) from a 20-centre sweep on the K5 arenas (builder0
-## light lane, fresh processes): every floor reached, no hull off the floor, owned = live exactly (33 negotiations, spot:hold
-## 6, spot:back 2); its 2 m neighbours all still reach spot:hold (1-7). No logic change.
-const SUMPS_CENTRE := Vector3(-32.0, 0.0, 44.0)
+## (-40, 40), took the stage's spot:hold to 0. Re-pinned to (-30, 46) from a 23-centre sweep (builder0 light lane, fresh
+## processes) as the pin that passes on BOTH main's and K5's arenas: every floor reached, no hull off the floor, owned =
+## live exactly; spot:hold 3 and spot:back 2 on each. ((-32, 44) passed K5 only: spot:back 0 on main.) No logic change.
+const SUMPS_CENTRE := Vector3(-30.0, 0.0, 46.0)
 ## Round 36 (native, R36.28's re-pin): the ranks 6 m apart side to side and 13 m across (were 7 and 16). With traffic's yieldgap
 ## ON the asker reads clear sooner (the gap after both noses), so the old pose's back-ups, which all came from RE-yields after an
 ## unfinished give-way, stopped: spot:back 15 -> 0 (laptop, main 17a3d967a v lab/s2a-on bf678480c). Tighter ranks leave no
