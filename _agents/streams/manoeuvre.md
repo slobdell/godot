@@ -170,7 +170,8 @@ nosing into a friend. The rule does not arise in a clean move (as designed); the
   series is sized from the base arm's first map.
 - **M6 parked (R37.15):** the parked leash measured harmful (aim lost, no closer: `lab/manoeuvre-r37-m6leash` 23add418f).
   Reconciled with orders' 956.2 s on their exact command: the turn-in is 944.7 s / 8,247 m of it (`lab/manoeuvre-r37-m6trace`
-  e20f9ba89). The lead was told "leave the turn-in".
+  e20f9ba89). The lead was told "leave the turn-in". **CLOSED (2026-10-21, his answer, game_design.md on main via godot-b0):**
+  the parked scouts' circling turn-in stays as it is; nothing more owed on M6.
 - **Main merged** (a10846307 -> stream d8ba445d9). `unstick` skips a crew in rules' R2 short halt (`Tank.short_halt_seconds`;
   b496101bd, inert while R2 is OFF). Native's twin is requested.
 - **Series queue (2026-10-21 ~12:45):**
