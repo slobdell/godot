@@ -73,6 +73,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   nominal deal's worst drive 31.7 m; the fit turns the halt along the street, worst 13.3 m; a squad that fits keeps its
   heading; the deal pays the grounded drive.
 
+- **Checks:** builder0 `make native check` on 39f57e7d6 exited 2 on INFRASTRUCTURE, not code: builder0 load ~20-37; the run
+  was `Terminated` at ~82 min (the slot's run cap) with 15 passed, 2 FAILED (test: shards 0/3/4 cut off mid-file, no
+  summary; web-smoke terminated mid-export), 8 NOT RUN, perf-judge NOT JUDGED (refused 3x at 2.3-2.5x); every shard that
+  finished was 0 failed, sim-baseline 13/13 unmoved. Per R38.2 the next full check (4870d8ebc: S1 + S2 + the hold, all
+  OFF) runs on builder2; the series follow on builder0 (`settle-chain2`).
+- **Smoke (builder0 light, orders-probe-shots, terminus 5 click seed 34, arrival, desktop; looked at):** main v fit+latch
+  identical but the blue squad (bottom), which with the fit stands strung along the east-west street below the blocks
+  instead of a north-south clump between them; no hull in a block either way. Frames: ~/settle-keep/shots/.
+
 ### Plan (ordered; smallest foundation first)
 1. S1 + S2 (one series, one base): bars (filed below) -> quick-remote -> one builder0 full check on the named hash -> `make native settle-series` -> verdict;
    a pass flips DEPLOY_FIT ON (symmetric, his and the CPU's) on a new hash with its own full check.
