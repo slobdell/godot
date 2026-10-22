@@ -1143,7 +1143,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors,
 					func() -> PackedVector3Array: return Pathing.find_path(ground, click, body),
-					func(p: Vector3) -> bool: return SelectionSquads.reached_from(click, p, drive_g, crosses_g))
+					func(p: Vector3) -> bool: return SelectionSquads.reached_from(click, p, drive_g, crosses_g), false, queue_leg)
 			column = not laid.is_empty()
 			if column:
 				anchors = laid

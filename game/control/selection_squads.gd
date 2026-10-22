@@ -303,8 +303,11 @@ static var bodies_kept := 0
 ## drive (G1: the column follows the road instead of stacking off the map). One anchor per block in `blocks`' order, or []
 ## when today's places all stand on clear ground. Pure.
 ## `passing`: a gate (a waypoint passed through): ranks step by the shape each squad travels in (`travel_depth`), not its halt.
+## `leg`: a shifted leg (blocks centred where the previous leg ends): no rank behind the farthest of those starts (dev
+## read e3389f1fc, locks 5 route: a rear squad's last place stood behind its own start; it drove on through the waypoints
+## and back).
 static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_at: Callable, clamp: Callable,
-		today: Array[Vector3] = [], path_back := Callable(), reached := Callable(), passing := false) -> Array[Vector3]:
+		today: Array[Vector3] = [], path_back := Callable(), reached := Callable(), passing := false, leg := false) -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	if blocks.size() < 2:
 		return result
@@ -337,7 +340,7 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	# The same when it would reach more than one rank behind where its rearmost squad stands (dev read f215b1772: a route's
 	# first waypoint 17 m ahead of the army stacked ranks 100 m back into the base; squads drove back, then on).
 	var step := deepest + GAP_M
-	var room := float(by_along[by_along.size() - 1][0]) + step
+	var room := float(by_along[by_along.size() - 1][0]) + (0.0 if leg else step)
 	# Every squad already within COLUMN_NEAR_M of the click: no approach to stack along (the same trace: re-laid, they only
 	# shuffled sideways); today's body stands.
 	if float(by_along[by_along.size() - 1][0]) < COLUMN_NEAR_M:
@@ -375,6 +378,8 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 	var start := 0
 	var on_road := false
 	var last_inside := [flat_click, ahead]
+	var last_start := 0
+	var merged := false
 	while start < by_along.size():
 		var at := _walk_back(straight, behind)
 		if start > 0 and not on_road:
@@ -391,9 +396,13 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		var out_of_room := behind > room + 0.01 or (clamp.call(at[0]) as Vector3).distance_to(at[0]) > 1.0
 		if out_of_room and not last_try:
 			return []
-		if out_of_room:
+		if out_of_room and start > 0:
+			# The rest join the last rank inside, laid again wider (never two squads on one place).
 			at = last_inside
+			start = last_start
+			merged = true
 		last_inside = at
+		last_start = start
 		var point: Vector3 = at[0]
 		var rank_ahead: Vector3 = at[1] if start > 0 else ahead
 		var rank_across := Vector3(-rank_ahead.z, 0.0, rank_ahead.x)
@@ -401,12 +410,13 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		var clear := minf(float(sides[0]) + float(sides[1]), MAX_FRONTAGE_M)
 		var single := clear < widest
 		var abreast := 1 if single else mini(MAX_ABREAST, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
-		abreast = by_along.size() - start if out_of_room else mini(abreast, by_along.size() - start)
+		abreast = by_along.size() - start if merged else mini(abreast, by_along.size() - start)
 		single = single and abreast == 1
 		# G1: a rank slides off the column's line only as far as keeps it on the clear ground (v1 centred it in the clear
 		# width: 100 m of open bank one side pushed crossing's ranks 44 m aside into the arena's edge, where they piled up).
 		var frontage := abreast * widest + (abreast - 1) * GAP_M
-		var shift := 0.0 if single else clampf(0.0, -float(sides[0]) + frontage * 0.5, float(sides[1]) - frontage * 0.5)
+		var shift := 0.0 if single or frontage > float(sides[0]) + float(sides[1]) \
+				else clampf(0.0, -float(sides[0]) + frontage * 0.5, float(sides[1]) - frontage * 0.5)
 		var centre := point + rank_across * shift
 		var rank_members: Array = []
 		for n in range(start, start + abreast):
