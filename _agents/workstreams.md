@@ -178,6 +178,17 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   x 1.1 + 5; yard_open: every squad row identical. **Reported:** route_out_m (incl. the drive in), parked re-deals, bodies
   kept, gate columns. **Plus:** paired top-down shots of his click, main v column, looked at, for him. A pass ships ON.
 
+- **Bar D2 CPU_DEFEND (doctrine, C38.2; filed in stream/doctrine cb831f10d Status before any arm number; code 6877a099c, OFF, GDScript
+  only in posture.gd + element_commander.gd; native: no twin).** D1 (builder0 native light, 6e049da5b, 55 blob fights, damage-weighted):
+  75 % of the CPU's damage is fired in ATTACK posture from its own half because it "holds no objective": the blob reaches the CPU's near
+  ring before the CPU has taken it, and Posture only holds zones the side already owns. In hold posture, seated crews fire still 83 % by
+  damage; the movers are crews driving to posts `_hold` re-lays across the enemy's moving centre each think. **Change (`--cpu-defend`):**
+  (a) a side DEFENDS its near ring when an enemy is within 60 m of it and the enemy doesn't own it, taken or not; (b) hold posts keep
+  their facing until the threat's direction swings > 45 deg. **Paired against `1c484a525.fights.jsonl`.** **Deciding:** the blob's win
+  rate down by > 2 paired se AND McNemar p < 0.05. **Second line:** the blob's kill ratio not up. **G1:** the turtle not up. **G2:**
+  per-faction kills and length. **G3 (what it could break):** CPU v CPU stalls on the `none` line, 2601-2608: cap hits ON <= OFF + 2,
+  median length <= x1.2. Workload: builder2, ~2 x 320 guard fights + 2 x 80 on the none line. A pass ships ON (symmetric).
+
 - **Bar F3 REPAIR_UNDER_FIRE (feedback, C38.4; filed in stream/feedback f0ad5a44d Status before any number).** Switch `--repair-under-fire`
   (OFF; `Match.repair_under_fire_on`): a friendly FIELD mender (the gangs' Resupply Tanker) keeps mending a vehicle under fire at HALF
   rate (2.5 hp/s), full after `REPAIR_QUIET_SECONDS`; the base's own mending still waits for quiet; a Tanker never mends itself.
