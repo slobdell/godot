@@ -68,7 +68,12 @@ func test_nothing_is_drawn_mending_what_the_rules_do_not_mend() -> void:
 	var menders := FeedbackReader.menders([tanker, patient, enemy])
 	assert_true(FeedbackReader.mending(enemy, menders).is_empty(), "never the enemy's")
 	patient.ticks_since_hit = 10
-	assert_true(FeedbackReader.mending(patient, menders).is_empty(), "not while it is still being hit")
+	var was := Match.repair_under_fire_on
+	Match.repair_under_fire_on = false
+	assert_true(FeedbackReader.mending(patient, menders).is_empty(), "without round 38's rule: not while it is still being hit")
+	Match.repair_under_fire_on = true
+	assert_true(bool(FeedbackReader.mending(patient, menders).get("under_fire", false)), "with it (F3): the slower beam")
+	Match.repair_under_fire_on = was
 	patient.ticks_since_hit = 1_000_000
 	patient.global_position = FIELD + Vector3(30.0, 0.0, 0.0)
 	assert_true(FeedbackReader.mending(patient, menders).is_empty(), "not out of the Tanker's 18 m")

@@ -1,7 +1,8 @@
 // Round 37 (feedback, F1 repair a): a mending beam from a Resupply Tanker to the vehicle it repairs -- a ribbon that always
 // faces the camera, arched a little, with pulses flowing from the Tanker to its patient. One MultiMesh, one draw.
 // Per instance: origin = the Tanker's end, basis z = the vector to the patient's end (its length is the beam's);
-// COLOR.rgb = tint, COLOR.a = strength; INSTANCE_CUSTOM = (unused, unused, width m, arch m).
+// COLOR.rgb = tint, COLOR.a = strength; INSTANCE_CUSTOM = (pulse speed share: 1 full, 0.5 mending under fire (round 38, F3),
+// unused, width m, arch m).
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, skip_vertex_transform, fog_disabled;
 
@@ -10,6 +11,7 @@ uniform float now = 0.0;
 varying float v_along;
 varying float v_length;
 varying vec4 v_color;
+varying float v_speed;
 
 void vertex() {
 	vec3 from = MODEL_MATRIX[3].xyz;
@@ -25,12 +27,13 @@ void vertex() {
 	v_along = along;
 	v_length = length(span);
 	v_color = COLOR;
+	v_speed = INSTANCE_CUSTOM.x > 0.0 ? INSTANCE_CUSTOM.x : 1.0;
 }
 
 void fragment() {
 	float across = abs(UV.x * 2.0 - 1.0);
 	float core = 1.0 - smoothstep(0.1, 0.9, across);
-	float pulses = smoothstep(0.55, 0.95, fract(v_along * v_length / 3.0 - now * 2.2));
+	float pulses = smoothstep(0.55, 0.95, fract(v_along * v_length / 3.0 - now * 2.2 * v_speed));
 	float ends = smoothstep(0.0, 0.08, v_along) * (1.0 - smoothstep(0.92, 1.0, v_along));
 	ALBEDO = v_color.rgb * core * (0.35 + 1.2 * pulses) * ends * v_color.a;
 }

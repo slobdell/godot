@@ -28,6 +28,9 @@ var score_bug: ScoreBug
 var zone_rings: ZoneRings
 ## The team the local player commands (the bug draws it on the left in the friendly colour).
 var team := Match.Team.GREEN
+## Round 38 (feedback F1/F2): the end of a match he commands; null until `Match.finished`.
+var end_card: EndCard
+var _end_hooked: Match
 
 @onready var status_label: Label = $Status
 @onready var scoreboard: Label = $Scoreboard
@@ -42,13 +45,16 @@ func _ready() -> void:
 	mount.hud = self
 	mount.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(mount)
+	if EndShots.wanted():
+		add_child(EndShots.new())
 
 
 class _BugMount extends Node:
 	var hud: Hud
 
 	func _process(_delta: float) -> void:
-		if hud.score_bug != null or hud._maybe_add_score_bug():
+		var bug := hud.score_bug != null or hud._maybe_add_score_bug()
+		if hud._maybe_hook_end() and bug:
 			set_process(false)
 
 
@@ -81,7 +87,53 @@ func _caption(speaker: String, text: String) -> void:
 
 func show_banner(text: String) -> void:
 	banner.text = text
-	banner.visible = true
+	banner.visible = end_card == null  # the end card says it (and why) itself
+
+
+## Round 38 (feedback): listen for the end once the match is known. True once hooked.
+func _maybe_hook_end() -> bool:
+	if game_match == null:
+		return false
+	if _end_hooked != game_match:
+		game_match.finished.connect(_on_match_finished)
+		_end_hooked = game_match
+	return true
+
+
+## F1/F2: where he commands an army (the controls are on this layer and nobody is spectating), the end gets its card: it
+## says who won and why, and stops a click from ordering a finished match.
+func _on_match_finished(result: Dictionary) -> void:
+	var controls := _commanding_controls()
+	if controls == null or end_card != null:
+		return
+	var main := get_parent()
+	var flags: LaunchFlags = main.get("flags") if main != null and main.get("flags") is LaunchFlags else LaunchFlags.new()
+	if SkirmishMode.spectated(flags):
+		return
+	end_card = EndCard.new()
+	end_card.setup(result, team, false, {Match.Team.GREEN: flags.text("player-faction"),
+			Match.Team.RUST: flags.text("enemy-faction")}, flags.text("end-look"))
+	end_card.yield_to = main.get_node_or_null("ArmyLoop") if main != null else null
+	end_card.choices = end_card.yield_to == null  # the garage's results screen follows
+	end_card.rig = main.get_node_or_null("RtsCamera") if main != null else null
+	end_card.focus = EndCard.decided_at(game_match, result)
+	end_card.hide_nodes.append(controls)
+	end_card.chosen.connect(_on_end_chosen.bind(flags))
+	banner.visible = false
+	add_child(end_card)
+
+
+func _commanding_controls() -> Control:
+	for node_name in ["RtsControls", "TacticalMap"]:
+		var node := get_node_or_null(node_name) as Control
+		if node != null:
+			return node
+	return null
+
+
+func _on_end_chosen(choice: String, flags: LaunchFlags) -> void:
+	# The skirmish's own seed formula (make skirmish): a new fight each time.
+	GameLauncher.start(get_tree(), MatchEnd.next_flags(flags, choice, int(Time.get_unix_time_from_system()) % 100000))
 
 
 ## True once the bug is up (a match that decides by control or elimination, with its armies on the field).
