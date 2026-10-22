@@ -72,7 +72,7 @@ end-shots: import ## F1: a commanded skirmish ended on the rings, filmed per --e
 		> $(END_DIR)/$(FB_PRESET)/SOURCE.txt
 	@set -e; for look in $(END_LOOKS); do for outcome in $(END_OUTCOMES); do \
 		d=$(CURDIR)/$(END_DIR)/$(FB_PRESET)/$$look-$$outcome; mkdir -p $$d; \
-		timeout 600 $(GODOT) --path . --resolution $(FB_RES) -- --skirmish --no-pick-faction --player-faction=law \
+		timeout 1500 $(GODOT) --path . --resolution $(FB_RES) -- --skirmish --no-pick-faction --player-faction=law \
 			--enemy-faction=gangs --seed=$(END_SEED) --arena=$(END_ARENA) --mute --announcer-history=off --music-history=off \
 			--render-preset=$(FB_PRESET) --end-look=$$look --end-shots=$$d --end-shots-outcome=$$outcome $(FB_FLAGS) \
 			> $$d/log.txt 2>&1 || true; \

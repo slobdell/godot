@@ -6,7 +6,7 @@ extends Node
 ## `win` gives them to him). Writing the score is the harness's only touch on the match, after which everything is the
 ## game's own end. It films the end from his camera, then clicks the field (F2: a click after the end) and films the answer.
 ##
-## Flags: --end-shots=<abs dir> --end-shots-outcome=loss|win (loss) --end-shots-after=S (sim seconds of fight first, 25)
+## Flags: --end-shots=<abs dir> --end-shots-outcome=loss|win (loss) --end-shots-after=S (sim seconds of fight first, 10)
 ##        --end-shots-frames=N (clip frames at 12 fps, 72); the look is the game's own --end-look.
 ## Prints END_SHOTS_START, END_SHOTS_CLICK, END_SHOTS_DONE frames=<n> look=<look> headline=<..>.
 
@@ -18,7 +18,7 @@ const STILLS_S := [0.6, 2.0, 3.2, 4.4]
 
 var out_dir := ""
 var outcome := "loss"
-var fight_seconds := 25.0
+var fight_seconds := 10.0
 var clip_frames := 72
 var _match: Match
 var _hud: Hud
@@ -51,11 +51,15 @@ func _run() -> void:
 		controls.call("set_paused", false, "")
 	get_tree().paused = false
 	print("END_SHOTS_START arena=%s outcome=%s" % [Arena.active.get("name", "?"), outcome])
+	var waited := Time.get_ticks_msec()
 	while _match.sim_seconds < fight_seconds:
 		await get_tree().process_frame
+	print("END_SHOTS_FORCE sim_s=%.1f wall_s=%.0f" % [_match.sim_seconds, (Time.get_ticks_msec() - waited) / 1000.0])
 	var side := Match.Team.RUST if outcome == "loss" else Match.Team.GREEN
 	_match.control_point = true
 	_match.control_score[side] = Match.CONTROL_POINTS_TO_WIN
+	# A close race, as his round-37 game was, not 90 to 0.
+	_match.control_score[1 - side] = maxi(int(_match.control_score[1 - side]), 61)
 	while _hud.end_card == null:
 		await get_tree().process_frame
 	var card := _hud.end_card
