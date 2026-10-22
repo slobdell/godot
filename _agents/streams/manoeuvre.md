@@ -84,6 +84,14 @@ ON tree), web-smoke missed first-sound 34.3 s > 30 s at 2 fps (load 27); web-smo
 mirror before any series; only a change above Movement (the order issued, the seat) needs no twin. Native writes Manoeuvre.refused
 and `_behind_plan` / `_behind_since` back, so the M2 trace's reads hold on the native path.
 
+**Case from settle for after M5 v2 (orchestrator relay, 2026-10-22; information only):** crossing, 5-squad click, s3866,
+`--halt-terrain=latch` (settle b013518a6, `references/round38/settle/s2-neverin-trace-builder0/README.md`, builder0 light native
+e42ff30eb). On main a squad-3 tank yields 7 m and squad 4 is in at 34 s; with one squad-3 seat 1.5 m different, a squad-1 tank is the
+yielder, steps 20 m INTO the lane, and squad 4 never arrives in 90 s. To read after the verdict: is that 20 m pick one of YIELD_SPOTS'
+ahead lead-outs (10/16/24) that M5a's seatstep already refuses for a seated crew? If so, seatstep ON is the lever (re-run the case
+with `--traffic-on=seatstep`); if not, the lever is a cap on a give-way's spot distance / an off-lane preference. No light run on
+builder0 while R38.8 holds.
+
 **Plan (in order; smallest foundation first):**
 1. **M1 (M5 v2):** Bar M5 v2 filed below BEFORE any number. Lab trees on today's main: `lab/manoeuvre-r38-m5` (stream + M5a's
    rule from `lab/manoeuvre-r37-m5` + native's `pair/native-m5` 156d563d9, seatstep OFF) and `lab/manoeuvre-r38-m5on` (seatstep
