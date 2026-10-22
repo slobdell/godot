@@ -24,6 +24,13 @@ const BEAMS := 48
 const CONES := 6
 ## How long a hit's ring segment plays (s).
 const HIT_SECTOR_S := 0.9
+## One segment per target this often at most (a new face still shows at once): a crew under a firing line took 31 hits
+## in 3 s on the first real-fight capture, and the stacked segments bloomed into a white disc over it (e12aa27cc, seed 5).
+const SEGMENT_EVERY_S := 0.3
+## The widest a segment draws (m): a War Rig's 14 m hull made a 24 m ring.
+const SEGMENT_MAX_M := 12.0
+## A front hit is the armour doing its job: drawn, but at this strength, so a flank or rear one stands out.
+const FRONT_STRENGTH := 0.45
 ## His approved flank / rear hit sounds (F3), over the round's own impact: one per target this often at most, and only
 ## for a gun's round (a machine gun's or a flamer's stream is not a flank shot; artillery from above has no flank).
 const HIT_SOUNDS := {"side": "flank_hit", "rear": "rear_hit"}
@@ -56,8 +63,9 @@ var _next_hit := 0
 ## projectile id -> {muzzle: Vector3, arc: bool, model: String}
 var _shots := {}
 var _shot_order: Array[int] = []
-## target name -> when its last flank / rear sound played.
+## target name -> when its last flank / rear sound played; target name -> [time, kind] of its last segment.
 var _last_sound := {}
+var _last_segment := {}
 ## patient name -> {node, rate}; name -> pinned level. This frame's, for UnitBars.
 var _mending := {}
 var _pinned := {}
@@ -141,6 +149,12 @@ func impact(event: Dictionary, now: float) -> void:
 		return  # the engine deck already flares gold and crunches (WeaponFx)
 	if HIT_SOUNDS.has(kind) and not SOUNDLESS_MODELS.has(String(shot.get("model", ""))):
 		_hit_sound(kind, target_name, at, now)
+	var previous: Array = _last_segment.get(target_name, [-10.0, ""])
+	if now - float(previous[0]) < SEGMENT_EVERY_S and String(previous[1]) == kind:
+		return
+	if _last_segment.size() > 64:
+		_last_segment.clear()
+	_last_segment[target_name] = [now, kind]
 	hits_drawn[kind] = int(hits_drawn.get(kind, 0)) + 1
 	last_segment = {"kind": kind, "toward": toward}
 	_sector(kind, target, toward, now)
@@ -210,8 +224,8 @@ func _sector(kind: String, target: Tank, toward: Vector3, now: float) -> void:
 	_next_hit = (_next_hit + 1) % HIT_MARKS
 	var place := FxWorld.visual_transform(target).origin
 	_ground.multimesh.set_instance_transform(i, Transform3D(_yaw_basis(toward), place))
-	_ground.multimesh.set_instance_color(i, Color(FACE_COLORS[kind], 1.0))
-	_ground.multimesh.set_instance_custom_data(i, Color(now, HIT_SECTOR_S, _hull_span(target) * 1.7, 0.0))
+	_ground.multimesh.set_instance_color(i, Color(FACE_COLORS[kind], FRONT_STRENGTH if kind == "front" else 1.0))
+	_ground.multimesh.set_instance_custom_data(i, Color(now, HIT_SECTOR_S, minf(_hull_span(target) * 1.7, SEGMENT_MAX_M), 0.0))
 
 
 func _beam(i: int, from: Vector3, to: Vector3) -> void:
