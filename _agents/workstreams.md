@@ -221,6 +221,8 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   orders-light 14, manoeuvre-trace 11, feedback 2; two full checks (feedback 4b070b284, settle 39f57e7d6) were killed at slot.sh's 5400 s
   cap with `test` still running (not failures). **Ruled:** light runs on builder0 at J <= 4; anything bigger is a series (the builder's
   one series slot) or goes to builder2. Doctrine's re-read moves to builder2.
+  Correction (manoeuvre): `pgrep -f Godot_v4` also counts wrappers (bash, xargs, timeout) whose command line names Godot; manoeuvre's
+  "11" was 3 Godot processes at J=3. The other counts may be inflated the same way; the load (~22) and the two killed checks stand.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
