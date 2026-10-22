@@ -87,6 +87,28 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   harm check, not a gain line (R35.64): the lab decides, the series guards.
 - **Pass = (0) + the lab (both paths) + every guard. A pass ships ON** (symmetric movement fix, C37.7).
 
+### M5a VERDICT: FAIL, NOT SHIPPED (2026-10-21 23:15, builder2 native, ON lab/manoeuvre-r37-m5on 7ebbc7bdd v BASE lab/manoeuvre-r37-m5 936612334)
+
+`python3 tests/manoeuvre/m5_judge.py ~/overnight-manoeuvre/r37/m5` (evidence `references/round37/manoeuvre/m5-series/`):
+jam census locks/terminus/sumps x 6840-6863 (72 pairs); hull-rest 6801-6832 x 4 factions x 6 tasks (128 pairs per task).
+- (0) counter first: yields_seated ON 3506, lead-outs avoided 327. PASS.
+- **DECIDING seat metres: base 43206.5, ON 39519.1, -3687.4 (-8.5 %), 1.645 se 3051.3. PASS.** Lead-out give-ways
+  747 -> 436, back-ups 647 -> 793, episodes 4047 -> 4152 (REPORTED).
+- Guards: asker's wait, timeouts, friendly contacts, jam deaths, deaths of both teams, team 0 kills: PASS.
+- **FAIL: team 1 kills 1411 -> 1322 (-89, 1.645 se 81.0).** Every fight count went down: team 0 deaths -89 (the same kills,
+  seen from the other side), team 1 deaths -56, team 0 kills -57. The rule is symmetric, so the fights got smaller, not one-sided.
+  But the guard as filed is "kills per team no worse than base + 1.645 se", and fewer kills counts as worse.
+- **FAIL: hull-rest (e) never settled: faced_ambush 5 -> 10, faced_attack_move 17 -> 23** (limit +4.9). The others
+  passed or went down (screen 26 -> 19, right 20 -> 17). (f) arrivals passed in all 6 tasks.
+- ON check (`make native check exited 2`, builder2): 3019 passed / 0 failed. The two red rows are not M5's:
+  ai-scenarios-check / native-verify-scenarios exited 1 on `UNEXPECTED PASS scenario_scout_suppress::test_target_behind`
+  (52,0,4,1). That is N5's promotion, which main took in 4b62d2186 (53,0,5,0 -> 54,0,4,0); the ON tree predates it. 0 verify
+  mismatches; perf NOT JUDGED (loaded). sim-baseline MOVED on yard, pit, archipelago and cut. Its base (stream b822e6696 plus native's
+  pair, both 13/13 unmoved) means seatstep ON moved them, which is expected for a behaviour switch and now moot.
+- Shipped as judged: nothing. `seatstep` stays OFF on its lab branch, not merged into the stream. No re-run to look for a pass.
+  A v2 would need a new bar filed first: the open questions are a fight-volume guard that a symmetric rule can't fail
+  just by meaning fewer fights, and why parked ambushers settle less (needs a trace before any rule).
+
 ### Bar M5 (`seatstep`, named `seatyield2` when filed: a seated crew steps aside and comes back), filed 2026-10-21 before any number (R37.6)
 
 - **Change (traffic's give-way block, mine this round):** a SEATED yielder (its move_to arrived, within SEAT_NEAR_M 10 m of its
@@ -185,6 +207,8 @@ nosing into a friend. The rule does not arise in a clean move (as designed); the
     **START 2026-10-21 18:36** on godot-b0's release (rules' units inactive 18:36): unit `manoeuvre-m5-series5` (the waiting
     unit `-series4` stopped; a `go` file skips the wait, so its "no rules process for 10 min" line is the release, not a
     measured 10 min). Same false-"NOT RUN" grep fix as M1's driver. The ON check runs first (`--wait-below 1`).
+    Restarted at J=14 at 22:36 (godot-b0's machine note; unit `manoeuvre-m5-series6`, no finished step redone). **FINISH
+    2026-10-21 23:15**, all steps complete.
 - **Requests / follow-ups:** rules (via godot-b0): R2's `Tank.short_halting()` must not read as a stall. When R2 merges, my
   `_unstick` stall clock skips a short-halting hull, and native mirrors that in its unstick twin (a request to native then).
 - **Parked yielders (godot-b0's question, from orders' O2 probe):** round 36's S4 trace (55c973cd4, builder0 light, 16 looping

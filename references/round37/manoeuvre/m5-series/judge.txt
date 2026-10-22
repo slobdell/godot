@@ -1,0 +1,26 @@
+M5 (0) counter first: yields_seated ON 3506 (lead-outs avoided 327)  PASS
+M5 DECIDING seat metres         base   43206.5 new   39519.1 diff   -3687.4 1.645se   3051.3 pairs 72  PASS
+M5 seated give-ways: episodes   base    4047.0 new    4152.0 diff    +105.0 1.645se    248.5 pairs 72  REPORTED
+M5 seated give-ways: leadout    base     747.0 new     436.0 diff    -311.0 1.645se     85.7 pairs 72  REPORTED
+M5 seated give-ways: back       base     647.0 new     793.0 diff    +146.0 1.645se     75.8 pairs 72  REPORTED
+M5 asker's wait (ticks)         base  228879.0 new  238245.0 diff   +9366.0 1.645se  20030.2 pairs 72  PASS
+M5 give-way timeouts            base     341.0 new     379.0 diff     +38.0 1.645se     66.7 pairs 72  PASS
+M5 friendly contacts            base   47131.0 new   47900.0 diff    +769.0 1.645se   4295.7 pairs 72  PASS
+M5 jam deaths                   base     153.0 new     158.0 diff      +5.0 1.645se     24.3 pairs 72  PASS
+M5 deaths team 0                base    1445.0 new    1356.0 diff     -89.0 1.645se     76.3 pairs 72  PASS
+M5 kills team 0                 base    1572.0 new    1515.0 diff     -57.0 1.645se     83.0 pairs 72  PASS
+M5 deaths team 1                base    1589.0 new    1533.0 diff     -56.0 1.645se     83.0 pairs 72  PASS
+M5 kills team 1                 base    1411.0 new    1322.0 diff     -89.0 1.645se     81.0 pairs 72  FAIL
+M5 (e) never settled faced_ambush         base 5 new 10 (+5) <= +4.9  FAIL
+S1 (f) arrived faced_ambush       base        0 new        0 diff       +0 1.645se     0.0 pairs 128  PASS
+M5 (e) never settled faced_attack_move    base 17 new 23 (+6) <= +4.9  FAIL
+S1 (f) arrived faced_attack_move  base      406 new      400 diff       -6 1.645se     6.1 pairs 128  PASS
+M5 (e) never settled faced_move           base 21 new 21 (+0) <= +4.9  PASS
+S1 (f) arrived faced_move         base      423 new      425 diff       +2 1.645se     3.3 pairs 128  PASS
+M5 (e) never settled faced_right          base 20 new 17 (-3) <= +4.9  PASS
+S1 (f) arrived faced_right        base      427 new      426 diff       -1 1.645se     4.4 pairs 128  PASS
+M5 (e) never settled faced_screen         base 26 new 19 (-7) <= +4.9  PASS
+S1 (f) arrived faced_screen       base      416 new      417 diff       +1 1.645se     2.9 pairs 128  PASS
+M5 (e) never settled faced_support_by_fire base 4 new 6 (+2) <= +4.9  PASS
+S1 (f) arrived faced_support_by_fire base        0 new        0 diff       +0 1.645se     0.0 pairs 128  PASS
+M5 VERDICT FAIL (see lines)
