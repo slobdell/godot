@@ -75,6 +75,34 @@ waits until those two end.
 3. **M7 (O5 v2):** read orders' O5 code and R37.32; the aside step also reads support_by_fire routes; bar from R37.32's base.
 4. **Stretch M3 (S1 v2):** base rate of stalls on main with M2's `unstick_fires` total first.
 
+### M7 trace (O5 v1's leftover), builder0 native, stream 53159326e, `--seat-aside=on`, locks/gorge/terminus x 3801-3806 (18 fights)
+
+`make manoeuvre-aside-trace` (rows kept in `~/overnight-manoeuvre/r38/aside1/`). CPU seat give-ways to another element's crew: screen
+to screen 200, to hold 105, to support_by_fire 90, to attack 42, to ambush 24, to move 19; hold to hold 72. Of the 90 screen-to-
+support_by_fire: every asker's element was still driving to its seat (89/89 not arrived); 59 happened with the screen crew >= 10 m
+off its own seat (median 19 m: moving the seat cannot help those); of the 30 at the seat, **29 lay within 10 m of the asking crew's
+own straight line to its goal, but only 10 within 10 m of the line O5 tests** (the element centre to the task's `to`, which for
+support_by_fire is the ENEMY it fires at, 92 m from the seat at the median) and 12 of the centre-to-slot line. So v2 reads each
+travelling member's own line.
+
+### Bar M7 (O5 v2, `--seat-aside=v2`: CPU screens keep off where other elements' crews actually drive), filed 2026-10-22 before any number
+
+- **Change (my grant, `element_commander.gd`'s screen seat choice):** O5's aside step (unchanged: a CPU screen point within
+  ASIDE_CLEAR_M 10 m of a way steps across its approach, 5 m alternating, up to 4) with its WAYS replaced: each other element's
+  living member not within 3 m of its slot contributes its line from where it is to its slot (else to the task's destination,
+  never to a support_by_fire task's `to`, which is a target). `--seat-aside=v2` (`on` keeps v1). GDScript only (CPU commander;
+  native has no twin of it: grep of native/ for seat_aside is empty).
+- **Workload (R37.32's, fresh seeds):** `make native seat-yield-census`, arms none v `SY_FLAGS=--seat-aside=v2`, locks / gorge /
+  terminus x 3811-3822 (36 fights an arm), builder0, on a green-checked hash, queued behind the M5 v2 series (one judged series).
+- **(0) counter:** `seats_aside` > 0 in the arm.
+- **DECIDING (R37.32's):** CPU screen give-way episodes summed, arm <= 50 % of base. Screen-to-support_by_fire REPORTED (the part v1
+  missed; expect it down).
+- **Reported line:** deaths in seat give-ways, arm <= base + 1.645 sqrt(base).
+- **Guards (per-fight totals, both sides CPU):** deaths a fight per team each within base +- 1.645 se (se from the base arm's
+  per-fight sd, n 36).
+- **Pass = (0) + deciding + guards. A pass ships ON** (symmetric: every CPU commander); a fail is written up, no retry for a pass.
+- Before the judged read: a dev read (builder0 light, a few fights) that the counter moves and screen-to-support_by_fire drops.
+
 ### Bar M5 v2 (`seatstep`: a seated crew steps aside and comes back), filed 2026-10-22 before any number
 
 - **Change: M5a's, unchanged** (Bar M5 as filed in round 37, archive/round37/manoeuvre.md): a SEATED yielder (move_to arrived,
