@@ -1,0 +1,42 @@
+PASS counter: deploys turned 78 of 567 on fit, rows differ True; squads 576
+FAIL deciding: squads with a crew moved >= 25 m after the deploy 166 -> 125 (<= 83.0; base >= 10: True); summed place+twitch 12022.5 -> 10227.9 m
+  FAIL guard never-in     locks 3 route: 1 v 2
+FAIL probe guards (12 cells)
+PASS guard first shape: squads whose first halt shape differs 8 of 576 (<= 3 %); base {'herringbone': 500, '': 10, 'coil': 66} | arm {'herringbone': 500, '': 9, 'coil': 67}
+PASS guard friend_contacts 13167 -> 13263 (<= 14488.7)
+PASS guard friend_contacts_foreign 6995 -> 7427 (<= 7699.5)
+  reported relays 206 -> 191
+  reported shape_flips 58 -> 58
+  reported parked_redeals 425 -> 417
+  reported redealt 74 -> 75
+  fight probe: 54 run lines without an arm (runs that never started) left out
+  PASS guard his kills   base 5.83 arm 5.89 a fight (se 0.48, n 18/18)
+  PASS guard his losses  base 8.11 arm 8.11 a fight (se 0.50, n 18/18)
+  PASS guard CPU losses  base 5.83 arm 5.89 a fight (se 0.48, n 18/18)
+PASS fight guards
+  reported fight probe: squads >= 25 m 44 -> 42, parked re-deals 46 -> 47 (54 squads)
+PASS CPU guard friendly contacts 956 -> 956 (<= 1056.6), fights 9/9
+PASS CPU guard stuck s 1474.1 -> 1474.1 (<= 1778.9)
+  outcomes base {'None': 9} | arm {'None': 9}
+VERDICT FAIL fit v main
+PASS counter: rows differ True, base shape flips (no-fight + fight) 95 (>= 10); squads 576 + 54
+PASS deciding: shape flips no-fight 58 -> 0 (<= 15.5), fight 37 -> 0 (<= 10.2); reseats 124 -> 0 (no more)
+  FAIL guard never-in     crossing 5 click: 0 v 1
+FAIL probe guards (12 cells)
+PASS guard first shape: squads whose first halt shape differs 12 of 576 (<= 3 %); base {'herringbone': 500, '': 10, 'coil': 66} | arm {'herringbone': 497, '': 10, 'coil': 69}
+PASS guard friend_contacts 13167 -> 13302 (<= 14488.7)
+PASS guard friend_contacts_foreign 6995 -> 7074 (<= 7699.5)
+  reported relays 206 -> 127
+  reported shape_flips 58 -> 0
+  reported parked_redeals 425 -> 413
+  reported redealt 74 -> 72
+  fight probe: 54 run lines without an arm (runs that never started) left out
+  PASS guard his kills   base 5.83 arm 6.06 a fight (se 0.48, n 18/18)
+  PASS guard his losses  base 8.11 arm 7.94 a fight (se 0.50, n 18/18)
+  PASS guard CPU losses  base 5.83 arm 6.06 a fight (se 0.48, n 18/18)
+PASS fight guards
+  reported fight probe: squads >= 25 m 44 -> 43, parked re-deals 46 -> 42 (54 squads)
+PASS CPU guard friendly contacts 956 -> 956 (<= 1056.6), fights 9/9
+PASS CPU guard stuck s 1474.1 -> 1474.1 (<= 1778.9)
+  outcomes base {'None': 9} | arm {'None': 9}
+VERDICT FAIL latch v main

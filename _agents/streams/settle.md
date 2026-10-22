@@ -49,9 +49,24 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-22, in progress)
+### Report (2026-10-22 evening; still working: S2's never-in trace, then H/S3)
 
-**S1 the deploy deal: built OFF (`--deploy-fit=on`), lab green, bar filed (below); judged series next.**
+**Verdicts (builder2 native, e42ff30eb GREEN; `make native settle-series`, the no-fight probe 12 cells x 3861-3872 = 576 squads
+an arm, the fight probe 18 of the re-filed 36 fights, the census; `references/round38/settle/s1s2-judged-builder2-e42ff30eb/`):**
+- **S1 DEPLOY_FIT FAILS as filed.** Deciding: squads with a crew moved >= 25 m after the deploy 166 -> 125 (-25 %, line <= 83);
+  summed place + twitch 12,022 -> 10,228 m (-15 %); counter 78 of 567 deploys turned. Guard FAIL never-in locks 3 route (1 v 2:
+  s3871 squad 1). Guards pass: first shape 8/576, contacts 13,167 -> 13,263 / foreign 6,995 -> 7,427, fights (n 18). Stays OFF;
+  the trace of the never-in and of the residual >= 25 m movers comes before any new arm (fresh seeds).
+- **S2 DEPLOY_LATCH: deciding PASSES, ONE GUARD FAILS.** Shape flips no-fight 58 -> 0, fight 37 -> 0; reseats 124 -> 0; relays
+  206 -> 127 (reported); first shape differs 12/576 (<= 3 %); contacts pass; fights pass (his kills 5.83 -> 6.06, losses 8.11 ->
+  7.94, CPU losses 5.83 -> 6.06, n 18). Guard FAIL never-in crossing 5 click (0 v 1: s3866 squad 4 never arrives; it does on
+  main). Not waived (R37.17's rule): traced next (builder0 light, `~/settle-keep/neverin/`).
+- **Two workload defects (re-filed before any fight number):** the fight probe is 3-squad only (54 five-squad fight runs
+  stopped at start), so 18 of 36 fights are in and 3879-3884 are owed (`make native settle-fight-topup`); and the CPU census
+  is IDENTICAL to the unit in all three arms (contacts 956 / 956 / 956): the deploy step never fires in CPU v CPU fights, so
+  the CPU guard is vacuous and these switches act on his crews only.
+
+**S1 the deploy deal (history):**
 - **Trace (laptop GDScript e5c436f46, `make settle-trace` / `--deploy-trace`, terminus 5 click s3767, n 1; same seats as
   builder0's c14ec0d80 trace):** the defect is not the deal's cost alone. (1) The deploy lays its halt (a 5-crew herringbone,
   47 m deep at spacing 10) on the click's heading (0.05, -1.0), i.e. ACROSS the east-west street the squad stopped strung
