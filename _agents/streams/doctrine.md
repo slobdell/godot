@@ -132,12 +132,16 @@ carry the switch; OFF gate 2601 0 flips): FAIL, ships OFF.**
 - Tool: G2's paired kills/length per faction came from a scratch script on guard.py's reader (to fold into guard.py --pair: a
   request to native, which owns it).
 
-**Bar D2b (FILED 2026-10-22 before any D2b arm number).** Change: `--cpu-defend` with D2b's trigger (eaf4c508f: a contact counts
-only when nearer the CPU's near ring than to every zone its side owns) v OFF. Bar D2's text unchanged (base, workload, positive
-control, deciding, second line, mechanism, G1-G4, equality), plus **G2t: the turtle line's kills a fight within 2 paired se of
-base.** **Seed reuse, flagged:** the trigger was designed after reading D2 on these 320 fights; the base pairing exists only for
-them, so D2b is judged on them too. A D2b pass is confirmed on a fresh block (2801-2808, both arms) before it ships, if the
-orchestrator wants it. No re-tune left: D2b is judged as it stands.
+**Bar D2b (FILED 2026-10-22 before any D2b arm number; re-filed under R38.14, fresh seeds).** Change: `--cpu-defend` with
+D2b's trigger (eaf4c508f: a contact counts only when nearer the CPU's near ring than to every zone its side owns) ON v OFF.
+- **Workload:** FRESH guard seeds **4801-4808 + 4901-4908** (no round-38 guard series used them; D2b's trigger was shaped by D2's
+  320 fights, R37.17). x 5 maps x both sides x blob/turtle = 320 fights an arm. **Both arms on D2b's tree** (3310e51c4 once its
+  full check is green), builder2, `guard.sh` GUARD_CHUNK=8, judged `guard.py --pair OFF ON` (paired with each other, not with
+  1c484a525). Plus the none line (CPU v CPU), seeds 4801-4808, both arms.
+- **Equality / positive control / deciding / second line / mechanism / G1-G4:** Bar D2's text unchanged, with "base" meaning
+  this OFF arm.
+- **G2t (explicit):** the turtle line's kills a fight (both sides), ON within 2 paired se of OFF.
+- No re-tune: judged as it stands. A pass ships ON (symmetric).
 
 **D2 in pictures (`make doctrine-shots`, laptop, a656460ea's tree; locks seed 2602, blob = green, 60 s in, 1854x1011 and
 1200x540; looked at):** OFF, the CPU's rust line burns north of the bridge and the blob has crossed it. ON, the rust CPU stands
