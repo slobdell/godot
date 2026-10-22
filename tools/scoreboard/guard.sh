@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# tools/scoreboard/guard.sh COMMIT [HOST]: the guard lines (CP37.1) of COMMIT, GUARD_CHUNK seeds a remote call, resumable per seed.
+# tools/scoreboard/guard.sh COMMIT [HOST]: the guard lines (CP37.1) of COMMIT in ONE rolling remote call, resumable per fight.
 #
 # builder2 is a Spot box, and on 2026-10-21 it was preempted every ~2 minutes for a while, so one long run would never finish.
-# Each seed is GUARD_KINDS x the five arenas x both sides (20 fights); a remote call runs GUARD_CHUNK seeds (default 2). It runs in a scratch worktree of its own
+# Each seed is GUARD_KINDS x the five arenas x both sides (20 fights); one remote call runs them all (GUARD_CHUNK, below). It runs in a scratch worktree of its own
 # (../godot-native-guard, COMMIT checked out detached, THIS tree's probe and make target laid over it, as run.sh does), so this
 # stream's own checks never collide with it. A chunk counts only on the wrapper's `exited 0 (build/ copied back)` and a
 # verified copy-back; its logs then go to $GUARD_OUT/<short commit>/<kind>/ (outside build/: a check's copy-back deletes
@@ -55,12 +55,18 @@ todo=()
 for seed in $seeds; do
 	if complete "$seed"; then say ">> guard: seed $seed already read"; else todo+=("$seed"); fi
 done
-# GUARD_CHUNK seeds a remote call (default 2: 40 fights at 20 at once, so the box idles once a call waiting on its slowest
-# fight, not once a seed). A chunk's seeds are copied back and counted one by one, so a re-run resumes per seed.
-chunk=${GUARD_CHUNK:-2}
+# Round 38 (N4, the rolling queue): every seed still needed goes in ONE call (GUARD_CHUNK=0, the default), so the remote
+# xargs keeps GUARD_JOBS fights running across seeds and the box idles once, at the very end. Each call passes GUARD_RESUME=1:
+# the remote folder's build/guards/ (kept between calls, stamped with commit, kinds, args, seconds) skips every fight that
+# already printed its GUARD_RESULT, so a call cut by a preemption (255) is retried for the fights it had not finished. The
+# copy-back still counts seed by seed, and a re-run of this script skips seeds already read here. GUARD_CHUNK=N: N seeds a
+# call (round 37's 1 or 2).
+chunk=${GUARD_CHUNK:-0}
+[ "$chunk" -gt 0 ] 2>/dev/null || chunk=${#todo[@]}
+[ "$chunk" -gt 0 ] || chunk=1
 for ((i = 0; i < ${#todo[@]}; i += chunk)); do
 	group=("${todo[@]:i:chunk}")
-	tag=$(IFS=-; echo "${group[*]}")
+	tag=${group[0]}; [ ${#group[@]} -gt 1 ] && tag=$tag-${group[-1]}  # first-last (a whole run would be a long name)
 	done_ok=""
 	for try in $(seq 1 "$tries"); do
 		case "$host" in *builder2*)
@@ -69,7 +75,7 @@ for ((i = 0; i < ${#todo[@]}; i += chunk)); do
 		esac
 		rm -rf "$wt/build/guards"
 		( cd "$wt" && TANK_SQUAD_COMMIT=$short REMOTE_HOST=$host bash tools/remote.sh native guard-run \
-			GUARD_KINDS="$kinds" GUARD_AT="$arenas" GUARD_SEEDS="${group[*]}" GUARD_JOBS="$jobs" GUARD_ARGS="$args" ) > "$out/remote-$tag.log" 2>&1
+			GUARD_KINDS="$kinds" GUARD_AT="$arenas" GUARD_SEEDS="${group[*]}" GUARD_JOBS="$jobs" GUARD_ARGS="$args" GUARD_RESUME=1 ) > "$out/remote-$tag.log" 2>&1
 		status=$?
 		exited=$(grep -E '^>> remote: make .*guard-run.* exited ' "$out/remote-$tag.log" | tail -1)
 		load=$(grep -E '^>> guard-run on ' "$wt/build/guards/run.txt" 2>/dev/null | head -1 | sed 's/.*| load /load /')
