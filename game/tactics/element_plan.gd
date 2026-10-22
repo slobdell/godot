@@ -204,6 +204,7 @@ const APPROACH_ARTILLERY_EDGE_DEG := 20.0
 
 
 static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable) -> Dictionary:
+	situation = _deploy_latched(situation, state)
 	var members: Array = situation.get("members", [])
 	var task: Dictionary = state.get("task", {})
 	var plan := {"formation": TacticsFormation.DEFAULT, "technique": "traveling", "drill": "", "why": "",
@@ -1940,7 +1941,32 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 				deploy["heading"], table.spacing(String(situation["terrain"])))
 		if DEPLOY_FIT:
 			_deploy_fit(deploy, situation, at, _deploy_shape(situation, state, table), table.spacing(String(situation["terrain"])))
+		deploy["terrain"] = String(situation["terrain"])
 	return deploy
+
+
+## S2 (round 38, settle; latch v2, R37.42): A DEPLOYED HALT KEEPS THE TERRAIN ITS SHAPE WAS DECIDED ON. Round 37's latch
+## (ElementSituation HALT_TERRAIN "latch") kept the read of the first update the element stood ARRIVED, and that can be a
+## one-update read: traced (test_tactics_scenarios_2's move, laptop f8bf6aaad) four tanks in a lane crossed an `open`
+## pocket at t=11, stood arrived at t=12, and latch deployed a COIL in the lane at t=22. Here the read is latched where the
+## deploy decides the halt's shape: at its all-in (or cap), the live read then (`deploy["terrain"]`), and every later update
+## of that deployed halt plans with it (shape AND spacing), so a crew's creep across a terrain line cannot re-lay or
+## re-space the squad. Before the deploy the live read stands (main's). A plain AUTO move only (the deploy step's scope):
+## holds and the CPU's other halts keep main's read. `--deploy-latch=on` (env DEPLOY_LATCH=on) opts in; OFF until its bar.
+static var DEPLOY_LATCH := OS.get_cmdline_user_args().has("--deploy-latch=on") or OS.get_environment("DEPLOY_LATCH") == "on"
+
+
+## `situation` with its terrain replaced by the deployed halt's latched read (DEPLOY_LATCH), else itself. Pure.
+static func _deploy_latched(situation: Dictionary, state: Dictionary) -> Dictionary:
+	if not DEPLOY_LATCH:
+		return situation
+	var deploy: Variant = state.get("deploy")
+	if not (deploy is Dictionary) or not bool((deploy as Dictionary).get("deployed", false)) \
+			or str((deploy as Dictionary).get("terrain", "")) == "" or String(situation.get("terrain", "")) == str(deploy["terrain"]):
+		return situation
+	var latched := situation.duplicate()
+	latched["terrain"] = str(deploy["terrain"])
+	return latched
 
 
 ## S1 (round 38, settle; R37.37's trace): THE DEPLOY LAID WHERE ITS CREWS STAND, AND DEALT BY THE DRIVE EACH CREW WILL MAKE.
