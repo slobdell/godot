@@ -71,7 +71,6 @@ func _draw_timed() -> void:
 	var fx := FxWorld.existing()
 	feedback = fx.feedback if fx != null else null
 	_now = fx.now if fx != null else 0.0
-	feedback_drawn.clear()
 	var eye := camera.global_position  # round 16: read once a draw, not once per tank
 	if record:
 		last_drawn = []
@@ -96,7 +95,7 @@ func _draw_timed() -> void:
 		var at := camera.unproject_position(head)
 		_bar(at, tank, scale_factor)
 		if feedback != null:
-			_feedback(at, head, tank, scale_factor, camera)
+			_feedback(at, tank, scale_factor)
 
 
 ## The drawn top of the hull, so the bar floats over the vehicle rather than through it.
@@ -122,8 +121,6 @@ var _selected := {}  # StringName -> true: this draw's selection
 ## Round 37 (feedback): the world half of the rules made visible; this draws their screen half over the bar.
 var feedback: FeedbackFx
 var _now := 0.0
-## What the feedback looks drew this draw: [name, what] per mark (tests).
-var feedback_drawn: Array = []
 
 
 func _bar(at: Vector2, tank: Tank, s: float) -> void:
@@ -172,62 +169,23 @@ func _alpha_of(tank: Tank) -> float:
 # ---- Round 37 (feedback, C37.6): the rules made visible over the bar -----------------------------------------------
 
 const PIN_COLOR := Color(1.0, 0.86, 0.25)
-const MEND_COLOR := Color(0.35, 1.0, 0.55)
-const HIT_LABELS := {"side": "FLANK", "rear": "REAR", "deck": "ENGINE"}
 
 
-func _feedback(at: Vector2, head: Vector3, tank: Tank, s: float, camera: Camera3D) -> void:
-	var width := WIDTH * s
+## His pick "pinned A": heads down, one to three chevrons pointing at the hull over the bar, by how pinned the crew is.
+func chevrons_for(tank: Tank) -> int:
+	var level := feedback.pinned_of(tank.name) if feedback != null and FeedbackLook.on("pinned") else 0.0
+	return 0 if level <= 0.0 else 1 + int(level > 0.45) + int(level > 0.9)
+
+
+func _feedback(at: Vector2, tank: Tank, s: float) -> void:
+	var count := chevrons_for(tank)
+	if count == 0:
+		return
 	var height := (HULL_H + (SHIELD_H + GAP if tank.max_shield > 0.0 else 0.0)) * s
-	var level := feedback.pinned_of(tank.name)
-	if level > 0.0:
-		var pulse := 0.65 + 0.35 * sin(_now * 6.0)
-		if FeedbackLook.has("pinned", "a"):
-			# Heads down: one to three chevrons pointing at the hull, over the bar.
-			var count := 1 + int(level > 0.45) + int(level > 0.9)
-			for i in count:
-				var y := at.y - height * 0.5 - (7.0 + i * 9.0) * s
-				var half := 11.0 * s
-				var chevron := PackedVector2Array([Vector2(at.x - half, y - 7.0 * s), Vector2(at.x, y), Vector2(at.x + half, y - 7.0 * s)])
-				draw_polyline(chevron, Color(0.0, 0.0, 0.0, 0.6 * pulse), 6.5 * s, true)
-				draw_polyline(chevron, Color(PIN_COLOR, pulse), 4.0 * s, true)
-			feedback_drawn.append([String(tank.name), "pinned:a"])
-		if FeedbackLook.has("pinned", "c"):
-			var rect := Rect2(at - Vector2(width * 0.5 + 2.0 * s, height * 0.5 + 2.0 * s), Vector2(width + 4.0 * s, height + 4.0 * s))
-			draw_rect(rect, Color(PIN_COLOR, pulse), false, 1.5 * s)
-			_text("PINNED", at + Vector2(0.0, height * 0.5 + 20.0 * s), PIN_COLOR, 19.0 * s)
-			feedback_drawn.append([String(tank.name), "pinned:c"])
-	var link := feedback.mending_of(tank.name)
-	if not link.is_empty() and FeedbackLook.has("repair", "c"):
-		var hull := clampf(float(tank.health) / maxf(float(tank.max_health), 1.0), 0.0, 1.0)
-		var bottom := at.y + height * 0.5
-		var edge := at.x - width * 0.5 + width * hull
-		var sheen := fmod(_now * 1.5, 1.0)
-		draw_rect(Rect2(Vector2(edge - 4.0 * s, bottom - HULL_H * s), Vector2(4.0 * s, HULL_H * s)), Color(MEND_COLOR, 0.6 + 0.4 * sheen))
-		_text("+%d/s" % roundi(float(link["rate"])), Vector2(at.x + width * 0.5 + 20.0 * s, bottom + 2.0 * s), MEND_COLOR, 21.0 * s)
-		feedback_drawn.append([String(tank.name), "repair:c"])
-	if FeedbackLook.has("hit", "b"):
-		var hit := feedback.recent_hit(String(tank.name), _now)
-		if not hit.is_empty() and String(hit["kind"]) != "front":
-			var age := (_now - float(hit["time"])) / FeedbackFx.HIT_MEMORY_S
-			var color: Color = FeedbackFx.FACE_COLORS[String(hit["kind"])]
-			color.a = 1.0 - age * age
-			# A wedge beside the bar on the side the shot came from, pointing in at the hull.
-			var toward: Vector3 = hit["toward"]
-			var side := camera.unproject_position(head + toward * 4.0) - at
-			side = side.normalized() if side.length() > 0.5 else Vector2.LEFT
-			var tip := at + side * (width * 0.5 + 6.0 * s)
-			var back := tip + side * 16.0 * s
-			var across := Vector2(-side.y, side.x) * 9.0 * s
-			draw_colored_polygon(PackedVector2Array([tip, back + across, back - across]), color)
-			_text(String(HIT_LABELS[String(hit["kind"])]), at + Vector2(0.0, -height * 0.5 - (10.0 + age * 12.0) * s), color, 19.0 * s)
-			feedback_drawn.append([String(tank.name), "hit:b:" + String(hit["kind"])])
-
-
-func _text(text: String, centre: Vector2, color: Color, size: float) -> void:
-	var font := CyberStyle.font()
-	var pixels := maxi(8, roundi(size))
-	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, pixels).x
-	draw_string_outline(font, centre - Vector2(width * 0.5, 0.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, pixels, 3,
-			Color(0.0, 0.0, 0.0, color.a * 0.8))
-	draw_string(font, centre - Vector2(width * 0.5, 0.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1, pixels, color)
+	var pulse := 0.65 + 0.35 * sin(_now * 6.0)
+	for i in count:
+		var y := at.y - height * 0.5 - (7.0 + i * 9.0) * s
+		var half := 11.0 * s
+		var chevron := PackedVector2Array([Vector2(at.x - half, y - 7.0 * s), Vector2(at.x, y), Vector2(at.x + half, y - 7.0 * s)])
+		draw_polyline(chevron, Color(0.0, 0.0, 0.0, 0.6 * pulse), 6.5 * s, true)
+		draw_polyline(chevron, Color(PIN_COLOR, pulse), 4.0 * s, true)

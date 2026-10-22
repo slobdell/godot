@@ -60,6 +60,8 @@ var link: MatchFxLink
 var order_feedback: OrderFeedback
 ## Round 37 (feedback): flank and rear hits, pinned crews, the Tanker's mending and the Emitter's cone, made visible.
 var feedback: FeedbackFx
+## Round 37 (feedback F3): the Tanker's workshop sound while it mends (a few voices for the nearest patients).
+var repair_hum: RepairHum
 ## Dust, drift marks, and lurches from vehicles on the move.
 var motion: MotionFx
 ## The slow-motion moment on a match's final kill.
@@ -161,6 +163,10 @@ func _init() -> void:
 	feedback = FeedbackFx.new(self)
 	link.feedback = feedback
 	add_child(feedback)
+	repair_hum = RepairHum.new()
+	repair_hum.muted = sfx.muted
+	repair_hum.use_streams(sfx.streams, sfx.takes)
+	add_child(repair_hum)
 	motion = MotionFx.new(self)
 	add_child(motion)
 	kill_cam = KillCam.new(self)
@@ -195,6 +201,8 @@ func _init() -> void:
 		add_child(RenderSplit.new())
 	if FeedbackShots.wanted():
 		add_child(FeedbackShots.new())
+	if FeedbackFight.wanted():
+		add_child(FeedbackFight.new())
 
 
 func _ready() -> void:
@@ -241,6 +249,7 @@ func _process(delta: float) -> void:
 	if camera != null:
 		engines.update(eye, delta)
 	gunfire.update(eye, now)
+	repair_hum.update(eye, feedback.mending_points)
 	_mark("engines_gunfire")
 
 

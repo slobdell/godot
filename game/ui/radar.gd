@@ -182,7 +182,7 @@ func blips() -> Array:
 		result.append({"kind": "enemy" if contact["visible"] else "contact", "position": contact["position"],
 				"fade": 1.0 if contact["visible"] else clampf(1.0 - age, 0.15, 0.8),
 				"length": _hull_length(seen) if seen != null else 0.0,
-				"pinned": contact["visible"] and seen != null and FeedbackLook.has("marks", "a")
+				"pinned": contact["visible"] and seen != null and FeedbackLook.on("marks")
 						and FeedbackReader.pinned_level(seen.suppression) > 0.0})
 	return result
 
@@ -567,7 +567,7 @@ func _marks() -> Dictionary:
 		if contact["visible"]:
 			diamonds.append([at, mark_dot * 1.3, enemy])
 			# Round 37 (feedback stretch): a pinned enemy you can see wears a yellow ring (his answer 8: "show it").
-			if seen != null and FeedbackLook.has("marks", "a") and FeedbackReader.pinned_level(seen.suppression) > 0.0:
+			if seen != null and FeedbackLook.on("marks") and FeedbackReader.pinned_level(seen.suppression) > 0.0:
 				rings.append([at, mark_dot * 1.3 + 3.0, PINNED_COLOR])
 		else:
 			var age := float(game_match.tick - int(contact["seen_tick"])) / Match.CONTACT_MEMORY_TICKS
