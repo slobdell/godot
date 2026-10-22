@@ -54,7 +54,9 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 **Report (2026-10-22, in progress):** D1 DONE (design note below). D2 coded OFF (`--cpu-defend`, b9f8a347c); its bar is FILED
-below before any arm number; lab 2 leans right (blob 18 -> 13 of 40); full check queued on builder0, then builder2's series.
+below before any arm number; lab 2 leans right (blob 18 -> 13 of 40). **GREEN: acbdef4c5** (builder2 `make native check exited 0`, 3063 passed / 0 failed, 26
+targets, sim-baseline 13/13 unmoved with the switch OFF; perf-judge not run: builder2 is not a judging machine). The series runs on
+that tree (builder2, ~/doctrine-runs/d2-series.sh, raw in ~/doctrine-guard-raw): OFF gate 2601 -> ON 320 -> none OFF/ON.
 
 **D1 the read (DONE).** Tool: `make native tactics-hold-fire` (tests/tactics/hold_fire_probe.gd extends the guard line read-only;
 every direct round, the same weighted by damage a round, and a 2 Hz crew sample, split by posture, posture reason, map half,
@@ -115,6 +117,9 @@ at 6e049da5b; `tests/tactics/hold_fire_pair.py`).**
 - **Equality:** sim-baseline unmoved with the switch OFF.
 - **A pass ships ON** (symmetric AI improvement: his standing rule). One re-tune allowed only on the guard lines (THREAT_M for
   defend), then judged as it stands.
+
+**builder2 hand-off:** when the D2 series ends, message settle (godot-settle-6b) AND the orchestrator "builder2 free" (settle's
+S2 re-read waits behind it, R38.10).
 
 **Pairing base (native, 2026-10-22):** main 1c484a525's `references/scoreboard/guards/1c484a525.fights.jsonl` (on main since
 cc7c7ef1a; 320 fights, builder2): blob 49 % (± 7), turtle 40 % (± 16). Arms pair with `guard.py --pair` against it; main's rolling
