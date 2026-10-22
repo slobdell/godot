@@ -68,8 +68,9 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### REPORT (orders, round 37; updated 2026-10-22 ~05:15 PDT). Every number names its commit, machine, workload, n.
-- **Round 37 outcome, one line each:** artillery fix SHIPPED (main 98153750a, R37.31). O1 latch PASSED its re-filed bar and
-  ships ON on this branch (e94410eb4; its check is the last named check below). O2 PASSED its bar but is HELD (re-deals
+- **Round 37 outcome, one line each:** artillery fix SHIPPED (main 98153750a, R37.31). O1 latch PASSED its re-filed bar, but
+  its ON check (f8bf6aaad, builder0 native, 3049 / 1) FAILED a lab scenario: latch keeps a one-update terrain read (an 'open'
+  pocket in a lane -> coil); default back to centre (733e024e4), latch stays an arm, fix is round 38's. O2 PASSED its bar but is HELD (re-deals
   50 -> 105, source below). O3 FAILED, folded into O7. O4 done (tooling). O5 FAILED (-23 % v -50 %). O6 seam OFF, unjudged.
   O7 group-lay FAILED as filed (stays OFF); at his real click it does what he asked (not judged, shots for him). Stretch
   answered, no code.
@@ -256,7 +257,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   **Judged: PASS** (builder0 native 1ebd7e550, seeds 3821-3832, `references/round37/orders/o1latch-reread-builder0-1ebd7e550/`):
   counter base relays 143, rows differ; deciding relays 143 -> 2 (limit 35.8), shape flips 19 -> 1; probe guards PASS in all
   12 cells (place + twitch); parked re-deals 429 -> 428 (reported). With (b) census and (c) fight passed on c14ec0d80: latch
-  SHIPS ON. Default flipped to `latch` in `element_situation.gd` (every side's halts; `--halt-terrain=centre` is round 36's).
+  SHIPS ON. Default flipped to `latch` (e94410eb4), then **back to centre (733e024e4)**: the ON check (f8bf6aaad, builder0 native,
+  exited 2, 3049 passed / 1 failed; sim-baseline 13 unmoved, and 13 unmoved with HALT_TERRAIN=centre too) failed
+  `test_tactics_scenarios_2::test_a_move_ends_formed_up_on_the_spot_and_stops_issuing`: the squad's centroid crossed an `open`
+  pocket in a lane the update it arrived, latch kept it (coil instead of herringbone, deployed late: 4 orders in the last 10 s).
+  `references/round37/orders/latch-transient-lab/`. Round 38: latch the read the deploy decides on (all-in), or a read held
+  ~2 s; new arm, bar, seeds.
 - **O2 ON TOP OF LATCH (R37.29's thought; filed 2026-10-21 ~23:00 PDT, before any number; runs ONLY if O1-latch passes).**
   Why: O2's judged read (c14ec0d80) passed, but its reported parked re-deals rose 50 -> 105 alongside halt re-lays 187 -> 352
   (O1's flicker). If crews now sit on seats the squad keeps re-laying, the latch should take the extra re-deals away.
