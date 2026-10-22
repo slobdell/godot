@@ -586,6 +586,13 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   brains' paths; no edits) and reports in his terms; if it's staging, cover re-pins it (grant on those 3 test files); if it's
   behaviour, it's a finding for him / round 38, and parade's run moves. Bar K's OFF arm and ON arm start now at 3923ba026 on builder2
   (they read the maps, not those tests).
+  **Parade traced (cover, builder0, a scratch probe beside test_tactics_cpu_opening, seed 3):** NOT staging. With only
+  arenas/parade.json reverted, all 3 brains parade tests pass (3019/7); on K5's parade they fail (3016/10). The CPU's opening waits by
+  the far depot and springs only where his tanks have no cover within 12 m of the kill zone; the run (-44,-8) mirrored at (44,8),
+  ~9 m off that road, gives his column cover exactly there (spots refused "no open ground" 14 -> 68; on K5 none survive, taken 0 v 1).
+  The CPU reacting sensibly, but it kills the depot-bay ambush he is meant to see. **Ruled:** parade's run moves off both depots'
+  approach roads (no barrier within 12 m + margin of either base -> depot line), checked by the 3 brains tests; Bar K's arms finish at
+  3923ba026 and ONLY parade's fights are re-run, both arms on the re-sited tree (pairing is per fight, the other 4 maps unchanged).
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
