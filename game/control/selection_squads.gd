@@ -491,6 +491,61 @@ static func _arc_of(line: PackedVector3Array, p: Vector3) -> float:
 	return best_arc
 
 
+## Round 38 (orders G3; settle's S2 trace, R38.10, crossing 5 click s3866): today's body laid squads 3 and 4 6.3 m apart
+## (ground_anchors moved an unstandable place next to its neighbour); squad 4 squeezed into squad 3's parked halt on main and
+## never arrived under settle's latch. `--place-clear=on`: no two places' footprints overlap (each block's width across the
+## approach by its depth along it, plus GAP_M): taken nearest the click first, a later place whose footprint overlaps an
+## earlier one steps back along the approach PLACE_CLEAR_STEP_M at a time, onto standable ground, up to PLACE_CLEAR_MAX_M.
+static var PLACE_CLEAR := OS.get_cmdline_user_args().has("--place-clear=on") or OS.get_environment("PLACE_CLEAR") == "on"
+const PLACE_CLEAR_STEP_M := 4.0
+const PLACE_CLEAR_MAX_M := 100.0
+## Measurement: places stepped back so, since start.
+static var places_cleared := 0
+
+
+## `standable(point)` -> bool. One place per block, in `anchors`' order (blocks beyond the anchors are ignored). Pure.
+static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, standable: Callable) -> Array[Vector3]:
+	var result: Array[Vector3] = anchors.duplicate()
+	var n := mini(anchors.size(), blocks.size())
+	if n < 2:
+		return result
+	var ahead := TacticsFormation.flat(approach)
+	if ahead == Vector3.ZERO:
+		return result
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	var order: Array = []
+	for i in n:
+		order.append([-(Vector3(result[i].x, 0.0, result[i].z) - flat_click).dot(ahead), i])
+	order.sort()
+	var placed: Array[int] = []
+	for entry: Array in order:
+		var i := int(entry[1])
+		var start := result[i]
+		var back := 0.0
+		while back <= PLACE_CLEAR_MAX_M:
+			var at := start - ahead * back
+			if (back == 0.0 or bool(standable.call(at))) and not _footprint_overlaps(at, i, result, placed, blocks, ahead, across):
+				if back > 0.0:
+					result[i] = at
+					places_cleared += 1
+				break
+			back += PLACE_CLEAR_STEP_M
+		placed.append(i)
+	return result
+
+
+static func _footprint_overlaps(at: Vector3, i: int, places: Array[Vector3], placed: Array[int], blocks: Array, ahead: Vector3,
+		across: Vector3) -> bool:
+	for j: int in placed:
+		var d := Vector3(at.x - places[j].x, 0.0, at.z - places[j].z)
+		var half_w := 0.5 * (float(blocks[i]["width"]) + float(blocks[j]["width"])) + GAP_M * 0.5
+		var half_d := 0.5 * (float(blocks[i].get("depth", 0.0)) + float(blocks[j].get("depth", 0.0))) + GAP_M * 0.5
+		if absf(d.dot(across)) < half_w and absf(d.dot(ahead)) < half_d:
+			return true
+	return false
+
+
 ## G1: a rank's clear width kept inside the strip he clicked (the click's own width along the approach line): a rear rank
 ## on open ground behind a street spread three abreast 130 m wide at his Terminus click, places in other streets again.
 static func _within_click(sides: Array, at_click: Array) -> Array:

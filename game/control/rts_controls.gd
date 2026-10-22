@@ -1212,6 +1212,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					-SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
 					func(p: Vector3, r: float) -> bool: return SlotGround.near_deck(p, r),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+		# Round 38 (G3): no place on another squad's halt (settle's S2 trace, crossing 5 click s3866).
+		if SelectionSquads.PLACE_CLEAR and ground != null and anchors.size() >= squads.size():
+			anchors = SelectionSquads.place_clear(anchors, blocks, click,
+					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
+					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p))
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.

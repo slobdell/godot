@@ -274,3 +274,17 @@ func test_g1_a_column_too_long_for_the_ground_squeezes_its_ranks() -> void:
 		for j in range(i + 1, out.size()):
 			assert_true(out[i].distance_to(out[j]) >= 20.0, "places %d and %d apart (%s)" % [i, j, out])
 	assert_true(out[0].z < out[1].z and out[1].z < out[2].z, "still nearest in front (%s)" % [out])
+
+
+## G3 (settle's S2 trace, R38.10, crossing 5 click s3866: two places 6.3 m apart): the place farther from the click steps
+## back along the approach until its footprint is clear of the nearer one's.
+func test_g3_a_place_on_another_squads_halt_steps_back() -> void:
+	var blocks := [{"center": Vector3(0, 0, 80), "width": 40.0, "depth": 20.0}, {"center": Vector3(5, 0, 90), "width": 40.0, "depth": 20.0}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(5.5, 0, 3.0)]
+	var out := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true)
+	assert_eq(out[0], places[0], "the place nearer the click stays")
+	assert_true(out[1].z - out[0].z >= 20.0 + SelectionSquads.GAP_M * 0.5 - 0.01, "the other steps back clear of it (%s)" % [out])
+	assert_true(absf(out[1].x - 5.5) < 0.01, "straight back along the approach (%s)" % [out])
+	var apart: Array[Vector3] = [Vector3(-30, 0, 0), Vector3(30, 0, 0)]
+	assert_eq(SelectionSquads.place_clear(apart, blocks, Vector3.ZERO, Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true), apart,
+			"places already clear are kept")
