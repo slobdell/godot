@@ -207,6 +207,17 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   re-deals no higher than latch alone's beyond noise ships O2 + latch together. The s3747 trace is read first.
 
 
+- **Bar O7 GROUP_LAY=column (orders, R37.29; filed in stream/orders Status before any judged number; code badfe25c0 OFF, probe
+  corridor metrics 6bff818f3).** Finding at his click (laptop lab, real Terminus navmesh): not a narrow street: the click is ~16 m
+  from a building edge on one side with clear ground to 100 m on the other; today's body put 2 of 4 places beyond that edge (the far
+  streets he drove through); the column centres each rank in its own clear width (spread 95.8 m, all on the open side), nearest
+  squad in front, farthest at the back (lab assertions). Laptop dev read (GDScript, terminus 5 squads at his point, s3790, n 1):
+  places outside the corridor 3 -> 0, metres driven outside it 189 -> 27, crews re-dealt 4 -> 0, worst twitch 19.5 -> 7.0 m.
+  **Judged:** FRESH seeds 3801-3812; the 12 street cells PLUS his click as its own cells (terminus `--probe-click=-29.3,85.8`, 3 and
+  5 squads). **Deciding:** places outside the corridor <= 25 % of base; metres driven outside it <= 50 % of base; crews re-dealt 0.
+  **Guards:** R36.6's per cell plus contacts; yard_open no-change (open-ground rows identical). Paired top-down shots of his click,
+  main v column, looked at, for him. Runs after O5, O1-latch (and O2-on-latch), on a green-checked hash with it in.
+
 - **Bar O2 PARKED_HOLD, FINAL (orders, R37.13; filed in stream/orders 052f30eea Status before any judged number; replaces the
   8dc98b5f4 text above; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and
   shoots from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. **Sizing (seen):** builder0
