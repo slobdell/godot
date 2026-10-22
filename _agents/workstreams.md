@@ -200,6 +200,11 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   arrived-element contacts and contacts per fight-second REPORTED beside it) and the fight read 3773-3784 (the R37.9 addendum's
   deciding and guards; replaces 3731-3742). **Ships only if all three pass.**
 
+- **Bar O1-LATCH settle re-read (orders, R37.37; filed in stream/orders aa562ce64 Status before any number).** The twitch guard becomes
+  PLACE + TWITCH of the run's worst crew, per-cell median <= base + 3 m (sized on the seen seeds: per-cell latch - main -3.6 .. +1.0
+  m). Workload: the no-fight probe only, the 12 cells, FRESH seeds 3821-3832; judge `orders_judge.py o1settle`. The other guards, the
+  census and the fight read stand as passed (R37.37). A pass ships latch ON. Runs after O7, in orders' series (orders-o7-series).
+
 - **Bar O2-ON-LATCH (orders, R37.28; filed in stream/orders 2477c46e7 Status before any number; runs only if O1-latch passes).**
   The fight probe, 9 cells, FRESH seeds 3785-3796 (36 fights an arm), `latch` v `latch + --parked-hold=on`. **Deciding:** O2's line
   (off_idle_s a fight, arm <= 50 % of base AND drop > 1.645 se; parked_returns > 0). **Guards:** O2's kills / losses lines.
