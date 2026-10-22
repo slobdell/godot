@@ -21,6 +21,13 @@ and the scoreboard rows, which the orchestrator finishes in round 36.** Older he
 | **feedback** | `godot-feedback` (6) | Opus | he can't miss the match ending | F1 the end of a match |
 | **native** | `godot-native` (4, CONTINUING its round-37 session) | Opus | nothing alone: rows, twins, guard tooling | N1 round 37's row |
 
+**Round 38 progress (2026-10-22 ~14:55 PDT):** merged on main: native N1 (cc7c7ef1a), manoeuvre M7 v2 OFF + aside tooling (8bfb74e55,
+its main check queued on builder2 behind feedback's). Passed: F3 Tanker repairs under fire (R38.4; feedback's ON hash checking on
+builder2). Failed: S1 v1 (R38.9; S1 v2 re-filed on the deploy leg, fresh seeds 3921-3944, R38.11), S2 one guard short (traced to a
+place laid on a parked tank; one fresh-seed re-read, R38.10). Running: doctrine D2 series (builder2), orders G1 judged series and
+manoeuvre M5 v2 (builder0, R38.8). Queued on builder2 after D2: settle S2 re-read, then S1 v2. Orders G3 (place never on a parked
+halt) built OFF; G2 not ready. His end-of-match pick (page V4dAc2UNofD2553VqKKS5q, `picks/end`): still empty.
+
 **To launch (the lead):** in each NEW folder (`godot-orders`, `godot-doctrine`, `godot-settle`, `godot-manoeuvre`, `godot-feedback`)
 start a CLI (orders and doctrine on Fable, the rest Opus) and paste the kickoff prompt from `_agents/orchestration.md`. Native is NOT
 relaunched: its open session continues (the orchestrator messages it). Main at launch: 1c484a525 + docs, GREEN, ALL JUDGED (builder0).
