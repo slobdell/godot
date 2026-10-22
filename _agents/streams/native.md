@@ -62,7 +62,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - Smoke on builder2 (blob gorge, base tree 9d325e291): 6 of 6 fights identical to the base; the second call printed
     "resuming, 4 fights already read" and ran only the 2 new fights.
   - Not exercised: a real preemption mid-call.
-- **N2:** waiting on pairs; checking settle's `--deploy-fit` against native/ next.
+- **N2 audit (2026-10-22):** settle (8bd480f96: element_plan/element_situation), manoeuvre M7 (b5775051e: element_commander
+  `_member_ways`) and doctrine D2 (not yet written; aimed at element_commander/posture/element_plan) touch nothing native/src
+  reads, so no twin is needed. **M5b (reverse-back) is the one to watch:** if it changes Manoeuvre.choose/behind/simulate, the
+  native mirror (drive_native.cpp `manoeuvre_decide` / `man_choose` / `man_behind` / `man_simulate`, round 33 N5.M; twin
+  test_native_manoeuvre.gd) must follow before its series. Manoeuvre was told (they had thought choose() was a callback). Spec
+  pending their trace (lab/manoeuvre-r38-m5btrace 6d43ce7eb).
 - **N5:** a row per main the round ships.
 
 **Side worktrees to remove at close:** ../godot-native-guard, -score, -k5 (and round 37's: -m5, -unstick, -cp371,
