@@ -86,3 +86,15 @@ A pass ships ON. Symmetric? The CPU never issues a multi-squad click, so this is
 ## 5. Open questions (decided by default; the lead can overrule)
 - Column of WEDGES even in a street where a wedge is wider than the street? Default: no, narrower halts as (c).
 - Attack-move: the front rank at the click, the rest behind (as today's ranks: nobody drives past his point).
+
+## 6. Built (v1, `--group-lay=column`, OFF): what his click reads like (laptop GDScript, lab)
+- The clear width at his click, read across 12 headings: about 16 m to one side (a building edge), 100 m (the scan limit) to the
+  other on almost every heading. His click is not in a narrow street; it stands at the edge of open ground. Today's body put two
+  of its four anchors beyond that 16 m edge, among the streets behind it.
+- `column_lay` centres each rank in its own clear width, so the body shifts onto the open side: every anchor inside the corridor
+  read at its rank (lab assertion), the squad nearest the click in front, the farthest at the back (lab assertion). Spread 95.8 m,
+  on open ground (today 128.8 m, across the edge).
+- A street narrower than one squad lays single file on the approach line (pure lab case); open ground both sides lays nothing
+  (today's body, the yard_open no-change cell).
+- Open for the bar: the route metric (the share of each squad's drive that leaves the click's corridor, R37.29's addition (1)),
+  and the paired shots of his click, main v column (addition (2)).

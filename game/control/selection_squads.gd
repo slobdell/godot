@@ -274,6 +274,73 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 	return moved
 
 
+## Round 37 (orders, R37.29; the lead's playtest 2026-10-21, Terminus: "the target waypoints for each squad was all over at
+## far away places ... A bunch of units drove through streets ... I immediately lost control of the army"; design note
+## references/round37/orders/group-click-column-note.md, approved). `--group-lay=column`: one click for several squads lays a
+## COLUMN OF WEDGES along the approach, as wide as the ground there, instead of the open-ground body (`ranks`): the squad
+## farthest along the approach (nearest the click) in front, the farthest back last; each rank as many squads abreast as its
+## own clear width holds (at most MAX_ABREAST and MAX_FRONTAGE_M), centred in that width, re-read at the rank's own point so
+## the column follows the street; narrower than a squad, single file on the approach line. Open ground (the scan reaches
+## GROUP_SCAN_M on both sides at the click) returns [] and today's body stands. Crossing squads swap places whole (no crew
+## re-deal). OFF until its bar passes.
+static var GROUP_LAY := OS.get_cmdline_user_args().has("--group-lay=column") or OS.get_environment("GROUP_LAY") == "column"
+## How far each side the corridor is read for a group click (wider than the gate's 60 m, so a wide street is not "open").
+const GROUP_SCAN_M := 100.0
+## Measurement: group clicks laid as a column (not open ground), since start.
+static var columns_laid := 0
+
+
+## `width_at(point, across)` -> [left, right] clear metres (RtsControls.gate_width on the navmesh, GROUP_SCAN_M); `approach`
+## the way the body comes in; `clamp(point)` -> point. One anchor per block in `blocks`' order, or [] on open ground. Pure.
+static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_at: Callable, clamp: Callable) -> Array[Vector3]:
+	var result: Array[Vector3] = []
+	if blocks.size() < 2:
+		return result
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	var ahead := Vector3(approach.x, 0.0, approach.z).normalized()
+	if ahead == Vector3.ZERO:
+		ahead = Vector3.FORWARD
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var at_click: Array = width_at.call(flat_click, across)
+	if float(at_click[0]) >= GROUP_SCAN_M - 0.01 and float(at_click[1]) >= GROUP_SCAN_M - 0.01:
+		return result  # open ground: today's body
+	var widest := 0.0
+	var deepest := 0.0
+	for block: Dictionary in blocks:
+		widest = maxf(widest, float(block["width"]))
+		deepest = maxf(deepest, float(block.get("halt_depth", block.get("depth", 0.0))))
+	# Front to back: farthest along the approach (nearest the click) first.
+	var by_along: Array = []
+	for i in blocks.size():
+		var c: Vector3 = blocks[i]["center"]
+		by_along.append([-Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(ahead), i])
+	by_along.sort()
+	result.resize(blocks.size())
+	var behind := 0.0
+	var start := 0
+	while start < by_along.size():
+		var point := flat_click - ahead * behind
+		var sides: Array = at_click if start == 0 else width_at.call(point, across)
+		var clear := minf(float(sides[0]) + float(sides[1]), MAX_FRONTAGE_M)
+		var single := clear < widest
+		var abreast := 1 if single else mini(MAX_ABREAST, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
+		abreast = mini(abreast, by_along.size() - start)
+		var centre := point if single else point + across * ((float(sides[1]) - float(sides[0])) * 0.5)
+		var rank_members: Array = []
+		for n in range(start, start + abreast):
+			var i := int(by_along[n][1])
+			var c: Vector3 = blocks[i]["center"]
+			rank_members.append([Vector3(c.x - flat_click.x, 0.0, c.z - flat_click.z).dot(across), i])
+		rank_members.sort()
+		for k in rank_members.size():
+			var aside := (float(k) - (abreast - 1) * 0.5) * (widest + GAP_M)
+			result[int(rank_members[k][1])] = clamp.call(centre + across * aside)
+		start += abreast
+		behind += deepest + GAP_M
+	columns_laid += 1
+	return result
+
+
 ## Crossing pairs between two squads' vehicle drives (each vehicle straight to its squad's place).
 static func _pair_crosses(units_a: Array, at_a: Vector3, units_b: Array, at_b: Vector3, starts: Dictionary) -> int:
 	var count := 0

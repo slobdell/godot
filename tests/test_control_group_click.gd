@@ -25,6 +25,7 @@ var _lab: TacticsLab
 
 
 func teardown() -> void:
+	SelectionSquads.GROUP_LAY = OS.get_cmdline_user_args().has("--group-lay=column")
 	if _lab != null:
 		_lab.dispose()
 	_lab = null
@@ -82,3 +83,78 @@ func test_his_terminus_click_today_spreads_his_squads_into_other_streets() -> vo
 	# The reproduction (today's behaviour, the bug): the squads' anchors land ~130 m end to end, as in his recording.
 	assert_true(spread > 100.0, "today: his one click spreads the squads over %.1f m (recording: ~130 m)" % spread)
 	assert_true(outside >= 2, "today: %d anchors stand outside the corridor at his click (the far streets he saw)" % outside)
+
+
+## His lab, built once: the lab, a ground tank, the blocks (squads then the loose Lancers) and the approach.
+func _his_click() -> Dictionary:
+	_lab = TacticsLab.create(self, 44742, "terminus")
+	var ground: Tank = null
+	for squad: String in SQUADS:
+		for m: Array in SQUADS[squad]:
+			var t := _lab.unit(Match.Team.GREEN, String(m[0]), m[2], 0.0, String(m[1]))
+			ground = t if ground == null else ground
+	for m: Array in LOOSE:
+		_lab.unit(Match.Team.GREEN, String(m[0]), m[2], 0.0, String(m[1]))
+	await _lab.start()
+	var blocks: Array = []
+	for squad: String in SQUADS:
+		blocks.append(_block(SQUADS[squad], SelectionSquads.width("wedge", 5)))
+	blocks.append(_block(LOOSE, SelectionSquads.width("auto", LOOSE.size())))
+	var drive := SelectionSquads.drive_on(ground)
+	var crosses := SelectionSquads.crosses_on(ground)
+	return {"blocks": blocks, "drive": drive, "crosses": crosses,
+			"approach": SelectionSquads.approach_of(blocks, CLICK, Match.team_frame(Match.Team.GREEN)["forward"]),
+			"width_at": func(p: Vector3, across: Vector3) -> Array:
+				return RtsControls.gate_width(p, across, drive, crosses, SelectionSquads.GROUP_SCAN_M)}
+
+
+## R37.29, the column of wedges on his click: every place inside the corridor read at its own rank, and the squad nearest
+## the click in front, the farthest at the back (the orchestrator's order check).
+func test_his_click_as_a_column_stays_in_the_corridor_nearest_squad_in_front() -> void:
+	var f := await _his_click()
+	var blocks: Array = f["blocks"]
+	var ahead: Vector3 = f["approach"]
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var anchors := SelectionSquads.column_lay(blocks, CLICK, ahead, f["width_at"], func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+	assert_eq(anchors.size(), blocks.size(), "his street is not open ground: a column is laid")
+	var spread := 0.0
+	for i in anchors.size():
+		for j in range(i + 1, anchors.size()):
+			spread = maxf(spread, Vector2(anchors[i].x - anchors[j].x, anchors[i].z - anchors[j].z).length())
+		# Inside the corridor read at the anchor's own rank point (on the approach line through the click).
+		var point := CLICK - ahead * (CLICK - anchors[i]).dot(ahead)
+		var sides: Array = (f["width_at"] as Callable).call(point, across)
+		var aside := (anchors[i] - point).dot(across)
+		print("GROUP_CLICK column anchor %d (%.1f, %.1f) back %.1f m, aside %.1f m in [-%.0f, %.0f]" % [i, anchors[i].x, anchors[i].z,
+				(CLICK - anchors[i]).dot(ahead), aside, float(sides[0]), float(sides[1])])
+		assert_true(aside >= -float(sides[0]) - 0.5 and aside <= float(sides[1]) + 0.5, "anchor %d stands inside its corridor" % i)
+	print("GROUP_CLICK column: spread %.1f m" % spread)
+	# The order check: front to back by how far along the approach each block already is.
+	var along := []
+	for i in blocks.size():
+		along.append([((blocks[i]["center"] as Vector3) - CLICK).dot(ahead), i])
+	along.sort()
+	var nearest := int(along[along.size() - 1][1])
+	var farthest := int(along[0][1])
+	var back_of := func(i: int) -> float: return (CLICK - anchors[i]).dot(ahead)
+	for i in blocks.size():
+		assert_true(float(back_of.call(nearest)) <= float(back_of.call(i)) + 0.5, "the squad nearest the click is in front (v %d)" % i)
+		assert_true(float(back_of.call(farthest)) >= float(back_of.call(i)) - 0.5, "the farthest squad is at the back (v %d)" % i)
+
+
+## Open ground (the scan reaches GROUP_SCAN_M both sides): no column, today's body stands (the yard_open no-change cell).
+func test_open_ground_lays_no_column() -> void:
+	var open := func(_p: Vector3, _across: Vector3) -> Array: return [SelectionSquads.GROUP_SCAN_M, SelectionSquads.GROUP_SCAN_M]
+	var blocks := [{"center": Vector3(0, 0, 60), "width": 57.0, "depth": 30.0}, {"center": Vector3(30, 0, 60), "width": 57.0, "depth": 30.0}]
+	assert_eq(SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), open, func(p: Vector3) -> Vector3: return p).size(), 0,
+			"open ground: [] (the caller keeps today's ranks)")
+
+
+## A street narrower than one squad: single file on the approach line, front to back.
+func test_a_narrow_street_is_single_file() -> void:
+	var narrow := func(_p: Vector3, _across: Vector3) -> Array: return [10.0, 10.0]
+	var blocks := [{"center": Vector3(0, 0, 60), "width": 57.0, "depth": 30.0}, {"center": Vector3(0, 0, 100), "width": 57.0, "depth": 30.0}]
+	var out := SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), narrow, func(p: Vector3) -> Vector3: return p)
+	assert_true(absf(out[0].x) < 0.01 and absf(out[1].x) < 0.01, "both on the approach line (%s)" % [out])
+	assert_true(out[0].z < out[1].z, "the nearer squad in front (%s)" % [out])
+
