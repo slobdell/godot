@@ -159,6 +159,27 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   seeds 3773-3784 (36 fights an arm); deciding and guards as the O1 addendum. This replaces the anchor fight read (3731-3742),
   which is not run.
   Ships ON (default "latch") only when (a), (b) and (c) all pass.
+- **GROUP-LAY=COLUMN (R37.29; filed 2026-10-22 ~00:30 PDT, before any judged number; code badfe25c0 + probe 6bff818f3, OFF).**
+  What he would see: select all, click one point, and his squads line up one behind the other along the way they came, as wide
+  as the street there, the nearest squad in front, each with its own vehicles; on open ground they spread as today. Design:
+  `references/round37/orders/group-click-column-note.md` (approved). Lab `test_control_group_click` (his Terminus click:
+  today spread 128.8 m with 2 of 4 anchors outside the corridor; column all inside, nearest squad in front, farthest at the back).
+  **Workload:** orders probe, arms `main:` v `column:--group-lay=column`, FRESH seeds 3801-3812 (n 12 a cell), builder0, on a
+  green-checked hash, cells: the 12 street cells (locks / crossing / terminus x 3 / 5 squads x click / route) PLUS his click as
+  its own cells, `terminus --probe-click=-29.3,85.8` x 3 / 5 squads x click (laptop dev read s3790, 5 squads: anchors outside
+  3 -> 0, metres outside 189 -> 27, re-dealt 4 -> 0). (The probe's own clicks often read as open ground, where the column does
+  not engage and the rows must be identical.)
+  **Counter:** `columns_laid` > 0 and the his-click rows differ.
+  **Deciding (both, summed over all cells):** (1) squads' places outside the click's corridor (`anchor_outside`), arm <= 25 %
+  of base; (2) "drove through other streets": driven metres outside the click's corridor (`route_out_m`), arm <= 50 % of base;
+  and crews re-dealt across squads (`redealt`) arm 0.
+  **Guards (R36.6's, per cell, medians):** all-in <= base x 1.2 + 3 s, no more never-in, twitch worst <= base + 3 m, end
+  foreign min >= base - 3 m, crossed no higher; friendly contacts (probe) <= base x 1.1 + 5. **No-change cell:** yard_open
+  (3 / 5 squads x click, the same seeds): rows identical to main's.
+  **Shots, for him (R37.29 (2)):** paired top-down shots of his click (terminus, -29.3, 85.8, 5 squads), main v column, at the
+  click, at arrival and 5 s after, LOOKED at; the recording carries no camera pose, so top-down over the click. He judges "I kept
+  control".
+  A pass ships ON (his control only: the CPU issues no multi-squad click).
 - **O2 ON TOP OF LATCH (R37.29's thought; filed 2026-10-21 ~23:00 PDT, before any number; runs ONLY if O1-latch passes).**
   Why: O2's judged read (c14ec0d80) passed, but its reported parked re-deals rose 50 -> 105 alongside halt re-lays 187 -> 352
   (O1's flicker). If crews now sit on seats the squad keeps re-laying, the latch should take the extra re-deals away.
