@@ -159,6 +159,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   seeds 3773-3784 (36 fights an arm); deciding and guards as the O1 addendum. This replaces the anchor fight read (3731-3742),
   which is not run.
   Ships ON (default "latch") only when (a), (b) and (c) all pass.
+- **O2 ON TOP OF LATCH (R37.29's thought; filed 2026-10-21 ~23:00 PDT, before any number; runs ONLY if O1-latch passes).**
+  Why: O2's judged read (c14ec0d80) passed, but its reported parked re-deals rose 50 -> 105 alongside halt re-lays 187 -> 352
+  (O1's flicker). If crews now sit on seats the squad keeps re-laying, the latch should take the extra re-deals away.
+  **Read:** the fight probe, arms `latch:--probe-fight=on,--probe-budget=1500,--halt-terrain=latch` v
+  `latchparked:--probe-fight=on,--probe-budget=1500,--halt-terrain=latch,--parked-hold=on`, the 9 cells (locks / crossing /
+  terminus x 3 squads x click), FRESH seeds 3785-3796 (36 fights an arm), builder0, on a green-checked hash.
+  **Deciding: O2's line**: off_idle_s a fight, arm <= 50 % of base, drop > 1.645 se (unpaired); counter parked_returns > 0.
+  **Guards:** his kills, his losses and the CPU's losses a fight, each within base +/- 1.645 se (O2's). **Reported, judged by
+  the orchestrator, not by a line:** parked re-deals arm v latch alone (and v O2's 105 / base 50), halt re-lays, reseats.
+  A pass + re-deals no higher than latch alone's beyond noise -> O2 + latch ship together (both ON for every side's halts;
+  parked-hold for his crews only).
 - **O2 PARKED_HOLD, FINAL BAR (orders, R37.13; filed 2026-10-21 before any judged number; supersedes the 8dc98b5f4
   text; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and shoots
   from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. The change
