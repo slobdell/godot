@@ -50,3 +50,24 @@ Nothing (the shots go to him at the close).
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### REPORT (orders, round 38; updated 2026-10-22 ~09:30 PDT)
+- **Start:** stream/orders = main 5b20bfd62 (round 38 docs; HANDOFF: main 1c484a525 GREEN on builder0, not re-run).
+- **Plan (in order):** G1 (a) open ground, (b) route legs, (c) whole squads -> lab -> dev read (builder0 light) -> bar filed
+  here -> full check on the named hash -> judged probe (fresh seeds) -> shots of his click -> ship ON if it passes. Then G2
+  (his shift-click route, 2-3 clicks through streets), then the stretch (bridge-mouth lay).
+- **G1 built (942533413, `--group-lay=column`, OFF):**
+  (a) `SelectionSquads.column_lay(..., today)`: today's body (ranks + fit_inside, what the caller lays without the column)
+  is KEPT when every one of its places stands inside the clear width read at its own rank (`on_clear_ground`: the point on
+  the approach line level with the place, GROUP_SCAN_M a side, 0.5 m slack). Decision: the place's centre, not its wings,
+  because that is what the deciding line counts and the halt shapes (lanes/dense) already narrow a squad at a wall.
+  (b) a shifted leg (`queue`) for several squads lays the column too, each squad's block centred where its previous leg
+  ends (`_leg_starts`, round 34's route-deal starts), approach from there; round 34/35's gate_order / uncross_paths are
+  skipped on a column leg (the column already deals front to back by where each squad comes from). A gate
+  (`_relay_previous_waypoint`) whose places stand off the clear ground is laid as a column too.
+  (c) whole squads: v1's `untangle_whole` kept; on a shifted leg the vehicles' drives start at their squad's leg start.
+  Probe: `route_left_m` (metres a crew drives outside the corridor AFTER it has once stood inside it: "left the street";
+  v1's `route_out_m` also counts the drive in from a 200 m-wide start, which no lay can change) and `bodies_kept`.
+  Lab `test_control_group_click` 7/0 (laptop GDScript, 942533413): +3 cases (body on clear ground kept although walls
+  are inside the scan; a place past a wall -> column inside the walls; a rear place read at its own rank).
+

@@ -319,7 +319,7 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	var deepest := 0.0
 	for block: Dictionary in blocks:
 		widest = maxf(widest, float(block["width"]))
-		deepest = maxf(deepest, float(block.get("halt_depth", block.get("depth", 0.0))))
+		deepest = maxf(deepest, column_depth(block))
 	# Front to back: farthest along the approach (nearest the click) first.
 	var by_along: Array = []
 	for i in blocks.size():
@@ -331,12 +331,16 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	var start := 0
 	while start < by_along.size():
 		var point := flat_click - ahead * behind
-		var sides: Array = at_click if start == 0 else width_at.call(point, across)
+		var sides: Array = at_click if start == 0 else _within_click(width_at.call(point, across), at_click)
 		var clear := minf(float(sides[0]) + float(sides[1]), MAX_FRONTAGE_M)
 		var single := clear < widest
 		var abreast := 1 if single else mini(MAX_ABREAST, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
 		abreast = mini(abreast, by_along.size() - start)
-		var centre := point if single else point + across * ((float(sides[1]) - float(sides[0])) * 0.5)
+		# G1: a rank slides off the approach line only as far as keeps it on the clear ground (v1 centred it in the clear
+		# width: 100 m of open bank one side pushed crossing's ranks 44 m aside into the arena's edge, where they piled up).
+		var frontage := abreast * widest + (abreast - 1) * GAP_M
+		var shift := 0.0 if single else clampf(0.0, -float(sides[0]) + frontage * 0.5, float(sides[1]) - frontage * 0.5)
+		var centre := point + across * shift
 		var rank_members: Array = []
 		for n in range(start, start + abreast):
 			var i := int(by_along[n][1])
@@ -352,10 +356,36 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	return result
 
 
+## G1: a rank's clear width kept inside the strip he clicked (the click's own width along the approach line): a rear rank
+## on open ground behind a street spread three abreast 130 m wide at his Terminus click, places in other streets again.
+static func _within_click(sides: Array, at_click: Array) -> Array:
+	return [minf(float(sides[0]), float(at_click[0])), minf(float(sides[1]), float(at_click[1]))]
+
+
+## G1: `crosses` that also stops at the arena's edge (Orders.clamp_to_arena would move the point): the column's width read
+## must not count ground a place would be clamped off.
+static func crosses_or_edge(crosses: Callable) -> Callable:
+	return func(from: Vector3, to: Vector3) -> bool:
+		var flat := Vector3(to.x, 0.0, to.z)
+		return Orders.clamp_to_arena(flat).distance_to(flat) > 0.5 or bool(crosses.call(from, to))
+
+
+## G1: how deep a block stands in a column rank: its formation depth, the AUTO all-round halt, and the halt it is priced
+## to deploy in on the ground he clicked (`halt`, O3; a herringbone in a lane runs 30-45 m deep, and v1's ranks stepped by
+## the formation depth: crossing 5 click stacked five herringbones ~20 m apart, contacts 432 -> 1416, dev read 942533413).
+static func column_depth(block: Dictionary) -> float:
+	var deepest := maxf(float(block.get("depth", 0.0)), float(block.get("halt_depth", 0.0)))
+	if block.has("halt") and String(block["halt"]) != "":
+		var pitch: Vector2 = block.get("pitch_v", Vector2(SPACING_M, SPACING_M))
+		deepest = maxf(deepest, halt_footprint(String(block["halt"]), int(block.get("count", 1)), pitch.x).y)
+	return deepest
+
+
 ## G1: whether every place in `places` stands inside the clear width read across `ahead` at its own rank (the point on
-## the approach line through `click` level with it; behind the click only, a place past the click reads at the click),
-## within PLACE_SLACK_M. `at_click` = width_at's read at the click (reused). Reads are shared between places of one rank.
-const PLACE_SLACK_M := 0.5
+## the approach line through `click` level with it; behind the click only, a place past the click reads at the click) and
+## inside the click's own width (the strip he clicked),
+## within PLACE_SLACK_M (the scan's step). `at_click` = width_at's read at the click (reused). Reads are shared between places of one rank.
+const PLACE_SLACK_M := 2.0  # the width scan steps 2 m (RtsControls.GATE_STEP_M)
 static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vector3, width_at: Callable, at_click: Array) -> bool:
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
 	var reads := {0: at_click}
@@ -363,7 +393,7 @@ static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vecto
 		var offset := Vector3(at.x - click.x, 0.0, at.z - click.z)
 		var back := maxi(0, roundi(-offset.dot(ahead)))
 		if not reads.has(back):
-			reads[back] = width_at.call(click - ahead * float(back), across)
+			reads[back] = _within_click(width_at.call(click - ahead * float(back), across), at_click)
 		var sides: Array = reads[back]
 		var aside := offset.dot(across)
 		if aside < -float(sides[0]) - PLACE_SLACK_M or aside > float(sides[1]) + PLACE_SLACK_M:

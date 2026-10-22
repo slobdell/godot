@@ -1135,18 +1135,19 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					moved["center"] = queue_starts[i]
 					lay_blocks.append(moved)
 			var drive_g := SelectionSquads.drive_on(ground)
-			var crosses_g := SelectionSquads.crosses_on(ground)
+			var crosses_g := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
 			var laid := SelectionSquads.column_lay(lay_blocks, click, SelectionSquads.approach_of(lay_blocks, click, Match.team_frame(team)["forward"]),
 					func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors)
 			column = not laid.is_empty()
 			if column:
 				anchors = laid
-			else:
-				lay_blocks = blocks
 		# Round 34 (R34.12): no rank stands behind its own squad (planner's O5: the back rank drove away from his click).
-		anchors = SelectionSquads.never_behind(anchors, lay_blocks, click,
-				SelectionSquads.approach_of(lay_blocks, click, Match.team_frame(team)["forward"]))  # the approach, not his drawn facing
+		# G1: not in a column, whose ranks stack behind the click on purpose (his "stacks of wedges"); pulled forward to
+		# their own squads' level they would stand on the rank in front.
+		if not column:
+			anchors = SelectionSquads.never_behind(anchors, blocks, click,
+					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]))  # the approach, not his drawn facing
 		# Round 34 (C34.11, O1, his scouts sent over the bridge): every anchor where the click reaches it by ground, read on
 		# the navmesh of one of the ordered vehicles.
 		if ground != null:
@@ -1623,6 +1624,8 @@ const GATE_DETOUR := 1.5
 static var GATE_DEAL := not OS.get_cmdline_user_args().has("--gate-deal=off") and OS.get_environment("GATE_DEAL") != "off"
 ## Measurement: gates laid (a re-lay of a queued waypoint for several squads).
 static var gates_laid := 0
+## Measurement (G1): gates laid as a column (some place of the gate stood off the clear ground).
+static var gates_laid_as_columns := 0
 
 
 ## The clear ground across the approach at `click`: [left, right] metres (left = -across) reachable from the click by ground
@@ -1774,15 +1777,20 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	var crosses: Callable = SelectionSquads.crosses_on(ground) if ground != null else func(_a: Vector3, _b: Vector3) -> bool: return false
 	var gate := gate_anchors(blocks, prev, approach, drive, crosses, func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
 	# Round 38 (G1): a gate whose places stand off the clear ground (its rear ranks are read at the gate's own width) is laid
-	# as the column a final click is, each rank centred in the clear width at its own point.
+	# as the column a final click is, each rank on the clear ground at its own point.
+	var as_column := false
 	if SelectionSquads.GROUP_LAY and ground != null:
+		var crosses_e := SelectionSquads.crosses_or_edge(crosses)
 		var laid := SelectionSquads.column_lay(blocks, prev, approach,
-				func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive, crosses, SelectionSquads.GROUP_SCAN_M),
+				func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive, crosses_e, SelectionSquads.GROUP_SCAN_M),
 				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), gate)
 		if not laid.is_empty():
 			gate = laid
+			as_column = true
+			gates_laid_as_columns += 1
 	# Round 35 (D5): and no gate place behind where the squad's previous leg ends (R34.12b's rule, on the way through).
-	if GATE_DEAL:
+	# G1: not a column's (its ranks stack behind on purpose).
+	if GATE_DEAL and not as_column:
 		gate = SelectionSquads.never_behind(gate, blocks, prev, approach)
 	for i in held_elements.size():
 		var element: Element = held_elements[i]

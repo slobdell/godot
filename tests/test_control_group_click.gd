@@ -105,7 +105,7 @@ func _his_click() -> Dictionary:
 	return {"blocks": blocks, "drive": drive, "crosses": crosses,
 			"approach": SelectionSquads.approach_of(blocks, CLICK, Match.team_frame(Match.Team.GREEN)["forward"]),
 			"width_at": func(p: Vector3, across: Vector3) -> Array:
-				return RtsControls.gate_width(p, across, drive, crosses, SelectionSquads.GROUP_SCAN_M)}
+				return RtsControls.gate_width(p, across, drive, SelectionSquads.crosses_or_edge(crosses), SelectionSquads.GROUP_SCAN_M)}
 
 
 ## R37.29, the column of wedges on his click: every place inside the corridor read at its own rank, and the squad nearest
@@ -131,6 +131,8 @@ func test_his_click_as_a_column_stays_in_the_corridor_nearest_squad_in_front() -
 		print("GROUP_CLICK column anchor %d (%.1f, %.1f) back %.1f m, aside %.1f m in [-%.0f, %.0f]" % [i, anchors[i].x, anchors[i].z,
 				(CLICK - anchors[i]).dot(ahead), aside, float(sides[0]), float(sides[1])])
 		assert_true(aside >= -float(sides[0]) - 0.5 and aside <= float(sides[1]) + 0.5, "anchor %d stands inside its corridor" % i)
+		# G1: no place laid past the arena's edge (the clamp would pile it onto its neighbour).
+		assert_true(Orders.clamp_to_arena(anchors[i]).distance_to(anchors[i]) < 0.01, "anchor %d is inside the arena unclamped" % i)
 	print("GROUP_CLICK column: spread %.1f m" % spread)
 	# The order check: front to back by how far along the approach each block already is.
 	var along := []
@@ -200,3 +202,14 @@ func test_g1_a_rear_place_is_read_at_its_own_rank() -> void:
 	assert_eq(out.size(), 2, "a column (%s)" % [out])
 	assert_true(SelectionSquads.on_clear_ground(out, Vector3.ZERO, Vector3(0, 0, -1), street_behind, street_behind.call(Vector3.ZERO, Vector3.RIGHT)),
 			"every place on the clear ground at its own rank (%s)" % [out])
+
+
+## G1 (dev read 942533413: crossing 5 click stacked five herringbones ~20 m apart): a column rank is as deep as the halt
+## the squad is priced to deploy in, not its formation.
+func test_g1_a_rank_is_as_deep_as_the_halt() -> void:
+	for shape: String in ["herringbone", "coil", "wedge", "column"]:
+		print("GROUP_CLICK halt footprint %s x5 at 14 m: %s" % [shape, SelectionSquads.halt_footprint(shape, 5, 14.0)])
+	var block := {"center": Vector3.ZERO, "width": 50.0, "depth": 20.0, "count": 5, "halt": "herringbone", "pitch_v": Vector2(14, 14)}
+	assert_true(SelectionSquads.column_depth(block) >= SelectionSquads.halt_footprint("herringbone", 5, 14.0).y - 0.01,
+			"the herringbone's depth (%.1f)" % SelectionSquads.column_depth(block))
+	assert_true(SelectionSquads.column_depth(block) > 20.0, "deeper than the formation's 20 m")
