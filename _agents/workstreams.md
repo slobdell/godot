@@ -308,6 +308,10 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   than a rank. New bar on fresh seeds, filed before numbers, with the same guards. His-click twitch is NOT excused: v3 passes it on its
   own, or it waits for settle's latch to ship and is re-read on top of it (then that is the bar's base). G3 (`--place-clear`) after v3.
   orders' series ended 2026-10-22 ~15:35: builder0's light lane (J <= 4) is free beside M5 v2.
+- **R38.13 (2026-10-22) main 400bada9a GREEN on builder2** (covers manoeuvre's 8bfb74e55 merge + docs): `make native check exited 0`,
+  3055 passed / 0 failed, 23 passed + 4 NOT JUDGED, all load-only (builder2 load 48-66 on 32 CPUs): perf-judge (not a judging machine),
+  ai-scenarios scenario_perf (loaded, ref 5.05x), quiet-window watch, web-smoke first-sound bound. sim-baseline 13/13 unmoved. Not yet
+  judged for perf on builder0 (R38.8 keeps full checks off it). Feedback's merge e1f558d83 checks next on builder2.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
