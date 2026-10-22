@@ -470,6 +470,10 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   any motion tax back: consistent with R1-R3's near-null arms. **Round-38 candidate (the lead's):** a CPU defender that stops to
   fire (doctrine in brains' paths), judged on the same guard lines; the rules stay as switches to re-read on top of it.
   Tool: `make rules-guard-motion` (`tests/rules/guard_motion_probe.gd`).
+- **R37.27 (2026-10-21) PRIORITY: his artillery ignored his moves (his playtest).** Recording `build/recordings/2026-10-21T21-43-57-
+  archipelago.jsonl`: Green_Guns_5 and Green_Eyes_4 (law_artillery) got element task moves ("moving as ordered") at 81-184 s yet sat
+  still with order '' and phase arrived; Eyes_4 drove once (arrived 87 s) then never again. Orders traces it first (light lane),
+  reports what he saw and why, then a lab case and a fix behind its own bar; it outranks O3/O5's series for builder0 time.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the

@@ -4294,3 +4294,12 @@ Nobody was watching that flank!"). He approved six (the brief capped "≤ 4 new 
    locks, sumps, gorge, parade (cover's K5 plan b, lanes kept); taken out again if the maps feel cluttered when he plays.
 3. **A nearly dead parked crew pulls back, then returns to its spot** ("Pull back and return"): orders' O2 keeps RETREAT-then-return.
 4. **Parked scouts keep the circling turn-in** ("Leave the circling"): M6 stays parked; O2's drive-back returns them after the fight.
+
+## Round 37: his playtest note, mid-round (2026-10-21 ~21:50 PDT, in chat, verbatim)
+
+"ok I'm playing a game, and you can look at the recording. My last 2 surviving units are artillery vehicles. By the end, I was
+directing them to move to target locations, and they did not move (I suppose I'm playing the game and you can collect feedback for
+future rounds)". Recording `build/recordings/2026-10-21T21-43-57-archipelago.jsonl` (archipelago, seed 44214, Law v Gangs). Read
+(orchestrator): his two Gas Rocket Trucks (Green_Guns_5, Green_Eyes_4) received element task moves at 81-184 s ("moving as ordered")
+but stayed at their spots with no order and phase "arrived"; the match ended on control at 195.4 s (Rust), so later clicks fell after
+the end. Sent to orders as a priority trace (R37.27).
