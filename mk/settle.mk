@@ -73,7 +73,7 @@ settle-fight-topup: native-for-check import ## Round 38 (settle): the S1/S2 figh
 # for main and latch -> build/settle-rr/ (judged on the laptop with the first read's fight/ merged: settle.md Status).
 SETTLE_RR_SEEDS ?= $(shell seq 3903 3914)
 SETTLE_RR_CENSUS_SEEDS ?= 3903 3904 3905
-SETTLE_RR_JOBS ?= 4
+SETTLE_RR_JOBS ?= 14
 SETTLE_RR_ARMS ?= main:--deploy-trace latch:--deploy-latch=on,--deploy-trace
 SETTLE_RR := $(BUILD_DIR)/settle-rr
 .PHONY: settle-s2-reread
@@ -91,3 +91,24 @@ settle-s2-reread: native-for-check import ## Round 38 (settle, R38.10): S2's re-
 	@for arm in $(SETTLE_RR_ARMS); do name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
 		$(MAKE) --no-print-directory traffic-census TRAFFIC_JOBS=$(SETTLE_RR_JOBS) TRAFFIC_CENSUS_SEEDS="$(SETTLE_RR_CENSUS_SEEDS)" TRAFFIC_FLAGS="$$flags" > $(SETTLE_RR)/census-$$name.out 2>&1 || true; \
 		cp $(BUILD_DIR)/traffic-census.jsonl $(SETTLE_RR)/census-$$name.jsonl || true; done
+
+# R38.11: S1 v2 (deciding = the deploy leg), on seeds never read for S1: the no-fight probe 12 cells x SETTLE_V2_SEEDS, the
+# fight probe 3-squad (budget 1500) and 5-squad (budget 3000) cells x SETTLE_V2_FIGHT_SEEDS, main v fit -> build/settle-s1v2/
+SETTLE_V2_SEEDS ?= $(shell seq 3921 3932)
+SETTLE_V2_FIGHT_SEEDS ?= $(shell seq 3933 3944)
+SETTLE_V2_JOBS ?= 14
+SETTLE_V2_ARMS ?= main:--deploy-trace fit:--deploy-fit=on,--deploy-trace
+SETTLE_V2 := $(BUILD_DIR)/settle-s1v2
+.PHONY: settle-s1v2
+settle-s1v2: native-for-check import ## Round 38 (settle, R38.11): S1 v2's series (main v fit) -> build/settle-s1v2/verdict.txt
+	@rm -rf $(SETTLE_V2) && mkdir -p $(SETTLE_V2)
+	@echo ">> settle-s1v2 on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | jobs $(SETTLE_V2_JOBS)" | tee $(SETTLE_V2)/header.txt
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ARMS="$(SETTLE_V2_ARMS)" ORDERS_PROBE_SEEDS="$(SETTLE_V2_SEEDS)" \
+		ORDERS_PROBE_JOBS=$(SETTLE_V2_JOBS) ORDERS_PROBE_DIR=$(SETTLE_V2)/probe > $(SETTLE_V2)/probe.out 2>&1 || true
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ROUTES=click ORDERS_PROBE_SQUADS=3 ORDERS_PROBE_JOBS=$(SETTLE_V2_JOBS) \
+		ORDERS_PROBE_ARMS="$(foreach a,$(SETTLE_V2_ARMS),$(a),--probe-fight=on,--probe-budget=1500)" \
+		ORDERS_PROBE_SEEDS="$(SETTLE_V2_FIGHT_SEEDS)" ORDERS_PROBE_DIR=$(SETTLE_V2)/fight3 > $(SETTLE_V2)/fight3.out 2>&1 || true
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ROUTES=click ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_JOBS=$(SETTLE_V2_JOBS) \
+		ORDERS_PROBE_ARMS="$(foreach a,$(SETTLE_V2_ARMS),$(a),--probe-fight=on,--probe-budget=3000)" \
+		ORDERS_PROBE_SEEDS="$(SETTLE_V2_FIGHT_SEEDS)" ORDERS_PROBE_DIR=$(SETTLE_V2)/fight5 > $(SETTLE_V2)/fight5.out 2>&1 || true
+	@cd $(SETTLE_V2) && $(PYTHON) $(CURDIR)/tests/settle/settle_judge.py s1v2 probe fight3 fight5 main fit | tee verdict.txt || true

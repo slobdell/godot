@@ -212,6 +212,19 @@ seeds AND latch <= main + 1 pooled over both reads (s3866 stays counted). Every 
 repeats, S2 fails until orders' lay stops placing spots on parked tanks. `make native settle-s2-reread` (mk/settle.mk), queued
 on builder2 behind doctrine's D2 series (builder0 full: feedback's check, orders' G1, manoeuvre's jam census).
 
+### Bar S1 v2 DEPLOY_FIT (R38.11; filed 2026-10-22 before any number on its seeds; code = ac36add58's, unchanged)
+What he would see: when a squad stops, no tank is sent across or out of its squad to reach its seat. **Why a v2:** the line was
+chosen after seeing e42ff30eb's rows (the deploy leg fell 73 -> 20 there), so those rows count for nothing; judged only on seeds
+never read for S1. **Arms:** `main:--deploy-trace` v `fit:--deploy-fit=on,--deploy-trace`, one tree, a green-checked hash.
+`make native settle-s1v2`, judge `settle_judge.py s1v2`. **Workloads, FRESH:** the no-fight probe 12 cells x 3921-3932; the
+fight probe 3-squad cells (budget 1500) and 5-squad cells (`--probe-budget=3000`) x 3933-3944 (36 fights an arm each).
+**Counter:** deploys turned > 0. **Deciding:** squads with a deploy leg (the longest drive from where a crew stood when the
+deploy began to its seat) >= 25 m: arm <= 50 % of base, base >= 10. **Guards:** squads with twitch >= 15 m not up (arm <=
+base); never-in runs arm <= base (R38.10's form, fresh seeds only); first shape differs in <= 3 % of squads; friend_contacts
+and friend_contacts_foreign <= base x 1.1 + 5; fights: his kills, his losses, the CPU's losses a fight within base +/- 1.645 se
+in each fight read, and no fight run that never starts. **Reported:** place + twitch >= 25 m squads. No CPU census (vacuous:
+the deploy step never fires in CPU v CPU fights, R38.9). Queued on builder2 behind S2's re-read. **A pass ships ON.**
+
 ### Questions for the lead
 None.
 

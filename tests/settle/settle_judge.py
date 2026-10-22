@@ -81,6 +81,54 @@ def s1_lines(probe, b, n, common, differ, fb, fn, fc, base, new, lines):
     return counter and dec
 
 
+def s1v2(argv):
+    """R38.11's bar: python3 settle_judge.py s1v2 PROBE FIGHT3 FIGHT5 BASE NEW"""
+    probe, fight3, fight5, base, new = argv
+    lines = []
+    rows = oj.load(os.path.join(probe, "rows.jsonl"))
+    b, n = keyed(rows, base), keyed(rows, new)
+    common = [k for k in b if k in n]
+    t, deploys = turned(probe, new)
+    counter = t > 0
+    lines.append("%s counter: deploys turned %d of %d on %s; squads %d" % ("PASS" if counter else "FAIL", t, deploys, new, len(common)))
+    leg_b = sum(1 for c in common if b[c]["deploy_leg_m"] >= LONG_M)
+    leg_n = sum(1 for c in common if n[c]["deploy_leg_m"] >= LONG_M)
+    dec = leg_b >= 10 and leg_n <= 0.5 * leg_b
+    lines.append("%s deciding: squads with a deploy leg >= %.0f m %d -> %d (<= %.1f; base >= 10)" % (
+        "PASS" if dec else "FAIL", LONG_M, leg_b, leg_n, 0.5 * leg_b))
+    tw_b = sum(1 for c in common if b[c]["twitch_m"] >= 15)
+    tw_n = sum(1 for c in common if n[c]["twitch_m"] >= 15)
+    g_tw = tw_n <= tw_b
+    lines.append("%s guard twitch: squads with twitch >= 15 m %d -> %d (not up)" % ("PASS" if g_tw else "FAIL", tw_b, tw_n))
+    nb = sum(1 for sq in oj.by_run(rows, base).values() if oj.run_all_in(sq) < 0)
+    nn = sum(1 for sq in oj.by_run(rows, new).values() if oj.run_all_in(sq) < 0)
+    g_ni = nn <= nb
+    lines.append("%s guard never-in: %d -> %d runs (arm <= base)" % ("PASS" if g_ni else "FAIL", nb, nn))
+    first = lambda r: (r.get("shapes") or [r["halt_shape"]])[0]
+    shapes = sum(1 for c in common if first(b[c]) != first(n[c]))
+    g_sh = shapes <= max(1, 0.03 * len(common))
+    lines.append("%s guard first shape: differs %d of %d (<= 3 %%)" % ("PASS" if g_sh else "FAIL", shapes, len(common)))
+    runs, _ = runs_of(os.path.join(probe, "runs.jsonl"))
+    g_c = True
+    for key in ("friend_contacts", "friend_contacts_foreign"):
+        cb = sum(r.get(key, 0) for r in runs if r["arm"] == base)
+        cn = sum(r.get(key, 0) for r in runs if r["arm"] == new)
+        passed = cn <= cb * 1.1 + 5
+        g_c = g_c and passed
+        lines.append("%s guard %s %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", key, cb, cn, cb * 1.1 + 5))
+    g_f = True
+    for label, d in (("3-squad", fight3), ("5-squad (--probe-budget=3000)", fight5)):
+        fr, ferr = runs_of(os.path.join(d, "runs.jsonl"))
+        lines.append("  fight read %s (%d runs that never started)" % (label, ferr))
+        g_f = oj.fight_guards(fr, base, new, lines) and g_f and ferr == 0
+    lines.append("  reported: place+twitch >= 25 m squads %d -> %d" % (sum(1 for c in common if moved(b[c]) >= LONG_M),
+                                                                       sum(1 for c in common if moved(n[c]) >= LONG_M)))
+    ok = counter and dec and g_tw and g_ni and g_sh and g_c and g_f
+    lines.append("VERDICT %s %s v %s (S1 v2, R38.11)" % ("PASS" if ok else "FAIL", new, base))
+    print("\n".join(lines))
+    return 0 if ok else 1
+
+
 def s2_lines(probe, b, n, common, differ, fb, fn, fc, base, new, lines):
     fl_b = sum(max(b[c]["shape_flips"], 0) for c in common)
     fl_n = sum(max(n[c]["shape_flips"], 0) for c in common)
@@ -188,6 +236,8 @@ def s3(argv):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) >= 2 and sys.argv[1] == "s1v2":
+        sys.exit(s1v2(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "s3":
         sys.exit(s3(sys.argv[2:]))
     if len(sys.argv) < 2 or sys.argv[1] not in ("s1", "s2"):
