@@ -117,6 +117,19 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   squeeze still does not fit, the leftover squads join the last rank laid wider (never two squads one place).
   Known: on the probe's route cells the FIRST waypoint is a plain click, so it stacks per his rule (rear squads may back up
   one rank) even though the probe chains two more clicks the same tick; a running leg can't be re-laid from my paths.
+- **Dev read 6 (e9e8397aa) was worse** on route cells (the shifted-leg room rule backfired); reverted to a dev switch.
+- **Variant read (builder0 light, native, 62f25938f, street cells x 3801-3803, n 3; `g1-dev7-variants-builder0-62f25938f/`):**
+  default column: deciding all pass (outside 41 -> 6, metres after leaving 4,974 -> 2,338, re-dealt 0), contacts 2,842 ->
+  1,500; guards fail only crossing 3 route all-in 15.5 -> 25.4 s and locks 5 route end foreign 13.6 -> 10.5 m (line 10.6).
+  `--group-legs=off` FAILS the deciding lines (outside 24, metres 2,913): shifted legs need the column. `--group-room=
+  rearmost` passes deciding but fails 4 guards. Crossing 3 route's failure persists with legs off: it comes from the route's
+  FIRST click (a plain click, stacked per his rule) which the probe chains past in the same tick.
+- **G2 pieces built:** `--group-route-line=on` (dev switch, e4a3a5c13): the controls remember his current group route's
+  clicks; a shifted leg's column and a gate's stack back along the route he clicked, not the navmesh drive (on Terminus the
+  drive cut through the plaza's diagonal streets). Laptop, his east-street route `--probe-points=70/50+70/-30+25/-30`, 5
+  squads, s3801, n 1: metres off the drawn path (`route_off_m`, his route's legs read mid-street) main 577, column 754,
+  route line 315. 78cdfc71a (default under the switch): a shifted click within 2 s of his plain group click re-lays that
+  first click as a waypoint (`Element.retarget` to its gate place); laptop crossing 3 route all-in ~25 -> ~21 s, twitch 0.
 - **Settle (C38.3) asked whether O7 v2 changes the deploy heading:** no; the column changes only each squad's place; `lay`
   stays round 34's B8 approach. Settle's deploy-fit (stream/settle ac36add58, OFF) sits on top; agreed, no new key.
 
