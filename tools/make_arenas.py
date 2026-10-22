@@ -173,9 +173,12 @@ COVER_K5_RUNS = {
     "locks": [(-26, -16), (-46, -16)],
     "sumps": [(-36, 72), (-30, -60)],
     "gorge": [(-62, 6), (-28, -6)],
-    "parade": [(-44, -8), (-50, 80)],
+    # R37.35: (-44,-8) gave his column cover on the road to the far depot (its mirror ~17 m off it), so the CPU's opening
+    # never lay in wait there (test_tactics_cpu_opening); re-sited with add_runs_proposal --clear-approaches parade.
+    "parade": [(-50, 80), (-62, 4)],
 }
 COVER_K5_A_RUNS = ("locks", "parade")
+COVER_K5_CLEAR_APPROACHES = ("parade",)  # maps whose runs keep off every base->depot road (add_runs_proposal.on_approach)
 
 
 def cover_k5(name, props):

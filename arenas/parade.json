@@ -406,38 +406,6 @@
   {
    "type": "barricade",
    "position": [
-    -47.0,
-    -8.0
-   ],
-   "rotation_deg": 0.0
-  },
-  {
-   "type": "barricade",
-   "position": [
-    47.0,
-    8.0
-   ],
-   "rotation_deg": 180.0
-  },
-  {
-   "type": "barricade",
-   "position": [
-    -41.0,
-    -8.0
-   ],
-   "rotation_deg": 0.0
-  },
-  {
-   "type": "barricade",
-   "position": [
-    41.0,
-    8.0
-   ],
-   "rotation_deg": 180.0
-  },
-  {
-   "type": "barricade",
-   "position": [
     -53.0,
     80.0
    ],
@@ -464,6 +432,38 @@
    "position": [
     47.0,
     -80.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -65.0,
+    4.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    65.0,
+    -4.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -59.0,
+    4.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    59.0,
+    -4.0
    ],
    "rotation_deg": 180.0
   }

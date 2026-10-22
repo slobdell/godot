@@ -19,12 +19,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
 import cover_page  # noqa: E402
 import arena_terrain  # noqa: E402
+import arena_report  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 RUN_PIECES = 2
 PIECE_M = 6.0
 ## Room a hull needs to pass the run's ends and sides (the widest hull is 4.07 m).
 CLEAR_M = 5.0
+WALL_CLEAR_M = 4.0  # arena.gd PLACEMENT_CLEARANCE, checked on the run grown by CLEAR_M
 MID_Z_MAX = 80.0
 MIN_APART_M = 20.0
 HEAT_RADIUS_M = 12.0
@@ -35,6 +37,14 @@ SITES_TRIED = 8
 ## "all": the above. "lanes": lane widths and the base-to-base ambush read only (what the arena tests pin as the map's
 ## design: his parade's crossing line, the Terminus's no-line centre); room and chokepoint counts may move.
 KEEP = "all"
+## R37.35: on parade the CPU's opening lies in wait beside a depot for the enemy coming down the road from his base, and
+## AmbushSite only springs where the attacker has no cover within OPEN_M (12 m) of the kill zone; a run near that road
+## gave his column cover and the ambush was never set (test_tactics_cpu_opening / cpu_hold / cpu_hold_guns). With
+## --clear-approaches (MAPS listed) no run centre lies within APPROACH_CLEAR_M of a base->depot road (from ALONG_MIN of
+## the way, AmbushSite's kill zones): OPEN_M + half a run + the tactical points' stand-off beside it.
+APPROACH_CLEAR_M = 24.0
+APPROACH_ALONG_MIN = 0.25
+CLEAR_APPROACHES = set()
 DEFAULT_MAPS = ["crossing", "sumps", "locks", "gorge"]
 
 
@@ -75,6 +85,13 @@ def fits(layout, centre, half):
     if abs(z) > MID_Z_MAX or abs(x) + RUN_PIECES * PIECE_M / 2 + CLEAR_M > half - 4.0:
         return False
     grown = run_quad(centre, CLEAR_M)
+    # A shaped arena (parade's hexagon) refuses a prop within the wall's clearance (candidate_maps' check, the generator's).
+    poly = arena_report.perimeter_polygon(layout)
+    for i in range(len(poly)):
+        mx, mz = (poly[i][0] + poly[(i + 1) % len(poly)][0]) / 2.0, (poly[i][1] + poly[(i + 1) % len(poly)][1]) / 2.0
+        a = math.hypot(mx, mz)
+        if any((mx * px + mz * pz) / a > a - WALL_CLEAR_M for px, pz in grown):
+            return False
     for pos, size, rot in boxes(layout):
         if _overlap(grown, cover_page.corners(pos, size, rot)):
             return False
@@ -83,6 +100,30 @@ def fits(layout, centre, half):
         if _overlap(grown, [(x0, z0), (x1, z0), (x1, z1), (x0, z1)]):
             return False
     return True
+
+
+def approaches(layout):
+    """Every base->depot road's kill-zone stretch: (start, end) from APPROACH_ALONG_MIN of the way to the depot."""
+    bases = [tuple(spots[0]) for spots in layout.get("spawns", {}).values() if spots]
+    roads = []
+    for objective in layout.get("objectives", []):
+        o = tuple(objective["position"])
+        for b in bases:
+            roads.append(((b[0] + (o[0] - b[0]) * APPROACH_ALONG_MIN, b[1] + (o[1] - b[1]) * APPROACH_ALONG_MIN), o))
+    return roads
+
+
+def _to_segment(p, a, b):
+    ab = (b[0] - a[0], b[1] - a[1])
+    t = max(0.0, min(1.0, ((p[0] - a[0]) * ab[0] + (p[1] - a[1]) * ab[1]) / max(ab[0] ** 2 + ab[1] ** 2, 1e-9)))
+    return math.dist(p, (a[0] + ab[0] * t, a[1] + ab[1] * t))
+
+
+def on_approach(layout, centre):
+    """The nearest base->depot road to a run (or its mirror) when it is within APPROACH_CLEAR_M, else None."""
+    near = min((_to_segment(c, a, b) for c in (centre, (-centre[0], -centre[1])) for a, b in approaches(layout)),
+               default=math.inf)
+    return near if near < APPROACH_CLEAR_M else None
 
 
 def lanes_ok(layout):
@@ -177,6 +218,8 @@ def propose(name, row, runs, base_dir=None):
                     continue
                 if not fits(layout, centre, half) or not fits(layout, (-centre[0], -centre[1]), half):
                     continue
+                if name in CLEAR_APPROACHES and on_approach(layout, centre) is not None:
+                    continue
                 sites.append((heat_near(cells, centre) + heat_near(cells, (-centre[0], -centre[1])), centre))
         for heat, centre in sorted(sites, key=lambda s: (-s[0], s[1]))[:SITES_TRIED]:
             if keeps_shape(before, shape(with_run(placed, centre))):
@@ -197,11 +240,14 @@ def main():
     ap.add_argument("--maps", default=",".join(DEFAULT_MAPS))
     ap.add_argument("--runs", type=int, default=2)
     ap.add_argument("--keep", default="all", choices=["all", "lanes"])
+    ap.add_argument("--clear-approaches", default="", help="maps (comma list) whose runs keep off every base->depot "
+                    "road (APPROACH_CLEAR_M)")
     ap.add_argument("--base", default=None, help="the maps without K5 (default arenas/; once K5 is applied, a "
                     "COVER_K5=none generation, e.g. make cover-k5 PLAN=none -> build/cover-k5-none/none)")
     args = ap.parse_args()
     global KEEP
     KEEP = args.keep
+    CLEAR_APPROACHES.update(m for m in args.clear_approaches.split(",") if m)
     report = json.load(open(args.heat))
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)

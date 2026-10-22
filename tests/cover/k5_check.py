@@ -9,7 +9,7 @@ Regenerates every map twice in OUT_DIR (COVER_K5=none: the maps without K5; COVE
   out exactly the named wreck / container and its mirror); every added run, grown by add_runs_proposal.CLEAR_M, touches
   nothing that collides and no terrain (a swap's barricade sits where the clutter stood); a shipping map keeps its shape
   (add_runs_proposal.keeps_shape: lane widths, arena_room's ambush / chokepoint / room reads); a dry twin keeps
-  its lane widths.
+  its lane widths; a map in COVER_K5_CLEAR_APPROACHES keeps every run off its base->depot roads (R37.35).
 Prints one line per changed map; exit 1 on any failure.
 """
 import ast, json, os, shutil, subprocess, sys
@@ -30,7 +30,8 @@ def tables():
     out = {}
     for node in ast.parse((ROOT / "tools" / "make_arenas.py").read_text()).body:
         if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name) \
-                and node.targets[0].id in ("COVER_K5_SWAPS", "COVER_K5_RUNS", "COVER_K5_A_RUNS"):
+                and node.targets[0].id in ("COVER_K5_SWAPS", "COVER_K5_RUNS", "COVER_K5_A_RUNS",
+                                                    "COVER_K5_CLEAR_APPROACHES"):
             out[node.targets[0].id] = ast.literal_eval(node.value)
     return out
 
@@ -91,6 +92,9 @@ def main():
             for centre in ((x, z), (-x, -z)):
                 if not runs.fits(a, centre, float(a.get("half_size", 120.0))):
                     failures.append(f"{name}: the run at {centre} does not clear {runs.CLEAR_M} m")
+            if base in t.get("COVER_K5_CLEAR_APPROACHES", ()) and runs.on_approach(a, (x, z)) is not None:
+                failures.append(f"{name}: the run at ({x}, {z}) is {runs.on_approach(a, (x, z)):.1f} m from a "
+                                f"base->depot road (< {runs.APPROACH_CLEAR_M} m)")
         if not a.get("fixture"):
             changed_shape = runs.keeps_shape(runs.shape(a), runs.shape(b))
             if changed_shape:
