@@ -55,7 +55,7 @@ static func why_key(game_match: Match, tank: Tank) -> String:
 	var commander := game_match.get_node_or_null("ElementCommander_%d" % tank.team)
 	var why := String((commander.get("posture") as Dictionary).get("why", "")) if commander != null else ""
 	var word := "?"
-	for pair in [["threatened", "threatened"], ["ahead", "ahead"], ["opening", "opening"], ["holds no", "nothing"],
+	for pair in [["defend", "defend"], ["threatened", "threatened"], ["ahead", "ahead"], ["opening", "opening"], ["holds no", "nothing"],
 			["not ahead", "behind"]]:
 		if why.contains(String(pair[0])):
 			word = String(pair[1])

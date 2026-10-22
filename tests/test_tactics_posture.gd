@@ -87,3 +87,62 @@ func test_the_opening_needs_a_site_and_is_given_up_when_behind_or_the_ring_is_lo
 	assert_eq(String(lost["posture"]), "attack", "the enemy holds our near ring: attack (%s)" % lost)
 	var none := Posture.decide(RUST, [0, 0], _zones(-1, -1), [], Vector3(-36, 0, 90))
 	assert_eq(String(none["posture"]), "attack", "no opening given (the control arm): round 19's rule (%s)" % none)
+
+
+# ---- Round 38 (doctrine D2): DEFEND. D1 (stream/doctrine Status): in the blob line 75 % of the CPU's damage was fired in
+# ATTACK posture from its own half, "holds no objective": the blob reached its near ring before the CPU had taken it, so
+# the CPU met it as an attacker. With `near` (the side's near ring, handed only when the switch is on) a side whose near
+# ring is not the enemy's and has a known enemy within THREAT_M of it HOLDS that ring.
+
+func _near(zones: Array) -> Dictionary:
+	var name := Posture.near_ring(zones, Vector3(36, 0, -90), Vector3(-36, 0, 90))
+	for zone: Dictionary in zones:
+		if String(zone["name"]) == name:
+			return zone
+	return {}
+
+
+func test_without_the_near_ring_holding_nothing_still_attacks() -> void:
+	var zones := _zones(-1, -1)
+	var decided := Posture.decide(RUST, [0, 0], zones, [_contact(Vector3(20, 0, -10))], Vector3(20, 0, -10))
+	assert_eq(String(decided["posture"]), "attack", "switch off: today's rule (%s)" % decided)
+
+
+func test_an_enemy_at_our_unowned_near_ring_is_defended() -> void:
+	var zones := _zones(-1, -1)
+	var decided := Posture.decide(RUST, [0, 0], zones, [_contact(Vector3(20, 0, -10))], Vector3(20, 0, -10), {}, _near(zones))
+	assert_eq(String(decided["posture"]), "hold", "enemy %.0f m from our near ring (%s)" % [Vector3(20, 0, -10).distance_to(
+			Vector3(36, 0, -24)), decided])
+	assert_eq(String(decided["zone"]["name"]), "east", "our near ring")
+	assert_true(String(decided["why"]).begins_with("defend"), "and says why (%s)" % decided["why"])
+
+
+func test_a_far_enemy_does_not_make_us_defend() -> void:
+	var zones := _zones(-1, -1)
+	var decided := Posture.decide(RUST, [0, 0], zones, [_contact(Vector3(-36, 0, 70))], Vector3(-36, 0, 70), {}, _near(zones))
+	assert_eq(String(decided["posture"]), "attack", "nobody near our ring: go and take things (%s)" % decided)
+
+
+func test_a_near_ring_the_enemy_owns_is_attacked_not_defended() -> void:
+	var zones := _zones(-1, GREEN)
+	var decided := Posture.decide(RUST, [0, 0], zones, [_contact(Vector3(30, 0, -20))], Vector3(30, 0, -20), {}, _near(zones))
+	assert_eq(String(decided["posture"]), "attack", "theirs now: take it back (%s)" % decided)
+
+
+func test_defending_is_the_same_rule_for_either_side() -> void:
+	var zones := _zones(-1, -1)
+	var rust := Posture.decide(RUST, [0, 0], zones, [_contact(Vector3(20, 0, -10))], Vector3(20, 0, -10), {}, _near(zones))
+	var green_near := {}
+	for zone: Dictionary in zones:
+		if String(zone["name"]) == Posture.near_ring(zones, Vector3(-36, 0, 90), Vector3(36, 0, -90)):
+			green_near = zone
+	var green := Posture.decide(GREEN, [0, 0], zones, [_contact(Vector3(-20, 0, 10))], Vector3(-20, 0, 10), {}, green_near)
+	assert_eq(String(rust["posture"]), String(green["posture"]), "mirrored: both defend")
+	assert_eq(String(green["zone"]["name"]), "west", "Green's near ring")
+
+
+func test_a_threatened_held_zone_still_comes_first() -> void:
+	var zones := _zones(RUST, -1)
+	var decided := Posture.decide(RUST, [0, 0], zones, [_contact(Vector3(-30, 0, 30)), _contact(Vector3(20, 0, -10))],
+			Vector3(0, 0, 10), {}, _near(zones))
+	assert_eq(String(decided["zone"]["name"]), "west", "the zone we hold, threatened, before the near ring (%s)" % decided)

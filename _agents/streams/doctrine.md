@@ -53,7 +53,27 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-22, in progress):** D1 running.
+**Report (2026-10-22, in progress):** D1 first read in; the damage-weighted re-read running (builder0 light, 6e049da5b).
+
+**D1 first read (builder0 light, native ON (NATIVE_EXEC lines), 640850023 = main 5b20bfd62 + the probe only, `make native
+tactics-hold-fire`, seeds 2601-2608 x 5 guard maps x both sides; blob 80 fights; turtle 45 of 80: the light slot's 90 min cap
+killed the rest; logs in ~/doctrine-runs/d1).** Blob line: CPU 58,805 direct rounds, 55.5 % faster than a crawl (per-seed se 1.6;
+R37.26 read 55.5 % on the same fights: the probe replays it).
+- **The CPU is not defending when the blob comes: 82.6 % of its rounds are fired in ATTACK posture** (ElementCommander's
+  Posture.decide), 17.4 % in hold. Its moving rounds by element task: screen (recon) 54 % of all moving rounds (65 % of its
+  rounds moving), support_by_fire 29 % (49 % moving), hold 9 % (46 % moving), attack 6 %.
+- By brain option: SUPPRESS 26 % of rounds (64 % moving), MOVE 22 % (77 % moving), ENGAGE 23 % (61 % moving), HOLD 26 % (21 %
+  moving). By seat: crews > 15 m from their element slot fire 49 % of rounds (69 % moving); crews within 5 m fire still 87 %.
+- **A CPU crew that is holding and on its seat already stops to fire** (hold|HOLD|near: 93 % still). Within hold posture the
+  movers are crews driving back to a post 15 m+ away (hold|MOVE|away, 76 % moving) and recon screening.
+- Turtle line (CPU the attacker, as it should be): 90 % of CPU rounds in attack posture, 56 % moving.
+- Reading: the lever is not inside the HOLD option; it is (a) the posture (the CPU meets the blob as an attacker), (b) the
+  support_by_fire line re-seated on a moving focus, (c) recon fire on the move. Re-read weights rounds by damage (a scout's MG
+  fires ~10 rounds to a cannon's 1) and splits by posture reason and map half before the design note.
+
+**Pairing base (native, 2026-10-22):** main 1c484a525's `references/scoreboard/guards/1c484a525.fights.jsonl` (on main since
+cc7c7ef1a; 320 fights, builder2): blob 49 % (± 7), turtle 40 % (± 16). Arms pair with `guard.py --pair` against it; main's rolling
+guard.sh (cc7c7ef1a) resumes per fight; I merge main for it before D2's series.
 
 **Plan (in order; one-line reasons):**
 1. D1 the read: `make tactics-hold-fire` (tests/tactics/hold_fire_probe.gd, extends the guard line read-only): every CPU direct round

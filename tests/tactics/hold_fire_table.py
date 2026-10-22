@@ -52,7 +52,7 @@ def seed_se(rows, who, part, pick):
 def show(title, table, total, top):
     print("    %s" % title)
     ordered = sorted(table.items(), key=lambda kv: -(kv[1][1] + kv[1][2]))
-    for key, c in ordered[:top]:
+    for key, c in [kv for kv in ordered if sum(kv[1])][:top]:
         n = sum(c)
         print("      %-44s n %6d (%4.1f %% of all)  still %5.1f  slow %5.1f  fast %5.1f  | moving %5.1f %%  (%4.1f %% of all moving)" % (
             key, n, 100 * n / total["n"] if total["n"] else 0, 100 * c[0] / n, 100 * c[1] / n, 100 * c[2] / n,

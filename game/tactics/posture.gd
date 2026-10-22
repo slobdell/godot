@@ -17,6 +17,12 @@ extends RefCounted
 ## Round 20 (M2), THE OPENING: given `opening` (the side's near ring and whether the map gives an ambush site on the way
 ## to it), a side that is not behind HOLDS its near ring from the start, taking it first if nobody has it, unless the
 ## enemy owns it. It comes after a threatened zone and after being ahead, and before attacking.
+##
+## Round 38 (doctrine D2), DEFEND: given `near` (the side's near ring objective; {} when the switch is off), a side whose
+## near ring is not the enemy's and has a known enemy within THREAT_M of it HOLDS that ring, whatever the score and
+## whether or not it has taken the ring yet. D1 (the guard lines, builder0): 75 % of the CPU's damage against a blob was
+## fired in ATTACK posture from its own half because it "holds no objective" yet: the blob reached the near ring first
+## and the CPU met it as an attacker, firing on the move. A threatened zone it already holds comes first.
 
 ## An enemy this close to an objective we hold threatens it (m from the zone's centre; parade's zones are 15 m across
 ## and its floor about 112 m: an enemy halfway across is coming for it).
@@ -26,7 +32,7 @@ const NEAR_MARGIN_M := 20.0
 
 
 static func decide(team: int, scores: Array, objectives: Array, contacts: Array, enemy_center: Vector3,
-		opening: Dictionary = {}) -> Dictionary:
+		opening: Dictionary = {}, near: Dictionary = {}) -> Dictionary:
 	var held: Array = []
 	for objective: Dictionary in objectives:
 		if int(objective.get("owner", -1)) == team:
@@ -34,6 +40,9 @@ static func decide(team: int, scores: Array, objectives: Array, contacts: Array,
 	var mine := int(scores[team]) if scores.size() == 2 else 0
 	var theirs := int(scores[1 - team]) if scores.size() == 2 else 0
 	var opened := _opening(team, mine, theirs, objectives, opening)
+	var defended := _defend(team, objectives, contacts, near)
+	if held.is_empty() and not defended.is_empty():
+		return defended
 	if held.is_empty():
 		if not opened.is_empty():
 			return {"posture": "hold", "zone": opened, "why": "opening: take and hold %s" % String(opened.get("name", "?"))}
@@ -48,6 +57,8 @@ static func decide(team: int, scores: Array, objectives: Array, contacts: Array,
 	if not threatened.is_empty():
 		return {"posture": "hold", "zone": threatened, "why": "zone threatened (enemy %.0f m from %s)" % [threat_d,
 				String(threatened.get("name", "?"))]}
+	if not defended.is_empty():
+		return defended
 	if mine > theirs:
 		var front := {}
 		var front_d := INF
@@ -73,6 +84,23 @@ static func _opening(team: int, mine: int, theirs: int, objectives: Array, openi
 		if String(objective.get("name", "")) == String(opening["name"]):
 			return objective if int(objective.get("owner", -1)) != 1 - team else {}
 	return {}
+
+
+## Round 38 (D2): the hold decision for `near` (re-read from `objectives` by name, so its owner is today's) when it is
+## not the enemy's and a known enemy is within THREAT_M of it; {} otherwise, or when `near` is {} (the switch off). Pure.
+static func _defend(team: int, objectives: Array, contacts: Array, near: Dictionary) -> Dictionary:
+	if near.is_empty():
+		return {}
+	var zone := near
+	for objective: Dictionary in objectives:
+		if String(objective.get("name", "")) == String(near.get("name", "")):
+			zone = objective
+	if int(zone.get("owner", -1)) == 1 - team:
+		return {}
+	var d := _nearest(contacts, zone["position"])
+	if d > THREAT_M:
+		return {}
+	return {"posture": "hold", "zone": zone, "why": "defend: enemy %.0f m from %s" % [d, String(zone.get("name", "?"))]}
 
 
 ## The ring a side reaches first: the objective nearest `own_spawn` among those nearer to it than to `enemy_spawn` by

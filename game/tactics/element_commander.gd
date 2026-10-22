@@ -137,6 +137,16 @@ static var OPENING_ENABLED := false
 const OPENING_REACH_M := 45.0
 var opening := {}
 var _opening_read := false
+## Round 38 (doctrine D2): DEFEND. D1 (the guard lines, builder0, stream/doctrine Status): against a blob the CPU fired
+## 75 % of its damage in ATTACK posture from its own half (it "holds no objective" yet: the blob reached its near ring
+## first), and in hold posture its posts swung with the enemy's centre, so crews drove to new posts mid-fight. With it on:
+## (a) a side whose near ring is not the enemy's and has a known enemy within Posture.THREAT_M of it HOLDS that ring
+## (Posture.decide's `near`), kept like any hold while the ring is not the enemy's; (b) a hold's posts keep the facing
+## they were laid with until the enemy's direction from the zone swings more than DEFEND_REFACE_DEG.
+static var DEFEND_ENABLED := false
+const DEFEND_REFACE_DEG := 45.0
+## zone name -> the facing its posts were laid with (DEFEND (b)).
+var _hold_toward := {}
 
 
 static func install(p_match: Match, p_team: int, p_elements: Elements = null) -> ElementCommander:
@@ -152,6 +162,11 @@ static func install(p_match: Match, p_team: int, p_elements: Elements = null) ->
 	# Round 21 (stretch a): `--hold-fallback` turns the fall-back on (shipped off).
 	if OS.get_cmdline_user_args().has("--hold-fallback"):
 		HOLD_FALLBACK_ENABLED = true
+	# Round 38 (doctrine D2): `--cpu-defend` turns DEFEND on, `--cpu-defend=off` keeps it off.
+	if OS.get_cmdline_user_args().has("--cpu-defend"):
+		DEFEND_ENABLED = true
+	if OS.get_cmdline_user_args().has("--cpu-defend=off"):
+		DEFEND_ENABLED = false
 	# Round 20 (M2): `--cpu-opening` turns the opening on (shipped off).
 	if OS.get_cmdline_user_args().has("--cpu-opening"):
 		OPENING_ENABLED = true
@@ -554,11 +569,18 @@ func _hold_posture(contacts: Array) -> bool:
 		if sides.size() == 2:
 			scores = [int((sides[0] as Dictionary).get("points", 0)), int((sides[1] as Dictionary).get("points", 0))]
 		objectives = _score.get("objectives", objectives)
-	var decided := Posture.decide(team, scores, objectives, contacts, _enemy_center(contacts), _opening(objectives))
+	var near := _near_ring(objectives) if DEFEND_ENABLED else {}
+	var decided := Posture.decide(team, scores, objectives, contacts, _enemy_center(contacts), _opening(objectives), near)
 	var was_holding := String(posture["posture"]) == "hold"
+	var held_zone: Dictionary = posture["zone"]
+	var still_ours := int(held_zone.get("owner", -1)) == team
+	if not still_ours and not near.is_empty() and String(held_zone.get("name", "")) == String(near.get("name", "")):
+		# DEFEND: the ring it defends need not be taken yet; the hold is kept while it is not the enemy's.
+		for objective: Dictionary in objectives:
+			if String(objective.get("name", "")) == String(near["name"]):
+				still_ours = int(objective.get("owner", -1)) != 1 - team
 	var keep := was_holding and String(decided["posture"]) == "attack" \
-			and game_match.tick - int(posture["since"]) < POSTURE_KEEP_TICKS \
-			and int((posture["zone"] as Dictionary).get("owner", -1)) == team
+			and game_match.tick - int(posture["since"]) < POSTURE_KEEP_TICKS and still_ours
 	if keep:
 		return true
 	if String(decided["posture"]) != String(posture["posture"]) \
@@ -573,9 +595,19 @@ func _hold_posture(contacts: Array) -> bool:
 	if String(posture["posture"]) != "hold":
 		_trade.clear()
 		fallen_back.clear()
+		_hold_toward.clear()
 		return false
 	hold_thinks += 1
 	return true
+
+
+## Round 38 (D2): this side's near ring objective (Posture.near_ring), {} when it has none.
+func _near_ring(objectives: Array) -> Dictionary:
+	var name := Posture.near_ring(objectives, Match.spawn_position(team, 0), Match.spawn_position(1 - team, 0))
+	for objective: Dictionary in objectives:
+		if name != "" and String(objective.get("name", "")) == name:
+			return objective
+	return {}
 
 
 ## Round 20 (M2): this side's opening ({"name", "site"}; {} when switched off), read once per match.
@@ -692,6 +724,8 @@ func _hold(line: Array, recon: Array, support: Array, contacts: Array) -> void:
 	zone = Vector3(zone.x, 0.0, zone.z)
 	var enemy := _enemy_center(contacts)
 	var toward := TacticsFormation.flat(enemy - zone)
+	if DEFEND_ENABLED:
+		toward = _steady_toward(String(zone_info.get("name", "")), toward)
 	var across := Vector3(-toward.z, 0.0, toward.x)
 	# Stretch (a): an element losing its trade gives one bound and holds there; it is out of the ambush and the posts.
 	var held_back: Array = []
@@ -739,6 +773,18 @@ func _hold(line: Array, recon: Array, support: Array, contacts: Array) -> void:
 			_give(element, {"verb": "support_by_fire", "to": _xz(kill_zone)})
 		else:
 			_give(element, {"verb": "support_by_fire", "to": _xz(contacts[0]["position"])})
+
+
+## DEFEND (b): the facing a zone's posts were laid with, kept until the enemy's direction swings past DEFEND_REFACE_DEG
+## (then laid again along the new one). The posts move only when the threat really comes from somewhere else.
+func _steady_toward(zone_name: String, toward: Vector3) -> Vector3:
+	var kept: Variant = _hold_toward.get(zone_name)
+	if kept is Vector3 and toward.length_squared() > 0.0001 \
+			and (kept as Vector3).dot(toward.normalized()) >= cos(deg_to_rad(DEFEND_REFACE_DEG)):
+		return kept
+	if toward.length_squared() > 0.0001:
+		_hold_toward[zone_name] = toward.normalized()
+	return toward
 
 
 func _drop_ambush(element: Element) -> void:
