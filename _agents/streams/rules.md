@@ -67,13 +67,49 @@ Nothing (his answers are recorded). His playtest at the round's close is the sub
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Now (2026-10-21 ~10:15 PDT):** R1, R2 (spread + short halt, with ruling R37.2 (b)) and R3 are BUILT, all OFF, lab-green:
-`test_rules_` 19/19 on builder0 at 51e5c6ff4. quick-remote passed at 12f410388 (builder0: 83 passed, 0 failed; lint 586
-scripts). **GREEN: 2c85080fc** (full `make check` on builder0, synced at the tip after 51e5c6ff4, so it covers the code plus mk/docs: tests 2992 passed, 0 failed; scenarios 52 passed, 0 failed, 4 pending; `make check exited 0`). Later commits are Status-only. In that check sim-baseline stayed unmoved (13/13), but perf-judge was NOT JUDGED (refused 3 times on a busy box, ratios 1.49/1.93/1.55x); the orchestrator folds it into one perf-judge on main after CP37.1 and my merge, covering cover's and my OFF code together. scenario_scout_suppress::test_target_behind came back UNEXPECTED PASS; the orchestrator says this is known (it has passed since 2026-10-20) and native's N5 promotes it with CP37.1, so nothing to do here. Smoke: `make rules-shots`
-(laptop, terminus, seed 3, --scripted, OFF v ON at 45/75 s, 1854x1011 and 1200x540): 8 frames, 0 engine errors, both arms
-play normally; one fight each, so the shape, not a count. **Next: wait for CP37.1 (native's guard lines + noise), fill
-bar R's k·se and n, cut the pair tree, native runs the lab tests under `make native test` with each switch ON (R37.4),
-then the series on builder2.**
+**ROUND 37 CLOSE NOTES (rules, 2026-10-21 ~19:00 PDT).** Green: **2c85080fc** (builder0 full `make check`, 2992/0), on main
+since a10846307. The series ran on builder2, on pair tree **75c3e74e0** (main 0baf6e1ff + this Status). Each arm is the same
+320 guard fights as the base (5 maps x seeds 2601-2608 + 2701-2708 x both sides x blob/turtle), paired against
+`references/scoreboard/guards/9d325e291.fights.jsonl`. Base gate: OFF replays it with 0 flips. One open item:
+the **package arm** (all three ON), queued after M5a (R37.25).
+
+| arm (`--rules-on=`) | blob wins (base 48 %) | paired diff (se) | flips to loss / to win | McNemar p | blob kr | turtle | verdict |
+|---|---|---|---|---|---|---|---|
+| sight | 47 % | -0.6 pts (3.5) | 17 / 16 | 0.50 | 0.89 | 39 % | NOT MET |
+| spread | 46 % | -1.2 pts (3.5) | 15 / 13 | 0.43 | 0.86 | 39 % | NOT MET |
+| pin_slow | 44 % | -3.1 pts (2.5) | 14 / 9 | 0.20 | 0.86 | 39 % | NOT MET |
+
+All three point the intended way, all sit inside noise, and none lets the turtle start winning. Guard 2's OUT cells are the same
+fragile cells in every arm (turtle Gangs median, blob Law median), not rule effects. Rulings: R37.22, R37.24, R37.25 (all stay OFF), R37.26.
+
+**Why they're null:**
+- **R1 sight:** spotting is the TEAM's. Any crew that sees a contact shares it, and the longest eyes (110 m and 105 m) stay
+  well past gun range (70 m) even at x0.85 moving. One crew's own radius rarely decides who sees first.
+- **R2 spread:** the blob is his right-click, so it never makes the short halt (ruling (b)) and only pays the wider spread. Most
+  damage is close in (movers beyond 50 m = 19 % of direct damage).
+- **All three, the motion read (R37.26):** the CPU "defender" fires on the move too. Faster than a crawl: blob 70 % of
+  rounds, CPU 56 %; fast: 33 % against 18 %. The CPU fires 41 % more rounds, so it pays back most of any motion tax (builder0 light,
+  68bfd11c1, 80 OFF blob fights).
+
+**Round 38 candidates:**
+- **(1) Doctrine:** a CPU defender that actually STOPS to fire, i.e. holds and shoots when the enemy comes at it, rather than rolling.
+  A motion tax only favours a defender that is still, and today's isn't.
+- **(2) The shared picture:** what a moving team shares, or how far its spotting reaches (the orchestrator's lever).
+- (1) is the better first try: it is AI doctrine (tactics/manoeuvre), and with (1) in, the round 37 rules may stop being null.
+  Re-run the three arms on top of it, since they are cheap to re-judge: switches, a paired file and `tests/rules/bar_r.py`.
+
+**For his playtest:** the switches stay on main, all OFF by default.
+- All three ON: `make rules-skirmish` (Terminus, seed 3, against the CPU).
+- One rule: `make rules-skirmish RULES=sight` (or `spread`, or `pin_slow`).
+- Another map: `make rules-skirmish ARENA=locks SEED=5`.
+- Today's game (OFF): `make skirmish`.
+- Any run of the game also takes `--rules-on=sight,spread,pin_slow` (or `--rules-sight`, `--rules-spread`, `--rules-pin-slow`)
+  after `--`.
+
+What to watch is under *What to playtest* below.
+
+**Tools left for round 38:** `make rules-moving` (damage by motion and range), `make rules-guard-motion` (shots by side and motion
+in the guard lines, by faction), `tests/rules/bar_r.py BASE ARM` (any arm by Bar R), `make rules-shots` (OFF v ON frames).
 
 **Measured:** R2's question (does moving fire matter?): movers (>= 15 % of top speed) deal **52.5 %** of direct-fire
 damage and 19.4 % from beyond 50 m (`make rules-moving`, 9d63f709a, builder0, CPU-v-CPU showmatch fights, terminus/locks/
