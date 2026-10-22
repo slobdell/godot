@@ -84,6 +84,26 @@ and `_behind_plan` / `_behind_since` back, so the M2 trace's reads hold on the n
 3. **M7 (O5 v2):** read orders' O5 code and R37.32; the aside step also reads support_by_fire routes; bar from R37.32's base.
 4. **Stretch M3 (S1 v2):** base rate of stalls on main with M2's `unstick_fires` total first.
 
+### M2 (M5b the reverse-back) TRACED, NOT BUILT (2026-10-22 ~13:00)
+
+Trace: `lab/manoeuvre-r38-m5btrace` 6d43ce7eb (SEAT_RETURN rows in the jam census, measurement only) + c16c4a0b6
+(`tests/manoeuvre/seat_return_table.py`); builder0 native, jam census locks/terminus/sumps x 7001-7008 (24 fights an arm), base
+(seatstep OFF) and ON (`--traffic-on=seatstep`); rows and tables in `~/overnight-manoeuvre/r38/m2trace/`.
+- **Base: 1,166 seated give-ways; the drive back turned the hull > 90 deg in 107 (9 %), reversed in 435 (37 %)**; median 6.3 m
+  off the seat when the give-way ended, median path back 2-3 m. By where the spot lay from the nose: ahead 422 (26 turned, 198
+  reversed), side 245 (70 turned), behind 344 (10), none 155 (1). ON (seatstep): 1,057, turned 105, reversed 336.
+- **72 of the 107 turn-rounds are the scout class** (syn_lancer 22, syn_scout 20, gang_scout 18, scout 10, law_scout 2): their
+  turn-in on the facing, which the lead chose to keep (M6 closed, game_design.md). **The rest: 35 in 24 fights** (~1.5 a fight,
+  3 % of returns, 267 m of path in all; side 17, ahead 13).
+- **The reverse-or-route decision (Manoeuvre.choose) ran for the seat in only 16 of 1,166 returns** (plan captured; 9 route,
+  7 reverse among those > 5 m off). A parked crew's order is a `face` (OrderController._apply_move: turns, never drives back), so
+  the trip back is the turn-in / the brain's next order, not a move_to drive. R37.10's premise (a crew that led out turns round on
+  its wheels) does not hold on today's main: of 422 ahead-spot give-ways, 26 turned round and 198 reversed back.
+- **Decision: M5b not built.** A drive-body rule plus native's C++ mirror plus a series for ~1.5 non-scout turn-rounds a fight is
+  not worth builder0 time this round; the scout share is his kept turn-in. Native told "no twin needed".
+  If he still sees crews turning round after stepping aside, the lever is the `face` order's return (a move back to the seat in
+  reverse when off it by > settle radius), not Manoeuvre.choose.
+
 ### M7 trace (O5 v1's leftover), builder0 native, stream 53159326e, `--seat-aside=on`, locks/gorge/terminus x 3801-3806 (18 fights)
 
 `make manoeuvre-aside-trace` (rows kept in `~/overnight-manoeuvre/r38/aside1/`). CPU seat give-ways to another element's crew: screen
