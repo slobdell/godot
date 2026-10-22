@@ -4276,3 +4276,12 @@ round 37 ... Prepare the set of workstreams, ensure builder2 is online, and then
 launch". Split (workstreams.md *Round 37*): rules (questions 1, 2, 8), cover (3), feedback (9a, the support trucks, the pinned look),
 native (the guard lines of 11, the twins), orders on Fable (the flicker and his parked/mixed-squad answers), manoeuvre (Eyes_3 and the
 stuck-crew tooling). Deferred items (4, 5) and rejected ones (6, 7, 10, smoke) have no stream.
+
+## Round 37: his picks on feedback's directions page (2026-10-21 ~19:55 PDT, the page's db)
+
+Page https://claude.ai/artifact/FDSA2k9cBPFfncfo2rCSHn (`picks/*`, `sounds/*`, no words added). **hit: C** (the struck side lit on
+a ring segment under the tank, which teaches facing; not the recommended A), **pinned: A** (heads-down chevrons over the bar),
+**repair: A** (the mending beam), **cone: C** (a shimmer in the air with pressure rings; not the recommended B). **Approved, all
+six:** the flank-hit, rear-hit and repair-loop sounds and the three announcer flank lines as written ("Caught broadside! That is
+what happens when you show them your doors!", "They went the long way round, and it paid off big!", "Right in the side panel!
+Nobody was watching that flank!"). He approved six (the brief capped "≤ 4 new sounds"; his approval supersedes the cap).

@@ -188,6 +188,18 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   arm's per-fight sd, n 36); the CPU's losses likewise. **A pass ships ON** (`--parked-hold=off` keeps today's), his crews only.
   Laptop mechanism read (crossing 3 s3621, one fight): own-option leaves 3 -> 1, worst crew off 44.6 -> 19.9 m; test_control_parked_hold 3/0.
 
+- **Bar O1-LATCH (orders, R37.17; re-filed in stream/orders 849fced87 Status before any latch number; replaces the anchor arm).**
+  The traces (builder0 light, native, 52c15e0e1, n 1 each; `references/round37/orders/o1-traces-builder0-52c15e0e1/`, edec107e0):
+  **locks 5 route s3703** under ANCHOR: three crews park, the fourth is held behind a neighbour whose halt differs, and 5 s later the
+  squad re-deals its seats: a parked crew drives 18 m south to the unreached seat (the twitch); under LATCH (the halt shape latched
+  per arrival) tick for tick identical to main, nobody moves again. **parade s3704** (CPU v CPU census): contacts of arrived elements
+  44 / 44 / 45 (main / anchor / latch); the excess is moving elements' drills (react_to_contact 31 -> 98, assault_through 17 -> 91;
+  the CPU's "Eyes" screen re-laid back and forth) in a longer fight (last contact 65 / 92 / 105 s; per fight-second 2.1 / 3.2 / 2.3;
+  totals 136 / 298 / 238): the halt read changes the fight's course. **Arms:** `main:` v `latch:`. **Workloads, FRESH seeds:** the
+  no-fight probe 3761-3772 + census 3761-3766 (Bar O1's deciding and guards unchanged; the contacts line kept as filed, with
+  arrived-element contacts and contacts per fight-second REPORTED beside it) and the fight read 3773-3784 (the R37.9 addendum's
+  deciding and guards; replaces 3731-3742). **Ships only if all three pass.**
+
 - **Bar O2 PARKED_HOLD, FINAL (orders, R37.13; filed in stream/orders 052f30eea Status before any judged number; replaces the
   8dc98b5f4 text above; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and
   shoots from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. **Sizing (seen):** builder0
@@ -424,6 +436,40 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   **Perf evidence (feedback, builder0):** perf-judge PASS 1.01x run alone on stream/feedback 6eed1f86a = main a10846307 (cover K2/K3 +
   rules R1-R3, all OFF) + feedback's FX; control-timing 5/0 and 8/0. So cover's and rules' OFF code is judged; manoeuvre's M1/M2 and
   native's hand-over (0baf6e1ff..4b62d2186) still owe one builder0 perf-judge.
+- **R37.22 (2026-10-21) R1 own-motion sight: Bar R deciding NOT MET.** rules (builder2, pair tree 75c3e74e0, `--rules-on=sight`,
+  320/320 paired; Status 355d11c3e): base gate OFF replays 9d325e291 with 0 flips. Blob wins 48 -> 47 % (paired -0.6 pts, se 3.5;
+  17 flips to a loss, 16 to a win; McNemar p 0.50); kill ratio +0.004 (se 0.031); turtle 39 -> 39 %; G2 3 of 16 faction cells out
+  (~chance at 2 se). Reading: sight rarely limits spotting (shared intel; a 62 m sight against ~70 m guns). **Ruled:** R1 stays OFF;
+  its one allowed re-tune is rules' call after spread and pin_slow are read (M5a may go ahead of it on builder2); the package arm
+  needs two rules passing alone (Bar R).
+- **R37.23 (2026-10-21) feedback merged OFF; main's perf now judged.** main c76469184 merges stream/feedback 7e2ff0a4f alone
+  (INHERIT): builder0 `make check exited 0`, 3025 passed / 0 failed, 27 targets ALL JUDGED (perf-judge PASS), scenarios 53/0/4/0,
+  sim-baseline unmoved. 7e2ff0a4f contains main 4b62d2186, so this perf-judge PASS covers every OFF change on main this round
+  (cover, rules, manoeuvre, native, feedback): **R37.20's owed perf-judge is closed.** Every look and the radar/card marks are OFF
+  by default until his picks.
+- **R37.24 (2026-10-21) R2 moving spread: Bar R deciding NOT MET.** rules (builder2, 75c3e74e0, `--rules-on=spread`, 320/320
+  paired; Status 2cd289bb1): blob 48 -> 46 % (paired -1.2 pts, se 3.5; 15 flips to a loss, 13 to a win; McNemar p 0.43); kill ratio
+  -0.025 (se 0.017); turtle 39 -> 39 %; per faction Condemned -8.9, Gangs -6.7, Law 0, Syndicate +8.9 pts (se 4.8); G2 3 of 16 cells
+  out (noisy). Reading: the blob never halts and pays the wider spread, but most damage is close in (movers beyond 50 m 19 %) and
+  the CPU "tactics" side moves as much as the blob, so it pays the same price. No stabilised-gun victim. **Ruled:** R2 stays OFF;
+  guard 3 (contention) is skipped, informative only, and M5a takes builder2 after pin_slow. **Orchestrator's reading for the lead:**
+  with R1 and R2 both flat, a rule that taxes MOTION cannot favour a defender while the CPU defender itself never stops; the
+  defender's edge needs the side that holds to actually hold (bounding / halting doctrine), a brains-path question for round 38.
+- **R37.25 (2026-10-21) R3 pin_slow: Bar R deciding NOT MET; no rule passes alone.** rules (builder2, 75c3e74e0,
+  `--rules-on=pin_slow`, 320/320 paired): blob 48 -> 44 % (paired -3.1 pts, se 2.5; 14 flips to a loss, 9 to a win; McNemar p 0.20);
+  kill ratio -0.019 (se 0.024); turtle 39 -> 39 %; G2 2 cells out (turtle Gangs median out in all three arms: a fragile cell). All
+  three point the intended way (sight -0.6, spread -1.2, pin_slow -3.1 pts), all inside noise, none moves the turtle. R1 re-tune
+  declined (shared spotting is set by the 110/105 m eyes, still past gun range at x0.85; a shared-picture rule is round-38 work).
+  First motion smoke (builder0 light, 2 fights, OFF blob line): blob 82 % of shots faster than a crawl, CPU 56 % (80-fight read
+  running). **Ruled:** all three stay OFF on main (switches kept); the PACKAGE arm runs on builder2 AFTER M5a, as information for
+  round 38 and for his playtest (deciding as Bar R; a pass would ship the package ON).
+- **R37.26 (2026-10-21) the CPU defender fires on the move too (rules' motion read).** builder0 light, 68bfd11c1 (all OFF), the OFF
+  blob line 5 maps x 2601-2608 x both sides = 80 fights (replays the base: blob 49 %): shots faster than a crawl (>= 0.15 top speed)
+  blob 70.1 % (se 2.4) of 42,998 direct rounds, CPU 55.5 % (se 2.3) of 60,841; fast (>= 0.5) 33 % v 18 %; by faction blob/CPU
+  Condemned 73/60, Gangs 72/59, Law 80/53, Syndicate 62/47. The CPU fires 41 % more rounds, over half on the move, so it pays most of
+  any motion tax back: consistent with R1-R3's near-null arms. **Round-38 candidate (the lead's):** a CPU defender that stops to
+  fire (doctrine in brains' paths), judged on the same guard lines; the rules stay as switches to re-read on top of it.
+  Tool: `make rules-guard-motion` (`tests/rules/guard_motion_probe.gd`).
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
