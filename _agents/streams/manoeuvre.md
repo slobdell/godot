@@ -94,6 +94,20 @@ own straight line to its goal, but only 10 within 10 m of the line O5 tests** (t
 support_by_fire is the ENEMY it fires at, 92 m from the seat at the median) and 12 of the centre-to-slot line. So v2 reads each
 travelling member's own line.
 
+### M7 DEV READ: v2 does not move the total; NOT sent to a judged series (2026-10-22 ~12:00)
+
+builder0 native, stream b5775051e (v2) v 53159326e (v1), `make manoeuvre-aside-trace`, locks/gorge/terminus x 3801-3806 (the same 18
+fights; rows in `~/overnight-manoeuvre/r38/aside{1,2}/`): CPU screen give-ways **v1 480, v2 483**; screen-to-support_by_fire 90 -> 72
+(the part v1 missed does drop); seats moved aside 2,805 -> 2,486, seats left on a way with no clear point within 4 x 5 m 1,074 ->
+3,022 (more ways leave fewer clear spots); deaths in seat give-ways 12 -> 17, all deaths 758 -> 801 (n 18, noise). **Why the total
+can't move:** 230 of v1's 480 screen give-ways (48 %; v2 50 %) happen with the screen crew >= 10 m OFF its seat (driving to or from
+it), which no seat choice reaches. Bar M7's deciding line (screen give-ways <= 50 % of base) needs nearly every SEATED give-way
+gone; v2 changed the total by +3. **Decision:** no judged series (builder0 is scarce; a fail by construction is not worth one).
+M7 is written up as blocked on the bar's reach, not as judged. **For the orchestrator / round 39:** (1) if the seated half is what
+he'd notice, re-file the deciding line as SEATED screen give-ways (seat_m < 10; v1 250 -> v2 241 here, so even that needs a
+bigger change); (2) the en-route half is ordinary traffic between elements (screens crossing other elements' routes on their
+way), which is traffic's give-way rules, not seat choice. v2 stays OFF (`--seat-aside=v2`) on the stream.
+
 ### Bar M7 (O5 v2, `--seat-aside=v2`: CPU screens keep off where other elements' crews actually drive), filed 2026-10-22 before any number
 
 - **Change (my grant, `element_commander.gd`'s screen seat choice):** O5's aside step (unchanged: a CPU screen point within
