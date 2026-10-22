@@ -16,12 +16,12 @@ are smart and under their control".
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **rules** | `godot-rules` (1) | Opus | [streams/rules.md](streams/rules.md) | a crew that stops sees further and shoots straighter; a charge under heavy fire slows | R1 own-motion sight (switch, twin, lab test) |
-| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a crew no longer steps aside again and again into the same friend | M1 Eyes_3's stand rule |
-| **feedback** | `godot-feedback` (3) | Opus | [streams/feedback.md](streams/feedback.md) | a rear hit looks and sounds different; a pinned crew shows it; the Tanker's repair and the Emitter's cone are visible | F1 the directions page |
+| **rules** | `godot-rules` (1) | Opus | [streams/rules.md](streams/archive/round37/rules.md) | a crew that stops sees further and shoots straighter; a charge under heavy fire slows | R1 own-motion sight (switch, twin, lab test) |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/archive/round37/manoeuvre.md) | a crew no longer steps aside again and again into the same friend | M1 Eyes_3's stand rule |
+| **feedback** | `godot-feedback` (3) | Opus | [streams/feedback.md](streams/archive/round37/feedback.md) | a rear hit looks and sounds different; a pinned crew shows it; the Tanker's repair and the Emitter's cone are visible | F1 the directions page |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: the two guard lines every rule is judged on; the C++ twins | CP37.1 the blob and turtle lines |
-| **orders** | `godot-orders` (5) | **Fable** | [streams/orders.md](streams/orders.md) | a squad's order stops flickering; a parked squad stays put and shoots; squads arrive whole | O1 the halt-shape flicker |
-| **cover** | `godot-cover` (6) | Opus | [streams/cover.md](streams/cover.md) | a tank parked tight behind rubble or a low wall is hard to hit from the front | K1 count each map's low cover |
+| **orders** | `godot-orders` (5) | **Fable** | [streams/orders.md](streams/archive/round37/orders.md) | a squad's order stops flickering; a parked squad stays put and shoots; squads arrive whole | O1 the halt-shape flicker |
+| **cover** | `godot-cover` (6) | Opus | [streams/cover.md](streams/archive/round37/cover.md) | a tank parked tight behind rubble or a low wall is hard to hit from the front | K1 count each map's low cover |
 
 **Machines (C37.1):** builder0 (12 cores) = **orders', manoeuvre's and feedback's lane**; builder2 (e2-highcpu-32 Spot, us-west4,
 stops itself after 20 idle min; `make gcp-start`, under `systemd-run` with `~/projects/bin` on PATH) = **native's guard lines,
@@ -1092,10 +1092,10 @@ loss in every fight is the wedged crew (8.3 % of deaths, R34 candidates).
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
 | **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | a crew under fire doesn't step aside into a killing zone when the one behind can go round | the design note |
-| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | fewer crews die shoved around in a lane mouth; a wheeled hull told to face a direction ends facing it and goes still | the wedged-death trace |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/archive/round37/manoeuvre.md) | fewer crews die shoved around in a lane mouth; a wheeled hull told to face a direction ends facing it and goes still | the wedged-death trace |
 | **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | squads on an attack-move don't hang ~30 s at each leg while a crew finishes turning to its arc | the sector-face step |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: every pair; the judging table complete | pairs, then planner's leftovers |
-| **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | squads arrive in their travel shape and deploy as one move, packed close without overlapping; five squads on the Locks route don't jam at a junction | ship the deploy step |
+| **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/archive/round37/orders.md) | squads arrive in their travel shape and deploy as one move, packed close without overlapping; five squads on the Locks route don't jam at a junction | ship the deploy step |
 
 **Machines (C35.1):** builder0 only (12 cores, 14 GB). **At most ONE full check and ONE judged series on builder0 at a time**;
 before any heavy launch read `free -g` and the Godot count by cwd (lesson 321). Every named run under `systemd-run --user
@@ -1899,7 +1899,7 @@ ONE machine. Before a run, `make gcp-status` says whether builder2 is up; if not
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
 | **traffic** | `godot-traffic` (1) | **Fable** | [streams/traffic.md](streams/traffic.md) | a crew stuck behind a parked crew of another squad gets by, and the parked crew goes back to its post (parkedroom v4); the yard's last hull stops circling (T4) | the stuck-death census |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | his circled scout turns and fights instead of shuffling (C33.9, done right); a War Rig or other wheeled turret vehicle told to face a direction ends facing it and sits still (CP-F 4) | C33.9 |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/archive/round37/manoeuvre.md) | his circled scout turns and fights instead of shuffling (C33.9, done right); a War Rig or other wheeled turret vehicle told to face a direction ends facing it and sits still (CP-F 4) | C33.9 |
 | **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | a scout stands and trades when it can win, and leaves when it can't; a pushed-off War Rig returns facing his way (B11b, after CP-F) | scout try 2 |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: every pair; a network match that never logs a shell hitting a dropped player | pairs, then the relay-smoke bug |
 | **planner** | `godot-planner` (6) | Opus | [streams/planner.md](streams/planner.md) | a rematch without restarting plays out the same (replays and the network depend on it) | the rematch diagnosis |
@@ -2559,7 +2559,7 @@ hardest problem), it is traffic (the far loop, lingering since round 31).
 | Stream | Folder (offset) | Model | Brief | What he will notice | Checkpoint |
 |---|---|---|---|---|---|
 | **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | a crew pinned behind a parked crew of another squad gets by (the far ask loop in skirmish); the crowded yard's last hull stops circling its slot (T4) | **CP-X** the far-loop census + design |
-| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a wheeled turret vehicle given a facing turns its hull there AT REST and sits still (M1b(3)) | **CP-F** face at rest |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/archive/round37/manoeuvre.md) | a wheeled turret vehicle given a facing turns its hull there AT REST and sits still (M1b(3)) | **CP-F** face at rest |
 | **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | respawns never overlap a standing hull; a pushed-off rig returns to its post facing his way (B11b on CP-F); seats stop jumping (B10b); the yard's last crew in (B5c-v6) | respawn fix; B11b |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: every pair; N5's held ports once CP-X's design settles | each pair |
 | **planner** | `godot-planner` (6) | Opus | [streams/planner.md](streams/planner.md) | the planner's shared queue (no gang-press starvation) and the War Rig's open-ground face-behind served on the library path | CP-Q |
@@ -3449,7 +3449,7 @@ every stream AND the orchestrator on Opus. No Fable session this round.**
 | Stream | Folder (offset) | Model | Brief | What he will notice | Checkpoint |
 |---|---|---|---|---|---|
 | **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | at a Terminus street crossing the squad that gives way waits ~2.6 s and the squads bump a third less; a set-up mortar truck stays set up while squadmates go round (both his yeses); later, a hull no longer stranded off the navmesh in the default arena | **CP-T** both ships ON, first |
-| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a vehicle pinned on a squadmate that never moves goes round it or settles short instead of asking and backing every 21 s; wheeled turret vehicles turn their hull to his facing and settle | H1b; M1b(3) |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/archive/round37/manoeuvre.md) | a vehicle pinned on a squadmate that never moves goes round it or settles short instead of asking and backing every 21 s; wheeled turret vehicles turn their hull to his facing and settle | H1b; M1b(3) |
 | **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | every crew across his bridge (108/108) without the arrive maps paying; the yard's last crew in every time, Sumps included | B3b-2c; B5c-v6 |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing in play: every pair (T3b-c first), the four twin test files split | each pair |
 | **planner** | `godot-planner` (6) | Opus | [streams/planner.md](streams/planner.md) | the laptop preset keeps the planner's War Rig turns without the tick cost (SLICE per preset); the side gate brains' arrival needs | CP-S side_gate; SLICE preset |
@@ -3794,7 +3794,7 @@ bridge and the SBF line re-judged with their round-30 findings; the C++ port of 
 | Stream | Folder (offset) | Model | Brief | What he will notice | Checkpoint |
 |---|---|---|---|---|---|
 | **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | crossing squads: the yielder through ~3 s later, half the bumps (his call); a set-up mortar truck stays set up for a passing squadmate (his call); the early-stop hook in the runners | T3b, T1c-b early (cheap re-judges); T4 into **CP-H** |
-| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a wedged IFV or truck backs out of a wall or a squadmate instead of sitting at full throttle, and a War Rig pinned on a friend asks, then backs straight; wheeled turret vehicles turn their whole hull to his drawn facing | **CP-H** (the honest-reading A/B, manoeuvre runs it); M1b(2) |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/archive/round37/manoeuvre.md) | a wedged IFV or truck backs out of a wall or a squadmate instead of sitting at full throttle, and a War Rig pinned on a friend asks, then backs straight; wheeled turret vehicles turn their whole hull to his drawn facing | **CP-H** (the honest-reading A/B, manoeuvre runs it); M1b(2) |
 | **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | the yard's last crew in every time with the 180° arrival and a scout's chase intact; his bridge 108/108; support by fire lines up on his drawn facing | **CP-G** B5c-v5 pair; B3b; B6 |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing in play: every pair; the planner's C++ reviewed and built; `test_native_traffic_hold` split | each pair; **CP-P0** with planner |
 | **planner** | `godot-planner` (6) | **Fable** | [streams/planner.md](streams/planner.md) | a long truck in a Terminus street turns in two or three deliberate legs, backs out of a wedge, never grinds a wall (behind `--nav-off=planner` until its bar passes, then ON as a pair) | **CP-P0** C++ port equal to the GDScript planner; **CP-P1** the seam judged |

@@ -1,3 +1,5 @@
+> **ARCHIVED (round 37 closed 2026-10-22).** The branch is `round37/manoeuvre`; its unmerged references stay on that branch. Round 38's brief is `streams/manoeuvre.md` where one exists.
+
 # Stream: manoeuvre (the last odd-looking side steps and stuck crews)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 37** (C37.1, C37.7)
@@ -63,6 +65,64 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### ROUND 37 CLOSE NOTES (worker, 2026-10-22)
+
+**Shipped on main** (da3193cf5 merges 775c009fe alone, R37.41; green builder2 `make native check exited 0`, 3036/0,
+sim-baseline 13/13 unmoved; perf owed on builder0 with main's):
+- **M1 `sidestand` ON:** a crew whose side step didn't get it past an unmoved friend stands instead of stepping again. Bar M1
+  PASSED (builder0 native, ON 339d3f2e2 v base b822e6696, 72 fight pairs + 128 hull-rest pairs per task): side repeats
+  30 -> 9, far loops 61 -> 38, every guard flat. Evidence `references/round37/manoeuvre/m1-series/`.
+- **M2:** WEDGE_TRACE prints the game's `unstick_fires` total (a static; round 36's per-crew sums were inexact).
+- The unstick stall clock ignores rules' short halt (+ native twin). Inert while R2 is OFF (rules closed, R37.33).
+- R37.35: the h1b_side bank stage re-pinned west of the lock (BANK_X -50), clear of cover's K5 barricade runs. Native =
+  GDScript on main's arenas and on cover 3923ba026's (builder0 light, 4/0 each, 2026-10-22). Native's traffic_stage seam
+  (`stage_override`, 3891cbabd).
+
+**Closed, not shipped:**
+- **M5a `seatstep`: FAIL as filed** (R37.30). Deciding passed: seat metres -8.5 %, lead-out give-ways 747 -> 436. Guards
+  failed: team 1 kills -89 (limit 81), and hull-rest never-settled ambush 5 -> 10 / attack_move 17 -> 23 (limit +4.9).
+  It stays OFF on `lab/manoeuvre-r37-m5` (936612334). Evidence `references/round37/manoeuvre/m5-series/`.
+- **M6 closed by the lead:** the parked scouts' circling turn-in stays (game_design.md). A leash measured harmful
+  (`lab/manoeuvre-r37-m6leash`).
+- **M4 never triggered:** rules' R3 (pin_slow) failed Bar R alone (R37.25), and the package closed at R37.33. Nothing to re-read.
+- **Stretch (post-deploy twitch):** decomposed, no rule. Of 1,696 s off-seat while parked: turn-in 945, standing off the
+  seat 579, brain moves 81, give-ways 80, driving code about 11.
+
+**For round 38** (the orchestrator assigned the M5 v2 there, R37.30):
+1. **M5 v2, a new bar filed first.** Re-use M5a's rule (lab/manoeuvre-r37-m5 + native's pair 156d563d9). Two guard changes,
+   decided before any number:
+   - **(a) fight volume:** a symmetric rule that only makes fights smaller must not fail on "fewer kills". Guard the
+     kill SHARE per team (kills_t / total kills, paired, within 1.645 se) plus total deaths of both teams not up. For
+     scale only (aggregate totals from M5a's judge, not a paired line): team 0's share 1572/2983 = 0.5270 -> 1515/2837 =
+     0.5340; total kills 2983 -> 2837.
+   - **(b) never-settled (e) needs its noise floor first:** the laptop GDScript re-run of M5a's 5 ambush flips reversed
+     them (ON settled in all 5, base missed 1; trace below). So run base v base on two paths (native v GDScript, same
+     seeds) to size how much (e) moves with no rule. Then set (e)'s limit from that, or replace it with a paired line.
+2. **Ambusher-settle read (done, step 2):** in condemned 6830 the arms match to f359, where one seated give-way picks
+   (0,8) v (3,-6). The later asks then differ, and whether the whole army settles is redrawn. No mechanism, no rule.
+   Trace build: `lab/manoeuvre-r37-ambushtrace` aae71e74e (`--yield-trace`). Not done: a native self-repeat of the
+   series' ON arm on those seeds.
+3. **M5b (seated crew reverses straight back to its seat after a give-way):** trace the return drive first (how often,
+   how far, against what). It needs a native twin. Not started.
+4. **M3, S1 v2 (stall net):** note `references/round37/manoeuvre/m3_s1v2_note.md`. Round 36's +22 % unstick fires was
+   inexact (the static, M2). Recommendation unchanged: count the base rate on main with M2's total (light lane, about 1 h)
+   before building; v2 = hold only in contact with an unmoved friend, fire through H1's ask, cap per goal.
+
+**Branches kept (labs, never merged):** lab/manoeuvre-r37-m5 (M5a OFF tree), lab/manoeuvre-r37-m5on,
+lab/manoeuvre-r37-ambushtrace, lab/manoeuvre-r37-bankcover (stream + cover arenas, the R37.35 read),
+lab/manoeuvre-r37-m6trace, lab/manoeuvre-r37-m6leash, lab/manoeuvre-m1on/m1base. **Worktrees left:** godot-manoeuvre-m5 (its
+builder folders stay too). The M1/M5 series trees and their builder folders are removed. Process lessons: give a single seed to
+`M1_SEEDS` as `N-N` (a bare N ran seeds 1..N for 90 min); grep check verdicts only on `^>> check:` lines (the check's own self-test
+prints "NOT RUN").
+
+**2026-10-22 (worker): HAND-OVER GREEN at stream/manoeuvre 775c009fe (builder2):** `make native check exited 0`, 3036 passed /
+0 failed, 25 passed + 2 NOT JUDGED (perf-judge: builder2 is not a judging machine; scenario_perf loaded), sim-baseline 13/13
+unmoved (log `~/overnight-manoeuvre/r37/check_775c009fe_builder2.log`). It contains M1 ON, the h1b_side bank re-pin
+(R37.35, 6eda892a4), native's traffic_stage seam (3891cbabd), and main merged (775c009fe). Earlier tries got no verdict:
+on 76c325844/6eda892a4 builder0 was overloaded and the check was cut off at 82 min (22 NOT RUN); on 80b59598d builder2 at
+load 33 failed one quiet-window self-test (load-sensitive tooling, not this stream's), and N5's UNEXPECTED PASS showed until
+main was merged. Perf is owed on builder0 (main's, separately).
 
 ### M1 VERDICT: PASS, ships ON (2026-10-22 01:35, builder0 native, ON lab/manoeuvre-m1on 339d3f2e2 v BASE stream b822e6696)
 

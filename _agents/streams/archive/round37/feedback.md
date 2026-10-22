@@ -1,3 +1,5 @@
+> **ARCHIVED (round 37 closed 2026-10-22).** The branch is `round37/feedback`; its unmerged references stay on that branch. Round 38's brief is `streams/feedback.md` where one exists.
+
 # Stream: feedback (the player sees what the rules are doing)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/workstreams.md` **Round 37** (C37.1, C37.6), `_agents/game_design.md`

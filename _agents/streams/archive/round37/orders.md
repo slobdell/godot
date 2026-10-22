@@ -1,3 +1,5 @@
+> **ARCHIVED (round 37 closed 2026-10-22).** The branch is `round37/orders`; its unmerged references stay on that branch. Round 38's brief is `streams/orders.md` where one exists.
+
 # Stream: orders (squads look smart and under his control: no flicker, parked squads stay put, squads arrive whole)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 37** (C37.1, C37.4,

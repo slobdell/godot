@@ -1,3 +1,5 @@
+> **ARCHIVED (round 37 closed 2026-10-22).** The branch is `round37/cover`; its unmerged references stay on that branch. Round 38's brief is `streams/cover.md` where one exists.
+
 # Stream: cover (hull-down behind real low cover)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 37** (C37.1, CP37.1,
@@ -76,13 +78,26 @@ None are my paths. Asked the orchestrator (2026-10-22): (1) owners re-pin their 
 re-site the runs clear of the stages (costs hit share), (3) hold K5. builder2 series HELD until the answer (re-siting changes
 what Bar K judges).
 
+**ROUND 37 CLOSED for cover (2026-10-22): main 27e00de2c merges b2a82c0ba; 1c484a525 adopts the 5 maps' sim-baseline.**
+Close notes for a fresh agent:
+- What ships: the K5 barrier runs (tools/make_arenas.py `COVER_K5 = "b"`, `COVER_K5_RUNS`; "none" takes them out if he finds
+  the maps cluttered), `TacticalQuery.low_cover_seat` (K3, unused by the CPU), and `--cover-on=hulldown` (K2) shipped OFF.
+- Re-siting a run: `tests/cover/add_runs_proposal.py HEAT OUT --maps M --keep lanes --base <COVER_K5=none maps>
+  [--clear-approaches M]`, then `make arenas`, `make cover-k5 PLAN=b`, `make arena-test`, the brains tactics_cpu tests, and
+  the native/manoeuvre staged tests (they stage on terminus's west street, sumps (-40,40), locks' north bank, parade's depot).
+- Lesson: busy streets are where both the fights and other streams' staged scenarios are, and a barrier near a base->depot
+  road kills the CPU's ambush (AmbushSite's 12 m open-ground rule). sumps (-30,-60), gorge (-62,6), locks (-46,-16) sit
+  inside 24 m of such a road; left by ruling (map-alone effect showed no rise) -- revisit if he sees the CPU stop ambushing.
+- If hull-down is tried again: it needs more hits on hulls behind cover (2-15 % of hits within 12 m of a run now), i.e.
+  the CPU actually taking low-cover seats (the stretch, brains paths) or denser low cover; re-judge with the paired Bar K.
+
 **HAND-OVER (2026-10-22): merge 43d16acc4** (code == 05300509a: main da3193cf5 merged + K5 maps with parade re-sited at
 c02b01d83 + K2 switch OFF). builder0 `make check exited 2` ONLY on sim-baseline's expected adoption: test 3055 passed 0 failed,
 24 passed / 1 FAILED (sim-baseline) / 2 NOT JUDGED (perf-judge refused 3x at 2.35/1.69/2.49x, box busy; scenario_perf
 unpinned), scenarios 53/0, 4 pending, determinism 8c3c1232b711a760. sim-baseline MOVED (switch OFF: the maps did it; the
 orchestrator adopts on merge): terminus 64e5266ef0faa245, sumps f7fc6b91340c2231, locks a929186d10a30461, parade
-d4cd790f2b1a157a, gorge 7a911a7558729ff1; the other 8 unmoved. Perf-judge still owed on a quiet box (K2 OFF adds one
-dictionary lookup per front-arc hit).
+d4cd790f2b1a157a, gorge 7a911a7558729ff1; the other 8 unmoved. Perf-judge, owed from the busy check (K2 OFF adds one
+dictionary lookup per front-arc hit). **Perf-judge PASS** at b2a82c0ba (builder0, quiet: ratio 1.08x, idle 97 %, attempt 1).
 
 **BAR K VERDICT (K4, 2026-10-22): FAIL on the deciding line; every guard holds. K2 stays OFF.** Paired, ON v OFF, one tree
 per fight: builder2, terminus/locks/sumps/gorge at 3923ba026 + parade's 64 fights per arm re-run at c02b01d83 (re-sited run,
@@ -121,9 +136,9 @@ beyond 1 se (sumps blob +6.2, se 7.7; locks both down) -> left as they are (orch
 1. **K1 the count** -- DONE: census + fight heat + page (below); reported to the orchestrator.
 2. **K2 the damage seam** -- code + lab test DONE at 5b4e79362 (laptop, `make test FILTER=cover_hulldown`, 8/8 PASS); quick-remote GREEN (builder0, 183/0); full check GREEN at e6f720619 (above).
 3. **K3 the seat API** -- DONE at 5b4e79362 (laptop, `FILTER=cover_seat`, 7/7 PASS); orders told once it is on main.
-4. **K4 the bar** -- after CP37.1; see the sequencing note below (K4 before K5 measures ~nothing).
-5. **K5 the map re-shape** -- WAITING ON HIS GATE: draft page filed (below).
-6. Stretch: the CPU choosing low-cover seats when it defends (needs a brains-path grant).
+4. **K4 the bar** -- DONE: Bar K FAILS on the deciding line, guards hold; K2 stays OFF (verdict above).
+5. **K5 the map re-shape** -- DONE: plan b applied on the 5 guard maps, parade re-sited (R37.35); merged, maps adopted (1c484a525).
+6. Stretch: the CPU choosing low-cover seats when it defends -- NOT STARTED (gated on K4 passing).
 
 ### K1: the static census (no Godot; `make cover-census`, arenas at 9d325e291)
 The ONLY low cover in the game is the jersey `barricade` (0.9 m; `ArenaKit.PROPS`). Everything else is >= eye height (1.3 m) and

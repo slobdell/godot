@@ -1,3 +1,5 @@
+> **ARCHIVED (round 37 closed 2026-10-22).** The branch is `round37/rules`; its unmerged references stay on that branch. Round 38's brief is `streams/rules.md` where one exists.
+
 # Stream: rules (stop to be strong: sight, accuracy and suppression follow motion)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 37** (C37.1, CP37.1,
@@ -67,8 +69,10 @@ Nothing (his answers are recorded). His playtest at the round's close is the sub
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**ROUND 37 CLOSE NOTES (rules, 2026-10-21 ~19:00 PDT).** Green: **2c85080fc** (builder0 full `make check`, 2992/0), on main
-since a10846307. The series ran on builder2, on pair tree **75c3e74e0** (main 0baf6e1ff + this Status). Each arm is the same
+**ROUND 37 CLOSE NOTES (rules, 2026-10-21 ~19:00 PDT; closed R37.33).** **Final green: 1f9ec3ded** (stream/rules with main
+98153750a+ merged in; builder2 full `make check exited 0`: tests 3031 passed, 0 failed; scenarios 53 passed, 0 failed, 4 pending;
+sim-baseline 13 maps unmoved; perf-judge NOT JUDGED, because builder2 is not a judging machine). It carries the round's tooling
+(rules-skirmish, guard_motion_probe, bar_r.py) and these notes. Earlier green: 2c85080fc (builder0, 2992/0), on main since a10846307. The series ran on builder2, on pair tree **75c3e74e0** (main 0baf6e1ff + this Status). Each arm is the same
 320 guard fights as the base (5 maps x seeds 2601-2608 + 2701-2708 x both sides x blob/turtle), paired against
 `references/scoreboard/guards/9d325e291.fights.jsonl`. Base gate: OFF replays it with 0 flips. One open item:
 the **package arm** (all three ON) ran 23:18-00:28 PDT on builder2, 0 attempts lost, and is NOT MET (row below). builder2 is free
