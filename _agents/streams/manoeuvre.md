@@ -45,7 +45,7 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-22 ~14:10 (worker): THE STREAM IS GREEN at 84c79d76f (builder2, R38.2):** `make native check exited 0`, 3,055 passed / 0
+**MERGED: main 8bfb74e55 merges 84c79d76f (orchestrator).** **2026-10-22 ~14:10 (worker): THE STREAM IS GREEN at 84c79d76f (builder2, R38.2):** `make native check exited 0`, 3,055 passed / 0
 failed, 25 passed + 2 NOT JUDGED (perf-judge: builder2 is not a judging machine; scenario_perf loaded), sim-baseline passed (unmoved:
 everything new is OFF or tooling). Log `~/overnight-manoeuvre/r38/check_stream_84c79d76f.log`. Later commits are Status only.
 **Merge notes:** `element_commander.gd` (my grant, doctrine's file): `--seat-aside=v2` adds `SEAT_ASIDE_WAYS`, `ASIDE_SEATED_M`,
