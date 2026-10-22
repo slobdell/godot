@@ -588,6 +588,15 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   announcer now hears the struck face live (MatchEventAdapter reads the K2 impact): rear / weak-spot / flank calls play in real
   matches. merge_check_needed says CHECK (main had the artillery fix and rules' tooling): ONE builder2 `make native check` on
   ac8cb7d92 is queued.
+- **R37.37 (2026-10-22) O1-latch FAILS as filed on one guard (terminus 5-squad click twitch); group-lay goes first.** orders (builder0
+  native c14ec0d80; no-fight 3761-3772, fight 3773-3784). No-fight deciding PASS: relays 128 -> 2 (limit 32), shape flips 34 -> 1; CPU
+  guards pass (contacts 1,625 -> 1,569; stuck 1,784 -> 1,688 s). Guard FAIL: terminus 5-squad click median worst twitch 16.8 -> 28.0 m
+  (limit base + 3); 11 cells pass. Fight read PASS: relays 442 -> 95 (limit 110.5), shape flips 90 -> 20; his kills 5.14 -> 4.72, his
+  losses 6.78 -> 7.11, CPU losses 5.22 -> 4.81 a fight, all within guard. Parked re-deals 447 -> 441 / 84 -> 88: latch does NOT remove
+  O2's re-deals. **Ruled:** the failing cell is his group click's own ground (terminus, 5 squads), where today's ABREAST layout sends
+  squads into other streets (R37.29). Order: (1) the trace of s3767 / s3772 squad 4 (light lane); (2) the group-lay check and Bar O7's
+  read; (3) latch re-read ON TOP of group-lay on fresh seeds if the trace says the twitch is the abreast layout. O2-on-latch is held
+  (O2's re-deals come from elsewhere: trace them after O7).
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
