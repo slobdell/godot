@@ -168,6 +168,18 @@ blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0
   - Read: own-motion sight does not move the blob at these factors (0.85 moving / 1.10 halted). The guard lines' spotting is
     rarely sight-limited: tank sight is 62 m against a 70 m gun, and the team shares intel. One re-tune is allowed (brief's stretch);
     whether to spend builder2 on it is decided after spread and pin_slow are in.
+- 17:24 PDT finish, **R2 spread arm (`--rules-on=spread`, 4x spread on the move + the short halt for CPU crews only): deciding NOT MET.**
+  builder2, 75c3e74e0, 320 of 320 paired, 0 lost.
+  - Blob wins 48 -> 46 % (paired diff -1.2 pts, se 3.5; flips 15 to a loss, 13 to a win; McNemar p 0.43).
+  - Blob kill ratio 0.88 -> 0.86 (-0.025, se 0.017): held.
+  - Guard 1 held: turtle 39 -> 39 % (-0.6 pts, se 2.3).
+  - Faction (reported): blob Condemned -8.9, Gangs -6.7, Law 0.0, **Syndicate +8.9 pts (se 4.8)**. Syndicate moves against the
+    overall sign, which is named here per the bar.
+  - Guard 2: 3 of 16 cells OUT. Blob Gangs kills/match -1.9 (2se 1.4). Blob Syndicate median +15 s (2se 10). Turtle Gangs median +32 s
+    (2se 19). Turtle Gangs median was also OUT in the sight arm, so that cell is noisy (6 seeds).
+  - Read: the blob is his right-click, so it never halts (ruling (b)); it only pays the wider spread. Most of the damage
+    is done close in, where spread barely matters (R2 measure: movers beyond 50 m = 19 % of direct damage), and the CPU
+    defender rolls too.
 - Each arm is read by `python3 tests/rules/bar_r.py references/scoreboard/guards/9d325e291.fights.jsonl <arm raw>` (e4d139813):
   guard.py's pairing, plus the verdict lines, guard 1's McNemar in the turtle's favour, the faction report and guard 2.
 
