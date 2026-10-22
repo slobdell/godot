@@ -168,7 +168,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 ### Bars (filed here before any judged number; the orchestrator records them on main)
 - **Bar G1 v3 (orders, R38.12; filed 2026-10-22 evening, before any v3 judged number; code 0e169432f, `--group-lay=column`
   OFF).** Changes from v2: today's body judged at the click's width only (the yard_open container case); the 2 s first-click
-  re-lay only where the column moved some squad's place > 40 m (about a rank). **Same cells, counter, deciding lines,
+  re-lay only where the column moved some squad's place > 40 m (about a rank), and (f2a94b6cc, amended before any number)
+  the re-laid first click goes back to the places today's body gave it, out of the gate (v2's judged yard_open misses s3889,
+  s3891, s3886 re-run on the laptop: byte-identical to main). **Same cells, counter, deciding lines,
   thresholds and guards as the amended Bar G1** (deciding over click cells + his click; re-dealt 0 over all cells; every
   R36.6 guard + contacts over all 14 cells; yard_open every row identical), **FRESH seeds 3951-3962** (amended before any number: settle's S2 re-read uses 3903-3914), builder0 light lane J
   <= 4, judge `orders_judge.py g1`, paired top-down shots of his click (main v column, looked at). **His-click twitch guard:
