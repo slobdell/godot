@@ -633,6 +633,8 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   exited 0`, 3036/0, sim-baseline 13/13 unmoved (game code byte-identical to the judged 339d3f2e2) + the h1b bank re-pin (6eda892a4).
   merge_check_needed says CHECK (native's re-pins not in manoeuvre's tree): ONE builder2 `make native check` on da3193cf5 queued.
   Cover may merge main for its hand-over once it's green.
+  **main da3193cf5 GREEN:** builder2 `make native check exited 0`, 3036 passed / 0 failed, sim-baseline 13/13 unmoved (re-run after the
+  05:11 PDT preemption killed the first try).
 - **R37.42 (2026-10-22) latch does NOT ship: its hand-over check is red on a real wrong shape.** orders: f8bf6aaad (latch ON) builder0
   `make native check exited 2`, 3049 passed / 1 failed: test_tactics_scenarios_2::test_a_move_ends_formed_up_on_the_spot_and_stops_
   issuing (coil, 4 orders in the last 10 s, limit 2; herringbone and 0 orders on every earlier green). Deterministic (laptop: fails with
