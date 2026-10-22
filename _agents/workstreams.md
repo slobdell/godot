@@ -127,7 +127,7 @@ each squad's FIRST halt shape (the property latch v1 broke: differs from main's 
 (test_tactics_scenarios_2 runs in it) on the hash. Note: the probe's `relays` read ElementSituation's terrain, which this arm
 does not change, so relays are reported, not judged. **A pass ships ON** (`--deploy-latch=off` keeps today's).
 
-- **S1 v2 DEPLOY_FIT, the deploy leg (settle, R38.11; filed in stream/settle 1cc41b5a4 Status before any number on its seeds, copied
+- **S1 v2 DEPLOY_FIT, the deploy leg (settle, R38.11; filed in stream/settle e4618c763 Status before any number on its seeds, copied
   here by the orchestrator).** Arms main v fit (code unchanged since ac36add58); `make native settle-s1v2`, `settle_judge.py s1v2`. Fresh
   seeds never read for S1: no-fight probe 12 cells x 3921-3932; fight probe 3-squad (budget 1500) and 5-squad (`--probe-budget=3000`) x
   3933-3944, 36 fights an arm each. Counter: deploys turned > 0. **Deciding:** squads with a deploy leg >= 25 m, arm <= 50 % of base,
