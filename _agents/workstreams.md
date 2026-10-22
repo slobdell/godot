@@ -455,6 +455,14 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   guard 3 (contention) is skipped, informative only, and M5a takes builder2 after pin_slow. **Orchestrator's reading for the lead:**
   with R1 and R2 both flat, a rule that taxes MOTION cannot favour a defender while the CPU defender itself never stops; the
   defender's edge needs the side that holds to actually hold (bounding / halting doctrine), a brains-path question for round 38.
+- **R37.25 (2026-10-21) R3 pin_slow: Bar R deciding NOT MET; no rule passes alone.** rules (builder2, 75c3e74e0,
+  `--rules-on=pin_slow`, 320/320 paired): blob 48 -> 44 % (paired -3.1 pts, se 2.5; 14 flips to a loss, 9 to a win; McNemar p 0.20);
+  kill ratio -0.019 (se 0.024); turtle 39 -> 39 %; G2 2 cells out (turtle Gangs median out in all three arms: a fragile cell). All
+  three point the intended way (sight -0.6, spread -1.2, pin_slow -3.1 pts), all inside noise, none moves the turtle. R1 re-tune
+  declined (shared spotting is set by the 110/105 m eyes, still past gun range at x0.85; a shared-picture rule is round-38 work).
+  First motion smoke (builder0 light, 2 fights, OFF blob line): blob 82 % of shots faster than a crawl, CPU 56 % (80-fight read
+  running). **Ruled:** all three stay OFF on main (switches kept); the PACKAGE arm runs on builder2 AFTER M5a, as information for
+  round 38 and for his playtest (deciding as Bar R; a pass would ship the package ON).
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
