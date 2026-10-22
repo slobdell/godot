@@ -19,9 +19,13 @@ func _setup() -> void:
 	assert_true(tank != null and _brain != null, "setup: a brain tank")
 
 
-func _teardown() -> void:
+func teardown() -> void:
 	TankBrain.PARKED_HOLD = TankBrain._parked_flag()
-	_lab.dispose()
+	if _lab != null:
+		_lab.dispose()
+	_lab = null  # the lab holds this case: drop the cycle or both leak at exit
+	_brain = null
+	super.teardown()
 
 
 func test_a_move_of_its_own_beyond_the_post_is_refused_and_it_holds() -> void:
