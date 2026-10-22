@@ -181,6 +181,9 @@ nosing into a friend. The rule does not arise in a clean move (as designed); the
     process has been seen there, then none for 10 min). ON lab/manoeuvre-r37-m5on 7ebbc7bdd v BASE lab/manoeuvre-r37-m5
     936612334 (stream + native's green pair 156d563d9). Judge: `tests/manoeuvre/m5_judge.py`. Logs
     `~/overnight-manoeuvre/r37/m5/`. START/FINISH get marked here.
+    **START 2026-10-21 18:36** on godot-b0's release (rules' units inactive 18:36): unit `manoeuvre-m5-series5` (the waiting
+    unit `-series4` stopped; a `go` file skips the wait, so its "no rules process for 10 min" line is the release, not a
+    measured 10 min). Same false-"NOT RUN" grep fix as M1's driver. The ON check runs first (`--wait-below 1`).
 - **Requests / follow-ups:** rules (via godot-b0): R2's `Tank.short_halting()` must not read as a stall. When R2 merges, my
   `_unstick` stall clock skips a short-halting hull, and native mirrors that in its unstick twin (a request to native then).
 - **Parked yielders (godot-b0's question, from orders' O2 probe):** round 36's S4 trace (55c973cd4, builder0 light, 16 looping
