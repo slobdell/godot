@@ -603,6 +603,19 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   p 0.36), kr 0.88 -> 0.87; turtle 39 -> 38 % (-1.3, se 2.9; p 0.42), kr 0.80 -> 0.75 (-0.054, se 0.031). Per map (32 fights, win pts,
   se): terminus blob 0 (6.5) / turtle 0 (7.9); locks -6.2 (7.7) / -9.4 (5.0); sumps +6.2 (7.7) / +3.1 (5.5); gorge 0 / 0; parade (old
   K5 site) -9.4 / 0, to be replaced. No rise beyond noise: **sumps, gorge and locks stay.**
+- **R37.38 (2026-10-22) O7 group-lay=column FAILS as filed; a v2 is round 38's.** orders (builder0 native, 1ebd7e550, 3801-3812;
+  `references/round37/orders/o7-judged-builder0-1ebd7e550/`): counter columns_laid 111; deciding places outside the corridor 84 -> 45
+  (limit 21) FAIL; metres driven outside 33,518 -> 32,505 (limit 16,759) FAIL; crews re-dealt 40 -> 0 PASS; contacts 16,826 -> 18,412
+  (limit 18,514) pass; probe guards fail in 6 cells (locks 5 click all-in 19.6 -> 28.8 s; terminus 3 route all-in 16.8 -> 24.2 s and
+  twitch 0 -> 13.2 m; crossing 5 click twitch 23.0 -> 28.1 m; crossing 5 route never-in 0 -> 1); yard_open no-change FAIL (44/96 rows
+  identical: the column engaged on open ground 12 times because "open" meant the scan reaching 100 m and yard_open's walls sit inside
+  it). Helps on plain clicks (crossing 3 outside 11 -> 0, crossing 5 23 -> 2, locks 2 -> 0 / 5 -> 2, metres outside ~halved); route
+  cells unchanged (the final click isn't where squads leave the corridor). **Probe bug (orders' own):** the make targets split arm
+  flags on commas, so `--probe-click=-29.3,85.8` reached the probe as `-29.3`, errored and clicked (0,0): the "his click" cells AND the
+  earlier paired laptop shots (2b5fbbeaf) were NOT his click; fixed 7e9bd7fb7 (x/z syntax, a malformed click exits 2). The fail stands
+  without those cells. **Ruled:** O7 stays OFF; v2 (open ground = clear width fits today's body; route legs; whole squads kept) is
+  round 38's lead item, with his click re-read at the real point for information now. **Lesson:** a probe flag that fails to parse
+  must stop the run, never fall back to a default.
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
