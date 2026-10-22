@@ -200,6 +200,13 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   crew >= 10 m off its seat (driving to/from it), which no seat choice reaches. **Ruled:** no series; round 39 re-files on SEATED
   give-ways only, or treats the en-route half as traffic. Native: no twin for M7; M5b needs one if it changes `choose()` (drive_native
   mirrors _manoeuvre/choose/behind/simulate since round 33).
+- **R38.4 (2026-10-22) F3 the Tanker repairs under fire PASSES; ships ON (his call).** feedback (builder2, f0ad5a44d, 320 paired guard
+  fights, base `--repair-report` v ON `--repair-under-fire --repair-report`; base replays 1c484a525 exactly, 320/320, 0 flips):
+  deciding gang hp mended a fight 399.6 -> 556.5 (+39 %, 174 under fire; 93 fights up, 16 down of 120; +157, se 50); guards: blob 49
+  -> 48 % (2 flips to a loss, 1 to a win), turtle 40 -> 41 % (+1.2, se 0.9, McNemar p 0.94); gangs as guard side blob 5 -> 6 of 30,
+  turtle 3 -> 4 (p 0.5); kills and median length flat per faction (gangs blob kills 51.0 -> 51.2, length 102 -> 99 s). Next: the
+  default flip (REPAIR_UNDER_FIRE_DEFAULT = true) as its own commit, a full check naming what moves (sim-baseline, maybe announcer
+  transcripts); the orchestrator adopts. builder2's series slot -> native's N3 trial -> doctrine.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
