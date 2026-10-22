@@ -719,3 +719,8 @@ LINES += [
 import lines_r31_34  # noqa: E402  (the same fields; owed since round 31, filed by native in round 35)
 
 LINES += lines_r31_34.LINES
+
+# ---------------------------------------------------------------- round 36 (round 37 native N6) ------------------------
+import lines_r36  # noqa: E402  (the same fields; round 36's close skipped the re-render, close step 5b)
+
+LINES += lines_r36.LINES

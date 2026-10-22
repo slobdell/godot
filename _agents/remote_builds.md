@@ -805,3 +805,16 @@ PATH=$HOME/projects/bin:$PATH` inside the unit's script; otherwise `make gcp-sta
 (no `local.mk`, so SMOKE_NET_PORT 9181) ran combat-smoke at once on builder0 and collided: `NET_CHECK FAIL peer=0 tanks_seen=3/2 no
 damage` (2026-10-21 ~01:45 and ~02:00 PDT); each passed alone. A side worktree that runs smokes needs its own port offset (copy the
 stream's `local.mk` with a different OFFSET, or `make worktree`'s port block), or its remotes run one at a time.
+
+- **Round 37: perf-judge never judges on builder2 (R37.20).** Since the 2026-10-19 conversion builder2 is an e2-highcpu-32 (Intel
+  Broadwell, mixed platforms per Spot start): it reads the perf reference ~2.5x slower than the stale c4d nominal and its brains at
+  21-34 ms a tick against scenario_perf's ABSOLUTE 20 ms line. A NOT JUDGED perf-judge on builder2 is the machine, not load; judge
+  perf on builder0 only (`make remote T=perf-judge`, alone, in a quiet window).
+- **Round 37: builder2 series ran at J=6 and left ~75 % of the box idle (the lead's htop, 2026-10-21 ~22:35 PDT).** Measured on
+  builder2 during manoeuvre's M5a series: 6 Godot processes at ~110 % each, `top` 19.7 us / 78.2 id, steal 0.0, iowait 0.0, PSI cpu and
+  io 0, 17.7 GB free of 32. A sim is ~one core, so a series' J sets the box's use. The e2-highcpu-32's 32 vCPUs are 16 physical cores
+  (hyperthreads): run builder2 series at **J ~14** (memory allows it: ~0.6 GB a sim). Results don't depend on J (deterministic sims);
+  builder0 (12 threads) stays at its own J.
+  **Correction (rules):** guard.sh (the blob/turtle lines) already runs GUARD_JOBS=20, one seed (20 fights) per remote call; its idle
+  time is the TAIL: each call waits for its slowest fight (up to 600 s sim) while the other cores sit idle. The lever there is more
+  fights per call (2 seeds a call, or a rolling queue that keeps ~14-20 running), not J. The J=6 note above is manoeuvre's driver.

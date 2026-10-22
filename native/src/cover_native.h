@@ -6,6 +6,8 @@
 #pragma once
 
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/packed_int32_array.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/templates/local_vector.hpp>
 #include <godot_cpp/variant/packed_float64_array.hpp>
@@ -51,6 +53,10 @@ public:
 	bool segment_hits(int index, const Vector2 &a, const Vector2 &b, double grow) const;
 	bool path_blocked(const Vector2 &a, const Vector2 &b, double grow);
 	int memo_size() const { return (int)(memo_fine.size() + memo_coarse.size()); }
+	// Round 37 (native N2, cover's K2/K3): CoverMap.low_screen, low_features_near and Armor.cover_roll.
+	Dictionary low_screen(const Vector2 &center, const Vector2 &forward, const Vector2 &toward, const Vector3 &hull) const;
+	PackedInt32Array low_features_near(const Vector2 &center, double radius) const;
+	static double cover_roll(int64_t projectile_id);
 };
 
 } // namespace godot

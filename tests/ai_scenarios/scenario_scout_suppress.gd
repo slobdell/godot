@@ -24,7 +24,9 @@ extends TestCase
 ## [it comes round in about a turn, not a shuffle]; no hull contact. With CP-S1 all four passed (pooled n = 18).
 ## Round 28: CP-S1 (the lay planner under SUPPRESS) did NOT ship by its census bar (branch `scout-s1-suppresslay`);
 ## main's band-and-face chain fails these two (pooled n = 18: behind first-on 3.5 s, crossing on point 0.48).
-const PENDING := ["test_target_behind", "test_target_crossing"]
+## Round 37 (native N5): test_target_behind PROMOTED. It passed identically while still marked pending in every check since at
+## least 2026-10-20 (n=3, shots=101, either switch setting; manoeuvre's logs), so it now gates like the others.
+const PENDING := ["test_target_crossing"]
 const ON_POINT_BAR := 0.5
 const FIRST_BAR := 3.0
 

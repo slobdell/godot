@@ -130,7 +130,10 @@ static func low_cover_strike(arena_node: Node, victim: Tank, weapon: Dictionary,
 	# The shooter must be beyond the screen: a gun between the cover and the hull shoots past it.
 	if fraction <= 0.0 or Vector2(from.x - center.x, from.z - center.y).dot(toward) <= float(screen["far"]):
 		return null
-	if cover_roll(projectile_id) >= fraction:
+	# Round 37 (native N2): CoverNative.cover_roll is the twin (the same bits; tests/test_native_cover_low.gd).
+	var roll: float = map._native.cover_roll(projectile_id) if map._native != null and BrainSwitches.native \
+			and BrainSwitches.native_cover else cover_roll(projectile_id)
+	if roll >= fraction:
 		return null
 	var point: Vector2 = screen["point"]
 	return Vector3(point.x, 0.6, point.y)
