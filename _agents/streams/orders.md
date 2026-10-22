@@ -51,7 +51,24 @@ Nothing (the shots go to him at the close).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-22 ~17:40 PDT)
+### NOW (2026-10-22 late evening)
+- **G1 v2 judged: FAILS as filed** (R38.12; `g1-judged-builder0-4a765e6e2/README.md`): deciding all pass (click-cell places
+  outside 84 -> 18, metres after leaving 6,223 -> 1,393, re-dealt 58 -> 0, contacts 14,004 -> 10,622); guards fail: crossing 3
+  route twitch 5.8 -> 10.5 m, his 3-squad click twitch 2.3 -> 11.4 m, yard_open 177/192 identical. Stays OFF.
+- **G1 v3 (f2a94b6cc; Bar G1 v3 filed + amended before any number; judged seeds 3951-3962; judged read WAITS for settle's
+  deploy latch ON on main, latch-on base):** today's body judged at the click's width; the 2 s first-click re-lay only where
+  the column moved a squad > 40 m, and it sends the first click back to today's places. v2's three yard_open misses re-run
+  on the laptop: byte-identical to main. quick-remote 6ff215661 (= f2a94b6cc + docs): builder0 279 / 0.
+  Dev read 13 (builder0 light, f2a94b6cc, dev seeds 3801-3803, n 3; `g1-dev13-*`): deciding all pass (click cells: outside
+  32 -> 7, metres after leaving 2,433 -> 321; re-dealt 20 -> 0), contacts 3,232 -> 2,506, yard_open 48/48; guards left:
+  terminus 5 route twitch 18.7 -> 27.6 (no column laid there: whole-squad swaps over a deploy already twitching 0-28 m in
+  main) and his 3-squad click 2.3 -> 11.4 (settle's halt flip: the latch base).
+- **Full check of the v2 tree (builder2, a68ae8b84 = 4a765e6e2 + docs, load ~24, ~80 other Godots):** two failures OUTSIDE my
+  paths, both load-sensitive: `broker-test` (relay subtest "a host that never comes back closes the room": timed out) and
+  `shell-tools-test`'s `quiet-window` live sample ("our own are not foreign"). Re-running those two targets on a quieter
+  box; no green hash named yet.
+
+### EARLIER (2026-10-22 ~17:40 PDT)
 - **G1 judged series RUNNING** (builder0 light lane, J 4 alongside manoeuvre per R38.8; tree 4a765e6e2 = 130cf487f + evidence;
   fresh seeds 3881-3892; amended Bar G1). Its **full check** is queued on builder2 behind doctrine's (R38.2): the verdict counts
   only if that check is green on the same game code. Output: `references/round38/orders/g1-judged-builder0-4a765e6e2/`.
