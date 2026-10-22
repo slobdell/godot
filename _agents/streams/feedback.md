@@ -49,6 +49,49 @@ F1's page when it exists (the orchestrator relays).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+## REPORT (2026-10-22 ~15:10)
+
+**Green hash to merge: 70667a554** — `make native check` on builder2 exited 0: 3076 passed / 0 failed, 25 targets passed, 2 NOT
+JUDGED (perf-judge: builder2 is not a judging machine; ai-scenarios' scenario_perf refused, loaded box, ref 4.86x). sim-baseline
+UNMOVED on all 13 maps with F3 ON (the baseline doctrines field no `gang_support`, so no Tanker ever mends there); announcer
+transcripts current. (This Status commit sits on top; docs only.)
+
+**Done:**
+- **F2** (every look): after the end a click or key no longer orders; MATCH OVER where he clicked; Enter = play again, Esc = faction
+  menu; garage loop: its results screen keeps its keys. Tests: test_feedback_end_card (real pushed input), test_feedback_match_end.
+- **F1**: the directions page https://claude.ai/artifact/V4dAc2UNofD2553VqKKS5q (A end card, recommended; B broadcast; C banner;
+  P today + why, the default). **WAITING ON HIS PICK** (db picks/end; the orchestrator relays). On his pick: set
+  `MatchEnd.DEFAULT_LOOK` to it, delete the losing looks' draw code and the `--end-look` choices he did not take.
+- **F3 ON** (C38.4 passed, R38.4): the Tanker mends a friend under fire at 2.5 hp/s (never itself, never the base); the beam
+  pulses at half speed, fainter and thinner meanwhile. Seen in a real fight (feedback-fight seed 3, builder0, laptop preset,
+  4b070b284+ON tree): round 37's seed where every Tanker died unmended now shows 3 patients mending at t=21 s under fire; the
+  thinner beam reads at his pose. Clips: ~/projects/godot-feedback-endkeep/repair-seed3/.
+
+**Merge notes (shared files):** `game/match/match.gd` (C38.4 grant: REPAIR_UNDER_FIRE_*, `repair_under_fire_rate_for`, the
+`_resupply` restructure, stats `hp_mended`/`hp_mended_under_fire`, `_field_menders` gains `name`, `_exit_tree`'s
+`--repair-report` line); `tests/test_combat_faction_mechanics.gd` (no owner: the field-repair test now covers both rules).
+
+**What to playtest:** `make skirmish` to the end of a match (the default end is P today + why; `--end-look=a|b|c` needs the raw
+command: `.tools/... --path . -- --skirmish --end-look=a`); click after the end (MATCH OVER, no order), Enter / Esc. Gangs v anyone:
+Tankers mending under fire (thinner beam), `--no-repair-under-fire` for the old rule.
+
+**Known issues / for the lead:** the sim runs on after the end (survivors keep fighting behind the card; the board shows the
+finish). Under-fire beam is deliberately fainter: if he can't see it at his pose, raise UNDER_FIRE_STRENGTH/WIDTH (feedback_fx.gd).
+Two builder0 checks were lost to slot.sh's 90-min cap under load ~26: worth a lesson (route full checks to builder2 when builder0's
+load > 20).
+
+**Requests to other streams:** none open.
+
+**Next:** his F1 pick -> build it final (F1 done); stretch: rough edges in his picks at the laptop preset.
+
+**2026-10-22 ~14:20, F3 ON committed; its full check running on builder2.**
+- 370c2960e: REPAIR_UNDER_FIRE_DEFAULT = true (the orchestrator recorded R38.4). Two builder0 checks (4b070b284 OFF, 370c2960e ON)
+  were killed by slot.sh's 5400 s cap mid-`test` (load ~26, 67 other godot): NOT failures, nothing named from them. 370c2960e's
+  partial `test` did find one real failure: `test_combat_faction_mechanics::test_field_repair_stops_while_the_fire_is_landing`
+  asserted the old rule. 70667a554 tests both rules (OFF holds the hull at <= 60; ON mends, slower than quiet); quick-remote
+  builder0 24/0 (incl. the garage-loop key test). **Merge note:** that file is the combat family's (no owner this round).
+- Full check of 70667a554 on builder2 under way (the orchestrator's routing: builder2 if builder0 hit the cap again).
+
 **2026-10-22 12:20, F3 PASSED its bar (C38.4) -> ships ON.** f0ad5a44d, builder2, the 320 CP37.1 guard fights (blob + turtle,
 seeds 2601-2608/2701-2708, 5 arenas, both sides), base `--repair-report` v ON `--repair-under-fire --repair-report`, paired:
 - **Deciding:** gang hp mended a fight 399.6 -> 556.5 (+39 %; 174.1 of it under fire); up in 93, down in 16 of 120 gang fights;
