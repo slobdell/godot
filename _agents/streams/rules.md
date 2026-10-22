@@ -71,16 +71,19 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 since a10846307. The series ran on builder2, on pair tree **75c3e74e0** (main 0baf6e1ff + this Status). Each arm is the same
 320 guard fights as the base (5 maps x seeds 2601-2608 + 2701-2708 x both sides x blob/turtle), paired against
 `references/scoreboard/guards/9d325e291.fights.jsonl`. Base gate: OFF replays it with 0 flips. One open item:
-the **package arm** (all three ON). It STARTED 23:18 PDT on builder2 (unit rules-guard-package, 75c3e74e0, `--rules-on=sight,spread,pin_slow`,
-one seed per call: native's GUARD_CHUNK commit 39cb1e94b is not on this tree). Cover's K4 queues behind it.
+the **package arm** (all three ON) ran 23:18-00:28 PDT on builder2, 0 attempts lost, and is NOT MET (row below). builder2 is free
+for cover's K4. **Nothing of rules is open.**
 
 | arm (`--rules-on=`) | blob wins (base 48 %) | paired diff (se) | flips to loss / to win | McNemar p | blob kr | turtle | verdict |
 |---|---|---|---|---|---|---|---|
 | sight | 47 % | -0.6 pts (3.5) | 17 / 16 | 0.50 | 0.89 | 39 % | NOT MET |
 | spread | 46 % | -1.2 pts (3.5) | 15 / 13 | 0.43 | 0.86 | 39 % | NOT MET |
 | pin_slow | 44 % | -3.1 pts (2.5) | 14 / 9 | 0.20 | 0.86 | 39 % | NOT MET |
+| sight,spread,pin_slow (package) | 43 % | -4.4 pts (3.4) | 18 / 11 | 0.13 | 0.85 | 38 % | NOT MET |
 
-All three point the intended way, all sit inside noise, and none lets the turtle start winning. Guard 2's OUT cells are the same
+All three point the intended way, all sit inside noise, and none lets the turtle start winning. The package lands near the sum of the
+three (-4.4 pts against -0.6 - 1.2 - 3.1 = -4.9). It still sits inside 2 se (6.8 pts). Faction: Condemned -6.7, Gangs -10.0,
+Law -2.5, Syndicate 0.0. Guard 2: blob Gangs kills/match -1.1 (2se 0.6) and the usual turtle Gangs median (+58 s). Guard 2's OUT cells are the same
 fragile cells in every arm (turtle Gangs median, blob Law median), not rule effects. Rulings: R37.22, R37.24, R37.25 (all stay OFF), R37.26.
 
 **Why they're null:**
