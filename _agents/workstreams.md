@@ -646,6 +646,11 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   (733e024e4); latch stays an arm; the test is NOT edited (it caught a real defect). Round 38: latch the read the deploy decides on (at
   all-in) or one that has held ~2 s, as a new arm + bar + fresh seeds. **Lesson:** a bar's lines must include the property the change
   could break (here the first shape), not only the one it fixes; the full check is the last net, and it worked.
+- **R37.43 (2026-10-22) orders closed; one main check judges the batch.** main ebbbdf0f8 merges stream/orders 36ac42a84 (green
+  31e779e8e: builder0 `make native check exited 0`, 3050/0, 27 targets ALL JUDGED incl. perf-judge, sim-baseline unmoved): tooling,
+  probes, lab cases, OFF arms (latch, parked-hold, untangle=whole, seat-aside, cover-seat, group-lay=column). main c9996f0c4 adds
+  feedback's 771633ed5 (mk/feedback.mk REMOTE_COPYBACK_PROTECT). merge_check_needed says CHECK (orders' tree lacked feedback's picks,
+  M1, native's re-pins): ONE builder0 `make native check` on c9996f0c4 (builder0 is quiet: its perf-judge can judge main).
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
