@@ -22,7 +22,7 @@ extends SceneTree
 ## arrived (or the window ends), desktop 1280x720 and phone 1560x720, into `--probe-shots=DIR`.
 ##
 ##   godot --fixed-fps 30 --path . --script res://tests/orders_probe.gd -- --arena=locks --seed=34 --probe-squads=3 \
-##     --probe-route=click [--ground-cap=off] [--halt-price=off] [--probe-shots=build/orders-probe] [--probe-click=x,z]
+##     --probe-route=click [--ground-cap=off] [--halt-price=off] [--probe-shots=build/orders-probe] [--probe-click=x/z]
 ## The arms are main's own switches (O1's ground cap, O3's halt price; O2's when it lands), read by SelectionSquads.
 ## The click (unless given): the near bank of the deck nearest the arena's middle, DECK_BACK_M short of it on the
 ## player's side, where an anchor laid 70 m sideways meets the river (his case); moved by the seed (`_jitter`) unless 34. The route: the squads' middle, then
@@ -804,7 +804,12 @@ func _anchor_of(squad: Dictionary) -> Variant:
 func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
 	var given := _flag("probe-click", "")
 	if given != "":
-		var xz := given.split(",")
+		# "x/z" (an arm's flags are split on commas by the make targets, so "x,z" only works on a direct run).
+		var xz := given.replace("/", ",").split(",")
+		if xz.size() != 2:
+			push_error("--probe-click=%s: want x/z (or x,z on a direct run)" % given)
+			quit(2)
+			return Vector3.ZERO
 		return Vector3(float(xz[0]), 0.0, float(xz[1]))
 	var best: Variant = null
 	for box: Array in SlotGround.deck_boxes():
