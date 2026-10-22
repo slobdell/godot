@@ -54,14 +54,16 @@ agent-client-windowed: import ## Same, but in a window so /screenshot works and 
 agent-offline: import ## Headless offline match (BOTS, default 1) with the agent commanding the player tank
 	$(GODOT) --headless --path . -- --agent-port=$(AGENT_PORT) --bots=$(or $(filter-out 0,$(BOTS)),1)
 
+# Round 37 (native N4): the client's FAIL used to end the recipe there (`cmd | grep; status=$$?` under -eu -o pipefail exits on the
+# pipe), skipping the server-ERROR grep and the reap; `|| status=1` keeps the diagnostics and still fails.
 combat-smoke: import ## Headless server with a bot + a stationary bot client that must take damage
 	mkdir -p $(BUILD_DIR)
 	$(REAP_GODOT); $(GODOT) --headless --path . -- --server=$(SMOKE_NET_PORT) --bots=1 > $(BUILD_DIR)/combat-smoke-server.log 2>&1 & server=$$!; \
 	trap 'kill $$server 2>/dev/null || true' EXIT; \
-	$(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
+	status=0; $(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
 		--connect=ws://127.0.0.1:$(SMOKE_NET_PORT) --expect-tanks=2 --min-travel=0 --expect-damage --timeout=60 \
-		2>&1 | grep -E 'NET_CHECK|ERROR'; \
-	status=$$?; grep -E 'destroyed' $(BUILD_DIR)/combat-smoke-server.log || true; \
+		2>&1 | grep -E 'NET_CHECK|ERROR' || status=1; \
+	grep -E 'destroyed' $(BUILD_DIR)/combat-smoke-server.log || true; \
 	grep -E 'ERROR' $(BUILD_DIR)/combat-smoke-server.log | grep -vF '$(WS_DEPARTURE_RACE)' && status=1; \
 	reap combat-smoke/server $$server $(BUILD_DIR)/combat-smoke-server.log || status=1; \
 	exit $$status
@@ -103,10 +105,19 @@ broker-smoke: $(BROKER_DEPS) ## Real broker process + scripted host/players: rel
 # room on a local broker; clients join with the code it prints.
 RELAY_SMOKE_HOST_FLAGS ?= --demo --bots=2
 
+# Round 37 (native N4): wait for the broker of log $(1) (pid $$broker) to print BROKER_LISTENING, or FAIL LOUDLY with its log. Until
+# round 37 the 5 s wait fell through silently, and a dead broker surfaced 30 s later as "host never opened a room".
+define broker_listening
+	listening=""; for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(1) && { listening=1; break; }; \
+		kill -0 $$broker 2>/dev/null || break; sleep 0.1; done; \
+	if [ -z "$$listening" ]; then echo "broker never printed BROKER_LISTENING in 5 s (process $$(kill -0 $$broker 2>/dev/null && echo alive || echo exited)); its log $(1):"; \
+		cat $(1); kill $$broker 2>/dev/null || true; exit 1; fi
+endef
+
 # Start a broker + host, wait for the room code in $$code. Recipe fragment (one shell).
 define relay_host_up
 	$(REAP_GODOT); $(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) $(1) > $(BUILD_DIR)/$(2)-broker.log 2>&1 & broker=$$!; \
-	for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(BUILD_DIR)/$(2)-broker.log && break; sleep 0.1; done; \
+	$(call broker_listening,$(BUILD_DIR)/$(2)-broker.log); \
 	$(GODOT) --headless --path . -- --host --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) $(RELAY_SMOKE_HOST_FLAGS) > $(BUILD_DIR)/$(2)-host.log 2>&1 & host=$$!; \
 	trap 'kill $$host $$broker 2>/dev/null || true' EXIT; \
 	code=""; for i in $$(seq 1 150); do code=$$(grep -oP 'TANK_SQUAD_ROOM code=\K\w+' $(BUILD_DIR)/$(2)-host.log || true); [ -n "$$code" ] && break; sleep 0.2; done; \
@@ -300,7 +311,7 @@ broker-load: $(BROKER_DEPS) ## Broker CPU + memory under measured relay traffic 
 	mkdir -p $(BUILD_DIR)
 	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) > $(BUILD_DIR)/broker-load.log 2>&1 & broker=$$!; \
 	trap 'kill $$broker 2>/dev/null || true' EXIT; \
-	for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(BUILD_DIR)/broker-load.log && break; sleep 0.1; done; \
+	$(call broker_listening,$(BUILD_DIR)/broker-load.log); \
 	$(NODE) $(BROKER_DIR)/load.mjs $(SMOKE_BROKER_PORT) $$broker $(ROOMS) $(PLAYERS) $(or $(filter-out 30,$(SECONDS)),20)
 
 # The touch lobby, tapped through headless against a local broker.
@@ -308,7 +319,7 @@ lobby-smoke: import $(BROKER_DEPS) ## --lobby: a wrong room code returns to the 
 	mkdir -p $(BUILD_DIR)
 	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) > $(BUILD_DIR)/lobby-smoke-broker.log 2>&1 & broker=$$!; \
 	trap 'kill $$broker 2>/dev/null || true' EXIT; \
-	for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(BUILD_DIR)/lobby-smoke-broker.log && break; sleep 0.1; done; \
+	$(call broker_listening,$(BUILD_DIR)/lobby-smoke-broker.log); \
 	status=0; $(GODOT) --headless --path . --script res://tests/net/lobby_check.gd -- --lobby --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) --stats-every=0 \
 		> $(BUILD_DIR)/lobby-smoke.log 2>&1 || status=$$?; \
 	grep -E 'LOBBY_CHECK|ERROR' $(BUILD_DIR)/lobby-smoke.log || true; \

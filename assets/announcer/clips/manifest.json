@@ -8305,6 +8305,42 @@
    "text": "A heavy hit, and they absorb it. For now.",
    "voice": "JR1"
   },
+  "caller.hit.flank.01": {
+   "duration_s": 3.701,
+   "file": "caller/caller.hit.flank.01.ogg",
+   "kind": "line",
+   "request": "caller.hit.flank.01",
+   "request_key": "3be5f64269fcfbf89f42113804cd428acade6b3d",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Caught broadside. That is what happens when you show them your doors",
+   "text": "Caught broadside! That is what happens when you show them your doors!",
+   "voice": "JR1"
+  },
+  "caller.hit.flank.02": {
+   "duration_s": 2.846,
+   "file": "caller/caller.hit.flank.02.ogg",
+   "kind": "line",
+   "request": "caller.hit.flank.02",
+   "request_key": "b54a00971933bec172ba31c06a45a1c66b772a96",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They went the long way round and it paid off big",
+   "text": "They went the long way round, and it paid off big!",
+   "voice": "JR1"
+  },
+  "caller.hit.flank.03": {
+   "duration_s": 2.747,
+   "file": "caller/caller.hit.flank.03.ogg",
+   "kind": "line",
+   "request": "caller.hit.flank.03",
+   "request_key": "96752985a9c87551d773ea857f2c49ed7c5e9fd6",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Right in the side panel. Nobody was watching that flank",
+   "text": "Right in the side panel! Nobody was watching that flank!",
+   "voice": "JR1"
+  },
   "caller.interrupt.01": {
    "duration_s": 1.06,
    "file": "caller/caller.interrupt.01.ogg",
@@ -38642,7 +38678,7 @@
    "voice": "corporate2"
   }
  },
- "generated": "2026-10-05",
+ "generated": "2026-10-21",
  "lines": {
   "caller.army.01": {
    "bases": [
@@ -40796,6 +40832,27 @@
    "speaker": "caller",
    "variants": {
     "": "caller.hit.34"
+   }
+  },
+  "caller.hit.flank.01": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.hit.flank.01"
+   }
+  },
+  "caller.hit.flank.02": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.hit.flank.02"
+   }
+  },
+  "caller.hit.flank.03": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.hit.flank.03"
    }
   },
   "caller.interrupt.01": {

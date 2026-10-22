@@ -1,6 +1,10 @@
 #include "cover_native.h"
 
+#include <godot_cpp/classes/geometry2d.hpp>
 #include <godot_cpp/core/class_db.hpp>
+
+#include <algorithm>
+#include <vector>
 
 #include <cmath>
 #include <limits>
@@ -15,6 +19,9 @@ void CoverNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("segment_hits", "index", "a", "b", "grow"), &CoverNative::segment_hits);
 	ClassDB::bind_method(D_METHOD("path_blocked", "a", "b", "grow"), &CoverNative::path_blocked);
 	ClassDB::bind_method(D_METHOD("memo_size"), &CoverNative::memo_size);
+	ClassDB::bind_method(D_METHOD("low_screen", "center", "forward", "toward", "hull"), &CoverNative::low_screen);
+	ClassDB::bind_method(D_METHOD("low_features_near", "center", "radius"), &CoverNative::low_features_near);
+	ClassDB::bind_static_method("CoverNative", D_METHOD("cover_roll", "projectile_id"), &CoverNative::cover_roll);
 }
 
 // cover_map.gd `_index`: each feature's grown corners (float32 math), their bounds, the cells they cover.
@@ -215,6 +222,175 @@ int CoverNative::clear_line(const Vector3 &a, const Vector3 &b) {
 
 int CoverNative::clear_line_coarse(const Vector3 &a, const Vector3 &b) {
 	return clear(a, b, 2.0, memo_coarse);
+}
+
+// ---- Round 37 (native N2): cover's K2 / K3 (game/ai/cover_map.gd low_screen / low_features_near, game/combat/armor.gd
+// cover_roll). Same widths as the GDScript: Vector2 math (and a Vector2 times a float, which narrows the float first) in
+// real_t; `float` locals, Vector2 members read into them, and PackedFloat64Array cells in double.
+
+namespace {
+constexpr int HULLDOWN_SLICES = 32;
+constexpr double HULLDOWN_REACH_M = 3.0;
+
+// cover_map.gd `_corners(index, 0.0)`: feature["half"] + Vector2(0, 0), then the four float32 corners.
+void corners_of(const PackedVector2Array &f_center, const PackedVector2Array &f_axis, const PackedVector2Array &f_half,
+		int32_t index, Vector2 out[4]) {
+	const Vector2 axis = f_axis[index];
+	const Vector2 across(-axis.y, axis.x);
+	const Vector2 half = f_half[index] + Vector2((real_t)0.0, (real_t)0.0);
+	const Vector2 center = f_center[index];
+	out[0] = center + axis * half.x + across * half.y;
+	out[1] = center - axis * half.x + across * half.y;
+	out[2] = center - axis * half.x - across * half.y;
+	out[3] = center + axis * half.x - across * half.y;
+}
+} // namespace
+
+Dictionary CoverNative::low_screen(const Vector2 &center, const Vector2 &forward, const Vector2 &toward,
+		const Vector3 &hull) const {
+	// String keys, as the GDScript literal has them (a caller indexes screen["fraction"]).
+	static const String fraction_k("fraction"), point_k("point"), far_k("far");
+	Dictionary none;
+	none[fraction_k] = 0.0;
+	none[point_k] = center;
+	none[far_k] = 0.0;
+	if ((double)hull.y <= 0.0 || (double)toward.length_squared() < 1e-9) {
+		return none;
+	}
+	// along := absf(forward.dot(toward)); aside := absf(forward.x * toward.y - forward.y * toward.x) (members as floats)
+	const double along = std::fabs((double)forward.dot(toward));
+	const double aside = std::fabs((double)forward.x * (double)toward.y - (double)forward.y * (double)toward.x);
+	const double width = (double)hull.x * along + (double)hull.z * aside;
+	const double depth = (double)hull.z * 0.5 * along + (double)hull.x * 0.5 * aside;
+	if (width <= 0.0) {
+		return none;
+	}
+	const Vector2 across(-toward.y, toward.x);
+	const double reach = depth + HULLDOWN_REACH_M;
+	const Vector2 side = across * (real_t)width * (real_t)0.5;
+	const Vector2 out = toward * (real_t)reach;
+	const Vector2 corners[4] = { center + side, center - side, center + out + side, center + out - side };
+	Vector2 low = corners[0];
+	Vector2 high = corners[0];
+	for (int c = 0; c < 4; c++) {
+		low = low.min(corners[c]);
+		high = high.max(corners[c]);
+	}
+	std::vector<int32_t> candidates;
+	const int32_t cx0 = (int32_t)std::floor((double)low.x / CELL), cx1 = (int32_t)std::floor((double)high.x / CELL);
+	const int32_t cz0 = (int32_t)std::floor((double)low.y / CELL), cz1 = (int32_t)std::floor((double)high.y / CELL);
+	for (int32_t cx = cx0; cx <= cx1; cx++) {
+		for (int32_t cz = cz0; cz <= cz1; cz++) {
+			const LocalVector<int32_t> *list = grid.getptr(Vector2i(cx, cz));
+			if (list != nullptr) {
+				for (uint32_t i = 0; i < list->size(); i++) {
+					candidates.push_back((*list)[i]);
+				}
+			}
+		}
+	}
+	std::sort(candidates.begin(), candidates.end());
+	candidates.erase(std::unique(candidates.begin(), candidates.end()), candidates.end());
+	double cover[HULLDOWN_SLICES];
+	for (int i = 0; i < HULLDOWN_SLICES; i++) {
+		cover[i] = 0.0;
+	}
+	double near = std::numeric_limits<double>::infinity();
+	double far = 0.0;
+	for (const int32_t index : candidates) {
+		const double height = f_height[index];
+		if (height >= eye_height || height <= 0.0) {
+			continue;
+		}
+		double a_min = std::numeric_limits<double>::infinity(), a_max = -std::numeric_limits<double>::infinity();
+		double s_min = std::numeric_limits<double>::infinity(), s_max = -std::numeric_limits<double>::infinity();
+		Vector2 fc[4];
+		corners_of(f_center, f_axis, f_half, index, fc);
+		for (int c = 0; c < 4; c++) {
+			const Vector2 offset = fc[c] - center;
+			a_min = std::min(a_min, (double)offset.dot(toward));
+			a_max = std::max(a_max, (double)offset.dot(toward));
+			s_min = std::min(s_min, (double)offset.dot(across));
+			s_max = std::max(s_max, (double)offset.dot(across));
+		}
+		if (a_max < depth || a_min > reach) {
+			continue;
+		}
+		const double hides = std::min(1.0, height / (double)hull.y);
+		bool used = false;
+		for (int slice = 0; slice < HULLDOWN_SLICES; slice++) {
+			const double s = -width * 0.5 + width * ((double)slice + 0.5) / (double)HULLDOWN_SLICES;
+			if (s >= s_min && s <= s_max && hides > cover[slice]) {
+				cover[slice] = hides;
+				used = true;
+			}
+		}
+		if (used) {
+			near = std::min(near, std::max(a_min, depth));
+			far = std::max(far, a_max);
+		}
+	}
+	double total = 0.0;
+	for (int slice = 0; slice < HULLDOWN_SLICES; slice++) {
+		total += cover[slice];
+	}
+	if (total <= 0.0) {
+		return none;
+	}
+	Dictionary result;
+	result[fraction_k] = total / (double)HULLDOWN_SLICES;
+	result[point_k] = center + toward * (real_t)near;
+	result[far_k] = far;
+	return result;
+}
+
+PackedInt32Array CoverNative::low_features_near(const Vector2 &center, double radius) const {
+	std::vector<int32_t> seen;
+	const int32_t cx0 = (int32_t)std::floor(((double)center.x - radius) / CELL);
+	const int32_t cx1 = (int32_t)std::floor(((double)center.x + radius) / CELL);
+	const int32_t cz0 = (int32_t)std::floor(((double)center.y - radius) / CELL);
+	const int32_t cz1 = (int32_t)std::floor(((double)center.y + radius) / CELL);
+	for (int32_t cx = cx0; cx <= cx1; cx++) {
+		for (int32_t cz = cz0; cz <= cz1; cz++) {
+			const LocalVector<int32_t> *list = grid.getptr(Vector2i(cx, cz));
+			if (list == nullptr) {
+				continue;
+			}
+			for (uint32_t i = 0; i < list->size(); i++) {
+				const int32_t index = (*list)[i];
+				if (f_height[index] < eye_height && f_height[index] > 0.0) {
+					seen.push_back(index);
+				}
+			}
+		}
+	}
+	std::sort(seen.begin(), seen.end());
+	seen.erase(std::unique(seen.begin(), seen.end()), seen.end());
+	PackedInt32Array found;
+	Geometry2D *geometry = Geometry2D::get_singleton();
+	for (const int32_t index : seen) {
+		Vector2 fc[4];
+		corners_of(f_center, f_axis, f_half, index, fc);
+		for (int k = 0; k < 4; k++) {
+			// Geometry2D.get_closest_point_to_segment, the engine's own (the GDScript calls the same singleton).
+			const Vector2 closest = geometry->get_closest_point_to_segment(center, fc[k], fc[(k + 1) % 4]);
+			if ((double)closest.distance_to(center) <= radius) {
+				found.push_back(index);
+				break;
+			}
+		}
+	}
+	return found;
+}
+
+// Armor.cover_roll: GDScript ints are int64 with wrap-around; the multiply is done unsigned for the same bits.
+double CoverNative::cover_roll(int64_t projectile_id) {
+	const uint64_t mask = 0xFFFFFFFFull;
+	uint64_t x = ((uint64_t)projectile_id * 2654435761ull + 0x9E3779B9ull) & mask;
+	x = (((x >> 16) ^ x) * 0x45D9F3Bull) & mask;
+	x = (((x >> 16) ^ x) * 0x45D9F3Bull) & mask;
+	x = (x >> 16) ^ x;
+	return (double)(x & 0xFFFFFFull) / 16777216.0;
 }
 
 } // namespace godot

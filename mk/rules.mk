@@ -50,3 +50,27 @@ RULES ?= sight,spread,pin_slow
 .PHONY: rules-skirmish
 rules-skirmish: native-fresh import ## Round 37 (rules): play a skirmish with the rules ON (RULES=sight,spread,pin_slow; ARENA=terminus SEED=n)
 	$(GODOT) --path . -- --skirmish --enemy=cpu --seed=$(or $(SEED),3) --arena=$(or $(ARENA),terminus) --rules-on=$(RULES)
+
+# rules-guard-motion: the orchestrator's close-of-round question. In the guard lines, how much does each SIDE fire on the move?
+# The guard fights exactly as guard-run plays them (tests/rules/guard_motion_probe.gd extends tests/ai_scenarios/guard_line.gd;
+# read-only), each round tagged by its shooter's side and speed. Light: tools/remote.sh --light rules-guard-motion.
+RULES_GM_KINDS ?= blob
+RULES_GM_AT ?= terminus locks sumps gorge parade
+RULES_GM_SEEDS ?= 2601 2602 2603 2604 2605 2606 2607 2608
+RULES_GM_SIDES ?= green rust
+RULES_GM_SECONDS ?= 600
+RULES_GM_DIR ?= $(BUILD_DIR)/rules-guard-motion
+
+.PHONY: rules-guard-motion
+rules-guard-motion: import ## Round 37 (rules): the guard lines' shots by side and motion (still / slow / fast): does the CPU defender fire on the move as much as the blob?
+	@rm -rf $(RULES_GM_DIR) && mkdir -p $(RULES_GM_DIR)
+	@echo ">> rules-guard-motion on $$(hostname) | commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)} | kinds '$(RULES_GM_KINDS)' | flags '$(RULES_FLAGS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)" | tee $(RULES_GM_DIR)/run.txt
+	@for kind in $(RULES_GM_KINDS); do for seed in $(RULES_GM_SEEDS); do for arena in $(RULES_GM_AT); do for side in $(RULES_GM_SIDES); do \
+		echo "$$kind $$arena $$seed $$side"; done; done; done; done | \
+		xargs -P $(RULES_JOBS) -L 1 sh -c 'timeout 1800 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/rules/guard_motion_probe.gd -- --skirmish --demo-match --clean --seed=$$2 --arena=$$1 --mute \
+		--guard=$$0 --guard-side=$$3 --seconds=$(RULES_GM_SECONDS) $(RULES_FLAGS) > $(RULES_GM_DIR)/$$0-$$1-$$2-$$3.log 2>&1 || true; \
+		grep -q "^GUARD_MOTION" $(RULES_GM_DIR)/$$0-$$1-$$2-$$3.log || echo "  MISSING GUARD_MOTION $$0 $$1 s$$2 $$3"'
+	@grep -h "^GUARD_MOTION" $(RULES_GM_DIR)/*.log | sed 's/^GUARD_MOTION //' > $(RULES_GM_DIR)/rows.jsonl
+	@grep -h "^GUARD_RESULT" $(RULES_GM_DIR)/*.log | sed 's/^GUARD_RESULT //' > $(RULES_GM_DIR)/results.jsonl
+	@$(PYTHON) tests/rules/guard_motion_table.py $(RULES_GM_DIR)/rows.jsonl $(RULES_GM_DIR)/results.jsonl | tee $(RULES_GM_DIR)/table.txt

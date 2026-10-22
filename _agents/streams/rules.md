@@ -67,13 +67,53 @@ Nothing (his answers are recorded). His playtest at the round's close is the sub
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Now (2026-10-21 ~10:15 PDT):** R1, R2 (spread + short halt, with ruling R37.2 (b)) and R3 are BUILT, all OFF, lab-green:
-`test_rules_` 19/19 on builder0 at 51e5c6ff4. quick-remote passed at 12f410388 (builder0: 83 passed, 0 failed; lint 586
-scripts). Full `make check` on **51e5c6ff4** is running on builder0 (the hash I will name). Smoke: `make rules-shots`
-(laptop, terminus, seed 3, --scripted, OFF v ON at 45/75 s, 1854x1011 and 1200x540): 8 frames, 0 engine errors, both arms
-play normally; one fight each, so the shape, not a count. **Next: wait for CP37.1 (native's guard lines + noise), fill
-bar R's k·se and n, cut the pair tree, native runs the lab tests under `make native test` with each switch ON (R37.4),
-then the series on builder2.**
+**ROUND 37 CLOSE NOTES (rules, 2026-10-21 ~19:00 PDT).** Green: **2c85080fc** (builder0 full `make check`, 2992/0), on main
+since a10846307. The series ran on builder2, on pair tree **75c3e74e0** (main 0baf6e1ff + this Status). Each arm is the same
+320 guard fights as the base (5 maps x seeds 2601-2608 + 2701-2708 x both sides x blob/turtle), paired against
+`references/scoreboard/guards/9d325e291.fights.jsonl`. Base gate: OFF replays it with 0 flips. One open item:
+the **package arm** (all three ON) ran 23:18-00:28 PDT on builder2, 0 attempts lost, and is NOT MET (row below). builder2 is free
+for cover's K4. **Nothing of rules is open.**
+
+| arm (`--rules-on=`) | blob wins (base 48 %) | paired diff (se) | flips to loss / to win | McNemar p | blob kr | turtle | verdict |
+|---|---|---|---|---|---|---|---|
+| sight | 47 % | -0.6 pts (3.5) | 17 / 16 | 0.50 | 0.89 | 39 % | NOT MET |
+| spread | 46 % | -1.2 pts (3.5) | 15 / 13 | 0.43 | 0.86 | 39 % | NOT MET |
+| pin_slow | 44 % | -3.1 pts (2.5) | 14 / 9 | 0.20 | 0.86 | 39 % | NOT MET |
+| sight,spread,pin_slow (package) | 43 % | -4.4 pts (3.4) | 18 / 11 | 0.13 | 0.85 | 38 % | NOT MET |
+
+All three point the intended way, all sit inside noise, and none lets the turtle start winning. The package lands near the sum of the
+three (-4.4 pts against -0.6 - 1.2 - 3.1 = -4.9). It still sits inside 2 se (6.8 pts). Faction: Condemned -6.7, Gangs -10.0,
+Law -2.5, Syndicate 0.0. Guard 2: blob Gangs kills/match -1.1 (2se 0.6) and the usual turtle Gangs median (+58 s). Guard 2's OUT cells are the same
+fragile cells in every arm (turtle Gangs median, blob Law median), not rule effects. Rulings: R37.22, R37.24, R37.25 (all stay OFF), R37.26.
+
+**Why they're null:**
+- **R1 sight:** spotting is the TEAM's. Any crew that sees a contact shares it, and the longest eyes (110 m and 105 m) stay
+  well past gun range (70 m) even at x0.85 moving. One crew's own radius rarely decides who sees first.
+- **R2 spread:** the blob is his right-click, so it never makes the short halt (ruling (b)) and only pays the wider spread. Most
+  damage is close in (movers beyond 50 m = 19 % of direct damage).
+- **All three, the motion read (R37.26):** the CPU "defender" fires on the move too. Faster than a crawl: blob 70 % of
+  rounds, CPU 56 %; fast: 33 % against 18 %. The CPU fires 41 % more rounds, so it pays back most of any motion tax (builder0 light,
+  68bfd11c1, 80 OFF blob fights).
+
+**Round 38 candidates:**
+- **(1) Doctrine:** a CPU defender that actually STOPS to fire, i.e. holds and shoots when the enemy comes at it, rather than rolling.
+  A motion tax only favours a defender that is still, and today's isn't.
+- **(2) The shared picture:** what a moving team shares, or how far its spotting reaches (the orchestrator's lever).
+- (1) is the better first try: it is AI doctrine (tactics/manoeuvre), and with (1) in, the round 37 rules may stop being null.
+  Re-run the three arms on top of it, since they are cheap to re-judge: switches, a paired file and `tests/rules/bar_r.py`.
+
+**For his playtest:** the switches stay on main, all OFF by default.
+- All three ON: `make rules-skirmish` (Terminus, seed 3, against the CPU).
+- One rule: `make rules-skirmish RULES=sight` (or `spread`, or `pin_slow`).
+- Another map: `make rules-skirmish ARENA=locks SEED=5`.
+- Today's game (OFF): `make skirmish`.
+- Any run of the game also takes `--rules-on=sight,spread,pin_slow` (or `--rules-sight`, `--rules-spread`, `--rules-pin-slow`)
+  after `--`.
+
+What to watch is under *What to playtest* below.
+
+**Tools left for round 38:** `make rules-moving` (damage by motion and range), `make rules-guard-motion` (shots by side and motion
+in the guard lines, by faction), `tests/rules/bar_r.py BASE ARM` (any arm by Bar R), `make rules-shots` (OFF v ON frames).
 
 **Measured:** R2's question (does moving fire matter?): movers (>= 15 % of top speed) deal **52.5 %** of direct-fire
 damage and 19.4 % from beyond 50 m (`make rules-moving`, 9d63f709a, builder0, CPU-v-CPU showmatch fights, terminus/locks/
@@ -83,8 +123,12 @@ sumps/gorge/parade x seeds 1-4, 180 s, n = 20 fights; direct damage 202 009, arc
 1. R1 own-motion sight: DONE at 9d63f709a (lab 6/6, builder0 light, `test FILTER=test_rules_sight`).
 2. R2 measure (`make rules-moving`: CPU-v-CPU showmatch fights, share of direct-fire damage by shooter motion x range): DONE, 52.5 %.
 3. R2 spread switch + short halt; R3 pin slow; lab tests both paths: DONE (12f410388; ruling (b) at 51e5c6ff4).
-4. quick-remote (PASSED 12f410388), then one full check on a named hash: 51e5c6ff4 running.
-5. After CP37.1 merges: bars in workstreams *Bars (round 37)*, series on builder2.
+4. quick-remote (PASSED 12f410388), then one full check on a named hash: GREEN 2c85080fc (builder0, 2992/0).
+5. After CP37.1 merges: bar R filled from its noise, series on builder2.
+
+**Machine lane (C37.1, the orchestrator's reminder):** every further full check and series of mine on **builder2** (`make
+gcp-remote T=...`; `make gcp-start` first if stopped, under systemd-run with ~/projects/bin on PATH). builder0 only for light
+runs. The check that went green on 2c85080fc ran on builder0 because builder2 was unreachable when it started. It was allowed to finish.
 
 **Switches:** `game/combat/rule_switches.gd` (`RuleSwitches`): `--rules-on=sight,spread,pin_slow`, `--rules-off=...`, or the
 brief's `--rules-sight` / `--rules-spread` / `--rules-pin-slow`. All OFF; sim-baseline is untouched with them OFF.
@@ -107,26 +151,128 @@ brief's `--rules-sight` / `--rules-spread` / `--rules-pin-slow`. All OFF; sim-ba
 - The brief's "a CPU tank halting to fire at 120 m": no direct-fire gun reaches 120 m (longest: railgun 110 m), so the lab
   case uses the Syndicate tank's railgun at > 80 m.
 
-**Bar R (filed 2026-10-21, recorded on main by the orchestrator; per R37.1(b), if CP37.1's base shows the blob near the
-floor the deciding metric switches to the one native names, and the bar is re-filed before any arm number):**
-
-**Bar R (rules R1/R2/R3), DRAFT filed 2026-10-21 by rules before any judged number; k·se and n are filled from CP37.1's
-noise (native's base read on builder2) before the series starts.** Arms: base = main at CP37.1's merge; each rule's arm =
-the same tree with `--rules-on=<rule>` (sight / spread / pin_slow), plus a package arm `--rules-on=sight,spread,pin_slow`.
-Judging: each rule alone first (its own switch); the package only if two or more pass alone or each is inside its noise
-alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions both ways, the grid and seeds native names.
-- **Deciding (each arm):** blob v tactics: the blob's win rate DOWN v base by more than k·se (k = 2, se = CP37.1's 2-seed-block
-  se of the win rate), AND the blob's kill ratio not up.
-- **Guard 1:** turtle v tactics: the turtle's win rate not UP v base by more than 2 se (the turtle must not start winning).
-- **Guard 2:** kills per match and match length per faction within base ± 2 se (no faction breaks: the stabilised-gun check
+**Bar R (rules R1/R2/R3), RE-FILED 2026-10-21 with PAIRED thresholds, before any arm number. The base comes from the
+orchestrator's CP37.1 base read (R37.14, recorded on main).** Base read: builder2, game tree main 9d325e291, the right-click
+blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0 % capped. Blob v tactics: blob wins 48 %
+(± 11, 2 se unpaired), kill ratio 0.88 (± 0.07), median 112 s. Turtle v tactics: turtle wins 39 % (± 15), kill ratio 0.80
+(± 0.17), median 194 s.
+- **Workload (n):** the SAME 320 fights per arm (both lines, the same maps, seeds and sides), on builder2.
+- **Base:** main after CP37.1 and the rules merge, every switch OFF. With all switches OFF it must replay
+  `references/scoreboard/guards/9d325e291.fights.jsonl` fight for fight (native shows the replay). If it does not, the base is
+  re-run on the new tree and the pairing uses that.
+- **Arms:** one arm per rule on that tree, `--rules-on=sight`, `spread` and `pin_slow`. Package arm `--rules-on=sight,spread,pin_slow`
+  only if two or more rules pass alone, or each sits inside its noise alone (argued in the verdict).
+- **Judged PAIRED** with `python3 tools/scoreboard/guard.py --pair <base fights.jsonl> <arm raw>`: flips per fight, exact
+  McNemar p, and paired differences with per-seed se. All se below are that paired per-seed se; none is the unpaired ± above.
+- **Deciding (each arm):** blob v tactics. The blob's win rate must be DOWN v base by more than 2 x paired se, AND the exact
+  McNemar p (blob win -> loss flips v loss -> win flips) must be < 0.05.
+- **Second line:** the blob's kill ratio must not be UP by more than 2 x paired se. A falling win rate with a rising kill
+  ratio is reported as a contradiction, not a pass.
+- **Faction:** faction dominates any single seed (base: Syndicate wins 73 % as blob, 67 % as turtle; Gangs 30/17 %; Law 22/22 %).
+  Every arm also reports the paired blob win-rate difference per faction. These per-faction differences are not judged
+  (n per faction is 1/3), but a faction whose sign is opposite to the overall result is named in the verdict.
+- **Guard 1:** turtle v tactics. The turtle's win rate must not be UP v base by more than 2 x paired se, and its McNemar p
+  must not fall below 0.05 in the turtle's favour (the turtle must not start winning).
+- **Guard 2:** kills per match and match length (median, both lines), per faction, within base ± 2 x paired se (no faction breaks: the stabilised-gun check
   in the brief; a faction outside is REPORTED with its units, not fixed here).
 - **Guard 3 (R2 only, ruling R37.2 (c)):** contention: friendly contacts, all-in time, crews held behind a halted friend,
   and manoeuvre's wedge line, each no worse than base + 2 se on the scoreboard's moves/orders workload.
-- **Guard 4:** perf-judge on the arm's pair tree (the short halt and the motion-sight pass are per-crew GDScript).
+- **Guard 4:** perf-judge with the arm ON, on builder2 (the short halt and the motion-sight pass are per-crew GDScript). The OFF code is judged once on main by the orchestrator, after CP37.1 and my merge.
 - **Equality:** sim-baseline maps unmoved with every switch OFF (attributed with the switch OFF, C37.2).
 - **Reports (not judged):** the R2 measure's movers' share of direct damage (`make rules-moving`, base 52.5 % at 9d63f709a,
   builder0, n = 20 fights) per arm; first-spot distance by side in the blob line (R1).
 - **Last attempt / partial rule:** one re-tune per rule only on the guard lines (brief's stretch), then judged as it stands.
+
+**Series log (builder2, queue mine until done; M5a goes after):**
+- PAIR TREE **75c3e74e0** (pair/rules-r37) = main 291318ece (0baf6e1ff + docs) merged into stream/rules; it differs from main only in this
+  Status. Declared to native for the lab arms (each switch ON, `make native test`, both arms).
+- R37.4 CLEARED by native on 75c3e74e0 (builder0 light): `make native test FILTER=test_rules_` 20/0 with native ON and
+  20/0 with NATIVE=off. Every rules test passes in both arms (pin_slow 4, sight 6, spread 9). Equality is assertion by
+  assertion, not bit for bit, which R37.4 did not ask for; the series checks the sim itself.
+- 13:23 PDT start: OFF base-gate replay, `GUARD_TAG=base` (systemd unit rules-guard-base). Gate: 0 flips v 9d325e291.fights.jsonl.
+- 14:52 PDT finish: base gate **PASSED**. OFF on 75c3e74e0 replays 9d325e291.fights.jsonl: 320 of 320 paired, 0 flips each way,
+  blob 48 % / kr 0.88, turtle 39 % / kr 0.80, unchanged (builder2, 16 of 16 seeds, 0 attempts lost). Arms pair against that file.
+- 14:55 PDT start: arms sight -> spread -> pin_slow, one after another (systemd unit rules-guard-arms; raw in
+  ../godot-native-guard-raw/75c3e74e0-<rule>). Each takes ~1.5 h on builder2.
+- Queued behind the arms (systemd unit rules-guard3): Guard 3 (R2 contention) runs the round scoreboard workload
+  (`tools/scoreboard/run.sh`, fights/moves/orders, builder2) on 75c3e74e0 (OFF) and on **4c02e3d78** (branch
+  pair/rules-r37-spread-on, ARM ONLY, never merged). That commit is the pair tree plus one line, `DEFAULT_ON = ["spread"]`, because the
+  workload passes no switches. It is judged on contacts, jam/wedge, all-in and held at a mouth, against the scoreboard's ± noise column.
+- 16:08 PDT finish, **R1 sight arm (`--rules-on=sight`): deciding NOT MET.** builder2, 75c3e74e0, 320 of 320 paired, 0 lost.
+  - Blob wins 48 -> 47 % (paired diff -0.6 pts, se 3.5; flips 17 to a loss, 16 to a win; McNemar p 0.50).
+  - Blob kill ratio 0.88 -> 0.89 (+0.004, se 0.031): held.
+  - Guard 1 held: turtle 39 -> 39 % (13/13 flips).
+  - Faction (reported): blob Condemned -4.4, Gangs -3.3, Law +2.5, Syndicate +2.2 pts. Every one is inside 1 se.
+  - Guard 2: 3 of 16 cells OUT. Blob Law median length -17 s (2se 9.5). Turtle Gangs kills/match +1.6 (2se 1.4) and median
+    +41 s (2se 19). Gangs has only 6 seeds, and at 2 se about 1 of 16 cells would be OUT by chance.
+  - Read: own-motion sight does not move the blob at these factors (0.85 moving / 1.10 halted). The guard lines' spotting is
+    rarely sight-limited: tank sight is 62 m against a 70 m gun, and the team shares intel. One re-tune is allowed (brief's stretch);
+    whether to spend builder2 on it is decided after spread and pin_slow are in.
+- 17:24 PDT finish, **R2 spread arm (`--rules-on=spread`, 4x spread on the move + the short halt for CPU crews only): deciding NOT MET.**
+  builder2, 75c3e74e0, 320 of 320 paired, 0 lost.
+  - Blob wins 48 -> 46 % (paired diff -1.2 pts, se 3.5; flips 15 to a loss, 13 to a win; McNemar p 0.43).
+  - Blob kill ratio 0.88 -> 0.86 (-0.025, se 0.017): held.
+  - Guard 1 held: turtle 39 -> 39 % (-0.6 pts, se 2.3).
+  - Faction (reported): blob Condemned -8.9, Gangs -6.7, Law 0.0, **Syndicate +8.9 pts (se 4.8)**. Syndicate moves against the
+    overall sign, which is named here per the bar.
+  - Guard 2: 3 of 16 cells OUT. Blob Gangs kills/match -1.9 (2se 1.4). Blob Syndicate median +15 s (2se 10). Turtle Gangs median +32 s
+    (2se 19). Turtle Gangs median was also OUT in the sight arm, so that cell is noisy (6 seeds).
+  - Read: the blob is his right-click, so it never halts (ruling (b)); it only pays the wider spread. Most of the damage
+    is done close in, where spread barely matters (R2 measure: movers beyond 50 m = 19 % of direct damage), and the CPU
+    defender rolls too.
+- 17:27 PDT: Guard 3 CANCELLED before it ran (unit rules-guard3 stopped while still waiting; no builder2 time used). R2 fails the
+  deciding line, so its contention guard could not change the verdict, and builder2 goes to M5a sooner. Arm commit 4c02e3d78
+  (pair/rules-r37-spread-on) stays unmerged and can be deleted.
+- Stabilised-gun exception (stretch): NOT proposed. R2's series names no faction victim: the factions that lose are losing as the
+  blob, which is the intended direction, and Syndicate gains.
+- 18:35 PDT finish, **R3 pin_slow arm (`--rules-on=pin_slow`): deciding NOT MET.** builder2, 75c3e74e0, 320 of 320 paired, 0 lost.
+  **Series done; builder2 is handed to M5a at 18:36.**
+  - Blob wins 48 -> 44 % (paired diff -3.1 pts, se 2.5; flips 14 to a loss, 9 to a win; McNemar p 0.20).
+  - Blob kill ratio 0.88 -> 0.86 (-0.019, se 0.024): held.
+  - Guard 1 held: turtle 39 -> 39 % (5/5 flips).
+  - Faction (reported): blob Condemned -4.4, Gangs -6.7, Law -5.0, Syndicate +2.2 pts. Syndicate is against the sign, but inside 1 se.
+  - Guard 2: 2 of 16 cells OUT: blob Law median -10 s (2se 7) and turtle Gangs median +57 s (2se 7). Both cells were OUT in
+    the other arms too: turtle Gangs median in all three, blob Law median in sight. They look like cells whose median sits on
+    a few long fights, not effects of these rules.
+- **Bar R overall: no rule passes alone.** The blob's paired change, in order: sight -0.6, spread -1.2, pin_slow -3.1 pts (se
+  3.5 / 3.5 / 2.5). All are inside noise, all point the intended way, and none moves the turtle.
+- **Package arm (all three ON): not run.** The bar allows it when each rule is inside its noise alone, and here every one is. But its
+  best case is the sum of three null effects, about -5 pts, against 2 x se of about 5-7 pts; builder2 time now goes to M5a.
+  It could go after M5a if the orchestrator wants that read before round 38.
+- **Motion read (the orchestrator's question): the CPU defender fires on the move less than the blob, but not little.**
+  builder0 light, 68bfd11c1 (all OFF), OFF blob line, 5 maps x seeds 2601-2608 x both sides = 80 fights, all read.
+  The results replay the base block: blob wins 49 %, the same as native's 2601+ block.
+  - Shots faster than a crawl (>= 0.15 of top speed): blob 70.1 % (se 2.4) of 42 998 direct rounds; CPU 55.5 % (se 2.3) of 60 841.
+  - Fast (>= 0.5): blob 33 %, CPU 18 %.
+  - By faction, blob / CPU: Condemned 73 / 60, Gangs 72 / 59, Law 80 / 53, Syndicate 62 / 47 %.
+  - Read: a motion tax hits the blob harder per round, but only by ~15 pts of share (fast: ~2x). The CPU fires 41 % more
+    rounds, more than half of them on the move, so it pays most of the tax back. That fits the near-null arms.
+    Round 38 lever: a defender that actually stops to fire. That is the CPU doctrine, not a rule constant.
+- **R37.25:** all three stay OFF, and R1's re-tune is declined; the shared-picture rule is round 38's. The **package arm**
+  (`--rules-on=sight,spread,pin_slow`, same 320 fights, Bar R's deciding unchanged) runs on builder2 AFTER manoeuvre's M5a.
+  A pass ships the package ON. QUEUED: I start it when the orchestrator says M5a is off builder2.
+- **R1 re-tune (stretch): not worth builder2 time.** Spotting is shared across the team, and the longest-sighted crews (110 m and
+  105 m) see well past the guns' range even at x0.85. A re-tune that mattered would have to push sight under gun range, or cut what
+  a moving team shares. That is a new rule (round 38's design question, the orchestrator's lever), not a re-tune.
+- R37.24: R2 stays OFF. After pin_slow, builder2 goes to manoeuvre's M5a.
+- The orchestrator's question (does the CPU defender fire on the move as much as the blob?): the guard rows carry no per-shot motion,
+  so `make rules-guard-motion` (68bfd11c1) re-plays the guard fights through tests/rules/guard_motion_probe.gd. It extends guard_line.gd
+  and is read-only. The run is the OFF blob line, seeds 2601-2608 (80 fights), on the builder0 light lane, so builder2 stays free.
+  Smoke (builder0 light, 2 fights x 60 s, terminus 2601): blob 82 % of shots faster than a crawl, CPU 56 %.
+- Each arm is read by `python3 tests/rules/bar_r.py references/scoreboard/guards/9d325e291.fights.jsonl <arm raw>` (e4d139813):
+  guard.py's pairing, plus the verdict lines, guard 1's McNemar in the turtle's favour, the faction report and guard 2.
+
+**Arm recipe (from native, 2026-10-21; tooling in stream/native 420048f99 and pair/native-cp371 2bb41ef93):**
+`GUARD_ARGS=--rules-on=<rule> GUARD_TAG=<rule> tools/scoreboard/guard.sh <pair commit>`. This runs on builder2, chunked
+and resumable after preemptions; it uses one scratch folder (../godot-native-guard), so either one arm at a time or a separate
+GUARD_WORKTREE. Then `python3 tools/scoreboard/guard.py --pair references/scoreboard/guards/9d325e291.fights.jsonl
+../godot-native-guard-raw/<commit>-<rule>`. The builder2 queue is shared, so each arm's start is written here.
+Base replay: native re-ran 20 of the 9d325e291 fights on today's main, byte-identical (builder2). Blocks 2601+ / 2701+:
+blob 49 / 46 %, turtle 41 / 38 %. **Merged (2026-10-21):** CP37.1 is on main as d9545d381; rules 2c85080fc and native's guard tooling are on main as a10846307.
+`git merge main` -> 922713a0a; on the merged tree `test_rules_` passes 20/20 (builder0 light, ccc903cfc, `make test exited 0`). **Waiting on:** the orchestrator's builder2 `make native check` of the batch. Then the pair
+tree is cut from a10846307, native runs the lab arms, and the gate is checked: OFF must replay 9d325e291.fights.jsonl with 0 flips,
+else the base is re-run on the new tree. My arms set `GUARD_WORKTREE=../godot-rules-guard` so they never share native's
+scratch folder. Raw output goes to ../godot-native-guard-raw/<commit>-<rule>.
 
 **Rulings received:** R37.2 (a) no twins provisional, (b) **no short halt under his plain MOVE** (attack-move, hold, parked,
 CPU only; built: `ShortHalt.plain_player_move`, game/combat/short_halt.gd, lab cases in test_rules_spread), (c) R2's bar
