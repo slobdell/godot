@@ -12,7 +12,8 @@ the repo so a rule's arm can be paired with it).
 
 --pair: each fight of ARM matched to BASE's same (line, arena, seed, side); per line the guard's wins base -> arm, the fights
 that flipped each way and an exact one-sided McNemar p (the arm made the guard lose more), and the paired differences of the
-win share and the kill ratio with their se from the per-seed differences (sd / sqrt(seeds)).
+win share and the kill ratio with their se from the per-seed differences (sd / sqrt(seeds)); and (round 38, Bar G2) the guard's
+kills and losses a fight and the median match length, all and per guard faction, each with its paired se the same way.
 
 Per line (blob, turtle, none): fights read, the guard's win / loss / draw share, the share capped at the time limit (won on
 points), its kill ratio (its kills / its losses, totals), its zone-point margin (guard minus tactics, per fight), match
@@ -197,19 +198,59 @@ def pair(base_roots, arm_roots):
             if sb["kill_ratio"] is not None and sa["kill_ratio"] is not None:
                 kr_d.append(sa["kill_ratio"] - sb["kill_ratio"])
 
-        def se(values):
-            if len(values) < 2:
-                return None
-            mean = sum(values) / len(values)
-            return math.sqrt(sum((v - mean) ** 2 for v in values) / (len(values) - 1)) / math.sqrt(len(values))
         sb, sa = stats_of([base[k] for k in keys]), stats_of([arm[k] for k in keys])
         report[kind] = {"n": len(keys), "unpaired_in_arm": sum(1 for k in arm if k[0] == kind and k not in base),
                         "base_win": sb.get("win"), "arm_win": sa.get("win"), "worse": worse, "better": better,
                         "mcnemar_p_worse": mcnemar_p(worse, better), "win_diff": (sa["win"] - sb["win"]) if keys else None,
-                        "win_diff_se": se(win_d), "base_kr": sb.get("kill_ratio"), "arm_kr": sa.get("kill_ratio"),
+                        "win_diff_se": _se(win_d),
+                        "base_kr": sb.get("kill_ratio"), "arm_kr": sa.get("kill_ratio"),
                         "kr_diff": (sa["kill_ratio"] - sb["kill_ratio"]) if keys and sa.get("kill_ratio") is not None
-                        and sb.get("kill_ratio") is not None else None, "kr_diff_se": se(kr_d), "seeds": len(per_seed)}
+                        and sb.get("kill_ratio") is not None else None, "kr_diff_se": _se(kr_d), "seeds": len(per_seed)}
+        report[kind]["all"] = _paired_rates(keys, base, arm)
+        report[kind]["by_faction"] = {fac: _paired_rates([k for k in keys if guard_faction(base[k]) == fac], base, arm)
+                                      for fac in sorted({guard_faction(base[k]) for k in keys})}
     return report
+
+
+def _se(values):
+    if len(values) < 2:
+        return None
+    mean = sum(values) / len(values)
+    return math.sqrt(sum((v - mean) ** 2 for v in values) / (len(values) - 1)) / math.sqrt(len(values))
+
+
+def _rates(rows):
+    s = stats_of(rows)
+    return {"kills_pf": s["kills"] / s["n"], "losses_pf": s["losses"] / s["n"], "median_s": s["median_s"]}
+
+
+def _paired_rates(keys, base, arm):
+    """Round 38 (doctrine's Bar G2): the guard's kills and losses a fight and the median length over `keys`, base -> arm, each
+    with its paired se from the per-seed differences (a seed's fights in this group, arm minus base)."""
+    out = {"n": len(keys)}
+    if not keys:
+        return out
+    per_seed = {}
+    for k in keys:
+        per_seed.setdefault(k[2], []).append(k)
+    seed_diffs = []
+    for ks in per_seed.values():
+        rb, ra = _rates([base[k] for k in ks]), _rates([arm[k] for k in ks])
+        seed_diffs.append({m: ra[m] - rb[m] for m in rb})
+    rb, ra = _rates([base[k] for k in keys]), _rates([arm[k] for k in keys])
+    for m in rb:
+        out[m] = {"base": rb[m], "arm": ra[m], "diff": ra[m] - rb[m], "se": _se([d[m] for d in seed_diffs])}
+    out["seeds"] = len(per_seed)
+    return out
+
+
+def _rates_line(label, r):
+    parts = []
+    for m, name, digits in (("kills_pf", "kills a fight", 2), ("losses_pf", "losses a fight", 2), ("median_s", "median s", 0)):
+        v = r[m]
+        parts.append("%s %s -> %s (diff %+.*f, se %s)" % (name, _num(v["base"], digits), _num(v["arm"], digits), digits,
+                                                         v["diff"], _num(v["se"], digits)))
+    return "  %s (n %d): %s" % (label, r["n"], "; ".join(parts))
 
 
 def render_pair(report):
@@ -224,6 +265,9 @@ def render_pair(report):
                                            _num(r["win_diff_se"], 3), r["worse"], r["better"], r["mcnemar_p_worse"]))
         out.append("  kill ratio %s -> %s (diff %s, se %s)" % (_num(r["base_kr"]), _num(r["arm_kr"]),
                    "n/a" if r["kr_diff"] is None else "%+.3f" % r["kr_diff"], _num(r["kr_diff_se"], 3)))
+        out.append(_rates_line("all", r["all"]))
+        for fac, fr in r["by_faction"].items():
+            out.append(_rates_line(fac, fr))
     return "\n".join(out)
 
 
