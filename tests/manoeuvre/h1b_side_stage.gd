@@ -30,7 +30,10 @@ const WALL_GAP_M := 0.4
 const CANAL_HALF_M := 7.0
 const DECK_HALF_X := 8.0
 const DECK_HALF_Z := 12.0
-const BANK_X := 40.0
+## R37.35: west of the lock (x -60..-17 at z ~10) since cover's K5 barricade runs (stream/cover 3923ba026) stand on the north
+## bank at x 20..32 and 40..52, z 16, where the old pin (+40) put the land-side point. The west bank is open to the
+## floodlight (-14, 20) and the west swing bridge (x -99..-85).
+const BANK_X := -50.0
 const EAST := -PI / 2.0  # a yaw facing +x (a hull's forward is -z at yaw 0)
 const ANGLED_UNIT := "law_scout"
 const ANGLED_FRIEND := "law_artillery"
