@@ -1,0 +1,30 @@
+extends TestCase
+var _lab: TacticsLab
+func teardown() -> void:
+	if _lab != null:
+		_lab.dispose()
+	_lab = null
+	super.teardown()
+func test_zz_latch_debug() -> void:
+	_lab = TacticsLab.create(self, 17)
+	var names := []
+	for i in 4:
+		var n := "Green_A_%d" % (i + 1)
+		_lab.unit(Match.Team.GREEN, n, Vector3(TacticsScenarios.LANE_X, 0.0, 40.0 + 10.0 * i), PI)
+		names.append(n)
+	for n: String in names:
+		AiScenario.make_durable(_lab.tank_of(n))
+	var point := Vector3(TacticsScenarios.LANE_X + 5.0, 0.0, -30.0)
+	var alpha := _lab.element(names, "Alpha")
+	await _lab.start()
+	var log := []
+	var on_issued := func(c: Dictionary) -> void: log.append(c)
+	(_lab.orders as Orders).issued.connect(on_issued)
+	alpha.assign({"verb": "move", "to": [point.x, point.z], "drills": false})
+	for tick in int(30 * SimClock.TICK_RATE):
+		await _lab.step()
+		if tick % SimClock.TICK_RATE == 0:
+			var t := ElementSituation.terrain_at(_lab.center_of(names))
+			print("LD t=%d arrived=%s form=%s latched=%s live=%s issued=%s" % [tick / SimClock.TICK_RATE, alpha.arrived, alpha.formation, alpha._halt_terrain, t, log.map(func(c): return "%s:%s" % [c.get("unit", c.get("name", "?")), c.get("verb", c.get("type", "?"))])])
+			log.clear()
+	(_lab.orders as Orders).issued.disconnect(on_issued)
