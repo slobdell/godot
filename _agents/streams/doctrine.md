@@ -83,6 +83,16 @@ until the enemy's direction from the zone swings > 45 degrees. Symmetric: every 
 CPU); his squads are not commanded (parked = settle's). Why not the brain: a holding crew on its seat already fires still.
 Lab: tests/test_tactics_posture.gd 16/0 (6 new: off = today, defend, far enemy, enemy-owned ring attacked, mirrored, held zone first).
 
+**D2 lab (NOT judged: 40 blob fights, 2601-2604 x 5 maps x both sides, builder0 native light J=4, paired with D1's OFF rows
+at 6e049da5b; `tests/tactics/hold_fire_pair.py`).**
+- Lab 1, 6877a099c (defend (a)+(b) at 60 m): CPU damage in defend posture 0 -> 39.6 %, in attack/"nothing"/own half 77.5 -> 26.4 %
+  (the posture engages), but CPU damage fired moving only 49.8 -> 47.0 %; blob wins 18 -> 20 of 40 (flips 2 / 4: noise). Why:
+  inside the hold the first post's `attack` on an intruder was 20 % of all CPU damage (43 % moving), and crews drove onto posts
+  laid after contact (hold|MOVE|away 87 % moving).
+- So (still before any judged number, same switch): (c) a defending post never breaks off for an intruder; (e) an element in
+  contact within 35 m of its post stands where it is; (d) defend triggers at 100 m (Posture.DEFEND_M), not 60. Tests 18/0.
+- Lab 2, b9f8a347c: running.
+
 **Bar D2 (FILED 2026-10-22 before any arm number; C38.1/C38.2).** Change: `--cpu-defend` ON v OFF.
 - **Base:** main 1c484a525's `references/scoreboard/guards/1c484a525.fights.jsonl` (320 fights, builder2). Gate: my pair tree
   OFF replays it with 0 flips on one seed block (2601), else the base is re-run on the pair tree and paired against that.
