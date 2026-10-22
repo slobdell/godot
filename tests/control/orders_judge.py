@@ -183,6 +183,9 @@ def main(argv):
             lines.append("%s guard %s %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", key, b, n, b * 1.1 + 5))
         lines.append("  whole_still_crossed %d" % sum(r.get("whole_still_crossed", 0) for r in runs if r["arm"] == new))
         ok = probe_guards(rows, base, new, lines) and ok
+    # R37.17 (orchestrator): what he sees whatever the totals say: parked crews sent off their seats, each arm (reported).
+    lines.append("  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) %d -> %d" % (
+        total(rows, base, "parked_redeals"), total(rows, new, "parked_redeals")))
     print("\n".join(lines))
     print("VERDICT %s: %s" % (mode, "PASS" if ok else "FAIL"))
 

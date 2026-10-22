@@ -204,7 +204,7 @@ func _run() -> void:
 				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
 				"twitch_seen": squad.get("twitch_seen", {}), "redealt": int(squad.get("redealt", 0)), "away_m": snappedf((squad.get("away", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"shape_flips": int(squad.get("shape_flips", -1)), "terrain_flips": int(squad.get("terrain_flips", -1)),
-				"anchor_terrain_flips": int(squad.get("anchor_terrain_flips", -1)), "relays": int(squad.get("relays", -1)), "reseats": int(squad.get("reseats", 0)),
+				"anchor_terrain_flips": int(squad.get("anchor_terrain_flips", -1)), "relays": int(squad.get("relays", -1)), "reseats": int(squad.get("reseats", 0)), "parked_redeals": int(squad.get("parked_redeals", 0)),
 				"shapes": squad.get("shapes", []),
 				"away_held_m": snappedf((squad.get("away_held", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"away_seat_m": snappedf((squad.get("away_seat", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
@@ -390,6 +390,7 @@ func _watch() -> void:
 				var goal: Variant = _controls.orders.goal_position(n)
 				if goal is Vector3 and _across(goal) and not (squad["goals_across"] as Array).any(func(g: Array) -> bool: return g[0] == n):
 					(squad["goals_across"] as Array).append([n, _xz(goal), snappedf((_match.tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)])
+		_watch_redeal(squad, alive)
 		if int(squad["arrived_tick"]) >= 0:
 			var seats: Dictionary = squad["at_arrival"]
 			for n: String in alive:
@@ -445,6 +446,32 @@ func _watch_halt(squad: Dictionary, alive: Array, element: Element) -> void:
 	squad["halt_last"] = [element.formation, centre_terrain, anchor_terrain, read_terrain]
 	squad["reseats"] = int(squad.get("reseats", 0)) + reseats - int(squad["reseat_from"])
 	squad["reseat_from"] = reseats
+
+
+## Round 37 (orders O1, R37.17's locks 5 trace): `parked_redeals` counts crews sent off a seat they were already parked on:
+## a crew with no order goal within REDEAL_PARKED_M of its station for REDEAL_SETTLED_S or more that then gets an order goal
+## more than REDEAL_OFF_M from that station (the squad re-dealing its seats; what he sees as a parked tank pulling out).
+## The settled time keeps out the deploy's travel -> halt step (a crew reaching its travel seat and dealt its halt seat).
+## Reported, not judged.
+const REDEAL_PARKED_M := 3.0
+const REDEAL_OFF_M := 6.0
+const REDEAL_SETTLED_S := 2.0
+func _watch_redeal(squad: Dictionary, alive: Array) -> void:
+	var parked: Dictionary = squad.get("parked_at", {})  # unit -> [station, tick it parked]
+	for n: String in alive:
+		var spot: Variant = OrderFeed.station(_controls.orders, n)
+		var goal: Variant = _controls.orders.goal_position(n)
+		if goal is Vector3:
+			if parked.has(n) and _match.tick - int(parked[n][1]) >= int(REDEAL_SETTLED_S * SimClock.TICK_RATE) \
+					and _flat_d(goal, parked[n][0]) > REDEAL_OFF_M:
+				squad["parked_redeals"] = int(squad.get("parked_redeals", 0)) + 1
+			parked.erase(n)
+		elif spot is Vector3 and _flat_d(_tank(n).global_position, spot) <= REDEAL_PARKED_M:
+			if not parked.has(n) or _flat_d(parked[n][0], spot) > 0.5:
+				parked[n] = [spot, _match.tick]
+		else:
+			parked.erase(n)
+	squad["parked_at"] = parked
 
 
 ## D2: the place move (from the deploy, or the arrival with the step off) and the twitch after it.
