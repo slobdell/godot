@@ -185,6 +185,23 @@ blob, 5 maps x seeds 2601-2608 + 2701-2708 x both sides = 160 fights per line, 0
   (pair/rules-r37-spread-on) stays unmerged and can be deleted.
 - Stabilised-gun exception (stretch): NOT proposed. R2's series names no faction victim: the factions that lose are losing as the
   blob, which is the intended direction, and Syndicate gains.
+- 18:35 PDT finish, **R3 pin_slow arm (`--rules-on=pin_slow`): deciding NOT MET.** builder2, 75c3e74e0, 320 of 320 paired, 0 lost.
+  **Series done; builder2 is handed to M5a at 18:36.**
+  - Blob wins 48 -> 44 % (paired diff -3.1 pts, se 2.5; flips 14 to a loss, 9 to a win; McNemar p 0.20).
+  - Blob kill ratio 0.88 -> 0.86 (-0.019, se 0.024): held.
+  - Guard 1 held: turtle 39 -> 39 % (5/5 flips).
+  - Faction (reported): blob Condemned -4.4, Gangs -6.7, Law -5.0, Syndicate +2.2 pts. Syndicate is against the sign, but inside 1 se.
+  - Guard 2: 2 of 16 cells OUT: blob Law median -10 s (2se 7) and turtle Gangs median +57 s (2se 7). Both cells were OUT in
+    the other arms too: turtle Gangs median in all three, blob Law median in sight. They look like cells whose median sits on
+    a few long fights, not effects of these rules.
+- **Bar R overall: no rule passes alone.** The blob's paired change, in order: sight -0.6, spread -1.2, pin_slow -3.1 pts (se
+  3.5 / 3.5 / 2.5). All are inside noise, all point the intended way, and none moves the turtle.
+- **Package arm (all three ON): not run.** The bar allows it when each rule is inside its noise alone, and here every one is. But its
+  best case is the sum of three null effects, about -5 pts, against 2 x se of about 5-7 pts; builder2 time now goes to M5a.
+  It could go after M5a if the orchestrator wants that read before round 38.
+- **R1 re-tune (stretch): not worth builder2 time.** Spotting is shared across the team, and the longest-sighted crews (110 m and
+  105 m) see well past the guns' range even at x0.85. A re-tune that mattered would have to push sight under gun range, or cut what
+  a moving team shares. That is a new rule (round 38's design question, the orchestrator's lever), not a re-tune.
 - R37.24: R2 stays OFF. After pin_slow, builder2 goes to manoeuvre's M5a.
 - The orchestrator's question (does the CPU defender fire on the move as much as the blob?): the guard rows carry no per-shot motion,
   so `make rules-guard-motion` (68bfd11c1) re-plays the guard fights through tests/rules/guard_motion_probe.gd. It extends guard_line.gd
