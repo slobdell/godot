@@ -49,6 +49,29 @@ F1's page when it exists (the orchestrator relays).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-22 12:20, F3 PASSED its bar (C38.4) -> ships ON.** f0ad5a44d, builder2, the 320 CP37.1 guard fights (blob + turtle,
+seeds 2601-2608/2701-2708, 5 arenas, both sides), base `--repair-report` v ON `--repair-under-fire --repair-report`, paired:
+- **Deciding:** gang hp mended a fight 399.6 -> 556.5 (+39 %; 174.1 of it under fire); up in 93, down in 16 of 120 gang fights;
+  diff +156.8, se 50.0 over the 6 seeds with a gang side. (Base already mends ~400 hp a fight once quiet: more than the round-37
+  clips suggested; under fire adds the rest.)
+- **Guards:** blob 49 % -> 48 % (2 flips to a loss, 1 to a win); turtle 40 % -> 41 % (+1.2, se 0.9, McNemar p 0.94); gangs guard
+  blob 5 -> 6 of 30, turtle 3 -> 4 of 30 (one flip each, p 0.5); kills/fight and median length flat per faction (gangs blob 51.0 ->
+  51.2 kills, 102 -> 99 s). All inside noise. Perf: no new loop (perf-judge in the check).
+- Table: `python3 tests/feedback/repair_table.py ~/projects/godot-feedback-guard-raw/f0ad5a44d-repair{base,on}`; guard.py --pair the same.
+
+**2026-10-22 ~11:30, F1 page up (WAITING ON HIS PICK), F3 ON arm running.**
+- **F1 page:** https://claude.ai/artifact/V4dAc2UNofD2553VqKKS5q (db `picks/end`), relayed by the orchestrator. Four looks filmed by
+  `make remote T=end-shots` (f0ad5a44d + the harness tweak 4b070b284, builder0, laptop preset, archipelago seed 44214, Law v Gangs,
+  enemy wins on the rings at 90-61 after 10 s of fight, a click 3.5 s after the end): A end card (recommended), B broadcast end,
+  C banner stays, P today's banner plus why (the default). Looked at: every look shows DEFEAT + "Road Gangs held the rings: 90 points
+  to 61"; MATCH OVER at the click in all four; in A the command bar is hidden under the dim; B's bars cover the score bug; P is as
+  easy to miss as today's (the point of the page). The clips' sources live in ~/projects/godot-feedback-endkeep/ (outside build/,
+  which every remote copy-back resets). Note: the sim keeps running after the end (survivors still fight; "Vehicles left" is the
+  board at the finish).
+- **F3 base arm:** f0ad5a44d, builder2, guard.sh (GUARD_CHUNK=2, GUARD_JOBS=20), `--repair-report`, 320/320 fights with MATCH_MENDED,
+  0 attempts lost. **Paired with main's base (references/scoreboard/guards/1c484a525.fights.jsonl): identical, blob 49 % -> 49 %,
+  turtle 40 % -> 40 %, 0 flips:** the counters and the OFF seam change nothing. ON arm started 10:59.
+
 **2026-10-22, F1/F2 built, F3 seam built (in progress).**
 - **F2 (every look):** `EndCard` (game/ui/end_card.gd), mounted by the Hud on `Match.finished` where he commands an army (the
   controls node on the HUD layer, not spectated). From that moment a click on the field or any key stops at the card: a click

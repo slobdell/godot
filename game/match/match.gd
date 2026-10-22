@@ -251,9 +251,9 @@ const REPAIR_QUIET_SECONDS := 3.0
 ## Round 38 (feedback F3, C38.4; his answer 2026-10-22, "yes it also repair during combat"): a friendly field mender (the
 ## gangs' Resupply Tanker) keeps mending a vehicle under fire at this share of its rate, full again after REPAIR_QUIET_SECONDS.
 ## The base's own mending still waits for quiet. A guarded seam: `--repair-under-fire` / `--no-repair-under-fire`, OFF until its
-## bar passes (_agents/streams/feedback.md), then REPAIR_UNDER_FIRE_DEFAULT ships it ON.
+## bar passes (_agents/streams/feedback.md). ON since round 38 (passed 2026-10-22: gang mending +39 %, guards inside noise).
 const REPAIR_UNDER_FIRE_FACTOR := 0.5
-const REPAIR_UNDER_FIRE_DEFAULT := false
+const REPAIR_UNDER_FIRE_DEFAULT := true
 static var repair_under_fire_on := Match._repair_under_fire_flag()
 ## G7 resupply: tanks within this distance of their own base center regain one shell every
 ## RESUPPLY_SECONDS_PER_SHELL. A full reload (45 shells) takes 45 s at base.
