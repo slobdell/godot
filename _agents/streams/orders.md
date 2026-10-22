@@ -148,4 +148,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   twitch median <= base + 3 m; end foreign min median >= base - 3 m; crossed no higher); friendly contacts (probe) <= base
   x 1.1 + 5; yard_open: every squad row identical. **Reported:** route_out_m (incl. the drive in), parked re-deals, bodies
   kept, gate columns. **Plus:** paired top-down shots of his click, main v column, looked at, for him. A pass ships ON.
+  **AMENDED 2026-10-22 ~16:30 PDT, before any judged number (dev seeds 3801-3803 only so far):** the column on shifted legs
+  and gates moves to G2 (`--group-legs=on`, OFF): ten dev reads showed every route-leg rule moving the route cells' guards
+  around (the probe chains three clicks in one tick; five squads stack deeper than a 120 m route), and his complaint was a
+  plain click. G1 = the plain-click column + squads whole on every group move + the 2 s first-click re-lay (a shifted click
+  right after a column click turns it into a waypoint; it keeps G1 from hurting routes). **Deciding lines now over the 6
+  click cells + his click cells** (thresholds unchanged: places outside <= 25 % of base, metres after leaving <= 50 %,
+  re-dealt 0 over ALL cells). **Every guard still over all 14 cells, route cells included**, and yard_open identical.
+  Known before judging: his click cells are effectively n 1 (`--probe-click` disables the seed's jitter; all seeds replay one
+  run); their one twitch (3 squads, 11.4 m) is the halt flipping herringbone -> coil after the deploy (settle traced it;
+  their `--deploy-latch=on` removes it, in settle's series on builder2).
 

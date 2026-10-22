@@ -254,13 +254,15 @@ def main(argv):
         laid = sum(r.get("columns_laid", 0) for r in runs if r["arm"] == new)
         kept = sum(r.get("bodies_kept", 0) for r in runs if r["arm"] == new)
         lines.append("%s counter: columns_laid %d (bodies kept %d)" % ("PASS" if laid > 0 else "FAIL", laid, kept))
-        bo = sum(1 for r in rows if r["arm"] == base and r.get("anchor_outside"))
-        no = sum(1 for r in rows if r["arm"] == new and r.get("anchor_outside"))
-        bm, nm = total(rows, base, "route_left_m"), total(rows, new, "route_left_m")
+        # Amended before any judged number: places and metres over the click cells (his click included); re-deals over all.
+        clicks = [r for r in rows if r["route"] == "click"]
+        bo = sum(1 for r in clicks if r["arm"] == base and r.get("anchor_outside"))
+        no = sum(1 for r in clicks if r["arm"] == new and r.get("anchor_outside"))
+        bm, nm = total(clicks, base, "route_left_m"), total(clicks, new, "route_left_m")
         nr = sum(1 for r in rows if r["arm"] == new and r.get("redealt", 0) > 0)
         d1, d2, d3 = no <= 0.25 * bo, nm <= 0.5 * bm, nr == 0
-        lines.append("%s deciding: places outside the corridor %d -> %d (<= %.1f)" % ("PASS" if d1 else "FAIL", bo, no, 0.25 * bo))
-        lines.append("%s deciding: metres driven outside the corridor after being in it %.0f -> %.0f (<= %.0f)" % (
+        lines.append("%s deciding: places outside the corridor (click cells) %d -> %d (<= %.1f)" % ("PASS" if d1 else "FAIL", bo, no, 0.25 * bo))
+        lines.append("%s deciding: metres driven outside the corridor after being in it (click cells) %.0f -> %.0f (<= %.0f)" % (
             "PASS" if d2 else "FAIL", bm, nm, 0.5 * bm))
         lines.append("%s deciding: squads with crews re-dealt (arm) %d (base %d)" % ("PASS" if d3 else "FAIL", nr,
                      sum(1 for r in rows if r["arm"] == base and r.get("redealt", 0) > 0)))

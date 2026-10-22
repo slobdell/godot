@@ -287,10 +287,12 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 ## ground read at its own rank (`today`), and the column is laid only when one of them is not. The same lay serves a queued
 ## leg (each squad's block centred where its previous leg ends) and a gate.
 static var GROUP_LAY := OS.get_cmdline_user_args().has("--group-lay=column") or OS.get_environment("GROUP_LAY") == "column"
-## G1 dev variants (read side by side on dev seeds; the judged arm uses the defaults): `--group-legs=off` lays no column on
-## shifted legs or gates; `--group-room=rearmost` lets no column reach behind its rearmost squad (default: one rank);
-## `--group-leg-room=starts` lets a shifted leg's column reach no further back than its squads' starts.
-static var GROUP_LEGS := not OS.get_cmdline_user_args().has("--group-legs=off")
+## G1 dev variants (read side by side on dev seeds; the judged arm uses the defaults): `--group-room=rearmost` lets no column
+## reach behind its rearmost squad (default: one rank); `--group-leg-room=starts` lets a shifted leg's column reach no further
+## back than its squads' starts. G2 (his shift-click route, OFF until its own bar): `--group-legs=on` lays the column on
+## shifted legs and gates too (dev reads 4e25c1eab..6d72c4dff: it moves the route cells' guards every way; G1 judges the
+## plain click alone).
+static var GROUP_LEGS := OS.get_cmdline_user_args().has("--group-legs=on")
 static var GROUP_ROOM_REARMOST := OS.get_cmdline_user_args().has("--group-room=rearmost")
 static var GROUP_LEG_ROOM := OS.get_cmdline_user_args().has("--group-leg-room=starts")
 ## G2 (dev): `--group-route-line=on`: a shifted leg's column (and a gate's) stacks back along his clicked route.
