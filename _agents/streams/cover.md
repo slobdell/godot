@@ -76,6 +76,21 @@ None are my paths. Asked the orchestrator (2026-10-22): (1) owners re-pin their 
 re-site the runs clear of the stages (costs hit share), (3) hold K5. builder2 series HELD until the answer (re-siting changes
 what Bar K judges).
 
+**R37.35 (2026-10-22), option (1): the maps stay; owners re-pin their stages (native: traffic x4, yield x2; manoeuvre: h1b bank).
+Parade traced (READ grant on brains): NOT stage geometry.** With only arenas/parade.json back to pre-K5, all 3 brains parade tests
+pass (builder0 full test 3019/7, the 7 being native's 6 + h1b); on K5's parade they fail. The CPU's opening lies in wait beside
+the far depot for his column on the road from his base, and AmbushSite springs only where the attacker has no cover within 12 m
+of the kill zone; the run (-44,-8)'s mirror (44,8) stood ~17 m off that road (its cover points ~9 m), refusals "no open ground"
+14 -> 68, taken 1 -> 0. **Re-sited at c02b01d83:** parade = (-50,80), (-62,4) (2.5 % of hull hits, was 7.7 %);
+`add_runs_proposal --clear-approaches` (no run within APPROACH_CLEAR_M 24 m of a base->depot road) + the arena wall's clearance;
+`make cover-k5` checks it. builder0 c02b01d83: `make test FILTER=tactics_cpu exited 0` 7/0 (cpu_opening, cpu_hold, cpu_hold_guns
+PASS); `make arena-test exited 0` (45/45, 148/0). Frames `k5-frames/parade_run_c*` (a low jersey line on open ground between
+two container walls; before: empty). Other maps by the same rule: sumps (-30,-60) 5.6 m, gorge (-62,6) 7.2 m, locks (-46,-16)
+17.7 m from a depot road; **map-alone effect** (guard.py --pair 9d325e291.fights.jsonl v OFF@3923ba026, builder2, 320 fights):
+blob 48 -> 46 % (-1.9, se 3.2), kr 0.88 -> 0.87; turtle 39 -> 38 % (-1.3, se 2.9), kr 0.80 -> 0.75 (se 0.031); per map no rise
+beyond 1 se (sumps blob +6.2, se 7.7; locks both down) -> left as they are (orchestrator's ruling). Bar K: OFF and ON at
+3923ba026, parade's 64 fights per arm re-run at c02b01d83 (queued); OFF-v-OFF replay seed 2601: 20 fights, 0 flips, identical.
+
 ### Plan (in order) and where each stands
 1. **K1 the count** -- DONE: census + fight heat + page (below); reported to the orchestrator.
 2. **K2 the damage seam** -- code + lab test DONE at 5b4e79362 (laptop, `make test FILTER=cover_hulldown`, 8/8 PASS); quick-remote GREEN (builder0, 183/0); full check GREEN at e6f720619 (above).
