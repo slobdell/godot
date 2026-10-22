@@ -861,6 +861,8 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 			plan["slots"] = _deploy_compact(plan["slots"], deploy["heading"])
 		if COVER_SEAT:
 			_cover_seats(plan, deploy, situation)
+		if DEPLOY_TRACE and int(deploy.get("tick", -1)) == int(situation.get("tick", 0)):
+			_trace_deploy(plan, situation, stand, deploy["heading"], spacing)
 		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
@@ -1863,6 +1865,25 @@ static func _deploy_compact(slots: Dictionary, heading: Vector3) -> Dictionary:
 		var seat: Vector3 = slots[name]
 		out[name] = seat - axis * (seat.dot(axis) - mid) * (1.0 - DEPLOY_COMPACT_ALONG)
 	return out
+
+
+## Round 38 (settle S1): `--deploy-trace` prints one DEPLOY_TRACE line per deploy (who stood where, the halt, the seats
+## dealt), the lab's input. Measurement only.
+static var DEPLOY_TRACE := OS.get_cmdline_user_args().has("--deploy-trace")
+
+
+static func _trace_deploy(plan: Dictionary, situation: Dictionary, stand: Vector3, heading: Vector3, spacing: float) -> void:
+	var crews := {}
+	for member: Dictionary in situation.get("members", []):
+		var at: Vector3 = member["position"]
+		var seat: Variant = plan["slots"].get(String(member["name"]))
+		crews[String(member["name"])] = {"unit": String(member.get("unit", "")), "role": String(member.get("role", "")),
+				"at": [snappedf(at.x, 0.01), snappedf(at.z, 0.01)],
+				"seat": [snappedf((seat as Vector3).x, 0.01), snappedf((seat as Vector3).z, 0.01)] if seat is Vector3 else null}
+	print("DEPLOY_TRACE ", JSON.stringify({"tick": int(situation.get("tick", 0)), "leader": String(situation.get("leader", "")),
+			"formation": String(plan["formation"]), "anchor": [snappedf(stand.x, 0.01), snappedf(stand.z, 0.01)],
+			"heading": [snappedf(heading.x, 0.0001), snappedf(heading.z, 0.0001)], "spacing": spacing,
+			"terrain": String(situation.get("terrain", "")), "crews": crews}))
 
 
 ## D3b (R35.41): a packed squad's last stretch in a file (OFF; `--arrive-file=on` / env ARRIVE_FILE=on opts in).
