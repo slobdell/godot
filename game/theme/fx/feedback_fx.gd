@@ -28,7 +28,11 @@ const HIT_SECTOR_S := 0.9
 ## in 3 s on the first real-fight capture, and the stacked segments bloomed into a white disc over it (e12aa27cc, seed 5).
 const SEGMENT_EVERY_S := 0.3
 ## The widest a segment draws (m): a War Rig's 14 m hull made a 24 m ring.
-const SEGMENT_MAX_M := 12.0
+## Round 38 (stretch, real fights at his laptop preset, seeds 5/7): at x1.7 and 12 m a Law APC's rear and side wedges reached
+## ~1.5 hull lengths out and pooled into a red smear that read as fire on the street; x1.3 / 9 m keeps them hugging the hull.
+const SEGMENT_MAX_M := 9.0
+## The segment's reach as a multiple of the hull's span.
+const SEGMENT_SPAN := 1.3
 ## A front hit is the armour doing its job: drawn, but at this strength, so a flank or rear one stands out.
 const FRONT_STRENGTH := 0.45
 ## His approved flank / rear hit sounds (F3), over the round's own impact: one per target this often at most, and only
@@ -225,7 +229,7 @@ func _sector(kind: String, target: Tank, toward: Vector3, now: float) -> void:
 	var place := FxWorld.visual_transform(target).origin
 	_ground.multimesh.set_instance_transform(i, Transform3D(_yaw_basis(toward), place))
 	_ground.multimesh.set_instance_color(i, Color(FACE_COLORS[kind], FRONT_STRENGTH if kind == "front" else 1.0))
-	_ground.multimesh.set_instance_custom_data(i, Color(now, HIT_SECTOR_S, minf(_hull_span(target) * 1.7, SEGMENT_MAX_M), 0.0))
+	_ground.multimesh.set_instance_custom_data(i, Color(now, HIT_SECTOR_S, minf(_hull_span(target) * SEGMENT_SPAN, SEGMENT_MAX_M), 0.0))
 
 
 ## Round 38 (F3): a beam mending under fire (half rate) runs its pulses at half speed and a little fainter and thinner, so
