@@ -80,7 +80,7 @@ baseline check (contract 1).
   z = (k0 - R k)/K for each arm, se of the paired sum of z_on - z_base). (a2) TOTAL deaths, both teams, not above base + 1.645 se.
   Total kills REPORTED (a smaller fight is allowed).
 - **Guard (e), NEW: never-settled sized by its own noise floor, measured first.** Before the ON arm is read, run the BASE tree's
-  hull-rest on the GDScript path (`--brains-off=native` equivalent: `NATIVE=off`, the same seeds) beside the base native arm. Per
+  hull-rest on the GDScript path (`M1_GD=1` = `--brains-off=native`, the same seeds, the same native-built folder) beside the base native arm. Per
   task, D_floor = runs whose settled/never-settled differs between the two base paths (a no-rule redraw). The ON line per task:
   never-settled ON - base <= 1.645 x sqrt(max(b + c, D_floor, 1)), where b + c = the runs discordant between ON and base (native).
   sqrt(discordant) is the sd of a net shift when each discordant run is a coin flip; D_floor stops a one-sided handful from failing
