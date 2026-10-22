@@ -67,12 +67,12 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### REPORT (orders, round 37; updated 2026-10-21 ~15:30 PDT). Every number names its commit, machine, workload, n.
+### REPORT (orders, round 37; updated 2026-10-21 ~19:00 PDT). Every number names its commit, machine, workload, n.
 - **State of the branch:** main c76469184 merged (52c15e0e1). The series hash is c14ec0d80 = 52c15e0e1 + the probe's
-  `parked_redeals`; its full check (builder0, native) is running, and 52c15e0e1's was stopped at 15 min for it. The check
+  `parked_redeals`; **its full check is GREEN (builder0 native: exited 0, 3040 passed / 0 failed, 25 passed + 2 NOT JUDGED for perf on a busy box (load 22), sim-baseline 13 unmoved)**. 52c15e0e1's check was stopped at 15 min for it. The check
   before, 42a26a17c (builder0 native, 3022 passed / 0 failed), FAILED on the engine-log gate only: `test_control_parked_hold`
   overrode the runner's sealed `_teardown()`, and the lab<->case reference cycle leaked 14 objects at exit. Fixed (teardown()
-  hook, cycle dropped; local run clean). Last green hash: f4365153f. The judged series (scratchpad `r37_series.sh`, side worktree
+  hook, cycle dropped; local run clean). Last green hash: **c14ec0d80**. The judged series (scratchpad `r37_series.sh`, side worktree
   `~/projects/godot-orders-o1` at c14ec0d80) runs on that green: O2, O3, O5, O1-latch no-fight + census, O1-latch fight. Verdicts
   go to `references/round37/orders/*-judged-builder0-c14ec0d80/verdict.txt`.
 - **Parked re-deals (orchestrator, after R37.17's traces; reported in every verdict):** `parked_redeals` = crews parked
