@@ -3,13 +3,15 @@
 
     python3 tests/control/orders_judge.py o1 rows.jsonl BASE_ARM NEW_ARM [census_base.jsonl census_new.jsonl]
     python3 tests/control/orders_judge.py o1fight rows.jsonl BASE_ARM NEW_ARM [runs.jsonl]
+    python3 tests/control/orders_judge.py o1settle rows.jsonl BASE_ARM NEW_ARM   (R37.37: latch's no-fight re-read)
     python3 tests/control/orders_judge.py o2 rows.jsonl BASE_ARM NEW_ARM
     python3 tests/control/orders_judge.py o3 rows.jsonl BASE_ARM NEW_ARM runs.jsonl
     python3 tests/control/orders_judge.py gl rows.jsonl BASE_ARM NEW_ARM runs.jsonl   (R37.29 group-lay=column)
     python3 tests/control/orders_judge.py o5 BASE_DIR NEW_DIR   (seat-yield-census folders of *.log)
 
 Probe guards (each cell, medians over seeds; R36.6's): all-in (the cell run's last squad arrival) <= base x 1.2 + 3 s and
-no more never-in seeds; twitch worst <= base + 3 m; end foreign min >= base - 3 m; crossed no higher. Fight guards
+no more never-in seeds; twitch worst <= base + 3 m (o1settle, R37.37: place + twitch, the crew's whole travel after the
+deploy, worst crew a run); end foreign min >= base - 3 m; crossed no higher. Fight guards
 (per-fight totals): his kills, his losses, the CPU's losses each within base +/- 1.645 se (se from the base arm's
 per-fight sd over n fights). Prints one PASS/FAIL line per line of the bar and a VERDICT.
 """
@@ -42,7 +44,7 @@ def med(xs):
     return st.median(xs) if xs else float("nan")
 
 
-def probe_guards(rows, base, new, lines):
+def probe_guards(rows, base, new, lines, settle=False):
     b, n = by_run(rows, base), by_run(rows, new)
     cells = sorted({k[:3] for k in b} | {k[:3] for k in n})
     ok = True
@@ -57,9 +59,10 @@ def probe_guards(rows, base, new, lines):
             ("never-in", sum(1 for t in na if t < 0) <= sum(1 for t in ba if t < 0),
              "%d v %d" % (sum(1 for t in ba if t < 0), sum(1 for t in na if t < 0))),
         ]
-        bt = [max((s["twitch_m"] for s in b[k]), default=-1) for k in bk]
-        nt = [max((s["twitch_m"] for s in n[k]), default=-1) for k in nk]
-        checks.append(("twitch", med(nt) <= med(bt) + 3.0, "%.1f v %.1f" % (med(bt), med(nt))))
+        moved = (lambda s: s["place_m"] + s["twitch_m"]) if settle else (lambda s: s["twitch_m"])
+        bt = [max((moved(s) for s in b[k]), default=-1) for k in bk]
+        nt = [max((moved(s) for s in n[k]), default=-1) for k in nk]
+        checks.append(("place+twitch" if settle else "twitch", med(nt) <= med(bt) + 3.0, "%.1f v %.1f" % (med(bt), med(nt))))
         bf = [min((s["end_foreign_m"] for s in b[k] if s["end_foreign_m"] >= 0), default=99) for k in bk]
         nf = [min((s["end_foreign_m"] for s in n[k] if s["end_foreign_m"] >= 0), default=99) for k in nk]
         checks.append(("end foreign", med(nf) >= med(bf) - 3.0, "%.1f v %.1f" % (med(bf), med(nf))))
@@ -147,7 +150,7 @@ def main(argv):
     rows = load(rows_path)
     lines = []
     ok = True
-    if mode in ("o1", "o1fight"):
+    if mode in ("o1", "o1fight", "o1settle"):
         br, nr = total(rows, base, "relays"), total(rows, new, "relays")
         bs, ns = total(rows, base, "shape_flips"), total(rows, new, "shape_flips")
         b_rows = {(r["map"], r["squads"], r["route"], r["seed"], r["squad"]): r for r in rows if r["arm"] == base}
@@ -157,11 +160,13 @@ def main(argv):
                      for k in b_rows if k in n_rows)
         counter = br >= 10 and differ
         lines.append("%s counter: base relays %d (>= 10), rows differ %s" % ("PASS" if counter else "FAIL", br, differ))
-        dec = nr <= 0.25 * br and (ns <= 1 if mode == "o1" else ns <= 0.25 * bs)
+        dec = nr <= 0.25 * br and (ns <= 1 if mode != "o1fight" else ns <= 0.25 * bs)
         lines.append("%s deciding: relays %d -> %d (<= %.1f), shape flips %d -> %d" % (
             "PASS" if dec else "FAIL", br, nr, 0.25 * br, bs, ns))
         ok = counter and dec
-        if mode == "o1":
+        if mode == "o1settle":
+            ok = probe_guards(rows, base, new, lines, settle=True) and ok
+        elif mode == "o1":
             ok = probe_guards(rows, base, new, lines) and ok
             if len(argv) >= 6:
                 cb, cn = load(argv[4]), load(argv[5])

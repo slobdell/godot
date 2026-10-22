@@ -191,6 +191,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   click, at arrival and 5 s after, LOOKED at; the recording carries no camera pose, so top-down over the click. He judges "I kept
   control".
   A pass ships ON (his control only: the CPU issues no multi-squad click).
+- **O1 LATCH RE-READ, twitch guard re-filed as PLACE + TWITCH (R37.37; filed 2026-10-22 ~03:00 PDT, before any number).**
+  Why: latch failed as filed only on terminus 5 click twitch (16.8 -> 28.0 m); the trace (ea09f3b17) showed the same 47 m
+  deploy-deal drive in both arms, which latch delays past PLACE_S (8 s), so it is counted as twitch instead of place. The
+  guard now counts the crew's whole travel after the deploy. **Read:** ONLY the no-fight probe (the census and the fight read
+  stand as passed), arms `main:` v `latch:--halt-terrain=latch`, the 12 cells (locks / crossing / terminus x 3 / 5 squads x
+  click / route), FRESH seeds 3821-3832, builder0 native, on a green-checked hash. `orders_judge.py o1settle`. Counter and
+  deciding as filed (base relays >= 10 and rows differ; relays arm <= 25 % of base, shape flips arm <= 1). Guards (per cell,
+  medians over seeds): all-in <= base x 1.2 + 3 s, no more never-in, **place + twitch of the run's worst crew <= base + 3 m**
+  (sized on the seen seeds 3761-3772: per-cell latch - main -3.6 .. +1.0 m, sd 4-20 m), end foreign min >= base - 3 m,
+  crossed no higher. A pass ships latch ON (default `latch`). (b), the deploy deal sending a stopped tank across its own
+  squad, is its own item: round 38's unless time remains after O7.
 - **O2 ON TOP OF LATCH (R37.29's thought; filed 2026-10-21 ~23:00 PDT, before any number; runs ONLY if O1-latch passes).**
   Why: O2's judged read (c14ec0d80) passed, but its reported parked re-deals rose 50 -> 105 alongside halt re-lays 187 -> 352
   (O1's flicker). If crews now sit on seats the squad keeps re-laying, the latch should take the extra re-deals away.
