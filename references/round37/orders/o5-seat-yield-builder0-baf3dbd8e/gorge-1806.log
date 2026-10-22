@@ -1,0 +1,115 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (condemned): 5 scouts, 8 tanks, 9 IFVs, 4 artillery, 4 lancers (5180 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 34 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (law): 12 pursuit cruisers, 5 assault guns, 4 gas rocket trucks, 5 sonic emitters (5130 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 26 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=5 green=30 rust_squads=6 rust=26
+SKIRMISH_CAMERA focus=(-59, 87) zoom=0.62 vehicles=4
+DEMO_SEED 1806 arena=gorge condemned vs law (replay: make showmatch SEED=1806)
+CONTROL_GROUPS squads=5 (Battery:4 Eyes:5 Guns:8 Hunters:9 Lances:4) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-21T10-38-52-gorge.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "1806", "arena": "gorge", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+NATIVE_EXEC 19029 native, 970 handed back (dead 0, reflexes 0, yielding 0, face 969, drive 0, other 0), 739 stale pulls, 1905 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Lances: shields down
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"support_by_fire","at":[15.0,76.4],"cpu":true,"died":false,"element":"Eyes","end":345,"s":9.1,"seat_m":17.5,"start":274,"team":0,"unit":"Green_Eyes_2","verb":"screen","yield_s":2.4}
+Rust_Guns_3 destroyed Green_Lances_4 (score Green 0 : 1 Rust)
+Green_Guns_3 destroyed Rust_Guns_3 (score Green 1 : 1 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 4 hit Hunters 6
+Rust_Guns_5 destroyed Green_Eyes_4 (score Green 1 : 2 Rust)
+SEAT_YIELD {"asker":"Green_Guns_6","asker_verb":"attack","at":[-27.2,54.2],"cpu":true,"died":true,"died_after":true,"element":"Eyes","end":422,"s":11.9,"seat_m":1.7,"start":357,"team":0,"unit":"Green_Eyes_4","verb":"screen","yield_s":2.2}
+HUD_MESSAGE [warning] Lances lost a Lancer, 3 left
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (25 left)
+SEAT_YIELD {"asker":"Rust_Sirens_1","asker_verb":"support_by_fire","at":[-42.1,-22.3],"cpu":true,"died":false,"element":"Eyes3","end":433,"s":11.3,"seat_m":11.5,"start":338,"team":1,"unit":"Rust_Eyes3_1","verb":"screen","yield_s":3.2}
+SEAT_YIELD {"asker":"Rust_Eyes_3","asker_verb":"screen","at":[27.3,-25.7],"cpu":true,"died":false,"element":"Eyes2","end":443,"s":13.6,"seat_m":22.8,"start":409,"team":1,"unit":"Rust_Eyes2_4","verb":"screen","yield_s":1.1}
+Rust_Guns_4 destroyed Green_Lances_1 (score Green 1 : 3 Rust)
+SEAT_YIELD {"asker":"Rust_Eyes_1","asker_verb":"screen","at":[39.0,-24.5],"cpu":true,"died":false,"element":"Eyes2","end":451,"s":14.1,"seat_m":6.2,"start":424,"team":1,"unit":"Rust_Eyes2_5","verb":"screen","yield_s":0.9}
+HUD_MESSAGE [warning] Lances: commander down, Lances 2 takes command
+HUD_MESSAGE [warning] Eyes lost a Scout, 4 left
+Green_Battery_3 destroyed Rust_Sirens_2 (score Green 2 : 3 Rust)
+HUD_MESSAGE [warning] Lances lost a Lancer, 2 left
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (24 left)
+Green_Hunters_7 destroyed Rust_Eyes_5 (score Green 3 : 3 Rust)
+Green_Guns_3 destroyed Rust_Guns_4 (score Green 4 : 3 Rust)
+Rust_Battery_4 destroyed Green_Hunters_4 (score Green 4 : 4 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (22 left)
+HUD_MESSAGE [warning] Hunters lost an IFV, 8 left
+Rust_Eyes_1 destroyed Green_Hunters_1 (score Green 4 : 5 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 2 takes command
+Green_Guns_6 destroyed Rust_Eyes_4 (score Green 5 : 5 Rust)
+HUD_MESSAGE [warning] Friendly fire: Eyes 3 hit Eyes 5
+NATIVE_EXEC 37410 native, 2589 handed back (dead 0, reflexes 0, yielding 0, face 2496, drive 0, other 0), 1207 stale pulls, 5369 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Hunters lost an IFV, 7 left
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (21 left)
+Green_Guns_1 destroyed Rust_Guns_5 (score Green 6 : 5 Rust)
+Green_Guns_3 destroyed Rust_Guns_1 (score Green 7 : 5 Rust)
+Rust_Sirens_1 destroyed Green_Eyes_5 (score Green 7 : 6 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (19 left)
+Green_Guns_2 destroyed Rust_Eyes_3 (score Green 8 : 6 Rust)
+HUD_MESSAGE [warning] Eyes lost a Scout, 3 left
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (18 left)
+Rust_Eyes_1 destroyed Green_Hunters_6 (score Green 8 : 7 Rust)
+Green_Guns_5 destroyed Rust_Eyes3_1 (score Green 9 : 7 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 9 hit Lances 2
+HUD_MESSAGE [warning] Hunters lost an IFV, 6 left
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (17 left)
+Green_Guns_5 destroyed Rust_Guns_2 (score Green 10 : 7 Rust)
+Green_Battery_1 destroyed Rust_Sirens_3 (score Green 11 : 7 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (15 left)
+Green_Guns_8 destroyed teammate Green_Hunters_7 (friendly fire)
+HUD_MESSAGE [warning] Friendly fire! Guns 8 destroyed Hunters 7
+Green_Hunters_2 destroyed Rust_Eyes_1 (score Green 12 : 7 Rust)
+HUD_MESSAGE [warning] Hunters lost an IFV, 5 left
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (14 left)
+Green_Guns_4 destroyed Rust_Eyes_2 (score Green 13 : 7 Rust)
+Green_Guns_5 destroyed Rust_Sirens_1 (score Green 14 : 7 Rust)
+NATIVE_EXEC 54520 native, 5479 handed back (dead 0, reflexes 0, yielding 0, face 5247, drive 0, other 0), 1631 stale pulls, 8151 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] Destroyed 2 enemies (12 left)
+TANK_OFF_FLOOR Green_Guns_5 (tank) y=0.60 at (-2.1, 55.2): separated from something along the vertical; it is now drawn above the floor
+Green_Eyes_2 destroyed Rust_Sirens_4 (score Green 15 : 7 Rust)
+Green_Guns_3 destroyed Rust_Eyes3_2 (score Green 16 : 7 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (10 left)
+Green_Guns_6 destroyed Rust_Sirens_5 (score Green 17 : 7 Rust)
+HUD_MESSAGE [warning] Eyes: shields down
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (9 left)
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Green_Battery_3 destroyed Rust_Eyes2_1 (score Green 18 : 7 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (8 left)
+Green_Battery_3 destroyed Rust_Eyes2_2 (score Green 19 : 7 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (7 left)
+NATIVE_EXEC 71769 native, 8230 handed back (dead 0, reflexes 0, yielding 0, face 7739, drive 0, other 0), 2053 stale pulls, 10602 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Green_Hunters_3","asker_verb":"support_by_fire","at":[40.5,57.6],"cpu":true,"died":false,"element":"Eyes","end":1902,"s":59.1,"seat_m":41.2,"start":1772,"team":0,"unit":"Green_Eyes_3","verb":"screen","yield_s":4.3}
+SEAT_YIELD {"asker":"Green_Guns_8","asker_verb":"ambush","at":[38.1,17.2],"cpu":true,"died":false,"element":"Eyes","end":1955,"s":60.5,"seat_m":1.4,"start":1816,"team":0,"unit":"Green_Eyes_1","verb":"screen","yield_s":4.6}
+SEAT_YIELD {"asker":"Green_Hunters_3","asker_verb":"support_by_fire","at":[39.0,23.7],"cpu":true,"died":false,"element":"Eyes","end":2065,"s":65.8,"seat_m":6.1,"start":1974,"team":0,"unit":"Green_Eyes_1","verb":"screen","yield_s":3.0}
+SEAT_YIELD {"asker":"Green_Guns_1","asker_verb":"ambush","at":[29.7,60.0],"cpu":true,"died":false,"element":"Eyes","end":2082,"s":66.8,"seat_m":41.6,"start":2003,"team":0,"unit":"Green_Eyes_3","verb":"screen","yield_s":2.6}
+Green_Hunters_9 destroyed Rust_Eyes2_4 (score Green 20 : 7 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (6 left)
+NATIVE_EXEC 89662 native, 10337 handed back (dead 0, reflexes 0, yielding 0, face 9846, drive 0, other 0), 2482 stale pulls, 12674 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"attack","at":[42.1,34.3],"cpu":true,"died":false,"element":"Eyes","end":2493,"s":77.1,"seat_m":21.6,"start":2313,"team":0,"unit":"Green_Eyes_3","verb":"screen","yield_s":6.0}
+Green_Lances_3 destroyed Rust_Battery_1 (score Green 21 : 7 Rust)
+Green_Hunters_8 destroyed Rust_Battery_4 (score Green 22 : 7 Rust)
+Rust_Eyes2_3 destroyed Green_Guns_5 (score Green 22 : 8 Rust)
+Green_Guns_3 destroyed Rust_Eyes2_5 (score Green 23 : 8 Rust)
+HUD_MESSAGE [info] Destroyed 3 enemies (3 left)
+HUD_MESSAGE [warning] Guns lost a Tank, 7 left
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"attack","at":[41.7,19.6],"cpu":true,"died":false,"element":"Eyes","end":2594,"s":80.5,"seat_m":2.9,"start":2415,"team":0,"unit":"Green_Eyes_1","verb":"screen","yield_s":6.0}
+Green_Guns_7 destroyed Rust_Eyes2_3 (score Green 24 : 8 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (2 left)
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"attack","at":[43.0,13.4],"cpu":true,"died":false,"element":"Eyes","end":2692,"s":87.0,"seat_m":5.5,"start":2610,"team":0,"unit":"Green_Eyes_1","verb":"screen","yield_s":2.7}
+Green_Hunters_2 destroyed Rust_Battery_2 (score Green 25 : 8 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Gas Rocket Truck (1 left)
+Green_Hunters_2 destroyed Rust_Battery_3 (score Green 26 : 8 Rust)
+HUD_MESSAGE [info] VICTORY
+HUD_MESSAGE [info] Destroyed an enemy Gas Rocket Truck (0 left)
+NATIVE_EXEC 108200 native, 11799 handed back (dead 0, reflexes 0, yielding 0, face 11308, drive 0, other 0), 2733 stale pulls, 13123 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Green_Hunters_5","asker_verb":"move","at":[75.2,5.5],"cpu":true,"died":false,"element":"Eyes","end":3401,"s":111.9,"seat_m":4.9,"start":3357,"team":0,"unit":"Green_Eyes_2","verb":"screen","yield_s":1.5}
+SEAT_YIELD {"asker":"Green_Hunters_9","asker_verb":"move","at":[72.6,19.2],"cpu":true,"died":false,"element":"Eyes","end":3720,"s":118.0,"seat_m":2.3,"start":3541,"team":0,"unit":"Green_Eyes_1","verb":"screen","yield_s":6.0}
+NATIVE_EXEC 125288 native, 14711 handed back (dead 0, reflexes 0, yielding 0, face 14220, drive 0, other 0), 2777 stale pulls, 13165 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"move","at":[77.2,18.7],"cpu":true,"died":false,"element":"Eyes","end":4350,"s":143.7,"seat_m":2.4,"start":4310,"team":0,"unit":"Green_Eyes_1","verb":"screen","yield_s":1.3}
+SEAT_YIELD {"asker":"Green_Hunters_5","asker_verb":"move","at":[77.2,17.3],"cpu":true,"died":false,"element":"Eyes","end":4627,"s":151.1,"seat_m":2.7,"start":4534,"team":0,"unit":"Green_Eyes_1","verb":"screen","yield_s":3.1}
+NATIVE_EXEC 141480 native, 18519 handed back (dead 0, reflexes 0, yielding 0, face 18028, drive 0, other 0), 2778 stale pulls, 13165 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD_CENSUS {"arena":"gorge","by_verb":{"cpu:screen":{"deaths":1,"episodes":16}},"deaths":35,"seat_aside":"off","seconds":180.0,"seed":1806}

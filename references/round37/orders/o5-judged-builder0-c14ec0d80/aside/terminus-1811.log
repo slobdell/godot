@@ -1,0 +1,157 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (condemned): 19 scouts, 5 tanks, 6 IFVs, 6 lancers (5190 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 36 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (syndicate): 8 skimmers, 3 limousine gunships, 3 railgun platforms, 3 spotter platforms (5010 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 17 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=5 green=36 rust_squads=5 rust=17
+SKIRMISH_CAMERA focus=(-57, 86) zoom=0.64 vehicles=10
+DEMO_SEED 1811 arena=terminus condemned vs syndicate (replay: make showmatch SEED=1811)
+CONTROL_GROUPS squads=5 (Eyes:10 Eyes II:9 Guns:5 Hunters:6 Lances:6) groups=5 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-21T21-52-33-terminus.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "1811", "arena": "terminus", "mute": "", "seconds": "180", "seat-aside": "on" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Rust_Guns_2 destroyed Green_Eyes II_5 (score Green 0 : 1 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 5 (35 tanks left)
+HUD_MESSAGE [warning] Eyes II lost a Scout, 8 left
+NATIVE_EXEC 19667 native, 332 handed back (dead 0, reflexes 0, yielding 0, face 330, drive 0, other 0), 656 stale pulls, 1920 part pulls, 0 verified, 0 verify mismatches 
+Rust_Guns_2 destroyed Green_Guns_3 (score Green 0 : 2 Rust)
+SEAT_YIELD {"asker":"Rust_Lances_1","asker_verb":"support_by_fire","at":[-23.7,-25.3],"cpu":true,"died":false,"element":"Eyes2","end":362,"s":11.1,"seat_m":2.1,"start":332,"team":1,"unit":"Rust_Eyes2_2","verb":"screen","yield_s":1.0}
+HUD_MESSAGE [warning] Guns lost a Tank, 4 left
+SEAT_YIELD {"asker":"Green_Eyes_1","asker_verb":"screen","at":[-0.6,72.0],"cpu":true,"died":false,"element":"Eyes II","end":408,"s":13.6,"seat_m":17.3,"start":407,"team":0,"unit":"Green_Eyes II_6","verb":"screen","yield_s":0.0}
+Rust_Guns_3 destroyed Green_Eyes II_1 (score Green 0 : 3 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 1 (33 tanks left)
+HUD_MESSAGE [warning] Eyes II: commander down, Eyes II 2 takes command
+SEAT_YIELD {"asker":"Rust_Hunters_2","asker_verb":"support_by_fire","at":[-3.7,-51.3],"cpu":true,"died":false,"element":"Eyes","end":460,"s":13.6,"seat_m":12.3,"start":409,"team":1,"unit":"Rust_Eyes_2","verb":"screen","yield_s":1.7}
+SEAT_YIELD {"asker":"Green_Eyes_5","asker_verb":"screen","at":[5.0,36.2],"cpu":true,"died":false,"element":"Eyes II II","end":469,"s":13.5,"seat_m":30.4,"start":404,"team":0,"unit":"Green_Eyes II_9","verb":"screen","yield_s":2.2}
+Green_Guns_5 destroyed Rust_Eyes2_1 (score Green 1 : 3 Rust)
+SEAT_YIELD {"asker":"Green_Eyes II_7","asker_verb":"screen","at":[-9.9,38.4],"cpu":true,"died":false,"element":"Eyes II","end":475,"s":13.7,"seat_m":30.2,"start":410,"team":0,"unit":"Green_Eyes_3","verb":"screen","yield_s":2.2}
+Rust_Hunters_2 destroyed Green_Eyes II_9 (score Green 1 : 4 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 9 (32 tanks left)
+SEAT_YIELD {"asker":"Green_Eyes II_1","asker_verb":"screen","at":[4.2,30.8],"cpu":true,"died":true,"died_after":true,"element":"Eyes II II","end":502,"s":16.4,"seat_m":35.9,"start":493,"team":0,"unit":"Green_Eyes II_9","verb":"screen","yield_s":0.3}
+HUD_MESSAGE [warning] Eyes II lost 2 vehicles (Scout, Scout), 6 left
+SEAT_YIELD {"asker":"Green_Eyes_5","asker_verb":"screen","at":[14.3,38.1],"cpu":true,"died":false,"element":"Eyes II II","end":502,"s":16.1,"seat_m":31.8,"start":484,"team":0,"unit":"Green_Eyes II_2","verb":"screen","yield_s":0.6}
+HUD_MESSAGE [warning] Friendly fire: Eyes II 3 hit Eyes II 8
+HUD_MESSAGE [info] Destroyed an enemy Skimmer (16 left)
+SEAT_YIELD {"asker":"Green_Guns_4","asker_verb":"attack","at":[-2.8,51.9],"cpu":true,"died":false,"element":"Eyes II","end":533,"s":14.2,"seat_m":26.9,"start":425,"team":0,"unit":"Green_Eyes II_3","verb":"screen","yield_s":3.6}
+SEAT_YIELD {"asker":"Green_Hunters_4","asker_verb":"support_by_fire","at":[1.0,71.0],"cpu":true,"died":false,"element":"Eyes II","end":533,"s":17.3,"seat_m":18.7,"start":519,"team":0,"unit":"Green_Eyes II_6","verb":"screen","yield_s":0.5}
+SEAT_YIELD {"asker":"Green_Eyes_5","asker_verb":"screen","at":[4.3,45.4],"cpu":true,"died":false,"element":"Eyes II","end":533,"s":13.6,"seat_m":33.7,"start":408,"team":0,"unit":"Green_Eyes II_8","verb":"screen","yield_s":4.2}
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"attack","at":[-6.8,43.1],"cpu":true,"died":false,"element":"Eyes II","end":543,"s":13.1,"seat_m":24.0,"start":394,"team":0,"unit":"Green_Eyes_2","verb":"screen","yield_s":5.0}
+SEAT_YIELD {"asker":"Green_Eyes_1","asker_verb":"screen","at":[-4.3,77.1],"cpu":true,"died":false,"element":"Eyes II","end":543,"s":14.0,"seat_m":16.2,"start":419,"team":0,"unit":"Green_Eyes_6","verb":"screen","yield_s":4.1}
+Rust_Hunters_2 destroyed Green_Eyes II_7 (score Green 1 : 5 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 7 (31 tanks left)
+SEAT_YIELD {"asker":"Green_Eyes_1","asker_verb":"screen","at":[-4.4,80.5],"cpu":true,"died":false,"element":"Eyes II","end":579,"s":19.0,"seat_m":-1.0,"start":569,"team":0,"unit":"Green_Eyes_6","verb":"screen","yield_s":0.3}
+HUD_MESSAGE [warning] Eyes II lost a Scout, 5 left
+Rust_Hunters_2 destroyed Green_Eyes II_3 (score Green 1 : 6 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 3 (30 tanks left)
+SEAT_YIELD {"asker":"Green_Eyes_2","asker_verb":"screen","at":[-5.0,30.4],"cpu":true,"died":true,"element":"Eyes II","end":703,"s":21.0,"seat_m":42.1,"start":630,"team":0,"unit":"Green_Eyes II_3","verb":"screen","yield_s":2.4}
+Green_Guns_5 destroyed Rust_Eyes2_2 (score Green 2 : 6 Rust)
+Rust_Guns_3 destroyed Green_Lances_3 (score Green 2 : 7 Rust)
+Green_Hunters_2 destroyed Rust_Eyes2_3 (score Green 3 : 7 Rust)
+HUD_MESSAGE [warning] Eyes II lost a Scout, 4 left
+HUD_MESSAGE [info] Destroyed 2 enemies (14 left)
+HUD_MESSAGE [warning] Lances lost a Lancer, 5 left
+NATIVE_EXEC 38276 native, 1723 handed back (dead 0, reflexes 0, yielding 0, face 1656, drive 0, other 0), 1109 stale pulls, 5074 part pulls, 0 verified, 0 verify mismatches 
+Rust_Hunters_3 destroyed Green_Eyes II_8 (score Green 3 : 8 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 8 (28 tanks left)
+SEAT_YIELD {"asker":"Rust_Hunters_3","asker_verb":"support_by_fire","at":[-3.0,-62.7],"cpu":true,"died":false,"element":"Eyes","end":732,"s":22.7,"seat_m":2.3,"start":681,"team":1,"unit":"Rust_Eyes_1","verb":"screen","yield_s":1.7}
+SEAT_YIELD {"asker":"Green_Eyes_2","asker_verb":"screen","at":[-5.8,17.3],"cpu":true,"died":true,"died_after":true,"element":"Eyes II","end":821,"s":26.2,"seat_m":27.2,"start":786,"team":0,"unit":"Green_Eyes II_8","verb":"screen","yield_s":1.2}
+HUD_MESSAGE [warning] Friendly fire: Hunters 2 hit Eyes 3
+Green_Guns_5 destroyed Rust_Hunters_2 (score Green 4 : 8 Rust)
+HUD_MESSAGE [warning] Eyes II lost a Scout, 3 left
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (13 left)
+Rust_Hunters_3 destroyed Green_Eyes_2 (score Green 4 : 9 Rust)
+HUD_MESSAGE [warning] Friendly fire: Eyes II 4 hit Eyes 3
+HUD_MESSAGE [warning] Eyes lost a Scout, 9 left
+Green_Hunters_2 destroyed Rust_Hunters_1 (score Green 5 : 9 Rust)
+Rust_Guns_3 destroyed Green_Eyes_3 (score Green 5 : 10 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (12 left)
+HUD_MESSAGE [warning] Eyes lost a Scout, 8 left
+Green_Hunters_2 destroyed Rust_Hunters_3 (score Green 6 : 10 Rust)
+HUD_MESSAGE [warning] The enemy took the west ring
+Rust_Guns_2 destroyed Green_Eyes II_2 (score Green 6 : 11 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 2 (25 tanks left)
+HUD_MESSAGE [warning] Eyes II: commander down, Eyes II 4 takes command
+HUD_MESSAGE [info] Destroyed an enemy Limousine Gunship (11 left)
+HUD_MESSAGE [warning] Eyes II lost a Scout, 2 left
+SEAT_YIELD {"asker":"Rust_Guns_3","asker_verb":"attack","at":[0.6,-63.8],"cpu":true,"died":false,"element":"Eyes","end":1083,"s":35.6,"seat_m":2.1,"start":1069,"team":1,"unit":"Rust_Eyes_1","verb":"screen","yield_s":0.5}
+HUD_MESSAGE [warning] Eyes II: shields down
+Rust_Lances_2 destroyed Green_Eyes II_6 (score Green 6 : 12 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 6 (24 tanks left)
+Rust_Guns_3 destroyed Green_Hunters_6 (score Green 6 : 13 Rust)
+HUD_MESSAGE [warning] Eyes II lost a Scout, 1 left
+HUD_MESSAGE [warning] Hunters lost an IFV, 5 left
+SEAT_YIELD {"asker":"Green_Eyes_9","asker_verb":"screen","at":[-43.0,89.2],"cpu":true,"died":false,"element":"Eyes","end":1215,"s":38.5,"seat_m":10.0,"start":1156,"team":0,"unit":"Green_Eyes_1","verb":"screen","yield_s":2.0}
+HUD_MESSAGE [warning] Eyes II: shields down
+NATIVE_EXEC 56093 native, 3906 handed back (dead 0, reflexes 0, yielding 0, face 3668, drive 0, other 0), 1406 stale pulls, 7998 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Green_Eyes_4","asker_verb":"screen","at":[-7.0,77.9],"cpu":true,"died":false,"element":"Eyes II","end":1241,"s":37.9,"seat_m":1.6,"start":1138,"team":0,"unit":"Green_Eyes_5","verb":"screen","yield_s":3.4}
+Rust_Lances_2 destroyed Green_Eyes II_4 (score Green 6 : 14 Rust)
+HUD_MESSAGE [warning] Eyes II lost Eyes II 4 (22 tanks left)
+SEAT_YIELD {"asker":"Green_Hunters_3","asker_verb":"support_by_fire","at":[-0.4,79.2],"cpu":true,"died":false,"element":"Eyes II","end":1263,"s":40.4,"seat_m":2.6,"start":1213,"team":0,"unit":"Green_Eyes_6","verb":"screen","yield_s":1.7}
+SEAT_YIELD {"asker":"Green_Eyes_1","asker_verb":"screen","at":[-42.1,90.4],"cpu":true,"died":false,"element":"Eyes II","end":1263,"s":41.0,"seat_m":13.8,"start":1230,"team":0,"unit":"Green_Eyes_9","verb":"screen","yield_s":1.1}
+Rust_Guns_2 destroyed Green_Hunters_2 (score Green 6 : 15 Rust)
+HUD_MESSAGE [error] Eyes II destroyed
+HUD_MESSAGE [warning] Hunters lost an IFV, 4 left
+SEAT_YIELD {"asker":"Rust_Guns_3","asker_verb":"hold","at":[-20.6,-97.1],"cpu":true,"died":false,"element":"Eyes","end":1363,"s":44.5,"seat_m":0.8,"start":1335,"team":1,"unit":"Rust_Eyes_2","verb":"screen","yield_s":0.9}
+Rust_Guns_1 destroyed Green_Guns_5 (score Green 6 : 16 Rust)
+HUD_MESSAGE [warning] Guns lost a Tank, 3 left
+Rust_Guns_3 destroyed Green_Guns_1 (score Green 6 : 17 Rust)
+HUD_MESSAGE [warning] Guns: commander down, Guns 2 takes command
+SEAT_YIELD {"asker":"Green_Hunters_3","asker_verb":"support_by_fire","at":[-5.0,43.5],"cpu":true,"died":false,"element":"Eyes","end":1569,"s":48.8,"seat_m":2.6,"start":1465,"team":0,"unit":"Green_Eyes_4","verb":"screen","yield_s":3.5}
+HUD_MESSAGE [warning] Guns lost a Tank, 2 left
+SEAT_YIELD {"asker":"Green_Eyes_9","asker_verb":"screen","at":[-66.0,53.5],"cpu":true,"died":false,"element":"Eyes","end":1592,"s":51.2,"seat_m":0.9,"start":1535,"team":0,"unit":"Green_Eyes_10","verb":"screen","yield_s":1.9}
+Green_Guns_2 destroyed Rust_Lances_3 (score Green 7 : 17 Rust)
+HUD_MESSAGE [warning] Guns: shields down
+HUD_MESSAGE [info] Destroyed an enemy Spotter Platform (10 left)
+Rust_Guns_3 destroyed Green_Guns_4 (score Green 7 : 18 Rust)
+SEAT_YIELD {"asker":"Green_Eyes_9","asker_verb":"screen","at":[-56.0,51.5],"cpu":true,"died":false,"element":"Eyes","end":1727,"s":51.6,"seat_m":3.1,"start":1547,"team":0,"unit":"Green_Eyes_7","verb":"screen","yield_s":6.0}
+HUD_MESSAGE [warning] Guns lost a Tank, 1 left
+HUD_MESSAGE [warning] Guns: shields down
+Rust_Lances_1 destroyed Green_Guns_2 (score Green 7 : 19 Rust)
+Rust_Guns_1 destroyed Green_Hunters_4 (score Green 7 : 20 Rust)
+HUD_MESSAGE [error] Guns destroyed
+SEAT_YIELD {"asker":"Green_Eyes_9","asker_verb":"screen","at":[-55.8,51.3],"cpu":true,"died":false,"element":"Eyes","end":1840,"s":58.9,"seat_m":2.8,"start":1768,"team":0,"unit":"Green_Eyes_7","verb":"screen","yield_s":2.4}
+HUD_MESSAGE [warning] Hunters lost an IFV, 3 left
+Rust_Guns_3 destroyed Green_Hunters_5 (score Green 7 : 21 Rust)
+NATIVE_EXEC 73747 native, 6252 handed back (dead 0, reflexes 0, yielding 0, face 6014, drive 0, other 0), 1585 stale pulls, 10732 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Green_Hunters_3","asker_verb":"support_by_fire","at":[-15.6,34.2],"cpu":true,"died":false,"element":"Eyes II","end":1911,"s":60.4,"seat_m":3.2,"start":1813,"team":0,"unit":"Green_Eyes_6","verb":"screen","yield_s":3.3}
+HUD_MESSAGE [warning] Hunters lost an IFV, 2 left
+Rust_Guns_1 destroyed Green_Hunters_1 (score Green 7 : 22 Rust)
+HUD_MESSAGE [warning] Hunters: commander down, Hunters 3 takes command
+Rust_Guns_2 destroyed Green_Hunters_3 (score Green 7 : 23 Rust)
+HUD_MESSAGE [error] Hunters destroyed
+Rust_Guns_3 destroyed Green_Eyes_10 (score Green 7 : 24 Rust)
+HUD_MESSAGE [warning] Eyes lost a Scout, 7 left
+Rust_Guns_1 destroyed Green_Eyes_9 (score Green 7 : 25 Rust)
+Rust_Guns_2 destroyed Green_Eyes_7 (score Green 7 : 26 Rust)
+HUD_MESSAGE [warning] Eyes lost 2 vehicles (Scout, Scout), 5 left
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Green_Lances_1 destroyed Rust_Eyes_1 (score Green 8 : 26 Rust)
+SEAT_YIELD {"asker":"Rust_Lances_1","asker_verb":"support_by_fire","at":[-76.8,-16.3],"cpu":true,"died":false,"element":"Guns","end":2423,"s":79.1,"seat_m":1.8,"start":2372,"team":1,"unit":"Rust_Guns_2","verb":"hold","yield_s":1.7}
+SEAT_YIELD {"asker":"Green_Eyes_8","asker_verb":"screen","at":[-36.1,28.3],"cpu":true,"died":false,"element":"Eyes II","end":2436,"s":80.0,"seat_m":12.4,"start":2401,"team":0,"unit":"Green_Eyes_6","verb":"screen","yield_s":1.2}
+SEAT_YIELD {"asker":"Green_Eyes_1","asker_verb":"screen","at":[-24.6,38.6],"cpu":true,"died":false,"element":"Eyes II","end":2441,"s":77.0,"seat_m":1.6,"start":2310,"team":0,"unit":"Green_Eyes_5","verb":"screen","yield_s":4.4}
+HUD_MESSAGE [info] Destroyed an enemy Skimmer (9 left)
+Rust_Guns_1 destroyed Green_Lances_4 (score Green 8 : 27 Rust)
+HUD_MESSAGE [warning] Lances lost a Lancer, 4 left
+Rust_Guns_3 destroyed Green_Lances_6 (score Green 8 : 28 Rust)
+SEAT_YIELD {"asker":"Green_Lances_2","asker_verb":"support_by_fire","at":[-5.1,2.3],"cpu":true,"died":false,"element":"Eyes","end":2799,"s":90.9,"seat_m":14.9,"start":2728,"team":0,"unit":"Green_Eyes_8","verb":"screen","yield_s":2.4}
+HUD_MESSAGE [warning] Lances lost a Lancer, 3 left
+SEAT_YIELD {"asker":"Green_Lances_2","asker_verb":"support_by_fire","at":[-10.6,3.2],"cpu":true,"died":false,"element":"Eyes II","end":2823,"s":93.9,"seat_m":12.9,"start":2818,"team":0,"unit":"Green_Eyes_5","verb":"screen","yield_s":0.2}
+Rust_Guns_1 destroyed Green_Lances_5 (score Green 8 : 29 Rust)
+NATIVE_EXEC 91194 native, 8805 handed back (dead 0, reflexes 0, yielding 0, face 8566, drive 0, other 0), 1752 stale pulls, 13581 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Lances lost a Lancer, 2 left
+SEAT_YIELD {"asker":"Green_Eyes_5","asker_verb":"screen","at":[-7.1,1.5],"cpu":true,"died":false,"element":"Eyes","end":2936,"s":95.5,"seat_m":14.0,"start":2866,"team":0,"unit":"Green_Eyes_8","verb":"screen","yield_s":2.3}
+Rust_Guns_1 destroyed Green_Lances_1 (score Green 8 : 30 Rust)
+HUD_MESSAGE [warning] Lances: commander down, Lances 2 takes command
+HUD_MESSAGE [warning] Lances lost a Lancer, 1 left
+SEAT_YIELD {"asker":"Green_Eyes_6","asker_verb":"screen","at":[3.2,-11.0],"cpu":true,"died":false,"element":"Eyes","end":3465,"s":113.9,"seat_m":3.2,"start":3418,"team":0,"unit":"Green_Eyes_1","verb":"screen","yield_s":1.6}
+Rust_Guns_3 destroyed Green_Eyes_6 (score Green 8 : 31 Rust)
+Rust_Guns_1 destroyed Green_Eyes_5 (score Green 8 : 32 Rust)
+HUD_MESSAGE [warning] Eyes lost 2 vehicles (Scout, Scout), 3 left
+SEAT_YIELD {"asker":"Rust_Lances_2","asker_verb":"support_by_fire","at":[-74.8,-27.9],"cpu":true,"died":false,"element":"Guns","end":3585,"s":117.4,"seat_m":1.9,"start":3523,"team":1,"unit":"Rust_Guns_3","verb":"hold","yield_s":2.1}
+SEAT_YIELD {"asker":"Green_Lances_2","asker_verb":"support_by_fire","at":[-8.7,-9.2],"cpu":true,"died":false,"element":"Eyes","end":3629,"s":117.5,"seat_m":3.4,"start":3526,"team":0,"unit":"Green_Eyes_8","verb":"screen","yield_s":3.4}
+NATIVE_EXEC 106599 native, 13400 handed back (dead 0, reflexes 0, yielding 0, face 13161, drive 0, other 0), 1804 stale pulls, 14737 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD_CENSUS {"arena":"terminus","by_verb":{"cpu:hold":{"deaths":0,"episodes":2},"cpu:screen":{"deaths":3,"episodes":34}},"deaths":40,"deaths_by_team":{"0":32,"1":8},"seat_aside":"on","seats_aside":145,"seats_aside_failed":45,"seconds":180.0,"seed":1811}

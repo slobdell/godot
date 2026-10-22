@@ -1,0 +1,74 @@
+>> 13:20 m1 series driver start: ON 339d3f2e2 BASE b822e6696 on slobdell@builder0
+>> 14:07 check start (try 1), load: 1.87 8.31 14.15 4/915 2505479 0 
+>> 14:57 check end: >> check:   NOT JUDGED is not a pass: the target refused a verdict it could not take here (the reason is >> check:   on its row: a loaded machine, or none recorded for it; verification.md rule 3). Re-run it alone. >> remote: make native check exited 0 (build/ copied back) 
+>> 14:57 STOP: targets NOT RUN
+>> 14:58 m1 series driver start: ON 339d3f2e2 BASE b822e6696 on slobdell@builder0
+>> 14:58 wedge on locks start, load: 0.72 3.24 6.60 1/905 2752149 0 
+>> 15:09 >> remote: make native manoeuvre-wedge-trace WEDGE_RANGE=664
+>> 15:09 fights on locks start, load: 3.03 3.90 5.36 1/905 2754113 0 
+>> 15:22 >> remote: make native manoeuvre-fights FIGHT_RANGE=6640-666
+>> 15:22 jam on locks start, load: 13.46 12.76 9.40 13/973 2760234 0 
+>> 15:40 >> remote: make native traffic-jam-census JAM_AT=locks JAM_R
+>> 15:40 wedge base locks start, load: 3.69 7.66 9.78 8/1036 2768235 0 
+>> 15:59 >> remote: make native manoeuvre-wedge-trace WEDGE_RANGE=664
+>> 15:59 fights base locks start, load: 14.93 12.48 11.42 6/1030 2803022 0 
+>> 16:16 >> remote: make native manoeuvre-fights FIGHT_RANGE=6640-666
+>> 16:16 jam base locks start, load: 7.92 11.40 11.69 4/1006 2948018 0 
+>> 16:33 >> remote: make native traffic-jam-census JAM_AT=locks JAM_R
+>> 16:33 wedge on terminus start, load: 3.39 6.92 9.25 1/918 2954265 0 
+>> 16:47 >> remote: make native manoeuvre-wedge-trace WEDGE_RANGE=664
+>> 16:47 fights on terminus start, load: 9.71 10.80 10.80 13/971 2958721 0 
+>> 17:01 >> remote: make native manoeuvre-fights FIGHT_RANGE=6640-666
+>> 17:01 jam on terminus start, load: 11.84 13.21 12.25 16/971 2963474 0 
+>> 17:20 >> remote: make native traffic-jam-census JAM_AT=terminus JA
+>> 17:20 wedge base terminus start, load: 8.54 10.55 11.63 7/1039 2990073 0 
+>> 17:41 >> remote: make native manoeuvre-wedge-trace WEDGE_RANGE=664
+>> 17:41 fights base terminus start, load: 15.00 18.53 17.00 20/1119 3023141 0 
+>> 18:01 >> remote: make native manoeuvre-fights FIGHT_RANGE=6640-666
+>> 18:01 jam base terminus start, load: 20.52 21.89 20.70 17/1223 3043878 0 
+>> 18:28 >> remote: make native traffic-jam-census JAM_AT=terminus JA
+>> 18:28 wedge on sumps start, load: 19.03 22.80 22.96 17/1229 3081967 0 
+>> 18:49 >> remote: make native manoeuvre-wedge-trace WEDGE_RANGE=664
+>> 18:49 fights on sumps start, load: 8.05 11.80 16.55 19/1175 3214726 0 
+>> 19:04 >> remote: make native manoeuvre-fights FIGHT_RANGE=6640-666
+>> 19:04 jam on sumps start, load: 4.98 7.60 11.79 2/972 3220967 0 
+>> 19:24 >> remote: make native traffic-jam-census JAM_AT=sumps JAM_R
+>> 19:24 wedge base sumps start, load: 8.81 11.91 12.61 2/970 3227567 0 
+>> 19:36 >> remote: make native manoeuvre-wedge-trace WEDGE_RANGE=664
+>> 19:36 fights base sumps start, load: 2.91 5.23 8.81 1/912 3230397 0 
+>> 19:46 >> remote: make native manoeuvre-fights FIGHT_RANGE=6640-666
+>> 19:46 jam base sumps start, load: 2.87 4.26 6.57 2/924 3233156 0 
+>> 20:08 >> remote: make native traffic-jam-census JAM_AT=sumps JAM_R
+>> 20:08 hr-new_drawn-gangs-1 start, load: 9.04 11.11 10.23 3/968 3251262 0 
+>> 20:31 hr-new_drawn-gangs-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 20:31 hr-new_drawn-gangs-2 start, load: 17.84 19.61 17.29 20/1050 3265827 0 
+>> 20:53 hr-new_drawn-gangs-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 20:53 hr-new_drawn-law-1 start, load: 22.28 19.48 17.49 10/1056 3282529 0 
+>> 21:06 hr-new_drawn-law-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 21:06 hr-new_drawn-law-2 start, load: 4.65 11.51 15.27 1/929 3291139 0 
+>> 21:20 hr-new_drawn-law-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 21:20 hr-new_drawn-syndicate-1 start, load: 11.03 11.79 13.24 19/1032 3321249 0 
+>> 21:29 hr-new_drawn-syndicate-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 21:29 hr-new_drawn-syndicate-2 start, load: 20.29 17.63 15.46 24/1338 3332683 0 
+>> 21:38 hr-new_drawn-syndicate-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 21:38 hr-new_drawn-condemned-1 start, load: 17.64 18.37 16.91 11/1131 3362368 0 
+>> 22:00 hr-new_drawn-condemned-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 22:00 hr-new_drawn-condemned-2 start, load: 15.44 16.71 16.75 9/1089 3490785 0 
+>> 22:27 hr-new_drawn-condemned-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 22:27 hr-base_drawn-gangs-1 start, load: 15.39 14.61 14.27 3/985 3514399 0 
+>> 22:50 hr-base_drawn-gangs-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 22:50 hr-base_drawn-gangs-2 start, load: 10.46 12.09 13.64 8/1071 3554811 0 
+>> 23:22 hr-base_drawn-gangs-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 23:22 hr-base_drawn-law-1 start, load: 14.75 17.50 17.75 11/1165 3637793 0 
+>> 00:12 hr-base_drawn-law-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 00:12 hr-base_drawn-law-2 start, load: 15.21 15.48 16.85 6/1025 3986557 0 
+>> 00:26 hr-base_drawn-law-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 00:26 hr-base_drawn-syndicate-1 start, load: 11.60 13.28 15.27 8/1071 4006040 0 
+>> 00:39 hr-base_drawn-syndicate-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 00:39 hr-base_drawn-syndicate-2 start, load: 18.16 16.78 15.45 14/1158 4037464 0 
+>> 00:49 hr-base_drawn-syndicate-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 00:49 hr-base_drawn-condemned-1 start, load: 18.81 18.48 16.96 29/1217 4060328 0 
+>> 01:12 hr-base_drawn-condemned-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 01:12 hr-base_drawn-condemned-2 start, load: 18.72 20.65 19.74 15/1229 4126738 0 
+>> 01:35 hr-base_drawn-condemned-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-re
+>> 01:35 series done, load: 14.80 18.80 19.56 7/1094 220136 0 

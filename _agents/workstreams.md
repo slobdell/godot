@@ -622,6 +622,51 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   hand-over; cover merges main after both. **His click at the real point (orders 2259e262e, NOT judged, builder0 light, 7e9bd7fb7,
   3801-3812, probe armies):** 5 squads places outside the corridor 36/60 -> 0, metres outside 2,350 -> 323, re-dealt 24 -> 0, contacts
   1,236 -> 396, all-in 12.4 -> 9.4 s; 3 squads outside 12/36 -> 0. Shots in `references/round37/orders/group-click-his-point-7e9bd7fb7/`.
+- **R37.40 (2026-10-22) O1-LATCH PASSES (the settle re-read) and ships ON.** orders (builder0 native 1ebd7e550, seeds 3821-3832,
+  `o1settle`; `references/round37/orders/o1latch-reread-builder0-1ebd7e550/`): base relays 143; deciding relays 143 -> 2 (limit 35.8),
+  shape flips 19 -> 1; all 12 cells pass place + twitch; parked re-deals 429 -> 428 (reported). Census and fight read passed on
+  c14ec0d80 (R37.37). Default flipped to `latch` (e94410eb4, `game/tactics/element_situation.gd`, every side's halts;
+  `--halt-terrain=centre` keeps round 36's); GDScript only (no native reader). Hand-over = stream/orders f8bf6aaad (latch ON; O2/O3/O5/
+  O6/O7 code OFF), its builder0 full check queued; moved sim-baseline maps are attributed with `--halt-terrain=centre` (must read
+  unmoved). O2's re-deal source recorded as a hypothesis (the halt re-planned when a pulled-back crew returns), untraced.
+- **R37.41 (2026-10-22) SHIPPED ON: M1 sidestand.** main da3193cf5 merges stream/manoeuvre 775c009fe alone: builder2 `make native check
+  exited 0`, 3036/0, sim-baseline 13/13 unmoved (game code byte-identical to the judged 339d3f2e2) + the h1b bank re-pin (6eda892a4).
+  merge_check_needed says CHECK (native's re-pins not in manoeuvre's tree): ONE builder2 `make native check` on da3193cf5 queued.
+  Cover may merge main for its hand-over once it's green.
+  **main da3193cf5 GREEN:** builder2 `make native check exited 0`, 3036 passed / 0 failed, sim-baseline 13/13 unmoved (re-run after the
+  05:11 PDT preemption killed the first try).
+- **R37.42 (2026-10-22) latch does NOT ship: its hand-over check is red on a real wrong shape.** orders: f8bf6aaad (latch ON) builder0
+  `make native check exited 2`, 3049 passed / 1 failed: test_tactics_scenarios_2::test_a_move_ends_formed_up_on_the_spot_and_stops_
+  issuing (coil, 4 orders in the last 10 s, limit 2; herringbone and 0 orders on every earlier green). Deterministic (laptop: fails with
+  latch, passes with centre). Traced (`references/round37/orders/latch-transient-lab/`): four tanks drive down a lane; the live read is
+  `lanes` every second except t=11 when the centroid crosses an `open` pocket; arrived at t=12, latch keeps t=11's `open` and deploys a
+  COIL at t=22; centre re-reads `lanes` at t=12 and deploys herringbone at t=13. In his terms: a squad that stops in a lane just after
+  crossing a gap opens into a ring that doesn't fit the lane. The judged probe counted flips and relays (which latch removes), not a wrong
+  FIRST shape. sim-baseline 13/13 unmoved with latch ON and with centre (nothing to adopt). **Ruled:** default back to centre
+  (733e024e4); latch stays an arm; the test is NOT edited (it caught a real defect). Round 38: latch the read the deploy decides on (at
+  all-in) or one that has held ~2 s, as a new arm + bar + fresh seeds. **Lesson:** a bar's lines must include the property the change
+  could break (here the first shape), not only the one it fixes; the full check is the last net, and it worked.
+- **R37.43 (2026-10-22) orders closed; one main check judges the batch.** main ebbbdf0f8 merges stream/orders 36ac42a84 (green
+  31e779e8e: builder0 `make native check exited 0`, 3050/0, 27 targets ALL JUDGED incl. perf-judge, sim-baseline unmoved): tooling,
+  probes, lab cases, OFF arms (latch, parked-hold, untangle=whole, seat-aside, cover-seat, group-lay=column). main c9996f0c4 adds
+  feedback's 771633ed5 (mk/feedback.mk REMOTE_COPYBACK_PROTECT). merge_check_needed says CHECK (orders' tree lacked feedback's picks,
+  M1, native's re-pins): ONE builder0 `make native check` on c9996f0c4 (builder0 is quiet: its perf-judge can judge main).
+- **R37.44 (2026-10-22) Bar K FAILS on the deciding line; K2 hull-down stays OFF; the K5 maps ship as he approved them.** cover
+  (stream/cover 43d16acc4; builder2, 320 fights an arm, 2601-08 + 2701-08, both sides; terminus/locks/sumps/gorge at 3923ba026, all 64
+  parade fights in BOTH arms at the re-sited c02b01d83; one preemption, seed 2702 re-run): blob 45 -> 44 % (-1.3 pts, paired se 0.9,
+  1.4 se v 2 needed; flips 2 to a loss, 0 to a win; McNemar p 0.25); kill ratio 0.85 -> 0.84; turtle 36 -> 37 % (+0.6, se 1.1); kills
+  a fight and length within 3 % per faction; positive control cover_struck ON terminus 101, locks 241, sumps 15, gorge 79, parade 69
+  (0 OFF); OFF-v-OFF replay seed 2601 0 flips. Map-alone (OFF@K5 v 9d325e291): blob 48 -> 45 % (-2.5, se 3.4), turtle 39 -> 36 % (-3.1,
+  se 2.2), turtle kill ratio 0.80 -> 0.75 (2.5 se DOWN): nothing rises. Reading: 505 shots stopped in 320 fights, too few on hulls
+  behind a run to change outcomes. The stretch (CPU taking low-cover seats) not started (gated on K4). Hand-over (K5 maps + re-pins,
+  main merged 05300509a) full check on builder0; the orchestrator adopts the moved maps on green.
+- **R37.45 (2026-10-22) main c9996f0c4 GREEN and ALL JUDGED on builder0.** `make native check exited 0`, 3055 passed / 0 failed,
+  27 targets all passed, ALL JUDGED (perf-judge judged on builder0), sim-baseline 13/13 unmoved. This closes every perf-judge owed this
+  round: the artillery fix, his feedback picks, M1 sidestand, every OFF arm.
+- **R37.46 (2026-10-22) SHIPPED: the K5 barrier maps; cover closed.** main 27e00de2c merges stream/cover b2a82c0ba (code = 05300509a:
+  builder0 `make check exited 2` only on sim-baseline's expected adoption, 3055/0; cover's perf-judge alone on a quiet builder0 PASS
+  1.08x). 1c484a525 adopts terminus, sumps, locks, parade (re-sited), gorge (read twice on builder0 at 27e00de2c, agreeing, equal to
+  05300509a's check hashes); 8 unmoved. K2 hull-down OFF. ONE builder0 `make native check` on 1c484a525 judges the merged main.
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His

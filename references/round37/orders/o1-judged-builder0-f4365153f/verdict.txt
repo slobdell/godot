@@ -1,0 +1,8 @@
+PASS counter: base relays 298 (>= 10), rows differ True
+PASS deciding: relays 298 -> 0 (<= 74.5), shape flips 114 -> 0
+  FAIL guard twitch       locks 5 route: 3.9 v 10.6
+FAIL probe guards (12 cells)
+FAIL CPU guard friendly contacts 1665 -> 1933 (<= 1836.5), fights 18/18
+PASS CPU guard stuck s 1645.3 -> 1767.1 (<= 1984.4)
+  outcomes base {'None': 18} | arm {'None': 18}
+VERDICT o1: FAIL

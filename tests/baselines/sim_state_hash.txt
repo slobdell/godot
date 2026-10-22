@@ -4,18 +4,18 @@ glibc-2.43 foundry 80f7b1bfb40d88bd
 glibc-2.43 yard 62d12a470d5c9ee3
 # glibc-2.43 pit: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
 glibc-2.43 pit 022e54dcc1c3e787
-# glibc-2.43 terminus: recorded on builder0 at 9e226c700, twice, agreeing (2026-10-19)
-glibc-2.43 terminus c1e385944ff8073b
+# glibc-2.43 terminus: recorded on builder0 at 27e00de2c, twice, agreeing (2026-10-22)
+glibc-2.43 terminus 64e5266ef0faa245
 # glibc-2.43 crossing: recorded on builder0 at eee5b0afa, twice, agreeing (2026-10-21)
 glibc-2.43 crossing b8278fef90b45929
-# glibc-2.43 sumps: recorded on builder0 at eee5b0afa, twice, agreeing (2026-10-21)
-glibc-2.43 sumps 942300f8e7d0dcc5
-# glibc-2.43 locks: recorded on builder0 at 9e226c700, twice, agreeing (2026-10-19)
-glibc-2.43 locks 13c33de4419afb5e
-# glibc-2.43 parade: recorded on builder0 at ffa462c94, twice, agreeing (2026-10-19)
-glibc-2.43 parade 72b1c96369096248
-# glibc-2.43 gorge: recorded on builder0 at 9e226c700, twice, agreeing (2026-10-19)
-glibc-2.43 gorge 4da2720fa4085f3b
+# glibc-2.43 sumps: recorded on builder0 at 27e00de2c, twice, agreeing (2026-10-22)
+glibc-2.43 sumps f7fc6b91340c2231
+# glibc-2.43 locks: recorded on builder0 at 27e00de2c, twice, agreeing (2026-10-22)
+glibc-2.43 locks a929186d10a30461
+# glibc-2.43 parade: recorded on builder0 at 27e00de2c, twice, agreeing (2026-10-22)
+glibc-2.43 parade d4cd790f2b1a157a
+# glibc-2.43 gorge: recorded on builder0 at 27e00de2c, twice, agreeing (2026-10-22)
+glibc-2.43 gorge 7a911a7558729ff1
 # glibc-2.43 archipelago: recorded on builder0 at cea87edc0, twice, agreeing (2026-10-19)
 glibc-2.43 archipelago 5595506fcfeac33f
 # glibc-2.43 cut: recorded on builder0 at a318a2cd3, twice, agreeing (2026-10-20)

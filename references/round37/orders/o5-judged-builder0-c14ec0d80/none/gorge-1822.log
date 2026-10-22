@@ -1,0 +1,189 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (law): 4 pursuit cruisers, 8 retired apcs, 8 assault guns, 4 sonic emitters (5120 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 24 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (condemned): 28 scouts, 14 IFVs (5180 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 2235 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=4 green=24 rust_squads=9 rust=42
+SKIRMISH_CAMERA focus=(-46, 87) zoom=0.62 vehicles=4
+DEMO_SEED 1822 arena=gorge law vs condemned (replay: make showmatch SEED=1822)
+CONTROL_GROUPS squads=4 (Eyes:4 Guns:8 Hunters:8 Sirens:4) groups=4 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-21T21-47-41-gorge.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "1822", "arena": "gorge", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 2 enemies in sight
+NATIVE_EXEC 19362 native, 637 handed back (dead 0, reflexes 0, yielding 0, face 635, drive 0, other 0), 787 stale pulls, 1640 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Rust_Hunters_5","asker_verb":"attack","at":[-51.3,-69.6],"cpu":true,"died":false,"element":"Eyes6","end":256,"s":7.0,"seat_m":11.0,"start":211,"team":1,"unit":"Rust_Eyes6_2","verb":"screen","yield_s":1.5}
+SEAT_YIELD {"asker":"Rust_Eyes4_2","asker_verb":"screen","at":[-8.1,-56.4],"cpu":true,"died":false,"element":"Eyes3","end":309,"s":9.1,"seat_m":2.2,"start":273,"team":1,"unit":"Rust_Eyes3_3","verb":"screen","yield_s":1.2}
+SEAT_YIELD {"asker":"Rust_Hunters_4","asker_verb":"attack","at":[-37.6,-67.3],"cpu":true,"died":false,"element":"Eyes5","end":319,"s":8.5,"seat_m":15.0,"start":254,"team":1,"unit":"Rust_Eyes5_3","verb":"screen","yield_s":2.2}
+SEAT_YIELD {"asker":"Rust_Eyes5_5","asker_verb":"screen","at":[-24.7,-61.0],"cpu":true,"died":false,"element":"Eyes4","end":322,"s":8.1,"seat_m":2.1,"start":243,"team":1,"unit":"Rust_Eyes4_3","verb":"screen","yield_s":2.6}
+SEAT_YIELD {"asker":"Rust_Eyes4_4","asker_verb":"screen","at":[7.1,-72.3],"cpu":true,"died":false,"element":"Eyes3","end":343,"s":8.0,"seat_m":18.9,"start":241,"team":1,"unit":"Rust_Eyes3_1","verb":"screen","yield_s":3.4}
+Green_Guns_6 destroyed Rust_Eyes5_2 (score Green 1 : 0 Rust)
+SEAT_YIELD {"asker":"Green_Guns_6","asker_verb":"attack","at":[-35.5,22.7],"cpu":true,"died":false,"element":"Eyes","end":363,"s":11.3,"seat_m":4.3,"start":338,"team":0,"unit":"Green_Eyes_4","verb":"screen","yield_s":0.8}
+SEAT_YIELD {"asker":"Rust_Hunters_3","asker_verb":"attack","at":[-44.8,-54.9],"cpu":true,"died":false,"element":"Eyes6","end":390,"s":7.0,"seat_m":2.9,"start":211,"team":1,"unit":"Rust_Eyes6_1","verb":"screen","yield_s":6.0}
+HUD_MESSAGE [info] Destroyed an enemy Scout (41 left)
+SEAT_YIELD {"asker":"Rust_Eyes3_4","asker_verb":"screen","at":[19.5,-63.7],"cpu":true,"died":false,"element":"Eyes2","end":405,"s":10.6,"seat_m":11.5,"start":318,"team":1,"unit":"Rust_Eyes2_5","verb":"screen","yield_s":2.9}
+SEAT_YIELD {"asker":"Rust_Eyes4_5","asker_verb":"screen","at":[-37.7,-67.2],"cpu":true,"died":false,"element":"Eyes5","end":422,"s":12.0,"seat_m":14.8,"start":360,"team":1,"unit":"Rust_Eyes5_3","verb":"screen","yield_s":2.1}
+SEAT_YIELD {"asker":"Rust_Hunters2_5","asker_verb":"support_by_fire","at":[-50.1,-75.6],"cpu":true,"died":false,"element":"Eyes5","end":422,"s":12.6,"seat_m":9.7,"start":379,"team":1,"unit":"Rust_Eyes5_4","verb":"screen","yield_s":1.4}
+SEAT_YIELD {"asker":"Rust_Eyes3_4","asker_verb":"screen","at":[14.3,-56.1],"cpu":true,"died":false,"element":"Eyes4","end":444,"s":11.4,"seat_m":3.1,"start":341,"team":1,"unit":"Rust_Eyes4_4","verb":"screen","yield_s":3.4}
+SEAT_YIELD {"asker":"Rust_Eyes4_2","asker_verb":"screen","at":[1.6,-56.9],"cpu":true,"died":false,"element":"Eyes2","end":452,"s":10.5,"seat_m":2.0,"start":316,"team":1,"unit":"Rust_Eyes2_3","verb":"screen","yield_s":4.5}
+Green_Guns_6 destroyed Rust_Hunters_3 (score Green 2 : 0 Rust)
+SEAT_YIELD {"asker":"Rust_Hunters3_4","asker_verb":"support_by_fire","at":[-55.5,-65.7],"cpu":true,"died":false,"element":"Eyes6","end":472,"s":11.4,"seat_m":6.3,"start":341,"team":1,"unit":"Rust_Eyes6_2","verb":"screen","yield_s":4.4}
+Green_Guns_1 destroyed Rust_Hunters2_4 (score Green 3 : 0 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (39 left)
+SEAT_YIELD {"asker":"Rust_Eyes5_1","asker_verb":"screen","at":[-43.3,-68.9],"cpu":true,"died":false,"element":"Eyes4","end":504,"s":14.7,"seat_m":4.0,"start":440,"team":1,"unit":"Rust_Eyes4_5","verb":"screen","yield_s":2.1}
+SEAT_YIELD {"asker":"Rust_Eyes3_1","asker_verb":"screen","at":[24.8,-60.7],"cpu":true,"died":false,"element":"Eyes","end":518,"s":12.9,"seat_m":19.8,"start":387,"team":1,"unit":"Rust_Eyes_2","verb":"screen","yield_s":4.4}
+NATIVE_EXEC 37624 native, 2375 handed back (dead 0, reflexes 0, yielding 0, face 2373, drive 0, other 0), 1284 stale pulls, 5071 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Rust_Hunters_1","asker_verb":"attack","at":[-43.6,-56.4],"cpu":true,"died":false,"element":"Eyes6","end":553,"s":13.2,"seat_m":4.5,"start":397,"team":1,"unit":"Rust_Eyes6_1","verb":"screen","yield_s":5.2}
+SEAT_YIELD {"asker":"Rust_Eyes5_5","asker_verb":"screen","at":[-35.5,-47.6],"cpu":true,"died":false,"element":"Eyes6","end":554,"s":12.5,"seat_m":3.2,"start":375,"team":1,"unit":"Rust_Eyes6_3","verb":"screen","yield_s":6.0}
+Green_Guns_6 destroyed Rust_Hunters3_1 (score Green 4 : 0 Rust)
+SEAT_YIELD {"asker":"Rust_Eyes2_5","asker_verb":"screen","at":[27.1,-60.7],"cpu":true,"died":false,"element":"Eyes","end":571,"s":16.4,"seat_m":13.7,"start":491,"team":1,"unit":"Rust_Eyes_3","verb":"screen","yield_s":2.7}
+SEAT_YIELD {"asker":"Rust_Eyes3_1","asker_verb":"screen","at":[36.8,-70.0],"cpu":true,"died":false,"element":"Eyes","end":573,"s":17.8,"seat_m":2.4,"start":534,"team":1,"unit":"Rust_Eyes_1","verb":"screen","yield_s":1.3}
+HUD_MESSAGE [info] Destroyed an enemy IFV (38 left)
+Green_Guns_3 destroyed Rust_Hunters2_1 (score Green 5 : 0 Rust)
+SEAT_YIELD {"asker":"Rust_Hunters2_3","asker_verb":"support_by_fire","at":[-58.6,-68.0],"cpu":true,"died":false,"element":"Eyes6","end":653,"s":19.4,"seat_m":5.7,"start":582,"team":1,"unit":"Rust_Eyes6_2","verb":"screen","yield_s":2.4}
+SEAT_YIELD {"asker":"Rust_Eyes4_1","asker_verb":"screen","at":[-13.6,-64.5],"cpu":true,"died":false,"element":"Eyes3","end":664,"s":20.9,"seat_m":13.5,"start":628,"team":1,"unit":"Rust_Eyes3_3","verb":"screen","yield_s":1.2}
+SEAT_YIELD {"asker":"Rust_Eyes3_1","asker_verb":"screen","at":[37.2,-70.7],"cpu":true,"died":false,"element":"Eyes","end":669,"s":19.8,"seat_m":27.7,"start":594,"team":1,"unit":"Rust_Eyes_1","verb":"screen","yield_s":2.5}
+SEAT_YIELD {"asker":"Rust_Eyes3_5","asker_verb":"screen","at":[5.9,-58.4],"cpu":true,"died":false,"element":"Eyes4","end":678,"s":20.4,"seat_m":40.4,"start":613,"team":1,"unit":"Rust_Eyes4_2","verb":"screen","yield_s":2.2}
+SEAT_YIELD {"asker":"Rust_Hunters3_2","asker_verb":"support_by_fire","at":[-39.0,-37.3],"cpu":true,"died":false,"element":"Eyes5","end":679,"s":18.5,"seat_m":49.7,"start":556,"team":1,"unit":"Rust_Eyes5_5","verb":"screen","yield_s":4.1}
+SEAT_YIELD {"asker":"Rust_Eyes3_5","asker_verb":"screen","at":[12.4,-58.9],"cpu":true,"died":false,"element":"Eyes2","end":681,"s":19.4,"seat_m":29.9,"start":583,"team":1,"unit":"Rust_Eyes2_5","verb":"screen","yield_s":3.3}
+SEAT_YIELD {"asker":"Rust_Eyes2_4","asker_verb":"screen","at":[30.5,-61.6],"cpu":true,"died":false,"element":"Eyes","end":685,"s":20.2,"seat_m":39.9,"start":607,"team":1,"unit":"Rust_Eyes_3","verb":"screen","yield_s":2.6}
+HUD_MESSAGE [info] Destroyed an enemy IFV (37 left)
+SEAT_YIELD {"asker":"Rust_Hunters3_2","asker_verb":"support_by_fire","at":[-36.9,-37.1],"cpu":true,"died":false,"element":"Eyes6","end":707,"s":20.3,"seat_m":16.8,"start":610,"team":1,"unit":"Rust_Eyes6_1","verb":"screen","yield_s":3.2}
+Green_Guns_8 destroyed Rust_Eyes6_1 (score Green 6 : 0 Rust)
+SEAT_YIELD {"asker":"Rust_Eyes5_5","asker_verb":"screen","at":[-37.1,-32.3],"cpu":true,"died":true,"died_after":true,"element":"Eyes6","end":781,"s":25.5,"seat_m":21.1,"start":766,"team":1,"unit":"Rust_Eyes6_1","verb":"screen","yield_s":0.5}
+SEAT_YIELD {"asker":"Rust_Eyes_2","asker_verb":"screen","at":[15.2,-57.8],"cpu":true,"died":false,"element":"Eyes2","end":741,"s":19.8,"seat_m":27.4,"start":594,"team":1,"unit":"Rust_Eyes2_1","verb":"screen","yield_s":4.9}
+SEAT_YIELD {"asker":"Rust_Eyes3_3","asker_verb":"screen","at":[-10.6,-64.2],"cpu":true,"died":false,"element":"Eyes4","end":759,"s":22.9,"seat_m":27.4,"start":688,"team":1,"unit":"Rust_Eyes4_1","verb":"screen","yield_s":2.4}
+HUD_MESSAGE [info] Destroyed an enemy Scout (36 left)
+SEAT_YIELD {"asker":"Rust_Eyes2_2","asker_verb":"screen","at":[-14.8,-79.5],"cpu":true,"died":false,"element":"Eyes3","end":781,"s":25.5,"seat_m":4.8,"start":765,"team":1,"unit":"Rust_Eyes3_3","verb":"screen","yield_s":0.5}
+SEAT_YIELD {"asker":"Rust_Hunters2_5","asker_verb":"support_by_fire","at":[-35.1,-43.6],"cpu":true,"died":false,"element":"Eyes6","end":781,"s":24.9,"seat_m":1.0,"start":746,"team":1,"unit":"Rust_Eyes6_3","verb":"screen","yield_s":1.2}
+Green_Guns_8 destroyed Rust_Hunters3_2 (score Green 7 : 0 Rust)
+SEAT_YIELD {"asker":"Rust_Eyes2_3","asker_verb":"screen","at":[-13.4,-80.5],"cpu":true,"died":false,"element":"Eyes3","end":835,"s":26.2,"seat_m":24.5,"start":787,"team":1,"unit":"Rust_Eyes3_3","verb":"screen","yield_s":1.6}
+NATIVE_EXEC 54157 native, 5842 handed back (dead 0, reflexes 0, yielding 0, face 5822, drive 0, other 0), 1536 stale pulls, 8071 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] Destroyed an enemy IFV (35 left)
+SEAT_YIELD {"asker":"Rust_Eyes3_1","asker_verb":"screen","at":[-12.7,-74.9],"cpu":true,"died":false,"element":"Eyes2","end":869,"s":27.2,"seat_m":28.5,"start":817,"team":1,"unit":"Rust_Eyes2_3","verb":"screen","yield_s":1.7}
+SEAT_YIELD {"asker":"Rust_Eyes4_1","asker_verb":"screen","at":[-15.1,-77.7],"cpu":true,"died":false,"element":"Eyes3","end":875,"s":28.1,"seat_m":27.2,"start":842,"team":1,"unit":"Rust_Eyes3_1","verb":"screen","yield_s":1.1}
+Green_Guns_1 destroyed Rust_Hunters_1 (score Green 8 : 0 Rust)
+HUD_MESSAGE [info] Destroyed an enemy IFV (34 left)
+SEAT_YIELD {"asker":"Rust_Eyes3_3","asker_verb":"screen","at":[-15.9,-87.5],"cpu":true,"died":false,"element":"Eyes4","end":957,"s":28.8,"seat_m":6.8,"start":865,"team":1,"unit":"Rust_Eyes4_2","verb":"screen","yield_s":3.1}
+SEAT_YIELD {"asker":"Rust_Eyes3_2","asker_verb":"screen","at":[-39.7,-76.3],"cpu":true,"died":false,"element":"Eyes4","end":975,"s":30.0,"seat_m":2.7,"start":901,"team":1,"unit":"Rust_Eyes4_3","verb":"screen","yield_s":2.5}
+HUD_MESSAGE [warning] The enemy took the valley
+SEAT_YIELD {"asker":"Rust_Eyes2_4","asker_verb":"screen","at":[0.5,-104.3],"cpu":true,"died":false,"element":"Eyes4","end":984,"s":30.7,"seat_m":3.1,"start":920,"team":1,"unit":"Rust_Eyes4_4","verb":"screen","yield_s":2.1}
+SEAT_YIELD {"asker":"Rust_Eyes6_3","asker_verb":"screen","at":[-40.8,-39.3],"cpu":true,"died":false,"element":"Eyes5","end":995,"s":28.7,"seat_m":49.1,"start":860,"team":1,"unit":"Rust_Eyes5_5","verb":"screen","yield_s":4.5}
+Green_Guns_8 destroyed Rust_Hunters2_5 (score Green 9 : 0 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 4 hit Sirens 4
+SEAT_YIELD {"asker":"Rust_Eyes2_2","asker_verb":"screen","at":[-31.7,-83.4],"cpu":true,"died":false,"element":"Eyes5","end":1028,"s":32.2,"seat_m":2.1,"start":967,"team":1,"unit":"Rust_Eyes5_1","verb":"screen","yield_s":2.0}
+HUD_MESSAGE [info] Destroyed an enemy IFV (33 left)
+SEAT_YIELD {"asker":"Rust_Eyes3_2","asker_verb":"screen","at":[-41.3,-83.4],"cpu":true,"died":false,"element":"Eyes5","end":1075,"s":32.0,"seat_m":2.6,"start":961,"team":1,"unit":"Rust_Eyes5_3","verb":"screen","yield_s":3.8}
+SEAT_YIELD {"asker":"Rust_Eyes3_1","asker_verb":"screen","at":[-9.7,-104.3],"cpu":true,"died":false,"element":"Eyes2","end":1091,"s":33.3,"seat_m":2.0,"start":998,"team":1,"unit":"Rust_Eyes2_1","verb":"screen","yield_s":3.1}
+Green_Guns_8 destroyed Rust_Hunters_5 (score Green 10 : 0 Rust)
+HUD_MESSAGE [info] Destroyed an enemy IFV (32 left)
+SEAT_YIELD {"asker":"Rust_Hunters3_4","asker_verb":"hold","at":[-41.5,-43.0],"cpu":true,"died":false,"element":"Eyes5","end":1159,"s":36.5,"seat_m":46.6,"start":1095,"team":1,"unit":"Rust_Eyes5_5","verb":"screen","yield_s":2.1}
+Green_Guns_3 destroyed Rust_Eyes6_3 (score Green 11 : 0 Rust)
+NATIVE_EXEC 67129 native, 12870 handed back (dead 0, reflexes 0, yielding 0, face 12825, drive 0, other 0), 1815 stale pulls, 10696 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] Destroyed an enemy Scout (31 left)
+Green_Guns_6 destroyed Rust_Hunters2_3 (score Green 12 : 0 Rust)
+HUD_MESSAGE [info] Destroyed an enemy IFV (30 left)
+HUD_MESSAGE [warning] Friendly fire: Hunters 8 hit Hunters 4
+Green_Guns_3 destroyed Rust_Hunters2_2 (score Green 13 : 0 Rust)
+Green_Guns_1 destroyed Rust_Hunters3_4 (score Green 14 : 0 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (28 left)
+SEAT_YIELD {"asker":"Rust_Eyes2_1","asker_verb":"screen","at":[-13.9,-104.7],"cpu":true,"died":false,"element":"Eyes3","end":1359,"s":42.1,"seat_m":0.2,"start":1263,"team":1,"unit":"Rust_Eyes3_1","verb":"screen","yield_s":3.2}
+HUD_MESSAGE [warning] Friendly fire: Sirens 4 hit Eyes 1
+HUD_MESSAGE [warning] Friendly fire: Guns 3 hit Hunters 4
+Green_Guns_8 destroyed Rust_Hunters_4 (score Green 15 : 0 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 1 hit Hunters 4
+SEAT_YIELD {"asker":"Rust_Eyes5_1","asker_verb":"screen","at":[-25.6,-81.3],"cpu":true,"died":false,"element":"Eyes4","end":1409,"s":45.4,"seat_m":31.0,"start":1362,"team":1,"unit":"Rust_Eyes4_1","verb":"screen","yield_s":1.6}
+Green_Guns_7 destroyed Rust_Eyes6_2 (score Green 16 : 0 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (26 left)
+SEAT_YIELD {"asker":"Rust_Eyes5_3","asker_verb":"screen","at":[-33.3,-95.8],"cpu":true,"died":false,"element":"Eyes2","end":1453,"s":46.2,"seat_m":3.0,"start":1385,"team":1,"unit":"Rust_Eyes2_2","verb":"screen","yield_s":2.3}
+SEAT_YIELD {"asker":"Rust_Eyes5_3","asker_verb":"screen","at":[-39.0,-93.8],"cpu":true,"died":false,"element":"Eyes3","end":1457,"s":45.2,"seat_m":2.9,"start":1355,"team":1,"unit":"Rust_Eyes3_2","verb":"screen","yield_s":3.4}
+SEAT_YIELD {"asker":"Rust_Eyes4_2","asker_verb":"screen","at":[-13.1,-92.6],"cpu":true,"died":false,"element":"Eyes5","end":1471,"s":46.2,"seat_m":14.0,"start":1385,"team":1,"unit":"Rust_Eyes5_5","verb":"screen","yield_s":2.9}
+SEAT_YIELD {"asker":"Rust_Eyes5_1","asker_verb":"screen","at":[-27.5,-97.4],"cpu":true,"died":false,"element":"Eyes3","end":1486,"s":46.3,"seat_m":3.4,"start":1390,"team":1,"unit":"Rust_Eyes3_3","verb":"screen","yield_s":3.2}
+Green_Guns_1 destroyed Rust_Hunters_2 (score Green 17 : 0 Rust)
+SEAT_YIELD {"asker":"Rust_Eyes4_2","asker_verb":"screen","at":[-9.1,-103.5],"cpu":true,"died":false,"element":"Eyes2","end":1548,"s":49.2,"seat_m":2.1,"start":1475,"team":1,"unit":"Rust_Eyes2_1","verb":"screen","yield_s":2.4}
+HUD_MESSAGE [info] Destroyed an enemy IFV (25 left)
+NATIVE_EXEC 81051 native, 18948 handed back (dead 0, reflexes 0, yielding 0, face 18903, drive 0, other 0), 2182 stale pulls, 13316 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Rust_Eyes5_1","asker_verb":"screen","at":[-22.1,-103.1],"cpu":true,"died":false,"element":"Eyes2","end":1588,"s":48.5,"seat_m":1.3,"start":1454,"team":1,"unit":"Rust_Eyes2_5","verb":"screen","yield_s":4.5}
+SEAT_YIELD {"asker":"Rust_Eyes3_4","asker_verb":"screen","at":[7.8,-109.3],"cpu":true,"died":false,"element":"Eyes2","end":1622,"s":52.3,"seat_m":1.6,"start":1570,"team":1,"unit":"Rust_Eyes2_4","verb":"screen","yield_s":1.7}
+SEAT_YIELD {"asker":"Rust_Eyes3_1","asker_verb":"screen","at":[-9.8,-104.4],"cpu":true,"died":false,"element":"Eyes5","end":1622,"s":53.1,"seat_m":6.9,"start":1593,"team":1,"unit":"Rust_Eyes5_5","verb":"screen","yield_s":1.0}
+HUD_MESSAGE [warning] Friendly fire: Hunters 3 hit Eyes 4
+HUD_MESSAGE [info] The valley is neutral
+Green_Guns_1 destroyed Rust_Eyes3_2 (score Green 18 : 0 Rust)
+SEAT_YIELD {"asker":"Rust_Eyes5_4","asker_verb":"screen","at":[-46.1,-107.3],"cpu":true,"died":false,"element":"Eyes4","end":1653,"s":54.5,"seat_m":3.9,"start":1634,"team":1,"unit":"Rust_Eyes4_3","verb":"screen","yield_s":0.6}
+SEAT_YIELD {"asker":"Rust_Eyes4_1","asker_verb":"screen","at":[-24.7,-110.5],"cpu":true,"died":false,"element":"Eyes5","end":1682,"s":55.1,"seat_m":12.7,"start":1653,"team":1,"unit":"Rust_Eyes5_1","verb":"screen","yield_s":1.0}
+HUD_MESSAGE [info] Destroyed an enemy Scout (24 left)
+SEAT_YIELD {"asker":"Rust_Eyes5_3","asker_verb":"screen","at":[-43.0,-102.7],"cpu":true,"died":false,"element":"Eyes4","end":1713,"s":55.8,"seat_m":10.1,"start":1675,"team":1,"unit":"Rust_Eyes4_3","verb":"screen","yield_s":1.3}
+SEAT_YIELD {"asker":"Rust_Eyes5_1","asker_verb":"screen","at":[-37.5,-107.8],"cpu":true,"died":false,"element":"Eyes4","end":1773,"s":58.8,"seat_m":58.8,"start":1763,"team":1,"unit":"Rust_Eyes4_2","verb":"screen","yield_s":0.3}
+Green_Guns_2 destroyed Rust_Eyes3_4 (score Green 19 : 0 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Scout (23 left)
+Rust_Eyes2_2 destroyed Green_Eyes_4 (score Green 19 : 1 Rust)
+Green_Hunters_1 destroyed Rust_Eyes5_1 (score Green 20 : 1 Rust)
+SEAT_YIELD {"asker":"Rust_Eyes2_1","asker_verb":"screen","at":[-17.5,-90.8],"cpu":true,"died":false,"element":"Eyes3","end":1969,"s":65.6,"seat_m":38.2,"start":1967,"team":1,"unit":"Rust_Eyes3_5","verb":"screen","yield_s":0.1}
+HUD_MESSAGE [warning] Eyes lost a Pursuit Cruiser, 3 left
+NATIVE_EXEC 96630 native, 23369 handed back (dead 0, reflexes 0, yielding 0, face 23160, drive 0, other 0), 2946 stale pulls, 16248 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [info] Destroyed an enemy Scout (22 left)
+HUD_MESSAGE [warning] Friendly fire: Hunters 2 hit Hunters 5
+Green_Guns_2 destroyed Rust_Eyes2_4 (score Green 21 : 1 Rust)
+SEAT_YIELD {"asker":"Rust_Eyes3_1","asker_verb":"screen","at":[-11.1,-91.5],"cpu":true,"died":false,"element":"Eyes2","end":2120,"s":69.4,"seat_m":41.7,"start":2082,"team":1,"unit":"Rust_Eyes2_1","verb":"screen","yield_s":1.3}
+HUD_MESSAGE [info] Destroyed an enemy Scout (21 left)
+SEAT_YIELD {"asker":"Rust_Eyes4_2","asker_verb":"screen","at":[-11.5,-97.7],"cpu":true,"died":false,"element":"Eyes3","end":2143,"s":70.2,"seat_m":63.3,"start":2107,"team":1,"unit":"Rust_Eyes3_5","verb":"screen","yield_s":1.2}
+SEAT_YIELD {"asker":"Rust_Eyes3_3","asker_verb":"screen","at":[-18.8,-94.1],"cpu":true,"died":false,"element":"Eyes2","end":2144,"s":70.6,"seat_m":48.1,"start":2117,"team":1,"unit":"Rust_Eyes2_2","verb":"screen","yield_s":0.9}
+Green_Guns_2 destroyed Rust_Eyes2_3 (score Green 22 : 1 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 5 hit Hunters 8
+HUD_MESSAGE [warning] Friendly fire: Hunters 7 hit Eyes 3
+SEAT_YIELD {"asker":"Rust_Eyes4_1","asker_verb":"screen","at":[-50.3,-97.3],"cpu":true,"died":false,"element":"Eyes5","end":2222,"s":73.6,"seat_m":21.8,"start":2209,"team":1,"unit":"Rust_Eyes5_5","verb":"screen","yield_s":0.4}
+HUD_MESSAGE [info] Destroyed an enemy Scout (20 left)
+Green_Hunters_7 destroyed Rust_Eyes4_4 (score Green 23 : 1 Rust)
+Green_Hunters_4 destroyed Rust_Eyes4_3 (score Green 24 : 1 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (18 left)
+Rust_Eyes2_2 destroyed Green_Hunters_4 (score Green 24 : 2 Rust)
+Green_Hunters_5 destroyed Rust_Eyes5_5 (score Green 25 : 2 Rust)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 7 left
+HUD_MESSAGE [warning] Friendly fire: Eyes 3 hit Sirens 1
+Green_Hunters_8 destroyed Rust_Eyes2_2 (score Green 26 : 2 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (16 left)
+NATIVE_EXEC 110058 native, 29941 handed back (dead 0, reflexes 0, yielding 0, face 29600, drive 0, other 0), 3335 stale pulls, 18295 part pulls, 0 verified, 0 verify mismatches 
+Green_Hunters_2 destroyed Rust_Eyes3_3 (score Green 27 : 2 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Scout (15 left)
+HUD_MESSAGE [warning] Friendly fire: Hunters 5 hit Sirens 1
+Green_Guns_2 destroyed Rust_Eyes4_5 (score Green 28 : 2 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Scout (14 left)
+Green_Guns_6 destroyed Rust_Eyes5_3 (score Green 29 : 2 Rust)
+HUD_MESSAGE [info] We hold the valley
+HUD_MESSAGE [info] Destroyed an enemy Scout (13 left)
+Rust_Eyes3_1 destroyed Green_Hunters_3 (score Green 29 : 3 Rust)
+Green_Guns_2 destroyed Rust_Eyes2_5 (score Green 30 : 3 Rust)
+HUD_MESSAGE [warning] Hunters lost a Retired APC, 6 left
+HUD_MESSAGE [info] Destroyed an enemy Scout (12 left)
+Green_Eyes_1 destroyed Rust_Eyes3_5 (score Green 31 : 3 Rust)
+Green_Guns_8 destroyed Rust_Eyes4_1 (score Green 32 : 3 Rust)
+Green_Guns_1 destroyed Rust_Eyes5_4 (score Green 33 : 3 Rust)
+HUD_MESSAGE [warning] Friendly fire: Hunters 8 hit Sirens 4
+HUD_MESSAGE [info] Destroyed 3 enemies (9 left)
+HUD_MESSAGE [warning] Friendly fire: Sirens 2 hit Eyes 2
+Green_Guns_2 destroyed Rust_Eyes3_1 (score Green 34 : 3 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Scout (8 left)
+HUD_MESSAGE [warning] Friendly fire: Sirens 3 hit Sirens 1
+Green_Hunters_8 destroyed Rust_Eyes4_2 (score Green 35 : 3 Rust)
+HUD_MESSAGE [warning] Friendly fire: Guns 6 hit Sirens 2
+HUD_MESSAGE [info] Destroyed an enemy Scout (7 left)
+NATIVE_EXEC 125615 native, 34384 handed back (dead 0, reflexes 0, yielding 0, face 33935, drive 0, other 0), 3731 stale pulls, 21314 part pulls, 0 verified, 0 verify mismatches 
+Green_Guns_6 destroyed Rust_Eyes2_1 (score Green 36 : 3 Rust)
+TANK_OFF_FLOOR Green_Hunters_2 (law_ifv) y=0.79 at (-24.1, -34.6): separated from something along the vertical; it is now drawn above the floor
+HUD_MESSAGE [info] Destroyed an enemy Scout (6 left)
+NATIVE_EXEC 141673 native, 38326 handed back (dead 0, reflexes 0, yielding 0, face 37868, drive 0, other 0), 3960 stale pulls, 22504 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Green_Sirens_1","asker_verb":"hold","at":[-67.6,-3.8],"cpu":true,"died":false,"element":"Hunters","end":4263,"s":136.1,"seat_m":2.3,"start":4083,"team":0,"unit":"Green_Hunters_6","verb":"hold","yield_s":6.0}
+SEAT_YIELD {"asker":"Green_Sirens_4","asker_verb":"hold","at":[-41.7,-50.6],"cpu":true,"died":false,"element":"Eyes","end":4282,"s":139.9,"seat_m":7.5,"start":4196,"team":0,"unit":"Green_Eyes_3","verb":"screen","yield_s":2.9}
+SEAT_YIELD {"asker":"Green_Sirens_4","asker_verb":"hold","at":[-35.2,-44.3],"cpu":true,"died":false,"element":"Eyes","end":4384,"s":144.8,"seat_m":1.0,"start":4343,"team":0,"unit":"Green_Eyes_1","verb":"screen","yield_s":1.4}
+SEAT_YIELD {"asker":"Green_Guns_7","asker_verb":"hold","at":[-52.3,-15.0],"cpu":true,"died":false,"element":"Hunters","end":4471,"s":145.9,"seat_m":2.1,"start":4377,"team":0,"unit":"Green_Hunters_8","verb":"hold","yield_s":3.1}
+SEAT_YIELD {"asker":"Green_Sirens_4","asker_verb":"hold","at":[-43.8,-36.4],"cpu":true,"died":false,"element":"Eyes","end":4508,"s":146.7,"seat_m":2.6,"start":4401,"team":0,"unit":"Green_Eyes_2","verb":"screen","yield_s":3.6}
+NATIVE_EXEC 154874 native, 45125 handed back (dead 0, reflexes 0, yielding 0, face 44667, drive 0, other 0), 4047 stale pulls, 23520 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"hold","at":[-59.4,-30.3],"cpu":true,"died":false,"element":"Guns II","end":4875,"s":156.5,"seat_m":2.2,"start":4696,"team":0,"unit":"Green_Guns_5","verb":"hold","yield_s":6.0}
+SEAT_YIELD {"asker":"Green_Guns_5","asker_verb":"hold","at":[-66.9,-19.7],"cpu":true,"died":false,"element":"Hunters","end":5053,"s":163.7,"seat_m":2.3,"start":4911,"team":0,"unit":"Green_Hunters_1","verb":"hold","yield_s":4.7}
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"hold","at":[-64.1,-26.6],"cpu":true,"died":false,"element":"Guns II","end":5055,"s":162.5,"seat_m":6.3,"start":4876,"team":0,"unit":"Green_Guns_5","verb":"hold","yield_s":6.0}
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"hold","at":[-68.3,-20.2],"cpu":true,"died":false,"element":"Guns II","end":5211,"s":168.8,"seat_m":13.9,"start":5065,"team":0,"unit":"Green_Guns_5","verb":"hold","yield_s":4.9}
+SEAT_YIELD {"asker":"Green_Guns_2","asker_verb":"hold","at":[-78.1,-27.9],"cpu":true,"died":false,"element":"Guns II","end":5356,"s":172.6,"seat_m":5.3,"start":5177,"team":0,"unit":"Green_Guns_7","verb":"hold","yield_s":6.0}
+SEAT_YIELD_CENSUS {"arena":"gorge","by_verb":{"cpu:hold":{"deaths":0,"episodes":7},"cpu:screen":{"deaths":1,"episodes":65}},"deaths":39,"deaths_by_team":{"0":3,"1":36},"seat_aside":"off","seats_aside":0,"seats_aside_failed":0,"seconds":180.0,"seed":1822}

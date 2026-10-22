@@ -1,0 +1,163 @@
+tools/remote.sh native orders-probe ORDERS_PROBE_SEEDS=3743\ 3744\ 3745\ 3746\ 3747\ 3748\ 3749\ 3750\ 3751\ 3752\ 3753\ 3754 ORDERS_PROBE_ARMS=fight:--probe-fight=on,--probe-budget=1500\ parked:--probe-fight=on,--probe-budget=1500,--parked-hold=on ORDERS_PROBE_MAPS=locks\ crossing\ terminus ORDERS_PROBE_SQUADS=3 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=4
+>> remote: syncing godot-orders-o1 to slobdell@builder0:~/tank_squad/godot-orders-o1
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3743 3744 3745 3746 3747 3748 3749 3750 3751 3752 3753 3754 ORDERS_PROBE_ARMS=fight:--probe-fight=on,--probe-budget=1500 parked:--probe-fight=on,--probe-budget=1500,--parked-hold=on ORDERS_PROBE_MAPS=locks crossing terminus ORDERS_PROBE_SQUADS=3 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=4 on slobdell@builder0
+>> native: src-sync: 3 changed since the last build, touched: src/cover_native.h src/cover_native.cpp src/drive_native.cpp 
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (49 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | CoverMap[39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | FireLanes[39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | ManoeuvreCensus[39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | Movement[39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | TacticalQuery[39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | TankBrain[39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | Armor[39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | RuleSwitches[39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | ShortHalt[39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | SelectionSquads[39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | Match[39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | Element[39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | ElementCommander[39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | ElementPlan[39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | ElementSituation[39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | Tank[39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | FeedbackShots[39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | FeedbackFx[39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | FeedbackLook[39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | FeedbackReader[39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | FxWorld[39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | MatchFxLink[39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | Radar[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | SelectionPanel[39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | UnitBars[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  70% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> orders-probe on builder0 | commit c14ec0d80 | native on
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          fight     |   33.2 /   18.8   |   23   0 |     23.8 |               2.8 |            48.8 | 6.64 | 50.7
+crossing 3 click          parked    |   33.2 /   18.8   |   20   0 |     27.7 |               2.6 |            49.9 | 5.14 | 50.7
+locks 3 click             fight     |   38.2 /   34.4   |   19   0 |     48.9 |               2.8 |            52.9 | 5.62 | 30.0
+locks 3 click             parked    |   38.2 /   34.4   |   12   0 |     34.3 |               2.3 |            75.8 | 4.70 | 30.0
+terminus 3 click          fight     |   36.9 /   34.4   |    0   0 |     36.3 |               3.8 |            60.5 | 7.87 | 19.9
+terminus 3 click          parked    |   36.9 /   34.4   |    0   0 |        - |               3.4 |            58.0 | 4.92 | 19.9
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          fight     |          58.8 |          28.7 |           44.2 |               2.7 |          43.3
+crossing 3 click          parked    |          31.7 |          25.8 |              - |               4.8 |          69.4
+locks 3 click             fight     |             - |          31.5 |              - |              10.6 |          53.4
+locks 3 click             parked    |             - |          29.6 |              - |              26.3 |          53.8
+terminus 3 click          fight     |          46.3 |          36.4 |           50.1 |              12.5 |          56.1
+terminus 3 click          parked    |             - |          33.7 |              - |              17.5 |          61.1
+
+MEDIANS over seeds [3743, 3744, 3745, 3746, 3747, 3748, 3749, 3750, 3751, 3752, 3753, 3754] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          fight       | 12 |         17.4 |     0 |          37.0 |         30.0 |          35.0 |              -1.0 |   23   0 | 3.17
+crossing 3 click          parked      | 12 |         17.4 |     0 |          35.8 |         33.7 |          36.5 |              -1.0 |   20   0 | 2.87
+locks 3 click             fight       | 12 |         28.9 |     0 |          34.3 |         22.5 |          46.1 |              -1.0 |   19   0 | 2.82
+locks 3 click             parked      | 12 |         26.4 |     0 |          39.6 |         20.4 |          39.4 |              -1.0 |   12   0 | 2.99
+terminus 3 click          fight       | 12 |         23.5 |     0 |          37.8 |         31.8 |          46.7 |              -1.0 |    0   0 | 2.82
+terminus 3 click          parked      | 12 |         21.9 |     1 |          41.5 |         32.3 |          45.0 |              -1.0 |    0   0 | 2.93
+
+EQUALITY click cells: 0 identical across arms, 36 differ
+  DIFFER crossing 3 click seed 3743
+  DIFFER crossing 3 click seed 3744
+  DIFFER crossing 3 click seed 3745
+  DIFFER crossing 3 click seed 3746
+  DIFFER crossing 3 click seed 3747
+  DIFFER crossing 3 click seed 3748
+  DIFFER crossing 3 click seed 3749
+  DIFFER crossing 3 click seed 3750
+  DIFFER crossing 3 click seed 3751
+  DIFFER crossing 3 click seed 3752
+  DIFFER crossing 3 click seed 3753
+  DIFFER crossing 3 click seed 3754
+  DIFFER locks 3 click seed 3743
+  DIFFER locks 3 click seed 3744
+  DIFFER locks 3 click seed 3745
+  DIFFER locks 3 click seed 3746
+  DIFFER locks 3 click seed 3747
+  DIFFER locks 3 click seed 3748
+  DIFFER locks 3 click seed 3749
+  DIFFER locks 3 click seed 3750
+  DIFFER locks 3 click seed 3751
+  DIFFER locks 3 click seed 3752
+  DIFFER locks 3 click seed 3753
+  DIFFER locks 3 click seed 3754
+  DIFFER terminus 3 click seed 3743
+  DIFFER terminus 3 click seed 3744
+  DIFFER terminus 3 click seed 3745
+  DIFFER terminus 3 click seed 3746
+  DIFFER terminus 3 click seed 3747
+  DIFFER terminus 3 click seed 3748
+  DIFFER terminus 3 click seed 3749
+  DIFFER terminus 3 click seed 3750
+  DIFFER terminus 3 click seed 3751
+  DIFFER terminus 3 click seed 3752
+  DIFFER terminus 3 click seed 3753
+  DIFFER terminus 3 click seed 3754
+TOTAL fight      | placed 105.0 flipping 7.0 flips 17.0 relays 187.0 relaying 47.0 terr_c 170.0 terr_a 0.0 reseats 103.0 away 1051.2 held 881.2 seat 5726.0
+TOTAL parked     | placed 99.0 flipping 9.0 flips 83.0 relays 352.0 relaying 39.0 terr_c 269.0 terr_a 0.0 reseats 181.0 away 952.2 held 810.0 seat 5383.0
+>> remote: copy-back verified, 115 files, sha256
+>> remote: copy-back moved 288 stale log(s) an earlier run left beside this run's rows, into build/.stale-20261021-200855/
+   moved  build/orders-probe/logs/crossing-5-click-anchor-s3702.log
+   moved  build/orders-probe/logs/crossing-3-click-main-s3707.log
+   moved  build/orders-probe/logs/crossing-3-click-anchor-s3708.log
+   moved  build/orders-probe/logs/locks-5-click-anchor-s3702.log
+   moved  build/orders-probe/logs/locks-3-route-main-s3702.log
+   moved  build/orders-probe/logs/crossing-5-click-anchor-s3711.log
+   moved  build/orders-probe/logs/locks-3-click-anchor-s3703.log
+   moved  build/orders-probe/logs/crossing-5-route-main-s3711.log
+   moved  build/orders-probe/logs/locks-3-click-anchor-s3710.log
+   moved  build/orders-probe/logs/locks-5-route-anchor-s3705.log
+   moved  build/orders-probe/logs/terminus-5-click-main-s3710.log
+   moved  build/orders-probe/logs/locks-5-click-main-s3705.log
+   moved  build/orders-probe/logs/locks-3-route-main-s3705.log
+   moved  build/orders-probe/logs/terminus-5-click-main-s3708.log
+   moved  build/orders-probe/logs/crossing-3-route-anchor-s3707.log
+   moved  build/orders-probe/logs/locks-3-click-anchor-s3709.log
+   moved  build/orders-probe/logs/crossing-3-route-main-s3702.log
+   moved  build/orders-probe/logs/terminus-3-click-anchor-s3709.log
+   moved  build/orders-probe/logs/crossing-5-click-anchor-s3705.log
+   moved  build/orders-probe/logs/locks-3-click-anchor-s3708.log
+   ... and 268 more
+>> remote: make native orders-probe ORDERS_PROBE_SEEDS=3743 3744 3745 3746 3747 3748 3749 3750 3751 3752 3753 3754 ORDERS_PROBE_ARMS=fight:--probe-fight=on,--probe-budget=1500 parked:--probe-fight=on,--probe-budget=1500,--parked-hold=on ORDERS_PROBE_MAPS=locks crossing terminus ORDERS_PROBE_SQUADS=3 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=4 exited 0 (build/ copied back)

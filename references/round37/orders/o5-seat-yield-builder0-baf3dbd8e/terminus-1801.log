@@ -1,0 +1,102 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+AUDIO_BUSES layout=declared buses=8
+ARMY_CAP preset=desktop squads=5 units=25
+SKIRMISH_ARMY Green cpu (syndicate): 7 skimmers, 3 limousine gunships, 3 railgun platforms, 4 spotter platforms (5140 pts)
+ARMY_LAYOUT_UNCHECKED team=0: 17 standable queries had no baked navigation map (the obstacle boxes were still checked)
+SKIRMISH_ARMY Rust cpu (law): 4 pursuit cruisers, 8 retired apcs, 4 assault guns, 4 gas rocket trucks, 4 sonic emitters (5080 pts)
+ARMY_LAYOUT_UNCHECKED team=1: 360 standable queries had no baked navigation map (the obstacle boxes were still checked)
+ARMY_CAP_FIELDED squads=5 green_squads=4 green=17 rust_squads=6 rust=24
+SKIRMISH_CAMERA focus=(-45, 86) zoom=0.59 vehicles=7
+DEMO_SEED 1801 arena=terminus syndicate vs law (replay: make showmatch SEED=1801)
+CONTROL_GROUPS squads=4 (Eyes:7 Guns:3 Hunters:3 Lances:4) groups=4 ungrouped=0 [] engaged_of=wired
+MATCH_RECORDING build/recordings/2026-10-21T10-08-05-terminus.jsonl
+TANK_SQUAD_READY role=SKIRMISH flags={ "skirmish": "", "demo-match": "", "clean": "", "seed": "1801", "arena": "terminus", "mute": "", "seconds": "180" }
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Green_Guns_1 destroyed Rust_Eyes_3 (score Green 1 : 0 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (23 left)
+Rust_Guns_3 destroyed Green_Hunters_3 (score Green 1 : 1 Rust)
+Green_Lances_4 destroyed Rust_Guns_2 (score Green 2 : 1 Rust)
+HUD_MESSAGE [warning] Hunters lost a Limousine Gunship, 2 left
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (22 left)
+NATIVE_EXEC 19635 native, 364 handed back (dead 0, reflexes 0, yielding 0, face 344, drive 0, other 0), 528 stale pulls, 2678 part pulls, 0 verified, 0 verify mismatches 
+Green_Guns_3 destroyed Rust_Eyes_1 (score Green 3 : 1 Rust)
+SEAT_YIELD {"asker":"Green_Eyes_4","asker_verb":"screen","at":[3.6,46.3],"cpu":true,"died":false,"element":"Eyes","end":439,"s":12.0,"seat_m":2.6,"start":359,"team":0,"unit":"Green_Eyes_1","verb":"screen","yield_s":2.7}
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (21 left)
+SEAT_YIELD {"asker":"Green_Eyes_4","asker_verb":"screen","at":[-11.1,39.4],"cpu":true,"died":false,"element":"Eyes","end":483,"s":15.3,"seat_m":5.0,"start":458,"team":0,"unit":"Green_Eyes_5","verb":"screen","yield_s":0.8}
+Green_Guns_1 destroyed Rust_Eyes_4 (score Green 4 : 1 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (20 left)
+Rust_Guns_3 destroyed Green_Eyes_4 (score Green 4 : 2 Rust)
+HUD_MESSAGE [warning] Eyes lost a Skimmer, 6 left
+Green_Eyes_3 destroyed Rust_Guns_3 (score Green 5 : 2 Rust)
+Rust_Sirens_1 destroyed Green_Eyes_1 (score Green 5 : 3 Rust)
+HUD_MESSAGE [warning] Eyes: commander down, Eyes 2 takes command
+Green_Eyes_3 destroyed Rust_Hunters2_1 (score Green 6 : 3 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (18 left)
+HUD_MESSAGE [warning] Eyes lost a Skimmer, 5 left
+Rust_Hunters_1 destroyed Green_Eyes_3 (score Green 6 : 4 Rust)
+Green_Guns_2 destroyed Rust_Sirens_2 (score Green 7 : 4 Rust)
+HUD_MESSAGE [warning] Eyes lost a Skimmer, 4 left
+HUD_MESSAGE [warning] Friendly fire: Eyes 6 hit Eyes 5
+HUD_MESSAGE [warning] Eyes: shields down
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (17 left)
+Rust_Sirens_1 destroyed Green_Eyes_5 (score Green 7 : 5 Rust)
+Green_Hunters_1 destroyed Rust_Guns_1 (score Green 8 : 5 Rust)
+HUD_MESSAGE [info] We hold the east ring
+Rust_Hunters_1 destroyed Green_Eyes_7 (score Green 8 : 6 Rust)
+HUD_MESSAGE [warning] Eyes lost 2 vehicles (Skimmer, Skimmer), 2 left
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (16 left)
+Green_Guns_3 destroyed Rust_Sirens_1 (score Green 9 : 6 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (15 left)
+Green_Guns_1 destroyed Rust_Sirens_3 (score Green 10 : 6 Rust)
+HUD_MESSAGE [warning] Eyes: shields down
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (14 left)
+NATIVE_EXEC 39284 native, 715 handed back (dead 0, reflexes 0, yielding 0, face 661, drive 0, other 0), 915 stale pulls, 6490 part pulls, 0 verified, 0 verify mismatches 
+Green_Guns_3 destroyed Rust_Sirens_4 (score Green 11 : 6 Rust)
+Rust_Hunters2_3 destroyed Green_Eyes_6 (score Green 11 : 7 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Sonic Emitter (13 left)
+HUD_MESSAGE [warning] Eyes lost a Skimmer, 1 left
+SEAT_YIELD {"asker":"Rust_Hunters_2","asker_verb":"support_by_fire","at":[6.6,-31.7],"cpu":true,"died":false,"element":"Eyes","end":1330,"s":42.2,"seat_m":34.1,"start":1265,"team":1,"unit":"Rust_Eyes_2","verb":"screen","yield_s":2.2}
+Green_Guns_3 destroyed Rust_Hunters_4 (score Green 12 : 7 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Retired APC (12 left)
+Green_Guns_1 destroyed Rust_Hunters2_3 (score Green 13 : 7 Rust)
+Green_Guns_2 destroyed Rust_Hunters2_2 (score Green 14 : 7 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (10 left)
+Green_Guns_3 destroyed Rust_Battery_2 (score Green 15 : 7 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Gas Rocket Truck (9 left)
+Green_Eyes_2 destroyed Rust_Battery_4 (score Green 16 : 7 Rust)
+SEAT_YIELD {"asker":"Green_Lances_4","asker_verb":"support_by_fire","at":[60.8,43.7],"cpu":true,"died":false,"element":"Guns","end":1671,"s":55.0,"seat_m":2.3,"start":1651,"team":0,"unit":"Green_Guns_1","verb":"hold","yield_s":0.7}
+HUD_MESSAGE [info] Destroyed an enemy Gas Rocket Truck (8 left)
+SEAT_YIELD {"asker":"Green_Lances_4","asker_verb":"support_by_fire","at":[59.9,42.4],"cpu":true,"died":false,"element":"Guns","end":1723,"s":56.0,"seat_m":3.7,"start":1681,"team":0,"unit":"Green_Guns_1","verb":"hold","yield_s":1.4}
+HUD_MESSAGE [warning] Eyes: shields down
+Green_Guns_3 destroyed Rust_Hunters_1 (score Green 17 : 7 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Retired APC (7 left)
+Rust_Hunters_2 destroyed Green_Eyes_2 (score Green 17 : 8 Rust)
+HUD_MESSAGE [error] Eyes destroyed
+SEAT_YIELD {"asker":"Green_Lances_4","asker_verb":"support_by_fire","at":[73.4,25.3],"cpu":true,"died":false,"element":"Guns","end":1885,"s":62.4,"seat_m":1.8,"start":1872,"team":0,"unit":"Green_Guns_3","verb":"hold","yield_s":0.4}
+Green_Guns_3 destroyed Rust_Hunters_5 (score Green 18 : 8 Rust)
+SEAT_YIELD {"asker":"Green_Lances_4","asker_verb":"support_by_fire","at":[73.5,24.2],"cpu":true,"died":false,"element":"Guns","end":1984,"s":64.5,"seat_m":2.6,"start":1936,"team":0,"unit":"Green_Guns_3","verb":"hold","yield_s":1.6}
+Green_Lances_1 destroyed Rust_Hunters_2 (score Green 19 : 8 Rust)
+HUD_MESSAGE [info] Destroyed 2 enemies (5 left)
+NATIVE_EXEC 58762 native, 1237 handed back (dead 0, reflexes 0, yielding 0, face 1145, drive 0, other 0), 1149 stale pulls, 9122 part pulls, 0 verified, 0 verify mismatches 
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+Green_Guns_2 destroyed Rust_Guns_4 (score Green 20 : 8 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Assault Gun (4 left)
+SEAT_YIELD {"asker":"Green_Hunters_1","asker_verb":"hold","at":[76.7,23.8],"cpu":true,"died":false,"element":"Guns","end":2281,"s":73.2,"seat_m":3.7,"start":2197,"team":0,"unit":"Green_Guns_3","verb":"hold","yield_s":2.8}
+Green_Guns_2 destroyed Rust_Hunters_3 (score Green 21 : 8 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Retired APC (3 left)
+SEAT_YIELD {"asker":"Green_Lances_4","asker_verb":"support_by_fire","at":[75.9,27.0],"cpu":true,"died":false,"element":"Guns","end":2461,"s":79.5,"seat_m":1.5,"start":2385,"team":0,"unit":"Green_Guns_3","verb":"hold","yield_s":2.5}
+Green_Lances_1 destroyed Rust_Battery_1 (score Green 22 : 8 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Gas Rocket Truck (2 left)
+Green_Lances_4 destroyed Rust_Battery_3 (score Green 23 : 8 Rust)
+HUD_MESSAGE [info] Destroyed an enemy Gas Rocket Truck (1 left)
+SEAT_YIELD {"asker":"Green_Hunters_1","asker_verb":"hold","at":[77.1,26.3],"cpu":true,"died":false,"element":"Guns","end":2808,"s":91.7,"seat_m":2.7,"start":2750,"team":0,"unit":"Green_Guns_3","verb":"hold","yield_s":1.9}
+HUD_MESSAGE [warning] Contact: 1 enemy in sight
+SEAT_YIELD {"asker":"Green_Lances_2","asker_verb":"hold","at":[77.5,20.1],"cpu":true,"died":false,"element":"Hunters","end":2997,"s":97.8,"seat_m":2.2,"start":2933,"team":0,"unit":"Green_Hunters_2","verb":"hold","yield_s":2.1}
+Green_Lances_4 destroyed Rust_Eyes_2 (score Green 24 : 8 Rust)
+HUD_MESSAGE [info] VICTORY
+HUD_MESSAGE [info] Destroyed an enemy Pursuit Cruiser (0 left)
+SEAT_YIELD {"asker":"Green_Lances_4","asker_verb":"hold","at":[79.2,23.0],"cpu":true,"died":false,"element":"Hunters","end":3689,"s":120.5,"seat_m":1.8,"start":3615,"team":0,"unit":"Green_Hunters_2","verb":"hold","yield_s":2.5}
+NATIVE_EXEC 77343 native, 2656 handed back (dead 0, reflexes 0, yielding 0, face 2564, drive 0, other 0), 1304 stale pulls, 10128 part pulls, 0 verified, 0 verify mismatches 
+SEAT_YIELD_CENSUS {"arena":"terminus","by_verb":{"cpu:hold":{"deaths":0,"episodes":9},"cpu:screen":{"deaths":0,"episodes":3}},"deaths":32,"seat_aside":"off","seconds":180.0,"seed":1801}

@@ -1,0 +1,82 @@
+cell                   arm        |   placed flipping    flips   relays relaying   terr_c   terr_a  reseats     away     held     seat
+crossing 3 click       fight      |       35        0        0      158       16      158        0       46    419.5    395.6   2789.9
+crossing 3 click       fightlatch |       35        0        0       23       11      149        0       54    450.1    419.0   2958.1
+locks 3 click          fight      |       32        8       90      183       10       93        0      115    546.4    415.9   2233.4
+locks 3 click          fightlatch |       32        3       20       45        5       42        0       27    262.1    242.9   1242.4
+terminus 3 click       fight      |       36        0        0      101       22      101        0       31    311.5    266.0   2256.9
+terminus 3 click       fightlatch |       36        0        0       27        7       85        0       30    257.9    211.9   1955.9
+
+TOTAL fight      | placed 103.0 flipping 8.0 flips 90.0 relays 442.0 relaying 48.0 terr_c 352.0 terr_a 0.0 reseats 192.0 away 1277.4 held 1077.5 seat 7280.2
+TOTAL fightlatch | placed 103.0 flipping 3.0 flips 20.0 relays 95.0 relaying 23.0 terr_c 276.0 terr_a 0.0 reseats 111.0 away 970.1 held 873.8 seat 6156.4
+
+FLIP crossing 3 click fight seed 3773 squad 3: relays 88 flips 0 shapes ['herringbone'] terrain c/a 88/0 reseats 0 away 27.1 held 27.1 seat 66.6
+FLIP crossing 3 click fight seed 3774 squad 1: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 2 away 7.2 held 7.2 seat 91.6
+FLIP crossing 3 click fight seed 3774 squad 2: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 2 away 12.7 held 12.7 seat 30.2
+FLIP crossing 3 click fight seed 3774 squad 3: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 1 away 15.6 held 15.6 seat 37.1
+FLIP crossing 3 click fight seed 3775 squad 1: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 0 away 0.0 held 0.0 seat 207.6
+FLIP crossing 3 click fight seed 3775 squad 3: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 3 away 21.8 held 9.1 seat 34.0
+FLIP crossing 3 click fight seed 3776 squad 3: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 2 away 10.9 held 10.9 seat 48.8
+FLIP crossing 3 click fight seed 3777 squad 1: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 0 away 2.1 held 2.1 seat 136.7
+FLIP crossing 3 click fight seed 3777 squad 2: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 2 away 21.4 held 21.4 seat 32.7
+FLIP crossing 3 click fight seed 3777 squad 3: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 1 away 10.5 held 10.5 seat 30.5
+FLIP crossing 3 click fight seed 3779 squad 1: relays 10 flips 0 shapes ['herringbone'] terrain c/a 10/0 reseats 4 away 23.1 held 23.1 seat 194.4
+FLIP crossing 3 click fight seed 3780 squad 1: relays 8 flips 0 shapes ['herringbone'] terrain c/a 8/0 reseats 3 away 21.5 held 21.1 seat 153.0
+FLIP crossing 3 click fight seed 3780 squad 2: relays 6 flips 0 shapes ['herringbone'] terrain c/a 6/0 reseats 1 away 12.8 held 12.8 seat 43.8
+FLIP crossing 3 click fight seed 3783 squad 1: relays 6 flips 0 shapes ['herringbone'] terrain c/a 6/0 reseats 0 away 1.3 held 1.3 seat 224.7
+FLIP crossing 3 click fight seed 3783 squad 2: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 1 away 19.9 held 19.9 seat 58.6
+FLIP crossing 3 click fight seed 3784 squad 3: relays 10 flips 0 shapes ['herringbone'] terrain c/a 10/0 reseats 0 away 31.2 held 27.1 seat 101.0
+FLIP crossing 3 click fightlatch seed 3774 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 4 away 11.5 held 11.5 seat 110.1
+FLIP crossing 3 click fightlatch seed 3774 squad 2: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 2 away 14.2 held 14.2 seat 47.8
+FLIP crossing 3 click fightlatch seed 3774 squad 3: relays 4 flips 0 shapes ['herringbone'] terrain c/a 6/0 reseats 1 away 21.7 held 18.8 seat 90.1
+FLIP crossing 3 click fightlatch seed 3775 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 3 away 15.5 held 15.5 seat 116.2
+FLIP crossing 3 click fightlatch seed 3776 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 0/0 reseats 5 away 14.5 held 14.5 seat 130.5
+FLIP crossing 3 click fightlatch seed 3777 squad 2: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 2 away 11.7 held 11.7 seat 55.2
+FLIP crossing 3 click fightlatch seed 3779 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 10/0 reseats 4 away 23.1 held 23.1 seat 194.4
+FLIP crossing 3 click fightlatch seed 3782 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 0/0 reseats 5 away 22.5 held 22.5 seat 66.3
+FLIP crossing 3 click fightlatch seed 3783 squad 2: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 1 away 19.9 held 19.9 seat 58.6
+FLIP crossing 3 click fightlatch seed 3784 squad 1: relays 3 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 4 away 12.0 held 12.0 seat 134.1
+FLIP crossing 3 click fightlatch seed 3784 squad 2: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 1 away 26.3 held 26.3 seat 61.1
+FLIP locks 3 click fight seed 3774 squad 3: relays 6 flips 3 shapes ['coil', 'herringbone'] terrain c/a 3/0 reseats 2 away 32.7 held 19.3 seat 83.8
+FLIP locks 3 click fight seed 3775 squad 3: relays 2 flips 1 shapes ['coil', 'herringbone'] terrain c/a 1/0 reseats 3 away 7.1 held 7.1 seat 39.4
+FLIP locks 3 click fight seed 3776 squad 1: relays 2 flips 1 shapes ['coil', 'herringbone'] terrain c/a 1/0 reseats 2 away 1.8 held 1.8 seat 49.2
+FLIP locks 3 click fight seed 3776 squad 2: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 1 away 24.8 held 24.8 seat 82.0
+FLIP locks 3 click fight seed 3777 squad 2: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.0 held 0.0 seat 55.3
+FLIP locks 3 click fight seed 3781 squad 1: relays 36 flips 18 shapes ['coil', 'herringbone'] terrain c/a 18/0 reseats 22 away 16.4 held 6.8 seat 37.8
+FLIP locks 3 click fight seed 3781 squad 3: relays 4 flips 2 shapes ['herringbone', 'coil'] terrain c/a 2/0 reseats 1 away 1.7 held 1.7 seat 63.2
+FLIP locks 3 click fight seed 3783 squad 1: relays 90 flips 45 shapes ['herringbone', 'coil'] terrain c/a 45/0 reseats 45 away 130.8 held 90.5 seat 202.3
+FLIP locks 3 click fight seed 3784 squad 1: relays 4 flips 2 shapes ['coil', 'herringbone'] terrain c/a 2/0 reseats 4 away 57.6 held 18.3 seat 71.1
+FLIP locks 3 click fight seed 3784 squad 3: relays 36 flips 18 shapes ['herringbone', 'coil'] terrain c/a 18/0 reseats 26 away 43.2 held 21.0 seat 75.6
+FLIP locks 3 click fightlatch seed 3774 squad 2: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.0 held 0.0 seat 34.5
+FLIP locks 3 click fightlatch seed 3777 squad 2: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 1 away 33.2 held 33.2 seat 129.9
+FLIP locks 3 click fightlatch seed 3780 squad 3: relays 4 flips 2 shapes ['coil', 'herringbone'] terrain c/a 3/0 reseats 0 away 7.4 held 7.4 seat 23.7
+FLIP locks 3 click fightlatch seed 3781 squad 2: relays 32 flips 16 shapes ['herringbone', 'coil'] terrain c/a 16/0 reseats 4 away 42.5 held 26.4 seat 49.8
+FLIP locks 3 click fightlatch seed 3784 squad 1: relays 4 flips 2 shapes ['coil', 'herringbone'] terrain c/a 2/0 reseats 3 away 0.2 held 0.2 seat 52.9
+FLIP terminus 3 click fight seed 3774 squad 1: relays 5 flips 0 shapes ['herringbone'] terrain c/a 5/0 reseats 0 away 1.3 held 1.3 seat 106.0
+FLIP terminus 3 click fight seed 3774 squad 2: relays 8 flips 0 shapes ['herringbone'] terrain c/a 8/0 reseats 1 away 8.3 held 8.3 seat 22.3
+FLIP terminus 3 click fight seed 3775 squad 1: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 0.0 held 0.0 seat 15.4
+FLIP terminus 3 click fight seed 3775 squad 2: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 1 away 5.2 held 5.2 seat 28.3
+FLIP terminus 3 click fight seed 3775 squad 3: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 2 away 10.5 held 10.5 seat 64.3
+FLIP terminus 3 click fight seed 3776 squad 1: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 2 away 0.2 held 0.2 seat 26.3
+FLIP terminus 3 click fight seed 3776 squad 3: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 3 away 39.3 held 34.8 seat 89.2
+FLIP terminus 3 click fight seed 3777 squad 1: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 0.0 held 0.0 seat 6.9
+FLIP terminus 3 click fight seed 3777 squad 2: relays 5 flips 0 shapes ['herringbone'] terrain c/a 5/0 reseats 1 away 12.9 held 12.9 seat 403.7
+FLIP terminus 3 click fight seed 3778 squad 1: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 0.0 held 0.0 seat 7.8
+FLIP terminus 3 click fight seed 3778 squad 2: relays 6 flips 0 shapes ['herringbone'] terrain c/a 6/0 reseats 1 away 48.5 held 32.4 seat 68.5
+FLIP terminus 3 click fight seed 3779 squad 1: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 2 away 5.4 held 5.4 seat 20.6
+FLIP terminus 3 click fight seed 3779 squad 2: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 2 away 17.4 held 16.1 seat 19.0
+FLIP terminus 3 click fight seed 3781 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 4.5 held 4.5 seat 14.1
+FLIP terminus 3 click fight seed 3781 squad 2: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 1 away 17.5 held 17.5 seat 40.4
+FLIP terminus 3 click fight seed 3781 squad 3: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 2 away 15.0 held 15.0 seat 76.6
+FLIP terminus 3 click fight seed 3782 squad 1: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 1 away 6.2 held 6.2 seat 15.5
+FLIP terminus 3 click fight seed 3783 squad 2: relays 14 flips 0 shapes ['herringbone'] terrain c/a 14/0 reseats 2 away 42.3 held 31.0 seat 53.6
+FLIP terminus 3 click fight seed 3783 squad 3: relays 21 flips 0 shapes ['herringbone'] terrain c/a 21/0 reseats 0 away 0.0 held 0.0 seat 260.4
+FLIP terminus 3 click fight seed 3784 squad 1: relays 3 flips 0 shapes ['herringbone'] terrain c/a 3/0 reseats 1 away 0.0 held 0.0 seat 11.8
+FLIP terminus 3 click fight seed 3784 squad 2: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 1 away 5.1 held 5.1 seat 36.9
+FLIP terminus 3 click fight seed 3784 squad 3: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 2 away 7.6 held 7.6 seat 30.0
+FLIP terminus 3 click fightlatch seed 3773 squad 3: relays 3 flips 0 shapes ['herringbone'] terrain c/a 3/0 reseats 1 away 0.8 held 0.8 seat 21.4
+FLIP terminus 3 click fightlatch seed 3774 squad 1: relays 2 flips 0 shapes ['herringbone'] terrain c/a 5/0 reseats 0 away 1.3 held 1.3 seat 106.0
+FLIP terminus 3 click fightlatch seed 3775 squad 3: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 1 away 7.9 held 7.9 seat 57.4
+FLIP terminus 3 click fightlatch seed 3776 squad 3: relays 1 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 3 away 5.0 held 2.5 seat 31.3
+FLIP terminus 3 click fightlatch seed 3783 squad 2: relays 12 flips 0 shapes ['herringbone'] terrain c/a 14/0 reseats 2 away 43.1 held 31.9 seat 50.4
+FLIP terminus 3 click fightlatch seed 3783 squad 3: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 1 away 8.9 held 8.9 seat 58.3
+FLIP terminus 3 click fightlatch seed 3784 squad 2: relays 3 flips 0 shapes ['herringbone'] terrain c/a 3/0 reseats 1 away 5.1 held 5.1 seat 62.2

@@ -1,0 +1,17 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          fight     |   29.6 /   13.5   |   13   0 |     20.5 |               2.8 |            51.8 | 4.11 | 52.3
+locks 3 click             fight     |   37.3 /   34.5   |    9   0 |     59.1 |               4.3 |            56.1 | 3.42 | 30.9
+terminus 3 click          fight     |   37.0 /   34.4   |    0   0 |     30.9 |               4.9 |            45.6 | 4.94 | 18.9
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          fight     |          30.5 |          28.5 |           49.2 |               5.4 |          33.9
+locks 3 click             fight     |          60.3 |          38.1 |              - |               6.8 |          56.6
+terminus 3 click          fight     |          34.8 |          24.1 |           41.3 |              18.0 |          56.2
+
+MEDIANS over seeds [3621, 3622, 3623, 3624, 3625, 3626] (n 6 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          fight       | 6 |         17.1 |     0 |          35.9 |         43.1 |          21.0 |              -1.0 |   13   0 | 3.52
+locks 3 click             fight       | 6 |         31.1 |     0 |          31.8 |         28.8 |          -1.0 |              -1.0 |    9   0 | 2.46
+terminus 3 click          fight       | 6 |         19.1 |     0 |          39.8 |         34.2 |          43.5 |              -1.0 |    0   0 | 3.19
+
+EQUALITY click cells: 0 identical across arms, 0 differ

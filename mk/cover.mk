@@ -22,3 +22,10 @@ cover-heat: import ## K1: where hulls are hit on every dealt map: HEAT_SEEDS mat
 			--arena=$$0 --seed=$$1 --green-faction=$$2 --rust-faction=$$3 --budget=5200 --time-limit=$(HEAT_TIME) --combat-log $(HEAT_FLAGS) \
 			> $(BUILD_DIR)/cover-heat/$$0-$$1.log 2>&1; echo "HEAT_RUN $$0 seed $$1 $$2 v $$3 exit $$?"'
 	$(PYTHON) tests/cover/low_cover_census.py --heat $(BUILD_DIR)/cover-heat --json $(BUILD_DIR)/cover/heat.json
+
+# K5 (round 37): check a prepared plan of tools/make_arenas.py (COVER_K5 a | b | none) in build/cover-k5-<plan>/, arenas/
+# untouched: only the plan's maps change, only barricades come in, runs clear 5 m, every R4 lane still passes.
+PLAN ?= b
+.PHONY: cover-k5
+cover-k5: ## Round 37 (cover K5): check the prepared low-cover plan PLAN=a|b|none against arenas/ (no Godot; arenas/ untouched)
+	@$(PYTHON) tests/cover/k5_check.py $(PLAN) $(BUILD_DIR)/cover-k5-$(PLAN)

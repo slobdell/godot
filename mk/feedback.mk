@@ -7,6 +7,9 @@ FB_PRESET ?= laptop
 FB_SLOTS ?= hit,pinned,repair,cone
 FB_CLIP_FRAMES ?= 24
 FB_FLAGS ?=
+# The picked clips are assembled locally (build/feedback-fight/picks/); a remote run's copy-back --delete mirrors builder0's
+# build/ and would take them (it did, 2026-10-22), so every `make remote` protects them.
+export REMOTE_COPYBACK_PROTECT := $(strip $(REMOTE_COPYBACK_PROTECT) feedback-fight/picks/)
 
 feedback-shots: import ## his picked looks staged in a real skirmish, stills at his pose + close, and clips -> build/feedback-shots/<preset>/ (needs a display: make remote T=feedback-shots; FB_PRESET=laptop|desktop FB_ARENA= FB_SLOTS= FB_CLIP_FRAMES= FB_RES=)
 	rm -rf $(FB_DIR)/$(FB_PRESET) && mkdir -p $(FB_DIR)/$(FB_PRESET)
