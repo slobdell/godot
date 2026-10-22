@@ -61,6 +61,21 @@ an arm, the fight probe 18 of the re-filed 36 fights, the census; `references/ro
   206 -> 127 (reported); first shape differs 12/576 (<= 3 %); contacts pass; fights pass (his kills 5.83 -> 6.06, losses 8.11 ->
   7.94, CPU losses 5.83 -> 6.06, n 18). Guard FAIL never-in crossing 5 click (0 v 1: s3866 squad 4 never arrives; it does on
   main). Not waived (R37.17's rule): traced next (builder0 light, `~/settle-keep/neverin/`).
+- **S1, what the rows say (judged rows, read after the verdict; not a re-judging):** the thing S1 changes, the deploy's own seat
+  drive, fell hard: squads whose deploy leg (the longest seat drive at the deploy) is >= 25 m 73 -> 20 (-73 %; latch alone 71).
+  The deciding line also counted the crews' movement after the 8 s place window, which S1 does not target: twitch >= 15 m in
+  98 squads on main, 79 fit, 105 latch. Its sources (main's 12 worst): GIVEWAY (parked crews stepping aside for others:
+  manoeuvre's M5) and long deploy drives still running after 8 s (a 34-55 m leg on the cap). Of fit's 125 long movers 102
+  are long on main too; terminus 5 click (the traced cell) has 2. A re-try needs a new bar on fresh seeds (the orchestrator's
+  call: deciding = the deploy leg, guards as filed), not a re-reading of these numbers.
+- **S2's never-in, traced (b013518a6, `references/round38/settle/s2-neverin-trace-builder0/`):** squad 4's place has a seat 0.4
+  m from squad 3's parked back tank (orders' lay, both arms); a 1.5 m seat difference (squad 3 not re-spaced after it parked)
+  flips which parked tank gives way: a squad-1 tank steps 20 m aside into the lane and squad 4 never gets within 12 m in 90 s
+  (main: in at 33.9 s). The first shape and every other seat are identical. Asked the orchestrator: re-read S2 on fresh seeds,
+  or hold for G1. S1's never-in (locks 3 route s3871 squad 1): stuck in both arms (main 82.7 s of 90), never deploys; a
+  window-edge flip.
+- **The fight probe's 5-squad stop:** `--probe-budget` caps both armies; his 5-squad army costs 2970 ("army costs 2970, over
+  the 1500 budget"), so the skirmish never starts. 5-squad fight cells need `--probe-budget=3000` (no code).
 - **Two workload defects (re-filed before any fight number):** the fight probe is 3-squad only (54 five-squad fight runs
   stopped at start), so 18 of 36 fights are in and 3879-3884 are owed (`make native settle-fight-topup`); and the CPU census
   is IDENTICAL to the unit in all three arms (contacts 956 / 956 / 956): the deploy step never fires in CPU v CPU fights, so
