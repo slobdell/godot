@@ -50,6 +50,10 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
   guard, not only the one it fixes (round 37's latch lesson). Probe flags that fail to parse stop the run.
 - **C38.2 Doctrine is judged on CP37.1's guard lines** (paired, `guard.py --pair`, the same 320 fights), deciding = the blob's win rate
   down; guards = the turtle not up, kills/length per faction, perf. Then rules' R1-R3 and K2 are re-read ON TOP (switches exist).
+- **C38.4 The Tanker repairs under fire (his answer, game_design.md; feedback).** GRANT to feedback: `Match.repair_rate_for` and
+  the repair tick in `game/match/match.gd` (one guarded seam, `--repair-under-fire`, merge note). Rule: under fire half rate (2.5 hp/s),
+  full after `REPAIR_QUIET_SECONDS` as today. Bar before numbers: deciding = hp mended a fight by Tankers (up); guards = the guard lines
+  per faction (the gangs must not start winning the blob line beyond noise), kills/length per faction, perf. A pass ships ON (his call).
 - **C38.3 settle and orders share `element_plan.gd`'s callers:** orders lays WHERE squads go (group lay); settle decides how a squad
   SITS once there (deploy, halt shape, seat deal, parked hold). A change that crosses goes through a merge note both sign.
 

@@ -4335,3 +4335,9 @@ He played round 37's main ("things seemed reasonable") and asked to "enqueue a b
 candidates (HANDOFF): orders (his group click, O7 v2), doctrine (the CPU defender stops to fire; re-read R1-R3/K2 on top), settle (the
 deploy deal crossing, latch v2, O2's re-deals), manoeuvre (M5 v2, M5b, O5 v2), feedback (the match end he missed), native (rows, twins,
 perf line). Open rules question for him: the Resupply Tanker rarely gets to repair in real fights (3 s quiet rule).
+
+## Round 38: his answer on the Resupply Tanker (2026-10-22 morning, in chat, verbatim)
+
+Question: the Tanker repairs only vehicles not hit for 3 s, so in real fights it rarely repairs; should it also repair during
+combat, more slowly? **His answer: "yes it also repair during combat".** Rule: the Tanker keeps repairing vehicles under fire at a
+reduced rate (start at half, 2.5 hp/s, full 5 hp/s after 3 s quiet as today); its repair beam (his pick A) shows it.

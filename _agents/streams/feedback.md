@@ -18,8 +18,7 @@ What he will notice: when a match ends, he knows at once (who won, why), and cli
 
 - His picks are ON (hit C ring, pinned A, repair A, cone C), six sounds/lines live, `marks` OFF.
 - The end screen exists (`game/ui/scoreboard_bug.gd` and the match result) but he missed it in a real game.
-- Finding (round 37): the Resupply Tanker rarely gets to repair in real fights (3 s quiet rule); that is a RULES question for him, not
-  a look: write it up for the orchestrator to ask, don't change the rule.
+- The Resupply Tanker rarely got to repair in real fights (3 s quiet rule). His answer (2026-10-22): it also repairs during combat (F3).
 
 ## Backlog (in order)
 
@@ -27,7 +26,10 @@ What he will notice: when a match ends, he knows at once (who won, why), and cli
    current end flow; propose 2-3 end treatments (a clear banner + reason, the announcer's call, input that says "match over") on a
    directions page; the orchestrator relays; build his pick.
 2. **F2 orders after the end:** a click after the match ends says so instead of echoing "move".
-3. **F3 the Tanker question** written up in player terms with a recommendation (for the orchestrator to ask him).
+3. **F3 the Tanker repairs under fire (C38.4, HIS ANSWER: "yes it also repair during combat").** Grant: `Match.repair_rate_for` and
+   the repair tick in `game/match/match.gd`, one guarded seam `--repair-under-fire` (OFF until its bar). Half rate (2.5 hp/s) under
+   fire, full after 3 s quiet. File the bar (C38.4) before numbers; series on the guard lines on builder2 (native's tooling). The repair
+   beam must show the slower mending.
 4. **Stretch:** any rough edge in his picks seen in real fights at his laptop preset.
 
 ## How to verify
