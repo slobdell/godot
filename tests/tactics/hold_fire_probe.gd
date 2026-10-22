@@ -26,6 +26,10 @@ var _hf_dmg := {"guard": {}, "tactics": {}}
 ## CPU rounds (and damage) by why its posture is what it is, and which half of the map the shooter stood in.
 var _hf_why := {}
 var _listening := false
+## Stretch (O6 under defend): the most seats each element's deploy ever moved behind low cover (`--cover-seat=on`), per side.
+var _hf_cover := {"guard": {}, "tactics": {}}
+## ...and element samples at 2 Hz split [not deployed, deployed] (cover seats are offered only once a deploy stands).
+var _hf_deployed := {"guard": [0, 0], "tactics": [0, 0]}
 
 
 func _initialize() -> void:
@@ -135,6 +139,15 @@ func _listen() -> void:
 				continue
 			var who := "guard" if tank.team == guard_team else "tactics"
 			tally(_hf_time[who], state_key(game_match, tank, guard_team), motion_bucket(tank.speed(), tank.max_forward_speed))
+		var elements := Elements.of_match(game_match)
+		if elements != null:
+			for element: Element in elements.all():
+				(_hf_deployed["guard" if element.team == guard_team else "tactics"] as Array)[
+						1 if bool(element.deploy.get("deployed", false)) else 0] += 1
+				var cover: Variant = element.deploy.get("cover")
+				if cover is Dictionary and not (cover as Dictionary).is_empty():
+					var side := _hf_cover["guard" if element.team == guard_team else "tactics"] as Dictionary
+					side[str(element.id)] = maxi(int(side.get(str(element.id), 0)), (cover as Dictionary).size())
 
 
 func _report(game_match: Match, guard: String, side: int, result: Dictionary, capped: bool) -> void:
@@ -144,4 +157,13 @@ func _report(game_match: Match, guard: String, side: int, result: Dictionary, ca
 		return
 	print("HOLD_FIRE " + JSON.stringify({"guard": guard, "arena": String(Arena.active.get("name", "")),
 			"seed": int(_flag("seed", "0")), "side": _flag("guard-side", "green"), "listening": _listening,
-			"args": " ".join(_arm_args()), "shots": _hf_shots, "time": _hf_time, "dmg": _hf_dmg, "why": _hf_why}))
+			"args": " ".join(_arm_args()), "shots": _hf_shots, "time": _hf_time, "dmg": _hf_dmg, "why": _hf_why,
+			"cover": {"moved": ElementPlan.cover_seats_moved, "guard": _sum(_hf_cover["guard"]), "tactics": _sum(_hf_cover["tactics"]),
+				"deployed": _hf_deployed}}))
+
+
+static func _sum(counts: Dictionary) -> int:
+	var total := 0
+	for n: int in counts.values():
+		total += n
+	return total

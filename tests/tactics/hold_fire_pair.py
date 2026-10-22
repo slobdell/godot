@@ -52,6 +52,7 @@ def main(off_dir, on_dir):
         flips = [0, 0]  # guard win -> loss, loss -> win
         dmg = [[0.0] * 4, [0.0] * 4]
         kills = [[0, 0], [0, 0]]  # [arm][guard, cpu]
+        cover = [[0, 0], [0, 0]]  # [arm][guard, cpu]: seats moved behind low cover (--cover-seat=on), elements' maxima
         for k in ks:
             res = []
             for arm, runs in enumerate((off, on)):
@@ -65,6 +66,8 @@ def main(off_dir, on_dir):
                 c = "rust" if g == "green" else "green"
                 kills[arm][0] += result["kills"][g]
                 kills[arm][1] += result["kills"][c]
+                cover[arm][0] += hold.get("cover", {}).get("guard", 0)
+                cover[arm][1] += hold.get("cover", {}).get("tactics", 0)
             if res[0] and not res[1]:
                 flips[0] += 1
             if res[1] and not res[0]:
@@ -78,6 +81,7 @@ def main(off_dir, on_dir):
             print("  %-3s guard kills %4d  CPU kills %4d | CPU damage moving %5.1f %%  in defend %5.1f %%  attack/nothing/own %5.1f %%" % (
                 name, kills[arm][0], kills[arm][1], 100 * m / t if t else 0, 100 * d / t if t else 0,
                 100 * no / t if t else 0))
+            print("      cover seats moved: guard %d, CPU %d" % tuple(cover[arm]))
 
 
 if __name__ == "__main__":

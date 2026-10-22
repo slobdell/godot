@@ -138,4 +138,10 @@ guard.sh (cc7c7ef1a) resumes per fight; I merge main for it before D2's series.
 2. D1 design note to the orchestrator: where a holder moves, which lever, and the bar (C38.1: the property it could break).
 3. D2 hold-and-fire behind a switch, lab first; quick-remote; one full check on a named hash; the paired guard series on builder2.
 4. D3 R1-R3 and K2 re-read on top of D2.
-5. Stretch: low-cover seats when defending.
+5. Stretch: low-cover seats when defending. **Read (laptop, uncommitted tree on 362e81c6e, locks 2602 blob, 120 s, `--cpu-defend
+   --cover-seat=on --cover-on=hulldown`, the probe's new `cover` field):** O6's call (`--cover-seat=on`) can't reach the CPU's holds.
+   `ElementPlan._deploy_state` deploys only a `move` without a told facing, and the CPU's holds are `hold` with a facing: CPU
+   elements deployed in 0 of 919 2 Hz samples (the blob 73 of 661), and no seats moved on either side. A CPU cover seat needs its own
+   path: per crew, a hook in the halt lay (settle's function: a request, not mine to edit), or the commander shifting a defend
+   post once behind low cover (mine). **Gated on D3's hulldown arm:** only build it if K2 stops enough rounds on top of defend to
+   matter (R37's read: 505 shots stopped in 320 fights, too few to change outcomes).
