@@ -67,30 +67,33 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### REPORT (orders, round 37; updated 2026-10-21 ~09:25 PDT). Every number names its commit, machine, workload, n.
-- **O1 the flicker: BUILT, bar recorded on main (441d8951d), pre-series check running.** Base rate (builder0 native,
-  20005d611, orders-probe 12 cells x 3621-3626, 285 placed squads): 4 squads flip halt shape after the place window, 18
-  flips, 50 reseats; centroid terrain changes 38 (shape flips + lanes <-> dense re-spacings: the deploy re-picks shape AND
-  spacing from the situation's terrain every update); at the anchor 0. Fix `--halt-terrain=anchor` (eb102aada, default
-  still centre). Lab `test_control_halt_terrain` (laptop GDScript: centre 2 flips, anchor 0). quick-remote eb102aada:
-  builder0 120 passed / 0 failed, exited 0. Full check of f4365153f (builder0, native) running; the judged probe runs on
-  that hash from a detached side worktree (`~/projects/godot-orders-o1`).
-- **O2 parked squads: MEASURING.** Finding (laptop traces, locks 5 click s34): in the no-fight probe a parked crew's
-  "ADVANCE" is a crew pushed off its seat by a friend's give-way, then walking back (an idle crew's ADVANCE objective IS
-  its station). R37.6: the give-way half is manoeuvre's M5; orders keeps the idle-crew options. Probe `--probe-fight=on`
-  (a real CPU army, 120 s after all are in) with `left_by` (option at the moment a crew with no order passes 6 m off its
-  placed seat; GIVEWAY apart), `self_off_*`, `lost_after_placed`. builder0 sizing (light, 3 maps x 3 squads x 3621-3626)
-  running; design note + grant request to follow.
-- **O3 squads whole: BUILT OFF, bar recorded on main.** `--untangle=whole` (092cb34b7); `test_control_untangle_whole`;
-  probe `friend_contacts` (physics hull touches). Judged probe after O1's (needs its own green check).
-- **O4 away_m v a fixed seat: DONE (tooling).** `away_held_m` (goal unchanged) and `away_seat_m` (placed seat) beside
-  away_m. On the base rows (20005d611, 285 squads): away 820.2 m, held 813.8 m, seat 2411.9 m; the flicker's share of
-  away_m is small on these cells.
-- **O5 CPU seats: MEASURING.** Grant moved (R37.5) to element_commander.gd's screen / support_by_fire point choice and
-  `_plan_screen`. `make seat-yield-census` (4daa2d069): laptop locks s1828: 75 give-ways by crews holding CPU seats (67
-  screen) to another element's crew, 0 deaths. builder0 sizing queued.
-- **O6 cover seat: SEAM DONE, OFF** (`--cover-seat=on`, 5fbee5103): cover's real signature; null until cover's API is on
-  main (cover: low cover is scarce on today's maps, so it will rarely fire).
+### REPORT (orders, round 37; updated 2026-10-21 ~15:30 PDT). Every number names its commit, machine, workload, n.
+- **State of the branch:** HEAD 52c15e0e1 = main c76469184 merged + everything below, all OFF. Its full check (builder0,
+  native) is running. The previous check, 42a26a17c (builder0 native, 3022 passed / 0 failed), FAILED on the engine-log
+  gate only: `test_control_parked_hold` overrode the runner's sealed `_teardown()` and the lab<->case reference cycle
+  leaked 14 objects at exit. Fixed in the commit before the merge (teardown() hook, cycle dropped; local run clean).
+  Last green hash: f4365153f (the O1 series hash).
+- **O1 the flicker: the judged no-fight read FAILED as filed** (builder0 native f4365153f, seeds 3701-3712, census 3701-3706;
+  `references/round37/orders/o1-judged-builder0-f4365153f/`). The deciding line passed (relays 298 -> 0, shape flips
+  114 -> 0). Two guards failed: twitch in locks 5 route (3.9 -> 10.6 m), and CPU friendly contacts (1665 -> 1933, line
+  1836.5). R37.17: it doesn't ship. Cause (traced): the anchor read changes which shape the deploy picks at halt (locks
+  coil 60 -> 52, terminus 6 -> 0), so more long herringbones crowd their neighbours. New arm `--halt-terrain=latch`
+  (ca251254a): read the centroid's terrain at arrival and keep that read while arrived (same first shape as main, no
+  flicker; lab `test_control_halt_terrain`: centre 2 flips, anchor 0, latch 0). R37.17's two traces (parade s3704 census,
+  locks 5 route s3703; arms main / anchor / latch) are running (light lane, `make o1-trace`). The latch bar gets re-filed
+  on fresh seeds before any number. The fight read (3731-3742) is still owed.
+- **O2 parked squads: BUILT OFF, final bar filed (052f30eea).** `--parked-hold=on` (tank_brain.gd seam `_parked_move`):
+  a move of his parked crew's own that ends more than 4 m off its post becomes hold-and-face (RETREAT kept). Off its post
+  with nothing to do, it drives all the way back (arrive 1.5 m). Deciding metric off_idle_s. Base (builder0 3e5944657,
+  fight probe, 18 fights): 94.2 s a fight (sd 111.0, se 26.2). Judged read queued after the check.
+- **O3 squads whole: BUILT OFF, bar recorded on main.** `--untangle=whole`. Judged read (3713-3724) queued after the check.
+- **O4 away_m v a fixed seat: DONE (tooling).** `away_held_m` / `away_seat_m` (20005d611, 285 squads: away 820.2 m, held
+  813.8 m, seat 2411.9 m).
+- **O5 CPU seats: BUILT OFF, bar recorded on main (78c06ab1f).** `--seat-aside=on`. Sizing (builder0 baf3dbd8e, 18 fights): 542
+  seat give-ways (499 screen), 21 deaths. Judged read (seat-yield-census 1811-1822) queued after the check.
+- **O6 cover seat: SEAM DONE, OFF and unjudged this round** (agreed with the orchestrator; it fires once in 3 probe cells).
+- **Open question for the lead (via the orchestrator):** should a parked crew about to be destroyed pull back and return,
+  or stay? RETREAT stays kept until he answers.
 
 ### Bars (filed here; the orchestrator records them on main)
 - **O1 HALT_TERRAIN=anchor (orders, C37.5; filed 2026-10-21 ~09:10 PDT before any arm number).** What he would see: a squad he
