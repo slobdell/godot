@@ -261,6 +261,16 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   (R37.17). **Two workload defects, re-filed (57f423f44) before any fight number was read:** the fight probe ran only 3-squad armies (54
   five-squad runs stopped at start: 18 of 36 fights; top-up 3879-3884 owed); the CPU census reads identical in every arm (the deploy step
   never fires CPU v CPU): the CPU guard is vacuous and these switches act on his crews only.
+- **R38.10 (2026-10-22) S2's failed guard is traced; one re-read on fresh seeds, guard pre-registered.** settle (builder0 light, native,
+  e42ff30eb tree; stream/settle b013518a6, references/round38/settle/s2-neverin-trace-builder0/README.md): s3866 squad 4 is laid with a
+  spot 0.4 m from squad 3's parked back tank in BOTH arms; the latch keeps one squad-3 seat 1.5 m different, which flips the give-way
+  (a squad-1 tank steps 20 m aside into the lane, squad 4 queues behind it, never in by 90 s). Every other seat in both squads is
+  identical; the latch picked no different shape. **Ruled:** option (a), once: the SAME arm and bar on fresh seeds (no-fight 12 cells x
+  3903-3914 + the fight top-up incl. 5-squad cells at `--probe-budget=3000`). Filed before numbers: the never-in guard must read latch <= main
+  on the fresh seeds AND pooled over both reads latch <= main + 1; every other line as filed. A repeat of the overlap never-in fails S2
+  until orders' lay stops placing spots on parked tanks. The overlap (place 0.4 m from a parked tank) goes to orders as a defect; the far
+  give-way lead to manoeuvre as a measured case. The fight probe's 5-squad stop was `--probe-budget` capping both armies (2970 > 1500);
+  the probe should print that refusal (orders' file). S1 stays failed (R38.9); its locks never-in is a window-edge flip (82.7 s on main).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
