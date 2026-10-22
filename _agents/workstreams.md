@@ -550,6 +550,11 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   (perf-judge on a busy box; scenario_perf unpinned), sim-baseline 13/13 unmoved, determinism 8c3c1232b711a760; no native twin
   (element_plan.gd GDScript; grep of native/ finds nothing). `--battery-seat-task` ON (=off keeps round 33's). Perf-judge for this
   small GDScript change is owed on builder0 with the next shipped batch.
+- **R37.32 (2026-10-22) O5 SEAT_ASIDE FAILS as filed.** orders (builder0 native, c14ec0d80, seat-yield-census 1811-1822, 36 fights an
+  arm; `references/round37/orders/o5-judged-builder0-c14ec0d80/`, 1d96ada2a): CPU screen give-ways 1,277 -> 988 (-23 %, the bar asked
+  >= 50 %); seats moved aside 5,456; deaths in give-ways 49 -> 45 (limit 60.5); team deaths 25.86 -> 24.47 and 15.50 -> 16.42 a fight
+  (pass). Screen-to-screen yields 742 -> 438, but screen-to-support_by_fire 251 -> 255 (the aside step doesn't see a support_by_fire
+  route). **Ruled:** O5 stays OFF; a v2 that also reads support_by_fire routes is a round-38 candidate.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
