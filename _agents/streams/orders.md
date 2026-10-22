@@ -67,7 +67,12 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### REPORT (orders, round 37; updated 2026-10-21 ~19:00 PDT). Every number names its commit, machine, workload, n.
+### REPORT (orders, round 37; updated 2026-10-22 ~04:00 PDT). Every number names its commit, machine, workload, n.
+- **Last green hash: 1ebd7e550** (stream/orders with main 98153750a merged, incl. the artillery fix and group-lay OFF):
+  builder0 native check exited 0, 3050 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge, box busy 1.4-2.0x;
+  scenario_perf unpinned), sim-baseline 13 unmoved. O7's judged read and the latch re-read run on it (scratchpad
+  `o7_series.sh`, side worktree `~/projects/godot-orders-o1` detached at 1ebd7e550). The artillery pair 53b0ee425 was green
+  (3031 / 0, 13 unmoved) and is on main (R37.31).
 - **State of the branch:** main c76469184 merged (52c15e0e1). The series hash is c14ec0d80 = 52c15e0e1 + the probe's
   `parked_redeals`; **its full check is GREEN (builder0 native: exited 0, 3040 passed / 0 failed, 25 passed + 2 NOT JUDGED for perf on a busy box (load 22), sim-baseline 13 unmoved)**. 52c15e0e1's check was stopped at 15 min for it. The check
   before, 42a26a17c (builder0 native, 3022 passed / 0 failed), FAILED on the engine-log gate only: `test_control_parked_hold`
