@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# tools/scoreboard/guard.sh COMMIT [HOST]: the guard lines (CP37.1) of COMMIT, one SEED a remote call, resumable.
+# tools/scoreboard/guard.sh COMMIT [HOST]: the guard lines (CP37.1) of COMMIT, GUARD_CHUNK seeds a remote call, resumable per seed.
 #
 # builder2 is a Spot box, and on 2026-10-21 it was preempted every ~2 minutes for a while, so one long run would never finish.
-# Each chunk is one seed: GUARD_KINDS x the five arenas x both sides (20 fights). It runs in a scratch worktree of its own
+# Each seed is GUARD_KINDS x the five arenas x both sides (20 fights); a remote call runs GUARD_CHUNK seeds (default 2). It runs in a scratch worktree of its own
 # (../godot-native-guard, COMMIT checked out detached, THIS tree's probe and make target laid over it, as run.sh does), so this
 # stream's own checks never collide with it. A chunk counts only on the wrapper's `exited 0 (build/ copied back)` and a
 # verified copy-back; its logs then go to $GUARD_OUT/<short commit>/<kind>/ (outside build/: a check's copy-back deletes
 # build/'s non-.log files). A chunk whose logs are all there with a GUARD_RESULT is skipped, so re-running the script resumes.
 # An exit 255 (the box gone) starts builder2 again and retries, GUARD_TRIES times a chunk. Every attempt is a line in
 # driver.txt; `lost` there counts the attempts preemption cost. Long: run it under systemd-run (or setsid nohup).
-#   GUARD_SEEDS="2601 ... 2608 2701 ... 2708" (default the two blocks), GUARD_KINDS="blob turtle", GUARD_JOBS=20,
+#   GUARD_SEEDS="2601 ... 2608 2701 ... 2708" (default the two blocks), GUARD_KINDS="blob turtle", GUARD_JOBS=20 (fights at
+#   once; 20 already keeps builder2's 16 cores busy, the base read ran 20 fights a chunk),
 #   GUARD_ARGS="--cover-on=hulldown" GUARD_TAG=hulldown (an arm: its switches, its own folder; pair it with guard.py --pair).
 set -uo pipefail
 export PATH=$HOME/projects/bin:$PATH  # gcloud, for gcp-start (remote_builds.md: a systemd-run unit lacks it)
@@ -50,8 +51,16 @@ complete() {  # complete SEED: every log of the chunk is in $out with its GUARD_
 }
 
 lost=0
+todo=()
 for seed in $seeds; do
-	if complete "$seed"; then say ">> guard: seed $seed already read"; continue; fi
+	if complete "$seed"; then say ">> guard: seed $seed already read"; else todo+=("$seed"); fi
+done
+# GUARD_CHUNK seeds a remote call (default 2: 40 fights at 20 at once, so the box idles once a call waiting on its slowest
+# fight, not once a seed). A chunk's seeds are copied back and counted one by one, so a re-run resumes per seed.
+chunk=${GUARD_CHUNK:-2}
+for ((i = 0; i < ${#todo[@]}; i += chunk)); do
+	group=("${todo[@]:i:chunk}")
+	tag=$(IFS=-; echo "${group[*]}")
 	done_ok=""
 	for try in $(seq 1 "$tries"); do
 		case "$host" in *builder2*)
@@ -60,25 +69,30 @@ for seed in $seeds; do
 		esac
 		rm -rf "$wt/build/guards"
 		( cd "$wt" && TANK_SQUAD_COMMIT=$short REMOTE_HOST=$host bash tools/remote.sh native guard-run \
-			GUARD_KINDS="$kinds" GUARD_AT="$arenas" GUARD_SEEDS="$seed" GUARD_JOBS="$jobs" GUARD_ARGS="$args" ) > "$out/remote-$seed.log" 2>&1
+			GUARD_KINDS="$kinds" GUARD_AT="$arenas" GUARD_SEEDS="${group[*]}" GUARD_JOBS="$jobs" GUARD_ARGS="$args" ) > "$out/remote-$tag.log" 2>&1
 		status=$?
-		exited=$(grep -E '^>> remote: make .*guard-run.* exited ' "$out/remote-$seed.log" | tail -1)
+		exited=$(grep -E '^>> remote: make .*guard-run.* exited ' "$out/remote-$tag.log" | tail -1)
 		load=$(grep -E '^>> guard-run on ' "$wt/build/guards/run.txt" 2>/dev/null | head -1 | sed 's/.*| load /load /')
 		if [ "$status" = 0 ] && [[ "$exited" == *"exited 0 (build/ copied back)"* ]] \
-				&& grep -q '^>> remote: copy-back verified' "$out/remote-$seed.log"; then
-			for kind in $kinds; do mkdir -p "$out/$kind"; cp "$wt"/build/guards/"$kind"/*-"$seed"-*.log "$out/$kind/" 2>/dev/null; done
-			cp "$wt/build/guards/run.txt" "$out/run-$seed.txt" 2>/dev/null
-			if complete "$seed"; then
-				say ">> guard: seed $seed read (attempt $try, $load)"; done_ok=1; break
-			fi
-			say ">> guard: seed $seed exited 0 but some fight printed no GUARD_RESULT: $(grep -c MISSING "$out/remote-$seed.log") missing"
-			done_ok=partial; break
+				&& grep -q '^>> remote: copy-back verified' "$out/remote-$tag.log"; then
+			cp "$wt/build/guards/run.txt" "$out/run-$tag.txt" 2>/dev/null
+			done_ok=1
+			for seed in "${group[@]}"; do
+				for kind in $kinds; do mkdir -p "$out/$kind"; cp "$wt"/build/guards/"$kind"/*-"$seed"-*.log "$out/$kind/" 2>/dev/null; done
+				if complete "$seed"; then
+					say ">> guard: seed $seed read (call $tag, attempt $try, $load)"
+				else
+					say ">> guard: seed $seed exited 0 but some fight printed no GUARD_RESULT: $(grep -c MISSING "$out/remote-$tag.log") missing in the call"
+					done_ok=partial
+				fi
+			done
+			break
 		fi
 		lost=$((lost + 1))
-		say ">> guard: seed $seed attempt $try LOST (exit $status: ${exited#>> remote: })"
+		say ">> guard: seeds $tag attempt $try LOST (exit $status: ${exited#>> remote: })"
 		[ "$status" = 255 ] || [ -z "$exited" ] || break
 	done
-	[ -n "$done_ok" ] || say ">> guard: seed $seed NOT READ after $tries attempts"
+	[ -n "$done_ok" ] || say ">> guard: seeds $tag NOT READ after $tries attempts"
 done
 git -C "$wt" checkout -q --force --detach "$short"
 git -C "$wt" clean -fdq -e build/ -e .godot/ -e .tools/ -e native/bin/ -e native/build/ -e local.mk -e override.cfg
