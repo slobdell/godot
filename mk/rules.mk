@@ -73,4 +73,4 @@ rules-guard-motion: import ## Round 37 (rules): the guard lines' shots by side a
 		grep -q "^GUARD_MOTION" $(RULES_GM_DIR)/$$0-$$1-$$2-$$3.log || echo "  MISSING GUARD_MOTION $$0 $$1 s$$2 $$3"'
 	@grep -h "^GUARD_MOTION" $(RULES_GM_DIR)/*.log | sed 's/^GUARD_MOTION //' > $(RULES_GM_DIR)/rows.jsonl
 	@grep -h "^GUARD_RESULT" $(RULES_GM_DIR)/*.log | sed 's/^GUARD_RESULT //' > $(RULES_GM_DIR)/results.jsonl
-	@$(PYTHON) tests/rules/guard_motion_table.py $(RULES_GM_DIR)/rows.jsonl | tee $(RULES_GM_DIR)/table.txt
+	@$(PYTHON) tests/rules/guard_motion_table.py $(RULES_GM_DIR)/rows.jsonl $(RULES_GM_DIR)/results.jsonl | tee $(RULES_GM_DIR)/table.txt
