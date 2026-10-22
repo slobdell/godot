@@ -651,6 +651,15 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   probes, lab cases, OFF arms (latch, parked-hold, untangle=whole, seat-aside, cover-seat, group-lay=column). main c9996f0c4 adds
   feedback's 771633ed5 (mk/feedback.mk REMOTE_COPYBACK_PROTECT). merge_check_needed says CHECK (orders' tree lacked feedback's picks,
   M1, native's re-pins): ONE builder0 `make native check` on c9996f0c4 (builder0 is quiet: its perf-judge can judge main).
+- **R37.44 (2026-10-22) Bar K FAILS on the deciding line; K2 hull-down stays OFF; the K5 maps ship as he approved them.** cover
+  (stream/cover 43d16acc4; builder2, 320 fights an arm, 2601-08 + 2701-08, both sides; terminus/locks/sumps/gorge at 3923ba026, all 64
+  parade fights in BOTH arms at the re-sited c02b01d83; one preemption, seed 2702 re-run): blob 45 -> 44 % (-1.3 pts, paired se 0.9,
+  1.4 se v 2 needed; flips 2 to a loss, 0 to a win; McNemar p 0.25); kill ratio 0.85 -> 0.84; turtle 36 -> 37 % (+0.6, se 1.1); kills
+  a fight and length within 3 % per faction; positive control cover_struck ON terminus 101, locks 241, sumps 15, gorge 79, parade 69
+  (0 OFF); OFF-v-OFF replay seed 2601 0 flips. Map-alone (OFF@K5 v 9d325e291): blob 48 -> 45 % (-2.5, se 3.4), turtle 39 -> 36 % (-3.1,
+  se 2.2), turtle kill ratio 0.80 -> 0.75 (2.5 se DOWN): nothing rises. Reading: 505 shots stopped in 320 fights, too few on hulls
+  behind a run to change outcomes. The stretch (CPU taking low-cover seats) not started (gated on K4). Hand-over (K5 maps + re-pins,
+  main merged 05300509a) full check on builder0; the orchestrator adopts the moved maps on green.
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
