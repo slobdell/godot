@@ -212,6 +212,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   time; moving rounds come from recon screens (54 %), support_by_fire lines re-seated on a moving focus (29 %), and crews 15 m+ off
   their slots. Damage-weighted re-read running (6e049da5b), then the design note and D2's bar. builder2's series slot goes to settle's
   S1+S2 meanwhile.
+- **R38.6 (2026-10-22) N3: the machine-relative perf line is NOT machine-invariant; not switching.** native (tree bed8b7596, builder2
+  Intel Xeon 2.20 GHz, idle load 0.3-0.8, n 5; Status 3e95798e3): absolute ai 19,978-21,202 us/tick (flips around 20,000: FAIL 4 / PASS
+  1); relative PASS 5/5 (median 9,054 us per reference ms v line 25,840). The reference benchmark runs ~2.5x slower on builder2 than
+  builder0 but the AI tick only ~1.6x, so one ratio would pass a 2x AI regression on builder2. **Ruled:** perf-judge stays builder0 /
+  absolute; the honest option, if pursued, is a per-CPU-model line (round 39+).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
