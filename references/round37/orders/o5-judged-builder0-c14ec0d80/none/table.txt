@@ -1,0 +1,15 @@
+fights 36, all deaths 1489
+  cpu:hold               episodes   165  deaths    3
+  cpu:screen             episodes  1277  deaths   46
+TOTAL seat give-ways 1442, deaths 49
+  asker cpu:screen             <- screen           742
+  asker cpu:screen             <- support_by_fire  251
+  asker cpu:screen             <- attack           97
+  asker cpu:hold               <- hold             86
+  asker cpu:screen             <- hold             79
+  asker cpu:screen             <- move             56
+  asker cpu:screen             <- ambush           52
+  asker cpu:hold               <- screen           48
+  asker cpu:hold               <- ambush           19
+  asker cpu:hold               <- support_by_fire  11
+  asker cpu:hold               <- attack           1

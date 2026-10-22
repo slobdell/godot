@@ -103,7 +103,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **O4 away_m v a fixed seat: DONE (tooling).** `away_held_m` / `away_seat_m` (20005d611, 285 squads: away 820.2 m, held
   813.8 m, seat 2411.9 m).
 - **O5 CPU seats: BUILT OFF, bar recorded on main (78c06ab1f).** `--seat-aside=on`. Sizing (builder0 baf3dbd8e, 18 fights): 542
-  seat give-ways (499 screen), 21 deaths. Judged read (seat-yield-census 1811-1822) queued after the check.
+  seat give-ways (499 screen), 21 deaths. **Judged: FAIL** (builder0 native c14ec0d80, seat-yield-census 1811-1822, 36 fights
+  a side; `references/round37/orders/o5-judged-builder0-c14ec0d80/`): CPU screen give-ways 1277 -> 988 (-23 %, the bar asked
+  <= 50 %); seats moved aside 5456; deaths in give-ways 49 -> 45 (noise); team deaths guards pass. In player terms: the CPU's
+  screening tanks get in each other's way less (screen yielding to screen 742 -> 438) but just as often in the way of a
+  support-by-fire seat (251 -> 255); the aside step does not see a support-by-fire route. Stays OFF; no retry filed.
 - **O6 cover seat: SEAM DONE, OFF and unjudged this round** (agreed with the orchestrator; it fires once in 3 probe cells).
 - **Stretch: both answered, no code.** (1) Bridge-mouth click: re-checked on this round's tree (laptop GDScript 9de8a7d4f,
   Crossing west deck, clicks 3 / 6 / 9 m short, 3 and 5 squads, 24 squads): crossed 0, goals across 0. Round 36's halt lay

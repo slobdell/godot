@@ -1,0 +1,40 @@
+tools/remote.sh native seat-yield-census SY_SEEDS=1811\ 1812\ 1813\ 1814\ 1815\ 1816\ 1817\ 1818\ 1819\ 1820\ 1821\ 1822
+>> remote: syncing godot-orders-o1 to slobdell@builder0:~/tank_squad/godot-orders-o1
+>> remote: make native seat-yield-census SY_SEEDS=1811 1812 1813 1814 1815 1816 1817 1818 1819 1820 1821 1822 on slobdell@builder0
+>> native: src-sync: 0 changed
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder0, -O2 -ffp-contract=off -fno-fast-math) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> seat-yield-census on builder0 | commit c14ec0d80 | native on | flags ''
+fights 36, all deaths 1489
+  cpu:hold               episodes   165  deaths    3
+  cpu:screen             episodes  1277  deaths   46
+TOTAL seat give-ways 1442, deaths 49
+  asker cpu:screen             <- screen           742
+  asker cpu:screen             <- support_by_fire  251
+  asker cpu:screen             <- attack           97
+  asker cpu:hold               <- hold             86
+  asker cpu:screen             <- hold             79
+  asker cpu:screen             <- move             56
+  asker cpu:screen             <- ambush           52
+  asker cpu:hold               <- screen           48
+  asker cpu:hold               <- ambush           19
+  asker cpu:hold               <- support_by_fire  11
+  asker cpu:hold               <- attack           1
+>> remote: copy-back verified, 405 files, sha256
+>> remote: make native seat-yield-census SY_SEEDS=1811 1812 1813 1814 1815 1816 1817 1818 1819 1820 1821 1822 exited 0 (build/ copied back)
