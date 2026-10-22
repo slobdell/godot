@@ -1109,6 +1109,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	var queue_starts: Array = _leg_starts(squads, blocks) if queue_leg else []
 	var column_ahead := Vector3.ZERO  # G2: the approach a column was laid on
 	var column_moved := false  # G1 v3: the column moved some squad more than RELAY_MOVED_M off today's place
+	var today_places: Array[Vector3] = []  # G1 v3: the places today's body gave, before the column replaced them
 	if extra.has("to"):
 		var click := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 		var drawn: Variant = null
@@ -1156,6 +1157,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors, path_back, reached, false, queue_leg)
 			column = not laid.is_empty()
 			if column:
+				today_places = anchors.duplicate()
 				# G1 v3: the first-click re-lay only where the column moved some squad's place more than a rank off today's.
 				column_moved = false
 				for i in mini(laid.size(), anchors.size()):
@@ -1168,6 +1170,17 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if not column:
 			anchors = SelectionSquads.never_behind(anchors, blocks, click,
 					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]))  # the approach, not his drawn facing
+		elif not today_places.is_empty():
+			# G1 v3: today's places go through the same passes main gives them (for the first-click re-lay).
+			today_places = SelectionSquads.never_behind(today_places, blocks, click,
+					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]))
+			if ground != null:
+				var clearance_t := SlotGround.envelope_of((ground as Tank).unit_id) if ground is Tank else 0.0
+				today_places = SelectionSquads.ground_cap(today_places, click, SelectionSquads.drive_on(ground), SelectionSquads.crosses_on(ground),
+						func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+				today_places = SelectionSquads.ground_anchors(today_places, blocks,
+						func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p),
+						func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance_t, from))
 		# Round 34 (C34.11, O1, his scouts sent over the bridge): every anchor where the click reaches it by ground, read on
 		# the navmesh of one of the ordered vehicles.
 		if ground != null:
@@ -1239,7 +1252,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
 		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
-				column and column_moved)
+				column and column_moved, today_places)
 	var queue := bool(extra.get("queue", false))
 	var element_only := ELEMENT_TASKS.has(verb) and not UnitCommand.VERBS.has(verb)
 	# Round 35 (D6, R35.28): a shift-click queues on the elements the squads' units belong to NOW. Round 22's untangle
@@ -1329,6 +1342,7 @@ var _route_clicks: Array = []
 var _route_squads: Array = []
 var _route_tick := -1
 var _route_first_column := false  # whether his plain click that started the route was laid as a column
+var _route_first_today := {}  # first unit name -> today's place at that first click (G1 v3)
 ## G2: a shifted click this soon after his plain group click re-lays that first click as a waypoint (the squads have barely
 ## set off). Measurement: first legs re-laid so.
 const ROUTE_RELAY_S := 2.0
@@ -1350,7 +1364,7 @@ func _route_key(squads: Array) -> Array:
 	return key
 
 
-func _remember_route_click(squads: Array, blocks: Array, click: Vector3, queued: bool, column: bool) -> void:
+func _remember_route_click(squads: Array, blocks: Array, click: Vector3, queued: bool, column: bool, today: Array[Vector3] = []) -> void:
 	var key := _route_key(squads)
 	if not queued or key != _route_squads or _route_clicks.is_empty():
 		var body := Vector3.ZERO
@@ -1360,7 +1374,29 @@ func _remember_route_click(squads: Array, blocks: Array, click: Vector3, queued:
 		_route_squads = key
 		_route_tick = game_match.tick if game_match != null else -1
 		_route_first_column = column
+		# G1 v3: today's place of each squad at that first click (by its first unit), for the re-lay.
+		_route_first_today = {}
+		for i in mini(squads.size(), today.size()):
+			if not (squads[i]["units"] as Array).is_empty():
+				_route_first_today[String(squads[i]["units"][0])] = today[i]
 	_route_clicks.append(click)
+
+
+## G1 v3: re-aim a fresh first click's running move at the place today's body gave its squad; false when unknown.
+func _relay_first_to_today(element: Element) -> bool:
+	if String(element.task.get("verb", "")) != "move":
+		return false
+	for unit_name: String in element.members():
+		if _route_first_today.has(unit_name):
+			var to: Vector3 = _route_first_today[unit_name]
+			var aimed: Dictionary = element.task.duplicate(true)
+			aimed["to"] = [to.x, to.z]
+			for key: String in ["halt_at", "halt_shape"]:
+				aimed.erase(key)
+			element.retarget(aimed)
+			first_legs_relaid += 1
+			return true
+	return false
 
 
 ## G2: his route back from `click`: [click, the click before, ..., where the squads stood], or [] when this click does not
@@ -1843,6 +1879,10 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 		if held == null or not is_instance_valid_element(held) or (held.queued_tasks.is_empty() and not fresh):
 			continue
 		var on_task := held.queued_tasks.is_empty()
+		# G1 v3 (judged 4a765e6e2, yard_open route s3886): the fresh first click goes back to the place today's body gave it
+		# and stays out of the gate, so a chained route drives exactly as main until its last click.
+		if on_task and _relay_first_to_today(held):
+			continue
 		var last: Dictionary = held.task if on_task else held.queued_tasks[held.queued_tasks.size() - 1]
 		if String(last.get("verb", "")) != "move" or not last.has("to"):
 			continue
@@ -1920,7 +1960,8 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	for i in held_elements.size():
 		var element: Element = held_elements[i]
 		if bool(running[i]):
-			# G2: his first click, just given, becomes a waypoint passed through: the running task re-aimed at its gate place.
+			# G2: his first click, just given, becomes a waypoint passed through: re-aimed at its gate place (only when its
+			# today's place is unknown; else `_relay_first_to_today` took it above).
 			var aimed: Dictionary = element.task.duplicate(true)
 			aimed["to"] = [gate[i].x, gate[i].z]
 			for key: String in ["halt_at", "halt_shape", "lay"]:
