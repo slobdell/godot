@@ -599,6 +599,10 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   sits 5.6 m from a depot road, gorge (-62,6) 7.2 m, locks (-46,-16) 17.7 m (no brains test covers them). **Ruled:** measure first:
   OFF@K5 paired against the CP37.1 base (old maps) = the maps' own effect on the guard lines; re-site those three only if the maps make
   the blob or the turtle win more beyond noise. The map-effect line goes in Bar K's verdict.
+  **Map effect measured (cover, builder2, OFF@3923ba026 paired v 9d325e291, 320 fights):** blob 48 -> 46 % (-1.9 pts, se 3.2; McNemar
+  p 0.36), kr 0.88 -> 0.87; turtle 39 -> 38 % (-1.3, se 2.9; p 0.42), kr 0.80 -> 0.75 (-0.054, se 0.031). Per map (32 fights, win pts,
+  se): terminus blob 0 (6.5) / turtle 0 (7.9); locks -6.2 (7.7) / -9.4 (5.0); sumps +6.2 (7.7) / +3.1 (5.5); gorge 0 / 0; parade (old
+  K5 site) -9.4 / 0, to be replaced. No rise beyond noise: **sumps, gorge and locks stay.**
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
