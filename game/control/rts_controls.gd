@@ -1107,6 +1107,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	# Round 34 (planner's O5) / round 38 (G1): on a shifted leg each squad starts where its previous leg ends.
 	var queue_leg := bool(extra.get("queue", false)) and elements != null and REQUEUE
 	var queue_starts: Array = _leg_starts(squads, blocks) if queue_leg else []
+	var column_ahead := Vector3.ZERO  # G2: the approach a column was laid on
 	if extra.has("to"):
 		var click := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 		var drawn: Variant = null
@@ -1155,6 +1156,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			column = not laid.is_empty()
 			if column:
 				anchors = laid
+				column_ahead = TacticsFormation.flat(approach)
 		# Round 34 (R34.12): no rank stands behind its own squad (planner's O5: the back rank drove away from his click).
 		# G1: not in a column, whose ranks stack behind the click on purpose (his "stacks of wedges"); pulled forward to
 		# their own squads' level they would stand on the rank in front.
@@ -1237,6 +1239,28 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	# Round 34 (traffic O4): a further shift-waypoint makes the previous queued one in-between: re-laid as a gate.
 	if queue and verb == "move" and extra.has("to") and squads.size() > 1 and elements != null:
 		_relay_previous_waypoint(squads, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])))
+	# G2 (dev read 94b00992f, crossing 5 route: five squads stack ~230 m on a ~120 m route, so a rear squad drove the route
+	# out and 80 m back): a squad whose place on a shifted leg stands behind where its previous leg ends stops there instead,
+	# its previous waypoint moved to that place.
+	if column and queue_leg and column_ahead != Vector3.ZERO:
+		for i in mini(squads.size(), queue_starts.size()):
+			var held: Element = squads[i].get("element")
+			if held == null or not is_instance_valid_element(held):
+				continue
+			var at := anchors[i]
+			if (Vector3(at.x, 0.0, at.z) - (queue_starts[i] as Vector3)).dot(column_ahead) >= -SHORT_LEG_M:
+				continue
+			if not held.queued_tasks.is_empty():
+				held.relay_queued(held.queued_tasks.size() - 1, [at.x, at.z])
+				for key: String in ["halt_at", "halt_shape", "lay"]:
+					(held.queued_tasks[held.queued_tasks.size() - 1] as Dictionary).erase(key)
+			elif String(held.task.get("verb", "")) == "move":
+				var aimed: Dictionary = held.task.duplicate(true)
+				aimed["to"] = [at.x, at.z]
+				for key: String in ["halt_at", "halt_shape", "lay"]:
+					aimed.erase(key)
+				held.retarget(aimed)
+			legs_cut_short += 1
 	var first_error := ""
 	for i in squads.size():
 		var squad: Dictionary = squads[i]
@@ -1298,6 +1322,10 @@ var _route_first_column := false  # whether his plain click that started the rou
 ## set off). Measurement: first legs re-laid so.
 const ROUTE_RELAY_S := 2.0
 static var first_legs_relaid := 0
+## G2: how far behind its previous leg's end a squad's place on a shifted leg may stand before that leg is cut short to it.
+## Measurement: legs cut short so.
+const SHORT_LEG_M := 5.0
+static var legs_cut_short := 0
 
 
 func _route_key(squads: Array) -> Array:
