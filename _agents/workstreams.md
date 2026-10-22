@@ -206,6 +206,7 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   **Reported (the orchestrator judges):** parked re-deals v latch alone (and v O2's 105 / 50), halt re-lays, reseats. A pass with
   re-deals no higher than latch alone's beyond noise ships O2 + latch together. The s3747 trace is read first.
 
+
 - **Bar O2 PARKED_HOLD, FINAL (orders, R37.13; filed in stream/orders 052f30eea Status before any judged number; replaces the
   8dc98b5f4 text above; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and
   shoots from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. **Sizing (seen):** builder0
@@ -504,6 +505,13 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   not more survivors (lost after placed 149 v 151); halt re-lays 187 -> 352, element reseat goal moves 103 -> 181, squads with any
   re-deal 31 -> 55 (Crossing 27 -> 55, locks 9 -> 26, terminus 14 -> 24). Reading (untested): parked crews now sit on seats the element
   keeps re-laying. O2 holds until the Crossing 3 click s3747 squad 1 trace; if O1-latch passes, O2 is re-read ON top of latch.
+- **R37.29 (2026-10-21) his group click: "I immediately lost control of the army" (his playtest, verbatim in game_design.md).**
+  Recording `build/recordings/2026-10-21T21-52-44-terminus.jsonl` (seed 44742, Syndicate): one click at 36.9 s became four squad
+  destinations about 130 m apart, crews re-dealt across squads; repeated at 45.1, 56.1, 58.5, 85.0 s. **Ruled:** orders (Fable) takes
+  it as its top item after the running reads: a design note first (the column of wedges he describes: squads stacked along the
+  approach, nearest in front, sized to the corridor's real width, spread only on open ground, every squad whole), with a lab of his
+  exact click, then a bar. O3 (whole squads) and the bridge-mouth lay fold into it; O3's standalone retry is dropped. Likely round
+  38's core if it can't be judged this round.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the

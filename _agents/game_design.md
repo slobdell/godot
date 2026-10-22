@@ -4303,3 +4303,28 @@ future rounds)". Recording `build/recordings/2026-10-21T21-43-57-archipelago.jso
 (orchestrator): his two Gas Rocket Trucks (Green_Guns_5, Green_Eyes_4) received element task moves at 81-184 s ("moving as ordered")
 but stayed at their spots with no order and phase "arrived"; the match ended on control at 195.4 s (Rust), so later clicks fell after
 the end. Sent to orders as a priority trace (R37.27).
+
+## Round 37: his playtest note on a group click (2026-10-21 ~22:20 PDT, in chat, verbatim)
+
+"ok next, I was playing as the Syndicate on Terminus - you might be able to view this in a recording as well. It's still the case
+that when I'm selecting all units and I click a single waypoint, the target waypoints for each individual squad is generally
+non-sensical. This is especially the case on Terminus (I just played another game). By selecting all units and just clicking on an
+open space in the East side of the map, the target waypoints for each squad was all over at far away places. Intuitively, I would
+have , there might be two things going on: 1. if our squads are trying to maintain some sort of wedge formation that's larger than
+the width of the corridor, I suspect that might be messing things up, and perhaps our formations should be accounting for the actual
+width of whatever corridor they're going through (I don't know how we handled this exactly for crossing bridges, the might be a
+slightly different case). And 2. if there's not enough room for all target vehicles at the target waypoint, I would have at least
+thought that if we had 4 squads of 5 vehicles each, it would make sense to just have stacks of wedges (i.e. one squad immediately
+behind the other). THe cases might be different if the corridor is wide enough (i.e. if I select all unit and click some target
+waypoint in an open field it would make sense for them to just spread out). But as it stands, I clicked on a waypoint in the south
+east corner of the map, and the waypoints were all over the place. A bunch of units drove through streets and stuff, totally exposing
+themselves and leaving the safety of the army. I would also think that given the target waypoint I had and the configuration the
+units started in (i.e. default formations at startup), it would have been natural for the squad furthest away to land in the back
+and the closest squad to land in the front. All said, I had a clear intent to navigate my army through a specific path I had in mind,
+but I immediatley lost control of the army because of the computed waypoints per squad were all over the place."
+
+**What the recording shows** (`build/recordings/2026-10-21T21-52-44-terminus.jsonl`, seed 44742, Syndicate): one group click at
+36.9 s became four squad destinations (-93,54), (-29,86), (35,117), (-7,51), about 130 m apart end to end, and the crews were re-dealt
+across squads (Battery and Eyes vehicles mixed into new groups); the same at 45.1, 56.1, 58.5 and 85.0 s. His proposal, in short: a
+group click lays the squads as a COLUMN OF WEDGES (stacked one behind the other, nearest squad in front, farthest at the back) sized to
+the corridor's real width; spread out only where the ground is open; every squad keeps its own vehicles. Sent to orders (R37.29).
