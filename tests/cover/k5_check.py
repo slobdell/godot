@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+"""K5 (cover, round 37): check a plan of `tools/make_arenas.py` (COVER_K5) without touching arenas/.
+
+    python3 tests/cover/k5_check.py PLAN OUT_DIR      (PLAN: none | a | b)
+
+Regenerates every map twice in OUT_DIR (COVER_K5=none: the maps without K5; COVER_K5=PLAN) and checks PLAN against none:
+- none: nothing to compare (it only proves the generator runs);
+- a / b: only the plan's maps (and their dry twins) change, only in `props`, and only barricades come in (a swap takes
+  out exactly the named wreck / container and its mirror); every added run, grown by add_runs_proposal.CLEAR_M, touches
+  nothing that collides and no terrain (a swap's barricade sits where the clutter stood); a shipping map keeps its shape
+  (add_runs_proposal.keeps_shape: lane widths, arena_room's ambush / chokepoint / room reads); a dry twin keeps
+  its lane widths; a map in COVER_K5_CLEAR_APPROACHES keeps every run off its base->depot roads (R37.35).
+Prints one line per changed map; exit 1 on any failure.
+"""
+import ast, json, os, shutil, subprocess, sys
+from collections import Counter
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import add_runs_proposal as runs  # noqa: E402
+
+## The applied plan keeps what the arena tests pin (lane widths, the ambush read); room and chokepoint counts may move.
+runs.KEEP = "lanes"
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def tables():
+    """COVER_K5_SWAPS / _RUNS / _A_RUNS read from the generator's source (importing it would run it)."""
+    out = {}
+    for node in ast.parse((ROOT / "tools" / "make_arenas.py").read_text()).body:
+        if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name) \
+                and node.targets[0].id in ("COVER_K5_SWAPS", "COVER_K5_RUNS", "COVER_K5_A_RUNS",
+                                                    "COVER_K5_CLEAR_APPROACHES"):
+            out[node.targets[0].id] = ast.literal_eval(node.value)
+    return out
+
+
+def key(p):
+    return (p["type"], round(p["position"][0], 2), round(p["position"][1], 2))
+
+
+def generate(plan, out):
+    """arenas/ copied to `out` (for the keys authored beside the generator), regenerated there with COVER_K5=plan."""
+    if out.exists():
+        shutil.rmtree(out)
+    shutil.copytree(ROOT / "arenas", out)
+    env = dict(os.environ)
+    env["COVER_K5"] = plan
+    subprocess.run([sys.executable, str(ROOT / "tools" / "make_arenas.py"), str(out)], cwd=ROOT, env=env, check=True,
+                   stdout=subprocess.DEVNULL)
+
+
+def main():
+    plan, out = sys.argv[1], Path(sys.argv[2])
+    generate("none", out / "none")
+    generate(plan, out / plan) if plan != "none" else None
+    t = tables()
+    swaps = t["COVER_K5_SWAPS"] if plan == "a" else {}
+    with_runs = set(t["COVER_K5_RUNS"]) if plan == "b" else (set(t["COVER_K5_A_RUNS"]) if plan == "a" else set())
+    expected = set(swaps) | with_runs
+    failures = []
+    changed = []
+    for path in sorted((out / "none").glob("*.json")):
+        before, after = path.read_bytes(), (out / plan / path.name).read_bytes()
+        if before == after:
+            continue
+        name = path.stem
+        base = name[:-len("_dry")] if name.endswith("_dry") else name
+        changed.append(name)
+        if base not in expected:
+            failures.append(f"{name}: changed but not in plan {plan}")
+            continue
+        a, b = json.loads(before), json.loads(after)
+        if {k: v for k, v in a.items() if k != "props"} != {k: v for k, v in b.items() if k != "props"}:
+            failures.append(f"{name}: something besides props changed")
+        gone = Counter(map(key, a["props"])) - Counter(map(key, b["props"]))
+        came = Counter(map(key, b["props"])) - Counter(map(key, a["props"]))
+        want_gone = Counter()
+        for kind, x, z in swaps.get(base, []):
+            want_gone[(kind, float(x), float(z))] += 1
+            want_gone[(kind, float(-x), float(-z))] += 1
+        if gone != want_gone:
+            failures.append(f"{name}: removed {dict(gone)}, expected {dict(want_gone)}")
+        if any(k[0] != "barricade" for k in came):
+            failures.append(f"{name}: added something other than barricades: {dict(came)}")
+        n_runs = len(t["COVER_K5_RUNS"].get(base, [])) if base in with_runs else 0
+        if sum(came.values()) != 2 * len(swaps.get(base, [])) + 4 * n_runs:
+            failures.append(f"{name}: {sum(came.values())} barricades in, expected "
+                            f"{2 * len(swaps.get(base, [])) + 4 * n_runs}")
+        for x, z in (t["COVER_K5_RUNS"].get(base, []) if base in with_runs else []):
+            for centre in ((x, z), (-x, -z)):
+                if not runs.fits(a, centre, float(a.get("half_size", 120.0))):
+                    failures.append(f"{name}: the run at {centre} does not clear {runs.CLEAR_M} m")
+            if base in t.get("COVER_K5_CLEAR_APPROACHES", ()) and runs.on_approach(a, (x, z)) is not None:
+                failures.append(f"{name}: the run at ({x}, {z}) is {runs.on_approach(a, (x, z)):.1f} m from a "
+                                f"base->depot road (< {runs.APPROACH_CLEAR_M} m)")
+        if not a.get("fixture"):
+            changed_shape = runs.keeps_shape(runs.shape(a), runs.shape(b))
+            if changed_shape:
+                failures.append(f"{name}: the map's shape changed: {changed_shape}")
+        elif runs.lanes_narrowed(runs.shape(a)["lanes"], b):
+            failures.append(f"{name}: a lane got narrower (a dry twin's lanes are bounded by blocks, not water)")
+        print(f"k5 {plan}: {name}: -{sum(gone.values())} clutter, +{sum(came.values())} barricades")
+    if plan != "none":
+        for base in sorted(expected - {c[:-len('_dry')] if c.endswith('_dry') else c for c in changed}):
+            failures.append(f"{base}: in plan {plan} but unchanged")
+    for f in failures:
+        print("FAIL " + f)
+    print(f"k5 {plan}: {len(changed)} files changed, {len(failures)} failures")
+    sys.exit(1 if failures else 0)
+
+
+if __name__ == "__main__":
+    main()
