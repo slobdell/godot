@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""K5 (cover, round 37): check a prepared plan of `tools/make_arenas.py` (COVER_K5) without touching arenas/.
+"""K5 (cover, round 37): check a plan of `tools/make_arenas.py` (COVER_K5) without touching arenas/.
 
     python3 tests/cover/k5_check.py PLAN OUT_DIR      (PLAN: none | a | b)
 
-Copies arenas/ to OUT_DIR, regenerates there with COVER_K5=PLAN, and checks against arenas/:
-- none: every file byte-identical (the prepared code is inert);
+Regenerates every map twice in OUT_DIR (COVER_K5=none: the maps without K5; COVER_K5=PLAN) and checks PLAN against none:
+- none: nothing to compare (it only proves the generator runs);
 - a / b: only the plan's maps (and their dry twins) change, only in `props`, and only barricades come in (a swap takes
   out exactly the named wreck / container and its mirror); every added run, grown by add_runs_proposal.CLEAR_M, touches
   nothing that collides and no terrain (a swap's barricade sits where the clutter stood); every lane that passed R4
@@ -35,25 +35,29 @@ def key(p):
     return (p["type"], round(p["position"][0], 2), round(p["position"][1], 2))
 
 
-def main():
-    plan, out = sys.argv[1], Path(sys.argv[2])
+def generate(plan, out):
+    """arenas/ copied to `out` (for the keys authored beside the generator), regenerated there with COVER_K5=plan."""
     if out.exists():
         shutil.rmtree(out)
     shutil.copytree(ROOT / "arenas", out)
     env = dict(os.environ)
-    env.pop("COVER_K5", None)
-    if plan != "none":
-        env["COVER_K5"] = plan
+    env["COVER_K5"] = plan
     subprocess.run([sys.executable, str(ROOT / "tools" / "make_arenas.py"), str(out)], cwd=ROOT, env=env, check=True,
                    stdout=subprocess.DEVNULL)
+
+
+def main():
+    plan, out = sys.argv[1], Path(sys.argv[2])
+    generate("none", out / "none")
+    generate(plan, out / plan) if plan != "none" else None
     t = tables()
     swaps = t["COVER_K5_SWAPS"] if plan == "a" else {}
     with_runs = set(t["COVER_K5_RUNS"]) if plan == "b" else (set(t["COVER_K5_A_RUNS"]) if plan == "a" else set())
     expected = set(swaps) | with_runs
     failures = []
     changed = []
-    for path in sorted((ROOT / "arenas").glob("*.json")):
-        before, after = path.read_bytes(), (out / path.name).read_bytes()
+    for path in sorted((out / "none").glob("*.json")):
+        before, after = path.read_bytes(), (out / plan / path.name).read_bytes()
         if before == after:
             continue
         name = path.stem

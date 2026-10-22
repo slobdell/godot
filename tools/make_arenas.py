@@ -145,16 +145,17 @@ def wreck(x, z, rot=0):
 
 
 # ---- Round 37 (cover, K5; granted R37.7): low cover where the fighting is. PREPARED, NOT APPLIED. ----------------
-# `COVER_K5` picks the plan; None (the default) writes every map exactly as before. The lead chooses (a) or (b);
-# then this constant flips and `make arenas` regenerates (sim-baseline attributed with --cover-on OFF).
+# `COVER_K5` picks the plan; None writes every map exactly as before. APPLIED: the lead chose (b) on the five guard
+# maps, honest heights, no taller rubble (game_design.md, 2026-10-21); crossing skipped. It comes back out (None) if
+# the maps feel cluttered when he plays.
 #   "a" RE-SHAPE: a lone wreck / single container_20 in the hot fighting (and its mirror) becomes a barricade on the
 #       same spot; locks and parade have none near the fighting, so they take (b)'s runs (the guard maps must all get
 #       low cover, or Bar K reads a null there).
-#   "b" ADD: two mirrored 12 m runs (two barricades end to end) across each guard map's hottest streets, and crossing's.
+#   "b" ADD: two mirrored 12 m runs (two barricades end to end) across each guard map's hottest streets.
 # Sites from the drafts (tests/cover/reshape_proposal.py, add_runs_proposal.py; heat 5b4e79362, builder2, 4 fights a
 # map; every run keeps 5 m clear and every lane passing R4). `make cover-k5 PLAN=a|b` checks a plan in a scratch folder.
-# COVER_K5 env overrides the constant, for that check only.
-COVER_K5 = None
+# COVER_K5 env (a | b | none) overrides the constant, for that check only.
+COVER_K5 = "b"
 # (type, x, z) of one member of each mirrored pair; the barricade faces the base axis (a crew behind it faces the enemy).
 COVER_K5_SWAPS = {
     "terminus": [("wreck", 55, -56)],
@@ -172,14 +173,13 @@ COVER_K5_RUNS = {
     "sumps": [(-20, 80), (-40, 70)],
     "gorge": [(-62, 6), (-32, 26)],
     "parade": [(-44, -8), (-16, 22)],
-    "crossing": [(-16, 32), (-36, 32)],
 }
 COVER_K5_A_RUNS = ("locks", "parade")
 
 
 def cover_k5(name, props):
     """The authored half `props` with plan COVER_K5 applied to map `name` (its dry twin too). Unchanged when off."""
-    plan = os.environ.get("COVER_K5") or COVER_K5
+    plan = {"none": None}.get(os.environ.get("COVER_K5"), os.environ.get("COVER_K5") or COVER_K5)
     if plan is None:
         return props
     assert plan in ("a", "b"), "COVER_K5 is a or b"

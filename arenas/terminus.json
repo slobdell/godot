@@ -450,6 +450,70 @@
    ],
    "rotation_deg": 0.0,
    "sign": "arena"
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -83.0,
+    -28.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    83.0,
+    28.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -77.0,
+    -28.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    77.0,
+    28.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -65.0,
+    28.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    65.0,
+    -28.0
+   ],
+   "rotation_deg": 180.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    -59.0,
+    28.0
+   ],
+   "rotation_deg": 0.0
+  },
+  {
+   "type": "barricade",
+   "position": [
+    59.0,
+    -28.0
+   ],
+   "rotation_deg": 180.0
   }
  ],
  "spawns": {
