@@ -59,6 +59,25 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Update 2026-10-22 ~04:40 PDT: R37.35 re-pins, guard chunking (GREEN 4238fb859, builder2 3036/0)
+
+**For merge (orchestrator, alone; cover then merges main): stream/native 4238fb859**, check exited 0 on builder2, 3036 passed 0 failed.
+- **R37.35 re-pins** (d9fde0b33; no logic change). Cover's K5 barricade runs broke six staged twins.
+  - Terminus hold x4: TrafficHoldCase.HEAD_STAGE puts the west street at z 55 -> -60 (it was 75 -> -55). It's passed through
+    manoeuvre's `TrafficStage.run(..., stage_override)` seam (stream/manoeuvre 3891cbabd, cherry-picked here as is), and
+    `TrafficTwin.run`'s new `stage` parameter.
+  - Sumps yield plain and owned: SUMPS_CENTRE moves to (-30, 46).
+  - Picked from sweeps on builder0's light lane: 4 hold poses and 23 Sumps centres, each run on both arena sets.
+  - Real files: traffic_hold x4 + test_native_yield 17/0 on main's arenas and 17/0 on stream/cover 3923ba026's (its terminus and
+    sumps match c02b01d83's), 0 mismatches. At the spot by crew half: 638/467 on main, 771/219 on K5 (floor 30).
+    Sumps spot:hold 3, spot:back 2 on both.
+- **guard.sh** (39cb1e94b): runs GUARD_CHUNK seeds a remote call (default 2: 40 fights at 20 at once, half the tail idle).
+  Resume and 255-retry still work per seed.
+  - Verified on builder2: blob gorge seeds 2601+2602 in one call match the 9d325e291 base read, 4/4 fights; a re-run skips
+    both seeds.
+  - `run.sh` passes SCORE_JOBS=14 on builder2 (the orchestrator's machine note).
+- Side worktree to remove at close: ../godot-native-k5 (detached 3923ba026 plus scratch overlay).
+
 ### Report (round 37 worker, 2026-10-21 ~13:00 PDT)
 
 **MERGED (orchestrator):** CP37.1 (d9545d381 + 84c11a60d); the stream hand-over 6c9bc7239 + 14c10d1d4 (main 36a19ae30);
