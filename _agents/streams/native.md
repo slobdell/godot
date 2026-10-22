@@ -76,8 +76,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   `_member_ways`) and doctrine D2 (not yet written; aimed at element_commander/posture/element_plan) touch nothing native/src
   reads, so no twin is needed. **M5b (reverse-back) is the one to watch:** if it changes Manoeuvre.choose/behind/simulate, the
   native mirror (drive_native.cpp `manoeuvre_decide` / `man_choose` / `man_behind` / `man_simulate`, round 33 N5.M; twin
-  test_native_manoeuvre.gd) must follow before its series. Manoeuvre was told (they had thought choose() was a callback). Spec
-  pending their trace (lab/manoeuvre-r38-m5btrace 6d43ce7eb).
+  test_native_manoeuvre.gd) must follow before its series. Manoeuvre was told (they had thought choose() was a callback).
+  **Closed:** manoeuvre isn't building M5b. Their trace (builder0 native, c16c4a0b6, jam 3 maps x 8 seeds, 24 fights): 107 of
+  1,166 seated give-ways turned round, 72 of them the scout's kept turn-in, and choose() ran for only 16 returns. No twin.
+  N2 has no pending pair. It reopens if doctrine's D2 moves into a mirrored path.
 - **N5:** a row per main the round ships.
 
 **Side worktrees to remove at close:** ../godot-native-guard, -score, -k5 (and round 37's: -m5, -unstick, -cp371,
