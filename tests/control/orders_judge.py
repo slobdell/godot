@@ -2,9 +2,10 @@
 """Round 37 (orders): the judged probe read against the bars in the brief's Status (O1, O2, O3).
 
     python3 tests/control/orders_judge.py o1 rows.jsonl BASE_ARM NEW_ARM [census_base.jsonl census_new.jsonl]
-    python3 tests/control/orders_judge.py o1fight rows.jsonl BASE_ARM NEW_ARM
+    python3 tests/control/orders_judge.py o1fight rows.jsonl BASE_ARM NEW_ARM [runs.jsonl]
     python3 tests/control/orders_judge.py o2 rows.jsonl BASE_ARM NEW_ARM
     python3 tests/control/orders_judge.py o3 rows.jsonl BASE_ARM NEW_ARM runs.jsonl
+    python3 tests/control/orders_judge.py o5 BASE_DIR NEW_DIR   (seat-yield-census folders of *.log)
 
 Probe guards (each cell, medians over seeds; R36.6's): all-in (the cell run's last squad arrival) <= base x 1.2 + 3 s and
 no more never-in seeds; twitch worst <= base + 3 m; end foreign min >= base - 3 m; crossed no higher. Fight guards
@@ -96,7 +97,51 @@ def total(rows, arm, field, pred=None):
     return sum(r.get(field, 0) for r in rows if r["arm"] == arm and r.get(field, -1) >= 0 and (pred is None or pred(r)))
 
 
+def census_rows(folder):
+    import glob
+    import os
+    out = []
+    for path in sorted(glob.glob(os.path.join(folder, "*.log"))):
+        with open(path) as f:
+            for line in f:
+                if line.startswith("SEAT_YIELD_CENSUS "):
+                    out.append(json.loads(line.split(" ", 1)[1]))
+    return out
+
+
+def judge_o5(base_dir, new_dir):
+    # The O5 bar (R37.5): counter seats_aside > 0; deciding CPU screen give-ways arm <= 50 % of base; reported seat give-way
+    # deaths (arm <= base + 1.645 sqrt(base)); guards deaths a fight per team within base +/- 1.645 se (base sd, n fights).
+    b, n = census_rows(base_dir), census_rows(new_dir)
+    lines = []
+    aside = sum(r.get("seats_aside", 0) for r in n)
+    lines.append("%s counter: seats_aside %d" % ("PASS" if aside > 0 else "FAIL", aside))
+    scr = lambda rows: sum(int(r["by_verb"].get("cpu:screen", {}).get("episodes", 0)) for r in rows)
+    dth = lambda rows: sum(int(v.get("deaths", 0)) for r in rows for v in r["by_verb"].values())
+    bs, ns = scr(b), scr(n)
+    dec = ns <= 0.5 * bs
+    lines.append("%s deciding: CPU screen give-ways %d -> %d (<= %.1f); fights %d/%d" % (
+        "PASS" if dec else "FAIL", bs, ns, 0.5 * bs, len(b), len(n)))
+    bd, nd = dth(b), dth(n)
+    lines.append("  reported: deaths in seat give-ways %d -> %d (noise line <= %.1f: %s)" % (
+        bd, nd, bd + 1.645 * math.sqrt(bd), "within" if nd <= bd + 1.645 * math.sqrt(bd) else "ABOVE"))
+    ok = aside > 0 and dec
+    for team in ("0", "1"):
+        bt = [float(r.get("deaths_by_team", {}).get(team, 0)) for r in b]
+        nt = [float(r.get("deaths_by_team", {}).get(team, 0)) for r in n]
+        se = st.stdev(bt) / math.sqrt(len(bt)) if len(bt) > 1 else float("inf")
+        passed = bool(nt) and abs(st.mean(nt) - st.mean(bt)) <= 1.645 * se
+        ok = ok and passed
+        lines.append("  %s guard team %s deaths a fight base %.2f arm %.2f (se %.2f, n %d/%d)" % (
+            "PASS" if passed else "FAIL", team, st.mean(bt), st.mean(nt) if nt else float("nan"), se, len(bt), len(nt)))
+    print("\n".join(lines))
+    print("VERDICT o5: %s" % ("PASS" if ok else "FAIL"))
+
+
 def main(argv):
+    if argv[0] == "o5":
+        judge_o5(argv[1], argv[2])
+        return
     mode, rows_path, base, new = argv[:4]
     rows = load(rows_path)
     lines = []
@@ -132,6 +177,8 @@ def main(argv):
                     dict(sorted(__import__("collections").Counter(str(r.get("outcome")) for r in cb).items())),
                     dict(sorted(__import__("collections").Counter(str(r.get("outcome")) for r in cn).items()))))
                 ok = ok and c1 and c2
+        elif len(argv) >= 5:  # o1fight: the O1 addendum's per-fight guards
+            ok = fight_guards(load(argv[4]), base, new, lines) and ok
     elif mode == "o2":
         # R37.13's final bar: off_idle_s a fight (unpaired: fights diverge), arm <= 50 % of base and the drop > 1.645 se.
         def per_fight(arm):
