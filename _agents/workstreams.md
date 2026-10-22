@@ -629,6 +629,10 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   `--halt-terrain=centre` keeps round 36's); GDScript only (no native reader). Hand-over = stream/orders f8bf6aaad (latch ON; O2/O3/O5/
   O6/O7 code OFF), its builder0 full check queued; moved sim-baseline maps are attributed with `--halt-terrain=centre` (must read
   unmoved). O2's re-deal source recorded as a hypothesis (the halt re-planned when a pulled-back crew returns), untraced.
+- **R37.41 (2026-10-22) SHIPPED ON: M1 sidestand.** main da3193cf5 merges stream/manoeuvre 775c009fe alone: builder2 `make native check
+  exited 0`, 3036/0, sim-baseline 13/13 unmoved (game code byte-identical to the judged 339d3f2e2) + the h1b bank re-pin (6eda892a4).
+  merge_check_needed says CHECK (native's re-pins not in manoeuvre's tree): ONE builder2 `make native check` on da3193cf5 queued.
+  Cover may merge main for its hand-over once it's green.
 - **R37.36 (2026-10-22) SHIPPED ON: his feedback picks.** main ac8cb7d92 merges stream/feedback 4c8946fd1 alone: builder0 `make check
   exited 0`, 3030 passed / 0 failed, sim-baseline 13/13 unmoved; perf-judge NOT JUDGED (busy). His picks ON by default (hit C ring
   segment, blended; pinned A chevrons; repair A beam; cone C shimmer); losing looks deleted; `marks` (radar ring, card words) OFF. His
