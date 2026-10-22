@@ -188,6 +188,18 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   arm's per-fight sd, n 36); the CPU's losses likewise. **A pass ships ON** (`--parked-hold=off` keeps today's), his crews only.
   Laptop mechanism read (crossing 3 s3621, one fight): own-option leaves 3 -> 1, worst crew off 44.6 -> 19.9 m; test_control_parked_hold 3/0.
 
+- **Bar O1-LATCH (orders, R37.17; re-filed in stream/orders 849fced87 Status before any latch number; replaces the anchor arm).**
+  The traces (builder0 light, native, 52c15e0e1, n 1 each; `references/round37/orders/o1-traces-builder0-52c15e0e1/`, edec107e0):
+  **locks 5 route s3703** under ANCHOR: three crews park, the fourth is held behind a neighbour whose halt differs, and 5 s later the
+  squad re-deals its seats: a parked crew drives 18 m south to the unreached seat (the twitch); under LATCH (the halt shape latched
+  per arrival) tick for tick identical to main, nobody moves again. **parade s3704** (CPU v CPU census): contacts of arrived elements
+  44 / 44 / 45 (main / anchor / latch); the excess is moving elements' drills (react_to_contact 31 -> 98, assault_through 17 -> 91;
+  the CPU's "Eyes" screen re-laid back and forth) in a longer fight (last contact 65 / 92 / 105 s; per fight-second 2.1 / 3.2 / 2.3;
+  totals 136 / 298 / 238): the halt read changes the fight's course. **Arms:** `main:` v `latch:`. **Workloads, FRESH seeds:** the
+  no-fight probe 3761-3772 + census 3761-3766 (Bar O1's deciding and guards unchanged; the contacts line kept as filed, with
+  arrived-element contacts and contacts per fight-second REPORTED beside it) and the fight read 3773-3784 (the R37.9 addendum's
+  deciding and guards; replaces 3731-3742). **Ships only if all three pass.**
+
 - **Bar O2 PARKED_HOLD, FINAL (orders, R37.13; filed in stream/orders 052f30eea Status before any judged number; replaces the
   8dc98b5f4 text above; code ef6b17ea9 + probe f4437d26a, OFF).** What he would see: a squad he parked stays where he put it and
   shoots from there; a crew that is pushed, drifts or pulls back drives all the way back onto its spot. **Sizing (seen):** builder0
