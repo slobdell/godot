@@ -61,15 +61,17 @@ const STAGES := {
 
 
 ## `on_tick` (optional): called every tick after the step with (lab, ticks since the order) — the clip's camera.
+## `stage_override` (optional, R37.35): a whole stage dictionary used instead of STAGES[arena][kind] (native's twins re-pin
+## terminus "head" off cover's K5 barricade runs with it; every caller here passes none).
 static func run(case: TestCase, seed_value: int, arena: String, kind: String, which: String, seconds: float,
-		side := "green", trace := false, on_tick := Callable()) -> Dictionary:
+		side := "green", trace := false, on_tick := Callable(), stage_override := {}) -> Dictionary:
 	Traffic.reset_counters()
 	Traffic.log_waits = trace
 	var lab := TacticsLab.create(case, seed_value, arena)
 	var game_match := lab.game_match
 	var team := Match.Team.GREEN if side == "green" else Match.Team.RUST
 	game_match.set_meta("player_team", team)
-	var stage: Dictionary = STAGES[arena][kind]
+	var stage: Dictionary = stage_override if not stage_override.is_empty() else STAGES[arena][kind]
 	var jitter := RandomNumberGenerator.new()
 	jitter.seed = seed_value
 	var squads := ["a", "b"] if which == "both" else [which.trim_prefix("solo_")]
