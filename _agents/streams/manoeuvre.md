@@ -48,6 +48,18 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Start (worker, 2026-10-22):** stream/manoeuvre = main 5b20bfd62 (round 38's launch; HANDOFF: GREEN, all judged, builder0), so no
 baseline check (contract 1).
 
+**Now (2026-10-22 ~08:50):**
+- M1: lab trees built on today's main (clean merge): BASE `lab/manoeuvre-r38-m5` 226e4c190 (worktree `godot-manoeuvre-m5`), ON
+  `lab/manoeuvre-r38-m5on` 269d593c5 (`godot-manoeuvre-m5on`). Judge `m5_judge.py --v2` (b1c-) tried on round 37's rows: it runs.
+  Series driver `~/overnight-manoeuvre/r38/m5/m5v2_series.sh` under `systemd-run --user --unit=manoeuvre-m5v2` (builder0, J=6):
+  ON full check first, then jam 3 maps x 40 seeds x 2 arms, hull-rest 768 runs x 3 arms (ON, base, base GDScript = the floor).
+  Log `~/overnight-manoeuvre/r38/m5/series-summary.txt`. Expect ~10-12 h at J=6.
+- M2: return trace written (`lab/manoeuvre-r38-m5btrace`, worktree `godot-manoeuvre-trace`: a SEAT_RETURN row per seated
+  give-way: spot ahead/side/behind of the nose, turned > 90 deg or reversed, Manoeuvre's plan and refusal for the seat).
+- M7: trace written (`tests/manoeuvre/aside_trace.gd`, `make manoeuvre-aside-trace`): orders' seat-yield census + the asker's
+  ways. Reading the O5 code: `_aside` already reads EVERY other element's way, support_by_fire included, but a support_by_fire
+  task's `to` is its TARGET (the enemy), not its seat, so the "way" it tests is centre -> enemy. The trace checks that.
+
 **Plan (in order; smallest foundation first):**
 1. **M1 (M5 v2):** Bar M5 v2 filed below BEFORE any number. Lab trees on today's main: `lab/manoeuvre-r38-m5` (stream + M5a's
    rule from `lab/manoeuvre-r37-m5` + native's `pair/native-m5` 156d563d9, seatstep OFF) and `lab/manoeuvre-r38-m5on` (seatstep
