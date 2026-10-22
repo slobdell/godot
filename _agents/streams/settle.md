@@ -82,6 +82,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   identical but the blue squad (bottom), which with the fit stands strung along the east-west street below the blocks
   instead of a north-south clump between them; no hull in a block either way. Frames: ~/settle-keep/shots/.
 
+- **e42ff30eb is GREEN (the orchestrator's ruling, R38.1's rule):** builder2 `make native check exited 2`, 24 passed / 1
+  FAILED / 0 NOT RUN / 2 NOT JUDGED (perf-judge: builder2 not a judging machine; scenario_perf: loaded, ref 4.74x); the one
+  fail was web-match-smoke's load timing ("first sound 30.6 s after READY (bound 30 s)", load ~30, page 2 fps); re-run
+  alone on the same hash: builder2 `make web-smoke exited 0` ("first sound 17.3 s after READY (bound 30 s)", WEB MATCH
+  SMOKE PASSED). The diff cannot reach audio or the web path. S1+S2's series runs on it (builder2, J 14).
+
+- **Orders' G1 case (his click, terminus 3 squads s3801, `--group-lay=column`; laptop GDScript, orders 6d72c4dff + this
+  branch merged in a scratch worktree, n 1):** squad 2's 11.4 m twitch is a deployed halt flipping herringbone -> coil at
+  t=9.4 (terrain read after the deploy), every crew re-dealt 16-20 m. With fit + latch: one deal, herringbone, twitch 0.0 m
+  (squad 1 place 27.8 -> 14.6 m). Told orders.
+
 ### Plan (ordered; smallest foundation first)
 1. S1 + S2 (one series, one base): bars (filed below) -> quick-remote -> one builder0 full check on the named hash -> `make native settle-series` -> verdict;
    a pass flips DEPLOY_FIT ON (symmetric, his and the CPU's) on a new hash with its own full check.
@@ -155,6 +166,13 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   parked re-deals o2 <= held x 1.1 + 3 (R37.28's "no higher beyond noise", now against the settled halt). Counter:
   parked_returns > 0. Guards: the kills / losses lines v held. A pass ships O2 ON with latch v2 and the hold (his crews only:
   PARKED_HOLD is player-only), the seam in tank_brain.gd unchanged (orders' code; merge note to doctrine).
+
+### Re-filed before any fight number (2026-10-22): the fight workloads
+The fight probe runs only the 3-squad army: every 5-squad fight run of the S1+S2 series (e42ff30eb, builder2) stopped at
+start ("no RtsControls (TacticalMap)", 54 of 108). Orders' own fight bars used 3 squads only; mine was mis-filed. Re-filed
+BEFORE reading any fight number: Bar S1 / S2's fight read = locks/crossing/terminus x 3 squads x click x seeds 3873-3884 (36
+fights an arm; 3873-3878 already ran, 3879-3884 run as a top-up on the same hash, the two halves read together); Bar H / S3
+= the same 3 cells x 3891-3902 (36 fights an arm). The no-fight probe and the census are read as filed.
 
 ### Questions for the lead
 None.

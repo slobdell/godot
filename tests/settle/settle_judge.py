@@ -24,6 +24,12 @@ import orders_judge as oj  # noqa: E402
 LONG_M = 25.0
 
 
+def runs_of(path):
+    """A probe's run lines, without the error lines a run that never started prints (counted)."""
+    rows = oj.load(path)
+    return [r for r in rows if "arm" in r], sum(1 for r in rows if "arm" not in r)
+
+
 def moved(row):
     return max(row["place_m"], 0.0) + max(row["twitch_m"], 0.0)
 
@@ -100,7 +106,7 @@ def guards(rows, frows, fc, fb, fn, probe, fight, census_b, census_n, base, new,
         "PASS" if shape_ok else "FAIL", shapes, len(common), dict(Counter(first(b[c]) for c in common)),
         dict(Counter(first(n[c]) for c in common))))
     ok = ok and shape_ok
-    runs = oj.load(os.path.join(probe, "runs.jsonl"))
+    runs, _ = runs_of(os.path.join(probe, "runs.jsonl"))
     for key in ("friend_contacts", "friend_contacts_foreign"):
         cb = sum(r.get(key, 0) for r in runs if r["arm"] == base)
         cn = sum(r.get(key, 0) for r in runs if r["arm"] == new)
@@ -109,7 +115,10 @@ def guards(rows, frows, fc, fb, fn, probe, fight, census_b, census_n, base, new,
         lines.append("%s guard %s %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", key, cb, cn, cb * 1.1 + 5))
     for key in ("relays", "shape_flips", "parked_redeals", "redealt"):
         lines.append("  reported %s %d -> %d" % (key, oj.total(rows, base, key), oj.total(rows, new, key)))
-    ok = oj.fight_guards(oj.load(os.path.join(fight, "runs.jsonl")), base, new, lines) and ok
+    fruns, ferr = runs_of(os.path.join(fight, "runs.jsonl"))
+    if ferr:
+        lines.append("  fight probe: %d run lines without an arm (runs that never started) left out" % ferr)
+    ok = oj.fight_guards(fruns, base, new, lines) and ok
     lines.append("  reported fight probe: squads >= %.0f m %d -> %d, parked re-deals %d -> %d (%d squads)" % (
         LONG_M, sum(1 for c in fc if moved(fb[c]) >= LONG_M), sum(1 for c in fc if moved(fn[c]) >= LONG_M),
         oj.total(frows, base, "parked_redeals"), oj.total(frows, new, "parked_redeals"), len(fc)))
@@ -144,7 +153,7 @@ def s3(argv):
     import statistics as st
     fight, latch, held, o2 = argv
     rows = oj.load(os.path.join(fight, "rows.jsonl"))
-    runs = oj.load(os.path.join(fight, "runs.jsonl"))
+    runs, _ = runs_of(os.path.join(fight, "runs.jsonl"))
     lines = []
     # Bar H: held v latch.
     rl, rh = per_fight(rows, latch, "parked_redeals"), per_fight(rows, held, "parked_redeals")
