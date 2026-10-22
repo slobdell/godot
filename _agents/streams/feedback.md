@@ -49,6 +49,14 @@ F1's page when it exists (the orchestrator relays).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-22 ~16:30, stretch (item 4): his picks in real fights at the laptop preset.** `make remote T=feedback-fight`, builder0,
+Terminus, gangs v Law, seeds 5 and 7 (all four slots) on main-equivalent 7ce9c4660 (F3 ON), clips in ~/projects/godot-feedback-endkeep/
+fight-seed{5,7}/. Pinned chevrons, the Emitter's shimmer and the beams (incl. under fire) read at his pose. **One rough edge, fixed
+(the hit ring C):** on a Law APC the rear/side wedges reached ~1.5 hull lengths out (x1.7 span, 12 m cap) and pooled into a red smear
+that read as fire on the street; now x1.3 / 9 m (`FeedbackFx.SEGMENT_SPAN`, `SEGMENT_MAX_M`), re-filmed on seed 7 (fight-seed7-after/):
+the wedges sit under the wheels, side and rear still apart. quick-remote builder0 6/0 (test_feedback_fx). Not changed (noted for
+him): the under-fire beam is fainter by design; the end look waits on his pick.
+
 ## REPORT (2026-10-22 ~15:10)
 
 **Green hash to merge: 70667a554** — `make native check` on builder2 exited 0: 3076 passed / 0 failed, 25 targets passed, 2 NOT
