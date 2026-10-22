@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Round 38 (settle): the judge for S1's bar (_agents/streams/settle.md Status, filed before any number).
 
-    python3 tests/settle/settle_judge.py s1 PROBE_DIR FIGHT_DIR CENSUS_BASE.jsonl CENSUS_ARM.jsonl BASE_ARM NEW_ARM
+    python3 tests/settle/settle_judge.py s1|s2 PROBE_DIR FIGHT_DIR CENSUS_BASE.jsonl CENSUS_ARM.jsonl BASE_ARM NEW_ARM
+
+s1 = Bar S1 DEPLOY_FIT, s2 = Bar S2 DEPLOY_LATCH (the same guards; each its own counter and deciding lines).
 
 PROBE_DIR / FIGHT_DIR are orders-probe output folders (rows.jsonl, runs.jsonl, logs/). Prints PASS/FAIL per line and a
 final VERDICT line. The guards reuse orders' judge (tests/control/orders_judge.py) so the lines are the ones its bars read.
@@ -37,15 +39,23 @@ def turned(folder, arm):
     return n, total
 
 
-def s1(argv):
+def judge(mode, argv):
     probe, fight, census_b, census_n, base, new = argv
     lines = []
     rows = oj.load(os.path.join(probe, "rows.jsonl"))
     b, n = keyed(rows, base), keyed(rows, new)
     common = [k for k in b if k in n]
-    t, deploys = turned(probe, new)
     differ = any(json.dumps({k: v for k, v in b[c].items() if k != "arm"}, sort_keys=True)
                  != json.dumps({k: v for k, v in n[c].items() if k != "arm"}, sort_keys=True) for c in common)
+    frows = oj.load(os.path.join(fight, "rows.jsonl"))
+    fb, fn = keyed(frows, base), keyed(frows, new)
+    fc = [k for k in fb if k in fn]
+    ok = (s1_lines if mode == "s1" else s2_lines)(probe, b, n, common, differ, fb, fn, fc, base, new, lines)
+    return guards(rows, frows, fc, fb, fn, probe, fight, census_b, census_n, base, new, b, n, common, lines, ok)
+
+
+def s1_lines(probe, b, n, common, differ, fb, fn, fc, base, new, lines):
+    t, deploys = turned(probe, new)
     long_b = sum(1 for c in common if moved(b[c]) >= LONG_M)
     long_n = sum(1 for c in common if moved(n[c]) >= LONG_M)
     counter = t > 0 and differ
@@ -58,13 +68,33 @@ def s1(argv):
     lines.append("%s deciding: squads with a crew moved >= %.0f m after the deploy %d -> %d (<= %.1f; base >= 10: %s); "
                  "summed place+twitch %.1f -> %.1f m" % ("PASS" if dec else "FAIL", LONG_M, long_b, long_n, 0.5 * long_b,
                                                          workload, sum_b, sum_n))
-    ok = counter and dec
+    return counter and dec
+
+
+def s2_lines(probe, b, n, common, differ, fb, fn, fc, base, new, lines):
+    fl_b = sum(max(b[c]["shape_flips"], 0) for c in common)
+    fl_n = sum(max(n[c]["shape_flips"], 0) for c in common)
+    ff_b = sum(max(fb[c]["shape_flips"], 0) for c in fc)
+    ff_n = sum(max(fn[c]["shape_flips"], 0) for c in fc)
+    rs_b = sum(b[c].get("reseats", 0) for c in common)
+    rs_n = sum(n[c].get("reseats", 0) for c in common)
+    counter = differ and (fl_b + ff_b) >= 10
+    lines.append("%s counter: rows differ %s, base shape flips (no-fight + fight) %d (>= 10); squads %d + %d" % (
+        "PASS" if counter else "FAIL", differ, fl_b + ff_b, len(common), len(fc)))
+    dec = fl_n <= 0.25 * fl_b + 1 and ff_n <= 0.25 * ff_b + 1 and rs_n <= rs_b
+    lines.append("%s deciding: shape flips no-fight %d -> %d (<= %.1f), fight %d -> %d (<= %.1f); reseats %d -> %d (no more)" % (
+        "PASS" if dec else "FAIL", fl_b, fl_n, 0.25 * fl_b + 1, ff_b, ff_n, 0.25 * ff_b + 1, rs_b, rs_n))
+    return counter and dec
+
+
+def guards(rows, frows, fc, fb, fn, probe, fight, census_b, census_n, base, new, b, n, common, lines, ok):
     ok = oj.probe_guards(rows, base, new, lines, settle=True) and ok
-    shapes = sum(1 for c in common if b[c]["halt_shape"] != n[c]["halt_shape"])
-    shape_ok = shapes <= max(1, 0.02 * len(common))
-    lines.append("%s guard first shape: squads whose halt shape differs %d of %d (<= 2 %%); base %s | arm %s" % (
-        "PASS" if shape_ok else "FAIL", shapes, len(common), dict(Counter(b[c]["halt_shape"] for c in common)),
-        dict(Counter(n[c]["halt_shape"] for c in common))))
+    first = lambda r: (r.get("shapes") or [r["halt_shape"]])[0]
+    shapes = sum(1 for c in common if first(b[c]) != first(n[c]))
+    shape_ok = shapes <= max(1, 0.03 * len(common))
+    lines.append("%s guard first shape: squads whose first halt shape differs %d of %d (<= 3 %%); base %s | arm %s" % (
+        "PASS" if shape_ok else "FAIL", shapes, len(common), dict(Counter(first(b[c]) for c in common)),
+        dict(Counter(first(n[c]) for c in common))))
     ok = ok and shape_ok
     runs = oj.load(os.path.join(probe, "runs.jsonl"))
     for key in ("friend_contacts", "friend_contacts_foreign"):
@@ -76,9 +106,6 @@ def s1(argv):
     for key in ("relays", "shape_flips", "parked_redeals", "redealt"):
         lines.append("  reported %s %d -> %d" % (key, oj.total(rows, base, key), oj.total(rows, new, key)))
     ok = oj.fight_guards(oj.load(os.path.join(fight, "runs.jsonl")), base, new, lines) and ok
-    frows = oj.load(os.path.join(fight, "rows.jsonl"))
-    fb, fn = keyed(frows, base), keyed(frows, new)
-    fc = [k for k in fb if k in fn]
     lines.append("  reported fight probe: squads >= %.0f m %d -> %d, parked re-deals %d -> %d (%d squads)" % (
         LONG_M, sum(1 for c in fc if moved(fb[c]) >= LONG_M), sum(1 for c in fc if moved(fn[c]) >= LONG_M),
         oj.total(frows, base, "parked_redeals"), oj.total(frows, new, "parked_redeals"), len(fc)))
@@ -94,13 +121,13 @@ def s1(argv):
     lines.append("  outcomes base %s | arm %s" % (dict(sorted(Counter(str(r.get("outcome")) for r in cb).items())),
                                                  dict(sorted(Counter(str(r.get("outcome")) for r in cn).items()))))
     ok = ok and c1 and c2 and len(cb) > 0 and len(cn) > 0
-    lines.append("VERDICT %s" % ("PASS" if ok else "FAIL"))
+    lines.append("VERDICT %s %s v %s" % ("PASS" if ok else "FAIL", new, base))
     print("\n".join(lines))
     return 0 if ok else 1
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or sys.argv[1] != "s1":
+    if len(sys.argv) < 2 or sys.argv[1] not in ("s1", "s2"):
         print(__doc__)
         sys.exit(2)
-    sys.exit(s1(sys.argv[2:]))
+    sys.exit(judge(sys.argv[1], sys.argv[2:]))

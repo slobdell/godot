@@ -74,7 +74,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   heading; the deal pays the grounded drive.
 
 ### Plan (ordered; smallest foundation first)
-1. S1: bar (filed below) -> quick-remote -> one builder0 full check on the named hash -> `make native settle-series` -> verdict;
+1. S1 + S2 (one series, one base): bars (filed below) -> quick-remote -> one builder0 full check on the named hash -> `make native settle-series` -> verdict;
    a pass flips DEPLOY_FIT ON (symmetric, his and the CPU's) on a new hash with its own full check.
 2. S2 latch v2: lab of test_tactics_scenarios_2's geometry first (must form herringbone); arm = the deploy latches the
    terrain its shape was decided on (at all-in) inside the deploy state (element_plan, mine: no element.gd edit); bar with the
@@ -100,6 +100,20 @@ not touched); friend_contacts and friend_contacts_foreign summed <= base x 1.1 +
 losses a fight each within base +/- 1.645 se (base sd, n 36); CPU: friendly contacts <= base x 1.1 + 5, stuck s <= base x
 1.2 + 10. **Reported:** relays, shape flips, parked re-deals, redealt; the fight probe's >= 25 m squads. **A pass ships ON**
 (symmetric); `--deploy-fit=off` keeps today's. sim-baseline maps that move are attributed with the switch OFF.
+
+### Bar S2 DEPLOY_LATCH (latch v2; filed 2026-10-22 before any judged number; code 44505a21c)
+What he would see: a squad he parked keeps one shape and its spots; it never opens into a ring that doesn't fit the lane it
+stopped in. **The change:** the deploy records the live terrain read at its all-in (or cap), where it decides the halt's
+shape, and every later update of that deployed halt plans with it (shape and spacing); before the deploy the live read
+stands (main's). Plain AUTO moves (the deploy step's scope), every side. Lab `tests/test_settle_deploy_latch.gd` 3/0 (R37.42's
+geometry: round-37 latch coil + 4 late orders, deploy latch herringbone + 0; creep lab: centre 2 flips, latched 0).
+**Arms:** `main:--deploy-trace` v `latch:--deploy-latch=on,--deploy-trace`, run in the SAME `make native settle-series` as
+S1 (one base for both arms, the same fresh seeds and workloads as Bar S1). **Counter:** rows differ and base shape flips
+(no-fight + fight probe) >= 10. **Deciding:** shape flips after the place window summed, no-fight probe arm <= 25 % of base
+(+1) AND fight probe arm <= 25 % of base (+1); reseats no more than base. **Guards:** Bar S1's, the first-shape line read on
+each squad's FIRST halt shape (the property latch v1 broke: differs from main's in <= 3 % of squads), plus the full check
+(test_tactics_scenarios_2 runs in it) on the hash. Note: the probe's `relays` read ElementSituation's terrain, which this arm
+does not change, so relays are reported, not judged. **A pass ships ON** (`--deploy-latch=off` keeps today's).
 
 ### Questions for the lead
 None.
