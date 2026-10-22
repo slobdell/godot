@@ -62,6 +62,15 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 _(each stream files its bar in its BRIEF's Status BEFORE its first number and messages the orchestrator, who copies it here; never
 edit this file on a stream branch. Rulings below as R38.x)_
 
+- **Bar F3 REPAIR_UNDER_FIRE (feedback, C38.4; filed in stream/feedback f0ad5a44d Status before any number).** Switch `--repair-under-fire`
+  (OFF; `Match.repair_under_fire_on`): a friendly FIELD mender (the gangs' Resupply Tanker) keeps mending a vehicle under fire at HALF
+  rate (2.5 hp/s), full after `REPAIR_QUIET_SECONDS`; the base's own mending still waits for quiet; a Tanker never mends itself.
+  **Run:** the CP37.1 guard set (blob + turtle, both sides, the same 320 fights) through `tests/feedback/repair_probe.gd` (extends
+  guard_line.gd read-only, adds mending counters), base v ON, paired, builder2. **Deciding:** hp mended by field menders per fight with
+  a gang side UP; a rise under ~25 % is a fail. **Guards:** (1) the blob line overall not beyond noise, no faction's blob or turtle rate
+  up beyond noise, the gangs must not start winning the blob line (paired, p >= 0.05); (2) kills and length per faction within noise
+  (median length up < 15 %); (3) perf (no new loop). **A pass ships ON** (his call).
+
 ## Rulings (round 38)
 
 _(none yet)_
