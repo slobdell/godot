@@ -312,6 +312,16 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   3055 passed / 0 failed, 23 passed + 4 NOT JUDGED, all load-only (builder2 load 48-66 on 32 CPUs): perf-judge (not a judging machine),
   ai-scenarios scenario_perf (loaded, ref 5.05x), quiet-window watch, web-smoke first-sound bound. sim-baseline 13/13 unmoved. Not yet
   judged for perf on builder0 (R38.8 keeps full checks off it). Feedback's merge e1f558d83 checks next on builder2.
+- **R38.14 (2026-10-22) D2 FAILS as filed (ships OFF); D2b on FRESH guard seeds with its own OFF arm.** doctrine (`--cpu-defend` on
+  acbdef4c5, green builder2 3063/0; builder2; 320 fights paired with 1c484a525): deciding blob 49 -> 44 % (-4.4, se 2.9 = 1.5 se; flips
+  15 to a loss, 8 to a win; McNemar p 0.105; the bar needs 2 se and p < 0.05); blob kr 0.86 -> 0.81. Guard turtle win 40 -> 42 % (+2.5,
+  se 4.4) ok; **guard FAIL turtle-line kills a fight 32.4 -> 26.2 (-3.8 paired se), every faction down > 2 se**: the CPU stops attacking a
+  turtle that sits within 100 m of the CPU's near ring. Pictures (laptop, locks 2602, 60 s): ON the CPU stands on its ring and the blob is
+  held at the barrier. D2b (eaf4c508f, OFF, posture.gd): only an enemy nearer the CPU's ring than any zone its own side owns counts.
+  **Ruled:** D2b was shaped by these 320 fights' turtle guard, so it is NOT judged on them (R37.17): fresh guard seeds never used by a
+  round-38 guard series, both arms (OFF and ON) on D2b's tree, 320 fights, Bar D2's text plus an explicit turtle-line kills-a-fight guard,
+  filed before numbers. builder2 after settle's S2 re-read and S1 v2; native's e1f558d83 row goes after D2b (its base seeds are the old ones
+  and it does not gate anything).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
