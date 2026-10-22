@@ -597,6 +597,16 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   squads into other streets (R37.29). Order: (1) the trace of s3767 / s3772 squad 4 (light lane); (2) the group-lay check and Bar O7's
   read; (3) latch re-read ON TOP of group-lay on fresh seeds if the trace says the twitch is the abreast layout. O2-on-latch is held
   (O2's re-deals come from elsewhere: trace them after O7).
+  **Trace (orders ea09f3b17, `references/round37/orders/o1latch-twitch-trace-builder0-c14ec0d80/README.md`):** the ~30 m slide is
+  neither the abreast lay nor latch's shape: it is the DEPLOY'S SEAT DEAL, on main too. Squad 4 (back rank, its own street, arrived
+  1.5 s): at the deploy, both arms and both seeds, the deal sends Delta_2 from the east end of its first halt (41.7, 90.1) to the far
+  west-front seat (3.3, 63.3), 47 m across its own squad. Latch only changes timing (the crew sits, waits ~4 s behind a squadmate, so the
+  same 47 m lands after the probe's 8 s PLACE_S cut and counts as twitch): s3767 main place 34.9 + twitch 22.8 = 57.7 v latch 8.9 + 35.7
+  = 44.6; s3772 40.3 v 44.5; the judged cell's median worst crew place+twitch 46.2 -> 44.8 (twitch alone 16.8 -> 28.0). **Ruled:** the
+  guard as filed failed and is not waived on these numbers (R37.17's rule). Orders re-files the guard as PLACE + TWITCH (the crew's
+  whole post-click travel), before numbers, and re-reads ONLY the no-fight probe on fresh seeds (the census and the fight read stand).
+  A pass ships latch ON. **(b) the deploy deal crossing its own squad** (a stopped tank drives 47 m to the far seat) is a real defect
+  he'd see, on main today: its own item, round 38 unless time remains.
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
