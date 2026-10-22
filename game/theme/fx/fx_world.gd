@@ -195,6 +195,8 @@ func _init() -> void:
 		add_child(RenderSplit.new())
 	if FeedbackShots.wanted():
 		add_child(FeedbackShots.new())
+	if FeedbackFight.wanted():
+		add_child(FeedbackFight.new())
 
 
 func _ready() -> void:

@@ -61,6 +61,17 @@ ElevenLabs until a `sounds/*` approval. Until his pick no look draws without the
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 **2026-10-21, F1 page up, picks pending.**
+- **Real-fight clips of the recommended looks** (orchestrator's ask, kept in the tree, not published):
+  `make remote T=feedback-fight` (FB_FIGHT_SEED=, FB_FIGHT_CLIPS=, FB_FLAGS=--feedback-fight-slots=repair) runs a
+  spectated CPU fight, gangs v Law, laptop preset, his pose, and films each slot's moment as it happens (hit: a crew
+  flanked 2+ times in 2 s; pinned: the most suppressed crew; repair: a Tanker mending; cone: an Emitter blowing).
+  The picked set: build/feedback-fight/recommended/ (README.txt says which seed each is from). Looked at: the flank
+  flares, the chevrons, the green beam and the violet footprint all read at his pose. quick-remote builder0 164/0.
+  Capture lessons: a skirmish without --cinematic sits in its planning pause; the spectator's CinematicCamera cuts
+  away mid-clip unless its process is paused; runs overwrite each other unless each seed has its own folder.
+- **Finding for the lead (repair):** in seeds 3 and 5 all three gang Tankers died within ~25 s of contact and no
+  mending ever ran (FEEDBACK_FIGHT_STATE: the one hurt friend in reach was still under fire; repair needs 3 s quiet).
+  Seeds 7 and 11 showed it. In a real fight his Tankers rarely get to mend: worth a rules question, not a look one.
 - **Nothing new shows by default** (d22d6867c, orchestrator's ask): with no `--feedback-look` every slot is OFF, and
   the stretch (radar ring, PINNED / REPAIRING on the card) sits behind `marks:a`. `FeedbackLook.RECOMMENDED` keeps my
   recommendation; once he picks, DEFAULTS becomes his pick. To try them all: `--feedback-look=hit:a,pinned:a,repair:a,cone:b,marks:a`.
