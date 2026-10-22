@@ -53,8 +53,18 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - The builder2 trial mode: `make perf-relative-trial`, which exits 3 by design.
   - The reader: `tools/judge/perf_relative.py <dirs>`.
   - test_perf_judge 13/0, test_perf_relative 2/0.
-  - **Left:** the record. Builder0 checks gather lines as they run; then builder2 trials on an Intel and an AMD start.
-    Switch only if the verdicts agree and per_ref's spread across the machines is narrow.
+  - **Builder2 trial, Intel start** (tree bed8b7596, builder2 "Intel(R) Xeon(R) CPU @ 2.20GHz", 2026-10-22 ~12:30 PDT, idle
+    box at load 0.3–0.8, `make perf-relative-trial`, n=5):
+    - ai_usec_per_tick 19978–21202: the absolute line (20000) flips, FAIL 4 / PASS 1.
+    - Reference ratio 2.51–2.54x builder0's nominal. Relative PASS 5 of 5, agreeing 1 of 5.
+    - usec per reference ms: median 9054 (8852–9303) v the line 25840.
+  - **Reading:** builder2's reference benchmark runs ~2.5x slower than builder0's, but its AI tick only ~1.6x. So
+    usec-per-reference-ms isn't machine-invariant. Older builder0 attempts in local build/ logs (no RELATIVE line, commits
+    unrecorded, so indicative only) work out to ~11000–16000 per reference ms under load, against builder2's idle ~9000.
+    On builder2 the relative line sits 2.85x above what it measures, so it would pass a 2x AI regression. **Not switching.**
+    The two verdicts disagree and per_ref's spread across machines is wide.
+  - **Left:** builder0 checks keep gathering RELATIVE lines (with their commit). A builder2 AMD start, if the box lands on one.
+    If the gap holds, a per-host calibrated line (FAIL_RATIO per cpu model) is the honest next option, not one shared ratio.
 - **N4 done** (595bb9208): guard.sh sends every seed it still needs in ONE call (GUARD_CHUNK=0), so xargs keeps 20 fights
   running across seeds.
   - Each call passes GUARD_RESUME=1: the remote build/guards/ is stamped (commit, kinds, args, seconds) and skips fights that
