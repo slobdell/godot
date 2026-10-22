@@ -463,6 +463,13 @@ alone (argued in the verdict). Workload: CP37.1's two guard lines, both factions
   First motion smoke (builder0 light, 2 fights, OFF blob line): blob 82 % of shots faster than a crawl, CPU 56 % (80-fight read
   running). **Ruled:** all three stay OFF on main (switches kept); the PACKAGE arm runs on builder2 AFTER M5a, as information for
   round 38 and for his playtest (deciding as Bar R; a pass would ship the package ON).
+- **R37.26 (2026-10-21) the CPU defender fires on the move too (rules' motion read).** builder0 light, 68bfd11c1 (all OFF), the OFF
+  blob line 5 maps x 2601-2608 x both sides = 80 fights (replays the base: blob 49 %): shots faster than a crawl (>= 0.15 top speed)
+  blob 70.1 % (se 2.4) of 42,998 direct rounds, CPU 55.5 % (se 2.3) of 60,841; fast (>= 0.5) 33 % v 18 %; by faction blob/CPU
+  Condemned 73/60, Gangs 72/59, Law 80/53, Syndicate 62/47. The CPU fires 41 % more rounds, over half on the move, so it pays most of
+  any motion tax back: consistent with R1-R3's near-null arms. **Round-38 candidate (the lead's):** a CPU defender that stops to
+  fire (doctrine in brains' paths), judged on the same guard lines; the rules stay as switches to re-read on top of it.
+  Tool: `make rules-guard-motion` (`tests/rules/guard_motion_probe.gd`).
 - **R37.6 (2026-10-21) a parked crew shoved by a friend's give-way is manoeuvre's M5.** manoeuvre (round 36's S4 trace,
   `references/round36/manoeuvre/s4/README.md` §3, builder0 light, 55c973cd4, the 16 looping squads, whole runs): of 172 give-ways,
   124 (72 %) had a yielder within 10 m of its own seat when asked, 44 of those sent to a spot >= 10 m from it (far spots lead the
