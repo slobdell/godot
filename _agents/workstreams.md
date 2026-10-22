@@ -194,6 +194,12 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   F3 series only). **Ruled:** a full check goes to whichever builder has none running (`REMOTE_HOST=slobdell@builder2
   tools/builder_checks.sh --wait-below 1`; `make gcp-start` first if stopped); builder0 keeps the probe series. Perf-judge's verdict
   still comes from builder0 (a merge batch's main check runs there).
+- **R38.3 (2026-10-22) M7 (O5 v2) not judged: its bar fails by construction.** manoeuvre (trace builder0 53159326e, 18 fights; dev
+  read same fights): v1's support_by_fire "way" ran centre -> the ENEMY; v2 (`--seat-aside=v2`, b5775051e, OFF) reads each travelling
+  crew's own line: screen -> support_by_fire give-ways 90 -> 72, but all CPU screen give-ways 480 -> 483; 48-50 % happen with the screen
+  crew >= 10 m off its seat (driving to/from it), which no seat choice reaches. **Ruled:** no series; round 39 re-files on SEATED
+  give-ways only, or treats the en-route half as traffic. Native: no twin for M7; M5b needs one if it changes `choose()` (drive_native
+  mirrors _manoeuvre/choose/behind/simulate since round 33).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
