@@ -639,6 +639,9 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   from the original without crossing water or a deck. Other g3 never-ins at the west bridge mouth (s4604, s4609). **Ruled:** v5 = a
   moved place must be reached from the original without a crossing (`crosses_on(ground)`, as G1) and never lands on a deck mouth; a
   dev read first, then a new bar on fresh seeds 5201-5212; if the round closes first it carries to round 39 with its bar.
+- **R38.46 (2026-10-23 ~09:20) main a34f05105 GREEN on builder2** (settle's 473966ff3, all OFF): `make native check exited 0`, 3108 passed /
+  0 failed, 25 passed + 2 NOT JUDGED (perf-judge, not a judging machine; scenario_perf loaded 4.61x), sim-baseline 13/13 unmoved. The
+  last judged perf line is e1f602fbf's (R38.38); everything merged since is OFF.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
