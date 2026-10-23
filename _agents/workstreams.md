@@ -668,6 +668,14 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   v 66 m; dev read 2 had 583); his 5-squad routes: main never gets 3 and 6 squads in, G2 gets all in (~55-59 s) at a cost of route-off
   887 -> 2,147 and 1,127 -> 2,063 m: the rear squads stand at the first waypoint's corner, ~20 m off the street the route runs down.
   **Round 39:** keep rear places on the route line at corners, then a bar.
+- **R38.48 (2026-10-23 ~10:35) D3 read: his round-37 rules change fight LENGTH, not results; doctrine at its end state; merged OFF.**
+  doctrine (c475c3163, builder2, guard seeds 4801-4808 + 4901-4908, 320 fights an arm, each paired with OFF; no arm moves a win rate by
+  2 se; no caps): **rules** (sight, spread, pin_slow) blob 47 -> 43 % (1.4 se); blob fights +7 s (3.5 se), law +18 s; turtle gangs/syndicate
+  fights 37-52 s shorter (~3 se). **hulldown** stops 0.85 (blob) / 1.24 (turtle) rounds a fight, 0-2 flips in 160 (as R37). **package**
+  blob 42 % (1.7 se, p 0.11), turtle 40 %. Stretch (CPU low-cover seats) not built (gate: 2 se or cover_struck >= 8 a fight; got ~1).
+  **For him (a feel call, not a results call):** R1-R3 make blob fights a little longer and turtle fights shorter without changing who
+  wins on the guard lines. Merged 5a9464679 (green builder2 3069/0); every switch OFF. Round 39: a powered SPLIT series; `make skirmish`
+  has no flag passthrough (play.mk's owner).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
