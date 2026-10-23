@@ -1,0 +1,1 @@
+>> settle-series on builder2 | commit e42ff30eb | native on | base 'main:--deploy-trace' arms 'fit:--deploy-fit=on,--deploy-trace latch:--deploy-latch=on,--deploy-trace'

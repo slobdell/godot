@@ -1,0 +1,9 @@
+crossing  3 route   n3 | main off     60 never 0 allin  15.5 tw   7.0 X 0 | g2 off    140 never 0 allin  17.2 tw   0.0 X 0
+crossing  5 route   n3 | main off    370 never 0 allin  36.4 tw  17.8 X 0 | g2 off    420 never 0 allin  22.4 tw   9.6 X 0
+locks     3 route   n3 | main off    340 never 0 allin  39.9 tw  17.2 X 0 | g2 off    150 never 0 allin  12.4 tw   3.7 X 0
+locks     5 route   n3 | main off    240 never 0 allin  22.2 tw   8.1 X 0 | g2 off    528 never 0 allin  23.3 tw  14.8 X 0
+terminus  3 route   n3 | main off    317 never 0 allin  16.6 tw  13.8 X 0 | g2 off    276 never 0 allin  14.4 tw   0.0 X 0
+terminus  5 route   n3 | main off   1078 never 0 allin  33.6 tw  17.1 X 0 | g2 off    400 never 0 allin  20.2 tw  12.6 X 0
+yard_open 3 route   n3 | main off      0 never 0 allin   7.1 tw   0.0 X 0 | g2 off      0 never 0 allin   8.4 tw   0.0 X 0
+yard_open 5 route   n3 | main off     89 never 0 allin   6.9 tw   2.6 X 0 | g2 off    102 never 0 allin   8.3 tw   6.6 X 0
+TOTAL route_off_m main 2493 g2 2016

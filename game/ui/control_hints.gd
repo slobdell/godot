@@ -87,7 +87,8 @@ func _input(event: InputEvent) -> void:
 
 
 func font_size() -> int:
-	return maxi(MIN_FONT, roundi(FONT_1080 * CyberStyle.ui_scale(get_viewport_rect().size)))
+	# Round 38 (F5): from the shorter side, so a portrait phone's hints fit beside its radar.
+	return maxi(MIN_FONT, roundi(FONT_1080 * HudLayout.bug_ui_scale(get_viewport_rect().size)))
 
 
 ## Where the hint column sits (empty when there's nothing to show).
@@ -100,7 +101,9 @@ func panel_rect() -> Rect2:
 	var line := px * 1.55
 	var width := minf(screen.x * 0.23, px * 22.0)
 	var height := line * ids.size() + px * 0.8
-	return Rect2(Vector2(px * 0.9, screen.y - height - px * 0.9), Vector2(width, height))
+	# Round 38 (F5): stacked on the score bug in the lower-left corner.
+	width = minf(width, HudLayout.bug_rect(screen).size.x)
+	return Rect2(Vector2(HudLayout.MARGIN, HudLayout.bug_top(screen) - HudLayout.GAP - height), Vector2(width, height))
 
 
 func _refresh() -> void:

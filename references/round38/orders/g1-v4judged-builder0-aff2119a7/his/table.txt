@@ -1,0 +1,44 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+terminus 3 click          column    |  100.8 /   50.4   |    0   0 |      4.0 |              12.4 |            31.7 | 1.44 | -40.0
+terminus 3 click          main      |   32.1 /   28.9   |    0   0 |      4.8 |               4.8 |            24.6 | 1.26 | -20.7
+terminus 5 click          column    |  105.1 /   68.8   |    0   0 |     11.8 |               6.3 |            27.9 | 2.25 | -69.9
+terminus 5 click          main      |   42.0 /   41.6   |    0   0 |     28.2 |               4.3 |            35.4 | 2.80 | -11.1
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+terminus 3 click          column    |          14.0 |          27.8 |            0.0 |              22.3 |         107.0
+terminus 3 click          main      |          14.8 |          10.2 |            2.3 |               6.2 |          38.8
+terminus 5 click          column    |          21.8 |          20.9 |           12.3 |               6.5 |         108.3
+terminus 5 click          main      |          38.2 |          29.0 |           13.8 |               4.5 |          62.6
+
+MEDIANS over seeds [4701, 4702, 4703, 4704, 4705, 4706, 4707, 4708, 4709, 4710, 4711, 4712] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+terminus 3 click          column      | 12 |          4.0 |     0 |          31.7 |          0.0 |         107.0 |              22.3 |    0   0 | 1.44
+terminus 3 click          main        | 12 |          4.8 |     0 |          24.6 |          2.3 |          38.8 |               6.2 |    0   0 | 1.26
+terminus 5 click          column      | 12 |         11.8 |     0 |          27.9 |         12.3 |         108.3 |               6.5 |    0   0 | 2.25
+terminus 5 click          main        | 12 |         28.2 |     0 |          35.4 |         13.8 |          62.6 |               4.5 |    0   0 | 2.80
+
+EQUALITY click cells: 0 identical across arms, 24 differ
+  DIFFER terminus 3 click seed 4701
+  DIFFER terminus 3 click seed 4702
+  DIFFER terminus 3 click seed 4703
+  DIFFER terminus 3 click seed 4704
+  DIFFER terminus 3 click seed 4705
+  DIFFER terminus 3 click seed 4706
+  DIFFER terminus 3 click seed 4707
+  DIFFER terminus 3 click seed 4708
+  DIFFER terminus 3 click seed 4709
+  DIFFER terminus 3 click seed 4710
+  DIFFER terminus 3 click seed 4711
+  DIFFER terminus 3 click seed 4712
+  DIFFER terminus 5 click seed 4701
+  DIFFER terminus 5 click seed 4702
+  DIFFER terminus 5 click seed 4703
+  DIFFER terminus 5 click seed 4704
+  DIFFER terminus 5 click seed 4705
+  DIFFER terminus 5 click seed 4706
+  DIFFER terminus 5 click seed 4707
+  DIFFER terminus 5 click seed 4708
+  DIFFER terminus 5 click seed 4709
+  DIFFER terminus 5 click seed 4710
+  DIFFER terminus 5 click seed 4711
+  DIFFER terminus 5 click seed 4712

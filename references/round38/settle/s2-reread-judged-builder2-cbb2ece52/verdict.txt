@@ -1,0 +1,29 @@
+PASS counter: rows differ True, base shape flips (no-fight + fight) 163 (>= 10); squads 576 + 108
+PASS deciding: shape flips no-fight 56 -> 0 (<= 15.0), fight 107 -> 0 (<= 27.8); reseats 133 -> 0 (no more)
+  FAIL guard never-in     terminus 5 route: 1 v 2
+FAIL probe guards (12 cells)
+FAIL guard first shape: squads whose first halt shape differs 18 of 576 (<= 3 %); base {'herringbone': 499, '': 9, 'coil': 68} | arm {'herringbone': 513, '': 8, 'coil': 55}
+PASS guard friend_contacts 13679 -> 13605 (<= 15051.9)
+PASS guard friend_contacts_foreign 7635 -> 7606 (<= 8403.5)
+  reported relays 154 -> 61
+  reported shape_flips 56 -> 0
+  reported parked_redeals 456 -> 447
+  reported redealt 71 -> 71
+  PASS guard his kills   base 5.22 arm 5.11 a fight (se 0.32, n 36/36)
+  PASS guard his losses  base 8.11 arm 8.22 a fight (se 0.34, n 36/36)
+  PASS guard CPU losses  base 5.28 arm 5.19 a fight (se 0.32, n 36/36)
+PASS fight guards
+  reported fight probe: squads >= 25 m 84 -> 83, parked re-deals 77 -> 72 (108 squads)
+PASS CPU guard friendly contacts 949 -> 949 (<= 1048.9), fights 9/9
+PASS CPU guard stuck s 1188.6 -> 1188.6 (<= 1436.3)
+  outcomes base {'None': 9} | arm {'None': 9}
+VERDICT FAIL latch v main
+5-squad fight read (--probe-budget=3000):
+  PASS guard his kills   base 9.58 arm 9.86 a fight (se 0.50, n 36/36)
+  PASS guard his losses  base 15.75 arm 15.86 a fight (se 0.82, n 36/36)
+  PASS guard CPU losses  base 9.72 arm 10.08 a fight (se 0.50, n 36/36)
+PASS fight guards
+PASS never-in (R38.10) fresh: main 9, latch 8 (latch <= main)
+PASS never-in (R38.10) pooled over both reads: main 15, latch 15 (latch <= main + 1)
+other FAIL lines: ["FAIL guard first shape: squads whose first halt shape differs 18 of 576 (<= 3 %); base {'herringbone': 499, '': 9, 'coil': 68} | arm {'herringbone': 513, '': 8, 'coil': 55}"]
+VERDICT FAIL latch v main (R38.10 re-read)

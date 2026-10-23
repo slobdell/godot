@@ -27,6 +27,11 @@ var _lab: TacticsLab
 func teardown() -> void:
 	SelectionSquads.GROUP_LAY = OS.get_cmdline_user_args().has("--group-lay=column")
 	SelectionSquads.CLEAR_AT_CLICK = not OS.get_cmdline_user_args().has("--group-clear=rank")
+	SelectionSquads.LEG_WIDTH_ALONG = OS.get_cmdline_user_args().has("--group-leg-width=along")
+	SelectionSquads.PLACE_CLEAR_NEAR = OS.get_cmdline_user_args().has("--place-clear-trigger=near")
+	SelectionSquads.RANK_SHIFT_HALF = OS.get_cmdline_user_args().has("--group-rank-shift=half")
+	SelectionSquads.GROUP_WHOLE_CLICK = OS.get_cmdline_user_args().has("--group-whole=click")
+	SelectionSquads.CLEAR_REACHED = OS.get_cmdline_user_args().has("--group-clear=reached")
 	if _lab != null:
 		_lab.dispose()
 	_lab = null
@@ -280,13 +285,89 @@ func test_g1_a_column_too_long_for_the_ground_squeezes_its_ranks() -> void:
 
 ## G3 (settle's S2 trace, R38.10, crossing 5 click s3866: two places 6.3 m apart): the place farther from the click steps
 ## back along the approach until its footprint is clear of the nearer one's.
-func test_g3_a_place_on_another_squads_halt_steps_back() -> void:
-	var blocks := [{"center": Vector3(0, 0, 80), "width": 40.0, "depth": 20.0}, {"center": Vector3(5, 0, 90), "width": 40.0, "depth": 20.0}]
-	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(5.5, 0, 3.0)]
+func test_g3_a_place_on_another_squads_halt_moves_aside() -> void:
+	# G3 dev read 1 (builder0, 42377862a, crossing 3 click s3801): main laid squads 2 and 3 2.8 m apart, herringbones.
+	var blocks := [{"center": Vector3(0, 0, 100), "width": 25.4, "depth": 54.8}, {"center": Vector3(60, 0, 0), "width": 25.4, "depth": 54.8}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
 	var out := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true)
-	assert_eq(out[0], places[0], "the place nearer the click stays")
-	assert_true(out[1].z - out[0].z >= 20.0 + SelectionSquads.GAP_M * 0.5 - 0.01, "the other steps back clear of it (%s)" % [out])
-	assert_true(absf(out[1].x - 5.5) < 0.01, "straight back along the approach (%s)" % [out])
+	assert_eq(out[0], places[0], "the squad with the longer drive keeps its place")
+	var need := 25.4
+	assert_true(out[1].distance_to(out[0]) >= need - 0.01, "the other clears its short side (%s)" % [out])
+	assert_true(out[1].distance_to(places[1]) <= need, "by about the shortfall, not a road length back (%s)" % [out])
+	assert_true(out[1].x > places[1].x and absf(out[1].z - places[1].z) < 0.01, "aside, toward its own vehicles (%s)" % [out])
+
+
+func test_g3_aside_blocked_it_steps_back_and_never_far() -> void:
+	var blocks := [{"center": Vector3(0, 0, 100), "width": 25.4, "depth": 54.8}, {"center": Vector3(5, 0, 90), "width": 25.4, "depth": 54.8}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
+	var street := func(p: Vector3) -> bool: return absf(p.x) < 6.0
+	var out := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), street)
+	assert_true(out[1].distance_to(out[0]) >= 25.4 - 0.01 and absf(out[1].x - 2.7) < 0.01,
+			"a street: straight back along the approach (%s)" % [out])
+	var walled := func(p: Vector3) -> bool: return p.distance_to(Vector3(2.7, 0, 0.5)) < 1.0
+	assert_eq(SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), walled), places,
+			"nowhere clear within PLACE_CLEAR_MAX_M: the place is kept")
+	assert_true(SelectionSquads.PLACE_CLEAR_MAX_M <= 40.0, "never a road length back (dev read 1 moved squads 60-90 m)")
+
+
+## G3 v5 (judged 9986a1cba, crossing 5 route s4603: v4 stepped squad 4's place across the river, its crews crossed the
+## bridge and never got in). A moved place must be reached from where it was without a crossing (`crosses(from, to)`).
+func test_g3_a_moved_place_never_crosses_the_river() -> void:
+	var blocks := [{"center": Vector3(0, 0, 100), "width": 25.4, "depth": 54.8}, {"center": Vector3(5, 0, 90), "width": 25.4, "depth": 54.8}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
+	var street := func(p: Vector3) -> bool: return absf(p.x) < 6.0
+	var river := func(from: Vector3, to: Vector3) -> bool: return (from.z > 10.0) != (to.z > 10.0)
+	var v4 := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), street)
+	assert_true(v4[1].z > 10.0, "v4: straight back, over the river at z 10 (%s)" % [v4])
+	assert_eq(SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), street, river), places,
+			"v5: no clear way on this bank, so the place is kept")
+
+
+func test_g3_of_the_clear_ways_the_one_nearest_the_squad() -> void:
+	# G3 dev reads 3-4 (builder0, 527d62cd2): a squad moved aside away from its neighbour drove further and missed the
+	# probe's limit where main only just got in. Of the ways clear at a step, the one nearest the squad's own vehicles.
+	var blocks := [{"center": Vector3(0, 0, 80), "width": 25.4, "depth": 54.8}, {"center": Vector3(-40, 0, 20), "width": 25.4, "depth": 54.8}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
+	var out := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true)
+	assert_true(out[1].x < 0.0, "aside toward its own vehicles, past its neighbour's far side (%s)" % [out])
+	assert_true(out[1].distance_to(out[0]) >= 25.4 - 0.01, "clear (%s)" % [out])
+
+
+func test_g3_the_slowest_squad_keeps_its_place() -> void:
+	# R38.15's ruling: G3 never lengthens the trip of the squad that is already the slowest. Of two places too close,
+	# the squad with the shorter remaining drive yields, nearer the click or not.
+	var blocks := [{"center": Vector3(0, 0, 30), "width": 25.4, "depth": 54.8}, {"center": Vector3(0, 0, 150), "width": 25.4, "depth": 54.8}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
+	var out := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true)
+	assert_eq(out[1], places[1], "the far squad (150 m to drive) keeps its place")
+	assert_true(out[0] != places[0] and out[0].distance_to(out[1]) >= 25.4 - 0.01, "the near squad yields (%s)" % [out])
+
+
+## G3 v4 (judged a67afc951, his 5 click: g3 moved squad 3 off a place 15.6 m from squad 5's, not a pair the bar counts,
+## into the gap before squad 4; its seats landed 4 m from squad 5's 38 m-deep halt, which re-packed, twitch 13.8 -> 26.0 m).
+## `--place-clear-trigger=near`: only a pair closer than PLACE_CLEAR_TRIGGER_M moves; it still clears the short sides.
+func test_g3_near_trigger_moves_only_pairs_on_each_other() -> void:
+	var blocks := [{"center": Vector3(45, 0, 88), "width": 25.4, "depth": 28.0}, {"center": Vector3(2, 0, 88), "width": 20.4, "depth": 14.0}]
+	var his: Array[Vector3] = [Vector3(8, 0, 66.5), Vector3(-7.5, 0, 68.5)]
+	var any := func(_p: Vector3) -> bool: return true
+	SelectionSquads.PLACE_CLEAR_NEAR = false
+	assert_true(SelectionSquads.place_clear(his, blocks, Vector3(-29.3, 0, 85.8), Vector3(0, 0, -1), any) != his,
+			"v3: 15.6 m is inside the short sides' 19.7 m, so a place moves")
+	SelectionSquads.PLACE_CLEAR_NEAR = true
+	assert_eq(SelectionSquads.place_clear(his, blocks, Vector3(-29.3, 0, 85.8), Vector3(0, 0, -1), any), his,
+			"near: 15.6 m apart is no squad on another's halt; both kept")
+	var on_it: Array[Vector3] = [Vector3(8, 0, 66.5), Vector3(2, 0, 69.6)]  # settle's S2 case: 6.3 m apart
+	var out := SelectionSquads.place_clear(on_it, blocks, Vector3(-29.3, 0, 85.8), Vector3(0, 0, -1), any)
+	assert_eq(out[0], on_it[0], "the longer drive keeps its place")
+	assert_true(out[1].distance_to(out[0]) >= 19.7 - 0.01, "a pair on each other still clears the short sides (%s)" % [out])
+
+
+func test_g3_staggered_or_apart_places_are_kept() -> void:
+	var blocks := [{"center": Vector3(0, 0, 80), "width": 25.4, "depth": 54.8}, {"center": Vector3(5, 0, 90), "width": 25.4, "depth": 54.8}]
+	# dev read 1, crossing 3 click s3802 squads 1 / 2: 28 m apart, one behind the other (the old full-depth box moved one 46 m).
+	var staggered: Array[Vector3] = [Vector3(-96.4, 0, 31.6), Vector3(-101.3, 0, 59.1)]
+	assert_eq(SelectionSquads.place_clear(staggered, blocks, Vector3(-96.4, 0, 31.6), Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true),
+			staggered, "staggered 28 m: kept")
 	var apart: Array[Vector3] = [Vector3(-30, 0, 0), Vector3(30, 0, 0)]
 	assert_eq(SelectionSquads.place_clear(apart, blocks, Vector3.ZERO, Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true), apart,
 			"places already clear are kept")
@@ -301,3 +382,101 @@ func test_g1v3_a_rear_place_beside_containers_keeps_todays_body() -> void:
 	var today: Array[Vector3] = [Vector3(0, 0, 0), Vector3(40, 0, 34)]
 	assert_eq(SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), containers_behind, func(p: Vector3) -> Vector3: return p, today).size(), 0,
 			"inside the click's width: today's body stands")
+
+
+## G1 v4 (judged b55757fee, locks 3 click s3960: the click's clear width ran 13 m west and the canal road 100 m east; the
+## front rank stood all three abreast slid 39 m east, squad 3 79.5 m from the click, stuck behind squad 2's halt, never in).
+## `--group-rank-shift=half`: a rank slides at most half a place off the column's line; who does not fit stands a rank back.
+func test_g1v4_a_rank_slides_half_a_place_at_most() -> void:
+	var canal_road := func(p: Vector3, _across: Vector3) -> Array:
+		return [13.0, 100.0] if p.z < 5.0 else [10.0, 10.0]
+	var blocks := [{"center": Vector3(-28, 0, 96), "width": 25.4, "depth": 28.0}, {"center": Vector3(3, 0, 90), "width": 25.4, "depth": 28.0},
+			{"center": Vector3(31, 0, 88), "width": 25.4, "depth": 28.0}]
+	var today: Array[Vector3] = [Vector3(-37, 0, 3), Vector3(0, 0, 0), Vector3(34, 0, -3)]
+	var lay := func() -> Array[Vector3]:
+		return SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), canal_road, func(p: Vector3) -> Vector3: return p, today)
+	SelectionSquads.RANK_SHIFT_HALF = false
+	var v3: Array[Vector3] = lay.call()
+	var worst := 0.0
+	for p: Vector3 in v3:
+		worst = maxf(worst, p.length())
+	assert_true(worst > 70.0, "v3: the front rank slid down the canal road, one place ~79 m off (%s)" % [v3])
+	SelectionSquads.RANK_SHIFT_HALF = true
+	var v4: Array[Vector3] = lay.call()
+	assert_eq(v4.size(), 3, "a column is laid (%s)" % [v4])
+	for p: Vector3 in v4:
+		assert_true(absf(p.x) <= 25.4 * 0.5 + 0.01, "every place within half a place of the column's line (%s)" % [v4])
+		assert_true(p.z >= -0.01, "never past the click (%s)" % [v4])
+
+
+## G1 v5 (`--group-whole=click`): squads stay whole on a plain group click; a queued leg is dealt as today.
+func test_g1v5_squads_whole_on_his_click_only() -> void:
+	SelectionSquads.GROUP_LAY = true
+	SelectionSquads.GROUP_WHOLE_CLICK = false
+	assert_true(SelectionSquads.whole_on(false) and SelectionSquads.whole_on(true), "v3: whole on every group move")
+	SelectionSquads.GROUP_WHOLE_CLICK = true
+	assert_true(SelectionSquads.whole_on(false), "a plain click keeps every squad's own vehicles")
+	assert_true(not SelectionSquads.whole_on(true), "a queued leg is dealt as today")
+	SelectionSquads.GROUP_LAY = false
+	assert_true(not SelectionSquads.whole_on(false), "switch off: today's dealing")
+
+
+## G1 v4 (three-arm dev read 7bfb06384, yard_open 5 click s3806: the click's clear width read 36 m left, today's place
+## stood 39.3 m left on the same open yard, and a column was laid on open ground). `--group-clear=reached`: a place past
+## the click's width that the click reaches straight by ground is on the ground he clicked; one round a block is not.
+func test_g1v4_a_place_the_click_reaches_straight_keeps_todays_body() -> void:
+	var yard := func(_p: Vector3, _across: Vector3) -> Array: return [36.0, 100.0]
+	var blocks := [{"center": Vector3(-59, 0, 95), "width": 25.4, "depth": 28.0}, {"center": Vector3(3, 0, 88), "width": 20.4, "depth": 14.0},
+			{"center": Vector3(59, 0, 93), "width": 25.4, "depth": 28.0}]
+	var today: Array[Vector3] = [Vector3(-39.3, 0, -2.5), Vector3(0, 0, 0), Vector3(39.3, 0, 2.5)]
+	var lay := func(reached: Callable) -> Array[Vector3]:
+		return SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), yard, func(p: Vector3) -> Vector3: return p, today,
+				Callable(), reached)
+	var straight := func(_p: Vector3) -> bool: return true
+	var round_a_block := func(p: Vector3) -> bool: return p.x > -30.0
+	SelectionSquads.CLEAR_REACHED = false
+	assert_eq((lay.call(straight) as Array).size(), 3, "v3: 39.3 m past a 36 m width lays a column")
+	SelectionSquads.CLEAR_REACHED = true
+	assert_eq((lay.call(straight) as Array).size(), 0, "reached straight: today's body stands")
+	assert_eq((lay.call(round_a_block) as Array).size(), 3, "a place round a block is another street: a column")
+
+
+## G2 (dev, `--group-leg-width=along`; d2ed6ef10's finding: v3's click-width test kept today's spread body on route legs):
+## a shifted leg wide at its click but driven through a 16 m street keeps no spread body; the drive's narrowest width rules.
+func test_g2_a_leg_through_a_narrow_street_lays_the_column() -> void:
+	var street_on_the_way := func(p: Vector3, _across: Vector3) -> Array:
+		return [100.0, 100.0] if p.z < 10.0 or p.z > 90.0 else [8.0, 8.0]
+	var blocks := [{"center": Vector3(-20, 0, 100), "width": 29.0, "depth": 20.0}, {"center": Vector3(20, 0, 100), "width": 29.0, "depth": 20.0}]
+	var spread: Array[Vector3] = [Vector3(-20, 0, 0), Vector3(20, 0, 0)]
+	var narrow: Array[Vector3] = [Vector3(-4, 0, 0), Vector3(4, 0, 6)]
+	var drive := func() -> PackedVector3Array: return PackedVector3Array([Vector3.ZERO, Vector3(0, 0, 100)])
+	var lay := func(today: Array[Vector3]) -> Array[Vector3]:  # lambdas capture by value: the body is passed in
+		return SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), street_on_the_way, func(p: Vector3) -> Vector3: return p,
+				today, drive, Callable(), false, true)
+	SelectionSquads.LEG_WIDTH_ALONG = false
+	assert_eq(lay.call(spread).size(), 0, "switch off: wide at the click, today's spread body stands (v3)")
+	SelectionSquads.LEG_WIDTH_ALONG = true
+	assert_eq(lay.call(spread).size(), 2, "switch on: 40 m spread through a 16 m street lays the column")
+	assert_eq(lay.call(narrow).size(), 0, "a body that fits the street stands")
+	var plain := SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), street_on_the_way, func(p: Vector3) -> Vector3: return p,
+			[Vector3(-20, 0, 0), Vector3(20, 0, 0)] as Array[Vector3], drive)
+	assert_eq(plain.size(), 0, "a plain click (not a leg) is judged at its click only")
+
+
+## G2 (dev read 1, terminus 5 avenue): a leg ending at a turn reads the cross street at its click; under the switch its ranks
+## are no wider than the street it drove (single file here), not three abreast down the cross street.
+func test_g2_a_leg_ending_at_a_turn_stands_in_the_street_it_drove() -> void:
+	var turn := func(p: Vector3, across: Vector3) -> Array:
+		if absf(across.z) > 0.9:  # read across a west-going leg: the cross street at the click, else the 16 m street
+			return [100.0, 100.0] if p.x < -40.0 else [8.0, 8.0]
+		return [8.0, 8.0]
+	var blocks := [{"center": Vector3(10, 0, -30), "width": 29.0, "depth": 20.0}, {"center": Vector3(20, 0, -30), "width": 29.0, "depth": 20.0},
+			{"center": Vector3(30, 0, -30), "width": 29.0, "depth": 20.0}]
+	var today: Array[Vector3] = [Vector3(-50, 0, -60), Vector3(-50, 0, -30), Vector3(-50, 0, 0)]
+	var drive := func() -> PackedVector3Array: return PackedVector3Array([Vector3(-50, 0, -30), Vector3(30, 0, -30)])
+	SelectionSquads.LEG_WIDTH_ALONG = true
+	var out := SelectionSquads.column_lay(blocks, Vector3(-50, 0, -30), Vector3(-1, 0, 0), turn, func(p: Vector3) -> Vector3: return p,
+			today, drive, Callable(), false, true)
+	assert_eq(out.size(), 3, "a column (%s)" % [out])
+	for at: Vector3 in out:
+		assert_true(absf(at.z + 30.0) <= 10.0, "in the street it drove, not down the cross street (%s)" % [at])

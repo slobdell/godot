@@ -46,6 +46,9 @@ func _ready() -> void:
 func _run() -> void:
 	while not _find():
 		await get_tree().process_frame
+	# Round 38 (F5, the top of the screen): a still of the planning pause and one mid-fight, before the end.
+	await _settle(30)
+	_still("play_planning.png")
 	var controls := _hud.get_node_or_null("TacticalMap")
 	if controls != null and controls.has_method("set_paused"):
 		controls.call("set_paused", false, "")
@@ -54,6 +57,14 @@ func _run() -> void:
 	var waited := Time.get_ticks_msec()
 	while _match.sim_seconds < fight_seconds:
 		await get_tree().process_frame
+	await _settle(1)
+	_still("play_fight.png")
+	# Space mid-fight: the pause line (RtsControls' own text) over the bottom HUD, the status block and buttons back.
+	if controls != null and controls.has_method("set_paused"):
+		controls.call("set_paused", true)
+		await _settle(10)
+		_still("play_paused.png")
+		controls.call("set_paused", false, "")
 	print("END_SHOTS_FORCE sim_s=%.1f wall_s=%.0f" % [_match.sim_seconds, (Time.get_ticks_msec() - waited) / 1000.0])
 	var side := Match.Team.RUST if outcome == "loss" else Match.Team.GREEN
 	_match.control_point = true
@@ -82,6 +93,17 @@ func _run() -> void:
 	print("END_SHOTS_DONE frames=%d headline=%s reason=\"%s\" notices=%d" % [clip_frames, card.headline,
 			card.reason, card.notices()])
 	get_tree().quit()
+
+
+func _settle(frames: int) -> void:
+	for i in frames:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+
+
+func _still(file_name: String) -> void:
+	get_viewport().get_texture().get_image().save_png(out_dir.path_join(file_name))
+	print("END_SHOTS_STILL %s" % file_name)
 
 
 func _find() -> bool:

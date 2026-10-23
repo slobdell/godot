@@ -1,0 +1,56 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 route          g2        |  115.2 /   47.9   |    0   0 |     31.0 |               4.5 |            56.6 | 5.30 | 17.8
+crossing 3 route          main      |   28.3 /   22.2   |    0   0 |     18.2 |               4.5 |            34.2 | 1.27 | 64.7
+crossing 5 route          g2        |  137.6 /   76.9   |    0   0 |     14.7 |               3.1 |            32.4 | 18.00 | 3.8
+crossing 5 route          main      |   71.4 /   27.0   |    3   0 |     36.8 |               4.5 |            42.5 | 2.11 | 19.8
+locks 3 route             g2        |   86.2 /   44.2   |    0   0 |     12.3 |               3.3 |            27.2 | 1.93 | -18.2
+locks 3 route             main      |   40.1 /   34.6   |    5   0 |     70.1 |               5.9 |            38.3 | 1.97 | 27.9
+locks 5 route             g2        |   80.6 /   68.8   |    0   0 |     26.9 |               4.7 |            51.0 | 3.32 | -18.5
+locks 5 route             main      |   51.9 /   46.0   |    0   0 |     34.0 |               5.6 |            34.6 | 1.58 | 17.0
+terminus 3 route          g2        |   71.8 /   34.5   |    0   0 |     16.7 |               7.0 |            32.0 | 3.28 | -6.3
+terminus 3 route          main      |   36.9 /   33.9   |    0   0 |     16.7 |               2.4 |            36.2 | 1.84 | 19.8
+terminus 5 route          g2        |   80.7 /   68.7   |    0   0 |     20.0 |               6.5 |            32.1 | 1.97 | -19.9
+terminus 5 route          main      |   54.0 /   39.6   |    0   0 |     42.5 |               3.1 |            66.0 | 7.67 | 5.9
+yard_open 3 route         g2        |   36.9 /   34.4   |    0   0 |      7.6 |              13.9 |            29.2 | 1.19 | 19.7
+yard_open 3 route         main      |   36.9 /   34.4   |    0   0 |      7.6 |              13.9 |            29.2 | 1.19 | 19.7
+yard_open 5 route         g2        |   51.9 /   39.4   |    0   0 |     26.3 |               5.0 |            36.1 | 5.40 | 4.1
+yard_open 5 route         main      |   51.9 /   39.4   |    0   0 |     26.3 |               5.0 |            36.1 | 5.40 | 4.1
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 route          g2        |          37.3 |          21.2 |           22.8 |               7.5 |         122.3
+crossing 3 route          main      |          23.4 |          19.7 |           15.4 |               5.0 |          39.3
+crossing 5 route          g2        |          22.0 |          27.1 |           10.2 |               5.9 |         152.8
+crossing 5 route          main      |          46.8 |          31.8 |           33.9 |               5.0 |          89.5
+locks 3 route             g2        |          22.3 |          15.7 |            4.5 |               5.0 |          96.6
+locks 3 route             main      |          80.1 |          18.6 |           18.3 |               6.7 |          53.3
+locks 5 route             g2        |          31.3 |          20.2 |           24.1 |               6.2 |          99.3
+locks 5 route             main      |          44.0 |          23.3 |           11.2 |              12.3 |          76.7
+terminus 3 route          g2        |          26.7 |          21.2 |           20.8 |               6.5 |          78.6
+terminus 3 route          main      |          26.7 |          22.2 |           20.8 |               6.5 |          53.6
+terminus 5 route          g2        |          30.0 |          21.8 |           11.3 |               4.9 |          86.5
+terminus 5 route          main      |          52.5 |          33.5 |           27.6 |               9.2 |          75.4
+yard_open 3 route         g2        |           9.2 |          15.8 |            0.0 |              13.0 |          49.5
+yard_open 3 route         main      |           9.2 |          15.8 |            0.0 |              13.0 |          49.5
+yard_open 5 route         g2        |          33.0 |          18.8 |           14.8 |               5.8 |          70.3
+yard_open 5 route         main      |          33.0 |          18.8 |           14.8 |               5.8 |          70.3
+
+MEDIANS over seeds [3801, 3802, 3803] (n 3 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 route          g2          | 3 |         27.3 |     0 |          47.0 |         12.9 |         121.9 |               7.5 |    0   0 | 4.26
+crossing 3 route          main        | 3 |         15.5 |     0 |          30.0 |         10.9 |          38.8 |               5.0 |    0   0 | 1.23
+crossing 5 route          g2          | 3 |         13.5 |     0 |          32.1 |          5.5 |         152.6 |               5.9 |    0   0 | 8.15
+crossing 5 route          main        | 3 |         36.4 |     0 |          40.2 |         32.3 |          86.5 |               5.0 |    3   0 | 1.95
+locks 3 route             g2          | 3 |         11.3 |     0 |          22.6 |          0.0 |          95.7 |               5.0 |    0   0 | 1.41
+locks 3 route             main        | 3 |         39.9 |     0 |          36.4 |         17.2 |          49.2 |               6.7 |    5   0 | 1.74
+locks 5 route             g2          | 3 |         21.3 |     0 |          42.4 |         11.8 |          95.6 |               6.2 |    0   0 | 2.71
+locks 5 route             main        | 3 |         22.2 |     0 |          33.8 |          5.1 |          74.9 |              12.3 |    0   0 | 1.40
+terminus 3 route          g2          | 3 |         16.6 |     0 |          31.3 |         13.8 |          50.8 |               6.5 |    0   0 | 1.45
+terminus 3 route          main        | 3 |         16.6 |     0 |          31.3 |         13.8 |          50.8 |               6.5 |    0   0 | 1.45
+terminus 5 route          g2          | 3 |         12.8 |     0 |          26.8 |         10.9 |          82.6 |               4.9 |    0   0 | 1.61
+terminus 5 route          main        | 3 |         33.6 |     0 |          65.2 |         18.7 |          71.6 |               9.2 |    0   0 | 6.58
+yard_open 3 route         g2          | 3 |          7.1 |     0 |          28.2 |          0.0 |          45.6 |              13.0 |    0   0 | 1.16
+yard_open 3 route         main        | 3 |          7.1 |     0 |          28.2 |          0.0 |          45.6 |              13.0 |    0   0 | 1.16
+yard_open 5 route         g2          | 3 |          6.9 |     0 |          35.4 |          2.6 |          66.3 |               5.8 |    0   0 | 2.80
+yard_open 5 route         main        | 3 |          6.9 |     0 |          35.4 |          2.6 |          66.3 |               5.8 |    0   0 | 2.80
+
+EQUALITY click cells: 0 identical across arms, 0 differ

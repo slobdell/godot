@@ -80,8 +80,9 @@ func post_caption(speaker: String, text: String) -> void:
 	_caption(speaker, text)
 
 
+## Round 38 (F5, his note: "the announcer text messages (we don't need those)"): the voice stays, its lines no longer show.
+## The signal still fires (transcripts, the log stays clean) and the line is printed.
 func _caption(speaker: String, text: String) -> void:
-	caption_line.show_line(speaker, text)
 	caption_posted.emit(speaker, text)
 
 

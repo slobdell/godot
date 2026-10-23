@@ -1230,26 +1230,48 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					-SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
 					func(p: Vector3, r: float) -> bool: return SlotGround.near_deck(p, r),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
-		# Round 38 (G3): no place on another squad's halt (settle's S2 trace, crossing 5 click s3866).
-		if SelectionSquads.PLACE_CLEAR and ground != null and anchors.size() >= squads.size():
-			anchors = SelectionSquads.place_clear(anchors, blocks, click,
-					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
-					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p))
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
 		# R37.29: under a column every squad keeps its own vehicles; crossing squads swap places whole.
 		# G1: and on every group move under the switch, a body kept included (dev read 4141ae445: terminus 5 route re-dealt
 		# crews on the legs whose body stood).
-		if (column or (SelectionSquads.GROUP_LAY and (verb == "move" or verb == "attack_move"))) and anchors.size() >= squads.size():
-			var from_leg := {}  # G1: a shifted leg's vehicles set off from where their squad's previous leg ends
-			for i in queue_starts.size():
-				for unit_name: String in squads[i]["units"]:
-					from_leg[unit_name] = queue_starts[i]
+		var from_leg := {}  # G1: a shifted leg's vehicles set off from where their squad's previous leg ends (read before any re-deal)
+		for i in mini(queue_starts.size(), squads.size()):
+			for unit_name: String in squads[i]["units"]:
+				from_leg[unit_name] = queue_starts[i]
+		if (column or (SelectionSquads.whole_on(queue_leg) and (verb == "move" or verb == "attack_move"))) \
+				and anchors.size() >= squads.size():
 			SelectionSquads.untangle_whole(squads, anchors,
 					func(n: String) -> Vector3: return from_leg[n] if from_leg.has(n) else _flat_position(n))
 		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
+		# Round 38 (G3): no place on another squad's halt (settle's S2 trace, crossing 5 click s3866). After the untangle, so
+		# the crews are dealt exactly as today and G3 only moves places, each squad's drive read from its own vehicles (dev
+		# read 7, e94ee14af: G3 before the untangle changed the dealing on terminus 5 route legs it later sent back; s3805's
+		# squad 1 never got in on main's own final places). Dev read 2's re-deal of a moved squad's crew cannot happen here.
+		_cleared_pending = {}
+		if SelectionSquads.PLACE_CLEAR and ground != null and anchors.size() >= squads.size():
+			var unmoved := anchors.duplicate()
+			var clear_blocks: Array = []
+			for k in mini(blocks.size(), squads.size()):
+				var block: Dictionary = (blocks[k] as Dictionary).duplicate()
+				var home := Vector3.ZERO
+				var units: Array = squads[k]["units"]
+				for unit_name: String in units:
+					home += from_leg[unit_name] if from_leg.has(unit_name) else _flat_position(unit_name)
+				if not units.is_empty():
+					block["center"] = home / units.size()
+				clear_blocks.append(block)
+			var reach := SelectionSquads.PLACE_CLEAR_REACH
+			anchors = SelectionSquads.place_clear(anchors, clear_blocks, click,
+					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
+					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p) \
+							and not (reach and SlotGround.near_deck(p, SelectionSquads.PLACE_CLEAR_DECK_M)),
+					SelectionSquads.crosses_on(ground) if reach else Callable())
+			for k in anchors.size():
+				if anchors[k] != unmoved[k]:
+					_cleared_pending[_place_key(anchors[k])] = unmoved[k]
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
 		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
 				column and column_moved, today_places)
@@ -1263,6 +1285,8 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	# Round 34 (traffic O4): a further shift-waypoint makes the previous queued one in-between: re-laid as a gate.
 	if queue and verb == "move" and extra.has("to") and squads.size() > 1 and elements != null:
 		_relay_previous_waypoint(squads, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])))
+	_cleared_back = _cleared_pending  # G3: after the re-lay above used the previous order's
+	_cleared_pending = {}
 	# G2 (dev read 94b00992f, crossing 5 route: five squads stack ~230 m on a ~120 m route, so a rear squad drove the route
 	# out and 80 m back): a squad whose place on a shifted leg stands behind where its previous leg ends stops there instead,
 	# its previous waypoint moved to that place.
@@ -1350,6 +1374,12 @@ const ROUTE_RELAY_S := 2.0
 ## only where the first click's column moved some squad's place more than about a rank (a halt's depth + GAP_M).
 const RELAY_MOVED_M := 40.0
 static var first_legs_relaid := 0
+## G3 (dev read 5, builder0 ad737f7c0: every click cell clean, the never-ins and twitches left all on route cells whose last
+## places equal main's): a place G3 moved is for a halt. When a shift-click makes that leg a waypoint, the squad still driving
+## it goes back to the place it had before clearing. Moved place (snapped) -> the place before. Measurement: legs sent back.
+var _cleared_back := {}
+var _cleared_pending := {}  # this order's moves; they become `_cleared_back` after its own waypoint re-lay
+static var cleared_legs_back := 0
 ## G2: how far behind its previous leg's end a squad's place on a shifted leg may stand before that leg is cut short to it.
 ## Measurement: legs cut short so.
 const SHORT_LEG_M := 5.0
@@ -1397,6 +1427,34 @@ func _relay_first_to_today(element: Element) -> bool:
 			first_legs_relaid += 1
 			return true
 	return false
+
+
+## G3: the leg G3 moved (running, or the last queued) goes back to its place before clearing (it is a waypoint now).
+## Whether it was sent back. Dev read 6 (a24f3b3fb, Terminus 5 route s3805): a moved leg still queued kept its moved place.
+func _send_cleared_back(element: Element) -> bool:
+	var queued := not element.queued_tasks.is_empty()
+	var leg: Dictionary = element.queued_tasks[element.queued_tasks.size() - 1] if queued else element.task
+	if _cleared_back.is_empty() or String(leg.get("verb", "")) != "move" or not leg.has("to"):
+		return false
+	var to: Array = leg["to"]
+	var key := _place_key(Vector3(float(to[0]), 0.0, float(to[1])))
+	if not _cleared_back.has(key):
+		return false
+	var back: Vector3 = _cleared_back[key]
+	var aimed: Dictionary = leg.duplicate(true)
+	aimed["to"] = [back.x, back.z]
+	for drop: String in ["halt_at", "halt_shape"]:
+		aimed.erase(drop)
+	if queued:
+		element.queued_tasks[element.queued_tasks.size() - 1] = aimed
+	else:
+		element.retarget(aimed)
+	cleared_legs_back += 1
+	return true
+
+
+static func _place_key(p: Vector3) -> Vector2i:
+	return Vector2i(roundi(p.x * 10.0), roundi(p.z * 10.0))
 
 
 ## G2: his route back from `click`: [click, the click before, ..., where the squads stood], or [] when this click does not
@@ -1876,6 +1934,8 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 		# (planner's probe, O4 before/after: one squad queued behind its crews' orders left a 5-squad route with no gate at all).
 		# G2: unless the running waypoint is his plain group click given moments ago and laid as a column (`fresh`): the
 		# probe's route cells stacked a column at the first waypoint and the rear squads backed up before driving the route.
+		if held != null and is_instance_valid_element(held):
+			_send_cleared_back(held)
 		if held == null or not is_instance_valid_element(held) or (held.queued_tasks.is_empty() and not fresh):
 			continue
 		var on_task := held.queued_tasks.is_empty()
@@ -1916,6 +1976,12 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 		return  # a gate is for several squads sharing the waypoint
 	prev /= held_elements.size()
 	before /= held_elements.size()
+	# G2 (dev, `--group-gate=main`): the gate stands at his click, not at the mean of a leg column's places (laptop, terminus 3
+	# west s3801: that mean stood 50-90 m up the incoming street and the drive on cut through another street).
+	if SelectionSquads.GROUP_GATE_MAIN and _route_key(squads) == _route_squads and _route_clicks.size() >= 3 \
+			and (_route_clicks[_route_clicks.size() - 1] as Vector3).distance_to(next_click) < 1.0:
+		var at_click: Vector3 = _route_clicks[_route_clicks.size() - 2]
+		prev = Vector3(at_click.x, 0.0, at_click.z)
 	var approach := prev - before
 	if approach.length() < 1.0:
 		approach = next_click - prev
@@ -1931,7 +1997,7 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	# Round 38 (G1): a gate whose places stand off the clear ground (its rear ranks are read at the gate's own width) is laid
 	# as the column a final click is, each rank on the clear ground at its own point.
 	var as_column := false
-	if SelectionSquads.GROUP_LAY and SelectionSquads.GROUP_LEGS and ground != null:
+	if SelectionSquads.gate_as_column() and ground != null:
 		var crosses_e := SelectionSquads.crosses_or_edge(crosses)
 		var path_back := func() -> PackedVector3Array: return Pathing.find_path(ground, prev, before)
 		var reached := func(p: Vector3) -> bool: return SelectionSquads.reached_from(prev, p, drive, crosses_e)
@@ -2919,9 +2985,9 @@ func _draw_timed() -> void:
 	HudClock.end(&"ctl.d.order_marks", t)
 	if _pause_text != "" and get_tree().paused:
 		var font := CyberStyle.font()
-		var text_size := roundi(22.0 * CyberStyle.ui_scale(size))
+		var text_size := roundi(22.0 * HudLayout.bug_ui_scale(size))  # C38.5 (feedback F5): the shorter side (portrait phones)
 		var width := font.get_string_size(_pause_text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size).x
-		var at := Vector2((size.x - width) / 2.0, size.y * 0.14)
+		var at := Vector2((size.x - width) / 2.0, HudLayout.pause_line_y_for(self, text_size))  # C38.5 (feedback F5): over the bottom HUD
 		draw_rect(Rect2(at - Vector2(16, text_size * 1.1), Vector2(width + 32, text_size * 1.6)), Color(CyberStyle.CARD, 0.85))
 		draw_string(font, at, _pause_text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, CyberStyle.YELLOW)
 	if mode != "":

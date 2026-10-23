@@ -8,6 +8,8 @@
     python3 tests/control/orders_judge.py o3 rows.jsonl BASE_ARM NEW_ARM runs.jsonl
     python3 tests/control/orders_judge.py gl rows.jsonl BASE_ARM NEW_ARM runs.jsonl   (R37.29 group-lay=column)
     python3 tests/control/orders_judge.py g1 rows.jsonl BASE_ARM NEW_ARM runs.jsonl [yard_rows.jsonl]   (round 38 G1, O7 v2)
+    python3 tests/control/orders_judge.py g1v4 rows.jsonl BASE_ARM NEW_ARM runs.jsonl [yard_rows.jsonl]   (G1 v4, R38.44: re-dealt over click cells)
+    python3 tests/control/orders_judge.py g3 rows.jsonl BASE_ARM NEW_ARM runs.jsonl   (round 38 G3, place clear)
     python3 tests/control/orders_judge.py o5 BASE_DIR NEW_DIR   (seat-yield-census folders of *.log)
 
 Probe guards (each cell, medians over seeds; R36.6's): all-in (the cell run's last squad arrival) <= base x 1.2 + 3 s and
@@ -246,7 +248,7 @@ def main(argv):
         ok = ok and passed
         lines.append("%s guard friend_contacts %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", b, n, b * 1.1 + 5))
         ok = probe_guards(rows, base, new, lines) and ok
-    elif mode == "g1":
+    elif mode in ("g1", "g1v4"):
         # Round 38 G1 (O7 v2)'s bar, filed in the brief's Status: places outside the click's corridor <= 25 % of base; metres
         # driven outside it after a crew was once inside (route_left_m) <= 50 % of base; crews re-dealt 0; guards as gl;
         # the open-ground cell (yard_open) rows identical, both arms.
@@ -259,13 +261,16 @@ def main(argv):
         bo = sum(1 for r in clicks if r["arm"] == base and r.get("anchor_outside"))
         no = sum(1 for r in clicks if r["arm"] == new and r.get("anchor_outside"))
         bm, nm = total(clicks, base, "route_left_m"), total(clicks, new, "route_left_m")
-        nr = sum(1 for r in rows if r["arm"] == new and r.get("redealt", 0) > 0)
+        # G1 v4 (R38.44): squads stay whole on plain clicks only; a route's queued legs are dealt as main, so re-deals count
+        # over the click cells (his click included).
+        dealt = clicks if mode == "g1v4" else rows
+        nr = sum(1 for r in dealt if r["arm"] == new and r.get("redealt", 0) > 0)
         d1, d2, d3 = no <= 0.25 * bo, nm <= 0.5 * bm, nr == 0
         lines.append("%s deciding: places outside the corridor (click cells) %d -> %d (<= %.1f)" % ("PASS" if d1 else "FAIL", bo, no, 0.25 * bo))
         lines.append("%s deciding: metres driven outside the corridor after being in it (click cells) %.0f -> %.0f (<= %.0f)" % (
             "PASS" if d2 else "FAIL", bm, nm, 0.5 * bm))
-        lines.append("%s deciding: squads with crews re-dealt (arm) %d (base %d)" % ("PASS" if d3 else "FAIL", nr,
-                     sum(1 for r in rows if r["arm"] == base and r.get("redealt", 0) > 0)))
+        lines.append("%s deciding: squads with crews re-dealt (arm%s) %d (base %d)" % ("PASS" if d3 else "FAIL",
+                     ", click cells" if mode == "g1v4" else "", nr, sum(1 for r in dealt if r["arm"] == base and r.get("redealt", 0) > 0)))
         lines.append("  reported: metres outside incl. the drive in (route_out_m) %.0f -> %.0f" % (
             total(rows, base, "route_out_m"), total(rows, new, "route_out_m")))
         ok = laid > 0 and d1 and d2 and d3
@@ -285,6 +290,63 @@ def main(argv):
             ok = ok and passed
             lines.append("%s guard no-change cell yard_open: %d of %d squad rows identical (arm rows %d)" % (
                 "PASS" if passed else "FAIL", same, len(yb), len(yn)))
+    elif mode == "g3":
+        # Round 38 G3's bar (R38.15), filed in the brief's Status: place pairs closer than 12 m <= 25 % of base (amended);
+        # never-in squads no more; offset guards (worst place-to-click median per cell
+        # <= base + 15 m; squads placed > 40 m further than main <= 5 % of rows; none > 100 m); R36.6 guards; contacts.
+        runs = load(argv[4])
+        cleared = sum(r.get("places_cleared", 0) for r in runs if r["arm"] == new)
+        lines.append("%s counter: places_cleared %d" % ("PASS" if cleared > 0 else "FAIL", cleared))
+        # Amended before any judged number (dev read 1: main parks neighbours 4-6 m apart, so end foreign < 8 m is normal
+        # parking): the defect itself, two squads' places laid closer than 12 m (half a herringbone's short side), per run.
+        def close_pairs(arm):
+            count = 0
+            for squads in by_run(rows, arm).values():
+                at = [(s["anchor"], s.get("anchor_element", "")) for s in squads if isinstance(s.get("anchor"), list)]
+                # Two squads read from one element share its anchor: one body, not two places (dev read 2: every
+                # remaining g3 pair was 0.0 m apart).
+                count += sum(1 for a in range(len(at)) for c in range(a + 1, len(at))
+                             if not (at[a][1] and at[a][1] == at[c][1])
+                             and math.hypot(at[a][0][0] - at[c][0][0], at[a][0][1] - at[c][0][1]) < 12.0)
+            return count
+        never = lambda arm: sum(1 for r in rows if r["arm"] == arm and r["arrived_s"] < 0)
+        bp, np_, bn, nn = close_pairs(base), close_pairs(new), never(base), never(new)
+        d1 = np_ <= 0.25 * bp
+        d2 = nn <= bn
+        lines.append("%s deciding: place pairs closer than 12 m %d -> %d (<= %.1f)" % ("PASS" if d1 else "FAIL", bp, np_, 0.25 * bp))
+        lines.append("%s guard never-in squads %d -> %d (no more)" % ("PASS" if d2 else "FAIL", bn, nn))
+        ok = cleared > 0 and d1 and d2
+        b_rows = {(r["map"], r["squads"], r["route"], r["seed"], r["squad"]): r for r in rows if r["arm"] == base}
+        n_rows = {(r["map"], r["squads"], r["route"], r["seed"], r["squad"]): r for r in rows if r["arm"] == new}
+        further = [n_rows[k]["anchor_offset_m"] - b_rows[k]["anchor_offset_m"] for k in n_rows
+                   if k in b_rows and n_rows[k]["anchor_offset_m"] >= 0 and b_rows[k]["anchor_offset_m"] >= 0]
+        far = sum(1 for d in further if d > 40.0)
+        g2 = far <= 0.05 * len(n_rows)
+        g3 = all(d <= 100.0 for d in further)
+        b, n = by_run(rows, base), by_run(rows, new)
+        g1 = True
+        for cell in sorted({k[:3] for k in b} | {k[:3] for k in n}):
+            bw = med([max(s["anchor_offset_m"] for s in b[k]) for k in b if k[:3] == cell])
+            nw = med([max(s["anchor_offset_m"] for s in n[k]) for k in n if k[:3] == cell])
+            if not nw <= bw + 15.0:
+                g1 = False
+                lines.append("  FAIL guard worst offset %s: %.1f v %.1f" % (" ".join(map(str, cell)), bw, nw))
+        lines.append("%s guard worst place-to-click median per cell <= base + 15 m" % ("PASS" if g1 else "FAIL"))
+        lines.append("%s guard squads placed > 40 m further than main %d of %d (<= %.1f)" % (
+            "PASS" if g2 else "FAIL", far, len(n_rows), 0.05 * len(n_rows)))
+        lines.append("%s guard no place > 100 m further than main (worst %+.1f m)" % (
+            "PASS" if g3 else "FAIL", max(further, default=0.0)))
+        moved = sorted(d for d in further if abs(d) > 0.5)
+        lines.append("  reported: offsets changed on %d rows; quartiles %s" % (
+            len(moved), [round(moved[int(q * (len(moved) - 1))], 1) for q in (0, 0.25, 0.5, 0.75, 1)] if moved else []))
+        lines.append("  reported: route_left_m %.0f -> %.0f" % (total(rows, base, "route_left_m"), total(rows, new, "route_left_m")))
+        ok = ok and g1 and g2 and g3
+        cb = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == base)
+        cn = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == new)
+        passed = cn <= cb * 1.1 + 5
+        ok = ok and passed
+        lines.append("%s guard friend_contacts %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", cb, cn, cb * 1.1 + 5))
+        ok = probe_guards(rows, base, new, lines) and ok
     elif mode == "o3":
         bd = sum(1 for r in rows if r["arm"] == base and r.get("redealt", 0) > 0)
         nd = sum(1 for r in rows if r["arm"] == new and r.get("redealt", 0) > 0)

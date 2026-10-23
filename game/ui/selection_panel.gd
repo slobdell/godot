@@ -56,6 +56,8 @@ var intro_requires_pause := true
 var _intro := ""
 var _preview_rect := Rect2()
 const PREVIEW_HEIGHT := 170.0
+## Round 38 (F5): the tooltip box above the card as last drawn (panel-local; empty when none), so the pause line clears it.
+var tooltip_rect := Rect2()
 ## Round 16 (hud H3): the panel redraws when what it draws changed, not every frame. `_info` is this frame's summary()
 ## (computed once, in _process, and drawn from), `_drawn` the signature of everything _draw reads the last time it ran.
 var _info := {}
@@ -125,17 +127,17 @@ func _current_info() -> Dictionary:
 
 
 func _scale() -> float:
-	return maxf(get_viewport_rect().size.y / 1080.0, 0.6)
+	return HudLayout.panel_scale(get_viewport_rect().size)
 
 
 ## Where the panel goes: bottom center, as wide as fits between the radar and its mirror on the left.
 func _layout() -> void:
 	var screen := get_viewport_rect().size
 	var s := _scale()
-	var radar_side := clampf(screen.y * Radar.HEIGHT_FRACTION, Radar.MIN_SIZE, Radar.MAX_SIZE) + Radar.MARGIN * 2.0
-	var width := minf(MAX_WIDTH * s, screen.x - radar_side * 2.0)
-	size = Vector2(maxf(width, 200.0), HEIGHT * s)
-	position = Vector2((screen.x - size.x) / 2.0, screen.y - size.y - PAD * s)
+	# Round 38 (F5): between the score bug (lower left) and the radar; across the width over them on a portrait phone.
+	var rect := HudLayout.panel_rect(screen)
+	size = rect.size
+	position = rect.position
 	_command_rects.clear()
 	var button := (size.y - PAD * s * 3.0) / 2.0
 	var wide := button * BUTTON_ASPECT
@@ -718,6 +720,7 @@ func _draw_timed() -> void:
 		_label(batch, font, button, label, 14.0 * s, ink)
 	var tip := tooltip()
 	_preview_rect = Rect2()
+	tooltip_rect = Rect2()
 	if not tip.is_empty():
 		_tooltip(batch, font, doctrine_rect() if tip["id"] == "doctrine" else _command_rects[tip["id"]], tip, s)
 	t = HudClock.begin()
@@ -763,6 +766,7 @@ func _tooltip(batch: DrawBatch, font: Font, button: Rect2, tip: Dictionary, s: f
 	var box := Rect2(Vector2(clampf(button.get_center().x - width / 2.0, -position.x + 4.0, size.x - width), -height - 6.0 * s),
 			Vector2(width, height))
 	batch.fill(box, Color(CyberStyle.HUD_BACKGROUND, 0.97))
+	tooltip_rect = box
 	if preview > 0.0:
 		_preview_rect = Rect2(box.position.x + 8.0 * s, box.end.y - preview - 2.0 * s, box.size.x - 16.0 * s, preview - 6.0 * s)
 	batch.outline(box, Color(CyberStyle.YELLOW, 0.8), 1.5)

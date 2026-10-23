@@ -141,7 +141,15 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 			return float(a["distance"]) < float(b["distance"])
 		return String(a["name"]) < String(b["name"]))
 
-	return {"tick": tick, "team": team, "center": center, "heading": heading, "leader": leader,
+	# Round 38 (settle S1): where a seat asked at `point` will stand for a hull of `unit`, grounded as Element.ground
+	# grounds a slot (on its anchor's bank, then pushed out of geometry toward the side the element stands on). The
+	# deploy deals its seats by these drives (ElementPlan._deploy_fit). Not called unless the deploy asks.
+	var ground_node := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
+			and game_match.tanks.get_child_count() > 0 else null
+	var ground_seat := func(point: Vector3, unit: String, anchor: Variant) -> Vector3:
+		var wanted := SlotGround.on_anchor_side(point, anchor) if anchor is Vector3 else point
+		return SlotGround.standable_from(ground_node, wanted, SlotGround.envelope_of(unit), center) if ground_node != null else wanted
+	return {"tick": tick, "team": team, "center": center, "heading": heading, "leader": leader, "ground_seat": ground_seat,
 			"members": members, "contacts": contacts, "known": known, "terrain": terrain_read(center, state),
 			"threat": threat_from(contacts, taking_fire), "composition": composition_of(members),
 			"strength": strength, "enemy_strength": enemy_strength, "taking_fire": taking_fire,
@@ -250,6 +258,79 @@ static var _pieces: Array = []
 ## Tests switch Arena.active between layouts with the same name and size: drop the cached pieces.
 static func forget_terrain() -> void:
 	_pieces_key = "-"
+	_boxes_key = "-"
+
+
+## S1 v5 (round 38, settle, R38.37): the axis of the street at `at`, the heading (of STREET_HEADINGS, 0-180 degrees) whose
+## clear run is longest, or null when no heading is clearly longest (open ground, or boxed in): the longest must beat the
+## shortest by STREET_RATIO. A clear run is open ground along the heading both ways from `at`, metre by metre to the first
+## hard box (cover_pieces' rule) grown by STREET_MARGIN_M, or where Orders.clamp_to_arena moves it (wall, water, pit), STREET_RUN_M at most each way. Traced
+## (terminus (23.5, 85.65), S1 v4's never-in): 80 m along the east-west street v 41-46 m every other way.
+static func street_axis(at: Vector3) -> Variant:
+	var boxes := _hard_boxes()
+	var best := -1.0
+	var least := INF
+	var axis := Vector3.ZERO
+	for k in STREET_HEADINGS:
+		var heading := Vector3.RIGHT.rotated(Vector3.UP, PI * float(k) / float(STREET_HEADINGS))
+		var run := _clear_run(boxes, at, heading)
+		least = minf(least, run)
+		if run > best:
+			best = run
+			axis = heading
+	if best < least * STREET_RATIO:
+		return null
+	return axis
+
+
+const STREET_HEADINGS := 12
+const STREET_RATIO := 1.3
+const STREET_MARGIN_M := 2.0
+const STREET_RUN_M := 40
+
+
+static func _clear_run(boxes: Array, at: Vector3, heading: Vector3) -> float:
+	var total := 0.0
+	for way: float in [1.0, -1.0]:
+		var run := 0
+		while run < STREET_RUN_M:
+			var point: Vector3 = at + heading * way * float(run + 1)
+			var clamped := Orders.clamp_to_arena(point)
+			if Vector2(clamped.x - point.x, clamped.z - point.z).length() > 0.01 or _in_box(boxes, Vector2(point.x, point.z)):
+				break
+			run += 1
+		total += float(run)
+	return total
+
+
+static func _in_box(boxes: Array, point: Vector2) -> bool:
+	for box: Dictionary in boxes:
+		var local := (point - (box["center"] as Vector2)).rotated(-deg_to_rad(float(box["rotation"])))
+		var size: Vector3 = box["size"]
+		if absf(local.x) <= size.x * 0.5 + STREET_MARGIN_M and absf(local.y) <= size.z * 0.5 + STREET_MARGIN_M:
+			return true
+	return false
+
+
+## The arena's hard boxes ({"center": Vector2, "size", "rotation"}), cover_pieces' rule, cached like the pieces.
+static func _hard_boxes() -> Array:
+	var obstacles: Array = Arena.active.get("obstacles", [])
+	var key := "%s|%d" % [Arena.active.get("name", ""), obstacles.size()]
+	if key != _boxes_key:
+		_boxes_key = key
+		_boxes = []
+		for obstacle: Dictionary in obstacles:
+			var size := Arena.obstacle_size(obstacle)
+			var type := String(obstacle.get("type", ""))
+			var cover := ArenaKit.cover_of(type) if ArenaKit.is_kit(type) else ("hard" if size.y >= Perception.EYE_HEIGHT else "low")
+			if cover == "hard":
+				_boxes.append({"center": Vector2(obstacle["position"][0], obstacle["position"][1]), "size": size,
+						"rotation": float(obstacle.get("rotation_deg", 0.0))})
+	return _boxes
+
+
+static var _boxes_key := "-"
+static var _boxes: Array = []
 
 
 ## Obstacles as pieces of cover, [{"positions": [Vector3 box centres]}] in layout order (round 5, arena's finding): boxes

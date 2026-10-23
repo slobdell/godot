@@ -853,3 +853,8 @@ stream's `local.mk` with a different OFFSET, or `make worktree`'s port block), o
     (`LD_DEBUG=bindings` shows it), and a native-ON laptop run under the shim mixes the two libms (28.6 s, neither machine's).
     So on the laptop, use the shim only with `--brains-off=native`, or `NATIVE=off`. It is a double-rounding approximation of
     the correctly rounded result: it matched builder0 on 2,000,000 random inputs per function, but it isn't a proof.
+
+- **(round 38, settle) A light-lane series at J <= 4 runs past slot.sh's default 5400 s limit and is killed without a verdict.**
+  settle's S1 v5 (builder0, J 4, 03:23-04:53) died in its 5-squad fight cells. Any series on the light lane that may exceed 90 min must
+  set `TANK_SQUAD_SLOT_TIMEOUT` (e.g. 14400) when it launches, AS A MAKE COMMAND-LINE VARIABLE (remote.sh does not forward it from
+  the environment; GNU make exports command-line variables into Makefile:103's `tools/slot.sh` recipe; orders' finding).

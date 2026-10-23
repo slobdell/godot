@@ -1,0 +1,171 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          fit       |   29.7 /   16.8   |   11   0 |     17.7 |               3.0 |            33.0 | 1.44 | 54.1
+crossing 3 click          latch     |   29.7 /   16.8   |   10   0 |     17.7 |               3.0 |            31.4 | 1.38 | 54.1
+crossing 3 click          main      |   29.7 /   16.8   |   10   0 |     17.7 |               3.0 |            31.4 | 1.39 | 54.1
+crossing 3 route          fit       |   29.7 /   23.3   |    4   0 |     27.5 |               3.8 |            35.8 | 1.39 | 54.1
+crossing 3 route          latch     |   29.7 /   23.3   |    4   0 |     27.5 |               3.8 |            43.9 | 1.39 | 54.1
+crossing 3 route          main      |   29.7 /   23.3   |    3   0 |     27.5 |               3.8 |            35.8 | 1.39 | 54.1
+crossing 5 click          fit       |   73.0 /   27.0   |    6   0 |     43.2 |               3.0 |            86.2 | 3.10 | 19.6
+crossing 5 click          latch     |   73.0 /   27.0   |    6   0 |        - |               3.0 |            83.2 | 3.10 | 19.6
+crossing 5 click          main      |   73.0 /   27.0   |    7   0 |     61.7 |               3.0 |            83.2 | 3.10 | 19.6
+crossing 5 route          fit       |   73.0 /   29.6   |    4   0 |     87.9 |               2.8 |            63.9 | 2.18 | 19.6
+crossing 5 route          latch     |   73.0 /   29.6   |    5   0 |        - |               3.6 |            71.2 | 3.11 | 19.6
+crossing 5 route          main      |   73.0 /   29.6   |    5   0 |        - |               3.6 |            71.2 | 3.11 | 19.6
+locks 3 click             fit       |   41.3 /   34.4   |   15   0 |        - |               2.3 |            45.1 | 2.07 | 28.1
+locks 3 click             latch     |   41.3 /   34.4   |   16   0 |        - |               2.3 |            45.1 | 2.07 | 28.1
+locks 3 click             main      |   41.3 /   34.4   |   15   0 |        - |               2.3 |            49.4 | 2.07 | 28.1
+locks 3 route             fit       |   41.3 /   34.4   |    9   2 |        - |               3.0 |            62.6 | 2.10 | 28.1
+locks 3 route             latch     |   41.3 /   34.4   |   11   2 |        - |               3.0 |            62.6 | 2.10 | 28.1
+locks 3 route             main      |   41.3 /   34.4   |   10   2 |        - |               3.0 |            62.6 | 2.19 | 28.1
+locks 5 click             fit       |   56.3 /   40.0   |    3   0 |     54.0 |               5.0 |            55.8 | 1.96 | 17.6
+locks 5 click             latch     |   56.3 /   40.0   |    5   0 |     64.8 |               3.2 |            74.2 | 2.67 | 17.6
+locks 5 click             main      |   56.3 /   40.0   |    5   0 |     54.0 |               3.2 |            74.2 | 2.26 | 17.6
+locks 5 route             fit       |   56.3 /   40.0   |    2   0 |     40.8 |               3.0 |            43.5 | 2.38 | 17.6
+locks 5 route             latch     |   56.3 /   40.0   |    0   0 |     40.8 |               3.0 |            68.2 | 2.49 | 17.6
+locks 5 route             main      |   56.3 /   40.0   |    0   0 |     40.8 |               3.0 |            68.2 | 2.49 | 17.6
+terminus 3 click          fit       |   36.9 /   34.4   |    0   0 |     34.9 |               2.6 |            41.5 | 1.81 | 19.8
+terminus 3 click          latch     |   36.9 /   34.4   |    0   0 |     34.9 |               2.6 |            59.0 | 1.81 | 19.8
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     34.9 |               2.6 |            59.0 | 1.81 | 19.8
+terminus 3 route          fit       |   36.9 /   34.4   |    0   0 |     24.8 |               3.1 |            60.5 | 2.31 | 19.8
+terminus 3 route          latch     |   36.9 /   34.4   |    0   0 |     24.8 |               3.1 |            60.5 | 2.31 | 19.8
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |     24.8 |               3.1 |            60.5 | 2.31 | 19.8
+terminus 5 click          fit       |   64.9 /   39.4   |    0   0 |     72.5 |               6.7 |            36.4 | 2.15 | 5.1
+terminus 5 click          latch     |   64.9 /   39.4   |    0   0 |     53.4 |               6.7 |            54.6 | 3.27 | 5.1
+terminus 5 click          main      |   64.9 /   39.4   |    0   0 |     53.4 |               6.7 |            54.6 | 3.27 | 5.1
+terminus 5 route          fit       |   64.9 /   39.4   |    0   0 |        - |               2.7 |            77.8 | 10.19 | 5.1
+terminus 5 route          latch     |   64.9 /   39.4   |    0   0 |        - |               2.7 |            64.3 | 9.60 | 5.1
+terminus 5 route          main      |   64.9 /   39.4   |    0   0 |        - |               2.7 |            64.3 | 10.19 | 5.1
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          fit       |          27.7 |          28.0 |           16.0 |               2.4 |          36.0
+crossing 3 click          latch     |          27.7 |          21.6 |           16.0 |               2.4 |          36.1
+crossing 3 click          main      |          27.7 |          21.6 |           16.0 |               2.4 |          36.1
+crossing 3 route          fit       |          34.1 |          17.5 |           14.8 |               2.8 |          41.4
+crossing 3 route          latch     |          34.1 |          17.5 |           30.7 |               2.8 |          41.4
+crossing 3 route          main      |          34.1 |          17.5 |           14.8 |               2.8 |          41.4
+crossing 5 click          fit       |          53.2 |          31.7 |           29.2 |               3.1 |          91.7
+crossing 5 click          latch     |             - |          31.9 |              - |               2.7 |         106.4
+crossing 5 click          main      |          71.7 |          31.9 |           37.2 |               2.7 |         106.4
+crossing 5 route          fit       |             - |          25.0 |              - |               3.1 |          95.1
+crossing 5 route          latch     |             - |          41.5 |              - |               3.3 |         101.3
+crossing 5 route          main      |             - |          41.5 |              - |               3.3 |         101.3
+locks 3 click             fit       |             - |          20.6 |              - |               3.7 |          51.9
+locks 3 click             latch     |             - |          25.6 |              - |               3.7 |          51.9
+locks 3 click             main      |             - |          25.6 |              - |               3.7 |          51.9
+locks 3 route             fit       |             - |          31.8 |              - |               4.2 |          68.3
+locks 3 route             latch     |             - |          52.1 |              - |               4.2 |          68.3
+locks 3 route             main      |             - |          52.1 |              - |               4.2 |          68.3
+locks 5 click             fit       |          64.0 |          30.1 |           36.6 |               6.3 |          80.8
+locks 5 click             latch     |          74.8 |          36.1 |           53.0 |               6.2 |          80.8
+locks 5 click             main      |          64.0 |          37.0 |           53.0 |               4.4 |          80.8
+locks 5 route             fit       |             - |          25.6 |              - |               5.1 |          80.6
+locks 5 route             latch     |             - |          31.1 |              - |               4.7 |          80.9
+locks 5 route             main      |             - |          31.1 |              - |               4.7 |          80.9
+terminus 3 click          fit       |          44.9 |          21.6 |           25.9 |               9.1 |          53.1
+terminus 3 click          latch     |          44.9 |          46.9 |           25.9 |              10.5 |          62.7
+terminus 3 click          main      |          44.9 |          46.9 |           25.9 |              10.5 |          62.7
+terminus 3 route          fit       |          29.5 |          29.7 |           21.7 |               5.3 |          55.3
+terminus 3 route          latch     |          29.5 |          31.8 |           21.7 |               5.3 |          55.7
+terminus 3 route          main      |          29.5 |          31.8 |           21.7 |               5.3 |          55.7
+terminus 5 click          fit       |          76.4 |          29.7 |           11.4 |               6.5 |          79.6
+terminus 5 click          latch     |          57.4 |          41.7 |           39.1 |               5.5 |          86.2
+terminus 5 click          main      |          57.4 |          41.7 |           44.6 |               5.5 |          86.2
+terminus 5 route          fit       |             - |          40.2 |              - |               4.2 |          84.2
+terminus 5 route          latch     |             - |          42.1 |              - |               3.7 |          84.9
+terminus 5 route          main      |             - |          42.1 |              - |               3.7 |          84.9
+
+MEDIANS over seeds [3861, 3862, 3863, 3864, 3865, 3866, 3867, 3868, 3869, 3870, 3871, 3872] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          fit         | 12 |         16.0 |     0 |          24.1 |          9.7 |          34.4 |               2.4 |   11   0 | 1.32
+crossing 3 click          latch       | 12 |         16.0 |     0 |          24.9 |         10.8 |          34.4 |               2.4 |   10   0 | 1.32
+crossing 3 click          main        | 12 |         16.0 |     0 |          24.9 |         10.6 |          34.4 |               2.4 |   10   0 | 1.31
+crossing 3 route          fit         | 12 |         17.1 |     0 |          27.3 |          6.5 |          37.8 |               2.8 |    4   0 | 1.28
+crossing 3 route          latch       | 12 |         17.1 |     0 |          27.5 |          6.5 |          38.1 |               2.8 |    4   0 | 1.30
+crossing 3 route          main        | 12 |         17.1 |     0 |          27.3 |          6.5 |          37.8 |               2.8 |    3   0 | 1.28
+crossing 5 click          fit         | 12 |         33.5 |     0 |          79.6 |         20.8 |          81.3 |               3.1 |    6   0 | 1.87
+crossing 5 click          latch       | 12 |         33.0 |     1 |          79.3 |         24.1 |          94.5 |               2.7 |    6   0 | 1.98
+crossing 5 click          main        | 12 |         33.0 |     0 |          79.6 |         23.8 |          94.5 |               2.7 |    7   0 | 1.98
+crossing 5 route          fit         | 12 |         43.9 |     0 |          43.0 |         21.3 |          83.9 |               3.1 |    4   0 | 1.88
+crossing 5 route          latch       | 12 |         53.6 |     2 |          42.2 |         17.2 |          84.8 |               3.3 |    5   0 | 2.00
+crossing 5 route          main        | 12 |         53.6 |     2 |          42.1 |         17.2 |          84.8 |               3.3 |    5   0 | 1.96
+locks 3 click             fit         | 12 |         29.5 |     1 |          32.7 |         16.2 |          47.7 |               3.7 |   15   0 | 1.47
+locks 3 click             latch       | 12 |         29.6 |     1 |          34.0 |         19.1 |          47.6 |               3.7 |   16   0 | 1.49
+locks 3 click             main        | 12 |         29.5 |     1 |          36.5 |         17.9 |          47.7 |               3.7 |   15   0 | 1.48
+locks 3 route             fit         | 12 |         28.1 |     2 |          31.6 |         14.4 |          48.6 |               4.2 |    9   2 | 1.51
+locks 3 route             latch       | 12 |         28.1 |     1 |          34.7 |         15.7 |          49.5 |               4.2 |   11   2 | 1.51
+locks 3 route             main        | 12 |         28.1 |     1 |          38.7 |         16.0 |          49.5 |               4.2 |   10   2 | 1.51
+locks 5 click             fit         | 12 |         18.1 |     0 |          48.7 |         14.0 |          75.3 |               6.3 |    3   0 | 1.60
+locks 5 click             latch       | 12 |         18.1 |     0 |          49.4 |         16.6 |          76.8 |               6.2 |    5   0 | 1.75
+locks 5 click             main        | 12 |         18.1 |     0 |          45.9 |         16.4 |          76.8 |               4.4 |    5   0 | 1.74
+locks 5 route             fit         | 12 |         25.2 |     0 |          34.7 |          8.0 |          73.4 |               5.1 |    2   0 | 1.29
+locks 5 route             latch       | 12 |         23.4 |     0 |          37.8 |         10.6 |          73.8 |               4.7 |    0   0 | 1.34
+locks 5 route             main        | 12 |         23.4 |     0 |          37.8 |         10.6 |          73.8 |               4.7 |    0   0 | 1.34
+terminus 3 click          fit         | 12 |         22.0 |     0 |          31.5 |         14.6 |          49.5 |               9.1 |    0   0 | 1.51
+terminus 3 click          latch       | 12 |         22.2 |     0 |          38.2 |         11.4 |          55.0 |              10.5 |    0   0 | 1.51
+terminus 3 click          main        | 12 |         22.2 |     0 |          38.2 |         11.4 |          55.0 |              10.5 |    0   0 | 1.51
+terminus 3 route          fit         | 12 |         18.0 |     0 |          28.9 |          0.0 |          53.8 |               5.3 |    0   0 | 1.29
+terminus 3 route          latch       | 12 |         18.0 |     0 |          28.9 |          0.0 |          54.0 |               5.3 |    0   0 | 1.29
+terminus 3 route          main        | 12 |         18.0 |     0 |          28.9 |          0.0 |          54.0 |               5.3 |    0   0 | 1.29
+terminus 5 click          fit         | 12 |         10.8 |     0 |          28.6 |          1.5 |          70.5 |               6.5 |    0   0 | 1.86
+terminus 5 click          latch       | 12 |         10.8 |     0 |          41.9 |         14.7 |          72.9 |               5.5 |    0   0 | 2.17
+terminus 5 click          main        | 12 |         10.8 |     0 |          41.9 |         14.7 |          74.1 |               5.5 |    0   0 | 2.17
+terminus 5 route          fit         | 12 |         51.8 |     2 |          52.5 |         21.9 |          73.8 |               4.2 |    0   0 | 5.49
+terminus 5 route          latch       | 12 |         48.5 |     2 |          47.0 |         21.1 |          73.8 |               3.7 |    0   0 | 5.66
+terminus 5 route          main        | 12 |         48.2 |     2 |          50.2 |         20.7 |          73.8 |               3.7 |    0   0 | 5.68
+
+EQUALITY click cells: 17 identical across arms, 55 differ
+  DIFFER crossing 3 click seed 3862
+  DIFFER crossing 3 click seed 3863
+  DIFFER crossing 3 click seed 3865
+  DIFFER crossing 3 click seed 3867
+  DIFFER crossing 3 click seed 3868
+  DIFFER crossing 3 click seed 3869
+  DIFFER crossing 5 click seed 3861
+  DIFFER crossing 5 click seed 3862
+  DIFFER crossing 5 click seed 3863
+  DIFFER crossing 5 click seed 3864
+  DIFFER crossing 5 click seed 3865
+  DIFFER crossing 5 click seed 3866
+  DIFFER crossing 5 click seed 3867
+  DIFFER crossing 5 click seed 3868
+  DIFFER crossing 5 click seed 3869
+  DIFFER crossing 5 click seed 3870
+  DIFFER crossing 5 click seed 3871
+  DIFFER crossing 5 click seed 3872
+  DIFFER locks 3 click seed 3867
+  DIFFER locks 3 click seed 3870
+  DIFFER locks 3 click seed 3871
+  DIFFER locks 3 click seed 3872
+  DIFFER locks 5 click seed 3861
+  DIFFER locks 5 click seed 3862
+  DIFFER locks 5 click seed 3863
+  DIFFER locks 5 click seed 3864
+  DIFFER locks 5 click seed 3865
+  DIFFER locks 5 click seed 3866
+  DIFFER locks 5 click seed 3867
+  DIFFER locks 5 click seed 3868
+  DIFFER locks 5 click seed 3869
+  DIFFER locks 5 click seed 3870
+  DIFFER locks 5 click seed 3871
+  DIFFER locks 5 click seed 3872
+  DIFFER terminus 3 click seed 3861
+  DIFFER terminus 3 click seed 3862
+  DIFFER terminus 3 click seed 3863
+  DIFFER terminus 3 click seed 3864
+  DIFFER terminus 3 click seed 3865
+  DIFFER terminus 3 click seed 3866
+  DIFFER terminus 3 click seed 3868
+  DIFFER terminus 3 click seed 3869
+  DIFFER terminus 3 click seed 3870
+  DIFFER terminus 5 click seed 3861
+  DIFFER terminus 5 click seed 3862
+  DIFFER terminus 5 click seed 3863
+  DIFFER terminus 5 click seed 3864
+  DIFFER terminus 5 click seed 3865
+  DIFFER terminus 5 click seed 3866
+  DIFFER terminus 5 click seed 3867
+  DIFFER terminus 5 click seed 3868
+  DIFFER terminus 5 click seed 3869
+  DIFFER terminus 5 click seed 3870
+  DIFFER terminus 5 click seed 3871
+  DIFFER terminus 5 click seed 3872

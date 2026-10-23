@@ -1,0 +1,11 @@
+PASS counter: columns_laid 52 (bodies kept 164)
+PASS deciding: places outside the corridor (click cells) 82 -> 20 (<= 20.5)
+PASS deciding: metres driven outside the corridor after being in it (click cells) 4974 -> 1328 (<= 2487)
+PASS deciding: squads with crews re-dealt (arm, click cells) 0 (base 48)
+  reported: metres outside incl. the drive in (route_out_m) 29052 -> 22210
+PASS guard friend_contacts 12910 -> 10746 (<= 14206.0)
+  FAIL guard never-in     crossing 3 click: 0 v 1
+FAIL probe guards (14 cells)
+PASS guard no-change cell yard_open: 192 of 192 squad rows identical (arm rows 192)
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 499 -> 510
+VERDICT g1v4: FAIL
