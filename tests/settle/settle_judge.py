@@ -217,16 +217,34 @@ def wrong_shapes(probe, arm, rows):
     return tally, wrong
 
 
-def shape_wrong(probe, base, new, b, n, common, lines):
-    """R38.15 (S2 v3): squads whose first shape is wrong for the ground they stand on, arm <= base."""
+def shape_wrong(probe, base, new, b, n, common, lines, judged=True):
+    """R38.15 (S2 v3): squads whose first shape is wrong for the ground they stand on, arm <= base. R38.20 (S2 v4): the
+    same count REPORTED, not judged (judged=False: the arm latches the read it is judged by)."""
     tb, wb = wrong_shapes(probe, base, {c: b[c] for c in common})
     tn, wn = wrong_shapes(probe, new, {c: n[c] for c in common})
     ok = tb["right"] + tb["wrong"] > 0 and tn["wrong"] <= tb["wrong"]
-    lines.append("%s guard first shape wrong for the ground (reference %s): %d -> %d (arm <= base); base %s | arm %s" % (
-        "PASS" if ok else "FAIL", REFERENCE, tb["wrong"], tn["wrong"], dict(tb), dict(tn)))
-    for label, w in ((base, wb), (new, wn)):
-        lines.append("  wrong on %s: %s" % (label, " ".join("%s-%d-%s-s%d#%d:%s/%s" % (c + (t, s)) for c, t, s in w) or "none"))
-    return ok
+    label = ("PASS" if ok else "FAIL") + " guard" if judged else "  reported"
+    lines.append("%s first shape wrong for the ground (reference %s): %d -> %d%s; base %s | arm %s" % (
+        label, REFERENCE, tb["wrong"], tn["wrong"], " (arm <= base)" if judged else "", dict(tb), dict(tn)))
+    for arm, w in ((base, wb), (new, wn)):
+        lines.append("  wrong on %s: %s" % (arm, " ".join("%s-%d-%s-s%d#%d:%s/%s" % (c + (t, s)) for c, t, s in w) or "none"))
+    return ok if judged else True
+
+
+def relays_reported(folder, arm, lines):
+    """R38.20: the anchor latch's re-lays at the deploy (DEPLOY_TRACE latch_lays) and the deploys that hit the cap."""
+    lays, capped, deploys = 0, [], 0
+    for path in sorted(glob.glob(os.path.join(folder, "logs", "*-%s-s*.log" % arm))):
+        with open(path, errors="replace") as f:
+            for line in f:
+                if line.startswith("DEPLOY_TRACE "):
+                    d = json.loads(line.split(" ", 1)[1])
+                    deploys += 1
+                    lays += max(int(d.get("latch_lays", 0)), 0)
+                    if d.get("latch_capped"):
+                        capped.append("%s:%s" % (os.path.basename(path)[:-4], d["leader"]))
+    lines.append("  reported %s deploy re-lays %d over %d deploys; at the cap %d: %s" % (arm, lays, deploys, len(capped),
+                                                                                    " ".join(capped) or "none"))
 
 
 def guards(rows, frows, fc, fb, fn, probe, fight, census_b, census_n, base, new, b, n, common, lines, ok,
@@ -345,8 +363,14 @@ def s2v3(argv):
     ok = g5 and ok
     lines.append("5-squad fight read (--probe-budget=3000; %d runs that never started):" % err5)
     lines.extend(ok5)
+    if os.environ.get("SETTLE_SHAPE_JUDGED", "1") == "0":
+        # R38.20 (S2 v4): first shape reported, not judged; the anchor latch's re-lays reported.
+        relays_reported(probe, new, lines)
+        shape = lambda *a: shape_wrong(*a, judged=False)
+    else:
+        shape = shape_wrong
     code = guards(rows, frows, fc, fb, fn, probe, fight3, census_b, census_n, base, new, b, n, common, lines, ok,
-                  shape_guard=shape_wrong, never_in_total=True)
+                  shape_guard=shape, never_in_total=True)
     return code
 
 

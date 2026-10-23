@@ -161,7 +161,7 @@ settle-s1v3: ## Round 38 (settle, R38.17): S1 v3's series (main v fit, seeds 420
 # (`--deploy-latch=anchor`), seeds never read for S2: no-fight 4301-4312, fight3/fight5 4313-4324, census 4301-4303.
 .PHONY: settle-s2v4
 settle-s2v4: ## Round 38 (settle, R38.19): S2 v4's series (main v anchor, seeds 4301-4324) -> build/settle-s2v4/verdict.txt
-	@$(MAKE) --no-print-directory settle-s2v3 SETTLE_V3="$(BUILD_DIR)/settle-s2v4" SETTLE_V3_NEW=anchor \
+	@SETTLE_SHAPE_JUDGED=0 $(MAKE) --no-print-directory settle-s2v3 SETTLE_V3="$(BUILD_DIR)/settle-s2v4" SETTLE_V3_NEW=anchor \
 		SETTLE_V3_ARMS="main:--deploy-trace anchor:--deploy-latch=anchor,--deploy-trace" \
 		SETTLE_V3_SEEDS="$$(seq -s " " 4301 4312)" SETTLE_V3_FIGHT_SEEDS="$$(seq -s " " 4313 4324)" \
 		SETTLE_V3_CENSUS_SEEDS="4301 4302 4303"

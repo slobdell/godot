@@ -298,11 +298,14 @@ its slots). Laptop dev, not judged: locks + terminus x 3/5 squads click x s3906-
 centroid latch 5, anchor latch 0.
 Arms `main:--deploy-trace` v `anchor:--deploy-latch=anchor,--deploy-trace`. Seeds never read for S2: no-fight 12 cells x
 4301-4312; fight 3-squad (budget 1500) and 5-squad (budget 3000) click cells x 4313-4324; census x 4301-4303.
-`make native settle-s2v4`, judge `settle_judge.py s2v3` (anchor reference). **Lines exactly as S2 v3:** counter and
-deciding as S2; first-shape guard wrong(anchor) <= wrong(main) against the terrain at each squad's first deploy anchor; never-in
-total arm <= base; every other probe guard, contacts, fights (both reads), census as filed. Queued on builder2 after
+`make native settle-s2v4`, judge `settle_judge.py s2v3` with SETTLE_SHAPE_JUDGED=0. **Lines (R38.20, amended before any
+number):** counter and deciding as S2; never-in total arm <= base; every other per-cell probe guard (all-in, place+twitch,
+end foreign, crossed); contacts; fights (both reads, 0 runs that never started); census; and R37.42's tests
+(test_settle_deploy_latch, test_settle_deploy_latch_anchor) green in the full check. **First shape against the anchor's terrain
+is REPORTED for both arms, not judged** (R38.20: the arm latches the read it would be judged by). Also reported: the
+deploy re-lays (DEPLOY_TRACE latch_lays) and every deploy that hits the 3-lay cap (latch_capped). Queued on builder2 after
 doctrine's D2b, before S1 v3 (R38.19).
-**Caveat, said before numbers:** v4 latches the very read the first-shape guard judges by. Its own wrong count is ~0 by
+**Caveat, said before numbers (why R38.20 reports it):** v4 latches the very read the first-shape guard judges by. Its own wrong count is ~0 by
 construction, except a shape that changes after the deploy or a re-lay whose anchor never settles. So that guard can hardly
 fail v4. Whether herringbone or coil looks right at a lane's mouth stays the lead's eye
 (`references/round38/settle/s2v3-lane-mouth-shots-laptop/`).

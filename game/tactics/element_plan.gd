@@ -1896,6 +1896,8 @@ static func _trace_deploy(plan: Dictionary, situation: Dictionary, stand: Vector
 			"formation": String(plan["formation"]), "anchor": [snappedf(stand.x, 0.01), snappedf(stand.z, 0.01)],
 			"heading": [snappedf(heading.x, 0.0001), snappedf(heading.z, 0.0001)], "spacing": spacing,
 			"terrain": String(situation.get("terrain", "")), "anchor_terrain": ElementSituation.terrain_at(stand),
+			"latch_lays": int((plan.get("deploy", {}) as Dictionary).get("latch_lays", -1)),
+			"latch_capped": bool((plan.get("deploy", {}) as Dictionary).get("latch_capped", false)),
 			"fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}), "crews": crews}))
 
 
@@ -1973,6 +1975,8 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 				deploy["heading"], table.spacing(String(situation["terrain"])))
 		var read := situation
 		if DEPLOY_LATCH_ANCHOR:
+			# Measurement (R38.20): the re-lays made, and whether the read at the last anchor still differs (the cap).
+			deploy["latch_lays"] = 0
 			for lay in DEPLOY_LATCH_LAYS:
 				var ground := ElementSituation.terrain_at(deploy["anchor"])
 				if ground == String(read["terrain"]):
@@ -1981,6 +1985,8 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 				read["terrain"] = ground
 				deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), _deploy_shape(read, state, table), deploy["heading"],
 						table.spacing(ground))
+				deploy["latch_lays"] = lay + 1
+			deploy["latch_capped"] = ElementSituation.terrain_at(deploy["anchor"]) != String(read["terrain"])
 		if DEPLOY_FIT:
 			_deploy_fit(deploy, read, at, _deploy_shape(read, state, table), table.spacing(String(read["terrain"])))
 		deploy["terrain"] = String(read["terrain"])
