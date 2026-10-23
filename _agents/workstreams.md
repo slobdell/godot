@@ -67,7 +67,7 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
 S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; guard seeds 2601-2608/2701-2708
-(the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001+ D2c.
+(the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001-5008/5101-5108 D2c.
 
 
 _(each stream files its bar in its BRIEF's Status BEFORE its first number and messages the orchestrator, who copies it here; never
@@ -185,6 +185,17 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   copied here by the orchestrator).** `_deploy_fit` leaves a deploy untouched unless it turns (tests/test_settle_deploy_fit_v3.gd pins a
   non-turning deploy byte-identical to main; fails on S1 v2's code). Seeds: no-fight 12 cells x 4201-4212; fight3 (budget 1500) and fight5
   (budget 3000) x 4213-4224. Lines exactly S1 v2's (`settle_judge.py s1v2`). `make native settle-s1v3`, builder2 after doctrine's D2b.
+
+- **D2c CPU_DEFEND, hold with some, strike with the rest (doctrine, R38.30; filed in stream/doctrine 587c31976 Status before any D2c
+  number; copied here by the orchestrator).** `--cpu-defend --cpu-defend-split --cpu-defend-closing` ON v OFF, code ebb817ea0. SPLIT:
+  post only the crews the coming contacts need (>= 1, <= half the line, nearest the ring first); the rest attack when the side would
+  attack with defend off. CLOSING: a contact counts only while >= 10 m nearer the ring over 5 s; defend lapses 30 s after the last
+  closed. Labs first (builder0 light J4, seeds 2601-2602, 40 fights an arm: OFF, split, closing, package); ONE constants re-tune
+  allowed in labs, recorded before the series tree is named. Series: FRESH guard seeds 5001-5008 + 5101-5108, 320 fights an arm, both
+  arms on the series tree (green check first), builder2 after D3, plus the none line 5001-5008. Deciding: blob win rate down > 2 paired
+  se AND McNemar p < 0.05. Second line: blob kr not up > 2 se. G1 turtle win/length not up > 2 se; G2/G2t kills a fight and length per
+  faction within 2 paired se on both lines; G3 none-line length x1.2; lab guard turtle-line CPU hold share <= OFF + 10 points. A pass
+  ships ON.
 
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
