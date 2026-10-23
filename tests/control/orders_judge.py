@@ -8,6 +8,7 @@
     python3 tests/control/orders_judge.py o3 rows.jsonl BASE_ARM NEW_ARM runs.jsonl
     python3 tests/control/orders_judge.py gl rows.jsonl BASE_ARM NEW_ARM runs.jsonl   (R37.29 group-lay=column)
     python3 tests/control/orders_judge.py g1 rows.jsonl BASE_ARM NEW_ARM runs.jsonl [yard_rows.jsonl]   (round 38 G1, O7 v2)
+    python3 tests/control/orders_judge.py g1v4 rows.jsonl BASE_ARM NEW_ARM runs.jsonl [yard_rows.jsonl]   (G1 v4, R38.44: re-dealt over click cells)
     python3 tests/control/orders_judge.py g3 rows.jsonl BASE_ARM NEW_ARM runs.jsonl   (round 38 G3, place clear)
     python3 tests/control/orders_judge.py o5 BASE_DIR NEW_DIR   (seat-yield-census folders of *.log)
 
@@ -247,7 +248,7 @@ def main(argv):
         ok = ok and passed
         lines.append("%s guard friend_contacts %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", b, n, b * 1.1 + 5))
         ok = probe_guards(rows, base, new, lines) and ok
-    elif mode == "g1":
+    elif mode in ("g1", "g1v4"):
         # Round 38 G1 (O7 v2)'s bar, filed in the brief's Status: places outside the click's corridor <= 25 % of base; metres
         # driven outside it after a crew was once inside (route_left_m) <= 50 % of base; crews re-dealt 0; guards as gl;
         # the open-ground cell (yard_open) rows identical, both arms.
@@ -260,13 +261,16 @@ def main(argv):
         bo = sum(1 for r in clicks if r["arm"] == base and r.get("anchor_outside"))
         no = sum(1 for r in clicks if r["arm"] == new and r.get("anchor_outside"))
         bm, nm = total(clicks, base, "route_left_m"), total(clicks, new, "route_left_m")
-        nr = sum(1 for r in rows if r["arm"] == new and r.get("redealt", 0) > 0)
+        # G1 v4 (R38.44): squads stay whole on plain clicks only; a route's queued legs are dealt as main, so re-deals count
+        # over the click cells (his click included).
+        dealt = clicks if mode == "g1v4" else rows
+        nr = sum(1 for r in dealt if r["arm"] == new and r.get("redealt", 0) > 0)
         d1, d2, d3 = no <= 0.25 * bo, nm <= 0.5 * bm, nr == 0
         lines.append("%s deciding: places outside the corridor (click cells) %d -> %d (<= %.1f)" % ("PASS" if d1 else "FAIL", bo, no, 0.25 * bo))
         lines.append("%s deciding: metres driven outside the corridor after being in it (click cells) %.0f -> %.0f (<= %.0f)" % (
             "PASS" if d2 else "FAIL", bm, nm, 0.5 * bm))
-        lines.append("%s deciding: squads with crews re-dealt (arm) %d (base %d)" % ("PASS" if d3 else "FAIL", nr,
-                     sum(1 for r in rows if r["arm"] == base and r.get("redealt", 0) > 0)))
+        lines.append("%s deciding: squads with crews re-dealt (arm%s) %d (base %d)" % ("PASS" if d3 else "FAIL",
+                     ", click cells" if mode == "g1v4" else "", nr, sum(1 for r in dealt if r["arm"] == base and r.get("redealt", 0) > 0)))
         lines.append("  reported: metres outside incl. the drive in (route_out_m) %.0f -> %.0f" % (
             total(rows, base, "route_out_m"), total(rows, new, "route_out_m")))
         ok = laid > 0 and d1 and d2 and d3
