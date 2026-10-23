@@ -73,9 +73,11 @@ Earlier greens: c475c3163 (3066 / 0), acbdef4c5 (3063 / 0), both builder2.
 - **Known issues:** the D2c lab (20 fights, 2 seeds) said 9 -> 4 and the series said 51 -> 47 %, so lab reads on 2 seeds are
   not evidence. `make doctrine-shots` needs a real GPU (laptop), and its show-match camera follows the action, so it can't show
   where the posts stand. G4 perf was never judged on builder0 for the switches (all ship OFF, and the OFF path is unchanged).
-- **Playtest (all OFF by default):** `make run ARGS="--skirmish --enemy=cpu --cpu-defend --cpu-defend-split"` shows the CPU
-  posting part of its line on its near ring and attacking with the rest. Add `--cpu-defend-closing` for the closing trigger.
-  D2's whole-line defend is `--cpu-defend` alone. Pictures: `make doctrine-shots DOCTRINE_SHOT_FLAGS="..."` on the laptop.
+- **Playtest (all OFF by default; `make skirmish` passes no extra flags and play.mk isn't mine, so call Godot directly):**
+  `.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --path . -- --skirmish --enemy=cpu --element-cpu --cpu-defend
+  --cpu-defend-split` shows the CPU posting part of its line on its near ring and attacking with the rest. `--element-cpu` (=
+  CPU_LEADERS=1) is what runs the CPU's commander. Add `--cpu-defend-closing` for the closing trigger. D2's whole-line defend is
+  `--cpu-defend` alone. A `SKIRMISH_FLAGS` passthrough in play.mk would be a small request to its owner. Pictures: `make doctrine-shots DOCTRINE_SHOT_FLAGS="..."` on the laptop.
 - **Merge notes:** owned paths only: game/tactics/posture.gd, element_commander.gd (new switches, default OFF), tests/
   test_tactics_posture.gd (24 tests), tests/tactics/hold_fire_probe.gd + hold_fire_pair.py, mk/tactics.mk (doctrine-shots,
   tactics-hold-fire). No baseline moved. Raw guard logs: ~/doctrine-guard-raw/{acbdef4c5,c475c3163,5a9464679}-*; scripts:
