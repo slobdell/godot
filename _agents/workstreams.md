@@ -66,7 +66,7 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 ## Bars (round 38)
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
-S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; guard seeds 2601-2608/2701-2708
+S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; guard seeds 2601-2608/2701-2708
 (the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001-5008/5101-5108 D2c.
 
 
@@ -507,6 +507,14 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   for the anchor 10 -> 0; relays 178 -> 94; re-lays 93/571 deploys, 2 at the cap. **Next:** the default flipped ON on a new hash, a full
   native check (R37.42's tests run in it), sim-baseline adopted with attribution on main; then orders' G1 v3 and G3 judged reads may start
   on a latch-on base (R38.12).
+- **R38.34 (2026-10-23 ~02:20) S1 v3 PASSES as filed; it ships stacked on the latch after a guard read on the latch-ON base.** settle
+  (builder2 native, 4ec06dd97 = fac47b5d2's code, latch OFF both arms; references/round38/settle/s1v3-judged-builder2-4ec06dd97,
+  a9c4dd08c): no-fight 576 squads an arm (4201-4212), fights n 36 + 36 (4213-4224); 70/570 deploys turned. Deciding: deploy leg >= 25 m
+  squads 57 -> 18 (line <= 28.5). Guards: twitch >= 15 m 111 -> 79; never-in 5 -> 4; first shape differs 10/576; contacts 12,652 ->
+  12,025; fights pass, 0 never started. Reported place+twitch >= 25 m 163 -> 116. **Ruled:** the pair (fit on the anchor-latched read)
+  has no judged number, so before it ships: S1 ON v OFF on the latch-ON tree, fresh seeds 4401-4424, the S1 v2 GUARDS judged as filed
+  (never-in, twitch, first shape, contacts, fights), the deciding line reported. Filed before numbers, ~1 h on builder2 AHEAD of doctrine's
+  D3 (a read, not a ship) because it is a fix he will see. Then the ON flip on a new hash and one full check.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
