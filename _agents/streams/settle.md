@@ -61,6 +61,15 @@ an arm, the fight probe 18 of the re-filed 36 fights, the census; `references/ro
   206 -> 127 (reported); first shape differs 12/576 (<= 3 %); contacts pass; fights pass (his kills 5.83 -> 6.06, losses 8.11 ->
   7.94, CPU losses 5.83 -> 6.06, n 18). Guard FAIL never-in crossing 5 click (0 v 1: s3866 squad 4 never arrives; it does on
   main). Not waived (R37.17's rule): traced next (builder0 light, `~/settle-keep/neverin/`).
+- **S2's re-read (R38.10) FAILS ONE GUARD: first shape.** builder2 native, cbb2ece52 (game code = e42ff30eb's GREEN),
+  `make native settle-s2-reread`, chain 17:10-18:07, `references/round38/settle/s2-reread-judged-builder2-cbb2ece52/`.
+  Deciding PASSES: shape flips no-fight 56 -> 0, fight (3-squad, n 36) 107 -> 0; reseats 133 -> 0. Never-in (the ruled
+  text) PASSES: fresh main 9 v latch 8; pooled 15 v 15. Fights pass, 3-squad and 5-squad (budget 3000, n 36 each); contacts and
+  census pass. **Guard FAIL first shape: 18 of 576 differ (line <= 17.3; the first read had 12).** Not waived. What the 18
+  are (read after the verdict): 14 coil on main -> herringbone latched (locks and terminus, 4 of them main's flipping
+  coil -> herringbone squads: the R37.42 shape the lab test locks); 1 herringbone -> coil (terminus 5 route s3908 squad 4);
+  3 are a squad with no halt on one side ('', the never-in rows the never-in guard already counts). S2 stays OFF; the
+  orchestrator's call whether the bar stands as filed.
 - **S1, what the rows say (judged rows, read after the verdict; not a re-judging):** the thing S1 changes, the deploy's own seat
   drive, fell hard: squads whose deploy leg (the longest seat drive at the deploy) is >= 25 m 73 -> 20 (-73 %; latch alone 71).
   The deciding line also counted the crews' movement after the 8 s place window, which S1 does not target: twitch >= 15 m in
