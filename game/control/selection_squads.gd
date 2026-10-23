@@ -494,12 +494,14 @@ static func _arc_of(line: PackedVector3Array, p: Vector3) -> float:
 ## Round 38 (orders G3; settle's S2 trace, R38.10, crossing 5 click s3866): today's body laid squads 3 and 4 6.3 m apart
 ## (ground_anchors moved an unstandable place next to its neighbour); squad 4 squeezed into squad 3's parked halt on main and
 ## never arrived under settle's latch. `--place-clear=on`: no two places closer than their squads' short sides (a disc of
-## half the narrower of width and depth each; no GAP_M,
-## whose 14 m would move squads standing staggered 28 m apart): taken nearest the click first, a later place too close to an
-## earlier one moves PLACE_CLEAR_STEP_M at a time, aside away from that neighbour first, then the other side, then back along
-## the approach, onto standable ground, up to PLACE_CLEAR_MAX_M; nowhere clear keeps the place.
-## v2 (dev read 1, builder0 42377862a, dev seeds 3801-3803): v1's box of full width by full depth stepped squads straight back
-## 60-90 m (crossing 3 route s3802: 24 -> 91 m from the click) and moved staggered places 28 m apart.
+## half the narrower of width and depth each; no GAP_M, whose 14 m would move squads standing staggered 28 m apart). The
+## squad with the longest remaining drive keeps its place (R38.15's ruling: never lengthen the slowest squad's trip); a
+## shorter one too close to a kept place moves PLACE_CLEAR_STEP_M at a time, aside either way or back along the approach,
+## onto standable ground, up to PLACE_CLEAR_MAX_M: each way's first clear step, and of those the one nearest the squad's
+## vehicles. Nowhere clear keeps the place.
+## Dev reads (builder0 light, dev seeds 3801-3809): v1's box of full width by full depth stepped squads straight back 60-90 m
+## (42377862a); v2 kept the nearest-the-click place and moved the other away from its neighbour, so g3's extra never-ins
+## were squads main only just gets in (527d62cd2).
 static var PLACE_CLEAR := OS.get_cmdline_user_args().has("--place-clear=on") or OS.get_environment("PLACE_CLEAR") == "on"
 const PLACE_CLEAR_STEP_M := 4.0
 const PLACE_CLEAR_MAX_M := 40.0
@@ -518,31 +520,41 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 		return result
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
 	var flat_click := Vector3(click.x, 0.0, click.z)
+	# v3 (R38.15's ruling): the longest remaining drive first (it keeps its place); nearer the click breaks a tie.
 	var order: Array = []
 	for i in n:
-		order.append([-(Vector3(result[i].x, 0.0, result[i].z) - flat_click).dot(ahead), i])
+		var from: Vector3 = blocks[i].get("center", result[i])
+		var drive := Vector2(result[i].x - from.x, result[i].z - from.z).length()
+		order.append([-snappedf(drive, 0.1), -(Vector3(result[i].x, 0.0, result[i].z) - flat_click).dot(ahead), i])
 	order.sort()
 	var placed: Array[int] = []
 	for entry: Array in order:
-		var i := int(entry[1])
+		var i := int(entry[2])
 		var start := result[i]
 		var near := _too_close(start, i, result, placed, blocks)
 		if near >= 0:
 			var away := 1.0 if (start - result[near]).dot(across) >= 0.0 else -1.0
 			var ways: Array[Vector3] = [across * away, -across * away, -ahead]
-			var step := PLACE_CLEAR_STEP_M
-			var found := false
-			while step <= PLACE_CLEAR_MAX_M and not found:
-				for way: Vector3 in ways:
+			var home: Vector3 = blocks[i].get("center", start)
+			var best: Variant = null
+			for way: Vector3 in ways:  # each way's first clear step; of those, the one nearest home
+				var step := PLACE_CLEAR_STEP_M
+				while step <= PLACE_CLEAR_MAX_M:
 					var at := start + way * step
 					if bool(standable.call(at)) and _too_close(at, i, result, placed, blocks) < 0:
-						result[i] = at
-						places_cleared += 1
-						found = true
+						if best == null or _flat_gap(at, home) < _flat_gap(best, home):
+							best = at
 						break
-				step += PLACE_CLEAR_STEP_M
+					step += PLACE_CLEAR_STEP_M
+			if best != null:
+				result[i] = best
+				places_cleared += 1
 		placed.append(i)
 	return result
+
+
+static func _flat_gap(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
 
 
 ## The first placed block whose short-side disc `at` (block i's) overlaps, or -1.

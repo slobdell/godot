@@ -282,18 +282,18 @@ func test_g1_a_column_too_long_for_the_ground_squeezes_its_ranks() -> void:
 ## back along the approach until its footprint is clear of the nearer one's.
 func test_g3_a_place_on_another_squads_halt_moves_aside() -> void:
 	# G3 dev read 1 (builder0, 42377862a, crossing 3 click s3801): main laid squads 2 and 3 2.8 m apart, herringbones.
-	var blocks := [{"center": Vector3(0, 0, 80), "width": 25.4, "depth": 54.8}, {"center": Vector3(5, 0, 90), "width": 25.4, "depth": 54.8}]
+	var blocks := [{"center": Vector3(0, 0, 100), "width": 25.4, "depth": 54.8}, {"center": Vector3(60, 0, 0), "width": 25.4, "depth": 54.8}]
 	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
 	var out := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true)
-	assert_eq(out[0], places[0], "the place nearer the click stays")
+	assert_eq(out[0], places[0], "the squad with the longer drive keeps its place")
 	var need := 25.4
 	assert_true(out[1].distance_to(out[0]) >= need - 0.01, "the other clears its short side (%s)" % [out])
 	assert_true(out[1].distance_to(places[1]) <= need, "by about the shortfall, not a road length back (%s)" % [out])
-	assert_true(out[1].x > places[1].x and absf(out[1].z - places[1].z) < 0.01, "aside, away from its neighbour (%s)" % [out])
+	assert_true(out[1].x > places[1].x and absf(out[1].z - places[1].z) < 0.01, "aside, toward its own vehicles (%s)" % [out])
 
 
 func test_g3_aside_blocked_it_steps_back_and_never_far() -> void:
-	var blocks := [{"center": Vector3(0, 0, 80), "width": 25.4, "depth": 54.8}, {"center": Vector3(5, 0, 90), "width": 25.4, "depth": 54.8}]
+	var blocks := [{"center": Vector3(0, 0, 100), "width": 25.4, "depth": 54.8}, {"center": Vector3(5, 0, 90), "width": 25.4, "depth": 54.8}]
 	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
 	var street := func(p: Vector3) -> bool: return absf(p.x) < 6.0
 	var out := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), street)
@@ -303,6 +303,26 @@ func test_g3_aside_blocked_it_steps_back_and_never_far() -> void:
 	assert_eq(SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), walled), places,
 			"nowhere clear within PLACE_CLEAR_MAX_M: the place is kept")
 	assert_true(SelectionSquads.PLACE_CLEAR_MAX_M <= 40.0, "never a road length back (dev read 1 moved squads 60-90 m)")
+
+
+func test_g3_of_the_clear_ways_the_one_nearest_the_squad() -> void:
+	# G3 dev reads 3-4 (builder0, 527d62cd2): a squad moved aside away from its neighbour drove further and missed the
+	# probe's limit where main only just got in. Of the ways clear at a step, the one nearest the squad's own vehicles.
+	var blocks := [{"center": Vector3(0, 0, 80), "width": 25.4, "depth": 54.8}, {"center": Vector3(-40, 0, 20), "width": 25.4, "depth": 54.8}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
+	var out := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true)
+	assert_true(out[1].x < 0.0, "aside toward its own vehicles, past its neighbour's far side (%s)" % [out])
+	assert_true(out[1].distance_to(out[0]) >= 25.4 - 0.01, "clear (%s)" % [out])
+
+
+func test_g3_the_slowest_squad_keeps_its_place() -> void:
+	# R38.15's ruling: G3 never lengthens the trip of the squad that is already the slowest. Of two places too close,
+	# the squad with the shorter remaining drive yields, nearer the click or not.
+	var blocks := [{"center": Vector3(0, 0, 30), "width": 25.4, "depth": 54.8}, {"center": Vector3(0, 0, 150), "width": 25.4, "depth": 54.8}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
+	var out := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true)
+	assert_eq(out[1], places[1], "the far squad (150 m to drive) keeps its place")
+	assert_true(out[0] != places[0] and out[0].distance_to(out[1]) >= 25.4 - 0.01, "the near squad yields (%s)" % [out])
 
 
 func test_g3_staggered_or_apart_places_are_kept() -> void:
