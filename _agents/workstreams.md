@@ -600,6 +600,14 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   anchor on the junction, Delta_3 in a relaid lane-mouth slot; Echo_1-3 stuck between them t 36-90 s, nothing gives way). **Round-39
   framing:** no seat of a deploying squad (relaid seats included) on a following same-order squad's remaining route, at any shape or
   angle; plus the chain-aware give-way; then S1 re-read.
+- **R38.41 (2026-10-23 ~06:55) D2c (SPLIT) FAILS the deciding line; ships OFF; every guard held.** doctrine (5a9464679 both arms, green;
+  builder2; fresh guard seeds 5001-5008 + 5101-5108; 320 fights an arm, 0 lost; 400/400 ON logs carry the switch): deciding blob 51 -> 47 %
+  (-4.4, se 3.8 = 1.2 se; McNemar p 0.13); kr 0.90 -> 0.86; G1 turtle 39 -> 35 % holds; **G2t turtle kills -0.56 (1.6 se) holds: the
+  passivity of D2/D2b is fixed**; G3 none-line median 159 -> 168 s (+6 %), caps 0 v 0 holds; outside 2 se by faction: blob law median
+  14 s shorter (3.5 se), turtle condemned kills 2.0 se. The lab's 9 -> 4 of 20 was luck on two seeds. Across D2/D2b/D2c the blob effect
+  was -4.4 / -3.1 / -4.4 points, each short of 2 se at 160 blob fights; not pooled (different arms). **Round-39 candidate:** SPLIT
+  costs nothing the guards measure; a powered series (~4x the fights, a bar sized for a 4-point effect) would decide it. D3 started 06:50
+  on builder2 as filed on OFF (~4.5 h); native's row follows.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
