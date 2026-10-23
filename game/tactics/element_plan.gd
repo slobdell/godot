@@ -2050,7 +2050,8 @@ static func _deploy_latched(situation: Dictionary, state: Dictionary) -> Diction
 ##   2. each is dealt by the least total of the drives the crews will actually make: from where each crew stands to its
 ##      seat GROUNDED as Element.ground will ground it (the situation's `ground_seat`; the nominal seat without one);
 ##   3. the ordered heading stands unless the axis shortens the longest of those drives by DEPLOY_FIT_GAIN_M.
-## The deal is kept in the deploy (`keep`) and seats the deploy's update; the seating is fixed from there as before.
+## A turned deploy keeps its deal (`keep`), which seats the deploy's update; the seating is fixed from there as before.
+## A deploy not turned is main's untouched (S1 v3, R38.17): only the `fit` measurement is added.
 ## `--deploy-fit=on` (env DEPLOY_FIT=on) opts in; OFF until its bar passes.
 static var DEPLOY_FIT := OS.get_cmdline_user_args().has("--deploy-fit=on") or OS.get_environment("DEPLOY_FIT") == "on"
 const DEPLOY_FIT_GAIN_M := 8.0
@@ -2081,13 +2082,15 @@ static func _deploy_fit(deploy: Dictionary, situation: Dictionary, at: Vector3, 
 			other["anchor"] = anchor
 			best = other
 			turned = true
+	deploy["fit"] = {"worst_m": snappedf(float(best["worst"]), 0.1), "ordered_worst_m": snappedf(ordered_worst, 0.1),
+			"turned": turned}
+	# S1 v3 (R38.17): a deploy not turned is main's, byte for byte (S1 v2 dealt it too, and runs with no turn diverged).
+	if not turned:
+		return
 	deploy["heading"] = best["heading"]
 	deploy["anchor"] = best["anchor"]
 	deploy["keep"] = best["keep"]
-	deploy["fit"] = {"worst_m": snappedf(float(best["worst"]), 0.1), "ordered_worst_m": snappedf(ordered_worst, 0.1),
-			"turned": turned}
-	if turned:
-		deploy_fit_turned += 1
+	deploy_fit_turned += 1
 
 
 ## The unit axis the crews stand strung along (their positions' principal axis), or null when they stand round their

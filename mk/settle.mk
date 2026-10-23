@@ -148,3 +148,10 @@ settle-s2v3-context: native-for-check import ## Round 38 (settle, R38.15): S2 v3
 	@cd $(SETTLE_V3_CTX) && for ref in anchor stand; do SETTLE_V3_REFERENCE=$$ref $(PYTHON) -c "import sys; sys.path.insert(0, '$(CURDIR)/tests/settle'); import settle_judge as sj, orders_judge as oj, os; \
 		rows = oj.load('probe/rows.jsonl'); b, n = sj.keyed(rows, 'main'), sj.keyed(rows, 'latch'); c = [k for k in b if k in n]; \
 		l = []; sj.shape_wrong('probe', 'main', 'latch', b, n, c, l); sj.shape_differs('probe', 'main', 'latch', b, n, c, l); print('\n'.join(l))"; done | tee context.txt || true
+
+# R38.17: S1 v3 = S1 v2's series and lines (judge `settle_judge.py s1v2`) on the fit that keeps main's deploy unless it
+# turns, seeds never read for S1: no-fight 4201-4212, fight3/fight5 4213-4224 -> build/settle-s1v3/verdict.txt.
+.PHONY: settle-s1v3
+settle-s1v3: ## Round 38 (settle, R38.17): S1 v3's series (main v fit, seeds 4201-4224) -> build/settle-s1v3/verdict.txt
+	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3" SETTLE_V2_SEEDS="$$(seq 4201 4212)" \
+		SETTLE_V2_FIGHT_SEEDS="$$(seq 4213 4224)"

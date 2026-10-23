@@ -254,6 +254,18 @@ and friend_contacts_foreign <= base x 1.1 + 5; fights: his kills, his losses, th
 in each fight read, and no fight run that never starts. **Reported:** place + twitch >= 25 m squads. No CPU census (vacuous:
 the deploy step never fires in CPU v CPU fights, R38.9). Queued on builder2 behind S2's re-read. **A pass ships ON.**
 
+### Bar S1 v3 DEPLOY_FIT (R38.17; filed 2026-10-22 before any number on its seeds; code = this commit)
+The fit keeps main's deploy byte for byte unless it turns (only the `fit` measurement is added), so only turned squads can
+differ. Pinned by `tests/test_settle_deploy_fit_v3.gd` (a deploy not turned: every plan identical to main's; the traced
+squad still turns and keeps its deal). Laptop dev (not judged): crossing 5 route s3931, S1 v2's never-in run, rows
+main v fit identical, 5 of 5 squads, 0 deploys turned. Arms `main:--deploy-trace` v `fit:--deploy-fit=on,--deploy-trace`.
+Seeds never read for S1 (the workstreams registry): no-fight probe 12 cells x 4201-4212; fight probe 3-squad (budget 1500)
+and 5-squad (budget 3000) click cells x 4213-4224. **Lines exactly as S1 v2** (`settle_judge.py s1v2`): counter = deploys
+turned > 0; deciding = squads with a deploy leg >= 25 m, base >= 10 and arm <= 50 % of base; guards: twitch >= 15 m squads
+not up, never-in runs arm <= base, first shape differs <= 3 %, friend contacts and foreign <= 110 % + 5, fights (his kills,
+his losses, CPU losses within 1.645 se, 0 runs that never started) in both fight reads. `make native settle-s1v3`, builder2,
+queued after doctrine's D2b (R38.17's order).
+
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
   column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as
