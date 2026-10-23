@@ -1,0 +1,7 @@
+terminus  3 avenue  n3 | main off    214 never 0 allin  39.4 tw  12.0 X 0 | g2 off    234 never 0 allin  41.2 tw  17.1 X 0
+terminus  3 east    n3 | main off    670 never 0 allin  53.4 tw  24.5 X 0 | g2 off    645 never 0 allin  49.6 tw  28.6 X 0
+terminus  3 west    n3 | main off     66 never 0 allin  42.2 tw   0.0 X 0 | g2 off     98 never 0 allin  35.6 tw   0.0 X 0
+terminus  5 avenue  n3 | main off    142 never 0 allin  36.4 tw   0.0 X 0 | g2 off    178 never 0 allin  43.1 tw  10.2 X 0
+terminus  5 east    n3 | main off    887 never 3 allin  -1.0 tw  31.4 X 0 | g2 off   2147 never 0 allin  58.9 tw  25.0 X 0
+terminus  5 west    n3 | main off   1127 never 6 allin  -1.0 tw  37.2 X 0 | g2 off   2063 never 0 allin  54.1 tw  14.9 X 0
+TOTAL route_off_m main 3105 g2 5365
