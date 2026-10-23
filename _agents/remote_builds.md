@@ -822,3 +822,7 @@ stream's `local.mk` with a different OFFSET, or `make worktree`'s port block), o
 - **(round 38, feedback) A builder0 full check at load ~26 dies on the 90-min slot cap.** Two of feedback's checks were killed that way
   while two light series shared builder0 (R38.8). When builder0's load is over ~20, send full checks to builder2 (R38.2); a judged perf
   line then waits for a quiet builder0 (main's own check), never a re-run on builder2.
+
+- **(round 38, settle) A light-lane series at J <= 4 runs past slot.sh's default 5400 s limit and is killed without a verdict.**
+  settle's S1 v5 (builder0, J 4, 03:23-04:53) died in its 5-squad fight cells. Any series on the light lane that may exceed 90 min must
+  set `TANK_SQUAD_SLOT_TIMEOUT` (e.g. 14400) when it launches.
