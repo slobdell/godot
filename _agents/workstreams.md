@@ -577,6 +577,15 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   79.5 m from the click). Not a guard: terminus 5 route never-in main 4 v column 1. **A shared spot:** three of these never-ins and two of
   main's own sit at crossing's west bridge mouth (-70, 30). Both stay OFF. Next on dev seeds only: G3's neighbour re-deal on his click,
   G1's 79.5 m place, the mouth; v4 bars only once a dev read is clean (a round-39 item if the round closes first).
+- **R38.40 (2026-10-23 ~06:30) S1 v5 FAILS never-in 3 -> 4; S1 is written up as BLOCKED for round 38 (no v6 this round).** settle
+  (builder0 light J4, 6c3112193 = e81b57579's code, 576 squads an arm; references/round38/settle/s1v5-judged-builder0-6c3112193/,
+  dd59e386f): counter 51/572 turned; twitch 96 -> 78; first shape 1/576; contacts 11,996 -> 11,715 (foreign 6,622 -> 6,370); fights
+  36/36 pass; reported legs >= 25 m 63 -> 33; street axis set on 504/504 herringbone deploys, 23 turns refused. The extra never-in is
+  terminus 5 route again (s4505 Echo: main in at 42.2 s, fit never), with Delta's lane herringbone turned ALONG the street inside the
+  cap. **Ruled:** S1 has now failed v1, v2, v4 and v5, each by one marginal never-in, three of them a later squad that cannot pass a
+  squad deploying ahead of it on terminus 5 route. Another tweak would be fitting to the guard. The two-arm s4505 trace finishes and its
+  cause goes in settle's close notes; **round-39 candidate:** a deploying squad must not settle across a lane a following squad of the
+  same order still has to pass (with manoeuvre's chain-aware give-way, R38.26), then S1 re-read on top of it.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
