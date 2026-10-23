@@ -4341,3 +4341,10 @@ perf line). Open rules question for him: the Resupply Tanker rarely gets to repa
 Question: the Tanker repairs only vehicles not hit for 3 s, so in real fights it rarely repairs; should it also repair during
 combat, more slowly? **His answer: "yes it also repair during combat".** Rule: the Tanker keeps repairing vehicles under fire at a
 reduced rate (start at half, 2.5 hp/s, full 5 hp/s after 3 s quiet as today); its repair beam (his pick A) shows it.
+
+## Round 38: his end-of-match pick (2026-10-22 18:41 PDT, feedback's directions page)
+
+Page https://claude.ai/artifact/V4dAc2UNofD2553VqKKS5q, db `picks/end`: **letter "a", words empty** (saved 2026-10-23T01:41:33Z).
+**A = the end card:** when a match he commands ends, a card says who won and why (e.g. DEFEAT, "Road Gangs held the rings: 90 points to
+61"), the field dims, and clicks after the end say MATCH OVER instead of giving orders (F2). It fits a portrait phone (937e7859c).
+Feedback builds A final: the losing looks (P today's banner + why, B broadcast bars, C banner stays) and `--end-look` are deleted.
