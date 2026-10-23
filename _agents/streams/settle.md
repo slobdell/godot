@@ -358,6 +358,21 @@ nothing); twitch >= 15 m squads not up; never-in runs arm <= base; first shape d
 **Reported, not judged:** the deciding line (deploy leg >= 25 m squads) and place+twitch >= 25 m. A pass ships S1 ON on a
 new hash, with one full check (R38.34).
 
+### S1 v4 verdict: FAILS on the never-in guard (builder2 native, fdeb18ce6 = b3ad7baa4's code; both arms latch-ON)
+`make native settle-s1v4`, builder2, jobs 14; no-fight 12 cells x 4401-4412 = 576 squads an arm, fights 3-squad and 5-squad
+x 4413-4424 (n 36 each). `references/round38/settle/s1v4-judged-builder2-fdeb18ce6/`. S1 stays OFF.
+- Counter PASS: 71 of 573 deploys turned. Reported deciding: deploy leg >= 25 m squads 62 -> 29 (S1 v3's line <= 31.0).
+- **Guard FAIL never-in: 3 -> 4 runs.** The three of main's are shared by both arms (crossing 5 route s4412 squad 4, locks
+  3 route s4406 squad 1, terminus 5 route s4401 squad 5). The new one: **terminus 5 route s4410 squad 5 (Echo)**, in at
+  67.8 s on main, never in on fit. Its deploy trace: Delta's deploy (tick 1359, the cap) turned on fit (leg 42.8 -> 15.9 m)
+  and Charlie's crews twitched 0 -> 11.2 m; Echo (anchor 53.1, 43.0) never deploys.
+- Guards PASS: twitch >= 15 m 98 -> 91; first shape differs 1 of 576; contacts 12,995 -> 12,438, foreign 7,289 -> 6,961;
+  fights 3-squad (his kills 5.44 -> 5.31, his losses 6.50 -> 6.61, CPU losses 5.50 -> 5.33) and 5-squad (10.36 -> 10.39,
+  12.61 -> 13.00, 10.50 -> 10.56), 0 runs that never started.
+- Reported: place+twitch >= 25 m 165 -> 143.
+- Trace (builder0 light, both arms, `--element-trace=all --arrive-trace`) under way; manoeuvre's chained give-way is the
+  first thing checked.
+
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
   column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as
