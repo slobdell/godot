@@ -57,7 +57,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 deciding 1.5 se; G2 broken on the turtle line). **D2b JUDGED: FAIL, ships OFF** (verdict below: deciding 0.9 se; G2t turtle
 kills -2.8 se; G3 none-line median +31 %). `--cpu-defend` stays in the code, OFF, for playtests. **D3** re-based on what ships
 (defend OFF); Bar D3 filed below before any arm number; it waits behind settle's S2 v4 and S1 v3 on builder2. **D2c** (hold with
-some, strike with the rest; R38.30) built OFF in ebb817ea0, Bar D2c filed below, labs on builder0 light. **GREEN: c475c3163**
+some, strike with the rest; R38.30) built OFF in ebb817ea0, Bar D2c filed below; labs done: SPLIT is the lever (blob 9 -> 4 of 20), so the series
+arm is SPLIT alone (re-filed before any series number); the series waits for builder2 after D3. **GREEN: c475c3163**
 (builder2 `make native check exited 0`, 3066 passed / 0 failed; the scenario perf row NOT JUDGED, reason=loaded, so G4 is re-run
 alone). Earlier green: acbdef4c5 (builder2, 3063 / 0, sim-baseline 13/13 unmoved with the switch OFF). Raw guard logs:
 ~/doctrine-guard-raw/acbdef4c5-{off,defend}, ~/doctrine-guard-raw/c475c3163-{off,defend}.
@@ -214,6 +215,26 @@ contact counts only while closing (>= 10 m nearer the ring over 5 s), and the de
 - **G4:** perf, commander-only code (one decide more a think under SPLIT, a distance per contact under CLOSING). **Equality:**
   sim-baseline unmoved with the switches OFF.
 - A pass ships ON (symmetric). If the round closes first it carries to round 39 with this bar intact.
+
+**D2c labs (NOT judged; builder0 native light J4, hold_fire_probe, tree 587c31976 (code ebb817ea0), seeds 2601-2602 x 5 maps x
+both sides, 20 fights a line an arm; switches confirmed in every ON log's TANK_SQUAD_READY, none in OFF; OFF reproduces
+D2b's OFF lab exactly, 22.0 % / 35.7 %, so the OFF path is unchanged):**
+
+| arm | turtle: guard wins | kills guard + CPU | CPU hold (verb / posture) | blob: guard wins | kills guard + CPU | CPU hold (verb / posture) |
+|---|---|---|---|---|---|---|
+| OFF | 8 | 283 + 310 | 22.0 / 35.7 % | 9 | 301 + 383 | 5.2 / 13.4 % |
+| split | 7 | 271 + 324 | 31.6 / 64.3 % | **4** | 249 + 407 | 25.5 / 67.3 % |
+| closing | 10 | 281 + 316 | 23.4 / 38.6 % | 9 | 310 + 378 | 32.1 / 55.2 % |
+| package | 8 | 270 + 320 | 23.2 / 46.6 % | 10 | 343 + 352 | 17.7 / 46.9 % |
+
+None line (CPU v CPU, same seeds, 20 fights): OFF median 158 s (6 control, 14 elimination); split 139 s (4 / 16); package 188 s
+(8 / 12). Kills 684 / 672 / 638.
+- SPLIT is the lever: the blob wins 4 of 20 v 9, turtle-line kills hold (595 v 593; D2 527, D2b 542), and CPU v CPU fights got
+  shorter, not longer. CLOSING buys nothing on the blob and undoes SPLIT's gain inside the package (10 of 20), and it lengthens
+  CPU v CPU. My read: a blob held at a barrier stops closing, the defend lapses after 30 s, and the CPU leaves its ring.
+- **Series arm re-filed (2026-10-23, before any series number): `--cpu-defend --cpu-defend-split` (SPLIT alone), not the
+  package.** The bar's text is otherwise unchanged. No constant was re-tuned. CLOSING stays in the code, OFF. Lab guard on
+  SPLIT: 31.6 % v OFF 22.0 %, inside +10 points by 0.4. Tight: the series reports it again on the series tree.
 
 **Bar D3 (FILED 2026-10-23 before any D3 arm number).** Change: the round-37 rule switches ON v OFF, on what ships (defend OFF,
 D2/D2b failed): **rules** `--rules-on=sight,spread,pin_slow`; **hulldown** `--cover-on=hulldown`; **pkg** both together.
