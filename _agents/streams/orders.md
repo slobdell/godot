@@ -51,7 +51,23 @@ Nothing (the shots go to him at the close).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-23 ~08:10 PDT)
+### NOW (2026-10-23 ~10:00 PDT)
+- **Judged so far, all FAIL as filed, all OFF, evidence in `references/round38/orders/`:**
+  - G3 v3 (`g3-judged-builder0-a67afc951`);
+  - G1 v3 (`g1-v3judged-builder0-b55757fee`);
+  - G3 v4 (`g3-v4judged-builder0-9986a1cba`): deciding passes and his click passes; never-in 3 -> 4; a place was stepped
+    across the river on s4603.
+- **Bars filed, waiting on a green check then the light lane:**
+  - **G3 v5** (b73157a9e, seeds 5201-5212). Dev read 10 PASS on every line (builder0, 425dc6a5b, dev seeds 3804-3809, n 6).
+  - **G1 v4** (7c3250ed6, seeds 4701-4712). Dev read 2 (builder0, 4d68baba4, dev seeds 3804-3809, n 6) passes everything
+    but terminus 5 route never-in 1 -> 2: the route's first plain click keeps squads whole. Filed as is on the
+    orchestrator's ruling (option (a)).
+  - Main a34f05105 merged at ab31e9bc2 (settle code all OFF). Its builder0 full check is running and covers both bars.
+    Then the judged reads: G3 v5, then G1 v4.
+- **G2:** dev read 3 (`--group-gate=main`, dev seeds 3801-3803) running on the light lane.
+- **Owed before anything ships ON:** a quiet-box builder0 control-timing read.
+
+### EARLIER (2026-10-23 ~08:10 PDT)
 - **Bar G3 v4 filed** (f0a70f544, seeds 4601-4612). G3 v4 dev read 9 PASS (builder0, e518fd649, dev seeds 3804-3809, n 6).
 - **Check on f0a70f544** (builder0): `make native check exited 2`. 24 passed, 1 FAILED, 2 NOT JUDGED.
   - The FAIL is remote-guard-test's `slot-light` setup: "the quiet window opened not in 30 s, at load 14.91 on 10
