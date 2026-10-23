@@ -432,11 +432,20 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   construction (the twins are bit-identical per seed); a floor needs shifted seeds. Next for manoeuvre: settle's s3866 give-way read (light).
   builder0 now carries only light lanes (orders, feedback, manoeuvre); full checks may go to it again when it is under its loaded line
   (tools/loaded.sh), and main owes a judged perf line there.
-- **R38.25 (2026-10-23 ~00:10) OPEN: a possible native/GDScript twin mismatch on main.** orders: terminus seed 3801, 5-squad click
+- **R38.25 (2026-10-23 ~00:10) a native/GDScript twin mismatch? NO: the MACHINE (glibc float trig); see the answer below.** orders: terminus seed 3801, 5-squad click
   (-29.3/85.8), main arm: squads 1-3 identical; squads 4 and 5 (one shared place (8.0, 66.5), a queue) arrive 29.5 s on the laptop
   (GDScript, a24f3b3fb, no native/bin) v 47.4 s on builder0 (native ON, 0646a865e = a24f3b3fb + Status), the same on seeds 3801-3809
   there. Machine v path not yet split: native runs the same command native ON and OFF on one machine and finds the first diverging tick.
   Until it is split, laptop dev reads do not predict builder0 in jams; judged reads stay on their filed machine.
+  **Answer (native, ~01:00):** native and GDScript agree on one machine (laptop 29.5/29.5, builder0 47.4/47.4; builder2 47.4; the laptop at a
+  quarter core still 29.5). SIM_HASH matches to tick 30; at tick 33 three TankCommand steer floats differ by 1-2 ulp, then the jam grows
+  it to 18 s. Cause: the laptop is glibc 2.39, the builders 2.43; glibc 2.41 made float libm correctly rounded (CORE-MATH): atan2f,
+  acosf, asinf, atanf, tanf differ (2M-input probe), builder0 == builder2. Proof: a 5-function LD_PRELOAD shim on the laptop gives SIM_HASH
+  identical to builder0 on all 180 checkpoints. **Rules from here:** native v GDScript on the builders is sound; laptop dev reads are not
+  comparable to builder reads where a jam amplifies ulps (dev reads that matter run on a builder light lane); sim-baseline is per-machine.
+  Open: under the shim the laptop's native arm gives 28.6, not 47.4 (one float function differs engine v native; tanf first suspect).
+  **Round-39 candidate:** the sim's trig made machine-independent (its own correctly rounded or double-based float trig), because his
+  laptop and any player's machine simulate differently today (replays, cross-machine fights).
 - **R38.26 (2026-10-23 ~00:20) manoeuvre at its end state; s3866 read.** (builder0 light native, n 1 an arm; stream/manoeuvre e55cba940,
   references/round38/manoeuvre/s3866-giveway/README.md): seatstep OFF, squad 4 in at 33.9 s on main, NEVER under `--deploy-latch=on` or
   `=anchor`. Not one pick, not a lead-out: Alpha_3 gives way four times in 10 s (6.7-10.3 m each), each from where the last left it, seat
