@@ -335,6 +335,8 @@ fights). Arms main:--deploy-trace v anchor:--deploy-latch=anchor,--deploy-trace.
   unpinned hybrid). test 3070 passed, 0 failed, including test_settle_deploy_latch (3), test_settle_deploy_latch_anchor
   (2) and test_tactics_scenarios_2::test_a_move_ends_formed_up_on_the_spot_and_stops_issuing (R37.42). sim-baseline:
   all 13 maps unmoved. The 2 NOT JUDGED are not passes: perf-judge needs a run on a quiet box.
+- **Shipped (R38.38):** merged as main e1f602fbf; main's full check on builder0 is green and ALL JUDGED: 27 targets,
+  3104 passed / 0 failed, perf-judge PASS 7,077 us/tick (ratio 1.01x; 7,060 before the latch), sim-baseline unmoved.
 
 ### S1 v3 verdict: PASSES as filed (builder2 native, 4ec06dd97 = fac47b5d2's code; latch OFF on both arms)
 `make native settle-s1v3`, builder2 (e2-highcpu-32), jobs 14; no-fight probe 12 cells x 4201-4212 = 576 squads an arm, fight
