@@ -535,6 +535,12 @@ static func _arc_of(line: PackedVector3Array, p: Vector3) -> float:
 static var PLACE_CLEAR := OS.get_cmdline_user_args().has("--place-clear=on") or OS.get_environment("PLACE_CLEAR") == "on"
 const PLACE_CLEAR_STEP_M := 4.0
 const PLACE_CLEAR_MAX_M := 40.0
+## G3 v4 (judged a67afc951, builder0, n 12: his 5 click twitch 13.8 -> 26.0 m): v3 moved squad 3 off a place 15.6 m from
+## squad 5's (inside the short sides' 19.7 m, not a pair the bar counts) into the gap before squad 4; its seats stood 4 m from
+## squad 5's five-crew halt, 38 m deep, which re-packed. `--place-clear-trigger=near`: only a pair closer than
+## PLACE_CLEAR_TRIGGER_M (the bar's 12 m and the scan's 2 m) moves, and it still clears the short sides.
+static var PLACE_CLEAR_NEAR := OS.get_cmdline_user_args().has("--place-clear-trigger=near")
+const PLACE_CLEAR_TRIGGER_M := 14.0
 ## Measurement: places moved so, since start.
 static var places_cleared := 0
 
@@ -562,6 +568,8 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 		var i := int(entry[2])
 		var start := result[i]
 		var near := _too_close(start, i, result, placed, blocks)
+		if near >= 0 and PLACE_CLEAR_NEAR and not _within(start, result, placed, PLACE_CLEAR_TRIGGER_M):
+			near = -1
 		if near >= 0:
 			var away := 1.0 if (start - result[near]).dot(across) >= 0.0 else -1.0
 			var ways: Array[Vector3] = [across * away, -across * away, -ahead]
@@ -585,6 +593,14 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 
 static func _flat_gap(a: Vector3, b: Vector3) -> float:
 	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+## Whether any placed place stands within `reach` of `at` (flat).
+static func _within(at: Vector3, places: Array[Vector3], placed: Array[int], reach: float) -> bool:
+	for j: int in placed:
+		if _flat_gap(at, places[j]) < reach:
+			return true
+	return false
 
 
 ## The first placed block whose short-side disc `at` (block i's) overlaps, or -1.

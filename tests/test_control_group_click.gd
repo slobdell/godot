@@ -28,6 +28,7 @@ func teardown() -> void:
 	SelectionSquads.GROUP_LAY = OS.get_cmdline_user_args().has("--group-lay=column")
 	SelectionSquads.CLEAR_AT_CLICK = not OS.get_cmdline_user_args().has("--group-clear=rank")
 	SelectionSquads.LEG_WIDTH_ALONG = OS.get_cmdline_user_args().has("--group-leg-width=along")
+	SelectionSquads.PLACE_CLEAR_NEAR = OS.get_cmdline_user_args().has("--place-clear-trigger=near")
 	if _lab != null:
 		_lab.dispose()
 	_lab = null
@@ -324,6 +325,25 @@ func test_g3_the_slowest_squad_keeps_its_place() -> void:
 	var out := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), func(_p: Vector3) -> bool: return true)
 	assert_eq(out[1], places[1], "the far squad (150 m to drive) keeps its place")
 	assert_true(out[0] != places[0] and out[0].distance_to(out[1]) >= 25.4 - 0.01, "the near squad yields (%s)" % [out])
+
+
+## G3 v4 (judged a67afc951, his 5 click: g3 moved squad 3 off a place 15.6 m from squad 5's, not a pair the bar counts,
+## into the gap before squad 4; its seats landed 4 m from squad 5's 38 m-deep halt, which re-packed, twitch 13.8 -> 26.0 m).
+## `--place-clear-trigger=near`: only a pair closer than PLACE_CLEAR_TRIGGER_M moves; it still clears the short sides.
+func test_g3_near_trigger_moves_only_pairs_on_each_other() -> void:
+	var blocks := [{"center": Vector3(45, 0, 88), "width": 25.4, "depth": 28.0}, {"center": Vector3(2, 0, 88), "width": 20.4, "depth": 14.0}]
+	var his: Array[Vector3] = [Vector3(8, 0, 66.5), Vector3(-7.5, 0, 68.5)]
+	var any := func(_p: Vector3) -> bool: return true
+	SelectionSquads.PLACE_CLEAR_NEAR = false
+	assert_true(SelectionSquads.place_clear(his, blocks, Vector3(-29.3, 0, 85.8), Vector3(0, 0, -1), any) != his,
+			"v3: 15.6 m is inside the short sides' 19.7 m, so a place moves")
+	SelectionSquads.PLACE_CLEAR_NEAR = true
+	assert_eq(SelectionSquads.place_clear(his, blocks, Vector3(-29.3, 0, 85.8), Vector3(0, 0, -1), any), his,
+			"near: 15.6 m apart is no squad on another's halt; both kept")
+	var on_it: Array[Vector3] = [Vector3(8, 0, 66.5), Vector3(2, 0, 69.6)]  # settle's S2 case: 6.3 m apart
+	var out := SelectionSquads.place_clear(on_it, blocks, Vector3(-29.3, 0, 85.8), Vector3(0, 0, -1), any)
+	assert_eq(out[0], on_it[0], "the longer drive keeps its place")
+	assert_true(out[1].distance_to(out[0]) >= 19.7 - 0.01, "a pair on each other still clears the short sides (%s)" % [out])
 
 
 func test_g3_staggered_or_apart_places_are_kept() -> void:
