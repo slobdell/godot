@@ -56,7 +56,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Report (2026-10-23, in progress):** D1 DONE (design note below). **D2 JUDGED: FAIL as filed, ships OFF** (verdict below:
 deciding 1.5 se; G2 broken on the turtle line). **D2b JUDGED: FAIL, ships OFF** (verdict below: deciding 0.9 se; G2t turtle
 kills -2.8 se; G3 none-line median +31 %). `--cpu-defend` stays in the code, OFF, for playtests. **D3** re-based on what ships
-(defend OFF); Bar D3 filed below before any arm number; it waits behind settle's S2 v4 and S1 v3 on builder2. **GREEN: c475c3163**
+(defend OFF); Bar D3 filed below before any arm number; it waits behind settle's S2 v4 and S1 v3 on builder2. **D2c** (hold with
+some, strike with the rest; R38.30) built OFF in ebb817ea0, Bar D2c filed below, labs on builder0 light. **GREEN: c475c3163**
 (builder2 `make native check exited 0`, 3066 passed / 0 failed; the scenario perf row NOT JUDGED, reason=loaded, so G4 is re-run
 alone). Earlier green: acbdef4c5 (builder2, 3063 / 0, sim-baseline 13/13 unmoved with the switch OFF). Raw guard logs:
 ~/doctrine-guard-raw/acbdef4c5-{off,defend}, ~/doctrine-guard-raw/c475c3163-{off,defend}.
@@ -190,6 +191,29 @@ fights an arm, 0 attempts lost; 400/400 ON logs carry `cpu-defend`, 0/400 OFF; j
   Guards are D2b's G2t and G3, plus a lab guard: CPU hold-time share on the turtle line <= OFF + 10 points (36 % -> <= 46 %).
   1 and 2 are separable switches, so the lab can tell which one buys what. My guess is 1 matters most, since cause 1 alone
   explains the behind-but-sitting fights.
+
+**Bar D2c (FILED 2026-10-23 before any D2c number; R38.30).** Change: `--cpu-defend --cpu-defend-split --cpu-defend-closing`
+(the package) ON v OFF, code ebb817ea0. SPLIT: a defend posts only `defenders_needed` (crew for crew with the coming contacts,
+>= 1, <= half the line, nearest the ring first), and when the side would attack with defend off the rest attack. CLOSING: a
+contact counts only while closing (>= 10 m nearer the ring over 5 s), and the defend lapses 30 s after the last one closed.
+- **Labs first** (builder0 native light J4, hold_fire_probe, turtle + blob, seeds 2601-2602 x 5 maps x both sides, 40 fights an
+  arm; all arms on one tree): OFF, split, closing, package. They say which switch buys what, and they hold the lab guard. One
+  re-tune of the constants is allowed in labs, recorded here before the series tree is named; the series then judges as is.
+- **Series workload:** FRESH guard seeds **5001-5008 + 5101-5108** (registered by R38.30) x 5 maps x both sides x blob/turtle =
+  320 fights an arm, both arms (OFF, package) on the series tree once its full check is green, builder2 after D3, `guard.sh`
+  GUARD_CHUNK=8, judged `guard.py --pair OFF ON`. Plus the none line (CPU v CPU), 5001-5008, both arms.
+- **Deciding:** the blob's win rate DOWN by > 2 paired se AND McNemar p < 0.05.
+- **Second line:** the blob's kill ratio not UP by > 2 paired se.
+- **G1:** the turtle's win rate not UP by > 2 paired se (McNemar p not < 0.05 in its favour); its median length not up > 2 se.
+- **G2 / G2t:** kills a fight and median length per faction within 2 paired se on both lines (a faction outside is named); the
+  turtle line's kills a fight (both sides) within 2 paired se.
+- **G3:** none line: caps ON <= OFF + 2, median length ON <= OFF x 1.2.
+- **Lab guard:** turtle line, the package lab on the series tree: CPU crew samples whose element task verb is `hold` <= OFF +
+  10 points (the posture word "hold" covers the attacking half under SPLIT, so the verb is the read; D2b's OFF lab 22.0 %, its
+  posture-hold 35.7 %).
+- **G4:** perf, commander-only code (one decide more a think under SPLIT, a distance per contact under CLOSING). **Equality:**
+  sim-baseline unmoved with the switches OFF.
+- A pass ships ON (symmetric). If the round closes first it carries to round 39 with this bar intact.
 
 **Bar D3 (FILED 2026-10-23 before any D3 arm number).** Change: the round-37 rule switches ON v OFF, on what ships (defend OFF,
 D2/D2b failed): **rules** `--rules-on=sight,spread,pin_slow`; **hulldown** `--cover-on=hulldown`; **pkg** both together.
