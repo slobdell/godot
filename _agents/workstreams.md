@@ -682,6 +682,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   8/0; the check's "right click on 30 units 114.9 (budget 104)" was a loaded, unjudged read. Stretch (bridge-mouth lay): clicks 3/6/9 m
   short of the west deck lay 0 places on it, 0 crossed, 0 never-in, in main and G3 v5; nothing to build. G3 v5 and G1 v4 judged reads
   running (builder0 light J4).
+- **R38.50 (2026-10-23 ~11:30) main 686150ed2 GREEN on builder2** (doctrine's merges c5583db82 + cbad42d0f, all OFF; re-queued after
+  builder2's Spot preemption ~10:40 killed the first run): `make native check exited 0`, 3122 passed / 0 failed, 25 passed + 2 NOT JUDGED
+  (perf-judge; scenario_perf loaded 2.82x), sim-baseline 13/13 unmoved. builder2 -> native's row (asked to row main 686150ed2, which
+  carries the latch ON). The laptop's disk hit 99 % (1.2 GB): round 37's overnight-manoeuvre logs were archived to
+  ~/archive-old-logs/overnight-manoeuvre-r37.tar.zst (verified) and removed (2.6 GB free).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
