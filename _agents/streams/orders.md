@@ -99,9 +99,18 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     - crossing 5 route s3801, crossing 5 click s3801 and locks 5 route s3802: all in, none re-dealt;
     - terminus 5 route s3804: byte-identical to main;
     - his click: worst twitch 14.2 m (line 14.6).
-  - Dev read 6 (a24f3b3fb, dev seeds 3801-3809) running.
-- **Questions (asked the orchestrator, 2026-10-22 late evening; working on, not waiting):** should R36.6's per-cell "no more
-  never-in" count a squad main only gets in after 40 s as already marginal? If not, G3 must move the slowest squad less.
+  - Dev read 6 (builder0 light J4, a24f3b3fb, dev seeds 3801-3809, n 9; `g3-dev6*`): FAIL.
+    - Pass: pairs 37 -> 2; offsets (17 of 648 rows > 40 m further, worst +61.6 m); contacts 11,353 -> 10,561.
+    - Fail: never-in 2 -> 4 (locks 3 route s3802 and terminus 5 route s3805, squad 1 both times); twitch on crossing 5,
+      locks 3 and terminus 5 routes; one crossing on crossing 5 route; his click twitch 11.6 -> 25.4.
+    - Cause of the route never-ins: a leg G3 moved that was still QUEUED kept its moved place once it became a waypoint,
+      and the gate re-lay averaged the moved places. e94ee14af sends queued moved legs back too. Dev read 7 (J6) running.
+  - **Laptop v builder0 twin mismatch (told the orchestrator, who routes it to native N2):** his click, a24f3b3fb, seed 3801,
+    identical flags. Laptop is GDScript (no native/bin); builder0 is `native on`. In MAIN, squads 4 and 5 (sharing one place)
+    get in at 29.5 s on the laptop and 47.4 s on builder0; in G3, the twitches differ (squad 4: 11.1 v 25.4). Machine v path
+    is not yet split. Until it is, laptop runs don't predict builder0 in jams: judge only from builder0 reads.
+- **Questions:** the never-in one was answered by R38.15's ruling (the guard stays as written; G3 must not lengthen the
+  slowest squad's trip).
 - **G1 v2 judged: FAILS as filed** (R38.12; `g1-judged-builder0-4a765e6e2/README.md`): deciding all pass (click-cell places
   outside 84 -> 18, metres after leaving 6,223 -> 1,393, re-dealt 58 -> 0, contacts 14,004 -> 10,622); guards fail: crossing 3
   route twitch 5.8 -> 10.5 m, his 3-squad click twitch 2.3 -> 11.4 m, yard_open 177/192 identical. Stays OFF.
