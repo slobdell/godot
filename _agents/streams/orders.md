@@ -350,6 +350,36 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   stays round 34's B8 approach. Settle's deploy-fit (stream/settle ac36add58, OFF) sits on top; agreed, no new key.
 
 ### Bars (filed here before any judged number; the orchestrator records them on main)
+- **Bar G1 v4 (orders, R38.44 + the ruling on option (a); filed 2026-10-23 ~09:55 PDT, before any v4 number on the judged
+  seeds; code 4d68baba4, all OFF).** What he would see: select all and click a street. Every squad lands in that street,
+  stacked back along it, each with its own vehicles. On open ground nothing changes, and a route he shift-clicks drives as today.
+  - **Arm:** `--group-lay=column,--group-rank-shift=half,--group-whole=click,--group-clear=reached`. Changes from v3:
+    1. squads stay whole on his plain group click only; a queued leg is dealt as today (R38.44, option 2);
+    2. a place past the click's width that the click reaches straight by ground counts as on the ground he clicked
+       (yard_open s3806's open-ground column);
+    3. a rank slides at most half a place off the column's line (locks 3 click s3960's 79.5 m place).
+  - **Tree:** the first commit at or after this bar's commit with main merged (latch ON in both arms) whose builder0 full
+    check is green. G3 and G2 switches stay OFF in both arms.
+  - **Probe:** `make native orders-probe`, arms `main:` v `column:<the arm above>`, builder0 light lane J <= 4,
+    `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make variable, **FRESH seeds 4701-4712** (n 12 a cell). Cells: as Bar G1 (the 12
+    street cells, his click as `terminus_his` 3 / 5, yard_open 3 / 5 x click / route).
+  - **Judge:** `tests/control/orders_judge.py g1v4` (street + his rows; yard_open rows as the 5th argument).
+  - **Counter:** columns_laid > 0.
+  - **Deciding** (over the click cells + his click): places outside the click's corridor, arm <= 25 % of base; metres driven
+    outside it after once inside (`route_left_m`), arm <= 50 % of base; squads with crews re-dealt, arm 0 **over the click
+    cells**.
+  - **Guards:** every R36.6 guard per cell over all 14 cells, as filed, twitch included; route cells are judged as main is,
+    and no guard is amended. Friendly contacts <= base x 1.1 + 5. yard_open: every squad row identical.
+  - **What route cells change:** a route's first click is his plain click, so it keeps squads whole where main re-deals.
+    Its queued legs are dealt as main. So route cells differ from main only through that first click's whole dealing
+    (dev read 2 traced terminus 5 route s3805: legs and places identical to main, squad 1 lost a contact race). A replay of
+    that click with main's dealing was tried and dropped: re-issuing the order perturbs the motion. Route never-in at n 12 is
+    a coin-flip risk, taken as the honest price of a fresh read.
+  - **Reported:** route_out_m, parked re-deals, bodies kept.
+  - **Plus:** paired top-down shots of his click, main v column, looked at.
+  - **Dev evidence:** dev read 2 (builder0, 4d68baba4, dev seeds 3804-3809, n 6): every line passes except terminus 5
+    route never-in 1 -> 2.
+  - A pass ships ON.
 - **Bar G3 v4 PLACE_CLEAR near (orders, R38.39; filed 2026-10-23 ~06:45 PDT, before any v4 number on the judged seeds;
   code e518fd649, `--place-clear=on,--place-clear-trigger=near`, OFF).** What he would see: the same as Bar G3. No squad
   parks on top of another one, every squad gets in, and squads standing a little apart are left where today's order put
@@ -376,7 +406,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   **Tree:** a hash at or after 527d62cd2 (G3 v2 + a moved place keeps its own vehicles: untangle swaps squads whole where
   place_clear moved a place) whose full check is green, with main merged; switch OFF by default. G1 is OFF in both arms.
   **Probe:** `make native orders-probe`, arms `main:` v `g3:--place-clear=on`, on builder0's light lane at J <= 4, with FRESH
-  seeds 4101-4112 (n 12 a cell; amended before any number from 4011-4022, which collided with settle's S2 v3 4001-4024; R38 seed blocks taken: 3861-3914, 3921-3944, 3951-3962, 4001-4024, 4101-4112, 4601-4612 (G3 v4), 4701-4712 (G1 v4, if it gets there), 4801-4808, 4901-4908). Cells: the 12 street cells (locks / crossing / terminus x 3 / 5 squads x click / route),
+  seeds 4101-4112 (n 12 a cell; amended before any number from 4011-4022, which collided with settle's S2 v3 4001-4024; R38 seed blocks taken: 3861-3914, 3921-3944, 3951-3962, 4001-4024, 4101-4112, 4601-4612 (G3 v4), 4701-4712 (G1 v4), 5201-5212 (G3 v5), 4801-4808, 4901-4908). Cells: the 12 street cells (locks / crossing / terminus x 3 / 5 squads x click / route),
   his click (`terminus_his`, 3 / 5 squads), and yard_open (3 / 5 x click / route).
   **Judge:** `tests/control/orders_judge.py g3` (all cells).
   **Counter:** places_cleared > 0.
