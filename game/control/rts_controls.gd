@@ -1263,9 +1263,12 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				if not units.is_empty():
 					block["center"] = home / units.size()
 				clear_blocks.append(block)
+			var reach := SelectionSquads.PLACE_CLEAR_REACH
 			anchors = SelectionSquads.place_clear(anchors, clear_blocks, click,
 					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
-					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p))
+					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p) \
+							and not (reach and SlotGround.near_deck(p, SelectionSquads.PLACE_CLEAR_DECK_M)),
+					SelectionSquads.crosses_on(ground) if reach else Callable())
 			for k in anchors.size():
 				if anchors[k] != unmoved[k]:
 					_cleared_pending[_place_key(anchors[k])] = unmoved[k]

@@ -310,6 +310,19 @@ func test_g3_aside_blocked_it_steps_back_and_never_far() -> void:
 	assert_true(SelectionSquads.PLACE_CLEAR_MAX_M <= 40.0, "never a road length back (dev read 1 moved squads 60-90 m)")
 
 
+## G3 v5 (judged 9986a1cba, crossing 5 route s4603: v4 stepped squad 4's place across the river, its crews crossed the
+## bridge and never got in). A moved place must be reached from where it was without a crossing (`crosses(from, to)`).
+func test_g3_a_moved_place_never_crosses_the_river() -> void:
+	var blocks := [{"center": Vector3(0, 0, 100), "width": 25.4, "depth": 54.8}, {"center": Vector3(5, 0, 90), "width": 25.4, "depth": 54.8}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
+	var street := func(p: Vector3) -> bool: return absf(p.x) < 6.0
+	var river := func(from: Vector3, to: Vector3) -> bool: return (from.z > 10.0) != (to.z > 10.0)
+	var v4 := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), street)
+	assert_true(v4[1].z > 10.0, "v4: straight back, over the river at z 10 (%s)" % [v4])
+	assert_eq(SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), street, river), places,
+			"v5: no clear way on this bank, so the place is kept")
+
+
 func test_g3_of_the_clear_ways_the_one_nearest_the_squad() -> void:
 	# G3 dev reads 3-4 (builder0, 527d62cd2): a squad moved aside away from its neighbour drove further and missed the
 	# probe's limit where main only just got in. Of the ways clear at a step, the one nearest the squad's own vehicles.

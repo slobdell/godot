@@ -549,6 +549,11 @@ const PLACE_CLEAR_MAX_M := 40.0
 ## squad 5's (inside the short sides' 19.7 m, not a pair the bar counts) into the gap before squad 4; its seats stood 4 m from
 ## squad 5's five-crew halt, 38 m deep, which re-packed. `--place-clear-trigger=near`: only a pair closer than
 ## PLACE_CLEAR_TRIGGER_M (the bar's 12 m and the scan's 2 m) moves, and it still clears the short sides.
+## G3 v5 (judged 9986a1cba, R38.45; crossing 5 route s4603: v4 stepped squad 4's place across the river, and its crews
+## crossed the bridge and never got in). `--place-clear-reach=on`: a moved place must be reached from where it was without
+## a crossing (`crosses`, G1's crosses_on), and never stands within PLACE_CLEAR_DECK_M of a deck (the caller's standable).
+static var PLACE_CLEAR_REACH := OS.get_cmdline_user_args().has("--place-clear-reach=on")
+const PLACE_CLEAR_DECK_M := 12.0  # about half a herringbone's short side: its seats stay off the deck's mouth
 static var PLACE_CLEAR_NEAR := OS.get_cmdline_user_args().has("--place-clear-trigger=near")
 const PLACE_CLEAR_TRIGGER_M := 14.0
 ## Measurement: places moved so, since start.
@@ -556,7 +561,8 @@ static var places_cleared := 0
 
 
 ## `standable(point)` -> bool. One place per block, in `anchors`' order (blocks beyond the anchors are ignored). Pure.
-static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, standable: Callable) -> Array[Vector3]:
+static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, standable: Callable,
+		crosses := Callable()) -> Array[Vector3]:
 	var result: Array[Vector3] = anchors.duplicate()
 	var n := mini(anchors.size(), blocks.size())
 	if n < 2:
@@ -589,7 +595,8 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 				var step := PLACE_CLEAR_STEP_M
 				while step <= PLACE_CLEAR_MAX_M:
 					var at := start + way * step
-					if bool(standable.call(at)) and _too_close(at, i, result, placed, blocks) < 0:
+					if bool(standable.call(at)) and not (crosses.is_valid() and bool(crosses.call(start, at))) \
+							and _too_close(at, i, result, placed, blocks) < 0:
 						if best == null or _flat_gap(at, home) < _flat_gap(best, home):
 							best = at
 						break
