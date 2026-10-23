@@ -162,6 +162,35 @@ fights an arm, 0 attempts lost; 400/400 ON logs carry `cpu-defend`, 0/400 OFF; j
 - Reading: the trigger fix bought back half of D2's turtle cost and none of the blob's; holding the near ring does not beat a
   blob at these numbers. Raw: ~/doctrine-guard-raw/c475c3163-{off,defend}/{blob,turtle,none}.
 
+**Design note: why DEFEND made the CPU passive, and a version that might not (2026-10-23, for round 39; R38.29).**
+- **What the numbers say:** the CPU didn't fight worse, it fought less. Turtle line: kill ratio flat (D2b 0.84 -> 0.85) while
+  kills AND losses a fight both fell (-1.94 and -2.45). None line: +40 s median. Labs (builder0 light, turtle 2601-2602, 20
+  fights): CPU time in hold posture OFF 36 %, D2 77 %, D2b 59 %. The blob line, where the enemy really comes, didn't move.
+- **Cause 1, it's side-wide.** Posture is one word for the whole side. Defend puts every line element on the ring, and in
+  `Posture.decide` it comes before "not ahead -> attack". So a side that is behind on points, which OFF would send forward,
+  sits instead. That's the main leak: the score logic is overruled by proximity.
+- **Cause 2, proximity is the trigger.** Any known enemy within DEFEND_M (100 m) holds us. D2b dropped enemies sitting on
+  their own zone, but an enemy that stops 90 m out still holds the whole side indefinitely, and a turtle's posts or a
+  CPU's holding line do exactly that. Nothing measures whether it is actually coming.
+- **Cause 3, no clock.** Defend lapses only when the contact leaves 100 m, and POSTURE_KEEP_TICKS then delays the switch back.
+  Two CPUs (none line) each see the other near their ring and both hold, so a standoff resolves only on control ticks.
+- **Cause 4, no counter-stroke.** DEFEND (c) took away the one element that went for an intruder (it fired 43 % on the move,
+  so the lab cut it). The hold then has no way to turn a stalled attack into a kill.
+- **Best guess, "hold with some, strike with the rest":**
+  1. *Economy of force, per element:* defend tasks only as many line elements as the coming threat needs (by count of
+     coming contacts, at most half the line). The rest follow what `decide` would say with defend OFF, so a side behind
+     still attacks.
+  2. *Closing, not near:* a contact counts only while its distance to the ring has fallen over the last ~10 s. The commander
+     keeps the last distance per contact name, which keeps it out of TankBrain/Movement state.
+  3. *A clock:* defend lapses after ~30 s with no contact closing, and isn't re-armed by the same contact without it
+     closing again.
+  4. *Counter on a stall:* once the coming contacts stop closing, or the local force ratio is >= 1.5, the held elements go
+     back to attack from their posts (the base of fire for the rest).
+- **Bar shape for it:** fresh seeds (5001+; D2/D2b's fights shaped this, R37.17). Deciding is blob win rate down, as D2's.
+  Guards are D2b's G2t and G3, plus a lab guard: CPU hold-time share on the turtle line <= OFF + 10 points (36 % -> <= 46 %).
+  1 and 2 are separable switches, so the lab can tell which one buys what. My guess is 1 matters most, since cause 1 alone
+  explains the behind-but-sitting fights.
+
 **Bar D3 (FILED 2026-10-23 before any D3 arm number).** Change: the round-37 rule switches ON v OFF, on what ships (defend OFF,
 D2/D2b failed): **rules** `--rules-on=sight,spread,pin_slow`; **hulldown** `--cover-on=hulldown`; **pkg** both together.
 - **Workload:** tree c475c3163 (green), builder2, `guard.sh` GUARD_CHUNK=8, the same 320 guard fights (4801-4808 + 4901-4908 x
