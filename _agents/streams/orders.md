@@ -64,7 +64,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     orchestrator's ruling (option (a)).
   - Main a34f05105 merged at ab31e9bc2 (settle code all OFF). Its builder0 full check is running and covers both bars.
     Then the judged reads: G3 v5, then G1 v4.
-- **G2:** dev read 3 (`--group-gate=main`, dev seeds 3801-3803) running on the light lane.
+- **G2 carries to round 39 (R38.47), no bar on the current code.** Dev read 3 (builder0 J4, ab31e9bc2, dev seeds 3801-3803,
+  n 3; `g2-dev3{cells,his}-builder0-ab31e9bc2/`):
+  - route cells: off 2,493 -> 2,016 m;
+  - his 3-squad routes: near main;
+  - **his 5-squad east/west routes: main never gets every squad in (3 and 6 never-in over 3 seeds), G2 does (0 / 0).**
+  - The cost: G2 stacks rear squads back along his route, and at the first waypoint's corner they stand off it (route-off
+    ~2x, one place about 20 m off the x=70 street). Next round's first try: keep rear places on the route line at corners.
+- **Stretch (bridge-mouth lay):** builder0 read of plain clicks 3 / 6 / 9 m short of the west deck (main v G3 v5, dev seeds
+  3804-3809) running.
 - **Owed before anything ships ON:** a quiet-box builder0 control-timing read.
 
 ### EARLIER (2026-10-23 ~08:10 PDT)
