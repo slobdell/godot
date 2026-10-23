@@ -397,6 +397,7 @@ counter (turned > 0), twitch >= 15 m not up, never-in arm <= base, first shape d
 <= 110 % + 5, fights (both reads, 1.645 se, 0 runs that never started). Reported: deciding (deploy leg >= 25 m),
 place+twitch, and (R38.37) the street axis set v null and the turns refused, per cell. A pass ships S1 ON (both switches)
 on a new hash with one full check.
+`make quick-remote` on e81b57579 (builder0): 100 scripts lint-parse, 122 passed, 0 failed (the diff's tests, settle's and tactics').
 
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
