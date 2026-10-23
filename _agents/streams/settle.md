@@ -405,6 +405,19 @@ Series run 1 (builder0 light J4, e81b57579, 2026-10-23 03:23-04:53): NO VERDICT.
 `TANK_SQUAD_SLOT_TIMEOUT=14400`, at 6c3112193 (a docs-only change from e81b57579). The J4 series runs past 90 min, so any light-lane
 series needs that knob.
 
+### S1 v5 verdict: FAIL (builder0 light J4, 6c3112193 = e81b57579's code, n 576 squads/arm; references/round38/settle/s1v5-judged-builder0-6c3112193/)
+FAILS the never-in guard 3 -> 4, the same guard and the same cell class as S1 v4: S1 stays OFF. Every other judged line passes:
+the counter (51 of 572 deploys turned), twitch >= 15 m 96 -> 78, first shape 1 of 576, friend_contacts 11,996 -> 11,715 and
+foreign 6,622 -> 6,370, and both fight reads (n 36/36). Reported: deploy legs >= 25 m 63 -> 33; place+twitch >= 25 m 169 -> 141.
+The street axis was set on all 504 herringbone deploys (null 0), and the cap refused 23 turns.
+- Never-ins (the no-fight probe, which the guard judges): main and fit share three at crossing 5 (click s4505 squad 4, route s4507
+  squad 4, route s4508 squad 5). The fit adds **terminus 5 route s4505, Echo**: main's Echo is in at 42.2 s (window 90 s), the
+  fit's never is (driven 120 m, ends 30.9 m off its anchor). The fit turned Delta's lane herringbone (anchor 21.5,84.5) to
+  heading (0.93, 0.38), along the street and inside the cap (not refused), ordered worst 38.0 -> 14.7 m. So the street cap
+  does not cover this case. A trace (both arms, builder0 light) is under way before H/S3.
+- Orders' R38.39 note (main's never-ins pile up at crossing's west bridge mouth): the three shared ones are crossing. The fit's
+  extra never-in is terminus, and main gets that squad in on this seed, so the note doesn't explain it.
+
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
   column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as
