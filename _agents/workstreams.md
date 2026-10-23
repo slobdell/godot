@@ -527,6 +527,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   has no judged number, so before it ships: S1 ON v OFF on the latch-ON tree, fresh seeds 4401-4424, the S1 v2 GUARDS judged as filed
   (never-in, twitch, first shape, contacts, fights), the deciding line reported. Filed before numbers, ~1 h on builder2 AHEAD of doctrine's
   D3 (a read, not a ship) because it is a fix he will see. Then the ON flip on a new hash and one full check.
+- **R38.35 (2026-10-23 02:35) main c54421161 perf JUDGED: PASS on builder0** (`make remote-quiet T=perf-judge`, light lanes held for
+  ~15 min by orders and doctrine): attempt 1 of 3, ai_usec_per_tick 7,060 v the 20,000 line, ratio 1.01x, idle 96 %, load 2.09; the
+  relative line (recorded) agrees. With R38.32 (9ff649dca green on builder0, web-smoke judged 20.0 s) main is GREEN AND ALL JUDGED at
+  c54421161 for everything merged through feedback's F5 and native's gates. **Lesson:** remote-quiet holds new launches but not running
+  light lanes; a judged perf line needs the workers to pause launches for ~15 min (ask them; it costs one dev read).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
