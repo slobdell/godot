@@ -49,6 +49,16 @@ F1's page when it exists (the orchestrator relays).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-22 ~19:40: the end card on a portrait phone; green hash to merge 2a5271b9f.** The orchestrator's ask: `make remote T=end-shots`
+at FB_RES=810x1800 (laptop preset) showed every look clipped (A's reason cut at "90", C's at "90 poin", the choices "PLAY AGAIN
+[ENT", B's reason running into its choices): EndCard scaled from the screen HEIGHT. Now (f627c6aa1, 2a5271b9f): the scale is the
+shorter side x CyberStyle.touch_boost (desktop unchanged), every line steps its size down until it fits its box, B's bottom bar
+stacks in portrait. Re-filmed with --ui-touch: all four fit (~/projects/godot-feedback-endkeep/phone3/); A and B read best; P's
+small banner lands on the portrait HUD's FX/QUALITY buttons (the HUD's portrait layout, not the card; noted, not changed). Test:
+test_on_a_portrait_phone_no_line_is_wider_than_its_box (choices on screen at 810x1800, boost 1.5). `make native check` builder0:
+exited 0, 3077 passed / 0 failed, 25 passed, 2 NOT JUDGED (perf-judge refused, busy 2.45-2.69x; scenario_perf unpinned), sim-baseline
+unmoved on 13.
+
 **2026-10-22 ~17:30: green hash to merge c9a3c01c6** (hit ring tightened, f52ab7077 + Status). `make native check` on builder2: 24
 passed, 2 NOT JUDGED (perf-judge not a judging box; scenario_perf loaded 5.24x), 1 FAILED web-smoke = "first sound 33.8 s after READY
 (bound 30 s)" at load 37.8 with the page at 2 fps; tests 3076/0, sim-baseline unmoved on 13. Re-run alone on builder0 (load ~11-25):
