@@ -59,6 +59,12 @@ func _run() -> void:
 		await get_tree().process_frame
 	await _settle(1)
 	_still("play_fight.png")
+	# Space mid-fight: the pause line (RtsControls' own text) over the bottom HUD, the status block and buttons back.
+	if controls != null and controls.has_method("set_paused"):
+		controls.call("set_paused", true)
+		await _settle(10)
+		_still("play_paused.png")
+		controls.call("set_paused", false, "")
 	print("END_SHOTS_FORCE sim_s=%.1f wall_s=%.0f" % [_match.sim_seconds, (Time.get_ticks_msec() - waited) / 1000.0])
 	var side := Match.Team.RUST if outcome == "loss" else Match.Team.GREEN
 	_match.control_point = true
