@@ -49,7 +49,50 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-22 evening; still working: S2's never-in trace, then H/S3)
+### Final report (2026-10-23, round 38's end state)
+
+| Item | State | Read |
+|---|---|---|
+| S1 deploy deal (`DEPLOY_FIT`) | **BLOCKED** (R38.40), OFF | v1, v2, v4, v5 each fail one marginal never-in. v3 passed only on the latch-OFF main; v4 and v5 stack on the latch-ON main |
+| S2 latch v2 (`DEPLOY_LATCH` + anchor) | **SHIPPED ON**: b3ad7baa4, main e1f602fbf (R38.38) | S2 v4 passed every line on builder2 at fac47b5d2; main's full check is all judged, perf 1.01x |
+| S3 O2 on the settled halt (`PARKED_HOLD`) | **FAILS** Bar S3, OFF | builder0 light, b3ad7baa4 |
+| Stretch: re-deals after a loss (`DEPLOY_HOLD`) | **FAILS** Bar H (narrowly), OFF | builder0 light, b3ad7baa4 |
+
+- **Bars H/S3** (builder0 light lane, J4, b3ad7baa4 = the shipped latch, the amended arms (all `--deploy-latch=anchor`), fight
+  probe locks/crossing/terminus x 3 squads x click x seeds 3891-3902, 36 fights an arm, n 36/36 started;
+  references/round38/settle/hs3-judged-builder0-b3ad7baa4/):
+  - **Bar H, held v latch: FAIL.** Parked re-deals 85 -> 54, line <= 51.0 (60 % of 85): it misses by 3, about 64 %.
+    Reseats 114 -> 0. Counter >= 10 passes. Fight guards pass: his kills 5.22 -> 5.00, his losses 8.00 -> 7.94, CPU losses
+    5.33 -> 5.08 (se 0.33-0.38).
+    Per cell: crossing 48 -> 35, locks 12 -> 4, terminus 25 -> 15.
+  - **Bar S3, o2 v held: FAIL.** Deciding PASSES: off_idle_s a fight 102.2 -> 31.0 (line <= 51.1; drop 71.3 > 1.645 se 26.7).
+    Re-deals FAIL: 54 -> 67 (line <= 62.4; latch alone 85). By cell: crossing 35 -> 45, locks 4 -> 10, terminus 15 -> 12.
+    Guard FAIL: his losses 7.94 -> 7.03 (se 0.34), outside the band. The guard as filed is two-sided ("within +/- 1.645 se"), so
+    the drop fails it although it means fewer of his tanks lost; failed guards aren't waived. Kills and CPU losses pass.
+    Counter parked_returns 38,948.
+  - Reading: on the latch, the hold removes the reseats outright and cuts re-deals by 36 %. O2 still adds re-deals on top
+    (+13, mostly crossing and locks), so R37.28's "the hold doubles re-deals" shrinks but isn't gone. Round 39 could re-file
+    Bar H at the observed size (both are fresh-seed reads, so it needs NEW seeds) or trace o2's crossing re-deals first. That's
+    the lead's / orchestrator's call; nothing ships.
+- **Merge notes:**
+  - What stream/settle adds to main beyond e1f602fbf is OFF-by-default code and its lab tests:
+    - `--deploy-fit=street` (`ElementPlan.DEPLOY_FIT_STREET`) and `ElementSituation.street_axis`
+    - `--deploy-hold`
+    - `tests/test_settle_deploy_fit_v5.gd`
+    - the settle-s1v4 and settle-s1v5 targets in mk/settle.mk
+    - tests/settle/settle_judge.py's street report and `SETTLE_S1_DECIDING_JUDGED`
+    - the references
+  - sim-baseline doesn't guard settle's paths: the latch left all 13 maps unmoved. Don't read "unmoved" as settle's check.
+  - `ground_seat` is a Callable seam.
+  - A light-lane series at J4 needs `TANK_SQUAD_SLOT_TIMEOUT=14400`, passed as a make argument to `tools/remote.sh`.
+- **Playtest:**
+  - `make skirmish ARENA=terminus`: park 5 squads and watch them settle (the latch is on by default).
+  - `--deploy-latch=off` gives round 38's start.
+  - `--deploy-fit=street` shows S1's blocked fit. On terminus with a route order, watch the herringbone's tail seat at a
+    junction.
+- **Questions for the lead:** none blocking. The lane-mouth screenshots stay the lead's call.
+
+### Report (2026-10-22 evening; superseded by the final report above)
 
 **Verdicts (builder2 native, e42ff30eb GREEN; `make native settle-series`, the no-fight probe 12 cells x 3861-3872 = 576 squads
 an arm, the fight probe 18 of the re-filed 36 fights, the census; `references/round38/settle/s1s2-judged-builder2-e42ff30eb/`):**

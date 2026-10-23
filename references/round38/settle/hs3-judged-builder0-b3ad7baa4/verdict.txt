@@ -1,0 +1,14 @@
+FAIL Bar H deciding: parked re-deals 85 -> 54 (<= 51.0; latch >= 10: True), reseats 114 -> 0 (no more); fights 36/36
+  PASS guard his kills   base 5.22 arm 5.00 a fight (se 0.33, n 36/36)
+  PASS guard his losses  base 8.00 arm 7.94 a fight (se 0.38, n 36/36)
+  PASS guard CPU losses  base 5.33 arm 5.08 a fight (se 0.34, n 36/36)
+PASS fight guards
+VERDICT FAIL held v latch
+PASS Bar S3 deciding: off_idle_s a fight 102.2 -> 31.0 (<= 51.1), drop 71.3 v 1.645 se 26.7; fights 36/36
+FAIL Bar S3 re-deals: parked re-deals 54 -> 67 (<= 62.4) [latch alone 85]
+PASS counter: parked_returns 38948
+  PASS guard his kills   base 5.00 arm 5.17 a fight (se 0.34, n 36/36)
+  FAIL guard his losses  base 7.94 arm 7.03 a fight (se 0.34, n 36/36)
+  PASS guard CPU losses  base 5.08 arm 5.25 a fight (se 0.34, n 36/36)
+FAIL fight guards
+VERDICT FAIL o2 v held
