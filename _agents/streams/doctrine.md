@@ -55,9 +55,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 **Report (2026-10-22, in progress):** D1 DONE (design note below). **D2 JUDGED: FAIL as filed, ships OFF** (verdict below:
 deciding 1.5 se; G2 broken on the turtle line). **D2b** (eaf4c508f, OFF): defend only against an enemy coming for the ring; its bar
-is filed below before any arm number; its series waits behind settle on builder2. **GREEN: acbdef4c5** (builder2 `make native
-check exited 0`, 3063 passed / 0 failed, 26 targets, sim-baseline 13/13 unmoved with the switch OFF; perf-judge not run: builder2
-is not a judging machine). Raw guard logs: ~/doctrine-guard-raw/acbdef4c5-{off,defend}.
+is filed below before any arm number; its series is running on builder2 (started 2026-10-22 20:33). **GREEN: c475c3163**
+(builder2 `make native check exited 0`, 3066 passed / 0 failed; the scenario perf row NOT JUDGED, reason=loaded, so G4 is re-run
+alone). Earlier green: acbdef4c5 (builder2, 3063 / 0, sim-baseline 13/13 unmoved with the switch OFF). Raw guard logs:
+~/doctrine-guard-raw/acbdef4c5-{off,defend}, ~/doctrine-guard-raw/c475c3163-{off,defend}.
 
 **D1 the read (DONE).** Tool: `make native tactics-hold-fire` (tests/tactics/hold_fire_probe.gd extends the guard line read-only;
 every direct round, the same weighted by damage a round, and a 2 Hz crew sample, split by posture, posture reason, map half,
