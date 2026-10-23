@@ -1,0 +1,13 @@
+PASS counter: places_cleared 70
+PASS deciding: place pairs closer than 12 m 48 -> 3 (<= 12.0)
+PASS guard never-in squads 7 -> 7 (no more)
+PASS guard worst place-to-click median per cell <= base + 15 m
+PASS guard squads placed > 40 m further than main 0 of 864 (<= 43.2)
+PASS guard no place > 100 m further than main (worst +27.0 m)
+  reported: offsets changed on 45 rows; quartiles [-9.2, 2.5, 13.8, 15.9, 27.0]
+  reported: route_left_m 15183 -> 14516
+PASS guard friend_contacts 14841 -> 14190 (<= 16330.1)
+  FAIL guard twitch       crossing 3 route: 5.5 v 8.8
+FAIL probe guards (18 cells)
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 720 -> 701
+VERDICT g3: FAIL
