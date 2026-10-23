@@ -495,6 +495,10 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   exited 0`, 3089 passed / 0 failed, 24 passed + 3 NOT JUDGED (perf-judge; scenario_perf loaded 4.49x; web-smoke first sound 30.2 s at
   2.67 per physical core, the new per-core gate (R38.19 native) refusing as designed). sim-baseline 13/13 unmoved. Judged perf and
   web-smoke lines come from the builder0 main check.
+- **R38.32 (2026-10-23 ~01:30) main 9ff649dca GREEN on builder0** (= 9a6909305 + docs): `make native check exited 0`, 3083 passed / 0
+  failed, 25 passed + 2 NOT JUDGED: perf-judge refused 3 times (ratios 1.40-1.55x, light lanes running), scenario_perf unpinned (hybrid
+  box). web-smoke JUDGED: first sound 20.0 s. sim-baseline 13/13 unmoved (glibc 2.43). The judged perf line is taken alone with
+  `make remote-quiet T=perf-judge` (holds the whole box for a few minutes).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
