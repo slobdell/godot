@@ -60,7 +60,7 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 ## Bars (round 38)
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
-S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; guard seeds 2601-2608/2701-2708
+S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; guard seeds 2601-2608/2701-2708
 (the 1c484a525 base, D2, F3), 4801-4808/4901-4908 D2b.
 
 
@@ -170,6 +170,11 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   apart as normal, so the 8 m end-foreign line caught 68/216 main rows; G3 v1 stepped squads 60-90 m back): code v2 = no two places
   closer than their short sides, a place moves aside first, then back, at most 40 m. Deciding: pairs of places laid closer than 12 m,
   arm <= 25 % of base (main dev: 14 pairs, 2.8-6.3 m apart); never-in becomes a guard (arm <= base). Offset guards unchanged.
+
+- **S1 v3 DEPLOY_FIT, main's deal unless turned (settle, R38.17; filed in stream/settle 3ac60e86f + 83d190c64 before any number;
+  copied here by the orchestrator).** `_deploy_fit` leaves a deploy untouched unless it turns (tests/test_settle_deploy_fit_v3.gd pins a
+  non-turning deploy byte-identical to main; fails on S1 v2's code). Seeds: no-fight 12 cells x 4201-4212; fight3 (budget 1500) and fight5
+  (budget 3000) x 4213-4224. Lines exactly S1 v2's (`settle_judge.py s1v2`). `make native settle-s1v3`, builder2 after doctrine's D2b.
 
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
@@ -374,6 +379,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   rows from tick 1090 v 1120; squad 4 is main's slowest, all-in 60.5 s). **Ruled:** (a). S1 v3 keeps main's deal byte-for-byte unless
   the deploy turns, so only turned squads can differ; a new bar on seeds never read for S1 (see the seed registry), the same lines as S1 v2.
   builder2 order: settle S2 v3 context + series, doctrine c475c3163 check + D2b arms, settle S1 v3, doctrine D3, native's row.
+- **R38.18 (2026-10-22) main 9d2897fd8 GREEN under R36.12** (covers feedback's e1f558d83 + ec70d6b5c): builder2 `make native check
+  exited 2`, 3076 passed / 0 failed, 24 passed, 2 NOT JUDGED (perf-judge; scenario_perf loaded 4.91x), 1 FAILED remote-guard-test
+  (`test_slot_light.sh` setup: the quiet window did not open in 30 s at load 27 on 32 CPUs, settle's series running). Re-run ALONE on the
+  same hash on the laptop (idle, load 2): `make remote-guard-test` exited 0. sim-baseline 13/13 unmoved. Builder2's ZeroTier dropped
+  ~18:40 (the lead's router restart); the check survived; the queued 4506f151a check failed to launch and was re-queued.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
