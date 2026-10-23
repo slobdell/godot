@@ -156,6 +156,12 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   2601-2602, 20 turtle fights each): turtle-line kills OFF 593, D2 527, D2b 542; CPU hold time 36 / 77 / 59 %; blob wins 9 OFF v 6 D2b
   of 20. Not tuned further. Full check of c475c3163 on builder2 first, then the arms.
 
+- **G3 PLACE_CLEAR (orders, R38.12/R38.15; filed in stream/orders 95dd05e36 Status before any number; copied here by the
+  orchestrator).** `--place-clear=on` v OFF: no two places' footprints overlap; a later overlapping place steps back along the approach.
+  Deciding: squads parked on another (end foreign < 8 m) <= 50 % of base, and fewer never-in. Offset guards: worst place-to-click median
+  <= base + 15 m per cell; rows > 40 m further than main <= 5 %; none > 100 m. Plus the R36.6 guards and contacts. builder0 light J <= 4.
+  **Seeds:** the orchestrator moved them from 4011-4022 (collides with settle's S2 v3, 4001-4024) to **4101-4112**.
+
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
 `references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
