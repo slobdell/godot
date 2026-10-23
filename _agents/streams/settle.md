@@ -295,7 +295,8 @@ read (at most DEPLOY_LATCH_LAYS = 3). The deploy's own update and every later on
 `tests/test_settle_deploy_latch_anchor.gd`: locks 3 click s3906 squad 3, the centroid latch holds lanes and a herringbone
 at an open anchor (the counter), the anchor latch holds open and stands a coil; R37.42's lane still a herringbone (quiet, in
 its slots). Laptop dev, not judged: locks + terminus x 3/5 squads click x s3906-3907, wrong for the anchor's terrain main 2,
-centroid latch 5, anchor latch 0.
+centroid latch 5, anchor latch 0 (laptop glibc 2.39 v builders' 2.43 round atan2f etc. differently, R38.25: in jams the
+laptop's rows are not comparable to builder rows; nothing judged here came from the laptop).
 Arms `main:--deploy-trace` v `anchor:--deploy-latch=anchor,--deploy-trace`. Seeds never read for S2: no-fight 12 cells x
 4301-4312; fight 3-squad (budget 1500) and 5-squad (budget 3000) click cells x 4313-4324; census x 4301-4303.
 `make native settle-s2v4`, judge `settle_judge.py s2v3` with SETTLE_SHAPE_JUDGED=0. **Lines (R38.20, amended before any
