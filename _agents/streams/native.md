@@ -91,6 +91,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **builder_checks.sh** (47112af3d, R38.15): a failed ssh (255) is never "0 running" any more. Plain mode exits 3 with no count;
   `--wait-below` asks again each poll and gives up (exit 3) after BUILDER_CHECKS_TRIES (30) failed asks in a row.
   test_builder_checks 9/0 (laptop, a fake ssh). Real asks: builder0 and builder2 each count 1; an unreachable host exits 3.
+- **Wall-clock gates per physical core** (54898f5b1, R38.19): tools/loaded.sh (1-min load per lscpu core, 1.5) is now the one
+  rule for web-smoke's first-sound bound (tools/web_smoke/first_sound_gate.sh, called from mk/web.mk), test_quiet_window and
+  test_slot_light. The per-nproc rule read builder2 (32 vCPU / 16 cores) as quiet up to load 48, so 4 checks FAILed at 31–38.
+  Now the line is builder2 24, builder0 15 (was 18). test_loaded 9/0 (loaded box -> NOT JUDGED; quiet box or a 2nd FAIL ->
+  FAIL); shell-tools-test exit 0 (laptop, 30 suites). Touches mk/web.mk (native's round-33 gate; not in the owned list, so
+  flagged in the hand-over).
 - **N3 closed** for the round (orchestrator accepted "not switching"); an AMD sample only if builder2 comes up on one.
 
 **Side worktrees to remove at close:** ../godot-native-guard, -score, -k5 (and round 37's: -m5, -unstick, -cp371,
