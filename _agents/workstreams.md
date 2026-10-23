@@ -209,6 +209,11 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   deciding line and place+twitch (`SETTLE_S1_DECIDING_JUDGED=0`). Also amended before numbers (5a9f65d54): Bars H/S3's arms use
   `--deploy-latch=anchor` (since b3ad7baa4, `=on` means v2's centroid read).
 
+- **G3 and G1 v3: tree lines amended before any judged number (stream/orders a67afc951).** Both bars' tree = 23983ab5b (main
+  e1f602fbf merged: the latch ON); G3 code = 695d3d482's, G1 v3 code = f2a94b6cc's; later G2 dev switches OFF and leave the OFF and
+  `--group-lay=column` paths unchanged. Full check on a67afc951 (docs on 23983ab5b), builder0; then G3 (4101-4112) and G1 v3
+  (3951-3962) judged reads, builder0 light J4, both arms latch-on.
+
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
 `references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
