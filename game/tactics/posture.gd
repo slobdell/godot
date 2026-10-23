@@ -54,7 +54,9 @@ static func decide(team: int, scores: Array, objectives: Array, contacts: Array,
 	var threatened := {}
 	var threat_d := INF
 	for objective: Dictionary in held:
-		var d := _nearest(contacts, objective["position"])
+		# D2b, with DEFEND on only: a held zone is threatened by an enemy coming for it, not one at home 60 m off (the lab:
+		# with defend's trigger fixed, "zone threatened" by a turtle sitting on its own zone still held the CPU 66 % of its fire).
+		var d := _nearest(contacts if near.is_empty() else _coming(contacts, objective, objectives, team), objective["position"])
 		if d <= THREAT_M and d < threat_d - 0.001:
 			threatened = objective
 			threat_d = d

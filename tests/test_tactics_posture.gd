@@ -174,6 +174,17 @@ func test_an_enemy_coming_for_our_ring_is_defended_though_its_side_owns_a_zone()
 	assert_eq(String(decided["zone"]["name"]), "east", "our near ring")
 
 
+func test_with_defend_on_a_held_zone_is_not_threatened_by_an_enemy_at_home() -> void:
+	var zones := [{"name": "west", "position": Vector3(-36, 0, 24), "radius": 15.0, "owner": GREEN},
+			{"name": "mid", "position": Vector3(10, 0, 0), "radius": 15.0, "owner": RUST},
+			{"name": "east", "position": Vector3(36, 0, -24), "radius": 15.0, "owner": -1}]
+	var home := Vector3(-30, 0, 20)  # on Green's west zone, ~45 m from our mid zone
+	var off := Posture.decide(RUST, [0, 0], zones, [_contact(home)], home)
+	assert_true(String(off["why"]).begins_with("zone threatened"), "switch off: today's rule (%s)" % off)
+	var on := Posture.decide(RUST, [0, 0], zones, [_contact(home)], home, {}, zones[2])
+	assert_eq(String(on["posture"]), "attack", "switch on: the enemy is home, not coming (%s)" % on)
+
+
 # DEFEND (e): an element in contact near its post stands where it is; one far off drives to its post.
 func test_an_element_in_contact_near_its_post_stands_where_it_is() -> void:
 	var post := Vector3(10, 0, 10)
