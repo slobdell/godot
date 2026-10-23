@@ -368,3 +368,22 @@ func test_g2_a_leg_through_a_narrow_street_lays_the_column() -> void:
 	var plain := SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), street_on_the_way, func(p: Vector3) -> Vector3: return p,
 			[Vector3(-20, 0, 0), Vector3(20, 0, 0)] as Array[Vector3], drive)
 	assert_eq(plain.size(), 0, "a plain click (not a leg) is judged at its click only")
+
+
+## G2 (dev read 1, terminus 5 avenue): a leg ending at a turn reads the cross street at its click; under the switch its ranks
+## are no wider than the street it drove (single file here), not three abreast down the cross street.
+func test_g2_a_leg_ending_at_a_turn_stands_in_the_street_it_drove() -> void:
+	var turn := func(p: Vector3, across: Vector3) -> Array:
+		if absf(across.z) > 0.9:  # read across a west-going leg: the cross street at the click, else the 16 m street
+			return [100.0, 100.0] if p.x < -40.0 else [8.0, 8.0]
+		return [8.0, 8.0]
+	var blocks := [{"center": Vector3(10, 0, -30), "width": 29.0, "depth": 20.0}, {"center": Vector3(20, 0, -30), "width": 29.0, "depth": 20.0},
+			{"center": Vector3(30, 0, -30), "width": 29.0, "depth": 20.0}]
+	var today: Array[Vector3] = [Vector3(-50, 0, -60), Vector3(-50, 0, -30), Vector3(-50, 0, 0)]
+	var drive := func() -> PackedVector3Array: return PackedVector3Array([Vector3(-50, 0, -30), Vector3(30, 0, -30)])
+	SelectionSquads.LEG_WIDTH_ALONG = true
+	var out := SelectionSquads.column_lay(blocks, Vector3(-50, 0, -30), Vector3(-1, 0, 0), turn, func(p: Vector3) -> Vector3: return p,
+			today, drive, Callable(), false, true)
+	assert_eq(out.size(), 3, "a column (%s)" % [out])
+	for at: Vector3 in out:
+		assert_true(absf(at.z + 30.0) <= 10.0, "in the street it drove, not down the cross street (%s)" % [at])

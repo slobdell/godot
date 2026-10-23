@@ -297,8 +297,8 @@ static var GROUP_ROOM_REARMOST := OS.get_cmdline_user_args().has("--group-room=r
 static var GROUP_LEG_ROOM := OS.get_cmdline_user_args().has("--group-leg-room=starts")
 ## G2 (dev): `--group-route-line=on`: a shifted leg's column (and a gate's) stacks back along his clicked route.
 static var GROUP_ROUTE_LINE := OS.get_cmdline_user_args().has("--group-route-line=on")
-## G2 (dev): `--group-leg-width=along`: a shifted leg keeps today's body only where its spread fits the narrowest width read
-## along the leg's drive (`path_back`), not just at its click (d2ed6ef10: on Terminus 5's east route the click stood in the
+## G2 (dev): `--group-leg-width=along`: a shifted leg is as wide as the narrowest width read along its drive (`path_back`,
+## out to its farthest start): today's body stands only where its spread fits, and no rank is wider; not just its click (d2ed6ef10: on Terminus 5's east route the click stood in the
 ## plaza, so v3 kept the spread body and the squads took three streets).
 static var LEG_WIDTH_ALONG := OS.get_cmdline_user_args().has("--group-leg-width=along")
 ## G2: how often the leg's drive is read for its width, and how far from each end the reads start (the click's own width
@@ -335,11 +335,22 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 		ahead = Vector3.FORWARD
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
 	var at_click: Array = width_at.call(flat_click, across)
+	# G2 (dev): a shifted leg is as wide as its narrowest street (dev read 1, terminus 5 avenue: the leg ending at a turn
+	# read the cross street at its click and stood three squads abreast down it, one 65 m off his route).
+	var narrowest := INF
+	if leg and LEG_WIDTH_ALONG and path_back.is_valid():
+		var reach := 0.0
+		for block: Dictionary in blocks:
+			var c: Vector3 = block["center"]
+			reach = maxf(reach, Vector2(c.x - flat_click.x, c.z - flat_click.z).length())
+		narrowest = narrowest_along(path_back.call(), width_at, reach)
+		var wide := float(at_click[0]) + float(at_click[1])
+		if narrowest < wide:
+			at_click = [float(at_click[0]) * narrowest / wide, float(at_click[1]) * narrowest / wide]
 	if today.is_empty():
 		if float(at_click[0]) >= GROUP_SCAN_M - 0.01 and float(at_click[1]) >= GROUP_SCAN_M - 0.01:
 			return result  # no body given: open = the scan reaches its limit both sides (v1)
-	elif on_clear_ground(today, flat_click, ahead, width_at, at_click) \
-			and not (leg and LEG_WIDTH_ALONG and path_back.is_valid() and not fits_along(today, ahead, path_back.call(), width_at)):
+	elif on_clear_ground(today, flat_click, ahead, width_at, at_click) and fits_along(today, ahead, narrowest):
 		bodies_kept += 1
 		return result  # today's body already stands on the ground he clicked
 	var widest := 0.0
@@ -632,19 +643,11 @@ static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vecto
 	return true
 
 
-## G2: whether `places`' spread across `ahead` fits the narrowest width read along `drive` (click first), every
-## LEG_WIDTH_STEP_M from LEG_WIDTH_ENDS_M past the click to as far short of its end, within 2 × PLACE_SLACK_M.
-static func fits_along(places: Array[Vector3], ahead: Vector3, drive: PackedVector3Array, width_at: Callable) -> bool:
-	var across := Vector3(-ahead.z, 0.0, ahead.x)
-	var lo := INF
-	var hi := -INF
-	for at: Vector3 in places:
-		lo = minf(lo, at.dot(across))
-		hi = maxf(hi, at.dot(across))
-	var spread := hi - lo
-	var total := 0.0
-	for k in range(1, drive.size()):
-		total += _xz(drive[k - 1]).distance_to(_xz(drive[k]))
+## G2: the narrowest clear width (both sides together) read along `drive` (click first), every LEG_WIDTH_STEP_M from
+## LEG_WIDTH_ENDS_M past the click to as far short of `reach` metres along it (the leg: out to its farthest start); INF
+## when nothing is read.
+static func narrowest_along(drive: PackedVector3Array, width_at: Callable, reach: float) -> float:
+	var narrowest := INF
 	var walked := 0.0
 	var next := LEG_WIDTH_ENDS_M
 	for k in range(1, drive.size()):
@@ -654,13 +657,23 @@ static func fits_along(places: Array[Vector3], ahead: Vector3, drive: PackedVect
 		if length < 0.01:
 			continue
 		var way := (b - a) / length
-		while next <= walked + length and next <= total - LEG_WIDTH_ENDS_M:
+		while next <= walked + length and next <= reach - LEG_WIDTH_ENDS_M:
 			var sides: Array = width_at.call(a + way * (next - walked), Vector3(-way.z, 0.0, way.x))
-			if spread > float(sides[0]) + float(sides[1]) + 2.0 * PLACE_SLACK_M:
-				return false
+			narrowest = minf(narrowest, float(sides[0]) + float(sides[1]))
 			next += LEG_WIDTH_STEP_M
 		walked += length
-	return true
+	return narrowest
+
+
+## G2: whether `places`' spread across `ahead` fits `narrowest` within 2 × PLACE_SLACK_M.
+static func fits_along(places: Array[Vector3], ahead: Vector3, narrowest: float) -> bool:
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var lo := INF
+	var hi := -INF
+	for at: Vector3 in places:
+		lo = minf(lo, at.dot(across))
+		hi = maxf(hi, at.dot(across))
+	return hi - lo <= narrowest + 2.0 * PLACE_SLACK_M
 
 
 ## Crossing pairs between two squads' vehicle drives (each vehicle straight to its squad's place).
