@@ -80,8 +80,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   **Closed:** manoeuvre isn't building M5b. Their trace (builder0 native, c16c4a0b6, jam 3 maps x 8 seeds, 24 fights): 107 of
   1,166 seated give-ways turned round, 72 of them the scout's kept turn-in, and choose() ran for only 16 returns. No twin.
   N2 has no pending pair. It reopens if doctrine's D2 moves into a mirrored path.
-- **N5:** a row per main the round ships. **Next: e1f558d83** (feedback F3 ON). Queued LAST on builder2 (R38.14): after settle's S2
-  and S1 v2, doctrine's D2b (OFF + ON) and D3, once its main check is green; doctrine pings "builder2 free". Keep it off builder0 (R38.8). Pair against
+- **N5:** a row per main the round ships. **Next: 9d2897fd8** (= e1f558d83 feedback F3 ON + ec70d6b5c hit ring,
+  presentation only; main check green R38.18, 3076/0, sim-baseline 13/13). Gate met. Queued LAST on builder2: after settle's S2 v3,
+  doctrine's D2b, settle's S1 v3 and doctrine's D3; doctrine pings "builder2 free". Keep it off builder0 (R38.8). Pair against
   1c484a525.fights.jsonl.
 - **guard.py --pair** (68301e6a7, doctrine's Bar G2): the guard's kills and losses a fight and median length, all and per
   guard faction, each with a paired se from the per-seed differences. test_guard 0 failed, test_scoreboard 14/0 (laptop);
