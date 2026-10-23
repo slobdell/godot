@@ -84,28 +84,24 @@ WEB_MATCH_QUERY := skirmish&scripted&player-faction=gangs&enemy-faction=law&seed
 # Round 26: 75 s, not 45: the 21.3 MB factions pack took 12.6 -> 27.1 -> >45 -> 33.5 s to fetch as builder0's load rose,
 # and one check failed "packs: factions: never loaded" with every game target green.
 WEB_MATCH_ARGS  := --seconds=$(or $(WEB_MATCH_SECONDS),75) --shots=15
-# Item 3 (round 33 overnight): the first-sound bound is judged only below this 1-minute load per CPU; above it a miss
-# is NOT JUDGED (check's verdict row), as perf-judge refuses on a busy box.
-WEB_LOADED_PER_CPU ?= 1.5
+# Item 3 (round 33 overnight): the first-sound bound is judged only below this 1-minute load per PHYSICAL core (round 38,
+# R38.19: tools/loaded.sh; per nproc, builder2's 32 vCPUs on 16 cores read quiet up to load 48); above it a miss is NOT
+# JUDGED (check's verdict row), as perf-judge refuses on a busy box.
+WEB_LOADED_PER_CORE ?= 1.5
 WEB_NOT_JUDGED_MARKER ?= $(BUILD_DIR)/check/notjudged/web-smoke
 web-match-smoke: export-web $(WEB_SMOKE_DEPS) ## A scripted browser skirmish: boots, music found, sound HEARD (WebAudio tap), booth as web_expect.json declares (WEB_VOICE=1: also the fetched voice)
 	$(MAKE) --no-print-directory -o export-web web-observe OBS_NAME=match_smoke OBS_QUERY='$(WEB_MATCH_QUERY)' OBS_ARGS='$(WEB_MATCH_ARGS)'
 	@# Round 33 overnight (native, item 3): "first sound <= 30 s after READY" is a wall-clock bound. It failed at load 30.8
 	@# and 36.8 (31.5 s, 34.7 s) and passed at 12.6 (11.7 s), builder0. When it is the ONLY FAIL and the box was loaded
-	@# (1-minute load >= WEB_LOADED_PER_CPU per CPU), the run is NOT JUDGED, as perf-judge refuses: the reason goes to
-	@# check's marker and the target passes. Every other FAIL, or the same miss on a quiet box, is red as before.
+	@# (1-minute load >= WEB_LOADED_PER_CORE per physical core), the run is NOT JUDGED, as perf-judge refuses: the reason
+	@# goes to check's marker and the target passes (tools/web_smoke/first_sound_gate.sh, tools/test_loaded.sh). Every other
+	@# FAIL, or the same miss on a quiet box, is red as before.
 	@rm -f $(WEB_NOT_JUDGED_MARKER); mkdir -p $(BUILD_DIR); \
 	s=0; $(PYTHON) tools/web_smoke/assert_match.py $(BUILD_DIR)/web-observe/match_smoke/report.json \
 		> $(BUILD_DIR)/web-match-smoke.txt 2>&1 || s=$$?; cat $(BUILD_DIR)/web-match-smoke.txt; \
 	if [ $$s -ne 0 ]; then \
-		load=$$(cut -d' ' -f1 /proc/loadavg); cpus=$$(nproc); \
-		fails=$$(grep -c '^  FAIL ' $(BUILD_DIR)/web-match-smoke.txt || true); \
-		bound=$$(grep -c '^  FAIL sound: first sound .* after READY (bound ' $(BUILD_DIR)/web-match-smoke.txt || true); \
-		if [ "$$fails" = 1 ] && [ "$$bound" = 1 ] && awk -v l=$$load -v c=$$cpus -v t=$(WEB_LOADED_PER_CPU) 'BEGIN{exit !(l >= t * c)}'; then \
-			why="first-sound bound missed at load $$load on $$cpus CPUs ($$(grep -o 'first sound [0-9.]* s after READY (bound [0-9]* s)' $(BUILD_DIR)/web-match-smoke.txt))"; \
-			echo ">> web-smoke: NOT JUDGED -- $$why: the box was too loaded to judge a wall-clock bound"; \
-			mkdir -p $$(dirname $(WEB_NOT_JUDGED_MARKER)); echo "$$why" > $(WEB_NOT_JUDGED_MARKER); \
-		else exit $$s; fi; \
+		WEB_LOADED_PER_CORE=$(WEB_LOADED_PER_CORE) bash tools/web_smoke/first_sound_gate.sh $(BUILD_DIR)/web-match-smoke.txt \
+			$(WEB_NOT_JUDGED_MARKER) || exit $$s; \
 	fi
 	$(if $(WEB_VOICE),$(MAKE) --no-print-directory -o export-web web-observe OBS_NAME=match_smoke_voice OBS_QUERY='$(WEB_MATCH_QUERY)&web-voice=fetch' OBS_ARGS='$(WEB_MATCH_ARGS)' && \
 		$(PYTHON) tools/web_smoke/assert_match.py $(BUILD_DIR)/web-observe/match_smoke_voice/report.json --voice=fetch)
