@@ -169,21 +169,28 @@ EXPECTED = {"lanes": "herringbone", "dense": "herringbone", "open": "coil"}
 NATO = ["Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot"]
 
 
+# The reference terrain: "anchor" = terrain_at the squad's first deploy anchor (DEPLOY_TRACE anchor_terrain; the deploy is
+# the same in both arms and its anchor is not moved by the shape that stands), "stand" = terrain_at the crews' centroid
+# STAND_TRACE_S after it (STAND_TRACE; the shape that stands moves it). env SETTLE_V3_REFERENCE, default anchor.
+REFERENCE = os.environ.get("SETTLE_V3_REFERENCE", "anchor")
+
+
 def stands(probe, arm, key):
-    """{squad index: STAND_TRACE line} of one probe run (ElementPlan._trace_stand: the ground at the crews' centroid
-    STAND_TRACE_S after the squad's first deploy)."""
+    """{squad index: {"terrain": the reference terrain}} of one probe run, from the squad's first DEPLOY_TRACE
+    (anchor_terrain) or STAND_TRACE line (terrain), by REFERENCE."""
     m, squads, route, seed = key
     out = {}
     path = os.path.join(probe, "logs", "%s-%d-%s-%s-s%d.log" % (m, squads, route, arm, seed))
     if not os.path.exists(path):
         return out
+    tag, field = ("DEPLOY_TRACE ", "anchor_terrain") if REFERENCE == "anchor" else ("STAND_TRACE ", "terrain")
     with open(path, errors="replace") as f:
         for line in f:
-            if line.startswith("STAND_TRACE "):
+            if line.startswith(tag):
                 d = json.loads(line.split(" ", 1)[1])
                 letter = d["leader"].split("_")[1] if d["leader"].count("_") >= 2 else ""
-                if letter in NATO:
-                    out.setdefault(NATO.index(letter) + 1, d)
+                if letter in NATO and field in d:
+                    out.setdefault(NATO.index(letter) + 1, {"terrain": d[field]})
     return out
 
 
@@ -215,8 +222,8 @@ def shape_wrong(probe, base, new, b, n, common, lines):
     tb, wb = wrong_shapes(probe, base, {c: b[c] for c in common})
     tn, wn = wrong_shapes(probe, new, {c: n[c] for c in common})
     ok = tb["right"] + tb["wrong"] > 0 and tn["wrong"] <= tb["wrong"]
-    lines.append("%s guard first shape wrong for the ground it stands on: %d -> %d (arm <= base); base %s | arm %s" % (
-        "PASS" if ok else "FAIL", tb["wrong"], tn["wrong"], dict(tb), dict(tn)))
+    lines.append("%s guard first shape wrong for the ground (reference %s): %d -> %d (arm <= base); base %s | arm %s" % (
+        "PASS" if ok else "FAIL", REFERENCE, tb["wrong"], tn["wrong"], dict(tb), dict(tn)))
     for label, w in ((base, wb), (new, wn)):
         lines.append("  wrong on %s: %s" % (label, " ".join("%s-%d-%s-s%d#%d:%s/%s" % (c + (t, s)) for c, t, s in w) or "none"))
     return ok

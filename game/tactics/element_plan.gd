@@ -1893,7 +1893,8 @@ static func _trace_deploy(plan: Dictionary, situation: Dictionary, stand: Vector
 	print("DEPLOY_TRACE ", JSON.stringify({"tick": int(situation.get("tick", 0)), "leader": String(situation.get("leader", "")),
 			"formation": String(plan["formation"]), "anchor": [snappedf(stand.x, 0.01), snappedf(stand.z, 0.01)],
 			"heading": [snappedf(heading.x, 0.0001), snappedf(heading.z, 0.0001)], "spacing": spacing,
-			"terrain": String(situation.get("terrain", "")), "fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}), "crews": crews}))
+			"terrain": String(situation.get("terrain", "")), "anchor_terrain": ElementSituation.terrain_at(stand),
+			"fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}), "crews": crews}))
 
 
 ## R38.15 (S2 v3's reference): one STAND_TRACE line per deploy, the first plan STAND_TRACE_S after it: the crews' centroid
