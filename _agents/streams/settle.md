@@ -400,6 +400,10 @@ counter (turned > 0), twitch >= 15 m not up, never-in arm <= base, first shape d
 place+twitch, and (R38.37) the street axis set v null and the turns refused, per cell. A pass ships S1 ON (both switches)
 on a new hash with one full check.
 `make quick-remote` on e81b57579 (builder0): 100 scripts lint-parse, 122 passed, 0 failed (the diff's tests, settle's and tactics').
+Series run 1 (builder0 light J4, e81b57579, 2026-10-23 03:23-04:53): NO VERDICT. slot.sh's default 5400 s limit killed it in the
+5-squad fight (probe and fight3 were complete; nothing was judged or read). It is rerunning unchanged, with
+`TANK_SQUAD_SLOT_TIMEOUT=14400`, at 6c3112193 (a docs-only change from e81b57579). The J4 series runs past 90 min, so any light-lane
+series needs that knob.
 
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
