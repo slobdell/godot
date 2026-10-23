@@ -196,6 +196,12 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   se AND McNemar p < 0.05. Second line: blob kr not up > 2 se. G1 turtle win/length not up > 2 se; G2/G2t kills a fight and length per
   faction within 2 paired se on both lines; G3 none-line length x1.2; lab guard turtle-line CPU hold share <= OFF + 10 points. A pass
   ships ON.
+  **Arm re-filed before any series number (stream/doctrine 25f5ca26e): `--cpu-defend --cpu-defend-split` alone**; CLOSING stays OFF;
+  no constant re-tuned. Labs (not judged; builder0 light J4, 587c31976, seeds 2601-2602, 20 fights a line an arm): blob guard wins OFF 9,
+  split 4, closing 9, package 10 of 20; turtle-line kills OFF 593, split 595, package 590; none-line median OFF 158 s, split 139 s,
+  package 188 s (a blob held at a barrier stops closing, so CLOSING lapses the defend). Lab guard on split 31.6 % v OFF 22.0 % (inside
+  +10 by 0.4; the series re-reads it). **Queue (orchestrator):** D2c's check + series go AHEAD of D3 on builder2 (a fix he would see; and
+  D3 is then read on top of what ships).
 
 - **S1 v4 = S1 v3 on the latch-ON base (settle, R38.34; filed in stream/settle fdeb18ce6 before any number; copied here by the
   orchestrator).** Arms S1 ON v OFF, both latch-ON, code = b3ad7baa4's; seeds 4401-4412 no-fight, 4413-4424 fights; builder2 from 02:12.
