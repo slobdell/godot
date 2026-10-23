@@ -70,6 +70,14 @@ an arm, the fight probe 18 of the re-filed 36 fights, the census; `references/ro
   coil -> herringbone squads: the R37.42 shape the lab test locks); 1 herringbone -> coil (terminus 5 route s3908 squad 4);
   3 are a squad with no halt on one side ('', the never-in rows the never-in guard already counts). S2 stays OFF; the
   orchestrator's call whether the bar stands as filed.
+- **S1 v2 (R38.11) FAILS ONE GUARD: never-in 1 -> 2 runs.** builder2 native, cbb2ece52 (game code = e42ff30eb's GREEN),
+  `make native settle-s1v2`, 18:07-19:04, `references/round38/settle/s1v2-judged-builder2-cbb2ece52/`. Deciding PASSES:
+  squads with a deploy leg >= 25 m 56 -> 10 (line <= 28). Counter 70 of 573 deploys turned. Guards pass: twitch >= 15 m
+  95 -> 71, first shape 7/576, contacts 12,183 -> 11,526 / foreign 6,301 -> 6,188, fights 3-squad and 5-squad (n 36 each).
+  Reported: place+twitch >= 25 m 153 -> 110. **FAIL never-in:** fit adds crossing 5 route s3931 squad 4. Read after the
+  verdict: no deploy in that run turned. Fit still deals every deploy's seats by its own grounded Hungarian, so the
+  rows diverge from Charlie's deploy (tick 1090 main, 1120 fit). Squad 4 is a late jam on main too (all-in at 60.5 s,
+  the slowest squad of the run); on fit it never gets in. Not waived; S1 stays OFF.
 - **S2 v3 (R38.15): the bar's reference chosen, the bar itself waits on its context run.** The re-read's first-shape FAIL stands
   (R38.15). S2 v3 = the same arm, seeds 4001-4012 (no-fight), 4013-4024 (fight3/fight5), census 4001-4003, judged by
   `settle_judge.py s2v3` (`make native settle-s2v3`). The first-shape guard is "first shape WRONG for the terrain at the
