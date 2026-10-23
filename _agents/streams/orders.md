@@ -45,27 +45,42 @@ settle's deploy/halt/seat functions, doctrine's brains paths, `native/**`, `test
 
 ## Waiting on the lead
 
-Nothing (the shots go to him at the close).
+Nothing. No bar passed in round 38, so no paired shots are due; G1, G2 and G3 carry to round 39 with causes in Status.
 
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-23 ~10:00 PDT)
-- **Judged so far, all FAIL as filed, all OFF, evidence in `references/round38/orders/`:**
+### NOW (2026-10-23 ~12:00 PDT) — every backlog item is complete, at a lead gate, or written up
+- **Report for the lead:**
+  - G1 and G3 each failed their last judged read on one guard cell and stay OFF; both carry to round 39 with a traced cause.
+  - On his 5-squad routes, main never gets every squad in, and G2 does; G2 carries (R38.47).
+  - Stretch covered. Green tree for everything: **ab31e9bc2** (builder0 full check, 27/27 all judged, 3121/0). Later
+    commits are docs and evidence only.
+- **Judged, all FAIL as filed, all OFF, evidence in `references/round38/orders/`:**
   - G3 v3 (`g3-judged-builder0-a67afc951`);
   - G1 v3 (`g1-v3judged-builder0-b55757fee`);
-  - G3 v4 (`g3-v4judged-builder0-9986a1cba`): deciding passes and his click passes; never-in 3 -> 4; a place was stepped
-    across the river on s4603.
-- **Bars filed, waiting on a green check then the light lane:**
-  - **G3 v5** (b73157a9e, seeds 5201-5212). Dev read 10 PASS on every line (builder0, 425dc6a5b, dev seeds 3804-3809, n 6).
-  - **G1 v4** (7c3250ed6, seeds 4701-4712). Dev read 2 (builder0, 4d68baba4, dev seeds 3804-3809, n 6) passes everything
-    but terminus 5 route never-in 1 -> 2: the route's first plain click keeps squads whole. Filed as is on the
-    orchestrator's ruling (option (a)).
-  - Main a34f05105 merged at ab31e9bc2 (settle code all OFF). **Check GREEN on ab31e9bc2** (builder0, `make native check
-    exited 0`, 27 targets all passed, ALL JUDGED, 3121 passed, 0 failed). That is the green tree for both bars.
-  - **Judged reads running** (builder0 light J4, slot timeout knob), on docs/evidence descendants of ab31e9bc2 with the same
-    game code: G3 v5 on 5201-5212, then G1 v4 on 4701-4712.
+  - G3 v4 (`g3-v4judged-builder0-9986a1cba`): never-in 3 -> 4; a place stepped across the river on s4603.
+  - **G3 v5** (builder0 light J4, game ab31e9bc2, fresh seeds 5201-5212, n 12, 18 cells; `g3-v5judged{,his}-builder0-7953d7e52`):
+    - fails one guard: twitch on crossing 3 route, 5.5 v 8.8 against base + 3 m;
+    - every other line passes: pairs closer than 12 m 48 -> 3; never-in 7 -> 7; placed more than 40 m further 0 of 864
+      (worst +27.0 m); contacts 14841 -> 14190.
+  - **G1 v4** (builder0 light J4, game ab31e9bc2, fresh seeds 4701-4712, n 12; `g1-v4judged-builder0-aff2119a7`):
+    - fails one guard: never-in on crossing 3 click, 0 v 1 (s4710 squad 2);
+    - every other line passes: places outside the corridor 82 -> 20 (bar <= 20.5); route_left_m 4974 -> 1328 (bar <= 2487);
+      re-dealt 0; contacts 12910 -> 10746; yard_open 192/192 identical.
+- **Causes, traced** (builder0 J2, n 1 each; `judged-traces-builder0-5725a5a57/README.md`):
+  - **G1 s4710:**
+    - The column gives the near place to squad 1, which arrives first and parks in the street. Squad 2's last crew
+      wedges 8.8 m behind it, on its MOVE order until t=90.
+    - Parked crews never give way; that is the same gap as the bridge mouth.
+    - Round 39, orders' share: the squad whose crews lead takes the far place, or the near squad holds until the far one
+      is past.
+  - **G3 s5201** (and squad 2 on s5204/5208/5209/5212):
+    - The moved place clears the neighbour, but it doesn't hold the squad's seats. The deploy re-seats about 24 s in,
+      for 16-23 m of twitch.
+    - Round 39: accept a cleared place only where every crew seats without a re-seat (the ground-cap check), or step it
+      back along the squad's own leg.
 - **G2 carries to round 39 (R38.47), no bar on the current code.** Dev read 3 (builder0 J4, ab31e9bc2, dev seeds 3801-3803,
   n 3; `g2-dev3{cells,his}-builder0-ab31e9bc2/`):
   - route cells: off 2,493 -> 2,016 m;
