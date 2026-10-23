@@ -59,7 +59,9 @@ kills -2.8 se; G3 none-line median +31 %). `--cpu-defend` stays in the code, OFF
 (defend OFF); Bar D3 filed below before any arm number; it waits behind settle's S2 v4 and S1 v3 on builder2. **D2c** (hold with
 some, strike with the rest; R38.30) built OFF in ebb817ea0, Bar D2c filed below; labs done: SPLIT is the lever (blob 9 -> 4 of 20), so the series
 arm is SPLIT alone (re-filed before any series number). **builder2 order (R38.35): settle's read, then D2c's check +
-series (~/doctrine-runs/d2c-series.sh <tree>), then D3; if D2c passes, Bar D3 is re-based on SPLIT ON before its numbers.** **GREEN: c475c3163**
+series (~/doctrine-runs/d2c-series.sh <tree>), then D3; if D2c passes, Bar D3 is re-based on SPLIT ON before its numbers.** **GREEN: 5a9464679** (D2c's series tree: builder2 `make native check exited 0`, 3069 passed / 0 failed,
+sim-baseline 13/13 unmoved with the switches OFF; scenario perf row NOT JUDGED, reason=loaded; series started 03:39). Before it,
+**c475c3163**
 (builder2 `make native check exited 0`, 3066 passed / 0 failed; the scenario perf row NOT JUDGED, reason=loaded, so G4 is re-run
 alone). Earlier green: acbdef4c5 (builder2, 3063 / 0, sim-baseline 13/13 unmoved with the switch OFF). Raw guard logs:
 ~/doctrine-guard-raw/acbdef4c5-{off,defend}, ~/doctrine-guard-raw/c475c3163-{off,defend}.
