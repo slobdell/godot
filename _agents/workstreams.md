@@ -443,7 +443,10 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   acosf, asinf, atanf, tanf differ (2M-input probe), builder0 == builder2. Proof: a 5-function LD_PRELOAD shim on the laptop gives SIM_HASH
   identical to builder0 on all 180 checkpoints. **Rules from here:** native v GDScript on the builders is sound; laptop dev reads are not
   comparable to builder reads where a jam amplifies ulps (dev reads that matter run on a builder light lane); sim-baseline is per-machine.
-  Open: under the shim the laptop's native arm gives 28.6, not 47.4 (one float function differs engine v native; tanf first suspect).
+  Closed (native ~01:20): atan2f alone carries this case (leave-one-out shims); native ON read 28.6 under the shim only because Godot
+  dlopens GDExtensions with RTLD_DEEPBIND, so the preload reaches the engine but not libtank_native (two libms mixed). Without a shim the
+  engine and native call the same libm and agree bit for bit on each machine. No native seam; nothing to fix in native. Lesson on
+  stream/native 1f714933a (remote_builds.md): never pair a laptop read with a builder read; the shim recipe for the GDScript arm only.
   **Round-39 candidate:** the sim's trig made machine-independent (its own correctly rounded or double-based float trig), because his
   laptop and any player's machine simulate differently today (replays, cross-machine fights).
 - **R38.26 (2026-10-23 ~00:20) manoeuvre at its end state; s3866 read.** (builder0 light native, n 1 an arm; stream/manoeuvre e55cba940,
