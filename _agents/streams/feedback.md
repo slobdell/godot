@@ -49,6 +49,11 @@ F1's page when it exists (the orchestrator relays).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-22 ~17:30: green hash to merge c9a3c01c6** (hit ring tightened, f52ab7077 + Status). `make native check` on builder2: 24
+passed, 2 NOT JUDGED (perf-judge not a judging box; scenario_perf loaded 5.24x), 1 FAILED web-smoke = "first sound 33.8 s after READY
+(bound 30 s)" at load 37.8 with the page at 2 fps; tests 3076/0, sim-baseline unmoved on 13. Re-run alone on builder0 (load ~11-25):
+`make remote T=web-smoke` exited 0, first sound 16.0 s. 70667a554 is merged (main e1f558d83). Done but his F1 pick.
+
 **2026-10-22 ~16:30, stretch (item 4): his picks in real fights at the laptop preset.** `make remote T=feedback-fight`, builder0,
 Terminus, gangs v Law, seeds 5 and 7 (all four slots) on main-equivalent 7ce9c4660 (F3 ON), clips in ~/projects/godot-feedback-endkeep/
 fight-seed{5,7}/. Pinned chevrons, the Emitter's shimmer and the beams (incl. under fire) read at his pose. **One rough edge, fixed
