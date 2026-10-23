@@ -585,7 +585,12 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   cap. **Ruled:** S1 has now failed v1, v2, v4 and v5, each by one marginal never-in, three of them a later squad that cannot pass a
   squad deploying ahead of it on terminus 5 route. Another tweak would be fitting to the guard. The two-arm s4505 trace finishes and its
   cause goes in settle's close notes; **round-39 candidate:** a deploying squad must not settle across a lane a following squad of the
-  same order still has to pass (with manoeuvre's chain-aware give-way, R38.26), then S1 re-read on top of it.
+  same order still has to pass (with manoeuvre's chain-aware give-way, R38.26), then S1 re-read on top of it. **Corrected by the s4505 trace (settle,
+  references/round38/settle/s1v5-s4505-trace-builder0/, da7915e14):** the variable is not "across a lane" (s4410 was across, s4505
+  along): in both, a halt seat lands on the remaining route of a following squad of the same order (here Delta_1 23.7 m west of the
+  anchor on the junction, Delta_3 in a relaid lane-mouth slot; Echo_1-3 stuck between them t 36-90 s, nothing gives way). **Round-39
+  framing:** no seat of a deploying squad (relaid seats included) on a following same-order squad's remaining route, at any shape or
+  angle; plus the chain-aware give-way; then S1 re-read.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
