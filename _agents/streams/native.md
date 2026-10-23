@@ -39,7 +39,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Report (round 38 worker, 2026-10-22 ~10:30 PDT)
 
-**HAND-OVER (green): a15a48de8** = 68301e6a7 (guard.py --pair G2) + 47112af3d (builder_checks ssh) + 54898f5b1 (per-core
+**MERGED:** main 9a6909305 merges a15a48de8 (merged back into stream/native, 51d5cd262).
+- **Watch (orchestrator):** web-smoke's first sound. a15a48de8 passed at 29.9 s v the 30 s bound, at 2.15 per core (above the
+  1.5 line, so a miss there would have read NOT JUDGED). Record first-sound time and per-core load from each check. If quiet
+  boxes (< 1.5 per core) also land within ~1 s of the bound, revisit the bound or the line.
+
+**Was the hand-over (green): a15a48de8** = 68301e6a7 (guard.py --pair G2) + 47112af3d (builder_checks ssh) + 54898f5b1 (per-core
 gates; mk/web.mk ruled IN for the first-sound gate call only) + Status notes.
 - Full check, builder2: `make check exited 0`, 3055 passed / 0 failed, 25 passed, 2 NOT JUDGED.
   - perf-judge: builder2 isn't a judging machine.
