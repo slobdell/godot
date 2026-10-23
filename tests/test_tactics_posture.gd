@@ -195,3 +195,49 @@ func test_an_element_in_contact_near_its_post_stands_where_it_is() -> void:
 			"a stand point is kept while the post is where it was")
 	assert_eq(ElementCommander.stand_post(Vector3(120, 0, 10), Vector3(5, 0, 5), false, Vector3(30, 0, 10)), Vector3(120, 0, 10),
 			"posts laid elsewhere: the old stand point is dropped")
+
+
+# D2c (2): with CLOSING on (`closing` is the names closing on the ring, [] = none), only an enemy closing makes us defend;
+# one that stopped 85 m out does not hold the side.
+func test_with_closing_on_only_a_closing_enemy_makes_us_defend() -> void:
+	var zones := _zones(-1, -1)
+	var at := Vector3(36, 0, 61)  # 85 m from our near ring
+	var still := Posture.decide(RUST, [0, 0], zones, [_contact(at)], at, {}, _near(zones), [])
+	assert_eq(String(still["posture"]), "attack", "it stopped out there: go on as before (%s)" % still)
+	var closing := Posture.decide(RUST, [0, 0], zones, [_contact(at)], at, {}, _near(zones), ["Green_1"])
+	assert_eq(String(closing["posture"]), "hold", "it is coming: defend (%s)" % closing)
+	assert_eq(int(closing.get("coming", 0)), 1, "the defend decision counts what is coming (%s)" % closing)
+
+
+# D2c (2)+(3): a contact is closing once its distance to the ring has fallen CLOSING_M over a CLOSING_WINDOW, and stays
+# closing for DEFEND_LAPSE after the last time it did; one standing still never is.
+func test_a_contact_is_closing_for_a_lapse_after_it_last_closed() -> void:
+	var w := Posture.CLOSING_WINDOW_TICKS
+	var track := Posture.track_closing([], 0, 90.0)
+	assert_true(not Posture.is_closing(track, 0), "first seen: not yet")
+	track = Posture.track_closing(track, w / 2, 70.0)
+	assert_true(not Posture.is_closing(track, w / 2), "inside the window: not judged yet")
+	track = Posture.track_closing(track, w, 70.0)
+	assert_true(Posture.is_closing(track, w), "20 m nearer over a window: closing")
+	var lapse := w + Posture.DEFEND_LAPSE_TICKS
+	track = Posture.track_closing(track, lapse - 1, 70.0)
+	assert_true(Posture.is_closing(track, lapse - 1), "stopped since: still closing until the lapse")
+	track = Posture.track_closing(track, lapse + 1, 70.0)
+	assert_true(not Posture.is_closing(track, lapse + 1), "DEFEND_LAPSE without closing: the defend lapses")
+	track = Posture.track_closing(track, lapse + 1 + w, 50.0)
+	assert_true(Posture.is_closing(track, lapse + 1 + w), "closing again: re-armed")
+	var still := Posture.track_closing([], 0, 90.0)
+	for k in range(1, 6):
+		still = Posture.track_closing(still, w * k, 90.0 - 2.0 * k)
+		assert_true(not Posture.is_closing(still, w * k), "a crawl under CLOSING_M a window is not closing")
+
+
+# D2c (1): defend takes only the elements the coming threat needs, nearest first, at least one and at most half the line.
+func test_defend_takes_only_the_elements_the_threat_needs() -> void:
+	assert_eq(ElementCommander.defenders_needed([4, 4, 4, 4], 3), 1, "three coming: one element of four")
+	assert_eq(ElementCommander.defenders_needed([4, 4, 4, 4], 6), 2, "six coming: two")
+	assert_eq(ElementCommander.defenders_needed([4, 4, 4, 4], 20), 2, "a blob: at most half the line")
+	assert_eq(ElementCommander.defenders_needed([4, 4, 4], 20), 2, "half of three, rounded up")
+	assert_eq(ElementCommander.defenders_needed([2, 4, 4], 3), 2, "the nearest is short: two")
+	assert_eq(ElementCommander.defenders_needed([4, 4], 0), 1, "nothing counted: still one on the ring")
+	assert_eq(ElementCommander.defenders_needed([4], 9), 1, "one element: it holds")

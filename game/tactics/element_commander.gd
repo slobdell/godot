@@ -153,6 +153,19 @@ var _hold_toward := {}
 const DEFEND_STAND_M := 35.0
 ## element id -> the point it stands on (DEFEND (e)).
 var _stand := {}
+## Round 38 (doctrine D2c; stream/doctrine Status, the design note): D2/D2b's DEFEND went passive. It held the whole line
+## on the ring for as long as any enemy stood within Posture.DEFEND_M, ahead of "behind -> attack" (turtle kills -2.8 se,
+## CPU v CPU +31 % length). Two switches on top of `--cpu-defend`, each alone or both:
+## (1) SPLIT (`--cpu-defend-split`): a defend hold posts only the elements the coming threat needs (defenders_needed,
+## nearest the ring first); when the side would attack with defend off, the rest attack as they would.
+## (2) CLOSING (`--cpu-defend-closing`): only a contact closing on the ring counts (Posture.track_closing), and the defend
+## lapses Posture.DEFEND_LAPSE after the last one closed.
+static var DEFEND_SPLIT_ENABLED := false
+static var DEFEND_CLOSING_ENABLED := false
+## contact name -> its closing track toward the near ring (Posture.track_closing; CLOSING).
+var _closing := {}
+## SPLIT: the contacts this defend counts, when the rest of the line attacks; -1 when the whole line holds.
+var _split_coming := -1
 
 
 static func install(p_match: Match, p_team: int, p_elements: Elements = null) -> ElementCommander:
@@ -173,6 +186,11 @@ static func install(p_match: Match, p_team: int, p_elements: Elements = null) ->
 		DEFEND_ENABLED = true
 	if OS.get_cmdline_user_args().has("--cpu-defend=off"):
 		DEFEND_ENABLED = false
+	# Round 38 (doctrine D2c): `--cpu-defend-split` and `--cpu-defend-closing` (each with `--cpu-defend`).
+	if OS.get_cmdline_user_args().has("--cpu-defend-split"):
+		DEFEND_SPLIT_ENABLED = true
+	if OS.get_cmdline_user_args().has("--cpu-defend-closing"):
+		DEFEND_CLOSING_ENABLED = true
 	# Round 20 (M2): `--cpu-opening` turns the opening on (shipped off).
 	if OS.get_cmdline_user_args().has("--cpu-opening"):
 		OPENING_ENABLED = true
@@ -402,9 +420,24 @@ func think() -> void:
 	# Round 19 (B2): a side ahead on points, or whose zone is threatened, HOLDS: its line posts over the zone and one
 	# element lies in ambush on the flank of the enemy's way to it. Behind, it attacks as before.
 	if _hold_posture(contacts):
-		_hold(line, recon, support, contacts)
-		return
-	line = _plan_ambush(line, contacts, objective)
+		if _split_coming < 0 or line.size() < 2:
+			_hold(line, recon, support, contacts)
+			return
+		# D2c SPLIT: the elements nearest the ring hold it; the rest attack as the side would with defend off.
+		var ring: Vector3 = (posture["zone"] as Dictionary)["position"]
+		line.sort_custom(func(a: Element, b: Element) -> bool:
+			var da := _flat(_center(a)).distance_to(_flat(ring))
+			var db := _flat(_center(b)).distance_to(_flat(ring))
+			return da < db - 0.001 or (absf(da - db) <= 0.001 and a.id < b.id))
+		var k := defenders_needed(line.map(func(e: Element) -> int: return _alive(e)), _split_coming)
+		_hold(line.slice(0, k), recon, support, contacts)
+		line = line.slice(k)
+		for element: Element in line:
+			_stand.erase(element.id)
+		recon = []
+		support = []
+	else:
+		line = _plan_ambush(line, contacts, objective)
 	for i in line.size():
 		var element: Element = line[i]
 		if focus.is_empty():
@@ -576,7 +609,9 @@ func _hold_posture(contacts: Array) -> bool:
 			scores = [int((sides[0] as Dictionary).get("points", 0)), int((sides[1] as Dictionary).get("points", 0))]
 		objectives = _score.get("objectives", objectives)
 	var near := _near_ring(objectives) if DEFEND_ENABLED else {}
-	var decided := Posture.decide(team, scores, objectives, contacts, _enemy_center(contacts), _opening(objectives), near)
+	var closing: Variant = _closing_names(contacts, near) if DEFEND_CLOSING_ENABLED and not near.is_empty() else null
+	var decided := Posture.decide(team, scores, objectives, contacts, _enemy_center(contacts), _opening(objectives), near,
+			closing)
 	var was_holding := String(posture["posture"]) == "hold"
 	var held_zone: Dictionary = posture["zone"]
 	var still_ours := int(held_zone.get("owner", -1)) == team
@@ -603,9 +638,53 @@ func _hold_posture(contacts: Array) -> bool:
 		fallen_back.clear()
 		_hold_toward.clear()
 		_stand.clear()
+		_split_coming = -1
 		return false
+	_split_coming = -1
+	if DEFEND_SPLIT_ENABLED and String(posture["why"]).begins_with("defend"):
+		var off := Posture.decide(team, scores, objectives, contacts, _enemy_center(contacts), _opening(objectives))
+		if String(off["posture"]) == "attack":
+			_split_coming = int(posture.get("coming", 0))
 	hold_thinks += 1
 	return true
+
+
+## D2c CLOSING: the names of the contacts closing on `near` this think (their tracks kept in _closing).
+func _closing_names(contacts: Array, near: Dictionary) -> Array:
+	var tracks := {}
+	var names: Array = []
+	for contact: Dictionary in contacts:
+		var name := String(contact["name"])
+		var d := _flat(contact["position"]).distance_to(_flat(near["position"]))
+		var track := Posture.track_closing(_closing.get(name, []), game_match.tick, d)
+		tracks[name] = track
+		if Posture.is_closing(track, game_match.tick):
+			names.append(name)
+	_closing = tracks
+	return names
+
+
+## D2c SPLIT: how many line elements (alive crews each, nearest the ring first) a defend posts: enough to match the
+## `coming` contacts crew for crew, at least one and at most half the line (rounded up). Pure.
+static func defenders_needed(sizes: Array, coming: int) -> int:
+	var cap := ceili(sizes.size() / 2.0)
+	var k := 0
+	var have := 0
+	for size: int in sizes:
+		if k >= cap or (k > 0 and have >= coming):
+			break
+		have += size
+		k += 1
+	return maxi(k, 1)
+
+
+func _alive(element: Element) -> int:
+	var alive := 0
+	for unit_name in element.members():
+		var tank := _tank(unit_name)
+		if tank != null and tank.is_alive():
+			alive += 1
+	return alive
 
 
 ## Round 38 (D2): this side's near ring objective (Posture.near_ring), {} when it has none.
