@@ -173,6 +173,10 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   apart as normal, so the 8 m end-foreign line caught 68/216 main rows; G3 v1 stepped squads 60-90 m back): code v2 = no two places
   closer than their short sides, a place moves aside first, then back, at most 40 m. Deciding: pairs of places laid closer than 12 m,
   arm <= 25 % of base (main dev: 14 pairs, 2.8-6.3 m apart); never-in becomes a guard (arm <= base). Offset guards unchanged.
+  **Amended again before any judged number (stream/orders 45b6b795f):** tree = a green hash at or after 527d62cd2 with main merged
+  (527d62cd2 adds: where place_clear moved a place, untangle swaps squads whole); deciding line 1 skips a pair whose two squads' places
+  are read from the same element (`anchor_element`; one place, 0.0 m apart, one body). Dev read 2 (f65b23c26, dev seeds): all 5 g3 pairs
+  left, and main's his-click pairs, were of that kind. Seeds 4101-4112 unchanged.
 
 - **S1 v3 DEPLOY_FIT, main's deal unless turned (settle, R38.17; filed in stream/settle 3ac60e86f + 83d190c64 before any number;
   copied here by the orchestrator).** `_deploy_fit` leaves a deploy untouched unless it turns (tests/test_settle_deploy_fit_v3.gd pins a
