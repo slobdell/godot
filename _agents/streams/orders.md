@@ -64,7 +64,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   dev-seed never-ins. Main's s3958 squad 4 is seated inside squad 3's parked halt at the pinch and never moves again.
   That is a round-39 item for the halt seat and give-way owners, not G1/G3.
 - **G1 v4** (`--group-rank-shift=half`, 087cd20b7): dev read 1 FAIL on guards (crossing 5 route never-in/twitch;
-  yard_open 91/96, but s3806's column is v3's too). A three-arm read (main v v3 v v4, dev seeds 3804-3809) is running.
+  yard_open 91/96, but s3806's column is v3's too).
+  - **Three-arm read** (builder0 J4, 7bfb06384, dev seeds 3804-3809, n 6; `g1-three1-builder0-7bfb06384/`): v3 and v4 fail
+    the same guards. Crossing 5 route never-in: v3 0 -> 2, v4 0 -> 1. Twitch 22.2 -> 33.5 for both. yard_open 91/96 for
+    both. So the cap causes none of them. Its only difference is s3808, one never-in fewer.
+  - The never-ins are the bridge mouth again: s3806 squad 5 at (-67.5, 29.5), the round-39 seat/give-way item. Main loses
+    s3809 squad 4 there too.
+  - The twitch is G1's squads whole on route legs. The final leg puts the same places under different whole squads than
+    main's re-deal, so squads cross lanes (s3804: 8.8 -> 36.1 m). Narrowing it to plain clicks breaks the bar's "re-dealt 0
+    over all cells" line, so it is a trade-off for the orchestrator, not a patch. **No G1 v4 bar** until that is ruled.
 
 ### EARLIER (2026-10-23 ~04:00 PDT)
 - **Check GREEN on a67afc951** (tree 23983ab5b: main e1f602fbf merged, latch ON; builder0, `make native check exited 0`):
