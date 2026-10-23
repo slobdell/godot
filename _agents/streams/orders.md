@@ -148,6 +148,20 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   BOTH arms on the side-street routes. Reading: five squads on a 20 m street route are dominated by traffic (give-ways,
   queues: manoeuvre's paths), not by where the places are; G2's deciding line (route_off_m <= 50 %) is not in reach from the
   lay alone. Next for G2: a bar on 3-squad routes first, and a request to manoeuvre if the traces show queues at corners.
+- **G2 update (2026-10-22 late evening; laptop GDScript, merged tree ad737f7c0, terminus 5 squads, east route
+  `70/50+70/-30+25/-30`, s3801, n 1 each; route_off_m total):**
+  - main: 577. G1 v3 + G2 switches (`--group-legs=on --group-route-line=on`): byte-identical to main. v3's open test reads
+    the width at each click only; every leg's click is wide, so it kept today's body (bodies_kept 4, columns 0). Today's
+    body spreads the last leg's rear squads into other streets: squad 2's last place is (-3, 13) for a click at (25, -30),
+    which takes it 391 m off the drawn route.
+  - G1 alone with the per-rank read (`--group-clear=rank`): still 577. Only one column laid, and not where it counts.
+  - Per-rank read + G2 switches: 188 (-67 %), columns_laid 3. But squad 1 never gets in, all-in is 64 s, and the first
+    leg is still today's spread (v3 sends a fresh first click back to today's places).
+  - Trace of main's squad 2: ~18 s jammed at the (65-70, 0-20) corner. Traffic is a second cause, not the only one.
+  - Reading: G2's main lever is the leg lay, and it conflicts with v3's click-width test, which is the yard_open fix. A G2
+    rule must read each leg's width along the route, not at its click. Next: a dev switch for exactly that, read on the
+    three his-style routes and the probe's route cells, before any G2 bar. Traffic at corners goes to manoeuvre if it
+    stays after the lay is fixed.
 
 ### REPORT (orders, round 38; updated 2026-10-22 ~09:30 PDT)
 - **Start:** stream/orders = main 5b20bfd62 (round 38 docs; HANDOFF: main 1c484a525 GREEN on builder0, not re-run).
