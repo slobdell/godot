@@ -384,6 +384,13 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   (`test_slot_light.sh` setup: the quiet window did not open in 30 s at load 27 on 32 CPUs, settle's series running). Re-run ALONE on the
   same hash on the laptop (idle, load 2): `make remote-guard-test` exited 0. sim-baseline 13/13 unmoved. Builder2's ZeroTier dropped
   ~18:40 (the lead's router restart); the check survived; the queued 4506f151a check failed to launch and was re-queued.
+- **R38.19 (2026-10-22) S2 v3 WITHDRAWN before any number on its seeds; builder2 goes to doctrine now.** settle's context re-run of the
+  re-read's seeds (builder2 91a681712; references/round38/settle/s2v3-context-builder2-91a681712/; reproduces the re-read exactly) under
+  the filed anchor reference: main 13 wrong, latch 16 (10 herringbone on an open anchor, all locks; 6 coil on a lanes anchor, 3 locks 3
+  terminus); stand reference main 0 (its own read), latch 13. The latch's weakness is the read it latches (the crews' all-in centroid
+  says lanes on locks where the halt's centre is open). Running the v3 series (started 19:33 on 79a9f83bf) would likely spend 1 h of
+  builder2 on a known fail while doctrine has waited since the afternoon: **stopped, no number read.** Next: S2 v4 latches the terrain
+  at the deploy anchor (the read the guard judges by), a lab first, a new bar on seeds never read for S2, queued after doctrine's D2b.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
