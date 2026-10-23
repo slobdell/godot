@@ -242,6 +242,14 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   s3805 trace and the dropped replay are recorded; route never-in at n 12 is a coin flip taken as the price of a fresh read. Paired
   top-down shots of his click, looked at. A pass ships ON.
 
+- **G3 v5 PLACE_CLEAR reached (orders, R38.45; filed in stream/orders b73157a9e before any number; copied here by the orchestrator).**
+  Code 5df548d53, OFF; arm `g3:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on` (a moved place must be reached from the
+  original without a crossing, and never within 12 m of a deck). What he would see: as Bar G3, plus no squad sent across a river or onto a
+  bridge mouth to make room. Tree: the first green commit at or after b73157a9e with main merged; G1 and G2 OFF both arms. Probe builder0
+  light J <= 4, slot timeout as a make variable, FRESH seeds 5201-5212, n 12 a cell, the same 18 cells; judge `g3`, the same lines as Bar G3
+  v4; never-in compares with main's own count on the same seeds. Dev read 10 (425dc6a5b, 3804-3809, n 6) passed every line (pairs
+  25 -> 1, never-in 1 -> 1, 0/432 > 40 m, contacts 7,183 -> 6,838). Carries to round 39 intact if the round closes first.
+
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
 `references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
