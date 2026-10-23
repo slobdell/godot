@@ -205,7 +205,9 @@ func colour() -> Color:
 func _draw() -> void:
 	var started := HudClock.begin()
 	_choice_rects.clear()
-	var s := size.y / 1080.0 if size.y > 0.0 else 1.0
+	# The SHORTER side sets the scale: a portrait phone (810 x 1800) sized from its height drew everything wider than the screen.
+	# A touch device grows it like the rest of the HUD (CyberStyle.touch_boost, 1.5x); lines shrink to fit their boxes.
+	var s := (minf(size.x, size.y) / 1080.0 if size.y > 0.0 and size.x > 0.0 else 1.0) * CyberStyle.touch_boost()
 	match look:
 		"a":
 			_draw_card(s)
@@ -257,6 +259,14 @@ func _draw_broadcast(s: float) -> void:
 	draw_rect(Rect2(bottom.position, Vector2(size.x, 4.0 * s)), tint)
 	var margin := 0.06 * size.x
 	_text(headline, Vector2(margin, top.end.y - bar * 0.28), size.x - 2.0 * margin, 84.0 * s, tint, 0.0, HORIZONTAL_ALIGNMENT_LEFT)
+	if size.x < size.y:
+		# Portrait: the reason, what was left, then the choices, stacked across the full width of the bottom bar.
+		_text(reason, Vector2(margin, bottom.position.y + bar * 0.26), size.x - 2.0 * margin, 30.0 * s, CyberStyle.WHITE, 0.0,
+				HORIZONTAL_ALIGNMENT_LEFT)
+		_text(score, Vector2(margin, bottom.position.y + bar * 0.44), size.x - 2.0 * margin, 20.0 * s, CyberStyle.TEXT, 0.0,
+				HORIZONTAL_ALIGNMENT_LEFT)
+		_draw_choices(Rect2(Vector2(margin, bottom.position.y + bar * 0.56), Vector2(size.x - 2.0 * margin, bar * 0.3)), s, 20.0 * s)
+		return
 	_text(reason, Vector2(margin, bottom.position.y + bar * 0.42), size.x * 0.5, 30.0 * s, CyberStyle.WHITE, 0.0,
 			HORIZONTAL_ALIGNMENT_LEFT)
 	_text(score, Vector2(margin, bottom.position.y + bar * 0.75), size.x * 0.5, 20.0 * s, CyberStyle.TEXT, 0.0,
@@ -311,6 +321,9 @@ func _text(text: String, baseline: Vector2, width: float, font_size: float, colo
 	if text == "" or colour_.a <= 0.0:
 		return
 	var px := maxi(int(round(font_size)), 6)
+	# Never clipped: a line too long for its box steps down until it fits (a portrait phone, a long faction name).
+	while width > 0.0 and px > 8 and _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x > width:
+		px -= 1
 	if outline > 0.0:
 		draw_string_outline(_font, baseline, text, align, width, px, int(round(outline)), Color(0, 0, 0, colour_.a))
 	draw_string(_font, baseline, text, align, width, px, colour_)

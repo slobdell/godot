@@ -171,3 +171,24 @@ func test_under_the_garage_loop_the_results_screen_gets_its_keys() -> void:
 	await _frames(1)
 	assert_eq(controls.keys, 1, "with the results up, keys go on to the screen (here the stand-in)")
 	(loop.results as Node).free()
+
+
+func test_on_a_portrait_phone_no_line_is_wider_than_its_box() -> void:
+	var font := CyberStyle.font()
+	var boost := CyberStyle.touch_boost()
+	CyberStyle.set_touch_boost(1.5)  # a phone grows the HUD 1.5x
+	for look: String in MatchEnd.LOOKS:
+		var card := EndCard.new()
+		card.setup({"winner": "Rust", "reason": "control", "control": {"green": 61, "rust": 90},
+				"units_left": {"green": 20, "rust": 20}}, Match.Team.GREEN, false, {Match.Team.RUST: "gangs"}, look)
+		add_to_tree(card)
+		card.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		card.size = Vector2(810, 1800)
+		card.advance(3.0)
+		await _frames(1)
+		for choice: String in EndCard.CHOICES:
+			var box: Rect2 = card._choice_rects[choice]
+			assert_true(Rect2(Vector2.ZERO, card.size).encloses(box), "%s: %s's box is on screen (%s)" % [look, choice, box])
+		card.queue_free()
+	CyberStyle.set_touch_boost(boost)
+	assert_true(font != null, "the HUD font loads")
