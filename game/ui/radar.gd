@@ -67,7 +67,7 @@ func _ready() -> void:
 
 func _layout() -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
-	var side := clampf(viewport_size.y * HEIGHT_FRACTION, MIN_SIZE, MAX_SIZE)
+	var side := HudLayout.radar_rect(viewport_size).size.x  # round 38 (F5): narrower on a portrait phone
 	set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	offset_left = -side - MARGIN
 	offset_right = -MARGIN

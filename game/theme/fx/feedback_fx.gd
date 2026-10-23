@@ -28,7 +28,11 @@ const HIT_SECTOR_S := 0.9
 ## in 3 s on the first real-fight capture, and the stacked segments bloomed into a white disc over it (e12aa27cc, seed 5).
 const SEGMENT_EVERY_S := 0.3
 ## The widest a segment draws (m): a War Rig's 14 m hull made a 24 m ring.
-const SEGMENT_MAX_M := 12.0
+## Round 38 (stretch, real fights at his laptop preset, seeds 5/7): at x1.7 and 12 m a Law APC's rear and side wedges reached
+## ~1.5 hull lengths out and pooled into a red smear that read as fire on the street; x1.3 / 9 m keeps them hugging the hull.
+const SEGMENT_MAX_M := 9.0
+## The segment's reach as a multiple of the hull's span.
+const SEGMENT_SPAN := 1.3
 ## A front hit is the armour doing its job: drawn, but at this strength, so a flank or rear one stands out.
 const FRONT_STRENGTH := 0.45
 ## His approved flank / rear hit sounds (F3), over the round's own impact: one per target this often at most, and only
@@ -194,7 +198,7 @@ func update(now: float) -> void:
 			var mender: Tank = link["node"]
 			var from := FxWorld.visual_transform(mender).origin + Vector3.UP * _top(mender) * 0.8
 			var to := FxWorld.visual_transform(tank).origin + Vector3.UP * _top(tank) * 0.7
-			_beam(beams, from, to)
+			_beam(beams, from, to, bool(link.get("under_fire", false)))
 			beams += 1
 			mending_points[String(tank.name)] = to
 		for cone: Dictionary in reader.active_cones(now) if FeedbackLook.on("cone") else []:
@@ -225,14 +229,22 @@ func _sector(kind: String, target: Tank, toward: Vector3, now: float) -> void:
 	var place := FxWorld.visual_transform(target).origin
 	_ground.multimesh.set_instance_transform(i, Transform3D(_yaw_basis(toward), place))
 	_ground.multimesh.set_instance_color(i, Color(FACE_COLORS[kind], FRONT_STRENGTH if kind == "front" else 1.0))
-	_ground.multimesh.set_instance_custom_data(i, Color(now, HIT_SECTOR_S, minf(_hull_span(target) * 1.7, SEGMENT_MAX_M), 0.0))
+	_ground.multimesh.set_instance_custom_data(i, Color(now, HIT_SECTOR_S, minf(_hull_span(target) * SEGMENT_SPAN, SEGMENT_MAX_M), 0.0))
 
 
-func _beam(i: int, from: Vector3, to: Vector3) -> void:
+## Round 38 (F3): a beam mending under fire (half rate) runs its pulses at half speed and a little fainter and thinner, so
+## the slower mending shows; once quiet it is the full beam again.
+const UNDER_FIRE_PULSE := 0.5
+const UNDER_FIRE_STRENGTH := 0.7
+const UNDER_FIRE_WIDTH := 0.5
+
+
+func _beam(i: int, from: Vector3, to: Vector3, under_fire := false) -> void:
 	var basis := Basis(Vector3.RIGHT, Vector3.UP, to - from)
 	_beams.multimesh.set_instance_transform(i, Transform3D(basis, from))
-	_beams.multimesh.set_instance_color(i, Color(MEND_COLOR, 1.0))
-	_beams.multimesh.set_instance_custom_data(i, Color(0.0, 0.0, 0.7, 1.5))
+	_beams.multimesh.set_instance_color(i, Color(MEND_COLOR, UNDER_FIRE_STRENGTH if under_fire else 1.0))
+	_beams.multimesh.set_instance_custom_data(i, Color(UNDER_FIRE_PULSE if under_fire else 1.0, 0.0,
+			UNDER_FIRE_WIDTH if under_fire else 0.7, 1.5))
 
 
 func _air_cone(cone: MeshInstance3D, origin: Vector3, direction: Vector3, reach: float, cone_deg: float) -> void:

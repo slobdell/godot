@@ -21,6 +21,18 @@ and the scoreboard rows, which the orchestrator finishes in round 36.** Older he
 | **feedback** | `godot-feedback` (6) | Opus | he can't miss the match ending | F1 the end of a match |
 | **native** | `godot-native` (4, CONTINUING its round-37 session) | Opus | nothing alone: rows, twins, guard tooling | N1 round 37's row |
 
+**Round 38 progress (2026-10-23 ~01:35 PDT):** on main and GREEN: native N1; manoeuvre M7 v2 OFF; feedback F3 Tanker repairs under fire
+ON, his end card A final, portrait end card, **F5 the top of the screen free** (score bug lower-left; captions, camera readout, top
+lines gone); orders G1 v3 / G3 / probe refusal OFF; native's per-core wall-clock gates and builder_checks fix. Latest green: 9a6909305
+(builder2) and 9ff649dca (builder0, web-smoke judged 20.0 s); 1dbfb9c1d (builder2). **Owed:** a judged perf line on builder0 (refused
+twice under light lanes; needs a held quiet window). **Passed, shipping:** settle S2 v4 deploy latch at the anchor (R38.33; ON hash
+b3ad7baa4 checking on builder0). **Failed:** S1 v1/v2 (S1 v3 running on builder2), S2 v1-v3, G1 amended, D2, D2b (R38.29), M5 v2
+(R38.24). **Building:** doctrine D2c "hold with some, strike with the rest" (bar filed, seeds 5001-5108), D3 rules re-read (after
+settle's S1 v3), orders G3 dev reads, G1 v3/G3 judged reads wait for the latch on main. **Found:** the laptop (glibc 2.39) and the
+builders (2.43) simulate differently in jams (atan2f rounding; R38.25): native == GDScript per machine. **Round-39 candidates:**
+machine-independent trig; chain-aware give-way (R38.26); touch-map top panels (a directions page); D2c if it carries. **For him when
+back:** lane-mouth shape (R38.16 shots); the physics-engine question was answered in chat (Jolt already; measure first).
+
 **To launch (the lead):** in each NEW folder (`godot-orders`, `godot-doctrine`, `godot-settle`, `godot-manoeuvre`, `godot-feedback`)
 start a CLI (orders and doctrine on Fable, the rest Opus) and paste the kickoff prompt from `_agents/orchestration.md`. Native is NOT
 relaunched: its open session continues (the orchestrator messages it). Main at launch: 1c484a525 + docs, GREEN, ALL JUDGED (builder0).

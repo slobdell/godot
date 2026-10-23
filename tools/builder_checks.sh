@@ -6,6 +6,9 @@
 #   tools/builder_checks.sh                    ask builder0 (REMOTE_HOST, default slobdell@builder0)
 #   tools/builder_checks.sh --wait-below N     wait (60 s polls) until fewer than N run, then print the count (C35.1: two)
 #   tools/builder_checks.sh --rows             read "cwd<TAB>args" rows on stdin instead (tools/test_builder_checks.sh)
+# Round 38 (R38.15): an ssh that fails (255: builder2 off ZeroTier for under a minute at 18:40) is never "0 running". Plain mode
+# exits 3 with no count; --wait-below asks again each poll, up to BUILDER_CHECKS_TRIES (30) failed asks in a row, then exits 3.
+# BUILDER_CHECKS_SSH / BUILDER_CHECKS_POLL (seconds, 60) are for the tests.
 set -euo pipefail
 host=${REMOTE_HOST:-slobdell@builder0}
 
@@ -14,22 +17,34 @@ count() { # stdin: cwd<TAB>args rows -> the count, then the cwds
 		END { n = 0; for (d in seen) n++; print n; for (d in seen) print d }'
 }
 
-rows() {
+rows() { # the rows, or a non-zero exit when the box could not be asked
+	local got
 	# shellcheck disable=SC2016
-	ssh -o BatchMode=yes -o ConnectTimeout=10 "$host" \
+	got=$("${BUILDER_CHECKS_SSH:-ssh}" -o BatchMode=yes -o ConnectTimeout=10 "$host" \
 		'for p in $(pgrep -f "make .*check"); do printf "%s\t%s\n" "$(readlink /proc/$p/cwd)" "$(tr "\0" " " < /proc/$p/cmdline)"; done' \
-		2>/dev/null | sed 's/ *$//'
+		2>/dev/null) || return
+	[ -z "$got" ] || sed 's/ *$//' <<<"$got"
 }
 
+poll=${BUILDER_CHECKS_POLL:-60}
 case "${1:-}" in
 --rows) count ;;
 --wait-below)
 	below=${2:?--wait-below N}
+	failed=0
 	while true; do
-		out=$(rows | count)
-		[ "$(head -1 <<<"$out")" -lt "$below" ] && { echo "$out"; exit 0; }
-		sleep 60
+		if got=$(rows); then
+			failed=0
+			out=$(count <<<"$got")
+			[ "$(head -1 <<<"$out")" -lt "$below" ] && { echo "$out"; exit 0; }
+		else
+			failed=$((failed + 1))
+			echo "builder_checks: cannot ask $host (ssh failed, $failed in a row); asking again" >&2
+			[ "$failed" -ge "${BUILDER_CHECKS_TRIES:-30}" ] && { echo "builder_checks: gave up on $host" >&2; exit 3; }
+		fi
+		sleep "$poll"
 	done ;;
-"") rows | count ;;
+"") got=$(rows) || { echo "builder_checks: cannot ask $host (ssh failed): no count" >&2; exit 3; }
+	count <<<"$got" ;;
 *) echo "builder_checks.sh [--wait-below N | --rows]" >&2; exit 2 ;;
 esac

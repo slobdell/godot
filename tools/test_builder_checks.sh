@@ -25,5 +25,25 @@ grep -q "godot-traffic-t7pair" <<<"$out" && ok "  'make native check' counts (th
 grep -q "godot-manoeuvre" <<<"$out" && ok "  a check with make variables after it counts" || bad "vars" "$out"
 ! grep -q "^/t/godot-native$" <<<"$out" && ok "  a check's own sub-stage (check-perf-judge-stage) alone doesn't" || bad "sub-stage" "$out"
 out=$(printf '' | bash "$bc" --rows); [ "$(head -1 <<<"$out")" = 0 ] && ok "none running: 0" || bad "empty" "$out"
+# Round 38 (R38.15): an ssh that fails (exit 255, the box off ZeroTier for a minute) is never "0 checks running". A fake ssh
+# (BUILDER_CHECKS_SSH) fails its first $FAILS calls, then answers with no rows.
+tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
+cat > "$tmp/ssh" <<'FAKE'
+#!/usr/bin/env bash
+n=$(cat "$FAKE_DIR/calls" 2>/dev/null || echo 0); echo $((n + 1)) > "$FAKE_DIR/calls"
+[ "$n" -lt "$FAILS" ] && { echo "ssh: connect to host builder2: No route to host" >&2; exit 255; }
+exit 0
+FAKE
+chmod +x "$tmp/ssh"
+fake() { rm -f "$tmp/calls"; FAKE_DIR=$tmp FAILS=$1 BUILDER_CHECKS_SSH=$tmp/ssh BUILDER_CHECKS_POLL=0 "${@:2}"; }
+out=$(fake 99 bash "$bc" 2>"$tmp/err"); status=$?
+[ "$status" -ne 0 ] && [ -z "$out" ] && grep -q "cannot ask" "$tmp/err" && ok "ssh fails: no count, exit $status" \
+	|| bad "plain mode on a failed ssh" "status $status, stdout '$out', stderr $(cat "$tmp/err")"
+out=$(fake 2 bash "$bc" --wait-below 1 2>"$tmp/err"); status=$?
+[ "$status" -eq 0 ] && [ "$(head -1 <<<"$out")" = 0 ] && [ "$(cat "$tmp/calls")" = 3 ] \
+	&& ok "--wait-below retries a failed ssh (2 failures, then 0 running)" || bad "wait retry" "status $status, out '$out', calls $(cat "$tmp/calls")"
+out=$(fake 99 env BUILDER_CHECKS_TRIES=3 bash "$bc" --wait-below 1 2>"$tmp/err"); status=$?
+[ "$status" -ne 0 ] && [ -z "$out" ] && [ "$(cat "$tmp/calls")" = 3 ] && ok "--wait-below gives up after BUILDER_CHECKS_TRIES failed asks (exit $status)" \
+	|| bad "wait give-up" "status $status, out '$out', calls $(cat "$tmp/calls")"
 printf '\nbuilder-checks: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

@@ -8,6 +8,7 @@
 set -uo pipefail
 
 qw="$(cd "$(dirname "$0")" && pwd)/quiet_window.sh"
+loaded="$(cd "$(dirname "$0")" && pwd)/loaded.sh"
 pass=0; fail=0; notjudged=0; kids=()
 tmp=$(mktemp -d)
 cleanup() { local p; for p in ${kids[@]+"${kids[@]}"}; do kill "$p" 2>/dev/null; done; rm -rf "$tmp"; }
@@ -17,14 +18,14 @@ ok()  { pass=$((pass + 1)); printf '  ok   %s\n' "$1"; }
 bad() { fail=$((fail + 1)); printf '  FAIL %s\n     %s\n' "$1" "${2:-}"; }
 # Round 33 overnight (native, item 3): the live cases sample real processes against the wall clock. On builder2 at load
 # 94 (53 foreign godot) two failed ("our own are not foreign", "records once the window opens"). On a loaded box
-# (1-minute load >= QW_LOADED_PER_CPU per CPU) such a miss is NOT JUDGED, as perf-judge refuses; on a quiet box it is
-# a FAIL as before. The reason goes to $NOT_JUDGED_FILE when check's target names one.
+# (1-minute load >= QW_LOADED_PER_CORE per physical core: tools/loaded.sh, round 38) such a miss is NOT JUDGED, as
+# perf-judge refuses; on a quiet box it is a FAIL as before. The reason goes to $NOT_JUDGED_FILE when check's target names one.
 timed_bad() {
-	local load cpus; load=$(cut -d' ' -f1 /proc/loadavg); cpus=$(nproc)
-	if awk -v l="$load" -v c="$cpus" -v t="${QW_LOADED_PER_CPU:-1.5}" 'BEGIN{exit !(l >= t * c)}'; then
+	local box
+	if box=$(bash "$loaded" "${QW_LOADED_PER_CORE:-1.5}"); then
 		notjudged=$((notjudged + 1))
-		printf '  NOT JUDGED %s (load %s on %s CPUs): %s\n' "$1" "$load" "$cpus" "${2:-}"
-		[ -n "${NOT_JUDGED_FILE:-}" ] && echo "quiet-window: $1 at load $load on $cpus CPUs" >> "$NOT_JUDGED_FILE"
+		printf '  NOT JUDGED %s (%s): %s\n' "$1" "$box" "${2:-}"
+		[ -n "${NOT_JUDGED_FILE:-}" ] && echo "quiet-window: $1 at $box" >> "$NOT_JUDGED_FILE"
 	else bad "$1" "${2:-}"; fi
 }
 # Poll the live sample until field $1 satisfies the test in $2 (a few seconds), rather than sleeping a guessed 0.3 s.

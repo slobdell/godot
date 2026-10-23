@@ -7,6 +7,7 @@
     python3 tests/control/orders_judge.py o2 rows.jsonl BASE_ARM NEW_ARM
     python3 tests/control/orders_judge.py o3 rows.jsonl BASE_ARM NEW_ARM runs.jsonl
     python3 tests/control/orders_judge.py gl rows.jsonl BASE_ARM NEW_ARM runs.jsonl   (R37.29 group-lay=column)
+    python3 tests/control/orders_judge.py g1 rows.jsonl BASE_ARM NEW_ARM runs.jsonl [yard_rows.jsonl]   (round 38 G1, O7 v2)
     python3 tests/control/orders_judge.py o5 BASE_DIR NEW_DIR   (seat-yield-census folders of *.log)
 
 Probe guards (each cell, medians over seeds; R36.6's): all-in (the cell run's last squad arrival) <= base x 1.2 + 3 s and
@@ -245,6 +246,45 @@ def main(argv):
         ok = ok and passed
         lines.append("%s guard friend_contacts %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", b, n, b * 1.1 + 5))
         ok = probe_guards(rows, base, new, lines) and ok
+    elif mode == "g1":
+        # Round 38 G1 (O7 v2)'s bar, filed in the brief's Status: places outside the click's corridor <= 25 % of base; metres
+        # driven outside it after a crew was once inside (route_left_m) <= 50 % of base; crews re-dealt 0; guards as gl;
+        # the open-ground cell (yard_open) rows identical, both arms.
+        runs = load(argv[4])
+        laid = sum(r.get("columns_laid", 0) for r in runs if r["arm"] == new)
+        kept = sum(r.get("bodies_kept", 0) for r in runs if r["arm"] == new)
+        lines.append("%s counter: columns_laid %d (bodies kept %d)" % ("PASS" if laid > 0 else "FAIL", laid, kept))
+        # Amended before any judged number: places and metres over the click cells (his click included); re-deals over all.
+        clicks = [r for r in rows if r["route"] == "click"]
+        bo = sum(1 for r in clicks if r["arm"] == base and r.get("anchor_outside"))
+        no = sum(1 for r in clicks if r["arm"] == new and r.get("anchor_outside"))
+        bm, nm = total(clicks, base, "route_left_m"), total(clicks, new, "route_left_m")
+        nr = sum(1 for r in rows if r["arm"] == new and r.get("redealt", 0) > 0)
+        d1, d2, d3 = no <= 0.25 * bo, nm <= 0.5 * bm, nr == 0
+        lines.append("%s deciding: places outside the corridor (click cells) %d -> %d (<= %.1f)" % ("PASS" if d1 else "FAIL", bo, no, 0.25 * bo))
+        lines.append("%s deciding: metres driven outside the corridor after being in it (click cells) %.0f -> %.0f (<= %.0f)" % (
+            "PASS" if d2 else "FAIL", bm, nm, 0.5 * bm))
+        lines.append("%s deciding: squads with crews re-dealt (arm) %d (base %d)" % ("PASS" if d3 else "FAIL", nr,
+                     sum(1 for r in rows if r["arm"] == base and r.get("redealt", 0) > 0)))
+        lines.append("  reported: metres outside incl. the drive in (route_out_m) %.0f -> %.0f" % (
+            total(rows, base, "route_out_m"), total(rows, new, "route_out_m")))
+        ok = laid > 0 and d1 and d2 and d3
+        b = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == base)
+        n = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == new)
+        passed = n <= b * 1.1 + 5
+        ok = ok and passed
+        lines.append("%s guard friend_contacts %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", b, n, b * 1.1 + 5))
+        ok = probe_guards(rows, base, new, lines) and ok
+        if len(argv) > 5:
+            yard = load(argv[5])
+            yb = {(r["map"], r["squads"], r["route"], r["seed"], r["squad"]): r for r in yard if r["arm"] == base}
+            yn = {(r["map"], r["squads"], r["route"], r["seed"], r["squad"]): r for r in yard if r["arm"] == new}
+            same = sum(1 for k in yb if k in yn and json.dumps({a: v for a, v in yb[k].items() if a != "arm"}, sort_keys=True)
+                       == json.dumps({a: v for a, v in yn[k].items() if a != "arm"}, sort_keys=True))
+            passed = same == len(yb) == len(yn) and len(yb) > 0
+            ok = ok and passed
+            lines.append("%s guard no-change cell yard_open: %d of %d squad rows identical (arm rows %d)" % (
+                "PASS" if passed else "FAIL", same, len(yb), len(yn)))
     elif mode == "o3":
         bd = sum(1 for r in rows if r["arm"] == base and r.get("redealt", 0) > 0)
         nd = sum(1 for r in rows if r["arm"] == new and r.get("redealt", 0) > 0)

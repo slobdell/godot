@@ -9,6 +9,7 @@ unset TANK_SQUAD_SLOT TANK_SQUAD_EXCLUSIVE TANK_SQUAD_SLOTS TANK_SQUAD_SLOT_DIR 
 	TANK_SQUAD_LIGHT TANK_SQUAD_LIGHT_SLOT TANK_SQUAD_LIGHT_SLOTS
 
 slot="$(cd "$(dirname "$0")" && pwd)/slot.sh"
+loaded="$(cd "$(dirname "$0")" && pwd)/loaded.sh"
 pass=0; fail=0; notjudged=0; kids=()
 tmp=$(mktemp -d)
 cleanup() { local p; for p in ${kids[@]+"${kids[@]}"}; do pkill -TERM -P "$p" 2>/dev/null; kill "$p" 2>/dev/null; done; rm -rf "$tmp"; }
@@ -53,21 +54,21 @@ TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 TANK_SQUAD_SLOT_CEILING=3 TANK_SQUAD
 # retries after slot.sh's 5 s sleep; one check failed here with every game target green.
 # Round 33 overnight (native, item 3): the window opening in time is wall-clock, and on a shared live box it failed twice
 # ("the quiet window opened", then "it ran while EXCLUSIVE held the box", which follows from it). When it does not open
-# and the box is loaded (1-minute load >= SLOT_LOADED_PER_CPU per CPU), case 5 is NOT JUDGED, as perf-judge refuses;
+# and the box is loaded (1-minute load >= SLOT_LOADED_PER_CORE per physical core: tools/loaded.sh, round 38), case 5 is
+# NOT JUDGED, as perf-judge refuses;
 # on a quiet box it is a FAIL as before. The reason goes to $NOT_JUDGED_FILE when check's target names one.
 if wait_for heavy_full 300; then
 	timeout 2 bash -c "TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_LIGHT=1 bash '$slot' touch '$tmp/flag.during'" >/dev/null 2>&1
 	[ ! -e "$tmp/flag.during" ] && ok "light: does not start inside a quiet window" \
 		|| bad "light: does not start inside a quiet window" "it ran while EXCLUSIVE held the box"
 else
-	load=$(cut -d' ' -f1 /proc/loadavg); cpus=$(nproc)
-	if awk -v l="$load" -v c="$cpus" -v t="${SLOT_LOADED_PER_CPU:-1.5}" 'BEGIN{exit !(l >= t * c)}'; then
+	if box=$(bash "$loaded" "${SLOT_LOADED_PER_CORE:-1.5}"); then
 		notjudged=$((notjudged + 1))
-		why="slot-light case 5: the quiet window did not open in 30 s at load $load on $cpus CPUs"
+		why="slot-light case 5: the quiet window did not open in 30 s at $box"
 		printf '  NOT JUDGED %s\n' "$why"
 		[ -n "${NOT_JUDGED_FILE:-}" ] && echo "$why" >> "$NOT_JUDGED_FILE"
 	else
-		bad "light: (setup) the quiet window opened" "not in 30 s, at load $load on $cpus CPUs (a quiet box)"
+		bad "light: (setup) the quiet window opened" "not in 30 s, at $box (a quiet box)"
 	fi
 fi
 

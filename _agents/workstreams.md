@@ -54,8 +54,493 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
   the repair tick in `game/match/match.gd` (one guarded seam, `--repair-under-fire`, merge note). Rule: under fire half rate (2.5 hp/s),
   full after `REPAIR_QUIET_SECONDS` as today. Bar before numbers: deciding = hp mended a fight by Tankers (up); guards = the guard lines
   per faction (the gangs must not start winning the blob line beyond noise), kills/length per faction, perf. A pass ships ON (his call).
+- **C38.5 Free the top of the screen (his note 2026-10-22 evening; feedback F5).** GRANT to feedback: the hint label's placement and
+  text in `game/modes/skirmish_mode.gd` ("PLANNING: select..."), nothing else in that file (merge note to its owner of record);
+  `game/ui/camera_readout.gd` hidden behind a debug flag. Presentation only; sim-baseline must not move. **Extended (2026-10-22 ~21:10):** the one
+  line in `game/control/rts_controls.gd` `_draw` that places the Space-pause line ("PAUSED: give orders, then Space to resume", drawn at
+  14 % of the height) may route it through the HUD hint at the bottom, and the line above it that sizes the pause text may use
+  `HudLayout.bug_ui_scale(size)` (identical in landscape); nothing else in orders' file (merge note to orders).
 - **C38.3 settle and orders share `element_plan.gd`'s callers:** orders lays WHERE squads go (group lay); settle decides how a squad
   SITS once there (deploy, halt shape, seat deal, parked hold). A change that crosses goes through a merge note both sign.
+
+## Bars (round 38)
+
+**Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
+S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; guard seeds 2601-2608/2701-2708
+(the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001-5008/5101-5108 D2c.
+
+
+_(each stream files its bar in its BRIEF's Status BEFORE its first number and messages the orchestrator, who copies it here; never
+edit this file on a stream branch. Rulings below as R38.x)_
+
+- **Bar S1 DEPLOY_FIT (filed 2026-10-22 before any judged number; code ac36add58 + the series tooling)** (recorded from stream/settle 0aed7a9f3)
+What he would see: when a squad stops, every tank settles into a spot near where it stopped; no tank drives across or out of
+its own squad to reach a seat. **Arms:** `main:--deploy-trace` v `fit:--deploy-fit=on,--deploy-trace`, one tree, builder0
+native, on a hash whose builder0 full check is green; `make native settle-series` (mk/settle.mk), judge
+`tests/settle/settle_judge.py s1`. **Workloads, FRESH seeds:** the no-fight probe, 12 cells (locks/crossing/terminus x 3/5
+squads x click/route) x 3861-3872; the fight probe (`--probe-fight=on --probe-budget=1500`, the 3 maps x 3/5 squads x click)
+x 3873-3878 (36 fights an arm); the CPU census (traffic-census' 3 default cases) x 3861-3863. **Counter:** deploys turned > 0
+on the arm (DEPLOY_TRACE) and rows differ. **Deciding (a stopped crew's longest post-arrival drive):** per squad place_m +
+twitch_m (the most any crew moved after the deploy began); squads with >= 25 m, summed over the no-fight probe: arm <= 50 %
+of base, base >= 10 (else "no workload"), and the summed place + twitch lower. **Guards:** per cell (orders' probe_guards,
+settle mode): all-in median <= base x 1.2 + 3 s, never-in no more, place + twitch median <= base + 3 m, end foreign min >=
+base - 3 m, crossed no higher; **the first shape:** squads whose halt shape differs from base's <= 2 % (the shape choice is
+not touched); friend_contacts and friend_contacts_foreign summed <= base x 1.1 + 5; fights: his kills, his losses, the CPU's
+losses a fight each within base +/- 1.645 se (base sd, n 36); CPU: friendly contacts <= base x 1.1 + 5, stuck s <= base x
+1.2 + 10. **Reported:** relays, shape flips, parked re-deals, redealt; the fight probe's >= 25 m squads. **A pass ships ON**
+(symmetric); `--deploy-fit=off` keeps today's. sim-baseline maps that move are attributed with the switch OFF.
+  Trace (settle, laptop GDScript, terminus 5 click s3767, n 1): the 47 m crossing = a 47 m-deep herringbone laid on the click's
+  heading ACROSS the street the squad stopped in (an end seat grounds 25 m into the next street) + a `fixed` group keeping old seat
+  indices; the fix tries the ordered heading and the squad's own axis, deals each by grounded drive, turns only if the longest drive
+  shrinks >= 8 m (dev read: squad 4 place+twitch 51.2 -> 8.8 m, squad 1 20.4 -> 8.6 m). Merge note C38.3: `ElementSituation.build` adds
+  a `ground_seat` Callable key.
+
+- **Bar M5 v2 (`seatstep`: a seated crew steps aside and comes back), filed 2026-10-22 before any number (recorded from stream/manoeuvre)**
+
+- **Change: M5a's, unchanged** (Bar M5 as filed in round 37, archive/round37/manoeuvre.md): a SEATED yielder (move_to arrived,
+  within SEAT_NEAR_M 10 m of its seat) takes, of the spots legal today, the whole spot nearest its seat that does not lead the asker
+  out; a lead-out only when nothing else is legal. Switch `seatstep` in Traffic.DEFAULT_OFF; native mirror = native's
+  `pair/native-m5` 156d563d9 (merged into the lab trees, not hand-edited).
+- **Why v2 (R37.30):** M5a passed deciding (-8.5 %) and failed two guards that a symmetric redraw can fail without harm: kills
+  per team down (every fight count fell: smaller fights, not one-sided) and hull-rest (e) on a hand-set +4.9 line that a laptop
+  GDScript re-run reversed (5 flips one way on native, the other way on GDScript).
+- **Fresh seeds:** jam census locks/terminus/sumps x **6940-6979** (120 pairs; round 37's 72 gave the deciding line about 60 %
+  power at its own -8.5 %, 120 gives about 85 %); hull-rest **6901-6932** x 4 factions x 6 tasks (128 pairs a task), native
+  (`native <target>`), builder0.
+- **(0) counter first:** `route_arms.yields_seated` > 0 in ON.
+- **DECIDING (unchanged):** seat metres summed over seated give-ways, paired by (arena, seed): ON < base by more than 1.645 se of
+  the paired sum. Lead-out / back / episode counts REPORTED.
+- **Guards, unchanged:** the asker's wait (ticks) and give-way timeouts, friendly contacts, jam deaths, deaths per team: each not
+  above base + 1.645 se. Hull-rest (f) squads arrived per task: not below base - 1.645 se.
+- **Guard (a), NEW: fight volume is not a harm; who wins it is.** Replaces "kills per team within 1.645 se". (a1) team 0's KILL
+  SHARE, K0 / (K0 + K1) summed over the series, within +-1.645 se of base, se from the paired linearisation (per pair
+  z = (k0 - R k)/K for each arm, se of the paired sum of z_on - z_base). (a2) TOTAL deaths, both teams, not above base + 1.645 se.
+  Total kills REPORTED (a smaller fight is allowed).
+- **Guard (e), NEW: never-settled sized by its own noise floor, measured first.** Before the ON arm is read, run the BASE tree's
+  hull-rest on the GDScript path (`M1_GD=1` = `--brains-off=native`, the same seeds, the same native-built folder) beside the base native arm. Per
+  task, D_floor = runs whose settled/never-settled differs between the two base paths (a no-rule redraw). The ON line per task:
+  never-settled ON - base <= 1.645 x sqrt(max(b + c, D_floor, 1)), where b + c = the runs discordant between ON and base (native).
+  sqrt(discordant) is the sd of a net shift when each discordant run is a coin flip; D_floor stops a one-sided handful from failing
+  a rule whose task redraws that many runs anyway, and b + c keeps the line honest if the floor is small. D_floor per task and the
+  net shift base GDScript - base native are REPORTED with the verdict.
+
+- **Bar S2 DEPLOY_LATCH (latch v2; filed 2026-10-22 before any judged number; code 44505a21c; recorded from stream/settle 4870d8ebc)**
+What he would see: a squad he parked keeps one shape and its spots; it never opens into a ring that doesn't fit the lane it
+stopped in. **The change:** the deploy records the live terrain read at its all-in (or cap), where it decides the halt's
+shape, and every later update of that deployed halt plans with it (shape and spacing); before the deploy the live read
+stands (main's). Plain AUTO moves (the deploy step's scope), every side. Lab `tests/test_settle_deploy_latch.gd` 3/0 (R37.42's
+geometry: round-37 latch coil + 4 late orders, deploy latch herringbone + 0; creep lab: centre 2 flips, latched 0).
+**Arms:** `main:--deploy-trace` v `latch:--deploy-latch=on,--deploy-trace`, run in the SAME `make native settle-series` as
+S1 (one base for both arms, the same fresh seeds and workloads as Bar S1). **Counter:** rows differ and base shape flips
+(no-fight + fight probe) >= 10. **Deciding:** shape flips after the place window summed, no-fight probe arm <= 25 % of base
+(+1) AND fight probe arm <= 25 % of base (+1); reseats no more than base. **Guards:** Bar S1's, the first-shape line read on
+each squad's FIRST halt shape (the property latch v1 broke: differs from main's in <= 3 % of squads), plus the full check
+(test_tactics_scenarios_2 runs in it) on the hash. Note: the probe's `relays` read ElementSituation's terrain, which this arm
+does not change, so relays are reported, not judged. **A pass ships ON** (`--deploy-latch=off` keeps today's).
+
+- **S1 v2 DEPLOY_FIT, the deploy leg (settle, R38.11; filed in stream/settle e4618c763 Status before any number on its seeds, copied
+  here by the orchestrator).** Arms main v fit (code unchanged since ac36add58); `make native settle-s1v2`, `settle_judge.py s1v2`. Fresh
+  seeds never read for S1: no-fight probe 12 cells x 3921-3932; fight probe 3-squad (budget 1500) and 5-squad (`--probe-budget=3000`) x
+  3933-3944, 36 fights an arm each. Counter: deploys turned > 0. **Deciding:** squads with a deploy leg >= 25 m, arm <= 50 % of base,
+  base >= 10. **Guards:** squads with twitch >= 15 m not up; never-in arm <= base (fresh seeds only); first shape <= 3 %; friend_contacts
+  and foreign <= base x 1.1 + 5; fights within 1.645 se in each fight read, zero runs that never start. Reported only: place+twitch >= 25 m.
+  No CPU census (vacuous, R38.9). builder2 after doctrine's D2 and settle's S2 re-read. A pass ships ON.
+
+- **G1 v3 (orders, R38.12; filed in stream/orders 876e15727 Status before any v3 number; code 0e169432f, OFF; copied here by the
+  orchestrator).** v3 = today's body judged open at the click's width only (the yard_open container case) + the 2 s first-click re-lay
+  only where the column moved some squad's place > 40 m (about a rank). Same cells, counter, deciding lines, thresholds and guards as the
+  amended Bar G1; `orders_judge.py g1`; builder0 light lane J <= 4; paired his-click shots (main v column, looked at). **Base:** settle's
+  deploy latch ON for both arms; the judged read waits until the latch ships ON on main (orders merges main at that checkpoint); dev reads
+  only until then. **Seeds:** the orchestrator moved them from 3901-3912 to **3951-3962**, so they never overlap the seeds that decide
+  the latch it sits on (S2 re-read 3903-3914). **Amended before any number (Status 6ff215661; code f2a94b6cc):** when his shift-click follows
+  within 2 s, the first click goes back to exactly today's places (kept out of the next gate), so a chained route drives as main until its
+  last click. Checked on v2's seeds only (laptop): s3889, s3891, s3886 now byte-identical to main. Seeds, guards, base unchanged.
+
+- **D2b CPU_DEFEND, the trigger (doctrine, R38.14; filed in stream/doctrine c042ca206 Status before any D2b number; copied here by the
+  orchestrator).** `--cpu-defend` with D2b's trigger (eaf4c508f: a contact counts only when nearer the CPU's near ring than to every zone
+  its own side owns), ON v OFF, both arms on tree 3310e51c4 (its full check first), builder2, guard.sh GUARD_CHUNK=8. FRESH guard seeds
+  4801-4808 + 4901-4908 x 5 maps x both sides x blob/turtle = 320 fights an arm, plus the none line 4801-4808 both arms; `guard.py --pair
+  OFF ON`. Criteria: Bar D2's text unchanged with base = this OFF arm (deciding: blob down > 2 paired se AND McNemar p < 0.05; second
+  line; mechanism; G1-G4; equality) plus **G2t:** turtle-line kills a fight, ON within 2 paired se of OFF. No re-tune. A pass ships ON.
+  **Re-filed before any number on its seeds (text unchanged): tree c475c3163** (= 4297bbb8b + Status): with defend ON only, the old
+  "zone threatened" rule also counts only an enemy coming for the zone (OFF byte-identical). Labs, NOT judged (builder0 light J4, seeds
+  2601-2602, 20 turtle fights each): turtle-line kills OFF 593, D2 527, D2b 542; CPU hold time 36 / 77 / 59 %; blob wins 9 OFF v 6 D2b
+  of 20. Not tuned further. Full check of c475c3163 on builder2 first, then the arms.
+
+- **G3 PLACE_CLEAR (orders, R38.12/R38.15; filed in stream/orders 95dd05e36 Status before any number; copied here by the
+  orchestrator).** `--place-clear=on` v OFF: no two places' footprints overlap; a later overlapping place steps back along the approach.
+  Deciding: squads parked on another (end foreign < 8 m) <= 50 % of base, and fewer never-in. Offset guards: worst place-to-click median
+  <= base + 15 m per cell; rows > 40 m further than main <= 5 %; none > 100 m. Plus the R36.6 guards and contacts. builder0 light J <= 4.
+  **Seeds:** the orchestrator moved them from 4011-4022 (collides with settle's S2 v3, 4001-4024) to **4101-4112**.
+  **Amended before any judged number (stream/orders f65b23c26), after dev read 1 on dev seeds 3801-3803** (main parks neighbours 4-6 m
+  apart as normal, so the 8 m end-foreign line caught 68/216 main rows; G3 v1 stepped squads 60-90 m back): code v2 = no two places
+  closer than their short sides, a place moves aside first, then back, at most 40 m. Deciding: pairs of places laid closer than 12 m,
+  arm <= 25 % of base (main dev: 14 pairs, 2.8-6.3 m apart); never-in becomes a guard (arm <= base). Offset guards unchanged.
+  **Amended again before any judged number (stream/orders 45b6b795f):** tree = a green hash at or after 527d62cd2 with main merged
+  (527d62cd2 adds: where place_clear moved a place, untangle swaps squads whole); deciding line 1 skips a pair whose two squads' places
+  are read from the same element (`anchor_element`; one place, 0.0 m apart, one body). Dev read 2 (f65b23c26, dev seeds): all 5 g3 pairs
+  left, and main's his-click pairs, were of that kind. Seeds 4101-4112 unchanged.
+
+- **S1 v3 DEPLOY_FIT, main's deal unless turned (settle, R38.17; filed in stream/settle 3ac60e86f + 83d190c64 before any number;
+  copied here by the orchestrator).** `_deploy_fit` leaves a deploy untouched unless it turns (tests/test_settle_deploy_fit_v3.gd pins a
+  non-turning deploy byte-identical to main; fails on S1 v2's code). Seeds: no-fight 12 cells x 4201-4212; fight3 (budget 1500) and fight5
+  (budget 3000) x 4213-4224. Lines exactly S1 v2's (`settle_judge.py s1v2`). `make native settle-s1v3`, builder2 after doctrine's D2b.
+
+- **D2c CPU_DEFEND, hold with some, strike with the rest (doctrine, R38.30; filed in stream/doctrine 587c31976 Status before any D2c
+  number; copied here by the orchestrator).** `--cpu-defend --cpu-defend-split --cpu-defend-closing` ON v OFF, code ebb817ea0. SPLIT:
+  post only the crews the coming contacts need (>= 1, <= half the line, nearest the ring first); the rest attack when the side would
+  attack with defend off. CLOSING: a contact counts only while >= 10 m nearer the ring over 5 s; defend lapses 30 s after the last
+  closed. Labs first (builder0 light J4, seeds 2601-2602, 40 fights an arm: OFF, split, closing, package); ONE constants re-tune
+  allowed in labs, recorded before the series tree is named. Series: FRESH guard seeds 5001-5008 + 5101-5108, 320 fights an arm, both
+  arms on the series tree (green check first), builder2 after D3, plus the none line 5001-5008. Deciding: blob win rate down > 2 paired
+  se AND McNemar p < 0.05. Second line: blob kr not up > 2 se. G1 turtle win/length not up > 2 se; G2/G2t kills a fight and length per
+  faction within 2 paired se on both lines; G3 none-line length x1.2; lab guard turtle-line CPU hold share <= OFF + 10 points. A pass
+  ships ON.
+  **Arm re-filed before any series number (stream/doctrine 25f5ca26e): `--cpu-defend --cpu-defend-split` alone**; CLOSING stays OFF;
+  no constant re-tuned. Labs (not judged; builder0 light J4, 587c31976, seeds 2601-2602, 20 fights a line an arm): blob guard wins OFF 9,
+  split 4, closing 9, package 10 of 20; turtle-line kills OFF 593, split 595, package 590; none-line median OFF 158 s, split 139 s,
+  package 188 s (a blob held at a barrier stops closing, so CLOSING lapses the defend). Lab guard on split 31.6 % v OFF 22.0 % (inside
+  +10 by 0.4; the series re-reads it). **Queue (orchestrator):** D2c's check + series go AHEAD of D3 on builder2 (a fix he would see; and
+  D3 is then read on top of what ships).
+
+- **S1 v4 = S1 v3 on the latch-ON base (settle, R38.34; filed in stream/settle fdeb18ce6 before any number; copied here by the
+  orchestrator).** Arms S1 ON v OFF, both latch-ON, code = b3ad7baa4's; seeds 4401-4412 no-fight, 4413-4424 fights; builder2 from 02:12.
+  Judged: counter (deploys turned > 0), twitch >= 15 m not up, never-in, first shape <= 3 %, contacts, both fight reads. Reported: the
+  deciding line and place+twitch (`SETTLE_S1_DECIDING_JUDGED=0`). Also amended before numbers (5a9f65d54): Bars H/S3's arms use
+  `--deploy-latch=anchor` (since b3ad7baa4, `=on` means v2's centroid read).
+
+### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
+s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
+`references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
+- **Not the returning crew.** Alpha's re-deals are of two kinds: (a) `drift` goal moves on the same anchor and seat index
+  at t=79, 101, 106, 109, 111 with no loss, beside 4 relays: the terrain read flips as crews move in the fight (parked hold
+  keeps them on posts, so the centroid creeps across a feature line) and the deployed halt is re-SPACED, moving seats 7-14 m:
+  what S2's deploy latch removes; (b) a LOSS (t=117, Alpha_2): the halt is laid again at the smaller size and three
+  survivors are re-seated 11-18 m: what the stretch's DEPLOY_HOLD removes. Laptop GDScript, the same cell: the re-deals
+  came at the two losses (t=77, 102). Why parked hold doubles them: with crews held on their posts, more of them are
+  "parked" (>= 2 s on the station) when a re-lay lands, so the probe counts them; without it, they were off fighting.
+- **With both (`--deploy-latch=on --deploy-hold=on`, same tree, builder0 light, n 1 each; the fights diverge):** parked
+  re-deals s3747 7 -> 3, s3748 2 -> 0; Alpha's reseat moves 3 -> 0; one 14.3 m drift remains after a loss (residual, untraced).
+- **DEPLOY_HOLD (8bd480f96, OFF):** while every crew of a deployed halt is one the deploy dealt, a smaller squad (a loss)
+  stands on its own dealt seats (seat, sector, order kept) and the shape keeps its name; a crew joining re-lays as before.
+  Lab `tests/test_settle_deploy_hold.gd` 1/0 (laptop): one of five lost, survivors' worst seat move 16.7 m -> 0.0.
+- native (godot-native-fb, written audit on 8bd480f96): no twin needed for S1, S2 or the hold.
+
+- **Bar H DEPLOY_HOLD and Bar S3 O2-ON-SETTLE (filed 2026-10-22 before any judged number; code 8bd480f96; recorded from stream/settle 4870d8ebc)**
+`make native settle-s3`, judge `settle_judge.py s3`: the fight probe only (locks/crossing/terminus x 3/5 squads x click),
+FRESH seeds 3891-3896 (36 fights an arm), builder0, a green-checked hash, run AFTER S2's verdict. Arms: `latch`
+(--deploy-latch=on), `held` (+ --deploy-hold=on), `o2` (+ --parked-hold=on). If S2 fails, the arms drop the latch and the
+bars are re-read on the same seeds with the base `main` (said in the verdict, before the run).
+- **Bar H (held v latch).** What he would see: when a parked tank is killed, the rest of the squad stays where it is.
+  Counter: latch's parked re-deals >= 10. Deciding: parked re-deals summed held <= 60 % of latch AND reseat goal moves no
+  more. Guards: his kills, his losses, the CPU's losses a fight within latch +/- 1.645 se. A pass ships ON.
+- **Bar S3 (o2 v held).** What he would see: a squad he parked stays where he put it and shoots from there, and nobody in
+  it gets sent to a new spot. Deciding: R37.13's line (off_idle_s a fight o2 <= 50 % of held AND the drop > 1.645 se) AND
+  parked re-deals o2 <= held x 1.1 + 3 (R37.28's "no higher beyond noise", now against the settled halt). Counter:
+  parked_returns > 0. Guards: the kills / losses lines v held. A pass ships O2 ON with latch v2 and the hold (his crews only:
+  PARKED_HOLD is player-only), the seam in tank_brain.gd unchanged (orders' code; merge note to doctrine).
+  S3 trace (settle, builder0 light native, crossing 3 click s3747/s3748 fight probe, parked-hold on, n 1 each;
+  `references/round38/settle/o2-redeal-trace-builder0/`): O2's re-deals are NOT the returning crew: (a) terrain-read flips re-space
+  the deployed halt (seats 7-14 m, no loss; latch removes these); (b) each LOSS re-lays the halt smaller and re-seats survivors 11-18
+  m; parked hold doubles the count because held crews are parked when a re-lay lands. With latch + DEPLOY_HOLD: re-deals 7 -> 3, 2 -> 0.
+  Native: no twin for deploy-fit, deploy-latch or DEPLOY_HOLD.
+
+- **Bar G1 GROUP_LAY=column v2 (orders, round 38; filed 2026-10-22 ~10:15 PDT, before any judged number; dev reads on dev seeds 3801-3803 only;
+  recorded from stream/orders 6f8fe05a5).** What he would see: select all, click a street: every squad lands in that street,
+  stacked back along it, nearest in front, each with its own vehicles; on open ground nothing changes.
+  **Tree:** a hash whose builder0 full check is green, switch OFF by default. **Probe:** `make native orders-probe`, arms
+  `main:` v `column:--group-lay=column`, builder0, FRESH seeds 3881-3892 (n 12 a cell). Cells: the 12 street cells (locks /
+  crossing / terminus x 3 / 5 squads x click / route); his click as its own cells (terminus `--probe-click=-29.3/85.8`, 3 and
+  5 squads, click; relabelled `terminus_his`); the open-ground cell yard_open (3 / 5 x click / route). **Judge:**
+  `tests/control/orders_judge.py g1` (street + his rows; yard_open rows as the 5th argument).
+  **Counter:** columns_laid > 0. **Deciding** (street + his cells): places outside the click's corridor, arm <= 25 % of
+  base; metres driven outside the corridor after the crew was once inside it (`route_left_m`), arm <= 50 % of base; squads
+  with crews re-dealt, arm 0. **Guards:** R36.6's per cell (all-in median <= base x 1.2 + 3 s; no more never-in; worst
+  twitch median <= base + 3 m; end foreign min median >= base - 3 m; crossed no higher); friendly contacts (probe) <= base
+  x 1.1 + 5; yard_open: every squad row identical. **Reported:** route_out_m (incl. the drive in), parked re-deals, bodies
+  kept, gate columns. **Plus:** paired top-down shots of his click, main v column, looked at, for him. A pass ships ON.
+
+- **Bar D2 CPU_DEFEND (doctrine, C38.2; filed in stream/doctrine cb831f10d Status before any arm number; code 6877a099c, OFF, GDScript
+  only in posture.gd + element_commander.gd; native: no twin).** D1 (builder0 native light, 6e049da5b, 55 blob fights, damage-weighted):
+  75 % of the CPU's damage is fired in ATTACK posture from its own half because it "holds no objective": the blob reaches the CPU's near
+  ring before the CPU has taken it, and Posture only holds zones the side already owns. In hold posture, seated crews fire still 83 % by
+  damage; the movers are crews driving to posts `_hold` re-lays across the enemy's moving centre each think. **Change (`--cpu-defend`):**
+  (a) a side DEFENDS its near ring when an enemy is within 60 m of it and the enemy doesn't own it, taken or not; (b) hold posts keep
+  their facing until the threat's direction swings > 45 deg. **Paired against `1c484a525.fights.jsonl`.** **Deciding:** the blob's win
+  rate down by > 2 paired se AND McNemar p < 0.05. **Second line:** the blob's kill ratio not up. **G1:** the turtle not up. **G2:**
+  per-faction kills and length. **G3 (what it could break):** CPU v CPU stalls on the `none` line, 2601-2608: cap hits ON <= OFF + 2,
+  median length <= x1.2. Workload: builder2, ~2 x 320 guard fights + 2 x 80 on the none line. A pass ships ON (symmetric).
+
+- **Bar G1 AMENDED (orders, ~16:30 PDT 2026-10-22, before any judged number; only dev seeds 3801-3803 run; stream/orders 130cf487f).**
+  The column on shifted legs / gates moves to G2 (`--group-legs=on`, OFF): ten builder0 dev reads showed every route-leg rule moving the
+  route cells' guards, and his complaint was a plain click. **G1 = the plain-click column + whole squads on every group move + a 2 s
+  first-click re-lay** (a shifted click right after a column click turns it into a waypoint). **Deciding** over the 6 click cells + his
+  click cells: places outside <= 25 % of base, metres after leaving the corridor <= 50 %, re-dealt 0 over ALL cells. **Guards:** every
+  R36.6 guard + contacts over all 14 cells incl. routes; yard_open rows identical. FRESH seeds 3881-3892, builder0 at J 4 beside M5 v2
+  (R38.8), full check on builder2. Note: his-click cells are effectively n 1 (`--probe-click` disables seed jitter); their one twitch is
+  the halt flipping herringbone -> coil after deploy, which settle's `--deploy-latch` removes. Best dev read (94b00992f, n 3): places
+  outside 53 -> 9, re-dealt 20 -> 0, contacts 3,232 -> 1,716, yard_open 48/48 identical.
+
+- **Bar F3 REPAIR_UNDER_FIRE (feedback, C38.4; filed in stream/feedback f0ad5a44d Status before any number).** Switch `--repair-under-fire`
+  (OFF; `Match.repair_under_fire_on`): a friendly FIELD mender (the gangs' Resupply Tanker) keeps mending a vehicle under fire at HALF
+  rate (2.5 hp/s), full after `REPAIR_QUIET_SECONDS`; the base's own mending still waits for quiet; a Tanker never mends itself.
+  **Run:** the CP37.1 guard set (blob + turtle, both sides, the same 320 fights) through `tests/feedback/repair_probe.gd` (extends
+  guard_line.gd read-only, adds mending counters), base v ON, paired, builder2. **Deciding:** hp mended by field menders per fight with
+  a gang side UP; a rise under ~25 % is a fail. **Guards:** (1) the blob line overall not beyond noise, no faction's blob or turtle rate
+  up beyond noise, the gangs must not start winning the blob line (paired, p >= 0.05); (2) kills and length per faction within noise
+  (median length up < 15 %); (3) perf (no new loop). **A pass ships ON** (his call).
+
+## Rulings (round 38)
+
+- **R38.2 (2026-10-22) full checks move to builder2 while builder0 is loaded.** builder0 at 11:16: load ~20, two full checks
+  running (feedback, settle) beside series; manoeuvre's M5 v2 ON check was killed by the slot timeout. builder2: 0 checks (feedback's
+  F3 series only). **Ruled:** a full check goes to whichever builder has none running (`REMOTE_HOST=slobdell@builder2
+  tools/builder_checks.sh --wait-below 1`; `make gcp-start` first if stopped); builder0 keeps the probe series. Perf-judge's verdict
+  still comes from builder0 (a merge batch's main check runs there).
+- **R38.3 (2026-10-22) M7 (O5 v2) not judged: its bar fails by construction.** manoeuvre (trace builder0 53159326e, 18 fights; dev
+  read same fights): v1's support_by_fire "way" ran centre -> the ENEMY; v2 (`--seat-aside=v2`, b5775051e, OFF) reads each travelling
+  crew's own line: screen -> support_by_fire give-ways 90 -> 72, but all CPU screen give-ways 480 -> 483; 48-50 % happen with the screen
+  crew >= 10 m off its seat (driving to/from it), which no seat choice reaches. **Ruled:** no series; round 39 re-files on SEATED
+  give-ways only, or treats the en-route half as traffic. Native: no twin for M7; M5b needs one if it changes `choose()` (drive_native
+  mirrors _manoeuvre/choose/behind/simulate since round 33).
+- **R38.4 (2026-10-22) F3 the Tanker repairs under fire PASSES; ships ON (his call).** feedback (builder2, f0ad5a44d, 320 paired guard
+  fights, base `--repair-report` v ON `--repair-under-fire --repair-report`; base replays 1c484a525 exactly, 320/320, 0 flips):
+  deciding gang hp mended a fight 399.6 -> 556.5 (+39 %, 174 under fire; 93 fights up, 16 down of 120; +157, se 50); guards: blob 49
+  -> 48 % (2 flips to a loss, 1 to a win), turtle 40 -> 41 % (+1.2, se 0.9, McNemar p 0.94); gangs as guard side blob 5 -> 6 of 30,
+  turtle 3 -> 4 (p 0.5); kills and median length flat per faction (gangs blob kills 51.0 -> 51.2, length 102 -> 99 s). Next: the
+  default flip (REPAIR_UNDER_FIRE_DEFAULT = true) as its own commit, a full check naming what moves (sim-baseline, maybe announcer
+  transcripts); the orchestrator adopts. builder2's series slot -> native's N3 trial -> doctrine.
+- **R38.5 (2026-10-22) D1's first read: the CPU meets a blob as an ATTACKER.** doctrine (stream/doctrine 640850023, builder0 light, 80
+  blob fights): the CPU fires 83 % of its rounds in ATTACK posture; its holding crews on their seats already fire still 93 % of the
+  time; moving rounds come from recon screens (54 %), support_by_fire lines re-seated on a moving focus (29 %), and crews 15 m+ off
+  their slots. Damage-weighted re-read running (6e049da5b), then the design note and D2's bar. builder2's series slot goes to settle's
+  S1+S2 meanwhile.
+- **R38.6 (2026-10-22) N3: the machine-relative perf line is NOT machine-invariant; not switching.** native (tree bed8b7596, builder2
+  Intel Xeon 2.20 GHz, idle load 0.3-0.8, n 5; Status 3e95798e3): absolute ai 19,978-21,202 us/tick (flips around 20,000: FAIL 4 / PASS
+  1); relative PASS 5/5 (median 9,054 us per reference ms v line 25,840). The reference benchmark runs ~2.5x slower on builder2 than
+  builder0 but the AI tick only ~1.6x, so one ratio would pass a 2x AI regression on builder2. **Ruled:** perf-judge stays builder0 /
+  absolute; the honest option, if pursued, is a per-CPU-model line (round 39+).
+- **R38.7 (2026-10-22) "light" runs on builder0 are capped at J <= 4.** builder0 at 12:49: load ~22, Godot processes doctrine-light 32,
+  orders-light 14, manoeuvre-trace 11, feedback 2; two full checks (feedback 4b070b284, settle 39f57e7d6) were killed at slot.sh's 5400 s
+  cap with `test` still running (not failures). **Ruled:** light runs on builder0 at J <= 4; anything bigger is a series (the builder's
+  one series slot) or goes to builder2. Doctrine's re-read moves to builder2.
+  Correction (manoeuvre): `pgrep -f Godot_v4` also counts wrappers (bash, xargs, timeout) whose command line names Godot; manoeuvre's
+  "11" was 3 Godot processes at J=3. The other counts may be inflated the same way; the load (~22) and the two killed checks stand.
+- **R38.8 (2026-10-22) two series on builder0 for his group click; manoeuvre's reads.** manoeuvre's M5 v2 series started 13:18 on
+  builder0 at J=6 (~10 h; its ON check 269d593c5 on builder2: 3,063/0, 0 twin mismatches, sim-baseline moved yard/pit/archipelago/cut,
+  web-smoke timing red re-run alone green). Waiting 10 h would hold his group click (orders' G1) back to tomorrow. **Ruled:** orders'
+  G1 series runs on builder0 ALONGSIDE M5 v2 at J <= 4 (6 + 4 of 12 threads); builder0 takes NO full checks while both run (checks go
+  to builder2, R38.2); light runs there pause. M2 (M5b) traced, not built: 9 % of seated give-ways turn round on the way back, 2/3 of
+  them the scouts' kept turn-in (~1.5 others a fight): no lever. M3 not built: 82 long hull-wedges in 72 fights, 0 deaths, mostly ORCA
+  slow-down.
+- **R38.9 (2026-10-22) S1 FAILS; S2 latch v2 passes deciding but FAILS one guard (never-in, crossing 5 click).** settle (builder2 native,
+  e42ff30eb; no-fight probe 12 cells x 3861-3872, 576 squads an arm). **S1 DEPLOY_FIT:** squads with a crew moved >= 25 m after the deploy
+  166 -> 125 (-25 %; line <= 83); summed place+twitch 12,022 -> 10,228 m (-15 %); 78/567 deploys turned; guard FAIL never-in locks 3 route
+  (1 v 2; s3871 squad 1); first shape 8/576, contacts 13,167 -> 13,263, foreign 6,995 -> 7,427, fights (n 18) pass. **S2 DEPLOY_LATCH:**
+  shape flips no-fight 58 -> 0, fight 37 -> 0; reseats 124 -> 0; relays 206 -> 127; first shape differs 12/576 (<= 3 %); guard FAIL never-in
+  crossing 5 click 0 v 1 (s3866 squad 4 never arrives; it does on main); contacts and fights pass (his kills 5.83 -> 6.06, losses 8.11 ->
+  7.94). **Ruled:** neither ships on this read; both traced (s3866, s3871 and the residual long movers); a fix is a new arm on fresh seeds
+  (R37.17). **Two workload defects, re-filed (57f423f44) before any fight number was read:** the fight probe ran only 3-squad armies (54
+  five-squad runs stopped at start: 18 of 36 fights; top-up 3879-3884 owed); the CPU census reads identical in every arm (the deploy step
+  never fires CPU v CPU): the CPU guard is vacuous and these switches act on his crews only.
+- **R38.10 (2026-10-22) S2's failed guard is traced; one re-read on fresh seeds, guard pre-registered.** settle (builder0 light, native,
+  e42ff30eb tree; stream/settle b013518a6, references/round38/settle/s2-neverin-trace-builder0/README.md): s3866 squad 4 is laid with a
+  spot 0.4 m from squad 3's parked back tank in BOTH arms; the latch keeps one squad-3 seat 1.5 m different, which flips the give-way
+  (a squad-1 tank steps 20 m aside into the lane, squad 4 queues behind it, never in by 90 s). Every other seat in both squads is
+  identical; the latch picked no different shape. **Ruled:** option (a), once: the SAME arm and bar on fresh seeds (no-fight 12 cells x
+  3903-3914 + the fight top-up incl. 5-squad cells at `--probe-budget=3000`). Filed before numbers: the never-in guard must read latch <= main
+  on the fresh seeds AND pooled over both reads latch <= main + 1; every other line as filed. A repeat of the overlap never-in fails S2
+  until orders' lay stops placing spots on parked tanks. The overlap (place 0.4 m from a parked tank) goes to orders as a defect; the far
+  give-way lead to manoeuvre as a measured case. The fight probe's 5-squad stop was `--probe-budget` capping both armies (2970 > 1500);
+  the probe should print that refusal (orders' file). S1 stays failed (R38.9); its locks never-in is a window-edge flip (82.7 s on main).
+- **R38.11 (2026-10-22) S1 v2 may be filed: the deciding line moves to the deploy leg, on fresh seeds, and the record says why.**
+  settle's residual read (judged e42ff30eb rows, not re-judged): squads with a deploy leg >= 25 m 73 (main) -> 20 (fit), latch 71; the
+  filed line also counted movement after the 8 s place window (squads with twitch >= 15 m 98 / 79 / 105), whose sources are GIVEWAY (M5's)
+  and long deploy legs still running after 8 s; 102 of fit's 125 long movers are long on main too. His defect (R37.37) is the stopped crew's
+  drive to its seat, so the deploy leg is the right line; the filed one was mis-specified. **This line was chosen after seeing e42ff30eb**,
+  so e42ff30eb's rows count for nothing: S1 v2 is judged only on seeds never read for S1 (none of 3861-3914). Deciding: squads with a
+  deploy leg >= 25 m down >= 50 %. Guards: squads with twitch >= 15 m not up, never-in (as R38.10), the first shape, contacts, fights. It
+  queues on builder2 after the S2 re-read; the bar goes to Status and to me before the series starts.
+- **R38.12 (2026-10-22) G1 (amended) FAILS as filed; G1 v3 next, G3 after.** orders (builder0 native light J 4, tree 4a765e6e2 = code
+  130cf487f, fresh seeds 3881-3892, n 12; stream/orders 4be1edf79, references/round38/orders/g1-judged-builder0-4a765e6e2/).
+  Deciding all pass: places outside the corridor (click cells) 84 -> 18 (line 21); metres driven outside after being in 6,223 -> 1,393
+  (line 3,111); squads re-dealt 58 -> 0; contacts 14,004 -> 10,622. Guards FAIL: crossing 3 route twitch 5.8 -> 10.5 m; his 3-squad click
+  twitch 2.3 -> 11.4 m (deterministic, n 1: settle's halt flip herringbone -> coil); yard_open 177/192 rows identical (s3889, s3891 laid a
+  column beside the yard's containers; s3886 re-laid its first click). Shots of his click (laptop, looked at): main sends a squad up the
+  street and piles one on a corner; the column keeps all five on the apron. **Ruled:** G1 stays OFF. v3 goes first because it is his lead
+  item: rear ranks judged open at the click's width (the container case); the first-click re-lay only where the column moved a squad more
+  than a rank. New bar on fresh seeds, filed before numbers, with the same guards. His-click twitch is NOT excused: v3 passes it on its
+  own, or it waits for settle's latch to ship and is re-read on top of it (then that is the bar's base). G3 (`--place-clear`) after v3.
+  orders' series ended 2026-10-22 ~15:35: builder0's light lane (J <= 4) is free beside M5 v2.
+- **R38.13 (2026-10-22) main 400bada9a GREEN on builder2** (covers manoeuvre's 8bfb74e55 merge + docs): `make native check exited 0`,
+  3055 passed / 0 failed, 23 passed + 4 NOT JUDGED, all load-only (builder2 load 48-66 on 32 CPUs): perf-judge (not a judging machine),
+  ai-scenarios scenario_perf (loaded, ref 5.05x), quiet-window watch, web-smoke first-sound bound. sim-baseline 13/13 unmoved. Not yet
+  judged for perf on builder0 (R38.8 keeps full checks off it). Feedback's merge e1f558d83 checks next on builder2.
+- **R38.14 (2026-10-22) D2 FAILS as filed (ships OFF); D2b on FRESH guard seeds with its own OFF arm.** doctrine (`--cpu-defend` on
+  acbdef4c5, green builder2 3063/0; builder2; 320 fights paired with 1c484a525): deciding blob 49 -> 44 % (-4.4, se 2.9 = 1.5 se; flips
+  15 to a loss, 8 to a win; McNemar p 0.105; the bar needs 2 se and p < 0.05); blob kr 0.86 -> 0.81. Guard turtle win 40 -> 42 % (+2.5,
+  se 4.4) ok; **guard FAIL turtle-line kills a fight 32.4 -> 26.2 (-3.8 paired se), every faction down > 2 se**: the CPU stops attacking a
+  turtle that sits within 100 m of the CPU's near ring. Pictures (laptop, locks 2602, 60 s): ON the CPU stands on its ring and the blob is
+  held at the barrier. D2b (eaf4c508f, OFF, posture.gd): only an enemy nearer the CPU's ring than any zone its own side owns counts.
+  **Ruled:** D2b was shaped by these 320 fights' turtle guard, so it is NOT judged on them (R37.17): fresh guard seeds never used by a
+  round-38 guard series, both arms (OFF and ON) on D2b's tree, 320 fights, Bar D2's text plus an explicit turtle-line kills-a-fight guard,
+  filed before numbers. builder2 after settle's S2 re-read and S1 v2; native's e1f558d83 row goes after D2b (its base seeds are the old ones
+  and it does not gate anything).
+- **R38.15 (2026-10-22) S2's re-read FAILS its first-shape guard by one squad; the bar stands as filed; S2 stays OFF.** settle (builder2
+  native, cbb2ece52 = e42ff30eb's game code, 17:10-18:07; references/round38/settle/s2-reread-judged-builder2-cbb2ece52/, a4596a61e):
+  deciding passes (shape flips no-fight 56 -> 0, fight 107 -> 0; reseats 133 -> 0); never-in passes (fresh 9 v 8, pooled 15 v 15); fights
+  (3-squad n 36, 5-squad budget 3000 n 36), contacts, census pass. **First shape differs 18/576 (line <= 17.3).** Read after the verdict:
+  14 coil on main -> herringbone latched (locks, terminus), 1 herringbone -> coil (terminus 5 route s3908 squad 4), 3 a squad with no halt
+  on one side. **Ruled:** a line missed is a fail; dropping the 3 no-halt rows now would be choosing the filter after the number. The
+  guard measured "differs", but what he would see is a WRONG first shape (a coil in a lane, R37.42), so the next bar may judge that
+  instead: S2 v3 = the same arm, a new bar filed before numbers on seeds never read for S2, its first-shape guard = "first shape wrong for
+  the terrain at the halt" (defined in the judge before the run, no-halt rows reported, not counted, since never-in counts them), all
+  other lines as filed. builder2 after S1 v2, ahead of doctrine's D2b (it gates orders' G1 v3). Orders' G1 v3 keeps waiting for a
+  shipped latch; meanwhile G3.
+- **R38.16 (2026-10-22) S2 v3's first-shape reference = the terrain at the squad's first deploy ANCHOR.** The standing-centroid reference
+  (R38.15's text) is main's own centre read, so it would make main right by construction; the deploy-tick read is the latch's own read.
+  The anchor (the halt's centre) is identical in both arms and moves with neither shape; laptop dev n 1 (57feb5e17): locks 3 click s3906
+  squad 3 anchor open (latch's herringbone WRONG), terminus 5 click s3912 squad 4 anchor lanes (main's first coil wrong), so the guard can
+  fail either arm. Seeds 4001-4012 no-fight, 4013-4024 fights, census 4001-4003. A context re-run of the re-read's no-fight probe
+  (settle-s2v3-context, builder2 after S1 v2) reports both references before the bar is committed. **For the lead later:** at a lane mouth
+  opening onto open ground, herringbone hugs the lane edge, coil spreads into the open (settle's shots, references/round38/settle/).
+- **R38.17 (2026-10-22) S1 v2 FAILS its never-in guard (1 -> 2 runs); S1 stays OFF; S1 v3 = main's deal unless the deploy turns.**
+  settle (builder2 native, cbb2ece52 = e42ff30eb's game code, 18:07-19:04; references/round38/settle/s1v2-judged-builder2-cbb2ece52/,
+  9e6f87f6e): deciding passes (squads with a deploy leg >= 25 m 56 -> 10, line <= 28; 70/573 deploys turned); twitch >= 15 m 95 -> 71,
+  first shape 7/576, contacts 12,183 -> 11,526, foreign 6,301 -> 6,188, fights (3- and 5-squad, n 36 each) pass; reported place+twitch
+  >= 25 m 153 -> 110. **FAIL:** fit adds crossing 5 route s3931 squad 4 (no deploy turned in that run; fit's own seat deal diverges the
+  rows from tick 1090 v 1120; squad 4 is main's slowest, all-in 60.5 s). **Ruled:** (a). S1 v3 keeps main's deal byte-for-byte unless
+  the deploy turns, so only turned squads can differ; a new bar on seeds never read for S1 (see the seed registry), the same lines as S1 v2.
+  builder2 order: settle S2 v3 context + series, doctrine c475c3163 check + D2b arms, settle S1 v3, doctrine D3, native's row.
+- **R38.18 (2026-10-22) main 9d2897fd8 GREEN under R36.12** (covers feedback's e1f558d83 + ec70d6b5c): builder2 `make native check
+  exited 2`, 3076 passed / 0 failed, 24 passed, 2 NOT JUDGED (perf-judge; scenario_perf loaded 4.91x), 1 FAILED remote-guard-test
+  (`test_slot_light.sh` setup: the quiet window did not open in 30 s at load 27 on 32 CPUs, settle's series running). Re-run ALONE on the
+  same hash on the laptop (idle, load 2): `make remote-guard-test` exited 0. sim-baseline 13/13 unmoved. Builder2's ZeroTier dropped
+  ~18:40 (the lead's router restart); the check survived; the queued 4506f151a check failed to launch and was re-queued.
+- **R38.19 (2026-10-22) S2 v3 WITHDRAWN before any number on its seeds; builder2 goes to doctrine now.** settle's context re-run of the
+  re-read's seeds (builder2 91a681712; references/round38/settle/s2v3-context-builder2-91a681712/; reproduces the re-read exactly) under
+  the filed anchor reference: main 13 wrong, latch 16 (10 herringbone on an open anchor, all locks; 6 coil on a lanes anchor, 3 locks 3
+  terminus); stand reference main 0 (its own read), latch 13. The latch's weakness is the read it latches (the crews' all-in centroid
+  says lanes on locks where the halt's centre is open). Running the v3 series (started 19:33 on 79a9f83bf) would likely spend 1 h of
+  builder2 on a known fail while doctrine has waited since the afternoon: **stopped, no number read.** Next: S2 v4 latches the terrain
+  at the deploy anchor (the read the guard judges by), a lab first, a new bar on seeds never read for S2, queued after doctrine's D2b.
+- **R38.20 (2026-10-22) Bar S2 v4 (`--deploy-latch=anchor`) accepted; its first-shape guard is REPORTED, not judged.** settle (bee8bd27c,
+  filed before any number): at the deploy, if the anchor's ground reads otherwise than the live read, the shape and anchor are laid again on
+  the anchor's read (<= 3 lays), and that read is latched. Lab (laptop 5/5): locks s3906 squad 3 now stands a coil on its open anchor;
+  R37.42's lane still forms a herringbone. Dev (not judged, laptop, locks+terminus 3/5 click s3906-3907): wrong for the anchor main 2,
+  centroid latch 5, anchor latch 0. Seeds 4301-4312 no-fight, 4313-4324 fights, census 4301-4303. **The orchestrator's R38.19 direction
+  made the guard circular** (v4 latches the read the guard judges by; settle flagged it before numbers): the anchor-terrain first-shape
+  count is reported for both arms, not judged. What carries the bar: the deciding lines (flips, reseats), never-in, all-in, contacts,
+  place+twitch, fights, census, plus R37.42's test in the full check; and whether a lane mouth takes herringbone or coil is the lead's
+  eye (R38.16 shots). No better independent reference exists (a click point is shared by 5 squads). builder2 after doctrine's D2b,
+  before S1 v3.
+- **R38.21 (2026-10-22) main 661de8e82 GREEN on builder2** (covers orders' 4506f151a: G1 v3, G3, probe refusal, all OFF): `make native
+  check exited 0`, 3084 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge, not a judging machine; scenario_perf loaded 4.81x),
+  sim-baseline 13/13 unmoved. Next main check (feedback's 937e7859c, the portrait end card) queued behind doctrine's c475c3163 check.
+- **R38.22 (2026-10-22) main 8f0dcb488 GREEN under R36.12** (covers feedback's 937e7859c, the portrait end card): builder2 `make native
+  check exited 2`, 3085 passed / 0 failed, 24 passed, 2 NOT JUDGED (perf-judge; scenario_perf loaded 4.96x), 1 FAILED web-smoke (first
+  sound 32.9 s v 30 s; builder2 loaded, the fourth such miss today). web-smoke re-run ALONE on the same hash on builder0 (load 12.7):
+  `make web-smoke exited 0`, first sound 21.6 s. sim-baseline 13/13 unmoved. Native's 54898f5b1 makes the gate per physical core
+  (builder2 loaded at 24, builder0 at 15), so these misses will read NOT JUDGED once merged.
+- **R38.23 (2026-10-22) main 7622b9f4c (feedback's final end card A, aca357e9e): builder2 `make native check exited 2`** on web-smoke
+  alone (first sound 32.2 s v 30 s, loaded; the fifth such miss), every other target passed or NOT JUDGED (perf-judge, scenario_perf),
+  sim-baseline unmoved. Not ruled green yet: the next main check (9a6909305, native's per-core gate, a superset of this tree) is its
+  verdict; if web-smoke misses there too, it reads NOT JUDGED under the new gate and is re-run alone on builder0.
+- **R38.24 (2026-10-22 23:49) M5 v2 (seatstep) FAILS; stays OFF; builder0's R38.8 exception ends.** manoeuvre (ON 269d593c5 v BASE
+  226e4c190, builder0 native J 6, 120 jam pairs + 768 hull-rest runs an arm; stream/manoeuvre b29ce78cf,
+  references/round38/manoeuvre/m5-series/README.md): deciding seat metres 76,032 -> 72,255 (-5.0 %), short of the 1.645 se bar (4,881);
+  every map -4 to -6 %. Lead-out give-ways 1,291 -> 747 (the rule works as written; crews still end about as far from their seats).
+  Safety guards pass (kill share 0.521 -> 0.527, deaths +6); (e) never-settled faced_attack_move +4 > +3.3 fails. 7/192 GDScript gangs runs
+  hit the 300 s timeout under load; judged by hand on what ran. **Lesson:** a noise floor from base native v base GDScript is 0 by
+  construction (the twins are bit-identical per seed); a floor needs shifted seeds. Next for manoeuvre: settle's s3866 give-way read (light).
+  builder0 now carries only light lanes (orders, feedback, manoeuvre); full checks may go to it again when it is under its loaded line
+  (tools/loaded.sh), and main owes a judged perf line there.
+- **R38.25 (2026-10-23 ~00:10) a native/GDScript twin mismatch? NO: the MACHINE (glibc float trig); see the answer below.** orders: terminus seed 3801, 5-squad click
+  (-29.3/85.8), main arm: squads 1-3 identical; squads 4 and 5 (one shared place (8.0, 66.5), a queue) arrive 29.5 s on the laptop
+  (GDScript, a24f3b3fb, no native/bin) v 47.4 s on builder0 (native ON, 0646a865e = a24f3b3fb + Status), the same on seeds 3801-3809
+  there. Machine v path not yet split: native runs the same command native ON and OFF on one machine and finds the first diverging tick.
+  Until it is split, laptop dev reads do not predict builder0 in jams; judged reads stay on their filed machine.
+  **Answer (native, ~01:00):** native and GDScript agree on one machine (laptop 29.5/29.5, builder0 47.4/47.4; builder2 47.4; the laptop at a
+  quarter core still 29.5). SIM_HASH matches to tick 30; at tick 33 three TankCommand steer floats differ by 1-2 ulp, then the jam grows
+  it to 18 s. Cause: the laptop is glibc 2.39, the builders 2.43; glibc 2.41 made float libm correctly rounded (CORE-MATH): atan2f,
+  acosf, asinf, atanf, tanf differ (2M-input probe), builder0 == builder2. Proof: a 5-function LD_PRELOAD shim on the laptop gives SIM_HASH
+  identical to builder0 on all 180 checkpoints. **Rules from here:** native v GDScript on the builders is sound; laptop dev reads are not
+  comparable to builder reads where a jam amplifies ulps (dev reads that matter run on a builder light lane); sim-baseline is per-machine.
+  Closed (native ~01:20): atan2f alone carries this case (leave-one-out shims); native ON read 28.6 under the shim only because Godot
+  dlopens GDExtensions with RTLD_DEEPBIND, so the preload reaches the engine but not libtank_native (two libms mixed). Without a shim the
+  engine and native call the same libm and agree bit for bit on each machine. No native seam; nothing to fix in native. Lesson on
+  stream/native 1f714933a (remote_builds.md): never pair a laptop read with a builder read; the shim recipe for the GDScript arm only.
+  **Round-39 candidate:** the sim's trig made machine-independent (its own correctly rounded or double-based float trig), because his
+  laptop and any player's machine simulate differently today (replays, cross-machine fights).
+- **R38.26 (2026-10-23 ~00:20) manoeuvre at its end state; s3866 read.** (builder0 light native, n 1 an arm; stream/manoeuvre e55cba940,
+  references/round38/manoeuvre/s3866-giveway/README.md): seatstep OFF, squad 4 in at 33.9 s on main, NEVER under `--deploy-latch=on` or
+  `=anchor`. Not one pick, not a lead-out: Alpha_3 gives way four times in 10 s (6.7-10.3 m each), each from where the last left it, seat
+  distance 2.9 -> ~20 m; with seatstep ON squad 4 arrives in every arm. **Round-39 candidate:** a chain-aware give-way (a crew already
+  pushed off its seat never takes a spot farther from it); needs native's begin_yield twin first. No code since green 84c79d76f.
+- **R38.27 (2026-10-23 ~00:30) main 9a6909305 GREEN on builder2** (covers feedback's final end card A aca357e9e and native's a15a48de8;
+  settles R38.23): `make native check exited 0`, 3083 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge; scenario_perf loaded 4.91x),
+  web-smoke first sound 29.2 s (judged), sim-baseline 13/13 unmoved. Main still owes a judged perf line on builder0 (queued when it is quiet).
+- **R38.28 (2026-10-23 ~00:50) feedback at its end state.** All merged: F3 Tanker under fire ON (e1f558d83), hit ring (ec70d6b5c), portrait
+  end card (937e7859c), his pick A final (aca357e9e), F5 the top of the screen free (1dbfb9c1d; desktop before/after looked at by the
+  orchestrator). **Round-39 candidates:** the `--touch-map` mode's panels still sit at the top by design (squad bar top centre, camera
+  buttons top right): a phone-layout redesign with a thumb-reach choice, so a directions page for him; the sim runs on behind the end card;
+  the under-fire repair beam is faint by design. No judged perf line on feedback's commits (main's builder0 check judges).
+- **R38.29 (2026-10-23 ~00:55) D2b FAILS; `--cpu-defend` ships OFF; D3 is a read on top of OFF.** doctrine (c475c3163 both arms,
+  builder2, fresh guard seeds 4801-4808 + 4901-4908, 320 fights an arm, 0 lost, 400/400 ON logs carry the switch): deciding blob 47 ->
+  44 % (0.9 paired se, McNemar p 0.22), not met; G1 turtle 39 -> 32 % holds; **G2t fails** turtle-line kills a fight -1.94 (-2.8 se);
+  **G3 fails** none-line median length 130 -> 170 s (+31 %, bar x1.2), caps 0 v 2; blob line flat per faction. Across D2 and D2b the
+  defend posture makes the CPU passive against anything near its ring and buys little against the blob. **Bar D3 (filed 640cee079,
+  before numbers; copied as accepted):** arms `--rules-on=sight,spread,pin_slow`, `--cover-on=hulldown` and the package, each paired
+  with c475c3163-OFF on the same 320 fights (no new base run; those seeds have no rules read yet). A read for his design call, not a ship
+  call; "matters" (a win rate moving > 2 se, or cover_struck a fight >= 5x R37's 1.6) gates the stretch (CPU low-cover seats). builder2
+  after settle's S2 v4 and S1 v3; native's row after D3.
+- **R38.30 (2026-10-23 ~01:05) doctrine's design note: DEFEND made the CPU fight less, not worse** (stream/doctrine bab6df4ac Status).
+  Turtle line kr flat 0.84 -> 0.85 but kills and losses a fight both fell (-1.94, -2.45); none line median +40 s; lab hold time OFF 36 /
+  D2 77 / D2b 59 %; the blob line did not move. Causes (posture.gd decide, element_commander _hold): defend is side-wide and precedes
+  "not ahead -> attack"; the trigger is nearness (100 m), not closing; no clock; no counter-stroke. **Approved as D2c, "hold with some,
+  strike with the rest":** (1) defend tasks only the elements the closing threat needs (<= half the line), the rest decide as OFF;
+  (2) a contact counts only while closing on the ring over ~10 s; (3) defend lapses after ~30 s with nothing closing; (4) posts switch to
+  attack when the attack stalls or the local ratio >= 1.5. (1) and (2) separable switches. Build and lab on builder0 light now; bar on
+  fresh guard seeds 5001+ filed before numbers (deciding blob down; guards G2t, G3, and a lab guard: turtle-line CPU hold share <= OFF +
+  10 points); its series on builder2 after D3, or carried to round 39 if the round closes first.
+- **R38.31 (2026-10-23 ~01:25) main 1dbfb9c1d GREEN on builder2** (feedback's F5, the top of the screen free): `make native check
+  exited 0`, 3089 passed / 0 failed, 24 passed + 3 NOT JUDGED (perf-judge; scenario_perf loaded 4.49x; web-smoke first sound 30.2 s at
+  2.67 per physical core, the new per-core gate (R38.19 native) refusing as designed). sim-baseline 13/13 unmoved. Judged perf and
+  web-smoke lines come from the builder0 main check.
+- **R38.32 (2026-10-23 ~01:30) main 9ff649dca GREEN on builder0** (= 9a6909305 + docs): `make native check exited 0`, 3083 passed / 0
+  failed, 25 passed + 2 NOT JUDGED: perf-judge refused 3 times (ratios 1.40-1.55x, light lanes running), scenario_perf unpinned (hybrid
+  box). web-smoke JUDGED: first sound 20.0 s. sim-baseline 13/13 unmoved (glibc 2.43). The judged perf line is taken alone with
+  `make remote-quiet T=perf-judge` (holds the whole box for a few minutes).
+- **R38.33 (2026-10-23 ~01:40) S2 v4 (`--deploy-latch=anchor`) PASSES every series line; ships ON after its full check.** settle (builder2
+  native, fac47b5d2, J 14 beside main's check; references/round38/settle/s2v4-judged-builder2-fac47b5d2, fde269d88): no-fight 12 cells x
+  4301-4312 (576 squads an arm); fights 3-squad n 36 and 5-squad (budget 3000) n 36 on 4313-4324; census 4301-4303. Deciding: shape flips
+  no-fight 51 -> 0 (line <= 13.8), fight 33 -> 0 (<= 9.2); reseats 89 -> 0. Guards: never-in 5 -> 5; every per-cell probe guard passes;
+  contacts 12,435 -> 11,762 (foreign 6,702 -> 6,302); fights pass, 0 never started; census contacts 701 -> 701. Reported: first shape wrong
+  for the anchor 10 -> 0; relays 178 -> 94; re-lays 93/571 deploys, 2 at the cap. **Next:** the default flipped ON on a new hash, a full
+  native check (R37.42's tests run in it), sim-baseline adopted with attribution on main; then orders' G1 v3 and G3 judged reads may start
+  on a latch-on base (R38.12).
+- **R38.34 (2026-10-23 ~02:20) S1 v3 PASSES as filed; it ships stacked on the latch after a guard read on the latch-ON base.** settle
+  (builder2 native, 4ec06dd97 = fac47b5d2's code, latch OFF both arms; references/round38/settle/s1v3-judged-builder2-4ec06dd97,
+  a9c4dd08c): no-fight 576 squads an arm (4201-4212), fights n 36 + 36 (4213-4224); 70/570 deploys turned. Deciding: deploy leg >= 25 m
+  squads 57 -> 18 (line <= 28.5). Guards: twitch >= 15 m 111 -> 79; never-in 5 -> 4; first shape differs 10/576; contacts 12,652 ->
+  12,025; fights pass, 0 never started. Reported place+twitch >= 25 m 163 -> 116. **Ruled:** the pair (fit on the anchor-latched read)
+  has no judged number, so before it ships: S1 ON v OFF on the latch-ON tree, fresh seeds 4401-4424, the S1 v2 GUARDS judged as filed
+  (never-in, twitch, first shape, contacts, fights), the deciding line reported. Filed before numbers, ~1 h on builder2 AHEAD of doctrine's
+  D3 (a read, not a ship) because it is a fix he will see. Then the ON flip on a new hash and one full check.
+- **R38.35 (2026-10-23 02:35) main c54421161 perf JUDGED: PASS on builder0** (`make remote-quiet T=perf-judge`, light lanes held for
+  ~15 min by orders and doctrine): attempt 1 of 3, ai_usec_per_tick 7,060 v the 20,000 line, ratio 1.01x, idle 96 %, load 2.09; the
+  relative line (recorded) agrees. With R38.32 (9ff649dca green on builder0, web-smoke judged 20.0 s) main is GREEN AND ALL JUDGED at
+  c54421161 for everything merged through feedback's F5 and native's gates. **Lesson:** remote-quiet holds new launches but not running
+  light lanes; a judged perf line needs the workers to pause launches for ~15 min (ask them; it costs one dev read).
+- **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
+  595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
+  (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
+  at load 49 with feedback's F3 series on the box; both re-run ALONE on 595bb9208 at load 24 exited 0. Accepted under R36.12's rule
+  (re-run alone green on the same hash; the reds are timing under load, not the diff's logic). **The row (1c484a525, builder2):** fights
+  verdict ok 40/48/36; guard lines 320/320, blob 49 % (+-7), kr 0.86; turtle 40 % (+-16), kr 0.81; paired v 9d325e291 blob +0.013 (se
+  0.037, p 0.70), turtle +0.006: inside noise. **`references/scoreboard/guards/1c484a525.fights.jsonl` is round 38's pairing base.** N3:
+  perf-judge records the machine-relative line beside the absolute (not deciding; FAIL_RATIO 25840 = 20000 / 0.774). N4: guard.sh's
+  rolling queue (all seeds in one call, GUARD_RESUME per fight).
 
 ## Round 37: six streams (prepared 2026-10-21; briefs in `streams/archive/round37/`)
 

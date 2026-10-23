@@ -80,9 +80,9 @@ with tempfile.TemporaryDirectory() as base_root, tempfile.TemporaryDirectory() a
     for seed in (1, 2):
         fight(base_root, "blob", "terminus", seed, "green", "green", kills=(10, 5), losses=(5, 10))
         fight(base_root, "blob", "terminus", seed, "rust", "green", kills=(5, 5), losses=(5, 5))
-    fight(arm_root, "blob", "terminus", 1, "green", "rust", kills=(5, 10), losses=(10, 5))   # win -> loss
+    fight(arm_root, "blob", "terminus", 1, "green", "rust", kills=(5, 10), losses=(10, 5), seconds=60.0)   # win -> loss
     fight(arm_root, "blob", "terminus", 1, "rust", "rust", kills=(5, 5), losses=(5, 5))      # loss -> win
-    fight(arm_root, "blob", "terminus", 2, "green", "rust", kills=(5, 10), losses=(10, 5))   # win -> loss
+    fight(arm_root, "blob", "terminus", 2, "green", "rust", kills=(5, 10), losses=(10, 5), seconds=40.0)   # win -> loss
     fight(arm_root, "blob", "terminus", 2, "rust", "green", kills=(5, 5), losses=(5, 5))     # loss, unchanged
     fight(arm_root, "blob", "locks", 9, "rust", "green")                                     # no base: not paired
     paired = guard.pair([base_root], [arm_root])["blob"]
@@ -93,6 +93,21 @@ with tempfile.TemporaryDirectory() as base_root, tempfile.TemporaryDirectory() a
     check("pair mcnemar", paired["mcnemar_p_worse"], 4 / 8.0)   # P(>= 2 of 3) = (3 + 1) / 8
     check("pair win diff", paired["win_diff"], 0.25 - 0.5)
     check("pair seeds", paired["seeds"], 2)
+    # Round 38 (doctrine's Bar G2): the guard's kills and losses a fight and the median length, all and per guard faction
+    # (green's guard is law, rust's gangs), each with its paired se from the per-seed differences.
+    law, gangs = paired["by_faction"]["law"], paired["by_faction"]["gangs"]
+    check("pair kills a fight base", paired["all"]["kills_pf"]["base"], 7.5)
+    check("pair kills a fight diff", paired["all"]["kills_pf"]["diff"], 5.0 - 7.5)
+    check("pair kills a fight se", paired["all"]["kills_pf"]["se"], 0.0)
+    check("pair losses a fight diff", paired["all"]["losses_pf"]["diff"], 7.5 - 5.0)
+    check("pair law n", law["n"], 2)
+    check("pair law kills diff", law["kills_pf"]["diff"], -5.0)
+    check("pair law median base", law["median_s"]["base"], 100.0)
+    check("pair law median arm", law["median_s"]["arm"], 60.0)   # sorted (40, 60)[n // 2], stats_of's median
+    check("pair law median se", law["median_s"]["se"], 10.0)    # per-seed diffs -40, -60: sd 14.14 / sqrt 2
+    check("pair gangs kills diff", gangs["kills_pf"]["diff"], 0.0)
+    pair_text = guard.render_pair(guard.pair([base_root], [arm_root]))
+    check("render pair faction line", "law (n 2): kills a fight 10.00 -> 5.00 (diff -5.00, se 0.00)" in pair_text, True)
     # Jsonl input reads the same fights as the logs.
     jsonl = os.path.join(base_root, "fights.jsonl")
     with open(jsonl, "w") as out:

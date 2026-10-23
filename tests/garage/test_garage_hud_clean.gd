@@ -6,7 +6,10 @@ extends TestCase
 func test_the_camera_readout_is_off_unless_asked_for() -> void:
 	assert_true(not CameraReadout.wanted(LaunchFlags.parse([])), "a player's launch: off")
 	assert_true(not CameraReadout.wanted(LaunchFlags.parse(["--camera-readout=off"])), "off when told")
-	assert_true(CameraReadout.wanted(LaunchFlags.parse(["--camera-readout=on"])), "the lead's flag: on")
+	# Round 38 (F5, his note: "the debug info about camera pitch ... we don't need this either"): make skirmish's `on`
+	# no longer shows it; `debug` is ours.
+	assert_true(not CameraReadout.wanted(LaunchFlags.parse(["--camera-readout=on"])), "the lead's launch flag: off now")
+	assert_true(CameraReadout.wanted(LaunchFlags.parse(["--camera-readout=debug"])), "the debug flag: on")
 
 
 func test_the_readout_sits_clear_of_the_status_block_and_the_columns_at_both_aspects() -> void:
