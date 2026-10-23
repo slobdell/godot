@@ -104,7 +104,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     - Fail: never-in 2 -> 4 (locks 3 route s3802 and terminus 5 route s3805, squad 1 both times); twitch on crossing 5,
       locks 3 and terminus 5 routes; one crossing on crossing 5 route; his click twitch 11.6 -> 25.4.
     - Cause of the route never-ins: a leg G3 moved that was still QUEUED kept its moved place once it became a waypoint,
-      and the gate re-lay averaged the moved places. e94ee14af sends queued moved legs back too. Dev read 7 (J6) running.
+      and the gate re-lay averaged the moved places. e94ee14af sends queued moved legs back too.
+  - Dev read 7 (builder0 light J6, e94ee14af; the his half synced 7ef1ebd56, which has the same G3 code; n 9; `g3-dev7*`):
+    FAIL. Fixed: locks 3 route (its never-in and twitch now pass); never-in 2 -> 3. Left: crossing 5 route twitch 20.1 ->
+    23.2 and one crossing (s3802); terminus 5 route never-in 1 -> 2 (s3805) and twitch 18.7 -> 24.4; his click twitch
+    11.6 -> 25.4. On terminus 5 route every final place equals main's, yet s3802, s3803 and s3805 differ: G3 ran BEFORE the
+    untangle, so a moved waypoint changed how crews were dealt, and that stayed changed after the leg went back.
+  - 695d3d482: G3 runs AFTER the untangle. Crews are dealt exactly as today; G3 only moves places, each squad's drive read
+    from its own vehicles (a shifted leg: from where its last leg ends). Laptop tests: group click 17, requeue 2, untangle
+    9, group moves 8, groups 17.
+  - Main d421e6752 merged as 4e5181739 (no conflicts; feedback's `_draw` change merged clean).
+  - Dev read 8 (builder0 light J4, 4e5181739, dev seeds 3801-3809) running, then G2 dev read 1 (below).
   - **Laptop v builder0 twin mismatch (told the orchestrator, who routes it to native N2):** his click, a24f3b3fb, seed 3801,
     identical flags. Laptop is GDScript (no native/bin); builder0 is `native on`. In MAIN, squads 4 and 5 (sharing one place)
     get in at 29.5 s on the laptop and 47.4 s on builder0; in G3, the twitches differ (squad 4: 11.1 v 25.4). Machine v path
@@ -187,6 +197,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     rule must read each leg's width along the route, not at its click. Next: a dev switch for exactly that, read on the
     three his-style routes and the probe's route cells, before any G2 bar. Traffic at corners goes to manoeuvre if it
     stays after the lay is fixed.
+  - 7ef1ebd56: dev switch `--group-leg-width=along` (OFF). A shifted leg keeps today's body only where its spread across
+    the approach fits the narrowest width read along the leg's drive (every 8 m, from 12 m past the click to 12 m short of
+    the start), not just at its click. Lab test `test_g2_a_leg_through_a_narrow_street_lays_the_column`. Laptop GDScript,
+    terminus 5 east route, s3801, n 1, route_off_m: main 577; legs + route line 577 (byte-identical); + along 147 (2
+    columns laid, 2 bodies kept), all-in 81.5 -> 86.7 s (squad 1 is the slowest in both), no crossings.
+  - G2 dev read 1 (builder0 light J4, dev seeds 3801-3803): his three routes (east, west, avenue) on terminus, 3 and 5
+    squads, plus the probe's route cells. Main v `--group-lay=column --group-legs=on --group-route-line=on
+    --group-leg-width=along`. Queued behind G3 dev read 8. No G2 bar yet.
 
 ### REPORT (orders, round 38; updated 2026-10-22 ~09:30 PDT)
 - **Start:** stream/orders = main 5b20bfd62 (round 38 docs; HANDOFF: main 1c484a525 GREEN on builder0, not re-run).
