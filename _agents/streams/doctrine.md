@@ -53,7 +53,8 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-23, in progress):** D1 DONE (design note below). **D2 JUDGED: FAIL as filed, ships OFF** (verdict below:
+**Report (2026-10-23, in progress):** **D2c JUDGED: FAIL (deciding 1.2 se), ships OFF; its guards held (turtle kills
+1.6 se, CPU v CPU +6 %).** D3 running as filed (on OFF) since 06:50. D1 DONE (design note below). **D2 JUDGED: FAIL as filed, ships OFF** (verdict below:
 deciding 1.5 se; G2 broken on the turtle line). **D2b JUDGED: FAIL, ships OFF** (verdict below: deciding 0.9 se; G2t turtle
 kills -2.8 se; G3 none-line median +31 %). `--cpu-defend` stays in the code, OFF, for playtests. **D3** re-based on what ships
 (defend OFF); Bar D3 filed below before any arm number; it waits behind settle's S2 v4 and S1 v3 on builder2. **D2c** (hold with
@@ -245,6 +246,23 @@ blob massed at the bridge's south end under fire. At 90 s, OFF: blob cars are in
 the show-match camera is on the CPU's rocket trucks firing from the rear. No defect on screen, but the frames don't show the
 split itself (the camera picks the action, not the ring). A camera pinned on the near ring would be needed to see it. The
 series decides.
+
+**D2c verdict (2026-10-23; 5a9464679 both arms (green), builder2, `guard.sh` J14 GUARD_CHUNK=8, fresh seeds 5001-5008 +
+5101-5108, 320 fights an arm, 0 attempts lost; 400/400 ON logs carry `cpu-defend-split`, 0/400 OFF; native's per-faction
+`guard.py --pair`): FAIL on the deciding line, ships OFF. The guards held.**
+- Deciding: blob 51 -> 47 % (-4.4, paired se 3.8 = 1.2 se; flips 18 to a loss, 11 to a win; McNemar p 0.13). Not met.
+- Second line: blob kill ratio 0.90 -> 0.86 (-0.042, se 0.028): down, not up.
+- G1: turtle 39 -> 35 % (-4.4, se 2.4), down; median 194 -> 193 s. Holds.
+- G2t: turtle kills a fight 14.12 -> 13.57 (-0.56, se 0.35 = 1.6 se). **Holds**, where D2 was -3.8 se and D2b -2.8 se, so the
+  passivity is fixed. G2 per faction, outside 2 se: blob law median 111 -> 97 s (-3.5 se, shorter); turtle condemned kills
+  -1.32 (se 0.66, at 2.0 se).
+- G3: none line, caps 0 v 0; median 159 -> 168 s (+6 %, the bar x1.2). Holds (D2b was +31 %).
+- Lab guard: split's lab 31.6 % v 22.0 % (inside +10).
+- Reading: the 20-fight lab's 9 -> 4 did not hold at 160. The blob effect is the same size as D2's (-4.4 points, now -3.1 and
+  -4.4 across D2b/D2c), and every one of the three series fell short of 2 se at 160 fights. The lab was luck on two seeds. SPLIT
+  costs nothing the guards measure, so it is a candidate for a larger series (about 4x the fights to see 4 points at 2 se),
+  which is the orchestrator's call for round 39. Not pooled here: the bar names one series. Raw:
+  ~/doctrine-guard-raw/5a9464679-{off,split}.
 
 **Bar D3 (FILED 2026-10-23 before any D3 arm number).** _(R38.35: if D2c passes, its base and every arm gain `--cpu-defend --cpu-defend-split`, re-filed
 before any D3 number; if it fails, as written.)_ Change: the round-37 rule switches ON v OFF, on what ships (defend OFF,
