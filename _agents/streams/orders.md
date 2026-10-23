@@ -350,6 +350,24 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   stays round 34's B8 approach. Settle's deploy-fit (stream/settle ac36add58, OFF) sits on top; agreed, no new key.
 
 ### Bars (filed here before any judged number; the orchestrator records them on main)
+- **Bar G3 v5 PLACE_CLEAR reach (orders, R38.45; filed 2026-10-23 ~09:50 PDT, before any v5 number on the judged seeds;
+  code 5df548d53, all OFF).** What he would see: as Bar G3. No squad parks on top of another, every squad gets in, and
+  no squad is sent across a river or onto a bridge's mouth to make room.
+  - **Arm:** `g3:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on`. v5's change: a moved place must be
+    reached from where it was without a crossing (`crosses_on(ground)`, as G1), and never stands within 12 m of a deck.
+    G3 v4's judged read (9986a1cba, crossing 5 route s4603) stepped a place across the river.
+  - **Tree:** the first commit at or after this bar's commit with main merged (latch ON in both arms) whose builder0 full
+    check is green. G1 and G2 stay OFF in both arms.
+  - **Probe:** `make native orders-probe`, arms `main:` v the arm above, builder0 light lane J <= 4,
+    `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make variable, **FRESH seeds 5201-5212** (n 12 a cell), the same 18 cells as Bar G3.
+  - **Judge:** `orders_judge.py g3`.
+  - **Lines:** counter, deciding line, offset guards, R36.6 guards, contacts, yard_open, reported and paired shots are the
+    same as Bar G3 v4.
+  - **Never-in:** the guard compares with main's count on the same seeds; main itself loses squads at Crossing's west
+    bridge mouth on some seeds (the round-39 seat/give-way item).
+  - **If the round closes before its read,** it carries to round 39 with the bar intact (R38.45).
+  - **Dev evidence:** dev read 10 (builder0, 425dc6a5b, dev seeds 3804-3809, n 6, 18 cells): every line PASS.
+  - A pass ships ON.
 - **Bar G1 v4 (orders, R38.44 + the ruling on option (a); filed 2026-10-23 ~09:55 PDT, before any v4 number on the judged
   seeds; code 4d68baba4, all OFF).** What he would see: select all and click a street. Every squad lands in that street,
   stacked back along it, each with its own vehicles. On open ground nothing changes, and a route he shift-clicks drives as today.
