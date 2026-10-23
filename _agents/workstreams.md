@@ -694,7 +694,12 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   82 -> 20 (bar <= 20.5); route_left_m 4,974 -> 1,328 (bar <= 2,487); re-dealt 0; contacts 12,910 -> 10,746; yard_open 192/192
   identical; FAIL never-in crossing 3 click 0 v 1 (s4710 squad 2 drove 113 m, stopped 12.9 m off its anchor). Orders traces both seeds
   so round 39 starts from a cause. **Round-38 tally for his lead item (group click):** every deciding line has passed on every judged
-  read (v2, v3, v4); each failed on one or two guard cells.
+  read (v2, v3, v4); each failed on one or two guard cells. **Traced (orders 0ff0cef37; references/round38/orders/judged-traces-builder0-5725a5a57/):**
+  G1 v4 s4710: the column gives the near place to squad 1, which parks in the street; squad 2's last crew wedges 8.8 m behind it on its
+  MOVE order at t 90 (the same parked-crews-never-give-way gap as the bridge mouth); round 39: the squad whose crews lead takes the far
+  place, or the near squad holds until the far one is past. G3 v5 s5201 (+ squad 2 on s5204/5208/5209/5212): the moved place clears its
+  neighbour but not the squad's seats, so the deploy re-seats ~24 s in (16-23 m twitch); round 39: accept a cleared place only where
+  every crew seats without a re-seat, or step it back along the squad's own leg. G1, G2, G3 carry to round 39.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
