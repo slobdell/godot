@@ -1,3 +1,10 @@
+**s3866 READ DONE (2026-10-23, builder0 light native, n 1 per arm; `references/round38/manoeuvre/s3866-giveway/README.md`):** squad 4
+arrives at 33.9 s on main and never under `--deploy-latch=on` or `=anchor` (identical rows). The 20 m is NOT one pick and NOT a lead-out:
+Alpha_3 gives way four times in 10 s to squad-4 crews (spots (5,-9) (5,9) (3,6) (3,-6), 6.7-10.3 m each), each from where the last
+left it, seat 2.9 -> 7.5 -> 8.5 -> 15.6 -> ~20 m. Seatstep ON (lab 5a4158505) arrives in every arm (44.8 / 39.9 / 39.9 s) but failed
+its bar. Lever = chain-aware give-way (no spot farther from the seat for a crew already pushed off it); needs native's twin
+(begin_yield is mirrored); a candidate for next round, not built. Lab trees: `lab/manoeuvre-r38-s3866` d81472918, `-s3866on`.
+
 # Stream: manoeuvre (parked crews make way and come straight back; CPU screens out of the way)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 38** (C38.1) and in
