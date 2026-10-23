@@ -115,10 +115,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     9, group moves 8, groups 17.
   - Main d421e6752 merged as 4e5181739 (no conflicts; feedback's `_draw` change merged clean).
   - Dev read 8 (builder0 light J4, 4e5181739, dev seeds 3801-3809) running, then G2 dev read 1 (below).
-  - **Laptop v builder0 twin mismatch (told the orchestrator, who routes it to native N2):** his click, a24f3b3fb, seed 3801,
-    identical flags. Laptop is GDScript (no native/bin); builder0 is `native on`. In MAIN, squads 4 and 5 (sharing one place)
-    get in at 29.5 s on the laptop and 47.4 s on builder0; in G3, the twitches differ (squad 4: 11.1 v 25.4). Machine v path
-    is not yet split. Until it is, laptop runs don't predict builder0 in jams: judge only from builder0 reads.
+  - **Laptop v builder0 split (R38.25, native's answer): the MACHINE, not the native path.** Native and GDScript agree on
+    one machine (his click, main: laptop 29.5/29.5 s, builder0 47.4/47.4 s). The laptop's glibc 2.39 rounds atan2f, acosf,
+    asinf, atanf and tanf differently from the builders' 2.43 (CORE-MATH); three steer floats differ by 1-2 ulp at tick 33,
+    and the jam grows that to 18 s. So laptop runs don't predict builder runs in jams: every dev read that matters runs on
+    builder0's light lane, and laptop figures (G2's 577 -> 147 m included) are indicative only.
 - **Questions:** the never-in one was answered by R38.15's ruling (the guard stays as written; G3 must not lengthen the
   slowest squad's trip).
 - **G1 v2 judged: FAILS as filed** (R38.12; `g1-judged-builder0-4a765e6e2/README.md`): deciding all pass (click-cell places
