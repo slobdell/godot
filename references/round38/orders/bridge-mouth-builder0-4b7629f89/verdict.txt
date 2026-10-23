@@ -1,0 +1,17 @@
+ARMS=main_z34:--probe-click=-92/34 g3v5_z34:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on,--probe-click=-92/34 main_z37:--probe-click=-92/37 g3v5_z37:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on,--probe-click=-92/37 main_z40:--probe-click=-92/40 g3v5_z40:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on,--probe-click=-92/40
+orders-probe on builder0 | commit 4b7629f89 | native on
+exited 0
+g3v5_z34  3 squads: rows 18 crossed 0 deck 6 goals_across 0 never-in 0
+g3v5_z34  5 squads: rows 30 crossed 0 deck 6 goals_across 0 never-in 0
+g3v5_z37  3 squads: rows 18 crossed 0 deck 0 goals_across 0 never-in 0
+g3v5_z37  5 squads: rows 30 crossed 0 deck 0 goals_across 0 never-in 0
+g3v5_z40  3 squads: rows 18 crossed 0 deck 0 goals_across 0 never-in 0
+g3v5_z40  5 squads: rows 30 crossed 0 deck 0 goals_across 0 never-in 0
+main_z34  3 squads: rows 18 crossed 0 deck 0 goals_across 0 never-in 0
+main_z34  5 squads: rows 30 crossed 0 deck 0 goals_across 0 never-in 0
+main_z37  3 squads: rows 18 crossed 0 deck 12 goals_across 0 never-in 0
+main_z37  5 squads: rows 30 crossed 0 deck 0 goals_across 0 never-in 0
+main_z40  3 squads: rows 18 crossed 0 deck 0 goals_across 0 never-in 0
+main_z40  5 squads: rows 30 crossed 0 deck 6 goals_across 0 never-in 0
+
+[exited with code 0]

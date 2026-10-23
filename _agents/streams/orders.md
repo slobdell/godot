@@ -71,8 +71,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - **his 5-squad east/west routes: main never gets every squad in (3 and 6 never-in over 3 seeds), G2 does (0 / 0).**
   - The cost: G2 stacks rear squads back along his route, and at the first waypoint's corner they stand off it (route-off
     ~2x, one place about 20 m off the x=70 street). Next round's first try: keep rear places on the route line at corners.
-- **Stretch (bridge-mouth lay):** builder0 read of plain clicks 3 / 6 / 9 m short of the west deck (main v G3 v5, dev seeds
-  3804-3809) running.
+- **Stretch (bridge-mouth lay): covered, nothing to build** (builder0 J4, 4b7629f89, dev seeds 3804-3809, plain clicks 3 / 6
+  / 9 m short of the west deck, 3 / 5 squads, main v G3 v5; `bridge-mouth-builder0-4b7629f89/`). 0 places on the deck,
+  0 crossed, 0 goals across, 0 never-in in every cell of both arms. Crews touch the deck after arriving in some cells
+  (seat spread, both arms).
 - **Owed before anything ships ON:** a quiet-box builder0 control-timing read.
 
 ### EARLIER (2026-10-23 ~08:10 PDT)
