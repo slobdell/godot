@@ -442,6 +442,9 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   `=anchor`. Not one pick, not a lead-out: Alpha_3 gives way four times in 10 s (6.7-10.3 m each), each from where the last left it, seat
   distance 2.9 -> ~20 m; with seatstep ON squad 4 arrives in every arm. **Round-39 candidate:** a chain-aware give-way (a crew already
   pushed off its seat never takes a spot farther from it); needs native's begin_yield twin first. No code since green 84c79d76f.
+- **R38.27 (2026-10-23 ~00:30) main 9a6909305 GREEN on builder2** (covers feedback's final end card A aca357e9e and native's a15a48de8;
+  settles R38.23): `make native check exited 0`, 3083 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge; scenario_perf loaded 4.91x),
+  web-smoke first sound 29.2 s (judged), sim-baseline 13/13 unmoved. Main still owes a judged perf line on builder0 (queued when it is quiet).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
