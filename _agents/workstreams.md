@@ -564,6 +564,9 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   the heading of the longest clear run (open ground both ways to the nearest hard obstacle + 2 m, 40 m cap each way); null on open
   ground, where a turn is not limited. A herringbone's turn must land within 30 deg of it; coils free. Lab: s4410's turn lands ~61 deg off
   the axis (refused), the street case ~3 deg (allowed). Bar S1 v5 on 4501-4524, S1 v4's lines.
+- **R38.38 (2026-10-23 ~03:40) main e1f602fbf (settle's latch ON) GREEN AND PERF-JUDGED on builder0:** `make native check exited 0`,
+  3104 passed / 0 failed; perf-judge PASS attempt 1 (ai_usec_per_tick 7,077 v 20,000, ratio 1.01x, idle 96 %, load 0.80; relative line
+  agrees); web-smoke first sound 26.1 s (judged); sim-baseline 13/13 unmoved. The latch adds no measurable AI cost (7,060 at c54421161).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
