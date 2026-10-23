@@ -49,7 +49,50 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-22 evening; still working: S2's never-in trace, then H/S3)
+### Final report (2026-10-23, round 38's end state)
+
+| Item | State | Read |
+|---|---|---|
+| S1 deploy deal (`DEPLOY_FIT`) | **BLOCKED** (R38.40), OFF | v1, v2, v4, v5 each fail one marginal never-in. v3 passed only on the latch-OFF main; v4 and v5 stack on the latch-ON main |
+| S2 latch v2 (`DEPLOY_LATCH` + anchor) | **SHIPPED ON**: b3ad7baa4, main e1f602fbf (R38.38) | S2 v4 passed every line on builder2 at fac47b5d2; main's full check is all judged, perf 1.01x |
+| S3 O2 on the settled halt (`PARKED_HOLD`) | **FAILS** Bar S3, OFF | builder0 light, b3ad7baa4 |
+| Stretch: re-deals after a loss (`DEPLOY_HOLD`) | **FAILS** Bar H (narrowly), OFF | builder0 light, b3ad7baa4 |
+
+- **Bars H/S3** (builder0 light lane, J4, b3ad7baa4 = the shipped latch, the amended arms (all `--deploy-latch=anchor`), fight
+  probe locks/crossing/terminus x 3 squads x click x seeds 3891-3902, 36 fights an arm, n 36/36 started;
+  references/round38/settle/hs3-judged-builder0-b3ad7baa4/):
+  - **Bar H, held v latch: FAIL.** Parked re-deals 85 -> 54, line <= 51.0 (60 % of 85): it misses by 3, about 64 %.
+    Reseats 114 -> 0. Counter >= 10 passes. Fight guards pass: his kills 5.22 -> 5.00, his losses 8.00 -> 7.94, CPU losses
+    5.33 -> 5.08 (se 0.33-0.38).
+    Per cell: crossing 48 -> 35, locks 12 -> 4, terminus 25 -> 15.
+  - **Bar S3, o2 v held: FAIL.** Deciding PASSES: off_idle_s a fight 102.2 -> 31.0 (line <= 51.1; drop 71.3 > 1.645 se 26.7).
+    Re-deals FAIL: 54 -> 67 (line <= 62.4; latch alone 85). By cell: crossing 35 -> 45, locks 4 -> 10, terminus 15 -> 12.
+    Guard FAIL: his losses 7.94 -> 7.03 (se 0.34), outside the band. The guard as filed is two-sided ("within +/- 1.645 se"), so
+    the drop fails it although it means fewer of his tanks lost; failed guards aren't waived. Kills and CPU losses pass.
+    Counter parked_returns 38,948.
+  - Reading: on the latch, the hold removes the reseats outright and cuts re-deals by 36 %. O2 still adds re-deals on top
+    (+13, mostly crossing and locks), so R37.28's "the hold doubles re-deals" shrinks but isn't gone. Round 39 could re-file
+    Bar H at the observed size (both are fresh-seed reads, so it needs NEW seeds) or trace o2's crossing re-deals first. That's
+    the lead's / orchestrator's call; nothing ships.
+- **Merge notes:**
+  - What stream/settle adds to main beyond e1f602fbf is OFF-by-default code and its lab tests:
+    - `--deploy-fit=street` (`ElementPlan.DEPLOY_FIT_STREET`) and `ElementSituation.street_axis`
+    - `--deploy-hold`
+    - `tests/test_settle_deploy_fit_v5.gd`
+    - the settle-s1v4 and settle-s1v5 targets in mk/settle.mk
+    - tests/settle/settle_judge.py's street report and `SETTLE_S1_DECIDING_JUDGED`
+    - the references
+  - sim-baseline doesn't guard settle's paths: the latch left all 13 maps unmoved. Don't read "unmoved" as settle's check.
+  - `ground_seat` is a Callable seam.
+  - A light-lane series at J4 needs `TANK_SQUAD_SLOT_TIMEOUT=14400`, passed as a make argument to `tools/remote.sh`.
+- **Playtest:**
+  - `make skirmish ARENA=terminus`: park 5 squads and watch them settle (the latch is on by default).
+  - `--deploy-latch=off` gives round 38's start.
+  - `--deploy-fit=street` shows S1's blocked fit. On terminus with a route order, watch the herringbone's tail seat at a
+    junction.
+- **Questions for the lead:** none blocking. The lane-mouth screenshots stay the lead's call.
+
+### Report (2026-10-22 evening; superseded by the final report above)
 
 **Verdicts (builder2 native, e42ff30eb GREEN; `make native settle-series`, the no-fight probe 12 cells x 3861-3872 = 576 squads
 an arm, the fight probe 18 of the re-filed 36 fights, the census; `references/round38/settle/s1s2-judged-builder2-e42ff30eb/`):**
@@ -226,6 +269,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   parked_returns > 0. Guards: the kills / losses lines v held. A pass ships O2 ON with latch v2 and the hold (his crews only:
   PARKED_HOLD is player-only), the seam in tank_brain.gd unchanged (orders' code; merge note to doctrine).
 
+**Amended 2026-10-23 before any S3 number (S2 passed as v4, R38.33):** every arm's latch is the shipped anchor latch
+(`--deploy-latch=anchor`; since b3ad7baa4 `=on` means v2's centroid read, which did not ship). The "if S2 fails" clause is
+moot. Bar S3's ship line reads "with the anchor latch and the hold". Seeds, cells, lines and the judge are unchanged. It
+runs on the latch-ON hash once that hash's full check is green.
+
 ### Re-filed before any fight number (2026-10-22): the fight workloads
 The fight probe runs only the 3-squad army: every 5-squad fight run of the S1+S2 series (e42ff30eb, builder2) stopped at
 start ("no RtsControls (TacticalMap)", 54 of 108). Orders' own fight bars used 3 squads only; mine was mis-filed. Re-filed
@@ -324,8 +372,119 @@ fights). Arms main:--deploy-trace v anchor:--deploy-latch=anchor,--deploy-trace.
 - Reported (R38.20): first shape wrong for the anchor's ground 10 -> 0 (main: 6 coil-on-lanes, 4 herringbone-on-open; locks
   and terminus 5-squad); relays 178 -> 94; parked re-deals 411 -> 405; deploy re-lays 93 over 571 deploys, 2 at the 3-lay cap
   (crossing 3 route s4305 Charlie, crossing 5 route s4306 Charlie).
-- Still to come: test_settle_deploy_latch and test_settle_deploy_latch_anchor green in a full check. That runs on the ON
-  commit (the default flipped) on builder2 after S1 v3, then the sim-baseline attribution.
+- **ON hash b3ad7baa4** (DEPLOY_LATCH + DEPLOY_LATCH_ANCHOR default ON; `--deploy-latch=off` = round 38's main, `=on` =
+  v2's centroid read). Full `make native check` on builder0 (glibc 2.43), 3804 s, beside other streams' series: 25 passed,
+  2 NOT JUDGED (perf-judge refused 3 times on a busy box, ratios 2.47x/1.93x/2.14x; ai-scenarios-check's scenario_perf,
+  unpinned hybrid). test 3070 passed, 0 failed, including test_settle_deploy_latch (3), test_settle_deploy_latch_anchor
+  (2) and test_tactics_scenarios_2::test_a_move_ends_formed_up_on_the_spot_and_stops_issuing (R37.42). sim-baseline:
+  all 13 maps unmoved. The 2 NOT JUDGED are not passes: perf-judge needs a run on a quiet box.
+- **Shipped (R38.38):** merged as main e1f602fbf; main's full check on builder0 is green and ALL JUDGED: 27 targets,
+  3104 passed / 0 failed, perf-judge PASS 7,077 us/tick (ratio 1.01x; 7,060 before the latch), sim-baseline unmoved.
+
+### S1 v3 verdict: PASSES as filed (builder2 native, 4ec06dd97 = fac47b5d2's code; latch OFF on both arms)
+`make native settle-s1v3`, builder2 (e2-highcpu-32), jobs 14; no-fight probe 12 cells x 4201-4212 = 576 squads an arm, fight
+3-squad and 5-squad (budget 3000) x 4213-4224 (n 36 each). `references/round38/settle/s1v3-judged-builder2-4ec06dd97/`.
+- Counter PASS: 70 of 570 deploys turned. **Deciding PASS:** squads with a deploy leg >= 25 m 57 -> 18 (line <= 28.5).
+- Guards PASS: twitch >= 15 m squads 111 -> 79; never-in 5 -> 4 runs; first shape differs 10 of 576 (<= 3 %); contacts
+  12,652 -> 12,025, foreign 6,874 -> 6,647; fights 3-squad (his kills 5.22 -> 5.28, his losses 8.44 -> 8.25, CPU losses
+  5.33 -> 5.39) and 5-squad (8.83 -> 8.81, 15.83 -> 16.08, 9.08 -> 9.00), 0 runs that never started.
+- Reported: place+twitch >= 25 m squads 163 -> 116.
+- Not yet: the full check of an ON commit. Note for the ON: it was judged with the latch OFF; on a latch-ON main the fit
+  lays on the anchor-latched read (`_deploy_state`: re-lay first, then the fit), a combination no judged number covers.
+
+### Bar S1 v4 DEPLOY_FIT on the latch (R38.34; filed 2026-10-23 before any number on its seeds; code = this commit)
+The fit (S1 v3, passed) stacked on the shipped anchor latch: arms `main:--deploy-trace` v `fit:--deploy-fit=on,--deploy-trace`,
+BOTH latch-ON (DEPLOY_LATCH + DEPLOY_LATCH_ANCHOR, the default since b3ad7baa4; this tree's code = b3ad7baa4's). Seeds
+never read (registered by the orchestrator): no-fight probe 12 cells x 4401-4412, fight 3-squad (budget 1500) and 5-squad
+(budget 3000) click cells x 4413-4424. `make native settle-s1v4`, builder2, judge `settle_judge.py s1v2` with
+SETTLE_S1_DECIDING_JUDGED=0. **Judged, as filed for S1 v2:** the counter (deploys turned > 0: without a turn the run says
+nothing); twitch >= 15 m squads not up; never-in runs arm <= base; first shape differs <= 3 %; friend contacts and foreign
+<= 110 % + 5; fights (his kills, his losses, CPU losses within 1.645 se, 0 runs that never started) in both fight reads.
+**Reported, not judged:** the deciding line (deploy leg >= 25 m squads) and place+twitch >= 25 m. A pass ships S1 ON on a
+new hash, with one full check (R38.34).
+
+### S1 v4 verdict: FAILS on the never-in guard (builder2 native, fdeb18ce6 = b3ad7baa4's code; both arms latch-ON)
+`make native settle-s1v4`, builder2, jobs 14; no-fight 12 cells x 4401-4412 = 576 squads an arm, fights 3-squad and 5-squad
+x 4413-4424 (n 36 each). `references/round38/settle/s1v4-judged-builder2-fdeb18ce6/`. S1 stays OFF.
+- Counter PASS: 71 of 573 deploys turned. Reported deciding: deploy leg >= 25 m squads 62 -> 29 (S1 v3's line <= 31.0).
+- **Guard FAIL never-in: 3 -> 4 runs.** The three of main's are shared by both arms (crossing 5 route s4412 squad 4, locks
+  3 route s4406 squad 1, terminus 5 route s4401 squad 5). The new one: **terminus 5 route s4410 squad 5 (Echo)**, in at
+  67.8 s on main, never in on fit. Its deploy trace: Delta's deploy (tick 1359, the cap) turned on fit (leg 42.8 -> 15.9 m)
+  and Charlie's crews twitched 0 -> 11.2 m; Echo (anchor 53.1, 43.0) never deploys.
+- Guards PASS: twitch >= 15 m 98 -> 91; first shape differs 1 of 576; contacts 12,995 -> 12,438, foreign 7,289 -> 6,961;
+  fights 3-squad (his kills 5.44 -> 5.31, his losses 6.50 -> 6.61, CPU losses 5.50 -> 5.33) and 5-squad (10.36 -> 10.39,
+  12.61 -> 13.00, 10.50 -> 10.56), 0 runs that never started.
+- Reported: place+twitch >= 25 m 165 -> 143.
+- **Trace (builder0 light, native, b3ad7baa4 tree = the run's code, n 1 per arm; reproduces the judged rows exactly;
+  `references/round38/settle/s1v4-neverin-trace-builder0/`): it is the FIT, not a chained give-way.** No give-way at all
+  (NATIVE_EXEC yielding 0); Echo's four crews hold live move goals and stand still from 50 s to 70 s at x 0-10, y 69-85.
+  Delta's capped deploy (45.3 s) turned from (0.98,-0.19) to (0.48,0.88), 72 degrees, and its crews settle by 50 s (fit's
+  gain: leg 42.8 -> 15.9 m) on seats D1 (4.2,60.4), D2 (13.3,88.0), D3 (27.8,87.1), D4 (36-42,87-90), across the lane
+  mouth Echo still has to drive through. On main the same Delta is still re-forming there until ~60 s and Echo is through
+  by 55-60 s (in at 67.8 s). Echo_3 never moves again; the run ends with Echo never in.
+- Across the series (fit arm, 576 squads): of the 71 turned deploys, 66 are herringbones (52 in lanes, 14 dense) and 5
+  coils. The turned herringbones' angle from main's heading has median 71 degrees (54 of 64 turned >= 45 degrees): the fit
+  mostly lays a lane herringbone ACROSS its ordered axis. That is the S1 v5 candidate (orchestrator's call): a herringbone
+  turns at most ~30 degrees off main's heading (the lane's axis), or the turned seats are priced against the passage.
+
+
+### Bar S1 v5 DEPLOY_FIT with the street cap (R38.37; filed 2026-10-23 before any number on its seeds; code = this commit)
+A herringbone's turn must land within 30 degrees of the street's axis (ElementSituation.street_axis at the deploy's anchor:
+the heading of the longest clear run, null where none is 1.3x the shortest); no street, no limit; coils turn freely
+(`--deploy-fit=street`, ElementPlan.DEPLOY_FIT_STREET). Lab `tests/test_settle_deploy_fit_v5.gd` (laptop, pure, terminus):
+the street at (23.5, 85.65) runs east-west; s4410's Delta turns without the cap (the counter) and keeps main's heading
+with it; the R37.37 across-the-street squad still turns (worst drive 31.7 -> 13.2 m), along the street, and keeps its
+deal; open ground has no street. Base = the latch-ON main (e1f602fbf merged). Arms `main:--deploy-trace` v
+`fit:--deploy-fit=street,--deploy-trace`. **Seeds 4501-4524 (registered, R38.37):** no-fight 12 cells x 4501-4512, fight
+3-squad (budget 1500) and 5-squad (budget 3000) click cells x 4513-4524. `make remote LIGHT=1 T="native settle-s1v5"`,
+builder0 light lane, J 4. Judge `settle_judge.py s1v2`, SETTLE_S1_DECIDING_JUDGED=0. **Lines exactly S1 v4's:** judged:
+counter (turned > 0), twitch >= 15 m not up, never-in arm <= base, first shape differs <= 3 %, contacts and foreign
+<= 110 % + 5, fights (both reads, 1.645 se, 0 runs that never started). Reported: deciding (deploy leg >= 25 m),
+place+twitch, and (R38.37) the street axis set v null and the turns refused, per cell. A pass ships S1 ON (both switches)
+on a new hash with one full check.
+`make quick-remote` on e81b57579 (builder0): 100 scripts lint-parse, 122 passed, 0 failed (the diff's tests, settle's and tactics').
+Series run 1 (builder0 light J4, e81b57579, 2026-10-23 03:23-04:53): NO VERDICT. slot.sh's default 5400 s limit killed it in the
+5-squad fight (probe and fight3 were complete; nothing was judged or read). It is rerunning unchanged, with
+`TANK_SQUAD_SLOT_TIMEOUT=14400`, at 6c3112193 (a docs-only change from e81b57579). The J4 series runs past 90 min, so any light-lane
+series needs that knob.
+
+### S1 v5 verdict: FAIL (builder0 light J4, 6c3112193 = e81b57579's code, n 576 squads/arm; references/round38/settle/s1v5-judged-builder0-6c3112193/)
+FAILS the never-in guard 3 -> 4, the same guard and the same cell class as S1 v4: S1 stays OFF. Every other judged line passes:
+the counter (51 of 572 deploys turned), twitch >= 15 m 96 -> 78, first shape 1 of 576, friend_contacts 11,996 -> 11,715 and
+foreign 6,622 -> 6,370, and both fight reads (n 36/36). Reported: deploy legs >= 25 m 63 -> 33; place+twitch >= 25 m 169 -> 141.
+The street axis was set on all 504 herringbone deploys (null 0), and the cap refused 23 turns.
+- Never-ins (the no-fight probe, which the guard judges): main and fit share three at crossing 5 (click s4505 squad 4, route s4507
+  squad 4, route s4508 squad 5). The fit adds **terminus 5 route s4505, Echo**: main's Echo is in at 42.2 s (window 90 s), the
+  fit's never is (driven 120 m, ends 30.9 m off its anchor). The fit turned Delta's lane herringbone (anchor 21.5,84.5) to
+  heading (0.93, 0.38), along the street and inside the cap (not refused), ordered worst 38.0 -> 14.7 m. So the street cap
+  does not cover this case. A trace (both arms, builder0 light) is under way before H/S3.
+- Orders' R38.39 note (main's never-ins pile up at crossing's west bridge mouth): the three shared ones are crossing. The fit's
+  extra never-in is terminus, and main gets that squad in on this seed, so the note doesn't explain it.
+- **The s4505 trace** (builder0 light, 6c3112193, n 1 per arm, `--element-trace=all --arrive-trace --probe-trace=5`; it
+  reproduces: the fit arm has 4 deploys and Echo is never in; references/round38/settle/s1v5-s4505-trace-builder0/). Echo's
+  route runs west along the E-W street past Delta's halt (anchor 21.5,84.5), then turns south into the N-S lane at x≈2
+  ((2.8,72.1) -> (2.3,51.3), 26-32 m wide).
+  - **Fit:** Delta's turned herringbone lies along the street, so its tail seat Delta_1 lands 23.7 m west of the anchor at
+    (-2.3,79.9), on the junction. Delta_3 is in its seat at (5.9,61.5), inside the lane mouth. That seat is slot (3.7,67.8),
+    asked (17.3,69.8) and relaid onto the ground. From t=36 to the end at 90 s, Echo_1 is stuck at (5.6,70.3), Echo_3 at
+    (0.9,76.3) and Echo_2 at (-5.4,80.0), between those two Delta crews. Nothing gives way.
+  - **Main:** Delta's herringbone runs north-south, so no tail seat lands on the junction. Delta_3 gets the same relaid
+    lane-mouth slot (3.7,67.8), but at t=40 it is 26.9 m off it, down the lane at (-5.4,42.5). Echo gets past and is in at
+    42.2 s.
+  - **Cause:** S1 v4's failure was a deploy turned across the street. This one is turned along it, inside the cap. In both, a
+    halt seat lands on the route the next squad of the same order still has to drive. Here it's the junction and lane mouth,
+    which a seat main already relays there helps close. So the shape's angle isn't the variable; the route still to be
+    driven is.
+
+### S1: BLOCKED for round 38 (R38.40)
+No S1 v6 this round. S1 failed v1, v2, v4 and v5, each by one marginal never-in, and three of them were a following squad that
+couldn't pass a squad deploying ahead of it on terminus 5 route. Another tweak would be fitting to the guard. `DEPLOY_FIT` and
+`DEPLOY_FIT_STREET` stay OFF and in the code (`--deploy-fit=on|street`). `ElementSituation.street_axis` and its tests stay; they
+cost nothing while it's OFF.
+**Round-39 candidate (the orchestrator's framing, corrected by the s4505 trace):** no seat of a deploying squad may land on the
+route that a following squad of the same order still has to drive, at any shape and any angle. "Across a lane" is too narrow:
+s4505's blocking seats are along the street, at the junction and lane mouth. The rule must also cover main's own relaid seats
+(s4505's Delta_3 slot at (3.7,67.8) is main's). Pair it with manoeuvre's chain-aware give-way, then re-read S1 on top.
 
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
@@ -344,3 +503,6 @@ None.
 ### Requests to other streams
 None yet. Merge note (C38.3): `ElementSituation.build` adds a `ground_seat` Callable to every element situation (orders and
 doctrine read situations; nothing iterates its keys).
+Round-close note (R38.33's merge, main e1f602fbf): **sim-baseline is not a guard for settle's paths.** With the latch ON, all 13
+maps were unmoved (b3ad7baa4, builder0): the baseline maps never reach a deploy halt that the latch changes. Settle's changes
+are guarded by its own series (orders-probe, fight probe, census) and the tests.

@@ -2081,8 +2081,16 @@ static func _deploy_latched(situation: Dictionary, state: Dictionary) -> Diction
 ## A turned deploy keeps its deal (`keep`), which seats the deploy's update; the seating is fixed from there as before.
 ## A deploy not turned is main's untouched (S1 v3, R38.17): only the `fit` measurement is added.
 ## `--deploy-fit=on` (env DEPLOY_FIT=on) opts in; OFF until its bar passes.
-static var DEPLOY_FIT := OS.get_cmdline_user_args().has("--deploy-fit=on") or OS.get_environment("DEPLOY_FIT") == "on"
+static var DEPLOY_FIT := OS.get_cmdline_user_args().has("--deploy-fit=on") or OS.get_environment("DEPLOY_FIT") == "on" \
+		or OS.get_cmdline_user_args().has("--deploy-fit=street") or OS.get_environment("DEPLOY_FIT") == "street"
 const DEPLOY_FIT_GAIN_M := 8.0
+## S1 v5 (R38.37): a HERRINGBONE's turn must land within DEPLOY_FIT_STREET_DEG of the street's axis
+## (ElementSituation.street_axis at the deploy's anchor); where there is no clear street the turn is not limited, and a
+## coil turns freely. Traced (S1 v4's never-in, terminus 5 route s4410): the fit turned Delta's lane herringbone 72
+## degrees across its east-west street and Echo never got through the lane mouth its seats stood in; 64 of the fit's 71
+## turns were herringbones, median 71 degrees. `--deploy-fit=street` (env DEPLOY_FIT=street) opts in, with the fit.
+static var DEPLOY_FIT_STREET := OS.get_cmdline_user_args().has("--deploy-fit=street") or OS.get_environment("DEPLOY_FIT") == "street"
+const DEPLOY_FIT_STREET_DEG := 30.0
 ## The squad stands along a line when its crews' spread along their main axis is at least this many times the spread
 ## across it (standard deviations); a squad standing round its middle has no axis to lay along.
 const DEPLOY_FIT_ELONGATION := 1.5
@@ -2101,17 +2109,26 @@ static func _deploy_fit(deploy: Dictionary, situation: Dictionary, at: Vector3, 
 	var ordered_worst := float(best["worst"])
 	var axis: Variant = crew_axis(members)
 	var turned := false
+	var refused := false
+	var street: Variant = ElementSituation.street_axis(deploy["anchor"]) if DEPLOY_FIT_STREET and shape == "herringbone" else null
 	if axis is Vector3:
 		var along: Vector3 = axis if (axis as Vector3).dot(ordered) >= 0.0 else -(axis as Vector3)
 		var anchor := _dry_halt_anchor(at, members, shape, along, spacing)
 		var other := _fit_deal(members, shape, anchor, along, spacing, situation)
 		if float(other["worst"]) < ordered_worst - DEPLOY_FIT_GAIN_M:
-			other["heading"] = along
-			other["anchor"] = anchor
-			best = other
-			turned = true
+			if street is Vector3 and absf(along.dot(street)) < cos(deg_to_rad(DEPLOY_FIT_STREET_DEG)):
+				refused = true
+			else:
+				other["heading"] = along
+				other["anchor"] = anchor
+				best = other
+				turned = true
 	deploy["fit"] = {"worst_m": snappedf(float(best["worst"]), 0.1), "ordered_worst_m": snappedf(ordered_worst, 0.1),
 			"turned": turned}
+	if DEPLOY_FIT_STREET and shape == "herringbone":
+		# Measurement (R38.37): whether the herringbone found a street (a null axis means the cap does nothing).
+		deploy["fit"]["street"] = "set" if street is Vector3 else "null"
+		deploy["fit"]["street_refused"] = refused
 	# S1 v3 (R38.17): a deploy not turned is main's, byte for byte (S1 v2 dealt it too, and runs with no turn diverged).
 	if not turned:
 		return
