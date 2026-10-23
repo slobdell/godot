@@ -543,6 +543,15 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   0 -> 11.2 m); the other 3 never-ins are the same in both arms. Passing: counter 71 turned; twitch 98 -> 91; first shape 1/576;
   contacts 12,995 -> 12,438; fights. Reported: deciding 62 -> 29. Every S1 read so far (v2, v4) fails by one marginal never-in; settle
   traces s4410 (builder0 light, both arms) with manoeuvre's chained give-way (R38.26) as first suspect. builder2 -> doctrine's D2c.
+- **R38.37 (2026-10-23 ~03:30) S1 v4's never-in is the fit itself; S1 v5 approved: a herringbone turns at most ~30 deg off main's
+  heading.** settle (builder0 light native, b3ad7baa4 tree, n 1 an arm, reproduces the judged rows; 31aa96d53,
+  references/round38/settle/s1v4-neverin-trace-builder0/): terminus 5 route s4410, Delta's capped deploy turns 72 deg and settles by 50 s
+  on seats flanking the lane mouth Echo must cross; Echo's 4 crews hold live move goals and stand still 50-70 s (no give-way: yielding 0);
+  on main Delta is still re-forming until ~60 s and Echo slips through. Series-wide on the fit arm: 66 of 71 turned deploys are
+  herringbones (52 lanes, 14 dense), median turn 71 deg, 54 of 64 >= 45 deg: the fit lays a lane herringbone ACROSS its axis, which he
+  would see as wrong. S1 v5: herringbone turn capped ~30 deg (along the lane), coils free; lab on s4410 first, then fresh seeds with S1
+  v4's lines (guards judged), latch-ON base. Machine: builder0 light J <= 4 beside orders' judged reads (J 4); Bars H/S3 the same lane
+  after S1 v5's lab.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
