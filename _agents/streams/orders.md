@@ -332,6 +332,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   yard_open no worse on any of these.
   **Reported:** places_cleared per cell, the offset distribution, and route_left_m.
   **Plus:** paired top-down shots of crossing 5 click (main v g3), looked at. A pass ships ON.
+  **AMENDED 2026-10-23 ~02:50 PDT, before any judged number (R38.33, the latch is on main):** the tree is **23983ab5b**:
+  stream/orders with main e1f602fbf merged (settle's `--deploy-latch=anchor` default ON), so both arms are latch-on. Its G3
+  code is 695d3d482's (G3 after the untangle; dev read 8 on dev seeds 3801-3809: every line passed but his-click twitch,
+  the deploy's). The full check and the judged read run on the docs-only commit that records this amendment (same game
+  code). The G2 dev switches in this tree are OFF and leave the OFF paths unchanged.
 - **Bar G1 v3 (orders, R38.12; filed 2026-10-22 evening, before any v3 judged number; code 0e169432f, `--group-lay=column`
   OFF).** Changes from v2: today's body judged at the click's width only (the yard_open container case); the 2 s first-click
   re-lay only where the column moved some squad's place > 40 m (about a rank), and (f2a94b6cc, amended before any number)
@@ -343,6 +348,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   v3 does not change the lay at his click, so it cannot pass that guard on its own: the judged read WAITS for settle's
   deploy latch to ship ON on main and runs on top of it** (both arms on a tree with main merged at that checkpoint; latch-on
   is the base). Until then, dev reads only. A pass ships ON.
+  **AMENDED 2026-10-23 ~02:50 PDT, before any v3 judged number (R38.33, the latch is on main):** the tree is **23983ab5b**:
+  stream/orders with main e1f602fbf merged (latch default ON), so both arms are latch-on. The G1 v3 code is f2a94b6cc's.
+  Later commits (G3, G2) sit behind their own OFF switches and leave `--group-lay=column` alone. The full check and the
+  judged read run on the docs-only commit that records this amendment.
 - **Bar G1 GROUP_LAY=column v2 (orders, round 38; filed 2026-10-22 ~10:15 PDT, before any judged number; dev reads above
   are on dev seeds 3801-3803 only).** What he would see: select all, click a street: every squad lands in that street,
   stacked back along it, nearest in front, each with its own vehicles; on open ground nothing changes.
