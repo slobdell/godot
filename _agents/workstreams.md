@@ -221,6 +221,15 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   turns refused. Lab (laptop, not judged): s4410 Delta's turn refused (keeps main's heading); the R37.37 squad still turns along the
   street 31.7 -> 13.2 m and keeps its 5-seat deal. The S1 v4 rows re-judge byte for byte with the new judge.
 
+- **G3 v4 PLACE_CLEAR near-trigger (orders, R38.39; filed in stream/orders f0a70f544 before any v4 number; copied here by the
+  orchestrator).** Code e518fd649, `--place-clear=on,--place-clear-trigger=near` (only a pair closer than 14 m moves; still clears the
+  short sides), OFF. Tree: the first commit at or after f0a70f544 with main merged (latch ON both arms) whose builder0 full check is green;
+  G1 (incl. v4's rank shift) and G2 OFF in both arms. Probe arms `main:` v `g3:--place-clear=on,--place-clear-trigger=near`, builder0
+  light J <= 4, `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make variable, FRESH seeds 4601-4612, n 12 a cell, the same 18 cells; `orders_judge.py
+  g3`. Lines as Bar G3 as amended (counter, deciding, offset guards, R36.6 guards, contacts, yard_open, reported, paired shots of crossing
+  5 click and his 5 click, looked at). Never-in compares with main's count on the same seeds and cells (main itself loses a squad at
+  crossing's west bridge mouth on some seeds). Dev read 9 (e518fd649, 3804-3809, n 6) passed every line. A pass ships ON.
+
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
 `references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
