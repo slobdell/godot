@@ -84,6 +84,22 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - **Decision (lead away; told the orchestrator):** no G3 judged read yet. Its his-click twitch guard is the halt deploy,
     the same blocker as G1 v3, so the G3 judged read joins G1 v3 in waiting for settle's latch on main (latch-on as base). Its
     never-in guard is the open question; see Questions below.
+- **G3 v3 / v4 (after R38.15's ruling: the never-in guard stays; G3 must not lengthen the slowest squad's trip):**
+  - ad737f7c0: the squad with the longest remaining drive keeps its place, and a shorter one yields. A moved place takes
+    each way's first clear step, and of those the one nearest its vehicles.
+  - Dev read 5 (builder0 light, ad737f7c0, dev seeds 3801-3809, n 9): every click cell clean, his click included; pairs
+    37 -> 0; offsets PASS; contacts 11,353 -> 9,756. FAIL only on route cells: never-in 2 -> 4, and twitch on crossing 5,
+    locks 3 and terminus 5 routes. The route runs that went never-in ended on exactly main's places.
+  - a24f3b3fb:
+    - no untangle where G3 moved a place; each squad keeps its own place and vehicles. A whole-squad swap after the move
+      had sent crossing 5 route s3801's squad 3 to the far end, in at 62.5 s against main's 21.6;
+    - a running leg G3 moved goes back to its old place when a shift-click makes it a waypoint;
+    - a shifted leg's drive is measured from where its last leg ends.
+  - Laptop GDScript (n 1 each), a24f3b3fb:
+    - crossing 5 route s3801, crossing 5 click s3801 and locks 5 route s3802: all in, none re-dealt;
+    - terminus 5 route s3804: byte-identical to main;
+    - his click: worst twitch 14.2 m (line 14.6).
+  - Dev read 6 (a24f3b3fb, dev seeds 3801-3809) running.
 - **Questions (asked the orchestrator, 2026-10-22 late evening; working on, not waiting):** should R36.6's per-cell "no more
   never-in" count a squad main only gets in after 40 s as already marginal? If not, G3 must move the slowest squad less.
 - **G1 v2 judged: FAILS as filed** (R38.12; `g1-judged-builder0-4a765e6e2/README.md`): deciding all pass (click-cell places
