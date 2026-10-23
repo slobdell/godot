@@ -360,7 +360,8 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	if today.is_empty():
 		if float(at_click[0]) >= GROUP_SCAN_M - 0.01 and float(at_click[1]) >= GROUP_SCAN_M - 0.01:
 			return result  # no body given: open = the scan reaches its limit both sides (v1)
-	elif on_clear_ground(today, flat_click, ahead, width_at, at_click) and fits_along(today, ahead, narrowest):
+	elif on_clear_ground(today, flat_click, ahead, width_at, at_click, reached if CLEAR_REACHED else Callable()) \
+			and fits_along(today, ahead, narrowest):
 		bodies_kept += 1
 		return result  # today's body already stands on the ground he clicked
 	var widest := 0.0
@@ -656,6 +657,10 @@ static func column_depth(block: Dictionary) -> float:
 ## beside the yard's containers): today's body is judged against the click's own width only (the strip the deciding line
 ## reads); `--group-clear=rank` re-reads each rank as v2 did.
 static var CLEAR_AT_CLICK := not OS.get_cmdline_user_args().has("--group-clear=rank")
+## G1 v4 (three-arm dev read 7bfb06384, yard_open 5 click s3806: the click's width read 36 m, today's place stood 39.3 m
+## aside on the same open yard, and a column was laid). `--group-clear=reached`: a place past the click's width that the
+## click reaches straight by ground (`reached`: no long way round, no crossing) is on the ground he clicked.
+static var CLEAR_REACHED := OS.get_cmdline_user_args().has("--group-clear=reached")
 
 
 ## G1: whether every place in `places` stands inside the clear width read across `ahead` at its own rank (the point on
@@ -663,7 +668,8 @@ static var CLEAR_AT_CLICK := not OS.get_cmdline_user_args().has("--group-clear=r
 ## inside the click's own width (the strip he clicked),
 ## within PLACE_SLACK_M (the scan's step). `at_click` = width_at's read at the click (reused). Reads are shared between places of one rank.
 const PLACE_SLACK_M := 2.0  # the width scan steps 2 m (RtsControls.GATE_STEP_M)
-static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vector3, width_at: Callable, at_click: Array) -> bool:
+static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vector3, width_at: Callable, at_click: Array,
+		reached := Callable()) -> bool:
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
 	var reads := {0: at_click}
 	for at: Vector3 in places:
@@ -673,7 +679,8 @@ static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vecto
 			reads[back] = _within_click(width_at.call(click - ahead * float(back), across), at_click)
 		var sides: Array = reads[back]
 		var aside := offset.dot(across)
-		if aside < -float(sides[0]) - PLACE_SLACK_M or aside > float(sides[1]) + PLACE_SLACK_M:
+		if (aside < -float(sides[0]) - PLACE_SLACK_M or aside > float(sides[1]) + PLACE_SLACK_M) \
+				and not (reached.is_valid() and bool(reached.call(Vector3(at.x, 0.0, at.z)))):
 			return false
 	return true
 

@@ -31,6 +31,7 @@ func teardown() -> void:
 	SelectionSquads.PLACE_CLEAR_NEAR = OS.get_cmdline_user_args().has("--place-clear-trigger=near")
 	SelectionSquads.RANK_SHIFT_HALF = OS.get_cmdline_user_args().has("--group-rank-shift=half")
 	SelectionSquads.GROUP_WHOLE_CLICK = OS.get_cmdline_user_args().has("--group-whole=click")
+	SelectionSquads.CLEAR_REACHED = OS.get_cmdline_user_args().has("--group-clear=reached")
 	if _lab != null:
 		_lab.dispose()
 	_lab = null
@@ -405,6 +406,26 @@ func test_g1v5_squads_whole_on_his_click_only() -> void:
 	assert_true(not SelectionSquads.whole_on(true), "a queued leg is dealt as today")
 	SelectionSquads.GROUP_LAY = false
 	assert_true(not SelectionSquads.whole_on(false), "switch off: today's dealing")
+
+
+## G1 v4 (three-arm dev read 7bfb06384, yard_open 5 click s3806: the click's clear width read 36 m left, today's place
+## stood 39.3 m left on the same open yard, and a column was laid on open ground). `--group-clear=reached`: a place past
+## the click's width that the click reaches straight by ground is on the ground he clicked; one round a block is not.
+func test_g1v4_a_place_the_click_reaches_straight_keeps_todays_body() -> void:
+	var yard := func(_p: Vector3, _across: Vector3) -> Array: return [36.0, 100.0]
+	var blocks := [{"center": Vector3(-59, 0, 95), "width": 25.4, "depth": 28.0}, {"center": Vector3(3, 0, 88), "width": 20.4, "depth": 14.0},
+			{"center": Vector3(59, 0, 93), "width": 25.4, "depth": 28.0}]
+	var today: Array[Vector3] = [Vector3(-39.3, 0, -2.5), Vector3(0, 0, 0), Vector3(39.3, 0, 2.5)]
+	var lay := func(reached: Callable) -> Array[Vector3]:
+		return SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), yard, func(p: Vector3) -> Vector3: return p, today,
+				Callable(), reached)
+	var straight := func(_p: Vector3) -> bool: return true
+	var round_a_block := func(p: Vector3) -> bool: return p.x > -30.0
+	SelectionSquads.CLEAR_REACHED = false
+	assert_eq((lay.call(straight) as Array).size(), 3, "v3: 39.3 m past a 36 m width lays a column")
+	SelectionSquads.CLEAR_REACHED = true
+	assert_eq((lay.call(straight) as Array).size(), 0, "reached straight: today's body stands")
+	assert_eq((lay.call(round_a_block) as Array).size(), 3, "a place round a block is another street: a column")
 
 
 ## G2 (dev, `--group-leg-width=along`; d2ed6ef10's finding: v3's click-width test kept today's spread body on route legs):
