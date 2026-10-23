@@ -30,8 +30,22 @@ mkdir -p "$out"
 # scenario_perf's pass line is ABSOLUTE (FAIL_USEC 20,000 us a tick): its brains read 21-34k there with the box idle, so a
 # judged run would fail a healthy tree; three refused tries cost a check up to six minutes. The relative line (us per
 # reference ms) is round 38's. PERF_JUDGE_HOSTNAME overrides /etc/hostname (tests).
+# Round 38 (native N3): the machine-relative line, RECORDED beside the absolute one, not deciding. The brains' cost in
+# units of the same attempt's reference workload (scenario_perf's `ai_usec_per_ref_ms`: usec a tick / the reference's ms
+# during the fight, both on the same pinned cores in the same moment) against FAIL_RATIO = FAIL_USEC / builder0's nominal
+# reference (20,000 / 0.774 ms = 25,840): today's line in machine-free units, so a tree builder0 passes still passes.
+# Every attempt prints a PERF_JUDGE_RELATIVE line and the summary says whether the two lines agree
+# (tools/judge/perf_relative.py tabulates them over many checks). The switch to it waits on that record (round 38's N3).
+# PERF_JUDGE_TRIAL=1 (make perf-relative-trial): a machine in PERF_JUDGE_NOT_JUDGING runs anyway, with scenario_perf's
+# nominal refusal off (--perf-refuse=off: builder2's nominal is stale), so it records both verdicts; still NOT JUDGED (3).
+fail_ratio=${PERF_JUDGE_FAIL_RATIO:-25840}
+trial=${PERF_JUDGE_TRIAL:-}
+scen_args=()
+[ -n "$trial" ] && scen_args+=(--perf-refuse=off)
+cpu_model=$(grep -m1 'model name' /proc/cpuinfo 2>/dev/null | sed 's/.*: //; s/  */ /g')
 host=${PERF_JUDGE_HOSTNAME:-$(cat /etc/hostname 2>/dev/null || hostname)}
-for no_judge in ${PERF_JUDGE_NOT_JUDGING:-builder2}; do
+for no_judge in ${PERF_JUDGE_NOT_JUDGING-builder2}; do
+	[ -n "$trial" ] && break
 	if [ "$host" = "$no_judge" ]; then
 		echo ">> perf-judge: NOT JUDGED: $host is not a judging machine (e2 Broadwell, absolute line); judge on builder0" \
 			| tee -a "$out/perf-judge.txt"
@@ -75,7 +89,7 @@ for attempt in $(seq 1 "$tries"); do
 	# The run's exit code is read (round 18, ship): a process can print its PASS line and then abort at exit (134);
 	# that is a crash of the tree under judgement, never a PASS.
 	rc=0; run=$(taskset -c "$cpus" "$godot" --headless --fixed-fps "$hz" --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
-		--filter=scenario_perf 2>&1) || rc=$?
+		--filter=scenario_perf ${scen_args[@]+"${scen_args[@]}"} 2>&1) || rc=$?
 	{ echo "==== attempt $attempt (cpus $cpus, ${idle}% idle after ${waited}s wait, load $load)"; echo "$run"; } >> "$out/perf-judge.log"
 	ratio=$(echo "$run" | grep -oE 'perf_reference .*: [0-9.]+x' | grep -oE '[0-9.]+x$' | head -1)
 	usec=$(echo "$run" | grep -oE 'MEASURE ai_usec_per_tick [0-9]+' | grep -oE '[0-9]+$' | head -1)
@@ -86,12 +100,29 @@ for attempt in $(seq 1 "$tries"); do
 	elif echo "$run" | grep -qE 'FAIL .*scenario_perf'; then state=FAIL
 	else state=NO_RESULT; fi
 	echo "PERF_JUDGE attempt=$attempt state=$state exit=$rc ratio=${ratio:-?} ai_usec_per_tick=${usec:-?} per_ref_ms=${per_ref:-?} cpus=$cpus idle=${idle}% waited=${waited}s load=$load run=$(( $(date +%s) - t0 ))s" | tee -a "$out/perf-judge.txt"
+	rel=NO_RESULT
+	if [ -n "$per_ref" ] && [ "$state" != CRASHED ]; then
+		if [ "$per_ref" -lt "$fail_ratio" ]; then rel=PASS; else rel=FAIL; fi
+	fi
+	echo "PERF_JUDGE_RELATIVE attempt=$attempt host=$host absolute=$state relative=$rel per_ref_ms=${per_ref:-?} line=$fail_ratio ai_usec_per_tick=${usec:-?} ratio=${ratio:-?} cpu=\"$cpu_model\"${trial:+ trial=1}" \
+		| tee -a "$out/perf-judge.txt"
+	[ -n "$trial" ] && continue  # a trial records every attempt and judges nothing
 	case $state in
 		PASS) verdict=0; break ;;
 		FAIL|CRASHED) verdict=1; break ;;
 	esac
 done
 total=$(( $(date +%s) - started ))
+if [ -n "$trial" ]; then
+	echo ">> perf-judge: TRIAL on $host ($cpu_model), NOT JUDGED: $tries attempts recorded (both lines) in ${total}s" | tee -a "$out/perf-judge.txt"
+	exit 3
+fi
+if [ "$verdict" != 3 ]; then
+	if { [ "$verdict" = 0 ] && [ "$rel" = PASS ]; } || { [ "$verdict" = 1 ] && [ "$rel" = FAIL ]; }; then agree=agrees
+	else agree=DISAGREES; fi
+	echo ">> perf-judge: relative line (recorded, not deciding): $rel, ${per_ref:-?} usec per reference ms v $fail_ratio; $agree with the absolute" \
+		| tee -a "$out/perf-judge.txt"
+fi
 case $verdict in
 	0) echo ">> perf-judge: JUDGED, PASS on attempt $attempt of $tries (${total}s)" ;;
 	1) if [ "$state" = CRASHED ]; then echo ">> perf-judge: FAILED -- the scenario run exited $rc (a crash or a timeout) on attempt $attempt (${total}s) -- see $out/perf-judge.log"

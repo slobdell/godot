@@ -72,21 +72,25 @@ static func mending(tank: Tank, field_menders: Array) -> Dictionary:
 	if tank == null or not tank.is_alive() or tank.health >= tank.max_health:
 		return {}
 	var quiet_ticks := roundi(maxf(tank.shield_recharge_delay, Match.REPAIR_QUIET_SECONDS) * SimClock.TICK_RATE)
-	if tank.ticks_since_hit < quiet_ticks:
+	var under_fire := tank.ticks_since_hit < quiet_ticks
+	# Round 38 (F3, `--repair-under-fire`): under fire a field mender still mends a friend (not itself) at
+	# Match.REPAIR_UNDER_FIRE_FACTOR of its rate, and the base does not (Match.repair_under_fire_rate_for).
+	if under_fire and not Match.repair_under_fire_on:
 		return {}
-	var base := Match.REPAIR_HP_PER_SECOND if Match.in_resupply_zone(tank.team, tank.global_position) else 0.0
+	var share := Match.REPAIR_UNDER_FIRE_FACTOR if under_fire else 1.0
+	var base := Match.REPAIR_HP_PER_SECOND if not under_fire and Match.in_resupply_zone(tank.team, tank.global_position) else 0.0
 	var best := {}
 	var best_distance := INF
 	for mender: Dictionary in field_menders:
-		if int(mender["team"]) != tank.team or float(mender["rate"]) <= base:
+		var rate := float(mender["rate"]) * share
+		if int(mender["team"]) != tank.team or rate <= base or (under_fire and mender["node"] == tank):
 			continue
 		var offset: Vector3 = mender["position"] - tank.global_position
 		var distance := Vector2(offset.x, offset.z).length()
 		if distance > float(mender["radius"]):
 			continue
-		if best.is_empty() or float(mender["rate"]) > float(best["rate"]) \
-				or (float(mender["rate"]) == float(best["rate"]) and distance < best_distance):
-			best = {"node": mender["node"], "rate": float(mender["rate"])}
+		if best.is_empty() or rate > float(best["rate"]) or (rate == float(best["rate"]) and distance < best_distance):
+			best = {"node": mender["node"], "rate": rate, "under_fire": under_fire}
 			best_distance = distance
 	return best
 

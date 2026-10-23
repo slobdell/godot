@@ -129,7 +129,23 @@ func test_a_resupply_tanker_mends_the_pack_around_it() -> void:
 	await _dispose(game_match)
 
 
+## Round 38 (feedback F3, C38.4; his answer 2026-10-22, "yes it also repair during combat"): under fire the Tanker still mends,
+## at Match.REPAIR_UNDER_FIRE_FACTOR of its rate (`--repair-under-fire`, ON since its bar passed). Both arms: the old rule
+## (OFF) still holds the hull, the new one mends it slower than the quiet rate would.
 func test_field_repair_stops_while_the_fire_is_landing() -> void:
+	var was := Match.repair_under_fire_on
+	Match.repair_under_fire_on = false
+	var off: int = await _hp_after_six_seconds_under_fire()
+	Match.repair_under_fire_on = true
+	var on: int = await _hp_after_six_seconds_under_fire()
+	Match.repair_under_fire_on = was
+	assert_true(off <= 60, "without round 38's rule a crew under fire does not get out and mend the hull (%d hp)" % off)
+	var quiet_rate := float(Units.stat("gang_support", "repair_hp_per_second"))
+	assert_true(on > 60, "with it the Tanker keeps mending under fire (%d hp)" % on)
+	assert_true(on < 60 + int(quiet_rate * 6.0), "but slower than once quiet (%d hp, quiet would be +%d)" % [on, int(quiet_rate * 6.0)])
+
+
+func _hp_after_six_seconds_under_fire() -> int:
 	var game_match := _setup()
 	assert_eq(game_match.load_doctrine(Match.Team.GREEN, {"name": "G", "squads": [{"name": "A",
 			"units": [{"unit": "gang_ifv"}, {"unit": "gang_support"}]}]}), "", "a gang pair loads")
@@ -148,9 +164,11 @@ func test_field_repair_stops_while_the_fire_is_landing() -> void:
 		if tick % 30 == 0:
 			hurt.take_hit(1.0, 1.0, 1.0)  # somebody keeps putting rounds into it
 		await wait_physics_frames(1)
-	print("MEASURE field_repair_under_fire %d hp after 6 s of being shot at (started at 60)" % hurt.health)
-	assert_true(hurt.health <= 60, "a crew under fire does not get out and mend the hull (%d hp)" % hurt.health)
+	print("MEASURE field_repair_under_fire %d hp after 6 s of being shot at (started at 60, under-fire rule %s)" % [hurt.health,
+			Match.repair_under_fire_on])
+	var hp := hurt.health
 	await _dispose(game_match)
+	return hp
 
 
 func test_only_the_units_that_carry_a_repair_crew_mend_anyone() -> void:

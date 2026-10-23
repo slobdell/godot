@@ -83,6 +83,14 @@ native-for-check:
 native-info: import ## What Godot loads: NativeBridge.available, the switch, and the library's build_info()
 	$(GODOT) --headless --path . --script res://tests/native/native_info.gd
 
+# Round 38 (N3): perf-judge's machine-relative line on a machine that does not judge (builder2): every attempt runs with
+# scenario_perf's nominal refusal off and records both lines (PERF_JUDGE_RELATIVE, with the cpu model); exits 3 (NOT JUDGED)
+# by design, so read the file, not the exit. Tabulate with tools/judge/perf_relative.py build/perf-relative/.
+.PHONY: perf-relative-trial
+perf-relative-trial: import ## N3: perf-judge's two lines recorded on a non-judging box (PERF_JUDGE_TRIES=5) -> build/perf-relative/perf-judge.txt
+	-PERF_JUDGE_TRIAL=1 PERF_JUDGE_TRIES=$${PERF_JUDGE_TRIES:-5} tools/perf_judge.sh $(GODOT) $(SIM_HZ) $(BUILD_DIR)/perf-relative
+	@$(PYTHON) tools/judge/perf_relative.py $(BUILD_DIR)/perf-relative
+
 # The price of one call across the seam (NATIVE_BENCH lines, usec per call): pin it (NATIVE_BENCH_CPUS=0-3 on builder0).
 native-bench: import ## The price of ONE GDScript->native call, each way of calling it (usec/call; pin with NATIVE_BENCH_CPUS=0-3)
 	$(if $(NATIVE_BENCH_CPUS),taskset -c $(NATIVE_BENCH_CPUS)) $(GODOT) --headless --path . --script res://tests/native/native_bench.gd

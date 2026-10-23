@@ -818,3 +818,7 @@ stream's `local.mk` with a different OFFSET, or `make worktree`'s port block), o
   **Correction (rules):** guard.sh (the blob/turtle lines) already runs GUARD_JOBS=20, one seed (20 fights) per remote call; its idle
   time is the TAIL: each call waits for its slowest fight (up to 600 s sim) while the other cores sit idle. The lever there is more
   fights per call (2 seeds a call, or a rolling queue that keeps ~14-20 running), not J. The J=6 note above is manoeuvre's driver.
+
+- **(round 38, feedback) A builder0 full check at load ~26 dies on the 90-min slot cap.** Two of feedback's checks were killed that way
+  while two light series shared builder0 (R38.8). When builder0's load is over ~20, send full checks to builder2 (R38.2); a judged perf
+  line then waits for a quiet builder0 (main's own check), never a re-run on builder2.

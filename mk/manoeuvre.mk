@@ -380,3 +380,19 @@ manoeuvre-hull-trace: import ## manoeuvre W1: one hull-rest cell (HT_FACTION HT_
 		--screen-test=$(CURDIR)/$$d --screen-only=$(HT_TASK) --trace-crew=$(HT_CREW) --seconds=0 > $$d/run.log 2>&1 || true; \
 	grep -c '^WEDGE_TICK' $$d/run.log | xargs echo "manoeuvre-hull-trace: WEDGE_TICK rows"; grep -m1 NATIVE_EXEC $$d/run.log || true; \
 	grep -m1 "SCRIPT ERROR" $$d/run.log || true
+
+# Round 38 (manoeuvre M7 = O5 v2's trace, measurement only): tests/manoeuvre/aside_trace.gd (orders' seat_yield_census + the
+# asker's ways) on ASIDE_AT x ASIDE_SEEDS showmatch fights -> ASIDE_DIR/<arena>-<seed>.log. ASIDE_FLAGS e.g. --seat-aside=on.
+ASIDE_AT ?= locks gorge terminus
+ASIDE_SEEDS ?= 3801-3806
+ASIDE_FLAGS ?=
+ASIDE_JOBS ?= $(JOBS)
+ASIDE_DIR ?= $(BUILD_DIR)/manoeuvre/aside
+.PHONY: manoeuvre-aside-trace
+manoeuvre-aside-trace: import ## manoeuvre M7: seat give-ways to another element's crew + the asker's ways (ASIDE_AT ASIDE_SEEDS ASIDE_FLAGS) -> build/manoeuvre/aside/
+	@rm -rf $(ASIDE_DIR); mkdir -p $(ASIDE_DIR)
+	@echo ">> manoeuvre-aside-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | flags '$(ASIDE_FLAGS)'"
+	@for seed in $(shell seq $(subst -, ,$(ASIDE_SEEDS))); do for arena in $(ASIDE_AT); do echo "$$arena $$seed"; done; done | xargs -P $(ASIDE_JOBS) -L 1 sh -c \
+		'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/aside_trace.gd -- \
+		--skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute --seconds=180 $(ASIDE_FLAGS) > $(ASIDE_DIR)/$$0-$$1.log 2>&1 || true'
+	@grep -h '^SEAT_YIELD_CENSUS' $(ASIDE_DIR)/*.log | wc -l | xargs echo ">> manoeuvre-aside-trace: fights with a census row:"
