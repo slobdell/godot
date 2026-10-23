@@ -44,10 +44,10 @@ settle-series: native-for-check import ## Round 38 (settle): S1/S2's judged seri
 			$(call _settle_name,$(SETTLE_BASE)) $$name | tee -a verdict.txt || true; done
 
 # S3 (O2 on settle) + the stretch (DEPLOY_HOLD): the fight probe only (locks/crossing/terminus x 3 squads x click x
-# SETTLE_S3_SEEDS), arms latch (S2 alone: the base), held (+ --deploy-hold=on), o2 (+ --parked-hold=on), then
+# SETTLE_S3_SEEDS), arms latch (S2 v4, the shipped anchor latch, R38.33: the base), held (+ --deploy-hold=on), o2 (+ --parked-hold=on), then
 # tests/settle/settle_judge.py s3 -> build/settle-s3/verdict.txt. Runs after S2's verdict (the latch arm is its base).
 SETTLE_S3_SEEDS ?= $(shell seq 3891 3902)
-SETTLE_S3_ARMS ?= latch:--deploy-latch=on,--probe-fight=on,--probe-budget=1500 held:--deploy-latch=on,--deploy-hold=on,--probe-fight=on,--probe-budget=1500 o2:--deploy-latch=on,--deploy-hold=on,--parked-hold=on,--probe-fight=on,--probe-budget=1500
+SETTLE_S3_ARMS ?= latch:--deploy-latch=anchor,--probe-fight=on,--probe-budget=1500 held:--deploy-latch=anchor,--deploy-hold=on,--probe-fight=on,--probe-budget=1500 o2:--deploy-latch=anchor,--deploy-hold=on,--parked-hold=on,--probe-fight=on,--probe-budget=1500
 .PHONY: settle-s3
 settle-s3: native-for-check import ## Round 38 (settle S3 + stretch): the fight probe, latch v held v o2 -> build/settle-s3/verdict.txt
 	@rm -rf $(BUILD_DIR)/settle-s3 && mkdir -p $(BUILD_DIR)/settle-s3
@@ -156,6 +156,22 @@ settle-s2v3-context: native-for-check import ## Round 38 (settle, R38.15): S2 v3
 settle-s1v3: ## Round 38 (settle, R38.17): S1 v3's series (main v fit, seeds 4201-4224) -> build/settle-s1v3/verdict.txt
 	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3" SETTLE_V2_SEEDS="$$(seq -s " " 4201 4212)" \
 		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 4213 4224)"
+
+# R38.34: S1 v4 = the fit stacked on the shipped latch (both arms latch-ON: the default since b3ad7baa4), S1 v2's series,
+# guards JUDGED as filed, the deciding line REPORTED; seeds never read: no-fight 4401-4412, fights 4413-4424.
+.PHONY: settle-s1v4
+settle-s1v4: ## Round 38 (settle, R38.34): the fit on the latch-ON main (seeds 4401-4424) -> build/settle-s1v4/verdict.txt
+	@SETTLE_S1_DECIDING_JUDGED=0 $(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v4" \
+		SETTLE_V2_SEEDS="$$(seq -s " " 4401 4412)" SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 4413 4424)"
+
+# R38.37: S1 v5 = the fit with the street cap (--deploy-fit=street) on the latch-ON main, S1 v4's lines (guards judged,
+# deciding reported) plus the street axis reported per cell; seeds never read: no-fight 4501-4512, fights 4513-4524.
+# builder0's light lane at J<=4 (R38.37): `make remote LIGHT=1 T="native settle-s1v5"`.
+.PHONY: settle-s1v5
+settle-s1v5: ## Round 38 (settle, R38.37): the street-capped fit (seeds 4501-4524) -> build/settle-s1v5/verdict.txt
+	@SETTLE_S1_DECIDING_JUDGED=0 $(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v5" \
+		SETTLE_V2_SEEDS="$$(seq -s " " 4501 4512)" SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 4513 4524)" SETTLE_V2_JOBS=4 \
+		SETTLE_V2_ARMS="main:--deploy-trace fit:--deploy-fit=street,--deploy-trace"
 
 # R38.19: S2 v4 = S2 v3's series, lines and judge (anchor guard) on the latch that holds the terrain at the halt's anchor
 # (`--deploy-latch=anchor`), seeds never read for S2: no-fight 4301-4312, fight3/fight5 4313-4324, census 4301-4303.

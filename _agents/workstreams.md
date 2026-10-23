@@ -66,7 +66,7 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 ## Bars (round 38)
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
-S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; 4501-4524 S1 v5; 4601-4612 G3 v4; 4701-4712 G1 v4; guard seeds 2601-2608/2701-2708
+S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; 4501-4524 S1 v5; 4601-4612 G3 v4; 4701-4712 G1 v4; 5201-5212 G3 v5; guard seeds 2601-2608/2701-2708
 (the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001-5008/5101-5108 D2c.
 
 
@@ -220,6 +220,27 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   first shape <= 3 %, contacts, both fight reads; deciding and place+twitch reported) plus reported per cell: street axis set v null and
   turns refused. Lab (laptop, not judged): s4410 Delta's turn refused (keeps main's heading); the R37.37 squad still turns along the
   street 31.7 -> 13.2 m and keeps its 5-seat deal. The S1 v4 rows re-judge byte for byte with the new judge.
+
+- **G3 v4 PLACE_CLEAR near-trigger (orders, R38.39; filed in stream/orders f0a70f544 before any v4 number; copied here by the
+  orchestrator).** Code e518fd649, `--place-clear=on,--place-clear-trigger=near` (only a pair closer than 14 m moves; still clears the
+  short sides), OFF. Tree: the first commit at or after f0a70f544 with main merged (latch ON both arms) whose builder0 full check is green;
+  G1 (incl. v4's rank shift) and G2 OFF in both arms. Probe arms `main:` v `g3:--place-clear=on,--place-clear-trigger=near`, builder0
+  light J <= 4, `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make variable, FRESH seeds 4601-4612, n 12 a cell, the same 18 cells; `orders_judge.py
+  g3`. Lines as Bar G3 as amended (counter, deciding, offset guards, R36.6 guards, contacts, yard_open, reported, paired shots of crossing
+  5 click and his 5 click, looked at). Never-in compares with main's count on the same seeds and cells (main itself loses a squad at
+  crossing's west bridge mouth on some seeds). Dev read 9 (e518fd649, 3804-3809, n 6) passed every line. A pass ships ON.
+
+- **G1 v4 COLUMN, whole on plain clicks (orders, R38.44; filed in stream/orders 7c3250ed6 before any number; copied here by the
+  orchestrator).** What he would see: select all and click a street; every squad lands in that street, stacked back along it, each with its
+  own vehicles; open ground unchanged; a shift-clicked route drives as today. Code 4d68baba4, OFF; arm `--group-lay=column,--group-rank-
+  shift=half,--group-whole=click,--group-clear=reached`. Tree: the first commit at or after 7c3250ed6 with main merged (latch ON both
+  arms) whose builder0 full check is green; G3 and G2 OFF both arms. Probe `main:` v `column:<arm>`, builder0 light J <= 4, slot timeout
+  14400 as a make variable, FRESH seeds 4701-4712, n 12 a cell, the G1 cells (12 street, his click 3/5, yard_open); `orders_judge.py g1v4`.
+  Counter columns_laid > 0. Deciding (click cells + his click): places outside <= 25 % of base; route_left_m <= 50 %; re-dealt 0 over the
+  click cells. Guards: every R36.6 guard over all 14 cells as filed (twitch included, none amended); contacts <= base x 1.1 + 5; yard_open
+  every row identical. Route cells differ from main only through the first plain click's whole dealing (queued legs dealt as main); the
+  s3805 trace and the dropped replay are recorded; route never-in at n 12 is a coin flip taken as the price of a fresh read. Paired
+  top-down shots of his click, looked at. A pass ships ON.
 
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
@@ -591,6 +612,48 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   anchor on the junction, Delta_3 in a relaid lane-mouth slot; Echo_1-3 stuck between them t 36-90 s, nothing gives way). **Round-39
   framing:** no seat of a deploying squad (relaid seats included) on a following same-order squad's remaining route, at any shape or
   angle; plus the chain-aware give-way; then S1 re-read.
+- **R38.41 (2026-10-23 ~06:55) D2c (SPLIT) FAILS the deciding line; ships OFF; every guard held.** doctrine (5a9464679 both arms, green;
+  builder2; fresh guard seeds 5001-5008 + 5101-5108; 320 fights an arm, 0 lost; 400/400 ON logs carry the switch): deciding blob 51 -> 47 %
+  (-4.4, se 3.8 = 1.2 se; McNemar p 0.13); kr 0.90 -> 0.86; G1 turtle 39 -> 35 % holds; **G2t turtle kills -0.56 (1.6 se) holds: the
+  passivity of D2/D2b is fixed**; G3 none-line median 159 -> 168 s (+6 %), caps 0 v 0 holds; outside 2 se by faction: blob law median
+  14 s shorter (3.5 se), turtle condemned kills 2.0 se. The lab's 9 -> 4 of 20 was luck on two seeds. Across D2/D2b/D2c the blob effect
+  was -4.4 / -3.1 / -4.4 points, each short of 2 se at 160 blob fights; not pooled (different arms). **Round-39 candidate:** SPLIT
+  costs nothing the guards measure; a powered series (~4x the fights, a bar sized for a 4-point effect) would decide it. D3 started 06:50
+  on builder2 as filed on OFF (~4.5 h); native's row follows.
+- **R38.42 (2026-10-23 ~07:40) Bars H and S3 FAIL; nothing ships; settle at its end state.** (builder0 light J4, b3ad7baa4, the amended
+  anchor arms, fight probe 3 cells x 3 squads x seeds 3891-3902, n 36/36 an arm; references/round38/settle/hs3-judged-builder0-b3ad7baa4/,
+  473966ff3.) **H** (held v latch): re-deals 85 -> 54 v line <= 51 (narrow fail); reseats 114 -> 0; fight guards pass. **S3** (o2 v held):
+  deciding passes (off_idle 102.2 -> 31.0 s a fight); fails re-deals 54 -> 67 (line <= 62.4, mostly crossing and locks) and the
+  two-sided his-losses guard 7.94 -> 7.03 (se 0.34; fewer of his tanks lost, but outside the band as filed; not waived). **Round 39:**
+  trace o2's crossing re-deals before any re-file (understand the cause, not re-size the line); H re-filed only on new seeds after that.
+- **R38.43 (2026-10-23 ~07:55) the bridge mouth, plainly: not the map alone; a deploy lays seats inside a neighbour's parked halt at
+  a pinch and nothing moves the parked crews.** orders (builder0 light, f0a70f544 = latch ON, main arm, crossing 5 route, squad 4
+  traced): on dev seeds 3801/3802 main's squad 4 now gets in (25.1 s, 20.1 s): every never-in there in rounds 37-38 predates the latch.
+  Judged seeds, main only: s4108 in only at 53.7 s (thin); s3958 never in: squads 3/4 placed 12.2 m apart; Delta_4 stops 8 m short of its
+  seat with a move order; Delta_2's seat lies 7 m from squad 3's place, inside its parked halt; neither crew ever gives way. **Owners for
+  round 39:** the halt seat (settle) and give-way among squads (manoeuvre, R38.26); the same rule as R38.40 (no halt seat on another
+  squad's ground or route). G3 v4's 14 m trigger covers this pair. G1 v4 dev read (f0a70f544, 3804-3809, n 6) FAILS guards (crossing 5
+  route never-in 0 -> 1, twitch 22.2 -> 33.5, yard_open 91/96 identical) though deciding passes (outside 38 -> 7, metres 2,520 -> 486,
+  re-dealt 32 -> 0); no G1 v4 bar.
+- **R38.44 (2026-10-23 ~08:30) G1 v4 scope: squads-whole on PLAIN CLICKS only; route legs belong to G2.** orders' three-arm dev read
+  (builder0 J4, 7bfb06384, dev seeds 3804-3809, n 6; 9986a1cba): v3 and v4 fail the same guards (crossing 5 route never-in v3 0 -> 2,
+  v4 0 -> 1; route twitch 22.2 -> 33.5 both; yard_open 91/96 both), so the rank cap causes none of them; the never-ins are the bridge
+  mouth (R38.43); the twitch is "squads whole on every group move" on route legs putting the same places under different squads than
+  main's re-deal. **Ruled (option 2, orders' recommendation):** his complaint was a plain click; G1 v4 keeps squads whole on plain
+  clicks only. Its bar, filed before numbers on fresh seeds 4701-4712: the deciding lines read over click cells (re-dealt 0 there);
+  route cells must behave as main (every R36.6 guard judged there as filed, the twitch included); yard_open identical. No guard amended.
+- **R38.45 (2026-10-23 ~09:00) G3 v4 judged read FAILS; a real G3 bug found; v5 may run this round.** orders (builder0 light J4, slot
+  timeout 14400; green tree f0a70f544, probe on 9986a1cba; latch ON; seeds 4601-4612, n 12 a cell, 18 cells; c7b43e66c): 78 places
+  cleared; pairs 51 -> 2 (line 12.8); offsets pass (0/864 > 40 m, worst +36.3); contacts 13,117 -> 13,172; his click passes (v3's twitch
+  gone). FAIL never-in 3 -> 4, crossing 5 click never-in 0 -> 1, crossing 5 route twitch 17.4 -> 21.4 (1 m over base + 3), crossing 5
+  route crossed 0 -> 1. **Cause (a bug, not a tuning):** route s4603, G3 stepped squad 4's place to (-51.2, -3.7) across the river; its
+  crews crossed the bridge at 36.5 s and never got in: place_clear checks each step is standable, not that the moved place is reached
+  from the original without crossing water or a deck. Other g3 never-ins at the west bridge mouth (s4604, s4609). **Ruled:** v5 = a
+  moved place must be reached from the original without a crossing (`crosses_on(ground)`, as G1) and never lands on a deck mouth; a
+  dev read first, then a new bar on fresh seeds 5201-5212; if the round closes first it carries to round 39 with its bar.
+- **R38.46 (2026-10-23 ~09:20) main a34f05105 GREEN on builder2** (settle's 473966ff3, all OFF): `make native check exited 0`, 3108 passed /
+  0 failed, 25 passed + 2 NOT JUDGED (perf-judge, not a judging machine; scenario_perf loaded 4.61x), sim-baseline 13/13 unmoved. The
+  last judged perf line is e1f602fbf's (R38.38); everything merged since is OFF.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both

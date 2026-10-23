@@ -1,0 +1,19 @@
+PASS counter: deploys turned 71 of 573 on fit; squads 576
+  reported deciding: squads with a deploy leg >= 25 m 62 -> 29 (<= 31.0; base >= 10)
+PASS guard twitch: squads with twitch >= 15 m 98 -> 91 (not up)
+FAIL guard never-in: 3 -> 4 runs (arm <= base)
+PASS guard first shape: differs 1 of 576 (<= 3 %)
+PASS guard friend_contacts 12995 -> 12438 (<= 14299.5)
+PASS guard friend_contacts_foreign 7289 -> 6961 (<= 8022.9)
+  fight read 3-squad (0 runs that never started)
+  PASS guard his kills   base 5.44 arm 5.31 a fight (se 0.42, n 36/36)
+  PASS guard his losses  base 6.50 arm 6.61 a fight (se 0.52, n 36/36)
+  PASS guard CPU losses  base 5.50 arm 5.33 a fight (se 0.42, n 36/36)
+PASS fight guards
+  fight read 5-squad (--probe-budget=3000) (0 runs that never started)
+  PASS guard his kills   base 10.36 arm 10.39 a fight (se 0.52, n 36/36)
+  PASS guard his losses  base 12.61 arm 13.00 a fight (se 0.97, n 36/36)
+  PASS guard CPU losses  base 10.50 arm 10.56 a fight (se 0.53, n 36/36)
+PASS fight guards
+  reported: place+twitch >= 25 m squads 165 -> 143
+VERDICT FAIL fit v main (S1 v2, R38.11)

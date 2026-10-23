@@ -1,0 +1,1 @@
+>> settle-s3 on builder0 | commit b3ad7baa4 | native on | arms 'latch:--deploy-latch=anchor,--probe-fight=on,--probe-budget=1500 held:--deploy-latch=anchor,--deploy-hold=on,--probe-fight=on,--probe-budget=1500 o2:--deploy-latch=anchor,--deploy-hold=on,--parked-hold=on,--probe-fight=on,--probe-budget=1500'
