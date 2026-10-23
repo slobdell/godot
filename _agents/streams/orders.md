@@ -63,7 +63,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - 527d62cd2: where G3 moved a place, untangle swaps squads whole; probe rows name the anchor's element; the judge skips
     pairs sharing an element. Laptop his 5 click s3801 (n 1): nobody re-dealt, all-in 47.4 -> 20.8 s, worst twitch 14.6 m
     (guard line 14.6). Lab 14/14; group/requeue/untangle tests 39 + 2 + 9 pass on the laptop.
-  - Dev read 3 (527d62cd2) running.
+  - Dev read 3 (builder0 light, 527d62cd2, dev seeds 3801-3803, n 3): deciding PASS (place pairs closer than 12 m 12 -> 1,
+    line 3.0), every offset guard PASS (2 of 216 rows > 40 m further; worst +46.9 m), contacts 3,401 -> 3,643 (line 3,746).
+    FAIL on the never-in guard 0 -> 2, and on his 5-squad click twitch 11.6 -> 22.1 m.
+    - locks 3 route s3802: g3's places equal main's, and main's squad 1 only got in at 70.1 s (marginal).
+    - crossing 5 click s3801: squad 4 moved 20 m aside, never in on builder0; laptop GDScript (n 1) in at 39.6 s, its
+      crews crossing the other squads' lanes.
+    - his click: squad 3 arrives at 0.1 s on a place its crews already stand on, then the halt reshuffles 20 m. That is
+      the deploy (settle's latch question), not a G3 drive.
+    - Trying "back first, then aside" (a dev switch) changed neither case on the laptop, so it was not kept.
+  - Main merged at 8f0dcb488 (42268e4a1; none of my paths touched). Dev read 4 is running (68ad5df9f, dev seeds 3804-3809,
+    outside every registered round-38 block) to read the never-in noise before any judged seeds are spent.
 - **G1 v2 judged: FAILS as filed** (R38.12; `g1-judged-builder0-4a765e6e2/README.md`): deciding all pass (click-cell places
   outside 84 -> 18, metres after leaving 6,223 -> 1,393, re-dealt 58 -> 0, contacts 14,004 -> 10,622); guards fail: crossing 3
   route twitch 5.8 -> 10.5 m, his 3-squad click twitch 2.3 -> 11.4 m, yard_open 177/192 identical. Stays OFF.
