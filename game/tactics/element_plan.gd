@@ -1974,7 +1974,7 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), _deploy_shape(situation, state, table),
 				deploy["heading"], table.spacing(String(situation["terrain"])))
 		var read := situation
-		if DEPLOY_LATCH_ANCHOR:
+		if DEPLOY_LATCH and DEPLOY_LATCH_ANCHOR:
 			# Measurement (R38.20): the re-lays made, and whether the read at the last anchor still differs (the cap).
 			deploy["latch_lays"] = 0
 			for lay in DEPLOY_LATCH_LAYS:
@@ -2000,16 +2000,17 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 ## deploy decides the halt's shape: at its all-in (or cap), the live read then (`deploy["terrain"]`), and every later update
 ## of that deployed halt plans with it (shape AND spacing), so a crew's creep across a terrain line cannot re-lay or
 ## re-space the squad. Before the deploy the live read stands (main's). A plain AUTO move only (the deploy step's scope):
-## holds and the CPU's other halts keep main's read. `--deploy-latch=on` (env DEPLOY_LATCH=on) opts in; OFF until its bar.
-static var DEPLOY_LATCH := OS.get_cmdline_user_args().has("--deploy-latch=on") or OS.get_environment("DEPLOY_LATCH") == "on" \
-		or OS.get_cmdline_user_args().has("--deploy-latch=anchor") or OS.get_environment("DEPLOY_LATCH") == "anchor"
+## holds and the CPU's other halts keep main's read. ON since S2 v4's bar (R38.33, builder2 fac47b5d2), at the anchor
+## (below); `--deploy-latch=off` (env DEPLOY_LATCH=off) is round 38's main, `--deploy-latch=on` this centroid read (v2).
+static var DEPLOY_LATCH := not (OS.get_cmdline_user_args().has("--deploy-latch=off") or OS.get_environment("DEPLOY_LATCH") == "off")
 ## S2 v4 (R38.19): the read latched is the terrain AT THE HALT'S ANCHOR, not at the crews' centroid at the all-in. Traced
 ## (S2 v3's context, builder2 91a681712, locks 3 click s3906 squad 3): the crews stood in on a lane's last metres (their
 ## centroid read lanes) while the halt's centre, its anchor, was open: the latch then held a herringbone in the open. At
 ## the deploy the anchor is laid on the live read's shape; when the ground at it reads otherwise the shape and anchor are
 ## laid again on that read (until the read at the anchor stands, DEPLOY_LATCH_LAYS at most), and the deploy, its update
-## and every later one plan with it. `--deploy-latch=anchor` (env DEPLOY_LATCH=anchor) opts in; OFF until its bar.
-static var DEPLOY_LATCH_ANCHOR := OS.get_cmdline_user_args().has("--deploy-latch=anchor") or OS.get_environment("DEPLOY_LATCH") == "anchor"
+## and every later one plan with it. ON with DEPLOY_LATCH (R38.33; `--deploy-latch=anchor` names it); `--deploy-latch=on`
+## (env DEPLOY_LATCH=on) keeps v2's centroid read.
+static var DEPLOY_LATCH_ANCHOR := not (OS.get_cmdline_user_args().has("--deploy-latch=on") or OS.get_environment("DEPLOY_LATCH") == "on")
 const DEPLOY_LATCH_LAYS := 3
 
 

@@ -1,5 +1,7 @@
 extends TestCase
 ## Round 38 (settle S2, latch v2): A DEPLOYED HALT KEEPS THE TERRAIN ITS SHAPE WAS DECIDED ON (ElementPlan.DEPLOY_LATCH).
+## The centroid read (v2) is what this file pins (DEPLOY_LATCH_ANCHOR off); the anchor latch, ON since R38.33, has
+## test_settle_deploy_latch_anchor.
 ## 1. R37.42's geometry first (test_tactics_scenarios_2's move, TacticsScenarios.task_posture "move", lab seed 17): four
 ##    tanks in a lane cross an `open` pocket the update before they stand arrived. Round 37's latch keeps that one-update
 ##    read and deploys a coil in the lane (the counter); the deploy latch reads at the all-in and stands in a herringbone.
@@ -12,21 +14,25 @@ const NUDGES := 6
 const CLEAR_M := 16.0
 
 var _latch := ElementPlan.DEPLOY_LATCH
+var _anchor := ElementPlan.DEPLOY_LATCH_ANCHOR
 var _terrain := ElementSituation.HALT_TERRAIN
 
 
 func teardown() -> void:
 	ElementPlan.DEPLOY_LATCH = _latch
+	ElementPlan.DEPLOY_LATCH_ANCHOR = _anchor
 	ElementSituation.HALT_TERRAIN = _terrain
 	super.teardown()
 
 
 func test_a_squad_stopping_in_a_lane_after_a_gap_stands_in_a_herringbone() -> void:
 	ElementPlan.DEPLOY_LATCH = false
+	ElementPlan.DEPLOY_LATCH_ANCHOR = false
 	ElementSituation.HALT_TERRAIN = "latch"
 	var round37: Dictionary = await TacticsScenarios.task_posture(self, "move", 30.0)
 	ElementSituation.HALT_TERRAIN = "centre"
 	ElementPlan.DEPLOY_LATCH = true
+	ElementPlan.DEPLOY_LATCH_ANCHOR = false
 	var latched: Dictionary = await TacticsScenarios.task_posture(self, "move", 30.0)
 	print("MEASURE deploy latch: round-37 latch %s | deploy latch %s" % [round37, latched])
 	assert_eq(String(round37["formation"]), "coil", "counter: round 37's latch keeps the gap's read (%s)" % round37["formation"])
@@ -63,6 +69,7 @@ func _edge() -> Dictionary:
 func _flips(latch: bool) -> Dictionary:
 	ElementSituation.HALT_TERRAIN = "centre"
 	ElementPlan.DEPLOY_LATCH = latch
+	ElementPlan.DEPLOY_LATCH_ANCHOR = false
 	var lab := TacticsLab.create(self, 7, MAP)
 	ElementSituation.forget_terrain()
 	var edge := _edge()
@@ -118,6 +125,7 @@ func test_a_deployed_halt_does_not_flip_when_its_crews_creep_across_a_terrain_ed
 
 func test_before_the_deploy_the_live_read_stands() -> void:
 	ElementPlan.DEPLOY_LATCH = true
+	ElementPlan.DEPLOY_LATCH_ANCHOR = false
 	var situation := {"terrain": "lanes"}
 	assert_eq(ElementPlan._deploy_latched(situation, {"deploy": {"deployed": false, "terrain": "open"}}), situation, "not deployed")
 	assert_eq(ElementPlan._deploy_latched(situation, {}), situation, "no deploy")
@@ -125,4 +133,5 @@ func test_before_the_deploy_the_live_read_stands() -> void:
 			"deployed: the deploy's read")
 	assert_eq(String(situation["terrain"]), "lanes", "the element's own situation is not edited")
 	ElementPlan.DEPLOY_LATCH = false
+	ElementPlan.DEPLOY_LATCH_ANCHOR = false
 	assert_eq(ElementPlan._deploy_latched(situation, {"deploy": {"deployed": true, "terrain": "open"}}), situation, "OFF: main's")
