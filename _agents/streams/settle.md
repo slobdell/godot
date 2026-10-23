@@ -266,6 +266,23 @@ not up, never-in runs arm <= base, first shape differs <= 3 %, friend contacts a
 his losses, CPU losses within 1.645 se, 0 runs that never started) in both fight reads. `make native settle-s1v3`, builder2,
 queued after doctrine's D2b (R38.17's order).
 
+### Bar S2 v3 DEPLOY_LATCH (R38.15; filed 2026-10-22 after its context run, before any number on its seeds)
+Arms `main:--deploy-trace` v `latch:--deploy-latch=on,--deploy-trace` (latch code unchanged since 44505a21c; the tree adds
+only S1 v3's fit change, OFF in both arms, and the trace lines). Seeds never read for S2: no-fight probe 12 cells x
+4001-4012; fight probe 3-squad (budget 1500) and 5-squad (budget 3000) click cells x 4013-4024; census x 4001-4003.
+`make native settle-s2v3`, judge `settle_judge.py s2v3` (SETTLE_V3_REFERENCE=anchor, the default).
+- Counter, deciding: as filed for S2 (rows differ and base flips >= 10; flips no-fight and in the 3-squad fight <= 25 % of
+  base + 1; reseats no more).
+- **Guard first shape (R38.15):** wrong = the squad's first standing shape (row shapes[0]) is not the table's shape on the
+  terrain at its first deploy ANCHOR (DEPLOY_TRACE anchor_terrain; lanes/dense -> herringbone, open -> coil). No-halt and
+  no-trace rows reported, not counted. PASS iff wrong(latch) <= wrong(main).
+- Never-in: latch <= main, total over the fresh seeds. Every other per-cell probe guard, contacts, fights (both reads, 0
+  runs that never started), census: as filed.
+**Context (NOT on the v3 seeds; the re-read's seeds 3903-3914 again, builder2 91a681712,
+`references/round38/settle/s2v3-context-builder2-91a681712/`):** reproduces the re-read (first shape differs 18/576, same
+shape counts). Anchor reference: main 13 wrong, latch 16 (the latch's: herringbone where the anchor is open, 13 of 16, all
+on locks). Stand reference: main 0 (its own read), latch 13.
+
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
   column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as
