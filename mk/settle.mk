@@ -157,6 +157,13 @@ settle-s1v3: ## Round 38 (settle, R38.17): S1 v3's series (main v fit, seeds 420
 	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3" SETTLE_V2_SEEDS="$$(seq -s " " 4201 4212)" \
 		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 4213 4224)"
 
+# R38.34: S1 v4 = the fit stacked on the shipped latch (both arms latch-ON: the default since b3ad7baa4), S1 v2's series,
+# guards JUDGED as filed, the deciding line REPORTED; seeds never read: no-fight 4401-4412, fights 4413-4424.
+.PHONY: settle-s1v4
+settle-s1v4: ## Round 38 (settle, R38.34): the fit on the latch-ON main (seeds 4401-4424) -> build/settle-s1v4/verdict.txt
+	@SETTLE_S1_DECIDING_JUDGED=0 $(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v4" \
+		SETTLE_V2_SEEDS="$$(seq -s " " 4401 4412)" SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 4413 4424)"
+
 # R38.19: S2 v4 = S2 v3's series, lines and judge (anchor guard) on the latch that holds the terrain at the halt's anchor
 # (`--deploy-latch=anchor`), seeds never read for S2: no-fight 4301-4312, fight3/fight5 4313-4324, census 4301-4303.
 .PHONY: settle-s2v4

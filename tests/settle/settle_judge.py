@@ -99,8 +99,11 @@ def s1v2(argv):
     leg_b = sum(1 for c in common if b[c]["deploy_leg_m"] >= LONG_M)
     leg_n = sum(1 for c in common if n[c]["deploy_leg_m"] >= LONG_M)
     dec = leg_b >= 10 and leg_n <= 0.5 * leg_b
+    # R38.34 (S1 v4, the fit stacked on the latch): the deciding line is reported, the guards judged.
+    dec_judged = os.environ.get("SETTLE_S1_DECIDING_JUDGED", "1") != "0"
     lines.append("%s deciding: squads with a deploy leg >= %.0f m %d -> %d (<= %.1f; base >= 10)" % (
-        "PASS" if dec else "FAIL", LONG_M, leg_b, leg_n, 0.5 * leg_b))
+        ("PASS" if dec else "FAIL") if dec_judged else "  reported", LONG_M, leg_b, leg_n, 0.5 * leg_b))
+    dec = dec or not dec_judged
     tw_b = sum(1 for c in common if b[c]["twitch_m"] >= 15)
     tw_n = sum(1 for c in common if n[c]["twitch_m"] >= 15)
     g_tw = tw_n <= tw_b

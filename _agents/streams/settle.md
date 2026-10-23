@@ -343,6 +343,17 @@ fights). Arms main:--deploy-trace v anchor:--deploy-latch=anchor,--deploy-trace.
 - Not yet: the full check of an ON commit. Note for the ON: it was judged with the latch OFF; on a latch-ON main the fit
   lays on the anchor-latched read (`_deploy_state`: re-lay first, then the fit), a combination no judged number covers.
 
+### Bar S1 v4 DEPLOY_FIT on the latch (R38.34; filed 2026-10-23 before any number on its seeds; code = this commit)
+The fit (S1 v3, passed) stacked on the shipped anchor latch: arms `main:--deploy-trace` v `fit:--deploy-fit=on,--deploy-trace`,
+BOTH latch-ON (DEPLOY_LATCH + DEPLOY_LATCH_ANCHOR, the default since b3ad7baa4; this tree's code = b3ad7baa4's). Seeds
+never read (registered by the orchestrator): no-fight probe 12 cells x 4401-4412, fight 3-squad (budget 1500) and 5-squad
+(budget 3000) click cells x 4413-4424. `make native settle-s1v4`, builder2, judge `settle_judge.py s1v2` with
+SETTLE_S1_DECIDING_JUDGED=0. **Judged, as filed for S1 v2:** the counter (deploys turned > 0: without a turn the run says
+nothing); twitch >= 15 m squads not up; never-in runs arm <= base; first shape differs <= 3 %; friend contacts and foreign
+<= 110 % + 5; fights (his kills, his losses, CPU losses within 1.645 se, 0 runs that never started) in both fight reads.
+**Reported, not judged:** the deciding line (deploy leg >= 25 m squads) and place+twitch >= 25 m. A pass ships S1 ON on a
+new hash, with one full check (R38.34).
+
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
   column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as
