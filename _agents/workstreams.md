@@ -499,6 +499,14 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   failed, 25 passed + 2 NOT JUDGED: perf-judge refused 3 times (ratios 1.40-1.55x, light lanes running), scenario_perf unpinned (hybrid
   box). web-smoke JUDGED: first sound 20.0 s. sim-baseline 13/13 unmoved (glibc 2.43). The judged perf line is taken alone with
   `make remote-quiet T=perf-judge` (holds the whole box for a few minutes).
+- **R38.33 (2026-10-23 ~01:40) S2 v4 (`--deploy-latch=anchor`) PASSES every series line; ships ON after its full check.** settle (builder2
+  native, fac47b5d2, J 14 beside main's check; references/round38/settle/s2v4-judged-builder2-fac47b5d2, fde269d88): no-fight 12 cells x
+  4301-4312 (576 squads an arm); fights 3-squad n 36 and 5-squad (budget 3000) n 36 on 4313-4324; census 4301-4303. Deciding: shape flips
+  no-fight 51 -> 0 (line <= 13.8), fight 33 -> 0 (<= 9.2); reseats 89 -> 0. Guards: never-in 5 -> 5; every per-cell probe guard passes;
+  contacts 12,435 -> 11,762 (foreign 6,702 -> 6,302); fights pass, 0 never started; census contacts 701 -> 701. Reported: first shape wrong
+  for the anchor 10 -> 0; relays 178 -> 94; re-lays 93/571 deploys, 2 at the cap. **Next:** the default flipped ON on a new hash, a full
+  native check (R37.42's tests run in it), sim-baseline adopted with attribution on main; then orders' G1 v3 and G3 judged reads may start
+  on a latch-on base (R38.12).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
