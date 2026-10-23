@@ -4341,3 +4341,22 @@ perf line). Open rules question for him: the Resupply Tanker rarely gets to repa
 Question: the Tanker repairs only vehicles not hit for 3 s, so in real fights it rarely repairs; should it also repair during
 combat, more slowly? **His answer: "yes it also repair during combat".** Rule: the Tanker keeps repairing vehicles under fire at a
 reduced rate (start at half, 2.5 hp/s, full 5 hp/s after 3 s quiet as today); its repair beam (his pick A) shows it.
+
+## Round 38: his end-of-match pick (2026-10-22 18:41 PDT, feedback's directions page)
+
+Page https://claude.ai/artifact/V4dAc2UNofD2553VqKKS5q, db `picks/end`: **letter "a", words empty** (saved 2026-10-23T01:41:33Z).
+**A = the end card:** when a match he commands ends, a card says who won and why (e.g. DEFEAT, "Road Gangs held the rings: 90 points to
+61"), the field dims, and clicks after the end say MATCH OVER instead of giving orders (F2). It fits a portrait phone (937e7859c).
+Feedback builds A final: the losing looks (P today's banner + why, B broadcast bars, C banner stays) and `--end-look` are deleted.
+
+## Round 38: his playtest note on the top of the screen (2026-10-22 evening, in chat, verbatim)
+
+"During gameplay, the most important part of the view is the top of the screen since that corresponds to units in the distance. Right
+now the most important part of the perspective is blocked by our nice looking scoreboard, some of these info messages (i.e.
+"PLANNING: select..."), the announcer text messages (we don't need those), and the debug info about camera pitch and so forth (we don't
+need this either). We should move the scoreboard to the lower left corner of the screen and refit the bottom UX elements as necessary,
+and otherwise free up the view for the top of the screen where the perspective matters the most"
+
+What he will notice: the top of the screen is clear, so he sees the far field. Decided by him: the scoreboard moves to the lower-left
+corner (the bottom elements refit around it); the announcer's text lines go (its voice stays); the camera pitch/debug readout goes
+from the player's view (a debug flag may keep it for us); hint lines like "PLANNING: select..." leave the top. Owner: feedback (F5).

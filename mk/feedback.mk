@@ -57,3 +57,31 @@ feedback-fight: import ## his picked looks in a REAL CPU fight (gangs v Law, not
 	@echo "feedback-fight: $$(ls $(FB_FIGHT_DIR)/*.mp4 2>/dev/null | wc -l) clips in $(FB_FIGHT_DIR)"
 
 .PHONY: feedback-shots feedback-fight
+
+# ---- Round 38 feedback F1: the end of a match (_agents/streams/feedback.md) ---------------------------------------------
+
+END_DIR := $(BUILD_DIR)/end-shots
+END_OUTCOMES ?= loss
+END_ARENA ?= archipelago
+END_SEED ?= 44214
+
+end-shots: import ## F1: a commanded skirmish ended on the rings (the end card, his pick), with a click after the end -> build/end-shots/<preset>/<outcome>/ (needs a display: make remote T=end-shots; END_OUTCOMES='loss win' END_ARENA= END_SEED= FB_PRESET= FB_RES=)
+	rm -rf $(END_DIR)/$(FB_PRESET) && mkdir -p $(END_DIR)/$(FB_PRESET)
+	@echo "commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null)}$$(git diff --quiet HEAD 2>/dev/null || echo ' (+ uncommitted)') host $$(hostname) preset $(FB_PRESET) arena $(END_ARENA) seed $(END_SEED) res $(FB_RES)" \
+		> $(END_DIR)/$(FB_PRESET)/SOURCE.txt
+	@set -e; for outcome in $(END_OUTCOMES); do \
+		d=$(CURDIR)/$(END_DIR)/$(FB_PRESET)/$$outcome; mkdir -p $$d; \
+		timeout 1500 $(GODOT) --path . --resolution $(FB_RES) -- --skirmish --no-pick-faction --player-faction=law \
+			--enemy-faction=gangs --seed=$(END_SEED) --arena=$(END_ARENA) --mute --announcer-history=off --music-history=off \
+			--render-preset=$(FB_PRESET) --end-shots=$$d --end-shots-outcome=$$outcome $(FB_FLAGS) \
+			> $$d/log.txt 2>&1 || true; \
+		grep -E '^END_SHOTS_|^END_CARD|SCRIPT ERROR' $$d/log.txt || true; \
+		grep -q END_SHOTS_DONE $$d/log.txt || { echo "end-shots: $$outcome did not finish ($$d/log.txt)"; exit 1; }; \
+		! grep -q 'SCRIPT ERROR' $$d/log.txt; \
+		ffmpeg -loglevel error -y -framerate 12 -i "$$d/clip/frame_%03d.png" -vf "scale=960:-2" -c:v libx264 -pix_fmt yuv420p \
+			-movflags +faststart "$$d/clip.mp4" && rm -rf "$$d/clip"; \
+	done
+	@cat $(END_DIR)/$(FB_PRESET)/SOURCE.txt
+	@echo "end-shots: $$(ls $(END_DIR)/$(FB_PRESET)/*/clip.mp4 2>/dev/null | wc -l) clips in $(END_DIR)/$(FB_PRESET)"
+
+.PHONY: end-shots

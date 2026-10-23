@@ -926,7 +926,17 @@ func _spread(element: Element, task: Dictionary) -> Dictionary:
 ## another living element of this side's way (its centre to its task's destination, straight) steps across its own
 ## approach by ASIDE_STEP_M, alternating sides, up to ASIDE_MAX_STEPS, to the first point clear of every way; none
 ## clear: the point as chosen. `--seat-aside=on` (env SEAT_ASIDE=on).
-static var SEAT_ASIDE := OS.get_cmdline_user_args().has("--seat-aside=on") or OS.get_environment("SEAT_ASIDE") == "on"
+static var SEAT_ASIDE := OS.get_cmdline_user_args().has("--seat-aside=on") or OS.get_environment("SEAT_ASIDE") == "on" \
+		or OS.get_cmdline_user_args().has("--seat-aside=v2") or OS.get_environment("SEAT_ASIDE") == "v2"
+## Round 38 (manoeuvre M7 = O5 v2, R37.32; grant C38.1): v1 left screen-to-support_by_fire give-ways flat (251 -> 255) because a
+## support_by_fire task's `to` is its TARGET, not where its crews drive. M7's trace (builder0 53159326e, v1 ON, locks/gorge/
+## terminus x 3801-3806, 90 such give-ways, every asker element still driving to its seat): of the 30 at the screen's seat, 29
+## lay within ASIDE_CLEAR_M of the asking crew's own straight line to its goal, 10 of the element centre-to-`to` line v1 tests.
+## Under v2 the ways are each TRAVELLING member's own line (its position to its slot, else to the task's destination for verbs
+## whose `to` is a place), so a screen keeps off where other elements' crews are actually driving. `--seat-aside=v2`.
+static var SEAT_ASIDE_WAYS := OS.get_cmdline_user_args().has("--seat-aside=v2") or OS.get_environment("SEAT_ASIDE") == "v2"
+## A member within this of its slot is seated, not travelling: its line is no way (m).
+const ASIDE_SEATED_M := 3.0
 const ASIDE_CLEAR_M := 10.0
 const ASIDE_STEP_M := 5.0
 const ASIDE_MAX_STEPS := 4
@@ -952,6 +962,9 @@ func _aside(element: Element, point: Vector3) -> Vector3:
 	for other: Element in elements.of_team(team):
 		if other == element or other.members().is_empty():
 			continue
+		if SEAT_ASIDE_WAYS:
+			ways.append_array(_member_ways(other))
+			continue
 		var to: Variant = ElementTask.destination(other.task)
 		if to is Vector3:
 			ways.append([_center(other), _flat(to)])
@@ -969,6 +982,23 @@ func _aside(element: Element, point: Vector3) -> Vector3:
 				return candidate
 	seats_aside_failed += 1
 	return point
+
+
+## v2's ways of `other`: each living member's line from where it is to its slot (else to the task's destination, unless the
+## task's `to` is a target: support_by_fire), skipping members already seated.
+func _member_ways(other: Element) -> Array:
+	var out: Array = []
+	var to: Variant = ElementTask.destination(other.task) if String(other.task.get("verb", "")) != "support_by_fire" else null
+	for unit_name in other.members():
+		var tank := _tank(unit_name)
+		if tank == null or not tank.is_alive():
+			continue
+		var here := _flat(tank.global_position)
+		var slot: Variant = other.slots.get(unit_name)
+		var goal: Variant = _flat(slot) if slot is Vector3 else (_flat(to) if to is Vector3 else null)
+		if goal is Vector3 and here.distance_to(goal) > ASIDE_SEATED_M:
+			out.append([here, goal])
+	return out
 
 
 static func _clear_of(point: Vector3, ways: Array) -> bool:
