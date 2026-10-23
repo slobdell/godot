@@ -44,10 +44,10 @@ settle-series: native-for-check import ## Round 38 (settle): S1/S2's judged seri
 			$(call _settle_name,$(SETTLE_BASE)) $$name | tee -a verdict.txt || true; done
 
 # S3 (O2 on settle) + the stretch (DEPLOY_HOLD): the fight probe only (locks/crossing/terminus x 3 squads x click x
-# SETTLE_S3_SEEDS), arms latch (S2 alone: the base), held (+ --deploy-hold=on), o2 (+ --parked-hold=on), then
+# SETTLE_S3_SEEDS), arms latch (S2 v4, the shipped anchor latch, R38.33: the base), held (+ --deploy-hold=on), o2 (+ --parked-hold=on), then
 # tests/settle/settle_judge.py s3 -> build/settle-s3/verdict.txt. Runs after S2's verdict (the latch arm is its base).
 SETTLE_S3_SEEDS ?= $(shell seq 3891 3902)
-SETTLE_S3_ARMS ?= latch:--deploy-latch=on,--probe-fight=on,--probe-budget=1500 held:--deploy-latch=on,--deploy-hold=on,--probe-fight=on,--probe-budget=1500 o2:--deploy-latch=on,--deploy-hold=on,--parked-hold=on,--probe-fight=on,--probe-budget=1500
+SETTLE_S3_ARMS ?= latch:--deploy-latch=anchor,--probe-fight=on,--probe-budget=1500 held:--deploy-latch=anchor,--deploy-hold=on,--probe-fight=on,--probe-budget=1500 o2:--deploy-latch=anchor,--deploy-hold=on,--parked-hold=on,--probe-fight=on,--probe-budget=1500
 .PHONY: settle-s3
 settle-s3: native-for-check import ## Round 38 (settle S3 + stretch): the fight probe, latch v held v o2 -> build/settle-s3/verdict.txt
 	@rm -rf $(BUILD_DIR)/settle-s3 && mkdir -p $(BUILD_DIR)/settle-s3

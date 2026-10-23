@@ -226,6 +226,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   parked_returns > 0. Guards: the kills / losses lines v held. A pass ships O2 ON with latch v2 and the hold (his crews only:
   PARKED_HOLD is player-only), the seam in tank_brain.gd unchanged (orders' code; merge note to doctrine).
 
+**Amended 2026-10-23 before any S3 number (S2 passed as v4, R38.33):** every arm's latch is the shipped anchor latch
+(`--deploy-latch=anchor`; since b3ad7baa4 `=on` means v2's centroid read, which did not ship). The "if S2 fails" clause is
+moot. Bar S3's ship line reads "with the anchor latch and the hold". Seeds, cells, lines and the judge are unchanged. It
+runs on the latch-ON hash once that hash's full check is green.
+
 ### Re-filed before any fight number (2026-10-22): the fight workloads
 The fight probe runs only the 3-squad army: every 5-squad fight run of the S1+S2 series (e42ff30eb, builder2) stopped at
 start ("no RtsControls (TacticalMap)", 54 of 108). Orders' own fight bars used 3 squads only; mine was mis-filed. Re-filed
