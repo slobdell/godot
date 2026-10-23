@@ -283,6 +283,11 @@ only S1 v3's fit change, OFF in both arms, and the trace lines). Seeds never rea
 shape counts). Anchor reference: main 13 wrong, latch 16 (the latch's: 10 herringbone where the anchor is open, all on locks; 6 coil where it is lanes, 3 locks, 3
 terminus). Stand reference: main 0 (its own read), latch 13.
 
+**S2 v3 WITHDRAWN before numbers (R38.19).** The series started on builder2 at 19:33 (79a9f83bf) and was stopped at the
+orchestrator's word before any row on 4001-4024 was read (the local copy deleted unread). Its context (anchor: main 13 v
+latch 16) showed the latch's own read, the crews' all-in centroid, is the weakness. Next: S2 v4 (the latch holds the
+terrain at the deploy anchor), lab first, a new bar on fresh seeds, queued after doctrine's D2b and before S1 v3.
+
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
   column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as
