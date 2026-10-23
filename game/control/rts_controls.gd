@@ -1428,20 +1428,26 @@ func _relay_first_to_today(element: Element) -> bool:
 	return false
 
 
-## G3: a running leg G3 moved goes back to its place before clearing (it is a waypoint now). Whether it was sent back.
+## G3: the leg G3 moved (running, or the last queued) goes back to its place before clearing (it is a waypoint now).
+## Whether it was sent back. Dev read 6 (a24f3b3fb, Terminus 5 route s3805): a moved leg still queued kept its moved place.
 func _send_cleared_back(element: Element) -> bool:
-	if _cleared_back.is_empty() or String(element.task.get("verb", "")) != "move" or not element.task.has("to"):
+	var queued := not element.queued_tasks.is_empty()
+	var leg: Dictionary = element.queued_tasks[element.queued_tasks.size() - 1] if queued else element.task
+	if _cleared_back.is_empty() or String(leg.get("verb", "")) != "move" or not leg.has("to"):
 		return false
-	var to: Array = element.task["to"]
+	var to: Array = leg["to"]
 	var key := _place_key(Vector3(float(to[0]), 0.0, float(to[1])))
 	if not _cleared_back.has(key):
 		return false
 	var back: Vector3 = _cleared_back[key]
-	var aimed: Dictionary = element.task.duplicate(true)
+	var aimed: Dictionary = leg.duplicate(true)
 	aimed["to"] = [back.x, back.z]
 	for drop: String in ["halt_at", "halt_shape"]:
 		aimed.erase(drop)
-	element.retarget(aimed)
+	if queued:
+		element.queued_tasks[element.queued_tasks.size() - 1] = aimed
+	else:
+		element.retarget(aimed)
 	cleared_legs_back += 1
 	return true
 
@@ -1927,7 +1933,7 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 		# (planner's probe, O4 before/after: one squad queued behind its crews' orders left a 5-squad route with no gate at all).
 		# G2: unless the running waypoint is his plain group click given moments ago and laid as a column (`fresh`): the
 		# probe's route cells stacked a column at the first waypoint and the rear squads backed up before driving the route.
-		if held != null and is_instance_valid_element(held) and held.queued_tasks.is_empty():
+		if held != null and is_instance_valid_element(held):
 			_send_cleared_back(held)
 		if held == null or not is_instance_valid_element(held) or (held.queued_tasks.is_empty() and not fresh):
 			continue
