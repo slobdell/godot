@@ -153,5 +153,5 @@ settle-s2v3-context: native-for-check import ## Round 38 (settle, R38.15): S2 v3
 # turns, seeds never read for S1: no-fight 4201-4212, fight3/fight5 4213-4224 -> build/settle-s1v3/verdict.txt.
 .PHONY: settle-s1v3
 settle-s1v3: ## Round 38 (settle, R38.17): S1 v3's series (main v fit, seeds 4201-4224) -> build/settle-s1v3/verdict.txt
-	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3" SETTLE_V2_SEEDS="$$(seq 4201 4212)" \
-		SETTLE_V2_FIGHT_SEEDS="$$(seq 4213 4224)"
+	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3" SETTLE_V2_SEEDS="$$(seq -s " " 4201 4212)" \
+		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 4213 4224)"
