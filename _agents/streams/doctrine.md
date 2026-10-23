@@ -58,7 +58,8 @@ deciding 1.5 se; G2 broken on the turtle line). **D2b JUDGED: FAIL, ships OFF** 
 kills -2.8 se; G3 none-line median +31 %). `--cpu-defend` stays in the code, OFF, for playtests. **D3** re-based on what ships
 (defend OFF); Bar D3 filed below before any arm number; it waits behind settle's S2 v4 and S1 v3 on builder2. **D2c** (hold with
 some, strike with the rest; R38.30) built OFF in ebb817ea0, Bar D2c filed below; labs done: SPLIT is the lever (blob 9 -> 4 of 20), so the series
-arm is SPLIT alone (re-filed before any series number); the series waits for builder2 after D3. **GREEN: c475c3163**
+arm is SPLIT alone (re-filed before any series number). **builder2 order (R38.35): settle's read, then D2c's check +
+series (~/doctrine-runs/d2c-series.sh <tree>), then D3; if D2c passes, Bar D3 is re-based on SPLIT ON before its numbers.** **GREEN: c475c3163**
 (builder2 `make native check exited 0`, 3066 passed / 0 failed; the scenario perf row NOT JUDGED, reason=loaded, so G4 is re-run
 alone). Earlier green: acbdef4c5 (builder2, 3063 / 0, sim-baseline 13/13 unmoved with the switch OFF). Raw guard logs:
 ~/doctrine-guard-raw/acbdef4c5-{off,defend}, ~/doctrine-guard-raw/c475c3163-{off,defend}.
@@ -236,7 +237,8 @@ None line (CPU v CPU, same seeds, 20 fights): OFF median 158 s (6 control, 14 el
   package.** The bar's text is otherwise unchanged. No constant was re-tuned. CLOSING stays in the code, OFF. Lab guard on
   SPLIT: 31.6 % v OFF 22.0 %, inside +10 points by 0.4. Tight: the series reports it again on the series tree.
 
-**Bar D3 (FILED 2026-10-23 before any D3 arm number).** Change: the round-37 rule switches ON v OFF, on what ships (defend OFF,
+**Bar D3 (FILED 2026-10-23 before any D3 arm number).** _(R38.35: if D2c passes, its base and every arm gain `--cpu-defend --cpu-defend-split`, re-filed
+before any D3 number; if it fails, as written.)_ Change: the round-37 rule switches ON v OFF, on what ships (defend OFF,
 D2/D2b failed): **rules** `--rules-on=sight,spread,pin_slow`; **hulldown** `--cover-on=hulldown`; **pkg** both together.
 - **Workload:** tree c475c3163 (green), builder2, `guard.sh` GUARD_CHUNK=8, the same 320 guard fights (4801-4808 + 4901-4908 x
   5 maps x both sides x blob/turtle), each arm paired with **c475c3163-off** (read above) by `guard.py --pair`. These switches
