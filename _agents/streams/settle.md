@@ -280,7 +280,7 @@ only S1 v3's fit change, OFF in both arms, and the trace lines). Seeds never rea
   runs that never started), census: as filed.
 **Context (NOT on the v3 seeds; the re-read's seeds 3903-3914 again, builder2 91a681712,
 `references/round38/settle/s2v3-context-builder2-91a681712/`):** reproduces the re-read (first shape differs 18/576, same
-shape counts). Anchor reference: main 13 wrong, latch 16 (the latch's: herringbone where the anchor is open, 13 of 16, all
+shape counts). Anchor reference: main 13 wrong, latch 16 (the latch's: 10 herringbone where the anchor is open, all on locks; 6 coil where it is lanes, 3 locks, 3
 on locks). Stand reference: main 0 (its own read), latch 13.
 
 ### Requests / cross-stream notes (round 38)
