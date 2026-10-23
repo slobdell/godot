@@ -419,6 +419,10 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   sound 32.9 s v 30 s; builder2 loaded, the fourth such miss today). web-smoke re-run ALONE on the same hash on builder0 (load 12.7):
   `make web-smoke exited 0`, first sound 21.6 s. sim-baseline 13/13 unmoved. Native's 54898f5b1 makes the gate per physical core
   (builder2 loaded at 24, builder0 at 15), so these misses will read NOT JUDGED once merged.
+- **R38.23 (2026-10-22) main 7622b9f4c (feedback's final end card A, aca357e9e): builder2 `make native check exited 2`** on web-smoke
+  alone (first sound 32.2 s v 30 s, loaded; the fifth such miss), every other target passed or NOT JUDGED (perf-judge, scenario_perf),
+  sim-baseline unmoved. Not ruled green yet: the next main check (9a6909305, native's per-core gate, a superset of this tree) is its
+  verdict; if web-smoke misses there too, it reads NOT JUDGED under the new gate and is re-run alone on builder0.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
