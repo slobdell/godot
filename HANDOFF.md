@@ -22,7 +22,7 @@ and the scoreboard rows, which the orchestrator finishes in round 36.** Older he
 | **native** | `godot-native` (4, CONTINUING its round-37 session) | Opus | nothing alone: rows, twins, guard tooling | N1 round 37's row |
 
 **ROUND 38: EVERY STREAM AT ITS END STATE (2026-10-23 ~13:45 PDT); ready to close when the lead says.** All six branches merged at
-their green hashes; main 30c23d4c8 (final check running on builder2); last perf-judged main f49a5febc PASS 7,087 us/tick (builder0).
+their green hashes; main 30c23d4c8 GREEN (builder2, 3135/0, sim-baseline unmoved) and perf-judged PASS 7,084 us/tick (builder0) (R38.54).
 **SHIPPED ON:** the Tanker repairs under fire (F3); his end card A (+ portrait phone); the top of the screen free (F5); settle's deploy
 latch at the anchor (a stopped squad keeps its shape and seats). **Merged OFF:** CPU defend D2/D2b/D2c, M7 v2, S1 v5 street cap, G1 v4,
 G2, G3 v5, all judges and traces. **Failed (each with a recorded cause):** M5 v2 (R38.24); D2, D2b, D2c (blob -3 to -4.4 points, never

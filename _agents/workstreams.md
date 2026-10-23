@@ -709,6 +709,10 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   check exited 0`, 3135 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge not judging there; scenario_perf loaded 2.91x),
   sim-baseline 13/13 unmoved. perf-judge on idle builder0 at dbe40f65d (= f49a5febc + docs): PASS attempt 1, 7,087 us/tick v 20,000
   (ratio 1.00x, idle 97 %). Main is green and judged for everything merged in round 38; only native's hand-over remains.
+- **R38.54 (2026-10-23 ~14:15) ROUND 38's FINAL MAIN: 30c23d4c8 GREEN (builder2) AND PERF-JUDGED (builder0).** `make native check
+  exited 0`, 3135 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge not judging there; scenario_perf loaded 2.79x), sim-baseline
+  13/13 unmoved. perf-judge on idle builder0 at 022055b68 (= 30c23d4c8 + docs): PASS attempt 1, 7,084 us/tick v 20,000 (ratio 1.00x, idle
+  95 %). Every stream at its end state; all six branches merged at their green hashes.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
