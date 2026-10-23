@@ -676,6 +676,12 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   **For him (a feel call, not a results call):** R1-R3 make blob fights a little longer and turtle fights shorter without changing who
   wins on the guard lines. Merged 5a9464679 (green builder2 3069/0); every switch OFF. Round 39: a powered SPLIT series; `make skirmish`
   has no flag passthrough (play.mk's owner).
+- **R38.49 (2026-10-23 ~10:50) orders' tree ab31e9bc2 GREEN AND ALL JUDGED on builder0; control timing judged on a quiet box.**
+  `make native check exited 0`, 27 targets all passed, ALL JUDGED, 3121 / 0 (the green tree for Bars G3 v5 and G1 v4). `make native
+  control-timing exited 0` on idle builder0 (load 1.2, same game code at 7953d7e52): test_control_scale 5/0, test_control_readability
+  8/0; the check's "right click on 30 units 114.9 (budget 104)" was a loaded, unjudged read. Stretch (bridge-mouth lay): clicks 3/6/9 m
+  short of the west deck lay 0 places on it, 0 crossed, 0 never-in, in main and G3 v5; nothing to build. G3 v5 and G1 v4 judged reads
+  running (builder0 light J4).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
