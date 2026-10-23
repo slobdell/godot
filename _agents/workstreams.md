@@ -450,6 +450,15 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   orchestrator). **Round-39 candidates:** the `--touch-map` mode's panels still sit at the top by design (squad bar top centre, camera
   buttons top right): a phone-layout redesign with a thumb-reach choice, so a directions page for him; the sim runs on behind the end card;
   the under-fire repair beam is faint by design. No judged perf line on feedback's commits (main's builder0 check judges).
+- **R38.29 (2026-10-23 ~00:55) D2b FAILS; `--cpu-defend` ships OFF; D3 is a read on top of OFF.** doctrine (c475c3163 both arms,
+  builder2, fresh guard seeds 4801-4808 + 4901-4908, 320 fights an arm, 0 lost, 400/400 ON logs carry the switch): deciding blob 47 ->
+  44 % (0.9 paired se, McNemar p 0.22), not met; G1 turtle 39 -> 32 % holds; **G2t fails** turtle-line kills a fight -1.94 (-2.8 se);
+  **G3 fails** none-line median length 130 -> 170 s (+31 %, bar x1.2), caps 0 v 2; blob line flat per faction. Across D2 and D2b the
+  defend posture makes the CPU passive against anything near its ring and buys little against the blob. **Bar D3 (filed 640cee079,
+  before numbers; copied as accepted):** arms `--rules-on=sight,spread,pin_slow`, `--cover-on=hulldown` and the package, each paired
+  with c475c3163-OFF on the same 320 fights (no new base run; those seeds have no rules read yet). A read for his design call, not a ship
+  call; "matters" (a win rate moving > 2 se, or cover_struck a fight >= 5x R37's 1.6) gates the stretch (CPU low-cover seats). builder2
+  after settle's S2 v4 and S1 v3; native's row after D3.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
