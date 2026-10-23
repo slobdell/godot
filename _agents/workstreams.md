@@ -58,7 +58,8 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
   text in `game/modes/skirmish_mode.gd` ("PLANNING: select..."), nothing else in that file (merge note to its owner of record);
   `game/ui/camera_readout.gd` hidden behind a debug flag. Presentation only; sim-baseline must not move. **Extended (2026-10-22 ~21:10):** the one
   line in `game/control/rts_controls.gd` `_draw` that places the Space-pause line ("PAUSED: give orders, then Space to resume", drawn at
-  14 % of the height) may route it through the HUD hint at the bottom; nothing else in orders' file (merge note to orders).
+  14 % of the height) may route it through the HUD hint at the bottom, and the line above it that sizes the pause text may use
+  `HudLayout.bug_ui_scale(size)` (identical in landscape); nothing else in orders' file (merge note to orders).
 - **C38.3 settle and orders share `element_plan.gd`'s callers:** orders lays WHERE squads go (group lay); settle decides how a squad
   SITS once there (deploy, halt shape, seat deal, parked hold). A change that crosses goes through a merge note both sign.
 
