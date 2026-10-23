@@ -329,8 +329,12 @@ fights). Arms main:--deploy-trace v anchor:--deploy-latch=anchor,--deploy-trace.
 - Reported (R38.20): first shape wrong for the anchor's ground 10 -> 0 (main: 6 coil-on-lanes, 4 herringbone-on-open; locks
   and terminus 5-squad); relays 178 -> 94; parked re-deals 411 -> 405; deploy re-lays 93 over 571 deploys, 2 at the 3-lay cap
   (crossing 3 route s4305 Charlie, crossing 5 route s4306 Charlie).
-- Still to come: test_settle_deploy_latch and test_settle_deploy_latch_anchor green in a full check. That runs on the ON
-  commit (the default flipped) on builder2 after S1 v3, then the sim-baseline attribution.
+- **ON hash b3ad7baa4** (DEPLOY_LATCH + DEPLOY_LATCH_ANCHOR default ON; `--deploy-latch=off` = round 38's main, `=on` =
+  v2's centroid read). Full `make native check` on builder0 (glibc 2.43), 3804 s, beside other streams' series: 25 passed,
+  2 NOT JUDGED (perf-judge refused 3 times on a busy box, ratios 2.47x/1.93x/2.14x; ai-scenarios-check's scenario_perf,
+  unpinned hybrid). test 3070 passed, 0 failed, including test_settle_deploy_latch (3), test_settle_deploy_latch_anchor
+  (2) and test_tactics_scenarios_2::test_a_move_ends_formed_up_on_the_spot_and_stops_issuing (R37.42). sim-baseline:
+  all 13 maps unmoved. The 2 NOT JUDGED are not passes: perf-judge needs a run on a quiet box.
 
 ### S1 v3 verdict: PASSES as filed (builder2 native, 4ec06dd97 = fac47b5d2's code; latch OFF on both arms)
 `make native settle-s1v3`, builder2 (e2-highcpu-32), jobs 14; no-fight probe 12 cells x 4201-4212 = 576 squads an arm, fight
