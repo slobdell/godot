@@ -230,6 +230,18 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   5 click and his 5 click, looked at). Never-in compares with main's count on the same seeds and cells (main itself loses a squad at
   crossing's west bridge mouth on some seeds). Dev read 9 (e518fd649, 3804-3809, n 6) passed every line. A pass ships ON.
 
+- **G1 v4 COLUMN, whole on plain clicks (orders, R38.44; filed in stream/orders 7c3250ed6 before any number; copied here by the
+  orchestrator).** What he would see: select all and click a street; every squad lands in that street, stacked back along it, each with its
+  own vehicles; open ground unchanged; a shift-clicked route drives as today. Code 4d68baba4, OFF; arm `--group-lay=column,--group-rank-
+  shift=half,--group-whole=click,--group-clear=reached`. Tree: the first commit at or after 7c3250ed6 with main merged (latch ON both
+  arms) whose builder0 full check is green; G3 and G2 OFF both arms. Probe `main:` v `column:<arm>`, builder0 light J <= 4, slot timeout
+  14400 as a make variable, FRESH seeds 4701-4712, n 12 a cell, the G1 cells (12 street, his click 3/5, yard_open); `orders_judge.py g1v4`.
+  Counter columns_laid > 0. Deciding (click cells + his click): places outside <= 25 % of base; route_left_m <= 50 %; re-dealt 0 over the
+  click cells. Guards: every R36.6 guard over all 14 cells as filed (twitch included, none amended); contacts <= base x 1.1 + 5; yard_open
+  every row identical. Route cells differ from main only through the first plain click's whole dealing (queued legs dealt as main); the
+  s3805 trace and the dropped replay are recorded; route never-in at n 12 is a coin flip taken as the price of a fresh read. Paired
+  top-down shots of his click, looked at. A pass ships ON.
+
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
 `references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
