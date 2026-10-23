@@ -327,6 +327,17 @@ fights). Arms main:--deploy-trace v anchor:--deploy-latch=anchor,--deploy-trace.
 - Still to come: test_settle_deploy_latch and test_settle_deploy_latch_anchor green in a full check. That runs on the ON
   commit (the default flipped) on builder2 after S1 v3, then the sim-baseline attribution.
 
+### S1 v3 verdict: PASSES as filed (builder2 native, 4ec06dd97 = fac47b5d2's code; latch OFF on both arms)
+`make native settle-s1v3`, builder2 (e2-highcpu-32), jobs 14; no-fight probe 12 cells x 4201-4212 = 576 squads an arm, fight
+3-squad and 5-squad (budget 3000) x 4213-4224 (n 36 each). `references/round38/settle/s1v3-judged-builder2-4ec06dd97/`.
+- Counter PASS: 70 of 570 deploys turned. **Deciding PASS:** squads with a deploy leg >= 25 m 57 -> 18 (line <= 28.5).
+- Guards PASS: twitch >= 15 m squads 111 -> 79; never-in 5 -> 4 runs; first shape differs 10 of 576 (<= 3 %); contacts
+  12,652 -> 12,025, foreign 6,874 -> 6,647; fights 3-squad (his kills 5.22 -> 5.28, his losses 8.44 -> 8.25, CPU losses
+  5.33 -> 5.39) and 5-squad (8.83 -> 8.81, 15.83 -> 16.08, 9.08 -> 9.00), 0 runs that never started.
+- Reported: place+twitch >= 25 m squads 163 -> 116.
+- Not yet: the full check of an ON commit. Note for the ON: it was judged with the latch OFF; on a latch-ON main the fit
+  lays on the anchor-latched read (`_deploy_state`: re-lay first, then the fit), a combination no judged number covers.
+
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
   column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as
