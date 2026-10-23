@@ -65,8 +65,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   main) and his 3-squad click 2.3 -> 11.4 (settle's halt flip: the latch base).
 - **Full check of the v2 tree (builder2, a68ae8b84 = 4a765e6e2 + docs, load ~24, ~80 other Godots):** two failures OUTSIDE my
   paths, both load-sensitive: `broker-test` (relay subtest "a host that never comes back closes the room": timed out) and
-  `shell-tools-test`'s `quiet-window` live sample ("our own are not foreign"). Re-running those two targets on a quieter
-  box; no green hash named yet.
+  `shell-tools-test`'s `quiet-window` live sample ("our own are not foreign"). Verdict line: `make native check exited 2`,
+  22 passed, 2 FAILED, 0 NOT RUN, 3 NOT JUDGED (perf-judge: builder2 not a judging box; scenario_perf at load; web-smoke
+  first sound at load 56); tests 3,061 passed / 0 failed; sim-baseline 13/13 unmoved. The two re-run on builder0's light
+  lane (b7d4dcffd): `make broker-test remote-guard-test exited 0`. **The hand-over hash's own full check** (b7d4dcffd: v3 +
+  G3 + probe fix, all OFF) is running on builder2. web-smoke already failed there: "first sound 32.3 s after READY (bound
+  30 s)" on headless SwiftShader at load ~31. That target is outside my paths and failed the same way on the v2 tree.
+- **Settle's S2 re-read fails one guard, so the latch stays OFF** (settle, ~19:30). The failing guard is first shape: 18 of
+  576 rows differ, over the 17.3 line. Most of those are coil -> herringbone in lanes. The orchestrator rules whether that
+  bar stands. G1 v3's judged read keeps waiting, as Bar G1 v3 says. No v3 number is taken on a latch that is not ON on main.
 
 ### EARLIER (2026-10-22 ~17:40 PDT)
 - **G1 judged series RUNNING** (builder0 light lane, J 4 alongside manoeuvre per R38.8; tree 4a765e6e2 = 130cf487f + evidence;
@@ -183,6 +190,27 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   stays round 34's B8 approach. Settle's deploy-fit (stream/settle ac36add58, OFF) sits on top; agreed, no new key.
 
 ### Bars (filed here before any judged number; the orchestrator records them on main)
+- **Bar G3 PLACE_CLEAR (orders, R38.15; filed 2026-10-22 late evening, before any G3 number on the judged seeds; code
+  258c199c6, `--place-clear=on`, OFF).** What he would see: select all and click; no squad parks on top of another one, and
+  every squad gets in. The squads stay where he clicked, not 60 m back down the road.
+  **Tree:** a hash whose full check is green (b7d4dcffd or later), switch OFF by default. G1 is OFF in both arms.
+  **Probe:** `make native orders-probe`, arms `main:` v `g3:--place-clear=on`, on builder0's light lane at J <= 4, with FRESH
+  seeds 4011-4022 (n 12 a cell). Cells: the 12 street cells (locks / crossing / terminus x 3 / 5 squads x click / route),
+  his click (`terminus_his`, 3 / 5 squads), and yard_open (3 / 5 x click / route).
+  **Judge:** `tests/control/orders_judge.py g3` (all cells).
+  **Counter:** places_cleared > 0.
+  **Deciding** (all cells, summed):
+  1. squad rows parked on another squad (`end_foreign_m` < 8 m): arm <= 50 % of base;
+  2. never-in squads: arm <= base, and strictly fewer if base has any.
+  **Offset guards** (R38.15: the s3866 lab stepped squads 4/5 back ~60 m):
+  1. per cell, the median of the worst place-to-click distance (`worst_offset_m`) <= base + 15 m;
+  2. squad rows whose place is > 40 m further from the click than the same seed and squad on main <= 5 % of all squad rows;
+  3. no place > 100 m further back than main's.
+  **Other guards:** every R36.6 guard per cell (all-in median <= base x 1.2 + 3 s; no more never-in; worst twitch median
+  <= base + 3 m; end foreign min median >= base - 3 m; crossed no higher); friendly contacts <= base x 1.1 + 5;
+  yard_open no worse on any of these.
+  **Reported:** places_cleared per cell, the offset distribution, and route_left_m.
+  **Plus:** paired top-down shots of crossing 5 click (main v g3), looked at. A pass ships ON.
 - **Bar G1 v3 (orders, R38.12; filed 2026-10-22 evening, before any v3 judged number; code 0e169432f, `--group-lay=column`
   OFF).** Changes from v2: today's body judged at the click's width only (the yard_open container case); the 2 s first-click
   re-lay only where the column moved some squad's place > 40 m (about a rank), and (f2a94b6cc, amended before any number)
