@@ -177,8 +177,8 @@ func test_banners_move_beside_the_tactical_map_and_wrap() -> void:
 	assert_true(messages.status.column.has_area(), "with the tactical map up, info moves into a side column")
 	assert_true(messages.status.column.end.x <= arena_left, "the info column stays left of a top-down arena")
 	assert_true(messages.warning.column.position.x >= 1600.0 - arena_left, "warnings stay right of it")
-	assert_true(messages.status.column.position.y >= 720.0 * 0.2 and messages.warning.column.position.y >= 720.0 * 0.2,
-			"both sit below the map's top button row and orders log")
+	assert_true(messages.status.column.position.y >= 720.0 / 3.0 and messages.warning.column.position.y >= 720.0 / 3.0,
+			"round 38 (F5): both start below the top third, the far field")
 	hud.post_message("Commander ALPHA-1 down: ALPHA-2 takes command of the squad", Hud.ERROR)
 	messages.warning.advance(2.0)
 	var tall := messages.warning.size.y

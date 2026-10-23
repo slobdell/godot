@@ -2919,9 +2919,9 @@ func _draw_timed() -> void:
 	HudClock.end(&"ctl.d.order_marks", t)
 	if _pause_text != "" and get_tree().paused:
 		var font := CyberStyle.font()
-		var text_size := roundi(22.0 * CyberStyle.ui_scale(size))
+		var text_size := roundi(22.0 * HudLayout.bug_ui_scale(size))  # C38.5 (feedback F5): the shorter side (portrait phones)
 		var width := font.get_string_size(_pause_text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size).x
-		var at := Vector2((size.x - width) / 2.0, size.y * 0.14)
+		var at := Vector2((size.x - width) / 2.0, HudLayout.pause_line_y_for(self, text_size))  # C38.5 (feedback F5): over the bottom HUD
 		draw_rect(Rect2(at - Vector2(16, text_size * 1.1), Vector2(width + 32, text_size * 1.6)), Color(CyberStyle.CARD, 0.85))
 		draw_string(font, at, _pause_text, HORIZONTAL_ALIGNMENT_LEFT, -1, text_size, CyberStyle.YELLOW)
 	if mode != "":

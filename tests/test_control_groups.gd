@@ -282,7 +282,8 @@ func test_group_bar_rows() -> void:
 	assert_eq(GroupBar.rows_for(ten, 6.0, 1206.0), [5, 5] as Array[int], "ten at his window: two rows of five")
 	assert_eq(GroupBar.rows_for(ten, 6.0, 2000.0), [10] as Array[int], "a wide enough screen keeps one row")
 	assert_eq(GroupBar.rows_for(ten.slice(0, 7), 6.0, 1000.0), [4, 3] as Array[int], "seven: four over three")
-	assert_near(GroupBar.room_for(Vector2(1854, 1011)), 1206.0, 1.0, "his window's room is the panel's")
+	# Round 38 (F5): the score bug took the lower left; the chips' row runs from right of the hints to left of the radar.
+	assert_true(GroupBar.room_for(Vector2(1854, 1011)) >= 5.0 * 180.0 + 4.0 * 6.0, "his window still fits five chips a row (%.0f)" % GroupBar.room_for(Vector2(1854, 1011)))
 
 
 func test_group_bar_shows_ten_chips_in_two_rows() -> void:

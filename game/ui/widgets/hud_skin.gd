@@ -8,6 +8,13 @@ extends Control
 
 ## Width of the top-left block as a fraction of the screen: stops short of the warning banner (20%).
 const BLOCK_FRACTION := 0.19
+## Round 38 (F5): on a portrait phone the block (shown only while paused) gets most of the width: 19 % of 810 px wrapped it
+## a word to a line.
+const BLOCK_FRACTION_PORTRAIT := 0.6
+
+
+static func block_width(screen: Vector2) -> float:
+	return screen.x * (BLOCK_FRACTION_PORTRAIT if HudLayout.portrait(screen) else BLOCK_FRACTION)
 
 var status_frame := CyberFrame.new()
 var banner_frame := CyberFrame.new()
@@ -186,6 +193,7 @@ func _process_timed(_delta: float) -> void:
 		_last_screen = screen
 		_layout(screen)
 	_fit_status_frame(screen)
+	_show_top_block_when_paused()
 	_fit_score_bug(screen)
 	_fit_banner_frame(screen)
 	if _messages != null:
@@ -207,10 +215,11 @@ func _place_messages(screen: Vector2) -> void:
 	var s := CyberStyle.ui_scale(screen)
 	var margin := 12.0 * s
 	var column_width := clampf((screen.x - screen.y) / 2.0 - margin * 2.0, 220.0 * s, screen.x * 0.26)
-	if map_up and column_width < screen.x * 0.4:
-		var info_top := maxf(screen.y * 0.22, fx_button.position.y + fx_button.size.y + margin)
-		_messages.set_columns(Rect2(margin, info_top, column_width, screen.y * 0.4),
-				Rect2(screen.x - margin - column_width, screen.y * 0.25, column_width, screen.y * 0.35))
+	if map_up and (column_width < screen.x * 0.4 or HudLayout.portrait(screen)):
+		# Round 38 (F5): both columns start below the top third (the far field), over the hints and the bug on the left and
+		# over the radar on the right.
+		var columns := HudLayout.message_columns(screen, column_width, 110.0 * s)
+		_messages.set_columns(columns[0], columns[1])
 	else:
 		_messages.set_columns(Rect2(), Rect2())
 		_messages.status.bottom_inset = 0.0
@@ -230,7 +239,7 @@ func _layout(screen: Vector2) -> void:
 	look_button.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
 	look_button.custom_minimum_size = Vector2(190.0 * s, 52.0 * s)
 	look_button.size = look_button.custom_minimum_size
-	var width := screen.x * BLOCK_FRACTION - pad * 2.0
+	var width := block_width(screen) - pad * 2.0
 	if _status != null:
 		_status.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
 		_status.add_theme_color_override("font_color", Color(CyberStyle.TEXT, 0.85))
@@ -246,6 +255,22 @@ func _layout(screen: Vector2) -> void:
 		_banner.add_theme_font_size_override("font_size", maxi(24, roundi(52.0 * s)))
 		_banner.add_theme_color_override("font_color", CyberStyle.WHITE)
 		_banner.add_theme_color_override("font_outline_color", Color(CyberStyle.PINK, 0.6))
+
+
+## Round 38 (F5, his note: free the top of the screen): where he commands an army, the status block (mode, seed, map) and
+## the FX / QUALITY / LOOK buttons show only while the game is paused (the planning pause, Space), where he changes how
+## it runs; during play the top of the screen is the far field.
+func _show_top_block_when_paused() -> void:
+	var shown := not _commanding() or get_tree().paused
+	for node: CanvasItem in [_status, _scoreboard]:
+		if node != null:
+			node.visible = shown
+	if not shown:
+		status_frame.visible = false
+	var buttons := shown and DisplayServer.get_name() != "headless"
+	fx_button.visible = buttons
+	frame_button.visible = buttons
+	look_button.visible = buttons and _levers != null
 
 
 func _fit_status_frame(screen: Vector2) -> void:
@@ -264,43 +289,44 @@ func _fit_status_frame(screen: Vector2) -> void:
 	var pad := 14.0 * s
 	# Labels outside containers grow to fit their text when it changes; pin the width every frame
 	# so autowrap keeps the block inside its column.
-	var width := screen.x * BLOCK_FRACTION - pad * 2.0
+	var width := block_width(screen) - pad * 2.0
 	_status.size = Vector2(width, 0.0)
 	_fit_status_lines(width, s)
 	_scoreboard.position = Vector2(_status.position.x, _status.position.y + _status.get_combined_minimum_size().y + 2.0 * s)
 	_scoreboard.size = Vector2(width, 0.0)
 	_fit_scoreboard_line(width, s)
 	var bottom := _scoreboard.position.y + _scoreboard.get_combined_minimum_size().y
-	var rect := Rect2(Vector2(pad * 0.5, pad * 0.35), Vector2(screen.x * BLOCK_FRACTION, bottom + pad * 0.6 - pad * 0.35))
+	var rect := Rect2(Vector2(pad * 0.5, pad * 0.35), Vector2(block_width(screen), bottom + pad * 0.6 - pad * 0.35))
 	if status_frame.position != rect.position or status_frame.size != rect.size:
 		status_frame.position = rect.position
 		status_frame.size = rect.size
 
 
-## Round 19 (board, S2): the score bug, top centre (the broadcast's place for it), scaled with the HUD. The top-left
-## block keeps the status; the bug carries the score.
+## Round 19 (board, S2): the score bug, scaled with the HUD. Round 38 (F5, his note): in the LOWER-LEFT corner, beside the
+## command bar (HudLayout), so the top of the screen, the far field, is clear. A spectated feed (no command bar) keeps the
+## broadcast's top centre.
 func _fit_score_bug(screen: Vector2) -> void:
 	var bug := _hud.get_node_or_null("ScoreBug") as Control
 	if bug == null:
 		return
-	var s := CyberStyle.ui_scale(screen)
-	var want := ScoreBug.SIZE_1080 * s
-	# Never wider than the lane between the status block and the right-hand column.
-	var lane := screen.x * (1.0 - 2.0 * BLOCK_FRACTION) - 24.0 * s
-	if want.x > lane:
-		want *= lane / want.x
-	var at := Vector2(round((screen.x - want.x) / 2.0), round(10.0 * s))
-	if bug.size != want or bug.position != at:
-		bug.position = at
-		bug.size = want
+	var rect := HudLayout.bug_rect(screen)
+	if not _commanding():
+		var s := CyberStyle.ui_scale(screen)
+		var want := ScoreBug.SIZE_1080 * s
+		var lane := screen.x * (1.0 - 2.0 * BLOCK_FRACTION) - 24.0 * s
+		if want.x > lane:
+			want *= lane / want.x
+		rect = Rect2(Vector2(round((screen.x - want.x) / 2.0), round(10.0 * s)), want)
+	if bug.size != rect.size or bug.position != rect.position:
+		bug.position = rect.position
+		bug.size = rect.size
 		bug.queue_redraw()
-	# The booth's caption line (top centre too) goes under the bug's whole footprint: the panel, the kills line and
-	# the lower-third (ScoreBug.FOOTPRINT_1080). Its own layout puts it at 7.5 % of the height, on top of them.
-	var caption := _hud.get("caption_line") as Control
-	if caption != null and caption.visible:
-		var below := at.y + ScoreBug.FOOTPRINT_1080 * (want.y / ScoreBug.SIZE_1080.y)
-		if caption.position.y < below:
-			caption.position.y = below
+
+
+## A player commands an army on this HUD (RtsControls or the touch map, both named TacticalMap), and nobody spectates.
+func _commanding() -> bool:
+	var tactical := _hud.get_node_or_null("TacticalMap") as Control
+	return tactical != null and tactical.get("reveal_all") != true
 
 
 ## Round 14 (garage G4, additive; round 13's tour at 20:9: the score box wrapped as "Green 4 units vs / 6 units Rust"):

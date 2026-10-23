@@ -75,7 +75,10 @@ static func lineup_plan(player: String, enemy: String, player_faction: String, e
 
 
 ## C25.6: the planning pause's line, naming the squads' number keys (1-4 on the laptop preset, 1-5 elsewhere).
-static func planning_hint(squad_cap: int) -> String:
+## C38.5 (feedback F5): a portrait phone gets the short form, which fits its width and still names the keys.
+static func planning_hint(squad_cap: int, narrow := false) -> String:
+	if narrow:
+		return "PLANNING: 1-%d, right-click to order, Space starts" % squad_cap
 	return "PLANNING: select (click, drag, 1-%d) and right-click to order; Space starts" % squad_cap
 
 
@@ -734,7 +737,8 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 			controls.recall_group(1)
 	else:
 		controls.recall_group(1)
-		controls.set_paused(true, SkirmishMode.planning_hint(match_squad_cap))
+		controls.set_paused(true, SkirmishMode.planning_hint(match_squad_cap,
+				HudLayout.portrait(main.get_viewport().get_visible_rect().size)))
 
 
 ## Round 2's mobile tap grammar (--touch-map; also the camera playtest, which drives it).
