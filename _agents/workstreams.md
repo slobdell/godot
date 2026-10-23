@@ -197,6 +197,12 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   faction within 2 paired se on both lines; G3 none-line length x1.2; lab guard turtle-line CPU hold share <= OFF + 10 points. A pass
   ships ON.
 
+- **S1 v4 = S1 v3 on the latch-ON base (settle, R38.34; filed in stream/settle fdeb18ce6 before any number; copied here by the
+  orchestrator).** Arms S1 ON v OFF, both latch-ON, code = b3ad7baa4's; seeds 4401-4412 no-fight, 4413-4424 fights; builder2 from 02:12.
+  Judged: counter (deploys turned > 0), twitch >= 15 m not up, never-in, first shape <= 3 %, contacts, both fight reads. Reported: the
+  deciding line and place+twitch (`SETTLE_S1_DECIDING_JUDGED=0`). Also amended before numbers (5a9f65d54): Bars H/S3's arms use
+  `--deploy-latch=anchor` (since b3ad7baa4, `=on` means v2's centroid read).
+
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
 `references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
