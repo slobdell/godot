@@ -71,6 +71,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   lane (b7d4dcffd): `make broker-test remote-guard-test exited 0`. **The hand-over hash's own full check** (b7d4dcffd: v3 +
   G3 + probe fix, all OFF) is running on builder2. web-smoke already failed there: "first sound 32.3 s after READY (bound
   30 s)" on headless SwiftShader at load ~31. That target is outside my paths and failed the same way on the v2 tree.
+- **GREEN HAND-OVER: b7d4dcffd** (G1 v3, G3 and the probe budget print, all OFF).
+  - builder2 full check: `make native check exited 2`; 24 passed, 1 FAILED (web-smoke), 2 NOT JUDGED (perf-judge: builder2 is
+    not a judging machine; scenario_perf at load 4.76x); tests 3,063 / 0; sim-baseline 13/13 unmoved.
+  - web-smoke re-run ALONE per R36.12 (builder0, b7d4dcffd, load ~16): `make web-smoke exited 0`, first sound 17.1 s.
+  - Control timing (builder2 printed it over budget, not judged there). builder0, back to back, same load ~16: merge-base
+    5b20bfd62 ordering 30 units 109.3 / right click 108.0 / UI 28.88 workloads, 3 failed; head 42377862a (same game code as
+    b7d4dcffd) 112.8 / 114.5 / UI under budget, 2 failed. Both trees go over budget at this load; mine is within the
+    base's noise. Not a regression from my code. A quiet-box read is owed before G1 or G3 ship ON.
 - **Settle's S2 re-read fails one guard, so the latch stays OFF** (settle, ~19:30). The failing guard is first shape: 18 of
   576 rows differ, over the 17.3 line. Most of those are coil -> herringbone in lanes. The orchestrator rules whether that
   bar stands. G1 v3's judged read keeps waiting, as Bar G1 v3 says. No v3 number is taken on a latch that is not ON on main.
