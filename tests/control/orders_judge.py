@@ -8,6 +8,7 @@
     python3 tests/control/orders_judge.py o3 rows.jsonl BASE_ARM NEW_ARM runs.jsonl
     python3 tests/control/orders_judge.py gl rows.jsonl BASE_ARM NEW_ARM runs.jsonl   (R37.29 group-lay=column)
     python3 tests/control/orders_judge.py g1 rows.jsonl BASE_ARM NEW_ARM runs.jsonl [yard_rows.jsonl]   (round 38 G1, O7 v2)
+    python3 tests/control/orders_judge.py g3 rows.jsonl BASE_ARM NEW_ARM runs.jsonl   (round 38 G3, place clear)
     python3 tests/control/orders_judge.py o5 BASE_DIR NEW_DIR   (seat-yield-census folders of *.log)
 
 Probe guards (each cell, medians over seeds; R36.6's): all-in (the cell run's last squad arrival) <= base x 1.2 + 3 s and
@@ -285,6 +286,53 @@ def main(argv):
             ok = ok and passed
             lines.append("%s guard no-change cell yard_open: %d of %d squad rows identical (arm rows %d)" % (
                 "PASS" if passed else "FAIL", same, len(yb), len(yn)))
+    elif mode == "g3":
+        # Round 38 G3's bar (R38.15), filed in the brief's Status: squads parked on another squad (end foreign < 8 m) <= 50 %
+        # of base; never-in squads no more (fewer if base has any); offset guards (worst place-to-click median per cell
+        # <= base + 15 m; squads placed > 40 m further than main <= 5 % of rows; none > 100 m); R36.6 guards; contacts.
+        runs = load(argv[4])
+        cleared = sum(r.get("places_cleared", 0) for r in runs if r["arm"] == new)
+        lines.append("%s counter: places_cleared %d" % ("PASS" if cleared > 0 else "FAIL", cleared))
+        on_other = lambda arm: sum(1 for r in rows if r["arm"] == arm and 0 <= r["end_foreign_m"] < 8.0)
+        never = lambda arm: sum(1 for r in rows if r["arm"] == arm and r["arrived_s"] < 0)
+        bp, np_, bn, nn = on_other(base), on_other(new), never(base), never(new)
+        d1 = np_ <= 0.5 * bp
+        d2 = nn <= bn and (nn < bn or bn == 0)
+        lines.append("%s deciding: squads parked on another squad (end foreign < 8 m) %d -> %d (<= %.1f)" % (
+            "PASS" if d1 else "FAIL", bp, np_, 0.5 * bp))
+        lines.append("%s deciding: never-in squads %d -> %d" % ("PASS" if d2 else "FAIL", bn, nn))
+        ok = cleared > 0 and d1 and d2
+        b_rows = {(r["map"], r["squads"], r["route"], r["seed"], r["squad"]): r for r in rows if r["arm"] == base}
+        n_rows = {(r["map"], r["squads"], r["route"], r["seed"], r["squad"]): r for r in rows if r["arm"] == new}
+        further = [n_rows[k]["anchor_offset_m"] - b_rows[k]["anchor_offset_m"] for k in n_rows
+                   if k in b_rows and n_rows[k]["anchor_offset_m"] >= 0 and b_rows[k]["anchor_offset_m"] >= 0]
+        far = sum(1 for d in further if d > 40.0)
+        g2 = far <= 0.05 * len(n_rows)
+        g3 = all(d <= 100.0 for d in further)
+        b, n = by_run(rows, base), by_run(rows, new)
+        g1 = True
+        for cell in sorted({k[:3] for k in b} | {k[:3] for k in n}):
+            bw = med([max(s["anchor_offset_m"] for s in b[k]) for k in b if k[:3] == cell])
+            nw = med([max(s["anchor_offset_m"] for s in n[k]) for k in n if k[:3] == cell])
+            if not nw <= bw + 15.0:
+                g1 = False
+                lines.append("  FAIL guard worst offset %s: %.1f v %.1f" % (" ".join(map(str, cell)), bw, nw))
+        lines.append("%s guard worst place-to-click median per cell <= base + 15 m" % ("PASS" if g1 else "FAIL"))
+        lines.append("%s guard squads placed > 40 m further than main %d of %d (<= %.1f)" % (
+            "PASS" if g2 else "FAIL", far, len(n_rows), 0.05 * len(n_rows)))
+        lines.append("%s guard no place > 100 m further than main (worst %+.1f m)" % (
+            "PASS" if g3 else "FAIL", max(further, default=0.0)))
+        moved = sorted(d for d in further if abs(d) > 0.5)
+        lines.append("  reported: offsets changed on %d rows; quartiles %s" % (
+            len(moved), [round(moved[int(q * (len(moved) - 1))], 1) for q in (0, 0.25, 0.5, 0.75, 1)] if moved else []))
+        lines.append("  reported: route_left_m %.0f -> %.0f" % (total(rows, base, "route_left_m"), total(rows, new, "route_left_m")))
+        ok = ok and g1 and g2 and g3
+        cb = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == base)
+        cn = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == new)
+        passed = cn <= cb * 1.1 + 5
+        ok = ok and passed
+        lines.append("%s guard friend_contacts %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", cb, cn, cb * 1.1 + 5))
+        ok = probe_guards(rows, base, new, lines) and ok
     elif mode == "o3":
         bd = sum(1 for r in rows if r["arm"] == base and r.get("redealt", 0) > 0)
         nd = sum(1 for r in rows if r["arm"] == new and r.get("redealt", 0) > 0)
