@@ -102,12 +102,12 @@ func test_after_the_end_a_click_says_match_over_and_orders_nothing() -> void:
 
 func test_enter_plays_again_once_the_choices_show() -> void:
 	var card := EndCard.new()
-	card.setup(_rust_wins(), Match.Team.GREEN, false, {}, "a")
+	card.setup(_rust_wins(), Match.Team.GREEN, false, {})
 	var picked: Array[String] = []
 	card.chosen.connect(func(choice: String) -> void: picked.append(choice))
 	add_to_tree(card)
 	assert_true(not card.choose("again"), "not before the choices show (a stray click at the end must not restart)")
-	card.advance(float(EndCard.CHOICES_AFTER["a"]) + 0.01)
+	card.advance(EndCard.CHOICES_AFTER + 0.01)
 	assert_true(card.choose("again"), "then Enter plays again")
 	assert_true(not card.choose("factions"), "once only")
 	assert_eq(picked, ["again"] as Array[String], "one choice emitted")
@@ -115,7 +115,7 @@ func test_enter_plays_again_once_the_choices_show() -> void:
 
 func test_under_the_garage_loop_there_are_no_choices() -> void:
 	var card := EndCard.new()
-	card.setup(_rust_wins(), Match.Team.GREEN, false, {}, "plain")
+	card.setup(_rust_wins(), Match.Team.GREEN, false, {})
 	card.choices = false
 	add_to_tree(card)
 	card.advance(5.0)
@@ -124,28 +124,21 @@ func test_under_the_garage_loop_there_are_no_choices() -> void:
 	assert_eq(card.notices(), 1, "the guard still says MATCH OVER")
 
 
-func test_every_look_draws() -> void:
+func test_the_card_draws_and_hides_the_command_overlay() -> void:
 	if tree.root.size.x < 640:
 		tree.root.size = Vector2i(1280, 720)
-	for look: String in MatchEnd.LOOKS:
-		var card := EndCard.new()
-		card.setup(_rust_wins(), Match.Team.GREEN, false, {Match.Team.RUST: "syndicate"}, look)
-		add_to_tree(card)
-		card.advance(3.0)
-		card.field_click(Vector2(640, 360))
-		await _frames(1)
-		assert_eq(card.look, look, "look %s" % look)
-		assert_true(card.choices_shown(), "%s: the choices show by 3 s" % look)
-		card.queue_free()
-
-
-func test_the_place_it_was_decided() -> void:
-	var game_match: Match = MATCH.instantiate()
-	add_to_tree(game_match)
-	game_match.objectives = [{"name": "a", "position": Vector3(10, 0, 5), "radius": 8.0, "owner": Match.Team.GREEN},
-			{"name": "b", "position": Vector3(-30, 0, 20), "radius": 8.0, "owner": Match.Team.RUST}]
-	assert_eq(EndCard.decided_at(game_match, _rust_wins()), Vector3(-30, 0, 20), "the ring the winner holds")
-	assert_eq(EndCard.decided_at(game_match, {"winner": "draw", "reason": "time_limit"}), null, "a draw: leave the camera")
+	var overlay := Control.new()
+	add_to_tree(overlay)
+	var card := EndCard.new()
+	card.setup(_rust_wins(), Match.Team.GREEN, false, {Match.Team.RUST: "syndicate"})
+	card.hide_nodes.append(overlay)
+	add_to_tree(card)
+	card.advance(3.0)
+	card.field_click(Vector2(640, 360))
+	await _frames(1)
+	assert_true(not overlay.visible, "the command overlay hides under the card")
+	assert_true(card.choices_shown(), "the choices show by 3 s")
+	assert_eq(card.headline, "DEFEAT", "the result")
 
 
 ## Stands in for ArmyLoop: its results screen comes up a few seconds after the end.
@@ -177,18 +170,16 @@ func test_on_a_portrait_phone_no_line_is_wider_than_its_box() -> void:
 	var font := CyberStyle.font()
 	var boost := CyberStyle.touch_boost()
 	CyberStyle.set_touch_boost(1.5)  # a phone grows the HUD 1.5x
-	for look: String in MatchEnd.LOOKS:
-		var card := EndCard.new()
-		card.setup({"winner": "Rust", "reason": "control", "control": {"green": 61, "rust": 90},
-				"units_left": {"green": 20, "rust": 20}}, Match.Team.GREEN, false, {Match.Team.RUST: "gangs"}, look)
-		add_to_tree(card)
-		card.set_anchors_preset(Control.PRESET_TOP_LEFT)
-		card.size = Vector2(810, 1800)
-		card.advance(3.0)
-		await _frames(1)
-		for choice: String in EndCard.CHOICES:
-			var box: Rect2 = card._choice_rects[choice]
-			assert_true(Rect2(Vector2.ZERO, card.size).encloses(box), "%s: %s's box is on screen (%s)" % [look, choice, box])
-		card.queue_free()
+	var card := EndCard.new()
+	card.setup({"winner": "Rust", "reason": "control", "control": {"green": 61, "rust": 90},
+			"units_left": {"green": 20, "rust": 20}}, Match.Team.GREEN, false, {Match.Team.RUST: "gangs"})
+	add_to_tree(card)
+	card.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	card.size = Vector2(810, 1800)
+	card.advance(3.0)
+	await _frames(1)
+	for choice: String in EndCard.CHOICES:
+		var box: Rect2 = card._choice_rects[choice]
+		assert_true(Rect2(Vector2.ZERO, card.size).encloses(box), "%s's box is on screen (%s)" % [choice, box])
 	CyberStyle.set_touch_boost(boost)
 	assert_true(font != null, "the HUD font loads")

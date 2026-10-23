@@ -112,11 +112,10 @@ func _on_match_finished(result: Dictionary) -> void:
 		return
 	end_card = EndCard.new()
 	end_card.setup(result, team, false, {Match.Team.GREEN: flags.text("player-faction"),
-			Match.Team.RUST: flags.text("enemy-faction")}, flags.text("end-look"))
+			Match.Team.RUST: flags.text("enemy-faction")})
 	end_card.yield_to = main.get_node_or_null("ArmyLoop") if main != null else null
 	end_card.choices = end_card.yield_to == null  # the garage's results screen follows
 	end_card.rig = main.get_node_or_null("RtsCamera") if main != null else null
-	end_card.focus = EndCard.decided_at(game_match, result)
 	end_card.hide_nodes.append(controls)
 	end_card.chosen.connect(_on_end_chosen.bind(flags))
 	banner.visible = false
