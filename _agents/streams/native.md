@@ -39,6 +39,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Report (round 38 worker, 2026-10-22 ~10:30 PDT)
 
+**HAND-OVER (green): a15a48de8** = 68301e6a7 (guard.py --pair G2) + 47112af3d (builder_checks ssh) + 54898f5b1 (per-core
+gates; mk/web.mk ruled IN for the first-sound gate call only) + Status notes.
+- Full check, builder2: `make check exited 0`, 3055 passed / 0 failed, 25 passed, 2 NOT JUDGED.
+  - perf-judge: builder2 isn't a judging machine.
+  - scenario_perf: loaded, ref 4.95x.
+- In that check: test_loaded 9/0 (box at load 34.38 on 16 cores, 2.15 per core); builder-checks 9/0; quiet-window 28/0;
+  slot-light 6/0; scoreboard 14/0. Web match smoke PASSED, first sound 29.9 s (bound 30 s).
+
 **MERGED:** main cc7c7ef1a merges 595bb9208 (R38.1). The two load-49 reds were accepted on the solo re-runs (R36.12).
 - **N1 done** (90adaf963): the row for round 37's shipped main 1c484a525, on builder2.
   - Fights: verdict ok, 40/48/36, 0 SCRIPT ERRORs (run.sh, SCORE_JOBS=14).
