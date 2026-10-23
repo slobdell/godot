@@ -423,6 +423,15 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   alone (first sound 32.2 s v 30 s, loaded; the fifth such miss), every other target passed or NOT JUDGED (perf-judge, scenario_perf),
   sim-baseline unmoved. Not ruled green yet: the next main check (9a6909305, native's per-core gate, a superset of this tree) is its
   verdict; if web-smoke misses there too, it reads NOT JUDGED under the new gate and is re-run alone on builder0.
+- **R38.24 (2026-10-22 23:49) M5 v2 (seatstep) FAILS; stays OFF; builder0's R38.8 exception ends.** manoeuvre (ON 269d593c5 v BASE
+  226e4c190, builder0 native J 6, 120 jam pairs + 768 hull-rest runs an arm; stream/manoeuvre b29ce78cf,
+  references/round38/manoeuvre/m5-series/README.md): deciding seat metres 76,032 -> 72,255 (-5.0 %), short of the 1.645 se bar (4,881);
+  every map -4 to -6 %. Lead-out give-ways 1,291 -> 747 (the rule works as written; crews still end about as far from their seats).
+  Safety guards pass (kill share 0.521 -> 0.527, deaths +6); (e) never-settled faced_attack_move +4 > +3.3 fails. 7/192 GDScript gangs runs
+  hit the 300 s timeout under load; judged by hand on what ran. **Lesson:** a noise floor from base native v base GDScript is 0 by
+  construction (the twins are bit-identical per seed); a floor needs shifted seeds. Next for manoeuvre: settle's s3866 give-way read (light).
+  builder0 now carries only light lanes (orders, feedback, manoeuvre); full checks may go to it again when it is under its loaded line
+  (tools/loaded.sh), and main owes a judged perf line there.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
