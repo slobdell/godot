@@ -114,7 +114,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     from its own vehicles (a shifted leg: from where its last leg ends). Laptop tests: group click 17, requeue 2, untangle
     9, group moves 8, groups 17.
   - Main d421e6752 merged as 4e5181739 (no conflicts; feedback's `_draw` change merged clean).
-  - Dev read 8 (builder0 light J4, 4e5181739, dev seeds 3801-3809) running, then G2 dev read 1 (below).
+  - **Dev read 8 (builder0 light J4; street cells 4e5181739, his half aed606700 = same code + docs; dev seeds 3801-3809,
+    n 9 per cell, 18 cells; `g3-dev8*`): every line passes but one.**
+    - Pass: deciding (pairs closer than 12 m 37 -> 2, line 9.2); never-in 2 -> 2; offsets (0 of 648 rows > 40 m
+      further, worst +39.8 m); contacts 11,353 -> 10,353; every route and click cell's probe guards.
+    - Fail: his click twitch 11.6 -> 17.5 m. Squads 4 and 5 still share one place (one element, so not a G3 case). With
+      G3 they get in at 11.2 s v main's 47.4; squad 4's crew then moves 17.5 m after settle's cap deploy at 21.2 s. That
+      is the deploy, the latch's case (S2 v4: reseats 89 -> 0).
+    - So G3 is ready for its judged read on a latch-on base (R38.15 / R38.33). Before any number: amend Bar G3's tree
+      line to the merged latch-on hash, and get a full check green on it.
   - **Laptop v builder0 split (R38.25, native's answer): the MACHINE, not the native path.** Native and GDScript agree on
     one machine (his click, main: laptop 29.5/29.5 s, builder0 47.4/47.4 s). The laptop's glibc 2.39 rounds atan2f, acosf,
     asinf, atanf and tanf differently from the builders' 2.43 (CORE-MATH); three steer floats differ by 1-2 ulp at tick 33,
@@ -205,7 +213,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     columns laid, 2 bodies kept), all-in 81.5 -> 86.7 s (squad 1 is the slowest in both), no crossings.
   - G2 dev read 1 (builder0 light J4, dev seeds 3801-3803): his three routes (east, west, avenue) on terminus, 3 and 5
     squads, plus the probe's route cells. Main v `--group-lay=column --group-legs=on --group-route-line=on
-    --group-leg-width=along`. Queued behind G3 dev read 8. No G2 bar yet.
+    --group-leg-width=along`; `g2-dev1*-builder0-aed606700`; n 3 per cell. Not good enough for a bar:
+    - route cells: route_off_m 2,556 -> 2,397 (-6 %); locks 3 route 366 -> 65 but one never-in; locks 5 route 189 -> 440;
+    - his routes: 2,948 -> 3,765; terminus 5 avenue 142 -> 736 and terminus 3 east 586 -> 967 got worse; terminus 5
+      east never-in 3 -> 0 (all in 83.8 s) and terminus 5 west 6 -> 3.
+    - Next: trace terminus 5 avenue (the worst regression) on builder0, to see where the column lay sends squads off
+      the drawn path.
 
 ### REPORT (orders, round 38; updated 2026-10-22 ~09:30 PDT)
 - **Start:** stream/orders = main 5b20bfd62 (round 38 docs; HANDOFF: main 1c484a525 GREEN on builder0, not re-run).
