@@ -87,6 +87,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   guard faction, each with a paired se from the per-seed differences. test_guard 0 failed, test_scoreboard 14/0 (laptop);
   not yet through a full check. Doctrine cross-checked it against their scratch script on D2 (acbdef4c5-defend v 1c484a525):
   turtle kills -2.91 and losses -3.30 a fight sum to their -6.21, and the medians match.
+- **builder_checks.sh** (47112af3d, R38.15): a failed ssh (255) is never "0 running" any more. Plain mode exits 3 with no count;
+  `--wait-below` asks again each poll and gives up (exit 3) after BUILDER_CHECKS_TRIES (30) failed asks in a row.
+  test_builder_checks 9/0 (laptop, a fake ssh). Real asks: builder0 and builder2 each count 1; an unreachable host exits 3.
 - **N3 closed** for the round (orchestrator accepted "not switching"); an AMD sample only if builder2 comes up on one.
 
 **Side worktrees to remove at close:** ../godot-native-guard, -score, -k5 (and round 37's: -m5, -unstick, -cp371,
