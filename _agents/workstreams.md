@@ -66,7 +66,7 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 ## Bars (round 38)
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
-S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; 4501-4524 S1 v5; guard seeds 2601-2608/2701-2708
+S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; 4501-4524 S1 v5; 4601-4612 G3 v4; 4701-4712 G1 v4; guard seeds 2601-2608/2701-2708
 (the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001-5008/5101-5108 D2c.
 
 
