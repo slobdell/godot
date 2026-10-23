@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-22 PDT — **ROUND 38 PREPARED (six streams; native continuing); round 37 closed at main 1c484a525.** Before that: **ROUND 36 CLOSED: T8 and S2a shipped ON; see the box below.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
+_Last updated: 2026-10-23 PDT — **ROUND 38 AT ITS END STATE (every stream done; ready to close); see the round-38 box.** Before that: ROUND 38 PREPARED; round 37 closed at main 1c484a525. Before that: **ROUND 36 CLOSED: T8 and S2a shipped ON; see the box below.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
 and the scoreboard rows, which the orchestrator finishes in round 36.** Older headers below._
 
 ## 🚀 ROUND 38 IS PREPARED (2026-10-22 morning) — read this first
@@ -21,17 +21,21 @@ and the scoreboard rows, which the orchestrator finishes in round 36.** Older he
 | **feedback** | `godot-feedback` (6) | Opus | he can't miss the match ending | F1 the end of a match |
 | **native** | `godot-native` (4, CONTINUING its round-37 session) | Opus | nothing alone: rows, twins, guard tooling | N1 round 37's row |
 
-**Round 38 progress (2026-10-23 ~07:00 PDT):** **SHIPPED on main, green and ALL JUDGED (e1f602fbf, builder0, perf 7,077 us/tick):**
-the Tanker repairs under fire (F3), his end card A, the end card on a portrait phone, the top of the screen free (F5: score bug
-lower-left; captions, camera readout, top lines gone), **settle's deploy latch at the anchor (S2 v4: a stopped squad keeps its shape
-and seats; shape flips 51 -> 0)**, native's per-core gates and builder_checks fix; OFF: manoeuvre M7 v2, orders G1 v3 / G3. **Failed
-this round (all OFF):** M5 v2 seatstep (R38.24); D2, D2b, D2c CPU defend (blob -3 to -4.4 points each time, never 2 se; D2c's
-passivity fixed, R38.41); S1 deploy fit v1-v5 (BLOCKED: each time one marginal never-in, a halt seat on a following squad's route,
-R38.40); G3 and G1 v3 judged reads (R38.39). **Running:** doctrine D3 rules re-read on builder2 (~11:20), then native's row; orders G3
-v4 (bar filed, judged read after its check) and G1 v4 dev; settle Bars H/S3. **Found:** the laptop (glibc 2.39) and the builders
-(2.43) simulate differently in jams (atan2f; R38.25). **Round-39 candidates:** no halt seat on a following squad's route + chain-aware
-give-way (then S1); a powered SPLIT series; machine-independent trig; crossing's west bridge mouth; touch-map top panels (a directions
-page). **For him:** lane-mouth shape (R38.16 shots); D3's read when it lands (whether his round-37 rules matter, his design call).
+**ROUND 38: EVERY STREAM AT ITS END STATE (2026-10-23 ~13:45 PDT); ready to close when the lead says.** All six branches merged at
+their green hashes; main 30c23d4c8 (final check running on builder2); last perf-judged main f49a5febc PASS 7,087 us/tick (builder0).
+**SHIPPED ON:** the Tanker repairs under fire (F3); his end card A (+ portrait phone); the top of the screen free (F5); settle's deploy
+latch at the anchor (a stopped squad keeps its shape and seats). **Merged OFF:** CPU defend D2/D2b/D2c, M7 v2, S1 v5 street cap, G1 v4,
+G2, G3 v5, all judges and traces. **Failed (each with a recorded cause):** M5 v2 (R38.24); D2, D2b, D2c (blob -3 to -4.4 points, never
+2 se; R38.41); S1 v1-v5 (BLOCKED, R38.40); Bars H/S3 (R38.42); G1 v3/v4 and G3 v4/v5 (every deciding line passed, one or two guard cells
+failed; R38.39, R38.45, R38.51). **Round 38 v round 37 (native's row, R38.52):** guard lines move inside noise (blob 47 %, turtle 41 %).
+**Found:** the laptop (glibc 2.39) and the builders (2.43) simulate differently in jams (atan2f, R38.25). **Round-39 candidates:**
+(1) no halt seat on a following or neighbouring squad's ground/route + chain-aware give-way (settle + manoeuvre; R38.26/R38.40/R38.43),
+then S1, G1 v4 (near/far place order) and G3 v5 (seat-safe moves) re-read; (2) G2 rear places on the route line at corners (R38.47);
+(3) a powered SPLIT series (R38.41); (4) trace o2's crossing re-deals before any Bar H re-file (R38.42); (5) machine-independent trig;
+(6) touch-map top panels (a directions page); (7) quiet-window line ~1.0 per core; `make skirmish` flag passthrough. Pairing base
+references/scoreboard/guards/686150ed2.fights.jsonl. **For him:** D3 says R1-R3 change fight length, not results (a feel call,
+R38.48); lane-mouth shape (R38.16 shots). Close steps left: archive briefs to streams/archive/round38/, remove worktrees (his sessions
+first), the laptop's disk is at ~2.6 GB free (round 38's overnight logs ~1.1 GB can be archived at close).
 
 **To launch (the lead):** in each NEW folder (`godot-orders`, `godot-doctrine`, `godot-settle`, `godot-manoeuvre`, `godot-feedback`)
 start a CLI (orders and doctrine on Fable, the rest Opus) and paste the kickoff prompt from `_agents/orchestration.md`. Native is NOT
