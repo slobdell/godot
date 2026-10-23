@@ -437,6 +437,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   (GDScript, a24f3b3fb, no native/bin) v 47.4 s on builder0 (native ON, 0646a865e = a24f3b3fb + Status), the same on seeds 3801-3809
   there. Machine v path not yet split: native runs the same command native ON and OFF on one machine and finds the first diverging tick.
   Until it is split, laptop dev reads do not predict builder0 in jams; judged reads stay on their filed machine.
+- **R38.26 (2026-10-23 ~00:20) manoeuvre at its end state; s3866 read.** (builder0 light native, n 1 an arm; stream/manoeuvre e55cba940,
+  references/round38/manoeuvre/s3866-giveway/README.md): seatstep OFF, squad 4 in at 33.9 s on main, NEVER under `--deploy-latch=on` or
+  `=anchor`. Not one pick, not a lead-out: Alpha_3 gives way four times in 10 s (6.7-10.3 m each), each from where the last left it, seat
+  distance 2.9 -> ~20 m; with seatstep ON squad 4 arrives in every arm. **Round-39 candidate:** a chain-aware give-way (a crew already
+  pushed off its seat never takes a spot farther from it); needs native's begin_yield twin first. No code since green 84c79d76f.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
