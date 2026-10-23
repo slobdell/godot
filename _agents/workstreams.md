@@ -567,6 +567,16 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
 - **R38.38 (2026-10-23 ~03:40) main e1f602fbf (settle's latch ON) GREEN AND PERF-JUDGED on builder0:** `make native check exited 0`,
   3104 passed / 0 failed; perf-judge PASS attempt 1 (ai_usec_per_tick 7,077 v 20,000, ratio 1.01x, idle 96 %, load 0.80; relative line
   agrees); web-smoke first sound 26.1 s (judged); sim-baseline 13/13 unmoved. The latch adds no measurable AI cost (7,060 at c54421161).
+- **R38.39 (2026-10-23 ~05:45) G3 and G1 v3 judged reads FAIL as filed on probe guards; every deciding line passes.** orders (builder0
+  light J4, latch ON; df9abb922). **G3** (a67afc951, seeds 4101-4112, n 12 a cell, 18 cells): 106 places cleared; close pairs 52 -> 4
+  (line 13.0); offsets pass (0/864 > 40 m further, worst +25.4 m); contacts 14,677 -> 13,808; FAIL never-in 3 -> 4 (crossing 5 route
+  s4104, squads 4 and 5); FAIL twitch crossing 5 click 20.4 -> 26.4 m, his 5 click 13.8 -> 26.0 m (identical every seed: G3 moves squads
+  2 and 3, unmoved squad 5 twitches 26 m, G3's own neighbour re-deal with the latch ON). **G1 v3** (b55757fee, seeds 3951-3962): 82
+  columns; places outside 99 -> 18 (line 24.8); metres outside 6,567 -> 1,233 (line 3,283); re-dealt 71 -> 0; contacts 15,614 -> 12,519;
+  yard_open 192/192 identical; FAIL never-in crossing 5 route 1 -> 2 (s3951 squad 5), locks 3 click 0 -> 1 (s3960 squad 3, placed
+  79.5 m from the click). Not a guard: terminus 5 route never-in main 4 v column 1. **A shared spot:** three of these never-ins and two of
+  main's own sit at crossing's west bridge mouth (-70, 30). Both stay OFF. Next on dev seeds only: G3's neighbour re-deal on his click,
+  G1's 79.5 m place, the mouth; v4 bars only once a dev read is clean (a round-39 item if the round closes first).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
