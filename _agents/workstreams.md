@@ -355,6 +355,13 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   the terrain at the halt" (defined in the judge before the run, no-halt rows reported, not counted, since never-in counts them), all
   other lines as filed. builder2 after S1 v2, ahead of doctrine's D2b (it gates orders' G1 v3). Orders' G1 v3 keeps waiting for a
   shipped latch; meanwhile G3.
+- **R38.16 (2026-10-22) S2 v3's first-shape reference = the terrain at the squad's first deploy ANCHOR.** The standing-centroid reference
+  (R38.15's text) is main's own centre read, so it would make main right by construction; the deploy-tick read is the latch's own read.
+  The anchor (the halt's centre) is identical in both arms and moves with neither shape; laptop dev n 1 (57feb5e17): locks 3 click s3906
+  squad 3 anchor open (latch's herringbone WRONG), terminus 5 click s3912 squad 4 anchor lanes (main's first coil wrong), so the guard can
+  fail either arm. Seeds 4001-4012 no-fight, 4013-4024 fights, census 4001-4003. A context re-run of the re-read's no-fight probe
+  (settle-s2v3-context, builder2 after S1 v2) reports both references before the bar is committed. **For the lead later:** at a lane mouth
+  opening onto open ground, herringbone hugs the lane edge, coil spreads into the open (settle's shots, references/round38/settle/).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
