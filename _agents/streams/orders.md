@@ -52,6 +52,18 @@ Nothing (the shots go to him at the close).
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### NOW (2026-10-22 late evening)
+- **G3 (R38.15; Bar G3 filed 95dd05e36, seeds amended to 4101-4112, deciding line amended before any number):** dev reads only so far.
+  - Dev read 1 (builder0 light, 42377862a, dev seeds 3801-3803, n 3): v1's full-depth box stepped squads 60-90 m back.
+    14 of 216 rows were > 40 m further than main; crossing 3 route s3802 went 24 -> 91 m. FAIL.
+  - v2 (f65b23c26): places only need their short sides clear; a place moves aside first, then back, at most 40 m.
+  - Dev read 2 (builder0 light, f65b23c26, n 3): offset guards PASS (none > 40 m further; worst +15.3 m). Close pairs
+    17 -> 5; all 5 left were two squads in one element (0.0 m apart), which is a probe reading, not an overlap. Also seen:
+    his 5-squad click twitch 11.6 -> 29.9 m, because the old untangle re-dealt squad 4's crew to squad 3's place; one
+    never-in on locks 3 route s3802; terminus 5 route end foreign 10.6 -> 6.9.
+  - 527d62cd2: where G3 moved a place, untangle swaps squads whole; probe rows name the anchor's element; the judge skips
+    pairs sharing an element. Laptop his 5 click s3801 (n 1): nobody re-dealt, all-in 47.4 -> 20.8 s, worst twitch 14.6 m
+    (guard line 14.6). Lab 14/14; group/requeue/untangle tests 39 + 2 + 9 pass on the laptop.
+  - Dev read 3 (527d62cd2) running.
 - **G1 v2 judged: FAILS as filed** (R38.12; `g1-judged-builder0-4a765e6e2/README.md`): deciding all pass (click-cell places
   outside 84 -> 18, metres after leaving 6,223 -> 1,393, re-dealt 58 -> 0, contacts 14,004 -> 10,622); guards fail: crossing 3
   route twitch 5.8 -> 10.5 m, his 3-squad click twitch 2.3 -> 11.4 m, yard_open 177/192 identical. Stays OFF.
