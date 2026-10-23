@@ -45,7 +45,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - Under the shim, `atan2f` alone flips the case (dropping the others changes nothing). The laptop's native arm gives 28.6 there
   because Godot DEEPBINDs the extension: native keeps the system libm, while the engine takes the shim (LD_DEBUG=bindings).
 - So it's a shim limitation, **not a native seam.** Engine and native call the same libm functions.
-- Scratch worktree ../godot-native-twin (a24f3b3fb): remove at close.
+- Scratch worktree ../godot-native-twin: removed 2026-10-23.
 
 **MERGED:** main 9a6909305 merges a15a48de8 (merged back into stream/native, 51d5cd262).
 - **Watch (orchestrator):** web-smoke's first sound. a15a48de8 passed at 29.9 s v the 30 s bound, at 2.15 per core (above the
