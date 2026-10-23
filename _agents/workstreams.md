@@ -366,6 +366,14 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   fail either arm. Seeds 4001-4012 no-fight, 4013-4024 fights, census 4001-4003. A context re-run of the re-read's no-fight probe
   (settle-s2v3-context, builder2 after S1 v2) reports both references before the bar is committed. **For the lead later:** at a lane mouth
   opening onto open ground, herringbone hugs the lane edge, coil spreads into the open (settle's shots, references/round38/settle/).
+- **R38.17 (2026-10-22) S1 v2 FAILS its never-in guard (1 -> 2 runs); S1 stays OFF; S1 v3 = main's deal unless the deploy turns.**
+  settle (builder2 native, cbb2ece52 = e42ff30eb's game code, 18:07-19:04; references/round38/settle/s1v2-judged-builder2-cbb2ece52/,
+  9e6f87f6e): deciding passes (squads with a deploy leg >= 25 m 56 -> 10, line <= 28; 70/573 deploys turned); twitch >= 15 m 95 -> 71,
+  first shape 7/576, contacts 12,183 -> 11,526, foreign 6,301 -> 6,188, fights (3- and 5-squad, n 36 each) pass; reported place+twitch
+  >= 25 m 153 -> 110. **FAIL:** fit adds crossing 5 route s3931 squad 4 (no deploy turned in that run; fit's own seat deal diverges the
+  rows from tick 1090 v 1120; squad 4 is main's slowest, all-in 60.5 s). **Ruled:** (a). S1 v3 keeps main's deal byte-for-byte unless
+  the deploy turns, so only turned squads can differ; a new bar on seeds never read for S1 (see the seed registry), the same lines as S1 v2.
+  builder2 order: settle S2 v3 context + series, doctrine c475c3163 check + D2b arms, settle S1 v3, doctrine D3, native's row.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
