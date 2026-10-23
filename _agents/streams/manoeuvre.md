@@ -45,6 +45,15 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**M1 (M5 v2) VERDICT: FAIL (2026-10-22 23:49, builder0 native J=6, ON 269d593c5 vs BASE 226e4c190, 120 jam pairs + 768
+hull-rest runs an arm).** Deciding seat metres 76,032 -> 72,255 (-3,777, -5.0 %; every map -4 to -6 %) < bar 4,881. Lead-out
+give-ways 1,291 -> 747 (the rule works as written; crews still end about as far from their seats). Every safety guard passes
+(deaths per team, kill share 0.521 -> 0.527, total deaths +6, wait, timeouts, contacts, jam deaths, arrived). (e) never settled:
+faced_attack_move +4 > +3.3 fails on its number; ambush / support_by_fire fail only on a short floor arm (GDScript gangs runs
+hit the 300 s timeout under load). D_floor = 0 on every task: GDScript and native are bit-identical per seed, so the two-path
+floor measures no noise (lesson for any next floor: shift the seeds). Per the bar: no re-run; **seatstep stays OFF**; nothing to
+merge. Evidence `references/round38/manoeuvre/m5-series/`. **builder0: my judged series ENDED 23:49 (unit inactive).**
+
 **MERGED: main 8bfb74e55 merges 84c79d76f (orchestrator).** **2026-10-22 ~14:10 (worker): THE STREAM IS GREEN at 84c79d76f (builder2, R38.2):** `make native check exited 0`, 3,055 passed / 0
 failed, 25 passed + 2 NOT JUDGED (perf-judge: builder2 is not a judging machine; scenario_perf loaded), sim-baseline passed (unmoved:
 everything new is OFF or tooling). Log `~/overnight-manoeuvre/r38/check_stream_84c79d76f.log`. Later commits are Status only.

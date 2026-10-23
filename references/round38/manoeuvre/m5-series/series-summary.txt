@@ -1,0 +1,90 @@
+>> 08:41 m5 v2 driver start: ON 269d593c5 BASE 226e4c190 on builder0, J=6
+>> 08:41 check start (try 1), load: 0.06 0.18 0.59 2/900 1486251
+>> 10:12 check end: >> check:   ordered after failed -- lint gates every other target, and the three port/path >> check:   exclusion pairs gate each other. >> remote: make native check exited 2 (build/ copied back) 
+>> 10:12 STOP: ON check red beyond sim-baseline: test
+ai-scenarios-check
+remote-guard-test
+>> 11:03 restart: try 1's check was killed by slot.sh after 5400 s (builder0 overloaded; test/ai-scenarios/remote-guard-test Terminated, sim-baseline MOVED as expected)
+>> 11:03 m5 v2 driver start: ON 269d593c5 BASE 226e4c190 on builder0, J=6
+>> 11:16 R38.2: the ON check moves to builder2 (builder0 overloaded); series stays on builder0
+>> 11:16 m5 v2 driver start: ON 269d593c5 BASE 226e4c190 on builder0, J=6
+>> 11:16 check start (try 1) on builder2
+>> 12:18 check end: >> check: 23 passed, 2 FAILED, 0 NOT RUN, 2 NOT JUDGED  [test x8, lint -P16, 4 at once, builder2] >> check: failed: sim-baseline web-smoke >> remote: make native check exited 2 (build/ copied back) 
+>> 12:18 STOP: ON check red beyond sim-baseline: web-smoke
+>> 13:14 ON check (builder2, 269d593c5): 3063 passed / 0 failed; red = sim-baseline (yard/pit/archipelago/cut MOVED, expected) + web-smoke (first sound 34.3 s > 30 s at 2 fps, load 27); web-smoke re-run alone on builder2
+>> 13:18 web-smoke alone on builder2 at 269d593c5: PASSED (exited 0); the ON check is accepted (3063/0, 0 twin mismatches; sim-baseline moved as expected)
+>> 13:18 m5 v2 driver start: ON 269d593c5 BASE 226e4c190 on builder0, J=6
+>> 13:18 jam on locks start, load: 14.65 16.66 17.96 11/1092 2198269
+>> 14:02 >> remote: make native traffic-jam-census JAM_AT=locks JAM_RANGE=6940-
+>> 14:02 jam base locks start, load: 9.45 12.74 15.58 8/1072 2221179
+>> 14:33 >> remote: make native traffic-jam-census JAM_AT=locks JAM_RANGE=6940-
+>> 14:33 jam on terminus start, load: 6.36 10.41 12.99 6/996 2242797
+>> 15:01 >> remote: make native traffic-jam-census JAM_AT=terminus JAM_RANGE=69
+>> 15:01 jam base terminus start, load: 16.39 18.79 16.72 18/1039 2251794
+>> 15:36 >> remote: make native traffic-jam-census JAM_AT=terminus JAM_RANGE=69
+>> 15:36 jam on sumps start, load: 28.55 28.62 27.20 18/1107 2264792
+>> 16:05 >> remote: make native traffic-jam-census JAM_AT=sumps JAM_RANGE=6940-
+>> 16:05 jam base sumps start, load: 2.84 7.92 17.40 1/901 2274887
+>> 16:30 >> remote: make native traffic-jam-census JAM_AT=sumps JAM_RANGE=6940-
+>> 16:30 hr-new_drawn-gangs-1 start, load: 3.87 8.77 12.24 1/912 2286052
+>> 16:41 hr-new_drawn-gangs-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 16:41 hr-new_drawn-gangs-2 start, load: 5.60 7.07 9.49 2/908 2403969
+>> 16:57 hr-new_drawn-gangs-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 16:57 hr-new_drawn-law-1 start, load: 16.45 14.72 12.74 11/1104 2418527
+>> 17:09 hr-new_drawn-law-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 17:09 hr-new_drawn-law-2 start, load: 13.18 16.60 15.37 7/1020 2435193
+>> 17:19 hr-new_drawn-law-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 17:19 hr-new_drawn-syndicate-1 start, load: 9.90 12.42 13.73 5/987 2442722
+>> 17:25 hr-new_drawn-syndicate-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 17:25 hr-new_drawn-syndicate-2 start, load: 23.69 18.57 15.71 7/1145 2506158
+>> 17:31 hr-new_drawn-syndicate-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 17:31 hr-new_drawn-condemned-1 start, load: 17.01 18.32 16.53 8/1042 2512660
+>> 17:44 hr-new_drawn-condemned-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 17:44 hr-new_drawn-condemned-2 start, load: 8.06 14.50 16.56 2/929 2518791
+>> 17:55 hr-new_drawn-condemned-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 17:55 hr-base_drawn-gangs-1 start, load: 11.45 14.45 15.56 2/959 2524443
+>> 18:09 hr-base_drawn-gangs-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 18:09 hr-base_drawn-gangs-2 start, load: 12.61 13.89 14.30 1/935 2532884
+>> 18:29 hr-base_drawn-gangs-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 18:29 hr-base_drawn-law-1 start, load: 17.11 18.21 17.36 11/1115 2618578
+>> 18:41 hr-base_drawn-law-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 18:41 hr-base_drawn-law-2 start, load: 16.33 17.52 17.31 13/1115 2638496
+>> 18:56 hr-base_drawn-law-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 18:56 hr-base_drawn-syndicate-1 start, load: 16.87 21.25 19.87 12/1123 2661979
+>> 19:02 hr-base_drawn-syndicate-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 19:02 hr-base_drawn-syndicate-2 start, load: 13.95 17.56 18.80 15/1046 2687682
+>> 19:09 hr-base_drawn-syndicate-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 19:09 hr-base_drawn-condemned-1 start, load: 13.93 15.39 17.33 8/1065 2695023
+>> 19:22 hr-base_drawn-condemned-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 19:22 hr-base_drawn-condemned-2 start, load: 10.34 14.15 15.58 5/987 2815467
+>> 19:34 hr-base_drawn-condemned-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 19:34 hr-gd_drawn-gangs-1 start, load: 9.14 11.33 13.27 3/970 2820875
+>> 19:50 hr-gd_drawn-gangs-1: 92/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 19:51 hr-gd_drawn-gangs-2 start, load: 8.51 12.28 12.39 1/917 2829156
+>> 20:16 hr-gd_drawn-gangs-2: 91/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 20:16 hr-gd_drawn-law-1 start, load: 13.56 14.51 13.46 12/1110 2863101
+>> 20:29 hr-gd_drawn-law-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 20:29 hr-gd_drawn-law-2 start, load: 16.05 21.81 18.67 13/1124 2889218
+>> 20:43 hr-gd_drawn-law-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 20:43 hr-gd_drawn-syndicate-1 start, load: 18.90 21.97 20.58 14/1158 3022347
+>> 20:52 hr-gd_drawn-syndicate-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 20:52 hr-gd_drawn-syndicate-2 start, load: 21.31 25.05 22.77 12/1173 3029466
+>> 21:01 hr-gd_drawn-syndicate-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 21:01 hr-gd_drawn-condemned-1 start, load: 15.06 19.15 20.87 10/1098 3035483
+>> 21:17 hr-gd_drawn-condemned-1: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 21:17 hr-gd_drawn-condemned-2 start, load: 18.57 17.21 18.25 18/1050 3043938
+>> 21:32 hr-gd_drawn-condemned-2: 96/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 21:32 pass 1 incomplete: jam/on/locks hr-gd_drawn-gangs-1 hr-gd_drawn-gangs-2
+>> 21:32 jam on locks start, load: 20.30 22.52 20.33 6/1049 3055021
+>> 22:04 >> remote: make native traffic-jam-census JAM_AT=locks JAM_RANGE=6940-
+>> 22:04 hr-gd_drawn-gangs-1 start, load: 17.72 18.18 17.82 12/1045 3072859
+>> 22:27 hr-gd_drawn-gangs-1: 92/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 22:27 hr-gd_drawn-gangs-2 start, load: 13.98 15.60 17.33 2/963 3088433
+>> 22:48 hr-gd_drawn-gangs-2: 93/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 22:48 pass 2 incomplete: hr-gd_drawn-gangs-1 hr-gd_drawn-gangs-2
+>> 22:48 hr-gd_drawn-gangs-1 start, load: 9.51 8.07 11.14 11/1108 3104318
+>> 23:16 hr-gd_drawn-gangs-1: 92/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 23:16 hr-gd_drawn-gangs-2 start, load: 16.47 18.57 17.70 11/1111 3137606
+>> 23:49 hr-gd_drawn-gangs-2: 93/96 screen.json; >> remote: make native manoeuvre-hull-rest M1_ARMS
+>> 23:49 pass 3 incomplete: hr-gd_drawn-gangs-1 hr-gd_drawn-gangs-2
+>> 23:49 STOP: incomplete after 3 passes: hr-gd_drawn-gangs-1 hr-gd_drawn-gangs-2
