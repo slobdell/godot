@@ -687,6 +687,14 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   (perf-judge; scenario_perf loaded 2.82x), sim-baseline 13/13 unmoved. builder2 -> native's row (asked to row main 686150ed2, which
   carries the latch ON). The laptop's disk hit 99 % (1.2 GB): round 37's overnight-manoeuvre logs were archived to
   ~/archive-old-logs/overnight-manoeuvre-r37.tar.zst (verified) and removed (2.6 GB free).
+- **R38.51 (2026-10-23 ~12:00) G3 v5 and G1 v4 judged reads FAIL, each on one guard cell; both OFF; no guard amended.** orders (builder0
+  light J4, game code ab31e9bc2 green and all judged; 5725a5a57). **G3 v5** (5201-5212, n 12, 18 cells): pairs < 12 m 48 -> 3; never-in
+  7 -> 7; 0/864 placed > 40 m further (worst +27.0); contacts 14,841 -> 14,190; FAIL twitch crossing 3 route 5.5 v 8.8 (base + 3 m):
+  squad 2 twitches 16-23 m on s5201/5204/5208/5209/5212 (main 0-6 m). **G1 v4** (4701-4712, n 12, 14 cells + yard_open): places outside
+  82 -> 20 (bar <= 20.5); route_left_m 4,974 -> 1,328 (bar <= 2,487); re-dealt 0; contacts 12,910 -> 10,746; yard_open 192/192
+  identical; FAIL never-in crossing 3 click 0 v 1 (s4710 squad 2 drove 113 m, stopped 12.9 m off its anchor). Orders traces both seeds
+  so round 39 starts from a cause. **Round-38 tally for his lead item (group click):** every deciding line has passed on every judged
+  read (v2, v3, v4); each failed on one or two guard cells.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
