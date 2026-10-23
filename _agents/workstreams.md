@@ -166,6 +166,10 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   Deciding: squads parked on another (end foreign < 8 m) <= 50 % of base, and fewer never-in. Offset guards: worst place-to-click median
   <= base + 15 m per cell; rows > 40 m further than main <= 5 %; none > 100 m. Plus the R36.6 guards and contacts. builder0 light J <= 4.
   **Seeds:** the orchestrator moved them from 4011-4022 (collides with settle's S2 v3, 4001-4024) to **4101-4112**.
+  **Amended before any judged number (stream/orders f65b23c26), after dev read 1 on dev seeds 3801-3803** (main parks neighbours 4-6 m
+  apart as normal, so the 8 m end-foreign line caught 68/216 main rows; G3 v1 stepped squads 60-90 m back): code v2 = no two places
+  closer than their short sides, a place moves aside first, then back, at most 40 m. Deciding: pairs of places laid closer than 12 m,
+  arm <= 25 % of base (main dev: 14 pairs, 2.8-6.3 m apart); never-in becomes a guard (arm <= base). Offset guards unchanged.
 
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
