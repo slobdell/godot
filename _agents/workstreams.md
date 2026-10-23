@@ -614,6 +614,15 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   deciding passes (off_idle 102.2 -> 31.0 s a fight); fails re-deals 54 -> 67 (line <= 62.4, mostly crossing and locks) and the
   two-sided his-losses guard 7.94 -> 7.03 (se 0.34; fewer of his tanks lost, but outside the band as filed; not waived). **Round 39:**
   trace o2's crossing re-deals before any re-file (understand the cause, not re-size the line); H re-filed only on new seeds after that.
+- **R38.43 (2026-10-23 ~07:55) the bridge mouth, plainly: not the map alone; a deploy lays seats inside a neighbour's parked halt at
+  a pinch and nothing moves the parked crews.** orders (builder0 light, f0a70f544 = latch ON, main arm, crossing 5 route, squad 4
+  traced): on dev seeds 3801/3802 main's squad 4 now gets in (25.1 s, 20.1 s): every never-in there in rounds 37-38 predates the latch.
+  Judged seeds, main only: s4108 in only at 53.7 s (thin); s3958 never in: squads 3/4 placed 12.2 m apart; Delta_4 stops 8 m short of its
+  seat with a move order; Delta_2's seat lies 7 m from squad 3's place, inside its parked halt; neither crew ever gives way. **Owners for
+  round 39:** the halt seat (settle) and give-way among squads (manoeuvre, R38.26); the same rule as R38.40 (no halt seat on another
+  squad's ground or route). G3 v4's 14 m trigger covers this pair. G1 v4 dev read (f0a70f544, 3804-3809, n 6) FAILS guards (crossing 5
+  route never-in 0 -> 1, twitch 22.2 -> 33.5, yard_open 91/96 identical) though deciding passes (outside 38 -> 7, metres 2,520 -> 486,
+  re-dealt 32 -> 0); no G1 v4 bar.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
