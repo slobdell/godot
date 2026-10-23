@@ -66,7 +66,7 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 ## Bars (round 38)
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
-S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; 4501-4524 S1 v5; 4601-4612 G3 v4; 4701-4712 G1 v4; guard seeds 2601-2608/2701-2708
+S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; 4501-4524 S1 v5; 4601-4612 G3 v4; 4701-4712 G1 v4; 5201-5212 G3 v5; guard seeds 2601-2608/2701-2708
 (the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001-5008/5101-5108 D2c.
 
 
@@ -630,6 +630,15 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   main's re-deal. **Ruled (option 2, orders' recommendation):** his complaint was a plain click; G1 v4 keeps squads whole on plain
   clicks only. Its bar, filed before numbers on fresh seeds 4701-4712: the deciding lines read over click cells (re-dealt 0 there);
   route cells must behave as main (every R36.6 guard judged there as filed, the twitch included); yard_open identical. No guard amended.
+- **R38.45 (2026-10-23 ~09:00) G3 v4 judged read FAILS; a real G3 bug found; v5 may run this round.** orders (builder0 light J4, slot
+  timeout 14400; green tree f0a70f544, probe on 9986a1cba; latch ON; seeds 4601-4612, n 12 a cell, 18 cells; c7b43e66c): 78 places
+  cleared; pairs 51 -> 2 (line 12.8); offsets pass (0/864 > 40 m, worst +36.3); contacts 13,117 -> 13,172; his click passes (v3's twitch
+  gone). FAIL never-in 3 -> 4, crossing 5 click never-in 0 -> 1, crossing 5 route twitch 17.4 -> 21.4 (1 m over base + 3), crossing 5
+  route crossed 0 -> 1. **Cause (a bug, not a tuning):** route s4603, G3 stepped squad 4's place to (-51.2, -3.7) across the river; its
+  crews crossed the bridge at 36.5 s and never got in: place_clear checks each step is standable, not that the moved place is reached
+  from the original without crossing water or a deck. Other g3 never-ins at the west bridge mouth (s4604, s4609). **Ruled:** v5 = a
+  moved place must be reached from the original without a crossing (`crosses_on(ground)`, as G1) and never lands on a deck mouth; a
+  dev read first, then a new bar on fresh seeds 5201-5212; if the round closes first it carries to round 39 with its bar.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
