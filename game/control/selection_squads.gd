@@ -805,6 +805,17 @@ const MAX_ABREAST := 3
 ## road 100 m the other; the front rank stood all three abreast slid 39 m down the road, squad 3 placed 79.5 m from the
 ## click, stuck behind squad 2's halt and never in. `--group-rank-shift=half`: a rank slides at most half a place off the
 ## column's line; fewer stand abreast, and the rest stand a rank back along the street they drove.
+## G1 v5 (three-arm dev read 7bfb06384: squads whole on a route's queued legs put the same places under different whole
+## squads than main's re-deal; they crossed lanes, crossing 5 route twitch 22.2 -> 33.5 m). `--group-whole=click`: squads
+## stay whole on his plain group click only; a queued leg is dealt as today (route legs are G2's).
+static var GROUP_WHOLE_CLICK := OS.get_cmdline_user_args().has("--group-whole=click")
+
+
+## G1: whether a group move under GROUP_LAY keeps every squad's own vehicles (untangle_whole) rather than re-dealing them.
+static func whole_on(queued: bool) -> bool:
+	return GROUP_LAY and not (GROUP_WHOLE_CLICK and queued)
+
+
 static var RANK_SHIFT_HALF := OS.get_cmdline_user_args().has("--group-rank-shift=half")
 ## The widest one rank may be, edge squad's centre to edge squad's centre plus their half-widths: 200 m, so the
 ## body fits across the narrowest drivable middle we deal (foundry's ±116 m square, 232 m) with a crew's room to

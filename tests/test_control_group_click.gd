@@ -30,6 +30,7 @@ func teardown() -> void:
 	SelectionSquads.LEG_WIDTH_ALONG = OS.get_cmdline_user_args().has("--group-leg-width=along")
 	SelectionSquads.PLACE_CLEAR_NEAR = OS.get_cmdline_user_args().has("--place-clear-trigger=near")
 	SelectionSquads.RANK_SHIFT_HALF = OS.get_cmdline_user_args().has("--group-rank-shift=half")
+	SelectionSquads.GROUP_WHOLE_CLICK = OS.get_cmdline_user_args().has("--group-whole=click")
 	if _lab != null:
 		_lab.dispose()
 	_lab = null
@@ -392,6 +393,18 @@ func test_g1v4_a_rank_slides_half_a_place_at_most() -> void:
 	for p: Vector3 in v4:
 		assert_true(absf(p.x) <= 25.4 * 0.5 + 0.01, "every place within half a place of the column's line (%s)" % [v4])
 		assert_true(p.z >= -0.01, "never past the click (%s)" % [v4])
+
+
+## G1 v5 (`--group-whole=click`): squads stay whole on a plain group click; a queued leg is dealt as today.
+func test_g1v5_squads_whole_on_his_click_only() -> void:
+	SelectionSquads.GROUP_LAY = true
+	SelectionSquads.GROUP_WHOLE_CLICK = false
+	assert_true(SelectionSquads.whole_on(false) and SelectionSquads.whole_on(true), "v3: whole on every group move")
+	SelectionSquads.GROUP_WHOLE_CLICK = true
+	assert_true(SelectionSquads.whole_on(false), "a plain click keeps every squad's own vehicles")
+	assert_true(not SelectionSquads.whole_on(true), "a queued leg is dealt as today")
+	SelectionSquads.GROUP_LAY = false
+	assert_true(not SelectionSquads.whole_on(false), "switch off: today's dealing")
 
 
 ## G2 (dev, `--group-leg-width=along`; d2ed6ef10's finding: v3's click-width test kept today's spread body on route legs):

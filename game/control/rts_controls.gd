@@ -1240,7 +1240,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		for i in mini(queue_starts.size(), squads.size()):
 			for unit_name: String in squads[i]["units"]:
 				from_leg[unit_name] = queue_starts[i]
-		if (column or (SelectionSquads.GROUP_LAY and (verb == "move" or verb == "attack_move"))) \
+		if (column or (SelectionSquads.whole_on(queue_leg) and (verb == "move" or verb == "attack_move"))) \
 				and anchors.size() >= squads.size():
 			SelectionSquads.untangle_whole(squads, anchors,
 					func(n: String) -> Vector3: return from_leg[n] if from_leg.has(n) else _flat_position(n))
