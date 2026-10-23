@@ -333,6 +333,17 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   round-38 guard series, both arms (OFF and ON) on D2b's tree, 320 fights, Bar D2's text plus an explicit turtle-line kills-a-fight guard,
   filed before numbers. builder2 after settle's S2 re-read and S1 v2; native's e1f558d83 row goes after D2b (its base seeds are the old ones
   and it does not gate anything).
+- **R38.15 (2026-10-22) S2's re-read FAILS its first-shape guard by one squad; the bar stands as filed; S2 stays OFF.** settle (builder2
+  native, cbb2ece52 = e42ff30eb's game code, 17:10-18:07; references/round38/settle/s2-reread-judged-builder2-cbb2ece52/, a4596a61e):
+  deciding passes (shape flips no-fight 56 -> 0, fight 107 -> 0; reseats 133 -> 0); never-in passes (fresh 9 v 8, pooled 15 v 15); fights
+  (3-squad n 36, 5-squad budget 3000 n 36), contacts, census pass. **First shape differs 18/576 (line <= 17.3).** Read after the verdict:
+  14 coil on main -> herringbone latched (locks, terminus), 1 herringbone -> coil (terminus 5 route s3908 squad 4), 3 a squad with no halt
+  on one side. **Ruled:** a line missed is a fail; dropping the 3 no-halt rows now would be choosing the filter after the number. The
+  guard measured "differs", but what he would see is a WRONG first shape (a coil in a lane, R37.42), so the next bar may judge that
+  instead: S2 v3 = the same arm, a new bar filed before numbers on seeds never read for S2, its first-shape guard = "first shape wrong for
+  the terrain at the halt" (defined in the judge before the run, no-halt rows reported, not counted, since never-in counts them), all
+  other lines as filed. builder2 after S1 v2, ahead of doctrine's D2b (it gates orders' G1 v3). Orders' G1 v3 keeps waiting for a
+  shipped latch; meanwhile G3.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
