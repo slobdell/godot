@@ -1,0 +1,28 @@
+PASS counter: rows differ True, base shape flips (no-fight + fight) 84 (>= 10); squads 576 + 108
+PASS deciding: shape flips no-fight 51 -> 0 (<= 13.8), fight 33 -> 0 (<= 9.2); reseats 89 -> 0 (no more)
+5-squad fight read (--probe-budget=3000; 0 runs that never started):
+  PASS guard his kills   base 9.14 arm 9.31 a fight (se 0.51, n 36/36)
+  PASS guard his losses  base 13.31 arm 12.53 a fight (se 0.88, n 36/36)
+  PASS guard CPU losses  base 9.28 arm 9.44 a fight (se 0.52, n 36/36)
+PASS fight guards
+  reported anchor deploy re-lays 93 over 571 deploys; at the cap 2: crossing-3-route-anchor-s4305:Green_Charlie_1 crossing-5-route-anchor-s4306:Green_Charlie_1
+PASS probe guards but never-in (probe guards (12 cells))
+PASS guard never-in (R38.15): 5 -> 5 runs (arm <= base)
+  reported first shape wrong for the ground (reference anchor): 10 -> 0; base {'right': 544, 'no stand': 16, 'no halt': 6, 'wrong': 10} | arm {'right': 554, 'no stand': 16, 'no halt': 6}
+  wrong on main: locks-3-route-s4307#3:open/herringbone locks-5-click-s4303#1:lanes/coil locks-5-click-s4303#5:open/herringbone locks-5-click-s4308#5:open/herringbone locks-5-route-s4303#1:lanes/coil locks-5-route-s4304#5:lanes/coil locks-5-route-s4310#5:lanes/coil terminus-5-click-s4302#4:lanes/coil terminus-5-click-s4308#4:lanes/coil terminus-5-route-s4308#4:lanes/coil
+  wrong on anchor: none
+PASS guard friend_contacts 12435 -> 11762 (<= 13683.5)
+PASS guard friend_contacts_foreign 6702 -> 6302 (<= 7377.2)
+  reported relays 178 -> 94
+  reported shape_flips 51 -> 0
+  reported parked_redeals 411 -> 405
+  reported redealt 45 -> 45
+  PASS guard his kills   base 5.53 arm 5.42 a fight (se 0.33, n 36/36)
+  PASS guard his losses  base 6.97 arm 7.00 a fight (se 0.46, n 36/36)
+  PASS guard CPU losses  base 5.58 arm 5.47 a fight (se 0.34, n 36/36)
+PASS fight guards
+  reported fight probe: squads >= 25 m 85 -> 84, parked re-deals 76 -> 73 (108 squads)
+PASS CPU guard friendly contacts 701 -> 701 (<= 776.1), fights 9/9
+PASS CPU guard stuck s 1452.3 -> 1452.3 (<= 1752.8)
+  outcomes base {'None': 9} | arm {'None': 9}
+VERDICT PASS anchor v main

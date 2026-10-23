@@ -141,7 +141,15 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 			return float(a["distance"]) < float(b["distance"])
 		return String(a["name"]) < String(b["name"]))
 
-	return {"tick": tick, "team": team, "center": center, "heading": heading, "leader": leader,
+	# Round 38 (settle S1): where a seat asked at `point` will stand for a hull of `unit`, grounded as Element.ground
+	# grounds a slot (on its anchor's bank, then pushed out of geometry toward the side the element stands on). The
+	# deploy deals its seats by these drives (ElementPlan._deploy_fit). Not called unless the deploy asks.
+	var ground_node := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
+			and game_match.tanks.get_child_count() > 0 else null
+	var ground_seat := func(point: Vector3, unit: String, anchor: Variant) -> Vector3:
+		var wanted := SlotGround.on_anchor_side(point, anchor) if anchor is Vector3 else point
+		return SlotGround.standable_from(ground_node, wanted, SlotGround.envelope_of(unit), center) if ground_node != null else wanted
+	return {"tick": tick, "team": team, "center": center, "heading": heading, "leader": leader, "ground_seat": ground_seat,
 			"members": members, "contacts": contacts, "known": known, "terrain": terrain_read(center, state),
 			"threat": threat_from(contacts, taking_fire), "composition": composition_of(members),
 			"strength": strength, "enemy_strength": enemy_strength, "taking_fire": taking_fire,
