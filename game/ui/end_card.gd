@@ -206,7 +206,8 @@ func _draw() -> void:
 	var started := HudClock.begin()
 	_choice_rects.clear()
 	# The SHORTER side sets the scale: a portrait phone (810 x 1800) sized from its height drew everything wider than the screen.
-	var s := minf(size.x, size.y) / 1080.0 if size.y > 0.0 and size.x > 0.0 else 1.0
+	# A touch device grows it like the rest of the HUD (CyberStyle.touch_boost, 1.5x); lines shrink to fit their boxes.
+	var s := (minf(size.x, size.y) / 1080.0 if size.y > 0.0 and size.x > 0.0 else 1.0) * CyberStyle.touch_boost()
 	match look:
 		"a":
 			_draw_card(s)
