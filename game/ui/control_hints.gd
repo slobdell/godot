@@ -100,7 +100,9 @@ func panel_rect() -> Rect2:
 	var line := px * 1.55
 	var width := minf(screen.x * 0.23, px * 22.0)
 	var height := line * ids.size() + px * 0.8
-	return Rect2(Vector2(px * 0.9, screen.y - height - px * 0.9), Vector2(width, height))
+	# Round 38 (F5): stacked on the score bug in the lower-left corner.
+	width = minf(width, HudLayout.bug_rect(screen).size.x)
+	return Rect2(Vector2(HudLayout.MARGIN, HudLayout.bug_top(screen) - HudLayout.GAP - height), Vector2(width, height))
 
 
 func _refresh() -> void:

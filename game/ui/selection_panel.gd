@@ -125,17 +125,17 @@ func _current_info() -> Dictionary:
 
 
 func _scale() -> float:
-	return maxf(get_viewport_rect().size.y / 1080.0, 0.6)
+	return HudLayout.panel_scale(get_viewport_rect().size)
 
 
 ## Where the panel goes: bottom center, as wide as fits between the radar and its mirror on the left.
 func _layout() -> void:
 	var screen := get_viewport_rect().size
 	var s := _scale()
-	var radar_side := clampf(screen.y * Radar.HEIGHT_FRACTION, Radar.MIN_SIZE, Radar.MAX_SIZE) + Radar.MARGIN * 2.0
-	var width := minf(MAX_WIDTH * s, screen.x - radar_side * 2.0)
-	size = Vector2(maxf(width, 200.0), HEIGHT * s)
-	position = Vector2((screen.x - size.x) / 2.0, screen.y - size.y - PAD * s)
+	# Round 38 (F5): between the score bug (lower left) and the radar; across the width over them on a portrait phone.
+	var rect := HudLayout.panel_rect(screen)
+	size = rect.size
+	position = rect.position
 	_command_rects.clear()
 	var button := (size.y - PAD * s * 3.0) / 2.0
 	var wide := button * BUTTON_ASPECT
