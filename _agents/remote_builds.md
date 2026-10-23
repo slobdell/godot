@@ -822,3 +822,34 @@ stream's `local.mk` with a different OFFSET, or `make worktree`'s port block), o
 - **(round 38, feedback) A builder0 full check at load ~26 dies on the 90-min slot cap.** Two of feedback's checks were killed that way
   while two light series shared builder0 (R38.8). When builder0's load is over ~20, send full checks to builder2 (R38.2); a judged perf
   line then waits for a quiet builder0 (main's own check), never a re-run on builder2.
+
+- **(round 38, native, R38.25) The laptop and the builders simulate DIFFERENT fights: glibc's float trig.** glibc >= 2.41 made
+  the float functions `atan2f acosf asinf atanf tanf` correctly rounded (CORE-MATH). The laptop runs glibc 2.39; builder0 and
+  builder2 run 2.43. Godot's real_t-float vector math (`angle_to` etc.) and native/src both call `atan2f`/`acosf`, so the same
+  command drifts by 1-2 ulp in a TankCommand and grows wherever a jam amplifies it.
+  - Case: orders_probe terminus 3801, 5 squads, a24f3b3fb. SIM_HASH matches to tick 30, then three steer floats differ at
+    tick 33. The two squads sharing one place arrive at 29.5 s on the laptop v 47.4 s on both builders.
+  - What did NOT matter:
+    - Native v GDScript agree on every machine (laptop 29.5/29.5, builder0 47.4/47.4).
+    - Different CPUs (builder0 i5-1345U == builder2 Xeon).
+    - Speed (the laptop on a quarter core: 29.5).
+    - sinf, cosf, expf, logf, powf, sqrtf and every double function are bit-identical across the three machines.
+  - **Rule:** never pair a laptop read with a builder read. Run both arms of a comparison on one glibc (a builder's light lane
+    for dev reads that will be compared with builder numbers). sim-baseline is per machine already.
+  - **The shim (GDScript arm only):** build it, then `LD_PRELOAD=<so> godot ...` makes the laptop's ENGINE match the builders
+    (180/180 SIM_HASH checkpoints equal to builder0, arrived 47.4):
+    ```
+    cat > shim.c <<'C'
+    #include <math.h>
+    float atan2f(float y, float x) { return (float)atan2((double)y, (double)x); }
+    float acosf(float x) { return (float)acos((double)x); }
+    float asinf(float x) { return (float)asin((double)x); }
+    float atanf(float x) { return (float)atan((double)x); }
+    float tanf(float x) { return (float)tan((double)x); }
+    C
+    gcc -O2 -shared -fPIC -fno-builtin -o crmath_shim.so shim.c -lm
+    ```
+    It does NOT reach native: Godot dlopens GDExtensions with RTLD_DEEPBIND, so libtank_native binds `atan2f` to the system libm
+    (`LD_DEBUG=bindings` shows it), and a native-ON laptop run under the shim mixes the two libms (28.6 s, neither machine's).
+    So on the laptop, use the shim only with `--brains-off=native`, or `NATIVE=off`. It is a double-rounding approximation of
+    the correctly rounded result: it matched builder0 on 2,000,000 random inputs per function, but it isn't a proof.
