@@ -1230,47 +1230,45 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					-SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
 					func(p: Vector3, r: float) -> bool: return SlotGround.near_deck(p, r),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
-		# Round 38 (G3): no place on another squad's halt (settle's S2 trace, crossing 5 click s3866).
-		var cleared := false  # G3 dev read 2 (his 5-squad click): a moved place kept, its vehicles re-dealt to another's
-		_cleared_pending = {}
-		if SelectionSquads.PLACE_CLEAR and ground != null and anchors.size() >= squads.size():
-			var before := SelectionSquads.places_cleared
-			var unmoved := anchors.duplicate()
-			var clear_blocks := blocks
-			if queue_leg and queue_starts.size() >= blocks.size():  # a shifted leg's drive starts where its last leg ends
-				clear_blocks = []
-				for k in blocks.size():
-					var moved_block: Dictionary = (blocks[k] as Dictionary).duplicate()
-					moved_block["center"] = queue_starts[k]
-					clear_blocks.append(moved_block)
-			anchors = SelectionSquads.place_clear(anchors, clear_blocks, click,
-					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
-					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p))
-			cleared = SelectionSquads.places_cleared > before
-			for k in anchors.size():
-				if anchors[k] != unmoved[k]:
-					_cleared_pending[_place_key(anchors[k])] = unmoved[k]
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
 		# R37.29: under a column every squad keeps its own vehicles; crossing squads swap places whole.
 		# G1: and on every group move under the switch, a body kept included (dev read 4141ae445: terminus 5 route re-dealt
 		# crews on the legs whose body stood).
-		# G3: where a place was moved clear, no untangle at all: each squad keeps its own place, moved or not, and its own
-		# vehicles (dev read 2, his 5-squad click: today's untangle re-dealt a moved squad's crew to another's place; a
-		# whole-squad swap after the move sent crossing 5 route s3801's squad 3 to the far end, in at 62.5 s v 21.6).
-		if cleared:
-			pass
-		elif (column or (SelectionSquads.GROUP_LAY and (verb == "move" or verb == "attack_move"))) \
+		var from_leg := {}  # G1: a shifted leg's vehicles set off from where their squad's previous leg ends (read before any re-deal)
+		for i in mini(queue_starts.size(), squads.size()):
+			for unit_name: String in squads[i]["units"]:
+				from_leg[unit_name] = queue_starts[i]
+		if (column or (SelectionSquads.GROUP_LAY and (verb == "move" or verb == "attack_move"))) \
 				and anchors.size() >= squads.size():
-			var from_leg := {}  # G1: a shifted leg's vehicles set off from where their squad's previous leg ends
-			for i in queue_starts.size():
-				for unit_name: String in squads[i]["units"]:
-					from_leg[unit_name] = queue_starts[i]
 			SelectionSquads.untangle_whole(squads, anchors,
 					func(n: String) -> Vector3: return from_leg[n] if from_leg.has(n) else _flat_position(n))
 		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
+		# Round 38 (G3): no place on another squad's halt (settle's S2 trace, crossing 5 click s3866). After the untangle, so
+		# the crews are dealt exactly as today and G3 only moves places, each squad's drive read from its own vehicles (dev
+		# read 7, e94ee14af: G3 before the untangle changed the dealing on terminus 5 route legs it later sent back; s3805's
+		# squad 1 never got in on main's own final places). Dev read 2's re-deal of a moved squad's crew cannot happen here.
+		_cleared_pending = {}
+		if SelectionSquads.PLACE_CLEAR and ground != null and anchors.size() >= squads.size():
+			var unmoved := anchors.duplicate()
+			var clear_blocks: Array = []
+			for k in mini(blocks.size(), squads.size()):
+				var block: Dictionary = (blocks[k] as Dictionary).duplicate()
+				var home := Vector3.ZERO
+				var units: Array = squads[k]["units"]
+				for unit_name: String in units:
+					home += from_leg[unit_name] if from_leg.has(unit_name) else _flat_position(unit_name)
+				if not units.is_empty():
+					block["center"] = home / units.size()
+				clear_blocks.append(block)
+			anchors = SelectionSquads.place_clear(anchors, clear_blocks, click,
+					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
+					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p))
+			for k in anchors.size():
+				if anchors[k] != unmoved[k]:
+					_cleared_pending[_place_key(anchors[k])] = unmoved[k]
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
 		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
 				column and column_moved, today_places)
