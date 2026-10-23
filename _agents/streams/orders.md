@@ -51,7 +51,13 @@ Nothing (the shots go to him at the close).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-22 late evening)
+### NOW (2026-10-23 ~04:00 PDT)
+- **Check GREEN on a67afc951** (tree 23983ab5b: main e1f602fbf merged, latch ON; builder0, `make native check exited 0`):
+  3112 passed, 0 failed; scenarios 53 passed, 0 failed; check 25 passed, 2 NOT JUDGED. perf-judge refused 3 times at
+  ratio 2.2x (box busy). ai-scenarios brains-budget was unpinned. Neither is in my paths; both get re-run alone on a quiet box.
+- **Judged reads running** on builder0 light J4, both arms latch ON: G3 on 4101-4112, then G1 v3 on 3951-3962.
+
+### EARLIER (2026-10-22 late evening)
 - **G3 (R38.15; Bar G3 filed 95dd05e36, seeds amended to 4101-4112, deciding line amended before any number):** dev reads only so far.
   - Dev read 1 (builder0 light, 42377862a, dev seeds 3801-3803, n 3): v1's full-depth box stepped squads 60-90 m back.
     14 of 216 rows were > 40 m further than main; crossing 3 route s3802 went 24 -> 91 m. FAIL.
