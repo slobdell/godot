@@ -413,6 +413,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
 - **R38.21 (2026-10-22) main 661de8e82 GREEN on builder2** (covers orders' 4506f151a: G1 v3, G3, probe refusal, all OFF): `make native
   check exited 0`, 3084 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge, not a judging machine; scenario_perf loaded 4.81x),
   sim-baseline 13/13 unmoved. Next main check (feedback's 937e7859c, the portrait end card) queued behind doctrine's c475c3163 check.
+- **R38.22 (2026-10-22) main 8f0dcb488 GREEN under R36.12** (covers feedback's 937e7859c, the portrait end card): builder2 `make native
+  check exited 2`, 3085 passed / 0 failed, 24 passed, 2 NOT JUDGED (perf-judge; scenario_perf loaded 4.96x), 1 FAILED web-smoke (first
+  sound 32.9 s v 30 s; builder2 loaded, the fourth such miss today). web-smoke re-run ALONE on the same hash on builder0 (load 12.7):
+  `make web-smoke exited 0`, first sound 21.6 s. sim-baseline 13/13 unmoved. Native's 54898f5b1 makes the gate per physical core
+  (builder2 loaded at 24, builder0 at 15), so these misses will read NOT JUDGED once merged.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
