@@ -417,6 +417,31 @@ The street axis was set on all 504 herringbone deploys (null 0), and the cap ref
   does not cover this case. A trace (both arms, builder0 light) is under way before H/S3.
 - Orders' R38.39 note (main's never-ins pile up at crossing's west bridge mouth): the three shared ones are crossing. The fit's
   extra never-in is terminus, and main gets that squad in on this seed, so the note doesn't explain it.
+- **The s4505 trace** (builder0 light, 6c3112193, n 1 per arm, `--element-trace=all --arrive-trace --probe-trace=5`; it
+  reproduces: the fit arm has 4 deploys and Echo is never in; references/round38/settle/s1v5-s4505-trace-builder0/). Echo's
+  route runs west along the E-W street past Delta's halt (anchor 21.5,84.5), then turns south into the N-S lane at x≈2
+  ((2.8,72.1) -> (2.3,51.3), 26-32 m wide).
+  - **Fit:** Delta's turned herringbone lies along the street, so its tail seat Delta_1 lands 23.7 m west of the anchor at
+    (-2.3,79.9), on the junction. Delta_3 is in its seat at (5.9,61.5), inside the lane mouth. That seat is slot (3.7,67.8),
+    asked (17.3,69.8) and relaid onto the ground. From t=36 to the end at 90 s, Echo_1 is stuck at (5.6,70.3), Echo_3 at
+    (0.9,76.3) and Echo_2 at (-5.4,80.0), between those two Delta crews. Nothing gives way.
+  - **Main:** Delta's herringbone runs north-south, so no tail seat lands on the junction. Delta_3 gets the same relaid
+    lane-mouth slot (3.7,67.8), but at t=40 it is 26.9 m off it, down the lane at (-5.4,42.5). Echo gets past and is in at
+    42.2 s.
+  - **Cause:** S1 v4's failure was a deploy turned across the street. This one is turned along it, inside the cap. In both, a
+    halt seat lands on the route the next squad of the same order still has to drive. Here it's the junction and lane mouth,
+    which a seat main already relays there helps close. So the shape's angle isn't the variable; the route still to be
+    driven is.
+
+### S1: BLOCKED for round 38 (R38.40)
+No S1 v6 this round. S1 failed v1, v2, v4 and v5, each by one marginal never-in, and three of them were a following squad that
+couldn't pass a squad deploying ahead of it on terminus 5 route. Another tweak would be fitting to the guard. `DEPLOY_FIT` and
+`DEPLOY_FIT_STREET` stay OFF and in the code (`--deploy-fit=on|street`). `ElementSituation.street_axis` and its tests stay; they
+cost nothing while it's OFF.
+**Round-39 candidate (the orchestrator's framing, corrected by the s4505 trace):** no seat of a deploying squad may land on the
+route that a following squad of the same order still has to drive, at any shape and any angle. "Across a lane" is too narrow:
+s4505's blocking seats are along the street, at the junction and lane mouth. The rule must also cover main's own relaid seats
+(s4505's Delta_3 slot at (3.7,67.8) is main's). Pair it with manoeuvre's chain-aware give-way, then re-read S1 on top.
 
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
