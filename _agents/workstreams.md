@@ -59,6 +59,11 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 
 ## Bars (round 38)
 
+**Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
+S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; guard seeds 2601-2608/2701-2708
+(the 1c484a525 base, D2, F3), 4801-4808/4901-4908 D2b.
+
+
 _(each stream files its bar in its BRIEF's Status BEFORE its first number and messages the orchestrator, who copies it here; never
 edit this file on a stream branch. Rulings below as R38.x)_
 
