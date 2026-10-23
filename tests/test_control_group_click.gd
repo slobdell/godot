@@ -29,6 +29,7 @@ func teardown() -> void:
 	SelectionSquads.CLEAR_AT_CLICK = not OS.get_cmdline_user_args().has("--group-clear=rank")
 	SelectionSquads.LEG_WIDTH_ALONG = OS.get_cmdline_user_args().has("--group-leg-width=along")
 	SelectionSquads.PLACE_CLEAR_NEAR = OS.get_cmdline_user_args().has("--place-clear-trigger=near")
+	SelectionSquads.RANK_SHIFT_HALF = OS.get_cmdline_user_args().has("--group-rank-shift=half")
 	if _lab != null:
 		_lab.dispose()
 	_lab = null
@@ -366,6 +367,31 @@ func test_g1v3_a_rear_place_beside_containers_keeps_todays_body() -> void:
 	var today: Array[Vector3] = [Vector3(0, 0, 0), Vector3(40, 0, 34)]
 	assert_eq(SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), containers_behind, func(p: Vector3) -> Vector3: return p, today).size(), 0,
 			"inside the click's width: today's body stands")
+
+
+## G1 v4 (judged b55757fee, locks 3 click s3960: the click's clear width ran 13 m west and the canal road 100 m east; the
+## front rank stood all three abreast slid 39 m east, squad 3 79.5 m from the click, stuck behind squad 2's halt, never in).
+## `--group-rank-shift=half`: a rank slides at most half a place off the column's line; who does not fit stands a rank back.
+func test_g1v4_a_rank_slides_half_a_place_at_most() -> void:
+	var canal_road := func(p: Vector3, _across: Vector3) -> Array:
+		return [13.0, 100.0] if p.z < 5.0 else [10.0, 10.0]
+	var blocks := [{"center": Vector3(-28, 0, 96), "width": 25.4, "depth": 28.0}, {"center": Vector3(3, 0, 90), "width": 25.4, "depth": 28.0},
+			{"center": Vector3(31, 0, 88), "width": 25.4, "depth": 28.0}]
+	var today: Array[Vector3] = [Vector3(-37, 0, 3), Vector3(0, 0, 0), Vector3(34, 0, -3)]
+	var lay := func() -> Array[Vector3]:
+		return SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), canal_road, func(p: Vector3) -> Vector3: return p, today)
+	SelectionSquads.RANK_SHIFT_HALF = false
+	var v3: Array[Vector3] = lay.call()
+	var worst := 0.0
+	for p: Vector3 in v3:
+		worst = maxf(worst, p.length())
+	assert_true(worst > 70.0, "v3: the front rank slid down the canal road, one place ~79 m off (%s)" % [v3])
+	SelectionSquads.RANK_SHIFT_HALF = true
+	var v4: Array[Vector3] = lay.call()
+	assert_eq(v4.size(), 3, "a column is laid (%s)" % [v4])
+	for p: Vector3 in v4:
+		assert_true(absf(p.x) <= 25.4 * 0.5 + 0.01, "every place within half a place of the column's line (%s)" % [v4])
+		assert_true(p.z >= -0.01, "never past the click (%s)" % [v4])
 
 
 ## G2 (dev, `--group-leg-width=along`; d2ed6ef10's finding: v3's click-width test kept today's spread body on route legs):

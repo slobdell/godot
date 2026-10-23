@@ -451,12 +451,11 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		var single := clear < widest
 		var abreast := 1 if single else mini(MAX_ABREAST, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
 		abreast = by_along.size() - start if merged else mini(abreast, by_along.size() - start)
+		if RANK_SHIFT_HALF and not merged:
+			while abreast > 1 and absf(_rank_shift(abreast, widest, sides)) > widest * 0.5:
+				abreast -= 1
 		single = single and abreast == 1
-		# G1: a rank slides off the column's line only as far as keeps it on the clear ground (v1 centred it in the clear
-		# width: 100 m of open bank one side pushed crossing's ranks 44 m aside into the arena's edge, where they piled up).
-		var frontage := abreast * widest + (abreast - 1) * GAP_M
-		var shift := 0.0 if single or frontage > float(sides[0]) + float(sides[1]) \
-				else clampf(0.0, -float(sides[0]) + frontage * 0.5, float(sides[1]) - frontage * 0.5)
+		var shift := 0.0 if single else _rank_shift(abreast, widest, sides)
 		var centre := point + rank_across * shift
 		var rank_members: Array = []
 		for n in range(start, start + abreast):
@@ -470,6 +469,16 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		start += abreast
 		behind += step
 	return result
+
+
+## G1: how far a rank of `abreast` slides off the column's line: only as far as keeps it on the clear ground `sides`
+## (v1 centred it in the clear width: 100 m of open bank one side pushed crossing's ranks 44 m aside into the arena's
+## edge, where they piled up); 0 when it does not fit at all.
+static func _rank_shift(abreast: int, widest: float, sides: Array) -> float:
+	var frontage := abreast * widest + (abreast - 1) * GAP_M
+	if frontage > float(sides[0]) + float(sides[1]):
+		return 0.0
+	return clampf(0.0, -float(sides[0]) + frontage * 0.5, float(sides[1]) - frontage * 0.5)
 
 
 ## G1: the column's line, flat, click first: the drive back to the body when it starts at the click, else the approach
@@ -792,6 +801,11 @@ static func row(blocks: Array, click: Vector3, facing: Variant = null, fallback_
 ## Three abreast, because a body of three is still read as one front with two flanks and a centre (the doctrine's own
 ## platoon of three elements); a fourth squad abreast only widens it.
 const MAX_ABREAST := 3
+## G1 v4 (judged b55757fee, builder0, n 12; locks 3 click s3960): the click's clear width ran 13 m one side and the canal
+## road 100 m the other; the front rank stood all three abreast slid 39 m down the road, squad 3 placed 79.5 m from the
+## click, stuck behind squad 2's halt and never in. `--group-rank-shift=half`: a rank slides at most half a place off the
+## column's line; fewer stand abreast, and the rest stand a rank back along the street they drove.
+static var RANK_SHIFT_HALF := OS.get_cmdline_user_args().has("--group-rank-shift=half")
 ## The widest one rank may be, edge squad's centre to edge squad's centre plus their half-widths: 200 m, so the
 ## body fits across the narrowest drivable middle we deal (foundry's ±116 m square, 232 m) with a crew's room to
 ## spare on each side, and a click anywhere but the outer 16 m keeps every squad where it was laid. Two of the gangs'
