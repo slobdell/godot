@@ -39,6 +39,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Report (round 38 worker, 2026-10-23 ~12:45 PDT)
 
+**HAND-OVER (green): 0e1753e0f.** It carries: the N5 row for main 686150ed2 (3797a9ccc: rows/, guards/ json + fights.jsonl,
+mains.txt, the README table); run.sh's gcloud PATH fix (5fa327ace); the R38.25 lesson in remote_builds.md (1f714933a); Status.
+main 686150ed2 is merged in (ceaf6a38c; remote_builds.md conflict: kept both round-38 bullets).
+- Full check, builder2, 13:04-13:38 (load at start 1.19 6.20 13.44): `make check exited 0`, 3135 passed / 0 failed, 25 passed,
+  2 NOT JUDGED (perf-judge: builder2 isn't a judging machine; scenario_perf: loaded, ref 2.60x). Scenarios 53 passed, 4 pending.
+- In it: web match smoke first sound 16.4 s (bound 30 s); test_loaded 9/0 (box at 23.50 on 16 cores, 1.47 per core);
+  builder-checks 9/0; quiet-window 28/0; slot-light 6/0.
+- **First-sound watch:** 29.9 s (a15a48de8, 2.15 per core) and 29.2 s (main 9a6909305), now 16.4 s here. No quiet-box read near
+  the bound, so no change to the bound or the line.
+
 **R38.25 twin case (orders' 18 s jam split): MACHINE, not path.** glibc 2.39 (laptop) v 2.43 (builder0, builder2).
 - The float trig `atan2f acosf asinf atanf tanf` differs; native == GDScript on each machine. Lesson + shim recipe: remote_builds.md
   (1f714933a).
