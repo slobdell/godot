@@ -71,9 +71,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     the drop fails it although it means fewer of his tanks lost; failed guards aren't waived. Kills and CPU losses pass.
     Counter parked_returns 38,948.
   - Reading: on the latch, the hold removes the reseats outright and cuts re-deals by 36 %. O2 still adds re-deals on top
-    (+13, mostly crossing and locks), so R37.28's "the hold doubles re-deals" shrinks but isn't gone. Round 39 could re-file
-    Bar H at the observed size (both are fresh-seed reads, so it needs NEW seeds) or trace o2's crossing re-deals first. That's
-    the lead's / orchestrator's call; nothing ships.
+    (+13, mostly crossing and locks), so R37.28's "the hold doubles re-deals" shrinks but isn't gone. Nothing ships.
+  - **Round 39 (R38.42):** trace o2's crossing re-deals FIRST. Re-file Bar H only after that, only on NEW seeds, and only if
+    the trace doesn't change it. Don't re-file at the observed size without a cause.
 - **Merge notes:**
   - What stream/settle adds to main beyond e1f602fbf is OFF-by-default code and its lab tests:
     - `--deploy-fit=street` (`ElementPlan.DEPLOY_FIT_STREET`) and `ElementSituation.street_axis`
