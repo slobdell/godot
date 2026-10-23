@@ -15,6 +15,7 @@
 # Round 36 (the noise column): a second seed block on one main is SCORE_VARS=SCORE_SEED_BASE=2700 SCORE_TAG=b2700
 # SCORE_EXPECT="40 fights, 48 moves, 36 orders": the row is rows/<commit>-<tag>.json (named in noise.txt, not mains.txt).
 set -uo pipefail
+export PATH=$HOME/projects/bin:$PATH  # gcloud, for gcp-start on a 255 retry (remote_builds.md: a systemd-run unit lacks it; guard.sh has the same line)
 commit=${1:?usage: tools/scoreboard/run.sh COMMIT [HOST]}
 host=${2:-slobdell@builder2}
 # SCORE_JOBS: fights at once (mk/scoreboard.mk's default 10). builder2 (16 physical cores) takes 14, the orchestrator's

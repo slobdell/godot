@@ -37,7 +37,38 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (round 38 worker, 2026-10-22 ~10:30 PDT)
+### Report (round 38 worker, 2026-10-23 ~12:45 PDT)
+
+**HAND-OVER (green): 0e1753e0f.** It carries: the N5 row for main 686150ed2 (3797a9ccc: rows/, guards/ json + fights.jsonl,
+mains.txt, the README table); run.sh's gcloud PATH fix (5fa327ace); the R38.25 lesson in remote_builds.md (1f714933a); Status.
+main 686150ed2 is merged in (ceaf6a38c; remote_builds.md conflict: kept both round-38 bullets).
+- Full check, builder2, 13:04-13:38 (load at start 1.19 6.20 13.44): `make check exited 0`, 3135 passed / 0 failed, 25 passed,
+  2 NOT JUDGED (perf-judge: builder2 isn't a judging machine; scenario_perf: loaded, ref 2.60x). Scenarios 53 passed, 4 pending.
+- In it: web match smoke first sound 16.4 s (bound 30 s); test_loaded 9/0 (box at 23.50 on 16 cores, 1.47 per core);
+  builder-checks 9/0; quiet-window 28/0; slot-light 6/0.
+- **First-sound watch:** 29.9 s (a15a48de8, 2.15 per core) and 29.2 s (main 9a6909305), now 16.4 s here. No quiet-box read near
+  the bound, so no change to the bound or the line.
+
+**R38.25 twin case (orders' 18 s jam split): MACHINE, not path.** glibc 2.39 (laptop) v 2.43 (builder0, builder2).
+- The float trig `atan2f acosf asinf atanf tanf` differs; native == GDScript on each machine. Lesson + shim recipe: remote_builds.md
+  (1f714933a).
+- Under the shim, `atan2f` alone flips the case (dropping the others changes nothing). The laptop's native arm gives 28.6 there
+  because Godot DEEPBINDs the extension: native keeps the system libm, while the engine takes the shim (LD_DEBUG=bindings).
+- So it's a shim limitation, **not a native seam.** Engine and native call the same libm functions.
+- Scratch worktree ../godot-native-twin: removed 2026-10-23.
+
+**MERGED:** main 9a6909305 merges a15a48de8 (merged back into stream/native, 51d5cd262).
+- **Watch (orchestrator):** web-smoke's first sound. a15a48de8 passed at 29.9 s v the 30 s bound, at 2.15 per core (above the
+  1.5 line, so a miss there would have read NOT JUDGED). Record first-sound time and per-core load from each check. If quiet
+  boxes (< 1.5 per core) also land within ~1 s of the bound, revisit the bound or the line.
+
+**Was the hand-over (green): a15a48de8** = 68301e6a7 (guard.py --pair G2) + 47112af3d (builder_checks ssh) + 54898f5b1 (per-core
+gates; mk/web.mk ruled IN for the first-sound gate call only) + Status notes.
+- Full check, builder2: `make check exited 0`, 3055 passed / 0 failed, 25 passed, 2 NOT JUDGED.
+  - perf-judge: builder2 isn't a judging machine.
+  - scenario_perf: loaded, ref 4.95x.
+- In that check: test_loaded 9/0 (box at load 34.38 on 16 cores, 2.15 per core); builder-checks 9/0; quiet-window 28/0;
+  slot-light 6/0; scoreboard 14/0. Web match smoke PASSED, first sound 29.9 s (bound 30 s).
 
 **MERGED:** main cc7c7ef1a merges 595bb9208 (R38.1). The two load-49 reds were accepted on the solo re-runs (R36.12).
 - **N1 done** (90adaf963): the row for round 37's shipped main 1c484a525, on builder2.
@@ -80,10 +111,18 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   **Closed:** manoeuvre isn't building M5b. Their trace (builder0 native, c16c4a0b6, jam 3 maps x 8 seeds, 24 fights): 107 of
   1,166 seated give-ways turned round, 72 of them the scout's kept turn-in, and choose() ran for only 16 returns. No twin.
   N2 has no pending pair. It reopens if doctrine's D2 moves into a mirrored path.
-- **N5:** a row per main the round ships. **Next: 9d2897fd8** (= e1f558d83 feedback F3 ON + ec70d6b5c hit ring,
-  presentation only; main check green R38.18, 3076/0, sim-baseline 13/13). Gate met. Queued LAST on builder2: after settle's S2 v3,
-  doctrine's D2b, settle's S1 v3 and doctrine's D3; doctrine pings "builder2 free". Keep it off builder0 (R38.8). Pair against
-  1c484a525.fights.jsonl.
+- **N5: a row per main the round ships.** **Done: 686150ed2** (3797a9ccc, builder2, 2026-10-23 10:56-12:35). Run on main
+  686150ed2 rather than 9d2897fd8 at the orchestrator's ask: it includes 9d2897fd8 and adds the latch ON (e1f602fbf).
+  9d2897fd8's run had been preempted at ~10:40 before reading anything.
+  - Fights: verdict ok, 40/48/36, 0 SCRIPT ERRORs (run.sh SCORE_JOBS=14). Every moved line is inside its noise (e.g. never settled
+    9 -> 8 of 48, twitch 11.5 -> 10.8 m).
+  - Guard lines (320 of 320 fights, 0 attempts lost): blob wins 47 % (± 7 %), kr 0.85; turtle 41 % (± 16 %), kr 0.81.
+  - Paired v round 37's 1c484a525 (round 38's base): blob -0.019 (se 0.010, flips 4 lost / 1 won, McNemar p 0.19); turtle
+    +0.012 (se 0.009, 1 / 3). Kills and losses a fight and median lengths are all within ~2 se. Only 5 and 4 of the 160 fights
+    flip, so the round's changes barely touch the guard fights.
+  - Per-fight rows: references/scoreboard/guards/686150ed2.fights.jsonl (a pairing base for round 39 if it wants one).
+  - run.sh fix (5fa327ace): its 255 retry's gcp-start died with Error 127 under systemd-run (no gcloud on PATH); it now has
+    guard.sh's PATH line.
 - **guard.py --pair** (68301e6a7, doctrine's Bar G2): the guard's kills and losses a fight and median length, all and per
   guard faction, each with a paired se from the per-seed differences. test_guard 0 failed, test_scoreboard 14/0 (laptop);
   not yet through a full check. Doctrine cross-checked it against their scratch script on D2 (acbdef4c5-defend v 1c484a525):
@@ -98,6 +137,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   FAIL); shell-tools-test exit 0 (laptop, 30 suites). Touches mk/web.mk (native's round-33 gate; not in the owned list, so
   flagged in the hand-over).
 - **N3 closed** for the round (orchestrator accepted "not switching"); an AMD sample only if builder2 comes up on one.
+
+**Round-39 note (R38, orchestrator, information only): the quiet-window setup should refuse at a lower line.** Orders' builder0
+check FAILed test_slot_light's setup "not in 30 s, at load 14.91 on 10 cores" (1.49 per core, just under 1.5), the same red
+R38.18 cleared by a solo re-run. That setup WAITS for quiet; it doesn't measure a bound, so a lower loaded line there (~1.0 per
+core, SLOT_LOADED_PER_CORE / QW_LOADED_PER_CORE) costs nothing in judging power. Not changed this round, per the orchestrator.
 
 **Side worktrees to remove at close:** ../godot-native-guard, -score, -k5 (and round 37's: -m5, -unstick, -cp371,
 -rulespair, if they still exist).

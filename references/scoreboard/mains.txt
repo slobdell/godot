@@ -6,3 +6,4 @@ e45bb6632 CP36.1: the joint W1c+T9, 4 maps adopted
 3d46b2884 T8 ships: a held crew that is hit leaves the hold
 9d325e291 round 37 launch: the guard lines' base
 1c484a525 round 37 ships (K5 maps, rules, cover, the re-pins)
+686150ed2 round 38 main: F3 ON, hit ring, latch ON (e1f602fbf)
