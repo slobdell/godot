@@ -1,0 +1,44 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+terminus 3 points         g2_avenue |   34.9 /   29.6   |    0   0 |     40.1 |               2.8 |            34.2 | 1.60 | 99.3
+terminus 3 points         g2_east   |   36.9 /   34.4   |    0   0 |     36.3 |              24.0 |            31.6 | 1.81 | 85.2
+terminus 3 points         g2_west   |   36.9 /   34.4   |    0   0 |     32.0 |               8.2 |            26.8 | 1.80 | 88.9
+terminus 3 points         main_avenue |   34.9 /   29.6   |    0   0 |     40.1 |               2.8 |            34.2 | 1.60 | 99.3
+terminus 3 points         main_east |   36.9 /   34.4   |    0   0 |     54.7 |               7.3 |            49.1 | 3.67 | 81.7
+terminus 3 points         main_west |   36.9 /   34.4   |    0   0 |     42.2 |               6.1 |            29.3 | 1.98 | 92.3
+terminus 5 points         g2_avenue |   87.7 /   53.4   |    0   0 |     43.5 |               4.9 |            38.8 | 1.28 | 60.0
+terminus 5 points         g2_east   |   87.0 /   49.9   |    0   0 |     42.7 |              10.1 |            48.8 | 2.06 | 63.8
+terminus 5 points         g2_west   |   87.0 /   48.6   |    0   0 |     35.3 |               8.8 |            35.5 | 1.41 | 33.9
+terminus 5 points         main_avenue |   51.9 /   37.7   |    0   0 |     36.4 |              15.3 |            33.4 | 1.53 | 74.5
+terminus 5 points         main_east |   53.5 /   39.4   |    0   0 |        - |               3.1 |            41.2 | 3.27 | 69.2
+terminus 5 points         main_west |   53.0 /   51.9   |    0   0 |        - |               3.4 |            50.9 | 2.77 | 71.2
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+terminus 3 points         g2_avenue |          43.9 |          10.2 |           12.0 |               9.7 |          45.8
+terminus 3 points         g2_east   |          38.5 |          23.7 |           23.2 |              16.4 |          43.5
+terminus 3 points         g2_west   |          38.2 |          16.3 |            0.0 |               8.1 |          46.4
+terminus 3 points         main_avenue |          43.9 |          10.2 |           12.0 |               9.7 |          45.8
+terminus 3 points         main_east |          64.7 |          36.4 |           22.9 |               6.9 |          55.3
+terminus 3 points         main_west |          45.3 |          12.9 |            0.0 |              13.8 |          51.6
+terminus 5 points         g2_avenue |          47.9 |          31.7 |            8.3 |               8.6 |         102.9
+terminus 5 points         g2_east   |          45.6 |          32.1 |           27.3 |               3.5 |         103.5
+terminus 5 points         g2_west   |          45.3 |          18.8 |            4.8 |               7.1 |          95.4
+terminus 5 points         main_avenue |          39.8 |          33.0 |            0.0 |               9.8 |          72.1
+terminus 5 points         main_east |             - |          23.7 |              - |              12.9 |          72.3
+terminus 5 points         main_west |             - |          11.2 |              - |               5.0 |          66.7
+
+MEDIANS over seeds [3801, 3802, 3803] (n 3 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+terminus 3 points         g2_avenue   | 3 |         40.1 |     0 |          34.2 |         12.0 |          45.8 |               9.7 |    0   0 | 1.60
+terminus 3 points         g2_east     | 3 |         36.3 |     0 |          31.6 |         23.2 |          43.5 |              16.4 |    0   0 | 1.81
+terminus 3 points         g2_west     | 3 |         32.0 |     0 |          26.8 |          0.0 |          46.4 |               8.1 |    0   0 | 1.80
+terminus 3 points         main_avenue | 3 |         40.1 |     0 |          34.2 |         12.0 |          45.8 |               9.7 |    0   0 | 1.60
+terminus 3 points         main_east   | 3 |         54.7 |     0 |          49.1 |         22.9 |          55.3 |               6.9 |    0   0 | 3.67
+terminus 3 points         main_west   | 3 |         42.2 |     0 |          29.3 |          0.0 |          51.6 |              13.8 |    0   0 | 1.98
+terminus 5 points         g2_avenue   | 3 |         43.5 |     0 |          38.8 |          8.3 |         102.9 |               8.6 |    0   0 | 1.28
+terminus 5 points         g2_east     | 3 |         42.7 |     0 |          48.8 |         27.3 |         103.5 |               3.5 |    0   0 | 2.06
+terminus 5 points         g2_west     | 3 |         35.3 |     0 |          35.5 |          4.8 |          95.4 |               7.1 |    0   0 | 1.41
+terminus 5 points         main_avenue | 3 |         36.4 |     0 |          33.4 |          0.0 |          72.1 |               9.8 |    0   0 | 1.53
+terminus 5 points         main_east   | 3 |          inf |     3 |          41.2 |         31.4 |          72.3 |              12.9 |    0   0 | 3.27
+terminus 5 points         main_west   | 3 |          inf |     3 |          50.9 |         30.3 |          66.7 |               5.0 |    0   0 | 2.77
+
+EQUALITY click cells: 0 identical across arms, 0 differ

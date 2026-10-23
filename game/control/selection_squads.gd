@@ -297,6 +297,24 @@ static var GROUP_ROOM_REARMOST := OS.get_cmdline_user_args().has("--group-room=r
 static var GROUP_LEG_ROOM := OS.get_cmdline_user_args().has("--group-leg-room=starts")
 ## G2 (dev): `--group-route-line=on`: a shifted leg's column (and a gate's) stacks back along his clicked route.
 static var GROUP_ROUTE_LINE := OS.get_cmdline_user_args().has("--group-route-line=on")
+## G2 (dev): `--group-gate=main`: a waypoint passed through keeps today's gate (round 34's, abreast across the corner at his
+## click), not a column, and centred on his click, not on the mean of the leg column's places (dev read 2, bde30e68e,
+## terminus 3 west: the gate stood 50-90 m up the incoming street and the drive on cut through another street: route off
+## 66 -> 583 m).
+static var GROUP_GATE_MAIN := OS.get_cmdline_user_args().has("--group-gate=main")
+
+
+## G2: whether a gate (a waypoint passed through) may be laid as a column.
+static func gate_as_column() -> bool:
+	return GROUP_LAY and GROUP_LEGS and not GROUP_GATE_MAIN
+## G2 (dev): `--group-leg-width=along`: a shifted leg is as wide as the narrowest width read along its drive (`path_back`,
+## out to its farthest start): today's body stands only where its spread fits, and no rank is wider; not just its click (d2ed6ef10: on Terminus 5's east route the click stood in the
+## plaza, so v3 kept the spread body and the squads took three streets).
+static var LEG_WIDTH_ALONG := OS.get_cmdline_user_args().has("--group-leg-width=along")
+## G2: how often the leg's drive is read for its width, and how far from each end the reads start (the click's own width
+## is read already; the start is where the body stands spread).
+const LEG_WIDTH_STEP_M := 8.0
+const LEG_WIDTH_ENDS_M := 12.0
 ## How far each side the corridor is read for a group click (wider than the gate's 60 m, so a wide street is not "open").
 const GROUP_SCAN_M := 100.0
 ## Measurement: group clicks laid as a column (not open ground), since start.
@@ -327,10 +345,23 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 		ahead = Vector3.FORWARD
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
 	var at_click: Array = width_at.call(flat_click, across)
+	# G2 (dev): a shifted leg is as wide as its narrowest street (dev read 1, terminus 5 avenue: the leg ending at a turn
+	# read the cross street at its click and stood three squads abreast down it, one 65 m off his route).
+	var narrowest := INF
+	if leg and LEG_WIDTH_ALONG and path_back.is_valid():
+		var reach := 0.0
+		for block: Dictionary in blocks:
+			var c: Vector3 = block["center"]
+			reach = maxf(reach, Vector2(c.x - flat_click.x, c.z - flat_click.z).length())
+		narrowest = narrowest_along(path_back.call(), width_at, reach)
+		var wide := float(at_click[0]) + float(at_click[1])
+		if narrowest < wide:
+			at_click = [float(at_click[0]) * narrowest / wide, float(at_click[1]) * narrowest / wide]
 	if today.is_empty():
 		if float(at_click[0]) >= GROUP_SCAN_M - 0.01 and float(at_click[1]) >= GROUP_SCAN_M - 0.01:
 			return result  # no body given: open = the scan reaches its limit both sides (v1)
-	elif on_clear_ground(today, flat_click, ahead, width_at, at_click):
+	elif on_clear_ground(today, flat_click, ahead, width_at, at_click, reached if CLEAR_REACHED else Callable()) \
+			and fits_along(today, ahead, narrowest):
 		bodies_kept += 1
 		return result  # today's body already stands on the ground he clicked
 	var widest := 0.0
@@ -421,12 +452,11 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		var single := clear < widest
 		var abreast := 1 if single else mini(MAX_ABREAST, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
 		abreast = by_along.size() - start if merged else mini(abreast, by_along.size() - start)
+		if RANK_SHIFT_HALF and not merged:
+			while abreast > 1 and absf(_rank_shift(abreast, widest, sides)) > widest * 0.5:
+				abreast -= 1
 		single = single and abreast == 1
-		# G1: a rank slides off the column's line only as far as keeps it on the clear ground (v1 centred it in the clear
-		# width: 100 m of open bank one side pushed crossing's ranks 44 m aside into the arena's edge, where they piled up).
-		var frontage := abreast * widest + (abreast - 1) * GAP_M
-		var shift := 0.0 if single or frontage > float(sides[0]) + float(sides[1]) \
-				else clampf(0.0, -float(sides[0]) + frontage * 0.5, float(sides[1]) - frontage * 0.5)
+		var shift := 0.0 if single else _rank_shift(abreast, widest, sides)
 		var centre := point + rank_across * shift
 		var rank_members: Array = []
 		for n in range(start, start + abreast):
@@ -440,6 +470,16 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		start += abreast
 		behind += step
 	return result
+
+
+## G1: how far a rank of `abreast` slides off the column's line: only as far as keeps it on the clear ground `sides`
+## (v1 centred it in the clear width: 100 m of open bank one side pushed crossing's ranks 44 m aside into the arena's
+## edge, where they piled up); 0 when it does not fit at all.
+static func _rank_shift(abreast: int, widest: float, sides: Array) -> float:
+	var frontage := abreast * widest + (abreast - 1) * GAP_M
+	if frontage > float(sides[0]) + float(sides[1]):
+		return 0.0
+	return clampf(0.0, -float(sides[0]) + frontage * 0.5, float(sides[1]) - frontage * 0.5)
 
 
 ## G1: the column's line, flat, click first: the drive back to the body when it starts at the click, else the approach
@@ -493,18 +533,36 @@ static func _arc_of(line: PackedVector3Array, p: Vector3) -> float:
 
 ## Round 38 (orders G3; settle's S2 trace, R38.10, crossing 5 click s3866): today's body laid squads 3 and 4 6.3 m apart
 ## (ground_anchors moved an unstandable place next to its neighbour); squad 4 squeezed into squad 3's parked halt on main and
-## never arrived under settle's latch. `--place-clear=on`: no two places' footprints overlap (each block's width across the
-## approach by its depth along it, plus GAP_M): taken nearest the click first, a later place whose footprint overlaps an
-## earlier one steps back along the approach PLACE_CLEAR_STEP_M at a time, onto standable ground, up to PLACE_CLEAR_MAX_M.
+## never arrived under settle's latch. `--place-clear=on`: no two places closer than their squads' short sides (a disc of
+## half the narrower of width and depth each; no GAP_M, whose 14 m would move squads standing staggered 28 m apart). The
+## squad with the longest remaining drive keeps its place (R38.15's ruling: never lengthen the slowest squad's trip); a
+## shorter one too close to a kept place moves PLACE_CLEAR_STEP_M at a time, aside either way or back along the approach,
+## onto standable ground, up to PLACE_CLEAR_MAX_M: each way's first clear step, and of those the one nearest the squad's
+## vehicles. Nowhere clear keeps the place.
+## Dev reads (builder0 light, dev seeds 3801-3809): v1's box of full width by full depth stepped squads straight back 60-90 m
+## (42377862a); v2 kept the nearest-the-click place and moved the other away from its neighbour, so g3's extra never-ins
+## were squads main only just gets in (527d62cd2).
 static var PLACE_CLEAR := OS.get_cmdline_user_args().has("--place-clear=on") or OS.get_environment("PLACE_CLEAR") == "on"
 const PLACE_CLEAR_STEP_M := 4.0
-const PLACE_CLEAR_MAX_M := 100.0
-## Measurement: places stepped back so, since start.
+const PLACE_CLEAR_MAX_M := 40.0
+## G3 v4 (judged a67afc951, builder0, n 12: his 5 click twitch 13.8 -> 26.0 m): v3 moved squad 3 off a place 15.6 m from
+## squad 5's (inside the short sides' 19.7 m, not a pair the bar counts) into the gap before squad 4; its seats stood 4 m from
+## squad 5's five-crew halt, 38 m deep, which re-packed. `--place-clear-trigger=near`: only a pair closer than
+## PLACE_CLEAR_TRIGGER_M (the bar's 12 m and the scan's 2 m) moves, and it still clears the short sides.
+## G3 v5 (judged 9986a1cba, R38.45; crossing 5 route s4603: v4 stepped squad 4's place across the river, and its crews
+## crossed the bridge and never got in). `--place-clear-reach=on`: a moved place must be reached from where it was without
+## a crossing (`crosses`, G1's crosses_on), and never stands within PLACE_CLEAR_DECK_M of a deck (the caller's standable).
+static var PLACE_CLEAR_REACH := OS.get_cmdline_user_args().has("--place-clear-reach=on")
+const PLACE_CLEAR_DECK_M := 12.0  # about half a herringbone's short side: its seats stay off the deck's mouth
+static var PLACE_CLEAR_NEAR := OS.get_cmdline_user_args().has("--place-clear-trigger=near")
+const PLACE_CLEAR_TRIGGER_M := 14.0
+## Measurement: places moved so, since start.
 static var places_cleared := 0
 
 
 ## `standable(point)` -> bool. One place per block, in `anchors`' order (blocks beyond the anchors are ignored). Pure.
-static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, standable: Callable) -> Array[Vector3]:
+static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, standable: Callable,
+		crosses := Callable()) -> Array[Vector3]:
 	var result: Array[Vector3] = anchors.duplicate()
 	var n := mini(anchors.size(), blocks.size())
 	if n < 2:
@@ -514,36 +572,67 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 		return result
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
 	var flat_click := Vector3(click.x, 0.0, click.z)
+	# v3 (R38.15's ruling): the longest remaining drive first (it keeps its place); nearer the click breaks a tie.
 	var order: Array = []
 	for i in n:
-		order.append([-(Vector3(result[i].x, 0.0, result[i].z) - flat_click).dot(ahead), i])
+		var from: Vector3 = blocks[i].get("center", result[i])
+		var drive := Vector2(result[i].x - from.x, result[i].z - from.z).length()
+		order.append([-snappedf(drive, 0.1), -(Vector3(result[i].x, 0.0, result[i].z) - flat_click).dot(ahead), i])
 	order.sort()
 	var placed: Array[int] = []
 	for entry: Array in order:
-		var i := int(entry[1])
+		var i := int(entry[2])
 		var start := result[i]
-		var back := 0.0
-		while back <= PLACE_CLEAR_MAX_M:
-			var at := start - ahead * back
-			if (back == 0.0 or bool(standable.call(at))) and not _footprint_overlaps(at, i, result, placed, blocks, ahead, across):
-				if back > 0.0:
-					result[i] = at
-					places_cleared += 1
-				break
-			back += PLACE_CLEAR_STEP_M
+		var near := _too_close(start, i, result, placed, blocks)
+		if near >= 0 and PLACE_CLEAR_NEAR and not _within(start, result, placed, PLACE_CLEAR_TRIGGER_M):
+			near = -1
+		if near >= 0:
+			var away := 1.0 if (start - result[near]).dot(across) >= 0.0 else -1.0
+			var ways: Array[Vector3] = [across * away, -across * away, -ahead]
+			var home: Vector3 = blocks[i].get("center", start)
+			var best: Variant = null
+			for way: Vector3 in ways:  # each way's first clear step; of those, the one nearest home
+				var step := PLACE_CLEAR_STEP_M
+				while step <= PLACE_CLEAR_MAX_M:
+					var at := start + way * step
+					if bool(standable.call(at)) and not (crosses.is_valid() and bool(crosses.call(start, at))) \
+							and _too_close(at, i, result, placed, blocks) < 0:
+						if best == null or _flat_gap(at, home) < _flat_gap(best, home):
+							best = at
+						break
+					step += PLACE_CLEAR_STEP_M
+			if best != null:
+				result[i] = best
+				places_cleared += 1
 		placed.append(i)
 	return result
 
 
-static func _footprint_overlaps(at: Vector3, i: int, places: Array[Vector3], placed: Array[int], blocks: Array, ahead: Vector3,
-		across: Vector3) -> bool:
+static func _flat_gap(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+## Whether any placed place stands within `reach` of `at` (flat).
+static func _within(at: Vector3, places: Array[Vector3], placed: Array[int], reach: float) -> bool:
 	for j: int in placed:
-		var d := Vector3(at.x - places[j].x, 0.0, at.z - places[j].z)
-		var half_w := 0.5 * (float(blocks[i]["width"]) + float(blocks[j]["width"])) + GAP_M * 0.5
-		var half_d := 0.5 * (float(blocks[i].get("depth", 0.0)) + float(blocks[j].get("depth", 0.0))) + GAP_M * 0.5
-		if absf(d.dot(across)) < half_w and absf(d.dot(ahead)) < half_d:
+		if _flat_gap(at, places[j]) < reach:
 			return true
 	return false
+
+
+## The first placed block whose short-side disc `at` (block i's) overlaps, or -1.
+static func _too_close(at: Vector3, i: int, places: Array[Vector3], placed: Array[int], blocks: Array) -> int:
+	for j: int in placed:
+		var d := Vector2(at.x - places[j].x, at.z - places[j].z).length()
+		if d < _short_side(blocks[i]) * 0.5 + _short_side(blocks[j]) * 0.5:
+			return j
+	return -1
+
+
+static func _short_side(block: Dictionary) -> float:
+	var width := float(block["width"])
+	var depth := float(block.get("depth", width))
+	return minf(width, depth) if depth > 0.0 else width
 
 
 ## G1: a rank's clear width kept inside the strip he clicked (the click's own width along the approach line): a rear rank
@@ -575,6 +664,10 @@ static func column_depth(block: Dictionary) -> float:
 ## beside the yard's containers): today's body is judged against the click's own width only (the strip the deciding line
 ## reads); `--group-clear=rank` re-reads each rank as v2 did.
 static var CLEAR_AT_CLICK := not OS.get_cmdline_user_args().has("--group-clear=rank")
+## G1 v4 (three-arm dev read 7bfb06384, yard_open 5 click s3806: the click's width read 36 m, today's place stood 39.3 m
+## aside on the same open yard, and a column was laid). `--group-clear=reached`: a place past the click's width that the
+## click reaches straight by ground (`reached`: no long way round, no crossing) is on the ground he clicked.
+static var CLEAR_REACHED := OS.get_cmdline_user_args().has("--group-clear=reached")
 
 
 ## G1: whether every place in `places` stands inside the clear width read across `ahead` at its own rank (the point on
@@ -582,7 +675,8 @@ static var CLEAR_AT_CLICK := not OS.get_cmdline_user_args().has("--group-clear=r
 ## inside the click's own width (the strip he clicked),
 ## within PLACE_SLACK_M (the scan's step). `at_click` = width_at's read at the click (reused). Reads are shared between places of one rank.
 const PLACE_SLACK_M := 2.0  # the width scan steps 2 m (RtsControls.GATE_STEP_M)
-static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vector3, width_at: Callable, at_click: Array) -> bool:
+static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vector3, width_at: Callable, at_click: Array,
+		reached := Callable()) -> bool:
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
 	var reads := {0: at_click}
 	for at: Vector3 in places:
@@ -592,9 +686,43 @@ static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vecto
 			reads[back] = _within_click(width_at.call(click - ahead * float(back), across), at_click)
 		var sides: Array = reads[back]
 		var aside := offset.dot(across)
-		if aside < -float(sides[0]) - PLACE_SLACK_M or aside > float(sides[1]) + PLACE_SLACK_M:
+		if (aside < -float(sides[0]) - PLACE_SLACK_M or aside > float(sides[1]) + PLACE_SLACK_M) \
+				and not (reached.is_valid() and bool(reached.call(Vector3(at.x, 0.0, at.z)))):
 			return false
 	return true
+
+
+## G2: the narrowest clear width (both sides together) read along `drive` (click first), every LEG_WIDTH_STEP_M from
+## LEG_WIDTH_ENDS_M past the click to as far short of `reach` metres along it (the leg: out to its farthest start); INF
+## when nothing is read.
+static func narrowest_along(drive: PackedVector3Array, width_at: Callable, reach: float) -> float:
+	var narrowest := INF
+	var walked := 0.0
+	var next := LEG_WIDTH_ENDS_M
+	for k in range(1, drive.size()):
+		var a := Vector3(drive[k - 1].x, 0.0, drive[k - 1].z)
+		var b := Vector3(drive[k].x, 0.0, drive[k].z)
+		var length := a.distance_to(b)
+		if length < 0.01:
+			continue
+		var way := (b - a) / length
+		while next <= walked + length and next <= reach - LEG_WIDTH_ENDS_M:
+			var sides: Array = width_at.call(a + way * (next - walked), Vector3(-way.z, 0.0, way.x))
+			narrowest = minf(narrowest, float(sides[0]) + float(sides[1]))
+			next += LEG_WIDTH_STEP_M
+		walked += length
+	return narrowest
+
+
+## G2: whether `places`' spread across `ahead` fits `narrowest` within 2 × PLACE_SLACK_M.
+static func fits_along(places: Array[Vector3], ahead: Vector3, narrowest: float) -> bool:
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var lo := INF
+	var hi := -INF
+	for at: Vector3 in places:
+		lo = minf(lo, at.dot(across))
+		hi = maxf(hi, at.dot(across))
+	return hi - lo <= narrowest + 2.0 * PLACE_SLACK_M
 
 
 ## Crossing pairs between two squads' vehicle drives (each vehicle straight to its squad's place).
@@ -687,6 +815,22 @@ static func row(blocks: Array, click: Vector3, facing: Variant = null, fallback_
 ## Three abreast, because a body of three is still read as one front with two flanks and a centre (the doctrine's own
 ## platoon of three elements); a fourth squad abreast only widens it.
 const MAX_ABREAST := 3
+## G1 v4 (judged b55757fee, builder0, n 12; locks 3 click s3960): the click's clear width ran 13 m one side and the canal
+## road 100 m the other; the front rank stood all three abreast slid 39 m down the road, squad 3 placed 79.5 m from the
+## click, stuck behind squad 2's halt and never in. `--group-rank-shift=half`: a rank slides at most half a place off the
+## column's line; fewer stand abreast, and the rest stand a rank back along the street they drove.
+## G1 v5 (three-arm dev read 7bfb06384: squads whole on a route's queued legs put the same places under different whole
+## squads than main's re-deal; they crossed lanes, crossing 5 route twitch 22.2 -> 33.5 m). `--group-whole=click`: squads
+## stay whole on his plain group click only; a queued leg is dealt as today (route legs are G2's).
+static var GROUP_WHOLE_CLICK := OS.get_cmdline_user_args().has("--group-whole=click")
+
+
+## G1: whether a group move under GROUP_LAY keeps every squad's own vehicles (untangle_whole) rather than re-dealing them.
+static func whole_on(queued: bool) -> bool:
+	return GROUP_LAY and not (GROUP_WHOLE_CLICK and queued)
+
+
+static var RANK_SHIFT_HALF := OS.get_cmdline_user_args().has("--group-rank-shift=half")
 ## The widest one rank may be, edge squad's centre to edge squad's centre plus their half-widths: 200 m, so the
 ## body fits across the narrowest drivable middle we deal (foundry's ±116 m square, 232 m) with a crew's room to
 ## spare on each side, and a click anywhere but the outer 16 m keeps every squad where it was laid. Two of the gangs'

@@ -20,6 +20,9 @@ var _lab: TacticsLab
 
 
 func teardown() -> void:
+	SelectionSquads.GROUP_LAY = OS.get_cmdline_user_args().has("--group-lay=column")
+	SelectionSquads.GROUP_LEGS = OS.get_cmdline_user_args().has("--group-legs=on")
+	SelectionSquads.GROUP_GATE_MAIN = OS.get_cmdline_user_args().has("--group-gate=main")
 	if _lab != null:
 		_lab.dispose()
 		_lab = null
@@ -344,3 +347,37 @@ func test_a_route_passes_its_middle_waypoint_without_stopping_and_arrives_at_the
 	assert_true(not arrived_on_leg2, "it never stopped to form up on the way (arrived stayed false on leg 2)")
 	assert_true(min_speed >= 2.0, "and its centre kept moving through the waypoint (slowest %.2f m/s)" % min_speed)
 	assert_true(element.arrived, "the LAST waypoint still arrives as today (within %d frames)" % frames)
+
+
+## G2 (dev, `--group-gate=main`): with the column on legs and gates (`--group-lay=column --group-legs=on`), a waypoint passed
+## through is never laid as a column. (The lab's open ground lays no gate column either way, so the second half is a guard
+## that the switch leaves today's gate places alone, not the case it was built for: terminus 3 west, dev read 2.)
+func test_g2_gate_main_lays_no_gate_column() -> void:
+	SelectionSquads.GROUP_LAY = true
+	SelectionSquads.GROUP_LEGS = true
+	SelectionSquads.GROUP_GATE_MAIN = false
+	assert_true(SelectionSquads.gate_as_column(), "the leg column on: a gate may be a column")
+	SelectionSquads.GROUP_GATE_MAIN = true
+	assert_true(not SelectionSquads.gate_as_column(), "the switch: never")
+
+
+
+func test_g2_gate_main_keeps_todays_gate_under_the_leg_column() -> void:
+	var f := await _squad_fixture()
+	var a: Element = f.controls.elements.form(["Green_S1_1", "Green_S1_2"], "A")
+	var b: Element = f.controls.elements.form(["Green_S1_3", "Green_S1_4"], "B")
+	var squads: Array = [{"units": ["Green_S1_1", "Green_S1_2"], "element": a, "number": 0},
+			{"units": ["Green_S1_3", "Green_S1_4"], "element": b, "number": 0}]
+	var gates := []
+	for lay_on: bool in [false, true]:
+		SelectionSquads.GROUP_LAY = lay_on
+		SelectionSquads.GROUP_LEGS = lay_on
+		SelectionSquads.GROUP_GATE_MAIN = lay_on
+		for e: Element in [a, b]:
+			assert_eq(e.assign({"verb": "move", "to": [0.0, -20.0], "drills": false}), "", "setup: the first leg running")
+			assert_eq(e.enqueue({"verb": "move", "to": [0.0, -60.0], "drills": false}), "", "setup: the second queued")
+		var columns := RtsControls.gates_laid_as_columns
+		f.controls._relay_previous_waypoint(squads, Vector3(40.0, 0.0, -60.0))
+		assert_eq(RtsControls.gates_laid_as_columns, columns, "no gate laid as a column (lay %s)" % lay_on)
+		gates.append([a.queued_tasks[0]["to"], b.queued_tasks[0]["to"]])
+	assert_eq(gates[1], gates[0], "the same gate places with the lay on and the switch (%s v %s)" % [gates[1], gates[0]])

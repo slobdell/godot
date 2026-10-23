@@ -1,0 +1,56 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          g3v5_z34  |   26.4 /   25.8   |    6   0 |     16.0 |               4.4 |            28.7 | 1.45 | 64.6
+crossing 3 click          g3v5_z37  |   28.0 /   25.7   |    0   0 |     14.8 |               3.5 |            26.3 | 1.36 | 63.2
+crossing 3 click          g3v5_z40  |   29.0 /   25.1   |    0   0 |     14.9 |               3.9 |            25.8 | 1.47 | 61.8
+crossing 3 click          main_z34  |   26.4 /   14.0   |    0   0 |     22.6 |               5.5 |            29.2 | 1.43 | 64.6
+crossing 3 click          main_z37  |   25.7 /   15.5   |   12   0 |     15.8 |               4.5 |            26.8 | 1.32 | 63.2
+crossing 3 click          main_z40  |   25.1 /   17.7   |    0   0 |     15.1 |               3.2 |            31.6 | 1.39 | 61.8
+crossing 5 click          g3v5_z34  |   63.5 /   33.7   |    6   0 |     38.3 |               4.4 |            82.5 | 1.87 | 41.4
+crossing 5 click          g3v5_z37  |   64.5 /   27.2   |    0   0 |     30.8 |               3.5 |            79.0 | 1.83 | 40.3
+crossing 5 click          g3v5_z40  |   65.6 /   26.8   |    0   0 |     38.1 |               3.4 |            72.8 | 2.20 | 20.6
+crossing 5 click          main_z34  |   63.5 /   27.7   |    0   0 |     31.9 |               4.2 |            78.0 | 1.75 | 41.4
+crossing 5 click          main_z37  |   64.5 /   27.2   |    0   0 |     33.3 |               4.5 |            79.9 | 1.76 | 40.3
+crossing 5 click          main_z40  |   65.6 /   26.8   |    6   0 |     37.2 |               3.5 |            73.6 | 2.31 | 20.6
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          g3v5_z34  |          26.0 |          18.7 |           17.5 |               7.7 |          33.3
+crossing 3 click          g3v5_z37  |          24.8 |          16.4 |            4.0 |               7.0 |          41.5
+crossing 3 click          g3v5_z40  |          24.9 |          16.6 |           14.0 |               7.8 |          38.9
+crossing 3 click          main_z34  |          32.6 |          17.2 |           11.6 |               6.3 |          33.8
+crossing 3 click          main_z37  |          25.8 |          18.4 |            3.7 |               3.3 |          33.4
+crossing 3 click          main_z40  |          25.1 |          20.9 |           13.3 |               4.0 |          34.4
+crossing 5 click          g3v5_z34  |          48.3 |          23.4 |           29.8 |               7.8 |          87.2
+crossing 5 click          g3v5_z37  |          40.8 |          25.7 |           23.2 |               4.7 |          87.4
+crossing 5 click          g3v5_z40  |          48.1 |          20.6 |           13.9 |               6.5 |          86.8
+crossing 5 click          main_z34  |          41.9 |          31.7 |           20.4 |               3.2 |          87.0
+crossing 5 click          main_z37  |          43.3 |          19.7 |           13.9 |               3.2 |          87.4
+crossing 5 click          main_z40  |          44.1 |          21.0 |           18.7 |               6.8 |          87.0
+
+MEDIANS over seeds [3804, 3805, 3806, 3807, 3808, 3809] (n 6 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          g3v5_z34    | 6 |         16.0 |     0 |          28.7 |         17.5 |          33.3 |               7.7 |    6   0 | 1.45
+crossing 3 click          g3v5_z37    | 6 |         14.8 |     0 |          26.3 |          4.0 |          41.5 |               7.0 |    0   0 | 1.36
+crossing 3 click          g3v5_z40    | 6 |         14.9 |     0 |          25.8 |         14.0 |          38.9 |               7.8 |    0   0 | 1.47
+crossing 3 click          main_z34    | 6 |         22.6 |     0 |          29.2 |         11.6 |          33.8 |               6.3 |    0   0 | 1.43
+crossing 3 click          main_z37    | 6 |         15.8 |     0 |          26.8 |          3.7 |          33.4 |               3.3 |   12   0 | 1.32
+crossing 3 click          main_z40    | 6 |         15.1 |     0 |          31.6 |         13.3 |          34.4 |               4.0 |    0   0 | 1.39
+crossing 5 click          g3v5_z34    | 6 |         38.3 |     0 |          82.5 |         29.8 |          87.2 |               7.8 |    6   0 | 1.87
+crossing 5 click          g3v5_z37    | 6 |         30.8 |     0 |          79.0 |         23.2 |          87.4 |               4.7 |    0   0 | 1.83
+crossing 5 click          g3v5_z40    | 6 |         38.1 |     0 |          72.8 |         13.9 |          86.8 |               6.5 |    0   0 | 2.20
+crossing 5 click          main_z34    | 6 |         31.9 |     0 |          78.0 |         20.4 |          87.0 |               3.2 |    0   0 | 1.75
+crossing 5 click          main_z37    | 6 |         33.3 |     0 |          79.9 |         13.9 |          87.4 |               3.2 |    0   0 | 1.76
+crossing 5 click          main_z40    | 6 |         37.2 |     0 |          73.6 |         18.7 |          87.0 |               6.8 |    6   0 | 2.31
+
+EQUALITY click cells: 0 identical across arms, 12 differ
+  DIFFER crossing 3 click seed 3804
+  DIFFER crossing 3 click seed 3805
+  DIFFER crossing 3 click seed 3806
+  DIFFER crossing 3 click seed 3807
+  DIFFER crossing 3 click seed 3808
+  DIFFER crossing 3 click seed 3809
+  DIFFER crossing 5 click seed 3804
+  DIFFER crossing 5 click seed 3805
+  DIFFER crossing 5 click seed 3806
+  DIFFER crossing 5 click seed 3807
+  DIFFER crossing 5 click seed 3808
+  DIFFER crossing 5 click seed 3809

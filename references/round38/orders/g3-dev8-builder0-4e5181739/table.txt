@@ -1,0 +1,122 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          g3        |   34.4 /   23.5   |    4   0 |     16.4 |               3.2 |            37.2 | 1.41 | 51.3
+crossing 3 click          main      |   34.4 /   11.2   |    8   0 |     21.2 |               2.2 |            35.0 | 1.39 | 51.3
+crossing 3 route          g3        |   44.0 /   26.9   |    0   0 |     21.9 |               4.5 |            38.6 | 1.54 | 51.3
+crossing 3 route          main      |   34.4 /   22.0   |    3   0 |     26.4 |               3.9 |            38.6 | 1.65 | 51.3
+crossing 5 click          g3        |   89.9 /   31.6   |    4   0 |     44.2 |               2.6 |            92.7 | 2.51 | 3.6
+crossing 5 click          main      |   71.4 /   28.3   |    8   0 |     64.9 |               2.9 |            83.6 | 2.89 | 19.8
+crossing 5 route          g3        |   71.4 /   32.5   |    6   0 |     72.5 |               4.3 |            59.5 | 2.69 | 19.8
+crossing 5 route          main      |   71.4 /   31.6   |    5   0 |     82.1 |               3.2 |            61.8 | 3.08 | 19.8
+locks 3 click             g3        |   40.1 /   34.4   |   11   1 |     41.0 |               3.0 |            45.2 | 1.72 | 27.9
+locks 3 click             main      |   40.1 /   34.4   |   11   1 |     41.0 |               3.0 |            45.2 | 1.72 | 27.9
+locks 3 route             g3        |   40.1 /   34.4   |   10   0 |     70.1 |               4.2 |            57.8 | 1.97 | 27.9
+locks 3 route             main      |   40.1 /   34.4   |   10   0 |     70.1 |               4.2 |            57.8 | 1.97 | 27.9
+locks 5 click             g3        |   54.9 /   40.3   |    1   0 |     51.4 |               6.0 |            55.5 | 2.75 | 17.0
+locks 5 click             main      |   54.9 /   40.3   |    1   0 |     51.4 |               6.0 |            55.5 | 2.75 | 17.0
+locks 5 route             g3        |   54.9 /   40.3   |    1   0 |     38.1 |               3.9 |            42.3 | 2.64 | 17.0
+locks 5 route             main      |   54.9 /   40.3   |    2   0 |     38.1 |               3.9 |            42.3 | 2.64 | 17.0
+terminus 3 click          g3        |   36.9 /   34.4   |    0   0 |     27.0 |               3.0 |            57.3 | 1.55 | 19.8
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     27.0 |               3.0 |            57.3 | 1.55 | 19.8
+terminus 3 route          g3        |   36.9 /   34.4   |    0   0 |     19.6 |               2.4 |            36.2 | 1.84 | 19.8
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |     19.6 |               2.4 |            36.2 | 1.84 | 19.8
+terminus 5 click          g3        |   64.0 /   39.4   |    0   0 |        - |               5.8 |            48.0 | 2.94 | 5.9
+terminus 5 click          main      |   64.0 /   39.4   |    0   0 |        - |               5.8 |            48.0 | 2.94 | 5.9
+terminus 5 route          g3        |   64.0 /   39.4   |    0   0 |        - |               3.1 |            72.4 | 9.03 | 5.9
+terminus 5 route          main      |   64.0 /   39.4   |    0   0 |        - |               3.1 |            72.4 | 9.03 | 5.9
+yard_open 3 click         g3        |   43.3 /   34.4   |    0   0 |     18.7 |               5.9 |            37.0 | 2.42 | 19.7
+yard_open 3 click         main      |   43.3 /   34.4   |    0   0 |     18.7 |               5.9 |            37.0 | 2.42 | 19.7
+yard_open 3 route         g3        |   43.3 /   34.4   |    0   0 |     14.6 |              13.9 |            32.4 | 1.43 | 19.7
+yard_open 3 route         main      |   43.3 /   34.4   |    0   0 |     14.6 |              13.9 |            32.4 | 1.43 | 19.7
+yard_open 5 click         g3        |   53.6 /   39.4   |    0   0 |     23.8 |               4.2 |            47.5 | 2.40 | 4.1
+yard_open 5 click         main      |   53.6 /   39.4   |    0   0 |     23.8 |               4.2 |            47.5 | 2.40 | 4.1
+yard_open 5 route         g3        |   53.6 /   39.4   |    0   0 |     29.5 |               4.2 |            55.5 | 11.12 | 4.1
+yard_open 5 route         main      |   53.6 /   39.4   |    0   0 |     29.5 |               4.2 |            55.5 | 11.12 | 4.1
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          g3        |          26.4 |          27.3 |           17.0 |               4.3 |          41.9
+crossing 3 click          main      |          31.2 |          18.0 |           21.7 |               4.2 |          36.8
+crossing 3 route          g3        |          30.0 |          23.5 |           14.2 |               3.5 |          46.2
+crossing 3 route          main      |          35.2 |          19.7 |           16.0 |               3.0 |          40.4
+crossing 5 click          g3        |          54.2 |          27.4 |           29.2 |               3.0 |         107.9
+crossing 5 click          main      |          74.9 |          35.4 |           35.3 |               3.0 |         105.6
+crossing 5 route          g3        |          75.2 |          31.1 |           42.9 |               3.7 |          89.7
+crossing 5 route          main      |             - |          31.8 |              - |               3.7 |          89.7
+locks 3 click             g3        |          51.0 |          23.9 |           25.3 |               5.6 |          53.2
+locks 3 click             main      |          51.0 |          23.9 |           25.3 |               5.6 |          53.2
+locks 3 route             g3        |          80.1 |          27.9 |           18.3 |               6.7 |          56.4
+locks 3 route             main      |          80.1 |          27.9 |           18.3 |               6.7 |          56.4
+locks 5 click             g3        |          61.4 |          38.5 |           24.7 |               5.1 |          77.4
+locks 5 click             main      |          61.4 |          38.5 |           24.7 |               5.1 |          77.4
+locks 5 route             g3        |          44.0 |          30.3 |           26.9 |               7.1 |          76.7
+locks 5 route             main      |          44.0 |          30.3 |           26.9 |               7.1 |          76.7
+terminus 3 click          g3        |          35.8 |          37.3 |           18.5 |               7.6 |          64.5
+terminus 3 click          main      |          35.8 |          37.3 |           18.5 |               7.6 |          64.5
+terminus 3 route          g3        |          26.7 |          22.2 |           20.8 |               6.5 |          53.6
+terminus 3 route          main      |          26.7 |          22.2 |           20.8 |               6.5 |          53.6
+terminus 5 click          g3        |             - |          38.2 |              - |               5.2 |          85.4
+terminus 5 click          main      |             - |          38.2 |              - |               5.2 |          85.4
+terminus 5 route          g3        |             - |          33.5 |              - |               6.4 |          86.1
+terminus 5 route          main      |             - |          33.5 |              - |               6.4 |          86.1
+yard_open 3 click         g3        |          25.0 |          19.4 |           16.4 |              12.0 |          50.8
+yard_open 3 click         main      |          25.0 |          19.4 |           16.4 |              12.0 |          50.8
+yard_open 3 route         g3        |          21.2 |          16.9 |            5.5 |              12.2 |          54.7
+yard_open 3 route         main      |          21.2 |          16.9 |            5.5 |              12.2 |          54.7
+yard_open 5 click         g3        |          30.7 |          27.9 |           20.2 |              10.5 |          78.0
+yard_open 5 click         main      |          30.7 |          27.9 |           20.2 |              10.5 |          78.0
+yard_open 5 route         g3        |          39.5 |          19.2 |           18.7 |               5.8 |          74.2
+yard_open 5 route         main      |          39.5 |          19.2 |           18.7 |               5.8 |          74.2
+
+MEDIANS over seeds [3801, 3802, 3803, 3804, 3805, 3806, 3807, 3808, 3809] (n 9 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          g3          | 9 |         15.6 |     0 |          29.4 |         11.3 |          36.1 |               4.3 |    4   0 | 1.31
+crossing 3 click          main        | 9 |         16.9 |     0 |          25.8 |         20.2 |          34.4 |               4.2 |    8   0 | 1.32
+crossing 3 route          g3          | 9 |         18.6 |     0 |          32.0 |          8.4 |          40.4 |               3.5 |    0   0 | 1.39
+crossing 3 route          main        | 9 |         18.2 |     0 |          29.6 |         10.9 |          38.3 |               3.0 |    3   0 | 1.37
+crossing 5 click          g3          | 9 |         37.7 |     0 |          77.0 |         18.4 |          84.7 |               3.0 |    4   0 | 2.24
+crossing 5 click          main        | 9 |         37.2 |     0 |          77.0 |         23.8 |          84.7 |               3.0 |    8   0 | 1.72
+crossing 5 route          g3          | 9 |         36.8 |     0 |          44.2 |         20.9 |          79.7 |               3.7 |    6   0 | 2.02
+crossing 5 route          main        | 9 |         38.4 |     0 |          42.5 |         20.1 |          79.2 |               3.7 |    5   0 | 1.94
+locks 3 click             g3          | 9 |         21.9 |     0 |          30.4 |         14.3 |          48.9 |               5.6 |   11   1 | 1.56
+locks 3 click             main        | 9 |         21.9 |     0 |          30.4 |         14.3 |          48.9 |               5.6 |   11   1 | 1.56
+locks 3 route             g3          | 9 |         28.6 |     0 |          34.2 |          8.4 |          49.2 |               6.7 |   10   0 | 1.61
+locks 3 route             main        | 9 |         28.6 |     0 |          34.2 |          8.4 |          49.2 |               6.7 |   10   0 | 1.61
+locks 5 click             g3          | 9 |         25.0 |     0 |          49.5 |         19.2 |          76.0 |               5.1 |    1   0 | 1.68
+locks 5 click             main        | 9 |         25.0 |     0 |          49.5 |         19.2 |          76.0 |               5.1 |    1   0 | 1.68
+locks 5 route             g3          | 9 |         28.1 |     0 |          33.8 |         12.6 |          73.6 |               7.1 |    1   0 | 1.40
+locks 5 route             main        | 9 |         27.7 |     0 |          33.7 |         12.6 |          73.6 |               7.1 |    2   0 | 1.40
+terminus 3 click          g3          | 9 |         21.5 |     0 |          33.5 |         11.5 |          47.5 |               7.6 |    0   0 | 1.47
+terminus 3 click          main        | 9 |         21.5 |     0 |          33.5 |         11.5 |          47.5 |               7.6 |    0   0 | 1.47
+terminus 3 route          g3          | 9 |         16.7 |     0 |          26.2 |          0.0 |          51.5 |               6.5 |    0   0 | 1.30
+terminus 3 route          main        | 9 |         16.7 |     0 |          26.2 |          0.0 |          51.5 |               6.5 |    0   0 | 1.30
+terminus 5 click          g3          | 9 |         11.0 |     1 |          44.1 |         23.3 |          78.9 |               5.2 |    0   0 | 2.49
+terminus 5 click          main        | 9 |         11.0 |     1 |          44.1 |         23.3 |          78.9 |               5.2 |    0   0 | 2.49
+terminus 5 route          g3          | 9 |         52.7 |     1 |          55.0 |         18.7 |          74.0 |               6.4 |    0   0 | 5.23
+terminus 5 route          main        | 9 |         52.7 |     1 |          55.0 |         18.7 |          74.0 |               6.4 |    0   0 | 5.23
+yard_open 3 click         g3          | 9 |         15.0 |     0 |          25.3 |          0.0 |          46.6 |              12.0 |    0   0 | 2.14
+yard_open 3 click         main        | 9 |         15.0 |     0 |          25.3 |          0.0 |          46.6 |              12.0 |    0   0 | 2.14
+yard_open 3 route         g3          | 9 |          7.9 |     0 |          21.9 |          0.0 |          45.5 |              12.2 |    0   0 | 1.19
+yard_open 3 route         main        | 9 |          7.9 |     0 |          21.9 |          0.0 |          45.5 |              12.2 |    0   0 | 1.19
+yard_open 5 click         g3          | 9 |         10.3 |     0 |          33.1 |          0.0 |          73.1 |              10.5 |    0   0 | 1.81
+yard_open 5 click         main        | 9 |         10.3 |     0 |          33.1 |          0.0 |          73.1 |              10.5 |    0   0 | 1.81
+yard_open 5 route         g3          | 9 |         13.5 |     0 |          40.6 |          5.2 |          66.3 |               5.8 |    0   0 | 2.80
+yard_open 5 route         main        | 9 |         13.5 |     0 |          40.6 |          5.2 |          66.3 |               5.8 |    0   0 | 2.80
+
+EQUALITY click cells: 54 identical across arms, 18 differ
+  DIFFER crossing 3 click seed 3801
+  DIFFER crossing 3 click seed 3802
+  DIFFER crossing 3 click seed 3803
+  DIFFER crossing 3 click seed 3804
+  DIFFER crossing 3 click seed 3805
+  DIFFER crossing 3 click seed 3806
+  DIFFER crossing 3 click seed 3807
+  DIFFER crossing 3 click seed 3808
+  DIFFER crossing 3 click seed 3809
+  DIFFER crossing 5 click seed 3801
+  DIFFER crossing 5 click seed 3802
+  DIFFER crossing 5 click seed 3803
+  DIFFER crossing 5 click seed 3804
+  DIFFER crossing 5 click seed 3805
+  DIFFER crossing 5 click seed 3806
+  DIFFER crossing 5 click seed 3807
+  DIFFER crossing 5 click seed 3808
+  DIFFER crossing 5 click seed 3809

@@ -162,6 +162,7 @@ func _run() -> void:
 			squad["legs_outside"] = _legs_outside(legs, units)
 	for squad: Dictionary in _squads:
 		squad["anchor"] = _anchor_of(squad)
+		squad["anchor_element"] = _element_key(squad)
 		var ground := _tank(String(squad["units"][0]))
 		var anchor: Variant = squad["anchor"]
 		squad["path_len"] = SlotGround.path_length(ground, squad["start"], anchor) if anchor is Vector3 and ground != null else -1.0
@@ -199,6 +200,8 @@ func _run() -> void:
 				"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off",
 				"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "squad": squad["number"],
 				"crews": (squad["units"] as Array).size(), "start": _xz(squad["start"]), "anchor": _xz(anchor) if anchor is Vector3 else null,
+				# G3: the element the anchor was read from (two squads in one element read one anchor: not two places).
+				"anchor_element": squad.get("anchor_element", ""),
 				"anchor_offset_m": snappedf(_flat_d(anchor, _click), 0.1) if anchor is Vector3 else -1.0,
 				# How much nearer the click its anchor is than its start (negative: the squad is sent AWAY from the click).
 				"toward_m": snappedf(_flat_d(squad["start"], _click) - _flat_d(anchor, _click), 0.1) if anchor is Vector3 else 0.0,
@@ -261,7 +264,7 @@ func _run() -> void:
 			# Round 35 (D5, D3): the swaps uncross_paths made and the packs laid (each A/B confirms its own counter first, R35.5)
 			"uncrossed": _static_or(SelectionSquads, "uncrossed"), "packed": _static_or(SelectionSquads, "packed"), "pack_refused": SelectionSquads.pack_refused, "deck_cleared": _static_or(SelectionSquads, "deck_cleared"),
 			"friend_contacts": _contacts, "friend_contacts_foreign": _contacts_foreign, "contact_ticks": _contact_ticks,
-			"swapped_whole": SelectionSquads.swapped_whole, "columns_laid": SelectionSquads.columns_laid, "gate_columns": _static_or(RtsControls, "gates_laid_as_columns"), "first_legs_relaid": _static_or(RtsControls, "first_legs_relaid"), "legs_cut_short": _static_or(RtsControls, "legs_cut_short"), "bodies_kept": _static_or(SelectionSquads, "bodies_kept"), "whole_still_crossed": SelectionSquads.whole_still_crossed,
+			"swapped_whole": SelectionSquads.swapped_whole, "columns_laid": SelectionSquads.columns_laid, "gate_columns": _static_or(RtsControls, "gates_laid_as_columns"), "first_legs_relaid": _static_or(RtsControls, "first_legs_relaid"), "legs_cut_short": _static_or(RtsControls, "legs_cut_short"), "bodies_kept": _static_or(SelectionSquads, "bodies_kept"), "places_cleared": _static_or(SelectionSquads, "places_cleared"), "cleared_legs_back": _static_or(RtsControls, "cleared_legs_back"), "whole_still_crossed": SelectionSquads.whole_still_crossed,
 			"untangle": "whole" if SelectionSquads.UNTANGLE_WHOLE else "deal",
 			"parked_hold": "on" if TankBrain.PARKED_HOLD else "off", "parked_refused": TankBrain.parked_refused,
 			"parked_returns": TankBrain.parked_returns,
@@ -898,6 +901,15 @@ func _end_state(squad: Dictionary) -> Dictionary:
 
 
 ## The squad's own anchor: its element's last task destination (the route's last waypoint for a queued route).
+func _element_key(squad: Dictionary) -> String:
+	var element := _controls.elements.of(String(squad["units"][0])) if _controls.elements != null else null
+	if element == null:
+		return ""
+	var names := Array(element.members())
+	names.sort()
+	return String(names[0]) if not names.is_empty() else ""
+
+
 func _anchor_of(squad: Dictionary) -> Variant:
 	var element := _controls.elements.of(String(squad["units"][0])) if _controls.elements != null else null
 	if element == null:
