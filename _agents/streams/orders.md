@@ -203,7 +203,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   every squad gets in. The squads stay where he clicked, not 60 m back down the road.
   **Tree:** a hash whose full check is green (b7d4dcffd or later), switch OFF by default. G1 is OFF in both arms.
   **Probe:** `make native orders-probe`, arms `main:` v `g3:--place-clear=on`, on builder0's light lane at J <= 4, with FRESH
-  seeds 4011-4022 (n 12 a cell). Cells: the 12 street cells (locks / crossing / terminus x 3 / 5 squads x click / route),
+  seeds 4101-4112 (n 12 a cell; amended before any number from 4011-4022, which collided with settle's S2 v3 4001-4024; R38 seed blocks taken: 3861-3914, 3921-3944, 3951-3962, 4001-4024, 4101-4112, 4801-4808, 4901-4908). Cells: the 12 street cells (locks / crossing / terminus x 3 / 5 squads x click / route),
   his click (`terminus_his`, 3 / 5 squads), and yard_open (3 / 5 x click / route).
   **Judge:** `tests/control/orders_judge.py g3` (all cells).
   **Counter:** places_cleared > 0.
