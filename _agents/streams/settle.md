@@ -311,6 +311,22 @@ construction, except a shape that changes after the deploy or a re-lay whose anc
 fail v4. Whether herringbone or coil looks right at a lane's mouth stays the lead's eye
 (`references/round38/settle/s2v3-lane-mouth-shots-laptop/`).
 
+### S2 v4 verdict: PASSES every series line; R37.42's tests in the full check still to come (builder2 native, fac47b5d2)
+`make native settle-s2v4`, builder2 (e2-highcpu-32), jobs 14, beside main's native check; the no-fight probe 12 cells x
+4301-4312 = 576 squads an arm, fight 3-squad x 4313-4324 (n 36 an arm) and 5-squad budget 3000 (n 36), census 4301-4303 (9
+fights). Arms main:--deploy-trace v anchor:--deploy-latch=anchor,--deploy-trace. `references/round38/settle/s2v4-judged-builder2-fac47b5d2/`.
+- Counter PASS: base shape flips 84 (no-fight + fight). **Deciding PASS:** shape flips no-fight 51 -> 0 (line <= 13.8), fight
+  33 -> 0 (<= 9.2); reseats 89 -> 0.
+- Guards PASS: never-in 5 -> 5 runs; every other per-cell probe guard (12 cells); friend contacts 12,435 -> 11,762, foreign
+  6,702 -> 6,302; fights 3-squad (his kills 5.53 -> 5.42, his losses 6.97 -> 7.00, CPU losses 5.58 -> 5.47 a fight) and 5-squad
+  (9.14 -> 9.31, 13.31 -> 12.53, 9.28 -> 9.44), 0 runs that never started; census friendly contacts 701 -> 701, stuck 1452.3 ->
+  1452.3 s.
+- Reported (R38.20): first shape wrong for the anchor's ground 10 -> 0 (main: 6 coil-on-lanes, 4 herringbone-on-open; locks
+  and terminus 5-squad); relays 178 -> 94; parked re-deals 411 -> 405; deploy re-lays 93 over 571 deploys, 2 at the 3-lay cap
+  (crossing 3 route s4305 Charlie, crossing 5 route s4306 Charlie).
+- Still to come: test_settle_deploy_latch and test_settle_deploy_latch_anchor green in a full check. That runs on the ON
+  commit (the default flipped) on builder2 after S1 v3, then the sim-baseline attribution.
+
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
   column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as
