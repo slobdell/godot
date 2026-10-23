@@ -297,6 +297,14 @@ static var GROUP_ROOM_REARMOST := OS.get_cmdline_user_args().has("--group-room=r
 static var GROUP_LEG_ROOM := OS.get_cmdline_user_args().has("--group-leg-room=starts")
 ## G2 (dev): `--group-route-line=on`: a shifted leg's column (and a gate's) stacks back along his clicked route.
 static var GROUP_ROUTE_LINE := OS.get_cmdline_user_args().has("--group-route-line=on")
+## G2 (dev): `--group-leg-width=along`: a shifted leg keeps today's body only where its spread fits the narrowest width read
+## along the leg's drive (`path_back`), not just at its click (d2ed6ef10: on Terminus 5's east route the click stood in the
+## plaza, so v3 kept the spread body and the squads took three streets).
+static var LEG_WIDTH_ALONG := OS.get_cmdline_user_args().has("--group-leg-width=along")
+## G2: how often the leg's drive is read for its width, and how far from each end the reads start (the click's own width
+## is read already; the start is where the body stands spread).
+const LEG_WIDTH_STEP_M := 8.0
+const LEG_WIDTH_ENDS_M := 12.0
 ## How far each side the corridor is read for a group click (wider than the gate's 60 m, so a wide street is not "open").
 const GROUP_SCAN_M := 100.0
 ## Measurement: group clicks laid as a column (not open ground), since start.
@@ -330,7 +338,8 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	if today.is_empty():
 		if float(at_click[0]) >= GROUP_SCAN_M - 0.01 and float(at_click[1]) >= GROUP_SCAN_M - 0.01:
 			return result  # no body given: open = the scan reaches its limit both sides (v1)
-	elif on_clear_ground(today, flat_click, ahead, width_at, at_click):
+	elif on_clear_ground(today, flat_click, ahead, width_at, at_click) \
+			and not (leg and LEG_WIDTH_ALONG and path_back.is_valid() and not fits_along(today, ahead, path_back.call(), width_at)):
 		bodies_kept += 1
 		return result  # today's body already stands on the ground he clicked
 	var widest := 0.0
@@ -620,6 +629,37 @@ static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vecto
 		var aside := offset.dot(across)
 		if aside < -float(sides[0]) - PLACE_SLACK_M or aside > float(sides[1]) + PLACE_SLACK_M:
 			return false
+	return true
+
+
+## G2: whether `places`' spread across `ahead` fits the narrowest width read along `drive` (click first), every
+## LEG_WIDTH_STEP_M from LEG_WIDTH_ENDS_M past the click to as far short of its end, within 2 × PLACE_SLACK_M.
+static func fits_along(places: Array[Vector3], ahead: Vector3, drive: PackedVector3Array, width_at: Callable) -> bool:
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var lo := INF
+	var hi := -INF
+	for at: Vector3 in places:
+		lo = minf(lo, at.dot(across))
+		hi = maxf(hi, at.dot(across))
+	var spread := hi - lo
+	var total := 0.0
+	for k in range(1, drive.size()):
+		total += _xz(drive[k - 1]).distance_to(_xz(drive[k]))
+	var walked := 0.0
+	var next := LEG_WIDTH_ENDS_M
+	for k in range(1, drive.size()):
+		var a := Vector3(drive[k - 1].x, 0.0, drive[k - 1].z)
+		var b := Vector3(drive[k].x, 0.0, drive[k].z)
+		var length := a.distance_to(b)
+		if length < 0.01:
+			continue
+		var way := (b - a) / length
+		while next <= walked + length and next <= total - LEG_WIDTH_ENDS_M:
+			var sides: Array = width_at.call(a + way * (next - walked), Vector3(-way.z, 0.0, way.x))
+			if spread > float(sides[0]) + float(sides[1]) + 2.0 * PLACE_SLACK_M:
+				return false
+			next += LEG_WIDTH_STEP_M
+		walked += length
 	return true
 
 

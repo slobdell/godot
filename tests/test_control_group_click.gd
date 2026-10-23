@@ -27,6 +27,7 @@ var _lab: TacticsLab
 func teardown() -> void:
 	SelectionSquads.GROUP_LAY = OS.get_cmdline_user_args().has("--group-lay=column")
 	SelectionSquads.CLEAR_AT_CLICK = not OS.get_cmdline_user_args().has("--group-clear=rank")
+	SelectionSquads.LEG_WIDTH_ALONG = OS.get_cmdline_user_args().has("--group-leg-width=along")
 	if _lab != null:
 		_lab.dispose()
 	_lab = null
@@ -345,3 +346,25 @@ func test_g1v3_a_rear_place_beside_containers_keeps_todays_body() -> void:
 	var today: Array[Vector3] = [Vector3(0, 0, 0), Vector3(40, 0, 34)]
 	assert_eq(SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), containers_behind, func(p: Vector3) -> Vector3: return p, today).size(), 0,
 			"inside the click's width: today's body stands")
+
+
+## G2 (dev, `--group-leg-width=along`; d2ed6ef10's finding: v3's click-width test kept today's spread body on route legs):
+## a shifted leg wide at its click but driven through a 16 m street keeps no spread body; the drive's narrowest width rules.
+func test_g2_a_leg_through_a_narrow_street_lays_the_column() -> void:
+	var street_on_the_way := func(p: Vector3, _across: Vector3) -> Array:
+		return [100.0, 100.0] if p.z < 10.0 or p.z > 90.0 else [8.0, 8.0]
+	var blocks := [{"center": Vector3(-20, 0, 100), "width": 29.0, "depth": 20.0}, {"center": Vector3(20, 0, 100), "width": 29.0, "depth": 20.0}]
+	var spread: Array[Vector3] = [Vector3(-20, 0, 0), Vector3(20, 0, 0)]
+	var narrow: Array[Vector3] = [Vector3(-4, 0, 0), Vector3(4, 0, 6)]
+	var drive := func() -> PackedVector3Array: return PackedVector3Array([Vector3.ZERO, Vector3(0, 0, 100)])
+	var lay := func(today: Array[Vector3]) -> Array[Vector3]:  # lambdas capture by value: the body is passed in
+		return SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), street_on_the_way, func(p: Vector3) -> Vector3: return p,
+				today, drive, Callable(), false, true)
+	SelectionSquads.LEG_WIDTH_ALONG = false
+	assert_eq(lay.call(spread).size(), 0, "switch off: wide at the click, today's spread body stands (v3)")
+	SelectionSquads.LEG_WIDTH_ALONG = true
+	assert_eq(lay.call(spread).size(), 2, "switch on: 40 m spread through a 16 m street lays the column")
+	assert_eq(lay.call(narrow).size(), 0, "a body that fits the street stands")
+	var plain := SelectionSquads.column_lay(blocks, Vector3.ZERO, Vector3(0, 0, -1), street_on_the_way, func(p: Vector3) -> Vector3: return p,
+			[Vector3(-20, 0, 0), Vector3(20, 0, 0)] as Array[Vector3], drive)
+	assert_eq(plain.size(), 0, "a plain click (not a leg) is judged at its click only")
