@@ -21,15 +21,17 @@ and the scoreboard rows, which the orchestrator finishes in round 36.** Older he
 | **feedback** | `godot-feedback` (6) | Opus | he can't miss the match ending | F1 the end of a match |
 | **native** | `godot-native` (4, CONTINUING its round-37 session) | Opus | nothing alone: rows, twins, guard tooling | N1 round 37's row |
 
-**Round 38 progress (2026-10-22 ~19:25 PDT):** merged on main: native N1 (cc7c7ef1a); manoeuvre M7 v2 OFF + aside tooling (8bfb74e55,
-main 400bada9a GREEN, R38.13); feedback F1 looks (P default until his pick) + F2 + **F3 Tanker repairs under fire ON** + hit ring
-tightened (e1f558d83, ec70d6b5c; main 9d2897fd8 GREEN under R36.12, R38.18); orders G1 v3 + G3 + probe refusal, all OFF (4506f151a, its
-main check running on builder2). Failed, re-filed on fresh seeds: S1 v2 (never-in 1 -> 2; S1 v3 = main's deal unless turned, R38.17),
-S2 re-read (first shape 18 v 17.3; S2 v3 judges the shape against the deploy anchor's terrain, R38.15/R38.16), G1 amended (three
-guards; v3 waits for a shipped latch, R38.12), D2 (turtle kills -3.8 se; D2b on fresh seeds with its own OFF arm, R38.14). builder2
-queue: settle S2 v3 context + series, doctrine D2b check + arms, settle S1 v3, doctrine D3, native's row for 9d2897fd8. builder0:
-manoeuvre M5 v2 series (from 13:18, ~10 h), orders G3 dev reads (J <= 4). Seed blocks: workstreams *Bars (round 38)* registry. **For him
-when back:** end-of-match pick (page V4dAc2UNofD2553VqKKS5q, `picks/end`, still empty); lane-mouth shape (R38.16 shots).
+**Round 38 progress (2026-10-23 ~01:35 PDT):** on main and GREEN: native N1; manoeuvre M7 v2 OFF; feedback F3 Tanker repairs under fire
+ON, his end card A final, portrait end card, **F5 the top of the screen free** (score bug lower-left; captions, camera readout, top
+lines gone); orders G1 v3 / G3 / probe refusal OFF; native's per-core wall-clock gates and builder_checks fix. Latest green: 9a6909305
+(builder2) and 9ff649dca (builder0, web-smoke judged 20.0 s); 1dbfb9c1d (builder2). **Owed:** a judged perf line on builder0 (refused
+twice under light lanes; needs a held quiet window). **Passed, shipping:** settle S2 v4 deploy latch at the anchor (R38.33; ON hash
+b3ad7baa4 checking on builder0). **Failed:** S1 v1/v2 (S1 v3 running on builder2), S2 v1-v3, G1 amended, D2, D2b (R38.29), M5 v2
+(R38.24). **Building:** doctrine D2c "hold with some, strike with the rest" (bar filed, seeds 5001-5108), D3 rules re-read (after
+settle's S1 v3), orders G3 dev reads, G1 v3/G3 judged reads wait for the latch on main. **Found:** the laptop (glibc 2.39) and the
+builders (2.43) simulate differently in jams (atan2f rounding; R38.25): native == GDScript per machine. **Round-39 candidates:**
+machine-independent trig; chain-aware give-way (R38.26); touch-map top panels (a directions page); D2c if it carries. **For him when
+back:** lane-mouth shape (R38.16 shots); the physics-engine question was answered in chat (Jolt already; measure first).
 
 **To launch (the lead):** in each NEW folder (`godot-orders`, `godot-doctrine`, `godot-settle`, `godot-manoeuvre`, `godot-feedback`)
 start a CLI (orders and doctrine on Fable, the rest Opus) and paste the kickoff prompt from `_agents/orchestration.md`. Native is NOT

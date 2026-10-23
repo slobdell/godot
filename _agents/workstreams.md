@@ -66,8 +66,8 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 ## Bars (round 38)
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
-S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; guard seeds 2601-2608/2701-2708
-(the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001+ D2c.
+S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; guard seeds 2601-2608/2701-2708
+(the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001-5008/5101-5108 D2c.
 
 
 _(each stream files its bar in its BRIEF's Status BEFORE its first number and messages the orchestrator, who copies it here; never
@@ -185,6 +185,29 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   copied here by the orchestrator).** `_deploy_fit` leaves a deploy untouched unless it turns (tests/test_settle_deploy_fit_v3.gd pins a
   non-turning deploy byte-identical to main; fails on S1 v2's code). Seeds: no-fight 12 cells x 4201-4212; fight3 (budget 1500) and fight5
   (budget 3000) x 4213-4224. Lines exactly S1 v2's (`settle_judge.py s1v2`). `make native settle-s1v3`, builder2 after doctrine's D2b.
+
+- **D2c CPU_DEFEND, hold with some, strike with the rest (doctrine, R38.30; filed in stream/doctrine 587c31976 Status before any D2c
+  number; copied here by the orchestrator).** `--cpu-defend --cpu-defend-split --cpu-defend-closing` ON v OFF, code ebb817ea0. SPLIT:
+  post only the crews the coming contacts need (>= 1, <= half the line, nearest the ring first); the rest attack when the side would
+  attack with defend off. CLOSING: a contact counts only while >= 10 m nearer the ring over 5 s; defend lapses 30 s after the last
+  closed. Labs first (builder0 light J4, seeds 2601-2602, 40 fights an arm: OFF, split, closing, package); ONE constants re-tune
+  allowed in labs, recorded before the series tree is named. Series: FRESH guard seeds 5001-5008 + 5101-5108, 320 fights an arm, both
+  arms on the series tree (green check first), builder2 after D3, plus the none line 5001-5008. Deciding: blob win rate down > 2 paired
+  se AND McNemar p < 0.05. Second line: blob kr not up > 2 se. G1 turtle win/length not up > 2 se; G2/G2t kills a fight and length per
+  faction within 2 paired se on both lines; G3 none-line length x1.2; lab guard turtle-line CPU hold share <= OFF + 10 points. A pass
+  ships ON.
+  **Arm re-filed before any series number (stream/doctrine 25f5ca26e): `--cpu-defend --cpu-defend-split` alone**; CLOSING stays OFF;
+  no constant re-tuned. Labs (not judged; builder0 light J4, 587c31976, seeds 2601-2602, 20 fights a line an arm): blob guard wins OFF 9,
+  split 4, closing 9, package 10 of 20; turtle-line kills OFF 593, split 595, package 590; none-line median OFF 158 s, split 139 s,
+  package 188 s (a blob held at a barrier stops closing, so CLOSING lapses the defend). Lab guard on split 31.6 % v OFF 22.0 % (inside
+  +10 by 0.4; the series re-reads it). **Queue (orchestrator):** D2c's check + series go AHEAD of D3 on builder2 (a fix he would see; and
+  D3 is then read on top of what ships).
+
+- **S1 v4 = S1 v3 on the latch-ON base (settle, R38.34; filed in stream/settle fdeb18ce6 before any number; copied here by the
+  orchestrator).** Arms S1 ON v OFF, both latch-ON, code = b3ad7baa4's; seeds 4401-4412 no-fight, 4413-4424 fights; builder2 from 02:12.
+  Judged: counter (deploys turned > 0), twitch >= 15 m not up, never-in, first shape <= 3 %, contacts, both fight reads. Reported: the
+  deciding line and place+twitch (`SETTLE_S1_DECIDING_JUDGED=0`). Also amended before numbers (5a9f65d54): Bars H/S3's arms use
+  `--deploy-latch=anchor` (since b3ad7baa4, `=on` means v2's centroid read).
 
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
@@ -432,11 +455,23 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   construction (the twins are bit-identical per seed); a floor needs shifted seeds. Next for manoeuvre: settle's s3866 give-way read (light).
   builder0 now carries only light lanes (orders, feedback, manoeuvre); full checks may go to it again when it is under its loaded line
   (tools/loaded.sh), and main owes a judged perf line there.
-- **R38.25 (2026-10-23 ~00:10) OPEN: a possible native/GDScript twin mismatch on main.** orders: terminus seed 3801, 5-squad click
+- **R38.25 (2026-10-23 ~00:10) a native/GDScript twin mismatch? NO: the MACHINE (glibc float trig); see the answer below.** orders: terminus seed 3801, 5-squad click
   (-29.3/85.8), main arm: squads 1-3 identical; squads 4 and 5 (one shared place (8.0, 66.5), a queue) arrive 29.5 s on the laptop
   (GDScript, a24f3b3fb, no native/bin) v 47.4 s on builder0 (native ON, 0646a865e = a24f3b3fb + Status), the same on seeds 3801-3809
   there. Machine v path not yet split: native runs the same command native ON and OFF on one machine and finds the first diverging tick.
   Until it is split, laptop dev reads do not predict builder0 in jams; judged reads stay on their filed machine.
+  **Answer (native, ~01:00):** native and GDScript agree on one machine (laptop 29.5/29.5, builder0 47.4/47.4; builder2 47.4; the laptop at a
+  quarter core still 29.5). SIM_HASH matches to tick 30; at tick 33 three TankCommand steer floats differ by 1-2 ulp, then the jam grows
+  it to 18 s. Cause: the laptop is glibc 2.39, the builders 2.43; glibc 2.41 made float libm correctly rounded (CORE-MATH): atan2f,
+  acosf, asinf, atanf, tanf differ (2M-input probe), builder0 == builder2. Proof: a 5-function LD_PRELOAD shim on the laptop gives SIM_HASH
+  identical to builder0 on all 180 checkpoints. **Rules from here:** native v GDScript on the builders is sound; laptop dev reads are not
+  comparable to builder reads where a jam amplifies ulps (dev reads that matter run on a builder light lane); sim-baseline is per-machine.
+  Closed (native ~01:20): atan2f alone carries this case (leave-one-out shims); native ON read 28.6 under the shim only because Godot
+  dlopens GDExtensions with RTLD_DEEPBIND, so the preload reaches the engine but not libtank_native (two libms mixed). Without a shim the
+  engine and native call the same libm and agree bit for bit on each machine. No native seam; nothing to fix in native. Lesson on
+  stream/native 1f714933a (remote_builds.md): never pair a laptop read with a builder read; the shim recipe for the GDScript arm only.
+  **Round-39 candidate:** the sim's trig made machine-independent (its own correctly rounded or double-based float trig), because his
+  laptop and any player's machine simulate differently today (replays, cross-machine fights).
 - **R38.26 (2026-10-23 ~00:20) manoeuvre at its end state; s3866 read.** (builder0 light native, n 1 an arm; stream/manoeuvre e55cba940,
   references/round38/manoeuvre/s3866-giveway/README.md): seatstep OFF, squad 4 in at 33.9 s on main, NEVER under `--deploy-latch=on` or
   `=anchor`. Not one pick, not a lead-out: Alpha_3 gives way four times in 10 s (6.7-10.3 m each), each from where the last left it, seat
@@ -468,6 +503,35 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   attack when the attack stalls or the local ratio >= 1.5. (1) and (2) separable switches. Build and lab on builder0 light now; bar on
   fresh guard seeds 5001+ filed before numbers (deciding blob down; guards G2t, G3, and a lab guard: turtle-line CPU hold share <= OFF +
   10 points); its series on builder2 after D3, or carried to round 39 if the round closes first.
+- **R38.31 (2026-10-23 ~01:25) main 1dbfb9c1d GREEN on builder2** (feedback's F5, the top of the screen free): `make native check
+  exited 0`, 3089 passed / 0 failed, 24 passed + 3 NOT JUDGED (perf-judge; scenario_perf loaded 4.49x; web-smoke first sound 30.2 s at
+  2.67 per physical core, the new per-core gate (R38.19 native) refusing as designed). sim-baseline 13/13 unmoved. Judged perf and
+  web-smoke lines come from the builder0 main check.
+- **R38.32 (2026-10-23 ~01:30) main 9ff649dca GREEN on builder0** (= 9a6909305 + docs): `make native check exited 0`, 3083 passed / 0
+  failed, 25 passed + 2 NOT JUDGED: perf-judge refused 3 times (ratios 1.40-1.55x, light lanes running), scenario_perf unpinned (hybrid
+  box). web-smoke JUDGED: first sound 20.0 s. sim-baseline 13/13 unmoved (glibc 2.43). The judged perf line is taken alone with
+  `make remote-quiet T=perf-judge` (holds the whole box for a few minutes).
+- **R38.33 (2026-10-23 ~01:40) S2 v4 (`--deploy-latch=anchor`) PASSES every series line; ships ON after its full check.** settle (builder2
+  native, fac47b5d2, J 14 beside main's check; references/round38/settle/s2v4-judged-builder2-fac47b5d2, fde269d88): no-fight 12 cells x
+  4301-4312 (576 squads an arm); fights 3-squad n 36 and 5-squad (budget 3000) n 36 on 4313-4324; census 4301-4303. Deciding: shape flips
+  no-fight 51 -> 0 (line <= 13.8), fight 33 -> 0 (<= 9.2); reseats 89 -> 0. Guards: never-in 5 -> 5; every per-cell probe guard passes;
+  contacts 12,435 -> 11,762 (foreign 6,702 -> 6,302); fights pass, 0 never started; census contacts 701 -> 701. Reported: first shape wrong
+  for the anchor 10 -> 0; relays 178 -> 94; re-lays 93/571 deploys, 2 at the cap. **Next:** the default flipped ON on a new hash, a full
+  native check (R37.42's tests run in it), sim-baseline adopted with attribution on main; then orders' G1 v3 and G3 judged reads may start
+  on a latch-on base (R38.12).
+- **R38.34 (2026-10-23 ~02:20) S1 v3 PASSES as filed; it ships stacked on the latch after a guard read on the latch-ON base.** settle
+  (builder2 native, 4ec06dd97 = fac47b5d2's code, latch OFF both arms; references/round38/settle/s1v3-judged-builder2-4ec06dd97,
+  a9c4dd08c): no-fight 576 squads an arm (4201-4212), fights n 36 + 36 (4213-4224); 70/570 deploys turned. Deciding: deploy leg >= 25 m
+  squads 57 -> 18 (line <= 28.5). Guards: twitch >= 15 m 111 -> 79; never-in 5 -> 4; first shape differs 10/576; contacts 12,652 ->
+  12,025; fights pass, 0 never started. Reported place+twitch >= 25 m 163 -> 116. **Ruled:** the pair (fit on the anchor-latched read)
+  has no judged number, so before it ships: S1 ON v OFF on the latch-ON tree, fresh seeds 4401-4424, the S1 v2 GUARDS judged as filed
+  (never-in, twitch, first shape, contacts, fights), the deciding line reported. Filed before numbers, ~1 h on builder2 AHEAD of doctrine's
+  D3 (a read, not a ship) because it is a fix he will see. Then the ON flip on a new hash and one full check.
+- **R38.35 (2026-10-23 02:35) main c54421161 perf JUDGED: PASS on builder0** (`make remote-quiet T=perf-judge`, light lanes held for
+  ~15 min by orders and doctrine): attempt 1 of 3, ai_usec_per_tick 7,060 v the 20,000 line, ratio 1.01x, idle 96 %, load 2.09; the
+  relative line (recorded) agrees. With R38.32 (9ff649dca green on builder0, web-smoke judged 20.0 s) main is GREEN AND ALL JUDGED at
+  c54421161 for everything merged through feedback's F5 and native's gates. **Lesson:** remote-quiet holds new launches but not running
+  light lanes; a judged perf line needs the workers to pause launches for ~15 min (ask them; it costs one dev read).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
