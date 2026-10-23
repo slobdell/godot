@@ -662,6 +662,12 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
 - **R38.46 (2026-10-23 ~09:20) main a34f05105 GREEN on builder2** (settle's 473966ff3, all OFF): `make native check exited 0`, 3108 passed /
   0 failed, 25 passed + 2 NOT JUDGED (perf-judge, not a judging machine; scenario_perf loaded 4.61x), sim-baseline 13/13 unmoved. The
   last judged perf line is e1f602fbf's (R38.38); everything merged since is OFF.
+- **R38.47 (2026-10-23 ~10:20) G2 (his shift-click route) carries to round 39; no bar this round.** orders' dev read 3 (builder0 light
+  J4, ab31e9bc2 latch ON, dev seeds 3801-3803, n 3; 4b7629f89; arm `--group-lay=column,--group-legs=on,--group-route-line=on,
+  --group-leg-width=along,--group-gate=main`): route cells route-off 2,493 -> 2,016 m, never-in 0/0; his 3-squad routes near main (west 98
+  v 66 m; dev read 2 had 583); his 5-squad routes: main never gets 3 and 6 squads in, G2 gets all in (~55-59 s) at a cost of route-off
+  887 -> 2,147 and 1,127 -> 2,063 m: the rear squads stand at the first waypoint's corner, ~20 m off the street the route runs down.
+  **Round 39:** keep rear places on the route line at corners, then a bar.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
