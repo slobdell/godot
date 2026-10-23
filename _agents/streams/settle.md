@@ -375,3 +375,6 @@ None.
 ### Requests to other streams
 None yet. Merge note (C38.3): `ElementSituation.build` adds a `ground_seat` Callable to every element situation (orders and
 doctrine read situations; nothing iterates its keys).
+Round-close note (R38.33's merge, main e1f602fbf): **sim-baseline is not a guard for settle's paths.** With the latch ON, all 13
+maps were unmoved (b3ad7baa4, builder0): the baseline maps never reach a deploy halt that the latch changes. Settle's changes
+are guarded by its own series (orders-probe, fight probe, census) and the tests.
