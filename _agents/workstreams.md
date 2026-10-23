@@ -214,6 +214,13 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   `--group-lay=column` paths unchanged. Full check on a67afc951 (docs on 23983ab5b), builder0; then G3 (4101-4112) and G1 v3
   (3951-3962) judged reads, builder0 light J4, both arms latch-on.
 
+- **S1 v5 DEPLOY_FIT with the street cap (settle, R38.37; filed in stream/settle e81b57579 before any number; copied here by the
+  orchestrator).** Tree e81b57579 = main e1f602fbf (latch ON) + the street cap; arms S1 ON v OFF, both latch-ON; seeds 4501-4512
+  no-fight, 4513-4524 fights; builder0 light J4. Lines exactly S1 v4's (guards judged: counter, twitch >= 15 m not up, never-in,
+  first shape <= 3 %, contacts, both fight reads; deciding and place+twitch reported) plus reported per cell: street axis set v null and
+  turns refused. Lab (laptop, not judged): s4410 Delta's turn refused (keeps main's heading); the R37.37 squad still turns along the
+  street 31.7 -> 13.2 m and keeps its 5-seat deal. The S1 v4 rows re-judge byte for byte with the new judge.
+
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
 `references/round38/settle/o2-redeal-trace-builder0/`). s3747 reproduces orders' run (the same NATIVE_EXEC count).
