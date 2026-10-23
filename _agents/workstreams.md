@@ -537,6 +537,12 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   relative line (recorded) agrees. With R38.32 (9ff649dca green on builder0, web-smoke judged 20.0 s) main is GREEN AND ALL JUDGED at
   c54421161 for everything merged through feedback's F5 and native's gates. **Lesson:** remote-quiet holds new launches but not running
   light lanes; a judged perf line needs the workers to pause launches for ~15 min (ask them; it costs one dev read).
+- **R38.36 (2026-10-23 ~03:05) S1 v4 (S1 on the latch-ON base) FAILS its never-in guard, 3 -> 4; S1 stays OFF.** settle (builder2
+  native, fdeb18ce6 = b3ad7baa4's code, both arms latch-ON; 576 squads an arm, fights n 36 + 36, seeds 4401-4424): new never-in terminus
+  5 route s4410 squad 5 (Echo), in at 67.8 s on main, never on fit (Delta's capped deploy turned, leg 42.8 -> 15.9 m; Charlie twitched
+  0 -> 11.2 m); the other 3 never-ins are the same in both arms. Passing: counter 71 turned; twitch 98 -> 91; first shape 1/576;
+  contacts 12,995 -> 12,438; fights. Reported: deciding 62 -> 29. Every S1 read so far (v2, v4) fails by one marginal never-in; settle
+  traces s4410 (builder0 light, both arms) with manoeuvre's chained give-way (R38.26) as first suspect. builder2 -> doctrine's D2c.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
