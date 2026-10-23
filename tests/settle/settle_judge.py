@@ -9,6 +9,11 @@ s1 = Bar S1 DEPLOY_FIT, s2 = Bar S2 DEPLOY_LATCH (the same guards; each its own 
 
 s3 = Bar H DEPLOY_HOLD (held v latch) and Bar S3 O2-on-settle (o2 v held), the fight probe only.
 
+    python3 tests/settle/settle_judge.py s2v3 PROBE FIGHT3 FIGHT5 CENSUS_BASE.jsonl CENSUS_ARM.jsonl BASE_ARM NEW_ARM
+
+s2v3 = R38.15's S2 v3 bar: s2's lines, with the first-shape guard read against the ground the squad stands on (the
+STAND_TRACE lines) and never-in as a total.
+
 PROBE_DIR / FIGHT_DIR are orders-probe output folders (rows.jsonl, runs.jsonl, logs/). Prints PASS/FAIL per line and a
 final VERDICT line. The guards reuse orders' judge (tests/control/orders_judge.py) so the lines are the ones its bars read.
 """
@@ -145,15 +150,94 @@ def s2_lines(probe, b, n, common, differ, fb, fn, fc, base, new, lines):
     return counter and dec
 
 
-def guards(rows, frows, fc, fb, fn, probe, fight, census_b, census_n, base, new, b, n, common, lines, ok):
-    ok = oj.probe_guards(rows, base, new, lines, settle=True) and ok
-    first = lambda r: (r.get("shapes") or [r["halt_shape"]])[0]
+def first(row):
+    return (row.get("shapes") or [row["halt_shape"]])[0]
+
+
+def shape_differs(probe, base, new, b, n, common, lines):
+    """Bars S1 / S2 as filed: the first halt shape differs in <= 3 % of squads."""
     shapes = sum(1 for c in common if first(b[c]) != first(n[c]))
     shape_ok = shapes <= max(1, 0.03 * len(common))
     lines.append("%s guard first shape: squads whose first halt shape differs %d of %d (<= 3 %%); base %s | arm %s" % (
         "PASS" if shape_ok else "FAIL", shapes, len(common), dict(Counter(first(b[c]) for c in common)),
         dict(Counter(first(n[c]) for c in common))))
-    ok = ok and shape_ok
+    return shape_ok
+
+
+# R38.15 (S2 v3): the shape the doctrine table's hold pick stands in on each terrain (every deploy of S2's re-read did).
+EXPECTED = {"lanes": "herringbone", "dense": "herringbone", "open": "coil"}
+NATO = ["Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot"]
+
+
+def stands(probe, arm, key):
+    """{squad index: STAND_TRACE line} of one probe run (ElementPlan._trace_stand: the ground at the crews' centroid
+    STAND_TRACE_S after the squad's first deploy)."""
+    m, squads, route, seed = key
+    out = {}
+    path = os.path.join(probe, "logs", "%s-%d-%s-%s-s%d.log" % (m, squads, route, arm, seed))
+    if not os.path.exists(path):
+        return out
+    with open(path, errors="replace") as f:
+        for line in f:
+            if line.startswith("STAND_TRACE "):
+                d = json.loads(line.split(" ", 1)[1])
+                letter = d["leader"].split("_")[1] if d["leader"].count("_") >= 2 else ""
+                if letter in NATO:
+                    out.setdefault(NATO.index(letter) + 1, d)
+    return out
+
+
+def wrong_shapes(probe, arm, rows):
+    """{right, wrong, no halt, no stand} over one arm's squads: wrong = the first standing shape is not the one the table
+    stands in on the terrain where the squad stands (the same terrain function for every arm)."""
+    tally, wrong = Counter(), []
+    cache = {}
+    for c, r in rows.items():
+        run = c[:4]
+        if run not in cache:
+            cache[run] = stands(probe, arm, run)
+        st = cache[run].get(c[4])
+        shape = first(r)
+        if shape == "":
+            tally["no halt"] += 1
+        elif st is None:
+            tally["no stand"] += 1
+        elif shape != EXPECTED.get(st["terrain"], shape):
+            tally["wrong"] += 1
+            wrong.append((c, st["terrain"], shape))
+        else:
+            tally["right"] += 1
+    return tally, wrong
+
+
+def shape_wrong(probe, base, new, b, n, common, lines):
+    """R38.15 (S2 v3): squads whose first shape is wrong for the ground they stand on, arm <= base."""
+    tb, wb = wrong_shapes(probe, base, {c: b[c] for c in common})
+    tn, wn = wrong_shapes(probe, new, {c: n[c] for c in common})
+    ok = tb["right"] + tb["wrong"] > 0 and tn["wrong"] <= tb["wrong"]
+    lines.append("%s guard first shape wrong for the ground it stands on: %d -> %d (arm <= base); base %s | arm %s" % (
+        "PASS" if ok else "FAIL", tb["wrong"], tn["wrong"], dict(tb), dict(tn)))
+    for label, w in ((base, wb), (new, wn)):
+        lines.append("  wrong on %s: %s" % (label, " ".join("%s-%d-%s-s%d#%d:%s/%s" % (c + (t, s)) for c, t, s in w) or "none"))
+    return ok
+
+
+def guards(rows, frows, fc, fb, fn, probe, fight, census_b, census_n, base, new, b, n, common, lines, ok,
+           shape_guard=shape_differs, never_in_total=False):
+    if never_in_total:
+        # R38.15: never-in is the total over the fresh seeds, latch <= main; every other per-cell line as filed.
+        cell_lines = []
+        oj.probe_guards(rows, base, new, cell_lines, settle=True)
+        failed = [l for l in cell_lines if l.startswith("  FAIL") and "never-in" not in l]
+        lines.extend(l for l in cell_lines if l.startswith("  FAIL"))
+        lines.append("%s probe guards but never-in (%s)" % ("FAIL" if failed else "PASS", cell_lines[-1].split(" ", 1)[1]))
+        nb = sum(1 for sq in oj.by_run(rows, base).values() if oj.run_all_in(sq) < 0)
+        nn = sum(1 for sq in oj.by_run(rows, new).values() if oj.run_all_in(sq) < 0)
+        lines.append("%s guard never-in (R38.15): %d -> %d runs (arm <= base)" % ("PASS" if nn <= nb else "FAIL", nb, nn))
+        ok = ok and not failed and nn <= nb
+    else:
+        ok = oj.probe_guards(rows, base, new, lines, settle=True) and ok
+    ok = shape_guard(probe, base, new, b, n, common, lines) and ok
     runs, _ = runs_of(os.path.join(probe, "runs.jsonl"))
     for key in ("friend_contacts", "friend_contacts_foreign"):
         cb = sum(r.get(key, 0) for r in runs if r["arm"] == base)
@@ -235,7 +319,33 @@ def s3(argv):
     return 0 if ok and ok_h else 1
 
 
+def s2v3(argv):
+    """R38.15's bar: python3 settle_judge.py s2v3 PROBE FIGHT3 FIGHT5 CENSUS_BASE CENSUS_ARM BASE NEW"""
+    probe, fight3, fight5, census_b, census_n, base, new = argv
+    lines = []
+    rows = oj.load(os.path.join(probe, "rows.jsonl"))
+    b, n = keyed(rows, base), keyed(rows, new)
+    common = [k for k in b if k in n]
+    differ = any(json.dumps({k: v for k, v in b[c].items() if k != "arm"}, sort_keys=True)
+                 != json.dumps({k: v for k, v in n[c].items() if k != "arm"}, sort_keys=True) for c in common)
+    frows = oj.load(os.path.join(fight3, "rows.jsonl"))
+    fb, fn = keyed(frows, base), keyed(frows, new)
+    fc = [k for k in fb if k in fn]
+    ok = s2_lines(probe, b, n, common, differ, fb, fn, fc, base, new, lines)
+    ok5 = []
+    f5, err5 = runs_of(os.path.join(fight5, "runs.jsonl"))
+    g5 = oj.fight_guards(f5, base, new, ok5) and err5 == 0
+    ok = g5 and ok
+    lines.append("5-squad fight read (--probe-budget=3000; %d runs that never started):" % err5)
+    lines.extend(ok5)
+    code = guards(rows, frows, fc, fb, fn, probe, fight3, census_b, census_n, base, new, b, n, common, lines, ok,
+                  shape_guard=shape_wrong, never_in_total=True)
+    return code
+
+
 if __name__ == "__main__":
+    if len(sys.argv) >= 2 and sys.argv[1] == "s2v3":
+        sys.exit(s2v3(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "s1v2":
         sys.exit(s1v2(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "s3":

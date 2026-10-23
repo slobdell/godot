@@ -112,3 +112,39 @@ settle-s1v2: native-for-check import ## Round 38 (settle, R38.11): S1 v2's serie
 		ORDERS_PROBE_ARMS="$(foreach a,$(SETTLE_V2_ARMS),$(a),--probe-fight=on,--probe-budget=3000)" \
 		ORDERS_PROBE_SEEDS="$(SETTLE_V2_FIGHT_SEEDS)" ORDERS_PROBE_DIR=$(SETTLE_V2)/fight5 > $(SETTLE_V2)/fight5.out 2>&1 || true
 	@cd $(SETTLE_V2) && $(PYTHON) $(CURDIR)/tests/settle/settle_judge.py s1v2 probe fight3 fight5 main fit | tee verdict.txt || true
+
+# R38.15: S2 v3, the same arm (main v latch) on seeds never read for S2, its first-shape guard read against the ground each
+# squad stands on (ElementPlan's STAND_TRACE under --deploy-trace) -> build/settle-s2v3/verdict.txt.
+# settle-s2v3-context: the R38.10 re-read's no-fight seeds again, only to print that guard's counts as the bar's context.
+SETTLE_V3_SEEDS ?= $(shell seq 4001 4012)
+SETTLE_V3_FIGHT_SEEDS ?= $(shell seq 4013 4024)
+SETTLE_V3_CENSUS_SEEDS ?= 4001 4002 4003
+SETTLE_V3_JOBS ?= 14
+SETTLE_V3_ARMS ?= main:--deploy-trace latch:--deploy-latch=on,--deploy-trace
+SETTLE_V3 := $(BUILD_DIR)/settle-s2v3
+SETTLE_V3_CTX := $(BUILD_DIR)/settle-s2v3-context
+.PHONY: settle-s2v3 settle-s2v3-context
+settle-s2v3: native-for-check import ## Round 38 (settle, R38.15): S2 v3's series (main v latch, seeds 4001-4024) -> build/settle-s2v3/verdict.txt
+	@rm -rf $(SETTLE_V3) && mkdir -p $(SETTLE_V3)
+	@echo ">> settle-s2v3 on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | jobs $(SETTLE_V3_JOBS)" | tee $(SETTLE_V3)/header.txt
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ARMS="$(SETTLE_V3_ARMS)" ORDERS_PROBE_SEEDS="$(SETTLE_V3_SEEDS)" \
+		ORDERS_PROBE_JOBS=$(SETTLE_V3_JOBS) ORDERS_PROBE_DIR=$(SETTLE_V3)/probe > $(SETTLE_V3)/probe.out 2>&1 || true
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ROUTES=click ORDERS_PROBE_SQUADS=3 ORDERS_PROBE_JOBS=$(SETTLE_V3_JOBS) \
+		ORDERS_PROBE_ARMS="$(foreach a,$(SETTLE_V3_ARMS),$(a),--probe-fight=on,--probe-budget=1500)" \
+		ORDERS_PROBE_SEEDS="$(SETTLE_V3_FIGHT_SEEDS)" ORDERS_PROBE_DIR=$(SETTLE_V3)/fight3 > $(SETTLE_V3)/fight3.out 2>&1 || true
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ROUTES=click ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_JOBS=$(SETTLE_V3_JOBS) \
+		ORDERS_PROBE_ARMS="$(foreach a,$(SETTLE_V3_ARMS),$(a),--probe-fight=on,--probe-budget=3000)" \
+		ORDERS_PROBE_SEEDS="$(SETTLE_V3_FIGHT_SEEDS)" ORDERS_PROBE_DIR=$(SETTLE_V3)/fight5 > $(SETTLE_V3)/fight5.out 2>&1 || true
+	@for arm in $(SETTLE_V3_ARMS); do name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
+		$(MAKE) --no-print-directory traffic-census TRAFFIC_JOBS=$(SETTLE_V3_JOBS) TRAFFIC_CENSUS_SEEDS="$(SETTLE_V3_CENSUS_SEEDS)" TRAFFIC_FLAGS="$$flags" > $(SETTLE_V3)/census-$$name.out 2>&1 || true; \
+		cp $(BUILD_DIR)/traffic-census.jsonl $(SETTLE_V3)/census-$$name.jsonl || true; done
+	@cd $(SETTLE_V3) && $(PYTHON) $(CURDIR)/tests/settle/settle_judge.py s2v3 probe fight3 fight5 census-main.jsonl census-latch.jsonl main latch | tee verdict.txt || true
+
+settle-s2v3-context: native-for-check import ## Round 38 (settle, R38.15): S2 v3's guard on the re-read's seeds 3903-3914 (context, not judged) -> build/settle-s2v3-context/
+	@rm -rf $(SETTLE_V3_CTX) && mkdir -p $(SETTLE_V3_CTX)
+	@echo ">> settle-s2v3-context on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | jobs $(SETTLE_V3_JOBS)" | tee $(SETTLE_V3_CTX)/header.txt
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ARMS="$(SETTLE_V3_ARMS)" ORDERS_PROBE_SEEDS="$(SETTLE_RR_SEEDS)" \
+		ORDERS_PROBE_JOBS=$(SETTLE_V3_JOBS) ORDERS_PROBE_DIR=$(SETTLE_V3_CTX)/probe > $(SETTLE_V3_CTX)/probe.out 2>&1 || true
+	@cd $(SETTLE_V3_CTX) && $(PYTHON) -c "import sys; sys.path.insert(0, '$(CURDIR)/tests/settle'); import settle_judge as sj, orders_judge as oj, os; \
+		rows = oj.load('probe/rows.jsonl'); b, n = sj.keyed(rows, 'main'), sj.keyed(rows, 'latch'); c = [k for k in b if k in n]; \
+		l = []; sj.shape_wrong('probe', 'main', 'latch', b, n, c, l); sj.shape_differs('probe', 'main', 'latch', b, n, c, l); print('\n'.join(l))" | tee context.txt || true
