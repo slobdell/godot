@@ -66,7 +66,7 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 ## Bars (round 38)
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
-S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; guard seeds 2601-2608/2701-2708
+S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; 4501-4524 S1 v5; 4601-4612 G3 v4; 4701-4712 G1 v4; guard seeds 2601-2608/2701-2708
 (the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001-5008/5101-5108 D2c.
 
 
@@ -208,6 +208,18 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   Judged: counter (deploys turned > 0), twitch >= 15 m not up, never-in, first shape <= 3 %, contacts, both fight reads. Reported: the
   deciding line and place+twitch (`SETTLE_S1_DECIDING_JUDGED=0`). Also amended before numbers (5a9f65d54): Bars H/S3's arms use
   `--deploy-latch=anchor` (since b3ad7baa4, `=on` means v2's centroid read).
+
+- **G3 and G1 v3: tree lines amended before any judged number (stream/orders a67afc951).** Both bars' tree = 23983ab5b (main
+  e1f602fbf merged: the latch ON); G3 code = 695d3d482's, G1 v3 code = f2a94b6cc's; later G2 dev switches OFF and leave the OFF and
+  `--group-lay=column` paths unchanged. Full check on a67afc951 (docs on 23983ab5b), builder0; then G3 (4101-4112) and G1 v3
+  (3951-3962) judged reads, builder0 light J4, both arms latch-on.
+
+- **S1 v5 DEPLOY_FIT with the street cap (settle, R38.37; filed in stream/settle e81b57579 before any number; copied here by the
+  orchestrator).** Tree e81b57579 = main e1f602fbf (latch ON) + the street cap; arms S1 ON v OFF, both latch-ON; seeds 4501-4512
+  no-fight, 4513-4524 fights; builder0 light J4. Lines exactly S1 v4's (guards judged: counter, twitch >= 15 m not up, never-in,
+  first shape <= 3 %, contacts, both fight reads; deciding and place+twitch reported) plus reported per cell: street axis set v null and
+  turns refused. Lab (laptop, not judged): s4410 Delta's turn refused (keeps main's heading); the R37.37 squad still turns along the
+  street 31.7 -> 13.2 m and keeps its 5-seat deal. The S1 v4 rows re-judge byte for byte with the new judge.
 
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
@@ -532,6 +544,53 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   relative line (recorded) agrees. With R38.32 (9ff649dca green on builder0, web-smoke judged 20.0 s) main is GREEN AND ALL JUDGED at
   c54421161 for everything merged through feedback's F5 and native's gates. **Lesson:** remote-quiet holds new launches but not running
   light lanes; a judged perf line needs the workers to pause launches for ~15 min (ask them; it costs one dev read).
+- **R38.36 (2026-10-23 ~03:05) S1 v4 (S1 on the latch-ON base) FAILS its never-in guard, 3 -> 4; S1 stays OFF.** settle (builder2
+  native, fdeb18ce6 = b3ad7baa4's code, both arms latch-ON; 576 squads an arm, fights n 36 + 36, seeds 4401-4424): new never-in terminus
+  5 route s4410 squad 5 (Echo), in at 67.8 s on main, never on fit (Delta's capped deploy turned, leg 42.8 -> 15.9 m; Charlie twitched
+  0 -> 11.2 m); the other 3 never-ins are the same in both arms. Passing: counter 71 turned; twitch 98 -> 91; first shape 1/576;
+  contacts 12,995 -> 12,438; fights. Reported: deciding 62 -> 29. Every S1 read so far (v2, v4) fails by one marginal never-in; settle
+  traces s4410 (builder0 light, both arms) with manoeuvre's chained give-way (R38.26) as first suspect. builder2 -> doctrine's D2c.
+- **R38.37 (2026-10-23 ~03:30) S1 v4's never-in is the fit itself; S1 v5 approved: a herringbone turns at most ~30 deg off main's
+  heading.** settle (builder0 light native, b3ad7baa4 tree, n 1 an arm, reproduces the judged rows; 31aa96d53,
+  references/round38/settle/s1v4-neverin-trace-builder0/): terminus 5 route s4410, Delta's capped deploy turns 72 deg and settles by 50 s
+  on seats flanking the lane mouth Echo must cross; Echo's 4 crews hold live move goals and stand still 50-70 s (no give-way: yielding 0);
+  on main Delta is still re-forming until ~60 s and Echo slips through. Series-wide on the fit arm: 66 of 71 turned deploys are
+  herringbones (52 lanes, 14 dense), median turn 71 deg, 54 of 64 >= 45 deg: the fit lays a lane herringbone ACROSS its axis, which he
+  would see as wrong. S1 v5: herringbone turn capped ~30 deg (along the lane), coils free; lab on s4410 first, then fresh seeds with S1
+  v4's lines (guards judged), latch-ON base. Machine: builder0 light J <= 4 beside orders' judged reads (J 4); Bars H/S3 the same lane
+  after S1 v5's lab. **Amended by settle before any number, accepted:** the cap is measured against the STREET's axis, not main's heading (main's
+  heading in the R37.37 across-the-street case is the click's, across the street, so a cap on it would lose the fix's own win:
+  laptop lab worst drive 31.7/34.6/27.9/30.0 m at 0/10/20/30 deg, the gain only at >= 50 deg). `ElementSituation.street_axis(anchor)` =
+  the heading of the longest clear run (open ground both ways to the nearest hard obstacle + 2 m, 40 m cap each way); null on open
+  ground, where a turn is not limited. A herringbone's turn must land within 30 deg of it; coils free. Lab: s4410's turn lands ~61 deg off
+  the axis (refused), the street case ~3 deg (allowed). Bar S1 v5 on 4501-4524, S1 v4's lines.
+- **R38.38 (2026-10-23 ~03:40) main e1f602fbf (settle's latch ON) GREEN AND PERF-JUDGED on builder0:** `make native check exited 0`,
+  3104 passed / 0 failed; perf-judge PASS attempt 1 (ai_usec_per_tick 7,077 v 20,000, ratio 1.01x, idle 96 %, load 0.80; relative line
+  agrees); web-smoke first sound 26.1 s (judged); sim-baseline 13/13 unmoved. The latch adds no measurable AI cost (7,060 at c54421161).
+- **R38.39 (2026-10-23 ~05:45) G3 and G1 v3 judged reads FAIL as filed on probe guards; every deciding line passes.** orders (builder0
+  light J4, latch ON; df9abb922). **G3** (a67afc951, seeds 4101-4112, n 12 a cell, 18 cells): 106 places cleared; close pairs 52 -> 4
+  (line 13.0); offsets pass (0/864 > 40 m further, worst +25.4 m); contacts 14,677 -> 13,808; FAIL never-in 3 -> 4 (crossing 5 route
+  s4104, squads 4 and 5); FAIL twitch crossing 5 click 20.4 -> 26.4 m, his 5 click 13.8 -> 26.0 m (identical every seed: G3 moves squads
+  2 and 3, unmoved squad 5 twitches 26 m, G3's own neighbour re-deal with the latch ON). **G1 v3** (b55757fee, seeds 3951-3962): 82
+  columns; places outside 99 -> 18 (line 24.8); metres outside 6,567 -> 1,233 (line 3,283); re-dealt 71 -> 0; contacts 15,614 -> 12,519;
+  yard_open 192/192 identical; FAIL never-in crossing 5 route 1 -> 2 (s3951 squad 5), locks 3 click 0 -> 1 (s3960 squad 3, placed
+  79.5 m from the click). Not a guard: terminus 5 route never-in main 4 v column 1. **A shared spot:** three of these never-ins and two of
+  main's own sit at crossing's west bridge mouth (-70, 30). Both stay OFF. Next on dev seeds only: G3's neighbour re-deal on his click,
+  G1's 79.5 m place, the mouth; v4 bars only once a dev read is clean (a round-39 item if the round closes first).
+- **R38.40 (2026-10-23 ~06:30) S1 v5 FAILS never-in 3 -> 4; S1 is written up as BLOCKED for round 38 (no v6 this round).** settle
+  (builder0 light J4, 6c3112193 = e81b57579's code, 576 squads an arm; references/round38/settle/s1v5-judged-builder0-6c3112193/,
+  dd59e386f): counter 51/572 turned; twitch 96 -> 78; first shape 1/576; contacts 11,996 -> 11,715 (foreign 6,622 -> 6,370); fights
+  36/36 pass; reported legs >= 25 m 63 -> 33; street axis set on 504/504 herringbone deploys, 23 turns refused. The extra never-in is
+  terminus 5 route again (s4505 Echo: main in at 42.2 s, fit never), with Delta's lane herringbone turned ALONG the street inside the
+  cap. **Ruled:** S1 has now failed v1, v2, v4 and v5, each by one marginal never-in, three of them a later squad that cannot pass a
+  squad deploying ahead of it on terminus 5 route. Another tweak would be fitting to the guard. The two-arm s4505 trace finishes and its
+  cause goes in settle's close notes; **round-39 candidate:** a deploying squad must not settle across a lane a following squad of the
+  same order still has to pass (with manoeuvre's chain-aware give-way, R38.26), then S1 re-read on top of it. **Corrected by the s4505 trace (settle,
+  references/round38/settle/s1v5-s4505-trace-builder0/, da7915e14):** the variable is not "across a lane" (s4410 was across, s4505
+  along): in both, a halt seat lands on the remaining route of a following squad of the same order (here Delta_1 23.7 m west of the
+  anchor on the junction, Delta_3 in a relaid lane-mouth slot; Echo_1-3 stuck between them t 36-90 s, nothing gives way). **Round-39
+  framing:** no seat of a deploying squad (relaid seats included) on a following same-order squad's remaining route, at any shape or
+  angle; plus the chain-aware give-way; then S1 re-read.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
