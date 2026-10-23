@@ -53,9 +53,10 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-22, in progress):** D1 DONE (design note below). **D2 JUDGED: FAIL as filed, ships OFF** (verdict below:
-deciding 1.5 se; G2 broken on the turtle line). **D2b** (eaf4c508f, OFF): defend only against an enemy coming for the ring; its bar
-is filed below before any arm number; its series is running on builder2 (started 2026-10-22 20:33). **GREEN: c475c3163**
+**Report (2026-10-23, in progress):** D1 DONE (design note below). **D2 JUDGED: FAIL as filed, ships OFF** (verdict below:
+deciding 1.5 se; G2 broken on the turtle line). **D2b JUDGED: FAIL, ships OFF** (verdict below: deciding 0.9 se; G2t turtle
+kills -2.8 se; G3 none-line median +31 %). `--cpu-defend` stays in the code, OFF, for playtests. **D3** re-based on what ships
+(defend OFF); Bar D3 filed below before any arm number; it waits behind settle's S2 v4 and S1 v3 on builder2. **GREEN: c475c3163**
 (builder2 `make native check exited 0`, 3066 passed / 0 failed; the scenario perf row NOT JUDGED, reason=loaded, so G4 is re-run
 alone). Earlier green: acbdef4c5 (builder2, 3063 / 0, sim-baseline 13/13 unmoved with the switch OFF). Raw guard logs:
 ~/doctrine-guard-raw/acbdef4c5-{off,defend}, ~/doctrine-guard-raw/c475c3163-{off,defend}.
@@ -145,6 +146,34 @@ than to every zone its side owns; 4297bbb8b: with defend ON, a held zone is "thr
 - **G2t (explicit):** the turtle line's kills a fight (both sides), ON within 2 paired se of OFF.
 - No re-tune: judged as it stands. A pass ships ON (symmetric).
 
+**D2b verdict (2026-10-23; c475c3163 both arms, builder2, `guard.sh` J14 GUARD_CHUNK=8, seeds 4801-4808 + 4901-4908, 320
+fights an arm, 0 attempts lost; 400/400 ON logs carry `cpu-defend`, 0/400 OFF; judged with native's per-faction `guard.py
+--pair`, stream/native 68301e6a7): FAIL, ships OFF.**
+- Deciding: blob 47 -> 44 % (-3.1, paired se 3.4 = 0.9 se; flips 16 to a loss, 11 to a win; McNemar p 0.22). Not met.
+- Second line: blob kill ratio 0.82 -> 0.82 (+0.004, se 0.030): not up. Blob kills a fight 18.74 -> 18.73, length 98 -> 96 s;
+  every faction inside 2 se (law kills -1.32, se 0.73 = 1.8 se, the nearest).
+- G1: turtle 39 -> 32 % (-6.9, se 3.5), down not up; median 193 -> 193 s. Holds.
+- **G2t broken:** turtle line kills a fight 14.74 -> 12.81 (-1.94, se 0.69 = -2.8 se); gangs -1.27 (-4.4 se), condemned -2.42
+  (-2.1 se). Losses a fight too: -2.45 (-2.4 se). Smaller than D2's -3.8 se but not inside 2 se: fights v a turtle are quieter.
+- **G3 broken:** none line (CPU v CPU, 4801-4808, 80 fights): caps ON 0 v OFF 2 (holds), median 130 -> 170 s (+31 %, +40 s se
+  15; the bar is x1.2), every faction +13..+45 s. Two CPUs that both defend take longer to settle it.
+- Mechanism and positive control: not read on these fights (hold_fire_probe is a lab tool; moot with the deciding line unmet).
+- G4: not judged (the check's perf row NOT JUDGED, reason=loaded); moot, the switch ships OFF and its OFF path is unchanged.
+- Reading: the trigger fix bought back half of D2's turtle cost and none of the blob's; holding the near ring does not beat a
+  blob at these numbers. Raw: ~/doctrine-guard-raw/c475c3163-{off,defend}/{blob,turtle,none}.
+
+**Bar D3 (FILED 2026-10-23 before any D3 arm number).** Change: the round-37 rule switches ON v OFF, on what ships (defend OFF,
+D2/D2b failed): **rules** `--rules-on=sight,spread,pin_slow`; **hulldown** `--cover-on=hulldown`; **pkg** both together.
+- **Workload:** tree c475c3163 (green), builder2, `guard.sh` GUARD_CHUNK=8, the same 320 guard fights (4801-4808 + 4901-4908 x
+  5 maps x both sides x blob/turtle), each arm paired with **c475c3163-off** (read above) by `guard.py --pair`. These switches
+  weren't shaped by these fights (R37.17 holds). No none line (the switches are symmetric; caps read off the guard lines).
+- **Read, not a ship call:** these are game rules that change what the player feels, so whether to turn one on is the lead's call
+  (design pillar); this reports what each does to the CPU v the two lines.
+- **Reported per arm:** blob and turtle win rates with paired se and McNemar p; kill ratio; kills/losses a fight and median length
+  per faction (a faction beyond 2 se is named); caps; for hulldown/pkg, `cover_struck` a fight (rounds hull-down stopped).
+- **"Matters" (the stretch gate):** hulldown or pkg moves a line's win rate by > 2 paired se, OR `cover_struck` a fight >= 5x R37's
+  1.6 (505 in 320). Neither: the stretch (CPU low-cover seats) is written up as not worth building now.
+
 **D2b labs (NOT judged; builder0 native light J4; D2's seeds 2601-2602 x 5 maps x both sides; hold_fire_probe):**
 | line, 20 fights | CPU hold time | CPU dmg in defend | in "threatened" | kills (guard + CPU) | guard wins |
 |---|---|---|---|---|---|
@@ -176,11 +205,11 @@ guard.sh (cc7c7ef1a) resumes per fight; I merge main for it before D2's series.
    brief wants the cause (which option moves a holder) before any code.
 2. D1 design note to the orchestrator: where a holder moves, which lever, and the bar (C38.1: the property it could break).
 3. D2 hold-and-fire behind a switch, lab first; quick-remote; one full check on a named hash; the paired guard series on builder2.
-4. D3 R1-R3 and K2 re-read on top of D2.
+4. D3 R1-R3 and K2 re-read, on what ships (defend OFF, after D2/D2b failed): Bar D3 above.
 5. Stretch: low-cover seats when defending. **Read (laptop, uncommitted tree on 362e81c6e, locks 2602 blob, 120 s, `--cpu-defend
    --cover-seat=on --cover-on=hulldown`, the probe's new `cover` field):** O6's call (`--cover-seat=on`) can't reach the CPU's holds.
    `ElementPlan._deploy_state` deploys only a `move` without a told facing, and the CPU's holds are `hold` with a facing: CPU
    elements deployed in 0 of 919 2 Hz samples (the blob 73 of 661), and no seats moved on either side. A CPU cover seat needs its own
    path: per crew, a hook in the halt lay (settle's function: a request, not mine to edit), or the commander shifting a defend
-   post once behind low cover (mine). **Gated on D3's hulldown arm:** only build it if K2 stops enough rounds on top of defend to
+   post once behind low cover (mine). **Gated on D3's hulldown arm (Bar D3's "matters"):** only build it if K2 stops enough rounds to
    matter (R37's read: 505 shots stopped in 320 fights, too few to change outcomes).
