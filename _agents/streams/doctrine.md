@@ -133,15 +133,28 @@ carry the switch; OFF gate 2601 0 flips): FAIL, ships OFF.**
   request to native, which owns it).
 
 **Bar D2b (FILED 2026-10-22 before any D2b arm number; re-filed under R38.14, fresh seeds).** Change: `--cpu-defend` with
-D2b's trigger (eaf4c508f: a contact counts only when nearer the CPU's near ring than to every zone its side owns) ON v OFF.
+D2b's trigger ON v OFF, **tree 4297bbb8b+** (eaf4c508f: a contact counts toward defend only when nearer the CPU's near ring
+than to every zone its side owns; 4297bbb8b: with defend ON, a held zone is "threatened" only by such a coming contact too).
 - **Workload:** FRESH guard seeds **4801-4808 + 4901-4908** (no round-38 guard series used them; D2b's trigger was shaped by D2's
-  320 fights, R37.17). x 5 maps x both sides x blob/turtle = 320 fights an arm. **Both arms on D2b's tree** (3310e51c4 once its
-  full check is green), builder2, `guard.sh` GUARD_CHUNK=8, judged `guard.py --pair OFF ON` (paired with each other, not with
+  320 fights, R37.17). x 5 maps x both sides x blob/turtle = 320 fights an arm. **Both arms on D2b's tree** (the Status commit on 4297bbb8b,
+  once its full check is green on builder2), builder2, `guard.sh` GUARD_CHUNK=8, judged `guard.py --pair OFF ON` (paired with each other, not with
   1c484a525). Plus the none line (CPU v CPU), seeds 4801-4808, both arms.
 - **Equality / positive control / deciding / second line / mechanism / G1-G4:** Bar D2's text unchanged, with "base" meaning
   this OFF arm.
 - **G2t (explicit):** the turtle line's kills a fight (both sides), ON within 2 paired se of OFF.
 - No re-tune: judged as it stands. A pass ships ON (symmetric).
+
+**D2b labs (NOT judged; builder0 native light J4; D2's seeds 2601-2602 x 5 maps x both sides; hold_fire_probe):**
+| line, 20 fights | CPU hold time | CPU dmg in defend | in "threatened" | kills (guard + CPU) | guard wins |
+|---|---|---|---|---|---|
+| turtle OFF (4297bbb8b) | 36 % | 0 % | 29 % | 283 + 310 = 593 | 8 |
+| turtle D2 trigger (1105f83cb) | 77 % | 35 % | 57 % | 240 + 287 = 527 | 8 |
+| turtle D2b trigger (c042ca206) | 60 % | 21 % | 66 % | 243 + 299 = 542 | 7 |
+| turtle D2b + threatened filter (4297bbb8b) | 59 % | 24 % | 63 % | 243 + 299 = 542 | 7 |
+| blob D2b + threat. (4297bbb8b) v OFF (D1 640850023) | | 46 % | | 267 + 395 v 301 + 383 | 6 v 9 |
+Reading: D2b's trigger recovers about half the turtle-line kills D2 cost. The rest: under defend the CPU takes its near ring early,
+then holds it against turtle posts that stand nearer that ring than their own zone (they pass the "coming" test). Not tuned
+further, since tuning to these 20 fights is what R37.17 forbids. The fresh-seed bar decides, and G2t may fail.
 
 **D2 in pictures (`make doctrine-shots`, laptop, a656460ea's tree; locks seed 2602, blob = green, 60 s in, 1854x1011 and
 1200x540; looked at):** OFF, the CPU's rust line burns north of the bridge and the blob has crossed it. ON, the rust CPU stands
