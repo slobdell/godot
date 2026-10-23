@@ -120,5 +120,10 @@ gates; mk/web.mk ruled IN for the first-sound gate call only) + Status notes.
   flagged in the hand-over).
 - **N3 closed** for the round (orchestrator accepted "not switching"); an AMD sample only if builder2 comes up on one.
 
+**Round-39 note (R38, orchestrator, information only): the quiet-window setup should refuse at a lower line.** Orders' builder0
+check FAILed test_slot_light's setup "not in 30 s, at load 14.91 on 10 cores" (1.49 per core, just under 1.5), the same red
+R38.18 cleared by a solo re-run. That setup WAITS for quiet; it doesn't measure a bound, so a lower loaded line there (~1.0 per
+core, SLOT_LOADED_PER_CORE / QW_LOADED_PER_CORE) costs nothing in judging power. Not changed this round, per the orchestrator.
+
 **Side worktrees to remove at close:** ../godot-native-guard, -score, -k5 (and round 37's: -m5, -unstick, -cp371,
 -rulespair, if they still exist).
