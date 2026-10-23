@@ -297,9 +297,10 @@ static var GROUP_ROOM_REARMOST := OS.get_cmdline_user_args().has("--group-room=r
 static var GROUP_LEG_ROOM := OS.get_cmdline_user_args().has("--group-leg-room=starts")
 ## G2 (dev): `--group-route-line=on`: a shifted leg's column (and a gate's) stacks back along his clicked route.
 static var GROUP_ROUTE_LINE := OS.get_cmdline_user_args().has("--group-route-line=on")
-## G2 (dev): `--group-gate=main`: a waypoint passed through keeps today's gate (round 34's, abreast across the corner), not a
-## column (dev read 2, bde30e68e, terminus 3 west: the gate's column stood up the incoming street 47-93 m short of the
-## corner, and the drive on from there cut through another street: route off 66 -> 583 m).
+## G2 (dev): `--group-gate=main`: a waypoint passed through keeps today's gate (round 34's, abreast across the corner at his
+## click), not a column, and centred on his click, not on the mean of the leg column's places (dev read 2, bde30e68e,
+## terminus 3 west: the gate stood 50-90 m up the incoming street and the drive on cut through another street: route off
+## 66 -> 583 m).
 static var GROUP_GATE_MAIN := OS.get_cmdline_user_args().has("--group-gate=main")
 
 

@@ -1973,6 +1973,12 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 		return  # a gate is for several squads sharing the waypoint
 	prev /= held_elements.size()
 	before /= held_elements.size()
+	# G2 (dev, `--group-gate=main`): the gate stands at his click, not at the mean of a leg column's places (laptop, terminus 3
+	# west s3801: that mean stood 50-90 m up the incoming street and the drive on cut through another street).
+	if SelectionSquads.GROUP_GATE_MAIN and _route_key(squads) == _route_squads and _route_clicks.size() >= 3 \
+			and (_route_clicks[_route_clicks.size() - 1] as Vector3).distance_to(next_click) < 1.0:
+		var at_click: Vector3 = _route_clicks[_route_clicks.size() - 2]
+		prev = Vector3(at_click.x, 0.0, at_click.z)
 	var approach := prev - before
 	if approach.length() < 1.0:
 		approach = next_click - prev
