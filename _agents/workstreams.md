@@ -432,6 +432,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   construction (the twins are bit-identical per seed); a floor needs shifted seeds. Next for manoeuvre: settle's s3866 give-way read (light).
   builder0 now carries only light lanes (orders, feedback, manoeuvre); full checks may go to it again when it is under its loaded line
   (tools/loaded.sh), and main owes a judged perf line there.
+- **R38.25 (2026-10-23 ~00:10) OPEN: a possible native/GDScript twin mismatch on main.** orders: terminus seed 3801, 5-squad click
+  (-29.3/85.8), main arm: squads 1-3 identical; squads 4 and 5 (one shared place (8.0, 66.5), a queue) arrive 29.5 s on the laptop
+  (GDScript, a24f3b3fb, no native/bin) v 47.4 s on builder0 (native ON, 0646a865e = a24f3b3fb + Status), the same on seeds 3801-3809
+  there. Machine v path not yet split: native runs the same command native ON and OFF on one machine and finds the first diverging tick.
+  Until it is split, laptop dev reads do not predict builder0 in jams; judged reads stay on their filed machine.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
