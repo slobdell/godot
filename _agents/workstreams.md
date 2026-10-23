@@ -66,7 +66,7 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 ## Bars (round 38)
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
-S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; guard seeds 2601-2608/2701-2708
+S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; 4401-4424 S1 v3 on the latch; 4501-4524 S1 v5; guard seeds 2601-2608/2701-2708
 (the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001-5008/5101-5108 D2c.
 
 
@@ -551,7 +551,12 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   herringbones (52 lanes, 14 dense), median turn 71 deg, 54 of 64 >= 45 deg: the fit lays a lane herringbone ACROSS its axis, which he
   would see as wrong. S1 v5: herringbone turn capped ~30 deg (along the lane), coils free; lab on s4410 first, then fresh seeds with S1
   v4's lines (guards judged), latch-ON base. Machine: builder0 light J <= 4 beside orders' judged reads (J 4); Bars H/S3 the same lane
-  after S1 v5's lab.
+  after S1 v5's lab. **Amended by settle before any number, accepted:** the cap is measured against the STREET's axis, not main's heading (main's
+  heading in the R37.37 across-the-street case is the click's, across the street, so a cap on it would lose the fix's own win:
+  laptop lab worst drive 31.7/34.6/27.9/30.0 m at 0/10/20/30 deg, the gain only at >= 50 deg). `ElementSituation.street_axis(anchor)` =
+  the heading of the longest clear run (open ground both ways to the nearest hard obstacle + 2 m, 40 m cap each way); null on open
+  ground, where a turn is not limited. A herringbone's turn must land within 30 deg of it; coils free. Lab: s4410's turn lands ~61 deg off
+  the axis (refused), the street case ~3 deg (allowed). Bar S1 v5 on 4501-4524, S1 v4's lines.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
