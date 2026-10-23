@@ -493,13 +493,17 @@ static func _arc_of(line: PackedVector3Array, p: Vector3) -> float:
 
 ## Round 38 (orders G3; settle's S2 trace, R38.10, crossing 5 click s3866): today's body laid squads 3 and 4 6.3 m apart
 ## (ground_anchors moved an unstandable place next to its neighbour); squad 4 squeezed into squad 3's parked halt on main and
-## never arrived under settle's latch. `--place-clear=on`: no two places' footprints overlap (each block's width across the
-## approach by its depth along it, plus GAP_M): taken nearest the click first, a later place whose footprint overlaps an
-## earlier one steps back along the approach PLACE_CLEAR_STEP_M at a time, onto standable ground, up to PLACE_CLEAR_MAX_M.
+## never arrived under settle's latch. `--place-clear=on`: no two places closer than their squads' short sides (a disc of
+## half the narrower of width and depth each; no GAP_M,
+## whose 14 m would move squads standing staggered 28 m apart): taken nearest the click first, a later place too close to an
+## earlier one moves PLACE_CLEAR_STEP_M at a time, aside away from that neighbour first, then the other side, then back along
+## the approach, onto standable ground, up to PLACE_CLEAR_MAX_M; nowhere clear keeps the place.
+## v2 (dev read 1, builder0 42377862a, dev seeds 3801-3803): v1's box of full width by full depth stepped squads straight back
+## 60-90 m (crossing 3 route s3802: 24 -> 91 m from the click) and moved staggered places 28 m apart.
 static var PLACE_CLEAR := OS.get_cmdline_user_args().has("--place-clear=on") or OS.get_environment("PLACE_CLEAR") == "on"
 const PLACE_CLEAR_STEP_M := 4.0
-const PLACE_CLEAR_MAX_M := 100.0
-## Measurement: places stepped back so, since start.
+const PLACE_CLEAR_MAX_M := 40.0
+## Measurement: places moved so, since start.
 static var places_cleared := 0
 
 
@@ -522,28 +526,38 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 	for entry: Array in order:
 		var i := int(entry[1])
 		var start := result[i]
-		var back := 0.0
-		while back <= PLACE_CLEAR_MAX_M:
-			var at := start - ahead * back
-			if (back == 0.0 or bool(standable.call(at))) and not _footprint_overlaps(at, i, result, placed, blocks, ahead, across):
-				if back > 0.0:
-					result[i] = at
-					places_cleared += 1
-				break
-			back += PLACE_CLEAR_STEP_M
+		var near := _too_close(start, i, result, placed, blocks)
+		if near >= 0:
+			var away := 1.0 if (start - result[near]).dot(across) >= 0.0 else -1.0
+			var ways: Array[Vector3] = [across * away, -across * away, -ahead]
+			var step := PLACE_CLEAR_STEP_M
+			var found := false
+			while step <= PLACE_CLEAR_MAX_M and not found:
+				for way: Vector3 in ways:
+					var at := start + way * step
+					if bool(standable.call(at)) and _too_close(at, i, result, placed, blocks) < 0:
+						result[i] = at
+						places_cleared += 1
+						found = true
+						break
+				step += PLACE_CLEAR_STEP_M
 		placed.append(i)
 	return result
 
 
-static func _footprint_overlaps(at: Vector3, i: int, places: Array[Vector3], placed: Array[int], blocks: Array, ahead: Vector3,
-		across: Vector3) -> bool:
+## The first placed block whose short-side disc `at` (block i's) overlaps, or -1.
+static func _too_close(at: Vector3, i: int, places: Array[Vector3], placed: Array[int], blocks: Array) -> int:
 	for j: int in placed:
-		var d := Vector3(at.x - places[j].x, 0.0, at.z - places[j].z)
-		var half_w := 0.5 * (float(blocks[i]["width"]) + float(blocks[j]["width"])) + GAP_M * 0.5
-		var half_d := 0.5 * (float(blocks[i].get("depth", 0.0)) + float(blocks[j].get("depth", 0.0))) + GAP_M * 0.5
-		if absf(d.dot(across)) < half_w and absf(d.dot(ahead)) < half_d:
-			return true
-	return false
+		var d := Vector2(at.x - places[j].x, at.z - places[j].z).length()
+		if d < _short_side(blocks[i]) * 0.5 + _short_side(blocks[j]) * 0.5:
+			return j
+	return -1
+
+
+static func _short_side(block: Dictionary) -> float:
+	var width := float(block["width"])
+	var depth := float(block.get("depth", width))
+	return minf(width, depth) if depth > 0.0 else width
 
 
 ## G1: a rank's clear width kept inside the strip he clicked (the click's own width along the approach line): a rear rank

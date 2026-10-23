@@ -207,9 +207,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   his click (`terminus_his`, 3 / 5 squads), and yard_open (3 / 5 x click / route).
   **Judge:** `tests/control/orders_judge.py g3` (all cells).
   **Counter:** places_cleared > 0.
-  **Deciding** (all cells, summed):
-  1. squad rows parked on another squad (`end_foreign_m` < 8 m): arm <= 50 % of base;
-  2. never-in squads: arm <= base, and strictly fewer if base has any.
+  **Deciding** (all cells, summed; AMENDED before any judged number, after dev read 1 on dev seeds 3801-3803: main parks
+  neighbouring squads 4-6 m apart as normal, so 68 of 216 main rows were under the old 8 m end-foreign line):
+  1. pairs of squads in a run whose places (`anchor`) are laid closer than 12 m, half a herringbone's short side: arm
+     <= 25 % of base (dev read 1, main: 14 such pairs, places 2.8-6.3 m apart);
+  2. never-in squads: arm <= base. This is now a guard; the defect is too rare on main to decide on.
+  Code amended too, before any number (v2, see Status): no two places closer than their short sides; a place moves aside
+  first, then back, at most 40 m.
   **Offset guards** (R38.15: the s3866 lab stepped squads 4/5 back ~60 m):
   1. per cell, the median of the worst place-to-click distance (`worst_offset_m`) <= base + 15 m;
   2. squad rows whose place is > 40 m further from the click than the same seed and squad on main <= 5 % of all squad rows;

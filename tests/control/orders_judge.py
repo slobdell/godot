@@ -287,20 +287,27 @@ def main(argv):
             lines.append("%s guard no-change cell yard_open: %d of %d squad rows identical (arm rows %d)" % (
                 "PASS" if passed else "FAIL", same, len(yb), len(yn)))
     elif mode == "g3":
-        # Round 38 G3's bar (R38.15), filed in the brief's Status: squads parked on another squad (end foreign < 8 m) <= 50 %
-        # of base; never-in squads no more (fewer if base has any); offset guards (worst place-to-click median per cell
+        # Round 38 G3's bar (R38.15), filed in the brief's Status: place pairs closer than 12 m <= 25 % of base (amended);
+        # never-in squads no more; offset guards (worst place-to-click median per cell
         # <= base + 15 m; squads placed > 40 m further than main <= 5 % of rows; none > 100 m); R36.6 guards; contacts.
         runs = load(argv[4])
         cleared = sum(r.get("places_cleared", 0) for r in runs if r["arm"] == new)
         lines.append("%s counter: places_cleared %d" % ("PASS" if cleared > 0 else "FAIL", cleared))
-        on_other = lambda arm: sum(1 for r in rows if r["arm"] == arm and 0 <= r["end_foreign_m"] < 8.0)
+        # Amended before any judged number (dev read 1: main parks neighbours 4-6 m apart, so end foreign < 8 m is normal
+        # parking): the defect itself, two squads' places laid closer than 12 m (half a herringbone's short side), per run.
+        def close_pairs(arm):
+            count = 0
+            for squads in by_run(rows, arm).values():
+                at = [s["anchor"] for s in squads if isinstance(s.get("anchor"), list)]
+                count += sum(1 for a in range(len(at)) for c in range(a + 1, len(at))
+                             if math.hypot(at[a][0] - at[c][0], at[a][1] - at[c][1]) < 12.0)
+            return count
         never = lambda arm: sum(1 for r in rows if r["arm"] == arm and r["arrived_s"] < 0)
-        bp, np_, bn, nn = on_other(base), on_other(new), never(base), never(new)
-        d1 = np_ <= 0.5 * bp
-        d2 = nn <= bn and (nn < bn or bn == 0)
-        lines.append("%s deciding: squads parked on another squad (end foreign < 8 m) %d -> %d (<= %.1f)" % (
-            "PASS" if d1 else "FAIL", bp, np_, 0.5 * bp))
-        lines.append("%s deciding: never-in squads %d -> %d" % ("PASS" if d2 else "FAIL", bn, nn))
+        bp, np_, bn, nn = close_pairs(base), close_pairs(new), never(base), never(new)
+        d1 = np_ <= 0.25 * bp
+        d2 = nn <= bn
+        lines.append("%s deciding: place pairs closer than 12 m %d -> %d (<= %.1f)" % ("PASS" if d1 else "FAIL", bp, np_, 0.25 * bp))
+        lines.append("%s guard never-in squads %d -> %d (no more)" % ("PASS" if d2 else "FAIL", bn, nn))
         ok = cleared > 0 and d1 and d2
         b_rows = {(r["map"], r["squads"], r["route"], r["seed"], r["squad"]): r for r in rows if r["arm"] == base}
         n_rows = {(r["map"], r["squads"], r["route"], r["seed"], r["squad"]): r for r in rows if r["arm"] == new}
