@@ -67,7 +67,7 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
 S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; guard seeds 2601-2608/2701-2708
-(the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b.
+(the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001+ D2c.
 
 
 _(each stream files its bar in its BRIEF's Status BEFORE its first number and messages the orchestrator, who copies it here; never
@@ -459,6 +459,15 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   with c475c3163-OFF on the same 320 fights (no new base run; those seeds have no rules read yet). A read for his design call, not a ship
   call; "matters" (a win rate moving > 2 se, or cover_struck a fight >= 5x R37's 1.6) gates the stretch (CPU low-cover seats). builder2
   after settle's S2 v4 and S1 v3; native's row after D3.
+- **R38.30 (2026-10-23 ~01:05) doctrine's design note: DEFEND made the CPU fight less, not worse** (stream/doctrine bab6df4ac Status).
+  Turtle line kr flat 0.84 -> 0.85 but kills and losses a fight both fell (-1.94, -2.45); none line median +40 s; lab hold time OFF 36 /
+  D2 77 / D2b 59 %; the blob line did not move. Causes (posture.gd decide, element_commander _hold): defend is side-wide and precedes
+  "not ahead -> attack"; the trigger is nearness (100 m), not closing; no clock; no counter-stroke. **Approved as D2c, "hold with some,
+  strike with the rest":** (1) defend tasks only the elements the closing threat needs (<= half the line), the rest decide as OFF;
+  (2) a contact counts only while closing on the ring over ~10 s; (3) defend lapses after ~30 s with nothing closing; (4) posts switch to
+  attack when the attack stalls or the local ratio >= 1.5. (1) and (2) separable switches. Build and lab on builder0 light now; bar on
+  fresh guard seeds 5001+ filed before numbers (deciding blob down; guards G2t, G3, and a lab guard: turtle-line CPU hold share <= OFF +
+  10 points); its series on builder2 after D3, or carried to round 39 if the round closes first.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
