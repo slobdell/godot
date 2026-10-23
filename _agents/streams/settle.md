@@ -314,6 +314,12 @@ fail v4. Whether herringbone or coil looks right at a lane's mouth stays the lea
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
   column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as
   G3, after G1's verdict. The probe's budget-refusal print lands after orders' series.
+- manoeuvre via the orchestrator (stream/manoeuvre e55cba940, builder0 light native, n 1 per arm,
+  references/round38/manoeuvre/s3866-giveway/README.md): crossing 5 click s3866, seatstep OFF, squad 4 is in at 33.9 s on main
+  and NEVER in under both --deploy-latch=on and =anchor (identical rows). Cause: a chained give-way (Alpha_3 gives way four
+  times in 10 s to squad-4 crews, seat distance 2.9 -> ~20 m), not the latch's pick; seatstep ON gets squad 4 in on every arm.
+  s3866 is outside S2 v4's seeds, so the bar is unchanged. **If v4's never-in fails, check the failing run for this chained
+  give-way first** (manoeuvre proposes a chain-aware give-way next round).
 
 ### Questions for the lead
 None.
