@@ -1,3 +1,23 @@
+### REPORT (worker, round 38 end, 2026-10-23)
+
+**Green hash: 84c79d76f** (builder2 `make native check exited 0`, 3,055 / 0; merged as main 8bfb74e55, main 400bada9a green, R38.13).
+Every later commit (to 5c3098897) is Status or `references/` only: no code, so 84c79d76f's check stands for the branch.
+- **M1 (M5 v2): judged, FAIL** (R38.24). Seat metres -5.0 % vs a 6.4 % bar; every safety guard passes; seatstep stays OFF.
+- **M2 (M5b): traced, NOT built.** Only ~1.5 non-scout turn-rounds a fight; parked crews hold `face` orders, so Manoeuvre never
+  plans their return. No native twin needed.
+- **M7 (O5 v2): dev read, NOT judged, stays OFF (code on main, OFF).** About half of the screen give-ways happen ≥ 10 m off-seat, so
+  the bar can't be reached by a seat-aside step.
+- **M3 (stretch, S1 v2): base rate counted, NOT built.** 82 target stalls in 72 fights, 0 deaths, mostly ORCA slow-downs.
+- **s3866 (settle's case): read.** Four chained give-ways, not a lead-out. Lever: a chain-aware give-way.
+**Decisions:** no re-run of a failed bar; no series for M2, M3 or M7 this round (nothing worth one).
+**Questions for the lead:** none. **Requests:** native, if the chain-aware give-way is picked up next round (begin_yield twin).
+**Known issues:** the two-path noise floor is zero by construction (twins bit-identical): any future (e) floor shifts seeds.
+GDScript hull-rest runs time out at 300 s under builder0 load (gangs).
+**Next steps (proposal):** a chain-aware give-way (count chained give-ways' seat drift on the jam census first, then the bar); M5a's
+nearest-seat choice alone, without the lead-out refusal, as a smaller arm.
+**Playtest:** nothing new to see (everything new is OFF). The s3866 case: `make settle-trace SETTLE_TRACE_CASES=crossing:5:click:3866:4`.
+**Lab worktrees (mine, removable):** godot-manoeuvre-{m5,m5on,trace,s3866,s3866on}.
+
 **s3866 READ DONE (2026-10-23, builder0 light native, n 1 per arm; `references/round38/manoeuvre/s3866-giveway/README.md`):** squad 4
 arrives at 33.9 s on main and never under `--deploy-latch=on` or `=anchor` (identical rows). The 20 m is NOT one pick and NOT a lead-out:
 Alpha_3 gives way four times in 10 s to squad-4 crews (spots (5,-9) (5,9) (3,6) (3,-6), 6.7-10.3 m each), each from where the last
