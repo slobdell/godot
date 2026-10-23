@@ -1013,12 +1013,14 @@ DOCTRINE_SHOT_SEED ?= 2602
 DOCTRINE_SHOT_SIDE ?= green
 DOCTRINE_SHOT_DELAYS ?= 60
 DOCTRINE_SHOT_DIR ?= $(BUILD_DIR)/doctrine-shots
+## The ON arm's switches (D2c: --cpu-defend --cpu-defend-split).
+DOCTRINE_SHOT_FLAGS ?= --cpu-defend
 
 .PHONY: doctrine-shots
 doctrine-shots: import ## Round 38 (doctrine D2): blob-v-CPU frames with --cpu-defend OFF and ON, his window and the phone -> build/doctrine-shots/*.png (needs a display)
 	rm -rf $(DOCTRINE_SHOT_DIR) && mkdir -p $(DOCTRINE_SHOT_DIR)
 	for arm in off on; do for delay in $(DOCTRINE_SHOT_DELAYS); do for size in 1854x1011 1200x540; do \
-		flags=""; if [ $$arm = on ]; then flags="--cpu-defend"; fi; \
+		flags=""; if [ $$arm = on ]; then flags="$(DOCTRINE_SHOT_FLAGS)"; fi; \
 		timeout 300 $(GODOT) --path . --resolution $$size --script res://tests/ai_scenarios/guard_line.gd -- --skirmish --demo-match --clean \
 			--seed=$(DOCTRINE_SHOT_SEED) --arena=$(DOCTRINE_SHOT_ARENA) --mute --guard=blob --guard-side=$(DOCTRINE_SHOT_SIDE) $$flags \
 			--screenshot-delay=$$delay --screenshot=$(CURDIR)/$(DOCTRINE_SHOT_DIR)/$${arm}_$${delay}s_$$size.png \

@@ -237,6 +237,13 @@ None line (CPU v CPU, same seeds, 20 fights): OFF median 158 s (6 control, 14 el
   package.** The bar's text is otherwise unchanged. No constant was re-tuned. CLOSING stays in the code, OFF. Lab guard on
   SPLIT: 31.6 % v OFF 22.0 %, inside +10 points by 0.4. Tight: the series reports it again on the series tree.
 
+**D2c in pictures (`make doctrine-shots DOCTRINE_SHOT_FLAGS="--cpu-defend --cpu-defend-split" DOCTRINE_SHOT_DELAYS="60 90"`,
+laptop GPU, tree de27d0370, locks 2602, blob = green; the ON logs carry both switches):** at 60 s both arms look alike, with the
+blob massed at the bridge's south end under fire. At 90 s, OFF: blob cars are inside the CPU's street among its buses. SPLIT:
+the show-match camera is on the CPU's rocket trucks firing from the rear. No defect on screen, but the frames don't show the
+split itself (the camera picks the action, not the ring). A camera pinned on the near ring would be needed to see it. The
+series decides.
+
 **Bar D3 (FILED 2026-10-23 before any D3 arm number).** _(R38.35: if D2c passes, its base and every arm gain `--cpu-defend --cpu-defend-split`, re-filed
 before any D3 number; if it fails, as written.)_ Change: the round-37 rule switches ON v OFF, on what ships (defend OFF,
 D2/D2b failed): **rules** `--rules-on=sight,spread,pin_slow`; **hulldown** `--cover-on=hulldown`; **pkg** both together.
