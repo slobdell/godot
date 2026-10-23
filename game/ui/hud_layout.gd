@@ -97,6 +97,12 @@ static func bug_top(screen: Vector2) -> float:
 ## top third. `width` is HudSkin's column width.
 static func message_columns(screen: Vector2, width: float, hints_room: float) -> Array[Rect2]:
 	var top := screen.y * TOP_CLEAR + MARGIN
+	if portrait(screen):
+		# No room for side columns: info over warnings, the width of the screen, between the top third and the command bar.
+		var room := maxf(panel_rect(screen).position.y - GAP - top, 0.0)
+		var half := (room - GAP) / 2.0
+		return [Rect2(MARGIN, top, screen.x - MARGIN * 2.0, half),
+				Rect2(MARGIN, top + half + GAP, screen.x - MARGIN * 2.0, half)]
 	var left_bottom := bug_top(screen) - GAP - hints_room
 	var right_bottom := radar_rect(screen).position.y - GAP
 	if portrait(screen):
@@ -122,6 +128,9 @@ static func pause_line_y_for(controls: Control, text_size: float) -> float:
 		var node := controls.get_node_or_null(node_name) as Control
 		if node != null and node.is_visible_in_tree() and node.size.y > 0.0:
 			floor_top = minf(floor_top, node.position.y)
+			var tip: Variant = node.get("tooltip_rect")  # the command bar's tooltip (the planning intro) rises above it
+			if tip is Rect2 and (tip as Rect2).has_area():
+				floor_top = minf(floor_top, node.position.y + (tip as Rect2).position.y)
 	var edge := controls.get_node_or_null("EdgeMarkers")
 	var lines := int(edge.get("alert_lines")) if edge != null and edge.get("alert_lines") != null else 2
 	return pause_line_y(screen, floor_top, lines, text_size)
@@ -129,7 +138,7 @@ static func pause_line_y_for(controls: Control, text_size: float) -> float:
 
 ## The control hints' widest (ControlHints.panel_rect's rule), for what may sit beside them.
 static func hints_width(screen: Vector2) -> float:
-	var px := maxf(float(ControlHints.MIN_FONT), round(ControlHints.FONT_1080 * CyberStyle.ui_scale(screen)))
+	var px := maxf(float(ControlHints.MIN_FONT), round(ControlHints.FONT_1080 * bug_ui_scale(screen)))
 	return minf(minf(screen.x * 0.23, px * 22.0), bug_rect(screen).size.x)
 
 

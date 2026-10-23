@@ -8,6 +8,13 @@ extends Control
 
 ## Width of the top-left block as a fraction of the screen: stops short of the warning banner (20%).
 const BLOCK_FRACTION := 0.19
+## Round 38 (F5): on a portrait phone the block (shown only while paused) gets most of the width: 19 % of 810 px wrapped it
+## a word to a line.
+const BLOCK_FRACTION_PORTRAIT := 0.6
+
+
+static func block_width(screen: Vector2) -> float:
+	return screen.x * (BLOCK_FRACTION_PORTRAIT if HudLayout.portrait(screen) else BLOCK_FRACTION)
 
 var status_frame := CyberFrame.new()
 var banner_frame := CyberFrame.new()
@@ -208,7 +215,7 @@ func _place_messages(screen: Vector2) -> void:
 	var s := CyberStyle.ui_scale(screen)
 	var margin := 12.0 * s
 	var column_width := clampf((screen.x - screen.y) / 2.0 - margin * 2.0, 220.0 * s, screen.x * 0.26)
-	if map_up and column_width < screen.x * 0.4:
+	if map_up and (column_width < screen.x * 0.4 or HudLayout.portrait(screen)):
 		# Round 38 (F5): both columns start below the top third (the far field), over the hints and the bug on the left and
 		# over the radar on the right.
 		var columns := HudLayout.message_columns(screen, column_width, 110.0 * s)
@@ -232,7 +239,7 @@ func _layout(screen: Vector2) -> void:
 	look_button.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
 	look_button.custom_minimum_size = Vector2(190.0 * s, 52.0 * s)
 	look_button.size = look_button.custom_minimum_size
-	var width := screen.x * BLOCK_FRACTION - pad * 2.0
+	var width := block_width(screen) - pad * 2.0
 	if _status != null:
 		_status.add_theme_font_size_override("font_size", maxi(12, roundi(20.0 * s)))
 		_status.add_theme_color_override("font_color", Color(CyberStyle.TEXT, 0.85))
@@ -282,14 +289,14 @@ func _fit_status_frame(screen: Vector2) -> void:
 	var pad := 14.0 * s
 	# Labels outside containers grow to fit their text when it changes; pin the width every frame
 	# so autowrap keeps the block inside its column.
-	var width := screen.x * BLOCK_FRACTION - pad * 2.0
+	var width := block_width(screen) - pad * 2.0
 	_status.size = Vector2(width, 0.0)
 	_fit_status_lines(width, s)
 	_scoreboard.position = Vector2(_status.position.x, _status.position.y + _status.get_combined_minimum_size().y + 2.0 * s)
 	_scoreboard.size = Vector2(width, 0.0)
 	_fit_scoreboard_line(width, s)
 	var bottom := _scoreboard.position.y + _scoreboard.get_combined_minimum_size().y
-	var rect := Rect2(Vector2(pad * 0.5, pad * 0.35), Vector2(screen.x * BLOCK_FRACTION, bottom + pad * 0.6 - pad * 0.35))
+	var rect := Rect2(Vector2(pad * 0.5, pad * 0.35), Vector2(block_width(screen), bottom + pad * 0.6 - pad * 0.35))
 	if status_frame.position != rect.position or status_frame.size != rect.size:
 		status_frame.position = rect.position
 		status_frame.size = rect.size

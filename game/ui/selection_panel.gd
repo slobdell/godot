@@ -56,6 +56,8 @@ var intro_requires_pause := true
 var _intro := ""
 var _preview_rect := Rect2()
 const PREVIEW_HEIGHT := 170.0
+## Round 38 (F5): the tooltip box above the card as last drawn (panel-local; empty when none), so the pause line clears it.
+var tooltip_rect := Rect2()
 ## Round 16 (hud H3): the panel redraws when what it draws changed, not every frame. `_info` is this frame's summary()
 ## (computed once, in _process, and drawn from), `_drawn` the signature of everything _draw reads the last time it ran.
 var _info := {}
@@ -718,6 +720,7 @@ func _draw_timed() -> void:
 		_label(batch, font, button, label, 14.0 * s, ink)
 	var tip := tooltip()
 	_preview_rect = Rect2()
+	tooltip_rect = Rect2()
 	if not tip.is_empty():
 		_tooltip(batch, font, doctrine_rect() if tip["id"] == "doctrine" else _command_rects[tip["id"]], tip, s)
 	t = HudClock.begin()
@@ -763,6 +766,7 @@ func _tooltip(batch: DrawBatch, font: Font, button: Rect2, tip: Dictionary, s: f
 	var box := Rect2(Vector2(clampf(button.get_center().x - width / 2.0, -position.x + 4.0, size.x - width), -height - 6.0 * s),
 			Vector2(width, height))
 	batch.fill(box, Color(CyberStyle.HUD_BACKGROUND, 0.97))
+	tooltip_rect = box
 	if preview > 0.0:
 		_preview_rect = Rect2(box.position.x + 8.0 * s, box.end.y - preview - 2.0 * s, box.size.x - 16.0 * s, preview - 6.0 * s)
 	batch.outline(box, Color(CyberStyle.YELLOW, 0.8), 1.5)
