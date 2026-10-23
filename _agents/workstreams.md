@@ -623,6 +623,13 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   squad's ground or route). G3 v4's 14 m trigger covers this pair. G1 v4 dev read (f0a70f544, 3804-3809, n 6) FAILS guards (crossing 5
   route never-in 0 -> 1, twitch 22.2 -> 33.5, yard_open 91/96 identical) though deciding passes (outside 38 -> 7, metres 2,520 -> 486,
   re-dealt 32 -> 0); no G1 v4 bar.
+- **R38.44 (2026-10-23 ~08:30) G1 v4 scope: squads-whole on PLAIN CLICKS only; route legs belong to G2.** orders' three-arm dev read
+  (builder0 J4, 7bfb06384, dev seeds 3804-3809, n 6; 9986a1cba): v3 and v4 fail the same guards (crossing 5 route never-in v3 0 -> 2,
+  v4 0 -> 1; route twitch 22.2 -> 33.5 both; yard_open 91/96 both), so the rank cap causes none of them; the never-ins are the bridge
+  mouth (R38.43); the twitch is "squads whole on every group move" on route legs putting the same places under different squads than
+  main's re-deal. **Ruled (option 2, orders' recommendation):** his complaint was a plain click; G1 v4 keeps squads whole on plain
+  clicks only. Its bar, filed before numbers on fresh seeds 4701-4712: the deciding lines read over click cells (re-dealt 0 there);
+  route cells must behave as main (every R36.6 guard judged there as filed, the twitch included); yard_open identical. No guard amended.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
