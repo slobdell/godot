@@ -1,0 +1,26 @@
+== main v v3
+PASS counter: columns_laid 40 (bodies kept 68)
+PASS deciding: places outside the corridor (click cells) 38 -> 7 (<= 9.5)
+PASS deciding: metres driven outside the corridor after being in it (click cells) 2520 -> 486 (<= 1260)
+PASS deciding: squads with crews re-dealt (arm) 0 (base 32)
+  reported: metres outside incl. the drive in (route_out_m) 13294 -> 9411
+PASS guard friend_contacts 7183 -> 6655 (<= 7906.3)
+  FAIL guard never-in     crossing 5 route: 0 v 2
+  FAIL guard twitch       crossing 5 route: 22.2 v 33.5
+FAIL probe guards (14 cells)
+FAIL guard no-change cell yard_open: 91 of 96 squad rows identical (arm rows 96)
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 256 -> 271
+VERDICT g1: FAIL
+== main v v4
+PASS counter: columns_laid 40 (bodies kept 68)
+PASS deciding: places outside the corridor (click cells) 38 -> 7 (<= 9.5)
+PASS deciding: metres driven outside the corridor after being in it (click cells) 2520 -> 486 (<= 1260)
+PASS deciding: squads with crews re-dealt (arm) 0 (base 32)
+  reported: metres outside incl. the drive in (route_out_m) 13294 -> 9249
+PASS guard friend_contacts 7183 -> 6546 (<= 7906.3)
+  FAIL guard never-in     crossing 5 route: 0 v 1
+  FAIL guard twitch       crossing 5 route: 22.2 v 33.5
+FAIL probe guards (14 cells)
+FAIL guard no-change cell yard_open: 91 of 96 squad rows identical (arm rows 96)
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 256 -> 268
+VERDICT g1: FAIL
