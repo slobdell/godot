@@ -17,16 +17,36 @@ extends RefCounted
 ## Round 20 (M2), THE OPENING: given `opening` (the side's near ring and whether the map gives an ambush site on the way
 ## to it), a side that is not behind HOLDS its near ring from the start, taking it first if nobody has it, unless the
 ## enemy owns it. It comes after a threatened zone and after being ahead, and before attacking.
+##
+## Round 38 (doctrine D2), DEFEND: given `near` (the side's near ring objective; {} when the switch is off), a side whose
+## near ring is not the enemy's and has a known enemy within DEFEND_M of it HOLDS that ring, whatever the score and
+## whether or not it has taken the ring yet. D1 (the guard lines, builder0): 75 % of the CPU's damage against a blob was
+## fired in ATTACK posture from its own half because it "holds no objective" yet: the blob reached the near ring first
+## and the CPU met it as an attacker, firing on the move. A threatened zone it already holds comes first. D2b: only an
+## enemy COMING for the ring counts (nearer it than to any zone its side owns; `_coming`), not one sitting at home.
+## D2c (2)+(3), CLOSING (`closing`: the names of the contacts closing on the ring, null when the switch is off): only a
+## coming contact that is also closing counts, so an enemy that stops 90 m out no longer holds the side, and the defend
+## lapses DEFEND_LAPSE after the last contact closed (track_closing). D2/D2b held the CPU on its ring for as long as an
+## enemy stood within DEFEND_M (stream/doctrine Status, the design note): turtle kills fell, CPU v CPU fights ran +31 %.
 
 ## An enemy this close to an objective we hold threatens it (m from the zone's centre; parade's zones are 15 m across
 ## and its floor about 112 m: an enemy halfway across is coming for it).
 const THREAT_M := 60.0
+## Round 38 (D2): an enemy this close to our near ring makes us DEFEND it (m). Wider than THREAT_M so the posts are
+## taken before the guns reach them (the lab at 60 m: crews drove onto posts 15 m+ away under fire, 87 % moving).
+const DEFEND_M := 100.0
 ## A ring is a side's NEAR ring when it is at least this much nearer that side's spawn than the enemy's (m).
 const NEAR_MARGIN_M := 20.0
+## D2c: a contact CLOSES when its distance to the ring falls at least CLOSING_M over a CLOSING_WINDOW (a tank at a walk
+## covers that in a couple of seconds; a crawl, or a turtle's posts shuffling, does not).
+const CLOSING_M := 10.0
+const CLOSING_WINDOW_TICKS := SimClock.TICK_RATE * 5
+## D2c (3): the defend lapses this long after the last time a contact closed.
+const DEFEND_LAPSE_TICKS := SimClock.TICK_RATE * 30
 
 
 static func decide(team: int, scores: Array, objectives: Array, contacts: Array, enemy_center: Vector3,
-		opening: Dictionary = {}) -> Dictionary:
+		opening: Dictionary = {}, near: Dictionary = {}, closing: Variant = null) -> Dictionary:
 	var held: Array = []
 	for objective: Dictionary in objectives:
 		if int(objective.get("owner", -1)) == team:
@@ -34,6 +54,9 @@ static func decide(team: int, scores: Array, objectives: Array, contacts: Array,
 	var mine := int(scores[team]) if scores.size() == 2 else 0
 	var theirs := int(scores[1 - team]) if scores.size() == 2 else 0
 	var opened := _opening(team, mine, theirs, objectives, opening)
+	var defended := _defend(team, objectives, contacts, near, closing)
+	if held.is_empty() and not defended.is_empty():
+		return defended
 	if held.is_empty():
 		if not opened.is_empty():
 			return {"posture": "hold", "zone": opened, "why": "opening: take and hold %s" % String(opened.get("name", "?"))}
@@ -41,13 +64,17 @@ static func decide(team: int, scores: Array, objectives: Array, contacts: Array,
 	var threatened := {}
 	var threat_d := INF
 	for objective: Dictionary in held:
-		var d := _nearest(contacts, objective["position"])
+		# D2b, with DEFEND on only: a held zone is threatened by an enemy coming for it, not one at home 60 m off (the lab:
+		# with defend's trigger fixed, "zone threatened" by a turtle sitting on its own zone still held the CPU 66 % of its fire).
+		var d := _nearest(contacts if near.is_empty() else _coming(contacts, objective, objectives, team), objective["position"])
 		if d <= THREAT_M and d < threat_d - 0.001:
 			threatened = objective
 			threat_d = d
 	if not threatened.is_empty():
 		return {"posture": "hold", "zone": threatened, "why": "zone threatened (enemy %.0f m from %s)" % [threat_d,
 				String(threatened.get("name", "?"))]}
+	if not defended.is_empty():
+		return defended
 	if mine > theirs:
 		var front := {}
 		var front_d := INF
@@ -73,6 +100,58 @@ static func _opening(team: int, mine: int, theirs: int, objectives: Array, openi
 		if String(objective.get("name", "")) == String(opening["name"]):
 			return objective if int(objective.get("owner", -1)) != 1 - team else {}
 	return {}
+
+
+## Round 38 (D2): the hold decision for `near` (re-read from `objectives` by name, so its owner is today's) when it is
+## not the enemy's and a known enemy is within DEFEND_M of it; {} otherwise, or when `near` is {} (the switch off). Pure.
+## D2c: `closing` (an Array of names, or null) keeps only the contacts closing on it; "coming" counts what counted.
+static func _defend(team: int, objectives: Array, contacts: Array, near: Dictionary, closing: Variant = null) -> Dictionary:
+	if near.is_empty():
+		return {}
+	var zone := near
+	for objective: Dictionary in objectives:
+		if String(objective.get("name", "")) == String(near.get("name", "")):
+			zone = objective
+	if int(zone.get("owner", -1)) == 1 - team:
+		return {}
+	var coming := _coming(contacts, zone, objectives, team)
+	if closing is Array:
+		coming = coming.filter(func(contact: Dictionary) -> bool: return (closing as Array).has(String(contact["name"])))
+	var d := _nearest(coming, zone["position"])
+	if d > DEFEND_M:
+		return {}
+	var counted := coming.filter(func(contact: Dictionary) -> bool:
+		return _flat(contact["position"]).distance_to(_flat(zone["position"])) <= DEFEND_M)
+	return {"posture": "hold", "zone": zone, "why": "defend: enemy %.0f m from %s" % [d, String(zone.get("name", "?"))],
+			"coming": counted.size()}
+
+
+## D2c (2)+(3): one contact's closing track, [since tick, distance then, closing until tick] ([] before it is first seen).
+## Every CLOSING_WINDOW the distance is compared with the last one; CLOSING_M nearer arms it for DEFEND_LAPSE. Pure.
+static func track_closing(track: Array, tick: int, distance: float) -> Array:
+	if track.is_empty():
+		return [tick, distance, -1]
+	if tick - int(track[0]) < CLOSING_WINDOW_TICKS:
+		return track
+	var until := tick + DEFEND_LAPSE_TICKS if float(track[1]) - distance >= CLOSING_M else int(track[2])
+	return [tick, distance, until]
+
+
+static func is_closing(track: Array, tick: int) -> bool:
+	return not track.is_empty() and tick <= int(track[2])
+
+
+## D2b: the contacts that are coming for `zone`: each nearer it than to every objective its own side owns. An enemy sitting
+## on its own zone (the turtle line's guard, within DEFEND_M of our ring on the small maps) is home, not coming: D2 counted
+## it, and the CPU stopped attacking a turtle (acbdef4c5, builder2, 160 turtle fights: kills a fight 32.4 -> 26.2, -3.8 se).
+static func _coming(contacts: Array, zone: Dictionary, objectives: Array, team: int) -> Array:
+	var theirs: Array = objectives.filter(func(o: Dictionary) -> bool: return int(o.get("owner", -1)) == 1 - team)
+	return contacts.filter(func(contact: Dictionary) -> bool:
+		var to_zone := _flat(contact["position"]).distance_to(_flat(zone["position"]))
+		for objective: Dictionary in theirs:
+			if _flat(contact["position"]).distance_to(_flat(objective["position"])) <= to_zone:
+				return false
+		return true)
 
 
 ## The ring a side reaches first: the objective nearest `own_spawn` among those nearer to it than to `enemy_spawn` by
