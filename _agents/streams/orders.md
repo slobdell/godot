@@ -55,8 +55,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Report for the lead:**
   - G1 and G3 each failed their last judged read on one guard cell and stay OFF; both carry to round 39 with a traced cause.
   - On his 5-squad routes, main never gets every squad in, and G2 does; G2 carries (R38.47).
-  - Stretch covered. Green tree for everything: **ab31e9bc2** (builder0 full check, 27/27 all judged, 3121/0). Later
-    commits are docs and evidence only.
+  - Stretch covered. **Green hash to merge: 0ff0cef37** (builder0 `make native check exited 0`, 27 targets all passed,
+    ALL JUDGED, 3121 passed, 0 failed); same game code as ab31e9bc2, also green. Merge after it is docs-only (this line).
 - **Judged, all FAIL as filed, all OFF, evidence in `references/round38/orders/`:**
   - G3 v3 (`g3-judged-builder0-a67afc951`);
   - G1 v3 (`g1-v3judged-builder0-b55757fee`);
