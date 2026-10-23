@@ -445,6 +445,11 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
 - **R38.27 (2026-10-23 ~00:30) main 9a6909305 GREEN on builder2** (covers feedback's final end card A aca357e9e and native's a15a48de8;
   settles R38.23): `make native check exited 0`, 3083 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge; scenario_perf loaded 4.91x),
   web-smoke first sound 29.2 s (judged), sim-baseline 13/13 unmoved. Main still owes a judged perf line on builder0 (queued when it is quiet).
+- **R38.28 (2026-10-23 ~00:50) feedback at its end state.** All merged: F3 Tanker under fire ON (e1f558d83), hit ring (ec70d6b5c), portrait
+  end card (937e7859c), his pick A final (aca357e9e), F5 the top of the screen free (1dbfb9c1d; desktop before/after looked at by the
+  orchestrator). **Round-39 candidates:** the `--touch-map` mode's panels still sit at the top by design (squad bar top centre, camera
+  buttons top right): a phone-layout redesign with a thumb-reach choice, so a directions page for him; the sim runs on behind the end card;
+  the under-fire repair beam is faint by design. No judged perf line on feedback's commits (main's builder0 check judges).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
