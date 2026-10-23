@@ -60,7 +60,7 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 ## Bars (round 38)
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
-S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; guard seeds 2601-2608/2701-2708
+S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; guard seeds 2601-2608/2701-2708
 (the 1c484a525 base, D2, F3), 4801-4808/4901-4908 D2b.
 
 
@@ -391,6 +391,16 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   says lanes on locks where the halt's centre is open). Running the v3 series (started 19:33 on 79a9f83bf) would likely spend 1 h of
   builder2 on a known fail while doctrine has waited since the afternoon: **stopped, no number read.** Next: S2 v4 latches the terrain
   at the deploy anchor (the read the guard judges by), a lab first, a new bar on seeds never read for S2, queued after doctrine's D2b.
+- **R38.20 (2026-10-22) Bar S2 v4 (`--deploy-latch=anchor`) accepted; its first-shape guard is REPORTED, not judged.** settle (bee8bd27c,
+  filed before any number): at the deploy, if the anchor's ground reads otherwise than the live read, the shape and anchor are laid again on
+  the anchor's read (<= 3 lays), and that read is latched. Lab (laptop 5/5): locks s3906 squad 3 now stands a coil on its open anchor;
+  R37.42's lane still forms a herringbone. Dev (not judged, laptop, locks+terminus 3/5 click s3906-3907): wrong for the anchor main 2,
+  centroid latch 5, anchor latch 0. Seeds 4301-4312 no-fight, 4313-4324 fights, census 4301-4303. **The orchestrator's R38.19 direction
+  made the guard circular** (v4 latches the read the guard judges by; settle flagged it before numbers): the anchor-terrain first-shape
+  count is reported for both arms, not judged. What carries the bar: the deciding lines (flips, reseats), never-in, all-in, contacts,
+  place+twitch, fights, census, plus R37.42's test in the full check; and whether a lane mouth takes herringbone or coil is the lead's
+  eye (R38.16 shots). No better independent reference exists (a click point is shared by 5 squads). builder2 after doctrine's D2b,
+  before S1 v3.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
