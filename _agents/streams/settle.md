@@ -370,8 +370,18 @@ x 4413-4424 (n 36 each). `references/round38/settle/s1v4-judged-builder2-fdeb18c
   fights 3-squad (his kills 5.44 -> 5.31, his losses 6.50 -> 6.61, CPU losses 5.50 -> 5.33) and 5-squad (10.36 -> 10.39,
   12.61 -> 13.00, 10.50 -> 10.56), 0 runs that never started.
 - Reported: place+twitch >= 25 m 165 -> 143.
-- Trace (builder0 light, both arms, `--element-trace=all --arrive-trace`) under way; manoeuvre's chained give-way is the
-  first thing checked.
+- **Trace (builder0 light, native, b3ad7baa4 tree = the run's code, n 1 per arm; reproduces the judged rows exactly;
+  `references/round38/settle/s1v4-neverin-trace-builder0/`): it is the FIT, not a chained give-way.** No give-way at all
+  (NATIVE_EXEC yielding 0); Echo's four crews hold live move goals and stand still from 50 s to 70 s at x 0-10, y 69-85.
+  Delta's capped deploy (45.3 s) turned from (0.98,-0.19) to (0.48,0.88), 72 degrees, and its crews settle by 50 s (fit's
+  gain: leg 42.8 -> 15.9 m) on seats D1 (4.2,60.4), D2 (13.3,88.0), D3 (27.8,87.1), D4 (36-42,87-90), across the lane
+  mouth Echo still has to drive through. On main the same Delta is still re-forming there until ~60 s and Echo is through
+  by 55-60 s (in at 67.8 s). Echo_3 never moves again; the run ends with Echo never in.
+- Across the series (fit arm, 576 squads): of the 71 turned deploys, 66 are herringbones (52 in lanes, 14 dense) and 5
+  coils. The turned herringbones' angle from main's heading has median 71 degrees (54 of 64 turned >= 45 degrees): the fit
+  mostly lays a lane herringbone ACROSS its ordered axis. That is the S1 v5 candidate (orchestrator's call): a herringbone
+  turns at most ~30 degrees off main's heading (the lane's axis), or the turned seats are priced against the passage.
+
 
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
