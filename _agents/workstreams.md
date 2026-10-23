@@ -608,6 +608,12 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   was -4.4 / -3.1 / -4.4 points, each short of 2 se at 160 blob fights; not pooled (different arms). **Round-39 candidate:** SPLIT
   costs nothing the guards measure; a powered series (~4x the fights, a bar sized for a 4-point effect) would decide it. D3 started 06:50
   on builder2 as filed on OFF (~4.5 h); native's row follows.
+- **R38.42 (2026-10-23 ~07:40) Bars H and S3 FAIL; nothing ships; settle at its end state.** (builder0 light J4, b3ad7baa4, the amended
+  anchor arms, fight probe 3 cells x 3 squads x seeds 3891-3902, n 36/36 an arm; references/round38/settle/hs3-judged-builder0-b3ad7baa4/,
+  473966ff3.) **H** (held v latch): re-deals 85 -> 54 v line <= 51 (narrow fail); reseats 114 -> 0; fight guards pass. **S3** (o2 v held):
+  deciding passes (off_idle 102.2 -> 31.0 s a fight); fails re-deals 54 -> 67 (line <= 62.4, mostly crossing and locks) and the
+  two-sided his-losses guard 7.94 -> 7.03 (se 0.34; fewer of his tanks lost, but outside the band as filed; not waived). **Round 39:**
+  trace o2's crossing re-deals before any re-file (understand the cause, not re-size the line); H re-filed only on new seeds after that.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
