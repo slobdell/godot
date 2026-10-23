@@ -37,7 +37,7 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (round 38 worker, 2026-10-22 ~10:30 PDT)
+### Report (round 38 worker, 2026-10-23 ~12:45 PDT)
 
 **R38.25 twin case (orders' 18 s jam split): MACHINE, not path.** glibc 2.39 (laptop) v 2.43 (builder0, builder2).
 - The float trig `atan2f acosf asinf atanf tanf` differs; native == GDScript on each machine. Lesson + shim recipe: remote_builds.md
@@ -101,14 +101,18 @@ gates; mk/web.mk ruled IN for the first-sound gate call only) + Status notes.
   **Closed:** manoeuvre isn't building M5b. Their trace (builder0 native, c16c4a0b6, jam 3 maps x 8 seeds, 24 fights): 107 of
   1,166 seated give-ways turned round, 72 of them the scout's kept turn-in, and choose() ran for only 16 returns. No twin.
   N2 has no pending pair. It reopens if doctrine's D2 moves into a mirrored path.
-- **N5, 9d2897fd8 (2026-10-23):** the row started 10:31 on builder2 after doctrine's "builder2 free". A Spot preemption at ~10:40
-  cut run.sh (exit 255), and its retry's gcp-start failed with Error 127: run.sh lacked guard.sh's gcloud PATH line (fixed in
-  5fa327ace). guard.sh restarted the box. Stopped at the orchestrator's request so their main check runs first (0 seeds read).
-  Re-run guard.sh (it resumes) then run.sh when they ping "builder2 free".
-- **N5:** a row per main the round ships. **Next: 9d2897fd8** (= e1f558d83 feedback F3 ON + ec70d6b5c hit ring,
-  presentation only; main check green R38.18, 3076/0, sim-baseline 13/13). Gate met. Queued LAST on builder2: after settle's S2 v3,
-  doctrine's D2b, settle's S1 v3 and doctrine's D3; doctrine pings "builder2 free". Keep it off builder0 (R38.8). Pair against
-  1c484a525.fights.jsonl.
+- **N5: a row per main the round ships.** **Done: 686150ed2** (3797a9ccc, builder2, 2026-10-23 10:56-12:35). Run on main
+  686150ed2 rather than 9d2897fd8 at the orchestrator's ask: it includes 9d2897fd8 and adds the latch ON (e1f602fbf).
+  9d2897fd8's run had been preempted at ~10:40 before reading anything.
+  - Fights: verdict ok, 40/48/36, 0 SCRIPT ERRORs (run.sh SCORE_JOBS=14). Every moved line is inside its noise (e.g. never settled
+    9 -> 8 of 48, twitch 11.5 -> 10.8 m).
+  - Guard lines (320 of 320 fights, 0 attempts lost): blob wins 47 % (± 7 %), kr 0.85; turtle 41 % (± 16 %), kr 0.81.
+  - Paired v round 37's 1c484a525 (round 38's base): blob -0.019 (se 0.010, flips 4 lost / 1 won, McNemar p 0.19); turtle
+    +0.012 (se 0.009, 1 / 3). Kills and losses a fight and median lengths are all within ~2 se. Only 5 and 4 of the 160 fights
+    flip, so the round's changes barely touch the guard fights.
+  - Per-fight rows: references/scoreboard/guards/686150ed2.fights.jsonl (a pairing base for round 39 if it wants one).
+  - run.sh fix (5fa327ace): its 255 retry's gcp-start died with Error 127 under systemd-run (no gcloud on PATH); it now has
+    guard.sh's PATH line.
 - **guard.py --pair** (68301e6a7, doctrine's Bar G2): the guard's kills and losses a fight and median length, all and per
   guard faction, each with a paired se from the per-seed differences. test_guard 0 failed, test_scoreboard 14/0 (laptop);
   not yet through a full check. Doctrine cross-checked it against their scratch script on D2 (acbdef4c5-defend v 1c484a525):
