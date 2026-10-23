@@ -841,6 +841,8 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	var deploy := _deploy_state(plan, situation, state, destination, center, told, table)
 	plan["deploy"] = deploy
 	if bool(deploy.get("deployed", false)):
+		# The deploy's own update plans with the read it latched (the same as the live read unless DEPLOY_LATCH_ANCHOR).
+		situation = _deploy_latched(situation, {"deploy": deploy})
 		plan["formation"] = _deploy_shape(situation, state, table)
 		plan["heading"] = deploy["heading"]
 		plan["why"] = "deployed: %s on the spot" % String(plan["formation"]).replace("_", " ")
@@ -1969,9 +1971,19 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 			at = Vector3(float(packed_at[0]), 0.0, float(packed_at[1]))
 		deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), _deploy_shape(situation, state, table),
 				deploy["heading"], table.spacing(String(situation["terrain"])))
+		var read := situation
+		if DEPLOY_LATCH_ANCHOR:
+			for lay in DEPLOY_LATCH_LAYS:
+				var ground := ElementSituation.terrain_at(deploy["anchor"])
+				if ground == String(read["terrain"]):
+					break
+				read = situation.duplicate()
+				read["terrain"] = ground
+				deploy["anchor"] = _dry_halt_anchor(at, members_of(situation), _deploy_shape(read, state, table), deploy["heading"],
+						table.spacing(ground))
 		if DEPLOY_FIT:
-			_deploy_fit(deploy, situation, at, _deploy_shape(situation, state, table), table.spacing(String(situation["terrain"])))
-		deploy["terrain"] = String(situation["terrain"])
+			_deploy_fit(deploy, read, at, _deploy_shape(read, state, table), table.spacing(String(read["terrain"])))
+		deploy["terrain"] = String(read["terrain"])
 	return deploy
 
 
@@ -1983,7 +1995,16 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 ## of that deployed halt plans with it (shape AND spacing), so a crew's creep across a terrain line cannot re-lay or
 ## re-space the squad. Before the deploy the live read stands (main's). A plain AUTO move only (the deploy step's scope):
 ## holds and the CPU's other halts keep main's read. `--deploy-latch=on` (env DEPLOY_LATCH=on) opts in; OFF until its bar.
-static var DEPLOY_LATCH := OS.get_cmdline_user_args().has("--deploy-latch=on") or OS.get_environment("DEPLOY_LATCH") == "on"
+static var DEPLOY_LATCH := OS.get_cmdline_user_args().has("--deploy-latch=on") or OS.get_environment("DEPLOY_LATCH") == "on" \
+		or OS.get_cmdline_user_args().has("--deploy-latch=anchor") or OS.get_environment("DEPLOY_LATCH") == "anchor"
+## S2 v4 (R38.19): the read latched is the terrain AT THE HALT'S ANCHOR, not at the crews' centroid at the all-in. Traced
+## (S2 v3's context, builder2 91a681712, locks 3 click s3906 squad 3): the crews stood in on a lane's last metres (their
+## centroid read lanes) while the halt's centre, its anchor, was open: the latch then held a herringbone in the open. At
+## the deploy the anchor is laid on the live read's shape; when the ground at it reads otherwise the shape and anchor are
+## laid again on that read (until the read at the anchor stands, DEPLOY_LATCH_LAYS at most), and the deploy, its update
+## and every later one plan with it. `--deploy-latch=anchor` (env DEPLOY_LATCH=anchor) opts in; OFF until its bar.
+static var DEPLOY_LATCH_ANCHOR := OS.get_cmdline_user_args().has("--deploy-latch=anchor") or OS.get_environment("DEPLOY_LATCH") == "anchor"
+const DEPLOY_LATCH_LAYS := 3
 
 
 ## Stretch (round 38, settle; S3's trace): A PARKED SQUAD THAT LOSES A CREW DOES NOT RE-DEAL ITS SURVIVORS. Traced

@@ -288,6 +288,25 @@ orchestrator's word before any row on 4001-4024 was read (the local copy deleted
 latch 16) showed the latch's own read, the crews' all-in centroid, is the weakness. Next: S2 v4 (the latch holds the
 terrain at the deploy anchor), lab first, a new bar on fresh seeds, queued after doctrine's D2b and before S1 v3.
 
+### Bar S2 v4 DEPLOY_LATCH at the anchor (R38.19; filed 2026-10-22 before any number on its seeds; code = this commit)
+The latch holds the terrain AT THE HALT'S ANCHOR (`--deploy-latch=anchor`, ElementPlan.DEPLOY_LATCH_ANCHOR). At the deploy
+the anchor is laid on the live read's shape; if the ground at it reads otherwise, shape and anchor are laid again on that
+read (at most DEPLOY_LATCH_LAYS = 3). The deploy's own update and every later one plan with it. Lab
+`tests/test_settle_deploy_latch_anchor.gd`: locks 3 click s3906 squad 3, the centroid latch holds lanes and a herringbone
+at an open anchor (the counter), the anchor latch holds open and stands a coil; R37.42's lane still a herringbone (quiet, in
+its slots). Laptop dev, not judged: locks + terminus x 3/5 squads click x s3906-3907, wrong for the anchor's terrain main 2,
+centroid latch 5, anchor latch 0.
+Arms `main:--deploy-trace` v `anchor:--deploy-latch=anchor,--deploy-trace`. Seeds never read for S2: no-fight 12 cells x
+4301-4312; fight 3-squad (budget 1500) and 5-squad (budget 3000) click cells x 4313-4324; census x 4301-4303.
+`make native settle-s2v4`, judge `settle_judge.py s2v3` (anchor reference). **Lines exactly as S2 v3:** counter and
+deciding as S2; first-shape guard wrong(anchor) <= wrong(main) against the terrain at each squad's first deploy anchor; never-in
+total arm <= base; every other probe guard, contacts, fights (both reads), census as filed. Queued on builder2 after
+doctrine's D2b, before S1 v3 (R38.19).
+**Caveat, said before numbers:** v4 latches the very read the first-shape guard judges by. Its own wrong count is ~0 by
+construction, except a shape that changes after the deploy or a re-lay whose anchor never settles. So that guard can hardly
+fail v4. Whether herringbone or coil looks right at a lane's mouth stays the lead's eye
+(`references/round38/settle/s2v3-lane-mouth-shots-laptop/`).
+
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
   column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as

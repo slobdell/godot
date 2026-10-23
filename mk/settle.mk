@@ -122,6 +122,7 @@ SETTLE_V3_CENSUS_SEEDS ?= 4001 4002 4003
 SETTLE_V3_JOBS ?= 14
 SETTLE_V3_ARMS ?= main:--deploy-trace latch:--deploy-latch=on,--deploy-trace
 SETTLE_V3 := $(BUILD_DIR)/settle-s2v3
+SETTLE_V3_NEW ?= latch
 SETTLE_V3_CTX := $(BUILD_DIR)/settle-s2v3-context
 .PHONY: settle-s2v3 settle-s2v3-context
 settle-s2v3: native-for-check import ## Round 38 (settle, R38.15): S2 v3's series (main v latch, seeds 4001-4024) -> build/settle-s2v3/verdict.txt
@@ -138,7 +139,7 @@ settle-s2v3: native-for-check import ## Round 38 (settle, R38.15): S2 v3's serie
 	@for arm in $(SETTLE_V3_ARMS); do name=$${arm%%:*}; flags=$$(echo "$${arm#*:}" | tr "," " "); \
 		$(MAKE) --no-print-directory traffic-census TRAFFIC_JOBS=$(SETTLE_V3_JOBS) TRAFFIC_CENSUS_SEEDS="$(SETTLE_V3_CENSUS_SEEDS)" TRAFFIC_FLAGS="$$flags" > $(SETTLE_V3)/census-$$name.out 2>&1 || true; \
 		cp $(BUILD_DIR)/traffic-census.jsonl $(SETTLE_V3)/census-$$name.jsonl || true; done
-	@cd $(SETTLE_V3) && $(PYTHON) $(CURDIR)/tests/settle/settle_judge.py s2v3 probe fight3 fight5 census-main.jsonl census-latch.jsonl main latch | tee verdict.txt || true
+	@cd $(SETTLE_V3) && $(PYTHON) $(CURDIR)/tests/settle/settle_judge.py s2v3 probe fight3 fight5 census-main.jsonl census-$(SETTLE_V3_NEW).jsonl main $(SETTLE_V3_NEW) | tee verdict.txt || true
 
 settle-s2v3-context: native-for-check import ## Round 38 (settle, R38.15): S2 v3's guard on the re-read's seeds 3903-3914 (context, not judged) -> build/settle-s2v3-context/
 	@rm -rf $(SETTLE_V3_CTX) && mkdir -p $(SETTLE_V3_CTX)
@@ -155,3 +156,12 @@ settle-s2v3-context: native-for-check import ## Round 38 (settle, R38.15): S2 v3
 settle-s1v3: ## Round 38 (settle, R38.17): S1 v3's series (main v fit, seeds 4201-4224) -> build/settle-s1v3/verdict.txt
 	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3" SETTLE_V2_SEEDS="$$(seq -s " " 4201 4212)" \
 		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 4213 4224)"
+
+# R38.19: S2 v4 = S2 v3's series, lines and judge (anchor guard) on the latch that holds the terrain at the halt's anchor
+# (`--deploy-latch=anchor`), seeds never read for S2: no-fight 4301-4312, fight3/fight5 4313-4324, census 4301-4303.
+.PHONY: settle-s2v4
+settle-s2v4: ## Round 38 (settle, R38.19): S2 v4's series (main v anchor, seeds 4301-4324) -> build/settle-s2v4/verdict.txt
+	@$(MAKE) --no-print-directory settle-s2v3 SETTLE_V3="$(BUILD_DIR)/settle-s2v4" SETTLE_V3_NEW=anchor \
+		SETTLE_V3_ARMS="main:--deploy-trace anchor:--deploy-latch=anchor,--deploy-trace" \
+		SETTLE_V3_SEEDS="$$(seq -s " " 4301 4312)" SETTLE_V3_FIGHT_SEEDS="$$(seq -s " " 4313 4324)" \
+		SETTLE_V3_CENSUS_SEEDS="4301 4302 4303"
