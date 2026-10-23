@@ -1,0 +1,17 @@
+orders-probe on builder0 | commit 4d68baba4 | native on
+exited 0
+orders-probe on builder0 | commit 4d68baba4 | native on
+exited 0
+PASS counter: columns_laid 26 (bodies kept 82)
+PASS deciding: places outside the corridor (click cells) 38 -> 7 (<= 9.5)
+PASS deciding: metres driven outside the corridor after being in it (click cells) 2520 -> 486 (<= 1260)
+PASS deciding: squads with crews re-dealt (arm, click cells) 0 (base 24)
+  reported: metres outside incl. the drive in (route_out_m) 13294 -> 9909
+PASS guard friend_contacts 7183 -> 6336 (<= 7906.3)
+  FAIL guard never-in     terminus 5 route: 1 v 2
+FAIL probe guards (14 cells)
+PASS guard no-change cell yard_open: 96 of 96 squad rows identical (arm rows 96)
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 256 -> 262
+VERDICT g1v4: FAIL
+
+[exited with code 0]
