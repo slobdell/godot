@@ -151,6 +151,10 @@ does not change, so relays are reported, not judged. **A pass ships ON** (`--dep
   4801-4808 + 4901-4908 x 5 maps x both sides x blob/turtle = 320 fights an arm, plus the none line 4801-4808 both arms; `guard.py --pair
   OFF ON`. Criteria: Bar D2's text unchanged with base = this OFF arm (deciding: blob down > 2 paired se AND McNemar p < 0.05; second
   line; mechanism; G1-G4; equality) plus **G2t:** turtle-line kills a fight, ON within 2 paired se of OFF. No re-tune. A pass ships ON.
+  **Re-filed before any number on its seeds (text unchanged): tree c475c3163** (= 4297bbb8b + Status): with defend ON only, the old
+  "zone threatened" rule also counts only an enemy coming for the zone (OFF byte-identical). Labs, NOT judged (builder0 light J4, seeds
+  2601-2602, 20 turtle fights each): turtle-line kills OFF 593, D2 527, D2b 542; CPU hold time 36 / 77 / 59 %; blob wins 9 OFF v 6 D2b
+  of 20. Not tuned further. Full check of c475c3163 on builder2 first, then the arms.
 
 ### S3 trace: O2's re-deals (builder0 light, native, 44505a21c tree, all switches OFF but --parked-hold=on; crossing 3 click
 s3747 and s3748, the fight probe, n 1 each; `make settle-trace` with `--arrive-trace --element-trace=Alpha`;
