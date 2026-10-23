@@ -72,8 +72,18 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     - his click: squad 3 arrives at 0.1 s on a place its crews already stand on, then the halt reshuffles 20 m. That is
       the deploy (settle's latch question), not a G3 drive.
     - Trying "back first, then aside" (a dev switch) changed neither case on the laptop, so it was not kept.
-  - Main merged at 8f0dcb488 (42268e4a1; none of my paths touched). Dev read 4 is running (68ad5df9f, dev seeds 3804-3809,
-    outside every registered round-38 block) to read the never-in noise before any judged seeds are spent.
+  - Main merged at 8f0dcb488 (42268e4a1; none of my paths touched).
+  - Dev read 4 (builder0 light, 68ad5df9f = 527d62cd2 + main, dev seeds 3804-3809, n 6): deciding PASS (pairs 25 -> 1,
+    line 6.2); offset guards PASS (6 of 432 rows > 40 m further; worst +44.2 m); contacts 7,952 -> 6,891. FAIL on never-in
+    2 -> 3, on crossed (crossing 5 route 0 -> 2, one run, s3809) and on his-click twitch 11.6 -> 22.1 m.
+  - Pooled over the nine dev seeds: never-in main 2, g3 5. Each of g3's three extras is a squad main only just gets in:
+    locks 3 route s3802 at 70.1 s, crossing 5 click s3801 at 41.7 s, terminus 5 route s3804 at 65.5 s. G3 moves the
+    slowest squad a little further and pushes it past the probe's limit. All-in medians pass in every cell.
+  - Split by cell type, main's close pairs are half on routes (dev read 4: click 12, route 13), so restricting G3 to plain
+    clicks would fail the deciding line.
+  - **Decision (lead away; told the orchestrator):** no G3 judged read yet. Its his-click twitch guard is the halt deploy,
+    the same blocker as G1 v3, so the G3 judged read joins G1 v3 in waiting for settle's latch on main (latch-on as base). Its
+    never-in guard is the open question; see Questions.
 - **G1 v2 judged: FAILS as filed** (R38.12; `g1-judged-builder0-4a765e6e2/README.md`): deciding all pass (click-cell places
   outside 84 -> 18, metres after leaving 6,223 -> 1,393, re-dealt 58 -> 0, contacts 14,004 -> 10,622); guards fail: crossing 3
   route twitch 5.8 -> 10.5 m, his 3-squad click twitch 2.3 -> 11.4 m, yard_open 177/192 identical. Stays OFF.
