@@ -54,6 +54,10 @@ hit the 300 s timeout under load). D_floor = 0 on every task: GDScript and nativ
 floor measures no noise (lesson for any next floor: shift the seeds). Per the bar: no re-run; **seatstep stays OFF**; nothing to
 merge. Evidence `references/round38/manoeuvre/m5-series/`. **builder0: my judged series ENDED 23:49 (unit inactive).**
 
+**s3866 read (approved by the orchestrator after R38.24; light, builder0, one run per arm):** lab `lab/manoeuvre-r38-s3866` d81472918 =
+settle e5a7f60b3 + a GIVEWAY row per probe give-way (lab only). Arms main / `--deploy-latch=on` / `--deploy-latch=anchor`, unit
+`manoeuvre-s3866` STARTED ~23:55, out `~/overnight-manoeuvre/r38/s3866/`.
+
 **MERGED: main 8bfb74e55 merges 84c79d76f (orchestrator).** **2026-10-22 ~14:10 (worker): THE STREAM IS GREEN at 84c79d76f (builder2, R38.2):** `make native check exited 0`, 3,055 passed / 0
 failed, 25 passed + 2 NOT JUDGED (perf-judge: builder2 is not a judging machine; scenario_perf loaded), sim-baseline passed (unmoved:
 everything new is OFF or tooling). Log `~/overnight-manoeuvre/r38/check_stream_84c79d76f.log`. Later commits are Status only.
