@@ -53,19 +53,35 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-23, in progress):** **D2c JUDGED: FAIL (deciding 1.2 se), ships OFF; its guards held (turtle kills
-1.6 se, CPU v CPU +6 %).** D3 running as filed (on OFF) since 06:50. D1 DONE (design note below). **D2 JUDGED: FAIL as filed, ships OFF** (verdict below:
-deciding 1.5 se; G2 broken on the turtle line). **D2b JUDGED: FAIL, ships OFF** (verdict below: deciding 0.9 se; G2t turtle
-kills -2.8 se; G3 none-line median +31 %). `--cpu-defend` stays in the code, OFF, for playtests. **D3** re-based on what ships
-(defend OFF); Bar D3 filed below before any arm number; it waits behind settle's S2 v4 and S1 v3 on builder2. **D2c** (hold with
-some, strike with the rest; R38.30) built OFF in ebb817ea0, Bar D2c filed below; labs done: SPLIT is the lever (blob 9 -> 4 of 20), so the series
-arm is SPLIT alone (re-filed before any series number). **builder2 order (R38.35): settle's read, then D2c's check +
-series (~/doctrine-runs/d2c-series.sh <tree>), then D3; if D2c passes, Bar D3 is re-based on SPLIT ON before its numbers.** **GREEN: 5a9464679** (D2c's series tree: builder2 `make native check exited 0`, 3069 passed / 0 failed,
-sim-baseline 13/13 unmoved with the switches OFF; scenario perf row NOT JUDGED, reason=loaded; series started 03:39). Before it,
-**c475c3163**
-(builder2 `make native check exited 0`, 3066 passed / 0 failed; the scenario perf row NOT JUDGED, reason=loaded, so G4 is re-run
-alone). Earlier green: acbdef4c5 (builder2, 3063 / 0, sim-baseline 13/13 unmoved with the switch OFF). Raw guard logs:
-~/doctrine-guard-raw/acbdef4c5-{off,defend}, ~/doctrine-guard-raw/c475c3163-{off,defend}.
+**Report (2026-10-23, FINAL for round 38). GREEN: 5a9464679** (builder2 `make native check exited 0`, 3069 passed / 0
+failed, sim-baseline 13/13 unmoved; the scenario perf row NOT JUDGED, reason=loaded, as on every builder2 check: builder2 isn't a
+judging machine). Commits after it change only this brief (`git diff --stat 5a9464679 HEAD`: _agents/streams/doctrine.md alone).
+Earlier greens: c475c3163 (3066 / 0), acbdef4c5 (3063 / 0), both builder2.
+- **D1 the read: DONE** (below). Against a blob, the CPU fired 75 % of its damage in attack posture from its own half.
+- **D2 hold-and-fire (`--cpu-defend`): FAIL, ships OFF.** Blob -4.4 points at 1.5 se; turtle kills -3.8 se.
+- **D2b (defend only against a contact coming for the ring): FAIL, ships OFF.** Blob -3.1 at 0.9 se; turtle kills -2.8 se;
+  CPU v CPU +31 % length.
+- **D2c (SPLIT: post only the elements the threat needs, the rest attack; `--cpu-defend --cpu-defend-split`): FAIL on the
+  deciding line, ships OFF.** Blob -4.4 at 1.2 se. Every guard held: turtle kills 1.6 se, CPU v CPU +6 %. CLOSING
+  (`--cpu-defend-closing`) is built, and the labs showed it undoes SPLIT, so it ships OFF.
+- **D3, R1-R3 and K2 re-read on OFF: no switch moves the CPU v the guard lines** (read below). This is for his design call.
+- **Stretch (CPU low-cover seats when defending): not built.** D3's hull-down stops 0.85-1.24 rounds a fight; the gate was 8.
+- **Decisions I made:** D3 on top of OFF, not D2 (accepted, R38.29). D2c's series arm re-filed to SPLIT alone after the labs,
+  before any series number (recorded, R38.30). The D2c design and constants are mine (design note below).
+- **For round 39 (R38.41):** a powered SPLIT series. The effect looks like ~4 points (-4.4 / -3.1 / -4.4 across three series),
+  which needs ~4x the fights for 2 se. Use fresh seeds again, since 5001-5108 have now shaped it.
+- **Known issues:** the D2c lab (20 fights, 2 seeds) said 9 -> 4 and the series said 51 -> 47 %, so lab reads on 2 seeds are
+  not evidence. `make doctrine-shots` needs a real GPU (laptop), and its show-match camera follows the action, so it can't show
+  where the posts stand. G4 perf was never judged on builder0 for the switches (all ship OFF, and the OFF path is unchanged).
+- **Playtest (all OFF by default):** `make run ARGS="--skirmish --enemy=cpu --cpu-defend --cpu-defend-split"` shows the CPU
+  posting part of its line on its near ring and attacking with the rest. Add `--cpu-defend-closing` for the closing trigger.
+  D2's whole-line defend is `--cpu-defend` alone. Pictures: `make doctrine-shots DOCTRINE_SHOT_FLAGS="..."` on the laptop.
+- **Merge notes:** owned paths only: game/tactics/posture.gd, element_commander.gd (new switches, default OFF), tests/
+  test_tactics_posture.gd (24 tests), tests/tactics/hold_fire_probe.gd + hold_fire_pair.py, mk/tactics.mk (doctrine-shots,
+  tactics-hold-fire). No baseline moved. Raw guard logs: ~/doctrine-guard-raw/{acbdef4c5,c475c3163,5a9464679}-*; scripts:
+  ~/doctrine-runs/*.sh. Per-faction pairing used native's guard.py (stream/native 68301e6a7), not committed here.
+- **Questions for the lead:** none blocking. D3's read is his to weigh (below): the rule switches don't change the CPU's
+  results, so whether they ship is about how the game feels.
 
 **D1 the read (DONE).** Tool: `make native tactics-hold-fire` (tests/tactics/hold_fire_probe.gd extends the guard line read-only;
 every direct round, the same weighted by damage a round, and a 2 Hz crew sample, split by posture, posture reason, map half,
@@ -277,6 +293,25 @@ D2/D2b failed): **rules** `--rules-on=sight,spread,pin_slow`; **hulldown** `--co
 - **"Matters" (the stretch gate):** hulldown or pkg moves a line's win rate by > 2 paired se, OR `cover_struck` a fight >= 5x R37's
   1.6 (505 in 320). Neither: the stretch (CPU low-cover seats) is written up as not worth building now.
 
+**D3 read (2026-10-23; c475c3163, builder2, `guard.sh` J14 GUARD_CHUNK=8, seeds 4801-4808 + 4901-4908, 320 fights an arm,
+0 lost; every arm's GUARD_RESULT "args" carries its switches (320/320); each paired with c475c3163-off; native's guard.py --pair):**
+
+| arm | blob wins (paired se, McNemar) | blob kill ratio | blob median | turtle wins (se) | turtle kills a fight | rounds hull-down stopped a fight |
+|---|---|---|---|---|---|---|
+| OFF | 47 % | 0.82 | 98 s | 39 % | 14.74 | 0 |
+| rules (sight, spread, pin_slow) | 43 % (-3.7, se 2.7; p 0.19) | 0.80 | 105 s (+7, se 2) | 39 % (+0.6, se 3.9) | 15.17 (+0.42, se 0.28) | 0 |
+| hulldown | 46 % (-1.3, se 0.9; 2 flips) | 0.82 | 98 s | 39 % (+0.6, se 1.1) | 14.74 | blob 0.85, turtle 1.24 |
+| package | 42 % (-5.0, se 2.9; p 0.11) | 0.79 | 105 s (+8, se 2) | 40 % (+1.3, se 3.6) | 15.11 (+0.37, se 0.30) | blob 0.68, turtle 1.14 |
+
+- No arm moves either line's win rate by 2 paired se. No caps in any arm.
+- **The rules slow blob fights by 7-8 s** (3.5 se), mostly law (89 -> 107 s, +4.5 se). Turtle fights are shorter for gangs
+  (-37 s) and syndicate (-52 s) at about 3 se.
+- **Hull-down does almost nothing:** about 1 round stopped a fight, 0-2 results flipped in 160. That is R37's read again.
+- **Stretch gate (Bar D3's "matters"): not met.** No win rate moves 2 se, and hull-down stops 0.68-1.24 rounds a fight against
+  the gate's 8. CPU low-cover seats are not worth building on these numbers.
+- **For his design call:** turning R1-R3 on doesn't help or hurt the CPU v the guard lines measurably. It makes blob fights a
+  little longer and some turtle fights shorter, so whether to ship them is about how a fight feels, not about results.
+
 **D2b labs (NOT judged; builder0 native light J4; D2's seeds 2601-2602 x 5 maps x both sides; hold_fire_probe):**
 | line, 20 fights | CPU hold time | CPU dmg in defend | in "threatened" | kills (guard + CPU) | guard wins |
 |---|---|---|---|---|---|
@@ -309,7 +344,7 @@ guard.sh (cc7c7ef1a) resumes per fight; I merge main for it before D2's series.
 2. D1 design note to the orchestrator: where a holder moves, which lever, and the bar (C38.1: the property it could break).
 3. D2 hold-and-fire behind a switch, lab first; quick-remote; one full check on a named hash; the paired guard series on builder2.
 4. D3 R1-R3 and K2 re-read, on what ships (defend OFF, after D2/D2b failed): Bar D3 above.
-5. Stretch: low-cover seats when defending. **Read (laptop, uncommitted tree on 362e81c6e, locks 2602 blob, 120 s, `--cpu-defend
+5. Stretch: low-cover seats when defending. **NOT BUILT: D3's gate not met (hull-down stops ~1 round a fight).** **Read (laptop, uncommitted tree on 362e81c6e, locks 2602 blob, 120 s, `--cpu-defend
    --cover-seat=on --cover-on=hulldown`, the probe's new `cover` field):** O6's call (`--cover-seat=on`) can't reach the CPU's holds.
    `ElementPlan._deploy_state` deploys only a `move` without a told facing, and the CPU's holds are `hold` with a facing: CPU
    elements deployed in 0 of 919 2 Hz samples (the blob 73 of 661), and no seats moved on either side. A CPU cover seat needs its own
