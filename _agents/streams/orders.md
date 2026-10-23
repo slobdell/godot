@@ -55,7 +55,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Bar G3 v4 filed** (f0a70f544, seeds 4601-4612). G3 v4 dev read 9 PASS (builder0, e518fd649, dev seeds 3804-3809, n 6).
 - **Check on f0a70f544** (builder0): `make native check exited 2`. 24 passed, 1 FAILED, 2 NOT JUDGED.
   - The FAIL is remote-guard-test's `slot-light` setup: "the quiet window opened not in 30 s, at load 14.91 on 10
-    cores". Environmental, outside my paths; it gets re-run alone on a quiet box (R36.12) before the judged read.
+    cores". Environmental, outside my paths. **Cleared** (R36.12, the orchestrator's call): `make remote-guard-test` re-run
+    alone on the idle laptop at f0a70f544 exited 0, every sub-suite passing, slot-light 6/0. So f0a70f544 is the green
+    tree for Bar G3 v4.
   - The NOT JUDGEDs are perf-judge (box busy, ratio 1.6-2.5x) and ai-scenarios brains-budget (unpinned).
   - Scenarios 53/0.
 - **Bridge mouth** (builder0 traces, `references/round38/orders/mouth-trace-builder0-f0a70f544/`): latch ON fixed the
