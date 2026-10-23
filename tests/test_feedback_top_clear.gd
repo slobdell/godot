@@ -63,3 +63,11 @@ func test_the_announcer_speaks_but_writes_nothing_on_screen() -> void:
 	await tree.process_frame
 	assert_eq(heard.size(), 1, "the line still goes out (transcripts, the voice)")
 	assert_true(not hud.caption_line.visible, "but nothing is written on screen")
+
+
+func test_a_portrait_phone_gets_the_short_planning_line() -> void:
+	var short := SkirmishMode.planning_hint(4, true)
+	assert_true(short.contains("1-4"), "it still names the squads' keys")
+	var px := roundi(22.0 * 0.75 * 1.5)  # the pause line's size on an 810 x 1800 phone with the touch boost
+	var wide := CyberStyle.font().get_string_size(short, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+	assert_true(wide < 810.0 - 32.0, "and fits the phone's width (%.0f px)" % wide)
