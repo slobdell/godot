@@ -101,6 +101,10 @@ gates; mk/web.mk ruled IN for the first-sound gate call only) + Status notes.
   **Closed:** manoeuvre isn't building M5b. Their trace (builder0 native, c16c4a0b6, jam 3 maps x 8 seeds, 24 fights): 107 of
   1,166 seated give-ways turned round, 72 of them the scout's kept turn-in, and choose() ran for only 16 returns. No twin.
   N2 has no pending pair. It reopens if doctrine's D2 moves into a mirrored path.
+- **N5, 9d2897fd8 (2026-10-23):** the row started 10:31 on builder2 after doctrine's "builder2 free". A Spot preemption at ~10:40
+  cut run.sh (exit 255), and its retry's gcp-start failed with Error 127: run.sh lacked guard.sh's gcloud PATH line (fixed in
+  5fa327ace). guard.sh restarted the box. Stopped at the orchestrator's request so their main check runs first (0 seeds read).
+  Re-run guard.sh (it resumes) then run.sh when they ping "builder2 free".
 - **N5:** a row per main the round ships. **Next: 9d2897fd8** (= e1f558d83 feedback F3 ON + ec70d6b5c hit ring,
   presentation only; main check green R38.18, 3076/0, sim-baseline 13/13). Gate met. Queued LAST on builder2: after settle's S2 v3,
   doctrine's D2b, settle's S1 v3 and doctrine's D3; doctrine pings "builder2 free". Keep it off builder0 (R38.8). Pair against
