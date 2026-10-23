@@ -6,19 +6,6 @@ extends RefCounted
 ## end was a bare VICTORY / DEFEAT label, no reason, over a fight that kept going. This names who won and WHY (the rings, a
 ## wipe-out, the clock) and builds the next match's flags.
 
-## `--end-look=`: plain (the old banner + the reason + F2's guard; the default until his pick), a (the end card), b (the
-## broadcast end), c (the banner stays). _agents/streams/feedback.md F1.
-const LOOKS := ["plain", "a", "b", "c"]
-const DEFAULT_LOOK := "plain"
-
-
-## The look `--end-look=` names (the default when unknown; EndCard warns).
-static func parse_look(text: String) -> String:
-	if text == "":
-		return DEFAULT_LOOK
-	return text if LOOKS.has(text) else DEFAULT_LOOK
-
-
 ## "win", "loss" or "draw" from `team`'s side (-1 = nobody commands: never a win or a loss).
 static func outcome(result: Dictionary, team: int) -> String:
 	var winner := String(result.get("winner", "draw"))

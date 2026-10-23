@@ -127,8 +127,8 @@ static func rows_for(widths: Array, gap: float, room: float) -> Array[int]:
 
 ## The room the bar may take across: the screen between the radar and its mirror (as the selection panel).
 static func room_for(screen: Vector2) -> float:
-	var radar_side := clampf(screen.y * Radar.HEIGHT_FRACTION, Radar.MIN_SIZE, Radar.MAX_SIZE) + Radar.MARGIN * 2.0
-	return screen.x - radar_side * 2.0
+	var span := HudLayout.chips_span(screen)  # round 38 (F5): over the command bar, between the hints and the radar
+	return span.y - span.x
 
 
 ## The chips' rects (local to the bar), number -> Rect2, laid out as `_layout` places them (tests read it).
@@ -177,7 +177,7 @@ func _layout() -> void:
 	var rows := maxi(_rows.size(), 1)
 	size = Vector2(maxf(width, 1.0), (CHIP_HEIGHT * rows + GAP * (rows - 1)) * s)
 	var bottom := panel.position.y if panel != null and panel.visible else screen.y
-	position = Vector2((screen.x - size.x) / 2.0, bottom - size.y - 6.0 * s)
+	position = Vector2(HudLayout.chips_x(screen, size.x), bottom - size.y - 6.0 * s)
 
 
 func _gui_input(event: InputEvent) -> void:

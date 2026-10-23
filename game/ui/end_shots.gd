@@ -1,14 +1,14 @@
 class_name EndShots
 extends Node
-## `make end-shots` (round 38, feedback F1): the end of a match he commands, filmed per look for the directions page. A real
+## `make end-shots` (round 38, feedback F1): the end of a match he commands, filmed for the directions page (his pick: the end card). A real
 ## commanded skirmish (the planning pause lifted, his army left where it starts, the CPU coming at it) runs until the fight
 ## is on, then the harness ends it as his round-37 game ended: the enemy reaches the rings' points (`--end-shots-outcome=loss`;
 ## `win` gives them to him). Writing the score is the harness's only touch on the match, after which everything is the
 ## game's own end. It films the end from his camera, then clicks the field (F2: a click after the end) and films the answer.
 ##
 ## Flags: --end-shots=<abs dir> --end-shots-outcome=loss|win (loss) --end-shots-after=S (sim seconds of fight first, 10)
-##        --end-shots-frames=N (clip frames at 12 fps, 72); the look is the game's own --end-look.
-## Prints END_SHOTS_START, END_SHOTS_CLICK, END_SHOTS_DONE frames=<n> look=<look> headline=<..>.
+##        --end-shots-frames=N (clip frames at 12 fps, 72).
+## Prints END_SHOTS_START, END_SHOTS_CLICK, END_SHOTS_DONE frames=<n> headline=<..>.
 
 const CLIP_FPS := 12.0
 ## The click lands this far into the clip (s), on the field below the middle of the screen.
@@ -46,6 +46,9 @@ func _ready() -> void:
 func _run() -> void:
 	while not _find():
 		await get_tree().process_frame
+	# Round 38 (F5, the top of the screen): a still of the planning pause and one mid-fight, before the end.
+	await _settle(30)
+	_still("play_planning.png")
 	var controls := _hud.get_node_or_null("TacticalMap")
 	if controls != null and controls.has_method("set_paused"):
 		controls.call("set_paused", false, "")
@@ -54,6 +57,14 @@ func _run() -> void:
 	var waited := Time.get_ticks_msec()
 	while _match.sim_seconds < fight_seconds:
 		await get_tree().process_frame
+	await _settle(1)
+	_still("play_fight.png")
+	# Space mid-fight: the pause line (RtsControls' own text) over the bottom HUD, the status block and buttons back.
+	if controls != null and controls.has_method("set_paused"):
+		controls.call("set_paused", true)
+		await _settle(10)
+		_still("play_paused.png")
+		controls.call("set_paused", false, "")
 	print("END_SHOTS_FORCE sim_s=%.1f wall_s=%.0f" % [_match.sim_seconds, (Time.get_ticks_msec() - waited) / 1000.0])
 	var side := Match.Team.RUST if outcome == "loss" else Match.Team.GREEN
 	_match.control_point = true
@@ -79,9 +90,20 @@ func _run() -> void:
 		if still < STILLS_S.size() and t >= float(STILLS_S[still]):
 			image.save_png(out_dir.path_join("still_%d_%.1fs.png" % [still + 1, t]))
 			still += 1
-	print("END_SHOTS_DONE frames=%d look=%s headline=%s reason=\"%s\" notices=%d" % [clip_frames, card.look, card.headline,
+	print("END_SHOTS_DONE frames=%d headline=%s reason=\"%s\" notices=%d" % [clip_frames, card.headline,
 			card.reason, card.notices()])
 	get_tree().quit()
+
+
+func _settle(frames: int) -> void:
+	for i in frames:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+
+
+func _still(file_name: String) -> void:
+	get_viewport().get_texture().get_image().save_png(out_dir.path_join(file_name))
+	print("END_SHOTS_STILL %s" % file_name)
 
 
 func _find() -> bool:

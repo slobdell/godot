@@ -23,9 +23,10 @@ var _copied_left := 0.0
 var _drawn: Array = []
 
 
-## Whether a skirmish shows the readout: only when asked for (`--camera-readout=on`).
+## Whether a skirmish shows the readout: only for us, `--camera-readout=debug`. Round 38 (F5, his note: "the debug info about
+## camera pitch and so forth (we don't need this either)"): `make skirmish` passes `on`, which no longer shows it.
 static func wanted(flags: LaunchFlags) -> bool:
-	return flags.text("camera-readout", "off") == "on"
+	return flags.text("camera-readout", "off") == "debug"
 
 
 ## Where the readout's text starts and how big it is, on a `screen` of that size for text `widest_at_1px` wide at 1 px.

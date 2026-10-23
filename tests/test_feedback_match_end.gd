@@ -59,12 +59,6 @@ func test_the_score_line_reads_the_final_board() -> void:
 			"Vehicles left: you 2, enemy 5", "what was left on the field")
 
 
-func test_the_look_flag() -> void:
-	assert_eq(MatchEnd.parse_look(""), MatchEnd.DEFAULT_LOOK, "no flag: the default")
-	assert_eq(MatchEnd.parse_look("b"), "b", "a direction")
-	assert_eq(MatchEnd.parse_look("nonsense"), MatchEnd.DEFAULT_LOOK, "unknown: the default")
-
-
 func test_play_again_keeps_his_factions_and_rolls_a_new_seed() -> void:
 	var flags := LaunchFlags.new()
 	flags.values = {"skirmish": "", "seed": "41", "player-faction": "law", "enemy-faction": "syndicate", "arena": "terminus",

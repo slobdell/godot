@@ -56,7 +56,10 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
   per faction (the gangs must not start winning the blob line beyond noise), kills/length per faction, perf. A pass ships ON (his call).
 - **C38.5 Free the top of the screen (his note 2026-10-22 evening; feedback F5).** GRANT to feedback: the hint label's placement and
   text in `game/modes/skirmish_mode.gd` ("PLANNING: select..."), nothing else in that file (merge note to its owner of record);
-  `game/ui/camera_readout.gd` hidden behind a debug flag. Presentation only; sim-baseline must not move.
+  `game/ui/camera_readout.gd` hidden behind a debug flag. Presentation only; sim-baseline must not move. **Extended (2026-10-22 ~21:10):** the one
+  line in `game/control/rts_controls.gd` `_draw` that places the Space-pause line ("PAUSED: give orders, then Space to resume", drawn at
+  14 % of the height) may route it through the HUD hint at the bottom, and the line above it that sizes the pause text may use
+  `HudLayout.bug_ui_scale(size)` (identical in landscape); nothing else in orders' file (merge note to orders).
 - **C38.3 settle and orders share `element_plan.gd`'s callers:** orders lays WHERE squads go (group lay); settle decides how a squad
   SITS once there (deploy, halt shape, seat deal, parked hold). A change that crosses goes through a merge note both sign.
 
@@ -64,7 +67,7 @@ GUARD_JOBS=20). Perf-judge judges on builder0 only (R37.20). When your series en
 
 **Seed blocks taken (round 38; check before filing a bar, never reuse one a bar already judged):** 3801-3803 orders dev; 3861-3914
 S1/S2 and the S2 re-read; 3881-3892 G1; 3921-3944 S1 v2; 3951-3962 G1 v3; 4001-4024 S2 v3; 4101-4112 G3; 4201-4224 S1 v3; 4301-4324 S2 v4; guard seeds 2601-2608/2701-2708
-(the 1c484a525 base, D2, F3), 4801-4808/4901-4908 D2b.
+(the 1c484a525 base, D2, F3); 3804-3809 orders G3 dev, 4801-4808/4901-4908 D2b; 5001+ D2c.
 
 
 _(each stream files its bar in its BRIEF's Status BEFORE its first number and messages the orchestrator, who copies it here; never
@@ -411,6 +414,60 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
 - **R38.21 (2026-10-22) main 661de8e82 GREEN on builder2** (covers orders' 4506f151a: G1 v3, G3, probe refusal, all OFF): `make native
   check exited 0`, 3084 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge, not a judging machine; scenario_perf loaded 4.81x),
   sim-baseline 13/13 unmoved. Next main check (feedback's 937e7859c, the portrait end card) queued behind doctrine's c475c3163 check.
+- **R38.22 (2026-10-22) main 8f0dcb488 GREEN under R36.12** (covers feedback's 937e7859c, the portrait end card): builder2 `make native
+  check exited 2`, 3085 passed / 0 failed, 24 passed, 2 NOT JUDGED (perf-judge; scenario_perf loaded 4.96x), 1 FAILED web-smoke (first
+  sound 32.9 s v 30 s; builder2 loaded, the fourth such miss today). web-smoke re-run ALONE on the same hash on builder0 (load 12.7):
+  `make web-smoke exited 0`, first sound 21.6 s. sim-baseline 13/13 unmoved. Native's 54898f5b1 makes the gate per physical core
+  (builder2 loaded at 24, builder0 at 15), so these misses will read NOT JUDGED once merged.
+- **R38.23 (2026-10-22) main 7622b9f4c (feedback's final end card A, aca357e9e): builder2 `make native check exited 2`** on web-smoke
+  alone (first sound 32.2 s v 30 s, loaded; the fifth such miss), every other target passed or NOT JUDGED (perf-judge, scenario_perf),
+  sim-baseline unmoved. Not ruled green yet: the next main check (9a6909305, native's per-core gate, a superset of this tree) is its
+  verdict; if web-smoke misses there too, it reads NOT JUDGED under the new gate and is re-run alone on builder0.
+- **R38.24 (2026-10-22 23:49) M5 v2 (seatstep) FAILS; stays OFF; builder0's R38.8 exception ends.** manoeuvre (ON 269d593c5 v BASE
+  226e4c190, builder0 native J 6, 120 jam pairs + 768 hull-rest runs an arm; stream/manoeuvre b29ce78cf,
+  references/round38/manoeuvre/m5-series/README.md): deciding seat metres 76,032 -> 72,255 (-5.0 %), short of the 1.645 se bar (4,881);
+  every map -4 to -6 %. Lead-out give-ways 1,291 -> 747 (the rule works as written; crews still end about as far from their seats).
+  Safety guards pass (kill share 0.521 -> 0.527, deaths +6); (e) never-settled faced_attack_move +4 > +3.3 fails. 7/192 GDScript gangs runs
+  hit the 300 s timeout under load; judged by hand on what ran. **Lesson:** a noise floor from base native v base GDScript is 0 by
+  construction (the twins are bit-identical per seed); a floor needs shifted seeds. Next for manoeuvre: settle's s3866 give-way read (light).
+  builder0 now carries only light lanes (orders, feedback, manoeuvre); full checks may go to it again when it is under its loaded line
+  (tools/loaded.sh), and main owes a judged perf line there.
+- **R38.25 (2026-10-23 ~00:10) OPEN: a possible native/GDScript twin mismatch on main.** orders: terminus seed 3801, 5-squad click
+  (-29.3/85.8), main arm: squads 1-3 identical; squads 4 and 5 (one shared place (8.0, 66.5), a queue) arrive 29.5 s on the laptop
+  (GDScript, a24f3b3fb, no native/bin) v 47.4 s on builder0 (native ON, 0646a865e = a24f3b3fb + Status), the same on seeds 3801-3809
+  there. Machine v path not yet split: native runs the same command native ON and OFF on one machine and finds the first diverging tick.
+  Until it is split, laptop dev reads do not predict builder0 in jams; judged reads stay on their filed machine.
+- **R38.26 (2026-10-23 ~00:20) manoeuvre at its end state; s3866 read.** (builder0 light native, n 1 an arm; stream/manoeuvre e55cba940,
+  references/round38/manoeuvre/s3866-giveway/README.md): seatstep OFF, squad 4 in at 33.9 s on main, NEVER under `--deploy-latch=on` or
+  `=anchor`. Not one pick, not a lead-out: Alpha_3 gives way four times in 10 s (6.7-10.3 m each), each from where the last left it, seat
+  distance 2.9 -> ~20 m; with seatstep ON squad 4 arrives in every arm. **Round-39 candidate:** a chain-aware give-way (a crew already
+  pushed off its seat never takes a spot farther from it); needs native's begin_yield twin first. No code since green 84c79d76f.
+- **R38.27 (2026-10-23 ~00:30) main 9a6909305 GREEN on builder2** (covers feedback's final end card A aca357e9e and native's a15a48de8;
+  settles R38.23): `make native check exited 0`, 3083 passed / 0 failed, 25 passed + 2 NOT JUDGED (perf-judge; scenario_perf loaded 4.91x),
+  web-smoke first sound 29.2 s (judged), sim-baseline 13/13 unmoved. Main still owes a judged perf line on builder0 (queued when it is quiet).
+- **R38.28 (2026-10-23 ~00:50) feedback at its end state.** All merged: F3 Tanker under fire ON (e1f558d83), hit ring (ec70d6b5c), portrait
+  end card (937e7859c), his pick A final (aca357e9e), F5 the top of the screen free (1dbfb9c1d; desktop before/after looked at by the
+  orchestrator). **Round-39 candidates:** the `--touch-map` mode's panels still sit at the top by design (squad bar top centre, camera
+  buttons top right): a phone-layout redesign with a thumb-reach choice, so a directions page for him; the sim runs on behind the end card;
+  the under-fire repair beam is faint by design. No judged perf line on feedback's commits (main's builder0 check judges).
+- **R38.29 (2026-10-23 ~00:55) D2b FAILS; `--cpu-defend` ships OFF; D3 is a read on top of OFF.** doctrine (c475c3163 both arms,
+  builder2, fresh guard seeds 4801-4808 + 4901-4908, 320 fights an arm, 0 lost, 400/400 ON logs carry the switch): deciding blob 47 ->
+  44 % (0.9 paired se, McNemar p 0.22), not met; G1 turtle 39 -> 32 % holds; **G2t fails** turtle-line kills a fight -1.94 (-2.8 se);
+  **G3 fails** none-line median length 130 -> 170 s (+31 %, bar x1.2), caps 0 v 2; blob line flat per faction. Across D2 and D2b the
+  defend posture makes the CPU passive against anything near its ring and buys little against the blob. **Bar D3 (filed 640cee079,
+  before numbers; copied as accepted):** arms `--rules-on=sight,spread,pin_slow`, `--cover-on=hulldown` and the package, each paired
+  with c475c3163-OFF on the same 320 fights (no new base run; those seeds have no rules read yet). A read for his design call, not a ship
+  call; "matters" (a win rate moving > 2 se, or cover_struck a fight >= 5x R37's 1.6) gates the stretch (CPU low-cover seats). builder2
+  after settle's S2 v4 and S1 v3; native's row after D3.
+- **R38.30 (2026-10-23 ~01:05) doctrine's design note: DEFEND made the CPU fight less, not worse** (stream/doctrine bab6df4ac Status).
+  Turtle line kr flat 0.84 -> 0.85 but kills and losses a fight both fell (-1.94, -2.45); none line median +40 s; lab hold time OFF 36 /
+  D2 77 / D2b 59 %; the blob line did not move. Causes (posture.gd decide, element_commander _hold): defend is side-wide and precedes
+  "not ahead -> attack"; the trigger is nearness (100 m), not closing; no clock; no counter-stroke. **Approved as D2c, "hold with some,
+  strike with the rest":** (1) defend tasks only the elements the closing threat needs (<= half the line), the rest decide as OFF;
+  (2) a contact counts only while closing on the ring over ~10 s; (3) defend lapses after ~30 s with nothing closing; (4) posts switch to
+  attack when the attack stalls or the local ratio >= 1.5. (1) and (2) separable switches. Build and lab on builder0 light now; bar on
+  fresh guard seeds 5001+ filed before numbers (deciding blob down; guards G2t, G3, and a lab guard: turtle-line CPU hold share <= OFF +
+  10 points); its series on builder2 after D3, or carried to round 39 if the round closes first.
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both
