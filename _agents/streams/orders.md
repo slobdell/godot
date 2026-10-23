@@ -62,8 +62,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - **G1 v4** (7c3250ed6, seeds 4701-4712). Dev read 2 (builder0, 4d68baba4, dev seeds 3804-3809, n 6) passes everything
     but terminus 5 route never-in 1 -> 2: the route's first plain click keeps squads whole. Filed as is on the
     orchestrator's ruling (option (a)).
-  - Main a34f05105 merged at ab31e9bc2 (settle code all OFF). Its builder0 full check is running and covers both bars.
-    Then the judged reads: G3 v5, then G1 v4.
+  - Main a34f05105 merged at ab31e9bc2 (settle code all OFF). **Check GREEN on ab31e9bc2** (builder0, `make native check
+    exited 0`, 27 targets all passed, ALL JUDGED, 3121 passed, 0 failed). That is the green tree for both bars.
+  - **Judged reads running** (builder0 light J4, slot timeout knob), on docs/evidence descendants of ab31e9bc2 with the same
+    game code: G3 v5 on 5201-5212, then G1 v4 on 4701-4712.
 - **G2 carries to round 39 (R38.47), no bar on the current code.** Dev read 3 (builder0 J4, ab31e9bc2, dev seeds 3801-3803,
   n 3; `g2-dev3{cells,his}-builder0-ab31e9bc2/`):
   - route cells: off 2,493 -> 2,016 m;
@@ -75,7 +77,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   / 9 m short of the west deck, 3 / 5 squads, main v G3 v5; `bridge-mouth-builder0-4b7629f89/`). 0 places on the deck,
   0 crossed, 0 goals across, 0 never-in in every cell of both arms. Crews touch the deck after arriving in some cells
   (seat spread, both arms).
-- **Owed before anything ships ON:** a quiet-box builder0 control-timing read.
+- **Control timing judged on an idle builder0** (load 1.2, 7953d7e52 = ab31e9bc2's game code): `make native control-timing
+  exited 0`, test_control_scale 5/0, test_control_readability 8/0. The check's "right click on 30 units 114.9 (budget
+  104) OVER BUDGET" line was read under load and is NOT JUDGED there.
 
 ### EARLIER (2026-10-23 ~08:10 PDT)
 - **Bar G3 v4 filed** (f0a70f544, seeds 4601-4612). G3 v4 dev read 9 PASS (builder0, e518fd649, dev seeds 3804-3809, n 6).
