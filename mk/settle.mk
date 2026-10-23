@@ -164,6 +164,15 @@ settle-s1v4: ## Round 38 (settle, R38.34): the fit on the latch-ON main (seeds 4
 	@SETTLE_S1_DECIDING_JUDGED=0 $(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v4" \
 		SETTLE_V2_SEEDS="$$(seq -s " " 4401 4412)" SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 4413 4424)"
 
+# R38.37: S1 v5 = the fit with the street cap (--deploy-fit=street) on the latch-ON main, S1 v4's lines (guards judged,
+# deciding reported) plus the street axis reported per cell; seeds never read: no-fight 4501-4512, fights 4513-4524.
+# builder0's light lane at J<=4 (R38.37): `make remote LIGHT=1 T="native settle-s1v5"`.
+.PHONY: settle-s1v5
+settle-s1v5: ## Round 38 (settle, R38.37): the street-capped fit (seeds 4501-4524) -> build/settle-s1v5/verdict.txt
+	@SETTLE_S1_DECIDING_JUDGED=0 $(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v5" \
+		SETTLE_V2_SEEDS="$$(seq -s " " 4501 4512)" SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 4513 4524)" SETTLE_V2_JOBS=4 \
+		SETTLE_V2_ARMS="main:--deploy-trace fit:--deploy-fit=street,--deploy-trace"
+
 # R38.19: S2 v4 = S2 v3's series, lines and judge (anchor guard) on the latch that holds the terrain at the halt's anchor
 # (`--deploy-latch=anchor`), seeds never read for S2: no-fight 4301-4312, fight3/fight5 4313-4324, census 4301-4303.
 .PHONY: settle-s2v4

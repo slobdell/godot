@@ -383,6 +383,21 @@ x 4413-4424 (n 36 each). `references/round38/settle/s1v4-judged-builder2-fdeb18c
   turns at most ~30 degrees off main's heading (the lane's axis), or the turned seats are priced against the passage.
 
 
+### Bar S1 v5 DEPLOY_FIT with the street cap (R38.37; filed 2026-10-23 before any number on its seeds; code = this commit)
+A herringbone's turn must land within 30 degrees of the street's axis (ElementSituation.street_axis at the deploy's anchor:
+the heading of the longest clear run, null where none is 1.3x the shortest); no street, no limit; coils turn freely
+(`--deploy-fit=street`, ElementPlan.DEPLOY_FIT_STREET). Lab `tests/test_settle_deploy_fit_v5.gd` (laptop, pure, terminus):
+the street at (23.5, 85.65) runs east-west; s4410's Delta turns without the cap (the counter) and keeps main's heading
+with it; the R37.37 across-the-street squad still turns (worst drive 31.7 -> 13.2 m), along the street, and keeps its
+deal; open ground has no street. Base = the latch-ON main (e1f602fbf merged). Arms `main:--deploy-trace` v
+`fit:--deploy-fit=street,--deploy-trace`. **Seeds 4501-4524 (registered, R38.37):** no-fight 12 cells x 4501-4512, fight
+3-squad (budget 1500) and 5-squad (budget 3000) click cells x 4513-4524. `make remote LIGHT=1 T="native settle-s1v5"`,
+builder0 light lane, J 4. Judge `settle_judge.py s1v2`, SETTLE_S1_DECIDING_JUDGED=0. **Lines exactly S1 v4's:** judged:
+counter (turned > 0), twitch >= 15 m not up, never-in arm <= base, first shape differs <= 3 %, contacts and foreign
+<= 110 % + 5, fights (both reads, 1.645 se, 0 runs that never started). Reported: deciding (deploy leg >= 25 m),
+place+twitch, and (R38.37) the street axis set v null and the turns refused, per cell. A pass ships S1 ON (both switches)
+on a new hash with one full check.
+
 ### Requests / cross-stream notes (round 38)
 - orders (godot-orders-93, 4a765e6e2, laptop GDScript): s3866's overlap is today's body (main's 6.3 m pair, squads 3/4); under G1's
   column all five places are >= 22 m apart and all in by 9.6 s. Orders owns "a place never lands on another squad's halt" as

@@ -17,6 +17,7 @@ STAND_TRACE lines) and never-in as a total.
 PROBE_DIR / FIGHT_DIR are orders-probe output folders (rows.jsonl, runs.jsonl, logs/). Prints PASS/FAIL per line and a
 final VERDICT line. The guards reuse orders' judge (tests/control/orders_judge.py) so the lines are the ones its bars read.
 """
+import collections
 import glob
 import json
 import os
@@ -52,6 +53,22 @@ def turned(folder, arm):
                     total += 1
                     n += 1 if json.loads(line.split(" ", 1)[1]).get("fit", {}).get("turned") else 0
     return n, total
+
+
+def streets(folder, arm):
+    """S1 v5 (R38.37): per cell (map-squads-route), the herringbone deploys whose street axis was set / null, and the
+    turns the street refused."""
+    cells = collections.defaultdict(lambda: {"set": 0, "null": 0, "refused": 0})
+    for path in glob.glob(os.path.join(folder, "logs", "*-%s-s*.log" % arm)):
+        cell = "-".join(os.path.basename(path).split("-")[:3])
+        with open(path, errors="replace") as f:
+            for line in f:
+                if line.startswith("DEPLOY_TRACE "):
+                    fit = json.loads(line.split(" ", 1)[1]).get("fit", {})
+                    if "street" in fit:
+                        cells[cell][fit["street"]] += 1
+                        cells[cell]["refused"] += 1 if fit.get("street_refused") else 0
+    return dict(cells)
 
 
 def judge(mode, argv):
@@ -131,6 +148,14 @@ def s1v2(argv):
         g_f = oj.fight_guards(fr, base, new, lines) and g_f and ferr == 0
     lines.append("  reported: place+twitch >= 25 m squads %d -> %d" % (sum(1 for c in common if moved(b[c]) >= LONG_M),
                                                                        sum(1 for c in common if moved(n[c]) >= LONG_M)))
+    cells = streets(probe, new)
+    if cells:
+        tot = {k: sum(c[k] for c in cells.values()) for k in ("set", "null", "refused")}
+        lines.append("  reported street axis (herringbone deploys): set %d, null %d; turns refused %d" % (
+            tot["set"], tot["null"], tot["refused"]))
+        for cell in sorted(cells):
+            c = cells[cell]
+            lines.append("    %s: set %d null %d refused %d" % (cell, c["set"], c["null"], c["refused"]))
     ok = counter and dec and g_tw and g_ni and g_sh and g_c and g_f
     lines.append("VERDICT %s %s v %s (S1 v2, R38.11)" % ("PASS" if ok else "FAIL", new, base))
     print("\n".join(lines))
