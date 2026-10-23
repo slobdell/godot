@@ -83,7 +83,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     clicks would fail the deciding line.
   - **Decision (lead away; told the orchestrator):** no G3 judged read yet. Its his-click twitch guard is the halt deploy,
     the same blocker as G1 v3, so the G3 judged read joins G1 v3 in waiting for settle's latch on main (latch-on as base). Its
-    never-in guard is the open question; see Questions.
+    never-in guard is the open question; see Questions below.
+- **Questions (asked the orchestrator, 2026-10-22 late evening; working on, not waiting):** should R36.6's per-cell "no more
+  never-in" count a squad main only gets in after 40 s as already marginal? If not, G3 must move the slowest squad less.
 - **G1 v2 judged: FAILS as filed** (R38.12; `g1-judged-builder0-4a765e6e2/README.md`): deciding all pass (click-cell places
   outside 84 -> 18, metres after leaving 6,223 -> 1,393, re-dealt 58 -> 0, contacts 14,004 -> 10,622); guards fail: crossing 3
   route twitch 5.8 -> 10.5 m, his 3-squad click twitch 2.3 -> 11.4 m, yard_open 177/192 identical. Stays OFF.
