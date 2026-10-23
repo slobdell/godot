@@ -297,6 +297,15 @@ static var GROUP_ROOM_REARMOST := OS.get_cmdline_user_args().has("--group-room=r
 static var GROUP_LEG_ROOM := OS.get_cmdline_user_args().has("--group-leg-room=starts")
 ## G2 (dev): `--group-route-line=on`: a shifted leg's column (and a gate's) stacks back along his clicked route.
 static var GROUP_ROUTE_LINE := OS.get_cmdline_user_args().has("--group-route-line=on")
+## G2 (dev): `--group-gate=main`: a waypoint passed through keeps today's gate (round 34's, abreast across the corner), not a
+## column (dev read 2, bde30e68e, terminus 3 west: the gate's column stood up the incoming street 47-93 m short of the
+## corner, and the drive on from there cut through another street: route off 66 -> 583 m).
+static var GROUP_GATE_MAIN := OS.get_cmdline_user_args().has("--group-gate=main")
+
+
+## G2: whether a gate (a waypoint passed through) may be laid as a column.
+static func gate_as_column() -> bool:
+	return GROUP_LAY and GROUP_LEGS and not GROUP_GATE_MAIN
 ## G2 (dev): `--group-leg-width=along`: a shifted leg is as wide as the narrowest width read along its drive (`path_back`,
 ## out to its farthest start): today's body stands only where its spread fits, and no rank is wider; not just its click (d2ed6ef10: on Terminus 5's east route the click stood in the
 ## plaza, so v3 kept the spread body and the squads took three streets).

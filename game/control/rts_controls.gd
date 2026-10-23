@@ -1988,7 +1988,7 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 	# Round 38 (G1): a gate whose places stand off the clear ground (its rear ranks are read at the gate's own width) is laid
 	# as the column a final click is, each rank on the clear ground at its own point.
 	var as_column := false
-	if SelectionSquads.GROUP_LAY and SelectionSquads.GROUP_LEGS and ground != null:
+	if SelectionSquads.gate_as_column() and ground != null:
 		var crosses_e := SelectionSquads.crosses_or_edge(crosses)
 		var path_back := func() -> PackedVector3Array: return Pathing.find_path(ground, prev, before)
 		var reached := func(p: Vector3) -> bool: return SelectionSquads.reached_from(prev, p, drive, crosses_e)
