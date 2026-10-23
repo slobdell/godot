@@ -72,6 +72,26 @@ that read as fire on the street; now x1.3 / 9 m (`FeedbackFx.SEGMENT_SPAN`, `SEG
 the wedges sit under the wheels, side and rear still apart. quick-remote builder0 6/0 (test_feedback_fx). Not changed (noted for
 him): the under-fire beam is fainter by design; the end look waits on his pick.
 
+## END STATE (2026-10-23): backlog done; everything merged
+
+**Merged to main, all green when named:** F1/F2 + F3 seam 70667a554 (main e1f558d83); F3 ON + hit-ring tightened c9a3c01c6
+(ec70d6b5c); portrait end card 2a5271b9f (937e7859c); F1 final, his pick A 66c46894c (aca357e9e); F5 823e507d8 (1dbfb9c1d).
+Every brief item is complete: F1 (his pick A, built final), F2, F3 (C38.4 passed, ON), F5 (his note), stretch (his picks in real
+fights: the hit ring tightened; the end card on a portrait phone).
+
+**Open, not started (for the next round; each is a design choice, not a fix):**
+- `--touch-map` (round 2's phone grammar, game/ui/tactical_map.gd) keeps its squad bar top centre and camera buttons top right
+  (`_layout_panels`): freeing the top there is a phone-layout redesign (where thumbs reach), worth a directions page first.
+- Perf has no judged line on any of my commits (perf-judge refused every time, builder0 busy at 1.4-2.7x); main's own check
+  judges it when builder0 is quiet. None of my changes adds a per-frame loop beyond HudLayout's few rect sums.
+- The sim runs on behind the end card (survivors keep fighting; the card shows the board at the finish).
+- The under-fire repair beam is fainter by design (`FeedbackFx.UNDER_FIRE_*`); raise it if he can't see it at his pose.
+
+**For the next agent:** clips and stills live in ~/projects/godot-feedback-endkeep/ (outside build/, which every remote copy-back
+resets); `make remote T=end-shots` (FB_RES=, FB_PRESET=, END_OUTCOMES='loss win', FB_FLAGS='--ui-touch') films planning, mid-fight,
+paused and the end card; `make remote T=feedback-fight` films his picks in a real fight. Lesson: send full checks to builder2
+when builder0's load is over ~20 (two of mine died at slot.sh's 90-minute cap).
+
 ## REPORT (2026-10-23, F1 final + F5)
 
 **F1 final (his pick A, picks/end 2026-10-23 01:41 UTC, no words; recorded on main 1424ef638):** the end card is the end of every
