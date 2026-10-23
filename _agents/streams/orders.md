@@ -51,7 +51,20 @@ Nothing (the shots go to him at the close).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-23 ~04:00 PDT)
+### NOW (2026-10-23 ~08:10 PDT)
+- **Bar G3 v4 filed** (f0a70f544, seeds 4601-4612). G3 v4 dev read 9 PASS (builder0, e518fd649, dev seeds 3804-3809, n 6).
+- **Check on f0a70f544** (builder0): `make native check exited 2`. 24 passed, 1 FAILED, 2 NOT JUDGED.
+  - The FAIL is remote-guard-test's `slot-light` setup: "the quiet window opened not in 30 s, at load 14.91 on 10
+    cores". Environmental, outside my paths; it gets re-run alone on a quiet box (R36.12) before the judged read.
+  - The NOT JUDGEDs are perf-judge (box busy, ratio 1.6-2.5x) and ai-scenarios brains-budget (unpinned).
+  - Scenarios 53/0.
+- **Bridge mouth** (builder0 traces, `references/round38/orders/mouth-trace-builder0-f0a70f544/`): latch ON fixed the
+  dev-seed never-ins. Main's s3958 squad 4 is seated inside squad 3's parked halt at the pinch and never moves again.
+  That is a round-39 item for the halt seat and give-way owners, not G1/G3.
+- **G1 v4** (`--group-rank-shift=half`, 087cd20b7): dev read 1 FAIL on guards (crossing 5 route never-in/twitch;
+  yard_open 91/96, but s3806's column is v3's too). A three-arm read (main v v3 v v4, dev seeds 3804-3809) is running.
+
+### EARLIER (2026-10-23 ~04:00 PDT)
 - **Check GREEN on a67afc951** (tree 23983ab5b: main e1f602fbf merged, latch ON; builder0, `make native check exited 0`):
   3112 passed, 0 failed; scenarios 53 passed, 0 failed; check 25 passed, 2 NOT JUDGED. perf-judge refused 3 times at
   ratio 2.2x (box busy). ai-scenarios brains-budget was unpinned. Neither is in my paths; both get re-run alone on a quiet box.
