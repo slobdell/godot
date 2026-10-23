@@ -30,6 +30,11 @@ What he will notice: when a match ends, he knows at once (who won, why), and cli
    the repair tick in `game/match/match.gd`, one guarded seam `--repair-under-fire` (OFF until its bar). Half rate (2.5 hp/s) under
    fire, full after 3 s quiet. File the bar (C38.4) before numbers; series on the guard lines on builder2 (native's tooling). The repair
    beam must show the slower mending.
+5. **F5 free the top of the screen (HIS NOTE, game_design.md *his playtest note on the top of the screen*, 2026-10-22 evening):**
+   move the scoreboard bug to the lower-left corner and refit the bottom elements (command bar, end card, touch HUD, phone portrait);
+   remove the announcer's on-screen text lines (voice stays); hide the camera pitch/debug readout from the player (behind a debug flag);
+   move hint lines ("PLANNING: select...") off the top. Shots before/after at his laptop preset, desktop and phone, LOOKED at; nothing
+   left in the top third during play except world markers. Presentation only (sim-baseline must not move). Builds ON (his decision).
 4. **Stretch:** any rough edge in his picks seen in real fights at his laptop preset.
 
 ## How to verify
