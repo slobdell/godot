@@ -1232,20 +1232,36 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
 		# Round 38 (G3): no place on another squad's halt (settle's S2 trace, crossing 5 click s3866).
 		var cleared := false  # G3 dev read 2 (his 5-squad click): a moved place kept, its vehicles re-dealt to another's
+		_cleared_pending = {}
 		if SelectionSquads.PLACE_CLEAR and ground != null and anchors.size() >= squads.size():
 			var before := SelectionSquads.places_cleared
-			anchors = SelectionSquads.place_clear(anchors, blocks, click,
+			var unmoved := anchors.duplicate()
+			var clear_blocks := blocks
+			if queue_leg and queue_starts.size() >= blocks.size():  # a shifted leg's drive starts where its last leg ends
+				clear_blocks = []
+				for k in blocks.size():
+					var moved_block: Dictionary = (blocks[k] as Dictionary).duplicate()
+					moved_block["center"] = queue_starts[k]
+					clear_blocks.append(moved_block)
+			anchors = SelectionSquads.place_clear(anchors, clear_blocks, click,
 					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
 					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p))
 			cleared = SelectionSquads.places_cleared > before
+			for k in anchors.size():
+				if anchors[k] != unmoved[k]:
+					_cleared_pending[_place_key(anchors[k])] = unmoved[k]
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
 		# R37.29: under a column every squad keeps its own vehicles; crossing squads swap places whole.
 		# G1: and on every group move under the switch, a body kept included (dev read 4141ae445: terminus 5 route re-dealt
 		# crews on the legs whose body stood).
-		# G3: and where a place was moved clear (a moved squad keeps its own vehicles).
-		if (column or cleared or (SelectionSquads.GROUP_LAY and (verb == "move" or verb == "attack_move"))) \
+		# G3: where a place was moved clear, no untangle at all: each squad keeps its own place, moved or not, and its own
+		# vehicles (dev read 2, his 5-squad click: today's untangle re-dealt a moved squad's crew to another's place; a
+		# whole-squad swap after the move sent crossing 5 route s3801's squad 3 to the far end, in at 62.5 s v 21.6).
+		if cleared:
+			pass
+		elif (column or (SelectionSquads.GROUP_LAY and (verb == "move" or verb == "attack_move"))) \
 				and anchors.size() >= squads.size():
 			var from_leg := {}  # G1: a shifted leg's vehicles set off from where their squad's previous leg ends
 			for i in queue_starts.size():
@@ -1268,6 +1284,8 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	# Round 34 (traffic O4): a further shift-waypoint makes the previous queued one in-between: re-laid as a gate.
 	if queue and verb == "move" and extra.has("to") and squads.size() > 1 and elements != null:
 		_relay_previous_waypoint(squads, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])))
+	_cleared_back = _cleared_pending  # G3: after the re-lay above used the previous order's
+	_cleared_pending = {}
 	# G2 (dev read 94b00992f, crossing 5 route: five squads stack ~230 m on a ~120 m route, so a rear squad drove the route
 	# out and 80 m back): a squad whose place on a shifted leg stands behind where its previous leg ends stops there instead,
 	# its previous waypoint moved to that place.
@@ -1355,6 +1373,12 @@ const ROUTE_RELAY_S := 2.0
 ## only where the first click's column moved some squad's place more than about a rank (a halt's depth + GAP_M).
 const RELAY_MOVED_M := 40.0
 static var first_legs_relaid := 0
+## G3 (dev read 5, builder0 ad737f7c0: every click cell clean, the never-ins and twitches left all on route cells whose last
+## places equal main's): a place G3 moved is for a halt. When a shift-click makes that leg a waypoint, the squad still driving
+## it goes back to the place it had before clearing. Moved place (snapped) -> the place before. Measurement: legs sent back.
+var _cleared_back := {}
+var _cleared_pending := {}  # this order's moves; they become `_cleared_back` after its own waypoint re-lay
+static var cleared_legs_back := 0
 ## G2: how far behind its previous leg's end a squad's place on a shifted leg may stand before that leg is cut short to it.
 ## Measurement: legs cut short so.
 const SHORT_LEG_M := 5.0
@@ -1402,6 +1426,28 @@ func _relay_first_to_today(element: Element) -> bool:
 			first_legs_relaid += 1
 			return true
 	return false
+
+
+## G3: a running leg G3 moved goes back to its place before clearing (it is a waypoint now). Whether it was sent back.
+func _send_cleared_back(element: Element) -> bool:
+	if _cleared_back.is_empty() or String(element.task.get("verb", "")) != "move" or not element.task.has("to"):
+		return false
+	var to: Array = element.task["to"]
+	var key := _place_key(Vector3(float(to[0]), 0.0, float(to[1])))
+	if not _cleared_back.has(key):
+		return false
+	var back: Vector3 = _cleared_back[key]
+	var aimed: Dictionary = element.task.duplicate(true)
+	aimed["to"] = [back.x, back.z]
+	for drop: String in ["halt_at", "halt_shape"]:
+		aimed.erase(drop)
+	element.retarget(aimed)
+	cleared_legs_back += 1
+	return true
+
+
+static func _place_key(p: Vector3) -> Vector2i:
+	return Vector2i(roundi(p.x * 10.0), roundi(p.z * 10.0))
 
 
 ## G2: his route back from `click`: [click, the click before, ..., where the squads stood], or [] when this click does not
@@ -1881,6 +1927,8 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 		# (planner's probe, O4 before/after: one squad queued behind its crews' orders left a 5-squad route with no gate at all).
 		# G2: unless the running waypoint is his plain group click given moments ago and laid as a column (`fresh`): the
 		# probe's route cells stacked a column at the first waypoint and the rear squads backed up before driving the route.
+		if held != null and is_instance_valid_element(held) and held.queued_tasks.is_empty():
+			_send_cleared_back(held)
 		if held == null or not is_instance_valid_element(held) or (held.queued_tasks.is_empty() and not fresh):
 			continue
 		var on_task := held.queued_tasks.is_empty()
