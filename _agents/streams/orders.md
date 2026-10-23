@@ -55,7 +55,25 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Check GREEN on a67afc951** (tree 23983ab5b: main e1f602fbf merged, latch ON; builder0, `make native check exited 0`):
   3112 passed, 0 failed; scenarios 53 passed, 0 failed; check 25 passed, 2 NOT JUDGED. perf-judge refused 3 times at
   ratio 2.2x (box busy). ai-scenarios brains-budget was unpinned. Neither is in my paths; both get re-run alone on a quiet box.
-- **Judged reads running** on builder0 light J4, both arms latch ON: G3 on 4101-4112, then G1 v3 on 3951-3962.
+- **G3 judged: FAILS as filed** (builder0 light J4, a67afc951 = tree 23983ab5b, latch ON, seeds 4101-4112, n 12 per
+  cell, 18 cells; `references/round38/orders/g3-judged-builder0-a67afc951/README.md`):
+  - deciding PASS: close pairs 52 -> 4 (line 13.0);
+  - offsets PASS: 0 of 864 rows > 40 m further, worst +25.4 m;
+  - contacts PASS: 14,677 -> 13,808.
+  - FAIL never-in 3 -> 4: crossing 5 route s4104, squads 4 and 5. Squad 4 is at the west bridge mouth -70/29.5, the same
+    spot as main's own s4108 never-in.
+  - FAIL twitch on crossing 5 click (20.4 -> 26.4) and his 5 click (13.8 -> 26.0). His click is identical every seed:
+    G3 moves squads 2 and 3, and squad 5 (not moved) twitches 26 m. With the latch ON, that is G3's re-deal, not the
+    deploy, which corrects my dev-read-8 reading.
+- **G1 v3 judged: FAILS as filed** (builder0 light J4, b55757fee = docs over a67afc951, seeds 3951-3962, n 12 per cell;
+  `references/round38/orders/g1-v3judged-builder0-b55757fee/README.md`):
+  - every deciding line PASS by a wide margin: places outside 99 -> 18, metres outside 6,567 -> 1,233, re-dealt 71 -> 0;
+  - contacts 15,614 -> 12,519; yard_open 192/192 identical.
+  - FAIL never-in on crossing 5 route (1 -> 2; s3951 squad 5 at the same bridge mouth) and locks 3 click (0 -> 1;
+    s3960 squad 3 placed 79.5 m from the click).
+- The west bridge mouth (-70/30) recurs in both arms and in main. That is where the stretch item (the bridge-mouth lay)
+  points. Next: dev seeds only. Diagnose (1) G3's neighbour re-deal on his click, (2) G1's 79.5 m place on locks 3
+  click, (3) the mouth never-in. Filing new bars is the orchestrator's call.
 
 ### EARLIER (2026-10-22 late evening)
 - **G3 (R38.15; Bar G3 filed 95dd05e36, seeds amended to 4101-4112, deciding line amended before any number):** dev reads only so far.
