@@ -70,6 +70,18 @@ an arm, the fight probe 18 of the re-filed 36 fights, the census; `references/ro
   coil -> herringbone squads: the R37.42 shape the lab test locks); 1 herringbone -> coil (terminus 5 route s3908 squad 4);
   3 are a squad with no halt on one side ('', the never-in rows the never-in guard already counts). S2 stays OFF; the
   orchestrator's call whether the bar stands as filed.
+- **S2 v3 (R38.15): the bar's reference chosen, the bar itself waits on its context run.** The re-read's first-shape FAIL stands
+  (R38.15). S2 v3 = the same arm, seeds 4001-4012 (no-fight), 4013-4024 (fight3/fight5), census 4001-4003, judged by
+  `settle_judge.py s2v3` (`make native settle-s2v3`). The first-shape guard is "first shape WRONG for the terrain at the
+  squad's first deploy ANCHOR" (DEPLOY_TRACE anchor_terrain; lanes/dense -> herringbone, open -> coil; no-halt / no-trace
+  rows reported, not counted; PASS iff wrong(latch) <= wrong(main)). The orchestrator first proposed the crews' standing
+  centroid: rejected because it is main's own centre read (main right by construction). Context run (`settle-s2v3-context`,
+  the re-read's seeds, both references) goes on builder2 after S1 v2. Then the bar is committed, then the series runs.
+  **For the lead (subjective, later):** the lane-mouth shots
+  `references/round38/settle/s2v3-lane-mouth-shots-laptop/` (laptop, 57feb5e17 tree, top-down at arrival + 5 s,
+  `locks-3-click-{main,latch}` s3906 squad 3 and `terminus-5-click-{main,latch}` s3912 squad 4; green and blue markers).
+  In both a squad stands where a lane opens out: the latch's herringbone hugs the lane edge, main's coil spreads into the
+  open. Which one looks right is his call.
 - **S1, what the rows say (judged rows, read after the verdict; not a re-judging):** the thing S1 changes, the deploy's own seat
   drive, fell hard: squads whose deploy leg (the longest seat drive at the deploy) is >= 25 m 73 -> 20 (-73 %; latch alone 71).
   The deciding line also counted the crews' movement after the 8 s place window, which S1 does not target: twitch >= 15 m in

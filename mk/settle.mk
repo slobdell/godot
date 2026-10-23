@@ -145,6 +145,6 @@ settle-s2v3-context: native-for-check import ## Round 38 (settle, R38.15): S2 v3
 	@echo ">> settle-s2v3-context on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | jobs $(SETTLE_V3_JOBS)" | tee $(SETTLE_V3_CTX)/header.txt
 	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ARMS="$(SETTLE_V3_ARMS)" ORDERS_PROBE_SEEDS="$(SETTLE_RR_SEEDS)" \
 		ORDERS_PROBE_JOBS=$(SETTLE_V3_JOBS) ORDERS_PROBE_DIR=$(SETTLE_V3_CTX)/probe > $(SETTLE_V3_CTX)/probe.out 2>&1 || true
-	@cd $(SETTLE_V3_CTX) && $(PYTHON) -c "import sys; sys.path.insert(0, '$(CURDIR)/tests/settle'); import settle_judge as sj, orders_judge as oj, os; \
+	@cd $(SETTLE_V3_CTX) && for ref in anchor stand; do SETTLE_V3_REFERENCE=$$ref $(PYTHON) -c "import sys; sys.path.insert(0, '$(CURDIR)/tests/settle'); import settle_judge as sj, orders_judge as oj, os; \
 		rows = oj.load('probe/rows.jsonl'); b, n = sj.keyed(rows, 'main'), sj.keyed(rows, 'latch'); c = [k for k in b if k in n]; \
-		l = []; sj.shape_wrong('probe', 'main', 'latch', b, n, c, l); sj.shape_differs('probe', 'main', 'latch', b, n, c, l); print('\n'.join(l))" | tee context.txt || true
+		l = []; sj.shape_wrong('probe', 'main', 'latch', b, n, c, l); sj.shape_differs('probe', 'main', 'latch', b, n, c, l); print('\n'.join(l))"; done | tee context.txt || true
