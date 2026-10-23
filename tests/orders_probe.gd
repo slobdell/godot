@@ -162,6 +162,7 @@ func _run() -> void:
 			squad["legs_outside"] = _legs_outside(legs, units)
 	for squad: Dictionary in _squads:
 		squad["anchor"] = _anchor_of(squad)
+		squad["anchor_element"] = _element_key(squad)
 		var ground := _tank(String(squad["units"][0]))
 		var anchor: Variant = squad["anchor"]
 		squad["path_len"] = SlotGround.path_length(ground, squad["start"], anchor) if anchor is Vector3 and ground != null else -1.0
@@ -199,6 +200,8 @@ func _run() -> void:
 				"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off",
 				"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "squad": squad["number"],
 				"crews": (squad["units"] as Array).size(), "start": _xz(squad["start"]), "anchor": _xz(anchor) if anchor is Vector3 else null,
+				# G3: the element the anchor was read from (two squads in one element read one anchor: not two places).
+				"anchor_element": squad.get("anchor_element", ""),
 				"anchor_offset_m": snappedf(_flat_d(anchor, _click), 0.1) if anchor is Vector3 else -1.0,
 				# How much nearer the click its anchor is than its start (negative: the squad is sent AWAY from the click).
 				"toward_m": snappedf(_flat_d(squad["start"], _click) - _flat_d(anchor, _click), 0.1) if anchor is Vector3 else 0.0,
@@ -898,6 +901,15 @@ func _end_state(squad: Dictionary) -> Dictionary:
 
 
 ## The squad's own anchor: its element's last task destination (the route's last waypoint for a queued route).
+func _element_key(squad: Dictionary) -> String:
+	var element := _controls.elements.of(String(squad["units"][0])) if _controls.elements != null else null
+	if element == null:
+		return ""
+	var names := Array(element.members())
+	names.sort()
+	return String(names[0]) if not names.is_empty() else ""
+
+
 func _anchor_of(squad: Dictionary) -> Variant:
 	var element := _controls.elements.of(String(squad["units"][0])) if _controls.elements != null else null
 	if element == null:

@@ -298,9 +298,12 @@ def main(argv):
         def close_pairs(arm):
             count = 0
             for squads in by_run(rows, arm).values():
-                at = [s["anchor"] for s in squads if isinstance(s.get("anchor"), list)]
+                at = [(s["anchor"], s.get("anchor_element", "")) for s in squads if isinstance(s.get("anchor"), list)]
+                # Two squads read from one element share its anchor: one body, not two places (dev read 2: every
+                # remaining g3 pair was 0.0 m apart).
                 count += sum(1 for a in range(len(at)) for c in range(a + 1, len(at))
-                             if math.hypot(at[a][0] - at[c][0], at[a][1] - at[c][1]) < 12.0)
+                             if not (at[a][1] and at[a][1] == at[c][1])
+                             and math.hypot(at[a][0][0] - at[c][0][0], at[a][0][1] - at[c][0][1]) < 12.0)
             return count
         never = lambda arm: sum(1 for r in rows if r["arm"] == arm and r["arrived_s"] < 0)
         bp, np_, bn, nn = close_pairs(base), close_pairs(new), never(base), never(new)

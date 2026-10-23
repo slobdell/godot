@@ -1231,17 +1231,22 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					func(p: Vector3, r: float) -> bool: return SlotGround.near_deck(p, r),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
 		# Round 38 (G3): no place on another squad's halt (settle's S2 trace, crossing 5 click s3866).
+		var cleared := false  # G3 dev read 2 (his 5-squad click): a moved place kept, its vehicles re-dealt to another's
 		if SelectionSquads.PLACE_CLEAR and ground != null and anchors.size() >= squads.size():
+			var before := SelectionSquads.places_cleared
 			anchors = SelectionSquads.place_clear(anchors, blocks, click,
 					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
 					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p))
+			cleared = SelectionSquads.places_cleared > before
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
 		# R37.29: under a column every squad keeps its own vehicles; crossing squads swap places whole.
 		# G1: and on every group move under the switch, a body kept included (dev read 4141ae445: terminus 5 route re-dealt
 		# crews on the legs whose body stood).
-		if (column or (SelectionSquads.GROUP_LAY and (verb == "move" or verb == "attack_move"))) and anchors.size() >= squads.size():
+		# G3: and where a place was moved clear (a moved squad keeps its own vehicles).
+		if (column or cleared or (SelectionSquads.GROUP_LAY and (verb == "move" or verb == "attack_move"))) \
+				and anchors.size() >= squads.size():
 			var from_leg := {}  # G1: a shifted leg's vehicles set off from where their squad's previous leg ends
 			for i in queue_starts.size():
 				for unit_name: String in squads[i]["units"]:
