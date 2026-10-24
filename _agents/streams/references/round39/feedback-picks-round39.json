@@ -1,0 +1,3 @@
+{"page": "https://claude.ai/artifact/7zsrhB5GG4hV4ckcCWaxGD", "collection": "picks", "doc_id": "round39", "read_by": "orchestrator 2026-10-24",
+ "data": {"at":"2026-10-24T06:58:38.677Z","fire":"none","lines":["moving_miss.01","moving_miss.02","moving_miss.03","pinned_slow.01","pinned_slow.02","pinned_slow.03"],"sight":"none","slowed":"amber","touch":"dock","words":""},
+ "applied": "F3 (main eda9a4620): slowed amber ON, touch dock default, unpicked looks deleted; six lines voiced behind --announcer-rules=on (lead gate: hear them before default ON)"}
