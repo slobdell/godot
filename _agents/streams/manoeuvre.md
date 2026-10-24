@@ -148,6 +148,25 @@ guards all-in time.
 code = c35cc93ac). Order: census OFF, census ON (6101-6112), orders probe both arms (6113-6124), then the judge. Out:
 `~/overnight-manoeuvre/r39/bar_m1/verdict.txt`. ETA ~16:30 PDT.
 
+### Bar M1 VERDICT: FAIL on G5 (never-in 2 -> 7); every other line PASS. M1 stays DEFAULT_OFF. (13:18 PDT; sent as CP39.1)
+Read on branch 879caa818 (game code c35cc93ac = main 76f42a9c3 merged clean, main GREEN builder0 3169/0), builder0 light J4, native,
+11:10-13:18 PDT; settle's DEPLOY_HOLD OFF (not in the tree), `--seat-route-clear` OFF. Files: `references/round39/manoeuvre/bar-m1/`
+(verdict.txt, chain_table.txt, the probe's rows/runs/table, both censuses' JAM_CENSUS lines).
+- A (census, terminus/locks/sumps x 6101-6112, 36 paired fights):
+  - **D chained seat drift: 1248.9 -> 42.7 m (-96.6 %), paired mean -33.5 m a fight, -8.4 se. PASS** (the rule does what it says:
+    chained parked give-ways 904 -> 504, out/n 1.38 -> 0.08 m; the 0-4 m bins unchanged).
+  - G1 give-way deaths 90 -> 106 (line +23.6). G2 stuck 260 -> 265 (line +32). G3 contacts 27012 -> 26969. G4 kill share worst
+    move 0.014, deaths 1541 -> 1563. All PASS. The rule fired 1390 times, skipped 5786 spots, refused 882 asks.
+- B (orders probe, 6113-6124, 144 paired runs): G6 all-in paired median +0.0 s, worst cell +0.0 s: PASS.
+  **G5 never-in 2 -> 7: FAIL.** The 5 new never-in runs, squad by its probe number (OFF arrival -> ON):
+  locks 3 click s6124 sq1 61.8 s; locks 3 route s6113 sq1 78.2 s; terminus 5 route s6117 sq5 45.7 s; s6118 sq1 35.3 s;
+  s6121 sq5 38.6 s. The 2 OFF never-ins (locks 3 click s6119, terminus 5 route s6115) stay never-in ON. Every other squad's
+  arrival in these runs is identical across the arms.
+  Read from the rows: each new never-in is the LAST squad in, the one that drives past squads already seated, and ends 4-7 m from
+  another squad's crew (end_foreign_m) and short of its goal. Under OFF, those squads were already late (35-78 s).
+  Candidate (untraced): seated crews that M1 holds near their seats close the lane a late squad used to get through.
+  Trace: `make manoeuvre-probe-wedge` (below).
+
 ### M3 (M7 re-file): NOT re-filed; stays written up as blocked (decision 2026-10-24, no new runs)
 Round 38's dev read (builder0 native, 53159326e v b5775051e, locks/gorge/terminus x 3801-3806, 18 fights) already has the
 seated half: SEATED screen give-ways (seat_m < 10) **v1 250 -> v2 241 (-3.6 %)**. Re-filing the deciding line on the seated half
