@@ -1277,8 +1277,15 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				clear_blocks.append(block)
 			var reach := SelectionSquads.PLACE_CLEAR_REACH
 			var clear_ahead := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"])
-			# G3 v6: the seat check (`place_clear`'s seats_hold) waits on settle's deploy preview (Status, requests).
+			# G3 v6: a moved place holds its squad's seats when settle's deploy preview there drives no crew further than at
+			# the place it was given (or SEAT_HOLD_M).
 			var seats_hold := Callable()
+			if SelectionSquads.PLACE_CLEAR_SEAT:
+				var given_preview := {}
+				seats_hold = func(k: int, at: Vector3) -> bool:
+					if not given_preview.has(k):
+						given_preview[k] = _deploy_preview_at(squads[k], blocks[k], unmoved[k], clear_ahead)
+					return SelectionSquads.seats_hold(given_preview[k], _deploy_preview_at(squads[k], blocks[k], at, clear_ahead))
 			anchors = SelectionSquads.place_clear(anchors, clear_blocks, click, clear_ahead,
 					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p) \
 							and not (reach and SlotGround.near_deck(p, SelectionSquads.PLACE_CLEAR_DECK_M)),
@@ -2056,6 +2063,37 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 			for key: String in ["halt_at", "halt_shape", "lay"]:
 				relayed.erase(key)
 	gates_laid += 1
+
+
+## G3 v6 (round 39; s5201's deploy trace, references/round39/orders/g3v6-trace-laptop-650e43521/): the deploy `squad` would
+## lay if it arrived at `at` on `heading`, by settle's ElementPlan.deploy_preview, the crews standing where they arrive: the
+## seats of the shape the doctrine moves in there, round `at`. {} for fewer than two crews.
+func _deploy_preview_at(squad: Dictionary, block: Dictionary, at: Vector3, heading: Vector3) -> Dictionary:
+	var members: Array = []
+	var faction := ""
+	for unit_name: String in squad["units"]:
+		var unit := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank if game_match != null else null
+		if unit == null:
+			continue
+		members.append({"name": unit_name, "unit": unit.unit_id, "role": Units.role_of(unit.unit_id), "position": unit.global_position})
+		faction = String(Units.PROFILES.get(unit.unit_id, {}).get("faction", ""))
+	if members.size() < 2:
+		return {}
+	var element: Element = squad.get("element")
+	var table: DoctrineTable = element.table if element != null and is_instance_valid_element(element) and element.table != null \
+			else DoctrineTable.for_faction(faction)
+	var flat := Vector3(at.x, 0.0, at.z)
+	var ground := ElementSituation.terrain_at(flat)
+	var pick := table.select({"task": "move", "threat": "none", "terrain": ground, "composition": ElementSituation.composition_of(members)})
+	var moving := String(pick.get("formation", block.get("shape", "wedge")))
+	if not TacticsFormation.NAMES.has(moving):
+		moving = String(block.get("shape", "wedge"))
+	var arrive := {}
+	for entry in TacticsFormation.place(members, moving, flat, heading, table.spacing(ground)):
+		arrive[String(entry["unit"])] = entry["to"]
+	for member: Dictionary in members:
+		member["position"] = arrive.get(member["name"], flat)
+	return ElementPlan.deploy_preview(members, flat, heading, table)
 
 
 func _squad_block(squad: Dictionary) -> Dictionary:

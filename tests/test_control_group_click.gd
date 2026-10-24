@@ -594,3 +594,13 @@ func test_g3v6_a_moved_place_must_seat_its_crews() -> void:
 	assert_eq(SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), any, Callable(), nowhere), places,
 			"nowhere seats: the place is kept")
 
+
+
+func test_g3v6_seats_hold_on_the_same_ground_and_no_longer_leg() -> void:
+	var given := {"shape": "herringbone", "spacing": 7.5, "worst_m": 6.7}
+	assert_true(SelectionSquads.seats_hold(given, {"shape": "herringbone", "spacing": 7.5, "worst_m": 8.5}), "same ground, leg inside the slack")
+	assert_true(not SelectionSquads.seats_hold(given, {"shape": "herringbone", "spacing": 10.0, "worst_m": 6.0}),
+			"s5201: lanes' 10 m spacing v dense's 7.5 re-seats")
+	assert_true(not SelectionSquads.seats_hold(given, {"shape": "coil", "spacing": 7.5, "worst_m": 6.0}), "another shape re-seats")
+	assert_true(not SelectionSquads.seats_hold(given, {"shape": "herringbone", "spacing": 7.5, "worst_m": 12.0}), "a longer deploy leg")
+	assert_true(SelectionSquads.seats_hold({}, {"shape": "coil"}), "no preview (one crew): holds")

@@ -618,11 +618,26 @@ static func _arc_of(line: PackedVector3Array, p: Vector3) -> float:
 ## were squads main only just gets in (527d62cd2).
 static var PLACE_CLEAR := OS.get_cmdline_user_args().has("--place-clear=on") or OS.get_environment("PLACE_CLEAR") == "on"
 ## G3 v6 (round 39; R38.51's trace, crossing 3 route s5201: v5 moved squad 2's place off squad 3's onto ground where its
-## halt did not seat, and the deploy re-seated it ~24 s in, 16-23 m of twitch). `place_clear`'s `seats_hold`: a moved place
-## must seat every crew without a re-seat (the caller's check), else it steps back along the squad's own leg. No caller
-## passes it yet, so there is no switch: a click-time estimate of the deploy from shapes alone read 11.0 m at s5201's moved
-## place v 13.0 at the given one (laptop 650e43521), because what differs is the deploy's own read at arrival (lanes v
-## dense under the halt, the crews' arrival shape). It needs settle's deploy as a pure preview.
+## halt did not seat, and the deploy re-seated it ~24 s in, 16-23 m of twitch). `--place-clear-seat=on`: a moved place must
+## seat every crew without a re-seat (the caller's check, `seats_hold`: settle's deploy preview), else it steps back along
+## the squad's own leg, else it is kept.
+static var PLACE_CLEAR_SEAT := OS.get_cmdline_user_args().has("--place-clear-seat=on")
+## G3 v6: a moved place whose deploy drives no crew further than this holds its seats whatever the given place's...
+const SEAT_HOLD_M := 8.0
+## ...else no further than this beyond the given place's.
+const SEAT_SLACK_M := 2.0
+
+
+## G3 v6: whether a moved place's deploy (`moved`, ElementPlan.deploy_preview's) holds the squad's seats as its given
+## place's (`given`) does: the same shape at the same spacing (s5201: lanes at 10 m v dense at 7.5 dealt the crews across
+## each other), and its worst leg no longer than the given's + SEAT_SLACK_M or SEAT_HOLD_M. An empty preview holds. Pure.
+static func seats_hold(given: Dictionary, moved: Dictionary) -> bool:
+	if given.is_empty() or moved.is_empty():
+		return true
+	if String(moved.get("shape", "")) != String(given.get("shape", "")) \
+			or absf(float(moved.get("spacing", 0.0)) - float(given.get("spacing", 0.0))) > 0.01:
+		return false
+	return float(moved.get("worst_m", 0.0)) <= maxf(float(given.get("worst_m", 0.0)) + SEAT_SLACK_M, SEAT_HOLD_M)
 ## Measurement (G3 v6): places that needed a move but found none that seats, kept, since start.
 static var places_kept_unseated := 0
 const PLACE_CLEAR_STEP_M := 4.0
