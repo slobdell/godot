@@ -66,10 +66,18 @@ waits on it); perf-judge of the native trig change on a quiet builder0 (main's o
     reads ~7,7xx, walk batch 1's merges (a77395a49, 3b2bce5eb, e7bb2adcb, 25baad035, ffec9488f, ba6a54c1b) for the first step.
   - The first launch (831ad5471) was stopped on a busy box: 6 of 6 attempts REFUSED (2.53-2.59x), nothing judged.
   - Prior (not a result): a laptop micro-bench puts CORE-MATH at 8-16 ns a call; its fma through libm's PLT costs ~0.5 ns.
-- **The full-check lock, DONE (3f1f35432; tools/** for it is the orchestrator's grant):** tools/full_check_lock.sh, a flock
-  on the builder, taken by remote.sh around every full check. builder_checks.sh counts the holder.
-  - test_full_check_lock 12/0 (20 two-claimer races, one winner each); shell-tools-test 33 suites (laptop).
-  - Full check of 3f1f35432 queued on builder0 (unit native-check-3f1f35432): the close's green hash when it lands.
+- **GREEN: 0bb755a4f** (builder0, `make check exited 0`, 3169 passed / 0 failed, 25 of 26 targets passed, the 26th
+  NOT JUDGED; 13 sim-baseline maps unmoved, determinism 258cc8b1c957a796). Perf-judge was NOT JUDGED (busy box, 3 refusals at
+  1.78-2.06x), and so was scenario_perf, which only perf-judge judges here. 1f4fdac27 after it is docs only.
+- **The full-check lock (tools/** for it is the orchestrator's grant):** tools/full_check_lock.sh, a flock on the builder,
+  taken by remote.sh around every full check; builder_checks.sh counts the holder.
+  - 0bb755a4f (feedback's finding: 3f1f35432's claim was the wrapper's alone): make inherits the claim; HUP/INT/TERM or a
+    dead ssh session (watched, also while queued) stops the check's group. Live on builder0: killing the local ssh stopped
+    the held command within 1 s and freed the lock.
+  - test_full_check_lock 18/0; shell-tools-test 34 suites (laptop).
+- **relay-smoke's stale host log (feedback's red at a2b560896), mk/net.mk (the orchestrator's grant):** logs are removed
+  before their process starts; waits read the process's own /proc/<pid>/fd/1. test_net_own_line 3/0. In 0bb755a4f's
+  check: host opened K735J, both clients NET_CHECK PASS.
 - **The 8952c3d64 run.sh row:** builder2 when doctrine frees it (~14:30 PDT, doctrine says). If it would still run when
   CP39.1 lands (~16:30), it waits until after orders' Bar G3 v6.
 **Orchestrator (R39.3):** it merges 8f018edf7 then bb8043686, then runs one main check; the trig perf line rides main's

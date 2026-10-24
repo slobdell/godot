@@ -47,8 +47,12 @@ run)
 		trap 'trap - HUP INT TERM; kill -TERM 0 2>/dev/null; exit 130' INT
 		trap 'trap - HUP INT TERM; kill -TERM 0 2>/dev/null; exit 143' TERM
 		if [ -n "${FULL_CHECK_LOCK_SESSION:-}" ]; then
-			( while kill -0 "$FULL_CHECK_LOCK_SESSION" 2>/dev/null; do sleep "${FULL_CHECK_LOCK_POLL:-5}"; done
-			  echo ">> full-check lock: the session (pid $FULL_CHECK_LOCK_SESSION) is gone: stopping this check" >&2; kill -HUP $$ ) 9>&- &
+			# SIGPIPE ignored: once the session is gone, stderr is a pipe with no reader, and writing the message killed
+			# the watchdog by SIGPIPE before it stopped anything (feedback's queued waiter, builder2, 2026-10-24).
+			( trap '' PIPE
+			  while kill -0 "$FULL_CHECK_LOCK_SESSION" 2>/dev/null; do sleep "${FULL_CHECK_LOCK_POLL:-5}"; done
+			  echo ">> full-check lock: the session (pid $FULL_CHECK_LOCK_SESSION) is gone: stopping this check" >&2
+			  kill -HUP $$ ) 9>&- &
 			watchdog=$!
 		fi
 	}
@@ -57,7 +61,13 @@ run)
 		guard
 		echo ">> full-check lock: another full check holds this builder ($(head -1 "$lock" 2>/dev/null)); waiting" >&2
 		t0=$(date +%s)
-		flock 9 || exit 2
+		# In the background, because bash runs a trap only when its foreground command returns: a queued waiter blocked
+		# in a foreground flock heard its dead session's hang-up only once the claim was free (feedback, builder2,
+		# 2026-10-24: a waiter outlived its stopped wrapper). `wait` is interrupted by a trapped signal. The lock is on the
+		# open file both share, so the child's claim is this script's too.
+		flock 9 & claimer=$!
+		while true; do wait "$claimer"; rc=$?; kill -0 "$claimer" 2>/dev/null || break; done
+		[ "$rc" = 0 ] || exit 2
 		echo ">> full-check lock: claimed after $(( $(date +%s) - t0 )) s" >&2
 	fi
 	# The holder line, rewritten in place (the flock is on the open file, so truncating through a path keeps it).
