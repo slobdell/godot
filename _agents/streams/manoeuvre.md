@@ -51,7 +51,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 ### CLOSE REPORT (round 39, 2026-10-24 PDT): DONE for the round
 **Green:** the M1 code is native's pair bb8043686 (builder2 full check 3143/0; merged to main, main 76f42a9c3 GREEN builder0
 3169/0, merged here as c35cc93ac). Since then the branch adds only Status, references and the trace tool (8981b769c). Per the
-orchestrator, that is gated by a builder0 light `quick` (hash below), not a full check. The orchestrator merges docs and references at
+orchestrator, that is gated by a builder0 light `quick`, not a full check: **quick PASSED on 708331859** (builder0 light,
+`>> remote: make quick ... exited 0`, 59 s: lint of probe_wedge.gd + wedge_trace.gd, native build, combat-smoke; no test touched). The orchestrator merges docs and references at
 the close.
 - **Backlog:**
   1. M1 `--giveway-chain`: built, twinned, census, s3866, bar. **FAIL on G5** (never-in 2 -> 7); deciding D -96.6 % at -8.4 se;
