@@ -2521,6 +2521,73 @@ static func _deploy_keep(members: Array, formation: String, anchor: Vector3, hea
 	return keep
 
 
+## Round 39 (settle, for orders' G3 v6): THE DEPLOY, PREVIEWED AT THE CLICK. Where a squad whose crews stand at `members`'
+## positions (each {"name", "unit", "position"}, plus "role" if known) would lay its halt if it deployed at `at` on
+## `heading`: the shape and spacing read as the deploy reads them (the terrain at the crews' centre, then at the anchor
+## while the latch re-lays: DEPLOY_LATCH_ANCHOR), the anchor stepped dry, the fit when DEPLOY_FIT is on, and the seats
+## dealt by the least total drive ("travel", main's deploy policy without the earlier seating it may keep; `ground`
+## (point, unit, anchor) -> Vector3 grounds each seat when given). Returns {"shape", "spacing", "terrain", "anchor",
+## "heading", "seats": {name: Vector3}, "worst_m", "total_m"}. PURE: no state written, no RNG drawn (the arena's terrain
+## pieces are read through ElementSituation's cache). `threat` "none" unless given.
+static func deploy_preview(given: Array, at: Vector3, heading: Vector3, table: DoctrineTable, ground: Variant = null,
+		threat := "none") -> Dictionary:
+	if given.is_empty():
+		return {}
+	var members: Array = []
+	for member: Dictionary in given:
+		var copy := member.duplicate()
+		if not copy.has("role"):
+			copy["role"] = Units.role_of(String(copy.get("unit", "")))
+		members.append(copy)
+	var centre := Vector3.ZERO
+	for member: Dictionary in members:
+		centre += Vector3((member["position"] as Vector3).x, 0.0, (member["position"] as Vector3).z)
+	centre /= float(members.size())
+	var read := {"members": members, "center": centre, "threat": threat, "terrain": ElementSituation.terrain_at(centre),
+			"composition": ElementSituation.composition_of(members), "tick": 0}
+	if ground is Callable:
+		read["ground_seat"] = ground
+	var lay := TacticsFormation.flat(heading)
+	var shape := String(_halt_pick(read, {}, table)["formation"])
+	var anchor := _dry_halt_anchor(at, members, shape, lay, table.spacing(String(read["terrain"])))
+	if DEPLOY_LATCH and DEPLOY_LATCH_ANCHOR:
+		for step in DEPLOY_LATCH_LAYS:
+			var there := ElementSituation.terrain_at(anchor)
+			if there == String(read["terrain"]):
+				break
+			read = read.duplicate()
+			read["terrain"] = there
+			shape = String(_halt_pick(read, {}, table)["formation"])
+			anchor = _dry_halt_anchor(at, members, shape, lay, table.spacing(there))
+	var spacing := table.spacing(String(read["terrain"]))
+	if DEPLOY_FIT:
+		var deploy := {"heading": lay, "anchor": anchor}
+		var turned := deploy_fit_turned
+		_deploy_fit(deploy, read, at, shape, spacing)
+		deploy_fit_turned = turned  # a preview is not a deploy
+		lay = deploy["heading"]
+		anchor = deploy["anchor"]
+	var deal := _fit_deal(members, shape, anchor, lay, spacing, read)
+	var seats := {}
+	var placed := TacticsFormation.place(members, shape, anchor, lay, spacing, {"halt": true, "corridor_m": INF, "layout": true})
+	var by_index := {}
+	for entry in placed:
+		by_index[int(entry["index"])] = clamp_to_arena((entry["to"] as Vector3) \
+				+ TacticsFormation.rotate(lay, deg_to_rad(float(entry["sector"]))) * FACE_LEAD)
+	for name: String in deal["keep"]:
+		var seat: Vector3 = by_index.get(int(deal["keep"][name]), anchor)
+		seats[name] = (ground as Callable).call(seat, String(_unit_of(members, name)), anchor) if ground is Callable else seat
+	return {"shape": shape, "spacing": spacing, "terrain": String(read["terrain"]), "anchor": anchor, "heading": lay,
+			"seats": seats, "worst_m": float(deal["worst"]), "total_m": float(deal["total"])}
+
+
+static func _unit_of(members: Array, name: String) -> String:
+	for member: Dictionary in members:
+		if String(member["name"]) == name:
+			return String(member.get("unit", ""))
+	return ""
+
+
 ## B8b: `at` stepped away from water, DEPLOY_INLAND_STEP_M at a time (up to DEPLOY_INLAND_MAX_M), until every seat of the
 ## halt (`shape` at `spacing` on `heading`) stands dry and on its anchor's bank: each step straight back from the seats
 ## that fail, the way the shape has to move. None found: `at`.
