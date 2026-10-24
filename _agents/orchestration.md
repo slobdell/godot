@@ -3960,3 +3960,8 @@ instrument that cannot lie about load — removal within one run — and let eve
      `build/flank_s5.mp4` was stale on the laptop with the box's size and mtime, so rsync's quick check skipped it and the sha256
      verifier failed the run (exit 5 over a green box check). `rsync -a` again did nothing; `rsync -a --checksum` fixed it. The
      box's verdict lines stood (they come from the box's stream, not the copied files); re-copy with --checksum, then quote build/.
+327. **Content he approved ships ON; opt-in flags are for unjudged behaviour.** (Round 39 close.) Feedback voiced his six approved
+     caller lines and parked them behind `--announcer-rules=on` "until he hears them"; his words: "why is announcer-rules a flag?
+     If we have new announcer scripts we should just turn them on." Rule for briefs: once he has approved an asset's text or look
+     and its check is green, it defaults ON (an `=off` escape is fine). Switches that default OFF stay for behaviour changes that
+     have not passed a bar.
