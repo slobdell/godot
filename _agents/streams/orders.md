@@ -55,7 +55,32 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-24)
+### CLOSE (round 39, 2026-10-24): every backlog item done; round-40 input below
+- **Green:** 632724c90 (builder2 full check, 3169/0, 24 passed + 3 NOT JUDGED), main 2518811d0 merged (CP39.1). HEAD's
+  descendants since then are docs, evidence and test tooling only (`tests/control/orders_bar.sh`, judge text). All of
+  orders' round-39 switches stay OFF: `--group-lead=drive`, `--group-route-corner=line`, `--place-clear-seat=on`.
+- **Backlog:**
+  1. G1 v5: built, judged, FAIL.
+  2. G2 v2c: built, dev-read. No bar this round; its block 6225-6236 is unused, and round 40 gets fresh blocks.
+  3. G3 v6: built, judged, FAIL.
+  4. Judged on CP39.1: done, in parallel per R39.8.
+  5. Stretch R38.44: not taken. G1 v5's failures are not the plain-click v route-leg trade-off.
+- **Round-40 input (traced causes; `references/round39/orders/bar-traces-builder0-e7c896c8f/README.md`):**
+  - **G1 his-5 twitch (28.4 m, all 12 seeds):** column gives Bravo the click, and Bravo_2 holds 3.83 m from its travel seat.
+    The deploy's all-in radius is 3.5 m (ORDER_ARRIVE), so the halt waits for DEPLOY_CAP_S (10 s), then deals on parked
+    crews. Fix: settle's trigger (count a holding crew within ~5 m as in). G1's ordering itself is fine.
+  - **G1 locks 5 outside 8 -> 8:** the column is not laid on s6204-6207 (rows identical to main). Why is untraced. With
+    those 8 the deciding line is 28 v 25; it would pass if the column engaged there.
+  - **G3 crossing 5 route never-in (s6213):** v6's step back along the squad's own leg parks it on the approach of the
+    squads still to come (Delta 28 m west, across Echo's road; Echo never in). Fix: no step back inside a later squad's
+    corridor; otherwise keep the given place. The s6220 twitch (cap deploy, 2 legs stepped back) is probably the same, but
+    not traced in detail.
+  - **G2 v2c:** re-read on CP39.1 before a bar. Its dev read 3's guard fails (end foreign, twitch) are the kind CP39.1 was
+    meant to fix.
+  - **Tooling:** `orders_bar.sh` runs a bar on either builder and re-runs a preempted part (it caught one builder2
+    preemption). `parked_redeals` is duck-excluded; `parked_ducks` is reported beside it.
+
+### NOW (2026-10-24, before the bars)
 - **GREEN: ebfe98d18** (builder0 full check `make native check`, load 6-12, 18 other godot): 3140 passed, 0 failed; scenarios
   53 passed, 0 failed, 3 pending; `>> remote: make native check exited 0`. All three switches OFF; main's behaviour unchanged.
 - **Orchestrator (2026-10-24):** Bars G1 v5 / G3 v6 recorded on main as filed at ebfe98d18. ebfe98d18 merges after settle's
