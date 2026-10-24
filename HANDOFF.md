@@ -25,6 +25,14 @@ contracts C39.0-C39.6 and the seed registry in `workstreams.md` *Round 39*; brie
 | **feedback** | `godot-feedback` (6) | Opus | the new rules show on screen; the phone map frees its top | F1 the rules he can see |
 | **native** | `godot-native` (4) | Opus | nothing alone: the rules-ON pairing base (CP39.0), same sim on every machine | N1 the rules-ON row |
 
+**ROUND 39 RUNNING (2026-10-24 ~10:30 PDT): main 76f42a9c3 GREEN on builder0** (`make check exited 0`, 3169 passed / 0 failed, 27
+targets ALL JUDGED, perf-judge PASS attempt 1, sim-baseline 13 maps unmoved) = batch 1: native 8f018edf7, pair bb8043686 (M1 OFF +
+twin), feedback d8f88b3ab (fog clip ON), doctrine 773412e49, settle 6ab14f1ac, orders ebfe98d18, one deploy_preview (d8f182d11).
+Rulings R39.1-R39.5 and bars in workstreams.md. FAILED: S1 route-clear, D2s dwell 1.0, D3 lab guard (SPLIT runs for the record,
+builder2 series to ~17:00 PDT). OPEN: manoeuvre M1 bar (6101-6124) -> CP39.1 -> orders G1 v5 / G3 v6; settle H v2 (6025-6048);
+feedback F3 merge (his picks + six voiced lines + rts_camera overview inset, R39.5). Close plan told to the lead: after orders'
+bars, or this evening if M1 fails.
+
 **LAUNCHED 2026-10-23 ~21:00 PDT (steps 1-2 done):** round-38 worktrees removed, branches renamed `round38/<s>`, builder0's
 `~/tank_squad/godot-<s>*` cleared (98 % -> 79 % disk, 22 GB free); builder2 was stopped, so its leftovers are still there (clear them
 when it next runs). The six round-39 worktrees exist at offsets per the table; the lab/guard side trees (`godot-*-guard`, `-m5*`,
