@@ -96,6 +96,7 @@ func _ready() -> void:
 	if not squads.is_empty():
 		selected_squad = squads[0].squad_name
 	set_tactical_view(rig == null)  # legacy flat map without an RTS camera; the tilted view with one
+	_hold_overview = LaunchFlags.from_environment().has("touch-overview")
 
 
 func _process(delta: float) -> void:
@@ -108,6 +109,8 @@ func _process_timed(delta: float) -> void:
 	if rig != null:
 		tactical_view = rig.is_overview()  # tracking can leave the overview on its own
 	_ping_left = maxf(0.0, _ping_left - delta)
+	if _hold_overview and not tactical_view:
+		set_tactical_view(true)  # captures only: the scripted orders' tracking leaves the overview on its own
 	_lift_frame()
 	if _formation_row != null and _formation_row.visible:
 		_formation_clock += delta
@@ -1051,6 +1054,8 @@ func _layout_bottom(screen: Vector2, h: float, picker_size: Vector2, card_size: 
 const GAP_PX := 6.0
 const MARGIN_PX := 10.0
 
+## Round 39: `--touch-overview` (captures only, make touch-shots FB_FLAGS=) holds the map in its overview.
+var _hold_overview := false
 ## Round 39 (dock, his pick): the overview's v_offset this map has applied to its camera (camera shake adds its own).
 var _lift_applied := 0.0
 
@@ -1060,7 +1065,12 @@ var _lift_applied := 0.0
 ## screen and lifted (Camera3D.v_offset) by half of it, nothing cut at the top (the far end matters most). A followed crew
 ## is framed at the screen centre, already clear of dock; the follow view is left alone.
 func _lift_frame() -> void:
-	if camera == null or rig != null:
+	if rig != null:
+		# The rig's own overview (R39.5): it keeps the bars' height clear; round 2's layout leaves it as it was.
+		rig.overview_inset_px = 0.0 if touch_rects.is_empty() else \
+				maxf(0.0, get_viewport_rect().size.y - float(touch_rects["text_floor"]))
+		return
+	if camera == null:
 		return
 	var fit := Vector2(1.0, 0.0)
 	if tactical_view and camera.projection == Camera3D.PROJECTION_ORTHOGONAL:

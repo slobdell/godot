@@ -373,6 +373,46 @@ func _apply() -> void:
 		camera.global_transform = RtsCamera.pose_at(_shown_focus, _shown_yaw, float(clear["distance"]), float(clear["pitch_deg"]))
 		camera.near = RtsCamera.cutaway_near(_shown_focus, _shown_yaw, float(clear["distance"]), float(clear["pitch_deg"]),
 				RtsCamera.perimeter_half())
+		if overview_inset_px > 0.0 and _before_overview != null:
+			_inset_overview()
+
+
+## Round 39 (feedback, R39.5): pixels at the bottom of the screen the overview keeps clear, for a touch layout whose bars
+## fill it (TacticalMap's dock sets it every frame; 0, the default, changes nothing: desktop framing is untouched).
+var overview_inset_px := 0.0
+
+
+## The overview's frame, fitted into the screen above the inset: the view tipped toward his own end and the lens
+## widened together, so the old frame's top edge stays on the screen's top (the far end) and its bottom edge lands on the
+## inset's top (overview_fit). The follow view never comes here.
+func _inset_overview() -> void:
+	var height := camera.get_viewport().get_visible_rect().size.y if camera.get_viewport() != null else 0.0
+	var fit := RtsCamera.overview_fit(deg_to_rad(camera.fov), height, overview_inset_px)
+	if fit.is_empty():
+		return
+	camera.fov = rad_to_deg(float(fit["fov"]))
+	camera.rotate_object_local(Vector3.RIGHT, -float(fit["tip"]))
+
+
+## {fov, tip} (radians) that put a frame of `fov` into rows 0 .. height - inset: tipped down by `tip`, its top ray on
+## row 0 and its bottom ray on row height - inset. Solved by bisection: tan(a + tip) / tan(a - tip) = (h/2) / (clear - h/2).
+## {} when the inset leaves under a quarter of the screen.
+static func overview_fit(fov: float, height: float, inset: float) -> Dictionary:
+	var clear := height - inset
+	if height <= 0.0 or inset <= 0.0 or clear < height * 0.25:
+		return {}
+	var a := fov * 0.5
+	var half := height * 0.5
+	var low := 0.0
+	var high := PI * 0.5 - a - 0.001
+	for i in 40:
+		var tip := (low + high) * 0.5
+		if half * tan(a - tip) - (clear - half) * tan(a + tip) > 0.0:
+			low = tip
+		else:
+			high = tip
+	var tip := (low + high) * 0.5
+	return {"fov": 2.0 * (a + tip), "tip": tip}  # the old top ray is the new frame's top edge
 
 
 ## X3 cutaway. At the lead's low camera a squad near the wall is framed from a camera that sits past the wall, inside

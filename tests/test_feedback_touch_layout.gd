@@ -99,3 +99,86 @@ func test_dock_keeps_his_crews_clear_of_the_bars() -> void:
 			node.queue_free()
 		await tree.process_frame
 	tree.root.size = before
+
+
+## R39.5: the real skirmish's Overview button is the RTS rig's (perspective, 77 degrees). The rig keeps the bars' height
+## clear in its overview (overview_inset_px, from TacticalMap): everything the old overview showed on screen now shows above
+## dock's bars, the far end included; desktop and round 2's layout get exactly the old pose; the follow view is never inset.
+## (The phone map hands the rig no vision region, so its overview centres on the arena: his crews at their start were off
+## the bottom of the screen before dock too; that is the old framing, kept.)
+func test_the_rigs_overview_shows_above_the_bars_what_it_showed() -> void:
+	var before := tree.root.size
+	var lens := RtsCamera.fov
+	RtsCamera.fov = RtsCamera.FOV_DEG  # his lens
+	var h := Match.ARENA_HALF_SIZE
+	var marks: Array = []
+	for i in range(-6, 7):
+		for j in range(-6, 7):
+			marks.append(Vector3(i * h / 6.0, 0.0, j * h / 6.0))
+	for screen: Vector2i in [Vector2i(2400, 1080), Vector2i(1800, 810), Vector2i(810, 1800)]:
+		tree.root.size = screen
+		var arena: Node = add_to_tree(ARENA.instantiate())
+		var game_match: Match = MATCH.instantiate()
+		add_to_tree(game_match)
+		game_match.load_doctrine(Match.Team.GREEN, Doctrine.load_file("res://doctrines/player_default.json")["doctrine"])
+		var camera := Camera3D.new()
+		add_to_tree(camera)
+		camera.make_current()
+		var rig := RtsCamera.new()
+		rig.camera = camera
+		rig.edge_pan = false
+		add_to_tree(rig)
+		var map := TacticalMap.new()
+		map.game_match = game_match
+		map.camera = camera
+		map.rig = rig
+		map.touch_layout = "top"  # first the old overview, round 2's layout (what desktop gets too: nothing sets the inset)
+		add_to_tree(map)
+		await wait_physics_frames(2)
+		(map._buttons["overview"] as Button).pressed.emit()
+		await wait_physics_frames(3)
+		await tree.process_frame
+		assert_true(rig.is_overview(), "%s: the Overview button opens the rig's overview" % screen)
+		assert_eq(rig.overview_inset_px, 0.0, "%s: round 2's layout hands the rig no inset" % screen)
+		assert_true(is_equal_approx(camera.fov, RtsCamera.fov), "%s: and the old lens (%.2f)" % [screen, camera.fov])
+		var old_at := marks.map(func(mark: Vector3) -> Vector2: return camera.unproject_position(mark))
+		map.touch_layout = "dock"
+		map._layout_panels()
+		await wait_physics_frames(2)
+		await tree.process_frame
+		var floor_y := float(map.touch_rects["text_floor"])
+		assert_true(rig.overview_inset_px > 0.0, "%s: dock hands the rig its bars' height (%.0f px)" % [screen, rig.overview_inset_px])
+		var shown := 0
+		for i in marks.size():
+			var was: Vector2 = old_at[i]
+			if was.y < 0.0 or was.y > screen.y or was.x < 0.0 or was.x > screen.x:
+				continue
+			shown += 1
+			var now := camera.unproject_position(marks[i])
+			assert_true(now.y >= -1.0 and now.y < floor_y, "%s: %s shown at %s is now at %s, above the bars (y < %.0f)" %
+					[screen, marks[i], was, now, floor_y])
+		assert_true(shown >= 10, "%s: setup: the old overview showed a good part of the arena (%d marks)" % [screen, shown])
+		print("FEEDBACK_OVERVIEW %s marks shown %d, bars from y %.0f, inset %.0f px, lens %.1f -> %.1f" % [screen, shown, floor_y,
+				rig.overview_inset_px, RtsCamera.fov, camera.fov])
+		(map._buttons["overview"] as Button).pressed.emit()  # back to the follow view
+		await wait_physics_frames(2)
+		await tree.process_frame
+		assert_true(not rig.is_overview() and is_equal_approx(camera.fov, RtsCamera.fov), "%s: the follow view keeps the rig's own lens" % screen)
+		# Desktop and round 2's layout: with no inset, the same state gives exactly the old pose and lens.
+		(map._buttons["overview"] as Button).pressed.emit()
+		map.set_process(false)
+		rig.set_process(false)
+		rig.overview_inset_px = 0.0
+		rig._apply()
+		var plain := [camera.global_transform, camera.fov]
+		rig.overview_inset_px = 178.0
+		rig._apply()
+		assert_true(not camera.global_transform.is_equal_approx(plain[0]), "%s: setup: an inset moves the overview" % screen)
+		rig.overview_inset_px = 0.0
+		rig._apply()
+		assert_true(camera.global_transform == plain[0] and camera.fov == plain[1], "%s: no inset: the old overview exactly" % screen)
+		for node: Node in [map, rig, camera, game_match, arena]:
+			node.queue_free()
+		await tree.process_frame
+	RtsCamera.fov = lens
+	tree.root.size = before
