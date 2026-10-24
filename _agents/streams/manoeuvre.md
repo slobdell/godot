@@ -76,3 +76,9 @@ doctrine's held both) when Claude Code reaped the local wrapper because the lapt
 available, 7.4 GiB total). I stopped the orphaned remote job (my `-light` folder only). So 14a10e719 has no builder0 result
 yet: only the laptop GDScript run of test_traffic_chain (5/5). Next: re-run that light job, then the census (step 2), once
 the lead OKs a restart.
+
+**2026-10-23 (orchestrator R39.2, main 784e32eff), noted:** CP39.0 pairing base landed: 8952c3d64 on builder2, 320/320 fights,
+blob 41 %, turtle 38 %; file `references/scoreboard/guards/8952c3d64.fights.jsonl` (stream/native 407a156cb). This is the base my
+bar's fight guards pair against. Native's givewaychain twin (N3): `pair/native-givewaychain` 37735bf4b, 0 mismatches, quick-remote
+pending. Once it's green, the `native_yield` bypass in `Traffic._chain_native` comes out on merge (native's mirror runs the rule).
+The laptop-v-builder pairing ban still stands until native's N4 merges. Still PAUSED on laptop memory (above).
