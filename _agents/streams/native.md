@@ -57,6 +57,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 it). **N3's pair: pair/native-givewaychain bb8043686** (builder2 3143/0), merged by the orchestrator beside manoeuvre's
 branch. **Left:** the scoreboard row's fights/moves/orders part for 8952c3d64 (run.sh, at a doctrine chunk pause; nothing
 waits on it); perf-judge of the native trig change on a quiet builder0 (main's own check).
+**Orchestrator (R39.3):** it merges 8f018edf7 then bb8043686, then runs one main check; the trig perf line rides main's
+own check on a quiet builder0. From now on only one stream runs Godot on the laptop at a time: wrap any laptop Godot run
+in `flock /tmp/tank-squad-laptop-godot.lock <cmd>`; everything else on the builders.
 **To playtest (the lead):** nothing changes on screen. `make skirmish SKIRMISH_FLAGS="--rules-off=sight,spread,pin_slow"`
 plays the old rules; `make trig-info` says which trig this machine runs.
 
