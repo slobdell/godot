@@ -25,6 +25,14 @@ contracts C39.0-C39.6 and the seed registry in `workstreams.md` *Round 39*; brie
 | **feedback** | `godot-feedback` (6) | Opus | the new rules show on screen; the phone map frees its top | F1 the rules he can see |
 | **native** | `godot-native` (4) | Opus | nothing alone: the rules-ON pairing base (CP39.0), same sim on every machine | N1 the rules-ON row |
 
+**UPDATE 2026-10-24 ~14:10 PDT: main 2518811d0 GREEN on builder0** (3169/0, 27 ALL JUDGED, perf-judge PASS 7,899 us/tick, 13 unmoved):
+batch 2 = doctrine d3b83c7ea (--duck=off), settle 8a5dec8dc (**DEPLOY_HOLD ON**, Bar H v2 PASS), native 0bb755a4f (full-check lock,
+net smokes' own-log waits). Then 7545c0d7c (native 342da8b23, the lock's watchdog fix; tools only, needs the next batch check).
+M1 FAILED (never-in 2 -> 7; traced: squads wedged behind seated crews M1 holds; round-40 directions in manoeuvre's Status);
+D3 powered FAILED (blob 39 -> 39 %); faction-matchup table = round-40 lead question (doctrine Status). R39.9: CP39.1 = main with
+DEPLOY_HOLD; orders' G1 v5 (builder0) + G3 v6 (builder2) running on tree 0fc1d7fb3. Settle, manoeuvre CLOSED. Open: orders' two
+verdicts, feedback cdadfb3e4's check (F3 + six lines + R39.5/R39.7), native's close-time trig A/B, doctrine D4 report.
+
 **ROUND 39 RUNNING (2026-10-24 ~10:30 PDT): main 76f42a9c3 GREEN on builder0** (`make check exited 0`, 3169 passed / 0 failed, 27
 targets ALL JUDGED, perf-judge PASS attempt 1, sim-baseline 13 maps unmoved) = batch 1: native 8f018edf7, pair bb8043686 (M1 OFF +
 twin), feedback d8f88b3ab (fog clip ON), doctrine 773412e49, settle 6ab14f1ac, orders ebfe98d18, one deploy_preview (d8f182d11).
