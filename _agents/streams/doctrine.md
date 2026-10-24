@@ -62,7 +62,20 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-24 ~01:10 PDT, in progress). Series running on builder2 since 00:08 (OFF arm, ~3.3 h an arm).**
+**Report (2026-10-24 ~02:30 PDT, in progress). Series running on builder2 since 00:08 (OFF arm, ~3.3 h an arm), tree
+773412e49 (green); then SPLIT, then D4 hull-down (report only), then the none line OFF / SPLIT (~14 h in all).**
+- **D2s FAILS at its check; reverted (e453dc541).** d1822fd27 (dwell 1.0) on builder0: `make native check exited 2`.
+  sim-baseline moved 9 of 13 maps as expected (foundry d98d9c0cb1105e22, yard ed3628c459f4cb7c, crossing fde86b02e13d8a2a,
+  locks d889ca119dad1a95, parade 7a79d1bd8d338a17, archipelago 32f7260f765864f0, cut 7faab9861e717fb0, docks
+  8bcba1d1566db68a, yard_open de7881ddcc5dbbf7; pit, terminus, sumps, gorge unmoved), but **scenario_cover fails twice**:
+  fights_from_cover hidden **32 %** of 40 s (bar 50 %; 86 % with the dwell at 2.0), shots 7; the hurt tank's longest hidden
+  **50 ticks** (bar 60). Trace (builder0 light, seed 1, dwell 1.0): the same loop to 20 s, then the crew drops COVER_FIRE for
+  ENGAGE and drives into the open, 43 -> 22 m from the gun. A one-second change in when sight grows tips the duel down a
+  different branch; I did not chase it into the cover AI. The dwell stays 2.0: a stopped crew reaches ~110 % at ~3 s, not his
+  ~2 s. **For the lead:** his "~2 s" number costs smart-looking cover fights today; it stays at ~3 s unless he asks.
+  Its series slot went to **D4** (`--cover-on=hulldown` on 773412e49, report only, no bar).
+- stream/doctrine's code = 773412e49's (`git diff 773412e49 HEAD` touches docs only).
+
 - **Trees:** D3 = **773412e49** (side branch `doctrine/d3-tree` = a24f4f298 + the ai_scenarios counts), **GREEN** builder0
   (`make native check exited 0`, 3135 passed / 0 failed, 3 NOT JUDGED for load). D2s = **d1822fd27** (stream/doctrine = D3's
   code + HALT_DWELL_SECONDS 1.0 + main's R39.1 docs), its full check running on builder0 (sim-baseline expected to move:
