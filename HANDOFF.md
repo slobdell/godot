@@ -33,7 +33,7 @@ failed; R38.39, R38.45, R38.51). **Round 38 v round 37 (native's row, R38.52):**
 then S1, G1 v4 (near/far place order) and G3 v5 (seat-safe moves) re-read; (2) G2 rear places on the route line at corners (R38.47);
 (3) a powered SPLIT series (R38.41); (4) trace o2's crossing re-deals before any Bar H re-file (R38.42); (5) machine-independent trig;
 (6) touch-map top panels (a directions page); (7) quiet-window line ~1.0 per core; `make skirmish` flag passthrough. Pairing base
-references/scoreboard/guards/686150ed2.fights.jsonl. **For him:** D3 says R1-R3 change fight length, not results (a feel call,
+references/scoreboard/guards/686150ed2.fights.jsonl. **His call (R38.55):** R1-R3 ship ON by default (doctrine flipping; merge alone + one main check) after D3 (
 R38.48); (lane-mouth shape withdrawn 2026-10-23: the R38.16 shot pairs barely differ and S2 v4 shipped on its measured bar). Close steps left: archive briefs to streams/archive/round38/, remove worktrees (his sessions
 first), the laptop's disk is at ~2.6 GB free (round 38's overnight logs ~1.1 GB can be archived at close).
 
