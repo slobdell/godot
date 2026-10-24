@@ -62,6 +62,24 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**D3 VERDICT (2026-10-24 10:28): FAIL; `--cpu-defend --cpu-defend-split` ships OFF. With the rules ON, SPLIT does nothing
+against the blob.** 773412e49 (green builder0 3135/0) both arms, builder2, `guard.sh` J14 GUARD_CHUNK=8, fresh seeds 6301-6340 +
+6401-6440, 800 fights a line an arm, 0 fights missing (2 attempts lost to a Spot preemption, re-run), `guard.py --pair OFF SPLIT`.
+Ruled (a) by the orchestrator: run as filed for the record, since the lab guard had already failed.
+- **Deciding:** blob 39 -> 39 % (+0.3, paired se 1.6; flips 72 to a loss / 74 to a win; McNemar p 0.60). **Not met.** The
+  -3 to -4.4 point lean of round 38's three series (rules OFF) is gone at 5x their n with the rules ON.
+- Second line: blob kr 0.74 -> 0.74 (+0.001, se 0.012). Holds.
+- G1: turtle 36 -> 31 % (-4.7, se 1.2, p 0.0002): DOWN, holds; median 193 -> 192 s.
+- **G2t FAILS:** turtle-line kills a fight 14.51 -> 13.82 (-0.69, se 0.16 = -4.3 se); losses -1.13 (se 0.20). Condemned
+  kills -1.30 (3.2 se), gangs -0.51 (2.3 se). At power, SPLIT's CPU fights a turtle less (D2c's 1.6 se at n 160 was this).
+- G2 outside 2 se: blob gangs median +7 s (2.3 se), blob law -8 s (2.7 se); turtle gangs median 186 -> 157 s (-5.8 se).
+- Lab guard: FAILED before the series (hold 22.7 -> 37.6 %). G3 (none line) reported when it lands; moot for shipping.
+- **Reading:** the turtle drop is the CPU winning on points by posting crews, not by fighting (fewer kills AND losses). Against
+  the blob nothing moves. Under R1-R3 a crew already stops to shoot (round 38's D1: a holding crew fires still); posting part
+  of the line on the ring adds nothing the rules don't already give. **The defend posture is not the lever with the rules ON.**
+  For round 40: D1/the base show the blob's remaining wins are faction matchups (syndicate blob v gangs CPU 86 %, law blob v
+  gangs 64 %; a gangs blob 13 %), which is army composition and balance, not doctrine.
+
 **Report (2026-10-24 ~02:30 PDT, in progress). Series running on builder2 since 00:08 (OFF arm, ~3.3 h an arm), tree
 773412e49 (green); then SPLIT, then D4 hull-down (report only), then the none line OFF / SPLIT (~14 h in all).**
 - **D2s FAILS at its check; reverted (e453dc541).** d1822fd27 (dwell 1.0) on builder0: `make native check exited 2`.
