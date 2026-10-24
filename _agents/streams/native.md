@@ -59,16 +59,30 @@ branch. **Left:** the scoreboard row's fights/moves/orders part for 8952c3d64 (r
 waits on it); perf-judge of the native trig change on a quiet builder0 (main's own check).
 **After the hand-over (2026-10-24, the orchestrator's asks):**
 - **Merged main 259926070** (0a34b4ceb). main 76f42a9c3 judged +8.8 % on builder0: 8,366 us/tick v 8952c3d64's 7,687.
-- **The trig cost A/B is built, its run DEFERRED to the orchestrator's go** (the round's close, when builder0 empties, ~20:00
-  PDT). `make remote-quiet T=trig-perf-ab`: libtank_native built cr v `NATIVE_TRIG=libm` (the only N4 change on glibc
-  >= 2.41), perf-judge per arm, 3 rounds alternating.
-  - Then, if cr ~ libm: `tools/judge/perf_ab_commits.sh 8952c3d64 <final main>` (remote-quiet per run). If 8952c3d64 still
-    reads ~7,7xx, walk batch 1's merges (a77395a49, 3b2bce5eb, e7bb2adcb, 25baad035, ffec9488f, ba6a54c1b) for the first step.
-  - The first launch (831ad5471) was stopped on a busy box: 6 of 6 attempts REFUSED (2.53-2.59x), nothing judged.
-  - Prior (not a result): a laptop micro-bench puts CORE-MATH at 8-16 ns a call; its fma through libm's PLT costs ~0.5 ns.
-  - Single readings, builder0 (the orchestrator's): 8952c3d64 7,687 (R38.55); 76f42a9c3 8,366 (idle 74 %, load 4.25);
-    2518811d0 7,899 (idle 51 %, load 5.34). Both mains have N4, so the +679 looks like single-reading spread. Not a verdict:
-    the A/B decides, and its summary now prints each arm's range as a % of its mean (a single reading's noise).
+- **The trig A/B, RUN (main 6a1c77752, builder0, `make remote-quiet T=trig-perf-ab`, 15:53-15:59 PDT, QUIET WINDOW: HELD,
+  load1 0.49-1.02, `exited 0`):** cr is SLOWER than libm by a little, in every round. Each arm n=3, every run PASS on
+  attempt 1 (none refused), idle 90-93 %:
+  | arm | ai_usec_per_tick (mean, sd, range, % of mean) | per_ref_ms (mean, sd) |
+  |---|---|---|
+  | cr (vendored CORE-MATH) | 7,862, sd 72, 7,763-7,932, 2.1 % | 10,084, sd 115 |
+  | libm (glibc 2.43's) | 7,693, sd 16, 7,670-7,707, 0.5 % | 9,876, sd 63 |
+  Paired cr-libm: +169 us/tick (+2.2 %; rounds +93, +225, +189), per_ref_ms +208 (+94, +403, +128). Attempts (round arm
+  us idle load): 1 cr 7763 91 % 0.61; 1 libm 7670 90 % 0.86; 2 libm 7707 93 % 0.96; 2 cr 7932 91 % 1.03; 3 cr 7891 93 %
+  0.94; 3 libm 7702 93 % 1.10. Summary: build/trig-perf-ab/summary.txt.
+  - **The +679 at 76f42a9c3 is NOT trig:** trig explains ~170 at most, and main 6a1c77752's own check (cr) read 7,693, 6 from
+    8952c3d64's 7,687. The 8,366 (idle 74 %, load 4.25) was a noisy single reading.
+  - **8952c3d64 v 6a1c77752 NOT run (my call, the orchestrator left it to me):** its condition (cr ~ libm) failed, and the
+    single readings already agree to 6 us; at n=3 its expected difference (~+170 from trig, inside cr's own 169 range)
+    would not separate.
+  - **Open, a proposal (not done):** on glibc >= 2.41 the vendored copies buy nothing (libm is the same correctly rounded
+    code and gives the same bits) and cost ~2 %. A likely cause: CORE-MATH's fma goes through libm's PLT as a call (built
+    without -mfma); glibc's own builds pick an FMA variant at load. Options: build the trig with an FMA target clone, or
+    resolve to libm's functions at load when glibc >= 2.41. Each needs the twin and trig known-answer tests again. n=3:
+    the sign held in 3 of 3 rounds, but the size wants a 5-round rerun before anyone spends on it.
+- **The copy-back's same-size stale file (the orchestrator's ask, flank_s5.mp4): GREEN e398f0d20.**
+  copyback_verify.sh re-copies a failed file once from the box with `rsync --checksum` and re-checks everything; remote.sh
+  passes the box's folder. test_copyback_verify 27/0 (a planted same-size, same-mtime stale file; the mutant without
+  --checksum fails 3). shell-tools-test builder0 light lane `exited 0`, 34 suites.
 - **GREEN: 0bb755a4f** (builder0, `make check exited 0`, 3169 passed / 0 failed, 25 of 26 targets passed, the 26th
   NOT JUDGED; 13 sim-baseline maps unmoved, determinism 258cc8b1c957a796). Perf-judge was NOT JUDGED (busy box, 3 refusals at
   1.78-2.06x), and so was scenario_perf, which only perf-judge judges here. 1f4fdac27 after it is docs only.
@@ -87,8 +101,24 @@ waits on it); perf-judge of the native trig change on a quiet builder0 (main's o
 - **relay-smoke's stale host log (feedback's red at a2b560896), mk/net.mk (the orchestrator's grant):** logs are removed
   before their process starts; waits read the process's own /proc/<pid>/fd/1. test_net_own_line 3/0. In 0bb755a4f's
   check: host opened K735J, both clients NET_CHECK PASS.
-- **The 8952c3d64 run.sh row:** builder2 when doctrine frees it (~14:30 PDT, doctrine says). If it would still run when
-  CP39.1 lands (~16:30), it waits until after orders' Bar G3 v6.
+- **The 8952c3d64 scoreboard row: DONE, 390ae171a** (builder2, 15:51-16:06 PDT, workload and probes from 6a1c77752,
+  SCORE_JOBS=14, `make native scoreboard-run exited 0`, verdict ok: 40 of 40 fights, 48 moves, 36 orders; SCRIPT ERROR 0).
+  Every line is inside its noise v round 38's 686150ed2. The largest moves: blob wins 47 -> 41 % (+-10), the blob's kill
+  ratio 0.85 -> 0.78 (+-0.09), stuck deaths 6.38 -> 5.83 (+-2.33). The guard-line noise column re-sized from the newest
+  read (blob +-7 -> +-10, turtle +-16 -> +-12). The run took 15 min, not the 1.5 h I planned around.
+
+**CLOSE (round 39, 2026-10-24 ~16:10 PDT): every item done, nothing running, nothing waiting on a gate.**
+- Backlog N1-N5 and the stretch: done before the hand-over (8f018edf7). The orchestrator's asks since then:
+  - The trig A/B (R39.10): cr +169 us/tick v libm.
+  - The full-check lock: 0bb755a4f, then 7d1078f0d.
+  - relay-smoke's own-log waits.
+  - The copy-back --checksum re-copy: e398f0d20, main a910f397a.
+  - The 8952c3d64 row: 390ae171a.
+- Green hashes: 0bb755a4f (full check, builder0), 7d1078f0d and e398f0d20 (tools-only gates, builder0). Later commits are
+  Status and references only.
+- For round 40: the trig FMA fix (low priority, a 5-round A/B first). See the A/B entry above.
+- Nothing of mine runs on builder0 or builder2. My scratch worktree ../godot-native-cb is removed; ../godot-native-score
+  (run.sh's own) stays, as run.sh expects.
 **Orchestrator (R39.3):** it merges 8f018edf7 then bb8043686, then runs one main check; the trig perf line rides main's
 own check on a quiet builder0. From now on only one stream runs Godot on the laptop at a time: wrap any laptop Godot run
 in `flock /tmp/tank-squad-laptop-godot.lock <cmd>`; everything else on the builders.
