@@ -96,8 +96,6 @@ func _ready() -> void:
 	if not squads.is_empty():
 		selected_squad = squads[0].squad_name
 	set_tactical_view(rig == null)  # legacy flat map without an RTS camera; the tilted view with one
-	if LaunchFlags.from_environment().has("touch-overview"):
-		set_tactical_view.call_deferred(true)  # round 39: captures of the overview under dock (make touch-shots FB_FLAGS=)
 
 
 func _process(delta: float) -> void:
