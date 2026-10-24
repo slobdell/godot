@@ -62,6 +62,56 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**FINAL REPORT, round 39 (2026-10-24 ~16:10 PDT). GREEN: d3b83c7ea** (builder2 `make native check exited 0`, 3169 passed /
+0 failed; NOT JUDGED: perf-judge (builder2 isn't a judging box), scenario_perf (loaded), remote-guard-test (quiet window)).
+Merged as main 40959ffd0. Commits after it touch only this brief (and main's merges). Earlier green: 773412e49 (builder0
+3135/0, the series tree, merged as main 76f42a9c3).
+
+| Item | Result |
+|---|---|
+| D1 rules-ON base read | DONE. Blob 47 -> 41 %, turtle 41 -> 38 % (CP39.0, 320 paired). The blob's remaining wins are faction matchups (table below). |
+| D2 his numbers | DONE. Spread 4.0x and pin-slow 40 % match. Sight 85/110 % matches, but 110 % comes at ~3 s, not ~2 s. |
+| D2s dwell 2.0 -> 1.0 | FAILED at its full check (fights_from_cover hidden 86 -> 32 %); reverted. Dwell stays 2.0. |
+| D3 powered SPLIT | FAIL; ships OFF. Blob 39 -> 39 % (1600 fights an arm); G2t -4.3 se; lab guard +14.9 pts. |
+| D4 hull-down, rules ON | Report: no effect (blob 39 -> 39, turtle 36 -> 36; ~1 round a fight strikes cover). |
+| D5 peek loop under R1 | DONE. R1 doesn't break it; the scenario's window was too short. fights_from_cover unpinned; crossing promoted. |
+| Stretch: CPU low-cover seats | NOT BUILT. Gate (2 se, or cover_struck >= 8) unmet: D4 reads ~1. |
+| Settle's request | DONE. `--duck=off` restored (47ce8d229, in d3b83c7ea). |
+
+- **What round 40 should try first.** D2/D2b/D2c/SPLIT, R1-R3 and hull-down each moved the whole blob line by 0-6 points,
+  and none changed the shape of the faction table. A gangs CPU still loses to any blob (72 %), and a syndicate CPU almost
+  never does (12 %). The lever is the armies, not how the CPU commands them. So: (1) a read, with no build, on the existing
+  1600 fights: per faction, the dealt army and its kills/losses by unit type. Which gangs units die without trading? What
+  does syndicate's blob have? That needs a per-unit tally in GUARD_RESULT (a probe, `tests/ai_scenarios/guard_line.gd`, which
+  is native's). (2) Then his call: unit balance or composition is a design-pillar question (fixed units, his "the problem is not the
+  units, but the rules" from Q10). Ask it in player terms, e.g. "a gangs army loses whether it charges (13 %) or defends (28 %
+  of blobs held): change what gangs fields, or how strong it is?". (3) Doctrine's own follow-up only if he keeps the units:
+  a faction-aware CPU (gangs plays to its strengths: ambush and hold tables per faction) on these seeds' OFF arm as the base.
+- **Decisions I made:** D5 changed the scenario's window, not the loop (the loop is B1's no_loaded_peek, by design). D2s's
+  check failure counted as a bar failure (the cover scenarios are the "what it could break" guard), with no dig into the cover AI.
+  The series shared one OFF arm across all its arms. D4 took D2s's series slot.
+- **Questions for the lead:** (a) R1's timing. He said ~2 s to full sight; today it's ~3 s. Making it ~2 s made a crew by
+  a wall come out and fight in the open (scenario_cover). Keep ~3 s? (Recommendation: yes.) (b) The faction table is
+  round 40's lead question (the orchestrator has it).
+- **Requests to other streams:** none open. For round 40, a per-unit kills/losses tally in guard_line's GUARD_RESULT (native's).
+- **Known issues:** scenario_cover's duels are sensitive to small sight-timing changes (D2s), so read them with that in mind
+  for any sight or cover change. A full check sharing builder0 with another hit slot.sh's 5400 s cap (1a6ab3536's, superseded).
+- **Playtest:** nothing new by default (`--duck=off` is a control arm). SPLIT stays playable OFF:
+  `make skirmish SKIRMISH_FLAGS="--cpu-defend --cpu-defend-split"` (C39.6). The faction gap to try: a syndicate army
+  blobbing a gangs CPU, then a gangs army blobbing a syndicate CPU.
+- **Raw data:** ~/doctrine-guard-raw/773412e49-{off,split,hulldown}/{blob,turtle} (1600 fights each); scripts
+  ~/doctrine-runs/r39-*.sh; the lab ~/doctrine-runs/r39lab-{off,split}. Side branch `doctrine/d3-tree` (773412e49) is merged;
+  its worktree and builder0 folders are removed. builder2 freed 15:50 PDT.
+- **Merge notes:** shared-path edits are only the GRANT/owned ones: tests/ai_scenarios/scenario_cover.gd and
+  scenario_scout_suppress.gd (D5), tests/baselines/ai_scenarios_count.txt (55,0,3,0, as native's 4b62d2186), tests/rules/
+  test_rules_sight.gd's dwell case (net: the half-second halt; the new 2 s case was reverted with D2s), game/tactics/
+  tactics_flags.gd (`--duck=off`). game/tank/tank.gd is unchanged on net.
+
+**D4 read (2026-10-24 15:50; report only, no bar):** `--cover-on=hulldown` v OFF, 773412e49, builder2, the series' seeds, 800
+fights a line, paired: blob 39 -> 39 % (+0.1, se 0.8; flips 13 / 14), kr flat; turtle 36 -> 36 % (-0.3, se 0.2; 3 / 1); kills
+and length flat on every faction except turtle-gangs median 186 -> 169 s (-16, se 2). Rounds that strike cover: 0.92 a blob
+fight, 1.03 a turtle fight (R38.48's rules-OFF read: 0.85 / 1.24). Hull-down stays OFF; the stretch gate is unmet.
+
 **ROUND-40 CANDIDATE: the blob still wins by faction matchup, not by doctrine (R39.6's request; no new runs).** Source: the
 series' OFF arm = the rules-ON base on fresh seeds (773412e49, builder2, 6301-6340 + 6401-6440, 800 blob + 800 turtle fights).
 Cells: guard (blob / turtle) win %, (n, binomial se in points; it ignores per-seed army clustering, so read it as a floor).
