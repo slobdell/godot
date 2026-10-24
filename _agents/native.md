@@ -980,3 +980,62 @@ and the hold (`not switched_off("yieldhold")`) are both on. `_begin_yield` retur
 The swap (`i_give_way and yield_fit_on() and _yield_unfit_last and ask(...)`) follows a false `_begin_yield`, so it needs
 `_yield_unfit_last` true. It is reachable only under `--nav-off=yieldhold`, where the GDScript drives. The C++ keeps the
 swap lines one for one so the mirror stays a pair (ruled by the orchestrator, round 33).
+
+## Machine-independent trig (round 39, N4): the design, then what proved it
+
+**The problem (R38.25).** glibc 2.41 made `atan2f acosf asinf atanf tanf` correctly rounded (CORE-MATH). The laptop runs 2.39,
+builder0 and builder2 run 2.43, so the same TankCommand differs by an ulp and a jam grows it into a different fight. Pairs across
+machines were forbidden, and the laptop had no sim-baseline line at all.
+
+**The choice.** Make every machine compute the *correctly rounded* result. It is unique, so any correct implementation gives
+the builders' numbers bit for bit, and nothing on the builders moves: no sim-baseline line, no pairing base, no guard file.
+- Rejected: one shared double-precision shim (`(float)atan2((double)y, (double)x)`) on every machine. Double rounding is
+  wrong on a few inputs in 2^24, so the builders' sims would move, and every base filed would go stale (N1's among them).
+- Rejected: a pinned libm binary, or patching the engine binary's DT_NEEDED (`patchelf`). Both are heavier, and the second
+  edits the pinned Godot.
+- **Sources:** CORE-MATH (MIT), the same code glibc 2.41+ ships, vendored unedited in `native/src/trig/core-math/` at
+  gitlab.inria.fr/core-math/core-math `0ce0cbc15935e24c656280e5a46c34e89f301b7a` (2026-10-20).
+  - sha256: atan2f fa6ad803..., acosf 3972539b..., asinf 4049d40e..., atanf 29032ad8..., tanf f58f91f3....
+  - Their only libm calls are exact operations (fma, fmaf, sqrt, roundeven, nanf; feraiseexcept on a NaN), which are the
+    same on every glibc.
+- **Native** (`native/src/trig/tank_trig.c`, `TANK_TRIG_HIDDEN`): the five defined *hidden* inside libtank_native. Its own
+  calls, and godot-cpp's `Math::atan2` inlined into it, bind there at link time; `nm -D` shows no float trig imported. So
+  the RTLD_DEEPBIND trap of R38.25 doesn't arise, and the library needs nothing from the box it runs on.
+- **Engine** (`mk/native.mk`, glibc < 2.41 only): the same file, built exported as `.tools/trig/libtank_trig-<sha>.so` at
+  make's parse time (one cc call, flock'ed, ~0.3 s once). Every process make starts gets `LD_PRELOAD`, and
+  `SIM_BASELINE_KEY=glibc-2.43`, because the machine now hashes like the builders.
+  - On 2.41+ nothing changes: no preload, libm is already CORE-MATH.
+  - `TRIG=system` turns it off (a pre-N4 laptop read). `make trig-info` says which trig runs.
+  - A Godot started by hand, outside make, runs the system libm. Prefix it with `LD_PRELOAD=$(make -s trig-info …)`, or
+    go through make.
+- **Cost.** One more preloaded library in the laptop's processes. CORE-MATH's float trig costs about what glibc's does
+  (it IS glibc's on the builders). Measured below.
+- **Not covered:** the web build (emscripten's musl libm) and Android (bionic). Neither is a sim we pair; the native
+  library on Android does carry the same hidden five.
+
+**What proved it (2026-10-23, tree of the N4 commit, before its check).**
+- **`trig-check`, CORE-MATH v the system libm**, exhaustive over all 2^32 inputs for acosf/asinf/atanf/tanf, plus 4e8
+  atan2f pairs (half uniform bits, half game-like |v| < 4096):
+  - **builder0 (glibc 2.43): 0 differ in every function.** So the vendored code is the builders' libm, result for result.
+  - **laptop (glibc 2.39):** acosf 5,422,146 differ; asinf 4,581,700; atanf 21,089,464; tanf 83,411,250; atan2f
+    76,410,115 of 4e8 (19 %).
+- **`trig-digest`, the same lines on both machines** (exhaustive for one argument, the counter-based 4e8 pairs for two):
+  - identical across laptop and builder0: sinf, cosf, sincosf (both outputs), expf, logf, powf and every cr_ function.
+  - differ across them: only the system acosf/asinf/atanf/tanf/atan2f.
+  - So the five are the whole problem; the double functions were already shown equal (R38.25).
+- **End to end, `make sim-baseline` on the laptop** (native ON, 13 dealt maps, read against the builders' glibc-2.43 lines):
+  - with the shim: **passed, 13 maps unmoved**;
+  - control `TRIG=system` (engine on the laptop's libm, native already CORE-MATH): **FAILED, 10 of 13 moved** (foundry,
+    locks and cut held).
+- **Tests:**
+  - `tests/test_native_trig.gd` (in make test): Vector2.angle() on an input 2.39 rounds 1 ulp low. It passes under the
+    preload and on the builders, and FAILS with TRIG=system on the laptop (seen: 3fc90fda v 3fc90fdb).
+  - `tools/test_trig.sh` (shell-tools-test): which glibc gets the preload, and that libtank_native imports none of the five.
+- **Cost** (`trig_check bench`, ns a call, one thread, sys v cr):
+  - laptop, while a sim-baseline ran: acosf 22.2/18.8, atanf 15.4/13.6, tanf 21.6/18.5, atan2f 29.3/26.0.
+  - builder0 at load 32: acosf 13.4/11.7, atanf 9.6/7.5, tanf 10.4/9.6, atan2f 14.0/18.3.
+  - Indicative only (both boxes loaded), but no function costs meaningfully more. The perf-judge line on a quiet builder0
+    is the real check of the native half.
+- **So, from N4 on:** a laptop run through make is the builders' sim, and the R38.25 rule against pairing a laptop read
+  with a builder read is lifted for runs that went through make. `make trig-info` says which trig ran. sim-baseline
+  stays per machine key, and on the laptop that key is now glibc-2.43.

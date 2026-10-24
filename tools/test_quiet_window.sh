@@ -19,10 +19,11 @@ bad() { fail=$((fail + 1)); printf '  FAIL %s\n     %s\n' "$1" "${2:-}"; }
 # Round 33 overnight (native, item 3): the live cases sample real processes against the wall clock. On builder2 at load
 # 94 (53 foreign godot) two failed ("our own are not foreign", "records once the window opens"). On a loaded box
 # (1-minute load >= QW_LOADED_PER_CORE per physical core: tools/loaded.sh, round 38) such a miss is NOT JUDGED, as
-# perf-judge refuses; on a quiet box it is a FAIL as before. The reason goes to $NOT_JUDGED_FILE when check's target names one.
+# perf-judge refuses; on a quiet box it is a FAIL as before. Round 39 (N5): 1.0 per core, not the bounds' 1.5: these cases
+# wait for a live window to open, they judge no bound, so the lower line costs no judging power. The reason goes to $NOT_JUDGED_FILE when check's target names one.
 timed_bad() {
 	local box
-	if box=$(bash "$loaded" "${QW_LOADED_PER_CORE:-1.5}"); then
+	if box=$(bash "$loaded" "${QW_LOADED_PER_CORE:-1.0}"); then
 		notjudged=$((notjudged + 1))
 		printf '  NOT JUDGED %s (%s): %s\n' "$1" "$box" "${2:-}"
 		[ -n "${NOT_JUDGED_FILE:-}" ] && echo "quiet-window: $1 at $box" >> "$NOT_JUDGED_FILE"
