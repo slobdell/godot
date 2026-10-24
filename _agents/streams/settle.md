@@ -68,6 +68,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   which orders' probe counts as a parked re-deal. Not confirmed: `--duck=off` no longer exists (requested from doctrine via the
   orchestrator). **No Bar H re-file:** its re-deal line counts duck moves (R38.42's rule: the trace changes it). References:
   `references/round39/settle/o2-redeal-trace-builder0/`.
+- **Stretch (re-deals after a loss), dev read** (builder0 light, 15ec5b830, fight probe locks/crossing/terminus x 3-squad click x
+  dev seeds 3891-3902, n 36 fights an arm; REDEAL_TRACE = the halt's OWN seat moves > 6 m, before ducks): main 144 re-lays after a
+  loss (185 crews moved), 0 from any other cause; `--deploy-hold=on` 0. Fights: his kills 4.86 -> 5.42, his losses 7.92 -> 7.36, CPU
+  losses 4.97 -> 5.56 a fight. Bar H v2 (deciding on REDEAL_TRACE, not the probe's parked_redeals) needs a fresh seed block: asked.
 - **Orders' request done:** `ElementPlan.deploy_preview` (4066132c4, quick-remote builder0 132/0), pure; orders told.
 
 ### S1 route-clear lab (builder0 light, n 1 per run, orders' probe; `make settle-lab`)
