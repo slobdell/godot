@@ -49,6 +49,7 @@ NATIVE_GDEXT     := $(NATIVE_BIN)/tank_squad.gdextension
 NATIVE_JOBS      ?= $(shell nproc)
 NATIVE_CPUS      ?=
 NATIVE           ?= on
+NATIVE_TRIG      ?= cr
 CMAKE            ?= cmake
 NATIVE_TOOLCHAIN := $(shell command -v $(CMAKE) >/dev/null 2>&1 && command -v c++ >/dev/null 2>&1 && echo yes || echo no)
 # Round 34 (N4): every Godot that make starts knows whether a library is expected here, so a twin that finds none FAILS
@@ -86,7 +87,7 @@ NATIVE_ENV := GODOT=$(GODOT) TOOLS_DIR=$(TOOLS_DIR) DOWNLOADS=$(DOWNLOADS) GODOT
 	GODOTCPP_SHA256=$(GODOTCPP_SHA256) GODOTCPP_URL=$(GODOTCPP_URL) GODOTCPP_SRC=$(GODOTCPP_SRC) \
 	GODOTCPP_BUILD=$(GODOTCPP_BUILD) GODOTCPP_LIB=$(GODOTCPP_LIB) NATIVE_FP_FLAGS="$(NATIVE_FP_FLAGS)" \
 	NATIVE_DIR=$(NATIVE_DIR) NATIVE_BUILD=$(NATIVE_BUILD) NATIVE_BIN=$(NATIVE_BIN) NATIVE_SO=$(NATIVE_SO) \
-	NATIVE_GDEXT=$(NATIVE_GDEXT) NATIVE_JOBS=$(NATIVE_JOBS) NATIVE_CPUS=$(NATIVE_CPUS) CMAKE=$(CMAKE)
+	NATIVE_GDEXT=$(NATIVE_GDEXT) NATIVE_JOBS=$(NATIVE_JOBS) NATIVE_CPUS=$(NATIVE_CPUS) CMAKE=$(CMAKE) NATIVE_TRIG=$(NATIVE_TRIG)
 
 .PHONY: native-first-tick-sync
 .PHONY: native native-off native-for-check native-info native-bench native-proof native-sizing native-price native-clean native-tp-headless
@@ -293,7 +294,7 @@ native-android: native ## Cross-compile the native library for Android arm64-v8a
 	GODOT=$(GODOT) TOOLS_DIR=$(TOOLS_DIR) DOWNLOADS=$(DOWNLOADS) NDK_VERSION=$(NDK_VERSION) NDK_SHA256=$(NDK_SHA256) \
 		NDK_URL=$(NDK_URL) GODOTCPP_SRC=$(GODOTCPP_SRC) GODOTCPP_API=$(GODOTCPP_BUILD)/api/extension_api.json \
 		GODOTCPP_VERSION=$(GODOTCPP_VERSION) NATIVE_FP_FLAGS="$(NATIVE_FP_FLAGS)" NATIVE_DIR=$(NATIVE_DIR) \
-		NATIVE_JOBS=$(NATIVE_JOBS) NATIVE_CPUS=$(NATIVE_CPUS) CMAKE=$(CMAKE) bash $(NATIVE_DIR)/build_android.sh
+		NATIVE_JOBS=$(NATIVE_JOBS) NATIVE_CPUS=$(NATIVE_CPUS) CMAKE=$(CMAKE) NATIVE_TRIG=$(NATIVE_TRIG) bash $(NATIVE_DIR)/build_android.sh
 
 # Round 24 (N4): where the in-contact tick goes, headless on builder0 (no display there): his Sumps at NATIVE_TPH_SIZE a
 # side with leaders, `--native-tick-profile=NATIVE_TP_WINDOW` (every sub-lap on), one run per seed, then
@@ -439,6 +440,13 @@ trig-check: $(TRIG_CHECK_BIN) ## N4: CORE-MATH's five float trig v this machine'
 
 trig-digest: $(TRIG_CHECK_BIN) ## N4: one digest line per float libm function; compare the lines across machines
 	env -u LD_PRELOAD $(TRIG_CHECK_BIN) digest
+
+# The orchestrator's ask (main 76f42a9c3, +8.8 % ai_usec_per_tick v 8952c3d64): N4's native trig cost, by removal. The
+# library built cr (as shipped) v NATIVE_TRIG=libm, perf-judge per arm, TRIG_AB_ROUNDS (3) rounds in alternating order, on
+# a quiet builder0: `make remote T=trig-perf-ab`. The library is left cr. -> build/trig-perf-ab/summary.txt
+.PHONY: trig-perf-ab
+trig-perf-ab: import ## N4: perf-judge with the native trig cr v libm, alternating, TRIG_AB_ROUNDS=3 (builder0) -> build/trig-perf-ab/
+	tools/judge/trig_perf_ab.sh $(GODOT) $(SIM_HZ) $(BUILD_DIR)/trig-perf-ab
 
 trig-info: ## N4: which trig this machine's Godot runs (cr = the builders' result; system = its own libm)
 	@echo "TRIG glibc $(TRIG_GLIBC) | $(if $(TRIG_OLD_LIBM),older than 2.41,2.41+ (libm is CORE-MATH))| TRIG=$(TRIG) | LD_PRELOAD=$(or $(LD_PRELOAD),none) | sim-baseline key $(or $(SIM_BASELINE_KEY),glibc-$(TRIG_GLIBC))"
