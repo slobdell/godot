@@ -141,13 +141,21 @@ func test_the_rigs_overview_shows_above_the_bars_what_it_showed() -> void:
 		assert_true(rig.is_overview(), "%s: the Overview button opens the rig's overview" % screen)
 		assert_eq(rig.overview_inset_px, 0.0, "%s: round 2's layout hands the rig no inset" % screen)
 		assert_true(is_equal_approx(camera.fov, RtsCamera.fov), "%s: and the old lens (%.2f)" % [screen, camera.fov])
-		var old_at := marks.map(func(mark: Vector3) -> Vector2: return camera.unproject_position(mark))
 		map.touch_layout = "dock"
 		map._layout_panels()
 		await wait_physics_frames(2)
 		await tree.process_frame
 		var floor_y := float(map.touch_rects["text_floor"])
-		assert_true(rig.overview_inset_px > 0.0, "%s: dock hands the rig its bars' height (%.0f px)" % [screen, rig.overview_inset_px])
+		var inset := rig.overview_inset_px
+		assert_true(inset > 0.0, "%s: dock hands the rig its bars' height (%.0f px)" % [screen, inset])
+		# The same rig state with and without the inset (the rig is still easing into the overview on a fast machine).
+		map.set_process(false)
+		rig.set_process(false)
+		rig.overview_inset_px = 0.0
+		rig._apply()
+		var old_at := marks.map(func(mark: Vector3) -> Vector2: return camera.unproject_position(mark))
+		rig.overview_inset_px = inset
+		rig._apply()
 		var shown := 0
 		for i in marks.size():
 			var was: Vector2 = old_at[i]
@@ -158,6 +166,8 @@ func test_the_rigs_overview_shows_above_the_bars_what_it_showed() -> void:
 			assert_true(now.y >= -1.0 and now.y < floor_y, "%s: %s shown at %s is now at %s, above the bars (y < %.0f)" %
 					[screen, marks[i], was, now, floor_y])
 		assert_true(shown >= 10, "%s: setup: the old overview showed a good part of the arena (%d marks)" % [screen, shown])
+		map.set_process(true)
+		rig.set_process(true)
 		print("FEEDBACK_OVERVIEW %s marks shown %d, bars from y %.0f, inset %.0f px, lens %.1f -> %.1f" % [screen, shown, floor_y,
 				rig.overview_inset_px, RtsCamera.fov, camera.fov])
 		(map._buttons["overview"] as Button).pressed.emit()  # back to the follow view
