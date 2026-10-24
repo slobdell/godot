@@ -52,9 +52,20 @@ F1's and F2's directions pages, once filed.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**CLOSED 2026-10-24: round 39 done.** cdadfb3e4 (green builder0: 27 targets all passed, ALL JUDGED, 3176/0) merged as main
+eda9a4620. In it: F1 audit and fixes, F2 directions page, F3 his picks (slowed amber ON; touch dock default), the stretch's six
+voiced caller lines behind `--announcer-rules=on`, R39.5 (the rig's overview clears dock's bars), R39.7 (the phone overview
+frames his force). Lead gates (in HANDOFF): he hears the caller lines before they default on; the portrait order-preview
+line floats mid-screen. For the next agent: builder-side checks from trees before main 7545c0d7c survive a stopped local
+wrapper (kill the remote PID); test a rig's overview from skirmish's real start (`rig.frame` squad one at START_ZOOM), since
+the overview zoom is min(0.92, the follow view's cap) and a start at the arena centre caps it stale.
+
 **REPORT 2026-10-24 ~10:10: F3 + stretch built (4ce6759b8, 7567d3753); full check owed after main's batch-1 check is green
 and merged in (the orchestrator's order).** builder0 `make quick` exited 0, 261 passed / 0 failed (7567d3753's tree, every
 test the diff since 906557c06 touches + lint). d8f88b3ab (the fog fix) is in main's batch-1.
+- **GREEN: cdadfb3e4 (main 2518811d0 merged + F3 + stretch + R39.5 + R39.7 + the lift fix), builder0, 2026-10-24:** `make remote
+  T=check` exited 0, "27 targets, all passed, ALL JUDGED"; test 3176 passed / 0 failed (6 shards); perf-judge JUDGED PASS;
+  sim-baseline 13 maps unmoved, determinism 258cc8b1c957a796; 3611 s. This is the hash to merge (later commits: Status only).
 - **Full check, a2b560896 (main 76f42a9c3 merged + R39.5), builder0, 2026-10-24 ~12:00: RED, not from this stream.**
   builder0 was shared with another check (perf lock held 300 s; 50 min to 4/26 targets) and the slot killed it at
   5400 s: `test` and `remote-guard-test` were Terminated, not failed; 11 NOT RUN. `relay-smoke` read room WU2K7 from
