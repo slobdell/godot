@@ -431,7 +431,9 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	if leg and ROUTE_CORNER:
 		for block: Dictionary in blocks:
 			rearmost = maxf(rearmost, _arc_of(road, block["center"]))
-	var room := rearmost + (0.0 if (leg and GROUP_LEG_ROOM) or GROUP_ROOM_REARMOST else step)
+	# G2 v2 (dev read 4ce8784d5, terminus 5 avenue: one step behind the rearmost start put squad 4 back at the army's
+	# start, 122.7 m off his route): on a leg, no rank behind its squads' rearmost start.
+	var room := rearmost + (0.0 if (leg and (GROUP_LEG_ROOM or ROUTE_CORNER)) or GROUP_ROOM_REARMOST else step)
 	# G2 v2: and never further back than the road runs (his route's first click): the ranks squeeze instead.
 	if leg and ROUTE_CORNER and road.size() >= 2:
 		room = minf(room, _arc_of(road, road[road.size() - 1]))
