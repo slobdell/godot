@@ -52,6 +52,17 @@ F1's and F2's directions pages, once filed.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT 2026-10-24 ~01:30: green hash to merge d8f88b3ab** (`make check` builder0 exited 0, 3144 passed / 0 failed, 25 passed +
+2 NOT JUDGED: perf-judge refused at 2.3-2.5x busy, scenario_perf unpinned; sim-baseline unmoved on every map). **ON:** the fog fix
+(F1a). **OFF until his picks:** rule looks, touch layouts. **At a lead gate:** F1/F2 picks + caller lines on the page; F3 builds
+them when the orchestrator relays (db `picks/round39`: sight/fire/slowed/touch/lines/words). Orchestrator messaged with the hash.
+**Next steps on his picks:** turn the picked look's default on in FeedbackLook.parse_rules / TouchLayout.from_flags (and delete
+the unpicked looks, as round 37/38 did), re-film at his preset; voice the approved lines (`make announcer-generate APPROVED=1
+ONLY=...`), wire `moving_misses` / `pinned_slow` events in MatchEventAdapter + AnnouncerMemory behind `--announcer-rules=on`.
+**Known issues:** the sight `edge` look can't be filmed in the staged shot; the sight ring draws over rooftops (2D overlay);
+on the phone map's portrait layout the order-preview line floats mid-screen (below the top third).
+**Merge notes:** no shared files; TacticalMap's bars are BoxContainer (were HBoxContainer).
+
 **2026-10-24 ~00:10: F1 + F2 directions page filed; waiting on his picks (lead gate). Full check queued on 6f793958f.**
 - **Page:** https://claude.ai/artifact/7zsrhB5GG4hV4ckcCWaxGD (db `picks/round39`: sight / fire / slowed / touch / words; empty
   at filing). Rule looks filmed with `make remote T=feedback-shots FB_SLOTS=sight,fire,slowed` (191185d7a; fire at 0fc88183a
