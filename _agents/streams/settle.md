@@ -58,9 +58,11 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-24)
-- **GREEN: 6ab14f1ac** (builder0, `make native check exited 0`, 3,145 passed / 0 failed, 27 targets ALL JUDGED, sim-baseline unmoved
-  on every map, 3,419 s). Everything past main is OFF by default.
+### Report (2026-10-24, close)
+- **GREEN (ship hash): 8a5dec8dc** = 2478e2eef (DEPLOY_HOLD ON, main f1fb16131 merged) + docs. builder2 (load 32.6 at start,
+  doctrine's D4 beside it), `make check exited 0`, **3,169 passed / 0 failed**, 25 targets passed + 2 NOT JUDGED (perf-judge and
+  ai-scenarios' CPU budget: builder2 is not a judging machine), **sim-baseline 13 maps unmoved** (the hold does not reach its
+  paths). Earlier green: 6ab14f1ac (builder0, 3,145/0, all OFF; merged to main).
 - **S1 route-clear v2: FAILED its bar; stays OFF** (`--seat-route-clear`; series on 6ab14f1ac's tree, builder0 light, J 4, seeds
   6001-6024, 576 squads an arm + 36 + 36 fights an arm; `>> remote: make native settle-s1c ... exited 0`, verdict FAIL). Deciding:
   never-in runs on the 5-squad cells 1 -> 3, three NEW (terminus 5 click s6003, terminus 5 route s6003, crossing 5 route s6009) and
@@ -72,7 +74,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   (3.6, 75.1) -> (-0.6, 57.9), down Alpha's lane at x 4-7; route s6003: Delta_1 (3.2, 80.0) -> (19.1, 74.4) across the junction
   Echo needed). The clear judges where a seat STANDS, not the drive to it, and the 7 m corridor is judged from the centre line
   in lanes narrower than that. Next (a later round): judge the crew's leg to its cleared seat against the same corridor, and
-  only clear when the leg is shorter than the one it replaces; trace the three runs in time first. References:
+  only clear when the leg is shorter than the one it replaces; trace the three runs in time first. **Static check of that
+  mechanism (the filed deploy traces, no run): it does not discriminate.** Crews whose leg to their seat (> 6 m) passes within
+  7 m of a passer's route: the never-in runs 3 (terminus click s6003), 4 (terminus route s6003), 7 (crossing route s6009); runs
+  that got in on the same cells 0, 9, 9, 8, 7. So no trace-backed S1 v2 design yet: the next step is a time trace of the stuck
+  squad (where its crews stop, and what stands there) on those three runs. References:
   `references/round39/settle/s1-route-clear-builder0/`.
 - **Item 2 (`--deploy-fit=street` on top of 1): not run** — the brief's rule (no new bar if 1 fails). The lab's `fitclear` arm
   (table below, n 1) is the only read.
@@ -88,8 +94,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   an arm; `>> remote: make native settle-h2 ... exited 0`): REDEAL_TRACE re-lays after a loss 288 -> 0 (367 crews moved -> 0),
   other causes 0 -> 0; his kills 5.39 -> 5.31, his losses 6.99 -> 6.64, CPU losses 5.44 -> 5.33 a fight (all within 1.645 se, 0
   runs unstarted). Reported: parked_redeals 172 -> 100, reseats 244 -> 1. Shipped ON at 2478e2eef (main f1fb16131 merged in;
-  `--deploy-hold=off` = round 38's re-lay). References `references/round39/settle/h2-deploy-hold-builder0/`. **Full check of the
-  ship hash: see the green line above.**
+  `--deploy-hold=off` = round 38's re-lay). References `references/round39/settle/h2-deploy-hold-builder0/`.
 - **Stretch (re-deals after a loss), dev read** (builder0 light, 15ec5b830, fight probe locks/crossing/terminus x 3-squad click x
   dev seeds 3891-3902, n 36 fights an arm; REDEAL_TRACE = the halt's OWN seat moves > 6 m, before ducks): main 144 re-lays after a
   loss (185 crews moved), 0 from any other cause; `--deploy-hold=on` 0. Fights: his kills 4.86 -> 5.42, his losses 7.92 -> 7.36, CPU
