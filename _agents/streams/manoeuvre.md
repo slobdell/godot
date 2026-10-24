@@ -163,4 +163,4 @@ game-code commit until the series ends.
 `tests/manoeuvre/wedge_trace.gd` now records, for each wedged tick, the partner: the friendly hull touched, else the nearest friend
 ahead within 8 m. Each is classed `state/way/mutual`, and `tests/manoeuvre/partner_table.py` tables it over round 37's target
 (touching, net < 0.5 m, >= 3 s). Laptop smoke only (f22e662e7, locks 6640, 90 s: 250 episodes, 2 target). The trace runs on
-builder0 light (`native manoeuvre-wedge-trace`, locks/terminus/sumps x round 37's 6640-6663) once the bar series frees the lane.
+builder0 light (`native manoeuvre-wedge-trace`, locks/terminus/sumps x my round-38 dev block 7001-7008, a DEV trace: the registry allows only round-38 dev blocks for reuse, so not round 37's 6640-6663) once the bar series frees the lane.
