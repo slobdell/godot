@@ -100,6 +100,12 @@ block: ask the orchestrator first.
   a line an arm: turtle-line CPU `hold` OFF 22.7 % v SPLIT 37.6 % (+14.9 v bar +10). SPLIT cannot ship from D3; its powered arm
   runs for the record (R39.4). Series on builder2: OFF (773412e49, green builder0 3135/0) -> SPLIT -> D4 hull-down report-only ->
   none lines; ends ~14:00 PDT 2026-10-24.
+- **D3 RESULT (powered series): FAILED, SPLIT stays OFF.** 773412e49 (green builder0), builder2, 6301-6340 + 6401-6440, 800
+  fights a line an arm, paired, none missing. Deciding: blob 39 -> 39 % (+0.3, se 1.6; flips 72/74; McNemar p 0.60). G1 turtle
+  36 -> 31 % (-4.7, se 1.2) holds. G2t FAILS: turtle-line kills -0.69 a fight (-4.3 se), losses -1.13. G2 outside 2 se: blob gangs
+  median +7 s, blob law -8 s, turtle gangs -29 s (5.8 se). Doctrine's read: with R1-R3 ON a crew already halts to shoot, so posting
+  part of the line adds nothing v the blob; the defend posture isn't the lever. Round-40 lead: the blob's remaining wins sit in
+  faction matchups (syndicate blob v gangs CPU 86 %, n 70; a gangs blob wins 13 %): composition/balance. None line DROPPED (R39.6).
 - **S1 route-clear (settle, filed 2026-10-23 at daea2cefe's code; settle.md *Bar S1 route-clear*): RESULT FAILED.** Seeds
   6001-6024, 6ab14f1ac's tree (green builder0 3145/0), builder0 light J4, `make native settle-s1c exited 0`. Deciding: 5-squad
   never-in 1 -> 3 (all new: terminus 5 click s6003, terminus 5 route s6003, crossing 5 route s6009). Every guard passed (all-in 25.8
@@ -157,6 +163,9 @@ block: ask the orchestrator first.
   read: lifting it pushes the far ground off the top). Verify by a capture of the REAL skirmish's Overview button at the three
   phone sizes; if the rig's tracking defeats a capture flag, a test that holds the rig's overview and asserts his crews above the
   bars counts.
+
+- **R39.6 (2026-10-24 ~11:00 PDT):** D3 is decided (FAIL), so its none line (G3, a guard for a ship that can't happen) is dropped;
+  builder2 goes to native's 8952c3d64 run.sh row and the trig perf attribution's builder2 needs, once D4 hull-down ends.
 
 ## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 
