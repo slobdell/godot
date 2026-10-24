@@ -5,7 +5,7 @@
 > (the halt seat that blocks a following squad; tactics beating the blob), orders, manoeuvre, feedback, native on Opus. Builders:
 > builder0 AND builder2 (C39.1 = C38.1).** Briefs in `streams/`; round 38's in `streams/archive/round38/`. Round 38's section follows.
 
-## Round 39: six streams (prepared 2026-10-23; briefs in `streams/`)
+## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`, native's still in `streams/` until its A/B lands)
 
 **Goal: squads that stop never block the squad behind them, and tactics (not a frontal blob) win, with R1-R3 ON.** From round 38
 (HANDOFF *ROUND 38 CLOSED*): every movement bar that failed (S1 v1-v5, G1 v3/v4, G3 v4/v5, Bar H) failed on one or two marginal
@@ -17,11 +17,11 @@ iterating to ensure that tactics and strategy win". The blob still wins ~47 % (n
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **settle** | `godot-settle` (3) | **Fable** | [streams/settle.md](streams/settle.md) | a squad that stops never parks in the street the next squad is driving | S1 route-clear halt seats |
-| **doctrine** | `godot-doctrine` (1) | **Fable** | [streams/doctrine.md](streams/doctrine.md) | a charging blob loses to a CPU that holds with some and strikes with the rest | D1 the rules-ON base read |
-| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a parked crew steps aside once for a friend and goes back, not shoved down the street | M1 chain-aware give-way |
-| **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | his group click puts every squad in, the far one first, on his route at corners | G1 who takes the far place |
-| **feedback** | `godot-feedback` (6) | Opus | [streams/feedback.md](streams/feedback.md) | the new rules show on screen; the phone map frees its top | F1 the rules he can see |
+| **settle** | `godot-settle` (3) | **Fable** | [archive/round39/settle.md](streams/archive/round39/settle.md) | a squad that stops never parks in the street the next squad is driving | S1 route-clear halt seats |
+| **doctrine** | `godot-doctrine` (1) | **Fable** | [archive/round39/doctrine.md](streams/archive/round39/doctrine.md) | a charging blob loses to a CPU that holds with some and strikes with the rest | D1 the rules-ON base read |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [archive/round39/manoeuvre.md](streams/archive/round39/manoeuvre.md) | a parked crew steps aside once for a friend and goes back, not shoved down the street | M1 chain-aware give-way |
+| **orders** | `godot-orders` (5) | Opus | [archive/round39/orders.md](streams/archive/round39/orders.md) | his group click puts every squad in, the far one first, on his route at corners | G1 who takes the far place |
+| **feedback** | `godot-feedback` (6) | Opus | [archive/round39/feedback.md](streams/archive/round39/feedback.md) | the new rules show on screen; the phone map frees its top | F1 the rules he can see |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: the rules-ON pairing base, same sim on every machine | N1 the rules-ON row (CP39.0) |
 
 **Machines (C39.1 = C38.1 with round 38's lessons):** builder0 = settle's, manoeuvre's, orders' and feedback's light lanes (J<=4);
@@ -2831,7 +2831,7 @@ ONE machine. Before a run, `make gcp-status` says whether builder2 is up; if not
 | **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | a scout stands and trades when it can win, and leaves when it can't; a pushed-off War Rig returns facing his way (B11b, after CP-F) | scout try 2 |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: every pair; a network match that never logs a shell hitting a dropped player | pairs, then the relay-smoke bug |
 | **planner** | `godot-planner` (6) | Opus | [streams/planner.md](streams/planner.md) | a rematch without restarting plays out the same (replays and the network depend on it) | the rematch diagnosis |
-| **orders** (added mid-round, 2026-10-18) | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | three squads sent to one point all end up near it, on the side of the river he clicked; a shift-clicked route is followed squad by squad (C34.11) | O1 the ground cap |
+| **orders** (added mid-round, 2026-10-18) | `godot-orders` (5) | Opus | [archive/round39/orders.md](streams/archive/round39/orders.md) | three squads sent to one point all end up near it, on the side of the river he clicked; a shift-clicked route is followed squad by squad (C34.11) | O1 the ground cap |
 
 **Launch baseline:** the docs commit's main inherits the last green main check (HANDOFF names it). Workers run no
 baseline check.

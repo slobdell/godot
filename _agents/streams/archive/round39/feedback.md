@@ -1,3 +1,5 @@
+> **ARCHIVED (round 39 closed 2026-10-24).** Final state of this brief; round 39's results are in `workstreams.md` *Bars (round 39)* and *Rulings (round 39)*.
+
 # Stream: feedback (the new rules show on screen; the phone map frees its top)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/game_design.md` (*Summary of his answers*, *His call on R1-R3*, his

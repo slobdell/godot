@@ -1,3 +1,5 @@
+> **ARCHIVED (round 39 closed 2026-10-24).** Final state of this brief; round 39's results are in `workstreams.md` *Bars (round 39)* and *Rulings (round 39)*.
+
 # Stream: doctrine (tactics beat a charging blob, with his R1-R3 rules ON)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/game_design.md` (*OPEN QUESTIONS for him before

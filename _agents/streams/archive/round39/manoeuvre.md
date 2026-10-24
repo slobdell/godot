@@ -1,3 +1,5 @@
+> **ARCHIVED (round 39 closed 2026-10-24).** Final state of this brief; round 39's results are in `workstreams.md` *Bars (round 39)* and *Rulings (round 39)*.
+
 # Stream: manoeuvre (a parked crew steps aside once for a friend and goes back, never shoved down the street in a chain)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 39** (C39.1, C39.2) and
