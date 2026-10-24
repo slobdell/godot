@@ -61,6 +61,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 ### Report (in progress, 2026-10-23 night)
 - **S1 route-clear v2, OFF** (`--seat-route-clear`, env SEAT_ROUTE_CLEAR=on; daea2cefe): lab clean on the three traced cases (below).
   Bar filed below; full check of the named hash next, then the series on 6001-6024.
+- **Item 3 traced (o2's crossing re-deals):** dev read on rules-ON main (builder0 light, 82c0a9db2 tree, crossing 3 click fights,
+  dev seeds 3891-3902, n 12 an arm): parked re-deals held 22 -> o2 35. Traced s3895 Alpha (0 -> 4): every counted re-deal is ONE
+  crew's seat moving 14-18 m off and back with anchor, shape, latched spacing and seat index unchanged. Probable cause:
+  UnansweredFire's duck (a crew ON ITS POST under fire it can't return goes to cover <= 25 m; PARKED_HOLD keeps more crews on posts),
+  which orders' probe counts as a parked re-deal. Not confirmed: `--duck=off` no longer exists (requested from doctrine via the
+  orchestrator). **No Bar H re-file:** its re-deal line counts duck moves (R38.42's rule: the trace changes it). References:
+  `references/round39/settle/o2-redeal-trace-builder0/`.
 - **Orders' request done:** `ElementPlan.deploy_preview` (4066132c4, quick-remote builder0 132/0), pure; orders told.
 
 ### S1 route-clear lab (builder0 light, n 1 per run, orders' probe; `make settle-lab`)
@@ -114,3 +121,13 @@ after a full check of the named hash. Judge `settle_judge.py s1c` (dry-run on ro
 - **Manoeuvre's switch state (C39.2):** the lab and bar run with manoeuvre's chain-aware give-way in main's state (OFF; not on
   main at launch).
 
+
+### Merge notes
+- `ElementPlan.deploy_preview` + `_unit_of` are byte-identical on stream/orders (da9591207, copied by orders): resolve to one copy.
+- `ElementSituation.build` adds a `passers` Callable (DeployPassers.of), read only by a `--seat-route-clear` deploy. Nothing iterates
+  the situation's keys (as with round 38's `ground_seat`).
+- Everything here is OFF by default (`--seat-route-clear`); the sim baseline does not guard settle's paths (round 38's note).
+
+### Requests to other streams
+- doctrine (via the orchestrator): restore `--duck=off` (UnansweredFire.ENABLED) in tactics_flags.gd, for item 3's control arm.
+- orders (note): `parked_redeals` counts UnansweredFire duck moves; Bar H / S3 need them excluded before any re-file.
