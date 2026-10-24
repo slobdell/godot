@@ -869,6 +869,8 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 			plan["slots"] = _deploy_compact(plan["slots"], deploy["heading"])
 		if COVER_SEAT:
 			_cover_seats(plan, deploy, situation)
+		if SEAT_ROUTE_CLEAR:
+			_route_clear(plan, deploy, situation, spacing)
 		if DEPLOY_HOLD:
 			_deploy_hold(plan, deploy, situation)
 		if DEPLOY_TRACE and int(deploy.get("tick", -1)) == int(situation.get("tick", 0)):
@@ -1898,7 +1900,8 @@ static func _trace_deploy(plan: Dictionary, situation: Dictionary, stand: Vector
 			"terrain": String(situation.get("terrain", "")), "anchor_terrain": ElementSituation.terrain_at(stand),
 			"latch_lays": int((plan.get("deploy", {}) as Dictionary).get("latch_lays", -1)),
 			"latch_capped": bool((plan.get("deploy", {}) as Dictionary).get("latch_capped", false)),
-			"fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}), "crews": crews}))
+			"fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}),
+			"cleared": int((plan.get("deploy", {}) as Dictionary).get("cleared", 0)), "crews": crews}))
 
 
 ## R38.15 (S2 v3's reference): one STAND_TRACE line per deploy, the first plan STAND_TRACE_S after it: the crews' centroid
@@ -2252,6 +2255,70 @@ static func _cover_seats(plan: Dictionary, deploy: Dictionary, situation: Dictio
 			if order is Dictionary:
 				order["to"] = cover[unit_name]
 				order["facing"] = facing
+
+
+## S1 (round 39, settle; C39.2, R38.40, R38.43): NO HALT SEAT ON THE ROUTE A FRIENDLY SQUAD STILL HAS TO DRIVE, AND NONE
+## INSIDE ANOTHER SQUAD'S PARKED HALT. Traced (terminus 5 route s4505, crossing 5 route s3958): a deploying squad's seats
+## (its shape's, and main's own relaid ones) stood on the junction and lane mouth the squad behind it still had to drive,
+## or inside a neighbour's parked halt at the bridge mouth, and the squad behind never got in. On the deploy's own update
+## the ground to keep clear is read once (the situation's `passers`, DeployPassers.of: every other squad of the team still
+## driving, from where it stands along its route and queued legs, and every other squad parked) and kept in the deploy
+## (`clear_of`), so every later update of the halt (a re-lay after a loss included) clears its seats against the same
+## ground. A seat standing (grounded) within DeployPassers.ROUTE_CLEAR_M of such a route, or HALT_CLEAR_M of a parked
+## seat, moves to the nearest clear seat (DeployPassers.clear_seat: out of what blocks it, else back along the squad's
+## arrival leg); none found, it stays. Every shape, every heading. `--seat-route-clear` (env SEAT_ROUTE_CLEAR=on) opts in.
+static var SEAT_ROUTE_CLEAR := OS.get_cmdline_user_args().has("--seat-route-clear") \
+		or OS.get_cmdline_user_args().has("--seat-route-clear=on") or OS.get_environment("SEAT_ROUTE_CLEAR") == "on"
+## Measurement: seats moved clear on deploys' own updates, and seats found blocked with no clear seat, since start.
+static var route_seats_cleared := 0
+static var route_seats_unclear := 0
+
+
+static func _route_clear(plan: Dictionary, deploy: Dictionary, situation: Dictionary, spacing: float) -> void:
+	var first := int(deploy.get("tick", -1)) == int(situation.get("tick", 0))
+	if not deploy.has("clear_of"):
+		var read: Variant = situation.get("passers")
+		deploy["clear_of"] = (read as Callable).call() if read is Callable else {}
+	var passers: Dictionary = deploy["clear_of"]
+	if (passers.get("routes", []) as Array).is_empty() and (passers.get("halts", []) as Array).is_empty():
+		return
+	var anchor: Vector3 = plan.get("anchor", situation.get("center", Vector3.ZERO))
+	var back := -TacticsFormation.flat(deploy.get("heading", Vector3.FORWARD))
+	var units := {}
+	for member: Dictionary in situation.get("members", []):
+		units[String(member["name"])] = String(member.get("unit", ""))
+	var grounder: Variant = situation.get("ground_seat")
+	var names: Array = plan["slots"].keys()
+	names.sort()
+	var moved := {}
+	for unit_name: String in names:
+		var seat: Variant = plan["slots"][unit_name]
+		if not (seat is Vector3):
+			continue
+		var unit := String(units.get(unit_name, "tank"))
+		var ground := func(p: Vector3) -> Vector3:
+			return (grounder as Callable).call(p, unit, anchor) if grounder is Callable else p
+		var ok := func(p: Vector3) -> bool:
+			return not SlotGround.over_water(p) and SlotGround.on_anchor_side(p, anchor).distance_to(p) <= 0.5
+		var others: Array = []
+		for other: String in names:
+			if other != unit_name and plan["slots"][other] is Vector3:
+				others.append(moved.get(other, plan["slots"][other]))
+		var clear: Variant = DeployPassers.clear_seat(seat, back, passers, others, spacing, ground, ok)
+		if clear == null:
+			if first:
+				route_seats_unclear += 1
+			continue
+		if (clear as Vector3).distance_to(seat) > 0.01:
+			moved[unit_name] = clear
+	for unit_name: String in moved:
+		plan["slots"][unit_name] = moved[unit_name]
+		var order: Variant = plan.get("orders", {}).get(unit_name)
+		if order is Dictionary:
+			order["to"] = moved[unit_name]
+	if first:
+		route_seats_cleared += moved.size()
+		deploy["cleared"] = moved.size()
 
 
 ## C37.4's seam: cover's `TacticalQuery.low_cover_seat(map, near, threat_dir, max_shift_m, hull, node)` (cover's K3, on
