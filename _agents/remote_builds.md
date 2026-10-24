@@ -644,7 +644,7 @@ goes away once the habit is everywhere**, so put new logs in the scratchpad toda
 takes, and the laptop verifies them: a mismatch names the file, prints both hashes, and fails the command
 (exit 5) — a green run beside silently altered bytes is the worst shape this can take. A missing manifest prints
 `NOT VERIFIED` and does not fail, because "nothing to check" and "everything checked out" must not look the same.
-`REMOTE_VERIFY=0` opts out. This does not stop corruption; it **localises** it, which after one flipped bit in a
+Before calling a file corrupt, the laptop re-copies each failed file once from the box with `rsync --checksum` and checks the whole manifest again. The plain copy-back decides by size and mtime, so a local file with the same size and mtime but different bytes was skipped by every re-run (`build/flank_s5.mp4`, round 39). The first-pass `CORRUPT` line and the fix are both printed; a file that still differs fails as before (`tools/test_copyback_verify.sh`). `REMOTE_VERIFY=0` opts out. This does not stop corruption; it **localises** it, which after one flipped bit in a
 101 MB log (`"slot_x"` → `"slot_\xf8"`, 2026-09-20) is the only thing we can cheaply learn. Then read the wrapper line
 from the log. **Before any re-run:** `ssh builder0 "ps -eo pid,etimes,args | grep '[s]lot.sh'"`, `readlink
 /proc/<pid>/cwd` to find only yours, kill by explicit PID walking `pgrep -P` (never by pattern, trip-up 19), confirm
