@@ -230,7 +230,7 @@ func _run() -> void:
 				# and hull to hull (less both hulls' half-diagonals, SlotGround.envelope_of).
 				"twitch_seen": squad.get("twitch_seen", {}), "redealt": int(squad.get("redealt", 0)), "away_m": snappedf((squad.get("away", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"shape_flips": int(squad.get("shape_flips", -1)), "terrain_flips": int(squad.get("terrain_flips", -1)),
-				"anchor_terrain_flips": int(squad.get("anchor_terrain_flips", -1)), "relays": int(squad.get("relays", -1)), "reseats": int(squad.get("reseats", 0)), "parked_redeals": int(squad.get("parked_redeals", 0)), "route_m": snappedf(float(squad.get("route_m", 0.0)), 0.1), "route_out_m": snappedf(float(squad.get("route_out_m", 0.0)), 0.1), "route_left_m": snappedf(float(squad.get("route_left_m", 0.0)), 0.1), "legs_outside": int(squad.get("legs_outside", -1)), "route_off_m": snappedf(float(squad.get("route_off_m", 0.0)), 0.1), "anchor_outside": _outside_corridor(_anchor_of(squad)),
+				"anchor_terrain_flips": int(squad.get("anchor_terrain_flips", -1)), "relays": int(squad.get("relays", -1)), "reseats": int(squad.get("reseats", 0)), "parked_redeals": int(squad.get("parked_redeals", 0)), "parked_ducks": int(squad.get("parked_ducks", 0)), "route_m": snappedf(float(squad.get("route_m", 0.0)), 0.1), "route_out_m": snappedf(float(squad.get("route_out_m", 0.0)), 0.1), "route_left_m": snappedf(float(squad.get("route_left_m", 0.0)), 0.1), "legs_outside": int(squad.get("legs_outside", -1)), "route_off_m": snappedf(float(squad.get("route_off_m", 0.0)), 0.1), "anchor_outside": _outside_corridor(_anchor_of(squad)),
 				"shapes": squad.get("shapes", []),
 				"away_held_m": snappedf((squad.get("away_held", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
 				"away_seat_m": snappedf((squad.get("away_seat", {}) as Dictionary).values().reduce(func(a: float, b: float) -> float: return maxf(a, b), 0.0), 0.1),
@@ -602,25 +602,40 @@ func _watch_corridor(squad: Dictionary, alive: Array) -> void:
 ## more than REDEAL_OFF_M from that station (the squad re-dealing its seats; what he sees as a parked tank pulling out).
 ## The settled time keeps out the deploy's travel -> halt step (a crew reaching its travel seat and dealt its halt seat).
 ## Reported, not judged.
+## Round 39 (settle's o2 trace, references/round39/settle/o2-redeal-trace-builder0): a crew under fire it cannot return ducks
+## (UnansweredFire: its slot goes to a cover / fall-back point, then back) while the halt's seats stay. Those moves, out to the
+## duck point or back from a seat that was one, count in `parked_ducks`, not `parked_redeals`.
 const REDEAL_PARKED_M := 3.0
 const REDEAL_OFF_M := 6.0
 const REDEAL_SETTLED_S := 2.0
+const REDEAL_DUCK_M := 3.0
 func _watch_redeal(squad: Dictionary, alive: Array) -> void:
-	var parked: Dictionary = squad.get("parked_at", {})  # unit -> [station, tick it parked]
+	var parked: Dictionary = squad.get("parked_at", {})  # unit -> [station, tick it parked, parked on a duck point]
+	var element := _controls.elements.of(String(alive[0])) if _controls.elements != null and not alive.is_empty() else null
 	for n: String in alive:
 		var spot: Variant = OrderFeed.station(_controls.orders, n)
 		var goal: Variant = _controls.orders.goal_position(n)
 		if goal is Vector3:
 			if parked.has(n) and _match.tick - int(parked[n][1]) >= int(REDEAL_SETTLED_S * SimClock.TICK_RATE) \
 					and _flat_d(goal, parked[n][0]) > REDEAL_OFF_M:
-				squad["parked_redeals"] = int(squad.get("parked_redeals", 0)) + 1
+				var duck := bool(parked[n][2]) or _duck_near(element, n, goal)
+				var key := "parked_ducks" if duck else "parked_redeals"
+				squad[key] = int(squad.get(key, 0)) + 1
 			parked.erase(n)
 		elif spot is Vector3 and _flat_d(_tank(n).global_position, spot) <= REDEAL_PARKED_M:
 			if not parked.has(n) or _flat_d(parked[n][0], spot) > 0.5:
-				parked[n] = [spot, _match.tick]
+				parked[n] = [spot, _match.tick, _duck_near(element, n, spot)]
 		else:
 			parked.erase(n)
 	squad["parked_at"] = parked
+
+
+## Whether `at` is the duck point UnansweredFire holds for crew `n` (Element.ducks).
+func _duck_near(element: Element, n: String, at: Vector3) -> bool:
+	if element == null or not element.ducks.has(n):
+		return false
+	var point: Variant = (element.ducks[n] as Dictionary).get("point")
+	return point is Vector3 and _flat_d(point, at) <= REDEAL_DUCK_M
 
 
 ## D2: the place move (from the deploy, or the arrival with the step off) and the twitch after it.

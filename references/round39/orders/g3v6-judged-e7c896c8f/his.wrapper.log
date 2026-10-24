@@ -1,0 +1,51 @@
+>> remote: syncing godot-orders to slobdell@builder2:~/tank_squad/godot-orders
+>> remote: make native orders-probe ORDERS_PROBE_MAPS=terminus ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_ARMS=main:--probe-click=-29.3/85.8 g3:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on,--place-clear-seat=on,--probe-click=-29.3/85.8 ORDERS_PROBE_SEEDS=6213 6214 6215 6216 6217 6218 6219 6220 6221 6222 6223 6224 ORDERS_PROBE_DIR=build/orders-bar-his ORDERS_PROBE_JOBS=14 TANK_SQUAD_SLOT_TIMEOUT=14400 on slobdell@builder2
+>> native: src-sync: 0 changed
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder2, -O2 -ffp-contract=off -fno-fast-math, trig cr) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> orders-probe on builder2 | commit e7c896c8f | native on
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+terminus 3 click          g3        |   32.1 /   28.9   |    0   0 |      4.8 |               4.8 |            24.6 | 1.26 | -20.7
+terminus 3 click          main      |   32.1 /   28.9   |    0   0 |      4.8 |               4.8 |            24.6 | 1.26 | -20.7
+terminus 5 click          g3        |   42.0 /   41.6   |    0   0 |     28.2 |               4.3 |            35.4 | 2.80 | -11.1
+terminus 5 click          main      |   42.0 /   41.6   |    0   0 |     28.2 |               4.3 |            35.4 | 2.80 | -11.1
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+terminus 3 click          g3        |          14.8 |          10.2 |            2.3 |               6.2 |          38.8
+terminus 3 click          main      |          14.8 |          10.2 |            2.3 |               6.2 |          38.8
+terminus 5 click          g3        |          38.2 |          29.0 |           13.8 |               4.5 |          62.6
+terminus 5 click          main      |          38.2 |          29.0 |           13.8 |               4.5 |          62.6
+
+MEDIANS over seeds [6213, 6214, 6215, 6216, 6217, 6218, 6219, 6220, 6221, 6222, 6223, 6224] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+terminus 3 click          g3          | 12 |          4.8 |     0 |          24.6 |          2.3 |          38.8 |               6.2 |    0   0 | 1.26
+terminus 3 click          main        | 12 |          4.8 |     0 |          24.6 |          2.3 |          38.8 |               6.2 |    0   0 | 1.26
+terminus 5 click          g3          | 12 |         28.2 |     0 |          35.4 |         13.8 |          62.6 |               4.5 |    0   0 | 2.80
+terminus 5 click          main        | 12 |         28.2 |     0 |          35.4 |         13.8 |          62.6 |               4.5 |    0   0 | 2.80
+
+EQUALITY click cells: 24 identical across arms, 0 differ
+TOTAL g3         | placed 96.0 flipping 0.0 flips 0.0 relays 0.0 relaying 0.0 terr_c 0.0 terr_a 0.0 reseats 0.0 away 204.0 held 204.0 seat 392.4
+TOTAL main       | placed 96.0 flipping 0.0 flips 0.0 relays 0.0 relaying 0.0 terr_c 0.0 terr_a 0.0 reseats 0.0 away 204.0 held 204.0 seat 392.4
+>> remote: copy-back verified, 670 files, sha256
+>> remote: copy-back moved 4 stale log(s) an earlier run left beside this run's rows, into build/.stale-20261024-150151/
+   moved  build/orders-bar-his/logs/terminus-3-click-main-s3801.log
+   moved  build/orders-bar-his/logs/terminus-5-click-main-s3801.log
+   moved  build/orders-bar-his/logs/terminus-3-click-g3-s3801.log
+   moved  build/orders-bar-his/logs/terminus-5-click-g3-s3801.log
+>> remote: make native orders-probe ORDERS_PROBE_MAPS=terminus ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_ARMS=main:--probe-click=-29.3/85.8 g3:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on,--place-clear-seat=on,--probe-click=-29.3/85.8 ORDERS_PROBE_SEEDS=6213 6214 6215 6216 6217 6218 6219 6220 6221 6222 6223 6224 ORDERS_PROBE_DIR=build/orders-bar-his ORDERS_PROBE_JOBS=14 TANK_SQUAD_SLOT_TIMEOUT=14400 exited 0 (build/ copied back)

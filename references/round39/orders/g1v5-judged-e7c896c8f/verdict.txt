@@ -1,0 +1,12 @@
+PASS counter: columns_laid 53 (bodies kept 115)
+FAIL deciding: places outside the corridor (click cells) 100 -> 28 (<= 25.0)
+PASS deciding: metres driven outside the corridor after being in it (click cells) 6490 -> 1832 (<= 3245)
+PASS deciding: squads with crews re-dealt (arm, click cells) 0 (base 48)
+  reported: metres outside incl. the drive in (route_out_m) 43182 -> 33421
+PASS guard friend_contacts 14280 -> 11413 (<= 15713.0)
+  FAIL guard twitch       terminus_his 5 click: 13.8 v 28.4
+FAIL probe guards (14 cells)
+PASS guard no-change cell yard_open: 192 of 192 squad rows identical (arm rows 192)
+  reported: parked_redeals, duck-excluded (a crew parked >= 2 s sent > 6 m off its seat, not an UnansweredFire duck) 487 -> 511
+  reported: parked duck moves (UnansweredFire, out to or back from its point; not re-deals) 0 -> 0
+VERDICT g1v4: FAIL

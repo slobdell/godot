@@ -400,8 +400,10 @@ def main(argv):
         lines.append("  whole_still_crossed %d" % sum(r.get("whole_still_crossed", 0) for r in runs if r["arm"] == new))
         ok = probe_guards(rows, base, new, lines) and ok
     # R37.17 (orchestrator): what he sees whatever the totals say: parked crews sent off their seats, each arm (reported).
-    lines.append("  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) %d -> %d" % (
+    lines.append("  reported: parked_redeals, duck-excluded (a crew parked >= 2 s sent > 6 m off its seat, not an UnansweredFire duck) %d -> %d" % (
         total(rows, base, "parked_redeals"), total(rows, new, "parked_redeals")))
+    lines.append("  reported: parked duck moves (UnansweredFire, out to or back from its point; not re-deals) %d -> %d" % (
+        total(rows, base, "parked_ducks"), total(rows, new, "parked_ducks")))
     print("\n".join(lines))
     print("VERDICT %s: %s" % (mode, "PASS" if ok else "FAIL"))
 

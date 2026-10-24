@@ -55,9 +55,97 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-23 ~22:40 PDT)
-- **Plan (backlog order):** G1 v5 lab + dev read (done) -> G2 v2 lab (done) + dev read (running) -> G3 v6 lab (done) + dev
-  read -> full check on a named hash -> wait for CP39.1 (C39.3) -> judged series one at a time. All three switches are OFF.
+### CLOSE (round 39, 2026-10-24): every backlog item done; round-40 input below
+- **Green:** 632724c90 (builder2 full check, 3169/0, 24 passed + 3 NOT JUDGED), main 2518811d0 merged (CP39.1). HEAD's
+  descendants since then are docs, evidence and test tooling only (`tests/control/orders_bar.sh`, judge text). All of
+  orders' round-39 switches stay OFF: `--group-lead=drive`, `--group-route-corner=line`, `--place-clear-seat=on`.
+- **Backlog:**
+  1. G1 v5: built, judged, FAIL.
+  2. G2 v2c: built, dev-read. No bar this round; its block 6225-6236 is unused, and round 40 gets fresh blocks.
+  3. G3 v6: built, judged, FAIL.
+  4. Judged on CP39.1: done, in parallel per R39.8.
+  5. Stretch R38.44: not taken. G1 v5's failures are not the plain-click v route-leg trade-off.
+- **Round-40 input (traced causes; `references/round39/orders/bar-traces-builder0-e7c896c8f/README.md`):**
+  - **G1 his-5 twitch (28.4 m, all 12 seeds):** column gives Bravo the click, and Bravo_2 holds 3.83 m from its travel seat.
+    The deploy's all-in radius is 3.5 m (ORDER_ARRIVE), so the halt waits for DEPLOY_CAP_S (10 s), then deals on parked
+    crews. Fix: settle's trigger (count a holding crew within ~5 m as in). G1's ordering itself is fine.
+  - **G1 locks 5 outside 8 -> 8:** the column is not laid on s6204-6207 (rows identical to main). Why is untraced. With
+    those 8 the deciding line is 28 v 25; it would pass if the column engaged there.
+  - **G3 crossing 5 route never-in (s6213):** v6's step back along the squad's own leg parks it on the approach of the
+    squads still to come (Delta 28 m west, across Echo's road; Echo never in). Fix: no step back inside a later squad's
+    corridor; otherwise keep the given place. The s6220 twitch (cap deploy, 2 legs stepped back) is probably the same, but
+    not traced in detail.
+  - **G2 v2c:** re-read on CP39.1 before a bar. Its dev read 3's guard fails (end foreign, twitch) are the kind CP39.1 was
+    meant to fix.
+  - **Tooling:** `orders_bar.sh` runs a bar on either builder and re-runs a preempted part (it caught one builder2
+    preemption). `parked_redeals` is duck-excluded; `parked_ducks` is reported beside it.
+
+### NOW (2026-10-24, before the bars)
+- **GREEN: ebfe98d18** (builder0 full check `make native check`, load 6-12, 18 other godot): 3140 passed, 0 failed; scenarios
+  53 passed, 0 failed, 3 pending; `>> remote: make native check exited 0`. All three switches OFF; main's behaviour unchanged.
+- **Orchestrator (2026-10-24):** Bars G1 v5 / G3 v6 recorded on main as filed at ebfe98d18. ebfe98d18 merges after settle's
+  6ab14f1ac; settle's `deploy_preview` is kept as the one copy. **G2 v2c's bar block: seeds 6225-6236.** CP39.1 is not here
+  (settle's S1 failed its bar; it waits on manoeuvre's M1 or settle's next version). The G2 bar file waits on its re-read on
+  CP39.1. R39.3: one laptop Godot run at a time,
+  `flock /tmp/tank-squad-laptop-godot.lock <cmd>`; everything else on the builders.
+- **REPORT (2026-10-24): Bars G1 v5 and G3 v6 both FAIL** (tree 632724c90 green, e7c896c8f descendant, CP39.1 with
+  DEPLOY_HOLD ON both arms; n 12 a cell; evidence `references/round39/orders/g1v5-judged-e7c896c8f/` and
+  `g3v6-judged-e7c896c8f/`). Both switches stay OFF.
+  - **G1 v5** (builder0 light J4, 6201-6212):
+    - FAIL deciding: places outside, click cells, 100 -> 28 (bar <= 25). Locks 5 stays 8 -> 8 and his 5 goes 36 -> 12.
+    - FAIL guard: terminus_his 5 click twitch median 2.0 v 8.2. Squad 2 twitches 28.4 m on all 12 seeds (main 0.0): one
+      deterministic layout of his click.
+    - PASS: route_left 6490 -> 1832, re-dealt 0, contacts 14280 -> 11413, yard_open identical.
+  - **G3 v6** (builder2 J14, 6213-6224; one Spot preemption, re-run whole by the driver):
+    - PASS deciding: pairs < 12 m 48 -> 12 (bar <= 12.0).
+    - FAIL guards, both on crossing 5 route: never-in 0 v 1 (s6213 squads 4 and 5) and twitch 18.9 v 22.9 (worst s6220 squad
+      5, 42.5 v 0.1).
+  - **Next (dev only; a new version needs a fresh bar block from the orchestrator):** trace his-click 5 squad 2's 28.4 m
+    twitch, which is deterministic and cheap to trace, and locks 5's places outside for G1. Trace s6213 / s6220 on crossing 5
+    route for G3: settle's cause (B), a cleared place's leg meeting a passer head-on, is the first suspect.
+- **GREEN: 632724c90** (main 2518811d0 merged, CP39.1 with DEPLOY_HOLD ON; builder2 `make native check`, load 31-22, 46
+  other godot): 3169 passed, 0 failed; 24 passed + 3 NOT JUDGED (perf-judge, scenario_perf, remote-guard-test: machine and
+  load refusals); `>> remote: make native check exited 0`. **Bars G1 v5 (builder0 light J4) and G3 v6 (builder2 J14) started
+  together on this tree** (results in `~/overnight-orders/bar-g1v5-<hash>` / `bar-g3v6-<hash>`, filed under references/ when
+  read).
+- **CP39.1 was further off (2026-10-24, earlier):** manoeuvre's Bar M1 FAILED on its never-in guard (2 -> 7; `--giveway-chain` stays OFF).
+  Manoeuvre is tracing it. My bars still wait.
+- **Dependency:** manoeuvre's `tests/manoeuvre/probe_wedge.gd` (stream/manoeuvre f3dfa1e64) extends `tests/orders_probe.gd` and
+  reads `_match`, `_squads` and `_order_tick`. Don't rename those without telling manoeuvre.
+- **On CP39.1 (orchestrator, approved):** merge main only after native's 0bb755a4f (full-check lock + relay-smoke race fix) is
+  on it. Run the tree's full check on whichever builder's check lock frees first (`make gcp-remote T="native check"` on
+  builder2 is fine), not in builder0's queue. The orchestrator announces both.
+- **Settle's S1 trace (A / B) read against G3 / G2 (code read, no run):** G3's place_clear never tests against a passing
+  squad's path. It clears place-to-place spacing (`_too_close`) and checks for decks on the moved place's own step, so (A),
+  a corridor as one centre line, has no counterpart. (B), a cleared place's leg meeting a passer head-on, applies in kind: G3
+  checks nothing for it. It is a candidate for the dry run's crossing 5 route twitch (untraced). G2 lays places on his drawn
+  route, the same assumption as a plain route. No code change before the bars (G3 v6 is filed as built).
+- **R39.8: the two bars run IN PARALLEL** when CP39.1 lands: G1 v5 on builder0 light J4, G3 v6 on builder2 (J ~14, Spot:
+  re-queue on preemption). Driver: `tests/control/orders_bar.sh <b0|b2> <g1v4|g3> <arm> "<seeds>" <out dir outside build/>
+  [jobs]`. It runs streets + his click, re-runs a part that is incomplete or preempted, splits terminus_his and yard_open, and
+  judges. Native's builder2 row yields to the G3 series.
+  - **Dry run** (builder2, J14, 2fedb9b65 = main 76f42a9c3 + orders, dev seed 3801, n 1, G3 v6's arm): 36 of 36 runs, native on;
+    the judge reads 18 cells. Not a verdict (n 1, dev seed). Its one failing line is a known risk for Bar G3 v6: worst twitch on
+    crossing 5 route 10.7 v 22.1 m (as G3 v5's crossing 3 route; DEPLOY_HOLD ON may move it). Results:
+    `~/overnight-orders/dry-b2-2fedb9b65/` (outside the repo). **Settle's DEPLOY_HOLD (2478e2eef) ships ON before CP39.1**, so both
+  arms of both bars carry it; name it in each bar's run line.
+- **parked_redeals duck exclusion** (ea51cc7c5; settle's o2 trace: every o2 "re-deal" was one crew's UnansweredFire duck,
+  14-18 m out and back, with the halt's seats unchanged): a parked crew's goal move out to its duck point, or back from a seat
+  that was one, now counts in `parked_ducks`, not `parked_redeals`. The judge reports both. No bar of mine judges either
+  (reported only).
+- **Where the backlog stands:** items 1-3 built, labbed and dev-read (below); item 4 is **waiting on CP39.1** (C39.3: judged series
+  only on top of it). Bars G1 v5 and G3 v6 are filed (below). G2 v2 re-reads on CP39.1 before its bar, on a fresh seed block
+  from the orchestrator. Stretch (R38.44) not needed so far: G1 v5 holds its deciding lines without it.
+- **Next for a fresh agent:** when the orchestrator announces CP39.1, merge main (keep ONE `ElementPlan.deploy_preview`: settle's),
+  run a full check, name the green hash, then Bar G1 v5 (6201-6212) and, after it, Bar G3 v6 (6213-6224), each with
+  `tools/remote.sh --light` direct (the arms contain spaces once commas expand; `make remote T=` word-splits them), J4,
+  `TANK_SQUAD_SLOT_TIMEOUT=14400`. Then G2 v2c's re-read on dev seeds 3801-3803.
+- **Smoke (lead / next agent):** `make skirmish ARENA=terminus SKIRMISH_FLAGS="--group-lay=column --group-rank-shift=half
+  --group-whole=click --group-clear=reached --group-lead=drive"`, select all, click down a street; for G2 add
+  `--group-route-corner=line` and give a 2-waypoint route round a corner; for G3 `--place-clear=on --place-clear-trigger=near
+  --place-clear-reach=on --place-clear-seat=on`. Needs native's N2 SKIRMISH_FLAGS passthrough.
+- **Plan (backlog order, history):** G1 v5 lab + dev read (done) -> G2 v2 lab + dev reads 1-3 (done) -> G3 v6 lab + dev read
+  (done) -> full check (ebfe98d18 green) -> wait for CP39.1 (C39.3) -> judged series one at a time.
 - **G1 v5 `--group-lead=drive`** (ef68308d1): a column's places go to its squads in the order their crews reach the click by
   ground. In `untangle_whole` every squad of a column is one knot, and the first key is `lead_breaks` (a squad placed behind
   one it leads by > 6 m), then crossings, then drive. Decided: lead = the mean of the squad's crews' navmesh drives (the bulk
@@ -84,7 +172,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
       too: a whole-squad swap on a leg); terminus 5 route worst twitch 18.7 -> 34.1.
   - **Dev read 2** (4ce8784d5; `g2v2b-dev2-builder0-4ce8784d5/`): v2b (rank centred, not single file) = v2 on every cell.
     `--group-lead=drive` on legs is worse (his routes never-in 3 -> 6), so G1 v5 stays a plain-click rule.
-  - v2c fixes the avenue cause (laptop trace, not pairable: squad 4 on the route, every squad in). Dev read 3 running.
+  - v2c fixes the avenue cause (laptop trace, not pairable: squad 4 on the route, every squad in).
+  - **Dev read 3** (builder0 light J4, 584d23588, dev seeds 3801-3803, n 3; `g2v2c-dev3-builder0-584d23588/`): his routes off
+    5,022 -> 2,523, never-in 9 -> 3; his 5 east 2,965 -> 207; his 5 avenue 536 (main 142); route cells off 2,404 -> 1,432,
+    never-in 1 -> 0. `orders_judge.py g2`: both deciding lines PASS, guards fail on 9 cells (end foreign, twitch). His 3 east
+    never-in: a squad's halt seat stands on the next squad's route (CP39.1's cause), so it re-reads on CP39.1.
 - **G3 v6 `--place-clear-seat=on`** (da9591207): a moved place must deploy in the given place's shape and spacing, worst leg
   <= given + 2 m (or 8 m); else it steps back along the squad's own leg; else it's kept. It uses settle's
   `ElementPlan.deploy_preview`, built on my request and copied verbatim from stream/settle 4066132c4.
@@ -92,8 +184,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     lanes / 10 m v the given place's dense / 7.5 m, so the deploy dealt the crews across (worst leg 16 m v main's 6.7).
   - With v6 (laptop, n 1): squad 2 keeps its place, all in at 17.3 s.
   - A shapes-only estimate (no preview) couldn't separate the places (11.0 v 13.0 m); removed.
+  - **Dev read** (builder0 light J4, b7bef53b1, dev seeds 3804-3809, n 6): main -> g3v6 PASSES `orders_judge.py g3`; places
+    cleared 25 (v5 33); pairs < 12 m 25 -> 4; crossing 5 route worst twitch v5 42.9 -> v6 29.9.
+- **Merge notes:** `element_plan.gd` carries a verbatim copy of settle's `deploy_preview` + `_unit_of` (keep settle's, drop mine);
+  `orders_judge.py` probe_guards' all-in guard passes a cell where the base never got all in (be1219fa7).
 
 ### Bars (filed here before any judged number; the orchestrator records them on main)
+- **Amended by R39.9 (2026-10-24, before any number on 6201-6224):** CP39.1 = main with settle's DEPLOY_HOLD ON. Tree for
+  both bars: stream/orders with main merged at >= 2316bc4f7 (0fc1d7fb3, main 2518811d0 with the full-check lock), green full check on either builder.
+  Both arms: DEPLOY_HOLD ON (default), `--giveway-chain` OFF, `--seat-route-clear` OFF. G1 v5 on builder0 light J4, G3 v6 on
+  builder2 J14, run together (`tests/control/orders_bar.sh`). Everything else as filed.
 - **Bar G1 v5 GROUP LEAD (orders, round 39; filed 2026-10-24 before any number on its seeds; code ef68308d1, all OFF).**
   What he would see: select all and click a street. Every squad lands in that street, stacked back along it, the squad in
   front taking the far place, so no squad parks on the way of one still to pass, and every squad gets in.
@@ -124,5 +224,4 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - A pass ships ON.
 - **G2 v2: no bar yet.** Dev read 3 (584d23588) passes both deciding lines (his routes off 5,022 -> 2,523, <= 60 %; route
   cells 2,404 -> 1,432, <= 75 %) and fails guards on 9 cells (end foreign, twitch). A column stands squads closer than
-  main's spread body, and the stops in the street are CP39.1's cause. It re-reads on CP39.1 first; a bar needs a fresh block
-  (6201-6224 are G1's and G3's).
+  main's spread body, and the stops in the street are CP39.1's cause. It re-reads on CP39.1 first; its bar block is 6225-6236 (reserved by the orchestrator).

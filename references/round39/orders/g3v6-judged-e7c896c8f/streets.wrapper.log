@@ -1,0 +1,176 @@
+>> remote: syncing godot-orders to slobdell@builder2:~/tank_squad/godot-orders
+>> remote: make native orders-probe ORDERS_PROBE_MAPS=locks crossing terminus yard_open ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click route ORDERS_PROBE_ARMS=main: g3:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on,--place-clear-seat=on ORDERS_PROBE_SEEDS=6213 6214 6215 6216 6217 6218 6219 6220 6221 6222 6223 6224 ORDERS_PROBE_DIR=build/orders-bar-streets ORDERS_PROBE_JOBS=14 TANK_SQUAD_SLOT_TIMEOUT=14400 on slobdell@builder2
+>> native: src-sync: 0 changed
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder2, -O2 -ffp-contract=off -fno-fast-math, trig cr) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> orders-probe on builder2 | commit e7c896c8f | native on
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          g3        |   36.4 /   24.5   |    0   0 |     17.0 |               2.9 |            30.7 | 1.44 | 50.8
+crossing 3 click          main      |   32.4 /   15.8   |    4   0 |     20.4 |               3.1 |            33.3 | 1.53 | 50.8
+crossing 3 route          g3        |   38.6 /   21.4   |    3   0 |     22.8 |               2.8 |            49.5 | 1.55 | 50.8
+crossing 3 route          main      |   32.4 /   18.9   |    6   0 |     22.8 |               2.8 |            49.5 | 1.62 | 50.8
+crossing 5 click          g3        |   69.6 /   31.4   |    4   0 |     61.8 |               2.7 |            86.4 | 2.66 | 20.1
+crossing 5 click          main      |   69.6 /   29.2   |    4   0 |     48.2 |               2.7 |            83.8 | 2.30 | 20.1
+crossing 5 route          g3        |   69.6 /   32.2   |    4   0 |        - |               3.1 |            64.6 | 4.31 | 20.1
+crossing 5 route          main      |   69.6 /   30.6   |    7   0 |     87.3 |               3.1 |            62.3 | 4.85 | 20.1
+locks 3 click             g3        |   43.1 /   34.4   |   13   0 |        - |               2.8 |            49.1 | 1.85 | 27.9
+locks 3 click             main      |   43.1 /   34.4   |   13   0 |        - |               2.8 |            49.1 | 1.85 | 27.9
+locks 3 route             g3        |   43.1 /   34.4   |    7   0 |     35.3 |               2.3 |            58.3 | 1.89 | 27.9
+locks 3 route             main      |   43.1 /   34.4   |    7   0 |     35.3 |               2.3 |            58.3 | 1.89 | 27.9
+locks 5 click             g3        |   55.7 /   39.8   |    4   0 |        - |               5.0 |            65.4 | 2.59 | 17.4
+locks 5 click             main      |   55.7 /   39.8   |    4   0 |        - |               5.0 |            65.4 | 2.59 | 17.4
+locks 5 route             g3        |   55.7 /   39.8   |    1   0 |     56.1 |               4.7 |            58.0 | 2.86 | 17.4
+locks 5 route             main      |   55.7 /   39.8   |    1   0 |     56.1 |               4.7 |            58.0 | 2.86 | 17.4
+terminus 3 click          g3        |   36.9 /   34.4   |    0   0 |     26.3 |               3.1 |            58.3 | 1.57 | 18.8
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     26.3 |               3.1 |            58.3 | 1.57 | 18.8
+terminus 3 route          g3        |   36.9 /   34.4   |    0   0 |     32.3 |               2.9 |            43.4 | 1.85 | 18.8
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |     32.3 |               2.9 |            43.4 | 1.85 | 18.8
+terminus 5 click          g3        |   61.3 /   39.4   |    0   0 |     50.3 |               7.2 |            55.3 | 3.18 | 5.7
+terminus 5 click          main      |   61.3 /   39.4   |    0   0 |     50.3 |               7.2 |            55.3 | 3.18 | 5.7
+terminus 5 route          g3        |   61.3 /   39.4   |    0   0 |        - |               3.2 |            73.5 | 9.73 | 5.7
+terminus 5 route          main      |   61.3 /   39.4   |    0   0 |        - |               3.2 |            73.5 | 9.73 | 5.7
+yard_open 3 click         g3        |   36.9 /   34.4   |    0   0 |     18.3 |               6.0 |            38.7 | 2.26 | 18.6
+yard_open 3 click         main      |   36.9 /   34.4   |    0   0 |     18.3 |               6.0 |            38.7 | 2.26 | 18.6
+yard_open 3 route         g3        |   36.9 /   34.4   |    0   0 |      9.4 |              12.3 |            31.6 | 1.37 | 18.6
+yard_open 3 route         main      |   36.9 /   34.4   |    0   0 |      9.4 |              12.3 |            31.6 | 1.37 | 18.6
+yard_open 5 click         g3        |   54.1 /   39.4   |    0   0 |        - |               3.3 |            45.8 | 3.22 | 3.5
+yard_open 5 click         main      |   54.1 /   39.4   |    0   0 |        - |               3.3 |            45.8 | 3.22 | 3.5
+yard_open 5 route         g3        |   54.1 /   39.4   |    0   0 |     28.1 |               4.5 |            44.9 | 12.87 | 3.5
+yard_open 5 route         main      |   54.1 /   39.4   |    0   0 |     28.1 |               4.5 |            44.9 | 12.87 | 3.5
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          g3        |          27.0 |          20.6 |           17.9 |               3.3 |          46.4
+crossing 3 click          main      |          30.4 |          31.2 |           20.5 |               3.3 |          37.0
+crossing 3 route          g3        |          32.8 |          23.2 |           18.3 |               2.5 |          43.8
+crossing 3 route          main      |          32.8 |          23.5 |           22.3 |               2.5 |          38.9
+crossing 5 click          g3        |          71.8 |          24.1 |           33.9 |               3.2 |         102.9
+crossing 5 click          main      |          58.2 |          31.7 |           28.9 |               3.2 |         102.9
+crossing 5 route          g3        |             - |          35.2 |              - |               3.0 |          87.5
+crossing 5 route          main      |             - |          31.2 |              - |               2.7 |          87.4
+locks 3 click             g3        |             - |          22.4 |              - |               3.6 |          51.4
+locks 3 click             main      |             - |          22.4 |              - |               3.6 |          51.4
+locks 3 route             g3        |          45.3 |          43.7 |           24.1 |               4.0 |          68.1
+locks 3 route             main      |          45.3 |          43.7 |           24.1 |               4.0 |          68.1
+locks 5 click             g3        |             - |          41.3 |              - |               5.4 |          79.5
+locks 5 click             main      |             - |          41.3 |              - |               5.4 |          79.5
+locks 5 route             g3        |             - |          39.8 |              - |               5.2 |          78.6
+locks 5 route             main      |             - |          39.8 |              - |               5.2 |          78.6
+terminus 3 click          g3        |          34.7 |          35.9 |           20.7 |               9.0 |          61.4
+terminus 3 click          main      |          34.7 |          35.9 |           20.7 |               9.0 |          61.4
+terminus 3 route          g3        |          39.1 |          29.1 |            6.7 |               6.7 |          56.1
+terminus 3 route          main      |          39.1 |          29.1 |            6.7 |               6.7 |          56.1
+terminus 5 click          g3        |          56.2 |          46.9 |           28.8 |               6.7 |          82.7
+terminus 5 click          main      |          56.2 |          46.9 |           28.8 |               6.7 |          82.7
+terminus 5 route          g3        |             - |          59.1 |              - |               6.5 |          86.4
+terminus 5 route          main      |             - |          59.1 |              - |               6.5 |          86.4
+yard_open 3 click         g3        |          23.9 |          26.2 |           26.0 |              11.3 |          49.8
+yard_open 3 click         main      |          23.9 |          26.2 |           26.0 |              11.3 |          49.8
+yard_open 3 route         g3        |          17.5 |          17.1 |            0.0 |              11.8 |          53.7
+yard_open 3 route         main      |          17.5 |          17.1 |            0.0 |              11.8 |          53.7
+yard_open 5 click         g3        |             - |          30.3 |              - |               8.0 |          77.4
+yard_open 5 click         main      |             - |          30.3 |              - |               8.0 |          77.4
+yard_open 5 route         g3        |          33.9 |          19.3 |            7.9 |               7.2 |          73.9
+yard_open 5 route         main      |          33.9 |          19.3 |            7.9 |               7.2 |          73.9
+
+MEDIANS over seeds [6213, 6214, 6215, 6216, 6217, 6218, 6219, 6220, 6221, 6222, 6223, 6224] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          g3          | 12 |         15.8 |     0 |          27.4 |          9.1 |          35.9 |               3.3 |    0   0 | 1.37
+crossing 3 click          main        | 12 |         15.6 |     0 |          23.8 |          8.2 |          33.2 |               3.3 |    4   0 | 1.34
+crossing 3 route          g3          | 12 |         18.4 |     0 |          30.6 |          7.0 |          38.2 |               2.5 |    3   0 | 1.42
+crossing 3 route          main        | 12 |         18.6 |     0 |          31.1 |          9.5 |          38.1 |               2.5 |    6   0 | 1.43
+crossing 5 click          g3          | 12 |         33.5 |     0 |          79.3 |         19.6 |          84.5 |               3.2 |    4   0 | 2.14
+crossing 5 click          main        | 12 |         35.3 |     0 |          78.8 |         17.5 |          84.9 |               3.2 |    4   0 | 1.98
+crossing 5 route          g3          | 12 |         39.5 |     1 |          45.7 |         22.9 |          79.4 |               3.0 |    4   0 | 2.89
+crossing 5 route          main        | 12 |         39.0 |     0 |          41.9 |         18.9 |          80.0 |               2.7 |    7   0 | 1.99
+locks 3 click             g3          | 12 |         20.1 |     4 |          33.1 |         12.1 |          48.3 |               3.6 |   13   0 | 1.45
+locks 3 click             main        | 12 |         20.1 |     4 |          33.1 |         12.1 |          48.3 |               3.6 |   13   0 | 1.45
+locks 3 route             g3          | 12 |         20.9 |     0 |          34.6 |         11.1 |          50.2 |               4.0 |    7   0 | 1.46
+locks 3 route             main        | 12 |         20.9 |     0 |          34.6 |         11.1 |          50.2 |               4.0 |    7   0 | 1.46
+locks 5 click             g3          | 12 |         26.4 |     1 |          47.0 |         16.8 |          76.8 |               5.4 |    4   0 | 1.76
+locks 5 click             main        | 12 |         26.4 |     1 |          47.0 |         16.8 |          76.8 |               5.4 |    4   0 | 1.76
+locks 5 route             g3          | 12 |         23.3 |     0 |          38.5 |         18.4 |          73.5 |               5.2 |    1   0 | 1.67
+locks 5 route             main        | 12 |         23.3 |     0 |          38.5 |         18.4 |          73.5 |               5.2 |    1   0 | 1.67
+terminus 3 click          g3          | 12 |         19.6 |     0 |          30.8 |          5.2 |          49.0 |               9.0 |    0   0 | 1.46
+terminus 3 click          main        | 12 |         19.6 |     0 |          30.8 |          5.2 |          49.0 |               9.0 |    0   0 | 1.46
+terminus 3 route          g3          | 12 |         17.1 |     0 |          26.8 |          0.0 |          50.7 |               6.7 |    0   0 | 1.21
+terminus 3 route          main        | 12 |         17.1 |     0 |          26.8 |          0.0 |          50.7 |               6.7 |    0   0 | 1.21
+terminus 5 click          g3          | 12 |         11.2 |     0 |          43.1 |         21.5 |          77.7 |               6.7 |    0   0 | 2.46
+terminus 5 click          main        | 12 |         11.2 |     0 |          43.1 |         21.5 |          77.7 |               6.7 |    0   0 | 2.46
+terminus 5 route          g3          | 12 |         41.8 |     1 |          42.9 |         25.6 |          72.0 |               6.5 |    0   0 | 4.67
+terminus 5 route          main        | 12 |         41.8 |     1 |          42.9 |         25.6 |          72.0 |               6.5 |    0   0 | 4.67
+yard_open 3 click         g3          | 12 |         14.0 |     0 |          26.8 |          3.2 |          43.7 |              11.3 |    0   0 | 2.04
+yard_open 3 click         main        | 12 |         14.0 |     0 |          26.8 |          3.2 |          43.7 |              11.3 |    0   0 | 2.04
+yard_open 3 route         g3          | 12 |          8.7 |     0 |          26.9 |          0.0 |          45.4 |              11.8 |    0   0 | 1.15
+yard_open 3 route         main        | 12 |          8.7 |     0 |          26.9 |          0.0 |          45.4 |              11.8 |    0   0 | 1.15
+yard_open 5 click         g3          | 12 |         14.6 |     2 |          40.8 |          9.4 |          72.8 |               8.0 |    0   0 | 2.34
+yard_open 5 click         main        | 12 |         14.6 |     2 |          40.8 |          9.4 |          72.8 |               8.0 |    0   0 | 2.34
+yard_open 5 route         g3          | 12 |         10.1 |     0 |          32.8 |          0.0 |          70.4 |               7.2 |    0   0 | 1.76
+yard_open 5 route         main        | 12 |         10.1 |     0 |          32.8 |          0.0 |          70.4 |               7.2 |    0   0 | 1.76
+
+EQUALITY click cells: 72 identical across arms, 24 differ
+  DIFFER crossing 3 click seed 6213
+  DIFFER crossing 3 click seed 6214
+  DIFFER crossing 3 click seed 6215
+  DIFFER crossing 3 click seed 6216
+  DIFFER crossing 3 click seed 6217
+  DIFFER crossing 3 click seed 6218
+  DIFFER crossing 3 click seed 6219
+  DIFFER crossing 3 click seed 6220
+  DIFFER crossing 3 click seed 6221
+  DIFFER crossing 3 click seed 6222
+  DIFFER crossing 3 click seed 6223
+  DIFFER crossing 3 click seed 6224
+  DIFFER crossing 5 click seed 6213
+  DIFFER crossing 5 click seed 6214
+  DIFFER crossing 5 click seed 6215
+  DIFFER crossing 5 click seed 6216
+  DIFFER crossing 5 click seed 6217
+  DIFFER crossing 5 click seed 6218
+  DIFFER crossing 5 click seed 6219
+  DIFFER crossing 5 click seed 6220
+  DIFFER crossing 5 click seed 6221
+  DIFFER crossing 5 click seed 6222
+  DIFFER crossing 5 click seed 6223
+  DIFFER crossing 5 click seed 6224
+TOTAL g3         | placed 755.0 flipping 0.0 flips 0.0 relays 68.0 relaying 26.0 terr_c 68.0 terr_a 0.0 reseats 0.0 away 1501.2 held 1501.2 seat 4828.6
+TOTAL main       | placed 756.0 flipping 0.0 flips 0.0 relays 53.0 relaying 28.0 terr_c 53.0 terr_a 0.0 reseats 0.0 away 1286.1 held 1286.1 seat 4679.1
+>> remote: copy-back verified, 626 files, sha256
+>> remote: copy-back moved 32 stale log(s) an earlier run left beside this run's rows, into build/.stale-20261024-145736/
+   moved  build/orders-bar-streets/logs/crossing-3-click-g3-s3801.log
+   moved  build/orders-bar-streets/logs/crossing-3-route-g3-s3801.log
+   moved  build/orders-bar-streets/logs/crossing-5-click-main-s3801.log
+   moved  build/orders-bar-streets/logs/terminus-3-route-g3-s3801.log
+   moved  build/orders-bar-streets/logs/locks-3-route-g3-s3801.log
+   moved  build/orders-bar-streets/logs/terminus-3-click-main-s3801.log
+   moved  build/orders-bar-streets/logs/yard_open-3-route-g3-s3801.log
+   moved  build/orders-bar-streets/logs/locks-5-click-main-s3801.log
+   moved  build/orders-bar-streets/logs/terminus-5-route-main-s3801.log
+   moved  build/orders-bar-streets/logs/locks-3-route-main-s3801.log
+   moved  build/orders-bar-streets/logs/yard_open-5-route-main-s3801.log
+   moved  build/orders-bar-streets/logs/crossing-3-route-main-s3801.log
+   moved  build/orders-bar-streets/logs/terminus-5-click-main-s3801.log
+   moved  build/orders-bar-streets/logs/crossing-5-route-main-s3801.log
+   moved  build/orders-bar-streets/logs/terminus-5-route-g3-s3801.log
+   moved  build/orders-bar-streets/logs/yard_open-5-route-g3-s3801.log
+   moved  build/orders-bar-streets/logs/yard_open-5-click-main-s3801.log
+   moved  build/orders-bar-streets/logs/locks-5-click-g3-s3801.log
+   moved  build/orders-bar-streets/logs/locks-3-click-g3-s3801.log
+   moved  build/orders-bar-streets/logs/locks-3-click-main-s3801.log
+   ... and 12 more
+>> remote: make native orders-probe ORDERS_PROBE_MAPS=locks crossing terminus yard_open ORDERS_PROBE_SQUADS=3 5 ORDERS_PROBE_ROUTES=click route ORDERS_PROBE_ARMS=main: g3:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on,--place-clear-seat=on ORDERS_PROBE_SEEDS=6213 6214 6215 6216 6217 6218 6219 6220 6221 6222 6223 6224 ORDERS_PROBE_DIR=build/orders-bar-streets ORDERS_PROBE_JOBS=14 TANK_SQUAD_SLOT_TIMEOUT=14400 exited 0 (build/ copied back)
