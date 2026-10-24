@@ -52,6 +52,24 @@ F1's and F2's directions pages, once filed.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**2026-10-24 ~00:10: F1 + F2 directions page filed; waiting on his picks (lead gate). Full check queued on 6f793958f.**
+- **Page:** https://claude.ai/artifact/7zsrhB5GG4hV4ckcCWaxGD (db `picks/round39`: sight / fire / slowed / touch / words; empty
+  at filing). Rule looks filmed with `make remote T=feedback-shots FB_SLOTS=sight,fire,slowed` (191185d7a; fire at 0fc88183a
+  + staging) on builder0, laptop preset; phone map with `make remote T=touch-shots TOUCH_LAYOUTS='top dock split'` (7db78b1b6).
+  Clips and stills kept in ~/projects/godot-feedback-keep/r39/ (final-ss, fire4, touch3).
+- **My recommendations:** sight none; fire none; slowed amber; phone map dock. The sight `edge` look is built (and tested) but
+  left off the page: it can't be seen in a staged shot (the army lights the whole site; the boundary falls behind buildings).
+- quick-remote builder0: 201 passed / 0 failed (7db78b1b6, all the diff's tests + lint). Orchestrator messaged.
+- Staging lesson (feedback-shots on builder0): the window renders a few frames a second, so physics jumps most of a sim second
+  between drawn frames; a timed look (the wedge, 0.9 s) must be staged right before each capture, not on the sim clock.
+
+**Questions for the lead** (on the page): the four picks.
+
+**What to playtest:** `make skirmish` (the fog fix is ON: drive a crew away from an enemy and watch the lit ground follow it);
+the looks: `make rules-skirmish` won't pass them; use `.tools/godot-*/Godot_* --path . -- --skirmish --enemy=cpu
+--rules-look=slowed:amber,fire:wedge,sight:ring` and `-- --skirmish --touch-map --ui-touch --touch-layout=dock`
+(C39.6's `make skirmish SKIRMISH_FLAGS=` once native's grant lands).
+
 **2026-10-23 ~22:00: started.** Plan (in order; each a test first):
 1. **F1a the fog lies (correctness, ships with its test):** FOUND. The fog of war is the range he is shown; the field
    (game/match/visibility_field.gd) takes one crew's look a tick and publishes once a cycle (15 ticks, or one tick per crew
