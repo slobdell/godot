@@ -1386,6 +1386,42 @@
      ]
     }
    ]
+  },
+  "moving_miss": {
+   "priority": 30,
+   "stale_s": 4,
+   "cooldown_s": 45,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "spraying on the move",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      }
+     ]
+    }
+   ]
+  },
+  "pinned_slow": {
+   "priority": 30,
+   "stale_s": 4,
+   "cooldown_s": 45,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "crawling under fire",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      }
+     ]
+    }
+   ]
   }
  }
 }
