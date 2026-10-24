@@ -155,3 +155,12 @@ would still ask a series to find a ~50 % cut where the dev read shows ~4 %. That
 time in a round where the light lane is the bottleneck. `--seat-aside=v2` stays on main, OFF. If he reports CPU screens blocking
 their own traffic, the lever is the off-seat half (screen crews >= 10 m off their seats while driving: 48-50 % of screen
 give-ways), not the seat choice.
+**Bar M1 tree note:** each leg of the series rsyncs the branch as it stands when that leg starts. Commits after c35cc93ac
+(879caa818 judge, f22e662e7 wedge_trace partner classes, Status) touch no game code, so every leg runs c35cc93ac's game code. No
+game-code commit until the series ends.
+
+### Stretch (the 82 long ORCA episodes): instrument READY, run after the bar
+`tests/manoeuvre/wedge_trace.gd` now records, for each wedged tick, the partner: the friendly hull touched, else the nearest friend
+ahead within 8 m. Each is classed `state/way/mutual`, and `tests/manoeuvre/partner_table.py` tables it over round 37's target
+(touching, net < 0.5 m, >= 3 s). Laptop smoke only (f22e662e7, locks 6640, 90 s: 250 episodes, 2 target). The trace runs on
+builder0 light (`native manoeuvre-wedge-trace`, locks/terminus/sumps x round 37's 6640-6663) once the bar series frees the lane.
