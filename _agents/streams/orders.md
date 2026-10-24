@@ -93,3 +93,36 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - With v6 (laptop, n 1): squad 2 keeps its place, all in at 17.3 s.
   - A shapes-only estimate (no preview) couldn't separate the places (11.0 v 13.0 m); removed.
 
+### Bars (filed here before any judged number; the orchestrator records them on main)
+- **Bar G1 v5 GROUP LEAD (orders, round 39; filed 2026-10-24 before any number on its seeds; code ef68308d1, all OFF).**
+  What he would see: select all and click a street. Every squad lands in that street, stacked back along it, the squad in
+  front taking the far place, so no squad parks on the way of one still to pass, and every squad gets in.
+  - **Arm:** `column:--group-lay=column,--group-rank-shift=half,--group-whole=click,--group-clear=reached,--group-lead=drive`
+    (G1 v4's arm + v5).
+  - **Tree:** the first commit at or after CP39.1 merged into stream/orders (C39.3) whose builder0 full check is green. G2 and
+    G3 switches OFF in both arms; settle's and manoeuvre's CP39.1 switches as main has them, both arms.
+  - **Probe:** `make native orders-probe`, arms `main:` v the arm above, builder0 light lane J <= 4,
+    `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make variable, **FRESH seeds 6201-6212** (n 12 a cell). Cells: as Bar G1 v4 (the 12
+    street cells, his click as `terminus_his` 3 / 5, yard_open 3 / 5 x click / route).
+  - **Judge:** `orders_judge.py g1v4` (street + his rows; yard_open rows as the 5th argument). Counter, deciding lines (over
+    the click cells + his click: places outside <= 25 % of base; route_left_m <= 50 %; re-dealt 0 over the click cells) and
+    guards (every R36.6 guard per cell over all 14 cells, as filed; contacts <= base x 1.1 + 5; yard_open identical) are G1
+    v4's, unamended. The judge's all-in guard now passes a cell where the base never got every squad in (be1219fa7); the
+    never-in line still judges that cell.
+  - **Known risk:** terminus 5 route never-in (dev read 1: s3805 squad 1, v4's whole first click, not v5's ordering; laptop
+    does not reproduce). Taken as the honest price of a fresh read, as R38.44.
+  - **Plus:** paired top-down shots of his click, main v column, looked at. A pass ships ON.
+- **Bar G3 v6 PLACE_CLEAR SEAT (orders, round 39; filed 2026-10-24 before any number on its seeds; code da9591207, all
+  OFF).** What he would see: no squad parks on top of another, and a squad moved to make room parks the way it would have
+  where it was sent, with no shuffle after it stops.
+  - **Arm:** `g3:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on,--place-clear-seat=on`.
+  - **Tree:** as Bar G1 v5 (after CP39.1, green builder0 full check; G1 / G2 OFF in both arms).
+  - **Probe:** as Bar G3 v5 (the same 18 cells), **FRESH seeds 6213-6224** (n 12 a cell).
+  - **Judge:** `orders_judge.py g3`: the counter, deciding line (pairs < 12 m <= 25 % of base), offset guards, R36.6 guards
+    (twitch included) and contacts as Bar G3 v5, unamended.
+  - **Dev evidence:** dev read 1 (builder0, b7bef53b1, dev seeds 3804-3809): main -> g3v6 PASS.
+  - A pass ships ON.
+- **G2 v2: no bar yet.** Dev read 3 (584d23588) passes both deciding lines (his routes off 5,022 -> 2,523, <= 60 %; route
+  cells 2,404 -> 1,432, <= 75 %) and fails guards on 9 cells (end foreign, twitch). A column stands squads closer than
+  main's spread body, and the stops in the street are CP39.1's cause. It re-reads on CP39.1 first; a bar needs a fresh block
+  (6201-6224 are G1's and G3's).
