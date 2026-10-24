@@ -55,6 +55,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **REPORT 2026-10-24 ~10:10: F3 + stretch built (4ce6759b8, 7567d3753); full check owed after main's batch-1 check is green
 and merged in (the orchestrator's order).** builder0 `make quick` exited 0, 261 passed / 0 failed (7567d3753's tree, every
 test the diff since 906557c06 touches + lint). d8f88b3ab (the fog fix) is in main's batch-1.
+- **Full check, a2b560896 (main 76f42a9c3 merged + R39.5), builder0, 2026-10-24 ~12:00: RED, not from this stream.**
+  builder0 was shared with another check (perf lock held 300 s; 50 min to 4/26 targets) and the slot killed it at
+  5400 s: `test` and `remote-guard-test` were Terminated, not failed; 11 NOT RUN. `relay-smoke` read room WU2K7 from
+  build/relay-smoke-host.log while the host this run opened PSVVQ (a stale-log race, outside my paths). sim-baseline 13
+  maps unmoved, determinism 258cc8b1c957a796, ai-scenarios 54/0 (perf NOT JUDGED: unpinned). Rerun on the next commit.
 - **His picks** (db `picks/round39`, 2026-10-24 06:58Z; the orchestrator confirmed, R39.4): sight none, fire none, slowed amber,
   touch dock, all six caller lines, no words. **ON by default now:** `slowed` (FeedbackLook slot; `--feedback-look=slowed:off`):
   the pinned chevrons show from the first 5 % of R3's slow and warm yellow -> orange; the phone map's `dock` layout
@@ -77,11 +82,20 @@ test the diff since 906557c06 touches + lint). d8f88b3ab (the fog fix) is in mai
   clear. Test: every crew above the bars in the overview, the followed crew clear in the follow view, at 1280x720, 2400x1080 and
   810x1800. test_tactical_map.gd is unchanged from main (no pin). Looked at: touch-shots dock (builder0): his squad above the
   bars at 2400x1080 and 810x1800.
-- **Known issues:** NOT verified: the RTS rig's own overview button in a real skirmish (perspective, 77 degrees, game/camera/
-  rts_camera.gd, not mine) likely draws his end under dock's bars the same way; a capture flag couldn't hold it open (the rig's
-  tracking took the view back). If it does, the fix is the rig's overview framing taking a bottom screen inset (TacticalMap can
-  hand it `touch_rects["text_floor"]`). In portrait, the order-preview line floats mid-screen. Caller lines off until he hears them.
-- **Merge notes:** outside my paths, the announcer data: assets/announcer/{lines.json, beats.json, README.md, ledger.md, clips/manifest.json, 6 clips} (round 37 did the same).
+- **R39.5 the rig's overview (granted game/camera/rts_camera.gd for this):** `RtsCamera.overview_inset_px` (0 by default:
+  desktop byte-identical, tested) is set by TacticalMap on touch layouts to the bars' height. In the overview the lens widens and
+  the view tips toward his end together (`RtsCamera.overview_fit`, solved exactly), so the old frame's top stays the screen's top
+  (the far end) and its bottom lands on the bars' top; the follow view is never inset. Test (the real Overview button, a frozen
+  rig with and without the inset): every grid mark the old overview showed is above the bars at 2400x1080 (78 marks), 1800x810
+  (78), 810x1800 (18; lens 35 -> 62.6 degrees there: portrait's bars are 804 px). Stills: `make remote T=touch-shots
+  TOUCH_LAYOUTS='dock top' FB_FLAGS=--touch-overview` (builder0; kept r39/f3/touch-overview2/).
+- **Known issues:** the phone map hands the rig no vision region (only desktop's controls do, skirmish_mode.gd:638), so its
+  overview centres on the arena middle and his crews at spawn were off the bottom of the screen in round 2's layout too; with
+  dock's wider lens they peek in at the bottom edge in landscape (portrait: on screen, clear). Fix: the touch map gets desktop's
+  vision callback (skirmish_mode.gd, not mine; asked the orchestrator). In portrait, the order-preview line floats mid-screen.
+  Caller lines off until he hears them.
+- **Merge notes:** outside my paths: game/camera/rts_camera.gd (R39.5 grant: overview_inset_px + _inset_overview +
+  overview_fit, additive) and the announcer data: assets/announcer/{lines.json, beats.json, README.md, ledger.md, clips/manifest.json, 6 clips} (round 37 did the same).
   R39.3 noted: laptop Godot runs under `flock /tmp/tank-squad-laptop-godot.lock`, none below 1500 MiB available.
 - **What to playtest:** `.tools/godot-*/Godot_* --path . -- --skirmish --enemy=cpu --announcer-rules=on` (the chevrons under fire;
   listen for the two new calls when crews fire on the move or crawl under fire); `-- --skirmish --touch-map --ui-touch` (dock).
