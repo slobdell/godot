@@ -52,16 +52,35 @@ F1's and F2's directions pages, once filed.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**REPORT 2026-10-24 ~01:30: green hash to merge d8f88b3ab** (`make check` builder0 exited 0, 3144 passed / 0 failed, 25 passed +
-2 NOT JUDGED: perf-judge refused at 2.3-2.5x busy, scenario_perf unpinned; sim-baseline unmoved on every map). **ON:** the fog fix
-(F1a). **OFF until his picks:** rule looks, touch layouts. **At a lead gate:** F1/F2 picks + caller lines on the page; F3 builds
-them when the orchestrator relays (db `picks/round39`: sight/fire/slowed/touch/lines/words). Orchestrator messaged with the hash.
-**Next steps on his picks:** turn the picked look's default on in FeedbackLook.parse_rules / TouchLayout.from_flags (and delete
-the unpicked looks, as round 37/38 did), re-film at his preset; voice the approved lines (`make announcer-generate APPROVED=1
-ONLY=...`), wire `moving_misses` / `pinned_slow` events in MatchEventAdapter + AnnouncerMemory behind `--announcer-rules=on`.
-**Known issues:** the sight `edge` look can't be filmed in the staged shot; the sight ring draws over rooftops (2D overlay);
-on the phone map's portrait layout the order-preview line floats mid-screen (below the top third).
-**Merge notes:** no shared files; TacticalMap's bars are BoxContainer (were HBoxContainer).
+**REPORT 2026-10-24 ~10:10: F3 + stretch built (4ce6759b8, 7567d3753); full check owed after main's batch-1 check is green
+and merged in (the orchestrator's order).** builder0 `make quick` exited 0, 261 passed / 0 failed (7567d3753's tree, every
+test the diff since 906557c06 touches + lint). d8f88b3ab (the fog fix) is in main's batch-1.
+- **His picks** (db `picks/round39`, 2026-10-24 06:58Z; the orchestrator confirmed, R39.4): sight none, fire none, slowed amber,
+  touch dock, all six caller lines, no words. **ON by default now:** `slowed` (FeedbackLook slot; `--feedback-look=slowed:off`):
+  the pinned chevrons show from the first 5 % of R3's slow and warm yellow -> orange; the phone map's `dock` layout
+  (`--touch-layout=top` keeps round 2's). **Deleted:** sight edge/ring, fire wedge, slowed brake, split, `--rules-look`,
+  FeedbackFx's moving-shot record, the fog shader's settled glow.
+- **Caller lines (stretch), behind `--announcer-rules=on`:** MatchEventAdapter counts shells fired on the move (15 %+ of top
+  speed) that hit no enemy and crews R3 holds 20 %+ slow for 2 s while rolling; momentum carries them as an optional `rules`
+  field (K5 and its Python twin unchanged, as round 37's `face`). AnnouncerMemory: 3+ misses, no hit -> `moving_miss`; a crawling
+  crew -> `pinned_slow` (`unit_<unit>`); beats.json cooldown 45 s each. Voiced caller.moving_miss.01-03 + caller.pinned_slow.01-03:
+  ElevenLabs 433 characters, STT flagged 0, credits read 121124 -> 121124 (settles later, as round 37's), ledgered.
+- **Looked at (builder0, laptop preset, 7567d3753; kept ~/projects/godot-feedback-keep/r39/f3/):** `feedback-shots
+  FB_SLOTS=slowed`: the 50 % crew's chevron is orange with amber, yellow without; the 15 % crew gains a chevron (behind the message
+  log in this framing). `touch-shots TOUCH_LAYOUTS=dock` at 2400x1080 / 1800x810 / 810x1800: top of the screen clear, nothing on
+  the bug or radar.
+- **Known issues:** with dock, a unit sitting bottom-centre is under the chips and can't be tapped through them (found by
+  test_tactical_map's follow camera; that one input-pipeline test now pins `top`). He should feel this in a playtest. In portrait,
+  the order-preview line floats mid-screen (below the top third). The caller lines are not on until he hears them.
+- **Merge notes:** outside my paths, two tests and the announcer data: tests/test_tactical_map.gd (one test pins `top`, 3 lines),
+  assets/announcer/{lines.json, beats.json, README.md, ledger.md, clips/manifest.json, 6 clips} (round 37 did the same).
+  R39.3 noted: laptop Godot runs under `flock /tmp/tank-squad-laptop-godot.lock`, none below 1500 MiB available.
+- **What to playtest:** `.tools/godot-*/Godot_* --path . -- --skirmish --enemy=cpu --announcer-rules=on` (the chevrons under fire;
+  listen for the two new calls when crews fire on the move or crawl under fire); `-- --skirmish --touch-map --ui-touch` (dock).
+
+**2026-10-24 ~01:30 (superseded): green hash d8f88b3ab** (`make check` builder0 exited 0, 3144 passed / 0 failed, 25 passed +
+2 NOT JUDGED: perf-judge refused at 2.3-2.5x busy, scenario_perf unpinned; sim-baseline unmoved on every map). The fog fix (F1a)
+ON; picks and caller lines then at the lead gate.
 
 **2026-10-24 ~00:10: F1 + F2 directions page filed; waiting on his picks (lead gate). Full check queued on 6f793958f.**
 - **Page:** https://claude.ai/artifact/7zsrhB5GG4hV4ckcCWaxGD (db `picks/round39`: sight / fire / slowed / touch / words; empty
