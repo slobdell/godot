@@ -51,7 +51,14 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (round 39 worker, 2026-10-23 ~22:30 PDT; in progress)
+### Report (round 39 worker, 2026-10-24 ~00:30 PDT): every backlog item and the stretch done
+
+**HAND-OVER (green): stream/native 8f018edf7** (builder2 3137/0, 13 sim-baseline maps unmoved; Status-only commits after
+it). **N3's pair: pair/native-givewaychain bb8043686** (builder2 3143/0), merged by the orchestrator beside manoeuvre's
+branch. **Left:** the scoreboard row's fights/moves/orders part for 8952c3d64 (run.sh, at a doctrine chunk pause; nothing
+waits on it); perf-judge of the native trig change on a quiet builder0 (main's own check).
+**To playtest (the lead):** nothing changes on screen. `make skirmish SKIRMISH_FLAGS="--rules-off=sight,spread,pin_slow"`
+plays the old rules; `make trig-info` says which trig this machine runs.
 
 **Plan (order):** N1 first (doctrine waits) and running in the background → N2 → N3 (named by manoeuvre at ~21:45) → N4 →
 N5 → stretch. Decided: N1 runs on main **8952c3d64**, the launch main (main 906557c06 differs from it in docs only).
@@ -81,8 +88,11 @@ N5 → stretch. Decided: N1 runs on main **8952c3d64**, the launch main (main 90
   - Tests: test_native_trig.gd (engine atan2f known answer: 2/0 under make; FAILS under TRIG=system, as designed) and
     tools/test_trig.sh (6/0).
   - **R38.25's "never pair a laptop read with a builder read" can be lifted for runs through make** (orchestrator's call).
-- **N3 DONE on a pair branch: `pair/native-givewaychain` 37735bf4b** (on manoeuvre's 14a10e719); quick-remote running on
-  builder0.
+- **N3 DONE, GREEN: `pair/native-givewaychain` bb8043686** (on manoeuvre's 14a10e719).
+  - Full check, builder2: `make check exited 0`, 3143 passed / 0 failed, 26 targets, 13 sim-baseline maps unmoved.
+  - Quick, builder0: 104/0. Chain stages ON / ON owned / OFF: 105 drives each, 0 mismatches.
+  - bb8043686 = 37735bf4b + the fix for manoeuvre's jam_census.gd:408 lint error (`var started: bool`), which failed the
+    first quick. manoeuvre has the same line as d7259b161, so the merge is clean.
   - drive_native.cpp chain_in_play / chain_far mirror Movement._chain_reach / _chain_far, at the same two places in
     begin_yield.
   - Config: CHAIN_M (the ready flag) and CHAIN_SLACK_M.
