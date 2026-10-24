@@ -17,7 +17,7 @@ set -euo pipefail
 : "${GODOT:?the Godot binary}" "${TOOLS_DIR:?.tools}" "${DOWNLOADS:?.tools/downloads}"
 : "${GODOTCPP_VERSION:?}" "${GODOTCPP_SHA256:?}" "${GODOTCPP_URL:?}" "${GODOTCPP_SRC:?}" "${GODOTCPP_BUILD:?}"
 : "${GODOTCPP_LIB:?}" "${NATIVE_FP_FLAGS:?}" "${NATIVE_DIR:?}" "${NATIVE_BUILD:?}" "${NATIVE_BIN:?}" "${NATIVE_SO:?}"
-: "${NATIVE_GDEXT:?}" "${NATIVE_JOBS:=4}" "${NATIVE_CPUS:=}" "${CMAKE:=cmake}"
+: "${NATIVE_GDEXT:?}" "${NATIVE_JOBS:=4}" "${NATIVE_CPUS:=}" "${CMAKE:=cmake}" "${NATIVE_TRIG:=cr}"
 
 say() { echo ">> native: $*"; }
 
@@ -85,7 +85,7 @@ flock -u 9
 native_abs=$(abs "$NATIVE_DIR")
 build_dir=$(abs "$NATIVE_BUILD")
 bin_dir=$(abs "$NATIVE_BIN")
-stamp_want="host=$(hostname) tree=$native_abs flags=$NATIVE_FP_FLAGS godot-cpp=$GODOTCPP_VERSION lib=$lib_abs"
+stamp_want="host=$(hostname) tree=$native_abs flags=$NATIVE_FP_FLAGS godot-cpp=$GODOTCPP_VERSION lib=$lib_abs trig=$NATIVE_TRIG"
 if [ -e "$build_dir/.stamp" ] && [ "$(cat "$build_dir/.stamp")" != "$stamp_want" ]; then
 	say "the build tree is another machine's or another flag set's ($(cat "$build_dir/.stamp")): rebuilding"
 	rm -rf "$build_dir"
@@ -100,7 +100,7 @@ echo "$stamp_want" > "$build_dir/.stamp"
 if [ ! -e "$build_dir/CMakeCache.txt" ]; then
 	run "$CMAKE" -S "$native_abs" -B "$build_dir" -DGODOTCPP_SRC="$src_abs" -DGODOTCPP_BUILD="$build_abs" \
 		-DGODOTCPP_LIB="$lib_abs" -DTANK_NATIVE_GODOTCPP="$GODOTCPP_VERSION" -DTANK_NATIVE_BUILD_HOST="$(hostname)" \
-		-DTANK_NATIVE_BIN="$bin_dir" -DTANK_NATIVE_FP_FLAGS="$NATIVE_FP_FLAGS" "${launcher[@]}" > "$build_dir/configure.log" 2>&1 \
+		-DTANK_NATIVE_BIN="$bin_dir" -DTANK_NATIVE_FP_FLAGS="$NATIVE_FP_FLAGS" -DTANK_NATIVE_TRIG="$NATIVE_TRIG" "${launcher[@]}" > "$build_dir/configure.log" 2>&1 \
 		|| { tail -30 "$build_dir/configure.log"; say "configure FAILED (see $build_dir/configure.log)"; exit 1; }
 fi
 # Round 35 (N3, R35.15): a source whose CONTENT changed since the last successful build is touched first, so cmake's
@@ -114,4 +114,4 @@ grep -E "warning:" "$build_dir/build.log" | head -20 || true
 [ -s "$NATIVE_SO" ] || { say "built, but $NATIVE_SO is missing"; exit 1; }
 hostname > "$bin_dir/.built-on"
 cp "$NATIVE_DIR/tank_squad.gdextension.in" "$NATIVE_GDEXT"
-say "ON: $NATIVE_SO ($(du -h "$NATIVE_SO" | cut -f1), $(hostname), $NATIVE_FP_FLAGS) and $NATIVE_GDEXT"
+say "ON: $NATIVE_SO ($(du -h "$NATIVE_SO" | cut -f1), $(hostname), $NATIVE_FP_FLAGS, trig $NATIVE_TRIG) and $NATIVE_GDEXT"

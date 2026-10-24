@@ -51,7 +51,32 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (round 39 worker, 2026-10-23 ~22:30 PDT; in progress)
+### Report (round 39 worker, 2026-10-24 ~00:30 PDT): every backlog item and the stretch done
+
+**HAND-OVER (green): stream/native 8f018edf7** (builder2 3137/0, 13 sim-baseline maps unmoved; Status-only commits after
+it). **N3's pair: pair/native-givewaychain bb8043686** (builder2 3143/0), merged by the orchestrator beside manoeuvre's
+branch. **Left:** the scoreboard row's fights/moves/orders part for 8952c3d64 (run.sh, at a doctrine chunk pause; nothing
+waits on it); perf-judge of the native trig change on a quiet builder0 (main's own check).
+**After the hand-over (2026-10-24, the orchestrator's asks):**
+- **Merged main 259926070** (0a34b4ceb). main 76f42a9c3 judged +8.8 % on builder0: 8,366 us/tick v 8952c3d64's 7,687.
+- **The trig cost A/B is built, its run DEFERRED to the orchestrator's go** (the round's close, when builder0 empties, ~20:00
+  PDT). `make remote-quiet T=trig-perf-ab`: libtank_native built cr v `NATIVE_TRIG=libm` (the only N4 change on glibc
+  >= 2.41), perf-judge per arm, 3 rounds alternating.
+  - Then, if cr ~ libm: `tools/judge/perf_ab_commits.sh 8952c3d64 <final main>` (remote-quiet per run). If 8952c3d64 still
+    reads ~7,7xx, walk batch 1's merges (a77395a49, 3b2bce5eb, e7bb2adcb, 25baad035, ffec9488f, ba6a54c1b) for the first step.
+  - The first launch (831ad5471) was stopped on a busy box: 6 of 6 attempts REFUSED (2.53-2.59x), nothing judged.
+  - Prior (not a result): a laptop micro-bench puts CORE-MATH at 8-16 ns a call; its fma through libm's PLT costs ~0.5 ns.
+- **The full-check lock, DONE (3f1f35432; tools/** for it is the orchestrator's grant):** tools/full_check_lock.sh, a flock
+  on the builder, taken by remote.sh around every full check. builder_checks.sh counts the holder.
+  - test_full_check_lock 12/0 (20 two-claimer races, one winner each); shell-tools-test 33 suites (laptop).
+  - Full check of 3f1f35432 queued on builder0 (unit native-check-3f1f35432): the close's green hash when it lands.
+- **The 8952c3d64 run.sh row:** builder2 when doctrine frees it (~14:30 PDT, doctrine says). If it would still run when
+  CP39.1 lands (~16:30), it waits until after orders' Bar G3 v6.
+**Orchestrator (R39.3):** it merges 8f018edf7 then bb8043686, then runs one main check; the trig perf line rides main's
+own check on a quiet builder0. From now on only one stream runs Godot on the laptop at a time: wrap any laptop Godot run
+in `flock /tmp/tank-squad-laptop-godot.lock <cmd>`; everything else on the builders.
+**To playtest (the lead):** nothing changes on screen. `make skirmish SKIRMISH_FLAGS="--rules-off=sight,spread,pin_slow"`
+plays the old rules; `make trig-info` says which trig this machine runs.
 
 **Plan (order):** N1 first (doctrine waits) and running in the background → N2 → N3 (named by manoeuvre at ~21:45) → N4 →
 N5 → stretch. Decided: N1 runs on main **8952c3d64**, the launch main (main 906557c06 differs from it in docs only).
@@ -81,8 +106,11 @@ N5 → stretch. Decided: N1 runs on main **8952c3d64**, the launch main (main 90
   - Tests: test_native_trig.gd (engine atan2f known answer: 2/0 under make; FAILS under TRIG=system, as designed) and
     tools/test_trig.sh (6/0).
   - **R38.25's "never pair a laptop read with a builder read" can be lifted for runs through make** (orchestrator's call).
-- **N3 DONE on a pair branch: `pair/native-givewaychain` 37735bf4b** (on manoeuvre's 14a10e719); quick-remote running on
-  builder0.
+- **N3 DONE, GREEN: `pair/native-givewaychain` bb8043686** (on manoeuvre's 14a10e719).
+  - Full check, builder2: `make check exited 0`, 3143 passed / 0 failed, 26 targets, 13 sim-baseline maps unmoved.
+  - Quick, builder0: 104/0. Chain stages ON / ON owned / OFF: 105 drives each, 0 mismatches.
+  - bb8043686 = 37735bf4b + the fix for manoeuvre's jam_census.gd:408 lint error (`var started: bool`), which failed the
+    first quick. manoeuvre has the same line as d7259b161, so the merge is clean.
   - drive_native.cpp chain_in_play / chain_far mirror Movement._chain_reach / _chain_far, at the same two places in
     begin_yield.
   - Config: CHAIN_M (the ready flag) and CHAIN_SLACK_M.
@@ -92,6 +120,26 @@ N5 → stretch. Decided: N1 runs on main **8952c3d64**, the launch main (main 90
   - Mutants caught: no slack, 4 mismatches; no under-way exemption, 18.
 - **N5 DONE (78c5fff87):** SLOT_LOADED_PER_CORE / QW_LOADED_PER_CORE default 1.0 (was 1.5). test_loaded 11/0,
   slot-light 6/0, quiet-window 28/0 (laptop).
+
+- **N1 DONE (407a156cb), messaged doctrine and the orchestrator (R39.2):** main 8952c3d64, builder2, 21:13-21:56 PDT,
+  320 of 320 fights, 0 lost, 0 SCRIPT ERRORs. Base `references/scoreboard/guards/8952c3d64.fights.jsonl` (+ .json).
+  - Blob wins 41 % (± 10 %), kr 0.78. Turtle wins 38 % (± 12 %), kr 0.82.
+  - Paired v 686150ed2 (rules OFF): blob -5.6 points (se 2.9; 16 fights flipped to a loss, 7 to a win; McNemar p 0.047),
+    kr 0.85 -> 0.78. Turtle -3.7 (se 3.8), inside its noise.
+  - Not yet run: the fights/moves/orders part of the row (run.sh, ~1.5 h of builder2). Nothing waits on it. It goes at
+    a doctrine chunk-boundary pause.
+- **a577e3776 GREEN (builder2):** `make check exited 0`, 3137 passed / 0 failed, 26 targets, all 13 sim-baseline maps
+  unmoved (N4 moves no builder sim).
+  - The ai-scenarios gate held with one note: scout_suppress::test_target_crossing is pending but now passes.
+  - That's the rules-ON effect, not N4: doctrine's tree (no N4) has already promoted it and passes it on builder0.
+- **Stretch DONE (e8e7a8d46): the physics engine's share of a tick** (his question).
+  - Run: builder0 light lane, `make physics-share`, 3 CPU v CPU fights (condemned mirror, 5200 budget, 120 s), 9,930
+    ticks. The box was loaded, but the share is a ratio within each run.
+  - **The engine (Godot's frame outside the scripts, mostly Jolt's step) is 4.2 % of a tick.**
+  - **`tank/drive` (motion model + move_and_slide) is 4.1 %. So physics is at most 8.3 %.**
+  - An infinitely fast physics engine would make a sim at most ~9 % faster. The scripts (brains, orders) are the other
+    ~92 %. Check time is mostly sims, so the same bound holds for a check.
+  - Laptop (indicative, one 20 s fight): 6.7 % + 6.0 %.
 
 **Merge notes (shared files):** mk/play.mk (C39.6 GRANT); tests/test_native_trig.gd and tools/test_trig.sh,
 tools/test_skirmish_flags.sh (new); `game/ai/native/native_drive.gd` (the native seam; not in round 39's owned list, it was

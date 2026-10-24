@@ -37,17 +37,25 @@ else()
 endif()
 
 add_library(tank_native SHARED src/register_types.cpp src/tank_native.cpp src/avoidance.cpp src/cover_native.cpp src/nav_native.cpp src/tank_record.cpp src/route_native.cpp src/drive_native.cpp src/situation_native.cpp src/matchups_native.cpp src/decide_native.cpp src/tq_native.cpp src/el_native.cpp src/mover_record.cpp src/exec_state.cpp src/gun_native.cpp src/execute_native.cpp src/motion_native.cpp src/tank_drive_native.cpp src/combat_native.cpp src/pathing_native.cpp src/perception_native.cpp src/incoming_native.cpp src/shell_native.cpp src/threat_native.cpp src/recorder_native.cpp src/controller_native.cpp src/wall_native.cpp src/feed_native.cpp src/planner_native.cpp
-	src/trig/tank_trig.c src/trig/core-math/atan2f.c src/trig/core-math/acosf.c src/trig/core-math/asinf.c src/trig/core-math/atanf.c
-	src/trig/core-math/tanf.c)
+)
 target_link_libraries(tank_native PRIVATE godot-cpp)
 separate_arguments(TANK_NATIVE_FP_FLAGS_LIST UNIX_COMMAND "${TANK_NATIVE_FP_FLAGS}")
 target_compile_options(tank_native PRIVATE ${TANK_NATIVE_FP_FLAGS_LIST} $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions> -fvisibility=hidden -Wall -Wextra -Wno-unused-parameter)
 # Round 39 (N4): the five float trig functions over the vendored CORE-MATH (correctly rounded, the builders' glibc >= 2.41
 # result), defined HIDDEN in this library, so its own atan2f/acosf/asinf/atanf/tanf calls bind here on every machine
 # (_agents/native.md "Machine-independent trig"). CORE-MATH's C is theirs, unedited: its warnings are not ours.
-set_source_files_properties(src/trig/tank_trig.c PROPERTIES COMPILE_DEFINITIONS TANK_TRIG_HIDDEN)
-set_source_files_properties(src/trig/core-math/atan2f.c src/trig/core-math/acosf.c src/trig/core-math/asinf.c
-	src/trig/core-math/atanf.c src/trig/core-math/tanf.c PROPERTIES COMPILE_OPTIONS "-w")
+# TANK_NATIVE_TRIG=libm (make NATIVE_TRIG=libm) leaves them out: the library binds libm's, for the cost A/B (make
+# trig-perf-ab); the same result on glibc >= 2.41 only.
+set(TANK_NATIVE_TRIG "cr" CACHE STRING "cr = the vendored CORE-MATH trig, hidden; libm = the system's")
+if(TANK_NATIVE_TRIG STREQUAL "cr")
+	target_sources(tank_native PRIVATE src/trig/tank_trig.c src/trig/core-math/atan2f.c src/trig/core-math/acosf.c
+		src/trig/core-math/asinf.c src/trig/core-math/atanf.c src/trig/core-math/tanf.c)
+	set_source_files_properties(src/trig/tank_trig.c PROPERTIES COMPILE_DEFINITIONS TANK_TRIG_HIDDEN)
+	set_source_files_properties(src/trig/core-math/atan2f.c src/trig/core-math/acosf.c src/trig/core-math/asinf.c
+		src/trig/core-math/atanf.c src/trig/core-math/tanf.c PROPERTIES COMPILE_OPTIONS "-w")
+elseif(NOT TANK_NATIVE_TRIG STREQUAL "libm")
+	message(FATAL_ERROR "TANK_NATIVE_TRIG is cr or libm, not ${TANK_NATIVE_TRIG}")
+endif()
 target_compile_definitions(tank_native PRIVATE
 	NDEBUG
 	TANK_NATIVE_GODOTCPP="${TANK_NATIVE_GODOTCPP}"
