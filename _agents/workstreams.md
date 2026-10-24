@@ -79,7 +79,7 @@ past 90 min passes `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make command-line variab
 
 ## Bars (round 39)
 
-**Seed registry (round 39):** 6001-6024 settle; 6101-6124 manoeuvre; 6201-6224 orders; 6301-6340 + 6401-6440 doctrine guard series
+**Seed registry (round 39):** 6001-6024 settle (+ 6025-6048 Bar H v2, R39.4); 6101-6124 manoeuvre; 6201-6224 orders (+ 6225-6236 G2 v2c, R39.4); 6301-6340 + 6401-6440 doctrine guard series
 (powered SPLIT: 4x fights); 6501-6512 feedback. Dev seeds: each stream's round-38 dev blocks may be reused for DEV reads only. Any new
 block: ask the orchestrator first.
 
@@ -92,6 +92,31 @@ block: ask the orchestrator first.
   6401-6440 x 5 maps x both sides x blob/turtle = 1600 fights an arm; none line on 6301-6340. Deciding: blob win rate DOWN > 2
   paired se AND McNemar p < 0.05. Guards: blob kill ratio not up > 2 se; turtle win rate and median length not up > 2 se; G2/G2t;
   G3; lab guard hold_fire_probe CPU `hold` <= OFF + 10 pts.
+
+- **D2s RESULT: FAILED, reverted (e453dc541).** d1822fd27 builder0 full check exited 2: scenario_cover fights_from_cover hidden
+  32 % of 40 s (bar 50; 86 % at dwell 2.0), hurt tank's longest hidden 50 ticks (bar 60); trace seed 1: COVER_FIRE -> ENGAGE at
+  ~20 s, the crew drives into the open 43 -> 22 m. The dwell stays 2.0 (110 % at ~3 s, short of his ~2 s; for the lead).
+- **D3 RESULT (lab guard): FAILED.** builder0 light hold_fire_probe, a24f4f298 rules ON, 2601-2602 x 5 maps x both sides, 20 fights
+  a line an arm: turtle-line CPU `hold` OFF 22.7 % v SPLIT 37.6 % (+14.9 v bar +10). SPLIT cannot ship from D3; its powered arm
+  runs for the record (R39.4). Series on builder2: OFF (773412e49, green builder0 3135/0) -> SPLIT -> D4 hull-down report-only ->
+  none lines; ends ~14:00 PDT 2026-10-24.
+- **S1 route-clear (settle, filed 2026-10-23 at daea2cefe's code; settle.md *Bar S1 route-clear*): RESULT FAILED.** Seeds
+  6001-6024, 6ab14f1ac's tree (green builder0 3145/0), builder0 light J4, `make native settle-s1c exited 0`. Deciding: 5-squad
+  never-in 1 -> 3 (all new: terminus 5 click s6003, terminus 5 route s6003, crossing 5 route s6009). Every guard passed (all-in 25.8
+  -> 24.7 s, contacts 11944 -> 10623, fights flat). Reported: deploy legs >= 25 m 64 -> 100. Probable cause (untraced): the clear
+  tests where the seat stands, not the drive to it. Stays OFF; no CP39.1 from settle.
+- **H v2 DEPLOY_HOLD (settle, filed 2026-10-24 at f44348d9d; settle.md *Bar H v2*):** seeds 6025-6048, 72 fights an arm
+  (locks/crossing/terminus 3-squad click), main v `--deploy-hold=on`, both `--deploy-trace`, code 6ab14f1ac's, builder0 light J4.
+  REDEAL_TRACE counts a surviving deployed seat moving > 6 m, before ducks. Counter: main loss re-lays >= 20. Deciding: held's
+  re-lays <= 20 % of main's. Guards: other-cause re-lays <= main + 3; kills and losses both sides within 1.645 se; 0 never started.
+  Pass: ON on a new hash with one full check.
+- **G1 v5 GROUP LEAD (orders, filed 2026-10-24; orders.md):** arm G1 v4's + `--group-lead=drive`; tree = first green commit at or
+  after CP39.1; FRESH seeds 6201-6212 (n 12 a cell); `orders_judge.py g1v4`, G1 v4's deciding lines and guards unamended (places
+  outside <= 25 % of base; route_left_m <= 50 %; re-dealt 0; R36.6 guards; contacts <= base x 1.1 + 5). Known risk: terminus 5
+  route never-in. Pass ships ON. Waits on CP39.1.
+- **G3 v6 PLACE_CLEAR SEAT (orders, filed 2026-10-24; orders.md):** arm `--place-clear=on,-trigger=near,-reach=on,-seat=on`; tree as
+  G1 v5; FRESH seeds 6213-6224; `orders_judge.py g3` as G3 v5 unamended (pairs < 12 m <= 25 % of base). Uses settle's deploy_preview.
+  Pass ships ON. Waits on CP39.1.
 
 ## Rulings (round 39)
 
@@ -117,6 +142,14 @@ block: ask the orchestrator first.
   stream runs Godot on the laptop at once (a laptop test, trace or probe). Take the lock with `flock /tmp/tank-squad-laptop-godot.lock
   <cmd>` and wait rather than skip. Everything else goes to builder0/builder2 through `make remote`/light lanes, whose laptop side
   only rsyncs. If `free -m` shows available < 1500 MiB, don't start a laptop run. Manoeuvre restarts its builder0 light job.
+
+- **R39.4 (2026-10-24 ~00:10 PDT):** (a) D3's SPLIT arm runs as filed, for the record only (its lab guard failed). (b) Seed blocks:
+  settle 6025-6048 (Bar H v2), orders 6225-6236 (G2 v2c). (c) His feedback picks (directions page, db picks/round39, 06:58Z):
+  sight none, firing on the move none, slowed AMBER chevrons, phone map DOCK; all six caller lines ticked (moving_miss.01-03,
+  pinned_slow.01-03): text approved, so feedback voices exactly those six. (d) Integration batch 1 merged to main: native
+  8f018edf7, pair/native-givewaychain bb8043686, feedback d8f88b3ab, doctrine/d3-tree 773412e49, settle 6ab14f1ac, orders
+  ebfe98d18, + d8f182d11 (one copy of deploy_preview). (e) Settle's o2 trace: probe "parked re-deals" on rules-ON main are
+  UnansweredFire duck moves (14-18 m), not halt re-deals; parked_redeals needs a duck exclusion before any bar uses it.
 
 ## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 
