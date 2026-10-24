@@ -25,7 +25,7 @@ build() {
 	esac
 	say "TRIG_AB built $1 (libm imports: ${imported:-none})"
 }
-say "TRIG_AB commit $(git rev-parse --short=9 HEAD 2>/dev/null) host $(hostname) rounds $rounds"
+say "TRIG_AB commit ${TANK_SQUAD_COMMIT:-$(git rev-parse --short=9 HEAD 2>/dev/null)} host $(hostname) rounds $rounds"
 status=0
 for r in $(seq 1 "$rounds"); do
 	if [ $((r % 2)) -eq 1 ]; then order="cr libm"; else order="libm cr"; fi
