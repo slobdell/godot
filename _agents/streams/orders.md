@@ -58,6 +58,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 ### NOW (2026-10-24)
 - **GREEN: ebfe98d18** (builder0 full check `make native check`, load 6-12, 18 other godot): 3140 passed, 0 failed; scenarios
   53 passed, 0 failed, 3 pending; `>> remote: make native check exited 0`. All three switches OFF; main's behaviour unchanged.
+- **Orchestrator (2026-10-24):** Bars G1 v5 / G3 v6 recorded on main as filed at ebfe98d18. ebfe98d18 merges after settle's
+  6ab14f1ac; settle's `deploy_preview` is kept as the one copy. **G2 v2c's bar block: seeds 6225-6236.** CP39.1 is not here
+  (settle's S1 failed its bar; it waits on manoeuvre's M1 or settle's next version). The G2 bar file waits on its re-read on
+  CP39.1. R39.3: one laptop Godot run at a time,
+  `flock /tmp/tank-squad-laptop-godot.lock <cmd>`; everything else on the builders.
+- **parked_redeals duck exclusion** (ea51cc7c5; settle's o2 trace: every o2 "re-deal" was one crew's UnansweredFire duck,
+  14-18 m out and back, with the halt's seats unchanged): a parked crew's goal move out to its duck point, or back from a seat
+  that was one, now counts in `parked_ducks`, not `parked_redeals`. The judge reports both. No bar of mine judges either
+  (reported only).
 - **Where the backlog stands:** items 1-3 built, labbed and dev-read (below); item 4 is **waiting on CP39.1** (C39.3: judged series
   only on top of it). Bars G1 v5 and G3 v6 are filed (below). G2 v2 re-reads on CP39.1 before its bar, on a fresh seed block
   from the orchestrator. Stretch (R38.44) not needed so far: G1 v5 holds its deciding lines without it.
@@ -145,5 +154,4 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - A pass ships ON.
 - **G2 v2: no bar yet.** Dev read 3 (584d23588) passes both deciding lines (his routes off 5,022 -> 2,523, <= 60 %; route
   cells 2,404 -> 1,432, <= 75 %) and fails guards on 9 cells (end foreign, twitch). A column stands squads closer than
-  main's spread body, and the stops in the street are CP39.1's cause. It re-reads on CP39.1 first; a bar needs a fresh block
-  (6201-6224 are G1's and G3's).
+  main's spread body, and the stops in the street are CP39.1's cause. It re-reads on CP39.1 first; its bar block is 6225-6236 (reserved by the orchestrator).
