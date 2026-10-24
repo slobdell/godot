@@ -204,6 +204,13 @@ block: ask the orchestrator first.
   full check; both arms carry DEPLOY_HOLD ON, giveway-chain OFF, seat-route-clear OFF. Everything else in both bars as filed.
   Parallel per R39.8 (G1 v5 builder0 light, G3 v6 builder2).
 
+- **R39.10 (2026-10-24 ~16:30 PDT): the trig A/B closes the perf question.** Main 6a1c77752, builder0, `make remote-quiet
+  T=trig-perf-ab exited 0`, QUIET WINDOW HELD (load1 0.49-1.02), 3 rounds alternating, all 6 PASS attempt 1. cr (CORE-MATH)
+  7,862 us/tick (sd 72, range 2.1 %); libm 7,693 (sd 16, range 0.5 %); paired cr-libm +169 (+93, +225, +189), same sign every round.
+  So 76f42a9c3's 8,366 (idle 74 %) was single-reading noise, not N4; main 6a1c77752 reads 7,693 v 8952c3d64's 7,687. Round-40
+  candidate (native, low priority): on glibc >= 2.41 the vendored trig buys nothing and costs ~2 % (probably fma through libm's PLT,
+  no -mfma); FMA target clone or resolve-to-libm at load, with a 5-round rerun first. Copy-back fix merged (a910f397a).
+
 ## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 
 **Goal: he keeps control of his army, and the defender really defends.** From round 37 (HANDOFF *ROUND 37 CLOSED*): his playtest's

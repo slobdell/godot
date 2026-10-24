@@ -50,9 +50,9 @@ bounds), CPU-bound, a fit for a new 16-core builder he may buy.
 ON or not; the portrait order-preview line floating mid-screen; keep R1's ~3 s to full sight (doctrine recommends yes) or have the
 cover AI cope with ~2 s; the faction table.
 
-**Still running at close (native, the only open session with work):** the trig A/B on builder0 (cr v libm, 3 rounds; main
-6a1c77752); the 8952c3d64 scoreboard row on builder2 (~17:20 PDT); the copy-back fix (rsync skips same-size/same-mtime files; re-copy
-mismatches with --checksum). Native's brief stays in `streams/native.md` until those land; then archive it.
+**Native at close:** trig A/B DONE (R39.10: CORE-MATH +169 us/tick = +2.2 % v libm, 3/3 rounds; the 8,366 was noise; a ~2 %
+FMA fix is a low-priority round-40 item); copy-back fix MERGED (a910f397a); the 8952c3d64 scoreboard row still running on builder2
+(~17:20 PDT). Native's brief stays in `streams/native.md` until those land; then archive it.
 
 **Close state:** briefs archived to `streams/archive/round39/` (native's pending); his picks' db filed in
 `streams/references/round39/`; feedback's announcer masters rescued into the main checkout. **Worktrees come down at round 40's
