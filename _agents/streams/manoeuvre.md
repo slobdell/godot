@@ -168,3 +168,8 @@ builder0 light (`native manoeuvre-wedge-trace`, locks/terminus/sumps x my round-
 its tree (no restart), and **Bar M1 is read with DEPLOY_HOLD OFF** (not in c35cc93ac), as well as `--seat-route-clear` OFF.
 I don't merge main until the series ends (each leg rsyncs the branch). If M1 passes, the orchestrator merges both, and the merge check
 plus orders' bars read the pair together.
+**Orchestrator (13:00 PDT), settle's S1 trace:** route-clear's moved seats sent crews driving their own paths back into passers
+(terminus s6003: Bravo_1 pushed 27 m off its seat, drove back and parked beside Echo_3, which never moved again; crossing s6009: Echo_4
+head-on into Delta_4/5 from t 40). If a Bar M1 never-in cell looks like that (a crew pushed far off its seat driving back into a passer),
+name the mechanism. Plan: after the verdict goes out, re-run any never-in cell once with wedge_trace as a DEV read and name it only if
+the trace shows it. M1 limits the give-way drift (Bravo_1's kind), not route-clear's moved seats (Echo_4's).
