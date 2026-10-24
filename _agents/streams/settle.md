@@ -59,8 +59,11 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### Report (in progress, 2026-10-23 night)
-- **S1 route-clear v2, OFF** (`--seat-route-clear`, env SEAT_ROUTE_CLEAR=on; daea2cefe): lab clean on the three traced cases (below).
-  Bar filed below; full check of the named hash next, then the series on 6001-6024.
+- **GREEN: 6ab14f1ac** (builder0, `make native check exited 0`, 3,145 passed / 0 failed, 27 targets ALL JUDGED, sim-baseline unmoved
+  on every map, 3,419 s). Everything past main is OFF by default.
+- **S1 route-clear v2, OFF** (`--seat-route-clear`; code daea2cefe, unchanged in 6ab14f1ac but for OFF traces and deploy_preview):
+  lab clean on the three traced cases (below). Bar filed below; **its series is running** on 6ab14f1ac's tree (builder0 light, J 4,
+  seeds 6001-6024, started 2026-10-24 ~03:10 PDT).
 - **Item 3 traced (o2's crossing re-deals):** dev read on rules-ON main (builder0 light, 82c0a9db2 tree, crossing 3 click fights,
   dev seeds 3891-3902, n 12 an arm): parked re-deals held 22 -> o2 35. Traced s3895 Alpha (0 -> 4): every counted re-deal is ONE
   crew's seat moving 14-18 m off and back with anchor, shape, latched spacing and seat index unchanged. Probable cause:
