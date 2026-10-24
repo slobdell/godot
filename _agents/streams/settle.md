@@ -77,8 +77,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   only clear when the leg is shorter than the one it replaces; trace the three runs in time first. **Static check of that
   mechanism (the filed deploy traces, no run): it does not discriminate.** Crews whose leg to their seat (> 6 m) passes within
   7 m of a passer's route: the never-in runs 3 (terminus click s6003), 4 (terminus route s6003), 7 (crossing route s6009); runs
-  that got in on the same cells 0, 9, 9, 8, 7. So no trace-backed S1 v2 design yet: the next step is a time trace of the stuck
-  squad (where its crews stop, and what stands there) on those three runs. References:
+  that got in on the same cells 0, 9, 9, 8, 7. The time trace (Round-40 input, below) settles it. References:
   `references/round39/settle/s1-route-clear-builder0/`.
 - **Item 2 (`--deploy-fit=street` on top of 1): not run** — the brief's rule (no new bar if 1 fails). The lab's `fitclear` arm
   (table below, n 1) is the only read.
@@ -146,6 +145,36 @@ deployed halt's own surviving seat moving > 6 m, before any duck), not the probe
   0 runs that never started.
 - Reported: the probe's `parked_redeals` and `reseats` per arm (duck-contaminated).
 - A pass ships `--deploy-hold` ON on a new hash with one full check.
+
+### Round-40 input: why route-clear lost three squads (time trace, builder0 light, tree a52661bf3, dev, not judged)
+All three never-in runs reproduce exactly on this tree (`references/round39/settle/s1-time-trace-builder0/`, reader
+`tests/settle/settle_stuck.py`). Each crew traced once a second (`--element-trace=all`), main v clear, same seed.
+- **terminus 5 click s6003 (Alpha never in).** Alpha_2 stops for good at (-7.0, 82.6) at t 25-30, 51 m short of its slot,
+  speed 0, between Bravo_1 (-3.8, 74.3) and Bravo_2 (-14.7, 88.1). On main it drives on through (-7.3, 74.5), (-5.9, 62.7) and
+  is in at t 35. The corridor clear read for Alpha was ONE line (its navmesh path from the squad's centre) down the lane at
+  x 4-8, but Alpha's crews drive their own paths at x -7 to -1. Clearing moved Bravo_1 (2.0, 79.7) -> (-4.0, 78.9) and Bravo_4
+  (1.3, 58.1) -> (-0.6, 57.9): WEST, off the line and onto the side Alpha actually drives. **Cause A: the corridor is not
+  where the crews go.**
+- **terminus 5 route s6003 (Echo never in).** Echo's first leg gives Echo_3 the formation slot (-18.6, 86.2), 24 m off the
+  leg's line, so it drives west along the street to (-15.7, 88.0) (t 33-37). That wasn't in the corridor read at Bravo's
+  deploy (t 15: Echo's line ran from (10.5, 89) south down the lane). Bravo_1, on its cleared seat (-7.2, 87.6) at the street's
+  edge, was pushed 27 m east by passing crews (t 21-36), drove back at t 48-51 and parked at (-4.0, 90.1) as Echo_3 turned back
+  east for the next leg; Echo_3 sits 6-7 m from it, 75-85 m short of its slot, to the end. On main, Bravo_1's seat (-2.6, 83.8)
+  holds (3-8 m off all run) and Echo_3 passes at t 40-55. **Cause A again (slots off the line), plus B (a cleared seat on the
+  street's edge is not held).**
+- **crossing 5 route s6009 (Delta never in).** Echo's halt (t 30) cleared Echo_4's seat from (-36.4, 40.0), 3 m from where it
+  stood, to (-15.5, 56.0), 25 m across the junction. Echo_4 drove east along the z 39 street while Delta_4/5 drove west along
+  it: they meet head-on at (-21, 40) at t 40, and Echo_4 stays 17-19 m short of its seat, Delta_4 47 m and Delta_5 67-69 m
+  short, to the end. On main Echo_4 parks where it stands and Delta is in at t 35. **Cause B: the cleared seat's own leg
+  crosses the live route, head-on, while the passer drives it.**
+- Why the static read (above) didn't discriminate: crossing legs are common; they fail when the passer arrives during the leg,
+  which only the time trace shows.
+
+**What round 40 should try (not built):** (1) the corridor from each passing CREW's own path to its own slot (and its queued
+legs' slots), not one centre line from the squad's centre; (2) accept a moved seat only if the crew's leg to it is short
+(<= about one spacing) or crosses no live corridor, else keep main's seat (main got in on all three); (3) failing both, a halt
+seat on a live corridor waits where the crew stands until the passer is past. Lab first: these three runs plus
+s4505/s3958/s3806, then a bar on fresh seeds.
 
 ### Plan (ordered)
 1. S1 route-clear: pure lab (`tests/test_settle_route_clear.gd`) -> the traced cases (`make settle-lab`, builder0 light) -> bar
