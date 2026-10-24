@@ -147,3 +147,11 @@ guards all-in time.
 **Bar M1 series STARTED 2026-10-24 ~11:35 PDT** (`manoeuvre-bar-m1`, builder0 light J4, native, judge 879caa818 committed first;
 code = c35cc93ac). Order: census OFF, census ON (6101-6112), orders probe both arms (6113-6124), then the judge. Out:
 `~/overnight-manoeuvre/r39/bar_m1/verdict.txt`. ETA ~16:30 PDT.
+
+### M3 (M7 re-file): NOT re-filed; stays written up as blocked (decision 2026-10-24, no new runs)
+Round 38's dev read (builder0 native, 53159326e v b5775051e, locks/gorge/terminus x 3801-3806, 18 fights) already has the
+seated half: SEATED screen give-ways (seat_m < 10) **v1 250 -> v2 241 (-3.6 %)**. Re-filing the deciding line on the seated half
+would still ask a series to find a ~50 % cut where the dev read shows ~4 %. That's a fail by construction and not worth builder0
+time in a round where the light lane is the bottleneck. `--seat-aside=v2` stays on main, OFF. If he reports CPU screens blocking
+their own traffic, the lever is the off-seat half (screen crews >= 10 m off their seats while driving: 48-50 % of screen
+give-ways), not the seat choice.
