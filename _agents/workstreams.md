@@ -112,6 +112,12 @@ block: ask the orchestrator first.
   the ban, and so does any non-make driver that runs its own Godot binary. The scoreboard's fights/moves/orders part for 8952c3d64
   (run.sh, ~1.5 h builder2) waits for a doctrine chunk-boundary pause; nothing is gated on it.
 
+- **R39.3 (2026-10-23 ~22:45 PDT, THE LEAD's yes): one laptop game run at a time.** The laptop (7.4 GB) hit 736 MiB free with seven
+  Claude sessions (~2.1 GB) plus several laptop Godot runs, and Claude Code reaped manoeuvre's light-run wrapper. Rule: at most ONE
+  stream runs Godot on the laptop at once (a laptop test, trace or probe). Take the lock with `flock /tmp/tank-squad-laptop-godot.lock
+  <cmd>` and wait rather than skip. Everything else goes to builder0/builder2 through `make remote`/light lanes, whose laptop side
+  only rsyncs. If `free -m` shows available < 1500 MiB, don't start a laptop run. Manoeuvre restarts its builder0 light job.
+
 ## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 
 **Goal: he keeps control of his army, and the defender really defends.** From round 37 (HANDOFF *ROUND 37 CLOSED*): his playtest's
