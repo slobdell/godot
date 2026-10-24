@@ -1,11 +1,88 @@
 # Workstreams: the current round
 
-> **ROUND 38 PREPARED (2026-10-22 morning; launched FRESH from the docs commit: round 37's `stream/*` branches are `round37/<stream>`;
-> native continues in its old session and worktree, as in round 36). SIX streams: orders and doctrine on FABLE (his group click; the
-> CPU defender that holds), settle, manoeuvre, feedback, native on Opus. Builders: builder0 AND builder2 (C38.1).** Briefs in
-> `streams/`. Round 37's section follows.
+> **ROUND 39 PREPARED (2026-10-23 evening, from round 38's traced failures and his R1-R3 call; launch FRESH: round 38's `stream/*`
+> branches become `round38/<stream>`, every stream gets a new session, native included). SIX streams: settle and doctrine on FABLE
+> (the halt seat that blocks a following squad; tactics beating the blob), orders, manoeuvre, feedback, native on Opus. Builders:
+> builder0 AND builder2 (C39.1 = C38.1).** Briefs in `streams/`; round 38's in `streams/archive/round38/`. Round 38's section follows.
 
-## Round 38: six streams (prepared 2026-10-22; briefs in `streams/`)
+## Round 39: six streams (prepared 2026-10-23; briefs in `streams/`)
+
+**Goal: squads that stop never block the squad behind them, and tactics (not a frontal blob) win, with R1-R3 ON.** From round 38
+(HANDOFF *ROUND 38 CLOSED*): every movement bar that failed (S1 v1-v5, G1 v3/v4, G3 v4/v5, Bar H) failed on one or two marginal
+cells, and the traces name one cause: a halt seat lands on the route a following squad still has to drive, or inside another
+squad's parked halt (the bridge mouth, R38.40/R38.43), and parked crews pushed off their seat keep giving way in a chain (s3866,
+R38.26). On the slug-fest, his call R38.55 put R1-R3 ON by default: "it's the correct direction to move in, and we'll continue
+iterating to ensure that tactics and strategy win". The blob still wins ~47 % (native's row 686150ed2, rules OFF); D2c's SPLIT leaned
+-4.4 points three series running but never reached 2 se (R38.41).
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **settle** | `godot-settle` (3) | **Fable** | [streams/settle.md](streams/settle.md) | a squad that stops never parks in the street the next squad is driving | S1 route-clear halt seats |
+| **doctrine** | `godot-doctrine` (1) | **Fable** | [streams/doctrine.md](streams/doctrine.md) | a charging blob loses to a CPU that holds with some and strikes with the rest | D1 the rules-ON base read |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a parked crew steps aside once for a friend and goes back, not shoved down the street | M1 chain-aware give-way |
+| **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | his group click puts every squad in, the far one first, on his route at corners | G1 who takes the far place |
+| **feedback** | `godot-feedback` (6) | Opus | [streams/feedback.md](streams/feedback.md) | the new rules show on screen; the phone map frees its top | F1 the rules he can see |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: the rules-ON pairing base, same sim on every machine | N1 the rules-ON row (CP39.0) |
+
+**Machines (C39.1 = C38.1 with round 38's lessons):** builder0 = settle's, manoeuvre's, orders' and feedback's light lanes (J<=4);
+builder2 (`make gcp-start`; Spot: read the verdict line, re-queue on preemption) = native's rows and doctrine's guard series. ONE full
+check + ONE judged series per builder at a time (`tools/builder_checks.sh --wait-below 1`). Perf-judge judges on builder0 only, and
+only while every light lane pauses (`make remote-quiet T=perf-judge` holds new launches; ask the lanes to pause; R38.35). A light series
+past 90 min passes `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make command-line variable. Never pair a laptop read with a builder read
+(glibc 2.39 v 2.43 trig, R38.25). When your series ends, say so at once: the next owner is waiting.
+
+**Ownership (round 39):**
+- **settle:** in `game/tactics/element_plan.gd` the deploy-step, halt-lay and seat-deal functions; `game/tactics/element_situation.gd`;
+  `game/tactics/deploy_passers.gd`; the PARKED_HOLD seam in `tank_brain.gd`; `tests/settle/**`, `tests/test_settle*.gd`, `mk/settle.mk`;
+  may run orders' probe and judge.
+- **manoeuvre:** `movement.gd`'s drive / unstick / side-step and traffic's give-way block, `game/ai/traffic.gd`, `tests/manoeuvre/**`,
+  `tests/traffic/**`, `tests/test_manoeuvre*.gd`, `tests/test_traffic*.gd`, `mk/manoeuvre.mk`.
+- **orders:** `game/control/**` (group lay, untangle, `selection_squads.gd`, `rts_controls.gd`), `tests/test_control*.gd`,
+  `tests/control/**`, `tests/orders_probe*.gd`, `mk/command.mk`. NOT the deploy/halt functions (settle's).
+- **doctrine:** brains (`game/ai/**` and `game/tactics/**` outside settle's and manoeuvre's carve-outs: `tank_brain.gd`,
+  `element_commander.gd`, `cpu_commander.gd`, `gunnery.gd`, doctrine tables), `tests/tactics/**`, `tests/test_tactics*.gd`,
+  `tests/ai_scenarios/**` it adds, `tests/rules/**`, `mk/tactics.mk`, `mk/rules.mk`; GRANT (C39.4): `game/combat/rule_switches.gd` and
+  the R1-R3 constants in `game/tank/tank.gd` (MOVING_SIGHT_FACTOR, HALTED_SIGHT_FACTOR, SIGHT_BLEND_PER_SECOND, PIN_SLOW_MAX) and
+  `game/match/match.gd` (RULES_MOVING_SPREAD_FACTOR), constants only.
+- **feedback:** `game/ui/**`, `game/theme/**`, `game/audio/**`, `game/announcer/**`, `tests/feedback/**`, `tests/test_feedback*.gd`,
+  `mk/feedback.mk`.
+- **native:** `native/**`, `mk/native.mk`, `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**`, `tools/perf_judge.sh`,
+  `tools/loaded.sh`, `tools/slot.sh`, `tests/ai_scenarios/guard_line.gd`; GRANT (C39.6): `mk/play.mk`'s skirmish recipe (a
+  `SKIRMISH_FLAGS` passthrough, nothing else).
+- **Nobody:** `game/match/**` and `game/tank/**` outside C39.4's constants, `game/combat/**` outside the switches file, `arenas/**` +
+  `tools/make_arenas.py`, `tests/baselines/**` (the orchestrator adopts).
+
+**Contracts (round 39):**
+- **C39.1 Fresh start; two builders; bars before numbers on FRESH seeds (C37.1, C38.1 stand).** Every seed block is registered in
+  *Bars (round 39)* before use; round 39's blocks start at 6001 (orchestrator assigns; see the registry). A bar names the property its
+  change could BREAK as a guard. A guard is never amended after its numbers are seen.
+- **C39.0 / CP39.0 The rules-ON pairing base (native N1, FIRST).** R1-R3 are ON on main (R38.55), so round 38's base
+  `references/scoreboard/guards/686150ed2.fights.jsonl` (rules OFF) no longer describes main. Native runs CP37.1's guard lines (320
+  paired fights, same seeds) on main as launched and files `references/scoreboard/guards/<main>.fights.jsonl` + a scoreboard row.
+  Every round-39 guard series pairs against that file. Doctrine's D1 reads it.
+- **C39.2 The halt seat and the give-way are one fix in two files (settle + manoeuvre).** settle decides WHERE a parked seat may be
+  (never on a following squad's still-to-drive route, never inside another squad's parked halt: R38.40, R38.43). manoeuvre decides
+  how far a parked crew may be pushed (a crew already pushed off its seat doesn't give way further: R38.26). Each lands behind its own
+  switch with its own bar; **CP39.1:** whichever passes first merges at once and the other re-reads on top; when BOTH have passed, the
+  orchestrator merges them and tells orders the same minute. A bar of either names the other's switch state.
+- **C39.3 orders re-reads on CP39.1.** G1/G3 v4-v5 failed only on cells the traces put on the seat/give-way cause. Orders builds G1 v5 /
+  G2 v2 / G3 v6 now (behind switches) and judges its series on top of CP39.1 when it lands; before, dev reads only.
+- **C39.4 The rules' constants (GRANT to doctrine).** His numbers (game_design.md *Summary of his answers*): sight ~85 % driving /
+  ~110 % stopped ~2 s; moving fire ~4x spread at full speed; suppression slows up to ~40 %, never stops. A constant may move only to
+  match his number or under a filed bar; the switches stay (DEFAULT_ON = his call; `--rules-off=` must keep working).
+- **C39.5 feedback shows the rules (his "shown", "never hide an enemy inside a range the player was shown").** No new buttons and no
+  visual that looks like the game cheating (his pattern). Any new look goes on a directions page for his pick first; until he picks,
+  nothing new shows by default.
+- **C39.6 `make skirmish SKIRMISH_FLAGS="..."` (native; play.mk GRANT).** Passes flags straight to the game, so he and the workers can
+  playtest any OFF switch with `make skirmish`. Additive; default unchanged.
+
+## Bars (round 39)
+
+**Seed registry (round 39):** 6001-6024 settle; 6101-6124 manoeuvre; 6201-6224 orders; 6301-6340 + 6401-6440 doctrine guard series
+(powered SPLIT: 4x fights); 6501-6512 feedback. Dev seeds: each stream's round-38 dev blocks may be reused for DEV reads only. Any new
+block: ask the orchestrator first.
+
+## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 
 **Goal: he keeps control of his army, and the defender really defends.** From round 37 (HANDOFF *ROUND 37 CLOSED*): his playtest's
 group click on Terminus ("I immediately lost control of the army", R37.29) was traced and designed but O7 failed as filed; the four
@@ -15,12 +92,12 @@ wrong first shape (R37.42), O2's parked re-deals (R37.28). Plus: the match end i
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **orders** | `godot-orders` (5) | **Fable** | [streams/orders.md](streams/orders.md) | a group click lands his squads stacked down the street he clicked, nearest in front, each whole | G1 O7 v2 (open ground; route legs) |
-| **doctrine** | `godot-doctrine` (1) | **Fable** | [streams/doctrine.md](streams/doctrine.md) | the CPU's defenders stop and shoot from cover; a blob charging them loses | D1 measure who halts to fire |
-| **settle** | `godot-settle` (3) | Opus | [streams/settle.md](streams/settle.md) | a parked squad keeps its shape and spots; no tank drives across its squad after stopping | S1 the deploy deal crossing |
-| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | parked crews step aside and back for friends; CPU screens out of the way | M1 M5 v2 |
-| **feedback** | `godot-feedback` (6) | Opus | [streams/feedback.md](streams/feedback.md) | he can't miss the match ending | F1 the end of a match |
-| **native** | `godot-native` (4, continuing) | Opus | [streams/native.md](streams/native.md) | nothing alone: scoreboard rows, twins, guard tooling | N1 finish round 37's row |
+| **orders** | `godot-orders` (5) | **Fable** | [streams/archive/round38/orders.md](streams/archive/round38/orders.md) | a group click lands his squads stacked down the street he clicked, nearest in front, each whole | G1 O7 v2 (open ground; route legs) |
+| **doctrine** | `godot-doctrine` (1) | **Fable** | [streams/archive/round38/doctrine.md](streams/archive/round38/doctrine.md) | the CPU's defenders stop and shoot from cover; a blob charging them loses | D1 measure who halts to fire |
+| **settle** | `godot-settle` (3) | Opus | [streams/archive/round38/settle.md](streams/archive/round38/settle.md) | a parked squad keeps its shape and spots; no tank drives across its squad after stopping | S1 the deploy deal crossing |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/archive/round38/manoeuvre.md](streams/archive/round38/manoeuvre.md) | parked crews step aside and back for friends; CPU screens out of the way | M1 M5 v2 |
+| **feedback** | `godot-feedback` (6) | Opus | [streams/archive/round38/feedback.md](streams/archive/round38/feedback.md) | he can't miss the match ending | F1 the end of a match |
+| **native** | `godot-native` (4, continuing) | Opus | [streams/archive/round38/native.md](streams/archive/round38/native.md) | nothing alone: scoreboard rows, twins, guard tooling | N1 finish round 37's row |
 
 **Machines (C38.1):** builder0 = orders', settle's, manoeuvre's and feedback's lane; builder2 (`make gcp-start`, under systemd-run
 with ~/projects/bin on PATH; Spot: read the verdict line) = doctrine's guard-line series and native. ONE full check + ONE judged

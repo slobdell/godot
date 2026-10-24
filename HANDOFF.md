@@ -4,10 +4,39 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-23 PDT — **ROUND 38 AT ITS END STATE (every stream done; ready to close); see the round-38 box.** Before that: ROUND 38 PREPARED; round 37 closed at main 1c484a525. Before that: **ROUND 36 CLOSED: T8 and S2a shipped ON; see the box below.** Earlier: 2026-10-20 ~13:15 PDT — **ROUND 36 PREPARED (four streams). Round 35 closed except the joint ship's merge (CP36.1)
-and the scoreboard rows, which the orchestrator finishes in round 36.** Older headers below._
+_Last updated: 2026-10-23 evening PDT — **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 closed on the docs side
+(briefs archived to `streams/archive/round38/`); its worktrees come down once the lead closes the six worker sessions.** Before that:
+ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
 
-## 🚀 ROUND 38 IS PREPARED (2026-10-22 morning) — read this first
+
+## 🚀 ROUND 39 IS PREPARED (2026-10-23 evening) — read this first
+
+**Goal: squads that stop never block the squad behind them, and tactics (not a frontal blob) win, with R1-R3 ON.** Split, ownership,
+contracts C39.0-C39.6 and the seed registry in `workstreams.md` *Round 39*; briefs in `_agents/streams/`; round 38's in
+`streams/archive/round38/`.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **settle** | `godot-settle` (3) | **Fable** | a squad that stops never parks in the street the next squad is driving | S1 route-clear halt seats |
+| **doctrine** | `godot-doctrine` (1) | **Fable** | a charging blob loses to a CPU that holds with some and strikes with the rest | D1 the rules-ON base read |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | a parked crew steps aside once for a friend and goes back | M1 chain-aware give-way |
+| **orders** | `godot-orders` (5) | Opus | his group click puts every squad in, the far one first, on his route at corners | G1 who takes the far place |
+| **feedback** | `godot-feedback` (6) | Opus | the new rules show on screen; the phone map frees its top | F1 the rules he can see |
+| **native** | `godot-native` (4) | Opus | nothing alone: the rules-ON pairing base (CP39.0), same sim on every machine | N1 the rules-ON row |
+
+**Launch steps (the next orchestrator; the round-38 worker sessions must be closed first, by the lead):**
+1. **R38.55 first:** if `stream/doctrine` a99bd09ed (R1-R3 DEFAULT_ON) isn't merged yet, read doctrine's Status (archived brief on
+   its branch) for the green hash and any sim-baseline adoption, merge it alone, one `make remote T=check` on main, record R38.55's
+   numbers. Every round-39 bar assumes rules ON.
+2. For each of orders doctrine settle manoeuvre feedback native: `make worktree-remove STREAM=<s>`, `ssh builder0 rm -rf
+   ~/tank_squad/godot-<s>*` (and builder2's), then `git branch -m stream/<s> round38/<s>` after `git merge-base --is-ancestor`.
+   Native's side trees `../godot-native-guard` and `-score` (guard.sh / run.sh scratch) may stay.
+3. Optional disk: archive `~/overnight-manoeuvre/r38` (~1.1 GB) to `~/archive-old-logs/` (laptop at ~2.6 GB free).
+4. `make worktree STREAM=<s> OFFSET=<n>` per the table (after the docs commit), then the lead starts a CLI in each folder (settle and
+   doctrine on Fable, the rest Opus) with the kickoff prompt in `_agents/orchestration.md`. Native is a FRESH session this time.
+5. Orchestrator loop as in `_agents/orchestration.md`; native's N1 (CP39.0) is the first thing doctrine waits on.
+
+## 🏁 ROUND 38 CLOSED (2026-10-23; prepared 2026-10-22 morning)
 
 **Goal: he keeps control of his army, and the defender really defends.** Split, ownership and contracts C38.1-C38.3 in `workstreams.md`
 *Round 38*; briefs in `_agents/streams/`; round 37's in `streams/archive/round37/`; branches `round37/<stream>`.
