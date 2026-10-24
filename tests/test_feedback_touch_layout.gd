@@ -3,6 +3,8 @@ extends TestCase
 ## map's "dock" layout, keeps the chips, orders and camera buttons out of the top third, on screen, off each other and
 ## off the HUD's score bug and radar. It is what a run gets; round 2's "top" stays behind --touch-layout=top.
 
+const ARENA := preload("res://game/arena/arena.tscn")
+const MATCH := preload("res://game/match/match.tscn")
 const SCREENS := {"phone 20:9": Vector2(2400, 1080), "small phone": Vector2(1800, 810), "portrait phone": Vector2(810, 1800)}
 
 
@@ -53,3 +55,47 @@ func test_dock_is_the_default_and_top_is_round_twos_layout() -> void:
 	assert_true(TouchLayout.place("top", SCREENS["phone 20:9"], [Vector2(400, 80), Vector2(80, 400)], [Vector2(400, 80),
 			Vector2(200, 400)], [Vector2(300, 60), Vector2(100, 200)], Rect2(), Rect2()).is_empty(), "top: TacticalMap keeps its own layout")
 	assert_eq(TouchLayout.from_flags(), "dock", "his pick is what a run without --touch-layout gets")
+
+
+## His default path: the phone map opens on the overview, which draws his own end of the arena at the bottom of the screen,
+## where dock sits (test_tactical_map's input test found his crews under dock's chips at 1280x720). The overview fits the
+## whole arena above the bars instead (TacticalMap.overview_fit), and a followed crew is framed in the clear.
+func test_dock_keeps_his_crews_clear_of_the_bars() -> void:
+	var before := tree.root.size
+	for screen: Vector2i in [Vector2i(1280, 720), Vector2i(2400, 1080), Vector2i(810, 1800)]:
+		tree.root.size = screen
+		var arena: Node = add_to_tree(ARENA.instantiate())
+		var game_match: Match = MATCH.instantiate()
+		add_to_tree(game_match)
+		game_match.load_doctrine(Match.Team.GREEN, Doctrine.load_file("res://doctrines/player_default.json")["doctrine"])
+		var camera := FollowCamera.new()
+		add_to_tree(camera)
+		camera.make_current()
+		var map := TacticalMap.new()
+		map.game_match = game_match
+		map.camera = camera
+		add_to_tree(map)
+		await wait_physics_frames(2)
+		assert_eq(map.touch_layout, "dock", "his pick is the layout a run gets")
+		assert_true(map.tactical_view, "setup: the map opens on the overview")
+		var floor_y := float(map.touch_rects["text_floor"])
+		for tank: Tank in game_match.team_tanks(0) + game_match.team_tanks(1):
+			var at := camera.unproject_position(tank.global_position)
+			assert_true(at.y >= 0.0 and at.y < floor_y, "%s overview: %s at %s is above the bars (y < %.0f)" % [screen, tank.name, at, floor_y])
+		for corner: Vector3 in [Vector3(-1, 0, -1), Vector3(1, 0, 1)]:
+			var edge := camera.unproject_position(corner * Match.ARENA_HALF_SIZE)
+			assert_true(edge.y >= 0.0 and edge.y <= floor_y, "%s overview: the arena's %s end is on screen above the bars (%s)" %
+					[screen, "far" if corner.z < 0.0 else "near", edge])
+		map.select_squad("Bravo")
+		map.set_tactical_view(false)
+		await wait_physics_frames(2)
+		var lead := game_match.tanks.get_node(NodePath(game_match.squads["0/Bravo"].commander)) as Tank
+		var at := camera.unproject_position(lead.global_position)
+		for key: String in ["orders", "squads", "tools"]:
+			assert_true(not (map.touch_rects[key] as Rect2).has_point(at), "%s follow: the followed crew at %s is clear of the %s" % [screen, at, key])
+		assert_true(at.y < floor_y, "%s follow: and above the bars (%s)" % [screen, at])
+		assert_true(absf(camera.v_offset) < 0.001, "%s follow: the follow view is not lifted (%f)" % [screen, camera.v_offset])
+		for node: Node in [map, camera, game_match, arena]:
+			node.queue_free()
+		await tree.process_frame
+	tree.root.size = before

@@ -96,6 +96,8 @@ func _ready() -> void:
 	if not squads.is_empty():
 		selected_squad = squads[0].squad_name
 	set_tactical_view(rig == null)  # legacy flat map without an RTS camera; the tilted view with one
+	if LaunchFlags.from_environment().has("touch-overview"):
+		set_tactical_view.call_deferred(true)  # round 39: captures of the overview under dock (make touch-shots FB_FLAGS=)
 
 
 func _process(delta: float) -> void:
@@ -108,6 +110,7 @@ func _process_timed(delta: float) -> void:
 	if rig != null:
 		tactical_view = rig.is_overview()  # tracking can leave the overview on its own
 	_ping_left = maxf(0.0, _ping_left - delta)
+	_lift_frame()
 	if _formation_row != null and _formation_row.visible:
 		_formation_clock += delta
 		_formation_stage.queue_redraw()  # round 18: the preview animates only while the picker is open
@@ -355,7 +358,7 @@ func set_tactical_view(enabled: bool) -> void:
 		if camera is FollowCamera:
 			(camera as FollowCamera).target = null
 		camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-		camera.size = Match.ARENA_HALF_SIZE * 2.0 + 12.0
+		camera.size = OVERVIEW_SIZE_M  # dock fits it above the bars (_lift_frame)
 		camera.global_position = Vector3(0.0, 200.0, 0.0)
 		camera.look_at(Vector3.ZERO, Vector3.FORWARD)  # north (the enemy) is up the screen
 	else:
@@ -1049,6 +1052,37 @@ func _layout_bottom(screen: Vector2, h: float, picker_size: Vector2, card_size: 
 
 const GAP_PX := 6.0
 const MARGIN_PX := 10.0
+
+## Round 39 (dock, his pick): the overview's v_offset this map has applied to its camera (camera shake adds its own).
+var _lift_applied := 0.0
+
+
+## Dock fills the bottom of the screen, where the overview draws his own end of the arena: his crews sat under the
+## chips. So the overview fits the whole arena into the clear ground above the bars: zoomed out by the bars' share of the
+## screen and lifted (Camera3D.v_offset) by half of it, nothing cut at the top (the far end matters most). A followed crew
+## is framed at the screen centre, already clear of dock; the follow view is left alone.
+func _lift_frame() -> void:
+	if camera == null or rig != null:
+		return
+	var fit := Vector2(1.0, 0.0)
+	if tactical_view and camera.projection == Camera3D.PROJECTION_ORTHOGONAL:
+		camera.size = OVERVIEW_SIZE_M
+		if not touch_rects.is_empty():
+			fit = overview_fit(get_viewport_rect().size, float(touch_rects["text_floor"]))
+			camera.size = OVERVIEW_SIZE_M * fit.x
+	camera.v_offset += fit.y - _lift_applied
+	_lift_applied = fit.y
+
+
+## The overview's arena, the whole of it with a 6 m margin (metres the orthographic camera shows top to bottom).
+const OVERVIEW_SIZE_M := Match.ARENA_HALF_SIZE * 2.0 + 12.0
+
+
+## [zoom-out factor, v_offset m] that fit the overview's arena into y = 0 .. clear_bottom of `screen`.
+static func overview_fit(screen: Vector2, clear_bottom: float) -> Vector2:
+	var clear := clampf(clear_bottom, screen.y * 0.25, screen.y)
+	var k := screen.y / clear
+	return Vector2(k, -(screen.y - clear) * 0.5 * OVERVIEW_SIZE_M * k / screen.y)
 
 
 ## A box's children laid out in a row and stacked: [row size, column size] (its own separation between them).
