@@ -52,6 +52,14 @@ F1's and F2's directions pages, once filed.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**CLOSED 2026-10-24: round 39 done.** cdadfb3e4 (green builder0: 27 targets all passed, ALL JUDGED, 3176/0) merged as main
+eda9a4620. In it: F1 audit and fixes, F2 directions page, F3 his picks (slowed amber ON; touch dock default), the stretch's six
+voiced caller lines behind `--announcer-rules=on`, R39.5 (the rig's overview clears dock's bars), R39.7 (the phone overview
+frames his force). Lead gates (in HANDOFF): he hears the caller lines before they default on; the portrait order-preview
+line floats mid-screen. For the next agent: builder-side checks from trees before main 7545c0d7c survive a stopped local
+wrapper (kill the remote PID); test a rig's overview from skirmish's real start (`rig.frame` squad one at START_ZOOM), since
+the overview zoom is min(0.92, the follow view's cap) and a start at the arena centre caps it stale.
+
 **REPORT 2026-10-24 ~10:10: F3 + stretch built (4ce6759b8, 7567d3753); full check owed after main's batch-1 check is green
 and merged in (the orchestrator's order).** builder0 `make quick` exited 0, 261 passed / 0 failed (7567d3753's tree, every
 test the diff since 906557c06 touches + lint). d8f88b3ab (the fog fix) is in main's batch-1.
