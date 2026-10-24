@@ -163,6 +163,10 @@ func test_real_input_pipeline_drives_commander_and_formation() -> void:
 	var game_match: Match = setup[0]
 	var map: TacticalMap = setup[1]
 	var camera: Camera3D = setup[2]
+	# Round 39: the follow camera frames Bravo's wingman bottom centre, under the dock's chips (his pick); this is about
+	# input reaching the map, so round 2's layout leaves the unit clear.
+	map.touch_layout = "top"
+	map._layout_panels()
 	await wait_physics_frames(2)
 	_push_key(KEY_2)
 	assert_eq(map.selected_squad, "Bravo", "a real key press reaches the map")

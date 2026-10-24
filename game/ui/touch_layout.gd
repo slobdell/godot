@@ -1,27 +1,26 @@
 class_name TouchLayout
 extends RefCounted
-## Round 39 (feedback F2, his note "the most important part of the view is the top of the screen since that corresponds to
-## units in the distance"): where the phone map (`--touch-map`, TacticalMap) puts its squad chips, order bar and camera
-## buttons. "top" is round 2's layout (chips top centre, camera buttons top right, orders bottom left, where they run into
-## the score bug); "dock" and "split" keep everything in the bottom of the screen, around the HUD's score bug (lower left)
-## and radar (lower right), where thumbs reach. `--touch-layout=dock|split` until he picks. Pure: tests read the rects.
+## Round 39 (feedback F2/F3, his note "the most important part of the view is the top of the screen since that corresponds
+## to units in the distance"): where the phone map (`--touch-map`, TacticalMap) puts its squad chips, order bar and camera
+## buttons. He picked "dock" on the directions page (2026-10-24): everything in the bottom of the screen, around the
+## HUD's score bug (lower left) and radar (lower right), where thumbs reach. "top" is round 2's layout (chips top centre,
+## camera buttons top right, orders bottom left, where they ran into the score bug), kept behind `--touch-layout=top` for
+## A/B. Pure: tests read the rects.
 ##
 ##   dock   orders along the bottom between the bug and the radar, the chips in a row just above them, the camera
 ##          buttons stacked over the radar
-##   split  the chips along the bottom between the bug and the radar, the orders in a row over the score bug (left
-##          thumb), the camera buttons stacked over the radar (right thumb)
-## Portrait (both): the orders stacked at the left edge and the chips at the right edge over the bug and radar, the
-## camera buttons stacked between them.
+## Portrait: the orders stacked at the left edge and the chips at the right edge over the bug and radar, the camera
+## buttons stacked between them.
 
-const LAYOUTS := ["top", "dock", "split"]
+const LAYOUTS := ["dock", "top"]
 const MARGIN := 10.0
 const GAP := 6.0
 
 
-## The layout this run asked for ("top" unless `--touch-layout=` names another).
+## The layout this run asked for (his "dock" unless `--touch-layout=top`).
 static func from_flags() -> String:
 	var asked := LaunchFlags.from_environment().text("touch-layout")
-	return asked if LAYOUTS.has(asked) else "top"
+	return asked if LAYOUTS.has(asked) else "dock"
 
 
 ## Rects for the order bar, the squad chips and the camera buttons, given each one's size laid out in a row and stacked
@@ -43,15 +42,9 @@ static func place(layout: String, screen: Vector2, orders: Array, squads: Array,
 	var right := radar.position.x - GAP
 	var bottom := screen.y - MARGIN
 	var tools_rect := Rect2(Vector2(screen.x - MARGIN - tools[1].x, radar.position.y - GAP - tools[1].y), tools[1])
-	if layout == "dock":
-		var orders_rect := _band(left, right, bottom, orders[0], bug)
-		var squads_rect := _band(left, right, orders_rect.position.y - GAP, squads[0], bug)
-		return _out(orders_rect, squads_rect, tools_rect, [false, false, true], squads_rect.position.y - GAP)
-	var chips := _band(left, right, bottom, squads[0], bug)
-	# Chips too wide for the band fall back over the bug (`_band`): the orders then go over the chips.
-	var under := chips.position.y if chips.position.x == MARGIN else bug.position.y
-	var over_bug := Rect2(Vector2(MARGIN, under - GAP - orders[0].y), orders[0])
-	return _out(over_bug, chips, tools_rect, [false, false, true], minf(chips.position.y, over_bug.position.y) - GAP)
+	var orders_rect := _band(left, right, bottom, orders[0], bug)
+	var squads_rect := _band(left, right, orders_rect.position.y - GAP, squads[0], bug)
+	return _out(orders_rect, squads_rect, tools_rect, [false, false, true], squads_rect.position.y - GAP)
 
 
 static func _out(orders: Rect2, squads: Rect2, tools: Rect2, vertical: Array, text_floor: float) -> Dictionary:

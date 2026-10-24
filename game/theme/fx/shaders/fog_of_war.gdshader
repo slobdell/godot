@@ -21,26 +21,18 @@ uniform int viewer_count = -1;
 uniform vec2 origin_m = vec2(-160.0, -160.0);
 uniform float seen_v = 0.3529;
 uniform float clip_soft_m = 1.5;
-// Round 39 (F1 candidate look "sight: edge"): the boundary glows brighter round a crew that has settled (viewers[i].w,
-// R1's motion factor, past 1). 0 = off.
-uniform float settled_glow = 0.0;
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453);
 }
 
-// `nearest_w` comes back as the nearest crew's motion factor (1 when nothing was clipped).
-float clip_to_sight(float v, vec2 at, inout float nearest_w) {
+float clip_to_sight(float v, vec2 at) {
 	if (viewer_count < 0 || v <= seen_v) {
 		return v;
 	}
 	float best = 1e9;
 	for (int i = 0; i < viewer_count; i++) {
-		float d = distance(at, viewers[i].xy) - viewers[i].z;
-		if (d < best) {
-			best = d;
-			nearest_w = viewers[i].w;
-		}
+		best = min(best, distance(at, viewers[i].xy) - viewers[i].z);
 		if (best <= -clip_soft_m) {
 			break;
 		}
@@ -50,8 +42,7 @@ float clip_to_sight(float v, vec2 at, inout float nearest_w) {
 }
 
 void fragment() {
-	float nearest_w = 1.0;
-	float v = clip_to_sight(texture(visibility, UV).r, origin_m + UV * size_m, nearest_w);
+	float v = clip_to_sight(texture(visibility, UV).r, origin_m + UV * size_m);
 	// Round 16 (R3): ground in sight now is exactly transparent -- at v >= 0.95 `lit` is 1, so `alpha` is 0, and `edge`
 	// is 0 (its falloff ends at 0.92) -- and a mix-blend at alpha 0 writes back the pixel already there. Leave before
 	// the grid, the static and the sweep are worked out: the same picture, a fraction of the work where it matters most
@@ -69,7 +60,6 @@ void fragment() {
 	float sweep = pow(fract(UV.y * 0.6 - TIME * 0.05), 30.0) * 0.25 * (1.0 - lit);
 	// Vision boundary: a soft band where visibility crosses into "visible now".
 	float edge = smoothstep(0.3, 0.6, v) * (1.0 - smoothstep(0.6, 0.92, v));
-	edge *= 1.0 + settled_glow * clamp((nearest_w - 1.0) / 0.1, 0.0, 1.0);
 	float alpha = mix(mix(never_alpha, seen_alpha, seen), 0.0, lit);
 	vec3 color = haze + edge_color * (grid * 0.05 + static_noise + sweep * 0.3);
 	ALBEDO = mix(color, edge_color, edge * edge_strength);

@@ -1027,9 +1027,11 @@ func _layout_bottom(screen: Vector2, h: float, picker_size: Vector2, card_size: 
 		_put(pair[0] as Control, touch_rects[pair[1]] as Rect2)
 	var orders: Rect2 = touch_rects["orders"]
 	var squads: Rect2 = touch_rects["squads"]
+	# The picker and the unit card stack over the orders, and over the chips too where dock rows them above the orders.
+	var above := minf(orders.position.y, squads.position.y)
 	_formation_row.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	_put(_formation_row, Rect2(Vector2(orders.position.x, orders.position.y - GAP_PX - picker_size.y), picker_size))
-	var card_bottom := orders.position.y - GAP_PX - (picker_size.y + GAP_PX if _formation_row.visible else 0.0)
+	_put(_formation_row, Rect2(Vector2(orders.position.x, above - GAP_PX - picker_size.y), picker_size))
+	var card_bottom := above - GAP_PX - (picker_size.y + GAP_PX if _formation_row.visible else 0.0)
 	_put(_unit_card, Rect2(Vector2(orders.position.x, card_bottom - card_size.y), card_size))
 	if quick_squad != "" and _squad_chips.has(quick_squad):
 		var quick := _quick_row.get_combined_minimum_size()

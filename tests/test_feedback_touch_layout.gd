@@ -1,7 +1,7 @@
 extends TestCase
-## Round 39 (feedback F2, his "the top of the screen ... corresponds to units in the distance"): the phone map's bottom
-## layouts (TouchLayout "dock", "split") keep the chips, orders and camera buttons out of the top third, on screen, off
-## each other and off the HUD's score bug and radar. "top" (round 2's) stays exactly as it was until he picks.
+## Round 39 (feedback F2/F3, his "the top of the screen ... corresponds to units in the distance"): his pick, the phone
+## map's "dock" layout, keeps the chips, orders and camera buttons out of the top third, on screen, off each other and
+## off the HUD's score bug and radar. It is what a run gets; round 2's "top" stays behind --touch-layout=top.
 
 const SCREENS := {"phone 20:9": Vector2(2400, 1080), "small phone": Vector2(1800, 810), "portrait phone": Vector2(810, 1800)}
 
@@ -23,10 +23,10 @@ func _place(layout: String, screen: Vector2, squads: int) -> Dictionary:
 			[Vector2(tool.x * 3 + 8.0, tool.y), Vector2(tool.x, tool.y * 3 + 8.0)], HudLayout.bug_rect(screen), HudLayout.radar_rect(screen))
 
 
-func test_the_bottom_layouts_leave_the_top_third_free_and_overlap_nothing() -> void:
+func test_dock_leaves_the_top_third_free_and_overlaps_nothing() -> void:
 	for boost in [1.0, 1.5]:
 		CyberStyle.set_touch_boost(boost)
-		for layout in ["dock", "split"]:
+		for layout in ["dock"]:
 			for name: String in SCREENS:
 				var screen: Vector2 = SCREENS[name]
 				for squads in [2, 5]:
@@ -49,7 +49,7 @@ func test_the_bottom_layouts_leave_the_top_third_free_and_overlap_nothing() -> v
 					assert_true(float(rects["text_floor"]) >= screen.y / 3.0, "%s: toasts sit below the top third" % where)
 
 
-func test_top_is_round_twos_layout() -> void:
+func test_dock_is_the_default_and_top_is_round_twos_layout() -> void:
 	assert_true(TouchLayout.place("top", SCREENS["phone 20:9"], [Vector2(400, 80), Vector2(80, 400)], [Vector2(400, 80),
 			Vector2(200, 400)], [Vector2(300, 60), Vector2(100, 200)], Rect2(), Rect2()).is_empty(), "top: TacticalMap keeps its own layout")
-	assert_eq(TouchLayout.from_flags(), "top", "and it is what a run without --touch-layout gets")
+	assert_eq(TouchLayout.from_flags(), "dock", "his pick is what a run without --touch-layout gets")
