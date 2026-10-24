@@ -63,8 +63,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   (settle's S1 failed its bar; it waits on manoeuvre's M1 or settle's next version). The G2 bar file waits on its re-read on
   CP39.1. R39.3: one laptop Godot run at a time,
   `flock /tmp/tank-squad-laptop-godot.lock <cmd>`; everything else on the builders.
-- **CP39.1 is further off (2026-10-24):** manoeuvre's Bar M1 FAILED on its never-in guard (2 -> 7; `--giveway-chain` stays OFF).
+- **GREEN: 632724c90** (main 2518811d0 merged, CP39.1 with DEPLOY_HOLD ON; builder2 `make native check`, load 31-22, 46
+  other godot): 3169 passed, 0 failed; 24 passed + 3 NOT JUDGED (perf-judge, scenario_perf, remote-guard-test: machine and
+  load refusals); `>> remote: make native check exited 0`. **Bars G1 v5 (builder0 light J4) and G3 v6 (builder2 J14) started
+  together on this tree** (results in `~/overnight-orders/bar-g1v5-<hash>` / `bar-g3v6-<hash>`, filed under references/ when
+  read).
+- **CP39.1 was further off (2026-10-24, earlier):** manoeuvre's Bar M1 FAILED on its never-in guard (2 -> 7; `--giveway-chain` stays OFF).
   Manoeuvre is tracing it. My bars still wait.
+- **Dependency:** manoeuvre's `tests/manoeuvre/probe_wedge.gd` (stream/manoeuvre f3dfa1e64) extends `tests/orders_probe.gd` and
+  reads `_match`, `_squads` and `_order_tick`. Don't rename those without telling manoeuvre.
 - **On CP39.1 (orchestrator, approved):** merge main only after native's 0bb755a4f (full-check lock + relay-smoke race fix) is
   on it. Run the tree's full check on whichever builder's check lock frees first (`make gcp-remote T="native check"` on
   builder2 is fine), not in builder0's queue. The orchestrator announces both.
