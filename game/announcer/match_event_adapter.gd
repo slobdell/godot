@@ -41,12 +41,13 @@ var _struck := {}
 var _arcing := {}
 const STRUCK_FRESH_S := 0.5
 ## Round 39 (feedback stretch, his six approved caller lines): the booth hears two of round 37's rules in a real match,
-## behind `--announcer-rules=on` until he hears them. Carried on momentum as an optional `rules` field, so K5 is
+## ON by default since round 39's close (his call: "If we have new announcer scripts we should just turn them on");
+## `--announcer-rules=off` mutes them. Carried on momentum as an optional `rules` field, so K5 is
 ## unchanged (as round 37's `face`): {"moving": {team: [misses, hits]}, "slowed": {team: unit or ""}}
 ##   moving  shells a team fired on the move (R2's spread) since the last momentum: how many hit no vehicle, how
 ##           many hit an enemy
 ##   slowed  a crew R3 has held at RULE_SLOW_FROM or more of its speed for RULE_SLOW_S while it drives ("" none)
-var rules_calls: bool = LaunchFlags.from_environment().text("announcer-rules") == "on"
+var rules_calls: bool = LaunchFlags.from_environment().text("announcer-rules") != "off"
 ## A round is fired on the move from this fraction of the hull's top speed (FeedbackReader's, Match.shot_spread's).
 const RULE_MOVING_FROM := 0.15
 ## A round no impact reported after this long missed (it flew on past its range).

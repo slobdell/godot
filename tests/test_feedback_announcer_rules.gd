@@ -1,6 +1,6 @@
 extends TestCase
 ## Round 39 (feedback stretch, his six approved caller lines): the booth calls two of round 37's rules in a real match,
-## behind `--announcer-rules=on` until he hears them. The live match counts shells fired on the move that hit nothing
+## ON by default (his call at round 39's close; `--announcer-rules=off` mutes them). The live match counts shells fired on the move that hit nothing
 ## (R2) and crews crawling under fire (R3), and hands them to the booth on momentum's optional `rules` field (K5 stays
 ## as it is); AnnouncerMemory turns them into moving_miss and pinned_slow moments, which his lines answer.
 
@@ -26,9 +26,9 @@ func _momentum(memory: AnnouncerMemory, rules: Variant) -> Array:
 	return memory.observe(event).map(func(found: Dictionary) -> String: return "%s/%s" % [found["kind"], found["team"]])
 
 
-func test_off_by_default() -> void:
+func test_on_by_default() -> void:
 	var game_match: Match = add_to_tree(MATCH.instantiate())
-	assert_true(not MatchEventAdapter.new(game_match, "terminus").rules_calls, "no rules calls until --announcer-rules=on")
+	assert_true(MatchEventAdapter.new(game_match, "terminus").rules_calls, "his six lines are on unless --announcer-rules=off")
 	assert_eq(_momentum(_memory(), null), [], "a momentum without them says nothing new")
 
 
