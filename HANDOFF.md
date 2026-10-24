@@ -25,6 +25,11 @@ contracts C39.0-C39.6 and the seed registry in `workstreams.md` *Round 39*; brie
 | **feedback** | `godot-feedback` (6) | Opus | the new rules show on screen; the phone map frees its top | F1 the rules he can see |
 | **native** | `godot-native` (4) | Opus | nothing alone: the rules-ON pairing base (CP39.0), same sim on every machine | N1 the rules-ON row |
 
+**LAUNCHED 2026-10-23 ~21:00 PDT (steps 1-2 done):** round-38 worktrees removed, branches renamed `round38/<s>`, builder0's
+`~/tank_squad/godot-<s>*` cleared (98 % -> 79 % disk, 22 GB free); builder2 was stopped, so its leftovers are still there (clear them
+when it next runs). The six round-39 worktrees exist at offsets per the table; the lab/guard side trees (`godot-*-guard`, `-m5*`,
+`-s3866*`, `-trace`, `-settle-on`, `-native-score`) were left in place (clean). The lead starts the CLIs; the orchestrator runs step 3.
+
 **Launch steps (the next orchestrator; the round-38 worker sessions must be closed first, by the lead):**
 **Main at launch: 8952c3d64 (+ docs), GREEN and perf-judged, R1-R3 ON** (R38.55: doctrine's 95a3a8f54 green on builder0, 3135
 passed / 0 failed, sim-baseline adopted for the rules; merged alone, INHERIT; perf-judge PASS 7,687 us/tick on idle builder0).
