@@ -167,6 +167,11 @@ block: ask the orchestrator first.
 - **R39.6 (2026-10-24 ~11:00 PDT):** D3 is decided (FAIL), so its none line (G3, a guard for a ship that can't happen) is dropped;
   builder2 goes to native's 8952c3d64 run.sh row and the trig perf attribution's builder2 needs, once D4 hull-down ends.
 
+- **R39.7 (2026-10-24 ~11:20 PDT, feedback's finding): GRANT `game/modes/skirmish_mode.gd` to feedback** for one change: the touch
+  map gets the same `rig.vision` / `vision_inset` hookup desktop has (skirmish_mode.gd ~638), so its overview frames his force (his
+  rule: never zoom past what the force can see) rather than the arena centre. Before: his spawn crews sat off the bottom of a
+  phone screen in every layout. Desktop byte-identical. A follow-up commit after feedback's current full check, with its own check.
+
 ## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 
 **Goal: he keeps control of his army, and the defender really defends.** From round 37 (HANDOFF *ROUND 37 CLOSED*): his playtest's
