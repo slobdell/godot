@@ -442,3 +442,19 @@ trig-digest: $(TRIG_CHECK_BIN) ## N4: one digest line per float libm function; c
 
 trig-info: ## N4: which trig this machine's Godot runs (cr = the builders' result; system = its own libm)
 	@echo "TRIG glibc $(TRIG_GLIBC) | $(if $(TRIG_OLD_LIBM),older than 2.41,2.41+ (libm is CORE-MATH))| TRIG=$(TRIG) | LD_PRELOAD=$(or $(LD_PRELOAD),none) | sim-baseline key $(or $(SIM_BASELINE_KEY),glibc-$(TRIG_GLIBC))"
+
+# Round 39 (stretch, the lead's question 2026-10-23: would a faster physics engine speed development?): what share of a
+# simulation tick is the PHYSICS ENGINE. A tick's wall time (MATCH_RESULT real_seconds over the ticks: the match runner
+# runs uncapped, startup excluded) = the scripts' _physics_process (SimProfile's whole tick) + the rest of Godot's frame,
+# whose bulk headless is PhysicsServer3D's sync, query flush and step (Jolt). Physics queries made FROM scripts are inside
+# the scripts' time: `tank/drive` (the motion model + move_and_slide) is reported beside, an upper bound on that part.
+# PHYSICS_SHARE_SEEDS fights (CPU v CPU, condemned mirror, 5200 budget, TIME s each) -> build/physics-share/ + a table.
+PHYSICS_SHARE_SEEDS ?= 3 7 11
+physics-share: import native-for-check ## Stretch (round 39): the physics engine's share of a sim tick (frame wall v scripts; tank/drive beside) -> build/physics-share/
+	@rm -rf $(BUILD_DIR)/physics-share; mkdir -p $(BUILD_DIR)/physics-share
+	@for seed in $(PHYSICS_SHARE_SEEDS); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --sim-profile \
+			--green-faction=condemned --rust-faction=condemned --budget=$(or $(BUDGET),5200) --time-limit=$(or $(TIME),120) \
+			--seed=$$seed > $(BUILD_DIR)/physics-share/seed-$$seed.log 2>&1 || exit 1; \
+	done
+	@$(PYTHON) tools/judge/physics_share.py $(BUILD_DIR)/physics-share/seed-*.log
