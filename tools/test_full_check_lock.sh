@@ -92,8 +92,9 @@ if kill -0 "$child" 2>/dev/null; then bad "the session gone, the check lived on"
 else bash "$fcl" run -n "$lock" true 2>/dev/null && grep -q "session .* is gone" "$tmp/err.w" \
 	&& ok "  the session gone: the check stopped, said why, claim free" || bad "session: claim or message" "$(cat "$tmp/err.w")"; fi
 
-# 5c. A check QUEUED for the claim whose session dies never runs (it would wake later as an orphan).
-bash "$fcl" run "$lock" sleep 2 &
+# 5c. A check QUEUED for the claim whose session dies leaves AT ONCE, while the claim is still held by the running check
+# (feedback on builder2: a queued waiter outlived its stopped wrapper; bash defers a trap until a foreground flock returns).
+bash "$fcl" run "$lock" sleep 6 &
 first=$!
 sleep 0.3
 sleep 300 & session=$!
@@ -102,8 +103,36 @@ FULL_CHECK_LOCK_SESSION=$session FULL_CHECK_LOCK_POLL=0.2 setsid bash "$fcl" run
 queued=$!
 sleep 0.5
 kill "$session"; wait "$session" 2>/dev/null
-wait "$queued" 2>/dev/null; wait "$first"
-[ ! -e "$tmp/ran" ] && ok "a queued check whose session died never runs" || bad "queued orphan ran"
+for _ in $(seq 1 15); do kill -0 "$queued" 2>/dev/null || break; sleep 0.1; done
+if kill -0 "$queued" 2>/dev/null; then bad "a queued waiter outlived its session by 1.5 s (still waiting for the claim)"; kill "$queued"
+else ok "a queued check whose session died leaves within 1.5 s, the claim still held by the running one"; fi
+kill -0 "$first" 2>/dev/null && ! bash "$fcl" run -n "$lock" true 2>/dev/null && ok "  the running check keeps its claim" \
+	|| bad "the running check lost its claim"
+wait "$first"
+[ ! -e "$tmp/ran" ] && ok "  and the queued one never ran" || bad "queued orphan ran"
+
+# 5d. The same with stderr on a pipe whose reader is gone, as remote.sh's is once the ssh session dies: the watchdog's own
+# message must not kill it by SIGPIPE before it stops the check (feedback's queued waiter on builder2 outlived its session).
+for role in running queued; do
+	mkfifo "$tmp/pipe.$role"
+	( exec 3<"$tmp/pipe.$role"; sleep 0.3 ) &
+	reader=$!
+	[ "$role" = queued ] && { bash "$fcl" run "$lock" sleep 6 & first=$!; sleep 0.3; }
+	sleep 300 & session=$!
+	rm -f "$tmp/child"
+	FULL_CHECK_LOCK_SESSION=$session FULL_CHECK_LOCK_POLL=0.2 setsid bash "$fcl" run "$lock" \
+		bash -c "echo \$\$ > '$tmp/child'; exec sleep 30" 2>"$tmp/pipe.$role" &
+	holder_pid=$!
+	wait "$reader"; sleep 0.3
+	kill "$session"; wait "$session" 2>/dev/null
+	for _ in $(seq 1 15); do kill -0 "$holder_pid" 2>/dev/null || break; sleep 0.1; done
+	alive=; kill -0 "$holder_pid" 2>/dev/null && alive=wrapper
+	[ -s "$tmp/child" ] && kill -0 "$(cat "$tmp/child")" 2>/dev/null && alive="$alive check"
+	if [ -n "$alive" ]; then bad "$role, stderr a dead pipe: the session gone, still alive:$alive"
+		kill "$holder_pid" 2>/dev/null; [ -s "$tmp/child" ] && kill "$(cat "$tmp/child")" 2>/dev/null
+	else ok "$role check, stderr a dead pipe: the session gone, it stops within 1.5 s"; fi
+	[ "$role" = queued ] && wait "$first"
+done
 
 # 6a. The command's status comes back, and the command holds the claim's descriptor (it is what keeps the claim).
 bash "$fcl" run "$lock" bash -c 'exit 7' 2>/dev/null; rc=$?
