@@ -63,6 +63,21 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   (settle's S1 failed its bar; it waits on manoeuvre's M1 or settle's next version). The G2 bar file waits on its re-read on
   CP39.1. R39.3: one laptop Godot run at a time,
   `flock /tmp/tank-squad-laptop-godot.lock <cmd>`; everything else on the builders.
+- **REPORT (2026-10-24): Bars G1 v5 and G3 v6 both FAIL** (tree 632724c90 green, e7c896c8f descendant, CP39.1 with
+  DEPLOY_HOLD ON both arms; n 12 a cell; evidence `references/round39/orders/g1v5-judged-e7c896c8f/` and
+  `g3v6-judged-e7c896c8f/`). Both switches stay OFF.
+  - **G1 v5** (builder0 light J4, 6201-6212):
+    - FAIL deciding: places outside, click cells, 100 -> 28 (bar <= 25). Locks 5 stays 8 -> 8 and his 5 goes 36 -> 12.
+    - FAIL guard: terminus_his 5 click twitch median 2.0 v 8.2. Squad 2 twitches 28.4 m on all 12 seeds (main 0.0): one
+      deterministic layout of his click.
+    - PASS: route_left 6490 -> 1832, re-dealt 0, contacts 14280 -> 11413, yard_open identical.
+  - **G3 v6** (builder2 J14, 6213-6224; one Spot preemption, re-run whole by the driver):
+    - PASS deciding: pairs < 12 m 48 -> 12 (bar <= 12.0).
+    - FAIL guards, both on crossing 5 route: never-in 0 v 1 (s6213 squads 4 and 5) and twitch 18.9 v 22.9 (worst s6220 squad
+      5, 42.5 v 0.1).
+  - **Next (dev only; a new version needs a fresh bar block from the orchestrator):** trace his-click 5 squad 2's 28.4 m
+    twitch, which is deterministic and cheap to trace, and locks 5's places outside for G1. Trace s6213 / s6220 on crossing 5
+    route for G3: settle's cause (B), a cleared place's leg meeting a passer head-on, is the first suspect.
 - **GREEN: 632724c90** (main 2518811d0 merged, CP39.1 with DEPLOY_HOLD ON; builder2 `make native check`, load 31-22, 46
   other godot): 3169 passed, 0 failed; 24 passed + 3 NOT JUDGED (perf-judge, scenario_perf, remote-guard-test: machine and
   load refusals); `>> remote: make native check exited 0`. **Bars G1 v5 (builder0 light J4) and G3 v6 (builder2 J14) started
