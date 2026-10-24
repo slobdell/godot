@@ -86,7 +86,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Stretch (re-deals after a loss), dev read** (builder0 light, 15ec5b830, fight probe locks/crossing/terminus x 3-squad click x
   dev seeds 3891-3902, n 36 fights an arm; REDEAL_TRACE = the halt's OWN seat moves > 6 m, before ducks): main 144 re-lays after a
   loss (185 crews moved), 0 from any other cause; `--deploy-hold=on` 0. Fights: his kills 4.86 -> 5.42, his losses 7.92 -> 7.36, CPU
-  losses 4.97 -> 5.56 a fight. Bar H v2 (deciding on REDEAL_TRACE): seeds 6025-6048 granted; bar filed below before any number.
+  losses 4.97 -> 5.56 a fight. Bar H v2 (deciding on REDEAL_TRACE): seeds 6025-6048 granted; bar filed below before any number (recorded on main 76f42a9c3).
+  Target `settle-h2` + judge `h2` at dbc022357. The judge's dry run on the dev read (not judged) reproduces it: re-lays 144 -> 0, but the
+  two-sided fight guard FAILS on held fighting BETTER (his kills 4.86 -> 5.42, se 0.29). A risk for the series, as filed.
+  **Series on hold** at the orchestrator's request (builder0 quiet for main's merge check / perf-judge); a start at ~09:34 was
+  stopped before any number. Start it on their word: `tools/remote.sh --light native settle-h2 TANK_SQUAD_SLOT_TIMEOUT=14400`.
 - **Orders' request done:** `ElementPlan.deploy_preview` (4066132c4, quick-remote builder0 132/0), pure; orders told.
 
 ### S1 route-clear lab (builder0 light, n 1 per run, orders' probe; `make settle-lab`)
