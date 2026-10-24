@@ -794,6 +794,12 @@ bars are re-read on the same seeds with the base `main` (said in the verdict, be
   R1-R3*): the right direction regardless of today's results; iterate until tactics beat the blob. doctrine flips
   RuleSwitches.DEFAULT_ON, updates tests that assumed OFF, adopts any moved sim-baseline maps with attribution, and names the green hash;
   merged alone, one check on main. Hull-down unchanged.
+  **DONE:** doctrine's 95a3a8f54 GREEN on builder0 (`make check exited 0`, 3135 passed / 0 failed, sim-baseline 13/13 on the adopted
+  lines, all 13 maps moved, old -> new in eb635cc6c's message; determinism 258cc8b1c957a796), merged alone as main 8952c3d64
+  (`merge_check_needed.sh` INHERIT: no main check). Two tests hold the rules OFF: scenario_cover's fights_from_cover (sight; with R1
+  ON back-to-cover 1 v bar 2: round 39's doctrine D5) and test_control_dials' inset test (all three; its fixture fights while the
+  camera settles: rules ON 0.44 v 0.50 FAIL, main PASS, each alone on builder0). **perf-judge on idle builder0 at 8952c3d64: PASS
+  attempt 1, 7,687 us/tick v 20,000** (round 38's 30c23d4c8 rules OFF: 7,084; +8.5 %, the rules' cost).
 - **R38.1 (2026-10-22) native's N1 merged; two load-sensitive reds accepted on a solo re-run.** main cc7c7ef1a merges stream/native
   595bb9208 (INHERIT). Its builder2 check: 3055 passed / 0 failed, sim hashes unmoved, `make check exited 2` on remote-guard-test
   (quiet-window "watch: records once the window opens", a timing test) and web-smoke (first sound 38.9 s v 30 s, the page at 2 fps), both

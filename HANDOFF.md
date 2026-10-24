@@ -4,8 +4,9 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-23 evening PDT — **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 closed on the docs side
-(briefs archived to `streams/archive/round38/`); its worktrees come down once the lead closes the six worker sessions.** Before that:
+_Last updated: 2026-10-23 ~20:40 PDT — **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
+`streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
 
 
@@ -25,16 +26,19 @@ contracts C39.0-C39.6 and the seed registry in `workstreams.md` *Round 39*; brie
 | **native** | `godot-native` (4) | Opus | nothing alone: the rules-ON pairing base (CP39.0), same sim on every machine | N1 the rules-ON row |
 
 **Launch steps (the next orchestrator; the round-38 worker sessions must be closed first, by the lead):**
-1. **R38.55 first:** if `stream/doctrine` a99bd09ed (R1-R3 DEFAULT_ON) isn't merged yet, read doctrine's Status (archived brief on
-   its branch) for the green hash and any sim-baseline adoption, merge it alone, one `make remote T=check` on main, record R38.55's
-   numbers. Every round-39 bar assumes rules ON.
-2. For each of orders doctrine settle manoeuvre feedback native: `make worktree-remove STREAM=<s>`, `ssh builder0 rm -rf
+**Main at launch: 8952c3d64 (+ docs), GREEN and perf-judged, R1-R3 ON** (R38.55: doctrine's 95a3a8f54 green on builder0, 3135
+passed / 0 failed, sim-baseline adopted for the rules; merged alone, INHERIT; perf-judge PASS 7,687 us/tick on idle builder0).
+Workers start from it without a baseline check.
+
+1. For each of orders doctrine settle manoeuvre feedback native: `make worktree-remove STREAM=<s>`, `ssh builder0 rm -rf
    ~/tank_squad/godot-<s>*` (and builder2's), then `git branch -m stream/<s> round38/<s>` after `git merge-base --is-ancestor`.
    Native's side trees `../godot-native-guard` and `-score` (guard.sh / run.sh scratch) may stay.
-3. Optional disk: archive `~/overnight-manoeuvre/r38` (~1.1 GB) to `~/archive-old-logs/` (laptop at ~2.6 GB free).
-4. `make worktree STREAM=<s> OFFSET=<n>` per the table (after the docs commit), then the lead starts a CLI in each folder (settle and
+   `stream/doctrine`'s tip 4289a213e is NOT an ancestor of main by design: a Status-only commit, already copied into
+   `streams/archive/round38/doctrine.md`; rename it to `round38/doctrine` like the rest.
+   (Done already: round 38's logs archived to `~/archive-old-logs/overnight-manoeuvre-r38.tar.zst`, laptop 7.8 GB free.)
+2. `make worktree STREAM=<s> OFFSET=<n>` per the table (after the docs commit), then the lead starts a CLI in each folder (settle and
    doctrine on Fable, the rest Opus) with the kickoff prompt in `_agents/orchestration.md`. Native is a FRESH session this time.
-5. Orchestrator loop as in `_agents/orchestration.md`; native's N1 (CP39.0) is the first thing doctrine waits on.
+3. Orchestrator loop as in `_agents/orchestration.md`; native's N1 (CP39.0) is the first thing doctrine waits on.
 
 ## 🏁 ROUND 38 CLOSED (2026-10-23; prepared 2026-10-22 morning)
 
@@ -62,9 +66,8 @@ failed; R38.39, R38.45, R38.51). **Round 38 v round 37 (native's row, R38.52):**
 then S1, G1 v4 (near/far place order) and G3 v5 (seat-safe moves) re-read; (2) G2 rear places on the route line at corners (R38.47);
 (3) a powered SPLIT series (R38.41); (4) trace o2's crossing re-deals before any Bar H re-file (R38.42); (5) machine-independent trig;
 (6) touch-map top panels (a directions page); (7) quiet-window line ~1.0 per core; `make skirmish` flag passthrough. Pairing base
-references/scoreboard/guards/686150ed2.fights.jsonl. **His call (R38.55):** R1-R3 ship ON by default (doctrine flipping; merge alone + one main check) after D3 (
-R38.48); (lane-mouth shape withdrawn 2026-10-23: the R38.16 shot pairs barely differ and S2 v4 shipped on its measured bar). Close steps left: archive briefs to streams/archive/round38/, remove worktrees (his sessions
-first), the laptop's disk is at ~2.6 GB free (round 38's overnight logs ~1.1 GB can be archived at close).
+references/scoreboard/guards/686150ed2.fights.jsonl. **His call (R38.55, DONE):** R1-R3 ON by default, merged as main 8952c3d64 (green, perf 7,687 us/tick) after D3 (
+R38.48); (lane-mouth shape withdrawn 2026-10-23: the R38.16 shot pairs barely differ and S2 v4 shipped on its measured bar). Close steps: briefs archived, logs archived (done); worktrees come down at round 39's launch (step 1 of its box).
 
 **To launch (the lead):** in each NEW folder (`godot-orders`, `godot-doctrine`, `godot-settle`, `godot-manoeuvre`, `godot-feedback`)
 start a CLI (orders and doctrine on Fable, the rest Opus) and paste the kickoff prompt from `_agents/orchestration.md`. Native is NOT
