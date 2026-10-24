@@ -2064,8 +2064,10 @@ const DEPLOY_LATCH_LAYS := 3
 ## moved 6-11 m: parked crews pulling out of their spots in the middle of a fight, the moment one of theirs is hit. Here the
 ## deploy keeps what it dealt (`deploy["held"]`: each crew's seat, sector, seat entry and order, and the shape); while every
 ## crew of the halt is one it dealt, a smaller squad (a loss) stands on its own dealt seats and the shape keeps its name.
-## A crew joining (a larger squad) lays the halt afresh as before. `--deploy-hold=on` (env DEPLOY_HOLD=on) opts in; OFF.
-static var DEPLOY_HOLD := OS.get_cmdline_user_args().has("--deploy-hold=on") or OS.get_environment("DEPLOY_HOLD") == "on"
+## A crew joining (a larger squad) lays the halt afresh as before. ON since Bar H v2 (round 39, builder0 cd7a272d0, seeds
+## 6025-6048, 72 fights an arm: REDEAL_TRACE re-lays after a loss 288 -> 0, fights flat); `--deploy-hold=off` (env
+## DEPLOY_HOLD=off) is round 38's re-lay.
+static var DEPLOY_HOLD := not (OS.get_cmdline_user_args().has("--deploy-hold=off") or OS.get_environment("DEPLOY_HOLD") == "off")
 ## Measurement: updates a held halt kept its survivors' seats after a loss, since start.
 static var deploy_held := 0
 
