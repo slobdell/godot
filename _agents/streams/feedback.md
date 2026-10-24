@@ -89,13 +89,21 @@ test the diff since 906557c06 touches + lint). d8f88b3ab (the fog fix) is in mai
   rig with and without the inset): every grid mark the old overview showed is above the bars at 2400x1080 (78 marks), 1800x810
   (78), 810x1800 (18; lens 35 -> 62.6 degrees there: portrait's bars are 804 px). Stills: `make remote T=touch-shots
   TOUCH_LAYOUTS='dock top' FB_FLAGS=--touch-overview` (builder0; kept r39/f3/touch-overview2/).
-- **Known issues:** the phone map hands the rig no vision region (only desktop's controls do, skirmish_mode.gd:638), so its
-  overview centres on the arena middle and his crews at spawn were off the bottom of the screen in round 2's layout too; with
-  dock's wider lens they peek in at the bottom edge in landscape (portrait: on screen, clear). Fix: the touch map gets desktop's
-  vision callback (skirmish_mode.gd, not mine; asked the orchestrator). In portrait, the order-preview line floats mid-screen.
+- **R39.7 the phone overview frames his force (granted game/modes/skirmish_mode.gd for one change), 464ae5cd0:**
+  `TacticalMap.vision_state()` returns desktop's L4 sight region only (his living crews, `VisionRegion.of`); `_start_touch_map`
+  gets desktop's `rig.vision` / `rig.vision_inset` hookup behind the same flags. So the Overview button centres on his force and
+  never zooms past what it can see (his "no unearned god view"); there is no `frame`, so the phone camera is never taken back
+  from his fingers. Desktop's branch is untouched. Test (from skirmish's start: squad one framed at START_ZOOM): all 5 spawn
+  crews on screen above the bars at 2400x1080, 1800x810, 810x1800. Stills (builder0 light lane, 464ae5cd0; kept
+  r39/touch-overview-r39.7/): all five crews mid-screen, clear of the bars, at all three sizes. Note: the overview opens at
+  min(0.92, the follow view's cap) and the cap only lowers it, which is desktop's own rule (a test starting at the arena centre
+  got a stale 0.51 cap and lost two portrait crews off the side; the real start does not).
+- ec3cb962d: `set_tactical_view` fits/drops dock's FollowCamera lift at once (the follow view drew one frame lifted; a flake
+  in test_dock_keeps_his_crews_clear_of_the_bars when two physics steps ran in one idle frame).
+- **Known issues:** in portrait, the order-preview line floats mid-screen.
   Caller lines off until he hears them.
 - **Merge notes:** outside my paths: game/camera/rts_camera.gd (R39.5 grant: overview_inset_px + _inset_overview +
-  overview_fit, additive) and the announcer data: assets/announcer/{lines.json, beats.json, README.md, ledger.md, clips/manifest.json, 6 clips} (round 37 did the same).
+  overview_fit, additive), game/modes/skirmish_mode.gd (R39.7: four lines in _start_touch_map) and the announcer data: assets/announcer/{lines.json, beats.json, README.md, ledger.md, clips/manifest.json, 6 clips} (round 37 did the same).
   R39.3 noted: laptop Godot runs under `flock /tmp/tank-squad-laptop-godot.lock`, none below 1500 MiB available.
 - **What to playtest:** `.tools/godot-*/Godot_* --path . -- --skirmish --enemy=cpu --announcer-rules=on` (the chevrons under fire;
   listen for the two new calls when crews fire on the move or crawl under fire); `-- --skirmish --touch-map --ui-touch` (dock).
