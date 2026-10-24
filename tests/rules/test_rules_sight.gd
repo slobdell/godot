@@ -62,12 +62,33 @@ func test_driving_shrinks_sight_and_a_dwell_stretches_it() -> void:
 	await _hold(pair, SimClock.TICK_RATE * 2, 1.0)
 	assert_near(mover.sight_radius, calm * Tank.MOVING_SIGHT_FACTOR, 0.5,
 			"two seconds of driving: it sees ~85 %% of its radius (%.1f of %.0f m)" % [mover.sight_radius, calm])
-	await _hold(pair, SimClock.TICK_RATE, 0.0)
+	await _hold(pair, SimClock.TICK_RATE / 2, 0.0)
 	assert_near(mover.sight_radius, calm * Tank.MOVING_SIGHT_FACTOR, 0.5,
-			"a one-second halt is not a dwell: sight stays where it was (%.1f m)" % mover.sight_radius)
-	await _hold(pair, SimClock.TICK_RATE * 3, 0.0)
+			"a half-second halt is not a dwell: sight stays where it was (%.1f m)" % mover.sight_radius)
+	await _hold(pair, SimClock.TICK_RATE * 4, 0.0)
 	assert_near(mover.sight_radius, calm * Tank.HALTED_SIGHT_FACTOR, 0.5,
 			"stopped long enough, it sees ~110 %% (%.1f m)" % mover.sight_radius)
+
+
+## Round 39 (doctrine D2s, C39.4): his number is "stopped ~2 s, ~110 %". A crew that halts after driving reaches it about two
+## seconds after it stops (the hull's braking counts as driving), not three.
+func test_a_crew_that_stops_sees_its_farthest_about_two_seconds_later() -> void:
+	RuleSwitches.sight_on = true
+	var game_match := _setup()
+	var pair: Array = await _pair(game_match)
+	var mover: Tank = pair[1]
+	var calm := float(Units.stat("tank", "sight_radius"))
+	await _hold(pair, SimClock.TICK_RATE * 2, 1.0)
+	var stopped_at := -1
+	for tick in SimClock.TICK_RATE * 4:
+		await _hold(pair, 1, 0.0)
+		if stopped_at < 0 and mover.halted_seconds > 0.0:
+			stopped_at = tick
+		if mover.sight_radius >= calm * Tank.HALTED_SIGHT_FACTOR - 0.05:
+			var seconds := float(tick - stopped_at) / SimClock.TICK_RATE
+			assert_true(seconds <= 2.2, "~110 %% about two seconds after it stopped (%.2f s)" % seconds)
+			return
+	assert_true(false, "it never reached ~110 %% in 4 s of halting (%.1f m)" % mover.sight_radius)
 
 
 func test_the_change_blends_and_never_jumps() -> void:

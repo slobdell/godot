@@ -1148,7 +1148,9 @@ func _apply_suppression_effects() -> void:
 ## `RuleSwitches.sight_on`; OFF this never runs and sight is untouched.
 const MOVING_SIGHT_FACTOR := 0.85
 const HALTED_SIGHT_FACTOR := 1.10
-const HALT_DWELL_SECONDS := 2.0
+## Round 39 (doctrine D2s, C39.4 grant R39.1): 1 s, so a crew reaches ~110 % about 2 s after it stops (his number); at
+## 2.0 it took ~3 s (2 s at 85 %, then the 1 s blend).
+const HALT_DWELL_SECONDS := 1.0
 ## 0.85 -> 1.10 in a second.
 const SIGHT_BLEND_PER_SECOND := 0.25
 ## Slower than this over the ground (real_velocity, flat) counts as halted: a hull pivoting in place or creeping onto
