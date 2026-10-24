@@ -52,6 +52,66 @@ F1's and F2's directions pages, once filed.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT 2026-10-24 ~10:10: F3 + stretch built (4ce6759b8, 7567d3753); full check owed after main's batch-1 check is green
+and merged in (the orchestrator's order).** builder0 `make quick` exited 0, 261 passed / 0 failed (7567d3753's tree, every
+test the diff since 906557c06 touches + lint). d8f88b3ab (the fog fix) is in main's batch-1.
+- **Full check, a2b560896 (main 76f42a9c3 merged + R39.5), builder0, 2026-10-24 ~12:00: RED, not from this stream.**
+  builder0 was shared with another check (perf lock held 300 s; 50 min to 4/26 targets) and the slot killed it at
+  5400 s: `test` and `remote-guard-test` were Terminated, not failed; 11 NOT RUN. `relay-smoke` read room WU2K7 from
+  build/relay-smoke-host.log while the host this run opened PSVVQ (a stale-log race, outside my paths). sim-baseline 13
+  maps unmoved, determinism 258cc8b1c957a796, ai-scenarios 54/0 (perf NOT JUDGED: unpinned). Rerun on the next commit.
+- **His picks** (db `picks/round39`, 2026-10-24 06:58Z; the orchestrator confirmed, R39.4): sight none, fire none, slowed amber,
+  touch dock, all six caller lines, no words. **ON by default now:** `slowed` (FeedbackLook slot; `--feedback-look=slowed:off`):
+  the pinned chevrons show from the first 5 % of R3's slow and warm yellow -> orange; the phone map's `dock` layout
+  (`--touch-layout=top` keeps round 2's). **Deleted:** sight edge/ring, fire wedge, slowed brake, split, `--rules-look`,
+  FeedbackFx's moving-shot record, the fog shader's settled glow.
+- **Caller lines (stretch), behind `--announcer-rules=on`:** MatchEventAdapter counts shells fired on the move (15 %+ of top
+  speed) that hit no enemy and crews R3 holds 20 %+ slow for 2 s while rolling; momentum carries them as an optional `rules`
+  field (K5 and its Python twin unchanged, as round 37's `face`). AnnouncerMemory: 3+ misses, no hit -> `moving_miss`; a crawling
+  crew -> `pinned_slow` (`unit_<unit>`); beats.json cooldown 45 s each. Voiced caller.moving_miss.01-03 + caller.pinned_slow.01-03:
+  ElevenLabs 433 characters, STT flagged 0, credits read 121124 -> 121124 (settles later, as round 37's), ledgered.
+- **Looked at (builder0, laptop preset, 7567d3753; kept ~/projects/godot-feedback-keep/r39/f3/):** `feedback-shots
+  FB_SLOTS=slowed`: the 50 % crew's chevron is orange with amber, yellow without; the 15 % crew gains a chevron (behind the message
+  log in this framing). `touch-shots TOUCH_LAYOUTS=dock` at 2400x1080 / 1800x810 / 810x1800: top of the screen clear, nothing on
+  the bug or radar.
+- **Dock framing (the orchestrator's ask, dc9cd45d0; builder0 quick 262/0):** test_tactical_map's input test found his
+  crews under dock's chips. Cause: TacticalMap's own overview (orthographic, the map without an RTS rig) draws his end of the
+  arena at the bottom of the screen, where dock sits. Fix: the overview zooms out by the bars' share and lifts
+  (`overview_fit`, Camera3D.v_offset) so the whole arena sits above the bars, nothing cut at the top. The follow view is not
+  lifted (that would push the far ground off the top, the part he said matters most); the followed crew is framed at the centre,
+  clear. Test: every crew above the bars in the overview, the followed crew clear in the follow view, at 1280x720, 2400x1080 and
+  810x1800. test_tactical_map.gd is unchanged from main (no pin). Looked at: touch-shots dock (builder0): his squad above the
+  bars at 2400x1080 and 810x1800.
+- **R39.5 the rig's overview (granted game/camera/rts_camera.gd for this):** `RtsCamera.overview_inset_px` (0 by default:
+  desktop byte-identical, tested) is set by TacticalMap on touch layouts to the bars' height. In the overview the lens widens and
+  the view tips toward his end together (`RtsCamera.overview_fit`, solved exactly), so the old frame's top stays the screen's top
+  (the far end) and its bottom lands on the bars' top; the follow view is never inset. Test (the real Overview button, a frozen
+  rig with and without the inset): every grid mark the old overview showed is above the bars at 2400x1080 (78 marks), 1800x810
+  (78), 810x1800 (18; lens 35 -> 62.6 degrees there: portrait's bars are 804 px). Stills: `make remote T=touch-shots
+  TOUCH_LAYOUTS='dock top' FB_FLAGS=--touch-overview` (builder0; kept r39/f3/touch-overview2/).
+- **R39.7 the phone overview frames his force (granted game/modes/skirmish_mode.gd for one change), 464ae5cd0:**
+  `TacticalMap.vision_state()` returns desktop's L4 sight region only (his living crews, `VisionRegion.of`); `_start_touch_map`
+  gets desktop's `rig.vision` / `rig.vision_inset` hookup behind the same flags. So the Overview button centres on his force and
+  never zooms past what it can see (his "no unearned god view"); there is no `frame`, so the phone camera is never taken back
+  from his fingers. Desktop's branch is untouched. Test (from skirmish's start: squad one framed at START_ZOOM): all 5 spawn
+  crews on screen above the bars at 2400x1080, 1800x810, 810x1800. Stills (builder0 light lane, 464ae5cd0; kept
+  r39/touch-overview-r39.7/): all five crews mid-screen, clear of the bars, at all three sizes. Note: the overview opens at
+  min(0.92, the follow view's cap) and the cap only lowers it, which is desktop's own rule (a test starting at the arena centre
+  got a stale 0.51 cap and lost two portrait crews off the side; the real start does not).
+- ec3cb962d: `set_tactical_view` fits/drops dock's FollowCamera lift at once (the follow view drew one frame lifted; a flake
+  in test_dock_keeps_his_crews_clear_of_the_bars when two physics steps ran in one idle frame).
+- **Known issues:** in portrait, the order-preview line floats mid-screen.
+  Caller lines off until he hears them.
+- **Merge notes:** outside my paths: game/camera/rts_camera.gd (R39.5 grant: overview_inset_px + _inset_overview +
+  overview_fit, additive), game/modes/skirmish_mode.gd (R39.7: four lines in _start_touch_map) and the announcer data: assets/announcer/{lines.json, beats.json, README.md, ledger.md, clips/manifest.json, 6 clips} (round 37 did the same).
+  R39.3 noted: laptop Godot runs under `flock /tmp/tank-squad-laptop-godot.lock`, none below 1500 MiB available.
+- **What to playtest:** `.tools/godot-*/Godot_* --path . -- --skirmish --enemy=cpu --announcer-rules=on` (the chevrons under fire;
+  listen for the two new calls when crews fire on the move or crawl under fire); `-- --skirmish --touch-map --ui-touch` (dock).
+
+**2026-10-24 ~01:30 (superseded): green hash d8f88b3ab** (`make check` builder0 exited 0, 3144 passed / 0 failed, 25 passed +
+2 NOT JUDGED: perf-judge refused at 2.3-2.5x busy, scenario_perf unpinned; sim-baseline unmoved on every map). The fog fix (F1a)
+ON; picks and caller lines then at the lead gate.
+
 **2026-10-24 ~00:10: F1 + F2 directions page filed; waiting on his picks (lead gate). Full check queued on 6f793958f.**
 - **Page:** https://claude.ai/artifact/7zsrhB5GG4hV4ckcCWaxGD (db `picks/round39`: sight / fire / slowed / touch / words; empty
   at filing). Rule looks filmed with `make remote T=feedback-shots FB_SLOTS=sight,fire,slowed` (191185d7a; fire at 0fc88183a

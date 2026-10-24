@@ -40,6 +40,26 @@ var _last_momentum_t := 0.0
 var _struck := {}
 var _arcing := {}
 const STRUCK_FRESH_S := 0.5
+## Round 39 (feedback stretch, his six approved caller lines): the booth hears two of round 37's rules in a real match,
+## behind `--announcer-rules=on` until he hears them. Carried on momentum as an optional `rules` field, so K5 is
+## unchanged (as round 37's `face`): {"moving": {team: [misses, hits]}, "slowed": {team: unit or ""}}
+##   moving  shells a team fired on the move (R2's spread) since the last momentum: how many hit no vehicle, how
+##           many hit an enemy
+##   slowed  a crew R3 has held at RULE_SLOW_FROM or more of its speed for RULE_SLOW_S while it drives ("" none)
+var rules_calls: bool = LaunchFlags.from_environment().text("announcer-rules") == "on"
+## A round is fired on the move from this fraction of the hull's top speed (FeedbackReader's, Match.shot_spread's).
+const RULE_MOVING_FROM := 0.15
+## A round no impact reported after this long missed (it flew on past its range).
+const RULE_MISS_WAIT_S := 3.0
+## R3's slow that counts (of the crew's speed: suppression 0.5 at PIN_SLOW_MAX 0.4), on a hull still rolling this fast.
+const RULE_SLOW_FROM := 0.2
+const RULE_SLOW_SPEED := 1.0
+const RULE_SLOW_S := 2.0
+## projectile id -> [team, seconds fired] of a gun round fired on the move, until its impact.
+var _moving_rounds := {}
+var _moving_count := [[0, 0], [0, 0]]
+## unit id -> seconds since its slow began.
+var _slow_since := {}
 
 
 ## Doctrine (L1) reports why an element is lining up the way it is, and the booth turns that into commentary
@@ -110,10 +130,15 @@ func poll() -> Array:
 		_try_start()
 	elif not _ended:
 		_watch_health()
+		if rules_calls:
+			_watch_slowed()
 		if seconds() - _last_momentum_t >= MOMENTUM_EVERY_S:
 			_last_momentum_t = seconds()
-			_emit("momentum", {"army_health": {"green": _army_health(0), "rust": _army_health(1)},
-					"units_left": {"green": game_match.alive_count(0), "rust": game_match.alive_count(1)}})
+			var momentum := {"army_health": {"green": _army_health(0), "rust": _army_health(1)},
+					"units_left": {"green": game_match.alive_count(0), "rust": game_match.alive_count(1)}}
+			if rules_calls:
+				momentum["rules"] = _rules_since()
+			_emit("momentum", momentum)
 	var out := _pending
 	_pending = []
 	return out
@@ -237,6 +262,11 @@ func _struck_face(id: String) -> Dictionary:
 
 
 func _on_weapon_fired(event: Dictionary) -> void:
+	if rules_calls and String(event.get("fire_model", "")) == "shell":  # a beam lands before it is announced
+		var unit: Dictionary = _units.get(String(event.get("shooter", "")), {})
+		var tank: Tank = unit.get("tank")
+		if tank != null and is_instance_valid(tank) and absf(tank.speed()) >= RULE_MOVING_FROM * maxf(tank.max_forward_speed, 0.1):
+			_moving_rounds[int(event.get("projectile_id", -1))] = [int(unit["team"]), seconds()]
 	if String(event.get("fire_model", "")) == "arc":
 		_arcing[int(event.get("projectile_id", -1))] = true
 		if _arcing.size() > 512:
@@ -245,11 +275,54 @@ func _on_weapon_fired(event: Dictionary) -> void:
 
 func _on_impact(event: Dictionary) -> void:
 	var target := String(event.get("target", ""))
+	var moving: Array = _moving_rounds.get(int(event.get("projectile_id", -1)), [])
+	if not moving.is_empty():
+		_moving_rounds.erase(int(event.get("projectile_id", -1)))
+		var team := int(moving[0])
+		var enemy: bool = _units.has(target) and int(_units[target]["team"]) != team
+		_moving_count[team][1 if enemy else 0] += 1
 	if target == "":
 		return
 	var from_above := _arcing.erase(int(event.get("projectile_id", -1)))
 	_struck[target] = {"tick": game_match.tick, "face": "" if from_above else String(event.get("face", "")),
 			"weak_spot": bool(event.get("weak_spot", false))}
+
+
+## Round 39: when each crew's R3 slow began (rolling, at RULE_SLOW_FROM or more); a crew that stops or shakes it off
+## starts again.
+func _watch_slowed() -> void:
+	var now := seconds()
+	for index in _watch_tanks.size():
+		var tank := _watch_tanks[index]
+		var id: String = _watched[index]["id"]
+		if is_instance_valid(tank) and tank.pin_slow() * Tank.PIN_SLOW_MAX >= RULE_SLOW_FROM \
+				and absf(tank.speed()) >= RULE_SLOW_SPEED:
+			if not _slow_since.has(id):
+				_slow_since[id] = now
+		else:
+			_slow_since.erase(id)
+
+
+## Round 39: the rules heard since the last momentum (the `rules` field), then a fresh count.
+func _rules_since() -> Dictionary:
+	var now := seconds()
+	for id: Variant in _moving_rounds.keys():
+		var round_of: Array = _moving_rounds[id]
+		if now - float(round_of[1]) >= RULE_MISS_WAIT_S:
+			_moving_count[int(round_of[0])][0] += 1
+			_moving_rounds.erase(id)
+	var rules := {"moving": {}, "slowed": {}}
+	for team in [0, 1]:
+		rules["moving"][TEAM_KEYS[team]] = (_moving_count[team] as Array).duplicate()
+		var slowed := ""
+		for id: String in _slow_since:
+			var unit: Dictionary = _units[id]
+			if int(unit["team"]) == team and unit["alive"] and now - float(_slow_since[id]) >= RULE_SLOW_S:
+				slowed = unit["unit"]
+				break
+		rules["slowed"][TEAM_KEYS[team]] = slowed
+	_moving_count = [[0, 0], [0, 0]]
+	return rules
 
 
 func _nearest_enemy(tank: Tank) -> String:

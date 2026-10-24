@@ -96,6 +96,7 @@ func _ready() -> void:
 	if not squads.is_empty():
 		selected_squad = squads[0].squad_name
 	set_tactical_view(rig == null)  # legacy flat map without an RTS camera; the tilted view with one
+	_hold_overview = LaunchFlags.from_environment().has("touch-overview")
 
 
 func _process(delta: float) -> void:
@@ -108,6 +109,9 @@ func _process_timed(delta: float) -> void:
 	if rig != null:
 		tactical_view = rig.is_overview()  # tracking can leave the overview on its own
 	_ping_left = maxf(0.0, _ping_left - delta)
+	if _hold_overview and not tactical_view:
+		set_tactical_view(true)  # captures only: the scripted orders' tracking leaves the overview on its own
+	_lift_frame()
 	if _formation_row != null and _formation_row.visible:
 		_formation_clock += delta
 		_formation_stage.queue_redraw()  # round 18: the preview animates only while the picker is open
@@ -355,7 +359,7 @@ func set_tactical_view(enabled: bool) -> void:
 		if camera is FollowCamera:
 			(camera as FollowCamera).target = null
 		camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-		camera.size = Match.ARENA_HALF_SIZE * 2.0 + 12.0
+		camera.size = OVERVIEW_SIZE_M  # dock fits it above the bars (_lift_frame)
 		camera.global_position = Vector3(0.0, 200.0, 0.0)
 		camera.look_at(Vector3.ZERO, Vector3.FORWARD)  # north (the enemy) is up the screen
 	else:
@@ -365,6 +369,7 @@ func set_tactical_view(enabled: bool) -> void:
 		if lead != null and camera is FollowCamera:
 			camera.rotation = Vector3.ZERO
 			(camera as FollowCamera).follow(lead)
+	_lift_frame()  # fit (or drop) the overview's lift now, not a frame late
 
 
 # ---- Input --------------------------------------------------------------------------
@@ -1027,9 +1032,11 @@ func _layout_bottom(screen: Vector2, h: float, picker_size: Vector2, card_size: 
 		_put(pair[0] as Control, touch_rects[pair[1]] as Rect2)
 	var orders: Rect2 = touch_rects["orders"]
 	var squads: Rect2 = touch_rects["squads"]
+	# The picker and the unit card stack over the orders, and over the chips too where dock rows them above the orders.
+	var above := minf(orders.position.y, squads.position.y)
 	_formation_row.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	_put(_formation_row, Rect2(Vector2(orders.position.x, orders.position.y - GAP_PX - picker_size.y), picker_size))
-	var card_bottom := orders.position.y - GAP_PX - (picker_size.y + GAP_PX if _formation_row.visible else 0.0)
+	_put(_formation_row, Rect2(Vector2(orders.position.x, above - GAP_PX - picker_size.y), picker_size))
+	var card_bottom := above - GAP_PX - (picker_size.y + GAP_PX if _formation_row.visible else 0.0)
 	_put(_unit_card, Rect2(Vector2(orders.position.x, card_bottom - card_size.y), card_size))
 	if quick_squad != "" and _squad_chips.has(quick_squad):
 		var quick := _quick_row.get_combined_minimum_size()
@@ -1047,6 +1054,57 @@ func _layout_bottom(screen: Vector2, h: float, picker_size: Vector2, card_size: 
 
 const GAP_PX := 6.0
 const MARGIN_PX := 10.0
+
+## Round 39: `--touch-overview` (captures only, make touch-shots FB_FLAGS=) holds the map in its overview.
+var _hold_overview := false
+## Round 39 (dock, his pick): the overview's v_offset this map has applied to its camera (camera shake adds its own).
+var _lift_applied := 0.0
+
+
+## R39.7: the phone map's half of desktop's L4 hookup (RtsControls.vision_state's "region"): the force's collective sight,
+## so the rig's overview frames his force, not the arena centre, and never zooms out past what it can see. No "frame":
+## the phone camera is never taken back from his fingers.
+func vision_state() -> Dictionary:
+	if game_match == null or game_match.tanks == null:
+		return {}
+	var friendly: Array = []
+	for tank in game_match.sorted_team_tanks(team):
+		if tank.is_alive():
+			friendly.append(tank)
+	return {"region": VisionRegion.of(friendly)}
+
+
+## Dock fills the bottom of the screen, where the overview draws his own end of the arena: his crews sat under the
+## chips. So the overview fits the whole arena into the clear ground above the bars: zoomed out by the bars' share of the
+## screen and lifted (Camera3D.v_offset) by half of it, nothing cut at the top (the far end matters most). A followed crew
+## is framed at the screen centre, already clear of dock; the follow view is left alone.
+func _lift_frame() -> void:
+	if rig != null:
+		# The rig's own overview (R39.5): it keeps the bars' height clear; round 2's layout leaves it as it was.
+		rig.overview_inset_px = 0.0 if touch_rects.is_empty() else \
+				maxf(0.0, get_viewport_rect().size.y - float(touch_rects["text_floor"]))
+		return
+	if camera == null:
+		return
+	var fit := Vector2(1.0, 0.0)
+	if tactical_view and camera.projection == Camera3D.PROJECTION_ORTHOGONAL:
+		camera.size = OVERVIEW_SIZE_M
+		if not touch_rects.is_empty():
+			fit = overview_fit(get_viewport_rect().size, float(touch_rects["text_floor"]))
+			camera.size = OVERVIEW_SIZE_M * fit.x
+	camera.v_offset += fit.y - _lift_applied
+	_lift_applied = fit.y
+
+
+## The overview's arena, the whole of it with a 6 m margin (metres the orthographic camera shows top to bottom).
+const OVERVIEW_SIZE_M := Match.ARENA_HALF_SIZE * 2.0 + 12.0
+
+
+## [zoom-out factor, v_offset m] that fit the overview's arena into y = 0 .. clear_bottom of `screen`.
+static func overview_fit(screen: Vector2, clear_bottom: float) -> Vector2:
+	var clear := clampf(clear_bottom, screen.y * 0.25, screen.y)
+	var k := screen.y / clear
+	return Vector2(k, -(screen.y - clear) * 0.5 * OVERVIEW_SIZE_M * k / screen.y)
 
 
 ## A box's children laid out in a row and stacked: [row size, column size] (its own separation between them).

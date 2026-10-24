@@ -22,9 +22,6 @@ const SEEN_V := VisibilityField.SEEN_VALUE / 255.0
 const SOFT_M := 1.5
 ## Frames a visual keeps looking for its field before it gives up (modes with no field never pay for the search).
 const FIND_FRAMES := 30
-## Round 39 (F1 candidate look "sight: edge", FeedbackLook): how much brighter the fog's boundary glows round a crew that
-## has settled to its ~110 % sight. 0 = the look is off (the default until he picks).
-const SETTLED_GLOW := 1.4
 
 
 ## The field whose picture is `texture` (the visual only gets the texture through its slot), or null.
@@ -37,14 +34,14 @@ static func find_field(tree: SceneTree, texture: Texture2D) -> VisibilityField:
 	return null
 
 
-## Each living crew of the field's team as (x, z, sight radius, R1's motion factor: 0.85 driving .. 1.10 settled).
+## Each living crew of the field's team as (x, z, sight radius as it is now, 0).
 static func pack(field: VisibilityField) -> PackedVector4Array:
 	var out := PackedVector4Array()
 	if field == null or field.game_match == null:
 		return out
 	for tank in field.game_match.sorted_team_tanks(field.team):
 		if tank.is_alive():
-			out.append(Vector4(tank.global_position.x, tank.global_position.z, tank.sight_radius, tank.motion_sight))
+			out.append(Vector4(tank.global_position.x, tank.global_position.z, tank.sight_radius, 0.0))
 	return out
 
 
@@ -55,7 +52,6 @@ static func apply(material: ShaderMaterial, field: VisibilityField) -> void:
 	viewers.resize(MAX)
 	material.set_shader_parameter("viewers", viewers)
 	material.set_shader_parameter("viewer_count", count)
-	material.set_shader_parameter("settled_glow", SETTLED_GLOW if FeedbackLook.rule("sight") == "edge" else 0.0)
 
 
 ## The value the fog draws at `at` (world xz) for the field's value `v` (0..1): the shader's `clip_to_sight`.

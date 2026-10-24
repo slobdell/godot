@@ -78,14 +78,6 @@ var _marked: Array = []
 var _next_read := 0.0
 var _controls: Node
 var _search_left := 0.0
-## Round 39 (F1 candidate look "fire: wedge", FeedbackLook.rule): shooter name -> {time, muzzle, direction, spread, still}
-## of its last round fired on the move (spread: this round's, Match.shot_spread; still: the same gun's stopped). Only
-## recorded while the look is picked.
-var _moving_shots := {}
-## A round counts as fired on the move from this fraction of the hull's top speed (Match.shot_spread's `moving`).
-const MOVING_SHOT_MIN := 0.15
-## How long a moving shot's wedge plays (s).
-const MOVING_SHOT_S := 0.9
 
 
 func _init(fx: FxWorld = null) -> void:
@@ -131,8 +123,6 @@ func _setup(instance: MultiMeshInstance3D, material: ShaderMaterial, count: int,
 ## K2 weapon_fired (from MatchFxLink): where each round left from, and the Emitter's puffs.
 func fired(event: Dictionary, now: float) -> void:
 	reader.fired(event, now)
-	if FeedbackLook.rule("fire") != "none":
-		_record_moving_shot(event, now)
 	var id := int(event.get("projectile_id", -1))
 	if id < 0:
 		return
@@ -141,36 +131,6 @@ func fired(event: Dictionary, now: float) -> void:
 	_shot_order.append(id)
 	if _shot_order.size() > MAX_TRACKED:
 		_shots.erase(_shot_order.pop_front())
-
-
-func _record_moving_shot(event: Dictionary, now: float) -> void:
-	var game_match := _fx.link.attached_match() as Match if _fx != null and _fx.link != null else null
-	if game_match == null or game_match.tanks == null:
-		return
-	var shooter := game_match.tanks.get_node_or_null(NodePath(String(event.get("shooter", "")))) as Tank
-	if shooter == null or String(event.get("fire_model", "")) == "arc":
-		return
-	var moving := clampf(absf(shooter.speed()) / maxf(shooter.max_forward_speed, 0.1), 0.0, 1.0)
-	if moving < MOVING_SHOT_MIN:
-		return
-	_moving_shots[shooter.name] = {"time": now, "muzzle": K2Events.to_vector(event.get("muzzle", [0, 0, 0])),
-			"direction": K2Events.to_vector(event.get("direction", [0, 0, -1])),
-			"spread": Match.shot_spread(shooter.weapon, moving, shooter.suppression),
-			"still": Match.shot_spread(shooter.weapon, 0.0, shooter.suppression)}
-
-
-## The last round `unit_name` fired on the move while it still plays ({} when none), with "age" 0..1 added.
-func moving_shot_of(unit_name: StringName, now: float) -> Dictionary:
-	var shot: Dictionary = _moving_shots.get(unit_name, {})
-	if shot.is_empty():
-		return shot
-	var age := (now - float(shot["time"])) / MOVING_SHOT_S
-	if age > 1.0 or age < 0.0:
-		_moving_shots.erase(unit_name)
-		return {}
-	var out := shot.duplicate()
-	out["age"] = age
-	return out
 
 
 ## K2 projectile_impact (from MatchFxLink): a hit on a vehicle, drawn by the face it struck.

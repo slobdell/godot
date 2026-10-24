@@ -14572,6 +14572,66 @@
     "category": "housing"
    },
    "added": "r12"
+  },
+  {
+   "id": "caller.moving_miss.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "moving_miss"
+   ],
+   "intensity": 2,
+   "text": "All that lead and nothing to show for it! You can't shoot straight on the gas!"
+  },
+  {
+   "id": "caller.moving_miss.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "moving_miss"
+   ],
+   "intensity": 2,
+   "text": "Firing on the run, and the only thing taking damage is the scenery!"
+  },
+  {
+   "id": "caller.moving_miss.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "moving_miss"
+   ],
+   "intensity": 2,
+   "text": "They're spraying from the saddle! Stop, plant it, then pull the trigger!"
+  },
+  {
+   "id": "caller.pinned_slow.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "pinned_slow"
+   ],
+   "intensity": 2,
+   "text": "They are wading through it now! Every single metre is costing them!"
+  },
+  {
+   "id": "caller.pinned_slow.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "pinned_slow"
+   ],
+   "intensity": 2,
+   "text": "Heads down and crawling! That fire is turning a charge into a slog!"
+  },
+  {
+   "id": "caller.pinned_slow.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "pinned_slow"
+   ],
+   "intensity": 2,
+   "text": "Still pushing, but look at them, they're barely rolling under that weight of fire!"
   }
  ]
 }

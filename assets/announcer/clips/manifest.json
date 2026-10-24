@@ -18925,6 +18925,42 @@
    "text": "Whoa, did you feel that? This match just turned!",
    "voice": "JR1"
   },
+  "caller.moving_miss.01": {
+   "duration_s": 4.223,
+   "file": "caller/caller.moving_miss.01.ogg",
+   "kind": "line",
+   "request": "caller.moving_miss.01",
+   "request_key": "6d8d4f0c01cdbd2abf7685ff4151b4a4f5f7d0b8",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "All that lead and nothing to show for it. You can't shoot straight on the gas",
+   "text": "All that lead and nothing to show for it! You can't shoot straight on the gas!",
+   "voice": "JR1"
+  },
+  "caller.moving_miss.02": {
+   "duration_s": 3.782,
+   "file": "caller/caller.moving_miss.02.ogg",
+   "kind": "line",
+   "request": "caller.moving_miss.02",
+   "request_key": "faff6c490685d3346d70b433f720c2c36f6e72ce",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Firing on the run, and the only thing taking damage is the scenery",
+   "text": "Firing on the run, and the only thing taking damage is the scenery!",
+   "voice": "JR1"
+  },
+  "caller.moving_miss.03": {
+   "duration_s": 3.427,
+   "file": "caller/caller.moving_miss.03.ogg",
+   "kind": "line",
+   "request": "caller.moving_miss.03",
+   "request_key": "18698c76d3c629640ef5e70b4391694ebba28d49",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They're spraying from the saddle. Stop, plant it, then pull the trigger",
+   "text": "They're spraying from the saddle! Stop, plant it, then pull the trigger!",
+   "voice": "JR1"
+  },
   "caller.ownkill.01@artillery": {
    "duration_s": 2.956,
    "file": "caller/caller.ownkill.01@artillery.ogg",
@@ -19799,6 +19835,42 @@
    "stt_ok": true,
    "stt_text": "They've done it again. Another one of their own",
    "text": "They've done it again! Another one of their own!",
+   "voice": "JR1"
+  },
+  "caller.pinned_slow.01": {
+   "duration_s": 4.243,
+   "file": "caller/caller.pinned_slow.01.ogg",
+   "kind": "line",
+   "request": "caller.pinned_slow.01",
+   "request_key": "53020b0d107a4c021c0a351482cf3ac4390a736e",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They are wading through it now. Every single meter is costing them",
+   "text": "They are wading through it now! Every single metre is costing them!",
+   "voice": "JR1"
+  },
+  "caller.pinned_slow.02": {
+   "duration_s": 3.891,
+   "file": "caller/caller.pinned_slow.02.ogg",
+   "kind": "line",
+   "request": "caller.pinned_slow.02",
+   "request_key": "7e187b10e3c848fc18508381f9e163a0dc68d3ac",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Heads down and crawling. That fire is turning a charge into a slog",
+   "text": "Heads down and crawling! That fire is turning a charge into a slog!",
+   "voice": "JR1"
+  },
+  "caller.pinned_slow.03": {
+   "duration_s": 4.228,
+   "file": "caller/caller.pinned_slow.03.ogg",
+   "kind": "line",
+   "request": "caller.pinned_slow.03",
+   "request_key": "964a1040cbdc82fe6dd631d73a50f15b5ef07bf7",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Still pushing, but look at them. They're barely rolling under that weight of fire",
+   "text": "Still pushing, but look at them, they're barely rolling under that weight of fire!",
    "voice": "JR1"
   },
   "caller.preview.01@condemned.artillery": {
@@ -38678,7 +38750,7 @@
    "voice": "corporate2"
   }
  },
- "generated": "2026-10-21",
+ "generated": "2026-10-24",
  "lines": {
   "caller.army.01": {
    "bases": [
@@ -43452,6 +43524,27 @@
     "": "caller.momentum.13"
    }
   },
+  "caller.moving_miss.01": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.moving_miss.01"
+   }
+  },
+  "caller.moving_miss.02": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.moving_miss.02"
+   }
+  },
+  "caller.moving_miss.03": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.moving_miss.03"
+   }
+  },
   "caller.ownkill.01": {
    "bases": [
     "victim_unit"
@@ -43619,6 +43712,27 @@
    "speaker": "caller",
    "variants": {
     "": "caller.ownkill.14"
+   }
+  },
+  "caller.pinned_slow.01": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.pinned_slow.01"
+   }
+  },
+  "caller.pinned_slow.02": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.pinned_slow.02"
+   }
+  },
+  "caller.pinned_slow.03": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.pinned_slow.03"
    }
   },
   "caller.preview.01": {

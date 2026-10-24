@@ -4,7 +4,7 @@ FB_DIR := $(BUILD_DIR)/feedback-shots
 FB_ARENA ?= terminus
 FB_RES ?= 1854x1011
 FB_PRESET ?= laptop
-FB_SLOTS ?= hit,pinned,repair,cone
+FB_SLOTS ?= hit,pinned,repair,cone,slowed
 FB_CLIP_FRAMES ?= 24
 FB_FLAGS ?=
 # The picked clips are assembled locally (build/feedback-fight/picks/); a remote run's copy-back --delete mirrors builder0's
@@ -89,12 +89,12 @@ end-shots: import ## F1: a commanded skirmish ended on the rings (the end card, 
 # ---- Round 39 feedback F2: the phone map's top (--touch-map; _agents/streams/feedback.md) -------------------------------
 
 TOUCH_DIR := $(BUILD_DIR)/touch-shots
-TOUCH_LAYOUTS ?= top
+TOUCH_LAYOUTS ?= dock top
 TOUCH_SIZES ?= 2400x1080 1800x810 810x1800
 TOUCH_DELAY ?= 12
 TOUCH_ARENA ?= terminus
 
-touch-shots: import ## F2: the phone map (--touch-map --ui-touch) in a skirmish at phone sizes, one still per layout x size -> build/touch-shots/<layout>_<size>.png (needs a display: make remote T=touch-shots; TOUCH_LAYOUTS='top a b c' TOUCH_SIZES= TOUCH_DELAY= FB_PRESET=)
+touch-shots: import ## F2: the phone map (--touch-map --ui-touch) in a skirmish at phone sizes, one still per layout x size -> build/touch-shots/<layout>_<size>.png (needs a display: make remote T=touch-shots; TOUCH_LAYOUTS='dock top' TOUCH_SIZES= TOUCH_DELAY= FB_PRESET=)
 	rm -rf $(TOUCH_DIR) && mkdir -p $(TOUCH_DIR)
 	@echo "commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null)}$$(git diff --quiet HEAD 2>/dev/null || echo ' (+ uncommitted)') host $$(hostname) preset $(FB_PRESET) arena $(TOUCH_ARENA)" \
 		> $(TOUCH_DIR)/SOURCE.txt

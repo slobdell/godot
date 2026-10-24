@@ -751,6 +751,10 @@ func _start_touch_map(field: VisibilityField, rig: RtsCamera, messages: HudMessa
 	tactical.camera = main.camera
 	tactical.ui_scale = clampf(float(flags.text("ui-scale", "1")), 0.75, 2.0)
 	tactical.rig = rig
+	if not flags.has("no-vision-camera") and not flags.has("camera-looks"):
+		# R39.7: L4 on the phone too, the force's sight region only (the overview frames his force; no hand-back).
+		rig.vision = tactical.vision_state
+		rig.vision_inset = SkirmishMode.camera_frame_inset(flags)
 	main.hud.add_child(tactical)
 	# C2: ground rings under the selected squad (and faint team marks), depth-tested under the models.
 	var markers := SelectionMarkers.new()

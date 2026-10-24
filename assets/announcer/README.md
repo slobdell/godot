@@ -66,6 +66,8 @@ blood" line beats a generic kill call, and a beat can `require` a tag outright.
 | `control` | control_changed | `taken`, `stolen`, `neutral`, `again` (3+ changes) |
 | `squad_wiped` | squad_wiped | |
 | `momentum` | momentum (army health lead changes) | `edge`, `shift`, `rout` |
+| `moving_miss` | momentum's `rules` (`--announcer-rules=on`, round 39): 3+ shells fired on the move since the last momentum, none hitting | |
+| `pinned_slow` | momentum's `rules` (`--announcer-rules=on`, round 39): a crew R3 held 20 %+ slow for 2 s while driving | `unit_<unit>` |
 | `lull` | the director, when it's quiet | `waiting` (before contact), `level` |
 | `result` | match_end | `win_elimination`/`win_control`/`win_time`, `draw`, `flawless`, `close`, `comeback`, `quick`, `long` |
 | `outro` | match_end (after the result call) | same as result |

@@ -413,7 +413,34 @@ func _on_control(event: Dictionary, t: float) -> Array:
 	return [moment("control", t, tags, {}, owner, "%s %s the control point" % [owner, "steals" if tags[0] == "stolen" else "takes"])]
 
 
+## Round 39 (feedback stretch): a side firing on the move this many times since the last momentum with no hit is a
+## moving_miss moment (R2: moving fire spreads 3x).
+const RULE_MISSES := 3
+
+
 func _on_momentum(event: Dictionary, t: float) -> Array:
+	return _on_rules(event.get("rules", {}), t) + _on_health(event, t)
+
+
+## Round 39: the rules the adapter heard (`--announcer-rules=on`; the momentum's optional `rules` field): shells fired
+## on the move that hit nothing (moving_miss), and a crew crawling under fire (pinned_slow, its unit as a tag and slot).
+func _on_rules(rules: Dictionary, t: float) -> Array:
+	var found: Array = []
+	if rules.is_empty() or not started_contact:
+		return found
+	for team in TEAMS:
+		var moving: Array = rules.get("moving", {}).get(team, [0, 0])
+		if int(moving[0]) >= RULE_MISSES and int(moving[1]) == 0:
+			found.append(moment("moving_miss", t, [], {"count": int(moving[0])}, team,
+					"%s fires %d rounds on the move and hits nothing" % [team, int(moving[0])]))
+		var slowed := String(rules.get("slowed", {}).get(team, ""))
+		if slowed != "":
+			found.append(moment("pinned_slow", t, ["unit_" + slowed], {"unit": slowed}, team,
+					"%s %s crawls on under fire" % [team, slowed]))
+	return found
+
+
+func _on_health(event: Dictionary, t: float) -> Array:
 	for team in TEAMS:
 		health[team] = float(event["army_health"][team])
 	for team in TEAMS:
