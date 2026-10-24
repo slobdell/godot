@@ -42,6 +42,11 @@ down a street, and give a 2-waypoint route round a corner.
 
 settle's deploy/halt functions, manoeuvre's movement/traffic, doctrine's brains, `native/**`, `tests/baselines/**`. Don't push.
 
+## Requests to other streams
+
+- **settle (G3 v6):** a pure static deploy preview orders can call at the click: (members with their arrival positions,
+  anchor, heading, table) -> the deploy's worst leg, on the same terrain/latch/fit path the deploy takes.
+
 ## Waiting on the lead
 
 Nothing.
@@ -65,7 +70,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   at its length) instead of the straight line on past the click, and ranks past the road's first corner (> 30 deg) stand single
   file on it. Lab on the Terminus navmesh (his east route's last leg): v1 rear rank two abreast 32 m either side of the x=70
   street (the column ran out of room and merged); v2 every place on the route line.
-- **G3 v6 pure step built** (`--place-clear-seat=on`, uncommitted -> next commit): a moved place must pass the caller's seat
-  check, else it steps back along the squad's own leg, else it is kept. The check itself waits on a `--deploy-trace` of
-  s5201 (what re-seats: the dry-halt anchor step, the deploy fit's turn, or the travel -> halt shape change).
+- **G3 v6 BLOCKED on settle (request sent 2026-10-23 ~22:00).** The `--deploy-trace` of s5201 (laptop, n 1; a trace, not a
+  pairable number; `references/round39/orders/g3v6-trace-laptop-650e43521/`): G3's moved place reads `lanes`, not `dense`, so the
+  halt is laid at 10 m spacing, not 7.5, and the crews (abreast across the heading) are dealt crosswise into the herringbone:
+  worst deploy leg 16 m v main's 6.7. A click-time estimate from shapes alone (travel seats -> halt seats, least longest
+  leg) read 11.0 m at the moved place v 13.0 at the given one, so it can't tell them apart; removed (72a5dfc81). Kept: `place_clear`'s
+  `seats_hold` seam (a moved place must pass the check, else it steps back along the squad's own leg, else it is kept;
+  lab 27/0). No switch until a check exists.
 
