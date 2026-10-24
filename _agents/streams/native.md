@@ -101,8 +101,24 @@ waits on it); perf-judge of the native trig change on a quiet builder0 (main's o
 - **relay-smoke's stale host log (feedback's red at a2b560896), mk/net.mk (the orchestrator's grant):** logs are removed
   before their process starts; waits read the process's own /proc/<pid>/fd/1. test_net_own_line 3/0. In 0bb755a4f's
   check: host opened K735J, both clients NET_CHECK PASS.
-- **The 8952c3d64 run.sh row: RUNNING on builder2** since 15:51:30 PDT (unit native-score-8952c3d64, ~1.5 h, main
-  6a1c77752's workload). Doctrine freed builder2 at 15:50, and orders' Bar G3 v6 was already done.
+- **The 8952c3d64 scoreboard row: DONE, 390ae171a** (builder2, 15:51-16:06 PDT, workload and probes from 6a1c77752,
+  SCORE_JOBS=14, `make native scoreboard-run exited 0`, verdict ok: 40 of 40 fights, 48 moves, 36 orders; SCRIPT ERROR 0).
+  Every line is inside its noise v round 38's 686150ed2. The largest moves: blob wins 47 -> 41 % (+-10), the blob's kill
+  ratio 0.85 -> 0.78 (+-0.09), stuck deaths 6.38 -> 5.83 (+-2.33). The guard-line noise column re-sized from the newest
+  read (blob +-7 -> +-10, turtle +-16 -> +-12). The run took 15 min, not the 1.5 h I planned around.
+
+**CLOSE (round 39, 2026-10-24 ~16:10 PDT): every item done, nothing running, nothing waiting on a gate.**
+- Backlog N1-N5 and the stretch: done before the hand-over (8f018edf7). The orchestrator's asks since then:
+  - The trig A/B (R39.10): cr +169 us/tick v libm.
+  - The full-check lock: 0bb755a4f, then 7d1078f0d.
+  - relay-smoke's own-log waits.
+  - The copy-back --checksum re-copy: e398f0d20, main a910f397a.
+  - The 8952c3d64 row: 390ae171a.
+- Green hashes: 0bb755a4f (full check, builder0), 7d1078f0d and e398f0d20 (tools-only gates, builder0). Later commits are
+  Status and references only.
+- For round 40: the trig FMA fix (low priority, a 5-round A/B first). See the A/B entry above.
+- Nothing of mine runs on builder0 or builder2. My scratch worktree ../godot-native-cb is removed; ../godot-native-score
+  (run.sh's own) stays, as run.sh expects.
 **Orchestrator (R39.3):** it merges 8f018edf7 then bb8043686, then runs one main check; the trig perf line rides main's
 own check on a quiet builder0. From now on only one stream runs Godot on the laptop at a time: wrap any laptop Godot run
 in `flock /tmp/tank-squad-laptop-godot.lock <cmd>`; everything else on the builders.
