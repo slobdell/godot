@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Known answers for tools/full_check_lock.sh (round 39, native): one full check per builder, claimed atomically. Two claimers
-# released at the same instant: exactly one wins (-n), and blocking claimers never overlap; a SIGKILLed holder frees the
-# claim at once (no stale lock); remote.sh takes it for a full check only; builder_checks.sh counts the holder.
+# released at the same instant: exactly one wins (-n), and blocking claimers never overlap; a SIGKILLed wrapper leaves the
+# claim held while its check runs and free when it exits; a hang-up kills the check; remote.sh takes it for a full check
+# only; builder_checks.sh counts the holder.
 set -u
 here="$(cd "$(dirname "$0")" && pwd)"
 fcl="$here/full_check_lock.sh"
@@ -47,20 +48,68 @@ wait "$holder_pid"
 bash "$fcl" holder "$lock" >/dev/null; rc=$?
 [ "$rc" = 1 ] && ok "holder: free after the run ends (exit 1)" || bad "holder free" "rc $rc"
 
-# 4. A holder killed by SIGKILL (no trap runs) frees the claim at once: no stale lock.
-bash "$fcl" run "$lock" bash -c "echo \$\$ > '$tmp/child'; exec sleep 30" &
+# 4. The wrapper dies, the check lives on (feedback: a killed local wrapper left the remote check running): the claim must
+# stay held while the check runs, because the check inherits it, and free the moment the check exits. setsid gives the
+# holder a process group of its own, as remote.sh's ssh session does (its traps signal that group).
+setsid bash "$fcl" run "$lock" bash -c "echo \$\$ > '$tmp/child'; exec sleep 30" &
 holder_pid=$!
-sleep 0.3
+for _ in $(seq 1 50); do [ -s "$tmp/child" ] && break; sleep 0.1; done
+child=$(cat "$tmp/child")
 kill -9 "$holder_pid"; wait "$holder_pid" 2>/dev/null
-bash "$fcl" run -n "$lock" true 2>/dev/null; rc=$?
-[ "$rc" = 0 ] && ok "a SIGKILLed holder: the next claim wins at once" || bad "stale" "rc $rc"
-kill "$(cat "$tmp/child")" 2>/dev/null   # the killed holder's own 'sleep 30', by its recorded pid
+sleep 0.2
+kill -0 "$child" 2>/dev/null && ! bash "$fcl" run -n "$lock" true 2>/dev/null \
+	&& ok "the wrapper SIGKILLed, the check alive: the claim is still held (no second check)" || bad "orphan check unlocked"
+kill "$child" 2>/dev/null; for _ in $(seq 1 20); do kill -0 "$child" 2>/dev/null || break; sleep 0.1; done
+bash "$fcl" run -n "$lock" true 2>/dev/null && ok "  the check exits: the next claim wins at once (no stale lock)" || bad "stale after check exit"
 
-# 5. The command's status comes back; the make child does not inherit the descriptor.
+# 5. A hang-up (the ssh session dropping) or TERM to the wrapper takes the check down too: no orphan, the claim freed.
+for sig in HUP TERM; do
+	rm -f "$tmp/child"
+	setsid bash "$fcl" run "$lock" bash -c "echo \$\$ > '$tmp/child'; exec sleep 30" &
+	holder_pid=$!
+	for _ in $(seq 1 50); do [ -s "$tmp/child" ] && break; sleep 0.1; done
+	child=$(cat "$tmp/child")
+	kill -"$sig" "$holder_pid"; wait "$holder_pid" 2>/dev/null
+	for _ in $(seq 1 30); do kill -0 "$child" 2>/dev/null || break; sleep 0.1; done
+	if kill -0 "$child" 2>/dev/null; then bad "$sig: the check outlived its wrapper"; kill "$child"
+	else bash "$fcl" run -n "$lock" true 2>/dev/null && ok "$sig to the wrapper: the check is gone and the claim free" || bad "$sig: claim held"; fi
+done
+
+# 5b. The session dies without a hang-up (an ssh with no terminal): the watchdog stops the check and frees the claim.
+sleep 300 & session=$!
+rm -f "$tmp/child"
+FULL_CHECK_LOCK_SESSION=$session FULL_CHECK_LOCK_POLL=0.2 setsid bash "$fcl" run "$lock" bash -c "echo \$\$ > '$tmp/child'; exec sleep 30" 2>"$tmp/err.w" &
+holder_pid=$!
+for _ in $(seq 1 50); do [ -s "$tmp/child" ] && break; sleep 0.1; done
+child=$(cat "$tmp/child")
+sleep 0.5
+kill -0 "$child" 2>/dev/null && ! bash "$fcl" run -n "$lock" true 2>/dev/null && ok "the session alive: the check runs, holding the claim" \
+	|| bad "watchdog fired early"
+kill "$session"; wait "$session" 2>/dev/null
+wait "$holder_pid" 2>/dev/null
+for _ in $(seq 1 30); do kill -0 "$child" 2>/dev/null || break; sleep 0.1; done
+if kill -0 "$child" 2>/dev/null; then bad "the session gone, the check lived on"; kill "$child"
+else bash "$fcl" run -n "$lock" true 2>/dev/null && grep -q "session .* is gone" "$tmp/err.w" \
+	&& ok "  the session gone: the check stopped, said why, claim free" || bad "session: claim or message" "$(cat "$tmp/err.w")"; fi
+
+# 5c. A check QUEUED for the claim whose session dies never runs (it would wake later as an orphan).
+bash "$fcl" run "$lock" sleep 2 &
+first=$!
+sleep 0.3
+sleep 300 & session=$!
+rm -f "$tmp/ran"
+FULL_CHECK_LOCK_SESSION=$session FULL_CHECK_LOCK_POLL=0.2 setsid bash "$fcl" run "$lock" touch "$tmp/ran" 2>/dev/null &
+queued=$!
+sleep 0.5
+kill "$session"; wait "$session" 2>/dev/null
+wait "$queued" 2>/dev/null; wait "$first"
+[ ! -e "$tmp/ran" ] && ok "a queued check whose session died never runs" || bad "queued orphan ran"
+
+# 6a. The command's status comes back, and the command holds the claim's descriptor (it is what keeps the claim).
 bash "$fcl" run "$lock" bash -c 'exit 7' 2>/dev/null; rc=$?
 [ "$rc" = 7 ] && ok "run exits with the command's status (7)" || bad "status" "rc $rc"
 fds=$(bash "$fcl" run "$lock" bash -c 'ls /proc/$$/fd' 2>/dev/null | tr '\n' ' ')
-[[ " $fds " != *" 9 "* ]] && ok "  the command does not inherit the lock's descriptor" || bad "fd 9 leaked" "$fds"
+[[ " $fds " == *" 9 "* ]] && ok "  the command inherits the claim's descriptor" || bad "fd 9 not inherited" "$fds"
 
 # 6. Which make arguments are a full check (remote.sh takes the lock for these only).
 yes=0; for args in "check" "native check" "check NATIVE=off" "native check WEB_PORT=8600"; do
@@ -71,7 +120,7 @@ no=0; for args in "quick" "native test" "check-perf-judge-stage" "perf-judge" "t
 	bash "$fcl" is-full-check $args || no=$((no + 1)); done
 [ "$yes" = 4 ] && [ "$no" = 5 ] && ok "is-full-check: check / native check (vars after) yes; quick, test, sub-stages no" \
 	|| bad "is-full-check" "yes $yes of 4, no $no of 5"
-grep -q 'full_check_lock.sh run ~/\$root/.full-check.lock make' "$here/remote.sh" \
+grep -q 'FULL_CHECK_LOCK_SESSION=\\$PPID bash tools/full_check_lock.sh run ~/\$root/.full-check.lock make' "$here/remote.sh" \
 	&& ok "remote.sh wraps a full check's make in the claim" || bad "remote.sh wiring"
 
 # 7. builder_checks.sh counts the lock's holder as a full check (a fake ssh runs the probe here, with pgrep stubbed out).

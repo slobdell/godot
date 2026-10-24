@@ -265,10 +265,11 @@ if [ -n "\$TANK_SQUAD_QUIET" ] && [ -f tools/quiet_window.sh ]; then
 fi
 # Round 39 (native): ONE full check per builder, claimed atomically (tools/full_check_lock.sh: a kernel flock on
 # ~/$root/.full-check.lock, dropped when the holder dies). A second full check WAITS here, before any slot, and says so;
-# builder_checks.sh's gate reads the same lock. Light runs never take it; REMOTE_FULL_CHECK_LOCK=0 skips it.
+# builder_checks.sh's gate reads the same lock. Light runs never take it; REMOTE_FULL_CHECK_LOCK=0 skips it. The ssh
+# session (this script's parent) is watched: a wrapper killed on the laptop takes its check on the builder down with it.
 if [ -z "$light" ] && [ "${REMOTE_FULL_CHECK_LOCK:-1}" != 0 ] && [ -f tools/full_check_lock.sh ] \
 	&& bash tools/full_check_lock.sh is-full-check "\$@"; then
-	bash tools/full_check_lock.sh run ~/$root/.full-check.lock make "\$@"
+	FULL_CHECK_LOCK_SESSION=\$PPID bash tools/full_check_lock.sh run ~/$root/.full-check.lock make "\$@"
 else
 	make "\$@"
 fi
