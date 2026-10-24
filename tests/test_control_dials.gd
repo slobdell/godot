@@ -23,7 +23,20 @@ func test_the_frame_distance_is_a_flag_with_three_settings() -> void:
 	assert_true(near < far, "the same element frames closer with close than with wide (%.2f vs %.2f)" % [near, far])
 
 
+func teardown() -> void:
+	RuleSwitches.sight_on = RuleSwitches._on("sight")  # back to what this run's flags say
+	RuleSwitches.spread_on = RuleSwitches._on("spread")
+	RuleSwitches.pin_slow_on = RuleSwitches._on("pin_slow")
+	super.teardown()
+
+
+## R38.55: the inset alone must move the frame here, so R1-R3 (ON by default) are held OFF. The fixture's two blocks
+## fight while the camera settles; with the rules ON builder0 eb635cc6c read 0.44 vs 0.50 (sight alone OFF: 0.56 vs
+## 0.59), the vision cap moving with the fight under the inset.
 func test_the_rig_frames_with_its_inset() -> void:
+	RuleSwitches.sight_on = false
+	RuleSwitches.spread_on = false
+	RuleSwitches.pin_slow_on = false
 	var f := Fixture.new(self)
 	await f.build(false)
 	f.rig.vision = f.controls.vision_state
