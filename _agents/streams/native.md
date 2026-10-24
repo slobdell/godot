@@ -93,6 +93,26 @@ N5 → stretch. Decided: N1 runs on main **8952c3d64**, the launch main (main 90
 - **N5 DONE (78c5fff87):** SLOT_LOADED_PER_CORE / QW_LOADED_PER_CORE default 1.0 (was 1.5). test_loaded 11/0,
   slot-light 6/0, quiet-window 28/0 (laptop).
 
+- **N1 DONE (407a156cb), messaged doctrine and the orchestrator (R39.2):** main 8952c3d64, builder2, 21:13-21:56 PDT,
+  320 of 320 fights, 0 lost, 0 SCRIPT ERRORs. Base `references/scoreboard/guards/8952c3d64.fights.jsonl` (+ .json).
+  - Blob wins 41 % (± 10 %), kr 0.78. Turtle wins 38 % (± 12 %), kr 0.82.
+  - Paired v 686150ed2 (rules OFF): blob -5.6 points (se 2.9; 16 fights flipped to a loss, 7 to a win; McNemar p 0.047),
+    kr 0.85 -> 0.78. Turtle -3.7 (se 3.8), inside its noise.
+  - Not yet run: the fights/moves/orders part of the row (run.sh, ~1.5 h of builder2). Nothing waits on it. It goes at
+    a doctrine chunk-boundary pause.
+- **a577e3776 GREEN (builder2):** `make check exited 0`, 3137 passed / 0 failed, 26 targets, all 13 sim-baseline maps
+  unmoved (N4 moves no builder sim).
+  - The ai-scenarios gate held with one note: scout_suppress::test_target_crossing is pending but now passes.
+  - That's the rules-ON effect, not N4: doctrine's tree (no N4) has already promoted it and passes it on builder0.
+- **Stretch DONE (e8e7a8d46): the physics engine's share of a tick** (his question).
+  - Run: builder0 light lane, `make physics-share`, 3 CPU v CPU fights (condemned mirror, 5200 budget, 120 s), 9,930
+    ticks. The box was loaded, but the share is a ratio within each run.
+  - **The engine (Godot's frame outside the scripts, mostly Jolt's step) is 4.2 % of a tick.**
+  - **`tank/drive` (motion model + move_and_slide) is 4.1 %. So physics is at most 8.3 %.**
+  - An infinitely fast physics engine would make a sim at most ~9 % faster. The scripts (brains, orders) are the other
+    ~92 %. Check time is mostly sims, so the same bound holds for a check.
+  - Laptop (indicative, one 20 s fight): 6.7 % + 6.0 %.
+
 **Merge notes (shared files):** mk/play.mk (C39.6 GRANT); tests/test_native_trig.gd and tools/test_trig.sh,
 tools/test_skirmish_flags.sh (new); `game/ai/native/native_drive.gd` (the native seam; not in round 39's owned list, it was
 native's in every earlier round) on the pair branch only.
