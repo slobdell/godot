@@ -1,0 +1,12 @@
+A: 36 paired fights (unpaired: none)
+PASS D chained seat drift: 1248.9 -> 42.7 m (-96.6 %; line <= 624.5); paired mean -33.51 m a fight, se 3.97 (-8.4 se)
+PASS G1 deaths in give-ways: 90 -> 106 (line +23.6 = max(2 paired se x n, 3))
+PASS G2 stuck deaths: 260 -> 265 (line +32.0)
+PASS G3 friendly contacts: 27012 -> 26969 (line <= 29713)
+PASS G4 fights: kill share {'0': 0.449, '1': 0.551} -> {'0': 0.463, '1': 0.537} (worst move 0.014, line 0.03); deaths 1541 -> 1563 (line +/- 77)
+B: 144 paired runs (off 144, on 144)
+FAIL G5 never-in runs: 2 -> 7 (no more)
+PASS G6 all-in time: paired median +0.0 s over 137 runs (line +2.0); worst cell crossing 3 click median +0.0 s (line +10)
+reported OFF {"chain_in_play": 0, "chain_refusals": 0, "chain_spots_skipped": 0, "chained_n": 904, "parked_out_m": 4873.2, "parked_refusals": 2363}
+reported ON  {"chain_in_play": 1390, "chain_refusals": 882, "chain_spots_skipped": 5786, "chained_n": 504, "parked_out_m": 3769.6, "parked_refusals": 2648}
+VERDICT FAIL

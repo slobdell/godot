@@ -39,6 +39,15 @@ var _moving_at := {}
 var _hits_at := {}
 var _last_pos := {}
 var _trace_crews: PackedStringArray = []
+## Round 39 (manoeuvre stretch: who an ORCA-slowed wedged crew yields to, and why neither moves): each tick's PARTNER (the friendly
+## hull it touches, else the nearest friend within PARTNER_M whose bearing is within PARTNER_DEG of its travel), classed
+## "<partner state>/<way>/<mutual>": state parked (phase arrived) / yielding / slow (pace < 0.5) / driving; way same / head_on /
+## cross / none (dot of the two travel directions); mutual = the partner's own partner this tick is this crew. Counted per episode
+## (`partners`: class -> ticks; `partner_top`: the crew it was most often).
+const PARTNER_M := 8.0
+const PARTNER_DEG := 60.0
+var _partner := {}  # crew -> partner crew this tick
+var _travel := {}  # crew -> its flat travel direction this tick (ZERO when parked)
 var _totals := {"episodes": 0, "episode_ticks": 0, "deaths": 0, "wedged_deaths": 0, "by_force": {},
 		"halt_ticks": 0, "halt_creep_ticks": 0, "halt_creep_held_ticks": 0}
 
@@ -121,6 +130,7 @@ func _observe(game_match: Match) -> void:
 		var tank := node as Tank
 		if tank != null and tank.is_alive():
 			alive.append(tank)
+	_partners(alive)
 	for tank in alive:
 		var crew := String(tank.name)
 		var here := tank.global_position
@@ -278,6 +288,13 @@ func _observe(game_match: Match) -> void:
 			ep["unstick_fires1"] = mover.unstick_fires
 			var tf: Dictionary = _totals["by_force"]
 			tf[force] = int(tf.get(force, 0)) + 1
+			var mate := String(_partner.get(crew, ""))
+			var pc: Dictionary = ep.get_or_add("partners", {})
+			var pclass := _partner_class(game_match, crew, mate)
+			pc[pclass] = int(pc.get(pclass, 0)) + 1
+			if mate != "":
+				var pt: Dictionary = ep.get_or_add("partner_ticks", {})
+				pt[mate] = int(pt.get(mate, 0)) + 1
 		elif _episodes.has(crew):
 			_close(crew, false)
 
@@ -296,7 +313,8 @@ func _close(crew: String, died: bool) -> void:
 			"by_force": ep["by_force"], "phase": ep["phase"], "stall_ticks": ep["stall_ticks"], "pace_lt_half": ep["pace_lt_half"],
 			"touch_hull": ep["touch_hull"], "unstick_fires": int(ep.get("unstick_fires1", ep["unstick_fires0"])) - int(ep["unstick_fires0"]),
 			"options": ep["options"], "orders": ep["orders"], "friends_max": ep["friends_max"], "enemies_max": ep["enemies_max"],
-			"died": died, "arena": String(Arena.active.get("name", "")), "seed": int(_flag("seed", "0"))}
+			"died": died, "arena": String(Arena.active.get("name", "")), "seed": int(_flag("seed", "0")),
+			"partners": ep.get("partners", {}), "partner_top": _top(ep.get("partner_ticks", {}))}
 	_totals["episodes"] = int(_totals["episodes"]) + 1
 	_totals["episode_ticks"] = int(_totals["episode_ticks"]) + int(ep["ticks"])
 	print("WEDGE_EP " + JSON.stringify(row))
@@ -350,3 +368,69 @@ func _on_death(game_match: Match, crew: String) -> void:
 		i -= step
 	print("WEDGE_DEATH " + JSON.stringify({"crew": crew, "tick": game_match.tick, "arena": String(Arena.active.get("name", "")),
 			"seed": int(_flag("seed", "0")), "timeline": timeline}))
+
+
+static func _top(counts: Dictionary) -> String:
+	var best := ""
+	for k: String in counts:
+		if best == "" or int(counts[k]) > int(counts[best]) or (int(counts[k]) == int(counts[best]) and k < best):
+			best = k
+	return best
+
+
+func _partners(alive: Array[Tank]) -> void:
+	_partner.clear()
+	_travel.clear()
+	for tank in alive:
+		var mover := Movement.of(tank)
+		var way := Vector2.ZERO
+		if mover != null and mover.is_under_way() and mover._goal != Vector3.INF:
+			way = mover._travel_direction(mover._goal, false)
+		_travel[String(tank.name)] = way
+	for tank in alive:
+		var crew := String(tank.name)
+		var mate := ""
+		for i in tank.get_slide_collision_count():
+			var hit := tank.get_slide_collision(i).get_collider() as Tank
+			if hit != null and hit.team == tank.team:
+				mate = String(hit.name)
+				break
+		if mate == "":
+			var way: Vector2 = _travel[crew]
+			var best := PARTNER_M
+			for other in alive:
+				if other == tank or other.team != tank.team:
+					continue
+				var off := Vector2(other.global_position.x - tank.global_position.x, other.global_position.z - tank.global_position.z)
+				var d := off.length()
+				if d >= best or d < 0.01:
+					continue
+				if way != Vector2.ZERO and absf(rad_to_deg(way.angle_to(off))) > PARTNER_DEG:
+					continue
+				best = d
+				mate = String(other.name)
+		_partner[crew] = mate
+
+
+func _partner_class(game_match: Match, crew: String, mate: String) -> String:
+	if mate == "":
+		return "none"
+	var other := game_match.tanks.get_node_or_null(NodePath(mate)) as Tank
+	var mover := Movement.of(other) if other != null else null
+	if mover == null:
+		return "player_or_gone"
+	var state := "driving"
+	if not mover.is_under_way():
+		state = "parked"
+	elif mover.yield_to != "":
+		state = "yielding"
+	elif mover.pace_now < 0.5:
+		state = "slow"
+	var a: Vector2 = _travel.get(crew, Vector2.ZERO)
+	var b: Vector2 = _travel.get(mate, Vector2.ZERO)
+	var way := "none"
+	if a != Vector2.ZERO and b != Vector2.ZERO:
+		var dot := a.dot(b)
+		way = "same" if dot > 0.5 else ("head_on" if dot < -0.5 else "cross")
+	var mutual := "mutual" if String(_partner.get(mate, "")) == crew else "one_way"
+	return "%s/%s/%s" % [state, way, mutual]

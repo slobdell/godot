@@ -396,3 +396,22 @@ manoeuvre-aside-trace: import ## manoeuvre M7: seat give-ways to another element
 		'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/aside_trace.gd -- \
 		--skirmish --demo-match --clean --seed=$$1 --arena=$$0 --mute --seconds=180 $(ASIDE_FLAGS) > $(ASIDE_DIR)/$$0-$$1.log 2>&1 || true'
 	@grep -h '^SEAT_YIELD_CENSUS' $(ASIDE_DIR)/*.log | wc -l | xargs echo ">> manoeuvre-aside-trace: fights with a census row:"
+
+# ---- round 39 (M1's G5 fail): who a never-in squad is stuck behind --------------------------------------------------
+# Orders' probe cells (map:squads:route:seed, PW_CELLS) in each arm (PW_ARMS, orders-probe's name:flags form), run under
+# tests/manoeuvre/probe_wedge.gd (the probe unchanged + the partner of every still crew under way) -> PROBE_WEDGE rows and the
+# probe's own ORDERS_PROBE_SQUAD rows in $(PW_DIR)/*.log, then tests/manoeuvre/probe_wedge_table.py.
+PW_CELLS ?= terminus:5:route:6117
+PW_ARMS ?= main: chain:--giveway-chain
+PW_DIR ?= $(BUILD_DIR)/manoeuvre/probe-wedge
+PW_JOBS ?= 4
+.PHONY: manoeuvre-probe-wedge
+manoeuvre-probe-wedge: import ## manoeuvre (R39, M1 G5): orders-probe cells (PW_CELLS map:squads:route:seed) x PW_ARMS under probe_wedge.gd -> $(PW_DIR)/*.log + the partner table
+	@rm -rf $(PW_DIR) && mkdir -p $(PW_DIR)
+	@echo ">> manoeuvre-probe-wedge on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"
+	@for cell in $(PW_CELLS); do for arm in $(PW_ARMS); do echo "$$(echo $$cell | tr ':' ' ') $$arm"; done; done | xargs -P $(PW_JOBS) -L 1 sh -c \
+		'name=$${4%%:*}; flags=$$(echo "$${4#*:}" | tr "," " "); \
+		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/probe_wedge.gd -- --arena=$$0 --seed=$$3 \
+			--probe-squads=$$1 --probe-route=$$2 --probe-arm=$$name $$flags > $(PW_DIR)/$$0-$$1-$$2-$$name-s$$3.log 2>&1 || true'
+	@grep -L '^ORDERS_PROBE {' $(PW_DIR)/*.log | sed 's/^/MISSING (no ORDERS_PROBE line): /' || true
+	$(PYTHON) tests/manoeuvre/probe_wedge_table.py $(PW_DIR)
