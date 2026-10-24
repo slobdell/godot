@@ -224,7 +224,12 @@ static func _untangle_once(squads: Array, anchors: Array[Vector3], position: Cal
 ## (the same knots `untangle` deals), every assignment of the knot's places to its squads is tried (a knot is at most five
 ## squads: 120) and the one with the fewest crossing pairs of vehicle drives between different squads wins, then the least
 ## total straight driving, then the order they had (stable). `anchors` is rewritten in place; returns the squads moved.
-static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Callable) -> int:
+## G1 v5 (`leads` given, one per squad: how far its crews drive to the click; `arc(place)`: how far the place stands back
+## from the click by ground): every squad is one knot, and first of all no squad that leads another stands behind it
+## (`lead_breaks`), so the squad in front takes the far place and nobody parks on the way of a squad still to pass.
+static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Callable, leads: Array = [],
+		arc := Callable()) -> int:
+	var by_lead := leads.size() == squads.size() and arc.is_valid()
 	var starts := {}
 	for i in squads.size():
 		for unit_name: String in squads[i]["units"]:
@@ -235,7 +240,7 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 		family.append(i)
 	for i in squads.size():
 		for j in range(i + 1, squads.size()):
-			if _root(family, i) != _root(family, j) and _pair_crosses(squads[i]["units"], anchors[i], squads[j]["units"], anchors[j], starts) > 0:
+			if _root(family, i) != _root(family, j) and (by_lead or _pair_crosses(squads[i]["units"], anchors[i], squads[j]["units"], anchors[j], starts) > 0):
 				family[_root(family, i)] = _root(family, j)
 	var groups := {}
 	for i in squads.size():
@@ -248,11 +253,24 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 		if members.size() < 2:
 			continue
 		var places: Array[Vector3] = []
+		var place_arcs: Array = []
+		var member_leads: Array = []
 		for i: int in members:
 			places.append(anchors[i])
+			if by_lead:
+				place_arcs.append(float(arc.call(anchors[i])))
+				member_leads.append(float(leads[i]))
 		var best: Array = []
-		var best_key := [INF, INF]
+		var best_key := [INF, INF, INF]
 		for perm: Array in _permutations(members.size()):
+			var breaks := 0
+			if by_lead:
+				var arcs: Array = []
+				for a in members.size():
+					arcs.append(place_arcs[perm[a]])
+				breaks = lead_breaks(member_leads, arcs)
+				if breaks > best_key[0]:
+					continue
 			var crossings := 0
 			var drive := 0.0
 			for a in members.size():
@@ -261,10 +279,11 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 					drive += _xz(starts[unit_name]).distance_to(_xz(at))
 				for b in range(a + 1, members.size()):
 					crossings += _pair_crosses(squads[members[a]]["units"], at, squads[members[b]]["units"], places[perm[b]], starts)
-			if crossings < best_key[0] or (crossings == best_key[0] and drive < best_key[1] - 0.01):
-				best_key = [crossings, drive]
+			if breaks < best_key[0] or (breaks == best_key[0] and (crossings < best_key[1]
+					or (crossings == best_key[1] and drive < best_key[2] - 0.01))):
+				best_key = [breaks, crossings, drive]
 				best = perm
-		if best_key[0] > 0:
+		if best_key[1] > 0:
 			whole_still_crossed += 1
 		for a in members.size():
 			if int(best[a]) != a:
@@ -272,6 +291,25 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 			anchors[members[a]] = places[best[a]]
 	swapped_whole += moved
 	return moved
+
+
+## G1 v5 (round 39; R38.51's trace, crossing 3 click s4710: the column gave the far place to Bravo and the near one to
+## Alpha, whose crews led; Alpha arrived at 3.3 s and parked in the street, and Bravo's last crew wedged behind it until
+## t = 90). `--group-lead=drive`: a column's places go to its squads in the order their crews reach the click by ground.
+static var GROUP_LEAD := OS.get_cmdline_user_args().has("--group-lead=drive")
+## Two squads (or two places) closer than this along the drive count as level: either may take either place.
+const LEAD_SLACK_M := 6.0
+
+
+## G1 v5: pairs of squads where one leads the other to the click (`leads`, metres by ground) by more than LEAD_SLACK_M yet
+## its place (`arcs`, metres back from the click by ground) stands behind the other's by more than LEAD_SLACK_M. Pure.
+static func lead_breaks(leads: Array, arcs: Array) -> int:
+	var count := 0
+	for a in leads.size():
+		for b in leads.size():
+			if float(leads[a]) < float(leads[b]) - LEAD_SLACK_M and float(arcs[a]) > float(arcs[b]) + LEAD_SLACK_M:
+				count += 1
+	return count
 
 
 ## Round 37 (orders, R37.29; the lead's playtest 2026-10-21, Terminus: "the target waypoints for each squad was all over at
@@ -297,6 +335,11 @@ static var GROUP_ROOM_REARMOST := OS.get_cmdline_user_args().has("--group-room=r
 static var GROUP_LEG_ROOM := OS.get_cmdline_user_args().has("--group-leg-room=starts")
 ## G2 (dev): `--group-route-line=on`: a shifted leg's column (and a gate's) stacks back along his clicked route.
 static var GROUP_ROUTE_LINE := OS.get_cmdline_user_args().has("--group-route-line=on")
+## G2 v2 (round 39; R38.47): `--group-route-corner=line`: a leg's column has room along his route (round its corners, no
+## further back than its first click), and a rank past the route's first corner stands centred on the route line, as wide
+## as the street there (dev read da9591207: single file there stacked terminus 5 avenue's rear squad behind its own
+## previous leg, 122 m off his route).
+static var ROUTE_CORNER := OS.get_cmdline_user_args().has("--group-route-corner=line")
 ## G2 (dev): `--group-gate=main`: a waypoint passed through keeps today's gate (round 34's, abreast across the corner at his
 ## click), not a column, and centred on his click, not on the mean of the leg column's places (dev read 2, bde30e68e,
 ## terminus 3 west: the gate stood 50-90 m up the incoming street and the drive on cut through another street: route off
@@ -381,15 +424,29 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	# The same when it would reach more than one rank behind where its rearmost squad stands (dev read f215b1772: a route's
 	# first waypoint 17 m ahead of the army stacked ranks 100 m back into the base; squads drove back, then on).
 	var step := deepest + GAP_M
-	var room := float(by_along[by_along.size() - 1][0]) + (0.0 if (leg and GROUP_LEG_ROOM) or GROUP_ROOM_REARMOST else step)
+	var rearmost := float(by_along[by_along.size() - 1][0])
+	# G2 v2: on a leg the room behind is read along the road (his route round its corner), not the straight line on past
+	# the click (terminus 5 east: the straight line ran east past the corner, so the rear ranks merged two abreast ~20 m
+	# either side of the street the route came down).
+	if leg and ROUTE_CORNER:
+		for block: Dictionary in blocks:
+			rearmost = maxf(rearmost, _arc_of(road, block["center"]))
+	# G2 v2 (dev read 4ce8784d5, terminus 5 avenue: one step behind the rearmost start put squad 4 back at the army's
+	# start, 122.7 m off his route): on a leg, no rank behind its squads' rearmost start.
+	var room := rearmost + (0.0 if (leg and (GROUP_LEG_ROOM or ROUTE_CORNER)) or GROUP_ROOM_REARMOST else step)
+	# G2 v2: and never further back than the road runs (his route's first click): the ranks squeeze instead.
+	if leg and ROUTE_CORNER and road.size() >= 2:
+		room = minf(room, _arc_of(road, road[road.size() - 1]))
 	# Every squad already within COLUMN_NEAR_M of the click: no approach to stack along (the same trace: re-laid, they only
 	# shuffled sideways); today's body stands.
 	if float(by_along[by_along.size() - 1][0]) < COLUMN_NEAR_M:
 		bodies_kept += 1
 		return result
+	# G2 v2: on a leg, ranks behind the road's first corner stand centred on it.
+	var corner := _first_turn_arc(road) if leg and ROUTE_CORNER else INF
 	for attempt in COLUMN_SQUEEZES + 1:
 		var laid := _lay_ranks(blocks, by_along, flat_click, ahead, straight, road, at_click, width_at, clamp, reached, widest,
-				step * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)), room, attempt == COLUMN_SQUEEZES)
+				step * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)), room, attempt == COLUMN_SQUEEZES, corner)
 		if not laid.is_empty():
 			result = laid
 			break
@@ -412,7 +469,7 @@ const COLUMN_SQUEEZES := 4
 ## `last_try`: then the rest stand abreast in the last rank inside).
 static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahead: Vector3, straight: PackedVector3Array,
 		road: PackedVector3Array, at_click: Array, width_at: Callable, clamp: Callable, reached: Callable, widest: float,
-		step: float, room: float, last_try: bool) -> Array[Vector3]:
+		step: float, room: float, last_try: bool, corner := INF) -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	result.resize(blocks.size())
 	var behind := 0.0
@@ -450,13 +507,15 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		var sides: Array = at_click if start == 0 else _within_click(width_at.call(point, rank_across), at_click)
 		var clear := minf(float(sides[0]) + float(sides[1]), MAX_FRONTAGE_M)
 		var single := clear < widest
+		# G2 v2: past the corner of his route the rank stands centred on the route line, as wide as that street.
+		var past_corner := on_road and behind > corner + CORNER_SLACK_M
 		var abreast := 1 if single else mini(MAX_ABREAST, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
 		abreast = by_along.size() - start if merged else mini(abreast, by_along.size() - start)
 		if RANK_SHIFT_HALF and not merged:
 			while abreast > 1 and absf(_rank_shift(abreast, widest, sides)) > widest * 0.5:
 				abreast -= 1
 		single = single and abreast == 1
-		var shift := 0.0 if single else _rank_shift(abreast, widest, sides)
+		var shift := 0.0 if single or past_corner else _rank_shift(abreast, widest, sides)
 		var centre := point + rank_across * shift
 		var rank_members: Array = []
 		for n in range(start, start + abreast):
@@ -470,6 +529,25 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		start += abreast
 		behind += step
 	return result
+
+
+## G2 v2: how far past the corner a rank stands before it is in the street behind it (a rank at the corner itself stands
+## across the street ahead, where it may still be abreast).
+const CORNER_SLACK_M := 4.0
+## G2 v2: a turn of the road sharper than this is a corner.
+const CORNER_TURN_DEG := 30.0
+
+
+## G2 v2: how far back along `line` (click first) it first turns by more than CORNER_TURN_DEG; INF when it never does.
+static func _first_turn_arc(line: PackedVector3Array) -> float:
+	var walked := 0.0
+	for k in range(1, line.size() - 1):
+		walked += line[k - 1].distance_to(line[k])
+		var a := Vector2(line[k].x - line[k - 1].x, line[k].z - line[k - 1].z)
+		var b := Vector2(line[k + 1].x - line[k].x, line[k + 1].z - line[k].z)
+		if a.length() > 0.01 and b.length() > 0.01 and rad_to_deg(absf(a.angle_to(b))) > CORNER_TURN_DEG:
+			return walked
+	return INF
 
 
 ## G1: how far a rank of `abreast` slides off the column's line: only as far as keeps it on the clear ground `sides`
@@ -543,6 +621,29 @@ static func _arc_of(line: PackedVector3Array, p: Vector3) -> float:
 ## (42377862a); v2 kept the nearest-the-click place and moved the other away from its neighbour, so g3's extra never-ins
 ## were squads main only just gets in (527d62cd2).
 static var PLACE_CLEAR := OS.get_cmdline_user_args().has("--place-clear=on") or OS.get_environment("PLACE_CLEAR") == "on"
+## G3 v6 (round 39; R38.51's trace, crossing 3 route s5201: v5 moved squad 2's place off squad 3's onto ground where its
+## halt did not seat, and the deploy re-seated it ~24 s in, 16-23 m of twitch). `--place-clear-seat=on`: a moved place must
+## seat every crew without a re-seat (the caller's check, `seats_hold`: settle's deploy preview), else it steps back along
+## the squad's own leg, else it is kept.
+static var PLACE_CLEAR_SEAT := OS.get_cmdline_user_args().has("--place-clear-seat=on")
+## G3 v6: a moved place whose deploy drives no crew further than this holds its seats whatever the given place's...
+const SEAT_HOLD_M := 8.0
+## ...else no further than this beyond the given place's.
+const SEAT_SLACK_M := 2.0
+
+
+## G3 v6: whether a moved place's deploy (`moved`, ElementPlan.deploy_preview's) holds the squad's seats as its given
+## place's (`given`) does: the same shape at the same spacing (s5201: lanes at 10 m v dense at 7.5 dealt the crews across
+## each other), and its worst leg no longer than the given's + SEAT_SLACK_M or SEAT_HOLD_M. An empty preview holds. Pure.
+static func seats_hold(given: Dictionary, moved: Dictionary) -> bool:
+	if given.is_empty() or moved.is_empty():
+		return true
+	if String(moved.get("shape", "")) != String(given.get("shape", "")) \
+			or absf(float(moved.get("spacing", 0.0)) - float(given.get("spacing", 0.0))) > 0.01:
+		return false
+	return float(moved.get("worst_m", 0.0)) <= maxf(float(given.get("worst_m", 0.0)) + SEAT_SLACK_M, SEAT_HOLD_M)
+## Measurement (G3 v6): places that needed a move but found none that seats, kept, since start.
+static var places_kept_unseated := 0
 const PLACE_CLEAR_STEP_M := 4.0
 const PLACE_CLEAR_MAX_M := 40.0
 ## G3 v4 (judged a67afc951, builder0, n 12: his 5 click twitch 13.8 -> 26.0 m): v3 moved squad 3 off a place 15.6 m from
@@ -561,8 +662,11 @@ static var places_cleared := 0
 
 
 ## `standable(point)` -> bool. One place per block, in `anchors`' order (blocks beyond the anchors are ignored). Pure.
+## G3 v6 (`seats_hold(i, at)` given): a moved place is accepted only where squad i's crews would seat without a re-seat;
+## when no aside or back step holds, the place steps back along the squad's own leg (toward its vehicles), and nowhere
+## holding keeps the place.
 static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, standable: Callable,
-		crosses := Callable()) -> Array[Vector3]:
+		crosses := Callable(), seats_hold := Callable()) -> Array[Vector3]:
 	var result: Array[Vector3] = anchors.duplicate()
 	var n := mini(anchors.size(), blocks.size())
 	if n < 2:
@@ -597,10 +701,25 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 					var at := start + way * step
 					if bool(standable.call(at)) and not (crosses.is_valid() and bool(crosses.call(start, at))) \
 							and _too_close(at, i, result, placed, blocks) < 0:
-						if best == null or _flat_gap(at, home) < _flat_gap(best, home):
-							best = at
+						if not seats_hold.is_valid() or bool(seats_hold.call(i, at)):
+							if best == null or _flat_gap(at, home) < _flat_gap(best, home):
+								best = at
 						break
 					step += PLACE_CLEAR_STEP_M
+			if best == null and seats_hold.is_valid():
+				# G3 v6: back along its own leg, toward its vehicles.
+				var leg := Vector3(home.x - start.x, 0.0, home.z - start.z)
+				var reach := minf(PLACE_CLEAR_MAX_M, leg.length())
+				var step := PLACE_CLEAR_STEP_M
+				while leg.length() > 0.01 and step <= reach:
+					var at := start + leg.normalized() * step
+					if bool(standable.call(at)) and not (crosses.is_valid() and bool(crosses.call(start, at))) \
+							and _too_close(at, i, result, placed, blocks) < 0 and bool(seats_hold.call(i, at)):
+						best = at
+						break
+					step += PLACE_CLEAR_STEP_M
+				if best == null:
+					places_kept_unseated += 1
 			if best != null:
 				result[i] = best
 				places_cleared += 1

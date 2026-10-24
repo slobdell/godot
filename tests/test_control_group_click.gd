@@ -32,6 +32,8 @@ func teardown() -> void:
 	SelectionSquads.RANK_SHIFT_HALF = OS.get_cmdline_user_args().has("--group-rank-shift=half")
 	SelectionSquads.GROUP_WHOLE_CLICK = OS.get_cmdline_user_args().has("--group-whole=click")
 	SelectionSquads.CLEAR_REACHED = OS.get_cmdline_user_args().has("--group-clear=reached")
+	SelectionSquads.GROUP_LEAD = OS.get_cmdline_user_args().has("--group-lead=drive")
+	SelectionSquads.ROUTE_CORNER = OS.get_cmdline_user_args().has("--group-route-corner=line")
 	if _lab != null:
 		_lab.dispose()
 	_lab = null
@@ -480,3 +482,130 @@ func test_g2_a_leg_ending_at_a_turn_stands_in_the_street_it_drove() -> void:
 	assert_eq(out.size(), 3, "a column (%s)" % [out])
 	for at: Vector3 in out:
 		assert_true(absf(at.z + 30.0) <= 10.0, "in the street it drove, not down the cross street (%s)" % [at])
+
+
+## G1 v5 (round 39; R38.51's trace, crossing 3 click s4710): a leading squad never stands behind one it leads.
+func test_g1v5lead_breaks_count_a_leader_placed_behind() -> void:
+	assert_eq(SelectionSquads.lead_breaks([10.0, 50.0], [0.0, 30.0]), 0, "the leader takes the far place")
+	assert_eq(SelectionSquads.lead_breaks([10.0, 50.0], [30.0, 0.0]), 1, "the leader placed behind")
+	assert_eq(SelectionSquads.lead_breaks([10.0, 13.0], [30.0, 0.0]), 0, "level squads (inside the slack) take either")
+	assert_eq(SelectionSquads.lead_breaks([10.0, 50.0], [2.0, 0.0]), 0, "places abreast (inside the slack) take either")
+	assert_eq(SelectionSquads.lead_breaks([10.0, 50.0, 90.0], [60.0, 30.0, 0.0]), 3, "a column laid backwards: every pair")
+
+
+## s4710's shape, flat: the street runs from the click (-87, 37.6) up to (-40, 88) and east along z ~ 90; Alpha's crews
+## stand nearest the street's mouth, Bravo's behind them, and the column's places are the head (front) and one rank back.
+## Straight lines from the crews to the places choose to send Bravo to the head (round 38's swap); by the drive, Alpha
+## (leading) takes the head and Bravo follows it in.
+func test_g1v5lead_the_squad_in_front_takes_the_far_place() -> void:
+	var squads: Array = [{"number": 1, "units": ["A1", "A2", "A3", "A4"]}, {"number": 2, "units": ["B1", "B2", "B3"]}]
+	var at := {"A1": Vector3(-20, 0, 104), "A2": Vector3(-34, 0, 90), "A3": Vector3(-24, 0, 96), "A4": Vector3(-28, 0, 100),
+			"B1": Vector3(0, 0, 86), "B2": Vector3(8, 0, 94), "B3": Vector3(4, 0, 90)}
+	var head := Vector3(-75.4, 0, 45.4)
+	var back := Vector3(-43.1, 0, 86.2)
+	var position := func(n: String) -> Vector3: return at[n]
+	# By ground: the street's mouth bend at (-40, 88); every drive goes through it.
+	var bend := Vector3(-40, 0, 88)
+	var click := Vector3(-87, 0, 37.6)
+	var by_ground := func(from: Vector3, to: Vector3) -> float:
+		return Vector2(from.x - bend.x, from.z - bend.z).length() + Vector2(bend.x - to.x, bend.z - to.z).length()
+	var leads: Array = []
+	for squad: Dictionary in squads:
+		var sum := 0.0
+		for n: String in squad["units"]:
+			sum += float(by_ground.call(at[n], click))
+		leads.append(sum / (squad["units"] as Array).size())
+	assert_true(float(leads[0]) < float(leads[1]) - SelectionSquads.LEAD_SLACK_M, "Alpha leads (%s)" % [leads])
+	var arc := func(p: Vector3) -> float: return Vector2(p.x - click.x, p.z - click.z).length()
+	for order: Array in [[head, back], [back, head]]:
+		var anchors: Array[Vector3] = [order[0], order[1]]
+		SelectionSquads.untangle_whole(squads, anchors, position, leads, arc)
+		assert_eq(anchors[0], head, "Alpha (leading) takes the head, from %s" % [order])
+		assert_eq(anchors[1], back, "Bravo follows it in, from %s" % [order])
+	# Without the leads: today's untangle (the reference this fixes) still decides on straight lines.
+	var today: Array[Vector3] = [head, back]
+	SelectionSquads.untangle_whole(squads, today, position)
+	print("GROUP_CLICK g1v5 straight-line untangle gives Alpha %s, Bravo %s" % [today[0], today[1]])
+	assert_eq(today[0], back, "today: straight lines send the trailing squad to the head (s4710)")
+
+
+## G2 v2 (round 39; R38.47, dev read 3 ab31e9bc2, terminus 5 east `70/50+70/-30+25/-30`): the last leg's column stacks back
+## along his route, round the corner at (70, -30) and up the x = 70 street; its rear rank stood two abreast at z = 28,
+## (50.3, 28.2) and (89.7, 28.2), ~20 m either side of the street the route runs down. On the real Terminus navmesh.
+const EAST_ROUTE := [Vector3(70, 0, 50), Vector3(70, 0, -30), Vector3(25, 0, -30)]
+func test_g2v2_rear_places_stand_on_his_route_round_the_corner() -> void:
+	_lab = TacticsLab.create(self, 3801, "terminus")
+	var ground: Tank = null
+	for i in ARMY.size():
+		var t := _lab.unit(Match.Team.GREEN, "Green_S%d_1" % i, ARMY[i], 0.0, "law_tank")
+		ground = t if ground == null else ground
+	await _lab.start()
+	var drive := SelectionSquads.drive_on(ground)
+	var crosses := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
+	var width_at := func(p: Vector3, across: Vector3) -> Array:
+		return RtsControls.gate_width(p, across, drive, crosses, SelectionSquads.GROUP_SCAN_M)
+	# The leg starts: five squads stacked back from the corner (70, -30) up the x = 70 street, as the gate leg leaves them.
+	var blocks: Array = []
+	for k in 5:
+		blocks.append({"center": Vector3(70, 0, -30 + 30.0 * k), "width": SelectionSquads.width("wedge", 5),
+				"depth": SelectionSquads.depth("wedge", 5), "halt_depth": SelectionSquads.depth("herringbone", 5)})
+	var click: Vector3 = EAST_ROUTE[2]
+	var line := PackedVector3Array([EAST_ROUTE[2], EAST_ROUTE[1], EAST_ROUTE[0]])
+	var today := SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, null, line[0] - line[1]),
+			func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+	SelectionSquads.LEG_WIDTH_ALONG = true
+	var lay := func() -> Array[Vector3]:
+		return SelectionSquads.column_lay(blocks, click, line[0] - line[1], width_at, func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p),
+				today, func() -> PackedVector3Array: return line, func(_p: Vector3) -> bool: return false, false, true)
+	SelectionSquads.ROUTE_CORNER = false
+	var before: Array[Vector3] = lay.call()
+	SelectionSquads.ROUTE_CORNER = true
+	var after: Array[Vector3] = lay.call()
+	for i in after.size():
+		var off_b := SelectionSquads._distance_to_path(before[i], line) if i < before.size() else -1.0
+		var off_a := SelectionSquads._distance_to_path(after[i], line)
+		print("GROUP_CLICK g2v2 place %d: v1 %s off %.1f m | v2 %s off %.1f m" % [i, before[i] if i < before.size() else null, off_b, after[i], off_a])
+	assert_eq(after.size(), 5, "a column (%s)" % [after])
+	for z in [-30, -10, 10, 20, 28, 40, 50]:
+		print("GROUP_CLICK g2v2 x=70 street at z=%d: %s" % [z, width_at.call(Vector3(70, 0, z), Vector3(1, 0, 0))])
+	for x in [25, 40, 55, 70]:
+		print("GROUP_CLICK g2v2 z=-30 street at x=%d: %s" % [x, width_at.call(Vector3(x, 0, -30), Vector3(0, 0, 1))])
+	for i in after.size():
+		var on_x70 := after[i].z > -30.0 + 4.0
+		var sides: Array = width_at.call(Vector3(70, 0, after[i].z), Vector3(1, 0, 0)) if on_x70 \
+				else width_at.call(Vector3(after[i].x, 0, -30), Vector3(0, 0, 1))
+		var aside := (after[i].x - 70.0) if on_x70 else (after[i].z + 30.0)
+		assert_true(aside >= -float(sides[0]) - 0.5 and aside <= float(sides[1]) + 0.5 and absf(aside) <= 20.0,
+				"place %d in his route's street, centred (%s, %.1f m aside in %s)" % [i, after[i], aside, sides])
+		assert_true(after[i].z <= 50.0 + 0.5, "never back past his route's first click (%s)" % [after[i]])
+
+
+## G3 v6 (round 39; R38.51's trace, crossing 3 route s5201): a cleared place must seat every crew without a re-seat.
+func test_g3v6_a_moved_place_must_seat_its_crews() -> void:
+	var blocks := [{"center": Vector3(0, 0, 100), "width": 25.4, "depth": 54.8}, {"center": Vector3(60, 0, 40), "width": 25.4, "depth": 54.8}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
+	var any := func(_p: Vector3) -> bool: return true
+	var v5 := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), any)
+	assert_true(v5[1].x > 20.0 and absf(v5[1].z - 0.5) < 0.01, "v5: straight aside toward its vehicles (%s)" % [v5])
+	# Aside the halt does not seat (x > 10, z < 10): v6 steps back along its own leg to where it does.
+	var seats := func(_i: int, at: Vector3) -> bool: return not (at.x > 10.0 and at.z < 10.0)
+	var v6 := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), any, Callable(), seats)
+	assert_true(bool(seats.call(1, v6[1])), "v6: the moved place seats (%s)" % [v6])
+	assert_true(v6[1].distance_to(v6[0]) >= 25.4 - 0.01, "and clears its neighbour (%s)" % [v6])
+	var leg := (Vector3(60, 0, 40) - places[1]).normalized()
+	var along := (v6[1] - places[1]).normalized()
+	assert_true(along.dot(leg) > 0.99 or along.dot(Vector3(0, 0, 1)) > 0.99, "aside blocked: back toward its vehicles (%s)" % [v6])
+	var nowhere := func(_i: int, _at: Vector3) -> bool: return false
+	assert_eq(SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), any, Callable(), nowhere), places,
+			"nowhere seats: the place is kept")
+
+
+
+func test_g3v6_seats_hold_on_the_same_ground_and_no_longer_leg() -> void:
+	var given := {"shape": "herringbone", "spacing": 7.5, "worst_m": 6.7}
+	assert_true(SelectionSquads.seats_hold(given, {"shape": "herringbone", "spacing": 7.5, "worst_m": 8.5}), "same ground, leg inside the slack")
+	assert_true(not SelectionSquads.seats_hold(given, {"shape": "herringbone", "spacing": 10.0, "worst_m": 6.0}),
+			"s5201: lanes' 10 m spacing v dense's 7.5 re-seats")
+	assert_true(not SelectionSquads.seats_hold(given, {"shape": "coil", "spacing": 7.5, "worst_m": 6.0}), "another shape re-seats")
+	assert_true(not SelectionSquads.seats_hold(given, {"shape": "herringbone", "spacing": 7.5, "worst_m": 12.0}), "a longer deploy leg")
+	assert_true(SelectionSquads.seats_hold({}, {"shape": "coil"}), "no preview (one crew): holds")

@@ -10,6 +10,7 @@
     python3 tests/control/orders_judge.py g1 rows.jsonl BASE_ARM NEW_ARM runs.jsonl [yard_rows.jsonl]   (round 38 G1, O7 v2)
     python3 tests/control/orders_judge.py g1v4 rows.jsonl BASE_ARM NEW_ARM runs.jsonl [yard_rows.jsonl]   (G1 v4, R38.44: re-dealt over click cells)
     python3 tests/control/orders_judge.py g3 rows.jsonl BASE_ARM NEW_ARM runs.jsonl   (round 38 G3, place clear)
+    python3 tests/control/orders_judge.py g2 his_rows.jsonl BASE_ARM NEW_ARM his_runs.jsonl [cell_rows.jsonl cell_runs.jsonl]   (round 39 G2 v2)
     python3 tests/control/orders_judge.py o5 BASE_DIR NEW_DIR   (seat-yield-census folders of *.log)
 
 Probe guards (each cell, medians over seeds; R36.6's): all-in (the cell run's last squad arrival) <= base x 1.2 + 3 s and
@@ -58,7 +59,8 @@ def probe_guards(rows, base, new, lines, settle=False):
         na = [run_all_in(n[k]) for k in nk]
         b_in, n_in = [t for t in ba if t >= 0], [t for t in na if t >= 0]
         checks = [
-            ("all-in", med(n_in) <= med(b_in) * 1.2 + 3.0, "%.1f v %.1f" % (med(b_in), med(n_in))),
+            # Round 39: a cell where the base never got every squad in has no base time to beat (the never-in line judges it).
+            ("all-in", not b_in or med(n_in) <= med(b_in) * 1.2 + 3.0, "%.1f v %.1f" % (med(b_in), med(n_in))),
             ("never-in", sum(1 for t in na if t < 0) <= sum(1 for t in ba if t < 0),
              "%d v %d" % (sum(1 for t in ba if t < 0), sum(1 for t in na if t < 0))),
         ]
@@ -151,6 +153,21 @@ def main(argv):
         return
     mode, rows_path, base, new = argv[:4]
     rows = load(rows_path)
+    if mode == "g2":
+        # Round 39 G2 v2: his routes run as arms "<arm>_<route>" (east / west / avenue, `--probe-points`): each folds into
+        # <arm>, its route the cell's route; the route cells' rows (arm "<arm>") as they are. Extra rows files may follow
+        # the runs file (`g2 rows.jsonl BASE NEW runs.jsonl [more_rows.jsonl more_runs.jsonl]`).
+        def fold(rs):
+            for r in rs:
+                if "_" in r["arm"]:
+                    arm, route = r["arm"].split("_", 1)
+                    r["arm"], r["route"] = arm, route
+            return rs
+        rows = fold(rows)
+        runs = fold(load(argv[4]))
+        if len(argv) > 6:
+            rows += fold(load(argv[5]))
+            runs += fold(load(argv[6]))
     lines = []
     ok = True
     if mode in ("o1", "o1fight", "o1settle"):
@@ -346,6 +363,24 @@ def main(argv):
         passed = cn <= cb * 1.1 + 5
         ok = ok and passed
         lines.append("%s guard friend_contacts %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", cb, cn, cb * 1.1 + 5))
+        ok = probe_guards(rows, base, new, lines) and ok
+    elif mode == "g2":
+        # Round 39 G2 v2's bar (filed in the brief's Status before any judged number): metres a crew drives off his drawn
+        # route (route_off_m) over his routes <= 60 % of base and over the route cells <= 75 % of base; R36.6 guards per
+        # cell (never-in included); contacts <= base x 1.1 + 5.
+        his = [r for r in rows if r["route"] in ("east", "west", "avenue")]
+        cells = [r for r in rows if r["route"] == "route"]
+        bh, nh = total(his, base, "route_off_m"), total(his, new, "route_off_m")
+        bc, nc = total(cells, base, "route_off_m"), total(cells, new, "route_off_m")
+        d1, d2 = bool(his) and nh <= 0.6 * bh, bool(cells) and nc <= 0.75 * bc
+        lines.append("%s deciding: metres off his drawn route, his routes %.0f -> %.0f (<= %.0f)" % ("PASS" if d1 else "FAIL", bh, nh, 0.6 * bh))
+        lines.append("%s deciding: metres off his drawn route, route cells %.0f -> %.0f (<= %.0f)" % ("PASS" if d2 else "FAIL", bc, nc, 0.75 * bc))
+        ok = d1 and d2
+        b = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == base)
+        n = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == new)
+        passed = n <= b * 1.1 + 5
+        ok = ok and passed
+        lines.append("%s guard friend_contacts %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", b, n, b * 1.1 + 5))
         ok = probe_guards(rows, base, new, lines) and ok
     elif mode == "o3":
         bd = sum(1 for r in rows if r["arm"] == base and r.get("redealt", 0) > 0)

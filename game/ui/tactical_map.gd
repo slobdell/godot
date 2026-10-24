@@ -64,6 +64,10 @@ var pending_verb := "move"
 var tactical_view := true
 ## Accessibility: scales every button, chip, card, and their text (skirmish --ui-scale=1.25).
 var ui_scale := 1.0
+## Round 39 (feedback F2): where the chips, orders and camera buttons go (TouchLayout; "top" = round 2's layout).
+var touch_layout: String = TouchLayout.from_flags()
+## The rects the last bottom layout used (tests), {} for "top".
+var touch_rects := {}
 
 var _drag_start: Variant = null
 var _drag_end: Variant = null
@@ -757,7 +761,7 @@ const QUICK_VERBS := ["hold", "break_contact", "assault"]
 const QUICK_SECONDS := 5.0
 const DRILL_SHORT := {"move": "Move", "bound": "Bound", "hold": "Hold", "assault": "Assault", "break_contact": "Break"}
 
-var _command_bar: HBoxContainer
+var _command_bar: BoxContainer
 ## The formation picker (kept under its old name: it replaced the formation row).
 var _formation_row: PanelContainer
 var _formation_grid: GridContainer
@@ -774,8 +778,8 @@ var _quick_row: HBoxContainer
 var quick_squad := ""
 var _unit_title: Label
 var _unit_stats: Label
-var _top_row: HBoxContainer
-var _squad_bar: HBoxContainer
+var _top_row: BoxContainer
+var _squad_bar: BoxContainer
 var _squad_chips := {}
 
 
@@ -793,7 +797,7 @@ func _key_hint(key: Key) -> String:
 
 
 func _build_panels() -> void:
-	_command_bar = HBoxContainer.new()
+	_command_bar = BoxContainer.new()  # round 39 (F2): a BoxContainer, so a bottom layout can stack it
 	_command_bar.name = "OrderBar"
 	_command_bar.add_theme_constant_override("separation", 4)
 	add_child(_command_bar)
@@ -863,7 +867,7 @@ func _build_panels() -> void:
 	_add_button(card_buttons, "Close", func() -> void: focus_unit(""), "unit:close", false)
 
 	# C2: the squad bar (top center): one chip per squad, up to 5.
-	_squad_bar = HBoxContainer.new()
+	_squad_bar = BoxContainer.new()
 	_squad_bar.name = "SquadBar"
 	_squad_bar.add_theme_constant_override("separation", 4)
 	add_child(_squad_bar)
@@ -894,7 +898,7 @@ func _build_panels() -> void:
 		quick.toggle_mode = false
 	_add_button(_quick_row, "Follow", func() -> void: quick_command("follow"), "quick:follow", false)
 	# Camera and time (top right).
-	_top_row = HBoxContainer.new()
+	_top_row = BoxContainer.new()
 	_top_row.add_theme_constant_override("separation", 4)
 	add_child(_top_row)
 	_add_button(_top_row, "Pause", func() -> void: set_paused(not get_tree().paused), "pause", false)
@@ -1000,6 +1004,71 @@ func _layout_panels() -> void:
 	_pause_label.offset_left = -360.0
 	_pause_label.offset_right = 360.0
 	_pause_label.offset_top = h * CHIP_HEIGHT + 40.0
+	_layout_bottom(screen, h, picker_size, card_size)
+
+
+## Round 39 (feedback F2): a bottom layout (TouchLayout) moves the chips, orders and camera buttons off the top of the
+## screen, around the HUD's score bug and radar, and the texts that hung under the top bar with them.
+func _layout_bottom(screen: Vector2, h: float, picker_size: Vector2, card_size: Vector2) -> void:
+	_command_bar.vertical = false
+	_squad_bar.vertical = false
+	_top_row.vertical = false
+	var count := maxi(_squad_chips.size(), 1)
+	var chip := Vector2(h * CHIP_WIDTH, h * CHIP_HEIGHT)
+	touch_rects = TouchLayout.place(touch_layout, screen, _row_and_column(_command_bar),
+			[Vector2(chip.x * count + 4.0 * (count - 1), chip.y), Vector2(chip.x, chip.y * count + 4.0 * (count - 1))],
+			_row_and_column(_top_row), HudLayout.bug_rect(screen), HudLayout.radar_rect(screen))
+	if touch_rects.is_empty():
+		return
+	_command_bar.vertical = bool(touch_rects["orders_vertical"])
+	_squad_bar.vertical = bool(touch_rects["squads_vertical"])
+	_top_row.vertical = bool(touch_rects["tools_vertical"])
+	for pair in [[_command_bar, "orders"], [_squad_bar, "squads"], [_top_row, "tools"]]:
+		_put(pair[0] as Control, touch_rects[pair[1]] as Rect2)
+	var orders: Rect2 = touch_rects["orders"]
+	var squads: Rect2 = touch_rects["squads"]
+	_formation_row.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	_put(_formation_row, Rect2(Vector2(orders.position.x, orders.position.y - GAP_PX - picker_size.y), picker_size))
+	var card_bottom := orders.position.y - GAP_PX - (picker_size.y + GAP_PX if _formation_row.visible else 0.0)
+	_put(_unit_card, Rect2(Vector2(orders.position.x, card_bottom - card_size.y), card_size))
+	if quick_squad != "" and _squad_chips.has(quick_squad):
+		var quick := _quick_row.get_combined_minimum_size()
+		var at := squads.position + (_squad_chips[quick_squad] as Control).position
+		var spot := Vector2(at.x - quick.x - GAP_PX, at.y) if _squad_bar.vertical else Vector2(at.x, at.y - GAP_PX - quick.y)
+		_put(_quick_row, Rect2(spot.clamp(Vector2(MARGIN_PX, 0), screen - quick - Vector2(MARGIN_PX, 0)), quick))
+	var text_floor: float = touch_rects["text_floor"]
+	_hint.visible = false  # round 2's long gesture line: the planning card and the first toast teach it on a phone
+	_info.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	_info.position = Vector2(orders.position.x, minf(text_floor, card_bottom - (card_size.y if _unit_card.visible else 0.0)) - 26.0)
+	for label in [_toast, _pause_label]:
+		(label as Label).offset_top = text_floor - (64.0 if label == _toast else 110.0)
+		(label as Label).offset_bottom = (label as Label).offset_top + 40.0
+
+
+const GAP_PX := 6.0
+const MARGIN_PX := 10.0
+
+
+## A box's children laid out in a row and stacked: [row size, column size] (its own separation between them).
+func _row_and_column(box: BoxContainer) -> Array:
+	var biggest := Vector2.ZERO
+	var total := Vector2.ZERO
+	var children := box.get_children()
+	for child in children:
+		var size := (child as Control).get_combined_minimum_size()
+		biggest = biggest.max(size)
+		total += size
+	var between := float(box.get_theme_constant("separation")) * maxf(children.size() - 1, 0)
+	return [Vector2(total.x + between, biggest.y), Vector2(biggest.x, total.y + between)]
+
+
+func _put(control: Control, rect: Rect2) -> void:
+	control.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	control.grow_horizontal = Control.GROW_DIRECTION_END
+	control.offset_left = rect.position.x
+	control.offset_top = rect.position.y
+	control.offset_right = rect.end.x
+	control.offset_bottom = rect.end.y
 
 
 func toggle_formation_row() -> void:

@@ -30,7 +30,7 @@ var yield_tally := {}
 const YIELD_COUNTERS: Array[String] = ["yields_started", "asks_refused", "setup_refusals", "parked_refusals",
 		"yield_swaps", "yield_swaps_shorter", "yield_spots_unfit", "yield_spots_shortened", "yield_holds",
 		"underfire_refusals", "underfire_holds", "underfire_gives", "passes", "passes_done", "passes_timeout", "pass_ticks",
-		"yields_unfinished", "yields_unfinished_capped"]
+		"yields_unfinished", "yields_unfinished_capped", "chain_in_play", "chain_spots_skipped", "chain_refusals"]
 ## `_compare_tick`'s clocks (measurement): microseconds in the live GDScript drive and the native drive, and drives.
 var tick_live_usec := 0
 var tick_native_usec := 0
