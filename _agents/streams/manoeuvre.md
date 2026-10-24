@@ -88,3 +88,9 @@ begin_yield at my two places. Native removes `Traffic._chain_native`, so asks ru
 becomes test_the_switch_leaves_native_yield_alone. Twin: 105 forced poses an arm, 0 mismatches on the laptop. Its quick-remote
 failed lint on MY census line (`started` couldn't be typed from an untyped Array). Fixed the same way here as d7259b161, so
 **14a10e719 is not nameable; d7259b161 is the code to check.** Waiting for native's green hash.
+
+**Native's N3 quick GREEN: pair/native-givewaychain bb8043686** (= 37735bf4b + the same census lint fix as my d7259b161), builder0
+quick-remote `exited 0`, 104 passed / 0 failed, lint clean. Chain stages ON / ON owned / OFF: 105 drives each, 0 mismatches.
+A full check of bb8043686 is running on builder2; that's native's merge hash for the orchestrator. Until the merge, my ON arms can
+run on the native path from that branch (C++ runs the rule; native_yield stays on). This is native's evidence, not a check of my
+branch: d7259b161 itself has no builder result. Still PAUSED on laptop memory, waiting for the lead's OK to restart builder0 runs.
