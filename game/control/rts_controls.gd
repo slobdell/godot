@@ -1277,13 +1277,8 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				clear_blocks.append(block)
 			var reach := SelectionSquads.PLACE_CLEAR_REACH
 			var clear_ahead := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"])
-			# G3 v6: a moved place holds its squad's seats when the deploy there would drive no crew further than at the
-			# place it was given (or SEAT_HOLD_M).
+			# G3 v6: the seat check (`place_clear`'s seats_hold) waits on settle's deploy preview (Status, requests).
 			var seats_hold := Callable()
-			if SelectionSquads.PLACE_CLEAR_SEAT:
-				seats_hold = func(k: int, at: Vector3) -> bool:
-					return _deploy_leg_at(squads[k], blocks[k], at, clear_ahead) \
-							<= maxf(_deploy_leg_at(squads[k], blocks[k], unmoved[k], clear_ahead), SelectionSquads.SEAT_HOLD_M)
 			anchors = SelectionSquads.place_clear(anchors, clear_blocks, click, clear_ahead,
 					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p) \
 							and not (reach and SlotGround.near_deck(p, SelectionSquads.PLACE_CLEAR_DECK_M)),
@@ -2061,41 +2056,6 @@ func _relay_previous_waypoint(squads: Array, next_click: Vector3) -> void:
 			for key: String in ["halt_at", "halt_shape", "lay"]:
 				relayed.erase(key)
 	gates_laid += 1
-
-
-## G3 v6 (round 39; s5201's deploy trace, laptop 092a7446a: G3's moved place read `lanes`, not `dense`, so the halt was
-## laid 10 m apart, not 7.5, and dealt the crews across each other, worst leg 16 m v main's 6.7): the longest leg a crew
-## would drive at the deploy if `squad` (its `block`) arrived at `at` on `heading`: from its travel seat to its halt seat,
-## dealt so the longest leg is least, on the ground read at `at` (its halt shape and spacing), the halt stepped off water as
-## the deploy steps it.
-func _deploy_leg_at(squad: Dictionary, block: Dictionary, at: Vector3, heading: Vector3) -> float:
-	var members: Array = []
-	var roles: Array = []
-	var faction := ""
-	for unit_name: String in squad["units"]:
-		var unit := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank if game_match != null else null
-		if unit == null:
-			continue
-		members.append({"name": unit_name, "unit": unit.unit_id, "role": Units.role_of(unit.unit_id), "position": unit.global_position})
-		roles.append(Units.role_of(unit.unit_id))
-		faction = String(Units.PROFILES.get(unit.unit_id, {}).get("faction", ""))
-	if members.size() < 2:
-		return 0.0
-	var element: Element = squad.get("element")
-	var table: DoctrineTable = element.table if element != null and is_instance_valid_element(element) and element.table != null \
-			else DoctrineTable.for_faction(faction)
-	var ground := ElementSituation.terrain_at(at)
-	var spacing := table.spacing(ground)
-	var flat := Vector3(at.x, 0.0, at.z)
-	var travel: Array[Vector3] = []
-	for entry in TacticsFormation.place(members, String(block.get("shape", "wedge")), flat, heading, spacing):
-		travel.append(entry["to"])
-	var shape := SelectionSquads.halt_shape(table, ground, roles)
-	var anchor := ElementPlan._dry_halt_anchor(flat, members, shape, heading, spacing)
-	var halt: Array[Vector3] = []
-	for entry in TacticsFormation.place(members, shape, anchor, heading, spacing, {"halt": true, "corridor_m": INF}):
-		halt.append(entry["to"])
-	return SelectionSquads.deploy_leg(travel, halt)
 
 
 func _squad_block(squad: Dictionary) -> Dictionary:
