@@ -405,7 +405,7 @@ func _giveway_chains(game_match: Match) -> void:
 			chain = [seat, 0]
 			_gw_chain[crew] = chain
 		var prev: Array = _gw_prev.get(crew, ["", Vector3.INF, "", ""])
-		var started := mover.yield_to != "" and (String(prev[0]) != mover.yield_to or prev[1] != mover._yield_from)
+		var started: bool = mover.yield_to != "" and (String(prev[0]) != mover.yield_to or prev[1] != mover._yield_from)
 		if _gw_open.has(crew):
 			var ep: Dictionary = _gw_open[crew]
 			if mover.yield_to == "" or started:
