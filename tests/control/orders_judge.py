@@ -402,6 +402,8 @@ def main(argv):
     # R37.17 (orchestrator): what he sees whatever the totals say: parked crews sent off their seats, each arm (reported).
     lines.append("  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) %d -> %d" % (
         total(rows, base, "parked_redeals"), total(rows, new, "parked_redeals")))
+    lines.append("  reported: parked duck moves (UnansweredFire, out to or back from its point; not re-deals) %d -> %d" % (
+        total(rows, base, "parked_ducks"), total(rows, new, "parked_ducks")))
     print("\n".join(lines))
     print("VERDICT %s: %s" % (mode, "PASS" if ok else "FAIL"))
 
