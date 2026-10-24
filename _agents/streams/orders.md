@@ -49,3 +49,23 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### NOW (2026-10-23 ~21:35 PDT)
+- **Plan (backlog order):** G1 v5 lab -> dev read -> G2 v2 lab -> dev read -> G3 v6 lab (needs a deploy trace of s5201) -> dev
+  read -> full check on a named hash -> wait for CP39.1 (C39.3) -> judged series one at a time.
+- **G1 v5 built** (`--group-lead=drive`, OFF; ef68308d1). A column's places go to its squads in the order their crews reach the
+  click by ground: under the switch every squad of a column is one knot in `untangle_whole`, and the first key is
+  `lead_breaks` (a squad placed behind one it leads by > 6 m), then crossings, then drive. Decided: lead = mean of the
+  squad's crews' navmesh drives (the bulk of the squad, not one forward scout).
+  - Lab `test_control_group_click` (laptop GDScript): pins today's straight-line swap (Bravo to the head) and the fix.
+  - **s4710 lab** (builder0 light J3, 93a6c2283's tree, crossing 3 click, n 1; `references/round39/orders/g1v5-lab-s4710-builder0-ef68308d1/`):
+    v4 Bravo never in, contacts 3,756 -> v5 all in 9.7 s, twitch 0, contacts 71 (main 875, all in 17.3 s).
+  - Dev read 1 running (builder0 light J4, 93a6c2283, dev seeds 3804-3809, 12 street cells, main / v4 / v5).
+- **G2 v2 built** (`--group-route-corner=line`, OFF; 93a6c2283). On a leg, the column's room is read along the road (capped
+  at its length) instead of the straight line on past the click, and ranks past the road's first corner (> 30 deg) stand single
+  file on it. Lab on the Terminus navmesh (his east route's last leg): v1 rear rank two abreast 32 m either side of the x=70
+  street (the column ran out of room and merged); v2 every place on the route line.
+- **G3 v6 pure step built** (`--place-clear-seat=on`, uncommitted -> next commit): a moved place must pass the caller's seat
+  check, else it steps back along the squad's own leg, else it is kept. The check itself waits on a `--deploy-trace` of
+  s5201 (what re-seats: the dry-halt anchor step, the deploy fit's turn, or the travel -> halt shape change).
+

@@ -573,3 +573,23 @@ func test_g2v2_rear_places_stand_on_his_route_round_the_corner() -> void:
 	for i in after.size():
 		assert_true(SelectionSquads._distance_to_path(after[i], line) <= SelectionSquads.width("wedge", 5) * 0.5 + 1.0,
 				"place %d on his route's street (%s)" % [i, after[i]])
+
+
+## G3 v6 (round 39; R38.51's trace, crossing 3 route s5201): a cleared place must seat every crew without a re-seat.
+func test_g3v6_a_moved_place_must_seat_its_crews() -> void:
+	var blocks := [{"center": Vector3(0, 0, 100), "width": 25.4, "depth": 54.8}, {"center": Vector3(60, 0, 40), "width": 25.4, "depth": 54.8}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(2.7, 0, 0.5)]
+	var any := func(_p: Vector3) -> bool: return true
+	var v5 := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), any)
+	assert_true(v5[1].x > 20.0 and absf(v5[1].z - 0.5) < 0.01, "v5: straight aside toward its vehicles (%s)" % [v5])
+	# Aside the halt does not seat (x > 10, z < 10): v6 steps back along its own leg to where it does.
+	var seats := func(_i: int, at: Vector3) -> bool: return not (at.x > 10.0 and at.z < 10.0)
+	var v6 := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), any, Callable(), seats)
+	assert_true(bool(seats.call(1, v6[1])), "v6: the moved place seats (%s)" % [v6])
+	assert_true(v6[1].distance_to(v6[0]) >= 25.4 - 0.01, "and clears its neighbour (%s)" % [v6])
+	var leg := (Vector3(60, 0, 40) - places[1]).normalized()
+	var along := (v6[1] - places[1]).normalized()
+	assert_true(along.dot(leg) > 0.99 or along.dot(Vector3(0, 0, 1)) > 0.99, "aside blocked: back toward its vehicles (%s)" % [v6])
+	var nowhere := func(_i: int, _at: Vector3) -> bool: return false
+	assert_eq(SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), any, Callable(), nowhere), places,
+			"nowhere seats: the place is kept")

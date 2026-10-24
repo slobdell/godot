@@ -617,6 +617,12 @@ static func _arc_of(line: PackedVector3Array, p: Vector3) -> float:
 ## (42377862a); v2 kept the nearest-the-click place and moved the other away from its neighbour, so g3's extra never-ins
 ## were squads main only just gets in (527d62cd2).
 static var PLACE_CLEAR := OS.get_cmdline_user_args().has("--place-clear=on") or OS.get_environment("PLACE_CLEAR") == "on"
+## G3 v6 (round 39; R38.51's trace, crossing 3 route s5201: v5 moved squad 2's place off squad 3's onto ground where its
+## halt did not seat, and the deploy re-seated it ~24 s in, 16-23 m of twitch). `--place-clear-seat=on`: a moved place
+## must seat every crew without a re-seat (the caller's check), else it steps back along the squad's own leg.
+static var PLACE_CLEAR_SEAT := OS.get_cmdline_user_args().has("--place-clear-seat=on")
+## Measurement (G3 v6): places that needed a move but found none that seats, kept, since start.
+static var places_kept_unseated := 0
 const PLACE_CLEAR_STEP_M := 4.0
 const PLACE_CLEAR_MAX_M := 40.0
 ## G3 v4 (judged a67afc951, builder0, n 12: his 5 click twitch 13.8 -> 26.0 m): v3 moved squad 3 off a place 15.6 m from
@@ -635,8 +641,11 @@ static var places_cleared := 0
 
 
 ## `standable(point)` -> bool. One place per block, in `anchors`' order (blocks beyond the anchors are ignored). Pure.
+## G3 v6 (`seats_hold(i, at)` given): a moved place is accepted only where squad i's crews would seat without a re-seat;
+## when no aside or back step holds, the place steps back along the squad's own leg (toward its vehicles), and nowhere
+## holding keeps the place.
 static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, standable: Callable,
-		crosses := Callable()) -> Array[Vector3]:
+		crosses := Callable(), seats_hold := Callable()) -> Array[Vector3]:
 	var result: Array[Vector3] = anchors.duplicate()
 	var n := mini(anchors.size(), blocks.size())
 	if n < 2:
@@ -671,10 +680,25 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 					var at := start + way * step
 					if bool(standable.call(at)) and not (crosses.is_valid() and bool(crosses.call(start, at))) \
 							and _too_close(at, i, result, placed, blocks) < 0:
-						if best == null or _flat_gap(at, home) < _flat_gap(best, home):
-							best = at
+						if not seats_hold.is_valid() or bool(seats_hold.call(i, at)):
+							if best == null or _flat_gap(at, home) < _flat_gap(best, home):
+								best = at
 						break
 					step += PLACE_CLEAR_STEP_M
+			if best == null and seats_hold.is_valid():
+				# G3 v6: back along its own leg, toward its vehicles.
+				var leg := Vector3(home.x - start.x, 0.0, home.z - start.z)
+				var reach := minf(PLACE_CLEAR_MAX_M, leg.length())
+				var step := PLACE_CLEAR_STEP_M
+				while leg.length() > 0.01 and step <= reach:
+					var at := start + leg.normalized() * step
+					if bool(standable.call(at)) and not (crosses.is_valid() and bool(crosses.call(start, at))) \
+							and _too_close(at, i, result, placed, blocks) < 0 and bool(seats_hold.call(i, at)):
+						best = at
+						break
+					step += PLACE_CLEAR_STEP_M
+				if best == null:
+					places_kept_unseated += 1
 			if best != null:
 				result[i] = best
 				places_cleared += 1
