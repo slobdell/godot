@@ -68,5 +68,36 @@ rsync -a --delete --filter='P *.log' --exclude='web/' --exclude='server/' 	--exc
 [ -f "$D/metrics/check.log" ] && ok "copy-back: the wrapper log survives" || bad "copy-back: the wrapper log survives"
 [ -f "$D/web/index.wasm" ] && ok "copy-back: excluded paths are not deleted either" || bad "copy-back: excluded paths are not deleted"
 
+# ---- a same-size, same-mtime stale file (round 39, build/flank_s5.mp4): only a --checksum re-copy fixes it ------------
+B="$tmp/box"; L="$tmp/local"; mkdir -p "$B/build" "$L/build"
+printf 'fresh frames 0123\n' > "$B/build/clip.mp4"
+printf 'ok\n'                > "$B/build/other.txt"
+( cd "$B" && sha256sum build/clip.mp4 build/other.txt > "$tmp/box.manifest" )
+rsync -a "$B/" "$L/" >/dev/null
+printf 'STALE frames 9876\n' > "$L/build/clip.mp4"; touch -r "$B/build/clip.mp4" "$L/build/clip.mp4"
+rsync -a "$B/" "$L/" >/dev/null
+cmp -s "$B/build/clip.mp4" "$L/build/clip.mp4" \
+	&& bad "the planted file reproduces the bug (a plain rsync -a skips it)" "plain rsync fixed it: the test plants nothing" \
+	|| ok "the planted file reproduces the bug (a plain rsync -a skips it)"
+out=$(bash "$cb" "$L" "$tmp/box.manifest" 2>&1); rc=$?
+[ "$rc" = 5 ] && ok "no source: the stale file is still CORRUPT (exit 5)" || bad "no source: exit 5" "exit $rc: $out"
+out=$(bash "$cb" "$L" "$tmp/box.manifest" "$B/" 2>&1); rc=$?
+[ "$rc" = 0 ] && ok "with the box as source: re-copied with --checksum, then verified (exit 0)" || bad "with source: exit 0" "exit $rc: $out"
+cmp -s "$B/build/clip.mp4" "$L/build/clip.mp4" && ok "with source: the local bytes are the box's" || bad "with source: the local bytes are the box's"
+grep -q "CORRUPT  build/clip.mp4" <<<"$out" && grep -q "fixed all 1" <<<"$out" && grep -q "verified, 2 files" <<<"$out" \
+	&& ok "with source: the first-pass mismatch is still printed, then the fix" || bad "with source: says what happened" "$out"
+grep -q "other.txt" <<<"$out" && bad "with source: only the failed file is re-copied" "$out" || ok "with source: only the failed file is re-copied"
+printf 'BOX ITSELF CHANGED\n' > "$B/build/clip.mp4"
+printf 'STALE frames 9876\n' > "$L/build/clip.mp4"
+out=$(bash "$cb" "$L" "$tmp/box.manifest" "$B/" 2>&1); rc=$?
+[ "$rc" = 5 ] && grep -q "FAILED -- 1 corrupt" <<<"$out" \
+	&& ok "a source that no longer matches the manifest: still FAILED (exit 5), never a pass" || bad "unfixable: exit 5" "exit $rc: $out"
+rm -f "$L/build/other.txt" "$B/build/other.txt"
+out=$(bash "$cb" "$L" "$tmp/box.manifest" "$B/" 2>&1); rc=$?
+[ "$rc" = 5 ] && grep -q "MISSING  build/other.txt" <<<"$out" && ok "missing on both sides: exit 5, the rsync error does not end the check" || bad "missing both: exit 5" "exit $rc: $out"
+grep -q 'copyback_verify.sh" "$verify_root" "$verify_root/build/.copyback.sha256" \\' "$remote_sh" \
+	&& grep -q '"$host:~/$remote_dir/" || verify_status' "$remote_sh" \
+	&& ok "remote.sh passes the box's folder as the re-copy source" || bad "remote.sh passes the box's folder as the re-copy source"
+
 printf '\ncopyback-verify: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
