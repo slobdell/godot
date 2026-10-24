@@ -61,8 +61,10 @@ for l in open(sys.argv[1]):
 for arm in ('cr', 'libm'):
     v = list(runs.get(arm, {}).values())
     if v:
-        print(f"TRIG_AB mean arm={arm} n={len(v)} ai_usec_per_tick={st.mean(x[0] for x in v):.0f} "
-              f"(sd {st.pstdev([x[0] for x in v]):.0f}) per_ref_ms={st.mean(x[1] for x in v):.0f} (sd {st.pstdev([x[1] for x in v]):.0f})")
+        u = [x[0] for x in v]; q = [x[1] for x in v]
+        print(f"TRIG_AB mean arm={arm} n={len(v)} ai_usec_per_tick={st.mean(u):.0f} (sd {st.pstdev(u):.0f}, "
+              f"range {min(u)}-{max(u)} = {100 * (max(u) - min(u)) / st.mean(u):.1f} % of the mean) "
+              f"per_ref_ms={st.mean(q):.0f} (sd {st.pstdev(q):.0f}, range {min(q)}-{max(q)})")
 pairs = [(runs['cr'][r], runs['libm'][r]) for r in runs.get('cr', {}) if r in runs.get('libm', {})]
 if pairs:
     d = [c[0] - l[0] for c, l in pairs]; dr = [c[1] - l[1] for c, l in pairs]

@@ -66,6 +66,9 @@ waits on it); perf-judge of the native trig change on a quiet builder0 (main's o
     reads ~7,7xx, walk batch 1's merges (a77395a49, 3b2bce5eb, e7bb2adcb, 25baad035, ffec9488f, ba6a54c1b) for the first step.
   - The first launch (831ad5471) was stopped on a busy box: 6 of 6 attempts REFUSED (2.53-2.59x), nothing judged.
   - Prior (not a result): a laptop micro-bench puts CORE-MATH at 8-16 ns a call; its fma through libm's PLT costs ~0.5 ns.
+  - Single readings, builder0 (the orchestrator's): 8952c3d64 7,687 (R38.55); 76f42a9c3 8,366 (idle 74 %, load 4.25);
+    2518811d0 7,899 (idle 51 %, load 5.34). Both mains have N4, so the +679 looks like single-reading spread. Not a verdict:
+    the A/B decides, and its summary now prints each arm's range as a % of its mean (a single reading's noise).
 - **GREEN: 0bb755a4f** (builder0, `make check exited 0`, 3169 passed / 0 failed, 25 of 26 targets passed, the 26th
   NOT JUDGED; 13 sim-baseline maps unmoved, determinism 258cc8b1c957a796). Perf-judge was NOT JUDGED (busy box, 3 refusals at
   1.78-2.06x), and so was scenario_perf, which only perf-judge judges here. 1f4fdac27 after it is docs only.
@@ -75,6 +78,12 @@ waits on it); perf-judge of the native trig change on a quiet builder0 (main's o
     dead ssh session (watched, also while queued) stops the check's group. Live on builder0: killing the local ssh stopped
     the held command within 1 s and freed the lock.
   - test_full_check_lock 18/0; shell-tools-test 34 suites (laptop).
+  - **GREEN 7d1078f0d (tools only; the orchestrator's gate: quick-remote + shell-tools-test):** feedback's report against
+    0bb755a4f, reproduced live on builder2. A stopped wrapper left its queued AND its running check alive, for two reasons:
+    the watchdog died by SIGPIPE writing to the dead session's stderr, and a waiter in a foreground flock could not run its
+    trap. Fixed: SIGPIPE ignored, and flock waits in the background. Live after: both gone within 5 s, the lock free.
+    quick-remote builder0 `exited 0` (no tests touched). shell-tools-test builder0 light lane `exited 0`, 34 suites,
+    full-check-lock 22/0 (at 342da8b23, docs only on top). The 0bb755a4f script fails 3 of the new cases.
 - **relay-smoke's stale host log (feedback's red at a2b560896), mk/net.mk (the orchestrator's grant):** logs are removed
   before their process starts; waits read the process's own /proc/<pid>/fd/1. test_net_own_line 3/0. In 0bb755a4f's
   check: host opened K735J, both clients NET_CHECK PASS.
@@ -152,5 +161,11 @@ N5 → stretch. Decided: N1 runs on main **8952c3d64**, the launch main (main 90
 **Merge notes (shared files):** mk/play.mk (C39.6 GRANT); tests/test_native_trig.gd and tools/test_trig.sh,
 tools/test_skirmish_flags.sh (new); `game/ai/native/native_drive.gd` (the native seam; not in round 39's owned list, it was
 native's in every earlier round) on the pair branch only.
+
+**Lessons (round 39):**
+- A live test of anything that runs over ssh must keep the SAME stdio as the real path. 0bb755a4f's builder0 test sent stderr to
+  a file and passed; with stderr on the ssh pipe, as remote.sh has it, the watchdog died by SIGPIPE (7d1078f0d).
+- Kill only by recorded pid, even in scratch: one `pkill -u $USER -f` on builder2 matched nothing else, but it is against
+  the contract.
 
 **Questions for the lead:** none.
