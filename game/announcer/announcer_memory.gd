@@ -422,7 +422,7 @@ func _on_momentum(event: Dictionary, t: float) -> Array:
 	return _on_rules(event.get("rules", {}), t) + _on_health(event, t)
 
 
-## Round 39: the rules the adapter heard (`--announcer-rules=on`; the momentum's optional `rules` field): shells fired
+## Round 39: the rules the adapter heard (ON by default, `--announcer-rules=off` mutes; the momentum's optional `rules` field): shells fired
 ## on the move that hit nothing (moving_miss), and a crew crawling under fire (pinned_slow, its unit as a tag and slot).
 func _on_rules(rules: Dictionary, t: float) -> Array:
 	var found: Array = []
