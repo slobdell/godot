@@ -50,3 +50,51 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Report (round 39 worker, 2026-10-23 ~22:30 PDT; in progress)
+
+**Plan (order):** N1 first (doctrine waits) and running in the background → N2 → N3 (named by manoeuvre at ~21:45) → N4 →
+N5 → stretch. Decided: N1 runs on main **8952c3d64**, the launch main (main 906557c06 differs from it in docs only).
+
+- **N1 (CP39.0) RUNNING:** `tools/scoreboard/guard.sh 8952c3d64` on builder2.
+  - Relaunched clean 21:13:55 PDT (systemd unit native-guard-8952c3d64c) after the orchestrator's builder2 cleanup voided
+    the first run. That run was killed, and its remote folder and local raw dir deleted; nothing from it is kept.
+  - On landing: `references/scoreboard/guards/8952c3d64.fights.jsonl` + json + the scoreboard row v 686150ed2, then
+    message doctrine and the orchestrator at once.
+- **N2 DONE (3c01cec03):** `make skirmish SKIRMISH_FLAGS="..."`, mk/play.mk's skirmish recipe only.
+  - The flags go last, so LaunchFlags (last value wins) also lets them override the recipe's own. The default command is
+    unchanged.
+  - Test: tools/test_skirmish_flags.sh (in shell-tools-test). A fake Godot records the recipe's argv: 4/0.
+  - Laptop smoke: `make skirmish SKIRMISH_FLAGS="--rules-off=sight,spread,pin_slow --screenshot=..."`. TANK_SQUAD_READY
+    listed rules-off, and the screenshot flag saved the faction menu on The Locks (looked at).
+- **N4 DONE (a577e3776), full check running on builder2:** machine-independent float trig. Design and proof:
+  `_agents/native.md` "Machine-independent trig".
+  - Vendored CORE-MATH (MIT, unedited, pinned 0ce0cbc1) for atan2f/acosf/asinf/atanf/tanf.
+  - Native defines them hidden. The engine gets them through LD_PRELOAD from mk/native.mk, on glibc < 2.41 only.
+  - **builder0 (2.43): CORE-MATH == libm on all 2^32 inputs** of the 4 one-argument functions and on 4e8 atan2f pairs,
+    so nothing on the builders moves.
+  - Laptop (2.39) v CORE-MATH: atan2f differs on 19 % of pairs, tanf on 83 M of 2^32 inputs.
+  - Cross-machine digests: sinf/cosf/sincosf/expf/logf/powf were already identical.
+  - **Laptop `make sim-baseline` (13 dealt maps) against the builders' glibc-2.43 lines:** 13/13 unmoved with the shim;
+    control `TRIG=system` FAILED with 10/13 moved.
+  - Cost: no function slower (ns/call, indicative, both boxes loaded).
+  - Tests: test_native_trig.gd (engine atan2f known answer: 2/0 under make; FAILS under TRIG=system, as designed) and
+    tools/test_trig.sh (6/0).
+  - **R38.25's "never pair a laptop read with a builder read" can be lifted for runs through make** (orchestrator's call).
+- **N3 DONE on a pair branch: `pair/native-givewaychain` 37735bf4b** (on manoeuvre's 14a10e719); quick-remote running on
+  builder0.
+  - drive_native.cpp chain_in_play / chain_far mirror Movement._chain_reach / _chain_far, at the same two places in
+    begin_yield.
+  - Config: CHAIN_M (the ready flag) and CHAIN_SLACK_M.
+  - traffic.gd's `_chain_native` is removed and test_traffic_chain's last case updated (manoeuvre's files, on the pair
+    branch only).
+  - Twin: test_native_yield chain stages ON, ON owned, OFF. 105 forced poses each, 0 mismatches, 0 called back (laptop).
+  - Mutants caught: no slack, 4 mismatches; no under-way exemption, 18.
+- **N5 DONE (78c5fff87):** SLOT_LOADED_PER_CORE / QW_LOADED_PER_CORE default 1.0 (was 1.5). test_loaded 11/0,
+  slot-light 6/0, quiet-window 28/0 (laptop).
+
+**Merge notes (shared files):** mk/play.mk (C39.6 GRANT); tests/test_native_trig.gd and tools/test_trig.sh,
+tools/test_skirmish_flags.sh (new); `game/ai/native/native_drive.gd` (the native seam; not in round 39's owned list, it was
+native's in every earlier round) on the pair branch only.
+
+**Questions for the lead:** none.

@@ -149,7 +149,11 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 	var ground_seat := func(point: Vector3, unit: String, anchor: Variant) -> Vector3:
 		var wanted := SlotGround.on_anchor_side(point, anchor) if anchor is Vector3 else point
 		return SlotGround.standable_from(ground_node, wanted, SlotGround.envelope_of(unit), center) if ground_node != null else wanted
+	# Round 39 (settle S1, C39.2): the ground a deploy must keep its seats off (DeployPassers.of), read only when a deploy
+	# under ElementPlan.SEAT_ROUTE_CLEAR asks, once.
+	var passers := func() -> Dictionary: return DeployPassers.of(game_match, team, leader)
 	return {"tick": tick, "team": team, "center": center, "heading": heading, "leader": leader, "ground_seat": ground_seat,
+			"passers": passers,
 			"members": members, "contacts": contacts, "known": known, "terrain": terrain_read(center, state),
 			"threat": threat_from(contacts, taking_fire), "composition": composition_of(members),
 			"strength": strength, "enemy_strength": enemy_strength, "taking_fire": taking_fire,

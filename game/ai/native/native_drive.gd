@@ -130,6 +130,9 @@ static func configure() -> bool:
 		"YIELD_CONTACT_M": (Movement as Script).get_script_constant_map().get("YIELD_CONTACT_M", null),
 		# Round 36 (traffic R36.4, `yieldgap`): T9's clear-by-distance as the gap after both half-lengths (absent: off).
 		"YIELD_CLEAR_GAP": (Movement as Script).get_script_constant_map().get("YIELD_CLEAR_GAP", null),
+		# Round 39 (manoeuvre M1, `givewaychain`): a parked crew off its seat gives way no farther from it (absent: off).
+		"CHAIN_M": (Movement as Script).get_script_constant_map().get("CHAIN_M", null),
+		"CHAIN_SLACK_M": float((Movement as Script).get_script_constant_map().get("CHAIN_SLACK_M", 0.5)),
 		"YIELD_RETRIES": int((Movement as Script).get_script_constant_map().get("YIELD_RETRIES", 0)),
 		"YIELD_RETRY_WINDOW_S": float((Movement as Script).get_script_constant_map().get("YIELD_RETRY_WINDOW_S", 0.0)),
 		"tank_script": Tank,

@@ -51,3 +51,61 @@ F1's and F2's directions pages, once filed.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-24 ~00:10: F1 + F2 directions page filed; waiting on his picks (lead gate). Full check queued on 6f793958f.**
+- **Page:** https://claude.ai/artifact/7zsrhB5GG4hV4ckcCWaxGD (db `picks/round39`: sight / fire / slowed / touch / words; empty
+  at filing). Rule looks filmed with `make remote T=feedback-shots FB_SLOTS=sight,fire,slowed` (191185d7a; fire at 0fc88183a
+  + staging) on builder0, laptop preset; phone map with `make remote T=touch-shots TOUCH_LAYOUTS='top dock split'` (7db78b1b6).
+  Clips and stills kept in ~/projects/godot-feedback-keep/r39/ (final-ss, fire4, touch3).
+- **My recommendations:** sight none; fire none; slowed amber; phone map dock. The sight `edge` look is built (and tested) but
+  left off the page: it can't be seen in a staged shot (the army lights the whole site; the boundary falls behind buildings).
+- quick-remote builder0: 201 passed / 0 failed (7db78b1b6, all the diff's tests + lint). Orchestrator messaged.
+- Staging lesson (feedback-shots on builder0): the window renders a few frames a second, so physics jumps most of a sim second
+  between drawn frames; a timed look (the wedge, 0.9 s) must be staged right before each capture, not on the sim clock.
+
+- **The clip's cost on his GPU** (`make perf-play PERF_PLAY_LAYERS=no_fogvis,no_fogclip PERF_PLAY_PRESET=laptop`, laptop UHD 620,
+  1854x1011, seed 92721, 3 cycles x 2.5 s, 45abbb3d3; the laptop was loaded by other worktrees, frames ~136 ms): no_fogclip
+  gpu +0.19 ms of 11.4 (noise: no_fogvis read frame +4.15). No cost I can measure; perf-judge (builder0) owns the judged line.
+- Page v2 adds question 5: six caller lines (moving misses, slowed to a crawl) as TEXT for his approval (lead gate 2:
+  `announcer-generate APPROVED=1` only after). Wiring (adapter events + memory moments, `--announcer-rules=on`) follows his ticks.
+
+**Questions for the lead** (on the page): the four picks and which caller lines to voice.
+
+**What to playtest:** `make skirmish` (the fog fix is ON: drive a crew away from an enemy and watch the lit ground follow it);
+the looks: `make rules-skirmish` won't pass them; use `.tools/godot-*/Godot_* --path . -- --skirmish --enemy=cpu
+--rules-look=slowed:amber,fire:wedge,sight:ring` and `-- --skirmish --touch-map --ui-touch --touch-layout=dock`
+(C39.6's `make skirmish SKIRMISH_FLAGS=` once native's grant lands).
+
+**2026-10-23 ~22:00: started.** Plan (in order; each a test first):
+1. **F1a the fog lies (correctness, ships with its test):** FOUND. The fog of war is the range he is shown; the field
+   (game/match/visibility_field.gd) takes one crew's look a tick and publishes once a cycle (15 ticks, or one tick per crew
+   past 15 crews), so lit ground trails a crew that drives off, and R1 shrinks its sight 110 % -> 85 % within a second on top.
+   Measured (tests/test_feedback_sight_shown.gd, laptop glibc 2.39, 906557c06 + test, enemy just outside the driving sight,
+   a drive-off from every point of the refresh cycle, 2 s each): army 1: R1 ON 8 lie-ticks / 5 drive-offs (worst 5.8 m past
+   real sight), OFF 38 (3.7 m); army 25: **ON 303 ticks / 9 drive-offs (worst 24.5 m)**, OFF 331 (13.0 m). Fix in my paths
+   (game/match is nobody's): the fog sheet's shader and the radar's fog layer clip lit ground to each living crew's sight
+   circle as it is NOW (FogViewers, uniforms every frame); the field still decides walls. After: 0 lie-ticks in all four.
+2. **F1b audit list** (every shown range or rule effect, below) -> a directions page for the NEW looks (2-3 + none each).
+3. **F2** touch-map layouts: a shots target, 2-3 layouts behind `--touch-layout=`, filmed at phone sizes -> directions page.
+4. F3 build his picks; stretch: announcer lines for the rules behind a switch.
+
+**2026-10-23 ~23:00: 38a865e97 committed** (F1a fix + candidate looks + F2 layouts, everything new OFF). quick-remote on the
+fix alone: builder0 `make quick` exited 0, 81 passed / 0 failed. Candidate looks (`--rules-look=`, FeedbackLook.RULE_LOOKS,
+default none): sight `edge` (fog boundary brighter round a settled crew) / `ring` (live dashed sight ring under selected crews);
+fire `wedge` (a shot fired on the move leaves a fading wedge of its spread, the stopped spread inside); slowed `amber`
+(chevrons from 5 % slow, warming to orange) / `brake` (brake lights on a slowed rolling hull). Touch layouts
+(`--touch-layout=`, TouchLayout, default top): `dock` (orders + chips centred between bug and radar, camera buttons over the
+radar), `split` (chips centred, orders over the score bug, camera buttons over the radar); portrait both = orders column
+left, chips column right, camera buttons between. Found on today's phone map (touch-shots 906557c06 builder0): its order bar
+runs into the score bug's kills line in landscape and covers the bug in portrait.
+
+**F1 audit (R1-R3 ON, 906557c06):**
+- Fog of war, 3D sheet (cyberpunk + default themes): LIED (above), fixed.
+- Radar fog (same field texture, ~1.2 m a pixel): same lie, fixed (its own layer + clip shader).
+- Enemy tanks, selection rings, radar blips: drawn from Match.is_visible_to (intel, every 3 ticks): honest.
+- Squad chip contact pip, the vision camera's frame (VisionRegion): read sight_radius live: honest.
+- Garage "Sight": a relative bar, no metres: honest. Unit hover card "Range N m" (orders' rts_controls): weapon range, not
+  a sight claim; unchanged.
+- R2 moving spread: nothing shows it except the shells themselves (tracers land wide). A new look is a page item.
+- R3 pin slow: chevrons start at suppression 0.3 (FeedbackReader.PIN_SHOW); the slow starts at 0 (up to 12 % slower with
+  no chevron). Nothing shows the slow itself. Page items.

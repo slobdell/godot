@@ -57,3 +57,81 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Report (in progress, 2026-10-23 night)
+- **S1 route-clear v2, OFF** (`--seat-route-clear`, env SEAT_ROUTE_CLEAR=on; daea2cefe): lab clean on the three traced cases (below).
+  Bar filed below; full check of the named hash next, then the series on 6001-6024.
+- **Item 3 traced (o2's crossing re-deals):** dev read on rules-ON main (builder0 light, 82c0a9db2 tree, crossing 3 click fights,
+  dev seeds 3891-3902, n 12 an arm): parked re-deals held 22 -> o2 35. Traced s3895 Alpha (0 -> 4): every counted re-deal is ONE
+  crew's seat moving 14-18 m off and back with anchor, shape, latched spacing and seat index unchanged. Probable cause:
+  UnansweredFire's duck (a crew ON ITS POST under fire it can't return goes to cover <= 25 m; PARKED_HOLD keeps more crews on posts),
+  which orders' probe counts as a parked re-deal. Not confirmed: `--duck=off` no longer exists (requested from doctrine via the
+  orchestrator). **No Bar H re-file:** its re-deal line counts duck moves (R38.42's rule: the trace changes it). References:
+  `references/round39/settle/o2-redeal-trace-builder0/`.
+- **Stretch (re-deals after a loss), dev read** (builder0 light, 15ec5b830, fight probe locks/crossing/terminus x 3-squad click x
+  dev seeds 3891-3902, n 36 fights an arm; REDEAL_TRACE = the halt's OWN seat moves > 6 m, before ducks): main 144 re-lays after a
+  loss (185 crews moved), 0 from any other cause; `--deploy-hold=on` 0. Fights: his kills 4.86 -> 5.42, his losses 7.92 -> 7.36, CPU
+  losses 4.97 -> 5.56 a fight. Bar H v2 (deciding on REDEAL_TRACE, not the probe's parked_redeals) needs a fresh seed block: asked.
+- **Orders' request done:** `ElementPlan.deploy_preview` (4066132c4, quick-remote builder0 132/0), pure; orders told.
+
+### S1 route-clear lab (builder0 light, n 1 per run, orders' probe; `make settle-lab`)
+| case | main | clear | fit (street) | fit + clear |
+|---|---|---|---|---|
+| crossing 5 route s3958 (the bridge mouth) | squad 4 NEVER | all in 47.5 s | squad 4 NEVER | all in 47.5 s |
+| crossing 5 route s3806 | all in 41.7 s | all in 44.5 s | all in 41.8 s | all in 44.5 s |
+| terminus 5 route s4505 | all in 42.2 s | all in 42.2 s | Echo NEVER | all in 42.3 s |
+- v1 (886c38c17) lost s4505's squads 1 and 5. Traced (4066132c4, `--deploy-trace`, which now prints the `clear_of` ground):
+  (a) the corridor started at Alpha's centre, so a seat cleared 6 m behind it stood on its rear crews' lane; (b) Bravo_1's seat
+  grounded onto Alpha's lane from both directions tried and stayed. v2 (daea2cefe) starts the corridor from every crew, searches
+  the whole ring (16 ways) nearest first, and keeps each crew's answer in the deploy. The table above is v2.
+- Cost seen: s4505 squad 1 is in at 30.6 s v 24.9; s3806 all-in +2.8 s. The guards below judge it.
+
+### Bar S1 route-clear (filed 2026-10-23 before any number on its seeds; code = daea2cefe's)
+What he'd see: on a 5-squad click or route, a squad that stops first never parks a tank on the street or bridge mouth the next
+squad still has to drive, and every squad gets in. Arms: `main:--deploy-trace` v `clear:--seat-route-clear,--deploy-trace`.
+Base: main as launched (8952c3d64: latch ON, R1-R3 ON). **Manoeuvre's `--giveway-chain`: OFF in both arms** (main's state; C39.2).
+**Seeds 6001-6024 (registered):** no-fight probe 12 cells x 6001-6012 (576 squads an arm), fights 3-squad (budget 1500) and 5-squad
+(budget 3000) click cells x 6013-6024. `tools/remote.sh --light native settle-s1c TANK_SQUAD_SLOT_TIMEOUT=14400`, builder0 light, J 4,
+after a full check of the named hash. Judge `settle_judge.py s1c` (dry-run on round 38's S1 v5 rows reproduces R38.40's read).
+- Counter: seats cleared > 0.
+- **Deciding:** never-in runs on the 5-squad cells (route and click) clear <= main - 1, with main >= 2, and NO run never-in on
+  clear that main gets in. (Main < 2 = not decidable: no ship.)
+- Guards (judged): never-in over every cell not up; all-in time, the mean over runs in on both arms, <= main x 1.10 + 1 s; twitch
+  >= 15 m squads not up; first shape differs <= 3 %; shape flips (the latch) <= main + 3; friend contacts and foreign <= 110 % + 5;
+  the fights (both reads, his kills / his losses / CPU losses within 1.645 se, 0 runs that never started).
+- Reported: place+twitch and deploy legs >= 25 m.
+- A pass ships `--seat-route-clear` ON on a new hash with one full check (CP39.1 with manoeuvre's M1).
+
+### Plan (ordered)
+1. S1 route-clear: pure lab (`tests/test_settle_route_clear.gd`) -> the traced cases (`make settle-lab`, builder0 light) -> bar
+   filed here before numbers -> full check on the named hash -> series on 6001-6024 (builder0 light, J <= 4).
+2. S1 on top: `--deploy-fit=street` re-read on 1's arm (the lab's `fitclear` arm first; no new bar if 1 fails).
+3. Trace o2's crossing re-deals (R38.42) before any Bar H re-file.
+4. Stretch: a parked crew re-dealt after a loss.
+
+### Decisions (S1 route-clear)
+- **Who counts as "following":** every other element of the same team with a move still to drive (its transit route from where
+  its crews stand, else a navmesh path to its spot, then each queued leg's path). A superset of "same order": `task_frame` can't
+  name one order across queued legs (each leg is assigned on its own frame), and a squad of a later order that must pass is
+  blocked just the same. Squads with nothing left to drive and arrived count as parked halts (their seats).
+- **Widths:** a seat (judged GROUNDED, via the situation's `ground_seat`, so main's relaid seats count) is blocked within 7 m of a
+  remaining route's centre line (the group lay's travel clearance, SelectionSquads.PACK_TRAVEL_CLEAR_M) or within 9 m of a
+  parked seat (its halt clearance, HALT_CLEAR_M).
+- **Where a blocked seat goes:** the nearest clear candidate in 2 m steps out to 24 m, at each distance first straight out of
+  what blocks it, then back along the squad's own arrival leg; dry, on its own bank, >= 0.75 spacing from its squad's other
+  seats. None found: it stays (counted, `route_seats_unclear`).
+- **When:** the ground is read ONCE, on the deploy's own update, and kept in the deploy (`clear_of`); every later update of that
+  halt (a re-lay after a loss) clears against the same ground, so a parked squad never shuffles because another squad drives by.
+- **Manoeuvre's switch state (C39.2):** the lab and bar run with manoeuvre's chain-aware give-way in main's state (OFF; not on
+  main at launch).
+
+
+### Merge notes
+- `ElementPlan.deploy_preview` + `_unit_of` are byte-identical on stream/orders (da9591207, copied by orders): resolve to one copy.
+- `ElementSituation.build` adds a `passers` Callable (DeployPassers.of), read only by a `--seat-route-clear` deploy. Nothing iterates
+  the situation's keys (as with round 38's `ground_seat`).
+- Everything here is OFF by default (`--seat-route-clear`); the sim baseline does not guard settle's paths (round 38's note).
+
+### Requests to other streams
+- doctrine (via the orchestrator): restore `--duck=off` (UnansweredFire.ENABLED) in tactics_flags.gd, for item 3's control arm.
+- orders (note): `parked_redeals` counts UnansweredFire duck moves; Bar H / S3 need them excluded before any re-file.

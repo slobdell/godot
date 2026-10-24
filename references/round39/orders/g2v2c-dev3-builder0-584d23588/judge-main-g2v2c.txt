@@ -1,0 +1,16 @@
+PASS deciding: metres off his drawn route, his routes 5022 -> 2523 (<= 3013)
+PASS deciding: metres off his drawn route, route cells 2404 -> 1432 (<= 1803)
+PASS guard friend_contacts 4046 -> 3403 (<= 4455.6)
+  FAIL guard twitch       locks 5 route: 8.1 v 15.4
+  FAIL guard end foreign  locks 5 route: 13.6 v 7.1
+  FAIL guard twitch       terminus 3 avenue: 12.0 v 17.1
+  FAIL guard end foreign  terminus 3 avenue: 10.4 v 6.4
+  FAIL guard twitch       terminus 3 east: 28.7 v 32.5
+  FAIL guard twitch       terminus 5 avenue: 0.0 v 15.1
+  FAIL guard end foreign  terminus 5 avenue: 9.8 v 5.2
+  FAIL guard end foreign  terminus 5 east: 9.8 v 4.5
+  FAIL guard end foreign  terminus 5 route: 12.3 v 5.7
+  FAIL guard end foreign  terminus 5 west: 7.6 v 4.1
+FAIL probe guards (12 cells)
+  reported: parked re-deals (a crew parked >= 2 s sent > 6 m off its seat) 118 -> 136
+VERDICT g2: FAIL

@@ -96,6 +96,7 @@ func _draw_timed() -> void:
 		_bar(at, tank, scale_factor)
 		if feedback != null:
 			_feedback(at, tank, scale_factor)
+			_rule_looks(tank, camera, scale_factor)
 
 
 ## The drawn top of the hull, so the bar floats over the vehicle rather than through it.
@@ -174,7 +175,12 @@ const PIN_COLOR := Color(1.0, 0.86, 0.25)
 ## His pick "pinned A": heads down, one to three chevrons pointing at the hull over the bar, by how pinned the crew is.
 func chevrons_for(tank: Tank) -> int:
 	var level := feedback.pinned_of(tank.name) if feedback != null and FeedbackLook.on("pinned") else 0.0
-	return 0 if level <= 0.0 else 1 + int(level > 0.45) + int(level > 0.9)
+	var count := 0 if level <= 0.0 else 1 + int(level > 0.45) + int(level > 0.9)
+	# Round 39 candidate "slowed: amber": a crew R3 is slowing shows at least one chevron, from the first slow.
+	if count == 0 and FeedbackLook.rule("slowed") == "amber" and FeedbackLook.on("pinned") \
+			and FeedbackReader.slowed(tank) * Tank.PIN_SLOW_MAX >= AMBER_FROM:
+		count = 1
+	return count
 
 
 func _feedback(at: Vector2, tank: Tank, s: float) -> void:
@@ -183,9 +189,102 @@ func _feedback(at: Vector2, tank: Tank, s: float) -> void:
 		return
 	var height := (HULL_H + (SHIELD_H + GAP if tank.max_shield > 0.0 else 0.0)) * s
 	var pulse := 0.65 + 0.35 * sin(_now * 6.0)
+	var color := PIN_COLOR
+	if FeedbackLook.rule("slowed") == "amber":
+		# Yellow at the first slow, orange at R3's full ~40 %.
+		color = PIN_COLOR.lerp(SLOW_COLOR, clampf(FeedbackReader.slowed(tank), 0.0, 1.0))
 	for i in count:
 		var y := at.y - height * 0.5 - (7.0 + i * 9.0) * s
 		var half := 11.0 * s
 		var chevron := PackedVector2Array([Vector2(at.x - half, y - 7.0 * s), Vector2(at.x, y), Vector2(at.x + half, y - 7.0 * s)])
 		draw_polyline(chevron, Color(0.0, 0.0, 0.0, 0.6 * pulse), 6.5 * s, true)
-		draw_polyline(chevron, Color(PIN_COLOR, pulse), 4.0 * s, true)
+		draw_polyline(chevron, Color(color, pulse), 4.0 * s, true)
+
+
+# ---- Round 39 (feedback F1, C39.5): candidate looks for R1-R3, for his directions page (FeedbackLook.rule) -------------
+
+## "slowed: amber": a chevron from this much of the crew's speed gone (5 %), turning SLOW_COLOR at R3's full slow.
+const AMBER_FROM := 0.05
+const SLOW_COLOR := Color(1.0, 0.45, 0.1)
+## "slowed: brake": the lights show from this much slow on a hull still rolling (m/s).
+const BRAKE_FROM := 0.05
+const BRAKE_MIN_SPEED := 1.0
+const BRAKE_COLOR := Color(1.0, 0.12, 0.08)
+## "fire: wedge": drawn this long (m) and this many spreads wide (a spread is one sigma of the shot's scatter).
+const WEDGE_M := 28.0
+const WEDGE_SIGMAS := 2.0
+const WEDGE_COLOR := Color(1.0, 0.62, 0.15)
+## "sight: ring": the selected crews' sight circle, dashed.
+const RING_SEGMENTS := 72
+const RING_COLOR := Color(0.55, 0.9, 1.0)
+
+
+## Rule looks drawn since load, by slot (the captures' check that a staged look reached the screen).
+static var rule_draws := {}
+
+
+func _rule_looks(tank: Tank, camera: Camera3D, s: float) -> void:
+	var friendly: bool = tank.team == controls.team
+	if FeedbackLook.rule("sight") == "ring" and friendly and _selected.has(tank.name):
+		_sight_ring(tank, camera, s)
+	if FeedbackLook.rule("fire") == "wedge":
+		var shot := feedback.moving_shot_of(tank.name, _now)
+		if not shot.is_empty():
+			rule_draws["fire"] = int(rule_draws.get("fire", 0)) + 1
+			_wedge(shot, camera, s)
+	if FeedbackLook.rule("slowed") == "brake":
+		var slow := FeedbackReader.slowed(tank) * Tank.PIN_SLOW_MAX
+		if slow >= BRAKE_FROM and absf(tank.speed()) >= BRAKE_MIN_SPEED:
+			rule_draws["brake"] = int(rule_draws.get("brake", 0)) + 1
+			_brake_lights(tank, camera, s, clampf(slow / Tank.PIN_SLOW_MAX, 0.0, 1.0))
+
+
+## The crew's sight as it is NOW (R1: shrinks driving, grows settled), dashed on the ground round it.
+func _sight_ring(tank: Tank, camera: Camera3D, s: float) -> void:
+	var centre := tank.global_position + Vector3.UP * 0.15
+	var radius := tank.sight_radius
+	for i in range(0, RING_SEGMENTS, 2):
+		var a := centre + Vector3(cos(TAU * i / RING_SEGMENTS), 0.0, sin(TAU * i / RING_SEGMENTS)) * radius
+		var b := centre + Vector3(cos(TAU * (i + 1) / RING_SEGMENTS), 0.0, sin(TAU * (i + 1) / RING_SEGMENTS)) * radius
+		if camera.is_position_behind(a) or camera.is_position_behind(b):
+			continue
+		draw_line(camera.unproject_position(a), camera.unproject_position(b), Color(RING_COLOR, 0.55), 2.0 * s, true)
+
+
+## This round's spread (fired on the move) as a fading wedge from the muzzle, the same gun's stopped spread inside it.
+func _wedge(shot: Dictionary, camera: Camera3D, s: float) -> void:
+	var muzzle: Vector3 = shot["muzzle"]
+	var direction: Vector3 = (shot["direction"] as Vector3)
+	direction.y = 0.0
+	if direction.length() < 0.01 or camera.is_position_behind(muzzle):
+		return
+	direction = direction.normalized()
+	var fade := 1.0 - float(shot["age"])
+	for pair: Array in [[float(shot["spread"]), 0.22], [float(shot["still"]), 0.0]]:
+		var half := minf(float(pair[0]) * WEDGE_SIGMAS, 0.6)
+		var left := muzzle + direction.rotated(Vector3.UP, half) * WEDGE_M
+		var right := muzzle + direction.rotated(Vector3.UP, -half) * WEDGE_M
+		if camera.is_position_behind(left) or camera.is_position_behind(right):
+			return
+		var points := PackedVector2Array([camera.unproject_position(muzzle), camera.unproject_position(left),
+				camera.unproject_position(right)])
+		if float(pair[1]) > 0.0:
+			draw_colored_polygon(points, Color(WEDGE_COLOR, float(pair[1]) * fade))
+			draw_polyline(PackedVector2Array([points[1], points[0], points[2]]), Color(WEDGE_COLOR, 0.8 * fade), 1.5 * s, true)
+		else:
+			draw_polyline(PackedVector2Array([points[1], points[0], points[2]]), Color(1, 1, 1, 0.7 * fade), 1.0 * s, true)
+
+
+## Two red lights at the hull's rear corners while R3 is slowing a rolling crew, brighter as it slows more.
+func _brake_lights(tank: Tank, camera: Camera3D, s: float, strength: float) -> void:
+	var size: Variant = Units.stat(String(tank.unit_id), "hull_size", [])
+	var hull := Vector3(float(size[0]), float(size[1]), float(size[2])) if size is Array and (size as Array).size() == 3 \
+			else Vector3(2.4, 2.0, 5.0)
+	var basis := tank.global_basis
+	for side: float in [-1.0, 1.0]:
+		var light := tank.global_position + basis.z * hull.z * 0.5 + basis.x * side * hull.x * 0.36 + Vector3.UP * hull.y * 0.45
+		if camera.is_position_behind(light):
+			continue
+		var at := camera.unproject_position(light)
+		draw_circle(at, 11.0 * s, Color(BRAKE_COLOR, 0.25 + 0.3 * strength))
+		draw_circle(at, 4.5 * s, Color(BRAKE_COLOR.lightened(0.35), 0.7 + 0.3 * strength))
