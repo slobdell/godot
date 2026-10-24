@@ -397,7 +397,9 @@ since>); waiting`. The check's make inherits the claim, so it is held exactly as
 and dropped by the kernel when the last exits (SIGKILL included): no stale lock to clear, and a wrapper killed while its
 make runs on cannot free the box under it. A hang-up or TERM to the wrapper, or its ssh session dying (watched every 5 s:
 a notty ssh sends no hang-up), stops the check's whole process group, queued or running, so **stopping your local unit now
-stops the remote check too** (trees with 0bb755a4f; older trees still need the cwd-verified kill). `builder_checks.sh`
+stops the remote check too** (trees with 7d1078f0d: 0bb755a4f's watchdog died by SIGPIPE on the dead session's stderr and
+a queued waiter could not hear it, so on older trees a stopped unit leaves its check, queued or running, for the
+cwd-verified kill). `builder_checks.sh`
 counts the holder too, so the gate still works as a polite early wait; it is no longer what keeps two checks apart.
 `REMOTE_FULL_CHECK_LOCK=0 make remote T=check` skips the claim (only with the orchestrator's say-so). Tests:
 `tools/test_full_check_lock.sh` (two claimers at once, 20 races, exactly one wins; a SIGKILLed wrapper; hang-ups; a dead
