@@ -85,3 +85,28 @@ end-shots: import ## F1: a commanded skirmish ended on the rings (the end card, 
 	@echo "end-shots: $$(ls $(END_DIR)/$(FB_PRESET)/*/clip.mp4 2>/dev/null | wc -l) clips in $(END_DIR)/$(FB_PRESET)"
 
 .PHONY: end-shots
+
+# ---- Round 39 feedback F2: the phone map's top (--touch-map; _agents/streams/feedback.md) -------------------------------
+
+TOUCH_DIR := $(BUILD_DIR)/touch-shots
+TOUCH_LAYOUTS ?= top
+TOUCH_SIZES ?= 2400x1080 1800x810 810x1800
+TOUCH_DELAY ?= 12
+TOUCH_ARENA ?= terminus
+
+touch-shots: import ## F2: the phone map (--touch-map --ui-touch) in a skirmish at phone sizes, one still per layout x size -> build/touch-shots/<layout>_<size>.png (needs a display: make remote T=touch-shots; TOUCH_LAYOUTS='top a b c' TOUCH_SIZES= TOUCH_DELAY= FB_PRESET=)
+	rm -rf $(TOUCH_DIR) && mkdir -p $(TOUCH_DIR)
+	@echo "commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null)}$$(git diff --quiet HEAD 2>/dev/null || echo ' (+ uncommitted)') host $$(hostname) preset $(FB_PRESET) arena $(TOUCH_ARENA)" \
+		> $(TOUCH_DIR)/SOURCE.txt
+	@set -e; for layout in $(TOUCH_LAYOUTS); do for size in $(TOUCH_SIZES); do \
+		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --touch-map --ui-touch --touch-layout=$$layout \
+			--scripted --enemy=cpu --seed=3 --arena=$(TOUCH_ARENA) --no-pick-faction --mute --announcer-history=off \
+			--music-history=off --render-preset=$(FB_PRESET) $(FB_FLAGS) --screenshot-delay=$(TOUCH_DELAY) \
+			--screenshot=$(CURDIR)/$(TOUCH_DIR)/$${layout}_$$size.png > $(TOUCH_DIR)/$${layout}_$$size.log 2>&1 \
+			|| echo "touch-shots: $$layout $$size exited $$?"; \
+	done; done
+	@cat $(TOUCH_DIR)/SOURCE.txt
+	@echo "touch-shots: $$(ls $(TOUCH_DIR)/*.png 2>/dev/null | wc -l) stills in $(TOUCH_DIR)"
+	@! grep -l 'SCRIPT ERROR' $(TOUCH_DIR)/*.log
+
+.PHONY: touch-shots

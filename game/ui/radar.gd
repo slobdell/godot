@@ -44,6 +44,13 @@ var obstacles: Array[PackedVector2Array] = []
 ## behind the radar's own drawing (`show_behind_parent`: the same order as one _draw), and only when they change.
 var _backdrop: Control
 var _backdrop_drawn: Array = []
+## Round 39 (feedback F1): the field's texture draws on its own layer between the frame and the props, through a shader
+## that clips lit ground to each crew's sight circle as it is NOW (FogViewers, as the 3D fog sheet does: the field's
+## picture can be two refreshes old). Its uniforms change every frame; its drawing still only when the backdrop's does.
+var _fog_layer: Control
+var _props_layer: Control
+var _fog_material := ShaderMaterial.new()
+const FOG_CLIP := preload("res://game/ui/radar_fog.gdshader")
 
 var _press: Variant = null
 var _press_moved := false
@@ -61,6 +68,18 @@ func _ready() -> void:
 	_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_backdrop.draw.connect(_draw_backdrop)
 	add_child(_backdrop, false, Node.INTERNAL_MODE_FRONT)
+	_fog_material.shader = FOG_CLIP
+	for layer_name in ["Fog", "Props"]:
+		var layer := Control.new()
+		layer.name = layer_name
+		layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_backdrop.add_child(layer)
+	_fog_layer = _backdrop.get_node("Fog")
+	_fog_layer.material = _fog_material
+	_fog_layer.draw.connect(_draw_fog)
+	_props_layer = _backdrop.get_node("Props")
+	_props_layer.draw.connect(_draw_props)
 	_layout()
 	get_viewport().size_changed.connect(_layout)
 
@@ -276,6 +295,8 @@ func _process(delta: float) -> void:
 
 func _process_timed(delta: float) -> void:
 	_check_backdrop()
+	if visibility != null:
+		FogViewers.apply(_fog_material, visibility)
 	if controls != null:
 		queue_redraw()
 		return
@@ -377,6 +398,8 @@ func _check_backdrop() -> void:
 		HudClock.changed(&"radar.backdrop")
 		_backdrop_drawn = drawn
 		_backdrop.queue_redraw()
+		_fog_layer.queue_redraw()
+		_props_layer.queue_redraw()
 
 
 func _draw_backdrop() -> void:
@@ -389,6 +412,13 @@ func _draw_backdrop() -> void:
 		_backdrop.draw_style_box(frame, rect)
 	else:
 		_backdrop.draw_rect(rect, Color(0.02, 0.03, 0.05, 0.82))
+	HudClock.end(&"radar.backdrop.draw", started)
+
+
+func _draw_fog() -> void:
+	var started := HudClock.begin()
+	if game_match == null:
+		return
 	# The visibility field: a texture that already encodes never / seen / visible.
 	if visibility != null and visibility.texture != null:
 		# X3 (combat, round 7): `origin` is per-instance now, because the field sizes to the ACTIVE layout rather
@@ -400,14 +430,23 @@ func _draw_backdrop() -> void:
 		# Flipped teams see the texture rotated 180 degrees: draw it with a negative size.
 		if _flip():
 			field_rect = Rect2(corner_a, corner_b - corner_a)
-		_backdrop.draw_texture_rect(visibility.texture, field_rect, false, Color(0.55, 0.85, 0.7, 0.55))
+		_fog_material.set_shader_parameter("origin_m", visibility.origin)
+		_fog_material.set_shader_parameter("size_m", extent)
+		_fog_layer.draw_texture_rect(visibility.texture, field_rect, false, Color(0.55, 0.85, 0.7, 0.55))
+	HudClock.end(&"radar.backdrop.draw", started)
+
+
+func _draw_props() -> void:
+	var started := HudClock.begin()
+	if game_match == null:
+		return
 	# X3 (combat, round 7) + 4f7371ef (control): the wall's real polygon, not a square off the constant. Two bugs in
 	# one line before: the constant is now the BOUND (140), so this drew an outline 20 m outside the wall of every
 	# shipped map, and it assumed four corners, so a hexagon would have been drawn as the square it is not.
 	# Resolved to control's outline_points() rather than combat's inline Arena.perimeter() loop: the two agree on the
 	# polygon case, and outline_points() ALSO falls back to the active layout's own bound when a layout has no
 	# perimeter, where the inline version draws nothing at all. It is also the seam test_radar calls directly.
-	_backdrop.draw_polyline(outline_points(), Color(0.6, 0.8, 0.9, 0.9), 1.5)
+	_props_layer.draw_polyline(outline_points(), Color(0.6, 0.8, 0.9, 0.9), 1.5)
 	var prop_color := Color(0.75, 0.8, 0.85, 0.85)
 	var prop_colors := PackedColorArray([prop_color, prop_color, prop_color, prop_color])
 	for corners in obstacles:
@@ -416,9 +455,9 @@ func _draw_backdrop() -> void:
 			shape.append(world_to_radar(Vector3(c.x, 0, c.y)))
 		# A four-cornered footprint (almost every prop) is a primitive, which batches; anything else is a polygon.
 		if shape.size() == 4:
-			_backdrop.draw_primitive(shape, prop_colors, PackedVector2Array())
+			_props_layer.draw_primitive(shape, prop_colors, PackedVector2Array())
 		else:
-			_backdrop.draw_colored_polygon(shape, prop_color)
+			_props_layer.draw_colored_polygon(shape, prop_color)
 	HudClock.end(&"radar.backdrop.draw", started)
 
 

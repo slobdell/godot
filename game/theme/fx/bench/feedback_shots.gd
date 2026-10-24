@@ -11,6 +11,10 @@ extends Node
 ##   pinned  four enemy crews at suppression 0, 0.45, 0.7 and 1.0, held there
 ##   repair  a Resupply Tanker with two hurt friends inside its 18 m (it really mends them) and one hurt friend outside
 ##   cone    a Sonic Emitter really blowing at two enemy crews (its cone, its suppression)
+## Round 39 (F1, C39.5): the rules' candidate looks (FeedbackLook.RULE_LOOKS), each look filmed in turn, "none" first:
+##   sight   one crew of his settled (~110 % sight), one driving circles (~85 %), both selected
+##   fire    a crew of his driving past an enemy and firing on the move, another firing stopped
+##   slowed  three enemy crews driving with suppression held at 0.15, 0.5 and 1.0 (R3 slows them 6, 20 and 40 %)
 ##
 ## Flags: --feedback-shots=<abs dir>  --feedback-shots-slots=hit,pinned  --feedback-shots-clip-frames=N (0: stills only)
 ## Prints FEEDBACK_SHOT <file> and FEEDBACK_SHOTS_DONE files=<n>.
@@ -35,6 +39,13 @@ var _emitter: Tank
 var _emitter_target := Vector3.ZERO
 var _site := Vector3.ZERO
 var _yaw := 0.0
+## Round 39: name -> [throttle, turn, aim target name or ""] driven every physics frame (the rules' slots).
+var _drivers := {}
+## Round 39: [shooter name, target name] pairs whose rounds are staged three times a second (the fire slot), and a tick count.
+var _volleys: Array = []
+var _volley_tick := 0
+## Round 39: the units kept selected every physics frame (the scripted run's own orders reselect its army).
+var _select: Array[String] = []
 
 
 static func wanted() -> bool:
@@ -74,6 +85,25 @@ func _physics_process(_delta: float) -> void:
 		# Staged targets are not there to die: the Emitter's 18 dps and the hit scene's rounds would wreck them mid-shot.
 		if not _hold_health.has(tank.name) and tank.health < tank.max_health * 0.6:
 			tank.health = tank.max_health
+	_volley_tick += 1
+	if not _volleys.is_empty() and _volley_tick % (SimClock.TICK_RATE / 3) == 0:
+		for pair: Array in _volleys:
+			_stage_round(String(pair[0]), String(pair[1]))
+	if not _select.is_empty():
+		var picker := get_tree().current_scene.find_child("TacticalMap", true, false)
+		if picker != null:
+			picker.get("selection").set_units(_select)
+	for driver_name: Variant in _drivers:
+		var driver := _match.tanks.get_node_or_null(NodePath(String(driver_name))) as Tank
+		if driver == null:
+			continue
+		var spec: Array = _drivers[driver_name]
+		driver.command.throttle = float(spec[0])
+		driver.command.turn = float(spec[1])
+		var aim := _match.tanks.get_node_or_null(NodePath(String(spec[2]))) as Tank if String(spec[2]) != "" else null
+		if aim != null:
+			driver.command.aim_point = aim.global_position + Vector3.UP
+			driver.command.fire = true
 	if _emitter != null and is_instance_valid(_emitter):
 		_emitter.command.aim_point = _emitter_target
 		_emitter.command.fire = true
@@ -94,6 +124,9 @@ func _run() -> void:
 			"pinned": await _pinned()
 			"repair": await _repair()
 			"cone": await _cone()
+			"sight": await _sight()
+			"fire": await _fire()
+			"slowed": await _slowed()
 		_settle_slot()
 	print("FEEDBACK_SHOTS_DONE files=%d" % _written)
 	get_tree().quit()
@@ -192,6 +225,13 @@ func _spawn(tank_name: String, team: int, unit_id: String, offset: Vector3, faci
 ## A slot is done: its vehicles stay where they are, held still and quiet like the armies.
 func _settle_slot() -> void:
 	_emitter = null
+	_drivers.clear()
+	_select.clear()
+	_volleys.clear()
+	FeedbackLook.use_rules("")
+	var controls := get_tree().current_scene.find_child("TacticalMap", true, false)
+	if controls != null:
+		controls.get("selection").units.clear()
 	_hold_suppression.clear()
 	for node: Variant in _staged:
 		_army.append(node)
@@ -235,6 +275,22 @@ func _hits() -> void:
 		await _clip("hit_on", func(frame: int) -> void:
 			if frame % roundi(CLIP_FPS * 1.2) == 2:
 				_strike(targets))
+
+
+## A cannon round from `shooter`'s muzzle toward `target`, through the effects' own fired event (the round is not simulated).
+func _stage_round(shooter_name: String, target_name: String) -> void:
+	var fx := FxWorld.existing()
+	var shooter := _match.tanks.get_node_or_null(NodePath(shooter_name)) as Tank
+	var target := _match.tanks.get_node_or_null(NodePath(target_name)) as Tank
+	if fx == null or shooter == null or target == null:
+		return
+	var from := shooter.global_position + Vector3.UP * 1.6
+	var toward := (target.global_position + Vector3.UP - from).normalized()
+	fx.link._on_weapon_fired({"tick": _match.tick, "shooter": shooter_name, "weapon": "cannon", "fire_model": "shell",
+			"muzzle": [from.x, from.y, from.z], "direction": [toward.x, toward.y, toward.z], "projectile_id": 950000 + _volley_tick,
+			"speed_mps": 0.0, "range": 60.0, "suppression_applied": 0.0})
+	print("FEEDBACK_VOLLEY %s speed=%.1f/%.1f look=%s recorded=%s" % [shooter_name, shooter.speed(), shooter.max_forward_speed,
+			FeedbackLook.rule("fire"), UnitBars.rule_draws])
 
 
 ## One cannon round into each target at once: from ahead (front), from its flank, from behind (rear).
@@ -292,6 +348,81 @@ func _cone() -> void:
 	await _shoot_held("cone", Vector3(0, 0, 2))
 
 
+# ---- Round 39 (F1): the rules' candidate looks ----------------------------------------------------------------------
+
+func _sight() -> void:
+	var settled := _spawn("FbSettled", Match.Team.GREEN, "tank", Vector3(-10, 0, 0), Vector3.FORWARD)
+	var driver := _spawn("FbDriver", Match.Team.GREEN, "tank", Vector3(14, 0, 6), Vector3.FORWARD)
+	_drivers[driver.name] = [0.6, 1.0, ""]  # circles on the spot: driving, so ~85 %
+	_select.assign([String(settled.name), String(driver.name)])
+	await _shoot_rule_looks("sight", Vector3(0, 0, -4), 1.9)
+
+
+func _fire() -> void:
+	var target := _spawn("FbFireTarget", Match.Team.RUST, "gang_ifv", Vector3(0, 0, -22), Vector3.BACK)
+	var mover := _spawn("FbMover", Match.Team.GREEN, "tank", Vector3(-12, 0, 4), Vector3.RIGHT)
+	var stopped := _spawn("FbStopped", Match.Team.GREEN, "tank", Vector3(16, 0, 10), Vector3.FORWARD)
+	_drivers[mover.name] = [0.7, 1.0, String(target.name)]  # circles on the spot, firing on the move
+	_drivers[stopped.name] = [0.0, 0.0, String(target.name)]
+	# Staged rounds (as the hit slot stages its impacts): each crew's real speed decides whether it fired on the move.
+	_volleys = [[String(mover.name), String(target.name)], [String(stopped.name), String(target.name)]]
+	await _shoot_rule_looks("fire", Vector3(0, 0, -6))
+
+
+func _slowed() -> void:
+	var levels := [0.15, 0.5, 1.0]
+	for i in levels.size():
+		var tank := _spawn("FbSlowed%d" % i, Match.Team.RUST, "gang_ifv", Vector3(-16.0 + i * 16.0, 0, 6), Vector3.FORWARD)
+		_hold_suppression[tank.name] = levels[i]
+		_drivers[tank.name] = [1.0, 1.0, ""]  # full throttle, circling on the spot
+	_spawn("FbEyes", Match.Team.GREEN, "scout", Vector3(0, 0, 36), Vector3.FORWARD)
+	await _shoot_rule_looks("slowed", Vector3.ZERO)
+
+
+## Every candidate look of a rule slot in turn ("none" first): a still at his pose and one close in, and a clip at his
+## pose for each look that draws something. `zoom_out` widens his pose (the sight slot's fog edge is ~60 m out).
+func _shoot_rule_looks(slot: String, centre := Vector3.ZERO, zoom_out := 1.0) -> void:
+	FeedbackLook.use("pinned:on")
+	await _seconds(2.5)
+	for look: String in FeedbackLook.RULE_LOOKS[slot]:
+		FeedbackLook.use_rules("%s:%s" % [slot, look])
+		for distance: float in [DISTANCE_M * zoom_out, CLOSE_M]:
+			_pose(distance, _staged_centre(centre))
+			await _seconds(SETTLE_S + 0.6)
+			_pose(distance, _staged_centre(centre))
+			_volley_now()
+			await _frames(2)
+			_save("%s_%s_%s" % [slot, look, "rts" if distance != CLOSE_M else "close"])
+		if clip_frames > 0 and look != "none":
+			var wide := DISTANCE_M * zoom_out
+			_pose(wide, _staged_centre(centre))
+			await _seconds(SETTLE_S)
+			await _clip("%s_%s" % [slot, look], func(frame: int) -> void:
+				_pose(wide, _staged_centre(centre))
+				if frame % 4 == 0:
+					_volley_now())
+
+
+## Every staged volley at once (a capture is about to be taken: a slow render jumps most of a sim second a frame, so a
+## round fired on the clock is rarely still in its wedge when a frame is saved).
+func _volley_now() -> void:
+	for pair: Array in _volleys:
+		_stage_round(String(pair[0]), String(pair[1]))
+
+
+## The staged crews' middle as a site offset (the rules' drivers circle, so the frame follows them), nudged by `bias`.
+func _staged_centre(bias: Vector3) -> Vector3:
+	var sum := Vector3.ZERO
+	var count := 0
+	for node: Variant in _staged:
+		if is_instance_valid(node) and _drivers.has((node as Tank).name) or (is_instance_valid(node) and _select.has(String((node as Tank).name))):
+			sum += (node as Tank).global_position
+			count += 1
+	if count == 0:
+		return bias
+	return (sum / count - _site).rotated(Vector3.UP, -_yaw) + bias
+
+
 ## A held situation with its look on at his pose and close in, a clip at his pose, then one still with it off.
 func _shoot_held(slot: String, centre := Vector3.ZERO) -> void:
 	await _seconds(2.5)
@@ -330,9 +461,12 @@ func _clip(clip_name: String, each: Callable) -> void:
 func _save(file_name: String) -> void:
 	var path := out_dir.path_join(file_name + ".png")
 	var err := get_viewport().get_texture().get_image().save_png(path)
+	for node: Variant in _staged:
+		if is_instance_valid(node) and _drivers.has((node as Tank).name):
+			print("FEEDBACK_DRIVER %s speed=%.1f slowed=%.2f draws=%s" % [(node as Tank).name, (node as Tank).speed(), FeedbackReader.slowed(node), UnitBars.rule_draws]) if (node as Tank).name == &"FbSlowed1" else null
 	_written += 1
 	var fx := FxWorld.existing()
-	print("FEEDBACK_SHOT %s %s look=%s counts=%s" % [file_name, error_string(err), FeedbackLook._on,
+	print("FEEDBACK_SHOT %s %s look=%s rules=%s counts=%s" % [file_name, error_string(err), FeedbackLook._on, FeedbackLook._rule,
 			fx.feedback.last_counts if fx != null else {}])
 
 
