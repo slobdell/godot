@@ -224,5 +224,5 @@ settle-shots: native-for-check import ## Round 39 (settle S1): top-down shots of
 		map=$$(echo $$c | cut -d: -f1); n=$$(echo $$c | cut -d: -f2); route=$$(echo $$c | cut -d: -f3); seed=$$(echo $$c | cut -d: -f4); \
 		name=$${a%%:*}; flags=$$(echo "$${a#*:}" | tr "," " "); out=$(BUILD_DIR)/settle-shots/$$map-$$n-$$route-s$$seed-$$name; mkdir -p $$out; \
 		timeout 900 $(GODOT) --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$map --seed=$$seed \
-			--probe-squads=$$n --probe-route=$$route --probe-arm=$$name --mute --probe-shots=$$out $$flags 2>&1 \
-			| grep -E '^ORDERS_PROBE( \{|_SHOT)' | cut -c1-160 || true; done; done
+			--probe-squads=$$n --probe-route=$$route --probe-arm=$$name --mute --probe-shots=$$out $$flags > $$out/run.log 2>&1 || true; \
+		echo "$$c $$name: $$(ls $$out/*.png 2>/dev/null | wc -l) shots, $$(grep -c '^ORDERS_PROBE {' $$out/run.log) run line"; done; done
