@@ -869,12 +869,15 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 			plan["slots"] = _deploy_compact(plan["slots"], deploy["heading"])
 		if COVER_SEAT:
 			_cover_seats(plan, deploy, situation)
+		if SEAT_ROUTE_CLEAR:
+			_route_clear(plan, deploy, situation, spacing)
 		if DEPLOY_HOLD:
 			_deploy_hold(plan, deploy, situation)
 		if DEPLOY_TRACE and int(deploy.get("tick", -1)) == int(situation.get("tick", 0)):
 			_trace_deploy(plan, situation, stand, deploy["heading"], spacing)
 		if DEPLOY_TRACE:
 			_trace_stand(plan, situation, deploy)
+			_trace_redeal(plan, situation, deploy)
 		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
@@ -1898,7 +1901,20 @@ static func _trace_deploy(plan: Dictionary, situation: Dictionary, stand: Vector
 			"terrain": String(situation.get("terrain", "")), "anchor_terrain": ElementSituation.terrain_at(stand),
 			"latch_lays": int((plan.get("deploy", {}) as Dictionary).get("latch_lays", -1)),
 			"latch_capped": bool((plan.get("deploy", {}) as Dictionary).get("latch_capped", false)),
-			"fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}), "crews": crews}))
+			"fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}),
+			"cleared": int((plan.get("deploy", {}) as Dictionary).get("cleared", 0)),
+			"clear_of": _trace_clear_of((plan.get("deploy", {}) as Dictionary).get("clear_of", {})), "crews": crews}))
+
+
+## The ground a route-clear deploy kept clear of, rounded for the trace: {"routes": [[[x, z], ...], ...], "halts": [...]}.
+static func _trace_clear_of(clear_of: Variant) -> Dictionary:
+	if not (clear_of is Dictionary):
+		return {}
+	var out := {}
+	for key: String in ["routes", "halts"]:
+		out[key] = ((clear_of as Dictionary).get(key, []) as Array).map(func(line: Array) -> Array:
+				return line.map(func(p: Vector3) -> Array: return [snappedf(p.x, 0.1), snappedf(p.z, 0.1)]))
+	return out
 
 
 ## R38.15 (S2 v3's reference): one STAND_TRACE line per deploy, the first plan STAND_TRACE_S after it: the crews' centroid
@@ -1924,6 +1940,34 @@ static func _trace_stand(plan: Dictionary, situation: Dictionary, deploy: Dictio
 			"terrain": ElementSituation.terrain_at(centre), "crews": members.size()}
 	print("STAND_TRACE ", JSON.stringify(line))
 	return line
+
+
+## Round 39 (settle stretch, after item 3's trace): one REDEAL_TRACE line each time a deployed halt moves a surviving crew's
+## seat more than REDEAL_TRACE_M, as the halt lays it (before UnansweredFire's ducks, which orders' probe counts as parked
+## re-deals too): {"tick", "leader", "cause": "loss" when a crew of the halt was lost since the last update, else "other",
+## "moved": {crew: metres}}. Measurement only, under --deploy-trace; the last seats are kept in the deploy.
+const REDEAL_TRACE_M := 6.0
+
+
+static func _trace_redeal(plan: Dictionary, situation: Dictionary, deploy: Dictionary) -> void:
+	var last: Dictionary = deploy.get("trace_slots", {})
+	var now := {}
+	for name: Variant in plan["slots"]:
+		if plan["slots"][name] is Vector3:
+			now[String(name)] = plan["slots"][name]
+	deploy["trace_slots"] = now
+	if last.is_empty():
+		return
+	var moved := {}
+	for name: String in now:
+		if last.has(name) and Vector2((now[name] as Vector3).x - (last[name] as Vector3).x,
+				(now[name] as Vector3).z - (last[name] as Vector3).z).length() > REDEAL_TRACE_M:
+			moved[name] = snappedf((now[name] as Vector3).distance_to(last[name]), 0.1)
+	if moved.is_empty():
+		return
+	var lost := last.keys().any(func(n: String) -> bool: return not now.has(n))
+	print("REDEAL_TRACE ", JSON.stringify({"tick": int(situation.get("tick", 0)), "leader": String(situation.get("leader", "")),
+			"cause": "loss" if lost else "other", "moved": moved}))
 
 
 ## D3b (R35.41): a packed squad's last stretch in a file (OFF; `--arrive-file=on` / env ARRIVE_FILE=on opts in).
@@ -2254,6 +2298,147 @@ static func _cover_seats(plan: Dictionary, deploy: Dictionary, situation: Dictio
 				order["facing"] = facing
 
 
+## Round 39 (settle, for orders' G3 v6): THE DEPLOY, PREVIEWED AT THE CLICK. Where a squad whose crews stand at `members`'
+## positions (each {"name", "unit", "position"}, plus "role" if known) would lay its halt if it deployed at `at` on
+## `heading`: the shape and spacing read as the deploy reads them (the terrain at the crews' centre, then at the anchor
+## while the latch re-lays: DEPLOY_LATCH_ANCHOR), the anchor stepped dry, the fit when DEPLOY_FIT is on, and the seats
+## dealt by the least total drive ("travel", main's deploy policy without the earlier seating it may keep; `ground`
+## (point, unit, anchor) -> Vector3 grounds each seat when given). Returns {"shape", "spacing", "terrain", "anchor",
+## "heading", "seats": {name: Vector3}, "worst_m", "total_m"}. PURE: no state written, no RNG drawn (the arena's terrain
+## pieces are read through ElementSituation's cache). `threat` "none" unless given.
+static func deploy_preview(given: Array, at: Vector3, heading: Vector3, table: DoctrineTable, ground: Variant = null,
+		threat := "none") -> Dictionary:
+	if given.is_empty():
+		return {}
+	var members: Array = []
+	for member: Dictionary in given:
+		var copy := member.duplicate()
+		if not copy.has("role"):
+			copy["role"] = Units.role_of(String(copy.get("unit", "")))
+		members.append(copy)
+	var centre := Vector3.ZERO
+	for member: Dictionary in members:
+		centre += Vector3((member["position"] as Vector3).x, 0.0, (member["position"] as Vector3).z)
+	centre /= float(members.size())
+	var read := {"members": members, "center": centre, "threat": threat, "terrain": ElementSituation.terrain_at(centre),
+			"composition": ElementSituation.composition_of(members), "tick": 0}
+	if ground is Callable:
+		read["ground_seat"] = ground
+	var lay := TacticsFormation.flat(heading)
+	var shape := String(_halt_pick(read, {}, table)["formation"])
+	var anchor := _dry_halt_anchor(at, members, shape, lay, table.spacing(String(read["terrain"])))
+	if DEPLOY_LATCH and DEPLOY_LATCH_ANCHOR:
+		for step in DEPLOY_LATCH_LAYS:
+			var there := ElementSituation.terrain_at(anchor)
+			if there == String(read["terrain"]):
+				break
+			read = read.duplicate()
+			read["terrain"] = there
+			shape = String(_halt_pick(read, {}, table)["formation"])
+			anchor = _dry_halt_anchor(at, members, shape, lay, table.spacing(there))
+	var spacing := table.spacing(String(read["terrain"]))
+	if DEPLOY_FIT:
+		var deploy := {"heading": lay, "anchor": anchor}
+		var turned := deploy_fit_turned
+		_deploy_fit(deploy, read, at, shape, spacing)
+		deploy_fit_turned = turned  # a preview is not a deploy
+		lay = deploy["heading"]
+		anchor = deploy["anchor"]
+	var deal := _fit_deal(members, shape, anchor, lay, spacing, read)
+	var seats := {}
+	var placed := TacticsFormation.place(members, shape, anchor, lay, spacing, {"halt": true, "corridor_m": INF, "layout": true})
+	var by_index := {}
+	for entry in placed:
+		by_index[int(entry["index"])] = clamp_to_arena((entry["to"] as Vector3) \
+				+ TacticsFormation.rotate(lay, deg_to_rad(float(entry["sector"]))) * FACE_LEAD)
+	for name: String in deal["keep"]:
+		var seat: Vector3 = by_index.get(int(deal["keep"][name]), anchor)
+		seats[name] = (ground as Callable).call(seat, String(_unit_of(members, name)), anchor) if ground is Callable else seat
+	return {"shape": shape, "spacing": spacing, "terrain": String(read["terrain"]), "anchor": anchor, "heading": lay,
+			"seats": seats, "worst_m": float(deal["worst"]), "total_m": float(deal["total"])}
+
+
+static func _unit_of(members: Array, name: String) -> String:
+	for member: Dictionary in members:
+		if String(member["name"]) == name:
+			return String(member.get("unit", ""))
+	return ""
+
+
+## S1 (round 39, settle; C39.2, R38.40, R38.43): NO HALT SEAT ON THE ROUTE A FRIENDLY SQUAD STILL HAS TO DRIVE, AND NONE
+## INSIDE ANOTHER SQUAD'S PARKED HALT. Traced (terminus 5 route s4505, crossing 5 route s3958): a deploying squad's seats
+## (its shape's, and main's own relaid ones) stood on the junction and lane mouth the squad behind it still had to drive,
+## or inside a neighbour's parked halt at the bridge mouth, and the squad behind never got in. On the deploy's own update
+## the ground to keep clear is read once (the situation's `passers`, DeployPassers.of: every other squad of the team still
+## driving, from where it stands along its route and queued legs, and every other squad parked) and kept in the deploy
+## (`clear_of`), so every later update of the halt (a re-lay after a loss included) clears its seats against the same
+## ground. A seat standing (grounded) within DeployPassers.ROUTE_CLEAR_M of such a route, or HALT_CLEAR_M of a parked
+## seat, moves to the nearest clear seat (DeployPassers.clear_seat: out of what blocks it, else back along the squad's
+## arrival leg); none found, it stays. Every shape, every heading. `--seat-route-clear` (env SEAT_ROUTE_CLEAR=on) opts in.
+static var SEAT_ROUTE_CLEAR := OS.get_cmdline_user_args().has("--seat-route-clear") \
+		or OS.get_cmdline_user_args().has("--seat-route-clear=on") or OS.get_environment("SEAT_ROUTE_CLEAR") == "on"
+## Measurement: seats moved clear on deploys' own updates, and seats found blocked with no clear seat, since start.
+static var route_seats_cleared := 0
+static var route_seats_unclear := 0
+
+
+static func _route_clear(plan: Dictionary, deploy: Dictionary, situation: Dictionary, spacing: float) -> void:
+	var first := int(deploy.get("tick", -1)) == int(situation.get("tick", 0))
+	if not deploy.has("clear_of"):
+		var read: Variant = situation.get("passers")
+		deploy["clear_of"] = (read as Callable).call() if read is Callable else {}
+	var passers: Dictionary = deploy["clear_of"]
+	if (passers.get("routes", []) as Array).is_empty() and (passers.get("halts", []) as Array).is_empty():
+		return
+	var anchor: Vector3 = plan.get("anchor", situation.get("center", Vector3.ZERO))
+	var back := -TacticsFormation.flat(deploy.get("heading", Vector3.FORWARD))
+	var units := {}
+	for member: Dictionary in situation.get("members", []):
+		units[String(member["name"])] = String(member.get("unit", ""))
+	var grounder: Variant = situation.get("ground_seat")
+	var names: Array = plan["slots"].keys()
+	names.sort()
+	var moved := {}
+	for unit_name: String in names:
+		var seat: Variant = plan["slots"][unit_name]
+		if not (seat is Vector3):
+			continue
+		var unit := String(units.get(unit_name, "tank"))
+		var ground := func(p: Vector3) -> Vector3:
+			return (grounder as Callable).call(p, unit, anchor) if grounder is Callable else p
+		var ok := func(p: Vector3) -> bool:
+			return not SlotGround.over_water(p) and SlotGround.on_anchor_side(p, anchor).distance_to(p) <= 0.5
+		var others: Array = []
+		for other: String in names:
+			if other != unit_name and plan["slots"][other] is Vector3:
+				others.append(moved.get(other, plan["slots"][other]))
+		# Each crew's answer for the seat it was asked is kept in the deploy: a later update with the same seat asks the
+		# navmesh nothing (a re-lay after a loss asks afresh for the seats that changed).
+		var answers: Dictionary = deploy.get("clear_moves", {})
+		var kept: Variant = answers.get(unit_name)
+		var clear: Variant
+		if kept is Array and ((kept as Array)[0] as Vector3).distance_to(seat) <= 0.01:
+			clear = (kept as Array)[1]
+		else:
+			clear = DeployPassers.clear_seat(seat, back, passers, others, spacing, ground, ok)
+			answers[unit_name] = [seat, clear]
+			deploy["clear_moves"] = answers
+		if clear == null:
+			if first:
+				route_seats_unclear += 1
+			continue
+		if (clear as Vector3).distance_to(seat) > 0.01:
+			moved[unit_name] = clear
+	for unit_name: String in moved:
+		plan["slots"][unit_name] = moved[unit_name]
+		var order: Variant = plan.get("orders", {}).get(unit_name)
+		if order is Dictionary:
+			order["to"] = moved[unit_name]
+	if first:
+		route_seats_cleared += moved.size()
+		deploy["cleared"] = moved.size()
+
+
 ## C37.4's seam: cover's `TacticalQuery.low_cover_seat(map, near, threat_dir, max_shift_m, hull, node)` (cover's K3, on
 ## main 821c7f494) when this build has it, else null. No map (a test's bare situation) or no hull size: null. `node` is
 ## left null (the plan is pure: no tank to path from); cover's query then skips its navmesh reach test (merge note).
@@ -2334,73 +2519,6 @@ static func _deploy_keep(members: Array, formation: String, anchor: Vector3, hea
 	for n in count:
 		keep[String(members[n]["name"])] = int(best[n])
 	return keep
-
-
-## Round 39 (settle, for orders' G3 v6): THE DEPLOY, PREVIEWED AT THE CLICK. Where a squad whose crews stand at `members`'
-## positions (each {"name", "unit", "position"}, plus "role" if known) would lay its halt if it deployed at `at` on
-## `heading`: the shape and spacing read as the deploy reads them (the terrain at the crews' centre, then at the anchor
-## while the latch re-lays: DEPLOY_LATCH_ANCHOR), the anchor stepped dry, the fit when DEPLOY_FIT is on, and the seats
-## dealt by the least total drive ("travel", main's deploy policy without the earlier seating it may keep; `ground`
-## (point, unit, anchor) -> Vector3 grounds each seat when given). Returns {"shape", "spacing", "terrain", "anchor",
-## "heading", "seats": {name: Vector3}, "worst_m", "total_m"}. PURE: no state written, no RNG drawn (the arena's terrain
-## pieces are read through ElementSituation's cache). `threat` "none" unless given.
-static func deploy_preview(given: Array, at: Vector3, heading: Vector3, table: DoctrineTable, ground: Variant = null,
-		threat := "none") -> Dictionary:
-	if given.is_empty():
-		return {}
-	var members: Array = []
-	for member: Dictionary in given:
-		var copy := member.duplicate()
-		if not copy.has("role"):
-			copy["role"] = Units.role_of(String(copy.get("unit", "")))
-		members.append(copy)
-	var centre := Vector3.ZERO
-	for member: Dictionary in members:
-		centre += Vector3((member["position"] as Vector3).x, 0.0, (member["position"] as Vector3).z)
-	centre /= float(members.size())
-	var read := {"members": members, "center": centre, "threat": threat, "terrain": ElementSituation.terrain_at(centre),
-			"composition": ElementSituation.composition_of(members), "tick": 0}
-	if ground is Callable:
-		read["ground_seat"] = ground
-	var lay := TacticsFormation.flat(heading)
-	var shape := String(_halt_pick(read, {}, table)["formation"])
-	var anchor := _dry_halt_anchor(at, members, shape, lay, table.spacing(String(read["terrain"])))
-	if DEPLOY_LATCH and DEPLOY_LATCH_ANCHOR:
-		for step in DEPLOY_LATCH_LAYS:
-			var there := ElementSituation.terrain_at(anchor)
-			if there == String(read["terrain"]):
-				break
-			read = read.duplicate()
-			read["terrain"] = there
-			shape = String(_halt_pick(read, {}, table)["formation"])
-			anchor = _dry_halt_anchor(at, members, shape, lay, table.spacing(there))
-	var spacing := table.spacing(String(read["terrain"]))
-	if DEPLOY_FIT:
-		var deploy := {"heading": lay, "anchor": anchor}
-		var turned := deploy_fit_turned
-		_deploy_fit(deploy, read, at, shape, spacing)
-		deploy_fit_turned = turned  # a preview is not a deploy
-		lay = deploy["heading"]
-		anchor = deploy["anchor"]
-	var deal := _fit_deal(members, shape, anchor, lay, spacing, read)
-	var seats := {}
-	var placed := TacticsFormation.place(members, shape, anchor, lay, spacing, {"halt": true, "corridor_m": INF, "layout": true})
-	var by_index := {}
-	for entry in placed:
-		by_index[int(entry["index"])] = clamp_to_arena((entry["to"] as Vector3) \
-				+ TacticsFormation.rotate(lay, deg_to_rad(float(entry["sector"]))) * FACE_LEAD)
-	for name: String in deal["keep"]:
-		var seat: Vector3 = by_index.get(int(deal["keep"][name]), anchor)
-		seats[name] = (ground as Callable).call(seat, String(_unit_of(members, name)), anchor) if ground is Callable else seat
-	return {"shape": shape, "spacing": spacing, "terrain": String(read["terrain"]), "anchor": anchor, "heading": lay,
-			"seats": seats, "worst_m": float(deal["worst"]), "total_m": float(deal["total"])}
-
-
-static func _unit_of(members: Array, name: String) -> String:
-	for member: Dictionary in members:
-		if String(member["name"]) == name:
-			return String(member.get("unit", ""))
-	return ""
 
 
 ## B8b: `at` stepped away from water, DEPLOY_INLAND_STEP_M at a time (up to DEPLOY_INLAND_MAX_M), until every seat of the

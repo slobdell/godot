@@ -1,0 +1,618 @@
+{
+ "blob": {
+  "all": {
+   "capped": 0.00625,
+   "draw": 0.0,
+   "kill_ratio": 0.780683583635422,
+   "kills": 3015,
+   "loss": 0.5875,
+   "losses": 3862,
+   "margin": 30.35625,
+   "median_s": 103.3,
+   "n": 160,
+   "win": 0.4125
+  },
+  "by_arena": {
+   "gorge": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.824396782841823,
+    "kills": 615,
+    "loss": 0.5,
+    "losses": 746,
+    "margin": 42.5625,
+    "median_s": 100.4,
+    "n": 32,
+    "win": 0.5
+   },
+   "locks": {
+    "capped": 0.03125,
+    "draw": 0.0,
+    "kill_ratio": 0.8318122555410691,
+    "kills": 638,
+    "loss": 0.5625,
+    "losses": 767,
+    "margin": 33.71875,
+    "median_s": 122.5,
+    "n": 32,
+    "win": 0.4375
+   },
+   "parade": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.672069825436409,
+    "kills": 539,
+    "loss": 0.71875,
+    "losses": 802,
+    "margin": 19.15625,
+    "median_s": 67.8,
+    "n": 32,
+    "win": 0.28125
+   },
+   "sumps": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.8247694334650857,
+    "kills": 626,
+    "loss": 0.5,
+    "losses": 759,
+    "margin": 51.75,
+    "median_s": 114.3,
+    "n": 32,
+    "win": 0.5
+   },
+   "terminus": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.7576142131979695,
+    "kills": 597,
+    "loss": 0.65625,
+    "losses": 788,
+    "margin": 4.59375,
+    "median_s": 113.2,
+    "n": 32,
+    "win": 0.34375
+   }
+  },
+  "by_faction": {
+   "condemned": {
+    "capped": 0.022222222222222223,
+    "draw": 0.0,
+    "kill_ratio": 0.6014150943396226,
+    "kills": 765,
+    "loss": 0.5777777777777777,
+    "losses": 1272,
+    "margin": 26.244444444444444,
+    "median_s": 137.9,
+    "n": 45,
+    "win": 0.4222222222222222
+   },
+   "gangs": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.25381526104417673,
+    "kills": 316,
+    "loss": 0.8,
+    "losses": 1245,
+    "margin": 19.733333333333334,
+    "median_s": 100.4,
+    "n": 30,
+    "win": 0.2
+   },
+   "law": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.6598639455782312,
+    "kills": 582,
+    "loss": 0.75,
+    "losses": 882,
+    "margin": 24.925,
+    "median_s": 88.8,
+    "n": 40,
+    "win": 0.25
+   },
+   "syndicate": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 2.920086393088553,
+    "kills": 1352,
+    "loss": 0.3111111111111111,
+    "losses": 463,
+    "margin": 46.37777777777778,
+    "median_s": 99.4,
+    "n": 45,
+    "win": 0.6888888888888889
+   }
+  },
+  "by_pairing": {
+   "condemned v gangs": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 1.0132450331125828,
+    "kills": 306,
+    "loss": 0.4,
+    "losses": 302,
+    "margin": 7.1,
+    "median_s": 170.9,
+    "n": 10,
+    "win": 0.6
+   },
+   "condemned v law": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.835990888382688,
+    "kills": 367,
+    "loss": 0.45,
+    "losses": 439,
+    "margin": 45.05,
+    "median_s": 141.0,
+    "n": 20,
+    "win": 0.55
+   },
+   "condemned v syndicate": {
+    "capped": 0.06666666666666667,
+    "draw": 0.0,
+    "kill_ratio": 0.17325800376647835,
+    "kills": 92,
+    "loss": 0.8666666666666667,
+    "losses": 531,
+    "margin": 13.933333333333334,
+    "median_s": 112.8,
+    "n": 15,
+    "win": 0.13333333333333333
+   },
+   "gangs v condemned": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.5359801488833746,
+    "kills": 216,
+    "loss": 0.5,
+    "losses": 403,
+    "margin": 47.1,
+    "median_s": 131.5,
+    "n": 10,
+    "win": 0.5
+   },
+   "gangs v law": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.2639593908629442,
+    "kills": 52,
+    "loss": 0.8,
+    "losses": 197,
+    "margin": -27.8,
+    "median_s": 174.7,
+    "n": 5,
+    "win": 0.2
+   },
+   "gangs v syndicate": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.07441860465116279,
+    "kills": 48,
+    "loss": 1.0,
+    "losses": 645,
+    "margin": 17.333333333333332,
+    "median_s": 80.8,
+    "n": 15,
+    "win": 0.0
+   },
+   "law v condemned": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.7155963302752294,
+    "kills": 312,
+    "loss": 0.75,
+    "losses": 436,
+    "margin": 32.45,
+    "median_s": 102.7,
+    "n": 20,
+    "win": 0.25
+   },
+   "law v gangs": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 4.434782608695652,
+    "kills": 204,
+    "loss": 0.0,
+    "losses": 46,
+    "margin": 29.6,
+    "median_s": 111.7,
+    "n": 5,
+    "win": 1.0
+   },
+   "law v syndicate": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.165,
+    "kills": 66,
+    "loss": 1.0,
+    "losses": 400,
+    "margin": 13.333333333333334,
+    "median_s": 76.2,
+    "n": 15,
+    "win": 0.0
+   },
+   "syndicate v condemned": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 2.120879120879121,
+    "kills": 386,
+    "loss": 0.6,
+    "losses": 182,
+    "margin": 46.4,
+    "median_s": 88.8,
+    "n": 15,
+    "win": 0.4
+   },
+   "syndicate v gangs": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 4.543478260869565,
+    "kills": 627,
+    "loss": 0.06666666666666667,
+    "losses": 138,
+    "margin": 46.733333333333334,
+    "median_s": 101.1,
+    "n": 15,
+    "win": 0.9333333333333333
+   },
+   "syndicate v law": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 2.370629370629371,
+    "kills": 339,
+    "loss": 0.26666666666666666,
+    "losses": 143,
+    "margin": 46.0,
+    "median_s": 96.0,
+    "n": 15,
+    "win": 0.7333333333333333
+   }
+  },
+  "by_side": {
+   "green": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.7323030907278165,
+    "kills": 1469,
+    "loss": 0.6125,
+    "losses": 2006,
+    "margin": 34.8125,
+    "median_s": 103.2,
+    "n": 80,
+    "win": 0.3875
+   },
+   "rust": {
+    "capped": 0.0125,
+    "draw": 0.0,
+    "kill_ratio": 0.8329741379310345,
+    "kills": 1546,
+    "loss": 0.5625,
+    "losses": 1856,
+    "margin": 25.9,
+    "median_s": 104.9,
+    "n": 80,
+    "win": 0.4375
+   }
+  },
+  "missing": [],
+  "noise": {
+   "capped": 0.01767766952966369,
+   "kill_ratio": 0.08813905829297813,
+   "margin": 8.088344237234221,
+   "seeds": 16,
+   "win": 0.09617692030835674
+  },
+  "read": 160,
+  "run": 160
+ },
+ "turtle": {
+  "all": {
+   "capped": 0.0125,
+   "draw": 0.0,
+   "kill_ratio": 0.8237226277372263,
+   "kills": 2257,
+   "loss": 0.625,
+   "losses": 2740,
+   "margin": 8.55,
+   "median_s": 193.4,
+   "n": 160,
+   "win": 0.375
+  },
+  "by_arena": {
+   "gorge": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.859375,
+    "kills": 495,
+    "loss": 0.53125,
+    "losses": 576,
+    "margin": 26.0625,
+    "median_s": 154.3,
+    "n": 32,
+    "win": 0.46875
+   },
+   "locks": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.8616352201257862,
+    "kills": 411,
+    "loss": 0.71875,
+    "losses": 477,
+    "margin": 0.6875,
+    "median_s": 194.7,
+    "n": 32,
+    "win": 0.28125
+   },
+   "parade": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.9092409240924092,
+    "kills": 551,
+    "loss": 0.625,
+    "losses": 606,
+    "margin": -2.9375,
+    "median_s": 130.6,
+    "n": 32,
+    "win": 0.375
+   },
+   "sumps": {
+    "capped": 0.03125,
+    "draw": 0.0,
+    "kill_ratio": 0.7798013245033113,
+    "kills": 471,
+    "loss": 0.5625,
+    "losses": 604,
+    "margin": 20.21875,
+    "median_s": 192.5,
+    "n": 32,
+    "win": 0.4375
+   },
+   "terminus": {
+    "capped": 0.03125,
+    "draw": 0.0,
+    "kill_ratio": 0.689727463312369,
+    "kills": 329,
+    "loss": 0.6875,
+    "losses": 477,
+    "margin": -1.28125,
+    "median_s": 196.0,
+    "n": 32,
+    "win": 0.3125
+   }
+  },
+  "by_faction": {
+   "condemned": {
+    "capped": 0.022222222222222223,
+    "draw": 0.0,
+    "kill_ratio": 0.6620775969962454,
+    "kills": 529,
+    "loss": 0.7333333333333333,
+    "losses": 799,
+    "margin": 3.6444444444444444,
+    "median_s": 194.7,
+    "n": 45,
+    "win": 0.26666666666666666
+   },
+   "gangs": {
+    "capped": 0.03333333333333333,
+    "draw": 0.0,
+    "kill_ratio": 0.15889628924833493,
+    "kills": 167,
+    "loss": 0.7333333333333333,
+    "losses": 1051,
+    "margin": -4.833333333333333,
+    "median_s": 193.4,
+    "n": 30,
+    "win": 0.26666666666666666
+   },
+   "law": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.5776772247360482,
+    "kills": 383,
+    "loss": 0.775,
+    "losses": 663,
+    "margin": 10.05,
+    "median_s": 192.8,
+    "n": 40,
+    "win": 0.225
+   },
+   "syndicate": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 5.18942731277533,
+    "kills": 1178,
+    "loss": 0.3111111111111111,
+    "losses": 227,
+    "margin": 21.044444444444444,
+    "median_s": 192.0,
+    "n": 45,
+    "win": 0.6888888888888889
+   }
+  },
+  "by_pairing": {
+   "condemned v gangs": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 2.7974683544303796,
+    "kills": 221,
+    "loss": 0.9,
+    "losses": 79,
+    "margin": -7.7,
+    "median_s": 192.6,
+    "n": 10,
+    "win": 0.1
+   },
+   "condemned v law": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 1.0583333333333333,
+    "kills": 254,
+    "loss": 0.5,
+    "losses": 240,
+    "margin": 22.55,
+    "median_s": 196.0,
+    "n": 20,
+    "win": 0.5
+   },
+   "condemned v syndicate": {
+    "capped": 0.06666666666666667,
+    "draw": 0.0,
+    "kill_ratio": 0.1125,
+    "kills": 54,
+    "loss": 0.9333333333333333,
+    "losses": 480,
+    "margin": -14.0,
+    "median_s": 169.5,
+    "n": 15,
+    "win": 0.06666666666666667
+   },
+   "gangs v condemned": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.20118343195266272,
+    "kills": 68,
+    "loss": 0.8,
+    "losses": 338,
+    "margin": -21.3,
+    "median_s": 193.0,
+    "n": 10,
+    "win": 0.2
+   },
+   "gangs v law": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.11891891891891893,
+    "kills": 22,
+    "loss": 1.0,
+    "losses": 185,
+    "margin": -44.4,
+    "median_s": 241.7,
+    "n": 5,
+    "win": 0.0
+   },
+   "gangs v syndicate": {
+    "capped": 0.06666666666666667,
+    "draw": 0.0,
+    "kill_ratio": 0.14583333333333334,
+    "kills": 77,
+    "loss": 0.6,
+    "losses": 528,
+    "margin": 19.333333333333332,
+    "median_s": 193.4,
+    "n": 15,
+    "win": 0.4
+   },
+   "law v condemned": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.8849840255591054,
+    "kills": 277,
+    "loss": 0.55,
+    "losses": 313,
+    "margin": 17.5,
+    "median_s": 195.9,
+    "n": 20,
+    "win": 0.45
+   },
+   "law v gangs": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 13.75,
+    "kills": 55,
+    "loss": 1.0,
+    "losses": 4,
+    "margin": -2.0,
+    "median_s": 194.6,
+    "n": 5,
+    "win": 0.0
+   },
+   "law v syndicate": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.14739884393063585,
+    "kills": 51,
+    "loss": 1.0,
+    "losses": 346,
+    "margin": 4.133333333333334,
+    "median_s": 88.0,
+    "n": 15,
+    "win": 0.0
+   },
+   "syndicate v condemned": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 6.825396825396825,
+    "kills": 430,
+    "loss": 0.26666666666666666,
+    "losses": 63,
+    "margin": 13.333333333333334,
+    "median_s": 193.4,
+    "n": 15,
+    "win": 0.7333333333333333
+   },
+   "syndicate v gangs": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 3.1181102362204722,
+    "kills": 396,
+    "loss": 0.6666666666666666,
+    "losses": 127,
+    "margin": 4.6,
+    "median_s": 191.1,
+    "n": 15,
+    "win": 0.3333333333333333
+   },
+   "syndicate v law": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 9.513513513513514,
+    "kills": 352,
+    "loss": 0.0,
+    "losses": 37,
+    "margin": 45.2,
+    "median_s": 194.9,
+    "n": 15,
+    "win": 1.0
+   }
+  },
+  "by_side": {
+   "green": {
+    "capped": 0.0,
+    "draw": 0.0,
+    "kill_ratio": 0.822501747030049,
+    "kills": 1177,
+    "loss": 0.625,
+    "losses": 1431,
+    "margin": 8.8625,
+    "median_s": 193.4,
+    "n": 80,
+    "win": 0.375
+   },
+   "rust": {
+    "capped": 0.025,
+    "draw": 0.0,
+    "kill_ratio": 0.825057295645531,
+    "kills": 1080,
+    "loss": 0.625,
+    "losses": 1309,
+    "margin": 8.2375,
+    "median_s": 194.2,
+    "n": 80,
+    "win": 0.375
+   }
+  },
+  "missing": [],
+  "noise": {
+   "capped": 0.024152294576982404,
+   "kill_ratio": 0.14751865070569753,
+   "margin": 12.16645661919142,
+   "seeds": 16,
+   "win": 0.12247448713915891
+  },
+  "read": 160,
+  "run": 160
+ }
+}

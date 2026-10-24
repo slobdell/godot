@@ -54,6 +54,34 @@ NATIVE_TOOLCHAIN := $(shell command -v $(CMAKE) >/dev/null 2>&1 && command -v c+
 # Round 34 (N4): every Godot that make starts knows whether a library is expected here, so a twin that finds none FAILS
 # (tests/native/native_expect.gd) instead of passing with "native: absent". NATIVE=off, or no toolchain: not expected.
 export TANK_NATIVE_EXPECTED := $(if $(filter-out off,$(NATIVE)),$(if $(filter yes,$(NATIVE_TOOLCHAIN)),1))
+
+# ---- Round 39 (N4): one float trig on every machine ---------------------------------------------------------------
+# glibc >= 2.41 (the builders) made atan2f acosf asinf atanf tanf correctly rounded (CORE-MATH); 2.39 (the laptop) is
+# 1-2 ulp off on 0.1-19 % of inputs, enough to make a jam a different fight (R38.25). The native library defines the five
+# itself (native/src/trig, hidden), so it is the same everywhere. The ENGINE takes them from libm, so on a glibc older
+# than 2.41 every process make starts gets LD_PRELOAD=libtank_trig (the same CORE-MATH sources, exported), built here
+# once per source/flag set into .tools/trig (never uploaded, never cleaned by native-clean). Its sims then hash like the
+# builders', so it reads the builders' sim-baseline lines (SIM_BASELINE_KEY). TRIG=system: this machine's own libm (a
+# pre-N4 laptop read). Proof: `make trig-check` (exhaustive v libm) and `make trig-digest` (one line per function to
+# compare across machines); _agents/native.md "Machine-independent trig".
+TRIG             ?= cr
+TRIG_SRCS        := native/src/trig/tank_trig.c $(addprefix native/src/trig/core-math/,atan2f.c acosf.c asinf.c atanf.c tanf.c)
+TRIG_GLIBC       := $(shell getconf GNU_LIBC_VERSION 2>/dev/null | awk '{print $$2}')
+TRIG_OLD_LIBM    := $(shell v='$(TRIG_GLIBC)'; [ -n "$$v" ] && [ "$$(printf '%s\n2.41\n' "$$v" | sort -V | head -1)" != 2.41 ] && echo yes)
+TRIG_SHA         := $(shell cat $(TRIG_SRCS) 2>/dev/null | { cat; printf '%s' '$(NATIVE_FP_FLAGS)'; } | sha256sum | cut -c1-10)
+TRIG_PRELOAD     := $(abspath $(TOOLS_DIR))/trig/libtank_trig-$(TRIG_SHA).so
+ifeq ($(TRIG_OLD_LIBM)$(filter cr,$(TRIG)),yescr)
+ifeq ($(wildcard $(TRIG_PRELOAD)),)
+$(shell mkdir -p $(dir $(TRIG_PRELOAD)) && flock $(dir $(TRIG_PRELOAD)).lock sh -c '[ -e $(TRIG_PRELOAD) ] || { \
+	cc $(NATIVE_FP_FLAGS) -fPIC -shared -fvisibility=hidden -w -o $(TRIG_PRELOAD).tmp $(TRIG_SRCS) -lm && mv $(TRIG_PRELOAD).tmp $(TRIG_PRELOAD); }' >&2)
+endif
+ifneq ($(wildcard $(TRIG_PRELOAD)),)
+export LD_PRELOAD := $(TRIG_PRELOAD)$(if $(filter-out $(TRIG_PRELOAD),$(LD_PRELOAD)), $(filter-out $(TRIG_PRELOAD),$(LD_PRELOAD)))
+export SIM_BASELINE_KEY ?= glibc-2.43
+else
+$(info >> trig: glibc $(TRIG_GLIBC) and no $(TRIG_PRELOAD) (no C compiler?): this machine's sims are NOT the builders')
+endif
+endif
 NATIVE_ENV := GODOT=$(GODOT) TOOLS_DIR=$(TOOLS_DIR) DOWNLOADS=$(DOWNLOADS) GODOTCPP_VERSION=$(GODOTCPP_VERSION) \
 	GODOTCPP_SHA256=$(GODOTCPP_SHA256) GODOTCPP_URL=$(GODOTCPP_URL) GODOTCPP_SRC=$(GODOTCPP_SRC) \
 	GODOTCPP_BUILD=$(GODOTCPP_BUILD) GODOTCPP_LIB=$(GODOTCPP_LIB) NATIVE_FP_FLAGS="$(NATIVE_FP_FLAGS)" \
@@ -396,3 +424,37 @@ pin-moves: import native ## C34.8 (a): every pinned stage x (pinned, free, pinne
 			[ -n "$$out" ] && [ -e $(BUILD_DIR)/$$out ] && cp -r $(BUILD_DIR)/$$out $$d/out; \
 			echo "PIN_MOVES {} $$arm exit=$$(cat $$d/exit) secs=$$(cat $$d/secs) load=$$(cat $$d/load_before)"; done'
 	@$(PYTHON) tests/native/pin_moves.py $(BUILD_DIR)/pin-moves | tee $(BUILD_DIR)/pin-moves/table.txt
+
+# Round 39 (N4): the trig proof. trig-check: CORE-MATH v this machine's libm, all 2^32 inputs of acosf asinf atanf tanf and
+# ATAN2_SAMPLES (4e8) pairs of atan2f, run WITHOUT the preload (0 differ on glibc >= 2.41). trig-digest: a digest of every
+# output per function (the system's float math the engine and native import, and the cr_ five), the same lines on two
+# machines = the same results. Minutes on every thread (TRIG_THREADS=4 on a shared builder); not in check.
+TRIG_CHECK_BIN := $(BUILD_DIR)/trig/trig_check
+$(TRIG_CHECK_BIN): native/src/trig/trig_check.c $(TRIG_SRCS)
+	@mkdir -p $(dir $@)
+	env -u LD_PRELOAD cc $(NATIVE_FP_FLAGS) -pthread -w -o $@ native/src/trig/trig_check.c $(filter-out %/tank_trig.c,$(TRIG_SRCS)) -lm
+
+trig-check: $(TRIG_CHECK_BIN) ## N4: CORE-MATH's five float trig v this machine's libm, every input (0 differ on glibc >= 2.41)
+	env -u LD_PRELOAD $(TRIG_CHECK_BIN) compare
+
+trig-digest: $(TRIG_CHECK_BIN) ## N4: one digest line per float libm function; compare the lines across machines
+	env -u LD_PRELOAD $(TRIG_CHECK_BIN) digest
+
+trig-info: ## N4: which trig this machine's Godot runs (cr = the builders' result; system = its own libm)
+	@echo "TRIG glibc $(TRIG_GLIBC) | $(if $(TRIG_OLD_LIBM),older than 2.41,2.41+ (libm is CORE-MATH))| TRIG=$(TRIG) | LD_PRELOAD=$(or $(LD_PRELOAD),none) | sim-baseline key $(or $(SIM_BASELINE_KEY),glibc-$(TRIG_GLIBC))"
+
+# Round 39 (stretch, the lead's question 2026-10-23: would a faster physics engine speed development?): what share of a
+# simulation tick is the PHYSICS ENGINE. A tick's wall time (MATCH_RESULT real_seconds over the ticks: the match runner
+# runs uncapped, startup excluded) = the scripts' _physics_process (SimProfile's whole tick) + the rest of Godot's frame,
+# whose bulk headless is PhysicsServer3D's sync, query flush and step (Jolt). Physics queries made FROM scripts are inside
+# the scripts' time: `tank/drive` (the motion model + move_and_slide) is reported beside, an upper bound on that part.
+# PHYSICS_SHARE_SEEDS fights (CPU v CPU, condemned mirror, 5200 budget, TIME s each) -> build/physics-share/ + a table.
+PHYSICS_SHARE_SEEDS ?= 3 7 11
+physics-share: import native-for-check ## Stretch (round 39): the physics engine's share of a sim tick (frame wall v scripts; tank/drive beside) -> build/physics-share/
+	@rm -rf $(BUILD_DIR)/physics-share; mkdir -p $(BUILD_DIR)/physics-share
+	@for seed in $(PHYSICS_SHARE_SEEDS); do \
+		$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . -- --match --elimination --control --sim-profile \
+			--green-faction=condemned --rust-faction=condemned --budget=$(or $(BUDGET),5200) --time-limit=$(or $(TIME),120) \
+			--seed=$$seed > $(BUILD_DIR)/physics-share/seed-$$seed.log 2>&1 || exit 1; \
+	done
+	@$(PYTHON) tools/judge/physics_share.py $(BUILD_DIR)/physics-share/seed-*.log

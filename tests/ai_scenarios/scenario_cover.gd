@@ -67,17 +67,18 @@ func test_a_healthy_tank_near_a_wall_fights_from_cover() -> void:
 	var me := s.brain_tank(Match.Team.GREEN, "Green_A_1", GREEN_START, 0.0)
 	# Durable since CP2 (round-3 cannons: 320 per shell, three hits kill): this measures fighting from cover, not survival.
 	AiScenario.make_durable(me)
-	# R38.55: the peek loop this bar was set on is the pre-R1 sight model. With R1 ON (the default since R38.55) builder0
-	# a99bd09ed reads hidden 90 %, shots 2, returns to cover 1 (bar 2); sight alone moves it. Round 39 owns R1's peek.
-	var sight_was := RuleSwitches.sight_on
-	RuleSwitches.sight_on = false
+	# Round 39 (doctrine D5): measured over 40 s, not 20. After its first shot the crew waits ~9 s behind the wall
+	# because the gun is laid on its peek spot and loaded (B1's no_loaded_peek, by design), so 20 s holds one cycle:
+	# builder0, seeds 1-4, the old 20 s bar met 2 returns on 2 of 4 seeds with R1 OFF (seed 1's second was a 0.6 s
+	# flicker while backing in) and on none with R1 ON. Over 40 s, R1 ON (the default) returns 2 times on all four and
+	# stays hidden 86-89 %. R1 does not change the loop's decisions (traced tick by tick, seed 1: doctrine Status, D5).
 	var samples := 0
 	var hidden := 0
 	var back_in_cover_after_shot := 0
 	var shots_seen := 0
 	var was_hidden := false
 	await s.start()
-	for tick in range(1, SimClock.TICK_RATE * 25 + 1):
+	for tick in range(1, SimClock.TICK_RATE * 45 + 1):
 		await s.step()
 		if tick < SimClock.TICK_RATE * 5 or not me.is_alive():
 			continue
@@ -89,12 +90,12 @@ func test_a_healthy_tank_near_a_wall_fights_from_cover() -> void:
 		if now_hidden and not was_hidden and shots_seen > 0:
 			back_in_cover_after_shot += 1
 		was_hidden = now_hidden
-	RuleSwitches.sight_on = sight_was
 	var fraction := float(hidden) / maxf(samples, 1)
-	print("MEASURE ai_cover_fire hidden %.0f%% of 20 s, shots %d, returns to cover %d, alive %s" % [fraction * 100.0,
+	print("MEASURE ai_cover_fire hidden %.0f%% of 40 s, shots %d, returns to cover %d, alive %s" % [fraction * 100.0,
 			s.shots_by(me), back_in_cover_after_shot, me.is_alive()])
 	assert_true(fraction >= 0.5, "it spends most of the fight out of the gun's sight (%.0f%%)" % (fraction * 100.0))
-	# At least half the shots its reload allows over the 20 s measured.
+	# At least half the shots its reload allows over 20 s (the bar as set before D5; the crew's patience behind the wall
+	# is B1's, so the longer window does not raise it).
 	var reload := float(Weapons.profile(me.weapon_id).get("reload", 2.5))
 	var expected := int(20.0 / reload * 0.5)
 	assert_true(s.shots_by(me) >= expected, "and still shoots back from cover (%d shots, at least %d)" % [s.shots_by(me), expected])

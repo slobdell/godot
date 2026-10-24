@@ -3945,3 +3945,9 @@ instrument that cannot lie about load — removal within one run — and let eve
      better (hold-post loops −74 %, jam-under-fire deaths −53 %, stacked lanes 64 → 49 %), and each failed on the totals: the deaths
      reappeared one for one as stuck, blocked or parked. A deciding gain needs its neighbour causes as guards, filed before numbers;
      every one of these bars had them, which is why nothing harmful shipped.
+324. **Clear a builder's folders only after a separate look for live runs, and never once workers are launched.** (Round 39
+     launch.) builder2 had been stopped at the close; by the time the orchestrator cleared its round-38 `~/tank_squad/godot-*`,
+     native's fresh session had already woken it (`make gcp-start`) and started a 20-job `guard-run` in `godot-native-guard`. The
+     `pgrep` sat in the same command as the `rm -rf`, so it reported the run after deleting its tree. Rule: clear builder folders
+     in launch step 1, before the lead starts any CLI; a stopped builder gets cleared the next time it is up only if
+     `pgrep -af 'make|godot'` (its own command, read first) shows no Tank Squad run, and otherwise only the named stale folders go.
