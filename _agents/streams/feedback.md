@@ -63,7 +63,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - Staging lesson (feedback-shots on builder0): the window renders a few frames a second, so physics jumps most of a sim second
   between drawn frames; a timed look (the wedge, 0.9 s) must be staged right before each capture, not on the sim clock.
 
-**Questions for the lead** (on the page): the four picks.
+- **The clip's cost on his GPU** (`make perf-play PERF_PLAY_LAYERS=no_fogvis,no_fogclip PERF_PLAY_PRESET=laptop`, laptop UHD 620,
+  1854x1011, seed 92721, 3 cycles x 2.5 s, 45abbb3d3; the laptop was loaded by other worktrees, frames ~136 ms): no_fogclip
+  gpu +0.19 ms of 11.4 (noise: no_fogvis read frame +4.15). No cost I can measure; perf-judge (builder0) owns the judged line.
+- Page v2 adds question 5: six caller lines (moving misses, slowed to a crawl) as TEXT for his approval (lead gate 2:
+  `announcer-generate APPROVED=1` only after). Wiring (adapter events + memory moments, `--announcer-rules=on`) follows his ticks.
+
+**Questions for the lead** (on the page): the four picks and which caller lines to voice.
 
 **What to playtest:** `make skirmish` (the fog fix is ON: drive a crew away from an enemy and watch the lit ground follow it);
 the looks: `make rules-skirmish` won't pass them; use `.tools/godot-*/Godot_* --path . -- --skirmish --enemy=cpu
