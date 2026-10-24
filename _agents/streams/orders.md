@@ -72,12 +72,19 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     - Contacts: main 5,970, v4 5,651, v5 5,013. v4 -> v5 passes every probe guard.
     - Both arms fail one guard: terminus 5 route never-in 1 v 2 (s3805 squad 1). No column was laid on that run and v4 / v5
       rows match, so it's v4's squads-whole on the route's first plain click (R38.44), not v5. Not traced yet.
-- **G2 v2 `--group-route-corner=line`** (93a6c2283): on a leg, the column's room is read along the road (capped at its length),
-  not on the straight line past the click, and ranks past the road's first corner (> 30 deg) stand single file on it.
-  - Lab (Terminus navmesh, his east route's last leg): v1's rear rank stood two abreast 32 m either side of the x=70 street (the
-    column ran out of room and merged); v2 puts every place on the route line.
-  - Dev read running (builder0 light J4; his east / west / avenue routes x 3 / 5 squads + the 12 route cells, dev seeds
-    3801-3803; main / g2 (R38.47's arm) / g2v2).
+- **G2 v2 `--group-route-corner=line`** (v2c, 6ac4b67d2): on a leg the column's room is read along the road (his route), no
+  further back than its squads' rearmost start; ranks past the route's first corner (> 30 deg) stand centred on it.
+  - Lab (Terminus navmesh, his east route's last leg): v1's rear rank stood two abreast 32 m either side of the x=70 street;
+    v2 puts every place on the route line.
+  - **Dev read 1** (builder0 light J4, da9591207, dev seeds 3801-3803, n 3; `references/round39/orders/g2v2-dev1-builder0-da9591207/`):
+    - his routes' metres off his drawn path: main 5,022, g2 v1 5,107, v2 3,302; never-in 9 / 6 / 3;
+    - his 5-squad east: 2,965 / 3 never -> 876 / 0; his 5-squad west: 1,127 / 6 -> 849 / 0;
+    - route cells: off 2,404 -> 1,462, never-in 1 -> 0.
+    - Costs: his 5 avenue 142 -> 682 m (the rear squad's place at the army's start); his 3 east never-in 3 (g2 v1's
+      too: a whole-squad swap on a leg); terminus 5 route worst twitch 18.7 -> 34.1.
+  - **Dev read 2** (4ce8784d5; `g2v2b-dev2-builder0-4ce8784d5/`): v2b (rank centred, not single file) = v2 on every cell.
+    `--group-lead=drive` on legs is worse (his routes never-in 3 -> 6), so G1 v5 stays a plain-click rule.
+  - v2c fixes the avenue cause (laptop trace, not pairable: squad 4 on the route, every squad in). Dev read 3 running.
 - **G3 v6 `--place-clear-seat=on`** (da9591207): a moved place must deploy in the given place's shape and spacing, worst leg
   <= given + 2 m (or 8 m); else it steps back along the squad's own leg; else it's kept. It uses settle's
   `ElementPlan.deploy_preview`, built on my request and copied verbatim from stream/settle 4066132c4.
