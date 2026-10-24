@@ -94,3 +94,8 @@ quick-remote `exited 0`, 104 passed / 0 failed, lint clean. Chain stages ON / ON
 A full check of bb8043686 is running on builder2; that's native's merge hash for the orchestrator. Until the merge, my ON arms can
 run on the native path from that branch (C++ runs the rule; native_yield stays on). This is native's evidence, not a check of my
 branch: d7259b161 itself has no builder result. Still PAUSED on laptop memory, waiting for the lead's OK to restart builder0 runs.
+
+**bb8043686 GREEN on builder2 (native's full check):** `make check exited 0`, 3143 passed / 0 failed, sim-baseline 13/13
+unmoved. It holds my M1 code (14a10e719 + the d7259b161 census fix) plus native's mirror; native has given it to the
+orchestrator as the pair's merge hash. This is the first full check covering givewaychain (OFF by default). Still PAUSED on laptop
+memory until the lead OKs restarting builder0 runs.
