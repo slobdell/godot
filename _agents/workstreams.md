@@ -172,6 +172,11 @@ block: ask the orchestrator first.
   rule: never zoom past what the force can see) rather than the arena centre. Before: his spawn crews sat off the bottom of a
   phone screen in every layout. Desktop byte-identical. A follow-up commit after feedback's current full check, with its own check.
 
+- **R39.8 (2026-10-24 ~11:10 PDT): orders' two bars run in parallel, one per builder, once CP39.1 lands.** G1 v5 on builder0 light
+  (as filed), G3 v6 on builder2 (free after doctrine's D4, R39.6; native's run.sh row and trig A/B go first if they're still queued).
+  Seeds and judges are unchanged; a machine difference doesn't matter (builders both glibc 2.43, deterministic sims; each bar pairs
+  within its own run). Manoeuvre's M1 verdict ETA ~16:30-17:00 PDT.
+
 ## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 
 **Goal: he keeps control of his army, and the defender really defends.** From round 37 (HANDOFF *ROUND 37 CLOSED*): his playtest's
