@@ -1,3 +1,30 @@
+### REPORT (worker, round 38 end, 2026-10-23)
+
+**Green hash: 84c79d76f** (builder2 `make native check exited 0`, 3,055 / 0; merged as main 8bfb74e55, main 400bada9a green, R38.13).
+Every later commit (to 5c3098897) is Status or `references/` only: no code, so 84c79d76f's check stands for the branch.
+- **M1 (M5 v2): judged, FAIL** (R38.24). Seat metres -5.0 % vs a 6.4 % bar; every safety guard passes; seatstep stays OFF.
+- **M2 (M5b): traced, NOT built.** Only ~1.5 non-scout turn-rounds a fight; parked crews hold `face` orders, so Manoeuvre never
+  plans their return. No native twin needed.
+- **M7 (O5 v2): dev read, NOT judged, stays OFF (code on main, OFF).** About half of the screen give-ways happen ≥ 10 m off-seat, so
+  the bar can't be reached by a seat-aside step.
+- **M3 (stretch, S1 v2): base rate counted, NOT built.** 82 target stalls in 72 fights, 0 deaths, mostly ORCA slow-downs.
+- **s3866 (settle's case): read.** Four chained give-ways, not a lead-out. Lever: a chain-aware give-way.
+**Decisions:** no re-run of a failed bar; no series for M2, M3 or M7 this round (nothing worth one).
+**Questions for the lead:** none. **Requests:** native, if the chain-aware give-way is picked up next round (begin_yield twin).
+**Known issues:** the two-path noise floor is zero by construction (twins bit-identical): any future (e) floor shifts seeds.
+GDScript hull-rest runs time out at 300 s under builder0 load (gangs).
+**Next steps (proposal):** a chain-aware give-way (count chained give-ways' seat drift on the jam census first, then the bar); M5a's
+nearest-seat choice alone, without the lead-out refusal, as a smaller arm.
+**Playtest:** nothing new to see (everything new is OFF). The s3866 case: `make settle-trace SETTLE_TRACE_CASES=crossing:5:click:3866:4`.
+**Lab worktrees (mine, removable):** godot-manoeuvre-{m5,m5on,trace,s3866,s3866on}.
+
+**s3866 READ DONE (2026-10-23, builder0 light native, n 1 per arm; `references/round38/manoeuvre/s3866-giveway/README.md`):** squad 4
+arrives at 33.9 s on main and never under `--deploy-latch=on` or `=anchor` (identical rows). The 20 m is NOT one pick and NOT a lead-out:
+Alpha_3 gives way four times in 10 s to squad-4 crews (spots (5,-9) (5,9) (3,6) (3,-6), 6.7-10.3 m each), each from where the last
+left it, seat 2.9 -> 7.5 -> 8.5 -> 15.6 -> ~20 m. Seatstep ON (lab 5a4158505) arrives in every arm (44.8 / 39.9 / 39.9 s) but failed
+its bar. Lever = chain-aware give-way (no spot farther from the seat for a crew already pushed off it); needs native's twin
+(begin_yield is mirrored); a candidate for next round, not built. Lab trees: `lab/manoeuvre-r38-s3866` d81472918, `-s3866on`.
+
 # Stream: manoeuvre (parked crews make way and come straight back; CPU screens out of the way)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 38** (C38.1) and in
@@ -45,6 +72,26 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**M1 (M5 v2) VERDICT: FAIL (2026-10-22 23:49, builder0 native J=6, ON 269d593c5 vs BASE 226e4c190, 120 jam pairs + 768
+hull-rest runs an arm).** Deciding seat metres 76,032 -> 72,255 (-3,777, -5.0 %; every map -4 to -6 %) < bar 4,881. Lead-out
+give-ways 1,291 -> 747 (the rule works as written; crews still end about as far from their seats). Every safety guard passes
+(deaths per team, kill share 0.521 -> 0.527, total deaths +6, wait, timeouts, contacts, jam deaths, arrived). (e) never settled:
+faced_attack_move +4 > +3.3 fails on its number; ambush / support_by_fire fail only on a short floor arm (GDScript gangs runs
+hit the 300 s timeout under load). D_floor = 0 on every task: GDScript and native are bit-identical per seed, so the two-path
+floor measures no noise (lesson for any next floor: shift the seeds). Per the bar: no re-run; **seatstep stays OFF**; nothing to
+merge. Evidence `references/round38/manoeuvre/m5-series/`. **builder0: my judged series ENDED 23:49 (unit inactive).**
+
+**s3866 read (approved by the orchestrator after R38.24; light, builder0, one run per arm):** lab `lab/manoeuvre-r38-s3866` d81472918 =
+settle e5a7f60b3 + a GIVEWAY row per probe give-way (lab only). Arms main / `--deploy-latch=on` / `--deploy-latch=anchor`, unit
+`manoeuvre-s3866` STARTED ~23:55, out `~/overnight-manoeuvre/r38/s3866/`.
+
+**MERGED: main 8bfb74e55 merges 84c79d76f (orchestrator).** **2026-10-22 ~14:10 (worker): THE STREAM IS GREEN at 84c79d76f (builder2, R38.2):** `make native check exited 0`, 3,055 passed / 0
+failed, 25 passed + 2 NOT JUDGED (perf-judge: builder2 is not a judging machine; scenario_perf loaded), sim-baseline passed (unmoved:
+everything new is OFF or tooling). Log `~/overnight-manoeuvre/r38/check_stream_84c79d76f.log`. Later commits are Status only.
+**Merge notes:** `element_commander.gd` (my grant, doctrine's file): `--seat-aside=v2` adds `SEAT_ASIDE_WAYS`, `ASIDE_SEATED_M`,
+`_member_ways()` and one branch in `_aside()`; default behaviour unchanged (v1 `on` unchanged). `mk/manoeuvre.mk`: +
+`manoeuvre-aside-trace`. Perf for this OFF change is judged with main's on builder0.
+
 **Start (worker, 2026-10-22):** stream/manoeuvre = main 5b20bfd62 (round 38's launch; HANDOFF: GREEN, all judged, builder0), so no
 baseline check (contract 1).
 
@@ -70,12 +117,20 @@ M2 trace census (`manoeuvre-m2trace`, jam 3 maps x 7001-7008, J=3, both arms) st
 18 fights) ~11:05. **M5 v2 ON check accepted (builder2, 269d593c5, R38.2):** `make native check exited 2` = 3,063 passed / 0
 failed, 0 native twin mismatches (seatstep yield cases incl.), sim-baseline MOVED yard/pit/archipelago/cut (expected, as round 37's
 ON tree), web-smoke missed first-sound 34.3 s > 30 s at 2 fps (load 27); web-smoke alone on builder2 at 269d593c5 PASSED.
-**The judged series STARTED 13:18 on builder0 (J=6, `manoeuvre-m5v2d`).** M2 trace and M7 dev read ENDED (~12:50 / ~11:50).
+**The judged series STARTED 13:18 on builder0 (J=6, `manoeuvre-m5v2d`).** R38.8: orders' G1 series shares builder0 (J <= 4); no light runs of mine there while both run. M2 trace and M7 dev read ENDED (~12:50 / ~11:50).
 
 **Native note for M5b (native, 2026-10-22):** `Manoeuvre.choose` / `behind` / `simulate` are MIRRORED in C++ since round 33
 (drive_native.cpp `manoeuvre_decide`, `man_choose`, ~3170-3270; twin test_native_manoeuvre.gd). A change there needs native's
 mirror before any series; only a change above Movement (the order issued, the seat) needs no twin. Native writes Manoeuvre.refused
 and `_behind_plan` / `_behind_since` back, so the M2 trace's reads hold on the native path.
+
+**Case from settle for after M5 v2 (orchestrator relay, 2026-10-22; information only):** crossing, 5-squad click, s3866,
+`--halt-terrain=latch` (settle b013518a6, `references/round38/settle/s2-neverin-trace-builder0/README.md`, builder0 light native
+e42ff30eb). On main a squad-3 tank yields 7 m and squad 4 is in at 34 s; with one squad-3 seat 1.5 m different, a squad-1 tank is the
+yielder, steps 20 m INTO the lane, and squad 4 never arrives in 90 s. To read after the verdict: is that 20 m pick one of YIELD_SPOTS'
+ahead lead-outs (10/16/24) that M5a's seatstep already refuses for a seated crew? If so, seatstep ON is the lever (re-run the case
+with `--traffic-on=seatstep`); if not, the lever is a cap on a give-way's spot distance / an off-lane preference. No light run on
+builder0 while R38.8 holds.
 
 **Plan (in order; smallest foundation first):**
 1. **M1 (M5 v2):** Bar M5 v2 filed below BEFORE any number. Lab trees on today's main: `lab/manoeuvre-r38-m5` (stream + M5a's
