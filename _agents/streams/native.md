@@ -143,5 +143,8 @@ check FAILed test_slot_light's setup "not in 30 s, at load 14.91 on 10 cores" (1
 R38.18 cleared by a solo re-run. That setup WAITS for quiet; it doesn't measure a bound, so a lower loaded line there (~1.0 per
 core, SLOT_LOADED_PER_CORE / QW_LOADED_PER_CORE) costs nothing in judging power. Not changed this round, per the orchestrator.
 
-**Side worktrees to remove at close:** ../godot-native-guard, -score, -k5 (and round 37's: -m5, -unstick, -cp371,
--rulespair, if they still exist).
+**Side worktrees (2026-10-23):** removed ../godot-native-twin, -cp371, -m5, -rulespair, -unstick and -k5 (their pair/native-*
+branches are kept; -k5's four modified test files were an overlay of committed versions, d9fde0b33 / 7a76164dc). Kept:
+../godot-native-guard and -score, the scratch trees guard.sh and run.sh reuse.
+
+**END STATE, round 38:** a7aab60be (green 0e1753e0f) merged alone as main 30c23d4c8.
