@@ -571,8 +571,13 @@ func test_g2v2_rear_places_stand_on_his_route_round_the_corner() -> void:
 	for x in [25, 40, 55, 70]:
 		print("GROUP_CLICK g2v2 z=-30 street at x=%d: %s" % [x, width_at.call(Vector3(x, 0, -30), Vector3(0, 0, 1))])
 	for i in after.size():
-		assert_true(SelectionSquads._distance_to_path(after[i], line) <= SelectionSquads.width("wedge", 5) * 0.5 + 1.0,
-				"place %d on his route's street (%s)" % [i, after[i]])
+		var on_x70 := after[i].z > -30.0 + 4.0
+		var sides: Array = width_at.call(Vector3(70, 0, after[i].z), Vector3(1, 0, 0)) if on_x70 \
+				else width_at.call(Vector3(after[i].x, 0, -30), Vector3(0, 0, 1))
+		var aside := (after[i].x - 70.0) if on_x70 else (after[i].z + 30.0)
+		assert_true(aside >= -float(sides[0]) - 0.5 and aside <= float(sides[1]) + 0.5 and absf(aside) <= 20.0,
+				"place %d in his route's street, centred (%s, %.1f m aside in %s)" % [i, after[i], aside, sides])
+		assert_true(after[i].z <= 50.0 + 0.5, "never back past his route's first click (%s)" % [after[i]])
 
 
 ## G3 v6 (round 39; R38.51's trace, crossing 3 route s5201): a cleared place must seat every crew without a re-seat.

@@ -335,8 +335,10 @@ static var GROUP_ROOM_REARMOST := OS.get_cmdline_user_args().has("--group-room=r
 static var GROUP_LEG_ROOM := OS.get_cmdline_user_args().has("--group-leg-room=starts")
 ## G2 (dev): `--group-route-line=on`: a shifted leg's column (and a gate's) stacks back along his clicked route.
 static var GROUP_ROUTE_LINE := OS.get_cmdline_user_args().has("--group-route-line=on")
-## G2 v2 (round 39; R38.47): `--group-route-corner=line`: on his route's line, a rank behind the click's own street stands
-## in the street the route runs down there: no wider than that street's narrowest width, and centred on the route.
+## G2 v2 (round 39; R38.47): `--group-route-corner=line`: a leg's column has room along his route (round its corners, no
+## further back than its first click), and a rank past the route's first corner stands centred on the route line, as wide
+## as the street there (dev read da9591207: single file there stacked terminus 5 avenue's rear squad behind its own
+## previous leg, 122 m off his route).
 static var ROUTE_CORNER := OS.get_cmdline_user_args().has("--group-route-corner=line")
 ## G2 (dev): `--group-gate=main`: a waypoint passed through keeps today's gate (round 34's, abreast across the corner at his
 ## click), not a column, and centred on his click, not on the mean of the leg column's places (dev read 2, bde30e68e,
@@ -438,7 +440,7 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	if float(by_along[by_along.size() - 1][0]) < COLUMN_NEAR_M:
 		bodies_kept += 1
 		return result
-	# G2 v2: on a leg, ranks behind the road's first corner stand single file on it.
+	# G2 v2: on a leg, ranks behind the road's first corner stand centred on it.
 	var corner := _first_turn_arc(road) if leg and ROUTE_CORNER else INF
 	for attempt in COLUMN_SQUEEZES + 1:
 		var laid := _lay_ranks(blocks, by_along, flat_click, ahead, straight, road, at_click, width_at, clamp, reached, widest,
@@ -503,15 +505,15 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		var sides: Array = at_click if start == 0 else _within_click(width_at.call(point, rank_across), at_click)
 		var clear := minf(float(sides[0]) + float(sides[1]), MAX_FRONTAGE_M)
 		var single := clear < widest
-		# G2 v2: past the corner of his route the rank stands single file on the route line.
-		single = single or (on_road and behind > corner + CORNER_SLACK_M)
+		# G2 v2: past the corner of his route the rank stands centred on the route line, as wide as that street.
+		var past_corner := on_road and behind > corner + CORNER_SLACK_M
 		var abreast := 1 if single else mini(MAX_ABREAST, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
 		abreast = by_along.size() - start if merged else mini(abreast, by_along.size() - start)
 		if RANK_SHIFT_HALF and not merged:
 			while abreast > 1 and absf(_rank_shift(abreast, widest, sides)) > widest * 0.5:
 				abreast -= 1
 		single = single and abreast == 1
-		var shift := 0.0 if single else _rank_shift(abreast, widest, sides)
+		var shift := 0.0 if single or past_corner else _rank_shift(abreast, widest, sides)
 		var centre := point + rank_across * shift
 		var rank_members: Array = []
 		for n in range(start, start + abreast):

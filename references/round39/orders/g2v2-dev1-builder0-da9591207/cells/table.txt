@@ -1,0 +1,62 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 route          g2        |  115.2 /   47.9   |    0   0 |     21.4 |               5.1 |            31.9 | 8.33 | 17.8
+crossing 3 route          g2v2      |  115.2 /   47.2   |    0   0 |     17.2 |               5.1 |            38.0 | 6.34 | 25.3
+crossing 3 route          main      |   28.3 /   22.2   |    0   0 |     18.0 |               3.9 |            34.1 | 1.23 | 64.7
+crossing 5 route          g2        |  137.6 /   76.9   |    1   0 |     24.0 |               4.7 |            41.1 | 28.84 | 3.8
+crossing 5 route          g2v2      |  105.3 /   76.9   |    0   0 |     35.7 |               4.7 |            42.5 | 4.37 | 26.7
+crossing 5 route          main      |   71.4 /   27.0   |    3   0 |     36.8 |               4.5 |            42.5 | 2.11 | 19.8
+locks 3 route             g2        |   86.2 /   44.2   |    0   0 |     13.2 |               4.7 |            51.7 | 2.39 | -18.2
+locks 3 route             g2v2      |   57.5 /   30.3   |    0   0 |     10.8 |               3.6 |            36.5 | 2.08 | 10.5
+locks 3 route             main      |   40.1 /   34.6   |    5   0 |     54.8 |               5.2 |            36.4 | 2.07 | 27.9
+locks 5 route             g2        |   80.6 /   68.8   |    0   0 |     31.4 |               3.9 |            43.6 | 7.57 | -18.5
+locks 5 route             g2v2      |   80.6 /   47.2   |    0   0 |     31.0 |               2.8 |            36.3 | 4.73 | -10.8
+locks 5 route             main      |   51.9 /   46.0   |    0   0 |     34.0 |               5.6 |            39.0 | 1.58 | 17.0
+terminus 3 route          g2        |   71.8 /   34.5   |    0   0 |     26.0 |               3.3 |            48.3 | 1.80 | -6.3
+terminus 3 route          g2v2      |   36.9 /   33.6   |    0   0 |     26.0 |               3.3 |            48.3 | 2.44 | 19.8
+terminus 3 route          main      |   36.9 /   33.9   |    0   0 |     16.7 |               2.4 |            36.2 | 1.84 | 19.8
+terminus 5 route          g2        |   80.7 /   68.7   |    0   0 |     26.1 |               6.4 |            38.4 | 1.93 | -19.9
+terminus 5 route          g2v2      |   68.4 /   39.6   |    0   0 |     53.0 |               4.1 |            63.6 | 7.68 | -6.4
+terminus 5 route          main      |   54.0 /   39.6   |    0   0 |     37.2 |               3.1 |            66.0 | 6.58 | 5.9
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 route          g2        |          27.3 |          13.8 |           17.3 |              10.2 |         125.0
+crossing 3 route          g2v2      |          27.1 |          13.8 |           17.3 |               9.2 |         124.7
+crossing 3 route          main      |          24.3 |          19.7 |           15.4 |               3.4 |          39.3
+crossing 5 route          g2        |          33.0 |          15.8 |            9.9 |               7.7 |         151.9
+crossing 5 route          g2v2      |          45.7 |          27.0 |           29.9 |               5.6 |         120.1
+crossing 5 route          main      |          46.8 |          23.4 |           32.3 |               5.0 |          89.5
+locks 3 route             g2        |          19.2 |          22.8 |           17.2 |              10.3 |          97.2
+locks 3 route             g2v2      |          20.8 |          22.5 |           11.4 |               5.1 |          71.2
+locks 3 route             main      |          64.8 |          18.6 |           19.4 |               9.1 |          53.3
+locks 5 route             g2        |          41.4 |          24.3 |           16.5 |               6.5 |          95.3
+locks 5 route             g2v2      |          32.7 |          16.5 |           15.4 |               7.1 |          89.7
+locks 5 route             main      |          44.0 |          20.7 |           11.1 |              12.3 |          76.7
+terminus 3 route          g2        |          31.2 |          28.3 |           12.2 |               8.4 |          78.6
+terminus 3 route          g2v2      |          31.2 |          28.3 |           12.2 |               6.1 |          53.7
+terminus 3 route          main      |          26.7 |          22.2 |           20.8 |               6.5 |          53.6
+terminus 5 route          g2        |          36.1 |          28.4 |           19.6 |               4.9 |          86.5
+terminus 5 route          g2v2      |          63.0 |          25.0 |           34.1 |               3.2 |          80.1
+terminus 5 route          main      |          44.1 |          29.3 |           18.7 |               9.2 |          75.4
+
+MEDIANS over seeds [3801, 3802, 3803] (n 3 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 route          g2          | 3 |         17.2 |     0 |          29.1 |          0.0 |         124.7 |              10.2 |    0   0 | 6.34
+crossing 3 route          g2v2        | 3 |         17.1 |     0 |          31.9 |          2.5 |         124.5 |               9.2 |    0   0 | 6.23
+crossing 3 route          main        | 3 |         15.5 |     0 |          30.0 |          7.0 |          38.3 |               3.4 |    0   0 | 1.18
+crossing 5 route          g2          | 3 |         22.4 |     0 |          40.8 |          9.6 |         151.5 |               7.7 |    1   0 | 13.41
+crossing 5 route          g2v2        | 3 |         33.5 |     0 |          37.1 |         12.7 |         119.8 |               5.6 |    0   0 | 4.24
+crossing 5 route          main        | 3 |         36.4 |     0 |          40.2 |         17.8 |          86.5 |               5.0 |    3   0 | 1.95
+locks 3 route             g2          | 3 |         12.4 |     0 |          28.3 |          3.7 |          93.6 |              10.3 |    0   0 | 1.93
+locks 3 route             g2v2        | 3 |         10.0 |     0 |          25.2 |         10.2 |          71.0 |               5.1 |    0   0 | 1.53
+locks 3 route             main        | 3 |         39.9 |     0 |          33.6 |         17.2 |          48.4 |               9.1 |    5   0 | 1.74
+locks 5 route             g2          | 3 |         23.3 |     0 |          35.6 |         14.8 |          93.7 |               6.5 |    0   0 | 7.16
+locks 5 route             g2v2        | 3 |         19.9 |     0 |          30.2 |         10.2 |          80.7 |               7.1 |    0   0 | 3.21
+locks 5 route             main        | 3 |         22.2 |     0 |          33.8 |          8.1 |          74.9 |              12.3 |    0   0 | 1.41
+terminus 3 route          g2          | 3 |         14.4 |     0 |          38.6 |          0.0 |          53.7 |               8.4 |    0   0 | 1.42
+terminus 3 route          g2v2        | 3 |         22.7 |     0 |          38.6 |          5.7 |          51.6 |               6.1 |    0   0 | 1.80
+terminus 3 route          main        | 3 |         16.6 |     0 |          31.3 |         13.8 |          50.8 |               6.5 |    0   0 | 1.45
+terminus 5 route          g2          | 3 |         20.2 |     0 |          32.6 |         12.6 |          82.6 |               4.9 |    0   0 | 1.61
+terminus 5 route          g2v2        | 3 |         42.2 |     0 |          33.0 |         17.2 |          66.0 |               3.2 |    0   0 | 4.67
+terminus 5 route          main        | 3 |         33.6 |     0 |          65.2 |         17.1 |          71.6 |               9.2 |    0   0 | 5.52
+
+EQUALITY click cells: 0 identical across arms, 0 differ
