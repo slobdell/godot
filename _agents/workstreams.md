@@ -102,6 +102,16 @@ block: ask the orchestrator first.
   builder). A native scoreboard row for a merged main waits for the series to finish; native and doctrine settle between them
   whether to pause it at a chunk boundary and run that row first. builder0 gets no part of the series.
 
+- **R39.2 (2026-10-23 ~22:10 PDT): CP39.0 LANDED; the laptop pairing ban lifts with N4.** Native's base: main 8952c3d64, builder2
+  21:13-21:56 PDT, 320/320 fights, 0 lost, 0 SCRIPT ERRORs; `references/scoreboard/guards/8952c3d64.fights.jsonl` (+ .json) on
+  stream/native 407a156cb. Lines: blob 41 % (+/- 10 %), kill ratio 0.78; turtle 38 % (+/- 12 %), kr 0.82. Paired v 686150ed2 (rules
+  OFF): blob -5.6 points (se 2.9; 16 flips to a loss / 7 to a win; McNemar p 0.047), kr 0.85 -> 0.78; turtle -3.7 (se 3.8), inside
+  noise. Every round-39 rules-ON bar pairs against this file. **R38.25's ban (never pair a laptop read with a builder read) lifts
+  for runs through `make` on any tree that contains N4 (a577e3776, vendored CORE-MATH, equal to builder0's libm on all 2^32 float
+  inputs; laptop sim-baseline 13/13 on the builders' lines)**, from the moment main holds N4 and is green. A tree without N4 keeps
+  the ban, and so does any non-make driver that runs its own Godot binary. The scoreboard's fights/moves/orders part for 8952c3d64
+  (run.sh, ~1.5 h builder2) waits for a doctrine chunk-boundary pause; nothing is gated on it.
+
 ## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 
 **Goal: he keeps control of his army, and the defender really defends.** From round 37 (HANDOFF *ROUND 37 CLOSED*): his playtest's
