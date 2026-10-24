@@ -53,8 +53,10 @@ for l in open(sys.argv[1]):
 for a in arms:
     v = list(runs.get(a, {}).values())
     if v:
-        print(f"PERF_AB mean arm={a} n={len(v)} ai_usec_per_tick={st.mean(x[0] for x in v):.0f} "
-              f"(sd {st.pstdev([x[0] for x in v]):.0f}) per_ref_ms={st.mean(x[1] for x in v):.0f} (sd {st.pstdev([x[1] for x in v]):.0f})")
+        u = [x[0] for x in v]; q = [x[1] for x in v]
+        print(f"PERF_AB mean arm={a} n={len(v)} ai_usec_per_tick={st.mean(u):.0f} (sd {st.pstdev(u):.0f}, "
+              f"range {min(u)}-{max(u)} = {100 * (max(u) - min(u)) / st.mean(u):.1f} % of the mean) "
+              f"per_ref_ms={st.mean(q):.0f} (sd {st.pstdev(q):.0f}, range {min(q)}-{max(q)})")
 base = runs.get(arms[0], {})
 for a in arms[1:]:
     rs = [r for r in runs.get(a, {}) if r in base]

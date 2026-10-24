@@ -66,6 +66,9 @@ waits on it); perf-judge of the native trig change on a quiet builder0 (main's o
     reads ~7,7xx, walk batch 1's merges (a77395a49, 3b2bce5eb, e7bb2adcb, 25baad035, ffec9488f, ba6a54c1b) for the first step.
   - The first launch (831ad5471) was stopped on a busy box: 6 of 6 attempts REFUSED (2.53-2.59x), nothing judged.
   - Prior (not a result): a laptop micro-bench puts CORE-MATH at 8-16 ns a call; its fma through libm's PLT costs ~0.5 ns.
+  - Single readings, builder0 (the orchestrator's): 8952c3d64 7,687 (R38.55); 76f42a9c3 8,366 (idle 74 %, load 4.25);
+    2518811d0 7,899 (idle 51 %, load 5.34). Both mains have N4, so the +679 looks like single-reading spread. Not a verdict:
+    the A/B decides, and its summary now prints each arm's range as a % of its mean (a single reading's noise).
 - **GREEN: 0bb755a4f** (builder0, `make check exited 0`, 3169 passed / 0 failed, 25 of 26 targets passed, the 26th
   NOT JUDGED; 13 sim-baseline maps unmoved, determinism 258cc8b1c957a796). Perf-judge was NOT JUDGED (busy box, 3 refusals at
   1.78-2.06x), and so was scenario_perf, which only perf-judge judges here. 1f4fdac27 after it is docs only.
