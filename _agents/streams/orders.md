@@ -66,7 +66,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **R39.8: the two bars run IN PARALLEL** when CP39.1 lands: G1 v5 on builder0 light J4, G3 v6 on builder2 (J ~14, Spot:
   re-queue on preemption). Driver: `tests/control/orders_bar.sh <b0|b2> <g1v4|g3> <arm> "<seeds>" <out dir outside build/>
   [jobs]`. It runs streets + his click, re-runs a part that is incomplete or preempted, splits terminus_his and yard_open, and
-  judges. Native's builder2 row yields to the G3 series. **Settle's DEPLOY_HOLD (2478e2eef) ships ON before CP39.1**, so both
+  judges. Native's builder2 row yields to the G3 series.
+  - **Dry run** (builder2, J14, 2fedb9b65 = main 76f42a9c3 + orders, dev seed 3801, n 1, G3 v6's arm): 36 of 36 runs, native on;
+    the judge reads 18 cells. Not a verdict (n 1, dev seed). Its one failing line is a known risk for Bar G3 v6: worst twitch on
+    crossing 5 route 10.7 v 22.1 m (as G3 v5's crossing 3 route; DEPLOY_HOLD ON may move it). Results:
+    `~/overnight-orders/dry-b2-2fedb9b65/` (outside the repo). **Settle's DEPLOY_HOLD (2478e2eef) ships ON before CP39.1**, so both
   arms of both bars carry it; name it in each bar's run line.
 - **parked_redeals duck exclusion** (ea51cc7c5; settle's o2 trace: every o2 "re-deal" was one crew's UnansweredFire duck,
   14-18 m out and back, with the halt's seats unchanged): a parked crew's goal move out to its duck point, or back from a seat
