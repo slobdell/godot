@@ -219,6 +219,10 @@ const RING_SEGMENTS := 72
 const RING_COLOR := Color(0.55, 0.9, 1.0)
 
 
+## Rule looks drawn since load, by slot (the captures' check that a staged look reached the screen).
+static var rule_draws := {}
+
+
 func _rule_looks(tank: Tank, camera: Camera3D, s: float) -> void:
 	var friendly: bool = tank.team == controls.team
 	if FeedbackLook.rule("sight") == "ring" and friendly and _selected.has(tank.name):
@@ -226,6 +230,7 @@ func _rule_looks(tank: Tank, camera: Camera3D, s: float) -> void:
 	if FeedbackLook.rule("fire") == "wedge":
 		var shot := feedback.moving_shot_of(tank.name, _now)
 		if not shot.is_empty():
+			rule_draws["fire"] = int(rule_draws.get("fire", 0)) + 1
 			_wedge(shot, camera, s)
 	if FeedbackLook.rule("slowed") == "brake":
 		var slow := FeedbackReader.slowed(tank) * Tank.PIN_SLOW_MAX

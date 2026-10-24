@@ -41,7 +41,7 @@ var _site := Vector3.ZERO
 var _yaw := 0.0
 ## Round 39: name -> [throttle, turn, aim target name or ""] driven every physics frame (the rules' slots).
 var _drivers := {}
-## Round 39: [shooter name, target name] pairs whose rounds are staged once a second (the fire slot), and a tick count.
+## Round 39: [shooter name, target name] pairs whose rounds are staged three times a second (the fire slot), and a tick count.
 var _volleys: Array = []
 var _volley_tick := 0
 ## Round 39: the units kept selected every physics frame (the scripted run's own orders reselect its army).
@@ -86,7 +86,7 @@ func _physics_process(_delta: float) -> void:
 		if not _hold_health.has(tank.name) and tank.health < tank.max_health * 0.6:
 			tank.health = tank.max_health
 	_volley_tick += 1
-	if not _volleys.is_empty() and _volley_tick % SimClock.TICK_RATE == 0:
+	if not _volleys.is_empty() and _volley_tick % (SimClock.TICK_RATE / 3) == 0:
 		for pair: Array in _volleys:
 			_stage_round(String(pair[0]), String(pair[1]))
 	if not _select.is_empty():
@@ -289,6 +289,8 @@ func _stage_round(shooter_name: String, target_name: String) -> void:
 	fx.link._on_weapon_fired({"tick": _match.tick, "shooter": shooter_name, "weapon": "cannon", "fire_model": "shell",
 			"muzzle": [from.x, from.y, from.z], "direction": [toward.x, toward.y, toward.z], "projectile_id": 950000 + _volley_tick,
 			"speed_mps": 0.0, "range": 60.0, "suppression_applied": 0.0})
+	print("FEEDBACK_VOLLEY %s speed=%.1f/%.1f look=%s recorded=%s" % [shooter_name, shooter.speed(), shooter.max_forward_speed,
+			FeedbackLook.rule("fire"), UnitBars.rule_draws])
 
 
 ## One cannon round into each target at once: from ahead (front), from its flank, from behind (rear).
@@ -388,13 +390,24 @@ func _shoot_rule_looks(slot: String, centre := Vector3.ZERO, zoom_out := 1.0) ->
 			_pose(distance, _staged_centre(centre))
 			await _seconds(SETTLE_S + 0.6)
 			_pose(distance, _staged_centre(centre))
+			_volley_now()
 			await _frames(2)
 			_save("%s_%s_%s" % [slot, look, "rts" if distance != CLOSE_M else "close"])
 		if clip_frames > 0 and look != "none":
 			var wide := DISTANCE_M * zoom_out
 			_pose(wide, _staged_centre(centre))
 			await _seconds(SETTLE_S)
-			await _clip("%s_%s" % [slot, look], func(_frame: int) -> void: _pose(wide, _staged_centre(centre)))
+			await _clip("%s_%s" % [slot, look], func(frame: int) -> void:
+				_pose(wide, _staged_centre(centre))
+				if frame % 4 == 0:
+					_volley_now())
+
+
+## Every staged volley at once (a capture is about to be taken: a slow render jumps most of a sim second a frame, so a
+## round fired on the clock is rarely still in its wedge when a frame is saved).
+func _volley_now() -> void:
+	for pair: Array in _volleys:
+		_stage_round(String(pair[0]), String(pair[1]))
 
 
 ## The staged crews' middle as a site offset (the rules' drivers circle, so the frame follows them), nudged by `bias`.
