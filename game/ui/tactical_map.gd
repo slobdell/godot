@@ -369,6 +369,7 @@ func set_tactical_view(enabled: bool) -> void:
 		if lead != null and camera is FollowCamera:
 			camera.rotation = Vector3.ZERO
 			(camera as FollowCamera).follow(lead)
+	_lift_frame()  # fit (or drop) the overview's lift now, not a frame late
 
 
 # ---- Input --------------------------------------------------------------------------
