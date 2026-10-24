@@ -57,3 +57,31 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Report (in progress, 2026-10-23 night)
+- **S1 route-clear built, OFF** (`--seat-route-clear`, env SEAT_ROUTE_CLEAR=on; a9df7ffa0). `make quick-remote` on builder0 at
+  a9df7ffa0: 128 passed / 0 failed (lint of the 103 dependent scripts, the diff's tests, combat-smoke). Lab on the traced cases: running.
+
+### Plan (ordered)
+1. S1 route-clear: pure lab (`tests/test_settle_route_clear.gd`) -> the traced cases (`make settle-lab`, builder0 light) -> bar
+   filed here before numbers -> full check on the named hash -> series on 6001-6024 (builder0 light, J <= 4).
+2. S1 on top: `--deploy-fit=street` re-read on 1's arm (the lab's `fitclear` arm first; no new bar if 1 fails).
+3. Trace o2's crossing re-deals (R38.42) before any Bar H re-file.
+4. Stretch: a parked crew re-dealt after a loss.
+
+### Decisions (S1 route-clear)
+- **Who counts as "following":** every other element of the same team with a move still to drive (its transit route from where
+  its crews stand, else a navmesh path to its spot, then each queued leg's path). A superset of "same order": `task_frame` can't
+  name one order across queued legs (each leg is assigned on its own frame), and a squad of a later order that must pass is
+  blocked just the same. Squads with nothing left to drive and arrived count as parked halts (their seats).
+- **Widths:** a seat (judged GROUNDED, via the situation's `ground_seat`, so main's relaid seats count) is blocked within 7 m of a
+  remaining route's centre line (the group lay's travel clearance, SelectionSquads.PACK_TRAVEL_CLEAR_M) or within 9 m of a
+  parked seat (its halt clearance, HALT_CLEAR_M).
+- **Where a blocked seat goes:** the nearest clear candidate in 2 m steps out to 24 m, at each distance first straight out of
+  what blocks it, then back along the squad's own arrival leg; dry, on its own bank, >= 0.75 spacing from its squad's other
+  seats. None found: it stays (counted, `route_seats_unclear`).
+- **When:** the ground is read ONCE, on the deploy's own update, and kept in the deploy (`clear_of`); every later update of that
+  halt (a re-lay after a loss) clears against the same ground, so a parked squad never shuffles because another squad drives by.
+- **Manoeuvre's switch state (C39.2):** the lab and bar run with manoeuvre's chain-aware give-way in main's state (OFF; not on
+  main at launch).
+
