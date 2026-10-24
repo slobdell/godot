@@ -63,6 +63,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   (settle's S1 failed its bar; it waits on manoeuvre's M1 or settle's next version). The G2 bar file waits on its re-read on
   CP39.1. R39.3: one laptop Godot run at a time,
   `flock /tmp/tank-squad-laptop-godot.lock <cmd>`; everything else on the builders.
+- **CP39.1 is further off (2026-10-24):** manoeuvre's Bar M1 FAILED on its never-in guard (2 -> 7; `--giveway-chain` stays OFF).
+  Manoeuvre is tracing it. My bars still wait.
+- **On CP39.1 (orchestrator, approved):** merge main only after native's 0bb755a4f (full-check lock + relay-smoke race fix) is
+  on it. Run the tree's full check on whichever builder's check lock frees first (`make gcp-remote T="native check"` on
+  builder2 is fine), not in builder0's queue. The orchestrator announces both.
+- **Settle's S1 trace (A / B) read against G3 / G2 (code read, no run):** G3's place_clear never tests against a passing
+  squad's path. It clears place-to-place spacing (`_too_close`) and checks for decks on the moved place's own step, so (A),
+  a corridor as one centre line, has no counterpart. (B), a cleared place's leg meeting a passer head-on, applies in kind: G3
+  checks nothing for it. It is a candidate for the dry run's crossing 5 route twitch (untraced). G2 lays places on his drawn
+  route, the same assumption as a plain route. No code change before the bars (G3 v6 is filed as built).
 - **R39.8: the two bars run IN PARALLEL** when CP39.1 lands: G1 v5 on builder0 light J4, G3 v6 on builder2 (J ~14, Spot:
   re-queue on preemption). Driver: `tests/control/orders_bar.sh <b0|b2> <g1v4|g3> <arm> "<seeds>" <out dir outside build/>
   [jobs]`. It runs streets + his click, re-runs a part that is incomplete or preempted, splits terminus_his and yard_open, and
