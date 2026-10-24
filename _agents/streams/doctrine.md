@@ -37,7 +37,11 @@ looks like the game cheating. Smart AI on both sides: symmetric improvements shi
    turtle not up; G2/G2t kills and length per faction; G3 none line; the lab guard; G4 perf). A pass ships ON (symmetric).
 4. **D4 hull-down re-read with rules ON** (K2, `--hulldown`), on the same base, if the series budget allows. Report only unless a bar
    is filed first.
-5. **Stretch:** CPU low-cover seats when defending (gate: 2 se or cover_struck >= 8 a fight).
+5. **D5 the peek-and-return loop under R1 (from R38.55's check).** With sight ON, scenario_cover's fights_from_cover went back to
+   cover 1 time against its bar of 2, so R38.55 pinned sight OFF in that one scenario. Find out why: a stopped crew sees ~110 %
+   only after ~2 s, so a short peek may be blind. Decide whether the loop or the scenario's bar should change, and unpin it.
+   Also, scout_suppress::test_target_crossing (pending) passes with the rules ON; promote it if it holds.
+6. **Stretch:** CPU low-cover seats when defending (gate: 2 se or cover_struck >= 8 a fight).
 
 ## How to verify
 
