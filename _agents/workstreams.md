@@ -116,6 +116,17 @@ block: ask the orchestrator first.
   REDEAL_TRACE counts a surviving deployed seat moving > 6 m, before ducks. Counter: main loss re-lays >= 20. Deciding: held's
   re-lays <= 20 % of main's. Guards: other-cause re-lays <= main + 3; kills and losses both sides within 1.645 se; 0 never started.
   Pass: ON on a new hash with one full check.
+- **H v2 RESULT: PASS -> ships ON** (pending the ship hash's full check). Series on cd7a272d0 (= dbc022357's code), builder0 light J4,
+  seeds 6025-6048, 72 fights an arm, `make native settle-h2 exited 0`: loss re-lays 288 -> 0 (367 crews moved -> 0; counter main >= 20
+  met, deciding <= 20 % met); other causes 0 -> 0; his kills 5.39 -> 5.31, his losses 6.99 -> 6.64, CPU losses 5.44 -> 5.33 a fight
+  (all within 1.645 se); 0 unstarted. Reported: parked_redeals 172 -> 100, reseats 244 -> 1. Ship hash 2478e2eef (DEPLOY_HOLD ON;
+  `--deploy-hold=off` = round 38's re-lay). What he'll see: a squad that loses a tank stops reshuffling its seats.
+- **M1 RESULT (manoeuvre, `--giveway-chain`): FAILED on G5, stays OFF.** Tree 879caa818 (game code = main 76f42a9c3 + nothing),
+  builder0 light, native, 11:10-13:18 PDT, DEPLOY_HOLD OFF, seat-route-clear OFF. Census (terminus/locks/sumps x 6101-6112, 36
+  paired fights): D chained seat drift 1248.9 -> 42.7 m (-8.4 se) PASS; G1 give-way deaths 90 -> 106 PASS; G2 stuck 260 -> 265
+  PASS; G3 contacts 27012 -> 26969 PASS; G4 PASS. Orders probe (6113-6124, 144 paired runs): G5 never-in 2 -> 7 FAIL (new: locks 3
+  click s6124, locks 3 route s6113, terminus 5 route s6117/s6118/s6121); G6 all-in median +0.0 s PASS. Cause untraced; candidate: a
+  passer wedged behind parked crews that now refuse (882 refusals ON). Dev wedge_trace follows.
 - **G1 v5 GROUP LEAD (orders, filed 2026-10-24; orders.md):** arm G1 v4's + `--group-lead=drive`; tree = first green commit at or
   after CP39.1; FRESH seeds 6201-6212 (n 12 a cell); `orders_judge.py g1v4`, G1 v4's deciding lines and guards unamended (places
   outside <= 25 % of base; route_left_m <= 50 %; re-dealt 0; R36.6 guards; contacts <= base x 1.1 + 5). Known risk: terminus 5
@@ -166,6 +177,22 @@ block: ask the orchestrator first.
 
 - **R39.6 (2026-10-24 ~11:00 PDT):** D3 is decided (FAIL), so its none line (G3, a guard for a ship that can't happen) is dropped;
   builder2 goes to native's 8952c3d64 run.sh row and the trig perf attribution's builder2 needs, once D4 hull-down ends.
+
+- **R39.7 (2026-10-24 ~11:20 PDT, feedback's finding): GRANT `game/modes/skirmish_mode.gd` to feedback** for one change: the touch
+  map gets the same `rig.vision` / `vision_inset` hookup desktop has (skirmish_mode.gd ~638), so its overview frames his force (his
+  rule: never zoom past what the force can see) rather than the arena centre. Before: his spawn crews sat off the bottom of a
+  phone screen in every layout. Desktop byte-identical. A follow-up commit after feedback's current full check, with its own check.
+
+- **R39.8 (2026-10-24 ~11:10 PDT): orders' two bars run in parallel, one per builder, once CP39.1 lands.** G1 v5 on builder0 light
+  (as filed), G3 v6 on builder2 (free after doctrine's D4, R39.6; native's run.sh row and trig A/B go first if they're still queued).
+  Seeds and judges are unchanged; a machine difference doesn't matter (builders both glibc 2.43, deterministic sims; each bar pairs
+  within its own run). Manoeuvre's M1 verdict ETA ~16:30-17:00 PDT.
+
+- **R39.9 (2026-10-24 ~13:30 PDT): no C39.2 switch passed (S1 route-clear and M1 both FAILED), so CP39.1 = main with settle's
+  DEPLOY_HOLD ON** (the seat fix that did pass, Bar H v2; on main since 2316bc4f7). Orders' G1 v5 and G3 v6 run NOW on that base,
+  amended before any number on their seeds (6201-6224 unseen): tree = stream/orders with main >= 2316bc4f7 merged, its own green
+  full check; both arms carry DEPLOY_HOLD ON, giveway-chain OFF, seat-route-clear OFF. Everything else in both bars as filed.
+  Parallel per R39.8 (G1 v5 builder0 light, G3 v6 builder2).
 
 ## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 

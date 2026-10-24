@@ -1,0 +1,95 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          held      |   27.4 /   16.9   |   44   0 |     22.2 |               2.7 |            47.1 | 6.81 | 58.4
+crossing 3 click          main      |   27.4 /   16.9   |   48   0 |     22.2 |               2.7 |            58.1 | 4.60 | 58.4
+locks 3 click             held      |   46.0 /   34.4   |   26   0 |     59.1 |               3.8 |            64.7 | 11.36 | 28.4
+locks 3 click             main      |   46.0 /   34.4   |   32   0 |     94.2 |               3.8 |            68.2 | 5.49 | 28.4
+terminus 3 click          held      |   37.3 /   34.4   |    0   0 |        - |               3.5 |            60.0 | 10.96 | 17.1
+terminus 3 click          main      |   37.3 /   34.4   |    0   0 |     37.3 |               3.5 |            70.8 | 11.11 | 17.1
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          held      |          32.2 |          29.7 |           47.2 |               3.1 |          63.4
+crossing 3 click          main      |          32.2 |          29.7 |           59.5 |               3.0 |          43.3
+locks 3 click             held      |             - |          29.0 |              - |               5.3 |          76.3
+locks 3 click             main      |             - |          34.0 |              - |               5.2 |          62.5
+terminus 3 click          held      |             - |          37.6 |              - |               3.9 |          65.0
+terminus 3 click          main      |             - |          36.9 |              - |               3.9 |          79.6
+
+MEDIANS over seeds [6025, 6026, 6027, 6028, 6029, 6030, 6031, 6032, 6033, 6034, 6035, 6036, 6037, 6038, 6039, 6040, 6041, 6042, 6043, 6044, 6045, 6046, 6047, 6048] (n 24 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          held        | 24 |         16.6 |     0 |          31.6 |         32.3 |          37.0 |              -1.0 |   44   0 | 3.47
+crossing 3 click          main        | 24 |         16.6 |     0 |          34.6 |         32.5 |          24.2 |              -1.0 |   48   0 | 3.37
+locks 3 click             held        | 24 |         28.0 |     0 |          34.7 |         22.6 |          40.8 |              -1.0 |   26   0 | 2.90
+locks 3 click             main        | 24 |         27.5 |     0 |          36.5 |         25.9 |          43.8 |              -1.0 |   32   0 | 2.63
+terminus 3 click          held        | 24 |         21.5 |     1 |          40.0 |         29.8 |          48.7 |              -1.0 |    0   0 | 4.44
+terminus 3 click          main        | 24 |         21.6 |     0 |          38.0 |         31.8 |          44.4 |              -1.0 |    0   0 | 3.79
+
+EQUALITY click cells: 3 identical across arms, 69 differ
+  DIFFER crossing 3 click seed 6025
+  DIFFER crossing 3 click seed 6026
+  DIFFER crossing 3 click seed 6028
+  DIFFER crossing 3 click seed 6029
+  DIFFER crossing 3 click seed 6030
+  DIFFER crossing 3 click seed 6031
+  DIFFER crossing 3 click seed 6032
+  DIFFER crossing 3 click seed 6033
+  DIFFER crossing 3 click seed 6034
+  DIFFER crossing 3 click seed 6035
+  DIFFER crossing 3 click seed 6036
+  DIFFER crossing 3 click seed 6037
+  DIFFER crossing 3 click seed 6038
+  DIFFER crossing 3 click seed 6039
+  DIFFER crossing 3 click seed 6040
+  DIFFER crossing 3 click seed 6041
+  DIFFER crossing 3 click seed 6042
+  DIFFER crossing 3 click seed 6043
+  DIFFER crossing 3 click seed 6044
+  DIFFER crossing 3 click seed 6045
+  DIFFER crossing 3 click seed 6046
+  DIFFER crossing 3 click seed 6047
+  DIFFER crossing 3 click seed 6048
+  DIFFER locks 3 click seed 6025
+  DIFFER locks 3 click seed 6026
+  DIFFER locks 3 click seed 6027
+  DIFFER locks 3 click seed 6028
+  DIFFER locks 3 click seed 6029
+  DIFFER locks 3 click seed 6030
+  DIFFER locks 3 click seed 6031
+  DIFFER locks 3 click seed 6032
+  DIFFER locks 3 click seed 6034
+  DIFFER locks 3 click seed 6035
+  DIFFER locks 3 click seed 6036
+  DIFFER locks 3 click seed 6037
+  DIFFER locks 3 click seed 6038
+  DIFFER locks 3 click seed 6039
+  DIFFER locks 3 click seed 6040
+  DIFFER locks 3 click seed 6041
+  DIFFER locks 3 click seed 6042
+  DIFFER locks 3 click seed 6043
+  DIFFER locks 3 click seed 6044
+  DIFFER locks 3 click seed 6045
+  DIFFER locks 3 click seed 6046
+  DIFFER locks 3 click seed 6047
+  DIFFER locks 3 click seed 6048
+  DIFFER terminus 3 click seed 6025
+  DIFFER terminus 3 click seed 6026
+  DIFFER terminus 3 click seed 6028
+  DIFFER terminus 3 click seed 6029
+  DIFFER terminus 3 click seed 6030
+  DIFFER terminus 3 click seed 6031
+  DIFFER terminus 3 click seed 6032
+  DIFFER terminus 3 click seed 6033
+  DIFFER terminus 3 click seed 6034
+  DIFFER terminus 3 click seed 6035
+  DIFFER terminus 3 click seed 6036
+  DIFFER terminus 3 click seed 6037
+  DIFFER terminus 3 click seed 6038
+  DIFFER terminus 3 click seed 6039
+  DIFFER terminus 3 click seed 6040
+  DIFFER terminus 3 click seed 6041
+  DIFFER terminus 3 click seed 6042
+  DIFFER terminus 3 click seed 6043
+  DIFFER terminus 3 click seed 6044
+  DIFFER terminus 3 click seed 6045
+  DIFFER terminus 3 click seed 6046
+  DIFFER terminus 3 click seed 6047
+  DIFFER terminus 3 click seed 6048

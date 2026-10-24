@@ -105,10 +105,25 @@ broker-smoke: $(BROKER_DEPS) ## Real broker process + scripted host/players: rel
 # room on a local broker; clients join with the code it prints.
 RELAY_SMOKE_HOST_FLAGS ?= --demo --bots=2
 
+# Round 39 (native, feedback's red relay-smoke at a2b560896: the clients joined WU2K7 from a STALE host log while this run's
+# host opened PSVVQ). `cmd > log &` returns before the child has opened (and truncated) the log, so the first poll can read
+# the last run's file. Every log a smoke waits on is removed before its process starts, and the wait reads the process's
+# own stdout, /proc/<pid>/fd/1, while it lives (exactly what THIS pid wrote), the path only after it exits. Until the child
+# has made its redirect, its fd 1 is still make's stdout (a pipe grep would block on): that poll reads nothing.
+# $(call own_log,PIDVAR,LOG): $$src = what to read this poll ("" = not yet).
+own_log = src=""; if kill -0 $$$(1) 2>/dev/null; then \
+		[ "$$(readlink /proc/$$$(1)/fd/1 2>/dev/null)" = "$(abspath $(2))" ] && src=/proc/$$$(1)/fd/1; else src=$(2); fi
+# $(call wait_own_line,PIDVAR,LOG,PCRE,POLLS): up to POLLS x 0.2 s; the first match in $$found (empty: never).
+define wait_own_line
+	found=""; for i in $$(seq 1 $(4)); do $(call own_log,$(1),$(2)); \
+		[ -n "$$src" ] && found=$$(grep -oP '$(3)' "$$src" 2>/dev/null | head -1 || true); [ -n "$$found" ] && break; sleep 0.2; done
+endef
+
 # Round 37 (native N4): wait for the broker of log $(1) (pid $$broker) to print BROKER_LISTENING, or FAIL LOUDLY with its log. Until
 # round 37 the 5 s wait fell through silently, and a dead broker surfaced 30 s later as "host never opened a room".
 define broker_listening
-	listening=""; for i in $$(seq 1 50); do grep -q BROKER_LISTENING $(1) && { listening=1; break; }; \
+	listening=""; for i in $$(seq 1 50); do $(call own_log,broker,$(1)); \
+		[ -n "$$src" ] && grep -q BROKER_LISTENING "$$src" 2>/dev/null && { listening=1; break; }; \
 		kill -0 $$broker 2>/dev/null || break; sleep 0.1; done; \
 	if [ -z "$$listening" ]; then echo "broker never printed BROKER_LISTENING in 5 s (process $$(kill -0 $$broker 2>/dev/null && echo alive || echo exited)); its log $(1):"; \
 		cat $(1); kill $$broker 2>/dev/null || true; exit 1; fi
@@ -116,18 +131,19 @@ endef
 
 # Start a broker + host, wait for the room code in $$code. Recipe fragment (one shell).
 define relay_host_up
-	$(REAP_GODOT); $(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) $(1) > $(BUILD_DIR)/$(2)-broker.log 2>&1 & broker=$$!; \
+	$(REAP_GODOT); rm -f $(BUILD_DIR)/$(2)-broker.log $(BUILD_DIR)/$(2)-host.log; \
+	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) $(1) > $(BUILD_DIR)/$(2)-broker.log 2>&1 & broker=$$!; \
 	$(call broker_listening,$(BUILD_DIR)/$(2)-broker.log); \
 	$(GODOT) --headless --path . -- --host --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) $(RELAY_SMOKE_HOST_FLAGS) > $(BUILD_DIR)/$(2)-host.log 2>&1 & host=$$!; \
 	trap 'kill $$host $$broker 2>/dev/null || true' EXIT; \
-	code=""; for i in $$(seq 1 150); do code=$$(grep -oP 'TANK_SQUAD_ROOM code=\K\w+' $(BUILD_DIR)/$(2)-host.log || true); [ -n "$$code" ] && break; sleep 0.2; done; \
+	$(call wait_own_line,host,$(BUILD_DIR)/$(2)-host.log,TANK_SQUAD_ROOM code=\K\w+,150); code=$$found; \
 	if [ -z "$$code" ]; then echo "host never opened a room:"; cat $(BUILD_DIR)/$(2)-host.log; exit 1; fi; \
 	echo "host opened room $$code"
 endef
 
 # Run bot_client_check.gd clients in the background, one log each: $(call relay_client,NAME,FLAGS)
 define relay_client
-	$(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
+	rm -f $(BUILD_DIR)/$(1).log; $(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
 		--join=$$code --relay=ws://127.0.0.1:$(SMOKE_BROKER_PORT) $(2) > $(BUILD_DIR)/$(1).log 2>&1 & \
 	pids="$$pids $$!"
 endef
@@ -168,8 +184,8 @@ relay-linger-arm: import $(BROKER_DEPS)
 	$(call relay_host_up,,relay-linger-$(LINGER)); \
 	pids=""; \
 	$(call relay_client,relay-linger-$(LINGER)-early,--demo --expect-tanks=4 --timeout=60 --linger=$(LINGER)); \
-	early=$$pids; \
-	if [ "$(LINGER)" = 0 ]; then wait $$early; else for i in $$(seq 1 300); do grep -q 'NET_CHECK lingering' $(BUILD_DIR)/relay-linger-$(LINGER)-early.log && break; sleep 0.2; done; fi; \
+	early=$${pids# }; \
+	if [ "$(LINGER)" = 0 ]; then wait $$early; else $(call wait_own_line,early,$(BUILD_DIR)/relay-linger-$(LINGER)-early.log,NET_CHECK lingering,300); fi; \
 	pids=""; \
 	$(call relay_client,relay-linger-$(LINGER)-late,--demo --expect-tanks=5 --timeout=20 --linger=0); \
 	$(call relay_verdict,relay-linger-$(LINGER),relay-linger-$(LINGER)-late)
@@ -213,12 +229,13 @@ web-relay-smoke: export-web import $(BROKER_DEPS) $(WEB_SMOKE_DEPS) ## Browser j
 WEB_HOST_SMOKE_FLAGS ?= demo&bots=2
 web-host-smoke: export-web import $(BROKER_DEPS) $(WEB_SMOKE_DEPS) ## Browser HOSTS via /relay; a headless client joins and checks the wasm host's simulation
 	mkdir -p $(BUILD_DIR)/screenshots
+	rm -f $(BUILD_DIR)/web-host-smoke-broker.log $(BUILD_DIR)/web-host-smoke-browser.log; \
 	$(NODE) $(BROKER_DIR)/src/main.mjs --port=$(SMOKE_BROKER_PORT) > $(BUILD_DIR)/web-host-smoke-broker.log 2>&1 & broker=$$!; \
 	$(PYTHON) tools/serve_web.py $(BUILD_DIR)/web $(SMOKE_PORT) 127.0.0.1 $(SMOKE_NET_PORT) $(SMOKE_BROKER_PORT) >/dev/null 2>&1 & web=$$!; \
 	CHROME=$(CHROME) $(NODE) $(WEB_SMOKE_DIR)/smoke.mjs "http://127.0.0.1:$(SMOKE_PORT)/?host&$(WEB_HOST_SMOKE_FLAGS)" \
 		$(BUILD_DIR)/screenshots/web-host.png 40 TANK_SQUAD_ROOM > $(BUILD_DIR)/web-host-smoke-browser.log 2>&1 & browser=$$!; \
 	trap 'kill $$broker $$web $$browser 2>/dev/null || true' EXIT; \
-	code=""; for i in $$(seq 1 450); do code=$$(grep -oP 'TANK_SQUAD_ROOM code=\K\w+' $(BUILD_DIR)/web-host-smoke-browser.log || true); [ -n "$$code" ] && break; sleep 0.2; done; \
+	$(call wait_own_line,browser,$(BUILD_DIR)/web-host-smoke-browser.log,TANK_SQUAD_ROOM code=\K\w+,450); code=$$found; \
 	if [ -z "$$code" ]; then echo "the browser never opened a room:"; cat $(BUILD_DIR)/web-host-smoke-browser.log; exit 1; fi; \
 	echo "browser opened room $$code"; \
 	status=0; $(GODOT) --headless --path . --script res://tests/net/bot_client_check.gd -- \
