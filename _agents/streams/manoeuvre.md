@@ -167,6 +167,43 @@ Read on branch 879caa818 (game code c35cc93ac = main 76f42a9c3 merged clean, mai
   Candidate (untraced): seated crews that M1 holds near their seats close the lane a late squad used to get through.
   Trace: `make manoeuvre-probe-wedge` (below).
 
+### ROUND-40 INPUT (M1 v2): the G5 trace. Cause = wedged behind seated crews M1 holds; NOT settle's S1 drive-back
+`make manoeuvre-probe-wedge` (8981b769c, builder0 light J4, native, 13:21-13:24 PDT, DEV read on the bar's own cells: the 5 new
+never-in runs + the 2 old ones, both arms, n 1 a run). Files: `references/round39/manoeuvre/probe-wedge/` (table.txt, one jsonl a run).
+Tool: `tests/manoeuvre/probe_wedge.gd` = orders' probe, UNCHANGED, plus a per-tick read. Every crew under way that moved
+< 0.3 m in the last second is "still". Its partner (wedge_trace's) is classed state/way/seat, where seat = the partner is within 8 m
+of its own seat (`Movement.yield_seat`) or off it.
+- All 14 runs reproduce the bar's arrival times exactly (deterministic), so the 5 regressions are real and repeatable.
+- The 5 regressed squads (s6124 sq1, s6113 sq1, s6117 sq5, s6118 sq1, s6121 sq5), crews' still time, OFF -> ON:
+  **163 -> 581 s.** By partner:
+  - parked at home (seated, not giving way): 22 -> 258 s (14 % -> 44 %).
+  - giving way / holding at home: 42 -> 140 s.
+  - driving or slow, off its seat (what settle's drive-back would read as): 43 -> 109 s.
+  - yielding off its seat: 32 -> 43 s.
+  The top partner is another squad's crew 74 % -> 82 % of the time.
+- Examples (ON):
+  - s6118 sq1: Alpha_2 sits 52 s behind Bravo_1 (sq2) parked at its seat; Alpha_4 sits 62 s behind Delta_3 (sq4).
+  - s6124 sq1: Alpha_1 and Alpha_3 sit 40-48 s behind Bravo_2 (sq2) parked at home.
+  - s6121 sq5: Echo_1 and Echo_3 sit 50-63 s behind Delta_1 (sq4), which is in a give-way at home with no travel: a hold that
+    never clears.
+- The rule fires in every ON run (chain_refusals 15-101 a run; OFF 0), and parked_refusals rise (s6117 1 -> 36, s6118 1 -> 121,
+  s6121 0 -> 42).
+- **Mechanism: a late squad drives past squads already seated. M1 keeps a seated crew within off_seat + 0.5 m of its seat, so it
+  refuses or holds instead of moving out of the lane. The passer is told to go round (CP1a2), but in a street ORCA has no way round, so
+  the last squad wedges behind the refusers until the window ends.** Under OFF, the same crews were shoved down the street (the drift
+  M1 removes, -96.6 %), and that shove is what let the late squad through, 35-78 s late.
+- **Not settle's drive-back:** "driving back off its seat" grows less (+66 s) than "seated at home" (+236 s) plus "holding at home"
+  (+98 s), and most of the off-seat drive partners are the passer's OWN squad mates (e.g. s6124 Alpha_2 behind Alpha_3, 46 s
+  driving/cross/off). The 2 old never-ins (s6119, s6115) show the same picture ON (parked/home dominant); OFF they read as own-squad
+  slow/driving partners instead.
+- **M1 v2 directions (round 40, untested):**
+  1. Let a chained crew give way past its reach when the asker has been refused N times (or for S seconds): it would rather drift
+     than block.
+  2. Apply the reach only to a crew whose chain index is >= 2 (the drift is in the long chains: the 0-4 m bins hardly moved).
+  3. Allow a far spot when it lies on the seat's side of the street, behind the passer's travel (it clears the lane without being
+     shoved down it).
+  The bar should keep G5 and add a lab cell from these 5 runs (deterministic) as the test-first case.
+
 ### M3 (M7 re-file): NOT re-filed; stays written up as blocked (decision 2026-10-24, no new runs)
 Round 38's dev read (builder0 native, 53159326e v b5775051e, locks/gorge/terminus x 3801-3806, 18 fights) already has the
 seated half: SEATED screen give-ways (seat_m < 10) **v1 250 -> v2 241 (-3.6 %)**. Re-filing the deciding line on the seated half
