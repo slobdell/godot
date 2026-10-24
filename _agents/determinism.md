@@ -29,6 +29,12 @@
   (`772dfb5198e15909` vs `c9cfbb1a221f5c94`) while each is repeatable. Godot calls the system's `libm` for trig, and
   glibc versions differ in the last bits. So `tests/baselines/sim_state_hash.txt` holds lines per glibc version;
   builder0's are canonical, and `make sim-baseline` skips machines with no recorded line.
+- **Round 39 (native N4, R39.2): one float trig on every machine, so the laptop simulates the builders' fights.** The whole
+  difference was five float functions (`atan2f acosf asinf atanf tanf`), which glibc >= 2.41 made correctly rounded
+  (CORE-MATH). The native library now carries CORE-MATH's five, hidden; on a glibc older than 2.41, `mk/native.mk`
+  LD_PRELOADs the same code into every process make starts and sets `SIM_BASELINE_KEY=glibc-2.43`. Proof and design:
+  `native.md` "Machine-independent trig" (the laptop's sim-baseline equals the builders' 13 lines with it; 10 of 13 move
+  without it). What that does and does not cover is the rule in `remote_builds.md` (R38.25's entry).
 
 ## Per-map baseline (round 18, ship)
 

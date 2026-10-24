@@ -42,6 +42,20 @@ var _seconds_run := 0.0
 var _printed := false
 var _deaths := 0
 var _by_cause := {}
+## Round 39 (manoeuvre M1's census, measurement only, both arms): every give-way begun by a crew with a seat
+## (Movement.yield_seat(): its move_to point, else its face slot), fixed at the start. off_m = its flat distance from the seat when
+## the give-way began; chain = give-ways in a row since it was last within CHAIN_BACK_M of that seat (0 = the first); push_m =
+## the farthest it got from the seat during the give-way minus off_m; end_m - off_m = where it was when the give-way ended. Parked =
+## the tick before, phase arrived or an order that is not a move_to (the crews givewaychain is for). A GIVEWAY_CHAIN row per
+## parked give-way begun more than CHAIN_ROW_M off its seat; GIVEWAY_CHAINS totals in JAM_CENSUS (`giveway_chain`).
+const CHAIN_BACK_M := 2.0
+const CHAIN_MOVED_M := 3.0
+const CHAIN_ROW_M := 4.0
+const CHAIN_BINS: Array[float] = [2.0, 4.0, 6.0, 10.0, 20.0]
+var _gw_prev := {}  # crew -> [yield_to, yield_from, phase, order type] last tick
+var _gw_open := {}  # crew -> {seat, off, max, chain, parked, asker, tick, spot}
+var _gw_chain := {}  # crew -> [seat, give-ways since last back by it]
+var _gw := {}
 
 
 func _initialize() -> void:
@@ -76,7 +90,8 @@ func _report() -> void:
 			"standoffs": _standoffs, "aborts": _aborts, "abort_contacts": _abort_contacts,
 			"friendly_contacts": _friendly_contacts, "pass_contacts": _pass_contacts, "held_deaths": _held_deaths, "by_sub_cause": _by_sub_cause,
 			"underfire_on": not Traffic.off("underfire"), "route_arms": Movement.route_arms(),
-			"holdfire_on": not Traffic.off("holdfire"), "traffic": Traffic.report()}))  # T8 (R35.7): the hold's own report
+			"holdfire_on": not Traffic.off("holdfire"), "traffic": Traffic.report(),
+			"giveway_chain_on": Movement.giveway_chain_on(), "giveway_chain": _gw_totals()}))  # T8 (R35.7): the hold's own report
 
 
 ## far_census.gd's death_cause, verbatim (traffic X1, round 34).
@@ -156,6 +171,7 @@ func _run() -> void:
 		_seconds_run = (tick - started) / float(SimClock.TICK_RATE)
 		_observe(game_match, last_seen, moving_at, jam_since, hits_at, base, first_seen)
 		_standoffs_and_aborts(game_match, prev_yield, standing, open_aborts, in_contact)
+		_giveway_chains(game_match)
 		if seconds > 0.0 and _seconds_run > seconds:
 			break
 	_report()
@@ -313,3 +329,95 @@ func _standoffs_and_aborts(game_match: Match, prev_yield: Dictionary, standing: 
 			closed.append(ab)
 	for ab: Array in closed:
 		open_aborts.erase(ab)
+
+
+static func _chain_bin(off_m: float) -> String:
+	var low := 0.0
+	for edge: float in CHAIN_BINS:
+		if off_m <= edge:
+			return "%d-%d" % [int(low), int(edge)]
+		low = edge
+	return "%d+" % int(low)
+
+
+func _gw_add(key: String, ep: Dictionary, end_m: float) -> void:
+	var row: Dictionary = _gw.get_or_add(key, {"n": 0, "push_m": 0.0, "end_m": 0.0, "out_m": 0.0})
+	var off_m := float(ep["off"])
+	row["n"] = int(row["n"]) + 1
+	row["push_m"] = float(row["push_m"]) + maxf(float(ep["max"]) - off_m, 0.0)
+	row["end_m"] = float(row["end_m"]) + (end_m - off_m)
+	row["out_m"] = float(row["out_m"]) + maxf(end_m - off_m, 0.0)
+
+
+func _gw_close(crew: String, here: Vector3, why: String) -> void:
+	var ep: Dictionary = _gw_open[crew]
+	_gw_open.erase(crew)
+	var end_m := _flat(here, ep["seat"])
+	var parked := bool(ep["parked"])
+	_gw_add("all", ep, end_m)
+	_gw_add("parked" if parked else "travelling", ep, end_m)
+	if parked:
+		_gw_add("parked:off:" + _chain_bin(float(ep["off"])), ep, end_m)
+		_gw_add("parked:chain:%d" % mini(int(ep["chain"]), 3), ep, end_m)
+		if float(ep["off"]) > CHAIN_ROW_M:
+			_gw_add("parked:chained", ep, end_m)
+			print("GIVEWAY_CHAIN " + JSON.stringify({"crew": crew, "asker": ep["asker"], "tick": ep["tick"], "chain": ep["chain"],
+					"off_m": snappedf(float(ep["off"]), 0.1), "push_m": snappedf(float(ep["max"]) - float(ep["off"]), 0.1),
+					"end_m": snappedf(end_m, 0.1), "spot": ep["spot"], "end": why}))
+
+
+func _gw_totals() -> Dictionary:
+	for crew: String in _gw_open.keys():
+		var ep: Dictionary = _gw_open[crew]
+		_gw_close(crew, ep["last"], "fight_end")
+	var out := {}
+	for key: String in _gw:
+		var row: Dictionary = _gw[key]
+		out[key] = {"n": row["n"], "push_m": snappedf(float(row["push_m"]), 0.1), "end_m": snappedf(float(row["end_m"]), 0.1),
+				"out_m": snappedf(float(row["out_m"]), 0.1)}
+	return out
+
+
+func _giveway_chains(game_match: Match) -> void:
+	var tick := game_match.tick
+	for crew: String in _gw_open.keys():
+		var t := game_match.tanks.get_node_or_null(crew) as Tank
+		if t == null or not t.is_alive():
+			var ep: Dictionary = _gw_open[crew]
+			_gw_close(crew, ep["last"], "died")
+	for node in game_match.tanks.get_children():
+		var tank := node as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		var mover := Movement.of(tank)
+		if mover == null:
+			continue
+		var crew := String(tank.name)
+		var here := tank.global_position
+		var seat := mover.yield_seat()
+		var order_type := String(mover.ctl.move_order.get("type", ""))
+		# The chain count: reset by the seat (back within CHAIN_BACK_M) or a new seat (a new order).
+		var chain: Array = _gw_chain.get(crew, [])
+		if seat == Vector3.INF:
+			_gw_chain.erase(crew)
+			chain = []
+		elif chain.is_empty() or _flat(chain[0], seat) > CHAIN_MOVED_M or (mover.yield_to == "" and _flat(here, seat) <= CHAIN_BACK_M):
+			chain = [seat, 0]
+			_gw_chain[crew] = chain
+		var prev: Array = _gw_prev.get(crew, ["", Vector3.INF, "", ""])
+		var started: bool = mover.yield_to != "" and (String(prev[0]) != mover.yield_to or prev[1] != mover._yield_from)
+		if _gw_open.has(crew):
+			var ep: Dictionary = _gw_open[crew]
+			if mover.yield_to == "" or started:
+				_gw_close(crew, here, "new" if started else "ended")
+			else:
+				ep["max"] = maxf(float(ep["max"]), _flat(here, ep["seat"]))
+				ep["last"] = here
+		if started and seat != Vector3.INF:
+			var off_m := _flat(here, seat)
+			var parked := String(prev[2]) == "arrived" or String(prev[3]) != "move_to"
+			_gw_open[crew] = {"seat": seat, "off": off_m, "max": off_m, "chain": int(chain[1]) if not chain.is_empty() else 0,
+					"parked": parked, "asker": mover.yield_to, "tick": tick, "spot": mover.yield_spot, "last": here}
+			if not chain.is_empty():
+				chain[1] = int(chain[1]) + 1
+		_gw_prev[crew] = [mover.yield_to, mover._yield_from, mover.phase, order_type]

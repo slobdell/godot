@@ -42,6 +42,11 @@ down a street, and give a 2-waypoint route round a corner.
 
 settle's deploy/halt functions, manoeuvre's movement/traffic, doctrine's brains, `native/**`, `tests/baselines/**`. Don't push.
 
+## Requests to other streams
+
+- **settle (G3 v6): DONE** (4066132c4, `ElementPlan.deploy_preview`). Merge note: orders carries a verbatim copy in
+  `element_plan.gd` (da9591207); keep one copy.
+
 ## Waiting on the lead
 
 Nothing.
@@ -49,3 +54,75 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### NOW (2026-10-23 ~22:40 PDT)
+- **Plan (backlog order):** G1 v5 lab + dev read (done) -> G2 v2 lab (done) + dev read (running) -> G3 v6 lab (done) + dev
+  read -> full check on a named hash -> wait for CP39.1 (C39.3) -> judged series one at a time. All three switches are OFF.
+- **G1 v5 `--group-lead=drive`** (ef68308d1): a column's places go to its squads in the order their crews reach the click by
+  ground. In `untangle_whole` every squad of a column is one knot, and the first key is `lead_breaks` (a squad placed behind
+  one it leads by > 6 m), then crossings, then drive. Decided: lead = the mean of the squad's crews' navmesh drives (the bulk
+  of the squad, not one forward scout).
+  - Lab (laptop GDScript): pins today's straight-line swap (Bravo to the head) and the fix.
+  - **s4710 lab** (builder0 light J3, ef68308d1 + G2 work OFF, crossing 3 click, n 1;
+    `references/round39/orders/g1v5-lab-s4710-builder0-ef68308d1/`): v4 Bravo never in, contacts 3,756 -> v5 all in 9.7 s,
+    twitch 0, contacts 71 (main 875, all in 17.3 s).
+  - **Dev read 1** (builder0 light J4 at load 20-47, 93a6c2283, dev seeds 3804-3809, n 6, 12 cells;
+    `references/round39/orders/g1v5-dev1-builder0-93a6c2283/`):
+    - v5 keeps v4's deciding lines v main: outside 14 -> 1; metres outside 1,011 -> 168; re-dealt 12 -> 0.
+    - Contacts: main 5,970, v4 5,651, v5 5,013. v4 -> v5 passes every probe guard.
+    - Both arms fail one guard: terminus 5 route never-in 1 v 2 (s3805 squad 1). No column was laid on that run and v4 / v5
+      rows match, so it's v4's squads-whole on the route's first plain click (R38.44), not v5. Not traced yet.
+- **G2 v2 `--group-route-corner=line`** (v2c, 6ac4b67d2): on a leg the column's room is read along the road (his route), no
+  further back than its squads' rearmost start; ranks past the route's first corner (> 30 deg) stand centred on it.
+  - Lab (Terminus navmesh, his east route's last leg): v1's rear rank stood two abreast 32 m either side of the x=70 street;
+    v2 puts every place on the route line.
+  - **Dev read 1** (builder0 light J4, da9591207, dev seeds 3801-3803, n 3; `references/round39/orders/g2v2-dev1-builder0-da9591207/`):
+    - his routes' metres off his drawn path: main 5,022, g2 v1 5,107, v2 3,302; never-in 9 / 6 / 3;
+    - his 5-squad east: 2,965 / 3 never -> 876 / 0; his 5-squad west: 1,127 / 6 -> 849 / 0;
+    - route cells: off 2,404 -> 1,462, never-in 1 -> 0.
+    - Costs: his 5 avenue 142 -> 682 m (the rear squad's place at the army's start); his 3 east never-in 3 (g2 v1's
+      too: a whole-squad swap on a leg); terminus 5 route worst twitch 18.7 -> 34.1.
+  - **Dev read 2** (4ce8784d5; `g2v2b-dev2-builder0-4ce8784d5/`): v2b (rank centred, not single file) = v2 on every cell.
+    `--group-lead=drive` on legs is worse (his routes never-in 3 -> 6), so G1 v5 stays a plain-click rule.
+  - v2c fixes the avenue cause (laptop trace, not pairable: squad 4 on the route, every squad in). Dev read 3 running.
+- **G3 v6 `--place-clear-seat=on`** (da9591207): a moved place must deploy in the given place's shape and spacing, worst leg
+  <= given + 2 m (or 8 m); else it steps back along the squad's own leg; else it's kept. It uses settle's
+  `ElementPlan.deploy_preview`, built on my request and copied verbatim from stream/settle 4066132c4.
+  - Trace (laptop, n 1, not pairable; `references/round39/orders/g3v6-trace-laptop-650e43521/`): v5's moved place read
+    lanes / 10 m v the given place's dense / 7.5 m, so the deploy dealt the crews across (worst leg 16 m v main's 6.7).
+  - With v6 (laptop, n 1): squad 2 keeps its place, all in at 17.3 s.
+  - A shapes-only estimate (no preview) couldn't separate the places (11.0 v 13.0 m); removed.
+
+### Bars (filed here before any judged number; the orchestrator records them on main)
+- **Bar G1 v5 GROUP LEAD (orders, round 39; filed 2026-10-24 before any number on its seeds; code ef68308d1, all OFF).**
+  What he would see: select all and click a street. Every squad lands in that street, stacked back along it, the squad in
+  front taking the far place, so no squad parks on the way of one still to pass, and every squad gets in.
+  - **Arm:** `column:--group-lay=column,--group-rank-shift=half,--group-whole=click,--group-clear=reached,--group-lead=drive`
+    (G1 v4's arm + v5).
+  - **Tree:** the first commit at or after CP39.1 merged into stream/orders (C39.3) whose builder0 full check is green. G2 and
+    G3 switches OFF in both arms; settle's and manoeuvre's CP39.1 switches as main has them, both arms.
+  - **Probe:** `make native orders-probe`, arms `main:` v the arm above, builder0 light lane J <= 4,
+    `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make variable, **FRESH seeds 6201-6212** (n 12 a cell). Cells: as Bar G1 v4 (the 12
+    street cells, his click as `terminus_his` 3 / 5, yard_open 3 / 5 x click / route).
+  - **Judge:** `orders_judge.py g1v4` (street + his rows; yard_open rows as the 5th argument). Counter, deciding lines (over
+    the click cells + his click: places outside <= 25 % of base; route_left_m <= 50 %; re-dealt 0 over the click cells) and
+    guards (every R36.6 guard per cell over all 14 cells, as filed; contacts <= base x 1.1 + 5; yard_open identical) are G1
+    v4's, unamended. The judge's all-in guard now passes a cell where the base never got every squad in (be1219fa7); the
+    never-in line still judges that cell.
+  - **Known risk:** terminus 5 route never-in (dev read 1: s3805 squad 1, v4's whole first click, not v5's ordering; laptop
+    does not reproduce). Taken as the honest price of a fresh read, as R38.44.
+  - **Plus:** paired top-down shots of his click, main v column, looked at. A pass ships ON.
+- **Bar G3 v6 PLACE_CLEAR SEAT (orders, round 39; filed 2026-10-24 before any number on its seeds; code da9591207, all
+  OFF).** What he would see: no squad parks on top of another, and a squad moved to make room parks the way it would have
+  where it was sent, with no shuffle after it stops.
+  - **Arm:** `g3:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on,--place-clear-seat=on`.
+  - **Tree:** as Bar G1 v5 (after CP39.1, green builder0 full check; G1 / G2 OFF in both arms).
+  - **Probe:** as Bar G3 v5 (the same 18 cells), **FRESH seeds 6213-6224** (n 12 a cell).
+  - **Judge:** `orders_judge.py g3`: the counter, deciding line (pairs < 12 m <= 25 % of base), offset guards, R36.6 guards
+    (twitch included) and contacts as Bar G3 v5, unamended.
+  - **Dev evidence:** dev read 1 (builder0, b7bef53b1, dev seeds 3804-3809): main -> g3v6 PASS.
+  - A pass ships ON.
+- **G2 v2: no bar yet.** Dev read 3 (584d23588) passes both deciding lines (his routes off 5,022 -> 2,523, <= 60 %; route
+  cells 2,404 -> 1,432, <= 75 %) and fails guards on 9 cells (end foreign, twitch). A column stands squads closer than
+  main's spread body, and the stops in the street are CP39.1's cause. It re-reads on CP39.1 first; a bar needs a fresh block
+  (6201-6224 are G1's and G3's).

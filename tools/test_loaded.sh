@@ -21,6 +21,12 @@ out=$(LOADED_LOAD=12.6 LOADED_CORES=10 bash "$ld"); s=$?
 [ "$s" = 1 ] && ok "builder0 at 12.6 (the round-33 pass): quiet" || bad "b0 12.6" "exit $s: $out"
 out=$(LOADED_LOAD=20 LOADED_CORES=16 bash "$ld" 1.2); s=$?
 [ "$s" = 0 ] && ok "a per-core bound as the argument (1.2)" || bad "arg" "exit $s: $out"
+# Round 39 (N5): the setup line (test_slot_light case 5, test_quiet_window's live cases) is 1.0 per core: the 1.49 per
+# core that FAILed orders' check (R38) is quiet at the bounds' 1.5 and loaded at the setup's 1.0.
+out=$(LOADED_LOAD=14.9 LOADED_CORES=10 bash "$ld" 1.0); s=$?
+[ "$s" = 0 ] && ok "builder0 at 14.9 (1.49 per core): loaded at the setup line 1.0" || bad "setup 1.0" "exit $s: $out"
+out=$(LOADED_LOAD=14.9 LOADED_CORES=10 bash "$ld"); s=$?
+[ "$s" = 1 ] && ok "... and quiet at the bounds' 1.5" || bad "bound 1.5" "exit $s: $out"
 out=$(bash "$ld"); s=$?
 [[ "$out" =~ ^load\ [0-9.]+\ on\ [1-9][0-9]*\ cores ]] && { [ "$s" = 0 ] || [ "$s" = 1 ]; } && ok "this box: $out" || bad "live" "exit $s: $out"
 
