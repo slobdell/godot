@@ -41,6 +41,9 @@ var _site := Vector3.ZERO
 var _yaw := 0.0
 ## Round 39: name -> [throttle, turn, aim target name or ""] driven every physics frame (the rules' slots).
 var _drivers := {}
+## Round 39: [shooter name, target name] pairs whose rounds are staged once a second (the fire slot), and a tick count.
+var _volleys: Array = []
+var _volley_tick := 0
 ## Round 39: the units kept selected every physics frame (the scripted run's own orders reselect its army).
 var _select: Array[String] = []
 
@@ -82,10 +85,14 @@ func _physics_process(_delta: float) -> void:
 		# Staged targets are not there to die: the Emitter's 18 dps and the hit scene's rounds would wreck them mid-shot.
 		if not _hold_health.has(tank.name) and tank.health < tank.max_health * 0.6:
 			tank.health = tank.max_health
+	_volley_tick += 1
+	if not _volleys.is_empty() and _volley_tick % SimClock.TICK_RATE == 0:
+		for pair: Array in _volleys:
+			_stage_round(String(pair[0]), String(pair[1]))
 	if not _select.is_empty():
-		var picker := get_tree().current_scene.find_child("RtsControls", true, false)
+		var picker := get_tree().current_scene.find_child("TacticalMap", true, false)
 		if picker != null:
-			picker.get("selection").units.assign(_select)
+			picker.get("selection").set_units(_select)
 	for driver_name: Variant in _drivers:
 		var driver := _match.tanks.get_node_or_null(NodePath(String(driver_name))) as Tank
 		if driver == null:
@@ -220,8 +227,9 @@ func _settle_slot() -> void:
 	_emitter = null
 	_drivers.clear()
 	_select.clear()
+	_volleys.clear()
 	FeedbackLook.use_rules("")
-	var controls := get_tree().current_scene.find_child("RtsControls", true, false)
+	var controls := get_tree().current_scene.find_child("TacticalMap", true, false)
 	if controls != null:
 		controls.get("selection").units.clear()
 	_hold_suppression.clear()
@@ -267,6 +275,20 @@ func _hits() -> void:
 		await _clip("hit_on", func(frame: int) -> void:
 			if frame % roundi(CLIP_FPS * 1.2) == 2:
 				_strike(targets))
+
+
+## A cannon round from `shooter`'s muzzle toward `target`, through the effects' own fired event (the round is not simulated).
+func _stage_round(shooter_name: String, target_name: String) -> void:
+	var fx := FxWorld.existing()
+	var shooter := _match.tanks.get_node_or_null(NodePath(shooter_name)) as Tank
+	var target := _match.tanks.get_node_or_null(NodePath(target_name)) as Tank
+	if fx == null or shooter == null or target == null:
+		return
+	var from := shooter.global_position + Vector3.UP * 1.6
+	var toward := (target.global_position + Vector3.UP - from).normalized()
+	fx.link._on_weapon_fired({"tick": _match.tick, "shooter": shooter_name, "weapon": "cannon", "fire_model": "shell",
+			"muzzle": [from.x, from.y, from.z], "direction": [toward.x, toward.y, toward.z], "projectile_id": 950000 + _volley_tick,
+			"speed_mps": 0.0, "range": 60.0, "suppression_applied": 0.0})
 
 
 ## One cannon round into each target at once: from ahead (front), from its flank, from behind (rear).
@@ -340,6 +362,8 @@ func _fire() -> void:
 	var stopped := _spawn("FbStopped", Match.Team.GREEN, "tank", Vector3(16, 0, 10), Vector3.FORWARD)
 	_drivers[mover.name] = [0.7, 1.0, String(target.name)]  # circles on the spot, firing on the move
 	_drivers[stopped.name] = [0.0, 0.0, String(target.name)]
+	# Staged rounds (as the hit slot stages its impacts): each crew's real speed decides whether it fired on the move.
+	_volleys = [[String(mover.name), String(target.name)], [String(stopped.name), String(target.name)]]
 	await _shoot_rule_looks("fire", Vector3(0, 0, -6))
 
 
