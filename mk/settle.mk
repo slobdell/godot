@@ -181,3 +181,22 @@ settle-s2v4: ## Round 38 (settle, R38.19): S2 v4's series (main v anchor, seeds 
 		SETTLE_V3_ARMS="main:--deploy-trace anchor:--deploy-latch=anchor,--deploy-trace" \
 		SETTLE_V3_SEEDS="$$(seq -s " " 4301 4312)" SETTLE_V3_FIGHT_SEEDS="$$(seq -s " " 4313 4324)" \
 		SETTLE_V3_CENSUS_SEEDS="4301 4302 4303"
+
+# Round 39 (settle S1, route-clear halt seats): the lab on the traced cases. SETTLE_LAB_CASES entries "map:squads:route:seed",
+# every SETTLE_LAB_ARMS entry "name:flag,flag" (orders' probe, --deploy-trace added) -> build/settle-lab/<case>-<arm>.log and
+# lab.txt: per run, each squad's arrived_s (-1 = never in) and the seats the deploys cleared. Builder0 light: J <= 4.
+SETTLE_LAB_CASES ?= terminus:5:route:4505 crossing:5:route:3958 crossing:5:route:3806
+SETTLE_LAB_ARMS ?= main: clear:--seat-route-clear fit:--deploy-fit=street fitclear:--deploy-fit=street,--seat-route-clear
+SETTLE_LAB_JOBS ?= 4
+SETTLE_LAB_FLAGS ?=
+.PHONY: settle-lab
+settle-lab: native-for-check import ## Round 39 (settle S1): orders' probe on SETTLE_LAB_CASES x SETTLE_LAB_ARMS -> build/settle-lab/lab.txt
+	@rm -rf $(BUILD_DIR)/settle-lab && mkdir -p $(BUILD_DIR)/settle-lab
+	@echo ">> settle-lab on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | flags '$(SETTLE_LAB_FLAGS)'" | tee $(BUILD_DIR)/settle-lab/lab.txt
+	@for c in $(SETTLE_LAB_CASES); do for a in $(SETTLE_LAB_ARMS); do echo "$$c $$a"; done; done | xargs -P $(SETTLE_LAB_JOBS) -L 1 sh -c \
+		'map=$$(echo $$0 | cut -d: -f1); n=$$(echo $$0 | cut -d: -f2); route=$$(echo $$0 | cut -d: -f3); seed=$$(echo $$0 | cut -d: -f4); \
+		name=$${1%%:*}; flags=$$(echo "$${1#*:}" | tr "," " "); \
+		timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$map --seed=$$seed \
+			--probe-squads=$$n --probe-route=$$route --probe-arm=$$name --deploy-trace $$flags $(SETTLE_LAB_FLAGS) \
+			> $(BUILD_DIR)/settle-lab/$$map-$$n-$$route-s$$seed-$$name.log 2>&1 || true'
+	@$(PYTHON) tests/settle/settle_lab.py $(BUILD_DIR)/settle-lab | tee -a $(BUILD_DIR)/settle-lab/lab.txt
