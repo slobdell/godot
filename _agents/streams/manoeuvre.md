@@ -48,6 +48,38 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### CLOSE REPORT (round 39, 2026-10-24 PDT): DONE for the round
+**Green:** the M1 code is native's pair bb8043686 (builder2 full check 3143/0; merged to main, main 76f42a9c3 GREEN builder0
+3169/0, merged here as c35cc93ac). Since then the branch adds only Status, references and the trace tool (8981b769c). Per the
+orchestrator, that is gated by a builder0 light `quick` (hash below), not a full check. The orchestrator merges docs and references at
+the close.
+- **Backlog:**
+  1. M1 `--giveway-chain`: built, twinned, census, s3866, bar. **FAIL on G5** (never-in 2 -> 7); deciding D -96.6 % at -8.4 se;
+     G1-G4 and G6 PASS. Stays DEFAULT_OFF. Cause traced (round-40 input below): late squads wedge behind seated crews the rule holds.
+     Not settle's drive-back.
+  2. M1 on S1: moot (M1 failed; the orchestrator does not merge it).
+  3. M7: not re-filed (seated half -3.6 % on the dev read).
+  4. Stretch (the 82 long ORCA episodes): NOT RUN. The instrument is ready (wedge_trace partner classes, f22e662e7, plus
+     `partner_table.py`), but the light lane went to orders' G1 v5. Run: `make native manoeuvre-wedge-trace WEDGE_AT=locks,terminus,sumps
+     WEDGE_RANGE=7001-7008` on builder0 light, then `python3 tests/manoeuvre/partner_table.py <dir>`.
+- **Decisions:**
+  - CHAIN_M 4.0 (from the census: chained = parked give-ways begun > 4 m off the seat).
+  - Refuse rather than hold when every spot is farther.
+  - The judge was committed before the series.
+  - No re-run on the bar seeds after the FAIL.
+- **Questions for the lead:** none. **Requests:** none open (native's twin landed).
+- **Known issues:** `--giveway-chain` regresses late squads' arrival (G5). Don't turn it on.
+- **Playtest (to see the failure):** `make skirmish ARENA=terminus SKIRMISH_FLAGS="--giveway-chain"` vs without, or the
+  probe cell `godot --path . --script res://tests/orders_probe.gd -- --arena=terminus --seed=6118 --probe-squads=5
+  --probe-route=route --probe-arm=chain --giveway-chain` (squad 1 never gets in; drop the flag and it's in at 35.3 s).
+- **Next (round 40):** M1 v2, directions in the round-40 input section. Test first on the 5 deterministic G5 runs
+  (`make manoeuvre-probe-wedge PW_CELLS=...`), then a fresh-seed bar that keeps G5.
+- **Merge notes:**
+  - New files: `tests/manoeuvre/probe_wedge.gd` (+ .uid), which extends orders' `tests/orders_probe.gd` and reads its
+    `_match`/`_squads`/`_order_tick`; `tests/manoeuvre/probe_wedge_table.py`; `mk/manoeuvre.mk` target `manoeuvre-probe-wedge`;
+    `references/round39/manoeuvre/`.
+  - Main was not merged after c35cc93ac (settle's DEPLOY_HOLD etc. are not in this branch).
+
 **Start (worker, 2026-10-23 ~21:15):** stream/manoeuvre = main 8952c3d64 + round-39 docs (906557c06), GREEN per HANDOFF (builder0
 3135/0), so no baseline check (contract 1).
 
@@ -68,7 +100,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 5. M1 on top of settle's S1 (CP39.1), when the orchestrator says. 6. M7 re-file decision. 7. Stretch: the 82 long ORCA episodes.
 
 **Questions for the lead:** none.
-**Requests to other streams:** native: `begin_yield`'s mirror of givewaychain (sent ~21:45).
+**Requests to other streams:** native: `begin_yield`'s mirror of givewaychain (sent ~21:45; landed bb8043686).
 
 **2026-10-23 ~22:00: PAUSED, laptop memory.** The builder0 light run of 14a10e719 (`native lint test FILTER=test_traffic|
 test_native_yield|test_native_drive|test_native_traffic`) never started. It was still queued for a light slot (orders' and
