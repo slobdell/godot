@@ -55,9 +55,22 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-23 ~22:40 PDT)
-- **Plan (backlog order):** G1 v5 lab + dev read (done) -> G2 v2 lab (done) + dev read (running) -> G3 v6 lab (done) + dev
-  read -> full check on a named hash -> wait for CP39.1 (C39.3) -> judged series one at a time. All three switches are OFF.
+### NOW (2026-10-24)
+- **GREEN: ebfe98d18** (builder0 full check `make native check`, load 6-12, 18 other godot): 3140 passed, 0 failed; scenarios
+  53 passed, 0 failed, 3 pending; `>> remote: make native check exited 0`. All three switches OFF; main's behaviour unchanged.
+- **Where the backlog stands:** items 1-3 built, labbed and dev-read (below); item 4 is **waiting on CP39.1** (C39.3: judged series
+  only on top of it). Bars G1 v5 and G3 v6 are filed (below). G2 v2 re-reads on CP39.1 before its bar, on a fresh seed block
+  from the orchestrator. Stretch (R38.44) not needed so far: G1 v5 holds its deciding lines without it.
+- **Next for a fresh agent:** when the orchestrator announces CP39.1, merge main (keep ONE `ElementPlan.deploy_preview`: settle's),
+  run a full check, name the green hash, then Bar G1 v5 (6201-6212) and, after it, Bar G3 v6 (6213-6224), each with
+  `tools/remote.sh --light` direct (the arms contain spaces once commas expand; `make remote T=` word-splits them), J4,
+  `TANK_SQUAD_SLOT_TIMEOUT=14400`. Then G2 v2c's re-read on dev seeds 3801-3803.
+- **Smoke (lead / next agent):** `make skirmish ARENA=terminus SKIRMISH_FLAGS="--group-lay=column --group-rank-shift=half
+  --group-whole=click --group-clear=reached --group-lead=drive"`, select all, click down a street; for G2 add
+  `--group-route-corner=line` and give a 2-waypoint route round a corner; for G3 `--place-clear=on --place-clear-trigger=near
+  --place-clear-reach=on --place-clear-seat=on`. Needs native's N2 SKIRMISH_FLAGS passthrough.
+- **Plan (backlog order, history):** G1 v5 lab + dev read (done) -> G2 v2 lab + dev reads 1-3 (done) -> G3 v6 lab + dev read
+  (done) -> full check (ebfe98d18 green) -> wait for CP39.1 (C39.3) -> judged series one at a time.
 - **G1 v5 `--group-lead=drive`** (ef68308d1): a column's places go to its squads in the order their crews reach the click by
   ground. In `untangle_whole` every squad of a column is one knot, and the first key is `lead_breaks` (a squad placed behind
   one it leads by > 6 m), then crossings, then drive. Decided: lead = the mean of the squad's crews' navmesh drives (the bulk
@@ -84,7 +97,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
       too: a whole-squad swap on a leg); terminus 5 route worst twitch 18.7 -> 34.1.
   - **Dev read 2** (4ce8784d5; `g2v2b-dev2-builder0-4ce8784d5/`): v2b (rank centred, not single file) = v2 on every cell.
     `--group-lead=drive` on legs is worse (his routes never-in 3 -> 6), so G1 v5 stays a plain-click rule.
-  - v2c fixes the avenue cause (laptop trace, not pairable: squad 4 on the route, every squad in). Dev read 3 running.
+  - v2c fixes the avenue cause (laptop trace, not pairable: squad 4 on the route, every squad in).
+  - **Dev read 3** (builder0 light J4, 584d23588, dev seeds 3801-3803, n 3; `g2v2c-dev3-builder0-584d23588/`): his routes off
+    5,022 -> 2,523, never-in 9 -> 3; his 5 east 2,965 -> 207; his 5 avenue 536 (main 142); route cells off 2,404 -> 1,432,
+    never-in 1 -> 0. `orders_judge.py g2`: both deciding lines PASS, guards fail on 9 cells (end foreign, twitch). His 3 east
+    never-in: a squad's halt seat stands on the next squad's route (CP39.1's cause), so it re-reads on CP39.1.
 - **G3 v6 `--place-clear-seat=on`** (da9591207): a moved place must deploy in the given place's shape and spacing, worst leg
   <= given + 2 m (or 8 m); else it steps back along the squad's own leg; else it's kept. It uses settle's
   `ElementPlan.deploy_preview`, built on my request and copied verbatim from stream/settle 4066132c4.
@@ -92,6 +109,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     lanes / 10 m v the given place's dense / 7.5 m, so the deploy dealt the crews across (worst leg 16 m v main's 6.7).
   - With v6 (laptop, n 1): squad 2 keeps its place, all in at 17.3 s.
   - A shapes-only estimate (no preview) couldn't separate the places (11.0 v 13.0 m); removed.
+  - **Dev read** (builder0 light J4, b7bef53b1, dev seeds 3804-3809, n 6): main -> g3v6 PASSES `orders_judge.py g3`; places
+    cleared 25 (v5 33); pairs < 12 m 25 -> 4; crossing 5 route worst twitch v5 42.9 -> v6 29.9.
+- **Merge notes:** `element_plan.gd` carries a verbatim copy of settle's `deploy_preview` + `_unit_of` (keep settle's, drop mine);
+  `orders_judge.py` probe_guards' all-in guard passes a cell where the base never got all in (be1219fa7).
 
 ### Bars (filed here before any judged number; the orchestrator records them on main)
 - **Bar G1 v5 GROUP LEAD (orders, round 39; filed 2026-10-24 before any number on its seeds; code ef68308d1, all OFF).**
