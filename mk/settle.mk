@@ -226,3 +226,17 @@ settle-shots: native-for-check import ## Round 39 (settle S1): top-down shots of
 		timeout 900 $(GODOT) --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$map --seed=$$seed \
 			--probe-squads=$$n --probe-route=$$route --probe-arm=$$name --mute --probe-shots=$$out $$flags > $$out/run.log 2>&1 || true; \
 		echo "$$c $$name: $$(ls $$out/*.png 2>/dev/null | wc -l) shots, $$(grep -c '^ORDERS_PROBE {' $$out/run.log) run line"; done; done
+
+# Round 39 Bar H v2 (settle.md Status, filed before any number): main v --deploy-hold=on, both --deploy-trace, the fight probe
+# (locks/crossing/terminus x 3 squads x click x 6025-6048); judge `settle_judge.py h2` on the REDEAL_TRACE lines (the hold is ON
+# since that bar: main carries --deploy-hold=off to re-run it). builder0 light, J 4:
+#   tools/remote.sh --light native settle-h2 TANK_SQUAD_SLOT_TIMEOUT=14400
+SETTLE_H2_SEEDS ?= $(shell seq 6025 6048)
+SETTLE_H2_ARMS ?= main:--deploy-trace,--deploy-hold=off,--probe-fight=on,--probe-budget=1500 held:--deploy-trace,--deploy-hold=on,--probe-fight=on,--probe-budget=1500
+.PHONY: settle-h2
+settle-h2: native-for-check import ## Round 39 (settle stretch): Bar H v2's series (main v held, seeds 6025-6048) -> build/settle-h2/verdict.txt
+	@rm -rf $(BUILD_DIR)/settle-h2 && mkdir -p $(BUILD_DIR)/settle-h2
+	@echo ">> settle-h2 on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | arms '$(SETTLE_H2_ARMS)'" | tee $(BUILD_DIR)/settle-h2/header.txt
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ROUTES=click ORDERS_PROBE_SQUADS=3 ORDERS_PROBE_ARMS="$(SETTLE_H2_ARMS)" \
+		ORDERS_PROBE_SEEDS="$(SETTLE_H2_SEEDS)" ORDERS_PROBE_JOBS=4 ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-h2/fight > $(BUILD_DIR)/settle-h2/fight.out 2>&1 || true
+	@cd $(BUILD_DIR)/settle-h2 && $(PYTHON) $(CURDIR)/tests/settle/settle_judge.py h2 fight main held | tee verdict.txt || true

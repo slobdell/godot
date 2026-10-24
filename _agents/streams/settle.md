@@ -58,20 +58,46 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (in progress, 2026-10-23 night)
-- **S1 route-clear v2, OFF** (`--seat-route-clear`, env SEAT_ROUTE_CLEAR=on; daea2cefe): lab clean on the three traced cases (below).
-  Bar filed below; full check of the named hash next, then the series on 6001-6024.
+### Report (2026-10-24)
+- **GREEN: 6ab14f1ac** (builder0, `make native check exited 0`, 3,145 passed / 0 failed, 27 targets ALL JUDGED, sim-baseline unmoved
+  on every map, 3,419 s). Everything past main is OFF by default.
+- **S1 route-clear v2: FAILED its bar; stays OFF** (`--seat-route-clear`; series on 6ab14f1ac's tree, builder0 light, J 4, seeds
+  6001-6024, 576 squads an arm + 36 + 36 fights an arm; `>> remote: make native settle-s1c ... exited 0`, verdict FAIL). Deciding:
+  never-in runs on the 5-squad cells 1 -> 3, three NEW (terminus 5 click s6003, terminus 5 route s6003, crossing 5 route s6009) and
+  main's one (crossing 5 route s6006) got in. Guards otherwise pass: all-in 25.8 -> 24.7 s (140 runs in on both), twitch >= 15 m
+  108 -> 103, friend contacts 11,944 -> 10,623, foreign 6,548 -> 5,436, fights flat (3-squad his kills 5.06 -> 4.83, losses 7.83 ->
+  8.31; 5-squad 9.78 -> 10.08, 15.44 -> 15.44). Reported: deploy legs >= 25 m **64 -> 100**. No ship, no re-file on these seeds.
+  What the three new never-ins share (the deploy traces, not yet traced in time): the halt ahead cleared 2-3 seats and each
+  cleared seat sent its crew 13-20 m along or across the lane the blocked squad still had to drive (click s6003: Bravo_4
+  (3.6, 75.1) -> (-0.6, 57.9), down Alpha's lane at x 4-7; route s6003: Delta_1 (3.2, 80.0) -> (19.1, 74.4) across the junction
+  Echo needed). The clear judges where a seat STANDS, not the drive to it, and the 7 m corridor is judged from the centre line
+  in lanes narrower than that. Next (a later round): judge the crew's leg to its cleared seat against the same corridor, and
+  only clear when the leg is shorter than the one it replaces; trace the three runs in time first. References:
+  `references/round39/settle/s1-route-clear-builder0/`.
+- **Item 2 (`--deploy-fit=street` on top of 1): not run** — the brief's rule (no new bar if 1 fails). The lab's `fitclear` arm
+  (table below, n 1) is the only read.
 - **Item 3 traced (o2's crossing re-deals):** dev read on rules-ON main (builder0 light, 82c0a9db2 tree, crossing 3 click fights,
   dev seeds 3891-3902, n 12 an arm): parked re-deals held 22 -> o2 35. Traced s3895 Alpha (0 -> 4): every counted re-deal is ONE
   crew's seat moving 14-18 m off and back with anchor, shape, latched spacing and seat index unchanged. Probable cause:
   UnansweredFire's duck (a crew ON ITS POST under fire it can't return goes to cover <= 25 m; PARKED_HOLD keeps more crews on posts),
-  which orders' probe counts as a parked re-deal. Not confirmed: `--duck=off` no longer exists (requested from doctrine via the
-  orchestrator). **No Bar H re-file:** its re-deal line counts duck moves (R38.42's rule: the trace changes it). References:
+  which orders' probe counts as a parked re-deal. **Confirmed by the control** (doctrine's `--duck=off`, 47ce8d229 applied
+  uncommitted to cd7a272d0; builder0 light, same workload, n 12 an arm): parked re-deals held 22 -> 9, o2 35 -> 7 with ducks off,
+  so o2's surplus is all ducks (`references/round39/settle/duck-control-builder0/`). **No Bar H re-file:** its re-deal line counts duck moves (R38.42's rule: the trace changes it). References:
   `references/round39/settle/o2-redeal-trace-builder0/`.
+- **Bar H v2 DEPLOY_HOLD: PASS -> ON** (series on cd7a272d0 = dbc022357's code, builder0 light J 4, seeds 6025-6048, 72 fights
+  an arm; `>> remote: make native settle-h2 ... exited 0`): REDEAL_TRACE re-lays after a loss 288 -> 0 (367 crews moved -> 0),
+  other causes 0 -> 0; his kills 5.39 -> 5.31, his losses 6.99 -> 6.64, CPU losses 5.44 -> 5.33 a fight (all within 1.645 se, 0
+  runs unstarted). Reported: parked_redeals 172 -> 100, reseats 244 -> 1. Shipped ON at 2478e2eef (main f1fb16131 merged in;
+  `--deploy-hold=off` = round 38's re-lay). References `references/round39/settle/h2-deploy-hold-builder0/`. **Full check of the
+  ship hash: see the green line above.**
 - **Stretch (re-deals after a loss), dev read** (builder0 light, 15ec5b830, fight probe locks/crossing/terminus x 3-squad click x
   dev seeds 3891-3902, n 36 fights an arm; REDEAL_TRACE = the halt's OWN seat moves > 6 m, before ducks): main 144 re-lays after a
   loss (185 crews moved), 0 from any other cause; `--deploy-hold=on` 0. Fights: his kills 4.86 -> 5.42, his losses 7.92 -> 7.36, CPU
-  losses 4.97 -> 5.56 a fight. Bar H v2 (deciding on REDEAL_TRACE, not the probe's parked_redeals) needs a fresh seed block: asked.
+  losses 4.97 -> 5.56 a fight. Bar H v2 (deciding on REDEAL_TRACE): seeds 6025-6048 granted; bar filed below before any number (recorded on main 76f42a9c3).
+  Target `settle-h2` + judge `h2` at dbc022357. The judge's dry run on the dev read (not judged) reproduces it: re-lays 144 -> 0, but the
+  two-sided fight guard FAILS on held fighting BETTER (his kills 4.86 -> 5.42, se 0.29). A risk for the series, as filed.
+  A start at ~09:34 was stopped before any number (main's merge check); **series running** after the all-clear (main 76f42a9c3
+  green), tree cd7a272d0 (= dbc022357's code), builder0 light J 4, log `build/h2-remote.log`.
 - **Orders' request done:** `ElementPlan.deploy_preview` (4066132c4, quick-remote builder0 132/0), pure; orders told.
 
 ### S1 route-clear lab (builder0 light, n 1 per run, orders' probe; `make settle-lab`)
@@ -101,6 +127,20 @@ after a full check of the named hash. Judge `settle_judge.py s1c` (dry-run on ro
   the fights (both reads, his kills / his losses / CPU losses within 1.645 se, 0 runs that never started).
 - Reported: place+twitch and deploy legs >= 25 m.
 - A pass ships `--seat-route-clear` ON on a new hash with one full check (CP39.1 with manoeuvre's M1).
+
+### Bar H v2 DEPLOY_HOLD (filed 2026-10-24 before any number on its seeds; code = 6ab14f1ac's)
+What he'd see: when a parked tank is killed, the rest of the squad stays where it is (no survivor sent 6 m+ to a new seat).
+Arms: `main:--deploy-trace,--probe-fight=on,--probe-budget=1500` v `held:` the same + `--deploy-hold=on`. Base: main as on 6ab14f1ac
+(latch ON, R1-R3 ON). **Seeds 6025-6048 (granted by the orchestrator, registered):** fight probe, locks / crossing / terminus x 3
+squads x click (72 fights an arm). `tools/remote.sh --light native settle-h2 TANK_SQUAD_SLOT_TIMEOUT=14400`, builder0 light, J 4.
+Judge `settle_judge.py h2` (dry run on the stretch dev read's folder only, seeds 3891-3902). Re-deals are REDEAL_TRACE lines (a
+deployed halt's own surviving seat moving > 6 m, before any duck), not the probe's `parked_redeals` (which counts ducks, item 3).
+- Counter: main's REDEAL_TRACE re-lays after a loss >= 20.
+- **Deciding:** held's REDEAL_TRACE re-lays (any cause) <= 20 % of main's.
+- Guards: held's re-lays from any other cause <= main's + 3; his kills, his losses, the CPU's losses a fight within main +/- 1.645 se;
+  0 runs that never started.
+- Reported: the probe's `parked_redeals` and `reseats` per arm (duck-contaminated).
+- A pass ships `--deploy-hold` ON on a new hash with one full check.
 
 ### Plan (ordered)
 1. S1 route-clear: pure lab (`tests/test_settle_route_clear.gd`) -> the traced cases (`make settle-lab`, builder0 light) -> bar
@@ -133,5 +173,5 @@ after a full check of the named hash. Judge `settle_judge.py s1c` (dry-run on ro
 - Everything here is OFF by default (`--seat-route-clear`); the sim baseline does not guard settle's paths (round 38's note).
 
 ### Requests to other streams
-- doctrine (via the orchestrator): restore `--duck=off` (UnansweredFire.ENABLED) in tactics_flags.gd, for item 3's control arm.
+- doctrine: `--duck=off` restored (47ce8d229); item 3's control done with it (dev, uncommitted here).
 - orders (note): `parked_redeals` counts UnansweredFire duck moves; Bar H / S3 need them excluded before any re-file.
