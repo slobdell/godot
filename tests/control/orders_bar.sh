@@ -22,7 +22,6 @@ part() {  # part <name> <maps> <routes> <main arm> <new arm> <expected runs>
 				"ORDERS_PROBE_DIR=build/orders-bar-$name" "ORDERS_PROBE_JOBS=$jobs" "TANK_SQUAD_SLOT_TIMEOUT=14400" > "$out/$name.log" 2>&1
 			src=build/orders-bar-$name
 		else
-			tools/builder_checks.sh --wait-below 1 >/dev/null 2>&1
 			tools/remote.sh --light native orders-probe "ORDERS_PROBE_MAPS=$maps" "ORDERS_PROBE_SQUADS=3 5" \
 				"ORDERS_PROBE_ROUTES=$routes" "ORDERS_PROBE_ARMS=$a $b" "ORDERS_PROBE_SEEDS=$seeds" \
 				"ORDERS_PROBE_DIR=build/orders-bar-$name" "ORDERS_PROBE_JOBS=$jobs" "TANK_SQUAD_SLOT_TIMEOUT=14400" > "$out/$name.log" 2>&1
