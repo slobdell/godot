@@ -761,7 +761,7 @@ const QUICK_VERBS := ["hold", "break_contact", "assault"]
 const QUICK_SECONDS := 5.0
 const DRILL_SHORT := {"move": "Move", "bound": "Bound", "hold": "Hold", "assault": "Assault", "break_contact": "Break"}
 
-var _command_bar: HBoxContainer
+var _command_bar: BoxContainer
 ## The formation picker (kept under its old name: it replaced the formation row).
 var _formation_row: PanelContainer
 var _formation_grid: GridContainer
@@ -778,8 +778,8 @@ var _quick_row: HBoxContainer
 var quick_squad := ""
 var _unit_title: Label
 var _unit_stats: Label
-var _top_row: HBoxContainer
-var _squad_bar: HBoxContainer
+var _top_row: BoxContainer
+var _squad_bar: BoxContainer
 var _squad_chips := {}
 
 
@@ -797,7 +797,7 @@ func _key_hint(key: Key) -> String:
 
 
 func _build_panels() -> void:
-	_command_bar = HBoxContainer.new()
+	_command_bar = BoxContainer.new()  # round 39 (F2): a BoxContainer, so a bottom layout can stack it
 	_command_bar.name = "OrderBar"
 	_command_bar.add_theme_constant_override("separation", 4)
 	add_child(_command_bar)
@@ -867,7 +867,7 @@ func _build_panels() -> void:
 	_add_button(card_buttons, "Close", func() -> void: focus_unit(""), "unit:close", false)
 
 	# C2: the squad bar (top center): one chip per squad, up to 5.
-	_squad_bar = HBoxContainer.new()
+	_squad_bar = BoxContainer.new()
 	_squad_bar.name = "SquadBar"
 	_squad_bar.add_theme_constant_override("separation", 4)
 	add_child(_squad_bar)
@@ -898,7 +898,7 @@ func _build_panels() -> void:
 		quick.toggle_mode = false
 	_add_button(_quick_row, "Follow", func() -> void: quick_command("follow"), "quick:follow", false)
 	# Camera and time (top right).
-	_top_row = HBoxContainer.new()
+	_top_row = BoxContainer.new()
 	_top_row.add_theme_constant_override("separation", 4)
 	add_child(_top_row)
 	_add_button(_top_row, "Pause", func() -> void: set_paused(not get_tree().paused), "pause", false)

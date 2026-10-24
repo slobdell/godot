@@ -329,18 +329,18 @@ func _cone() -> void:
 func _sight() -> void:
 	var settled := _spawn("FbSettled", Match.Team.GREEN, "tank", Vector3(-10, 0, 0), Vector3.FORWARD)
 	var driver := _spawn("FbDriver", Match.Team.GREEN, "tank", Vector3(14, 0, 6), Vector3.FORWARD)
-	_drivers[driver.name] = [0.6, 0.7, ""]  # circles on the spot: driving, so ~85 %
+	_drivers[driver.name] = [0.6, 1.0, ""]  # circles on the spot: driving, so ~85 %
 	_select.assign([String(settled.name), String(driver.name)])
-	await _shoot_rule_looks("sight", Vector3(0, 0, -6), 1.9)
+	await _shoot_rule_looks("sight", Vector3(0, 0, -4), 1.9)
 
 
 func _fire() -> void:
-	var target := _spawn("FbFireTarget", Match.Team.RUST, "gang_ifv", Vector3(0, 0, -26), Vector3.BACK)
+	var target := _spawn("FbFireTarget", Match.Team.RUST, "gang_ifv", Vector3(0, 0, -22), Vector3.BACK)
 	var mover := _spawn("FbMover", Match.Team.GREEN, "tank", Vector3(-12, 0, 4), Vector3.RIGHT)
 	var stopped := _spawn("FbStopped", Match.Team.GREEN, "tank", Vector3(16, 0, 10), Vector3.FORWARD)
-	_drivers[mover.name] = [0.7, 0.6, String(target.name)]  # circles on the spot, firing on the move
+	_drivers[mover.name] = [0.7, 1.0, String(target.name)]  # circles on the spot, firing on the move
 	_drivers[stopped.name] = [0.0, 0.0, String(target.name)]
-	await _shoot_rule_looks("fire", Vector3(0, 0, -8))
+	await _shoot_rule_looks("fire", Vector3(0, 0, -6))
 
 
 func _slowed() -> void:
@@ -348,9 +348,9 @@ func _slowed() -> void:
 	for i in levels.size():
 		var tank := _spawn("FbSlowed%d" % i, Match.Team.RUST, "gang_ifv", Vector3(-16.0 + i * 16.0, 0, 6), Vector3.FORWARD)
 		_hold_suppression[tank.name] = levels[i]
-		_drivers[tank.name] = [1.0, 0.7, ""]  # full throttle, circling on the spot
+		_drivers[tank.name] = [1.0, 1.0, ""]  # full throttle, circling on the spot
 	_spawn("FbEyes", Match.Team.GREEN, "scout", Vector3(0, 0, 36), Vector3.FORWARD)
-	await _shoot_rule_looks("slowed", Vector3(0, 0, -6))
+	await _shoot_rule_looks("slowed", Vector3.ZERO)
 
 
 ## Every candidate look of a rule slot in turn ("none" first): a still at his pose and one close in, and a clip at his
@@ -361,14 +361,29 @@ func _shoot_rule_looks(slot: String, centre := Vector3.ZERO, zoom_out := 1.0) ->
 	for look: String in FeedbackLook.RULE_LOOKS[slot]:
 		FeedbackLook.use_rules("%s:%s" % [slot, look])
 		for distance: float in [DISTANCE_M * zoom_out, CLOSE_M]:
-			_pose(distance, centre)
+			_pose(distance, _staged_centre(centre))
 			await _seconds(SETTLE_S + 0.6)
+			_pose(distance, _staged_centre(centre))
 			await _frames(2)
 			_save("%s_%s_%s" % [slot, look, "rts" if distance != CLOSE_M else "close"])
 		if clip_frames > 0 and look != "none":
-			_pose(DISTANCE_M * zoom_out, centre)
+			var wide := DISTANCE_M * zoom_out
+			_pose(wide, _staged_centre(centre))
 			await _seconds(SETTLE_S)
-			await _clip("%s_%s" % [slot, look], Callable())
+			await _clip("%s_%s" % [slot, look], func(_frame: int) -> void: _pose(wide, _staged_centre(centre)))
+
+
+## The staged crews' middle as a site offset (the rules' drivers circle, so the frame follows them), nudged by `bias`.
+func _staged_centre(bias: Vector3) -> Vector3:
+	var sum := Vector3.ZERO
+	var count := 0
+	for node: Variant in _staged:
+		if is_instance_valid(node) and _drivers.has((node as Tank).name) or (is_instance_valid(node) and _select.has(String((node as Tank).name))):
+			sum += (node as Tank).global_position
+			count += 1
+	if count == 0:
+		return bias
+	return (sum / count - _site).rotated(Vector3.UP, -_yaw) + bias
 
 
 ## A held situation with its look on at his pose and close in, a clip at his pose, then one still with it off.

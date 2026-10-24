@@ -65,6 +65,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 3. **F2** touch-map layouts: a shots target, 2-3 layouts behind `--touch-layout=`, filmed at phone sizes -> directions page.
 4. F3 build his picks; stretch: announcer lines for the rules behind a switch.
 
+**2026-10-23 ~23:00: 38a865e97 committed** (F1a fix + candidate looks + F2 layouts, everything new OFF). quick-remote on the
+fix alone: builder0 `make quick` exited 0, 81 passed / 0 failed. Candidate looks (`--rules-look=`, FeedbackLook.RULE_LOOKS,
+default none): sight `edge` (fog boundary brighter round a settled crew) / `ring` (live dashed sight ring under selected crews);
+fire `wedge` (a shot fired on the move leaves a fading wedge of its spread, the stopped spread inside); slowed `amber`
+(chevrons from 5 % slow, warming to orange) / `brake` (brake lights on a slowed rolling hull). Touch layouts
+(`--touch-layout=`, TouchLayout, default top): `dock` (orders + chips centred between bug and radar, camera buttons over the
+radar), `split` (chips centred, orders over the score bug, camera buttons over the radar); portrait both = orders column
+left, chips column right, camera buttons between. Found on today's phone map (touch-shots 906557c06 builder0): its order bar
+runs into the score bug's kills line in landscape and covers the bug in portrait.
+
 **F1 audit (R1-R3 ON, 906557c06):**
 - Fog of war, 3D sheet (cyberpunk + default themes): LIED (above), fixed.
 - Radar fog (same field texture, ~1.2 m a pixel): same lie, fixed (its own layer + clip shader).
