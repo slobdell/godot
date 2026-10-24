@@ -11,7 +11,7 @@ set -uo pipefail
 [ $# -ge 2 ] || { echo "usage: tools/judge/perf_ab_commits.sh <commit> <commit> [...]" >&2; exit 2; }
 root=$(git rev-parse --show-toplevel)
 rounds=${PERF_AB_ROUNDS:-3}
-out=$root/build/perf-ab
+out=${PERF_AB_OUT:-$root/build/perf-ab}   # outside build/ if this worktree will run make remote meanwhile (its copy-back deletes)
 mkdir -p "$out"
 : > "$out/summary.txt"
 say() { echo "$*" | tee -a "$out/summary.txt"; }
