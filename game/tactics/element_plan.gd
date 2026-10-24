@@ -1901,7 +1901,19 @@ static func _trace_deploy(plan: Dictionary, situation: Dictionary, stand: Vector
 			"latch_lays": int((plan.get("deploy", {}) as Dictionary).get("latch_lays", -1)),
 			"latch_capped": bool((plan.get("deploy", {}) as Dictionary).get("latch_capped", false)),
 			"fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}),
-			"cleared": int((plan.get("deploy", {}) as Dictionary).get("cleared", 0)), "crews": crews}))
+			"cleared": int((plan.get("deploy", {}) as Dictionary).get("cleared", 0)),
+			"clear_of": _trace_clear_of((plan.get("deploy", {}) as Dictionary).get("clear_of", {})), "crews": crews}))
+
+
+## The ground a route-clear deploy kept clear of, rounded for the trace: {"routes": [[[x, z], ...], ...], "halts": [...]}.
+static func _trace_clear_of(clear_of: Variant) -> Dictionary:
+	if not (clear_of is Dictionary):
+		return {}
+	var out := {}
+	for key: String in ["routes", "halts"]:
+		out[key] = ((clear_of as Dictionary).get(key, []) as Array).map(func(line: Array) -> Array:
+				return line.map(func(p: Vector3) -> Array: return [snappedf(p.x, 0.1), snappedf(p.z, 0.1)]))
+	return out
 
 
 ## R38.15 (S2 v3's reference): one STAND_TRACE line per deploy, the first plan STAND_TRACE_S after it: the crews' centroid
