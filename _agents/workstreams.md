@@ -135,6 +135,16 @@ block: ask the orchestrator first.
   G1 v5; FRESH seeds 6213-6224; `orders_judge.py g3` as G3 v5 unamended (pairs < 12 m <= 25 % of base). Uses settle's deploy_preview.
   Pass ships ON. Waits on CP39.1.
 
+- **G1 v5 RESULT: FAILED, stays OFF.** Game code 632724c90 (green builder2 3169/0), probe e7c896c8f, native, DEPLOY_HOLD ON both
+  arms, builder0 light J4, 6201-6212, n 12 a cell, streets 384/384 + his 48/48 (`make native orders-probe exited 0`). Deciding FAIL:
+  places outside (click cells) 100 -> 28 (bar <= 25; locks 5 8 -> 8, his 5 36 -> 12). Guard FAIL: terminus_his 5 click twitch median
+  2.0 v 8.2 (squad 2 twitches 28.4 m on all 12 seeds, main 0.0: one deterministic layout). PASS: route_left 6490 -> 1832, re-dealt
+  48 -> 0, contacts 14280 -> 11413, yard_open identical. Evidence references/round39/orders/g1v5-judged-e7c896c8f/ (e51e88c09).
+- **G3 v6 RESULT: FAILED, stays OFF.** Same tree, builder2 J14, 6213-6224 (streets preempted on try 1, re-run whole: 384/384, his
+  48/48, exited 0). Deciding PASS: pairs < 12 m 48 -> 12 (bar <= 12.0); counter, offsets, contacts pass. Guards FAIL on crossing 5
+  route: never-in 0 v 1 (s6213 squads 4-5), twitch 18.9 v 22.9 (s6220 squad 5 42.5 v 0.1); settle's cause (B) is the first suspect.
+  Parked re-deals (duck-excluded) G1 487 -> 511, G3 675 -> 643; ducks 0 in all arms.
+
 ## Rulings (round 39)
 
 - **R39.1 (2026-10-23 ~21:35 PDT, doctrine's request):** (a) GRANT Tank.HALT_DWELL_SECONDS to doctrine under C39.4 (constant
