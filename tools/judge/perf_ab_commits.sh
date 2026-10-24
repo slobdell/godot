@@ -3,7 +3,8 @@
 # drift (load, thermal, a kernel update) lands on every arm. Run on the laptop: tools/judge/perf_ab_commits.sh A B [C ...]
 #
 # Each commit gets a detached worktree of its own beside this one (../<this folder>-ab-<sha>, made once, reused), so it
-# gets its own builder0 folder; each round runs `make remote T="native perf-judge"` from each in turn, the order rotating
+# gets its own builder0 folder; each round runs `make remote-quiet T="native perf-judge"` (every slot held, the window's
+# verdict recorded; PERF_AB_REMOTE=remote for an unheld run) from each in turn, the order rotating
 # round to round (A B, B A, ... for two). PERF_AB_ROUNDS (3) rounds. perf-judge keeps its own pin, quiet wait and retries.
 # OUT: build/perf-ab/summary.txt: one PERF_AB line per run (the judged PERF_JUDGE line), then each arm's mean and the
 # paired difference of each arm from the first. The worktrees are left for reuse: `git worktree remove` them after.
@@ -24,15 +25,19 @@ for c in "$@"; do
 	shas+=("$sha")
 done
 n=${#shas[@]}
-say "PERF_AB arms ${shas[*]} rounds $rounds (builder0, make remote T=\"native perf-judge\")"
+say "PERF_AB arms ${shas[*]} rounds $rounds (builder0, make ${PERF_AB_REMOTE:-remote-quiet} T=\"native perf-judge\")"
 for r in $(seq 1 "$rounds"); do
 	for k in $(seq 0 $((n - 1))); do
 		sha=${shas[$(( (k + r - 1) % n ))]}
 		wt="$root-ab-$sha"
 		log="$out/$r-$sha.log"
-		make -C "$wt" --no-print-directory remote T="native perf-judge" > "$log" 2>&1
+		make -C "$wt" --no-print-directory "${PERF_AB_REMOTE:-remote-quiet}" T="native perf-judge" > "$log" 2>&1
 		verdict=$(grep -E '^>> remote: make .* exited [0-9]+' "$log" | tail -1)
+		window=$(grep -oE 'QUIET WINDOW: (HELD|NOT USABLE).*' "$log" | tail -1)
+		grep -E '^PERF_JUDGE attempt=' "$wt/build/perf-judge/perf-judge.txt" 2>/dev/null \
+			| sed "s/^/PERF_AB round=$r arm=$sha all /" >> "$out/summary.txt"
 		line=$(grep -E '^PERF_JUDGE attempt=.* state=(PASS|FAIL) ' "$wt/build/perf-judge/perf-judge.txt" 2>/dev/null | tail -1)
+		say "PERF_AB round=$r arm=$sha window: ${window:-no quiet-window verdict}"
 		if [ -n "$line" ]; then say "PERF_AB round=$r arm=$sha $line"
 		else say "PERF_AB round=$r arm=$sha NOT JUDGED (${verdict:-no verdict line}): $(tail -1 "$wt/build/perf-judge/perf-judge.txt" 2>/dev/null)"; fi
 	done

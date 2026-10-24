@@ -7,6 +7,7 @@
 # library built both ways: cr (as shipped) and libm (NATIVE_TRIG=libm, the five left out). Each round runs perf-judge
 # (tools/perf_judge.sh, pinned, quiet-waiting, its own retries) once per arm, the order alternating round to round
 # (cr libm, libm cr, ...) so a drift in the box's load lands on both. TRIG_AB_ROUNDS (3) rounds; the library is left cr.
+# Run it under a quiet window: `make remote-quiet T=trig-perf-ab` (every slot held; QUIET WINDOW: HELD or NOT USABLE).
 # OUT: <out_dir>/<round>-<arm>/perf-judge.txt and <out_dir>/summary.txt (one TRIG_AB line per judged run, then the means).
 set -uo pipefail
 godot=$1 hz=$2 out=$3
@@ -15,30 +16,41 @@ so=native/bin/libtank_native.linux.x86_64.so
 mkdir -p "$out"
 : > "$out/summary.txt"
 say() { echo "$*" | tee -a "$out/summary.txt"; }
-build() {
-	make --no-print-directory native NATIVE_TRIG="$1" > "$out/build-$1.log" 2>&1 || { tail -20 "$out/build-$1.log"; return 1; }
+build() { # both arms built once, up front, on 2 jobs (a quiet window counts the run's own load), kept as files
+	make --no-print-directory native NATIVE_TRIG="$1" NATIVE_JOBS=2 > "$out/build-$1.log" 2>&1 || { tail -20 "$out/build-$1.log"; return 1; }
+	cp "$so" "$out/libtank_native-$1.so"
+}
+use() { # the arm's library into native/bin, checked by what it imports
+	cp "$out/libtank_native-$1.so" "$so"
 	local imported
 	imported=$(nm -D --undefined-only "$so" | grep -oE ' (atan2f|acosf|asinf|atanf|tanf)(@|$)' | tr -d ' @' | sort | tr '\n' ' ')
 	case $1 in
 		cr) [ -z "$imported" ] || { say "TRIG_AB arm cr imports libm's ($imported): not the cr arm"; return 1; } ;;
 		libm) [ -n "$imported" ] || { say "TRIG_AB arm libm imports none of the five: not the libm arm"; return 1; } ;;
 	esac
-	say "TRIG_AB built $1 (libm imports: ${imported:-none})"
+	say "TRIG_AB using $1 (libm imports: ${imported:-none})"
 }
+load1() { cut -d' ' -f1 /proc/loadavg; }
 say "TRIG_AB commit ${TANK_SQUAD_COMMIT:-$(git rev-parse --short=9 HEAD 2>/dev/null)} host $(hostname) rounds $rounds"
 status=0
+build libm && build cr || exit 1
+# Let the builds' load decay before the first judged run (up to TRIG_AB_SETTLE s, until load1 < 2).
+for _ in $(seq 1 $(( ${TRIG_AB_SETTLE:-300} / 10 ))); do awk -v l="$(load1)" 'BEGIN { exit !(l < 2) }' && break; sleep 10; done
+say "TRIG_AB settled: load1 $(load1)"
 for r in $(seq 1 "$rounds"); do
 	if [ $((r % 2)) -eq 1 ]; then order="cr libm"; else order="libm cr"; fi
 	for arm in $order; do
-		build "$arm" || { status=1; break 2; }
+		use "$arm" || { status=1; break 2; }
 		d="$out/$r-$arm"
 		PERF_JUDGE_TRIES=${PERF_JUDGE_TRIES:-3} tools/perf_judge.sh "$godot" "$hz" "$d" > /dev/null 2>&1
+		# Every attempt, with its idle % and load (a refusal or a FAIL is part of the record).
+		grep -E '^PERF_JUDGE attempt=' "$d/perf-judge.txt" | sed "s/^/TRIG_AB round=$r arm=$arm all /" >> "$out/summary.txt"
 		line=$(grep -E '^PERF_JUDGE attempt=.* state=(PASS|FAIL) ' "$d/perf-judge.txt" | tail -1)
 		if [ -n "$line" ]; then say "TRIG_AB round=$r arm=$arm $line"
 		else say "TRIG_AB round=$r arm=$arm NOT JUDGED: $(tail -1 "$d/perf-judge.txt")"; fi
 	done
 done
-build cr >/dev/null || status=1
+use cr >/dev/null || status=1
 python3 - "$out/summary.txt" <<'EOF' | tee -a "$out/summary.txt"
 import re, sys, statistics as st
 runs = {}
