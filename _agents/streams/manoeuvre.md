@@ -99,3 +99,10 @@ branch: d7259b161 itself has no builder result. Still PAUSED on laptop memory, w
 unmoved. It holds my M1 code (14a10e719 + the d7259b161 census fix) plus native's mirror; native has given it to the
 orchestrator as the pair's merge hash. This is the first full check covering givewaychain (OFF by default). Still PAUSED on laptop
 memory until the lead OKs restarting builder0 runs.
+
+**2026-10-24: merged main 76f42a9c3 (green builder0 3169/0) as c35cc93ac.** Clean merge: the tree = main + Status +
+`tests/traffic/chain_table.py`. givewaychain now runs through native's C++ mirror (no `_chain_native` bypass). I stopped my
+pre-merge light test job; main's check covers this code.
+**Seeds:** the census (`manoeuvre-census-base`, builder0 light J4, c35cc93ac, switch OFF, terminus/locks/sumps x 7001-7008) is a
+DEV read on my round-38 dev block 7001-7008 (allowed by the registry note). Nothing judged runs on it; the bar's series uses
+6101-6124 only.
