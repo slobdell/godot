@@ -62,6 +62,39 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**ROUND-40 CANDIDATE: the blob still wins by faction matchup, not by doctrine (R39.6's request; no new runs).** Source: the
+series' OFF arm = the rules-ON base on fresh seeds (773412e49, builder2, 6301-6340 + 6401-6440, 800 blob + 800 turtle fights).
+Cells: guard (blob / turtle) win %, (n, binomial se in points; it ignores per-seed army clustering, so read it as a floor).
+No mirror matches are dealt. Blob kill ratio by blob faction: syndicate 2.62, law 0.98, condemned 0.83, gangs 0.15.
+
+| blob v CPU | condemned | gangs | law | syndicate | all |
+|---|---|---|---|---|---|
+| condemned | - | 67 % (60, 6) | 59 % (70, 6) | 13 % (60, 4) | 47 % (190, 4) |
+| gangs | 5 % (60, 3) | - | 21 % (80, 5) | 10 % (70, 4) | **13 %** (210, 2) |
+| law | 23 % (70, 5) | 64 % (80, 5) | - | 12 % (60, 4) | 35 % (210, 3) |
+| syndicate | 43 % (60, 6) | **86 %** (70, 4) | 62 % (60, 6) | - | 65 % (190, 3) |
+| all (by CPU) | 24 % (190, 3) | **72 %** (210, 3) | 45 % (210, 3) | 12 % (190, 2) | 39 % (800, 2) |
+
+| turtle v CPU | condemned | gangs | law | syndicate | all |
+|---|---|---|---|---|---|
+| condemned | - | 28 % (60, 6) | 54 % (70, 6) | 37 % (60, 6) | 41 % (190, 4) |
+| gangs | 23 % (60, 5) | - | 14 % (80, 4) | 14 % (70, 4) | 17 % (210, 3) |
+| law | 30 % (70, 5) | 26 % (80, 5) | - | 27 % (60, 6) | 28 % (210, 3) |
+| syndicate | 70 % (60, 6) | 41 % (70, 6) | 75 % (60, 6) | - | 61 % (190, 4) |
+| all (by CPU) | 41 % (190, 4) | 32 % (210, 3) | 45 % (210, 3) | 25 % (190, 3) | 36 % (800, 2) |
+
+- **What he'd notice:** charging a gangs CPU with a blob works almost every time (72 %; syndicate's blob 86 %), and charging a
+  syndicate CPU almost never does (12 %). The "blob wins too often" line is mostly two cells: any blob v a gangs CPU, and a
+  syndicate blob v anyone but syndicate. A gangs army loses whether it charges (13 %) or turtles (17 %).
+- Matches CP39.0 at 1/5 the n (syndicate blob v gangs 14/15, v law 11/15; a syndicate CPU beaten 2/45), so it is stable.
+- **Why it isn't doctrine's:** the CPU fights with the same brains and commander for every faction; what differs is the army
+  (units, budget deal, 1000 credits). Every doctrine lever this round and last (D2/D2b/D2c/SPLIT, R1-R3) moved the whole line by
+  0-6 points and left this table's shape alone. The levers are composition and unit balance (`game/units/**`, the CPU's army
+  deal), whose owners are outside this stream; a gangs-specific defensive doctrine would be the doctrine-side follow-up.
+- **Suggested first read for round 40 (no build):** per faction, the CPU's dealt army v the blob's (units, cost, kill ratio by
+  unit type) on these same 1600 fights, to name which gangs units die without trading and what syndicate's blob has that
+  the others don't.
+
 **D3 VERDICT (2026-10-24 10:28): FAIL; `--cpu-defend --cpu-defend-split` ships OFF. With the rules ON, SPLIT does nothing
 against the blob.** 773412e49 (green builder0 3135/0) both arms, builder2, `guard.sh` J14 GUARD_CHUNK=8, fresh seeds 6301-6340 +
 6401-6440, 800 fights a line an arm, 0 fights missing (2 attempts lost to a Spot preemption, re-run), `guard.py --pair OFF SPLIT`.
