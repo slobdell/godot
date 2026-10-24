@@ -159,4 +159,10 @@ N5 → stretch. Decided: N1 runs on main **8952c3d64**, the launch main (main 90
 tools/test_skirmish_flags.sh (new); `game/ai/native/native_drive.gd` (the native seam; not in round 39's owned list, it was
 native's in every earlier round) on the pair branch only.
 
+**Lessons (round 39):**
+- A live test of anything that runs over ssh must keep the SAME stdio as the real path. 0bb755a4f's builder0 test sent stderr to
+  a file and passed; with stderr on the ssh pipe, as remote.sh has it, the watchdog died by SIGPIPE (7d1078f0d).
+- Kill only by recorded pid, even in scratch: one `pkill -u $USER -f` on builder2 matched nothing else, but it is against
+  the contract.
+
 **Questions for the lead:** none.
