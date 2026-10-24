@@ -678,3 +678,156 @@ func _abort_compare(movers: Array[Movement], ctl: OrderController, owned: bool, 
 	ctl.tank.ticks_since_hit = was_hit
 	Traffic.set_off("underfire", was_off)
 	return result
+
+
+## Round 39 (manoeuvre M1, `givewaychain`, C39.2; native N3): a PARKED crew already more than Movement.CHAIN_M off its seat
+## takes no give-way spot farther from that seat (Movement._chain_reach / _chain_far, drive_native.cpp chain_in_play /
+## chain_far). Forced poses on open ground, one twinned negotiation each, as the shortened stage stages them: the asked
+## crew parked (phase arrived) with its seat placed to reach every branch, a tank 6 m off its nose driving straight
+## through it (stalled, so it asks). Seats, relative to the crew: `side` 6 m to one side (in play, spots skipped, it gives
+## way along or toward the seat), `toward` 8 m back toward the asker (in play, every spot farther: the chain's refusal),
+## `near` 3 m off (within CHAIN_M: not in play), `moveto` the side seat as an arrived move_to (yield_seat's move_to branch),
+## `underway` that move_to still driving (not in play). Both switch arms, so OFF stays today's give-way.
+const CHAIN_UNITS: Array[String] = ["tank", "gang_tank", "ifv"]
+const CHAIN_AT: Array[Vector3] = [Vector3(0.0, 0.0, 0.0), Vector3(20.0, 0.0, -20.0), Vector3(-20.0, 0.0, 30.0)]
+const CHAIN_SEATS: Array[String] = ["side", "toward", "near", "moveto", "underway"]
+const CHAIN_FLOORS_ON := {"": 30, "chain_in_play": 20, "chain_spots_skipped": 10, "chain_refusals": 2, "yields_started": 10}
+const CHAIN_FLOORS_OFF := {"": 30, "yields_started": 10}
+## The slack poses (a mutation found the stage blind to CHAIN_SLACK_M: no spot fell in the band): for each YIELD_SPOTS
+## candidate (and flip), a seat 5 m off the crew placed so THAT candidate lies CHAIN_SLACK_M / 2 beyond the crew's own
+## distance from the seat, inside the slack: taken with the slack, skipped without it. The tank, at the origin, heading 0.
+const CHAIN_SLACK_OFF := 5.0
+
+
+func test_the_chain_give_way_on() -> void:
+	if FreshStage.parent(self, "test_the_chain_give_way_on"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _chain(false, true)
+
+
+func test_the_chain_give_way_on_owned() -> void:
+	if FreshStage.parent(self, "test_the_chain_give_way_on_owned"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _chain(true, true)
+
+
+func test_the_chain_give_way_off() -> void:
+	if FreshStage.parent(self, "test_the_chain_give_way_off"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _chain(false, false)
+
+
+func _chain(owned: bool, chain_on: bool) -> void:
+	if NativeExpect.absent(self):
+		return
+	if not (Movement as Script).get_script_constant_map().has("CHAIN_M"):
+		print("native yield chain: this tree has no givewaychain (Movement.CHAIN_M), nothing to twin")
+		return
+	var was_off := Traffic.off("givewaychain")
+	Traffic.set_off("givewaychain", not chain_on)
+	MoverState.world_reset()
+	_man_reset()
+	_yield_reset()
+	NativeDrive.owned = owned
+	assert_true(BrainSwitches.native_yield, "the switch leaves native's yield port on (the C++ mirror exists)")
+	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
+	await ArenaFixture.build(self, "yard_open")
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	game_match.seed_spawns(1, 0.0)
+	var drives := 0
+	var mismatches := 0
+	var first := ""
+	var k := 0
+	for unit: String in CHAIN_UNITS:
+		for at: Vector3 in CHAIN_AT:
+			for seat_kind: String in CHAIN_SEATS:
+				for heading in [0, 3]:
+					var r: Array = await _chain_pose(game_match, k, unit, at, heading, seat_kind)
+					drives += r[0]
+					mismatches += r[1]
+					if first == "" and r[2] != "":
+						first = "%s %s %s h%d: %s" % [unit, at, seat_kind, heading, r[2]]
+					k += 1
+	# The slack poses: along = the asker's way (-nose), across = (-along.y, along.x), as _begin_yield builds them.
+	for spot: Vector2 in Movement.YIELD_SPOTS:
+		for flip: float in ([1.0, -1.0] if spot.y != 0.0 else [1.0]):
+			var r: Array = await _chain_pose(game_match, k, "tank", Vector3.ZERO, 0, "slack", Vector2(spot.x, spot.y * flip))
+			drives += r[0]
+			mismatches += r[1]
+			if first == "" and r[2] != "":
+				first = "slack %s x%d: %s" % [spot, flip, r[2]]
+			k += 1
+	NativeDrive.owned = false
+	Traffic.set_off("givewaychain", was_off)
+	var label := "chain %s%s" % ["ON" if chain_on else "OFF", " (owned state)" if owned else ""]
+	print("native yield %s: %d drives compared, %d mismatches" % [label, drives, mismatches])
+	assert_eq(mismatches, 0, "the native chain give-way is the live GDScript's: %s" % first)
+	_yield_check(label, CHAIN_FLOORS_ON if chain_on else CHAIN_FLOORS_OFF)
+	if not chain_on:
+		assert_eq(int(yield_tally.get("chain_in_play", 0)), 0, "OFF: the rule never runs")
+
+
+## One pose, one twinned negotiation (the asker's drive); returns [drives, mismatches, first]. `slack_spot` (seat "slack"):
+## the candidate's offset (along, across) the seat is placed for.
+func _chain_pose(game_match: Match, k: int, unit: String, at: Vector3, heading: int, seat_kind: String,
+		slack_spot := Vector2.ZERO) -> Array:
+	var controllers: Array[OrderController] = []
+	var movers: Array[Movement] = []
+	for who: String in ["tank", unit]:
+		var tank := game_match.spawn_tank("Chain%d_%s" % [k, who], 0, Match.Team.GREEN, who)
+		var orders := OrderController.new()
+		orders.tank = tank
+		orders.tanks_root = game_match.tanks
+		add_to_tree(orders)
+		controllers.append(orders)
+	var asked := controllers[1].tank
+	asked.place(at, heading * PI / 4.0)
+	var nose := -asked.global_basis.z
+	var right := asked.global_basis.x
+	controllers[0].tank.place(at + nose * 6.0, heading * PI / 4.0 + PI)
+	await wait_physics_frames(1)
+	for orders in controllers:
+		orders.set_physics_process(false)
+		movers.append(Movement.of(orders.tank))
+	var past: Vector3 = at - nose * 30.0
+	controllers[0].set_orders({"type": "move_to", "x": past.x, "z": past.z, "direct": true}, null)
+	var here := asked.global_position
+	var seat: Vector3 = here + right * 6.0
+	match seat_kind:
+		"toward":
+			seat = here + nose * 8.0
+		"near":
+			seat = here + right * 3.0
+		"slack":
+			# The candidate S = here + along * x + across * y; a seat w (|w| = d) with |S - here - w| = d + slack / 2:
+			# s.w = (L^2 - 2 d e - e^2) / 2 for e = slack / 2, so w's angle off s is acos of that over (L d).
+			var along := Vector2(-nose.x, -nose.z).normalized()
+			var across := Vector2(-along.y, along.x)
+			var s2 := along * slack_spot.x + across * slack_spot.y
+			var d := CHAIN_SLACK_OFF
+			var e := Movement.CHAIN_SLACK_M * 0.5
+			var cos_a := clampf((s2.length_squared() - 2.0 * d * e - e * e) / (2.0 * s2.length() * d), -1.0, 1.0)
+			var w := s2.normalized().rotated(acos(cos_a)) * d
+			seat = here + Vector3(w.x, 0.0, w.y)
+	if seat_kind == "moveto" or seat_kind == "underway":
+		controllers[1].set_orders({"type": "move_to", "x": seat.x, "z": seat.z}, null)
+		controllers[1].face_slot = Vector3.INF
+	else:
+		controllers[1].set_orders({"type": "stop"}, null)
+		controllers[1].face_slot = seat
+	var asker := movers[0]
+	asker._progress_goal = Vector3(past.x, 0.0, past.z)
+	asker._progress_best = 0.0
+	asker.stalled_ticks = 100000
+	asker._ask_left = 0
+	movers[1].phase = "driving" if seat_kind == "underway" else "arrived"
+	movers[1]._remaining = 6.0 if seat_kind == "underway" else 0.0
+	for mover in movers:
+		mover.native_stale |= Movement.STALE_ALL
+	var result := _compare_tick(movers, controllers, k, 0)
+	for orders in controllers:
+		orders.tank.queue_free()
+		orders.queue_free()
+	await wait_physics_frames(1)
+	return result

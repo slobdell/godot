@@ -277,7 +277,7 @@ static func route_arms() -> Dictionary:
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
-			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "yield_spots_unfit": yield_spots_unfit,
+			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
 			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none,
@@ -322,6 +322,9 @@ static func reset_route_arms() -> void:
 	pass_ticks = 0
 	yields_unfinished = 0
 	yields_unfinished_capped = 0
+	chain_in_play = 0
+	chain_spots_skipped = 0
+	chain_refusals = 0
 	setup_refusals = 0
 	yield_swaps = 0
 	parked_refusals = 0
@@ -1876,6 +1879,60 @@ func _asker_clear(here: Vector3, asker: Tank) -> bool:
 	return distance - noses > YIELD_CLEAR_GAP
 
 
+# ---- Round 39 (manoeuvre M1, R38.26 / C39.2; `--giveway-chain` = `--traffic-on=givewaychain`, DEFAULT_OFF until judged) -------
+# s3866 (references/round38/manoeuvre/s3866-giveway): a parked crew gave way four times in 10 s, each from where the last one left
+# it, and ended ~20 m from its seat (2.9 -> 7.5 -> 8.5 -> 15.6 -> ~20 m), so the squad behind never got in. With this on, a PARKED
+# crew (phase arrived, or keeping a face slot: no move of its own) already more than CHAIN_M off its seat (yield_seat()) takes no
+# give-way spot farther from that seat than it stands now (+ CHAIN_SLACK_M): along it or back toward it, or today's in-place hold.
+# With none of those it refuses, and the asker treats it as parked (CP1a2: keeps its route, ORCA goes round). A crew by its seat
+# gives way as today. Native: not mirrored yet, so the switch turns BrainSwitches.native_yield off (Traffic.off), and the C++ drive
+# calls _negotiate back so every ask runs here; native_yield's GDScript and C++ are bit-identical per seed (R38.24), so the OFF arm
+# on native and the ON arm here differ only by the rule.
+const CHAIN_M := 4.0
+const CHAIN_SLACK_M := 0.5
+## Measurement: give-ways asked of a crew the rule was in play for; spots it skipped as farther from the seat; asks it refused
+## because every spot left was farther.
+static var chain_in_play := 0
+static var chain_spots_skipped := 0
+static var chain_refusals := 0
+
+
+static func giveway_chain_on() -> bool:
+	return not Traffic.off("givewaychain")
+
+
+## The crew's own seat: its move_to point, else the slot its face keeps; INF when it has neither (round 37 M5's seat).
+func yield_seat() -> Vector3:
+	var order: Dictionary = ctl.move_order
+	if String(order.get("type", "")) == "move_to":
+		return Vector3(float(order.get("x", 0.0)), 0.0, float(order.get("z", 0.0)))
+	return ctl.face_slot
+
+
+## The farthest from its seat a give-way spot may lie under `givewaychain` (the seat and that reach as [seat, reach]), or [] when
+## the rule is not in play for this crew (off, no seat, under way on its own move, or within CHAIN_M of the seat).
+func _chain_reach() -> Array:
+	if not giveway_chain_on():
+		return []
+	var seat := yield_seat()
+	if seat == Vector3.INF:
+		return []
+	if is_under_way() and String(ctl.move_order.get("type", "")) == "move_to":
+		return []
+	var off_seat := _flat_distance(ctl.tank.global_position, seat)
+	if off_seat <= CHAIN_M:
+		return []
+	return [seat, off_seat + CHAIN_SLACK_M]
+
+
+## True when `point` is a spot the chain rule refuses (farther from the seat than `chain` allows).
+func _chain_far(chain: Array, point: Vector3) -> bool:
+	if chain.is_empty() or _flat_distance(point, chain[0]) <= float(chain[1]):
+		return false
+	chain_spots_skipped += 1
+	return true
+
+
 # ---- Round 34 (traffic T6, R34.15; `--traffic-on=underfire`, DEFAULT_OFF until judged): a crew under fire holds its lane ------
 # T5's census on main (144 fights): 337 crews died jammed by friendly traffic, 83 % GIVING WAY, for a median 1.5 s, 77 % already
 # under fire (the last hit landed during the give-way for 63 %). The step aside is what exposed them. So a crew hit within
@@ -2079,6 +2136,10 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 	var other_radius := Avoidance.radius_of(other_tank.unit_id) if other_tank != null else 1.8
 	var line_clear := Avoidance.radius_of(tank.unit_id) + other_radius + YIELD_LINE_MARGIN
 	Avoidance.refresh(ctl.tanks_root)
+	# Round 39 (M1, `givewaychain`): a parked crew already pushed off its seat takes no spot farther from it (see _chain_reach).
+	var chain := _chain_reach()
+	if not chain.is_empty():
+		chain_in_play += 1
 	for spot: Vector2 in YIELD_SPOTS:
 		for flip: float in ([side, -side] if spot.y != 0.0 else [side]):
 			var offset := along * spot.x + across * (spot.y * flip)
@@ -2091,6 +2152,8 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 			# Wheels can't pivot: a spot inside the turning circle is a three-point turn. A car takes a spot it can
 			# drive forward onto, or one straight behind it (reversing in a straight line is what a car CAN do).
 			if wheel_radius() > 0.0 and not _ahead_of_wheels(point) and not _straight_behind(point):
+				continue
+			if _chain_far(chain, point):
 				continue
 			if not _free_spot(point, String(tank.name), other):
 				continue
@@ -2119,6 +2182,8 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 		var point := Vector3(here.x + back.x * distance, 0.0, here.z + back.y * distance)
 		if _flat_distance(point, from) < _flat_distance(here, from):
 			continue
+		if _chain_far(chain, point):
+			continue
 		if not _free_spot(point, String(tank.name), other):
 			continue
 		if _yield_fits(point):
@@ -2143,6 +2208,8 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 		yield_holds += 1
 		_start_yield(other, here, along, "hold", via)
 		return true
+	if not chain.is_empty():
+		chain_refusals += 1
 	return false
 
 
