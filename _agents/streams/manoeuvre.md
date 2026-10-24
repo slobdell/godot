@@ -82,3 +82,9 @@ blob 41 %, turtle 38 %; file `references/scoreboard/guards/8952c3d64.fights.json
 bar's fight guards pair against. Native's givewaychain twin (N3): `pair/native-givewaychain` 37735bf4b, 0 mismatches, quick-remote
 pending. Once it's green, the `native_yield` bypass in `Traffic._chain_native` comes out on merge (native's mirror runs the rule).
 The laptop-v-builder pairing ban still stands until native's N4 merges. Still PAUSED on laptop memory (above).
+
+**Native's N3 (pair/native-givewaychain 37735bf4b, on my 14a10e719):** the C++ copy of the rule, in drive_native.cpp
+begin_yield at my two places. Native removes `Traffic._chain_native`, so asks run in C++ again with the switch on; my last test
+becomes test_the_switch_leaves_native_yield_alone. Twin: 105 forced poses an arm, 0 mismatches on the laptop. Its quick-remote
+failed lint on MY census line (`started` couldn't be typed from an untyped Array). Fixed the same way here as d7259b161, so
+**14a10e719 is not nameable; d7259b161 is the code to check.** Waiting for native's green hash.
