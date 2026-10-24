@@ -32,6 +32,7 @@ func teardown() -> void:
 	SelectionSquads.RANK_SHIFT_HALF = OS.get_cmdline_user_args().has("--group-rank-shift=half")
 	SelectionSquads.GROUP_WHOLE_CLICK = OS.get_cmdline_user_args().has("--group-whole=click")
 	SelectionSquads.CLEAR_REACHED = OS.get_cmdline_user_args().has("--group-clear=reached")
+	SelectionSquads.GROUP_LEAD = OS.get_cmdline_user_args().has("--group-lead=drive")
 	if _lab != null:
 		_lab.dispose()
 	_lab = null
@@ -480,3 +481,48 @@ func test_g2_a_leg_ending_at_a_turn_stands_in_the_street_it_drove() -> void:
 	assert_eq(out.size(), 3, "a column (%s)" % [out])
 	for at: Vector3 in out:
 		assert_true(absf(at.z + 30.0) <= 10.0, "in the street it drove, not down the cross street (%s)" % [at])
+
+
+## G1 v5 (round 39; R38.51's trace, crossing 3 click s4710): a leading squad never stands behind one it leads.
+func test_g1v5lead_breaks_count_a_leader_placed_behind() -> void:
+	assert_eq(SelectionSquads.lead_breaks([10.0, 50.0], [0.0, 30.0]), 0, "the leader takes the far place")
+	assert_eq(SelectionSquads.lead_breaks([10.0, 50.0], [30.0, 0.0]), 1, "the leader placed behind")
+	assert_eq(SelectionSquads.lead_breaks([10.0, 13.0], [30.0, 0.0]), 0, "level squads (inside the slack) take either")
+	assert_eq(SelectionSquads.lead_breaks([10.0, 50.0], [2.0, 0.0]), 0, "places abreast (inside the slack) take either")
+	assert_eq(SelectionSquads.lead_breaks([10.0, 50.0, 90.0], [60.0, 30.0, 0.0]), 3, "a column laid backwards: every pair")
+
+
+## s4710's shape, flat: the street runs from the click (-87, 37.6) up to (-40, 88) and east along z ~ 90; Alpha's crews
+## stand nearest the street's mouth, Bravo's behind them, and the column's places are the head (front) and one rank back.
+## Straight lines from the crews to the places choose to send Bravo to the head (round 38's swap); by the drive, Alpha
+## (leading) takes the head and Bravo follows it in.
+func test_g1v5lead_the_squad_in_front_takes_the_far_place() -> void:
+	var squads: Array = [{"number": 1, "units": ["A1", "A2", "A3", "A4"]}, {"number": 2, "units": ["B1", "B2", "B3"]}]
+	var at := {"A1": Vector3(-20, 0, 104), "A2": Vector3(-34, 0, 90), "A3": Vector3(-24, 0, 96), "A4": Vector3(-28, 0, 100),
+			"B1": Vector3(0, 0, 86), "B2": Vector3(8, 0, 94), "B3": Vector3(4, 0, 90)}
+	var head := Vector3(-75.4, 0, 45.4)
+	var back := Vector3(-43.1, 0, 86.2)
+	var position := func(n: String) -> Vector3: return at[n]
+	# By ground: the street's mouth bend at (-40, 88); every drive goes through it.
+	var bend := Vector3(-40, 0, 88)
+	var click := Vector3(-87, 0, 37.6)
+	var by_ground := func(from: Vector3, to: Vector3) -> float:
+		return Vector2(from.x - bend.x, from.z - bend.z).length() + Vector2(bend.x - to.x, bend.z - to.z).length()
+	var leads: Array = []
+	for squad: Dictionary in squads:
+		var sum := 0.0
+		for n: String in squad["units"]:
+			sum += float(by_ground.call(at[n], click))
+		leads.append(sum / (squad["units"] as Array).size())
+	assert_true(float(leads[0]) < float(leads[1]) - SelectionSquads.LEAD_SLACK_M, "Alpha leads (%s)" % [leads])
+	var arc := func(p: Vector3) -> float: return Vector2(p.x - click.x, p.z - click.z).length()
+	for order: Array in [[head, back], [back, head]]:
+		var anchors: Array[Vector3] = [order[0], order[1]]
+		SelectionSquads.untangle_whole(squads, anchors, position, leads, arc)
+		assert_eq(anchors[0], head, "Alpha (leading) takes the head, from %s" % [order])
+		assert_eq(anchors[1], back, "Bravo follows it in, from %s" % [order])
+	# Without the leads: today's untangle (the reference this fixes) still decides on straight lines.
+	var today: Array[Vector3] = [head, back]
+	SelectionSquads.untangle_whole(squads, today, position)
+	print("GROUP_CLICK g1v5 straight-line untangle gives Alpha %s, Bravo %s" % [today[0], today[1]])
+	assert_eq(today[0], back, "today: straight lines send the trailing squad to the head (s4710)")

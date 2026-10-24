@@ -224,7 +224,12 @@ static func _untangle_once(squads: Array, anchors: Array[Vector3], position: Cal
 ## (the same knots `untangle` deals), every assignment of the knot's places to its squads is tried (a knot is at most five
 ## squads: 120) and the one with the fewest crossing pairs of vehicle drives between different squads wins, then the least
 ## total straight driving, then the order they had (stable). `anchors` is rewritten in place; returns the squads moved.
-static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Callable) -> int:
+## G1 v5 (`leads` given, one per squad: how far its crews drive to the click; `arc(place)`: how far the place stands back
+## from the click by ground): every squad is one knot, and first of all no squad that leads another stands behind it
+## (`lead_breaks`), so the squad in front takes the far place and nobody parks on the way of a squad still to pass.
+static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Callable, leads: Array = [],
+		arc := Callable()) -> int:
+	var by_lead := leads.size() == squads.size() and arc.is_valid()
 	var starts := {}
 	for i in squads.size():
 		for unit_name: String in squads[i]["units"]:
@@ -235,7 +240,7 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 		family.append(i)
 	for i in squads.size():
 		for j in range(i + 1, squads.size()):
-			if _root(family, i) != _root(family, j) and _pair_crosses(squads[i]["units"], anchors[i], squads[j]["units"], anchors[j], starts) > 0:
+			if _root(family, i) != _root(family, j) and (by_lead or _pair_crosses(squads[i]["units"], anchors[i], squads[j]["units"], anchors[j], starts) > 0):
 				family[_root(family, i)] = _root(family, j)
 	var groups := {}
 	for i in squads.size():
@@ -248,11 +253,24 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 		if members.size() < 2:
 			continue
 		var places: Array[Vector3] = []
+		var place_arcs: Array = []
+		var member_leads: Array = []
 		for i: int in members:
 			places.append(anchors[i])
+			if by_lead:
+				place_arcs.append(float(arc.call(anchors[i])))
+				member_leads.append(float(leads[i]))
 		var best: Array = []
-		var best_key := [INF, INF]
+		var best_key := [INF, INF, INF]
 		for perm: Array in _permutations(members.size()):
+			var breaks := 0
+			if by_lead:
+				var arcs: Array = []
+				for a in members.size():
+					arcs.append(place_arcs[perm[a]])
+				breaks = lead_breaks(member_leads, arcs)
+				if breaks > best_key[0]:
+					continue
 			var crossings := 0
 			var drive := 0.0
 			for a in members.size():
@@ -261,10 +279,11 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 					drive += _xz(starts[unit_name]).distance_to(_xz(at))
 				for b in range(a + 1, members.size()):
 					crossings += _pair_crosses(squads[members[a]]["units"], at, squads[members[b]]["units"], places[perm[b]], starts)
-			if crossings < best_key[0] or (crossings == best_key[0] and drive < best_key[1] - 0.01):
-				best_key = [crossings, drive]
+			if breaks < best_key[0] or (breaks == best_key[0] and (crossings < best_key[1]
+					or (crossings == best_key[1] and drive < best_key[2] - 0.01))):
+				best_key = [breaks, crossings, drive]
 				best = perm
-		if best_key[0] > 0:
+		if best_key[1] > 0:
 			whole_still_crossed += 1
 		for a in members.size():
 			if int(best[a]) != a:
@@ -272,6 +291,25 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 			anchors[members[a]] = places[best[a]]
 	swapped_whole += moved
 	return moved
+
+
+## G1 v5 (round 39; R38.51's trace, crossing 3 click s4710: the column gave the far place to Bravo and the near one to
+## Alpha, whose crews led; Alpha arrived at 3.3 s and parked in the street, and Bravo's last crew wedged behind it until
+## t = 90). `--group-lead=drive`: a column's places go to its squads in the order their crews reach the click by ground.
+static var GROUP_LEAD := OS.get_cmdline_user_args().has("--group-lead=drive")
+## Two squads (or two places) closer than this along the drive count as level: either may take either place.
+const LEAD_SLACK_M := 6.0
+
+
+## G1 v5: pairs of squads where one leads the other to the click (`leads`, metres by ground) by more than LEAD_SLACK_M yet
+## its place (`arcs`, metres back from the click by ground) stands behind the other's by more than LEAD_SLACK_M. Pure.
+static func lead_breaks(leads: Array, arcs: Array) -> int:
+	var count := 0
+	for a in leads.size():
+		for b in leads.size():
+			if float(leads[a]) < float(leads[b]) - LEAD_SLACK_M and float(arcs[a]) > float(arcs[b]) + LEAD_SLACK_M:
+				count += 1
+	return count
 
 
 ## Round 37 (orders, R37.29; the lead's playtest 2026-10-21, Terminus: "the target waypoints for each squad was all over at

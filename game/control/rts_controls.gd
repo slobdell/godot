@@ -1242,8 +1242,20 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				from_leg[unit_name] = queue_starts[i]
 		if (column or (SelectionSquads.whole_on(queue_leg) and (verb == "move" or verb == "attack_move"))) \
 				and anchors.size() >= squads.size():
-			SelectionSquads.untangle_whole(squads, anchors,
-					func(n: String) -> Vector3: return from_leg[n] if from_leg.has(n) else _flat_position(n))
+			var at_of := func(n: String) -> Vector3: return from_leg[n] if from_leg.has(n) else _flat_position(n)
+			# G1 v5: a column's places go to its squads in the order their crews reach the click by ground.
+			var leads: Array = []
+			var arc := Callable()
+			if column and SelectionSquads.GROUP_LEAD and ground != null:
+				var drive_l := SelectionSquads.drive_on(ground)
+				var to := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
+				for squad: Dictionary in squads:
+					var sum := 0.0
+					for unit_name: String in squad["units"]:
+						sum += float(drive_l.call(at_of.call(unit_name), to))
+					leads.append(sum / maxi(1, (squad["units"] as Array).size()))
+				arc = func(p: Vector3) -> float: return float(drive_l.call(to, p))
+			SelectionSquads.untangle_whole(squads, anchors, at_of, leads, arc)
 		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 		# Round 38 (G3): no place on another squad's halt (settle's S2 trace, crossing 5 click s3866). After the untangle, so
