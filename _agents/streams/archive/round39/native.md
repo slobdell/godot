@@ -1,3 +1,5 @@
+> **ARCHIVED (round 39 closed 2026-10-24).** Final state of this brief; round 39's results are in `workstreams.md` *Bars (round 39)* and *Rulings (round 39)*.
+
 # Stream: native (the rules-ON pairing base; the same sim on every machine; the tools every stream leans on)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/remote_builds.md`, `_agents/workstreams.md`

@@ -51,10 +51,10 @@ ON or not; the portrait order-preview line floating mid-screen; keep R1's ~3 s t
 cover AI cope with ~2 s; the faction table.
 
 **Native at close:** trig A/B DONE (R39.10: CORE-MATH +169 us/tick = +2.2 % v libm, 3/3 rounds; the 8,366 was noise; a ~2 %
-FMA fix is a low-priority round-40 item); copy-back fix MERGED (a910f397a); the 8952c3d64 scoreboard row still running on builder2
-(~17:20 PDT). Native's brief stays in `streams/native.md` until those land; then archive it.
+FMA fix is a low-priority round-40 item); copy-back fix MERGED (a910f397a); the 8952c3d64 scoreboard row DONE (390ae171a: 40/40 fights, every line
+inside noise v 686150ed2; blob 47 -> 41 % +/- 10). Native closed; all six briefs archived. 
 
-**Close state:** briefs archived to `streams/archive/round39/` (native's pending); his picks' db filed in
+**Close state:** briefs archived to `streams/archive/round39/` (all six); his picks' db filed in
 `streams/references/round39/`; feedback's announcer masters rescued into the main checkout. **Worktrees come down at round 40's
 launch** (as round 38's did), after the lead closes the six sessions: `make worktree-remove STREAM=<s>`, `ssh builder0 rm -rf
 ~/tank_squad/godot-<s>*` and builder2's (BEFORE any round-40 CLI starts, lesson 324), `git branch -m stream/<s> round39/<s>`.
