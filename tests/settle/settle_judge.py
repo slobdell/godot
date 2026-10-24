@@ -9,6 +9,10 @@ s1 = Bar S1 DEPLOY_FIT, s2 = Bar S2 DEPLOY_LATCH (the same guards; each its own 
 
 s3 = Bar H DEPLOY_HOLD (held v latch) and Bar S3 O2-on-settle (o2 v held), the fight probe only.
 
+    python3 tests/settle/settle_judge.py h2 FIGHT_DIR BASE_ARM HELD_ARM
+
+h2 = round 39's Bar H v2: the same hold, judged on the REDEAL_TRACE lines in FIGHT_DIR/logs (needs --deploy-trace on both arms).
+
     python3 tests/settle/settle_judge.py s2v3 PROBE FIGHT3 FIGHT5 CENSUS_BASE.jsonl CENSUS_ARM.jsonl BASE_ARM NEW_ARM
 
 s2v3 = R38.15's S2 v3 bar: s2's lines, with the first-shape guard read against the ground the squad stands on (the
@@ -479,7 +483,50 @@ def s1c(argv):
     return 0 if ok else 1
 
 
+def redeal_traces(fight, arm):
+    """REDEAL_TRACE lines (ElementPlan._trace_redeal) per arm: [(log, cause, crews moved), ...] from FIGHT/logs/*-ARM-s*.log."""
+    out = []
+    for path in sorted(glob.glob(os.path.join(fight, "logs", "*-%s-s*.log" % arm))):
+        with open(path) as f:
+            for line in f:
+                if line.startswith("REDEAL_TRACE "):
+                    d = json.loads(line.split(" ", 1)[1])
+                    out.append((os.path.basename(path), d.get("cause", ""), len(d.get("moved", {}))))
+    return out
+
+
+def h2(argv):
+    """Round 39 Bar H v2 (settle.md Status): held v main on REDEAL_TRACE, the fight probe only."""
+    fight, base, held = argv
+    rows = oj.load(os.path.join(fight, "rows.jsonl"))
+    runs, err = runs_of(os.path.join(fight, "runs.jsonl"))
+    lines = []
+    tb, th = redeal_traces(fight, base), redeal_traces(fight, held)
+    loss_b = sum(1 for t in tb if t[1] == "loss")
+    other_b = sum(1 for t in tb if t[1] != "loss")
+    other_h = sum(1 for t in th if t[1] != "loss")
+    counter = loss_b >= 20
+    lines.append("%s counter: %s re-lays after a loss %d (>= 20)" % ("PASS" if counter else "FAIL", base, loss_b))
+    dec = counter and len(th) <= 0.2 * len(tb)
+    lines.append("%s deciding: REDEAL_TRACE re-lays %d -> %d (<= %.1f); crews moved %d -> %d" % (
+        "PASS" if dec else "FAIL", len(tb), len(th), 0.2 * len(tb), sum(t[2] for t in tb), sum(t[2] for t in th)))
+    g_o = other_h <= other_b + 3
+    lines.append("%s guard re-lays from any other cause %d -> %d (<= base + 3)" % ("PASS" if g_o else "FAIL", other_b, other_h))
+    lines.append("  fight read (%d runs that never started; fights %d/%d)" % (
+        err, sum(1 for r in runs if r["arm"] == base), sum(1 for r in runs if r["arm"] == held)))
+    g_f = oj.fight_guards(runs, base, held, lines) and err == 0
+    lines.append("  reported: parked_redeals %d -> %d, reseats %d -> %d" % (
+        sum(per_fight(rows, base, "parked_redeals").values()), sum(per_fight(rows, held, "parked_redeals").values()),
+        sum(per_fight(rows, base, "reseats").values()), sum(per_fight(rows, held, "reseats").values())))
+    ok = counter and dec and g_o and g_f
+    lines.append("VERDICT %s %s v %s (Bar H v2 DEPLOY_HOLD, round 39)" % ("PASS" if ok else "FAIL", held, base))
+    print("\n".join(lines))
+    return 0 if ok else 1
+
+
 if __name__ == "__main__":
+    if len(sys.argv) >= 2 and sys.argv[1] == "h2":
+        sys.exit(h2(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "s2v3":
         sys.exit(s2v3(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "s1c":

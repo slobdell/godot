@@ -1,0 +1,102 @@
+cell                   arm        |   placed flipping    flips   relays relaying   terr_c   terr_a  reseats     away     held     seat
+crossing 3 click       clear      |       36        0        0        1        1        1        0        0     43.7     43.7    261.7
+crossing 3 click       main       |       36        0        0        3        2        3        0        0    102.9    102.9    354.7
+crossing 3 route       clear      |       36        0        0        7        4        7        0        0     51.8     51.8    211.1
+crossing 3 route       main       |       36        0        0        5        3        5        0        0     38.3     38.3    206.1
+crossing 5 click       clear      |       60        0        0        8        3        8        0        0    202.4    202.4    889.8
+crossing 5 click       main       |       60        0        0        9        5        9        0        0    270.9    270.9    735.6
+crossing 5 route       clear      |       58        0        0       12        8       12        0        0    198.9    198.9    747.3
+crossing 5 route       main       |       58        0        0       16        7       16        0        0    258.7    258.7    742.0
+locks 3 click          clear      |       36        0        0        9        4        9        0        0     66.5     66.5    236.3
+locks 3 click          main       |       36        0        0        5        2        5        0        0    112.6    112.6    285.4
+locks 3 route          clear      |       36        0        0        0        0        0        0        0     90.3     90.3    199.3
+locks 3 route          main       |       36        0        0        3        1        3        0        0     94.8     94.8    264.4
+locks 5 click          clear      |       60        0        0        8        5        8        0        0    173.5    173.5    442.6
+locks 5 click          main       |       59        0        0       17        7       17        0        0    186.2    186.2    530.6
+locks 5 route          clear      |       60        0        0        1        1        1        0        0     80.0     80.0    277.7
+locks 5 route          main       |       60        0        0        3        2        3        0        0    134.4    134.4    384.6
+terminus 3 click       clear      |       36        0        0        0        0        0        0        0     35.7     35.7    125.4
+terminus 3 click       main       |       36        0        0        6        2        6        0        0     81.1     81.1    195.2
+terminus 3 route       clear      |       36        0        0        1        1        1        0        0     17.0     17.0     36.9
+terminus 3 route       main       |       36        0        0        2        1        2        0        0      7.9      7.9     37.4
+terminus 5 click       clear      |       59        0        0        3        2        3        0        0    106.5    106.5    476.5
+terminus 5 click       main       |       60        0        0        0        0        0        0        0     84.8     84.8    428.2
+terminus 5 route       clear      |       58        0        0       17        6       17        0        0    275.0    275.0    857.8
+terminus 5 route       main       |       58        0        0       17        6       17        0        0    257.0    257.0    828.3
+
+TOTAL clear      | placed 571.0 flipping 0.0 flips 0.0 relays 67.0 relaying 35.0 terr_c 67.0 terr_a 0.0 reseats 0.0 away 1341.3 held 1341.3 seat 4762.4
+TOTAL main       | placed 571.0 flipping 0.0 flips 0.0 relays 86.0 relaying 38.0 terr_c 86.0 terr_a 0.0 reseats 0.0 away 1629.6 held 1629.6 seat 4992.5
+
+FLIP crossing 3 click clear seed 6012 squad 3: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 2.6 held 2.6 seat 13.9
+FLIP crossing 3 click main seed 6001 squad 3: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 8.0 held 8.0 seat 14.1
+FLIP crossing 3 click main seed 6009 squad 1: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 15.7 held 15.7 seat 20.2
+FLIP crossing 3 route clear seed 6003 squad 2: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 2.7 held 2.7 seat 18.2
+FLIP crossing 3 route clear seed 6003 squad 3: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 3.4 held 3.4 seat 19.9
+FLIP crossing 3 route clear seed 6004 squad 3: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 9.4 held 9.4 seat 15.9
+FLIP crossing 3 route clear seed 6011 squad 3: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 0.0 held 0.0 seat 3.5
+FLIP crossing 3 route main seed 6001 squad 3: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 2.2 held 2.2 seat 20.6
+FLIP crossing 3 route main seed 6008 squad 2: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 1.9 held 1.9 seat 11.7
+FLIP crossing 3 route main seed 6012 squad 2: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 4.3 held 4.3 seat 6.2
+FLIP crossing 5 click clear seed 6001 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 14.8 held 14.8 seat 26.7
+FLIP crossing 5 click clear seed 6011 squad 5: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 0 away 12.9 held 12.9 seat 15.2
+FLIP crossing 5 click clear seed 6012 squad 4: relays 3 flips 0 shapes ['herringbone'] terrain c/a 3/0 reseats 0 away 1.4 held 1.4 seat 26.7
+FLIP crossing 5 click main seed 6001 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.0 held 0.0 seat 6.1
+FLIP crossing 5 click main seed 6006 squad 4: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 4.9 held 4.9 seat 11.1
+FLIP crossing 5 click main seed 6008 squad 1: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 0 away 14.7 held 14.7 seat 23.3
+FLIP crossing 5 click main seed 6009 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.0 held 0.0 seat 7.0
+FLIP crossing 5 click main seed 6011 squad 4: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 13.3 held 13.3 seat 15.8
+FLIP crossing 5 route clear seed 6001 squad 5: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 13.1 held 13.1 seat 30.5
+FLIP crossing 5 route clear seed 6004 squad 3: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 1.4 held 1.4 seat 14.7
+FLIP crossing 5 route clear seed 6006 squad 5: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 12.2 held 12.2 seat 38.0
+FLIP crossing 5 route clear seed 6008 squad 3: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 10.2 held 10.2 seat 18.1
+FLIP crossing 5 route clear seed 6008 squad 4: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 1.1 held 1.1 seat 20.6
+FLIP crossing 5 route clear seed 6008 squad 5: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 7.1 held 7.1 seat 30.4
+FLIP crossing 5 route clear seed 6011 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.0 held 0.0 seat 7.4
+FLIP crossing 5 route clear seed 6011 squad 5: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 1.5 held 1.5 seat 14.2
+FLIP crossing 5 route main seed 6002 squad 1: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 5.4 held 5.4 seat 20.7
+FLIP crossing 5 route main seed 6004 squad 5: relays 6 flips 0 shapes ['herringbone'] terrain c/a 6/0 reseats 0 away 5.8 held 5.8 seat 11.2
+FLIP crossing 5 route main seed 6008 squad 1: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 4.5 held 4.5 seat 16.1
+FLIP crossing 5 route main seed 6008 squad 5: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.0 held 0.0 seat 0.1
+FLIP crossing 5 route main seed 6009 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.0 held 0.0 seat 4.0
+FLIP crossing 5 route main seed 6009 squad 5: relays 3 flips 0 shapes ['herringbone'] terrain c/a 3/0 reseats 0 away 2.9 held 2.9 seat 19.6
+FLIP crossing 5 route main seed 6012 squad 4: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 10.2 held 10.2 seat 34.5
+FLIP locks 3 click clear seed 6002 squad 2: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.0 held 0.0 seat 10.8
+FLIP locks 3 click clear seed 6004 squad 2: relays 3 flips 0 shapes ['herringbone'] terrain c/a 3/0 reseats 0 away 0.9 held 0.9 seat 32.3
+FLIP locks 3 click clear seed 6006 squad 3: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 1.4 held 1.4 seat 11.7
+FLIP locks 3 click clear seed 6009 squad 2: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 0 away 21.4 held 21.4 seat 33.7
+FLIP locks 3 click main seed 6002 squad 2: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 11.5 held 11.5 seat 20.7
+FLIP locks 3 click main seed 6004 squad 2: relays 3 flips 0 shapes ['herringbone'] terrain c/a 3/0 reseats 0 away 9.2 held 9.2 seat 30.3
+FLIP locks 3 route main seed 6002 squad 2: relays 3 flips 0 shapes ['herringbone'] terrain c/a 3/0 reseats 0 away 22.6 held 22.6 seat 32.3
+FLIP locks 5 click clear seed 6001 squad 4: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 20.8 held 20.8 seat 20.5
+FLIP locks 5 click clear seed 6004 squad 4: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.0 held 0.0 seat 15.0
+FLIP locks 5 click clear seed 6007 squad 3: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.0 held 0.0 seat 4.6
+FLIP locks 5 click clear seed 6009 squad 5: relays 3 flips 0 shapes ['coil'] terrain c/a 3/0 reseats 0 away 4.4 held 4.4 seat 12.1
+FLIP locks 5 click clear seed 6011 squad 4: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 1.0 held 1.0 seat 16.2
+FLIP locks 5 click main seed 6004 squad 4: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.0 held 0.0 seat 15.0
+FLIP locks 5 click main seed 6005 squad 2: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 41.9 held 41.9 seat 53.3
+FLIP locks 5 click main seed 6007 squad 2: relays 3 flips 0 shapes ['herringbone'] terrain c/a 3/0 reseats 0 away 7.4 held 7.4 seat 10.9
+FLIP locks 5 click main seed 6007 squad 3: relays 3 flips 0 shapes ['herringbone'] terrain c/a 3/0 reseats 0 away 0.0 held 0.0 seat 6.6
+FLIP locks 5 click main seed 6009 squad 5: relays 3 flips 0 shapes ['coil'] terrain c/a 3/0 reseats 0 away 4.4 held 4.4 seat 12.1
+FLIP locks 5 click main seed 6010 squad 4: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 0 away 16.8 held 16.8 seat 20.6
+FLIP locks 5 click main seed 6011 squad 4: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 1.0 held 1.0 seat 16.2
+FLIP locks 5 route clear seed 6007 squad 2: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 3.2 held 3.2 seat 38.4
+FLIP locks 5 route main seed 6007 squad 2: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 14.4 held 14.4 seat 28.7
+FLIP locks 5 route main seed 6007 squad 3: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 38.3 held 38.3 seat 47.2
+FLIP terminus 3 click main seed 6003 squad 2: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 0 away 17.4 held 17.4 seat 23.8
+FLIP terminus 3 click main seed 6011 squad 2: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 23.7 held 23.7 seat 37.1
+FLIP terminus 3 route clear seed 6005 squad 2: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 4.8 held 4.8 seat 19.7
+FLIP terminus 3 route main seed 6005 squad 2: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 7.9 held 7.9 seat 24.4
+FLIP terminus 5 click clear seed 6003 squad 4: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 6.1 held 6.1 seat 20.1
+FLIP terminus 5 click clear seed 6005 squad 4: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 38.2 held 38.2 seat 57.2
+FLIP terminus 5 route clear seed 6002 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 6.3 held 6.3 seat 43.2
+FLIP terminus 5 route clear seed 6005 squad 3: relays 5 flips 0 shapes ['herringbone'] terrain c/a 5/0 reseats 0 away 5.7 held 5.7 seat 12.7
+FLIP terminus 5 route clear seed 6005 squad 4: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 0 away 0.0 held 0.0 seat 26.5
+FLIP terminus 5 route clear seed 6006 squad 4: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 3.6 held 3.6 seat 35.0
+FLIP terminus 5 route clear seed 6010 squad 4: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 6.5 held 6.5 seat 49.8
+FLIP terminus 5 route clear seed 6012 squad 4: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 0 away 11.9 held 11.9 seat 23.5
+FLIP terminus 5 route main seed 6003 squad 4: relays 3 flips 0 shapes ['herringbone'] terrain c/a 3/0 reseats 0 away 20.1 held 20.1 seat 26.7
+FLIP terminus 5 route main seed 6005 squad 4: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.2 held 0.2 seat 27.1
+FLIP terminus 5 route main seed 6006 squad 4: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 15.2 held 15.2 seat 24.3
+FLIP terminus 5 route main seed 6011 squad 1: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 2.8 held 2.8 seat 27.5
+FLIP terminus 5 route main seed 6011 squad 4: relays 4 flips 0 shapes ['herringbone'] terrain c/a 4/0 reseats 0 away 11.6 held 11.6 seat 21.9
+FLIP terminus 5 route main seed 6012 squad 4: relays 6 flips 0 shapes ['herringbone'] terrain c/a 6/0 reseats 0 away 18.6 held 18.6 seat 31.1
