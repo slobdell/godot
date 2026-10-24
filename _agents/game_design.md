@@ -4379,6 +4379,8 @@ question and stays as it is.
   is honest); firing on the move: none; suppressed/slowed crews: AMBER chevrons; phone map: DOCK layout; all six caller lines'
   text approved (moving_miss.01-03, pinned_slow.01-03), voiced, OFF until he hears them.
 - **Laptop memory** (asked, his "yes, with the rule"): one stream runs Godot on the laptop at a time (R39.3).
+- **Caller lines (2026-10-24, verbatim):** "why is announcer-rules a flag? If we have new announcer scripts we should just turn
+  them on" -> ON by default; approved content ships ON from now on.
 - **Open with him at round 39's close:** keep R1's full sight at ~3 s after a halt (his number was ~2 s; ~2 s pulled crews out of
-  cover in scenario_cover) or have the cover AI cope; the caller lines' default; the faction-matchup table (blob wins are
+  cover in scenario_cover) or have the cover AI cope; the portrait order-preview line; the faction-matchup table (blob wins are
   mostly faction composition/balance: workstreams.md *Bars (round 39)* D3, doctrine's archived brief).
