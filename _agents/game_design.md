@@ -4360,3 +4360,14 @@ and otherwise free up the view for the top of the screen where the perspective m
 What he will notice: the top of the screen is clear, so he sees the far field. Decided by him: the scoreboard moves to the lower-left
 corner (the bottom elements refit around it); the announcer's text lines go (its voice stays); the camera pitch/debug readout goes
 from the player's view (a debug flag may keep it for us); hint lines like "PLANNING: select..." leave the top. Owner: feedback (F5).
+
+## His call on R1-R3 (2026-10-23, after D3's read R38.48)
+
+Asked whether to turn on the three round-37 rules (moving crews see less, moving fire much less accurate, suppression slows but never
+stops) given D3's read that they change fight length, not who wins, he said (verbatim): "for the 3 real choices for me, yes, we should
+enable all of those features. Regardless of whether or not this makes the game better right now, it's the correct direction to move in,
+and we'll continue iterating to ensure that tactics and strategy win our as opposed to full frontal assault slug ests"
+
+**So:** sight, spread and pin_slow ship ON by default (RuleSwitches.DEFAULT_ON). This is a direction call, not a results call: later
+rounds keep iterating on the two guard lines until tactics beat a frontal blob. Hull-down (R37 hulldown switch) was not in the
+question and stays as it is.
