@@ -58,12 +58,24 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (in progress, 2026-10-23 night)
+### Report (2026-10-24)
 - **GREEN: 6ab14f1ac** (builder0, `make native check exited 0`, 3,145 passed / 0 failed, 27 targets ALL JUDGED, sim-baseline unmoved
   on every map, 3,419 s). Everything past main is OFF by default.
-- **S1 route-clear v2, OFF** (`--seat-route-clear`; code daea2cefe, unchanged in 6ab14f1ac but for OFF traces and deploy_preview):
-  lab clean on the three traced cases (below). Bar filed below; **its series is running** on 6ab14f1ac's tree (builder0 light, J 4,
-  seeds 6001-6024, started 2026-10-24 ~03:10 PDT).
+- **S1 route-clear v2: FAILED its bar; stays OFF** (`--seat-route-clear`; series on 6ab14f1ac's tree, builder0 light, J 4, seeds
+  6001-6024, 576 squads an arm + 36 + 36 fights an arm; `>> remote: make native settle-s1c ... exited 0`, verdict FAIL). Deciding:
+  never-in runs on the 5-squad cells 1 -> 3, three NEW (terminus 5 click s6003, terminus 5 route s6003, crossing 5 route s6009) and
+  main's one (crossing 5 route s6006) got in. Guards otherwise pass: all-in 25.8 -> 24.7 s (140 runs in on both), twitch >= 15 m
+  108 -> 103, friend contacts 11,944 -> 10,623, foreign 6,548 -> 5,436, fights flat (3-squad his kills 5.06 -> 4.83, losses 7.83 ->
+  8.31; 5-squad 9.78 -> 10.08, 15.44 -> 15.44). Reported: deploy legs >= 25 m **64 -> 100**. No ship, no re-file on these seeds.
+  What the three new never-ins share (the deploy traces, not yet traced in time): the halt ahead cleared 2-3 seats and each
+  cleared seat sent its crew 13-20 m along or across the lane the blocked squad still had to drive (click s6003: Bravo_4
+  (3.6, 75.1) -> (-0.6, 57.9), down Alpha's lane at x 4-7; route s6003: Delta_1 (3.2, 80.0) -> (19.1, 74.4) across the junction
+  Echo needed). The clear judges where a seat STANDS, not the drive to it, and the 7 m corridor is judged from the centre line
+  in lanes narrower than that. Next (a later round): judge the crew's leg to its cleared seat against the same corridor, and
+  only clear when the leg is shorter than the one it replaces; trace the three runs in time first. References:
+  `references/round39/settle/s1-route-clear-builder0/`.
+- **Item 2 (`--deploy-fit=street` on top of 1): not run** — the brief's rule (no new bar if 1 fails). The lab's `fitclear` arm
+  (table below, n 1) is the only read.
 - **Item 3 traced (o2's crossing re-deals):** dev read on rules-ON main (builder0 light, 82c0a9db2 tree, crossing 3 click fights,
   dev seeds 3891-3902, n 12 an arm): parked re-deals held 22 -> o2 35. Traced s3895 Alpha (0 -> 4): every counted re-deal is ONE
   crew's seat moving 14-18 m off and back with anchor, shape, latched spacing and seat index unchanged. Probable cause:

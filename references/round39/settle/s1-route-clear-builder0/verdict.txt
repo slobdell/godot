@@ -1,0 +1,23 @@
+PASS counter: seats cleared 619 over 573 deploys on clear; squads 576
+FAIL deciding: never-in runs on the 5-squad cells 1 -> 3 (<= base - 1, base >= 2) and none new (3 new: [('crossing', 5, 'route', 6009), ('terminus', 5, 'click', 6003), ('terminus', 5, 'route', 6003)])
+    base never-in: [('crossing', 5, 'route', 6006)]
+    arm never-in: [('crossing', 5, 'route', 6009), ('terminus', 5, 'click', 6003), ('terminus', 5, 'route', 6003)]
+FAIL guard never-in, every cell: 1 -> 3 runs (arm <= base)
+PASS guard all-in time: mean over 140 runs in on both 25.8 -> 24.7 s (<= 29.3)
+PASS guard twitch: squads with twitch >= 15 m 108 -> 103 (not up)
+PASS guard first shape: differs 5 of 576 (<= 3 %)
+PASS guard shape flips (the latch): 0 -> 0 (<= base + 3)
+PASS guard friend_contacts 11944 -> 10623 (<= 13143.4)
+PASS guard friend_contacts_foreign 6548 -> 5436 (<= 7207.8)
+  fight read 3-squad (0 runs that never started)
+  PASS guard his kills   base 5.06 arm 4.83 a fight (se 0.38, n 36/36)
+  PASS guard his losses  base 7.83 arm 8.31 a fight (se 0.46, n 36/36)
+  PASS guard CPU losses  base 5.06 arm 4.92 a fight (se 0.38, n 36/36)
+PASS fight guards
+  fight read 5-squad (--probe-budget=3000) (0 runs that never started)
+  PASS guard his kills   base 9.78 arm 10.08 a fight (se 0.50, n 36/36)
+  PASS guard his losses  base 15.44 arm 15.44 a fight (se 0.71, n 36/36)
+  PASS guard CPU losses  base 9.86 arm 10.19 a fight (se 0.50, n 36/36)
+PASS fight guards
+  reported: place+twitch >= 25 m squads 171 -> 170; deploy leg >= 25 m 64 -> 100
+VERDICT FAIL clear v main (Bar S1 route-clear, round 39)
