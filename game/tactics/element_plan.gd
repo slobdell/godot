@@ -877,6 +877,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 			_trace_deploy(plan, situation, stand, deploy["heading"], spacing)
 		if DEPLOY_TRACE:
 			_trace_stand(plan, situation, deploy)
+			_trace_redeal(plan, situation, deploy)
 		return
 	# Round 25 (brains F1, C25.5): who takes which seat. In transit the shape TRAVELS along the route, so the nearest
 	# crew to each seat is the nearest to that seat's station on the route now (route_seats), not to its slot at the
@@ -1939,6 +1940,34 @@ static func _trace_stand(plan: Dictionary, situation: Dictionary, deploy: Dictio
 			"terrain": ElementSituation.terrain_at(centre), "crews": members.size()}
 	print("STAND_TRACE ", JSON.stringify(line))
 	return line
+
+
+## Round 39 (settle stretch, after item 3's trace): one REDEAL_TRACE line each time a deployed halt moves a surviving crew's
+## seat more than REDEAL_TRACE_M, as the halt lays it (before UnansweredFire's ducks, which orders' probe counts as parked
+## re-deals too): {"tick", "leader", "cause": "loss" when a crew of the halt was lost since the last update, else "other",
+## "moved": {crew: metres}}. Measurement only, under --deploy-trace; the last seats are kept in the deploy.
+const REDEAL_TRACE_M := 6.0
+
+
+static func _trace_redeal(plan: Dictionary, situation: Dictionary, deploy: Dictionary) -> void:
+	var last: Dictionary = deploy.get("trace_slots", {})
+	var now := {}
+	for name: Variant in plan["slots"]:
+		if plan["slots"][name] is Vector3:
+			now[String(name)] = plan["slots"][name]
+	deploy["trace_slots"] = now
+	if last.is_empty():
+		return
+	var moved := {}
+	for name: String in now:
+		if last.has(name) and Vector2((now[name] as Vector3).x - (last[name] as Vector3).x,
+				(now[name] as Vector3).z - (last[name] as Vector3).z).length() > REDEAL_TRACE_M:
+			moved[name] = snappedf((now[name] as Vector3).distance_to(last[name]), 0.1)
+	if moved.is_empty():
+		return
+	var lost := last.keys().any(func(n: String) -> bool: return not now.has(n))
+	print("REDEAL_TRACE ", JSON.stringify({"tick": int(situation.get("tick", 0)), "leader": String(situation.get("leader", "")),
+			"cause": "loss" if lost else "other", "moved": moved}))
 
 
 ## D3b (R35.41): a packed squad's last stretch in a file (OFF; `--arrive-file=on` / env ARRIVE_FILE=on opts in).
