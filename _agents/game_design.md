@@ -4371,3 +4371,14 @@ and we'll continue iterating to ensure that tactics and strategy win our as oppo
 **So:** sight, spread and pin_slow ship ON by default (RuleSwitches.DEFAULT_ON). This is a direction call, not a results call: later
 rounds keep iterating on the two guard lines until tactics beat a frontal blob. Hull-down (R37 hulldown switch) was not in the
 question and stays as it is.
+
+
+## His round-39 calls (2026-10-23/24)
+
+- **Feedback picks** (directions page, `streams/references/round39/feedback-picks-round39.json`): sight shown: none (the fog edge
+  is honest); firing on the move: none; suppressed/slowed crews: AMBER chevrons; phone map: DOCK layout; all six caller lines'
+  text approved (moving_miss.01-03, pinned_slow.01-03), voiced, OFF until he hears them.
+- **Laptop memory** (asked, his "yes, with the rule"): one stream runs Godot on the laptop at a time (R39.3).
+- **Open with him at round 39's close:** keep R1's full sight at ~3 s after a halt (his number was ~2 s; ~2 s pulled crews out of
+  cover in scenario_cover) or have the cover AI cope; the caller lines' default; the faction-matchup table (blob wins are
+  mostly faction composition/balance: workstreams.md *Bars (round 39)* D3, doctrine's archived brief).

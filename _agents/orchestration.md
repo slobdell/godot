@@ -3951,3 +3951,12 @@ instrument that cannot lie about load — removal within one run — and let eve
      `pgrep` sat in the same command as the `rm -rf`, so it reported the run after deleting its tree. Rule: clear builder folders
      in launch step 1, before the lead starts any CLI; a stopped builder gets cleared the next time it is up only if
      `pgrep -af 'make|godot'` (its own command, read first) shows no Tank Squad run, and otherwise only the named stale folders go.
+325. **When a checkpoint a bar waits on never comes, re-base the bar on what did pass, before any number.** (Round 39, R39.9.)
+     Orders' G1 v5 / G3 v6 were filed to read "on top of CP39.1" (settle's or manoeuvre's seat fix); both failed. The bars'
+     seeds were still unseen, so the orchestrator re-based them on main with the fix that DID pass (DEPLOY_HOLD) and ran both the
+     same hour, one per builder (R39.8): two ~3 h series finished in ~3 h, not 6, and the round closed the same day. Re-basing is
+     legitimate only before the bar's own seeds produce a number; say so in the ruling.
+326. **A copy-back verifier that flags a file the copier skipped is right, and a plain re-copy won't fix it.** (Round 39 close.)
+     `build/flank_s5.mp4` was stale on the laptop with the box's size and mtime, so rsync's quick check skipped it and the sha256
+     verifier failed the run (exit 5 over a green box check). `rsync -a` again did nothing; `rsync -a --checksum` fixed it. The
+     box's verdict lines stood (they come from the box's stream, not the copied files); re-copy with --checksum, then quote build/.
