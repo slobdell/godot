@@ -461,6 +461,9 @@ func _clip(clip_name: String, each: Callable) -> void:
 func _save(file_name: String) -> void:
 	var path := out_dir.path_join(file_name + ".png")
 	var err := get_viewport().get_texture().get_image().save_png(path)
+	for node: Variant in _staged:
+		if is_instance_valid(node) and _drivers.has((node as Tank).name):
+			print("FEEDBACK_DRIVER %s speed=%.1f slowed=%.2f draws=%s" % [(node as Tank).name, (node as Tank).speed(), FeedbackReader.slowed(node), UnitBars.rule_draws]) if (node as Tank).name == &"FbSlowed1" else null
 	_written += 1
 	var fx := FxWorld.existing()
 	print("FEEDBACK_SHOT %s %s look=%s rules=%s counts=%s" % [file_name, error_string(err), FeedbackLook._on, FeedbackLook._rule,

@@ -235,6 +235,7 @@ func _rule_looks(tank: Tank, camera: Camera3D, s: float) -> void:
 	if FeedbackLook.rule("slowed") == "brake":
 		var slow := FeedbackReader.slowed(tank) * Tank.PIN_SLOW_MAX
 		if slow >= BRAKE_FROM and absf(tank.speed()) >= BRAKE_MIN_SPEED:
+			rule_draws["brake"] = int(rule_draws.get("brake", 0)) + 1
 			_brake_lights(tank, camera, s, clampf(slow / Tank.PIN_SLOW_MAX, 0.0, 1.0))
 
 
@@ -285,5 +286,5 @@ func _brake_lights(tank: Tank, camera: Camera3D, s: float, strength: float) -> v
 		if camera.is_position_behind(light):
 			continue
 		var at := camera.unproject_position(light)
-		draw_circle(at, 5.5 * s, Color(BRAKE_COLOR, 0.25 * strength))
-		draw_circle(at, 2.6 * s, Color(BRAKE_COLOR.lightened(0.3), 0.55 + 0.45 * strength))
+		draw_circle(at, 11.0 * s, Color(BRAKE_COLOR, 0.25 + 0.3 * strength))
+		draw_circle(at, 4.5 * s, Color(BRAKE_COLOR.lightened(0.35), 0.7 + 0.3 * strength))
