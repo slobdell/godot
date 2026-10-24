@@ -59,8 +59,37 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### Report (in progress, 2026-10-23 night)
-- **S1 route-clear built, OFF** (`--seat-route-clear`, env SEAT_ROUTE_CLEAR=on; a9df7ffa0). `make quick-remote` on builder0 at
-  a9df7ffa0: 128 passed / 0 failed (lint of the 103 dependent scripts, the diff's tests, combat-smoke). Lab on the traced cases: running.
+- **S1 route-clear v2, OFF** (`--seat-route-clear`, env SEAT_ROUTE_CLEAR=on; daea2cefe): lab clean on the three traced cases (below).
+  Bar filed below; full check of the named hash next, then the series on 6001-6024.
+- **Orders' request done:** `ElementPlan.deploy_preview` (4066132c4, quick-remote builder0 132/0), pure; orders told.
+
+### S1 route-clear lab (builder0 light, n 1 per run, orders' probe; `make settle-lab`)
+| case | main | clear | fit (street) | fit + clear |
+|---|---|---|---|---|
+| crossing 5 route s3958 (the bridge mouth) | squad 4 NEVER | all in 47.5 s | squad 4 NEVER | all in 47.5 s |
+| crossing 5 route s3806 | all in 41.7 s | all in 44.5 s | all in 41.8 s | all in 44.5 s |
+| terminus 5 route s4505 | all in 42.2 s | all in 42.2 s | Echo NEVER | all in 42.3 s |
+- v1 (886c38c17) lost s4505's squads 1 and 5. Traced (4066132c4, `--deploy-trace`, which now prints the `clear_of` ground):
+  (a) the corridor started at Alpha's centre, so a seat cleared 6 m behind it stood on its rear crews' lane; (b) Bravo_1's seat
+  grounded onto Alpha's lane from both directions tried and stayed. v2 (daea2cefe) starts the corridor from every crew, searches
+  the whole ring (16 ways) nearest first, and keeps each crew's answer in the deploy. The table above is v2.
+- Cost seen: s4505 squad 1 is in at 30.6 s v 24.9; s3806 all-in +2.8 s. The guards below judge it.
+
+### Bar S1 route-clear (filed 2026-10-23 before any number on its seeds; code = daea2cefe's)
+What he'd see: on a 5-squad click or route, a squad that stops first never parks a tank on the street or bridge mouth the next
+squad still has to drive, and every squad gets in. Arms: `main:--deploy-trace` v `clear:--seat-route-clear,--deploy-trace`.
+Base: main as launched (8952c3d64: latch ON, R1-R3 ON). **Manoeuvre's `--giveway-chain`: OFF in both arms** (main's state; C39.2).
+**Seeds 6001-6024 (registered):** no-fight probe 12 cells x 6001-6012 (576 squads an arm), fights 3-squad (budget 1500) and 5-squad
+(budget 3000) click cells x 6013-6024. `tools/remote.sh --light native settle-s1c TANK_SQUAD_SLOT_TIMEOUT=14400`, builder0 light, J 4,
+after a full check of the named hash. Judge `settle_judge.py s1c` (dry-run on round 38's S1 v5 rows reproduces R38.40's read).
+- Counter: seats cleared > 0.
+- **Deciding:** never-in runs on the 5-squad cells (route and click) clear <= main - 1, with main >= 2, and NO run never-in on
+  clear that main gets in. (Main < 2 = not decidable: no ship.)
+- Guards (judged): never-in over every cell not up; all-in time, the mean over runs in on both arms, <= main x 1.10 + 1 s; twitch
+  >= 15 m squads not up; first shape differs <= 3 %; shape flips (the latch) <= main + 3; friend contacts and foreign <= 110 % + 5;
+  the fights (both reads, his kills / his losses / CPU losses within 1.645 se, 0 runs that never started).
+- Reported: place+twitch and deploy legs >= 25 m.
+- A pass ships `--seat-route-clear` ON on a new hash with one full check (CP39.1 with manoeuvre's M1).
 
 ### Plan (ordered)
 1. S1 route-clear: pure lab (`tests/test_settle_route_clear.gd`) -> the traced cases (`make settle-lab`, builder0 light) -> bar

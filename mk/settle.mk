@@ -98,6 +98,8 @@ SETTLE_V2_SEEDS ?= $(shell seq 3921 3932)
 SETTLE_V2_FIGHT_SEEDS ?= $(shell seq 3933 3944)
 SETTLE_V2_JOBS ?= 14
 SETTLE_V2_ARMS ?= main:--deploy-trace fit:--deploy-fit=on,--deploy-trace
+SETTLE_V2_JUDGE ?= s1v2
+SETTLE_V2_PAIR ?= main fit
 SETTLE_V2 := $(BUILD_DIR)/settle-s1v2
 .PHONY: settle-s1v2
 settle-s1v2: native-for-check import ## Round 38 (settle, R38.11): S1 v2's series (main v fit) -> build/settle-s1v2/verdict.txt
@@ -111,7 +113,7 @@ settle-s1v2: native-for-check import ## Round 38 (settle, R38.11): S1 v2's serie
 	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ROUTES=click ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_JOBS=$(SETTLE_V2_JOBS) \
 		ORDERS_PROBE_ARMS="$(foreach a,$(SETTLE_V2_ARMS),$(a),--probe-fight=on,--probe-budget=3000)" \
 		ORDERS_PROBE_SEEDS="$(SETTLE_V2_FIGHT_SEEDS)" ORDERS_PROBE_DIR=$(SETTLE_V2)/fight5 > $(SETTLE_V2)/fight5.out 2>&1 || true
-	@cd $(SETTLE_V2) && $(PYTHON) $(CURDIR)/tests/settle/settle_judge.py s1v2 probe fight3 fight5 main fit | tee verdict.txt || true
+	@cd $(SETTLE_V2) && $(PYTHON) $(CURDIR)/tests/settle/settle_judge.py $(SETTLE_V2_JUDGE) probe fight3 fight5 $(SETTLE_V2_PAIR) | tee verdict.txt || true
 
 # R38.15: S2 v3, the same arm (main v latch) on seeds never read for S2, its first-shape guard read against the ground each
 # squad stands on (ElementPlan's STAND_TRACE under --deploy-trace) -> build/settle-s2v3/verdict.txt.
@@ -200,3 +202,13 @@ settle-lab: native-for-check import ## Round 39 (settle S1): orders' probe on SE
 			--probe-squads=$$n --probe-route=$$route --probe-arm=$$name --deploy-trace $$flags $(SETTLE_LAB_FLAGS) \
 			> $(BUILD_DIR)/settle-lab/$$map-$$n-$$route-s$$seed-$$name.log 2>&1 || true'
 	@$(PYTHON) tests/settle/settle_lab.py $(BUILD_DIR)/settle-lab | tee -a $(BUILD_DIR)/settle-lab/lab.txt
+
+# Round 39 Bar S1 route-clear (settle.md Status, filed before any number): main v --seat-route-clear on the latch-ON main,
+# S1 v5's workloads on fresh seeds: no-fight 12 cells x 6001-6012, fights 3-squad (budget 1500) and 5-squad (budget 3000)
+# click cells x 6013-6024; judge `settle_judge.py s1c`. builder0 light, J 4, TANK_SQUAD_SLOT_TIMEOUT=14400:
+#   tools/remote.sh --light native settle-s1c TANK_SQUAD_SLOT_TIMEOUT=14400
+.PHONY: settle-s1c
+settle-s1c: ## Round 39 (settle S1): the route-clear bar's series (main v clear, seeds 6001-6024) -> build/settle-s1c/verdict.txt
+	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1c" SETTLE_V2_SEEDS="$$(seq -s " " 6001 6012)" \
+		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 6013 6024)" SETTLE_V2_JOBS=4 SETTLE_V2_JUDGE=s1c SETTLE_V2_PAIR="main clear" \
+		SETTLE_V2_ARMS="main:--deploy-trace clear:--seat-route-clear,--deploy-trace"
