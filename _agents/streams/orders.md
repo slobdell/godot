@@ -58,7 +58,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   `lead_breaks` (a squad placed behind one it leads by > 6 m), then crossings, then drive. Decided: lead = mean of the
   squad's crews' navmesh drives (the bulk of the squad, not one forward scout).
   - Lab `test_control_group_click` (laptop GDScript): pins today's straight-line swap (Bravo to the head) and the fix.
-  - **s4710 lab** (builder0 light J3, 93a6c2283's tree, crossing 3 click, n 1; `references/round39/orders/g1v5-lab-s4710-builder0-ef68308d1/`):
+  - **s4710 lab** (builder0 light J3, ef68308d1 + G2 v2 work OFF, crossing 3 click, n 1; `references/round39/orders/g1v5-lab-s4710-builder0-ef68308d1/`):
     v4 Bravo never in, contacts 3,756 -> v5 all in 9.7 s, twitch 0, contacts 71 (main 875, all in 17.3 s).
   - Dev read 1 running (builder0 light J4, 93a6c2283, dev seeds 3804-3809, 12 street cells, main / v4 / v5).
 - **G2 v2 built** (`--group-route-corner=line`, OFF; 93a6c2283). On a leg, the column's room is read along the road (capped

@@ -621,6 +621,27 @@ static var PLACE_CLEAR := OS.get_cmdline_user_args().has("--place-clear=on") or 
 ## halt did not seat, and the deploy re-seated it ~24 s in, 16-23 m of twitch). `--place-clear-seat=on`: a moved place
 ## must seat every crew without a re-seat (the caller's check), else it steps back along the squad's own leg.
 static var PLACE_CLEAR_SEAT := OS.get_cmdline_user_args().has("--place-clear-seat=on")
+## G3 v6: a moved place whose deploy drives no crew further than this holds its seats whatever the original's.
+const SEAT_HOLD_M := 8.0
+
+
+## G3 v6: the least longest leg over every dealing of `travel` seats to `halt` seats (one each, up to six; more: in order).
+static func deploy_leg(travel: Array[Vector3], halt: Array[Vector3]) -> float:
+	var n := mini(travel.size(), halt.size())
+	if n == 0:
+		return 0.0
+	var perms := _permutations(n) if n <= 6 else [range(n)]
+	var best := INF
+	for perm: Array in perms:
+		var worst := 0.0
+		for a in n:
+			worst = maxf(worst, _flat_gap(travel[a], halt[int(perm[a])]))
+			if worst >= best:
+				break
+		best = minf(best, worst)
+	return best
+
+
 ## Measurement (G3 v6): places that needed a move but found none that seats, kept, since start.
 static var places_kept_unseated := 0
 const PLACE_CLEAR_STEP_M := 4.0

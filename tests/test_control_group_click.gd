@@ -593,3 +593,10 @@ func test_g3v6_a_moved_place_must_seat_its_crews() -> void:
 	var nowhere := func(_i: int, _at: Vector3) -> bool: return false
 	assert_eq(SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(0, 0, -1), any, Callable(), nowhere), places,
 			"nowhere seats: the place is kept")
+
+
+func test_g3v6_deploy_leg_is_the_least_longest_leg() -> void:
+	var travel: Array[Vector3] = [Vector3(0, 0, 0), Vector3(10, 0, 0)]
+	var halt: Array[Vector3] = [Vector3(10, 0, 3), Vector3(0, 0, 4)]
+	assert_near(SelectionSquads.deploy_leg(travel, halt), 4.0, 0.001, "dealt crosswise: the longest leg is 4 m, not 10.4")
+	assert_near(SelectionSquads.deploy_leg([] as Array[Vector3], halt), 0.0, 0.001, "no crews: no leg")
