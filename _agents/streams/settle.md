@@ -84,6 +84,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   uncommitted to cd7a272d0; builder0 light, same workload, n 12 an arm): parked re-deals held 22 -> 9, o2 35 -> 7 with ducks off,
   so o2's surplus is all ducks (`references/round39/settle/duck-control-builder0/`). **No Bar H re-file:** its re-deal line counts duck moves (R38.42's rule: the trace changes it). References:
   `references/round39/settle/o2-redeal-trace-builder0/`.
+- **Bar H v2 DEPLOY_HOLD: PASS -> ON** (series on cd7a272d0 = dbc022357's code, builder0 light J 4, seeds 6025-6048, 72 fights
+  an arm; `>> remote: make native settle-h2 ... exited 0`): REDEAL_TRACE re-lays after a loss 288 -> 0 (367 crews moved -> 0),
+  other causes 0 -> 0; his kills 5.39 -> 5.31, his losses 6.99 -> 6.64, CPU losses 5.44 -> 5.33 a fight (all within 1.645 se, 0
+  runs unstarted). Reported: parked_redeals 172 -> 100, reseats 244 -> 1. Shipped ON at 2478e2eef (main f1fb16131 merged in;
+  `--deploy-hold=off` = round 38's re-lay). References `references/round39/settle/h2-deploy-hold-builder0/`. **Full check of the
+  ship hash: see the green line above.**
 - **Stretch (re-deals after a loss), dev read** (builder0 light, 15ec5b830, fight probe locks/crossing/terminus x 3-squad click x
   dev seeds 3891-3902, n 36 fights an arm; REDEAL_TRACE = the halt's OWN seat moves > 6 m, before ducks): main 144 re-lays after a
   loss (185 crews moved), 0 from any other cause; `--deploy-hold=on` 0. Fights: his kills 4.86 -> 5.42, his losses 7.92 -> 7.36, CPU

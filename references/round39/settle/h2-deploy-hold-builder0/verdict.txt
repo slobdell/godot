@@ -1,0 +1,10 @@
+PASS counter: main re-lays after a loss 288 (>= 20)
+PASS deciding: REDEAL_TRACE re-lays 288 -> 0 (<= 57.6); crews moved 367 -> 0
+PASS guard re-lays from any other cause 0 -> 0 (<= base + 3)
+  fight read (0 runs that never started; fights 72/72)
+  PASS guard his kills   base 5.39 arm 5.31 a fight (se 0.26, n 72/72)
+  PASS guard his losses  base 6.99 arm 6.64 a fight (se 0.35, n 72/72)
+  PASS guard CPU losses  base 5.44 arm 5.33 a fight (se 0.26, n 72/72)
+PASS fight guards
+  reported: parked_redeals 172 -> 100, reseats 244 -> 1
+VERDICT PASS held v main (Bar H v2 DEPLOY_HOLD, round 39)
