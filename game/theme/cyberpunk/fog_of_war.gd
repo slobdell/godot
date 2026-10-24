@@ -10,6 +10,8 @@ var _material := ShaderMaterial.new()
 var _field: VisibilityField
 var _texture: Texture2D
 var _looks := 0
+## False draws the field's picture alone (the `no_fogclip` perf layer measures what the clip costs).
+var clip := true
 
 
 func _ready() -> void:
@@ -41,4 +43,7 @@ func _process(_delta: float) -> void:
 		_field = FogViewers.find_field(get_tree(), _texture)
 		if _field == null:
 			return
-	FogViewers.apply(_material, _field)
+	if clip:
+		FogViewers.apply(_material, _field)
+	else:
+		_material.set_shader_parameter("viewer_count", -1)
