@@ -1,0 +1,32 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          held      |   33.2 /   14.8   |   23   0 |     23.1 |               3.6 |            44.3 | 6.22 | 51.9
+crossing 3 click          heldnd    |   33.2 /   14.8   |   18   0 |     23.1 |               3.6 |            44.3 | 4.80 | 51.9
+crossing 3 click          o2        |   33.2 /   14.8   |   21   0 |     28.1 |               3.1 |            51.4 | 3.73 | 51.9
+crossing 3 click          o2nd      |   33.2 /   14.8   |   18   0 |     28.1 |               3.1 |            36.7 | 2.87 | 51.9
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          held      |          33.1 |          33.7 |           48.3 |               6.8 |          41.4
+crossing 3 click          heldnd    |          33.1 |          32.6 |           48.3 |               3.5 |          37.7
+crossing 3 click          o2        |          38.1 |          33.1 |              - |               3.4 |          48.4
+crossing 3 click          o2nd      |          38.1 |          26.4 |           30.3 |               3.4 |          36.7
+
+MEDIANS over seeds [3891, 3892, 3893, 3894, 3895, 3896, 3897, 3898, 3899, 3900, 3901, 3902] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          held        | 12 |         16.4 |     0 |          32.8 |         36.5 |          34.2 |              -1.0 |   23   0 | 3.20
+crossing 3 click          heldnd      | 12 |         16.4 |     0 |          30.0 |         27.4 |          34.0 |              -1.0 |   18   0 | 3.06
+crossing 3 click          o2          | 12 |         17.0 |     0 |          33.2 |         32.5 |          33.4 |              -1.0 |   21   0 | 2.71
+crossing 3 click          o2nd        | 12 |         17.0 |     0 |          26.7 |         20.2 |          -1.0 |              -1.0 |   18   0 | 2.29
+
+EQUALITY click cells: 0 identical across arms, 12 differ
+  DIFFER crossing 3 click seed 3891
+  DIFFER crossing 3 click seed 3892
+  DIFFER crossing 3 click seed 3893
+  DIFFER crossing 3 click seed 3894
+  DIFFER crossing 3 click seed 3895
+  DIFFER crossing 3 click seed 3896
+  DIFFER crossing 3 click seed 3897
+  DIFFER crossing 3 click seed 3898
+  DIFFER crossing 3 click seed 3899
+  DIFFER crossing 3 click seed 3900
+  DIFFER crossing 3 click seed 3901
+  DIFFER crossing 3 click seed 3902

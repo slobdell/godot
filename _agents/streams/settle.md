@@ -80,8 +80,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   dev seeds 3891-3902, n 12 an arm): parked re-deals held 22 -> o2 35. Traced s3895 Alpha (0 -> 4): every counted re-deal is ONE
   crew's seat moving 14-18 m off and back with anchor, shape, latched spacing and seat index unchanged. Probable cause:
   UnansweredFire's duck (a crew ON ITS POST under fire it can't return goes to cover <= 25 m; PARKED_HOLD keeps more crews on posts),
-  which orders' probe counts as a parked re-deal. Not confirmed: `--duck=off` no longer exists (requested from doctrine via the
-  orchestrator). **No Bar H re-file:** its re-deal line counts duck moves (R38.42's rule: the trace changes it). References:
+  which orders' probe counts as a parked re-deal. **Confirmed by the control** (doctrine's `--duck=off`, 47ce8d229 applied
+  uncommitted to cd7a272d0; builder0 light, same workload, n 12 an arm): parked re-deals held 22 -> 9, o2 35 -> 7 with ducks off,
+  so o2's surplus is all ducks (`references/round39/settle/duck-control-builder0/`). **No Bar H re-file:** its re-deal line counts duck moves (R38.42's rule: the trace changes it). References:
   `references/round39/settle/o2-redeal-trace-builder0/`.
 - **Stretch (re-deals after a loss), dev read** (builder0 light, 15ec5b830, fight probe locks/crossing/terminus x 3-squad click x
   dev seeds 3891-3902, n 36 fights an arm; REDEAL_TRACE = the halt's OWN seat moves > 6 m, before ducks): main 144 re-lays after a
@@ -89,8 +90,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   losses 4.97 -> 5.56 a fight. Bar H v2 (deciding on REDEAL_TRACE): seeds 6025-6048 granted; bar filed below before any number (recorded on main 76f42a9c3).
   Target `settle-h2` + judge `h2` at dbc022357. The judge's dry run on the dev read (not judged) reproduces it: re-lays 144 -> 0, but the
   two-sided fight guard FAILS on held fighting BETTER (his kills 4.86 -> 5.42, se 0.29). A risk for the series, as filed.
-  **Series on hold** at the orchestrator's request (builder0 quiet for main's merge check / perf-judge); a start at ~09:34 was
-  stopped before any number. Start it on their word: `tools/remote.sh --light native settle-h2 TANK_SQUAD_SLOT_TIMEOUT=14400`.
+  A start at ~09:34 was stopped before any number (main's merge check); **series running** after the all-clear (main 76f42a9c3
+  green), tree cd7a272d0 (= dbc022357's code), builder0 light J 4, log `build/h2-remote.log`.
 - **Orders' request done:** `ElementPlan.deploy_preview` (4066132c4, quick-remote builder0 132/0), pure; orders told.
 
 ### S1 route-clear lab (builder0 light, n 1 per run, orders' probe; `make settle-lab`)
@@ -166,5 +167,5 @@ deployed halt's own surviving seat moving > 6 m, before any duck), not the probe
 - Everything here is OFF by default (`--seat-route-clear`); the sim baseline does not guard settle's paths (round 38's note).
 
 ### Requests to other streams
-- doctrine (via the orchestrator): restore `--duck=off` (UnansweredFire.ENABLED) in tactics_flags.gd, for item 3's control arm.
+- doctrine: `--duck=off` restored (47ce8d229); item 3's control done with it (dev, uncommitted here).
 - orders (note): `parked_redeals` counts UnansweredFire duck moves; Bar H / S3 need them excluded before any re-file.
