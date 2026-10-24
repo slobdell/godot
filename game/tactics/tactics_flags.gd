@@ -139,6 +139,10 @@ static func _parse() -> void:
 		# Round 25 (brains F2): the funnel OFF (the control arm: the travelling shape at full width through every choke).
 		if arg == "--funnel=off":
 			ElementPlan.FUNNEL_ENABLED = false
+		# Round 21 (brains): the unanswered-fire duck OFF (the control arm). Round 39 (settle's request, R39.2): restored, the
+		# parse had been lost while unanswered_fire.gd's header still named it.
+		if arg == "--duck=off":
+			UnansweredFire.ENABLED = false
 		# Round 23 (brains B3): acting inside the grace on the damage rate (OFF by default: measured no gain; the arm).
 		if arg == "--duck-urgent=on":
 			UnansweredFire.URGENT_ENABLED = true
