@@ -164,3 +164,7 @@ game-code commit until the series ends.
 ahead within 8 m. Each is classed `state/way/mutual`, and `tests/manoeuvre/partner_table.py` tables it over round 37's target
 (touching, net < 0.5 m, >= 3 s). Laptop smoke only (f22e662e7, locks 6640, 90 s: 250 episodes, 2 target). The trace runs on
 builder0 light (`native manoeuvre-wedge-trace`, locks/terminus/sumps x my round-38 dev block 7001-7008, a DEV trace: the registry allows only round-38 dev blocks for reuse, so not round 37's 6640-6663) once the bar series frees the lane.
+**Orchestrator (2026-10-24 afternoon):** settle's DEPLOY_HOLD (Bar H v2 PASS) reaches main ON before my verdict. The M1 series keeps
+its tree (no restart), and **Bar M1 is read with DEPLOY_HOLD OFF** (not in c35cc93ac), as well as `--seat-route-clear` OFF.
+I don't merge main until the series ends (each leg rsyncs the branch). If M1 passes, the orchestrator merges both, and the merge check
+plus orders' bars read the pair together.
