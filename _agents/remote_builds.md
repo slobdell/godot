@@ -393,10 +393,19 @@ doctrine's and feedback's checks both passed `--wait-below 1` in one poll window
 `tools/remote.sh` now wraps every full check's `make` (a target list with the word `check`; not light runs) in
 `tools/full_check_lock.sh run ~/tank_squad/.full-check.lock`, a kernel flock on the builder. A second full check WAITS for
 it there, before taking any slot, and prints `>> full-check lock: another full check holds this builder (<folder pid
-since>); waiting`. The holder dies, the claim goes (SIGKILL included): there is no stale lock to clear. `builder_checks.sh`
+since>); waiting`. The check's make inherits the claim, so it is held exactly as long as any process of the check lives
+and dropped by the kernel when the last exits (SIGKILL included): no stale lock to clear, and a wrapper killed while its
+make runs on cannot free the box under it. A hang-up or TERM to the wrapper, or its ssh session dying (watched every 5 s:
+a notty ssh sends no hang-up), stops the check's whole process group, queued or running, so **stopping your local unit now
+stops the remote check too** (trees with 0bb755a4f; older trees still need the cwd-verified kill). `builder_checks.sh`
 counts the holder too, so the gate still works as a polite early wait; it is no longer what keeps two checks apart.
 `REMOTE_FULL_CHECK_LOCK=0 make remote T=check` skips the claim (only with the orchestrator's say-so). Tests:
-`tools/test_full_check_lock.sh` (two claimers at once, 20 races, exactly one wins; SIGKILLed holder; builder_checks).
+`tools/test_full_check_lock.sh` (two claimers at once, 20 races, exactly one wins; a SIGKILLed wrapper; hang-ups; a dead
+session; builder_checks).
+**A smoke reads only its own process's log (round 39, native):** `cmd > log &` returns before the child has truncated the
+log, so a first poll could read the last run's room code (feedback's red relay-smoke at a2b560896). mk/net.mk removes every
+log it waits on before starting its process, and `wait_own_line` reads `/proc/<pid>/fd/1` once it names that log
+(`tools/test_net_own_line.sh`). A new smoke that waits for a ready line uses it.
 **Every killed wrapper leaves its builder0 half alive and queued** (trip-up 68). A relaunch is then REFUSED with exit 9
 ("already has a live run"). Kill the orphan on builder0 by cwd-verified PID first. A result with no exited line is NOT
 a result.
