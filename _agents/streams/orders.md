@@ -144,7 +144,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Bars (filed here before any judged number; the orchestrator records them on main)
 - **Amended by R39.9 (2026-10-24, before any number on 6201-6224):** CP39.1 = main with settle's DEPLOY_HOLD ON. Tree for
-  both bars: stream/orders with main merged at >= 2316bc4f7 (a78e5b2ca, main f7d66969f), green full check on either builder.
+  both bars: stream/orders with main merged at >= 2316bc4f7 (0fc1d7fb3, main 2518811d0 with the full-check lock), green full check on either builder.
   Both arms: DEPLOY_HOLD ON (default), `--giveway-chain` OFF, `--seat-route-clear` OFF. G1 v5 on builder0 light J4, G3 v6 on
   builder2 J14, run together (`tests/control/orders_bar.sh`). Everything else as filed.
 - **Bar G1 v5 GROUP LEAD (orders, round 39; filed 2026-10-24 before any number on its seeds; code ef68308d1, all OFF).**
