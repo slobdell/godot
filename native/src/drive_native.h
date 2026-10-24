@@ -115,6 +115,9 @@ struct DriveConfig {
 	// Round 36 (traffic R36.4, `yieldgap`): Movement.YIELD_CLEAR_GAP; yieldgap_ready false on a tree without it.
 	bool yieldgap_ready = false;
 	double YIELD_CLEAR_GAP = 2.0;
+	// Round 39 (manoeuvre M1, `givewaychain`): Movement.CHAIN_M / CHAIN_SLACK_M; chain_ready false on a tree without them.
+	bool chain_ready = false;
+	double CHAIN_M = 4.0, CHAIN_SLACK_M = 0.5;
 	int64_t YIELD_RETRIES = 2;
 	Ref<Script> tank_script; // Tank: `collider as Tank`
 	// Round 31 (planner CP-P1, R31.2): the lattice planner's seam ON (PlannerSeam.PLANNER_DEFAULT; the native drive runs

@@ -834,7 +834,20 @@ stream's `local.mk` with a different OFFSET, or `make worktree`'s port block), o
     - Different CPUs (builder0 i5-1345U == builder2 Xeon).
     - Speed (the laptop on a quarter core: 29.5).
     - sinf, cosf, expf, logf, powf, sqrtf and every double function are bit-identical across the three machines.
-  - **Rule:** never pair a laptop read with a builder read. Run both arms of a comparison on one glibc (a builder's light lane
+  - **Lifted for make runs, round 39 (native N4, R39.2), once main holds N4 green.** CORE-MATH's correctly rounded five
+    are now in libtank_native (hidden), and on glibc < 2.41 `mk/native.mk` LD_PRELOADs them into the engine
+    (`.tools/trig/libtank_trig-<sha>.so`), so a laptop run gives the builders' result (`native.md` "Machine-independent trig").
+    - **A laptop read pairs with a builder read when** both trees contain N4 and the laptop's Godot was started BY MAKE (a
+      target, or a driver a target runs: match_series.py, guard.sh's remote, sim_baseline.py all inherit the env).
+      `make trig-info` on the laptop must say `LD_PRELOAD=.../libtank_trig-...so`.
+    - **Still forbidden:**
+      - a laptop Godot started by hand, or by a script outside make, with its own binary path and no LD_PRELOAD;
+      - a laptop tree without N4 (any branch older than it, until it merges main);
+      - `TRIG=system` (the escape hatch: the laptop's own libm, a pre-N4 read);
+      - the web build (emscripten's libm) and Android (bionic) against either.
+    - **Check before you pair:** a pair of the same seed on both machines must agree on SIM_HASH at tick 30+. If it
+      doesn't, the run missed the preload: re-run through make before reading anything.
+    - The original rule, for the runs above that it still covers: **never pair a laptop read with a builder read.** Run both arms of a comparison on one glibc (a builder's light lane
     for dev reads that will be compared with builder numbers). sim-baseline is per machine already.
   - **The shim (GDScript arm only):** build it, then `LD_PRELOAD=<so> godot ...` makes the laptop's ENGINE match the builders
     (180/180 SIM_HASH checkpoints equal to builder0, arrived 47.4):
