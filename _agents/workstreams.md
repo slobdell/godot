@@ -116,6 +116,11 @@ block: ask the orchestrator first.
   REDEAL_TRACE counts a surviving deployed seat moving > 6 m, before ducks. Counter: main loss re-lays >= 20. Deciding: held's
   re-lays <= 20 % of main's. Guards: other-cause re-lays <= main + 3; kills and losses both sides within 1.645 se; 0 never started.
   Pass: ON on a new hash with one full check.
+- **H v2 RESULT: PASS -> ships ON** (pending the ship hash's full check). Series on cd7a272d0 (= dbc022357's code), builder0 light J4,
+  seeds 6025-6048, 72 fights an arm, `make native settle-h2 exited 0`: loss re-lays 288 -> 0 (367 crews moved -> 0; counter main >= 20
+  met, deciding <= 20 % met); other causes 0 -> 0; his kills 5.39 -> 5.31, his losses 6.99 -> 6.64, CPU losses 5.44 -> 5.33 a fight
+  (all within 1.645 se); 0 unstarted. Reported: parked_redeals 172 -> 100, reseats 244 -> 1. Ship hash 2478e2eef (DEPLOY_HOLD ON;
+  `--deploy-hold=off` = round 38's re-lay). What he'll see: a squad that loses a tank stops reshuffling its seats.
 - **G1 v5 GROUP LEAD (orders, filed 2026-10-24; orders.md):** arm G1 v4's + `--group-lead=drive`; tree = first green commit at or
   after CP39.1; FRESH seeds 6201-6212 (n 12 a cell); `orders_judge.py g1v4`, G1 v4's deciding lines and guards unamended (places
   outside <= 25 % of base; route_left_m <= 50 %; re-dealt 0; R36.6 guards; contacts <= base x 1.1 + 5). Known risk: terminus 5
