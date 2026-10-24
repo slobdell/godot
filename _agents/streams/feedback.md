@@ -69,11 +69,19 @@ test the diff since 906557c06 touches + lint). d8f88b3ab (the fog fix) is in mai
   FB_SLOTS=slowed`: the 50 % crew's chevron is orange with amber, yellow without; the 15 % crew gains a chevron (behind the message
   log in this framing). `touch-shots TOUCH_LAYOUTS=dock` at 2400x1080 / 1800x810 / 810x1800: top of the screen clear, nothing on
   the bug or radar.
-- **Known issues:** with dock, a unit sitting bottom-centre is under the chips and can't be tapped through them (found by
-  test_tactical_map's follow camera; that one input-pipeline test now pins `top`). He should feel this in a playtest. In portrait,
-  the order-preview line floats mid-screen (below the top third). The caller lines are not on until he hears them.
-- **Merge notes:** outside my paths, two tests and the announcer data: tests/test_tactical_map.gd (one test pins `top`, 3 lines),
-  assets/announcer/{lines.json, beats.json, README.md, ledger.md, clips/manifest.json, 6 clips} (round 37 did the same).
+- **Dock framing (the orchestrator's ask, dc9cd45d0; builder0 quick 262/0):** test_tactical_map's input test found his
+  crews under dock's chips. Cause: TacticalMap's own overview (orthographic, the map without an RTS rig) draws his end of the
+  arena at the bottom of the screen, where dock sits. Fix: the overview zooms out by the bars' share and lifts
+  (`overview_fit`, Camera3D.v_offset) so the whole arena sits above the bars, nothing cut at the top. The follow view is not
+  lifted (that would push the far ground off the top, the part he said matters most); the followed crew is framed at the centre,
+  clear. Test: every crew above the bars in the overview, the followed crew clear in the follow view, at 1280x720, 2400x1080 and
+  810x1800. test_tactical_map.gd is unchanged from main (no pin). Looked at: touch-shots dock (builder0): his squad above the
+  bars at 2400x1080 and 810x1800.
+- **Known issues:** NOT verified: the RTS rig's own overview button in a real skirmish (perspective, 77 degrees, game/camera/
+  rts_camera.gd, not mine) likely draws his end under dock's bars the same way; a capture flag couldn't hold it open (the rig's
+  tracking took the view back). If it does, the fix is the rig's overview framing taking a bottom screen inset (TacticalMap can
+  hand it `touch_rects["text_floor"]`). In portrait, the order-preview line floats mid-screen. Caller lines off until he hears them.
+- **Merge notes:** outside my paths, the announcer data: assets/announcer/{lines.json, beats.json, README.md, ledger.md, clips/manifest.json, 6 clips} (round 37 did the same).
   R39.3 noted: laptop Godot runs under `flock /tmp/tank-squad-laptop-godot.lock`, none below 1500 MiB available.
 - **What to playtest:** `.tools/godot-*/Godot_* --path . -- --skirmish --enemy=cpu --announcer-rules=on` (the chevrons under fire;
   listen for the two new calls when crews fire on the move or crawl under fire); `-- --skirmish --touch-map --ui-touch` (dock).
