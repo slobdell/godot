@@ -144,3 +144,6 @@ guards all-in time.
   seeds). If the orchestrator wants a CP39.0 guard line on ON before merge, that is a builder2 run.
 - **Verdict:** every line passes -> PASS (ship ON is the orchestrator's / the lead's call: symmetric AI, CP39.1). Any FAIL ->
   no re-run on these seeds; the cause traced and written up. Judge: `tests/manoeuvre/chain_judge.py` (committed before the run).
+**Bar M1 series STARTED 2026-10-24 ~11:35 PDT** (`manoeuvre-bar-m1`, builder0 light J4, native, judge 879caa818 committed first;
+code = c35cc93ac). Order: census OFF, census ON (6101-6112), orders probe both arms (6113-6124), then the judge. Out:
+`~/overnight-manoeuvre/r39/bar_m1/verdict.txt`. ETA ~16:30 PDT.
