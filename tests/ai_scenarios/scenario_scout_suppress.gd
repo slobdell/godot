@@ -26,7 +26,9 @@ extends TestCase
 ## main's band-and-face chain fails these two (pooled n = 18: behind first-on 3.5 s, crossing on point 0.48).
 ## Round 37 (native N5): test_target_behind PROMOTED. It passed identically while still marked pending in every check since at
 ## least 2026-10-20 (n=3, shots=101, either switch setting; manoeuvre's logs), so it now gates like the others.
-const PENDING := ["test_target_crossing"]
+## Round 39 (doctrine D5): test_target_crossing PROMOTED. With R1-R3 ON (the default since R38.55) it passed while still
+## marked pending (doctrine's R38.55 check, builder0 95a3a8f54); re-read alone on builder0 before promoting (doctrine Status).
+const PENDING := []
 const ON_POINT_BAR := 0.5
 const FIRST_BAR := 3.0
 
