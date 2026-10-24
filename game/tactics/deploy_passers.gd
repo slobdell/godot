@@ -17,6 +17,7 @@ const HALT_CLEAR_M := 9.0
 ## along the squad's own arrival leg.
 const CLEAR_STEP_M := 2.0
 const CLEAR_MAX_M := 24.0
+const CLEAR_RING := 16
 ## A moved seat keeps at least this share of the halt's spacing from the squad's other seats.
 const CLEAR_OWN_GAP := 0.75
 
@@ -36,18 +37,23 @@ static func of(game_match: Match, team: int, leader: String) -> Dictionary:
 		if element.roster.has(leader) or element.leader == leader:
 			continue
 		var centre := Vector3.ZERO
-		var alive := 0
+		var crews: Array = []
 		for unit_name in element.roster:
 			var tank := by_name.get(unit_name) as Tank
 			if tank != null and tank.is_alive():
-				centre += Vector3(tank.global_position.x, 0.0, tank.global_position.z)
-				alive += 1
-		if alive == 0:
+				crews.append(Vector3(tank.global_position.x, 0.0, tank.global_position.z))
+				centre += crews[crews.size() - 1]
+		if crews.is_empty():
 			continue
-		centre /= float(alive)
+		centre /= float(crews.size())
 		var route := remaining_route(element, centre, node)
 		if route.size() >= 2:
 			out["routes"].append(route)
+			# The drive starts from every crew, not the squad's centre: the rear crews still have the ground behind it to
+			# cover (traced s4505: a seat cleared 6 m behind Alpha's centre stood on its rear crews' lane).
+			for crew: Vector3 in crews:
+				if crew.distance_to(route[0]) > 1.0:
+					out["routes"].append([crew, route[0]])
 		elif element.arrived and element.queued_tasks.is_empty():
 			var seats: Array = []
 			for unit_name: String in _sorted(element.slots.keys()):
@@ -150,7 +156,8 @@ static func _closest_on(p: Vector3, a: Vector3, b: Vector3) -> Vector3:
 
 ## The nearest seat to `seat` that nothing in `passers` blocks: stepped CLEAR_STEP_M at a time out to CLEAR_MAX_M, at each
 ## distance first straight away from what blocks it (the shortest way out), then along `back` (the squad's arrival leg,
-## reversed). Each candidate is judged where it will stand, `ground.call(candidate)`, must pass `ok.call(candidate)` (dry,
+## reversed), then round the ring (CLEAR_RING directions from `away`; traced s4505: Bravo_1's seat asked off Alpha's lane
+## grounded onto it both ways, and stayed there). Each candidate is judged where it will stand, `ground.call(candidate)`, must pass `ok.call(candidate)` (dry,
 ## on the squad's own bank) and stand CLEAR_OWN_GAP x `spacing` from every seat in `others`. `seat` itself when it is
 ## clear; null when no clear seat is found. Pure but for the callables.
 static func clear_seat(seat: Vector3, back: Vector3, passers: Dictionary, others: Array, spacing: float,
@@ -166,6 +173,8 @@ static func clear_seat(seat: Vector3, back: Vector3, passers: Dictionary, others
 	var flat_back := Vector3(back.x, 0.0, back.z)
 	if flat_back.length() > 0.01:
 		ways.append(flat_back.normalized())
+	for k in range(1, CLEAR_RING):
+		ways.append(TacticsFormation.rotate(away.normalized(), TAU * float(k) / float(CLEAR_RING)))
 	var gap := CLEAR_OWN_GAP * spacing
 	for step in range(1, int(CLEAR_MAX_M / CLEAR_STEP_M) + 1):
 		for way: Vector3 in ways:

@@ -2383,7 +2383,17 @@ static func _route_clear(plan: Dictionary, deploy: Dictionary, situation: Dictio
 		for other: String in names:
 			if other != unit_name and plan["slots"][other] is Vector3:
 				others.append(moved.get(other, plan["slots"][other]))
-		var clear: Variant = DeployPassers.clear_seat(seat, back, passers, others, spacing, ground, ok)
+		# Each crew's answer for the seat it was asked is kept in the deploy: a later update with the same seat asks the
+		# navmesh nothing (a re-lay after a loss asks afresh for the seats that changed).
+		var answers: Dictionary = deploy.get("clear_moves", {})
+		var kept: Variant = answers.get(unit_name)
+		var clear: Variant
+		if kept is Array and ((kept as Array)[0] as Vector3).distance_to(seat) <= 0.01:
+			clear = (kept as Array)[1]
+		else:
+			clear = DeployPassers.clear_seat(seat, back, passers, others, spacing, ground, ok)
+			answers[unit_name] = [seat, clear]
+			deploy["clear_moves"] = answers
 		if clear == null:
 			if first:
 				route_seats_unclear += 1
