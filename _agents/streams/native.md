@@ -75,6 +75,12 @@ waits on it); perf-judge of the native trig change on a quiet builder0 (main's o
     dead ssh session (watched, also while queued) stops the check's group. Live on builder0: killing the local ssh stopped
     the held command within 1 s and freed the lock.
   - test_full_check_lock 18/0; shell-tools-test 34 suites (laptop).
+  - **GREEN 7d1078f0d (tools only; the orchestrator's gate: quick-remote + shell-tools-test):** feedback's report against
+    0bb755a4f, reproduced live on builder2. A stopped wrapper left its queued AND its running check alive, for two reasons:
+    the watchdog died by SIGPIPE writing to the dead session's stderr, and a waiter in a foreground flock could not run its
+    trap. Fixed: SIGPIPE ignored, and flock waits in the background. Live after: both gone within 5 s, the lock free.
+    quick-remote builder0 `exited 0` (no tests touched). shell-tools-test builder0 light lane `exited 0`, 34 suites,
+    full-check-lock 22/0 (at 342da8b23, docs only on top). The 0bb755a4f script fails 3 of the new cases.
 - **relay-smoke's stale host log (feedback's red at a2b560896), mk/net.mk (the orchestrator's grant):** logs are removed
   before their process starts; waits read the process's own /proc/<pid>/fd/1. test_net_own_line 3/0. In 0bb755a4f's
   check: host opened K735J, both clients NET_CHECK PASS.
