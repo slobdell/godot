@@ -51,3 +51,27 @@ F1's and F2's directions pages, once filed.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-23 ~22:00: started.** Plan (in order; each a test first):
+1. **F1a the fog lies (correctness, ships with its test):** FOUND. The fog of war is the range he is shown; the field
+   (game/match/visibility_field.gd) takes one crew's look a tick and publishes once a cycle (15 ticks, or one tick per crew
+   past 15 crews), so lit ground trails a crew that drives off, and R1 shrinks its sight 110 % -> 85 % within a second on top.
+   Measured (tests/test_feedback_sight_shown.gd, laptop glibc 2.39, 906557c06 + test, enemy just outside the driving sight,
+   a drive-off from every point of the refresh cycle, 2 s each): army 1: R1 ON 8 lie-ticks / 5 drive-offs (worst 5.8 m past
+   real sight), OFF 38 (3.7 m); army 25: **ON 303 ticks / 9 drive-offs (worst 24.5 m)**, OFF 331 (13.0 m). Fix in my paths
+   (game/match is nobody's): the fog sheet's shader and the radar's fog layer clip lit ground to each living crew's sight
+   circle as it is NOW (FogViewers, uniforms every frame); the field still decides walls. After: 0 lie-ticks in all four.
+2. **F1b audit list** (every shown range or rule effect, below) -> a directions page for the NEW looks (2-3 + none each).
+3. **F2** touch-map layouts: a shots target, 2-3 layouts behind `--touch-layout=`, filmed at phone sizes -> directions page.
+4. F3 build his picks; stretch: announcer lines for the rules behind a switch.
+
+**F1 audit (R1-R3 ON, 906557c06):**
+- Fog of war, 3D sheet (cyberpunk + default themes): LIED (above), fixed.
+- Radar fog (same field texture, ~1.2 m a pixel): same lie, fixed (its own layer + clip shader).
+- Enemy tanks, selection rings, radar blips: drawn from Match.is_visible_to (intel, every 3 ticks): honest.
+- Squad chip contact pip, the vision camera's frame (VisionRegion): read sight_radius live: honest.
+- Garage "Sight": a relative bar, no metres: honest. Unit hover card "Range N m" (orders' rts_controls): weapon range, not
+  a sight claim; unchanged.
+- R2 moving spread: nothing shows it except the shells themselves (tracers land wide). A new look is a page item.
+- R3 pin slow: chevrons start at suppression 0.3 (FeedbackReader.PIN_SHOW); the slow starts at 0 (up to 12 % slower with
+  no chevron). Nothing shows the slow itself. Page items.
