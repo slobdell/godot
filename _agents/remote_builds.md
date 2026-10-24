@@ -388,6 +388,24 @@ builder0 runs, one per worktree, in any form (`make check`, `make native check`,
 than two run (C35.1), so a launcher can be `systemd-run ... /bin/bash -lc "tools/builder_checks.sh --wait-below 2 && make
 remote T=check > log 2>&1"`. A hand-rolled `pgrep -f "make --no-print-directory check$"` misses `make native check` (round
 35: native's N3 check started as a third on the box that way).
+**One full check per builder is now a LOCK, not a count (round 39, native).** Counting then launching is check-then-act:
+doctrine's and feedback's checks both passed `--wait-below 1` in one poll window (2026-10-24 ~10:3x PDT) and ran together.
+`tools/remote.sh` now wraps every full check's `make` (a target list with the word `check`; not light runs) in
+`tools/full_check_lock.sh run ~/tank_squad/.full-check.lock`, a kernel flock on the builder. A second full check WAITS for
+it there, before taking any slot, and prints `>> full-check lock: another full check holds this builder (<folder pid
+since>); waiting`. The check's make inherits the claim, so it is held exactly as long as any process of the check lives
+and dropped by the kernel when the last exits (SIGKILL included): no stale lock to clear, and a wrapper killed while its
+make runs on cannot free the box under it. A hang-up or TERM to the wrapper, or its ssh session dying (watched every 5 s:
+a notty ssh sends no hang-up), stops the check's whole process group, queued or running, so **stopping your local unit now
+stops the remote check too** (trees with 0bb755a4f; older trees still need the cwd-verified kill). `builder_checks.sh`
+counts the holder too, so the gate still works as a polite early wait; it is no longer what keeps two checks apart.
+`REMOTE_FULL_CHECK_LOCK=0 make remote T=check` skips the claim (only with the orchestrator's say-so). Tests:
+`tools/test_full_check_lock.sh` (two claimers at once, 20 races, exactly one wins; a SIGKILLed wrapper; hang-ups; a dead
+session; builder_checks).
+**A smoke reads only its own process's log (round 39, native):** `cmd > log &` returns before the child has truncated the
+log, so a first poll could read the last run's room code (feedback's red relay-smoke at a2b560896). mk/net.mk removes every
+log it waits on before starting its process, and `wait_own_line` reads `/proc/<pid>/fd/1` once it names that log
+(`tools/test_net_own_line.sh`). A new smoke that waits for a ready line uses it.
 **Every killed wrapper leaves its builder0 half alive and queued** (trip-up 68). A relaunch is then REFUSED with exit 9
 ("already has a live run"). Kill the orphan on builder0 by cwd-verified PID first. A result with no exited line is NOT
 a result.
