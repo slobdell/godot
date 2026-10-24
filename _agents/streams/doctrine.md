@@ -75,6 +75,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   ~2 s. **For the lead:** his "~2 s" number costs smart-looking cover fights today; it stays at ~3 s unless he asks.
   Its series slot went to **D4** (`--cover-on=hulldown` on 773412e49, report only, no bar).
 - stream/doctrine's code = 773412e49's (`git diff 773412e49 HEAD` touches docs only).
+- **The series' OFF arm (the rules-ON base on fresh seeds) DONE 05:09:** 773412e49, builder2, 6301-6340 + 6401-6440, 1600
+  fights, 0 attempts lost. Blob wins **39 %** (± 5), kr 0.74, median 108 s; turtle **36 %** (± 6), kr 0.75, median 193 s, caps
+  1 %. D1 replicates at 5x n: by blob faction syndicate 65 %, condemned 47 %, law 35 %, gangs 13 %; syndicate blob v gangs CPU
+  **86 %** (n 70), v law 62 %; law blob v gangs 64 %. SPLIT arm started 05:09.
 
 - **Trees:** D3 = **773412e49** (side branch `doctrine/d3-tree` = a24f4f298 + the ai_scenarios counts), **GREEN** builder0
   (`make native check exited 0`, 3135 passed / 0 failed, 3 NOT JUDGED for load). D2s = **d1822fd27** (stream/doctrine = D3's
