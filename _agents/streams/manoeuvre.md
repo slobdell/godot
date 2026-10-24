@@ -106,3 +106,6 @@ pre-merge light test job; main's check covers this code.
 **Seeds:** the census (`manoeuvre-census-base`, builder0 light J4, c35cc93ac, switch OFF, terminus/locks/sumps x 7001-7008) is a
 DEV read on my round-38 dev block 7001-7008 (allowed by the registry note). Nothing judged runs on it; the bar's series uses
 6101-6124 only.
+**M1 bar ETA (2026-10-24 11:00 PDT):** verdict ~16:30-17:00 PDT (census started 10:29 PDT and is nearly done; then s3866, the bar
+filed, the series). It is CP39.1: I send the verdict and the tree's green hash to the orchestrator AND orders (godot-orders-db) at
+once, pass or fail (with the cause if traced).
