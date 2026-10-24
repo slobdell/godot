@@ -26,6 +26,7 @@ const NAMES := [
 	"no_perimeter",   # walls, towers, beams and glow pools (structures that are not venue, blocks or airship)
 	"no_blocks",      # city blocks (the Terminus)
 	"no_fogvis",      # the fog-of-war ground sheet
+	"no_fogclip",     # round 39 (F1): the fog sheet without its live sight clip (FogViewers), the field alone
 	"no_haze",        # heat haze over burning wrecks
 	"no_show",        # the light show writes identity (Show.driving = false)
 	"no_effects",     # tracers, bursts, decals, streaks, beams, haze, order marks, dust
@@ -119,6 +120,11 @@ static func apply(tree: SceneTree, layer: String) -> Array:
 			var fog := scene.get_node_or_null("FogOfWar") if scene != null else null
 			if fog is Node3D:
 				_hide(fog, undo)
+		"no_fogclip":
+			var clip_slot := scene.get_node_or_null("FogOfWar") if scene != null else null
+			var clip_sheet: Variant = clip_slot.get("visual") if clip_slot != null else null
+			if clip_sheet is Object and "clip" in clip_sheet:
+				_put(clip_sheet, "clip", false, undo)
 		"no_haze":
 			if fx != null:
 				_hide(fx.haze, undo)

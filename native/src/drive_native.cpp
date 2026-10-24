@@ -140,6 +140,9 @@ struct N {
 			yield_swaps_shorter{ "yield_swaps_shorter" }, yield_spots_unfit{ "yield_spots_unfit" },
 			yield_spots_shortened{ "yield_spots_shortened" }, yield_holds{ "yield_holds" }, neighbours{ "neighbours" },
 			off{ "off" }, yield_log{ "yield_log" }, setup_log{ "setup_log" }, yield_site{ "yield" },
+			// Round 39 (manoeuvre M1, `givewaychain`)
+			face_slot{ "face_slot" }, chain_in_play{ "chain_in_play" }, chain_spots_skipped{ "chain_spots_skipped" },
+			chain_refusals{ "chain_refusals" },
 			// fast paths
 			game_match{ "game_match" }, tick{ "tick" }, think_offset{ "think_offset" }, _stride{ "_stride" },
 			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" },
@@ -2092,6 +2095,42 @@ struct Drive {
 		v.set__repath_left(0.0);
 	}
 
+	// Round 39 (manoeuvre M1, `givewaychain`): Movement._chain_reach(), as [seat, reach] through out-parameters. In play when
+	// the switch is on (a tree without CHAIN_M: never), the crew has a seat (yield_seat(): its move_to point, else ctl.face_slot),
+	// it is not under way on a move_to of its own, and it stands more than CHAIN_M off that seat; reach = off_seat + CHAIN_SLACK_M.
+	bool chain_in_play(Vector3 &seat, double &reach) {
+		static const String givewaychain("givewaychain"), type("type"), move_to("move_to"), arrived("arrived"), x("x"), z("z");
+		if (!c.chain_ready || traffic_off(givewaychain)) {
+			return false;
+		}
+		const Dictionary order = ctl->get(k.move_order);
+		const bool moving_to = String(order.get(type, String())) == move_to;
+		// yield_seat(): Vector3(float(order.x), 0, float(order.z)) for a move_to, else the face slot (INF: none)
+		seat = moving_to ? Vector3((real_t)(double)order.get(x, 0.0), 0, (real_t)(double)order.get(z, 0.0))
+						 : (Vector3)ctl->get(k.face_slot);
+		if (seat == V3_INF) {
+			return false;
+		}
+		if (String(v.phase()) != arrived && moving_to) { // is_under_way() and a move_to
+			return false;
+		}
+		const double off_seat = flat_distance(here, seat);
+		if (off_seat <= c.CHAIN_M) {
+			return false;
+		}
+		reach = off_seat + c.CHAIN_SLACK_M;
+		return true;
+	}
+
+	// Movement._chain_far(chain, point): a spot farther from the seat than the reach (counted as skipped).
+	bool chain_far(const Vector3 &seat, double reach, const Vector3 &point) {
+		if (flat_distance(point, seat) <= reach) {
+			return false;
+		}
+		sadd(k.chain_spots_skipped, 1);
+		return true;
+	}
+
 	// Round 34 (traffic T6, R34.15): Movement.underfire_on(), the switch (`--traffic-on=underfire`); off while the
 	// GDScript has no T6 (UNDER_FIRE_TICKS -1: Movement.UNDER_FIRE_S absent).
 	bool underfire_on() {
@@ -2971,6 +3010,13 @@ bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vecto
 	(void)via; // the yield log's (measurement; off here)
 	const String me = tank->get_name();
 	const double from_here = flat_distance(here, from);
+	// Round 39 (manoeuvre M1, `givewaychain`): a parked crew already pushed off its seat takes no spot farther from it.
+	Vector3 chain_seat = V3_INF;
+	double chain_reach = 0.0;
+	const bool chain = chain_in_play(chain_seat, chain_reach);
+	if (chain) {
+		sadd(k.chain_in_play, 1);
+	}
 	for (int64_t s = 0; s < c.YIELD_SPOTS.size(); s++) {
 		const Vector2 spot = c.YIELD_SPOTS[s];
 		const double flips[2] = { side, -side };
@@ -2986,6 +3032,9 @@ bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vecto
 				continue;
 			}
 			if (wheel_radius() > 0.0 && !ahead_of_wheels(point, wheel_radius()) && !straight_behind(point)) {
+				continue;
+			}
+			if (chain && chain_far(chain_seat, chain_reach, point)) {
 				continue;
 			}
 			if (!free_spot(point, me, other)) {
@@ -3016,6 +3065,9 @@ bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vecto
 		if (flat_distance(point, from) < from_here) {
 			continue;
 		}
+		if (chain && chain_far(chain_seat, chain_reach, point)) {
+			continue;
+		}
 		if (!free_spot(point, me, other)) {
 			continue;
 		}
@@ -3042,6 +3094,9 @@ bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vecto
 		sadd(k.yield_holds, 1);
 		start_yield(other, here, along, hold);
 		return true;
+	}
+	if (chain) {
+		sadd(k.chain_refusals, 1);
 	}
 	return false;
 }

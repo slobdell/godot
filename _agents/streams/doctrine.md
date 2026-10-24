@@ -61,3 +61,60 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Report (2026-10-23 ~21:45 PDT, in progress).**
+
+**Plan (ordered; reason):** D5 first (builder0 light, no wait) -> D2 read + bar -> D3 + D2's arm in ONE powered series on
+builder2 (one shared OFF arm saves 1600 fights) -> D1 when native's CP39.0 lands (it doesn't gate the series: D3's seeds are
+fresh, so its OFF arm is our own run on them, not CP39.0's file) -> D4 if budget -> stretch.
+
+**D5 DONE (36b3adb14).** builder0 light, the wall duel traced tick by tick (906557c06 + probe, seeds 1-4, 45 s, sight OFF v ON):
+- R1 does not break the loop. Seed 1: the same option/why sequence in both arms to 18 s (bait 0.1 s, duck 1.4, shot 1.5,
+  reload in cover, "waiting for its reload" 6.9-15.9 s, ADVANCE, peek, shot ~18 s, duck). After the first shot the crew sits
+  ~9 s behind the wall because the gun is laid on its peek spot and loaded: round 18's B1 no_loaded_peek, by design.
+- The old bar (2 returns in 20 s) was fragile before R1: with sight OFF it held on seeds 1 and 3 only, and seed 1's second
+  return was a 0.6 s flicker while backing in (19.4-20.0 s). With sight ON, 1 return on every seed at 25 s.
+- Over 45 s: sight ON returns 2 on all four seeds, hidden 86-89 %, shots 3; sight OFF returns 1-4, hidden 62-66 % (it drifts
+  into the open after ~35 s), shots 5.
+- **Decided: the scenario's window changes, not the loop.** fights_from_cover now runs with R1 ON (the pin is gone), measured
+  over 40 s (5-45 s), the same bars (hidden >= 50 %, shots >= half its reload allows in 20 s, returns >= 2). builder0 light:
+  4 passed / 0 failed, hidden 86 %, shots 3, returns 2.
+- scout_suppress::test_target_crossing PROMOTED: builder0 light 4/0, crossing on_point 0.60 (bar 0.50), first 1.0 s, n=3.
+
+**D2 his numbers v the constants (read of 906557c06's code):**
+- Moving fire: spread x(1 + RULES_MOVING_SPREAD_FACTOR x speed fraction) = **4.0x at full speed** (3.0; OFF was 1.5 = 2.5x).
+  His number was ~4x at full speed (game_design.md Q2: "MOVING_SPREAD_FACTOR 1.5 -> ~3.0"). **Matches.**
+- Suppression: throttle capped at 1 - PIN_SLOW_MAX x suppression, 0.4 = **up to 40 % slower, never stops**. **Matches.**
+- Sight: MOVING 0.85, HALTED 1.10. **Matches.** **Timing short:** the factor only starts rising after HALT_DWELL_SECONDS (2.0)
+  halted, then blends at 0.25/s, so a crew that stops after driving sees **85 % for its first 2 s and 110 % at ~3 s** (his
+  "stopped ~2 s ~110 %"). HALT_DWELL_SECONDS 2.0 -> 1.0 keeps the blend (the edge never jumps) and reaches 110 % at 2.0 s;
+  a stop under 1 s still changes nothing. SIGHT_BLEND_PER_SECOND alone (granted) can't get there without a near-jump edge
+  (1.0/s gives 2.25 s and a 0.25 s drop). **Needs HALT_DWELL_SECONDS added to the C39.4 grant** (requested; constants only).
+
+**Bar D2s (FILED 2026-10-23 before any number): R1's dwell at his number.** Change: Tank.HALT_DWELL_SECONDS 2.0 -> 1.0 (its
+own tree, the D3 tree + that one constant; its own full check). Since the change only brings a constant to his stated
+number (C39.4), it ships unless it breaks something; the bar is guards only:
+- Workload: D3's (below), paired with D3's OFF arm.
+- G0 (deciding for a ship): the blob's win rate NOT UP by > 2 paired se (McNemar p not < 0.05 in its favour).
+- G1: turtle win rate not up by > 2 paired se; G2/G2t: kills a fight and median length per faction within 2 paired se on
+  both lines (a faction outside is named); G3: none line caps <= OFF + 2, median <= OFF x 1.2; G4: perf unchanged (one
+  constant). Reported, not gating: blob win rate down (the direction it should lean).
+
+**Bar D3 (FILED 2026-10-23 before any number; D2c's shape, powered).** Change: `--cpu-defend --cpu-defend-split` ON v OFF,
+rules ON (the default), one tree (this branch, after its full check). Workload: **seeds 6301-6340 + 6401-6440** (80 seeds,
+fresh, C39.1 registry) x 5 maps x both sides x blob/turtle = **1600 fights an arm**; none line (CPU v CPU) on 6301-6340
+(400 fights an arm). builder2, `guard.sh` GUARD_CHUNK=8, `guard.py --pair OFF ON`.
+- **Deciding:** blob win rate DOWN by > 2 paired se AND McNemar p < 0.05.
+- Second line: blob kill ratio not UP by > 2 paired se. G1 turtle win rate not UP > 2 se, median length not up > 2 se.
+- G2 / G2t: kills a fight and median length per faction within 2 paired se on both lines; turtle-line kills a fight within
+  2 paired se. G3: none line caps ON <= OFF + 2, median ON <= OFF x 1.2.
+- Lab guard (turtle line, hold_fire_probe, builder0 light, 2601-2602, 20 fights an arm): CPU task verb `hold` <= OFF + 10 pts.
+- G4 perf: commander-only code, OFF path unchanged; G4 judged only if it passes. A pass ships ON (symmetric).
+- Sizing check (lesson R35): D2c's paired se was 3.8 points at 160 blob fights; at 800 it is ~1.7, so a 4-point effect is
+  ~2.3 se: reachable, not certain.
+
+**Questions for the lead:** none.
+
+**Requests:** orchestrator: add `Tank.HALT_DWELL_SECONDS` to C39.4's grant (D2s); builder2 slot for D3 + D2s after native's
+CP39.0 (~19 h at J14: 3 arms x 1600 + none 3 x 400).
+

@@ -1,0 +1,12 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          main      |   27.1 /   12.0   |    0   0 |     17.3 |               3.4 |            24.3 | 1.30 | 57.7
+crossing 3 click          v4        |  115.2 /   65.5   |    0   0 |        - |               9.9 |            47.0 | 3.10 | 13.0
+crossing 3 click          v5        |  115.2 /   65.5   |    0   0 |      9.7 |               9.4 |            23.0 | 1.21 | 13.0
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          main      |          27.3 |          18.3 |            6.8 |               5.2 |          31.8
+crossing 3 click          v4        |             - |          13.7 |              - |               8.8 |         126.7
+crossing 3 click          v5        |          19.7 |          19.7 |            0.0 |              21.3 |         126.7
+
+EQUALITY click cells: 0 identical across arms, 1 differ
+  DIFFER crossing 3 click seed 4710

@@ -206,7 +206,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := []  # T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
+const DEFAULT_OFF := ["givewaychain"]  # round 39 M1 givewaychain (manoeuvre, until its bar is judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -222,6 +222,8 @@ static func off(name: String) -> bool:
 			if String(arg).begins_with("--traffic-on="):
 				for part in String(arg).trim_prefix("--traffic-on=").split(",", false):
 					_off.erase(part.strip_edges())
+			elif String(arg) == "--giveway-chain":  # round 39 (M1): the brief's name for --traffic-on=givewaychain
+				_off.erase("givewaychain")
 		for arg in OS.get_cmdline_user_args():
 			if String(arg).begins_with("--traffic-off="):
 				for part in String(arg).trim_prefix("--traffic-off=").split(",", false):

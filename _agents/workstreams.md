@@ -42,7 +42,8 @@ past 90 min passes `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make command-line variab
 - **doctrine:** brains (`game/ai/**` and `game/tactics/**` outside settle's and manoeuvre's carve-outs: `tank_brain.gd`,
   `element_commander.gd`, `cpu_commander.gd`, `gunnery.gd`, doctrine tables), `tests/tactics/**`, `tests/test_tactics*.gd`,
   `tests/ai_scenarios/**` it adds, `tests/rules/**`, `mk/tactics.mk`, `mk/rules.mk`; GRANT (C39.4): `game/combat/rule_switches.gd` and
-  the R1-R3 constants in `game/tank/tank.gd` (MOVING_SIGHT_FACTOR, HALTED_SIGHT_FACTOR, SIGHT_BLEND_PER_SECOND, PIN_SLOW_MAX) and
+  the R1-R3 constants in `game/tank/tank.gd` (MOVING_SIGHT_FACTOR, HALTED_SIGHT_FACTOR, SIGHT_BLEND_PER_SECOND, PIN_SLOW_MAX,
+  HALT_DWELL_SECONDS since R39.1) and
   `game/match/match.gd` (RULES_MOVING_SPREAD_FACTOR), constants only.
 - **feedback:** `game/ui/**`, `game/theme/**`, `game/audio/**`, `game/announcer/**`, `tests/feedback/**`, `tests/test_feedback*.gd`,
   `mk/feedback.mk`.
@@ -78,9 +79,103 @@ past 90 min passes `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make command-line variab
 
 ## Bars (round 39)
 
-**Seed registry (round 39):** 6001-6024 settle; 6101-6124 manoeuvre; 6201-6224 orders; 6301-6340 + 6401-6440 doctrine guard series
+**Seed registry (round 39):** 6001-6024 settle (+ 6025-6048 Bar H v2, R39.4); 6101-6124 manoeuvre; 6201-6224 orders (+ 6225-6236 G2 v2c, R39.4); 6301-6340 + 6401-6440 doctrine guard series
 (powered SPLIT: 4x fights); 6501-6512 feedback. Dev seeds: each stream's round-38 dev blocks may be reused for DEV reads only. Any new
 block: ask the orchestrator first.
+
+**Filed (stream briefs hold the full text; numbers only after these):**
+- **D2s (doctrine, filed 2026-10-23 ~21:30 PDT at a24f4f298):** Tank.HALT_DWELL_SECONDS 2.0 -> 1.0 (his "~110 % stopped ~2 s": at 2.0
+  the blend reaches 110 % at ~3 s). Guards only, paired with D3's OFF arm: G0 blob win rate not up > 2 paired se (deciding for a
+  ship); G1 turtle not up > 2 se; G2/G2t kills a fight and median length per faction within 2 se; G3 none caps <= OFF + 2, median
+  <= OFF x 1.2; G4 perf unchanged.
+- **D3 (doctrine, filed 2026-10-23 at a24f4f298):** `--cpu-defend --cpu-defend-split` ON v OFF, rules ON; seeds 6301-6340 +
+  6401-6440 x 5 maps x both sides x blob/turtle = 1600 fights an arm; none line on 6301-6340. Deciding: blob win rate DOWN > 2
+  paired se AND McNemar p < 0.05. Guards: blob kill ratio not up > 2 se; turtle win rate and median length not up > 2 se; G2/G2t;
+  G3; lab guard hold_fire_probe CPU `hold` <= OFF + 10 pts.
+
+- **D2s RESULT: FAILED, reverted (e453dc541).** d1822fd27 builder0 full check exited 2: scenario_cover fights_from_cover hidden
+  32 % of 40 s (bar 50; 86 % at dwell 2.0), hurt tank's longest hidden 50 ticks (bar 60); trace seed 1: COVER_FIRE -> ENGAGE at
+  ~20 s, the crew drives into the open 43 -> 22 m. The dwell stays 2.0 (110 % at ~3 s, short of his ~2 s; for the lead).
+- **D3 RESULT (lab guard): FAILED.** builder0 light hold_fire_probe, a24f4f298 rules ON, 2601-2602 x 5 maps x both sides, 20 fights
+  a line an arm: turtle-line CPU `hold` OFF 22.7 % v SPLIT 37.6 % (+14.9 v bar +10). SPLIT cannot ship from D3; its powered arm
+  runs for the record (R39.4). Series on builder2: OFF (773412e49, green builder0 3135/0) -> SPLIT -> D4 hull-down report-only ->
+  none lines; ends ~14:00 PDT 2026-10-24.
+- **D3 RESULT (powered series): FAILED, SPLIT stays OFF.** 773412e49 (green builder0), builder2, 6301-6340 + 6401-6440, 800
+  fights a line an arm, paired, none missing. Deciding: blob 39 -> 39 % (+0.3, se 1.6; flips 72/74; McNemar p 0.60). G1 turtle
+  36 -> 31 % (-4.7, se 1.2) holds. G2t FAILS: turtle-line kills -0.69 a fight (-4.3 se), losses -1.13. G2 outside 2 se: blob gangs
+  median +7 s, blob law -8 s, turtle gangs -29 s (5.8 se). Doctrine's read: with R1-R3 ON a crew already halts to shoot, so posting
+  part of the line adds nothing v the blob; the defend posture isn't the lever. Round-40 lead: the blob's remaining wins sit in
+  faction matchups (syndicate blob v gangs CPU 86 %, n 70; a gangs blob wins 13 %): composition/balance. None line DROPPED (R39.6).
+- **S1 route-clear (settle, filed 2026-10-23 at daea2cefe's code; settle.md *Bar S1 route-clear*): RESULT FAILED.** Seeds
+  6001-6024, 6ab14f1ac's tree (green builder0 3145/0), builder0 light J4, `make native settle-s1c exited 0`. Deciding: 5-squad
+  never-in 1 -> 3 (all new: terminus 5 click s6003, terminus 5 route s6003, crossing 5 route s6009). Every guard passed (all-in 25.8
+  -> 24.7 s, contacts 11944 -> 10623, fights flat). Reported: deploy legs >= 25 m 64 -> 100. Probable cause (untraced): the clear
+  tests where the seat stands, not the drive to it. Stays OFF; no CP39.1 from settle.
+- **H v2 DEPLOY_HOLD (settle, filed 2026-10-24 at f44348d9d; settle.md *Bar H v2*):** seeds 6025-6048, 72 fights an arm
+  (locks/crossing/terminus 3-squad click), main v `--deploy-hold=on`, both `--deploy-trace`, code 6ab14f1ac's, builder0 light J4.
+  REDEAL_TRACE counts a surviving deployed seat moving > 6 m, before ducks. Counter: main loss re-lays >= 20. Deciding: held's
+  re-lays <= 20 % of main's. Guards: other-cause re-lays <= main + 3; kills and losses both sides within 1.645 se; 0 never started.
+  Pass: ON on a new hash with one full check.
+- **G1 v5 GROUP LEAD (orders, filed 2026-10-24; orders.md):** arm G1 v4's + `--group-lead=drive`; tree = first green commit at or
+  after CP39.1; FRESH seeds 6201-6212 (n 12 a cell); `orders_judge.py g1v4`, G1 v4's deciding lines and guards unamended (places
+  outside <= 25 % of base; route_left_m <= 50 %; re-dealt 0; R36.6 guards; contacts <= base x 1.1 + 5). Known risk: terminus 5
+  route never-in. Pass ships ON. Waits on CP39.1.
+- **G3 v6 PLACE_CLEAR SEAT (orders, filed 2026-10-24; orders.md):** arm `--place-clear=on,-trigger=near,-reach=on,-seat=on`; tree as
+  G1 v5; FRESH seeds 6213-6224; `orders_judge.py g3` as G3 v5 unamended (pairs < 12 m <= 25 % of base). Uses settle's deploy_preview.
+  Pass ships ON. Waits on CP39.1.
+
+## Rulings (round 39)
+
+- **R39.1 (2026-10-23 ~21:35 PDT, doctrine's request):** (a) GRANT Tank.HALT_DWELL_SECONDS to doctrine under C39.4 (constant
+  only; it brings R1 to his stated ~2 s; bar D2s). (b) builder2's judged-series slot goes to doctrine's three-arm series (OFF,
+  SPLIT, dwell 1.0; ~19 h at J14) as soon as native's CP39.0 run (8952c3d64, relaunched 21:14 PDT) ends and native says so. The
+  series runs resumable (GUARD_RESUME, chunked), and native's full checks still run beside it (one full check + one series per
+  builder). A native scoreboard row for a merged main waits for the series to finish; native and doctrine settle between them
+  whether to pause it at a chunk boundary and run that row first. builder0 gets no part of the series.
+
+- **R39.2 (2026-10-23 ~22:10 PDT): CP39.0 LANDED; the laptop pairing ban lifts with N4.** Native's base: main 8952c3d64, builder2
+  21:13-21:56 PDT, 320/320 fights, 0 lost, 0 SCRIPT ERRORs; `references/scoreboard/guards/8952c3d64.fights.jsonl` (+ .json) on
+  stream/native 407a156cb. Lines: blob 41 % (+/- 10 %), kill ratio 0.78; turtle 38 % (+/- 12 %), kr 0.82. Paired v 686150ed2 (rules
+  OFF): blob -5.6 points (se 2.9; 16 flips to a loss / 7 to a win; McNemar p 0.047), kr 0.85 -> 0.78; turtle -3.7 (se 3.8), inside
+  noise. Every round-39 rules-ON bar pairs against this file. **R38.25's ban (never pair a laptop read with a builder read) lifts
+  for runs through `make` on any tree that contains N4 (a577e3776, vendored CORE-MATH, equal to builder0's libm on all 2^32 float
+  inputs; laptop sim-baseline 13/13 on the builders' lines)**, from the moment main holds N4 and is green. A tree without N4 keeps
+  the ban, and so does any non-make driver that runs its own Godot binary. The scoreboard's fights/moves/orders part for 8952c3d64
+  (run.sh, ~1.5 h builder2) waits for a doctrine chunk-boundary pause; nothing is gated on it.
+
+- **R39.3 (2026-10-23 ~22:45 PDT, THE LEAD's yes): one laptop game run at a time.** The laptop (7.4 GB) hit 736 MiB free with seven
+  Claude sessions (~2.1 GB) plus several laptop Godot runs, and Claude Code reaped manoeuvre's light-run wrapper. Rule: at most ONE
+  stream runs Godot on the laptop at once (a laptop test, trace or probe). Take the lock with `flock /tmp/tank-squad-laptop-godot.lock
+  <cmd>` and wait rather than skip. Everything else goes to builder0/builder2 through `make remote`/light lanes, whose laptop side
+  only rsyncs. If `free -m` shows available < 1500 MiB, don't start a laptop run. Manoeuvre restarts its builder0 light job.
+
+- **R39.4 (2026-10-24 ~00:10 PDT):** (a) D3's SPLIT arm runs as filed, for the record only (its lab guard failed). (b) Seed blocks:
+  settle 6025-6048 (Bar H v2), orders 6225-6236 (G2 v2c). (c) His feedback picks (directions page, db picks/round39, 06:58Z):
+  sight none, firing on the move none, slowed AMBER chevrons, phone map DOCK; all six caller lines ticked (moving_miss.01-03,
+  pinned_slow.01-03): text approved, so feedback voices exactly those six. (d) Integration batch 1 merged to main: native
+  8f018edf7, pair/native-givewaychain bb8043686, feedback d8f88b3ab, doctrine/d3-tree 773412e49, settle 6ab14f1ac, orders
+  ebfe98d18, + d8f182d11 (one copy of deploy_preview). (e) Settle's o2 trace: probe "parked re-deals" on rules-ON main are
+  UnansweredFire duck moves (14-18 m), not halt re-deals; parked_redeals needs a duck exclusion before any bar uses it.
+
+- **R39.5 (2026-10-24 ~10:15 PDT, feedback's request): GRANT `game/camera/rts_camera.gd` to feedback**, for one change: the RTS
+  rig's Overview framing takes a bottom screen inset (TacticalMap passes `touch_rects["text_floor"]`) so the dock's bars never cover
+  his end of the arena on a phone. Touch layouts only: desktop/no-touch framing byte-identical, follow view unchanged (feedback's
+  read: lifting it pushes the far ground off the top). Verify by a capture of the REAL skirmish's Overview button at the three
+  phone sizes; if the rig's tracking defeats a capture flag, a test that holds the rig's overview and asserts his crews above the
+  bars counts.
+
+- **R39.6 (2026-10-24 ~11:00 PDT):** D3 is decided (FAIL), so its none line (G3, a guard for a ship that can't happen) is dropped;
+  builder2 goes to native's 8952c3d64 run.sh row and the trig perf attribution's builder2 needs, once D4 hull-down ends.
+
+- **R39.7 (2026-10-24 ~11:20 PDT, feedback's finding): GRANT `game/modes/skirmish_mode.gd` to feedback** for one change: the touch
+  map gets the same `rig.vision` / `vision_inset` hookup desktop has (skirmish_mode.gd ~638), so its overview frames his force (his
+  rule: never zoom past what the force can see) rather than the arena centre. Before: his spawn crews sat off the bottom of a
+  phone screen in every layout. Desktop byte-identical. A follow-up commit after feedback's current full check, with its own check.
+
+- **R39.8 (2026-10-24 ~11:10 PDT): orders' two bars run in parallel, one per builder, once CP39.1 lands.** G1 v5 on builder0 light
+  (as filed), G3 v6 on builder2 (free after doctrine's D4, R39.6; native's run.sh row and trig A/B go first if they're still queued).
+  Seeds and judges are unchanged; a machine difference doesn't matter (builders both glibc 2.43, deterministic sims; each bar pairs
+  within its own run). Manoeuvre's M1 verdict ETA ~16:30-17:00 PDT.
 
 ## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 
