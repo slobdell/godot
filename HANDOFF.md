@@ -4,11 +4,61 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-23 ~20:40 PDT — **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-24 ~16:10 PDT — **ROUND 39 CLOSED** (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
 
+
+## 🏁 ROUND 39 CLOSED (2026-10-24 ~16:10 PDT) — read this first
+
+**Main 6a1c77752 (+ docs since) GREEN on builder0** (`make check exited 0` on the box, 3176 passed / 0 failed, 27 targets ALL
+JUDGED, sim-baseline 13 maps unmoved; perf-judge PASS attempt 1, **7,693 us/tick**, idle 94 %). The wrapper reported exit 5 only
+because one copied-back file (build/flank_s5.mp4) was stale on the laptop; re-copied with `rsync --checksum`, now matching the box.
+Native is fixing the copy-back (see below). Every stream's tip is merged.
+
+**SHIPPED ON (what he'll notice):**
+1. **A squad that loses a tank keeps its seats** (settle's DEPLOY_HOLD, Bar H v2: loss re-lays 288 -> 0, reseats 244 -> 1, fights flat).
+2. **Honest fog of war** (feedback): lit ground never shows past a crew's live sight (was up to 24.5 m over hidden enemies).
+3. **His picks** (directions page, R39.4): amber chevrons on suppressed crews; the phone map's DOCK layout; the phone overview
+   frames his force above the bars (R39.5, R39.7).
+4. **The laptop simulates the builders' fights** (native N4, CORE-MATH trig); laptop/builder pairing allowed for make runs (R39.2).
+5. `make skirmish SKIRMISH_FLAGS="..."`; one full check per builder at a time (native's lock, watchdog fixed in 7545c0d7c).
+**Built, OFF:** his six caller lines (voiced; `--announcer-rules=on`); M1 `--giveway-chain`; S1 `--seat-route-clear`; G1 v5
+`--group-lead=drive`; G2 v2c; G3 v6; D3 `--cpu-defend-split`; `--duck=off` (a control).
+
+**FAILED, each with a traced cause (round 40 starts here):**
+- **M1 give-way limit** (never-in 2 -> 7): squads wedged behind seated crews M1 holds in a street with no way round. Three v2
+  directions + 5 deterministic lab runs: `archive/round39/manoeuvre.md` Status.
+- **S1 route-clear** (never-in 1 -> 3): (A) it protected one centre line, but crews drive their own paths; (B) a moved seat's leg
+  meets the passer head-on. Fix sketch: per-crew corridors; move a seat only on a short leg crossing no live corridor.
+- **G1 v5** (places outside 100 -> 28 v bar 25): the his-5 twitch is settle's deploy trigger, a crew holding 3.83 m v the 3.5 m
+  ORDER_ARRIVE radius waits out the 10 s cap and re-deals. Round-40 one-liner: count a holding crew within ~5 m as in. Locks 5
+  (8 -> 8) untraced.
+- **G3 v6** (deciding passed at the bar; crossing-5-route guards failed): the step-back puts a place on a later squad's route.
+  Fix: never step back inside a still-to-arrive squad's corridor.
+- **Doctrine:** D2s (dwell 1.0 pulled crews out of cover), D3 SPLIT (blob 39 -> 39 %, n 800 a line), D4 hull-down (no effect).
+
+**THE ROUND-40 LEAD QUESTION: faction balance.** Doctrine's table (rules-ON base, 1600 fights, `archive/round39/doctrine.md`):
+a blob v a gangs CPU wins 72 % (syndicate blob 86 %); v a syndicate CPU 12 %; a gangs army loses charging (13 %) or turtling (17 %).
+Every tactic tried in two rounds moved the line 0-6 points and left the table's shape alone. Doctrine's plan: (1) a no-build
+per-unit kill/loss tally on the 1600 fights (native adds per-unit counts to GUARD_RESULT); (2) his call on balance/composition, in
+player terms; (3) only then a faction-aware CPU. Also discussed with him: automatic balance search (many sims a candidate, his
+bounds), CPU-bound, a fit for a new 16-core builder he may buy.
+
+**Waiting on him (lead gates):** hear the six caller lines (`make skirmish SKIRMISH_FLAGS="--announcer-rules=on"`), then default
+ON or not; the portrait order-preview line floating mid-screen; keep R1's ~3 s to full sight (doctrine recommends yes) or have the
+cover AI cope with ~2 s; the faction table.
+
+**Still running at close (native, the only open session with work):** the trig A/B on builder0 (cr v libm, 3 rounds; main
+6a1c77752); the 8952c3d64 scoreboard row on builder2 (~17:20 PDT); the copy-back fix (rsync skips same-size/same-mtime files; re-copy
+mismatches with --checksum). Native's brief stays in `streams/native.md` until those land; then archive it.
+
+**Close state:** briefs archived to `streams/archive/round39/` (native's pending); his picks' db filed in
+`streams/references/round39/`; feedback's announcer masters rescued into the main checkout. **Worktrees come down at round 40's
+launch** (as round 38's did), after the lead closes the six sessions: `make worktree-remove STREAM=<s>`, `ssh builder0 rm -rf
+~/tank_squad/godot-<s>*` and builder2's (BEFORE any round-40 CLI starts, lesson 324), `git branch -m stream/<s> round39/<s>`.
+Laptop disk ~15 GB free.
 
 ## 🚀 ROUND 39 IS PREPARED (2026-10-23 evening) — read this first
 
