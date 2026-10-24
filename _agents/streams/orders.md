@@ -44,8 +44,8 @@ settle's deploy/halt functions, manoeuvre's movement/traffic, doctrine's brains,
 
 ## Requests to other streams
 
-- **settle (G3 v6):** a pure static deploy preview orders can call at the click: (members with their arrival positions,
-  anchor, heading, table) -> the deploy's worst leg, on the same terrain/latch/fit path the deploy takes.
+- **settle (G3 v6): DONE** (4066132c4, `ElementPlan.deploy_preview`). Merge note: orders carries a verbatim copy in
+  `element_plan.gd` (da9591207); keep one copy.
 
 ## Waiting on the lead
 
@@ -55,26 +55,34 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-23 ~21:35 PDT)
-- **Plan (backlog order):** G1 v5 lab -> dev read -> G2 v2 lab -> dev read -> G3 v6 lab (needs a deploy trace of s5201) -> dev
-  read -> full check on a named hash -> wait for CP39.1 (C39.3) -> judged series one at a time.
-- **G1 v5 built** (`--group-lead=drive`, OFF; ef68308d1). A column's places go to its squads in the order their crews reach the
-  click by ground: under the switch every squad of a column is one knot in `untangle_whole`, and the first key is
-  `lead_breaks` (a squad placed behind one it leads by > 6 m), then crossings, then drive. Decided: lead = mean of the
-  squad's crews' navmesh drives (the bulk of the squad, not one forward scout).
-  - Lab `test_control_group_click` (laptop GDScript): pins today's straight-line swap (Bravo to the head) and the fix.
-  - **s4710 lab** (builder0 light J3, ef68308d1 + G2 v2 work OFF, crossing 3 click, n 1; `references/round39/orders/g1v5-lab-s4710-builder0-ef68308d1/`):
-    v4 Bravo never in, contacts 3,756 -> v5 all in 9.7 s, twitch 0, contacts 71 (main 875, all in 17.3 s).
-  - Dev read 1 running (builder0 light J4, 93a6c2283, dev seeds 3804-3809, 12 street cells, main / v4 / v5).
-- **G2 v2 built** (`--group-route-corner=line`, OFF; 93a6c2283). On a leg, the column's room is read along the road (capped
-  at its length) instead of the straight line on past the click, and ranks past the road's first corner (> 30 deg) stand single
-  file on it. Lab on the Terminus navmesh (his east route's last leg): v1 rear rank two abreast 32 m either side of the x=70
-  street (the column ran out of room and merged); v2 every place on the route line.
-- **G3 v6 BLOCKED on settle (request sent 2026-10-23 ~22:00).** The `--deploy-trace` of s5201 (laptop, n 1; a trace, not a
-  pairable number; `references/round39/orders/g3v6-trace-laptop-650e43521/`): G3's moved place reads `lanes`, not `dense`, so the
-  halt is laid at 10 m spacing, not 7.5, and the crews (abreast across the heading) are dealt crosswise into the herringbone:
-  worst deploy leg 16 m v main's 6.7. A click-time estimate from shapes alone (travel seats -> halt seats, least longest
-  leg) read 11.0 m at the moved place v 13.0 at the given one, so it can't tell them apart; removed (72a5dfc81). Kept: `place_clear`'s
-  `seats_hold` seam (a moved place must pass the check, else it steps back along the squad's own leg, else it is kept;
-  lab 27/0). No switch until a check exists.
+### NOW (2026-10-23 ~22:40 PDT)
+- **Plan (backlog order):** G1 v5 lab + dev read (done) -> G2 v2 lab (done) + dev read (running) -> G3 v6 lab (done) + dev
+  read -> full check on a named hash -> wait for CP39.1 (C39.3) -> judged series one at a time. All three switches are OFF.
+- **G1 v5 `--group-lead=drive`** (ef68308d1): a column's places go to its squads in the order their crews reach the click by
+  ground. In `untangle_whole` every squad of a column is one knot, and the first key is `lead_breaks` (a squad placed behind
+  one it leads by > 6 m), then crossings, then drive. Decided: lead = the mean of the squad's crews' navmesh drives (the bulk
+  of the squad, not one forward scout).
+  - Lab (laptop GDScript): pins today's straight-line swap (Bravo to the head) and the fix.
+  - **s4710 lab** (builder0 light J3, ef68308d1 + G2 work OFF, crossing 3 click, n 1;
+    `references/round39/orders/g1v5-lab-s4710-builder0-ef68308d1/`): v4 Bravo never in, contacts 3,756 -> v5 all in 9.7 s,
+    twitch 0, contacts 71 (main 875, all in 17.3 s).
+  - **Dev read 1** (builder0 light J4 at load 20-47, 93a6c2283, dev seeds 3804-3809, n 6, 12 cells;
+    `references/round39/orders/g1v5-dev1-builder0-93a6c2283/`):
+    - v5 keeps v4's deciding lines v main: outside 14 -> 1; metres outside 1,011 -> 168; re-dealt 12 -> 0.
+    - Contacts: main 5,970, v4 5,651, v5 5,013. v4 -> v5 passes every probe guard.
+    - Both arms fail one guard: terminus 5 route never-in 1 v 2 (s3805 squad 1). No column was laid on that run and v4 / v5
+      rows match, so it's v4's squads-whole on the route's first plain click (R38.44), not v5. Not traced yet.
+- **G2 v2 `--group-route-corner=line`** (93a6c2283): on a leg, the column's room is read along the road (capped at its length),
+  not on the straight line past the click, and ranks past the road's first corner (> 30 deg) stand single file on it.
+  - Lab (Terminus navmesh, his east route's last leg): v1's rear rank stood two abreast 32 m either side of the x=70 street (the
+    column ran out of room and merged); v2 puts every place on the route line.
+  - Dev read running (builder0 light J4; his east / west / avenue routes x 3 / 5 squads + the 12 route cells, dev seeds
+    3801-3803; main / g2 (R38.47's arm) / g2v2).
+- **G3 v6 `--place-clear-seat=on`** (da9591207): a moved place must deploy in the given place's shape and spacing, worst leg
+  <= given + 2 m (or 8 m); else it steps back along the squad's own leg; else it's kept. It uses settle's
+  `ElementPlan.deploy_preview`, built on my request and copied verbatim from stream/settle 4066132c4.
+  - Trace (laptop, n 1, not pairable; `references/round39/orders/g3v6-trace-laptop-650e43521/`): v5's moved place read
+    lanes / 10 m v the given place's dense / 7.5 m, so the deploy dealt the crews across (worst leg 16 m v main's 6.7).
+  - With v6 (laptop, n 1): squad 2 keeps its place, all in at 17.3 s.
+  - A shapes-only estimate (no preview) couldn't separate the places (11.0 v 13.0 m); removed.
 
