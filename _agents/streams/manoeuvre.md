@@ -109,3 +109,38 @@ DEV read on my round-38 dev block 7001-7008 (allowed by the registry note). Noth
 **M1 bar ETA (2026-10-24 11:00 PDT):** verdict ~16:30-17:00 PDT (census started 10:29 PDT and is nearly done; then s3866, the bar
 filed, the series). It is CP39.1: I send the verdict and the tree's green hash to the orchestrator AND orders (godot-orders-db) at
 once, pass or fail (with the cause if traced).
+
+### M1 census (base, DEV): c35cc93ac, builder0 light J4, native, switch OFF, terminus/locks/sumps x 7001-7008, 24 fights
+(`~/overnight-manoeuvre/r39/census_base/`, `tests/traffic/chain_table.py`). Give-ways by a crew with a seat: 4,505 (travelling
+3,312, parked 1,193). Parked: 2,886 m of drift left off seats (mean 2.42 m a give-way). By off-seat at the start: 0-2 m 245
+(3.46 m each), 2-4 m 499 (2.78), 4-6 m 189 (1.89), 6-10 m 58, 10-20 m 66, 20+ m 136. **Chained (> 4 m off): 449 give-ways,
+650.5 m out, 27.1 +/- 22.7 m a fight.** By chain index among those: 0 = 328 (never back within 2 m), 1 = 73, 2 = 30, 3+ = 18. The
+biggest single pushes are lead-outs (spot(16,0) / (24,0): 10-14 m). Deaths jam:yielding 48, jam:friend 16, stuck:* 162;
+parked refusals 1,246. **CHAIN_M stays 4.0:** 2-4 m is where loosely seated crews take their FIRST give-way (the lead's "steps
+aside once"), and lowering it would refuse those.
+
+### M1 lab s3866 (builder0 light, native, 2677407d8 = c35cc93ac + Status, n 1 an arm; `~/overnight-manoeuvre/r39/s3866/`)
+crossing 5 click, squad 4 traced: **switch OFF, squad 4 never in (90 s); ON, in at 83.2 s.** Squads 1/2/3/5 identical. Late: the
+rule keeps the parked crew from being pushed down the street, but squad 4 still queues round the anchor for ~50 s. The bar
+guards all-in time.
+
+### Bar M1 (filed 2026-10-24 ~11:25 PDT, BEFORE any series number)
+- **Tree / arms:** c35cc93ac's code (later commits on the branch are Status / docs); OFF (default) v ON `--giveway-chain`; native
+  ON (C++ mirror, bb8043686 in main). **settle's `--seat-route-clear`: OFF in both arms** (main's default; S1 not passed).
+  builder0 light lane, J 4. Seeds: the registered block 6101-6124, split: A on 6101-6112, B on 6113-6124.
+- **A, jam census** (`traffic-jam-census`, terminus/locks/sumps x 6101-6112, 180 s, 36 fights an arm; paired by fight):
+  - **D (deciding): chained seat drift** = sum of `giveway_chain["parked:chained"].out_m`. PASS: ON <= 0.5 x OFF AND the paired
+    per-fight mean difference < 0 by >= 2 se.
+  - G1 deaths in give-ways (`jam:yielding` + `jam:friend`): ON - OFF <= max(2 paired se, 3).
+  - G2 stuck deaths (`stuck:*`, the asker that can't get round a refuser): ON - OFF <= max(2 paired se, 3).
+  - G3 friendly contacts: ON <= 1.10 x OFF.
+  - G4 the fights: each team's kill share within +/- 0.03 of OFF; total deaths within +/- 5 %.
+- **B, orders probe** (`orders-probe`, locks/crossing/terminus x 3,5 squads x click,route x 6113-6124, 144 runs an arm):
+  - G5 never-in runs (a run where some squad never arrives): ON <= OFF.
+  - G6 all-in time (the run's last arrival), runs where both arms got all in: paired median ON - OFF <= +2.0 s, and no cell's
+    median worse by more than 10 s.
+- **Reported, not judged:** chained n, chain_in_play / skipped / refusals, parked_refusals, all parked drift, s3866's arrival.
+- **Not paired against CP39.0** (the 320-fight guard lines are builder2 scoreboard series; A's fight rows pair the same tree and
+  seeds). If the orchestrator wants a CP39.0 guard line on ON before merge, that is a builder2 run.
+- **Verdict:** every line passes -> PASS (ship ON is the orchestrator's / the lead's call: symmetric AI, CP39.1). Any FAIL ->
+  no re-run on these seeds; the cause traced and written up. Judge: `tests/manoeuvre/chain_judge.py` (committed before the run).
