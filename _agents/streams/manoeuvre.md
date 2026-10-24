@@ -47,3 +47,32 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Start (worker, 2026-10-23 ~21:15):** stream/manoeuvre = main 8952c3d64 + round-39 docs (906557c06), GREEN per HANDOFF (builder0
+3135/0), so no baseline check (contract 1).
+
+**Plan (in order):**
+1. **M1 code (OFF), DONE 14a10e719:** `--giveway-chain` (= `--traffic-on=givewaychain`, Traffic.DEFAULT_OFF). A crew parked
+   (phase arrived, or an order that is not a move_to) more than `CHAIN_M` (4.0 m, to be set from the census) off its seat
+   (`Movement.yield_seat()`: move_to point, else face slot) takes no give-way spot farther from that seat than it stands (+0.5 m):
+   along it, back toward it, or today's in-place hold. With none left, it refuses, and the asker treats it as parked (CP1a2:
+   keeps its route, ORCA goes round). **Decision:** refuse rather than hold. A parked refuser is already the case the asker
+   handles, and a hold would keep the asker waiting on a crew that can't move. **Native:** no C++ mirror yet, so while the
+   switch is on it sets `BrainSwitches.native_yield = false` and asks run in GDScript (bit-identical to C++ per seed, R38.24).
+   Twin requested from native via the orchestrator (2026-10-23 ~21:45). Test `tests/test_traffic_chain.gd` (5 cases).
+2. **Census first (base, no bar):** `jam_census.gd` now prints GIVEWAY_CHAIN rows and `giveway_chain` totals (give-ways by off-seat
+   bin and chain index; push_m = farthest from the seat during the give-way minus off_m). Run on main's behaviour (switch OFF),
+   builder0 light, dev seeds; pick CHAIN_M from it.
+3. **Lab s3866** (crossing 5 click, squad 4 must get in), both arms.
+4. **The bar** (filed before numbers; seeds 6101-6124; settle's `--seat-route-clear` state named), then the series.
+5. M1 on top of settle's S1 (CP39.1), when the orchestrator says. 6. M7 re-file decision. 7. Stretch: the 82 long ORCA episodes.
+
+**Questions for the lead:** none.
+**Requests to other streams:** native: `begin_yield`'s mirror of givewaychain (sent ~21:45).
+
+**2026-10-23 ~22:00: PAUSED, laptop memory.** The builder0 light run of 14a10e719 (`native lint test FILTER=test_traffic|
+test_native_yield|test_native_drive|test_native_traffic`) never started. It was still queued for a light slot (orders' and
+doctrine's held both) when Claude Code reaped the local wrapper because the laptop was critically low on memory (736 MiB
+available, 7.4 GiB total). I stopped the orphaned remote job (my `-light` folder only). So 14a10e719 has no builder0 result
+yet: only the laptop GDScript run of test_traffic_chain (5/5). Next: re-run that light job, then the census (step 2), once
+the lead OKs a restart.
