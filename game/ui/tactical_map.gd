@@ -1061,6 +1061,19 @@ var _hold_overview := false
 var _lift_applied := 0.0
 
 
+## R39.7: the phone map's half of desktop's L4 hookup (RtsControls.vision_state's "region"): the force's collective sight,
+## so the rig's overview frames his force, not the arena centre, and never zooms out past what it can see. No "frame":
+## the phone camera is never taken back from his fingers.
+func vision_state() -> Dictionary:
+	if game_match == null or game_match.tanks == null:
+		return {}
+	var friendly: Array = []
+	for tank in game_match.sorted_team_tanks(team):
+		if tank.is_alive():
+			friendly.append(tank)
+	return {"region": VisionRegion.of(friendly)}
+
+
 ## Dock fills the bottom of the screen, where the overview draws his own end of the arena: his crews sat under the
 ## chips. So the overview fits the whole arena into the clear ground above the bars: zoomed out by the bars' share of the
 ## screen and lifted (Camera3D.v_offset) by half of it, nothing cut at the top (the far end matters most). A followed crew

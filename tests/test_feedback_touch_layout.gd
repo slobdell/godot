@@ -104,8 +104,7 @@ func test_dock_keeps_his_crews_clear_of_the_bars() -> void:
 ## R39.5: the real skirmish's Overview button is the RTS rig's (perspective, 77 degrees). The rig keeps the bars' height
 ## clear in its overview (overview_inset_px, from TacticalMap): everything the old overview showed on screen now shows above
 ## dock's bars, the far end included; desktop and round 2's layout get exactly the old pose; the follow view is never inset.
-## (The phone map hands the rig no vision region, so its overview centres on the arena: his crews at their start were off
-## the bottom of the screen before dock too; that is the old framing, kept.)
+## (Without a vision region the overview centres on the arena; R39.7's test below hands it his force's.)
 func test_the_rigs_overview_shows_above_the_bars_what_it_showed() -> void:
 	var before := tree.root.size
 	var lens := RtsCamera.fov
@@ -187,6 +186,71 @@ func test_the_rigs_overview_shows_above_the_bars_what_it_showed() -> void:
 		rig.overview_inset_px = 0.0
 		rig._apply()
 		assert_true(camera.global_transform == plain[0] and camera.fov == plain[1], "%s: no inset: the old overview exactly" % screen)
+		for node: Node in [map, rig, camera, game_match, arena]:
+			node.queue_free()
+		await tree.process_frame
+	RtsCamera.fov = lens
+	tree.root.size = before
+
+
+## R39.7 (his "never zoom past what the force can see"): the phone map hands the rig his force's sight region, as desktop's
+## controls do, so the Overview button frames his crews where they start, every one on screen and above dock's bars, at
+## the three phone sizes, from the start skirmish gives him (squad one framed); and the region is his living crews' only.
+func test_the_phone_overview_frames_his_force_above_the_bars() -> void:
+	var before := tree.root.size
+	var lens := RtsCamera.fov
+	RtsCamera.fov = RtsCamera.FOV_DEG
+	for screen: Vector2i in [Vector2i(2400, 1080), Vector2i(1800, 810), Vector2i(810, 1800)]:
+		tree.root.size = screen
+		var arena: Node = add_to_tree(ARENA.instantiate())
+		var game_match: Match = MATCH.instantiate()
+		add_to_tree(game_match)
+		game_match.load_doctrine(Match.Team.GREEN, Doctrine.load_file("res://doctrines/player_default.json")["doctrine"])
+		var camera := Camera3D.new()
+		add_to_tree(camera)
+		camera.make_current()
+		var rig := RtsCamera.new()
+		rig.camera = camera
+		rig.edge_pan = false
+		add_to_tree(rig)
+		var map := TacticalMap.new()
+		map.game_match = game_match
+		map.camera = camera
+		map.rig = rig
+		rig.vision = map.vision_state  # skirmish_mode's _start_touch_map hookup
+		# skirmish_mode's first frame: squad one, a little ahead, at START_ZOOM.
+		var first: Array = []
+		for tank in game_match.sorted_team_tanks(Match.Team.GREEN):
+			if Array(game_match.team_squads(Match.Team.GREEN)[0].roster).has(String(tank.name)):
+				first.append(tank.global_position)
+		rig.frame(first, false, SkirmishMode.START_ZOOM)
+		rig.snap()
+		add_to_tree(map)
+		await wait_physics_frames(RtsCamera.VISION_CAP_EVERY + 3)
+		var crews: Array = []
+		for tank in game_match.sorted_team_tanks(Match.Team.GREEN):
+			crews.append(tank)
+		assert_true(crews.size() >= 4, "%s: setup: his force is on the field (%d)" % [screen, crews.size()])
+		var region: VisionRegion = map.vision_state()["region"]
+		for tank: Tank in crews:
+			assert_true(region.contains(tank.global_position), "%s: %s sees its own ground" % [screen, tank.name])
+		assert_true(not region.contains(Vector3(0, 0, -Match.ARENA_HALF_SIZE)) or not region.contains(Vector3(0, 0, Match.ARENA_HALF_SIZE)),
+				"%s: the region is his force's sight, not the whole arena" % screen)
+		(map._buttons["overview"] as Button).pressed.emit()
+		await wait_physics_frames(3)
+		await tree.process_frame
+		assert_true(rig.is_overview(), "%s: the Overview button opens the rig's overview" % screen)
+		map.set_process(false)
+		rig.set_process(false)
+		rig.snap()
+		rig._apply()
+		var floor_y := float(map.touch_rects["text_floor"])
+		for tank: Tank in crews:
+			var at := camera.unproject_position(tank.global_position)
+			assert_true(not camera.is_position_behind(tank.global_position) and at.x > 0.0 and at.x < screen.x
+					and at.y > 0.0 and at.y < floor_y, "%s: %s at %s is framed above the bars (y < %.0f)" % [screen, tank.name, at, floor_y])
+		print("FEEDBACK_FORCE_OVERVIEW %s crews %d framed above y %.0f, focus %s, zoom %.2f" % [screen, crews.size(), floor_y,
+				rig.focus, rig.zoom])
 		for node: Node in [map, rig, camera, game_match, arena]:
 			node.queue_free()
 		await tree.process_frame
