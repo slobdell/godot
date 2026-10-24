@@ -63,6 +63,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   (settle's S1 failed its bar; it waits on manoeuvre's M1 or settle's next version). The G2 bar file waits on its re-read on
   CP39.1. R39.3: one laptop Godot run at a time,
   `flock /tmp/tank-squad-laptop-godot.lock <cmd>`; everything else on the builders.
+- **R39.8: the two bars run IN PARALLEL** when CP39.1 lands: G1 v5 on builder0 light J4, G3 v6 on builder2 (J ~14, Spot:
+  re-queue on preemption). Driver: `tests/control/orders_bar.sh <b0|b2> <g1v4|g3> <arm> "<seeds>" <out dir outside build/>
+  [jobs]`. It runs streets + his click, re-runs a part that is incomplete or preempted, splits terminus_his and yard_open, and
+  judges. Native's builder2 row yields to the G3 series. **Settle's DEPLOY_HOLD (2478e2eef) ships ON before CP39.1**, so both
+  arms of both bars carry it; name it in each bar's run line.
 - **parked_redeals duck exclusion** (ea51cc7c5; settle's o2 trace: every o2 "re-deal" was one crew's UnansweredFire duck,
   14-18 m out and back, with the halt's seats unchanged): a parked crew's goal move out to its duck point, or back from a seat
   that was one, now counts in `parked_ducks`, not `parked_redeals`. The judge reports both. No bar of mine judges either
