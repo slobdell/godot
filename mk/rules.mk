@@ -1,7 +1,7 @@
 # Round 37 (rules, C37.2): the "stop to be strong" rules. Switches: game/combat/rule_switches.gd (--rules-on=sight,spread,pin_slow).
 # rules-moving: R2's first MEASURE. CPU-v-CPU fights (the scoreboard's showmatch: --skirmish --demo-match) with
 # tests/rules/moving_fire_probe.gd listening: how much enemy damage came from rounds fired on the move, by range.
-# RULES_FLAGS adds run flags (--rules-on=spread for the arm). Light: make remote T=rules-moving LIGHT=1.
+# RULES_FLAGS adds run flags (the rules ship ON since R38.55: --rules-off=sight,spread,pin_slow for the OFF arm). Light: make remote T=rules-moving LIGHT=1.
 
 RULES_AT ?= terminus locks sumps gorge parade
 RULES_SEEDS ?= 1 2 3 4
@@ -34,7 +34,7 @@ RULES_SHOT_DIR ?= $(BUILD_DIR)/rules-shots
 rules-shots: import ## Round 37 (rules): skirmish frames with the rules OFF and ON (--rules-on=sight,spread,pin_slow), his window and the phone -> build/rules-shots/*.png (needs a display)
 	rm -rf $(RULES_SHOT_DIR) && mkdir -p $(RULES_SHOT_DIR)
 	for arm in off on; do for delay in $(RULES_SHOT_DELAYS); do for size in 1854x1011 1200x540; do \
-		flags=""; if [ $$arm = on ]; then flags="--rules-on=sight,spread,pin_slow"; fi; \
+		flags="--rules-off=sight,spread,pin_slow"; if [ $$arm = on ]; then flags="--rules-on=sight,spread,pin_slow"; fi; \
 		timeout 300 $(GODOT) --path . --resolution $$size -- --skirmish --scripted --enemy=cpu --seed=3 --arena=$(RULES_SHOT_ARENA) \
 			--no-pick-faction --announcer=text --announcer-history=off --music-history=off --render-preset=desktop $$flags \
 			--screenshot-delay=$$delay --screenshot=$(CURDIR)/$(RULES_SHOT_DIR)/$${arm}_$${delay}s_$$size.png \
