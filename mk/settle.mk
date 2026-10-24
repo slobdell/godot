@@ -212,3 +212,17 @@ settle-s1c: ## Round 39 (settle S1): the route-clear bar's series (main v clear,
 	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1c" SETTLE_V2_SEEDS="$$(seq -s " " 6001 6012)" \
 		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 6013 6024)" SETTLE_V2_JOBS=4 SETTLE_V2_JUDGE=s1c SETTLE_V2_PAIR="main clear" \
 		SETTLE_V2_ARMS="main:--deploy-trace clear:--seat-route-clear,--deploy-trace"
+
+# Round 39 (settle S1): the player's look at the lab cases. Orders' probe in a window (needs a display: builder0 via
+# tools/remote.sh --light), top-down desktop + phone shots when every squad is in (or the window ends), per
+# SETTLE_LAB_CASES x SETTLE_SHOT_ARMS -> build/settle-shots/<case>-<arm>/*.png
+SETTLE_SHOT_ARMS ?= main: clear:--seat-route-clear
+.PHONY: settle-shots
+settle-shots: native-for-check import ## Round 39 (settle S1): top-down shots of the lab cases, main v clear (needs a display) -> build/settle-shots/
+	@rm -rf $(BUILD_DIR)/settle-shots && mkdir -p $(BUILD_DIR)/settle-shots
+	@for c in $(SETTLE_LAB_CASES); do for a in $(SETTLE_SHOT_ARMS); do \
+		map=$$(echo $$c | cut -d: -f1); n=$$(echo $$c | cut -d: -f2); route=$$(echo $$c | cut -d: -f3); seed=$$(echo $$c | cut -d: -f4); \
+		name=$${a%%:*}; flags=$$(echo "$${a#*:}" | tr "," " "); out=$(BUILD_DIR)/settle-shots/$$map-$$n-$$route-s$$seed-$$name; mkdir -p $$out; \
+		timeout 900 $(GODOT) --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$map --seed=$$seed \
+			--probe-squads=$$n --probe-route=$$route --probe-arm=$$name --mute --probe-shots=$$out $$flags 2>&1 \
+			| grep -E '^ORDERS_PROBE( \{|_SHOT)' | cut -c1-160 || true; done; done
