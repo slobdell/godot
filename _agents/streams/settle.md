@@ -86,7 +86,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Stretch (re-deals after a loss), dev read** (builder0 light, 15ec5b830, fight probe locks/crossing/terminus x 3-squad click x
   dev seeds 3891-3902, n 36 fights an arm; REDEAL_TRACE = the halt's OWN seat moves > 6 m, before ducks): main 144 re-lays after a
   loss (185 crews moved), 0 from any other cause; `--deploy-hold=on` 0. Fights: his kills 4.86 -> 5.42, his losses 7.92 -> 7.36, CPU
-  losses 4.97 -> 5.56 a fight. Bar H v2 (deciding on REDEAL_TRACE, not the probe's parked_redeals) needs a fresh seed block: asked.
+  losses 4.97 -> 5.56 a fight. Bar H v2 (deciding on REDEAL_TRACE): seeds 6025-6048 granted; bar filed below before any number.
 - **Orders' request done:** `ElementPlan.deploy_preview` (4066132c4, quick-remote builder0 132/0), pure; orders told.
 
 ### S1 route-clear lab (builder0 light, n 1 per run, orders' probe; `make settle-lab`)
@@ -116,6 +116,20 @@ after a full check of the named hash. Judge `settle_judge.py s1c` (dry-run on ro
   the fights (both reads, his kills / his losses / CPU losses within 1.645 se, 0 runs that never started).
 - Reported: place+twitch and deploy legs >= 25 m.
 - A pass ships `--seat-route-clear` ON on a new hash with one full check (CP39.1 with manoeuvre's M1).
+
+### Bar H v2 DEPLOY_HOLD (filed 2026-10-24 before any number on its seeds; code = 6ab14f1ac's)
+What he'd see: when a parked tank is killed, the rest of the squad stays where it is (no survivor sent 6 m+ to a new seat).
+Arms: `main:--deploy-trace,--probe-fight=on,--probe-budget=1500` v `held:` the same + `--deploy-hold=on`. Base: main as on 6ab14f1ac
+(latch ON, R1-R3 ON). **Seeds 6025-6048 (granted by the orchestrator, registered):** fight probe, locks / crossing / terminus x 3
+squads x click (72 fights an arm). `tools/remote.sh --light native settle-h2 TANK_SQUAD_SLOT_TIMEOUT=14400`, builder0 light, J 4.
+Judge `settle_judge.py h2` (dry run on the stretch dev read's folder only, seeds 3891-3902). Re-deals are REDEAL_TRACE lines (a
+deployed halt's own surviving seat moving > 6 m, before any duck), not the probe's `parked_redeals` (which counts ducks, item 3).
+- Counter: main's REDEAL_TRACE re-lays after a loss >= 20.
+- **Deciding:** held's REDEAL_TRACE re-lays (any cause) <= 20 % of main's.
+- Guards: held's re-lays from any other cause <= main's + 3; his kills, his losses, the CPU's losses a fight within main +/- 1.645 se;
+  0 runs that never started.
+- Reported: the probe's `parked_redeals` and `reseats` per arm (duck-contaminated).
+- A pass ships `--deploy-hold` ON on a new hash with one full check.
 
 ### Plan (ordered)
 1. S1 route-clear: pure lab (`tests/test_settle_route_clear.gd`) -> the traced cases (`make settle-lab`, builder0 light) -> bar
