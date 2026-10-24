@@ -62,7 +62,110 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-23 ~21:45 PDT, in progress).**
+**ROUND-40 CANDIDATE: the blob still wins by faction matchup, not by doctrine (R39.6's request; no new runs).** Source: the
+series' OFF arm = the rules-ON base on fresh seeds (773412e49, builder2, 6301-6340 + 6401-6440, 800 blob + 800 turtle fights).
+Cells: guard (blob / turtle) win %, (n, binomial se in points; it ignores per-seed army clustering, so read it as a floor).
+No mirror matches are dealt. Blob kill ratio by blob faction: syndicate 2.62, law 0.98, condemned 0.83, gangs 0.15.
+
+| blob v CPU | condemned | gangs | law | syndicate | all |
+|---|---|---|---|---|---|
+| condemned | - | 67 % (60, 6) | 59 % (70, 6) | 13 % (60, 4) | 47 % (190, 4) |
+| gangs | 5 % (60, 3) | - | 21 % (80, 5) | 10 % (70, 4) | **13 %** (210, 2) |
+| law | 23 % (70, 5) | 64 % (80, 5) | - | 12 % (60, 4) | 35 % (210, 3) |
+| syndicate | 43 % (60, 6) | **86 %** (70, 4) | 62 % (60, 6) | - | 65 % (190, 3) |
+| all (by CPU) | 24 % (190, 3) | **72 %** (210, 3) | 45 % (210, 3) | 12 % (190, 2) | 39 % (800, 2) |
+
+| turtle v CPU | condemned | gangs | law | syndicate | all |
+|---|---|---|---|---|---|
+| condemned | - | 28 % (60, 6) | 54 % (70, 6) | 37 % (60, 6) | 41 % (190, 4) |
+| gangs | 23 % (60, 5) | - | 14 % (80, 4) | 14 % (70, 4) | 17 % (210, 3) |
+| law | 30 % (70, 5) | 26 % (80, 5) | - | 27 % (60, 6) | 28 % (210, 3) |
+| syndicate | 70 % (60, 6) | 41 % (70, 6) | 75 % (60, 6) | - | 61 % (190, 4) |
+| all (by CPU) | 41 % (190, 4) | 32 % (210, 3) | 45 % (210, 3) | 25 % (190, 3) | 36 % (800, 2) |
+
+- **What he'd notice:** charging a gangs CPU with a blob works almost every time (72 %; syndicate's blob 86 %), and charging a
+  syndicate CPU almost never does (12 %). The "blob wins too often" line is mostly two cells: any blob v a gangs CPU, and a
+  syndicate blob v anyone but syndicate. A gangs army loses whether it charges (13 %) or turtles (17 %).
+- Matches CP39.0 at 1/5 the n (syndicate blob v gangs 14/15, v law 11/15; a syndicate CPU beaten 2/45), so it is stable.
+- **Why it isn't doctrine's:** the CPU fights with the same brains and commander for every faction; what differs is the army
+  (units, budget deal, 1000 credits). Every doctrine lever this round and last (D2/D2b/D2c/SPLIT, R1-R3) moved the whole line by
+  0-6 points and left this table's shape alone. The levers are composition and unit balance (`game/units/**`, the CPU's army
+  deal), whose owners are outside this stream; a gangs-specific defensive doctrine would be the doctrine-side follow-up.
+- **Suggested first read for round 40 (no build):** per faction, the CPU's dealt army v the blob's (units, cost, kill ratio by
+  unit type) on these same 1600 fights, to name which gangs units die without trading and what syndicate's blob has that
+  the others don't.
+
+**D3 VERDICT (2026-10-24 10:28): FAIL; `--cpu-defend --cpu-defend-split` ships OFF. With the rules ON, SPLIT does nothing
+against the blob.** 773412e49 (green builder0 3135/0) both arms, builder2, `guard.sh` J14 GUARD_CHUNK=8, fresh seeds 6301-6340 +
+6401-6440, 800 fights a line an arm, 0 fights missing (2 attempts lost to a Spot preemption, re-run), `guard.py --pair OFF SPLIT`.
+Ruled (a) by the orchestrator: run as filed for the record, since the lab guard had already failed.
+- **Deciding:** blob 39 -> 39 % (+0.3, paired se 1.6; flips 72 to a loss / 74 to a win; McNemar p 0.60). **Not met.** The
+  -3 to -4.4 point lean of round 38's three series (rules OFF) is gone at 5x their n with the rules ON.
+- Second line: blob kr 0.74 -> 0.74 (+0.001, se 0.012). Holds.
+- G1: turtle 36 -> 31 % (-4.7, se 1.2, p 0.0002): DOWN, holds; median 193 -> 192 s.
+- **G2t FAILS:** turtle-line kills a fight 14.51 -> 13.82 (-0.69, se 0.16 = -4.3 se); losses -1.13 (se 0.20). Condemned
+  kills -1.30 (3.2 se), gangs -0.51 (2.3 se). At power, SPLIT's CPU fights a turtle less (D2c's 1.6 se at n 160 was this).
+- G2 outside 2 se: blob gangs median +7 s (2.3 se), blob law -8 s (2.7 se); turtle gangs median 186 -> 157 s (-5.8 se).
+- Lab guard: FAILED before the series (hold 22.7 -> 37.6 %). G3 (none line) reported when it lands; moot for shipping.
+- **Reading:** the turtle drop is the CPU winning on points by posting crews, not by fighting (fewer kills AND losses). Against
+  the blob nothing moves. Under R1-R3 a crew already stops to shoot (round 38's D1: a holding crew fires still); posting part
+  of the line on the ring adds nothing the rules don't already give. **The defend posture is not the lever with the rules ON.**
+  For round 40: D1/the base show the blob's remaining wins are faction matchups (syndicate blob v gangs CPU 86 %, law blob v
+  gangs 64 %; a gangs blob 13 %), which is army composition and balance, not doctrine.
+
+**Report (2026-10-24 ~02:30 PDT, in progress). Series running on builder2 since 00:08 (OFF arm, ~3.3 h an arm), tree
+773412e49 (green); then SPLIT, then D4 hull-down (report only), then the none line OFF / SPLIT (~14 h in all).**
+- **D2s FAILS at its check; reverted (e453dc541).** d1822fd27 (dwell 1.0) on builder0: `make native check exited 2`.
+  sim-baseline moved 9 of 13 maps as expected (foundry d98d9c0cb1105e22, yard ed3628c459f4cb7c, crossing fde86b02e13d8a2a,
+  locks d889ca119dad1a95, parade 7a79d1bd8d338a17, archipelago 32f7260f765864f0, cut 7faab9861e717fb0, docks
+  8bcba1d1566db68a, yard_open de7881ddcc5dbbf7; pit, terminus, sumps, gorge unmoved), but **scenario_cover fails twice**:
+  fights_from_cover hidden **32 %** of 40 s (bar 50 %; 86 % with the dwell at 2.0), shots 7; the hurt tank's longest hidden
+  **50 ticks** (bar 60). Trace (builder0 light, seed 1, dwell 1.0): the same loop to 20 s, then the crew drops COVER_FIRE for
+  ENGAGE and drives into the open, 43 -> 22 m from the gun. A one-second change in when sight grows tips the duel down a
+  different branch; I did not chase it into the cover AI. The dwell stays 2.0: a stopped crew reaches ~110 % at ~3 s, not his
+  ~2 s. **For the lead:** his "~2 s" number costs smart-looking cover fights today; it stays at ~3 s unless he asks.
+  Its series slot went to **D4** (`--cover-on=hulldown` on 773412e49, report only, no bar).
+- stream/doctrine's code = 773412e49's (`git diff 773412e49 HEAD` touches docs only).
+- **The series' OFF arm (the rules-ON base on fresh seeds) DONE 05:09:** 773412e49, builder2, 6301-6340 + 6401-6440, 1600
+  fights, 0 attempts lost. Blob wins **39 %** (± 5), kr 0.74, median 108 s; turtle **36 %** (± 6), kr 0.75, median 193 s, caps
+  1 %. D1 replicates at 5x n: by blob faction syndicate 65 %, condemned 47 %, law 35 %, gangs 13 %; syndicate blob v gangs CPU
+  **86 %** (n 70), v law 62 %; law blob v gangs 64 %. SPLIT arm started 05:09.
+
+- **Trees:** D3 = **773412e49** (side branch `doctrine/d3-tree` = a24f4f298 + the ai_scenarios counts), **GREEN** builder0
+  (`make native check exited 0`, 3135 passed / 0 failed, 3 NOT JUDGED for load). D2s = **d1822fd27** (stream/doctrine = D3's
+  code + HALT_DWELL_SECONDS 1.0 + main's R39.1 docs), its full check running on builder0 (sim-baseline expected to move:
+  R39.1 accepts that as its only red; the moved maps go here, and the orchestrator adopts only if D2s ships).
+- a24f4f298's check (builder0) went red on two explained targets, everything else green (3135 / 0, sim-baseline 13/13
+  unmoved): ai-scenarios-check counts 54 -> 55 passed / pending 4 -> 3 (my crossing promotion: recorded 55,0,3,0 in
+  tests/baselines/ai_scenarios_count.txt as native's 4b62d2186 did), and broker-test's "host never comes back" 2 s timeout
+  at load 33 (alone on builder0 light: 31 passed / 0 failed).
+- **D3's LAB GUARD FAILS** (builder0 light, hold_fire_probe, code a24f4f298, rules ON, 2601-2602 x 5 maps x both sides, 20
+  fights a line an arm): turtle-line CPU crew samples tasked `hold` OFF 22.7 % -> SPLIT **37.6 %** (+14.9 points; bar <= +10;
+  round 38's rules-OFF lab 22.0 -> 31.6). Turtle kills guard + CPU 278 + 293 -> 272 + 284; blob guard wins 4/20 -> 7/20
+  (2 seeds: not evidence). So **SPLIT cannot ship from Bar D3** whatever the series says. Asked the orchestrator whether
+  the SPLIT arm still runs (my recommendation: yes, for the record of the powered read, R38.41); it is queued second.
+
+**D1 DONE: the rules-ON base read** (native's CP39.0, `references/scoreboard/guards/8952c3d64.fights.jsonl` on stream/native
+407a156cb; main 8952c3d64, R1-R3 ON, builder2, CP37.1 seeds 2601-2608 + 2701-2708, 320 fights, paired fight for fight with
+686150ed2 (rules OFF); my per-group pairing, se = paired, n per row):
+- **Lines:** blob 47 -> 41 % (-5.6, se 3.0 = 1.9 se; flips 16 to a loss / 7 to a win; native's McNemar p 0.047); turtle 41 ->
+  38 % (-3.8, se 3.4; 18 / 12). Median length unchanged (blob 102 -> 103 s, turtle 194 -> 193). Blob-line kills: guard 19.7 ->
+  18.8 a fight, CPU 23.1 -> 23.9. The rules now favour the defender a little on both lines, as D3 (R38.48) leaned.
+- **Who the rules moved (blob line):** blob syndicate 82 -> 69 % (-13.3, 2.0 se), CPU law 70 -> 58 % (-12.5, 1.7 se),
+  condemned blob -6.7; gangs and law blobs unchanged. Every map leans the same way (-3 to -6 points); Green-side blobs moved
+  more (-8.8) than Rust (-2.5).
+- **Where the blob still wins (ON, wins/fights):** it is a faction matchup. syndicate blob v gangs CPU **14/15**, v law CPU
+  **11/15**, v condemned 6/15; condemned blob v law 11/20, v gangs 6/10; law blob v gangs 5/5. A syndicate CPU is almost
+  never beaten (2/45). By CPU faction the blob wins **83 % v gangs**, 58 % v law, 36 % v condemned, 4 % v syndicate.
+  By map: gorge and sumps 50 %, locks 44 %, terminus 34 %, parade 28 %.
+- **Turtle line:** condemned turtle 44 -> 27 % (-17.8, 2.5 se), gangs turtle 13 -> 27 % (+13.3, 1.7 se, 5 flips of 6 to a
+  win, gangs fights 151 -> 193 s). Syndicate turtle wins 69 % (15/15 v law CPU).
+- **What it chooses for D2/D3:** the blob that still wins is a syndicate (and condemned) blob charging a gangs or law CPU.
+  The deciding line stays the whole blob line (the bar is filed), and the series reports the gangs- and law-CPU cells per
+  faction (G2 already names each faction). Faction balance itself (syndicate strong both ways, gangs weak as defender) is
+  outside doctrine's paths: a note for the orchestrator, not a fix here.
+
+**Report (2026-10-23 ~21:45 PDT).**
 
 **Plan (ordered; reason):** D5 first (builder0 light, no wait) -> D2 read + bar -> D3 + D2's arm in ONE powered series on
 builder2 (one shared OFF arm saves 1600 fights) -> D1 when native's CP39.0 lands (it doesn't gate the series: D3's seeds are
