@@ -335,6 +335,9 @@ static var GROUP_ROOM_REARMOST := OS.get_cmdline_user_args().has("--group-room=r
 static var GROUP_LEG_ROOM := OS.get_cmdline_user_args().has("--group-leg-room=starts")
 ## G2 (dev): `--group-route-line=on`: a shifted leg's column (and a gate's) stacks back along his clicked route.
 static var GROUP_ROUTE_LINE := OS.get_cmdline_user_args().has("--group-route-line=on")
+## G2 v2 (round 39; R38.47): `--group-route-corner=line`: on his route's line, a rank behind the click's own street stands
+## in the street the route runs down there: no wider than that street's narrowest width, and centred on the route.
+static var ROUTE_CORNER := OS.get_cmdline_user_args().has("--group-route-corner=line")
 ## G2 (dev): `--group-gate=main`: a waypoint passed through keeps today's gate (round 34's, abreast across the corner at his
 ## click), not a column, and centred on his click, not on the mean of the leg column's places (dev read 2, bde30e68e,
 ## terminus 3 west: the gate stood 50-90 m up the incoming street and the drive on cut through another street: route off
@@ -419,15 +422,27 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	# The same when it would reach more than one rank behind where its rearmost squad stands (dev read f215b1772: a route's
 	# first waypoint 17 m ahead of the army stacked ranks 100 m back into the base; squads drove back, then on).
 	var step := deepest + GAP_M
-	var room := float(by_along[by_along.size() - 1][0]) + (0.0 if (leg and GROUP_LEG_ROOM) or GROUP_ROOM_REARMOST else step)
+	var rearmost := float(by_along[by_along.size() - 1][0])
+	# G2 v2: on a leg the room behind is read along the road (his route round its corner), not the straight line on past
+	# the click (terminus 5 east: the straight line ran east past the corner, so the rear ranks merged two abreast ~20 m
+	# either side of the street the route came down).
+	if leg and ROUTE_CORNER:
+		for block: Dictionary in blocks:
+			rearmost = maxf(rearmost, _arc_of(road, block["center"]))
+	var room := rearmost + (0.0 if (leg and GROUP_LEG_ROOM) or GROUP_ROOM_REARMOST else step)
+	# G2 v2: and never further back than the road runs (his route's first click): the ranks squeeze instead.
+	if leg and ROUTE_CORNER and road.size() >= 2:
+		room = minf(room, _arc_of(road, road[road.size() - 1]))
 	# Every squad already within COLUMN_NEAR_M of the click: no approach to stack along (the same trace: re-laid, they only
 	# shuffled sideways); today's body stands.
 	if float(by_along[by_along.size() - 1][0]) < COLUMN_NEAR_M:
 		bodies_kept += 1
 		return result
+	# G2 v2: on a leg, ranks behind the road's first corner stand single file on it.
+	var corner := _first_turn_arc(road) if leg and ROUTE_CORNER else INF
 	for attempt in COLUMN_SQUEEZES + 1:
 		var laid := _lay_ranks(blocks, by_along, flat_click, ahead, straight, road, at_click, width_at, clamp, reached, widest,
-				step * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)), room, attempt == COLUMN_SQUEEZES)
+				step * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)), room, attempt == COLUMN_SQUEEZES, corner)
 		if not laid.is_empty():
 			result = laid
 			break
@@ -450,7 +465,7 @@ const COLUMN_SQUEEZES := 4
 ## `last_try`: then the rest stand abreast in the last rank inside).
 static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahead: Vector3, straight: PackedVector3Array,
 		road: PackedVector3Array, at_click: Array, width_at: Callable, clamp: Callable, reached: Callable, widest: float,
-		step: float, room: float, last_try: bool) -> Array[Vector3]:
+		step: float, room: float, last_try: bool, corner := INF) -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	result.resize(blocks.size())
 	var behind := 0.0
@@ -488,6 +503,8 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		var sides: Array = at_click if start == 0 else _within_click(width_at.call(point, rank_across), at_click)
 		var clear := minf(float(sides[0]) + float(sides[1]), MAX_FRONTAGE_M)
 		var single := clear < widest
+		# G2 v2: past the corner of his route the rank stands single file on the route line.
+		single = single or (on_road and behind > corner + CORNER_SLACK_M)
 		var abreast := 1 if single else mini(MAX_ABREAST, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
 		abreast = by_along.size() - start if merged else mini(abreast, by_along.size() - start)
 		if RANK_SHIFT_HALF and not merged:
@@ -508,6 +525,25 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		start += abreast
 		behind += step
 	return result
+
+
+## G2 v2: how far past the corner a rank stands before it is in the street behind it (a rank at the corner itself stands
+## across the street ahead, where it may still be abreast).
+const CORNER_SLACK_M := 4.0
+## G2 v2: a turn of the road sharper than this is a corner.
+const CORNER_TURN_DEG := 30.0
+
+
+## G2 v2: how far back along `line` (click first) it first turns by more than CORNER_TURN_DEG; INF when it never does.
+static func _first_turn_arc(line: PackedVector3Array) -> float:
+	var walked := 0.0
+	for k in range(1, line.size() - 1):
+		walked += line[k - 1].distance_to(line[k])
+		var a := Vector2(line[k].x - line[k - 1].x, line[k].z - line[k - 1].z)
+		var b := Vector2(line[k + 1].x - line[k].x, line[k + 1].z - line[k].z)
+		if a.length() > 0.01 and b.length() > 0.01 and rad_to_deg(absf(a.angle_to(b))) > CORNER_TURN_DEG:
+			return walked
+	return INF
 
 
 ## G1: how far a rank of `abreast` slides off the column's line: only as far as keeps it on the clear ground `sides`

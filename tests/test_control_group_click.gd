@@ -33,6 +33,7 @@ func teardown() -> void:
 	SelectionSquads.GROUP_WHOLE_CLICK = OS.get_cmdline_user_args().has("--group-whole=click")
 	SelectionSquads.CLEAR_REACHED = OS.get_cmdline_user_args().has("--group-clear=reached")
 	SelectionSquads.GROUP_LEAD = OS.get_cmdline_user_args().has("--group-lead=drive")
+	SelectionSquads.ROUTE_CORNER = OS.get_cmdline_user_args().has("--group-route-corner=line")
 	if _lab != null:
 		_lab.dispose()
 	_lab = null
@@ -526,3 +527,49 @@ func test_g1v5lead_the_squad_in_front_takes_the_far_place() -> void:
 	SelectionSquads.untangle_whole(squads, today, position)
 	print("GROUP_CLICK g1v5 straight-line untangle gives Alpha %s, Bravo %s" % [today[0], today[1]])
 	assert_eq(today[0], back, "today: straight lines send the trailing squad to the head (s4710)")
+
+
+## G2 v2 (round 39; R38.47, dev read 3 ab31e9bc2, terminus 5 east `70/50+70/-30+25/-30`): the last leg's column stacks back
+## along his route, round the corner at (70, -30) and up the x = 70 street; its rear rank stood two abreast at z = 28,
+## (50.3, 28.2) and (89.7, 28.2), ~20 m either side of the street the route runs down. On the real Terminus navmesh.
+const EAST_ROUTE := [Vector3(70, 0, 50), Vector3(70, 0, -30), Vector3(25, 0, -30)]
+func test_g2v2_rear_places_stand_on_his_route_round_the_corner() -> void:
+	_lab = TacticsLab.create(self, 3801, "terminus")
+	var ground: Tank = null
+	for i in ARMY.size():
+		var t := _lab.unit(Match.Team.GREEN, "Green_S%d_1" % i, ARMY[i], 0.0, "law_tank")
+		ground = t if ground == null else ground
+	await _lab.start()
+	var drive := SelectionSquads.drive_on(ground)
+	var crosses := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
+	var width_at := func(p: Vector3, across: Vector3) -> Array:
+		return RtsControls.gate_width(p, across, drive, crosses, SelectionSquads.GROUP_SCAN_M)
+	# The leg starts: five squads stacked back from the corner (70, -30) up the x = 70 street, as the gate leg leaves them.
+	var blocks: Array = []
+	for k in 5:
+		blocks.append({"center": Vector3(70, 0, -30 + 30.0 * k), "width": SelectionSquads.width("wedge", 5),
+				"depth": SelectionSquads.depth("wedge", 5), "halt_depth": SelectionSquads.depth("herringbone", 5)})
+	var click: Vector3 = EAST_ROUTE[2]
+	var line := PackedVector3Array([EAST_ROUTE[2], EAST_ROUTE[1], EAST_ROUTE[0]])
+	var today := SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, null, line[0] - line[1]),
+			func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+	SelectionSquads.LEG_WIDTH_ALONG = true
+	var lay := func() -> Array[Vector3]:
+		return SelectionSquads.column_lay(blocks, click, line[0] - line[1], width_at, func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p),
+				today, func() -> PackedVector3Array: return line, func(_p: Vector3) -> bool: return false, false, true)
+	SelectionSquads.ROUTE_CORNER = false
+	var before: Array[Vector3] = lay.call()
+	SelectionSquads.ROUTE_CORNER = true
+	var after: Array[Vector3] = lay.call()
+	for i in after.size():
+		var off_b := SelectionSquads._distance_to_path(before[i], line) if i < before.size() else -1.0
+		var off_a := SelectionSquads._distance_to_path(after[i], line)
+		print("GROUP_CLICK g2v2 place %d: v1 %s off %.1f m | v2 %s off %.1f m" % [i, before[i] if i < before.size() else null, off_b, after[i], off_a])
+	assert_eq(after.size(), 5, "a column (%s)" % [after])
+	for z in [-30, -10, 10, 20, 28, 40, 50]:
+		print("GROUP_CLICK g2v2 x=70 street at z=%d: %s" % [z, width_at.call(Vector3(70, 0, z), Vector3(1, 0, 0))])
+	for x in [25, 40, 55, 70]:
+		print("GROUP_CLICK g2v2 z=-30 street at x=%d: %s" % [x, width_at.call(Vector3(x, 0, -30), Vector3(0, 0, 1))])
+	for i in after.size():
+		assert_true(SelectionSquads._distance_to_path(after[i], line) <= SelectionSquads.width("wedge", 5) * 0.5 + 1.0,
+				"place %d on his route's street (%s)" % [i, after[i]])
