@@ -42,7 +42,8 @@ past 90 min passes `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make command-line variab
 - **doctrine:** brains (`game/ai/**` and `game/tactics/**` outside settle's and manoeuvre's carve-outs: `tank_brain.gd`,
   `element_commander.gd`, `cpu_commander.gd`, `gunnery.gd`, doctrine tables), `tests/tactics/**`, `tests/test_tactics*.gd`,
   `tests/ai_scenarios/**` it adds, `tests/rules/**`, `mk/tactics.mk`, `mk/rules.mk`; GRANT (C39.4): `game/combat/rule_switches.gd` and
-  the R1-R3 constants in `game/tank/tank.gd` (MOVING_SIGHT_FACTOR, HALTED_SIGHT_FACTOR, SIGHT_BLEND_PER_SECOND, PIN_SLOW_MAX) and
+  the R1-R3 constants in `game/tank/tank.gd` (MOVING_SIGHT_FACTOR, HALTED_SIGHT_FACTOR, SIGHT_BLEND_PER_SECOND, PIN_SLOW_MAX,
+  HALT_DWELL_SECONDS since R39.1) and
   `game/match/match.gd` (RULES_MOVING_SPREAD_FACTOR), constants only.
 - **feedback:** `game/ui/**`, `game/theme/**`, `game/audio/**`, `game/announcer/**`, `tests/feedback/**`, `tests/test_feedback*.gd`,
   `mk/feedback.mk`.
@@ -81,6 +82,25 @@ past 90 min passes `TANK_SQUAD_SLOT_TIMEOUT=14400` as a make command-line variab
 **Seed registry (round 39):** 6001-6024 settle; 6101-6124 manoeuvre; 6201-6224 orders; 6301-6340 + 6401-6440 doctrine guard series
 (powered SPLIT: 4x fights); 6501-6512 feedback. Dev seeds: each stream's round-38 dev blocks may be reused for DEV reads only. Any new
 block: ask the orchestrator first.
+
+**Filed (stream briefs hold the full text; numbers only after these):**
+- **D2s (doctrine, filed 2026-10-23 ~21:30 PDT at a24f4f298):** Tank.HALT_DWELL_SECONDS 2.0 -> 1.0 (his "~110 % stopped ~2 s": at 2.0
+  the blend reaches 110 % at ~3 s). Guards only, paired with D3's OFF arm: G0 blob win rate not up > 2 paired se (deciding for a
+  ship); G1 turtle not up > 2 se; G2/G2t kills a fight and median length per faction within 2 se; G3 none caps <= OFF + 2, median
+  <= OFF x 1.2; G4 perf unchanged.
+- **D3 (doctrine, filed 2026-10-23 at a24f4f298):** `--cpu-defend --cpu-defend-split` ON v OFF, rules ON; seeds 6301-6340 +
+  6401-6440 x 5 maps x both sides x blob/turtle = 1600 fights an arm; none line on 6301-6340. Deciding: blob win rate DOWN > 2
+  paired se AND McNemar p < 0.05. Guards: blob kill ratio not up > 2 se; turtle win rate and median length not up > 2 se; G2/G2t;
+  G3; lab guard hold_fire_probe CPU `hold` <= OFF + 10 pts.
+
+## Rulings (round 39)
+
+- **R39.1 (2026-10-23 ~21:35 PDT, doctrine's request):** (a) GRANT Tank.HALT_DWELL_SECONDS to doctrine under C39.4 (constant
+  only; it brings R1 to his stated ~2 s; bar D2s). (b) builder2's judged-series slot goes to doctrine's three-arm series (OFF,
+  SPLIT, dwell 1.0; ~19 h at J14) as soon as native's CP39.0 run (8952c3d64, relaunched 21:14 PDT) ends and native says so. The
+  series runs resumable (GUARD_RESUME, chunked), and native's full checks still run beside it (one full check + one series per
+  builder). A native scoreboard row for a merged main waits for the series to finish; native and doctrine settle between them
+  whether to pause it at a chunk boundary and run that row first. builder0 gets no part of the series.
 
 ## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 
