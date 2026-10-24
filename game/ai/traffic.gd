@@ -231,23 +231,7 @@ static func off(name: String) -> bool:
 						_off.erase(part.strip_edges())
 					else:
 						_off[part.strip_edges()] = true
-		_chain_native()
 	return _off.has(name)
-
-
-## Round 39 (M1): `givewaychain` has no C++ mirror yet, so while it is on the native drive calls _negotiate back
-## (BrainSwitches.native_yield off) and every ask runs the GDScript rule; off, native_yield is left as it was.
-static var _chain_saved_native_yield: Variant = null
-
-
-static func _chain_native() -> void:
-	if not _off.has("givewaychain"):
-		if _chain_saved_native_yield == null:
-			_chain_saved_native_yield = BrainSwitches.native_yield
-		BrainSwitches.native_yield = false
-	elif _chain_saved_native_yield != null:
-		BrainSwitches.native_yield = bool(_chain_saved_native_yield)
-		_chain_saved_native_yield = null
 
 
 ## Tests: switch a behaviour off (true) or back on, whatever the command line said.
@@ -257,7 +241,6 @@ static func set_off(name: String, value: bool) -> void:
 		_off[name] = true
 	else:
 		_off.erase(name)
-	_chain_native()
 	_forget()
 
 

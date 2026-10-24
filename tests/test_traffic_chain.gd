@@ -95,11 +95,13 @@ func test_on_a_crew_by_its_seat_gives_way_as_today() -> void:
 	assert_eq(Movement.chain_in_play, in_play, "the rule does not run")
 
 
-func test_the_switch_routes_asks_through_the_gdscript_rule() -> void:
+func test_the_switch_leaves_native_yield_alone() -> void:
+	# Round 39 (native N3): drive_native.cpp mirrors the rule (chain_in_play / chain_far; twin: test_native_yield's chain
+	# stages), so the switch no longer turns BrainSwitches.native_yield off.
 	var was := BrainSwitches.native_yield
 	Traffic.set_off("givewaychain", false)
 	assert_true(Movement.giveway_chain_on(), "on")
-	assert_true(not BrainSwitches.native_yield, "native's yield port is off while the rule is on (no C++ mirror yet)")
+	assert_eq(BrainSwitches.native_yield, was, "native's yield port is left as it was (the C++ mirror runs the rule)")
 	Traffic.set_off("givewaychain", true)
 	assert_true(not Movement.giveway_chain_on(), "off")
 	assert_eq(BrainSwitches.native_yield, was, "and back as it was")
