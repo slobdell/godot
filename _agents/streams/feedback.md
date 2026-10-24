@@ -77,6 +77,53 @@ that read as fire on the street; now x1.3 / 9 m (`FeedbackFx.SEGMENT_SPAN`, `SEG
 the wedges sit under the wheels, side and rear still apart. quick-remote builder0 6/0 (test_feedback_fx). Not changed (noted for
 him): the under-fire beam is fainter by design; the end look waits on his pick.
 
+## END STATE (2026-10-23): backlog done; everything merged
+
+**Merged to main, all green when named:** F1/F2 + F3 seam 70667a554 (main e1f558d83); F3 ON + hit-ring tightened c9a3c01c6
+(ec70d6b5c); portrait end card 2a5271b9f (937e7859c); F1 final, his pick A 66c46894c (aca357e9e); F5 823e507d8 (1dbfb9c1d).
+Every brief item is complete: F1 (his pick A, built final), F2, F3 (C38.4 passed, ON), F5 (his note), stretch (his picks in real
+fights: the hit ring tightened; the end card on a portrait phone).
+
+**Open, not started (for the next round; each is a design choice, not a fix):**
+- `--touch-map` (round 2's phone grammar, game/ui/tactical_map.gd) keeps its squad bar top centre and camera buttons top right
+  (`_layout_panels`): freeing the top there is a phone-layout redesign (where thumbs reach), worth a directions page first.
+- Perf has no judged line on any of my commits (perf-judge refused every time, builder0 busy at 1.4-2.7x); main's own check
+  judges it when builder0 is quiet. None of my changes adds a per-frame loop beyond HudLayout's few rect sums.
+- The sim runs on behind the end card (survivors keep fighting; the card shows the board at the finish).
+- The under-fire repair beam is fainter by design (`FeedbackFx.UNDER_FIRE_*`); raise it if he can't see it at his pose.
+
+**For the next agent:** clips and stills live in ~/projects/godot-feedback-endkeep/ (outside build/, which every remote copy-back
+resets); `make remote T=end-shots` (FB_RES=, FB_PRESET=, END_OUTCOMES='loss win', FB_FLAGS='--ui-touch') films planning, mid-fight,
+paused and the end card; `make remote T=feedback-fight` films his picks in a real fight. Lesson: send full checks to builder2
+when builder0's load is over ~20 (two of mine died at slot.sh's 90-minute cap).
+
+## REPORT (2026-10-23, F1 final + F5)
+
+**F1 final (his pick A, picks/end 2026-10-23 01:41 UTC, no words; recorded on main 1424ef638):** the end card is the end of every
+match he commands; P, the broadcast bars, the band, `--end-look` and `EndCard.decided_at` deleted. Win and loss looked at (end-shots,
+laptop preset). Green 66c46894c (builder0 check, 3075/0), merged as main aca357e9e.
+
+**F5: green hash to merge 823e507d8** (`make native check` builder0 exited 0: 3081 passed / 0 failed, 25 passed, 2 NOT JUDGED:
+perf-judge refused at 1.38-1.42x, scenario_perf unpinned; sim-baseline unmoved on 13).
+
+**F5 free the top of the screen (his note, game_design.md 2026-10-22 evening; C38.5):** `HudLayout` (game/ui/hud_layout.gd, pure)
+places the bottom of the HUD: landscape [hints over the score bug | command bar | radar], chips over the bar (their row may reach
+left to the hints), the bug shrinking only as far as the bar needs (0.81x on his laptop, 0.76x at 1920x1080); portrait the bar
+across the width over [bug | radar], message rows full width. Gone from the top during play: the score bug (lower left), the
+announcer's captions (Hud._caption: the signal and print stay, nothing drawn; the voice stays), the camera readout (now
+`--camera-readout=debug`; make skirmish's `on` no longer shows it), the PLANNING / PAUSED line (over the bottom HUD and the command
+bar's tooltip: C38.5's two lines in rts_controls.gd `_draw`, size and placement; short planning text on a portrait phone), the status
+block and FX / QUALITY / LOOK buttons (shown only while paused), the message columns (start below the top third). Decisions (mine,
+reversible): the status block and buttons paused-only (they are how he changes how the game runs, which he does paused); the bug
+keeps the broadcast top centre in a spectated feed (no command bar). Tests: tests/test_feedback_top_clear.gd (every bottom rect
+below the top third, apart, on screen, at 4 sizes x 2 touch boosts; captions; readout; the short line), plus updated
+test_control_captions, test_garage_hud_clean, test_hud_widgets, test_control_groups (the chips' row still fits five at his window).
+**Looked at** (end-shots, builder0; before/after at his laptop preset, desktop and portrait phone, planning, mid-fight, paused, end
+card): ~/projects/godot-feedback-endkeep/f5-{before,after,after2}/, references in `_agents/streams/references/round38/feedback/`.
+**Merge notes:** rts_controls.gd `_draw` (orders' file): the pause text's size and placement lines call HudLayout (C38.5, main
+87e11407f + f3ed26f09); game/modes/skirmish_mode.gd: `planning_hint(cap, narrow)` and its one call (C38.5 text and placement).
+**Known, not changed:** the touch map (`--touch-map`, round 2's grammar) lays out its own panels; not refit.
+
 ## REPORT (2026-10-22 ~15:10)
 
 **Green hash to merge: 70667a554** — `make native check` on builder2 exited 0: 3076 passed / 0 failed, 25 targets passed, 2 NOT
