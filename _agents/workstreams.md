@@ -151,6 +151,13 @@ block: ask the orchestrator first.
   ebfe98d18, + d8f182d11 (one copy of deploy_preview). (e) Settle's o2 trace: probe "parked re-deals" on rules-ON main are
   UnansweredFire duck moves (14-18 m), not halt re-deals; parked_redeals needs a duck exclusion before any bar uses it.
 
+- **R39.5 (2026-10-24 ~10:15 PDT, feedback's request): GRANT `game/camera/rts_camera.gd` to feedback**, for one change: the RTS
+  rig's Overview framing takes a bottom screen inset (TacticalMap passes `touch_rects["text_floor"]`) so the dock's bars never cover
+  his end of the arena on a phone. Touch layouts only: desktop/no-touch framing byte-identical, follow view unchanged (feedback's
+  read: lifting it pushes the far ground off the top). Verify by a capture of the REAL skirmish's Overview button at the three
+  phone sizes; if the rig's tracking defeats a capture flag, a test that holds the rig's overview and asserts his crews above the
+  bars counts.
+
 ## Round 38: six streams (prepared 2026-10-22; closed 2026-10-23; briefs in `streams/archive/round38/`)
 
 **Goal: he keeps control of his army, and the defender really defends.** From round 37 (HANDOFF *ROUND 37 CLOSED*): his playtest's
