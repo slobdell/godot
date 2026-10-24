@@ -62,7 +62,42 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-23 ~21:45 PDT, in progress).**
+**Report (2026-10-24 ~01:10 PDT, in progress). Series running on builder2 since 00:08 (OFF arm, ~3.3 h an arm).**
+- **Trees:** D3 = **773412e49** (side branch `doctrine/d3-tree` = a24f4f298 + the ai_scenarios counts), **GREEN** builder0
+  (`make native check exited 0`, 3135 passed / 0 failed, 3 NOT JUDGED for load). D2s = **d1822fd27** (stream/doctrine = D3's
+  code + HALT_DWELL_SECONDS 1.0 + main's R39.1 docs), its full check running on builder0 (sim-baseline expected to move:
+  R39.1 accepts that as its only red; the moved maps go here, and the orchestrator adopts only if D2s ships).
+- a24f4f298's check (builder0) went red on two explained targets, everything else green (3135 / 0, sim-baseline 13/13
+  unmoved): ai-scenarios-check counts 54 -> 55 passed / pending 4 -> 3 (my crossing promotion: recorded 55,0,3,0 in
+  tests/baselines/ai_scenarios_count.txt as native's 4b62d2186 did), and broker-test's "host never comes back" 2 s timeout
+  at load 33 (alone on builder0 light: 31 passed / 0 failed).
+- **D3's LAB GUARD FAILS** (builder0 light, hold_fire_probe, code a24f4f298, rules ON, 2601-2602 x 5 maps x both sides, 20
+  fights a line an arm): turtle-line CPU crew samples tasked `hold` OFF 22.7 % -> SPLIT **37.6 %** (+14.9 points; bar <= +10;
+  round 38's rules-OFF lab 22.0 -> 31.6). Turtle kills guard + CPU 278 + 293 -> 272 + 284; blob guard wins 4/20 -> 7/20
+  (2 seeds: not evidence). So **SPLIT cannot ship from Bar D3** whatever the series says. Asked the orchestrator whether
+  the SPLIT arm still runs (my recommendation: yes, for the record of the powered read, R38.41); it is queued second.
+
+**D1 DONE: the rules-ON base read** (native's CP39.0, `references/scoreboard/guards/8952c3d64.fights.jsonl` on stream/native
+407a156cb; main 8952c3d64, R1-R3 ON, builder2, CP37.1 seeds 2601-2608 + 2701-2708, 320 fights, paired fight for fight with
+686150ed2 (rules OFF); my per-group pairing, se = paired, n per row):
+- **Lines:** blob 47 -> 41 % (-5.6, se 3.0 = 1.9 se; flips 16 to a loss / 7 to a win; native's McNemar p 0.047); turtle 41 ->
+  38 % (-3.8, se 3.4; 18 / 12). Median length unchanged (blob 102 -> 103 s, turtle 194 -> 193). Blob-line kills: guard 19.7 ->
+  18.8 a fight, CPU 23.1 -> 23.9. The rules now favour the defender a little on both lines, as D3 (R38.48) leaned.
+- **Who the rules moved (blob line):** blob syndicate 82 -> 69 % (-13.3, 2.0 se), CPU law 70 -> 58 % (-12.5, 1.7 se),
+  condemned blob -6.7; gangs and law blobs unchanged. Every map leans the same way (-3 to -6 points); Green-side blobs moved
+  more (-8.8) than Rust (-2.5).
+- **Where the blob still wins (ON, wins/fights):** it is a faction matchup. syndicate blob v gangs CPU **14/15**, v law CPU
+  **11/15**, v condemned 6/15; condemned blob v law 11/20, v gangs 6/10; law blob v gangs 5/5. A syndicate CPU is almost
+  never beaten (2/45). By CPU faction the blob wins **83 % v gangs**, 58 % v law, 36 % v condemned, 4 % v syndicate.
+  By map: gorge and sumps 50 %, locks 44 %, terminus 34 %, parade 28 %.
+- **Turtle line:** condemned turtle 44 -> 27 % (-17.8, 2.5 se), gangs turtle 13 -> 27 % (+13.3, 1.7 se, 5 flips of 6 to a
+  win, gangs fights 151 -> 193 s). Syndicate turtle wins 69 % (15/15 v law CPU).
+- **What it chooses for D2/D3:** the blob that still wins is a syndicate (and condemned) blob charging a gangs or law CPU.
+  The deciding line stays the whole blob line (the bar is filed), and the series reports the gangs- and law-CPU cells per
+  faction (G2 already names each faction). Faction balance itself (syndicate strong both ways, gangs weak as defender) is
+  outside doctrine's paths: a note for the orchestrator, not a fix here.
+
+**Report (2026-10-23 ~21:45 PDT).**
 
 **Plan (ordered; reason):** D5 first (builder0 light, no wait) -> D2 read + bar -> D3 + D2's arm in ONE powered series on
 builder2 (one shared OFF arm saves 1600 fights) -> D1 when native's CP39.0 lands (it doesn't gate the series: D3's seeds are
