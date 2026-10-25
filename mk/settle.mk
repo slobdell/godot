@@ -304,3 +304,14 @@ settle-dev-v3b: native-for-check import ## Round 40 (settle): S1 v3b's dev lab -
 		ORDERS_PROBE_ARMS="main:--deploy-trace v3:--seat-route-clear=v3,--deploy-trace v3b:--seat-route-clear=v3b,--deploy-trace" \
 		ORDERS_PROBE_SEEDS="$$(seq -s " " 6301 6306)" ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-v3b > $(BUILD_DIR)/settle-dev-v3b/probe.out 2>&1 || true
 	@$(PYTHON) tests/settle/settle_t1.py $(BUILD_DIR)/settle-dev-v3b | tee $(BUILD_DIR)/settle-dev-v3b/lab.txt || true
+
+# Round 40 (R40.14 (3)): --cap-deal=street's lab on orders' flagged terminus 5 route seeds (dev for settle), main v capdeal.
+# builder2 light:  REMOTE_HOST=slobdell@builder2 tools/remote.sh --light native settle-dev-capdeal
+.PHONY: settle-dev-capdeal
+settle-dev-capdeal: native-for-check import ## Round 40 (settle): --cap-deal=street's lab (terminus 5 route 8203 8206 8208) -> build/settle-dev-capdeal/
+	@rm -rf $(BUILD_DIR)/settle-dev-capdeal && mkdir -p $(BUILD_DIR)/settle-dev-capdeal
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_MAPS=terminus ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_ROUTES=route ORDERS_PROBE_JOBS=6 \
+		ORDERS_PROBE_ARMS="main:--deploy-trace capdeal:--cap-deal=street,--deploy-trace" ORDERS_PROBE_SEEDS="8203 8206 8208" \
+		ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-capdeal > $(BUILD_DIR)/settle-dev-capdeal/probe.out 2>&1 || true
+	@$(PYTHON) tests/settle/settle_t1.py $(BUILD_DIR)/settle-dev-capdeal | tee $(BUILD_DIR)/settle-dev-capdeal/lab.txt || true
+	@$(PYTHON) tests/settle/settle_deals.py $(BUILD_DIR)/settle-dev-capdeal | tee -a $(BUILD_DIR)/settle-dev-capdeal/lab.txt || true
