@@ -189,4 +189,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - **Known risk:** Bar G3 v6's crossing 5 route never-in / twitch (round 39, untraced: a cleared place's own leg meets a
     passing squad head-on). v9 keeps every moved place off the others' roads in, which should answer it; the dev read's
     crossing 5 route cell passed, at n 6.
+  - **Lane (orchestrator, C40.1: one judged series per builder):** recorded as filed at 893180a31. After its full check
+    goes green, it runs from the frozen tree on builder0 light J4 in the lane manoeuvre's M1 v2 frees, or on builder2
+    once G1 v6 ends, whichever comes first.
   - A pass ships ON.
