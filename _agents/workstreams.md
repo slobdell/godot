@@ -74,6 +74,9 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   `~/balance-runs/sim_baseline_adopt-66c4839a2.json`). Screens (dev 8513-8524, paired): flatness -10.6 +/- 3.5, blob +1.7 +/- 3.0, turtle
   -2.5 +/- 4.2; G8 mono -1 +/- 2. Expected (balance, written first): deciding passes (~-10 at se ~1.3); G1/G2 the risk; G3-G5 unscreened;
   G6 PASS; G7 green but sim-baseline (re-pins per R40.18); G8 passes unless law's +6 +/- 4 is real. Series builder2 J14, ~8-10 h.
+  Judge filed before numbers: `search.py bar <root> 5be511659 66c4839a2` (one BAR_B2S line a rule + VERDICT). **Ruled reading of G3:** a
+  median-length change fails only when outside its band (+/-15 % a line, +/-20 % a guard faction) AND > 2 paired se from zero (the bar's
+  "each fails at > 2 paired se the wrong way"). Dry run on dev: 17/18 hold, G5 unread; nearest the band: blob median length +11.4 % (se 5.2).
 - **Bar T1, the deploy trigger (settle; FILED a03250e13, 2026-10-24 evening, before any number on 8001-8012; code = c074db72e's).** Arms
   `main:--deploy-trace` v `settled:--deploy-arrive=settled,--deploy-trace`; `--giveway-chain` OFF and `--seat-route-clear` OFF both arms.
   Workload: no-fight 12 street cells x 8001-8012 (576 squads an arm) + fight click cells 3-squad b1500 and 5-squad b3000 x 8001-8012.
