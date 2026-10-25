@@ -1924,6 +1924,20 @@ static func chain_release_on() -> bool:
 	return not Traffic.off("chainrelease")
 
 
+## The release time in force: CHAIN_RELEASE_S, or `--chain-release-s=<s>` (a lab knob for tuning the constant; read once).
+static var _chain_release_ticks := -1
+
+
+static func chain_release_ticks() -> int:
+	if _chain_release_ticks < 0:
+		var seconds := CHAIN_RELEASE_S
+		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--chain-release-s="):
+				seconds = float(String(arg).trim_prefix("--chain-release-s="))
+		_chain_release_ticks = int(seconds * SimClock.TICK_RATE)
+	return _chain_release_ticks
+
+
 static func chain_side_on() -> bool:
 	return not Traffic.off("chainside")
 
@@ -1965,7 +1979,7 @@ func _chain_asker_wedged(asker: String) -> bool:
 		return false
 	var other := ctl.tanks_root.get_node_or_null(NodePath(asker)) as Tank
 	var mover := Movement.of(other) if other != null else null
-	return mover != null and mover.stalled_ticks >= int(CHAIN_RELEASE_S * SimClock.TICK_RATE)
+	return mover != null and mover.stalled_ticks >= chain_release_ticks()
 
 
 ## True when `point` is a spot the chain rule refuses (farther from the seat than `chain` allows).
