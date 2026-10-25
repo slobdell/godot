@@ -77,6 +77,16 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   shape, flips, places outside (the GATE read) <= main + 2; contacts; fights. Departure (stated with dev numbers, accepted): per-cell
   twitch MEDIANS reported, not judged (an early halt moves a straggler's last approach into the probe's window; lab 3 n 2). Known risk:
   terminus 5 route s6003 (Echo lost in dev). A pass = CP40.1.
+- **Bar G1 v6 (orders; FILED b4da041c4, 2026-10-24 evening, before any number on 8201-8212).** Arm = G1 v5's + `--group-sides=both`; judge
+  `orders_judge.py g1v4`, unamended. Deciding lines read the new corridor (R40.5); the old gate read reported beside them per cell, plus one
+  line naming the cells where main v main's read changed. builder0 light J4, main as it is (CP40.1 OFF both arms unless it lands first).
+  Known risk: terminus 5 route never-in (s3805 squad 1 in dev: the route's first plain click's whole-squad deal, R38.44; Alpha_3 wedged
+  in the x=0 street among parked squads t40-t90, both arms' legs identical).
+- **R40.9 (2026-10-24 evening) G3 v7 BLOCKED on its dev read; the redesign goes ahead.** Dev (builder2, 4c672deca, 3804-3809, n 6): pairs
+  < 12 m 25 -> 17 (bar 6.2), guards pass. Traced: (a) the moves onto Echo's road were v5's aside/back steps accepted by v6's seat check;
+  (b) on a route G3 runs BEFORE `_relay_previous_waypoint`, so every squad's road in starts from a stale previous waypoint (s6213 Echo
+  (-41.9, 40) v the relaid (-53.7, 70.5)). **Ruled:** orders builds G3 v8 = G3 after the relay (its own code), dev first; a bar on
+  8213-8224 only if the dev read passes.
 
 ## Rulings (round 40)
 
