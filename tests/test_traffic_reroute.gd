@@ -106,7 +106,9 @@ func test_on_the_planned_asker_drives_round_the_holder() -> void:
 	Traffic.set_off("reroute", false)
 	var staged: Array = await _stage("hold", 5.0)
 	var asker := _lab.tank_of("Green_Asker")
+	var pending := PlannerSeam.pending_ticks
 	PlannerSeam._reroute_scan()
+	assert_true(not PlannerSeam._crews["Green_Asker"].pending, "the scan's own search planned it")
 	var passed := false
 	for i in 30 * SimClock.TICK_RATE:
 		await _lab.step()
@@ -117,7 +119,7 @@ func test_on_the_planned_asker_drives_round_the_holder() -> void:
 	print("MEASURE reroute drive: %s, asker at %s | last abandoned %s | plans %s" % [report, asker.global_position,
 			PlannerSeam.last_abandoned, PlannerSeam.last_plans])
 	assert_true(int(report["outcomes"].get("planned", 0)) >= 1, "a plan landed: %s" % report)
-	assert_true(int(report["pack_ticks"]) > 0, "the battery dug in while its search ran, and its leg waited for the legs")
+	assert_eq(PlannerSeam.pending_ticks, pending, "taken with its plan in hand: never held pending")
 	assert_true(passed, "the asker got past the holder: %s" % asker.global_position)
 
 
@@ -172,3 +174,24 @@ func test_on_the_target_walks_past_a_parked_hull() -> void:
 	print("MEASURE reroute goal walk: without the world %s, with it %s" % [bare, clear])
 	assert_true(not clear.is_empty(), "a clear goal further on")
 	assert_true(Vector3(clear[0]).z < Vector3(bare[0]).z - 2.0, "past the blocker, not on it: %s v %s" % [clear, bare])
+
+
+## A search the planner refuses is made before any take: the crew is never held for it (lab 2: 19 of 30 asks NO_PATH).
+func test_on_a_refused_search_never_takes_the_crew() -> void:
+	Traffic.set_off("reroute", false)
+	var staged: Array = await _stage("hold", 5.0)
+	var mover: Movement = staged[1]
+	var blocked := PlannerSeam.REROUTE_SHRINK_M
+	# A goal the planner cannot reach: a wall of hulls across the yard north of the holder, stood in for by a tiny budget.
+	var req := PlannerSeam.reroute_req(mover, Vector3(0.0, 0.0, -12.0), Vector3(0.0, 0.0, -1.0))
+	req.budget = 1
+	req.fine_retry = false
+	var plan := Planner.plan(req)
+	print("MEASURE reroute refused search: %s after %d expansions (shrink %.1f)" % [plan.code, plan.expansions, blocked])
+	assert_true(plan.code != PackedPlan.OK, "setup: a refused search")
+	var before := PlannerSeam.reroute_report()
+	PlannerSeam._reroute_budget_test = 1
+	PlannerSeam._reroute_scan()
+	PlannerSeam._reroute_budget_test = 0
+	assert_true(not PlannerSeam._crews.has("Green_Asker"), "refused: never taken")
+	assert_eq(int(PlannerSeam.reroute_report()["searches"]), int(before["searches"]) + 1, "one search made")

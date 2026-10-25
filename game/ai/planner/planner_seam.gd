@@ -1139,6 +1139,9 @@ const REROUTE_HOLD_X := 3   # a re-route's search may run this many holds (540 e
 static var reroute_asks := 0
 static var reroute_no_target := 0
 static var reroute_cooled := 0
+static var _reroute_budget_test := 0  # tests: the scan's search budget (0 = BUDGET)
+static var reroute_searches := 0      # whole searches the scan made (each a tick's cost: reroute_expansions)
+static var reroute_expansions := 0
 static var reroute_start_blocked := 0   # wedged askers not taken: the start overlaps a hull even in the shrunk world
 static var reroute_pack_ticks := 0   # hull-ticks a re-routed battery's leg waited for its legs to come up
 static var _reroute_next := {}   # asker name -> the first tick it may be re-routed again
@@ -1163,7 +1166,7 @@ static func hook_reroute() -> void:
 
 
 static func reroute_report() -> Dictionary:
-	return {"asks": reroute_asks, "no_target": reroute_no_target, "cooled": reroute_cooled, "start_blocked": reroute_start_blocked, "pack_ticks": reroute_pack_ticks, "outcomes": reroute_outcomes.duplicate()}
+	return {"asks": reroute_asks, "no_target": reroute_no_target, "cooled": reroute_cooled, "start_blocked": reroute_start_blocked, "searches": reroute_searches, "expansions": reroute_expansions, "pack_ticks": reroute_pack_ticks, "outcomes": reroute_outcomes.duplicate()}
 
 
 static func reroute_reset() -> void:
@@ -1171,6 +1174,8 @@ static func reroute_reset() -> void:
 	reroute_no_target = 0
 	reroute_cooled = 0
 	reroute_start_blocked = 0
+	reroute_searches = 0
+	reroute_expansions = 0
 	reroute_pack_ticks = 0
 	reroute_outcomes = {}
 	_reroute_next = {}
@@ -1220,8 +1225,8 @@ static func _reroute_scan() -> void:
 		if target.is_empty():
 			reroute_no_target += 1
 			continue
-		_reroute_request(asker, target[0], target[1], tick, world)
 		reroute_asks += 1
+		_reroute_now(asker, target[0], target[1], tick, world)
 
 
 ## [the first point along the asker's route (its path from here, then its goal) past the holder and clear of both boxes, the
@@ -1273,6 +1278,40 @@ static func reroute_req(mover: Movement, goal: Vector3, way: Vector3, world: Pla
 	req.horizon_m = HORIZON_M
 	req.in_world(world if world != null else PlannerNavWorld.for_tank(tank, mover.ctl.tanks_root, REROUTE_SHRINK_M))
 	return req
+
+
+## Round 40 (M3 lab 2, 58b7cb865: with the start and goal checked, the refusals left were NO_PATH, 19 of 30 asks under
+## `reroute`: a holder holds because no spot fits, so the street often has no way round; each held the crew still for up to
+## REROUTE_HOLD_X holds and cleared its clocks): the first search is made HERE, whole (Planner.plan: the library's one-shot
+## search, apart from the seam's sliced session), and the crew is taken only with a plan in hand, driving from this tick.
+## A refusal costs the crew nothing. Measured: reroute_searches and their expansions (the cost of the scan's ticks).
+static func _reroute_now(mover: Movement, goal: Vector3, way: Vector3, tick: int, world: PlannerNavWorld) -> void:
+	var tank := mover.ctl.tank
+	var name := String(tank.name)
+	var req := reroute_req(mover, goal, way, world)
+	if _reroute_budget_test > 0:
+		req.budget = _reroute_budget_test
+		req.fine_retry = false
+	var plan := Planner.plan(req)
+	reroute_searches += 1
+	reroute_expansions += plan.expansions
+	if plan.code != PackedPlan.OK:
+		reroute_outcomes["refused_unheld:" + str(plan.code)] = int(reroute_outcomes.get("refused_unheld:" + str(plan.code), 0)) + 1
+		return
+	var crew := _reroute_request(mover, goal, way, tick, world)
+	_queue.erase(name)
+	crew.req = req
+	crew.pending = false
+	crew.executor = PlannerExecutor.new()
+	crew.executor.start(plan, tank)
+	plans += 1
+	plan_legs += plan.legs.size()
+	_reroute_note(name, "planned")
+	last_plans.append({"tick": tick, "name": name, "kind": "reroute", "legs": plan.describe(), "n_legs": plan.legs.size(),
+			"expansions": plan.expansions, "metres": plan.metres, "cusps": plan.cusps,
+			"start": [snappedf(crew.at.x, 0.01), snappedf(crew.at.z, 0.01)], "goal": [snappedf(goal.x, 0.01), snappedf(goal.z, 0.01)]})
+	if ManoeuvreCensus.trace_unit == name:
+		print("PLANNER_SEAM %s reroute: %s %s | %s" % [name, plan.code, plan.describe(), plan.why])
 
 
 ## A k-turn crew asked from here to `goal` (the kturn branch of `_request`, the pose not AIM: the plan must END past the
