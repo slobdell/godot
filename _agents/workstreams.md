@@ -205,6 +205,12 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   J4, gated on b21565b37's full check. s7004's 73 s (hover syn_artillery, out of the wheeled scope) explained and still counted. **Ruled
   (orchestrator, before numbers):** both arms run the SAME drive path (the GDScript drive with native_drive bypassed in OFF too), so the
   pairing compares the rule, not the path. Ship needs the C++ twin and a sliced scan (today one physics tick) plus perf.
+  **VERDICT FAIL on D (2026-10-25 ~08:00; code b21565b37 green builder0, series 8c8d9035b, builder0 light J4, GDScript drive both arms;
+  36 paired fights + 144 paired probe runs).** D long-episode seconds 544.1 -> 554.0 (+1.8 %, paired +0.28 s a fight, se 5.83; line <=
+  435.3). Guards all pass: give-way deaths 84 -> 87, stuck deaths 248 -> 213, contact ticks 829,543 -> 820,818, kill share worst 0.028,
+  deaths 1,458 -> 1,435, never-in 3 -> 3, G6/G7 +0.0 s. Reported: long episodes 65 -> 51 (fewer but not shorter); 608 searches, 271 plans,
+  96 driven to the end; ON's two longest (s8605 Rust_Battery2_4, 99 / 71.6 s) are a crew the seam never drove (divergence), ARRIVED for
+  2,054 of 2,147 ticks. For a later bar: the long-episode definition counts parked, arrived crews. Stays OFF.
 
 ## Rulings (round 40)
 
