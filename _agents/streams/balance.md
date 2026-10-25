@@ -133,6 +133,16 @@ cells (as blob/turtle guard, and 100 - the CPU cell), faction_max leaves law wea
   | fm_law_cost | 13.6 | -4.9 (3.7) | 41 % | 24 % | 60 % | 34 % |
   fm_law_cost overshoots (syndicate blob 20 %, a syndicate CPU beaten 60 %). **fm_law is round 2's winner**; its mono line (and the
   base's) run next, both sides, 8513-8520, one guard side (GUARD_SIDES=green), before the bar candidate is named.
+  **Round 3 (the turtle guard, R40.13 note):** fm_law's turtle line rose +5.8 (se 3.3), faction_max's +4.2 (2.8); fm_law_cost's held
+  (+0.0) but overshot syndicate. **fm_law_c5** (fm_law + syndicate cost +5 %): flatness 18.5 -> **8.3**, change **-10.2 (se 3.1)**,
+  blob line **+1.7 (3.4)**, turtle line **-0.8 (3.7)**; blob v a CPU of each faction 32-47 %. The best on every line read.
+  **PROVISIONAL BAR CANDIDATE: fm_law_c5**, named only once its mono line (G8 screen, 8513-8520, both sides) is not above the base's.
+  BASE = **5be511659** (stream/balance, main 9d5907ddd's T1 merged), ARM = **494a3d33d** (`balance/b2s-arm`, worktree
+  ../godot-balance-arm: BASE + `search.py apply fm_law_c5`, 55 values in units.gd/weapons.gd, cross-checked 0 mismatches). ARM's full
+  check is running on builder0 (expected red only on sim-baseline). **Expected bar outcome, written before the series:** deciding
+  passes (dev change -10 at se ~3 a 240-fight read, so ~-10 at se ~1.2 at 1600); G1 blob flat and G2 turtle flat on dev, but each
+  at ~0 +/- 3.5, so either could cross +2 se (~+2.4 points at the bar's n) by chance or a small real rise: the riskiest guards; G3
+  lengths unknown (not screened); G8 known after the mono screen.
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
