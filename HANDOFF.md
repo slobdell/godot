@@ -59,6 +59,9 @@ M1 v2 FAIL (G5), G1 v6 FAIL (terminus 5 route twitch); running S1 v3 (settle), G
 (68d0410d3 read 7,691), relative line PASS. Covers T1 ON + every OFF switch merged this round (M1 v2, G1 v6, G3 v8/v9). Main 245499bf1
 GREEN on builder2 (`make check exited 0`, 25 passed + 2 NOT JUDGED: perf-judge, scenario_perf 3.02x; sim-baseline 13 unmoved): fully verified.
 
+**2026-10-25 ~09:30: main (c30136971 code = 0badbb09e + docs) GREEN on builder0, 27 targets ALL JUDGED** (`make check exited 0`,
+3237 passed / 0 failed; perf-judge judged in the check). This is round 40's verified main without B2s.
+
 **ROUND 40 STATE (2026-10-25 ~08:35 PDT):** settle, manoeuvre, orders DONE (merged; only T1 shipped ON). native idle (N4 trig rerun
 waits a quiet builder0). **balance's Bar B2s series running on builder2** (fm_law_c5r2; BASE 5be511659 / ARM 66c4839a2; ~8-10 h): on a
 PASS the orchestrator merges ARM, ADOPTS its 13 recorded sim-baseline maps (`~/balance-runs/sim_baseline_adopt-66c4839a2.json`, laptop
