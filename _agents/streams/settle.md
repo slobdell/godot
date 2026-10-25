@@ -151,6 +151,16 @@ fight seeds 8737-8748**; builder2, `make settle-capdeal`. Judge `settle_judge.py
   (native-verify-scenarios 54/0 runner exit 0, trig 6/0). Nothing failed, but no `exited 0` means no gate, so the series
   did not run and seeds 8725-8748 are still unrun. Builder2 went straight to balance's B2s; told the orchestrator. Waiting
   on its slot: re-run the gate with `TANK_SQUAD_SLOT_TIMEOUT` raised, then the series.
+- Run 2: builder2 (Spot) preempted 2 min into the gate check. Not judged, nothing ran.
+- **Run 3: VERDICT FAIL, not shipped (`--cap-deal=street` stays OFF).** Gate: 95276e979 **GREEN** on builder2, 3212/0,
+  `make native check exited 0`. Series: builder2, J12, frozen 95276e979, seeds 8725-8748, 576 squads, fights 36/36 for
+  3- and 5-squad, 0 unstarted; refs at `references/round40/settle/capdeal-bar-builder2/verdict.txt`. Deciding: legs
+  >= 25 m **59 -> 45 FAIL** (needed <= 44.2, 0.75 x base: a 24 % cut that missed 25 % by under one squad); twitch >= 15 m
+  99 -> 92 PASS. Guards all PASS: never-in 7 -> 6 (0 new), all-in 26.7 -> 26.0 s, outside 100 -> 100, flips 0 -> 0,
+  contacts 14460 -> 14351 / foreign 8526 -> 8591, all six fight guards. Counter: 92 cap deploys dealt out of 569.
+  Reported: place+twitch >= 25 m 170 -> 162. Reading: the cap deal helps without hurting anything, but cap deploys are
+  only 92 of 569, so most legs >= 25 m come from the other deploy causes (all_in, settled), which this cut doesn't touch.
+  A round-41 bar would have to cover those causes, not only cap.
 
 ### Bar S1 v3b swept band (filed 2026-10-25 before any number on 8701-8724; R40.14)
 What he'd see: the same as S1 v3 (no squad parks on a street the squads behind still drive), now with T1 ON in both arms.

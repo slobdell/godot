@@ -1,0 +1,21 @@
+PASS counter: cap deploys dealt 92 over 569 deploys on capdeal; squads 576
+FAIL deciding: squads with a deploy leg >= 25 m 59 -> 45 (<= 44.2, 0.75 x base; base >= 20)
+PASS deciding: squads with twitch >= 15 m 99 -> 92 (no more)
+PASS guard never-in, every cell: 7 -> 6 runs (arm <= base) and none new (0 new: [])
+PASS guard all-in time: mean over 137 runs in on both 26.7 -> 26.0 s (<= 30.4)
+PASS guard places outside: 100 -> 100 (<= base + 2)
+PASS guard shape flips: 0 -> 0 (<= base + 3)
+PASS guard friend_contacts 14460 -> 14351 (<= 15911.0)
+PASS guard friend_contacts_foreign 8526 -> 8591 (<= 9383.6)
+  fight read 3-squad (0 runs that never started)
+  PASS guard his kills   base 5.06 arm 5.00 a fight (se 0.29, n 36/36)
+  PASS guard his losses  base 7.25 arm 7.44 a fight (se 0.50, n 36/36)
+  PASS guard CPU losses  base 5.11 arm 5.03 a fight (se 0.29, n 36/36)
+PASS fight guards
+  fight read 5-squad (--probe-budget=3000) (0 runs that never started)
+  PASS guard his kills   base 11.44 arm 11.36 a fight (se 0.46, n 36/36)
+  PASS guard his losses  base 12.03 arm 11.42 a fight (se 0.73, n 36/36)
+  PASS guard CPU losses  base 11.56 arm 11.44 a fight (se 0.46, n 36/36)
+PASS fight guards
+  reported: place+twitch >= 25 m squads 170 -> 162; first shape differs 3 of 576
+VERDICT FAIL capdeal v main (Bar cap deal, round 40)
