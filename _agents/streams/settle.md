@@ -90,7 +90,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   `references/round40/settle/dev-v3t1-builder2/`): **with T1 ON, v3's twitch cost reverses**: squads >= 15 m 42 -> 33,
   worst twitch a run median 17.2 -> 15.1 m, all-in median 21.0 -> 18.7 s, cap deploys 42 -> 33. But **one new never-in**:
   terminus 5 click s6306, Alpha (the last squad; main in at 42.1 s) ends 19.4 m off its spot. Bravo had 3 seats cleared and a
-  crew waiting, Delta 1 cleared. Not traced further yet; likely a moved seat or waiting crew on Alpha's way in. Dev, n 6 a cell.
+  crew waiting, Delta 1 cleared. Dev, n 6 a cell. From the log (no per-crew positions in it): Bravo_2 WAITED where it stood,
+  (-24.3, 85.9), ~7 m off the head of Alpha's live route ((-31.4, 86.7) west then south to its spot (-29.9, 22.2)), and was
+  released at tick 503 (REDEAL_TRACE, 9.6 m). Whether that wait held Alpha up needs a position trace of Alpha's crews (not
+  run). First thing for a v3-on-T1 bar: that trace, and a "never wait within ROUTE_CLEAR_M of a live route's head" rule.
 - **Dry deal read** (same run, main 9d5907ddd T1 ON, terminus 5 route 8203/8205/8206/8208, 20 deploys, 4 on the cap; 8205 had
   none): drives to the grounded seats, [worst, total] m. Cap deploys: main worst median 36.5 (>= 25 m: 4 of 4), total mean
   73.9; least-total on the ordered heading 21.6 (2 of 4), 60.3; **least-total laid on the street axis 22.5 (0 of 4), 51.4**.
