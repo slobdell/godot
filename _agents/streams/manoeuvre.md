@@ -126,5 +126,29 @@ OFF on 65da436ec; v2 on the same game code (d35eb24d1 + knob), GDScript yield pa
 - **Verdict:** every line passes -> PASS -> ships ON (CP40.2: one full check of the flip). Any FAIL -> stays OFF, no re-run on these
   seeds, the cause traced and written up.
 
+### M2 report: the long ORCA episodes (DEV trace, report only)
+Code 479bf90f9 (M2) / d776ed30f (M2b, + one trace field). All switches OFF (main's behaviour). builder0 light J4, native,
+locks/terminus/sumps x 7001-7008, 24 fights. `~/overnight-manoeuvre/r40/m2`, `m2b`.
+- **37 target episodes (touching, net < 0.5 m, >= 3 s), 268.8 s.** Round 37's 82 were another block on an older main. M2b
+  reproduces M2 exactly.
+- Episodes by team: CPU 23, his side 14. No wedged crew died (37/37 alive). 15 had an enemy in sight.
+- Partner tick shares (wedge_trace classes): giving way 49.5 %, parked 25.9 %, no partner 11.6 %, driving or slow ~13 %. 23 of 37
+  top partners are another squad's crew. Forces on the wedged crew: orca_slow 2,646 ticks, unstick 2,269, hold 857, yield 742.
+- **Artillery: 18 of 37 episodes, 135.7 of 268.8 s** (gang_artillery 12, artillery 4, syn_artillery 1, + 1).
+- **Whom a yielding partner gives way to (M2b's partner_yields, 8,065 partner ticks):**
+  - for the wedged crew itself: HOLD in place 1,365 (17 %), spot 943, short 138, back 64.
+  - for someone else: spot 879, back 462, hold 130.
+  - Longest: sumps s7004 Rust_Battery_1 (syn_artillery) 28.2 s, 607 ticks of Rust_Battery_2 holding in place FOR it.
+- **Named: the hold that is a wall.** When no spot fits, the asked crew gives way IN PLACE (round 6/13's `hold`: stop pushing, let the
+  other through). That frees the asker only if the asker has a way round. When it doesn't, the asker sits behind the holder for the
+  hold's YIELD_MAX_SECONDS (6 s). After that, `_last_yielded_to` means it never asks that crew again, so the wedge stands until
+  unstick or a re-plan moves someone. It's M1 v2's mechanism in the base give-way: a hold for a WEDGED asker should hand the
+  give-way back (the asker backs off or swaps) instead of standing.
+- **Next fix (filed, not built; a bar only on a fresh block from the orchestrator):** `--traffic-on=holdrelease`: a hold ends early
+  when its asker's stalled_ticks has not reset for HOLD_RELEASE_S (~2 s) since the hold began. The asker then gets the swap ask
+  (`_negotiate`'s i_give_way path) instead of `_last_yielded_to` silence. Lab first on the 8 longest cells above. It touches
+  begin_yield/_end_yield, so it needs native's twin like chainrelease. The stretch builds it OFF after Bar M1 v2's series (no game-code
+  edits in this tree while the series rsyncs it).
+
 **Native twin MERGED:** pair/native-chainrelease 18e5dbca8 (quick-green builder0 114/0, 0 mismatches) merged clean as ee659b522;
 chainrelease now runs in C++ (chainside alone keeps the GDScript bypass). Full check of ee659b522 started on builder0.
