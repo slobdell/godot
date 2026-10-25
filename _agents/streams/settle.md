@@ -114,6 +114,10 @@ Places outside are the probe's own read on this branch (main's gate read; orders
   a marginal cell. Lab 3 (c074db72e, dev 6003-6004 x 12 cells, n 2): caps 47 -> 19, arrival to deploy 6.8 -> 5.1 s mean,
   all-in 26.7 -> 26.8 s (runs in on both), never-in 0 -> 1.
 - A pass ships `--deploy-arrive=settled` ON on a new hash with one full check = **CP40.1**.
+- **Series tree (R40, the orchestrator's condition):** the series runs on afd436ca3. `git diff c074db72e afd436ca3 -- game/` is ONE
+  line: `_trace_deploy` adds a `"waited"` field to the printed DEPLOY_TRACE line (measurement only, under `--deploy-trace`,
+  which both T1 arms pass; it reads the deploy and decides nothing). No other game path differs; S1 v3's code was already in
+  c074db72e behind `--seat-route-clear=v3`, OFF in both T1 arms. Main's decision path is unchanged.
 
 ### S1 v3 lab (afd436ca3's tree, builder0 light J4, n 1 a run, dev; `references/round40/settle/s1v3-lab-dev/`, `settle_lab.py`)
 | run | main all-in | v2 (`--seat-route-clear`) | v3 (`=v3`) | v3 seats cleared / crews waited |
