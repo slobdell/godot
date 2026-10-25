@@ -157,6 +157,10 @@ BASE 5be511659's. Before naming c5r: its mono line (G8 screen) and one paired li
   its mono line runs only to measure what the in-bounds tank nerf buys against the all-tank army.
   builder2 (Spot) was preempted ~05:00 PDT during c5r's first mono arm; guard.sh restarted the box and retried that chunk (attempt
   2), nothing lost (fm_law_ca's lines had ended 04:59). The rest of the screens run at J10 (`~/balance-runs/r8.sh`) beside settle's gate.
+  **Smoke (ARM ad956031b, builder0 light):** `faction-shots GREEN_FACTION=syndicate RUST_FACTION=gangs SEED=8513`: at 60 s a War Rig's
+  nameplate reads 483 hp (the +15 %), gangs hold the centre 18-0 on points while syndicate leads kills 16-4, a contest; `garage-shots`:
+  the Syndicate card reads 126-283 CR, the vehicle cards 126 / 180 / 204 / 228 / 283 CR, the suggested army fits (6 CR left); phone
+  aspect clean. Frames in ../godot-balance-arm/build/light/build/screenshots/ (looked at).
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
