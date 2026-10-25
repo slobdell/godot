@@ -1985,7 +1985,9 @@ static func _trace_redeal(plan: Dictionary, situation: Dictionary, deploy: Dicti
 ## DEPLOY_SETTLED_NEAR_M; every crew settled is all in; and once at least half the squad is settled and that count stands
 ## DEPLOY_SETTLED_WAIT_S with every crew still out within DEPLOY_STRAGGLER_M, the halt is laid (cause "settled") and the
 ## crews still out drive straight to their halt seats.
-## `--deploy-arrive=near|settled` (env DEPLOY_ARRIVE); "" (main) until judged.
+## `--deploy-arrive=settled|near|off` (env DEPLOY_ARRIVE). "settled" ON since Bar T1 passed (round 40, builder0 light J4,
+## afd436ca3's code, seeds 8001-8012: cap deploys 265 -> 83 of 576 squads, arrival to deploy 6.26 -> 4.42 s, every guard
+## held; references/round40/settle/t1-bar-builder0/). `=off` (""): the all-in-or-cap rule.
 static var DEPLOY_ARRIVE := _deploy_arrive_flag()
 const DEPLOY_NEAR_M := 5.0
 const DEPLOY_NEAR_HOLD_TICKS := SimClock.TICK_RATE / 2
@@ -2002,8 +2004,13 @@ const DEPLOY_STRAGGLER_M := 12.0
 static func _deploy_arrive_flag() -> String:
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--deploy-arrive="):
-			return arg.trim_prefix("--deploy-arrive=")
-	return OS.get_environment("DEPLOY_ARRIVE")
+			return _deploy_arrive_mode(arg.trim_prefix("--deploy-arrive="))
+	var env := OS.get_environment("DEPLOY_ARRIVE")
+	return _deploy_arrive_mode(env if env != "" else "settled")
+
+
+static func _deploy_arrive_mode(asked: String) -> String:
+	return "" if asked == "off" else asked
 
 
 ## Measurement (T1, under --deploy-trace): a near deploy that fired on the cap prints each crew's distance off its travel

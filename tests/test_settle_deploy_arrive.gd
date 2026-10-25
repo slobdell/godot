@@ -139,7 +139,8 @@ func test_settled_waits_for_a_straggler_far_out() -> void:
 	assert_true(not bool(waited.get("deployed", false)), "a straggler beyond DEPLOY_STRAGGLER_M: the squad waits")
 
 
-func test_off_by_default() -> void:
+func test_settled_on_by_default() -> void:
 	var asked: bool = Array(OS.get_cmdline_user_args()).any(func(a: String) -> bool: return a.begins_with("--deploy-arrive=")) \
 			or OS.get_environment("DEPLOY_ARRIVE") != ""
-	assert_true(asked or ElementPlan.DEPLOY_ARRIVE == "", "OFF until its bar passes")
+	assert_true(asked or ElementPlan.DEPLOY_ARRIVE == "settled", "settled ON since Bar T1 passed")
+	assert_eq(ElementPlan._deploy_arrive_mode("off"), "", "=off: the all-in-or-cap rule")
