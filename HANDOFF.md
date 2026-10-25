@@ -56,8 +56,8 @@ fixes. **Still owed: perf-judge on a quiet builder0** for T1 ON (last judged 68d
 M1 v2 FAIL (G5), G1 v6 FAIL (terminus 5 route twitch); running S1 v3 (settle), G3 v9 (orders, queued), B2s (balance, candidate screening).
 
 **2026-10-25 ~03:18: perf-judge PASS on main 245499bf1** (builder0 quiet window, attempt 1, idle 98 %, load 0.18): **7,431 us/tick**
-(68d0410d3 read 7,691), relative line PASS. Covers T1 ON + every OFF switch merged this round (M1 v2, G1 v6, G3 v8/v9). Main check of
-245499bf1 running on builder2.
+(68d0410d3 read 7,691), relative line PASS. Covers T1 ON + every OFF switch merged this round (M1 v2, G1 v6, G3 v8/v9). Main 245499bf1
+GREEN on builder2 (`make check exited 0`, 25 passed + 2 NOT JUDGED: perf-judge, scenario_perf 3.02x; sim-baseline 13 unmoved): fully verified.
 
 **LEAD QUESTION (asked 2026-10-25 ~03:45, R40.16): combined arms needs more than +/-15 % unit numbers.** All-tanks beats a mixed army 82 %;
 the mixed army's IFVs and MG scouts can't hurt tanks (autocannon 5-10 % of its damage on a tank's front). Recommended: give IFVs a
