@@ -673,11 +673,14 @@ func test_g3v7_no_step_back_onto_a_later_squads_road() -> void:
 	var v6 := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(-1, 0, 0), any, Callable(), only_back)
 	print("GROUP_CLICK g3v7 v6 %s" % [v6])
 	assert_true(v6[1].x > 20.0, "v6: Delta steps back east along its leg, onto Echo's road (%s)" % [v6[1]])
-	SelectionSquads.PLACE_CLEAR_LANE = true
 	var refused := SelectionSquads.places_off_lanes
-	var v7 := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(-1, 0, 0), any, Callable(), only_back)
+	# Echo's road in: from its vehicles to its place (a straight drive here).
+	var in_lane := func(i: int, at: Vector3) -> bool:
+		return i != 0 and SelectionSquads.on_road(at, PackedVector3Array([blocks[0]["center"], places[0]]), SelectionSquads.lane_reach(blocks, i, 0))
+	var v7 := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(-1, 0, 0), any, Callable(), only_back, in_lane)
 	print("GROUP_CLICK g3v7 v7 %s" % [v7])
 	assert_eq(v7[1], places[1], "v7: Delta keeps its given place")
 	assert_eq(SelectionSquads.places_off_lanes, refused + 1, "counted")
-	assert_eq(SelectionSquads._in_lane(Vector3(50, 0, 0), 1, places, [0], blocks), 0, "a point on Echo's road is in its lane")
-	assert_eq(SelectionSquads._in_lane(Vector3(50, 0, 40), 1, places, [0], blocks), -1, "40 m off it is not")
+	var road := PackedVector3Array([Vector3(100, 0, 0), Vector3(0, 0, 0)])
+	assert_true(SelectionSquads.on_road(Vector3(50, 0, 5), road, 25.4), "a point beside the road is on it")
+	assert_true(not SelectionSquads.on_road(Vector3(50, 0, 40), road, 25.4), "40 m off it is not")

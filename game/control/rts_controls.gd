@@ -1298,10 +1298,23 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					if not given_preview.has(k):
 						given_preview[k] = _deploy_preview_at(squads[k], blocks[k], unmoved[k], clear_ahead)
 					return SelectionSquads.seats_hold(given_preview[k], _deploy_preview_at(squads[k], blocks[k], at, clear_ahead))
+			# G3 v7: each other squad's road in, its navmesh drive from its vehicles to the place it was given.
+			var in_lane := Callable()
+			if SelectionSquads.PLACE_CLEAR_LANE:
+				var roads := {}
+				in_lane = func(i: int, at: Vector3) -> bool:
+					for j in mini(clear_blocks.size(), unmoved.size()):
+						if j == i:
+							continue
+						if not roads.has(j):
+							roads[j] = Pathing.find_path(ground, clear_blocks[j]["center"], unmoved[j])
+						if SelectionSquads.on_road(at, roads[j], SelectionSquads.lane_reach(clear_blocks, i, j)):
+							return true
+					return false
 			anchors = SelectionSquads.place_clear(anchors, clear_blocks, click, clear_ahead,
 					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p) \
 							and not (reach and SlotGround.near_deck(p, SelectionSquads.PLACE_CLEAR_DECK_M)),
-					SelectionSquads.crosses_on(ground) if reach else Callable(), seats_hold)
+					SelectionSquads.crosses_on(ground) if reach else Callable(), seats_hold, in_lane)
 			for k in anchors.size():
 				if anchors[k] != unmoved[k]:
 					_cleared_pending[_place_key(anchors[k])] = unmoved[k]

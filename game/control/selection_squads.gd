@@ -749,8 +749,10 @@ static var places_cleared := 0
 ## G3 v6 (`seats_hold(i, at)` given): a moved place is accepted only where squad i's crews would seat without a re-seat;
 ## when no aside or back step holds, the place steps back along the squad's own leg (toward its vehicles), and nowhere
 ## holding keeps the place.
+## G3 v7 (`in_lane(i, at)` given): any step (aside, back, or back along its leg) is refused where it stands on another
+## squad's road in; nowhere else clear keeps the place.
 static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, standable: Callable,
-		crosses := Callable(), seats_hold := Callable()) -> Array[Vector3]:
+		crosses := Callable(), seats_hold := Callable(), in_lane := Callable()) -> Array[Vector3]:
 	var result: Array[Vector3] = anchors.duplicate()
 	var n := mini(anchors.size(), blocks.size())
 	if n < 2:
@@ -785,7 +787,12 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 					var at := start + way * step
 					if bool(standable.call(at)) and not (crosses.is_valid() and bool(crosses.call(start, at))) \
 							and _too_close(at, i, result, placed, blocks) < 0:
-						if not seats_hold.is_valid() or bool(seats_hold.call(i, at)):
+						# G3 v7: this way's first clear step on another squad's road in: the way is refused.
+						if in_lane.is_valid() and bool(in_lane.call(i, at)):
+							places_off_lanes += 1
+							if COLUMN_TRACE:
+								print("PLACE_TRACE squad %d step to %s refused: on a road in" % [i, at])
+						elif not seats_hold.is_valid() or bool(seats_hold.call(i, at)):
 							if best == null or _flat_gap(at, home) < _flat_gap(best, home):
 								best = at
 						break
@@ -799,9 +806,11 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 					var at := start + leg.normalized() * step
 					if bool(standable.call(at)) and not (crosses.is_valid() and bool(crosses.call(start, at))) \
 							and _too_close(at, i, result, placed, blocks) < 0 and bool(seats_hold.call(i, at)):
-						# G3 v7: never on the road in of a squad still to arrive; then the given place is kept.
-						if PLACE_CLEAR_LANE and _in_lane(at, i, result, placed, blocks) >= 0:
+						# G3 v7: never on another squad's road in; then the given place is kept.
+						if in_lane.is_valid() and bool(in_lane.call(i, at)):
 							places_off_lanes += 1
+							if COLUMN_TRACE:
+								print("PLACE_TRACE squad %d step back to %s refused: on a road in" % [i, at])
 							break
 						best = at
 						break
@@ -809,35 +818,39 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 				if best == null:
 					places_kept_unseated += 1
 			if best != null:
+				if COLUMN_TRACE:
+					print("PLACE_TRACE squad %d moved %s -> %s (near %d)" % [i, start, best, near])
 				result[i] = best
 				places_cleared += 1
 		placed.append(i)
 	return result
 
 
-## G3 v7 (round 40; R39's trace, crossing 5 route s6213: v6 stepped Delta back along its own leg 28 m west, onto the
-## approach Echo still had to drive; Echo crept through Delta's halt for 50 s and never got in). `--place-clear-lane=on`:
-## a step back never stands inside the lane of a squad placed before it (a longer drive, so still to arrive): the strip from
-## that squad's vehicles (`center`) to its place, half its width plus half this squad's short side either way.
+## G3 v7 (round 40; R39's trace, crossing 5 route s6213: v6 moved Delta 16 m, (-66.9, 29.5) -> (-53.9, 38.8), onto the
+## approach Echo still had to drive; Echo crept through Delta's halt for 50 s and never got in. Round 40's laptop trace:
+## that was v5's aside/back step, which v6's seat check accepted, not the step back along the leg). `--place-clear-lane=on`:
+## no moved place stands on another squad's road in (the caller's `in_lane`: its navmesh drive from its vehicles to its
+## place, `lane_reach` either side); the given place is kept.
 static var PLACE_CLEAR_LANE := OS.get_cmdline_user_args().has("--place-clear-lane=on")
 ## Measurement (G3 v7): step backs refused for standing in a later squad's lane (the given place kept), since start.
 static var places_off_lanes := 0
 
 
-## G3 v7: the first placed squad whose lane (its `center` to its place) `at` stands in, or -1. Pure.
-static func _in_lane(at: Vector3, i: int, places: Array[Vector3], placed: Array[int], blocks: Array) -> int:
+## G3 v7: whether `at` stands within `reach` of the road `path` (a polyline). Pure.
+static func on_road(at: Vector3, path: PackedVector3Array, reach: float) -> bool:
 	var p := Vector2(at.x, at.z)
-	for j: int in placed:
-		if j == i or j >= blocks.size():
-			continue
-		var c: Vector3 = blocks[j].get("center", places[j])
-		var a := Vector2(c.x, c.z)
-		var b := Vector2(places[j].x, places[j].z)
-		var seg := b - a
+	for k in range(1, path.size()):
+		var a := Vector2(path[k - 1].x, path[k - 1].z)
+		var seg := Vector2(path[k].x, path[k].z) - a
 		var t := 0.0 if seg.length_squared() < 0.001 else clampf((p - a).dot(seg) / seg.length_squared(), 0.0, 1.0)
-		if p.distance_to(a + seg * t) < float(blocks[j]["width"]) * 0.5 + _short_side(blocks[i]) * 0.5:
-			return j
-	return -1
+		if p.distance_to(a + seg * t) < reach:
+			return true
+	return false
+
+
+## G3 v7: a road's half-width for squad `j` passing a halt of squad `i` (half j's width + half i's short side).
+static func lane_reach(blocks: Array, i: int, j: int) -> float:
+	return float(blocks[j]["width"]) * 0.5 + _short_side(blocks[i]) * 0.5
 
 
 static func _flat_gap(a: Vector3, b: Vector3) -> float:
