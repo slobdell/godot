@@ -75,6 +75,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - PASS: places_cleared 47; offsets (worst +24.0 m, 0 of 864 > 40 m); contacts 15046 -> 15049.
   - For round 41 (a new version needs a fresh block): read each crew's own road, not the squad centre's; and the
     crossing route pairs G3 never moves.
+  - **Crossing route pairs, offline from the bar's runs (no new runs):** G3 is not idle there (places_cleared 8 / 7 on
+    crossing 3 / 5 route), but the road test refuses about one step a run (places_off_lanes 11 / 12 over 12 runs) and the
+    pairs left are exactly main's (squads 2 / 3 and 3 / 4 at x -74 to -67, z 29-36): on that leg every way out of the
+    pair lands on a road still to be driven into the west quay, where the roads converge. Per-crew roads would make
+    this stricter, not looser, so round 41 needs a different exit there (e.g. the later squad holds short, not aside).
 - **REPORT (2026-10-25): Bar G1 v6 FAILS on one guard** (frozen tree c7d642aeb = green 8bbafb376 + docs; builder2 J4;
   8201-8212, n 12 a cell; evidence `references/round40/orders/g1v6-judged-builder2-c7d642aeb/`). Switch stays OFF.
   - FAIL guard: **terminus 5 route twitch** 20.6 v 25.4 (median of per-run worst; bar base + 3). Four seeds differ
