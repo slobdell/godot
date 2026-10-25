@@ -108,6 +108,16 @@ faction F" / "CPU's faction F" minus the line mean over blob and turtle, in poin
 Round 39's OFF arm scores 17.4 (se 1.4); OFF v SPLIT paired change -0.1 (se 0.9). Candidates: `tools/balance/candidates/`
 `faction_max` (gangs hp/armour/damage +15 %, syndicate -15 %, law +5 %) and `targeted` (B1's units only).
 
+**B4 dry run (dev seeds 8501-8512, builder2, guard.sh J20 GUARD_CHUNK=8, 240 fights an arm, NOT a bar).** Base 066d0ff95 (= main's
+code 68d0410d3 + tools): flatness **26.6 (se 4.0)**; blob 45 % (v a gangs CPU 83 %, v a syndicate CPU 6 %), turtle 42 %. Same shape as
+round 39. Candidates `faction_max` and `targeted` running (paired with that base).
+
+**B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
+role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
+one line; otherwise unchanged). Mono-tank v its own faction's deal, CPU v CPU (guard none), 8501-8510, mono on Green: queued after the
+candidates. The none line's green/rust guard-side fights are exact duplicates (checked on d2c's none run), so half a none series is
+wasted until guard.sh passes GUARD_SIDES (asked of native).
+
 **Bar B2s (the stat change; FILED before any number on 8301-8340 + 8401-8440).**
 - Arms: BASE = the tree as it ships without the change; ARM = the same tree with the chosen candidate (named in this Status before
   the series; chosen from dev seeds only). Paired fights: seeds 8301-8340 + 8401-8440, blob + turtle, 5 guard arenas, both sides
