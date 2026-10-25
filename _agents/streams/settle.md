@@ -62,12 +62,21 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-24, running)
-- **GREEN: afd436ca3** (builder2, `>> remote: make native check exited 0`, 3,188 passed / 0 failed, 24 targets + 3 NOT JUDGED
-  as a non-judging machine: perf-judge, ai-scenarios' CPU budget, the quiet-window guard). Everything of round 40 OFF.
-- **Bar T1 series RUNNING**, builder0 light J4 (`settle-t1`, seeds 8001-8012, afd436ca3's code); then Bar S1 v3's
-  (`settle-s1v3r40`, 8013-8024) on the same lane. **Restart:** the first start (21:30 PDT) was lost when builder0 crashed
-  (~22:15); no row of it is read. Re-run IN FULL from 22:22 PDT on the same tree and seeds (the target clears its folder).
+### Report (2026-10-25, running)
+- **Bar T1 PASS** (afd436ca3's code, builder0 light J4, `settle-t1`, seeds 8001-8012, re-run in full after builder0's crash;
+  every part complete: 576 squads, fights 36/36 both reads, 0 unstarted; `references/round40/settle/t1-bar-builder0/`
+  at 8ca1b1e31): cap deploys 265 -> 83; arrival to deploy mean 6.26 -> 4.42 s (median 7.1 -> 3.4); never-in 3 -> 1 runs;
+  all-in mean 28.6 -> 29.0 s (<= 32.4); twitch >= 15 m 113 -> 110; places outside (gate read) 80 -> 80; flips 0 -> 0; first
+  shape 6/576; contacts 13576 -> 13394; fights 3sq kills 4.69 -> 5.11, losses 7.06 -> 6.72; 5sq kills 10.00 -> 9.56,
+  losses 12.86 -> 12.97 (all inside). Per-cell twitch medians reported in verdict.txt (orders owns the his-5 twitch).
+- **T1 SHIPPED ON at cab85debf** (`--deploy-arrive=settled` default, `=off` escape; deploy tests 59/0 laptop). Full check
+  RUNNING on builder2 (CP40.1). Expected red only on sim-baseline (deploy timing moves); if so, maps recorded twice on
+  cab85debf (`make remote T=sim-baseline-record` x2), the orchestrator adopts them at merge. `settle-t1`'s main arm and both
+  arms of `settle-s1v3r40` now pin `--deploy-arrive=off` so the filed bars reproduce.
+- **Bar S1 v3 series RUNNING**, builder0 light J4 (`settle-s1v3r40`, seeds 8013-8024), launched at 8ca1b1e31 (game code ==
+  afd436ca3, green) before the flip; remote.sh's single rsync froze it (orchestrator accepted as R40.13's frozen tree). T1 is
+  OFF in both arms, as the bar was filed.
+- Previous green: **afd436ca3** (builder2, 3,188 passed / 0 failed, 24 + 3 NOT JUDGED), everything of round 40 OFF.
 - **T1 built** (1327f85ef, OFF: `--deploy-arrive=near`): pure test `tests/test_settle_deploy_arrive.gd` 5/0 (laptop): the
   3.83 m holding tracked crew counts as in (main waits for the cap), a crew rolling at 4 m and one holding at 6 m don't, a hold
   under 0.5 s doesn't yet.
