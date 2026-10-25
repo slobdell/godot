@@ -88,6 +88,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   a dry read at that deploy comparing main's fixed deal, `_fit_deal` on the ordered heading, and `_fit_deal` on the street
   axis (S1 v5's street cap), worst and total legs. Then, if it pays, a flag scoped to cap deploys with a bunched squad
   (crew spread under one spacing), filed as its own bar.
+- **Dry deal read (orchestrator: after S1 v3's series, dev only):** built at 3be6f1aa7 + 978c98d88. DEPLOY_TRACE now
+  carries `cause` and `deals` (main / `_fit_deal` on the ordered heading / on the street axis: [worst, total] m to the
+  grounded seats, plus the crews' spread); pure test `tests/test_settle_deal_read.gd` 1/0 (laptop); reader
+  `tests/settle/settle_deals.py DIR`. Plan: terminus 5 route seeds 8203, 8205, 8206, 8208 on (a) this tree (T1 ON) and (b) a
+  frozen side worktree merging stream/orders' G1 v6 bar commit with the trace commits (Delta's case reproduces only under
+  G1 v6's column). If least-total on the street axis cuts the bunched cap deploys' worst legs well below main's, file a
+  scoped flag + bar (round 41 or end of round 40, whichever the clock allows; S1 v3 first if it passes).
 - Previous green: **afd436ca3** (builder2, 3,188 passed / 0 failed, 24 + 3 NOT JUDGED), everything of round 40 OFF.
 - **T1 built** (1327f85ef, OFF: `--deploy-arrive=near`): pure test `tests/test_settle_deploy_arrive.gd` 5/0 (laptop): the
   3.83 m holding tracked crew counts as in (main waits for the cap), a crew rolling at 4 m and one holding at 6 m don't, a hold
