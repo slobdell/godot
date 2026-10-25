@@ -6,12 +6,17 @@ extends PlannerWorld
 
 var map := RID()
 var bake_radius := 2.0
+## Round 40 (manoeuvre M3): every other hull's box is this much smaller on each side (0 = the hull_size box, every other use).
+## A wedged crew touches its holder, and its start pose overlaps the holder's box by the contact's depth (M3 lab 1: 16 of the
+## 21 re-routes asked at locks s7006 refused START_BLOCKED); the re-route plans in a world where touching is not overlap.
+var hull_shrink_m := 0.0
 
 
-static func for_tank(me: Tank, tanks_root: Node) -> PlannerNavWorld:
+static func for_tank(me: Tank, tanks_root: Node, shrink_m := 0.0) -> PlannerNavWorld:
 	var w := PlannerNavWorld.new()
 	w.map = me.get_world_3d().navigation_map
 	w.bake_radius = Movement.bake_radius(me)
+	w.hull_shrink_m = shrink_m
 	w.refresh_hulls(me, tanks_root)
 	return w
 
@@ -26,7 +31,8 @@ func refresh_hulls(me: Tank, tanks_root: Node) -> void:
 			continue
 		var box: Array = Movement.hull_box(other.unit_id)
 		var f := -other.global_basis.z
-		add_hull(other.global_position.x, other.global_position.z, f.x, f.z, float(box[0]) * 0.5, float(box[2]) * 0.5, String(other.name))
+		add_hull(other.global_position.x, other.global_position.z, f.x, f.z, maxf(float(box[0]) * 0.5 - hull_shrink_m, 0.2),
+				maxf(float(box[2]) * 0.5 - hull_shrink_m, 0.2), String(other.name))
 
 
 func native_view() -> Dictionary:

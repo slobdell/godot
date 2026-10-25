@@ -206,7 +206,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside"]  # round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "reroute", "rerouteany"]  # round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -230,6 +230,11 @@ static func off(name: String) -> bool:
 			elif String(arg) == "--giveway-chain=side":  # round 40 (M1 v2, direction 3's lab arm): givewaychain + chainside
 				_off.erase("givewaychain")
 				_off.erase("chainside")
+			elif String(arg) == "--giveway-reroute":  # round 40 (M3): a wedged asker re-routes round the crew holding for it
+				_off.erase("reroute")
+			elif String(arg) == "--giveway-reroute=any":  # round 40 (M3, a lab arm): round any crew giving way to it
+				_off.erase("reroute")
+				_off.erase("rerouteany")
 		for arg in OS.get_cmdline_user_args():
 			if String(arg).begins_with("--traffic-off="):
 				for part in String(arg).trim_prefix("--traffic-off=").split(",", false):
@@ -245,9 +250,21 @@ static func off(name: String) -> bool:
 ## (BrainSwitches.native_yield off) and every ask runs the GDScript rule (native_yield's GDScript and C++ are bit-identical per
 ## seed, R38.24); off, native_yield is left as it was. `chainrelease` is twinned (native, pair/native-chainrelease).
 static var _chain_saved_native_yield: Variant = null
+static var _reroute_saved_native_drive: Variant = null
 
 
 static func _chain_native() -> void:
+	# Round 40 (M3): the seam's once-a-tick re-route scan, connected only while ON; and a re-route's leg is driven unscaled by
+	# ORCA's share in Movement.drive, which has no C++ mirror yet, so while ON the drive runs the GDScript (native_drive off;
+	# the GDScript and C++ drives are bit-identical per test_native_drive). Off, native_drive is left as it was.
+	if not _off.has("reroute"):
+		PlannerSeam.hook_reroute()
+		if _reroute_saved_native_drive == null:
+			_reroute_saved_native_drive = BrainSwitches.native_drive
+		BrainSwitches.native_drive = false
+	elif _reroute_saved_native_drive != null:
+		BrainSwitches.native_drive = bool(_reroute_saved_native_drive)
+		_reroute_saved_native_drive = null
 	if not _off.has("chainside"):
 		if _chain_saved_native_yield == null:
 			_chain_saved_native_yield = BrainSwitches.native_yield
