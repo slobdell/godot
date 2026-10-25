@@ -151,11 +151,16 @@ locks/terminus/sumps x 7001-7008, 24 fights. `~/overnight-manoeuvre/r40/m2`, `m2
   not set, the asker asks again, and it gets the same hold. Battery_2's 607 ticks are back-to-back 6 s holds. The wedge stands until
   unstick or a re-plan moves someone. It's M1 v2's mechanism in the base give-way: a hold for a WEDGED asker should hand the
   give-way back (the asker backs off or swaps) instead of standing.
-- **Next fix (filed, not built; a bar only on a fresh block from the orchestrator):** `--traffic-on=holdrelease`: a hold ends early
-  when its asker's stalled_ticks has not reset for HOLD_RELEASE_S (~2 s) since the hold began. The asker then gives way itself
-  (backs off: the i_give_way / swap path) instead of re-asking into the same hold. Lab first on the 8 longest cells above. It touches
-  begin_yield/_end_yield, so it needs native's twin like chainrelease. The stretch builds it OFF after Bar M1 v2's series (no game-code
-  edits in this tree while the series rsyncs it).
+- **The hold's timing:** an unfinished hold is retried YIELD_RETRIES = 2 times in YIELD_RETRY_WINDOW_S (30 s), so it's 3 holds x 6 s
+  ~ 18 s, then the cap records it finished (`yields_unfinished_capped`). That matches Battery_2's 607 ticks.
+- **No cheap fix, so the stretch is NOT built (decision 2026-10-24 ~23:20).** A hold happens only when NO spot fits the holder, and the
+  wedge stands only when the asker has no way round. Ending the hold early (the `holdrelease` I first filed) opens nothing:
+  - against a parked holder the asker keeps its route (CP1a2);
+  - backing the asker off drives it straight back into the same street.
+  The levers that would work aren't cheap: re-route the asker around the holder (the planner: a re-plan with the holder as an obstacle),
+  or let the holder take a spot that doesn't fit whole (round 13 measured scraping give-ways worse: arrivals 115 -> 105).
+  Candidate for a later round, if he reports artillery crews sitting behind a squadmate: the planner re-plan, lab on the 8 longest
+  episodes above (sumps s7004 Battery_1 first).
 
 **Known issue (comment only, fix after the series):** M1 v2's comment in movement.gd says that after a hold "the asker never asks that
 crew again (_last_yielded_to)". Under yieldfit2 (ON) an UNFINISHED hold leaves _last_yielded_to unset and the asker re-asks. So the
