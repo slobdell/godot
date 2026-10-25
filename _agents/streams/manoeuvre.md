@@ -172,3 +172,11 @@ The rule is right; the sentence is wrong. Not edited now: the series' tree must 
 
 **Native twin MERGED:** pair/native-chainrelease 18e5dbca8 (quick-green builder0 114/0, 0 mismatches) merged clean as ee659b522;
 chainrelease now runs in C++ (chainside alone keeps the GDScript bypass). Full check of ee659b522 started on builder0.
+
+**M3 scope (orchestrator, 2026-10-25 ~00:30): wheeled hulls only.** The planner plans only for wheeled hulls (`side_gate_in`:
+locomotion == "wheels"). M3 opens its lab on the longest wheeled episode, locks s7006 Rust_Battery_5 (gang_artillery, 21.6 s).
+Wheels cover 7 of M2's 10 longest episodes. **Named gap:** sumps s7004 Rust_Battery_1 (syn_artillery, hover, 28.2 s), and tracked
+artillery and tanks.
+**Filed for a later round (not M3):** widen the planner past wheels (tracks, hover), so the re-route reaches s7004's kind of wedge.
+**C40.2 noted:** settle's T1 ships ON. The M1 v2 series keeps its tree as filed (T1 OFF in both arms). On a pass, one dev read of
+M1 v2 on a T1-ON main before the flip.
