@@ -275,5 +275,41 @@ planned round the holder by the planner's seam.
     Rust_Eyes_5 until the match ends, with ORCA's pace under half for 2192 of its 2196 ticks.
   - The seam planned once in that fight (2 legs, 30 driving ticks, then released stale), so the 73 s follows from that one
     re-route. Without it, `any` is 10 / 76 s.
-  - A traced run (`--turn-trace=Rust_Battery_2`, builder0 light) is under way; raw data: `~/overnight-manoeuvre/r40/m3lab3/`,
-    `m3t7004/`.
+  - **Traced (fd9c9d0f7, builder0 light, `--turn-trace=Rust_Battery_2`; the same 73.2 s, from tick 3206):** the seam never took
+    Rust_Battery_2. syn_artillery is a HOVER hull (outside M3's wheels-only scope), wedged against a parked Rust_Eyes_5
+    (stall/unstick cycling, pace 0.05-0.08). The one re-route was another crew's, earlier, and changed the fight's path: a cost of
+    the arm through divergence, not the rule acting on the stuck crew. It is counted, as a bar counts it. Raw data:
+    `~/overnight-manoeuvre/r40/m3lab3/`, `m3t7004/`.
+- **Reading:** `reroute` (holds only) is worse and is dropped. `any` is the bar's ON arm: fewer long episodes (19 -> 11), with
+  seconds that a single divergent fight can swing.
+
+### Bar M3 (filed 2026-10-25 ~05:00 PDT, BEFORE any number on 8601-8624)
+- **Gate:** the tree's full check green on builder0 FIRST (C31.1), with M3 OFF (the default). The checked hash is named here before
+  the series starts.
+- **Arms:** OFF (default) v ON `--giveway-reroute=any`.
+  - Native ON in both arms. ON runs the GDScript drive (`Traffic._chain_native` turns native_drive off while reroute is ON); the
+    re-route leg rule is not twinned in C++.
+  - Lab 3 evidence the drive itself doesn't move the result: the `reroute` arm's fights it never planned in match off's episodes
+    exactly.
+  - settle's switches: main defaults in both arms (T1 `--deploy-arrive=near` ON since C40.2; S1 off; DEPLOY_HOLD on).
+- **Machine:** builder0 light lane, J 4. **Seeds (registered R40.12):** A on 8601-8612, B on 8613-8624.
+- **A, wedge trace** (`manoeuvre-wedge-trace`, locks/terminus/sumps x 8601-8612, 180 s, 36 fights an arm, paired by fight):
+  - **D (deciding): long-episode seconds** (touching a hull, net < 0.5 m, >= 3 s; partner_table's target, every unit). PASS: ON <=
+    0.8 x OFF AND paired per-fight mean < 0 by >= 2 se.
+  - G1 deaths in give-ways (jam:yielding + jam:friend): ON - OFF <= max(2 paired se x n, 3).
+  - G2 stuck deaths (stuck:*): ON - OFF <= max(2 paired se x n, 3).
+  - G3 friendly contact ticks: ON <= 1.10 x OFF.
+  - G4 the fights: each team's kill share (from the logs' `destroyed` lines) within +/- 0.03 of OFF; total deaths within +/- 5 %.
+- **B, orders probe** (`orders-probe`, locks/crossing/terminus x 3,5 squads x click,route x 8613-8624, 144 runs an arm, arms
+  `main:` / `any:--giveway-reroute=any`):
+  - **G5 never-in runs: ON <= OFF.**
+  - G6 all-in time: the paired median ON - OFF <= +2.0 s, over runs both arms got all in.
+  - G7 last squad in: the paired mean ON - OFF <= +2.0 s, AND runs more than 10 s later <= runs more than 10 s earlier + 3.
+- **Reported, not judged:**
+  - long-episode count and the three longest;
+  - the reroute report summed: asks, searches, expansions, outcomes, pack_ticks.
+  - The scan's search is whole on one physics tick. Up to BUDGET expansions in a frame is a hitch risk on the laptop; it must be
+    sliced before ON ships, whatever the verdict.
+- **Judge:** `python3 tests/manoeuvre/reroute_judge.py wedge-off wedge-on probe/rows.jsonl --on-arm=any`, committed with this bar.
+- **A pass** goes to the orchestrator, with the C++ twin request and the slicing, before ON ships. **A fail:** M3 stays OFF, as a
+  report; no re-run on these seeds.
