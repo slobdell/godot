@@ -4397,3 +4397,15 @@ bar) and a balance-search harness in the meantime.
 
 Asked whether a stopped tank should keep reaching full sight ~3 s after stopping (his number was ~2 s, which pulled crews out of cover
 in scenario_cover): **"sounds fine"** -> HALT_DWELL_SECONDS stays 2.0 (full sight at ~3 s). Closed; not re-asked.
+
+## His faction-balance call (2026-10-24 evening, verbatim)
+
+Asked (player terms): when a faction keeps losing, may we change its units' numbers, A: tune a little (at most ~15 % on toughness,
+damage or price; no new abilities, no units added or removed), B: units untouched (only what the CPU buys and how each faction fights),
+C: keep factions uneven on purpose. His answer: **"yes, when a faction keeps losing, we should change its units' numbers. Obviously the
+game should be balanced. I was also going to highlight that every time I play with the gang I seem to lose. Yes let's go with A for your
+recommendation."**
+
+**So (R40.1):** unit stats may be tuned within +/-15 % of today's value on hp/armour (toughness), damage, and cost, per unit; no new
+abilities, no unit added or removed, each faction keeps its roster. The aim is a flat faction table (no faction a free win or a wall,
+charging or holding). His own play matches the table: gangs loses. Owner: balance (C40.5, no longer lead-gated within these bounds).

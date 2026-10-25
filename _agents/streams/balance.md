@@ -6,8 +6,8 @@
 > **You own** doctrine's round-39 paths: brains (`game/ai/**` and `game/tactics/**` outside settle's and manoeuvre's carve-outs:
 > `tank_brain.gd`, `element_commander.gd`, `cpu_commander.gd`, `gunnery.gd`, doctrine tables), `tests/tactics/**`, `tests/test_tactics*.gd`,
 > `tests/ai_scenarios/**` you add, `tests/rules/**`, `mk/tactics.mk`, `mk/rules.mk`, `tools/balance/**` (new), `mk/balance.mk` (new);
-> the C39.4 grant (rule constants) carries over as C40.4. **GRANT C40.5:** `game/units/**` (unit stats, `army.gd`'s CPU army deal) behind
-> a lead gate: you may READ it and build tooling against it; nothing in it changes on main until he answers (below). **Model:** Fable
+> the C39.4 grant (rule constants) carries over as C40.4. **GRANT C40.5:** `game/units/**` (unit stats, `army.gd`'s CPU army deal): unit numbers
+> within +/-15 % per his call R40.1 (below), under a filed bar. **Model:** Fable
 > (the lingering problem: two rounds of tactics moved the blob line 0-6 points). **Machine:** builder2 for series (`make gcp-start`;
 > Spot, re-queue on preemption), builder0 light for quick reads. **Seeds:** 8301-8340 + 8401-8440 (registered, C40.1); round 39's 6301-6340
 > + 6401-6440 for the RE-READ of its own fights only.
@@ -32,17 +32,20 @@ turtling (17 %). Blob kill ratio by blob faction: syndicate 2.62, law 0.98, cond
    first). Re-run round 39's OFF-arm fights (773412e49's workload on main) with it and write, per faction: the dealt army (units, cost),
    and by unit type kills, losses, damage dealt per credit. Name which gangs units die without trading and what syndicate's army has
    that the others don't. Before CP40.0 lands: read `army.gd`/`units.gd` and tabulate each faction's dealt army by seed (no fights needed).
-2. **B2 his decision page (lead gate).** One page, in player terms, one recommendation, e.g. "a gangs army loses whether it charges or
-   holds: make gangs' tanks tougher, change what gangs fields, or keep gangs as the hard faction?". Give the orchestrator the text and the
-   numbers; the orchestrator publishes it and brings back his answer. Don't wait: go on with 3.
+2. **B2 ANSWERED (R40.1, 2026-10-24): tune the units' numbers.** His words: "yes, when a faction keeps losing, we should change its
+   units' numbers. Obviously the game should be balanced. I was also going to highlight that every time I play with the gang I seem to
+   lose. Yes let's go with A". Bounds: +/-15 % of today's value per unit on toughness (hp/armour), damage, cost; no new abilities, no unit
+   added or removed. B1's tally picks the candidates (B4's search scores them); the winner ships under a bar on 8301-8340 + 8401-8440
+   (deciding: the faction table flatter, e.g. the spread of by-CPU blob win rates down by > 2 se; guards: overall blob and turtle lines
+   not up, kills/length per faction, the none line, perf, the sim baseline adopted on purpose). Stat change first, then B3 on top.
 3. **B3 a faction-aware CPU (symmetric, ships without asking if it passes).** Each faction plays to its army: per-faction ambush/hold
    tables in the doctrine (e.g. gangs holds and ambushes rather than trading in the open), on both sides' brains. Bar on 8301-8340 +
    8401-8440 (deciding: the gangs-CPU cells' blob win rate down by > 2 paired se; guards as Bar D3: blob kr, turtle line, kills and
    length per faction, the none line, perf).
-4. **B4 the balance search harness (tooling, OFF).** `tools/balance/`: given his bounds on unit stats (e.g. +/-15 % hp, damage, cost),
-   run N sims a candidate on builder2 and score the faction table's flatness. Build and dry-run it on two candidates; NO stat changes
-   on main until he answers B2.
-5. **Stretch:** after his answer, the change he picks behind a switch with its own bar.
+4. **B4 the balance search harness.** `tools/balance/`: within his +/-15 % bounds, run N sims a candidate on builder2 (native's N3
+   `--unit-overrides`) and score the faction table's flatness; it feeds B2's candidate. If B4 is ready before B1's read names the
+   candidates, do B4 before B3.
+5. **Stretch:** a second balance pass after B3 (the faction-aware CPU changes the table again).
 
 **His answer (2026-10-24):** R1's full sight stays at ~3 s after a halt ("sounds fine"); HALT_DWELL_SECONDS stays 2.0.
 
@@ -59,7 +62,7 @@ settle's deploy/halt functions and PARKED_HOLD seam, manoeuvre's movement/traffi
 
 ## Waiting on the lead
 
-B2 (faction balance).
+Nothing (B2 answered: R40.1).
 
 ## Status
 

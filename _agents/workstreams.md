@@ -54,8 +54,9 @@ project's workers (plane_maker): never touch processes you didn't start.
 - **C40.3 orders judges G1 on CP40.1;** G3 v7 and G2 judge on main as it is.
 - **C40.4 = C39.4 (rule constants, GRANT to balance).** A constant moves only to his number or under a filed bar; R1's dwell stays 2.0
   until he answers.
-- **C40.5 Unit stats and the army deal (GRANT to balance, LEAD-GATED).** `game/units/**` changes on main only after his answer to B2;
-  tooling, overrides behind native's OFF flag, and reads are free.
+- **C40.5 Unit stats and the army deal (GRANT to balance; his answer R40.1).** `game/units/**` unit numbers may change within +/-15 % of
+  today's (toughness, damage, cost), per unit; no new abilities, no unit added or removed. A stat change ships under a filed bar on fresh
+  seeds (the faction table flatter, guards on the blob/turtle lines and the none line).
 
 ## Bars (round 40)
 
@@ -64,7 +65,10 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 7001-7008 manoeuv
 
 ## Rulings (round 40)
 
-_(none yet)_
+- **R40.1 (2026-10-24 evening) His faction-balance call: A.** Verbatim in game_design.md *His faction-balance call*: "yes, when a faction
+  keeps losing, we should change its units' numbers. Obviously the game should be balanced. ... every time I play with the gang I seem to
+  lose. Yes let's go with A". Unit numbers within +/-15 % (toughness, damage, cost); rosters and abilities fixed. C40.5 un-gated. His R1
+  answer: keep ~3 s to full sight ("sounds fine"); HALT_DWELL_SECONDS stays 2.0.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 

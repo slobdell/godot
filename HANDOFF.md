@@ -33,7 +33,8 @@ of main), builder0's `~/tank_squad/godot-<s>*` cleared (22 GB free), builder2 st
 another project's workers (plane_maker), not ours: left alone. He confirmed builder2 stays on for round 40. Feedback's announcer masters were already in the main checkout.
 
 **Waiting on him (ask in player terms, one recommendation; record answers in game_design.md and balance's brief):**
-1. **Faction balance (the round's lead question; balance B2 writes the page after B1's tally).**
+1. ~~Faction balance~~ ANSWERED 2026-10-24: **A**, tune unit numbers within +/-15 % (R40.1; "every time I play with the gang I seem
+   to lose"). Balance owns it (C40.5 un-gated). All five sessions started 2026-10-24 evening.
 2. ~~R1's timing~~ ANSWERED 2026-10-24: keep ~3 s ("sounds fine").
 3. **The portrait order-preview line** floating mid-screen: does he see it as wrong (a feedback item next round)?
 4. His playtest notes on main (amber chevrons, dock phone map, honest fog, the parked hold, his caller lines).
