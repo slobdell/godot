@@ -1903,6 +1903,7 @@ static func _trace_deploy(plan: Dictionary, situation: Dictionary, stand: Vector
 			"latch_capped": bool((plan.get("deploy", {}) as Dictionary).get("latch_capped", false)),
 			"fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}),
 			"cleared": int((plan.get("deploy", {}) as Dictionary).get("cleared", 0)),
+			"waited": int((plan.get("deploy", {}) as Dictionary).get("waited", 0)),
 			"clear_of": _trace_clear_of((plan.get("deploy", {}) as Dictionary).get("clear_of", {})), "crews": crews}))
 
 
