@@ -91,6 +91,9 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   `main:--deploy-trace` v `v3:--seat-route-clear=v3,--deploy-trace`; giveway-chain OFF and T1 OFF both arms; round 39's S1 workloads and
   judge `s1c` unamended (deciding: 5-squad never-in <= main - 1, main >= 2, none new). Lab (afd436ca3, builder0 light, n 1 a run, dev): all
   six traced runs every squad in (main lost s3958, v2 lost three); all-in s6009 42.9 v 34.8 s (+8), the rest equal or faster.
+- **R40.10 (2026-10-24 evening) G2 v2c: no bar this round.** Orders' O4 re-read on main (dev 3801-3803, builder2) repeats round 39's dev
+  read 3 exactly (DEPLOY_HOLD doesn't act without losses); guards fail on 10 cells (end foreign, twitch). Write-up: stream/orders
+  f3df5390d. Its one later re-read: on top of settle's S1 v3 if that ships (end-foreign is S1's kind). G3 v8 built (5bc304738).
 
 ## Rulings (round 40)
 
