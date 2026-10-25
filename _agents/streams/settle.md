@@ -148,6 +148,14 @@ round 39's lines unamended:
 - Reported: place+twitch and deploy legs >= 25 m (v2 raised them 64 -> 100), seats cleared, crews waited.
 - A pass ships `--seat-route-clear=v3` ON on a new hash with one full check.
 
+### Player's look (builder0 light, `make settle-shots`, afd436ca3's tree, crossing 3 click s6003; frames looked at)
+- main and settled frames are byte-identical, as expected: the probe shoots when the last squad arrives and 5 s later, and
+  settled's early halts on this run fire at 17.7 s and 25.4 s (main caps at 24.7 / 26.1 s), after both shots. The probe's shot
+  times (orders' file) can't show T1; the deploy-time numbers are its evidence. Playtest: `make skirmish ARENA=crossing
+  SKIRMISH_FLAGS="--deploy-arrive=settled"`, three squads, one click past the bridge, and watch the third squad lay its halt
+  ~2 s after it stops instead of ~10 s.
+- v3: the three squads stand along the street south of the bridge mouth, none on the deck or across its mouth.
+
 ### Plan (ordered)
 1. T1: pure test (done) -> lab on orders' traced cell (his-5 click 6201-6212, main and G1 v5's column arm, each +/- near) ->
    bar filed here before numbers -> full check of the named hash -> series on 8001-8012 -> ship ON + full check = CP40.1.
