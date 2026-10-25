@@ -1108,6 +1108,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	var queue_leg := bool(extra.get("queue", false)) and elements != null and REQUEUE
 	var queue_starts: Array = _leg_starts(squads, blocks) if queue_leg else []
 	var column_ahead := Vector3.ZERO  # G2: the approach a column was laid on
+	var two_sided_before := SelectionSquads.columns_two_sided  # G1 v6: whether this lay was two-sided
 	var column_moved := false  # G1 v3: the column moved some squad more than RELAY_MOVED_M off today's place
 	var today_places: Array[Vector3] = []  # G1 v3: the places today's body gave, before the column replaced them
 	if extra.has("to"):
@@ -1255,7 +1256,18 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 						sum += float(drive_l.call(at_of.call(unit_name), to))
 					leads.append(sum / maxi(1, (squad["units"] as Array).size()))
 				arc = func(p: Vector3) -> float: return float(drive_l.call(to, p))
-			SelectionSquads.untangle_whole(squads, anchors, at_of, leads, arc)
+			# G1 v6: a squad keeps to its own side of the click (column_lay laid the far side's places past it).
+			var misplaced := Callable()
+			if column and SelectionSquads.SIDES_BOTH and SelectionSquads.columns_two_sided > two_sided_before:
+				var click_s := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
+				var far_of := {}
+				for i in squads.size():
+					var centre := Vector3.ZERO
+					for unit_name: String in squads[i]["units"]:
+						centre += at_of.call(unit_name) / maxi(1, (squads[i]["units"] as Array).size())
+					far_of[i] = (centre - click_s).dot(column_ahead) > SelectionSquads.FAR_SIDE_M
+				misplaced = func(i: int, p: Vector3) -> bool: return bool(far_of[i]) != ((p - click_s).dot(column_ahead) > 1.0)
+			SelectionSquads.untangle_whole(squads, anchors, at_of, leads, arc, misplaced)
 		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 		# Round 38 (G3): no place on another squad's halt (settle's S2 trace, crossing 5 click s3866). After the untangle, so

@@ -33,6 +33,7 @@ func teardown() -> void:
 	SelectionSquads.GROUP_WHOLE_CLICK = OS.get_cmdline_user_args().has("--group-whole=click")
 	SelectionSquads.CLEAR_REACHED = OS.get_cmdline_user_args().has("--group-clear=reached")
 	SelectionSquads.GROUP_LEAD = OS.get_cmdline_user_args().has("--group-lead=drive")
+	SelectionSquads.SIDES_BOTH = OS.get_cmdline_user_args().has("--group-sides=both")
 	SelectionSquads.ROUTE_CORNER = OS.get_cmdline_user_args().has("--group-route-corner=line")
 	if _lab != null:
 		_lab.dispose()
@@ -609,3 +610,49 @@ func test_g3v6_seats_hold_on_the_same_ground_and_no_longer_leg() -> void:
 	assert_true(not SelectionSquads.seats_hold(given, {"shape": "coil", "spacing": 7.5, "worst_m": 6.0}), "another shape re-seats")
 	assert_true(not SelectionSquads.seats_hold(given, {"shape": "herringbone", "spacing": 7.5, "worst_m": 12.0}), "a longer deploy leg")
 	assert_true(SelectionSquads.seats_hold({}, {"shape": "coil"}), "no preview (one crew): holds")
+
+
+## G1 v6 (round 40; the orchestrator's relay of settle's T1 read and orders' trace, his 5 click s6201, e7c896c8f): the
+## body comes in from the east, but Alpha stands 29 m WEST of his click. v5 laid it second in the column, 34 m east: it
+## drove 62 m through Bravo's halt at the click, Bravo gave way and only got in on the 10 s cap (the 28.4 m twitch).
+## `--group-sides=both`: a squad past the click stands on its own side, a column out from the click the other way.
+func test_g1v6_a_squad_past_the_click_keeps_to_its_own_side() -> void:
+	var street := func(_p: Vector3, _across: Vector3) -> Array: return [10.0, 10.0]
+	var blocks := [{"center": Vector3(-29, 0, 0), "width": 29.0, "depth": 20.0},  # Alpha, past the click
+			{"center": Vector3(9, 0, 0), "width": 29.0, "depth": 20.0},  # Bravo, nearest on the way in
+			{"center": Vector3(40, 0, 0), "width": 29.0, "depth": 20.0},
+			{"center": Vector3(70, 0, 0), "width": 29.0, "depth": 20.0}]
+	var west := Vector3(-1, 0, 0)  # the approach: from the body's middle (22.5, 0) to the click
+	var clamp := func(p: Vector3) -> Vector3: return p
+	var v5 := SelectionSquads.column_lay(blocks, Vector3.ZERO, west, street, clamp)
+	print("GROUP_CLICK g1v6 one-sided (v5) %s" % [v5])
+	assert_true(v5[0].x > -0.5, "v5: Alpha stacked behind the click, on the far side from where it stands (%s)" % [v5[0]])
+	SelectionSquads.SIDES_BOTH = true
+	var sided := SelectionSquads.column_lay(blocks, Vector3.ZERO, west, street, clamp)
+	print("GROUP_CLICK g1v6 two-sided %s" % [sided])
+	assert_eq(sided.size(), 4, "every squad placed")
+	assert_true(sided[0].x < -10.0, "Alpha's place past the click, on its own side (%s)" % [sided[0]])
+	for i in range(1, 4):
+		assert_true(sided[i].x > -0.5, "squad %d on the near side (%s)" % [i, sided[i]])
+	assert_true(sided[1].distance_to(Vector3.ZERO) < 0.5, "Bravo, nearest on the way in, at the click (%s)" % [sided[1]])
+	for i in 4:
+		for j in range(i + 1, 4):
+			assert_true(sided[i].distance_to(sided[j]) >= 20.0, "places %d and %d apart (%s / %s)" % [i, j, sided[i], sided[j]])
+
+
+## G1 v6: the untangle never hands a squad a place on the other side of the click, even where v5's lead rule would
+## (Alpha reaches the click 21 m before Charlie, yet its own-side place is farther from the click by ground).
+func test_g1v6_the_untangle_keeps_each_squad_on_its_side() -> void:
+	var squads: Array = [{"number": 1, "units": ["A1"]}, {"number": 3, "units": ["C1"]}]
+	var at := {"A1": Vector3(-29, 0, 0), "C1": Vector3(40, 0, 0)}
+	var position := func(n: String) -> Vector3: return at[n]
+	var arc := func(p: Vector3) -> float: return absf(p.x)
+	var leads: Array = [29.0, 50.0]
+	var v5: Array[Vector3] = [Vector3(-44, 0, 0), Vector3(34, 0, 0)]
+	SelectionSquads.untangle_whole(squads, v5, position, leads, arc)
+	assert_eq(v5[0], Vector3(34, 0, 0), "v5: the lead rule sends Alpha across the click to the nearer place")
+	var misplaced := func(i: int, p: Vector3) -> bool: return (i == 0) != (p.dot(Vector3(-1, 0, 0)) > 1.0)
+	var sided: Array[Vector3] = [Vector3(-44, 0, 0), Vector3(34, 0, 0)]
+	SelectionSquads.untangle_whole(squads, sided, position, leads, arc, misplaced)
+	assert_eq(sided[0], Vector3(-44, 0, 0), "v6: Alpha keeps its own side's place")
+	assert_eq(sided[1], Vector3(34, 0, 0), "v6: Charlie keeps the near side's")

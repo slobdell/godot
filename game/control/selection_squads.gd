@@ -227,8 +227,10 @@ static func _untangle_once(squads: Array, anchors: Array[Vector3], position: Cal
 ## G1 v5 (`leads` given, one per squad: how far its crews drive to the click; `arc(place)`: how far the place stands back
 ## from the click by ground): every squad is one knot, and first of all no squad that leads another stands behind it
 ## (`lead_breaks`), so the squad in front takes the far place and nobody parks on the way of a squad still to pass.
+## G1 v6: `misplaced(i, place)` -> true when squad i may not take that place (a place on the other side of the click from
+## the squad), counted before everything else.
 static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Callable, leads: Array = [],
-		arc := Callable()) -> int:
+		arc := Callable(), misplaced := Callable()) -> int:
 	var by_lead := leads.size() == squads.size() and arc.is_valid()
 	var starts := {}
 	for i in squads.size():
@@ -262,14 +264,22 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 				member_leads.append(float(leads[i]))
 		var best: Array = []
 		var best_key := [INF, INF, INF]
+		var best_wrong := INF
 		for perm: Array in _permutations(members.size()):
+			var wrong := 0
+			if misplaced.is_valid():
+				for a in members.size():
+					if bool(misplaced.call(members[a], places[perm[a]])):
+						wrong += 1
+				if wrong > best_wrong:
+					continue
 			var breaks := 0
 			if by_lead:
 				var arcs: Array = []
 				for a in members.size():
 					arcs.append(place_arcs[perm[a]])
 				breaks = lead_breaks(member_leads, arcs)
-				if breaks > best_key[0]:
+				if wrong == best_wrong and breaks > best_key[0]:
 					continue
 			var crossings := 0
 			var drive := 0.0
@@ -279,8 +289,9 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 					drive += _xz(starts[unit_name]).distance_to(_xz(at))
 				for b in range(a + 1, members.size()):
 					crossings += _pair_crosses(squads[members[a]]["units"], at, squads[members[b]]["units"], places[perm[b]], starts)
-			if breaks < best_key[0] or (breaks == best_key[0] and (crossings < best_key[1]
+			if wrong < best_wrong or breaks < best_key[0] or (breaks == best_key[0] and (crossings < best_key[1]
 					or (crossings == best_key[1] and drive < best_key[2] - 0.01))):
+				best_wrong = wrong
 				best_key = [breaks, crossings, drive]
 				best = perm
 		if best_key[1] > 0:
@@ -407,6 +418,58 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 			and fits_along(today, ahead, narrowest):
 		bodies_kept += 1
 		return result  # today's body already stands on the ground he clicked
+	# Every squad already within COLUMN_NEAR_M of the click: no approach to stack along (the same trace: re-laid, they only
+	# shuffled sideways); today's body stands.
+	var near_check: Array = []
+	for i in blocks.size():
+		near_check.append(_arc_of(_back_line(PackedVector3Array(), flat_click, ahead), blocks[i]["center"]))
+	if near_check.max() < COLUMN_NEAR_M:
+		bodies_kept += 1
+		return result
+	# G1 v6 (round 40, `--group-sides=both`): a squad standing past the click (his-5 s6201: Alpha 29 m west of it, the body
+	# coming in from the east) is laid on its own side, a column out from the click the other way, so it never drives
+	# through the squads stacked on the near side (v5 gave it the second place, 34 m east: it drove 62 m through Bravo's halt).
+	var far: Array[int] = []
+	var near: Array[int] = []
+	for i in blocks.size():
+		var c: Vector3 = blocks[i]["center"]
+		if SIDES_BOTH and (Vector3(c.x, 0.0, c.z) - flat_click).dot(ahead) > FAR_SIDE_M:
+			far.append(i)
+		else:
+			near.append(i)
+	if far.is_empty() or near.is_empty():
+		result = _lay_side(blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg)
+	else:
+		var near_blocks: Array = near.map(func(i: int) -> Dictionary: return blocks[i])
+		var far_blocks: Array = far.map(func(i: int) -> Dictionary: return blocks[i])
+		var near_laid := _lay_side(near_blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg)
+		var deepest := 0.0
+		for block: Dictionary in blocks:
+			deepest = maxf(deepest, float(block.get("travel_depth", block.get("depth", 0.0))) if passing else column_depth(block))
+		var far_click := flat_click + ahead * (deepest + GAP_M)
+		var far_laid: Array[Vector3] = []
+		if (clamp.call(far_click) as Vector3).distance_to(far_click) <= 1.0 and (not reached.is_valid() or bool(reached.call(far_click))):
+			# Read across the far side's own way in (-across): the click's sides swap.
+			far_laid = _lay_side(far_blocks, far_click, -ahead, _within_click(width_at.call(far_click, -across), [at_click[1], at_click[0]]),
+					width_at, clamp, Callable(), reached, passing, false)
+		if near_laid.is_empty() or far_laid.is_empty():
+			result = _lay_side(blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg)
+		else:
+			result.resize(blocks.size())
+			for k in near.size():
+				result[near[k]] = near_laid[k]
+			for k in far.size():
+				result[far[k]] = far_laid[k]
+			columns_two_sided += 1
+	columns_laid += 1
+	return result
+
+
+## G1: one side's column (v1-v5's lay, every squad): ranks back from `flat_click` along -`ahead`, squeezed when too long;
+## [] when no squeeze fits.
+static func _lay_side(blocks: Array, flat_click: Vector3, ahead: Vector3, at_click: Array, width_at: Callable, clamp: Callable,
+		path_back: Callable, reached: Callable, passing: bool, leg: bool) -> Array[Vector3]:
+	var result: Array[Vector3] = []
 	var widest := 0.0
 	var deepest := 0.0
 	for block: Dictionary in blocks:
@@ -437,11 +500,6 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	# G2 v2: and never further back than the road runs (his route's first click): the ranks squeeze instead.
 	if leg and ROUTE_CORNER and road.size() >= 2:
 		room = minf(room, _arc_of(road, road[road.size() - 1]))
-	# Every squad already within COLUMN_NEAR_M of the click: no approach to stack along (the same trace: re-laid, they only
-	# shuffled sideways); today's body stands.
-	if float(by_along[by_along.size() - 1][0]) < COLUMN_NEAR_M:
-		bodies_kept += 1
-		return result
 	# G2 v2: on a leg, ranks behind the road's first corner stand centred on it.
 	var corner := _first_turn_arc(road) if leg and ROUTE_CORNER else INF
 	for attempt in COLUMN_SQUEEZES + 1:
@@ -450,8 +508,15 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 		if not laid.is_empty():
 			result = laid
 			break
-	columns_laid += 1
 	return result
+
+
+## G1 v6 (round 40): `--group-sides=both` lays squads standing past the click on their own side (OFF until its bar).
+static var SIDES_BOTH := OS.get_cmdline_user_args().has("--group-sides=both")
+## G1 v6: how far past the click (along the approach) a squad's centre stands to count as on the far side.
+const FAR_SIDE_M := 15.0
+## Measurement (G1 v6): columns laid on both sides of the click.
+static var columns_two_sided := 0
 
 
 ## G1: a group already this close to the click (every squad, along the approach) keeps today's body: the terminus route's
