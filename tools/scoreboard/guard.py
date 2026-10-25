@@ -3,6 +3,7 @@
 
     python3 tools/scoreboard/guard.py RAW [RAW2 ...] [--json]
     python3 tools/scoreboard/guard.py --pair BASE ARM     (a rule's bar: the same fights, arm v base)
+    python3 tools/scoreboard/guard.py --by-unit RAW ... | --by-unit --pair BASE ARM   (round 40: per faction and unit type)
 
 RAW is a guard-run output folder (build/guards/ or a copy: <kind>/<arena>-<seed>-<side>.log, each with one GUARD_RESULT
 line). Several RAWs are seed blocks of ONE main (2601+, 2701+): their fights pool into the line, and the noise is sized
@@ -271,12 +272,122 @@ def render_pair(report):
     return "\n".join(out)
 
 
+# ---- Round 40 (native N2): the per-unit summary (GUARD_RESULT's `units`, CP40.0) ------------------------------------------------
+# Per faction and unit type, every fight pooled (both sides, every line): how many fielded, their credits, kills, the credits they
+# killed, losses, the credits lost, shield + hull dealt and taken (enemies only), and each per credit fielded. Rows without `units`
+# (older mains) are counted and skipped. "*" is the faction's whole army.
+UNIT_SUMS = ("fielded", "credits", "kills", "killed_value", "losses", "lost_value", "dealt", "taken")
+UNIT_RATES = ("kills_pkc", "killed_value_pc", "lost_value_pc", "dealt_pc", "taken_pc", "survived")
+
+
+def _unit_groups(fights):
+    """{(faction, type): sums} and the per-seed sums {seed: {(faction, type): sums}} over fights that carry `units`."""
+    total, per_seed, skipped = {}, {}, 0
+    for f in fights:
+        units = (f["r"] or {}).get("units")
+        if not units:
+            skipped += 1
+            continue
+        rows = [u for side in ("green", "rust") for u in units.get(side, [])]
+        cost = {u["id"]: float(u["cost"]) for u in rows}
+        killed = {}
+        for u in rows:
+            if int(u.get("death", -1)) >= 0 and u.get("killer") in cost:
+                killed[u["killer"]] = killed.get(u["killer"], 0.0) + float(u["cost"])
+        seed = per_seed.setdefault(f["seed"], {})
+        for u in rows:
+            add = {"fielded": 1, "credits": float(u["cost"]), "kills": int(u["kills"]), "killed_value": killed.get(u["id"], 0.0),
+                   "losses": 1 if int(u.get("death", -1)) >= 0 else 0,
+                   "lost_value": float(u["cost"]) if int(u.get("death", -1)) >= 0 else 0.0,
+                   "dealt": float(u["dealt"]), "taken": float(u["taken"])}
+            for key in ((u["faction"], u["type"]), (u["faction"], "*")):
+                for bucket in (total, seed):
+                    sums = bucket.setdefault(key, dict.fromkeys(UNIT_SUMS, 0))
+                    for k, v in add.items():
+                        sums[k] += v
+    return total, per_seed, skipped
+
+
+def unit_rates(sums):
+    """Per credit fielded: kills per 1000 credits, credits killed and lost a credit, damage dealt and taken a credit; and the
+    share of the fielded that lived."""
+    c = sums["credits"] or None
+    return {"kills_pkc": 1000.0 * sums["kills"] / c if c else None,
+            "killed_value_pc": sums["killed_value"] / c if c else None,
+            "lost_value_pc": sums["lost_value"] / c if c else None,
+            "dealt_pc": sums["dealt"] / c if c else None, "taken_pc": sums["taken"] / c if c else None,
+            "survived": 1.0 - sums["losses"] / sums["fielded"] if sums["fielded"] else None}
+
+
+def by_unit(fights):
+    total, _, skipped = _unit_groups([f for f in fights if f["r"] is not None])
+    groups = {"%s %s" % k: dict(total[k], **unit_rates(total[k])) for k in sorted(total)}
+    return {"groups": groups, "fights_without_units": skipped}
+
+
+def by_unit_pair(base_roots, arm_roots):
+    """Each group's rates base -> arm on the fights both runs have, with the paired se from the per-seed differences."""
+    def key(f):
+        return (f["kind"], f["arena"], f["seed"], f["side"])
+    base = {key(f): f for f in read(base_roots) if f["r"] is not None and f["r"].get("units")}
+    arm = {key(f): f for f in read(arm_roots) if f["r"] is not None and f["r"].get("units")}
+    keys = sorted(k for k in arm if k in base)
+    tb, sb, _ = _unit_groups([base[k] for k in keys])
+    ta, sa, _ = _unit_groups([arm[k] for k in keys])
+    groups = {}
+    for g in sorted(set(tb) & set(ta)):
+        rb, ra = unit_rates(tb[g]), unit_rates(ta[g])
+        out = {"fielded": {"base": tb[g]["fielded"], "arm": ta[g]["fielded"]}}
+        for m in UNIT_RATES:
+            diffs = []
+            for seed in sb:
+                if g in sb[seed] and g in sa.get(seed, {}):
+                    b, a = unit_rates(sb[seed][g])[m], unit_rates(sa[seed][g])[m]
+                    if b is not None and a is not None:
+                        diffs.append(a - b)
+            out[m] = {"base": rb[m], "arm": ra[m], "diff": None if rb[m] is None or ra[m] is None else ra[m] - rb[m],
+                      "se": _se(diffs)}
+        groups["%s %s" % g] = out
+    return {"n": len(keys), "seeds": len({k[2] for k in keys}), "groups": groups}
+
+
+def render_by_unit(report):
+    out = ["BY UNIT (%d fights without per-unit rows skipped): per faction and type, every line and side pooled; per credit "
+           "fielded" % report["fights_without_units"],
+           "  %-26s %7s %8s %6s %8s %8s %8s %8s %6s" % ("faction type", "fielded", "credits", "k/1kc", "killed/c", "lost/c",
+                                                        "dealt/c", "taken/c", "lived")]
+    for name, g in report["groups"].items():
+        out.append("  %-26s %7d %8d %6s %8s %8s %8s %8s %6s" % (name, g["fielded"], g["credits"], _num(g["kills_pkc"]),
+                   _num(g["killed_value_pc"], 3), _num(g["lost_value_pc"], 3), _num(g["dealt_pc"]), _num(g["taken_pc"]),
+                   _pct(g["survived"])))
+    return "\n".join(out)
+
+
+def render_by_unit_pair(report):
+    out = ["BY UNIT paired: %d fights (%d seeds); base -> arm (diff, se from the per-seed differences)" % (report["n"],
+                                                                                                      report["seeds"])]
+    for name, g in report["groups"].items():
+        parts = []
+        for m, digits in (("killed_value_pc", 3), ("lost_value_pc", 3), ("dealt_pc", 2), ("survived", 3)):
+            v = g[m]
+            parts.append("%s %s -> %s (%s, se %s)" % (m, _num(v["base"], digits), _num(v["arm"], digits),
+                         "n/a" if v["diff"] is None else "%+.*f" % (digits, v["diff"]), _num(v["se"], digits)))
+        out.append("  %s (fielded %d -> %d): %s" % (name, g["fielded"]["base"], g["fielded"]["arm"], "; ".join(parts)))
+    return "\n".join(out)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser()
     p.add_argument("raw", nargs="*")
     p.add_argument("--json", action="store_true")
     p.add_argument("--pair", nargs=2, metavar=("BASE", "ARM"))
+    p.add_argument("--by-unit", action="store_true", help="the per-unit summary (round 40, N2); with --pair, paired")
     args = p.parse_args(argv)
+    if args.by_unit:
+        report = by_unit_pair([args.pair[0]], [args.pair[1]]) if args.pair else by_unit(read(args.raw))
+        text = render_by_unit_pair(report) if args.pair else render_by_unit(report)
+        print(json.dumps(report, indent=1, sort_keys=True) if args.json else text)
+        return 0
     if args.pair:
         report = pair([args.pair[0]], [args.pair[1]])
         print(json.dumps(report, indent=1, sort_keys=True) if args.json else render_pair(report))

@@ -69,6 +69,38 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   their line's mean. Guards: blob and turtle lines not up; match length per line within +/-15 % (+/-20 % per faction); time-cap share not
   up; none line not worse; perf-judge; full check with the sim baseline adopted on purpose (orchestrator). Base read: round 39's OFF arm
   scores 17.4 (se 1.4).
+- **Bar T1, the deploy trigger (settle; FILED a03250e13, 2026-10-24 evening, before any number on 8001-8012; code = c074db72e's).** Arms
+  `main:--deploy-trace` v `settled:--deploy-arrive=settled,--deploy-trace`; `--giveway-chain` OFF and `--seat-route-clear` OFF both arms.
+  Workload: no-fight 12 street cells x 8001-8012 (576 squads an arm) + fight click cells 3-squad b1500 and 5-squad b3000 x 8001-8012.
+  **Deciding:** cap deploys <= 50 % of main, main >= 20. Judged guards: never-in total and per cell; per-cell all-in / end foreign /
+  crossed; all-in mean (runs in on both) <= x1.10 + 1 s; arrival-to-deploy mean <= main; squads twitching >= 15 m <= x1.1 + 2; first
+  shape, flips, places outside (the GATE read) <= main + 2; contacts; fights. Departure (stated with dev numbers, accepted): per-cell
+  twitch MEDIANS reported, not judged (an early halt moves a straggler's last approach into the probe's window; lab 3 n 2). Known risk:
+  terminus 5 route s6003 (Echo lost in dev). A pass = CP40.1.
+- **Bar G1 v6 (orders; FILED b4da041c4, 2026-10-24 evening, before any number on 8201-8212).** Arm = G1 v5's + `--group-sides=both`; judge
+  `orders_judge.py g1v4`, unamended. Deciding lines read the new corridor (R40.5); the old gate read reported beside them per cell, plus one
+  line naming the cells where main v main's read changed. builder0 light J4, main as it is (CP40.1 OFF both arms unless it lands first).
+  Known risk: terminus 5 route never-in (s3805 squad 1 in dev: the route's first plain click's whole-squad deal, R38.44; Alpha_3 wedged
+  in the x=0 street among parked squads t40-t90, both arms' legs identical).
+- **R40.9 (2026-10-24 evening) G3 v7 BLOCKED on its dev read; the redesign goes ahead.** Dev (builder2, 4c672deca, 3804-3809, n 6): pairs
+  < 12 m 25 -> 17 (bar 6.2), guards pass. Traced: (a) the moves onto Echo's road were v5's aside/back steps accepted by v6's seat check;
+  (b) on a route G3 runs BEFORE `_relay_previous_waypoint`, so every squad's road in starts from a stale previous waypoint (s6213 Echo
+  (-41.9, 40) v the relaid (-53.7, 70.5)). **Ruled:** orders builds G3 v8 = G3 after the relay (its own code), dev first; a bar on
+  8213-8224 only if the dev read passes.
+- **Bar S1 v3, per-crew corridors (settle; FILED da8dd1f61, 2026-10-24 evening, before any number on 8013-8024).** Arms
+  `main:--deploy-trace` v `v3:--seat-route-clear=v3,--deploy-trace`; giveway-chain OFF and T1 OFF both arms; round 39's S1 workloads and
+  judge `s1c` unamended (deciding: 5-squad never-in <= main - 1, main >= 2, none new). Lab (afd436ca3, builder0 light, n 1 a run, dev): all
+  six traced runs every squad in (main lost s3958, v2 lost three); all-in s6009 42.9 v 34.8 s (+8), the rest equal or faster.
+- **R40.10 (2026-10-24 evening) G2 v2c: no bar this round.** Orders' O4 re-read on main (dev 3801-3803, builder2) repeats round 39's dev
+  read 3 exactly (DEPLOY_HOLD doesn't act without losses); guards fail on 10 cells (end foreign, twitch). Write-up: stream/orders
+  f3df5390d. Its one later re-read: on top of settle's S1 v3 if that ships (end-foreign is S1's kind). G3 v8 built (5bc304738).
+- **Bar M1 v2, give-way limit with release (manoeuvre; FILED 479bf90f9, 2026-10-24 evening, before any number on 8101-8124).** Gate:
+  ee659b522's full check (with pair/native-chainrelease 18e5dbca8). Arms OFF v `--giveway-chain=v2`, native C++ path; T1 OFF, S1 OFF,
+  DEPLOY_HOLD ON both; this tree even if CP40.1 lands first. builder0 light J4. **A (census, 8101-8112, 36 fights):** deciding chained drift
+  ON <= 0.5x OFF and <= -2 se; G1-G4 as Bar M1. **B (probe, 8113-8124, 144 runs):** G5 never-in ON <= OFF (unamended); G6 as Bar M1; G7
+  last squad in JUDGED (paired mean <= +2.0 s; runs > 10 s later <= runs > 10 s earlier + 3). Judge `chain_judge.py --on-arm=v2
+  --d-ratio=0.5 --last-in` (6c28abd3e; reproduces round 39's verdict). Dev (7001-7008, builder0, 24 fights): drift 650.5 -> 140.7 m (0.22x,
+  -5.3 se); stuck deaths 162 -> 181.
 
 ## Rulings (round 40)
 

@@ -87,11 +87,42 @@ static func archetypes_for(faction: String) -> PackedStringArray:
 	return names
 
 
+## Round 40 (native N3, R40.2): `--unit-overrides=<path>` (a balance candidate's JSON, Units.apply_overrides), read ONCE at the
+## first army load, before any army is priced or any unit spawns. OFF by default: without the flag nothing is read. A bad file
+## is an error and changes nothing. `overrides_sha` (the file's sha256) is what GUARD_RESULT echoes.
+static var overrides_sha := ""
+static var _overrides_read := false
+
+
+static func ensure_overrides() -> void:
+	if _overrides_read:
+		return
+	_overrides_read = true
+	var path := ""
+	for arg in OS.get_cmdline_user_args():
+		if String(arg).begins_with("--unit-overrides="):
+			path = String(arg).split("=", true, 1)[1]
+	if path == "":
+		return
+	var text := FileAccess.get_file_as_string(path)
+	var doc: Variant = JSON.parse_string(text) if text != "" else null
+	if typeof(doc) != TYPE_DICTIONARY:
+		push_error("--unit-overrides=%s: not a JSON object (or unreadable)" % path)
+		return
+	var problem := Units.apply_overrides(doc)
+	if problem != "":
+		push_error("--unit-overrides=%s rejected: %s" % [path, problem])
+		return
+	overrides_sha = text.sha256_text()
+	print("UNIT_OVERRIDES applied from %s (sha256 %s)" % [path, overrides_sha])
+
+
 ## Load an army by name: "cpu" / "cpu:<archetype>" (generated from `seed_value` and `budget`), a name in
 ## res://doctrines/, or a full path. `faction` (L3, optional) restricts a CPU army to one faction's archetypes and
 ## units, and lets it grow past Doctrine.MAX_UNITS. Returns {"doctrine": Dictionary} or {"error": String}.
 static func load_army(name_or_path: String, seed_value: int, budget: int = Units.DEFAULT_BUDGET,
 		faction: String = "") -> Dictionary:
+	ensure_overrides()
 	if is_cpu(name_or_path):
 		var archetype := name_or_path.trim_prefix("cpu:")
 		if archetype.begins_with(MONO_PREFIX):
