@@ -55,7 +55,7 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### CLOSE REPORT (round 40, 2026-10-25 ~08:00 PDT)
+### CLOSE REPORT (round 40, 2026-10-25 ~08:00 PDT): done for the round
 
 **Done:** every backlog item.
 1. **M1 v2:** built OFF; its code is on main (65a5c5b70).
@@ -108,6 +108,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 **Questions for the lead:** none.
 
+**Round-41 items (the orchestrator, 2026-10-25):**
+1. **M1 v3, own-squad-arriving reach:** limit a parked crew's give-way reach only while its OWN squad is still arriving. The chain
+   drift is the arrivals' cost; a parked squad making way for a later squad is the job. From the G5 trace, where Bar M1 v2's
+   regressions were last squads threading through squads already parked at the objective. Not built.
+2. **M3, count only unparked crews:** the long-episode measure should exclude arrived, parked crews ("stuck while ordered to move").
+   Bar M3's ON 71.6 s was a crew ARRIVED for 2054 of 2147 ticks. Lesson: "fewer but not shorter" (65 -> 51 episodes, flat seconds).
+3. **M3, slice the scan:** the re-route's first search runs whole on one physics tick (16 k expansions a fight on Bar M3's ON).
+   Slice it, or budget it per tick, before any ON.
+4. **M3, widen the planner past wheels:** hover and tracked askers, since hover crews held the longest stalls (lab 3's s7004 and
+   M2's sumps s7004). Filed for later, not M3's scope.
+
 **Playtest commands** (both OFF by default):
 - `make skirmish ARENA=locks SKIRMISH_FLAGS="--giveway-reroute=any"` against without: squads threading a street past parked friends.
 - `--giveway-chain=v2` is M1 v2, also OFF.
@@ -116,7 +127,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - Everything ships DEFAULT_OFF; OFF behaviour is unchanged (sim-baseline unmoved on b21565b37).
 - Files: game/ai/planner/{planner_seam,planner_nav_world}.gd (the M3 grant), game/ai/traffic.gd, movement.gd's drive (one
   `planned_leg` gate), tests/test_traffic_reroute.gd (13 tests), tests/manoeuvre/reroute_judge.py.
-- Green: b21565b37 (builder0, 3219 / 0); the final commit's check is named below.
+- Green: b21565b37 (builder0, 3219 / 0). The orchestrator merged the tip 68a70aba2 (docs only on top of it) and stopped the
+  docs-only final check before it started (it was waiting on balance's builder0 lock); no other check ran.
 - Raw data: `~/overnight-manoeuvre/r40/` (m3lab1-3, m3t7004, barm3).
 
 **Start (worker, 2026-10-24 evening):** stream/manoeuvre = main 33a2cc285 + round-40 docs (afce35a74); code = 68d0410d3, GREEN
