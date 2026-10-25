@@ -143,6 +143,8 @@ struct N {
 			// Round 39 (manoeuvre M1, `givewaychain`)
 			face_slot{ "face_slot" }, chain_in_play{ "chain_in_play" }, chain_spots_skipped{ "chain_spots_skipped" },
 			chain_refusals{ "chain_refusals" },
+			// Round 40 (manoeuvre M1 v2, `chainrelease`)
+			chain_releases{ "chain_releases" }, chain_holds_refused{ "chain_holds_refused" }, of{ "of" },
 			// fast paths
 			game_match{ "game_match" }, tick{ "tick" }, think_offset{ "think_offset" }, _stride{ "_stride" },
 			_fire_detour{ "_fire_detour" }, _fire_checked_tick{ "_fire_checked_tick" }, _kturn_check{ "_kturn_check" },
@@ -2098,7 +2100,9 @@ struct Drive {
 	// Round 39 (manoeuvre M1, `givewaychain`): Movement._chain_reach(), as [seat, reach] through out-parameters. In play when
 	// the switch is on (a tree without CHAIN_M: never), the crew has a seat (yield_seat(): its move_to point, else ctl.face_slot),
 	// it is not under way on a move_to of its own, and it stands more than CHAIN_M off that seat; reach = off_seat + CHAIN_SLACK_M.
-	bool chain_in_play(Vector3 &seat, double &reach) {
+	// Round 40 (M1 v2, `chainrelease`; a tree without CHAIN_RELEASE_TICKS: never): not in play when the asker is wedged
+	// (Movement._chain_asker_wedged), counted in chain_releases.
+	bool chain_in_play(Vector3 &seat, double &reach, const String &asker) {
 		static const String givewaychain("givewaychain"), type("type"), move_to("move_to"), arrived("arrived"), x("x"), z("z");
 		if (!c.chain_ready || traffic_off(givewaychain)) {
 			return false;
@@ -2118,8 +2122,36 @@ struct Drive {
 		if (off_seat <= c.CHAIN_M) {
 			return false;
 		}
+		if (chain_release_on() && chain_asker_wedged(asker)) {
+			sadd(k.chain_releases, 1);
+			return false;
+		}
 		reach = off_seat + c.CHAIN_SLACK_M;
 		return true;
+	}
+
+	// Movement.chain_release_on(): `chainrelease` not off (a tree without CHAIN_RELEASE_TICKS: off, the round-39 rule).
+	bool chain_release_on() {
+		static const String chainrelease("chainrelease");
+		return c.CHAIN_RELEASE_TICKS >= 0 && !traffic_off(chainrelease);
+	}
+
+	// Movement._chain_asker_wedged(asker): ctl.tanks_root's `asker` has a Movement (Movement.of) whose stalled_ticks reached
+	// Movement.chain_release_ticks() (the value in force, configured).
+	bool chain_asker_wedged(const String &asker) {
+		if (asker.is_empty()) {
+			return false;
+		}
+		Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+		if (root == nullptr) {
+			return false;
+		}
+		Node *other = root->get_node_or_null(NodePath(asker));
+		if (other == nullptr || Object::cast_to<Object>(other)->get(k.unit_id).get_type() != Variant::STRING) {
+			return false; // `as Tank`: not a hull
+		}
+		Object *mover = script->call(k.of, other).get_validated_object();
+		return mover != nullptr && (int64_t)mover->get(k.stalled_ticks) >= c.CHAIN_RELEASE_TICKS;
 	}
 
 	// Movement._chain_far(chain, point): a spot farther from the seat than the reach (counted as skipped).
@@ -3013,10 +3045,11 @@ bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vecto
 	// Round 39 (manoeuvre M1, `givewaychain`): a parked crew already pushed off its seat takes no spot farther from it.
 	Vector3 chain_seat = V3_INF;
 	double chain_reach = 0.0;
-	const bool chain = chain_in_play(chain_seat, chain_reach);
+	const bool chain = chain_in_play(chain_seat, chain_reach, other);
 	if (chain) {
 		sadd(k.chain_in_play, 1);
 	}
+	const int64_t chain_skipped = chain ? (int64_t)sget(k.chain_spots_skipped) : 0;
 	for (int64_t s = 0; s < c.YIELD_SPOTS.size(); s++) {
 		const Vector2 spot = c.YIELD_SPOTS[s];
 		const double flips[2] = { side, -side };
@@ -3091,6 +3124,12 @@ bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vecto
 		return true;
 	}
 	if (v._yield_unfit_last() && c.yield_fit && c.yield_hold) {
+		// Round 40 (M1 v2, chainrelease): a hold the reach left as the only answer is refused, so the asker can ask again.
+		if (chain && chain_release_on() && (int64_t)sget(k.chain_spots_skipped) > chain_skipped) {
+			sadd(k.chain_holds_refused, 1);
+			sadd(k.chain_refusals, 1);
+			return false;
+		}
 		sadd(k.yield_holds, 1);
 		start_yield(other, here, along, hold);
 		return true;

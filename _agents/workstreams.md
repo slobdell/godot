@@ -54,17 +54,131 @@ project's workers (plane_maker): never touch processes you didn't start.
 - **C40.3 orders judges G1 on CP40.1;** G3 v7 and G2 judge on main as it is.
 - **C40.4 = C39.4 (rule constants, GRANT to balance).** A constant moves only to his number or under a filed bar; R1's dwell stays 2.0
   until he answers.
-- **C40.5 Unit stats and the army deal (GRANT to balance, LEAD-GATED).** `game/units/**` changes on main only after his answer to B2;
-  tooling, overrides behind native's OFF flag, and reads are free.
+- **C40.5 Unit stats and the army deal (GRANT to balance; his answer R40.1).** `game/units/**` unit numbers may change within +/-15 % of
+  today's (toughness, damage, cost), per unit; no new abilities, no unit added or removed. A stat change ships under a filed bar on fresh
+  seeds (the faction table flatter, guards on the blob/turtle lines and the none line).
 
 ## Bars (round 40)
 
 **Seed registry (round 40):** 8001-8024 settle (T1 8001-8012, S1 v3 8013-8024); 8101-8124 manoeuvre; 8201-8236 orders (G1 v6 8201-8212,
-G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 7001-7008 manoeuvre's M2 dev trace (not a bar).
+G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 (wedge re-route, R40.12); 7001-7008 manoeuvre's M2 dev trace (not a bar).
+
+- **Bar B2s, the stat change (balance; FILED d479a17a1, 2026-10-24 evening, before any number on 8301-8340 + 8401-8440).** Change: the
+  candidate B4 picks (unit hp/armour/damage/cost within R40.1's +/-15 %). Deciding: FLATNESS (RMS over 16 cells: by guard faction and by
+  CPU faction, blob and turtle lines, minus the line mean; se by seed bootstrap) down by > 2 paired se, AND both outlier cells move toward
+  their line's mean. Guards: blob and turtle lines not up; match length per line within +/-15 % (+/-20 % per faction); time-cap share not
+  up; none line not worse; perf-judge; full check with the sim baseline adopted on purpose (orchestrator). Base read: round 39's OFF arm
+  scores 17.4 (se 1.4).
+- **Bar T1, the deploy trigger (settle; FILED a03250e13, 2026-10-24 evening, before any number on 8001-8012; code = c074db72e's).** Arms
+  `main:--deploy-trace` v `settled:--deploy-arrive=settled,--deploy-trace`; `--giveway-chain` OFF and `--seat-route-clear` OFF both arms.
+  Workload: no-fight 12 street cells x 8001-8012 (576 squads an arm) + fight click cells 3-squad b1500 and 5-squad b3000 x 8001-8012.
+  **Deciding:** cap deploys <= 50 % of main, main >= 20. Judged guards: never-in total and per cell; per-cell all-in / end foreign /
+  crossed; all-in mean (runs in on both) <= x1.10 + 1 s; arrival-to-deploy mean <= main; squads twitching >= 15 m <= x1.1 + 2; first
+  shape, flips, places outside (the GATE read) <= main + 2; contacts; fights. Departure (stated with dev numbers, accepted): per-cell
+  twitch MEDIANS reported, not judged (an early halt moves a straggler's last approach into the probe's window; lab 3 n 2). Known risk:
+  terminus 5 route s6003 (Echo lost in dev). A pass = CP40.1.
+  **VERDICT PASS (2026-10-25 ~00:30, afd436ca3's code, builder0 light J4, 8001-8012, full re-run after the crash, every part complete:
+  576 squads, 36/36 fights both reads, 0 unstarted).** Deciding: cap deploys 265 -> 83 (31 %). Guards: arrival-to-deploy 6.26 -> 4.42 s;
+  never-in 3 -> 1; all-in mean 28.6 -> 29.0 s (<= 32.4); twitch >= 15 m 113 -> 110; places outside (gate) 80 -> 80; flips 0 -> 0; first
+  shape 6/576; contacts 13,576 -> 13,394; fights 3-squad kills 4.69 -> 5.11, losses 7.06 -> 6.72; 5-squad 10.00 -> 9.56, 12.86 -> 12.97.
+  Ships `--deploy-arrive=settled` ON (`=off` escape) on a new hash with one full check = CP40.1.
+- **Bar G1 v6 (orders; FILED b4da041c4, 2026-10-24 evening, before any number on 8201-8212).** Arm = G1 v5's + `--group-sides=both`; judge
+  `orders_judge.py g1v4`, unamended. Deciding lines read the new corridor (R40.5); the old gate read reported beside them per cell, plus one
+  line naming the cells where main v main's read changed. builder0 light J4, main as it is (CP40.1 OFF both arms unless it lands first).
+  Known risk: terminus 5 route never-in (s3805 squad 1 in dev: the route's first plain click's whole-squad deal, R38.44; Alpha_3 wedged
+  in the x=0 street among parked squads t40-t90, both arms' legs identical).
+- **R40.9 (2026-10-24 evening) G3 v7 BLOCKED on its dev read; the redesign goes ahead.** Dev (builder2, 4c672deca, 3804-3809, n 6): pairs
+  < 12 m 25 -> 17 (bar 6.2), guards pass. Traced: (a) the moves onto Echo's road were v5's aside/back steps accepted by v6's seat check;
+  (b) on a route G3 runs BEFORE `_relay_previous_waypoint`, so every squad's road in starts from a stale previous waypoint (s6213 Echo
+  (-41.9, 40) v the relaid (-53.7, 70.5)). **Ruled:** orders builds G3 v8 = G3 after the relay (its own code), dev first; a bar on
+  8213-8224 only if the dev read passes.
+- **Bar S1 v3, per-crew corridors (settle; FILED da8dd1f61, 2026-10-24 evening, before any number on 8013-8024).** Arms
+  `main:--deploy-trace` v `v3:--seat-route-clear=v3,--deploy-trace`; giveway-chain OFF and T1 OFF both arms; round 39's S1 workloads and
+  judge `s1c` unamended (deciding: 5-squad never-in <= main - 1, main >= 2, none new). Lab (afd436ca3, builder0 light, n 1 a run, dev): all
+  six traced runs every squad in (main lost s3958, v2 lost three); all-in s6009 42.9 v 34.8 s (+8), the rest equal or faster.
+- **R40.10 (2026-10-24 evening) G2 v2c: no bar this round.** Orders' O4 re-read on main (dev 3801-3803, builder2) repeats round 39's dev
+  read 3 exactly (DEPLOY_HOLD doesn't act without losses); guards fail on 10 cells (end foreign, twitch). Write-up: stream/orders
+  f3df5390d. Its one later re-read: on top of settle's S1 v3 if that ships (end-foreign is S1's kind). G3 v8 built (5bc304738).
+- **Bar M1 v2, give-way limit with release (manoeuvre; FILED 479bf90f9, 2026-10-24 evening, before any number on 8101-8124).** Gate:
+  ee659b522's full check (with pair/native-chainrelease 18e5dbca8). Arms OFF v `--giveway-chain=v2`, native C++ path; T1 OFF, S1 OFF,
+  DEPLOY_HOLD ON both; this tree even if CP40.1 lands first. builder0 light J4. **A (census, 8101-8112, 36 fights):** deciding chained drift
+  ON <= 0.5x OFF and <= -2 se; G1-G4 as Bar M1. **B (probe, 8113-8124, 144 runs):** G5 never-in ON <= OFF (unamended); G6 as Bar M1; G7
+  last squad in JUDGED (paired mean <= +2.0 s; runs > 10 s later <= runs > 10 s earlier + 3). Judge `chain_judge.py --on-arm=v2
+  --d-ratio=0.5 --last-in` (6c28abd3e; reproduces round 39's verdict). Dev (7001-7008, builder0, 24 fights): drift 650.5 -> 140.7 m (0.22x,
+  -5.3 se); stuck deaths 162 -> 181.
+- **Bar G3 v9, road as wide as its column (orders; FILED 893180a31, 2026-10-25 ~01:10, before any number on 8213-8224).** Arm = v8's +
+  `--place-clear-lane=column`, base `main:`; judge `orders_judge.py g3` unamended from G3 v6; frozen tree at the green hash; every
+  G1/G2/T1/S1 switch OFF both arms. Known risk: G3 v6's crossing 5 route never-in / twitch. Dev (builder2 J4, 9076ee2f8, 3804-3809, n 6):
+  pairs < 12 m 25 -> 6 (bar <= 6.2, thin), never-in 1 -> 1, all 18 cells pass. **Lane (C40.1, one judged series per builder):** builder2
+  has G1 v6, so G3 v9 runs in builder0's light lane manoeuvre's M1 v2 frees.
+- **R40.11 (2026-10-24 ~22:20 PDT) builder0 crashed (the lead force-restarted it); a load cap.** At the crash builder0 carried a full check
+  plus three light lanes (load ~25 on 12 CPUs); orders' b4da041c4 check had already gone RED from load alone (combat-smoke and
+  native-verify-scenarios killed by the watchdog at ~80 min, perf-judge refused 2.44x). **Ruled:** while a full check runs on builder0, at
+  most TWO light lanes run there (J<=4 each); a third waits or goes to builder2. Lost runs re-run on the same tree and seeds (deterministic);
+  a series re-runs only its incomplete parts and notes the restart. A bar whose series tree moves to a descendant states, in Status, that
+  `git diff <bar code> <tree> -- game/` touches only OFF-switch paths.
+  **Cause found (native, 2026-10-24 ~22:35):** not the load. stream/native 6538aa16a's slot.sh exec'd a dry run (`make -n`) without
+  TANK_SQUAD_SLOT, so the inner make re-entered slot.sh: unbounded recursion (>= 6,388 makes on builder0, OOM from 22:04, thrash to the
+  22:20 poweroff; 15,228 on builder2, killed 05:26 UTC). Only native's own folder ran it; main's slot.sh is unaffected. **Do not merge
+  6538aa16a or pair/native-guard-sides 0b6734709.** Fix: the dry run sets TANK_SQUAD_SLOT before exec + a test running a real recursive
+  make under timeout; 2495c6967 raises remote jobs' oom_score_adj to 500. The two-lane cap stays (orders' RED check was the load).
+- **R40.12 (2026-10-24 ~23:20) manoeuvre's M3 = a wedged asker re-routes round its holder (holdrelease withdrawn).** Manoeuvre's code
+  read (847429f96): a hold happens only when no spot fits the holder, so ending it early opens nothing; the 20 s wedges are YIELD_RETRIES
+  re-asks into the same hold. M2 (7001-7008, 24 fights, all OFF): 37 long episodes, no deaths, CPU 23 / his side 14, artillery ~half; a
+  "looks dumb" item (his bar: units must look smart). **Ruled:** M3 (a) a planner re-route of the wedged asker with the holder as an
+  obstacle, OFF, after Bar M1 v2's series; lab first on M2's 8 longest episodes (sumps s7004 Battery_1 first), then a bar on 8601-8624.
+  **GRANT to manoeuvre:** `game/ai/planner/**` for M3 (balance's by default; balance isn't working there this round).
+- **R40.13 (2026-10-24 ~23:50) A judged series runs ONE frozen tree.** Orders' Bar G1 v6 parts re-synced its moving worktree (c7d642aeb,
+  then 9076ee2f8's G3 v9, unreachable OFF code). **Ruled:** every judged series runs from a side worktree at its named green hash
+  (doctrine's round-39 `d3-tree` pattern); parts that ran on another commit re-run from it. G1 v6's parts move to builder2 (builder0 held
+  main's check + three lanes). G3 v8 dev read FAILED (5bc304738, builder2 J4, 3804-3809, n 6: pairs < 12 m 25 -> 10, bar 6.2; the road
+  test reads each road 17-20 m wide); G3 v9 `--place-clear-lane=column` (9076ee2f8, OFF) dev-reads next. Main check of 5a9743c2c running on
+  builder0 (synced before 65a5c5b70's merge, so manoeuvre's M1 v2 OFF needs the next batch check).
 
 ## Rulings (round 40)
 
-_(none yet)_
+- **R40.1 (2026-10-24 evening) His faction-balance call: A.** Verbatim in game_design.md *His faction-balance call*: "yes, when a faction
+  keeps losing, we should change its units' numbers. Obviously the game should be balanced. ... every time I play with the gang I seem to
+  lose. Yes let's go with A". Unit numbers within +/-15 % (toughness, damage, cost); rosters and abilities fixed. C40.5 un-gated. His R1
+  answer: keep ~3 s to full sight ("sounds fine"); HALT_DWELL_SECONDS stays 2.0.
+- **R40.2 (2026-10-24 evening) N3's overrides shape = balance's (absolute values through Units.tuning / apply_tuning).** Balance's B1
+  (b8c8cfca2, tally of round 39's OFF arm, 773412e49, builder2, 1600 fights): killed value per credit syndicate 0.84, condemned 0.64,
+  law 0.54, gangs 0.36; gangs' Gun Truck 0.02 kills a unit (12 % survive), Resupply Tanker 0.10, War Rig 0.33; syndicate Railgun 5.12
+  (kill ratio 16), Missile Ring 2.65; gangs fields 43.4 of the 45-unit cap, so its lever is hp/armour/damage, not cost. Shape:
+  `{"units": {"<id>": {"max_health", "max_shield", "cost", "armor": {"front","side","rear"}}}, "weapons": {"<id>": {"damage"}}}`,
+  loaded via the existing `--tune` path. **GRANT to native (N3):** `Units.cost_of` and `army.gd`'s deal honour a tuned cost (additive;
+  default unchanged), and GUARD_RESULT echoes a hash of the overrides. Multipliers (native's brief) are dropped.
+- **R40.3 (2026-10-24 evening) GRANT to balance: weapon `damage` values in `game/combat/weapons.gd`** (constants only, within R40.1's
+  +/-15 %; his bounds name damage). Balance's own rule stands: no damage change on a weapon two factions share (laser, autocannon,
+  machine_gun). Seeds 8501-8540 registered as balance's B4 screening block (dev).
+- **R40.4 (2026-10-24 evening) C40.3 relaxed: orders' G1 v6 does not wait on CP40.1.** Settle's T1 dev read (1327f85ef, builder0 light J4,
+  terminus his-5 click, 6201-6212, n 12 an arm): `--deploy-arrive=near` changes nothing (worst twitch 13.8 / 13.8 m main; 28.4 / 28.4
+  column, identical every seed). Traced s6201: the cap's blocker is Bravo_1 7.94 m off (in at t3, then walked off by an ADVANCE brain
+  option); the 28.4 m twitch is Bravo_2's 24 m deploy leg to the herringbone's far seat, after the probe's 8 s window. So round 39's
+  reading (G1 v5's guard = settle's trigger) was wrong; the twitch goes to orders. Main deploys on the 10 s cap for 311/768 street squads
+  (40 %) and 48/96 his-click squads (e7c896c8f's rows): that is the "sits 10 s"; settle traces every cap deploy before picking T1's rule.
+- **R40.5 (2026-10-24 evening) orders' traces: G1 v5's his-5 twitch is its own lay; locks 5 "outside" is a probe artifact.** (1) s6201
+  (e7c896c8f's logs): Alpha starts 29 m WEST of the click, v5's column gives it the 2nd place 34 m EAST, so it drives 62 m through Bravo's
+  halt; Bravo_2 gives way t1-t10, Bravo deploys on the cap. Fix G1 v6 `--group-sides=both` (88b413ec4, OFF): a squad > 15 m past the click
+  is laid on its own side; the untangle never hands a place across the click. (2) locks 5 s6204-6207: the probe's gate_width scan stops at
+  a floodlight's navmesh hole, counting two squads on one open quay as "outside"; the probe now reads past obstacles <= 8 m (c08d8f720;
+  `--probe-corridor=gate` = the old read; the game's gate_width callers unchanged). **Ruled:** the G1 v6 bar decides on the new read and
+  REPORTS the old read beside it for every cell (an instrument change is never judged on its own new number alone); settle's and
+  manoeuvre's bars that use orders' probe name which corridor read they judge on.
+- **R40.6 (2026-10-24 evening) Combined arms is a balance goal (his note, verbatim in game_design.md *His combined-arms note*).** He won more
+  easily with 100 % tanks. Balance adds B5: a mono-army line (all-tank v mixed, same faction, same budget) measured first; target mixed
+  beats mono ~60-65 %. Bar B2s may add ONE guard before any number on its seeds: the mono-tank line's win rate not up (the stat change
+  must not widen the all-tank edge). Counters within +/-15 %; past the bounds = his call.
+- **R40.7 (2026-10-24 evening) B2s guard G8 filed; B5's mono deal.** Bar B2s gains G8 (the mono-tank line's win share not up), filed at
+  balance 16bfd1cc6 before any bar-seed number. B5 deals mono armies in `Army.cpu_army("cpu:mono_<role>")` (C40.5; measurement only, never
+  in ARCHETYPES). **GRANT to balance:** one additive line in `game/modes/skirmish_mode.gd` (demo_flags keeps an explicit --player/--enemy
+  that starts with "cpu:mono_"); default path unchanged. The line: CPU v CPU, mono on Green one arm / Rust the other, per faction, v the
+  SAME faction's normal deal at the same budget, 8501-8510 (screening).
+- **R40.8 (2026-10-24 evening) settle's cap-deploy census: ADVANCE walks crews off their station.** Lab 2 (754fee377, builder0 light J4,
+  main arm, 12 street cells x dev 6003-6004, 96 squads): 47 cap deploys; of the 45 crews that WERE in (<= 3.5 m) and drifted off, 20 were
+  on ADVANCE, 19 HOLD, 6 MOVE. Settle's T1 v2 `--deploy-arrive=settled` (a once-in crew within 10 m counts) works round it (cap deploys
+  47 -> 5, arrival-to-deploy 6.8 -> 3.5 s, all-in median 25.1 -> 23.6 s; one never-in fixed at c074db72e, re-lab running). The ADVANCE
+  drift itself is balance's (brains), a later item (B6) after B2s/B5: a crew still being dealt its travel seat shouldn't take ADVANCE.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 

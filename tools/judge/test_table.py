@@ -22,6 +22,15 @@ class Table(unittest.TestCase):
         cls.rows = table.table_rows(ROOT)
         cls.by = {(r["probe"], r["metric"]): r for r in cls.rows}
 
+    def test_the_guard_line_win_share_reads_the_printed_se(self):
+        # Round 40: the blob's win share at 160 fights a line reads se ~3.3 points, as the rulings printed (2.9-3.8, R38.14 /
+        # R38.41 / R39); a 4-point move needs ~660 a line (why D3's powered series ran 800).
+        r = self.by[("guard line, blob (a fight)", "win")]
+        self.assertAlmostEqual(r["se_today"], 0.0327, places=3)
+        self.assertTrue(600 <= r["n_needed"] <= 720, r["n_needed"])
+        self.assertEqual(probes.guard_fight_value({"side": "Rust", "role": "guard", "kills": {"rust": 3}}, "win"), 1.0)
+        self.assertEqual(probes.guard_fight_value({"side": "Rust", "role": "tactics", "kills": {"rust": 3}}, "kills"), 3.0)
+
     def test_every_spec_has_a_row(self):
         self.assertEqual(len(self.rows), len(probes.build(ROOT)))
         self.assertGreaterEqual(sum(1 for r in self.rows if r.get("n_needed")), 40)

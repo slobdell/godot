@@ -1100,10 +1100,11 @@ static func validate_entry(entry: Dictionary) -> String:
 	return ""
 
 
-## Points one army entry costs (0 for an unknown unit).
+## Points one army entry costs (0 for an unknown unit). Round 40 (R40.2): a tuned cost (`--tune=<unit>.cost=`, or a balance
+## candidate's `--unit-overrides`) is honoured, so the CPU's deal and the army's cost buy at the candidate's price.
 static func cost_of(entry: Dictionary) -> int:
 	var unit_id: Variant = entry.get("unit", "")
-	return int(PROFILES[unit_id]["cost"]) if typeof(unit_id) == TYPE_STRING and PROFILES.has(unit_id) else 0
+	return int(stat(unit_id, "cost")) if typeof(unit_id) == TYPE_STRING and PROFILES.has(unit_id) else 0
 
 
 ## Points a whole army (doctrine) costs.
@@ -1147,7 +1148,7 @@ static func roster_average_cost(faction: String) -> float:
 		return 0.0
 	var total := 0.0
 	for unit_id in ids:
-		total += float(PROFILES[unit_id]["cost"])
+		total += float(stat(unit_id, "cost"))  # R40.2: a tuned cost counts
 	return total / ids.size()
 
 
@@ -1389,6 +1390,48 @@ static func apply_tuning(spec: String) -> String:
 		else:
 			Weapons.tuning[parts[0]] = float(parts[1])
 	return ""
+
+
+## Round 40 (native N3, R40.2): a balance candidate's ABSOLUTE stats, into the same `tuning` as `--tune=`:
+##     {"units": {"gang_tank": {"max_health": 483, "cost": 160, "armor": {"front": 8.05}}}, "weapons": {"scrap_cannon": {"damage": 299}}}
+## Every unit, weapon and key must exist and hold a number (an armor facing one level down); nothing is written unless the whole
+## document is valid. Returns "" or the first problem. Read by Army.ensure_overrides from `--unit-overrides=<path>`.
+static func apply_overrides(doc: Dictionary) -> String:
+	var unit_writes := {}
+	var weapon_writes := {}
+	for top: Variant in doc:
+		if not ["units", "weapons"].has(top) or typeof(doc[top]) != TYPE_DICTIONARY:
+			return "overrides: expected {\"units\": {..}, \"weapons\": {..}}, got key '%s'" % top
+	for pass_name: String in ["units", "weapons"]:
+		var catalog: Dictionary = PROFILES if pass_name == "units" else Weapons.PROFILES
+		var writes := unit_writes if pass_name == "units" else weapon_writes
+		var section: Dictionary = doc.get(pass_name, {})
+		for id: Variant in section:
+			if not catalog.has(id) or typeof(section[id]) != TYPE_DICTIONARY:
+				return "overrides: no %s '%s'" % [pass_name.trim_suffix("s"), id]
+			var stats: Dictionary = section[id]
+			for key: Variant in stats:
+				var have: Variant = catalog[id].get(key)
+				if have == null:
+					return "overrides: no stat '%s.%s'" % [id, key]
+				if typeof(have) == TYPE_DICTIONARY:
+					if typeof(stats[key]) != TYPE_DICTIONARY:
+						return "overrides: '%s.%s' takes {facing: number}" % [id, key]
+					for sub: Variant in stats[key]:
+						if not (have as Dictionary).has(sub) or not _is_number(stats[key][sub]):
+							return "overrides: no number stat '%s.%s.%s'" % [id, key, sub]
+						writes["%s.%s.%s" % [id, key, sub]] = float(stats[key][sub])
+					continue
+				if not _is_number(have) or not _is_number(stats[key]):
+					return "overrides: '%s.%s' is not a number stat" % [id, key]
+				writes["%s.%s" % [id, key]] = float(stats[key])
+	tuning.merge(unit_writes, true)
+	Weapons.tuning.merge(weapon_writes, true)
+	return ""
+
+
+static func _is_number(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT
 
 
 ## A unit's armor on one face ("front"/"side"/"rear"), honoring `--tune=unit.armor.face=`.
