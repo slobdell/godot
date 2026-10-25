@@ -52,31 +52,76 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-24 evening)
-- **Plan (backlog order):** O1 trace (done) -> G1 v6 from the his-5 trace (built, lab running) -> O2 G3 v7 (built, s6220
-  trace running on builder2) -> full check of the tip -> file Bars G1 v6 / G3 v7 (before any number on 8201-8224) ->
-  bars (G1 v6 builder0 light J4, G3 v7 builder2) -> O4 G2 v2c re-read on 3801-3803. Ruled R40.5 (orchestrator): C40.3
-  relaxed, G1 v6 judges on main as it is unless CP40.1 lands first.
+### NOW (2026-10-24 night)
+- **Plan:** O1 done -> G1 v6 built + dev-read (deciding lines pass) -> full check of the tip -> **Bar G1 v6 (filed below)** on
+  builder0 light J4 -> O2 written up as blocked (dev read failed, cause traced, below) -> O4 G2 v2c re-read (running on
+  builder2, `tests/control/orders_g2.sh`) -> its bar if it holds. R40.5 (orchestrator): C40.3 relaxed, G1 v6 judges on
+  main as it is unless CP40.1 lands first; the probe's new corridor read decides, the old one is reported beside it.
+- **G1 v6 dev read 1** (builder0 light J4, 2eedf9f7f, dev seeds 3804-3806, n 3, `orders_bar.sh b0 g1v4`; evidence
+  `references/round40/orders/g1v6-dev1-builder0-2eedf9f7f/`): v6 v main passes every deciding line:
+  - places outside (click cells): new read 13 -> 1; old read 19 -> 1;
+  - route_left_m 684 -> 35 (old read 1116 -> 45);
+  - re-dealt 0; yard_open 48 of 48 rows identical; contacts 2996 -> 2315.
+  - **His 5 click: Bravo's twitch 28.4 -> 9.7 m, every squad in** (worst Alpha 14.2 v main's worst 13.8; probe guards pass).
+  - The read changed main v main only on his click (terminus_his 3 / 5: the floodlight-type post there too).
+  - **One guard fails: terminus 5 route never-in 0 v 1** (s3805 squad 1), the same cell and squad v4 / v5 failed in round
+    39's dev read. Traced (builder0 light, 3b4f03053, `--probe-trace=1`): every leg is identical across arms, and an arm
+    without `--group-whole=click` fails the same way. The difference is the crew deal: on the route's first plain click
+    G1 keeps squads whole, where main re-deals crews. Alpha_3 follows the legs into the x = 0 street and wedges at (7, 83)
+    from t 40 to t 90, among squads parked at (-7.5, 72) and (21.2, 84.5), still bound for (-28.6, 34.9). This is R38.44's
+    trade-off ending in a traffic wedge; not v6's two-sided lay. Carried as the bar's known risk.
+- **O2 G3 v7: BLOCKED (dev read FAILED; cause traced; switch OFF, no bar filed).** Dev read 1 (builder2 J14, 4c672deca,
+  dev seeds 3804-3809, n 6, `orders_bar.sh b2 g3`, evidence `references/round40/orders/g3v7-dev1-builder2-4c672deca/`):
+  every guard passes (never-in 1 -> 1, contacts 7183 -> 7025, 18 probe cells), but **deciding pairs < 12 m 25 -> 17**
+  (bar <= 6.2; v6's dev read 25 -> 4): the road test refuses moves next to every neighbour. Laptop traces (crossing 5
+  route s6213 / s6220, `--column-trace`; legs identical to the bar's):
+  - The moves that put Delta on Echo's road were **v5's aside/back steps, accepted by v6's seat check, not the step back
+    along the leg** (s6213: Delta (-66.9, 29.5) -> (-53.9, 38.8); s6220: (-68.6, 29.5) -> (-55.4, 38.5)). So v7 tests
+    every step.
+  - **On a route, G3 runs before `_relay_previous_waypoint` re-lays the previous waypoints.** Every squad's road in
+    starts from a stale point: s6213's Echo road started at (-41.9, 40), not its relaid (-53.7, 70.5). A road test on
+    those inputs is either too wide (dev read 1) or misses s6213 (a trimmed variant, laptop, not committed).
+  - **Next (a fresh version):** run place_clear on a shifted leg after the relay, reading roads from the relaid
+    waypoints; or G3 on plain clicks only. Both change v6's tested order of operations: a new design, not a tweak.
 - **O1 DONE (c08d8f720): locks 5 "places outside 8 -> 8" is the probe's corridor stopping at a floodlight, not G1.**
   Laptop trace (`--column-trace`, s6204-6207, n 1 each): his click lands on the open west quay 4-6 m east of the
   floodlight at (-14, 20). `gate_width` stops at the post's navmesh hole (corridor left 4-6 m, right 92-94 m), so the
   probe counts squads 1 and 2's places, 19.7 and 39.4 m west on the same quay, as outside. The column rightly keeps
-  today's body (`--group-clear=reached`: both reached straight by ground; bodies_kept 1 on all 12 bar runs). Fix,
-  measurement only: `gate_width(..., past_posts)` (default 0: every game caller unchanged); the probe reads past obstacles
-  <= `POST_SPAN_M` 8 m (`--probe-corridor=gate` = round 39's read). Test `test_control_corridor_posts` (builder0 light,
-  2/0): quay left 4 -> 100 m; the lock-house block still ends the read (20 m both). **R40.5:** the old read is reported
-  beside the new one (`*_gate` fields; the judge prints both per cell and the cells where main v main's read changed).
-- **G1 his-5 twitch (28.4 m, all 12 seeds) traced: G1 v5's own lay, not settle's trigger** (settle's T1: `--deploy-arrive=near`
-  changes nothing there). From round 39's e7c896c8f logs (s6201): the body comes in from the east, but Alpha starts at
-  (-58, 96), 29 m WEST of the click. v5's column (lead=drive) gives it the 2nd place at (4.3, 93.3), 34 m east, so Alpha
-  drives 62 m through Bravo's halt at the click. Bravo_2 backs off / gives way t1-t10 (main: straight in by t2), Bravo is
-  never all in, the halt deploys on the 10 s cap, and Bravo_2's 24 m leg to the far herringbone seat lands after the probe's
-  place window.
-- **G1 v6 `--group-sides=both` (88b413ec4, OFF):** a squad whose centre stands > 15 m past the click (along the approach)
-  is laid on its own side, a column out from the click the other way (front one rank past it); either side failing ->
-  v5's one-sided lay. `untangle_whole` counts `misplaced` (a place across the click from its squad) ahead of the lead
-  rule. Probe: `columns_two_sided`. Tests: builder0 light 30/0. Lab (builder0 light, his click 3/5, s6201-6202): running.
-- **O2 G3 v7 `--place-clear-lane=on` (1d7d2cddf, OFF):** v6's step back along the squad's own leg is refused where it
-  stands in the lane (vehicles -> place, half its width + half this squad's short side) of a squad placed before it
-  (longer drive = still to arrive); the given place is kept. Probe: `places_off_lanes`. Test (laptop 31/0). s6220 trace
-  (main / g3 v6 / g3 v7, squads 4 and 5, s6213 too): running on builder2.
+  today's body (`--group-clear=reached`; bodies_kept 1 on all 12 bar runs). Fix, measurement only:
+  `gate_width(..., past_posts)` (default 0: every game caller unchanged); the probe reads past obstacles <= `POST_SPAN_M`
+  8 m (`--probe-corridor=gate` = round 39's read). Test `test_control_corridor_posts` (builder0 light, 2/0). R40.5: the
+  probe reports the old read beside it (`anchor_outside_gate`, `route_out_gate_m`, `route_left_gate_m`), and
+  `orders_judge.py g1v4` prints both reads per cell plus the cells where main v main's read changed.
+- **G1 his-5 twitch traced: G1 v5's own lay, not settle's trigger.** From round 39's e7c896c8f logs (s6201): the body comes
+  in from the east, but Alpha starts at (-58, 96), 29 m WEST of the click. v5's column (lead=drive) gives it the 2nd
+  place, 34 m east, so Alpha drives 62 m through Bravo's halt at the click. Bravo gives way t1-t10, is never all in, and
+  deploys on the 10 s cap; Bravo_2's 24 m leg falls after the probe's place window.
+- **G1 v6 `--group-sides=both` (88b413ec4 + 2eedf9f7f, OFF):** a squad whose centre stands > 15 m past the click is laid
+  on its own side, a column out from the click the other way. Its front stands at the near side's own rank spacing,
+  squeezed toward half where the ground runs out (a full 69 m rank stood off Terminus' west edge). Either side failing
+  falls back to v5's lay. `untangle_whole` counts `misplaced` (a place across the click from its squad) ahead of the
+  lead rule. Probe: `columns_two_sided`. Tests `test_control_group_click` 31/0. Shots (laptop, his click 5,
+  `make orders-probe-shots`): v6 has Alpha's squad on its own west side and the rest stacked east along the street.
+
+### Bars (filed here before any judged number; the orchestrator records them on main)
+- **Bar G1 v6 TWO SIDES (orders, round 40; filed 2026-10-24 before any number on 8201-8212; code 2eedf9f7f, all OFF).**
+  What he would see: select all and click a street. Every squad lands in that street, the squad nearest the click on it,
+  the others stacked back along their own way in. A squad that stood past the click stays on its side, so none drives
+  through another's halt, and every squad gets in without a reshuffle.
+  - **Arm:** `sides:--group-lay=column,--group-rank-shift=half,--group-whole=click,--group-clear=reached,--group-lead=drive,--group-sides=both`
+    (G1 v5's arm + v6). Base `main:`.
+  - **Tree:** stream/orders at the commit whose full check is named green below (main as launched, 68d0410d3 code;
+    DEPLOY_HOLD ON both arms; `--giveway-chain`, `--seat-route-clear`, `--deploy-arrive=near` OFF both arms, as main has
+    them; R40.5: on main as it is unless CP40.1 lands first, then on it, both arms).
+  - **Probe:** `tests/control/orders_bar.sh b0 g1v4 <arm> "8201 ... 8212" <out> 4` (builder0 light J4,
+    `TANK_SQUAD_SLOT_TIMEOUT=14400`), **FRESH seeds 8201-8212** (n 12 a cell). Cells as Bars G1 v4 / v5: the 12 street
+    cells, his click (terminus_his 3 / 5), yard_open 3 / 5 x click / route.
+  - **Judge:** `orders_judge.py g1v4`, unamended from G1 v5. Deciding (click cells + his click): places outside the
+    corridor <= 25 % of base; route_left_m <= 50 %; re-dealt 0. Guards: every R36.6 guard per cell over all 14 cells;
+    contacts <= base x 1.1 + 5; yard_open identical. **Corridor (R40.5):** the deciding lines read the probe's new
+    corridor (past posts <= 8 m). The old read's places outside and route_left_m are reported beside them, per cell. One
+    line shows main v main, new v old read, and names the cells where the read changed (it must be only cells with a
+    post inside the scan).
+  - **Known risk:** terminus 5 route never-in (dev read 1 s3805 squad 1, also in v4 / v5's dev reads): the whole-squad
+    deal on the route's first plain click (R38.44) wedges a crew in the x = 0 street. Taken as the honest price, as round 39.
+  - **Plus:** paired top-down shots of his click, main v sides, looked at. A pass ships ON.
