@@ -67,9 +67,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     deploys on the 10 s cap (13.9 s) with its crews bunched at (24-30, 89-92), and then Delta_2 drives 36 m east to (65,
     68) and Delta_4 29 m south-west to (4.8, 70.8), still moving at t 45. In main its crews come in strung out and deploy
     on the cap at 15.2 s nearer their seats (worst 21.4). So it is a cap deploy among passers, which T1 changes.
-  - **Orchestrator's dev read (running):** the G1 v6 arm v main on T1-ON main, terminus 5 route only, dev seeds
-    3801-3812, builder2 J4, frozen tree `/home/slobdell/projects/godot-orders-t1` = main 9d5907ddd + c7d642aeb merged
-    (a1602cca9, detached, not on any branch). If the twitch gap closes there, round 41's G1 v7 starts from it.
+  - **T1-ON dev read (orchestrator's; builder2 J4, a1602cca9 = main 9d5907ddd + c7d642aeb merged, detached; terminus 5
+    route only, dev seeds 3801-3812, n 12; evidence `references/round40/orders/g1v6-t1on-dev-builder2-a1602cca9/`):
+    **the twitch gap closes**: median of per-run worst 27.6 (main) v 27.0 (sides), passing the bar's base + 3 test.
+    8 of 12 seeds are identical; sides is better on 3803 / 3805, worse on 3802 (15.8 -> 26.7). **Never-in 0 v 1**
+    (s3805 squad 1, the filed known risk, the same seed and squad as dev read 1): that guard would still fail here.
+    All-in 46.0 v 46.2 s; end foreign min 4.9 v 3.2 m. Main's twitch on these seeds under T1 (27.6) is not
+    comparable to the bar's 20.6 (other seeds, T1 OFF). For round 41: G1 v7 starts on T1-ON main; its open item is
+    s3805's whole-squad wedge (R38.44), not the twitch.
 - **Plan:** O1 done -> G1 v6 built + dev-read (deciding lines pass) -> full check of the tip -> **Bar G1 v6 (filed below)** on
   builder0 light J4 -> O2 written up as blocked (dev read failed, cause traced, below) -> O4 G2 v2c re-read (running on
   builder2, `tests/control/orders_g2.sh`) -> its bar if it holds. R40.5 (orchestrator): C40.3 relaxed, G1 v6 judges on
