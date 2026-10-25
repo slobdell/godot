@@ -253,3 +253,10 @@ planned round the holder by the planner's seam.
 - **Fix (58b7cb865):** the scan checks the start (exact overlap, in a world whose other hulls are REROUTE_SHRINK_M = 0.3 m smaller a
   side; `PlannerNavWorld.hull_shrink_m`, 0 everywhere else), and walks the route to a goal pose the footprint clears, BEFORE the
   take. Laptop NATIVE=off: traffic|planner|test_manoeuvre 227 passed, 0 failed. Lab 2: the same cells, reroute / any.
+- **M3 lab 2 (58b7cb865, builder2 light J14, load 56 at start):** start_blocked 0, so the shrunk world works. Long episodes:
+  reroute 23 / 299 s, any 13 / 138 s (off 19 / 141 s, lab 1). Under `reroute` the refusals left were NO_PATH (19 of 30 asks): a
+  holder holds because no spot fits, so the street often has no way round. Each refusal still held the crew still for up to
+  3 holds. `any` planned 36 and drove 13 to the end.
+- **Fix (b10c8dee8):** the scan makes the first search whole (Planner.plan, the library's one-shot search, apart from the seam's
+  sliced session) and takes the crew only with a plan in hand. A refusal costs the crew nothing; the cost moves to the scan's
+  tick (searches and expansions reported). Lab 3: the same cells, reroute / any.
