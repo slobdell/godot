@@ -312,5 +312,8 @@ planned round the holder by the planner's seam.
   - The scan's search is whole on one physics tick. Up to BUDGET expansions in a frame is a hitch risk on the laptop; it must be
     sliced before ON ships, whatever the verdict.
 - **Judge:** `python3 tests/manoeuvre/reroute_judge.py wedge-off wedge-on probe/rows.jsonl --on-arm=any`, committed with this bar.
+- **Gate MET: b21565b37 GREEN on builder0** (`>> remote: make native check exited 0`, 3219 passed / 0 failed, sim-baseline unmoved,
+  copy-back verified; 06:00 PDT). Series tree: this commit, docs-only on top (b21565b37's game code). Series STARTED ~06:05 PDT
+  (`~/overnight-manoeuvre/r40/barm3.sh`, builder0 light J4). No number seen before this line.
 - **A pass** goes to the orchestrator, with the C++ twin request and the slicing, before ON ships. **A fail:** M3 stays OFF, as a
   report; no re-run on these seeds.
