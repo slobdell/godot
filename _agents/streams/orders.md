@@ -114,12 +114,25 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   squads nearer each other than main's spread body. **R40.10:** no G2 bar this round. Its one later re-read runs on
   top of settle's S1 v3 (`--seat-route-clear=v3`) if Bar S1 v3 passes (end foreign is S1's kind of failure); the
   orchestrator says when.
-- **G3 v8 `--place-clear-after=relay` (5bc304738, OFF; R40.9):** the G3 block is now `_place_clear()`. On a shifted leg
-  it runs after `_relay_previous_waypoint`, each squad's home read from its relaid previous waypoint. With
-  `--place-clear-lane=on`, the road test reads those roads short of each squad's own halt (`lane_skip`, half its short
-  side). Laptop trace (crossing 5 route, legs identical to the bar's): Delta keeps its given place on the last leg on s6213
-  and s6220; Charlie steps west, onto nobody's road. `test_control` 525/0 (laptop). Dev read (builder2 J8, 3804-3809):
-  running.
+- **G3 v8 `--place-clear-after=relay` (5bc304738, OFF; R40.9): dev read FAILED, no bar.** On a shifted leg the G3 block
+  (now `_place_clear()`) runs after `_relay_previous_waypoint`, each squad's road read from its relaid previous waypoint
+  and short of its own halt (`lane_skip`). Dev read 1 (builder2 J4, 5bc304738, 3804-3809, n 6, `orders_bar.sh b2 g3`;
+  evidence `references/round40/orders/g3v8-dev1-builder2-5bc304738/`): every guard passes (never-in 1 -> 1, contacts
+  7183 -> 6857, 18 probe cells, worst +16.9 m), **deciding pairs < 12 m 25 -> 10** (bar <= 6.2; v7 17). All 10 left
+  are on crossing and are main's own places, unmoved. 8 of the 10 are runs where every step was refused for standing on
+  a road (places_cleared 0, places_off_lanes 1-3). Laptop trace (crossing 3 click s3806, `--column-trace`): squad 0's
+  three steps lie on squads 1 and 2's roads, read 17.2 and 19.7 m either side (`lane_reach` = half the driver's parked
+  width + half the halt's short side), a band as wide as a herringbone around every road on a crossing.
+- **G3 v9 `--place-clear-lane=column` (9076ee2f8, OFF):** a road in reads as wide as the column driving it
+  (`ROAD_HALF_M` 4 m + half the halt's short side; ~10 m on crossing, v8 17-20 m). v7's case still holds (test).
+  `test_control` 526/0 (laptop). Dev read 1 (builder2 J4, 9076ee2f8, 3804-3809, arm v8's with `--place-clear-lane=column`):
+  running, `~/overnight-orders/g3v9-dev1-9076ee2f8`. A bar on 8213-8224 only if it passes, filed before any number.
+- **Full check of 8bbafb376 (builder0, load ~10): `make native check exited 0`, 25 passed, 2 NOT JUDGED** (perf-judge
+  refused 3 times on a busy box, 1.52-1.84x; scenario_perf unpinned on the hybrid). Green: the G1 v6 series' tree.
+- **Bar G1 v6 series: running** (builder0 light J4, 8201-8212, `~/overnight-orders/barg1v6-c7d642aeb`). The streets part
+  synced c7d642aeb (= 8bbafb376 + docs). Each later part re-syncs the worktree: from 9076ee2f8 the only game/ change is G3
+  v9 (`lane_reach` under `--place-clear-lane=column`, a trace under `--column-trace`), unreachable with every G3 switch
+  OFF, as R40.11. Each part's log names its commit.
 
 ### Bars (filed here before any judged number; the orchestrator records them on main)
 - **Bar G1 v6 TWO SIDES (orders, round 40; filed 2026-10-24 before any number on 8201-8212; code 2eedf9f7f, all OFF).**
