@@ -94,6 +94,13 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
 - **R40.10 (2026-10-24 evening) G2 v2c: no bar this round.** Orders' O4 re-read on main (dev 3801-3803, builder2) repeats round 39's dev
   read 3 exactly (DEPLOY_HOLD doesn't act without losses); guards fail on 10 cells (end foreign, twitch). Write-up: stream/orders
   f3df5390d. Its one later re-read: on top of settle's S1 v3 if that ships (end-foreign is S1's kind). G3 v8 built (5bc304738).
+- **Bar M1 v2, give-way limit with release (manoeuvre; FILED 479bf90f9, 2026-10-24 evening, before any number on 8101-8124).** Gate:
+  ee659b522's full check (with pair/native-chainrelease 18e5dbca8). Arms OFF v `--giveway-chain=v2`, native C++ path; T1 OFF, S1 OFF,
+  DEPLOY_HOLD ON both; this tree even if CP40.1 lands first. builder0 light J4. **A (census, 8101-8112, 36 fights):** deciding chained drift
+  ON <= 0.5x OFF and <= -2 se; G1-G4 as Bar M1. **B (probe, 8113-8124, 144 runs):** G5 never-in ON <= OFF (unamended); G6 as Bar M1; G7
+  last squad in JUDGED (paired mean <= +2.0 s; runs > 10 s later <= runs > 10 s earlier + 3). Judge `chain_judge.py --on-arm=v2
+  --d-ratio=0.5 --last-in` (6c28abd3e; reproduces round 39's verdict). Dev (7001-7008, builder0, 24 fights): drift 650.5 -> 140.7 m (0.22x,
+  -5.3 se); stuck deaths 162 -> 181.
 
 ## Rulings (round 40)
 
