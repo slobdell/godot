@@ -138,7 +138,13 @@ cells (as blob/turtle guard, and 100 - the CPU cell), faction_max leaves law wea
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
 one line; otherwise unchanged). Mono-tank v its own faction's deal, CPU v CPU (guard none), 8501-8510, mono on Green: queued after the
 candidates. The none line's green/rust guard-side fights are exact duplicates (checked on d2c's none run), so half a none series is
-wasted until guard.sh passes GUARD_SIDES (asked of native).
+wasted until guard.sh passes GUARD_SIDES (asked of native; on main since 5a9743c2c).
+**B5 mono-tank line, base (7b53f5f85, builder2, 8513-8520, guard none, GUARD_SIDES=green, mono on Green then on Rust, 320 fights):**
+an all-tank army beats its own faction's mixed deal at equal budget **82 % (se 3)**: condemned 71 % (26.0 v 33.5 units), gangs 80 %
+(29.0 v 43.6), law 86 % (20.0 v 25.4), syndicate 89 % (11.0 v 16.4). His experience confirmed; his target (mixed wins ~60-65 %) is
+~45 points away. Side effect: Rust wins ~8 points more than Green in this line (mono-on-Green 74 %, mono-on-Rust 89 %), so both arms
+always run. Next: `fm_law_ca` (fm_law + every tank -15 % hp/armour/damage, +15 % cost, clamped) on the lines and the mono line; if
+the bounds can't reach the target, a write-up for him (R40.6 (3)).
 
 **Bar B2s (the stat change; FILED before any number on 8301-8340 + 8401-8440).**
 - Arms: BASE = the tree as it ships without the change; ARM = the same tree with the chosen candidate (named in this Status before
