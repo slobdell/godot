@@ -11,14 +11,17 @@ var _lab: TacticsLab
 
 func teardown() -> void:
 	Traffic.set_off("givewaychain", Traffic.DEFAULT_OFF.has("givewaychain"))
+	Traffic.set_off("chainrelease", Traffic.DEFAULT_OFF.has("chainrelease"))
+	Traffic.set_off("chainside", Traffic.DEFAULT_OFF.has("chainside"))
 	if _lab != null:
 		_lab.dispose()
 		_lab = null
 	super.teardown()
 
 
-## `seat` is the parked crew's face slot. Returns [mover, ask's answer].
-func _stage(seat: Vector3) -> Array:
+## `seat` is the parked crew's face slot; `stalled_s`, how long the asker has made no progress (M1 v2's wedged asker). Returns
+## [mover, ask's answer].
+func _stage(seat: Vector3, stalled_s := 0.0) -> Array:
 	_lab = TacticsLab.create(self, 7, "yard_open")
 	var parked := _lab.gun(Match.Team.GREEN, "Green_Parked", Vector3.ZERO, 0.0, "tank")
 	var asker := _lab.unit(Match.Team.GREEN, "Green_Asker", Vector3(0.0, 0.0, 12.0), 0.0, "tank")
@@ -31,6 +34,7 @@ func _stage(seat: Vector3) -> Array:
 	var mover := Movement.of(parked)
 	mover.ctl.face_slot = seat
 	assert_true(not mover.is_under_way(), "setup: the crew is parked (phase %s)" % mover.phase)
+	Movement.of(asker).stalled_ticks = int(stalled_s * SimClock.TICK_RATE)
 	var gave := mover.ask(String(asker.name), asker.global_position, Vector2(0.0, -1.0))
 	return [mover, gave]
 
@@ -106,3 +110,75 @@ func test_the_switch_leaves_native_yield_alone() -> void:
 	assert_true(not Movement.giveway_chain_on(), "off")
 	assert_eq(BrainSwitches.native_yield, was, "and back as it was")
 	assert_true(Traffic.DEFAULT_OFF.has("givewaychain"), "DEFAULT_OFF until judged")
+
+
+# ---- Round 40 (M1 v2, `--giveway-chain=v2` = givewaychain + chainrelease): the reach is lifted for a WEDGED asker -------------
+# Bar M1's G5: the last squad in wedged behind seated crews M1 held, in streets with no way round. An asker that has made no
+# progress for Movement.CHAIN_RELEASE_S is let through as today; one that is still getting somewhere sees M1's reach.
+
+func _v2() -> void:
+	Traffic.set_off("givewaychain", false)
+	Traffic.set_off("chainrelease", false)
+
+
+func test_v2_a_wedged_asker_gets_todays_spot() -> void:
+	_v2()
+	var releases := Movement.chain_releases
+	var staged: Array = await _stage(SEAT_EAST, Movement.CHAIN_RELEASE_S + 0.5)
+	var mover: Movement = staged[0]
+	assert_true(bool(staged[1]), "it gives way")
+	assert_true(Movement._flat_distance(mover._yield_point, TODAY) < 0.5,
+			"today's spot, 14 m from the seat: %s %s" % [mover.yield_spot, mover._yield_point])
+	assert_eq(Movement.chain_releases, releases + 1, "counted as a release")
+
+
+func test_v2_an_asker_still_getting_somewhere_sees_the_reach() -> void:
+	_v2()
+	var releases := Movement.chain_releases
+	var staged: Array = await _stage(SEAT_EAST, Movement.CHAIN_RELEASE_S - 1.0)
+	var mover: Movement = staged[0]
+	assert_true(bool(staged[1]), "it gives way")
+	assert_true(Movement._flat_distance(mover._yield_point, SEAT_EAST) <= 6.0 + Movement.CHAIN_SLACK_M,
+			"M1's reach: a spot no farther from its seat: %s %s" % [mover.yield_spot, mover._yield_point])
+	assert_eq(Movement.chain_releases, releases, "no release")
+
+
+func test_v2_a_wedged_asker_is_let_past_where_m1_refused() -> void:
+	_v2()
+	var staged: Array = await _stage(Vector3(0.0, 0.0, 8.0), Movement.CHAIN_RELEASE_S + 0.5)
+	assert_true(bool(staged[1]), "M1 refused this one (every spot farther); wedged, it gives way")
+
+
+func test_v2_without_release_is_m1() -> void:
+	Traffic.set_off("givewaychain", false)
+	var staged: Array = await _stage(Vector3(0.0, 0.0, 8.0), Movement.CHAIN_RELEASE_S + 0.5)
+	assert_true(not bool(staged[1]), "chainrelease off: M1 refuses a wedged asker too")
+
+
+func test_side_allows_a_step_across_not_down_the_street() -> void:
+	Traffic.set_off("givewaychain", false)
+	Traffic.set_off("chainside", false)
+	var sides := Movement.chain_side_spots
+	# The seat 8 m back toward the asker, which travels -Z: today's side step west (-8, 0, 0) is no farther along its travel from
+	# the seat than the crew stands (8 m), so it is allowed; spots ahead (down the street) stay refused.
+	var staged: Array = await _stage(Vector3(0.0, 0.0, 8.0))
+	var mover: Movement = staged[0]
+	assert_true(bool(staged[1]), "it gives way (spot %s %s)" % [mover.yield_spot, mover._yield_point])
+	var seat := Vector3(0.0, 0.0, 8.0)
+	assert_true(Vector2(mover._yield_point.x - seat.x, mover._yield_point.z - seat.z).dot(Vector2(0.0, -1.0))
+			<= 8.0 + Movement.CHAIN_SLACK_M, "across the street, not down it: %s" % mover._yield_point)
+	assert_true(Movement.chain_side_spots > sides, "a side spot past the reach was allowed")
+
+
+func test_v2_switches_turn_native_yield_off_until_twinned() -> void:
+	var was := BrainSwitches.native_yield
+	Traffic.set_off("chainrelease", false)
+	assert_true(Movement.chain_release_on(), "on")
+	assert_true(not BrainSwitches.native_yield, "asks run the GDScript rule (no C++ mirror of chainrelease yet)")
+	Traffic.set_off("chainrelease", true)
+	assert_eq(BrainSwitches.native_yield, was, "and back as it was")
+	Traffic.set_off("chainside", false)
+	assert_true(not BrainSwitches.native_yield, "chainside too")
+	Traffic.set_off("chainside", true)
+	assert_eq(BrainSwitches.native_yield, was, "and back")
+	assert_true(Traffic.DEFAULT_OFF.has("chainrelease") and Traffic.DEFAULT_OFF.has("chainside"), "DEFAULT_OFF until judged")

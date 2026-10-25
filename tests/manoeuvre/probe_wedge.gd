@@ -9,6 +9,9 @@ extends "res://tests/orders_probe.gd"
 ##          BACK to it: settle's S1 drive-back)
 ## At quit, one PROBE_WEDGE row per crew with still ticks: crew, squad, its partners (class -> ticks), the top partner and its
 ## squad, and the run's give-way counters (chain_refusals, parked_refusals, yields_started).
+## Round 40 (M1 v2): and one PROBE_CHAIN row per run: the chained seat drift, as the jam census counts it (tests/traffic/jam_census.gd,
+## Bar M1's D line): parked give-ways begun more than CHAIN_ROW_M off the crew's seat, n and out_m (how much farther from the seat
+## each ended, summed), plus the rule's counters (chain_releases, chain_holds_refused, chain_side_spots).
 ##
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/manoeuvre/probe_wedge.gd -- --arena=terminus --seed=6117 \
 ##     --probe-squads=5 --probe-route=route --probe-arm=chain --giveway-chain
@@ -22,6 +25,10 @@ var _hist := {}  # crew -> ring of positions, one a tick, the last second
 var _still := {}  # crew -> {class: ticks}
 var _mates := {}  # crew -> {partner: ticks}
 var _last_tick := -1
+const CHAIN_ROW_M := 4.0
+var _gw_prev := {}  # crew -> [yield_to, yield_from, phase, order type] last tick
+var _gw_open := {}  # crew -> {seat, off, parked, last}
+var _chained := {"n": 0, "out_m": 0.0, "parked_n": 0, "parked_out_m": 0.0}
 
 
 func _initialize() -> void:
@@ -38,6 +45,7 @@ func _trace() -> void:
 			continue
 		_last_tick = _match.tick
 		_observe()
+		_chains()
 
 
 func _squad_of(crew: String) -> int:
@@ -124,7 +132,59 @@ func _observe() -> void:
 			by[mate] = int(by.get(mate, 0)) + 1
 
 
+## The jam census's give-way episodes (_giveway_chains there), cut to what PROBE_CHAIN totals.
+func _chains() -> void:
+	for node in _match.tanks.get_children():
+		var tank := node as Tank
+		if tank == null or tank.team != Match.Team.GREEN:
+			continue
+		var crew := String(tank.name)
+		var mover := Movement.of(tank)
+		if not tank.is_alive() or mover == null:
+			if _gw_open.has(crew):
+				_gw_close(crew, (_gw_open[crew] as Dictionary)["last"])
+			continue
+		var here := tank.global_position
+		var prev: Array = _gw_prev.get(crew, ["", Vector3.INF, "", ""])
+		var started: bool = mover.yield_to != "" and (String(prev[0]) != mover.yield_to or prev[1] != mover._yield_from)
+		if _gw_open.has(crew):
+			if mover.yield_to == "" or started:
+				_gw_close(crew, here)
+			else:
+				(_gw_open[crew] as Dictionary)["last"] = here
+		var seat := mover.yield_seat()
+		if started and seat != Vector3.INF:
+			var parked := String(prev[2]) == "arrived" or String(prev[3]) != "move_to"
+			_gw_open[crew] = {"seat": seat, "off": _flat(here, seat), "parked": parked, "last": here}
+		_gw_prev[crew] = [mover.yield_to, mover._yield_from, mover.phase, String(mover.ctl.move_order.get("type", ""))]
+
+
+func _gw_close(crew: String, here: Vector3) -> void:
+	var ep: Dictionary = _gw_open[crew]
+	_gw_open.erase(crew)
+	if not bool(ep["parked"]):
+		return
+	var out := maxf(_flat(here, ep["seat"]) - float(ep["off"]), 0.0)
+	_chained["parked_n"] = int(_chained["parked_n"]) + 1
+	_chained["parked_out_m"] = float(_chained["parked_out_m"]) + out
+	if float(ep["off"]) > CHAIN_ROW_M:
+		_chained["n"] = int(_chained["n"]) + 1
+		_chained["out_m"] = float(_chained["out_m"]) + out
+
+
+static func _flat(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
 func _finalize() -> void:
+	for crew: String in _gw_open.keys():
+		_gw_close(crew, (_gw_open[crew] as Dictionary)["last"])
+	print("PROBE_CHAIN " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": _flag("arena", ""), "arm": _flag("probe-arm", ""),
+			"chained_n": _chained["n"], "chained_out_m": snappedf(float(_chained["out_m"]), 0.1), "parked_n": _chained["parked_n"],
+			"parked_out_m": snappedf(float(_chained["parked_out_m"]), 0.1), "chain_in_play": Movement.chain_in_play,
+			"chain_refusals": Movement.chain_refusals, "chain_releases": Movement.chain_releases,
+			"chain_holds_refused": Movement.chain_holds_refused, "chain_side_spots": Movement.chain_side_spots,
+			"parked_refusals": Movement.parked_refusals, "native_yield": BrainSwitches.native_yield}))
 	for crew: String in _still:
 		var by: Dictionary = _mates.get(crew, {})
 		var top := ""
