@@ -53,6 +53,16 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### NOW (2026-10-24 night)
+- **REPORT (2026-10-25): Bar G3 v9 FAILS** (frozen tree 893180a31, green; builder0 light J4; 8213-8224, n 12 a cell;
+  evidence `references/round40/orders/g3v9-judged-builder0-893180a31/`). Switch stays OFF.
+  - FAIL deciding: pairs < 12 m 48 -> 13 (<= 12.0). 12 of the 13 are main's own places left unmoved on crossing route
+    cells; 1 is new (s8220 crossing 5 route).
+  - FAIL guard never-in 5 -> 6: crossing 5 click 0 v 1 (s8220 Delta). Traced (laptop, same code, reproduces): Charlie is
+    moved to (-86.4, 43.2), off Delta's one centre-to-place road, but Delta_4 drives in by a western loop and stands
+    3 m from Charlie's halt from t 55 to the end. The road test reads one road per squad; its crews drive several.
+  - PASS: places_cleared 47; offsets (worst +24.0 m, 0 of 864 > 40 m); contacts 15046 -> 15049.
+  - For round 41 (a new version needs a fresh block): read each crew's own road, not the squad centre's; and the
+    crossing route pairs G3 never moves.
 - **REPORT (2026-10-25): Bar G1 v6 FAILS on one guard** (frozen tree c7d642aeb = green 8bbafb376 + docs; builder2 J4;
   8201-8212, n 12 a cell; evidence `references/round40/orders/g1v6-judged-builder2-c7d642aeb/`). Switch stays OFF.
   - FAIL guard: **terminus 5 route twitch** 20.6 v 25.4 (median of per-run worst; bar base + 3). Four seeds differ
