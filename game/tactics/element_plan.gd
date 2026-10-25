@@ -1982,7 +1982,8 @@ static func _trace_redeal(plan: Dictionary, situation: Dictionary, deploy: Dicti
 ## squad out in 25, a crew still driving in 18, one holding 5-25 m in 14, one holding within 5 m in 8): a crew is settled
 ## when it is in, or was in since the arrival and stands within DEPLOY_REACHED_M, or has held DEPLOY_NEAR_HOLD_TICKS within
 ## DEPLOY_SETTLED_NEAR_M; every crew settled is all in; and once at least half the squad is settled and that count stands
-## DEPLOY_SETTLED_WAIT_S, the halt is laid (cause "settled") and the crews still out drive straight to their halt seats.
+## DEPLOY_SETTLED_WAIT_S with every crew still out within DEPLOY_STRAGGLER_M, the halt is laid (cause "settled") and the
+## crews still out drive straight to their halt seats.
 ## `--deploy-arrive=near|settled` (env DEPLOY_ARRIVE); "" (main) until judged.
 static var DEPLOY_ARRIVE := _deploy_arrive_flag()
 const DEPLOY_NEAR_M := 5.0
@@ -1990,6 +1991,11 @@ const DEPLOY_NEAR_HOLD_TICKS := SimClock.TICK_RATE / 2
 const DEPLOY_REACHED_M := 10.0
 const DEPLOY_SETTLED_NEAR_M := 7.5
 const DEPLOY_SETTLED_WAIT_S := 2.0
+## ... and only while every crew still out stands within this of its travel seat. Traced (lab 2, builder0 754fee377, terminus
+## 5 route s6003, dev): Bravo laid its halt 4 s after arriving with Bravo_1 ~21 m out; its 21.7 m drive to its halt seat
+## crossed the street Echo still had to drive, and Echo never got in (main waited for Bravo_1 and Echo was in at 81.6 s).
+## At main's cap deploys the crews still out stand 3.7-34.6 m off, 58 of 87 squads' worst within 12 m.
+const DEPLOY_STRAGGLER_M := 12.0
 
 
 static func _deploy_arrive_flag() -> String:
@@ -2069,6 +2075,7 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 	var reached: Dictionary = _deploy_reached(deploy, situation, issued) if reads else {}
 	var near := 0
 	var settled := 0
+	var straggler_m := 0.0
 	var members: Array = situation.get("members", [])
 	for member: Dictionary in members:
 		var n := String(member["name"])
@@ -2091,10 +2098,11 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 			settled += 1
 		else:
 			all_in = false
+			straggler_m = maxf(straggler_m, off)
 	# "settled": at least half the squad settled, unchanged for DEPLOY_SETTLED_WAIT_S, lays the halt; the rest drive to it.
 	var settled_out := false
 	if DEPLOY_ARRIVE == "settled" and not all_in:
-		var enough := not members.is_empty() and settled * 2 >= members.size()
+		var enough := not members.is_empty() and settled * 2 >= members.size() and straggler_m <= DEPLOY_STRAGGLER_M
 		if not enough or int(deploy.get("settled_count", -1)) != settled:
 			deploy["settled_since"] = tick
 		deploy["settled_count"] = settled if enough else -1

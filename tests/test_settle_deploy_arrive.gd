@@ -119,7 +119,7 @@ func test_settled_a_crew_that_was_in_and_drifted_still_counts() -> void:
 
 
 func test_settled_lays_the_halt_with_one_straggler_once_the_rest_stand_2_s() -> void:
-	var straggler := func(_step: int) -> Dictionary: return {"Green_S_2": [20.0, false]}
+	var straggler := func(_step: int) -> Dictionary: return {"Green_S_2": [10.0, false]}
 	var every := 3
 	var short_wait := int(ElementPlan.DEPLOY_SETTLED_WAIT_S * SimClock.TICK_RATE) / every
 	var early := _drive_by("settled", straggler, short_wait, every)
@@ -129,6 +129,14 @@ func test_settled_lays_the_halt_with_one_straggler_once_the_rest_stand_2_s() -> 
 	assert_true(bool(late.get("deployed", false)), "three of four settled for 2 s: deployed")
 	assert_eq(String(late.get("cause", "")), "settled", "on the settled rule")
 	assert_true(not bool(main.get("deployed", false)), "counter: main waits for the straggler or the cap")
+
+
+func test_settled_waits_for_a_straggler_far_out() -> void:
+	# Lab 2's terminus 5 route s6003: a straggler ~21 m out sent to its halt seat crossed the next squad's street.
+	var every := 3
+	var waited := _drive_by("settled", func(_step: int) -> Dictionary: return {"Green_S_2": [ElementPlan.DEPLOY_STRAGGLER_M + 4.0, false]},
+			int(ElementPlan.DEPLOY_SETTLED_WAIT_S * SimClock.TICK_RATE) / every + 3, every)
+	assert_true(not bool(waited.get("deployed", false)), "a straggler beyond DEPLOY_STRAGGLER_M: the squad waits")
 
 
 func test_off_by_default() -> void:
