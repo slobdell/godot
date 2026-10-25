@@ -190,6 +190,12 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   269 -> 283, Missile Ring 218 -> 228; 2000 CR buys 15 Skimmers, not 16). **GRANT:** re-pin ONLY those expected numbers on the ARM branch
   (test_army_economy x6, test_army_screen::test_a_spent_army_says_so, test_army_size::test_the_table_at_two_thousand), each listed in
   merge notes, adopted like the sim baseline. That's adoption, not weakening, and doesn't breach G7. No assertion's form changes.
+- **Bar M3, wedge re-route (manoeuvre; FILED b21565b37, 2026-10-25 ~04:50, before any number on 8601-8624).** OFF v
+  `--giveway-reroute=any`. **Deciding D:** long-episode seconds ON <= 0.8 x OFF at >= 2 se. G1-G4 deaths, contacts, fights (A: wedge trace
+  8601-8612); G5 never-in, G6/G7 all-in and last-in (B: orders probe 8613-8624). Judge `tests/manoeuvre/reroute_judge.py`. builder0 light
+  J4, gated on b21565b37's full check. s7004's 73 s (hover syn_artillery, out of the wheeled scope) explained and still counted. **Ruled
+  (orchestrator, before numbers):** both arms run the SAME drive path (the GDScript drive with native_drive bypassed in OFF too), so the
+  pairing compares the rule, not the path. Ship needs the C++ twin and a sliced scan (today one physics tick) plus perf.
 
 ## Rulings (round 40)
 
