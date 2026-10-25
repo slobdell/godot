@@ -1904,7 +1904,50 @@ static func _trace_deploy(plan: Dictionary, situation: Dictionary, stand: Vector
 			"fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}),
 			"cleared": int((plan.get("deploy", {}) as Dictionary).get("cleared", 0)),
 			"waited": int((plan.get("deploy", {}) as Dictionary).get("waited", 0)),
+			"cause": String((plan.get("deploy", {}) as Dictionary).get("cause", "")),
+			"deals": _trace_deals(plan, situation, stand, heading, spacing),
 			"clear_of": _trace_clear_of((plan.get("deploy", {}) as Dictionary).get("clear_of", {})), "crews": crews}))
+
+
+## Round 40 (settle; orders' G1 v6 trace, terminus 5 route s8206: Delta cap-deployed bunched and its halt sent Delta_2 36 m
+## and Delta_4 29 m across the street). The dry read of the deploy's deal: the drives each crew would make to its GROUNDED
+## seat, worst and total m, under main's seating ("main"), _fit_deal's least-total deal on the ordered heading ("ordered"),
+## and _fit_deal laid on the street's axis (ElementSituation.street_axis at the stand, null without a street; "street"),
+## plus the crews' spread (m, the largest distance from their centroid). Measurement only, under --deploy-trace.
+static func _trace_deals(plan: Dictionary, situation: Dictionary, stand: Vector3, heading: Vector3, spacing: float) -> Dictionary:
+	var members := members_of(situation)
+	if members.size() < 2:
+		return {}
+	var shape := String(plan["formation"])
+	var grounder: Variant = situation.get("ground_seat")
+	var worst := 0.0
+	var total := 0.0
+	var centre := Vector3.ZERO
+	for member: Dictionary in members:
+		centre += member["position"] as Vector3
+	centre /= float(members.size())
+	var spread := 0.0
+	for member: Dictionary in members:
+		var at: Vector3 = member["position"]
+		spread = maxf(spread, Vector2(at.x - centre.x, at.z - centre.z).length())
+		var seat: Variant = plan["slots"].get(String(member["name"]))
+		if not (seat is Vector3):
+			continue
+		if grounder is Callable:
+			seat = (grounder as Callable).call(seat, String(member.get("unit", "")), stand)
+		var leg := Vector2(at.x - (seat as Vector3).x, at.z - (seat as Vector3).z).length()
+		worst = maxf(worst, leg)
+		total += leg
+	var ordered := _fit_deal(members, shape, stand, heading, spacing, situation)
+	var out := {"spread_m": snappedf(spread, 0.1), "main": [snappedf(worst, 0.1), snappedf(total, 0.1)],
+			"ordered": [snappedf(float(ordered["worst"]), 0.1), snappedf(float(ordered["total"]), 0.1)], "street": null}
+	var street: Variant = ElementSituation.street_axis(stand)
+	if street is Vector3:
+		var along: Vector3 = street if (street as Vector3).dot(heading) >= 0.0 else -(street as Vector3)
+		var anchor := _dry_halt_anchor(stand, members, shape, along, spacing)
+		var laid := _fit_deal(members, shape, anchor, along, spacing, situation)
+		out["street"] = [snappedf(float(laid["worst"]), 0.1), snappedf(float(laid["total"]), 0.1)]
+	return out
 
 
 ## The ground a route-clear deploy kept clear of, rounded for the trace: {"routes": [[[x, z], ...], ...], "halts": [...]}.
