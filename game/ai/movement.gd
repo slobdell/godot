@@ -1059,6 +1059,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	lap = OrderController._lap("move.guard", lap)
 	var drive_vector: Vector2
 	var radius := wheel_radius()
+	var planned_leg := false
 	if radius > 0.0:
 		# K3 wheels drive like cars: pure pursuit, three-point turns (Steering.drive_toward_wheels).
 		# Direct calls rather than a Callable picked every tick (round-5 X1).
@@ -1074,6 +1075,7 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 					drive_vector = _circle_gate(waypoint, radius, drive_vector)
 				if _planned_reverse(leg, waypoint, delta):
 					drive_vector = Vector2(leg.throttle, leg.turn)
+					planned_leg = true
 			elif _kturn_left_m > 0.0:
 				_kturn_end("cancelled")
 				_kturn_left_m = 0.0
@@ -1085,7 +1087,9 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	lap = OrderController._lap("steer.drive", lap)
 	cmd.throttle = drive_vector.x * speed_factor * pace
 	cmd.turn = drive_vector.y
-	if _kturn_left_m > 0.0:
+	# Round 40 (manoeuvre M3, `--giveway-reroute`): so is a re-route's leg. Its holder stands in ORCA's way by definition, and its
+	# share (0 behind a hull holding head-on) would stop the plan's first metre (the test stage: three plans, each stalled on leg 1).
+	if _kturn_left_m > 0.0 or (planned_leg and PlannerSeam.rerouting(String(tank.name))):
 		cmd.throttle = drive_vector.x  # a planned leg is driven as planned: pace or a slow order would drop it into the plant's creep
 		_ease_ticks = 0
 	elif _ease_ticks > 0:
