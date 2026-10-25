@@ -486,8 +486,10 @@ func _read_corridor(units: Array) -> void:
 	if ground == null or ahead == Vector3.ZERO:
 		return
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	# O1 (round 40): read past a lone post (Locks' floodlight); `--probe-corridor=gate` is round 39's read.
+	var posts := 0.0 if _flag("probe-corridor", "posts") == "gate" else RtsControls.POST_SPAN_M
 	var sides := RtsControls.gate_width(_click, across, SelectionSquads.drive_on(ground), SelectionSquads.crosses_on(ground),
-			SelectionSquads.GROUP_SCAN_M)
+			SelectionSquads.GROUP_SCAN_M, posts)
 	_corridor = {"across": across, "left": sides[0], "right": sides[1]}
 	print("ORDERS_PROBE_CORRIDOR " + JSON.stringify({"click": _xz(_click), "across": _xz(across), "left": sides[0], "right": sides[1]}))
 

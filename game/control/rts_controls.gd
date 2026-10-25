@@ -1851,7 +1851,11 @@ static var gates_laid_as_columns := 0
 ## The clear ground across the approach at `click`: [left, right] metres (left = -across) reachable from the click by ground
 ## without a long way round (drive <= GATE_DETOUR x straight) and with no deck between (crosses). `drive(from, to)` -> metres
 ## by ground (< 0: unreachable); `crosses(from, to)` -> bool. Both scans stop at GATE_SCAN_M.
-static func gate_width(click: Vector3, across: Vector3, drive: Callable, crosses: Callable, scan := GATE_SCAN_M) -> Array[float]:
+## O1 (round 40): `past_posts` > 0 reads past an obstacle no wider than that along the scan (a floodlight, a sign): the side
+## ends only where the ground stays off for more than `past_posts` metres (the Locks quay, s6204-6207: the probe's corridor
+## stopped 4-6 m from his click at the floodlight at (-14, 20) and counted two squads on the open quay "outside").
+static func gate_width(click: Vector3, across: Vector3, drive: Callable, crosses: Callable, scan := GATE_SCAN_M,
+		past_posts := 0.0) -> Array[float]:
 	var out: Array[float] = []
 	var flat_click := Vector3(click.x, 0.0, click.z)
 	for side: float in [-1.0, 1.0]:
@@ -1864,11 +1868,18 @@ static func gate_width(click: Vector3, across: Vector3, drive: Callable, crosses
 				break
 			var by_ground := float(drive.call(flat_click, p))
 			if by_ground < 0.0 or by_ground > GATE_DETOUR * d + 1.0:
-				break
-			reach = d
+				if d - reach > past_posts:
+					break
+			else:
+				reach = d
 			k += 1
 		out.append(reach)
 	return out
+
+
+## O1 (round 40): the widest obstacle the orders probe's corridor reads past (a floodlight's or a sign's hole in the navmesh
+## with a hull's clearance; a 20 ft container broadside, ~12 m with clearance, still ends it).
+const POST_SPAN_M := 8.0
 
 
 ## The squads' anchors at an in-between waypoint: a gate as wide as the ground. `blocks` = [{"center", "width", "depth"}] (any

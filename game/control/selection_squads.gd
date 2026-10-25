@@ -805,10 +805,17 @@ static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vecto
 			reads[back] = _within_click(width_at.call(click - ahead * float(back), across), at_click)
 		var sides: Array = reads[back]
 		var aside := offset.dot(across)
-		if (aside < -float(sides[0]) - PLACE_SLACK_M or aside > float(sides[1]) + PLACE_SLACK_M) \
-				and not (reached.is_valid() and bool(reached.call(Vector3(at.x, 0.0, at.z)))):
+		var off_width := aside < -float(sides[0]) - PLACE_SLACK_M or aside > float(sides[1]) + PLACE_SLACK_M
+		if COLUMN_TRACE:
+			print("COLUMN_TRACE place %s aside %.1f sides %s off_width %s reached %s" % [at, aside, sides, off_width,
+					reached.is_valid() and off_width and bool(reached.call(Vector3(at.x, 0.0, at.z)))])
+		if off_width and not (reached.is_valid() and bool(reached.call(Vector3(at.x, 0.0, at.z)))):
 			return false
 	return true
+
+
+## O1 (round 40, dev): `--column-trace` prints each place's clear-ground read when a column is weighed.
+static var COLUMN_TRACE := OS.get_cmdline_user_args().has("--column-trace")
 
 
 ## G2: the narrowest clear width (both sides together) read along `drive` (click first), every LEG_WIDTH_STEP_M from
