@@ -66,8 +66,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - The read changed main v main only on his click (terminus_his 3 / 5: the floodlight-type post there too).
   - **One guard fails: terminus 5 route never-in 0 v 1** (s3805 squad 1), the same cell and squad v4 / v5 failed in round
     39's dev read. Traced (builder0 light, 3b4f03053, `--probe-trace=1`): every leg is identical across arms, and an arm
-    without `--group-whole=click` fails the same way. The difference is the crew deal: on the route's first plain click
-    G1 keeps squads whole, where main re-deals crews. Alpha_3 follows the legs into the x = 0 street and wedges at (7, 83)
+    with every G1 switch but `--group-whole=click` fails the same way (not a switches-OFF arm: the `main:` arm matches main,
+    23.1 / 7.8 / 5.0 / 3.3 / 63.7 s, as manoeuvre's main read on 479bf90f9). The difference is the crew deal: under
+    GROUP_LAY the route's first plain click keeps squads whole (`untangle_whole`, whole_still_crossed 1), where main
+    re-deals crews. Alpha_3 follows the legs into the x = 0 street and wedges at (7, 83)
     from t 40 to t 90, among squads parked at (-7.5, 72) and (21.2, 84.5), still bound for (-28.6, 34.9). This is R38.44's
     trade-off ending in a traffic wedge; not v6's two-sided lay. Carried as the bar's known risk.
 - **O2 G3 v7: BLOCKED (dev read FAILED; cause traced; switch OFF, no bar filed).** Dev read 1 (builder2 J14, 4c672deca,
