@@ -44,6 +44,12 @@ B2s (+G8 mono guard), T1, S1 v3, G1 v6 (workstreams *Bars (round 40)*); M1 v2's 
 his combined-arms note -> B5, settle's ADVANCE census -> balance B6, G3 v8 after the relay). Pending merges: native efb2d9a81
 (GUARD_SIDES, quick), manoeuvre ee659b522 (+ pair/native-chainrelease 18e5dbca8) when green.
 
+**2026-10-25 ~01:02: main 5a9743c2c GREEN on builder0** (`make check exited 0`, 3184 passed / 0 failed, 25 passed + 2 NOT JUDGED:
+perf-judge refused 3x at 1.4-2.2x on a busy box, scenario_perf unpinned; sim-baseline 13 unmoved, determinism 258cc8b1c957a796). Main
+65a5c5b70+ (manoeuvre's M1 v2 OFF merged after it) still needs the next batch check. **No perf verdict since 68d0410d3 (7,691 us/tick):**
+the first ON flip (T1, CP40.1) needs a quiet-window `make remote-quiet T=perf-judge` on builder0 before the round closes. Builder0 crashed
+22:04-22:20 (native's slot.sh recursion, R40.11); fixed on main.
+
 **Orchestrator, after launch:** run the round-30 loop (`orchestration.md`); merge CP40.0 alone the minute native names it and tell
 balance; merge CP40.1 when settle's T1 bar passes and tell orders the same minute.
 
