@@ -183,6 +183,21 @@ BASE 5be511659's. Before naming c5r: its mono line (G8 screen) and one paired li
   838aa1bf6d5d2c31, gorge f55e040a106496c4, archipelago fefa4465e3025a7c, cut 3a19138ad98c4dc6, docks 835465f77b5d2cd4, yard_open
   12307bd04c9ff832 (`~/balance-runs/sim_baseline_adopt-66c4839a2.json`). BASE 5be511659 green (builder0 3212/0, ALL JUDGED).
 
+**B5 WRITE-UP FOR HIM (draft; the orchestrator attaches it to his decision; the armour line waits on fm_law_ca's mono read).**
+*What you noticed is real.* An army of only tanks beats the same faction's normal mixed army, at the same money, 82 % of the time
+(CPU v CPU, every map, both sides, 320 fights): Condemned 71 %, Road Gangs 80 %, Law 86 %, Syndicate 89 %. Your target was the
+mixed army winning 60-65 %, so the tank army should win 35-40 %: about 45 points away.
+*Why:* in a mixed army, the units built to kill tanks do their job. Artillery deals 3-5 hit points per credit to a tank column and
+nearly all of it survives; the gangs' spear buggies 2.4; the Condemned Lancer 3.4. The trouble is everything else: about half of each
+army's money (44-61 %) is in vehicles that can't hurt a tank at all. An IFV's cannon does 5-10 % of its damage to a tank's front
+(0.2-0.8 per credit), a scout's machine gun 5 %, and the support trucks nothing. So the tank army fights half an army.
+*What's inside your +/-15 % on unit numbers:* tank armour -15 % only doubles an IFV's effect on a tank's front (5-10 % -> ~10-20 %),
+and when we tried every tank -15 % (with +15 % cost) the faction table got worse again (the Syndicate back on top; turtles winning
+more). [Measured mono rate with that change: PENDING.] It doesn't reach the target.
+*What would (outside the numbers):* (1) give the IFV a real anti-tank weapon, slow and limited, like a Bradley's TOW (the orchestrator's
+recommendation: fixed units, authentic); (2) let armour-piercing ("penetration") move per unit, not just damage; (3) change what each
+faction's army buys (fewer IFVs, more anti-tank). Recommendation: (1).
+
 **NAMED B2s CANDIDATE: fm_law_c5r2. BASE 5be511659, ARM 66c4839a2.** Series: `~/balance-runs/bar-b2s.sh` on builder2 (lines 8301-8340
 + 8401-8440, 1600 an arm; none line 8301-8320; G8 mono 8301-8320 both teams per faction; GUARD_SIDES=green on none/mono, whose two
 guard sides are one fight). **Expected outcome (written before any bar number):** deciding passes (dev -10.6 at se 3.5 on 240 fights
