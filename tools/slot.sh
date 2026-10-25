@@ -124,6 +124,19 @@ if [ "${1:-}" = "--jobs" ]; then
 	exit 0
 fi
 
+# Round 40 (native, R40.11): THE DEPTH BACKSTOP. Every pass through here that goes on to run its command counts one level
+# (TANK_SQUAD_SLOT_DEPTH, inherited by the command); past SLOT_MAX_DEPTH it refuses. Legitimately the Makefile enters once and a
+# slot test inside a check's slot twice, so 3 is headroom. It exists because a slot.sh that re-entered itself through make took
+# builder0 down by OOM (2026-10-24 22:04 PDT, >= 6,388 makes in the kernel's dumps) and ate 8.5 GB on builder2: a loop now stops
+# at depth 4 with one line, whatever caused it.
+SLOT_MAX_DEPTH=3
+depth=$(( ${TANK_SQUAD_SLOT_DEPTH:-0} + 1 ))
+if [ "$depth" -gt "$SLOT_MAX_DEPTH" ]; then
+	echo "slot.sh: REFUSED: nested $depth deep (TANK_SQUAD_SLOT_DEPTH > $SLOT_MAX_DEPTH): something re-enters slot.sh in a loop: $*" >&2
+	exit 2
+fi
+export TANK_SQUAD_SLOT_DEPTH=$depth
+
 if [ -n "${TANK_SQUAD_SLOT:-}" ]; then
 	exec "$@"  # already inside a slot (nested make)
 fi
@@ -132,9 +145,12 @@ fi
 # Makefile's slot re-run reached here and a `make -n faction-matrix` (tools/test_series_arms.sh reads a target's command line)
 # queued 20+ min behind every heavy slot on a busy builder0, holding shell-tools-test with it. Single-letter flags are
 # MAKEFLAGS's first word (no leading dash), so an `n` there is -n / --dry-run / --just-print / --recon.
+# ⚠ TANK_SQUAD_SLOT is set BEFORE the exec, as a granted slot sets it. The first version (6538aa16a, never merged) exec'd
+# without it: the inner make re-ran itself through here, which exec'd make again, unbounded -- the OOM above.
+# tools/test_slot_light.sh case 2c runs a real nested make through this file under timeout 30.
 case "${MAKEFLAGS:-}" in
 	-*|"") ;;
-	*) case "${MAKEFLAGS%% *}" in *n*) exec "$@" ;; esac ;;
+	*) case "${MAKEFLAGS%% *}" in *n*) TANK_SQUAD_SLOT=dry-run exec "$@" ;; esac ;;
 esac
 
 
@@ -151,7 +167,8 @@ esac
 if [ -z "${TANK_SQUAD_PINNED_SELF:-}" ]; then
 	pinned=$(mktemp -t "$(basename "$0").XXXXXX") || exit 1
 	cat "$0" > "$pinned" && chmod +x "$pinned" || { rm -f "$pinned"; exit 1; }
-	TANK_SQUAD_PINNED_SELF="$pinned" exec bash "$pinned" "$@"
+	# The pinned copy runs this file from the top again: hand it the depth this pass started from, so one entry counts once.
+	TANK_SQUAD_SLOT_DEPTH=$(( depth - 1 )) TANK_SQUAD_PINNED_SELF="$pinned" exec bash "$pinned" "$@"
 fi
 rm -f "$TANK_SQUAD_PINNED_SELF"
 
