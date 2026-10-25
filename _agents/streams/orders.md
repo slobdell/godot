@@ -53,6 +53,15 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### NOW (2026-10-24 night)
+- **REPORT (2026-10-25): Bar G1 v6 FAILS on one guard** (frozen tree c7d642aeb = green 8bbafb376 + docs; builder2 J4;
+  8201-8212, n 12 a cell; evidence `references/round40/orders/g1v6-judged-builder2-c7d642aeb/`). Switch stays OFF.
+  - FAIL guard: **terminus 5 route twitch** 20.6 v 25.4 (median of per-run worst; bar base + 3). Four seeds differ
+    (8203, 8205, 8206, 8208), worst squad Delta on three.
+  - PASS every deciding line: places outside (click cells) 65 -> 8 (<= 16.2); route_left 3864 -> 589 (<= 1932); re-dealt
+    0. Contacts 14781 -> 11799; yard_open identical; never-in no more. v5's two failures are gone (his 5 twitch, locks
+    5 outside). Old corridor read reported: 98 -> 17, 6174 -> 1209; main v main changed only on locks and terminus_his.
+  - The failing cell is the filed known risk's (the route's first plain click keeps squads whole, R38.44), failing on
+    twitch, not never-in. Trace next (laptop, s8206 Delta).
 - **Plan:** O1 done -> G1 v6 built + dev-read (deciding lines pass) -> full check of the tip -> **Bar G1 v6 (filed below)** on
   builder0 light J4 -> O2 written up as blocked (dev read failed, cause traced, below) -> O4 G2 v2c re-read (running on
   builder2, `tests/control/orders_g2.sh`) -> its bar if it holds. R40.5 (orchestrator): C40.3 relaxed, G1 v6 judges on
