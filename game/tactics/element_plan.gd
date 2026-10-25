@@ -861,7 +861,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		# S1 (DEPLOY_FIT): the deploy's own deal seats its update, in place of the early halt's seat indices (`fixed`
 		# keeps a previous seating whatever it costs, and the early halt-shape seats are the same shape and size).
 		var dealt: Dictionary = deploy.get("keep", {})
-		if DEPLOY_FIT and dealt.size() == ordered.size() and int(deploy.get("tick", -1)) == int(situation.get("tick", 0)):
+		if (DEPLOY_FIT or CAP_DEAL) and dealt.size() == ordered.size() and int(deploy.get("tick", -1)) == int(situation.get("tick", 0)):
 			deploy_extra["previous"] = dealt
 		_group(plan, ordered, String(plan["formation"]), stand, deploy["heading"], spacing, "move", "", true, true, null,
 				false, "travel", deploy_extra)
@@ -2196,8 +2196,47 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 			deploy["latch_capped"] = ElementSituation.terrain_at(deploy["anchor"]) != String(read["terrain"])
 		if DEPLOY_FIT:
 			_deploy_fit(deploy, read, at, _deploy_shape(read, state, table), table.spacing(String(read["terrain"])))
+		if CAP_DEAL and String(deploy["cause"]) == "cap" and not deploy.has("keep"):
+			_cap_deal(deploy, read, at, _deploy_shape(read, state, table), table.spacing(String(read["terrain"])))
 		deploy["terrain"] = String(read["terrain"])
 	return deploy
+
+
+## Round 40 (settle, R40.14; the dry deal read, builder2 main 9d5907ddd + trace, terminus 5 route 8203/8205/8206/8208,
+## `references/round40/settle/dev-v3t1-builder2/`): A CAP DEPLOY IS LAID ON THE STREET AND DEALT BY THE DRIVES THE CREWS
+## WILL MAKE. On the cap the crews stand where they stopped (20-30 m spread there, not bunched), and main lays the halt on
+## the ordered heading with each crew keeping its travel seat index: at s8206 Delta's halt sent Delta_2 36 m and Delta_4
+## 29 m across the street (orders' G1 v6 trace). At the 4 cap deploys the worst drive to a grounded seat was 36.5 m median
+## (4 of 4 >= 25 m) on main, 21.6 (2 of 4) dealt least-total on the ordered heading, 22.5 (0 of 4) laid on the street's axis
+## and dealt least-total. Here, on a cap deploy only: the halt is laid along the street at the anchor
+## (ElementSituation.street_axis, the ordered heading's side of it; the ordered heading where no street reads) and dealt by
+## `_fit_deal` (least total of the drives from where each crew stands to its grounded seat); the deal seats the deploy's
+## update (`keep`), fixed from there. `--cap-deal=street` (env CAP_DEAL=street) opts in; OFF until its bar passes.
+static var CAP_DEAL := OS.get_cmdline_user_args().has("--cap-deal=street") or OS.get_environment("CAP_DEAL") == "street"
+## Measurement: cap deploys dealt, and of those laid on a street, since start.
+static var cap_deals := 0
+static var cap_deals_street := 0
+
+
+static func _cap_deal(deploy: Dictionary, situation: Dictionary, at: Vector3, shape: String, spacing: float) -> void:
+	var members := members_of(situation)
+	if members.size() < 2:
+		return
+	var heading: Vector3 = deploy["heading"]
+	var anchor: Vector3 = deploy["anchor"]
+	var street: Variant = ElementSituation.street_axis(anchor)
+	if street is Vector3:
+		heading = street if (street as Vector3).dot(deploy["heading"]) >= 0.0 else -(street as Vector3)
+		anchor = _dry_halt_anchor(at, members, shape, heading, spacing)
+		cap_deals_street += 1
+	var deal := _fit_deal(members, shape, anchor, heading, spacing, situation)
+	if (deal["keep"] as Dictionary).size() != members.size():
+		return
+	deploy["heading"] = heading
+	deploy["anchor"] = anchor
+	deploy["keep"] = deal["keep"]
+	deploy["cap_deal"] = {"street": street is Vector3, "worst_m": snappedf(float(deal["worst"]), 0.1)}
+	cap_deals += 1
 
 
 ## S2 (round 38, settle; latch v2, R37.42): A DEPLOYED HALT KEEPS THE TERRAIN ITS SHAPE WAS DECIDED ON. Round 37's latch

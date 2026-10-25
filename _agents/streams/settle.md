@@ -112,6 +112,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   steps), added to v3's crew corridors. Pure test `tests/test_settle_route_clear_v3b.gd` 3/0 (laptop): (8.6, 68) reads
   clear to v3 and blocked to v3b. Branch merged with main 9d5907ddd at c973a456e.
 
+- **S1 v3b dev lab: LOSES v3's T1-ON gain → series STOPPED** (builder2 light, frozen 46b72a3fc = main 9d5907ddd + branch,
+  crossing + terminus x 3/5 x click/route, dev 6301-6306, n 48 runs an arm; `settle-dev-v3b`): twitch >= 15 m main 42, v3 33,
+  **v3b 48**; never-in main 0, v3 1 (s6306), v3b 0 (the band fixes s6306); all-in median 21.0 / 18.7 / 22.0 s. Split: the
+  band makes 70 of 192 squads WAIT (v3 29), and those twitch 31 v main's 27; cleared squads 12 v 10. The lane-wide band
+  leaves no fit seat, the crews wait, and their release lands after the 8 s window. Told the orchestrator before any
+  series number (R40.15's gate). Round 41 idea: protect the band only from a seat ON the passer's next 30 m (where it drives
+  now), not the whole remaining lane, or let a waiting crew keep its stand once the band has passed it.
+- **GREEN: b5dbfdd72** (builder2, `make native check exited 0`, 3,189 passed / 0 failed, 24 + 3 NOT JUDGED): T1 ON + the
+  deal-read trace.
+
 ### Bar S1 v3b swept band (filed 2026-10-25 before any number on 8701-8724; R40.14)
 What he'd see: the same as S1 v3 (no squad parks on a street the squads behind still drive), now with T1 ON in both arms.
 Arms: `main:--deploy-trace` v `v3b:--seat-route-clear=v3b,--deploy-trace`, both on main 9d5907ddd + this branch (T1
