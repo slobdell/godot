@@ -101,6 +101,12 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   last squad in JUDGED (paired mean <= +2.0 s; runs > 10 s later <= runs > 10 s earlier + 3). Judge `chain_judge.py --on-arm=v2
   --d-ratio=0.5 --last-in` (6c28abd3e; reproduces round 39's verdict). Dev (7001-7008, builder0, 24 fights): drift 650.5 -> 140.7 m (0.22x,
   -5.3 se); stuck deaths 162 -> 181.
+- **R40.11 (2026-10-24 ~22:20 PDT) builder0 crashed (the lead force-restarted it); a load cap.** At the crash builder0 carried a full check
+  plus three light lanes (load ~25 on 12 CPUs); orders' b4da041c4 check had already gone RED from load alone (combat-smoke and
+  native-verify-scenarios killed by the watchdog at ~80 min, perf-judge refused 2.44x). **Ruled:** while a full check runs on builder0, at
+  most TWO light lanes run there (J<=4 each); a third waits or goes to builder2. Lost runs re-run on the same tree and seeds (deterministic);
+  a series re-runs only its incomplete parts and notes the restart. A bar whose series tree moves to a descendant states, in Status, that
+  `git diff <bar code> <tree> -- game/` touches only OFF-switch paths.
 
 ## Rulings (round 40)
 
