@@ -31,7 +31,8 @@ see today: a parked crew pushed off its seat by a passing friend keeps giving wa
 3. **M2 the long ORCA episodes (round 39's unrun stretch):** `make native manoeuvre-wedge-trace WEDGE_AT=locks,terminus,sumps
    WEDGE_RANGE=7001-7008` on builder0 light, then `python3 tests/manoeuvre/partner_table.py <dir>`; name the partner classes behind the
    82 long episodes and file the next fix (report; a bar only on a fresh block from the orchestrator).
-4. **Stretch:** if M2 names a cheap fix, build it OFF and lab it.
+4. **M3 (R40.12): a wedged asker re-routes round its holder** (`game/ai/planner/**` granted). OFF; lab on M2's 8 longest episodes
+   (sumps s7004 Battery_1 first); bar on 8601-8624 filed before numbers. holdrelease is withdrawn (847429f96: ending a hold opens nothing).
 
 ## How to verify
 

@@ -61,7 +61,7 @@ project's workers (plane_maker): never touch processes you didn't start.
 ## Bars (round 40)
 
 **Seed registry (round 40):** 8001-8024 settle (T1 8001-8012, S1 v3 8013-8024); 8101-8124 manoeuvre; 8201-8236 orders (G1 v6 8201-8212,
-G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 holdrelease (if barred); 7001-7008 manoeuvre's M2 dev trace (not a bar).
+G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 (wedge re-route, R40.12); 7001-7008 manoeuvre's M2 dev trace (not a bar).
 
 - **Bar B2s, the stat change (balance; FILED d479a17a1, 2026-10-24 evening, before any number on 8301-8340 + 8401-8440).** Change: the
   candidate B4 picks (unit hp/armour/damage/cost within R40.1's +/-15 %). Deciding: FLATNESS (RMS over 16 cells: by guard faction and by
@@ -112,6 +112,12 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   22:20 poweroff; 15,228 on builder2, killed 05:26 UTC). Only native's own folder ran it; main's slot.sh is unaffected. **Do not merge
   6538aa16a or pair/native-guard-sides 0b6734709.** Fix: the dry run sets TANK_SQUAD_SLOT before exec + a test running a real recursive
   make under timeout; 2495c6967 raises remote jobs' oom_score_adj to 500. The two-lane cap stays (orders' RED check was the load).
+- **R40.12 (2026-10-24 ~23:20) manoeuvre's M3 = a wedged asker re-routes round its holder (holdrelease withdrawn).** Manoeuvre's code
+  read (847429f96): a hold happens only when no spot fits the holder, so ending it early opens nothing; the 20 s wedges are YIELD_RETRIES
+  re-asks into the same hold. M2 (7001-7008, 24 fights, all OFF): 37 long episodes, no deaths, CPU 23 / his side 14, artillery ~half; a
+  "looks dumb" item (his bar: units must look smart). **Ruled:** M3 (a) a planner re-route of the wedged asker with the holder as an
+  obstacle, OFF, after Bar M1 v2's series; lab first on M2's 8 longest episodes (sumps s7004 Battery_1 first), then a bar on 8601-8624.
+  **GRANT to manoeuvre:** `game/ai/planner/**` for M3 (balance's by default; balance isn't working there this round).
 
 ## Rulings (round 40)
 
