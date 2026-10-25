@@ -45,6 +45,10 @@ LOG = re.compile(r"^(?P<arena>[a-z_]+)-(?P<seed>\d+)-(?P<side>green|rust)\.log$"
 
 
 def load_catalog(path: Path | None) -> dict:
+    # build/ is cleared by a remote run's copy-back, so a series' driver keeps its copy in ~/balance-runs/.
+    for fallback in (ROOT / "build/balance/catalog.json", Path.home() / "balance-runs/catalog.json"):
+        if path is None and fallback.exists():
+            path = fallback
     path = path or ROOT / "build/balance/catalog.json"
     if not path.exists():
         sys.exit(f"no catalog at {path}: run `make balance-catalog`")
