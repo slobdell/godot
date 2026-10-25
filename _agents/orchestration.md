@@ -3965,3 +3965,8 @@ instrument that cannot lie about load — removal within one run — and let eve
      If we have new announcer scripts we should just turn them on." Rule for briefs: once he has approved an asset's text or look
      and its check is green, it defaults ON (an `=off` escape is fine). Switches that default OFF stay for behaviour changes that
      have not passed a bar.
+328. **A tool that re-execs make must prove it terminates on a real make (round 40).** native's slot.sh dry-run change exec'd `make -n`
+    without the variable that marks "already in a slot"; its test used `touch`, so it never recursed. On the builders it forked thousands
+    of makes, OOMed builder0 into a 15-minute thrash and a forced poweroff, and lost four streams' runs. Any change to slot.sh, remote.sh or
+    a make wrapper is tested with a real nested make under `timeout`, and remote jobs run at a raised oom_score_adj so the kernel kills a
+    build, not the box.

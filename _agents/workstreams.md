@@ -107,6 +107,11 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   most TWO light lanes run there (J<=4 each); a third waits or goes to builder2. Lost runs re-run on the same tree and seeds (deterministic);
   a series re-runs only its incomplete parts and notes the restart. A bar whose series tree moves to a descendant states, in Status, that
   `git diff <bar code> <tree> -- game/` touches only OFF-switch paths.
+  **Cause found (native, 2026-10-24 ~22:35):** not the load. stream/native 6538aa16a's slot.sh exec'd a dry run (`make -n`) without
+  TANK_SQUAD_SLOT, so the inner make re-entered slot.sh: unbounded recursion (>= 6,388 makes on builder0, OOM from 22:04, thrash to the
+  22:20 poweroff; 15,228 on builder2, killed 05:26 UTC). Only native's own folder ran it; main's slot.sh is unaffected. **Do not merge
+  6538aa16a or pair/native-guard-sides 0b6734709.** Fix: the dry run sets TANK_SQUAD_SLOT before exec + a test running a real recursive
+  make under timeout; 2495c6967 raises remote jobs' oom_score_adj to 500. The two-lane cap stays (orders' RED check was the load).
 
 ## Rulings (round 40)
 
