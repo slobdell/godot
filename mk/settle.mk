@@ -240,3 +240,13 @@ settle-h2: native-for-check import ## Round 39 (settle stretch): Bar H v2's seri
 	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_ROUTES=click ORDERS_PROBE_SQUADS=3 ORDERS_PROBE_ARMS="$(SETTLE_H2_ARMS)" \
 		ORDERS_PROBE_SEEDS="$(SETTLE_H2_SEEDS)" ORDERS_PROBE_JOBS=4 ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-h2/fight > $(BUILD_DIR)/settle-h2/fight.out 2>&1 || true
 	@cd $(BUILD_DIR)/settle-h2 && $(PYTHON) $(CURDIR)/tests/settle/settle_judge.py h2 fight main held | tee verdict.txt || true
+
+# Round 40 Bar T1 (settle.md Status, filed before any number): main v the deploy trigger arm on S1 v2's workloads, seeds
+# 8001-8012 (no-fight 12 cells; fights 3-squad budget 1500 and 5-squad budget 3000 click cells); judge `settle_judge.py t1`.
+# builder0 light, J 4:  tools/remote.sh --light native settle-t1 TANK_SQUAD_SLOT_TIMEOUT=14400
+SETTLE_T1_ARM ?= settled:--deploy-arrive=settled,--deploy-trace
+.PHONY: settle-t1
+settle-t1: ## Round 40 (settle T1): the deploy trigger's bar series (main v SETTLE_T1_ARM, seeds 8001-8012) -> build/settle-t1/verdict.txt
+	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-t1" SETTLE_V2_SEEDS="$$(seq -s " " 8001 8012)" \
+		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 8001 8012)" SETTLE_V2_JOBS=4 SETTLE_V2_JUDGE=t1 \
+		SETTLE_V2_PAIR="main $(firstword $(subst :, ,$(SETTLE_T1_ARM)))" SETTLE_V2_ARMS="main:--deploy-trace $(SETTLE_T1_ARM)"
