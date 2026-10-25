@@ -122,6 +122,31 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **GREEN: b5dbfdd72** (builder2, `make native check exited 0`, 3,189 passed / 0 failed, 24 + 3 NOT JUDGED): T1 ON + the
   deal-read trace.
 
+- **Round 41 S1, the middle ground (R40.17, one line, no build):** a band on ONE side only, from the centre line out to the
+  side each crew's own travel slot sits (its lateral offset, at most 15 m), so a lane's far half stays free for seats and
+  fewer squads wait (v3 under-covers Alpha_3's line; v3b covers both halves and makes 70 of 192 squads wait).
+- **`--cap-deal=street` built** (OFF, 463f64e39; pure tests 2/0 on builder2, `settle_` 47/0): on a CAP deploy only, the
+  halt laid along the street at the anchor (ElementSituation.street_axis, the ordered heading's side; the ordered heading
+  where no street reads) and dealt least-total from where the crews stand (`_fit_deal`, its `keep` seats the deploy).
+  **Lab** (builder2 light, 463f64e39 + target, terminus 5 route 8203/8206/8208, n 3 runs an arm, dev; `settle-dev-capdeal`):
+  deploy legs >= 25 m 5 -> 1 squads; the cap deploys' legs 34.5 -> 24.5 (8203 Bravo), 38.2 -> 20.4 (8206 Delta), 31.5 ->
+  10.7 m (8208 Bravo; its twitch 37.1 -> 16.7); squads twitching >= 15 m 4 -> 4; never-in 0 -> 0; all-in median 46.6 ->
+  44.8 s; places outside 0 -> 0. 8208's Alpha capped on main (50.8 m leg) and deployed all in under capdeal.
+
+### Bar cap deal (filed 2026-10-25 before any number on 8725-8748; R40.14 (3))
+What he'd see: a squad that waited out the 10 s deploy limit lays its halt along the street it stands in and each tank
+takes the seat nearest it, no tank driving 30-50 m across the street after the squad has stopped. Arms: `main:--deploy-trace`
+v `capdeal:--cap-deal=street,--deploy-trace`, both on main 9d5907ddd + this branch (T1 ON, everything else of the branch
+OFF), frozen at the hash whose full check is green (the gate). Workload: s1c's (12 no-fight cells: locks, crossing, terminus
+x 3/5 squads x click/route; fights 3-squad budget 1500 and 5-squad budget 3000 click cells); **no-fight seeds 8725-8736,
+fight seeds 8737-8748**; builder2, `make settle-capdeal`. Judge `settle_judge.py capdeal`:
+- Counter: cap deploys dealt > 0 (DEPLOY_TRACE `cap_deal`).
+- **Deciding (both):** squads with a deploy leg >= 25 m, capdeal <= 0.75 x main with main >= 20 (else undecidable = no
+  ship); squads with twitch >= 15 m, capdeal <= main.
+- Guards: never-in over every cell capdeal <= main and none new; all-in mean over runs in on both <= main x 1.10 + 1; places
+  outside <= main + 2; shape flips <= main + 3; friend contacts and foreign <= 110 % + 5; fights 3- and 5-squad (his kills,
+  his losses, CPU losses as orders_judge's fight_guards), 0 unstarted. Reported: place+twitch >= 25 m, first shape differs.
+
 ### Bar S1 v3b swept band (filed 2026-10-25 before any number on 8701-8724; R40.14)
 What he'd see: the same as S1 v3 (no squad parks on a street the squads behind still drive), now with T1 ON in both arms.
 Arms: `main:--deploy-trace` v `v3b:--seat-route-clear=v3b,--deploy-trace`, both on main 9d5907ddd + this branch (T1

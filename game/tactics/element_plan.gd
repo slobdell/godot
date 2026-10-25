@@ -1905,6 +1905,7 @@ static func _trace_deploy(plan: Dictionary, situation: Dictionary, stand: Vector
 			"cleared": int((plan.get("deploy", {}) as Dictionary).get("cleared", 0)),
 			"waited": int((plan.get("deploy", {}) as Dictionary).get("waited", 0)),
 			"cause": String((plan.get("deploy", {}) as Dictionary).get("cause", "")),
+			"cap_deal": (plan.get("deploy", {}) as Dictionary).get("cap_deal", {}),
 			"deals": _trace_deals(plan, situation, stand, heading, spacing),
 			"clear_of": _trace_clear_of((plan.get("deploy", {}) as Dictionary).get("clear_of", {})), "crews": crews}))
 

@@ -315,3 +315,12 @@ settle-dev-capdeal: native-for-check import ## Round 40 (settle): --cap-deal=str
 		ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-capdeal > $(BUILD_DIR)/settle-dev-capdeal/probe.out 2>&1 || true
 	@$(PYTHON) tests/settle/settle_t1.py $(BUILD_DIR)/settle-dev-capdeal | tee $(BUILD_DIR)/settle-dev-capdeal/lab.txt || true
 	@$(PYTHON) tests/settle/settle_deals.py $(BUILD_DIR)/settle-dev-capdeal | tee -a $(BUILD_DIR)/settle-dev-capdeal/lab.txt || true
+
+# Round 40 Bar cap deal (settle.md Status, filed before any number; R40.14): main v --cap-deal=street on T1-ON main, s1c's
+# workload; no-fight seeds 8725-8736, fight seeds 8737-8748; judge `settle_judge.py capdeal`.
+# builder2:  make gcp-remote T="native settle-capdeal"
+.PHONY: settle-capdeal
+settle-capdeal: ## Round 40 (settle): the cap deal's bar series (main v capdeal, seeds 8725-8748) -> build/settle-capdeal/verdict.txt
+	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-capdeal" SETTLE_V2_SEEDS="$$(seq -s " " 8725 8736)" \
+		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 8737 8748)" SETTLE_V2_JOBS=$(or $(SETTLE_CAPDEAL_JOBS),12) SETTLE_V2_JUDGE=capdeal \
+		SETTLE_V2_PAIR="main capdeal" SETTLE_V2_ARMS="main:--deploy-trace capdeal:--cap-deal=street,--deploy-trace"
