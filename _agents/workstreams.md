@@ -61,7 +61,14 @@ project's workers (plane_maker): never touch processes you didn't start.
 ## Bars (round 40)
 
 **Seed registry (round 40):** 8001-8024 settle (T1 8001-8012, S1 v3 8013-8024); 8101-8124 manoeuvre; 8201-8236 orders (G1 v6 8201-8212,
-G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 7001-7008 manoeuvre's M2 dev trace (not a bar).
+G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 7001-7008 manoeuvre's M2 dev trace (not a bar).
+
+- **Bar B2s, the stat change (balance; FILED d479a17a1, 2026-10-24 evening, before any number on 8301-8340 + 8401-8440).** Change: the
+  candidate B4 picks (unit hp/armour/damage/cost within R40.1's +/-15 %). Deciding: FLATNESS (RMS over 16 cells: by guard faction and by
+  CPU faction, blob and turtle lines, minus the line mean; se by seed bootstrap) down by > 2 paired se, AND both outlier cells move toward
+  their line's mean. Guards: blob and turtle lines not up; match length per line within +/-15 % (+/-20 % per faction); time-cap share not
+  up; none line not worse; perf-judge; full check with the sim baseline adopted on purpose (orchestrator). Base read: round 39's OFF arm
+  scores 17.4 (se 1.4).
 
 ## Rulings (round 40)
 
@@ -76,6 +83,9 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 7001-7008 manoeuv
   `{"units": {"<id>": {"max_health", "max_shield", "cost", "armor": {"front","side","rear"}}}, "weapons": {"<id>": {"damage"}}}`,
   loaded via the existing `--tune` path. **GRANT to native (N3):** `Units.cost_of` and `army.gd`'s deal honour a tuned cost (additive;
   default unchanged), and GUARD_RESULT echoes a hash of the overrides. Multipliers (native's brief) are dropped.
+- **R40.3 (2026-10-24 evening) GRANT to balance: weapon `damage` values in `game/combat/weapons.gd`** (constants only, within R40.1's
+  +/-15 %; his bounds name damage). Balance's own rule stands: no damage change on a weapon two factions share (laser, autocannon,
+  machine_gun). Seeds 8501-8540 registered as balance's B4 screening block (dev).
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
