@@ -73,9 +73,22 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   make native check exited 0`, 3,188 passed / 0 failed, 24 + 3 NOT JUDGED (non-judging machine: perf-judge, ai-scenarios'
   CPU budget, the quiet-window guard). **sim-baseline unmoved** ("13 maps unmoved (glibc-2.43)", 53/0): no maps to record or
   adopt. `settle-t1`'s main arm and both arms of `settle-s1v3r40` pin `--deploy-arrive=off` so the filed bars reproduce.
-- **Bar S1 v3 series RUNNING**, builder0 light J4 (`settle-s1v3r40`, seeds 8013-8024), launched at 8ca1b1e31 (game code ==
-  afd436ca3, green) before the flip; remote.sh's single rsync froze it (orchestrator accepted as R40.13's frozen tree). T1 is
-  OFF in both arms, as the bar was filed.
+- **Bar S1 v3 FAIL** (afd436ca3's code frozen at 8ca1b1e31, T1 OFF both arms, builder0 light J4, seeds 8013-8024, every
+  part complete: 576 squads, fights 36/36 both reads; `references/round40/settle/s1v3-bar-builder0/`). DECIDING PASSED:
+  never-in runs on the 5-squad cells 4 -> 0, none new; never-in all cells 5 -> 0; all-in 25.7 -> 24.8 s; flips 0 -> 0;
+  first shape 6/576; contacts 12235 -> 11418; fights all inside. **FAILED guard twitch: squads >= 15 m 88 -> 99.** Reported:
+  deploy leg >= 25 m 58 -> 85; place+twitch >= 25 m 162 -> 168. Not shipped (stays `--seat-route-clear=v3`, OFF).
+- **The twitch split** (bar rows joined to v3's DEPLOY_TRACE; net +11 = 56 up, 45 down): WAITED squads (n 79) 31 -> 37 (+6)
+  with legs barely moved (>= 25 m 5 -> 10; 4 of 16 ups long-legged): the waiting crew released and driving after the 8 s
+  place window. CLEARED squads (n 239) 42 -> 47 (+5) carry the long legs (>= 25 m 18 -> 42; 9 of 30 ups' legs grew > 5 m).
+  UNTOUCHED (n 258) 15 -> 15. Cells: crossing 5 click +4, crossing 3 click +3, terminus 5 click +3, crossing 3 route +2,
+  terminus 5 route +2; locks clicks and crossing 5 route went down. Next for round 41 (v4 ideas, not built): release a wait
+  inside the place window or keep the waiting crew's stand as its seat once the window closes; cap a cleared seat's leg
+  (e.g. no clear seat farther than the original seat + a spacing: wait instead).
+- **Dev pair with T1 ON + the dry deal read RUNNING** on builder2 (orchestrator's asks), frozen side worktree
+  `../godot-settle-dev9d` = main 9d5907ddd + the two measurement-only trace commits (tip 4f1ed2eca): v3 v main on crossing +
+  terminus x 3/5 x click/route, dev seeds 6301-6306, J12; then main's DEPLOY_TRACE deals on terminus 5 route
+  8203/8205/8206/8208.
 - **Orders' question (via orchestrator, G1 v6 trace, laptop, terminus 5 route s8206): when a cap deploy lays its halt with
   crews bunched, should seats be dealt nearest-first from where they stand?** Answer (code read, no run): **yes, as the
   least TOTAL drive, not greedy nearest-first.** Greedy nearest-first leaves the last crew the leftover far seat. On main the
