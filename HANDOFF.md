@@ -59,6 +59,10 @@ M1 v2 FAIL (G5), G1 v6 FAIL (terminus 5 route twitch); running S1 v3 (settle), G
 (68d0410d3 read 7,691), relative line PASS. Covers T1 ON + every OFF switch merged this round (M1 v2, G1 v6, G3 v8/v9). Main 245499bf1
 GREEN on builder2 (`make check exited 0`, 25 passed + 2 NOT JUDGED: perf-judge, scenario_perf 3.02x; sim-baseline 13 unmoved): fully verified.
 
+**2026-10-25 ~07:30: main 901afc1c1 GREEN on builder2** (`make check exited 0`, 3224 passed / 0 failed, 25 passed + 2 NOT JUDGED:
+perf-judge, scenario_perf 2.77x) = + balance 5be511659 (tools, B3 OFF), orders e7c8a9dce (all OFF), settle f7ad1078f (all OFF). Only
+OFF code since perf-judged 245499bf1.
+
 **LEAD QUESTION (asked 2026-10-25 ~03:45, R40.16): combined arms needs more than +/-15 % unit numbers.** All-tanks beats a mixed army 82 %;
 the mixed army's IFVs and MG scouts can't hurt tanks (autocannon 5-10 % of its damage on a tank's front). Recommended: give IFVs a
 real anti-tank missile (as the Bradley's TOW), slow and limited; the alternative is letting penetration change too.
