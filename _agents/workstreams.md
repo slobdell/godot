@@ -109,6 +109,11 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   in ARCHETYPES). **GRANT to balance:** one additive line in `game/modes/skirmish_mode.gd` (demo_flags keeps an explicit --player/--enemy
   that starts with "cpu:mono_"); default path unchanged. The line: CPU v CPU, mono on Green one arm / Rust the other, per faction, v the
   SAME faction's normal deal at the same budget, 8501-8510 (screening).
+- **R40.8 (2026-10-24 evening) settle's cap-deploy census: ADVANCE walks crews off their station.** Lab 2 (754fee377, builder0 light J4,
+  main arm, 12 street cells x dev 6003-6004, 96 squads): 47 cap deploys; of the 45 crews that WERE in (<= 3.5 m) and drifted off, 20 were
+  on ADVANCE, 19 HOLD, 6 MOVE. Settle's T1 v2 `--deploy-arrive=settled` (a once-in crew within 10 m counts) works round it (cap deploys
+  47 -> 5, arrival-to-deploy 6.8 -> 3.5 s, all-in median 25.1 -> 23.6 s; one never-in fixed at c074db72e, re-lab running). The ADVANCE
+  drift itself is balance's (brains), a later item (B6) after B2s/B5: a crew still being dealt its travel seat shouldn't take ADVANCE.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
