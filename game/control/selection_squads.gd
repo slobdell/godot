@@ -837,20 +837,38 @@ static var places_off_lanes := 0
 
 
 ## G3 v7: whether `at` stands within `reach` of the road `path` (a polyline). Pure.
-static func on_road(at: Vector3, path: PackedVector3Array, reach: float) -> bool:
+## G3 v8: short of its last `skip_end` metres (beside the squad's own halt is the spacing's business, not its road).
+static func on_road(at: Vector3, path: PackedVector3Array, reach: float, skip_end := 0.0) -> bool:
 	var p := Vector2(at.x, at.z)
+	var total := 0.0
+	for k in range(1, path.size()):
+		total += Vector2(path[k].x - path[k - 1].x, path[k].z - path[k - 1].z).length()
+	var walked := 0.0
 	for k in range(1, path.size()):
 		var a := Vector2(path[k - 1].x, path[k - 1].z)
 		var seg := Vector2(path[k].x, path[k].z) - a
-		var t := 0.0 if seg.length_squared() < 0.001 else clampf((p - a).dot(seg) / seg.length_squared(), 0.0, 1.0)
-		if p.distance_to(a + seg * t) < reach:
+		var length := seg.length()
+		var t := 0.0 if length < 0.001 else clampf((p - a).dot(seg) / (length * length), 0.0, 1.0)
+		if p.distance_to(a + seg * t) < reach and walked + t * length < total - skip_end:
 			return true
+		walked += length
 	return false
 
 
 ## G3 v7: a road's half-width for squad `j` passing a halt of squad `i` (half j's width + half i's short side).
 static func lane_reach(blocks: Array, i: int, j: int) -> float:
 	return float(blocks[j]["width"]) * 0.5 + _short_side(blocks[i]) * 0.5
+
+
+## G3 v8: how much of squad `j`'s road end is its own halt (half its short side).
+static func lane_skip(blocks: Array, j: int) -> float:
+	return _short_side(blocks[j]) * 0.5
+
+
+## G3 v8 (round 40, R40.9): `--place-clear-after=relay` clears a shifted leg's places after the previous waypoints are
+## re-laid, and reads each road from where its previous leg now ends, short of the squad's own halt (with
+## `--place-clear-lane=on`). OFF until its bar.
+static var PLACE_CLEAR_AFTER := OS.get_cmdline_user_args().has("--place-clear-after=relay")
 
 
 static func _flat_gap(a: Vector3, b: Vector3) -> float:
