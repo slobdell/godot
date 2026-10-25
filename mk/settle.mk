@@ -259,3 +259,20 @@ settle-s1v3r40: ## Round 40 (settle S1 v3): the per-crew route-clear's bar serie
 	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3r40" SETTLE_V2_SEEDS="$$(seq -s " " 8013 8024)" \
 		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 8013 8024)" SETTLE_V2_JOBS=4 SETTLE_V2_JUDGE=s1c SETTLE_V2_PAIR="main v3" \
 		SETTLE_V2_ARMS="main:--deploy-arrive=off,--deploy-trace v3:--deploy-arrive=off,--seat-route-clear=v3,--deploy-trace"
+
+# Round 40 (settle stretch, orchestrator after Bar S1 v3's FAIL): dev reads on main with T1 ON. (1) v3 v main on the cells
+# that carried v3's extra twitch (crossing + terminus, 3 and 5 squads, click and route), dev seeds 6301-6306; (2) the dry
+# deal read (DEPLOY_TRACE `deals`) on terminus 5 route, orders' flagged seeds 8203 8205 8206 8208. builder2:
+#   make gcp-remote T="native settle-dev-v3t1"
+.PHONY: settle-dev-v3t1
+settle-dev-v3t1: native-for-check import ## Round 40 (settle stretch): dev v3 v main with T1 ON + the dry deal read -> build/settle-dev-v3t1/
+	@rm -rf $(BUILD_DIR)/settle-dev-v3t1 && mkdir -p $(BUILD_DIR)/settle-dev-v3t1
+	@echo ">> settle-dev-v3t1 on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | jobs 12" | tee $(BUILD_DIR)/settle-dev-v3t1/header.txt
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_MAPS="crossing terminus" ORDERS_PROBE_JOBS=12 \
+		ORDERS_PROBE_ARMS="main:--deploy-trace v3:--seat-route-clear=v3,--deploy-trace" ORDERS_PROBE_SEEDS="$$(seq -s " " 6301 6306)" \
+		ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-v3t1/pair > $(BUILD_DIR)/settle-dev-v3t1/pair.out 2>&1 || true
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_MAPS=terminus ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_ROUTES=route ORDERS_PROBE_JOBS=12 \
+		ORDERS_PROBE_ARMS="main:--deploy-trace" ORDERS_PROBE_SEEDS="8203 8205 8206 8208" \
+		ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-v3t1/deals > $(BUILD_DIR)/settle-dev-v3t1/deals.out 2>&1 || true
+	@$(PYTHON) tests/settle/settle_t1.py $(BUILD_DIR)/settle-dev-v3t1/pair | tee $(BUILD_DIR)/settle-dev-v3t1/pair.txt || true
+	@$(PYTHON) tests/settle/settle_deals.py $(BUILD_DIR)/settle-dev-v3t1/deals | tee $(BUILD_DIR)/settle-dev-v3t1/deals.txt || true
