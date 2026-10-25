@@ -77,6 +77,11 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   shape, flips, places outside (the GATE read) <= main + 2; contacts; fights. Departure (stated with dev numbers, accepted): per-cell
   twitch MEDIANS reported, not judged (an early halt moves a straggler's last approach into the probe's window; lab 3 n 2). Known risk:
   terminus 5 route s6003 (Echo lost in dev). A pass = CP40.1.
+  **VERDICT PASS (2026-10-25 ~00:30, afd436ca3's code, builder0 light J4, 8001-8012, full re-run after the crash, every part complete:
+  576 squads, 36/36 fights both reads, 0 unstarted).** Deciding: cap deploys 265 -> 83 (31 %). Guards: arrival-to-deploy 6.26 -> 4.42 s;
+  never-in 3 -> 1; all-in mean 28.6 -> 29.0 s (<= 32.4); twitch >= 15 m 113 -> 110; places outside (gate) 80 -> 80; flips 0 -> 0; first
+  shape 6/576; contacts 13,576 -> 13,394; fights 3-squad kills 4.69 -> 5.11, losses 7.06 -> 6.72; 5-squad 10.00 -> 9.56, 12.86 -> 12.97.
+  Ships `--deploy-arrive=settled` ON (`=off` escape) on a new hash with one full check = CP40.1.
 - **Bar G1 v6 (orders; FILED b4da041c4, 2026-10-24 evening, before any number on 8201-8212).** Arm = G1 v5's + `--group-sides=both`; judge
   `orders_judge.py g1v4`, unamended. Deciding lines read the new corridor (R40.5); the old gate read reported beside them per cell, plus one
   line naming the cells where main v main's read changed. builder0 light J4, main as it is (CP40.1 OFF both arms unless it lands first).
