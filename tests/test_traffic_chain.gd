@@ -174,9 +174,9 @@ func test_v2_switches_turn_native_yield_off_until_twinned() -> void:
 	var was := BrainSwitches.native_yield
 	Traffic.set_off("chainrelease", false)
 	assert_true(Movement.chain_release_on(), "on")
-	assert_true(not BrainSwitches.native_yield, "asks run the GDScript rule (no C++ mirror of chainrelease yet)")
+	assert_eq(BrainSwitches.native_yield, was, "chainrelease is twinned: native_yield left alone")
 	Traffic.set_off("chainrelease", true)
-	assert_eq(BrainSwitches.native_yield, was, "and back as it was")
+	assert_eq(BrainSwitches.native_yield, was, "and off, as it was")
 	Traffic.set_off("chainside", false)
 	assert_true(not BrainSwitches.native_yield, "chainside too")
 	Traffic.set_off("chainside", true)
