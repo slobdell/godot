@@ -152,6 +152,9 @@ cells (as blob/turtle guard, and 100 - the CPU cell), faction_max leaves law wea
   283, Missile Ring 218 -> 228, Spotter 195 -> 204; 2000 CR buys 15 Skimmers, not 16). **R40.18:** c5r accepted; the eight re-pinned,
 numbers only (adopted on purpose, R40.18) -> **ARM = ad956031b** (6d95d4eba + the re-pins). Its full check queued on builder0 after
 BASE 5be511659's. Before naming c5r: its mono line (G8 screen) and one paired lines read on 8513-8524 (builder2, queued).
+  **fm_law_ca (B5, every tank -15 % hp/armour/damage +15 % cost on top of fm_law):** flatness 18.5 -> 17.3 (-1.2, se 2.7), turtle
+  line **+9.2 (3.3)**, syndicate back on top (blob v a syndicate CPU 20 %): the tank nerf undoes the faction table. Not a candidate;
+  its mono line runs only to measure what the in-bounds tank nerf buys against the all-tank army.
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
