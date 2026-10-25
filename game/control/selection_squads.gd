@@ -831,7 +831,13 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 ## that was v5's aside/back step, which v6's seat check accepted, not the step back along the leg). `--place-clear-lane=on`:
 ## no moved place stands on another squad's road in (the caller's `in_lane`: its navmesh drive from its vehicles to its
 ## place, `lane_reach` either side); the given place is kept.
-static var PLACE_CLEAR_LANE := OS.get_cmdline_user_args().has("--place-clear-lane=on")
+static var PLACE_CLEAR_LANE := OS.get_cmdline_user_args().has("--place-clear-lane=on") \
+		or OS.get_cmdline_user_args().has("--place-clear-lane=column")
+## G3 v9 (round 40): `--place-clear-lane=column` reads a road as wide as the column driving it (`ROAD_HALF_M` either
+## side), not as the squad's parked herringbone (v8's dev read: 8 of the 10 pairs left had every step refused, the road
+## 17-20 m either side on crossing).
+static var LANE_COLUMN := OS.get_cmdline_user_args().has("--place-clear-lane=column")
+const ROAD_HALF_M := 4.0
 ## Measurement (G3 v7): step backs refused for standing in a later squad's lane (the given place kept), since start.
 static var places_off_lanes := 0
 
@@ -855,9 +861,10 @@ static func on_road(at: Vector3, path: PackedVector3Array, reach: float, skip_en
 	return false
 
 
-## G3 v7: a road's half-width for squad `j` passing a halt of squad `i` (half j's width + half i's short side).
+## G3 v7: a road's half-width for squad `j` passing a halt of squad `i` (half j's width + half i's short side; v9: half
+## a column's).
 static func lane_reach(blocks: Array, i: int, j: int) -> float:
-	return float(blocks[j]["width"]) * 0.5 + _short_side(blocks[i]) * 0.5
+	return (ROAD_HALF_M if LANE_COLUMN else float(blocks[j]["width"]) * 0.5) + _short_side(blocks[i]) * 0.5
 
 
 ## G3 v8: how much of squad `j`'s road end is its own halt (half its short side).

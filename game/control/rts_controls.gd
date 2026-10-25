@@ -1429,6 +1429,9 @@ func _place_clear(squads: Array, blocks: Array, anchors: Array[Vector3], click: 
 					roads[j] = Pathing.find_path(ground, clear_blocks[j]["center"], unmoved[j])
 				if SelectionSquads.on_road(at, roads[j], SelectionSquads.lane_reach(clear_blocks, i, j),
 						SelectionSquads.lane_skip(clear_blocks, j) if SelectionSquads.PLACE_CLEAR_AFTER else 0.0):
+					if SelectionSquads.COLUMN_TRACE:
+						print("PLACE_TRACE squad %d at %s on squad %d's road %s -> %s (reach %.1f)" % [i, at, j,
+								clear_blocks[j]["center"], unmoved[j], SelectionSquads.lane_reach(clear_blocks, i, j)])
 					return true
 			return false
 	anchors = SelectionSquads.place_clear(anchors, clear_blocks, click, clear_ahead,

@@ -35,6 +35,7 @@ func teardown() -> void:
 	SelectionSquads.GROUP_LEAD = OS.get_cmdline_user_args().has("--group-lead=drive")
 	SelectionSquads.SIDES_BOTH = OS.get_cmdline_user_args().has("--group-sides=both")
 	SelectionSquads.PLACE_CLEAR_LANE = OS.get_cmdline_user_args().has("--place-clear-lane=on")
+	SelectionSquads.LANE_COLUMN = OS.get_cmdline_user_args().has("--place-clear-lane=column")
 	SelectionSquads.ROUTE_CORNER = OS.get_cmdline_user_args().has("--group-route-corner=line")
 	if _lab != null:
 		_lab.dispose()
@@ -684,3 +685,25 @@ func test_g3v7_no_step_back_onto_a_later_squads_road() -> void:
 	var road := PackedVector3Array([Vector3(100, 0, 0), Vector3(0, 0, 0)])
 	assert_true(SelectionSquads.on_road(Vector3(50, 0, 5), road, 25.4), "a point beside the road is on it")
 	assert_true(not SelectionSquads.on_road(Vector3(50, 0, 40), road, 25.4), "40 m off it is not")
+
+
+func test_g3v9_a_road_is_a_column_wide() -> void:
+	# Dev read (5bc304738, builder2, 3804-3809): 8 of the 10 pairs left were squads whose every step was refused, the
+	# road read as wide as the driving squad's parked herringbone (17-20 m either side on crossing 3 / 5).
+	var blocks := [{"center": Vector3(100, 0, 0), "width": 25.4, "depth": 54.8}, {"center": Vector3(60, 0, 6), "width": 12.0, "depth": 30.0}]
+	SelectionSquads.LANE_COLUMN = false
+	assert_near(SelectionSquads.lane_reach(blocks, 1, 0), 12.7 + 6.0, 0.01, "v7: half the driver's width + half the halt's short side")
+	SelectionSquads.LANE_COLUMN = true
+	assert_near(SelectionSquads.lane_reach(blocks, 1, 0), SelectionSquads.ROAD_HALF_M + 6.0, 0.01, "v9: half a column + half the halt's short side")
+	var road := PackedVector3Array([Vector3(100, 0, 0), Vector3(0, 0, 0)])
+	assert_true(not SelectionSquads.on_road(Vector3(50, 0, 14), road, SelectionSquads.lane_reach(blocks, 1, 0)), "a halt 14 m off the column is clear of it")
+	assert_true(SelectionSquads.on_road(Vector3(50, 0, 8), road, SelectionSquads.lane_reach(blocks, 1, 0)), "8 m off it still blocks it")
+	# v7's case still holds: Delta's step back up Echo's road is refused with a column's reach.
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(3, 0, 0.5)]
+	var two := [{"center": Vector3(100, 0, 0), "width": 25.4, "depth": 54.8}, {"center": Vector3(60, 0, 6), "width": 25.4, "depth": 54.8}]
+	var only_back := func(i: int, at: Vector3) -> bool: return i != 1 or (at.x > 20.0 and at.z > 1.5)
+	var in_lane := func(i: int, at: Vector3) -> bool:
+		return i != 0 and SelectionSquads.on_road(at, PackedVector3Array([two[0]["center"], places[0]]), SelectionSquads.lane_reach(two, i, 0))
+	var v9 := SelectionSquads.place_clear(places, two, Vector3.ZERO, Vector3(-1, 0, 0), func(_p: Vector3) -> bool: return true,
+			Callable(), only_back, in_lane)
+	assert_eq(v9[1], places[1], "v9: Delta still keeps its given place")
