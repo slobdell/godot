@@ -106,6 +106,11 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   last squad in JUDGED (paired mean <= +2.0 s; runs > 10 s later <= runs > 10 s earlier + 3). Judge `chain_judge.py --on-arm=v2
   --d-ratio=0.5 --last-in` (6c28abd3e; reproduces round 39's verdict). Dev (7001-7008, builder0, 24 fights): drift 650.5 -> 140.7 m (0.22x,
   -5.3 se); stuck deaths 162 -> 181.
+- **Bar G3 v9, road as wide as its column (orders; FILED 893180a31, 2026-10-25 ~01:10, before any number on 8213-8224).** Arm = v8's +
+  `--place-clear-lane=column`, base `main:`; judge `orders_judge.py g3` unamended from G3 v6; frozen tree at the green hash; every
+  G1/G2/T1/S1 switch OFF both arms. Known risk: G3 v6's crossing 5 route never-in / twitch. Dev (builder2 J4, 9076ee2f8, 3804-3809, n 6):
+  pairs < 12 m 25 -> 6 (bar <= 6.2, thin), never-in 1 -> 1, all 18 cells pass. **Lane (C40.1, one judged series per builder):** builder2
+  has G1 v6, so G3 v9 runs in builder0's light lane manoeuvre's M1 v2 frees.
 - **R40.11 (2026-10-24 ~22:20 PDT) builder0 crashed (the lead force-restarted it); a load cap.** At the crash builder0 carried a full check
   plus three light lanes (load ~25 on 12 CPUs); orders' b4da041c4 check had already gone RED from load alone (combat-smoke and
   native-verify-scenarios killed by the watchdog at ~80 min, perf-judge refused 2.44x). **Ruled:** while a full check runs on builder0, at
