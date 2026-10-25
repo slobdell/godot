@@ -118,6 +118,12 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   "looks dumb" item (his bar: units must look smart). **Ruled:** M3 (a) a planner re-route of the wedged asker with the holder as an
   obstacle, OFF, after Bar M1 v2's series; lab first on M2's 8 longest episodes (sumps s7004 Battery_1 first), then a bar on 8601-8624.
   **GRANT to manoeuvre:** `game/ai/planner/**` for M3 (balance's by default; balance isn't working there this round).
+- **R40.13 (2026-10-24 ~23:50) A judged series runs ONE frozen tree.** Orders' Bar G1 v6 parts re-synced its moving worktree (c7d642aeb,
+  then 9076ee2f8's G3 v9, unreachable OFF code). **Ruled:** every judged series runs from a side worktree at its named green hash
+  (doctrine's round-39 `d3-tree` pattern); parts that ran on another commit re-run from it. G1 v6's parts move to builder2 (builder0 held
+  main's check + three lanes). G3 v8 dev read FAILED (5bc304738, builder2 J4, 3804-3809, n 6: pairs < 12 m 25 -> 10, bar 6.2; the road
+  test reads each road 17-20 m wide); G3 v9 `--place-clear-lane=column` (9076ee2f8, OFF) dev-reads next. Main check of 5a9743c2c running on
+  builder0 (synced before 65a5c5b70's merge, so manoeuvre's M1 v2 OFF needs the next batch check).
 
 ## Rulings (round 40)
 
