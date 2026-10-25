@@ -61,7 +61,7 @@ project's workers (plane_maker): never touch processes you didn't start.
 ## Bars (round 40)
 
 **Seed registry (round 40):** 8001-8024 settle (T1 8001-8012, S1 v3 8013-8024); 8101-8124 manoeuvre; 8201-8236 orders (G1 v6 8201-8212,
-G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 (wedge re-route, R40.12); 7001-7008 manoeuvre's M2 dev trace (not a bar).
+G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 (wedge re-route, R40.12); 8701-8724 settle S1 v3b (v3 on T1-ON main), 8725-8748 settle --cap-deal=street (R40.14); 7001-7008 manoeuvre's M2 dev trace (not a bar).
 
 - **Bar B2s, the stat change (balance; FILED d479a17a1, 2026-10-24 evening, before any number on 8301-8340 + 8401-8440).** Change: the
   candidate B4 picks (unit hp/armour/damage/cost within R40.1's +/-15 %). Deciding: FLATNESS (RMS over 16 cells: by guard faction and by
@@ -151,6 +151,13 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   main's check + three lanes). G3 v8 dev read FAILED (5bc304738, builder2 J4, 3804-3809, n 6: pairs < 12 m 25 -> 10, bar 6.2; the road
   test reads each road 17-20 m wide); G3 v9 `--place-clear-lane=column` (9076ee2f8, OFF) dev-reads next. Main check of 5a9743c2c running on
   builder0 (synced before 65a5c5b70's merge, so manoeuvre's M1 v2 OFF needs the next batch check).
+- **R40.14 (2026-10-25 ~03:10) settle: S1 v3 re-bars on T1-ON main; --cap-deal=street next.** Dev (builder2, frozen 4f1ed2eca = main
+  9d5907ddd + trace commits, crossing+terminus x 3/5 x click/route, 6301-6306, n 48 an arm): with T1 ON, v3's twitch cost reverses
+  (>= 15 m 42 -> 33, worst median 17.2 -> 15.1 m, all-in 21.0 -> 18.7 s, cap deploys 42 -> 33), one new never-in (terminus 5 click s6306
+  Alpha, untraced). Dry deal read (terminus 5 route 8203/8206/8208 cap deploys): worst/total leg main 36.5/73.9 m, least-total on the
+  ordered heading 21.6/60.3, least-total on the street axis 22.5/51.4 (0 of 4 >= 25 m). **Ruled:** trace s6306 first (dev); if it isn't
+  a v3 flaw, file Bar S1 v3b (v3 v main, both on T1-ON main, frozen tree) on 8701-8724 before any number. A different base = a new bar,
+  not a re-run. Then build `--cap-deal=street` OFF (scope: every cap deploy), lab, bar on 8725-8748.
 
 ## Rulings (round 40)
 
