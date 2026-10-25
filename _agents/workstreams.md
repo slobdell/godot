@@ -69,6 +69,13 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 7001-7008 manoeuv
   keeps losing, we should change its units' numbers. Obviously the game should be balanced. ... every time I play with the gang I seem to
   lose. Yes let's go with A". Unit numbers within +/-15 % (toughness, damage, cost); rosters and abilities fixed. C40.5 un-gated. His R1
   answer: keep ~3 s to full sight ("sounds fine"); HALT_DWELL_SECONDS stays 2.0.
+- **R40.2 (2026-10-24 evening) N3's overrides shape = balance's (absolute values through Units.tuning / apply_tuning).** Balance's B1
+  (b8c8cfca2, tally of round 39's OFF arm, 773412e49, builder2, 1600 fights): killed value per credit syndicate 0.84, condemned 0.64,
+  law 0.54, gangs 0.36; gangs' Gun Truck 0.02 kills a unit (12 % survive), Resupply Tanker 0.10, War Rig 0.33; syndicate Railgun 5.12
+  (kill ratio 16), Missile Ring 2.65; gangs fields 43.4 of the 45-unit cap, so its lever is hp/armour/damage, not cost. Shape:
+  `{"units": {"<id>": {"max_health", "max_shield", "cost", "armor": {"front","side","rear"}}}, "weapons": {"<id>": {"damage"}}}`,
+  loaded via the existing `--tune` path. **GRANT to native (N3):** `Units.cost_of` and `army.gd`'s deal honour a tuned cost (additive;
+  default unchanged), and GUARD_RESULT echoes a hash of the overrides. Multipliers (native's brief) are dropped.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
