@@ -149,7 +149,9 @@ cells (as blob/turtle guard, and 100 - the CPU cell), faction_max leaves law wea
   **ARM = 6d95d4eba** (`balance/b2s-arm-r`, BASE 5be511659 + apply; rear armour verified unchanged); its full check queued on builder0
   after BASE's. (b) Eight tests pin the prices the syndicate cost +5 % moves (C19.2): test_army_economy x6, test_army_screen::
   test_a_spent_army_says_so, test_army_size::test_the_table_at_two_thousand (Skimmer 120 -> 126 CR, Gunship 172 -> 180, Railgun 269 ->
-  283, Missile Ring 218 -> 228; 2000 CR buys 15 Skimmers, not 16). Re-pinning them is asked of the orchestrator (no sim effect).
+  283, Missile Ring 218 -> 228, Spotter 195 -> 204; 2000 CR buys 15 Skimmers, not 16). **R40.18:** c5r accepted; the eight re-pinned,
+numbers only (adopted on purpose, R40.18) -> **ARM = ad956031b** (6d95d4eba + the re-pins). Its full check queued on builder0 after
+BASE 5be511659's. Before naming c5r: its mono line (G8 screen) and one paired lines read on 8513-8524 (builder2, queued).
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
