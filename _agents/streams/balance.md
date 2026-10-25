@@ -173,6 +173,23 @@ BASE 5be511659's. Before naming c5r: its mono line (G8 screen) and one paired li
   re-pins cherry-picked); full check running on builder0. c5r's lines read was stopped by PID (wrong candidate now); c5r2's lines read
   and its syndicate mono arms run on builder2 (`r9.sh`). c5r2's other factions' units equal c5r's, so their mono fights replay
   identically (condemned's +0 / se 0 above shows it): c5r2's G8 screen = c5r's gangs/law/condemned arms + c5r2's syndicate arms.
+  **c5r2 screens:** lines (7b53f5f85 + overrides, builder2, 8513-8524, 240 fights, paired): flatness 18.5 -> **7.9**, **-10.6 (se
+  3.5)**; blob line **+1.7 (3.0)**, turtle line **-2.5 (4.2)**; blob v a CPU of each faction 37-50 %. G8 mono (c5r's gangs/law/condemned
+  arms + c5r2's own syndicate arms, separate runs: overrides sha edf790a4 v 27c1b3e2, 8 of 80 fight lengths differ, the same wins):
+  mono 82 -> 80 %, **-1 (se 2)**. **ARM 66c4839a2: green but for sim-baseline** (builder0 `make check exited 2`, 3212 passed / 0
+  failed, 26 of 27 targets, perf-judge JUDGED PASS attempt 1; only sim-baseline red, all 13 maps moved). **sim-baseline-record on
+  builder0 (light): 13 maps read twice, agreeing**, equal to the check's: foundry 59e197160f23b82d, yard 368d787dbe03a5fe, pit
+  ccdfc12f382f87f2, terminus c7cc13e24f73009a, crossing b4489ed8f9df7024, sumps 857a99ed0d2d273f, locks 0fc4a99c36dee823, parade
+  838aa1bf6d5d2c31, gorge f55e040a106496c4, archipelago fefa4465e3025a7c, cut 3a19138ad98c4dc6, docks 835465f77b5d2cd4, yard_open
+  12307bd04c9ff832 (`~/balance-runs/sim_baseline_adopt-66c4839a2.json`). BASE 5be511659 green (builder0 3212/0, ALL JUDGED).
+
+**NAMED B2s CANDIDATE: fm_law_c5r2. BASE 5be511659, ARM 66c4839a2.** Series: `~/balance-runs/bar-b2s.sh` on builder2 (lines 8301-8340
++ 8401-8440, 1600 an arm; none line 8301-8320; G8 mono 8301-8320 both teams per faction; GUARD_SIDES=green on none/mono, whose two
+guard sides are one fight). **Expected outcome (written before any bar number):** deciding passes (dev -10.6 at se 3.5 on 240 fights
+-> about -10 at se ~1.3 on 1600); G1 blob and G2 turtle flat on dev (+1.7 / -2.5, se 3-4), so each passes unless a real rise near +2.5
+points exists (the riskiest guards); G3 lengths not screened (unknown); G4 time-cap share unknown; G5 none line unknown (flatter
+factions should not make it worse); G6 perf-judge PASS on ARM; G7 green but sim-baseline, re-pins adopted on purpose (R40.18); G8 -1
+(se 2) on dev: passes unless law's +6 (se 4) is real and large.
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
