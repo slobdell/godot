@@ -51,3 +51,32 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### NOW (2026-10-24 evening)
+- **Plan (backlog order):** O1 trace (done) -> G1 v6 from the his-5 trace (built, lab running) -> O2 G3 v7 (built, s6220
+  trace running on builder2) -> full check of the tip -> file Bars G1 v6 / G3 v7 (before any number on 8201-8224) ->
+  bars (G1 v6 builder0 light J4, G3 v7 builder2) -> O4 G2 v2c re-read on 3801-3803. Ruled R40.5 (orchestrator): C40.3
+  relaxed, G1 v6 judges on main as it is unless CP40.1 lands first.
+- **O1 DONE (c08d8f720): locks 5 "places outside 8 -> 8" is the probe's corridor stopping at a floodlight, not G1.**
+  Laptop trace (`--column-trace`, s6204-6207, n 1 each): his click lands on the open west quay 4-6 m east of the
+  floodlight at (-14, 20). `gate_width` stops at the post's navmesh hole (corridor left 4-6 m, right 92-94 m), so the
+  probe counts squads 1 and 2's places, 19.7 and 39.4 m west on the same quay, as outside. The column rightly keeps
+  today's body (`--group-clear=reached`: both reached straight by ground; bodies_kept 1 on all 12 bar runs). Fix,
+  measurement only: `gate_width(..., past_posts)` (default 0: every game caller unchanged); the probe reads past obstacles
+  <= `POST_SPAN_M` 8 m (`--probe-corridor=gate` = round 39's read). Test `test_control_corridor_posts` (builder0 light,
+  2/0): quay left 4 -> 100 m; the lock-house block still ends the read (20 m both). **R40.5:** the old read is reported
+  beside the new one (`*_gate` fields; the judge prints both per cell and the cells where main v main's read changed).
+- **G1 his-5 twitch (28.4 m, all 12 seeds) traced: G1 v5's own lay, not settle's trigger** (settle's T1: `--deploy-arrive=near`
+  changes nothing there). From round 39's e7c896c8f logs (s6201): the body comes in from the east, but Alpha starts at
+  (-58, 96), 29 m WEST of the click. v5's column (lead=drive) gives it the 2nd place at (4.3, 93.3), 34 m east, so Alpha
+  drives 62 m through Bravo's halt at the click. Bravo_2 backs off / gives way t1-t10 (main: straight in by t2), Bravo is
+  never all in, the halt deploys on the 10 s cap, and Bravo_2's 24 m leg to the far herringbone seat lands after the probe's
+  place window.
+- **G1 v6 `--group-sides=both` (88b413ec4, OFF):** a squad whose centre stands > 15 m past the click (along the approach)
+  is laid on its own side, a column out from the click the other way (front one rank past it); either side failing ->
+  v5's one-sided lay. `untangle_whole` counts `misplaced` (a place across the click from its squad) ahead of the lead
+  rule. Probe: `columns_two_sided`. Tests: builder0 light 30/0. Lab (builder0 light, his click 3/5, s6201-6202): running.
+- **O2 G3 v7 `--place-clear-lane=on` (1d7d2cddf, OFF):** v6's step back along the squad's own leg is refused where it
+  stands in the lane (vehicles -> place, half its width + half this squad's short side) of a squad placed before it
+  (longer drive = still to arrive); the given place is kept. Probe: `places_off_lanes`. Test (laptop 31/0). s6220 trace
+  (main / g3 v6 / g3 v7, squads 4 and 5, s6213 too): running on builder2.
