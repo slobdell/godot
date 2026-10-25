@@ -164,14 +164,28 @@ def scale(name: str, specs: list[str], catalog: dict) -> dict:
     weapon another faction also carries (check() would refuse it); the skipped ones are listed under "skipped"."""
     units, weapons = catalog["units"], catalog["weapons"]
     cand = {"name": name, "units": {}, "weapons": {}, "skipped": []}
+    # B5: "role:<role>:hp=0.9,cost=1.1" multiplies on top of a faction's spec (both apply to a gangs tank), and the
+    # product is clamped to his +/-15 %.
+    by_unit: dict = defaultdict(dict)
     for spec in specs:
-        faction, _, body = spec.partition(":")
-        if faction not in FACTIONS:
-            sys.exit(f"no faction '{faction}'")
+        head, _, body = spec.rpartition(":")
         mult = {k: float(v) for k, v in (p.split("=") for p in body.split(",") if p)}
-        for unit_id, row in sorted(units.items()):
-            if row["faction"] != faction:
-                continue
+        if head.startswith("role:"):
+            match = [u for u, r in units.items() if r["role"] == head[len("role:"):]]
+        elif head in FACTIONS:
+            match = [u for u, r in units.items() if r["faction"] == head]
+        else:
+            sys.exit(f"no faction or role:<role> '{head}'")
+        if not match:
+            sys.exit(f"'{head}' matches no unit")
+        for unit_id in match:
+            for k, v in mult.items():
+                by_unit[unit_id][k] = by_unit[unit_id].get(k, 1.0) * v
+    for unit_id in by_unit:
+        by_unit[unit_id] = {k: min(1 + BOUND, max(1 - BOUND, v)) for k, v in by_unit[unit_id].items()}
+    for unit_id, row in sorted(units.items()):
+        mult = by_unit.get(unit_id)
+        if mult:
             over = {}
             if "hp" in mult:
                 over["max_health"] = round(row["max_health"] * mult["hp"], 2)
