@@ -292,7 +292,7 @@ settle-dev-s6306: native-for-check import ## Round 40 (settle): trace the dev ne
 .PHONY: settle-s1v3b
 settle-s1v3b: ## Round 40 (settle S1 v3b): the swept band's bar series (main v v3b, seeds 8701-8724) -> build/settle-s1v3b/verdict.txt
 	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3b" SETTLE_V2_SEEDS="$$(seq -s " " 8701 8712)" \
-		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 8713 8724)" SETTLE_V2_JOBS=$(or $(SETTLE_V3B_JOBS),12) SETTLE_V2_JUDGE=s1c \
+		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 8713 8724)" SETTLE_V2_JOBS=$(or $(SETTLE_V3B_JOBS),12) SETTLE_V2_JUDGE=s1v3b \
 		SETTLE_V2_PAIR="main v3b" SETTLE_V2_ARMS="main:--deploy-trace v3b:--seat-route-clear=v3b,--deploy-trace"
 
 # Its dev lab (not the bar's seeds): v3b v v3 v main on crossing + terminus x 3/5 x click/route, seeds 6301-6306.

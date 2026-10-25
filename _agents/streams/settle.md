@@ -118,10 +118,17 @@ Arms: `main:--deploy-trace` v `v3b:--seat-route-clear=v3b,--deploy-trace`, both 
 `--deploy-arrive=settled` ON, everything else of the branch OFF), frozen at the hash whose full check went green (the gate).
 Manoeuvre's `--giveway-chain` OFF in both. Workload and judge: s1c's as filed for S1 v3 (12 no-fight cells x 3 maps x 3/5
 squads x click/route; fights 3-squad budget 1500 and 5-squad budget 3000 click cells), **no-fight seeds 8701-8712, fight
-seeds 8713-8724**, `settle_judge.py s1c` unamended, `make settle-s1v3b` on builder2. A different base from Bar S1 v3: a
-new bar, not a re-run. **Noted before any number:** s1c's deciding line needs main's 5-squad never-in >= 2; with T1 ON,
-main's dev never-in was 0 of 48 runs (6301-6306), so the deciding line may be unreachable. If base < 2 the verdict reads
-FAIL (undecided) as filed, unless the orchestrator amends the deciding line before the series starts.
+seeds 8713-8724**, `make settle-s1v3b` on builder2. A different base from Bar S1 v3: a new bar, not a re-run.
+**AMENDED at the orchestrator's ruling R40.15 (main 968226fb4), before any number on 8701-8724** (as filed at 46b72a3fc the
+judge was s1c unamended, whose deciding line needs main's 5-squad never-in >= 2; with T1 ON main's dev never-in was 0 of 48).
+Judge `settle_judge.py s1v3b` (s1c's lines with these changes):
+- **Deciding:** squads with twitch >= 15 m, v3b <= 0.85 x main, with main >= 20 (else undecidable = no ship).
+- **Never-in is a GUARD:** v3b <= main over every cell, and NONE NEW on any cell (s6306's kind).
+- Every other s1c guard as filed (counter seats cleared > 0; all-in mean <= base x 1.10 + 1; first shape <= 3 %; flips
+  <= base + 3; friend contacts and foreign <= 110 % + 5; fights 3- and 5-squad, 0 unstarted). Deploy legs >= 25 m and
+  place+twitch >= 25 m reported.
+- Gate: the merged branch's full check green on builder2, and the dev lab (6301-6306) showing v3b keeps v3's T1-ON gain
+  (twitch down, no new never-in); if it loses it, stop and tell the orchestrator before the series.
 - **Orders' question (via orchestrator, G1 v6 trace, laptop, terminus 5 route s8206): when a cap deploy lays its halt with
   crews bunched, should seats be dealt nearest-first from where they stand?** Answer (code read, no run): **yes, as the
   least TOTAL drive, not greedy nearest-first.** Greedy nearest-first leaves the last crew the leftover far seat. On main the

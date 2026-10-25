@@ -27,6 +27,7 @@ final VERDICT line. The guards reuse orders' judge (tests/control/orders_judge.p
 """
 import collections
 import glob
+import gzip
 import json
 import os
 import sys
@@ -54,8 +55,9 @@ def keyed(rows, arm):
 
 def turned(folder, arm):
     n = total = 0
-    for path in glob.glob(os.path.join(folder, "logs", "*-%s-s*.log" % arm)):
-        with open(path, errors="replace") as f:
+    for path in glob.glob(os.path.join(folder, "logs", "*-%s-s*.log" % arm)) + \
+            glob.glob(os.path.join(folder, "logs", "*-%s-s*.log.gz" % arm)):
+        with (gzip.open(path, "rt", errors="replace") if path.endswith(".gz") else open(path, errors="replace")) as f:
             for line in f:
                 if line.startswith("DEPLOY_TRACE "):
                     total += 1
@@ -413,8 +415,9 @@ def s2v3(argv):
 def cleared(folder, arm):
     """S1 route-clear: deploys, and seats moved clear on deploys' own updates (DEPLOY_TRACE "cleared")."""
     n = total = 0
-    for path in glob.glob(os.path.join(folder, "logs", "*-%s-s*.log" % arm)):
-        with open(path, errors="replace") as f:
+    for path in glob.glob(os.path.join(folder, "logs", "*-%s-s*.log" % arm)) + \
+            glob.glob(os.path.join(folder, "logs", "*-%s-s*.log.gz" % arm)):
+        with (gzip.open(path, "rt", errors="replace") if path.endswith(".gz") else open(path, errors="replace")) as f:
             for line in f:
                 if line.startswith("DEPLOY_TRACE "):
                     total += 1
@@ -422,9 +425,11 @@ def cleared(folder, arm):
     return n, total
 
 
-def s1c(argv):
+def s1c(argv, v3b=False):
     """Round 39 Bar S1 route-clear (settle.md Status, filed before any number):
-    python3 settle_judge.py s1c PROBE FIGHT3 FIGHT5 BASE NEW"""
+    python3 settle_judge.py s1c PROBE FIGHT3 FIGHT5 BASE NEW
+    v3b (round 40 Bar S1 v3b, R40.15, amended before any number): deciding = squads with twitch >= 15 m, arm <= 0.85 x
+    base with base >= 20; never-in a guard (arm <= base, none new on any cell); every other s1c guard as filed."""
     probe, fight3, fight5, base, new = argv
     lines = []
     rows = oj.load(os.path.join(probe, "rows.jsonl"))
@@ -440,24 +445,36 @@ def s1c(argv):
     never_n = {k for k, sq in rn.items() if five(k) and oj.run_all_in(sq) < 0}
     fresh = sorted(never_n - never_b)
     dec = len(never_b) >= 2 and len(never_n) <= len(never_b) - 1 and not fresh
-    lines.append("%s deciding: never-in runs on the 5-squad cells %d -> %d (<= base - 1, base >= 2) and none new (%d new: %s)" % (
+    tw_b = sum(1 for c in common if b[c]["twitch_m"] >= 15)
+    tw_n = sum(1 for c in common if n[c]["twitch_m"] >= 15)
+    if v3b:
+        dec = tw_b >= 20 and tw_n <= 0.85 * tw_b
+        lines.append("%s deciding (R40.15): squads with twitch >= 15 m %d -> %d (<= %.1f, 0.85 x base; base >= 20)" % (
+            "PASS" if dec else "FAIL", tw_b, tw_n, 0.85 * tw_b))
+    else:
+        lines.append("%s deciding: never-in runs on the 5-squad cells %d -> %d (<= base - 1, base >= 2) and none new (%d new: %s)" % (
         "PASS" if dec else "FAIL", len(never_b), len(never_n), len(fresh), fresh))
     lines.append("    base never-in: %s" % sorted(never_b))
     lines.append("    arm never-in: %s" % sorted(never_n))
     nb = sum(1 for sq in rb.values() if oj.run_all_in(sq) < 0)
     nn = sum(1 for sq in rn.values() if oj.run_all_in(sq) < 0)
     g_ni = nn <= nb
-    lines.append("%s guard never-in, every cell: %d -> %d runs (arm <= base)" % ("PASS" if g_ni else "FAIL", nb, nn))
+    if v3b:
+        new_any = sorted({k for k, sq in rn.items() if oj.run_all_in(sq) < 0} - {k for k, sq in rb.items() if oj.run_all_in(sq) < 0})
+        g_ni = g_ni and not new_any
+        lines.append("%s guard never-in, every cell: %d -> %d runs (arm <= base) and none new (%d new: %s)" % (
+            "PASS" if g_ni else "FAIL", nb, nn, len(new_any), new_any))
+    else:
+        lines.append("%s guard never-in, every cell: %d -> %d runs (arm <= base)" % ("PASS" if g_ni else "FAIL", nb, nn))
     both = [k for k in rb if k in rn and oj.run_all_in(rb[k]) >= 0 and oj.run_all_in(rn[k]) >= 0]
     tb = sum(oj.run_all_in(rb[k]) for k in both) / max(len(both), 1)
     tn = sum(oj.run_all_in(rn[k]) for k in both) / max(len(both), 1)
     g_t = tn <= tb * 1.10 + 1.0
     lines.append("%s guard all-in time: mean over %d runs in on both %.1f -> %.1f s (<= %.1f)" % (
         "PASS" if g_t else "FAIL", len(both), tb, tn, tb * 1.10 + 1.0))
-    tw_b = sum(1 for c in common if b[c]["twitch_m"] >= 15)
-    tw_n = sum(1 for c in common if n[c]["twitch_m"] >= 15)
     g_tw = tw_n <= tw_b
-    lines.append("%s guard twitch: squads with twitch >= 15 m %d -> %d (not up)" % ("PASS" if g_tw else "FAIL", tw_b, tw_n))
+    if not v3b:
+        lines.append("%s guard twitch: squads with twitch >= 15 m %d -> %d (not up)" % ("PASS" if g_tw else "FAIL", tw_b, tw_n))
     shapes = sum(1 for c in common if first(b[c]) != first(n[c]))
     g_sh = shapes <= max(1, 0.03 * len(common))
     lines.append("%s guard first shape: differs %d of %d (<= 3 %%)" % ("PASS" if g_sh else "FAIL", shapes, len(common)))
@@ -482,7 +499,8 @@ def s1c(argv):
         sum(1 for c in common if moved(b[c]) >= LONG_M), sum(1 for c in common if moved(n[c]) >= LONG_M),
         sum(1 for c in common if b[c]["deploy_leg_m"] >= LONG_M), sum(1 for c in common if n[c]["deploy_leg_m"] >= LONG_M)))
     ok = counter and dec and g_ni and g_t and g_tw and g_sh and g_fl and g_c and g_f
-    lines.append("VERDICT %s %s v %s (Bar S1 route-clear, round 39)" % ("PASS" if ok else "FAIL", new, base))
+    lines.append("VERDICT %s %s v %s (%s)" % ("PASS" if ok else "FAIL", new, base,
+                                            "Bar S1 v3b, round 40, R40.15" if v3b else "Bar S1 route-clear, round 39"))
     print("\n".join(lines))
     return 0 if ok else 1
 
@@ -645,6 +663,8 @@ if __name__ == "__main__":
         sys.exit(s2v3(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "s1c":
         sys.exit(s1c(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "s1v3b":
+        sys.exit(s1c(sys.argv[2:], v3b=True))
     if len(sys.argv) >= 2 and sys.argv[1] == "s1v2":
         sys.exit(s1v2(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "s3":
