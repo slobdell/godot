@@ -54,6 +54,24 @@ class SearchTest(unittest.TestCase):
                            "factions": {"Green": g, "Rust": c}, "_key": ("blob", "a", i, "green")})
         self.assertAlmostEqual(search.flatness(fights), 0.0)
 
+    def test_apply_rewrites_only_the_named_block(self):
+        import tempfile
+        units = ('const PROFILES := {\n\t"gang_tank": {\n\t\t"cost": 175,\n\t\t"max_health": 420,\n'
+                 '\t\t"armor": {"front": 7.0, "side": 4.0, "rear": 2.0},\n\t},\n\t"gang_ifv": {\n\t\t"cost": 110,\n'
+                 '\t\t"max_health": 170,\n\t},\n}\n')
+        weapons = 'const PROFILES := {\n\t"scrap_cannon": {\n\t\t"damage": 260.0,\n\t},\n}\n'
+        with tempfile.TemporaryDirectory() as tmp:
+            u, w = pathlib.Path(tmp) / "u.gd", pathlib.Path(tmp) / "w.gd"
+            u.write_text(units)
+            w.write_text(weapons)
+            search.apply({"units": {"gang_tank": {"max_health": 483, "cost": 160, "armor": {"front": 8.05}}},
+                          "weapons": {"scrap_cannon": {"damage": 299}}}, u, w)
+            out = u.read_text()
+            self.assertIn('"cost": 160,\n\t\t"max_health": 483,', out)
+            self.assertIn('"armor": {"front": 8.05, "side": 4.0, "rear": 2.0}', out)
+            self.assertIn('"gang_ifv": {\n\t\t"cost": 110,\n\t\t"max_health": 170,', out)
+            self.assertIn('"damage": 299.0,', w.read_text())
+
 
 if __name__ == "__main__":
     unittest.main()

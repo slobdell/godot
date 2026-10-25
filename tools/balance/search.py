@@ -113,6 +113,48 @@ def tune_string(cand: dict) -> str:
     return ",".join(parts)
 
 
+def _literal(v: float, old: str) -> str:
+    """A number written the way the catalog writes it: an int where it had an int, else a float with a point."""
+    if "." not in old and float(v) == int(v):
+        return str(int(v))
+    text = format(float(v), ".6g")
+    return text if "." in text or "e" in text else text + ".0"
+
+
+def apply(cand: dict, units_path: Path, weapons_path: Path) -> list[str]:
+    """Write a candidate's values into the catalogs' source (units.gd PROFILES, weapons.gd PROFILES), each inside its
+    own profile's block. Returns what changed, one line each."""
+    changed = []
+    for path, section in ((units_path, cand.get("units", {})), (weapons_path, cand.get("weapons", {}))):
+        text = path.read_text()
+        for item_id, stats in section.items():
+            start = text.index(f'\n\t"{item_id}": {{\n')
+            end = text.index("\n\t},", start)
+            block = text[start:end]
+            for key, value in stats.items():
+                if isinstance(value, dict):
+                    m = re.search(rf'\n\t\t"{key}": \{{([^}}]*)\}}', block)
+                    inner = m.group(1)
+                    for face, v in value.items():
+                        fm = re.search(rf'"{face}": ([0-9.]+)', inner)
+                        inner = inner[:fm.start(1)] + _literal(v, fm.group(1)) + inner[fm.end(1):]
+                    new = m.group(0).replace(m.group(1), inner)
+                    changed.append(f"{item_id}.{key}: {m.group(1).strip()} -> {inner.strip()}")
+                    block = block.replace(m.group(0), new)
+                else:
+                    m = re.search(rf'(\n\t\t"{key}": )([0-9.]+)', block)
+                    if m is None:
+                        raise SystemExit(f"apply: no {item_id}.{key} literal in {path}")
+                    if key == "max_health":
+                        value = math.floor(float(value) + 0.5)  # Tank: max_health = roundi(stat): ship what the sim used
+                    lit = _literal(value, m.group(2))
+                    changed.append(f"{item_id}.{key}: {m.group(2)} -> {lit}")
+                    block = block[:m.start(2)] + lit + block[m.end(2):]
+            text = text[:start] + block + text[end:]
+        path.write_text(text)
+    return changed
+
+
 def _num(v: float) -> str:
     return format(float(v), ".6g")
 
@@ -278,6 +320,9 @@ def main(argv=None) -> int:
     p.add_argument("commit")
     p.add_argument("seeds", nargs="+")
     p.add_argument("--out", type=Path, default=Path.home() / "balance-guard-raw")
+    p.add_argument("--tag", help="folder tag (default bal-<name>); GUARD_ARGS / GUARD_KINDS pass through the environment")
+    p = sub.add_parser("apply")
+    p.add_argument("cand", type=Path)
     p = sub.add_parser("score")
     p.add_argument("raw", nargs="+", type=Path)
     p.add_argument("--base", nargs="+", type=Path)
@@ -298,6 +343,11 @@ def main(argv=None) -> int:
         return 1 if problems else 0
     cand = json.loads(args.cand.read_text())
     problems = check(cand, catalog)
+    if args.cmd == "apply":
+        if problems:
+            sys.exit("refused:\n" + "\n".join(problems))
+        print("\n".join(apply(cand, ROOT / "game/units/units.gd", ROOT / "game/combat/weapons.gd")))
+        return 0
     if args.cmd == "check":
         print("\n".join(problems) or "ok: inside +/-15 %")
         print(f"--tune={tune_string(cand)}")
@@ -310,7 +360,7 @@ def main(argv=None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     over = args.out / f"overrides-{name}.json"
     over.write_text(json.dumps(clean, indent=1) + "\n")
-    env = dict(os.environ, GUARD_OVERRIDES=str(over), GUARD_TAG=f"bal-{name}", GUARD_SEEDS=" ".join(args.seeds),
+    env = dict(os.environ, GUARD_OVERRIDES=str(over), GUARD_TAG=args.tag or f"bal-{name}", GUARD_SEEDS=" ".join(args.seeds),
                GUARD_OUT=str(args.out), GUARD_JOBS=os.environ.get("GUARD_JOBS", "16"),
                GUARD_WORKTREE=os.environ.get("GUARD_WORKTREE", str(ROOT.parent / "godot-balance-guard")))
     if not clean:
