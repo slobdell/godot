@@ -125,7 +125,7 @@ func _flag(name: String, fallback: String) -> String:
 static func _arm_args() -> PackedStringArray:
 	var out := PackedStringArray()
 	for arg in OS.get_cmdline_user_args():
-		for prefix in ["--rules-", "--cover-", "--traffic-", "--nav-", "--tune="]:
+		for prefix in ["--rules-", "--cover-", "--traffic-", "--nav-", "--tune=", "--unit-overrides="]:
 			if String(arg).begins_with(prefix):
 				out.append(String(arg))
 	return out
@@ -375,4 +375,4 @@ func _report(game_match: Match, guard: String, side: int, result: Dictionary, ca
 			"cover_struck": int((result.get("stats", {}) as Dictionary).get("cover_struck", 0)) \
 					if typeof(result.get("stats")) == TYPE_DICTIONARY else 0,
 			"args": " ".join(_arm_args()), "factions": factions, "blob_drills": _flag("blob-drills", "off"), "tasks": _tasks, "retargets": _retargets, "last_target": _target_name,
-			"units": _tally.report()}))
+			"units": _tally.report(), "overrides_sha": Army.overrides_sha}))
