@@ -433,6 +433,8 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	var near: Array[int] = []
 	for i in blocks.size():
 		var c: Vector3 = blocks[i]["center"]
+		if COLUMN_TRACE:
+			print("COLUMN_TRACE block %d centre %s past the click %.1f" % [i, c, (Vector3(c.x, 0.0, c.z) - flat_click).dot(ahead)])
 		if SIDES_BOTH and (Vector3(c.x, 0.0, c.z) - flat_click).dot(ahead) > FAR_SIDE_M:
 			far.append(i)
 		else:
@@ -446,12 +448,29 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 		var deepest := 0.0
 		for block: Dictionary in blocks:
 			deepest = maxf(deepest, float(block.get("travel_depth", block.get("depth", 0.0))) if passing else column_depth(block))
-		var far_click := flat_click + ahead * (deepest + GAP_M)
+		# The far side's front one rank past the click, closer (down to half a rank, as a column squeezes) where the ground
+		# past it runs out (his-5 s6201: a full rank, 69 m, stood off the map's west edge).
+		# No further than the near side's own rank spacing (it may have squeezed): his-5's near ranks stood 34 m apart, and
+		# a full rank put Alpha 61 m west, twice as far from his click as it started.
+		var rank := deepest + GAP_M
+		for p: Vector3 in near_laid:
+			var back := (flat_click - p).dot(ahead)
+			if back > 1.0:
+				rank = minf(rank, back)
+		var far_click := flat_click
 		var far_laid: Array[Vector3] = []
-		if (clamp.call(far_click) as Vector3).distance_to(far_click) <= 1.0 and (not reached.is_valid() or bool(reached.call(far_click))):
+		for attempt in COLUMN_SQUEEZES + 1:
+			far_click = flat_click + ahead * (rank * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)))
+			if (clamp.call(far_click) as Vector3).distance_to(far_click) > 1.0 or (reached.is_valid() and not bool(reached.call(far_click))):
+				continue
 			# Read across the far side's own way in (-across): the click's sides swap.
 			far_laid = _lay_side(far_blocks, far_click, -ahead, _within_click(width_at.call(far_click, -across), [at_click[1], at_click[0]]),
 					width_at, clamp, Callable(), reached, passing, false)
+			if not far_laid.is_empty():
+				break
+		if COLUMN_TRACE:
+			print("COLUMN_TRACE sides far %s near %s far_click %s clamped %s reached %s near_laid %s far_laid %s" % [far, near, far_click,
+					(clamp.call(far_click) as Vector3).distance_to(far_click), reached.is_valid() and bool(reached.call(far_click)), near_laid, far_laid])
 		if near_laid.is_empty() or far_laid.is_empty():
 			result = _lay_side(blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg)
 		else:
