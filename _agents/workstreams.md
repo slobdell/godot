@@ -61,7 +61,7 @@ project's workers (plane_maker): never touch processes you didn't start.
 ## Bars (round 40)
 
 **Seed registry (round 40):** 8001-8024 settle (T1 8001-8012, S1 v3 8013-8024); 8101-8124 manoeuvre; 8201-8236 orders (G1 v6 8201-8212,
-G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 7001-7008 manoeuvre's M2 dev trace (not a bar).
+G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 holdrelease (if barred); 7001-7008 manoeuvre's M2 dev trace (not a bar).
 
 - **Bar B2s, the stat change (balance; FILED d479a17a1, 2026-10-24 evening, before any number on 8301-8340 + 8401-8440).** Change: the
   candidate B4 picks (unit hp/armour/damage/cost within R40.1's +/-15 %). Deciding: FLATNESS (RMS over 16 cells: by guard faction and by
