@@ -87,6 +87,10 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   (b) on a route G3 runs BEFORE `_relay_previous_waypoint`, so every squad's road in starts from a stale previous waypoint (s6213 Echo
   (-41.9, 40) v the relaid (-53.7, 70.5)). **Ruled:** orders builds G3 v8 = G3 after the relay (its own code), dev first; a bar on
   8213-8224 only if the dev read passes.
+- **Bar S1 v3, per-crew corridors (settle; FILED da8dd1f61, 2026-10-24 evening, before any number on 8013-8024).** Arms
+  `main:--deploy-trace` v `v3:--seat-route-clear=v3,--deploy-trace`; giveway-chain OFF and T1 OFF both arms; round 39's S1 workloads and
+  judge `s1c` unamended (deciding: 5-squad never-in <= main - 1, main >= 2, none new). Lab (afd436ca3, builder0 light, n 1 a run, dev): all
+  six traced runs every squad in (main lost s3958, v2 lost three); all-in s6009 42.9 v 34.8 s (+8), the rest equal or faster.
 
 ## Rulings (round 40)
 
