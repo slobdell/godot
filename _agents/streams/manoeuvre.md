@@ -246,7 +246,7 @@ planned round the holder by the planner's seam.
   terminus 7003) x off / reroute / any, under wedge_trace. Raw data: `~/overnight-manoeuvre/r40/m3lab1/`.
 - **M3 lab 1 result (6f92700fa, builder2 light J14, load 22-41 at start (shared with balsa); n 1 a fight, 7 fights an arm):** WORSE.
   Long episodes (touching, net < 0.5 m, >= 3 s): off 19 / 141 s, reroute 22 / 204 s, any 19 / 276 s. locks s7006 Battery_5 went
-  21.6 s -> 30.4 + 24.0 + 9.8 s. The re-route almost never planned: reroute 1 plan of 62 asks, the rest refused START_BLOCKED (the
+  21.6 s -> 30.4 + 24.0 + 9.8 s. The re-route almost never planned: reroute 1 plan of 57 asks (58b7cb865's message says 72: wrong), the rest refused START_BLOCKED (the
   wedged crew touches its holder, and its start pose overlapped the hull box) or GOAL_BLOCKED (the route's next point stands in the
   squad's own parked crews). Each refused take still held the crew at zero/zero and cleared its stall and escape clocks
   (`yield_to_plan`), so the re-route only delayed the unstick. Lesson: a take must be a plan the planner will make.
