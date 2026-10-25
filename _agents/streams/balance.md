@@ -67,3 +67,56 @@ Nothing (B2 answered: R40.1).
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Report (2026-10-24, in progress).** Plan, in order: B1 tally (DONE, no fights) -> B4 harness + dry run of two candidates on
+dev seeds (running) -> pick the candidate -> Bar B2s series on 8301-8340 + 8401-8440 -> ship -> B3 on top. Reason: R40.1 put the stat
+change before B3, and B4 is ready before B3 would be.
+
+**B1 DONE (no build; b8c8cfca2).** `make balance-tally RUNS=~/doctrine-guard-raw/773412e49-off` reads round 39's OFF arm (773412e49,
+builder2, 6301-6340 + 6401-6440, 800 blob + 800 turtle fights): each kill line names killer and victim, and a faction's squads are
+pure by role, so the squad name is the unit type. Kills tally to GUARD_RESULT on 3198 of 3200 sides. Damage dealt waits on CP40.0.
+
+| faction | units a fight (cost) | kills / unit | survive | killed value / credit |
+|---|---|---|---|---|
+| condemned | 32.0 (5164) | 0.63 | 40 % | 0.64 |
+| gangs | 43.4 (5000) | 0.21 | 17 % | **0.36** |
+| law | 25.2 (5128) | 0.80 | 38 % | 0.54 |
+| syndicate | 16.7 (5125) | 1.74 | 63 % | **0.84** |
+
+- **Gangs units that die without trading:** Gun Truck (110 pts, 9160 fielded) 0.02 kills/unit, 12 % survive, kr 0.03: twin_mg's
+  penetration 2.5 sits on the armour floor against everything; Resupply Tanker 0.10 kills, 19 % survive; War Rig 0.33 kills, 22 %
+  survive, kr 0.43 (a Condemned Tank 1.15, a Law Assault Gun 2.37). Rat Rods trade best per credit (0.39) but 12 % survive. The
+  Wrecker Catapult is the one gangs unit that pays (0.96 value/credit, kr 1.37).
+- **What syndicate has:** the Railgun Platform, 5.12 kills/unit, kr 16, 1.79 value/credit; the Missile Ring kr 10, the Spotter kr 6.2.
+  Every syndicate gun outranges every gangs gun (railgun 110 m, missiles 170 m v spear 30 m, twin MG 35 m, scrap cannon 50 m).
+- **Not the R1-R3 rules:** the rules-OFF base 686150ed2 has the same table (gangs CPU beaten 83 %, syndicate 7 %; n 30-45 a cell).
+- **Cost is a weak lever for gangs:** gangs field 43.4 of the 45-unit cap (Army.MAX_ARMY_UNITS), so a cheaper gangs unit buys almost
+  nothing; hp, armour and damage are the gangs levers, cost is a syndicate/law lever (fewer units).
+- All MG units are weak everywhere (Condemned Scout kr 0.09, Pursuit Cruiser 0.15, Skimmer 0.46): spotters by design, not a faction gap.
+
+**B4 harness (built; dry run in progress).** `tools/balance/search.py`: `check` (his +/-15 % bounds; refuses a damage change on a weapon
+two factions share: laser, autocannon, machine_gun), `scale` (per-faction multipliers -> a candidate), `run` (guard.sh on builder2 with
+`--tune=`; cost refused until native's N3 `--unit-overrides`), `score` (the faction table and FLATNESS = RMS of the 16 cells "guard's
+faction F" / "CPU's faction F" minus the line mean over blob and turtle, in points, se by bootstrap over seed units; `--base` pairs).
+Round 39's OFF arm scores 17.4 (se 1.4); OFF v SPLIT paired change -0.1 (se 0.9). Candidates: `tools/balance/candidates/`
+`faction_max` (gangs hp/armour/damage +15 %, syndicate -15 %, law +5 %) and `targeted` (B1's units only).
+
+**Bar B2s (the stat change; FILED before any number on 8301-8340 + 8401-8440).**
+- Arms: BASE = the tree as it ships without the change; ARM = the same tree with the chosen candidate (named in this Status before
+  the series; chosen from dev seeds only). Paired fights: seeds 8301-8340 + 8401-8440, blob + turtle, 5 guard arenas, both sides
+  (1600 fights an arm), builder2, guard.sh GUARD_CHUNK=8, after a full check of the named hash. None line: 8301-8320 (200 an arm).
+- **Deciding:** flatness (search.py score) down by > 2 paired se, AND the two worst cells move toward their line mean: blob v a
+  gangs CPU down, blob v a syndicate CPU up.
+- **Guards** (each fails at > 2 paired se the wrong way): (G1) the blob line's overall win share not up; (G2) the turtle line's not up;
+  (G3) median match length of each line within +/-15 % of base, and of each guard faction within +/-20 %; (G4) the share of fights
+  ending on the time cap (won on points) not up; (G5) the none line's flatness not worse; (G6) perf: perf-judge on builder0 passes on
+  the shipped hash; (G7) the full check green on the shipped hash, with sim-baseline's moved maps adopted on purpose by the
+  orchestrator (no other test edited to pass).
+- Ships as numbers in `game/units/units.gd` (C40.5) and weapon damage in `game/combat/weapons.gd` (requested, below).
+
+**Questions for the lead:** none open.
+
+**Requests to other streams / orchestrator:**
+- Dev seeds for B4's screening (never the bar's): using **8501-8540**, unregistered; please register or reassign.
+- A grant for weapon `damage` values in `game/combat/weapons.gd` (his bounds name damage; C40.5 covers only `game/units/**`).
+
