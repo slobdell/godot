@@ -103,6 +103,21 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   lead rule. Probe: `columns_two_sided`. Tests `test_control_group_click` 31/0. Shots (laptop, his click 5,
   `make orders-probe-shots`): v6 has Alpha's squad on its own west side and the rest stacked east along the street.
 
+- **O4 G2 v2c re-read: does NOT hold, no bar** (builder2 J10, 78eeea863 = main as launched + orders, all OFF, dev seeds
+  3801-3803, n 3, `tests/control/orders_g2.sh b2`; evidence `references/round40/orders/g2v2c-reread-builder2-78eeea863/`).
+  Every number repeats round 39's dev read 3 (584d23588) exactly: his routes off 5,022 -> 2,523 and route cells 2,404 ->
+  1,432 (both deciding lines PASS); contacts 4,046 -> 3,403. DEPLOY_HOLD acts only when a squad loses a tank, and the probe
+  has no fights, so it can't move them. **Guards fail on 10 cells:** end foreign on 7 (e.g. terminus 5 east 9.8 v 4.5,
+  locks 5 route 13.6 v 7.1) and twitch on 4 (terminus 5 avenue 0.0 v 15.1, locks 5 route 8.1 v 15.4). A column parks
+  squads nearer each other than main's spread body. **Next (a new version):** G2 with G3 v8's spacing (place_clear after
+  the relay) on the same cells; re-read after G3 v8's dev read.
+- **G3 v8 `--place-clear-after=relay` (5bc304738, OFF; R40.9):** the G3 block is now `_place_clear()`. On a shifted leg
+  it runs after `_relay_previous_waypoint`, each squad's home read from its relaid previous waypoint. With
+  `--place-clear-lane=on`, the road test reads those roads short of each squad's own halt (`lane_skip`, half its short
+  side). Laptop trace (crossing 5 route, legs identical to the bar's): Delta keeps its given place on the last leg on s6213
+  and s6220; Charlie steps west, onto nobody's road. `test_control` 525/0 (laptop). Dev read (builder2 J8, 3804-3809):
+  running.
+
 ### Bars (filed here before any judged number; the orchestrator records them on main)
 - **Bar G1 v6 TWO SIDES (orders, round 40; filed 2026-10-24 before any number on 8201-8212; code 2eedf9f7f, all OFF).**
   What he would see: select all and click a street. Every squad lands in that street, the squad nearest the click on it,
