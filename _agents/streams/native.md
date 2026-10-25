@@ -50,6 +50,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### Report (round 40 worker, 2026-10-24 evening): in progress
 
+**GREEN: stream/native dd4a87bc6** (N1 + N2 + N3 + main 64743c477; builder2 full check `exited 0`, 3184/0, 23 passed, 4 NOT
+JUDGED for load: perf-judge (builder2 doesn't judge), scenario_perf 2.22x, quiet-window, web-smoke first sound 30.9 s v 30 at
+load 90 / 16 cores). Named to the orchestrator. Merged as main b25b803e5 (INHERIT). N1's own builder0 check was stopped as redundant (the orchestrator's call). Later on the branch:
+dec9725f5 GUARD_SIDES (light quick + shell-tools-test, the orchestrator's call) and Status commits.
+
 **Plan (in order):** N1 -> N2 -> N3 (the orchestrator: N3 is on balance's critical path, R40.1/R40.2; N4/N5 never ahead of it)
 -> N4 (low) -> N5 (waits on his Ryzen).
 
@@ -84,3 +89,22 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   the scratch tree as `overrides/<sha12>.json`, passes `--unit-overrides=res://overrides/<sha12>.json` to every fight, and files
   the logs under `../godot-native-guard-raw/<commit>-ov-<sha12>/` (GUARD_TAG overrides the name); it refuses a commit without
   N3. Read: `guard.py --by-unit <dir>` and `guard.py --by-unit --pair <base dir> <arm dir>`.
+  `GUARD_SIDES=green` (balance's ask, dec9725f5): one guard side only (the none line's two sides are the same fight).
+- **Inserted by the orchestrator: M1 v2's chainrelease twin, `pair/native-chainrelease` 18e5dbca8** (on manoeuvre's 4406e1f52;
+  worktree `../godot-native-chain`; QUICK-GREEN builder0 114/0, needs a full check before merge). drive_native.cpp: `chain_in_play(seat, reach, asker)` lifts the reach
+  when chainrelease is on and the asker's Movement (Movement.of via the script) has stalled_ticks >= CHAIN_RELEASE_TICKS
+  (configured from Movement.chain_release_ticks(), so `--chain-release-s` reaches it; -1 on a tree without it = off), counting
+  chain_releases; the hold branch refuses (chain_holds_refused, chain_refusals) when the chain is in play and its search skipped
+  a spot. chainside NOT twinned: Traffic._chain_native now bypasses native_yield only for chainside (manoeuvre's grant), and
+  test_traffic_chain's switch test flipped. Twins (laptop, n 1 run each): the chain stages with the release on, wedged
+  (stalled 100000) and still (50) askers, 210 drives a mode, 0 mismatches, chain_releases 69; a new Sumps stage of 6 poses
+  that reach the refused hold (swept: 66 of 792 poses, all 0 mismatches), 6 refused, 0 mismatches; the ON and OFF arms as
+  before; test_traffic_chain's v2 stages pass through the C++ (16/0). Mutation: the C++ refusal dropped -> the hold stage
+  6/6 mismatches. Manoeuvre merges it into its bar tree; that tree's full check covers it (the orchestrator's call).
+- **The judging re-render (close step 5b, the orchestrator's ask), d52293d52:** rounds 37-39's 87 judged lines in
+  `tools/judge/lines_r37.py` / `_r38` / `_r39` (quoted from the rulings), inventory + table csv under
+  `references/round40/native/sizing/`; a new table row, the guard line per fight (blob win share se 3.3 points at 160 fights a
+  line; ~660 fights a line for a 4-point move: balance's bars should size from it). `_agents/judging.md` *Round 40 re-render*.
+  Judge tests pass (laptop; test_table 12/12).
+- **N4 (the trig's ~2 %):** waits for a quiet builder0 window (none soon: three streams have series queued, the orchestrator).
+- **N5:** waits on his Ryzen purchase.

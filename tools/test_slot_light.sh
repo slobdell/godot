@@ -34,6 +34,44 @@ timeout 2 bash -c "TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 bash '$slot' touc
 [ ! -e "$tmp/flag.heavy" ] && ok "light: a heavy run still waits for a heavy slot" \
 	|| bad "light: a heavy run still waits for a heavy slot" "it started with every heavy slot held"
 
+# ---- 2b. round 40: a dry run (make -n: MAKEFLAGS's first word holds n) takes no slot -------------
+timeout 4 bash -c "MAKEFLAGS='n --no-print-directory' TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 bash '$slot' touch '$tmp/flag.dry'" >/dev/null 2>&1
+[ -e "$tmp/flag.dry" ] && ok "dry run: make -n starts while every heavy slot is held" \
+	|| bad "dry run: make -n starts while every heavy slot is held" "it queued for a slot"
+timeout 2 bash -c "MAKEFLAGS='--no-print-directory -j4' TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 bash '$slot' touch '$tmp/flag.long'" >/dev/null 2>&1
+[ ! -e "$tmp/flag.long" ] && ok "dry run: a long-option MAKEFLAGS (no n) still waits" \
+	|| bad "dry run: a long-option MAKEFLAGS (no n) still waits" "--no-print-directory read as a dry run"
+
+# ---- 2c. round 40 (R40.11): a REAL nested make through slot.sh under -n does not re-enter it -----
+# The Makefile's own shape: a goal re-runs itself through slot.sh unless TANK_SQUAD_SLOT is set. 6538aa16a's slot.sh exec'd the
+# dry run without setting it and recursed without bound (builder0's OOM). The fake recipe carries its own depth cap (past 4 it
+# prints RECURSED and exits 3), so a regression fails this case and never runs away; `timeout 30` is the second fence.
+cat > "$tmp/rec.mk" <<'MK'
+ifeq ($(TANK_SQUAD_SLOT),)
+probe:
+	@d=$${REC_DEPTH:-0}; [ $$d -lt 4 ] || { echo RECURSED; exit 3; }; REC_DEPTH=$$((d + 1)) bash @SLOT@ $(MAKE) --no-print-directory -f @MK@ probe
+else
+probe:
+	@echo inner-ran
+endif
+MK
+sed -i "s|@SLOT@|$slot|; s|@MK@|$tmp/rec.mk|" "$tmp/rec.mk"
+out=$(cd "$tmp" && TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_SLOTS=3 timeout 30 make -n --no-print-directory -f "$tmp/rec.mk" probe 2>&1); rc=$?
+# -n prints the outer recipe line too (it names RECURSED), so the cap firing is a line that IS "RECURSED"; one inner level runs.
+if [ "$rc" = 124 ]; then bad "dry run: a nested make runs inside the slot, no re-entry" "timed out after 30 s"
+elif printf '%s\n' "$out" | grep -qx 'RECURSED' || printf '%s\n' "$out" | grep -q 'REFUSED: nested'; then
+	bad "dry run: a nested make runs inside the slot, no re-entry" "it re-entered slot.sh (rc $rc)"
+elif [ "$rc" = 0 ] && [ "$(printf '%s\n' "$out" | grep -cx 'echo inner-ran')" = 1 ]; then
+	ok "dry run: a nested make runs inside the slot, no re-entry"
+else bad "dry run: a nested make runs inside the slot, no re-entry" "rc $rc: $out"; fi
+
+# ---- 2d. round 40 (R40.11): the depth backstop refuses a fourth level with one line --------------
+out=$(TANK_SQUAD_SLOT_DEPTH=3 TANK_SQUAD_SLOT=1 timeout 10 bash "$slot" touch "$tmp/flag.deep" 2>&1); rc=$?
+[ "$rc" = 2 ] && [ ! -e "$tmp/flag.deep" ] && [ "$(printf '%s\n' "$out" | grep -c 'REFUSED: nested 4 deep')" = 1 ] \
+	&& ok "depth: a fourth nested slot.sh exits 2 with one REFUSED line" || bad "depth: a fourth nested slot.sh exits 2 with one REFUSED line" "rc $rc: $out"
+out=$(TANK_SQUAD_SLOT_DEPTH=2 TANK_SQUAD_SLOT=1 timeout 10 bash "$slot" touch "$tmp/flag.third" 2>&1); rc=$?
+[ "$rc" = 0 ] && [ -e "$tmp/flag.third" ] && ok "depth: a third level still runs" || bad "depth: a third level still runs" "rc $rc: $out"
+
 # ---- 3. inside the light lane nothing fans out ---------------------------------------------------
 fresh
 out=$(TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_LIGHT=1 bash "$slot" bash "$slot" --jobs 10 12 2>/dev/null)
