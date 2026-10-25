@@ -287,10 +287,11 @@ planned round the holder by the planner's seam.
 - **Gate:** the tree's full check green on builder0 FIRST (C31.1), with M3 OFF (the default). The checked hash is named here before
   the series starts.
 - **Arms:** OFF (default) v ON `--giveway-reroute=any`.
-  - Native ON in both arms. ON runs the GDScript drive (`Traffic._chain_native` turns native_drive off while reroute is ON); the
-    re-route leg rule is not twinned in C++.
-  - Lab 3 evidence the drive itself doesn't move the result: the `reroute` arm's fights it never planned in match off's episodes
-    exactly.
+  - **Both arms run the GDScript drive: `--brains-off=native_drive` in BOTH** (the orchestrator's condition, 2026-10-25, before any
+    number). ON would turn native_drive off anyway (`Traffic._chain_native`: the re-route leg rule is not twinned in C++), so the
+    pair compares the rule alone, not the rule plus the drive path. The rest of native stays ON in both. Lab 3's match between
+    off and the never-planning fights is NOT claimed as evidence (that was one tree, not a measured fact).
+  - The tree is b21565b37's game code; this amendment is docs and the series script only, made before any number.
   - settle's switches: main defaults in both arms (T1 `--deploy-arrive=near` ON since C40.2; S1 off; DEPLOY_HOLD on).
 - **Machine:** builder0 light lane, J 4. **Seeds (registered R40.12):** A on 8601-8612, B on 8613-8624.
 - **A, wedge trace** (`manoeuvre-wedge-trace`, locks/terminus/sumps x 8601-8612, 180 s, 36 fights an arm, paired by fight):
@@ -301,7 +302,7 @@ planned round the holder by the planner's seam.
   - G3 friendly contact ticks: ON <= 1.10 x OFF.
   - G4 the fights: each team's kill share (from the logs' `destroyed` lines) within +/- 0.03 of OFF; total deaths within +/- 5 %.
 - **B, orders probe** (`orders-probe`, locks/crossing/terminus x 3,5 squads x click,route x 8613-8624, 144 runs an arm, arms
-  `main:` / `any:--giveway-reroute=any`):
+  `main:--brains-off=native_drive` / `any:--giveway-reroute=any,--brains-off=native_drive`):
   - **G5 never-in runs: ON <= OFF.**
   - G6 all-in time: the paired median ON - OFF <= +2.0 s, over runs both arms got all in.
   - G7 last squad in: the paired mean ON - OFF <= +2.0 s, AND runs more than 10 s later <= runs more than 10 s earlier + 3.
