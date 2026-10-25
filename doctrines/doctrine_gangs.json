@@ -5,6 +5,7 @@
   "summary": "A pack of hyenas, not a platoon. They spread wider than anyone, they get around you and keep circling so no single vehicle eats the whole volley, they send one rat rod to pull you onto the rest, and they have no word for withdraw.",
   "spacing_m": {"open": 18.0, "lanes": 14.0, "dense": 10.0},
   "legs": {"traveling_m": 55.0, "traveling_overwatch_m": 45.0, "cohesion_m": 30.0},
+  "traits": {"ambush_share": 0.6, "why": "B3 (round 40): short guns wait on the enemy's way; read only with --faction-ambush"},
   "drills": {
     "enabled": ["react_to_contact", "near_ambush", "assault_through", "far_ambush", "support_by_fire",
                 "herringbone", "bait"],
