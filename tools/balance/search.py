@@ -301,6 +301,19 @@ def score(raw: list[Path], base: list[Path] | None) -> dict:
         report["change_se"] = bootstrap(pseeds, diff) if len(pseeds) > 1 else float("nan")
         print(f"BALANCE_PAIRED n={len(flat)} base {flatness([b for b, _ in flat]):.1f} -> arm "
               f"{flatness([a for _, a in flat]):.1f}: change {report['change']:+.1f} se {report['change_se']:.1f}")
+        for line in ("blob", "turtle", "none"):
+            lp = {seed: [(b, a) for b, a in pairs if a["guard"] == line] for seed, pairs in pseeds.items()}
+            lp = {k: v for k, v in lp.items() if v}
+            if not lp:
+                continue
+
+            def share(pairs, line=line):
+                return 100 * sum((a["winner"] == a["side"]) - (b["winner"] == b["side"]) for b, a in pairs) / len(pairs)
+
+            allp = [p for v in lp.values() for p in v]
+            d, dse = share(allp), bootstrap(lp, share) if len(lp) > 1 else float("nan")
+            report[f"{line}_change"], report[f"{line}_change_se"] = d, dse
+            print(f"BALANCE_LINE {line} guard win share paired change {d:+.1f} se {dse:.1f} (n {len(allp)})")
         print("base:\n" + table([b for b, _ in flat]))
     return report
 
