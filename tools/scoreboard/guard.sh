@@ -38,6 +38,9 @@ out=${GUARD_OUT:-$(dirname "$src")/godot-native-guard-raw}/$short${GUARD_TAG:+-$
 seeds=${GUARD_SEEDS:-$(seq 2601 2608; seq 2701 2708)}
 kinds=${GUARD_KINDS:-blob turtle}
 arenas=${GUARD_AT:-terminus locks sumps gorge parade}
+# GUARD_SIDES (round 40, balance's ask): the guard sides to run, default both. The none line's two sides are the same fight
+# (nobody is ordered: identical winner, length, kills), so a none-only series runs GUARD_SIDES=green and halves its fights.
+sides=${GUARD_SIDES:-green rust}
 jobs=${GUARD_JOBS:-20}
 tries=${GUARD_TRIES:-6}
 overlay=(mk/scoreboard.mk tests/ai_scenarios/guard_line.gd tests/ai_scenarios/guard_line.gd.uid tools/remote.sh
@@ -59,11 +62,11 @@ fi
 overlay_from=$(git -C "$src" rev-parse --short=9 HEAD)
 mkdir -p "$out"
 say() { echo "$*" | tee -a "$out/driver.txt"; }
-say ">> guard: $short on $host, probe from $overlay_from, kinds '$kinds', args '$args'${ov_sha:+, overrides $overrides}, seeds $(echo $seeds | wc -w) ($(date '+%F %T'))"
+say ">> guard: $short on $host, probe from $overlay_from, kinds '$kinds', sides '$sides', args '$args'${ov_sha:+, overrides $overrides}, seeds $(echo $seeds | wc -w) ($(date '+%F %T'))"
 
 complete() {  # complete SEED: every log of the chunk is in $out with its GUARD_RESULT
 	local seed=$1 kind arena side
-	for kind in $kinds; do for arena in $arenas; do for side in green rust; do
+	for kind in $kinds; do for arena in $arenas; do for side in $sides; do
 		grep -q '^GUARD_RESULT' "$out/$kind/$arena-$seed-$side.log" 2>/dev/null || return 1
 	done; done; done
 }
@@ -93,7 +96,7 @@ for ((i = 0; i < ${#todo[@]}; i += chunk)); do
 		esac
 		rm -rf "$wt/build/guards"
 		( cd "$wt" && TANK_SQUAD_COMMIT=$short REMOTE_HOST=$host bash tools/remote.sh native guard-run \
-			GUARD_KINDS="$kinds" GUARD_AT="$arenas" GUARD_SEEDS="${group[*]}" GUARD_JOBS="$jobs" GUARD_ARGS="$args" GUARD_RESUME=1 ) > "$out/remote-$tag.log" 2>&1
+			GUARD_KINDS="$kinds" GUARD_AT="$arenas" GUARD_SEEDS="${group[*]}" GUARD_SIDES="$sides" GUARD_JOBS="$jobs" GUARD_ARGS="$args" GUARD_RESUME=1 ) > "$out/remote-$tag.log" 2>&1
 		status=$?
 		exited=$(grep -E '^>> remote: make .*guard-run.* exited ' "$out/remote-$tag.log" | tail -1)
 		load=$(grep -E '^>> guard-run on ' "$wt/build/guards/run.txt" 2>/dev/null | head -1 | sed 's/.*| load /load /')
