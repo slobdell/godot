@@ -103,6 +103,25 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   bunched ones. Proposal (round 41 bar, not built): `--cap-deal=street`, a cap deploy laid on the street axis (S1 v5's street
   read) and dealt least-total from where the crews stand; judged on deploy leg >= 25 m and twitch >= 15 m, with never-in,
   all-in, places outside and fights as guards.
+- **v3's never-in traced** (builder2 light, `settle-dev-s6306`, main 9d5907ddd + v3, `--probe-trace=1`): reproduced. Alpha_3
+  drove the lane at x 4..7 holding its travel place, 8.6 m east of its modelled corridor (its navmesh path to its slot ran
+  the centre line, over ROUTE_CLEAR_M 7); Bravo's v3 seat cleared to (4.4, 68.0) on that line (main's Bravo_1 seat was
+  (-17.5, 65.8)), and Alpha_3 stopped at (4.1, 71.9) from t36 to the end. **A v3 flaw: the corridor model ignores the
+  formation's travel width.** Fix: **S1 v3b** (`--seat-route-clear=v3b`, OFF, 0eec2ccdc): each driving squad's SWEPT BAND
+  (its centre route shifted out to its travel half-width, slots' widest offset across the first leg, at most 15 m, in 7 m
+  steps), added to v3's crew corridors. Pure test `tests/test_settle_route_clear_v3b.gd` 3/0 (laptop): (8.6, 68) reads
+  clear to v3 and blocked to v3b. Branch merged with main 9d5907ddd at c973a456e.
+
+### Bar S1 v3b swept band (filed 2026-10-25 before any number on 8701-8724; R40.14)
+What he'd see: the same as S1 v3 (no squad parks on a street the squads behind still drive), now with T1 ON in both arms.
+Arms: `main:--deploy-trace` v `v3b:--seat-route-clear=v3b,--deploy-trace`, both on main 9d5907ddd + this branch (T1
+`--deploy-arrive=settled` ON, everything else of the branch OFF), frozen at the hash whose full check went green (the gate).
+Manoeuvre's `--giveway-chain` OFF in both. Workload and judge: s1c's as filed for S1 v3 (12 no-fight cells x 3 maps x 3/5
+squads x click/route; fights 3-squad budget 1500 and 5-squad budget 3000 click cells), **no-fight seeds 8701-8712, fight
+seeds 8713-8724**, `settle_judge.py s1c` unamended, `make settle-s1v3b` on builder2. A different base from Bar S1 v3: a
+new bar, not a re-run. **Noted before any number:** s1c's deciding line needs main's 5-squad never-in >= 2; with T1 ON,
+main's dev never-in was 0 of 48 runs (6301-6306), so the deciding line may be unreachable. If base < 2 the verdict reads
+FAIL (undecided) as filed, unless the orchestrator amends the deciding line before the series starts.
 - **Orders' question (via orchestrator, G1 v6 trace, laptop, terminus 5 route s8206): when a cap deploy lays its halt with
   crews bunched, should seats be dealt nearest-first from where they stand?** Answer (code read, no run): **yes, as the
   least TOTAL drive, not greedy nearest-first.** Greedy nearest-first leaves the last crew the leftover far seat. On main the

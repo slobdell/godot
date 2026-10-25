@@ -285,3 +285,22 @@ settle-dev-s6306: native-for-check import ## Round 40 (settle): trace the dev ne
 	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_MAPS=terminus ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=2 \
 		ORDERS_PROBE_ARMS="main:--deploy-trace,--probe-trace=1 v3:--seat-route-clear=v3,--deploy-trace,--probe-trace=1" ORDERS_PROBE_SEEDS=6306 \
 		ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-s6306 > $(BUILD_DIR)/settle-dev-s6306/probe.out 2>&1 || true
+
+# Round 40 Bar S1 v3b (R40.14; settle.md Status, filed before any number): v3b v main, BOTH arms on T1-ON main (no
+# --deploy-arrive pin), s1c's workload and judge as filed; no-fight seeds 8701-8712, fight seeds 8713-8724.
+# builder2:  make gcp-remote T="native settle-s1v3b" (or LIGHT=1 with tools/remote.sh --light)
+.PHONY: settle-s1v3b
+settle-s1v3b: ## Round 40 (settle S1 v3b): the swept band's bar series (main v v3b, seeds 8701-8724) -> build/settle-s1v3b/verdict.txt
+	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3b" SETTLE_V2_SEEDS="$$(seq -s " " 8701 8712)" \
+		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 8713 8724)" SETTLE_V2_JOBS=$(or $(SETTLE_V3B_JOBS),12) SETTLE_V2_JUDGE=s1c \
+		SETTLE_V2_PAIR="main v3b" SETTLE_V2_ARMS="main:--deploy-trace v3b:--seat-route-clear=v3b,--deploy-trace"
+
+# Its dev lab (not the bar's seeds): v3b v v3 v main on crossing + terminus x 3/5 x click/route, seeds 6301-6306.
+.PHONY: settle-dev-v3b
+settle-dev-v3b: native-for-check import ## Round 40 (settle): S1 v3b's dev lab -> build/settle-dev-v3b/
+	@rm -rf $(BUILD_DIR)/settle-dev-v3b && mkdir -p $(BUILD_DIR)/settle-dev-v3b
+	@echo ">> settle-dev-v3b on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | jobs 12" | tee $(BUILD_DIR)/settle-dev-v3b/header.txt
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_MAPS="crossing terminus" ORDERS_PROBE_JOBS=12 \
+		ORDERS_PROBE_ARMS="main:--deploy-trace v3:--seat-route-clear=v3,--deploy-trace v3b:--seat-route-clear=v3b,--deploy-trace" \
+		ORDERS_PROBE_SEEDS="$$(seq -s " " 6301 6306)" ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-v3b > $(BUILD_DIR)/settle-dev-v3b/probe.out 2>&1 || true
+	@$(PYTHON) tests/settle/settle_t1.py $(BUILD_DIR)/settle-dev-v3b | tee $(BUILD_DIR)/settle-dev-v3b/lab.txt || true
