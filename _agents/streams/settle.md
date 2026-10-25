@@ -115,6 +115,35 @@ Places outside are the probe's own read on this branch (main's gate read; orders
   all-in 26.7 -> 26.8 s (runs in on both), never-in 0 -> 1.
 - A pass ships `--deploy-arrive=settled` ON on a new hash with one full check = **CP40.1**.
 
+### S1 v3 lab (afd436ca3's tree, builder0 light J4, n 1 a run, dev; `references/round40/settle/s1v3-lab-dev/`, `settle_lab.py`)
+| run | main all-in | v2 (`--seat-route-clear`) | v3 (`=v3`) | v3 seats cleared / crews waited |
+|---|---|---|---|---|
+| crossing 5 route s3806 | 41.7 s | 44.5 | 32.1 | 11 / 1 |
+| crossing 5 route s3958 (bridge mouth) | NEVER (squad 4) | 47.5 | 51.5 | 9 / 2 |
+| crossing 5 route s6009 (cause B) | 34.8 | NEVER | 42.9 | 10 / 3 |
+| terminus 5 click s6003 (cause A) | 32.9 | NEVER | 33.8 | 5 / 1 |
+| terminus 5 route s4505 | 42.2 | 42.2 | 39.6 | 8 / 2 |
+| terminus 5 route s6003 (cause A+B) | 81.6 | NEVER | 56.8 | 7 / 1 |
+Every squad in on all six on v3 (main 5 of 6, v2 3 of 6). Cost seen: s6009 +8.1 s, s3958 +4 s v v2.
+
+### Bar S1 v3 per-crew route-clear (filed 2026-10-24 before any number on 8013-8024; code = afd436ca3's)
+What he'd see: on a 5-squad click or route, a squad that stops first never parks a tank on the street the squads behind still
+drive, nor drives one across it while they come, and every squad gets in. Arms: `main:--deploy-trace` v
+`v3:--seat-route-clear=v3,--deploy-trace`. Base: main as on afd436ca3 (DEPLOY_HOLD ON, latch ON, R1-R3 ON;
+`--deploy-arrive` OFF, T1 not shipped). **Manoeuvre's `--giveway-chain`: OFF in both arms** (main's state; C40.2). **Seeds
+8013-8024 (registered, C40.1):** round 39's S1 workloads: no-fight 12 cells (576 squads an arm), fights 3-squad (b1500) and
+5-squad (b3000) click cells. `tools/remote.sh --light native settle-s1v3r40 TANK_SQUAD_SLOT_TIMEOUT=14400`, builder0 light J 4,
+after a green full check of afd436ca3 (and after Bar T1's series: one judged series per builder). Judge `settle_judge.py s1c`,
+round 39's lines unamended:
+- Counter: seats cleared > 0.
+- **Deciding:** never-in runs on the 5-squad cells (route and click) v3 <= main - 1, with main >= 2, and NO run never-in on v3
+  that main gets in. (Main < 2 = not decidable: no ship.)
+- Guards: never-in over every cell not up; all-in time (mean over runs in on both) <= main x 1.10 + 1 s; twitch >= 15 m squads
+  not up; first shape differs <= 3 %; shape flips <= main + 3; friend and foreign contacts <= 110 % + 5; the fights (both reads,
+  within 1.645 se, 0 unstarted).
+- Reported: place+twitch and deploy legs >= 25 m (v2 raised them 64 -> 100), seats cleared, crews waited.
+- A pass ships `--seat-route-clear=v3` ON on a new hash with one full check.
+
 ### Plan (ordered)
 1. T1: pure test (done) -> lab on orders' traced cell (his-5 click 6201-6212, main and G1 v5's column arm, each +/- near) ->
    bar filed here before numbers -> full check of the named hash -> series on 8001-8012 -> ship ON + full check = CP40.1.

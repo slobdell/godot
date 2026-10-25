@@ -250,3 +250,12 @@ settle-t1: ## Round 40 (settle T1): the deploy trigger's bar series (main v SETT
 	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-t1" SETTLE_V2_SEEDS="$$(seq -s " " 8001 8012)" \
 		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 8001 8012)" SETTLE_V2_JOBS=4 SETTLE_V2_JUDGE=t1 \
 		SETTLE_V2_PAIR="main $(firstword $(subst :, ,$(SETTLE_T1_ARM)))" SETTLE_V2_ARMS="main:--deploy-trace $(SETTLE_T1_ARM)"
+
+# Round 40 Bar S1 v3 (settle.md Status, filed before any number): main v --seat-route-clear=v3 on round 39's S1 workloads,
+# seeds 8013-8024 (no-fight 12 cells; fights 3-squad b1500 / 5-squad b3000 click cells); judge `settle_judge.py s1c` (round 39's
+# lines, unamended). builder0 light, J 4:  tools/remote.sh --light native settle-s1v3r40 TANK_SQUAD_SLOT_TIMEOUT=14400
+.PHONY: settle-s1v3r40
+settle-s1v3r40: ## Round 40 (settle S1 v3): the per-crew route-clear's bar series (main v v3, seeds 8013-8024) -> build/settle-s1v3r40/verdict.txt
+	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3r40" SETTLE_V2_SEEDS="$$(seq -s " " 8013 8024)" \
+		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 8013 8024)" SETTLE_V2_JOBS=4 SETTLE_V2_JUDGE=s1c SETTLE_V2_PAIR="main v3" \
+		SETTLE_V2_ARMS="main:--deploy-trace v3:--seat-route-clear=v3,--deploy-trace"
