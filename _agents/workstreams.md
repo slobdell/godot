@@ -1,9 +1,70 @@
 # Workstreams: the current round
 
-> **ROUND 39 PREPARED (2026-10-23 evening, from round 38's traced failures and his R1-R3 call; launch FRESH: round 38's `stream/*`
-> branches become `round38/<stream>`, every stream gets a new session, native included). SIX streams: settle and doctrine on FABLE
-> (the halt seat that blocks a following squad; tactics beating the blob), orders, manoeuvre, feedback, native on Opus. Builders:
-> builder0 AND builder2 (C39.1 = C38.1).** Briefs in `streams/`; round 38's in `streams/archive/round38/`. Round 38's section follows.
+> **ROUND 40 PREPARED (2026-10-24 evening, from round 39's traced failures and its faction table; launch FRESH: round 39's `stream/*`
+> branches are `round39/<stream>`, every stream gets a new session). FIVE streams: balance and settle on FABLE (the blob's faction
+> matchups; the halt seat), manoeuvre, orders, native on Opus. No feedback stream this round (its one known issue, the portrait
+> order-preview line, waits for his playtest notes). Builders: builder0 AND builder2 (C40.1 = C39.1).** Briefs in `streams/`; round 39's
+> in `streams/archive/round39/`. Round 39's section follows.
+
+## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
+
+**Goal: every squad of his group click and route gets in without a reshuffle, and no army wins a frontal charge because of its faction.**
+From round 39 (HANDOFF *ROUND 39 CLOSED*): G1 v5's guard failure is settle's deploy trigger (a crew holding 3.83 m v the 3.5 m all-in
+radius waits out the 10 s cap); S1 v2 failed on per-crew paths (cause A) and cleared seats' legs meeting passers head-on (cause B); M1
+wedged late squads; G3 v6 stepped back onto later squads' approach. Doctrine's 1600-fight table: the blob's remaining wins are faction
+matchups (any blob v a gangs CPU 72 %, v a syndicate CPU 12 %).
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **balance** | `godot-balance` (1) | **Fable** | [streams/balance.md](streams/balance.md) | a gangs army isn't a free win, a syndicate army isn't a wall | B1 the per-unit tally |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a crew steps aside for a friend without wedging the squads behind | M1 v2 on the 5 G5 runs |
+| **settle** | `godot-settle` (3) | **Fable** | [streams/settle.md](streams/settle.md) | a squad that stops doesn't sit 10 s and reshuffle; never parks on a friend's road | T1 the deploy trigger |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: per-unit counts for balance; the balance runner | N1 per-unit GUARD_RESULT (CP40.0) |
+| **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | his group click puts every squad in, the far one first | O1 trace locks 5 |
+
+**Machines (C40.1 = C39.1):** builder0 = settle's, manoeuvre's and orders' light lanes (J<=4); builder2 (`make gcp-start`; Spot: read the
+verdict line, re-queue on preemption) = balance's series, native's rows, orders' G3 bar. ONE full check + ONE judged series per builder
+at a time (`tools/builder_checks.sh --wait-below 1`; the full-check lock). Perf-judge on builder0 only, in a quiet window
+(`make remote-quiet`). One laptop Godot run at a time (`flock /tmp/tank-squad-laptop-godot.lock`, R39.3). builder2 also runs another
+project's workers (plane_maker): never touch processes you didn't start.
+
+**Ownership (round 40):** each brief's *You own* line is the contract; in short:
+- **settle:** `element_plan.gd`'s deploy-step, halt-lay, seat-deal (DEPLOY_CAP_S and the all-in test), `element_situation.gd`,
+  `deploy_passers.gd`, the PARKED_HOLD seam, `tests/settle/**`, `tests/test_settle*.gd`, `mk/settle.mk`.
+- **manoeuvre:** movement's drive/unstick/side-step and traffic's give-way block, `game/ai/traffic.gd`, `tests/manoeuvre/**`,
+  `tests/traffic/**`, `tests/test_manoeuvre*.gd`, `tests/test_traffic*.gd`, `mk/manoeuvre.mk`.
+- **orders:** `game/control/**`, `tests/test_control*.gd`, `tests/control/**`, `tests/orders_probe*.gd`, `mk/command.mk`.
+- **balance:** round 39 doctrine's paths (brains, `tests/tactics/**`, `tests/rules/**`, `mk/tactics.mk`, `mk/rules.mk`), `tools/balance/**`,
+  `mk/balance.mk`; C40.4 and C40.5 grants.
+- **native:** `native/**`, `mk/native.mk`, `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**`, `tools/perf_judge.sh`,
+  `tools/loaded.sh`, `tools/slot.sh`, `tools/remote.sh`, `tools/full_check_lock.sh`, `tools/copyback_verify.sh`,
+  `tests/ai_scenarios/guard_line.gd`, `mk/play.mk`'s skirmish recipe; N3's one additive read in `game/units/army.gd`.
+- **Nobody:** `game/ui/**`, `game/audio/**`, `game/announcer/**` (no feedback stream), `game/match/**` and `game/tank/**` outside C40.4,
+  `game/combat/**` outside the switches file, `arenas/**`, `tests/baselines/**` (the orchestrator adopts).
+
+**Contracts (round 40):**
+- **C40.1 Fresh start; two builders; bars before numbers on FRESH seeds (C37.1-C39.1 stand).** Registry below; a guard is never amended
+  after its numbers are seen.
+- **CP40.0 Per-unit counts (native N1, FIRST).** Additive GUARD_RESULT fields (per unit: id, type, faction, cost, kills, death tick,
+  damage dealt/taken). Merged alone the minute it's green; balance's B1 re-reads round 39's OFF-arm workload with it.
+- **CP40.1 The deploy trigger (settle T1).** A holding crew within ~5 m of its travel seat counts as in (`--deploy-arrive=near`). When its
+  bar passes and it ships ON, the orchestrator merges it and tells orders the same minute; orders' G1 v6 series runs on top (C40.3).
+- **C40.2 Seat and give-way stay one fix in two files (C39.2 stands).** settle decides where a parked seat may be; manoeuvre how far a
+  parked crew may be pushed. Each bar names the other's switch states.
+- **C40.3 orders judges G1 on CP40.1;** G3 v7 and G2 judge on main as it is.
+- **C40.4 = C39.4 (rule constants, GRANT to balance).** A constant moves only to his number or under a filed bar; R1's dwell stays 2.0
+  until he answers.
+- **C40.5 Unit stats and the army deal (GRANT to balance, LEAD-GATED).** `game/units/**` changes on main only after his answer to B2;
+  tooling, overrides behind native's OFF flag, and reads are free.
+
+## Bars (round 40)
+
+**Seed registry (round 40):** 8001-8024 settle (T1 8001-8012, S1 v3 8013-8024); 8101-8124 manoeuvre; 8201-8236 orders (G1 v6 8201-8212,
+G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 7001-7008 manoeuvre's M2 dev trace (not a bar).
+
+## Rulings (round 40)
+
+_(none yet)_
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 

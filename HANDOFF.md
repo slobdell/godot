@@ -4,13 +4,44 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-24 ~16:45 PDT — **ROUND 39 CLOSED; ROUND 40 NOT PREPARED (start at the NEXT ORCHESTRATOR box)**; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
 
 
-## 🧭 NEXT ORCHESTRATOR: ROUND 40 IS NOT PREPARED YET — start here
+## 🚀 ROUND 40 IS PREPARED (2026-10-24 evening) — read this first
+
+**Goal: every squad of his group click and route gets in without a reshuffle, and no army wins a frontal charge because of its
+faction.** Split, ownership, contracts C40.1-C40.5 / CP40.0-CP40.1 and the seed registry in `workstreams.md` *Round 40*; briefs in
+`_agents/streams/`; round 39's in `streams/archive/round39/`. **Main at launch: 33a2cc285 + docs; code = 68d0410d3, GREEN builder0**
+(3176/0, 27 ALL JUDGED, perf-judge 7,691 us/tick, sim-baseline 13 unmoved). Workers start from it without a baseline check.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **balance** | `godot-balance` (1) | **Fable** | a gangs army isn't a free win, a syndicate army isn't a wall | B1 the per-unit tally |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | a crew steps aside for a friend without wedging the squads behind | M1 v2 on the 5 G5 runs |
+| **settle** | `godot-settle` (3) | **Fable** | a squad that stops doesn't sit 10 s and reshuffle; never parks on a friend's road | T1 the deploy trigger |
+| **native** | `godot-native` (4) | Opus | nothing alone: per-unit counts for balance (CP40.0); the balance runner | N1 per-unit GUARD_RESULT |
+| **orders** | `godot-orders` (5) | Opus | his group click puts every squad in, the far one first | O1 trace locks 5 |
+
+No feedback stream this round: its one known issue (the portrait order-preview line floats mid-screen) waits for his playtest notes.
+
+**Done at preparation (2026-10-24 evening):** round 39 torn down: six worktrees removed, branches renamed `round39/<s>` (all ancestors
+of main), builder0's `~/tank_squad/godot-<s>*` cleared (22 GB free), builder2 started and its round-39 folders cleared (its
+`godot-native-guard/-score` copies too; remote.sh re-syncs them from the laptop trees, which are kept). builder2 was also running
+another project's workers (plane_maker), not ours: left alone. Feedback's announcer masters were already in the main checkout.
+
+**Waiting on him (ask in player terms, one recommendation; record answers in game_design.md and balance's brief):**
+1. **Faction balance (the round's lead question; balance B2 writes the page after B1's tally).**
+2. **R1's timing:** full sight ~3 s after a halt (recommended: keep) or his ~2 s, which pulled crews out of cover.
+3. **The portrait order-preview line** floating mid-screen: does he see it as wrong (a feedback item next round)?
+4. His playtest notes on main (amber chevrons, dock phone map, honest fog, the parked hold, his caller lines).
+
+**Orchestrator, after launch:** run the round-30 loop (`orchestration.md`); merge CP40.0 alone the minute native names it and tell
+balance; merge CP40.1 when settle's T1 bar passes and tell orders the same minute.
+
+## 🧭 (DONE) ROUND 40 PREPARATION STEPS — kept for the record
 
 The lead closes every round-39 session and starts you fresh. Round 39 is fully closed (box below). **Do, in order:**
 1. **Tear down round 39** (the six sessions are closed by then): for each of settle doctrine manoeuvre orders feedback native:

@@ -4384,3 +4384,11 @@ question and stays as it is.
 - **Open with him at round 39's close:** keep R1's full sight at ~3 s after a halt (his number was ~2 s; ~2 s pulled crews out of
   cover in scenario_cover) or have the cover AI cope; the portrait order-preview line; the faction-matchup table (blob wins are
   mostly faction composition/balance: workstreams.md *Bars (round 39)* D3, doctrine's archived brief).
+
+## Round 40's plan (2026-10-24 evening, the orchestrator; no new words from him yet)
+
+Prepared before his playtest notes, from round 39's traced causes. His open questions carry (HANDOFF *ROUND 40 IS PREPARED*): faction
+balance (the faction table above: any blob v a gangs CPU 72 %, v a syndicate CPU 12 %), R1's ~3 s v his ~2 s, the portrait order-preview
+line. Unit stats and the CPU's army deal (`game/units/**`) don't change until he answers the balance question (pillar: fixed units; his
+Q10 "the problem is not the units, but the rules"); balance stream builds the per-unit read, a faction-aware CPU (symmetric, ships on a
+bar) and a balance-search harness in the meantime.
