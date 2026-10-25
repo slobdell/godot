@@ -69,10 +69,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   all-in mean 28.6 -> 29.0 s (<= 32.4); twitch >= 15 m 113 -> 110; places outside (gate read) 80 -> 80; flips 0 -> 0; first
   shape 6/576; contacts 13576 -> 13394; fights 3sq kills 4.69 -> 5.11, losses 7.06 -> 6.72; 5sq kills 10.00 -> 9.56,
   losses 12.86 -> 12.97 (all inside). Per-cell twitch medians reported in verdict.txt (orders owns the his-5 twitch).
-- **T1 SHIPPED ON at cab85debf** (`--deploy-arrive=settled` default, `=off` escape; deploy tests 59/0 laptop). Full check
-  RUNNING on builder2 (CP40.1). Expected red only on sim-baseline (deploy timing moves); if so, maps recorded twice on
-  cab85debf (`make remote T=sim-baseline-record` x2), the orchestrator adopts them at merge. `settle-t1`'s main arm and both
-  arms of `settle-s1v3r40` now pin `--deploy-arrive=off` so the filed bars reproduce.
+- **GREEN: cab85debf = CP40.1, T1 SHIPPED ON** (`--deploy-arrive=settled` default, `=off` escape). builder2, `>> remote:
+  make native check exited 0`, 3,188 passed / 0 failed, 24 + 3 NOT JUDGED (non-judging machine: perf-judge, ai-scenarios'
+  CPU budget, the quiet-window guard). **sim-baseline unmoved** ("13 maps unmoved (glibc-2.43)", 53/0): no maps to record or
+  adopt. `settle-t1`'s main arm and both arms of `settle-s1v3r40` pin `--deploy-arrive=off` so the filed bars reproduce.
 - **Bar S1 v3 series RUNNING**, builder0 light J4 (`settle-s1v3r40`, seeds 8013-8024), launched at 8ca1b1e31 (game code ==
   afd436ca3, green) before the flip; remote.sh's single rsync froze it (orchestrator accepted as R40.13's frozen tree). T1 is
   OFF in both arms, as the bar was filed.
