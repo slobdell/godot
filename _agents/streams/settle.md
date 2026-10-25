@@ -146,6 +146,11 @@ fight seeds 8737-8748**; builder2, `make settle-capdeal`. Judge `settle_judge.py
 - Guards: never-in over every cell capdeal <= main and none new; all-in mean over runs in on both <= main x 1.10 + 1; places
   outside <= main + 2; shape flips <= main + 3; friend contacts and foreign <= 110 % + 5; fights 3- and 5-squad (his kills,
   his losses, CPU losses as orders_judge's fight_guards), 0 unstarted. Reported: place+twitch >= 25 m, first shape differs.
+- **Run 1 (2026-10-25): NOT JUDGED, no series.** The gate full check of 95276e979 on builder2 (shared with godot and
+  manoeuvre, load 20-34, waited 4 min for a slot) hit slot.sh's 5400 s timeout at 25/26 stages, with only `test` left
+  (native-verify-scenarios 54/0 runner exit 0, trig 6/0). Nothing failed, but no `exited 0` means no gate, so the series
+  did not run and seeds 8725-8748 are still unrun. Builder2 went straight to balance's B2s; told the orchestrator. Waiting
+  on its slot: re-run the gate with `TANK_SQUAD_SLOT_TIMEOUT` raised, then the series.
 
 ### Bar S1 v3b swept band (filed 2026-10-25 before any number on 8701-8724; R40.14)
 What he'd see: the same as S1 v3 (no squad parks on a street the squads behind still drive), now with T1 ON in both arms.
