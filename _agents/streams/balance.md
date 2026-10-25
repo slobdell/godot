@@ -102,6 +102,10 @@ pure by role, so the squad name is the unit type. Kills tally to GUARD_RESULT on
 - **Not the R1-R3 rules:** the rules-OFF base 686150ed2 has the same table (gangs CPU beaten 83 %, syndicate 7 %; n 30-45 a cell).
 - **Cost is a weak lever for gangs:** gangs field 43.4 of the 45-unit cap (Army.MAX_ARMY_UNITS), so a cheaper gangs unit buys almost
   nothing; hp, armour and damage are the gangs levers, cost is a syndicate/law lever (fewer units).
+- **Per-unit damage (CP40.0, N2's `guard.py --by-unit`; 7b53f5f85, builder2, dev 8513-8524, 240 fights):** hull+shield dealt / taken a
+  credit fielded: syndicate 1.82 / 0.73 (68 % live), law 1.29 / 1.46, condemned 1.20 / 1.66, gangs 1.07 / 1.58 (20 % live). Gun Truck
+  dealt 0.30 a credit, 13 % live; Railgun Platform 3.10 dealt / 0.65 taken, 11.6 kills a 1000 credits (law Assault Gun 9.3,
+  condemned Tank 4.1, War Rig 3.3). The kill-line tally above stands.
 - All MG units are weak everywhere (Condemned Scout kr 0.09, Pursuit Cruiser 0.15, Skimmer 0.46): spotters by design, not a faction gap.
 
 **B4 harness (built; dry run in progress).** `tools/balance/search.py`: `check` (his +/-15 % bounds; refuses a damage change on a weapon
