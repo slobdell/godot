@@ -60,8 +60,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - PASS every deciding line: places outside (click cells) 65 -> 8 (<= 16.2); route_left 3864 -> 589 (<= 1932); re-dealt
     0. Contacts 14781 -> 11799; yard_open identical; never-in no more. v5's two failures are gone (his 5 twitch, locks
     5 outside). Old corridor read reported: 98 -> 17, 6174 -> 1209; main v main changed only on locks and terminus_his.
-  - The failing cell is the filed known risk's (the route's first plain click keeps squads whole, R38.44), failing on
-    twitch, not never-in. Trace next (laptop, s8206 Delta).
+  - **Traced (laptop, c7d642aeb-equivalent code, s8206 terminus 5 route, `--probe-trace=4`; reproduces 21.4 v 35.5):**
+    v6's two sides never fire on this cell (every squad's centre 18-31 m short of the click). The difference is v5's
+    column on the route's first plain click: it gives Delta a first place (23.4, 84.5) almost on its final one (22.3,
+    84.5), so Delta stands at its halt by t 4 while Bravo and Echo still drive through that street. It is never all in,
+    deploys on the 10 s cap (13.9 s) with its crews bunched at (24-30, 89-92), and then Delta_2 drives 36 m east to (65,
+    68) and Delta_4 29 m south-west to (4.8, 70.8), still moving at t 45. In main its crews come in strung out and deploy
+    on the cap at 15.2 s nearer their seats (worst 21.4). So it is a cap deploy among passers, which T1 changes.
+  - **Orchestrator's dev read (running):** the G1 v6 arm v main on T1-ON main, terminus 5 route only, dev seeds
+    3801-3812, builder2 J4, frozen tree `/home/slobdell/projects/godot-orders-t1` = main 9d5907ddd + c7d642aeb merged
+    (a1602cca9, detached, not on any branch). If the twitch gap closes there, round 41's G1 v7 starts from it.
 - **Plan:** O1 done -> G1 v6 built + dev-read (deciding lines pass) -> full check of the tip -> **Bar G1 v6 (filed below)** on
   builder0 light J4 -> O2 written up as blocked (dev read failed, cause traced, below) -> O4 G2 v2c re-read (running on
   builder2, `tests/control/orders_g2.sh`) -> its bar if it holds. R40.5 (orchestrator): C40.3 relaxed, G1 v6 judges on
