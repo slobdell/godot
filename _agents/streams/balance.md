@@ -113,7 +113,9 @@ Round 39's OFF arm scores 17.4 (se 1.4); OFF v SPLIT paired change -0.1 (se 0.9)
 
 **B4 dry run (dev seeds 8501-8512, builder2, guard.sh J20 GUARD_CHUNK=8, 240 fights an arm, NOT a bar).** Base 066d0ff95 (= main's
 code 68d0410d3 + tools): flatness **26.6 (se 4.0)**; blob 45 % (v a gangs CPU 83 %, v a syndicate CPU 6 %), turtle 42 %. Same shape as
-round 39. Candidates `faction_max` and `targeted` running (paired with that base).
+round 39. **faction_max** (gangs hp/armour/damage +15 %, syndicate -15 %, law hp/damage +5 %;
+shared weapons untouched): flatness 26.6 -> **13.8**, paired change **-12.8 (se 2.4)**; blob 45 -> 37 % (v a gangs CPU 83 -> 43, v a
+syndicate CPU 6 -> 37), turtle 42 -> 45 % (n 120 a line, dev seeds; not a bar). `targeted` running.
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
