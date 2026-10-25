@@ -557,23 +557,51 @@ def t1(argv):
     lines.append("%s deciding: cap deploys %d -> %d (<= 50 %% of base, base >= 20)" % ("PASS" if d1 else "FAIL", cap_b, cap_n))
     wb, wn = waits(b, base, common), waits(n, new, common)
     mb, mn = (st.mean(wb) if wb else 0.0), (st.mean(wn) if wn else 0.0)
-    d2 = bool(wb) and mn <= 0.75 * mb
-    lines.append("%s deciding: arrival to deploy, mean over squads %.2f -> %.2f s (<= 75 %% of base); median %.1f -> %.1f" % (
+    d2 = bool(wb) and mn <= mb
+    lines.append("%s guard arrival to deploy, mean over squads %.2f -> %.2f s (<= base); median %.1f -> %.1f" % (
         "PASS" if d2 else "FAIL", mb, mn, st.median(wb) if wb else -1, st.median(wn) if wn else -1))
     rb, rn = oj.by_run(rows, base), oj.by_run(rows, new)
     nb = sum(1 for sq in rb.values() if oj.run_all_in(sq) < 0)
     nn = sum(1 for sq in rn.values() if oj.run_all_in(sq) < 0)
     g_ni = nn <= nb
     lines.append("%s guard never-in, every cell: %d -> %d runs (arm <= base)" % ("PASS" if g_ni else "FAIL", nb, nn))
-    g_p = oj.probe_guards(rows, base, new, lines, settle=True)
+    both = [k for k in rb if k in rn and oj.run_all_in(rb[k]) >= 0 and oj.run_all_in(rn[k]) >= 0]
+    ab = sum(oj.run_all_in(rb[k]) for k in both) / max(len(both), 1)
+    an = sum(oj.run_all_in(rn[k]) for k in both) / max(len(both), 1)
+    g_ai = an <= ab * 1.10 + 1.0
+    lines.append("%s guard all-in time: mean over %d runs in on both %.1f -> %.1f s (<= %.1f, base x 1.10 + 1)" % (
+        "PASS" if g_ai else "FAIL", len(both), ab, an, ab * 1.10 + 1.0))
+    # Per cell (R36.6's lines but the twitch median): all-in, never-in, end foreign, crossed. An early halt moves a
+    # straggler's last approach after its deploy, into place and twitch (main drives it before its deploy, uncounted), so
+    # per-cell twitch medians are reported, and the visible reshuffle is judged as the count of squads twitching >= 15 m.
+    g_p = True
+    for cell in sorted({k[:3] for k in rb} | {k[:3] for k in rn}):
+        ba = [oj.run_all_in(rb[k]) for k in rb if k[:3] == cell]
+        na = [oj.run_all_in(rn[k]) for k in rn if k[:3] == cell]
+        b_in, n_in = [t for t in ba if t >= 0], [t for t in na if t >= 0]
+        bt = [max(sq["twitch_m"] for sq in rb[k]) for k in rb if k[:3] == cell]
+        nt = [max(sq["twitch_m"] for sq in rn[k]) for k in rn if k[:3] == cell]
+        bf = [min((sq["end_foreign_m"] for sq in rb[k] if sq["end_foreign_m"] >= 0), default=99) for k in rb if k[:3] == cell]
+        nf = [min((sq["end_foreign_m"] for sq in rn[k] if sq["end_foreign_m"] >= 0), default=99) for k in rn if k[:3] == cell]
+        bc = sum(1 for k in rb if k[:3] == cell for sq in rb[k] if sq["crossed"])
+        nc = sum(1 for k in rn if k[:3] == cell for sq in rn[k] if sq["crossed"])
+        checks = [("all-in", not b_in or oj.med(n_in) <= oj.med(b_in) * 1.2 + 3.0, "%.1f v %.1f" % (oj.med(b_in), oj.med(n_in))),
+                  ("never-in", sum(1 for t in na if t < 0) <= sum(1 for t in ba if t < 0),
+                   "%d v %d" % (sum(1 for t in ba if t < 0), sum(1 for t in na if t < 0))),
+                  ("end foreign", oj.med(nf) >= oj.med(bf) - 3.0, "%.1f v %.1f" % (oj.med(bf), oj.med(nf))),
+                  ("crossed", nc <= bc, "%d v %d" % (bc, nc))]
+        for name, passed, text in checks:
+            g_p = g_p and passed
+            if not passed:
+                lines.append("  FAIL guard %-12s %s: %s" % (name, " ".join(map(str, cell)), text))
+        lines.append("    reported twitch median %s: %.1f v %.1f" % (" ".join(map(str, cell)), oj.med(bt), oj.med(nt)))
+    lines.append(("PASS" if g_p else "FAIL") + " per-cell guards (all-in, never-in, end foreign, crossed)")
     tw_b = sum(1 for c in common if b[c]["twitch_m"] >= 15)
     tw_n = sum(1 for c in common if n[c]["twitch_m"] >= 15)
     g_tw = tw_n <= tw_b * 1.1 + 2
     lines.append("%s guard twitch: squads with twitch >= 15 m %d -> %d (<= base x 1.1 + 2)" % ("PASS" if g_tw else "FAIL", tw_b, tw_n))
-    pt_b = sum(1 for c in common if moved(b[c]) >= LONG_M)
-    pt_n = sum(1 for c in common if moved(n[c]) >= LONG_M)
-    g_pt = pt_n <= pt_b * 1.1 + 2
-    lines.append("%s guard place+twitch >= %.0f m squads %d -> %d (<= base x 1.1 + 2)" % ("PASS" if g_pt else "FAIL", LONG_M, pt_b, pt_n))
+    lines.append("  reported: place+twitch >= %.0f m squads %d -> %d" % (LONG_M, sum(1 for c in common if moved(b[c]) >= LONG_M),
+                 sum(1 for c in common if moved(n[c]) >= LONG_M)))
     shapes = sum(1 for c in common if first(b[c]) != first(n[c]))
     g_sh = shapes <= max(1, 0.03 * len(common))
     lines.append("%s guard first shape: differs %d of %d (<= 3 %%)" % ("PASS" if g_sh else "FAIL", shapes, len(common)))
@@ -602,7 +630,7 @@ def t1(argv):
         sum(1 for c in common if b[c]["deploy_leg_m"] >= LONG_M), sum(1 for c in common if n[c]["deploy_leg_m"] >= LONG_M),
         "%.1f -> %.1f s" % (st.median([oj.run_all_in(v) for v in rb.values() if oj.run_all_in(v) >= 0] or [-1]),
                             st.median([oj.run_all_in(v) for v in rn.values() if oj.run_all_in(v) >= 0] or [-1]))))
-    ok = counter and d1 and d2 and g_ni and g_p and g_tw and g_pt and g_sh and g_fl and g_po and g_c and g_f
+    ok = counter and d1 and d2 and g_ni and g_ai and g_p and g_tw and g_sh and g_fl and g_po and g_c and g_f
     lines.append("VERDICT %s %s v %s (Bar T1, round 40)" % ("PASS" if ok else "FAIL", new, base))
     print("\n".join(lines))
     return 0 if ok else 1

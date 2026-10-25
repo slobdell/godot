@@ -89,6 +89,32 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   halt is laid (cause "settled") and the stragglers drive straight to their halt seats instead of the squad sitting out the
   10 s. Lab 2 running (main / near / settled, 12 street cells x dev 6003-6004).
 
+### Bar T1 the deploy trigger (filed 2026-10-24 before any number on 8001-8012; code = c074db72e's; judge = this commit's)
+What he'd see: a squad that stops lays its halt within a few seconds instead of sitting ~10 s and then shuffling, and every
+squad still gets in. Arms: `main:--deploy-trace` v `settled:--deploy-arrive=settled,--deploy-trace`. Base: main as on
+c074db72e (DEPLOY_HOLD ON, latch ON, R1-R3 ON). **Manoeuvre's `--giveway-chain`: OFF in both arms** (main's state; C40.2);
+`--seat-route-clear` OFF in both. **Seeds 8001-8012 (registered, C40.1):** the no-fight probe's 12 street cells (locks /
+crossing / terminus x 3 / 5 squads x click / route, n 12 a cell, 576 squads an arm) and the fight probe's click cells, 3-squad
+budget 1500 and 5-squad budget 3000 (36 + 36 fights an arm). `tools/remote.sh --light native settle-t1
+TANK_SQUAD_SLOT_TIMEOUT=14400`, builder0 light, J 4, after a green full check of the named hash. Judge `settle_judge.py t1`.
+Places outside are the probe's own read on this branch (main's gate read; orders' R40.5 corridor read is not on main).
+- Counter: squads deployed by the new rule where main capped, or on "settled", > 0.
+- **Deciding:** cap deploys over the no-fight probe <= 50 % of main's, with main >= 20.
+- Guards (judged): never-in runs over every cell <= main; per cell: all-in median <= main x 1.2 + 3 s, never-in <= main, end
+  foreign median >= main - 3 m, crossed <= main; all-in time (mean over runs in on both) <= main x 1.10 + 1 s; arrival to
+  deploy mean <= main's; squads twitching >= 15 m <= main x 1.1 + 2; first shape differs <= 3 %; shape flips <= main + 3;
+  places outside <= main + 2; friend and foreign contacts <= 110 % + 5; the fights (his kills, his losses, CPU losses within
+  1.645 se; 0 runs that never started).
+- Reported: per-cell twitch medians, place+twitch >= 25 m, deploy legs >= 25 m, all-in median per run. **Why not judged
+  (from the dev labs, before this bar):** an early halt moves a straggler's last approach after the deploy, into the probe's
+  place and twitch windows; main drives the same metres before its deploy, uncounted (lab 3, n 2 a cell: crossing twitch
+  medians 6.4 -> 14.1, 20.3 -> 26.9, 20.0 -> 29.7 m while squads twitching >= 15 m 20 -> 22). The reshuffle he'd see is the
+  >= 15 m count, which is judged.
+- Known risk: terminus 5 route s6003 (dev) lost Echo on settled in both labs; main got Echo in at 81.6 s (all-in median 25 s),
+  a marginal cell. Lab 3 (c074db72e, dev 6003-6004 x 12 cells, n 2): caps 47 -> 19, arrival to deploy 6.8 -> 5.1 s mean,
+  all-in 26.7 -> 26.8 s (runs in on both), never-in 0 -> 1.
+- A pass ships `--deploy-arrive=settled` ON on a new hash with one full check = **CP40.1**.
+
 ### Plan (ordered)
 1. T1: pure test (done) -> lab on orders' traced cell (his-5 click 6201-6212, main and G1 v5's column arm, each +/- near) ->
    bar filed here before numbers -> full check of the named hash -> series on 8001-8012 -> ship ON + full check = CP40.1.
