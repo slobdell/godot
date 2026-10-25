@@ -165,6 +165,13 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   twitch >= 15 m, ON <= 0.85 x OFF with OFF >= 20 (dev 42 -> 33 = 0.79); never-in becomes a guard (ON <= OFF, none new on any cell);
   every other s1c guard as filed; deploy legs >= 25 m stay reported. What he'd see: fewer tanks lurching to new seats, squads in sooner.
   The amendment is made before any 8701-8724 number; the dev lab (v3b v v3 v main, 6301-6306) must show v3b keeps the dev gain first.
+- **R40.16 (2026-10-25 ~03:45) B5: the all-tank edge is numbers (armour v penetration), not doctrine.** Mono base (7b53f5f85, builder2,
+  8513-8520, CPU v CPU both sides, n 320): mono-tank beats its own faction's mixed deal 82 % (se 3): condemned 71, gangs 80, law 86,
+  syndicate 89 %. Per-unit (CP40.0, `tools/balance/mono_roles.py`): anti-armour trades well v the blob (artillery 3.0-5.5 hp a credit,
+  spears 2.4, Lancers 3.4); IFVs 0.2-0.8, MG scouts 0.04-0.17, Tanker/Sonic ~0.3; 44-61 % of a mixed army's credits deal < 1 hp a credit to
+  tanks; an autocannon (pen 5) hits a tank's front at 0.05-0.10 of its damage. No symmetric AI fix exists here. Inside R40.1's bounds:
+  tank armour -15 % roughly doubles the autocannon's front effect (fm_law_ca screens it). Beyond: penetration, the IFV's weapon/role, the
+  deal's mix: **a lead question** (HANDOFF), asked in player terms with one recommendation.
 
 ## Rulings (round 40)
 

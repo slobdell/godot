@@ -55,6 +55,10 @@ perf-judge (builder2 doesn't judge), scenario_perf 3.08x, quiet window; sim-base
 fixes. **Still owed: perf-judge on a quiet builder0** for T1 ON (last judged 68d0410d3, 7,691 us/tick). Bars so far: T1 PASS (shipped),
 M1 v2 FAIL (G5), G1 v6 FAIL (terminus 5 route twitch); running S1 v3 (settle), G3 v9 (orders, queued), B2s (balance, candidate screening).
 
+**LEAD QUESTION (asked 2026-10-25 ~03:45, R40.16): combined arms needs more than +/-15 % unit numbers.** All-tanks beats a mixed army 82 %;
+the mixed army's IFVs and MG scouts can't hurt tanks (autocannon 5-10 % of its damage on a tank's front). Recommended: give IFVs a
+real anti-tank missile (as the Bradley's TOW), slow and limited; the alternative is letting penetration change too.
+
 **Round-41 candidate (orders, 385a9be32):** G1 v7 starts on T1-ON main: there the G1 v6 arm's terminus 5 route twitch gap closes (dev,
 builder2 J4, a1602cca9 = main 9d5907ddd + c7d642aeb, 3801-3812, n 12: 27.6 v 27.0 m); its open item is s3805's whole-squad wedge (never-in
 0 v 1, R38.44). Settle's matching item: a cap deploy with a bunched squad deals least-total (_fit_deal), maybe with a street-axis lay
