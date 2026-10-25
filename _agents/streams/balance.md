@@ -118,7 +118,9 @@ Round 39's OFF arm scores 17.4 (se 1.4); OFF v SPLIT paired change -0.1 (se 0.9)
   (G3) median match length of each line within +/-15 % of base, and of each guard faction within +/-20 %; (G4) the share of fights
   ending on the time cap (won on points) not up; (G5) the none line's flatness not worse; (G6) perf: perf-judge on builder0 passes on
   the shipped hash; (G7) the full check green on the shipped hash, with sim-baseline's moved maps adopted on purpose by the
-  orchestrator (no other test edited to pass).
+  orchestrator (no other test edited to pass). (G8, added 2026-10-24 per R40.6, before any number on the bar seeds) the mono-tank
+  line: an all-tank army's win share v a mixed army of its own faction at equal budget (CPU v CPU, the none line, every guard
+  arena, mono on each team in turn; 8301-8320) is not up.
 - Ships as numbers in `game/units/units.gd` (C40.5) and weapon damage in `game/combat/weapons.gd` (requested, below).
 
 **Questions for the lead:** none open.
