@@ -7,7 +7,7 @@ extends TestCase
 func test_mono_tank_army_is_all_tanks_at_the_budget() -> void:
 	for faction: String in Units.FACTIONS:
 		var loaded := Army.load_army("cpu:mono_tank", 8501, Units.BASELINE_BUDGET, faction)
-		assert_false(loaded.has("error"), "%s mono_tank loads: %s" % [faction, loaded.get("error", "")])
+		assert_true(not loaded.has("error"), "%s mono_tank loads: %s" % [faction, loaded.get("error", "")])
 		var army: Dictionary = loaded.get("doctrine", {})
 		var entries := Doctrine.entries(army)
 		assert_true(entries.size() > 0, "%s mono_tank has vehicles" % faction)
@@ -24,7 +24,7 @@ func test_mono_tank_army_is_all_tanks_at_the_budget() -> void:
 
 func test_mono_is_never_rolled_and_needs_a_faction_role() -> void:
 	for faction: String in Units.FACTIONS:
-		assert_false(Array(Army.archetypes_for(faction)).any(func(a: String) -> bool: return a.begins_with("mono_")),
+		assert_true(not Array(Army.archetypes_for(faction)).any(func(a: String) -> bool: return a.begins_with("mono_")),
 				"%s has no mono archetype to roll" % faction)
 	assert_true(Army.load_army("cpu:mono_burner", 1, Units.BASELINE_BUDGET, "gangs").has("error"),
 			"a role the faction doesn't field is an error")
