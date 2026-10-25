@@ -111,6 +111,9 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   242 v 229 (line +33.5); G3 contacts 24,051 -> 23,279; G4 worst kill share 0.018; G6 all-in median +0.0 s; G7 last squad in +0.3 s. v2's
   never-ins: crossing 5 click s8120 sq4, locks 3 click s8119 sq1, terminus 5 route s8114 sq1 (+ sq5, main's too), s8118 sq5, s8119 sq5
   (three are the last squad on terminus 5 route). Stays OFF; no re-run on these seeds; diagnosis trace on the 5 cells (dev).
+  Diagnosis (dev, n 1 a cell, builder0 light): 479bf90f9 main 1/5, v2 5/5 never-in (deterministic); on main 9d5907ddd (T1 ON) mainT1
+  1/5, v2T1 3/5 (crossing s8120 sq4 and terminus s8119 sq5 recover; locks s8119 sq1, terminus s8114 sq1, s8118 sq5 still out). T1 halves
+  v2's cost; it survives on the main that ships.
 - **Bar G3 v9, road as wide as its column (orders; FILED 893180a31, 2026-10-25 ~01:10, before any number on 8213-8224).** Arm = v8's +
   `--place-clear-lane=column`, base `main:`; judge `orders_judge.py g3` unamended from G3 v6; frozen tree at the green hash; every
   G1/G2/T1/S1 switch OFF both arms. Known risk: G3 v6's crossing 5 route never-in / twitch. Dev (builder2 J4, 9076ee2f8, 3804-3809, n 6):
