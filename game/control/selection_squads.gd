@@ -780,6 +780,10 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 					var at := start + leg.normalized() * step
 					if bool(standable.call(at)) and not (crosses.is_valid() and bool(crosses.call(start, at))) \
 							and _too_close(at, i, result, placed, blocks) < 0 and bool(seats_hold.call(i, at)):
+						# G3 v7: never on the road in of a squad still to arrive; then the given place is kept.
+						if PLACE_CLEAR_LANE and _in_lane(at, i, result, placed, blocks) >= 0:
+							places_off_lanes += 1
+							break
 						best = at
 						break
 					step += PLACE_CLEAR_STEP_M
@@ -790,6 +794,31 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 				places_cleared += 1
 		placed.append(i)
 	return result
+
+
+## G3 v7 (round 40; R39's trace, crossing 5 route s6213: v6 stepped Delta back along its own leg 28 m west, onto the
+## approach Echo still had to drive; Echo crept through Delta's halt for 50 s and never got in). `--place-clear-lane=on`:
+## a step back never stands inside the lane of a squad placed before it (a longer drive, so still to arrive): the strip from
+## that squad's vehicles (`center`) to its place, half its width plus half this squad's short side either way.
+static var PLACE_CLEAR_LANE := OS.get_cmdline_user_args().has("--place-clear-lane=on")
+## Measurement (G3 v7): step backs refused for standing in a later squad's lane (the given place kept), since start.
+static var places_off_lanes := 0
+
+
+## G3 v7: the first placed squad whose lane (its `center` to its place) `at` stands in, or -1. Pure.
+static func _in_lane(at: Vector3, i: int, places: Array[Vector3], placed: Array[int], blocks: Array) -> int:
+	var p := Vector2(at.x, at.z)
+	for j: int in placed:
+		if j == i or j >= blocks.size():
+			continue
+		var c: Vector3 = blocks[j].get("center", places[j])
+		var a := Vector2(c.x, c.z)
+		var b := Vector2(places[j].x, places[j].z)
+		var seg := b - a
+		var t := 0.0 if seg.length_squared() < 0.001 else clampf((p - a).dot(seg) / seg.length_squared(), 0.0, 1.0)
+		if p.distance_to(a + seg * t) < float(blocks[j]["width"]) * 0.5 + _short_side(blocks[i]) * 0.5:
+			return j
+	return -1
 
 
 static func _flat_gap(a: Vector3, b: Vector3) -> float:

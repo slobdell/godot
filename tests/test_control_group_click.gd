@@ -34,6 +34,7 @@ func teardown() -> void:
 	SelectionSquads.CLEAR_REACHED = OS.get_cmdline_user_args().has("--group-clear=reached")
 	SelectionSquads.GROUP_LEAD = OS.get_cmdline_user_args().has("--group-lead=drive")
 	SelectionSquads.SIDES_BOTH = OS.get_cmdline_user_args().has("--group-sides=both")
+	SelectionSquads.PLACE_CLEAR_LANE = OS.get_cmdline_user_args().has("--place-clear-lane=on")
 	SelectionSquads.ROUTE_CORNER = OS.get_cmdline_user_args().has("--group-route-corner=line")
 	if _lab != null:
 		_lab.dispose()
@@ -656,3 +657,27 @@ func test_g1v6_the_untangle_keeps_each_squad_on_its_side() -> void:
 	SelectionSquads.untangle_whole(squads, sided, position, leads, arc, misplaced)
 	assert_eq(sided[0], Vector3(-44, 0, 0), "v6: Alpha keeps its own side's place")
 	assert_eq(sided[1], Vector3(34, 0, 0), "v6: Charlie keeps the near side's")
+
+
+## G3 v7 (round 40; R39's trace, crossing 5 route s6213): v6 stepped Delta back along its own leg onto the road Echo still
+## had to drive in. `--place-clear-lane=on`: no step back inside the lane of a squad still to arrive; the given place is kept.
+func test_g3v7_no_step_back_onto_a_later_squads_road() -> void:
+	# Echo (0): the longest drive, from (100, 0, 0) west to its place at the origin; Delta (1): its given place 3 m off
+	# Echo's, its vehicles east too, so its leg home runs back up Echo's road. Charlie (2): from the north, clear of it.
+	var blocks := [{"center": Vector3(100, 0, 0), "width": 25.4, "depth": 54.8}, {"center": Vector3(60, 0, 6), "width": 25.4, "depth": 54.8},
+			{"center": Vector3(0, 0, 80), "width": 25.4, "depth": 54.8}]
+	var places: Array[Vector3] = [Vector3(0, 0, 0), Vector3(3, 0, 0.5), Vector3(-60, 0, 0)]
+	var any := func(_p: Vector3) -> bool: return true
+	# Aside and straight back never seat; along its leg (rising toward z = 6) it does.
+	var only_back := func(i: int, at: Vector3) -> bool: return i != 1 or (at.x > 20.0 and at.z > 1.5)
+	var v6 := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(-1, 0, 0), any, Callable(), only_back)
+	print("GROUP_CLICK g3v7 v6 %s" % [v6])
+	assert_true(v6[1].x > 20.0, "v6: Delta steps back east along its leg, onto Echo's road (%s)" % [v6[1]])
+	SelectionSquads.PLACE_CLEAR_LANE = true
+	var refused := SelectionSquads.places_off_lanes
+	var v7 := SelectionSquads.place_clear(places, blocks, Vector3.ZERO, Vector3(-1, 0, 0), any, Callable(), only_back)
+	print("GROUP_CLICK g3v7 v7 %s" % [v7])
+	assert_eq(v7[1], places[1], "v7: Delta keeps its given place")
+	assert_eq(SelectionSquads.places_off_lanes, refused + 1, "counted")
+	assert_eq(SelectionSquads._in_lane(Vector3(50, 0, 0), 1, places, [0], blocks), 0, "a point on Echo's road is in its lane")
+	assert_eq(SelectionSquads._in_lane(Vector3(50, 0, 40), 1, places, [0], blocks), -1, "40 m off it is not")
