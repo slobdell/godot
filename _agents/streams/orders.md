@@ -143,3 +143,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - **Known risk:** terminus 5 route never-in (dev read 1 s3805 squad 1, also in v4 / v5's dev reads): the whole-squad
     deal on the route's first plain click (R38.44) wedges a crew in the x = 0 street. Taken as the honest price, as round 39.
   - **Plus:** paired top-down shots of his click, main v sides, looked at. A pass ships ON.
+  - **R40.11 (tree after builder0's crash):** the b4da041c4 check died to the watchdog at load 26. The tree is now
+    8bbafb376, if its check goes green. `git diff b4da041c4 8bbafb376 -- game/` (2 files, +99 / -46) is G3 v8 only:
+    rts_controls.gd moves the G3 block unchanged into `_place_clear()`, still reached only under `--place-clear=on`, and
+    adds the deferred call under `--place-clear=on` AND `--place-clear-after=relay`. selection_squads.gd adds `on_road`'s
+    `skip_end` (default 0, unchanged), `lane_skip` and `PLACE_CLEAR_AFTER`. Every G3 switch is OFF in both G1 v6 arms, so
+    neither arm reaches the changed code. Lane (R40.11): builder0 light only when one of the two lanes allowed beside a
+    full check is free; otherwise builder2 once G3 v8's dev read ends.
