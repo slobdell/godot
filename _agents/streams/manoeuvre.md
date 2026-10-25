@@ -180,3 +180,21 @@ artillery and tanks.
 **Filed for a later round (not M3):** widen the planner past wheels (tracks, hover), so the re-route reaches s7004's kind of wedge.
 **C40.2 noted:** settle's T1 ships ON. The M1 v2 series keeps its tree as filed (T1 OFF in both arms). On a pass, one dev read of
 M1 v2 on a T1-ON main before the flip.
+
+**Bar M1 v2: FAIL on G5 alone (2026-10-25 01:25 PDT).** Game code 479bf90f9 (GREEN builder2), on builder0 light, native, J4.
+A = census on 8101-8112 (36 paired fights); B = orders probe on 8113-8124 (144 paired runs). Raw data:
+`~/overnight-manoeuvre/r40/bar/`.
+- PASS D chained seat drift 884.0 -> 190.4 m (-78.5 %; line <= 442.0), paired -19.27 m a fight, se 2.11 (-9.1 se).
+- PASS G1 give-way deaths 91 -> 86 (line +19.7). PASS G2 stuck deaths 229 -> 242 (line +33.5). PASS G3 contacts 24051 -> 23279.
+- PASS G4 kill share worst move 0.018 (line 0.03); deaths 1463 -> 1451.
+- **FAIL G5 never-in runs 2 -> 5 (no more).** PASS G6 all-in paired median +0.0 s. PASS G7 last-in paired mean +0.3 s (7 runs
+  more than 10 s later v 4 earlier).
+- Reported deaths by team: OFF {0: 720, 1: 743}, ON {0: 737, 1: 714}.
+- Stuck by sub-cause, OFF -> ON: wedged 86 -> 104, static 61 -> 55, still 77 -> 78, no_path 5 -> 5.
+- Never-in runs:
+  - main: locks 3 click s8116 sq1 (v2 got it in); terminus 5 route s8114 sq5.
+  - v2: crossing 5 click s8120 sq4 (main 37.0 s); locks 3 click s8119 sq1; terminus 5 route s8114 sq1 (main 84.7 s) + sq5;
+    terminus 5 route s8118 sq5 (main 56.6 s); terminus 5 route s8119 sq5 (main 41.3 s).
+  - So 3 of the 5 are terminus 5-squad route cells, the last squad in; in main those squads came in late (41-85 s).
+- **Not shipped; no re-run on these seeds.** The guard stands unamended. Trace (diagnosis only, not a re-judge): probe_wedge on the
+  5 v2 never-in cells, main v v2, `~/overnight-manoeuvre/r40/trace5/`.
