@@ -123,6 +123,12 @@ OFF on 65da436ec; v2 on the same game code (d35eb24d1 + knob), GDScript yield pa
 - **Reported, not judged:** chained n, chain_in_play / releases / holds_refused / refusals, parked_refusals, all parked drift.
 - **Judge:** `python3 tests/manoeuvre/chain_judge.py census-off census-on probe/rows.jsonl --on-arm=v2 --d-ratio=0.5 --last-in`
   (committed before the run, 6c28abd3e; no options = round 39's judge, re-judged line for line).
+- **Gate MET: 479bf90f9 GREEN on builder2** (`>> remote: make native check exited 0`, 3186 passed / 0 failed, 24 targets passed + 3 NOT
+  JUDGED (perf-judge on builder2, and scenario_perf / remote-guard-test refused at load 65), sim-baseline unmoved, copy-back verified;
+  23:05 PDT). builder0's first check of it was lost in builder0's crash (R40.11). The series tree: the branch tip d379fd017, game code =
+  479bf90f9 (since then: Status, the judge's reported-deaths line, a wedge_trace field the series doesn't run).
+- **Series STARTED 2026-10-24 ~23:07 PDT** (`~/overnight-manoeuvre/r40/bar.sh`, builder0 light J4, C++ path). ETA ~01:00 PDT. No
+  game-code edit in this tree until it ends.
 - **Verdict:** every line passes -> PASS -> ships ON (CP40.2: one full check of the flip). Any FAIL -> stays OFF, no re-run on these
   seeds, the cause traced and written up.
 
