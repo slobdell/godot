@@ -1,5 +1,5 @@
 # Faction balance (round 40, balance stream; _agents/streams/balance.md). Included by the root Makefile.
-.PHONY: balance-catalog balance-tally balance-pytest
+.PHONY: balance-catalog balance-tally balance-pytest balance-tuned
 
 balance-catalog: import ## The unit and weapon catalogs as JSON -> build/balance/catalog.json (read-only; the tally prices units with it)
 	mkdir -p $(BUILD_DIR)/balance
@@ -12,3 +12,9 @@ balance-tally: balance-catalog ## B1: per-unit kills/losses/value per credit of 
 
 balance-pytest: ## The balance tools' own tests (tally fixture)
 	$(PYTHON) -m unittest discover -s tools/balance -p 'test_*.py'
+
+balance-tuned: import ## B4: the stats as the simulation reads them under a candidate's tune: TUNE_SPEC="gang_tank.max_health=483,..." -> build/balance/tuned.json
+	mkdir -p $(BUILD_DIR)/balance
+	$(GODOT) --headless --path . --script res://tools/balance/catalog_dump.gd -- --tune=$(TUNE_SPEC) 2>&1 \
+		| sed -n 's/^TUNED_JSON //p' > $(BUILD_DIR)/balance/tuned.json
+	test -s $(BUILD_DIR)/balance/tuned.json
