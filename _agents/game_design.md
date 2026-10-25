@@ -4392,3 +4392,8 @@ balance (the faction table above: any blob v a gangs CPU 72 %, v a syndicate CPU
 line. Unit stats and the CPU's army deal (`game/units/**`) don't change until he answers the balance question (pillar: fixed units; his
 Q10 "the problem is not the units, but the rules"); balance stream builds the per-unit read, a faction-aware CPU (symmetric, ships on a
 bar) and a balance-search harness in the meantime.
+
+## His answer on R1's timing (2026-10-24 evening, verbatim)
+
+Asked whether a stopped tank should keep reaching full sight ~3 s after stopping (his number was ~2 s, which pulled crews out of cover
+in scenario_cover): **"sounds fine"** -> HALT_DWELL_SECONDS stays 2.0 (full sight at ~3 s). Closed; not re-asked.

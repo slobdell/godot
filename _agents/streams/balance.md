@@ -44,8 +44,7 @@ turtling (17 %). Blob kill ratio by blob faction: syndicate 2.62, law 0.98, cond
    on main until he answers B2.
 5. **Stretch:** after his answer, the change he picks behind a switch with its own bar.
 
-**Open question for him (doctrine's, carried):** R1's full sight after a halt comes at ~3 s; his number was ~2 s, and ~2 s pulled a crew
-out of cover in scenario_cover. Doctrine recommended keeping ~3 s. Until he answers, the dwell stays 2.0.
+**His answer (2026-10-24):** R1's full sight stays at ~3 s after a halt ("sounds fine"); HALT_DWELL_SECONDS stays 2.0.
 
 ## How to verify
 
@@ -60,7 +59,7 @@ settle's deploy/halt functions and PARKED_HOLD seam, manoeuvre's movement/traffi
 
 ## Waiting on the lead
 
-B2 (faction balance); R1's timing.
+B2 (faction balance).
 
 ## Status
 

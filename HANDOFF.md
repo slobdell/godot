@@ -30,11 +30,11 @@ No feedback stream this round: its one known issue (the portrait order-preview l
 **Done at preparation (2026-10-24 evening):** round 39 torn down: six worktrees removed, branches renamed `round39/<s>` (all ancestors
 of main), builder0's `~/tank_squad/godot-<s>*` cleared (22 GB free), builder2 started and its round-39 folders cleared (its
 `godot-native-guard/-score` copies too; remote.sh re-syncs them from the laptop trees, which are kept). builder2 was also running
-another project's workers (plane_maker), not ours: left alone. Feedback's announcer masters were already in the main checkout.
+another project's workers (plane_maker), not ours: left alone. He confirmed builder2 stays on for round 40. Feedback's announcer masters were already in the main checkout.
 
 **Waiting on him (ask in player terms, one recommendation; record answers in game_design.md and balance's brief):**
 1. **Faction balance (the round's lead question; balance B2 writes the page after B1's tally).**
-2. **R1's timing:** full sight ~3 s after a halt (recommended: keep) or his ~2 s, which pulled crews out of cover.
+2. ~~R1's timing~~ ANSWERED 2026-10-24: keep ~3 s ("sounds fine").
 3. **The portrait order-preview line** floating mid-screen: does he see it as wrong (a feedback item next round)?
 4. His playtest notes on main (amber chevrons, dock phone map, honest fog, the parked hold, his caller lines).
 
