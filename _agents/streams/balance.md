@@ -143,6 +143,13 @@ cells (as blob/turtle guard, and 100 - the CPU cell), faction_max leaves law wea
   passes (dev change -10 at se ~3 a 240-fight read, so ~-10 at se ~1.2 at 1600); G1 blob flat and G2 turtle flat on dev, but each
   at ~0 +/- 3.5, so either could cross +2 se (~+2.4 points at the bar's n) by chance or a small real rise: the riskiest guards; G3
   lengths unknown (not screened); G8 known after the mono screen.
+  **ARM 494a3d33d's full check: NOT green** (builder0 `make check exited 2`, 3203 passed / 9 failed + sim-baseline, all 13 maps moved).
+  (a) `test_combat_mechanics::test_everything_hurts_from_behind` (a design invariant): +15 % REAR armour on War Rigs / Law units puts the
+  twin MG from behind under 0.4. **Candidate is now `fm_law_c5r`** = fm_law_c5 with every rear armour as today (no bar number seen).
+  **ARM = 6d95d4eba** (`balance/b2s-arm-r`, BASE 5be511659 + apply; rear armour verified unchanged); its full check queued on builder0
+  after BASE's. (b) Eight tests pin the prices the syndicate cost +5 % moves (C19.2): test_army_economy x6, test_army_screen::
+  test_a_spent_army_says_so, test_army_size::test_the_table_at_two_thousand (Skimmer 120 -> 126 CR, Gunship 172 -> 180, Railgun 269 ->
+  283, Missile Ring 218 -> 228; 2000 CR buys 15 Skimmers, not 16). Re-pinning them is asked of the orchestrator (no sim effect).
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
