@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-24 ~16:45 PDT — **ROUND 39 CLOSED; ROUND 40 NOT PREPARED (start at the NEXT ORCHESTRATOR box)** (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-24 ~16:45 PDT — **ROUND 39 CLOSED; ROUND 40 NOT PREPARED (start at the NEXT ORCHESTRATOR box)**; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
@@ -75,8 +75,8 @@ player terms; (3) only then a faction-aware CPU. Also discussed with him: automa
 bounds), CPU-bound, a fit for a new 16-core builder he may buy.
 
 **His call after the close (2026-10-24 ~16:40 PDT):** "why is announcer-rules a flag? If we have new announcer scripts we should
-just turn them on" -> his six caller lines are ON by default (`--announcer-rules=off` mutes; main 68d0410d3, check: see the
-NEXT ORCHESTRATOR box). Rule from now on: approved content ships ON.
+just turn them on" -> his six caller lines are ON by default (`--announcer-rules=off` mutes). **Main 68d0410d3 GREEN on builder0**
+(`make check exited 0`, 3176/0, 27 targets ALL JUDGED, sim-baseline 13 unmoved, perf-judge PASS 7,691 us/tick idle 94 %). Rule from now on: approved content ships ON.
 **Waiting on him (lead gates):** the portrait order-preview line floating mid-screen; keep R1's ~3 s to full sight (doctrine
 recommends yes) or have the cover AI cope with ~2 s; the faction table (round 40's lead question).
 
