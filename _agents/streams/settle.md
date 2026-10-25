@@ -85,10 +85,21 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   terminus 5 route +2; locks clicks and crossing 5 route went down. Next for round 41 (v4 ideas, not built): release a wait
   inside the place window or keep the waiting crew's stand as its seat once the window closes; cap a cleared seat's leg
   (e.g. no clear seat farther than the original seat + a spacing: wait instead).
-- **Dev pair with T1 ON + the dry deal read RUNNING** on builder2 (orchestrator's asks), frozen side worktree
-  `../godot-settle-dev9d` = main 9d5907ddd + the two measurement-only trace commits (tip 4f1ed2eca): v3 v main on crossing +
-  terminus x 3/5 x click/route, dev seeds 6301-6306, J12; then main's DEPLOY_TRACE deals on terminus 5 route
-  8203/8205/8206/8208.
+- **Dev pair with T1 ON** (builder2, frozen side worktree `../godot-settle-dev9d` = main 9d5907ddd + measurement-only trace
+  commits, tip 4f1ed2eca; crossing + terminus x 3/5 x click/route, dev seeds 6301-6306, n 48 runs an arm, J12;
+  `references/round40/settle/dev-v3t1-builder2/`): **with T1 ON, v3's twitch cost reverses**: squads >= 15 m 42 -> 33,
+  worst twitch a run median 17.2 -> 15.1 m, all-in median 21.0 -> 18.7 s, cap deploys 42 -> 33. But **one new never-in**:
+  terminus 5 click s6306, Alpha (the last squad; main in at 42.1 s) ends 19.4 m off its spot. Bravo had 3 seats cleared and a
+  crew waiting, Delta 1 cleared. Not traced further yet; likely a moved seat or waiting crew on Alpha's way in. Dev, n 6 a cell.
+- **Dry deal read** (same run, main 9d5907ddd T1 ON, terminus 5 route 8203/8205/8206/8208, 20 deploys, 4 on the cap; 8205 had
+  none): drives to the grounded seats, [worst, total] m. Cap deploys: main worst median 36.5 (>= 25 m: 4 of 4), total mean
+  73.9; least-total on the ordered heading 21.6 (2 of 4), 60.3; **least-total laid on the street axis 22.5 (0 of 4), 51.4**.
+  Every deploy: >= 25 m 6 -> 4 (ordered) -> 0 (street). s8206 Delta: main [38.4, 83.7], ordered [41.9, 82.5], street
+  [24.3, 65.9]. **The lay matters more than the deal**, as guessed: on the ordered heading the deal alone left Delta's
+  worst at 41.9 m. The cap deploys here were NOT bunched (spread 20-30 m), so a flag should be scoped to cap deploys, not to
+  bunched ones. Proposal (round 41 bar, not built): `--cap-deal=street`, a cap deploy laid on the street axis (S1 v5's street
+  read) and dealt least-total from where the crews stand; judged on deploy leg >= 25 m and twitch >= 15 m, with never-in,
+  all-in, places outside and fights as guards.
 - **Orders' question (via orchestrator, G1 v6 trace, laptop, terminus 5 route s8206): when a cap deploy lays its halt with
   crews bunched, should seats be dealt nearest-first from where they stand?** Answer (code read, no run): **yes, as the
   least TOTAL drive, not greedy nearest-first.** Greedy nearest-first leaves the last crew the leftover far seat. On main the

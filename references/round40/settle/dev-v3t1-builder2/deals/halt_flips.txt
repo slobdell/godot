@@ -1,0 +1,7 @@
+cell                   arm        |   placed flipping    flips   relays relaying   terr_c   terr_a  reseats     away     held     seat
+terminus 5 route       main       |       20        0        0        3        2        3        0        0     83.0     83.0    237.5
+
+TOTAL main       | placed 20.0 flipping 0.0 flips 0.0 relays 3.0 relaying 2.0 terr_c 3.0 terr_a 0.0 reseats 0.0 away 83.0 held 83.0 seat 237.5
+
+FLIP terminus 5 route main seed 8206 squad 3: relays 2 flips 0 shapes ['herringbone'] terrain c/a 2/0 reseats 0 away 1.1 held 1.1 seat 9.3
+FLIP terminus 5 route main seed 8208 squad 3: relays 1 flips 0 shapes ['herringbone'] terrain c/a 1/0 reseats 0 away 0.1 held 0.1 seat 6.1

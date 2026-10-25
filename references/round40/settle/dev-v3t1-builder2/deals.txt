@@ -1,0 +1,7 @@
+terminus-5-route-main-s8203.log              Green_Bravo_1    spread  24.9  main [34.5, 73.8]  ordered [17.2, 52.8]  street [24.5, 55.6]
+terminus-5-route-main-s8206.log              Green_Delta_1    spread  20.0  main [38.4, 83.7]  ordered [41.9, 82.5]  street [24.3, 65.9]
+terminus-5-route-main-s8208.log              Green_Bravo_1    spread  23.1  main [31.5, 57.6]  ordered [16.6, 42.7]  street [10.7, 32.4]
+terminus-5-route-main-s8208.log              Green_Alpha_1    spread  29.6  main [50.8, 80.4]  ordered [26.1, 63.1]  street [20.6, 51.8]
+every          n  20 | main worst median 16.0 max 50.8, >= 25 m 6, total mean 44.4 (n 20) | ordered worst median 15.7 max 41.9, >= 25 m 4, total mean 40.3 (n 20) | street worst median 12.3 max 24.5, >= 25 m 0, total mean 36.1 (n 20)
+cap            n   4 | main worst median 36.5 max 50.8, >= 25 m 4, total mean 73.9 (n 4) | ordered worst median 21.6 max 41.9, >= 25 m 2, total mean 60.3 (n 4) | street worst median 22.5 max 24.5, >= 25 m 0, total mean 51.4 (n 4)
+cap bunched    n 0

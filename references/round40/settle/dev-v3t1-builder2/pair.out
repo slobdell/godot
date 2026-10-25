@@ -1,0 +1,96 @@
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> orders-probe on builder2 | commit 4f1ed2eca | native on
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          main      |   27.1 /   18.1   |    4   0 |     17.0 |               3.2 |            27.1 | 1.38 | 61.8
+crossing 3 click          v3        |   27.1 /   18.1   |    4   0 |     18.1 |               2.8 |            27.1 | 1.41 | 61.8
+crossing 3 route          main      |   28.9 /   23.1   |    1   0 |     20.7 |               3.4 |            37.8 | 1.47 | 61.8
+crossing 3 route          v3        |   28.9 /   23.1   |    3   0 |     20.7 |               3.1 |            42.4 | 1.56 | 61.8
+crossing 5 click          main      |   72.4 /   25.6   |    3   0 |     64.0 |               2.6 |            95.9 | 2.81 | 19.5
+crossing 5 click          v3        |   72.4 /   25.6   |    4   0 |     52.6 |               2.7 |            86.2 | 2.71 | 19.5
+crossing 5 route          main      |   72.4 /   28.1   |    2   0 |     56.8 |               3.5 |            48.3 | 2.18 | 19.5
+crossing 5 route          v3        |   72.4 /   28.1   |    3   0 |     89.2 |               3.7 |            67.0 | 2.28 | 19.5
+terminus 3 click          main      |   37.1 /   34.4   |    0   0 |     39.0 |               3.2 |            46.9 | 1.79 | 18.0
+terminus 3 click          v3        |   37.1 /   34.4   |    0   0 |     26.3 |               3.5 |            53.1 | 1.55 | 18.0
+terminus 3 route          main      |   37.1 /   34.4   |    0   0 |     19.1 |               3.4 |            39.4 | 1.80 | 18.0
+terminus 3 route          v3        |   37.1 /   34.4   |    0   0 |     19.1 |               3.4 |            39.4 | 1.80 | 18.0
+terminus 5 click          main      |   60.8 /   39.4   |    0   0 |     42.1 |               7.1 |            53.1 | 3.21 | 5.1
+terminus 5 click          v3        |   60.8 /   39.4   |    0   0 |        - |               8.6 |            53.5 | 3.07 | 5.1
+terminus 5 route          main      |   60.8 /   39.4   |    0   0 |     51.9 |               5.1 |            73.0 | 8.48 | 5.1
+terminus 5 route          v3        |   60.8 /   39.4   |    0   0 |     51.6 |               3.6 |            65.9 | 7.88 | 5.1
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          main      |          25.8 |          19.2 |           21.7 |               4.3 |          37.2
+crossing 3 click          v3        |          25.7 |          21.7 |           20.2 |               4.9 |          42.4
+crossing 3 route          main      |          30.7 |          19.2 |           10.9 |               3.3 |          40.5
+crossing 3 route          v3        |          29.6 |          27.0 |           18.7 |               4.7 |          44.2
+crossing 5 click          main      |          74.0 |          31.1 |           25.6 |               3.6 |         106.6
+crossing 5 click          v3        |          58.5 |          40.3 |           28.1 |               4.2 |         106.6
+crossing 5 route          main      |          66.8 |          24.6 |           25.8 |               3.0 |          88.1
+crossing 5 route          v3        |             - |          53.9 |              - |               4.0 |          95.2
+terminus 3 click          main      |          49.0 |          39.2 |           26.7 |               9.8 |          62.2
+terminus 3 click          v3        |          29.7 |          35.3 |           10.6 |              12.0 |          62.2
+terminus 3 route          main      |          26.9 |          22.8 |           20.2 |               8.1 |          55.5
+terminus 3 route          v3        |          26.9 |          22.8 |            3.0 |              12.7 |          55.5
+terminus 5 click          main      |          47.6 |          41.8 |           32.0 |               5.8 |          83.8
+terminus 5 click          v3        |             - |          41.8 |              - |               5.8 |          83.8
+terminus 5 route          main      |          56.4 |          34.3 |           34.9 |               8.3 |          75.1
+terminus 5 route          v3        |          54.7 |          34.3 |           30.3 |               8.3 |          78.5
+
+MEDIANS over seeds [6301, 6302, 6303, 6304, 6305, 6306] (n 6 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          main        | 6 |         15.9 |     0 |          25.6 |         18.5 |          35.1 |               4.3 |    4   0 | 1.32
+crossing 3 click          v3          | 6 |         15.8 |     0 |          24.1 |         17.0 |          38.5 |               4.9 |    4   0 | 1.31
+crossing 3 route          main        | 6 |         17.2 |     0 |          31.5 |          8.4 |          38.5 |               3.3 |    1   0 | 1.28
+crossing 3 route          v3          | 6 |         17.5 |     0 |          29.7 |         11.7 |          39.4 |               4.7 |    3   0 | 1.25
+crossing 5 click          main        | 6 |         38.0 |     0 |          78.9 |         22.5 |          89.5 |               3.6 |    3   0 | 1.82
+crossing 5 click          v3          | 6 |         32.1 |     0 |          77.9 |         17.4 |          89.5 |               4.2 |    4   0 | 1.93
+crossing 5 route          main        | 6 |         37.8 |     0 |          34.8 |         20.4 |          84.0 |               3.0 |    2   0 | 1.99
+crossing 5 route          v3          | 6 |         38.9 |     0 |          35.5 |         19.9 |          83.8 |               4.0 |    3   0 | 1.96
+terminus 3 click          main        | 6 |         21.9 |     0 |          36.0 |         11.5 |          59.4 |               9.8 |    0   0 | 1.52
+terminus 3 click          v3          | 6 |         19.4 |     0 |          41.5 |          7.4 |          59.4 |              12.0 |    0   0 | 1.40
+terminus 3 route          main        | 6 |         16.6 |     0 |          29.5 |          0.0 |          53.6 |               8.1 |    0   0 | 1.14
+terminus 3 route          v3          | 6 |         16.6 |     0 |          29.5 |          0.0 |          53.6 |              12.7 |    0   0 | 1.13
+terminus 5 click          main        | 6 |         10.8 |     0 |          44.0 |         21.7 |          74.6 |               5.8 |    0   0 | 2.55
+terminus 5 click          v3          | 6 |         10.8 |     1 |          43.4 |         21.7 |          74.6 |               5.8 |    0   0 | 2.52
+terminus 5 route          main        | 6 |         41.1 |     0 |          59.3 |         22.6 |          72.3 |               8.3 |    0   0 | 6.23
+terminus 5 route          v3          | 6 |         37.7 |     0 |          58.0 |         19.4 |          73.3 |               8.3 |    0   0 | 5.77
+
+EQUALITY click cells: 4 identical across arms, 20 differ
+  DIFFER crossing 3 click seed 6301
+  DIFFER crossing 3 click seed 6302
+  DIFFER crossing 3 click seed 6303
+  DIFFER crossing 3 click seed 6304
+  DIFFER crossing 3 click seed 6305
+  DIFFER crossing 3 click seed 6306
+  DIFFER crossing 5 click seed 6301
+  DIFFER crossing 5 click seed 6302
+  DIFFER crossing 5 click seed 6303
+  DIFFER crossing 5 click seed 6304
+  DIFFER crossing 5 click seed 6305
+  DIFFER crossing 5 click seed 6306
+  DIFFER terminus 3 click seed 6301
+  DIFFER terminus 3 click seed 6302
+  DIFFER terminus 3 click seed 6303
+  DIFFER terminus 3 click seed 6304
+  DIFFER terminus 3 click seed 6305
+  DIFFER terminus 3 click seed 6306
+  DIFFER terminus 5 click seed 6304
+  DIFFER terminus 5 click seed 6306
+TOTAL main       | placed 192.0 flipping 0.0 flips 0.0 relays 38.0 relaying 13.0 terr_c 38.0 terr_a 0.0 reseats 0.0 away 606.3 held 606.3 seat 1906.4
+TOTAL v3         | placed 190.0 flipping 0.0 flips 0.0 relays 46.0 relaying 15.0 terr_c 46.0 terr_a 0.0 reseats 0.0 away 513.0 held 508.3 seat 1684.6
