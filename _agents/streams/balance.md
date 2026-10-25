@@ -124,6 +124,15 @@ syndicate CPU 6 -> 37), turtle 42 -> 45 % (n 120 a line, dev seeds; not a bar). 
 cells (as blob/turtle guard, and 100 - the CPU cell), faction_max leaves law weakest (34 %) and syndicate/condemned strongest (61/56 %).
 **Round 2** (on 7b53f5f85 = main b25b803e5 with N1+N3 merged; fresh dev seeds 8513-8524; J16): base, faction_max again, `fm_law`
 (law to +15 % too), `fm_law_cost` (fm_law + syndicate cost +10 % through N3). Then the mono line (B5).
+  Round-2 reads (7b53f5f85, builder2, 8513-8524, 240 fights an arm, paired with its base; base flatness 18.5 se 3.5):
+  | arm | flatness | change (se) | blob line | blob v gangs CPU | blob v syndicate CPU | turtle line |
+  |---|---|---|---|---|---|---|
+  | base | 18.5 | - | 40 % | 52 % | 7 % | 34 % |
+  | faction_max | 12.9 | -5.6 (2.4) | 40 % | 36 % | 27 % | 38 % |
+  | **fm_law** | **10.1** | **-8.4 (3.1)** | 36 % | 32 % | 33 % | 40 % |
+  | fm_law_cost | 13.6 | -4.9 (3.7) | 41 % | 24 % | 60 % | 34 % |
+  fm_law_cost overshoots (syndicate blob 20 %, a syndicate CPU beaten 60 %). **fm_law is round 2's winner**; its mono line (and the
+  base's) run next, both sides, 8513-8520, one guard side (GUARD_SIDES=green), before the bar candidate is named.
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
