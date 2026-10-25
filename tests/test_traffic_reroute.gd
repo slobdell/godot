@@ -18,10 +18,13 @@ func teardown() -> void:
 
 
 ## [holder mover, asker mover]: the holder giving way to the asker as `spot`, the asker stalled for `stalled_s`.
-func _stage(spot: String, stalled_s: float, asker_unit := "gang_artillery") -> Array:
+## `asker_z`: where the asker starts (12 m south: clear of the holder); `blocker`: a third tank parked at that point.
+func _stage(spot: String, stalled_s: float, asker_unit := "gang_artillery", asker_z := 12.0, blocker := Vector3.INF) -> Array:
 	_lab = TacticsLab.create(self, 7, "yard_open")
 	var parked := _lab.gun(Match.Team.GREEN, "Green_Holder", Vector3.ZERO, 0.0, "tank")
-	var asker := _lab.unit(Match.Team.GREEN, "Green_Asker", Vector3(0.0, 0.0, 12.0), 0.0, asker_unit)
+	if blocker != Vector3.INF:
+		_lab.gun(Match.Team.GREEN, "Green_Blocker", blocker, 0.0, "tank")
+	var asker := _lab.unit(Match.Team.GREEN, "Green_Asker", Vector3(0.0, 0.0, asker_z), 0.0, asker_unit)
 	await _lab.start()
 	for i in 3:
 		await _lab.step()
@@ -137,3 +140,35 @@ func test_on_runs_the_gdscript_drive_until_twinned() -> void:
 	assert_true(not BrainSwitches.native_drive, "ON: the GDScript drive")
 	Traffic.set_off("reroute", true)
 	assert_eq(BrainSwitches.native_drive, before, "OFF: native_drive back as it was")
+
+
+## M3 lab 1: a wedged crew TOUCHES its holder, and its start pose overlapped the holder's box (START_BLOCKED, 16 of 21 asks at
+## locks s7006). The stage puts the asker nose into the holder; the physics parts them to contact.
+func test_on_an_asker_in_contact_with_its_holder_is_taken() -> void:
+	Traffic.set_off("reroute", false)
+	var touching := 0.5 * (float(Movement.hull_box("gang_artillery")[2]) + float(Movement.hull_box("tank")[2])) - 0.1
+	var staged: Array = await _stage("hold", 5.0, "gang_artillery", touching)
+	var asker := _lab.tank_of("Green_Asker")
+	var world := PlannerNavWorld.for_tank(asker, Movement.of(asker).ctl.tanks_root)
+	var req := PlanRequest.for_unit("gang_artillery")
+	var f := -asker.global_basis.z
+	print("MEASURE reroute contact: asker at z %.2f (placed %.2f), the hull_size world says overlap %s" % [asker.global_position.z,
+			touching, world.exact_hull_overlap(asker.global_position.x, asker.global_position.z, f.x, f.z, req.half_w, req.half_l)])
+	PlannerSeam._reroute_scan()
+	assert_eq(int(PlannerSeam.reroute_report()["start_blocked"]), 0, "in contact is not overlap in the re-route's world")
+	assert_true(PlannerSeam._crews.has("Green_Asker"), "taken")
+
+
+## A refusal the planner would give at once is never a take: the goal walk passes a point another hull stands on.
+func test_on_the_target_walks_past_a_parked_hull() -> void:
+	Traffic.set_off("reroute", false)
+	var staged: Array = await _stage("hold", 5.0, "gang_artillery", 10.0, Vector3(0.0, 0.0, -8.0))
+	var mover: Movement = staged[1]
+	var req := PlanRequest.for_unit("gang_artillery")
+	var world := PlannerNavWorld.for_tank(mover.ctl.tank, mover.ctl.tanks_root, PlannerSeam.REROUTE_SHRINK_M)
+	world.prepare(0.0, 10.0, 40.0)
+	var bare: Array = PlannerSeam._reroute_target(mover, _lab.tank_of("Green_Holder"))
+	var clear: Array = PlannerSeam._reroute_target(mover, _lab.tank_of("Green_Holder"), world, req.half_w, req.half_l)
+	print("MEASURE reroute goal walk: without the world %s, with it %s" % [bare, clear])
+	assert_true(not clear.is_empty(), "a clear goal further on")
+	assert_true(Vector3(clear[0]).z < Vector3(bare[0]).z - 2.0, "past the blocker, not on it: %s v %s" % [clear, bare])
