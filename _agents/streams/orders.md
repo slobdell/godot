@@ -129,6 +129,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   running, `~/overnight-orders/g3v9-dev1-9076ee2f8`. A bar on 8213-8224 only if it passes, filed before any number.
 - **Full check of 8bbafb376 (builder0, load ~10): `make native check exited 0`, 25 passed, 2 NOT JUDGED** (perf-judge
   refused 3 times on a busy box, 1.52-1.84x; scenario_perf unpinned on the hybrid). Green: the G1 v6 series' tree.
+- **Settle's Bar T1 passed (orchestrator, 2026-10-25):** `--deploy-arrive=settled` ships ON as CP40.1 after its flip
+  check. The G1 v6 series stays on its frozen tree, T1 OFF both arms as filed (R40.4); main is not merged into it.
 - **Bar G1 v6 series: running on builder2 J4 from a frozen tree** (orchestrator, after 893850559: a judged series runs ONE
   tree; builder0 was over R40.11's cap). Detached worktree `/home/slobdell/projects/godot-orders-g1v6` at c7d642aeb
   (= green 8bbafb376 + docs), synced to builder2:~/tank_squad/godot-orders-g1v6; every part runs from it
