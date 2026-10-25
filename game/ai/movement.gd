@@ -1908,8 +1908,9 @@ static func giveway_chain_on() -> bool:
 # (its crews' still time 163 -> 581 s, "parked at home" partners 22 -> 258 s). So the reach is lifted for an asker that is WEDGED:
 # one that has made no progress toward its goal for CHAIN_RELEASE_S (its stalled_ticks). The parked crew would rather drift than
 # block. A passer that ORCA gets round makes progress and never releases it, so the chain M1 stopped stays stopped. And a give-way
-# the reach cut down to a hold in place is refused instead: after a hold the asker never asks that crew again (_last_yielded_to),
-# while a refused asker asks again every ASK_EVERY_SECONDS and, once wedged, is let through.
+# the reach cut down to a hold in place is refused instead. A hold left unfinished (yieldfit2: the asker still touching) does not
+# set _last_yielded_to, so the asker re-asks into the same hold, 3 x YIELD_MAX_SECONDS before the retry cap; a refused asker asks
+# again every ASK_EVERY_SECONDS and, once wedged, is judged with the release (a real spot, not another hold).
 # `--giveway-chain=side` (`chainside`, direction 3, a lab arm): a spot past the reach is allowed when it lies no farther along the
 # asker's travel from the seat than the crew stands now (a step across the street, not down it).
 const CHAIN_RELEASE_S := 3.0
