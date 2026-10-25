@@ -65,7 +65,19 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 ### Report (2026-10-24, running)
 - **T1 built** (1327f85ef, OFF: `--deploy-arrive=near`): pure test `tests/test_settle_deploy_arrive.gd` 5/0 (laptop): the
   3.83 m holding tracked crew counts as in (main waits for the cap), a crew rolling at 4 m and one holding at 6 m don't, a hold
-  under 0.5 s doesn't yet. Lab running (builder0 light J4, his-5 click, 6201-6212, arms main / near / col (G1 v5) / colnear).
+  under 0.5 s doesn't yet.
+- **T1 lab: near changes NOTHING on his-5 click** (1327f85ef, builder0 light J4, terminus his click 5 squads, seeds 6201-6212,
+  n 12 an arm, dev; `references/round40/settle/t1-lab-dev/`, reader `tests/settle/settle_t1.py`): worst twitch a run main 13.8
+  / near 13.8 m; column (G1 v5's arm) 28.4 / column+near 28.4 m, identical on every seed; never-in 0; all-in median 28.2 / 16.8 s.
+- **Why (traced, column+near s6201, `--probe-trace=2`, ARRIVE_TRACE at the cap, tick 332):** the crew keeping Bravo out at the
+  cap is **Bravo_1, holding 7.94 m off** (it WAS in at t 3, 3.4 m, then an ADVANCE brain option walked it off its station);
+  Bravo_2 was still DRIVING 7-8 m off from t 1 to t 9 and held at 3.86 m only from t 10 (15 ticks at the cap). And the 28.4 m
+  "twitch" is not the wait: it is Bravo_2's 24 m deploy leg to the herringbone's far seat (-53.7, 75.1), blocked t 11-15, then
+  driven t 18-22, after the probe's 8 s place window. An earlier trigger cannot remove it on this cell. Orders' trace read
+  "3.83 m v 3.5 m" correctly, but that is the last crew in, not the cause of the twitch.
+- **The wider read (round 39's judged G1 v5 / G3 v6 rows, e7c896c8f, builder0, no new run): main deploys on the CAP for 311 of
+  768 street squads (40 %) and 48 of 96 his-click squads.** That is the "sits 10 s" he sees. Tracing every cap deploy now
+  (ARRIVE_TRACE: each crew's distance, holding, held ticks, ever-in) on main, dev seeds 6001-6002 x 12 street cells.
 
 ### Plan (ordered)
 1. T1: pure test (done) -> lab on orders' traced cell (his-5 click 6201-6212, main and G1 v5's column arm, each +/- near) ->

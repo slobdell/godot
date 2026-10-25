@@ -104,9 +104,10 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 				"left": clampf((float(tank.health) + tank.shield) / maxf(float(tank.max_health) + tank.max_shield, 1.0),
 						0.0, 1.0),
 				# Round 40 (settle T1): standing still by its own choice (no throttle asked, really not moving), the deploy's
-				# near read (ElementPlan.DEPLOY_ARRIVE_NEAR).
+				# near read (ElementPlan.DEPLOY_ARRIVE).
 				"holding": absf(tank.command.throttle) < HOLD_THROTTLE
-						and Vector2(tank.real_velocity.x, tank.real_velocity.z).length() < HOLD_SPEED_MPS})
+						and Vector2(tank.real_velocity.x, tank.real_velocity.z).length() < HOLD_SPEED_MPS,
+				"intent": tank.intent})
 		center += _flat(tank.global_position)
 		strength += float(tank.health) + tank.shield
 	if not members.is_empty():
