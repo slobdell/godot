@@ -182,6 +182,14 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   0.75 x main (main >= 20) AND twitch >= 15 m <= main. Guards: never-in <= main, none new; all-in <= x1.10 + 1 s; places outside <= +2;
   flips <= +3; contacts; fights. Lab (builder2 light, terminus 5 route 8203/8206/8208, n 3, dev): legs >= 25 m 5 -> 1, twitch >= 15 m
   4 -> 4, all-in 46.6 -> 44.8 s. **Lane:** builder2's one judged series slot; balance's B2s series queues behind it or takes builder0.
+- **R40.18 (2026-10-25 ~04:40) B2s candidate = fm_law_c5r; price-pinned tests re-pinned on purpose.** ARM 494a3d33d (fm_law_c5) was red on
+  builder0 (3203/9 + sim-baseline 13 moved, expected): (1) test_combat_mechanics::test_everything_hurts_from_behind (a real invariant:
+  +15 % rear armour put the twin MG from behind under the 0.4 floor). **Ruled:** the candidate becomes fm_law_c5r (every unit's REAR armour
+  as today), new ARM 6d95d4eba; the invariant stays. Its remaining screen (G8's mono line, and one lines read if builder2 has room) runs on
+  c5r, not c5. (2) Eight tests pin syndicate prices the candidate moves on purpose (+5 %: Skimmer 120 -> 126, Gunship 172 -> 180, Railgun
+  269 -> 283, Missile Ring 218 -> 228; 2000 CR buys 15 Skimmers, not 16). **GRANT:** re-pin ONLY those expected numbers on the ARM branch
+  (test_army_economy x6, test_army_screen::test_a_spent_army_says_so, test_army_size::test_the_table_at_two_thousand), each listed in
+  merge notes, adopted like the sim baseline. That's adoption, not weakening, and doesn't breach G7. No assertion's form changes.
 
 ## Rulings (round 40)
 
