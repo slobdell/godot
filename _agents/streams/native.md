@@ -89,7 +89,7 @@ dec9725f5 GUARD_SIDES (light quick + shell-tools-test, the orchestrator's call) 
   the scratch tree as `overrides/<sha12>.json`, passes `--unit-overrides=res://overrides/<sha12>.json` to every fight, and files
   the logs under `../godot-native-guard-raw/<commit>-ov-<sha12>/` (GUARD_TAG overrides the name); it refuses a commit without
   N3. Read: `guard.py --by-unit <dir>` and `guard.py --by-unit --pair <base dir> <arm dir>`.
-  `GUARD_SIDES=green` (balance's ask, dec9725f5): one guard side only (the none line's two sides are the same fight).
+  `GUARD_SIDES=green` (balance's ask, dec9725f5; green in 62a7d653d): one guard side only (the none line's two sides are the same fight).
 - **Inserted by the orchestrator: M1 v2's chainrelease twin, `pair/native-chainrelease` 18e5dbca8** (on manoeuvre's 4406e1f52;
   worktree `../godot-native-chain`; QUICK-GREEN builder0 114/0, needs a full check before merge). drive_native.cpp: `chain_in_play(seat, reach, asker)` lifts the reach
   when chainrelease is on and the asker's Movement (Movement.of via the script) has stalled_ticks >= CHAIN_RELEASE_TICKS
@@ -106,5 +106,19 @@ dec9725f5 GUARD_SIDES (light quick + shell-tools-test, the orchestrator's call) 
   `references/round40/native/sizing/`; a new table row, the guard line per fight (blob win share se 3.3 points at 160 fights a
   line; ~660 fights a line for a 4-point move: balance's bars should size from it). `_agents/judging.md` *Round 40 re-render*.
   Judge tests pass (laptop; test_table 12/12).
+- **INCIDENT (R40.11; mine): builder0's OOM, 2026-10-24 22:04-22:20 PDT.** 6538aa16a (never merged) let a `make -n` skip the
+  slot queue by exec'ing it, WITHOUT setting TANK_SQUAD_SLOT: the inner make re-ran itself through slot.sh, unbounded. My test
+  used `touch`, not make, so it never recursed. It ran on builder0 from ~21:58 (a shell-tools-test light run): memory pressure
+  22:02:52, OOM 22:04:03, >= 6,388 makes in the kernel's (rate-limited) dumps; the kernel killed desktop processes (+200
+  oom_score_adj v our 0) until the lead powered it off. The same ran on builder2 (15,228 makes, +8.5 GB), killed at 05:26
+  builder2 time. (An earlier message of mine blamed "30 python, 13.6 GB": that was a July 26 OOM in the same boot's journal;
+  retracted.) **Fixed at 62a7d653d** (the orchestrator's four conditions): the dry run sets TANK_SQUAD_SLOT before its exec; a
+  depth backstop (TANK_SQUAD_SLOT_DEPTH > 3 -> exit 2, one REFUSED line); test_slot_light 2c = a real nested make through
+  slot.sh under timeout 30 (depth-capped fake recipe), 2d = the backstop; mutation: 6538aa16a fails 2c+2d, the backstop alone
+  fails 2c. Guarded light run on builder2 (`ulimit -u 4127`, `timeout 1500`, by hand in godot-native-slotguard): shell-tools-test
+  exit 0, 34 suites 0 failed. With it: remote jobs raise oom_score_adj to 500 (2495c6967, `REMOTE_OOM_ADJ`; works and is
+  inherited on both builders). **Named to the orchestrator: 62a7d653d** (GUARD_SIDES + oom + slot fix + the judging
+  re-render). After the reboot builder0's slot pool (/tmp, tmpfs) and full-check lock (a kernel flock) held nothing stale.
+  **Lesson:** a test of a recursion guard must run the real recursion (make through the wrapper), fenced by its own cap.
 - **N4 (the trig's ~2 %):** waits for a quiet builder0 window (none soon: three streams have series queued, the orchestrator).
 - **N5:** waits on his Ryzen purchase.
