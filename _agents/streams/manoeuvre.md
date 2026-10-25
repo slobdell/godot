@@ -218,3 +218,29 @@ v2-only never-in cells).** Raw data: `~/overnight-manoeuvre/r40/trace5/` and `tr
   parked crew from taking the far spot that would let it through, and the release only helps a WEDGED asker (stalled 3 s); a slow
   one doesn't qualify. M1 v2 stays OFF. The next form, if a later round wants it: limit the reach only for a crew whose OWN squad is
   still arriving (the chain drift is the arrivals' cost; a parked squad making way for a later squad is the job). Not built.
+
+**M3 built OFF (db55d1fdb, `--giveway-reroute`; `=any` is a lab arm).** A wedged wheeled asker that a friend holds in place for is
+planned round the holder by the planner's seam.
+- **Trigger:** PlannerSeam's once-a-tick scan, connected only while ON. The asker is wheeled and has stalled for
+  Movement.chain_release_ticks() (3 s, M1 v2's "wedged"). A friend's yield_spot is "hold" with yield_to = the asker (=any: any
+  give-way to it).
+- **The plan:** a k-turn crew to the first point along the asker's route (walked in 1 m steps, within HORIZON_M) past the holder and
+  clear of both boxes, ending within 2.5 m, pointing the route's way within 30 deg. The holder is a box in the plan's world, like
+  every living hull. Once taken, it's an ordinary seam crew: `_planned_reverse`'s hold drives it every tick (and the C++ drive's
+  `seam_live` calls it back), and every release rule applies. The hull-length scope (10 m) isn't asked: M2's wedged wheeled
+  crews are 6.6-7.3 m.
+- **Three things the test stage found** (a tank parked at the origin, a gang_artillery 12 m south ordered straight through it):
+  - The search needs 246 expansions and a hold gives 180, so a re-route may run 3 holds (REROUTE_HOLD_X). The crew is wedged; it
+    loses nothing by waiting.
+  - ORCA's share is 0 behind a hull holding head-on, which zeroed the leg. A re-route's leg is driven as planned, like a k-turn
+    leg (`Movement.drive`, gated on `PlannerSeam.rerouting`).
+  - **A battery held still for the search digs in** (Tank._deploy_step: legs down after 1/4 s at rest), and the leg's 2 s stall
+    rule aborted it before the legs came up. The leg's clocks now wait while deploy_ratio > 0 (59 ticks on the stage). This
+    may be part of why M2's long wedges are artillery: any stop near a squadmate starts a dig-in.
+- **Native:** the leg rule is in `Movement.drive`, which has a C++ mirror, so while ON the GDScript drive runs (native_drive off,
+  restored when OFF; the chainside pattern). The twin request (drive_native.cpp: a seam crew in `_rerouted` drives its leg
+  unscaled) goes to the orchestrator only if the lab is promising.
+- Tests: tests/test_traffic_reroute.gd, 10 tests. Laptop flightdeck NATIVE=off: traffic|planner_seam|test_manoeuvre 173 passed,
+  0 failed (6f92700fa).
+- **M3 lab 1 (running, builder2 light J14, 6f92700fa):** the fights holding M2's longest wheeled episodes (locks 7002-7007,
+  terminus 7003) x off / reroute / any, under wedge_trace. Raw data: `~/overnight-manoeuvre/r40/m3lab1/`.
