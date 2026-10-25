@@ -141,14 +141,20 @@ locks/terminus/sumps x 7001-7008, 24 fights. `~/overnight-manoeuvre/r40/m2`, `m2
   - Longest: sumps s7004 Rust_Battery_1 (syn_artillery) 28.2 s, 607 ticks of Rust_Battery_2 holding in place FOR it.
 - **Named: the hold that is a wall.** When no spot fits, the asked crew gives way IN PLACE (round 6/13's `hold`: stop pushing, let the
   other through). That frees the asker only if the asker has a way round. When it doesn't, the asker sits behind the holder for the
-  hold's YIELD_MAX_SECONDS (6 s). After that, `_last_yielded_to` means it never asks that crew again, so the wedge stands until
+  hold's YIELD_MAX_SECONDS (6 s). The hold then ends UNFINISHED (yieldfit2: the asker is still touching behind), so `_last_yielded_to` is
+  not set, the asker asks again, and it gets the same hold. Battery_2's 607 ticks are back-to-back 6 s holds. The wedge stands until
   unstick or a re-plan moves someone. It's M1 v2's mechanism in the base give-way: a hold for a WEDGED asker should hand the
   give-way back (the asker backs off or swaps) instead of standing.
 - **Next fix (filed, not built; a bar only on a fresh block from the orchestrator):** `--traffic-on=holdrelease`: a hold ends early
-  when its asker's stalled_ticks has not reset for HOLD_RELEASE_S (~2 s) since the hold began. The asker then gets the swap ask
-  (`_negotiate`'s i_give_way path) instead of `_last_yielded_to` silence. Lab first on the 8 longest cells above. It touches
+  when its asker's stalled_ticks has not reset for HOLD_RELEASE_S (~2 s) since the hold began. The asker then gives way itself
+  (backs off: the i_give_way / swap path) instead of re-asking into the same hold. Lab first on the 8 longest cells above. It touches
   begin_yield/_end_yield, so it needs native's twin like chainrelease. The stretch builds it OFF after Bar M1 v2's series (no game-code
   edits in this tree while the series rsyncs it).
+
+**Known issue (comment only, fix after the series):** M1 v2's comment in movement.gd says that after a hold "the asker never asks that
+crew again (_last_yielded_to)". Under yieldfit2 (ON) an UNFINISHED hold leaves _last_yielded_to unset and the asker re-asks. So the
+hold-refusal's real effect is that each re-ask is judged again with the release (a wedged asker gets a real spot, not another hold).
+The rule is right; the sentence is wrong. Not edited now: the series' tree must stay the checked game code.
 
 **Native twin MERGED:** pair/native-chainrelease 18e5dbca8 (quick-green builder0 114/0, 0 mismatches) merged clean as ee659b522;
 chainrelease now runs in C++ (chainside alone keeps the GDScript bypass). Full check of ee659b522 started on builder0.
