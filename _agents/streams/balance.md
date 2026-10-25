@@ -218,6 +218,9 @@ flatness change < -2 se AND blob v a gangs CPU down AND blob v a syndicate CPU u
 fails when a median-length change is outside +/-15 % (line) or +/-20 % (guard faction) AND more than 2 se from zero; G4 fails at a
 time-cap share change > +2 se; G5 fails at a none-line flatness change > +2 se; G8 fails at a mono win-share change > +2 se. Dry run
 on the c5r2 dev reads: 17 of 18 rules hold, G5 not read (no dev none line); blob median length +11.4 % (se 5.2) is the nearest to a band.
+**Series log:** started 07:56 PDT 2026-10-25 at J14 (`~/balance-runs/bar-b2s.log`); at 08:49, 3 fights/min (each 8-seed chunk is its own
+remote call and the box idles at each tail), so it was stopped by PID at a chunk start and resumed at J24 (`bar-b2s-2.log`); guard.sh
+skipped the seeds already read (sims are deterministic, so nothing about the series changed but its pace).
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
