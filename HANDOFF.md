@@ -39,6 +39,11 @@ another project's workers (plane_maker), not ours: left alone. He confirmed buil
 3. **The portrait order-preview line** floating mid-screen: does he see it as wrong (a feedback item next round)?
 4. His playtest notes on main (amber chevrons, dock phone map, honest fog, the parked hold, his caller lines).
 
+**RUNNING (2026-10-24 ~20:45 PDT): main b25b803e5 = CP40.0 + N2 + N3 (native dd4a87bc6, builder2 green 3184/0; INHERIT).** Bars filed:
+B2s (+G8 mono guard), T1, S1 v3, G1 v6 (workstreams *Bars (round 40)*); M1 v2's coming. Rulings R40.1-R40.9 (his balance call A,
+his combined-arms note -> B5, settle's ADVANCE census -> balance B6, G3 v8 after the relay). Pending merges: native efb2d9a81
+(GUARD_SIDES, quick), manoeuvre ee659b522 (+ pair/native-chainrelease 18e5dbca8) when green.
+
 **Orchestrator, after launch:** run the round-30 loop (`orchestration.md`); merge CP40.0 alone the minute native names it and tell
 balance; merge CP40.1 when settle's T1 bar passes and tell orders the same minute.
 
