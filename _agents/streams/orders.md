@@ -109,8 +109,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   1,432 (both deciding lines PASS); contacts 4,046 -> 3,403. DEPLOY_HOLD acts only when a squad loses a tank, and the probe
   has no fights, so it can't move them. **Guards fail on 10 cells:** end foreign on 7 (e.g. terminus 5 east 9.8 v 4.5,
   locks 5 route 13.6 v 7.1) and twitch on 4 (terminus 5 avenue 0.0 v 15.1, locks 5 route 8.1 v 15.4). A column parks
-  squads nearer each other than main's spread body. **Next (a new version):** G2 with G3 v8's spacing (place_clear after
-  the relay) on the same cells; re-read after G3 v8's dev read.
+  squads nearer each other than main's spread body. **R40.10:** no G2 bar this round. Its one later re-read runs on
+  top of settle's S1 v3 (`--seat-route-clear=v3`) if Bar S1 v3 passes (end foreign is S1's kind of failure); the
+  orchestrator says when.
 - **G3 v8 `--place-clear-after=relay` (5bc304738, OFF; R40.9):** the G3 block is now `_place_clear()`. On a shifted leg
   it runs after `_relay_previous_waypoint`, each squad's home read from its relaid previous waypoint. With
   `--place-clear-lane=on`, the road test reads those roads short of each squad's own halt (`lane_skip`, half its short
