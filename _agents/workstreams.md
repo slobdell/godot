@@ -104,6 +104,11 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   easily with 100 % tanks. Balance adds B5: a mono-army line (all-tank v mixed, same faction, same budget) measured first; target mixed
   beats mono ~60-65 %. Bar B2s may add ONE guard before any number on its seeds: the mono-tank line's win rate not up (the stat change
   must not widen the all-tank edge). Counters within +/-15 %; past the bounds = his call.
+- **R40.7 (2026-10-24 evening) B2s guard G8 filed; B5's mono deal.** Bar B2s gains G8 (the mono-tank line's win share not up), filed at
+  balance 16bfd1cc6 before any bar-seed number. B5 deals mono armies in `Army.cpu_army("cpu:mono_<role>")` (C40.5; measurement only, never
+  in ARCHETYPES). **GRANT to balance:** one additive line in `game/modes/skirmish_mode.gd` (demo_flags keeps an explicit --player/--enemy
+  that starts with "cpu:mono_"); default path unchanged. The line: CPU v CPU, mono on Green one arm / Rust the other, per faction, v the
+  SAME faction's normal deal at the same budget, 8501-8510 (screening).
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
