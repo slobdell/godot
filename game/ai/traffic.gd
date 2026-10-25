@@ -206,7 +206,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain"]  # round 39 M1 givewaychain (manoeuvre, until its bar is judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside"]  # round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -224,6 +224,12 @@ static func off(name: String) -> bool:
 					_off.erase(part.strip_edges())
 			elif String(arg) == "--giveway-chain":  # round 39 (M1): the brief's name for --traffic-on=givewaychain
 				_off.erase("givewaychain")
+			elif String(arg) == "--giveway-chain=v2":  # round 40 (M1 v2): givewaychain + chainrelease
+				_off.erase("givewaychain")
+				_off.erase("chainrelease")
+			elif String(arg) == "--giveway-chain=side":  # round 40 (M1 v2, direction 3's lab arm): givewaychain + chainside
+				_off.erase("givewaychain")
+				_off.erase("chainside")
 		for arg in OS.get_cmdline_user_args():
 			if String(arg).begins_with("--traffic-off="):
 				for part in String(arg).trim_prefix("--traffic-off=").split(",", false):
@@ -231,7 +237,24 @@ static func off(name: String) -> bool:
 						_off.erase(part.strip_edges())
 					else:
 						_off[part.strip_edges()] = true
+		_chain_native()
 	return _off.has(name)
+
+
+## Round 40 (M1 v2): `chainside` (a lab arm) has no C++ mirror, so while it is on the native drive calls _negotiate back
+## (BrainSwitches.native_yield off) and every ask runs the GDScript rule (native_yield's GDScript and C++ are bit-identical per
+## seed, R38.24); off, native_yield is left as it was. `chainrelease` is twinned (native, pair/native-chainrelease).
+static var _chain_saved_native_yield: Variant = null
+
+
+static func _chain_native() -> void:
+	if not _off.has("chainside"):
+		if _chain_saved_native_yield == null:
+			_chain_saved_native_yield = BrainSwitches.native_yield
+		BrainSwitches.native_yield = false
+	elif _chain_saved_native_yield != null:
+		BrainSwitches.native_yield = bool(_chain_saved_native_yield)
+		_chain_saved_native_yield = null
 
 
 ## Tests: switch a behaviour off (true) or back on, whatever the command line said.
@@ -241,6 +264,7 @@ static func set_off(name: String, value: bool) -> void:
 		_off[name] = true
 	else:
 		_off.erase(name)
+	_chain_native()
 	_forget()
 
 

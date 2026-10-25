@@ -133,6 +133,8 @@ static func configure() -> bool:
 		# Round 39 (manoeuvre M1, `givewaychain`): a parked crew off its seat gives way no farther from it (absent: off).
 		"CHAIN_M": (Movement as Script).get_script_constant_map().get("CHAIN_M", null),
 		"CHAIN_SLACK_M": float((Movement as Script).get_script_constant_map().get("CHAIN_SLACK_M", 0.5)),
+		# Round 40 (manoeuvre M1 v2, `chainrelease`): the release time in force, in ticks (absent before M1 v2: -1, off).
+		"CHAIN_RELEASE_TICKS": Movement.chain_release_ticks() if (Movement as Script).get_script_constant_map().has("CHAIN_RELEASE_S") else -1,
 		"YIELD_RETRIES": int((Movement as Script).get_script_constant_map().get("YIELD_RETRIES", 0)),
 		"YIELD_RETRY_WINDOW_S": float((Movement as Script).get_script_constant_map().get("YIELD_RETRY_WINDOW_S", 0.0)),
 		"tank_script": Tank,
