@@ -76,6 +76,18 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Bar S1 v3 series RUNNING**, builder0 light J4 (`settle-s1v3r40`, seeds 8013-8024), launched at 8ca1b1e31 (game code ==
   afd436ca3, green) before the flip; remote.sh's single rsync froze it (orchestrator accepted as R40.13's frozen tree). T1 is
   OFF in both arms, as the bar was filed.
+- **Orders' question (via orchestrator, G1 v6 trace, laptop, terminus 5 route s8206): when a cap deploy lays its halt with
+  crews bunched, should seats be dealt nearest-first from where they stand?** Answer (code read, no run): **yes, as the
+  least TOTAL drive, not greedy nearest-first.** Greedy nearest-first leaves the last crew the leftover far seat. On main the
+  halt keeps each crew's TRAVEL seat index (`fixed` seating) and lays on the ordered heading, so a bunched squad's crews get
+  whatever seat its index names. Round 38's `_fit_deal` (element_plan.gd) already deals by least total from each crew's
+  position to its GROUNDED seat (Hungarian), but only when DEPLOY_FIT turns the lay (`--deploy-fit`, OFF). R38.17 restricted
+  it to turns because dealing every deploy diverged runs with no turn. Caveat: a deal can't shorten a leg past the
+  shape's own extent (a herringbone runs ~47 m deep), and Delta_2's 36 m / Delta_4's 29 m are probably mostly seats laid
+  across the street (ordered heading) rather than the index swap. Next step (a candidate for the stretch item, not run):
+  a dry read at that deploy comparing main's fixed deal, `_fit_deal` on the ordered heading, and `_fit_deal` on the street
+  axis (S1 v5's street cap), worst and total legs. Then, if it pays, a flag scoped to cap deploys with a bunched squad
+  (crew spread under one spacing), filed as its own bar.
 - Previous green: **afd436ca3** (builder2, 3,188 passed / 0 failed, 24 + 3 NOT JUDGED), everything of round 40 OFF.
 - **T1 built** (1327f85ef, OFF: `--deploy-arrive=near`): pure test `tests/test_settle_deploy_arrive.gd` 5/0 (laptop): the
   3.83 m holding tracked crew counts as in (main waits for the cap), a crew rolling at 4 m and one holding at 6 m don't, a hold
