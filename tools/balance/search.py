@@ -10,11 +10,11 @@ weapon damage; cost), no other key. Subcommands:
 
     search.py check CAND.json            bounds + shared-weapon check; prints the --tune string
     search.py scale NAME OUT.json gangs:hp=1.15,dmg=1.15 syndicate:hp=0.85 ...   a per-faction candidate
-    search.py run CAND.json COMMIT SEEDS...   guard.sh on builder2 (GUARD_ARGS=--tune=..., its own folder)
+    search.py run CAND.json COMMIT SEEDS...   guard.sh on builder2 (GUARD_OVERRIDES, J16, its own folder)
     search.py score RAW [--base RAW]          the faction table and its flatness (and the paired change v BASE)
 
-Cost goes through `--unit-overrides` once native's N3 lands (Units.cost_of then honours it); until then a candidate that
-moves a cost is refused by `run` (the deal would ignore it), `check` says so.
+`run` passes the candidate through native's N3 (`GUARD_OVERRIDES` -> `--unit-overrides`, on main since b25b803e5), which
+honours cost in the deal too; its commit must carry N3. (066d0ff95's dry run used `--tune`, which can't move a cost.)
 
 FLATNESS (lower is flatter): for each guard line (blob, turtle), the eight win shares "the guard's faction is F" and "the
 CPU's faction is F", each minus the line's own mean; the root mean square over both lines' 16 cells, in points. Its se and
@@ -300,20 +300,22 @@ def main(argv=None) -> int:
     problems = check(cand, catalog)
     if args.cmd == "check":
         print("\n".join(problems) or "ok: inside +/-15 %")
-        if moves_cost(cand):
-            print("note: cost moves need native's --unit-overrides (N3); --tune can't move the deal")
         print(f"--tune={tune_string(cand)}")
         return 1 if problems else 0
     if problems:
         sys.exit("refused:\n" + "\n".join(problems))
-    if moves_cost(cand):
-        sys.exit("refused: the candidate moves a cost; needs native's --unit-overrides (N3)")
     name = cand.get("name") or args.cand.stem
-    env = dict(os.environ, GUARD_ARGS=f"--tune={tune_string(cand)}", GUARD_TAG=f"bal-{name}",
-               GUARD_SEEDS=" ".join(args.seeds), GUARD_OUT=str(args.out),
+    # N3 (native, on main b25b803e5): `--unit-overrides` reads only {"units", "weapons"}; it honours cost in the deal.
+    clean = {k: cand[k] for k in ("units", "weapons") if cand.get(k)}
+    args.out.mkdir(parents=True, exist_ok=True)
+    over = args.out / f"overrides-{name}.json"
+    over.write_text(json.dumps(clean, indent=1) + "\n")
+    env = dict(os.environ, GUARD_OVERRIDES=str(over), GUARD_TAG=f"bal-{name}", GUARD_SEEDS=" ".join(args.seeds),
+               GUARD_OUT=str(args.out), GUARD_JOBS=os.environ.get("GUARD_JOBS", "16"),
                GUARD_WORKTREE=os.environ.get("GUARD_WORKTREE", str(ROOT.parent / "godot-balance-guard")))
+    if not clean:
+        env.pop("GUARD_OVERRIDES")
     return subprocess.call(["bash", str(ROOT / "tools/scoreboard/guard.sh"), args.commit], env=env, cwd=ROOT)
-
 
 if __name__ == "__main__":
     sys.exit(main())
