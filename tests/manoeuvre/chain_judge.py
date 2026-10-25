@@ -155,6 +155,18 @@ def main(argv):
                 t[k] = t.get(k, 0) + int(c.get("route_arms", {}).get(k, 0))
         t["parked_out_m"] = round(t["parked_out_m"], 1)
         return t
+    def deaths(cs):
+        t = {"deaths_by_team": {}, "stuck_by_sub_cause": {}}
+        for c in cs.values():
+            for team, row in c.get("teams", {}).items():
+                t["deaths_by_team"][team] = t["deaths_by_team"].get(team, 0) + int(row.get("deaths", 0))
+            for k, v in c.get("by_cause", {}).items():
+                if k.startswith("stuck:"):
+                    t["stuck_by_sub_cause"][k] = t["stuck_by_sub_cause"].get(k, 0) + int(v)
+        return t
+    # Round 40 (the orchestrator's ask, reporting only): deaths per team and stuck deaths by sub-cause, beside the verdict.
+    lines.append("reported deaths OFF %s" % json.dumps(deaths(off), sort_keys=True))
+    lines.append("reported deaths ON  %s" % json.dumps(deaths(on), sort_keys=True))
     lines.append("reported OFF %s" % json.dumps(arms(off), sort_keys=True))
     lines.append("reported ON  %s" % json.dumps(arms(on), sort_keys=True))
     lines.append("VERDICT %s" % ("PASS" if ok else "FAIL"))
