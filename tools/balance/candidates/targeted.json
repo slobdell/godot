@@ -1,0 +1,17 @@
+{
+ "name": "targeted",
+ "why": "B1's tally (773412e49 OFF arm, 1600 fights): gangs' War Rig, Gun Truck and Resupply Tanker die without trading; syndicate's Railgun (kr 16) and Missile Ring (kr 10) carry it. Only those units move.",
+ "units": {
+  "gang_tank": {"max_health": 483, "armor": {"front": 8.05, "side": 4.6, "rear": 2.3}},
+  "gang_ifv": {"max_health": 195.5, "armor": {"front": 3.45, "side": 2.3, "rear": 1.725}},
+  "gang_support": {"max_health": 299},
+  "syn_tank": {"max_health": 288, "max_shield": 234}
+ },
+ "weapons": {
+  "scrap_cannon": {"damage": 299},
+  "spear_gun": {"damage": 109.25},
+  "twin_mg": {"damage": 3.45},
+  "railgun": {"damage": 357},
+  "guided_missiles": {"damage": 127.5}
+ }
+}

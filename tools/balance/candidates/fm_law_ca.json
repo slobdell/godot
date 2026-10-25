@@ -1,0 +1,189 @@
+{
+ "name": "fm_law_ca",
+ "units": {
+  "gang_artillery": {
+   "max_health": 218.5,
+   "armor": {
+    "front": 3.45,
+    "rear": 1.725,
+    "side": 2.3
+   }
+  },
+  "gang_ifv": {
+   "max_health": 195.5,
+   "armor": {
+    "front": 3.45,
+    "rear": 1.725,
+    "side": 2.3
+   }
+  },
+  "gang_scout": {
+   "max_health": 115.0,
+   "armor": {
+    "front": 1.725,
+    "rear": 1.15,
+    "side": 1.15
+   }
+  },
+  "gang_support": {
+   "max_health": 299.0,
+   "armor": {
+    "front": 4.6,
+    "rear": 2.3,
+    "side": 3.45
+   }
+  },
+  "gang_tank": {
+   "max_health": 410.55,
+   "armor": {
+    "front": 6.842,
+    "rear": 1.955,
+    "side": 3.91
+   },
+   "cost": 201
+  },
+  "law_artillery": {
+   "max_health": 253.0,
+   "max_shield": 103.5,
+   "armor": {
+    "front": 3.45,
+    "rear": 1.725,
+    "side": 2.3
+   }
+  },
+  "law_ifv": {
+   "max_health": 322.0,
+   "max_shield": 138.0,
+   "armor": {
+    "front": 10.35,
+    "rear": 2.3,
+    "side": 4.6
+   }
+  },
+  "law_scout": {
+   "max_health": 207.0,
+   "max_shield": 103.5,
+   "armor": {
+    "front": 3.45,
+    "rear": 1.725,
+    "side": 2.3
+   }
+  },
+  "law_suppressor": {
+   "max_health": 299.0,
+   "max_shield": 138.0,
+   "armor": {
+    "front": 6.9,
+    "rear": 2.3,
+    "side": 3.45
+   }
+  },
+  "law_tank": {
+   "max_health": 322.57,
+   "max_shield": 136.85,
+   "armor": {
+    "front": 6.842,
+    "rear": 1.955,
+    "side": 3.91
+   },
+   "cost": 299
+  },
+  "syn_artillery": {
+   "max_health": 187.0,
+   "max_shield": 136.0,
+   "armor": {
+    "front": 2.55,
+    "rear": 1.7,
+    "side": 2.55
+   }
+  },
+  "syn_ifv": {
+   "max_health": 204.0,
+   "max_shield": 170.0,
+   "armor": {
+    "front": 4.25,
+    "rear": 1.7,
+    "side": 3.4
+   }
+  },
+  "syn_lancer": {
+   "max_health": 187.0,
+   "max_shield": 170.0,
+   "armor": {
+    "front": 2.55,
+    "rear": 1.7,
+    "side": 2.55
+   }
+  },
+  "syn_scout": {
+   "max_health": 127.5,
+   "max_shield": 136.0,
+   "armor": {
+    "front": 1.7,
+    "rear": 1.7,
+    "side": 1.7
+   }
+  },
+  "syn_tank": {
+   "max_health": 272.0,
+   "max_shield": 221.0,
+   "armor": {
+    "front": 5.95,
+    "rear": 1.7,
+    "side": 4.25
+   },
+   "cost": 540
+  },
+  "tank": {
+   "max_health": 255.0,
+   "max_shield": 127.5,
+   "armor": {
+    "front": 6.8,
+    "rear": 1.7,
+    "side": 3.4
+   },
+   "cost": 230
+  }
+ },
+ "weapons": {
+  "catapult": {
+   "damage": 126.5
+  },
+  "twin_mg": {
+   "damage": 3.45
+  },
+  "spear_gun": {
+   "damage": 109.25
+  },
+  "scrap_cannon": {
+   "damage": 254.15
+  },
+  "gas_rockets": {
+   "damage": 63.25
+  },
+  "assault_gun": {
+   "damage": 195.5
+  },
+  "guided_missiles": {
+   "damage": 127.5
+  },
+  "pulse_cannon": {
+   "damage": 22.1
+  },
+  "pulse_repeater": {
+   "damage": 3.825
+  },
+  "railgun": {
+   "damage": 357.0
+  },
+  "cannon": {
+   "damage": 272.0
+  }
+ },
+ "skipped": [
+  "autocannon (shared by condemned, law)",
+  "machine_gun (shared by condemned, law)",
+  "laser (shared by condemned, syndicate)"
+ ],
+ "why": "B5 (R40.6): fm_law + every faction's tank -15 % hp/armour/damage, +15 % cost (clamped with the faction's own multiplier): mono tanks win 82 % at base (8513-8520)"
+}
