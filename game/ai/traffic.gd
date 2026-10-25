@@ -241,14 +241,14 @@ static func off(name: String) -> bool:
 	return _off.has(name)
 
 
-## Round 40 (M1 v2): `chainrelease` and `chainside` have no C++ mirror yet, so while either is on the native drive calls
-## _negotiate back (BrainSwitches.native_yield off) and every ask runs the GDScript rule (native_yield's GDScript and C++ are
-## bit-identical per seed, R38.24); with both off, native_yield is left as it was. Round 39's bypass for givewaychain, again.
+## Round 40 (M1 v2): `chainside` (a lab arm) has no C++ mirror, so while it is on the native drive calls _negotiate back
+## (BrainSwitches.native_yield off) and every ask runs the GDScript rule (native_yield's GDScript and C++ are bit-identical per
+## seed, R38.24); off, native_yield is left as it was. `chainrelease` is twinned (native, pair/native-chainrelease).
 static var _chain_saved_native_yield: Variant = null
 
 
 static func _chain_native() -> void:
-	if not _off.has("chainrelease") or not _off.has("chainside"):
+	if not _off.has("chainside"):
 		if _chain_saved_native_yield == null:
 			_chain_saved_native_yield = BrainSwitches.native_yield
 		BrainSwitches.native_yield = false

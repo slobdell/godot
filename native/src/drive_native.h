@@ -118,6 +118,8 @@ struct DriveConfig {
 	// Round 39 (manoeuvre M1, `givewaychain`): Movement.CHAIN_M / CHAIN_SLACK_M; chain_ready false on a tree without them.
 	bool chain_ready = false;
 	double CHAIN_M = 4.0, CHAIN_SLACK_M = 0.5;
+	// Round 40 (manoeuvre M1 v2, `chainrelease`): Movement.chain_release_ticks() in force; -1 on a tree without it (off).
+	int64_t CHAIN_RELEASE_TICKS = -1;
 	int64_t YIELD_RETRIES = 2;
 	Ref<Script> tank_script; // Tank: `collider as Tank`
 	// Round 31 (planner CP-P1, R31.2): the lattice planner's seam ON (PlannerSeam.PLANNER_DEFAULT; the native drive runs
