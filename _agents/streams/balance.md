@@ -165,6 +165,14 @@ BASE 5be511659's. Before naming c5r: its mono line (G8 screen) and one paired li
   wins 82 -> 80 %, **-1 (se 2)**: not above base. By faction: condemned +0 (se 0; its units don't change, so its fights replay
   identically, the pairing's check), gangs -6 (7), law **+6 (4)** (Law's buffed Assault Gun helps an all-tank Law army most),
   syndicate -5 (3).
+  **ARM ad956031b's full check: still red on the same invariant, its other half** (builder0 `make check exited 2`, 3211 passed / 1
+  failed + sim-baseline): "rear hurts at least as much as the front" broke on the Skimmer (2/2/2 armour: a cut front under an unmoved
+  rear). **Candidate is now `fm_law_c5r2`:** rear armour moves only where armour goes DOWN (syndicate all faces -15 % as c5 had; a
+  buffed rear stays as today). Self-check over every weapon x unit with the penetration math: 0 breaks; the four affected test files
+  on the new ARM: builder0 light 57 passed / 0 failed. **ARM = 66c4839a2** (`balance/b2s-arm-r2`: 5be511659 + apply c5r2 + the
+  re-pins cherry-picked); full check running on builder0. c5r's lines read was stopped by PID (wrong candidate now); c5r2's lines read
+  and its syndicate mono arms run on builder2 (`r9.sh`). c5r2's other factions' units equal c5r's, so their mono fights replay
+  identically (condemned's +0 / se 0 above shows it): c5r2's G8 screen = c5r's gangs/law/condemned arms + c5r2's syndicate arms.
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
