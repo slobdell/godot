@@ -69,6 +69,11 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   their line's mean. Guards: blob and turtle lines not up; match length per line within +/-15 % (+/-20 % per faction); time-cap share not
   up; none line not worse; perf-judge; full check with the sim baseline adopted on purpose (orchestrator). Base read: round 39's OFF arm
   scores 17.4 (se 1.4).
+  **CANDIDATE NAMED (2026-10-25 ~08:30, before any 8301-8340 / 8401-8440 number): fm_law_c5r2.** BASE 5be511659 (green builder0, ALL
+  JUDGED); ARM 66c4839a2 (builder0 3212/0, perf-judge PASS, red only on sim-baseline: 13 maps moved, recorded twice, agreeing:
+  `~/balance-runs/sim_baseline_adopt-66c4839a2.json`). Screens (dev 8513-8524, paired): flatness -10.6 +/- 3.5, blob +1.7 +/- 3.0, turtle
+  -2.5 +/- 4.2; G8 mono -1 +/- 2. Expected (balance, written first): deciding passes (~-10 at se ~1.3); G1/G2 the risk; G3-G5 unscreened;
+  G6 PASS; G7 green but sim-baseline (re-pins per R40.18); G8 passes unless law's +6 +/- 4 is real. Series builder2 J14, ~8-10 h.
 - **Bar T1, the deploy trigger (settle; FILED a03250e13, 2026-10-24 evening, before any number on 8001-8012; code = c074db72e's).** Arms
   `main:--deploy-trace` v `settled:--deploy-arrive=settled,--deploy-trace`; `--giveway-chain` OFF and `--seat-route-clear` OFF both arms.
   Workload: no-fight 12 street cells x 8001-8012 (576 squads an arm) + fight click cells 3-squad b1500 and 5-squad b3000 x 8001-8012.
