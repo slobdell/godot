@@ -132,6 +132,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   route_left_m 6000 -> 5734. The streets part was preempted once (Spot, exit 255) and re-ran whole.
 - **Full check of 8bbafb376 (builder0, load ~10): `make native check exited 0`, 25 passed, 2 NOT JUDGED** (perf-judge
   refused 3 times on a busy box, 1.52-1.84x; scenario_perf unpinned on the hybrid). Green: the G1 v6 series' tree.
+- **CP40.1 on main (orchestrator, 2026-10-25):** main 9d5907ddd = settle's cab85debf (T1 `--deploy-arrive=settled` ON)
+  + manoeuvre's M1 v2 (OFF). G1 v6 and G3 v9 stay on their frozen trees (T1 OFF, as filed). A pass ships with its
+  check on a T1-ON main. **After G1 v6's verdict:** one dev read of its arm on T1-ON main (his click 5 + terminus 5
+  route), for the merge.
 - **Settle's Bar T1 passed (orchestrator, 2026-10-25):** `--deploy-arrive=settled` ships ON as CP40.1 after its flip
   check. The G1 v6 series stays on its frozen tree, T1 OFF both arms as filed (R40.4); main is not merged into it.
 - **Bar G1 v6 series: running on builder2 J4 from a frozen tree** (orchestrator, after 893850559: a judged series runs ONE
