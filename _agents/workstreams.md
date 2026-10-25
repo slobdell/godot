@@ -182,6 +182,10 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   0.75 x main (main >= 20) AND twitch >= 15 m <= main. Guards: never-in <= main, none new; all-in <= x1.10 + 1 s; places outside <= +2;
   flips <= +3; contacts; fights. Lab (builder2 light, terminus 5 route 8203/8206/8208, n 3, dev): legs >= 25 m 5 -> 1, twitch >= 15 m
   4 -> 4, all-in 46.6 -> 44.8 s. **Lane:** builder2's one judged series slot; balance's B2s series queues behind it or takes builder0.
+  **VERDICT FAIL (2026-10-25 06:23; gate 95276e979 green builder2 3212/0; builder2 J12, 8725-8748, frozen 95276e979, 576 squads + 36/36
+  fights a read).** Deciding line 1 FAIL: deploy legs >= 25 m 59 -> 45 (bar <= 44.2; a 24 % cut, under one squad short). Line 2 PASS:
+  twitch >= 15 m 99 -> 92. Every guard passed (never-in 7 -> 6 none new, all-in 26.7 -> 26.0 s, places outside 100 -> 100, flips 0,
+  contacts, six fight guards). 92 of 569 cap deploys dealt. `--cap-deal=street` stays OFF; a round-41 candidate with its numbers.
 - **R40.18 (2026-10-25 ~04:40) B2s candidate = fm_law_c5r; price-pinned tests re-pinned on purpose.** ARM 494a3d33d (fm_law_c5) was red on
   builder0 (3203/9 + sim-baseline 13 moved, expected): (1) test_combat_mechanics::test_everything_hurts_from_behind (a real invariant:
   +15 % rear armour put the twin MG from behind under the 0.4 floor). **Ruled:** the candidate becomes fm_law_c5r (every unit's REAR armour
