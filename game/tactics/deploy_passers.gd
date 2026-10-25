@@ -50,6 +50,8 @@ static func of(game_match: Match, team: int, leader: String) -> Dictionary:
 		if route.size() >= 2 and CREW_CORRIDORS:
 			# v3 (round 40, cause A): each crew's own drive, not the squad's centre line.
 			out["routes"].append_array(crew_routes(element, _crews_by_name(element, by_name), centre, node))
+			if SWEPT_BAND:
+				out["routes"].append_array(band(route, travel_half_width(element, route, centre)))
 		elif route.size() >= 2:
 			out["routes"].append(route)
 			# The drive starts from every crew, not the squad's centre: the rear crews still have the ground behind it to
@@ -74,8 +76,60 @@ static func of(game_match: Match, team: int, leader: String) -> Dictionary:
 ## the squad (its slot less the squad's centre, at most CREW_OFFSET_MAX_M), then each queued leg's spot shifted the same,
 ## on the navmesh. ON with ElementPlan.SEAT_ROUTE_CLEAR_V3 (`--seat-route-clear=v3`).
 static var CREW_CORRIDORS := OS.get_cmdline_user_args().has("--seat-route-clear=v3") \
-		or OS.get_environment("SEAT_ROUTE_CLEAR") == "v3"
+		or OS.get_environment("SEAT_ROUTE_CLEAR") == "v3" or OS.get_cmdline_user_args().has("--seat-route-clear=v3b") \
+		or OS.get_environment("SEAT_ROUTE_CLEAR") == "v3b"
 const CREW_OFFSET_MAX_M := 15.0
+## S1 v3b (round 40, R40.14; dev trace, main 9d5907ddd + v3, builder2, terminus 5 click s6306): a crew's navmesh path to its
+## slot runs down the lane's centre line, but in transit the crew keeps its TRAVEL place in the formation: Alpha_3 drove the
+## lane at x 4..7, 8.6 m east of its modelled corridor (over ROUTE_CLEAR_M), Bravo's cleared seat stood at (4.4, 68.0) on that
+## line and Alpha_3 stopped at (4.1, 71.9) for good (main: in at 42.1 s). v3b adds, per driving squad, its SWEPT BAND: the
+## squad's centre route shifted to either side out to its travel half-width (its slots' widest place across the route's
+## first leg, at most CREW_OFFSET_MAX_M) in steps of ROUTE_CLEAR_M, so the union of the corridors covers the width it drives
+## in. `--seat-route-clear=v3b` (env SEAT_ROUTE_CLEAR=v3b), with v3's crew corridors and waits.
+static var SWEPT_BAND := OS.get_cmdline_user_args().has("--seat-route-clear=v3b") \
+		or OS.get_environment("SEAT_ROUTE_CLEAR") == "v3b"
+
+
+## The squad's travel half-width across `route`'s first leg: the widest of its slots' offsets from `centre`, measured across
+## that leg, at most CREW_OFFSET_MAX_M; 0 without slots.
+static func travel_half_width(element: Element, route: Array, centre: Vector3) -> float:
+	if route.size() < 2:
+		return 0.0
+	var right := _right_of((route[1] as Vector3) - (route[0] as Vector3))
+	var half := 0.0
+	for unit_name: String in element.slots:
+		var slot: Variant = element.slots[unit_name]
+		if slot is Vector3:
+			half = maxf(half, absf(Vector3((slot as Vector3).x - centre.x, 0.0, (slot as Vector3).z - centre.z).dot(right)))
+	return minf(half, CREW_OFFSET_MAX_M)
+
+
+## `route` shifted to each side by multiples of ROUTE_CLEAR_M out to `half_m` (the last copy at `half_m` itself), each point
+## moved along the route's local normal; [] when half_m adds nothing past the centre line's own corridor. Pure.
+static func band(route: Array, half_m: float) -> Array:
+	var out: Array = []
+	if route.size() < 2 or half_m <= 0.5:
+		return out
+	var offsets: Array = []
+	var d := ROUTE_CLEAR_M
+	while d < half_m:
+		offsets.append(d)
+		d += ROUTE_CLEAR_M
+	offsets.append(half_m)
+	for off: float in offsets:
+		for side in [-1.0, 1.0]:
+			var line: Array = []
+			for i in route.size():
+				var a: Vector3 = route[maxi(i - 1, 0)]
+				var b: Vector3 = route[mini(i + 1, route.size() - 1)]
+				line.append((route[i] as Vector3) + _right_of(b - a) * (off * side))
+			out.append(line)
+	return out
+
+
+static func _right_of(direction: Vector3) -> Vector3:
+	var flat := Vector3(direction.x, 0.0, direction.z)
+	return Vector3(-flat.z, 0.0, flat.x).normalized() if flat.length() > 1e-6 else Vector3.RIGHT
 
 
 static func _crews_by_name(element: Element, by_name: Dictionary) -> Dictionary:
