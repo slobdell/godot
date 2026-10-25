@@ -74,3 +74,9 @@ builder0 per HANDOFF (3176/0), so no baseline check (contract 1).
 - **"Last squad in" is a JUDGED guard** in Bar M1 v2, not just reported: the later arrivals are what he'd see.
 - **The bar runs on native's twin,** not the GDScript bypass, unless the twin is late. Then the bar names its path.
 - **R40.5:** no M1 v2 line reads orders' places-outside corridor read (G5/G6 read arrived_s and never-in only).
+- **Orders' extra lab cell (dev only, NOT a bar seed):** terminus 5 route s3805, squad 1 never in on orders' 2eedf9f7f (both arms);
+  Alpha_3 wedged at (7, 83) in the x=0 street among parked squads t40-t90. Lab `--giveway-chain=v2` v main once ee659b522 is green;
+  tell orders (via the orchestrator) whether it gets in.
+
+**Native twin MERGED:** pair/native-chainrelease 18e5dbca8 (quick-green builder0 114/0, 0 mismatches) merged clean as ee659b522;
+chainrelease now runs in C++ (chainside alone keeps the GDScript bypass). Full check of ee659b522 started on builder0.
