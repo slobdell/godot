@@ -176,6 +176,12 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   6301-6306, n 48 an arm): twitch >= 15 m main 42 / v3 33 / v3b 48; never-in 0 / 1 / 0 (the band fixes s6306); all-in median 21.0 / 18.7 /
   22.0 s. The full-lane band clears or waits more seats, landing after the 8 s window. 8701-8724 unused (returned). Settle goes to
   `--cap-deal=street`'s lab (8203/8206/8208), then its bar on 8725-8748. Green b5dbfdd72 (builder2, 3,189/0) covers the trace commits.
+- **Bar cap deal (settle; FILED 95276e979, 2026-10-25 ~03:40, before any number on 8725-8748).** `--cap-deal=street` (463f64e39, OFF): a
+  cap deploy laid on the street axis, dealt least-total. main v capdeal, both on T1-ON main + branch; s1c's workload; no-fight 8725-8736,
+  fights 8737-8748; judge `capdeal`; builder2, frozen side worktree, gated on the hash's full check. **Deciding:** deploy legs >= 25 m <=
+  0.75 x main (main >= 20) AND twitch >= 15 m <= main. Guards: never-in <= main, none new; all-in <= x1.10 + 1 s; places outside <= +2;
+  flips <= +3; contacts; fights. Lab (builder2 light, terminus 5 route 8203/8206/8208, n 3, dev): legs >= 25 m 5 -> 1, twitch >= 15 m
+  4 -> 4, all-in 46.6 -> 44.8 s. **Lane:** builder2's one judged series slot; balance's B2s series queues behind it or takes builder0.
 
 ## Rulings (round 40)
 
