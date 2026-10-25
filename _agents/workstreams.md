@@ -172,6 +172,10 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   tanks; an autocannon (pen 5) hits a tank's front at 0.05-0.10 of its damage. No symmetric AI fix exists here. Inside R40.1's bounds:
   tank armour -15 % roughly doubles the autocannon's front effect (fm_law_ca screens it). Beyond: penetration, the IFV's weapon/role, the
   deal's mix: **a lead question** (HANDOFF), asked in player terms with one recommendation.
+- **R40.17 (2026-10-25 ~03:55) Bar S1 v3b NOT run: its gate lab failed (R40.15).** Dev (builder2 light, frozen 46b72a3fc, crossing+terminus,
+  6301-6306, n 48 an arm): twitch >= 15 m main 42 / v3 33 / v3b 48; never-in 0 / 1 / 0 (the band fixes s6306); all-in median 21.0 / 18.7 /
+  22.0 s. The full-lane band clears or waits more seats, landing after the 8 s window. 8701-8724 unused (returned). Settle goes to
+  `--cap-deal=street`'s lab (8203/8206/8208), then its bar on 8725-8748. Green b5dbfdd72 (builder2, 3,189/0) covers the trace commits.
 
 ## Rulings (round 40)
 
