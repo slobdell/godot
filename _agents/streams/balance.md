@@ -52,6 +52,9 @@ turtling (17 %). Blob kill ratio by blob faction: syndicate 2.62, law 0.98, cond
    (anti-armour v tanks, tanks v light units, MGs v light armour); a filed bar on a fresh block from the orchestrator. If the bounds can't
    reach it, write it up for him (player terms) rather than going past them. Add to Bar B2s, before any number on its seeds, the guard:
    mono-tank line's win rate not up.
+5b. **B6 (R40.8, after B2s and B5): ADVANCE walks a deploying crew off its seat.** Settle's census (754fee377, builder0 light, 96
+   squads): of 45 crews that were in and drifted off before the deploy, 20 were on ADVANCE. His "Stay put and shoot" for parked squads.
+   Settle's T1 v2 works round it, so this is a cleanliness fix, not a blocker.
 5. **Stretch:** a second balance pass after B3 (the faction-aware CPU changes the table again).
 
 **His answer (2026-10-24):** R1's full sight stays at ~3 s after a halt ("sounds fine"); HALT_DWELL_SECONDS stays 2.0.
