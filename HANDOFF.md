@@ -55,6 +55,11 @@ perf-judge (builder2 doesn't judge), scenario_perf 3.08x, quiet window; sim-base
 fixes. **Still owed: perf-judge on a quiet builder0** for T1 ON (last judged 68d0410d3, 7,691 us/tick). Bars so far: T1 PASS (shipped),
 M1 v2 FAIL (G5), G1 v6 FAIL (terminus 5 route twitch); running S1 v3 (settle), G3 v9 (orders, queued), B2s (balance, candidate screening).
 
+**Round-41 candidate (orders, 385a9be32):** G1 v7 starts on T1-ON main: there the G1 v6 arm's terminus 5 route twitch gap closes (dev,
+builder2 J4, a1602cca9 = main 9d5907ddd + c7d642aeb, 3801-3812, n 12: 27.6 v 27.0 m); its open item is s3805's whole-squad wedge (never-in
+0 v 1, R38.44). Settle's matching item: a cap deploy with a bunched squad deals least-total (_fit_deal), maybe with a street-axis lay
+(dry read after S1 v3).
+
 **Round-41 candidate (manoeuvre, 7849fe586):** M1 v3 = limit a parked crew's give-way reach only while its OWN squad is still arriving
 (a parked squad making way for a later squad is doing its job). M1 v2 failed G5 (2 -> 5; with T1 ON 1 -> 3): the last squad threads
 through squads already parked at the objective, and the 3 s release helps only a stalled crew, not a slow one.
