@@ -315,5 +315,8 @@ planned round the holder by the planner's seam.
 - **Gate MET: b21565b37 GREEN on builder0** (`>> remote: make native check exited 0`, 3219 passed / 0 failed, sim-baseline unmoved,
   copy-back verified; 06:00 PDT). Series tree: this commit, docs-only on top (b21565b37's game code). Series STARTED ~06:05 PDT
   (`~/overnight-manoeuvre/r40/barm3.sh`, builder0 light J4). No number seen before this line.
+- **R40.13:** the series re-syncs this worktree three times: each of its three `tools/remote.sh` calls (wedge off, wedge on, probe)
+  rsyncs the tree, and the judge runs from it at the end. So nothing is committed under game/ or tests/ until its `end` line; docs
+  only.
 - **A pass** goes to the orchestrator, with the C++ twin request and the slicing, before ON ships. **A fail:** M3 stays OFF, as a
   report; no re-run on these seeds.
