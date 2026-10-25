@@ -49,3 +49,21 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Start (worker, 2026-10-24 evening):** stream/manoeuvre = main 33a2cc285 + round-40 docs (afce35a74); code = 68d0410d3, GREEN
+builder0 per HANDOFF (3176/0), so no baseline check (contract 1).
+
+**Plan (in order):**
+1. **M1 v2 built OFF (d35eb24d1):** `--giveway-chain=v2` = givewaychain + `chainrelease` (direction 1): the reach is lifted for an
+   asker that is WEDGED, i.e. it has made no progress toward its goal for CHAIN_RELEASE_S = 3 s (its own `stalled_ticks`, no new
+   per-crew state, so the C++ twin reads one existing field); a hold the reach left as the only answer is refused instead (after a
+   hold the asker never asks that crew again, `_last_yielded_to`; a refused asker asks again and, once wedged, is let through).
+   `--giveway-chain=side` = givewaychain + `chainside` (direction 3, a lab arm): a far spot is allowed when it is no farther along
+   the asker's travel from the seat (across the street, not down it). Both DEFAULT_OFF; both turn native_yield off until twinned.
+   - **Direction 2 not built (decided from round 39's census, no run):** a reach only from chain index >= 2 leaves index 0-1 alone,
+     and on the bar's OFF census (c35cc93ac, builder0, 36 fights) every parked give-way of index >= 2 carries 378 m of out_m against
+     1,249 m chained: the deciding line (ON <= 0.5 x OFF) can't pass by construction.
+2. **Lab (test first):** the 5 G5 regressions + the 2 old never-ins + s3866 (crossing 5 click), arms main / chain (v1) / v2 / side /
+   chaingd (v1 on the GDScript yield: the path control). Wanted: every squad in on the 5, s3866 squad 4 in, chained out_m near v1's.
+3. Pick, native twin request (via the orchestrator), bar M1 v2 filed before numbers on 8101-8124, series, verdict.
+4. M2 (the long ORCA episodes trace, 7001-7008), then the stretch.
