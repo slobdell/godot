@@ -158,6 +158,13 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   ordered heading 21.6/60.3, least-total on the street axis 22.5/51.4 (0 of 4 >= 25 m). **Ruled:** trace s6306 first (dev); if it isn't
   a v3 flaw, file Bar S1 v3b (v3 v main, both on T1-ON main, frozen tree) on 8701-8724 before any number. A different base = a new bar,
   not a re-run. Then build `--cap-deal=street` OFF (scope: every cap deploy), lab, bar on 8725-8748.
+- **R40.15 (2026-10-25 ~03:30) Bar S1 v3b's deciding line, ruled before any number.** s6306 traced: a v3 flaw (Alpha_3 drove its
+  formation place 8.6 m east of its modelled corridor; Bravo's cleared seat landed on it). v3b (`--seat-route-clear=v3b`, 0eec2ccdc, OFF)
+  adds each driving squad's swept band (its centre route shifted to its travel half-width, max 15 m). Bar S1 v3b filed at 46b72a3fc. With
+  T1 ON, main's 5-squad never-in is ~0 (dev 0/48), so s1c's deciding line (main >= 2) can't decide. **Ruled:** deciding = squads with
+  twitch >= 15 m, ON <= 0.85 x OFF with OFF >= 20 (dev 42 -> 33 = 0.79); never-in becomes a guard (ON <= OFF, none new on any cell);
+  every other s1c guard as filed; deploy legs >= 25 m stay reported. What he'd see: fewer tanks lurching to new seats, squads in sooner.
+  The amendment is made before any 8701-8724 number; the dev lab (v3b v v3 v main, 6301-6306) must show v3b keeps the dev gain first.
 
 ## Rulings (round 40)
 
