@@ -1,0 +1,37 @@
+PASS counter: squads deployed by the new trigger where main capped, or on 'settled': 217 of 576
+PASS deciding: cap deploys 265 -> 83 (<= 50 % of base, base >= 20)
+PASS guard arrival to deploy, mean over squads 6.26 -> 4.42 s (<= base); median 7.1 -> 3.4
+PASS guard never-in, every cell: 3 -> 1 runs (arm <= base)
+PASS guard all-in time: mean over 141 runs in on both 28.6 -> 29.0 s (<= 32.4, base x 1.10 + 1)
+    reported twitch median crossing 3 click: 15.1 v 16.4
+    reported twitch median crossing 3 route: 9.3 v 11.1
+    reported twitch median crossing 5 click: 20.8 v 19.8
+    reported twitch median crossing 5 route: 15.7 v 20.3
+    reported twitch median locks 3 click: 22.0 v 19.7
+    reported twitch median locks 3 route: 10.8 v 14.3
+    reported twitch median locks 5 click: 17.1 v 17.0
+    reported twitch median locks 5 route: 17.5 v 16.8
+    reported twitch median terminus 3 click: 4.7 v 4.7
+    reported twitch median terminus 3 route: 0.0 v 0.0
+    reported twitch median terminus 5 click: 21.4 v 18.1
+    reported twitch median terminus 5 route: 24.9 v 23.5
+PASS per-cell guards (all-in, never-in, end foreign, crossed)
+PASS guard twitch: squads with twitch >= 15 m 113 -> 110 (<= base x 1.1 + 2)
+  reported: place+twitch >= 25 m squads 186 -> 177
+PASS guard first shape: differs 6 of 576 (<= 3 %)
+PASS guard shape flips: 0 -> 0 (<= base + 3)
+PASS guard places outside: 80 -> 80 (<= base + 2)
+PASS guard friend_contacts 13576 -> 13394 (<= 14938.6)
+PASS guard friend_contacts_foreign 7242 -> 7124 (<= 7971.2)
+  fight read 3-squad (0 runs that never started)
+  PASS guard his kills   base 4.69 arm 5.11 a fight (se 0.30, n 36/36)
+  PASS guard his losses  base 7.06 arm 6.72 a fight (se 0.43, n 36/36)
+  PASS guard CPU losses  base 4.69 arm 5.11 a fight (se 0.30, n 36/36)
+PASS fight guards
+  fight read 5-squad (--probe-budget=3000) (0 runs that never started)
+  PASS guard his kills   base 10.00 arm 9.56 a fight (se 0.62, n 36/36)
+  PASS guard his losses  base 12.86 arm 12.97 a fight (se 0.91, n 36/36)
+  PASS guard CPU losses  base 10.14 arm 9.64 a fight (se 0.62, n 36/36)
+PASS fight guards
+  reported: deploy leg >= 25 m 54 -> 53; all-in median per run 22.8 -> 23.2 s
+VERDICT PASS settled v main (Bar T1, round 40)

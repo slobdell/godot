@@ -711,20 +711,106 @@ func test_the_chain_give_way_on_owned() -> void:
 	await _chain(true, true)
 
 
+## Round 40 (manoeuvre M1 v2, `chainrelease`; native, pair/native-chainrelease): the same poses with the release on, each
+## twice: the asker WEDGED (stalled_ticks far past Movement.chain_release_ticks(): the reach lifted, chain_releases) and the
+## asker still getting somewhere (CHAIN_STILL_STALLED: asking, short of the release: the reach, and a hold it leaves as the
+## only answer refused, chain_holds_refused).
+const CHAIN_STILL_STALLED := 50
+const CHAIN_FLOORS_RELEASE := {"": 60, "chain_in_play": 20, "chain_releases": 20, "chain_refusals": 2, "yields_started": 20}
+
+
+func test_the_chain_give_way_release() -> void:
+	if FreshStage.parent(self, "test_the_chain_give_way_release"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _chain(false, true, true)
+
+
+func test_the_chain_give_way_release_owned() -> void:
+	if FreshStage.parent(self, "test_the_chain_give_way_release_owned"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _chain(true, true, true)
+
+
+## The refused hold (chainrelease's second half): open ground leaves no unfit spot, so these are Sumps poses where the reach
+## skips the far spots, the near ones don't fit and the asker is not wedged: today's answer, a hold in place, is refused.
+## From a sweep of _chain_pose there (laptop, pair/native-chainrelease on manoeuvre's 4406e1f52; 66 of 792 poses, all
+## twinned with 0 mismatches): [unit, at, seat, heading].
+const CHAIN_HOLD_POSES := [["tank", Vector3(-60.0, 0.0, -36.0), "side", 2], ["tank", Vector3(-60.0, 0.0, -32.0), "moveto", 0],
+		["tank", Vector3(-12.0, 0.0, -24.0), "side", 4], ["tank", Vector3(-4.0, 0.0, 24.0), "moveto", 7],
+		["tank", Vector3(4.0, 0.0, -24.0), "side", 1], ["tank", Vector3(-60.0, 0.0, -12.0), "side", 5]]
+
+
+func test_the_chain_release_refuses_the_hold() -> void:
+	if FreshStage.parent(self, "test_the_chain_release_refuses_the_hold"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _chain_holds(false)
+
+
+func test_the_chain_release_refuses_the_hold_owned() -> void:
+	if FreshStage.parent(self, "test_the_chain_release_refuses_the_hold_owned"):  # its own process (tests/native/fresh_stage.gd)
+		return
+	await _chain_holds(true)
+
+
+func _chain_holds(owned: bool) -> void:
+	if NativeExpect.absent(self):
+		return
+	if not (Movement as Script).get_script_constant_map().has("CHAIN_RELEASE_S"):
+		print("native yield chain: this tree has no chainrelease (Movement.CHAIN_RELEASE_S), nothing to twin")
+		return
+	var was_off := [Traffic.off("givewaychain"), Traffic.off("chainrelease")]
+	Traffic.set_off("givewaychain", false)
+	Traffic.set_off("chainrelease", false)
+	MoverState.world_reset()
+	_man_reset()
+	_yield_reset()
+	NativeDrive.owned = owned
+	assert_true(BrainSwitches.native_yield, "chainrelease leaves native's yield port on (the C++ mirror exists)")
+	assert_true(NativeDrive.configure(), "the native drive takes the live constants")
+	await ArenaFixture.build(self, "sumps")
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	game_match.seed_spawns(1, 0.0)
+	var drives := 0
+	var mismatches := 0
+	var first := ""
+	for k in CHAIN_HOLD_POSES.size():
+		var pose: Array = CHAIN_HOLD_POSES[k]
+		var r: Array = await _chain_pose(game_match, k, pose[0], pose[1], pose[3], pose[2], Vector2.ZERO, CHAIN_STILL_STALLED)
+		drives += r[0]
+		mismatches += r[1]
+		if first == "" and r[2] != "":
+			first = "%s: %s" % [pose, r[2]]
+	NativeDrive.owned = false
+	Traffic.set_off("givewaychain", was_off[0])
+	Traffic.set_off("chainrelease", was_off[1])
+	var label := "chain release holds%s" % [" (owned state)" if owned else ""]
+	print("native yield %s: %d drives compared, %d mismatches" % [label, drives, mismatches])
+	assert_eq(mismatches, 0, "the native refused hold is the live GDScript's: %s" % first)
+	_yield_check(label, {"": CHAIN_HOLD_POSES.size(), "chain_holds_refused": CHAIN_HOLD_POSES.size()})
+
+
 func test_the_chain_give_way_off() -> void:
 	if FreshStage.parent(self, "test_the_chain_give_way_off"):  # its own process (tests/native/fresh_stage.gd)
 		return
 	await _chain(false, false)
 
 
-func _chain(owned: bool, chain_on: bool) -> void:
+func _chain(owned: bool, chain_on: bool, release := false) -> void:
 	if NativeExpect.absent(self):
 		return
 	if not (Movement as Script).get_script_constant_map().has("CHAIN_M"):
 		print("native yield chain: this tree has no givewaychain (Movement.CHAIN_M), nothing to twin")
 		return
+	if release and not (Movement as Script).get_script_constant_map().has("CHAIN_RELEASE_S"):
+		print("native yield chain: this tree has no chainrelease (Movement.CHAIN_RELEASE_S), nothing to twin")
+		return
 	var was_off := Traffic.off("givewaychain")
+	var release_was_off := Traffic.off("chainrelease") if release else true
 	Traffic.set_off("givewaychain", not chain_on)
+	if release:
+		Traffic.set_off("chainrelease", false)
+	var stalls: Array = [100000, CHAIN_STILL_STALLED] if release else [100000]
 	MoverState.world_reset()
 	_man_reset()
 	_yield_reset()
@@ -739,31 +825,35 @@ func _chain(owned: bool, chain_on: bool) -> void:
 	var mismatches := 0
 	var first := ""
 	var k := 0
-	for unit: String in CHAIN_UNITS:
-		for at: Vector3 in CHAIN_AT:
-			for seat_kind: String in CHAIN_SEATS:
-				for heading in [0, 3]:
-					var r: Array = await _chain_pose(game_match, k, unit, at, heading, seat_kind)
-					drives += r[0]
-					mismatches += r[1]
-					if first == "" and r[2] != "":
-						first = "%s %s %s h%d: %s" % [unit, at, seat_kind, heading, r[2]]
-					k += 1
-	# The slack poses: along = the asker's way (-nose), across = (-along.y, along.x), as _begin_yield builds them.
-	for spot: Vector2 in Movement.YIELD_SPOTS:
-		for flip: float in ([1.0, -1.0] if spot.y != 0.0 else [1.0]):
-			var r: Array = await _chain_pose(game_match, k, "tank", Vector3.ZERO, 0, "slack", Vector2(spot.x, spot.y * flip))
-			drives += r[0]
-			mismatches += r[1]
-			if first == "" and r[2] != "":
-				first = "slack %s x%d: %s" % [spot, flip, r[2]]
-			k += 1
+	for stalled: int in stalls:
+		for unit: String in CHAIN_UNITS:
+			for at: Vector3 in CHAIN_AT:
+				for seat_kind: String in CHAIN_SEATS:
+					for heading in [0, 3]:
+						var r: Array = await _chain_pose(game_match, k, unit, at, heading, seat_kind, Vector2.ZERO, stalled)
+						drives += r[0]
+						mismatches += r[1]
+						if first == "" and r[2] != "":
+							first = "%s %s %s h%d stalled %d: %s" % [unit, at, seat_kind, heading, stalled, r[2]]
+						k += 1
+		# The slack poses: along = the asker's way (-nose), across = (-along.y, along.x), as _begin_yield builds them.
+		for spot: Vector2 in Movement.YIELD_SPOTS:
+			for flip: float in ([1.0, -1.0] if spot.y != 0.0 else [1.0]):
+				var r: Array = await _chain_pose(game_match, k, "tank", Vector3.ZERO, 0, "slack", Vector2(spot.x, spot.y * flip),
+						stalled)
+				drives += r[0]
+				mismatches += r[1]
+				if first == "" and r[2] != "":
+					first = "slack %s x%d stalled %d: %s" % [spot, flip, stalled, r[2]]
+				k += 1
 	NativeDrive.owned = false
 	Traffic.set_off("givewaychain", was_off)
-	var label := "chain %s%s" % ["ON" if chain_on else "OFF", " (owned state)" if owned else ""]
+	if release:
+		Traffic.set_off("chainrelease", release_was_off)
+	var label := "chain %s%s%s" % ["ON" if chain_on else "OFF", " release" if release else "", " (owned state)" if owned else ""]
 	print("native yield %s: %d drives compared, %d mismatches" % [label, drives, mismatches])
 	assert_eq(mismatches, 0, "the native chain give-way is the live GDScript's: %s" % first)
-	_yield_check(label, CHAIN_FLOORS_ON if chain_on else CHAIN_FLOORS_OFF)
+	_yield_check(label, CHAIN_FLOORS_RELEASE if release else (CHAIN_FLOORS_ON if chain_on else CHAIN_FLOORS_OFF))
 	if not chain_on:
 		assert_eq(int(yield_tally.get("chain_in_play", 0)), 0, "OFF: the rule never runs")
 
@@ -771,7 +861,7 @@ func _chain(owned: bool, chain_on: bool) -> void:
 ## One pose, one twinned negotiation (the asker's drive); returns [drives, mismatches, first]. `slack_spot` (seat "slack"):
 ## the candidate's offset (along, across) the seat is placed for.
 func _chain_pose(game_match: Match, k: int, unit: String, at: Vector3, heading: int, seat_kind: String,
-		slack_spot := Vector2.ZERO) -> Array:
+		slack_spot := Vector2.ZERO, stalled := 100000) -> Array:
 	var controllers: Array[OrderController] = []
 	var movers: Array[Movement] = []
 	for who: String in ["tank", unit]:
@@ -819,7 +909,7 @@ func _chain_pose(game_match: Match, k: int, unit: String, at: Vector3, heading: 
 	var asker := movers[0]
 	asker._progress_goal = Vector3(past.x, 0.0, past.z)
 	asker._progress_best = 0.0
-	asker.stalled_ticks = 100000
+	asker.stalled_ticks = stalled
 	asker._ask_left = 0
 	movers[1].phase = "driving" if seat_kind == "underway" else "arrived"
 	movers[1]._remaining = 6.0 if seat_kind == "underway" else 0.0

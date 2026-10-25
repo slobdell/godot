@@ -1,0 +1,58 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 5 click          main      |   70.7 /   29.0   |   14   0 |     48.7 |               3.3 |            86.2 | 16.14 | 18.9
+crossing 5 click          settled   |   70.7 /   29.0   |   10   0 |     51.2 |               3.3 |            87.9 | 16.45 | 18.9
+locks 5 click             main      |   54.7 /   39.6   |   12   0 |        - |               5.2 |            58.7 | 12.12 | 16.6
+locks 5 click             settled   |   54.7 /   39.6   |   13   0 |        - |               5.2 |            58.4 | 16.89 | 16.6
+terminus 5 click          main      |   61.9 /   39.4   |    0   0 |     55.6 |               7.2 |            54.1 | 22.81 | 9.7
+terminus 5 click          settled   |   61.9 /   39.4   |    0   0 |        - |               6.1 |            60.9 | 15.67 | 9.7
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 5 click          main      |          58.7 |          35.2 |           47.1 |               2.5 |         102.4
+crossing 5 click          settled   |          61.2 |          35.6 |           54.2 |               3.2 |         101.8
+locks 5 click             main      |             - |          35.5 |              - |               8.9 |          78.9
+locks 5 click             settled   |             - |          35.5 |              - |              10.3 |          79.2
+terminus 5 click          main      |          65.6 |          44.8 |              - |               4.6 |          93.8
+terminus 5 click          settled   |             - |          40.8 |              - |               5.7 |          85.9
+
+MEDIANS over seeds [8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8009, 8010, 8011, 8012] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 5 click          main        | 12 |         37.8 |     0 |          79.5 |         41.7 |          85.3 |               2.5 |   14   0 | 5.81
+crossing 5 click          settled     | 12 |         37.1 |     0 |          81.3 |         38.1 |          85.7 |              -1.0 |   10   0 | 6.95
+locks 5 click             main        | 12 |         39.0 |     3 |          49.7 |         26.9 |          75.0 |              -1.0 |   12   0 | 7.15
+locks 5 click             settled     | 12 |         50.9 |     5 |          43.2 |         26.2 |          74.5 |              -1.0 |   13   0 | 8.74
+terminus 5 click          main        | 12 |         15.8 |     0 |          46.8 |         30.4 |          75.5 |              -1.0 |    0   0 | 7.77
+terminus 5 click          settled     | 12 |         17.1 |     1 |          46.9 |         28.4 |          75.4 |              -1.0 |    0   0 | 9.74
+
+EQUALITY click cells: 4 identical across arms, 32 differ
+  DIFFER crossing 5 click seed 8001
+  DIFFER crossing 5 click seed 8002
+  DIFFER crossing 5 click seed 8003
+  DIFFER crossing 5 click seed 8004
+  DIFFER crossing 5 click seed 8005
+  DIFFER crossing 5 click seed 8006
+  DIFFER crossing 5 click seed 8007
+  DIFFER crossing 5 click seed 8008
+  DIFFER crossing 5 click seed 8009
+  DIFFER crossing 5 click seed 8010
+  DIFFER crossing 5 click seed 8011
+  DIFFER locks 5 click seed 8001
+  DIFFER locks 5 click seed 8002
+  DIFFER locks 5 click seed 8003
+  DIFFER locks 5 click seed 8004
+  DIFFER locks 5 click seed 8005
+  DIFFER locks 5 click seed 8007
+  DIFFER locks 5 click seed 8008
+  DIFFER locks 5 click seed 8009
+  DIFFER locks 5 click seed 8010
+  DIFFER locks 5 click seed 8011
+  DIFFER terminus 5 click seed 8001
+  DIFFER terminus 5 click seed 8002
+  DIFFER terminus 5 click seed 8003
+  DIFFER terminus 5 click seed 8004
+  DIFFER terminus 5 click seed 8006
+  DIFFER terminus 5 click seed 8007
+  DIFFER terminus 5 click seed 8008
+  DIFFER terminus 5 click seed 8009
+  DIFFER terminus 5 click seed 8010
+  DIFFER terminus 5 click seed 8011
+  DIFFER terminus 5 click seed 8012

@@ -61,7 +61,7 @@ project's workers (plane_maker): never touch processes you didn't start.
 ## Bars (round 40)
 
 **Seed registry (round 40):** 8001-8024 settle (T1 8001-8012, S1 v3 8013-8024); 8101-8124 manoeuvre; 8201-8236 orders (G1 v6 8201-8212,
-G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 7001-7008 manoeuvre's M2 dev trace (not a bar).
+G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 (wedge re-route, R40.12); 7001-7008 manoeuvre's M2 dev trace (not a bar).
 
 - **Bar B2s, the stat change (balance; FILED d479a17a1, 2026-10-24 evening, before any number on 8301-8340 + 8401-8440).** Change: the
   candidate B4 picks (unit hp/armour/damage/cost within R40.1's +/-15 %). Deciding: FLATNESS (RMS over 16 cells: by guard faction and by
@@ -77,6 +77,11 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   shape, flips, places outside (the GATE read) <= main + 2; contacts; fights. Departure (stated with dev numbers, accepted): per-cell
   twitch MEDIANS reported, not judged (an early halt moves a straggler's last approach into the probe's window; lab 3 n 2). Known risk:
   terminus 5 route s6003 (Echo lost in dev). A pass = CP40.1.
+  **VERDICT PASS (2026-10-25 ~00:30, afd436ca3's code, builder0 light J4, 8001-8012, full re-run after the crash, every part complete:
+  576 squads, 36/36 fights both reads, 0 unstarted).** Deciding: cap deploys 265 -> 83 (31 %). Guards: arrival-to-deploy 6.26 -> 4.42 s;
+  never-in 3 -> 1; all-in mean 28.6 -> 29.0 s (<= 32.4); twitch >= 15 m 113 -> 110; places outside (gate) 80 -> 80; flips 0 -> 0; first
+  shape 6/576; contacts 13,576 -> 13,394; fights 3-squad kills 4.69 -> 5.11, losses 7.06 -> 6.72; 5-squad 10.00 -> 9.56, 12.86 -> 12.97.
+  Ships `--deploy-arrive=settled` ON (`=off` escape) on a new hash with one full check = CP40.1.
 - **Bar G1 v6 (orders; FILED b4da041c4, 2026-10-24 evening, before any number on 8201-8212).** Arm = G1 v5's + `--group-sides=both`; judge
   `orders_judge.py g1v4`, unamended. Deciding lines read the new corridor (R40.5); the old gate read reported beside them per cell, plus one
   line naming the cells where main v main's read changed. builder0 light J4, main as it is (CP40.1 OFF both arms unless it lands first).
@@ -101,6 +106,16 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   last squad in JUDGED (paired mean <= +2.0 s; runs > 10 s later <= runs > 10 s earlier + 3). Judge `chain_judge.py --on-arm=v2
   --d-ratio=0.5 --last-in` (6c28abd3e; reproduces round 39's verdict). Dev (7001-7008, builder0, 24 fights): drift 650.5 -> 140.7 m (0.22x,
   -5.3 se); stuck deaths 162 -> 181.
+  **VERDICT FAIL on G5 alone (2026-10-25 ~01:30; 479bf90f9 green, builder0 light, native; 36 census fights on 8101-8112 + 144 probe runs
+  on 8113-8124).** G5 never-in 2 -> 5. Passed: D chained drift 884.0 -> 190.4 m (-78.5 %, -9.1 se); G1 give-way deaths 91 -> 86; G2 stuck
+  242 v 229 (line +33.5); G3 contacts 24,051 -> 23,279; G4 worst kill share 0.018; G6 all-in median +0.0 s; G7 last squad in +0.3 s. v2's
+  never-ins: crossing 5 click s8120 sq4, locks 3 click s8119 sq1, terminus 5 route s8114 sq1 (+ sq5, main's too), s8118 sq5, s8119 sq5
+  (three are the last squad on terminus 5 route). Stays OFF; no re-run on these seeds; diagnosis trace on the 5 cells (dev).
+- **Bar G3 v9, road as wide as its column (orders; FILED 893180a31, 2026-10-25 ~01:10, before any number on 8213-8224).** Arm = v8's +
+  `--place-clear-lane=column`, base `main:`; judge `orders_judge.py g3` unamended from G3 v6; frozen tree at the green hash; every
+  G1/G2/T1/S1 switch OFF both arms. Known risk: G3 v6's crossing 5 route never-in / twitch. Dev (builder2 J4, 9076ee2f8, 3804-3809, n 6):
+  pairs < 12 m 25 -> 6 (bar <= 6.2, thin), never-in 1 -> 1, all 18 cells pass. **Lane (C40.1, one judged series per builder):** builder2
+  has G1 v6, so G3 v9 runs in builder0's light lane manoeuvre's M1 v2 frees.
 - **R40.11 (2026-10-24 ~22:20 PDT) builder0 crashed (the lead force-restarted it); a load cap.** At the crash builder0 carried a full check
   plus three light lanes (load ~25 on 12 CPUs); orders' b4da041c4 check had already gone RED from load alone (combat-smoke and
   native-verify-scenarios killed by the watchdog at ~80 min, perf-judge refused 2.44x). **Ruled:** while a full check runs on builder0, at
@@ -112,6 +127,18 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   22:20 poweroff; 15,228 on builder2, killed 05:26 UTC). Only native's own folder ran it; main's slot.sh is unaffected. **Do not merge
   6538aa16a or pair/native-guard-sides 0b6734709.** Fix: the dry run sets TANK_SQUAD_SLOT before exec + a test running a real recursive
   make under timeout; 2495c6967 raises remote jobs' oom_score_adj to 500. The two-lane cap stays (orders' RED check was the load).
+- **R40.12 (2026-10-24 ~23:20) manoeuvre's M3 = a wedged asker re-routes round its holder (holdrelease withdrawn).** Manoeuvre's code
+  read (847429f96): a hold happens only when no spot fits the holder, so ending it early opens nothing; the 20 s wedges are YIELD_RETRIES
+  re-asks into the same hold. M2 (7001-7008, 24 fights, all OFF): 37 long episodes, no deaths, CPU 23 / his side 14, artillery ~half; a
+  "looks dumb" item (his bar: units must look smart). **Ruled:** M3 (a) a planner re-route of the wedged asker with the holder as an
+  obstacle, OFF, after Bar M1 v2's series; lab first on M2's 8 longest episodes (sumps s7004 Battery_1 first), then a bar on 8601-8624.
+  **GRANT to manoeuvre:** `game/ai/planner/**` for M3 (balance's by default; balance isn't working there this round).
+- **R40.13 (2026-10-24 ~23:50) A judged series runs ONE frozen tree.** Orders' Bar G1 v6 parts re-synced its moving worktree (c7d642aeb,
+  then 9076ee2f8's G3 v9, unreachable OFF code). **Ruled:** every judged series runs from a side worktree at its named green hash
+  (doctrine's round-39 `d3-tree` pattern); parts that ran on another commit re-run from it. G1 v6's parts move to builder2 (builder0 held
+  main's check + three lanes). G3 v8 dev read FAILED (5bc304738, builder2 J4, 3804-3809, n 6: pairs < 12 m 25 -> 10, bar 6.2; the road
+  test reads each road 17-20 m wide); G3 v9 `--place-clear-lane=column` (9076ee2f8, OFF) dev-reads next. Main check of 5a9743c2c running on
+  builder0 (synced before 65a5c5b70's merge, so manoeuvre's M1 v2 OFF needs the next batch check).
 
 ## Rulings (round 40)
 

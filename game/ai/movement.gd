@@ -277,7 +277,7 @@ static func route_arms() -> Dictionary:
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
-			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "yield_spots_unfit": yield_spots_unfit,
+			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
 			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none,
@@ -325,6 +325,9 @@ static func reset_route_arms() -> void:
 	chain_in_play = 0
 	chain_spots_skipped = 0
 	chain_refusals = 0
+	chain_releases = 0
+	chain_holds_refused = 0
+	chain_side_spots = 0
 	setup_refusals = 0
 	yield_swaps = 0
 	parked_refusals = 0
@@ -1885,9 +1888,7 @@ func _asker_clear(here: Vector3, asker: Tank) -> bool:
 # crew (phase arrived, or keeping a face slot: no move of its own) already more than CHAIN_M off its seat (yield_seat()) takes no
 # give-way spot farther from that seat than it stands now (+ CHAIN_SLACK_M): along it or back toward it, or today's in-place hold.
 # With none of those it refuses, and the asker treats it as parked (CP1a2: keeps its route, ORCA goes round). A crew by its seat
-# gives way as today. Native: not mirrored yet, so the switch turns BrainSwitches.native_yield off (Traffic.off), and the C++ drive
-# calls _negotiate back so every ask runs here; native_yield's GDScript and C++ are bit-identical per seed (R38.24), so the OFF arm
-# on native and the ON arm here differ only by the rule.
+# gives way as today. Native mirrors it (drive_native.cpp begin_yield's chain_in_play / chain_far, N3 bb8043686).
 const CHAIN_M := 4.0
 const CHAIN_SLACK_M := 0.5
 ## Measurement: give-ways asked of a crew the rule was in play for; spots it skipped as farther from the seat; asks it refused
@@ -1901,6 +1902,46 @@ static func giveway_chain_on() -> bool:
 	return not Traffic.off("givewaychain")
 
 
+# ---- Round 40 (manoeuvre M1 v2, C40.2; `--giveway-chain=v2` = givewaychain + chainrelease, DEFAULT_OFF until judged) -----------
+# Bar M1's G5 (references/round39/manoeuvre/probe-wedge): the last squad in drives past squads already seated, M1 keeps those crews
+# by their seats, and in a street ORCA has no way round them, so the squad wedged behind the refusers until the window closed
+# (its crews' still time 163 -> 581 s, "parked at home" partners 22 -> 258 s). So the reach is lifted for an asker that is WEDGED:
+# one that has made no progress toward its goal for CHAIN_RELEASE_S (its stalled_ticks). The parked crew would rather drift than
+# block. A passer that ORCA gets round makes progress and never releases it, so the chain M1 stopped stays stopped. And a give-way
+# the reach cut down to a hold in place is refused instead: after a hold the asker never asks that crew again (_last_yielded_to),
+# while a refused asker asks again every ASK_EVERY_SECONDS and, once wedged, is let through.
+# `--giveway-chain=side` (`chainside`, direction 3, a lab arm): a spot past the reach is allowed when it lies no farther along the
+# asker's travel from the seat than the crew stands now (a step across the street, not down it).
+const CHAIN_RELEASE_S := 3.0
+## Measurement: asks the reach was lifted for (the asker wedged); holds refused because the reach had cut the search; side spots
+## allowed past the reach (chainside).
+static var chain_releases := 0
+static var chain_holds_refused := 0
+static var chain_side_spots := 0
+
+
+static func chain_release_on() -> bool:
+	return not Traffic.off("chainrelease")
+
+
+## The release time in force: CHAIN_RELEASE_S, or `--chain-release-s=<s>` (a lab knob for tuning the constant; read once).
+static var _chain_release_ticks := -1
+
+
+static func chain_release_ticks() -> int:
+	if _chain_release_ticks < 0:
+		var seconds := CHAIN_RELEASE_S
+		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--chain-release-s="):
+				seconds = float(String(arg).trim_prefix("--chain-release-s="))
+		_chain_release_ticks = int(seconds * SimClock.TICK_RATE)
+	return _chain_release_ticks
+
+
+static func chain_side_on() -> bool:
+	return not Traffic.off("chainside")
+
+
 ## The crew's own seat: its move_to point, else the slot its face keeps; INF when it has neither (round 37 M5's seat).
 func yield_seat() -> Vector3:
 	var order: Dictionary = ctl.move_order
@@ -1910,8 +1951,9 @@ func yield_seat() -> Vector3:
 
 
 ## The farthest from its seat a give-way spot may lie under `givewaychain` (the seat and that reach as [seat, reach]), or [] when
-## the rule is not in play for this crew (off, no seat, under way on its own move, or within CHAIN_M of the seat).
-func _chain_reach() -> Array:
+## the rule is not in play for this crew (off, no seat, under way on its own move, or within CHAIN_M of the seat), or (chainrelease)
+## when `asker` is wedged. With chainside, [seat, reach, along, how far along the asker's travel `along` the crew stands from the seat].
+func _chain_reach(asker := "", along := Vector2.ZERO) -> Array:
 	if not giveway_chain_on():
 		return []
 	var seat := yield_seat()
@@ -1922,13 +1964,33 @@ func _chain_reach() -> Array:
 	var off_seat := _flat_distance(ctl.tank.global_position, seat)
 	if off_seat <= CHAIN_M:
 		return []
+	if chain_release_on() and _chain_asker_wedged(asker):
+		chain_releases += 1
+		return []
+	if chain_side_on() and along != Vector2.ZERO:
+		var here := ctl.tank.global_position
+		return [seat, off_seat + CHAIN_SLACK_M, along, Vector2(here.x - seat.x, here.z - seat.z).dot(along)]
 	return [seat, off_seat + CHAIN_SLACK_M]
+
+
+## chainrelease: has `asker` made no progress toward its goal for CHAIN_RELEASE_S (Movement.stalled_ticks)?
+func _chain_asker_wedged(asker: String) -> bool:
+	if asker == "" or ctl.tanks_root == null:
+		return false
+	var other := ctl.tanks_root.get_node_or_null(NodePath(asker)) as Tank
+	var mover := Movement.of(other) if other != null else null
+	return mover != null and mover.stalled_ticks >= chain_release_ticks()
 
 
 ## True when `point` is a spot the chain rule refuses (farther from the seat than `chain` allows).
 func _chain_far(chain: Array, point: Vector3) -> bool:
 	if chain.is_empty() or _flat_distance(point, chain[0]) <= float(chain[1]):
 		return false
+	if chain.size() > 2:
+		var seat: Vector3 = chain[0]
+		if Vector2(point.x - seat.x, point.z - seat.z).dot(chain[2]) <= float(chain[3]) + CHAIN_SLACK_M:
+			chain_side_spots += 1
+			return false
 	chain_spots_skipped += 1
 	return true
 
@@ -2137,9 +2199,10 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 	var line_clear := Avoidance.radius_of(tank.unit_id) + other_radius + YIELD_LINE_MARGIN
 	Avoidance.refresh(ctl.tanks_root)
 	# Round 39 (M1, `givewaychain`): a parked crew already pushed off its seat takes no spot farther from it (see _chain_reach).
-	var chain := _chain_reach()
+	var chain := _chain_reach(other, along)
 	if not chain.is_empty():
 		chain_in_play += 1
+	var chain_skipped := chain_spots_skipped
 	for spot: Vector2 in YIELD_SPOTS:
 		for flip: float in ([side, -side] if spot.y != 0.0 else [side]):
 			var offset := along * spot.x + across * (spot.y * flip)
@@ -2205,6 +2268,11 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 	# Nothing fits even shortened, so give way IN PLACE — stop pushing and let the other through — rather than refuse
 	# (a refusal leaves both hulls pushing: the refusing build's rigs lost 10 arrivals of 128). `--nav-off=yieldhold`.
 	if _yield_unfit_last and yield_fit_on() and not switched_off("yieldhold"):
+		# Round 40 (M1 v2, chainrelease): a hold the reach left as the only answer is refused, so the asker can ask again.
+		if not chain.is_empty() and chain_release_on() and chain_spots_skipped > chain_skipped:
+			chain_holds_refused += 1
+			chain_refusals += 1
+			return false
 		yield_holds += 1
 		_start_yield(other, here, along, "hold", via)
 		return true
