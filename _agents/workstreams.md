@@ -86,6 +86,12 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
 - **R40.3 (2026-10-24 evening) GRANT to balance: weapon `damage` values in `game/combat/weapons.gd`** (constants only, within R40.1's
   +/-15 %; his bounds name damage). Balance's own rule stands: no damage change on a weapon two factions share (laser, autocannon,
   machine_gun). Seeds 8501-8540 registered as balance's B4 screening block (dev).
+- **R40.4 (2026-10-24 evening) C40.3 relaxed: orders' G1 v6 does not wait on CP40.1.** Settle's T1 dev read (1327f85ef, builder0 light J4,
+  terminus his-5 click, 6201-6212, n 12 an arm): `--deploy-arrive=near` changes nothing (worst twitch 13.8 / 13.8 m main; 28.4 / 28.4
+  column, identical every seed). Traced s6201: the cap's blocker is Bravo_1 7.94 m off (in at t3, then walked off by an ADVANCE brain
+  option); the 28.4 m twitch is Bravo_2's 24 m deploy leg to the herringbone's far seat, after the probe's 8 s window. So round 39's
+  reading (G1 v5's guard = settle's trigger) was wrong; the twitch goes to orders. Main deploys on the 10 s cap for 311/768 street squads
+  (40 %) and 48/96 his-click squads (e7c896c8f's rows): that is the "sits 10 s"; settle traces every cap deploy before picking T1's rule.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
