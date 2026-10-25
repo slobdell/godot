@@ -16,6 +16,10 @@ extends SceneTree
 ##       --seed=N --arena=A --mute --guard=blob|turtle|none --guard-side=green|rust [--seconds=600] [switches: GUARD_ARGS]
 ## Prints GUARD_RESULT {json} once: who won (the ordered side "guard", the CPU "tactics", or "draw"), why, how long, kills
 ## and losses a side, the zone points, and what the ordered side was told. Read by tools/scoreboard/guard.py.
+## Round 40 (CP40.0, native N1): and `units` {"green": [...], "rust": [...]}, one row per unit that fought: {id (its name), type
+## (unit id), faction, cost, kills (enemies it destroyed), death (the tick, or -1), killer (a unit name, "hazard:..", or ""),
+## dealt, taken (shield + hull points to and from ENEMIES; friendly fire and hazards are not counted)}. Additive: older rows
+## have no `units`, and a side's kills sum to the row's `kills` (UnitTally; tests/test_guard_units.gd).
 ## A fight that has not ended by --seconds is judged as the game judges a time-out (Match.result("time_limit")).
 
 ## Seconds between looks at the zones (the blob's target, unseated crews). The CPU's own commander thinks every second.
@@ -32,6 +36,77 @@ var _kills := [0, 0]
 var _losses := [0, 0]
 var _shots := [0, 0]
 var _hits := [0, 0]
+var _tally := UnitTally.new()
+
+
+## Round 40 (CP40.0, native N1): the per-unit counts of one fight, fed the match's own events. Read-only: nothing in the
+## simulation listens to it. Shells, beams and arc bursts arrive as weapon_fired (projectile_id -> shooter) and
+## projectile_impact (target + damage, or a burst's victims); a cone's damage has no event, so guard_line runs `spray_before`
+## and `spray_after` around the match's own sprayed handler and the enemies' shield + hull drop is the sprayer's.
+class UnitTally:
+	var rows := {}  # unit name -> {id, type, faction, cost, kills, death, killer, dealt, taken}
+	var teams := {}  # unit name -> team
+	var _shooters := {}  # projectile_id -> shooter name
+	var _before := {}  # an open spray: enemy name -> shield + health
+
+	func has(unit: String) -> bool:
+		return rows.has(unit)
+
+	func register(unit: String, team: int, type: String, faction: String, cost: int) -> void:
+		if rows.has(unit):
+			return
+		teams[unit] = team
+		rows[unit] = {"id": unit, "type": type, "faction": faction, "cost": cost, "kills": 0, "death": -1, "killer": "",
+				"dealt": 0.0, "taken": 0.0}
+
+	func fired(event: Dictionary) -> void:
+		_shooters[event.get("projectile_id", -1)] = String(event.get("shooter", ""))
+
+	func impact(event: Dictionary) -> void:
+		var shooter := String(_shooters.get(event.get("projectile_id", -1), ""))
+		if event.has("victims"):
+			for entry: Dictionary in event["victims"]:
+				damage(shooter, String(entry.get("target", "")), float(entry.get("damage", 0.0)))
+		elif event.has("target"):
+			damage(shooter, String(event["target"]), float(event.get("damage", 0.0)))
+
+	## `amount` from `shooter` to `victim`; counted only between enemies.
+	func damage(shooter: String, victim: String, amount: float) -> void:
+		if amount <= 0.0 or not rows.has(shooter) or not rows.has(victim) or teams[shooter] == teams[victim]:
+			return
+		rows[shooter]["dealt"] += amount
+		rows[victim]["taken"] += amount
+
+	func destroyed(event: Dictionary) -> void:
+		var unit := String(event.get("unit", ""))
+		if not rows.has(unit):
+			return
+		var killer := String(event.get("killer", ""))
+		rows[unit]["death"] = int(event.get("tick", -1))
+		rows[unit]["killer"] = killer
+		if String(event.get("cause", "")) == "enemy" and rows.has(killer):
+			rows[killer]["kills"] += 1
+
+	## `points`: enemy name -> shield + health now, before (then after) the match lands a cone's tick of damage.
+	func spray_before(points: Dictionary) -> void:
+		_before = points
+
+	func spray_after(sprayer: String, points: Dictionary) -> void:
+		for victim: String in _before:
+			damage(sprayer, victim, float(_before[victim]) - float(points.get(victim, 0.0)))
+		_before = {}
+
+	## {"green": [...], "rust": [...]}, each side's rows by name, damage to 0.01.
+	func report() -> Dictionary:
+		var out := {"green": [], "rust": []}
+		var names := rows.keys()
+		names.sort()
+		for unit: String in names:
+			var row: Dictionary = rows[unit].duplicate()
+			row["dealt"] = snappedf(row["dealt"], 0.01)
+			row["taken"] = snappedf(row["taken"], 0.01)
+			out["green" if int(teams[unit]) == 0 else "rust"].append(row)
+		return out
 
 
 func _initialize() -> void:
@@ -116,6 +191,9 @@ func _run() -> void:
 		# elements take the player's preempting tasks, exactly as in his skirmish.
 		game_match.set_meta("player_team", side)
 	var shooter_of := {}
+	game_match.weapon_fired.connect(_tally.fired)
+	game_match.projectile_impact.connect(_tally.impact)
+	game_match.unit_destroyed.connect(_tally.destroyed)
 	game_match.weapon_fired.connect(func(event: Dictionary) -> void:
 		var shooter := game_match.tanks.get_node_or_null(String(event.get("shooter", ""))) as Tank
 		if shooter != null:
@@ -154,6 +232,7 @@ func _run() -> void:
 				break
 			continue
 		last_tick = tick
+		_watch_units(game_match)
 		if started < 0:
 			started = tick
 		var run_s := (tick - started) / float(SimClock.TICK_RATE)
@@ -167,6 +246,50 @@ func _run() -> void:
 		result = game_match.result("time_limit")
 	_report(game_match, guard, side, result, reason_capped)
 	quit(0)
+
+
+## Round 40 (N1): register every unit the first tick it is seen, and put the cone tally around the match's sprayed handler
+## (disconnect it, connect spray_before, reconnect it, connect spray_after: a signal calls in connection order).
+func _watch_units(game_match: Match) -> void:
+	if game_match.tanks.get_child_count() == _tally.rows.size():
+		return
+	var factions := _factions()
+	for node in game_match.tanks.get_children():
+		var tank := node as Tank
+		if tank == null or _tally.has(String(tank.name)):
+			continue
+		_tally.register(String(tank.name), tank.team, tank.unit_id, String(factions[Match.TEAM_NAMES[tank.team]]),
+				int(Units.stat(tank.unit_id, "cost")))
+		var theirs: Array = []
+		for connection: Dictionary in tank.sprayed.get_connections():
+			theirs.append(connection["callable"])
+			tank.sprayed.disconnect(connection["callable"])
+		tank.sprayed.connect(func(_o: Vector3, _d: Vector3, _dt: float) -> void: _tally.spray_before(_points(game_match, tank)))
+		for callable: Callable in theirs:
+			tank.sprayed.connect(callable)
+		tank.sprayed.connect(func(_o: Vector3, _d: Vector3, _dt: float) -> void:
+			_tally.spray_after(String(tank.name), _points(game_match, tank)))
+
+
+## Every enemy of `tank` (a dead one reads 0 health): name -> shield + health.
+static func _points(game_match: Match, tank: Tank) -> Dictionary:
+	var out := {}
+	for node in game_match.tanks.get_children():
+		var other := node as Tank
+		if other != null and other.team != tank.team:
+			out[String(other.name)] = other.shield + float(other.health)
+	return out
+
+
+## The demo's factions, rolled from the seed by the same pure functions SkirmishMode.demo_flags calls (Green = its player).
+func _factions() -> Dictionary:
+	var player := _flag("player-faction", "")
+	if player == "":
+		player = SkirmishMode.roll_demo_player(int(_flag("seed", "0")))
+	var enemy := _flag("enemy-faction", "")
+	if enemy == "":
+		enemy = FactionPicker.roll_enemy(int(_flag("seed", "0")), player)
+	return {Match.TEAM_NAMES[Match.Team.GREEN]: player, Match.TEAM_NAMES[Match.Team.RUST]: enemy}
 
 
 ## The ordered side's think: seat unseated crews (its commander, which used to, stands down), then task its elements.
@@ -242,14 +365,7 @@ func _report(game_match: Match, guard: String, side: int, result: Dictionary, ca
 	if winner == Match.TEAM_NAMES[Match.Team.GREEN] or winner == Match.TEAM_NAMES[Match.Team.RUST]:
 		var team := Match.TEAM_NAMES.find(winner)
 		role = "tactics" if guard == "none" or team != side else "guard"
-	# The demo's factions, rolled from the seed by the same pure functions SkirmishMode.demo_flags calls (Green = its player).
-	var player := _flag("player-faction", "")
-	if player == "":
-		player = SkirmishMode.roll_demo_player(int(_flag("seed", "0")))
-	var enemy := _flag("enemy-faction", "")
-	if enemy == "":
-		enemy = FactionPicker.roll_enemy(int(_flag("seed", "0")), player)
-	var factions := {Match.TEAM_NAMES[Match.Team.GREEN]: player, Match.TEAM_NAMES[Match.Team.RUST]: enemy}
+	var factions := _factions()
 	print("GUARD_RESULT " + JSON.stringify({"seed": int(_flag("seed", "0")), "arena": String(Arena.active.get("name", "")),
 			"guard": guard, "side": Match.TEAM_NAMES[side], "winner": winner, "role": role,
 			"reason": "cap" if capped else String(result.get("reason", "")), "seconds": result.get("sim_seconds", 0.0),
@@ -258,4 +374,5 @@ func _report(game_match: Match, guard: String, side: int, result: Dictionary, ca
 			"control": result.get("control"), "tanks": result.get("tanks"), "army_cost": result.get("army_cost"),
 			"cover_struck": int((result.get("stats", {}) as Dictionary).get("cover_struck", 0)) \
 					if typeof(result.get("stats")) == TYPE_DICTIONARY else 0,
-			"args": " ".join(_arm_args()), "factions": factions, "blob_drills": _flag("blob-drills", "off"), "tasks": _tasks, "retargets": _retargets, "last_target": _target_name}))
+			"args": " ".join(_arm_args()), "factions": factions, "blob_drills": _flag("blob-drills", "off"), "tasks": _tasks, "retargets": _retargets, "last_target": _target_name,
+			"units": _tally.report()}))
