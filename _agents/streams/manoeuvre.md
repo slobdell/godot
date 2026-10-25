@@ -260,3 +260,20 @@ planned round the holder by the planner's seam.
 - **Fix (b10c8dee8):** the scan makes the first search whole (Planner.plan, the library's one-shot search, apart from the seam's
   sliced session) and takes the crew only with a plan in hand. A refusal costs the crew nothing; the cost moves to the scan's
   tick (searches and expansions reported). Lab 3: the same cells, reroute / any.
+- **M3 lab 3 (b10c8dee8, builder2 light J14, load 40 at start; n 1 a fight, 7 fights an arm):**
+
+  | Arm | Long episodes | Total |
+  |---|---|---|
+  | off (lab 1) | 19 | 141 s |
+  | reroute | 23 | 228 s |
+  | any | 11 | 149 s |
+
+  - start_blocked is 0 in every log.
+  - `any`: 103 searches and 73 k expansions over 7 fights; it planned 56 and drove 17 to the end.
+  - The `reroute` arm's other cells match off's episodes exactly; it planned only 3 times.
+  - Both ON arms carry one 73.2 s episode that off doesn't have: locks s7004 Rust_Battery_2 (syn_artillery), pinned by a parked
+    Rust_Eyes_5 until the match ends, with ORCA's pace under half for 2192 of its 2196 ticks.
+  - The seam planned once in that fight (2 legs, 30 driving ticks, then released stale), so the 73 s follows from that one
+    re-route. Without it, `any` is 10 / 76 s.
+  - A traced run (`--turn-trace=Rust_Battery_2`, builder0 light) is under way; raw data: `~/overnight-manoeuvre/r40/m3lab3/`,
+    `m3t7004/`.
