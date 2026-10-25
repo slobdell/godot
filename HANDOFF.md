@@ -59,6 +59,12 @@ M1 v2 FAIL (G5), G1 v6 FAIL (terminus 5 route twitch); running S1 v3 (settle), G
 (68d0410d3 read 7,691), relative line PASS. Covers T1 ON + every OFF switch merged this round (M1 v2, G1 v6, G3 v8/v9). Main 245499bf1
 GREEN on builder2 (`make check exited 0`, 25 passed + 2 NOT JUDGED: perf-judge, scenario_perf 3.02x; sim-baseline 13 unmoved): fully verified.
 
+**ROUND 40 STATE (2026-10-25 ~08:35 PDT):** settle, manoeuvre, orders DONE (merged; only T1 shipped ON). native idle (N4 trig rerun
+waits a quiet builder0). **balance's Bar B2s series running on builder2** (fm_law_c5r2; BASE 5be511659 / ARM 66c4839a2; ~8-10 h): on a
+PASS the orchestrator merges ARM, ADOPTS its 13 recorded sim-baseline maps (`~/balance-runs/sim_baseline_adopt-66c4839a2.json`, laptop
+copy under references), runs one main check + a quiet perf-judge, then closes the round. Main batch check (0badbb09e + docs) running on
+builder0. Bars: T1 PASS (ON); M1 v2, G1 v6, S1 v3, G3 v9, cap deal, M3 FAIL (each traced, round-41 items in the briefs' Status).
+
 **2026-10-25 ~07:30: main 901afc1c1 GREEN on builder2** (`make check exited 0`, 3224 passed / 0 failed, 25 passed + 2 NOT JUDGED:
 perf-judge, scenario_perf 2.77x) = + balance 5be511659 (tools, B3 OFF), orders e7c8a9dce (all OFF), settle f7ad1078f (all OFF). Only
 OFF code since perf-judged 245499bf1.
