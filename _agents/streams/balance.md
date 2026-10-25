@@ -161,6 +161,10 @@ BASE 5be511659's. Before naming c5r: its mono line (G8 screen) and one paired li
   nameplate reads 483 hp (the +15 %), gangs hold the centre 18-0 on points while syndicate leads kills 16-4, a contest; `garage-shots`:
   the Syndicate card reads 126-283 CR, the vehicle cards 126 / 180 / 204 / 228 / 283 CR, the suggested army fits (6 CR left); phone
   aspect clean. Frames in ../godot-balance-arm/build/light/build/screenshots/ (looked at).
+  **G8 screen, c5r's mono line (7b53f5f85 + overrides, builder2, 8513-8520, both sides, 320 fights, paired with the base's):** mono
+  wins 82 -> 80 %, **-1 (se 2)**: not above base. By faction: condemned +0 (se 0; its units don't change, so its fights replay
+  identically, the pairing's check), gangs -6 (7), law **+6 (4)** (Law's buffed Assault Gun helps an all-tank Law army most),
+  syndicate -5 (3).
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
