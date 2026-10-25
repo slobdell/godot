@@ -87,6 +87,11 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   line naming the cells where main v main's read changed. builder0 light J4, main as it is (CP40.1 OFF both arms unless it lands first).
   Known risk: terminus 5 route never-in (s3805 squad 1 in dev: the route's first plain click's whole-squad deal, R38.44; Alpha_3 wedged
   in the x=0 street among parked squads t40-t90, both arms' legs identical).
+  **VERDICT FAIL on one guard (2026-10-25 ~02:00; frozen c7d642aeb = green 8bbafb376 + docs, builder2 J4, 8201-8212, n 12 a cell, one Spot
+  preemption re-run whole).** FAIL: terminus 5 route twitch, median of each run's worst 20.6 -> 25.4 m (bar base + 3); seeds 8203, 8205,
+  8206, 8208 differ (Delta worst on 3). PASS every deciding line: places outside (click) 65 -> 8 (<= 16.2), route_left 3,864 -> 589, re-dealt
+  48 -> 0, contacts 14,781 -> 11,799, yard_open identical, never-in not up. Old corridor read: outside 98 -> 17, route_left 6,174 -> 1,209;
+  main v main changed only on locks 3/5 and terminus_his 3/5. Stays OFF. Cause: the route's first plain click keeps squads whole (R38.44).
 - **R40.9 (2026-10-24 evening) G3 v7 BLOCKED on its dev read; the redesign goes ahead.** Dev (builder2, 4c672deca, 3804-3809, n 6): pairs
   < 12 m 25 -> 17 (bar 6.2), guards pass. Traced: (a) the moves onto Echo's road were v5's aside/back steps accepted by v6's seat check;
   (b) on a route G3 runs BEFORE `_relay_previous_waypoint`, so every squad's road in starts from a stale previous waypoint (s6213 Echo
