@@ -67,3 +67,10 @@ builder0 per HANDOFF (3176/0), so no baseline check (contract 1).
    chaingd (v1 on the GDScript yield: the path control). Wanted: every squad in on the 5, s3866 squad 4 in, chained out_m near v1's.
 3. Pick, native twin request (via the orchestrator), bar M1 v2 filed before numbers on 8101-8124, series, verdict.
 4. M2 (the long ORCA episodes trace, 7001-7008), then the stretch.
+
+**Orchestrator (2026-10-24 evening), recorded:**
+- **Twin request:** sent once the release time is picked, with the exact rule (the asker's stalled_ticks >= CHAIN_RELEASE_S lifts
+  the reach; a reach-cut hold becomes a refusal). Native takes it after N1 (CP40.0) and before N2/N3.
+- **"Last squad in" is a JUDGED guard** in Bar M1 v2, not just reported: the later arrivals are what he'd see.
+- **The bar runs on native's twin,** not the GDScript bypass, unless the twin is late. Then the bar names its path.
+- **R40.5:** no M1 v2 line reads orders' places-outside corridor read (G5/G6 read arrived_s and never-in only).
