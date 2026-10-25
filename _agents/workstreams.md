@@ -69,6 +69,14 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   their line's mean. Guards: blob and turtle lines not up; match length per line within +/-15 % (+/-20 % per faction); time-cap share not
   up; none line not worse; perf-judge; full check with the sim baseline adopted on purpose (orchestrator). Base read: round 39's OFF arm
   scores 17.4 (se 1.4).
+- **Bar T1, the deploy trigger (settle; FILED a03250e13, 2026-10-24 evening, before any number on 8001-8012; code = c074db72e's).** Arms
+  `main:--deploy-trace` v `settled:--deploy-arrive=settled,--deploy-trace`; `--giveway-chain` OFF and `--seat-route-clear` OFF both arms.
+  Workload: no-fight 12 street cells x 8001-8012 (576 squads an arm) + fight click cells 3-squad b1500 and 5-squad b3000 x 8001-8012.
+  **Deciding:** cap deploys <= 50 % of main, main >= 20. Judged guards: never-in total and per cell; per-cell all-in / end foreign /
+  crossed; all-in mean (runs in on both) <= x1.10 + 1 s; arrival-to-deploy mean <= main; squads twitching >= 15 m <= x1.1 + 2; first
+  shape, flips, places outside (the GATE read) <= main + 2; contacts; fights. Departure (stated with dev numbers, accepted): per-cell
+  twitch MEDIANS reported, not judged (an early halt moves a straggler's last approach into the probe's window; lab 3 n 2). Known risk:
+  terminus 5 route s6003 (Echo lost in dev). A pass = CP40.1.
 
 ## Rulings (round 40)
 
