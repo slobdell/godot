@@ -129,10 +129,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   running, `~/overnight-orders/g3v9-dev1-9076ee2f8`. A bar on 8213-8224 only if it passes, filed before any number.
 - **Full check of 8bbafb376 (builder0, load ~10): `make native check exited 0`, 25 passed, 2 NOT JUDGED** (perf-judge
   refused 3 times on a busy box, 1.52-1.84x; scenario_perf unpinned on the hybrid). Green: the G1 v6 series' tree.
-- **Bar G1 v6 series: running** (builder0 light J4, 8201-8212, `~/overnight-orders/barg1v6-c7d642aeb`). The streets part
-  synced c7d642aeb (= 8bbafb376 + docs). Each later part re-syncs the worktree: from 9076ee2f8 the only game/ change is G3
-  v9 (`lane_reach` under `--place-clear-lane=column`, a trace under `--column-trace`), unreachable with every G3 switch
-  OFF, as R40.11. Each part's log names its commit.
+- **Bar G1 v6 series: running on builder2 J4 from a frozen tree** (orchestrator, after 893850559: a judged series runs ONE
+  tree; builder0 was over R40.11's cap). Detached worktree `/home/slobdell/projects/godot-orders-g1v6` at c7d642aeb
+  (= green 8bbafb376 + docs), synced to builder2:~/tank_squad/godot-orders-g1v6; every part runs from it
+  (`~/overnight-orders/barg1v6-b2-c7d642aeb`). The first builder0 start (light, c7d642aeb) was stopped mid-streets by my
+  PIDs; no part of it stands. Shots (laptop, c7d642aeb, his click 5, seed 34, `orders-probe-shots`, arrival + 5 s):
+  main knots the squads in the centre street between the blocks; sides keeps Alpha's squad west of the click and lays the
+  rest east along the front street.
 
 ### Bars (filed here before any judged number; the orchestrator records them on main)
 - **Bar G1 v6 TWO SIDES (orders, round 40; filed 2026-10-24 before any number on 8201-8212; code 2eedf9f7f, all OFF).**
