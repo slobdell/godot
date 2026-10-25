@@ -76,8 +76,18 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   driven t 18-22, after the probe's 8 s place window. An earlier trigger cannot remove it on this cell. Orders' trace read
   "3.83 m v 3.5 m" correctly, but that is the last crew in, not the cause of the twitch.
 - **The wider read (round 39's judged G1 v5 / G3 v6 rows, e7c896c8f, builder0, no new run): main deploys on the CAP for 311 of
-  768 street squads (40 %) and 48 of 96 his-click squads.** That is the "sits 10 s" he sees. Tracing every cap deploy now
-  (ARRIVE_TRACE: each crew's distance, holding, held ticks, ever-in) on main, dev seeds 6001-6002 x 12 street cells.
+  768 street squads (40 %) and 48 of 96 his-click squads.** That is the "sits 10 s" he sees. Orchestrator R40.4: orders owns
+  the his-5 twitch (the column's far-seat leg); T1's target is the cap deploys, judged on cap deploys / time to deploy.
+- **The cap trace** (1327f85ef + ARRIVE_TRACE, builder0 light J4, main, dev seeds 6001-6002 x 12 street cells, 96 squads;
+  `references/round40/settle/cap-trace-dev/`, `settle_t1.py DIR caps`): 41 cap deploys (43 %), arrival to deploy median 7.0 s.
+  The crews keeping a squad out (a squad can have several): a crew that WAS in and is now off (3.6-16.7 m, most 4-9 m) in 25 of
+  40; a crew still driving, never in, in 18; one holding 5-25 m, never in, in 14; one holding within 5 m in 8. Scored at the
+  cap moment, "near" (holding <= 5 m) would let 6 of 40 in; + once-in within 10 m 12; holding <= 7.5 m + once-in 20. The rest
+  have a crew genuinely still driving.
+- **T1 v2 `--deploy-arrive=settled`** (754fee377, OFF; pure tests 7/0 laptop): settled = in, or once in and <= 10 m, or
+  holding 0.5 s <= 7.5 m; all settled = all in; and when at least half the squad is settled and the count stands 2 s, the
+  halt is laid (cause "settled") and the stragglers drive straight to their halt seats instead of the squad sitting out the
+  10 s. Lab 2 running (main / near / settled, 12 street cells x dev 6003-6004).
 
 ### Plan (ordered)
 1. T1: pure test (done) -> lab on orders' traced cell (his-5 click 6201-6212, main and G1 v5's column arm, each +/- near) ->
@@ -94,3 +104,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   through 5 m on its way in is not caught.
 - **Radius** DEPLOY_NEAR_M 5.0 (the brief's ~5 m; orders' trace 3.83 m), max'd with the unit's settle radius as main's test.
 - **Trace:** `deploy["near"]` = crews counted near at the deploy (0 on the cap).
+- **Settled v near (after the cap trace):** near alone answers a fifth of the caps. "Was in" is per crew since the arrival,
+  against the seat it was sent to then (travel seats drift with the squad; 10 m keeps a drift of one spacing). The half-squad
+  rule keeps B8's idea (lay the halt once the squad stands) without waiting on one crew stuck behind traffic: its drive to the
+  halt seat is the same drive it was making. Risk the bar must guard: twitch / place+twitch and deploy legs (a straggler's
+  halt seat can be farther than its travel seat), never-in, contacts.

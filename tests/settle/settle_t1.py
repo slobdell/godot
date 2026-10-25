@@ -8,12 +8,21 @@ Per arm (the log name's `-<arm>.log` or `-<arm>-s<seed>.log`): runs, the worst t
 >= 15 m, runs never all in, the all-in time (median over runs in), and the per-seed worst twitch. Dev read only.
 """
 import glob
+import gzip
 import json
 import os
 import re
 import statistics as st
 import sys
 from collections import defaultdict
+
+
+def logs(folder):
+    return glob.glob(os.path.join(folder, "**", "*.log"), recursive=True) + glob.glob(os.path.join(folder, "**", "*.log.gz"), recursive=True)
+
+
+def opened(path):
+    return gzip.open(path, "rt", errors="replace") if path.endswith(".gz") else open(path, errors="replace")
 
 
 def arm_seed(name):
@@ -26,12 +35,12 @@ def arm_seed(name):
 
 def main(folder):
     runs = defaultdict(dict)
-    for path in sorted(glob.glob(os.path.join(folder, "**", "*.log"), recursive=True)):
-        arm, seed = arm_seed(os.path.basename(path))
+    for path in sorted(logs(folder)):
+        arm, seed = arm_seed(os.path.basename(path).replace(".gz", ""))
         if arm is None:
             continue
         squads = []
-        with open(path, errors="replace") as f:
+        with opened(path) as f:
             for line in f:
                 if line.startswith("ORDERS_PROBE_SQUAD "):
                     squads.append(json.loads(line.split(" ", 1)[1]))
@@ -39,7 +48,13 @@ def main(folder):
             runs[arm][(os.path.basename(path).split("-s")[0], seed)] = squads
     for arm in sorted(runs):
         worst, long_, never, allin, per = [], 0, 0, [], []
+        causes = defaultdict(int)
+        waits = []
         for key, squads in sorted(runs[arm].items()):
+            for s in squads:
+                causes[s.get("deploy_cause", "")] += 1
+                if float(s.get("deploy_s", -1)) >= 0 and float(s.get("arrived_s", -1)) >= 0:
+                    waits.append(float(s["deploy_s"]) - float(s["arrived_s"]))
             tw = max(float(s.get("twitch_m", -1)) for s in squads)
             worst.append(tw)
             long_ += sum(1 for s in squads if float(s.get("twitch_m", -1)) >= 15)
@@ -51,6 +66,8 @@ def main(folder):
             per.append("s%d %.1f" % (key[1], tw))
         print("%-8s runs %2d | worst twitch median %.1f max %.1f | squads >= 15 m %d | never-in runs %d | all-in median %.1f s" % (
             arm, len(worst), st.median(worst), max(worst), long_, never, st.median(allin) if allin else -1))
+        print("         deploys %s | arrival to deploy median %.1f mean %.1f s (n %d)" % (dict(sorted(causes.items())),
+              st.median(waits) if waits else -1, st.mean(waits) if waits else -1, len(waits)))
         print("         " + ", ".join(per))
 
 
@@ -64,8 +81,8 @@ def caps(folder):
     from collections import Counter
     kinds, squads = Counter(), 0
     examples = defaultdict(list)
-    for path in sorted(glob.glob(os.path.join(folder, "**", "*.log"), recursive=True)):
-        with open(path, errors="replace") as f:
+    for path in sorted(logs(folder)):
+        with opened(path) as f:
             for line in f:
                 if not line.startswith("ARRIVE_TRACE "):
                     continue
