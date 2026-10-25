@@ -276,3 +276,12 @@ settle-dev-v3t1: native-for-check import ## Round 40 (settle stretch): dev v3 v 
 		ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-v3t1/deals > $(BUILD_DIR)/settle-dev-v3t1/deals.out 2>&1 || true
 	@$(PYTHON) tests/settle/settle_t1.py $(BUILD_DIR)/settle-dev-v3t1/pair | tee $(BUILD_DIR)/settle-dev-v3t1/pair.txt || true
 	@$(PYTHON) tests/settle/settle_deals.py $(BUILD_DIR)/settle-dev-v3t1/deals | tee $(BUILD_DIR)/settle-dev-v3t1/deals.txt || true
+
+# Round 40 (R40.14 (1)): the dev never-in under v3 with T1 ON (terminus 5 click s6306, Alpha), squad 1's crews every second
+# (orders' --probe-trace=1), both arms. builder2 light:  make gcp-remote LIGHT=1 T="native settle-dev-s6306"
+.PHONY: settle-dev-s6306
+settle-dev-s6306: native-for-check import ## Round 40 (settle): trace the dev never-in (terminus 5 click s6306) -> build/settle-dev-s6306/
+	@rm -rf $(BUILD_DIR)/settle-dev-s6306 && mkdir -p $(BUILD_DIR)/settle-dev-s6306
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_MAPS=terminus ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=2 \
+		ORDERS_PROBE_ARMS="main:--deploy-trace,--probe-trace=1 v3:--seat-route-clear=v3,--deploy-trace,--probe-trace=1" ORDERS_PROBE_SEEDS=6306 \
+		ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-s6306 > $(BUILD_DIR)/settle-dev-s6306/probe.out 2>&1 || true
