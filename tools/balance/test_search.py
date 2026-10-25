@@ -72,6 +72,19 @@ class SearchTest(unittest.TestCase):
             self.assertIn('"gang_ifv": {\n\t\t"cost": 110,\n\t\t"max_health": 170,', out)
             self.assertIn('"damage": 299.0,', w.read_text())
 
+    def test_check_refuses_a_rear_that_breaks_the_from_behind_rule(self):
+        cat = {"units": {"gang_tank": {"faction": "gangs", "cost": 175, "max_health": 420, "max_shield": 0.0,
+                                       "weapon": "twin_mg", "armor": {"front": 7.0, "side": 4.0, "rear": 2.0}},
+                         "syn_scout": {"faction": "syndicate", "cost": 210, "max_health": 150, "max_shield": 160.0,
+                                       "weapon": "twin_mg", "armor": {"front": 2.0, "side": 2.0, "rear": 2.0}}},
+               "weapons": {"twin_mg": {"damage": 3.0, "penetration": 2.5}}}
+        self.assertEqual(search.check({}, cat), [], "today's catalog keeps the rule")
+        # +15 % rear on a War Rig: the twin MG from behind falls under 0.4 (the ARM 494a3d33d failure).
+        self.assertTrue(search.check({"units": {"gang_tank": {"armor": {"rear": 2.3}}}}, cat))
+        # A cut front under an unmoved rear: the rear is now harder than the front (the ARM ad956031b failure).
+        self.assertTrue(search.check({"units": {"syn_scout": {"armor": {"front": 1.7, "side": 1.7}}}}, cat))
+        self.assertEqual(search.check({"units": {"syn_scout": {"armor": {"front": 1.7, "side": 1.7, "rear": 1.7}}}}, cat), [])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -92,7 +92,36 @@ def check(cand: dict, catalog: dict) -> list[str]:
         users = sorted({units[u]["faction"] for u in units if units[u]["weapon"] == weapon_id})
         if len(users) > 1:
             problems.append(f"{weapon_id} is shared by {', '.join(users)}: a damage change moves every one of them")
+    if all("armor" in row for row in units.values()) and all("penetration" in w for w in weapons.values()):
+        problems += from_behind_breaks(cand, catalog)
     return problems
+
+
+# Armor.penetration_multiplier (game/combat/armor.gd), mirrored so `check` refuses a candidate that breaks
+# test_combat_mechanics::test_everything_hurts_from_behind (every weapon: rear >= front, rear >= 0.4) before it costs a series.
+PENETRATION_FLOOR, PENETRATION_CAP = 0.05, 1.5
+
+
+def penetration_multiplier(penetration: float, thickness: float) -> float:
+    if penetration <= 0.0:
+        return PENETRATION_FLOOR
+    if thickness <= 0.0:
+        return PENETRATION_CAP
+    return min(PENETRATION_CAP, max(PENETRATION_FLOOR, 0.5 * math.log(1.6 * penetration / thickness) / math.log(2.0)))
+
+
+def from_behind_breaks(cand: dict, catalog: dict) -> list[str]:
+    out = []
+    for unit_id, row in catalog["units"].items():
+        armor = dict(row["armor"])
+        armor.update(cand.get("units", {}).get(unit_id, {}).get("armor", {}))
+        for weapon_id, weapon in catalog["weapons"].items():
+            pen = float(weapon.get("penetration") or 0.0)
+            front = penetration_multiplier(pen, float(armor["front"]))
+            rear = penetration_multiplier(pen, float(armor["rear"]))
+            if rear < front - 1e-9 or rear < 0.4 - 1e-9:
+                out.append(f"{weapon_id} from behind into a {unit_id}: rear x{rear:.2f} v front x{front:.2f} (needs rear >= front, >= 0.4)")
+    return out
 
 
 def moves_cost(cand: dict) -> bool:
