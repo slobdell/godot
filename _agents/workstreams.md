@@ -54,17 +54,61 @@ project's workers (plane_maker): never touch processes you didn't start.
 - **C40.3 orders judges G1 on CP40.1;** G3 v7 and G2 judge on main as it is.
 - **C40.4 = C39.4 (rule constants, GRANT to balance).** A constant moves only to his number or under a filed bar; R1's dwell stays 2.0
   until he answers.
-- **C40.5 Unit stats and the army deal (GRANT to balance, LEAD-GATED).** `game/units/**` changes on main only after his answer to B2;
-  tooling, overrides behind native's OFF flag, and reads are free.
+- **C40.5 Unit stats and the army deal (GRANT to balance; his answer R40.1).** `game/units/**` unit numbers may change within +/-15 % of
+  today's (toughness, damage, cost), per unit; no new abilities, no unit added or removed. A stat change ships under a filed bar on fresh
+  seeds (the faction table flatter, guards on the blob/turtle lines and the none line).
 
 ## Bars (round 40)
 
 **Seed registry (round 40):** 8001-8024 settle (T1 8001-8012, S1 v3 8013-8024); 8101-8124 manoeuvre; 8201-8236 orders (G1 v6 8201-8212,
-G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 7001-7008 manoeuvre's M2 dev trace (not a bar).
+G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 7001-7008 manoeuvre's M2 dev trace (not a bar).
+
+- **Bar B2s, the stat change (balance; FILED d479a17a1, 2026-10-24 evening, before any number on 8301-8340 + 8401-8440).** Change: the
+  candidate B4 picks (unit hp/armour/damage/cost within R40.1's +/-15 %). Deciding: FLATNESS (RMS over 16 cells: by guard faction and by
+  CPU faction, blob and turtle lines, minus the line mean; se by seed bootstrap) down by > 2 paired se, AND both outlier cells move toward
+  their line's mean. Guards: blob and turtle lines not up; match length per line within +/-15 % (+/-20 % per faction); time-cap share not
+  up; none line not worse; perf-judge; full check with the sim baseline adopted on purpose (orchestrator). Base read: round 39's OFF arm
+  scores 17.4 (se 1.4).
 
 ## Rulings (round 40)
 
-_(none yet)_
+- **R40.1 (2026-10-24 evening) His faction-balance call: A.** Verbatim in game_design.md *His faction-balance call*: "yes, when a faction
+  keeps losing, we should change its units' numbers. Obviously the game should be balanced. ... every time I play with the gang I seem to
+  lose. Yes let's go with A". Unit numbers within +/-15 % (toughness, damage, cost); rosters and abilities fixed. C40.5 un-gated. His R1
+  answer: keep ~3 s to full sight ("sounds fine"); HALT_DWELL_SECONDS stays 2.0.
+- **R40.2 (2026-10-24 evening) N3's overrides shape = balance's (absolute values through Units.tuning / apply_tuning).** Balance's B1
+  (b8c8cfca2, tally of round 39's OFF arm, 773412e49, builder2, 1600 fights): killed value per credit syndicate 0.84, condemned 0.64,
+  law 0.54, gangs 0.36; gangs' Gun Truck 0.02 kills a unit (12 % survive), Resupply Tanker 0.10, War Rig 0.33; syndicate Railgun 5.12
+  (kill ratio 16), Missile Ring 2.65; gangs fields 43.4 of the 45-unit cap, so its lever is hp/armour/damage, not cost. Shape:
+  `{"units": {"<id>": {"max_health", "max_shield", "cost", "armor": {"front","side","rear"}}}, "weapons": {"<id>": {"damage"}}}`,
+  loaded via the existing `--tune` path. **GRANT to native (N3):** `Units.cost_of` and `army.gd`'s deal honour a tuned cost (additive;
+  default unchanged), and GUARD_RESULT echoes a hash of the overrides. Multipliers (native's brief) are dropped.
+- **R40.3 (2026-10-24 evening) GRANT to balance: weapon `damage` values in `game/combat/weapons.gd`** (constants only, within R40.1's
+  +/-15 %; his bounds name damage). Balance's own rule stands: no damage change on a weapon two factions share (laser, autocannon,
+  machine_gun). Seeds 8501-8540 registered as balance's B4 screening block (dev).
+- **R40.4 (2026-10-24 evening) C40.3 relaxed: orders' G1 v6 does not wait on CP40.1.** Settle's T1 dev read (1327f85ef, builder0 light J4,
+  terminus his-5 click, 6201-6212, n 12 an arm): `--deploy-arrive=near` changes nothing (worst twitch 13.8 / 13.8 m main; 28.4 / 28.4
+  column, identical every seed). Traced s6201: the cap's blocker is Bravo_1 7.94 m off (in at t3, then walked off by an ADVANCE brain
+  option); the 28.4 m twitch is Bravo_2's 24 m deploy leg to the herringbone's far seat, after the probe's 8 s window. So round 39's
+  reading (G1 v5's guard = settle's trigger) was wrong; the twitch goes to orders. Main deploys on the 10 s cap for 311/768 street squads
+  (40 %) and 48/96 his-click squads (e7c896c8f's rows): that is the "sits 10 s"; settle traces every cap deploy before picking T1's rule.
+- **R40.5 (2026-10-24 evening) orders' traces: G1 v5's his-5 twitch is its own lay; locks 5 "outside" is a probe artifact.** (1) s6201
+  (e7c896c8f's logs): Alpha starts 29 m WEST of the click, v5's column gives it the 2nd place 34 m EAST, so it drives 62 m through Bravo's
+  halt; Bravo_2 gives way t1-t10, Bravo deploys on the cap. Fix G1 v6 `--group-sides=both` (88b413ec4, OFF): a squad > 15 m past the click
+  is laid on its own side; the untangle never hands a place across the click. (2) locks 5 s6204-6207: the probe's gate_width scan stops at
+  a floodlight's navmesh hole, counting two squads on one open quay as "outside"; the probe now reads past obstacles <= 8 m (c08d8f720;
+  `--probe-corridor=gate` = the old read; the game's gate_width callers unchanged). **Ruled:** the G1 v6 bar decides on the new read and
+  REPORTS the old read beside it for every cell (an instrument change is never judged on its own new number alone); settle's and
+  manoeuvre's bars that use orders' probe name which corridor read they judge on.
+- **R40.6 (2026-10-24 evening) Combined arms is a balance goal (his note, verbatim in game_design.md *His combined-arms note*).** He won more
+  easily with 100 % tanks. Balance adds B5: a mono-army line (all-tank v mixed, same faction, same budget) measured first; target mixed
+  beats mono ~60-65 %. Bar B2s may add ONE guard before any number on its seeds: the mono-tank line's win rate not up (the stat change
+  must not widen the all-tank edge). Counters within +/-15 %; past the bounds = his call.
+- **R40.7 (2026-10-24 evening) B2s guard G8 filed; B5's mono deal.** Bar B2s gains G8 (the mono-tank line's win share not up), filed at
+  balance 16bfd1cc6 before any bar-seed number. B5 deals mono armies in `Army.cpu_army("cpu:mono_<role>")` (C40.5; measurement only, never
+  in ARCHETYPES). **GRANT to balance:** one additive line in `game/modes/skirmish_mode.gd` (demo_flags keeps an explicit --player/--enemy
+  that starts with "cpu:mono_"); default path unchanged. The line: CPU v CPU, mono on Green one arm / Rust the other, per faction, v the
+  SAME faction's normal deal at the same budget, 8501-8510 (screening).
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 

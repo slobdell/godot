@@ -4392,3 +4392,34 @@ balance (the faction table above: any blob v a gangs CPU 72 %, v a syndicate CPU
 line. Unit stats and the CPU's army deal (`game/units/**`) don't change until he answers the balance question (pillar: fixed units; his
 Q10 "the problem is not the units, but the rules"); balance stream builds the per-unit read, a faction-aware CPU (symmetric, ships on a
 bar) and a balance-search harness in the meantime.
+
+## His answer on R1's timing (2026-10-24 evening, verbatim)
+
+Asked whether a stopped tank should keep reaching full sight ~3 s after stopping (his number was ~2 s, which pulled crews out of cover
+in scenario_cover): **"sounds fine"** -> HALT_DWELL_SECONDS stays 2.0 (full sight at ~3 s). Closed; not re-asked.
+
+## His faction-balance call (2026-10-24 evening, verbatim)
+
+Asked (player terms): when a faction keeps losing, may we change its units' numbers, A: tune a little (at most ~15 % on toughness,
+damage or price; no new abilities, no units added or removed), B: units untouched (only what the CPU buys and how each faction fights),
+C: keep factions uneven on purpose. His answer: **"yes, when a faction keeps losing, we should change its units' numbers. Obviously the
+game should be balanced. I was also going to highlight that every time I play with the gang I seem to lose. Yes let's go with A for your
+recommendation."**
+
+**So (R40.1):** unit stats may be tuned within +/-15 % of today's value on hp/armour (toughness), damage, and cost, per unit; no new
+abilities, no unit added or removed, each faction keeps its roster. The aim is a flat faction table (no faction a free win or a wall,
+charging or holding). His own play matches the table: gangs loses. Owner: balance (C40.5, no longer lead-gated within these bounds).
+
+## His combined-arms note (2026-10-24 evening, verbatim)
+
+"also, there was another element of gameplay that I tested that we might want to re-visit - I tried playing some games where I used 100%
+tanks versus the enemy, and it seemed I was able to more easily win. Should we also include game balancing to ensure that using a variety
+of units should theoretically create the advantage? This is of course related to real-world military cases where different types of
+units are supposed to augment / complement each other and make up for each others' weaknesses (I learned this studying military history
+in college). Going back to medieval times or whatever, between archers, infantry, cavalry, artillery, etc we know that each type of unit
+had strengths and weaknesses, and having a mix of unit types should protect other units' weaknesses."
+
+**Decided (orchestrator's recommendation, R40.6; he may overrule):** combined arms becomes a balance goal. Measure first (a mono-tank
+army v a mixed army of the same faction and budget, every map). Target: a well-mixed army beats an all-tank army of equal cost ~60-65 %
+of the time (mono stays playable, never the better choice). The lever is counters within R40.1's +/-15 % (anti-armour punishes a tank
+blob, tanks crush light units, MGs beat light armour); if the bounds can't build real counters, ask him before going past them.
