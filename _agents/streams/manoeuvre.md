@@ -55,6 +55,70 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### CLOSE REPORT (round 40, 2026-10-25 ~08:00 PDT)
+
+**Done:** every backlog item.
+1. **M1 v2:** built OFF; its code is on main (65a5c5b70).
+2. **Bar M1 v2:** FAIL on G5. Stays OFF; G5 traced.
+3. **M2:** report filed.
+4. **Stretch:** not built, as no cheap fix was named.
+5. **M3:** built OFF; **Bar M3 FAIL on D** (below). Stays DEFAULT_OFF as a report; no re-run on 8601-8624.
+
+**Bar M3 verdict:** FAIL.
+- Run: game code b21565b37 (GREEN builder0); series tree 8c8d9035b; builder0 light J4.
+- Both arms GDScript drive (`--brains-off=native_drive`, the orchestrator's condition).
+- A: 36 paired fights on 8601-8612. B: 144 paired runs on 8613-8624.
+
+| Line | OFF | ON | Result |
+|---|---|---|---|
+| **D** long-episode seconds | 544.1 s | 554.0 s (+1.8 %) | **FAIL** (line <= 435.3; paired +0.28 s a fight, se 5.83, 0.0 se) |
+| G1 give-way deaths | 84 | 87 | PASS |
+| G2 stuck deaths | 248 | 213 | PASS |
+| G3 friendly contact ticks | 829,543 | 820,818 | PASS |
+| G4 kill share (Green / Rust) | 0.402 / 0.598 | 0.375 / 0.625 | PASS (worst move 0.028, line 0.03) |
+| G4 deaths | 1458 | 1435 | PASS |
+| G5 never-in runs | 3 | 3 | PASS |
+| G6 all-in, paired median | | +0.0 s | PASS |
+| G7 last-in, paired mean | | +0.0 s | PASS (1 run later v 2 earlier) |
+
+- **Reported:** long episodes 65 -> 51 (fewer, as in the labs), but the seconds didn't move.
+- **ON's reroute:** 608 searches, 583,491 expansions (16 k a fight, each search whole on one tick), 271 plans, 96 driven to the end,
+  176 BUDGET + 162 NO_PATH refusals (unheld).
+- **ON's two longest (diagnosis read of the logs, not a re-judge):** both Rust_Battery2_4 (gang_artillery), sumps s8605 99.0 s and
+  terminus s8605 71.6 s.
+  - The seam never drove that crew: no planner force; ORCA slowed it for 2647 / 2085 ticks.
+  - In terminus it had ARRIVED for 2054 of 2147 ticks: a parked crew touching a parked friend, which the episode definition counts
+    as stuck.
+  - Both are the fight diverging after other crews' re-routes. Counted, as filed.
+- **Measurement note for a later bar (not an amendment):** the long-episode definition (touching, net < 0.5 m, >= 3 s) counts
+  arrived, parked crews. A "stuck while ordered to move" filter would read closer to what the player sees.
+
+**Decisions:**
+- The re-route plans only with a plan in hand: the first search is whole, inside the scan (lab 2: refused takes cost the crew its
+  unstick).
+- `reroute` (holds only) was dropped for `=any`; holds rarely have a way round.
+- Wheeled hulls only (orchestrator). Hover crews are the named gap: lab 3's 73 s outlier was a hover syn_artillery.
+
+**Known issues if anyone turns M3 on:**
+- The scan's search is unsliced: up to BUDGET expansions in one physics tick, a laptop hitch risk.
+- ON forces native_drive off: the re-route leg rule is not twinned in C++.
+- The pack-wait (a re-routed battery's leg clocks wait while deploy_ratio > 0) has no cap.
+
+**Requests:** none. The C++ twin was conditional on a pass; not filed.
+
+**Questions for the lead:** none.
+
+**Playtest commands** (both OFF by default):
+- `make skirmish ARENA=locks SKIRMISH_FLAGS="--giveway-reroute=any"` against without: squads threading a street past parked friends.
+- `--giveway-chain=v2` is M1 v2, also OFF.
+
+**Merge notes:**
+- Everything ships DEFAULT_OFF; OFF behaviour is unchanged (sim-baseline unmoved on b21565b37).
+- Files: game/ai/planner/{planner_seam,planner_nav_world}.gd (the M3 grant), game/ai/traffic.gd, movement.gd's drive (one
+  `planned_leg` gate), tests/test_traffic_reroute.gd (13 tests), tests/manoeuvre/reroute_judge.py.
+- Green: b21565b37 (builder0, 3219 / 0); the final commit's check is named below.
+- Raw data: `~/overnight-manoeuvre/r40/` (m3lab1-3, m3t7004, barm3).
+
 **Start (worker, 2026-10-24 evening):** stream/manoeuvre = main 33a2cc285 + round-40 docs (afce35a74); code = 68d0410d3, GREEN
 builder0 per HANDOFF (3176/0), so no baseline check (contract 1).
 
@@ -318,5 +382,6 @@ planned round the holder by the planner's seam.
 - **R40.13:** the series re-syncs this worktree three times: each of its three `tools/remote.sh` calls (wedge off, wedge on, probe)
   rsyncs the tree, and the judge runs from it at the end. So nothing is committed under game/ or tests/ until its `end` line; docs
   only.
+- **VERDICT: FAIL on D** (07:49 PDT; full lines in the CLOSE REPORT at the top of Status). M3 stays OFF; no re-run on these seeds.
 - **A pass** goes to the orchestrator, with the C++ twin request and the slicing, before ON ships. **A fail:** M3 stays OFF, as a
   report; no re-run on these seeds.
