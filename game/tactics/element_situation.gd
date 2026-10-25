@@ -12,7 +12,7 @@ extends RefCounted
 ##
 ## members: {"name", "position", "forward", "role", "unit", "speed", "range", "sight", "health" (0..1),
 ##           "suppression" (0..1; combat's L2 when it lands, else recent hits), "taking_fire",
-##           "since_hit" (ticks since its last hit; round 22)}
+##           "since_hit" (ticks since its last hit; round 22), "holding" (round 40: still by its own choice)}
 ## contacts: {"name", "position", "role", "unit", "visible", "age" (ticks since this element FIRST knew of it:
 ##           a small age means it appeared from nowhere, which is what makes an ambush an ambush), "distance"
 ##           (from the element's centre), "bearing_deg" (+ = right), "strength", "speed", "velocity" (flat, m/s, as
@@ -67,6 +67,9 @@ static func terrain_point(center: Vector3, state: Dictionary) -> Vector3:
 	if HALT_TERRAIN == "anchor" and bool(state.get("arrived", false)) and state.get("anchor") is Vector3:
 		return state["anchor"]
 	return center
+## A member counts as `holding` below this asked throttle and this real flat speed (Tank.DEPLOY_MAX_SPEED's stop).
+const HOLD_THROTTLE := 0.05
+const HOLD_SPEED_MPS := 0.3
 ## Fallback suppression when combat's L2 field isn't in this build yet: a unit hit this recently reads as
 ## suppressed, fading to 0 over FIRE_TICKS.
 const HIT_SUPPRESSION := 0.6
@@ -99,7 +102,11 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 				"since_hit": tank.ticks_since_hit,
 				# Round 23 (B3): hull + shield left as a share of their maxima (UnansweredFire's damage-rate read).
 				"left": clampf((float(tank.health) + tank.shield) / maxf(float(tank.max_health) + tank.max_shield, 1.0),
-						0.0, 1.0)})
+						0.0, 1.0),
+				# Round 40 (settle T1): standing still by its own choice (no throttle asked, really not moving), the deploy's
+				# near read (ElementPlan.DEPLOY_ARRIVE_NEAR).
+				"holding": absf(tank.command.throttle) < HOLD_THROTTLE
+						and Vector2(tank.real_velocity.x, tank.real_velocity.z).length() < HOLD_SPEED_MPS})
 		center += _flat(tank.global_position)
 		strength += float(tank.health) + tank.shield
 	if not members.is_empty():

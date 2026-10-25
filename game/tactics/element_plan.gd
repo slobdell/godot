@@ -1970,6 +1970,29 @@ static func _trace_redeal(plan: Dictionary, situation: Dictionary, deploy: Dicti
 			"cause": "loss" if lost else "other", "moved": moved}))
 
 
+## T1 (round 40, settle; orders' G1 v5 trace, builder0 e7c896c8f, terminus his-5 click, all 12 seeds): A CREW HOLDING NEAR
+## ITS SEAT COUNTS AS IN. The all-in test reads max(ORDER_ARRIVE 3.5 m, settle radius); the brain stops short of that on its
+## own (Bravo_2 to HOLD 3.83 m off its travel seat) and the squad waited out DEPLOY_CAP_S, then dealt the halt on crews
+## parked ~7 s: a 28.4 m twitch. Here a crew HOLDING (ElementSituation's `holding`: no throttle asked, really still) for
+## DEPLOY_NEAR_HOLD_TICKS without a break, within DEPLOY_NEAR_M of the seat it was sent to, counts as in; a crew still
+## rolling, or holding farther out, does not. OFF until judged: `--deploy-arrive=near` (env DEPLOY_ARRIVE=near) opts in.
+static var DEPLOY_ARRIVE_NEAR := OS.get_cmdline_user_args().has("--deploy-arrive=near") or OS.get_environment("DEPLOY_ARRIVE") == "near"
+const DEPLOY_NEAR_M := 5.0
+const DEPLOY_NEAR_HOLD_TICKS := SimClock.TICK_RATE / 2
+
+
+## The tick each crew of `situation` began holding without a break (name -> tick), kept in `deploy["still"]`; a crew not
+## holding this update is dropped (its clock restarts).
+static func _deploy_still(deploy: Dictionary, situation: Dictionary, tick: int) -> Dictionary:
+	var was: Dictionary = deploy.get("still", {})
+	var still := {}
+	for member: Dictionary in situation.get("members", []):
+		if bool(member.get("holding", false)):
+			still[String(member["name"])] = int(was.get(String(member["name"]), tick))
+	deploy["still"] = still
+	return still
+
+
 ## D3b (R35.41): a packed squad's last stretch in a file (OFF; `--arrive-file=on` / env ARRIVE_FILE=on opts in).
 static var ARRIVE_FILE := OS.get_cmdline_user_args().has("--arrive-file=on") or OS.get_environment("ARRIVE_FILE") == "on"
 
@@ -1993,19 +2016,33 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 		return deploy
 	var issued: Dictionary = state.get("issued_slots", {})
 	var all_in := not issued.is_empty()
+	var tick := int(situation.get("tick", 0))
+	var still: Dictionary = _deploy_still(deploy, situation, tick) if DEPLOY_ARRIVE_NEAR else {}
+	var near := 0
 	for member: Dictionary in situation.get("members", []):
 		var seat: Variant = issued.get(String(member["name"]))
 		var radius := maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(String(member.get("unit", ""))))
-		if not (seat is Vector3) or Vector2((member["position"] as Vector3).x - (seat as Vector3).x,
-				(member["position"] as Vector3).z - (seat as Vector3).z).length() > radius:
+		if not (seat is Vector3):
 			all_in = false
 			break
-	var tick := int(situation.get("tick", 0))
+		var off := Vector2((member["position"] as Vector3).x - (seat as Vector3).x,
+				(member["position"] as Vector3).z - (seat as Vector3).z).length()
+		if off <= radius:
+			continue
+		if DEPLOY_ARRIVE_NEAR and off <= maxf(DEPLOY_NEAR_M, radius) and still.has(String(member["name"])) \
+				and tick - int(still[String(member["name"])]) >= DEPLOY_NEAR_HOLD_TICKS:
+			near += 1
+			continue
+		all_in = false
+		break
 	var waited := int(state.get("arrived_tick", -1)) >= 0 and tick - int(state["arrived_tick"]) >= int(DEPLOY_CAP_S * SimClock.TICK_RATE)
 	if all_in or waited:
 		deploy["deployed"] = true
 		deploy["tick"] = tick
 		deploy["cause"] = "all_in" if all_in else "cap"
+		if DEPLOY_ARRIVE_NEAR:
+			deploy["near"] = near if all_in else 0
+			deploy.erase("still")
 		# D1 (round 35, the ship check): within DEPLOY_ON_SPOT_M of the spot it was sent to, the halt stands ON that spot
 		# (the scenarios' "every formation stands on the spot it was sent to": B8b's centred lay left anchors 1.5-9.5 m
 		# off); a squad that deployed on the cap far short of it stands where it is (B8b).
