@@ -305,6 +305,68 @@ def score(raw: list[Path], base: list[Path] | None) -> dict:
     return report
 
 
+# ---- B5 / G8: the mono line -----------------------------------------------------------------------------------------
+
+MONO_DIR = re.compile(r"mono-(?:.*-)?(?P<faction>condemned|gangs|law|syndicate)-(?P<team>player|enemy)$")
+
+
+def read_mono(root: Path, match: str = "") -> dict:
+    """(faction, team, arena, seed) -> {"mono_won": 0|1, "mono_units", "mixed_units", "seconds"} from every
+    <...>mono-<faction>-<player|enemy> folder under `root` (guard none; the green-side log only: the none line's two
+    guard sides are the same fight)."""
+    out = {}
+    for d in sorted(p for p in root.iterdir() if p.is_dir()):
+        m = MONO_DIR.search(d.name)
+        if not m or match not in d.name:
+            continue
+        mono_team = "green" if m["team"] == "player" else "rust"
+        for log in sorted((d / "none").glob("*-green.log")):
+            lm = LOG.match(log.name)
+            for line in log.read_text(errors="replace").splitlines():
+                if line.startswith("GUARD_RESULT "):
+                    r = json.loads(line[len("GUARD_RESULT "):])
+                    other = "rust" if mono_team == "green" else "green"
+                    out[(m["faction"], m["team"], lm["arena"], int(lm["seed"]))] = {
+                        "mono_won": 1 if r["winner"].lower() == mono_team else 0,
+                        "mono_units": r["tanks"][mono_team], "mixed_units": r["tanks"][other], "seconds": r["seconds"]}
+                    break
+    return out
+
+
+def mono_report(root: Path, match: str = "", base_match: str | None = None) -> dict:
+    arm = read_mono(root, match)
+    rows = {}
+    print(f"BALANCE_MONO fights={len(arm)} (mono-tank army v its own faction's deal, equal budget, CPU v CPU)")
+    for faction in FACTIONS + ["all"]:
+        keys = [k for k in arm if faction in ("all", k[0])]
+        if not keys:
+            continue
+        won = sum(arm[k]["mono_won"] for k in keys) / len(keys)
+        by_team = {t: [arm[k]["mono_won"] for k in keys if k[1] == t] for t in ("player", "enemy")}
+        units = (sum(arm[k]["mono_units"] for k in keys) / len(keys), sum(arm[k]["mixed_units"] for k in keys) / len(keys))
+        seeds = defaultdict(list)
+        for k in keys:
+            seeds[k[3]].append(arm[k])
+        se = bootstrap(seeds, lambda fs: 100 * sum(f["mono_won"] for f in fs) / len(fs)) if len(seeds) > 1 else float("nan")
+        line = (f"  {faction:10} mono wins {100 * won:3.0f} % (n {len(keys)}, se {se:.0f}) | on Green "
+                + " ".join(f"{t}={100 * sum(v) / len(v):.0f}%" for t, v in by_team.items() if v)
+                + f" | units mono {units[0]:.1f} v mixed {units[1]:.1f}")
+        rows[faction] = {"won": won, "n": len(keys), "se": se, "units": units}
+        if base_match is not None:
+            b = read_mono(root, base_match)
+            paired = [(b[k]["mono_won"], arm[k]["mono_won"], k[3]) for k in keys if k in b]
+            if paired:
+                ps = defaultdict(list)
+                for bw, aw, seed in paired:
+                    ps[seed].append((bw, aw))
+                change = 100 * sum(aw - bw for bw, aw, _ in paired) / len(paired)
+                cse = bootstrap(ps, lambda xs: 100 * sum(a - b for b, a in xs) / len(xs)) if len(ps) > 1 else float("nan")
+                line += f" | paired v base {change:+.0f} (se {cse:.0f}, n {len(paired)})"
+                rows[faction]["change"], rows[faction]["change_se"] = change, cse
+        print(line)
+    return rows
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--catalog", type=Path)
@@ -323,12 +385,19 @@ def main(argv=None) -> int:
     p.add_argument("--tag", help="folder tag (default bal-<name>); GUARD_ARGS / GUARD_KINDS pass through the environment")
     p = sub.add_parser("apply")
     p.add_argument("cand", type=Path)
+    p = sub.add_parser("mono")
+    p.add_argument("root", type=Path, help="the folder holding <commit>-<tag>mono-<faction>-<player|enemy>/ runs")
+    p.add_argument("--match", default="", help="only folders whose name contains this (e.g. -mono-base-)")
+    p.add_argument("--base-match", help="pair with the folders whose name contains this")
     p = sub.add_parser("score")
     p.add_argument("raw", nargs="+", type=Path)
     p.add_argument("--base", nargs="+", type=Path)
     p.add_argument("--json", type=Path)
     args = ap.parse_args(argv)
 
+    if args.cmd == "mono":
+        mono_report(args.root, args.match, args.base_match)
+        return 0
     if args.cmd == "score":
         report = score(args.raw, args.base)
         if args.json:
