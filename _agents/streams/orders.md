@@ -152,6 +152,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   `references/round40/orders/g3v9-dev1-builder2-9076ee2f8/`): **pairs < 12 m 25 -> 6 (<= 6.2), PASS**; places_cleared
   20; never-in 1 -> 1; 18 probe cells (twitch included) pass; worst +24.0 m (0 of 432 > 40 m); contacts 7183 -> 6801;
   route_left_m 6000 -> 5734. The streets part was preempted once (Spot, exit 255) and re-ran whole.
+- **GREEN: 893180a31** (code 9076ee2f8; builder0 `make native check exited 0`, 25 passed, 2 NOT JUDGED: perf-judge refused
+  3 times on a busy box at 2.08-2.27x, scenario_perf unpinned). **Bar G3 v9 running** from the frozen tree
+  `/home/slobdell/projects/godot-orders-g3v9` (893180a31) on builder0 light J4, 8213-8224
+  (`~/overnight-orders/barg3v9-893180a31`).
 - **Full check of 8bbafb376 (builder0, load ~10): `make native check exited 0`, 25 passed, 2 NOT JUDGED** (perf-judge
   refused 3 times on a busy box, 1.52-1.84x; scenario_perf unpinned on the hybrid). Green: the G1 v6 series' tree.
 - **CP40.1 on main (orchestrator, 2026-10-25):** main 9d5907ddd = settle's cab85debf (T1 `--deploy-arrive=settled` ON)
