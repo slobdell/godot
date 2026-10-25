@@ -108,6 +108,14 @@ brief's per-run costs (traffic 1.75 min, hull-rest 2.5, fights 3.5, Terminus 4, 
 | arrive series (100 cells) | cells within 8 m | count-cells | – | – | – | 100 | – | >= control - 1; 100/100 v 89/100 (B5c), 99 v 91 (B5c-v4), 95 v 88 (B2 v5), 97 v 93 (B3); 90 v 97 (B3b-2b, r31, FAILED); 90 = 90, 93 = 93 (B3b-2c, B10, r32: identical cells) | – | see *Count lines* / A/A | – | – | – |
 | arrive series (100 cells) | all-within-8 m s, cells complete in both arms | median | 13.68 | 29.43 | 0.00 | 91 | 1.01 | median no slower than +2 % (B5c-v4: 29.6 -> 24.5 s over 91 complete pairs; B3b-2b r31 28.9 -> 28.1 over 88; reported since) | 0.589 (2 %) | **> 1000 (not affordable)** | 2.52 (9 %) | base ± 1.67 | 218 → 4013 |
 | bridge-pooled (18 cells) / his bridge 108 | cells passed | deterministic | – | – | – | 18 | – | 18/18; 108/108 | – | see *Count lines* / A/A | – | – | – |
+| guard line, blob (a fight) | win | mean | 0.414 | 0.472 | 0.00 | 160 | 0.0327 | the guard's win share: a 4-point move (D2c / D3's sizing) | 0.04 (8 %) | **662** | 0.0814 (17 %) | base ± 0.0538 | 1056 → 4369 |
+| guard line, blob (a fight) | kills | mean | 5.55 | 20.12 | 0.00 | 160 | 0.439 | the guard's kills a fight within 2 se (G2t); sized for 5 % | 1.01 (5 %) | **189** | 1.09 (5 %) | base ± 0.722 | 1056 → 1247 |
+| guard line, blob (a fight) | losses | mean | 4.84 | 23.25 | 0.00 | 160 | 0.383 | the guard's losses a fight; sized for 5 % | 1.16 (5 %) | **108** | 0.952 (4 %) | base ± 0.63 | 1056 → 713 |
+| guard line, blob (a fight) | seconds | mean | 47.92 | 116.53 | 0.00 | 160 | 3.79 | fight length (G2's median, read as a mean here); sized for 10 % | 11.65 (10 %) | **105** | 9.42 (8 %) | base ± 6.23 | 1056 → 693 |
+| guard line, turtle (a fight) | win | mean | 0.415 | 0.403 | 0.00 | 160 | 0.0328 | the guard's win share: a 4-point move (D2c / D3's sizing) | 0.04 (10 %) | **666** | 0.0816 (20 %) | base ± 0.054 | 1056 → 4396 |
+| guard line, turtle (a fight) | kills | mean | 5.34 | 14.24 | 0.00 | 160 | 0.423 | the guard's kills a fight within 2 se (G2t); sized for 5 % | 0.712 (5 %) | **349** | 1.05 (7 %) | base ± 0.695 | 1056 → 2303 |
+| guard line, turtle (a fight) | losses | mean | 6.22 | 17.60 | 0.00 | 160 | 0.492 | the guard's losses a fight; sized for 5 % | 0.88 (5 %) | **310** | 1.22 (7 %) | base ± 0.809 | 1056 → 2046 |
+| guard line, turtle (a fight) | seconds | mean | 65.32 | 169.26 | 0.00 | 160 | 5.16 | fight length (G2's median, read as a mean here); sized for 10 % | 16.93 (10 %) | **93** | 12.84 (8 %) | base ± 8.49 | 1056 → 614 |
 <!-- judge:table:end -->
 
 **What the table says, in four lines.**
@@ -713,3 +721,20 @@ copy T8's (`round36/traffic` `references/round36/traffic/t8_series_a2de32420/`) 
 (+0.50), T10's deploy_s guard (+1.21) and its deciding line (−0.59: a miss of a little over half an se, R36.23), S1's team-0 kills
 guard (−0.32), S2a's far-loops line (+0.74). Clear by more: T8's deciding line (+5.12), S2a's rebuilt unstick line (+2.83),
 S1's unstick guard (−2.02, a clear fail). Counts and cells (O2, X3b) carry no se.
+
+## Round 40 re-render: rounds 37-39's judged lines and the guard-line probe (2026-10-24, native, close step 5b owed since round 37)
+
+`tools/judge/lines_r37.py`, `lines_r38.py`, `lines_r39.py`: 87 lines (37: 25, 38: 39, 39: 23), every number quoted from the
+rulings in `_agents/workstreams.md` (nothing re-measured); `inventory.py` -> `references/round40/native/sizing/inventory.{csv,md}`
+(507 lines, 256 with a noise estimate). Of the 26 new lines with a printed se, none is inside its own noise; the verdicts that
+sat within 1.645 se of going the other way: M5a's deciding PASS (+0.34 se, R37.30), M5 v2's deciding FAIL (-0.37 se, R38.24),
+every doctrine / rules / cover blob win-rate line (-0.5 to -1.8 se at 160 blob fights; D3 at 800: -2.2 se), Bar K's turtle
+guard (+1.45), O1's CPU contacts guard (-0.93), S3's his-losses guard (-1.03).
+
+**New in the table: the guard line, per fight** (`probes.py` *guard line, blob / turtle (a fight)*): the paired sd of a fight's
+win (0/1), kills, losses and length across two pairs of guard bases on main over the same 320 fights (9d325e291 -> 1c484a525,
+686150ed2 -> 8952c3d64; `references/scoreboard/guards/`). At 160 fights a line the blob's win share reads se 3.3 points (the
+rulings printed 2.9-3.8) and a 4-point move needs ~660 fights a line (D3's powered 800 was right; balance's B-series bars should
+size from this row). The win share keeps the fights that don't flip (they are the noise of a 0/1); fights inside a seed are taken as
+independent here, so a bar's per-seed se is the stricter read. Cost 3.3 core-minutes a fight (R39.1's series). Judge tests 12/12
+in test_table (laptop).

@@ -216,6 +216,12 @@ if [ ! -x ~/$root/.tools/node/bin/node ]; then
 	curl -fsSL https://nodejs.org/dist/$node_version/node-$node_version-linux-x64.tar.xz | tar -xJ --strip-components=1 -C ~/$root/.tools/node
 fi
 export PATH=~/$root/.tools/node/bin:\$PATH
+# Round 40 (native): builder0 died of a global OOM (2026-10-24 22:04-22:20 PDT, 15 GB + 4 GB swap: 30 python processes held
+# 13.6 GB). The kernel picks by rss plus oom_score_adj, and the desktop runs at +200, ours at 0, so it killed a terminal, the
+# indexer and gnome bits (a few MB each) five times, freed nothing and the box thrashed until it was powered off. Every remote
+# job (and what it starts: the value is inherited) raises its own to REMOTE_OOM_ADJ (500; unprivileged may raise it), so under
+# pressure the kernel kills a build process, which fails one target, before it freezes the box. 0 restores the old order.
+echo ${REMOTE_OOM_ADJ:-500} > /proc/self/oom_score_adj 2>/dev/null || true
 export TANK_SQUAD_SLOTS=$slots
 export TANK_SQUAD_QUIET=$quiet
 export TANK_SQUAD_LIGHT=$light

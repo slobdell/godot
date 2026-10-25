@@ -1903,6 +1903,7 @@ static func _trace_deploy(plan: Dictionary, situation: Dictionary, stand: Vector
 			"latch_capped": bool((plan.get("deploy", {}) as Dictionary).get("latch_capped", false)),
 			"fit": (plan.get("deploy", {}) as Dictionary).get("fit", {}),
 			"cleared": int((plan.get("deploy", {}) as Dictionary).get("cleared", 0)),
+			"waited": int((plan.get("deploy", {}) as Dictionary).get("waited", 0)),
 			"clear_of": _trace_clear_of((plan.get("deploy", {}) as Dictionary).get("clear_of", {})), "crews": crews}))
 
 
@@ -1970,6 +1971,89 @@ static func _trace_redeal(plan: Dictionary, situation: Dictionary, deploy: Dicti
 			"cause": "loss" if lost else "other", "moved": moved}))
 
 
+## T1 (round 40, settle; orders' G1 v5 trace, builder0 e7c896c8f, terminus his-5 click, all 12 seeds): A CREW HOLDING NEAR
+## ITS SEAT COUNTS AS IN. The all-in test reads max(ORDER_ARRIVE 3.5 m, settle radius); the brain stops short of that on its
+## own (Bravo_2 to HOLD 3.83 m off its travel seat) and the squad waited out DEPLOY_CAP_S, then dealt the halt on crews
+## parked ~7 s: a 28.4 m twitch. Here a crew HOLDING (ElementSituation's `holding`: no throttle asked, really still) for
+## DEPLOY_NEAR_HOLD_TICKS without a break, within DEPLOY_NEAR_M of the seat it was sent to, counts as in; a crew still
+## rolling, or holding farther out, does not (`--deploy-arrive=near`).
+##
+## "settled" (after the lab: near moved nothing on his-5 click, and main deploys on the cap for ~40 % of squads; the cap
+## trace, builder0 1327f85ef+, dev 6001-6002 x 12 street cells, 40 cap deploys: a crew that WAS in and drifted off kept the
+## squad out in 25, a crew still driving in 18, one holding 5-25 m in 14, one holding within 5 m in 8): a crew is settled
+## when it is in, or was in since the arrival and stands within DEPLOY_REACHED_M, or has held DEPLOY_NEAR_HOLD_TICKS within
+## DEPLOY_SETTLED_NEAR_M; every crew settled is all in; and once at least half the squad is settled and that count stands
+## DEPLOY_SETTLED_WAIT_S with every crew still out within DEPLOY_STRAGGLER_M, the halt is laid (cause "settled") and the
+## crews still out drive straight to their halt seats.
+## `--deploy-arrive=settled|near|off` (env DEPLOY_ARRIVE). "settled" ON since Bar T1 passed (round 40, builder0 light J4,
+## afd436ca3's code, seeds 8001-8012: cap deploys 265 -> 83 of 576 squads, arrival to deploy 6.26 -> 4.42 s, every guard
+## held; references/round40/settle/t1-bar-builder0/). `=off` (""): the all-in-or-cap rule.
+static var DEPLOY_ARRIVE := _deploy_arrive_flag()
+const DEPLOY_NEAR_M := 5.0
+const DEPLOY_NEAR_HOLD_TICKS := SimClock.TICK_RATE / 2
+const DEPLOY_REACHED_M := 10.0
+const DEPLOY_SETTLED_NEAR_M := 7.5
+const DEPLOY_SETTLED_WAIT_S := 2.0
+## ... and only while every crew still out stands within this of its travel seat. Traced (lab 2, builder0 754fee377, terminus
+## 5 route s6003, dev): Bravo laid its halt 4 s after arriving with Bravo_1 ~21 m out; its 21.7 m drive to its halt seat
+## crossed the street Echo still had to drive, and Echo never got in (main waited for Bravo_1 and Echo was in at 81.6 s).
+## At main's cap deploys the crews still out stand 3.7-34.6 m off, 58 of 87 squads' worst within 12 m.
+const DEPLOY_STRAGGLER_M := 12.0
+
+
+static func _deploy_arrive_flag() -> String:
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with("--deploy-arrive="):
+			return _deploy_arrive_mode(arg.trim_prefix("--deploy-arrive="))
+	var env := OS.get_environment("DEPLOY_ARRIVE")
+	return _deploy_arrive_mode(env if env != "" else "settled")
+
+
+static func _deploy_arrive_mode(asked: String) -> String:
+	return "" if asked == "off" else asked
+
+
+## Measurement (T1, under --deploy-trace): a near deploy that fired on the cap prints each crew's distance off its travel
+## seat, its `holding` read, how long it has held and whether it was ever in since the arrival: ARRIVE_TRACE {"tick",
+## "leader", "crews": {name: [off m, holding, ticks, reached, intent]}}. Every cap deploy under --deploy-trace, either arm.
+static func _trace_arrive(situation: Dictionary, issued: Dictionary, still: Dictionary, reached: Dictionary, tick: int) -> void:
+	var crews := {}
+	for member: Dictionary in situation.get("members", []):
+		var n := String(member["name"])
+		var seat: Variant = issued.get(n)
+		var off := -1.0 if not (seat is Vector3) else Vector2((member["position"] as Vector3).x - (seat as Vector3).x,
+				(member["position"] as Vector3).z - (seat as Vector3).z).length()
+		crews[n] = [snappedf(off, 0.01), bool(member.get("holding", false)), tick - int(still.get(n, tick)), reached.has(n),
+				str(member.get("intent", "")).get_slice(" ", 0)]
+	print("ARRIVE_TRACE ", JSON.stringify({"tick": tick, "leader": String(situation.get("leader", "")), "crews": crews}))
+
+
+## The crews of `situation` that have stood in (within the all-in radius of the seat they were sent to) at any update since
+## the arrival, kept in `deploy["reached"]` (name -> true).
+static func _deploy_reached(deploy: Dictionary, situation: Dictionary, issued: Dictionary) -> Dictionary:
+	var reached: Dictionary = (deploy.get("reached", {}) as Dictionary).duplicate()
+	for member: Dictionary in situation.get("members", []):
+		var seat: Variant = issued.get(String(member["name"]))
+		if seat is Vector3 and Vector2((member["position"] as Vector3).x - (seat as Vector3).x,
+				(member["position"] as Vector3).z - (seat as Vector3).z).length() \
+				<= maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(String(member.get("unit", "")))):
+			reached[String(member["name"])] = true
+	deploy["reached"] = reached
+	return reached
+
+
+## The tick each crew of `situation` began holding without a break (name -> tick), kept in `deploy["still"]`; a crew not
+## holding this update is dropped (its clock restarts).
+static func _deploy_still(deploy: Dictionary, situation: Dictionary, tick: int) -> Dictionary:
+	var was: Dictionary = deploy.get("still", {})
+	var still := {}
+	for member: Dictionary in situation.get("members", []):
+		if bool(member.get("holding", false)):
+			still[String(member["name"])] = int(was.get(String(member["name"]), tick))
+	deploy["still"] = still
+	return still
+
+
 ## D3b (R35.41): a packed squad's last stretch in a file (OFF; `--arrive-file=on` / env ARRIVE_FILE=on opts in).
 static var ARRIVE_FILE := OS.get_cmdline_user_args().has("--arrive-file=on") or OS.get_environment("ARRIVE_FILE") == "on"
 
@@ -1993,19 +2077,55 @@ static func _deploy_state(plan: Dictionary, situation: Dictionary, state: Dictio
 		return deploy
 	var issued: Dictionary = state.get("issued_slots", {})
 	var all_in := not issued.is_empty()
-	for member: Dictionary in situation.get("members", []):
-		var seat: Variant = issued.get(String(member["name"]))
-		var radius := maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(String(member.get("unit", ""))))
-		if not (seat is Vector3) or Vector2((member["position"] as Vector3).x - (seat as Vector3).x,
-				(member["position"] as Vector3).z - (seat as Vector3).z).length() > radius:
-			all_in = false
-			break
 	var tick := int(situation.get("tick", 0))
+	var reads := DEPLOY_ARRIVE != "" or DEPLOY_TRACE
+	var still: Dictionary = _deploy_still(deploy, situation, tick) if reads else {}
+	var reached: Dictionary = _deploy_reached(deploy, situation, issued) if reads else {}
+	var near := 0
+	var settled := 0
+	var straggler_m := 0.0
+	var members: Array = situation.get("members", [])
+	for member: Dictionary in members:
+		var n := String(member["name"])
+		var seat: Variant = issued.get(n)
+		var radius := maxf(TankBrain.ORDER_ARRIVE, Movement.settle_radius(String(member.get("unit", ""))))
+		if not (seat is Vector3):
+			all_in = false
+			continue
+		var off := Vector2((member["position"] as Vector3).x - (seat as Vector3).x,
+				(member["position"] as Vector3).z - (seat as Vector3).z).length()
+		var held := still.has(n) and tick - int(still[n]) >= DEPLOY_NEAR_HOLD_TICKS
+		if off <= radius:
+			settled += 1
+		elif DEPLOY_ARRIVE == "near" and held and off <= maxf(DEPLOY_NEAR_M, radius):
+			near += 1
+			settled += 1
+		elif DEPLOY_ARRIVE == "settled" and ((reached.has(n) and off <= DEPLOY_REACHED_M)
+				or (held and off <= maxf(DEPLOY_SETTLED_NEAR_M, radius))):
+			near += 1
+			settled += 1
+		else:
+			all_in = false
+			straggler_m = maxf(straggler_m, off)
+	# "settled": at least half the squad settled, unchanged for DEPLOY_SETTLED_WAIT_S, lays the halt; the rest drive to it.
+	var settled_out := false
+	if DEPLOY_ARRIVE == "settled" and not all_in:
+		var enough := not members.is_empty() and settled * 2 >= members.size() and straggler_m <= DEPLOY_STRAGGLER_M
+		if not enough or int(deploy.get("settled_count", -1)) != settled:
+			deploy["settled_since"] = tick
+		deploy["settled_count"] = settled if enough else -1
+		settled_out = enough and tick - int(deploy["settled_since"]) >= int(DEPLOY_SETTLED_WAIT_S * SimClock.TICK_RATE)
 	var waited := int(state.get("arrived_tick", -1)) >= 0 and tick - int(state["arrived_tick"]) >= int(DEPLOY_CAP_S * SimClock.TICK_RATE)
-	if all_in or waited:
+	if all_in or settled_out or waited:
 		deploy["deployed"] = true
 		deploy["tick"] = tick
-		deploy["cause"] = "all_in" if all_in else "cap"
+		deploy["cause"] = "all_in" if all_in else ("settled" if settled_out else "cap")
+		if DEPLOY_ARRIVE != "":
+			deploy["near"] = near if all_in or settled_out else 0
+		if DEPLOY_TRACE and not all_in:
+			_trace_arrive(situation, issued, still, reached, tick)
+		for key: String in ["still", "reached", "settled_since", "settled_count"]:
+			deploy.erase(key)
 		# D1 (round 35, the ship check): within DEPLOY_ON_SPOT_M of the spot it was sent to, the halt stands ON that spot
 		# (the scenarios' "every formation stands on the spot it was sent to": B8b's centred lay left anchors 1.5-9.5 m
 		# off); a squad that deployed on the cap far short of it stands where it is (B8b).
@@ -2378,7 +2498,20 @@ static func _unit_of(members: Array, name: String) -> String:
 ## seat, moves to the nearest clear seat (DeployPassers.clear_seat: out of what blocks it, else back along the squad's
 ## arrival leg); none found, it stays. Every shape, every heading. `--seat-route-clear` (env SEAT_ROUTE_CLEAR=on) opts in.
 static var SEAT_ROUTE_CLEAR := OS.get_cmdline_user_args().has("--seat-route-clear") \
-		or OS.get_cmdline_user_args().has("--seat-route-clear=on") or OS.get_environment("SEAT_ROUTE_CLEAR") == "on"
+		or OS.get_cmdline_user_args().has("--seat-route-clear=on") or OS.get_environment("SEAT_ROUTE_CLEAR") == "on" \
+		or DeployPassers.CREW_CORRIDORS
+## S1 v3 (round 40, settle; round 39's time trace, `references/round39/settle/s1-time-trace-builder0/`): (a) the ground is
+## each passing crew's own drive (DeployPassers.crew_routes), not one centre line (cause A); (b) a blocked seat moves only
+## where the crew's leg to it is fit (DeployPassers.leg_clear: at most one spacing, or past that never within a live
+## corridor; cause B, the cleared leg met the passer head-on); (c) with no fit seat, the crew WAITS where it stood at the
+## deploy, its seat kept, and takes it once the ground there reads clear (re-read every WAIT_CHECK_TICKS) or WAIT_MAX_S
+## after the deploy. `--seat-route-clear=v3` (env SEAT_ROUTE_CLEAR=v3) opts in; it sets DeployPassers.CREW_CORRIDORS.
+static var SEAT_ROUTE_CLEAR_V3 := DeployPassers.CREW_CORRIDORS
+const WAIT_CHECK_TICKS := SimClock.TICK_RATE
+const WAIT_MAX_S := 30.0
+## Measurement: crews sent to wait at a deploy, and waits released, since start.
+static var route_seats_waited := 0
+static var route_waits_released := 0
 ## Measurement: seats moved clear on deploys' own updates, and seats found blocked with no clear seat, since start.
 static var route_seats_cleared := 0
 static var route_seats_unclear := 0
@@ -2401,15 +2534,28 @@ static func _route_clear(plan: Dictionary, deploy: Dictionary, situation: Dictio
 	var names: Array = plan["slots"].keys()
 	names.sort()
 	var moved := {}
+	var positions := {}
+	for member: Dictionary in situation.get("members", []):
+		positions[String(member["name"])] = member["position"]
+	var waits: Dictionary = deploy.get("waits", {})
+	if SEAT_ROUTE_CLEAR_V3 and not waits.is_empty():
+		_release_waits(deploy, situation, grounder, anchor, units)
+		waits = deploy.get("waits", {})
 	for unit_name: String in names:
 		var seat: Variant = plan["slots"][unit_name]
 		if not (seat is Vector3):
 			continue
+		if waits.has(unit_name) and ((waits[unit_name] as Array)[0] as Vector3).distance_to(seat) <= 0.01:
+			moved[unit_name] = (waits[unit_name] as Array)[1]
+			continue
 		var unit := String(units.get(unit_name, "tank"))
 		var ground := func(p: Vector3) -> Vector3:
 			return (grounder as Callable).call(p, unit, anchor) if grounder is Callable else p
+		var from: Variant = positions.get(unit_name)
 		var ok := func(p: Vector3) -> bool:
-			return not SlotGround.over_water(p) and SlotGround.on_anchor_side(p, anchor).distance_to(p) <= 0.5
+			if SlotGround.over_water(p) or SlotGround.on_anchor_side(p, anchor).distance_to(p) > 0.5:
+				return false
+			return not SEAT_ROUTE_CLEAR_V3 or not (from is Vector3) or DeployPassers.leg_clear(from, ground.call(p), passers, spacing)
 		var others: Array = []
 		for other: String in names:
 			if other != unit_name and plan["slots"][other] is Vector3:
@@ -2428,6 +2574,12 @@ static func _route_clear(plan: Dictionary, deploy: Dictionary, situation: Dictio
 		if clear == null:
 			if first:
 				route_seats_unclear += 1
+			if SEAT_ROUTE_CLEAR_V3 and first and positions.get(unit_name) is Vector3:
+				var stood: Vector3 = positions[unit_name]
+				waits[unit_name] = [seat, Vector3(stood.x, 0.0, stood.z)]
+				deploy["waits"] = waits
+				moved[unit_name] = waits[unit_name][1]
+				route_seats_waited += 1
 			continue
 		if (clear as Vector3).distance_to(seat) > 0.01:
 			moved[unit_name] = clear
@@ -2437,8 +2589,42 @@ static func _route_clear(plan: Dictionary, deploy: Dictionary, situation: Dictio
 		if order is Dictionary:
 			order["to"] = moved[unit_name]
 	if first:
-		route_seats_cleared += moved.size()
-		deploy["cleared"] = moved.size()
+		route_seats_cleared += moved.size() - waits.size()
+		deploy["cleared"] = moved.size() - waits.size()
+		deploy["waited"] = waits.size()
+
+
+## S1 v3 (c): every WAIT_CHECK_TICKS, a waiting crew takes its kept seat once that seat stands clear of the ground read
+## NOW (DeployPassers.of, the passers gone by), or WAIT_MAX_S after the deploy whatever it reads. Its kept answer becomes the
+## seat itself, and a held halt (DEPLOY_HOLD) keeps that seat from then on.
+static func _release_waits(deploy: Dictionary, situation: Dictionary, grounder: Variant, anchor: Vector3, units: Dictionary) -> void:
+	var tick := int(situation.get("tick", 0))
+	if tick < int(deploy.get("wait_next", 0)):
+		return
+	deploy["wait_next"] = tick + WAIT_CHECK_TICKS
+	var expired := tick - int(deploy.get("tick", tick)) >= int(WAIT_MAX_S * SimClock.TICK_RATE)
+	var read: Variant = situation.get("passers")
+	var now: Dictionary = {} if expired or not (read is Callable) else (read as Callable).call()
+	var waits: Dictionary = (deploy["waits"] as Dictionary).duplicate()
+	var answers: Dictionary = deploy.get("clear_moves", {})
+	var names: Array = waits.keys()
+	names.sort()
+	for unit_name: String in names:
+		var seat: Vector3 = waits[unit_name][0]
+		var stands: Vector3 = (grounder as Callable).call(seat, String(units.get(unit_name, "tank")), anchor) \
+				if grounder is Callable else seat
+		if not expired and not DeployPassers.blocking(stands, now).is_empty():
+			continue
+		waits.erase(unit_name)
+		answers[unit_name] = [seat, seat]
+		route_waits_released += 1
+		var held: Variant = (deploy.get("held", {}) as Dictionary).get(unit_name)
+		if held is Dictionary:
+			held["slot"] = seat
+			if held["order"] is Dictionary:
+				held["order"]["to"] = seat
+	deploy["waits"] = waits
+	deploy["clear_moves"] = answers
 
 
 ## C37.4's seam: cover's `TacticalQuery.low_cover_seat(map, near, threat_dir, max_shift_m, hull, node)` (cover's K3, on

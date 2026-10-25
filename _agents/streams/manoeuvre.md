@@ -31,10 +31,12 @@ see today: a parked crew pushed off its seat by a passing friend keeps giving wa
 3. **M2 the long ORCA episodes (round 39's unrun stretch):** `make native manoeuvre-wedge-trace WEDGE_AT=locks,terminus,sumps
    WEDGE_RANGE=7001-7008` on builder0 light, then `python3 tests/manoeuvre/partner_table.py <dir>`; name the partner classes behind the
    82 long episodes and file the next fix (report; a bar only on a fresh block from the orchestrator).
-4. **Stretch:** if M2 names a cheap fix, build it OFF and lab it.
-5. **M3 (R40.12, added by the orchestrator 2026-10-24 night):** the planner re-route of a wedged asker, with the holder as an obstacle
-   (M2's hold-wall). OFF; after Bar M1 v2's series; lab first on M2's 8 longest episodes (sumps s7004 Rust_Battery_1 first); the bar on
-   8601-8624 (registered). GRANT: `game/ai/planner/**` for M3. A C++ twin, if needed, goes through the orchestrator.
+4. **Stretch:** if M2 names a cheap fix, build it OFF and lab it. (Not built: holdrelease is withdrawn, 847429f96: ending a hold
+   opens nothing.)
+5. **M3 (R40.12, added by the orchestrator 2026-10-24 night): a wedged asker re-routes round its holder**, with the holder as an
+   obstacle (M2's hold-wall). GRANT `game/ai/planner/**`. OFF. Lab on M2's longest WHEELED episodes, locks s7006 Rust_Battery_5 first;
+   sumps s7004's hover Battery_1 is a named gap (orchestrator, 2026-10-25). Bar on 8601-8624, filed before numbers. A C++ twin, if
+   needed, goes through the orchestrator.
 
 ## How to verify
 

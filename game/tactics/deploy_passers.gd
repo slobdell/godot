@@ -47,7 +47,10 @@ static func of(game_match: Match, team: int, leader: String) -> Dictionary:
 			continue
 		centre /= float(crews.size())
 		var route := remaining_route(element, centre, node)
-		if route.size() >= 2:
+		if route.size() >= 2 and CREW_CORRIDORS:
+			# v3 (round 40, cause A): each crew's own drive, not the squad's centre line.
+			out["routes"].append_array(crew_routes(element, _crews_by_name(element, by_name), centre, node))
+		elif route.size() >= 2:
 			out["routes"].append(route)
 			# The drive starts from every crew, not the squad's centre: the rear crews still have the ground behind it to
 			# cover (traced s4505: a seat cleared 6 m behind Alpha's centre stood on its rear crews' lane).
@@ -63,6 +66,73 @@ static func of(game_match: Match, team: int, leader: String) -> Dictionary:
 			if not seats.is_empty():
 				out["halts"].append(seats)
 	return out
+
+
+## S1 v3 (round 40, settle; round 39's time trace, cause A: terminus 5 click s6003, Alpha's crews drove x -7..-1 while the
+## one centre line the clear protected ran at x 4..8, and seats cleared off it landed on the crews' real lanes): the ground a
+## driving squad still needs is EACH CREW'S drive, from where it stands to the squad's spot shifted by the crew's place in
+## the squad (its slot less the squad's centre, at most CREW_OFFSET_MAX_M), then each queued leg's spot shifted the same,
+## on the navmesh. ON with ElementPlan.SEAT_ROUTE_CLEAR_V3 (`--seat-route-clear=v3`).
+static var CREW_CORRIDORS := OS.get_cmdline_user_args().has("--seat-route-clear=v3") \
+		or OS.get_environment("SEAT_ROUTE_CLEAR") == "v3"
+const CREW_OFFSET_MAX_M := 15.0
+
+
+static func _crews_by_name(element: Element, by_name: Dictionary) -> Dictionary:
+	var crews := {}
+	for unit_name in element.roster:
+		var tank := by_name.get(unit_name) as Tank
+		if tank != null and tank.is_alive():
+			crews[String(unit_name)] = Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+	return crews
+
+
+## Each crew's remaining drive (name order), as above: [[Vector3, ...], ...]; a crew with no move left gives none.
+static func crew_routes(element: Element, crews: Dictionary, centre: Vector3, node: Node3D) -> Array:
+	var out: Array = []
+	var verb := String(element.task.get("verb", ""))
+	var moving := (verb == "move" or verb == "attack_move") and not element.arrived
+	var spot: Variant = ElementTask.destination(element.task)
+	for unit_name: String in _sorted(crews.keys()):
+		var at: Vector3 = crews[unit_name]
+		var slot: Variant = element.slots.get(unit_name)
+		var offset := Vector3((slot as Vector3).x - centre.x, 0.0, (slot as Vector3).z - centre.z) if slot is Vector3 else Vector3.ZERO
+		offset = offset.limit_length(CREW_OFFSET_MAX_M)
+		var points: Array = []
+		var last := at
+		if moving and spot is Vector3:
+			points = _path(node, at, (spot as Vector3) + offset)
+			last = (spot as Vector3) + offset
+		for queued: Dictionary in element.queued_tasks:
+			var to: Variant = ElementTask.destination(queued)
+			if not (to is Vector3):
+				continue
+			var leg := _path(node, last, (to as Vector3) + offset)
+			points.append_array(leg if points.is_empty() else leg.slice(1))
+			last = (to as Vector3) + offset
+		if points.size() >= 2:
+			out.append(points)
+	return out
+
+
+## S1 v3 (b) (cause B: crossing 5 route s6009, Echo_4's cleared seat 25 m across the junction, its leg met Delta head-on):
+## a crew's leg from `from` to `to` is fit when it is at most `short_m` long, or when every point of it past its first
+## `short_m` stands ROUTE_CLEAR_M clear of every route in `passers` (a crew may pull out of a corridor, not drive along or
+## across one). Pure.
+static func leg_clear(from: Vector3, to: Vector3, passers: Dictionary, short_m: float) -> bool:
+	var leg := Vector3(to.x - from.x, 0.0, to.z - from.z)
+	var length := leg.length()
+	if length <= short_m:
+		return true
+	var d := short_m
+	while d <= length + 0.001:
+		var p := Vector3(from.x, 0.0, from.z) + leg * (minf(d, length) / length)
+		for route: Array in passers.get("routes", []):
+			for i in range(1, route.size()):
+				if p.distance_to(_closest_on(p, route[i - 1], route[i])) < ROUTE_CLEAR_M:
+					return false
+		d += CLEAR_STEP_M
+	return true
 
 
 ## The drive `element` still has to make from `centre`: the rest of its travelling anchor's route (a plain move in

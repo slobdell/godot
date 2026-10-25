@@ -1,0 +1,143 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          main      |   34.4 /   17.1   |    9   0 |     19.4 |               2.6 |            39.5 | 1.58 | 50.8
+crossing 3 click          settled   |   34.4 /   17.1   |    6   0 |     19.4 |               2.6 |            39.5 | 1.58 | 50.8
+crossing 3 route          main      |   34.4 /   21.6   |    8   0 |     31.1 |               3.0 |            42.4 | 1.55 | 50.8
+crossing 3 route          settled   |   34.4 /   21.6   |    9   0 |     26.0 |               3.0 |            42.4 | 1.56 | 50.8
+crossing 5 click          main      |   70.7 /   29.0   |    4   0 |     78.1 |               3.1 |            86.3 | 3.33 | 18.9
+crossing 5 click          settled   |   70.7 /   29.0   |    5   0 |     60.8 |               3.1 |            87.4 | 3.73 | 18.9
+crossing 5 route          main      |   70.7 /   29.8   |    4   0 |     48.3 |               2.7 |            63.9 | 3.24 | 18.9
+crossing 5 route          settled   |   70.7 /   29.8   |    6   0 |     52.9 |               2.7 |            68.3 | 3.18 | 18.9
+locks 3 click             main      |   42.0 /   34.4   |   16   0 |     80.5 |               2.8 |            55.7 | 2.11 | 27.7
+locks 3 click             settled   |   42.0 /   34.4   |   17   0 |     80.5 |               2.8 |            54.8 | 2.11 | 27.7
+locks 3 route             main      |   42.0 /   34.4   |   15   0 |     44.8 |               5.2 |            39.8 | 2.08 | 27.7
+locks 3 route             settled   |   42.0 /   34.4   |   14   0 |     59.7 |               2.7 |            39.8 | 2.09 | 27.7
+locks 5 click             main      |   54.7 /   39.6   |    4   0 |     40.6 |               3.3 |            58.2 | 2.23 | 16.6
+locks 5 click             settled   |   54.7 /   39.6   |    7   0 |     62.2 |               4.0 |            67.6 | 2.37 | 16.6
+locks 5 route             main      |   54.7 /   39.6   |    4   0 |        - |               4.5 |            60.4 | 2.55 | 16.6
+locks 5 route             settled   |   54.7 /   39.6   |    3   0 |        - |               4.5 |            54.2 | 2.55 | 16.6
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     43.9 |               3.2 |            48.2 | 1.87 | 23.3
+terminus 3 click          settled   |   36.9 /   34.4   |    0   0 |     43.9 |               3.2 |            48.2 | 1.89 | 23.3
+terminus 3 route          main      |   36.9 /   34.4   |    0   0 |     21.9 |               4.3 |            33.5 | 1.89 | 23.3
+terminus 3 route          settled   |   36.9 /   34.4   |    0   0 |     21.9 |               4.3 |            33.5 | 1.90 | 23.3
+terminus 5 click          main      |   61.9 /   39.4   |    0   0 |     72.4 |               4.7 |            54.4 | 3.26 | 9.7
+terminus 5 click          settled   |   61.9 /   39.4   |    0   0 |     40.0 |               5.6 |            57.6 | 2.80 | 9.7
+terminus 5 route          main      |   61.9 /   39.4   |    0   0 |        - |               3.0 |            62.8 | 9.73 | 9.7
+terminus 5 route          settled   |   61.9 /   39.4   |    0   0 |     64.1 |               3.0 |            64.0 | 9.88 | 9.7
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          main      |          29.4 |          30.0 |           30.1 |               3.5 |          36.6
+crossing 3 click          settled   |          28.6 |          30.0 |           30.0 |               3.1 |          36.5
+crossing 3 route          main      |          41.1 |          19.5 |           18.0 |               3.2 |          43.0
+crossing 3 route          settled   |          35.6 |          16.4 |           17.7 |               3.2 |          47.2
+crossing 5 click          main      |          88.1 |          28.7 |              - |               3.2 |         101.7
+crossing 5 click          settled   |          70.8 |          28.7 |           34.7 |               3.1 |         101.8
+crossing 5 route          main      |          58.3 |          28.1 |           46.5 |               3.4 |          89.8
+crossing 5 route          settled   |          58.9 |          38.6 |           46.5 |               2.9 |          89.8
+locks 3 click             main      |             - |          29.2 |              - |               5.6 |          53.5
+locks 3 click             settled   |          87.0 |          29.2 |              - |               4.4 |          52.7
+locks 3 route             main      |          54.8 |          20.9 |           25.0 |               5.9 |          56.7
+locks 3 route             settled   |          67.3 |          20.9 |           25.0 |               5.9 |          53.3
+locks 5 click             main      |             - |          40.0 |              - |               3.6 |          78.2
+locks 5 click             settled   |          72.2 |          37.9 |           44.3 |               6.0 |          78.2
+locks 5 route             main      |             - |          32.9 |              - |               4.7 |          77.9
+locks 5 route             settled   |             - |          36.5 |              - |               5.8 |          77.9
+terminus 3 click          main      |          45.9 |          32.5 |           30.8 |              10.5 |          60.8
+terminus 3 click          settled   |          45.9 |          32.5 |           30.8 |              10.5 |          60.8
+terminus 3 route          main      |          31.3 |          24.4 |           23.1 |               9.5 |          55.2
+terminus 3 route          settled   |          25.9 |          24.4 |           23.1 |               9.5 |          55.2
+terminus 5 click          main      |          82.4 |          45.6 |              - |               3.5 |          84.3
+terminus 5 click          settled   |          46.6 |          42.5 |           25.9 |               4.7 |          84.3
+terminus 5 route          main      |             - |          41.3 |              - |               5.8 |          84.7
+terminus 5 route          settled   |          72.6 |          38.6 |           49.9 |               5.8 |          84.7
+
+MEDIANS over seeds [8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8009, 8010, 8011, 8012] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          main        | 12 |         16.6 |     0 |          28.5 |         15.1 |          34.3 |               3.5 |    9   0 | 1.37
+crossing 3 click          settled     | 12 |         16.6 |     0 |          28.0 |         16.4 |          34.3 |               3.1 |    6   0 | 1.37
+crossing 3 route          main        | 12 |         20.6 |     0 |          34.2 |          9.3 |          38.4 |               3.2 |    8   0 | 1.37
+crossing 3 route          settled     | 12 |         20.6 |     0 |          33.1 |         11.1 |          38.4 |               3.2 |    9   0 | 1.38
+crossing 5 click          main        | 12 |         37.3 |     0 |          76.6 |         20.8 |          85.5 |               3.2 |    4   0 | 1.80
+crossing 5 click          settled     | 12 |         42.0 |     0 |          76.3 |         19.8 |          86.3 |               3.1 |    5   0 | 1.91
+crossing 5 route          main        | 12 |         38.2 |     0 |          48.8 |         15.7 |          79.6 |               3.4 |    4   0 | 2.01
+crossing 5 route          settled     | 12 |         37.0 |     0 |          48.0 |         20.3 |          79.6 |               2.9 |    6   0 | 1.90
+locks 3 click             main        | 12 |         26.5 |     0 |          33.1 |         22.0 |          48.6 |               5.6 |   16   0 | 1.56
+locks 3 click             settled     | 12 |         30.8 |     0 |          32.2 |         19.7 |          49.2 |               4.4 |   17   0 | 1.53
+locks 3 route             main        | 12 |         24.2 |     0 |          33.0 |         10.8 |          50.4 |               5.9 |   15   0 | 1.56
+locks 3 route             settled     | 12 |         31.4 |     0 |          33.1 |         14.3 |          49.2 |               5.9 |   14   0 | 1.51
+locks 5 click             main        | 12 |         30.5 |     0 |          41.4 |         17.1 |          75.3 |               3.6 |    4   0 | 1.72
+locks 5 click             settled     | 12 |         32.8 |     0 |          43.5 |         17.0 |          75.7 |               6.0 |    7   0 | 1.89
+locks 5 route             main        | 12 |         20.8 |     2 |          35.4 |         17.5 |          74.2 |               4.7 |    4   0 | 1.54
+locks 5 route             settled     | 12 |         21.5 |     1 |          35.1 |         16.8 |          74.2 |               5.8 |    3   0 | 1.56
+terminus 3 click          main        | 12 |         19.1 |     0 |          32.7 |          4.7 |          48.0 |              10.5 |    0   0 | 1.40
+terminus 3 click          settled     | 12 |         19.1 |     0 |          32.7 |          4.7 |          48.0 |              10.5 |    0   0 | 1.40
+terminus 3 route          main        | 12 |         17.2 |     0 |          27.0 |          0.0 |          50.1 |               9.5 |    0   0 | 1.35
+terminus 3 route          settled     | 12 |         17.2 |     0 |          26.7 |          0.0 |          50.1 |               9.5 |    0   0 | 1.35
+terminus 5 click          main        | 12 |         12.1 |     0 |          44.0 |         21.4 |          77.1 |               3.5 |    0   0 | 2.25
+terminus 5 click          settled     | 12 |         12.1 |     0 |          38.7 |         18.1 |          77.0 |               4.7 |    0   0 | 2.18
+terminus 5 route          main        | 12 |         49.0 |     1 |          44.0 |         24.9 |          73.0 |               5.8 |    0   0 | 5.67
+terminus 5 route          settled     | 12 |         51.2 |     0 |          45.5 |         23.5 |          73.8 |               5.8 |    0   0 | 5.44
+
+EQUALITY click cells: 9 identical across arms, 63 differ
+  DIFFER crossing 3 click seed 8001
+  DIFFER crossing 3 click seed 8002
+  DIFFER crossing 3 click seed 8003
+  DIFFER crossing 3 click seed 8004
+  DIFFER crossing 3 click seed 8005
+  DIFFER crossing 3 click seed 8006
+  DIFFER crossing 3 click seed 8007
+  DIFFER crossing 3 click seed 8009
+  DIFFER crossing 3 click seed 8010
+  DIFFER crossing 3 click seed 8012
+  DIFFER crossing 5 click seed 8001
+  DIFFER crossing 5 click seed 8002
+  DIFFER crossing 5 click seed 8003
+  DIFFER crossing 5 click seed 8004
+  DIFFER crossing 5 click seed 8005
+  DIFFER crossing 5 click seed 8006
+  DIFFER crossing 5 click seed 8007
+  DIFFER crossing 5 click seed 8008
+  DIFFER crossing 5 click seed 8009
+  DIFFER crossing 5 click seed 8010
+  DIFFER crossing 5 click seed 8011
+  DIFFER crossing 5 click seed 8012
+  DIFFER locks 3 click seed 8001
+  DIFFER locks 3 click seed 8002
+  DIFFER locks 3 click seed 8003
+  DIFFER locks 3 click seed 8004
+  DIFFER locks 3 click seed 8005
+  DIFFER locks 3 click seed 8006
+  DIFFER locks 3 click seed 8007
+  DIFFER locks 3 click seed 8008
+  DIFFER locks 3 click seed 8009
+  DIFFER locks 3 click seed 8010
+  DIFFER locks 3 click seed 8011
+  DIFFER locks 3 click seed 8012
+  DIFFER locks 5 click seed 8001
+  DIFFER locks 5 click seed 8002
+  DIFFER locks 5 click seed 8003
+  DIFFER locks 5 click seed 8004
+  DIFFER locks 5 click seed 8005
+  DIFFER locks 5 click seed 8006
+  DIFFER locks 5 click seed 8007
+  DIFFER locks 5 click seed 8008
+  DIFFER locks 5 click seed 8009
+  DIFFER locks 5 click seed 8010
+  DIFFER locks 5 click seed 8011
+  DIFFER locks 5 click seed 8012
+  DIFFER terminus 3 click seed 8005
+  DIFFER terminus 3 click seed 8006
+  DIFFER terminus 3 click seed 8007
+  DIFFER terminus 3 click seed 8008
+  DIFFER terminus 3 click seed 8012
+  DIFFER terminus 5 click seed 8001
+  DIFFER terminus 5 click seed 8002
+  DIFFER terminus 5 click seed 8003
+  DIFFER terminus 5 click seed 8004
+  DIFFER terminus 5 click seed 8005
+  DIFFER terminus 5 click seed 8006
+  DIFFER terminus 5 click seed 8007
+  DIFFER terminus 5 click seed 8008
+  DIFFER terminus 5 click seed 8009
+  DIFFER terminus 5 click seed 8010
+  DIFFER terminus 5 click seed 8011
+  DIFFER terminus 5 click seed 8012

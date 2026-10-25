@@ -30,13 +30,25 @@ No feedback stream this round: its one known issue (the portrait order-preview l
 **Done at preparation (2026-10-24 evening):** round 39 torn down: six worktrees removed, branches renamed `round39/<s>` (all ancestors
 of main), builder0's `~/tank_squad/godot-<s>*` cleared (22 GB free), builder2 started and its round-39 folders cleared (its
 `godot-native-guard/-score` copies too; remote.sh re-syncs them from the laptop trees, which are kept). builder2 was also running
-another project's workers (plane_maker), not ours: left alone. Feedback's announcer masters were already in the main checkout.
+another project's workers (plane_maker), not ours: left alone. He confirmed builder2 stays on for round 40. Feedback's announcer masters were already in the main checkout.
 
 **Waiting on him (ask in player terms, one recommendation; record answers in game_design.md and balance's brief):**
-1. **Faction balance (the round's lead question; balance B2 writes the page after B1's tally).**
-2. **R1's timing:** full sight ~3 s after a halt (recommended: keep) or his ~2 s, which pulled crews out of cover.
+1. ~~Faction balance~~ ANSWERED 2026-10-24: **A**, tune unit numbers within +/-15 % (R40.1; "every time I play with the gang I seem
+   to lose"). Balance owns it (C40.5 un-gated). All five sessions started 2026-10-24 evening.
+2. ~~R1's timing~~ ANSWERED 2026-10-24: keep ~3 s ("sounds fine").
 3. **The portrait order-preview line** floating mid-screen: does he see it as wrong (a feedback item next round)?
 4. His playtest notes on main (amber chevrons, dock phone map, honest fog, the parked hold, his caller lines).
+
+**RUNNING (2026-10-24 ~20:45 PDT): main b25b803e5 = CP40.0 + N2 + N3 (native dd4a87bc6, builder2 green 3184/0; INHERIT).** Bars filed:
+B2s (+G8 mono guard), T1, S1 v3, G1 v6 (workstreams *Bars (round 40)*); M1 v2's coming. Rulings R40.1-R40.9 (his balance call A,
+his combined-arms note -> B5, settle's ADVANCE census -> balance B6, G3 v8 after the relay). Pending merges: native efb2d9a81
+(GUARD_SIDES, quick), manoeuvre ee659b522 (+ pair/native-chainrelease 18e5dbca8) when green.
+
+**2026-10-25 ~01:02: main 5a9743c2c GREEN on builder0** (`make check exited 0`, 3184 passed / 0 failed, 25 passed + 2 NOT JUDGED:
+perf-judge refused 3x at 1.4-2.2x on a busy box, scenario_perf unpinned; sim-baseline 13 unmoved, determinism 258cc8b1c957a796). Main
+65a5c5b70+ (manoeuvre's M1 v2 OFF merged after it) still needs the next batch check. **No perf verdict since 68d0410d3 (7,691 us/tick):**
+the first ON flip (T1, CP40.1) needs a quiet-window `make remote-quiet T=perf-judge` on builder0 before the round closes. Builder0 crashed
+22:04-22:20 (native's slot.sh recursion, R40.11); fixed on main.
 
 **Orchestrator, after launch:** run the round-30 loop (`orchestration.md`); merge CP40.0 alone the minute native names it and tell
 balance; merge CP40.1 when settle's T1 bar passes and tell orders the same minute.

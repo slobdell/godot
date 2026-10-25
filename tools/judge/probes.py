@@ -624,7 +624,52 @@ def build(root):
          "aa": "not a sample: named cells on a deterministic sim; a new failing cell is a trace to read, not a statistic (B3b: 107/108 v control 106/108 is 2 cells gained, 1 lost: McNemar p 1.0, a coin, and the lost cell is a regression by name)",
          "cost_min": 0.19, "unit": "cell"},
     ]
+    # Round 40 (native): the guard lines (CP37.1, every rules / cover / doctrine / balance bar since round 37), per fight.
+    for kind in ("blob", "turtle"):
+        for metric, form, effect, words in (("win", "mean", {"abs": 0.04}, "the guard's win share: a 4-point move (D2c / D3's sizing)"),
+                                            ("kills", "mean", 0.05, "the guard's kills a fight within 2 se (G2t); sized for 5 %"),
+                                            ("losses", "mean", 0.05, "the guard's losses a fight; sized for 5 %"),
+                                            ("seconds", "mean", 0.10, "fight length (G2's median, read as a mean here); sized for 10 %")):
+            specs.append({"probe": "guard line, %s (a fight)" % kind, "metric": metric, "form": form, "n_today": 160, "effect": effect,
+                          "line": words, "read": lambda root=root, kind=kind, metric=metric: guard_fight_metric(root, kind, metric),
+                          "aa": "OFF v OFF replays are byte-identical (R37.14: 0 flips), so the noise is the seed draw; read from mains' paired bases",
+                          "cost_min": 3.3, "unit": "fight"})  # R39.1: doctrine's 3 arms x 1600 fights ~19 h at J14 on builder2
     return specs
+
+
+# Round 40 (native): pairs of guard bases on main over the same fights (2601-2608 + 2701-2708, 5 maps, both sides, blob and turtle).
+# Each pair is a real change (the mains differ), so its paired sd is the seed-to-seed noise of a change of that size; fights inside a
+# seed are counted as independent (no icc: R37.14's per-seed se is the stricter read for a bar).
+GUARD_BASE_PAIRS = [("9d325e291 -> 1c484a525 (round 37's merges)", "references/scoreboard/guards/9d325e291.fights.jsonl",
+                     "references/scoreboard/guards/1c484a525.fights.jsonl"),
+                    ("686150ed2 -> 8952c3d64 (R1-R3 ON, R39.2)", "references/scoreboard/guards/686150ed2.fights.jsonl",
+                     "references/scoreboard/guards/8952c3d64.fights.jsonl")]
+
+
+def guard_fight_value(row, metric):
+    side = row["side"].lower()
+    if metric == "win":
+        return 1.0 if row["role"] == "guard" else 0.0
+    if metric == "seconds":
+        return float(row["seconds"])
+    return float(row[metric][side])
+
+
+def guard_fight_metric(root, kind, metric):
+    lists = []
+    for label, base, arm in GUARD_BASE_PAIRS:
+        pairs = rows.jsonl_pairs(os.path.join(root, base), os.path.join(root, arm), ["guard", "arena", "seed", "side"], where={"guard": kind})
+        lists.append((label, pairs))
+    value = lambda r, metric=metric: guard_fight_value(r, metric)  # noqa: E731
+    if metric != "win":
+        return _pooled_pairs(lists, value, "mean")
+    # A win is 0/1: most fights don't flip, and those zeros ARE the noise (a flip is the McNemar discordant), so no acted filter.
+    sds, used, b_all = [], [], []
+    for label, pairs in lists:
+        sds.append((stats.paired_sd(rows.diffs(pairs, value)), len(pairs)))
+        b_all += rows.values(pairs, value, "base")
+        used.append("%s (n %d, flips %d)" % (label, len(pairs), len(stats.acted(rows.diffs(pairs, value)))))
+    return {"sd_run": pooled_sd(sds), "base_run": statistics.mean(b_all), "icc": 0.0, "pairs": used, "n_pairs": len(used), "n": len(b_all)}
 
 
 def pooled_cases(root, cases, metric):

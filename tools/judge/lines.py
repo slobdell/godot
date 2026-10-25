@@ -724,3 +724,10 @@ LINES += lines_r31_34.LINES
 import lines_r36  # noqa: E402  (the same fields; round 36's close skipped the re-render, close step 5b)
 
 LINES += lines_r36.LINES
+
+# ---------------------------------------------------------------- rounds 37-39 (round 40 native) ----------------------------
+import lines_r37  # noqa: E402  (the same fields; rounds 37-39's closes skipped the re-render, close step 5b)
+import lines_r38  # noqa: E402
+import lines_r39  # noqa: E402
+
+LINES += lines_r37.LINES + lines_r38.LINES + lines_r39.LINES
