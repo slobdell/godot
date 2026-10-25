@@ -61,3 +61,24 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Report (2026-10-24, running)
+- **T1 built** (1327f85ef, OFF: `--deploy-arrive=near`): pure test `tests/test_settle_deploy_arrive.gd` 5/0 (laptop): the
+  3.83 m holding tracked crew counts as in (main waits for the cap), a crew rolling at 4 m and one holding at 6 m don't, a hold
+  under 0.5 s doesn't yet. Lab running (builder0 light J4, his-5 click, 6201-6212, arms main / near / col (G1 v5) / colnear).
+
+### Plan (ordered)
+1. T1: pure test (done) -> lab on orders' traced cell (his-5 click 6201-6212, main and G1 v5's column arm, each +/- near) ->
+   bar filed here before numbers -> full check of the named hash -> series on 8001-8012 -> ship ON + full check = CP40.1.
+2. S1 v3 per-crew corridors: pure test -> lab on the six traced runs -> bar -> series 8013-8024.
+3. Stretch per the brief.
+
+### Decisions (T1)
+- **Holding** = no throttle asked (|throttle| < 0.05) and real flat speed < 0.3 m/s (Tank.DEPLOY_MAX_SPEED's stop), read in
+  ElementSituation from `tank.command` and `tank.real_velocity`. Throttle, not intent: a crew queued behind a friend with its
+  throttle open is still driving to its seat and must not count; one pivoting in place within 5 m may (it is in by any eye).
+- **"A few ticks running"** = DEPLOY_NEAR_HOLD_TICKS 15 (0.5 s, five element updates) without a break, clock per crew kept in
+  the deploy (`deploy["still"]`, dropped at the deploy). Short enough to beat the cap by ~9 s, long enough that a crew braking
+  through 5 m on its way in is not caught.
+- **Radius** DEPLOY_NEAR_M 5.0 (the brief's ~5 m; orders' trace 3.83 m), max'd with the unit's settle radius as main's test.
+- **Trace:** `deploy["near"]` = crews counted near at the deploy (0 on the cap).
