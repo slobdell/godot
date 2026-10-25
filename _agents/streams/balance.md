@@ -212,6 +212,12 @@ guard sides are one fight). **Expected outcome (written before any bar number):*
 points exists (the riskiest guards); G3 lengths not screened (unknown); G4 time-cap share unknown; G5 none line unknown (flatter
 factions should not make it worse); G6 perf-judge PASS on ARM; G7 green but sim-baseline, re-pins adopted on purpose (R40.18); G8 -1
 (se 2) on dev: passes unless law's +6 (se 4) is real and large.
+**The bar's judge (written before any bar number):** `tools/balance/search.py bar ~/balance-guard-raw/bar-b2s 5be511659 66c4839a2`
+prints one BAR_B2S line a rule and a VERDICT. Readings fixed here: se is a bootstrap over seed units (400 reps); deciding = paired
+flatness change < -2 se AND blob v a gangs CPU down AND blob v a syndicate CPU up; G1/G2 fail at a paired share change > +2 se; G3
+fails when a median-length change is outside +/-15 % (line) or +/-20 % (guard faction) AND more than 2 se from zero; G4 fails at a
+time-cap share change > +2 se; G5 fails at a none-line flatness change > +2 se; G8 fails at a mono win-share change > +2 se. Dry run
+on the c5r2 dev reads: 17 of 18 rules hold, G5 not read (no dev none line); blob median length +11.4 % (se 5.2) is the nearest to a band.
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
