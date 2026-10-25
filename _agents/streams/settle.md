@@ -63,6 +63,10 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### Report (2026-10-24, running)
+- **GREEN: afd436ca3** (builder2, `>> remote: make native check exited 0`, 3,188 passed / 0 failed, 24 targets + 3 NOT JUDGED
+  as a non-judging machine: perf-judge, ai-scenarios' CPU budget, the quiet-window guard). Everything of round 40 OFF.
+- **Bar T1 series RUNNING** since 21:30 PDT, builder0 light J4 (`settle-t1`, seeds 8001-8012, afd436ca3's code); then Bar S1 v3's
+  (`settle-s1v3r40`, 8013-8024) on the same lane.
 - **T1 built** (1327f85ef, OFF: `--deploy-arrive=near`): pure test `tests/test_settle_deploy_arrive.gd` 5/0 (laptop): the
   3.83 m holding tracked crew counts as in (main waits for the cap), a crew rolling at 4 m and one holding at 6 m don't, a hold
   under 0.5 s doesn't yet.
