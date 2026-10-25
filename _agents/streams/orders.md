@@ -123,10 +123,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   a road (places_cleared 0, places_off_lanes 1-3). Laptop trace (crossing 3 click s3806, `--column-trace`): squad 0's
   three steps lie on squads 1 and 2's roads, read 17.2 and 19.7 m either side (`lane_reach` = half the driver's parked
   width + half the halt's short side), a band as wide as a herringbone around every road on a crossing.
-- **G3 v9 `--place-clear-lane=column` (9076ee2f8, OFF):** a road in reads as wide as the column driving it
-  (`ROAD_HALF_M` 4 m + half the halt's short side; ~10 m on crossing, v8 17-20 m). v7's case still holds (test).
-  `test_control` 526/0 (laptop). Dev read 1 (builder2 J4, 9076ee2f8, 3804-3809, arm v8's with `--place-clear-lane=column`):
-  running, `~/overnight-orders/g3v9-dev1-9076ee2f8`. A bar on 8213-8224 only if it passes, filed before any number.
+- **G3 v9 `--place-clear-lane=column` (9076ee2f8, OFF): dev read PASSES -> Bar G3 v9 filed below.** A road in reads
+  as wide as the column driving it (`ROAD_HALF_M` 4 m + half the halt's short side; ~10 m on crossing, v8 17-20 m).
+  v7's case still holds (test). `test_control` 526/0 (laptop). Dev read 1 (builder2 J4, code 9076ee2f8; parts synced
+  743f86a4a / c6dfbd42e, docs only after it; 3804-3809, n 6; evidence
+  `references/round40/orders/g3v9-dev1-builder2-9076ee2f8/`): **pairs < 12 m 25 -> 6 (<= 6.2), PASS**; places_cleared
+  20; never-in 1 -> 1; 18 probe cells (twitch included) pass; worst +24.0 m (0 of 432 > 40 m); contacts 7183 -> 6801;
+  route_left_m 6000 -> 5734. The streets part was preempted once (Spot, exit 255) and re-ran whole.
 - **Full check of 8bbafb376 (builder0, load ~10): `make native check exited 0`, 25 passed, 2 NOT JUDGED** (perf-judge
   refused 3 times on a busy box, 1.52-1.84x; scenario_perf unpinned on the hybrid). Green: the G1 v6 series' tree.
 - **Settle's Bar T1 passed (orchestrator, 2026-10-25):** `--deploy-arrive=settled` ships ON as CP40.1 after its flip
@@ -168,3 +171,22 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     `skip_end` (default 0, unchanged), `lane_skip` and `PLACE_CLEAR_AFTER`. Every G3 switch is OFF in both G1 v6 arms, so
     neither arm reaches the changed code. Lane (R40.11): builder0 light only when one of the two lanes allowed beside a
     full check is free; otherwise builder2 once G3 v8's dev read ends.
+- **Bar G3 v9 ROAD A COLUMN WIDE (orders, round 40; filed 2026-10-25 before any number on 8213-8224; code 9076ee2f8,
+  all OFF).** What he would see: no squad parks on top of another; a squad moved to make room parks the way it would
+  have where it was sent, and never on the road another squad still has to drive in, on a click and on a shift-click
+  route alike.
+  - **Arm:** `g3v9:--place-clear=on,--place-clear-trigger=near,--place-clear-reach=on,--place-clear-seat=on,--place-clear-lane=column,--place-clear-after=relay`.
+    Base `main:`.
+  - **Tree:** a frozen detached worktree at the commit whose full check is named green here (code 9076ee2f8; main as
+    launched; DEPLOY_HOLD ON both arms; every G1 / G2 switch, `--giveway-chain`, `--seat-route-clear`,
+    `--deploy-arrive` OFF both arms, as filed for G1 v6; R40.4). Every part runs from it.
+  - **Probe:** `tests/control/orders_bar.sh b2 g3 <arm> "8213 ... 8224" <out> 4` (builder2 J4,
+    `TANK_SQUAD_SLOT_TIMEOUT=14400`), **FRESH seeds 8213-8224** (n 12 a cell), the 18 cells of Bars G3 v5 / v6.
+  - **Judge:** `orders_judge.py g3`, unamended from Bar G3 v6: counter; deciding pairs < 12 m <= 25 % of base; never-in
+    no more; offset guards (worst place-to-click median per cell <= base + 15 m; > 40 m further <= 5 % of rows; none
+    > 100 m); R36.6 guards per cell (twitch included); contacts <= base x 1.1 + 5.
+  - **Dev evidence:** dev read 1 above (25 -> 6, PASS by 0.2 of a pair: the margin is thin).
+  - **Known risk:** Bar G3 v6's crossing 5 route never-in / twitch (round 39, untraced: a cleared place's own leg meets a
+    passing squad head-on). v9 keeps every moved place off the others' roads in, which should answer it; the dev read's
+    crossing 5 route cell passed, at n 6.
+  - A pass ships ON.
