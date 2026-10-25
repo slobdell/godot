@@ -120,5 +120,10 @@ dec9725f5 GUARD_SIDES (light quick + shell-tools-test, the orchestrator's call) 
   inherited on both builders). **Named to the orchestrator: 62a7d653d** (GUARD_SIDES + oom + slot fix + the judging
   re-render). After the reboot builder0's slot pool (/tmp, tmpfs) and full-check lock (a kernel flock) held nothing stale.
   **Lesson:** a test of a recursion guard must run the real recursion (make through the wrapper), fenced by its own cap.
+- **Merged: 62a7d653d -> main 5a9743c2c** (its main full check queued on builder0; main unverified until it is green).
+- **builder0 disk (the orchestrator's ask, approved list only):** deleted ~/tank_squad/godot-light (main's light folder, last
+  used 10-12), ~/tank_squad_feel_look + ~/tank_squad_feel_c (round-~10 feel tree copies) and the 128 ~/.local/share/tank_squad_*
+  user dirs last written before 10-17 (no process held any). df: 11G -> 15G free (90 % -> 86 %). Not ours, for the lead:
+  ~/Videos 23G (models/ and tmp/ each beside a .tar of itself), ~/projects 12G, ~/.cache/tracker3 1.9G.
 - **N4 (the trig's ~2 %):** waits for a quiet builder0 window (none soon: three streams have series queued, the orchestrator).
 - **N5:** waits on his Ryzen purchase.
