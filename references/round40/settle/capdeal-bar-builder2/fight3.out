@@ -1,0 +1,60 @@
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> orders-probe on builder2 | commit 95276e979 | native on
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          capdeal   |   29.4 /   16.4   |   21   0 |     30.1 |               3.2 |            50.0 | 6.33 | 54.7
+crossing 3 click          main      |   29.4 /   16.4   |   20   0 |     30.1 |               3.2 |            58.5 | 4.96 | 54.7
+locks 3 click             capdeal   |   46.6 /   34.4   |   14   0 |     39.8 |               3.7 |            63.1 | 7.83 | 20.4
+locks 3 click             main      |   46.6 /   34.4   |   13   0 |     39.8 |               3.7 |            79.9 | 7.83 | 20.4
+terminus 3 click          capdeal   |   36.9 /   34.4   |    0   0 |     30.6 |               4.1 |            75.1 | 5.51 | 17.7
+terminus 3 click          main      |   36.9 /   34.4   |    0   0 |     30.6 |               4.1 |            75.1 | 5.66 | 17.7
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          capdeal   |          40.1 |          25.5 |           53.6 |               5.3 |          46.7
+crossing 3 click          main      |          40.1 |          28.5 |           76.1 |               3.4 |          42.5
+locks 3 click             capdeal   |             - |          25.4 |              - |              16.5 |          72.0
+locks 3 click             main      |             - |          25.4 |              - |              16.5 |         105.8
+terminus 3 click          capdeal   |          34.4 |          36.8 |           58.3 |              14.1 |          59.9
+terminus 3 click          main      |          34.4 |          30.0 |           58.3 |              14.1 |          59.9
+
+MEDIANS over seeds [8737, 8738, 8739, 8740, 8741, 8742, 8743, 8744, 8745, 8746, 8747, 8748] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          capdeal     | 12 |         16.5 |     0 |          33.0 |         32.9 |          33.9 |              -1.0 |   21   0 | 3.27
+crossing 3 click          main        | 12 |         16.5 |     0 |          30.9 |         27.0 |          33.4 |              -1.0 |   20   0 | 2.82
+locks 3 click             capdeal     | 12 |         25.2 |     0 |          38.2 |         26.1 |          40.0 |              -1.0 |   14   0 | 3.46
+locks 3 click             main        | 12 |         25.2 |     0 |          39.2 |         26.1 |          40.0 |              -1.0 |   13   0 | 3.42
+terminus 3 click          capdeal     | 12 |         20.7 |     0 |          32.7 |         27.8 |          44.1 |              -1.0 |    0   0 | 3.12
+terminus 3 click          main        | 12 |         20.7 |     0 |          32.7 |         28.6 |          44.1 |              -1.0 |    0   0 | 3.34
+
+EQUALITY click cells: 22 identical across arms, 14 differ
+  DIFFER crossing 3 click seed 8737
+  DIFFER crossing 3 click seed 8738
+  DIFFER crossing 3 click seed 8739
+  DIFFER crossing 3 click seed 8740
+  DIFFER crossing 3 click seed 8741
+  DIFFER crossing 3 click seed 8742
+  DIFFER crossing 3 click seed 8745
+  DIFFER crossing 3 click seed 8746
+  DIFFER crossing 3 click seed 8747
+  DIFFER crossing 3 click seed 8748
+  DIFFER locks 3 click seed 8739
+  DIFFER locks 3 click seed 8741
+  DIFFER locks 3 click seed 8748
+  DIFFER terminus 3 click seed 8739
+TOTAL capdeal    | placed 106.0 flipping 0.0 flips 0.0 relays 328.0 relaying 63.0 terr_c 328.0 terr_a 0.0 reseats 0.0 away 585.9 held 554.8 seat 6987.8
+TOTAL main       | placed 106.0 flipping 0.0 flips 0.0 relays 325.0 relaying 63.0 terr_c 325.0 terr_a 0.0 reseats 0.0 away 559.7 held 530.6 seat 7003.0
