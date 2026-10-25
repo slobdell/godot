@@ -133,5 +133,55 @@ with tempfile.TemporaryDirectory() as root:
     read_row = [l for l in page.splitlines() if l.startswith("| Guard fights read")][0]
     check("table read cell", read_row.split(" | ")[2], "4 of 5")
 
+# Round 40 (N2): --by-unit on rows with `units` (CP40.0). Seed 1: g1 (law tank 200) kills r1 (gangs buggy 70) and r2; seed 2
+# (the arm's twin of seed 1, and its base): the same units, g1 kills r1 only. An older row without `units` is skipped.
+def units_row(seed, side, g1_kills):
+    dead = ["r1", "r2"][:g1_kills]
+    rows = {"green": [{"id": "g1", "type": "law_tank", "faction": "law", "cost": 200, "kills": g1_kills, "death": -1,
+                       "killer": "", "dealt": 100.0 * g1_kills, "taken": 30.0}],
+            "rust": [{"id": r, "type": "gang_buggy", "faction": "gangs", "cost": 70, "kills": 0,
+                      "death": 90 if r in dead else -1, "killer": "g1" if r in dead else "", "dealt": 15.0,
+                      "taken": 100.0 if r in dead else 0.0} for r in ("r1", "r2")]}
+    return {"guard": "blob", "arena": "locks", "seed": seed, "side": side, "winner": "Green", "role": "guard",
+            "reason": "elimination", "seconds": 90.0, "kills": {"green": g1_kills, "rust": 0},
+            "losses": {"green": 0, "rust": g1_kills}, "factions": {"Green": "law", "Rust": "gangs"}, "units": rows}
+
+
+with tempfile.TemporaryDirectory() as root:
+    base_path, arm_path = os.path.join(root, "base.jsonl"), os.path.join(root, "arm.jsonl")
+    with open(base_path, "w") as out:
+        for seed in (1, 2):
+            out.write(json.dumps(units_row(seed, "Green", 2)) + "\n")
+        old = units_row(3, "Green", 2)
+        del old["units"]
+        out.write(json.dumps(old) + "\n")
+    with open(arm_path, "w") as out:
+        out.write(json.dumps(units_row(1, "Green", 1)) + "\n")
+        out.write(json.dumps(units_row(2, "Green", 2)) + "\n")
+    bu = guard.by_unit(guard.read([base_path]))
+    check("by-unit skipped old rows", bu["fights_without_units"], 1)
+    tank = bu["groups"]["law law_tank"]
+    check("by-unit fielded", tank["fielded"], 2)
+    check("by-unit credits", tank["credits"], 400.0)
+    check("by-unit kills a 1000 credits", tank["kills_pkc"], 10.0)        # 4 kills / 400 credits
+    check("by-unit killed value a credit", tank["killed_value_pc"], 0.7)  # 4 x 70 / 400
+    check("by-unit dealt a credit", tank["dealt_pc"], 1.0)                # 400 / 400
+    check("by-unit lived", tank["survived"], 1.0)
+    gangs = bu["groups"]["gangs *"]
+    check("by-unit army fielded", gangs["fielded"], 4)
+    check("by-unit army lost value", gangs["lost_value_pc"], 1.0)
+    check("by-unit army lived", gangs["survived"], 0.0)
+    check("by-unit kills sum to the rows", sum(g["kills"] for k, g in bu["groups"].items() if not k.endswith("*")), 4)
+    bp = guard.by_unit_pair([base_path], [arm_path])
+    check("by-unit pair n", bp["n"], 2)
+    kv = bp["groups"]["law law_tank"]["killed_value_pc"]
+    check("by-unit pair base", kv["base"], 0.7)
+    check("by-unit pair arm", kv["arm"], 0.525)                          # 3 x 70 / 400
+    check("by-unit pair diff", kv["diff"], 0.525 - 0.7)
+    check("by-unit pair se", kv["se"], 0.175)                             # per-seed diffs -0.35, 0: sd 0.2475 / sqrt 2
+    check("by-unit pair lived", bp["groups"]["gangs gang_buggy"]["survived"]["arm"], 0.25)
+    check("by-unit render", "law law_tank" in guard.render_by_unit(bu), True)
+    check("by-unit pair render", "killed_value_pc 0.700 -> 0.525" in guard.render_by_unit_pair(bp), True)
+
 print("%d failed" % len(failures))
 sys.exit(1 if failures else 0)
