@@ -143,7 +143,12 @@ wasted until guard.sh passes GUARD_SIDES (asked of native; on main since 5a9743c
 an all-tank army beats its own faction's mixed deal at equal budget **82 % (se 3)**: condemned 71 % (26.0 v 33.5 units), gangs 80 %
 (29.0 v 43.6), law 86 % (20.0 v 25.4), syndicate 89 % (11.0 v 16.4). His experience confirmed; his target (mixed wins ~60-65 %) is
 ~45 points away. Side effect: Rust wins ~8 points more than Green in this line (mono-on-Green 74 %, mono-on-Rust 89 %), so both arms
-always run. Next: `fm_law_ca` (fm_law + every tank -15 % hp/armour/damage, +15 % cost, clamped) on the lines and the mono line; if
+always run. **Why (CP40.0 per-unit rows, `tools/balance/mono_roles.py`, same fights):** the mixed army's anti-armour units trade
+well against the tank blob (artillery 3.0-5.5 hp dealt a credit, 92 % live; Rat Rod spears 2.4; Condemned Lancers 3.4); the units
+that lose are the ones that can't hurt armour: IFVs 0.2-0.8 a credit, 2-6 % live; MG scouts 0.04-0.17; Tanker / Sonic Emitter ~0.3.
+44-61 % of each mixed army's credits sit in units dealing < 1 hp a credit to tanks. Armor.penetration_multiplier: an autocannon
+(pen 5) hits a tank's front at 0.05-0.10, its side at 0.34-0.50; MGs sit on the 0.05 floor. So it is the armour/penetration rule
+(numbers), not how the CPU places them: no doctrine fix would make an IFV hurt a tank. Next: `fm_law_ca` (fm_law + every tank -15 % hp/armour/damage, +15 % cost, clamped) on the lines and the mono line; if
 the bounds can't reach the target, a write-up for him (R40.6 (3)).
 
 **Bar B2s (the stat change; FILED before any number on 8301-8340 + 8401-8440).**
