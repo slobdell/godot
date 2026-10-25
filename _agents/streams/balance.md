@@ -155,6 +155,8 @@ BASE 5be511659's. Before naming c5r: its mono line (G8 screen) and one paired li
   **fm_law_ca (B5, every tank -15 % hp/armour/damage +15 % cost on top of fm_law):** flatness 18.5 -> 17.3 (-1.2, se 2.7), turtle
   line **+9.2 (3.3)**, syndicate back on top (blob v a syndicate CPU 20 %): the tank nerf undoes the faction table. Not a candidate;
   its mono line runs only to measure what the in-bounds tank nerf buys against the all-tank army.
+  builder2 (Spot) was preempted ~05:00 PDT during c5r's first mono arm; guard.sh restarted the box and retried that chunk (attempt
+  2), nothing lost (fm_law_ca's lines had ended 04:59). The rest of the screens run at J10 (`~/balance-runs/r8.sh`) beside settle's gate.
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
