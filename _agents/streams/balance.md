@@ -198,6 +198,13 @@ more). [Measured mono rate with that change: PENDING.] It doesn't reach the targ
 recommendation: fixed units, authentic); (2) let armour-piercing ("penetration") move per unit, not just damage; (3) change what each
 faction's army buys (fewer IFVs, more anti-tank). Recommendation: (1).
 
+**B6 (queued after B2s and B5; code read only so far):** a crew under an element/player order gets `order_context`, so
+`TankBrain` nulls its doctrine objective and an "idle" crew's objective becomes the order's goal (radius 5 m); `commanded` (which zeroes
+ADVANCE) is the doctrine squad's slot, false for an ordered crew. ORDER_OPTIONS["idle"] allows ADVANCE, scored 0.45 with no threat in
+sight when the crew is > 5 m from that goal: a crew sitting on its travel seat (not its goal) drives off it. Fix sketch: ADVANCE = 0
+while the crew's element is still dealing its travel seats (Element.deploy, not yet "deployed"), read in the brain; the feed is
+mirrored in native's feed_native.cpp, so the read goes through ElementFeed.element_of, not a new feed key. Needs its own bar.
+
 **NAMED B2s CANDIDATE: fm_law_c5r2. BASE 5be511659, ARM 66c4839a2.** Series: `~/balance-runs/bar-b2s.sh` on builder2 (lines 8301-8340
 + 8401-8440, 1600 an arm; none line 8301-8320; G8 mono 8301-8320 both teams per faction; GUARD_SIDES=green on none/mono, whose two
 guard sides are one fight). **Expected outcome (written before any bar number):** deciding passes (dev -10.6 at se 3.5 on 240 fights
