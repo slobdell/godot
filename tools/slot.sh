@@ -128,6 +128,15 @@ if [ -n "${TANK_SQUAD_SLOT:-}" ]; then
 	exec "$@"  # already inside a slot (nested make)
 fi
 
+# Round 40 (native): a DRY RUN (`make -n`) takes no slot. make runs a recipe line that names $(MAKE) even under -n, so the
+# Makefile's slot re-run reached here and a `make -n faction-matrix` (tools/test_series_arms.sh reads a target's command line)
+# queued 20+ min behind every heavy slot on a busy builder0, holding shell-tools-test with it. Single-letter flags are
+# MAKEFLAGS's first word (no leading dash), so an `n` there is -n / --dry-run / --just-print / --recon.
+case "${MAKEFLAGS:-}" in
+	-*|"") ;;
+	*) case "${MAKEFLAGS%% *}" in *n*) exec "$@" ;; esac ;;
+esac
+
 
 # ---- Pin this script against a mid-run rewrite -------------------------------------------------
 # `git merge` / `git checkout` rewrite a working-tree file IN PLACE -- same inode, verified -- and bash reads a

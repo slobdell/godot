@@ -34,6 +34,14 @@ timeout 2 bash -c "TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 bash '$slot' touc
 [ ! -e "$tmp/flag.heavy" ] && ok "light: a heavy run still waits for a heavy slot" \
 	|| bad "light: a heavy run still waits for a heavy slot" "it started with every heavy slot held"
 
+# ---- 2b. round 40: a dry run (make -n: MAKEFLAGS's first word holds n) takes no slot -------------
+timeout 4 bash -c "MAKEFLAGS='n --no-print-directory' TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 bash '$slot' touch '$tmp/flag.dry'" >/dev/null 2>&1
+[ -e "$tmp/flag.dry" ] && ok "dry run: make -n starts while every heavy slot is held" \
+	|| bad "dry run: make -n starts while every heavy slot is held" "it queued for a slot"
+timeout 2 bash -c "MAKEFLAGS='--no-print-directory -j4' TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 bash '$slot' touch '$tmp/flag.long'" >/dev/null 2>&1
+[ ! -e "$tmp/flag.long" ] && ok "dry run: a long-option MAKEFLAGS (no n) still waits" \
+	|| bad "dry run: a long-option MAKEFLAGS (no n) still waits" "--no-print-directory read as a dry run"
+
 # ---- 3. inside the light lane nothing fans out ---------------------------------------------------
 fresh
 out=$(TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_LIGHT=1 bash "$slot" bash "$slot" --jobs 10 12 2>/dev/null)
