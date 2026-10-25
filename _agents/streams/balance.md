@@ -115,7 +115,11 @@ Round 39's OFF arm scores 17.4 (se 1.4); OFF v SPLIT paired change -0.1 (se 0.9)
 code 68d0410d3 + tools): flatness **26.6 (se 4.0)**; blob 45 % (v a gangs CPU 83 %, v a syndicate CPU 6 %), turtle 42 %. Same shape as
 round 39. **faction_max** (gangs hp/armour/damage +15 %, syndicate -15 %, law hp/damage +5 %;
 shared weapons untouched): flatness 26.6 -> **13.8**, paired change **-12.8 (se 2.4)**; blob 45 -> 37 % (v a gangs CPU 83 -> 43, v a
-syndicate CPU 6 -> 37), turtle 42 -> 45 % (n 120 a line, dev seeds; not a bar). `targeted` running.
+syndicate CPU 6 -> 37), turtle 42 -> 45 % (n 120 a line, dev seeds; not a bar). **targeted** (B1's units only): 26.6 -> 21.1, change
+-5.5 (se 2.5); blob v a gangs CPU 83 -> 67, v a syndicate CPU 6 -> 17. **B4's dry run is DONE: faction_max wins.** Pooled over its four
+cells (as blob/turtle guard, and 100 - the CPU cell), faction_max leaves law weakest (34 %) and syndicate/condemned strongest (61/56 %).
+**Round 2** (on 7b53f5f85 = main b25b803e5 with N1+N3 merged; fresh dev seeds 8513-8524; J16): base, faction_max again, `fm_law`
+(law to +15 % too), `fm_law_cost` (fm_law + syndicate cost +10 % through N3). Then the mono line (B5).
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's
