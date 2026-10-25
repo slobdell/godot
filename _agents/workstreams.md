@@ -100,6 +100,10 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   `--probe-corridor=gate` = the old read; the game's gate_width callers unchanged). **Ruled:** the G1 v6 bar decides on the new read and
   REPORTS the old read beside it for every cell (an instrument change is never judged on its own new number alone); settle's and
   manoeuvre's bars that use orders' probe name which corridor read they judge on.
+- **R40.6 (2026-10-24 evening) Combined arms is a balance goal (his note, verbatim in game_design.md *His combined-arms note*).** He won more
+  easily with 100 % tanks. Balance adds B5: a mono-army line (all-tank v mixed, same faction, same budget) measured first; target mixed
+  beats mono ~60-65 %. Bar B2s may add ONE guard before any number on its seeds: the mono-tank line's win rate not up (the stat change
+  must not widen the all-tank edge). Counters within +/-15 %; past the bounds = his call.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 

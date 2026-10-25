@@ -45,6 +45,13 @@ turtling (17 %). Blob kill ratio by blob faction: syndicate 2.62, law 0.98, cond
 4. **B4 the balance search harness.** `tools/balance/`: within his +/-15 % bounds, run N sims a candidate on builder2 (native's N3
    `--unit-overrides`) and score the faction table's flatness; it feeds B2's candidate. If B4 is ready before B1's read names the
    candidates, do B4 before B3.
+5a. **B5 combined arms (R40.6, his note 2026-10-24: "I tried playing some games where I used 100% tanks versus the enemy, and it seemed I
+   was able to more easily win. Should we also include game balancing to ensure that using a variety of units should theoretically create
+   the advantage?").** (1) Measure: a mono-army line in guard_line (all-tank army v a mixed army, same faction, same budget, every map,
+   both sides; on your B4 screening seeds), by faction. (2) Target: mixed beats mono ~60-65 %. (3) Lever: counters within +/-15 %
+   (anti-armour v tanks, tanks v light units, MGs v light armour); a filed bar on a fresh block from the orchestrator. If the bounds can't
+   reach it, write it up for him (player terms) rather than going past them. Add to Bar B2s, before any number on its seeds, the guard:
+   mono-tank line's win rate not up.
 5. **Stretch:** a second balance pass after B3 (the faction-aware CPU changes the table again).
 
 **His answer (2026-10-24):** R1's full sight stays at ~3 s after a halt ("sounds fine"); HALT_DWELL_SECONDS stays 2.0.
