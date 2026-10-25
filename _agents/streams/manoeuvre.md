@@ -200,3 +200,21 @@ A = census on 8101-8112 (36 paired fights); B = orders probe on 8113-8124 (144 p
   - So 3 of the 5 are terminus 5-squad route cells, the last squad in; in main those squads came in late (41-85 s).
 - **Not shipped; no re-run on these seeds.** The guard stands unamended. Trace (diagnosis only, not a re-judge): probe_wedge on the
   5 v2 never-in cells, main v v2, `~/overnight-manoeuvre/r40/trace5/`.
+
+**The G5 trace (diagnosis, not a re-judge; 2026-10-25 01:26-01:35 PDT, builder0 light native, n 1 a cell, probe_wedge on the 5
+v2-only never-in cells).** Raw data: `~/overnight-manoeuvre/r40/trace5/` and `trace5b/`.
+- On 479bf90f9: never-in runs main 1/5, v2 5/5. The bar's 5 regressions reproduce deterministically.
+- On main 9d5907ddd with settle's T1 ON (merged here as a92ce7b73): mainT1 1/5, v2T1 3/5.
+  - crossing s8120 sq4 recovers: in at 41.5 s v 35.5 s. terminus s8119 sq5 recovers: in at 40.1 s, the same as mainT1.
+  - So T1 halves v2's G5 cost, but the cost survives on the main that ships.
+- The 3 survivors (v2T1):
+  - **terminus s8118 sq5:** 8 chain refusals, 1 release. Echo's crews sit behind Delta_4 (sq4, parked, yielding head_on and cross,
+    26.6 s): the limit keeps sq4's parked crews from stepping far enough to let the last squad through. This is the rule's own cost.
+  - **terminus s8114 sq1:** 9 refusals, 7 releases. The same shape, against sq4's Delta_5. Fragile: mainT1 had sq1 in only at 84.7 s,
+    and sq5 is never in on both arms.
+  - **locks s8119 sq1:** in_play 1, no refusals. An own-squad column jam (Alpha_2 behind Alpha_3, slow/same, 41 s). One rule event
+    changes the run's whole path: chaos, not the rule. Fragile: mainT1 had sq1 in only at 70.0 s.
+- **Reading:** the regressions are the last squad threading through squads already parked at the objective. M1's limit keeps a far
+  parked crew from taking the far spot that would let it through, and the release only helps a WEDGED asker (stalled 3 s); a slow
+  one doesn't qualify. M1 v2 stays OFF. The next form, if a later round wants it: limit the reach only for a crew whose OWN squad is
+  still arriving (the chain drift is the arrivals' cost; a parked squad making way for a later squad is the job). Not built.
