@@ -92,6 +92,14 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   option); the 28.4 m twitch is Bravo_2's 24 m deploy leg to the herringbone's far seat, after the probe's 8 s window. So round 39's
   reading (G1 v5's guard = settle's trigger) was wrong; the twitch goes to orders. Main deploys on the 10 s cap for 311/768 street squads
   (40 %) and 48/96 his-click squads (e7c896c8f's rows): that is the "sits 10 s"; settle traces every cap deploy before picking T1's rule.
+- **R40.5 (2026-10-24 evening) orders' traces: G1 v5's his-5 twitch is its own lay; locks 5 "outside" is a probe artifact.** (1) s6201
+  (e7c896c8f's logs): Alpha starts 29 m WEST of the click, v5's column gives it the 2nd place 34 m EAST, so it drives 62 m through Bravo's
+  halt; Bravo_2 gives way t1-t10, Bravo deploys on the cap. Fix G1 v6 `--group-sides=both` (88b413ec4, OFF): a squad > 15 m past the click
+  is laid on its own side; the untangle never hands a place across the click. (2) locks 5 s6204-6207: the probe's gate_width scan stops at
+  a floodlight's navmesh hole, counting two squads on one open quay as "outside"; the probe now reads past obstacles <= 8 m (c08d8f720;
+  `--probe-corridor=gate` = the old read; the game's gate_width callers unchanged). **Ruled:** the G1 v6 bar decides on the new read and
+  REPORTS the old read beside it for every cell (an instrument change is never judged on its own new number alone); settle's and
+  manoeuvre's bars that use orders' probe name which corridor read they judge on.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
