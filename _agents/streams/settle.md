@@ -62,7 +62,37 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-25, running)
+### Final report (round 40, 2026-10-25)
+**Final hash: see the last commit on `stream/settle` (docs and refs only after 95276e979).** Green hashes: **95276e979**
+(builder2, `make native check exited 0`, 3212 passed / 0 failed; the cap-deal gate), cab85debf = CP40.1 (T1 ON, builder2
+3188/0), b5dbfdd72 (builder2 3189/0). Every game-code commit on the branch is at or before 95276e979.
+- **Shipped: T1, ON** (`--deploy-arrive=settled` default, `=off` escape; merged to main 9d5907ddd). A squad deploys once
+  its crews have settled instead of waiting out the 10 s cap. Bar T1 PASS (builder0 light J4, 8001-8012, n 576 squads):
+  cap deploys 265 -> 83, arrival to deploy mean 6.26 -> 4.42 s, every guard held. What he'd feel: squads stop and form up
+  sooner, with fewer stragglers.
+- **S1 v3, per-crew route-clear: FAIL** (builder0 light J4, 8013-8024, T1 OFF). Its deciding line passed (5-squad never-in
+  4 -> 0), but the twitch guard failed: squads >= 15 m 88 -> 99. Cause: waiting crews were released after the 8 s window
+  (+6), and cleared seats sat far away (legs >= 25 m 18 -> 42, +5). With T1 ON (dev, builder2, n 48) the twitch cost
+  reversed (42 -> 33), but s6306 showed a new never-in. Traced: the v3 corridor ignores the formation's travel width.
+- **S1 v3b, swept band: lab STOPPED before the series** (dev builder2, n 48). It fixes s6306 (never-in 0) but loses the
+  gain: twitch >= 15 m 48 v main 42, and 70 of 192 squads wait. Cause: a lane-wide band leaves no fit seat. Seeds
+  8701-8724 were returned unused.
+- **Bar cap deal: FAIL by under one squad** (builder2 J12, frozen 95276e979, 8725-8748, n 576, fights 36/36).
+  Deciding legs >= 25 m 59 -> 45, needed <= 44.2. Twitch >= 15 m 99 -> 92 PASS; every guard PASS. Cause: it cuts the
+  cap deploys' legs >= 25 m by half (25 -> 12), but most long legs come from all_in (21 -> 21) and settled (13 -> 12)
+  deploys, which it never touches. Stays OFF.
+- **Round 41 items:** (1) S1 one-sided band: the band runs from the centre line out to the side where each crew's own
+  travel slot sits (at most 15 m), so the lane's far half stays free for seats. (2) Cap deal re-barred on fresh seeds,
+  with the deciding line counted over cap deploys, or the street lay extended to all_in/settled deploys whose legs
+  run >= 25 m. (3) v3 ideas: release a wait inside the place window; cap a cleared seat's leg at the original seat plus
+  one spacing.
+- Housekeeping: `tests/test_settle_cap_deal.gd.uid` committed (uid from builder2's import). Side worktree
+  `../godot-settle-dev9d` is parked at 4f1ed2eca (the dev-v3t1 trace commit, not on the branch) to keep the cited
+  refs' tree reachable; delete it once nobody needs that tree. Its builder2 folders are deleted. Quirk: the series that
+  delegate to `settle-s1v2` (s1c, t1, s1v3r40, s1v3b, capdeal) stamp `header.txt` with "settle-s1v2"; the dir name is the
+  target.
+
+### Report detail (2026-10-25)
 - **Bar T1 PASS** (afd436ca3's code, builder0 light J4, `settle-t1`, seeds 8001-8012, re-run in full after builder0's crash;
   every part complete: 576 squads, fights 36/36 both reads, 0 unstarted; `references/round40/settle/t1-bar-builder0/`
   at 8ca1b1e31): cap deploys 265 -> 83; arrival to deploy mean 6.26 -> 4.42 s (median 7.1 -> 3.4); never-in 3 -> 1 runs;
@@ -158,9 +188,9 @@ fight seeds 8737-8748**; builder2, `make settle-capdeal`. Judge `settle_judge.py
   >= 25 m **59 -> 45 FAIL** (needed <= 44.2, 0.75 x base: a 24 % cut that missed 25 % by under one squad); twitch >= 15 m
   99 -> 92 PASS. Guards all PASS: never-in 7 -> 6 (0 new), all-in 26.7 -> 26.0 s, outside 100 -> 100, flips 0 -> 0,
   contacts 14460 -> 14351 / foreign 8526 -> 8591, all six fight guards. Counter: 92 cap deploys dealt out of 569.
-  Reported: place+twitch >= 25 m 170 -> 162. Reading: the cap deal helps without hurting anything, but cap deploys are
-  only 92 of 569, so most legs >= 25 m come from the other deploy causes (all_in, settled), which this cut doesn't touch.
-  A round-41 bar would have to cover those causes, not only cap.
+  Reported: place+twitch >= 25 m 170 -> 162. Legs >= 25 m by deploy cause (probe rows.jsonl): cap 25 -> 12, all_in
+  21 -> 21, settled 13 -> 12. The cap deal halves the cap deploys' long legs, but most long legs come from deploy causes
+  it never touches.
 
 ### Bar S1 v3b swept band (filed 2026-10-25 before any number on 8701-8724; R40.14)
 What he'd see: the same as S1 v3 (no squad parks on a street the squads behind still drive), now with T1 ON in both arms.
