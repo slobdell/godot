@@ -50,6 +50,11 @@ perf-judge refused 3x at 1.4-2.2x on a busy box, scenario_perf unpinned; sim-bas
 the first ON flip (T1, CP40.1) needs a quiet-window `make remote-quiet T=perf-judge` on builder0 before the round closes. Builder0 crashed
 22:04-22:20 (native's slot.sh recursion, R40.11); fixed on main.
 
+**2026-10-25 ~02:10: main 9d5907ddd GREEN on builder2** (`make check exited 0`, 3206 passed / 0 failed, 24 passed + 3 NOT JUDGED:
+perf-judge (builder2 doesn't judge), scenario_perf 3.08x, quiet window; sim-baseline 13 unmoved) = CP40.1 T1 ON + M1 v2 OFF + native's
+fixes. **Still owed: perf-judge on a quiet builder0** for T1 ON (last judged 68d0410d3, 7,691 us/tick). Bars so far: T1 PASS (shipped),
+M1 v2 FAIL (G5), G1 v6 FAIL (terminus 5 route twitch); running S1 v3 (settle), G3 v9 (orders, queued), B2s (balance, candidate screening).
+
 **Round-41 candidate (manoeuvre, 7849fe586):** M1 v3 = limit a parked crew's give-way reach only while its OWN squad is still arriving
 (a parked squad making way for a later squad is doing its job). M1 v2 failed G5 (2 -> 5; with T1 ON 1 -> 3): the last squad threads
 through squads already parked at the objective, and the 3 s release helps only a stalled crew, not a slow one.
