@@ -194,6 +194,11 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   269 -> 283, Missile Ring 218 -> 228; 2000 CR buys 15 Skimmers, not 16). **GRANT:** re-pin ONLY those expected numbers on the ARM branch
   (test_army_economy x6, test_army_screen::test_a_spent_army_says_so, test_army_size::test_the_table_at_two_thousand), each listed in
   merge notes, adopted like the sim baseline. That's adoption, not weakening, and doesn't breach G7. No assertion's form changes.
+  **Amended (2026-10-25 ~07:20):** ARM ad956031b red on the invariant's other half (rear >= front; Skimmer 2/2/2 with a cut front over an
+  unmoved rear). Candidate becomes **fm_law_c5r2**: rear armour moves only where armour goes DOWN (syndicate all faces -15 %, as screened
+  c5); a buffed rear stays as today. Every weapon x unit through the penetration math: 0 breaks. ARM = 66c4839a2 (5be511659 + apply c5r2 +
+  R40.18's re-pins). **Accepted:** c5r2's G8 screen = c5r's gangs/law/condemned mono arms (same-faction fights hold no syndicate unit, so
+  they replay identically) + new syndicate mono arms; its own paired lines read on 8513-8524 runs first.
 - **Bar M3, wedge re-route (manoeuvre; FILED b21565b37, 2026-10-25 ~04:50, before any number on 8601-8624).** OFF v
   `--giveway-reroute=any`. **Deciding D:** long-episode seconds ON <= 0.8 x OFF at >= 2 se. G1-G4 deaths, contacts, fights (A: wedge trace
   8601-8612); G5 never-in, G6/G7 all-in and last-in (B: orders probe 8613-8624). Judge `tests/manoeuvre/reroute_judge.py`. builder0 light
