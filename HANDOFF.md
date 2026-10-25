@@ -50,6 +50,10 @@ perf-judge refused 3x at 1.4-2.2x on a busy box, scenario_perf unpinned; sim-bas
 the first ON flip (T1, CP40.1) needs a quiet-window `make remote-quiet T=perf-judge` on builder0 before the round closes. Builder0 crashed
 22:04-22:20 (native's slot.sh recursion, R40.11); fixed on main.
 
+**Round-41 candidate (manoeuvre, 7849fe586):** M1 v3 = limit a parked crew's give-way reach only while its OWN squad is still arriving
+(a parked squad making way for a later squad is doing its job). M1 v2 failed G5 (2 -> 5; with T1 ON 1 -> 3): the last squad threads
+through squads already parked at the objective, and the 3 s release helps only a stalled crew, not a slow one.
+
 **Orchestrator, after launch:** run the round-30 loop (`orchestration.md`); merge CP40.0 alone the minute native names it and tell
 balance; merge CP40.1 when settle's T1 bar passes and tell orders the same minute.
 
