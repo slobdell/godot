@@ -120,6 +120,15 @@ th did not beat t50 by more than its se). Round 2 (ifv15, then t50_ifv15) starte
 turtle lines for base / t50 / t50_ifv15 on 9411-9420, 200 fights an arm, Bar B5's guards as a dev screen) is queued behind it
 (`~/balance-runs/b5-r3.sh`; stop by PID if Bar B2s v2's ARM goes green first).
 
+**B5 ROUND 2 DONE (08:46; 8f2643375 + overrides, builder2 J24, 9401-9410, mono line both teams, 400 fights an arm, 0 lost):**
+| arm | all | condemned | gangs | law | syndicate | median length | flank share |
+|---|---|---|---|---|---|---|---|
+| base | 85 % | 77 | 78 | 92 | 92 | 179 s | 64.6 % |
+| ifv15 (IFV toughness +15 %, cost -15 %) | 82 % (-2, se 2) | -3 (4) | +2 (5) | -5 (2) | -3 (1) | +2 % | -0.9 (0.9) |
+| **t50_ifv15** (turret x0.5 + ifv15) | **77 % (-8, se 1)** | -10 (4) | -10 (4) | -3 (3) | -8 (2) | +8 % (syndicate +52) | +0.7 (1.0) |
+**The nearest arm inside his rules lands at 77 %, 37-42 points short of 35-40 %.** The IFV's dealt a credit under the combined
+arm: condemned 0.8 -> 1.5, law 0.8 -> 1.15, still 4-8 % alive. Next (running): the deal arm (R41.12), then pen7, then the lines.
+
 **B5 round 2, ifv15 arm read (every IFV hp/shield/front+side armour +15 %, cost -15 %; same series, 400 fights, paired, 07:37):**
 mono-tank wins 85 -> **82 % (-2, se 2)**: condemned -3 (se 4), gangs +2 (se 5; the Gun Truck's twin MG, pen 2.5, gets through
 nowhere, so toughness buys it nothing), law -5 (se 2; length -15 %), syndicate -3 (se 1). The IFV's share of the damage on tanks
@@ -151,7 +160,7 @@ bridge runs (9025-9036 x 3 ticks x 2 sides) the v2 overrides tree with the rule 
 known bridge failure remains the 18-run drill's rust t15 s2 (R40.20). The ARM rebuild recipe (apply + cherry-pick ad956031b)
 is proven mechanical on ff30edf87 (`apply --tree` now). builder2 stays on B5: the deal arm, pen7, then the lines screen.
 
-**B5 WRITE-UP FOR HIM (draft 07:45; the combined arm's line is filled in when it lands; the orchestrator takes it to him).**
+**B5 WRITE-UP FOR HIM (round-2 version 08:55; two dev arms still to land, the deal arm and pen7, which may change the last paragraph; the orchestrator takes it to him).**
 *What you noticed is real, and it is not about facing.* An army of only tanks beats the same faction's normal mixed army, same
 money, 85 % of the time (CPU v CPU, 5 maps, both sides, 400 fights). Your target was the mixed army winning 60-65 %, so the
 tank army should win 35-40 %: about 45 points away.
@@ -167,8 +176,8 @@ its flank fire adds up: 4 % of IFVs are alive at the end, and all IFVs together 
 (34 %) and the mixed army's own tanks (35 %) do the work. The Gangs Gun Truck is the extreme: its twin MG can't scratch a tank
 from any side, at any toughness.
 *An IFV 15 % tougher and 15 % cheaper (your +/-15 % rule) takes the tank army from 85 to 82 %.* With the slow turret as well:
-[combined arm, pending].
-*So inside your rules the all-tank army ends near [78-80] %, not 35-40 %.* To reach your target the IFV has to be able to kill
+77 % (Condemned and Gangs 67-68 %, Law 89 %, Syndicate 84 %).
+*So inside your rules the all-tank army ends near 77 %, not 35-40 %: the best in-bounds change closes about 8 of the 45 points.* To reach your target the IFV has to be able to kill
 a tank from the side before it dies, and that is a weapon or armour-piercing change, not a number inside 15 %: (1) the IFV's
 cannon gets through a tank's side and rear properly (its penetration up, so a flank actually pays; the front stays a wall), or
 (2) the slow, limited anti-tank missile you asked about (not a tank: a Bradley's TOW, two shots, slow, only useful from a
