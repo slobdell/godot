@@ -153,6 +153,13 @@ another project's workers (plane_maker): never touch processes you didn't start.
   0.6 %, off-screen shots 29 -> 1; ambush blind 2.8 -> 1.2 %; attack guards hold (clicks 80.8 v 82.4 %, slip p95 24 px, held 16.6 %,
   action share 35.9 -> 59.4 %, reversals 11.7 -> 5.3/min). The full check of 91ebddc9f queued behind builder0's lock; the series
   starts on the commit that check greens (light lane, ~2.5 h both arms). A pass ships ON; the clip (K4.4) goes to him.
+  **Amended before any number (camera 4fd517b83):** the first laptop clip of his retreat (dev 7005) faced the fight but hid his scout
+  behind his own wall (the vision frame mirrors each contact about his units and leans toward the move destination; looking at the
+  danger both lie behind the view and the focus sat 30 m past the wall, so the cutaway found no wall). Fix, ON only: mirrors and the
+  focus stay 4 m inside the wall; a destination behind the view is not leaned toward (same seed: boom ~49 m, cutaway active, scout
+  visible). **G5 "own squad on screen" also requires the unit not to be behind an uncut perimeter wall** (projection-only scored
+  that clip 99.7 % while the scout was invisible). The 91ebddc9f check is cancelled unstarted; 4fd517b83's is queued; the series
+  starts on the commit whose check greens.
 
 _(filed bars go here, before their numbers)_
 
