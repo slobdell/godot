@@ -265,6 +265,8 @@ _(filed bars go here, before their numbers)_
   (both clamped: the one moved less; neither: today's sign), **gated under ATTACK_SHOT (option b)** so the OFF arm of every bar this
   round stays byte-identical to main and no OFF baseline moves; the ship flip carries it. Bar E1's frozen tree moves to the fixed
   commit, lines unchanged, no number read; the suite-ON check re-runs on it (C31.1) before the series. Perf-judge under ON: PASS.
+  Built 4658fa514 (`ElementPlan.flank_side`, pure; two lines under `if ATTACK_SHOT`; 4 tests; laptop `ATTACK_SHOT=on make
+  tactics-drills` 0 failures, far_ambush widest 75.0 m v OFF 73.3): **Bar E1's frozen tree = 4658fa514**; its suite-ON check queued.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
