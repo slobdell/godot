@@ -239,6 +239,15 @@ round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9548 camera K3 v2 (36 see
   automatic snaps 594 -> 0; (4) auto_frame px/min 61 % of BASE, 36/36 runs ok; (5) held 15.0 % of play, action share 41.8 -> 41.4 %.
   Shake (laptop windowed, s7001, d6f0da32e): <= 0.5 px at any click. Clip for him: `build/camera-clip/camera_glide_clip.mp4` (laptop,
   72 s, dev seed 9501, left off / right on). Merge on camera's green hash; perf-judge in the close's quiet window (an ON flip).
+- **R41.18 (2026-10-26 ~11:30) B5's dev reads complete; the write-up for him is final (balance Status, B5 WRITE-UP FOR HIM).** pen7
+  (autocannon 5 -> 7, pulse 7, twin MG 4; 8f2643375 + tune, 400 mono fights): all-tanks 85 -> 85 % (+0, se 1): IFVs traded better
+  (condemned 0.81 -> 0.95 a credit, law 0.78 -> 0.96, Gun Truck 0.23 -> 0.50) and still died (2-5 % alive). Barrage arm (3ef8d5771,
+  law_barrage / syndicate_barrage measure_only, 200 fights): Law 92 -> 96 % (+4, se 3: the Gas Rocket Truck deals 2.65 a credit v the
+  Condemned Artillery's 5.4); Syndicate 92 -> 87 % (-5, se 5: the Missile Ring 1.06 a credit, dies to the Railgun in 5 s). Summary for
+  him: his levers ~5 points each (turret best), in-bounds IFV +2, combined 77 %; artillery-heavy lineups reach the target for Condemned
+  (47 %) and Gangs (52 %) with no number changed; Law and Syndicate have no lineup that does (their only tank-trader is their tank): the
+  next thing to measure is their artillery's numbers within his 15 %; a sharper IFV cannon buys nothing; the missile isn't needed.
+  Lines screen (base / t50 / t50_ifv15) running ~1.8 h: decides only whether the slow turret is safe to file a bar for.
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
