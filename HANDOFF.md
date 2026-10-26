@@ -62,7 +62,14 @@ GREEN on builder2 (`make check exited 0`, 25 passed + 2 NOT JUDGED: perf-judge, 
 **2026-10-25 ~09:30: main (c30136971 code = 0badbb09e + docs) GREEN on builder0, 27 targets ALL JUDGED** (`make check exited 0`,
 3237 passed / 0 failed; perf-judge judged in the check). This is round 40's verified main without B2s.
 
-**ROUND 40 STATE (2026-10-25 ~18:10 PDT): Bar B2s FAILED on G3 (R40.19).** BASE 5be511659 v ARM 66c4839a2, builder2, 1600 fights an
+**ROUND 40 STATE (2026-10-25 ~20:50 PDT): heading to close; main unchanged (verified 0badbb09e + docs).** B2s v2's ARM (d385cd308,
+fm_c5r2_lawt5: Law +5 % toughness) went red on bridge-pooled (rust t15 s2, one crew 5.4 s at the rim v 3 s). Cause: ORCA steers a
+wheeled follower out past the deck mouth while its leader turns (R40.21; not the twin). Manoeuvre's follow-queue F1 took three forms
+(R40.22-R40.24); each fixed its case and broke another, so F1 stays OFF. bridge-pooled is not waived, so **the stat change carries to
+round 41** behind a speed-only bridge fix; Bar B2s v2 (8801-8840 + 8901-8940) is filed and unread. Waiting: balance's v2 dev screen,
+B2s's G5/G8 verdict, final docs tips; then close (orchestration.md §8).
+
+**Earlier: ROUND 40 STATE (2026-10-25 ~18:10 PDT): Bar B2s FAILED on G3 (R40.19).** BASE 5be511659 v ARM 66c4839a2, builder2, 1600 fights an
 arm: flatness 18.5 -> 8.9 (-9.6 ± 2.2) PASS, G1 blob 41 -> 35 % PASS, G2 turtle +0.4 PASS, G4 PASS, but G3's LAW blob fight length
 +24.6 % ± 3.6 (band ±20 %) FAILS (Law's +15 % toughness). fm_law_c5r2 stays OFF; main unchanged (verified 0badbb09e + docs). Balance
 works v2 (Law toughness trimmed): dev screen on 8501-8540 with a per-faction G3 read, then Bar B2s v2 on fresh 8801-8840 + 8901-8940
