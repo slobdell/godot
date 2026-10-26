@@ -207,6 +207,12 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   c5); a buffed rear stays as today. Every weapon x unit through the penetration math: 0 breaks. ARM = 66c4839a2 (5be511659 + apply c5r2 +
   R40.18's re-pins). **Accepted:** c5r2's G8 screen = c5r's gangs/law/condemned mono arms (same-faction fights hold no syndicate unit, so
   they replay identically) + new syndicate mono arms; its own paired lines read on 8513-8524 runs first.
+- **Bar B2s v2 (balance; FILED 8165a8830, 2026-10-25 ~18:30, before any number on 8801-8840 + 8901-8940; R40.19).** Bar B2s word for
+  word with its seeds moved: lines 8801-8840 + 8901-8940 (blob + turtle, 5 guard arenas, both sides, 1600 an arm); none line 8801-8820
+  (one side); G8 mono line 8801-8820 per faction. BASE 5be511659; ARM frozen d385cd308 (branch balance/b2s-v2-arm = 5be511659 + apply
+  fm_c5r2_lawt5, 55 values, + R40.18's re-pins; prices as c5r2). The dev screen (8501-8540) must confirm the candidate before the series;
+  a changed candidate = a new frozen ARM named before numbers. Judge `search.py bar`, deciding and G1-G8 exactly as B2s. Builder2 J24,
+  after ARM's full check (builder0, green but sim-baseline, recorded twice).
 - **Bar M3, wedge re-route (manoeuvre; FILED b21565b37, 2026-10-25 ~04:50, before any number on 8601-8624).** OFF v
   `--giveway-reroute=any`. **Deciding D:** long-episode seconds ON <= 0.8 x OFF at >= 2 se. G1-G4 deaths, contacts, fights (A: wedge trace
   8601-8612); G5 never-in, G6/G7 all-in and last-in (B: orders probe 8613-8624). Judge `tests/manoeuvre/reroute_judge.py`. builder0 light
