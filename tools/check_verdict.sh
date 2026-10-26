@@ -14,7 +14,7 @@
 #
 #   PASS     started and finished
 #   FAIL     started and did not finish
-#   NOT RUN  never started -- skipped because something it was ordered after failed (lint gates everything;
+#   NOT RUN  never started -- skipped because something it was ordered after failed (lint-fast gates everything;
 #            the three exclusion pairs gate each other)
 #
 # And a fourth since round 14 (squad Q2; verification.md rule 3):
@@ -82,7 +82,7 @@ printf '%s' "$lines" | grep -v '   PASS  '
 if [ -n "$notrun_list" ]; then
 	printf '>> check: never ran:%s\n' "$notrun_list"
 	printf '>> check:   a NOT RUN target is not a passing one. It was skipped because a target it is\n'
-	printf '>> check:   ordered after failed -- lint gates every other target, and the three port/path\n'
+	printf '>> check:   ordered after failed -- lint-fast gates every other target, and the three port/path\n'
 	printf '>> check:   exclusion pairs gate each other.\n'
 fi
 exit 1

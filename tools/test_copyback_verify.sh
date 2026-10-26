@@ -96,8 +96,45 @@ rm -f "$L/build/other.txt" "$B/build/other.txt"
 out=$(bash "$cb" "$L" "$tmp/box.manifest" "$B/" 2>&1); rc=$?
 [ "$rc" = 5 ] && grep -q "MISSING  build/other.txt" <<<"$out" && ok "missing on both sides: exit 5, the rsync error does not end the check" || bad "missing both: exit 5" "exit $rc: $out"
 grep -q 'copyback_verify.sh" "$verify_root" "$verify_root/build/.copyback.sha256" \\' "$remote_sh" \
-	&& grep -q '"$host:~/$remote_dir/" || verify_status' "$remote_sh" \
-	&& ok "remote.sh passes the box's folder as the re-copy source" || bad "remote.sh passes the box's folder as the re-copy source"
+	&& grep -q '"$host:$remote_dir/" || verify_status' "$remote_sh" \
+	&& ok "remote.sh passes the box's folder as the re-copy source, home-relative" || bad "remote.sh passes the box's folder as the re-copy source, home-relative"
+
+# ---- round 41 N1: a `host:~/dir/` source runs the re-copy branch for real -------------------------------------------------
+# rsync 3.4's sender takes the `~` of a --files-from source literally: change_dir "/home/<user>/~/tank_squad/..." and exit 12
+# on the receiving side (manoeuvre, builder2, 2026-10-25; reproduced against builder0 2026-10-26). A stub rsync on PATH plays
+# the box: `box:<path>` maps onto $tmp/home/<path>, and a literal `~` in a --files-from source fails exactly that way.
+H="$tmp/home"; mkdir -p "$H/tank_squad/godot-x/build" "$tmp/bin"
+real_rsync=$(command -v rsync)
+cat > "$tmp/bin/rsync" <<STUB
+#!/usr/bin/env bash
+args=(); ff=0; tilde=0
+for a in "\$@"; do
+	case "\$a" in --files-from=*) ff=1 ;; esac
+	case "\$a" in
+		box:*) p=\${a#box:}; case "\$p" in '~/'*) tilde=1 ;; esac; args+=("$H/\$p") ;;
+		*) args+=("\$a") ;;
+	esac
+done
+if [ \$ff = 1 ] && [ \$tilde = 1 ]; then
+	echo 'rsync: [sender] change_dir "/home/u/~/..." failed: No such file or directory (2)' >&2; exit 12
+fi
+exec "$real_rsync" "\${args[@]}"
+STUB
+chmod +x "$tmp/bin/rsync"
+X="$tmp/xlocal"; mkdir -p "$X/build"
+printf 'fresh frames 0123\n' > "$H/tank_squad/godot-x/build/clip.mp4"
+( cd "$H/tank_squad/godot-x" && sha256sum build/clip.mp4 > "$tmp/x.manifest" )
+cp -p "$H/tank_squad/godot-x/build/clip.mp4" "$X/build/clip.mp4"
+printf 'STALE frames 9876\n' > "$X/build/clip.mp4"; touch -r "$H/tank_squad/godot-x/build/clip.mp4" "$X/build/clip.mp4"
+out=$(PATH="$tmp/bin:$PATH" bash "$tmp/bin/rsync" -a --files-from=<(echo build/clip.mp4) "box:~/tank_squad/godot-x/" "$X/" 2>&1); rc=$?
+[ "$rc" = 12 ] && ok "the stub reproduces the bug: a --files-from source with ~/ exits 12" || bad "stub reproduces exit 12" "exit $rc: $out"
+out=$(PATH="$tmp/bin:$PATH" bash "$cb" "$X" "$tmp/x.manifest" "box:~/tank_squad/godot-x/" 2>&1); rc=$?
+[ "$rc" = 0 ] && ok "a box:~/dir/ source: the re-copy runs and the file verifies (exit 0)" || bad "box:~/ source: exit 0" "exit $rc: $out"
+grep -q "re-copy exited" <<<"$out" && bad "a box:~/dir/ source: the re-copy's rsync succeeds" "$out" || ok "a box:~/dir/ source: the re-copy's rsync succeeds"
+grep -q "fixed all 1" <<<"$out" && ok "a box:~/dir/ source: says the re-copy fixed it" || bad "box:~/ source: fixed all 1" "$out"
+printf 'STALE frames 9876\n' > "$X/build/clip.mp4"; touch -r "$H/tank_squad/godot-x/build/clip.mp4" "$X/build/clip.mp4"
+out=$(PATH="$tmp/bin:$PATH" bash "$cb" "$X" "$tmp/x.manifest" "box:tank_squad/godot-x/" 2>&1); rc=$?
+[ "$rc" = 0 ] && ok "a home-relative box:dir/ source (what remote.sh passes): exit 0" || bad "box:dir/ source: exit 0" "exit $rc: $out"
 
 printf '\ncopyback-verify: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

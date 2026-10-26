@@ -1,0 +1,4 @@
+extends Node
+## lint-fast self-test (N5): a static type error, seen only by the analyzer.
+func h() -> void:
+	var y: int = "s"

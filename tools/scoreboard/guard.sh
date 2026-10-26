@@ -15,6 +15,9 @@
 #   GUARD_OVERRIDES=path/to/candidate.json (round 40, N3: balance's search): the file is laid into the scratch tree as
 #   overrides/<sha12>.json and every fight gets --unit-overrides=res://overrides/<sha12>.json (Army.ensure_overrides; COMMIT
 #   must carry it); the folder is <commit>-ov-<sha12> unless GUARD_TAG names it. GUARD_RESULT's overrides_sha says which file.
+#   GUARD_TARGET=balance-guard-run (round 41, balance's ask): the make target each remote call runs, default `guard-run`. Another
+#   target (balance's read-only face probe, tests/tactics/face_probe.gd extends guard_line) must be in COMMIT's own makefiles:
+#   only scoreboard.mk and guard_line.gd are in the overlay below. It retires tools/balance/guard_probe.sh's sed'd copy.
 set -uo pipefail
 export PATH=$HOME/projects/bin:$PATH  # gcloud, for gcp-start (remote_builds.md: a systemd-run unit lacks it)
 commit=${1:?usage: tools/scoreboard/guard.sh COMMIT [HOST]}
@@ -43,6 +46,8 @@ arenas=${GUARD_AT:-terminus locks sumps gorge parade}
 sides=${GUARD_SIDES:-green rust}
 jobs=${GUARD_JOBS:-20}
 tries=${GUARD_TRIES:-6}
+target=${GUARD_TARGET:-guard-run}
+[[ "$target" =~ ^[a-z0-9][a-z0-9_-]*$ ]] || { echo "guard: GUARD_TARGET '$target' is not a make target name" >&2; exit 2; }
 overlay=(mk/scoreboard.mk tests/ai_scenarios/guard_line.gd tests/ai_scenarios/guard_line.gd.uid tools/remote.sh
 	tools/remote_guard.sh tools/slot.sh tools/quiet_window.sh tools/worktree.sh tools/copyback_verify.sh tools/copyback_prune.sh)
 
@@ -62,7 +67,7 @@ fi
 overlay_from=$(git -C "$src" rev-parse --short=9 HEAD)
 mkdir -p "$out"
 say() { echo "$*" | tee -a "$out/driver.txt"; }
-say ">> guard: $short on $host, probe from $overlay_from, kinds '$kinds', sides '$sides', args '$args'${ov_sha:+, overrides $overrides}, seeds $(echo $seeds | wc -w) ($(date '+%F %T'))"
+say ">> guard: $short on $host, target $target, probe from $overlay_from, kinds '$kinds', sides '$sides', args '$args'${ov_sha:+, overrides $overrides}, seeds $(echo $seeds | wc -w) ($(date '+%F %T'))"
 
 complete() {  # complete SEED: every log of the chunk is in $out with its GUARD_RESULT
 	local seed=$1 kind arena side
@@ -95,10 +100,10 @@ for ((i = 0; i < ${#todo[@]}; i += chunk)); do
 				|| TANK_SQUAD_SLOT=1 make -C "$src" --no-print-directory gcp-start 2>&1 | tail -1 | tee -a "$out/driver.txt" ;;
 		esac
 		rm -rf "$wt/build/guards"
-		( cd "$wt" && TANK_SQUAD_COMMIT=$short REMOTE_HOST=$host bash tools/remote.sh native guard-run \
+		( cd "$wt" && TANK_SQUAD_COMMIT=$short REMOTE_HOST=$host bash tools/remote.sh native "$target" \
 			GUARD_KINDS="$kinds" GUARD_AT="$arenas" GUARD_SEEDS="${group[*]}" GUARD_SIDES="$sides" GUARD_JOBS="$jobs" GUARD_ARGS="$args" GUARD_RESUME=1 ) > "$out/remote-$tag.log" 2>&1
 		status=$?
-		exited=$(grep -E '^>> remote: make .*guard-run.* exited ' "$out/remote-$tag.log" | tail -1)
+		exited=$(grep -E "^>> remote: make .*$target.* exited " "$out/remote-$tag.log" | tail -1)
 		load=$(grep -E '^>> guard-run on ' "$wt/build/guards/run.txt" 2>/dev/null | head -1 | sed 's/.*| load /load /')
 		if [ "$status" = 0 ] && [[ "$exited" == *"exited 0 (build/ copied back)"* ]] \
 				&& grep -q '^>> remote: copy-back verified' "$out/remote-$tag.log"; then

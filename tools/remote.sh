@@ -348,8 +348,9 @@ verify_status=0
 if [ "${REMOTE_VERIFY:-1}" != 0 ] && [ "${REMOTE_NO_COPYBACK:-0}" != 1 ] && [ "$copy_status" -eq 0 ] && [ -x "$repo_root/tools/copyback_verify.sh" ]; then
 	# The box's folder as the re-copy source: a file that fails is fetched once more with --checksum before it counts
 	# (round 39: build/flank_s5.mp4 matched the box's size and mtime, so the plain copy-back skipped it every time).
+	# Home-relative, no `~/`: rsync's --files-from sender takes a `~` literally (round 41 N1, exit 12).
 	RSYNC_RSH="ssh ${ssh_opts[*]}" "$repo_root/tools/copyback_verify.sh" "$verify_root" "$verify_root/build/.copyback.sha256" \
-		"$host:~/$remote_dir/" || verify_status=$?
+		"$host:$remote_dir/" || verify_status=$?
 	# A missing manifest (exit 3) is reported and does not fail the command: an older checkout on the box
 	# writes none, and refusing every run over that would be worse than the problem. A MISMATCH (5) does.
 	[ "$verify_status" -eq 3 ] && verify_status=0

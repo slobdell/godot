@@ -1,0 +1,5 @@
+extends Node
+## lint-fast self-test (N5): sound itself, but preloads a script that does not parse.
+const B = preload("res://build/lint-fast-selftest/broken.gd")
+func g() -> void:
+	pass

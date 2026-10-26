@@ -173,6 +173,34 @@ lint: import ## Parse-check every GDScript file; fails on any finding NOT in tes
 	fi; \
 	echo "lint: all $$count scripts parse (-P$(LINT_JOBS), $$(grep -c . $(BUILD_DIR)/lint.expected || echo 0) known artefacts baselined, $$found_n findings seen, self-test seen)"
 
+# Round 41 (native N5, R41.2): `lint-fast`, THE GATE for check's other targets. `lint` above re-loads each file's dependency graph
+# in its own process: 715 s of builder0's 2,208 s check (main, 2026-10-26 01:20), with all 25 other targets waiting on it. One
+# process loading every script once (tests/lint/lint_fast.gd) took 13.9 s there and printed a planted syntax error, the script
+# preloading it and a typed-assignment error, each with file:line. It runs WITH the class_name globals registered, so lint's 8
+# --check-only artefacts (tests/baselines/lint_expected.txt) do not occur here: lint-fast has no baseline, any finding fails.
+# Its self-test is planted every run (tests/fixtures/lint_fast/*.gd.txt + lint's ternary probe): each must be reported, and
+# the loader must count every file, or the run says nothing (tools/lint_fast.py). `lint` itself still runs in check, beside
+# `test`, judging exactly what it judged before: nothing it catches is dropped.
+.PHONY: lint-fast
+lint-fast: import ## One Godot process loads every GDScript file (~15 s on builder0): check's gate; fails on any Parse/SCRIPT ERROR
+	@# The planted files sit at a FIXED res:// path (uses_broken.gd preloads res://build/lint-fast-selftest/broken.gd).
+	@mkdir -p build/lint-fast-selftest $(BUILD_DIR)
+	@files=$$(git ls-files -co --exclude-standard '*.gd' 2>/dev/null || true); \
+	if [ -z "$$files" ]; then \
+		files=$$(find . -name '*.gd' -not -path './.git/*' -not -path './.godot/*' -not -path './.tools/*' \
+			-not -path './build/*' -not -path './node_modules/*' | sed 's|^\./||' | sort); \
+	fi; \
+	d=build/lint-fast-selftest; planted=""; \
+	for f in tests/fixtures/lint_fast/*.gd.txt tests/fixtures/ternary_infer_probe.gd.txt; do \
+		b=$$(basename $$f .txt); cp $$f $$d/$$b; planted="$$planted,$$d/$$b"; done; \
+	planted=$${planted#,}; \
+	{ printf '%s\n' "$$files"; printf '%s\n' $$(echo $$planted | tr ',' ' '); } | grep . > $(BUILD_DIR)/lint-fast.files; \
+	n=$$(grep -c . $(BUILD_DIR)/lint-fast.files); \
+	s=0; $(GODOT) --headless --path . --script res://tests/lint/lint_fast.gd -- "$$(realpath $(BUILD_DIR)/lint-fast.files)" \
+		> $(BUILD_DIR)/lint-fast.raw 2>&1 || s=$$?; \
+	[ $$s -lt 128 ] || echo "LINT_FAST killed by signal $$(( s - 128 ))" >> $(BUILD_DIR)/lint-fast.raw; \
+	$(PYTHON) tools/lint_fast.py $(BUILD_DIR)/lint-fast.raw --files $$n --selftest "$$planted" --out $(BUILD_DIR)/lint-fast.out
+
 # T1 (metrics, round 9). MEASURED on builder0 at c21d0256, serially, per target:
 #
 #     test 2388 s | announcer-check 80 s | army-loop-smoke 24 s | combat-smoke 19 s | determinism 11 s
@@ -375,7 +403,7 @@ test-times: ## Round 29 (I1): write tests/shard_times.txt from the last sharded 
 # Round 26 (C26.6, brains B1): `bridge-pooled` joins -- his bridge drill, seeds 1-3 x start ticks {1,8,15} x both sides
 # (18 runs, ~3.4 min on builder0), judged by tools/tactics/bridge_verdict.py (every surviving crew across; a crew killed
 # while not stuck excused). Round 25 fixed his bridge and nothing guarded it; CP1a fixed it again.
-CHECK_TARGETS := lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
+CHECK_TARGETS := lint-fast lint test net-smoke combat-smoke broker-test relay-smoke lobby-smoke match-smoke determinism \
                  sim-baseline garage-smoke army-loop-smoke announcer-check audio-check match-pytest metrics-pytest \
                  ai-scenarios-check remote-guard-test tactics-drills tactics-pytest web-smoke export-guard \
                  bridge-pooled native-verify-scenarios native-live-guard planner-pytest
@@ -575,11 +603,12 @@ check-parallel: $(_CHECK_WRAPPED) ## (internal) check's targets for `make -j`; r
 # `s=0; ... || s=$$?`: under `.SHELLFLAGS := -eu -o pipefail` the old `cmd; s=$$?` exited before s was set.
 $(foreach t,$(CHECK_TARGETS),$(eval _cp-$(t): ; @mkdir -p $$(BUILD_DIR)/check/started $$(BUILD_DIR)/check/done $$(BUILD_DIR)/check/running $$(BUILD_DIR)/check/logs $$(BUILD_DIR)/check/engine && touch $$(BUILD_DIR)/check/started/$(t) $$(BUILD_DIR)/check/running/$(t) && rm -f $$(BUILD_DIR)/check/engine/$(t) && { s=0; $$(MAKE) --no-print-directory -o import $(t) 2>&1 | tee $$(BUILD_DIR)/check/logs/$(t).log || s=$$$$?; $$(PYTHON) tools/engine_log_gate.py $(t) $$(BUILD_DIR)/check/logs/$(t).log --out $$(BUILD_DIR)/check/engine/$(t) || s=1; rm -f $$(BUILD_DIR)/check/running/$(t); [ $$$$s -eq 0 ] && touch $$(BUILD_DIR)/check/done/$(t); exit $$$$s; }))
 
-# LINT GATES EVERY OTHER TARGET. A file that does not parse makes every Godot target below fail in a way
-# that describes the symptom and not the cause, and reading sixteen of those to find one parse error is
+# LINT-FAST GATES EVERY OTHER TARGET (round 41 N5: it was `lint`, 715 s on builder0 with nothing else running; lint-fast is
+# ~15 s and sees the same parse errors, and per-file `lint` now runs beside `test` under this same gate). A file that does not
+# parse makes every Godot target below fail in a way that describes the symptom and not the cause, and reading sixteen of those to find one parse error is
 # how an hour goes. Ordered, not merged into the batch, so `-k` skips the rest rather than running them
 # into the same wall -- and they come back NOT RUN, which is not the same as passing.
-$(foreach t,$(filter-out lint,$(CHECK_TARGETS)),$(eval _cp-$(t): | _cp-lint))
+$(foreach t,$(filter-out lint-fast,$(CHECK_TARGETS)),$(eval _cp-$(t): | _cp-lint-fast))
 
 # The three exclusion groups, as order-only prerequisites between the wrappers.
 _cp-combat-smoke:    | _cp-net-smoke

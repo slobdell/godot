@@ -64,22 +64,22 @@ run match-smoke "" ; [ "$rc" = 0 ] && ok "an empty log passes" || bad "empty" "r
 
 # ---- the REAL check wrapper, with a stub target ----------------------------------------------------------------------
 # The stubs reach the wrapper's sub-make through MAKE (a command-line variable, so every sub-make gets it; `-f` alone
-# is not inherited and MAKEFILES loads BEFORE the Makefile, which then wins). `lint` is stubbed too: every other
-# wrapper is ordered after `_cp-lint`. make warns about the overridden recipes; harmless.
+# is not inherited and MAKEFILES loads BEFORE the Makefile, which then wins). `lint-fast` is stubbed too: every other
+# wrapper is ordered after `_cp-lint-fast` (round 41 N5; it was `lint`). make warns about the overridden recipes; harmless.
 cat > "$tmp/stub.mk" <<EOF
-lint: ; @echo "stub lint"
+lint-fast: ; @echo "stub lint-fast"
 stub-noisy: ; @echo "stub ran"; printf '%s\n' '$UNI' >&2
 stub-quiet: ; @echo "stub ran"
 EOF
 B="$tmp/b"
 wrap() {  # wrap <target>
-	( cd "$repo" && make -s --no-print-directory -f Makefile -f "$tmp/stub.mk" "_cp-$1" MAKE="make -f Makefile -f $tmp/stub.mk" CHECK_TARGETS="lint $1" BUILD_DIR="$B" \
+	( cd "$repo" && make -s --no-print-directory -f Makefile -f "$tmp/stub.mk" "_cp-$1" MAKE="make -f Makefile -f $tmp/stub.mk" CHECK_TARGETS="lint-fast $1" BUILD_DIR="$B" \
 		>"$tmp/wrap.out" 2>&1 ); echo $?
 }
 rc=$(wrap stub-noisy)
 [ "$rc" != 0 ] && ok "the wrapper fails a target whose make exited 0 but printed the line (on stderr)" || bad "wrapper noisy" "rc=$rc $(cat "$tmp/wrap.out")"
 [ ! -e "$B/check/done/stub-noisy" ] && [ ! -e "$B/check/running/stub-noisy" ] && ok "... no done marker, and running is cleared" || bad "markers" "$(ls -R "$B/check")"
-v=$("$repo/tools/check_verdict.sh" "$B/check" lint stub-noisy 2>&1)
+v=$("$repo/tools/check_verdict.sh" "$B/check" lint-fast stub-noisy 2>&1)
 grep -q 'FAIL     stub-noisy: engine message x1: "Unicode parsing error' <<<"$v" && ok "the verdict's FAIL row quotes the line" || bad "verdict row" "$v"
 grep -q 'stub ran' "$B/check/logs/stub-noisy.log" && ok "the target's own log is kept in check/logs/" || bad "log kept" ""
 grep -q 'engine-log-gate: stub-noisy FAILED' "$tmp/wrap.out" && ok "the target's output says why it failed" || bad "says why" "$(cat "$tmp/wrap.out")"
