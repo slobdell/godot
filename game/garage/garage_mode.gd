@@ -185,7 +185,7 @@ func fight(player_path: String, enemy: String) -> void:
 	var player_faction := catalog.faction if catalog.faction != "" else Units.DEFAULT_FACTION
 	var enemy_faction := GarageMode.resolve_enemy_faction(screen.enemy_faction, seed_value, player_faction)
 	var built := GarageOpponent.build(enemy, enemy_faction, seed_value, catalog.budget if catalog.in_credits
-			else Credits.of_points(budget))
+			else Credits.of_points(budget), screen.draft.to_doctrine())
 	if built.has("error"):
 		screen.report(String(built["error"]))
 		return

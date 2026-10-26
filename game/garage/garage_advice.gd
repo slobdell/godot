@@ -11,6 +11,21 @@ const UNIT_COLUMNS := [["cost", "Cost"], ["max_health", "Hull"], ["max_shield", 
 const LOWER_IS_BETTER := ["cost"]
 
 
+## B7 (round 42, balance): the line his tank-heavy draft gets. ON; `--tank-rush-hint=off` is the escape.
+const TANK_RUSH_HINT := "Bring two artillery squads with your tanks."
+static var _tank_rush_hint := true
+static var _tank_rush_read := false
+
+
+static func tank_rush_hint_on() -> bool:
+	if not _tank_rush_read:
+		_tank_rush_read = true
+		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--tank-rush-hint="):
+				_tank_rush_hint = String(arg).split("=", true, 1)[1] != "off"
+	return _tank_rush_hint
+
+
 ## Short, actionable hints about an army's composition, most important first.
 static func composition_hints(draft: ArmyDraft) -> PackedStringArray:
 	var catalog := draft.catalog
@@ -21,6 +36,11 @@ static func composition_hints(draft: ArmyDraft) -> PackedStringArray:
 	var my_roles := {}
 	for unit_id: String in counts:
 		my_roles[catalog.role(unit_id)] = true
+	# B7 (round 42, balance): a tank rush is what the CPU answers with artillery (Army.COUNTER_TANK_SHARE); say so first.
+	if tank_rush_hint_on() and Army.tank_share(draft.to_doctrine()) >= Army.COUNTER_TANK_SHARE \
+			and ArmyPresets.unit_for_role(catalog, "artillery") != "" \
+			and catalog.role(ArmyPresets.unit_for_role(catalog, "artillery")) == "artillery":
+		hints.append(TANK_RUSH_HINT)
 	# Each weakness of a unit I own that nothing I own is good against.
 	var reported := {}
 	for unit_id: String in counts:

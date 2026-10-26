@@ -14,8 +14,10 @@ const UNIT_CAP := ArmyCatalog.MAX_UNITS
 
 
 ## The army for `spec` ("cpu" = a seeded archetype of `faction`, "cpu:<archetype>" = that one, when it is the
-## faction's) at `credits`. {"doctrine": Dictionary} or {"error": String}.
-static func build(spec: String, faction: String, seed_value: int, credits: int = Credits.GAME_CREDITS) -> Dictionary:
+## faction's) at `credits`. {"doctrine": Dictionary} or {"error": String}. B7 (round 42, balance): `opposing` is his draft; against a
+## tank rush a plain deal is the faction's counter lineup (Army.counter_archetype; OFF behind --cpu-counter), rolled the same way.
+static func build(spec: String, faction: String, seed_value: int, credits: int = Credits.GAME_CREDITS,
+		opposing: Dictionary = {}) -> Dictionary:
 	if not Units.FACTIONS.has(faction):
 		return {"error": "no faction '%s'" % faction}
 	var archetypes: Array = Array(Army.archetypes_for(faction))
@@ -27,6 +29,10 @@ static func build(spec: String, faction: String, seed_value: int, credits: int =
 	if not archetypes.has(archetype):
 		# A named archetype of another faction (ENEMY=cpu:siege against a Law pick) is read as "any of this faction's".
 		archetype = String(archetypes[rng.randi_range(0, archetypes.size() - 1)])
+		var counter := Army.counter_archetype(faction, opposing)
+		if counter != "":
+			print("CPU_COUNTER faction=%s tank_share=%.2f archetype=%s (garage)" % [faction, Army.tank_share(opposing), counter])
+			archetype = counter
 	var order: Array = Army.ARCHETYPES[archetype]["units"]
 	var cheapest := INF
 	for unit_id: String in order:

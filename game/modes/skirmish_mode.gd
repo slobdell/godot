@@ -378,9 +378,12 @@ func _start_match() -> void:
 	var squad_cap := SkirmishMode.squad_cap_for(flags)
 	match_squad_cap = squad_cap
 	print("ARMY_CAP preset=%s squads=%d units=%d" % [RenderLevers.preset(), squad_cap, squad_cap * Formations.MAX_MEMBERS])
+	# B7 (round 42, balance; R42.1): both armies first, so a plain "cpu" side is dealt against the other side's army.
+	var armies := Army.load_pair(lineups, {Match.Team.GREEN: String(plan[Match.Team.GREEN]["faction"]),
+			Match.Team.RUST: String(plan[Match.Team.RUST]["faction"])}, seed_value, budget)
 	for team in lineups:
 		var faction := String(plan[team]["faction"])
-		var loaded := Army.load_army(lineups[team], seed_value, budget, faction)
+		var loaded: Dictionary = armies[team]
 		LoadingScreen.mark("army_%d_rolled" % team)
 		var error: String = loaded.get("error", "")
 		if error == "" and team == Match.Team.GREEN and faction == "":
