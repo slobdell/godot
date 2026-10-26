@@ -60,7 +60,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 **2026-10-26: K1 DONE (sent). K2 built (`--camera-glide`, ON). Bar K3 v1 read on 9501-9512: FAILED line 3 (auto_frame
 snaps) and showed the camera held 58 % of play; fixed (aim needs orders' getter, a click spends it; a screen-speed cap);
-Bar K3 v2 filed below (fresh seeds 9513-9524), unread. Clip: `make camera-clip` (laptop) built; re-film after v2.**
+Bar K3 v2 filed below (R41.14: 36 seeds 9513-9548), unread. Clip: `make camera-clip` (laptop) built; re-film after v2.**
 
 ### K2 dev read (dev seeds 7001-7006, NEVER a bar; d6f0da32e's code; builder0 headless 1920x1080 60 fps)
 Autoplay now carries the cursor onto the target over 0.3 s (a hand's reach) before the 0.5 s aim, both arms.
@@ -148,10 +148,36 @@ ARM seeds ran to the 150 s cap. The laptop clip (seed 9501, 75 s) shows it: the 
 Fix: hand motion alone is no longer aiming. The hold needs a held button, or orders' `is_aiming` while the hand moved within
 HOVER_HOLD_S (1.5 s); a click ends the aim. Automatic focus moves are capped at GLIDE_SCREENS_PER_S 0.6 screen heights/s.
 
-### Bar K3 v2 (FILED before any v2 number; seeds 9513-9524, the orchestrator's fresh block; 9501-9512 are dev seeds now)
-Same workload as v1 on `CAMERA_SEEDS="9513 ... 9524"`, both arms on one commit (the commit with GLIDE_SCREENS_PER_S 0.6 and the aim
-fix), lines 1-4 at v1's levels unamended, plus:
-5. **The camera still finds the action:** ARM held time <= 25 % of play AND ARM attack aims per minute >= 90 % of BASE's.
+### Bar K3 v2 (FILED before any number on 9513+; amended by R41.14 before any read; seeds 9513-9548, 36 per arm)
+Workload: `make camera-trace CAMERA_SEEDS="9513 ... 9548" CAMERA_FLAGS=--camera-glide=off` (BASE) and `=on` (ARM), builder0 light
+lane, headless 1920x1080 at 60 fps, Terminus, CPU enemy, the CameraPlaytest autoplay; both arms on one commit (named with the result,
+the constants as shipped: GLIDE_SCREENS_PER_S 0.6, HAND_PACE 0.25, DWELL_S 0.1, HOVER_HOLD_S 1.5). Pooled over the 36 seeds.
+Lines 1-4 are v1's, unamended. Read off `camera_report.py`'s table and its "Play:" line. **Ship ON = every line passes.**
+5. **The camera still finds the action:** ARM held time <= 25 % of play AND the action share (seconds with an aimable enemy on
+   screen / seconds of play; `CAMERA_SLIP action_s`) ARM >= BASE - 10 points.
+Why 36 seeds and the action share (R41.14): on dev seeds the action share's per-seed SD is ~25 points (a camera change changes the
+autoplay's choices and the match diverges: one seed read 0-80 % across arms), so 12 seeds read it +-7 points and v2's first line 5
+(aims/min >= 90 % of BASE on 12 seeds) could not tell a camera from noise. **On record: the ARM as filed reads 44.0 % v BASE's
+55.8 % on dev seeds 9501-9512 (-11.8 points), which FAILS this line too**: the amendment is about power, not passing. If line 5
+fails on the bar, that is a real result for him (the smooth camera costs him some sight of the fight), and the clip must show it.
+
+### K2/K3 dev reads after v1 (dev seeds 9501-9512, NEVER a bar; builder0 light lane, headless 1920x1080 60 fps, 12 seeds per row)
+Rows 1-6 at 112b0a339's code, rows 7-10 at 8ffe4651a's (the same camera; dev knobs only). Hits = attack clicks on the aimed unit.
+| arm | play min | held | action share | aims/min | hits | slip p95 | jerks/min | auto snaps |
+|---|---|---|---|---|---|---|---|---|
+| OFF (round 40) | 15.8 | 0 % | 55.8 % | 9.75 | 88/154 57.1 % | 308.3 | 16.90 | 146 |
+| ON (as filed) | 20.2 | 15.4 % | 44.0 % | 7.64 | 121/154 78.6 % | 32.4 | 0.40 | 0 |
+| ON, no hold (`--camera-aim-hold=off`) | 17.8 | 0 % | 41.4 % | 7.03 | 60/125 48.0 % | 134.3 | 0.22 | 0 |
+| ON, cap 1.0 screens/s | 21.4 | 15.0 % | 37.0 % | 6.41 | 104/137 75.9 % | 32.9 | 0.28 | 0 |
+| ON, no hand pace (1.0) | 17.5 | 15.5 % | 49.1 % | 8.69 | 108/152 71.1 % | 72.9 | 0.29 | 0 |
+| ON, leash 0 | 15.8 | 15.1 % | 44.7 % | 7.77 | 101/123 82.1 % | 34.8 | 0.32 | 0 |
+| ON, glide yaw 70 deg/s | 15.9 | 15.6 % | 52.5 % | 9.03 | 105/144 72.9 % | 36.5 | 0.13 | 0 |
+| ON, focus omega 5 | 14.7 | 15.8 % | 45.6 % | 8.35 | 99/123 80.5 % | 31.9 | 0.20 | 0 |
+| ON, leash 0 + yaw 70 + omega 5 | 17.9 | 15.2 % | 40.7 % | 7.04 | 98/126 77.8 % | 40.4 | 0.67 | 0 |
+Read: the hold is what wins the clicks (78.6 % v 48.0 % without it), and the hand pace is what keeps the slip down (32 v 73 px).
+No knob moves the action share beyond the noise (the per-seed SD is ~25 points; yaw 70 alone read 52.5 %, yet all three
+together read 40.7 %), so no constant was tuned on it. Two dev steps before these rows (580e29909's parent): a hold on the hand's stop
+alone (DWELL) read slip p95 73.5 (the camera coasted into the aim: 650 px/s x 0.2 s), and aim = "orders' getter only" read 172.
 
 ### Decisions
 - Jerk/snap thresholds are perceptual and fixed BEFORE any K2 number (JERK_PX_S2 15,000, SNAP_PX 24, at 1080 rows).

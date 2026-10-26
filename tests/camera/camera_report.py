@@ -51,7 +51,12 @@ def table(runs):
             "over_10px": sum(1 for s in slips if s > 10.0),
             "by_source_p95": {s: quantile(v, 0.95) for s, v in sorted(by.items())},
             "by_source_clicks": {s: len(v) for s, v in sorted(by.items())}}
-    return {"minutes": minutes, "seeds": [r["seed"] for r in runs], "rows": rows, "slip": slip}
+    seconds = minutes * 60.0
+    held = sum(r["summary"].get("held_s", 0.0) for r in runs)
+    action = sum(r["slip"].get("action_s", 0.0) for r in runs)
+    play = {"held_pct": 100.0 * held / seconds, "action_pct": 100.0 * action / seconds,
+            "aims_per_min": len(attacks) / minutes}
+    return {"minutes": minutes, "seeds": [r["seed"] for r in runs], "rows": rows, "slip": slip, "play": play}
 
 
 def show(name, t):
@@ -69,6 +74,9 @@ def show(name, t):
           f"over 10 px {s['over_10px']}")
     print("Slip by source (p95 px over the clicks it touched / clicks): " +
           ", ".join(f"{k} {v:.1f}/{s['by_source_clicks'][k]}" for k, v in s["by_source_p95"].items()))
+    p = t["play"]
+    print(f"Play: camera held for his aim {p['held_pct']:.1f} % of play; an aimable enemy on screen {p['action_pct']:.1f} % "
+          f"(the action share); attack aims {p['aims_per_min']:.2f} / min")
     print()
 
 
