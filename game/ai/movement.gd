@@ -294,11 +294,17 @@ static var holdlane_holds := 0
 ## NOPUSH_AWAY_MPS above mine) eases off: forward throttle 0 while the contact lasts and for NOPUSH_HOLD_TICKS after, instead of
 ## pushing. Speed only (C41.2): ORCA's steer point, the asks, the give-ways and right-of-way are as today. Per-crew state:
 ## `_nopush_until` (the tick the ease ends), `_nopush_for` (the friend). Measurement: nopush_ticks, nopush_episodes.
+## v2 (lab 1, a45c0b953: contacts -28 % and shoved ticks -36 %, but never-in runs 6 -> 10, jam-seconds +23 %: a crew that never pushes
+## never clears a stalled friend): the ease lasts NOPUSH_CAP_S per friend, then today's press for NOPUSH_PRESS_S, then it may ease
+## again; a moving or turning friend is not shoved, a stalled head is still pushed.
 const NOPUSH_SWITCH := "nopush"
 const NOPUSH_AWAY_MPS := 0.3
 const NOPUSH_HOLD_TICKS := SimClock.TICK_RATE / 2
+const NOPUSH_CAP_S := 3.0
+const NOPUSH_PRESS_S := 6.0
 static var nopush_ticks := 0
 static var nopush_episodes := 0
+static var nopush_capped := 0  # eases that reached the cap and handed back to today's press
 
 ## X4 right-of-way. A unit that has made no progress for ASK_SECONDS asks the friend in its way to give way, at most
 ## once every ASK_EVERY seconds.
@@ -353,7 +359,7 @@ static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
 			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
-			"route_not_ready": route_not_ready, "wait_queued": wait_queued, "waits": waits, "wait_timeouts": wait_timeouts, "wait_long": wait_long, "holdlane_skips": holdlane_skips, "holdlane_holds": holdlane_holds, "nopush_ticks": nopush_ticks, "nopush_episodes": nopush_episodes, "wait_longest": wait_longest.duplicate(), "wait_by_kind": wait_by_kind.duplicate(), "follow_queued": follow_queued, "follow_open": follow_open, "follow_longest": follow_longest.duplicate(), "follow_long_waits": follow_long_waits, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
+			"route_not_ready": route_not_ready, "wait_queued": wait_queued, "waits": waits, "wait_timeouts": wait_timeouts, "wait_long": wait_long, "holdlane_skips": holdlane_skips, "holdlane_holds": holdlane_holds, "nopush_ticks": nopush_ticks, "nopush_episodes": nopush_episodes, "nopush_capped": nopush_capped, "wait_longest": wait_longest.duplicate(), "wait_by_kind": wait_by_kind.duplicate(), "follow_queued": follow_queued, "follow_open": follow_open, "follow_longest": follow_longest.duplicate(), "follow_long_waits": follow_long_waits, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
@@ -445,6 +451,7 @@ static func reset_route_arms() -> void:
 	holdlane_holds = 0
 	nopush_ticks = 0
 	nopush_episodes = 0
+	nopush_capped = 0
 	press_escapes = 0
 	nose_stops = 0
 	driver_ticks = {}
@@ -992,6 +999,8 @@ func reset() -> void:
 	_wait_since = -1
 	_nopush_for = ""  # Q5
 	_nopush_until = -1
+	_nopush_since = -1
+	_nopush_press_until = -1
 	_order_ticks = 0
 	_repair_for = Vector3.INF
 	_repair_to = Vector3.INF
@@ -2997,7 +3006,7 @@ func _following(here: Vector3, way: Vector2) -> Tank:
 
 
 ## Round 41 (Q5): the pace this crew may drive forward at: 0.0 while its hull touches a friend ahead that is not pulling away (and
-## for NOPUSH_HOLD_TICKS after the last touch), else 1.0.
+## for NOPUSH_HOLD_TICKS after the last touch), for at most NOPUSH_CAP_S per friend, then 1.0 (today's press) for NOPUSH_PRESS_S; else 1.0.
 func _nopush(tank: Tank) -> float:
 	var tick := Engine.get_physics_frames()
 	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
@@ -3015,14 +3024,29 @@ func _nopush(tank: Tank) -> float:
 			continue  # pulling away: following is not pushing
 		touching = String(hull.name)
 		break
-	if touching != "":
-		if _nopush_for != touching or tick > _nopush_until:
-			nopush_episodes += 1
+	if touching == "":
+		if tick > _nopush_until:
+			if tick > _nopush_press_until:
+				_nopush_for = ""
+			return 1.0
+		nopush_ticks += 1
+		return 0.0  # the hold after the last touch
+	if _nopush_for != touching:
 		_nopush_for = touching
-		_nopush_until = tick + NOPUSH_HOLD_TICKS
-	elif tick > _nopush_until:
-		_nopush_for = ""
+		_nopush_since = tick
+		_nopush_press_until = -1
+		nopush_episodes += 1
+	if tick < _nopush_press_until:
+		return 1.0  # v2: the cap was reached on this friend: today's press until the press window ends
+	if _nopush_press_until > 0:
+		_nopush_since = tick  # the press window has ended: it may ease again
+		_nopush_press_until = -1
+	if tick - _nopush_since >= int(NOPUSH_CAP_S * SimClock.TICK_RATE):
+		nopush_capped += 1
+		_nopush_press_until = tick + int(NOPUSH_PRESS_S * SimClock.TICK_RATE)
+		_nopush_until = -1
 		return 1.0
+	_nopush_until = tick + NOPUSH_HOLD_TICKS
 	nopush_ticks += 1
 	return 0.0
 
@@ -6336,6 +6360,8 @@ var _wait_refused_until := -1
 ## Round 41 (Q5, NOPUSH_SWITCH): the friend this crew eased off for, and the tick the ease ends. Declared last (exec_fields.h appends).
 var _nopush_for := ""
 var _nopush_until := -1
+var _nopush_since := -1
+var _nopush_press_until := -1
 const CENSUS_HOPS := 4
 
 
