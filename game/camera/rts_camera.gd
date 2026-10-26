@@ -284,9 +284,12 @@ const PACE_OMEGA := 12.0
 ## An automatic move's top speed, in heights of the ground in view per second at the focus (K3: an uncapped spring
 ## crossed a whole screen in 0.7 s on a long re-frame: smooth, but not cinematic, and 12 frames over SNAP_PX).
 const GLIDE_SCREENS_PER_S := 0.6
-## K3's dev knobs (`--camera-glide-screens=`, `--camera-hand-pace=`, `--camera-aim-hold=off`), read once in _ready: the
-## bar runs at the constants.
+## K3's dev knobs (`--camera-glide-screens=`, `--camera-hand-pace=`, `--camera-aim-hold=off`, `--camera-leash=`,
+## `--camera-glide-yaw=`, `--camera-glide-omega=`), read once in _ready: the bar runs at the constants.
 var screens_per_s := GLIDE_SCREENS_PER_S
+var frame_leash := FRAME_LEASH
+var yaw_deg_per_s := GLIDE_YAW_DEG_PER_S
+var focus_omega := GLIDE_FOCUS_OMEGA
 var hand_pace := HAND_PACE
 var aim_hold := true
 ## The building clearance: how fast it eases toward more clearance (fast: the camera must not sit in a wall), and back.
@@ -333,6 +336,9 @@ func _ready() -> void:
 	screens_per_s = float(flags.text("camera-glide-screens", str(GLIDE_SCREENS_PER_S)))
 	hand_pace = float(flags.text("camera-hand-pace", str(HAND_PACE)))
 	aim_hold = flags.text("camera-aim-hold", "on") != "off"
+	frame_leash = float(flags.text("camera-leash", str(FRAME_LEASH)))
+	yaw_deg_per_s = float(flags.text("camera-glide-yaw", str(GLIDE_YAW_DEG_PER_S)))
+	focus_omega = float(flags.text("camera-glide-omega", str(GLIDE_FOCUS_OMEGA)))
 	if glide:
 		CameraShake.pivot = cursor_ground
 	snap()
@@ -440,7 +446,7 @@ func _glide(delta: float) -> void:
 		_focus_velocity *= exp(-GLIDE_STOP_OMEGA * delta)
 		_shown_focus += _focus_velocity * delta
 	else:
-		var next := RtsCamera.spring(_shown_focus, _focus_velocity, focus, GLIDE_FOCUS_OMEGA, delta)
+		var next := RtsCamera.spring(_shown_focus, _focus_velocity, focus, focus_omega, delta)
 		_focus_velocity = (next[1] as Vector3).limit_length(glide_top_speed())
 		_shown_focus = next[0] if (next[1] as Vector3).length() == _focus_velocity.length() else before_focus + _focus_velocity * delta
 	var before_zoom := _shown_zoom
@@ -464,7 +470,7 @@ func _glide(delta: float) -> void:
 	else:
 		var gap := angle_difference(yaw, _shown_yaw)  # shown - wanted, the short way round
 		var next := RtsCamera.spring(gap, _yaw_velocity, 0.0, GLIDE_YAW_OMEGA, delta)
-		var limit := deg_to_rad(GLIDE_YAW_DEG_PER_S) * _pace
+		var limit := deg_to_rad(yaw_deg_per_s) * _pace
 		_yaw_velocity = clampf(float(next[1]), -limit, limit)
 		_shown_yaw = wrapf(yaw + float(next[0]) if float(next[1]) == _yaw_velocity else before_yaw + _yaw_velocity * delta, -PI, PI)
 	var before_pitch := _shown_pitch
@@ -1610,7 +1616,7 @@ func _update_vision_tracking() -> void:
 ## that comes and goes; the camera aims at a point that only moves once the goal has wandered FRAME_LEASH of the view
 ## away from it (then it is dragged along, so a squad driving off is followed smoothly, never in steps). Zoom likewise.
 func _on_leash() -> void:
-	var reach := RtsCamera.distance_for(zoom) * tan(deg_to_rad(fov) / 2.0) * FRAME_LEASH
+	var reach := RtsCamera.distance_for(zoom) * tan(deg_to_rad(fov) / 2.0) * frame_leash
 	if _leash_focus == null or _leash_zoom < 0.0:
 		_leash_focus = focus
 		_leash_zoom = zoom
