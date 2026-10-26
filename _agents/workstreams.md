@@ -1,11 +1,11 @@
 # Workstreams: the current round
 
-> **ROUND 41 PREPARED (2026-10-26 ~03:00, from his playtest of round-40 main and round 40's carried items; launch FRESH: round 40's
+> **ROUND 41 CLOSED 2026-10-26 ~13:05 (main 21b20bdce green builder0 ALL JUDGED; briefs in `streams/archive/round41/`). Was: ROUND 41 PREPARED (2026-10-26 ~03:00, from his playtest of round-40 main and round 40's carried items; launch FRESH: round 40's
 > `stream/*` branches are `round40/<stream>`, every stream gets a new session). FIVE streams: manoeuvre and balance on FABLE (traffic
 > that queues instead of detouring + the bridge; combined arms + the faction stat change), camera, orders, native on Opus. Builders:
 > builder0 AND builder2 (C41.1).** Briefs in `streams/`; round 40's in `streams/archive/round40/`. Round 40's section follows round 41's.
 
-## Round 41: five streams (prepared 2026-10-26; briefs in `streams/`)
+## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
 **Goal: a big group order flows like traffic (crews wait for a friend to turn instead of steering round it), the camera never jerks
 under his cursor, and a mixed army beats an all-tank one.** His words: `game_design.md` *His playtest and answers after round 40*.

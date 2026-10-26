@@ -4,13 +4,19 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-26 ~12:15 PDT — **ROUND 41 CLOSING (box below)**: every stream merged; main 21b20bdce batch check running on builder0. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-26 ~12:15 PDT — **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
 
 
-## 🏁 ROUND 41 CLOSING (2026-10-26 ~12:15 PDT) — read this first
+## 🏁 ROUND 41 IS CLOSED (2026-10-26 ~13:05 PDT) — read this first
+
+**Main: 21b20bdce GREEN on builder0, 28 targets ALL JUDGED** (`make check exited 0`, 3289 passed / 0 failed; sim-baseline 13 unmoved)
+= every round-41 merge. Later commits are docs plus a two-line comment in mk/camera.mk. All five streams closed: worktrees and
+builder0/builder2 folders removed (builder0 76 %, builder2 52 %), branches `round41/<s>`, briefs in `streams/archive/round41/`.
+Not ours / kept: godot-doctrine-guard, godot-native-guard, godot-native-score worktrees; builder0 godot-native-score*; builder2
+godot-native-score-light and plane_maker. Raw B5 data: `~/balance-guard-raw/b5`, `~/balance-runs` (keep).
 
 **Shipped ON:** (1) **G1 v9, the group click lays a column** (orders; Bar G1 v9 PASS, R41.15: places outside the corridor 57 -> 8,
 sent away 24 -> 0, contacts -23 %; seven switches, `--group-g1=off` = all off; 5693c0b66 green builder0 ALL JUDGED, perf-judge PASS).
@@ -20,7 +26,7 @@ R41.2: 715 s -> 17 s gate). **OFF with causes** (workstreams R41.4-R41.13): O2 d
 jam time on his 5-squad order); Q4 hold the lane; Q5 no-pressing (contacts -28 % but columns stand; round-42 bar design R41.10); Bar Q3
 the bridge wait (FAILED); M1 v3 (null). **Bar B2s v2** (the faction stat change) carries to round 42 again, unread.
 
-**Combined arms (balance B5, dev reads, R41.12/R41.16/R41.18; the write-up for him is in `streams/archive/round41/balance.md` Status):**
+**Combined arms (balance B5, dev reads, R41.12/R41.16/R41.18; the write-up for him is in `streams/archive/round41/balance.md` Status, B5 WRITE-UP FOR HIM):**
 all-tanks beats a mixed army 85 %; his slow turret -5 points, slow hull -4, both -5; IFV +15 % tough / -15 % cost -2; turret + IFV 77 %;
 sharper IFV cannon 0. **Artillery-heavy lineups already reach his target with no number changed:** Condemned 47 %, Gangs 52 %. Law
 (96 %) and Syndicate (87 %) have no lineup that does: their artillery is weak (Law's Gas Rocket Truck 2.65 dealt a credit v Condemned's
@@ -38,7 +44,8 @@ balance/b2s-v2-arm d385cd308.
 2. **A click right beside his army:** squads already in that street now hold their places and only the near ones move. Right?
 3. **Combined arms:** recommended: give every faction an artillery-heavy army the CPU fields against an all-tank army and the garage
    suggests ("bring two artillery squads with your tanks"); next round tunes Law's and Syndicate's artillery within his 15 %. The slow
-   turret only if he likes how it feels (worth ~5 points). No missile needed.
+   turret only if he likes how it feels (worth ~5 points; but its dev lines read turtles winning +3.0 points, se 1.5, so it isn't
+   safe to ship alone yet). No missile needed.
 
 ## (DONE) ROUND 41 AS PREPARED (2026-10-26 ~03:00) — read this first
 
