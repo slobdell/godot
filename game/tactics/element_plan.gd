@@ -3174,6 +3174,11 @@ static func _plan_fire_and_maneuver(plan: Dictionary, situation: Dictionary, sta
 	var maneuver_center := _center_of(maneuver)
 	var side := signf((maneuver_center - focus).dot(right))
 	side = 1.0 if side == 0.0 else side
+	# Round 42 (engage, R42.10): a flank the arena would clamp gives way to the side with room (ATTACK_SHOT; shipped with
+	# the rule). The far_ambush drill's stage: the lane 17 m from the west edge, the maneuver half straddling the line of
+	# contact, and the shot read's 3 m tipped the sign west, onto the wall (a 17 m "swing" against 73 m east).
+	if ATTACK_SHOT:
+		side = flank_side(focus, right, side, table.drill_number("flank_m"))
 	var flank := focus + right * side * table.drill_number("flank_m")
 	if maneuver_center.distance_to(flank) <= FLANK_ARRIVE or (FLANK_TURN_IN_BY_BEARING
 			and turned_the_flank(maneuver_center, focus, axis, table.drill_number("flank_m"))):
@@ -3184,6 +3189,17 @@ static func _plan_fire_and_maneuver(plan: Dictionary, situation: Dictionary, sta
 		# round the way they can see least of (X7), not straight across their front.
 		var step := _route_step(plan, situation, state, maneuver_center, flank)
 		_group(plan, maneuver, "wedge", step, TacticsFormation.flat(step - maneuver_center), spacing, "move")
+
+
+## Round 42 (engage, R42.10): the side (+1/-1 along `right`) to flank `focus` on, given the sign's pick `side`: the pick
+## when the arena clamps its flank point no further than the other side's (open ground both ways: the pick; one side
+## into a wall: the other; both: the one moved less). Pure.
+static func flank_side(focus: Vector3, right: Vector3, side: float, flank_m: float) -> float:
+	var mine := focus + right * side * flank_m
+	var other := focus - right * side * flank_m
+	if mine.distance_to(clamp_to_arena(mine)) <= other.distance_to(clamp_to_arena(other)):
+		return side
+	return -side
 
 
 ## Round 15 (squad P4): whether a maneuver half at `at` has got round the target at `focus`: it bears at least
