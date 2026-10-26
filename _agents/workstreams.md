@@ -122,7 +122,7 @@ another project's workers (plane_maker): never touch processes you didn't start.
   Player smoke (laptop, his pose): OFF the Rat Rod sits nose-on behind the container 20 s; ON it is past the container's end at 1 s,
   gun on the ring, firing by 3 s (frames in Status).
 
-- **Bar Q5, no pressing (manoeuvre; FILED 361fb9d24 Status, 2026-10-26 ~15:20, before any number on 9801-9824; R41.10's frame).** Rule
+- **WITHDRAWN UNREAD (R42.8; 9801-9824 unseen, kept for a v3). Bar Q5, no pressing (manoeuvre; FILED 361fb9d24 Status, 2026-10-26 ~15:20, before any number on 9801-9824; R41.10's frame).** Rule
   = `--traffic-on=nopush` v2 exactly as fc8f3697d: a crew whose hull touches a FRIEND ahead that is not pulling away (speed along my
   nose <= mine + 0.3 m/s) holds forward throttle at 0 while the contact lasts and 0.5 s after, at most 3 s per friend, then today's
   press for 6 s; reverse orders exempt; ORCA's steer, asks, give-ways and right-of-way as today (speed only, C42.4). Tree = CP42.0's
@@ -236,6 +236,17 @@ _(filed bars go here, before their numbers)_
   is not what he asked for); three variants labbed on seeds 1-3 are named in the filing (C42.1); one full check of the frozen tree
   gates Bar Q5 and Bar Q6 (both switches OFF by default on it; each ON arm names its switch); the Q6 trace of main's worst run (green
   s2 t1, 28.8 -> 42.6 s) runs before tuning or filing.
+- **R42.8 (2026-10-26 ~16:40) Bar Q5 WITHDRAWN UNREAD (as Bar O2, R41.4); seeds 9801-9824 stay unseen for a v3.** Manoeuvre's dev read
+  on the frozen tree 7569747ce (his group order, crossing / locks / sumps / terminus x 7009-7012, main v nopush v2, GDScript, builder0
+  light, 16 paired runs, `q5_judge`): D1 contacts 239,703 -> 176,321 (-26 %, -3.8 se) and D2 shoved ticks 28,432 -> 17,783 (-38 %,
+  -4.5 se) pass, but G5 all-in 74.8 -> 80.5 s (+5.7 v line +4.8) FAILS and G6 never-in runs 7 -> 9 FAILS; jam-seconds +21 % (-19.5 %
+  with the rule's own eased ticks removed: a third of the ON arm's jam is the easing). On today's main (G1 v9's column) standing behind a
+  stalled head costs more than on round 41's (all-in +2.0, never-in 6 -> 7); the long ON episodes are columns coasting 20-45 s behind
+  a stalled head of their own column at the Crossing's street mouths. Ruled: not spent on builder2 (balance's and engage's series are
+  queued there); the strict guards are his "didn't hear me" case and the dev read fails them by 2 runs and 5.7 s. Q5 v2 stays OFF.
+  Manoeuvre: Bar Q6 first (it unblocks B2s v2), then ONE lab of a v3 on the same dev cells: ease only against a friend ahead that is
+  itself moving (clearing), and press at once behind a head that has stood > ~1 s (a stalled head is the case the column must grind
+  through); if the v3 dev read passes G5 / G6 and keeps D1 / D2, file Bar Q5 v3 on the unseen 9801-9824 (the last re-file).
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
