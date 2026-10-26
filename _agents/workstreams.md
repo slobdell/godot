@@ -213,6 +213,14 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   fm_c5r2_lawt5, 55 values, + R40.18's re-pins; prices as c5r2). The dev screen (8501-8540) must confirm the candidate before the series;
   a changed candidate = a new frozen ARM named before numbers. Judge `search.py bar`, deciding and G1-G8 exactly as B2s. Builder2 J24,
   after ARM's full check (builder0, green but sim-baseline, recorded twice).
+- **Bar F1, follow-queue (manoeuvre; FILED 25595cae4, 2026-10-25 ~19:10, before any number on 8125-8148; R40.21).** OFF v
+  `--traffic-on=follow` (built OFF 1267b1635), BOTH arms on the GDScript drive (`--brains-off=native_drive`), builder0 light J4, one frozen
+  tree whose full check (F1 OFF) is green on builder0 first and named before the series. A: wedge trace locks/terminus/sumps x 8125-8136,
+  180 s, 36 fights an arm, paired. **Deciding D: moving-stuck seconds** (long episodes: touching a hull, net < 0.5 m, >= 3 s, with
+  `arrived` under half its ticks): ON <= 0.8 x OFF AND paired mean < 0 by >= 2 se. G1 give-way deaths, G2 stuck deaths: ON - OFF <=
+  max(2 paired se x n, 3); G3 contact ticks ON <= 1.10 x OFF; the rest as M3 (kill share, never-in, all-in / last-in on B 8137-8148)
+  plus G8 bridge-pooled 18/18 with F1 ON. Judge tests/manoeuvre/follow_judge.py, committed before the gate check. Ship ON needs
+  native's C++ twin (requested 2026-10-25 ~19:30).
 - **Bar M3, wedge re-route (manoeuvre; FILED b21565b37, 2026-10-25 ~04:50, before any number on 8601-8624).** OFF v
   `--giveway-reroute=any`. **Deciding D:** long-episode seconds ON <= 0.8 x OFF at >= 2 se. G1-G4 deaths, contacts, fights (A: wedge trace
   8601-8612); G5 never-in, G6/G7 all-in and last-in (B: orders probe 8613-8624). Judge `tests/manoeuvre/reroute_judge.py`. builder0 light
@@ -296,6 +304,14 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   stopped friend is passed as today. Symmetric, OFF until judged; GDScript first, C++ twin to native. Lab: bridge-pooled on main and
   under d385cd308's overrides, then the wedge and orders cells. Bar on 8125-8148, filed before any number on them, frozen tree (R40.13),
   guards as M3's (deaths, stuck deaths, contact ticks, kill share, never-in, all-in / last-in) plus bridge-pooled 18/18.
+- **R40.22 (2026-10-25 ~20:00) F1 as built too broad (dev lab); F1 v2 = queue only before a turn it can't recover; Bar F1 unchanged.**
+  Lab 1 (1267b1635, builder0 light, bridge-pooled 18 runs an arm): main OFF 18/18 rim 8.1 s, deck jam 7.5 s, arrival 36.6 s; ON 18/18 rim
+  9.9, deck jam 16.2, arrival 37.8; under v2's overrides (29b9072ed) OFF 17/18 (worst 5.1 s), ON 18/18 (worst 1.1 s). Lab 2 (a4e34d70e,
+  builder0 light J4, GDScript both arms, dev 7001-7004 wedge x3 + 7001-7002 orders): D moving-stuck 137.7 -> 234.4 s (+70 %), G3
+  contacts +19 % FAIL, G4 and G7 (+2.2 s) FAIL; 2,756-10,490 queued crew-ticks a fight, longest waits 2.8-8.8 s behind leaders at
+  1.1-1.3 m/s (locks s7001 Green_Wrenches_7 8.8 s behind _3). **Ruled:** F1 v2 = the same follow test, only for a wheeled crew whose route
+  turns > 45 deg within 2 x its min turn radius ahead; elsewhere ORCA as today. Lab again (bridge-pooled both trees, then the dev cells);
+  Bar F1 stays as filed (no 8125-8148 number read), gated on v2's hash. Native's twin waits for v2's final rule.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
