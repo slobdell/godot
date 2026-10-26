@@ -55,6 +55,40 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### ROUND-41 ITEM 1 (top): a speed-only bridge-mouth rule (R40.24: F1 stopped OFF; balance's stat change carries behind it)
+
+**The rule to build:** a WHEELED crew slows before a sharp turn on its route that its leader is in. ORCA's steering is untouched:
+the crew keeps ORCA's direction and only its speed is capped, so it reaches the turn at a speed and a line it can make.
+- Every F1 form changed ORCA's answer itself, and that reshuffled who meets whom across the whole map.
+- What made the bridge case: a follower at 10-11 m/s, 7 m behind a leader slowing into the deck mouth. ORCA carried it wide past
+  the entry (it never slowed enough to stay behind), and with a fixed 8 m turning radius no line back reached the deck.
+- A speed cap keyed to the turn (e.g. the speed at which the turn is still reachable from here, given the min turn radius and the
+  leader's place in it) leaves open traffic and straight streets exactly as today.
+- **Judge it on the bridge drill:** the orchestrator's Bar F1 v2 design (R40.23) fits it as written.
+  - Deciding: bridge-drill rim seconds on fresh seeds, BRIDGE_POOLED_SEEDS x ticks {1,8,15} x both sides, on main AND under
+    balance's v2 overrides. ON <= 0.8 x OFF pooled at >= 2 se, and every surviving crew crosses in both trees with ON.
+  - Guards: the wedge trace and the orders probe with M3's lines.
+  - BRIDGE_POOLED_SEEDS is a plain make variable (bridge-series loops BRIDGE_SEEDS), so any seeds work.
+- **A C++ twin** is needed before it ships ON (the cap would sit in the drive, inside native_drive's mirror).
+
+**The evidence it starts from (all builder0 light, n 1 a run; bridge-pooled 18 runs an arm):**
+
+| F1 form (commit) | Main tree: OFF -> ON | Overrides tree: OFF -> ON | Dev cells (12 fights / 24 runs, lab read) |
+|---|---|---|---|
+| v1: queue behind any moving friend ahead (1267b1635 / a4e34d70e) | 18/18 -> 18/18; rim 8.1 -> 9.9 s, deck 7.5 -> 16.2 s, arrival 36.6 -> 37.8 s | 17/18 -> 18/18; rim 14.2 -> 10.0 s, deck 17.1 -> 23.2 s | D +70 %; G3 +19 %, G4 deaths 493 -> 466, G7 +2.2 s FAIL; waits >= 3 s in most fights, longest 8.8 s behind 1.1-1.3 m/s leaders |
+| v2: only with a turn > 45 deg within 2 radii (3f23a36ab) | 18/18 -> 18/18; rim 8.1 -> 5.9 s, deck 7.5 -> 6.4 s, arrival 36.6 -> 35.6 s | 17/18 -> 18/18; rim 14.2 -> 6.4 s, deck 17.1 -> 13.6 s | D +3.8 %; G4 deaths 493 -> 461 and G7 +2.3 s FAIL (terminus +20.0 / +13.8 / +12.0 s); no wait >= 3 s |
+| v2 + the leader within 8 m of the turn (e516edcec) | 18/18 -> **17/18** (green t1 s1, 4.0 s); rim 8.1 -> 9.2 s, deck 7.5 -> 4.8 s | 17/18 -> 18/18; rim 14.2 -> 8.6 s | D -12 %; G3 +13 % and G7 +3.3 s FAIL; terminus s7001 squad 1 fixed, squad 5 +12.1 s |
+
+- **The original cause** (rust t15 s2 under the overrides, 5a233f42b): Rust_S_3 was carried past the deck entry by ORCA round its
+  slowing leader. It was not the native drive (identical with `--brains-off=native_drive`); `--no-avoidance` gave rim 0.
+- **The terminus trace** (R40.23, 3f23a36ab): Green_Alpha_4 queued at 3.5 m/s for 6 s behind a steady friend because a route turn
+  lay within 16 m. It reached the junction late into crossing squad 3, circled, and its squad came in 20 s later.
+- **Main's own bridge margin:** with F1 OFF, main's three worst runs have a crew at the rim 1.5 s (rust t? s2), 1.4 s and 1.1 s:
+  1.5-1.9 s under the 3 s line, identical in all three labs (deterministic). A stat change (balance's v2: 5.1 s) or a traffic rule
+  (F1 final: 4.0 s on green t1 s1) is enough to push one crew over. The drill's margin is thin, not just balance's tree.
+- **F1's code stays on the branch, OFF** (`--traffic-on=follow`, DEFAULT_OFF; tests/test_traffic_follow.gd; follow_judge.py).
+  Bars F1 and F1 v2 were never run; 8125-8148 are unspent (R40.24).
+
 ### Late round-40 item: bridge-pooled at the bridge mouth (orchestrator, 2026-10-25 evening)
 
 **Ask:** balance's ARM d385cd308 (stat overrides fm_c5r2_lawt5) fails bridge-pooled 17 / 18 on builder0. Rust, start tick 15, seed 2:
@@ -225,7 +259,7 @@ asked for a bar.
 - **A pass** goes to the orchestrator; F1 ships ON only with native's twin matching. **A fail:** F1 stays OFF; no re-run on these
   seeds.
 
-### CLOSE REPORT (round 40, 2026-10-25 ~08:00 PDT): done for the round
+### CLOSE REPORT (round 40, 2026-10-25 ~08:00 PDT; the bridge item after it is above): done for the round
 
 **Done:** every backlog item.
 1. **M1 v2:** built OFF; its code is on main (65a5c5b70).
