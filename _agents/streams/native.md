@@ -49,7 +49,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   JUDGED` (timing refusals on a 2.1-2.45x loaded box), sim-baseline 13 unmoved, determinism 258cc8b1c957a796; merged as 6209e9f89).
   Commits after it on stream/native, none with a full check of its own: a0c281dec (tools/test_full_check_lock.sh case 7 only; builder0
   light shell-tools-test exited 0, 22/0; in the orchestrator's next main batch), 467d36596 + a18a8a2b8 (tools/judge/lines_r41.py
-  data; 548 lines load, judge tests pass, laptop) and Status commits. A tip full check can run whenever the orchestrator gives it the lock.
+  data; 548 lines load, judge tests pass, laptop) and Status commits. No separate tip check (orchestrator): a0c281dec is on main, and
+  the tip goes into the next main batch, whose check covers it. Native is idle for the round unless a twin is asked for.
 - **N1 DONE** (bfd033228; remote.sh's re-copy no longer passes a literal `~` with --files-from; covered by c19dc10ec's real re-copy).
 - **N2:** pair/native-wait-fields e59aca6aa (the four `_wait_*` members; on manoeuvre's tree) and **pair/native-wait 20300bb52** (Q2 v2's
   wait rule twinned; builder0 quick 151/0, native-proof EQUAL x6). Bar Q3 FAILED (R41.13): 20300bb52 is KEPT AS A REF BRANCH,
