@@ -120,6 +120,37 @@ th did not beat t50 by more than its se). Round 2 (ifv15, then t50_ifv15) starte
 turtle lines for base / t50 / t50_ifv15 on 9411-9420, 200 fights an arm, Bar B5's guards as a dev screen) is queued behind it
 (`~/balance-runs/b5-r3.sh`; stop by PID if Bar B2s v2's ARM goes green first).
 
+**B5 round 2, ifv15 arm read (every IFV hp/shield/front+side armour +15 %, cost -15 %; same series, 400 fights, paired, 07:37):**
+mono-tank wins 85 -> **82 % (-2, se 2)**: condemned -3 (se 4), gangs +2 (se 5; the Gun Truck's twin MG, pen 2.5, gets through
+nowhere, so toughness buys it nothing), law -5 (se 2; length -15 %), syndicate -3 (se 1). The IFV's share of the damage on tanks
+10 -> 12 %; its dealt a credit 0.8 -> 1.1 (condemned, law), still 6-7 % alive, ~66 s lived. Flank share -0.9 (se 0.9). **The
+in-bounds IFV buff is worth ~2 points.** Combined arm t50_ifv15 running (ends ~08:30).
+
+**B5 WRITE-UP FOR HIM (draft 07:45; the combined arm's line is filled in when it lands; the orchestrator takes it to him).**
+*What you noticed is real, and it is not about facing.* An army of only tanks beats the same faction's normal mixed army, same
+money, 85 % of the time (CPU v CPU, 5 maps, both sides, 400 fights). Your target was the mixed army winning 60-65 %, so the
+tank army should win 35-40 %: about 45 points away.
+*Your two levers, measured:* a tank turret turning half as fast (Condemned 50 -> 25 deg/s, Gangs 60 -> 30, Law 70 -> 35,
+Syndicate 55 -> 27) takes the tank army from 85 to 80 %. A tank hull a quarter slower (and turning a quarter slower) takes it to
+81 %. Both at once: 80 %. So each lever is worth about 5 points of the 45, and they don't add. The slow turret works the way
+you'd expect: the tank misses more of what crosses in front of it. The slow hull doesn't get flanked more: a slow tank crawls
+with its front to the fight, and the mixed army actually hit its sides and rears LESS (65 -> 62 % of its direct fire).
+*Why the mixed army loses anyway:* its fast units already get round. Two thirds of the mixed army's direct fire on the tanks
+lands on a side or rear today. The trouble is the IFV's trade. One Condemned IFV needs 187 s of fire to kill a tank from the
+front, 23 s from the side, 13 s from behind; the tank kills the IFV in 9, 5 or 4 s. The IFV dies in one or two shells before
+its flank fire adds up: 4 % of IFVs are alive at the end, and all IFVs together do 10 % of the damage on the tanks. Artillery
+(34 %) and the mixed army's own tanks (35 %) do the work. The Gangs Gun Truck is the extreme: its twin MG can't scratch a tank
+from any side, at any toughness.
+*An IFV 15 % tougher and 15 % cheaper (your +/-15 % rule) takes the tank army from 85 to 82 %.* With the slow turret as well:
+[combined arm, pending].
+*So inside your rules the all-tank army ends near [78-80] %, not 35-40 %.* To reach your target the IFV has to be able to kill
+a tank from the side before it dies, and that is a weapon or armour-piercing change, not a number inside 15 %: (1) the IFV's
+cannon gets through a tank's side and rear properly (its penetration up, so a flank actually pays; the front stays a wall), or
+(2) the slow, limited anti-tank missile you asked about (not a tank: a Bradley's TOW, two shots, slow, only useful from a
+flank), or (3) the mixed army buys fewer IFVs and more anti-tank. Recommendation: (1), because it rewards exactly the thing
+the mixed army already does (get round the side) and changes no unit's role. The slow turret (5 points) is worth keeping on its
+own merits if you like how it feels: a Bar B5 run says whether it is safe to ship alone.
+
 **B5 round 1, t50 arm read (tank turret traverse x0.5; 8f2643375 + overrides, builder2 J24, 9401-9410, 400 fights, paired):**
 mono-tank wins 85 -> **80 % (-5, se 1)**: condemned 77 -> 70 (-7, se 2), gangs 78 -> 75 (-3, se 5), law 92 -> 85 (-7, se 2),
 syndicate 92 -> 88 (-4, se 2). Median length +8 % (syndicate +37 %: 94 -> 128 s; the others +0-2 %). Faces unchanged: direct fire
