@@ -67,3 +67,74 @@ LINES += [
       base="32; 116; 415,690; 0.609; 816", arm="55 (G1 FAIL); 141; 378,664; 0.593 (worst move 0.015); 805",
       verdict="FAIL (G1)", source=q3, noise=NONE),
 ]
+
+# ---------------------------------------------------------------- Bar K3 v2, a smooth camera (camera) -----------------
+k3v2 = (src41 + " Bars 'Bar K3 v2' (FILED 355a5b0a7) and Rulings 'R41.17 ... Bar K3 v2 PASSES every line'; both arms 8a2974e85, "
+        "builder0 light, headless 1920x1080 @60, Terminus v CPU autoplay")
+K3V2_N = "Terminus 9513-9548, 36 seeds an arm (BASE 51.4 min / 899 clicks, ARM 53.1 min / 918)"
+LINES += [
+    L(round=41, stream="camera", item="K3 v2 --camera-glide", commit="8a2974e85",
+      line="(1) attack clicks on the aimed unit ARM >= 70 % AND >= BASE + 15 points", form="total", n=K3V2_N,
+      rule=">= 70 % and >= 67.4 %", base="52.4 %", arm="77.5 %", verdict="PASS", source=k3v2, machine="builder0", noise=NONE),
+    L(round=41, stream="camera", item="K3 v2 --camera-glide", commit="8a2974e85",
+      line="(2) target slip p95 ARM <= 40 px AND <= half BASE", form="p95", n=K3V2_N, rule="<= 40 px", base="294.6 px",
+      arm="34.7 px", verdict="PASS", source=k3v2, machine="builder0", noise=NONE),
+    L(round=41, stream="camera", item="K3 v2 --camera-glide", commit="8a2974e85",
+      line="(3) jerks: ARM total <= 3.0/min, no automatic source > 1.5/min, automatic snaps = 0", form="total", n=K3V2_N,
+      rule="<= 3.0/min; <= 1.5/min; 0 snaps", base="18.27/min; 594 snaps", arm="0.19/min (worst automatic: solid 0.17); 0 snaps",
+      verdict="PASS", source=k3v2, machine="builder0", noise=NONE),
+    L(round=41, stream="camera", item="K3 v2 --camera-glide", commit="8a2974e85",
+      line="(4) auto_frame px/min ARM >= 25 % of BASE, no trace failure or SCRIPT ERROR", form="total", n=K3V2_N,
+      rule=">= 25 %", base="100 %", arm="61 %; 36/36 runs ok", verdict="PASS", source=k3v2, machine="builder0", noise=NONE),
+    L(round=41, stream="camera", item="K3 v2 --camera-glide", commit="8a2974e85",
+      line="(5) the camera still finds the action: ARM held time <= 25 % of play AND ARM attack aims/min >= 90 % of BASE",
+      form="total", n=K3V2_N, rule="<= 25 %; >= 90 %", base="action share 41.8 %",
+      arm="held 15.0 % of play; action share 41.4 %", verdict="PASS", source=k3v2, machine="builder0", noise=NONE),
+]
+
+# ---------------------------------------------------------------- Bar G1 v9, the group click lays a column (orders) -----
+g1v9 = (src41 + " Bars 'Bar G1 v9' (FILED 383828c39) and Rulings 'R41.15 ... Bar G1 v9 PASSES every line'; builder2, frozen "
+        "872dab643, native on, judge g1v8; evidence references/round41/orders/barg1v9-builder2-872dab643/")
+G1V9_N = "9101-9112, n 12 a cell"
+LINES += [
+    L(round=41, stream="orders", item="G1 v9 --group-column-toward=stay", commit="872dab643",
+      line="DECIDING: places outside the corridor", form="total", n=G1V9_N, rule="<= 14.2", base="57", arm="8",
+      verdict="PASS", source=g1v9, machine="builder2", noise=NONE),
+    L(round=41, stream="orders", item="G1 v9 --group-column-toward=stay", commit="872dab643",
+      line="metres outside the corridor after arriving", form="total", n=G1V9_N, rule="<= 1140", base="2281", arm="436",
+      verdict="PASS", source=g1v9, machine="builder2", noise=NONE),
+    L(round=41, stream="orders", item="G1 v9 --group-column-toward=stay", commit="872dab643",
+      line="re-dealt places", form="total", n=G1V9_N, rule="<= base", base="48", arm="0", verdict="PASS", source=g1v9,
+      machine="builder2", noise=NONE),
+    L(round=41, stream="orders", item="G1 v9 --group-column-toward=stay", commit="872dab643",
+      line="guard: friend contacts", form="total", n=G1V9_N, rule="<= 14772.5", base="13425", arm="10393", verdict="PASS",
+      source=g1v9, machine="builder2", noise=NONE),
+    L(round=41, stream="orders", item="G1 v9 --group-column-toward=stay", commit="872dab643",
+      line="guard: places sent away > 10 m", form="total", n=G1V9_N, rule="<= 26", base="24", arm="0", verdict="PASS",
+      source=g1v9, machine="builder2", noise=NONE),
+    L(round=41, stream="orders", item="G1 v9 --group-column-toward=stay", commit="872dab643",
+      line="guard: probe guards held in 14 cells; yard_open identical", form="count-cells", n="14 cells; yard_open 192 runs",
+      rule="every cell held; 192/192 identical", base="-", arm="14/14 held; 192/192 identical", verdict="PASS", source=g1v9,
+      machine="builder2", noise=DET),
+    L(round=41, stream="orders", item="G1 v9 --group-column-toward=stay", commit="872dab643",
+      line="reported: parked re-deals", form="total", n=G1V9_N, rule="-", base="376", arm="396", verdict="REPORTED",
+      source=g1v9, machine="builder2", noise=NONE),
+]
+
+# ---------------------------------------------------------------- B5 combined arms (balance): DEV reads, never a bar -----
+b5 = src41 + " Rulings 'R41.16' and 'R41.18' (dev reads; balance Status B5 WRITE-UP FOR HIM, streams/archive/round41/balance.md)"
+LINES += [
+    L(round=41, stream="balance", item="B5 deal arm (dev)", commit="9204009f6",
+      line="dev: all-tanks win share v the faction's artillery-heavy archetype, same money, no stat change", form="mean",
+      n="9401-9410, 400 mono fights", rule="his target (all-tanks no longer the easy win)",
+      base="Condemned 77 %; Gangs 78 %; Law 93 %; Syndicate 99 % (v their normal deal)",
+      arm="Condemned 47 % (-30, se 10); Gangs 52 % (-26, se 6); Law +1; Syndicate +7; pooled -12 (se 3)",
+      verdict="REPORTED (dev)", source=b5, machine="builder2", noise=se_line(3, 1.645 * 3, 12 - 1.645 * 3, "pooled")),
+    L(round=41, stream="balance", item="B5 pen7 (dev)", commit="8f2643375",
+      line="dev: all-tanks win share with autocannon 5 -> 7, pulse 7, twin MG 4", form="mean", n="400 mono fights",
+      rule="-", base="85 %", arm="85 % (+0, se 1)", verdict="REPORTED (dev)", source=b5, machine="builder2", noise=NONE),
+    L(round=41, stream="balance", item="B5 barrage arm (dev)", commit="3ef8d5771",
+      line="dev: all-tanks win share v law_barrage / syndicate_barrage (measure_only)", form="mean", n="200 fights",
+      rule="-", base="Law 92 %; Syndicate 92 %", arm="Law 96 % (+4, se 3); Syndicate 87 % (-5, se 5)",
+      verdict="REPORTED (dev)", source=b5, machine="builder2", noise=NONE),
+]
