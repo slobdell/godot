@@ -239,7 +239,12 @@ a settled squad gives way as today, so the last squads threading past parked squ
 refusers. `chain_settled_passes` counts lifted reaches. No C++ mirror yet: ON runs the GDScript ask (native_yield off). Tests
 `tests/test_traffic_chainarriving.gd` 3/0, `test_traffic_chain` 11/0 (laptop NATIVE=off). **Lab 1** (round 40 lab2's cells: the five
 G5 regressions + two old never-ins + s3866, arms main / v3, both `--brains-off=native_yield`, probe_wedge, builder0 light J4):
-running, `~/overnight-manoeuvre/r41/m1v3lab1/`.
+**a NULL**: v3 is bit-identical to main on all 8 cells (same arrivals to 0.1 s, chained give-ways 37 / 37, drift 48.9 / 48.9 m,
+never-in 2 / 2; the reach came into play for 3 asks in 16 runs). Reading: on these cells the crews M1 would hold are in SETTLED
+squads, so v3 lifts the reach everywhere M1 acted, s3866 included (its drifting crew's squad was settled: chained n 3 -> 3). The
+premise "the chain drift is the arrivals' cost" does not hold on the drift case itself; v3 removes M1's benefit along with its G5
+cost. Stays OFF, no bar; the code and test are kept on the branch for the record (cherry-picked after the series). Evidence:
+`~/overnight-manoeuvre/r41/m1v3lab1/`, table filed under `references/round41/manoeuvre/q2-labs-builder0/`.
 
 ### Q4 hold the lane (R41.5): BUILT OFF (0dc8a435f), lab 1 a NULL; stays OFF, no bar
 
