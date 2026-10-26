@@ -348,7 +348,7 @@ static func route_arms() -> Dictionary:
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
-			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
+			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_settled_passes": chain_settled_passes, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
 			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none,
@@ -397,6 +397,7 @@ static func reset_route_arms() -> void:
 	chain_spots_skipped = 0
 	chain_refusals = 0
 	chain_releases = 0
+	chain_settled_passes = 0
 	chain_holds_refused = 0
 	chain_side_spots = 0
 	setup_refusals = 0
@@ -2034,6 +2035,29 @@ static func chain_side_on() -> bool:
 	return not Traffic.off("chainside")
 
 
+# ---- Round 41 (manoeuvre M1 v3, stretch; `--giveway-chain=v3` = givewaychain + chainarriving, DEFAULT_OFF until judged) -----------
+# Bar M1 v2's G5 trace (round 40): the last squads in threaded through squads already PARKED at the objective, and the reach kept
+# those crews by their seats in a street with no way round. The chain drift M1 stops is the arrivals' cost: a parked crew pushed
+# down the street while its own squad is still forming up. A parked squad making way for a later squad is the job. So with this
+# on, the reach is in play only while the crew's OWN element is still arriving (not `arrived`, or with tasks queued); once its
+# squad is settled it gives way as today. Native: no mirror yet, so while on the native drive calls _negotiate back (native_yield off).
+static var chain_settled_passes := 0  # measurement: reaches lifted because the crew's own squad was settled
+
+
+static func chain_arriving_on() -> bool:
+	return not Traffic.off("chainarriving")
+
+
+## Is this crew's own element settled (arrived, nothing queued)? False without a brain, a match or an element.
+func _own_squad_settled() -> bool:
+	var brain := ctl as TankBrain
+	if brain == null or brain.game_match == null:
+		return false
+	var elements := Elements.of_match(brain.game_match)
+	var element: Element = elements.of(String(ctl.tank.name)) if elements != null else null
+	return element != null and element.arrived and element.queued_tasks.is_empty()
+
+
 ## The crew's own seat: its move_to point, else the slot its face keeps; INF when it has neither (round 37 M5's seat).
 func yield_seat() -> Vector3:
 	var order: Dictionary = ctl.move_order
@@ -2055,6 +2079,9 @@ func _chain_reach(asker := "", along := Vector2.ZERO) -> Array:
 		return []
 	var off_seat := _flat_distance(ctl.tank.global_position, seat)
 	if off_seat <= CHAIN_M:
+		return []
+	if chain_arriving_on() and _own_squad_settled():
+		chain_settled_passes += 1
 		return []
 	if chain_release_on() and _chain_asker_wedged(asker):
 		chain_releases += 1
