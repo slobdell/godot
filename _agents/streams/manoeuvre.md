@@ -147,6 +147,21 @@ crews crossing each other's lane each wait for the other, each seeing the other'
 - On the stage: the crossing friend is now ONE wait of 2.2 s and 0.00 m off the line (v2: 54 waits, 6-8 m off the line).
 - Lab 3 (v3, the 16 cells) started 03:59 on builder0 (`jamlab4/`); v3 bridge reads queued (`bridgelab3/`).
 
+### Q2 lab 3 (v3, aaac5c133): FAIL again; the broad "wait for a crosser" rule stops here (three variants, same 16 cells)
+
+Lab 3 (`~/overnight-manoeuvre/r41/jamlab4/`, same 16 paired cells, both GDScript drive): D1 jam-seconds 13,365 -> 14,506 (+8.5 %;
+paired +71 s a run, se 32, 2.3 se WORSE) FAIL; D2 all-in 80.4 -> 83.3 (+2.9 s, se 2.3) FAIL; G5 never-in 10 -> 9 PASS; G6 contacts
++0.8 % PASS. Terminus worse in all four cells again (55.7 -> 66.5, 57.6 -> 69.0, 56.6 -> 69.2). Counters: 1,725 waits a run, 11,229
+queued crew-ticks (0.22 s a wait; 31 waits >= 2 s a run), time-outs 6, longest 9.6 s; by kind moving 131k, waiting 30k, turning 18k.
+
+**Reading (three variants, v1 +8.8 %, v2 +7.3 %, v3 +8.5 %, each 1.9-2.4 se worse on the same dev cells):** on his group order, where
+25 crews merge into one street, waiting for a friend that is crossing my lane costs more than ORCA's steer-round, whatever the
+wait's shape; the waits stay short even with lock-on because the crosser itself slows (for me, or for a third crew) and stops
+qualifying, and the crews behind read the waiter as stalled. The census's counterfactual ("the blocker cleared within 3 s in 53 %
+of jam-seconds") held, but the detour it replaced was cheaper than the wait on these maps. **The broad rule is not filed as a bar
+and stays OFF** (`--traffic-on=waitcross` after v4's split, for the record). What the wait DID fix outright is the bridge (below):
+a wheeled follower behind a leader turning onto the deck. v4 keeps that: the wait keys on a leader that is itself turning.
+
 ### The bridge read (R41.3: bridge-pooled with `--traffic-on=wait`): THE WAIT RULE CLEARS THE BRIDGE
 
 bridgelab1 (builder0 light, native, bridge-pooled 18 runs an arm, deterministic; `~/overnight-manoeuvre/r41/bridgelab1/`; reader
