@@ -281,6 +281,14 @@ static var wait_longest := {}  # {crew, for, s}
 static var wait_long := 0  # waits of WAIT_LONG_S or more
 const WAIT_LONG_S := 2.0
 static var wait_by_kind := {}  # moving / turning -> crew-ticks
+## Round 41 (manoeuvre Q4, R41.5; `--traffic-on=holdlane`, DEFAULT_OFF until judged): Q1's census put 42 % of the jam-seconds in
+## long episodes, and those were 46 % give-ways and 33 % reversing: his "cars driving around the jam". A crew stalled behind a
+## FRIEND that will clear by itself (a wait kind, the crosser included) asks nobody to give way, gives way to nobody and does not
+## back off: it holds its lane and slows (ORCA keeps it clear) until the friend has moved. Parked, stalled and head-on friends keep
+## today's asks, yields and unstick. Measurement: holdlane_skips (asks skipped), holdlane_holds (unstick back-offs held).
+const HOLDLANE_SWITCH := "holdlane"
+static var holdlane_skips := 0
+static var holdlane_holds := 0
 
 ## X4 right-of-way. A unit that has made no progress for ASK_SECONDS asks the friend in its way to give way, at most
 ## once every ASK_EVERY seconds.
@@ -335,7 +343,7 @@ static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
 			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
-			"route_not_ready": route_not_ready, "wait_queued": wait_queued, "waits": waits, "wait_timeouts": wait_timeouts, "wait_long": wait_long, "wait_longest": wait_longest.duplicate(), "wait_by_kind": wait_by_kind.duplicate(), "follow_queued": follow_queued, "follow_open": follow_open, "follow_longest": follow_longest.duplicate(), "follow_long_waits": follow_long_waits, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
+			"route_not_ready": route_not_ready, "wait_queued": wait_queued, "waits": waits, "wait_timeouts": wait_timeouts, "wait_long": wait_long, "holdlane_skips": holdlane_skips, "holdlane_holds": holdlane_holds, "wait_longest": wait_longest.duplicate(), "wait_by_kind": wait_by_kind.duplicate(), "follow_queued": follow_queued, "follow_open": follow_open, "follow_longest": follow_longest.duplicate(), "follow_long_waits": follow_long_waits, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
@@ -422,6 +430,8 @@ static func reset_route_arms() -> void:
 	wait_long = 0
 	wait_longest = {}
 	wait_by_kind = {}
+	holdlane_skips = 0
+	holdlane_holds = 0
 	press_escapes = 0
 	nose_stops = 0
 	driver_ticks = {}
@@ -2673,6 +2683,10 @@ func _negotiate(goal: Vector3, direct: bool, still_only := false) -> void:
 		return  # held back by a mover: avoidance is sharing that out; only a stall makes it a negotiation
 	var here := tank.global_position
 	var my_way := _travel_direction(goal, direct)
+	# Round 41 (Q4): a friend that will clear by itself is neither asked nor given way to: hold the lane and let it.
+	if not Traffic.off(HOLDLANE_SWITCH) and _holdlane_patient(other, my_way):
+		holdlane_skips += 1
+		return
 	var i_give_way := false
 	if mover.is_under_way():
 		var difference := _remaining - mover._remaining
@@ -3003,6 +3017,13 @@ func _wait_end() -> void:
 	_wait_since = -1
 
 
+## Round 41 (Q4, HOLDLANE_SWITCH): is `other` a friend that will clear my way by itself (any wait kind, the crosser included)?
+func _holdlane_patient(other: Tank, way: Vector2) -> bool:
+	if other == null or other.team != ctl.tank.team or not other.is_alive():
+		return false
+	return _wait_kind(other, way, true) != ""
+
+
 ## Round 41 (Q2): the friend to wait for: the nearest living friend ahead in my lane (WAIT_AHEAD_M, both radii + WAIT_SLACK_M), else
 ## the one meeting me there first within WAIT_HORIZON_S at `preferred`; [] unless `_wait_kind` says it will clear by itself.
 func _wait_blocker(here: Vector3, way: Vector2, preferred: Vector2) -> Array:
@@ -3041,7 +3062,7 @@ func _wait_blocker(here: Vector3, way: Vector2, preferred: Vector2) -> Array:
 ## "moving" (only with `waitcross`) when it drives across my lane; "waiting" when it is itself waiting for a friend that will clear (not for me);
 ## "turning" when it is slow, under way and its nose is still WAIT_TURN_DEG or more off its own travel direction (it is getting
 ## oriented, as his scout was).
-func _wait_kind(other: Tank, way: Vector2) -> String:
+func _wait_kind(other: Tank, way: Vector2, cross := false) -> String:
 	var mover := Movement.of(other)
 	# Two crews crossing each other's lane each wait for the other (each sees the other's wait a tick late, so without a rule both
 	# flip every tick: the test stage's trace, v3): the four-way stop's tie-break, the lower name goes, the other waits.
@@ -3063,7 +3084,7 @@ func _wait_kind(other: Tank, way: Vector2) -> String:
 			var nose := Vector2(-other.global_basis.z.x, -other.global_basis.z.z).normalized()
 			if nose.dot(its_way) < cos(deg_to_rad(WAIT_TURN_DEG)):
 				return "turning"
-	if speed >= WAIT_MOVING_MPS and not Traffic.off(WAIT_CROSS_SWITCH):
+	if speed >= WAIT_MOVING_MPS and (cross or not Traffic.off(WAIT_CROSS_SWITCH)):
 		# `waitcross` (OFF; the broad rule, three variants labbed on 7001-7004 at +7-9 % jam-seconds, lab 1-3): a friend driving
 		# ACROSS my lane whose own motion takes it out of the lane within the cap (a leader's lateral speed is ~0: never).
 		var off := Vector2(other.global_position.x - ctl.tank.global_position.x, other.global_position.z - ctl.tank.global_position.z)
@@ -4257,6 +4278,11 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		if _stuck_time == 0.0:
 			_stuck_from = ctl.tank.global_position
 		_stuck_time += delta
+		# Round 41 (Q4): stalled against a friend that will clear by itself: no back-off, no escape; the clock restarts.
+		if _stuck_time >= STUCK_SECONDS and not Traffic.off(HOLDLANE_SWITCH) and _holdlane_patient(_holdlane_blocker(order), _travel_direction(_goal, bool(order.get("direct", false)))):
+			_stuck_time = 0.0
+			holdlane_holds += 1
+			return
 		if _stuck_time >= STUCK_SECONDS and honest:
 			_stuck_time = 0.0
 			_escape_begin(cmd, order, pinned_on)
@@ -4381,6 +4407,19 @@ static func reset_escape_arms() -> void:
 
 ## The hull's escape is the honest one under this order: returns what pins it (a Tank, or the hull itself standing for
 ## "terrain"), or null for round 29's rule. Only a routed `move_to` (a goal; never a raw `drive`, a face or a direct hop).
+## Round 41 (Q4): the hull this crew is stalled against: a hull it touches, else the nearest hull ahead (BLOCKER_REACH); null if none.
+func _holdlane_blocker(order: Dictionary) -> Tank:
+	var tank := ctl.tank
+	for i in tank.get_slide_collision_count():
+		var hull := tank.get_slide_collision(i).get_collider() as Tank
+		if hull != null:
+			return hull
+	if _goal == Vector3.INF:
+		return null
+	var name := _hull_ahead(_goal, bool(order.get("direct", false)))
+	return ctl.tanks_root.get_node_or_null(NodePath(name)) as Tank if name != "" else null
+
+
 func _honest_blocker(order: Dictionary) -> Object:
 	if String(order.get("type", "")) != "move_to" or bool(order.get("direct", false)):
 		return null

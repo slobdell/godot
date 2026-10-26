@@ -313,5 +313,5 @@ func _finalize() -> void:
 			"waitable_s": waitable, "faster_s": snappedf(faster, 0.1), "held_s": snappedf(_held_ticks / float(SimClock.TICK_RATE), 0.1),
 			"slowed_s": snappedf(_slowed_ticks / float(SimClock.TICK_RATE), 0.1),
 			"no_blocker_s": snappedf(_no_blocker_ticks / float(SimClock.TICK_RATE), 0.1), "native_drive": BrainSwitches.native_drive,
-			"wait_queued": Movement.wait_queued, "waits": Movement.waits, "wait_timeouts": Movement.wait_timeouts, "wait_long": Movement.wait_long,
+			"wait_queued": Movement.wait_queued, "waits": Movement.waits, "wait_timeouts": Movement.wait_timeouts, "wait_long": Movement.wait_long, "holdlane_skips": Movement.holdlane_skips, "holdlane_holds": Movement.holdlane_holds,
 			"wait_longest": Movement.wait_longest, "wait_by_kind": Movement.wait_by_kind}))
