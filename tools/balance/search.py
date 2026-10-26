@@ -620,6 +620,76 @@ def bar(root: Path, base_c: str, arm_c: str) -> int:
     return 0 if all(verdict) else 1
 
 
+# ---- Bar B5 (round 41; DRAFT in the brief until filed): the verdict, one line a rule ---------------------------------
+
+def bar_b5(root: Path, base_c: str, arm_c: str) -> int:
+    """Judge Bar B5 from guard.sh folders <commit>-lines (blob + turtle, both sides) and <commit>-mono-<faction>-<team>
+    (the mono-tank line) under `root`. Deciding: the all-tank army's win share v its own faction's mixed deal DOWN by > 2
+    paired se. Guards as Bar B2s's G1-G4 on the lines, G5 = the lines' flatness not worse (the faction table kept)."""
+    verdict = []
+
+    def judge(name, d, se, n, fail_if, note=""):
+        bad = fail_if(d, se)
+        verdict.append(not bad)
+        print(f"BAR_B5 {name:42} {d:+7.2f} se {se:5.2f} (n {n}) -> {'FAIL' if bad else 'pass'} {note}")
+
+    mb, ma = read_mono(root, f"{base_c}-mono-"), read_mono(root, f"{arm_c}-mono-")
+    mp = defaultdict(list)
+    for k, a in ma.items():
+        if k in mb:
+            mp[k[3]].append((mb[k]["mono_won"], a["mono_won"]))
+    if mp:
+        allp = [p for v in mp.values() for p in v]
+        wb, wa = 100 * sum(b for b, _ in allp) / len(allp), 100 * sum(a for _, a in allp) / len(allp)
+        print(f"BAR_B5 mono-tank wins base {wb:.0f} -> arm {wa:.0f} % (target 35-40; gap {wa - 40:+.0f} to 40)")
+        d, se, n = _change(mp, lambda xs: 100 * sum(a - b for b, a in xs) / len(xs))
+        judge("DECIDING mono-tank win share (down > 2 se)", d, se, n, lambda d, se: not d < -2 * se)
+        for faction in FACTIONS:
+            fp = {seed: [(mb[k]["mono_won"], ma[k]["mono_won"]) for k in ma if k[0] == faction and k[3] == seed and k in mb]
+                  for seed in mp}
+            fp = {k: v for k, v in fp.items() if v}
+            if fp:
+                d, se, n = _change(fp, lambda xs: 100 * sum(a - b for b, a in xs) / len(xs))
+                fa = [ma[k]["mono_won"] for k in ma if k[0] == faction and k in mb]
+                print(f"BAR_B5   {faction:10} mono wins {100 * sum(fa) / len(fa):3.0f} % arm, change {d:+.1f} se {se:.1f} (n {n})")
+    else:
+        print("BAR_B5 DECIDING mono line: NOT READ")
+        verdict.append(False)
+    lines_b, lines_a = read_fights([root / f"{base_c}-lines"]), read_fights([root / f"{arm_c}-lines"])
+    ps = _paired_seeds(lines_b, lines_a)
+    if not ps:
+        print("BAR_B5 G1-G5 lines: NOT READ")
+        verdict.append(False)
+    else:
+        def share(line):
+            return lambda pairs: 100 * sum((a["winner"] == a["side"]) - (b["winner"] == b["side"]) for b, a in pairs) / len(pairs)
+
+        for g, line in (("G1", "blob"), ("G2", "turtle")):
+            d, se, n = _change(_paired_seeds(lines_b, lines_a, lambda f, line=line: f["guard"] == line), share(line))
+            judge(f"{g} {line} line guard win share (not up)", d, se, n, lambda d, se: d > 2 * se)
+        for line in ("blob", "turtle"):
+            keep = lambda f, line=line: f["guard"] == line
+            ratio = lambda pairs: 100 * (_median([a["seconds"] for _, a in pairs]) / _median([b["seconds"] for b, _ in pairs]) - 1)
+            d, se, n = _change(_paired_seeds(lines_b, lines_a, keep), ratio)
+            judge(f"G3 {line} median length % (within 15)", d, se, n, lambda d, se: abs(d) > 15 and abs(d) > 2 * se)
+            for faction in FACTIONS:
+                kf = lambda f, line=line, faction=faction: f["guard"] == line and f["factions"][f["side"]] == faction
+                d, se, n = _change(_paired_seeds(lines_b, lines_a, kf), ratio)
+                judge(f"G3 {line} {faction} median length % (within 20)", d, se, n, lambda d, se: abs(d) > 20 and abs(d) > 2 * se)
+        capped = lambda pairs: 100 * sum((a["reason"] in ("time_limit", "cap")) - (b["reason"] in ("time_limit", "cap"))
+                                          for b, a in pairs) / len(pairs)
+        d, se, n = _change(ps, capped)
+        judge("G4 time-cap share (not up)", d, se, n, lambda d, se: d > 2 * se)
+        flat_change = lambda pairs: flatness([a for _, a in pairs]) - flatness([b for b, _ in pairs])
+        d, se, n = _change(ps, flat_change)
+        print(f"BAR_B5 flatness base {flatness([b for v in ps.values() for b, _ in v]):.1f} -> arm "
+              f"{flatness([a for v in ps.values() for _, a in v]):.1f}")
+        judge("G5 lines flatness (not worse)", d, se, n, lambda d, se: d > 2 * se)
+    print("BAR_B5 G6 perf / G7 full check: read from ARM's check (not here)")
+    print(f"BAR_B5 VERDICT {'PASS' if all(verdict) else 'FAIL'} ({sum(verdict)} of {len(verdict)} rules hold)")
+    return 0 if all(verdict) else 1
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--catalog", type=Path)
@@ -643,6 +713,10 @@ def main(argv=None) -> int:
     p.add_argument("root", type=Path)
     p.add_argument("base_commit")
     p.add_argument("arm_commit")
+    p = sub.add_parser("bar-b5")
+    p.add_argument("root", type=Path)
+    p.add_argument("base_commit")
+    p.add_argument("arm_commit")
     p = sub.add_parser("mono")
     p.add_argument("root", type=Path, help="the folder holding <commit>-<tag>mono-<faction>-<player|enemy>/ runs")
     p.add_argument("--match", default="", help="only folders whose name contains this (e.g. -mono-base-)")
@@ -659,6 +733,8 @@ def main(argv=None) -> int:
 
     if args.cmd == "bar":
         return bar(args.root, args.base_commit, args.arm_commit)
+    if args.cmd == "bar-b5":
+        return bar_b5(args.root, args.base_commit, args.arm_commit)
     if args.cmd == "mono":
         mono_report(args.root, args.match, args.base_match)
         return 0
