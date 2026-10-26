@@ -133,3 +133,32 @@ func test_find_is_pure_and_bounded() -> void:
 			taken.append(TARGET + Vector3(float(direction[0]), 0.0, float(direction[1])) * 24.0 * fraction)
 	assert_true(FiringPosition.find(map, Vector3.ZERO, TARGET, 24.0, 8.0, taken).is_empty(),
 			"every ring spot held by a friend: none")
+
+
+## E5: a target the TEAM cannot see (remembered at its last position): the same read on that position, the same move.
+func test_a_remembered_target_behind_the_box_gets_the_same_move() -> void:
+	ElementPlan.ATTACK_SHOT = true
+	var situation := _situation()
+	(situation["contacts"][0] as Dictionary)["visible"] = false
+	situation["threat"] = ElementSituation.threat_from(situation["contacts"], false)
+	var plan := ElementPlan.build(situation, _state(), _table())
+	var order: Dictionary = plan["orders"]["Green_blocked"]
+	assert_eq(order["verb"], "move", "no line to where it was last seen: a move for one (%s)" % [order])
+	assert_eq(order["target"], "Rust_1", "naming it")
+	assert_true(order["to"] is Vector3 and (situation["cover_map"] as CoverMap).clear_line(order["to"], TARGET),
+			"to a spot that sees that position (%s)" % [order.get("to")])
+
+
+## E5: a covering crew (`_hold`) fights only what it has a line to; it keeps its spot either way.
+func test_a_covering_crew_without_a_line_holds_its_spot() -> void:
+	ElementPlan.ATTACK_SHOT = true
+	var situation := _situation()
+	var plan := {"orders": {}, "slots": {}}
+	ElementPlan._hold(plan, situation["members"], situation, Vector3.FORWARD, "test")
+	assert_eq(plan["orders"]["Green_blocked"]["verb"], "hold", "behind the box: hold, guns toward the facing (%s)" % [plan["orders"]["Green_blocked"]])
+	assert_eq(plan["orders"]["Green_clear"]["verb"], "attack", "with a line: attack (%s)" % [plan["orders"]["Green_clear"]])
+	assert_eq(plan["slots"]["Green_blocked"], Vector3.ZERO, "and it keeps its spot")
+	ElementPlan.ATTACK_SHOT = false
+	plan = {"orders": {}, "slots": {}}
+	ElementPlan._hold(plan, situation["members"], situation, Vector3.FORWARD, "test")
+	assert_eq(plan["orders"]["Green_blocked"]["verb"], "attack", "OFF: round 41, attack by distance")
