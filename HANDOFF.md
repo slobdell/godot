@@ -28,6 +28,11 @@ builder0, 27 ALL JUDGED** (`make check exited 0`, 3243 passed / 0 failed; sim-ba
 
 Kickoff: the same one line for every stream, `_agents/orchestration.md` *The kickoff prompt*. All five are FRESH sessions.
 
+**2026-10-26 09:20: main a1af3ba9e GREEN on builder0, 28 targets ALL JUDGED** (`make check exited 0`, 3255 passed / 0 failed;
+sim-baseline unmoved) = orders bdb43b2b8 + ba0d14aab, native c19dc10ec + a0c281dec (lint-fast gate). Since: R41.8-R41.14 (Q3 FAILED, wait
+family stops, B2s v2 carries to round 42; Q5 OFF; K3 v1 failed line 3, v2 on 9513-9548; G1 v9 bar running; B5 best in-bounds arm
+t50_ifv15 = all-tanks 85 -> 77 %, deal arm early read 40 % for gangs).
+
 **RUNNING (2026-10-26 ~05:00 PDT): all five streams started ~02:00.** Main = 04513fc92 (GREEN builder0) + orders' bdb43b2b8 (O1 probe +
 is_aiming, quick-green; main's batch check pending with native's tip c19dc10ec). Rulings R41.1-R41.7; bars filed: K3 v1 (camera), Q3
 (manoeuvre, bridge wait, gate check on builder2), G1 v8 (orders; v7 withdrawn unread); O2 and Q2/Q4 closed OFF without bars (his traffic
