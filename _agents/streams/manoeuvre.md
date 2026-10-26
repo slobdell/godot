@@ -127,11 +127,22 @@ which the follower catches it again (F1 v1's lesson, R40.22, in another form).
 crossing, turning and waiting friends only. Cap 5 s (R41.2). tests/test_traffic_wait.gd 5/0 (laptop NATIVE=off; the cap test now
 calls the rule directly on a staged crossing friend). Lab 2 (v2, same 16 cells) queued on builder0 behind the bridge read.
 
-### The bridge read (R41.3: first bridge-pooled with `--traffic-on=wait`; running)
+### The bridge read (R41.3: bridge-pooled with `--traffic-on=wait`): THE WAIT RULE CLEARS THE BRIDGE
 
-`~/overnight-manoeuvre/r41/bridgelab1/`: overrides tree (bt = 10d3a8d72 + 8e257f3bc + d385cd308, the v1 rule) OFF **17/18**
-(rust t15 s2, as R40.20; reproduced) and ON; then main (c8e329b23, v2) OFF / ON. bridgelab2: v2 under the overrides, ON.
-Reader: `tests/manoeuvre/bridge_lab_table.py` (checked against round 40's F1 v2 lab: 8.1 -> 5.9 s rim, 18/18 both).
+bridgelab1 (builder0 light, native, bridge-pooled 18 runs an arm, deterministic; `~/overnight-manoeuvre/r41/bridgelab1/`; reader
+`tests/manoeuvre/bridge_lab_table.py`, checked against round 40's F1 v2 lab):
+
+| Tree | Arm | bridge-pooled | Pooled rim s | Deck jam s | Worst crew | Mean arrival | Paired rim |
+|---|---|---|---|---|---|---|---|
+| overrides (bt 3430fd21a = 10d3a8d72 + 8e257f3bc + d385cd308) | OFF | **17/18** (rust t15 s2, Rust_S_3 5.1 s: R40.20 reproduced) | 14.2 | 17.1 | 5.1 | 34.9 | |
+| overrides | ON, v1 rule (same_way waited) | **18/18** | 1.3 | 12.2 | 0.6 | 32.7 | -0.72 s a run, se 0.30 (-2.4 se) |
+| main c8e329b23 | OFF | 18/18 | 8.1 | 7.5 | 1.5 | 36.6 | |
+| main c8e329b23 | ON, v2 rule (no same_way) | 18/18 | 3.4 | **16.2** | 1.0 | 37.0 | -0.26 s a run, se 0.18 (-1.5 se) |
+
+Reading: the bridge case is Q2's case (R40.21's follower carried wide round its slowing leader is a crew that should wait). v1 under
+the overrides fixes the failing run outright and cuts deck jam and arrival too. v2 on main halves the rim but doubles deck-jam
+seconds; bridgelab2 (v2 under the overrides) decides whether Q3 = Q2 v2 as is, or v2 plus the orchestrator's leader-in-turn gate
+(a same_way leader is waited on only while it is itself turning: moving, nose off its own next leg).
 
 ### Q3 design decision, written BEFORE any bridge number (R40.24's item; for the orchestrator's ruling)
 
