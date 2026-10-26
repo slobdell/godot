@@ -79,6 +79,21 @@ JUDGED; no baseline check re-run, per the contract). Orchestrator session: `godo
 (`wip/manoeuvre-q5-r42` = main + native's 75495744b + a45c0b953 + fc8f3697d: Q5 dev until CP42.0 lands). Evidence outside every
 worktree: `~/overnight-manoeuvre/r42/`.
 
+### Where it stands (2026-10-26 ~16:50 PDT): both bars filed; the gate check of the frozen tree 7569747ce is queued on builder0
+
+- **Frozen tree 7569747ce** (code ac64ce939 = main bf99631b5 with CP42.0 + Q5 a45c0b953 / fc8f3697d cherry-picked + deckwait v4 +
+  this stream's judges/instruments): `make remote T=check` launched ~16:45 (`~/overnight-manoeuvre/r42/gate1/`; behind engage's and
+  camera's checks in builder0's lock). One check gates Bar Q5 and Bar Q6 (R42.7). Laptop: `make test FILTER=traffic NATIVE=off`
+  127/0 at 520516ec3; deckwait 7/0 at ac64ce939.
+- **Bar Q5** (recorded on main as filed): the series `~/overnight-manoeuvre/r42/barq5.sh` (HOST=builder2 on the orchestrator's word
+  after engage's guards, else builder0 light) starts after the gate's green wrapper line.
+- **Bar Q6** (recorded on main as filed, 7569747ce): `~/overnight-manoeuvre/r42/barq6.sh` (builder0 light lanes: this worktree's and
+  the overrides tree's `../godot-manoeuvre-bt` = d9382eed7 = 7569747ce + 8e257f3bc + d385cd308) after the same green line; one half
+  at a time if `tools/loaded.sh` says the lane is full.
+- **Stretch 3 (running, dev seeds):** the long shoved episodes with Q5 ON, `q5lab3` (crossing/locks/sumps/terminus x 7009-7012,
+  main v nopush, GDScript both): what remains after no-pressing.
+- Rulings this round so far: R42.7 (the arrival guard; one check gates both bars; v4 the last re-file).
+
 ### Plan (ordered; the brief's backlog as built)
 
 1. **Bar Q5 FILED** (below) before any number; its judge `tests/manoeuvre/q5_judge.py` and the reported column's instrument
