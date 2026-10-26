@@ -297,6 +297,15 @@ more exec_fields lines when it matters); `nopush_capped` counts eases that hit t
 cells 7009-7012, main v nopush v2, both GDScript drive, one light lane, queued behind the series' bridge half. If it does not beat
 main on jam-seconds and never-in, Q5 is written up OFF and the round's traffic work closes with Bar Q3.
 
+**Lab 2 read (fc8f3697d, 16 paired runs, `q5lab2/`, filed beside lab 1's):** contact ticks 233,375 -> 168,724 (-28 %); shoved
+crew-ticks 26,997 -> 17,689 (-34 %); never-in runs 6 -> 7 (squads a run 0.94 -> 1.06); every-squad-in 76.9 -> 78.9 s (+2.0 s, 0.6 se);
+jam-seconds 13,650 -> 16,721 (+22.5 %, 4.4 se WORSE; note that a crew easing off reads as slowed by a friend in this measure, so the
+eased ticks themselves are in it). The cap worked as a cap (the never-in runs 10 -> 7 against v1; locks s7009 / s7011 / s7012 in
+faster, locks s7010 48.5 -> 84.1 s) but v2 beats main on neither jam-seconds nor never-in. **Q5 closes OFF (R41.8), no bar.** What it
+showed: a third of the shoving and a quarter of the friendly contacts can be taken out by not pressing, at the price of columns that
+stand; a rule that keeps the contacts down without the standing would need to know which friend ahead will move (Q2's question
+again). The round's traffic work closes with Bar Q3.
+
 ### M1 v3 (stretch): BUILT OFF on the side branch wip/manoeuvre-m1v3 (9087f3b12); dev lab running
 
 While Bar Q3's tree is frozen, M1 v3 lives in the side worktree `../godot-manoeuvre-m1` (branch `wip/manoeuvre-m1v3`, off
