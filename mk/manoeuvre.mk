@@ -415,3 +415,25 @@ manoeuvre-probe-wedge: import ## manoeuvre (R39, M1 G5): orders-probe cells (PW_
 			--probe-squads=$$1 --probe-route=$$2 --probe-arm=$$name $$flags > $(PW_DIR)/$$0-$$1-$$2-$$name-s$$3.log 2>&1 || true'
 	@grep -L '^ORDERS_PROBE {' $(PW_DIR)/*.log | sed 's/^/MISSING (no ORDERS_PROBE line): /' || true
 	$(PYTHON) tests/manoeuvre/probe_wedge_table.py $(PW_DIR)
+
+# ---- round 41 (Q1): the jam census on the group-order workload -------------------------------------------------------------
+# Orders' probe cells (PJ_CELLS map:squads:route:seed) x PJ_ARMS (name:flags) x PJ_SCATTER (off / on: every hull turned to a seeded
+# random heading the tick after the order), under tests/manoeuvre/probe_jam.gd (the probe unchanged + every stretch a crew is slowed
+# by a friend: who the blocker was, what it was doing, how long, what the asker did, and when the blocker cleared the asker's frozen
+# lane) -> JAM_EP / JAM_RUN rows in $(PJ_DIR)/*.log, then tests/manoeuvre/probe_jam_table.py. Measurement only; a judged read is
+# `native manoeuvre-probe-jam` (remote_builds.md: a probe target runs whatever library the folder last built).
+PJ_CELLS ?= terminus:5:route:7001 terminus:5:click:7001 locks:5:route:7001 locks:5:click:7001 crossing:5:route:7001 crossing:5:click:7001
+PJ_ARMS ?= main:
+PJ_SCATTER ?= off on
+PJ_DIR ?= $(BUILD_DIR)/manoeuvre/probe-jam
+PJ_JOBS ?= 4
+.PHONY: manoeuvre-probe-jam
+manoeuvre-probe-jam: import ## manoeuvre Q1 (round 41): the jam census on orders-probe cells (PJ_CELLS) x PJ_ARMS x PJ_SCATTER -> $(PJ_DIR)/*.log + the table
+	@rm -rf $(PJ_DIR) && mkdir -p $(PJ_DIR)
+	@echo ">> manoeuvre-probe-jam on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | cells '$(PJ_CELLS)' arms '$(PJ_ARMS)' scatter '$(PJ_SCATTER)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for cell in $(PJ_CELLS); do for arm in $(PJ_ARMS); do for sc in $(PJ_SCATTER); do echo "$$(echo $$cell | tr ':' ' ') $$arm $$sc"; done; done; done | xargs -P $(PJ_JOBS) -L 1 sh -c \
+		'name=$${4%%:*}; flags=$$(echo "$${4#*:}" | tr "," " "); \
+		timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/probe_jam.gd -- --arena=$$0 --seed=$$3 \
+			--probe-squads=$$1 --probe-route=$$2 --probe-arm=$$name --jam-scatter=$$5 $$flags > $(PJ_DIR)/$$0-$$1-$$2-$$name-sc$$5-s$$3.log 2>&1 || true'
+	@grep -L '^JAM_RUN' $(PJ_DIR)/*.log | sed 's/^/MISSING (no JAM_RUN line): /' || true
+	$(PYTHON) tests/manoeuvre/probe_jam_table.py $(PJ_DIR)
