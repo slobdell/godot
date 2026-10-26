@@ -135,6 +135,16 @@ _(filed bars go here, before their numbers)_
   is shown nowhere in the game (tests only), so the brief's suggestion could not be seen. Granted: `_hint()` returns
   `GarageAdvice.tank_rush_line(draft)` + " · FIGHT when ready" when the line is non-empty (the status line under the credits bar);
   the function and `--tank-rush-hint=off` live in garage_advice.gd. Additive, merge note, screenshot at desktop and phone.
+- **R42.5 (2026-10-26 ~15:45) camera's K4.1 census; Bar K4's frame approved.** 3f73a1378 Status (camera code 4cfadc6ee, danger off =
+  round 41; builder0 light, headless 1920x1080 @60, Terminus, CPU, dev 7001-7012, 45 s a run, never a bar): ambush 40 m, 12 runs: blind
+  (under fire, no enemy on screen) 3.7 % of play, 12 off-screen shots, 5 never on screen; flank lanes fine (latency p50 0.7-1.6 s: the
+  vision frame widens, an attack order turns the heading); REAR lane (4 runs) blind 9.8 % of play (19.9 % of time under fire), 5 of 9
+  shooters never on screen. His retreat (12 runs): the view faces the wall 37.3 % of the run (~60 % after the order), 17 of 29
+  off-screen shots never on screen. Yaw already reverses 2-9 times/min in a fight (the swing baseline). Player terms: a fight from the
+  side mostly shows up already; a gun behind the squad, or the fight he is retreating from, stays off screen. **Ruled:** Bar K4 as the
+  brief, with "never on screen" counted as 20 s in the latency line (so a mean and se exist; the never count reported beside), the
+  deciding workload = ambush (all lanes, 55 m) + his retreat, the rear lane and the retreat read separately as well as pooled; the
+  reversal guard is against this baseline (ARM <= BASE + 1/min). K4.2 built OFF; two read-only lines in skirmish_mode.gd (C42.3).
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
