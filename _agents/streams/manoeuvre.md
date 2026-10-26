@@ -83,7 +83,7 @@ the crew keeps ORCA's direction and only its speed is capped, so it reaches the 
   slowing leader. It was not the native drive (identical with `--brains-off=native_drive`); `--no-avoidance` gave rim 0.
 - **The terminus trace** (R40.23, 3f23a36ab): Green_Alpha_4 queued at 3.5 m/s for 6 s behind a steady friend because a route turn
   lay within 16 m. It reached the junction late into crossing squad 3, circled, and its squad came in 20 s later.
-- **Main's own bridge margin:** with F1 OFF, main's three worst runs have a crew at the rim 1.5 s (rust t? s2), 1.4 s and 1.1 s:
+- **Main's own bridge margin:** with F1 OFF, main's three worst runs have a crew at the rim 1.5 s (a rust seed-2 run), 1.4 s and 1.1 s:
   1.5-1.9 s under the 3 s line, identical in all three labs (deterministic). A stat change (balance's v2: 5.1 s) or a traffic rule
   (F1 final: 4.0 s on green t1 s1) is enough to push one crew over. The drill's margin is thin, not just balance's tree.
 - **F1's code stays on the branch, OFF** (`--traffic-on=follow`, DEFAULT_OFF; tests/test_traffic_follow.gd; follow_judge.py).
