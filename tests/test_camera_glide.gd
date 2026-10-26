@@ -186,3 +186,28 @@ func test_a_pivoted_shake_keeps_the_cursor_ground_on_its_pixel() -> void:
 	var far_before := CameraTrace.project_pose(pose, 35.0, Vector2(1920, 1080), elsewhere) as Vector2
 	var far_after := CameraTrace.project_pose(shaken, 35.0, Vector2(1920, 1080), elsewhere) as Vector2
 	assert_true(far_before.distance_to(far_after) > 1.0, "and the rest of the view still shakes (%.1f px)" % far_before.distance_to(far_after))
+
+
+func test_while_his_hand_moves_the_camera_slows_without_a_lurch() -> void:
+	var rig := _rig()
+	await wait_physics_frames(2)
+	rig.focus = rig._shown_focus + Vector3(300, 0, 0)
+	rig.wrote["focus"] = "auto_frame"
+	for i in 180:
+		rig._process(1.0 / 60.0)
+	var full := rig.glide_top_speed()
+	assert_near(rig._focus_velocity.length(), full, full * 0.01, "setup: a long re-frame at its top speed")
+	var motion := InputEventMouseMotion.new()
+	var speeds: Array = []
+	for i in 30:
+		motion.position = Vector2(200 + i * 20, 300)  # a sweep: never still
+		rig._input(motion)
+		rig._process(1.0 / 60.0)
+		speeds.append(rig._focus_velocity.length())
+	assert_true(not rig.holding, "a sweep is not aiming: the camera is not held")
+	assert_near(float(speeds.back()), full * RtsCamera.HAND_PACE, full * 0.03, "it settles at HAND_PACE of its top speed")
+	var top_change := 0.0
+	for i in range(1, speeds.size()):
+		top_change = maxf(top_change, absf(float(speeds[i]) - float(speeds[i - 1])) * 60.0)
+	assert_true(top_change <= full * RtsCamera.PACE_OMEGA * 1.05, "eased down, never a step (%.1f m/s^2)" % top_change)
+

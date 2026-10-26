@@ -252,7 +252,8 @@ var layers := {}
 ##     on a unit) the automatic moves coast to a stop and wait: the ground under his cursor stays put. They resume,
 ##     eased, after; his click ends the aim. A hand sweeping is not aiming (an RTS hand never rests: K3's first bar run
 ##     held the camera 58 % of the match that way and it found a fifth fewer fights);
-##   * no automatic move carries the view faster than GLIDE_SCREENS_PER_S;
+##   * no automatic move carries the view faster than GLIDE_SCREENS_PER_S, and while his hand moves they ease down to
+##     HAND_PACE of that (a hold that only began when his hand stopped let the camera coast into his aim: 130 px);
 ##   * the building clearance eases in over ~0.1 s instead of one frame, and CameraShake pivots on the ground under the
 ##     cursor (the view shakes, the point he is about to click does not).
 ## His own input (keys, wheel, drag, F, O, jumps) is untouched: it was never the jerk. `--camera-glide=off` is round 40.
@@ -275,6 +276,11 @@ const FRAME_ZOOM_LEASH := 0.025
 const HOVER_HOLD_S := 1.5
 ## A hand that has stopped this long has found what it will click (a sweep never pauses; a reach ends in a stop).
 const DWELL_S := 0.1
+## While his hand moves (it moved within HAND_MOVING_S) the automatic moves' top speeds ease down to this fraction, at
+## PACE_OMEGA (1/s: never a step in speed), and back up once it rests.
+const HAND_PACE := 0.25
+const HAND_MOVING_S := 0.25
+const PACE_OMEGA := 12.0
 ## An automatic move's top speed, in heights of the ground in view per second at the focus (K3: an uncapped spring
 ## crossed a whole screen in 0.7 s on a long re-frame: smooth, but not cinematic, and 12 frames over SNAP_PX).
 const GLIDE_SCREENS_PER_S := 0.6
@@ -295,6 +301,7 @@ var _leash_zoom := -1.0
 var _mouse_at := Vector2(-1, -1)
 var _mouse_moved_at := -1e9
 var _aim_spent_at := -1e9
+var _pace := 1.0
 var _buttons_down := 0
 var _solid_d := 0.0
 var _solid_p := 0.0
@@ -414,6 +421,8 @@ func _move_shown(delta: float) -> void:
 ## speed-limited, and while he aims it coasts to a stop (its goal goes on being worked out; the view waits for him).
 func _glide(delta: float) -> void:
 	var weight := 1.0 - exp(-SMOOTHING * delta)
+	var pace_goal := HAND_PACE if _clock - _mouse_moved_at < HAND_MOVING_S else 1.0
+	_pace = pace_goal + (_pace - pace_goal) * exp(-PACE_OMEGA * delta)
 	var before_focus := _shown_focus
 	if RtsCamera.hand_set(wrote["focus"]):
 		_shown_focus = _shown_focus.lerp(focus, weight)
@@ -434,7 +443,7 @@ func _glide(delta: float) -> void:
 		_shown_zoom += _zoom_velocity * delta
 	else:
 		var next := RtsCamera.spring(_shown_zoom, _zoom_velocity, zoom, GLIDE_ZOOM_OMEGA, delta)
-		_zoom_velocity = clampf(float(next[1]), -TRACK_ZOOM_SPEED, TRACK_ZOOM_SPEED)
+		_zoom_velocity = clampf(float(next[1]), -TRACK_ZOOM_SPEED * _pace, TRACK_ZOOM_SPEED * _pace)
 		_shown_zoom = float(next[0]) if float(next[1]) == _zoom_velocity else before_zoom + _zoom_velocity * delta
 	var before_yaw := _shown_yaw
 	if RtsCamera.hand_set(wrote["yaw"]):
@@ -446,7 +455,7 @@ func _glide(delta: float) -> void:
 	else:
 		var gap := angle_difference(yaw, _shown_yaw)  # shown - wanted, the short way round
 		var next := RtsCamera.spring(gap, _yaw_velocity, 0.0, GLIDE_YAW_OMEGA, delta)
-		var limit := deg_to_rad(GLIDE_YAW_DEG_PER_S)
+		var limit := deg_to_rad(GLIDE_YAW_DEG_PER_S) * _pace
 		_yaw_velocity = clampf(float(next[1]), -limit, limit)
 		_shown_yaw = wrapf(yaw + float(next[0]) if float(next[1]) == _yaw_velocity else before_yaw + _yaw_velocity * delta, -PI, PI)
 	var before_pitch := _shown_pitch
@@ -498,10 +507,10 @@ func aiming_now() -> bool:
 
 
 ## The top speed of an automatic focus move (m/s): GLIDE_SCREENS_PER_S heights of the ground in view at the shown
-## zoom, under round 40's TRACK_SPEED.
+## zoom, under round 40's TRACK_SPEED, times the hand's pace.
 func glide_top_speed() -> float:
 	var height := 2.0 * RtsCamera.distance_for(_shown_zoom) * tan(deg_to_rad(fov) / 2.0)
-	return minf(GLIDE_SCREENS_PER_S * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom))
+	return minf(GLIDE_SCREENS_PER_S * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom)) * _pace
 
 
 ## The ground under the cursor, or null (no cursor seen yet, or sky): CameraShake's pivot while gliding.
