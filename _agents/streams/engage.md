@@ -91,13 +91,19 @@ Nothing.
 
 ## Status
 
-**2026-10-26 ~16:05 PDT (Fable).** E1 DONE (the mechanism, below). E2 built, OFF behind `--attack-shot` (quick gate green on
+**2026-10-26 ~17:10 PDT (Fable).** E1 DONE (the mechanism, below). E2 built, OFF behind `--attack-shot` (quick gate green on
 builder0 at 7322318a3: 169 passed / 0 failed, 631 s). E3 DONE (the HUD's words, tests). E5 (cheap half) done. **Bar E1 FILED
-below (recorded on main as R42.6); the frozen tree is 57e2e7eb5** (b37e7f4a4 + the read gated OFF + the SUPPRESS column + the
-shot tool; filed before any number on 9601-9648). Running: the suite ON (C31.1) `make remote T="check ATTACK_SHOT=on"` on
-57e2e7eb5, builder0 (queued behind native's full check at launch). Next: the deciding series on builder0's light lane once the
-ON check reads green; the fight guards on builder2 on the orchestrator's word (balance's B8 screen pauses at a leg boundary);
-the OFF check of the merge candidate.
+below (recorded on main as R42.6); the frozen tree is now 4658fa514** (57e2e7eb5 + R42.10's flank side pick, gated; filed
+before any number on 9601-9648, none read yet). **The suite-ON check at 57e2e7eb5 was NOT green (builder0, 16:40 PDT):**
+`>> remote: make check ATTACK_SHOT=on exited 2`, unit tests `3297 passed, 0 failed`, `26 passed, 2 FAILED`: sim-baseline
+(9 maps moved, expected under the flag: yard pit terminus crossing sumps gorge archipelago cut yard_open; foundry locks parade
+docks unmoved; adopted at the ship flip) and **tactics-drills: far_ambush "one half went round them" red** (widest_lateral 17.0
+v OFF 73.3; needs > 20). perf-judge JUDGED PASS (attempt 1; relative line 9504 usec per reference ms v 25840). Mechanism and
+the fix (R42.10) in *Done*; every drill passes ON on the laptop at 4658fa514 (`ATTACK_SHOT=on make tactics-drills`:
+failures 0, far_ambush off_axis 5.3 8.5 43.5 75.0). Running: the suite ON (C31.1) `make remote T="check ATTACK_SHOT=on"` on
+4658fa514, builder0 (queued behind manoeuvre's full check, 16:40). Next: the deciding series on builder0's light lane once the
+ON check reads green; the fight guards on builder2 on the orchestrator's word (balance runs there in short legs; pauses on
+"pause"); the OFF check of the merge candidate.
 
 **Player smoke (laptop, 57e2e7eb5, `tests/engage/engage_shots.gd`, his pose, desktop 1920x1080 and phone 1200x540, frames at
 0/1/3/8/20 s in `build/engage/shots/`, copied to the scratchpad):** OFF: the Rat Rod sits nose-on behind the blue container all
@@ -131,6 +137,17 @@ words are pinned by test_engage_hud_words.)
   (Merge note: one new var `line_of_fire` and one helper beside `engaged_of`; the two lines of wording.)
 - **E5 (e81c93ae8, cheap half):** `_hold`'s attack, the orbit drill's in-range and the flank line's crew-reach read take the same
   `has_shot` truth under the flag (a covering crew without a line holds its spot; a ring crew keeps going round).
+- **R42.10 (4658fa514, GRANT, gated under ATTACK_SHOT): the maneuver half flanks on the side with room.** The suite-ON check
+  at 57e2e7eb5 turned far_ambush red. Traced (`tests/engage/far_ambush_trace.gd`, laptop, identical numbers to builder0): under
+  ON, A_3 (no line to Gun_2 for ~20 ticks of react to contact) got a firing-spot move 3 m west of where OFF's `attack` took it;
+  `_plan_fire_and_maneuver` picks the flank side by the sign of (maneuver centre - focus) . right, the maneuver half straddles
+  the line of contact there (margin ~3 m), the sign went west, and the lane (x -98) is 17 m from the arena edge: the flank
+  point was clamped onto the wall, "swing" 17.0 m (OFF happens to pick east: 73.3 m). The fight was also won 8 s sooner ON
+  (both guns dead at tick 447 v 697). A knife-edge pick that was there before; a flank into a wall is wrong in either arm.
+  Fix: `ElementPlan.flank_side` (pure): the sign's side unless the arena clamps its flank point further than the other
+  side's (one side into a wall -> the other; both -> the one moved less). OFF unchanged (option b: no OFF baseline moves before
+  the flip). `tests/tactics/test_engage_flank_side.gd` (4: OFF pinned wall-and-all, the stage ON goes > 20 m east to an
+  unclamped flank, both clamped -> the less moved, the function pure). Laptop, all drills ON: failures 0.
 - **Tests:** `tests/tactics/test_engage_shot.gd` (6: the read, today's `attack` pinned as the control, the spot's properties, the
   spot kept, no spot -> closing, find pure and bounded), `tests/engage/test_engage_hud_words.gd` (2). `mk/engage.mk`: engage-replay,
   engage-probe, engage-bar, engage-parse.
@@ -181,8 +198,10 @@ reads it as material, the seam is `_act` SUPPRESS's stand (same guard) or `Comba
 
 ### Bar E1 (FILED b37e7f4a4, 2026-10-26 ~15:50 PDT, before any number on 9601-9648)
 
-**Switch:** `--attack-shot` (DEFAULT OFF at filing; a pass ships ON with `=off` = round 41). **Tree:** 57e2e7eb5 frozen for every
-arm (code = e81c93ae8 + the read gated behind the flag; the rest is the probe, the table and the shot tool). OFF asks the cover
+**Switch:** `--attack-shot` (DEFAULT OFF at filing; a pass ships ON with `=off` = round 41). **Tree:** 4658fa514 frozen for every
+arm (was 57e2e7eb5 = e81c93ae8 + the read gated behind the flag + the probe, the table and the shot tool; moved to 4658fa514 on
+R42.10's flank side pick after the suite-ON check at 57e2e7eb5 turned far_ambush red, before any number on 9601-9648 was read;
+the lines below are unchanged). OFF asks the cover
 map for nothing (probe 7001: 0 lines OFF, 210 ON). **What it could break (round 37's rule):** a crew that leaves its standoff
 to close may die in the open (the exposure guard); a crew whose spot is unreachable, or whose line flickers at a corner, may
 oscillate (the dither count, the line flips, spots never reached); a CPU fight where crews now close instead of holding may
@@ -206,8 +225,8 @@ behind a container or block 18-42 m away, one crew with a clear line from the st
    G1 green kills a fight, G2 green losses a fight, G3 the match length (median), G4 green's kill ratio: each ON within OFF
    +/- 1.645 paired se. **G5:** no fight ends in a SCRIPT ERROR or a missing GUARD_RESULT.
 6. **Sim-baseline:** rows that move under ON listed with the reason (the rule acted); adopted at the ship by the orchestrator.
-7. **The whole suite ON (C31.1):** `make remote T="check ATTACK_SHOT=on"` on b37e7f4a4 before the series: every test passes
-   (the baseline rows excepted, 6).
+7. **The whole suite ON (C31.1):** `make remote T="check ATTACK_SHOT=on"` on the frozen tree before the series: every test
+   passes (the baseline rows excepted, 6). At 57e2e7eb5: 3297/0 unit tests, far_ambush red -> R42.10; rerun on 4658fa514.
 8. **Cost (the ray budget, named before the series):** cover-map lines a plan tick in the ON arm, mean over the series, <= crews
    + 1 (one line a member a target; the probe has one target; dev 3.7 at a mean 3.6 crews); by construction never more than
    SHOT_CONTACTS (6) x members an element a plan tick, memoized at 0.5 m; and the ON check's perf-judge reads PASS on its own
@@ -233,6 +252,9 @@ behind a container or block 18-42 m away, one crew with a clear line from the st
 ### Known issues
 
 - SUPPRESS under an attack order can stand in band with no line (above; outside the GRANT; measured by the stuck line).
+- The flank side pick is a knife-edge when the maneuver half straddles the line of contact (far_ambush's stage: ~3 m); R42.10
+  keeps it off walls under the flag but does not latch it. OFF today can still flank into a wall (test_engage_flank_side pins
+  that as the control). Worth a latch in a later round if a drill flips side mid-swing.
 - A target the team sees but the cover map calls blocked while the physics ray is clear (a feature lower than eye height is not
   in the map's lines; hull-down cover): the plan sends a spot the gun did not need. Not seen in 12 dev seeds.
 
@@ -247,4 +269,5 @@ OFF arm is the same without the flag.
 - `game/ai/tank_brain.gd` `_act` ENGAGE: the R42.2 GRANT branch only (own_line; `cover_map` is a fresh `CoverMap.of(tank)`).
 - `game/control/rts_controls.gd`: `line_of_fire` var + `_has_line_of_fire` + the two wording lines in `attack_shortfall`.
 - `game/tactics/element_situation.gd`: additive `preferred_min` and `shot` member fields; `shots_into` static.
+- `game/tactics/element_plan.gd` `_plan_fire_and_maneuver`: two lines under `if ATTACK_SHOT` + the pure `flank_side` (R42.10).
 - `order_executor.gd` untouched (unreachable under EXECUTES_ORDERS).
