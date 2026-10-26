@@ -79,8 +79,16 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     main, crossing never-in 5 -> 4, terminus 57.1 -> 62.8; paired -1.0 +/- 2.0 s; 16 of 120 queued, 2 by the cap.
   - **Finding:** the corridor rule rarely fires (16-18 of 120 squads); the jams form where roads merge mid-way.
     **v3 `--group-depart=merge` (b8116ec21):** each pair's first merge outside the halt area; the shorter-drive squad
-    goes when the longer one's tail is no farther from the merge than it is, less 10 m. Dev read 3 running.
-  - Full check of 25525980a on builder0: queued behind native's (the lock held since 02:12).
+    goes when the longer one's tail is no farther from the merge than it is, less 10 m.
+  - **Dev read 3 (v3, b8116ec21, same setup):** the only variant that moves never-in (15 -> 8 squads; locks 2 -> 0;
+    contacts 34157 -> 26085; paired all-in -8.7 +/- 6.6 s, deciding still fails) and it does it by holding squads: median
+    18 s of the 40 that waited, 17 released by the 20 s cap, 18 of 24 clicks with a squad waiting > 5 s (every wait
+    guard fails: he would see squads that did not hear him). Third variant on the same seeds: partly fitted.
+  - **O2 RESULT: written up, no bar** (orchestrator's call for this case). Departure order is not where the time goes:
+    the time is crews meeting inside the merges (stalled / crossing / same_way, manoeuvre's Q1), i.e. what a blocked crew
+    does, which is Q2. Switches stay OFF in code (`--group-depart=queue|merge`, `--group-depart-rank=drive`); evidence
+    `references/round41/orders/o2-dev-reads-builder0/` (ba0d14aab). The stale check of 25525980a was stopped (mine,
+    exit 143); a full check of ba0d14aab runs on builder0.
 - **Plan:** O1 census probe (done, 8b828ec59) -> census on builder0 dev seeds 7001-7006 (crew v formed headings) -> hash to
   manoeuvre + orchestrator -> O2: pick the lever from the numbers, build OFF, lab, file Bar O2 on 9101-9124 before any number
   -> C41.4 getter if camera asks -> stretch G1 v7.
