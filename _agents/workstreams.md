@@ -61,7 +61,7 @@ project's workers (plane_maker): never touch processes you didn't start.
 ## Bars (round 40)
 
 **Seed registry (round 40):** 8001-8024 settle (T1 8001-8012, S1 v3 8013-8024); 8101-8124 manoeuvre; 8201-8236 orders (G1 v6 8201-8212,
-G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 (wedge re-route, R40.12); 8701-8724 settle S1 v3b (v3 on T1-ON main), 8725-8748 settle --cap-deal=street (R40.14); 7001-7008 manoeuvre's M2 dev trace (not a bar). 8801-8840 + 8901-8940 balance Bar B2s v2 (R40.19).
+G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 (wedge re-route, R40.12); 8701-8724 settle S1 v3b (v3 on T1-ON main), 8725-8748 settle --cap-deal=street (R40.14); 7001-7008 manoeuvre's M2 dev trace (not a bar). 8801-8840 + 8901-8940 balance Bar B2s v2 (R40.19). 8125-8148 manoeuvre Bar F1 follow-queue (R40.21).
 
 - **Bar B2s, the stat change (balance; FILED d479a17a1, 2026-10-24 evening, before any number on 8301-8340 + 8401-8440).** Change: the
   candidate B4 picks (unit hp/armour/damage/cost within R40.1's +/-15 %). Deciding: FLATNESS (RMS over 16 cells: by guard faction and by
@@ -286,6 +286,16 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   GDScript drive 31.0 s (rim 0). **Ruled:** bridge-pooled is not loosened or re-seeded; manoeuvre owns the fix (symmetric, ON if
   bridge-pooled is green on main AND under v2's overrides, twin matching). Then v2's ARM is rebuilt on that main; Bar B2s v2's BASE is
   that main (no number on 8801-8840 + 8901-8940 read yet, so it is the same bar).
+- **R40.21 (2026-10-25 ~19:20) Bridge cause = ORCA steering a wheeled follower around its leader; F1 follow-queue approved, OFF until
+  its bar.** Manoeuvre (builder0, 5a233f42b): `--brains-off=native_drive` gives the identical 48.9 s / rim 5.1 s, so R40.20's
+  native-v-GDScript reading is WRONG (the laptop's 31.0 s is another difference; it has no native library). Rust_S_3, 7 m behind
+  Rust_S_1 at 10-11 m/s: S1 slows to turn onto the deck; ORCA (pace 0.96 -> 0.71) pushes S3's steer point outside past the mouth; on
+  return S3 heads east beside the mouth and its 8 m turn radius cannot reach the deck; presses, circles, yields; the same at the far end.
+  `--no-avoidance` diagnostic (n 1): rim 0, arrived 38.8 s. **Ruled:** build F1: a WHEELED crew whose ORCA conflict is a moving friend
+  ahead on its route going its way (FOLLOW_COS) keeps its route steer and takes only ORCA's along-route speed (queues, never passes); a
+  stopped friend is passed as today. Symmetric, OFF until judged; GDScript first, C++ twin to native. Lab: bridge-pooled on main and
+  under d385cd308's overrides, then the wedge and orders cells. Bar on 8125-8148, filed before any number on them, frozen tree (R40.13),
+  guards as M3's (deaths, stuck deaths, contact ticks, kill share, never-in, all-in / last-in) plus bridge-pooled 18/18.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
