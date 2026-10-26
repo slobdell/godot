@@ -43,6 +43,15 @@ in player terms; CP42.1: merge manoeuvre's Q6 alone on its pass (with native's t
 B7 result to him as "the CPU now brings artillery against your tank rush"; perf-judge in a quiet builder0 window for every ON flip
 before the close.
 
+**RUNNING (2026-10-26 ~16:00 PDT): all five streams started ~14:55; the orchestrator loop is godot-8c (a second main-checkout session,
+godot-45, answered one grant and stood down, R42.1).** Rulings R42.1-R42.6; bars filed: B7 (balance, per countered faction R42.3; waits
+on B8's dev screen), E1 (engage: the brain held his crew at standoff on the TEAM's sight, R42.2; ON replay drives round in 1.5 s and
+fires at 0.8 s; builder2 guards queued behind balance). Camera's K4.1 census (R42.5): the round-41 camera finds a flank ambush but
+goes blind on a rear one (5 of 9 shooters never on screen) and faces the wall 37 % of his retreat; K4.2 built OFF, Bar K4 next.
+Manoeuvre: Q6's first read reproduces R40.21's crew exactly (locks rust s2 t15, rim 5.1 s); Bar Q5's judge written; dev tree up.
+Native: CP42.0 candidate 75495744b (Q5's members as LATE exec_fields rows), full check on builder0 since ~15:05. Main = docs only
+since 21b20bdce (+ two comment lines in mk/camera.mk).
+
 **Waiting on him (player terms, one recommendation each; none blocks a stream):**
 1. **Combined arms:** the round proceeds on the recommendation (the CPU fields an artillery-heavy army against an all-tank army and
    the garage suggests it; Law's and Syndicate's artillery numbers within his 15 %). His veto stands at the close.
