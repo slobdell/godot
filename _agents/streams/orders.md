@@ -56,6 +56,31 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### NOW (2026-10-26)
+- **CLOSE REPORT (2026-10-26):**
+  - **Done:** O1 (census, 8b828ec59); O2 written up, switches OFF (orchestrator's R41.4; merged as ba0d14aab); C41.4
+    (b973ba955); stretch **G1 v9 ON (5693c0b66, R41.15)**.
+  - **Bar G1 v9: PASS** (builder2, frozen 872dab643, native on, 9101-9112, n 12 a cell, judge g1v8; evidence
+    `references/round41/orders/barg1v9-builder2-872dab643/`). Places outside the corridor 57 -> 8 (<= 14.2); metres
+    outside after in 2281 -> 436 (<= 1140); re-dealt 0 (base 48); friend_contacts 13425 -> 10393 (<= 14772.5); probe
+    guards 14 cells; yard_open 192 / 192 identical; sent away > 10 m 24 -> 0 (<= 26). Reported only: parked re-deals
+    (duck-excluded) 376 -> 396.
+  - **What ships:** with no flags his group click lays the column (`selection_squads.gd`: GROUP_LAY, RANK_SHIFT_HALF,
+    GROUP_WHOLE_CLICK, CLEAR_REACHED, GROUP_LEAD, SIDES_BOTH, COLUMN_STAY ON). Escapes: `--group-lay=off`,
+    `--group-rank-shift=off`, `--group-whole=off`, `--group-clear=click`, `--group-lead=off`, `--group-sides=off`,
+    `--group-column-toward=off`; `--group-g1=off` = all seven off (the group click before G1). The probe's `main:` arm is
+    now G1 ON; a future bar against pre-G1 uses `old:--group-g1=off`.
+  - **Tests:** five tests of the pre-G1 group click pin it with `SelectionSquads.set_g1(false)` (untangle's crew
+    re-deal, requeue x2, R37.29's lay, v6's one-sided line); teardowns call `reset_g1()`. Laptop NATIVE=off control +
+    orders: 625 / 0.
+  - **Known issues:** with G1 ON interleaved squads stay whole, so crews can cross where the old re-deal untangled them
+    (the whole-squad untangle takes the fewest crossings; contacts fell on the bar). crossing 5 route is unchanged by G1
+    (route legs are G2's). Full checks this round read perf-judge NOT JUDGED (box busy): the ON flip needs
+    `make remote-quiet T=perf-judge` on main (orchestrator scheduling it).
+  - **Question for the lead:** the feel question under Bar G1 v9 below (a tail squad that stays on a click beside it).
+  - **Playtest:** `make skirmish ARENA=terminus`, select all five squads at the start, click the street just left of
+    them; then a far click across the map. Compare `SKIRMISH_FLAGS="--group-g1=off"`.
+  - **Next:** Q2 (what a blocked crew does inside merges) is where group-move time goes (O1 / O2); departure order is not.
+  - **Merge notes:** 5693c0b66 alone (code + tests + evidence); green check named below when it lands.
 - **REPORT so far (2026-10-26 ~03:00):**
   - **O1 DONE (8b828ec59, `make orders-group`).** Census (builder0, 8b828ec59, native off, dev seeds 7001-7006, n 6 a
     cell; evidence `references/round41/orders/o1-census-builder0-8b828ec59/`): his "pointed different ways" is mostly not
