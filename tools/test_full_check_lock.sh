@@ -159,12 +159,18 @@ cmd=${*: -1}; cmd=${cmd//pgrep -f/true}
 HOME=$FAKE_HOME bash -c "$cmd"
 FAKE
 chmod +x "$tmp/ssh"
-( cd "$tmp" && bash "$fcl" run "$lock" sleep 1 ) &
+# The holder keeps the lock until released (20 s cap), and the probe is asked until it shows the holder's folder (up to 10 s):
+# a fixed 0.3 s read `1` without the folder line on a loaded builder2 (round 41, manoeuvre's check on 2e5848acd).
+( cd "$tmp" && bash "$fcl" run "$lock" bash -c "for _ in \$(seq 1 400); do [ -e '$tmp/release7' ] && break; sleep 0.05; done" ) &
 holder_pid=$!
-sleep 0.3
-out=$(FAKE_HOME=$tmp BUILDER_CHECKS_SSH=$tmp/ssh bash "$here/builder_checks.sh" 2>&1)
+for _ in $(seq 1 100); do
+	out=$(FAKE_HOME=$tmp BUILDER_CHECKS_SSH=$tmp/ssh bash "$here/builder_checks.sh" 2>&1)
+	[ "$(head -1 <<<"$out")" = 1 ] && grep -qx "$tmp" <<<"$out" && break
+	sleep 0.1
+done
 [ "$(head -1 <<<"$out")" = 1 ] && grep -qx "$tmp" <<<"$out" && ok "builder_checks: the lock's holder counts (1, its folder)" \
 	|| bad "builder_checks holder" "$out"
+touch "$tmp/release7"
 wait "$holder_pid"
 out=$(FAKE_HOME=$tmp BUILDER_CHECKS_SSH=$tmp/ssh bash "$here/builder_checks.sh" 2>&1)
 [ "$(head -1 <<<"$out")" = 0 ] && ok "builder_checks: a free lock adds nothing (0)" || bad "builder_checks free" "$out"
