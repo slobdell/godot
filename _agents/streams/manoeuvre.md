@@ -133,6 +133,11 @@ asked for a bar.
   - long episodes (all) and the three longest;
   - follow_queued, if the wedge logs carry route_arms;
   - bridge-pooled ON under d385cd308's overrides (the lab's ask; it's balance's tree, not this bar's).
+  - **Added by the orchestrator after lab 1, reported only (the bar's judged lines stand as filed):** bridge-pooled deck jam and
+    mean arrival, OFF v ON; and the longest single follow-queue wait in the wedge cells, with its crew, leader, seed and the
+    leader's least speed (`follow_longest` / `follow_long_waits` in WEDGE_TRACE, measurement only, a newer commit). Lab 1 on
+    1267b1635: deck jam 7.5 -> 16.2 s, mean arrival 36.6 -> 37.8 s. If lab 2 shows a crew queued behind a friend that slows for
+    no reason, one is traced before the series.
 - **Judge:** `python3 tests/manoeuvre/follow_judge.py wedge-off wedge-on probe/rows.jsonl --on-arm=follow` (D on moving-stuck
   seconds, the rest as reroute_judge.py), plus bridge_verdict.py's line for G8. Committed before the series starts.
 - **A pass** goes to the orchestrator; F1 ships ON only with native's twin matching. **A fail:** F1 stays OFF; no re-run on these
