@@ -1,0 +1,17 @@
+PASS counter: squads queued 16
+FAIL deciding all-in: mean paired diff -1.0 s (se 2.0, n 24); median 109.2 v 109.2 s
+PASS deciding never-in squads: 15 v 11
+  PASS guard crossing  all-in median 180.0 v 180.0 s; never-in runs 5 v 4 (n 6)
+  PASS guard locks     all-in median 86.3 v 86.3 s; never-in runs 2 v 2 (n 6)
+  PASS guard sumps     all-in median 124.6 v 124.6 s; never-in runs 1 v 1 (n 6)
+  FAIL guard terminus  all-in median 57.1 v 62.8 s; never-in runs 0 v 0 (n 6)
+PASS guard contacts 34157 v 32729
+PASS guard wait waited median: 3.7 s of 16 squads that waited (of 120)
+FAIL guard wait cap releases: 2 of 16 queued
+PASS guard wait clicks > 5 s: 5 of 24 clicks
+  wait squad 1: median 0.0 max 4.9 s (n 24)
+  wait squad 2: median 0.0 max 20.0 s (n 24)
+  wait squad 3: median 0.0 max 0.0 s (n 24)
+  wait squad 4: median 0.0 max 5.4 s (n 24)
+  wait squad 5: median 0.0 max 3.9 s (n 24)
+FAIL streets: no rows
