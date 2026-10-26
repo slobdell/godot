@@ -129,6 +129,15 @@ turtle lines for base / t50 / t50_ifv15 on 9411-9420, 200 fights an arm, Bar B5'
 **The nearest arm inside his rules lands at 77 %, 37-42 points short of 35-40 %.** The IFV's dealt a credit under the combined
 arm: condemned 0.8 -> 1.5, law 0.8 -> 1.15, still 4-8 % alive. Next (running): the deal arm (R41.12), then pen7, then the lines.
 
+**DEAL ARM DONE (09:51; 9204009f6, builder2 J24, 9401-9410, mono line both teams, 400 fights, 0 lost; all-tanks v the faction's
+named archetype at the same money, no stat change):** all **85 -> 73 % (-12, se 3)**; **condemned v `siege`** (2 artillery, 2
+scouts, tank, IFV) **77 -> 47 % (-30, se 10)**, 38 % with the tanks on Green; **gangs v `gang_hail`** (2 artillery, 2 Rat Rods, Gun
+Truck, Tanker) **78 -> 52 % (-26, se 6)**, 40 % on Green; law v `law_dragnet` (3 scouts, artillery, tank, suppressor) 92 -> 93 %
+(+1); syndicate v `syndicate_standoff` (2 Lancers, 2 Spotters, Missile Ring, IFV) 92 -> 99 % (+7, se 3). **What wins is artillery:**
+5.1-5.4 points dealt a credit, 94-99 % alive at the end (condemned siege fields 10 artillery a fight v 2.9 in its normal deal).
+The two archetypes that fail are the ones with no artillery weight (law's is three MG scouts; syndicate's Lancers die to the
+Railgun in 30 s). So "a well-mixed army beats tanks" is TRUE today for the artillery-heavy mixes, with no number changed; the
+CPU's seeded deal just rarely fields one, and law / syndicate have none to field. (Detail from the first reads, kept:)
 **Deal arm, in progress (9204009f6, builder2, 9401-9410, paired with base):** gangs v `gang_hail` (2 artillery, 2 Rat Rods, Gun
 Truck, Tanker; no tank): all-tanks **78 -> 52 % (-26, se 6)**, 40 % when the tanks are Green, 64 % when Rust; length +2 %.
 Syndicate v `syndicate_standoff` (2 Lancers, 2 Spotters, Missile Ring, IFV; no tank): all-tanks **92 -> 99 % (+7, se 3)**,
@@ -167,7 +176,7 @@ bridge runs (9025-9036 x 3 ticks x 2 sides) the v2 overrides tree with the rule 
 known bridge failure remains the 18-run drill's rust t15 s2 (R40.20). The ARM rebuild recipe (apply + cherry-pick ad956031b)
 is proven mechanical on ff30edf87 (`apply --tree` now). builder2 stays on B5: the deal arm, pen7, then the lines screen.
 
-**B5 WRITE-UP FOR HIM (round-2 version 08:55; two dev arms still to land, the deal arm and pen7, which may change the last paragraph; the orchestrator takes it to him).**
+**B5 WRITE-UP FOR HIM (deal-arm version 10:00; pen7's line pending; the orchestrator takes it to him).**
 *What you noticed is real, and it is not about facing.* An army of only tanks beats the same faction's normal mixed army, same
 money, 85 % of the time (CPU v CPU, 5 maps, both sides, 400 fights). Your target was the mixed army winning 60-65 %, so the
 tank army should win 35-40 %: about 45 points away.
@@ -184,13 +193,19 @@ its flank fire adds up: 4 % of IFVs are alive at the end, and all IFVs together 
 from any side, at any toughness.
 *An IFV 15 % tougher and 15 % cheaper (your +/-15 % rule) takes the tank army from 85 to 82 %.* With the slow turret as well:
 77 % (Condemned and Gangs 67-68 %, Law 89 %, Syndicate 84 %).
-*So inside your rules the all-tank army ends near 77 %, not 35-40 %: the best in-bounds change closes about 8 of the 45 points.* To reach your target the IFV has to be able to kill
-a tank from the side before it dies, and that is a weapon or armour-piercing change, not a number inside 15 %: (1) the IFV's
-cannon gets through a tank's side and rear properly (its penetration up, so a flank actually pays; the front stays a wall), or
-(2) the slow, limited anti-tank missile you asked about (not a tank: a Bradley's TOW, two shots, slow, only useful from a
-flank), or (3) the mixed army buys fewer IFVs and more anti-tank. Recommendation: (1), because it rewards exactly the thing
-the mixed army already does (get round the side) and changes no unit's role. The slow turret (5 points) is worth keeping on its
-own merits if you like how it feels: a Bar B5 run says whether it is safe to ship alone.
+*So inside your rules the all-tank army ends near 77 %, not 35-40 %: the best in-bounds change closes about 8 of the 45 points.*
+*But a different mixed army already beats the tanks, with no number changed.* We put the all-tank army against each faction's
+artillery-heavy lineup at the same money. Condemned "siege" (two artillery squads, two scout squads, a tank squad, an IFV squad):
+the tank army wins 47 % (38 % when it attacks from the Green side). Road Gangs "hail" (two catapult squads, two Rat Rod squads, a
+Gun Truck squad, a Tanker): 52 % (40 % from Green). That is your target, today. What does it is artillery: a credit of artillery
+puts 5 points of damage on the tanks and 94-99 % of it is still alive at the end; a credit of IFV puts 0.8 and dies. Law and
+Syndicate have no such lineup to field: Law's "dragnet" is three machine-gun scout squads (the tank army still wins 93 %) and
+Syndicate's "standoff" is Lancers, which the Railgun Platform kills in one shot from 110 m (99 %).
+*So the recommendation changes:* (1) give every faction an artillery-heavy lineup and make the CPU field it when it faces an
+all-tank army (and show you the same lineup in the garage): no unit changes, the game already has the units; measured at 47-52 %
+for the two factions that have one. (2) The slow turret (5 points) only if you like how it feels. (3) The IFV's trade (it dies
+in one or two shells before its flank fire adds up) is a separate, smaller question: tougher-and-cheaper buys 2 points, a
+sharper cannon [pen7 arm, pending]. The missile is not needed for your target.
 
 **B5 round 1, t50 arm read (tank turret traverse x0.5; 8f2643375 + overrides, builder2 J24, 9401-9410, 400 fights, paired):**
 mono-tank wins 85 -> **80 % (-5, se 1)**: condemned 77 -> 70 (-7, se 2), gangs 78 -> 75 (-3, se 5), law 92 -> 85 (-7, se 2),
