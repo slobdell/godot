@@ -82,6 +82,13 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   that waited, median wait <= 6 s; cap releases <= 10 % of queued; clicks with any wait > 5 s <= 50 %; per-squad wait median/max reported.
   **Parts B/C** (9101-9112, n 12): R36.6 probe guards on the 12 street cells + his click, contacts, fight lines (kills, losses, CPU losses
   within 1.645 se). Lab before filing (laptop s7001, n 1 a map, not a number): terminus all-in 75.4 -> 59.0 s; crossing never-in -> 93.4 s.
+- **Bar K3 v1, a smooth camera (camera; FILED 0871a6789, 2026-10-26 ~02:50, before any number on 9501-9512).** Switch
+  `--camera-glide` (ON when it passes, =off escape). BASE glide=off v ARM glide=on, same commit + seeds, `make camera-trace`, builder0
+  light, headless 1920x1080 @60, Terminus v CPU, CameraPlaytest autoplay (hand reach 0.3 s, aim 0.5 s, right-click), pooled 12 seeds.
+  Ship ON = every line passes: (1) attack clicks still on the aimed unit ARM >= 70 % AND >= BASE + 15 points; (2) target slip p95 ARM
+  <= 40 px AND <= half BASE; (3) jerks: ARM total <= 3.0/min, no automatic source > 1.5/min, automatic snaps = 0 (JERK_PX_S2 15,000,
+  SNAP_PX 24 at 1080 rows, fixed first); (4) the vision camera still finds the action: ARM auto_frame px/min >= 25 % of BASE, no
+  trace failure or SCRIPT ERROR. Shake separately: windowed laptop run, shake slip at the cursor ARM <= 1 px p95. The lead judges feel.
 
 ## Rulings (round 41)
 
