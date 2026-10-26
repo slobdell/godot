@@ -56,6 +56,20 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (native, round 42, 2026-10-26 evening). Every item is done or waiting on another stream's bar / the close.**
+- **Green:** 75495744b (builder0 full check, `make check exited 0`, 3290/0, 27 passed + 1 NOT JUDGED by load) = CP42.0, merged as
+  main bf99631b5. Tip 653bf50d7 adds only tools/judge + docs (0e93002cd, 3df630755, c63142b73, Status commits): builder0
+  `make quick-remote QUICK_BASE=75495744b` exited 0 (57 s, no test touched); `python3 -m pytest tools/judge` 86/86 (laptop). For
+  the orchestrator's next batch.
+- **N1 done; N3 done for round 41** (lines + step 5b); lines_r42.py waits on round 42's verdicts.
+- **N2 waiting:** Q6 twin approved as planned (Status below), built only on a Bar Q6 pass off the bar's hash. Q5 twin on a Bar Q5
+  pass. Any E1 seam: none needed so far (R42.2).
+- **N4 waiting** on a quiet builder0 (queued all evening, orchestrator). **N5** at the close, on the orchestrator's ask.
+- **Spare done** (report below: "rr + heavy heads", ~-32 % on the test wall's sum bound; needs an A/B by core.mk's owner).
+- **Questions for the lead:** none. **Requests to other streams:** manoeuvre: the `_avoid` OFF-path guard (relayed, accepted).
+- **Merge notes:** `tests/test_native_exec_state.gd` changed (native's test of native's table). When Q5 is on main for good, its
+  four lines can move from EXEC_MOVER_LATE_FIELDS to the core list (cosmetic).
+
 **2026-10-26 (session 1, round 42).** Plan: N1 CP42.0 (first; the round's first merge) -> N3 lines_r41 + step 5b while N1's check
 runs -> N2 twins as asked (Q5 nopush, Q6 bridge, any E1 seam) -> N3 lines_r42 as bars are filed -> N4 quiet-box lint-fast read when
 builder0 is quiet -> N5 perf-judge windows when the orchestrator asks -> spare (test-shard time).
