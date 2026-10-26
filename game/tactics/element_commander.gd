@@ -82,6 +82,11 @@ const AMBUSH_COOLDOWN_TICKS := SimClock.TICK_RATE * 20
 ## reaches the kill zone.
 const AMBUSH_MARGIN_S := 4.0
 const AMBUSH_ENEMY_MPS := 9.0
+## B3 (round 40, balance): THE FACTION-AWARE AMBUSH, SHIPPED OFF (`--faction-ambush` turns it on). A faction's doctrine
+## table may let `traits.ambush_share` of its line lie in ambush at once (ambush_limit) instead of one element: the gangs,
+## whose guns reach 30-50 m against 70-170 m, die meeting a blob in the open (B1: 0.36 killed value a credit, syndicate
+## 0.84). Every side whose table carries the trait gets it, CPU or player's squads alike.
+static var FACTION_AMBUSH_ENABLED := false
 ## element id -> {"spot", "zone", "since", "reach"} while it lies in ambush; element id -> tick its cooldown ends.
 var ambushes := {}
 var _ambush_cooldown := {}
@@ -191,6 +196,9 @@ static func install(p_match: Match, p_team: int, p_elements: Elements = null) ->
 		DEFEND_SPLIT_ENABLED = true
 	if OS.get_cmdline_user_args().has("--cpu-defend-closing"):
 		DEFEND_CLOSING_ENABLED = true
+	# Round 40 (B3): `--faction-ambush` turns the faction-aware ambush on (shipped off).
+	if OS.get_cmdline_user_args().has("--faction-ambush"):
+		FACTION_AMBUSH_ENABLED = true
 	# Round 20 (M2): `--cpu-opening` turns the opening on (shipped off).
 	if OS.get_cmdline_user_args().has("--cpu-opening"):
 		OPENING_ENABLED = true
@@ -504,7 +512,8 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := f
 			_drop_ambush(element)
 			_ambush_cooldown[element.id] = game_match.tick + AMBUSH_COOLDOWN_TICKS
 			free.append(element)
-	if not ambushes.is_empty():
+	var traits: Dictionary = (line[0] as Element).table.traits if not line.is_empty() and (line[0] as Element).table != null else {}
+	if ambushes.size() >= ambush_limit(line.size(), traits, FACTION_AMBUSH_ENABLED):
 		return free
 	# Take one: the free line element out of contact with the nearest site.
 	var best: Element = null
@@ -547,6 +556,13 @@ func _plan_ambush(line: Array, contacts: Array, objective: Vector3, holding := f
 	_give(best, {"verb": "ambush", "to": _xz(zone), "from": _xz(spot)})
 	free.erase(best)
 	return free
+
+
+## B3 (round 40): how many line elements may lie in ambush at once. Pure.
+static func ambush_limit(line_size: int, traits: Dictionary, faction_on: bool) -> int:
+	if not faction_on or not traits.has("ambush_share"):
+		return 1
+	return maxi(1, floori(line_size * float(traits["ambush_share"])))
 
 
 ## Round 19 (B3): AmbushSite.find, memoised for this think: holding, every free element searches from the same zone

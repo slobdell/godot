@@ -27,6 +27,7 @@ final VERDICT line. The guards reuse orders' judge (tests/control/orders_judge.p
 """
 import collections
 import glob
+import gzip
 import json
 import os
 import sys
@@ -54,8 +55,9 @@ def keyed(rows, arm):
 
 def turned(folder, arm):
     n = total = 0
-    for path in glob.glob(os.path.join(folder, "logs", "*-%s-s*.log" % arm)):
-        with open(path, errors="replace") as f:
+    for path in glob.glob(os.path.join(folder, "logs", "*-%s-s*.log" % arm)) + \
+            glob.glob(os.path.join(folder, "logs", "*-%s-s*.log.gz" % arm)):
+        with (gzip.open(path, "rt", errors="replace") if path.endswith(".gz") else open(path, errors="replace")) as f:
             for line in f:
                 if line.startswith("DEPLOY_TRACE "):
                     total += 1
@@ -413,8 +415,9 @@ def s2v3(argv):
 def cleared(folder, arm):
     """S1 route-clear: deploys, and seats moved clear on deploys' own updates (DEPLOY_TRACE "cleared")."""
     n = total = 0
-    for path in glob.glob(os.path.join(folder, "logs", "*-%s-s*.log" % arm)):
-        with open(path, errors="replace") as f:
+    for path in glob.glob(os.path.join(folder, "logs", "*-%s-s*.log" % arm)) + \
+            glob.glob(os.path.join(folder, "logs", "*-%s-s*.log.gz" % arm)):
+        with (gzip.open(path, "rt", errors="replace") if path.endswith(".gz") else open(path, errors="replace")) as f:
             for line in f:
                 if line.startswith("DEPLOY_TRACE "):
                     total += 1
@@ -422,9 +425,11 @@ def cleared(folder, arm):
     return n, total
 
 
-def s1c(argv):
+def s1c(argv, v3b=False):
     """Round 39 Bar S1 route-clear (settle.md Status, filed before any number):
-    python3 settle_judge.py s1c PROBE FIGHT3 FIGHT5 BASE NEW"""
+    python3 settle_judge.py s1c PROBE FIGHT3 FIGHT5 BASE NEW
+    v3b (round 40 Bar S1 v3b, R40.15, amended before any number): deciding = squads with twitch >= 15 m, arm <= 0.85 x
+    base with base >= 20; never-in a guard (arm <= base, none new on any cell); every other s1c guard as filed."""
     probe, fight3, fight5, base, new = argv
     lines = []
     rows = oj.load(os.path.join(probe, "rows.jsonl"))
@@ -440,24 +445,36 @@ def s1c(argv):
     never_n = {k for k, sq in rn.items() if five(k) and oj.run_all_in(sq) < 0}
     fresh = sorted(never_n - never_b)
     dec = len(never_b) >= 2 and len(never_n) <= len(never_b) - 1 and not fresh
-    lines.append("%s deciding: never-in runs on the 5-squad cells %d -> %d (<= base - 1, base >= 2) and none new (%d new: %s)" % (
+    tw_b = sum(1 for c in common if b[c]["twitch_m"] >= 15)
+    tw_n = sum(1 for c in common if n[c]["twitch_m"] >= 15)
+    if v3b:
+        dec = tw_b >= 20 and tw_n <= 0.85 * tw_b
+        lines.append("%s deciding (R40.15): squads with twitch >= 15 m %d -> %d (<= %.1f, 0.85 x base; base >= 20)" % (
+            "PASS" if dec else "FAIL", tw_b, tw_n, 0.85 * tw_b))
+    else:
+        lines.append("%s deciding: never-in runs on the 5-squad cells %d -> %d (<= base - 1, base >= 2) and none new (%d new: %s)" % (
         "PASS" if dec else "FAIL", len(never_b), len(never_n), len(fresh), fresh))
     lines.append("    base never-in: %s" % sorted(never_b))
     lines.append("    arm never-in: %s" % sorted(never_n))
     nb = sum(1 for sq in rb.values() if oj.run_all_in(sq) < 0)
     nn = sum(1 for sq in rn.values() if oj.run_all_in(sq) < 0)
     g_ni = nn <= nb
-    lines.append("%s guard never-in, every cell: %d -> %d runs (arm <= base)" % ("PASS" if g_ni else "FAIL", nb, nn))
+    if v3b:
+        new_any = sorted({k for k, sq in rn.items() if oj.run_all_in(sq) < 0} - {k for k, sq in rb.items() if oj.run_all_in(sq) < 0})
+        g_ni = g_ni and not new_any
+        lines.append("%s guard never-in, every cell: %d -> %d runs (arm <= base) and none new (%d new: %s)" % (
+            "PASS" if g_ni else "FAIL", nb, nn, len(new_any), new_any))
+    else:
+        lines.append("%s guard never-in, every cell: %d -> %d runs (arm <= base)" % ("PASS" if g_ni else "FAIL", nb, nn))
     both = [k for k in rb if k in rn and oj.run_all_in(rb[k]) >= 0 and oj.run_all_in(rn[k]) >= 0]
     tb = sum(oj.run_all_in(rb[k]) for k in both) / max(len(both), 1)
     tn = sum(oj.run_all_in(rn[k]) for k in both) / max(len(both), 1)
     g_t = tn <= tb * 1.10 + 1.0
     lines.append("%s guard all-in time: mean over %d runs in on both %.1f -> %.1f s (<= %.1f)" % (
         "PASS" if g_t else "FAIL", len(both), tb, tn, tb * 1.10 + 1.0))
-    tw_b = sum(1 for c in common if b[c]["twitch_m"] >= 15)
-    tw_n = sum(1 for c in common if n[c]["twitch_m"] >= 15)
     g_tw = tw_n <= tw_b
-    lines.append("%s guard twitch: squads with twitch >= 15 m %d -> %d (not up)" % ("PASS" if g_tw else "FAIL", tw_b, tw_n))
+    if not v3b:
+        lines.append("%s guard twitch: squads with twitch >= 15 m %d -> %d (not up)" % ("PASS" if g_tw else "FAIL", tw_b, tw_n))
     shapes = sum(1 for c in common if first(b[c]) != first(n[c]))
     g_sh = shapes <= max(1, 0.03 * len(common))
     lines.append("%s guard first shape: differs %d of %d (<= 3 %%)" % ("PASS" if g_sh else "FAIL", shapes, len(common)))
@@ -482,7 +499,85 @@ def s1c(argv):
         sum(1 for c in common if moved(b[c]) >= LONG_M), sum(1 for c in common if moved(n[c]) >= LONG_M),
         sum(1 for c in common if b[c]["deploy_leg_m"] >= LONG_M), sum(1 for c in common if n[c]["deploy_leg_m"] >= LONG_M)))
     ok = counter and dec and g_ni and g_t and g_tw and g_sh and g_fl and g_c and g_f
-    lines.append("VERDICT %s %s v %s (Bar S1 route-clear, round 39)" % ("PASS" if ok else "FAIL", new, base))
+    lines.append("VERDICT %s %s v %s (%s)" % ("PASS" if ok else "FAIL", new, base,
+                                            "Bar S1 v3b, round 40, R40.15" if v3b else "Bar S1 route-clear, round 39"))
+    print("\n".join(lines))
+    return 0 if ok else 1
+
+
+def capdeal_count(folder, arm):
+    """Cap deal: deploys, and cap deploys the arm dealt (DEPLOY_TRACE "cap_deal" non-empty)."""
+    n = total = 0
+    for path in glob.glob(os.path.join(folder, "logs", "*-%s-s*.log" % arm)) + \
+            glob.glob(os.path.join(folder, "logs", "*-%s-s*.log.gz" % arm)):
+        with (gzip.open(path, "rt", errors="replace") if path.endswith(".gz") else open(path, errors="replace")) as f:
+            for line in f:
+                if line.startswith("DEPLOY_TRACE "):
+                    total += 1
+                    n += 1 if json.loads(line.split(" ", 1)[1]).get("cap_deal") else 0
+    return n, total
+
+
+def capdeal(argv):
+    """Round 40 Bar cap deal (settle.md Status, filed before any number; R40.14):
+    python3 settle_judge.py capdeal PROBE FIGHT3 FIGHT5 BASE NEW"""
+    probe, fight3, fight5, base, new = argv
+    lines = []
+    rows = oj.load(os.path.join(probe, "rows.jsonl"))
+    b, n = keyed(rows, base), keyed(rows, new)
+    common = [k for k in b if k in n]
+    dealt, deploys = capdeal_count(probe, new)
+    counter = dealt > 0
+    lines.append("%s counter: cap deploys dealt %d over %d deploys on %s; squads %d" % ("PASS" if counter else "FAIL", dealt,
+                                                                                       deploys, new, len(common)))
+    leg_b = sum(1 for c in common if b[c]["deploy_leg_m"] >= LONG_M)
+    leg_n = sum(1 for c in common if n[c]["deploy_leg_m"] >= LONG_M)
+    d1 = leg_b >= 20 and leg_n <= 0.75 * leg_b
+    lines.append("%s deciding: squads with a deploy leg >= %.0f m %d -> %d (<= %.1f, 0.75 x base; base >= 20)" % (
+        "PASS" if d1 else "FAIL", LONG_M, leg_b, leg_n, 0.75 * leg_b))
+    tw_b = sum(1 for c in common if b[c]["twitch_m"] >= 15)
+    tw_n = sum(1 for c in common if n[c]["twitch_m"] >= 15)
+    d2 = tw_n <= tw_b
+    lines.append("%s deciding: squads with twitch >= 15 m %d -> %d (no more)" % ("PASS" if d2 else "FAIL", tw_b, tw_n))
+    rb, rn = oj.by_run(rows, base), oj.by_run(rows, new)
+    nb = sum(1 for sq in rb.values() if oj.run_all_in(sq) < 0)
+    nn = sum(1 for sq in rn.values() if oj.run_all_in(sq) < 0)
+    new_any = sorted({k for k, sq in rn.items() if oj.run_all_in(sq) < 0} - {k for k, sq in rb.items() if oj.run_all_in(sq) < 0})
+    g_ni = nn <= nb and not new_any
+    lines.append("%s guard never-in, every cell: %d -> %d runs (arm <= base) and none new (%d new: %s)" % (
+        "PASS" if g_ni else "FAIL", nb, nn, len(new_any), new_any))
+    both = [k for k in rb if k in rn and oj.run_all_in(rb[k]) >= 0 and oj.run_all_in(rn[k]) >= 0]
+    tb = sum(oj.run_all_in(rb[k]) for k in both) / max(len(both), 1)
+    tn = sum(oj.run_all_in(rn[k]) for k in both) / max(len(both), 1)
+    g_t = tn <= tb * 1.10 + 1.0
+    lines.append("%s guard all-in time: mean over %d runs in on both %.1f -> %.1f s (<= %.1f)" % (
+        "PASS" if g_t else "FAIL", len(both), tb, tn, tb * 1.10 + 1.0))
+    out_b = sum(1 for c in common if b[c].get("anchor_outside"))
+    out_n = sum(1 for c in common if n[c].get("anchor_outside"))
+    g_o = out_n <= out_b + 2
+    lines.append("%s guard places outside: %d -> %d (<= base + 2)" % ("PASS" if g_o else "FAIL", out_b, out_n))
+    fl_b = sum(max(int(b[c].get("shape_flips", 0)), 0) for c in common)
+    fl_n = sum(max(int(n[c].get("shape_flips", 0)), 0) for c in common)
+    g_fl = fl_n <= fl_b + 3
+    lines.append("%s guard shape flips: %d -> %d (<= base + 3)" % ("PASS" if g_fl else "FAIL", fl_b, fl_n))
+    runs, _ = runs_of(os.path.join(probe, "runs.jsonl"))
+    g_c = True
+    for key in ("friend_contacts", "friend_contacts_foreign"):
+        cb = sum(r.get(key, 0) for r in runs if r["arm"] == base)
+        cn = sum(r.get(key, 0) for r in runs if r["arm"] == new)
+        passed = cn <= cb * 1.1 + 5
+        g_c = g_c and passed
+        lines.append("%s guard %s %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", key, cb, cn, cb * 1.1 + 5))
+    g_f = True
+    for label, d in (("3-squad", fight3), ("5-squad (--probe-budget=3000)", fight5)):
+        fr, ferr = runs_of(os.path.join(d, "runs.jsonl"))
+        lines.append("  fight read %s (%d runs that never started)" % (label, ferr))
+        g_f = oj.fight_guards(fr, base, new, lines) and g_f and ferr == 0
+    lines.append("  reported: place+twitch >= 25 m squads %d -> %d; first shape differs %d of %d" % (
+        sum(1 for c in common if moved(b[c]) >= LONG_M), sum(1 for c in common if moved(n[c]) >= LONG_M),
+        sum(1 for c in common if first(b[c]) != first(n[c])), len(common)))
+    ok = counter and d1 and d2 and g_ni and g_t and g_o and g_fl and g_c and g_f
+    lines.append("VERDICT %s %s v %s (Bar cap deal, round 40)" % ("PASS" if ok else "FAIL", new, base))
     print("\n".join(lines))
     return 0 if ok else 1
 
@@ -645,6 +740,10 @@ if __name__ == "__main__":
         sys.exit(s2v3(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "s1c":
         sys.exit(s1c(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "s1v3b":
+        sys.exit(s1c(sys.argv[2:], v3b=True))
+    if len(sys.argv) >= 2 and sys.argv[1] == "capdeal":
+        sys.exit(capdeal(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "s1v2":
         sys.exit(s1v2(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "s3":

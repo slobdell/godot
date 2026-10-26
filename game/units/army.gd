@@ -125,6 +125,8 @@ static func load_army(name_or_path: String, seed_value: int, budget: int = Units
 	ensure_overrides()
 	if is_cpu(name_or_path):
 		var archetype := name_or_path.trim_prefix("cpu:")
+		if archetype.begins_with(MONO_PREFIX):
+			return mono_army(archetype.trim_prefix(MONO_PREFIX), budget, faction)
 		if name_or_path != "cpu" and not ARCHETYPES.has(archetype):
 			return {"error": "no CPU army archetype '%s' (have %s)" % [archetype, ARCHETYPES.keys()]}
 		if faction == "":
@@ -139,6 +141,30 @@ static func load_army(name_or_path: String, seed_value: int, budget: int = Units
 		return parse_scaled(cpu_army(name_or_path, seed_value, budget, faction))
 	var path := name_or_path if name_or_path.contains("://") else "res://doctrines/%s.json" % name_or_path
 	return Doctrine.load_file(path)
+
+
+## B5 (round 40, balance; R40.6) MEASUREMENT CONTROL, never normal play: "cpu:mono_<role>" deals `faction`'s units of that
+## role only (his "100% tanks") at the budget, up to MAX_ARMY_UNITS, so a series can ask whether a mixed army beats it. It
+## is not in ARCHETYPES, so no seed rolls it; SkirmishMode.demo_flags keeps it only when named on the command line.
+const MONO_PREFIX := "mono_"
+
+
+static func mono_army(role: String, budget: int, faction: String) -> Dictionary:
+	if not Units.FACTIONS.has(faction):
+		return {"error": "a mono army needs a faction (have %s)" % ", ".join(Units.FACTIONS)}
+	var unit_id := ""
+	for candidate: String in Units.roster(faction):
+		if Units.role_of(candidate) == role:
+			unit_id = candidate
+			break
+	if unit_id == "":
+		return {"error": "faction '%s' fields no '%s'" % [faction, role]}
+	var cost := Units.cost_of({"unit": unit_id})
+	var entries: Array = []
+	while entries.size() < MAX_ARMY_UNITS and (entries.size() + 1) * cost <= budget:
+		entries.append({"unit": unit_id})
+	return parse_scaled({"name": "CPU Mono %s" % role.capitalize(), "archetype": MONO_PREFIX + role, "faction": faction,
+			"cost": cost * entries.size(), "squads": squads_for_scale(entries)})
 
 
 ## L3/X5: validate an army that may hold more than Doctrine.MAX_SQUADS squads. Doctrine.parse owns every rule

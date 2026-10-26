@@ -227,8 +227,10 @@ static func _untangle_once(squads: Array, anchors: Array[Vector3], position: Cal
 ## G1 v5 (`leads` given, one per squad: how far its crews drive to the click; `arc(place)`: how far the place stands back
 ## from the click by ground): every squad is one knot, and first of all no squad that leads another stands behind it
 ## (`lead_breaks`), so the squad in front takes the far place and nobody parks on the way of a squad still to pass.
+## G1 v6: `misplaced(i, place)` -> true when squad i may not take that place (a place on the other side of the click from
+## the squad), counted before everything else.
 static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Callable, leads: Array = [],
-		arc := Callable()) -> int:
+		arc := Callable(), misplaced := Callable()) -> int:
 	var by_lead := leads.size() == squads.size() and arc.is_valid()
 	var starts := {}
 	for i in squads.size():
@@ -262,14 +264,22 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 				member_leads.append(float(leads[i]))
 		var best: Array = []
 		var best_key := [INF, INF, INF]
+		var best_wrong := INF
 		for perm: Array in _permutations(members.size()):
+			var wrong := 0
+			if misplaced.is_valid():
+				for a in members.size():
+					if bool(misplaced.call(members[a], places[perm[a]])):
+						wrong += 1
+				if wrong > best_wrong:
+					continue
 			var breaks := 0
 			if by_lead:
 				var arcs: Array = []
 				for a in members.size():
 					arcs.append(place_arcs[perm[a]])
 				breaks = lead_breaks(member_leads, arcs)
-				if breaks > best_key[0]:
+				if wrong == best_wrong and breaks > best_key[0]:
 					continue
 			var crossings := 0
 			var drive := 0.0
@@ -279,8 +289,9 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 					drive += _xz(starts[unit_name]).distance_to(_xz(at))
 				for b in range(a + 1, members.size()):
 					crossings += _pair_crosses(squads[members[a]]["units"], at, squads[members[b]]["units"], places[perm[b]], starts)
-			if breaks < best_key[0] or (breaks == best_key[0] and (crossings < best_key[1]
+			if wrong < best_wrong or breaks < best_key[0] or (breaks == best_key[0] and (crossings < best_key[1]
 					or (crossings == best_key[1] and drive < best_key[2] - 0.01))):
+				best_wrong = wrong
 				best_key = [breaks, crossings, drive]
 				best = perm
 		if best_key[1] > 0:
@@ -407,6 +418,77 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 			and fits_along(today, ahead, narrowest):
 		bodies_kept += 1
 		return result  # today's body already stands on the ground he clicked
+	# Every squad already within COLUMN_NEAR_M of the click: no approach to stack along (the same trace: re-laid, they only
+	# shuffled sideways); today's body stands.
+	var near_check: Array = []
+	for i in blocks.size():
+		near_check.append(_arc_of(_back_line(PackedVector3Array(), flat_click, ahead), blocks[i]["center"]))
+	if near_check.max() < COLUMN_NEAR_M:
+		bodies_kept += 1
+		return result
+	# G1 v6 (round 40, `--group-sides=both`): a squad standing past the click (his-5 s6201: Alpha 29 m west of it, the body
+	# coming in from the east) is laid on its own side, a column out from the click the other way, so it never drives
+	# through the squads stacked on the near side (v5 gave it the second place, 34 m east: it drove 62 m through Bravo's halt).
+	var far: Array[int] = []
+	var near: Array[int] = []
+	for i in blocks.size():
+		var c: Vector3 = blocks[i]["center"]
+		if COLUMN_TRACE:
+			print("COLUMN_TRACE block %d centre %s past the click %.1f" % [i, c, (Vector3(c.x, 0.0, c.z) - flat_click).dot(ahead)])
+		if SIDES_BOTH and (Vector3(c.x, 0.0, c.z) - flat_click).dot(ahead) > FAR_SIDE_M:
+			far.append(i)
+		else:
+			near.append(i)
+	if far.is_empty() or near.is_empty():
+		result = _lay_side(blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg)
+	else:
+		var near_blocks: Array = near.map(func(i: int) -> Dictionary: return blocks[i])
+		var far_blocks: Array = far.map(func(i: int) -> Dictionary: return blocks[i])
+		var near_laid := _lay_side(near_blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg)
+		var deepest := 0.0
+		for block: Dictionary in blocks:
+			deepest = maxf(deepest, float(block.get("travel_depth", block.get("depth", 0.0))) if passing else column_depth(block))
+		# The far side's front one rank past the click, closer (down to half a rank, as a column squeezes) where the ground
+		# past it runs out (his-5 s6201: a full rank, 69 m, stood off the map's west edge).
+		# No further than the near side's own rank spacing (it may have squeezed): his-5's near ranks stood 34 m apart, and
+		# a full rank put Alpha 61 m west, twice as far from his click as it started.
+		var rank := deepest + GAP_M
+		for p: Vector3 in near_laid:
+			var back := (flat_click - p).dot(ahead)
+			if back > 1.0:
+				rank = minf(rank, back)
+		var far_click := flat_click
+		var far_laid: Array[Vector3] = []
+		for attempt in COLUMN_SQUEEZES + 1:
+			far_click = flat_click + ahead * (rank * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)))
+			if (clamp.call(far_click) as Vector3).distance_to(far_click) > 1.0 or (reached.is_valid() and not bool(reached.call(far_click))):
+				continue
+			# Read across the far side's own way in (-across): the click's sides swap.
+			far_laid = _lay_side(far_blocks, far_click, -ahead, _within_click(width_at.call(far_click, -across), [at_click[1], at_click[0]]),
+					width_at, clamp, Callable(), reached, passing, false)
+			if not far_laid.is_empty():
+				break
+		if COLUMN_TRACE:
+			print("COLUMN_TRACE sides far %s near %s far_click %s clamped %s reached %s near_laid %s far_laid %s" % [far, near, far_click,
+					(clamp.call(far_click) as Vector3).distance_to(far_click), reached.is_valid() and bool(reached.call(far_click)), near_laid, far_laid])
+		if near_laid.is_empty() or far_laid.is_empty():
+			result = _lay_side(blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg)
+		else:
+			result.resize(blocks.size())
+			for k in near.size():
+				result[near[k]] = near_laid[k]
+			for k in far.size():
+				result[far[k]] = far_laid[k]
+			columns_two_sided += 1
+	columns_laid += 1
+	return result
+
+
+## G1: one side's column (v1-v5's lay, every squad): ranks back from `flat_click` along -`ahead`, squeezed when too long;
+## [] when no squeeze fits.
+static func _lay_side(blocks: Array, flat_click: Vector3, ahead: Vector3, at_click: Array, width_at: Callable, clamp: Callable,
+		path_back: Callable, reached: Callable, passing: bool, leg: bool) -> Array[Vector3]:
+	var result: Array[Vector3] = []
 	var widest := 0.0
 	var deepest := 0.0
 	for block: Dictionary in blocks:
@@ -437,11 +519,6 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 	# G2 v2: and never further back than the road runs (his route's first click): the ranks squeeze instead.
 	if leg and ROUTE_CORNER and road.size() >= 2:
 		room = minf(room, _arc_of(road, road[road.size() - 1]))
-	# Every squad already within COLUMN_NEAR_M of the click: no approach to stack along (the same trace: re-laid, they only
-	# shuffled sideways); today's body stands.
-	if float(by_along[by_along.size() - 1][0]) < COLUMN_NEAR_M:
-		bodies_kept += 1
-		return result
 	# G2 v2: on a leg, ranks behind the road's first corner stand centred on it.
 	var corner := _first_turn_arc(road) if leg and ROUTE_CORNER else INF
 	for attempt in COLUMN_SQUEEZES + 1:
@@ -450,8 +527,15 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 		if not laid.is_empty():
 			result = laid
 			break
-	columns_laid += 1
 	return result
+
+
+## G1 v6 (round 40): `--group-sides=both` lays squads standing past the click on their own side (OFF until its bar).
+static var SIDES_BOTH := OS.get_cmdline_user_args().has("--group-sides=both")
+## G1 v6: how far past the click (along the approach) a squad's centre stands to count as on the far side.
+const FAR_SIDE_M := 15.0
+## Measurement (G1 v6): columns laid on both sides of the click.
+static var columns_two_sided := 0
 
 
 ## G1: a group already this close to the click (every squad, along the approach) keeps today's body: the terminus route's
@@ -665,8 +749,10 @@ static var places_cleared := 0
 ## G3 v6 (`seats_hold(i, at)` given): a moved place is accepted only where squad i's crews would seat without a re-seat;
 ## when no aside or back step holds, the place steps back along the squad's own leg (toward its vehicles), and nowhere
 ## holding keeps the place.
+## G3 v7 (`in_lane(i, at)` given): any step (aside, back, or back along its leg) is refused where it stands on another
+## squad's road in; nowhere else clear keeps the place.
 static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, standable: Callable,
-		crosses := Callable(), seats_hold := Callable()) -> Array[Vector3]:
+		crosses := Callable(), seats_hold := Callable(), in_lane := Callable()) -> Array[Vector3]:
 	var result: Array[Vector3] = anchors.duplicate()
 	var n := mini(anchors.size(), blocks.size())
 	if n < 2:
@@ -701,7 +787,12 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 					var at := start + way * step
 					if bool(standable.call(at)) and not (crosses.is_valid() and bool(crosses.call(start, at))) \
 							and _too_close(at, i, result, placed, blocks) < 0:
-						if not seats_hold.is_valid() or bool(seats_hold.call(i, at)):
+						# G3 v7: this way's first clear step on another squad's road in: the way is refused.
+						if in_lane.is_valid() and bool(in_lane.call(i, at)):
+							places_off_lanes += 1
+							if COLUMN_TRACE:
+								print("PLACE_TRACE squad %d step to %s refused: on a road in" % [i, at])
+						elif not seats_hold.is_valid() or bool(seats_hold.call(i, at)):
 							if best == null or _flat_gap(at, home) < _flat_gap(best, home):
 								best = at
 						break
@@ -715,16 +806,76 @@ static func place_clear(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 					var at := start + leg.normalized() * step
 					if bool(standable.call(at)) and not (crosses.is_valid() and bool(crosses.call(start, at))) \
 							and _too_close(at, i, result, placed, blocks) < 0 and bool(seats_hold.call(i, at)):
+						# G3 v7: never on another squad's road in; then the given place is kept.
+						if in_lane.is_valid() and bool(in_lane.call(i, at)):
+							places_off_lanes += 1
+							if COLUMN_TRACE:
+								print("PLACE_TRACE squad %d step back to %s refused: on a road in" % [i, at])
+							break
 						best = at
 						break
 					step += PLACE_CLEAR_STEP_M
 				if best == null:
 					places_kept_unseated += 1
 			if best != null:
+				if COLUMN_TRACE:
+					print("PLACE_TRACE squad %d moved %s -> %s (near %d)" % [i, start, best, near])
 				result[i] = best
 				places_cleared += 1
 		placed.append(i)
 	return result
+
+
+## G3 v7 (round 40; R39's trace, crossing 5 route s6213: v6 moved Delta 16 m, (-66.9, 29.5) -> (-53.9, 38.8), onto the
+## approach Echo still had to drive; Echo crept through Delta's halt for 50 s and never got in. Round 40's laptop trace:
+## that was v5's aside/back step, which v6's seat check accepted, not the step back along the leg). `--place-clear-lane=on`:
+## no moved place stands on another squad's road in (the caller's `in_lane`: its navmesh drive from its vehicles to its
+## place, `lane_reach` either side); the given place is kept.
+static var PLACE_CLEAR_LANE := OS.get_cmdline_user_args().has("--place-clear-lane=on") \
+		or OS.get_cmdline_user_args().has("--place-clear-lane=column")
+## G3 v9 (round 40): `--place-clear-lane=column` reads a road as wide as the column driving it (`ROAD_HALF_M` either
+## side), not as the squad's parked herringbone (v8's dev read: 8 of the 10 pairs left had every step refused, the road
+## 17-20 m either side on crossing).
+static var LANE_COLUMN := OS.get_cmdline_user_args().has("--place-clear-lane=column")
+const ROAD_HALF_M := 4.0
+## Measurement (G3 v7): step backs refused for standing in a later squad's lane (the given place kept), since start.
+static var places_off_lanes := 0
+
+
+## G3 v7: whether `at` stands within `reach` of the road `path` (a polyline). Pure.
+## G3 v8: short of its last `skip_end` metres (beside the squad's own halt is the spacing's business, not its road).
+static func on_road(at: Vector3, path: PackedVector3Array, reach: float, skip_end := 0.0) -> bool:
+	var p := Vector2(at.x, at.z)
+	var total := 0.0
+	for k in range(1, path.size()):
+		total += Vector2(path[k].x - path[k - 1].x, path[k].z - path[k - 1].z).length()
+	var walked := 0.0
+	for k in range(1, path.size()):
+		var a := Vector2(path[k - 1].x, path[k - 1].z)
+		var seg := Vector2(path[k].x, path[k].z) - a
+		var length := seg.length()
+		var t := 0.0 if length < 0.001 else clampf((p - a).dot(seg) / (length * length), 0.0, 1.0)
+		if p.distance_to(a + seg * t) < reach and walked + t * length < total - skip_end:
+			return true
+		walked += length
+	return false
+
+
+## G3 v7: a road's half-width for squad `j` passing a halt of squad `i` (half j's width + half i's short side; v9: half
+## a column's).
+static func lane_reach(blocks: Array, i: int, j: int) -> float:
+	return (ROAD_HALF_M if LANE_COLUMN else float(blocks[j]["width"]) * 0.5) + _short_side(blocks[i]) * 0.5
+
+
+## G3 v8: how much of squad `j`'s road end is its own halt (half its short side).
+static func lane_skip(blocks: Array, j: int) -> float:
+	return _short_side(blocks[j]) * 0.5
+
+
+## G3 v8 (round 40, R40.9): `--place-clear-after=relay` clears a shifted leg's places after the previous waypoints are
+## re-laid, and reads each road from where its previous leg now ends, short of the squad's own halt (with
+## `--place-clear-lane=on`). OFF until its bar.
+static var PLACE_CLEAR_AFTER := OS.get_cmdline_user_args().has("--place-clear-after=relay")
 
 
 static func _flat_gap(a: Vector3, b: Vector3) -> float:
@@ -805,10 +956,17 @@ static func on_clear_ground(places: Array[Vector3], click: Vector3, ahead: Vecto
 			reads[back] = _within_click(width_at.call(click - ahead * float(back), across), at_click)
 		var sides: Array = reads[back]
 		var aside := offset.dot(across)
-		if (aside < -float(sides[0]) - PLACE_SLACK_M or aside > float(sides[1]) + PLACE_SLACK_M) \
-				and not (reached.is_valid() and bool(reached.call(Vector3(at.x, 0.0, at.z)))):
+		var off_width := aside < -float(sides[0]) - PLACE_SLACK_M or aside > float(sides[1]) + PLACE_SLACK_M
+		if COLUMN_TRACE:
+			print("COLUMN_TRACE place %s aside %.1f sides %s off_width %s reached %s" % [at, aside, sides, off_width,
+					reached.is_valid() and off_width and bool(reached.call(Vector3(at.x, 0.0, at.z)))])
+		if off_width and not (reached.is_valid() and bool(reached.call(Vector3(at.x, 0.0, at.z)))):
 			return false
 	return true
+
+
+## O1 (round 40, dev): `--column-trace` prints each place's clear-ground read when a column is weighed.
+static var COLUMN_TRACE := OS.get_cmdline_user_args().has("--column-trace")
 
 
 ## G2: the narrowest clear width (both sides together) read along `drive` (click first), every LEG_WIDTH_STEP_M from

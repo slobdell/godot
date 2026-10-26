@@ -1,0 +1,42 @@
+PASS counter: columns_laid 55 (bodies kept 113)
+PASS deciding: places outside the corridor (click cells) 65 -> 8 (<= 16.2)
+PASS deciding: metres driven outside the corridor after being in it (click cells) 3864 -> 589 (<= 1932)
+PASS deciding: squads with crews re-dealt (arm, click cells) 0 (base 48)
+  reported: metres outside incl. the drive in (route_out_m) 30098 -> 22643
+  reported (round 39's read): places outside (click cells) 98 -> 17; route_left_m 6174 -> 1209
+    crossing 3 click main: outside new 13 / old 13, route_left new 543 / old 543
+    crossing 3 click sides: outside new 0 / old 0, route_left new 38 / old 38
+    crossing 3 route main: outside new 17 / old 17, route_left new 1068 / old 1068
+    crossing 3 route sides: outside new 14 / old 14, route_left new 1064 / old 1064
+    crossing 5 click main: outside new 26 / old 26, route_left new 1783 / old 1783
+    crossing 5 click sides: outside new 6 / old 6, route_left new 303 / old 303
+    crossing 5 route main: outside new 26 / old 26, route_left new 8389 / old 8389
+    crossing 5 route sides: outside new 26 / old 26, route_left new 8303 / old 8303
+    locks 3 click main: outside new 0 / old 3, route_left new 0 / old 515
+    locks 3 click sides: outside new 0 / old 3, route_left new 0 / old 515
+    locks 3 route main: outside new 0 / old 3, route_left new 0 / old 152
+    locks 3 route sides: outside new 0 / old 3, route_left new 0 / old 152
+    locks 5 click main: outside new 2 / old 8, route_left new 248 / old 313
+    locks 5 click sides: outside new 2 / old 8, route_left new 248 / old 313
+    locks 5 route main: outside new 2 / old 8, route_left new 46 / old 53
+    locks 5 route sides: outside new 2 / old 8, route_left new 46 / old 53
+    terminus 3 click main: outside new 0 / old 0, route_left new 0 / old 0
+    terminus 3 click sides: outside new 0 / old 0, route_left new 0 / old 0
+    terminus 3 route main: outside new 0 / old 0, route_left new 0 / old 0
+    terminus 3 route sides: outside new 0 / old 0, route_left new 0 / old 0
+    terminus 5 click main: outside new 0 / old 0, route_left new 0 / old 0
+    terminus 5 click sides: outside new 0 / old 0, route_left new 0 / old 0
+    terminus 5 route main: outside new 0 / old 0, route_left new 0 / old 0
+    terminus 5 route sides: outside new 0 / old 0, route_left new 0 / old 0
+    terminus_his 3 click main: outside new 0 / old 12, route_left new 0 / old 181
+    terminus_his 3 click sides: outside new 0 / old 0, route_left new 0 / old 40
+    terminus_his 5 click main: outside new 24 / old 36, route_left new 1290 / old 2838
+    terminus_his 5 click sides: outside new 0 / old 0, route_left new 0 / old 0
+  reported: main v main, new v old read, cells where the read changed: locks 3 click, locks 3 route, locks 5 click, locks 5 route, terminus_his 3 click, terminus_his 5 click
+PASS guard friend_contacts 14781 -> 11799 (<= 16264.1)
+  FAIL guard twitch       terminus 5 route: 20.6 v 25.4
+FAIL probe guards (14 cells)
+PASS guard no-change cell yard_open: 192 of 192 squad rows identical (arm rows 192)
+  reported: parked_redeals, duck-excluded (a crew parked >= 2 s sent > 6 m off its seat, not an UnansweredFire duck) 484 -> 494
+  reported: parked duck moves (UnansweredFire, out to or back from its point; not re-deals) 0 -> 0
+VERDICT g1v4: FAIL

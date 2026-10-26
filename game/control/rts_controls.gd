@@ -1108,6 +1108,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	var queue_leg := bool(extra.get("queue", false)) and elements != null and REQUEUE
 	var queue_starts: Array = _leg_starts(squads, blocks) if queue_leg else []
 	var column_ahead := Vector3.ZERO  # G2: the approach a column was laid on
+	var two_sided_before := SelectionSquads.columns_two_sided  # G1 v6: whether this lay was two-sided
 	var column_moved := false  # G1 v3: the column moved some squad more than RELAY_MOVED_M off today's place
 	var today_places: Array[Vector3] = []  # G1 v3: the places today's body gave, before the column replaced them
 	if extra.has("to"):
@@ -1255,7 +1256,18 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 						sum += float(drive_l.call(at_of.call(unit_name), to))
 					leads.append(sum / maxi(1, (squad["units"] as Array).size()))
 				arc = func(p: Vector3) -> float: return float(drive_l.call(to, p))
-			SelectionSquads.untangle_whole(squads, anchors, at_of, leads, arc)
+			# G1 v6: a squad keeps to its own side of the click (column_lay laid the far side's places past it).
+			var misplaced := Callable()
+			if column and SelectionSquads.SIDES_BOTH and SelectionSquads.columns_two_sided > two_sided_before:
+				var click_s := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
+				var far_of := {}
+				for i in squads.size():
+					var centre := Vector3.ZERO
+					for unit_name: String in squads[i]["units"]:
+						centre += at_of.call(unit_name) / maxi(1, (squads[i]["units"] as Array).size())
+					far_of[i] = (centre - click_s).dot(column_ahead) > SelectionSquads.FAR_SIDE_M
+				misplaced = func(i: int, p: Vector3) -> bool: return bool(far_of[i]) != ((p - click_s).dot(column_ahead) > 1.0)
+			SelectionSquads.untangle_whole(squads, anchors, at_of, leads, arc, misplaced)
 		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 		# Round 38 (G3): no place on another squad's halt (settle's S2 trace, crossing 5 click s3866). After the untangle, so
@@ -1263,36 +1275,10 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		# read 7, e94ee14af: G3 before the untangle changed the dealing on terminus 5 route legs it later sent back; s3805's
 		# squad 1 never got in on main's own final places). Dev read 2's re-deal of a moved squad's crew cannot happen here.
 		_cleared_pending = {}
-		if SelectionSquads.PLACE_CLEAR and ground != null and anchors.size() >= squads.size():
-			var unmoved := anchors.duplicate()
-			var clear_blocks: Array = []
-			for k in mini(blocks.size(), squads.size()):
-				var block: Dictionary = (blocks[k] as Dictionary).duplicate()
-				var home := Vector3.ZERO
-				var units: Array = squads[k]["units"]
-				for unit_name: String in units:
-					home += from_leg[unit_name] if from_leg.has(unit_name) else _flat_position(unit_name)
-				if not units.is_empty():
-					block["center"] = home / units.size()
-				clear_blocks.append(block)
-			var reach := SelectionSquads.PLACE_CLEAR_REACH
-			var clear_ahead := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"])
-			# G3 v6: a moved place holds its squad's seats when settle's deploy preview there drives no crew further than at
-			# the place it was given (or SEAT_HOLD_M).
-			var seats_hold := Callable()
-			if SelectionSquads.PLACE_CLEAR_SEAT:
-				var given_preview := {}
-				seats_hold = func(k: int, at: Vector3) -> bool:
-					if not given_preview.has(k):
-						given_preview[k] = _deploy_preview_at(squads[k], blocks[k], unmoved[k], clear_ahead)
-					return SelectionSquads.seats_hold(given_preview[k], _deploy_preview_at(squads[k], blocks[k], at, clear_ahead))
-			anchors = SelectionSquads.place_clear(anchors, clear_blocks, click, clear_ahead,
-					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p) \
-							and not (reach and SlotGround.near_deck(p, SelectionSquads.PLACE_CLEAR_DECK_M)),
-					SelectionSquads.crosses_on(ground) if reach else Callable(), seats_hold)
-			for k in anchors.size():
-				if anchors[k] != unmoved[k]:
-					_cleared_pending[_place_key(anchors[k])] = unmoved[k]
+		# G3 v8: a shifted leg's places clear after the previous waypoints are re-laid (below), from where they now end.
+		var clear_later := SelectionSquads.PLACE_CLEAR_AFTER and bool(extra.get("queue", false))
+		if SelectionSquads.PLACE_CLEAR and ground != null and anchors.size() >= squads.size() and not clear_later:
+			anchors = _place_clear(squads, blocks, anchors, click, ground, team, from_leg)
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
 		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
 				column and column_moved, today_places)
@@ -1330,6 +1316,29 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					aimed.erase(key)
 				held.retarget(aimed)
 			legs_cut_short += 1
+	# G3 v8 (R40.9): on a shifted leg, G3 clears after the re-lay, each squad's road in from its previous waypoint as it now
+	# stands (v7's dev read 4c672deca read roads from waypoints the re-lay then moved: s6213's Echo from (-41.9, 40), not
+	# its relaid (-53.7, 70.5)).
+	if SelectionSquads.PLACE_CLEAR and SelectionSquads.PLACE_CLEAR_AFTER and queue and extra.has("to") and anchors.size() >= squads.size():
+		var ground_c: Node3D = null
+		var relaid := {}
+		for squad: Dictionary in squads:
+			var held: Element = squad.get("element")
+			var end: Variant = null
+			if held != null and is_instance_valid_element(held):
+				var last: Dictionary = held.task if held.queued_tasks.is_empty() else held.queued_tasks[held.queued_tasks.size() - 1]
+				end = ElementTask.destination(last)
+			for unit_name: String in squad["units"]:
+				if end != null:
+					relaid[unit_name] = Vector3((end as Vector3).x, 0.0, (end as Vector3).z)
+				var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Node3D if game_match != null else null
+				if ground_c == null and tank != null and tank.is_inside_tree():
+					ground_c = tank
+		if ground_c != null:
+			_cleared_pending = {}
+			anchors = _place_clear(squads, blocks, anchors, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), ground_c, team, relaid)
+			_cleared_back = _cleared_pending
+			_cleared_pending = {}
 	var first_error := ""
 	for i in squads.size():
 		var squad: Dictionary = squads[i]
@@ -1379,6 +1388,60 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			if first_error == "":
 				first_error = error
 	return first_error
+
+
+
+## Round 38 (G3), as a function since G3 v8: the places cleared of each other (SelectionSquads.place_clear), each squad's
+## drive read from `from_leg` (unit -> where its leg starts) or its vehicles; fills `_cleared_pending`.
+func _place_clear(squads: Array, blocks: Array, anchors: Array[Vector3], click: Vector3, ground: Node3D, team: int,
+		from_leg: Dictionary) -> Array[Vector3]:
+	var unmoved := anchors.duplicate()
+	var clear_blocks: Array = []
+	for k in mini(blocks.size(), squads.size()):
+		var block: Dictionary = (blocks[k] as Dictionary).duplicate()
+		var home := Vector3.ZERO
+		var units: Array = squads[k]["units"]
+		for unit_name: String in units:
+			home += from_leg[unit_name] if from_leg.has(unit_name) else _flat_position(unit_name)
+		if not units.is_empty():
+			block["center"] = home / units.size()
+		clear_blocks.append(block)
+	var reach := SelectionSquads.PLACE_CLEAR_REACH
+	var clear_ahead := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"])
+	# G3 v6: a moved place holds its squad's seats when settle's deploy preview there drives no crew further than at
+	# the place it was given (or SEAT_HOLD_M).
+	var seats_hold := Callable()
+	if SelectionSquads.PLACE_CLEAR_SEAT:
+		var given_preview := {}
+		seats_hold = func(k: int, at: Vector3) -> bool:
+			if not given_preview.has(k):
+				given_preview[k] = _deploy_preview_at(squads[k], blocks[k], unmoved[k], clear_ahead)
+			return SelectionSquads.seats_hold(given_preview[k], _deploy_preview_at(squads[k], blocks[k], at, clear_ahead))
+	# G3 v7: each other squad's road in, its navmesh drive from its vehicles to the place it was given.
+	var in_lane := Callable()
+	if SelectionSquads.PLACE_CLEAR_LANE:
+		var roads := {}
+		in_lane = func(i: int, at: Vector3) -> bool:
+			for j in mini(clear_blocks.size(), unmoved.size()):
+				if j == i:
+					continue
+				if not roads.has(j):
+					roads[j] = Pathing.find_path(ground, clear_blocks[j]["center"], unmoved[j])
+				if SelectionSquads.on_road(at, roads[j], SelectionSquads.lane_reach(clear_blocks, i, j),
+						SelectionSquads.lane_skip(clear_blocks, j) if SelectionSquads.PLACE_CLEAR_AFTER else 0.0):
+					if SelectionSquads.COLUMN_TRACE:
+						print("PLACE_TRACE squad %d at %s on squad %d's road %s -> %s (reach %.1f)" % [i, at, j,
+								clear_blocks[j]["center"], unmoved[j], SelectionSquads.lane_reach(clear_blocks, i, j)])
+					return true
+			return false
+	anchors = SelectionSquads.place_clear(anchors, clear_blocks, click, clear_ahead,
+			func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p) \
+					and not (reach and SlotGround.near_deck(p, SelectionSquads.PLACE_CLEAR_DECK_M)),
+			SelectionSquads.crosses_on(ground) if reach else Callable(), seats_hold, in_lane)
+	for k in anchors.size():
+		if anchors[k] != unmoved[k]:
+			_cleared_pending[_place_key(anchors[k])] = unmoved[k]
+	return anchors
 
 
 ## G2: the clicks of his current group route, [where the squads stood, first click, ...], and which squads it was for. A
@@ -1851,7 +1914,11 @@ static var gates_laid_as_columns := 0
 ## The clear ground across the approach at `click`: [left, right] metres (left = -across) reachable from the click by ground
 ## without a long way round (drive <= GATE_DETOUR x straight) and with no deck between (crosses). `drive(from, to)` -> metres
 ## by ground (< 0: unreachable); `crosses(from, to)` -> bool. Both scans stop at GATE_SCAN_M.
-static func gate_width(click: Vector3, across: Vector3, drive: Callable, crosses: Callable, scan := GATE_SCAN_M) -> Array[float]:
+## O1 (round 40): `past_posts` > 0 reads past an obstacle no wider than that along the scan (a floodlight, a sign): the side
+## ends only where the ground stays off for more than `past_posts` metres (the Locks quay, s6204-6207: the probe's corridor
+## stopped 4-6 m from his click at the floodlight at (-14, 20) and counted two squads on the open quay "outside").
+static func gate_width(click: Vector3, across: Vector3, drive: Callable, crosses: Callable, scan := GATE_SCAN_M,
+		past_posts := 0.0) -> Array[float]:
 	var out: Array[float] = []
 	var flat_click := Vector3(click.x, 0.0, click.z)
 	for side: float in [-1.0, 1.0]:
@@ -1864,11 +1931,18 @@ static func gate_width(click: Vector3, across: Vector3, drive: Callable, crosses
 				break
 			var by_ground := float(drive.call(flat_click, p))
 			if by_ground < 0.0 or by_ground > GATE_DETOUR * d + 1.0:
-				break
-			reach = d
+				if d - reach > past_posts:
+					break
+			else:
+				reach = d
 			k += 1
 		out.append(reach)
 	return out
+
+
+## O1 (round 40): the widest obstacle the orders probe's corridor reads past (a floodlight's or a sign's hole in the navmesh
+## with a hull's clearance; a 20 ft container broadside, ~12 m with clearance, still ends it).
+const POST_SPAN_M := 8.0
 
 
 ## The squads' anchors at an in-between waypoint: a gate as wide as the ground. `blocks` = [{"center", "width", "depth"}] (any

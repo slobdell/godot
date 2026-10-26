@@ -259,3 +259,68 @@ settle-s1v3r40: ## Round 40 (settle S1 v3): the per-crew route-clear's bar serie
 	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3r40" SETTLE_V2_SEEDS="$$(seq -s " " 8013 8024)" \
 		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 8013 8024)" SETTLE_V2_JOBS=4 SETTLE_V2_JUDGE=s1c SETTLE_V2_PAIR="main v3" \
 		SETTLE_V2_ARMS="main:--deploy-arrive=off,--deploy-trace v3:--deploy-arrive=off,--seat-route-clear=v3,--deploy-trace"
+
+# Round 40 (settle stretch, orchestrator after Bar S1 v3's FAIL): dev reads on main with T1 ON. (1) v3 v main on the cells
+# that carried v3's extra twitch (crossing + terminus, 3 and 5 squads, click and route), dev seeds 6301-6306; (2) the dry
+# deal read (DEPLOY_TRACE `deals`) on terminus 5 route, orders' flagged seeds 8203 8205 8206 8208. builder2:
+#   make gcp-remote T="native settle-dev-v3t1"
+.PHONY: settle-dev-v3t1
+settle-dev-v3t1: native-for-check import ## Round 40 (settle stretch): dev v3 v main with T1 ON + the dry deal read -> build/settle-dev-v3t1/
+	@rm -rf $(BUILD_DIR)/settle-dev-v3t1 && mkdir -p $(BUILD_DIR)/settle-dev-v3t1
+	@echo ">> settle-dev-v3t1 on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | jobs 12" | tee $(BUILD_DIR)/settle-dev-v3t1/header.txt
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_MAPS="crossing terminus" ORDERS_PROBE_JOBS=12 \
+		ORDERS_PROBE_ARMS="main:--deploy-trace v3:--seat-route-clear=v3,--deploy-trace" ORDERS_PROBE_SEEDS="$$(seq -s " " 6301 6306)" \
+		ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-v3t1/pair > $(BUILD_DIR)/settle-dev-v3t1/pair.out 2>&1 || true
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_MAPS=terminus ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_ROUTES=route ORDERS_PROBE_JOBS=12 \
+		ORDERS_PROBE_ARMS="main:--deploy-trace" ORDERS_PROBE_SEEDS="8203 8205 8206 8208" \
+		ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-v3t1/deals > $(BUILD_DIR)/settle-dev-v3t1/deals.out 2>&1 || true
+	@$(PYTHON) tests/settle/settle_t1.py $(BUILD_DIR)/settle-dev-v3t1/pair | tee $(BUILD_DIR)/settle-dev-v3t1/pair.txt || true
+	@$(PYTHON) tests/settle/settle_deals.py $(BUILD_DIR)/settle-dev-v3t1/deals | tee $(BUILD_DIR)/settle-dev-v3t1/deals.txt || true
+
+# Round 40 (R40.14 (1)): the dev never-in under v3 with T1 ON (terminus 5 click s6306, Alpha), squad 1's crews every second
+# (orders' --probe-trace=1), both arms. builder2 light:  make gcp-remote LIGHT=1 T="native settle-dev-s6306"
+.PHONY: settle-dev-s6306
+settle-dev-s6306: native-for-check import ## Round 40 (settle): trace the dev never-in (terminus 5 click s6306) -> build/settle-dev-s6306/
+	@rm -rf $(BUILD_DIR)/settle-dev-s6306 && mkdir -p $(BUILD_DIR)/settle-dev-s6306
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_MAPS=terminus ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_JOBS=2 \
+		ORDERS_PROBE_ARMS="main:--deploy-trace,--probe-trace=1 v3:--seat-route-clear=v3,--deploy-trace,--probe-trace=1" ORDERS_PROBE_SEEDS=6306 \
+		ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-s6306 > $(BUILD_DIR)/settle-dev-s6306/probe.out 2>&1 || true
+
+# Round 40 Bar S1 v3b (R40.14; settle.md Status, filed before any number): v3b v main, BOTH arms on T1-ON main (no
+# --deploy-arrive pin), s1c's workload and judge as filed; no-fight seeds 8701-8712, fight seeds 8713-8724.
+# builder2:  make gcp-remote T="native settle-s1v3b" (or LIGHT=1 with tools/remote.sh --light)
+.PHONY: settle-s1v3b
+settle-s1v3b: ## Round 40 (settle S1 v3b): the swept band's bar series (main v v3b, seeds 8701-8724) -> build/settle-s1v3b/verdict.txt
+	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-s1v3b" SETTLE_V2_SEEDS="$$(seq -s " " 8701 8712)" \
+		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 8713 8724)" SETTLE_V2_JOBS=$(or $(SETTLE_V3B_JOBS),12) SETTLE_V2_JUDGE=s1v3b \
+		SETTLE_V2_PAIR="main v3b" SETTLE_V2_ARMS="main:--deploy-trace v3b:--seat-route-clear=v3b,--deploy-trace"
+
+# Its dev lab (not the bar's seeds): v3b v v3 v main on crossing + terminus x 3/5 x click/route, seeds 6301-6306.
+.PHONY: settle-dev-v3b
+settle-dev-v3b: native-for-check import ## Round 40 (settle): S1 v3b's dev lab -> build/settle-dev-v3b/
+	@rm -rf $(BUILD_DIR)/settle-dev-v3b && mkdir -p $(BUILD_DIR)/settle-dev-v3b
+	@echo ">> settle-dev-v3b on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | jobs 12" | tee $(BUILD_DIR)/settle-dev-v3b/header.txt
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_MAPS="crossing terminus" ORDERS_PROBE_JOBS=12 \
+		ORDERS_PROBE_ARMS="main:--deploy-trace v3:--seat-route-clear=v3,--deploy-trace v3b:--seat-route-clear=v3b,--deploy-trace" \
+		ORDERS_PROBE_SEEDS="$$(seq -s " " 6301 6306)" ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-v3b > $(BUILD_DIR)/settle-dev-v3b/probe.out 2>&1 || true
+	@$(PYTHON) tests/settle/settle_t1.py $(BUILD_DIR)/settle-dev-v3b | tee $(BUILD_DIR)/settle-dev-v3b/lab.txt || true
+
+# Round 40 (R40.14 (3)): --cap-deal=street's lab on orders' flagged terminus 5 route seeds (dev for settle), main v capdeal.
+# builder2 light:  REMOTE_HOST=slobdell@builder2 tools/remote.sh --light native settle-dev-capdeal
+.PHONY: settle-dev-capdeal
+settle-dev-capdeal: native-for-check import ## Round 40 (settle): --cap-deal=street's lab (terminus 5 route 8203 8206 8208) -> build/settle-dev-capdeal/
+	@rm -rf $(BUILD_DIR)/settle-dev-capdeal && mkdir -p $(BUILD_DIR)/settle-dev-capdeal
+	@$(MAKE) --no-print-directory orders-probe ORDERS_PROBE_MAPS=terminus ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_ROUTES=route ORDERS_PROBE_JOBS=6 \
+		ORDERS_PROBE_ARMS="main:--deploy-trace capdeal:--cap-deal=street,--deploy-trace" ORDERS_PROBE_SEEDS="8203 8206 8208" \
+		ORDERS_PROBE_DIR=$(BUILD_DIR)/settle-dev-capdeal > $(BUILD_DIR)/settle-dev-capdeal/probe.out 2>&1 || true
+	@$(PYTHON) tests/settle/settle_t1.py $(BUILD_DIR)/settle-dev-capdeal | tee $(BUILD_DIR)/settle-dev-capdeal/lab.txt || true
+	@$(PYTHON) tests/settle/settle_deals.py $(BUILD_DIR)/settle-dev-capdeal | tee -a $(BUILD_DIR)/settle-dev-capdeal/lab.txt || true
+
+# Round 40 Bar cap deal (settle.md Status, filed before any number; R40.14): main v --cap-deal=street on T1-ON main, s1c's
+# workload; no-fight seeds 8725-8736, fight seeds 8737-8748; judge `settle_judge.py capdeal`.
+# builder2:  make gcp-remote T="native settle-capdeal"
+.PHONY: settle-capdeal
+settle-capdeal: ## Round 40 (settle): the cap deal's bar series (main v capdeal, seeds 8725-8748) -> build/settle-capdeal/verdict.txt
+	@$(MAKE) --no-print-directory settle-s1v2 SETTLE_V2="$(BUILD_DIR)/settle-capdeal" SETTLE_V2_SEEDS="$$(seq -s " " 8725 8736)" \
+		SETTLE_V2_FIGHT_SEEDS="$$(seq -s " " 8737 8748)" SETTLE_V2_JOBS=$(or $(SETTLE_CAPDEAL_JOBS),12) SETTLE_V2_JUDGE=capdeal \
+		SETTLE_V2_PAIR="main capdeal" SETTLE_V2_ARMS="main:--deploy-trace capdeal:--cap-deal=street,--deploy-trace"

@@ -62,12 +62,173 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-24, running)
-- **GREEN: afd436ca3** (builder2, `>> remote: make native check exited 0`, 3,188 passed / 0 failed, 24 targets + 3 NOT JUDGED
-  as a non-judging machine: perf-judge, ai-scenarios' CPU budget, the quiet-window guard). Everything of round 40 OFF.
-- **Bar T1 series RUNNING**, builder0 light J4 (`settle-t1`, seeds 8001-8012, afd436ca3's code); then Bar S1 v3's
-  (`settle-s1v3r40`, 8013-8024) on the same lane. **Restart:** the first start (21:30 PDT) was lost when builder0 crashed
-  (~22:15); no row of it is read. Re-run IN FULL from 22:22 PDT on the same tree and seeds (the target clears its folder).
+### Final report (round 40, 2026-10-25)
+**Final hash: see the last commit on `stream/settle` (docs and refs only after 95276e979).** Green hashes: **95276e979**
+(builder2, `make native check exited 0`, 3212 passed / 0 failed; the cap-deal gate), cab85debf = CP40.1 (T1 ON, builder2
+3188/0), b5dbfdd72 (builder2 3189/0). Every game-code commit on the branch is at or before 95276e979.
+- **Shipped: T1, ON** (`--deploy-arrive=settled` default, `=off` escape; merged to main 9d5907ddd). A squad deploys once
+  its crews have settled instead of waiting out the 10 s cap. Bar T1 PASS (builder0 light J4, 8001-8012, n 576 squads):
+  cap deploys 265 -> 83, arrival to deploy mean 6.26 -> 4.42 s, every guard held. What he'd feel: squads stop and form up
+  sooner, with fewer stragglers.
+- **S1 v3, per-crew route-clear: FAIL** (builder0 light J4, 8013-8024, T1 OFF). Its deciding line passed (5-squad never-in
+  4 -> 0), but the twitch guard failed: squads >= 15 m 88 -> 99. Cause: waiting crews were released after the 8 s window
+  (+6), and cleared seats sat far away (legs >= 25 m 18 -> 42, +5). With T1 ON (dev, builder2, n 48) the twitch cost
+  reversed (42 -> 33), but s6306 showed a new never-in. Traced: the v3 corridor ignores the formation's travel width.
+- **S1 v3b, swept band: lab STOPPED before the series** (dev builder2, n 48). It fixes s6306 (never-in 0) but loses the
+  gain: twitch >= 15 m 48 v main 42, and 70 of 192 squads wait. Cause: a lane-wide band leaves no fit seat. Seeds
+  8701-8724 were returned unused.
+- **Bar cap deal: FAIL by under one squad** (builder2 J12, frozen 95276e979, 8725-8748, n 576, fights 36/36).
+  Deciding legs >= 25 m 59 -> 45, needed <= 44.2. Twitch >= 15 m 99 -> 92 PASS; every guard PASS. Cause: it cuts the
+  cap deploys' legs >= 25 m by half (25 -> 12), but most long legs come from all_in (21 -> 21) and settled (13 -> 12)
+  deploys, which it never touches. Stays OFF.
+- **Round 41 items:** (1) S1 one-sided band: the band runs from the centre line out to the side where each crew's own
+  travel slot sits (at most 15 m), so the lane's far half stays free for seats. (2) Cap deal re-barred on fresh seeds,
+  with the deciding line counted over cap deploys, or the street lay extended to all_in/settled deploys whose legs
+  run >= 25 m. (3) v3 ideas: release a wait inside the place window; cap a cleared seat's leg at the original seat plus
+  one spacing.
+- Housekeeping: `tests/test_settle_cap_deal.gd.uid` committed (uid from builder2's import). Side worktree
+  `../godot-settle-dev9d` is parked at 4f1ed2eca (the dev-v3t1 trace commit, not on the branch) to keep the cited
+  refs' tree reachable; delete it once nobody needs that tree. Its builder2 folders are deleted. Quirk: the series that
+  delegate to `settle-s1v2` (s1c, t1, s1v3r40, s1v3b, capdeal) stamp `header.txt` with "settle-s1v2"; the dir name is the
+  target.
+
+### Report detail (2026-10-25)
+- **Bar T1 PASS** (afd436ca3's code, builder0 light J4, `settle-t1`, seeds 8001-8012, re-run in full after builder0's crash;
+  every part complete: 576 squads, fights 36/36 both reads, 0 unstarted; `references/round40/settle/t1-bar-builder0/`
+  at 8ca1b1e31): cap deploys 265 -> 83; arrival to deploy mean 6.26 -> 4.42 s (median 7.1 -> 3.4); never-in 3 -> 1 runs;
+  all-in mean 28.6 -> 29.0 s (<= 32.4); twitch >= 15 m 113 -> 110; places outside (gate read) 80 -> 80; flips 0 -> 0; first
+  shape 6/576; contacts 13576 -> 13394; fights 3sq kills 4.69 -> 5.11, losses 7.06 -> 6.72; 5sq kills 10.00 -> 9.56,
+  losses 12.86 -> 12.97 (all inside). Per-cell twitch medians reported in verdict.txt (orders owns the his-5 twitch).
+- **GREEN: cab85debf = CP40.1, T1 SHIPPED ON** (`--deploy-arrive=settled` default, `=off` escape). builder2, `>> remote:
+  make native check exited 0`, 3,188 passed / 0 failed, 24 + 3 NOT JUDGED (non-judging machine: perf-judge, ai-scenarios'
+  CPU budget, the quiet-window guard). **sim-baseline unmoved** ("13 maps unmoved (glibc-2.43)", 53/0): no maps to record or
+  adopt. `settle-t1`'s main arm and both arms of `settle-s1v3r40` pin `--deploy-arrive=off` so the filed bars reproduce.
+- **Bar S1 v3 FAIL** (afd436ca3's code frozen at 8ca1b1e31, T1 OFF both arms, builder0 light J4, seeds 8013-8024, every
+  part complete: 576 squads, fights 36/36 both reads; `references/round40/settle/s1v3-bar-builder0/`). DECIDING PASSED:
+  never-in runs on the 5-squad cells 4 -> 0, none new; never-in all cells 5 -> 0; all-in 25.7 -> 24.8 s; flips 0 -> 0;
+  first shape 6/576; contacts 12235 -> 11418; fights all inside. **FAILED guard twitch: squads >= 15 m 88 -> 99.** Reported:
+  deploy leg >= 25 m 58 -> 85; place+twitch >= 25 m 162 -> 168. Not shipped (stays `--seat-route-clear=v3`, OFF).
+- **The twitch split** (bar rows joined to v3's DEPLOY_TRACE; net +11 = 56 up, 45 down): WAITED squads (n 79) 31 -> 37 (+6)
+  with legs barely moved (>= 25 m 5 -> 10; 4 of 16 ups long-legged): the waiting crew released and driving after the 8 s
+  place window. CLEARED squads (n 239) 42 -> 47 (+5) carry the long legs (>= 25 m 18 -> 42; 9 of 30 ups' legs grew > 5 m).
+  UNTOUCHED (n 258) 15 -> 15. Cells: crossing 5 click +4, crossing 3 click +3, terminus 5 click +3, crossing 3 route +2,
+  terminus 5 route +2; locks clicks and crossing 5 route went down. Next for round 41 (v4 ideas, not built): release a wait
+  inside the place window or keep the waiting crew's stand as its seat once the window closes; cap a cleared seat's leg
+  (e.g. no clear seat farther than the original seat + a spacing: wait instead).
+- **Dev pair with T1 ON** (builder2, frozen side worktree `../godot-settle-dev9d` = main 9d5907ddd + measurement-only trace
+  commits, tip 4f1ed2eca; crossing + terminus x 3/5 x click/route, dev seeds 6301-6306, n 48 runs an arm, J12;
+  `references/round40/settle/dev-v3t1-builder2/`): **with T1 ON, v3's twitch cost reverses**: squads >= 15 m 42 -> 33,
+  worst twitch a run median 17.2 -> 15.1 m, all-in median 21.0 -> 18.7 s, cap deploys 42 -> 33. But **one new never-in**:
+  terminus 5 click s6306, Alpha (the last squad; main in at 42.1 s) ends 19.4 m off its spot. Bravo had 3 seats cleared and a
+  crew waiting, Delta 1 cleared. Dev, n 6 a cell. From the log (no per-crew positions in it): Bravo_2 WAITED where it stood,
+  (-24.3, 85.9), ~7 m off the head of Alpha's live route ((-31.4, 86.7) west then south to its spot (-29.9, 22.2)), and was
+  released at tick 503 (REDEAL_TRACE, 9.6 m). Whether that wait held Alpha up needs a position trace of Alpha's crews (not
+  run). First thing for a v3-on-T1 bar: that trace, and a "never wait within ROUTE_CLEAR_M of a live route's head" rule.
+- **Dry deal read** (same run, main 9d5907ddd T1 ON, terminus 5 route 8203/8205/8206/8208, 20 deploys, 4 on the cap; 8205 had
+  none): drives to the grounded seats, [worst, total] m. Cap deploys: main worst median 36.5 (>= 25 m: 4 of 4), total mean
+  73.9; least-total on the ordered heading 21.6 (2 of 4), 60.3; **least-total laid on the street axis 22.5 (0 of 4), 51.4**.
+  Every deploy: >= 25 m 6 -> 4 (ordered) -> 0 (street). s8206 Delta: main [38.4, 83.7], ordered [41.9, 82.5], street
+  [24.3, 65.9]. **The lay matters more than the deal**, as guessed: on the ordered heading the deal alone left Delta's
+  worst at 41.9 m. The cap deploys here were NOT bunched (spread 20-30 m), so a flag should be scoped to cap deploys, not to
+  bunched ones. Proposal (round 41 bar, not built): `--cap-deal=street`, a cap deploy laid on the street axis (S1 v5's street
+  read) and dealt least-total from where the crews stand; judged on deploy leg >= 25 m and twitch >= 15 m, with never-in,
+  all-in, places outside and fights as guards.
+- **v3's never-in traced** (builder2 light, `settle-dev-s6306`, main 9d5907ddd + v3, `--probe-trace=1`): reproduced. Alpha_3
+  drove the lane at x 4..7 holding its travel place, 8.6 m east of its modelled corridor (its navmesh path to its slot ran
+  the centre line, over ROUTE_CLEAR_M 7); Bravo's v3 seat cleared to (4.4, 68.0) on that line (main's Bravo_1 seat was
+  (-17.5, 65.8)), and Alpha_3 stopped at (4.1, 71.9) from t36 to the end. **A v3 flaw: the corridor model ignores the
+  formation's travel width.** Fix: **S1 v3b** (`--seat-route-clear=v3b`, OFF, 0eec2ccdc): each driving squad's SWEPT BAND
+  (its centre route shifted out to its travel half-width, slots' widest offset across the first leg, at most 15 m, in 7 m
+  steps), added to v3's crew corridors. Pure test `tests/test_settle_route_clear_v3b.gd` 3/0 (laptop): (8.6, 68) reads
+  clear to v3 and blocked to v3b. Branch merged with main 9d5907ddd at c973a456e.
+
+- **S1 v3b dev lab: LOSES v3's T1-ON gain → series STOPPED** (builder2 light, frozen 46b72a3fc = main 9d5907ddd + branch,
+  crossing + terminus x 3/5 x click/route, dev 6301-6306, n 48 runs an arm; `settle-dev-v3b`): twitch >= 15 m main 42, v3 33,
+  **v3b 48**; never-in main 0, v3 1 (s6306), v3b 0 (the band fixes s6306); all-in median 21.0 / 18.7 / 22.0 s. Split: the
+  band makes 70 of 192 squads WAIT (v3 29), and those twitch 31 v main's 27; cleared squads 12 v 10. The lane-wide band
+  leaves no fit seat, the crews wait, and their release lands after the 8 s window. Told the orchestrator before any
+  series number (R40.15's gate). Round 41 idea: protect the band only from a seat ON the passer's next 30 m (where it drives
+  now), not the whole remaining lane, or let a waiting crew keep its stand once the band has passed it.
+- **GREEN: b5dbfdd72** (builder2, `make native check exited 0`, 3,189 passed / 0 failed, 24 + 3 NOT JUDGED): T1 ON + the
+  deal-read trace.
+
+- **Round 41 S1, the middle ground (R40.17, one line, no build):** a band on ONE side only, from the centre line out to the
+  side each crew's own travel slot sits (its lateral offset, at most 15 m), so a lane's far half stays free for seats and
+  fewer squads wait (v3 under-covers Alpha_3's line; v3b covers both halves and makes 70 of 192 squads wait).
+- **`--cap-deal=street` built** (OFF, 463f64e39; pure tests 2/0 on builder2, `settle_` 47/0): on a CAP deploy only, the
+  halt laid along the street at the anchor (ElementSituation.street_axis, the ordered heading's side; the ordered heading
+  where no street reads) and dealt least-total from where the crews stand (`_fit_deal`, its `keep` seats the deploy).
+  **Lab** (builder2 light, 463f64e39 + target, terminus 5 route 8203/8206/8208, n 3 runs an arm, dev; `settle-dev-capdeal`):
+  deploy legs >= 25 m 5 -> 1 squads; the cap deploys' legs 34.5 -> 24.5 (8203 Bravo), 38.2 -> 20.4 (8206 Delta), 31.5 ->
+  10.7 m (8208 Bravo; its twitch 37.1 -> 16.7); squads twitching >= 15 m 4 -> 4; never-in 0 -> 0; all-in median 46.6 ->
+  44.8 s; places outside 0 -> 0. 8208's Alpha capped on main (50.8 m leg) and deployed all in under capdeal.
+
+### Bar cap deal (filed 2026-10-25 before any number on 8725-8748; R40.14 (3))
+What he'd see: a squad that waited out the 10 s deploy limit lays its halt along the street it stands in and each tank
+takes the seat nearest it, no tank driving 30-50 m across the street after the squad has stopped. Arms: `main:--deploy-trace`
+v `capdeal:--cap-deal=street,--deploy-trace`, both on main 9d5907ddd + this branch (T1 ON, everything else of the branch
+OFF), frozen at the hash whose full check is green (the gate). Workload: s1c's (12 no-fight cells: locks, crossing, terminus
+x 3/5 squads x click/route; fights 3-squad budget 1500 and 5-squad budget 3000 click cells); **no-fight seeds 8725-8736,
+fight seeds 8737-8748**; builder2, `make settle-capdeal`. Judge `settle_judge.py capdeal`:
+- Counter: cap deploys dealt > 0 (DEPLOY_TRACE `cap_deal`).
+- **Deciding (both):** squads with a deploy leg >= 25 m, capdeal <= 0.75 x main with main >= 20 (else undecidable = no
+  ship); squads with twitch >= 15 m, capdeal <= main.
+- Guards: never-in over every cell capdeal <= main and none new; all-in mean over runs in on both <= main x 1.10 + 1; places
+  outside <= main + 2; shape flips <= main + 3; friend contacts and foreign <= 110 % + 5; fights 3- and 5-squad (his kills,
+  his losses, CPU losses as orders_judge's fight_guards), 0 unstarted. Reported: place+twitch >= 25 m, first shape differs.
+- **Run 1 (2026-10-25): NOT JUDGED, no series.** The gate full check of 95276e979 on builder2 (shared with godot and
+  manoeuvre, load 20-34, waited 4 min for a slot) hit slot.sh's 5400 s timeout at 25/26 stages, with only `test` left
+  (native-verify-scenarios 54/0 runner exit 0, trig 6/0). Nothing failed, but no `exited 0` means no gate, so the series
+  did not run and seeds 8725-8748 are still unrun. Builder2 went straight to balance's B2s; told the orchestrator. Waiting
+  on its slot: re-run the gate with `TANK_SQUAD_SLOT_TIMEOUT` raised, then the series.
+- Run 2: builder2 (Spot) preempted 2 min into the gate check. Not judged, nothing ran.
+- **Run 3: VERDICT FAIL, not shipped (`--cap-deal=street` stays OFF).** Gate: 95276e979 **GREEN** on builder2, 3212/0,
+  `make native check exited 0`. Series: builder2, J12, frozen 95276e979, seeds 8725-8748, 576 squads, fights 36/36 for
+  3- and 5-squad, 0 unstarted; refs at `references/round40/settle/capdeal-bar-builder2/verdict.txt`. Deciding: legs
+  >= 25 m **59 -> 45 FAIL** (needed <= 44.2, 0.75 x base: a 24 % cut that missed 25 % by under one squad); twitch >= 15 m
+  99 -> 92 PASS. Guards all PASS: never-in 7 -> 6 (0 new), all-in 26.7 -> 26.0 s, outside 100 -> 100, flips 0 -> 0,
+  contacts 14460 -> 14351 / foreign 8526 -> 8591, all six fight guards. Counter: 92 cap deploys dealt out of 569.
+  Reported: place+twitch >= 25 m 170 -> 162. Legs >= 25 m by deploy cause (probe rows.jsonl): cap 25 -> 12, all_in
+  21 -> 21, settled 13 -> 12. The cap deal halves the cap deploys' long legs, but most long legs come from deploy causes
+  it never touches.
+
+### Bar S1 v3b swept band (filed 2026-10-25 before any number on 8701-8724; R40.14)
+What he'd see: the same as S1 v3 (no squad parks on a street the squads behind still drive), now with T1 ON in both arms.
+Arms: `main:--deploy-trace` v `v3b:--seat-route-clear=v3b,--deploy-trace`, both on main 9d5907ddd + this branch (T1
+`--deploy-arrive=settled` ON, everything else of the branch OFF), frozen at the hash whose full check went green (the gate).
+Manoeuvre's `--giveway-chain` OFF in both. Workload and judge: s1c's as filed for S1 v3 (12 no-fight cells x 3 maps x 3/5
+squads x click/route; fights 3-squad budget 1500 and 5-squad budget 3000 click cells), **no-fight seeds 8701-8712, fight
+seeds 8713-8724**, `make settle-s1v3b` on builder2. A different base from Bar S1 v3: a new bar, not a re-run.
+**AMENDED at the orchestrator's ruling R40.15 (main 968226fb4), before any number on 8701-8724** (as filed at 46b72a3fc the
+judge was s1c unamended, whose deciding line needs main's 5-squad never-in >= 2; with T1 ON main's dev never-in was 0 of 48).
+Judge `settle_judge.py s1v3b` (s1c's lines with these changes):
+- **Deciding:** squads with twitch >= 15 m, v3b <= 0.85 x main, with main >= 20 (else undecidable = no ship).
+- **Never-in is a GUARD:** v3b <= main over every cell, and NONE NEW on any cell (s6306's kind).
+- Every other s1c guard as filed (counter seats cleared > 0; all-in mean <= base x 1.10 + 1; first shape <= 3 %; flips
+  <= base + 3; friend contacts and foreign <= 110 % + 5; fights 3- and 5-squad, 0 unstarted). Deploy legs >= 25 m and
+  place+twitch >= 25 m reported.
+- Gate: the merged branch's full check green on builder2, and the dev lab (6301-6306) showing v3b keeps v3's T1-ON gain
+  (twitch down, no new never-in); if it loses it, stop and tell the orchestrator before the series.
+- **Orders' question (via orchestrator, G1 v6 trace, laptop, terminus 5 route s8206): when a cap deploy lays its halt with
+  crews bunched, should seats be dealt nearest-first from where they stand?** Answer (code read, no run): **yes, as the
+  least TOTAL drive, not greedy nearest-first.** Greedy nearest-first leaves the last crew the leftover far seat. On main the
+  halt keeps each crew's TRAVEL seat index (`fixed` seating) and lays on the ordered heading, so a bunched squad's crews get
+  whatever seat its index names. Round 38's `_fit_deal` (element_plan.gd) already deals by least total from each crew's
+  position to its GROUNDED seat (Hungarian), but only when DEPLOY_FIT turns the lay (`--deploy-fit`, OFF). R38.17 restricted
+  it to turns because dealing every deploy diverged runs with no turn. Caveat: a deal can't shorten a leg past the
+  shape's own extent (a herringbone runs ~47 m deep), and Delta_2's 36 m / Delta_4's 29 m are probably mostly seats laid
+  across the street (ordered heading) rather than the index swap. Next step (a candidate for the stretch item, not run):
+  a dry read at that deploy comparing main's fixed deal, `_fit_deal` on the ordered heading, and `_fit_deal` on the street
+  axis (S1 v5's street cap), worst and total legs. Then, if it pays, a flag scoped to cap deploys with a bunched squad
+  (crew spread under one spacing), filed as its own bar.
+- **Dry deal read (orchestrator: after S1 v3's series, dev only):** built at 3be6f1aa7 + 978c98d88. DEPLOY_TRACE now
+  carries `cause` and `deals` (main / `_fit_deal` on the ordered heading / on the street axis: [worst, total] m to the
+  grounded seats, plus the crews' spread); pure test `tests/test_settle_deal_read.gd` 1/0 (laptop); reader
+  `tests/settle/settle_deals.py DIR`. Plan: terminus 5 route seeds 8203, 8205, 8206, 8208 on (a) this tree (T1 ON) and (b) a
+  frozen side worktree merging stream/orders' G1 v6 bar commit with the trace commits (Delta's case reproduces only under
+  G1 v6's column). If least-total on the street axis cuts the bunched cap deploys' worst legs well below main's, file a
+  scoped flag + bar (round 41 or end of round 40, whichever the clock allows; S1 v3 first if it passes).
+- Previous green: **afd436ca3** (builder2, 3,188 passed / 0 failed, 24 + 3 NOT JUDGED), everything of round 40 OFF.
 - **T1 built** (1327f85ef, OFF: `--deploy-arrive=near`): pure test `tests/test_settle_deploy_arrive.gd` 5/0 (laptop): the
   3.83 m holding tracked crew counts as in (main waits for the cap), a crew rolling at 4 m and one holding at 6 m don't, a hold
   under 0.5 s doesn't yet.

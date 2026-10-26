@@ -61,7 +61,7 @@ project's workers (plane_maker): never touch processes you didn't start.
 ## Bars (round 40)
 
 **Seed registry (round 40):** 8001-8024 settle (T1 8001-8012, S1 v3 8013-8024); 8101-8124 manoeuvre; 8201-8236 orders (G1 v6 8201-8212,
-G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 (wedge re-route, R40.12); 7001-7008 manoeuvre's M2 dev trace (not a bar).
+G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 (wedge re-route, R40.12); 8701-8724 settle S1 v3b (v3 on T1-ON main), 8725-8748 settle --cap-deal=street (R40.14); 7001-7008 manoeuvre's M2 dev trace (not a bar). 8801-8840 + 8901-8940 balance Bar B2s v2 (R40.19). 8125-8148 manoeuvre Bar F1 follow-queue (R40.21).
 
 - **Bar B2s, the stat change (balance; FILED d479a17a1, 2026-10-24 evening, before any number on 8301-8340 + 8401-8440).** Change: the
   candidate B4 picks (unit hp/armour/damage/cost within R40.1's +/-15 %). Deciding: FLATNESS (RMS over 16 cells: by guard faction and by
@@ -69,6 +69,14 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   their line's mean. Guards: blob and turtle lines not up; match length per line within +/-15 % (+/-20 % per faction); time-cap share not
   up; none line not worse; perf-judge; full check with the sim baseline adopted on purpose (orchestrator). Base read: round 39's OFF arm
   scores 17.4 (se 1.4).
+  **CANDIDATE NAMED (2026-10-25 ~08:30, before any 8301-8340 / 8401-8440 number): fm_law_c5r2.** BASE 5be511659 (green builder0, ALL
+  JUDGED); ARM 66c4839a2 (builder0 3212/0, perf-judge PASS, red only on sim-baseline: 13 maps moved, recorded twice, agreeing:
+  `~/balance-runs/sim_baseline_adopt-66c4839a2.json`). Screens (dev 8513-8524, paired): flatness -10.6 +/- 3.5, blob +1.7 +/- 3.0, turtle
+  -2.5 +/- 4.2; G8 mono -1 +/- 2. Expected (balance, written first): deciding passes (~-10 at se ~1.3); G1/G2 the risk; G3-G5 unscreened;
+  G6 PASS; G7 green but sim-baseline (re-pins per R40.18); G8 passes unless law's +6 +/- 4 is real. Series builder2 J14, ~8-10 h.
+  Judge filed before numbers: `search.py bar <root> 5be511659 66c4839a2` (one BAR_B2S line a rule + VERDICT). **Ruled reading of G3:** a
+  median-length change fails only when outside its band (+/-15 % a line, +/-20 % a guard faction) AND > 2 paired se from zero (the bar's
+  "each fails at > 2 paired se the wrong way"). Dry run on dev: 17/18 hold, G5 unread; nearest the band: blob median length +11.4 % (se 5.2).
 - **Bar T1, the deploy trigger (settle; FILED a03250e13, 2026-10-24 evening, before any number on 8001-8012; code = c074db72e's).** Arms
   `main:--deploy-trace` v `settled:--deploy-arrive=settled,--deploy-trace`; `--giveway-chain` OFF and `--seat-route-clear` OFF both arms.
   Workload: no-fight 12 street cells x 8001-8012 (576 squads an arm) + fight click cells 3-squad b1500 and 5-squad b3000 x 8001-8012.
@@ -87,6 +95,11 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   line naming the cells where main v main's read changed. builder0 light J4, main as it is (CP40.1 OFF both arms unless it lands first).
   Known risk: terminus 5 route never-in (s3805 squad 1 in dev: the route's first plain click's whole-squad deal, R38.44; Alpha_3 wedged
   in the x=0 street among parked squads t40-t90, both arms' legs identical).
+  **VERDICT FAIL on one guard (2026-10-25 ~02:00; frozen c7d642aeb = green 8bbafb376 + docs, builder2 J4, 8201-8212, n 12 a cell, one Spot
+  preemption re-run whole).** FAIL: terminus 5 route twitch, median of each run's worst 20.6 -> 25.4 m (bar base + 3); seeds 8203, 8205,
+  8206, 8208 differ (Delta worst on 3). PASS every deciding line: places outside (click) 65 -> 8 (<= 16.2), route_left 3,864 -> 589, re-dealt
+  48 -> 0, contacts 14,781 -> 11,799, yard_open identical, never-in not up. Old corridor read: outside 98 -> 17, route_left 6,174 -> 1,209;
+  main v main changed only on locks 3/5 and terminus_his 3/5. Stays OFF. Cause: the route's first plain click keeps squads whole (R38.44).
 - **R40.9 (2026-10-24 evening) G3 v7 BLOCKED on its dev read; the redesign goes ahead.** Dev (builder2, 4c672deca, 3804-3809, n 6): pairs
   < 12 m 25 -> 17 (bar 6.2), guards pass. Traced: (a) the moves onto Echo's road were v5's aside/back steps accepted by v6's seat check;
   (b) on a route G3 runs BEFORE `_relay_previous_waypoint`, so every squad's road in starts from a stale previous waypoint (s6213 Echo
@@ -96,6 +109,10 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   `main:--deploy-trace` v `v3:--seat-route-clear=v3,--deploy-trace`; giveway-chain OFF and T1 OFF both arms; round 39's S1 workloads and
   judge `s1c` unamended (deciding: 5-squad never-in <= main - 1, main >= 2, none new). Lab (afd436ca3, builder0 light, n 1 a run, dev): all
   six traced runs every squad in (main lost s3958, v2 lost three); all-in s6009 42.9 v 34.8 s (+8), the rest equal or faster.
+  **VERDICT FAIL on one guard (2026-10-25 ~02:40; afd436ca3's code frozen at 8ca1b1e31, T1 OFF both arms, builder0 light J4, 8013-8024,
+  576 squads + 36/36 fights both reads).** Deciding PASSED: 5-squad never-in 4 -> 0, none new. FAIL: twitch >= 15 m squads 88 -> 99 (s1c's
+  "not up", unamended). Passed: never-in all cells 5 -> 0, all-in 25.7 -> 24.8 s, flips 0, first shape 6/576, contacts 12,235 -> 11,418
+  (foreign 6,888 -> 5,844), fights. Reported: deploy legs >= 25 m 58 -> 85, place+twitch >= 25 m 162 -> 168. Stays OFF.
 - **R40.10 (2026-10-24 evening) G2 v2c: no bar this round.** Orders' O4 re-read on main (dev 3801-3803, builder2) repeats round 39's dev
   read 3 exactly (DEPLOY_HOLD doesn't act without losses); guards fail on 10 cells (end foreign, twitch). Write-up: stream/orders
   f3df5390d. Its one later re-read: on top of settle's S1 v3 if that ships (end-foreign is S1's kind). G3 v8 built (5bc304738).
@@ -106,6 +123,14 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   last squad in JUDGED (paired mean <= +2.0 s; runs > 10 s later <= runs > 10 s earlier + 3). Judge `chain_judge.py --on-arm=v2
   --d-ratio=0.5 --last-in` (6c28abd3e; reproduces round 39's verdict). Dev (7001-7008, builder0, 24 fights): drift 650.5 -> 140.7 m (0.22x,
   -5.3 se); stuck deaths 162 -> 181.
+  **VERDICT FAIL on G5 alone (2026-10-25 ~01:30; 479bf90f9 green, builder0 light, native; 36 census fights on 8101-8112 + 144 probe runs
+  on 8113-8124).** G5 never-in 2 -> 5. Passed: D chained drift 884.0 -> 190.4 m (-78.5 %, -9.1 se); G1 give-way deaths 91 -> 86; G2 stuck
+  242 v 229 (line +33.5); G3 contacts 24,051 -> 23,279; G4 worst kill share 0.018; G6 all-in median +0.0 s; G7 last squad in +0.3 s. v2's
+  never-ins: crossing 5 click s8120 sq4, locks 3 click s8119 sq1, terminus 5 route s8114 sq1 (+ sq5, main's too), s8118 sq5, s8119 sq5
+  (three are the last squad on terminus 5 route). Stays OFF; no re-run on these seeds; diagnosis trace on the 5 cells (dev).
+  Diagnosis (dev, n 1 a cell, builder0 light): 479bf90f9 main 1/5, v2 5/5 never-in (deterministic); on main 9d5907ddd (T1 ON) mainT1
+  1/5, v2T1 3/5 (crossing s8120 sq4 and terminus s8119 sq5 recover; locks s8119 sq1, terminus s8114 sq1, s8118 sq5 still out). T1 halves
+  v2's cost; it survives on the main that ships.
 - **Bar G3 v9, road as wide as its column (orders; FILED 893180a31, 2026-10-25 ~01:10, before any number on 8213-8224).** Arm = v8's +
   `--place-clear-lane=column`, base `main:`; judge `orders_judge.py g3` unamended from G3 v6; frozen tree at the green hash; every
   G1/G2/T1/S1 switch OFF both arms. Known risk: G3 v6's crossing 5 route never-in / twitch. Dev (builder2 J4, 9076ee2f8, 3804-3809, n 6):
@@ -134,6 +159,72 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   main's check + three lanes). G3 v8 dev read FAILED (5bc304738, builder2 J4, 3804-3809, n 6: pairs < 12 m 25 -> 10, bar 6.2; the road
   test reads each road 17-20 m wide); G3 v9 `--place-clear-lane=column` (9076ee2f8, OFF) dev-reads next. Main check of 5a9743c2c running on
   builder0 (synced before 65a5c5b70's merge, so manoeuvre's M1 v2 OFF needs the next batch check).
+- **R40.14 (2026-10-25 ~03:10) settle: S1 v3 re-bars on T1-ON main; --cap-deal=street next.** Dev (builder2, frozen 4f1ed2eca = main
+  9d5907ddd + trace commits, crossing+terminus x 3/5 x click/route, 6301-6306, n 48 an arm): with T1 ON, v3's twitch cost reverses
+  (>= 15 m 42 -> 33, worst median 17.2 -> 15.1 m, all-in 21.0 -> 18.7 s, cap deploys 42 -> 33), one new never-in (terminus 5 click s6306
+  Alpha, untraced). Dry deal read (terminus 5 route 8203/8206/8208 cap deploys): worst/total leg main 36.5/73.9 m, least-total on the
+  ordered heading 21.6/60.3, least-total on the street axis 22.5/51.4 (0 of 4 >= 25 m). **Ruled:** trace s6306 first (dev); if it isn't
+  a v3 flaw, file Bar S1 v3b (v3 v main, both on T1-ON main, frozen tree) on 8701-8724 before any number. A different base = a new bar,
+  not a re-run. Then build `--cap-deal=street` OFF (scope: every cap deploy), lab, bar on 8725-8748.
+- **R40.15 (2026-10-25 ~03:30) Bar S1 v3b's deciding line, ruled before any number.** s6306 traced: a v3 flaw (Alpha_3 drove its
+  formation place 8.6 m east of its modelled corridor; Bravo's cleared seat landed on it). v3b (`--seat-route-clear=v3b`, 0eec2ccdc, OFF)
+  adds each driving squad's swept band (its centre route shifted to its travel half-width, max 15 m). Bar S1 v3b filed at 46b72a3fc. With
+  T1 ON, main's 5-squad never-in is ~0 (dev 0/48), so s1c's deciding line (main >= 2) can't decide. **Ruled:** deciding = squads with
+  twitch >= 15 m, ON <= 0.85 x OFF with OFF >= 20 (dev 42 -> 33 = 0.79); never-in becomes a guard (ON <= OFF, none new on any cell);
+  every other s1c guard as filed; deploy legs >= 25 m stay reported. What he'd see: fewer tanks lurching to new seats, squads in sooner.
+  The amendment is made before any 8701-8724 number; the dev lab (v3b v v3 v main, 6301-6306) must show v3b keeps the dev gain first.
+- **R40.16 (2026-10-25 ~03:45) B5: the all-tank edge is numbers (armour v penetration), not doctrine.** Mono base (7b53f5f85, builder2,
+  8513-8520, CPU v CPU both sides, n 320): mono-tank beats its own faction's mixed deal 82 % (se 3): condemned 71, gangs 80, law 86,
+  syndicate 89 %. Per-unit (CP40.0, `tools/balance/mono_roles.py`): anti-armour trades well v the blob (artillery 3.0-5.5 hp a credit,
+  spears 2.4, Lancers 3.4); IFVs 0.2-0.8, MG scouts 0.04-0.17, Tanker/Sonic ~0.3; 44-61 % of a mixed army's credits deal < 1 hp a credit to
+  tanks; an autocannon (pen 5) hits a tank's front at 0.05-0.10 of its damage. No symmetric AI fix exists here. Inside R40.1's bounds:
+  tank armour -15 % roughly doubles the autocannon's front effect (fm_law_ca screens it). Beyond: penetration, the IFV's weapon/role, the
+  deal's mix: **a lead question** (HANDOFF), asked in player terms with one recommendation.
+- **R40.17 (2026-10-25 ~03:55) Bar S1 v3b NOT run: its gate lab failed (R40.15).** Dev (builder2 light, frozen 46b72a3fc, crossing+terminus,
+  6301-6306, n 48 an arm): twitch >= 15 m main 42 / v3 33 / v3b 48; never-in 0 / 1 / 0 (the band fixes s6306); all-in median 21.0 / 18.7 /
+  22.0 s. The full-lane band clears or waits more seats, landing after the 8 s window. 8701-8724 unused (returned). Settle goes to
+  `--cap-deal=street`'s lab (8203/8206/8208), then its bar on 8725-8748. Green b5dbfdd72 (builder2, 3,189/0) covers the trace commits.
+- **Bar cap deal (settle; FILED 95276e979, 2026-10-25 ~03:40, before any number on 8725-8748).** `--cap-deal=street` (463f64e39, OFF): a
+  cap deploy laid on the street axis, dealt least-total. main v capdeal, both on T1-ON main + branch; s1c's workload; no-fight 8725-8736,
+  fights 8737-8748; judge `capdeal`; builder2, frozen side worktree, gated on the hash's full check. **Deciding:** deploy legs >= 25 m <=
+  0.75 x main (main >= 20) AND twitch >= 15 m <= main. Guards: never-in <= main, none new; all-in <= x1.10 + 1 s; places outside <= +2;
+  flips <= +3; contacts; fights. Lab (builder2 light, terminus 5 route 8203/8206/8208, n 3, dev): legs >= 25 m 5 -> 1, twitch >= 15 m
+  4 -> 4, all-in 46.6 -> 44.8 s. **Lane:** builder2's one judged series slot; balance's B2s series queues behind it or takes builder0.
+  **VERDICT FAIL (2026-10-25 06:23; gate 95276e979 green builder2 3212/0; builder2 J12, 8725-8748, frozen 95276e979, 576 squads + 36/36
+  fights a read).** Deciding line 1 FAIL: deploy legs >= 25 m 59 -> 45 (bar <= 44.2; a 24 % cut, under one squad short). Line 2 PASS:
+  twitch >= 15 m 99 -> 92. Every guard passed (never-in 7 -> 6 none new, all-in 26.7 -> 26.0 s, places outside 100 -> 100, flips 0,
+  contacts, six fight guards). 92 of 569 cap deploys dealt. `--cap-deal=street` stays OFF; a round-41 candidate with its numbers.
+- **R40.18 (2026-10-25 ~04:40) B2s candidate = fm_law_c5r; price-pinned tests re-pinned on purpose.** ARM 494a3d33d (fm_law_c5) was red on
+  builder0 (3203/9 + sim-baseline 13 moved, expected): (1) test_combat_mechanics::test_everything_hurts_from_behind (a real invariant:
+  +15 % rear armour put the twin MG from behind under the 0.4 floor). **Ruled:** the candidate becomes fm_law_c5r (every unit's REAR armour
+  as today), new ARM 6d95d4eba; the invariant stays. Its remaining screen (G8's mono line, and one lines read if builder2 has room) runs on
+  c5r, not c5. (2) Eight tests pin syndicate prices the candidate moves on purpose (+5 %: Skimmer 120 -> 126, Gunship 172 -> 180, Railgun
+  269 -> 283, Missile Ring 218 -> 228; 2000 CR buys 15 Skimmers, not 16). **GRANT:** re-pin ONLY those expected numbers on the ARM branch
+  (test_army_economy x6, test_army_screen::test_a_spent_army_says_so, test_army_size::test_the_table_at_two_thousand), each listed in
+  merge notes, adopted like the sim baseline. That's adoption, not weakening, and doesn't breach G7. No assertion's form changes.
+  **Amended (2026-10-25 ~07:20):** ARM ad956031b red on the invariant's other half (rear >= front; Skimmer 2/2/2 with a cut front over an
+  unmoved rear). Candidate becomes **fm_law_c5r2**: rear armour moves only where armour goes DOWN (syndicate all faces -15 %, as screened
+  c5); a buffed rear stays as today. Every weapon x unit through the penetration math: 0 breaks. ARM = 66c4839a2 (5be511659 + apply c5r2 +
+  R40.18's re-pins). **Accepted:** c5r2's G8 screen = c5r's gangs/law/condemned mono arms (same-faction fights hold no syndicate unit, so
+  they replay identically) + new syndicate mono arms; its own paired lines read on 8513-8524 runs first.
+- **Bar B2s v2 (balance; FILED 8165a8830, 2026-10-25 ~18:30, before any number on 8801-8840 + 8901-8940; R40.19).** Bar B2s word for
+  word with its seeds moved: lines 8801-8840 + 8901-8940 (blob + turtle, 5 guard arenas, both sides, 1600 an arm); none line 8801-8820
+  (one side); G8 mono line 8801-8820 per faction. BASE 5be511659; ARM frozen d385cd308 (branch balance/b2s-v2-arm = 5be511659 + apply
+  fm_c5r2_lawt5, 55 values, + R40.18's re-pins; prices as c5r2). The dev screen (8501-8540) must confirm the candidate before the series;
+  a changed candidate = a new frozen ARM named before numbers. Judge `search.py bar`, deciding and G1-G8 exactly as B2s. Builder2 J24,
+  after ARM's full check (builder0, green but sim-baseline, recorded twice).
+- **Bar M3, wedge re-route (manoeuvre; FILED b21565b37, 2026-10-25 ~04:50, before any number on 8601-8624).** OFF v
+  `--giveway-reroute=any`. **Deciding D:** long-episode seconds ON <= 0.8 x OFF at >= 2 se. G1-G4 deaths, contacts, fights (A: wedge trace
+  8601-8612); G5 never-in, G6/G7 all-in and last-in (B: orders probe 8613-8624). Judge `tests/manoeuvre/reroute_judge.py`. builder0 light
+  J4, gated on b21565b37's full check. s7004's 73 s (hover syn_artillery, out of the wheeled scope) explained and still counted. **Ruled
+  (orchestrator, before numbers):** both arms run the SAME drive path (the GDScript drive with native_drive bypassed in OFF too), so the
+  pairing compares the rule, not the path. Ship needs the C++ twin and a sliced scan (today one physics tick) plus perf.
+  **VERDICT FAIL on D (2026-10-25 ~08:00; code b21565b37 green builder0, series 8c8d9035b, builder0 light J4, GDScript drive both arms;
+  36 paired fights + 144 paired probe runs).** D long-episode seconds 544.1 -> 554.0 (+1.8 %, paired +0.28 s a fight, se 5.83; line <=
+  435.3). Guards all pass: give-way deaths 84 -> 87, stuck deaths 248 -> 213, contact ticks 829,543 -> 820,818, kill share worst 0.028,
+  deaths 1,458 -> 1,435, never-in 3 -> 3, G6/G7 +0.0 s. Reported: long episodes 65 -> 51 (fewer but not shorter); 608 searches, 271 plans,
+  96 driven to the end; ON's two longest (s8605 Rust_Battery2_4, 99 / 71.6 s) are a crew the seam never drove (divergence), ARRIVED for
+  2,054 of 2,147 ticks. For a later bar: the long-episode definition counts parked, arrived crews. Stays OFF.
 
 ## Rulings (round 40)
 
@@ -179,6 +270,32 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   on ADVANCE, 19 HOLD, 6 MOVE. Settle's T1 v2 `--deploy-arrive=settled` (a once-in crew within 10 m counts) works round it (cap deploys
   47 -> 5, arrival-to-deploy 6.8 -> 3.5 s, all-in median 25.1 -> 23.6 s; one never-in fixed at c074db72e, re-lab running). The ADVANCE
   drift itself is balance's (brains), a later item (B6) after B2s/B5: a crew still being dealt its travel seat shouldn't take ADVANCE.
+- **R40.19 (2026-10-25 ~18:10) Bar B2s FAILS on G3; fm_law_c5r2 stays OFF; v2 approved on a fresh block.** Balance's lines verdict
+  (BASE 5be511659 v ARM 66c4839a2, builder2, 8301-8340 + 8401-8440, 1600 fights an arm, 80/80 seeds, 1 attempt lost to a Spot
+  preemption and retried): DECIDING flatness 18.5 -> 8.9 (-9.6 ± 2.2) pass; G1 blob 41 -> 35 % (-6.4 ± 2.2) pass; G2 turtle 34 -> 34 %
+  (+0.4 ± 1.4) pass; G4 time-cap +0.06 ± 0.18 pass; G3 lengths blob +10.4 % ± 2.3 (inside ±15 %) but the LAW blob cell +24.6 % ± 3.6
+  (band ±20 %) FAILS. The bar fails as filed; no guard is amended. G5/G8 finish for the record. **Ruled:** candidate v2 = fm_law_c5r2
+  with Law's toughness trimmed (balance picks the numbers inside R40.1's ±15 %, e.g. hp/shield/armour +5 %, damage +15 %); screen on
+  the dev block 8501-8540 INCLUDING a per-faction G3 length read; then file Bar B2s v2 (same lines and guards as B2s) before any number
+  on the fresh block 8801-8840 + 8901-8940, one frozen ARM tree (R40.13), builder2. Round 40 closes around it; v2 carries into round 41
+  if it is not judged first.
+- **R40.20 (2026-10-25 ~19:00) v2 ARM d385cd308 red on bridge-pooled; cause is traffic, routed to manoeuvre.** builder0 `make check
+  exited 2`, 3212/0, sim-baseline (expected) + bridge-pooled 17/18 (rust t15 s2: one crew at the rim 5.4 s v the 3 s bar, all 4 crossed;
+  base and c5r2 pass). Balance's trace (balance/bridge-trace 5a233f42b, builder0 light): Rust_S_3's slot goal re-dealt 3x on the
+  approach, wedged at the deck mouth, yields and backs 7 m, wedged again at the far end; native drive arrived 48.9 s v the laptop's
+  GDScript drive 31.0 s (rim 0). **Ruled:** bridge-pooled is not loosened or re-seeded; manoeuvre owns the fix (symmetric, ON if
+  bridge-pooled is green on main AND under v2's overrides, twin matching). Then v2's ARM is rebuilt on that main; Bar B2s v2's BASE is
+  that main (no number on 8801-8840 + 8901-8940 read yet, so it is the same bar).
+- **R40.21 (2026-10-25 ~19:20) Bridge cause = ORCA steering a wheeled follower around its leader; F1 follow-queue approved, OFF until
+  its bar.** Manoeuvre (builder0, 5a233f42b): `--brains-off=native_drive` gives the identical 48.9 s / rim 5.1 s, so R40.20's
+  native-v-GDScript reading is WRONG (the laptop's 31.0 s is another difference; it has no native library). Rust_S_3, 7 m behind
+  Rust_S_1 at 10-11 m/s: S1 slows to turn onto the deck; ORCA (pace 0.96 -> 0.71) pushes S3's steer point outside past the mouth; on
+  return S3 heads east beside the mouth and its 8 m turn radius cannot reach the deck; presses, circles, yields; the same at the far end.
+  `--no-avoidance` diagnostic (n 1): rim 0, arrived 38.8 s. **Ruled:** build F1: a WHEELED crew whose ORCA conflict is a moving friend
+  ahead on its route going its way (FOLLOW_COS) keeps its route steer and takes only ORCA's along-route speed (queues, never passes); a
+  stopped friend is passed as today. Symmetric, OFF until judged; GDScript first, C++ twin to native. Lab: bridge-pooled on main and
+  under d385cd308's overrides, then the wedge and orders cells. Bar on 8125-8148, filed before any number on them, frozen tree (R40.13),
+  guards as M3's (deaths, stuck deaths, contact ticks, kill share, never-in, all-in / last-in) plus bridge-pooled 18/18.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
