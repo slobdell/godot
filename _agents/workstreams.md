@@ -88,7 +88,11 @@ _(filed bars go here, before their numbers)_
 
 ## Rulings (round 42)
 
-_(R42.1 onward)_
+- **R42.1 (2026-10-26 evening) balance's B7 call-site GRANT.** Two additive edits outside balance's paths, OFF-pinned by tests, merge
+  note: (1) `game/modes/skirmish_mode.gd` `_start_match` loads both armies through a new `Army.load_pair()` before the spawn loop (today
+  GREEN loads before RUST, so a plain `cpu` on GREEN can't see a tank rush on RUST: half of every mono series); (2) `game/garage/
+  garage_mode.gd` `fight()` passes `screen.draft.to_doctrine()` into `GarageOpponent.build` as the opposing army (one argument). With
+  `--cpu-counter` OFF nothing changes (tests pin it); the orchestrator reviews the diff at merge.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
