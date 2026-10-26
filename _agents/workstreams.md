@@ -116,6 +116,11 @@ another project's workers (plane_maker): never touch processes you didn't start.
   whole suite ON (C31.1) before the series; a cost line. Could break: a crew leaving standoff dies in the open; an unreachable spot or a
   corner flicker oscillates; CPU fights change; baseline rows move. Known, outside the grant: under an attack order a crew can pick
   SUPPRESS and stand in band with no line (7001 ON: 7.8 s into the container); the stuck line counts it.
+  **Amended before any number (engage, frozen tree 57e2e7eb5):** the situation's shot read runs only under `--attack-shot` (OFF asks the
+  cover map for nothing: 7001 reads 0 lines OFF, 210 ON); the probe reports the SUPPRESS share of stuck seconds (R42.6); the cost line's
+  pass level: lines a plan tick in the ON arm <= crews + 1 (series mean; memoized at 0.5 m), OFF 0, and the ON check's perf-judge PASS.
+  Player smoke (laptop, his pose): OFF the Rat Rod sits nose-on behind the container 20 s; ON it is past the container's end at 1 s,
+  gun on the ring, firing by 3 s (frames in Status).
 
 - **Bar Q5, no pressing (manoeuvre; FILED 361fb9d24 Status, 2026-10-26 ~15:20, before any number on 9801-9824; R41.10's frame).** Rule
   = `--traffic-on=nopush` v2 exactly as fc8f3697d: a crew whose hull touches a FRIEND ahead that is not pulling away (speed along my
