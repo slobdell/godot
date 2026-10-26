@@ -78,6 +78,95 @@ Nothing (B2 answered: R40.1).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**FINAL REPORT, round 40 (2026-10-25 evening). GREEN: 5be511659** (builder0 `make check exited 0`, 3212 passed / 0 failed, 27
+targets ALL JUDGED, sim-baseline 13 unmoved). Every commit after it touches only `tools/balance/**` (Python, outside Godot's import,
+not in `make check`; `python3 -m unittest discover -s tools/balance` 14 OK) and this brief. Nothing ships ON: Bar B2s FAILED on one
+guard (R40.19), so the unit numbers on main are today's.
+
+| Item | Result |
+|---|---|
+| B1 per-unit tally | DONE. Kills/losses by unit from the kill lines (b8c8cfca2) + CP40.0's damage. Gangs trade 0.36 killed value a credit, syndicate 0.84; the Gun Truck, Tanker and War Rig die without trading; syndicate's edge is the Railgun (kr 16) and Missile Ring (kr 10). Not the R1-R3 rules (the rules-OFF base has the same table). |
+| B2 his call | ANSWERED (R40.1): tune unit numbers within +/-15 %. |
+| B4 search harness | DONE. `tools/balance/search.py` check / scale / run (N3 `--unit-overrides`) / score / mono / apply / bar; tally.py, mono_roles.py, catalog_dump.gd; `make balance-catalog/-tally/-tuned/-pytest`. |
+| Bar B2s (fm_law_c5r2) | **FAIL, 17 of 18** (BASE 5be511659 v ARM 66c4839a2, builder2, 1600 + 100 + 800 fights an arm): deciding flatness 18.5 -> 8.9 (-9.6, se 2.2), blob line DOWN 41 -> 35 %, turtle flat, mono line flat, none line flat; **G3 a Law blob's median fight +24.6 % (se 3.6) v the 20 % band**. Stays OFF. |
+| Bar B2s v2 (fm_c5r2_lawt5) | FILED (8165a8830) on fresh 8801-8840 + 8901-8940, UNREAD. ARM d385cd308 frozen; its check is red on bridge-pooled (a crossing-queue traffic case its Law change exposes; manoeuvre's F1 stopped, R40.24). Carries to round 41 behind a bridge fix. **Dev screen** (BASE tree 5be511659 + overrides, builder2 J24, 8501-8540, 800 fights an arm, paired, read with `search.py bar`): flatness 17.9 -> **7.0 (-10.9, se 2.2)**; blob v a gangs CPU 72 -> 42 %, v a syndicate CPU 9 -> 34 % (the gap stays closed); G1 blob -9.3 (3.0), G2 turtle -1.0 (2.4), G4 +0.1 (0.3); **all 10 per-faction G3 cells pass**: the Law blob +4.3 % (6.1) (B2s: +24.6), the nearest to a band the gangs turtle +15.8 % (6.2) v 20; the blob line +4.2 % (3.1). To watch: a syndicate BLOB now wins 17 % (was 76 %); the table's cells by CPU 31-42 %. G5/G8 not screened here (c5r2's mono line -1 stands; v2 is less tough on Law). |
+| B5 combined arms | MEASURED + written up for him (R40.16): an all-tank army beats its own faction's mixed deal 82-84 %; his target is 35-40 %. Cause: armour/penetration (half each mixed army's money can't hurt a tank), not doctrine; the in-bounds tank nerf (fm_law_ca) undid the faction table. Write-up below; his decision pending. |
+| B3 faction-aware CPU | v1 BUILT OFF (`--faction-ambush`, gangs table ambush_share 0.6; 2979ee5c8, quick builder0 340/0). Not screened: it goes on top of the stat change (R40.1). |
+| B6 ADVANCE off a seat | TRACED (code read): an "idle" order allows ADVANCE 0.45 toward the order's goal while a crew sits on its travel seat. Not built (after B2s/B5). |
+
+**Candidates, and why each moved** (all dev reads paired with their base, builder2, 240 fights an arm unless noted):
+faction_max (gangs +15, syndicate -15, law +5: -12.8 then -5.6 on fresh seeds) -> fm_law (law to +15: -8.4, but turtle +5.8) ->
+fm_law_cost (syndicate cost +10: turtle flat, overshot syndicate) -> fm_law_c5 (cost +5: -10.2, both lines flat) -> fm_law_c5r (rear
+armour kept: a buffed rear broke "everything hurts from behind") -> fm_law_c5r2 (rear moves only when armour goes down: a cut front
+under a kept rear broke the other half; -10.6, lines flat, mono -1) -> Bar B2s FAIL on Law blob length -> fm_c5r2_lawt5 (Law
+toughness +5, its damage +15). targeted (B1's units only, -5.5) and fm_law_ca (B5's tank nerf, -1.2, turtle +9.2) were dropped.
+
+- **Decisions I made:** candidates scaled per faction (+ role) rather than per unit (the dev n can't resolve 63 dims); shared
+  weapons never tuned (laser, autocannon, machine_gun); `search.py check` refuses a candidate that breaks the from-behind rule (both
+  ARM failures reproduced); hp written as the sim rounds it; mono/none lines on one guard side (their two sides are one fight).
+- **Questions for the lead (via the orchestrator):** B5: give the IFV a real anti-tank weapon (recommended), let penetration move,
+  or change what armies buy (write-up below). Nothing else open from this stream.
+- **Requests to other streams:** manoeuvre: the bridge mouth traffic case (R40.21/R40.24; trace in
+  `~/balance-runs/bridge-trace-d385cd308-rust-t15-s2.log`, repro branch balance/bridge-trace 5a233f42b). Native: none open (N1-N3 and
+  GUARD_SIDES landed).
+- **Known issues:** dev screens at 240 fights can't see a per-faction length cell (B2s's Law cell read +13 % se 10 on dev, +25 % se 4
+  at the bar): screen G3 cells at 800+. The laptop has no native library, so its bridge-drill fight differs from builder0's.
+- **Playtest (no change ships):** the faction gap as is: `make skirmish SKIRMISH_FLAGS="--player-faction=syndicate
+  --enemy-faction=gangs"`, then the reverse. The candidate in a real fight: `make skirmish SKIRMISH_FLAGS="--unit-overrides=$HOME/balance-guard-raw/v2/overrides-fm_c5r2_lawt5.json"`
+  (N3's flag; that file is the candidate's units/weapons only, written by `search.py run`), or check out d385cd308.
+- **Next steps (round 41):** after the bridge fix, rebuild v2's ARM on that main + apply fm_c5r2_lawt5 + the R40.18 re-pins
+  (cherry-pick ad956031b), full check + `sim-baseline-record`, then Bar B2s v2 (`~/balance-runs/bar-b2s.sh` with BASE/ARM edited,
+  seeds 8801-8840 + 8901-8940, J24, `search.py bar`). Then B3 on top, B6, a second balance pass.
+- **Branches to keep:** `balance/b2s-v2-arm` d385cd308 (worktree ../godot-balance-arm), `balance/bridge-trace` 5a233f42b
+  (../godot-balance-trace), `balance/b2s-arm-r2` 66c4839a2 (B2s's ARM, for the record); scratch `balance/fm-law-arm`,
+  `balance/b2s-arm`, `balance/b2s-arm-r` can go; ../godot-balance-base (5be511659) can go.
+- **Raw data:** `~/balance-guard-raw/{r2,bar-b2s,v2}` and the 066d0ff95 dry run; drivers and checks in `~/balance-runs/`.
+- **Merge notes (shared-path edits on stream/balance):** `game/units/army.gd` (mono_army, C40.5), `game/modes/skirmish_mode.gd` (one
+  additive line, R40.7), `game/tactics/element_commander.gd` + `doctrines/doctrine_gangs.json` (B3 v1, OFF), `mk/balance.mk`,
+  `tests/test_tactics_mono_army.gd`, `tests/test_tactics_faction_ambush.gd`. No unit numbers change on stream/balance (only on the ARM
+  branches).
+
+
+**Bar B2s v2 (R40.19; FILED 2026-10-25 before any number on 8801-8840 + 8901-8940).** Same as Bar B2s, word for word, with its seeds
+moved: BASE = the tree as it ships without the change; ARM = the same tree + the v2 candidate (named in Status from the dev screen on
+8501-8540 before the series), one frozen ARM tree (R40.13). Lines 8801-8840 + 8901-8940 (blob + turtle, 5 guard arenas, both sides,
+1600 an arm); none line 8801-8820 (one guard side: its two sides are one fight); G8 mono-tank line 8801-8820, mono on each team in
+turn, per faction. Builder2, J24, after a full check of ARM (green but for sim-baseline, recorded twice) and BASE. Deciding and G1-G8
+and the judge's readings exactly as Bar B2s (`search.py bar <root> <BASE> <ARM>`). **v2 candidate (draft): `fm_c5r2_lawt5`** (fm_law_c5r2 with Law's
+hp/shield/front-side armour at +5 %, its damage +15 %). **Frozen ARM = d385cd308** (`balance/b2s-v2-arm` in ../godot-balance-arm:
+5be511659 + apply, 0 mismatches + the R40.18 re-pins, prices unchanged from c5r2); its full check + sim-baseline-record x2 run on
+builder0 now; the dev screen (base + lawt5 on 5be511659 + overrides, 8501-8540) on builder2 after B2s's series.
+  **v2 ARM d385cd308's full check: red on sim-baseline (expected) AND bridge-pooled** (builder0 `make check exited 2`, 3212 passed /
+  0 failed; bridge-pooled 17 of 18: rust tick 15 seed 2, one crew 5.4 s on the river's rim, bar 3 s). sim-baseline-record: 13 maps read
+  twice, agreeing (`~/balance-runs/sim_baseline_adopt-d385cd308.json`). **Cause (traced, builder0 light, branch balance/bridge-trace
+  5a233f42b = ARM + a `bridge-trace` target only):** the drill is 4 Law Assault Guns v 3 Syndicate Lancers; v2's Law toughness changes
+  the far-bank fight and who reaches the bridge mouth first. Rust_S_3's slot goal is re-dealt three times on the approach, it wedges
+  at the deck entry (17.5-20 s), yields 7 m back to Rust_S_1 (20.5-24.5 s) and wedges at the far end (29-32 s): the crossing queue's
+  traffic (manoeuvre's give-way / queue), not the brains. Routed to manoeuvre via the orchestrator; trace in
+  `~/balance-runs/bridge-trace-d385cd308-rust-t15-s2.log`. The laptop doesn't reproduce it (no native library there: the GDScript brain
+  plays a different fight, arrived 31.0 s, rim 0). Bar v2 waits for an ARM green but for sim-baseline; bridge-pooled is not retuned.
+
+**BAR B2s, LINES VERDICT (2026-10-25 17:30 PDT): FAILS on G3 (one cell); deciding, G1, G2 and G4 pass.** BASE 5be511659 v ARM
+66c4839a2, builder2 J24, 8301-8340 + 8401-8440, 1600 fights an arm, 80 of 80 seeds each (ARM: 1 attempt lost, retried),
+`search.py bar ~/balance-guard-raw/bar-b2s 5be511659 66c4839a2`:
+| rule | change (paired se) | result |
+|---|---|---|
+| DECIDING flatness 18.5 -> 8.9 | -9.64 (2.18) | pass (4.4 se) |
+| blob v a gangs CPU / v a syndicate CPU | 79 -> 50 % / 7 -> 36 % | pass (both toward the mean) |
+| G1 blob line 41 -> 35 % | -6.4 (2.2) | pass (down) |
+| G2 turtle line 34 -> 34 % | +0.4 (1.4) | pass |
+| G3 blob median length | +10.4 % (2.3) | pass (band 15 %): fights he'd notice are longer |
+| G3 blob, LAW guard median length | **+24.6 % (3.6)** | **FAIL** (band 20 %) |
+| G3 other 9 cells | -9.3 .. +14.0 % | pass |
+| G4 time-cap share | +0.06 (0.18) | pass |
+Table after: blob v a CPU of each faction (cond/gangs/law/synd) 24 / 50 / 29 / 36 %; a guard of each faction 38 / 26 / 53 / 22 %. Why
+G3: Law's +15 % hp/shield/armour makes a Law blob's fights run long. The dev screen read that cell +13.2 % (se 10.1, n 35): too small
+an n to see it (lesson: screen the per-faction length cells at the bar's n, or bound toughness and damage separately).
+**FULL VERDICT (20:55 PDT): FAIL, 17 of 18 rules hold; the one failure is G3's Law-blob length (R40.19: OFF, no guard amended).**
+G5 none line flatness -4.89 (se 3.91, n 100): pass. G8 mono-tank line -1.38 (se 1.20, n 800): pass; mono wins 84 % at the bar's seeds
+(condemned 79, gangs 78, law 90, syndicate 88; mono 21.2 v mixed 28.3 units). G6 perf-judge PASS and G7 green-but-sim-baseline on
+ARM 66c4839a2 (above). 3 attempts lost to Spot preemption across the series, each retried, 0 fights missing.
+
 **Report (2026-10-24, in progress).** Plan, in order: B1 tally (DONE, no fights) -> B4 harness + dry run of two candidates on
 dev seeds (running) -> pick the candidate -> Bar B2s series on 8301-8340 + 8401-8440 -> ship -> B3 on top. Reason: R40.1 put the stat
 change before B3, and B4 is ready before B3 would be.
@@ -133,6 +222,94 @@ cells (as blob/turtle guard, and 100 - the CPU cell), faction_max leaves law wea
   | fm_law_cost | 13.6 | -4.9 (3.7) | 41 % | 24 % | 60 % | 34 % |
   fm_law_cost overshoots (syndicate blob 20 %, a syndicate CPU beaten 60 %). **fm_law is round 2's winner**; its mono line (and the
   base's) run next, both sides, 8513-8520, one guard side (GUARD_SIDES=green), before the bar candidate is named.
+  **Round 3 (the turtle guard, R40.13 note):** fm_law's turtle line rose +5.8 (se 3.3), faction_max's +4.2 (2.8); fm_law_cost's held
+  (+0.0) but overshot syndicate. **fm_law_c5** (fm_law + syndicate cost +5 %): flatness 18.5 -> **8.3**, change **-10.2 (se 3.1)**,
+  blob line **+1.7 (3.4)**, turtle line **-0.8 (3.7)**; blob v a CPU of each faction 32-47 %. The best on every line read.
+  **PROVISIONAL BAR CANDIDATE: fm_law_c5**, named only once its mono line (G8 screen, 8513-8520, both sides) is not above the base's.
+  BASE = **5be511659** (stream/balance, main 9d5907ddd's T1 merged), ARM = **494a3d33d** (`balance/b2s-arm`, worktree
+  ../godot-balance-arm: BASE + `search.py apply fm_law_c5`, 55 values in units.gd/weapons.gd, cross-checked 0 mismatches). ARM's full
+  check is running on builder0 (expected red only on sim-baseline). **Expected bar outcome, written before the series:** deciding
+  passes (dev change -10 at se ~3 a 240-fight read, so ~-10 at se ~1.2 at 1600); G1 blob flat and G2 turtle flat on dev, but each
+  at ~0 +/- 3.5, so either could cross +2 se (~+2.4 points at the bar's n) by chance or a small real rise: the riskiest guards; G3
+  lengths unknown (not screened); G8 known after the mono screen.
+  **ARM 494a3d33d's full check: NOT green** (builder0 `make check exited 2`, 3203 passed / 9 failed + sim-baseline, all 13 maps moved).
+  (a) `test_combat_mechanics::test_everything_hurts_from_behind` (a design invariant): +15 % REAR armour on War Rigs / Law units puts the
+  twin MG from behind under 0.4. **Candidate is now `fm_law_c5r`** = fm_law_c5 with every rear armour as today (no bar number seen).
+  **ARM = 6d95d4eba** (`balance/b2s-arm-r`, BASE 5be511659 + apply; rear armour verified unchanged); its full check queued on builder0
+  after BASE's. (b) Eight tests pin the prices the syndicate cost +5 % moves (C19.2): test_army_economy x6, test_army_screen::
+  test_a_spent_army_says_so, test_army_size::test_the_table_at_two_thousand (Skimmer 120 -> 126 CR, Gunship 172 -> 180, Railgun 269 ->
+  283, Missile Ring 218 -> 228, Spotter 195 -> 204; 2000 CR buys 15 Skimmers, not 16). **R40.18:** c5r accepted; the eight re-pinned,
+numbers only (adopted on purpose, R40.18) -> **ARM = ad956031b** (6d95d4eba + the re-pins). Its full check queued on builder0 after
+BASE 5be511659's. Before naming c5r: its mono line (G8 screen) and one paired lines read on 8513-8524 (builder2, queued).
+  **fm_law_ca (B5, every tank -15 % hp/armour/damage +15 % cost on top of fm_law):** flatness 18.5 -> 17.3 (-1.2, se 2.7), turtle
+  line **+9.2 (3.3)**, syndicate back on top (blob v a syndicate CPU 20 %): the tank nerf undoes the faction table. Not a candidate;
+  its mono line runs only to measure what the in-bounds tank nerf buys against the all-tank army.
+  builder2 (Spot) was preempted ~05:00 PDT during c5r's first mono arm; guard.sh restarted the box and retried that chunk (attempt
+  2), nothing lost (fm_law_ca's lines had ended 04:59). The rest of the screens run at J10 (`~/balance-runs/r8.sh`) beside settle's gate.
+  **Smoke (ARM ad956031b, builder0 light):** `faction-shots GREEN_FACTION=syndicate RUST_FACTION=gangs SEED=8513`: at 60 s a War Rig's
+  nameplate reads 483 hp (the +15 %), gangs hold the centre 18-0 on points while syndicate leads kills 16-4, a contest; `garage-shots`:
+  the Syndicate card reads 126-283 CR, the vehicle cards 126 / 180 / 204 / 228 / 283 CR, the suggested army fits (6 CR left); phone
+  aspect clean. Frames in ../godot-balance-arm/build/light/build/screenshots/ (looked at).
+  **G8 screen, c5r's mono line (7b53f5f85 + overrides, builder2, 8513-8520, both sides, 320 fights, paired with the base's):** mono
+  wins 82 -> 80 %, **-1 (se 2)**: not above base. By faction: condemned +0 (se 0; its units don't change, so its fights replay
+  identically, the pairing's check), gangs -6 (7), law **+6 (4)** (Law's buffed Assault Gun helps an all-tank Law army most),
+  syndicate -5 (3).
+  **ARM ad956031b's full check: still red on the same invariant, its other half** (builder0 `make check exited 2`, 3211 passed / 1
+  failed + sim-baseline): "rear hurts at least as much as the front" broke on the Skimmer (2/2/2 armour: a cut front under an unmoved
+  rear). **Candidate is now `fm_law_c5r2`:** rear armour moves only where armour goes DOWN (syndicate all faces -15 % as c5 had; a
+  buffed rear stays as today). Self-check over every weapon x unit with the penetration math: 0 breaks; the four affected test files
+  on the new ARM: builder0 light 57 passed / 0 failed. **ARM = 66c4839a2** (`balance/b2s-arm-r2`: 5be511659 + apply c5r2 + the
+  re-pins cherry-picked); full check running on builder0. c5r's lines read was stopped by PID (wrong candidate now); c5r2's lines read
+  and its syndicate mono arms run on builder2 (`r9.sh`). c5r2's other factions' units equal c5r's, so their mono fights replay
+  identically (condemned's +0 / se 0 above shows it): c5r2's G8 screen = c5r's gangs/law/condemned arms + c5r2's syndicate arms.
+  **c5r2 screens:** lines (7b53f5f85 + overrides, builder2, 8513-8524, 240 fights, paired): flatness 18.5 -> **7.9**, **-10.6 (se
+  3.5)**; blob line **+1.7 (3.0)**, turtle line **-2.5 (4.2)**; blob v a CPU of each faction 37-50 %. G8 mono (c5r's gangs/law/condemned
+  arms + c5r2's own syndicate arms, separate runs: overrides sha edf790a4 v 27c1b3e2, 8 of 80 fight lengths differ, the same wins):
+  mono 82 -> 80 %, **-1 (se 2)**. **ARM 66c4839a2: green but for sim-baseline** (builder0 `make check exited 2`, 3212 passed / 0
+  failed, 26 of 27 targets, perf-judge JUDGED PASS attempt 1; only sim-baseline red, all 13 maps moved). **sim-baseline-record on
+  builder0 (light): 13 maps read twice, agreeing**, equal to the check's: foundry 59e197160f23b82d, yard 368d787dbe03a5fe, pit
+  ccdfc12f382f87f2, terminus c7cc13e24f73009a, crossing b4489ed8f9df7024, sumps 857a99ed0d2d273f, locks 0fc4a99c36dee823, parade
+  838aa1bf6d5d2c31, gorge f55e040a106496c4, archipelago fefa4465e3025a7c, cut 3a19138ad98c4dc6, docks 835465f77b5d2cd4, yard_open
+  12307bd04c9ff832 (`~/balance-runs/sim_baseline_adopt-66c4839a2.json`). BASE 5be511659 green (builder0 3212/0, ALL JUDGED).
+
+**B5 WRITE-UP FOR HIM (draft; the orchestrator attaches it to his decision; the armour line waits on fm_law_ca's mono read).**
+*What you noticed is real.* An army of only tanks beats the same faction's normal mixed army, at the same money, 82 % of the time
+(CPU v CPU, every map, both sides, 320 fights): Condemned 71 %, Road Gangs 80 %, Law 86 %, Syndicate 89 %. Your target was the
+mixed army winning 60-65 %, so the tank army should win 35-40 %: about 45 points away.
+*Why:* in a mixed army, the units built to kill tanks do their job. Artillery deals 3-5 hit points per credit to a tank column and
+nearly all of it survives; the gangs' spear buggies 2.4; the Condemned Lancer 3.4. The trouble is everything else: about half of each
+army's money (44-61 %) is in vehicles that can't hurt a tank at all. An IFV's cannon does 5-10 % of its damage to a tank's front
+(0.2-0.8 per credit), a scout's machine gun 5 %, and the support trucks nothing. So the tank army fights half an army.
+*What's inside your +/-15 % on unit numbers:* tank armour -15 % only doubles an IFV's effect on a tank's front (5-10 % -> ~10-20 %),
+and when we tried every tank -15 % (with +15 % cost) the faction table got worse again (the Syndicate back on top; turtles winning
+more). (Its mono read was not run: builder time went to the bar.) It doesn't reach the target.
+*What would (outside the numbers):* (1) give the IFV a real anti-tank weapon, slow and limited, like a Bradley's TOW (the orchestrator's
+recommendation: fixed units, authentic); (2) let armour-piercing ("penetration") move per unit, not just damage; (3) change what each
+faction's army buys (fewer IFVs, more anti-tank). Recommendation: (1).
+
+**B6 (queued after B2s and B5; code read only so far):** a crew under an element/player order gets `order_context`, so
+`TankBrain` nulls its doctrine objective and an "idle" crew's objective becomes the order's goal (radius 5 m); `commanded` (which zeroes
+ADVANCE) is the doctrine squad's slot, false for an ordered crew. ORDER_OPTIONS["idle"] allows ADVANCE, scored 0.45 with no threat in
+sight when the crew is > 5 m from that goal: a crew sitting on its travel seat (not its goal) drives off it. Fix sketch: ADVANCE = 0
+while the crew's element is still dealing its travel seats (Element.deploy, not yet "deployed"), read in the brain; the feed is
+mirrored in native's feed_native.cpp, so the read goes through ElementFeed.element_of, not a new feed key. Needs its own bar.
+
+**NAMED B2s CANDIDATE: fm_law_c5r2. BASE 5be511659, ARM 66c4839a2.** Series: `~/balance-runs/bar-b2s.sh` on builder2 (lines 8301-8340
++ 8401-8440, 1600 an arm; none line 8301-8320; G8 mono 8301-8320 both teams per faction; GUARD_SIDES=green on none/mono, whose two
+guard sides are one fight). **Expected outcome (written before any bar number):** deciding passes (dev -10.6 at se 3.5 on 240 fights
+-> about -10 at se ~1.3 on 1600); G1 blob and G2 turtle flat on dev (+1.7 / -2.5, se 3-4), so each passes unless a real rise near +2.5
+points exists (the riskiest guards); G3 lengths not screened (unknown); G4 time-cap share unknown; G5 none line unknown (flatter
+factions should not make it worse); G6 perf-judge PASS on ARM; G7 green but sim-baseline, re-pins adopted on purpose (R40.18); G8 -1
+(se 2) on dev: passes unless law's +6 (se 4) is real and large.
+**The bar's judge (written before any bar number):** `tools/balance/search.py bar ~/balance-guard-raw/bar-b2s 5be511659 66c4839a2`
+prints one BAR_B2S line a rule and a VERDICT. Readings fixed here: se is a bootstrap over seed units (400 reps); deciding = paired
+flatness change < -2 se AND blob v a gangs CPU down AND blob v a syndicate CPU up; G1/G2 fail at a paired share change > +2 se; G3
+fails when a median-length change is outside +/-15 % (line) or +/-20 % (guard faction) AND more than 2 se from zero; G4 fails at a
+time-cap share change > +2 se; G5 fails at a none-line flatness change > +2 se; G8 fails at a mono win-share change > +2 se. Dry run
+on the c5r2 dev reads: 17 of 18 rules hold, G5 not read (no dev none line); blob median length +11.4 % (se 5.2) is the nearest to a band.
+**Series log:** started 07:56 PDT 2026-10-25 at J14 (`~/balance-runs/bar-b2s.log`); at 08:49, 3 fights/min (each 8-seed chunk is its own
+remote call and the box idles at each tail), so it was stopped by PID at a chunk start and resumed at J24 (`bar-b2s-2.log`); guard.sh
+skipped the seeds already read (sims are deterministic, so nothing about the series changed but its pace).
 
 **B5 combined arms (R40.6; plumbing done, c1d7b88ae, quick-remote builder0 264/0).** `cpu:mono_<role>` deals a faction's units of one
 role at the budget (Army.mono_army, never rolled); `SkirmishMode.demo_flags` keeps a `--player`/`--enemy` naming `cpu:mono_*` (R40.7's

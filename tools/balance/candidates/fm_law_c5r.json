@@ -1,0 +1,163 @@
+{
+ "name": "fm_law_c5r",
+ "units": {
+  "gang_artillery": {
+   "max_health": 218.5,
+   "armor": {
+    "front": 3.45,
+    "side": 2.3
+   }
+  },
+  "gang_ifv": {
+   "max_health": 195.5,
+   "armor": {
+    "front": 3.45,
+    "side": 2.3
+   }
+  },
+  "gang_scout": {
+   "max_health": 115.0,
+   "armor": {
+    "front": 1.725,
+    "side": 1.15
+   }
+  },
+  "gang_support": {
+   "max_health": 299.0,
+   "armor": {
+    "front": 4.6,
+    "side": 3.45
+   }
+  },
+  "gang_tank": {
+   "max_health": 483.0,
+   "armor": {
+    "front": 8.05,
+    "side": 4.6
+   }
+  },
+  "syn_artillery": {
+   "max_health": 187.0,
+   "max_shield": 136.0,
+   "armor": {
+    "front": 2.55,
+    "side": 2.55
+   },
+   "cost": 399
+  },
+  "syn_ifv": {
+   "max_health": 204.0,
+   "max_shield": 170.0,
+   "armor": {
+    "front": 4.25,
+    "side": 3.4
+   },
+   "cost": 315
+  },
+  "syn_lancer": {
+   "max_health": 187.0,
+   "max_shield": 170.0,
+   "armor": {
+    "front": 2.55,
+    "side": 2.55
+   },
+   "cost": 357
+  },
+  "syn_scout": {
+   "max_health": 127.5,
+   "max_shield": 136.0,
+   "armor": {
+    "front": 1.7,
+    "side": 1.7
+   },
+   "cost": 220
+  },
+  "syn_tank": {
+   "max_health": 272.0,
+   "max_shield": 221.0,
+   "armor": {
+    "front": 5.95,
+    "side": 4.25
+   },
+   "cost": 494
+  },
+  "law_artillery": {
+   "max_health": 253.0,
+   "max_shield": 103.5,
+   "armor": {
+    "front": 3.45,
+    "side": 2.3
+   }
+  },
+  "law_ifv": {
+   "max_health": 322.0,
+   "max_shield": 138.0,
+   "armor": {
+    "front": 10.35,
+    "side": 4.6
+   }
+  },
+  "law_scout": {
+   "max_health": 207.0,
+   "max_shield": 103.5,
+   "armor": {
+    "front": 3.45,
+    "side": 2.3
+   }
+  },
+  "law_suppressor": {
+   "max_health": 299.0,
+   "max_shield": 138.0,
+   "armor": {
+    "front": 6.9,
+    "side": 3.45
+   }
+  },
+  "law_tank": {
+   "max_health": 379.5,
+   "max_shield": 161.0,
+   "armor": {
+    "front": 8.05,
+    "side": 4.6
+   }
+  }
+ },
+ "weapons": {
+  "catapult": {
+   "damage": 126.5
+  },
+  "twin_mg": {
+   "damage": 3.45
+  },
+  "spear_gun": {
+   "damage": 109.25
+  },
+  "scrap_cannon": {
+   "damage": 299.0
+  },
+  "guided_missiles": {
+   "damage": 127.5
+  },
+  "pulse_cannon": {
+   "damage": 22.1
+  },
+  "pulse_repeater": {
+   "damage": 3.825
+  },
+  "railgun": {
+   "damage": 357.0
+  },
+  "gas_rockets": {
+   "damage": 63.25
+  },
+  "assault_gun": {
+   "damage": 230.0
+  }
+ },
+ "skipped": [
+  "laser (shared by condemned, syndicate)",
+  "autocannon (shared by condemned, law)",
+  "machine_gun (shared by condemned, law)"
+ ],
+ "why": "fm_law_c5 with every unit's REAR armour as today: +15 % rear on War Rigs and Law units put the twin MG from behind under test_combat_mechanics' 0.4 floor ('everything hurts from behind'), a design invariant"
+}
