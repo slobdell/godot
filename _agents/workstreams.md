@@ -69,7 +69,7 @@ workers (plane_maker): never touch processes you didn't start. Never delete buil
 ## Bars (round 41)
 
 **Seed registry (round 41):** 9001-9024 manoeuvre Q2; 9025-9048 manoeuvre Q3 (bridge-drill seeds: BRIDGE_POOLED_SEEDS); 9101-9124 orders
-O2; 9201-9240 + 9301-9340 balance B5 bar; 9401-9440 balance B5 dev screening (never a bar); 8801-8840 + 8901-8940 Bar B2s v2 (filed
+O2 (withdrawn unread; 9101-9112 -> Bar G1 v7); 9201-9240 + 9301-9340 balance B5 bar; 9401-9440 balance B5 dev screening (never a bar); 8801-8840 + 8901-8940 Bar B2s v2 (filed
 round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001-7012 as before (never a bar).
 
 - **Bar O2, a coordinated departure (orders; WITHDRAWN UNREAD R41.4; FILED 25525980a, 2026-10-26 ~03:00, before any number on 9101-9124).** Switch
@@ -89,6 +89,12 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   <= 40 px AND <= half BASE; (3) jerks: ARM total <= 3.0/min, no automatic source > 1.5/min, automatic snaps = 0 (JERK_PX_S2 15,000,
   SNAP_PX 24 at 1080 rows, fixed first); (4) the vision camera still finds the action: ARM auto_frame px/min >= 25 % of BASE, no
   trace failure or SCRIPT ERROR. Shake separately: windowed laptop run, shake slip at the cursor ARM <= 1 px p95. The lead judges feel.
+- **Bar G1 v7 (orders; FILED b4190e37e, 2026-10-26 ~04:40, before any number on 9101-9112).** G1 v6's arm unchanged (round 40,
+  OFF: failed on the terminus 5 route twitch on T1-OFF main) re-judged on T1-ON main by `orders_judge.py g1v4`, unamended. Seeds
+  9101-9112 reassigned from O2's withdrawn-unread bar (unseen). Runner `orders_bar.sh b2`, builder2 J8, from a frozen tree after
+  ba0d14aab's full check. Only variant dev-read (builder0 light, 941325eaa, native, 7007-7012, n 6 a cell): places outside 26 -> 2,
+  route_left 1037 -> 335, re-dealt 0, contacts 6554 -> 5155, all 14 cells' probe guards incl. the terminus 5 route twitch, yard_open 96/96
+  identical; laptop terminus 5 route: main leaves squad 5 never in, the arm gets all five in (s3805's risk reverses).
 
 ## Rulings (round 41)
 
