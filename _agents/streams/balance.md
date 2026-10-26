@@ -93,7 +93,7 @@ FAIL** at the 2-se rule (a parked turtle has the time to track; the rushing tank
 +6 %, turtle +0 %); G4 time-cap +0; G5 flatness 24.5 -> 24.3 (-0.2, se 1.1) pass. **So the slow turret alone is NOT safe to file
 as is: it raises the turtle line.** If he wants it for feel, Bar B5 would need a turtle-neutral form (e.g. the turret lever at
 -30 %, t30, which is built but unscreened) or the turtle guard argued on its merits (a slower tank turret rewards the defender,
-which is the slug-fest direction R38.55 chose). The combined arm's lines follow (~12:50).
+which is the slug-fest direction R38.55 chose). The combined arm's lines were STOPPED at the round's close (12:45, by PID on builder2 and locally; ~30 of its 200 fights unread, a nice-to-have): its folder `8f2643375-lines-t50_ifv15` holds only partial logs. Nothing of balance's runs on either builder.
 
 **REPORT SKELETON (filled as the last arms land; the numbers above are final where marked DONE):**
 - **Playtest for him (no change ships; the lineups exist today):** his all-tank army v the artillery-heavy CPU:
