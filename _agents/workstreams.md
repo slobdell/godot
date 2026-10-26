@@ -312,6 +312,16 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   1.1-1.3 m/s (locks s7001 Green_Wrenches_7 8.8 s behind _3). **Ruled:** F1 v2 = the same follow test, only for a wheeled crew whose route
   turns > 45 deg within 2 x its min turn radius ahead; elsewhere ORCA as today. Lab again (bridge-pooled both trees, then the dev cells);
   Bar F1 stays as filed (no 8125-8148 number read), gated on v2's hash. Native's twin waits for v2's final rule.
+- **R40.23 (2026-10-25 ~20:30) F1 v2 lab: bridge fixed, D flat; trace the terminus G7 first, then Bar F1 v2 replaces Bar F1.** v2
+  (3f23a36ab, builder0 light): bridge-pooled main OFF 18/18 rim 8.1 / deck 7.5 / arrival 36.6 s -> ON 18/18 5.9 / 6.4 / 35.6; under v2's
+  overrides (5fb35635e) OFF 17/18 -> ON 18/18 (rim 14.2 -> 6.4, deck 17.1 -> 13.6, worst 0.8 s). Dev cells (GDScript both arms, n 12/24):
+  open-traffic queue 0 by construction, 413-1,486 queued crew-ticks a fight at turns, longest wait 2.23 s, waits >= 3 s 0; D 137.7 ->
+  142.9 s (flat), G4 deaths 493 -> 461 (lab fail, kill share unmoved), G7 last-in +2.3 s (terminus 5 route s7001 +20.0, s7002 +13.8,
+  3 click s7001 +12.0). **Ruled:** (1) trace one terminus G7 run (5 route s7001); a squad 20 s late at a street corner is a ship-blocker
+  he would see. (2) Then Bar F1 is WITHDRAWN unread and Bar F1 v2 filed before any number on 8125-8148: deciding = bridge-drill rim
+  seconds on FRESH seeds (the bridge drill at BRIDGE_POOLED_SEEDS 8125-8136 x ticks {1,8,15} x both sides, on main AND under v2's
+  overrides): ON <= 0.8 x OFF pooled at >= 2 se, and every surviving crew crosses in both trees. Guards on 8137-8148: wedge trace +
+  orders probe, M3's guards, G4 deaths and G7 last-in included, unchanged lines. Frozen tree, gate green first.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
