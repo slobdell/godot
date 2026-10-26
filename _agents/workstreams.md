@@ -61,7 +61,7 @@ project's workers (plane_maker): never touch processes you didn't start.
 ## Bars (round 40)
 
 **Seed registry (round 40):** 8001-8024 settle (T1 8001-8012, S1 v3 8013-8024); 8101-8124 manoeuvre; 8201-8236 orders (G1 v6 8201-8212,
-G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 (wedge re-route, R40.12); 8701-8724 settle S1 v3b (v3 on T1-ON main), 8725-8748 settle --cap-deal=street (R40.14); 7001-7008 manoeuvre's M2 dev trace (not a bar).
+G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance's B4 screening (dev, never a bar); 8601-8624 manoeuvre's M3 (wedge re-route, R40.12); 8701-8724 settle S1 v3b (v3 on T1-ON main), 8725-8748 settle --cap-deal=street (R40.14); 7001-7008 manoeuvre's M2 dev trace (not a bar). 8801-8840 + 8901-8940 balance Bar B2s v2 (R40.19).
 
 - **Bar B2s, the stat change (balance; FILED d479a17a1, 2026-10-24 evening, before any number on 8301-8340 + 8401-8440).** Change: the
   candidate B4 picks (unit hp/armour/damage/cost within R40.1's +/-15 %). Deciding: FLATNESS (RMS over 16 cells: by guard faction and by
@@ -264,6 +264,15 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   on ADVANCE, 19 HOLD, 6 MOVE. Settle's T1 v2 `--deploy-arrive=settled` (a once-in crew within 10 m counts) works round it (cap deploys
   47 -> 5, arrival-to-deploy 6.8 -> 3.5 s, all-in median 25.1 -> 23.6 s; one never-in fixed at c074db72e, re-lab running). The ADVANCE
   drift itself is balance's (brains), a later item (B6) after B2s/B5: a crew still being dealt its travel seat shouldn't take ADVANCE.
+- **R40.19 (2026-10-25 ~18:10) Bar B2s FAILS on G3; fm_law_c5r2 stays OFF; v2 approved on a fresh block.** Balance's lines verdict
+  (BASE 5be511659 v ARM 66c4839a2, builder2, 8301-8340 + 8401-8440, 1600 fights an arm, 80/80 seeds, 1 attempt lost to a Spot
+  preemption and retried): DECIDING flatness 18.5 -> 8.9 (-9.6 ± 2.2) pass; G1 blob 41 -> 35 % (-6.4 ± 2.2) pass; G2 turtle 34 -> 34 %
+  (+0.4 ± 1.4) pass; G4 time-cap +0.06 ± 0.18 pass; G3 lengths blob +10.4 % ± 2.3 (inside ±15 %) but the LAW blob cell +24.6 % ± 3.6
+  (band ±20 %) FAILS. The bar fails as filed; no guard is amended. G5/G8 finish for the record. **Ruled:** candidate v2 = fm_law_c5r2
+  with Law's toughness trimmed (balance picks the numbers inside R40.1's ±15 %, e.g. hp/shield/armour +5 %, damage +15 %); screen on
+  the dev block 8501-8540 INCLUDING a per-faction G3 length read; then file Bar B2s v2 (same lines and guards as B2s) before any number
+  on the fresh block 8801-8840 + 8901-8940, one frozen ARM tree (R40.13), builder2. Round 40 closes around it; v2 carries into round 41
+  if it is not judged first.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
