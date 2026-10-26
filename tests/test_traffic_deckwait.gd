@@ -157,6 +157,31 @@ func test_tracked_crews_clear_lanes_and_the_wait_switch_leave_it_off() -> void:
 	assert_eq(int(Movement.route_arms()["deckwait_queued"]), 0, "with `wait` named too, `wait` wins")
 
 
+## OFF is main: with the rule off the clear-way pace is 1.0 whatever the speed wish, a near-zero wish included (a crawl order, speed
+## 0.2 at the route's end: wish under 0.1 m/s), so the native drive (main's path) and this one agree on every tick.
+func test_off_the_clear_way_pace_is_one_at_a_near_zero_wish() -> void:
+	_lab = TacticsLab.create(self, 7, "yard_open")
+	var me := _lab.gun(Match.Team.GREEN, "Green_Me", Vector3.ZERO, 0.0, "law_tank")
+	var friend := _lab.gun(Match.Team.GREEN, "Green_Friend", Vector3(30.0, 0.0, -30.0), 0.0, "law_tank")
+	await _lab.start()
+	var mover := Movement.of(me)
+	# A crawl (speed 0.2 = the floor) to a goal 0.6 m ahead: _remaining is tiny, so slow = 0.35 and the wish = 12 x 0.2 x 0.35 = 0.84 m/s;
+	# then the same test with the wish forced under 0.1 through a stopped hull (max_forward_speed 0 for the call).
+	mover.ctl.set_orders({"type": "move_to", "x": 0.0, "z": -0.6, "speed": 0.2}, {"type": "fire_at_will"})
+	await _lab.step()
+	var saved := me.max_forward_speed
+	me.max_forward_speed = 0.01
+	var out: Array = mover._avoid(Vector3(0.0, 0.0, -0.6), 0.2, 1.0 / SimClock.TICK_RATE)
+	me.max_forward_speed = saved
+	print("MEASURE near-zero wish: avoid -> %s (friend %s)" % [out, friend.global_position])
+	assert_eq(float(out[1]), 1.0, "a clear way at a near-zero wish keeps main's pace 1.0 with the rule off")
+	Traffic.set_off("deckwait", false)
+	me.max_forward_speed = 0.01
+	out = mover._avoid(Vector3(0.0, 0.0, -0.6), 0.2, 1.0 / SimClock.TICK_RATE)
+	me.max_forward_speed = saved
+	assert_eq(float(out[1]), 1.0, "and with it on but nothing in a mouth (yard_open has no decks) the same")
+
+
 ## The timer artefact (round 41's known issue): a wait begun in the mouth ends on the first drive tick that does not weigh it (here:
 ## a new order to a goal within reach), so `_wait_since` never carries across a gap.
 func test_a_wait_ends_on_a_tick_that_never_weighs_it() -> void:

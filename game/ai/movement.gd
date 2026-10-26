@@ -3384,7 +3384,9 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 	if chosen.distance_squared_to(route_preferred) < 0.04:
 		if _wait_for != "" and Traffic.off(DECKWAIT_SWITCH):
 			_wait_end()  # Q2: ORCA no longer deflects me: the way is clear
-		return [waypoint, clampf(desired / maxf(wish, 0.1), 0.0, 1.0)]
+		# Only a deckwait cap lowers this (desired < wish); with the rule off it is main's 1.0 whatever the wish (native's read of
+		# 0b47dfbd8: a wish under 0.1 m/s would have read wish / 0.1).
+		return [waypoint, 1.0 if desired >= wish else clampf(desired / maxf(wish, 0.1), 0.0, 1.0)]
 	var speed := chosen.length()
 	var keep := clampf(speed / maxf(wish, 0.1), 0.0, 1.0)
 	# Round 41 (Q2, his rule): wait for a friend that will clear my lane by itself instead of steering round it (WAIT_SWITCH).
