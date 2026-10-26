@@ -476,10 +476,25 @@ def read_faces(root: Path, match: str = "") -> dict:
     return out
 
 
+INDIRECT_ROLES = {"artillery"}  # an indirect round comes down on top: its face is "side" by convention, not by flanking
+
+
+def _direct(rows: list) -> dict:
+    """The mixed army's faced damage to tanks from DIRECT fire (every shooter role but artillery), summed by face."""
+    out = {f: 0.0 for f in FACES}
+    for r in rows:
+        for role, by in r["by_role"].items():
+            if role not in INDIRECT_ROLES:
+                for f in FACES:
+                    out[f] += float(by.get(f, 0.0))
+    return out
+
+
 def _flank_share(rows: list) -> float:
-    """Points of the mixed army's faced damage to tanks that struck a side or rear, in percent of all faced."""
-    faced = sum(sum(r["to_tanks"].values()) for r in rows)
-    return 100 * sum(r["to_tanks"]["side"] + r["to_tanks"]["rear"] for r in rows) / faced if faced else float("nan")
+    """B5's WHY: of the mixed army's DIRECT-fire damage on tanks, the percent that struck a side or rear (did it get round?)."""
+    d = _direct(rows)
+    faced = sum(d.values())
+    return 100 * (d["side"] + d["rear"]) / faced if faced else float("nan")
 
 
 def faces_report(root: Path, match: str = "", base_match: str | None = None) -> dict:
@@ -500,8 +515,11 @@ def faces_report(root: Path, match: str = "", base_match: str | None = None) -> 
             seeds[k[3]].append(arm[k])
         share = _flank_share(rows)
         se = bootstrap(seeds, _flank_share) if len(seeds) > 1 else float("nan")
-        line = (f"  {faction:10} to tanks: front {100 * faced['front'] / total_faced:3.0f} % side {100 * faced['side'] / total_faced:3.0f} % "
-                f"rear {100 * faced['rear'] / total_faced:3.0f} % | side+rear {share:.1f} (se {se:.1f}) | faced {100 * total_faced / dealt:.0f} % of dealt")
+        direct = _direct(rows)
+        direct_total = sum(direct.values()) or float("nan")
+        line = (f"  {faction:10} direct fire on tanks: front {100 * direct['front'] / direct_total:3.0f} % side "
+                f"{100 * direct['side'] / direct_total:3.0f} % rear {100 * direct['rear'] / direct_total:3.0f} % | side+rear {share:.1f} "
+                f"(se {se:.1f}) | direct {100 * direct_total / total_faced:.0f} % of faced, faced {100 * total_faced / dealt:.0f} % of dealt")
         out[faction] = {"share": share, "se": se, "faced": faced, "n": len(keys)}
         if base:
             pairs = defaultdict(list)
