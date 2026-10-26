@@ -204,6 +204,15 @@ _(filed bars go here, before their numbers)_
   before any bar number: if the bar's stuck crew-seconds ON are mostly SUPPRESS (a crew standing in band with no line), that is a
   real result and the SUPPRESS seam (the same own-line guard, `_act` SUPPRESS) is granted on the same terms as R42.2 for a v2; the
   `plan_lay` reserve stays second.
+- **R42.7 (2026-10-26 ~16:15) Q6 deckwait: the OFF-path fix, an arrival guard, one gate for two bars.** Native's read of 0b47dfbd8: the
+  `_avoid` clear-way return fell below main's 1.0 at a near-zero wish with the rule OFF (the native drive returned 1.0: a divergence);
+  manoeuvre fixed it in 520516ec3 (1.0 unless a deckwait cap lowered the wish; a near-zero-wish test). Dev reads on the drill's seeds
+  1-3 (builder0 light, GDScript): v2 overrides 18/18, rim 14.2 -> 9.3 s; v3 (a765e2ba6, entry only) overrides 18/18, rim 14.2 -> 11.2,
+  arrival +0.9 s a run; main 18/18, rim 8.1 -> 7.8, but arrival +2.5 s a run (1.8 se), deck-jam 7.5 -> 17.2 s. Ruled: Bar Q6 adds an
+  arrival guard before any 9825+ number (paired per-run arrival ON <= OFF + 1.645 se, each tree: a bridge fix that slows every crossing
+  is not what he asked for); three variants labbed on seeds 1-3 are named in the filing (C42.1); one full check of the frozen tree
+  gates Bar Q5 and Bar Q6 (both switches OFF by default on it; each ON arm names its switch); the Q6 trace of main's worst run (green
+  s2 t1, 28.8 -> 42.6 s) runs before tuning or filing.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
