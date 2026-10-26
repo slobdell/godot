@@ -130,7 +130,32 @@ none: 320 fights an arm, paired by (faction, team, arena, seed); se by bootstrap
   ~87 -> ~70 % pooled: **the deciding line fails on B7 alone**; it passes only if B8 moves Law's and Syndicate's barrage by
   ~40 points between them. A pass ships ON (the orchestrator tells him; his veto stands).
 
-**Questions for the orchestrator (sent):** (1) B7's deciding line is pooled; Law's and Syndicate's counter lineups don't beat
+**R42.3 (the orchestrator's ruling, before any 9901+ number):** Bar B7's DECIDING is per faction whose counter FIRES (ARM <= 60 %
+AND paired change < 0 by >= 2 se); the counter fires for a faction only if the dev screen shows its counter lineup beating the roll
+(all-tanks v counter <= all-tanks v roll - 2 se); the pooled share is reported. The firing list goes in this Status BEFORE the 9901+
+series. G1-G4 unchanged. **R42.4:** one line in `GarageScreen._hint()` shows the tank-rush line (below).
+
+**The garage line (fa3ec097d):** `composition_hints` is shown nowhere in the game, so the line is `GarageAdvice.tank_rush_line`,
+read first by the garage's status line under the credits bar: "Bring two artillery squads with your tanks · FIGHT when ready".
+Looked at (laptop, a Condemned draft of 9 tanks + a scout, 1910 CR): desktop 1920x1080 and phone 1800x810 both show it in full
+(`references/round42/balance/b7-garage-line/`).
+
+**Dev series in flight (builder2 J24, commit 9d8e26e44 = B7 code + B8 candidates, counter OFF; seeds 10201-10220 x 5 arenas x mono
+on Green and on Rust = 200 fights an arm a faction; raw `~/balance-guard-raw/b8/`):**
+- `~/balance-runs/b8-dev.sh` (unit balance-b8-dev, started 15:14): all-tanks v law_barrage under base and b8_grt_both; v
+  syndicate_barrage under base and b8_mr_both.
+- `~/balance-runs/b8-arms.sh` (unit balance-b8-roll, queued behind it): all-tanks v the plain roll (OFF) for all four factions, and
+  v siege / gang_hail (condemned, gangs): the firing test of R42.3.
+- *Seeds:* 10201-10220 (20 of the dev block's 40) for the firing read. *Why:* the effects in question are either ~25-30 points
+  (condemned, gangs: 77 -> 47, 78 -> 52 on 9401-9410) or within ~1 se (law +4, syndicate -5), and 200 paired fights an arm give
+  se ~3; 10221-10240 stay in reserve if a read lands near its 2-se line.
+
+**Stretch, read now:** B6 (ADVANCE walks a deploying crew off its seat) is a brain/element fix (`TankBrain` ADVANCE while the
+element deals travel seats, read through `ElementFeed`): `game/ai/**` and `game/tactics/**` are engage's and settle's this round,
+so it is BLOCKED by ownership (not asked: engage's E1 is the round's first item). B3 (faction-aware CPU, v1 built OFF round 40 at
+2979ee5c8) goes on top of the faction stat change (R40.1), which waits on CP42.1 with B9.
+
+**Questions for the orchestrator (sent; R42.3 answered (1)):** (1) B7's deciding line is pooled; Law's and Syndicate's counter lineups don't beat
 tanks today (96 / 87 %). If B8 can't fix them inside 15 %, may Bar B7 be judged per countered faction (Condemned and Gangs:
 each ARM <= 60 % and down >= 2 se) with the counter firing only for the factions whose lineup works? Asked BEFORE any 9901+ number.
 
@@ -138,5 +163,6 @@ each ARM <= 60 % and down >= 2 se) with the counter firing only for the factions
 (`Army.load_pair`) and the loop's `load_army` call replaced by `armies[team]` (nowhere near `rig.facing`); `game/garage/garage_mode.gd`
 `fight()`: one argument, `screen.draft.to_doctrine()`. Granted paths: `garage_opponent.gd` (`build`'s `opposing` + 4 lines),
 `garage_advice.gd` (the hint + its switch). Mine: `game/units/army.gd` (counter rule, `load_pair`, `load_army`'s `opposing`),
-`tests/test_army_counter.gd` (+ .uid), `tools/balance/candidates/b8_*.json`.
+`tests/test_army_counter.gd` (+ .uid), `tools/balance/candidates/b8_*.json`. R42.4: `game/garage/garage_screen.gd`
+`_hint()`: one line first (`GarageAdvice.tank_rush_line`).
 
