@@ -6,6 +6,13 @@
 # words. ENGAGE_ARM=on|off selects the rule; ENGAGE_SECONDS the window.
 ENGAGE_ARM ?= off
 ENGAGE_SECONDS ?= 40
+.PHONY: engage-far-trace
+engage-far-trace: import ## engage R42.10: the far_ambush drill's stage with one FAR_TRACE line per crew per sample (ENGAGE_ARM=on|off) -> build/engage/far_trace_<arm>.log
+	@mkdir -p $(BUILD_DIR)/engage
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/far_ambush_trace.gd -- \
+		--seconds=26 --every=30 --attack-shot=$(ENGAGE_ARM) > $(BUILD_DIR)/engage/far_trace_$(ENGAGE_ARM).log 2>&1 || true
+	@grep -E "FAR_HP|FAR_TRACE_FLAG|FAR_TRACE_DONE|ERROR" $(BUILD_DIR)/engage/far_trace_$(ENGAGE_ARM).log || true
+
 .PHONY: engage-replay
 engage-replay: import ## engage E1: replay his crew behind the container (ENGAGE_ARM=on|off, ENGAGE_SECONDS) -> build/engage/replay_<arm>.log
 	@mkdir -p $(BUILD_DIR)/engage
