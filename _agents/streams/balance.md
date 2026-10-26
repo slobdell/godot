@@ -83,7 +83,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 **Plan (in order; decisions in one line each):**
 1. B7 code (DONE, OFF): the counter rule, the pair loader, the garage deal and suggestion line, tests first.
-2. B8 dev screen (RUNNING, builder2): "both" arms first (Gas Rocket Truck damage +15 % and cost -15 %; Missile Ring cost -15 %
+2. B8 dev screen (DONE 16:44, below: NOTHING SHIPS, no Bar B8 filed): "both" arms first (Gas Rocket Truck damage +15 % and cost -15 %; Missile Ring cost -15 %
    and hull/shield +15 %), v base, 10201-10220 (dev), 200 fights an arm a faction. *Why both first:* the largest move inside
    his 15 %; if "both" moves nothing, the single-change arms can't, and they are skipped (saves ~2 h of builder2).
 3. Bar B8 (filed before its numbers) on the arm that moves all-tanks v barrage most, with the faction lines as guards.
@@ -140,11 +140,23 @@ read first by the garage's status line under the credits bar: "Bring two artille
 Looked at (laptop, a Condemned draft of 9 tanks + a scout, 1910 CR): desktop 1920x1080 and phone 1800x810 both show it in full
 (`references/round42/balance/b7-garage-line/`).
 
-**Dev series in flight (builder2 J24, commit 9d8e26e44 = B7 code + B8 candidates, counter OFF; seeds 10201-10220 x 5 arenas x mono
+**B8 result (DONE; commit 9d8e26e44, builder2 J24, dev seeds 10201-10220 x 5 arenas x mono on Green and on Rust, guard none,
+n 200 an arm a faction, paired v base on the same seeds; `search.py mono ~/balance-guard-raw/b8`):** all-tanks v law_barrage:
+base **96 %** (se 1), b8_grt_both (Gas Rockets 63.25 damage + Gas Rocket Truck cost 213) **92 %** (se 2), paired **-5 (se 3)**,
+length -0 %. All-tanks v syndicate_barrage: base **84 %** (se 2), b8_mr_both (Missile Ring cost 323, hull 253, shield 184)
+**86 %** (se 2), paired **+2 (se 3)**, length +27 %. *Read:* the largest move inside his 15 % doesn't change who wins (both
+inside 2 se of nothing, nowhere near 35-40 %), so the single-change arms are skipped as planned and **Bar B8 is not filed**
+(a bar on an arm that moved nothing would spend 10001-10140 for nothing). B8 is written up: measured, nothing ships; the
+Gas Rocket Truck's damage rate (~9/s v a mortar's ~31/s) is the gap, and closing it is a larger change than ±15 %
+(a question for him, below). Quick-remote GREEN on 75c9f2736 (builder0, `make quick ... exited 0`, 77 passed / 0 failed,
+narrowed QUICK_BASE=41d047cf3). `search.py run` waits at the next leg while `~/balance-runs/PAUSE` exists (8fdd85855), so
+builder2 can be handed to another stream with no kill.
+
+**Dev series (builder2 J24, commit 9d8e26e44 = B7 code + B8 candidates, counter OFF; seeds 10201-10220 x 5 arenas x mono
 on Green and on Rust = 200 fights an arm a faction; raw `~/balance-guard-raw/b8/`):**
-- `~/balance-runs/b8-dev.sh` (unit balance-b8-dev, started 15:14): all-tanks v law_barrage under base and b8_grt_both; v
+- `~/balance-runs/b8-dev.sh` (unit balance-b8-dev, 15:14-16:44, DONE above): all-tanks v law_barrage under base and b8_grt_both; v
   syndicate_barrage under base and b8_mr_both.
-- `~/balance-runs/b8-arms.sh` (unit balance-b8-roll, queued behind it): all-tanks v the plain roll (OFF) for all four factions, and
+- `~/balance-runs/b8-arms.sh` (unit balance-b8-roll, NOT STARTED: held on the orchestrator's word, engage's Bar E1 guards go first): all-tanks v the plain roll (OFF) for all four factions, and
   v siege / gang_hail (condemned, gangs): the firing test of R42.3.
 - *Seeds:* 10201-10220 (20 of the dev block's 40) for the firing read. *Why:* the effects in question are either ~25-30 points
   (condemned, gangs: 77 -> 47, 78 -> 52 on 9401-9410) or within ~1 se (law +4, syndicate -5), and 200 paired fights an arm give
