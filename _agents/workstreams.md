@@ -82,6 +82,13 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   `game/modes/skirmish_mode.gd` (granted); camera builds K2 behind `--camera-glide` (ON when it passes) and files K3's lines (clicks on
   target, slip p95, jerks/min by source) before numbers on 9501-9512.
 
+- **R41.2 (2026-10-26 ~02:35) native N5 lint-fast approved; mk/core.mk's lint gate granted to native for it.** N4's read (builder0,
+  c36217f79-era tree): full check wall 2,208 s = lint 715 s (1,212 files, one `--check-only` process each at -P6) gating test 1,479 s.
+  One Godot process loading every script: 13.9 s, 495 MB, catches planted parse / preload / typed-assignment errors. Ruled: lint-fast
+  becomes the gate; per-file lint stays in the check as an ordinary target beside test (no coverage dropped); mutation test; before/after
+  builder0 wall time named. Merged alone with its own check. Also relayed: orders' O1 probe 8b828ec59 -> manoeuvre's Q1;
+  orders' is_aiming b973ba955 -> camera; native's GUARD_TARGET e41b6d70e -> balance.
+
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
 **Goal: every squad of his group click and route gets in without a reshuffle, and no army wins a frontal charge because of its faction.**
