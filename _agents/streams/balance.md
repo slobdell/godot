@@ -196,6 +196,12 @@ bridge runs (9025-9036 x 3 ticks x 2 sides) the v2 overrides tree with the rule 
 known bridge failure remains the 18-run drill's rust t15 s2 (R40.20). The ARM rebuild recipe (apply + cherry-pick ad956031b)
 is proven mechanical on ff30edf87 (`apply --tree` now). builder2 stays on B5: the deal arm, pen7, then the lines screen.
 
+**pen7 ARM DONE (10:51; 8f2643375 + `--tune=autocannon.penetration=7,pulse_cannon.penetration=7,twin_mg.penetration=4`, builder2,
+9401-9410, 400 fights, 0 lost, paired with base; OUTSIDE R40.1's keys, a read for his decision only):** all-tanks **85 -> 85 %
+(+0, se 1)**: condemned +7 (se 3), gangs -4 (se 4), law -2 (se 2), syndicate +1 (se 2); length +1 %; flank share +0.7 (se 0.6).
+The IFVs did trade better (dealt a credit: condemned 0.81 -> 0.95, law 0.78 -> 0.96, Gun Truck 0.23 -> 0.50, its side-face rate
+0.09 -> 0.48 a second alive) and still died (2-5 % alive, 32-64 s lived). **A sharper IFV cannon is worth ~0 points: the IFV's
+problem is that it dies before its fire adds up, not what gets through.** Closed: not a lever for his target.
 **pen7 arm, first run (gangs, mono on Green, 50 fights, 10:02):** the tune landed (GUARD_RESULT args carry it; the Gun Truck's
 dealt a credit 0.23 -> 0.50, its side-face rate 0.09 -> 0.42 pts a second alive: twin MG pen 4 gets through a War Rig's side now);
 all-tanks 82 -> 80 % (-2, se 3). Seven runs to go.
@@ -205,7 +211,7 @@ all-tanks 82 -> 80 % (-2, se 3). Seven runs to go.
 siege's shape in each roster (artillery, scout, tank, artillery, IFV, scout), same money as the base deal. All-tanks v each, mono
 on each team, 9401-9410, paired with base (`~/balance-runs/b5-barrage.sh`). Test pins the roll and the load. Quick-remote on the first cut failed twice (no assert_false in the harness; then test_army_economy's 17-archetype digest, which now skips measure-only lineups: one additive condition in a shared test, **merge note**); the arm runs on 3ef8d5771: **quick-remote GREEN** on 601963cd5 = 3ef8d5771 + Status (builder0 `make quick exited 0`, 269 passed / 0 failed, 71 scripts lint).
 
-**B5 WRITE-UP FOR HIM (deal-arm version 10:00; pen7's line pending; the orchestrator takes it to him).**
+**B5 WRITE-UP FOR HIM (10:55; Law and Syndicate's barrage numbers pending, else final; the orchestrator takes it to him).**
 *What you noticed is real, and it is not about facing.* An army of only tanks beats the same faction's normal mixed army, same
 money, 85 % of the time (CPU v CPU, 5 maps, both sides, 400 fights). Your target was the mixed army winning 60-65 %, so the
 tank army should win 35-40 %: about 45 points away.
@@ -239,8 +245,9 @@ artillery only hits what someone can see. *What the CPU would field against your
 tank rush meets a wall of indirect fire it can't shoot back at until it closes, and the Rat Rods / Lancers open it from the
 side while it closes. Today the CPU rolls one of three lineups a game and only one of them is this one (Law and Syndicate have
 none), which is why your tanks have walked through most games. (2) The slow turret (5 points) only if you like how it feels. (3) The IFV's trade (it dies
-in one or two shells before its flank fire adds up) is a separate, smaller question: tougher-and-cheaper buys 2 points, a
-sharper cannon [pen7 arm, pending]. The missile is not needed for your target.
+in one or two shells before its flank fire adds up) is a separate, smaller question: tougher-and-cheaper buys 2 points; a
+sharper cannon (armour-piercing 5 -> 7, so an IFV behind a tank kills it in 11 s instead of 13 and from the side in 17 instead
+of 23) buys nothing at all (85 -> 85 %): the IFV still dies first. The missile is not needed for your target.
 
 **B5 round 1, t50 arm read (tank turret traverse x0.5; 8f2643375 + overrides, builder2 J24, 9401-9410, 400 fights, paired):**
 mono-tank wins 85 -> **80 % (-5, se 1)**: condemned 77 -> 70 (-7, se 2), gangs 78 -> 75 (-3, se 5), law 92 -> 85 (-7, se 2),
