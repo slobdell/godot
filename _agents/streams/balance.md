@@ -129,6 +129,13 @@ turtle lines for base / t50 / t50_ifv15 on 9411-9420, 200 fights an arm, Bar B5'
 **The nearest arm inside his rules lands at 77 %, 37-42 points short of 35-40 %.** The IFV's dealt a credit under the combined
 arm: condemned 0.8 -> 1.5, law 0.8 -> 1.15, still 4-8 % alive. Next (running): the deal arm (R41.12), then pen7, then the lines.
 
+**Deal arm, in progress (9204009f6, builder2, 9401-9410, paired with base):** gangs v `gang_hail` (2 artillery, 2 Rat Rods, Gun
+Truck, Tanker; no tank): all-tanks **78 -> 52 % (-26, se 6)**, 40 % when the tanks are Green, 64 % when Rust; length +2 %.
+Syndicate v `syndicate_standoff` (2 Lancers, 2 Spotters, Missile Ring, IFV; no tank): all-tanks **92 -> 99 % (+7, se 3)**,
+length +71 %: the Railgun Platform (110 m, 420 a shot) one-shots Lancers (1 % alive, 30 s lived, 0.43 dealt a credit); the
+syndicate's best anti-tank unit IS its tank (1.58 dealt a credit in the base deal), so a no-tank deal loses harder. The deal
+answer is per faction, not one rule. Law and condemned running.
+
 **B5 round 2, ifv15 arm read (every IFV hp/shield/front+side armour +15 %, cost -15 %; same series, 400 fights, paired, 07:37):**
 mono-tank wins 85 -> **82 % (-2, se 2)**: condemned -3 (se 4), gangs +2 (se 5; the Gun Truck's twin MG, pen 2.5, gets through
 nowhere, so toughness buys it nothing), law -5 (se 2; length -15 %), syndicate -3 (se 1). The IFV's share of the damage on tanks
