@@ -1,0 +1,5 @@
+extends Node
+## lint-fast self-test (N5): a syntax error. Copied to build/lint-fast-selftest/ as a .gd; never in the tree as one.
+func f() -> int:
+	var x := 
+	return 1
