@@ -43,3 +43,14 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-26 (session 1).** Plan: N1 (now) -> N2 on request (waiting on manoeuvre's Q2/Q3 spec via the orchestrator) -> N3 lines_r41.py
+as bars are filed -> spare: builder0 test-time read.
+
+- **N1 DONE: bfd033228** (`tools/remote.sh`, `tools/copyback_verify.sh`, `tools/test_copyback_verify.sh`). Cause reproduced against
+  builder0 2026-10-26: `rsync -a --checksum --files-from=F builder0:~/tank_squad/godot-native/ L/` -> sender `change_dir
+  "/home/slobdell/~/tank_squad/godot-native/" failed`, laptop exit 12 (laptop rsync 3.2.7, builder0 3.4.1); the plain `host:~/dir/`
+  copy-back is unaffected; home-relative `host:tank_squad/...` with --files-from exits 0. Fix: remote.sh passes `$host:$remote_dir/`;
+  copyback_verify.sh rewrites any `host:~/x` source to `host:x`. Test: a stub rsync on PATH that fails `~` + --files-from the same way
+  runs the re-copy branch (32/0 with the fix, 29/3 without). `make remote T=shell-tools-test` exited 0 and `make quick-remote` exited 0
+  on bfd033228 (builder0). Full check: running on builder0 (result below when it lands).
