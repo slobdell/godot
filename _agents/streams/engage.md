@@ -91,12 +91,20 @@ Nothing.
 
 ## Status
 
-**2026-10-26 ~15:50 PDT (Fable).** E1 DONE (the mechanism, below). E2 built, OFF behind `--attack-shot` (quick gate green on
+**2026-10-26 ~16:05 PDT (Fable).** E1 DONE (the mechanism, below). E2 built, OFF behind `--attack-shot` (quick gate green on
 builder0 at 7322318a3: 169 passed / 0 failed, 631 s). E3 DONE (the HUD's words, tests). E5 (cheap half) done. **Bar E1 FILED
-below at b37e7f4a4 (the frozen tree), before any number on 9601-9648.** Running: the suite ON (C31.1) `make remote T="check
-ATTACK_SHOT=on"` on b37e7f4a4, builder0. Next: the deciding series on builder0's light lane once the ON check is read; the fight
-guards on builder2 (busy with balance's series at filing time: a request below); the OFF check of the merge candidate; the
-player smoke shots.
+below (recorded on main as R42.6); the frozen tree is 57e2e7eb5** (b37e7f4a4 + the read gated OFF + the SUPPRESS column + the
+shot tool; filed before any number on 9601-9648). Running: the suite ON (C31.1) `make remote T="check ATTACK_SHOT=on"` on
+57e2e7eb5, builder0 (queued behind native's full check at launch). Next: the deciding series on builder0's light lane once the
+ON check reads green; the fight guards on builder2 on the orchestrator's word (balance's B8 screen pauses at a leg boundary);
+the OFF check of the merge candidate.
+
+**Player smoke (laptop, 57e2e7eb5, `tests/engage/engage_shots.gd`, his pose, desktop 1920x1080 and phone 1200x540, frames at
+0/1/3/8/20 s in `build/engage/shots/`, copied to the scratchpad):** OFF: the Rat Rod sits nose-on behind the blue container all
+20 s, gun on nothing, 26.1 m out. ON: at 1 s it is at 19.1 m with its gun on the ring and the ray clear; at 3 s it stands past
+the container's end at 17.8 m, "holding at standoff", and the ring's damage reads 47 by 3 s and 1555 by 20 s (OFF: 632, all
+from the squadmate). Looked at: desktop_off_08s, desktop_on_08s, phone_on_03s. (A lab, so no HUD banner in the frame: the banner
+words are pinned by test_engage_hud_words.)
 
 ### Done (every number: commit, machine, workload, n)
 
@@ -173,8 +181,9 @@ reads it as material, the seam is `_act` SUPPRESS's stand (same guard) or `Comba
 
 ### Bar E1 (FILED b37e7f4a4, 2026-10-26 ~15:50 PDT, before any number on 9601-9648)
 
-**Switch:** `--attack-shot` (DEFAULT OFF at filing; a pass ships ON with `=off` = round 41). **Tree:** b37e7f4a4 frozen for every
-arm (code = e81c93ae8; b37e7f4a4 adds the probe only). **What it could break (round 37's rule):** a crew that leaves its standoff
+**Switch:** `--attack-shot` (DEFAULT OFF at filing; a pass ships ON with `=off` = round 41). **Tree:** 57e2e7eb5 frozen for every
+arm (code = e81c93ae8 + the read gated behind the flag; the rest is the probe, the table and the shot tool). OFF asks the cover
+map for nothing (probe 7001: 0 lines OFF, 210 ON). **What it could break (round 37's rule):** a crew that leaves its standoff
 to close may die in the open (the exposure guard); a crew whose spot is unreachable, or whose line flickers at a corner, may
 oscillate (the dither count, the line flips, spots never reached); a CPU fight where crews now close instead of holding may
 change its kills, losses and length (the fight lines); the sim-baseline rows move (expected: adopted with the reason).
@@ -199,7 +208,13 @@ behind a container or block 18-42 m away, one crew with a clear line from the st
 6. **Sim-baseline:** rows that move under ON listed with the reason (the rule acted); adopted at the ship by the orchestrator.
 7. **The whole suite ON (C31.1):** `make remote T="check ATTACK_SHOT=on"` on b37e7f4a4 before the series: every test passes
    (the baseline rows excepted, 6).
-8. **Cost:** cover-map lines per plan tick reported (dev 3.7 for 2-5 crews v 1 target; bound SHOT_CONTACTS 6 a member).
+8. **Cost (the ray budget, named before the series):** cover-map lines a plan tick in the ON arm, mean over the series, <= crews
+   + 1 (one line a member a target; the probe has one target; dev 3.7 at a mean 3.6 crews); by construction never more than
+   SHOT_CONTACTS (6) x members an element a plan tick, memoized at 0.5 m; and the ON check's perf-judge reads PASS on its own
+   line. OFF: 0 lines.
+9. **SUPPRESS share (pre-registered, R42.6):** the share of ON's stuck crew-seconds spent in the brain's SUPPRESS is a reported
+   column (`stuck_suppress`); if it is most of what is left, that is a real result and the SUPPRESS stand in `_act` gets the
+   same own-line guard as a v2 on R42.2's terms (plan_lay the second reserve).
 **A pass ships ON** (every deciding line and guard); the plan_lay seam stays in reserve (R42.2).
 
 ### Decisions
