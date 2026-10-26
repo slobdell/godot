@@ -254,6 +254,17 @@ _(filed bars go here, before their numbers)_
   two factions' artillery cannot be made to hurt tanks (the Gas Rocket Truck is a suppression weapon; the Missile Ring dies to the
   Railgun), so Law's and the Syndicate's counter stays off under B7 and their tank-rush answer is their own tank until he allows a
   larger change. builder2 free at 16:44: balance's R42.3 firing screen starts now and pauses at a leg boundary for engage's guards.
+- **R42.10 (2026-10-26 ~17:05) engage's suite-ON check RED on tactics-drills; GRANT `_plan_fire_and_maneuver`'s side pick, gated.**
+  Tree 57e2e7eb5, builder0, `make check ATTACK_SHOT=on exited 2`: 3297 passed / 0 failed, 26 passed, 2 FAILED: sim-baseline (9 maps
+  moved under ON: expected for a flag-ON run; adoption is the ship-flip step) and tactics-drills far_ambush "one half went round them"
+  (off_axis widest 17.0 m v > 20; OFF 73.3). Traced (`tests/engage/far_ambush_trace.gd`, deterministic on the laptop): the maneuver
+  half straddles the axis (margin ~3 m); under ON a firing-spot move 3 m west flips the sign in `_plan_fire_and_maneuver`'s side pick,
+  the flank goes WEST into the arena edge (clamp_to_arena pins it at x -115.4: a 17 m swing); OFF happens to pick east (open ground).
+  ON wins the fight 8 s sooner. A pre-existing knife-edge, not the shot rule; a flank toward a wall is wrong in either arm. Ruled:
+  GRANT engage `_plan_fire_and_maneuver` (~8 lines, test first, pure): prefer the side whose flank point clamp_to_arena does not move
+  (both clamped: the one moved less; neither: today's sign), **gated under ATTACK_SHOT (option b)** so the OFF arm of every bar this
+  round stays byte-identical to main and no OFF baseline moves; the ship flip carries it. Bar E1's frozen tree moves to the fixed
+  commit, lines unchanged, no number read; the suite-ON check re-runs on it (C31.1) before the series. Perf-judge under ON: PASS.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
