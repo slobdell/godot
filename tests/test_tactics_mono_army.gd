@@ -53,10 +53,10 @@ func test_measure_only_archetypes_load_by_name_and_are_never_rolled() -> void:
 	# B5 (round 41): law_barrage / syndicate_barrage exist for the all-tank measurement only.
 	for faction: String in ["law", "syndicate"]:
 		var name := faction + "_barrage"
-		assert_false(Array(Army.archetypes_for(faction)).has(name), "%s is not in the seeded roll's list" % name)
+		assert_true(not Array(Army.archetypes_for(faction)).has(name), "%s is not in the seeded roll's list" % name)
 		assert_true(Array(Army.archetypes_for(faction, true)).has(name), "%s is a %s army when asked for by name" % [name, faction])
 		var army := Army.load_army("cpu:" + name, 1, Units.BASELINE_BUDGET, faction)
-		assert_false(army.has("error"), "cpu:%s loads (%s)" % [name, army.get("error", "")])
+		assert_true(not army.has("error"), "cpu:%s loads (%s)" % [name, army.get("error", "")])
 		var artillery := 0
 		for squad: Dictionary in army["doctrine"]["squads"]:
 			for entry: Dictionary in squad["units"]:
@@ -65,4 +65,4 @@ func test_measure_only_archetypes_load_by_name_and_are_never_rolled() -> void:
 		assert_true(artillery >= 2, "%s fields artillery (%d)" % [name, artillery])
 	for seed_value in range(40):
 		var rolled := Army.cpu_army("cpu", seed_value, Units.BASELINE_BUDGET, "law")
-		assert_false(String(rolled.get("archetype", "")).ends_with("_barrage"), "a seeded law deal never rolls the barrage")
+		assert_true(not String(rolled.get("archetype", "")).ends_with("_barrage"), "a seeded law deal never rolls the barrage")
