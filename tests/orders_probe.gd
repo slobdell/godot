@@ -179,12 +179,13 @@ func _run() -> void:
 		squad["shuffle"] = 0.0
 		_last_centre[squad["number"]] = squad["start"]
 	var all_in_tick := -1
-	var window_s := WINDOW_S + (FIGHT_AFTER_S - AFTER_ARRIVAL_S if fight else 0.0)
+	# Round 41 (O2): `--probe-window=S` replaces WINDOW_S (his across-the-map group order outruns 90 s).
+	var window_s := float(_flag("probe-window", str(WINDOW_S))) + (FIGHT_AFTER_S - AFTER_ARRIVAL_S if fight else 0.0)
 	var after_s := FIGHT_AFTER_S if fight else AFTER_ARRIVAL_S
 	while _match.tick - _order_tick < int(window_s * SimClock.TICK_RATE):
 		await physics_frame
 		_watch()
-		_watch_extra()
+		await _watch_extra()
 		var all_in := _squads.all(func(s: Dictionary) -> bool: return int(s["arrived_tick"]) >= 0)
 		if all_in and all_in_tick < 0:
 			all_in_tick = _match.tick
@@ -281,6 +282,14 @@ func _run() -> void:
 			"worst_offset_m": rows.map(func(r: Dictionary) -> float: return r["anchor_offset_m"]).max(),
 			"worst_shuffle_m": rows.map(func(r: Dictionary) -> float: return r["shuffle_m"]).max()}.merged(_run_extra())))
 	quit(0)
+
+
+## Round 41 (O2): whether `squad` is still in the departure queue (no task from this order yet).
+func _departure_waiting(squad: Dictionary) -> bool:
+	var queue: DepartureQueue = _controls.departures if _controls != null else null
+	if queue == null:
+		return false
+	return queue.waiting.any(func(e: Dictionary) -> bool: return (e["units"] as Array).has(String(squad["units"][0])))
 
 
 ## Round 41 (orders O1): hooks for a subclass probe (tests/orders_probe_group.gd); no-ops here. `_before_order` runs just
@@ -389,6 +398,16 @@ func _watch() -> void:
 				squad["crossed"] = true
 				squad["crossed_at"] = [_xz(at), snappedf((_match.tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)]
 		var element := _controls.elements.of(String(alive[0])) if _controls.elements != null else null
+		# Round 41 (O2, `--group-depart=queue`): a squad still waiting its turn has no task from this order yet (its element
+		# reads the OLD task, often "arrived"): it is not in, and its anchor is read when its task comes.
+		if _departure_waiting(squad):
+			continue
+		if not (squad["anchor"] is Vector3) and _anchor_of(squad) is Vector3:
+			squad["anchor"] = _anchor_of(squad)
+			squad["anchor_element"] = _element_key(squad)
+			var ground_l := _tank(String(alive[0]))
+			squad["path_len"] = SlotGround.path_length(ground_l, squad["start"], squad["anchor"]) if ground_l != null else -1.0
+			squad["plan_deck"] = bool(SelectionSquads.crosses_on(ground_l).call(squad["start"], squad["anchor"])) if ground_l != null else false
 		# Arrived: its element says so with nothing queued, or (a route's element is gone by its end) its centre is within
 		# ARRIVE_M of its anchor with every crew still.
 		var anchor: Variant = squad["anchor"]

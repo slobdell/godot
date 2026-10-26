@@ -661,6 +661,7 @@ ORDERS_GROUP_SEEDS ?= 7001 7002 7003 7004 7005 7006
 ORDERS_GROUP_HEADINGS ?= crew formed
 ORDERS_GROUP_ARMS ?= main:
 ORDERS_GROUP_TARGET ?= across
+ORDERS_GROUP_WINDOW ?= 180
 ORDERS_GROUP_JOBS ?= 4
 ORDERS_GROUP_DIR ?= $(BUILD_DIR)/orders-group
 .PHONY: orders-group
@@ -672,7 +673,7 @@ orders-group: import ## O1 (round 41): his group order (5 full squads, mixed hea
 		'name=$${2%%:*}; flags=$$(echo "$${2#*:}" | tr "," " "); \
 		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe_group.gd -- --arena=$$0 --seed=$$3 \
 			--probe-squads=5 --probe-army=res://tests/control/orders_probe_group_5.json --probe-headings=$$1 \
-			--probe-target=$(ORDERS_GROUP_TARGET) --probe-arm=$$name $$flags > $(ORDERS_GROUP_DIR)/logs/$$0-$$1-$$name-s$$3.log 2>&1 || true'
+			--probe-target=$(ORDERS_GROUP_TARGET) --probe-window=$(ORDERS_GROUP_WINDOW) --probe-arm=$$name $$flags > $(ORDERS_GROUP_DIR)/logs/$$0-$$1-$$name-s$$3.log 2>&1 || true'
 	@cat $(ORDERS_GROUP_DIR)/logs/*.log | grep -h '^ORDERS_PROBE {' | sed 's/^ORDERS_PROBE //' > $(ORDERS_GROUP_DIR)/runs.jsonl || true
 	@cat $(ORDERS_GROUP_DIR)/logs/*.log | grep -h '^ORDERS_PROBE_SQUAD ' | sed 's/^ORDERS_PROBE_SQUAD //' > $(ORDERS_GROUP_DIR)/rows.jsonl || true
 	@cat $(ORDERS_GROUP_DIR)/logs/*.log | grep -h '^ORDERS_GROUP_CREW ' | sed 's/^ORDERS_GROUP_CREW //' > $(ORDERS_GROUP_DIR)/crews.jsonl || true

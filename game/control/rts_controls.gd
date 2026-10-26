@@ -177,6 +177,8 @@ var _last_group_at := -10.0
 var _pause_text := ""
 var _hover_at := Vector2(-1, -1)
 var _hover_time := 0.0
+## Round 41 (O2): the group order's departure queue, made on first use (`--group-depart=queue`).
+var departures: DepartureQueue
 ## Draws above the panel, group bar, and radar (children draw over their parent): the tooltip and the armed-order hint.
 var _overlay: Control
 
@@ -1016,6 +1018,8 @@ func issue(command: Dictionary) -> String:
 func order_selection(verb: String, extra: Dictionary = {}) -> String:
 	if selection.units.is_empty():
 		return ""
+	if departures != null:
+		departures.cancel(selection.units)  # O2: a new order takes a waiting squad out of the queue
 	# Round 19 (orders, C19.1): a selection holding several squads (two selected together, or one group over both)
 	# is ordered one squad at a time, side by side - never as one heap of vehicles, never as one element.
 	if verb != "stop" and several_squads():
@@ -1351,6 +1355,23 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			_cleared_back = _cleared_pending
 			_cleared_pending = {}
 	var first_error := ""
+	# Round 41 (O2, `--group-depart=queue`): the squads of a plain move set off front first, each when its road is clear.
+	var depart_rank := {}  # squad index -> its rank (0 = the front)
+	if DepartureQueue.ENABLED and elements != null and not queue and (verb == "move" or verb == "attack_move") \
+			and squads.size() >= 2 and anchors.size() >= squads.size() and extra.has("to"):
+		var centres: Array = []
+		for k in squads.size():
+			centres.append((blocks[k] as Dictionary)["center"])
+		var order := DepartureQueue.rank(centres, SelectionSquads.approach_of(blocks,
+				Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), Match.team_frame(team)["forward"]))
+		if DepartureQueue.RANK == "drive":
+			var drives: Array = []
+			for k in squads.size():
+				var lead := _first_living(squads[k]["units"])
+				drives.append(DepartureQueue.route_length(Pathing.find_path(lead, centres[k], anchors[k])) if lead != null else 0.0)
+			order = DepartureQueue.rank_by_drive(drives)
+		for r in order.size():
+			depart_rank[order[r]] = r
 	for i in squads.size():
 		var squad: Dictionary = squads[i]
 		var given := extra.duplicate()
@@ -1380,7 +1401,10 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if queued is String:
 			error = queued
 		elif elements != null and ELEMENT_TASKS.has(verb) and (not queue or element_only):
-			error = _task_squad(squad, verb, given)
+			if depart_rank.has(i) and _depart_later(squad, i, squads, depart_rank, anchors, held, verb, given):
+				error = ""
+			else:
+				error = _task_squad(squad, verb, given)
 		elif element_only:
 			error = _refuse("tasks need the doctrine layer, which this match is running without")
 		else:
@@ -1596,7 +1620,7 @@ static func too_big_for_a_squad(count: int) -> String:
 
 ## One squad's task (the per-squad half of assign_task): its element, formed now if this is its first task, takes
 ## the task in the squad's own formation.
-func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
+func _task_squad(squad: Dictionary, verb: String, extra: Dictionary, acknowledge := true) -> String:
 	var shape := squad_formation(squad)
 	var units: Array = squad["units"]
 	var number := int(squad.get("number", 0))
@@ -1627,9 +1651,76 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary) -> String:
 	var command := UnitCommand.make(units, verb, extra)
 	command["task"] = true  # OrderFeedback confirms a squad's task at its anchor (its crews' orders are the leader's)
 	command_issued.emit(command, error)
-	if error == "":
+	if error == "" and acknowledge:
 		_acknowledge(command)
 	return error
+
+
+## Round 41 (O2): the first living Tank of `units` (null when none).
+func _first_living(units: Array) -> Tank:
+	if game_match == null:
+		return null
+	for n: String in units:
+		var tank := game_match.tanks.get_node_or_null(NodePath(n)) as Tank
+		if tank != null and tank.is_alive():
+			return tank
+	return null
+
+
+## Round 41 (O2): queue squad `i` behind the squads ranked ahead of it when its corridor (DepartureQueue) holds one of
+## their crews; true when it waits (acknowledged now, the same marker as a squad that leaves; its task comes on its
+## turn). A squad still driving an earlier task, or with no route, leaves now.
+func _depart_later(squad: Dictionary, i: int, squads: Array, depart_rank: Dictionary, anchors: Array[Vector3],
+		held: Element, verb: String, given: Dictionary) -> bool:
+	if int(depart_rank[i]) == 0 or game_match == null:
+		return false
+	if held != null and not held.task.is_empty() and not held.arrived:
+		return false
+	var ahead: Array = []
+	for k in squads.size():
+		if depart_rank.has(k) and int(depart_rank[k]) < int(depart_rank[i]):
+			ahead += (squads[k]["units"] as Array)
+	var ground: Tank = null
+	for n: String in squad["units"]:
+		ground = game_match.tanks.get_node_or_null(NodePath(n)) as Tank
+		if ground != null and ground.is_alive():
+			break
+	if ground == null or ahead.is_empty():
+		return false
+	var route := Pathing.find_path(ground, _middle_of(squad["units"]), anchors[i])
+	if departures == null:
+		departures = DepartureQueue.new()
+		departures.name = "DepartureQueue"
+		departures.game_match = game_match
+		add_child(departures)
+	var units: Array = squad["units"]
+	var arrived_of := func(n: String) -> bool:
+		var owner := elements.of(n) if elements != null else null
+		return owner != null and owner.arrived
+	var release := _task_squad.bind(squad, verb, given, false)
+	if DepartureQueue.MERGE:
+		# v3: one merge per squad ranked ahead whose road this one's meets before the halt area.
+		var mine := DepartureQueue.flat(route)
+		var merges: Array = []
+		for k in squads.size():
+			if not depart_rank.has(k) or int(depart_rank[k]) >= int(depart_rank[i]):
+				continue
+			var lead := _first_living(squads[k]["units"])
+			if lead == null:
+				continue
+			var other := DepartureQueue.flat(Pathing.find_path(lead, _middle_of(squads[k]["units"]), anchors[k]))
+			var merge := DepartureQueue.merge_of(mine, other)
+			if not merge.is_empty():
+				merges.append({"names": (squads[k]["units"] as Array).duplicate(), "road": other,
+						"at_m": merge["at_m"], "mine_m": merge["mine_m"]})
+		if not departures.add_merges(units, merges, release, arrived_of):
+			return false
+	elif not departures.add(units, ahead, DepartureQueue.corridor_of(route), release, arrived_of):
+		return false
+	var command := UnitCommand.make(units, verb, given)
+	command["task"] = true
+	_acknowledge(command)
+	return true
 
 
 ## Round 28 (brains B5; the lead, 2026-10-13: *"I expect to be able to shift + screen click on top of an existing
