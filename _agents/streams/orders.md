@@ -76,6 +76,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     (the whole-squad untangle takes the fewest crossings; contacts fell on the bar). crossing 5 route is unchanged by G1
     (route legs are G2's). Full checks this round read perf-judge NOT JUDGED (box busy): the ON flip needs
     `make remote-quiet T=perf-judge` on main (orchestrator scheduling it).
+  - **Smoke (laptop, 5693c0b66, terminus s7007 his click, no flags):** columns_laid 1, two-sided 1; the shot 5 s after
+    all in is identical to the v9-flags shot (`g1-his-click-shots-laptop/terminus-5-click-v9-arrival_plus5-desktop.png`).
   - **Question for the lead:** the feel question under Bar G1 v9 below (a tail squad that stays on a click beside it).
   - **Playtest:** `make skirmish ARENA=terminus`, select all five squads at the start, click the street just left of
     them; then a far click across the map. Compare `SKIRMISH_FLAGS="--group-g1=off"`.
