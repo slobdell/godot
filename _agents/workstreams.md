@@ -70,7 +70,7 @@ workers (plane_maker): never touch processes you didn't start. Never delete buil
 
 **Seed registry (round 41):** 9001-9024 manoeuvre Q2; 9025-9048 manoeuvre Q3 (bridge-drill seeds: BRIDGE_POOLED_SEEDS); 9101-9124 orders
 O2 (withdrawn unread; 9101-9112 -> Bar G1 v7); 9201-9240 + 9301-9340 balance B5 bar; 9401-9440 balance B5 dev screening (never a bar); 8801-8840 + 8901-8940 Bar B2s v2 (filed
-round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001-7012 as before (never a bar).
+round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9524 camera K3 v2. Dev blocks 7001-7012 as before (never a bar).
 
 - **Bar O2, a coordinated departure (orders; WITHDRAWN UNREAD R41.4; FILED 25525980a, 2026-10-26 ~03:00, before any number on 9101-9124).** Switch
   `--group-depart=queue` (DEFAULT_OFF): squads of a plain move/attack-move to 2+ squads rank front to back along the approach; each sets
@@ -82,7 +82,7 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   that waited, median wait <= 6 s; cap releases <= 10 % of queued; clicks with any wait > 5 s <= 50 %; per-squad wait median/max reported.
   **Parts B/C** (9101-9112, n 12): R36.6 probe guards on the 12 street cells + his click, contacts, fight lines (kills, losses, CPU losses
   within 1.645 se). Lab before filing (laptop s7001, n 1 a map, not a number): terminus all-in 75.4 -> 59.0 s; crossing never-in -> 93.4 s.
-- **Bar K3 v1, a smooth camera (camera; FILED 0871a6789, 2026-10-26 ~02:50, before any number on 9501-9512).** Switch
+- **Bar K3 v1, a smooth camera (camera; FAILED line 3, R41.11; FILED 0871a6789, 2026-10-26 ~02:50, before any number on 9501-9512).** Switch
   `--camera-glide` (ON when it passes, =off escape). BASE glide=off v ARM glide=on, same commit + seeds, `make camera-trace`, builder0
   light, headless 1920x1080 @60, Terminus v CPU, CameraPlaytest autoplay (hand reach 0.3 s, aim 0.5 s, right-click), pooled 12 seeds.
   Ship ON = every line passes: (1) attack clicks still on the aimed unit ARM >= 70 % AND >= BASE + 15 points; (2) target slip p95 ARM
@@ -187,6 +187,14 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   1.06), jam-seconds +22.5 % (4.4 se; the eased ticks count as "slowed by a friend" in that measure, so it is biased against the rule).
   Per R41.9 it beat main on neither line, so OFF, no bar. Round 42: a bar decided on what he sees (friendly contacts / shoved ticks),
   with all-in and never-in as strict guards, on fresh seeds; jam-seconds reported, not deciding (named here before any such bar's number).
+- **R41.11 (2026-10-26 ~07:30) Bar K3 v1 FAILS line 3; v2 on fresh 9513-9524.** builder0 light, headless 1920x1080 @60, Terminus, 9501-9512
+  (OFF d08f63317, ON 01adebec9 = same camera code + clip overlay; n 154 / 146 attack clicks): (1) clicks on the aimed unit 57.1 -> 77.4 %
+  PASS; (2) slip p95 308 -> 13.9 px PASS; (3) jerks ON 0.22/min (max source 0.16) but auto_frame 12 one-frame snaps, one glide on s9509
+  peaking 25.6 px/frame (1,530 px/s): FAIL (the spring had no screen-speed cap); (4) auto_frame px/min ON 41 % of OFF PASS, no trace
+  failure. Gap with no line: ON held the camera 58 % of match time ("hand moved in 0.6 s" counted as aiming; an RTS hand never rests):
+  attacks/min 9.8 -> 7.9, 4 ON seeds hit the 150 s cap, the s9501 clip never shows an enemy in 76 s. Fix: aiming = a held button, or
+  is_aiming while the hand moved in 1.5 s; a click ends the aim; automatic moves capped at 0.6 screen heights/s. Bar v2 adds: held <= 25 %
+  of match time and attacks/min >= 90 % of BASE; lines 1-4 unamended; fresh seeds 9513-9524.
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
