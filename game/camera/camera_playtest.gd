@@ -6,7 +6,7 @@ extends Node
 ##
 ## With `--camera-autoplay` this is a scripted player at his pose (the defaults: auto_frame and yaw follow on): every
 ## 1-3 s it selects (ctrl+A for the whole army, or a group key), then, if an enemy is on screen, puts the cursor on it,
-## holds still for AIM_S like a hand that has found its target, and right-clicks there (an attack order); with no enemy
+## carries the cursor onto it over REACH_S, holds still for AIM_S like a hand that has found its target, and right-clicks there (an attack order); with no enemy
 ## on screen it right-clicks the ground up-screen (a move). For each click it records the TARGET SLIP: how far (px at
 ## 1080 rows) the ground point that was under the cursor AIM_S before the click has slid by the click, and which source
 ## slid it; and whether the click still lands on the unit it aimed at. Without `--camera-autoplay` it only records (his
@@ -15,6 +15,8 @@ extends Node
 ## `--camera-hold` turns auto_frame and yaw follow off: the floor a click's miss has from the units' own motion.
 
 const AIM_S := 0.5
+## How long his hand takes to carry the cursor to what he aims at (a Fitts-law reach across a 1080p screen is ~0.25-0.4 s).
+const REACH_S := 0.3
 const SECONDS := 150.0
 
 var trace: CameraTrace
@@ -30,6 +32,7 @@ var _done := false
 var _seconds := SECONDS
 var _seed := 0
 var _ended := false
+var _cursor := Vector2(-1, -1)
 
 
 func _ready() -> void:
@@ -174,6 +177,9 @@ func _move() -> void:
 
 
 func _click_after_aim(aim: Vector2, kind: String, target: Tank) -> void:
+	await _reach(aim, target)
+	if target != null and target.is_alive() and not rig.camera.is_position_behind(Shown.at(target)):
+		aim = rig.camera.unproject_position(Shown.at(target))  # the hand lands where the unit is now
 	_motion(aim)
 	var anchor: Variant = rig.ground_point(aim)
 	trace.anchor_motion.clear()
@@ -205,12 +211,26 @@ func _click_after_aim(aim: Vector2, kind: String, target: Tank) -> void:
 	clicks.append(row)
 
 
+## Carry the cursor to `aim` (re-aimed at the target each frame, as an eye-hand would) over REACH_S, one motion a frame.
+func _reach(aim: Vector2, target: Tank) -> void:
+	var from := _cursor if _cursor.x >= 0.0 else get_viewport().get_visible_rect().size * 0.5
+	var start := _clock
+	while _clock - start < REACH_S and not _ended:
+		var goal := aim
+		if target != null and target.is_alive() and not rig.camera.is_position_behind(Shown.at(target)):
+			goal = rig.camera.unproject_position(Shown.at(target))
+		var t := clampf((_clock - start) / REACH_S, 0.0, 1.0)
+		_motion(from.lerp(goal, t * t * (3.0 - 2.0 * t)))
+		await get_tree().process_frame
+
+
 func _motion(at: Vector2) -> void:
 	var motion := InputEventMouseMotion.new()
 	motion.position = at
 	motion.global_position = at
 	get_viewport().push_input(motion)
 	trace.cursor = at
+	_cursor = at
 
 
 func _right_click(at: Vector2) -> void:

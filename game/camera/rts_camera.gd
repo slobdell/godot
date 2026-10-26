@@ -258,6 +258,9 @@ var glide := true
 const GLIDE_FOCUS_OMEGA := 3.0
 const GLIDE_ZOOM_OMEGA := 2.5
 const GLIDE_YAW_OMEGA := 3.0
+## The yaw follow's top speed while gliding (round 40's goal turned at YAW_FOLLOW_DEG_PER_S, 70): K1's biggest slip
+## source was a 35 deg swing in the half second before his click, so the glide turns at most this fast.
+const GLIDE_YAW_DEG_PER_S := 45.0
 ## While he aims, how quickly an automatic move coasts to a stop (1/s; its speed falls by e every 1/omega s).
 const GLIDE_STOP_OMEGA := 10.0
 ## The leash: how far the frame's ideal centre may wander from where the camera aims before it follows, as a fraction of
@@ -270,8 +273,8 @@ const HOVER_HOLD_S := 3.0
 ## The building clearance: how fast it eases toward more clearance (fast: the camera must not sit in a wall), and back.
 const SOLID_IN_OMEGA := 22.0
 const SOLID_OUT_OMEGA := 4.0
-## C41.4: orders' read-only "player is aiming" getter, when wired (RtsControls.is_aiming). Until then `aiming_now` asks
-## the controls' public pick_unit / mode itself (found once in the tree) and watches the mouse in `_input`.
+## C41.4 (R41.1): orders' read-only "player is aiming" getter (RtsControls.is_aiming; skirmish_mode wires it). The rig
+## also watches the mouse itself in `_input` (`aiming_now`).
 var aiming: Callable = Callable()
 ## Whether the automatic moves are holding for him this frame (the readout and the trace show it).
 var holding := false
@@ -284,8 +287,6 @@ var _leash_zoom := -1.0
 var _mouse_at := Vector2(-1, -1)
 var _mouse_moved_at := -1e9
 var _buttons_down := 0
-var _aim_source: Node = null
-var _aim_source_looked := false
 var _solid_d := 0.0
 var _solid_p := 0.0
 var _solid_d_velocity := 0.0
@@ -436,7 +437,7 @@ func _glide(delta: float) -> void:
 	else:
 		var gap := angle_difference(yaw, _shown_yaw)  # shown - wanted, the short way round
 		var next := RtsCamera.spring(gap, _yaw_velocity, 0.0, GLIDE_YAW_OMEGA, delta)
-		var limit := deg_to_rad(YAW_FOLLOW_DEG_PER_S)
+		var limit := deg_to_rad(GLIDE_YAW_DEG_PER_S)
 		_yaw_velocity = clampf(float(next[1]), -limit, limit)
 		_shown_yaw = wrapf(yaw + float(next[0]) if float(next[1]) == _yaw_velocity else before_yaw + _yaw_velocity * delta, -PI, PI)
 	var before_pitch := _shown_pitch
@@ -474,33 +475,17 @@ static func spring(x: Variant, v: Variant, goal: Variant, omega: float, delta: f
 	return [goal + (away + lead) * decay, (v - lead * omega) * decay]
 
 
-## Round 41 (K2, C41.4): is he about to click something? Orders' getter when it is wired; until then: a mouse button held
-## (a box or a right-drag), an order armed (A, M, F...), the cursor resting on a unit (up to HOVER_HOLD_S after his hand
-## stopped), or his hand still moving (AIM_LINGER_S).
+## Round 41 (K2, C41.4): is he about to click something? A mouse button held (a box, a drag) or his hand moving
+## (AIM_LINGER_S) always; and orders' getter (`RtsControls.is_aiming`: the cursor on a unit a click would pick, a press,
+## an armed order) for up to HOVER_HOLD_S after his hand stopped, so a cursor left resting on a unit cannot freeze the
+## camera for good.
 func aiming_now() -> bool:
-	if aiming.is_valid():
-		return bool(aiming.call())
 	if _buttons_down != 0:
 		return true
 	var still := _clock - _mouse_moved_at
 	if still < AIM_LINGER_S:
 		return true
-	var source := _controls()
-	if source == null:
-		return false
-	if String(source.get("mode")) != "":
-		return true
-	return still < HOVER_HOLD_S and _mouse_at.x >= 0.0 and source.call("pick_unit", _mouse_at) != null
-
-
-## The desktop controls (RtsControls, "TacticalMap"), for the aiming adapter: looked up once, read only.
-func _controls() -> Node:
-	if not _aim_source_looked and is_inside_tree():
-		_aim_source_looked = true
-		var found := get_tree().root.find_child("TacticalMap", true, false)
-		if found != null and found.has_method("pick_unit") and "mode" in found:
-			_aim_source = found
-	return _aim_source if is_instance_valid(_aim_source) else null
+	return still < HOVER_HOLD_S and aiming.is_valid() and bool(aiming.call())
 
 
 ## The ground under the cursor, or null (no cursor seen yet, or sky): CameraShake's pivot while gliding.
