@@ -139,6 +139,21 @@ another project's workers (plane_maker): never touch processes you didn't start.
   runs) D1 -27.7 % (-3.6 se), D2 -34.5 % (-3.2 se), G5 inside, **G6 6 -> 7 (would fail)**; the judge reproduces them. Machine: builder2
   for the group-order series if up, else builder0 light; fights builder0 light. A pass: native's twin, then ON; a fail: OFF, no re-run.
 
+- **Bar K4, the camera looks where the danger is (camera; FILED 76cb5053b Status, 2026-10-26 ~16:00, before any number on 9701-9736;
+  R42.5).** Switch `--camera-danger` (OFF; ON on a pass; off = round 41): the agreed weighted sum (heading by speed, lightly; each known
+  enemy by threat with decay; the war's pull: enemy centroid else the arena's middle), cancel / deadband / hold guards, no turn while he
+  aims, manual yaw wins, the glide's speed cap; two read-only feed lines in skirmish_mode.gd (C42.3). BASE off v ARM on, one commit,
+  builder0 light J4, headless 1920x1080 @60, Terminus, 9701-9736 x 3 workloads: AMBUSH (55 m, lanes by seed % 3), RETREAT (his case),
+  ATTACK (round 41's autoplay, 150 s; guards only). **Deciding:** D1 latency first shot -> shooter on screen (never = 20 s) on
+  AMBUSH + RETREAT pooled, ARM < BASE by >= 2 se of the difference; D2 REAR lane alone AND RETREAT alone, ARM latency mean < BASE and
+  blind % <= BASE; D3 facing the wall, pooled and RETREAT alone, ARM <= half BASE. **Guards:** K3 v2 lines 1-3 on ATTACK (clicks on
+  the aimed unit >= 70 %, slip p95 <= 40 px, jerks <= 3/min with no automatic source > 1.5, snaps 0 everywhere); held <= 25 %; action
+  share >= BASE - 10; yaw reversals ARM <= BASE + 1/min per workload; own squad on screen ARM >= BASE - 5 points per workload; every
+  run ok, no SCRIPT ERROR, every scenario staged ok. Dev reads (7001-7012, never a bar, 91ebddc9f): retreat facing the wall 37.3 ->
+  0.6 %, off-screen shots 29 -> 1; ambush blind 2.8 -> 1.2 %; attack guards hold (clicks 80.8 v 82.4 %, slip p95 24 px, held 16.6 %,
+  action share 35.9 -> 59.4 %, reversals 11.7 -> 5.3/min). The full check of 91ebddc9f queued behind builder0's lock; the series
+  starts on the commit that check greens (light lane, ~2.5 h both arms). A pass ships ON; the clip (K4.4) goes to him.
+
 _(filed bars go here, before their numbers)_
 
 ## Rulings (round 42)
