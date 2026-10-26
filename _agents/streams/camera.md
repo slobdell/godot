@@ -58,8 +58,9 @@ The clip, when K3 has one.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-26: K1 DONE (sent to the orchestrator). K2 built (`--camera-glide`, ON; d6f0da32e), dev read below; full check on
-d6f0da32e running on builder0; then Bar K3 v1 on 9501-9512.**
+**2026-10-26: K1 DONE (sent). K2 built (`--camera-glide`, ON). Bar K3 v1 read on 9501-9512: FAILED line 3 (auto_frame
+snaps) and showed the camera held 58 % of play; fixed (aim needs orders' getter, a click spends it; a screen-speed cap);
+Bar K3 v2 filed below (fresh seeds 9513-9524), unread. Clip: `make camera-clip` (laptop) built; re-film after v2.**
 
 ### K2 dev read (dev seeds 7001-7006, NEVER a bar; d6f0da32e's code; builder0 headless 1920x1080 60 fps)
 Autoplay now carries the cursor onto the target over 0.3 s (a hand's reach) before the 0.5 s aim, both arms.
@@ -127,6 +128,30 @@ pooled 12 seeds. **Ship ON = every line passes.**
 4. **The camera still works** (the vision camera he likes stays): ARM auto_frame px moved / min >= 25 % of BASE's (it still
    finds the action), and no CAMERA_TRACE_DONE ok=false or SCRIPT ERROR in any run.
 Shake is judged separately (headless has none): a windowed laptop run, `shake` slip at the cursor ARM <= 1 px p95 (pivot).
+
+### Bar K3 v1 RESULT (FAIL, line 3)
+Builder0 light lane, headless 1920x1080 60 fps, Terminus, seeds 9501-9512 pooled. BASE (`--camera-glide=off`) on d08f63317: 15.8 min of
+play, 280 clicks; ARM (on) on 01adebec9 (the same camera code; it adds only the clip overlay): 18.6 min, 321 clicks.
+| line | BASE | ARM | pass level | |
+|---|---|---|---|---|
+| 1 attack clicks on the aimed unit | 88/154 = 57.1 % | 113/146 = 77.4 % | >= 70 % and >= 72.1 % | PASS |
+| 2 target slip p95 | 308.3 px | 13.9 px | <= 40 and <= 154 | PASS |
+| 3 jerk events/min (all; worst automatic source) | 16.90; auto_frame 11.08 | 0.22; solid 0.16 | <= 3.0; <= 1.5 | PASS |
+| 3 automatic snaps | 146 | **12 (auto_frame)** | 0 | **FAIL** |
+| 4 auto_frame px/min | 4707 | 1922 (41 %) | >= 25 % | PASS |
+| 4 DONE ok=false / SCRIPT ERROR | 0 / 0 | 0 / 0 | 0 | PASS |
+The 12 snaps: one smooth glide on seed 9509 (t = 97.1 s) peaking at 25.6 px/frame (1530 px/s), 12 frames over SNAP_PX 24 with
+no jump in speed (dv 39 px/s). Not a lurch, but a whole screen in 0.7 s is not cinematic either: the spring had no top speed in screen
+terms. **Found outside the bar:** ARM held the camera 58.4 % of play (BASE 0), because "his hand moved in the last 0.6 s" counted as
+aiming and an RTS hand never rests. ARM made 7.86 attack aims/min against BASE's 9.75 (enemies on screen less often), and 4 of 12
+ARM seeds ran to the 150 s cap. The laptop clip (seed 9501, 75 s) shows it: the ON arm never had an enemy on screen.
+Fix: hand motion alone is no longer aiming. The hold needs a held button, or orders' `is_aiming` while the hand moved within
+HOVER_HOLD_S (1.5 s); a click ends the aim. Automatic focus moves are capped at GLIDE_SCREENS_PER_S 0.6 screen heights/s.
+
+### Bar K3 v2 (FILED before any v2 number; seeds 9513-9524, the orchestrator's fresh block; 9501-9512 are dev seeds now)
+Same workload as v1 on `CAMERA_SEEDS="9513 ... 9524"`, both arms on one commit (the commit with GLIDE_SCREENS_PER_S 0.6 and the aim
+fix), lines 1-4 at v1's levels unamended, plus:
+5. **The camera still finds the action:** ARM held time <= 25 % of play AND ARM attack aims per minute >= 90 % of BASE's.
 
 ### Decisions
 - Jerk/snap thresholds are perceptual and fixed BEFORE any K2 number (JERK_PX_S2 15,000, SNAP_PX 24, at 1080 rows).

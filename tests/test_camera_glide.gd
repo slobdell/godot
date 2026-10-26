@@ -115,23 +115,54 @@ func test_while_he_aims_the_automatic_moves_wait() -> void:
 	assert_true(rig._shown_focus.distance_to(before) > 0.5, "and it goes on its way after")
 
 
-func test_the_mouse_alone_says_he_is_aiming() -> void:
+func test_a_moving_hand_alone_is_not_aiming_and_a_click_spends_the_aim() -> void:
 	var rig := _rig()
 	await wait_physics_frames(1)
-	assert_true(not rig.aiming_now(), "no hand yet")
+	var on_unit := [false]
+	rig.aiming = func() -> bool: return on_unit[0]
 	var motion := InputEventMouseMotion.new()
 	motion.position = Vector2(300, 300)
 	rig._input(motion)
-	assert_true(rig.aiming_now(), "his hand is moving")
-	rig._clock += RtsCamera.AIM_LINGER_S + 0.1
-	assert_true(not rig.aiming_now(), "it has stopped (and rests on nothing)")
+	assert_true(not rig.aiming_now(), "an RTS hand never rests: moving the mouse is not aiming")
+	on_unit[0] = true
+	assert_true(rig.aiming_now(), "the cursor on a unit, his hand on the mouse: he aims")
+	rig._clock += RtsCamera.HOVER_HOLD_S + 0.1
+	assert_true(not rig.aiming_now(), "a cursor left resting on a unit does not freeze the camera")
+	motion.position = Vector2(310, 300)
+	rig._input(motion)
+	assert_true(rig.aiming_now(), "his hand is back")
+	for pressed in [true, false]:
+		var click := InputEventMouseButton.new()
+		click.button_index = MOUSE_BUTTON_RIGHT
+		click.pressed = pressed
+		click.position = Vector2(310, 300)
+		rig._input(click)
+	assert_true(not rig.aiming_now(), "his click spends the aim: the camera may go on")
 	var press := InputEventMouseButton.new()
 	press.button_index = MOUSE_BUTTON_LEFT
 	press.pressed = true
 	press.position = Vector2(300, 300)
 	rig._input(press)
 	rig._clock += 5.0
+	on_unit[0] = false
 	assert_true(rig.aiming_now(), "a button held (a box, a drag) is aiming however long it lasts")
+
+
+func test_no_automatic_move_crosses_the_screen_faster_than_its_top_speed() -> void:
+	var rig := _rig()
+	await wait_physics_frames(2)
+	var top := rig.glide_top_speed()
+	var height := 2.0 * RtsCamera.distance_for(rig._shown_zoom) * tan(deg_to_rad(RtsCamera.fov) / 2.0)
+	assert_near(top, RtsCamera.GLIDE_SCREENS_PER_S * height, 0.01, "the cap is in screens, not metres")
+	rig.focus = rig._shown_focus + Vector3(200, 0, 0)
+	rig.wrote["focus"] = "auto_frame"
+	var fastest := 0.0
+	for i in 240:
+		var before := rig._shown_focus
+		rig._process(1.0 / 60.0)
+		fastest = maxf(fastest, rig._shown_focus.distance_to(before) * 60.0)
+	assert_true(fastest <= top * 1.001, "a long re-frame tops out at %.1f m/s (cap %.1f)" % [fastest, top])
+	assert_true(fastest >= top * 0.9, "and it does reach it (%.1f m/s)" % fastest)
 
 
 func test_a_pivoted_shake_keeps_the_cursor_ground_on_its_pixel() -> void:

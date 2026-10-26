@@ -248,8 +248,11 @@ var layers := {}
 ##     starts and stops with no jump in speed, the same at 30 or 144 fps (`spring`);
 ##   * the vision frame is on a leash (FRAME_LEASH): the squad may wander that far from the frame's centre before the
 ##     camera follows, so a squad milling about leaves the view still and a squad driving off drags it smoothly;
-##   * while he is aiming (`aiming_now`: a button held, an order armed, the cursor on a unit, or his hand moving) the
-##     automatic moves coast to a stop and wait: the ground under his cursor stays put. They resume, eased, after;
+##   * while he is aiming (`aiming_now`: a button held, or an order armed or the cursor on a unit while his hand is on
+##     the mouse) the automatic moves coast to a stop and wait: the ground under his cursor stays put. They resume,
+##     eased, after; his click ends the aim. A hand merely moving is not aiming (an RTS hand never rests: K3's first
+##     bar run held the camera 58 % of the match that way and it found a fifth fewer fights);
+##   * no automatic move carries the view faster than GLIDE_SCREENS_PER_S;
 ##   * the building clearance eases in over ~0.1 s instead of one frame, and CameraShake pivots on the ground under the
 ##     cursor (the view shakes, the point he is about to click does not).
 ## His own input (keys, wheel, drag, F, O, jumps) is untouched: it was never the jerk. `--camera-glide=off` is round 40.
@@ -267,9 +270,12 @@ const GLIDE_STOP_OMEGA := 10.0
 ## the half-height of the ground in view (~2.3 m at his 49 m), and how far its zoom may (zoom levels).
 const FRAME_LEASH := 0.15
 const FRAME_ZOOM_LEASH := 0.025
-## The hand: an automatic move waits this long after the cursor last moved, and up to HOVER_HOLD_S while it rests on a unit.
-const AIM_LINGER_S := 0.6
-const HOVER_HOLD_S := 3.0
+## The hand: while orders' getter says he aims, an automatic move waits up to this long after the cursor last moved (a
+## cursor left resting on a unit must not freeze the camera for good).
+const HOVER_HOLD_S := 1.5
+## An automatic move's top speed, in heights of the ground in view per second at the focus (K3: an uncapped spring
+## crossed a whole screen in 0.7 s on a long re-frame: smooth, but not cinematic, and 12 frames over SNAP_PX).
+const GLIDE_SCREENS_PER_S := 0.6
 ## The building clearance: how fast it eases toward more clearance (fast: the camera must not sit in a wall), and back.
 const SOLID_IN_OMEGA := 22.0
 const SOLID_OUT_OMEGA := 4.0
@@ -286,6 +292,7 @@ var _leash_focus: Variant = null
 var _leash_zoom := -1.0
 var _mouse_at := Vector2(-1, -1)
 var _mouse_moved_at := -1e9
+var _aim_spent_at := -1e9
 var _buttons_down := 0
 var _solid_d := 0.0
 var _solid_p := 0.0
@@ -414,7 +421,7 @@ func _glide(delta: float) -> void:
 		_shown_focus += _focus_velocity * delta
 	else:
 		var next := RtsCamera.spring(_shown_focus, _focus_velocity, focus, GLIDE_FOCUS_OMEGA, delta)
-		_focus_velocity = (next[1] as Vector3).limit_length(TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom))
+		_focus_velocity = (next[1] as Vector3).limit_length(glide_top_speed())
 		_shown_focus = next[0] if (next[1] as Vector3).length() == _focus_velocity.length() else before_focus + _focus_velocity * delta
 	var before_zoom := _shown_zoom
 	if RtsCamera.hand_set(wrote["zoom"]):
@@ -475,17 +482,22 @@ static func spring(x: Variant, v: Variant, goal: Variant, omega: float, delta: f
 	return [goal + (away + lead) * decay, (v - lead * omega) * decay]
 
 
-## Round 41 (K2, C41.4): is he about to click something? A mouse button held (a box, a drag) or his hand moving
-## (AIM_LINGER_S) always; and orders' getter (`RtsControls.is_aiming`: the cursor on a unit a click would pick, a press,
-## an armed order) for up to HOVER_HOLD_S after his hand stopped, so a cursor left resting on a unit cannot freeze the
-## camera for good.
+## Round 41 (K2, C41.4): is he about to click something? A mouse button held (a box, a drag) always; orders' getter
+## (`RtsControls.is_aiming`: the cursor on a unit a click would pick, an armed order) while his hand is on the mouse:
+## it moved within HOVER_HOLD_S and he has not clicked since (a click spends the aim).
 func aiming_now() -> bool:
 	if _buttons_down != 0:
 		return true
-	var still := _clock - _mouse_moved_at
-	if still < AIM_LINGER_S:
-		return true
-	return still < HOVER_HOLD_S and aiming.is_valid() and bool(aiming.call())
+	if _aim_spent_at >= _mouse_moved_at:
+		return false
+	return _clock - _mouse_moved_at < HOVER_HOLD_S and aiming.is_valid() and bool(aiming.call())
+
+
+## The top speed of an automatic focus move (m/s): GLIDE_SCREENS_PER_S heights of the ground in view at the shown
+## zoom, under round 40's TRACK_SPEED.
+func glide_top_speed() -> float:
+	var height := 2.0 * RtsCamera.distance_for(_shown_zoom) * tan(deg_to_rad(fov) / 2.0)
+	return minf(GLIDE_SCREENS_PER_S * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom))
 
 
 ## The ground under the cursor, or null (no cursor seen yet, or sky): CameraShake's pivot while gliding.
@@ -507,7 +519,10 @@ func _input(event: InputEvent) -> void:
 		if button.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
 			var bit := 1 << int(button.button_index)
 			_buttons_down = (_buttons_down | bit) if button.pressed else (_buttons_down & ~bit)
-			_mouse_moved_at = _clock
+			if button.pressed:
+				_mouse_moved_at = _clock
+			else:
+				_aim_spent_at = _clock
 
 
 func _exit_tree() -> void:
