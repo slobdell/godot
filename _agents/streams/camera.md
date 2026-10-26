@@ -58,9 +58,41 @@ The clip, when K3 has one.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-26: K1 DONE (sent). K2 built (`--camera-glide`, ON). Bar K3 v1 read on 9501-9512: FAILED line 3 (auto_frame
-snaps) and showed the camera held 58 % of play; fixed (aim needs orders' getter, a click spends it; a screen-speed cap);
-Bar K3 v2 filed below (R41.14: 36 seeds 9513-9548), unread. Clip: `make camera-clip` (laptop) built; re-film after v2.**
+**2026-10-26: K1, K2, K3 DONE; waiting on the lead's eye (the clip). Bar K3 v2 PASSED every line on fresh seeds 9513-9548
+(8a2974e85). `--camera-glide` ships ON, `--camera-glide=off` is round 40. Full check: see "Green" below.**
+
+### Report (for the orchestrator and the lead)
+**What he gets (ON):** every automatic camera move (vision frame, yaw follow, order tracking, zoom cap, building clearance)
+is a critically damped glide capped at 0.6 screen heights/s. While his hand moves they slow to a quarter of that, eased.
+When his hand stops on something (0.1 s), or rests on a unit, or holds a button, they coast to a stop until he clicks.
+Shake pivots on the ground under his cursor. His own input (keys, wheel, drag, F, O) is unchanged.
+**Bar K3 v2** (both arms 8a2974e85, builder0 light lane, headless 1920x1080 60 fps, Terminus, CPU enemy, CameraPlaytest
+autoplay, 36 seeds per arm 9513-9548, BASE 51.4 min of play / 899 clicks, ARM 53.1 min / 918 clicks):
+| line | BASE (`--camera-glide=off`) | ARM (ON) | pass level | |
+|---|---|---|---|---|
+| 1 attack clicks still on the aimed unit | 195/372 = 52.4 % | 299/386 = 77.5 % | >= 70 % and >= 67.4 % | PASS |
+| 2 target slip p95 | 294.6 px | 34.7 px | <= 40 and <= 147.3 | PASS |
+| 3 jerk events/min (all; worst automatic source) | 18.27; auto_frame 12.27 | 0.19; solid 0.17 | <= 3.0; <= 1.5 | PASS |
+| 3 automatic snaps | 594 | 0 | 0 | PASS |
+| 4 auto_frame px moved/min | 4750 | 2888 (61 %) | >= 25 % | PASS |
+| 4 runs DONE ok / SCRIPT ERROR | 36/36, 0 | 36/36, 0 | all ok, 0 | PASS |
+| 5 held for his aim; action share | 0 %; 41.8 % | 15.0 %; 41.4 % | <= 25 %; >= 31.8 % | PASS |
+Shake (line outside the headless bar): laptop windowed 1920x1080 ~28 fps, seed 7001, 60 s, d6f0da32e (the pivot is unchanged
+since): shake moved the cursor's ground <= 0.5 px at any click (<= 1 px p95: PASS).
+**The clip** (K3; the lead is the only check for feel): `build/camera-clip/camera_glide_clip.mp4` on the laptop (flightdeck),
+72 s, 1920x540, made by `make camera-clip` at 8a2974e85: the same autoplay on seed 9501 (a dev seed; the clip is not a bar),
+LEFT glide off (round 40), RIGHT glide on. The white cross is the autoplay's cursor (a movie has no OS cursor), and a yellow
+ring marks each right-click. Left: 6 of 13 attack clicks on the unit, slip p95 163 px. Right: 11 of 14, slip p95 24 px.
+LEFT ends at 48 s (it won the match there) and holds its last frame. Re-film: `make camera-clip` (needs a display; laptop lock).
+**His smoke:** `make skirmish ARENA=terminus` (glide ON) and `make skirmish ARENA=terminus SKIRMISH_FLAGS="--camera-glide=off"`
+(round 40): select all, find a fight, aim at an enemy and right-click it. Watch for: the view glides instead of jumping; the
+ground under the cursor stays put while he aims; and whether the camera still finds the fight fast enough for him.
+**Merge notes:** shared edits are one line in `game/modes/skirmish_mode.gd` (`rig.aiming = controls.is_aiming`, granted, R41.1)
+and `game/theme/fx/camera_shake.gd` (owned; the pivot). New: `game/camera/camera_trace.gd`, `camera_playtest.gd` (+ .uid),
+`mk/camera.mk` (`camera-trace`, `camera-trace-windowed`, `camera-clip`), `tests/camera/camera_report.py`,
+`tests/test_camera_trace.gd`, `tests/test_camera_glide.gd`. Dev-only flags: `--camera-glide-screens`, `--camera-hand-pace`,
+`--camera-aim-hold=off`, `--camera-leash`, `--camera-glide-yaw`, `--camera-glide-omega` (the bar runs at the constants).
+**Green:** (pending: the full check of the last commit).
 
 ### K2 dev read (dev seeds 7001-7006, NEVER a bar; d6f0da32e's code; builder0 headless 1920x1080 60 fps)
 Autoplay now carries the cursor onto the target over 0.3 s (a hand's reach) before the 0.5 s aim, both arms.
