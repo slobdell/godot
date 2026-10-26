@@ -125,5 +125,17 @@ dec9725f5 GUARD_SIDES (light quick + shell-tools-test, the orchestrator's call) 
   used 10-12), ~/tank_squad_feel_look + ~/tank_squad_feel_c (round-~10 feel tree copies) and the 128 ~/.local/share/tank_squad_*
   user dirs last written before 10-17 (no process held any). df: 11G -> 15G free (90 % -> 86 %). Not ours, for the lead:
   ~/Videos 23G (models/ and tmp/ each beside a .tar of itself), ~/projects 12G, ~/.cache/tracker3 1.9G.
+- **Inserted by the orchestrator: F1's follow-queue twin (R40.21), `pair/native-follow` 1838537d7** (on manoeuvre's 25595cae4;
+  worktree `../godot-native-follow`). **ON HOLD (R40.22):** F1 queued in open traffic in manoeuvre's lab; v2 adds a turn-ahead
+  condition (route turns > 45 deg within 2x the min turn radius); the orchestrator sends the spec diff, then add it here.
+  Built: drive_native.cpp `avoid` (after chosen / keep, before the grace): follow on (configured from Movement.FOLLOW_AHEAD_M;
+  absent: off), not held, wheeled, `following(way)` -> follow_queued, steer point kept, pace clamp(chosen.way / max(desired,
+  0.1)). Traffic._chain_native keeps native_drive for follow (reroute still turns it off); test_traffic_follow's switch test
+  flipped; `follow_queued` in drive_twin_case's counters. New tests/test_native_follow.gd (open ground: a file behind a slow
+  leader, a stopped friend, a crossing column, a tracked hull; ON / ON owned / OFF). Laptop (1838537d7, n 1 run each): 2880
+  drives a stage, 0 mismatches; queued 752 ON, 0 OFF; test_traffic_follow under native 0.00 m lateral, 236 queued (=
+  manoeuvre's GDScript run); 8/0. Mutations: the C++ branch dropped -> 934 mismatches, the moving/way test dropped -> 461 (both
+  ON stages fail). Quick (builder0 light) and per-seed native-proof on/off (laptop, seeds 92721/8001/8002, follow ON and OFF)
+  were in flight at the hold; results below when they land.
 - **N4 (the trig's ~2 %):** waits for a quiet builder0 window (none soon: three streams have series queued, the orchestrator).
 - **N5:** waits on his Ryzen purchase.
