@@ -13,6 +13,8 @@ extends Node
 ## own session: `make skirmish SKIRMISH_FLAGS="--camera-trace=DIR"`). Either way it writes DIR/camera_trace.json at the
 ## end and prints CAMERA_TRACE / CAMERA_SLIP lines; the autoplay quits after `--camera-seconds` (default 150).
 ## `--camera-hold` turns auto_frame and yaw follow off: the floor a click's miss has from the units' own motion.
+## `--camera-clip=CAPTION` (for a filmed clip, `make camera-clip`): a recorded movie has no OS cursor, so it draws the
+## autoplay's cursor, a ring where it clicks, and CAPTION in a corner.
 
 const AIM_S := 0.5
 ## How long his hand takes to carry the cursor to what he aims at (a Fitts-law reach across a 1080p screen is ~0.25-0.4 s).
@@ -33,6 +35,10 @@ var _seconds := SECONDS
 var _seed := 0
 var _ended := false
 var _cursor := Vector2(-1, -1)
+var _overlay: Control
+var _clicked_at := Vector2(-1, -1)
+var _clicked_clock := -10.0
+var _caption := ""
 
 
 func _ready() -> void:
@@ -42,16 +48,55 @@ func _ready() -> void:
 			_seconds = float(arg.trim_prefix("--camera-seconds="))
 		elif arg.begins_with("--seed="):
 			_seed = int(arg.trim_prefix("--seed="))
+		elif arg.begins_with("--camera-clip="):
+			_caption = arg.trim_prefix("--camera-clip=")
 	_rng.seed = hash(["camera-playtest", _seed])
 	trace.keep_frames = OS.get_cmdline_user_args().has("--camera-trace-frames")
 	if DisplayServer.get_name() == "headless":
 		get_tree().root.size = Vector2i(1920, 1080)  # headless roots are 64x64 (trip-up 31); measure at his desktop size
 	get_tree().auto_accept_quit = false
+	if _caption != "":
+		_add_overlay()
 	_run.call_deferred()
 
 
 func _process(delta: float) -> void:
 	_clock += delta
+	if _overlay != null:
+		_overlay.queue_redraw()
+
+
+func _add_overlay() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 120
+	add_child(layer)
+	_overlay = Control.new()
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_overlay.draw.connect(_draw_overlay)
+	layer.add_child(_overlay)
+	var label := Label.new()
+	label.text = _caption
+	label.position = Vector2(24, 18)
+	label.add_theme_font_size_override("font_size", 40)
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	label.add_theme_constant_override("outline_size", 10)
+	layer.add_child(label)
+
+
+func _draw_overlay() -> void:
+	if _cursor.x < 0.0:
+		return
+	var scale := _overlay.get_viewport_rect().size.y / CameraTrace.REFERENCE_ROWS
+	var arm := 30.0 * maxf(scale, 0.5)
+	for line in [[Vector2(-arm, 0), Vector2(-arm * 0.3, 0)], [Vector2(arm * 0.3, 0), Vector2(arm, 0)],
+			[Vector2(0, -arm), Vector2(0, -arm * 0.3)], [Vector2(0, arm * 0.3), Vector2(0, arm)]]:
+		_overlay.draw_line(_cursor + line[0], _cursor + line[1], Color.BLACK, 6.0 * maxf(scale, 0.5))
+		_overlay.draw_line(_cursor + line[0], _cursor + line[1], Color.WHITE, 2.5 * maxf(scale, 0.5))
+	var since := _clock - _clicked_clock
+	if since < 0.5:
+		_overlay.draw_arc(_clicked_at, arm * (1.0 + since * 3.0), 0.0, TAU, 32, Color(1.0, 0.85, 0.2, 1.0 - since * 2.0),
+				4.0 * maxf(scale, 0.5))
 
 
 func _notification(what: int) -> void:
@@ -234,6 +279,8 @@ func _motion(at: Vector2) -> void:
 
 
 func _right_click(at: Vector2) -> void:
+	_clicked_at = at
+	_clicked_clock = _clock
 	for pressed in [true, false]:
 		var event := InputEventMouseButton.new()
 		event.button_index = MOUSE_BUTTON_RIGHT
