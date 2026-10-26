@@ -290,6 +290,26 @@ def main(argv):
                      ", click cells" if mode == "g1v4" else "", nr, sum(1 for r in dealt if r["arm"] == base and r.get("redealt", 0) > 0)))
         lines.append("  reported: metres outside incl. the drive in (route_out_m) %.0f -> %.0f" % (
             total(rows, base, "route_out_m"), total(rows, new, "route_out_m")))
+        # R40.5: the corridor read moved (O1, past posts <= 8 m); round 39's read (`*_gate`) is reported beside every line,
+        # per cell, and main v main old v new shows where the read itself changed.
+        if any("anchor_outside_gate" in r for r in rows):
+            bog = sum(1 for r in clicks if r["arm"] == base and r.get("anchor_outside_gate"))
+            nog = sum(1 for r in clicks if r["arm"] == new and r.get("anchor_outside_gate"))
+            lines.append("  reported (round 39's read): places outside (click cells) %d -> %d; route_left_m %.0f -> %.0f" % (
+                bog, nog, total(clicks, base, "route_left_gate_m"), total(clicks, new, "route_left_gate_m")))
+            cells = sorted({(r["map"], r["squads"], r["route"]) for r in rows})
+            moved = []
+            for cell in cells:
+                cr = [r for r in rows if (r["map"], r["squads"], r["route"]) == cell]
+                for arm in (base, new):
+                    ar = [r for r in cr if r["arm"] == arm]
+                    o, og = sum(1 for r in ar if r.get("anchor_outside")), sum(1 for r in ar if r.get("anchor_outside_gate"))
+                    lm, lg = total(ar, arm, "route_left_m"), total(ar, arm, "route_left_gate_m")
+                    lines.append("    %s %d %s %s: outside new %d / old %d, route_left new %.0f / old %.0f" % (
+                        cell[0], cell[1], cell[2], arm, o, og, lm, lg))
+                    if arm == base and (o != og or abs(lm - lg) > 0.5):
+                        moved.append("%s %d %s" % cell)
+            lines.append("  reported: main v main, new v old read, cells where the read changed: %s" % (", ".join(moved) or "none"))
         ok = laid > 0 and d1 and d2 and d3
         b = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == base)
         n = sum(r.get("friend_contacts", 0) for r in runs if r["arm"] == new)

@@ -295,6 +295,13 @@ func _observe(game_match: Match) -> void:
 			if mate != "":
 				var pt: Dictionary = ep.get_or_add("partner_ticks", {})
 				pt[mate] = int(pt.get(mate, 0)) + 1
+				# Round 40 (M2): a yielding partner, by whom it gives way to (me / other) and its spot's kind (hold / spot / back / short).
+				var pm := Movement.of(game_match.tanks.get_node_or_null(NodePath(mate)) as Tank)
+				if pm != null and pm.yield_to != "":
+					var kind := pm.yield_spot.get_slice("(", 0).get_slice(":", 0) if pm.yield_spot != "" else "?"
+					var py: Dictionary = ep.get_or_add("partner_yields", {})
+					var key := "%s:%s" % ["me" if pm.yield_to == crew else "other", kind]
+					py[key] = int(py.get(key, 0)) + 1
 		elif _episodes.has(crew):
 			_close(crew, false)
 
@@ -314,7 +321,8 @@ func _close(crew: String, died: bool) -> void:
 			"touch_hull": ep["touch_hull"], "unstick_fires": int(ep.get("unstick_fires1", ep["unstick_fires0"])) - int(ep["unstick_fires0"]),
 			"options": ep["options"], "orders": ep["orders"], "friends_max": ep["friends_max"], "enemies_max": ep["enemies_max"],
 			"died": died, "arena": String(Arena.active.get("name", "")), "seed": int(_flag("seed", "0")),
-			"partners": ep.get("partners", {}), "partner_top": _top(ep.get("partner_ticks", {}))}
+			"partners": ep.get("partners", {}), "partner_top": _top(ep.get("partner_ticks", {})),
+			"partner_yields": ep.get("partner_yields", {})}
 	_totals["episodes"] = int(_totals["episodes"]) + 1
 	_totals["episode_ticks"] = int(_totals["episode_ticks"]) + int(ep["ticks"])
 	print("WEDGE_EP " + JSON.stringify(row))

@@ -1,0 +1,81 @@
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> orders-probe on builder0 | commit 8ca1b1e31 | native on
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 3 click          main      |   31.4 /   15.7   |   18   0 |     21.0 |               3.2 |            41.8 | 3.96 | 52.7
+crossing 3 click          v3        |   31.4 /   15.7   |   23   0 |     19.1 |               2.7 |            44.1 | 4.48 | 52.7
+locks 3 click             main      |   43.3 /   34.4   |   12   0 |     90.0 |               3.1 |            51.0 | 3.94 | 30.2
+locks 3 click             v3        |   43.3 /   34.4   |   23   0 |     54.4 |               2.9 |            63.8 | 4.43 | 30.2
+terminus 3 click          main      |   37.1 /   34.4   |    0   0 |        - |               3.2 |            50.2 | 6.71 | 17.8
+terminus 3 click          v3        |   37.1 /   34.4   |    0   0 |     31.8 |               5.9 |            51.5 | 6.28 | 17.8
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 3 click          main      |          31.0 |          46.0 |           42.0 |               3.1 |          38.7
+crossing 3 click          v3        |          29.1 |          24.2 |              - |               2.0 |          60.0
+locks 3 click             main      |         100.0 |          27.2 |              - |              13.9 |          57.8
+locks 3 click             v3        |             - |          35.7 |              - |               5.8 |          65.3
+terminus 3 click          main      |             - |          34.9 |              - |              12.8 |          61.7
+terminus 3 click          v3        |          39.6 |          34.0 |           49.6 |              12.8 |          63.5
+
+MEDIANS over seeds [8013, 8014, 8015, 8016, 8017, 8018, 8019, 8020, 8021, 8022, 8023, 8024] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 3 click          main        | 12 |         16.4 |     0 |          29.8 |         27.9 |          15.2 |              -1.0 |   18   0 | 2.83
+crossing 3 click          v3          | 12 |         16.5 |     0 |          33.7 |         30.8 |          35.5 |              -1.0 |   23   0 | 3.01
+locks 3 click             main        | 12 |         25.1 |     0 |          37.0 |         21.9 |          48.6 |              -1.0 |   12   0 | 2.81
+locks 3 click             v3          | 12 |         25.2 |     0 |          39.8 |         22.8 |          41.1 |              -1.0 |   23   0 | 2.46
+terminus 3 click          main        | 12 |         19.5 |     1 |          34.5 |         27.2 |          41.2 |              -1.0 |    0   0 | 3.28
+terminus 3 click          v3          | 12 |         21.8 |     0 |          38.8 |         32.6 |          22.1 |              -1.0 |    0   0 | 3.12
+
+EQUALITY click cells: 1 identical across arms, 35 differ
+  DIFFER crossing 3 click seed 8013
+  DIFFER crossing 3 click seed 8014
+  DIFFER crossing 3 click seed 8015
+  DIFFER crossing 3 click seed 8016
+  DIFFER crossing 3 click seed 8017
+  DIFFER crossing 3 click seed 8018
+  DIFFER crossing 3 click seed 8019
+  DIFFER crossing 3 click seed 8020
+  DIFFER crossing 3 click seed 8021
+  DIFFER crossing 3 click seed 8022
+  DIFFER crossing 3 click seed 8023
+  DIFFER crossing 3 click seed 8024
+  DIFFER locks 3 click seed 8013
+  DIFFER locks 3 click seed 8014
+  DIFFER locks 3 click seed 8015
+  DIFFER locks 3 click seed 8016
+  DIFFER locks 3 click seed 8017
+  DIFFER locks 3 click seed 8018
+  DIFFER locks 3 click seed 8019
+  DIFFER locks 3 click seed 8020
+  DIFFER locks 3 click seed 8021
+  DIFFER locks 3 click seed 8022
+  DIFFER locks 3 click seed 8023
+  DIFFER locks 3 click seed 8024
+  DIFFER terminus 3 click seed 8013
+  DIFFER terminus 3 click seed 8014
+  DIFFER terminus 3 click seed 8015
+  DIFFER terminus 3 click seed 8016
+  DIFFER terminus 3 click seed 8017
+  DIFFER terminus 3 click seed 8018
+  DIFFER terminus 3 click seed 8019
+  DIFFER terminus 3 click seed 8020
+  DIFFER terminus 3 click seed 8022
+  DIFFER terminus 3 click seed 8023
+  DIFFER terminus 3 click seed 8024
+TOTAL main       | placed 98.0 flipping 0.0 flips 0.0 relays 223.0 relaying 55.0 terr_c 223.0 terr_a 0.0 reseats 0.0 away 755.8 held 646.2 seat 5171.9
+TOTAL v3         | placed 101.0 flipping 0.0 flips 0.0 relays 206.0 relaying 53.0 terr_c 206.0 terr_a 0.0 reseats 0.0 away 627.0 held 579.9 seat 5726.9

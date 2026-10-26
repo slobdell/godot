@@ -609,6 +609,7 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.chain_ready = config.get("CHAIN_M", Variant()).get_type() == Variant::FLOAT;
 	c.CHAIN_M = c.chain_ready ? (double)config["CHAIN_M"] : 4.0;
 	c.CHAIN_SLACK_M = config.get("CHAIN_SLACK_M", 0.5);
+	c.CHAIN_RELEASE_TICKS = (int64_t)config.get("CHAIN_RELEASE_TICKS", -1);
 	c.YIELD_RETRY_WINDOW_S = config.get("YIELD_RETRY_WINDOW_S", 30.0);
 	c.tank_script = config.get("tank_script", Variant());
 	c.keep_planner_seam = config.get("planner_seam", Variant());

@@ -1,0 +1,6 @@
+SKIRMISH_ARMY Green cpu (gangs): 2 rat rods, 1 war rig (315 pts)
+SKIRMISH_ARMY Rust cpu (syndicate): 1 railgun platform (470 pts)
+Rust_Guns_1 destroyed Green_Spears_1 (score Green 0 : 1 Rust)
+Green_Spears II_2 destroyed teammate Green_Guns_1 (friendly fire)
+Green_Spears II_2 destroyed Rust_Guns_1 (score Green 1 : 1 Rust)
+GUARD_RESULT {"factions":{"Green":"gangs","Rust":"syndicate"},"guard":"blob","side":"Green","winner":"Green","kills":{"green":1,"rust":1},"losses":{"green":2,"rust":1}}

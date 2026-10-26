@@ -1,0 +1,14 @@
+PASS counter: places_cleared 47
+FAIL deciding: place pairs closer than 12 m 48 -> 13 (<= 12.0)
+FAIL guard never-in squads 5 -> 6 (no more)
+PASS guard worst place-to-click median per cell <= base + 15 m
+PASS guard squads placed > 40 m further than main 0 of 864 (<= 43.2)
+PASS guard no place > 100 m further than main (worst +24.0 m)
+  reported: offsets changed on 35 rows; quartiles [-10.7, -2.1, 1.2, 12.0, 24.0]
+  reported: route_left_m 12462 -> 12401
+PASS guard friend_contacts 15046 -> 15049 (<= 16555.6)
+  FAIL guard never-in     crossing 5 click: 0 v 1
+FAIL probe guards (18 cells)
+  reported: parked_redeals, duck-excluded (a crew parked >= 2 s sent > 6 m off its seat, not an UnansweredFire duck) 648 -> 646
+  reported: parked duck moves (UnansweredFire, out to or back from its point; not re-deals) 0 -> 0
+VERDICT g3: FAIL

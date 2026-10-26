@@ -405,7 +405,7 @@ static func report() -> Dictionary:
 			"holds": _hold_stats(), "hold_ticks": Array(holds), "face_far": Array(face_far),
 			"asks_by_kind": asks_by_kind.duplicate(), "abandoned_by_kind": abandoned_by_kind.duplicate(),
 			"face_kept_served": face_kept_served, "face_kept_fallbacks": face_kept_fallbacks,
-			"face_episodes": face_episodes.duplicate(true)}   # hold_ticks: the per-event list (the series pools it per arm)
+			"face_episodes": face_episodes.duplicate(true), "reroute": reroute_report()}   # hold_ticks: the per-event list (the series pools it per arm)
 
 
 ## The hold per event (R31.7's reported line: what he would see a rig stand for): n, median and max hull-ticks.
@@ -444,6 +444,7 @@ static func reset() -> void:
 	_face_watch = {}
 	last_plans = []
 	_release_all()
+	reroute_reset()
 
 
 ## Once a tick: a crew whose hull is freed (or queued for it) is released, so a dead head never holds the queue and
@@ -644,9 +645,10 @@ static func _pend(mover: Movement, cmd: TankCommand, crew: Crew, name: String, t
 	cmd.throttle = 0.0
 	cmd.turn = 0.0
 	pending_ticks += 1
-	if tick - crew.asked_tick >= pending_cap():
+	if tick - crew.asked_tick >= pending_cap() * (REROUTE_HOLD_X if _rerouted.has(name) else 1):
 		abandoned += 1
 		abandoned_by_kind[crew.kind] = int(abandoned_by_kind.get(crew.kind, 0)) + 1
+		_reroute_note(name, "abandoned")
 		if crew.kind == "face":
 			var gave_up := _face_episode(name)
 			gave_up["abandoned"] = int(gave_up["abandoned"]) + 1
@@ -842,6 +844,7 @@ static func _answer(mover: Movement, cmd: TankCommand, crew: Crew, name: String,
 		return false
 	if plan.code != PackedPlan.OK:
 		refused[plan.code] = int(refused.get(plan.code, 0)) + 1
+		_reroute_note(name, "refused:" + str(plan.code))
 		if crew.kind == "face":
 			var by_code: Dictionary = _face_episode(name)["refused"]
 			by_code[plan.code] = int(by_code.get(plan.code, 0)) + 1
@@ -852,6 +855,7 @@ static func _answer(mover: Movement, cmd: TankCommand, crew: Crew, name: String,
 		return false
 	plans += 1
 	plan_legs += plan.legs.size()
+	_reroute_note(name, "planned")
 	last_plans.append({"tick": tick, "name": name, "kind": crew.kind, "legs": plan.describe(), "n_legs": plan.legs.size(),
 			"expansions": plan.expansions, "metres": plan.metres, "cusps": plan.cusps,
 			"start": [snappedf(crew.at.x, 0.01), snappedf(crew.at.z, 0.01)], "goal": [snappedf(crew.goal.x, 0.01), snappedf(crew.goal.z, 0.01)]})
@@ -888,6 +892,14 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 		cmd.throttle = 0.0
 		cmd.turn = 0.0
 		return false
+	if crew.tank.deploy_ratio > 0.0 and _rerouted.has(name):
+		# Round 40 (M3): a battery held still while its search ran has dug in (Tank._deploy_step: legs down after 1/4 s at
+		# rest); its legs come up before it moves, so the leg's stall and time clocks wait for them (the test stage's plans
+		# each aborted "stalled on leg 1" with the command reaching the hull).
+		crew.executor.stall = 0.0
+		crew.executor.stall_from = crew.tank.global_position
+		crew.executor.timeout += delta
+		reroute_pack_ticks += 1
 	var out := crew.executor.tick(delta)
 	cmd.throttle = out.throttle
 	cmd.turn = out.turn
@@ -904,8 +916,10 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 		var goal := crew.goal
 		var want := Vector3(crew.req.goal_fx, 0.0, crew.req.goal_fz)
 		var replans := crew.replans + 1
+		var rerouted := _rerouted.has(name)
+		_reroute_note(name, "aborted")
 		_release(name)
-		var again := _request(mover, kind, goal, want, tick)
+		var again := _request(mover, kind, goal, want, tick) if not rerouted else _reroute_request(mover, goal, want, tick)
 		if again == null:
 			_decline(name, mover.ctl.tank, tick)
 			return false
@@ -915,6 +929,7 @@ static func _drive(mover: Movement, cmd: TankCommand, crew: Crew, name: String, 
 		return true
 	if crew.executor.done:
 		driven += 1
+		_reroute_note(name, "driven")
 		_release(name)
 		_decline(name, mover.ctl.tank, tick)  # the route or the face's aligned test takes it from here
 		return true
@@ -931,6 +946,7 @@ static func _release(name: String, quiet := false) -> void:
 		Planner.cancel_session()
 	_crews.erase(name)
 	_queue.erase(name)
+	_rerouted.erase(name)
 	# The run's report (CP-P1 bar line (a): "PlannerSeam.report() printed per run"): the drive harnesses are nav's
 	# files, so the seam prints its own cumulative line at every event's end; the LAST one in a log is the run's.
 	if REPORT_LINES and not quiet:
@@ -1097,6 +1113,234 @@ static func _live_count() -> int:
 
 static func _flat(a: Vector3, b: Vector3) -> float:
 	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+# ---- Round 40 (manoeuvre M3, R40.12; `--giveway-reroute`, Traffic DEFAULT_OFF until judged): the wedged asker re-routes ---------
+# M2 (`_agents/streams/manoeuvre.md`): 17 % of the long wedges' ticks are a partner HOLDING in place for the wedged crew. A hold
+# is chosen when no spot fits the holder, so it frees the asker only if the asker has a way round, and ORCA and the route's
+# carrot never look for one: the asker sits behind the holder hold after hold. Here the seam takes such an asker -- wheeled,
+# stalled for Movement.chain_release_ticks() (M1 v2's "wedged"), a friend holding for it (`--giveway-reroute=any`: giving way to
+# it in any form) -- and plans it to its route's first point past the holder. The holder is in the plan's world as a box, like
+# every living hull (PlannerNavWorld), so the plan goes round it or is refused (NO_PATH: today's rules, nothing changed).
+# Once taken the crew is an ordinary k-turn crew: the drive's `_planned_reverse` holds it every tick (GDScript, and the C++
+# drive through `seam_live`, so no native change), and every release rule applies. The hull-length scope (SCOPE_MIN_HULL_M) is
+# not asked: the wedged wheeled crews of M2 are 6.6-7.3 m hulls. The scan is a physics_frame hook, connected only while ON.
+const REROUTE_SWITCH := "reroute"
+const REROUTE_ANY_SWITCH := "rerouteany"
+const REROUTE_EVERY_TICKS := 3 * SimClock.TICK_RATE   # an asker re-asked at most this often (a refused search is 1500 expansions)
+const REROUTE_PAST_M := 1.5                            # the target clears the holder's box by this, both half lengths added
+const REROUTE_STAY_M := 2.5                            # the plan ends within this of the target
+const REROUTE_TOL_DEG := 30.0                          # ... pointing the route's way within this
+const REROUTE_SHRINK_M := 0.3                          # the re-route's world: other hulls' boxes this much smaller a side
+static var _no_start := PackedFloat32Array([INF, INF, INF, INF])   # footprint's start clearances: none (the goal judged on its own)
+const REROUTE_STEP_M := 1.0                            # the route walked in steps of this for the target
+const REROUTE_HOLD_X := 3   # a re-route's search may run this many holds (540 expansions at SLICE 2): the crew is wedged, so the
+                            # hold costs it nothing, and the test stage's plan round one tank takes 246 (a hold is 180)
+static var reroute_asks := 0
+static var reroute_no_target := 0
+static var reroute_cooled := 0
+static var _reroute_budget_test := 0  # tests: the scan's search budget (0 = BUDGET)
+static var reroute_searches := 0      # whole searches the scan made (each a tick's cost: reroute_expansions)
+static var reroute_expansions := 0
+static var reroute_start_blocked := 0   # wedged askers not taken: the start overlaps a hull even in the shrunk world
+static var reroute_pack_ticks := 0   # hull-ticks a re-routed battery's leg waited for its legs to come up
+static var _reroute_next := {}   # asker name -> the first tick it may be re-routed again
+static var _rerouted := {}       # asker name -> true while its crew is one of ours (a replan stays a re-route; the outcomes)
+static var reroute_outcomes := {}   # planned / driven / aborted / abandoned / refused:<code> -> count
+
+
+static func reroute_on() -> bool:
+	return on() and not Traffic.off(REROUTE_SWITCH)
+
+
+## Is `name` a crew the seam holds as a re-route (Movement.drive drives its leg as planned, unscaled by ORCA's share)?
+static func rerouting(name: String) -> bool:
+	return not _rerouted.is_empty() and _rerouted.has(name) and _crews.has(name)
+
+
+## Traffic connects it when its switches are read with `reroute` on (`_chain_native`): the scan runs once a tick, before the controllers.
+static func hook_reroute() -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree != null and not tree.physics_frame.is_connected(_reroute_scan):
+		tree.physics_frame.connect(_reroute_scan)
+
+
+static func reroute_report() -> Dictionary:
+	return {"asks": reroute_asks, "no_target": reroute_no_target, "cooled": reroute_cooled, "start_blocked": reroute_start_blocked, "searches": reroute_searches, "expansions": reroute_expansions, "pack_ticks": reroute_pack_ticks, "outcomes": reroute_outcomes.duplicate()}
+
+
+static func reroute_reset() -> void:
+	reroute_asks = 0
+	reroute_no_target = 0
+	reroute_cooled = 0
+	reroute_start_blocked = 0
+	reroute_searches = 0
+	reroute_expansions = 0
+	reroute_pack_ticks = 0
+	reroute_outcomes = {}
+	_reroute_next = {}
+	_rerouted = {}
+
+
+static func _reroute_note(name: String, what: String) -> void:
+	if _rerouted.has(name):
+		reroute_outcomes[what] = int(reroute_outcomes.get(what, 0)) + 1
+
+
+static func _reroute_scan() -> void:
+	if not reroute_on():
+		return
+	var tick := Engine.get_physics_frames()
+	var any := not Traffic.off(REROUTE_ANY_SWITCH)
+	var wedged := Movement.chain_release_ticks()
+	for id: int in Movement._registry.keys():
+		var holder: Movement = Movement._registry[id]
+		if holder == null or not is_instance_valid(holder.ctl) or not is_instance_valid(holder.ctl.tank):
+			continue
+		if holder.yield_to == "" or not (any or holder.yield_spot == "hold"):
+			continue
+		var asker_tank := holder.ctl.tanks_root.get_node_or_null(NodePath(holder.yield_to)) as Tank
+		var asker := Movement.of(asker_tank)
+		if asker == null or not asker_tank.is_alive() or asker.wheel_radius() <= 0.0 or asker.stalled_ticks < wedged:
+			continue
+		var name := String(asker_tank.name)
+		if _crews.has(name) or _declined(name, asker_tank, tick) or Traffic.holding(name):
+			continue
+		if int(_reroute_next.get(name, -1)) > tick:
+			reroute_cooled += 1
+			continue
+		_reroute_next[name] = tick + REROUTE_EVERY_TICKS
+		# The plan's world, checked BEFORE the seam takes the crew: a take holds it at zero/zero and clears its stall and
+		# escape clocks (yield_to_plan), so an ask the planner would refuse at once costs the wedged crew its unstick (M3
+		# lab 1: 1 plan of 72 asks, the rest START_BLOCKED / GOAL_BLOCKED, and the long episodes 141 -> 204 s).
+		var req := PlanRequest.for_unit(asker_tank.unit_id)
+		var world := PlannerNavWorld.for_tank(asker_tank, asker.ctl.tanks_root, REROUTE_SHRINK_M)
+		var here := asker_tank.global_position
+		var forward := Vector3(-asker_tank.global_basis.z.x, 0.0, -asker_tank.global_basis.z.z).normalized()
+		world.prepare(here.x, here.z, HORIZON_M + req.half_l + 2.0)
+		if world.exact_hull_overlap(here.x, here.z, forward.x, forward.z, req.half_w, req.half_l):
+			reroute_start_blocked += 1
+			continue
+		var target := _reroute_target(asker, holder.ctl.tank, world, req.half_w, req.half_l)
+		if target.is_empty():
+			reroute_no_target += 1
+			continue
+		reroute_asks += 1
+		_reroute_now(asker, target[0], target[1], tick, world)
+
+
+## [the first point along the asker's route (its path from here, then its goal) past the holder and clear of both boxes, the
+## route's heading there], or [] when none lies within HORIZON_M (the holder stands on the goal: a plan round it goes nowhere).
+## The route is walked in REROUTE_STEP_M steps, so a long straight leg yields the point just past the holder, not its far end.
+static func _reroute_target(asker: Movement, holder: Tank, world: PlannerWorld = null, half_w := 0.0, half_l := 0.0) -> Array:
+	var here := asker.ctl.tank.global_position
+	var at := holder.global_position
+	var clear := 0.5 * (float(Movement.hull_box(asker.ctl.tank.unit_id)[2]) + float(Movement.hull_box(holder.unit_id)[2])) \
+			+ REROUTE_PAST_M
+	var points := PackedVector3Array()
+	for i in range(asker._path_index, asker._path.size()):
+		points.append(asker._path[i])
+	if asker._goal != Vector3.INF and (points.is_empty() or _flat(points[points.size() - 1], asker._goal) > 0.5):
+		points.append(asker._goal)
+	var past := Vector3(at.x - here.x, 0.0, at.z - here.z).normalized()
+	var last := here
+	for p: Vector3 in points:
+		var leg := Vector3(p.x - last.x, 0.0, p.z - last.z)
+		var length := leg.length()
+		if length >= 0.01:
+			var way := leg / length
+			var walked := minf(REROUTE_STEP_M, length)
+			while true:
+				var q := last + way * walked
+				if _flat(q, here) > HORIZON_M:
+					return []
+				if (q - at).dot(past) > 0.0 and _flat(q, at) >= clear and (world == null or world.footprint(q.x, q.z, way.x,
+						way.z, half_w, half_l, Planner.MARGIN_M, _no_start) >= 0.0):
+					return [Vector3(q.x, p.y, q.z), way]
+				if walked >= length:
+					break
+				walked = minf(walked + REROUTE_STEP_M, length)
+		last = p
+	return []
+
+
+## The re-route's request: from the hull's pose to `goal`, ending within REROUTE_STAY_M pointing `way` within REROUTE_TOL_DEG,
+## in the navmesh plus every living hull (the holder among them).
+static func reroute_req(mover: Movement, goal: Vector3, way: Vector3, world: PlannerNavWorld = null) -> PlanRequest:
+	var tank := mover.ctl.tank
+	var req := PlanRequest.for_unit(tank.unit_id)
+	var here := tank.global_position
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	req.at(here.x, here.z, forward.x, forward.z)
+	req.to(goal.x, goal.z, way.x, way.z, REROUTE_STAY_M, REROUTE_TOL_DEG)
+	req.arrive_gear = 1
+	req.budget = BUDGET
+	req.horizon_m = HORIZON_M
+	req.in_world(world if world != null else PlannerNavWorld.for_tank(tank, mover.ctl.tanks_root, REROUTE_SHRINK_M))
+	return req
+
+
+## Round 40 (M3 lab 2, 58b7cb865: with the start and goal checked, the refusals left were NO_PATH, 19 of 30 asks under
+## `reroute`: a holder holds because no spot fits, so the street often has no way round; each held the crew still for up to
+## REROUTE_HOLD_X holds and cleared its clocks): the first search is made HERE, whole (Planner.plan: the library's one-shot
+## search, apart from the seam's sliced session), and the crew is taken only with a plan in hand, driving from this tick.
+## A refusal costs the crew nothing. Measured: reroute_searches and their expansions (the cost of the scan's ticks).
+static func _reroute_now(mover: Movement, goal: Vector3, way: Vector3, tick: int, world: PlannerNavWorld) -> void:
+	var tank := mover.ctl.tank
+	var name := String(tank.name)
+	var req := reroute_req(mover, goal, way, world)
+	if _reroute_budget_test > 0:
+		req.budget = _reroute_budget_test
+		req.fine_retry = false
+	var plan := Planner.plan(req)
+	reroute_searches += 1
+	reroute_expansions += plan.expansions
+	if plan.code != PackedPlan.OK:
+		reroute_outcomes["refused_unheld:" + str(plan.code)] = int(reroute_outcomes.get("refused_unheld:" + str(plan.code), 0)) + 1
+		return
+	var crew := _reroute_request(mover, goal, way, tick, world)
+	_queue.erase(name)
+	crew.req = req
+	crew.pending = false
+	crew.executor = PlannerExecutor.new()
+	crew.executor.start(plan, tank)
+	plans += 1
+	plan_legs += plan.legs.size()
+	_reroute_note(name, "planned")
+	last_plans.append({"tick": tick, "name": name, "kind": "reroute", "legs": plan.describe(), "n_legs": plan.legs.size(),
+			"expansions": plan.expansions, "metres": plan.metres, "cusps": plan.cusps,
+			"start": [snappedf(crew.at.x, 0.01), snappedf(crew.at.z, 0.01)], "goal": [snappedf(goal.x, 0.01), snappedf(goal.z, 0.01)]})
+	if ManoeuvreCensus.trace_unit == name:
+		print("PLANNER_SEAM %s reroute: %s %s | %s" % [name, plan.code, plan.describe(), plan.why])
+
+
+## A k-turn crew asked from here to `goal` (the kturn branch of `_request`, the pose not AIM: the plan must END past the
+## holder, not merely point at it).
+static func _reroute_request(mover: Movement, goal: Vector3, way: Vector3, tick: int, world: PlannerNavWorld = null) -> Crew:
+	var tank := mover.ctl.tank
+	var name := String(tank.name)
+	var req := reroute_req(mover, goal, way, world)
+	var here := tank.global_position
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	mover.yield_to_plan()
+	var crew := Crew.new()
+	crew.kind = "kturn"
+	crew.req = req
+	crew.goal = goal
+	crew.order_goal = mover._goal
+	crew.asked_tick = tick
+	crew.held_since = tick
+	crew.tick_seen = tick
+	crew.at = here
+	crew.heading = forward
+	crew.tank = tank
+	_crews[name] = crew
+	_rerouted[name] = true
+	_hook()
+	_queue.append(name)
+	requests += 1
+	asks_by_kind["reroute"] = int(asks_by_kind.get("reroute", 0)) + 1
+	return crew
 
 
 # ---- the twin harnesses (MoverState / TrafficTwin snapshot statics; this is the seam's) --------------------------------

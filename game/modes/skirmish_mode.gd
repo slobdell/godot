@@ -283,6 +283,10 @@ static func demo_flags(current: LaunchFlags) -> LaunchFlags:
 	next.values["enemy-faction"] = enemy
 	next.values["player"] = "cpu"
 	next.values["enemy"] = "cpu"
+	# B5 (round 40, balance; R40.7): a measurement's mono army (Army.MONO_PREFIX) named on the command line stays.
+	for side: String in ["player", "enemy"]:
+		if current.text(side).begins_with("cpu:" + Army.MONO_PREFIX):
+			next.values[side] = current.text(side)
 	next.values["cinematic"] = ""
 	next.values["no-pick-faction"] = ""
 	next.values.erase("pick-faction")

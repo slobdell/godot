@@ -39,6 +39,65 @@ another project's workers (plane_maker), not ours: left alone. He confirmed buil
 3. **The portrait order-preview line** floating mid-screen: does he see it as wrong (a feedback item next round)?
 4. His playtest notes on main (amber chevrons, dock phone map, honest fog, the parked hold, his caller lines).
 
+**RUNNING (2026-10-24 ~20:45 PDT): main b25b803e5 = CP40.0 + N2 + N3 (native dd4a87bc6, builder2 green 3184/0; INHERIT).** Bars filed:
+B2s (+G8 mono guard), T1, S1 v3, G1 v6 (workstreams *Bars (round 40)*); M1 v2's coming. Rulings R40.1-R40.9 (his balance call A,
+his combined-arms note -> B5, settle's ADVANCE census -> balance B6, G3 v8 after the relay). Pending merges: native efb2d9a81
+(GUARD_SIDES, quick), manoeuvre ee659b522 (+ pair/native-chainrelease 18e5dbca8) when green.
+
+**2026-10-25 ~01:02: main 5a9743c2c GREEN on builder0** (`make check exited 0`, 3184 passed / 0 failed, 25 passed + 2 NOT JUDGED:
+perf-judge refused 3x at 1.4-2.2x on a busy box, scenario_perf unpinned; sim-baseline 13 unmoved, determinism 258cc8b1c957a796). Main
+65a5c5b70+ (manoeuvre's M1 v2 OFF merged after it) still needs the next batch check. **No perf verdict since 68d0410d3 (7,691 us/tick):**
+the first ON flip (T1, CP40.1) needs a quiet-window `make remote-quiet T=perf-judge` on builder0 before the round closes. Builder0 crashed
+22:04-22:20 (native's slot.sh recursion, R40.11); fixed on main.
+
+**2026-10-25 ~02:10: main 9d5907ddd GREEN on builder2** (`make check exited 0`, 3206 passed / 0 failed, 24 passed + 3 NOT JUDGED:
+perf-judge (builder2 doesn't judge), scenario_perf 3.08x, quiet window; sim-baseline 13 unmoved) = CP40.1 T1 ON + M1 v2 OFF + native's
+fixes. **Still owed: perf-judge on a quiet builder0** for T1 ON (last judged 68d0410d3, 7,691 us/tick). Bars so far: T1 PASS (shipped),
+M1 v2 FAIL (G5), G1 v6 FAIL (terminus 5 route twitch); running S1 v3 (settle), G3 v9 (orders, queued), B2s (balance, candidate screening).
+
+**2026-10-25 ~03:18: perf-judge PASS on main 245499bf1** (builder0 quiet window, attempt 1, idle 98 %, load 0.18): **7,431 us/tick**
+(68d0410d3 read 7,691), relative line PASS. Covers T1 ON + every OFF switch merged this round (M1 v2, G1 v6, G3 v8/v9). Main 245499bf1
+GREEN on builder2 (`make check exited 0`, 25 passed + 2 NOT JUDGED: perf-judge, scenario_perf 3.02x; sim-baseline 13 unmoved): fully verified.
+
+**2026-10-25 ~09:30: main (c30136971 code = 0badbb09e + docs) GREEN on builder0, 27 targets ALL JUDGED** (`make check exited 0`,
+3237 passed / 0 failed; perf-judge judged in the check). This is round 40's verified main without B2s.
+
+**ROUND 40 STATE (2026-10-25 ~20:50 PDT): heading to close; main unchanged (verified 0badbb09e + docs).** B2s v2's ARM (d385cd308,
+fm_c5r2_lawt5: Law +5 % toughness) went red on bridge-pooled (rust t15 s2, one crew 5.4 s at the rim v 3 s). Cause: ORCA steers a
+wheeled follower out past the deck mouth while its leader turns (R40.21; not the twin). Manoeuvre's follow-queue F1 took three forms
+(R40.22-R40.24); each fixed its case and broke another, so F1 stays OFF. bridge-pooled is not waived, so **the stat change carries to
+round 41** behind a speed-only bridge fix; Bar B2s v2 (8801-8840 + 8901-8940) is filed and unread. Waiting: balance's v2 dev screen,
+B2s's G5/G8 verdict, final docs tips; then close (orchestration.md §8).
+
+**Earlier: ROUND 40 STATE (2026-10-25 ~18:10 PDT): Bar B2s FAILED on G3 (R40.19).** BASE 5be511659 v ARM 66c4839a2, builder2, 1600 fights an
+arm: flatness 18.5 -> 8.9 (-9.6 ± 2.2) PASS, G1 blob 41 -> 35 % PASS, G2 turtle +0.4 PASS, G4 PASS, but G3's LAW blob fight length
++24.6 % ± 3.6 (band ±20 %) FAILS (Law's +15 % toughness). fm_law_c5r2 stays OFF; main unchanged (verified 0badbb09e + docs). Balance
+works v2 (Law toughness trimmed): dev screen on 8501-8540 with a per-faction G3 read, then Bar B2s v2 on fresh 8801-8840 + 8901-8940
+(builder2). The round can close around it; v2 carries into round 41 if unjudged. G5/G8 of B2s land ~20:00 for the record.
+
+**Earlier (ROUND 40 STATE (2026-10-25 ~08:35 PDT):** settle, manoeuvre, orders DONE (merged; only T1 shipped ON). native idle (N4 trig rerun
+waits a quiet builder0). **balance's Bar B2s series running on builder2** (fm_law_c5r2; BASE 5be511659 / ARM 66c4839a2; ~8-10 h): on a
+PASS the orchestrator merges ARM, ADOPTS its 13 recorded sim-baseline maps (`~/balance-runs/sim_baseline_adopt-66c4839a2.json`, laptop
+copy under references), runs one main check + a quiet perf-judge, then closes the round. Main batch check (0badbb09e + docs) running on
+builder0. Bars: T1 PASS (ON); M1 v2, G1 v6, S1 v3, G3 v9, cap deal, M3 FAIL (each traced, round-41 items in the briefs' Status).
+
+**2026-10-25 ~07:30: main 901afc1c1 GREEN on builder2** (`make check exited 0`, 3224 passed / 0 failed, 25 passed + 2 NOT JUDGED:
+perf-judge, scenario_perf 2.77x) = + balance 5be511659 (tools, B3 OFF), orders e7c8a9dce (all OFF), settle f7ad1078f (all OFF). Only
+OFF code since perf-judged 245499bf1.
+
+**LEAD QUESTION (asked 2026-10-25 ~03:45, R40.16): combined arms needs more than +/-15 % unit numbers.** All-tanks beats a mixed army 82 %;
+the mixed army's IFVs and MG scouts can't hurt tanks (autocannon 5-10 % of its damage on a tank's front). Recommended: give IFVs a
+real anti-tank missile (as the Bradley's TOW), slow and limited; the alternative is letting penetration change too.
+
+**Round-41 candidate (orders, 385a9be32):** G1 v7 starts on T1-ON main: there the G1 v6 arm's terminus 5 route twitch gap closes (dev,
+builder2 J4, a1602cca9 = main 9d5907ddd + c7d642aeb, 3801-3812, n 12: 27.6 v 27.0 m); its open item is s3805's whole-squad wedge (never-in
+0 v 1, R38.44). Settle's matching item: a cap deploy with a bunched squad deals least-total (_fit_deal), maybe with a street-axis lay
+(dry read after S1 v3).
+
+**Round-41 candidate (manoeuvre, 7849fe586):** M1 v3 = limit a parked crew's give-way reach only while its OWN squad is still arriving
+(a parked squad making way for a later squad is doing its job). M1 v2 failed G5 (2 -> 5; with T1 ON 1 -> 3): the last squad threads
+through squads already parked at the objective, and the 3 s release helps only a stalled crew, not a slow one.
+
 **Orchestrator, after launch:** run the round-30 loop (`orchestration.md`); merge CP40.0 alone the minute native names it and tell
 balance; merge CP40.1 when settle's T1 bar passes and tell orders the same minute.
 
