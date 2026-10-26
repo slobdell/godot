@@ -127,6 +127,26 @@ which the follower catches it again (F1 v1's lesson, R40.22, in another form).
 crossing, turning and waiting friends only. Cap 5 s (R41.2). tests/test_traffic_wait.gd 5/0 (laptop NATIVE=off; the cap test now
 calls the rule directly on a staged crossing friend). Lab 2 (v2, same 16 cells) queued on builder0 behind the bridge read.
 
+### Q2 lab 2 (v2, 6268e08a5): still FAIL, the rule dithered; v3 built (aaac5c133), lab 3 running
+
+**Lab 2** (same 16 paired cells, both GDScript drive, `~/overnight-manoeuvre/r41/jamlab3/`): D1 jam-seconds 13,365 -> 14,346 (+7.3 %;
+paired +61 s a run, se 32, 1.9 se WORSE) FAIL; D2 all-in 80.4 -> 83.0 (+2.5 s, se 2.2) FAIL; G5 never-in 10 -> 10 PASS; G6 contacts
++3.6 % PASS. Terminus worse in all four cells (55.7 -> 58.2, 57.6 -> 72.3, 56.6 -> 71.6, 68.6 -> 74.7). **The rule's counters:**
+1,003 waits a run, 7,533 queued crew-ticks: the mean wait was 0.25 s. Slowing for the friend removed ORCA's deflection, the wait
+ended (v2 ended it whenever ORCA did not deflect), the crew sped up, deflected, waited again: dithering at half pace, not holding a
+lane; the crews behind read the ditherers as stalled (stalled 3,924 -> 4,872). The test stage's tick trace showed a second flaw: two
+crews crossing each other's lane each wait for the other, each seeing the other's wait a tick late, so both flipped every tick.
+
+**v3 (aaac5c133; `tests/test_traffic_wait.gd` 6/0 laptop NATIVE=off):**
+- A wait, once begun, goes on with ITS friend while that friend is still ahead within the lane's band (12 m along, both radii + 0.5 m
+  + a 2 m band) and still one to wait on; the blocker is not re-selected every tick. A fresh wait is taken only on a tick ORCA deflects.
+- "Will clear" for a moving friend = its own lateral motion takes it out of my lane within WAIT_CAP_S (`Movement._lane_exit_s`); a
+  leader going my way has ~0 lateral speed and never qualifies (v2's same_way drop, now by construction); head-on excluded as before.
+- A mutual wait is a four-way stop: the lower name goes, the other waits (`_wait_kind` checks it before the speed branch).
+- Stale waits end on a street-mouth hold, at the route's end and on ticks `_avoid` is skipped (reversing, arriving).
+- On the stage: the crossing friend is now ONE wait of 2.2 s and 0.00 m off the line (v2: 54 waits, 6-8 m off the line).
+- Lab 3 (v3, the 16 cells) started 03:59 on builder0 (`jamlab4/`); v3 bridge reads queued (`bridgelab3/`).
+
 ### The bridge read (R41.3: bridge-pooled with `--traffic-on=wait`): THE WAIT RULE CLEARS THE BRIDGE
 
 bridgelab1 (builder0 light, native, bridge-pooled 18 runs an arm, deterministic; `~/overnight-manoeuvre/r41/bridgelab1/`; reader
