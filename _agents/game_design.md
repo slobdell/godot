@@ -4493,3 +4493,15 @@ off the heading is simply off screen. **Recommended to him (pending his answer):
 selection is quiet; = the bearing to the fight once it has contact or takes fire, with squad and enemy both in frame; when quiet, never
 look out at the wall (bias toward the arena's middle); an off-screen hit gets an edge marker and the camera turns at glide speed, never
 while he is aiming.
+
+**His follow-up (verbatim):** "ok great - would it otherwise make sense to just take some sort of weighted average of where the danger is
+or something? Key use case I just experienced: I had a group of scouts drive back behind my own lines to the edge of the map, and the
+camera pointed out completely to the audience. This of course has no meaningful utility, but it miht be correct behavior in order to
+maintain abstractions and mitigate special cases"
+
+**Agreed design (orchestrator, pending his OK): one rule, no special cases.** The look direction is a weighted sum of unit vectors from the
+selection: (a) its heading, weighted by speed and lightly; (b) each known enemy, weighted by threat (closer, firing at us, recently hit us
+weigh more; memory decays over seconds); (c) a "where the war is" pull, toward the centroid of known enemies, else the arena's middle.
+His retreat-to-the-edge case falls out: (b)+(c) outweigh a backward heading, so the camera looks back at the fight he is leaving.
+Guards: when the sum nearly cancels (threats on opposite sides) keep the current yaw; a deadband and minimum hold time stop it swinging;
+no turn while he aims; his manual yaw wins for the hand-back time; the turn speed is the glide's.
