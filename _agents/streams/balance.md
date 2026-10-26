@@ -104,6 +104,19 @@ units are not failing to get round; the IFV's share is small even though 72 % of
 hit is small, and 2-6 % of IFVs live, round 40). What a slower turret / hull can still buy: fewer tank hits a minute (the tank
 can't track a crossing target), and more time for the mixed army's artillery; the t50 / h25 / th arms say how much.
 
+**The IFV split (the orchestrator's ask, 2026-10-26 ~03:50; base arm's rows, no new runs; `tools/balance/trade_table.py`):**
+(a) in the mono line every enemy of the mixed army is a tank: 100 % of IFV fire went on tanks and made 10 % of the damage, so
+"busy with other targets" is not the cause here. (b) per second alive on tanks: condemned IFV 1.9 pts/s (0.5 front / 0.9 side /
+0.5 rear), lives 64 s, 4 % survive; its tank 5.8/s, artillery 7.3, Lancer 5.9; law IFV 2.8/s (55 s, 2 %); Gun Truck 0.4/s (twin
+MG pen 2.5 gets through nowhere); syndicate IFV 2.1/s (32 s). Dealt a credit: IFV 0.8 (condemned, law), 0.2 (gangs, syndicate)
+v tanks 1.6-2.1, artillery 1.4-5.4. (c) the static trade (catalog through armor.gd, no aim): one condemned IFV needs 187 s of
+fire to kill its tank on the front, 23 s on the side, 13 s on the rear; the tank kills the IFV in 9 / 5 / 4 s; per 1000 CR, IFV
+28 / 3 / 2 s v tank 3 / 2 / 1. Per credit the IFV is near even on a flank ON PAPER but dies in one or two shells first: a tank's
+gun (64 raw dps) is twice an autocannon's (33) at 1.33x the price, and its armour + hp buys 2-3x the life under fire. So 150 CR
+of IFV is out-traded by 200 CR of tank at every facing in practice. His levers can cut the tank's hits (turret) and buy the
+artillery / Rat Rods time (hull); neither touches the IFV's trade. In-bounds options for that trade: IFV toughness +15 % / cost
+-15 % (R40.1's keys, a screen); beyond the bounds, the honest number.
+
 **Bar B5 (DRAFT; filed for real, lever named, before any number on 9201-9240 + 9301-9340).** BASE = the tree as it ships
 without the lever; ARM = the same tree + the lever's values written into units.gd (`search.py apply`), one frozen ARM
 (R40.13). Workload: the mono-tank line (B5's: guard none, 5 guard arenas, mono on each team in turn, per faction; 9201-9240
