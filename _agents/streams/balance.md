@@ -112,7 +112,11 @@ builder0 now; the dev screen (base + lawt5 on 5be511659 + overrides, 8501-8540) 
 | G4 time-cap share | +0.06 (0.18) | pass |
 Table after: blob v a CPU of each faction (cond/gangs/law/synd) 24 / 50 / 29 / 36 %; a guard of each faction 38 / 26 / 53 / 22 %. Why
 G3: Law's +15 % hp/shield/armour makes a Law blob's fights run long. The dev screen read that cell +13.2 % (se 10.1, n 35): too small
-an n to see it (lesson: screen the per-faction length cells at the bar's n, or bound toughness and damage separately). G5/G8 pending.
+an n to see it (lesson: screen the per-faction length cells at the bar's n, or bound toughness and damage separately).
+**FULL VERDICT (20:55 PDT): FAIL, 17 of 18 rules hold; the one failure is G3's Law-blob length (R40.19: OFF, no guard amended).**
+G5 none line flatness -4.89 (se 3.91, n 100): pass. G8 mono-tank line -1.38 (se 1.20, n 800): pass; mono wins 84 % at the bar's seeds
+(condemned 79, gangs 78, law 90, syndicate 88; mono 21.2 v mixed 28.3 units). G6 perf-judge PASS and G7 green-but-sim-baseline on
+ARM 66c4839a2 (above). 3 attempts lost to Spot preemption across the series, each retried, 0 fights missing.
 
 **Report (2026-10-24, in progress).** Plan, in order: B1 tally (DONE, no fights) -> B4 harness + dry run of two candidates on
 dev seeds (running) -> pick the candidate -> Bar B2s series on 8301-8340 + 8401-8440 -> ship -> B3 on top. Reason: R40.1 put the stat
