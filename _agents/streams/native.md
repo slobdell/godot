@@ -96,7 +96,15 @@ as bars are filed -> spare: builder0 test-time read.
   drives a stage, 0 mismatches; ON 491 crew-ticks held, 21 waits (moving 464, turning 6, waiting 20), OFF 0; with
   test_traffic_wait 8/0. Mutations: wait branch dropped -> 377 mismatches, the ask gate's clause dropped -> 400. `wait_long` is never
   incremented, mirroring the GDScript (manoeuvre: the spec line came from v3; keep it). If Bar Q3 fails, the twin is discarded.
-  builder0 quick + native-proof (seeds 92721 / 8001 / 8002, wait on and off): running.
+  **QUICK-GREEN builder0 light 20300bb52: exited 0, 151 passed, 0 failed** (the diff's tests + the five drive twins; the wait stages
+  2,880 drives each, 0 mismatches). native-proof EQUAL on/off/ab, builder0, sumps: 92721 off 5cf09094178e2984 / on cd879db30c7894e5;
+  8001 off a092d3b70748e62b / on 674f8f6bb426edac; 8002 off 09d72fa169555ee6 / on 1db462f745d0e8d7 (ON moves every fight).
+  Sent to the orchestrator; merges with manoeuvre's Bar Q3 tree on a pass.
+- **test_full_check_lock case 7 (orchestrator, a builder2 flake): a0c281dec.** The holder holds until released; builder_checks is polled
+  up to 10 s for the holder's folder (was a fixed 0.3 s). Laptop 22/0 (and x3 under 8 busy loops); builder0 light shell-tools-test
+  exited 0, 22/0.
+- **Queued, gated:** Q5 `nopush` fields (`_nopush_for`, `_nopush_until` after the wait fields, off wip/manoeuvre-m1v3 a45c0b953): build
+  ONLY if the orchestrator says Q5's last lab passed.
 - **N5 (R41.2, granted core.mk's lint gate): lint-fast.** a64611c15 (+ .uid 0165f3d67). `make lint-fast`: tests/lint/lint_fast.gd loads
   every script in one process; tools/lint_fast.py turns `SCRIPT ERROR`/`Parse Error` + `at: (res://f:l)` into `f:l: msg` findings; no
   baseline; fails on: any finding, a planted file not reported, a file count short, no LINT_FAST_DONE. Planted every run: syntax error,
