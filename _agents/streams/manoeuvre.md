@@ -55,7 +55,223 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### CLOSE REPORT (round 40, 2026-10-25 ~08:00 PDT): done for the round
+**FINAL (round-40 close, 2026-10-25 ~22:15 PDT): 0a7097ee7 GREEN on builder0** (`>> remote: make native check exited 0`,
+3243 passed / 0 failed, 27 targets all passed, ALL JUDGED; sim-baseline 13 maps unmoved; copy-back verified, 228 files). The tip
+on top of it is docs only (Status). Everything of this stream ships OFF: M1 v2 (`--giveway-chain=v2`), M3 (`--giveway-reroute`),
+F1 (`--traffic-on=follow`).
+
+### ROUND-41 ITEM 1 (top): a speed-only bridge-mouth rule (R40.24: F1 stopped OFF; balance's stat change carries behind it)
+
+**The rule to build:** a WHEELED crew slows before a sharp turn on its route that its leader is in. ORCA's steering is untouched:
+the crew keeps ORCA's direction and only its speed is capped, so it reaches the turn at a speed and a line it can make.
+- Every F1 form changed ORCA's answer itself, and that reshuffled who meets whom across the whole map.
+- What made the bridge case: a follower at 10-11 m/s, 7 m behind a leader slowing into the deck mouth. ORCA carried it wide past
+  the entry (it never slowed enough to stay behind), and with a fixed 8 m turning radius no line back reached the deck.
+- A speed cap keyed to the turn (e.g. the speed at which the turn is still reachable from here, given the min turn radius and the
+  leader's place in it) leaves open traffic and straight streets exactly as today.
+- **Judge it on the bridge drill:** the orchestrator's Bar F1 v2 design (R40.23) fits it as written.
+  - Deciding: bridge-drill rim seconds on fresh seeds, BRIDGE_POOLED_SEEDS x ticks {1,8,15} x both sides, on main AND under
+    balance's v2 overrides. ON <= 0.8 x OFF pooled at >= 2 se, and every surviving crew crosses in both trees with ON.
+  - Guards: the wedge trace and the orders probe with M3's lines.
+  - BRIDGE_POOLED_SEEDS is a plain make variable (bridge-series loops BRIDGE_SEEDS), so any seeds work.
+- **A C++ twin** is needed before it ships ON (the cap would sit in the drive, inside native_drive's mirror).
+- **Its per-crew state must be real Movement members with native/src/exec_fields.h entries** (the orchestrator, close of round
+  40), not a static table hidden from test_native_exec_state. F1's measurement uses a static table, `Movement._follow_runs` keyed
+  by instance id (0a7097ee7). That passes the exec-state test only because F1 forces native_drive off. Instance ids are reused,
+  and the table is cleared only by `reset_route_arms()`, which only tests call, so in play it would outlive a match.
+- **F1's table is harmless today, checked in the code:** `_follow_runs` is written only by `_follow_note`, called only inside
+  `_avoid`'s `if not held and not Traffic.off(FOLLOW_SWITCH) and wheel_radius() > 0.0` branch (movement.gd ~2950-2959). With
+  `follow` OFF (DEFAULT_OFF) it is never written. Don't copy the pattern.
+
+**The evidence it starts from (all builder0 light, n 1 a run; bridge-pooled 18 runs an arm):**
+
+| F1 form (commit) | Main tree: OFF -> ON | Overrides tree: OFF -> ON | Dev cells (12 fights / 24 runs, lab read) |
+|---|---|---|---|
+| v1: queue behind any moving friend ahead (1267b1635 / a4e34d70e) | 18/18 -> 18/18; rim 8.1 -> 9.9 s, deck 7.5 -> 16.2 s, arrival 36.6 -> 37.8 s | 17/18 -> 18/18; rim 14.2 -> 10.0 s, deck 17.1 -> 23.2 s | D +70 %; G3 +19 %, G4 deaths 493 -> 466, G7 +2.2 s FAIL; waits >= 3 s in most fights, longest 8.8 s behind 1.1-1.3 m/s leaders |
+| v2: only with a turn > 45 deg within 2 radii (3f23a36ab) | 18/18 -> 18/18; rim 8.1 -> 5.9 s, deck 7.5 -> 6.4 s, arrival 36.6 -> 35.6 s | 17/18 -> 18/18; rim 14.2 -> 6.4 s, deck 17.1 -> 13.6 s | D +3.8 %; G4 deaths 493 -> 461 and G7 +2.3 s FAIL (terminus +20.0 / +13.8 / +12.0 s); no wait >= 3 s |
+| v2 + the leader within 8 m of the turn (e516edcec) | 18/18 -> **17/18** (green t1 s1, 4.0 s); rim 8.1 -> 9.2 s, deck 7.5 -> 4.8 s | 17/18 -> 18/18; rim 14.2 -> 8.6 s | D -12 %; G3 +13 % and G7 +3.3 s FAIL; terminus s7001 squad 1 fixed, squad 5 +12.1 s |
+
+- **The original cause** (rust t15 s2 under the overrides, 5a233f42b): Rust_S_3 was carried past the deck entry by ORCA round its
+  slowing leader. It was not the native drive (identical with `--brains-off=native_drive`); `--no-avoidance` gave rim 0.
+- **The terminus trace** (R40.23, 3f23a36ab): Green_Alpha_4 queued at 3.5 m/s for 6 s behind a steady friend because a route turn
+  lay within 16 m. It reached the junction late into crossing squad 3, circled, and its squad came in 20 s later.
+- **Main's own bridge margin:** with F1 OFF, main's three worst runs have a crew at the rim 1.5 s (a rust seed-2 run), 1.4 s and 1.1 s:
+  1.5-1.9 s under the 3 s line, identical in all three labs (deterministic). A stat change (balance's v2: 5.1 s) or a traffic rule
+  (F1 final: 4.0 s on green t1 s1) is enough to push one crew over. The drill's margin is thin, not just balance's tree.
+- **F1's code stays on the branch, OFF** (`--traffic-on=follow`, DEFAULT_OFF; tests/test_traffic_follow.gd; follow_judge.py).
+  Bars F1 and F1 v2 were never run; 8125-8148 are unspent (R40.24).
+
+### Late round-40 item: bridge-pooled at the bridge mouth (orchestrator, 2026-10-25 evening)
+
+**Ask:** balance's ARM d385cd308 (stat overrides fm_c5r2_lawt5) fails bridge-pooled 17 / 18 on builder0. Rust, start tick 15, seed 2:
+Rust_S_3 pressed at the rim 5.1 s against the 3 s bar, though all 4 crossed (4 Law Assault Guns, wheeled, v 3 Lancers). Find the
+cause, propose a fix in one line, build only on the orchestrator's go. A symmetric fix ships ON if bridge-pooled stays green on main
+AND on d385cd308's overrides, the rest of the check green, and the C++ twin matches; one that moves guard lines needs a bar.
+
+**Cause (traced 2026-10-25 18:20-18:40 PDT, builder0 light, my side worktree `../godot-manoeuvre-bt` at balance's 5a233f42b = d385cd308 +
+the trace target; n 1 a run, deterministic):**
+- **Not the native drive:** `--brains-off=native_drive` is identical (arrived 48.9 s, Rust_S_3 rim 5.1 s, rim_total 5.4 s). The
+  laptop's 31.0 s is some other difference.
+- **ORCA moves a wheeled follower around its leader at the deck mouth** (`--turn-trace=Rust_S_3`):
+  - S3 is the second crew of a single-file move at 10-11 m/s, about 7 m behind Rust_S_1, which slows to turn onto the deck.
+  - f 515-535: ORCA's answer (pace 0.96 -> 0.71) moves the steer point off the route to the outside, past the entry: (91.3, -12.4)
+    to (94.6, -9.2), against the route corner at (86, -10.5). The two hulls touch at f 520.
+  - When the steer point returns to the deck, S3 is heading east beside the mouth. A fixed 8 m turning radius can't reach the deck
+    at any speed.
+  - It presses at the rim and circles (17.5-20 s), then yields to S1 backing out (20.5-24.5 s). The same thing happens at the far
+    end behind S1 (28.5-32 s).
+- **Diagnostic, n 1:** `--no-avoidance` gives rim 0 (arrived 38.8 s).
+
+**Proposed (sent 18:45 PDT; no build until the go):** a WHEELED crew whose ORCA conflict is a friend ahead on its route going its way
+(FOLLOW_COS, moving) keeps steering on its route and takes only ORCA's along-route speed: it queues instead of passing. A stopped friend
+is passed as today. Symmetric, OFF until judged, GDScript first, then a C++ twin request. Expected to move guard lines, so seeds were
+asked for a bar.
+
+### F1, the follow-queue (R40.21, approved 2026-10-25 evening; `--traffic-on=follow`, DEFAULT_OFF until judged)
+
+**Built OFF (1267b1635, main 7f9414dd5 merged).**
+- **The rule:** in `Movement._avoid`, when ORCA would deflect a WHEELED crew and the nearest living friend ahead along its way (16 m,
+  35 deg cone) is moving its way (Traffic.FOLLOW_COS, >= 1 m/s), the crew keeps its route's steering and takes ORCA's along-route
+  speed. A stopped friend is passed as today. Counter: `Movement.follow_queued` (crew-ticks, in route_arms()).
+- **Native:** ON turns native_drive off (Traffic._chain_native, M3's pattern): `_avoid` runs inside the drive's C++ mirror.
+- **Tests** (tests/test_traffic_follow.gd, 5): off by default; the follow test (ahead and moving = followed; behind, off the way or
+  stopped = not); live, two law_tanks in file, ON keeps the follower's line (0.00 m, 236 queued crew-ticks); ON runs the GDScript
+  drive. Laptop NATIVE=off: 5 / 0; traffic|test_manoeuvre|movement|steering 197 passed, 0 failed (1267b1635).
+- **Lab 1 (running, builder0 light):** bridge-pooled OFF / ON on 1267b1635, and on 1267b1635 + balance's 8e257f3bc + d385cd308
+  cherry-picked (side worktree `../godot-manoeuvre-bt`, detached 29b9072ed; nothing of balance's on this branch). Raw data:
+  `~/overnight-manoeuvre/r40/f1lab1/`.
+
+**C++ twin request (for native, via the orchestrator; F1 can't ship ON without it):**
+- **Where:** native's mirror of `Movement._avoid` (drive_native.cpp), after ORCA's `chosen` velocity and its `keep` are computed,
+  BEFORE the start-of-order grace / min-pace branch.
+- **When:** `follow` is ON (Traffic.DEFAULT_OFF lists it; `--traffic-on=follow`), the call isn't a hold's inner call (`held` false),
+  and the hull is wheeled (`wheel_radius() > 0`).
+- **The test, `_following(here, way)`:** `way` = (waypoint - here) flat, normalised. Over the living friends of its team (not
+  itself), take the NEAREST whose flat offset `off` has length d with 0.01 <= d < FOLLOW_AHEAD_M = 16.0 and off.way >=
+  FOLLOW_CONE_COS (0.819) x d. It is followed if its flat `real_velocity` v has |v| >= FOLLOW_MOVING_MPS = 1.0 and v.way >=
+  Traffic.FOLLOW_COS (0.866) x |v|. Ties go to the first in tanks_root child order (the strict `d >= best_d` skip).
+- **Then:** `follow_queued += 1`; return [waypoint, clamp(chosen.way / max(desired, 0.1), 0, 1)]. The steer point is unchanged and
+  the pace is ORCA's along-route share.
+- **OFF: nothing changes.** Twin check: tests/test_traffic_follow.gd under native, and bit-identity per seed (R38.24) with
+  `--traffic-on=follow` on and off.
+
+- **Lab 1 (builder0 light, bridge-pooled, 18 runs an arm, n 1 a run):**
+
+  | Tree | Arm | bridge-pooled | Rim | Deck jam | Worst rim crew | Mean arrival |
+  |---|---|---|---|---|---|---|
+  | 1267b1635 (main + F1) | OFF | 18/18 | 8.1 s | 7.5 s | 1.5 s | 36.6 s |
+  | 1267b1635 | ON | 18/18 | 9.9 s | 16.2 s | 2.0 s | 37.8 s |
+  | 29b9072ed (+ d385cd308's overrides) | OFF | 17/18 (rust t15 s2) | 14.2 s | 17.1 s | 5.1 s | 34.9 s |
+  | 29b9072ed | ON | **18/18** | 10.0 s | 23.2 s | 1.1 s | 36.4 s |
+
+- **Lab 2 (a4e34d70e, builder0 light J4, both arms GDScript drive; dev seeds: wedge locks/terminus/sumps x 7001-7004, 12 fights;
+  orders x 7001-7002, 24 runs; follow_judge.py as a lab read): F1 as built is TOO BROAD.**
+  - D moving-stuck 137.7 -> 234.4 s (+70 %).
+  - G3 contacts +19 % (FAIL). G4 deaths 493 -> 466 (FAIL). G7 last-in +2.2 s (FAIL). G1, G2, G5, G6 pass.
+  - The rule fires all over open traffic: 2,756-10,490 queued crew-ticks a fight, 0-13 waits >= 3 s.
+  - The longest waits run 2.8-8.8 s, behind leaders crawling at 1.1-1.3 m/s, just over the 1 m/s floor (locks s7001
+    Green_Wrenches_7 8.8 s behind Green_Wrenches_3).
+  - **Not gated; series not started** (it would spend 8125-8148 on a near-certain FAIL).
+  - Proposed to the orchestrator: **F1 v2, corner-gated.** Queue only when the wheeled crew's route turns by more than 45 deg
+    within 2 x its min turn radius ahead (a turn it can't make back to after a swerve). Both bridge ends qualify. Waiting on the
+    go.
+
+- **F1 v2 built (3f23a36ab, R40.22, main 6dc9f67d3 merged):** queue only where the route turns by more than FOLLOW_TURN_DEG = 45 deg
+  within FOLLOW_TURN_RADII = 2 x the min turn radius ahead (`Movement._turn_ahead`); elsewhere ORCA passes as today
+  (`follow_open` counts those follows). Laptop NATIVE=off: traffic|test_manoeuvre|movement|steering|wedge 216 passed, 0 failed.
+- **F1 v2 labs (builder0 light; bridge 18 runs an arm; dev cells as lab 2, GDScript drive both arms; `~/overnight-manoeuvre/r40/f1v2lab/`):**
+
+  | Tree | Arm | bridge-pooled | Rim | Deck jam | Worst rim crew | Mean arrival |
+  |---|---|---|---|---|---|---|
+  | 3f23a36ab (main + v2) | OFF | 18/18 | 8.1 s | 7.5 s | 1.5 s | 36.6 s |
+  | 3f23a36ab | ON | 18/18 | 5.9 s | 6.4 s | 1.1 s | 35.6 s |
+  | 5fb35635e (+ d385cd308's overrides) | OFF | 17/18 (rust t15 s2) | 14.2 s | 17.1 s | 5.1 s | 34.9 s |
+  | 5fb35635e | ON | **18/18** | 6.4 s | 13.6 s | 0.8 s | 32.8 s |
+
+  - **Dev cells (follow_judge.py as a lab read, n 12 fights / 24 runs):**
+    - D moving-stuck 137.7 -> 142.9 s (+3.8 %, 0.1 se): flat, nowhere near the 0.8 line.
+    - G4 deaths 493 -> 461 (FAIL, line +/- 25; kill share unmoved).
+    - G7 last-in +2.3 s (FAIL): terminus 5 route s7001 +20.0 s, terminus 5 route s7002 +13.8 s, terminus 3 click s7001 +12.0 s.
+    - G1, G2, G3, G5, G6 pass. G5 never-in 1 -> 0.
+  - **Queue left in open traffic: 0 by construction.** 1,730-8,967 follows a fight passed to ORCA (`follow_open`); 413-1,486
+    queued crew-ticks a fight, all at turns.
+  - **Waits >= 3 s: 0 in every fight.** The longest is 2.23 s (terminus s7003 Rust_Spears2_1 behind Rust_Spears2_5, the
+    leader's least speed 1.27 m/s). No crawler wait outside a turn, so no trace (the orchestrator's condition).
+  - **Reading:** v2 fixes the bridge (rim and deck jam both down, on both trees) and no longer queues in the open. On D it is
+    neutral, so Bar F1 as filed would very likely FAIL on D. The terminus last-in cost (squads queued at street corners) is a
+    risk for G7.
+
+- **R40.23 terminus trace (3f23a36ab, builder0 light, `--turn-trace=Green_Alpha_4` both arms, terminus 5 route s7001):** squad 1 at
+  21.9 -> 51.0 s. Green_Alpha_4 queued at 3.5 m/s for 6 s (f 440-620) behind a friend driving steadily up the street, because the
+  route turned within 16 m (the leader nowhere near it). It reached the junction late into crossing squad 3 (Green_Charlie_1,
+  f 700), circled, and spent 20 s off the drive path. OFF: 5-12 m/s up the same street.
+- **Fix (e516edcec):** queue only while the LEADER is within FOLLOW_AT_TURN_M = 8 m of the turn's vertex (`_turn_vertex`).
+  Laptop NATIVE=off 216 / 0.
+- **Labs on e516edcec (builder0 light; overrides tree 0c5d4ca6f): NOT a clean fix.**
+  - bridge-pooled main: OFF 18/18 -> ON **17/18** (green t1 s1, a crew at the rim 4.0 s; rim 8.1 -> 9.2 s, deck jam 7.5 -> 4.8 s,
+    arrival 36.6 -> 36.2 s).
+  - bridge-pooled under the overrides: OFF 17/18 -> ON 18/18 (rim 14.2 -> 8.6 s, deck 17.1 -> 17.7 s, worst 1.8 s).
+  - Dev cells: D 137.7 -> 120.9 s (-12 %, -0.4 se); G3 contacts +13 % (lab FAIL); G7 last-in +3.3 s (lab FAIL, 4 runs > 10 s
+    later v 1 earlier); G1, G2, G4, G5, G6 pass. Queued 201-955 crew-ticks a fight; waits >= 3 s: 0; the longest 2.4 s.
+  - terminus 5 route s7001: squad 1 24.6 s (fixed, OFF 21.9), but squad 5 43.1 v 31.0 s.
+- **Reading:**
+  - Each F1 form fixed the case in front of it and moved a failure somewhere else: v1 open-ground queues; v2 the terminus corner;
+    v2 + the leader-in-turn gate fails main's own bridge seed (green t1 s1).
+  - n 1 a cell and any change to ORCA's answer reshuffles who meets whom where. Tuning the gate further against these labs is
+    fitting noise.
+  - Recommended to the orchestrator: stop F1 here (OFF, no bar run, 8125-8148 unspent). Balance's ARM fails bridge-pooled on a
+    traffic-order seed, a known fragility, not a new defect of the stat change. Round 41 could try a speed-only rule (a wheeled
+    crew slows before a sharp turn its leader is in, ORCA's steering untouched) with a bar built on the bridge drill.
+
+**Twin spec diff, v1 -> v2 (NOT final, not sent to native: F1 is recommended stopped; on e516edcec the queue also needs the leader within FOLLOW_AT_TURN_M = 8 m of `_turn_vertex`'s vertex):**
+- **Added:** after `_following` finds a leader, the queue holds only if `_turn_ahead(here, FOLLOW_TURN_RADII x wheel_radius())`.
+  Otherwise the leader is dropped (`follow_open += 1`, measurement) and the code falls through to today's path.
+- **`_turn_ahead(here, within_m)`:**
+  - prev = flat(here), walked = 0, way_in = 0. For i from `_path_index` to the end of `_path`:
+    - leg = flat(_path[i]) - prev; skip if |leg| < 0.1 (prev is NOT advanced);
+    - way = leg / |leg|; if way_in != 0 and way_in . way < cos(45 deg), return true;
+    - walked += |leg|; if walked > within_m, return false;
+    - way_in = way; prev = flat(_path[i]).
+  - After the loop, return false.
+- **Constants:** FOLLOW_TURN_DEG = 45.0, FOLLOW_TURN_RADII = 2.0.
+- **Measurement only, no twin needed for behaviour:** follow_open, follow_longest, follow_long_waits. The rest is as the v1
+  request above.
+
+### Bar F1 (filed 2026-10-25 ~19:10 PDT, BEFORE any number on 8125-8148)
+- **Gate:** the tree's full check green on builder0 FIRST (C31.1), F1 OFF. The checked hash is named here before the series starts.
+  The series runs from that one frozen tree (R40.13): no game/ or tests/ commits until its `end` line.
+- **Arms:** OFF (default) v ON `--traffic-on=follow`. **Both run the GDScript drive (`--brains-off=native_drive` in BOTH),** as Bar
+  M3, so the pair compares the rule alone. Native ON otherwise. settle's switches at main's defaults in both.
+- **Machine:** builder0 light lane, J 4. **Seeds (R40.21):** A on 8125-8136, B on 8137-8148.
+- **A, wedge trace** (`manoeuvre-wedge-trace`, locks/terminus/sumps x 8125-8136, 180 s, 36 fights an arm, paired by fight):
+  - **D (deciding): moving-stuck seconds:** long episodes (touching a hull, net < 0.5 m, >= 3 s) whose `phase` has `arrived` under
+    half its ticks (M3's lesson: a parked crew touching a parked friend is not stuck to the player). PASS: ON <= 0.8 x OFF AND
+    paired per-fight mean < 0 by >= 2 se.
+  - G1 give-way deaths (jam:yielding + jam:friend), G2 stuck deaths (stuck:*): ON - OFF <= max(2 paired se x n, 3).
+  - G3 friendly contact ticks: ON <= 1.10 x OFF.
+  - G4 kill share within +/- 0.03 of OFF; total deaths within +/- 5 %.
+- **B, orders probe** (locks/crossing/terminus x 3,5 squads x click,route x 8137-8148, 144 runs an arm, arms
+  `main:--brains-off=native_drive` / `follow:--traffic-on=follow,--brains-off=native_drive`):
+  - **G5 never-in runs: ON <= OFF.**
+  - G6 all-in, paired median ON - OFF <= +2.0 s.
+  - G7 last-in, paired mean <= +2.0 s AND runs > 10 s later <= runs > 10 s earlier + 3.
+- **G8 bridge-pooled:** 18/18 with `--traffic-on=follow` on the bar's tree (builder0 light, native, as the check runs it; ON forces
+  the GDScript drive).
+- **Reported, not judged:**
+  - long episodes (all) and the three longest;
+  - follow_queued, if the wedge logs carry route_arms;
+  - bridge-pooled ON under d385cd308's overrides (the lab's ask; it's balance's tree, not this bar's).
+  - **Added by the orchestrator after lab 1, reported only (the bar's judged lines stand as filed):** bridge-pooled deck jam and
+    mean arrival, OFF v ON; and the longest single follow-queue wait in the wedge cells, with its crew, leader, seed and the
+    leader's least speed (`follow_longest` / `follow_long_waits` in WEDGE_TRACE, measurement only, a newer commit). Lab 1 on
+    1267b1635: deck jam 7.5 -> 16.2 s, mean arrival 36.6 -> 37.8 s. If lab 2 shows a crew queued behind a friend that slows for
+    no reason, one is traced before the series.
+- **Judge:** `python3 tests/manoeuvre/follow_judge.py wedge-off wedge-on probe/rows.jsonl --on-arm=follow` (D on moving-stuck
+  seconds, the rest as reroute_judge.py), plus bridge_verdict.py's line for G8. Committed before the series starts.
+- **A pass** goes to the orchestrator; F1 ships ON only with native's twin matching. **A fail:** F1 stays OFF; no re-run on these
+  seeds.
+
+### CLOSE REPORT (round 40, 2026-10-25 ~08:00 PDT; the bridge item after it is above): done for the round
 
 **Done:** every backlog item.
 1. **M1 v2:** built OFF; its code is on main (65a5c5b70).

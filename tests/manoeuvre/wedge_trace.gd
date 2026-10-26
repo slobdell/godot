@@ -111,7 +111,8 @@ func _run() -> void:
 			"totals": _totals, "wedged_units": Movement.wedged_units,
 			"stall_intent_on": Manoeuvre.stall_intent_on(), "stall_intent_ticks": Manoeuvre.stall_intent_ticks,
 			"esc_fires_hull": Movement.esc_fires_hull, "stall_net_holds": Movement.stall_net_holds, "esc_asks": Movement.esc_asks, "yields_started": Movement.yields_started,
-			"unstick_fires": Movement.unstick_fires}))
+			"unstick_fires": Movement.unstick_fires, "follow_queued": Movement.follow_queued, "follow_open": Movement.follow_open,
+			"follow_longest": Movement.follow_longest, "follow_long_waits": Movement.follow_long_waits}))
 	quit(0)
 
 
