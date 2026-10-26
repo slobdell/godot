@@ -95,7 +95,7 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   ba0d14aab's full check. Only variant dev-read (builder0 light, 941325eaa, native, 7007-7012, n 6 a cell): places outside 26 -> 2,
   route_left 1037 -> 335, re-dealt 0, contacts 6554 -> 5155, all 14 cells' probe guards incl. the terminus 5 route twitch, yard_open 96/96
   identical; laptop terminus 5 route: main leaves squad 5 never in, the arm gets all five in (s3805's risk reverses).
-- **Bar G1 v8 (orders; FILED 099a3f135, 2026-10-26 ~05:00, before any number on 9101-9112).** v7 withdrawn unread: its own shots of
+- **Bar G1 v8 (orders; WITHDRAWN UNREAD -> G1 v9; FILED 099a3f135, 2026-10-26 ~05:00, before any number on 9101-9112).** v7 withdrawn unread: its own shots of
   his click (laptop, terminus s7007, 5 squads, click ~30 m from the army's middle) gave 3 of 5 squads places no nearer the click than
   they stood (squad 5 placed 103 m out, 15 m farther than it started; "in" at 0.1 s without moving: he'd see them ignore the click).
   v8 = v7 + `--group-column-toward=on`: a column that would put any squad > 10 m farther from the click than it stands is refused and
@@ -109,6 +109,12 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   9037-9048 his 5-squad across click, all-in mean and never-in squads each ARM <= BASE + 1.645 se, contacts <= BASE x 1.05 (q3_judge.py);
   fight guards G1-G4 via wedge trace on 9037-9042. Both arms `--brains-off=native_drive`; O2 OFF; four variants labbed on 7001-7004 +
   the 18-run drill noted. Ships ON only with native's twin and bridge-pooled's hard line green.
+- **Bar G1 v9 (orders; FILED 383828c39, 2026-10-26 ~05:30, before any number on 9101-9112).** v8 withdrawn unread: its dev read
+  (builder0 light, 099a3f135, native, 7007-7012, n 6) failed places-outside 26 -> 9 v <= 6.5 (refusing the whole column hands squad 5
+  main's own place, outside the corridor on all six seeds); guards passed. v9 = `--group-column-toward=stay`: the column stands; only a
+  squad it would send > 10 m away keeps the spot it stands on (tail of the street). Judge g1v8 unamended. Three variants dev-read on
+  7007-7012 (noted). Feel question for him (orders' Status): on a click right beside his army, squads already in that street hold and
+  only the near ones move.
 
 ## Rulings (round 41)
 
