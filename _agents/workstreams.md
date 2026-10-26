@@ -131,6 +131,10 @@ _(filed bars go here, before their numbers)_
   the counter fires for a faction only if B8's dev screen shows its barrage lineup beating the roll (ON <= OFF - 2 se); for a faction
   where it doesn't, the counter stays off and that is reported (a counter that loses worse than the roll must not fire). B8's dev
   screen runs first; Bar B7 freezes on the tree that carries whatever B8 ships. The pooled share stays a reported column.
+- **R42.4 (2026-10-26 ~15:40) GRANT balance one line in `game/garage/garage_screen.gd` `_hint()`.** `GarageAdvice.composition_hints`
+  is shown nowhere in the game (tests only), so the brief's suggestion could not be seen. Granted: `_hint()` returns
+  `GarageAdvice.tank_rush_line(draft)` + " · FIGHT when ready" when the line is non-empty (the status line under the credits bar);
+  the function and `--tank-rush-hint=off` live in garage_advice.gd. Additive, merge note, screenshot at desktop and phone.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
