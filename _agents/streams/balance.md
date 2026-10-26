@@ -196,6 +196,16 @@ bridge runs (9025-9036 x 3 ticks x 2 sides) the v2 overrides tree with the rule 
 known bridge failure remains the 18-run drill's rust t15 s2 (R40.20). The ARM rebuild recipe (apply + cherry-pick ad956031b)
 is proven mechanical on ff30edf87 (`apply --tree` now). builder2 stays on B5: the deal arm, pen7, then the lines screen.
 
+**BARRAGE ARM DONE (11:15; 3ef8d5771, builder2, 9401-9410, 200 fights, 0 lost; all-tanks v `law_barrage` / `syndicate_barrage`,
+siege's shape, same money, paired with base):** law **92 -> 96 % (+4, se 3)**, syndicate **92 -> 87 % (-5, se 5)**. Law's Gas
+Rocket Truck deals 2.65 points a credit (68 % alive) v the Condemned Artillery's 5.4 and the Wrecker Catapult's 3.9: its gas
+rockets (55 dmg every 6 s, the weakest artillery in the catalog: 79 s of fire to kill an Assault Gun v 14-25 s for the others)
+can't hurt tanks; it is a suppression weapon. The Missile Ring deals 1.06 a credit at 380 CR and 24 % live (the Railgun kills
+it in 5 s); the syndicate's own Railgun Platform is its only unit that trades with tanks (1.56 a credit). **The four-faction deal
+answer:** condemned 47 %, gangs 52 % (his target, with the lineups that exist), law 93-96 %, syndicate 87-99 % (no lineup in the
+roster reaches it: their anti-tank IS the tank). Law and syndicate need a number change to get there, and the +/-15 % keys
+on their artillery are the first candidate (not screened this round).
+
 **pen7 ARM DONE (10:51; 8f2643375 + `--tune=autocannon.penetration=7,pulse_cannon.penetration=7,twin_mg.penetration=4`, builder2,
 9401-9410, 400 fights, 0 lost, paired with base; OUTSIDE R40.1's keys, a read for his decision only):** all-tanks **85 -> 85 %
 (+0, se 1)**: condemned +7 (se 3), gangs -4 (se 4), law -2 (se 2), syndicate +1 (se 2); length +1 %; flank share +0.7 (se 0.6).
@@ -211,7 +221,7 @@ all-tanks 82 -> 80 % (-2, se 3). Seven runs to go.
 siege's shape in each roster (artillery, scout, tank, artillery, IFV, scout), same money as the base deal. All-tanks v each, mono
 on each team, 9401-9410, paired with base (`~/balance-runs/b5-barrage.sh`). Test pins the roll and the load. Quick-remote on the first cut failed twice (no assert_false in the harness; then test_army_economy's 17-archetype digest, which now skips measure-only lineups: one additive condition in a shared test, **merge note**); the arm runs on 3ef8d5771: **quick-remote GREEN** on 601963cd5 = 3ef8d5771 + Status (builder0 `make quick exited 0`, 269 passed / 0 failed, 71 scripts lint).
 
-**B5 WRITE-UP FOR HIM (10:55; Law and Syndicate's barrage numbers pending, else final; the orchestrator takes it to him).**
+**B5 WRITE-UP FOR HIM (FINAL 11:25; the orchestrator takes it to him).**
 *What you noticed is real, and it is not about facing.* An army of only tanks beats the same faction's normal mixed army, same
 money, 85 % of the time (CPU v CPU, 5 maps, both sides, 400 fights). Your target was the mixed army winning 60-65 %, so the
 tank army should win 35-40 %: about 45 points away.
@@ -238,7 +248,12 @@ Syndicate have no such lineup to field: Law's "dragnet" is three machine-gun sco
 Syndicate's "standoff" is Spotter Platforms (its lancer), which the Railgun Platform kills in one shot from 110 m (99 %).
 *So the recommendation changes:* (1) give every faction an artillery-heavy lineup and make the CPU field it when it faces an
 all-tank army (and show you the same lineup in the garage): no unit changes, the game already has the units; measured at 47-52 %
-for the two factions that have one [Law and Syndicate: barrage arm, pending]. *What you'd do differently in the garage:* bring
+for the two factions that have one. For Law and the Syndicate it does NOT work (we built the same lineup for each and measured
+it: the tank army wins 96 % and 87 %): Law's Gas Rocket Truck is a suppression weapon that needs 79 s of fire to kill one
+Assault Gun (the Condemned Artillery needs 14 s), and the Syndicate's Missile Ring costs 380 credits and dies to the Railgun
+in 5 s; for those two factions the best anti-tank unit is their own tank. So for Law and the Syndicate the honest answer is a
+number change to their artillery (within your 15 %: more damage, less cost), to be measured next round. *What you'd do
+differently in the garage:* bring
 two artillery squads with your tanks instead of IFVs (Condemned: two Artillery squads, two Scout squads for eyes, a Tank
 squad, one IFV squad; Road Gangs: two Catapult squads, two Rat Rod squads, a Gun Truck squad and a Tanker). Keep the scouts: the
 artillery only hits what someone can see. *What the CPU would field against your all-tank army:* the same lineup, so your
