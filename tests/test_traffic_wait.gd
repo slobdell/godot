@@ -12,7 +12,6 @@ var _lab: TacticsLab
 
 func teardown() -> void:
 	Traffic.set_off("wait", Traffic.DEFAULT_OFF.has("wait"))
-	Traffic.set_off("waitcross", Traffic.DEFAULT_OFF.has("waitcross"))
 	if _lab != null:
 		_lab.dispose()
 		_lab = null
@@ -39,7 +38,6 @@ func _steps(n: int) -> void:
 
 func test_off_by_default() -> void:
 	assert_true(Traffic.DEFAULT_OFF.has("wait"), "Q2 is opt-in until judged")
-	assert_true(Traffic.DEFAULT_OFF.has("waitcross"), "and the broad crosser rule stays OFF (labs 1-3)")
 
 
 ## The kind test, on staged friends: a friend driving across my lane is waited on ("moving"); one parked is not; one coming head-on
@@ -50,19 +48,7 @@ func test_wait_kind_reads_what_the_friend_is_doing() -> void:
 	var north := Vector2(0.0, -1.0)
 	await _steps(2 * SimClock.TICK_RATE)
 	print("MEASURE wait kind crossing: friend v %s" % (staged[1] as Tank).real_velocity)
-	assert_eq(me._wait_kind(staged[1], north), "", "a friend driving straight east across my lane: passed as today (v4)")
-	Traffic.set_off("waitcross", false)
-	assert_eq(me._wait_kind(staged[1], north), "moving", "...waited on only under the broad `waitcross` rule")
-	Traffic.set_off("waitcross", true)
-	_lab.dispose()
-	# A wheeled leader 12 m ahead facing east, ordered north: it drives an arc, moving with its nose off its own leg: turning.
-	staged = await _stage(Vector3(0.0, 0.0, -12.0), -PI / 2.0, {"type": "move_to", "x": 0.0, "z": -70.0}, "ifv")
-	me = Movement.of(staged[0])
-	await _steps(SimClock.TICK_RATE / 2)
-	var leader := staged[1] as Tank
-	var lm := Movement.of(leader)
-	print("MEASURE wait kind turning leader: v %s nose %s way %s" % [leader.real_velocity, -leader.global_basis.z, lm._travel_direction(lm._goal, false)])
-	assert_eq(me._wait_kind(leader, north), "turning", "a moving leader still swinging onto its leg will be off my line when done")
+	assert_eq(me._wait_kind(staged[1], north), "moving", "a friend driving east across my lane will clear it")
 	_lab.dispose()
 	staged = await _stage(Vector3(0.0, 0.0, -9.0), PI / 2.0, {})
 	me = Movement.of(staged[0])
@@ -94,29 +80,16 @@ func test_wait_kind_reads_what_the_friend_is_doing() -> void:
 	fm._wait_since = Engine.get_physics_frames()
 	assert_eq(me._wait_kind(friend, north), "waiting", "the car ahead in the jam, itself waiting, will move when its friend does")
 	fm._wait_for = "Green_Me"
-	assert_eq(me._wait_kind(friend, north), "waiting", "waiting for me: the four-way stop's tie-break, Green_Friend < Green_Me goes, I wait")
-	assert_eq(fm._wait_kind(staged[0], Vector2(0.0, -1.0)), "", "...and from its side, with my wait on it, it goes")
+	assert_eq(me._wait_kind(friend, north), "", "but not when it is waiting for me")
 	fm._wait_for = ""
 
 
-## v3's "will clear": the friend's own motion takes it out of my lane within the cap. Forward -Z, lane half-width 4 m.
-func test_lane_exit_reads_the_friends_own_motion() -> void:
-	var north := Vector2(0.0, -1.0)
-	assert_near(Movement._lane_exit_s(Vector2(-1.0, -8.0), Vector2(5.0, 0.0), north, 4.0), 1.0, 0.001, "1 m left, driving east at 5 m/s: out past the right edge (5 m) in 1 s")
-	assert_near(Movement._lane_exit_s(Vector2(-1.0, -8.0), Vector2(-5.0, 0.0), north, 4.0), 0.6, 0.001, "1 m left, driving west: out past the left edge (3 m) in 0.6 s")
-	assert_eq(Movement._lane_exit_s(Vector2(0.0, -8.0), Vector2(0.0, -5.0), north, 4.0), INF, "a leader going my way never leaves it")
-	assert_eq(Movement._lane_exit_s(Vector2(0.0, -8.0), Vector2(0.0, 5.0), north, 4.0), INF, "nor one coming at me")
-	assert_near(Movement._lane_exit_s(Vector2(0.0, -8.0), Vector2(0.5, -5.0), north, 4.0), 8.0, 0.001, "a diagonal leader drifting out at 0.5 m/s: 8 s, past the cap")
-
-
-## Live (the broad `waitcross` rule, OFF by default): a friend crosses my lane 9 m ahead. OFF, ORCA steers me round it; ON, I hold my
-## line and slow, and go on once it is past.
+## Live: a friend crosses my lane 9 m ahead. OFF, ORCA steers me round it; ON, I hold my line and slow, and go on once it is past.
 func test_on_holds_the_line_for_a_crossing_friend() -> void:
 	var lateral := {}
 	var ahead := {}
 	for arm: String in ["off", "on"]:
 		Traffic.set_off("wait", arm == "off")
-		Traffic.set_off("waitcross", arm == "off")
 		var staged: Array = await _stage(Vector3(-9.0, 0.0, -9.0), -PI / 2.0, {"type": "move_to", "x": 60.0, "z": -9.0})
 		var me := staged[0] as Tank
 		var queued := Movement.wait_queued
@@ -148,7 +121,6 @@ func test_the_wait_times_out_and_hands_back_to_avoidance() -> void:
 	var north := Vector2(0.0, -1.0)
 	await _steps(2 * SimClock.TICK_RATE)
 	Traffic.set_off("wait", false)
-	Traffic.set_off("waitcross", false)
 	var here: Vector3 = (staged[0] as Tank).global_position
 	var preferred := north * (staged[0] as Tank).max_forward_speed
 	print("MEASURE wait cap stage: blocker %s, friend at %s v %s, me at %s" % [me._wait_blocker(here, north, preferred),
@@ -158,13 +130,13 @@ func test_the_wait_times_out_and_hands_back_to_avoidance() -> void:
 	var now := Engine.get_physics_frames()
 	me._wait_for = "Green_Friend"
 	me._wait_since = now - int(Movement.WAIT_CAP_S * SimClock.TICK_RATE)
-	assert_eq(me._wait(here, north, preferred, 9.0, true), -1.0, "at the cap the wait hands back to avoidance")
+	assert_eq(me._wait(here, north, preferred, 9.0), -1.0, "at the cap the wait hands back to avoidance")
 	assert_eq(Movement.wait_timeouts, timeouts + 1, "and counts a time-out")
 	assert_eq(me._wait_for, "", "the wait is over")
 	assert_eq(me._wait_refused, "Green_Friend", "that friend is refused")
-	assert_eq(me._wait(here, north, preferred, 9.0, true), -1.0, "and not waited on again during the cooldown")
+	assert_eq(me._wait(here, north, preferred, 9.0), -1.0, "and not waited on again during the cooldown")
 	me._wait_refused_until = now - 1
-	var pace := me._wait(here, north, preferred, 9.0, true)
+	var pace := me._wait(here, north, preferred, 9.0)
 	assert_true(pace >= 0.0 and pace < 1.0, "after the cooldown a fresh wait on it is taken, at a following pace (%.2f)" % pace)
 	assert_eq(me._wait_for, "Green_Friend", "and recorded")
 	print("MEASURE wait cap: pace after cooldown %.2f, longest %s" % [pace, Movement.wait_longest])

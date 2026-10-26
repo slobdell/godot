@@ -31,7 +31,7 @@ func test_off_by_default() -> void:
 	assert_true(Traffic.DEFAULT_OFF.has("holdlane"), "Q4 is opt-in until judged")
 
 
-## The patience read: a friend crossing or turning is one to be patient with (whatever `waitcross` says); parked or head-on is not.
+## The patience read: a friend crossing or turning is one to be patient with; parked or head-on is not.
 func test_patient_reads_a_friend_that_will_clear() -> void:
 	var staged: Array = await _stage(Vector3(-8.0, 0.0, -8.0), -PI / 2.0, {"type": "move_to", "x": 60.0, "z": -8.0})
 	var me := Movement.of(staged[0])
