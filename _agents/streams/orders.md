@@ -56,6 +56,21 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### NOW (2026-10-26)
+- **REPORT so far (2026-10-26 ~03:00):**
+  - **O1 DONE (8b828ec59, `make orders-group`).** Census (builder0, 8b828ec59, native off, dev seeds 7001-7006, n 6 a
+    cell; evidence `references/round41/orders/o1-census-builder0-8b828ec59/`): his "pointed different ways" is mostly not
+    the cause. All-in crew v formed headings: terminus 57.1 v 60.5 s, locks 66.2 v 61.9 s; crews nose > 90 deg are
+    ~1 s slower each. First-leg crossings 0 in 48 runs (roads converge on one street / deck). The time goes to traffic:
+    under-way crew-seconds a run yielding 50-258, slow 53-197, blocked 5-67. Never in within 90 s: crossing 6 / 6, locks
+    3-4 / 6, sumps 3-5 / 6; terminus always in. Sent to manoeuvre + orchestrator.
+  - **C41.4 DONE (b973ba955, quick-green builder0 356 / 0):** `RtsControls.is_aiming()`; skirmish hands it to the rig with
+    `rig.set("aiming", ...)` (RtsCamera has no `aiming` until camera's lands; camera types it after merge).
+  - **O2 lever = departure order (approved by the orchestrator).** Why: no crossings to spread, headings cost little, and
+    the jam is crews meeting where five squads' roads converge at once. Built OFF (25525980a): `game/control/departure_queue.gd`.
+    **Bar O2 FILED** (25525980a, below). Probe fix 4c9dd0a67 (a waiting squad read "in" from its old task; OFF unaffected).
+  - Lab (laptop, 4c9dd0a67 tree, s7001, n 1 a map; a sign, not a number): terminus all-in 75.4 -> 59.0 s; crossing
+    never-in -> 93.4 s; waits 0-5.5 s, none by the cap; yielding 80 -> 53 and 320 -> 147 crew-s.
+  - Waiting: full check of 25525980a on builder0 (queued behind native's); dev read on 7001-7006 (builder0 light).
 - **Plan:** O1 census probe (done, 8b828ec59) -> census on builder0 dev seeds 7001-7006 (crew v formed headings) -> hash to
   manoeuvre + orchestrator -> O2: pick the lever from the numbers, build OFF, lab, file Bar O2 on 9101-9124 before any number
   -> C41.4 getter if camera asks -> stretch G1 v7.
