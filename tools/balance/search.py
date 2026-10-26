@@ -36,6 +36,7 @@ import random
 import re
 import subprocess
 import sys
+import time
 from collections import defaultdict
 from pathlib import Path
 
@@ -801,6 +802,13 @@ def main(argv=None) -> int:
     if not clean:
         env.pop("GUARD_OVERRIDES")
     driver = ROOT / ("tools/balance/guard_probe.sh" if args.probe else "tools/scoreboard/guard.sh")
+    # Round 42: a series pauses at its next leg (another stream's turn on the builder) while this file exists.
+    pause = Path(os.environ.get("BALANCE_PAUSE", str(Path.home() / "balance-runs/PAUSE")))
+    if pause.exists():
+        print(f"run: paused while {pause} exists", flush=True)
+        while pause.exists():
+            time.sleep(30)
+        print("run: resumed", flush=True)
     return subprocess.call(["bash", str(driver), args.commit], env=env, cwd=ROOT)
 
 if __name__ == "__main__":
