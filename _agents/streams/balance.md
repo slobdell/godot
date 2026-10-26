@@ -78,6 +78,55 @@ Nothing (B2 answered: R40.1).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**FINAL REPORT, round 40 (2026-10-25 evening). GREEN: 5be511659** (builder0 `make check exited 0`, 3212 passed / 0 failed, 27
+targets ALL JUDGED, sim-baseline 13 unmoved). Every commit after it touches only `tools/balance/**` (Python, outside Godot's import,
+not in `make check`; `python3 -m unittest discover -s tools/balance` 14 OK) and this brief. Nothing ships ON: Bar B2s FAILED on one
+guard (R40.19), so the unit numbers on main are today's.
+
+| Item | Result |
+|---|---|
+| B1 per-unit tally | DONE. Kills/losses by unit from the kill lines (b8c8cfca2) + CP40.0's damage. Gangs trade 0.36 killed value a credit, syndicate 0.84; the Gun Truck, Tanker and War Rig die without trading; syndicate's edge is the Railgun (kr 16) and Missile Ring (kr 10). Not the R1-R3 rules (the rules-OFF base has the same table). |
+| B2 his call | ANSWERED (R40.1): tune unit numbers within +/-15 %. |
+| B4 search harness | DONE. `tools/balance/search.py` check / scale / run (N3 `--unit-overrides`) / score / mono / apply / bar; tally.py, mono_roles.py, catalog_dump.gd; `make balance-catalog/-tally/-tuned/-pytest`. |
+| Bar B2s (fm_law_c5r2) | **FAIL, 17 of 18** (BASE 5be511659 v ARM 66c4839a2, builder2, 1600 + 100 + 800 fights an arm): deciding flatness 18.5 -> 8.9 (-9.6, se 2.2), blob line DOWN 41 -> 35 %, turtle flat, mono line flat, none line flat; **G3 a Law blob's median fight +24.6 % (se 3.6) v the 20 % band**. Stays OFF. |
+| Bar B2s v2 (fm_c5r2_lawt5) | FILED (8165a8830) on fresh 8801-8840 + 8901-8940, UNREAD. ARM d385cd308 frozen; its check is red on bridge-pooled (a crossing-queue traffic case its Law change exposes; manoeuvre's F1 stopped, R40.24). Carries to round 41 behind a bridge fix. Dev screen: below. |
+| B5 combined arms | MEASURED + written up for him (R40.16): an all-tank army beats its own faction's mixed deal 82-84 %; his target is 35-40 %. Cause: armour/penetration (half each mixed army's money can't hurt a tank), not doctrine; the in-bounds tank nerf (fm_law_ca) undid the faction table. Write-up below; his decision pending. |
+| B3 faction-aware CPU | v1 BUILT OFF (`--faction-ambush`, gangs table ambush_share 0.6; 2979ee5c8, quick builder0 340/0). Not screened: it goes on top of the stat change (R40.1). |
+| B6 ADVANCE off a seat | TRACED (code read): an "idle" order allows ADVANCE 0.45 toward the order's goal while a crew sits on its travel seat. Not built (after B2s/B5). |
+
+**Candidates, and why each moved** (all dev reads paired with their base, builder2, 240 fights an arm unless noted):
+faction_max (gangs +15, syndicate -15, law +5: -12.8 then -5.6 on fresh seeds) -> fm_law (law to +15: -8.4, but turtle +5.8) ->
+fm_law_cost (syndicate cost +10: turtle flat, overshot syndicate) -> fm_law_c5 (cost +5: -10.2, both lines flat) -> fm_law_c5r (rear
+armour kept: a buffed rear broke "everything hurts from behind") -> fm_law_c5r2 (rear moves only when armour goes down: a cut front
+under a kept rear broke the other half; -10.6, lines flat, mono -1) -> Bar B2s FAIL on Law blob length -> fm_c5r2_lawt5 (Law
+toughness +5, its damage +15). targeted (B1's units only, -5.5) and fm_law_ca (B5's tank nerf, -1.2, turtle +9.2) were dropped.
+
+- **Decisions I made:** candidates scaled per faction (+ role) rather than per unit (the dev n can't resolve 63 dims); shared
+  weapons never tuned (laser, autocannon, machine_gun); `search.py check` refuses a candidate that breaks the from-behind rule (both
+  ARM failures reproduced); hp written as the sim rounds it; mono/none lines on one guard side (their two sides are one fight).
+- **Questions for the lead (via the orchestrator):** B5: give the IFV a real anti-tank weapon (recommended), let penetration move,
+  or change what armies buy (write-up below). Nothing else open from this stream.
+- **Requests to other streams:** manoeuvre: the bridge mouth traffic case (R40.21/R40.24; trace in
+  `~/balance-runs/bridge-trace-d385cd308-rust-t15-s2.log`, repro branch balance/bridge-trace 5a233f42b). Native: none open (N1-N3 and
+  GUARD_SIDES landed).
+- **Known issues:** dev screens at 240 fights can't see a per-faction length cell (B2s's Law cell read +13 % se 10 on dev, +25 % se 4
+  at the bar): screen G3 cells at 800+. The laptop has no native library, so its bridge-drill fight differs from builder0's.
+- **Playtest (no change ships):** the faction gap as is: `make skirmish SKIRMISH_FLAGS="--player-faction=syndicate
+  --enemy-faction=gangs"`, then the reverse. The candidate in a real fight: `make skirmish SKIRMISH_FLAGS="--unit-overrides=<abs path
+  to tools/balance/candidates/fm_c5r2_lawt5.json minus name/why keys>"` (N3's flag), or check out d385cd308.
+- **Next steps (round 41):** after the bridge fix, rebuild v2's ARM on that main + apply fm_c5r2_lawt5 + the R40.18 re-pins
+  (cherry-pick ad956031b), full check + `sim-baseline-record`, then Bar B2s v2 (`~/balance-runs/bar-b2s.sh` with BASE/ARM edited,
+  seeds 8801-8840 + 8901-8940, J24, `search.py bar`). Then B3 on top, B6, a second balance pass.
+- **Branches to keep:** `balance/b2s-v2-arm` d385cd308 (worktree ../godot-balance-arm), `balance/bridge-trace` 5a233f42b
+  (../godot-balance-trace), `balance/b2s-arm-r2` 66c4839a2 (B2s's ARM, for the record); scratch `balance/fm-law-arm`,
+  `balance/b2s-arm`, `balance/b2s-arm-r` can go; ../godot-balance-base (5be511659) can go.
+- **Raw data:** `~/balance-guard-raw/{r2,bar-b2s,v2}` and the 066d0ff95 dry run; drivers and checks in `~/balance-runs/`.
+- **Merge notes (shared-path edits on stream/balance):** `game/units/army.gd` (mono_army, C40.5), `game/modes/skirmish_mode.gd` (one
+  additive line, R40.7), `game/tactics/element_commander.gd` + `doctrines/doctrine_gangs.json` (B3 v1, OFF), `mk/balance.mk`,
+  `tests/test_tactics_mono_army.gd`, `tests/test_tactics_faction_ambush.gd`. No unit numbers change on stream/balance (only on the ARM
+  branches).
+
+
 **Bar B2s v2 (R40.19; FILED 2026-10-25 before any number on 8801-8840 + 8901-8940).** Same as Bar B2s, word for word, with its seeds
 moved: BASE = the tree as it ships without the change; ARM = the same tree + the v2 candidate (named in Status from the dev screen on
 8501-8540 before the series), one frozen ARM tree (R40.13). Lines 8801-8840 + 8901-8940 (blob + turtle, 5 guard arenas, both sides,
