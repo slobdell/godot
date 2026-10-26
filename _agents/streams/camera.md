@@ -86,3 +86,48 @@ The clip, when K4.4 has one.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-26: K4.1 DONE (census sent to the orchestrator); K4.2 built OFF (4cfadc6ee), dev reads next.** Start: 18982e8df
+(= 21b20bdce's code, GREEN builder0 per HANDOFF; no baseline check).
+
+### K4.1 census: where the round-41 camera looks (camera code = 4cfadc6ee with `--camera-danger` off = round 41; builder0 light lane; headless 1920x1080 @60; Terminus; CPU enemy; dev seeds 7001-7012, NEVER a bar; 45 s a run)
+Workloads (CameraPlaytest `--camera-scenario=`): **ambush** = group 1 ordered 110 m north; 5 s in, up to 3 units of one CPU squad
+are set down 40 m (or 55 m) off its right / left / rear (seed % 3; 4 seeds a lane), facing it, told to hold (they fire from there);
+the autoplay then attacks enemies it can see on screen (round 41's hand), else waits. **retreat** = his scout group drives north at
+a CPU squad held 70 m ahead, takes fire (<= 15 s), fights 4 s, then is ordered to his own (south) edge.
+"Under fire" = a known enemy's round passed within 6 m of a commanded unit in the last 3 s. "Blind" = under fire and no known enemy
+on screen (clickable: 60 px margin, above the HUD). "Facing the wall" = the arena's middle > 90 deg off the view, units >= 30 m from
+it. An off-screen shot = an episode; latency = until that shooter is first on screen ("never" = not by the run's end).
+
+| workload | runs | play s | under fire % | blind % of play (of fire) | facing wall % | off-screen shots | never | latency p50 / p90 s | yaw reversals/min |
+|---|---|---|---|---|---|---|---|---|---|
+| ambush 40 m, right | 4 | 178 | 36.3 | 0.5 (1.4) | 4.9 | 2 | 0 | 0.7 / 3.4 | 4.71 |
+| ambush 40 m, left | 4 | 182 | 28.5 | 0.7 (2.3) | 36.5 | 1 | 0 | 1.6 / 1.6 | 4.61 |
+| ambush 40 m, **rear** | 4 | 185 | 49.0 | **9.8 (19.9)** | 11.5 | 9 | **5** | **never / never** | 7.12 |
+| ambush 40 m, all | 12 | 546 | 38.0 | 3.7 (9.7) | 17.7 | 12 | 5 | 3.4 / never | 5.49 |
+| ambush 55 m, all | 12 | 544 | 37.8 | 2.8 (7.3) | 16.0 | 7 | 3 | 3.5 / never | 5.18 |
+| ambush 55 m, rear | 4 | 182 | 51.4 | 6.5 (12.7) | 5.3 | 3 | 2 | never / never | 8.91 |
+| **retreat** (his case) | 12 | 528 | 42.8 | 8.2 (19.1) | **37.3** | 29 | **17** | **never / never** | 2.16 |
+
+Read: (1) a FLANK ambush is mostly found already: the vision frame widens to the contacts his units see, and an attack order turns
+the heading (so the yaw) onto the target. (2) The **rear** is where it fails: the selection keeps its heading, the shooters stay
+behind the camera (5 of 9 never on screen). (3) His **retreat** is the clearest: the view faces the wall/stands 37 % of the run
+(~60 % of the time after the retreat order), and 17 of 29 off-screen shots never came on screen. (4) The round-41 yaw already
+reverses ~2-9 times a minute in a fight (attack orders re-aim the heading): that is BASE for the swing guard.
+Caveat: the autoplay attacks only what it sees, so it never turns the camera by hand; he would (`,` `.`). These numbers are the
+camera alone.
+
+
+### Plan (in order; reasons in one line)
+1. `DangerFeed` (`game/camera/danger_feed.gd`): one reader of the danger, used by BOTH the census and the rule (so the bar
+   measures what the rule sees). Known enemies of his team (seen now, or last seen within MEMORY_S), each with "fired at the
+   selection" and "hit the selection" recency, from `Match.weapon_fired` / `projectile_impact` (read-only signal hooks; a
+   shot "at" the selection = an enemy round whose line passes within IncomingFire.DANGER_RADIUS of a selected unit). The
+   arena's middle = the origin (arenas are point-symmetric, `Arena` checks it). Unseen shooters do not count (no cheating view).
+2. `CameraLook` (`game/camera/camera_look.gd`): the census per frame (bearings from the view's yaw to the nearest shooter, the
+   enemy centroid and the middle; shooter-on-screen by projecting it; first-shot-off-screen -> on-screen events; the shares).
+3. CameraPlaytest scenarios `--camera-scenario=ambush|retreat`: ambush = group 1 drives north, one CPU squad is placed on its
+   flank/rear (lane = seed % 3: right, left, rear) at ~45 m and told to hold (it fires from there); retreat = his scout squad
+   drives at a held enemy squad, takes fire, then is ordered back to his own edge. The autoplay's aim/attack loop is round 41's.
+4. `camera_report.py` look table; census on dev seeds 7001-7012 -> orchestrator. Then K4.2 (the rule), K4.3 (Bar K4), K4.4 clip.
+
