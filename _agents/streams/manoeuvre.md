@@ -102,7 +102,18 @@ worktree: `~/overnight-manoeuvre/r42/`.
   as filed will most likely fail G5 / G6 on 9801-9824; recommended run as filed with the fights skipped on a group-guard fail
   (barq5.sh does that), or withdraw unread (R41.4's precedent). A rule that keeps the contacts down without the standing needs to know
   which head will move (Q2's question again); not built this round.
-- Rulings this round so far: R42.7 (the arrival guard; one check gates both bars; v4 the last re-file).
+- **R42.8 (~17:15): Bar Q5 WITHDRAWN UNREAD** (9801-9824 stay unseen; the dev read above; builder2 to balance and engage). Q5 v2 OFF,
+  no series. Order: Bar Q6 the minute the gate is green; then ONE lab of **Q5 v3** on the same dev cells: ease only against a friend
+  that is itself moving (clearing); press at once behind a head that has stood > ~1 s. A v3 pass on G5 / G6 with D1 / D2 kept =
+  Bar Q5 v3 filed on the unseen 9801-9824 (the LAST re-file); else Q5 is written up OFF with this evidence.
+- **Q5 v3 BUILT on the side worktree `../godot-manoeuvre-q5` (`wip/manoeuvre-q5v3` 4c8db69b6 = 9ffdfbd37 + v3; the stream branch
+  stays frozen for Bar Q6):** the ease is only against a friend whose drive is under way (a parked or arrived head is pressed as
+  today), and a friend standing still (< 0.5 m/s) under the ease for NOPUSH_STOOD_TICKS (1 s) since the ease began is pressed at once
+  (its drive's state alone read a yielding-but-still head as moving, and `stalled_ticks` read a crawling friend as stood); a moving
+  friend keeps v2's 3 s cap / 6 s press. `tests/test_traffic_nopush.gd` 4/0 (laptop NATIVE=off): the standing head eased <= 1 s then
+  pressed; a slow friend still moving eased against (pressing while touching 13 -> 6 ticks). **Lab q5lab4 (running):** the same 16
+  dev cells as q5lab3, main v nopush v3, GDScript both, builder0 light (the q5 tree's own light folder); read with q5_judge.
+- Rulings this round so far: R42.7 (the arrival guard; one check gates both bars; v4 the last re-file); R42.8 (above).
 
 ### Plan (ordered; the brief's backlog as built)
 
