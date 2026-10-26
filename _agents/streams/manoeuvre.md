@@ -77,7 +77,48 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-26 ~02:10 PDT (Fable). Starting commit de509b00f = main at launch (code c36217f79 GREEN builder0, 3243/0; no
 baseline check re-run, per the contract). Orchestrator session: `godot-d6`.**
 
-### Q1 the jam census: INSTRUMENT BUILT (32851c0d8), lab 1 running on builder0 (light J4, native, 64 runs)
+### Q1 the jam census: REPORTED (lab 1: 32851c0d8, builder0 light J4, native ON, 64 runs; sent to the orchestrator 03:15, decisions approved)
+
+Workload: orders' O1 probe, his five full squads (25 crews), one click across the map, terminus / locks / crossing / sumps x dev seeds
+7001-7008 x headings crew / formed, 90 s window, n 8 a cell. Evidence: `references/round41/manoeuvre/q1-census-builder0-32851c0d8/`
+(table.txt, per_map.txt); raw logs `~/overnight-manoeuvre/r41/jamlab1/logs`.
+
+| Map | Never-in (crew / formed, of 8) | All-in median s | Jam-seconds a run (crew / formed) | Blockers (both headings) |
+|---|---|---|---|---|
+| crossing | 8 / 8 | never | 1,099 / 981 | stalled 36 %, crossing 25 %, same_way 23 %, head_on 8 %, turning 4 %, parked 3 % |
+| locks | 3 / 4 | 72.2 / 71.9 | 846 / 753 | stalled 28, crossing 27, same_way 25, head_on 9, parked 6, turning 5 |
+| sumps | 7 / 4 | 67.2 / 77.0 | 856 / 712 | stalled 33, crossing 24, same_way 24, head_on 11, turning 5, parked 4 |
+| terminus | 0 / 0 | 56.2 / 60.5 | 529 / 525 | crossing 33, same_way 29, stalled 15, head_on 11, parked 8, turning 4 |
+
+- **Pooled (50,400 jam-seconds, 53k episodes):** blockers stalled 30 %, crossing 27 %, same_way 25 %, head_on 10 %, turning-in-place
+  5 %, parked 5 %. Askers: reversed 30 %, slowed 24 %, yielded 22 %, steered 17 %, stopped 7 %. Episodes >= 3 s hold 42 % of the
+  jam-seconds and are 46 % yields and 33 % reversing: the detour machinery is the long part. Same-squad blocker 37-40 %. 25 crews
+  spend ~45 % of their time in crossing slowed by a friend. Headings barely matter (crew v formed 833 v 743 s a run), as orders found.
+- **t_clear** (when the blocker actually left the asker's frozen lane), median / p90 / never within 20 s: crossing 1.5 / 6.7 s / 4 %,
+  same_way 1.4 / 5.4 / 3 %, turning 2.1 / 9.6 / 9 %, head_on 1.7 / 8.3 / 7 %, stalled 3.3 / 11.9 / 19 %, parked 2.8 / 12.3 / 37 %.
+- **The number Q2 hangs on:** the classes Q2 waits on (crossing + same_way + turning) are 56 % of all jam-seconds; of those the blocker
+  had cleared within 2 s 49 %, 3 s 64 %, 4 s 73 %, 5 s 79 %, 6 s 83 %, 8 s 88 %. Over ALL jam-seconds: 3 s 53 %, 5 s 66 %, and in
+  40 % the blocker cleared before the asker's own detour / yield ended. **Q2 is worth building.**
+- **Decisions (approved by the orchestrator 2026-10-26 ~03:20):** Q2 waits on crossing, moving same_way, turning, and a friend that is
+  itself waiting (stalled is 30 % and under the rule a share of those are waiting crews; cycle-guarded); never on parked,
+  stalled-not-waiting or head-on. **Cap 5 s** (79 % of the waitable jam-seconds; past 5 s each second buys under 5 points while a
+  never-clearing blocker costs the whole cap). Moves from 4 s after the first Q2 lab (running at 4 s).
+- Caveat on t_clear: the lane is frozen at the episode's start, but the blocker's motion was not independent of what the asker did.
+
+### Q3 design decision, written BEFORE any bridge number (R40.24's item; for the orchestrator's ruling)
+
+**Proposal:** bridge-pooled's single-run line (every surviving crew crosses, no crew at the rim over 3 s, 18/18 cells) stays a HARD
+GUARD as it is: it is his bridge complaint and a guard is never loosened. It does not become the deciding measure, because its
+margin on main is 1.1-1.9 s on a deterministic 18-cell drill, so a pass/fail flip there says little about a rule. **Bar Q3's deciding
+line is pooled rim-seconds** (R40.23's design): fresh bridge-drill seeds 9025-9036 x start ticks {1, 8, 15} x both sides (72 runs
+an arm a tree), on main AND under balance's v2 overrides; ON <= 0.8 x OFF pooled and the paired per-run mean < 0 by >= 2 se; every
+surviving crew crosses in both trees; runs with a crew over the 3 s rim line ON <= OFF (named). Deck-jam seconds and mean arrival
+reported. **Q2 may be the bridge rule:** the bridge case (R40.21) is a wheeled follower 7 m behind a leader slowing to turn onto the
+deck, i.e. a moving same_way blocker that then reads "turning" (slow, nose off its next leg) at the mouth: both are Q2's waitable
+classes, so the first bridge read is bridge-pooled with `--traffic-on=wait` on main and under the overrides. If that is green with
+rim down, Q3 = Q2 (one rule, one twin) and Bar Q3 judges the same switch; a separate speed cap is built only if it is not.
+
+### (superseded) Q1 the jam census: INSTRUMENT BUILT (32851c0d8), lab 1 running on builder0 (light J4, native, 64 runs)
 
 - `tests/manoeuvre/probe_jam.gd` extends orders' O1 probe (`tests/orders_probe_group.gd`, cherry-picked 8b828ec59 = f8c9867c6 here:
   his five full squads, 25 crews, one click across the map, `--probe-headings=crew|formed`). Classifier `jam_class.gd` (pure,

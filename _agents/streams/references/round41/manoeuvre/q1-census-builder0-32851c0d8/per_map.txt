@@ -1,0 +1,29 @@
+Q1 jam census lab 1: 32851c0d8, builder0 light J4, native ON, orders' O1 probe (25 crews, one click across), 90 s window, n 8 a cell
+per map x headings: runs, never-in, all-in median, jam s/run, crew-s under way yielding/slow/blocked (orders' read, mean)
+  crossing  crew   n 8 never-in 8 all-in med   -1.0 jam   1099 s/run | yielding   244 slow   202 blocked   63
+  crossing  formed n 8 never-in 8 all-in med   -1.0 jam    981 s/run | yielding   172 slow   157 blocked   40
+  locks     crew   n 8 never-in 3 all-in med   72.2 jam    846 s/run | yielding    80 slow    91 blocked   30
+  locks     formed n 8 never-in 4 all-in med   71.9 jam    753 s/run | yielding    88 slow    87 blocked   41
+  sumps     crew   n 8 never-in 7 all-in med   67.2 jam    856 s/run | yielding   135 slow   100 blocked   39
+  sumps     formed n 8 never-in 4 all-in med   77.0 jam    712 s/run | yielding   112 slow    85 blocked   24
+  terminus  crew   n 8 never-in 0 all-in med   56.2 jam    529 s/run | yielding    50 slow    50 blocked    4
+  terminus  formed n 8 never-in 0 all-in med   60.5 jam    525 s/run | yielding    66 slow    56 blocked   10
+
+per map (both headings): jam-s by blocker class share; blocker cleared the frozen lane within 3 / 5 s; cleared before the episode ended
+  crossing   16643 s: stalled 36%, crossing 25%, same_way 23%, head_on 8%, turning 4%, parked 3% | <=3s 52% <=5s 63% faster 41%
+  locks      12794 s: stalled 28%, crossing 27%, same_way 25%, head_on 9%, parked 6%, turning 5% | <=3s 52% <=5s 65% faster 40%
+  sumps      12548 s: stalled 33%, crossing 24%, same_way 24%, head_on 11%, turning 5%, parked 4% | <=3s 50% <=5s 64% faster 39%
+  terminus    8437 s: crossing 33%, same_way 29%, stalled 15%, head_on 11%, parked 8%, turning 4% | <=3s 58% <=5s 73% faster 42%
+
+t_clear quantiles (s) by class over episodes that cleared; never %
+  crossing  n 15842 p50  1.5 p75  3.3 p90  6.7 never 4%
+  same_way  n 15711 p50  1.4 p75  3.0 p90  5.4 never 3%
+  turning   n  3134 p50  2.1 p75  5.0 p90  9.6 never 9%
+  head_on   n  5647 p50  1.7 p75  4.2 p90  8.3 never 7%
+  stalled   n 10154 p50  3.3 p75  7.3 p90 11.9 never 19%
+  parked    n  2554 p50  2.8 p75  7.1 p90 12.3 never 37%
+
+Q2's classes (crossing/same_way/turning): 28176 jam-s = 56% of all; cleared within 2/3/4/5/6/8 s: 2:49% 3:64% 4:73% 5:79% 6:83% 8:88%; never 4%
+
+episodes >= 3 s: 3858, 21303 jam-s = 42% of all; blockers: [('stalled', 1525), ('crossing', 952), ('same_way', 692), ('head_on', 405), ('turning', 145), ('parked', 139)]
+their askers' actions: [('yielded', 1764), ('reversed', 1256), ('steered', 542), ('stopped', 199), ('slowed', 97)]
