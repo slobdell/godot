@@ -297,6 +297,7 @@ const DECKWAIT_CAP_S := 5.0
 static var deckwait_waits := 0
 static var deckwait_queued := 0
 static var deckwait_timeouts := 0
+static var deckwait_trace := OS.get_cmdline_user_args().has("--deckwait-trace")  # DECKWAIT lines, twice a second per waiting crew
 ## Round 41 (manoeuvre Q4, R41.5; `--traffic-on=holdlane`, DEFAULT_OFF until judged): Q1's census put 42 % of the jam-seconds in
 ## long episodes, and those were 46 % give-ways and 33 % reversing: his "cars driving around the jam". A crew stalled behind a
 ## FRIEND that will clear by itself (a wait kind, the crosser included) asks nobody to give way, gives way to nobody and does not
@@ -3030,11 +3031,18 @@ func _deckwait(here: Vector3, way: Vector2) -> float:
 	var off := Vector2(leader.global_position.x - here.x, leader.global_position.z - here.z)
 	var gap := Avoidance.radius_of(ctl.tank.unit_id) + Avoidance.radius_of(leader.unit_id) + WAIT_GAP_M
 	var its_along := maxf(Vector2(leader.real_velocity.x, leader.real_velocity.z).dot(way), 0.0)
-	return maxf(off.dot(way) - gap, 0.0) / WAIT_FOLLOW_S + its_along
+	var cap := maxf(off.dot(way) - gap, 0.0) / WAIT_FOLLOW_S + its_along
+	if deckwait_trace and tick % (SimClock.TICK_RATE / 2) == 0:
+		print("DECKWAIT " + JSON.stringify({"tick": tick, "crew": String(ctl.tank.name), "for": name, "since": _wait_since,
+				"at": [snappedf(here.x, 0.1), snappedf(here.z, 0.1)], "way": [snappedf(way.x, 0.01), snappedf(way.y, 0.01)],
+				"leader_at": [snappedf(leader.global_position.x, 0.1), snappedf(leader.global_position.z, 0.1)],
+				"along": snappedf(off.dot(way), 0.1), "its_along": snappedf(its_along, 0.1), "cap": snappedf(cap, 0.1)}))
+	return cap
 
 
 ## Round 42 (Q6): is `point` in a bridge deck's mouth: the deck's rectangle grown by DECKWAIT_MOUTH_M (its aprons and the bank at
-## either end), less the water or pit it spans (over the water the crossing is under way), read from the live arena's terrain
+## either end), less the middle of the water or pit it spans (more than DECKWAIT_MOUTH_M in from the water's edge the crossing is
+## under way), read from the live arena's terrain
 ## (`Arena.active`; a match without an arena has no decks).
 static func _in_a_deck_mouth(point: Vector3) -> bool:
 	var data: Dictionary = Arena.active
@@ -3049,8 +3057,11 @@ static func _in_a_deck_mouth(point: Vector3) -> bool:
 					and point.z > box[1] - DECKWAIT_MOUTH_M and point.z < box[3] + DECKWAIT_MOUTH_M:
 				in_mouth = true
 		elif ArenaTerrain.carves(kind):
-			if point.x > box[0] and point.x < box[2] and point.z > box[1] and point.z < box[3]:
-				return false  # over the water: the crossing itself
+			# Over the water by more than the reach: the crossing itself, not its mouth (a leader just onto the deck is still
+			# turning in the mouth: the rust s2 t15 trace ON, q6dev1, had the leader 1 m past the water's edge at 1-3 m/s).
+			var inside := minf(minf(point.x - box[0], box[2] - point.x), minf(point.z - box[1], box[3] - point.z))
+			if inside > DECKWAIT_MOUTH_M:
+				return false
 	return in_mouth
 
 
