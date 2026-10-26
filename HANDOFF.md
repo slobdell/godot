@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-26 ~12:15 PDT — **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-26 ~14:30 PDT — **ROUND 41 CLOSED (box below)**; his post-close playtest recorded (attack order behind a container); main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
@@ -32,7 +32,12 @@ sharper IFV cannon 0. **Artillery-heavy lineups already reach his target with no
 (96 %) and Syndicate (87 %) have no lineup that does: their artillery is weak (Law's Gas Rocket Truck 2.65 dealt a credit v Condemned's
 5.4; Syndicate's Missile Ring dies to the Railgun in 5 s).
 
-**Round-42 starting points:** his three decisions below; Law/Syndicate artillery numbers within +/-15 % (balance); B2s v2 behind the
+**His playtest after the close (2026-10-26 ~14:15, `game_design.md` *His playtest after round 41*): a crew under his attack
+order sat 37 s behind a container, NOT FIRING, 22-26 m from the target** (recording `build/recordings/2026-10-26T14-15-45-locks.jsonl`,
+Green_Spears2_3 ticks 3240-4350). Cause: `ElementPlan._engage` gives `attack` by distance, with no line-of-fire test. **Round 42's
+first item (orders):** an attacked target that a crew can't hit puts the crew on the move to a spot with a clear shot.
+
+**Round-42 starting points:** his attack-order fix above; his three decisions below; Law/Syndicate artillery numbers within +/-15 % (balance); B2s v2 behind the
 bridge (the overrides tree with no rule crossed 72/72 fresh bridge runs; its only known failure is the 18-run drill's rust t15 s2);
 Q5 bar on what he sees (contacts / shoved ticks); refs kept: pair/native-wait 20300bb52, wip/manoeuvre-m1v3 (Q5 a45c0b953 / fc8f3697d),
 balance/b2s-v2-arm d385cd308.

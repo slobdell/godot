@@ -4460,3 +4460,20 @@ On builder0 files that aren't the project's: **"Don't delete files on builder0 t
   table (target 35-40 % for all-tanks). Why it can work: an IFV's autocannon does ~5 % of its damage on a tank's front but ~50 % on the
   side and ~100 % on the rear (armor.gd penetration v front 8 / side 4 / rear 2), so a slow turret and hull let fast units get round.
   The missile idea is not built unless his levers fall short and he asks for it.
+
+## His playtest after round 41 (2026-10-26 ~14:15, verbatim)
+
+Recording: `build/recordings/2026-10-26T14-15-45-locks.jsonl` (Locks, seed 49326, Gangs v Syndicate, his round-41 main).
+
+**"I had 2 scouts attacking a Syndicate artillery piece. When I told them to attack, one vehicle was behind a milvan container. Even
+though I explicitly told them to attack, one vehicle was just stuck behind the container (or waiting behind the container) with a banner
+that just said "not firing" I think. If I tell my units to attack I expect them to navigate around obstacles and toward the enemy such
+that they can and do attack"**
+
+**What the recording shows (orchestrator):** his `attack` orders on Rust_Battery_3 (tick 3048) and Rust_Battery_1 (tick 3293) went to
+Green_Spears2_3 + Green_Spears2_4 (Rat Rods). Spears2_4 killed all three Missile Rings. Spears2_3 got zero kills: it sat "arrived" at
+(44.3, -74.4) from tick 3240 to his move at 4350, 37 s, 22-26 m from its targets, under an attack order the whole time. The cause, read
+in code: `ElementPlan._engage` (element_plan.gd ~3250) orders `attack` to every member whose DISTANCE to the target is in range, with no
+line-of-fire test, so a crew in range behind a container stands still and the HUD calls it NOT FIRING (rts_controls.gd
+`attack_shortfall`). **The rule he wants:** a crew under his attack order that cannot hit its target moves to a spot that can, round the
+obstacle and toward the enemy, and fires. "In range" means a clear shot, not a distance.
