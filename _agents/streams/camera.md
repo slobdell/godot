@@ -99,6 +99,21 @@ cost him about 3 attack clicks in 10.
 Not measured headless: **camera shake** (FxWorld, and so CameraShake, exists only with a renderer): `make
 camera-trace-windowed` measures it on a display (pending: builder0's desktop or the laptop under its lock).
 
+### Bar K3 v1 (FILED before any fresh number; seeds 9501-9512 unread)
+
+Workload: `make camera-trace CAMERA_SEEDS="9501 ... 9512" CAMERA_FLAGS=--camera-glide=off` (BASE) and `=on` (ARM), builder0
+light lane, headless 1920x1080 at 60 fps, Terminus, CPU enemy, the CameraPlaytest autoplay at the commit named with the
+result (hand reach 0.3 s, aim 0.5 s, then right-click). Both arms on the same commit and seeds. Each line is read on the
+pooled 12 seeds. **Ship ON = every line passes.**
+1. **Clicks on the aimed unit** (attack clicks whose cursor still picks the aimed unit at the click): ARM >= 70 % AND ARM >= BASE
+   + 15 points (his complaint; K1 read 50 % v a 79 % held-camera floor on dev seeds).
+2. **Target slip p95** (px at 1080 rows, all clicks): ARM <= 40 px AND <= half of BASE.
+3. **Jerk events per minute, by source**: ARM total (all) <= 3.0 / min; no automatic source (auto_frame, yaw_follow, cap,
+   order_track, solid, hull) above 1.5 / min; ARM snaps from automatic sources = 0.
+4. **The camera still works** (the vision camera he likes stays): ARM auto_frame px moved / min >= 25 % of BASE's (it still
+   finds the action), and no CAMERA_TRACE_DONE ok=false or SCRIPT ERROR in any run.
+Shake is judged separately (headless has none): a windowed laptop run, `shake` slip at the cursor ARM <= 1 px p95 (pivot).
+
 ### Decisions
 - Jerk/snap thresholds are perceptual and fixed BEFORE any K2 number (JERK_PX_S2 15,000, SNAP_PX 24, at 1080 rows).
 - The aiming signal (C41.4): an adapter in the rig until orders' getter exists (a button held, an armed `mode`, the
