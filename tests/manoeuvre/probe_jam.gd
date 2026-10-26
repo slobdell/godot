@@ -186,6 +186,7 @@ func _begin(tank: Tank, mover: Movement, blocker: Tank, way: Vector2) -> Diction
 			"stopped_ticks": 0, "max_lateral": 0.0, "phases": {}, "t_clear": -1.0, "blocker_start": Vector2(blocker.global_position.x, blocker.global_position.z),
 			"blocker_yaw_start": JamClass.yaw_of(-blocker.global_basis.z), "asker_yaw_start": JamClass.yaw_of(-tank.global_basis.z),
 			"blocker_wheeled": Movement.of(blocker) != null and Movement.of(blocker).wheel_radius() > 0.0,
+			"reverse_why": {}, "reverse_m": 0.0, "reverse_from": Vector2.INF, "reverse_max_m": 0.0, "last_pos": here,
 			"lane_start": _in_my_way(here, way, Avoidance.radius_of(tank.unit_id) + Avoidance.radius_of(blocker.unit_id) + LANE_SLACK_M,
 					way * tank.max_forward_speed, blocker)}
 
@@ -218,8 +219,40 @@ func _tick_episode(ep: Dictionary, tank: Tank, mover: Movement, blocker: Tank, w
 	if v.length() < STILL_MPS:
 		ep["stopped_ticks"] = int(ep["stopped_ticks"]) + 1
 	var forward := Vector2(-tank.global_basis.z.x, -tank.global_basis.z.z)
+	var pos := Vector2(tank.global_position.x, tank.global_position.z)
 	if v.dot(forward) < -REVERSE_MPS:
 		ep["reversed_ticks"] = int(ep["reversed_ticks"]) + 1
+		# Round 41 (the orchestrator's reversing report): which rule has the hull in reverse gear this tick, from the drive's own
+		# reads: a planned three-point-turn leg (_kturn_left_m), the blind back-off (_unstick_left), H1's escape (_esc_stage), else
+		# the drive's _reverse_why (order = Manoeuvre's short move behind / a reverse order, circle = Steering's circle test on a
+		# forward order, station, other); and how far it backed, from where, and whether it came back to that spot.
+		# ...and "shoved": the hull moves backward with no reverse throttle commanded (pushed by a friend, or rolling after a reverse).
+		var why := "other"
+		if float(tank.command.throttle) >= 0.0:
+			why = "shoved" if tank.get_slide_collision_count() > 0 else "coasting"
+		elif float(mover._kturn_left_m) > 0.0:
+			why = "kturn"
+		elif float(mover._unstick_left) > 0.0:
+			why = "unstick"
+		elif int(mover._esc_stage) != 0:
+			why = "escape"
+		elif mover.yield_to != "":
+			why = "yield"
+		elif String(mover.ctl.move_order.get("type", "")) != "move_to":
+			why = "order:" + String(mover.ctl.move_order.get("type", "?"))  # a face / hold / stop order's own gears (not the drive)
+		elif String(mover._reverse_why) != "":
+			why = String(mover._reverse_why)
+		if tank.get_slide_collision_count() > 0 and why != "shoved":
+			why += "+touch"
+		var whys: Dictionary = ep["reverse_why"]
+		whys[why] = int(whys.get(why, 0)) + 1
+		ep["reverse_m"] = float(ep["reverse_m"]) + pos.distance_to(ep["last_pos"])
+		if ep["reverse_from"] == Vector2.INF:
+			ep["reverse_from"] = pos
+	if ep["reverse_from"] != Vector2.INF:
+		ep["reverse_max_m"] = maxf(float(ep["reverse_max_m"]), pos.distance_to(ep["reverse_from"]))
+		ep["reverse_end_m"] = pos.distance_to(ep["reverse_from"])
+	ep["last_pos"] = pos
 	var off := Vector2(tank.global_position.x, tank.global_position.z) - (ep["origin"] as Vector2)
 	ep["max_lateral"] = maxf(float(ep["max_lateral"]), absf(off.cross(ep["way"] as Vector2)))
 
@@ -307,7 +340,10 @@ func _finalize() -> void:
 				"yield_s": snappedf(int(ep["yield_ticks"]) / float(SimClock.TICK_RATE), 0.1), "phases": ep["phases"],
 				"start_s": snappedf((int(ep["start_tick"]) - start_tick) / float(SimClock.TICK_RATE), 0.1),
 				"at": [snappedf((ep["origin"] as Vector2).x, 0.1), snappedf((ep["origin"] as Vector2).y, 0.1)],
-				"blocker_heading_off_deg": snappedf(rad_to_deg(absf(angle_difference(float(ep["asker_yaw_start"]), float(ep["blocker_yaw_start"])))), 1.0)}))
+				"blocker_heading_off_deg": snappedf(rad_to_deg(absf(angle_difference(float(ep["asker_yaw_start"]), float(ep["blocker_yaw_start"])))), 1.0),
+				"reverse_why": ep["reverse_why"], "reverse_m": snappedf(float(ep["reverse_m"]), 0.1), "reverse_max_m": snappedf(float(ep["reverse_max_m"]), 0.1),
+				"reverse_end_m": snappedf(float(ep.get("reverse_end_m", -1.0)), 0.1),
+				"reverse_reentered": ep["reverse_from"] != Vector2.INF and float(ep["reverse_max_m"]) > 3.0 and float(ep.get("reverse_end_m", 99.0)) < 2.0}))
 	print("JAM_RUN " + JSON.stringify({"seed": seed, "arena": arena, "route": route, "arm": arm, "headings": headings,
 			"episodes": _episodes.size(), "jam_s": snappedf(total, 0.1), "by_class": by_class, "by_action": by_action,
 			"waitable_s": waitable, "faster_s": snappedf(faster, 0.1), "held_s": snappedf(_held_ticks / float(SimClock.TICK_RATE), 0.1),
