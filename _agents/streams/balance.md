@@ -111,6 +111,13 @@ on tanks side+rear 64.6 -> 65.7 (+1.1, se 0.7), so the lever works by the tank m
 own tanks' damage a second alive 5.8 -> 5.1 condemned, 3.6 -> 3.7 gangs, 7.9 -> 7.9 law). **A real lever, a small one: ~5 of the
 ~45 points to his target.** Round 2's ifv15 arm is queued to start the minute round 1 ends (`~/balance-runs/b5-r2.sh`).
 
+**B5 round 1, h25 arm read (tank hull speed, reverse and hull turn x0.75; same series, 400 fights, paired):** mono-tank wins 85 ->
+**81 % (-4, se 3)**: condemned -2 (se 7), gangs -3 (se 6; on Green 62, on Rust 88: a noisy cell), law -6 (se 3), syndicate -4 (se 3).
+Median length -1 % (syndicate +32 %, condemned -13 %). Faces: the mixed army's direct fire strikes a side or rear LESS, 64.6 ->
+61.7 (**-2.9, se 0.6**; rear 19 -> 13 %): a slow hull doesn't get flanked more, it crawls with its front to the fight. As small a
+lever as t50 and it costs flanking; **t50 is the better of his two levers so far**; th (both) runs now. Round 2's combined arm is
+built as `th_ifv15` (or `t50` + ifv15 if th reads no better than t50).
+
 **The IFV split (the orchestrator's ask, 2026-10-26 ~03:50; base arm's rows, no new runs; `tools/balance/trade_table.py`):**
 (a) in the mono line every enemy of the mixed army is a tank: 100 % of IFV fire went on tanks and made 10 % of the damage, so
 "busy with other targets" is not the cause here. (b) per second alive on tanks: condemned IFV 1.9 pts/s (0.5 front / 0.9 side /
