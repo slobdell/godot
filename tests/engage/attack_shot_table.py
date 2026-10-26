@@ -51,11 +51,12 @@ def metrics(d):
         "hits": sum(int(v) for v in d.get("hits", {}).values()),
         "target_dead": float(d["target_dead_s"]) if float(d["target_dead_s"]) >= 0 else window,
         "lines_per_plan_tick": (float(d["lines"]) / float(d["plan_ticks"])) if int(d.get("plan_ticks", 0)) > 0 else 0.0,
+        "line_flips": sum(int(v) for v in d.get("line_flips", {}).values()) / len(crews),
     }
 
 
-KEYS = ["stuck", "no_shot", "first_hit", "never_hit", "deaths_moving", "deaths", "never_reached", "dither", "hits", "target_dead",
-        "lines_per_plan_tick"]
+KEYS = ["stuck", "no_shot", "first_hit", "never_hit", "deaths_moving", "deaths", "never_reached", "dither", "line_flips", "hits",
+        "target_dead", "lines_per_plan_tick"]
 
 
 def one(folder):
@@ -67,9 +68,10 @@ def one(folder):
         d = rows[seed]
         m = metrics(d)
         clear = sum(1 for v in d["start_line"].values() if v)
-        print("%-6d %-9s %-10s %5d %5s | %7.1f %7.1f %8.1f %5d %6d %6d %5d %6.2f %5d %7.1f" % (
+        print("%-6d %-9s %-10s %5d %5s | %7.1f %7.1f %8.1f %5d %6d %6d %5d %6.2f %5d %7.1f  %s%s" % (
             seed, d["arena"], d["hull"], int(d["crews"]), "%d/%d" % (clear, int(d["crews"])), m["stuck"], m["no_shot"],
-            m["first_hit"], m["never_hit"], m["deaths_moving"], m["deaths"], m["never_reached"], m["dither"], m["hits"], m["target_dead"]))
+            m["first_hit"], m["never_hit"], m["deaths_moving"], m["deaths"], m["never_reached"], m["dither"], m["hits"], m["target_dead"],
+            "" if d.get("stage_ok", True) else "STAGE-OFF ", d.get("start_m", "")))
         for k in KEYS:
             totals[k] += m[k]
     n = len(rows)

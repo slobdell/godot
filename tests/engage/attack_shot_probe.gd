@@ -17,8 +17,13 @@ extends SceneTree
 ##   lines         ElementSituation.shot_lines over the run (cover-map lines the plan asked for) and per plan tick
 
 const ARENAS := ["locks", "terminus", "crossing"]
-const HULLS := ["gang_scout", "gang_ifv", "scout", "ifv", "tank"]
-const TARGETS := ["syn_artillery", "tank", "ifv", "law_tank"]
+## His case is a fixed gun's standoff hold (a turret circles and is rarely held still): five fixed mounts to one gun truck.
+const HULLS := ["gang_scout", "scout", "law_scout", "gang_scout", "law_scout", "gang_ifv"]
+## Targets a 2-5 crew squad can hurt in a minute (no tanks: a stage every crew dies on measures deaths, not shots).
+const TARGETS := ["syn_artillery", "syn_scout", "ifv", "law_artillery", "syn_ifv"]
+## The stage as the brief names it: the crews behind the cover start this far from the target.
+const STAGE_MIN_M := 18.0
+const STAGE_MAX_M := 42.0
 const STAND_M := 3.0
 const SPOT_CHANGE_M := 2.0
 const REACH_M := 3.0
@@ -49,8 +54,8 @@ static func _flat(v: Vector3) -> Vector3:
 	return Vector3(v.x, 0.0, v.z)
 
 
-## A cover piece to fight round: medium-sized (a container, a small block), well inside the arena, drawn by the rng.
-func _pick_feature(map: CoverMap, rng: RandomNumberGenerator) -> Dictionary:
+## The cover pieces to fight round, in the rng's order: medium-sized (a container, a small block), well inside the arena.
+func _features(map: CoverMap, rng: RandomNumberGenerator) -> Array:
 	var candidates: Array = []
 	for feature: Dictionary in map.features:
 		var half: Vector2 = feature["half"]
@@ -62,9 +67,55 @@ func _pick_feature(map: CoverMap, rng: RandomNumberGenerator) -> Dictionary:
 		if absf(center.x) > 80.0 or absf(center.y) > 80.0:
 			continue
 		candidates.append(feature)
-	if candidates.is_empty():
+	var order: Array = []
+	while not candidates.is_empty():
+		order.append(candidates.pop_at(rng.randi_range(0, candidates.size() - 1)))
+	return order
+
+
+## The stage round `feature`: the target 8-14 m off its far face, the crews 10-18 m off the near face spread along it (4 m
+## apart at least), one crew past the face's end on the target's side. {} when a spot cannot stand (inside something, off
+## the arena); the caller then tries the next piece, and the distances are judged once the ground has had its say.
+func _stage(map: CoverMap, feature: Dictionary, rng: RandomNumberGenerator, crews_n: int) -> Dictionary:
+	var center := Vector3((feature["center"] as Vector2).x, 0.0, (feature["center"] as Vector2).y)
+	var axis := Vector3((feature["axis"] as Vector2).x, 0.0, (feature["axis"] as Vector2).y)
+	var half: Vector2 = feature["half"]
+	var along := axis
+	var n := Vector3(-axis.z, 0.0, axis.x)
+	var half_n := half.y
+	var half_along := half.x
+	if half.y > half.x:
+		along = Vector3(-axis.z, 0.0, axis.x)
+		n = axis
+		half_n = half.x
+		half_along = half.y
+	if rng.randf() < 0.5:
+		n = -n
+	var target_at := center + n * (half_n + 8.0 + rng.randf_range(0.0, 6.0)) + along * rng.randf_range(-half_along * 0.5, half_along * 0.5)
+	if not _standable(map, target_at):
 		return {}
-	return candidates[rng.randi_range(0, candidates.size() - 1)]
+	var spots: Array = []
+	for i in crews_n:
+		var spot := Vector3.INF
+		for attempt in 12:
+			var try_at: Vector3
+			if i == crews_n - 1 and crews_n >= 2:
+				var side := 1.0 if rng.randf() < 0.5 else -1.0
+				try_at = center + along * side * (half_along + 8.0 + rng.randf_range(0.0, 4.0)) - n * rng.randf_range(0.0, 6.0)
+			else:
+				try_at = center - n * (half_n + 10.0 + rng.randf_range(0.0, 8.0)) \
+						+ along * rng.randf_range(-half_along - 2.0, half_along + 2.0)
+			var apart := true
+			for other: Vector3 in spots:
+				if other.distance_to(try_at) < 4.0:
+					apart = false
+			if apart and _standable(map, try_at):
+				spot = try_at
+				break
+		if spot == Vector3.INF:
+			return {}
+		spots.append(spot)
+	return {"center": center, "n": n, "target": target_at, "spots": spots}
 
 
 func _standable(map: CoverMap, point: Vector3) -> bool:
@@ -84,49 +135,37 @@ func _run() -> void:
 	var crews_n := int(_flag("crews", str(2 + rng.randi_range(0, 3))))
 	var hull: String = HULLS[rng.randi_range(0, HULLS.size() - 1)]
 	var target_unit: String = TARGETS[rng.randi_range(0, TARGETS.size() - 1)]
-	var lab := TacticsLab.create(case, seed_value, arena)
-	var game_match := lab.game_match
-	game_match.set_meta("player_team", Match.Team.GREEN)
-	var map := CoverMap.of(game_match)
-	var feature := _pick_feature(map, rng)
-	if feature.is_empty():
-		print("ENGAGE_PROBE %s" % JSON.stringify({"seed": seed_value, "arena": arena, "error": "no cover piece"}))
+	# The seed's arena, else the next in the cycle (a seed whose draw stands nowhere on one map: 7012 on terminus).
+	var lab: TacticsLab = null
+	var game_match: Match = null
+	var map: CoverMap = null
+	var stage := {}
+	var feature := {}
+	for attempt in ARENAS.size():
+		if _flag("arena", "") == "" and attempt > 0:
+			arena = ARENAS[(seed_value + attempt) % ARENAS.size()]
+		elif attempt > 0:
+			break
+		lab = TacticsLab.create(case, seed_value, arena)
+		game_match = lab.game_match
+		game_match.set_meta("player_team", Match.Team.GREEN)
+		map = CoverMap.of(game_match)
+		for candidate: Dictionary in _features(map, rng):
+			stage = _stage(map, candidate, rng, crews_n)
+			if not stage.is_empty():
+				feature = candidate
+				break
+		if not stage.is_empty():
+			break
+		lab.dispose()
+		await process_frame
+	if stage.is_empty():
+		print("ENGAGE_PROBE %s" % JSON.stringify({"seed": seed_value, "arena": arena, "error": "no stage stands"}))
 		quit(0)
 		return
-	var center := Vector3((feature["center"] as Vector2).x, 0.0, (feature["center"] as Vector2).y)
-	var axis := Vector3((feature["axis"] as Vector2).x, 0.0, (feature["axis"] as Vector2).y)
-	var half: Vector2 = feature["half"]
-	# The long face: its normal `n` (crews behind it, the target in front), its extent `along`.
-	var along := axis
-	var n := Vector3(-axis.z, 0.0, axis.x)
-	var half_n := half.y
-	var half_along := half.x
-	if half.y > half.x:
-		along = Vector3(-axis.z, 0.0, axis.x)
-		n = axis
-		half_n = half.x
-		half_along = half.y
-	if rng.randf() < 0.5:
-		n = -n
-	# The target 8-14 m off the far face; the crews 10-18 m off the near face, spread along it; one crew past the face's
-	# end on the target's side (a clear line from the start).
-	var target_at := center + n * (half_n + 8.0 + rng.randf_range(0.0, 6.0)) + along * rng.randf_range(-half_along * 0.5, half_along * 0.5)
-	var crew_spots: Array = []
-	for i in crews_n:
-		var spot: Vector3
-		if i == crews_n - 1 and crews_n >= 2:
-			var side := 1.0 if rng.randf() < 0.5 else -1.0
-			spot = center + along * side * (half_along + 8.0 + rng.randf_range(0.0, 4.0)) - n * rng.randf_range(0.0, 6.0)
-		else:
-			spot = center - n * (half_n + 10.0 + rng.randf_range(0.0, 8.0)) \
-					+ along * rng.randf_range(-half_along + 1.0, half_along - 1.0)
-		var tries := 0
-		while not _standable(map, spot) and tries < 8:
-			spot += (-n if i < crews_n - 1 else along * signf(spot.dot(along) - center.dot(along))) * 3.0
-			tries += 1
-		crew_spots.append(spot)
-	if not _standable(map, target_at):
-		target_at += n * 4.0
+	var center: Vector3 = stage["center"]
+	var target_at: Vector3 = stage["target"]
+	var crew_spots: Array = stage["spots"]
 	var toward := _flat(target_at - center).normalized()
 	var yaw := atan2(-toward.x, -toward.z)
 	var names: Array = []
@@ -135,9 +174,15 @@ func _run() -> void:
 		names.append(String(crew.name))
 	var target := lab.gun(Match.Team.RUST, "Rust_T_1", target_at, yaw + PI, target_unit)
 	_target_name = String(target.name)
+	var shooters := {}
+	game_match.weapon_fired.connect(func(event: Dictionary) -> void:
+		shooters[int(event.get("projectile_id", -1))] = String(event.get("shooter", "")))
 	game_match.projectile_impact.connect(func(event: Dictionary) -> void:
-		var shooter := String(event.get("shooter", ""))
-		if String(event.get("target", "")) == _target_name and names.has(shooter):
+		var shooter := String(shooters.get(int(event.get("projectile_id", -1)), event.get("shooter", "")))
+		var victims: Array = event.get("victims", [])
+		var on_target := String(event.get("target", "")) == _target_name \
+				or victims.any(func(v: Dictionary) -> bool: return String(v.get("target", "")) == _target_name)
+		if on_target and float(event.get("damage", 0.0)) > 0.0 and names.has(shooter):
 			_hits[shooter] = int(_hits.get(shooter, 0)) + 1
 			if not _first_hit.has(shooter):
 				_first_hit[shooter] = int(event.get("tick", game_match.tick)))
@@ -156,6 +201,23 @@ func _run() -> void:
 		target.place(grounded, yaw + PI)
 	for i in 3:
 		await lab.step()
+	var placed: Array = []
+	var start_m: Array = []
+	var stage_ok := true
+	var ground_moved := 0
+	for i in names.size():
+		var at := _flat(lab.tank_of(names[i]).global_position)
+		placed.append([_r(at.x), _r(at.z)])
+		if at.distance_to(crew_spots[i]) > 3.0:
+			ground_moved += 1
+		var d := at.distance_to(_flat(target.global_position))
+		start_m.append(_r(d))
+		if i < names.size() - 1 and (d < STAGE_MIN_M or d > STAGE_MAX_M):
+			stage_ok = false
+	if _flat(target.global_position).distance_to(target_at) > 3.0:
+		ground_moved += 1
+	if ground_moved > 0:
+		stage_ok = false
 	var element := lab.elements.form(names, "Echo")
 	var order_tick := game_match.tick
 	element.assign({"verb": "attack", "target": _target_name, "formation": "line"})
@@ -167,6 +229,8 @@ func _run() -> void:
 	var reached := {}    # crew -> {goal index: true}
 	var start_lines := {}
 	var death_moving := {}
+	var flips := {}
+	var last_shot := {}
 	for unit_name: String in names:
 		stuck_ticks[unit_name] = 0
 		in_range_no_shot_ticks[unit_name] = 0
@@ -206,7 +270,11 @@ func _run() -> void:
 				if not moving:
 					stuck_ticks[unit_name] = int(stuck_ticks[unit_name]) + 1
 			moving_for_shot[unit_name] = moving and not shot
-			if verb in ["move", "attack_move"] and named and order.has("goal"):
+			if last_shot.has(unit_name) and bool(last_shot[unit_name]) != shot:
+				flips[unit_name] = int(flips.get(unit_name, 0)) + 1
+			last_shot[unit_name] = shot
+			# A firing-spot move is a `move` naming the target (the drills' attack-moves and the formation's moves are not spots).
+			if verb == "move" and named and order.has("goal"):
 				var goal := Vector3(float(order["goal"][0]), 0.0, float(order["goal"][1]))
 				var list: Array = spots[unit_name]
 				if list.is_empty() or (list[list.size() - 1] as Vector3).distance_to(goal) > SPOT_CHANGE_M:
@@ -222,6 +290,9 @@ func _run() -> void:
 			if _deaths.has(unit_name) and not death_moving.has(unit_name):
 				death_moving[unit_name] = bool(moving_for_shot.get(unit_name, false))
 	var window := float(game_match.tick - order_tick) / SimClock.TICK_RATE
+	var line_flips := {}
+	for unit_name: String in names:
+		line_flips[unit_name] = int(flips.get(unit_name, 0))
 	var first_hit := {}
 	var never_reached := 0
 	var spot_changes := {}
@@ -244,7 +315,8 @@ func _run() -> void:
 	print("ENGAGE_PROBE %s" % JSON.stringify({"seed": seed_value, "arena": arena, "arm": "on" if ElementPlan.ATTACK_SHOT else "off",
 			"crews": crews_n, "hull": hull, "target_unit": target_unit, "feature": String(feature.get("type", "")),
 			"feature_at": [_r(center.x), _r(center.z)], "target_at": [_r(target_at.x), _r(target_at.z)],
-			"crew_at": crew_spots.map(func(p: Vector3) -> Array: return [_r(p.x), _r(p.z)]),
+			"crew_at": placed, "target_placed": [_r(target.global_position.x), _r(target.global_position.z)],
+			"start_m": start_m, "stage_ok": stage_ok, "ground_moved": ground_moved, "line_flips": line_flips,
 			"start_line": start_lines, "window_s": _r(window), "seconds": seconds,
 			"stuck_s": stuck_s, "no_shot_s": no_shot_s, "first_hit_s": first_hit, "hits": _hits,
 			"deaths": _deaths.keys().filter(func(k: String) -> bool: return names.has(k)).size(), "deaths_moving": deaths_moving,
