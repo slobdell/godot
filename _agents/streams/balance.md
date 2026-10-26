@@ -82,5 +82,26 @@ line, 400 fights an arm, builder2 J24) -> read, expand the lever that moves the 
   "slower than they are" read as the whole hull); t50 before t30 (if -50 % doesn't move the share, -30 % won't); 10 dev seeds
   first (400 fights an arm; the mono share's se was 3 at n 320, and the gap to close is ~45 points), the winner expanded after.
 - **Questions for the lead:** none yet (B5's read decides).
+- **B5 round 1 series (dev 9401-9410, never a bar; `~/balance-runs/b5-r1.sh`):** commit 8f2643375 + overrides, builder2 J24,
+  GUARD_KINDS=none GUARD_SIDES=green, mono on Green then on Rust per faction (8 runs an arm, 50 fights each = 400 an arm),
+  arms base, t50, h25, th, in that order; paired reads with `search.py mono ~/balance-guard-raw/b5 --match -mono-t50- --base-match
+  -mono-base-` and `search.py faces` the same way. Expected (written before any number): base ~82 % mono wins as round 40; a
+  lever that works moves the share down by > 10 points at this n (se ~2.5) AND the side+rear share of the mixed army's faced
+  damage to tanks UP; if a lever moves the share without moving the faces, something else (fight length, the tanks' own
+  fire) did it, and the read says so.
+
+**Bar B5 (DRAFT; filed for real, lever named, before any number on 9201-9240 + 9301-9340).** BASE = the tree as it ships
+without the lever; ARM = the same tree + the lever's values written into units.gd (`search.py apply`), one frozen ARM
+(R40.13). Workload: the mono-tank line (B5's: guard none, 5 guard arenas, mono on each team in turn, per faction; 9201-9240
++ 9301-9340 = 80 seeds x 5 x 4 x 2 = 3200 fights an arm) AND the blob + turtle lines on the same seeds (both sides, 1600 an
+arm) for the guards. **Deciding:** the all-tank army's win share v its own faction's mixed deal down by > 2 paired se, toward
+35-40 % (reported per faction; the gap left is stated in points). **Guards** (each fails at > 2 paired se the wrong way, as
+Bar B2s): G1 blob line's win share not up; G2 turtle line's not up; G3 median length of each line within +/-15 % and of each
+guard faction within +/-20 % (a slower tank makes fights longer: the band is the bar, not a target); G4 time-cap share not
+up; G5 flatness not worse (the faction table must not undo what fm_c5r2_lawt5 buys, read on the lines); G6 perf-judge on
+builder0 passes on the shipped hash; G7 full check green on the shipped hash (sim-baseline adopted on purpose by the
+orchestrator). Judge: `search.py bar` extended for the mono deciding line (to be written before the series). Whether the
+lever is judged alone or on top of fm_c5r2_lawt5 is named with the lever (default: alone, so his two questions get two
+answers; v2's Bar B2s then re-screens with the lever in its BASE).
 - **Requests to other streams:** native: a `GUARD_TARGET` knob in tools/scoreboard/guard.sh (default guard-run) would retire
   tools/balance/guard_probe.sh (not urgent; the adapter works).
