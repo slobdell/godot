@@ -147,8 +147,17 @@ arrived 48.9 -> 53.4); mean arrival 34.9 -> 36.5 s (+1.6; green s2 t8 39.1 -> 48
 S_4 waited ~2 s at the deck's north end on S_3 stopped on the far apron, S_1 behind S_4; rim 1.8 v 1.9, deck jam 1.3 both); the
 other +5.4 s of the arrival (39.1 -> 48.0) is after the bridge: the crews reach the far quay in another order and their regroup
 differs (no DECKWAIT line after t 28). Arrival on 18 deterministic cells is a reshuffle (R40.24's lesson), which is why the bar
-decides on rim-seconds pooled over 72 fresh runs a tree and reports arrival. Dev read 6 (running): the drill on MAIN (no overrides)
-OFF / ON from this stream's light folder (deciding line 2 reads both trees).
+decides on rim-seconds pooled over 72 fresh runs a tree and reports arrival. **Dev read 6 (q6dev6, v2 on MAIN, OFF / ON, this stream's light folder):** 18/18 both; pooled rim 8.1 -> 7.3 s, worst 1.5 -> 1.1;
+but deck-jam seconds 7.5 -> 17.2 and mean arrival 36.6 -> 39.1 s: followers queued on the deck behind a leader stopped at the exit.
+**v3 (a765e2ba6): a leader already beyond the water (through the crossing, on the far apron) is passed as today; the rule is the
+entry's.** Dev reads 7-8 (v3 ON, both trees, `bridge_lab_table.py --q6`): OVERRIDES 18/18, rim 14.2 -> 11.2 s (-21 %), worst 1.9,
+arrival +0.92 s a run (se 0.66); MAIN 18/18, rim 8.1 -> 7.8, worst 1.1, deck jam 7.5 -> 17.2, **arrival +2.51 s a run (se 1.38,
++1.8 se)**. An arrival guard joins Bar Q6 (paired per-run arrival ON <= OFF + 1.645 se, each tree: a bridge fix that makes every
+crossing slower is not what he asked for), and v3 would fail it on main's drill seeds, so dev read 9 (q6dev9, running) traces
+main's worst run (green s2 t1, 28.8 -> 42.6 s) OFF / ON before the rule is tuned or the bar filed. Native's OFF-path read of
+0b47dfbd8 (a wish under 0.1 m/s read wish / 0.1 on the clear-way return) fixed in 520516ec3 with a test. CP42.0 taken: main
+bf99631b5 merged (8026d9696), Q5 cherry-picked (09db261b7, 8f1166f69; conflicts in DEFAULT_OFF / _chain_native / route_arms
+resolved); `make test FILTER=traffic NATIVE=off` laptop 127/0.
 
 ### Bar Q6 (DRAFT, not filed; filed the minute the dev reads justify it, BEFORE any number on 9825-9848; the brief's lines)
 
