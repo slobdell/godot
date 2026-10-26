@@ -55,6 +55,11 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**FINAL (round-40 close, 2026-10-25 ~22:15 PDT): 0a7097ee7 GREEN on builder0** (`>> remote: make native check exited 0`,
+3243 passed / 0 failed, 27 targets all passed, ALL JUDGED; sim-baseline 13 maps unmoved; copy-back verified, 228 files). The tip
+on top of it is docs only (Status). Everything of this stream ships OFF: M1 v2 (`--giveway-chain=v2`), M3 (`--giveway-reroute`),
+F1 (`--traffic-on=follow`).
+
 ### ROUND-41 ITEM 1 (top): a speed-only bridge-mouth rule (R40.24: F1 stopped OFF; balance's stat change carries behind it)
 
 **The rule to build:** a WHEELED crew slows before a sharp turn on its route that its leader is in. ORCA's steering is untouched:
