@@ -156,6 +156,13 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   group-order dev +7.3 % (1.9 se). Ruled: file on v2 IF its overrides read clears the failing run (18/18) with the rim down; group-order
   guards on 9037-9048 (his 5-squad across click): all-in mean and never-in squads ARM <= BASE + 1.645 se, contacts <= BASE x 1.05; a
   bridge fix that visibly worsens his big order doesn't ship (then option (c): wait family stops, bridge as R40.24 left it, B2s v2 waits).
+- **R41.7 (2026-10-26 ~05:30) Q4 holdlane stays OFF, no bar.** One lab as R41.5 asked (ca843a664, builder0 light, fresh dev crossing/
+  locks/sumps/terminus x 7005-7008 crew, 16 paired runs, GDScript drive): jam-seconds -1.5 % (-0.7 se, flat), all-in +3.0 s (2.1 se
+  worse), never-in runs 8 -> 9, friendly contacts +10.8 %: a crew that neither asks nor yields sits nose-to-tail against a crossing
+  friend; the give-way episodes buy separation. **For him (player terms):** on his 5-squad order both forms of his idea were tried
+  (wait for a friend to clear: Q2 v1-v3, +7-9 % jam time; hold the lane: Q4, +3 s to all-in) and both made the jam slightly worse,
+  because 25 crews squeeze into one street and stepping aside is what keeps them apart; the wait does fix the bridge (Bar Q3).
+  Manoeuvre next: Bar Q3 series, then M1 v3.
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
