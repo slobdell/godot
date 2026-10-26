@@ -214,7 +214,11 @@ func test_the_skirmish_armies_are_untouched() -> void:
 func test_every_archetype_and_seed_buys_the_army_it_bought_before() -> void:
 	var parts: PackedStringArray = []
 	var count := 0
+	var rolled := 0
 	for archetype: String in Army.ARCHETYPES:
+		if bool(Army.ARCHETYPES[archetype].get("measure_only", false)):
+			continue  # B5 (round 41, balance): a measurement-only lineup is never dealt in play (test_tactics_mono_army pins it)
+		rolled += 1
 		var faction := String(Army.ARCHETYPES[archetype].get("faction", Units.DEFAULT_FACTION))
 		for seed_value in 20:
 			parts.append(JSON.stringify(Army.cpu_army("cpu:" + archetype, seed_value, Units.BASELINE_BUDGET, faction), "", true))
@@ -223,6 +227,5 @@ func test_every_archetype_and_seed_buys_the_army_it_bought_before() -> void:
 		parts.append(JSON.stringify(Army.cpu_army("cpu", seed_value), "", true))
 		count += 1
 	var digest := "\n".join(parts).md5_text()
-	print("MEASURE r20_cpu_army_digest %d armies (%d archetypes x 20 seeds + 20 plain): %s" % [count,
-			Army.ARCHETYPES.size(), digest])
+	print("MEASURE r20_cpu_army_digest %d armies (%d archetypes x 20 seeds + 20 plain): %s" % [count, rolled, digest])
 	assert_eq(digest, CPU_ARMY_DIGEST, "Army.cpu_army builds the same armies as before R1 (the baselines' input)")
