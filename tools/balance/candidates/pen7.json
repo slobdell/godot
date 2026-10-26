@@ -1,0 +1,4 @@
+{
+ "name": "pen7",
+ "why": "B5 round 2c dev arm (outside R40.1's keys; a read for his decision, never a bar): no overrides; the arm is a --tune on the IFV guns' penetration (autocannon 5->7, pulse_cannon 6->7, twin_mg 2.5->4), passed as GUARD_ARGS by ~/balance-runs/b5-r2c.sh"
+}
