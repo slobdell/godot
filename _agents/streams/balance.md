@@ -104,6 +104,13 @@ units are not failing to get round; the IFV's share is small even though 72 % of
 hit is small, and 2-6 % of IFVs live, round 40). What a slower turret / hull can still buy: fewer tank hits a minute (the tank
 can't track a crossing target), and more time for the mixed army's artillery; the t50 / h25 / th arms say how much.
 
+**B5 round 1, t50 arm read (tank turret traverse x0.5; 8f2643375 + overrides, builder2 J24, 9401-9410, 400 fights, paired):**
+mono-tank wins 85 -> **80 % (-5, se 1)**: condemned 77 -> 70 (-7, se 2), gangs 78 -> 75 (-3, se 5), law 92 -> 85 (-7, se 2),
+syndicate 92 -> 88 (-4, se 2). Median length +8 % (syndicate +37 %: 94 -> 128 s; the others +0-2 %). Faces unchanged: direct fire
+on tanks side+rear 64.6 -> 65.7 (+1.1, se 0.7), so the lever works by the tank missing more, not by more flanking (the mixed army's
+own tanks' damage a second alive 5.8 -> 5.1 condemned, 3.6 -> 3.7 gangs, 7.9 -> 7.9 law). **A real lever, a small one: ~5 of the
+~45 points to his target.** Round 2's ifv15 arm is queued to start the minute round 1 ends (`~/balance-runs/b5-r2.sh`).
+
 **The IFV split (the orchestrator's ask, 2026-10-26 ~03:50; base arm's rows, no new runs; `tools/balance/trade_table.py`):**
 (a) in the mono line every enemy of the mixed army is a tank: 100 % of IFV fire went on tanks and made 10 % of the damage, so
 "busy with other targets" is not the cause here. (b) per second alive on tanks: condemned IFV 1.9 pts/s (0.5 front / 0.9 side /
