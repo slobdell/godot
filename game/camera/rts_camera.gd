@@ -213,6 +213,49 @@ const YAW_DEADBAND_DEG := 12.0
 const YAW_SETTLE_DEG := 2.0
 var _yaw_turning := false
 
+## Round 42 (camera K4.2): the yaw looks where the danger is. The lead, after round 41: "if the camera is following the
+## direction at which a squad is moving, and then there's an ambush from the east (assuming we're driving north), the
+## camera doesn't end up pointing at the action"; and of his scouts retreating to the edge, "the camera pointed out
+## completely to the audience". His idea, agreed as ONE rule with no special cases (`danger_look`): the look direction
+## is a weighted sum of unit vectors from the commanded units:
+##   (a) their heading, lightly, by speed            DANGER_HEADING_W x min(speed / DANGER_FULL_SPEED, 1)
+##   (b) each known enemy, by threat                 DANGER_ENEMY_W x nearness x (1 + firing at us + hit us), fading
+##                                                    over DangerFeed.MEMORY_S once out of sight
+##   (c) where the war is                             DANGER_WAR_W toward the known enemies' centre, else the arena's middle
+## So a quiet drive north looks north (all three agree), an ambush from the east pulls the view east while it fires, and
+## a retreat to his own edge looks back at the fight (b + c outweigh a backward heading). Guards: a sum that nearly
+## cancels (threats on opposite sides) keeps the current yaw; a deadband, a settle and a minimum hold stop it swinging;
+## while he aims the glide holds the view (C41.4); his own turn wins for the hand-back time; the turn is the glide's.
+## `danger` is DangerFeed.read (skirmish_mode wires it, C42.3). `--camera-danger=off` is round 41 (the heading only).
+var danger: Callable = Callable()
+var danger_on := false
+## The last `danger_look` (the readout shows its pulls; the trace its strength).
+var danger_last := {}
+## (a) The heading is a light pull: it decides only when nothing else does (a quiet drive, no enemy known).
+const DANGER_HEADING_W := 0.6
+## The heading's weight is full at this speed (m/s; a scout's cruise) and zero at rest: a parked squad has no heading.
+const DANGER_FULL_SPEED := 6.0
+## (b) One known enemy at DANGER_NEAR_M; nearer weighs more (to DANGER_NEAR_CAP x), farther less (to DANGER_FAR_FLOOR x).
+const DANGER_ENEMY_W := 0.5
+const DANGER_NEAR_M := 50.0
+const DANGER_NEAR_CAP := 2.0
+const DANGER_FAR_FLOOR := 0.3
+## An enemy firing at the commanded units weighs (1 + DANGER_FIRING_X) x, one that hit them (1 + ... + DANGER_HIT_X) x,
+## each fading with DANGER_RECENT_S: the gun that is shooting at him now is where he must look.
+const DANGER_FIRING_X := 2.0
+const DANGER_HIT_X := 2.0
+const DANGER_RECENT_S := 3.0
+## (c) Where the war is: as strong as the heading at full speed and more, so a retreat to the edge looks back in.
+const DANGER_WAR_W := 1.0
+## The war pull lets go within this distance of its point (standing on it, every way is toward it).
+const DANGER_WAR_NEAR_M := 20.0
+## Cancel guard: a sum shorter than this fraction of its weights has no direction worth turning to (threats both sides).
+const DANGER_CANCEL := 0.2
+## Swing guards: start a turn only DANGER_DEADBAND_DEG off, finish within YAW_SETTLE_DEG, then hold DANGER_HOLD_S.
+const DANGER_DEADBAND_DEG := 20.0
+const DANGER_HOLD_S := 1.5
+var _danger_settled_at := -1e9
+
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
 var _shown_zoom := 0.7
@@ -232,7 +275,7 @@ var _manual_at := -1e9
 ## This frame's `vision` reading, so the tracking and the cap agree and it is called once.
 var _vision_state := {}
 ## Round 41 (camera K1): who last set each part of the WANTED pose ("player", "jump", "follow", "order_track",
-## "auto_frame", "yaw_follow", "cap", "frame"), and the layers `_apply` stacked on the shown pose this frame (the solid
+## "auto_frame", "yaw_follow", "danger", "cap", "frame"), and the layers `_apply` stacked on the shown pose this frame (the solid
 ## and airship moves), for CameraTrace to say which of them moved the ground under the cursor. Tags only: nothing
 ## reads them to decide anything.
 var wrote := {"focus": "frame", "yaw": "frame", "zoom": "frame", "pitch": "frame"}
@@ -339,6 +382,7 @@ func _ready() -> void:
 	frame_leash = float(flags.text("camera-leash", str(FRAME_LEASH)))
 	yaw_deg_per_s = float(flags.text("camera-glide-yaw", str(GLIDE_YAW_DEG_PER_S)))
 	focus_omega = float(flags.text("camera-glide-omega", str(GLIDE_FOCUS_OMEGA)))
+	danger_on = flags.text("camera-danger", "off") != "off"  # K4.2: OFF until Bar K4 passes (then ON; =off = round 41)
 	if glide:
 		CameraShake.pivot = cursor_ground
 	snap()
@@ -1233,22 +1277,85 @@ func set_auto_frame(on: bool) -> void:
 		stop_tracking("manual")
 
 
-## Round 7 (A): turn the yaw toward the selection's facing (see `yaw_follow`).
+## Round 7 (A): turn the yaw toward the selection's facing (see `yaw_follow`). Round 42 (K4.2): with `danger_on`, toward
+## where the danger is instead (`danger_look`), with its own deadband and hold.
 func _update_yaw_follow(delta: float) -> void:
 	if not yaw_follow or not facing.is_valid() or _before_overview != null or _clock - _manual_at < handback_seconds:
 		_yaw_turning = false
 		return
-	var wanted: Variant = facing.call()
+	var wanted: Variant
+	var deadband := YAW_DEADBAND_DEG
+	var writer := "yaw_follow"
+	if danger_on and danger.is_valid():
+		danger_last = RtsCamera.danger_look(danger.call())
+		wanted = danger_last.get("look")
+		deadband = DANGER_DEADBAND_DEG
+		writer = "danger"
+		if not _yaw_turning and _clock - _danger_settled_at < DANGER_HOLD_S:
+			return
+	else:
+		wanted = facing.call()
 	if not wanted is Vector3:
 		_yaw_turning = false
 		return
 	var gap := angle_difference(yaw, RtsCamera.yaw_facing(wanted as Vector3))
-	if not _yaw_turning and absf(gap) < deg_to_rad(YAW_DEADBAND_DEG):
+	if not _yaw_turning and absf(gap) < deg_to_rad(deadband):
 		return
+	var was_turning := _yaw_turning
 	_yaw_turning = absf(gap) > deg_to_rad(YAW_SETTLE_DEG)
+	if was_turning and not _yaw_turning:
+		_danger_settled_at = _clock
 	var step := deg_to_rad(YAW_FOLLOW_DEG_PER_S) * delta
 	yaw = wrapf(yaw + clampf(gap, -step, step), -PI, PI)
-	wrote["yaw"] = "yaw_follow"
+	wrote["yaw"] = writer
+
+
+## Round 42 (K4.2): the direction the view should look, from a DangerFeed reading: {"look": a ground unit Vector3, or
+## null when there is nothing to look at or the pulls cancel; "pulls": {heading, enemies, war} (each a ground Vector3,
+## the weighted pull); "strength": the sum's length over its weights}. Pure, for tests.
+static func danger_look(state: Dictionary) -> Dictionary:
+	var out := {"look": null, "pulls": {}, "strength": 0.0}
+	if not state.get("from") is Vector3:
+		return out
+	var from: Vector3 = state["from"]
+	var weights := 0.0
+	var heading := Vector3.ZERO
+	if state.get("heading") is Vector3 and (state["heading"] as Vector3).length() > 0.01:
+		var w := DANGER_HEADING_W * clampf(float(state.get("speed", 0.0)) / DANGER_FULL_SPEED, 0.0, 1.0)
+		heading = RtsCamera._flat(state["heading"]) * w
+		weights += w
+	var enemies := Vector3.ZERO
+	var centre := Vector3.ZERO
+	var known: Array = state.get("enemies", [])
+	for enemy: Dictionary in known:
+		var at: Vector3 = enemy["at"]
+		centre += at
+		var away := Vector3(at.x - from.x, 0.0, at.z - from.z)
+		if away.length() < 0.5:
+			continue
+		var near := clampf(DANGER_NEAR_M / away.length(), DANGER_FAR_FLOOR, DANGER_NEAR_CAP)
+		var fade := 1.0 if bool(enemy.get("seen", true)) else clampf(1.0 - float(enemy.get("age_s", 0.0)) / DangerFeed.MEMORY_S, 0.0, 1.0)
+		var threat := 1.0 + DANGER_FIRING_X * exp(-float(enemy.get("fired_s", DangerFeed.NEVER)) / DANGER_RECENT_S) \
+				+ DANGER_HIT_X * exp(-float(enemy.get("hit_s", DangerFeed.NEVER)) / DANGER_RECENT_S)
+		var w := DANGER_ENEMY_W * near * fade * threat
+		enemies += away.normalized() * w
+		weights += w
+	var war_at: Vector3 = centre / float(known.size()) if not known.is_empty() else state.get("middle", Vector3.ZERO)
+	var war := Vector3.ZERO
+	var to_war := Vector3(war_at.x - from.x, 0.0, war_at.z - from.z)
+	if to_war.length() > DANGER_WAR_NEAR_M:
+		war = to_war.normalized() * DANGER_WAR_W
+		weights += DANGER_WAR_W
+	var total := heading + enemies + war
+	out["pulls"] = {"heading": heading, "enemies": enemies, "war": war}
+	out["strength"] = total.length() / weights if weights > 0.0 else 0.0
+	if weights > 0.0 and float(out["strength"]) >= DANGER_CANCEL:
+		out["look"] = total.normalized()
+	return out
+
+
+static func _flat(v: Vector3) -> Vector3:
+	return Vector3(v.x, 0.0, v.z).normalized()
 
 
 ## How far below the screen's centre a lean may put the squad, as a fraction of the half-height: derived from where

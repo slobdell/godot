@@ -17,7 +17,7 @@ extends Node
 ## than SNAP_PX; a REVERSAL is a source's velocity turning back on itself (jitter). The player's own input is counted
 ## under "player" and is not a defect. `--camera-trace=DIR` turns it on in any skirmish (CameraPlaytest drives one).
 
-const SOURCES := ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "cap", "frame", "solid", "hull",
+const SOURCES := ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "danger", "cap", "frame", "solid", "hull",
 		"shake"]
 ## Screen acceleration of one source that counts as a jerk (px/s^2 at 1080 rows; scaled by the window's height). A
 ## critically damped move of 300 px peaks near 300 * omega^2 = 4,800 px/s^2 at omega 4/s; a lerp from rest at the rig's
@@ -78,6 +78,13 @@ static func attach_from_args(on_rig: RtsCamera) -> void:
 	playtest.rig = on_rig
 	playtest.out_dir = out_dir
 	playtest.autoplay = OS.get_cmdline_user_args().has("--camera-autoplay")
+	# Round 42 (K4.1): where the view looks against where the danger is (the playtest gives it the feed).
+	var look := CameraLook.new()
+	look.name = "CameraLook"
+	look.rig = on_rig
+	look.keep_frames = OS.get_cmdline_user_args().has("--camera-trace-frames")
+	playtest.look = look
+	on_rig.add_child.call_deferred(look)
 	on_rig.add_child.call_deferred(playtest)
 
 
