@@ -28,6 +28,12 @@ builder0, 27 ALL JUDGED** (`make check exited 0`, 3243 passed / 0 failed; sim-ba
 
 Kickoff: the same one line for every stream, `_agents/orchestration.md` *The kickoff prompt*. All five are FRESH sessions.
 
+**RUNNING (2026-10-26 ~05:00 PDT): all five streams started ~02:00.** Main = 04513fc92 (GREEN builder0) + orders' bdb43b2b8 (O1 probe +
+is_aiming, quick-green; main's batch check pending with native's tip c19dc10ec). Rulings R41.1-R41.7; bars filed: K3 v1 (camera), Q3
+(manoeuvre, bridge wait, gate check on builder2), G1 v8 (orders; v7 withdrawn unread); O2 and Q2/Q4 closed OFF without bars (his traffic
+idea, both forms, made the 5-squad order slightly worse; the wait fixes the bridge). Balance B5: tank turret x0.5 = all-tanks 85 -> 80 %;
+IFVs lose to tanks by toughness/burst, not facing (65 % of mixed fire already hits sides/rears); round 2 (IFV +15 % tough, -15 % cost) ~06:30.
+
 **Orchestrator, after launch:** run the round loop; relay orders' O1 probe hash to manoeuvre (its Q1 reads on it); CP41.1: merge
 manoeuvre's Q3 alone when its bar passes (with native's twin) and tell balance the same minute (Bar B2s v2 runs then); take balance's
 B5 read and camera's K3 clip to him in player terms.
