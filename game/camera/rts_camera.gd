@@ -248,10 +248,10 @@ var layers := {}
 ##     starts and stops with no jump in speed, the same at 30 or 144 fps (`spring`);
 ##   * the vision frame is on a leash (FRAME_LEASH): the squad may wander that far from the frame's centre before the
 ##     camera follows, so a squad milling about leaves the view still and a squad driving off drags it smoothly;
-##   * while he is aiming (`aiming_now`: a button held, or an order armed or the cursor on a unit while his hand is on
-##     the mouse) the automatic moves coast to a stop and wait: the ground under his cursor stays put. They resume,
-##     eased, after; his click ends the aim. A hand merely moving is not aiming (an RTS hand never rests: K3's first
-##     bar run held the camera 58 % of the match that way and it found a fifth fewer fights);
+##   * while he is aiming (`aiming_now`: a button held; his hand just stopped (DWELL_S); or an order armed or the cursor
+##     on a unit) the automatic moves coast to a stop and wait: the ground under his cursor stays put. They resume,
+##     eased, after; his click ends the aim. A hand sweeping is not aiming (an RTS hand never rests: K3's first bar run
+##     held the camera 58 % of the match that way and it found a fifth fewer fights);
 ##   * no automatic move carries the view faster than GLIDE_SCREENS_PER_S;
 ##   * the building clearance eases in over ~0.1 s instead of one frame, and CameraShake pivots on the ground under the
 ##     cursor (the view shakes, the point he is about to click does not).
@@ -273,6 +273,8 @@ const FRAME_ZOOM_LEASH := 0.025
 ## The hand: while orders' getter says he aims, an automatic move waits up to this long after the cursor last moved (a
 ## cursor left resting on a unit must not freeze the camera for good).
 const HOVER_HOLD_S := 1.5
+## A hand that has stopped this long has found what it will click (a sweep never pauses; a reach ends in a stop).
+const DWELL_S := 0.1
 ## An automatic move's top speed, in heights of the ground in view per second at the focus (K3: an uncapped spring
 ## crossed a whole screen in 0.7 s on a long re-frame: smooth, but not cinematic, and 12 frames over SNAP_PX).
 const GLIDE_SCREENS_PER_S := 0.6
@@ -482,15 +484,17 @@ static func spring(x: Variant, v: Variant, goal: Variant, omega: float, delta: f
 	return [goal + (away + lead) * decay, (v - lead * omega) * decay]
 
 
-## Round 41 (K2, C41.4): is he about to click something? A mouse button held (a box, a drag) always; orders' getter
-## (`RtsControls.is_aiming`: the cursor on a unit a click would pick, an armed order) while his hand is on the mouse:
-## it moved within HOVER_HOLD_S and he has not clicked since (a click spends the aim).
+## Round 41 (K2, C41.4): is he about to click something? A mouse button held (a box, a drag) always. Otherwise only
+## while his hand is on the mouse (it moved within HOVER_HOLD_S, and he has not clicked since: a click spends the aim),
+## and then when it has stopped (DWELL_S) or orders' getter says so (`RtsControls.is_aiming`: the cursor on a unit a
+## click would pick, an armed order).
 func aiming_now() -> bool:
 	if _buttons_down != 0:
 		return true
-	if _aim_spent_at >= _mouse_moved_at:
+	var still := _clock - _mouse_moved_at
+	if _aim_spent_at >= _mouse_moved_at or still >= HOVER_HOLD_S:
 		return false
-	return _clock - _mouse_moved_at < HOVER_HOLD_S and aiming.is_valid() and bool(aiming.call())
+	return still >= DWELL_S or (aiming.is_valid() and bool(aiming.call()))
 
 
 ## The top speed of an automatic focus move (m/s): GLIDE_SCREENS_PER_S heights of the ground in view at the shown

@@ -109,6 +109,12 @@ func test_while_he_aims_the_automatic_moves_wait() -> void:
 	assert_true((rig.ground_point(screen) as Vector3).distance_to(under) < 0.05,
 			"the ground under his cursor stays put while he aims (moved %.3f m)" % (rig.ground_point(screen) as Vector3).distance_to(under))
 	aiming[0] = false
+	for pressed in [true, false]:  # he clicks: the aim is spent
+		var click := InputEventMouseButton.new()
+		click.button_index = MOUSE_BUTTON_RIGHT
+		click.pressed = pressed
+		click.position = screen
+		rig._input(click)
 	var before := rig._shown_focus
 	for i in 30:
 		rig._process(1.0 / 60.0)
@@ -123,7 +129,11 @@ func test_a_moving_hand_alone_is_not_aiming_and_a_click_spends_the_aim() -> void
 	var motion := InputEventMouseMotion.new()
 	motion.position = Vector2(300, 300)
 	rig._input(motion)
-	assert_true(not rig.aiming_now(), "an RTS hand never rests: moving the mouse is not aiming")
+	assert_true(not rig.aiming_now(), "an RTS hand never rests: a sweeping mouse is not aiming")
+	rig._clock += RtsCamera.DWELL_S + 0.05
+	assert_true(rig.aiming_now(), "a hand that has stopped has found what it will click")
+	motion.position = Vector2(305, 300)
+	rig._input(motion)
 	on_unit[0] = true
 	assert_true(rig.aiming_now(), "the cursor on a unit, his hand on the mouse: he aims")
 	rig._clock += RtsCamera.HOVER_HOLD_S + 0.1
