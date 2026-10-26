@@ -63,6 +63,26 @@ B5's read decides whether a missile/penetration question goes back to him.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT SKELETON (filled as the last arms land; the numbers above are final where marked DONE):**
+- **Playtest for him (no change ships; the lineups exist today):** his all-tank army v the artillery-heavy CPU:
+  `make skirmish ENEMY=cpu:siege ENEMY_FACTION=condemned` and `make skirmish ENEMY=cpu:gang_hail ENEMY_FACTION=gangs` (field
+  only tanks in the garage); after 3ef8d5771 also `ENEMY=cpu:law_barrage ENEMY_FACTION=law` and `ENEMY=cpu:syndicate_barrage
+  ENEMY_FACTION=syndicate`. His levers in a real fight: `make skirmish SKIRMISH_FLAGS="--unit-overrides=$HOME/balance-guard-raw/b5/overrides-t50.json"`
+  (turret x0.5; `overrides-t50_ifv15.json` for the combined arm; N3's flag, the file is units only).
+- **Merge notes (shared-path edits on stream/balance):** `game/modes/skirmish_mode.gd` demo_flags, one condition widened (R41.12,
+  `begins_with("cpu:")`); `game/units/army.gd` two `measure_only` ARCHETYPES + `archetypes_for(faction, with_measure_only)`
+  (callers: the explicit-name check asks for them; the roll and the garage don't); `tests/test_army_economy.gd` the digest skips
+  measure-only lineups (one additive condition; its baseline unchanged); `tests/test_tactics_mono_army.gd` two tests;
+  `tests/tactics/face_probe.gd` (+ .uid); `mk/balance.mk` balance-guard-run / balance-faces; `tools/balance/**`. No unit number
+  changes on stream/balance (every arm was overrides or a --tune on a clean checkout).
+- **Known issues:** `search.py apply` wrote into the script's own tree (fixed: `--tree`, printed); the harness has no
+  `assert_false`; builder2's 50-fight calls idle ~3 min at each tail (J24 > 50 fights: use 20 seeds a call next time).
+- **Next steps (round 42):** (a) if he says yes to the lineup answer: the CPU fields an artillery-heavy lineup against an
+  all-tank player army (a deal rule in `Army.cpu_army` / the garage opponent: a design change, his call, measured 47-52 % and
+  the barrage numbers); the garage suggests the same lineup to him; (b) Bar B2s v2 after the bridge (R41.13; the ARM rebuild is
+  mechanical); (c) Bar B5 for t50 only if he wants the slow turret for feel (the lines screen below says whether it's safe);
+  (d) B3 faction-aware CPU, B6 ADVANCE off a seat (not started this round: B5 took the round).
+
 **Report (2026-10-26, in progress; started from main 98179d62b = code c36217f79 GREEN builder0, no baseline re-run).
 RUNNING: B5 round 1 on builder2 since 02:34 PDT (8f2643375 + overrides; `~/balance-runs/b5-r1.log`). Probe smoke: 8f2643375 on
 builder0's light lane, one gangs mono fight (terminus 9401, 150 s, th overrides): native on, UNIT_OVERRIDES applied, GUARD_RESULT +
