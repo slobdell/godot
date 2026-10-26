@@ -1,9 +1,94 @@
 # Workstreams: the current round
 
-> **ROUND 41 CLOSED 2026-10-26 ~13:05 (main 21b20bdce green builder0 ALL JUDGED; briefs in `streams/archive/round41/`). Was: ROUND 41 PREPARED (2026-10-26 ~03:00, from his playtest of round-40 main and round 40's carried items; launch FRESH: round 40's
-> `stream/*` branches are `round40/<stream>`, every stream gets a new session). FIVE streams: manoeuvre and balance on FABLE (traffic
-> that queues instead of detouring + the bridge; combined arms + the faction stat change), camera, orders, native on Opus. Builders:
-> builder0 AND builder2 (C41.1).** Briefs in `streams/`; round 40's in `streams/archive/round40/`. Round 40's section follows round 41's.
+> **ROUND 42 PREPARED 2026-10-26 evening (from his playtest after round 41; `stream/*` branches are fresh off main 21b20bdce+docs;
+> every stream gets a new session). FIVE streams: engage and manoeuvre on FABLE (his attack order gets a clear shot; Q5 judged on what
+> he sees + the bridge rim crew), camera, balance, native on Opus. Builders: builder0 AND builder2 (C42.1). Round 41 CLOSED 2026-10-26
+> ~13:05 (main 21b20bdce green builder0 ALL JUDGED; briefs in `streams/archive/round41/`).** Briefs in `streams/`; round 41's section
+> follows round 42's.
+
+## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
+
+**Goal: a crew under his attack order never stands behind a container NOT FIRING (it drives to a spot with a clear shot and fires);
+the camera looks where the danger is, not where the squad's nose points; and the carry-overs land: Q5 judged on what he sees, the CPU
+meets an all-tank army with artillery, Law's and Syndicate's artillery within his 15 %, the faction stat change behind a clean bridge.**
+His words: `game_design.md` *His playtest after round 41* (the attack order, the camera note, his weighted-average idea). From round 41
+(HANDOFF *ROUND 41 IS CLOSED*): G1 v9 ON (the group click lays a column), `--camera-glide` ON, lint-fast gates the check; Q2 / Q3 / Q4 /
+Q5 / M1 v3 OFF with causes (R41.4-R41.13); B5 read (R41.18): artillery-heavy lineups already reach his combined-arms target for Condemned
+and Gangs, Law and Syndicate have none that does.
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **engage** | `godot-engage` (5) | **Fable** | [streams/engage.md](streams/engage.md) | a crew he tells to attack goes round the container and fires; no NOT FIRING banner | E1 replay his recording |
+| **camera** | `godot-camera` (3) | Opus | [streams/camera.md](streams/camera.md) | an ambush from the side is on screen; a retreat to the edge looks back at the fight | K4.1 the look census |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | fewer shoves in his big order; the bridge crossing clean under the stat change | Q5.1 Bar Q5 (after CP42.0) |
+| **balance** | `godot-balance` (1) | Opus | [streams/balance.md](streams/balance.md) | the CPU meets his tank rush with artillery; Law / Syndicate artillery hurts tanks | B7 the CPU counter-lineup |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: Q5's fields (CP42.0), twins, the judged lines and table | N1 CP42.0 exec_fields |
+
+No orders stream: G1 v9 shipped; his decision 2 (a click beside his army: squads already in that street hold) is a feel question with
+no code behind it. No settle stream: nothing of settle's is on his list.
+
+**Machines (C42.1 = C41.1):** builder0 = engage's, manoeuvre's, camera's light lanes (J<=4); builder2 (`make gcp-start`; STOPPED at launch;
+Spot: read the verdict line, re-queue on preemption) = balance's series, native's rows, any bar series over 24 fights. ONE full check +
+ONE judged series per builder at a time (`tools/builder_checks.sh --wait-below 1`; the full-check lock). Perf-judge on builder0 only,
+quiet window (`make remote-quiet`). One laptop Godot run at a time (`flock /tmp/tank-squad-laptop-godot.lock`). builder2 also runs
+another project's workers (plane_maker): never touch processes you didn't start. Never delete builder files that aren't ours.
+
+**Ownership (round 42):** each brief's *You own* line is the contract; in short:
+- **engage:** `game/tactics/element_plan.gd`'s engagement functions (`_engage`, `_hold`'s and the orbit drill's in-range tests,
+  `ENGAGE_RANGE_FACTOR`, the crew-reach read) and NOT settle's (deploy-step, halt-lay, seat-deal); `game/tactics/element_situation.gd`
+  (additive per-member fields); `game/tactics/drills.gd` `nearest_visible`; new `game/tactics/firing_position.gd`;
+  `game/control/order_executor.gd`'s `attack` branch (GRANT); `game/ai/order_controller.gd` only where E1's trace lands (merge note);
+  `tests/tactics/test_engage*.gd`, `tests/engage/**`, `mk/engage.mk`; GRANT (C42.6) `rts_controls.gd` `attack_shortfall` wording.
+- **camera:** `game/camera/**`, `game/theme/fx/camera_shake.gd`, `game/ui/camera_readout.gd`, `tests/test_camera*.gd`, `tests/camera/**`,
+  `mk/camera.mk`; GRANT (C42.3) read-only feed lines in `game/modes/skirmish_mode.gd` beside `rig.facing`.
+- **manoeuvre:** movement's drive / unstick / side-step / avoidance, `game/ai/traffic.gd`, `tests/manoeuvre/**`, `tests/traffic/**`,
+  `tests/test_manoeuvre*.gd`, `tests/test_traffic*.gd`, `mk/manoeuvre.mk`.
+- **balance:** `game/units/**` (numbers within C42.5; `army.gd` ARCHETYPES / `cpu_army`), `tools/balance/**`, `mk/balance.mk`,
+  `tests/rules/**`, `mk/rules.mk`, `mk/tactics.mk`, its probes in `tests/tactics/` (`face_probe.gd`, `army_probe.gd`, the `*_table.py` /
+  `*_bar.py` tools); GRANTS `game/garage/garage_advice.gd` / `garage_opponent.gd` (the suggestion line, the opponent deal),
+  `game/modes/skirmish_mode.gd` demo_flags (R41.12); `game/combat/weapons.gd` / `armor.gd` NUMBERS only if B8 needs them.
+- **native:** `native/**`, `mk/native.mk`, `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**`, `tools/perf_judge.sh`,
+  `tools/loaded.sh`, `tools/slot.sh`, `tools/remote.sh`, `tools/full_check_lock.sh`, `tools/copyback_verify.sh`,
+  `tests/ai_scenarios/guard_line.gd`, `mk/play.mk`'s skirmish recipe, `_agents/judging.md`.
+- **Nobody:** `game/control/**` (but the two GRANTs above), the planner (`game/ai/planner/**`), `game/ui/**` (but camera_readout),
+  `game/audio/**`, `game/announcer/**`, `game/match/**`, `game/tank/**`, the settle functions in `element_plan.gd`, `arenas/**`,
+  `tests/baselines/**` (the orchestrator adopts).
+
+**Contracts (round 42):**
+- **C42.1 Fresh start; two builders; bars before numbers on FRESH seeds (C37.1-C41.1 stand).** Registry below; a guard is never amended
+  after its numbers are seen; a bar names what the change could BREAK (round 37's lesson) before its numbers.
+- **C42.2 "In range" means a clear shot (engage).** The element plan's `attack` goes only to a crew with a line of fire to the target; a
+  crew in distance-range without one is sent to a firing position (toward the enemy) as `attack_move` naming the target; the executor
+  stops a crew for `attack` only when it can actually hit. Line-of-fire reads reach the pure planner through the situation builder, never
+  a physics call inside `ElementPlan`. The CPU's elements get the same rule (symmetric). Settle's functions are untouched.
+- **C42.3 The camera reads, never writes (camera).** The danger feed is read-only Callables set in `skirmish_mode.gd` beside `rig.facing`
+  (known enemies of his team with position and fire recency, the arena's middle); nothing in `game/control/**` or `game/match/**`
+  changes behaviour for it. C41.4 stands: no turn while he aims; manual yaw wins; the glide's speed cap applies to the danger turn.
+- **C42.4 = C41.2: manoeuvre's rules keep ORCA's answer unless the bar says otherwise;** speed-only rules; every per-crew state a real
+  Movement member with an `exec_fields.h` entry; native twins a rule before it ships ON.
+- **C42.5 Unit stats and lineups (balance).** R40.1's +/-15 % per unit stands (B8: Law's Gas Rocket Truck, Syndicate's Missile Ring);
+  the CPU counter-lineup (B7) is a deal rule, no new unit or weapon; the two measure_only lineups become dealable only under that rule;
+  default `cpu` and the demo are unchanged (test). The IFV missile is NOT built. Bar B5 t50 only on his yes (lead gate).
+- **C42.6 The HUD's words follow the truth (engage, GRANT in `rts_controls.gd`).** NOT FIRING is shown only for a crew standing with a
+  clear shot that doesn't fire; a crew driving for a shot reads as carrying the order out. String tests pin the wording.
+- **CP42.0 Q5's fields (native, day one).** Native merges the four `exec_fields.h` lines alone; the orchestrator tells manoeuvre the
+  same minute; manoeuvre cherry-picks Q5 onto that main before Bar Q5.
+- **CP42.1 The bridge (manoeuvre Q6).** When Q6's bar passes (bridge-pooled 18/18 under the overrides, pooled no worse, group-order
+  guards held) and it ships ON (twin included), the orchestrator merges it alone and tells balance the same minute; balance rebuilds
+  v2's ARM on that main and runs Bar B2s v2 (8801-8840 + 8901-8940, filed round 40, unread).
+
+## Bars (round 42)
+
+**Seed registry (round 42):** 9601-9624 engage Bar E1 deciding; 9625-9648 engage fight guards; 9701-9736 camera Bar K4 (36 an arm);
+9801-9824 manoeuvre Bar Q5; 9825-9848 manoeuvre Bar Q6 (fresh BRIDGE_POOLED_SEEDS 9825-9836, group-order guards 9837-9848);
+9901-9940 balance Bar B7; 10001-10040 + 10101-10140 balance Bar B8; 10201-10240 balance B8 dev (never a bar); carried unread:
+8801-8840 + 8901-8940 Bar B2s v2; 9201-9240 + 9301-9340 Bar B5 t50 (only on his yes). Dev blocks 7001-7012 as before (never a bar).
+
+_(filed bars go here, before their numbers)_
+
+## Rulings (round 42)
+
+_(R42.1 onward)_
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 

@@ -4,11 +4,54 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-26 ~15:00 PDT — **ROUND 41 CLOSED; ROUND 42 NOT YET PREPARED.** The next orchestrator prepares it from the box below (his post-close playtest: the attack order behind a container, and the danger-weighted camera), `game_design.md` *His playtest after round 41*, and the carry-overs. No agents, loops or builder jobs running at this handoff. Earlier: **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-26 evening — **ROUND 42 PREPARED (box below; launch = the lead starts five CLIs: two Fable, three Opus)**; round 41 closed. Main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); every later commit is docs only. Earlier: 2026-10-26 ~15:00 PDT — ROUND 41 CLOSED; round 42 not yet prepared. Earlier: **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
 
+
+## 🧭 ROUND 42 IS PREPARED (2026-10-26 evening) — read this first
+
+**Goal: a crew under his attack order never stands behind a container NOT FIRING (it drives to a spot with a clear shot and fires);
+the camera looks where the danger is; and the carry-overs land (Q5 judged on what he sees, the CPU meets an all-tank army with
+artillery, Law / Syndicate artillery within his 15 %, the faction stat change behind a clean bridge).** From his playtest after round
+41 (`game_design.md` *His playtest after round 41*) and the round-41 close (box below). Split, ownership, contracts C42.1-C42.6 /
+CP42.0-CP42.1 and the seed registry in `workstreams.md` *Round 42*; briefs in `_agents/streams/`; round 41's in
+`streams/archive/round41/`. **Main at launch: 21b20bdce GREEN on builder0, 28 targets ALL JUDGED (3289/0); every later commit is
+docs plus two comment lines in `mk/camera.mk`** (`tools/merge_check_needed.sh 21b20bdce` reads CHECK on that one file; the diff is
+comments only, so 21b20bdce's check stands). Workers start from it without a baseline check.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **engage** | `godot-engage` (5) | **Fable** | a crew he tells to attack goes round the container and fires | E1 replay his recording |
+| **camera** | `godot-camera` (3) | Opus | an ambush from the side is on screen; a retreat looks back at the fight | K4.1 the look census |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | fewer shoves in his big order; a clean bridge under the stat change | Q5.1 Bar Q5 (after CP42.0) |
+| **balance** | `godot-balance` (1) | Opus | the CPU meets his tank rush with artillery; Law / Syndicate artillery hurts tanks | B7 the counter-lineup |
+| **native** | `godot-native` (4) | Opus | nothing alone: Q5's fields (CP42.0), twins, the judged lines and table | N1 CP42.0 |
+
+Kickoff: the same one line for every stream, `_agents/orchestration.md` *The kickoff prompt*. All five are FRESH sessions. Two Fable
+sessions (engage, manoeuvre: his first item, and the traffic problem that has failed three rounds of bars); Opus for the rest.
+
+**Done at preparation:** round 41 was already torn down at its close (worktrees, builder folders, branches `round41/<s>`); builder0 has
+only `godot`, `godot-native-score`, `godot-native-score-light` (76 %, 25 G free); builder2 is STOPPED (balance's `make gcp-start`
+wakes it). His recording `build/recordings/2026-10-26T14-15-45-locks.jsonl` copied to `_agents/streams/references/round42/engage/`
+(a remote copy-back wipes `build/`). Worktrees created after the docs commit (`make worktree STREAM=<s> OFFSET=<n>`).
+
+**Orchestrator, after launch:** run the round loop (`orchestration.md` *The orchestrator's loop*); **CP42.0 first**: merge native's
+exec_fields hash alone the minute it is green and tell manoeuvre; relay engage's E1 trace table and camera's K4.1 census to the lead
+in player terms; CP42.1: merge manoeuvre's Q6 alone on its pass (with native's twin) and tell balance the same minute; take balance's
+B7 result to him as "the CPU now brings artillery against your tank rush"; perf-judge in a quiet builder0 window for every ON flip
+before the close.
+
+**Waiting on him (player terms, one recommendation each; none blocks a stream):**
+1. **Combined arms:** the round proceeds on the recommendation (the CPU fields an artillery-heavy army against an all-tank army and
+   the garage suggests it; Law's and Syndicate's artillery numbers within his 15 %). His veto stands at the close.
+2. **The slow turret (B5 t50):** only if he likes the feel; its lines screen read turtles winning +3.0 points (se 1.5), so it is not
+   safe to ship alone. Recommended: no, for now.
+3. **A click right beside his army** (G1 v9, shipped): squads already in that street hold their places and only the near ones move.
+   Right? (Shots in `references/round41/orders/g1-his-click-shots-laptop/`.)
+4. **The smooth camera** (`--camera-glide`, shipped): the clip `build/camera-clip/camera_glide_clip.mp4` (left old, right new), or play
+   `make skirmish ARENA=terminus` v `SKIRMISH_FLAGS="--camera-glide=off"`. Round 42's danger camera builds on it.
 
 ## 🏁 ROUND 41 IS CLOSED (2026-10-26 ~13:05 PDT) — read this first
 
