@@ -101,7 +101,7 @@ round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9524 camera K3 v2. Dev bl
   v8 = v7 + `--group-column-toward=on`: a column that would put any squad > 10 m farther from the click than it stands is refused and
   today's places stand. Judge `g1v8` = g1v4 unamended + one guard: places sent > 10 m away (toward_m < -10) ARM <= BASE + 2 over all
   cells (v7's dev data reads 12 -> 20: fails, catches the flaw). Two variants dev-read on 7007-7012. The frozen tree gets its own full check.
-- **Bar Q3, the bridge wait (manoeuvre; FILED in Status on tree f6d9d7b1b = code 1199fad11, 2026-10-26 ~05:00, before any number on
+- **Bar Q3, the bridge wait (manoeuvre; FAILED R41.13; FILED in Status on tree f6d9d7b1b = code 1199fad11, 2026-10-26 ~05:00, before any number on
   9025-9048).** Rule = Q2 v2's keying (`--traffic-on=wait`: crossing + turning friends + the waiting chain; v3/v4/waitcross to history;
   Q4 holdlane OFF). R41.6 condition (1) met first (overrides tree 0740c8ece, builder0 light, 18 runs: 17/18 -> 18/18, pooled rim 14.2 ->
   6.4 s, worst crew 5.1 -> 3.0 s, deck 17.1 -> 19.2). Deciding (R41.3): pooled rim on 9025-9036 x ticks {1,8,15} x both sides, on main AND
@@ -205,6 +205,15 @@ round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9524 camera K3 v2. Dev bl
   demo_flags keeps any explicit `cpu:<archetype>` (measurement only; default path unchanged, with a test). Order: the deal arm (all-tanks
   v the faction's anti-armour archetype: condemned siege, gangs gang_hail, law law_dragnet, syndicate standoff, same money) before pen7
   (autocannon 7, pulse 7, twin MG 4; dev only, outside R40.1).
+- **R41.13 (2026-10-26 ~08:10) Bar Q3 FAILS; R41.6 (c): the wait family stops; Bar B2s v2 carries again.** Series 05:43-08:00 builder0
+  light (code f6d9d7b1b, bar tree 7f4eabcd1, overrides tree 368aa08dd; both arms native_drive off). MAIN: 72/72 both; pooled rim 32.7 ->
+  25.3 s (-23 %, passes 0.8x) but paired mean -0.10 s se 0.09 (-1.2 se) FAILS (37 runs better, 21 worse, 14 same; the gain is the few
+  large OFF rims). OVERRIDES: OFF 72/72, ON 71/72 (locks green 9030 t15 Green_S_3 4.2 s: the hard line broken by the rule), rim -6 %
+  (-0.2 se) FAILS. Group-order guards (9037-9048, 48 paired runs): all-in 78.4 -> 82.5 s FAIL; never-in squads 1.08 -> 1.29 pass;
+  contacts +9.9 % FAIL. Fight guards (9037-9042, 18 fights): G1 give-way deaths 32 -> 55 FAIL; G2-G4 pass. Wait stays DEFAULT_OFF;
+  native's pair/native-wait 20300bb52 kept as a ref, unmerged. Evidence `references/round41/manoeuvre/barq3-builder0-f6d9d7b1b/`.
+  Note for round 42 (no action now): the overrides tree with the rule OFF crossed 72/72 on these fresh bridge seeds; its only known
+  bridge failure stays the 18-run drill's rust t15 s2 (bridge-pooled is not re-seeded or loosened, R40.24).
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
