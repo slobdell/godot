@@ -79,6 +79,7 @@ const DEPART_SHOT_S := 4
 
 func _watch_extra() -> void:
 	var since := _match.tick - _order_tick
+	_watch_waiting_contacts()
 	if since == DEPART_SHOT_S * SimClock.TICK_RATE:
 		await _shots("depart_%ds" % DEPART_SHOT_S)
 	for squad: Dictionary in _squads:
@@ -108,6 +109,40 @@ func _watch_extra() -> void:
 				row["yielding"] = int(row["yielding"]) + 1
 			elif Vector2(t.velocity.x, t.velocity.z).length() < SLOW_MPS:
 				row["slow"] = int(row["slow"]) + 1
+
+
+## O2 (the orchestrator's question): hull contacts that touch a squad WHILE it waits its turn (a crew of a waiting squad
+## in a slide collision with any of his other crews), counted once per pair when it starts; `wait_contacts` on the run.
+var _wait_contacts := 0
+var _wait_pairs := {}
+
+
+func _watch_waiting_contacts() -> void:
+	var waiting := {}
+	for squad: Dictionary in _squads:
+		if _departure_waiting(squad):
+			for n: String in squad["units"]:
+				waiting[n] = true
+	if waiting.is_empty():
+		_wait_pairs = {}
+		return
+	var now := {}
+	for t: Node in _match.tanks.get_children():
+		var tank := t as Tank
+		if tank == null or tank.team != Match.Team.GREEN or not tank.is_alive():
+			continue
+		for k in tank.get_slide_collision_count():
+			var other := tank.get_slide_collision(k).get_collider() as Tank
+			if other == null or other.team != Match.Team.GREEN or other == tank:
+				continue
+			var a := String(tank.name)
+			var b := String(other.name)
+			if waiting.has(a) or waiting.has(b):
+				now[a + "|" + b if a < b else b + "|" + a] = true
+	for key: String in now:
+		if not _wait_pairs.has(key):
+			_wait_contacts += 1
+	_wait_pairs = now
 
 
 ## Its own route as Movement planned it (the corners from where it stands); its first leg is the first corner NOSE_LEG_M away.
@@ -196,7 +231,7 @@ func _run_extra() -> Dictionary:
 			"slow_s": snappedf(slow * tick_s, 0.1), "turn_worst_s": turn_worst,
 			"depart": "queue" if DepartureQueue.ENABLED else "off", "depart_queued": DepartureQueue.queued,
 			"depart_clear": DepartureQueue.released_clear, "depart_timeout": DepartureQueue.released_timeout,
-			"waits_s": waits}}
+			"waits_s": waits, "wait_contacts": _wait_contacts}}
 
 
 ## Two first legs cross: some segment of each intersects the other's at more than CROSS_DEG (shared roads merge, not cross).
