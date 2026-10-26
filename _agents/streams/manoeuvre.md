@@ -73,3 +73,29 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Session start 2026-10-26 ~02:10 PDT (Fable). Starting commit de509b00f = main at launch (code c36217f79 GREEN builder0, 3243/0; no
+baseline check re-run, per the contract). Orchestrator session: `godot-d6`.**
+
+### Plan (ordered; the brief's backlog as built)
+
+1. **Q1 the jam census** (report, dev seeds 7001-7008, builder0 light J4). Instrument: `tests/manoeuvre/probe_jam.gd` (extends
+   orders' probe as probe_wedge does; the probe itself untouched) + `jam_class.gd` (the classifier, pure-tested in
+   `tests/manoeuvre/test_jam_class.gd`) + `probe_jam_table.py` + `make manoeuvre-probe-jam`. Workload until orders' O1 hash
+   lands: the 5-squad group order (click and route) on terminus / locks / crossing, with and without `--jam-scatter=on` (every
+   crew's hull turned to a seeded random heading the tick after the order: his "a scout is pointed north" case). Re-read on O1's
+   probe when its hash arrives.
+   - Decision: the BLOCKER of a slowed crew is read in this order: the crew it yields to; a friendly hull it touches; the nearest
+     friend in its lane ahead (12 m, hull radii + 0.5 m); else the friend ORCA would meet first within 2 s at the route's
+     preferred velocity (time to meet). No friend found = not a friend jam (terrain, route end, enemy): not counted. Why: ORCA
+     exposes no binding neighbour; this is the same lane/horizon ORCA reasons about, from the public table.
+   - Decision: the counterfactual "would end by itself within N s" is measured, not modelled: the lane is FROZEN at the episode's
+     start (origin, direction, width) and `t_clear` is the first tick the blocker is out of that lane and will not enter it
+     (time to meet = none), capped at 20 s. Caveat written here: the blocker's motion is not independent of what the asker did.
+2. **Q2 wait, don't detour** (`--traffic-on=wait`, DEFAULT_OFF): built only if Q1 says a meaningful share of jam-seconds would
+   clear within a few seconds. Speed/hold only (C41.2); per-crew state as Movement members with exec_fields.h entries; lab on
+   Q1's worst cases; **Bar Q2** filed before any number on 9001-9024.
+3. **Q3 the bridge speed cap** (CP41.1): the pooled-measure decision written BEFORE any number; Bar Q3 on 9025-9048, main and
+   under balance's v2 overrides. Shares a rule with Q2 if Q1 shows the bridge case is the turning-friend case.
+4. Stretch: M1 v3.
+
