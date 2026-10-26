@@ -162,6 +162,17 @@ of jam-seconds") held, but the detour it replaced was cheaper than the wait on t
 and stays OFF** (`--traffic-on=waitcross` after v4's split, for the record). What the wait DID fix outright is the bridge (below):
 a wheeled follower behind a leader turning onto the deck. v4 keeps that: the wait keys on a leader that is itself turning.
 
+### v4 (R41.5, f7fd7819a): the wait keys on a leader that is itself turning; reads running
+
+R41.5 (2026-10-26 ~04:15): the broad wait stops OFF with no bar; `--traffic-on=waitcross` keeps the crosser key in code for the
+record. v4: `_wait_kind` returns "turning" for a friend under way whose nose is more than 30 deg off its own next leg (moving or
+slow; the bridge's leader swinging onto the deck, his scout pointed north), "waiting" for the chain behind it, "" for a leader
+driving straight, a parked, stalled or head-on friend. Tests 6/0 laptop NATIVE=off (a wheeled leader 12 m ahead facing east and
+ordered north reads "turning" at 4.4 m/s). Running (`~/overnight-manoeuvre/r41/v4labs/`): bridge-pooled ON under the overrides
+(bt = f7fd7819a + 8e257f3bc + d385cd308 = 225087f27), the group-order no-harm lab (16 cells, wait v main), bridge-pooled ON on main.
+Then Bar Q3 on 9025-9048. **Q4 (the orchestrator's add, R41.5):** the long episodes (42 % of jam-seconds) are yields and reversing:
+lab a cut of the give-way machinery when the blocker is a moving friend (slow and hold the lane), on fresh dev cells 7005-7008.
+
 ### The bridge read (R41.3: bridge-pooled with `--traffic-on=wait`): THE WAIT RULE CLEARS THE BRIDGE
 
 bridgelab1 (builder0 light, native, bridge-pooled 18 runs an arm, deterministic; `~/overnight-manoeuvre/r41/bridgelab1/`; reader
