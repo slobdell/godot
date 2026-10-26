@@ -74,15 +74,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     orders: 625 / 0.
   - **Known issues:** with G1 ON interleaved squads stay whole, so crews can cross where the old re-deal untangled them
     (the whole-squad untangle takes the fewest crossings; contacts fell on the bar). crossing 5 route is unchanged by G1
-    (route legs are G2's). Full checks this round read perf-judge NOT JUDGED (box busy): the ON flip needs
-    `make remote-quiet T=perf-judge` on main (orchestrator scheduling it).
+    (route legs are G2's). perf-judge judged on the ON commit's check (5693c0b66), so no quiet re-run is needed for it.
   - **Smoke (laptop, 5693c0b66, terminus s7007 his click, no flags):** columns_laid 1, two-sided 1; the shot 5 s after
     all in is identical to the v9-flags shot (`g1-his-click-shots-laptop/terminus-5-click-v9-arrival_plus5-desktop.png`).
   - **Question for the lead:** the feel question under Bar G1 v9 below (a tail squad that stays on a click beside it).
   - **Playtest:** `make skirmish ARENA=terminus`, select all five squads at the start, click the street just left of
     them; then a far click across the map. Compare `SKIRMISH_FLAGS="--group-g1=off"`.
   - **Next:** Q2 (what a blocked crew does inside merges) is where group-move time goes (O1 / O2); departure order is not.
-  - **Merge notes:** 5693c0b66 alone (code + tests + evidence); green check named below when it lands.
+  - **Merge notes:** 5693c0b66 alone (code + tests + evidence). **GREEN: full check of 5693c0b66 on builder0 exited 0,
+    27 targets all passed, ALL JUDGED (perf-judge judged), 3258 tests / 0 failed.** Later commits are Status only.
 - **REPORT so far (2026-10-26 ~03:00):**
   - **O1 DONE (8b828ec59, `make orders-group`).** Census (builder0, 8b828ec59, native off, dev seeds 7001-7006, n 6 a
     cell; evidence `references/round41/orders/o1-census-builder0-8b828ec59/`): his "pointed different ways" is mostly not
