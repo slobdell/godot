@@ -135,7 +135,9 @@ dec9725f5 GUARD_SIDES (light quick + shell-tools-test, the orchestrator's call) 
   leader, a stopped friend, a crossing column, a tracked hull; ON / ON owned / OFF). Laptop (1838537d7, n 1 run each): 2880
   drives a stage, 0 mismatches; queued 752 ON, 0 OFF; test_traffic_follow under native 0.00 m lateral, 236 queued (=
   manoeuvre's GDScript run); 8/0. Mutations: the C++ branch dropped -> 934 mismatches, the moving/way test dropped -> 461 (both
-  ON stages fail). Quick (builder0 light) and per-seed native-proof on/off (laptop, seeds 92721/8001/8002, follow ON and OFF)
-  were in flight at the hold; results below when they land.
+  ON stages fail). **QUICK-GREEN builder0 light 1838537d7: exited 0, 141 passed, 0 failed** (the diff's tests + the five
+  drive twins; the follow stages 2880 drives each, 0 mismatches, 752 queued ON = the laptop's). Per-seed native-proof on v off
+  (laptop, sumps, seeds 92721 / 8001 / 8002): EQUAL on all six (follow ON and OFF); ON's hash differs from OFF's on every
+  seed, so the rule moved those fights (the match log prints no follow_queued).
 - **N4 (the trig's ~2 %):** waits for a quiet builder0 window (none soon: three streams have series queued, the orchestrator).
 - **N5:** waits on his Ryzen purchase.
