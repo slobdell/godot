@@ -105,6 +105,34 @@ Workload: orders' O1 probe, his five full squads (25 crews), one click across th
   never-clearing blocker costs the whole cap). Moves from 4 s after the first Q2 lab (running at 4 s).
 - Caveat on t_clear: the lane is frozen at the episode's start, but the blocker's motion was not independent of what the asker did.
 
+### Q2 lab 1: FAIL as built (a553f85b0); v2 built (c8e329b23); lab 2 and the bridge reads running
+
+**Lab 1** (a553f85b0 = scaffold + native's exec_fields pair, builder0 light J4, orders' O1 probe, crossing / locks / sumps / terminus x
+7001-7004, crew headings, 16 paired runs, BOTH arms `--brains-off=native_drive`, `wait_judge.py`, `~/overnight-manoeuvre/r41/jamlab2/`):
+
+| Line | main -> wait | Verdict |
+|---|---|---|
+| D1 jam-seconds (16 runs) | 13,365 -> 14,537 s (+8.8 %; paired +73 s a run, se 30: 2.4 se WORSE) | FAIL |
+| D2 every-squad-in (never-in = 90) | 80.4 -> 84.7 s (paired +4.3 s, se 2.6) | FAIL |
+| G5 never-in runs | 10 -> 11 of 16 | FAIL |
+| G6 friendly contact ticks | 235,328 -> 230,744 (-2 %) | PASS |
+
+By blocker class (jam-s): crossing 3,656 -> 2,982 (the intended case, down), turning 685 -> 516, head_on 1,302 -> 1,169, parked
+557 -> 423, but **same_way 3,241 -> 4,265 and stalled 3,924 -> 5,182**. Terminus, the always-in map, got worse (55.7 -> 60.4,
+56.6 -> 88.3, 68.6 -> 87.4 s). Reading: waiting behind a slower friend going my way turns ORCA's overtake into following at that
+friend's pace, and the crews behind chain up; Q1's "same_way clears within 2 s" was the leader driving out of the frozen lane, after
+which the follower catches it again (F1 v1's lesson, R40.22, in another form).
+
+**v2 (c8e329b23):** a leader going my way (velocity within 30 deg of mine, Traffic.FOLLOW_COS) is passed as today; Q2 waits on
+crossing, turning and waiting friends only. Cap 5 s (R41.2). tests/test_traffic_wait.gd 5/0 (laptop NATIVE=off; the cap test now
+calls the rule directly on a staged crossing friend). Lab 2 (v2, same 16 cells) queued on builder0 behind the bridge read.
+
+### The bridge read (R41.3: first bridge-pooled with `--traffic-on=wait`; running)
+
+`~/overnight-manoeuvre/r41/bridgelab1/`: overrides tree (bt = 10d3a8d72 + 8e257f3bc + d385cd308, the v1 rule) OFF **17/18**
+(rust t15 s2, as R40.20; reproduced) and ON; then main (c8e329b23, v2) OFF / ON. bridgelab2: v2 under the overrides, ON.
+Reader: `tests/manoeuvre/bridge_lab_table.py` (checked against round 40's F1 v2 lab: 8.1 -> 5.9 s rim, 18/18 both).
+
 ### Q3 design decision, written BEFORE any bridge number (R40.24's item; for the orchestrator's ruling)
 
 **Proposal:** bridge-pooled's single-run line (every surviving crew crosses, no crew at the rim over 3 s, 18/18 cells) stays a HARD
