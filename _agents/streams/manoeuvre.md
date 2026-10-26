@@ -229,6 +229,45 @@ met by v2's crosser key (-58 %) and failed by v4's turning key (+32 %): at the d
 CROSSER by its velocity before its nose is 30 deg off its next leg, so v4 fires late. The group order is neutral-to-worse for all
 four (v4 the mildest). The wait family trades the bridge for his group order; the orchestrator rules (message sent 04:50).
 
+### The reversing report (the orchestrator's read-only ask, 2026-10-26 ~05:20): a jammed crew that moves backward is mostly being PUSHED
+
+Instrument: probe_jam with per-tick reverse attribution (side branch wip/manoeuvre-m1v3, dd4d28907: on every tick the asker moves
+backward, which rule has it in reverse gear from the drive's own members, or "shoved" = no reverse throttle commanded and a hull in
+contact, "coasting" = none commanded and nothing touched; metres backed; farthest from where the reverse began; re-entered = back
+within 2 m of that spot by the episode's end after getting more than 3 m from it). Read: builder0 light, GDScript drive, main only,
+his group order (orders' O1 probe, crew headings) on crossing / locks / sumps / terminus x 7001-7002 = 8 runs, 6,830 episodes.
+Filed: `references/round41/manoeuvre/reversing-report/` (the table, and the 64-run Q1-log profile).
+
+| What has the hull moving backward (reversed crew-ticks) | all | wheeled (14.9k ticks) | tracked (3.2k ticks) |
+|---|---|---|---|
+| shoved: no reverse throttle, a hull in contact (pushed by a friend) | **45 %** | 35 % | **93 %** |
+| coasting: no reverse throttle, nothing touched (rolling after a push or a reverse) | 17 % | 20 % | 1 % |
+| the drive's own reverse toward a steer point behind the hull (`_reverse_why` other) | 18 % (+3 % touching) | 21 % (+4 %) | 0 % |
+| a planned three-point-turn leg (kturn) | 9 % (+4 %) | 10 % (+5 %) | 0 % |
+| the blind back-off (unstick) | 2 % | 2 % | 3 % |
+| a give-way's own drive (yield) | 1 % | 1 % | 2 % |
+| H1's escape, a face / hold / stop order's gears, Steering's circle test | 0 % | 0 % | 0 % |
+
+- **By the episode's dominant cause (reversing jam-seconds):** shoved 59 %, the drive's own 17 %, coasting 13 %, kturn 7 %, unstick 3 %,
+  yield 1 %. The give-way machinery is NOT what backs crews up: yields are 1 % and the blind back-off 3 %; a commanded reverse of
+  any kind is ~28 %. The asker's phase during these episodes: driving 86 %, blocked 13 %, yielding 1 % (the same 85 / 13 / 1 on
+  the 64-run Q1 logs).
+- **How far:** median 0.7 m backed an episode, p75 1.3, p90 2.5, max 34.2 (a wheeled crew's run of K-turn legs); farthest from
+  where it began median 0.9 m, p90 5.1 m. Episodes that got more than 3 m away: 235 of 1,209 (832 of 1,969 reversing jam-seconds).
+- **Re-entry:** of those 235, **9 (4 %)** were back within 2 m of the spot by the episode's end. A crew that backs off a jam almost
+  never returns to the place it left: the ground it gives up is taken (by the friend, or the crew goes round).
+- **Blocker during reversing episodes:** stalled 32 %, crossing 29 %, same_way 17 %, head_on 9 %, turning 7 %, parked 6 %; wheeled
+  askers 76 % (IFV 47 %, scout 29 %, tank 24 %); the longest 8 (15-30 s) are all "shoved" or "coasting" against a stalled or parked
+  friend of the same column at the crossing / locks street mouths.
+- **Reading for him:** what looks like a tank backing up for a friend is, three times out of five, a tank being shoved backward by a
+  friend pressing into it (contact physics between two hulls that both want the same ground), and once in five the hull rolling on
+  after that push; the backing a crew chooses (K-turn legs, the drive's reverse toward a steer point behind it) is a wheeled hull
+  turning in a street. The next traffic lever is the press itself: two crews pressing nose to nose or nose to tail in a column, the
+  one behind shoving the one in front backward (or sideways) while neither gets anywhere. That is `stalled` (30 % of all jam-seconds
+  in Q1) seen from the pusher's side. A rule for it would be speed-only (C41.2): a crew whose hull touches a friend ahead that is
+  not moving away eases off instead of pressing (ORCA's answer untouched), judged on contact-ticks and shoved-ticks; not built
+  this round without a ruling.
+
 ### M1 v3 (stretch): BUILT OFF on the side branch wip/manoeuvre-m1v3 (9087f3b12); dev lab running
 
 While Bar Q3's tree is frozen, M1 v3 lives in the side worktree `../godot-manoeuvre-m1` (branch `wip/manoeuvre-m1v3`, off
