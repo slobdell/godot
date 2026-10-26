@@ -291,6 +291,12 @@ stalled friend, and a column whose head has stopped now stands instead of grindi
 goes on, the one variant worth a lab is a cap (ease off for ~3 s per friend, then today's press) so a stalled head is still pushed
 eventually while a moving one is not shoved; not built without a ruling.
 
+**v2 (the orchestrator's one more lab, the last Q5 variant):** the ease is capped at NOPUSH_CAP_S = 3 s per friend, then today's
+press for NOPUSH_PRESS_S = 6 s, then it may ease again; members `_nopush_since`, `_nopush_press_until` added (declared last; two
+more exec_fields lines when it matters); `nopush_capped` counts eases that hit the cap. Tests 3/0. Lab 2 (`q5lab2/`): the same
+cells 7009-7012, main v nopush v2, both GDScript drive, one light lane, queued behind the series' bridge half. If it does not beat
+main on jam-seconds and never-in, Q5 is written up OFF and the round's traffic work closes with Bar Q3.
+
 ### M1 v3 (stretch): BUILT OFF on the side branch wip/manoeuvre-m1v3 (9087f3b12); dev lab running
 
 While Bar Q3's tree is frozen, M1 v3 lives in the side worktree `../godot-manoeuvre-m1` (branch `wip/manoeuvre-m1v3`, off
