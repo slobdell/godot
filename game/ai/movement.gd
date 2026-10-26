@@ -286,8 +286,9 @@ static var wait_by_kind := {}  # moving / turning -> crew-ticks
 ## radii + WAIT_SLACK_M) that is in a deck's MOUTH (a bridge deck's rectangle grown by DECKWAIT_MOUTH_M, less the water it spans:
 ## the aprons and the bank ends, from the arena's terrain) lowers its SPEED WISH to a following speed (the friend's speed my way,
 ## closing to WAIT_GAP_M over WAIT_FOLLOW_S) BEFORE ORCA solves: the direction wish and ORCA's answer to it are untouched (speed
-## only); a friend through the mouth at speed lowers nothing, and one turning off my lane counts by its speed away from me. The
-## asks, give-ways and right-of-way are as today. DECKWAIT_CAP_S per friend, then today's wish for WAIT_COOLDOWN_S (a head that
+## only); a friend through the mouth at speed lowers nothing, one turning off my lane counts by its speed away from me, and one
+## already beyond the water (through the crossing, on the far apron) is passed as today. The asks, give-ways and right-of-way are
+## as today. DECKWAIT_CAP_S per friend, then today's wish for WAIT_COOLDOWN_S (a head that
 ## never clears is passed as today). The trigger is the friend's place, not my route's turn vertex: the path's vertex
 ## comes and goes while ORCA deflects me (the first build, traced in test_traffic_deckwait). Per-crew state is Q2's wait members
 ## (`_wait_for`, `_wait_since`, `_wait_refused`, `_wait_refused_until`: the same meaning, exec_fields.h lines in place); `deckwait`
@@ -3020,7 +3021,7 @@ func _deckwait(here: Vector3, way: Vector2) -> float:
 		_wait_end()
 		return -1.0
 	var leader := _lane_friend(here, way)
-	if leader == null or not _in_a_deck_mouth(leader.global_position):
+	if leader == null or not _in_a_deck_mouth(leader.global_position) or _beyond_the_water(here, leader.global_position):
 		return -1.0
 	var name := String(leader.name)
 	if name == _wait_refused and tick < _wait_refused_until:
@@ -3068,6 +3069,33 @@ static func _in_a_deck_mouth(point: Vector3) -> bool:
 			if inside > DECKWAIT_MOUTH_M:
 				return false
 	return in_mouth
+
+
+## Round 42 (Q6): is `there` on the far side of the water from `here` (outside every carved footprint, with carved ground between
+## us or under me)? A leader through the crossing and onto the far apron is passed as today (v3: on main's drill, v2 queued crews on
+## the deck behind a leader at the exit, deck-jam seconds up and arrivals +2.5 s; the rim problem is the entry).
+static func _beyond_the_water(here: Vector3, there: Vector3) -> bool:
+	var data: Dictionary = Arena.active
+	if not data.has("terrain"):
+		return false
+	var boxes: Array = []
+	for entry: Dictionary in data["terrain"]:
+		if ArenaTerrain.carves(String(entry["kind"])):
+			boxes.append(ArenaTerrain.bounds(entry))
+	if boxes.is_empty():
+		return false
+	var inside := func(p: Vector3) -> bool:
+		for box: PackedFloat32Array in boxes:
+			if p.x > box[0] and p.x < box[2] and p.z > box[1] and p.z < box[3]:
+				return true
+		return false
+	if inside.call(there):
+		return false
+	var steps := maxi(int(ceil(_flat_distance(here, there))), 1)
+	for i in steps:
+		if inside.call(here.lerp(there, float(i) / float(steps))):
+			return true
+	return false
 
 
 ## Round 42 (Q6): the nearest living friend ahead of `here` in my lane along `way` (WAIT_AHEAD_M ahead, both hull radii + WAIT_SLACK_M

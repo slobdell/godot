@@ -105,6 +105,70 @@ at S_1's speed ORCA has no reason to carry S_3 east past the mouth, and S_1 has 
 a wheeled follower at the deck mouth while its leader turns), with the trigger read from the trace: a friend ahead on my route, within
 ~12 m, inside the deck's mouth (the turn vertex within 8 m of it) and slow or turning. Built next, OFF, with a test on this case.
 
+### Q6 step 2: `deckwait` BUILT OFF (460f3591b + 80d8b5582; `--traffic-on=deckwait`); drill dev read running (2026-10-26 ~15:25 PDT)
+
+**The rule (speed only, C42.4):** a WHEELED crew with a friend ahead in its lane (WAIT_AHEAD_M 12 m, both radii + 0.5 m) that is in
+a bridge deck's MOUTH (the deck's rectangle grown by DECKWAIT_MOUTH_M 6 m, less the water it spans: the aprons and the bank at
+either end, read from `Arena.active`'s terrain) lowers its SPEED WISH to a following speed (the friend's speed my way, closing to
+WAIT_GAP_M over WAIT_FOLLOW_S) BEFORE ORCA solves; the direction wish and ORCA's answer (direction, steer point) are untouched, and
+the pace returned is read against the route's full wish so the cap reaches the throttle. A friend through the mouth at speed lowers
+nothing. DECKWAIT_CAP_S 5 s per friend, then today's wish for WAIT_COOLDOWN_S 6 s (a head that never clears is passed as today).
+**Why the friend's place and not my route's turn vertex:** the first build keyed on `_turn_vertex` and the trace in
+`test_traffic_deckwait` showed the vertex come and go while ORCA deflects me (the path is re-planned / the index advances), which
+reset the cap every few ticks. **State:** Q2's wait members (`_wait_for`, `_wait_since`, `_wait_refused`, `_wait_refused_until`:
+the same meaning; exec_fields.h lines already in place, so no native request for a checked tree); `deckwait` and `wait` are
+exclusive (`wait` wins). Counters deckwait_waits / _queued / _timeouts (route_arms, JAM_RUN); ON forces the GDScript drive
+(`Traffic._chain_native`) until twinned. **The `_wait` timer artefact (stretch 3, done with it):** `drive()` ends a wait on any tick
+that never reaches the rule (goal within reach, a reverse, no avoidance), and `_avoid`'s hold path and near-waypoint return end it
+too, so `_wait_since` only counts ticks the rule was asked on (test: `test_a_wait_ends_on_a_tick_that_never_weighs_it`).
+**Tests** (`tests/test_traffic_deckwait.gd`, laptop NATIVE=off, 80d8b5582): 6/0: off by default; the mouth test on the Locks (the
+deck's corners and apron in, over the water and the bank 20 m west out, no mouths on yard_open); the slow-leader case (ON queues
+300 ticks and still crosses; in that staging the leader crawls at 3 m/s and ON costs the cap twice, 27.1 s v 9.5 s to cross:
+whether waiting beats passing in the real mouth is the drill's question); a parked head (waited on 150 ticks = the 5 s cap, then
+timed out and refused for the cooldown); tracked crews / a clear lane / `wait` named too leave it off; the timer artefact.
+`make test FILTER=traffic NATIVE=off` on the branch: pending (the full traffic filter runs after the drill read).
+**Dev read 1 (39c2f55ad = d1e91f74c + the rule, builder0 light, GDScript drive, `~/overnight-manoeuvre/r42/q6dev1/`): the hard
+line passes, the squad is slower.** bridge-pooled under the overrides ON **18/18** (OFF 17/18): rust s2 t15 Rust_S_3 rim 5.4 -> 2.3 s,
+arrived 48.9 -> 41.8 s. But pooled rim 14.2 -> 15.5 s and mean arrival 34.9 -> 39.0 s over the 18 runs (worst: green s1 t8 43.0 ->
+60.1 s, rust s3 t1 39.6 -> 51.3, green s3 t1 27.2 -> 37.3). The ON trace of rust s2 t15: the rule never slowed S_3 before the mouth
+(S_1, the leader, was 1 m onto the water at 1-3 m/s, and the first mouth zone excluded the whole water span), S_3 still arrived at
+10.5 m/s and stalled at the deck's north-east edge 4.5 s; what the rule changed was downstream. Fixed in 550e96c07: the mouth reaches
+DECKWAIT_MOUTH_M onto the water. **Dev read 2 (q6dev2, traces of green s1 t8 OFF / ON, 39c2f55ad):** ON, Green_S_2 sat 8 s at v 0
+on the north apron (-81,-12) after crossing (OFF: 1-2 s there, blocked, then on), and S_1 and S_4 queued 6 s behind that; a chain of
+waits in the exit's mouth zone, each capped at 5 s on a new friend. **Dev read 3 (q6dev3, the same run ON with `--deckwait-trace`, 550e96c07):** two causes. (1) At the entry the followers stood
+8 m behind a leader that was turning north onto the deck at 3 m/s: its speed along MY way read 0, so the cap was the closing term
+alone (0.5-1.3 m/s) for the whole 5 s. (2) At the exit a leader parked on the far apron (Green_S_2 at (-81,-12), v 0 for 8 s) was
+never asked to give way: the ask gate (`_wait_for == ""`, Q2's) was shut for every waiting follower, each 5 s on a new friend.
+**v2 (0b47dfbd8):** the leader counts by its speed AWAY from me (`v . off_hat`, never negative), and the ask stays as today (only
+Q2's `wait` holds it). Unit tests 6/0 (laptop). **Dev read 4 (q6dev4, v2 on the overrides tree, bridge-pooled ON, builder0 light,
+GDScript):** **18/18, pooled rim 14.2 -> 9.3 s (-35 %), worst crew 1.5 s** (rust s2 t15: rim 5.4 -> 0.8, deck jam 2.7 -> 4.6,
+arrived 48.9 -> 53.4); mean arrival 34.9 -> 36.5 s (+1.6; green s2 t8 39.1 -> 48.0, green s2 t15 35.0 -> 41.8, green s1 t8 43.0 ->
+38.5, rust s3 t1 39.6 -> 36.2). **Dev read 5 (q6dev5, green s2 t8 traced OFF / ON, 0b47dfbd8):** the crossing itself is +3.6 s (crossed 23.2 -> 26.8:
+S_4 waited ~2 s at the deck's north end on S_3 stopped on the far apron, S_1 behind S_4; rim 1.8 v 1.9, deck jam 1.3 both); the
+other +5.4 s of the arrival (39.1 -> 48.0) is after the bridge: the crews reach the far quay in another order and their regroup
+differs (no DECKWAIT line after t 28). Arrival on 18 deterministic cells is a reshuffle (R40.24's lesson), which is why the bar
+decides on rim-seconds pooled over 72 fresh runs a tree and reports arrival. Dev read 6 (running): the drill on MAIN (no overrides)
+OFF / ON from this stream's light folder (deciding line 2 reads both trees).
+
+### Bar Q6 (DRAFT, not filed; filed the minute the dev reads justify it, BEFORE any number on 9825-9848; the brief's lines)
+
+- **The rule judged:** `--traffic-on=deckwait` as built above (its hash named at filing). What it could BREAK (named first): a follower
+  that waits on a slow leader in a mouth arrives later (the drill's arrival; the group-order all-in / never-in on the two maps with
+  decks, crossing and locks); a crew easing in a fight (G1-G4); contacts (a slower follower sits nose-to-tail: G7).
+- **Gate:** the frozen tree's full check green on builder0 first (C31.1). **Arms:** OFF v ON, both `--brains-off=native_drive`.
+- **Deciding:** (1) bridge-pooled 18/18 under balance's v2 overrides (the hard line: `BRIDGE_POOLED_SEEDS=1 2 3`, ticks 1/8/15,
+  both sides; the overrides tree = the frozen tree + 8e257f3bc + d385cd308); (2) pooled rim-seconds on fresh 9825-9836 x ticks
+  {1,8,15} x both sides (72 runs an arm a tree), main AND overrides: ON <= OFF (no worse) with the drill's worst crew <= 3 s; every
+  surviving crew crosses in both trees. Reported: deck-jam seconds, mean arrival, the rule's counters.
+- **Guards (R41.6's group-order lines, strict):** orders' O1 probe cells crossing / locks / sumps / terminus x 9837-9848 x crew
+  headings (48 paired runs; `q3_judge.py --arm=deckwait`): G5 all-in mean ARM <= BASE + 1.645 se (paired, never-in reads as 90 s);
+  G6 never-in squads a run ARM <= BASE + 1.645 se; G7 contacts ARM <= 1.05 x BASE. **Fight guards:** `manoeuvre-wedge-trace` locks /
+  terminus / sumps x 9837-9842 (18 fights an arm), `follow_judge.py --on-arm=deckwait` G1-G4.
+- **Dev history:** the drill's seeds 1-3 only (the check's own 18 runs) and the unit tests; no number on 9825-9848 read.
+- **Machine:** builder0 light for the drill halves (deterministic, 72 x 2 x 2); builder2 or builder0 light for the group-order
+  guards. Evidence `~/overnight-manoeuvre/r42/barq6/`, filed under `references/round42/manoeuvre/barq6-<machine>-<hash>/`. A pass =
+  CP42.1 (the orchestrator merges it alone with native's twin and tells balance); a fail: OFF, no re-run on these seeds.
+
 ### Bar Q5: FILED 2026-10-26 ~15:20 PDT, BEFORE any number on 9801-9824 (R41.10's frame; the brief's lines)
 
 - **The rule judged:** `--traffic-on=nopush` v2 exactly as at fc8f3697d (no pressing, capped): a crew whose hull touches a FRIEND ahead
