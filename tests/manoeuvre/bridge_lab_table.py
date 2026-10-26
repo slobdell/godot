@@ -33,7 +33,9 @@ def worst_rim(r):
 
 
 def passes(r):
-    return int(r["crossed"]) == int(r["alive"]) and worst_rim(r) <= RIM_LINE_S
+    # The probe's own verdict: rim_crews counts crews at the rim for >= RIM_STUCK_S x TICK_RATE ticks (3.00 s fails); the row's
+    # rim_s is snapped to 0.1 s, so a crew at 2.93-2.97 s prints 3.0 and passes.
+    return int(r["crossed"]) == int(r["alive"]) and int(r.get("rim_crews", 1)) == 0
 
 
 def main(argv):
@@ -51,7 +53,7 @@ def main(argv):
             sum(float(r["rim_total_s"]) for r in rows), sum(float(r["deck_jam_s"]) for r in rows),
             max([worst_rim(r) for r in rows] or [0.0]),
             statistics.mean(float(r["arrived_s"]) for r in rows) if rows else 0.0,
-            sum(1 for r in rows if worst_rim(r) > RIM_LINE_S)))
+            sum(1 for r in rows if int(r.get("rim_crews", 0)) > 0)))
         for r in rows:
             if not passes(r):
                 print("    FAIL %s %s seed %s tick %s: crossed %s/%s, worst rim %.1f s (%s)" % (
