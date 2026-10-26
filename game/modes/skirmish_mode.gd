@@ -565,7 +565,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	rig.aiming = controls.is_aiming  # round 41 (C41.4, R41.1): the camera holds the ground still while he aims
 	# Round 42 (C42.3): where the danger is, read-only (known enemies, who fires at the selection, the arena's middle).
 	rig.danger = DangerFeed.new().attach(game_match, controls.team, controls.commanded_units, controls.can_see,
-			controls.selection_facing).read
+			controls.selection_facing).reader()
 	main.hud.add_child(controls)
 	var markers := SelectionMarkers.new()
 	markers.name = "SelectionMarkers"

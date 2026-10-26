@@ -67,6 +67,19 @@ def fmt_s(x):
     return "never" if x == float("inf") else f"{x:.1f}"
 
 
+NEVER_S = 20.0  # R42.5: a shooter never on screen counts as 20 s in Bar K4's latency line
+
+
+def mean_se(values):
+    if not values:
+        return 0.0, 0.0
+    m = sum(values) / len(values)
+    if len(values) < 2:
+        return m, 0.0
+    var = sum((v - m) ** 2 for v in values) / (len(values) - 1)
+    return m, (var / len(values)) ** 0.5
+
+
 def look_table(runs):
     groups = {}
     for r in runs:
@@ -84,6 +97,7 @@ def look_table(runs):
         under = sum(l["under_fire_s"] for l in looks)
         blind = sum(l["blind_s"] for l in looks)
         wall = sum(l["wall_s"] for l in looks)
+        own = sum(l.get("own_shown_s", 0.0) for l in looks)
         lat = [x for l in looks for x in l["latencies"]] + [float("inf")] * sum(l["never"] for l in looks)
         minutes = sum(l["minutes"] for l in looks) or 1e-6
         bearing = {}
@@ -93,9 +107,10 @@ def look_table(runs):
         rows.append({"scenario": key[0], "lane": key[1], "runs": len(rs),
                      "staged": sum(1 for r in rs if r.get("staged", {}).get("ok", key[0] == "attack")),
                      "play_s": play, "under_pct": 100 * under / play, "blind_pct": 100 * blind / play,
-                     "blind_of_fire_pct": 100 * blind / under if under else 0.0, "wall_pct": 100 * wall / play,
+                     "blind_of_fire_pct": 100 * blind / under if under else 0.0, "wall_pct": 100 * wall / play, "own_pct": 100 * own / play,
                      "episodes": len(lat), "never": sum(l["never"] for l in looks),
                      "p50": quantile(lat, 0.5), "p90": quantile(lat, 0.9),
+                     "capped": mean_se([min(x, NEVER_S) for x in lat]),
                      "reversals_per_min": sum(l["yaw_reversals"] for l in looks) / minutes, "bearing": bearing})
     return rows
 
@@ -104,14 +119,14 @@ def show_look(rows):
     if not rows:
         return
     print("| scenario | lane | runs (staged ok) | play s | under fire % | blind % of play | blind % of fire | facing wall % "
-          "| off-screen shots | never | first shot -> on screen p50 / p90 s | yaw reversals/min "
+          "| own on screen % | off-screen shots | never | first shot -> on screen p50 / p90 s | mean (never = 20 s) +- se | yaw reversals/min "
           "| mean abs bearing shooter / enemies / middle (deg) |")
-    print("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
     for r in rows:
         b = r["bearing"]
         print(f"| {r['scenario']} | {r['lane']} | {r['runs']} ({r['staged']}) | {r['play_s']:.0f} | {r['under_pct']:.1f} | "
-              f"{r['blind_pct']:.1f} | {r['blind_of_fire_pct']:.1f} | {r['wall_pct']:.1f} | {r['episodes']} | {r['never']} | "
-              f"{fmt_s(r['p50'])} / {fmt_s(r['p90'])} | {r['reversals_per_min']:.2f} | "
+              f"{r['blind_pct']:.1f} | {r['blind_of_fire_pct']:.1f} | {r['wall_pct']:.1f} | {r['own_pct']:.1f} | {r['episodes']} | {r['never']} | "
+              f"{fmt_s(r['p50'])} / {fmt_s(r['p90'])} | {r['capped'][0]:.1f} +- {r['capped'][1]:.1f} | {r['reversals_per_min']:.2f} | "
               f"{b['shooter']:.0f} / {b['centroid']:.0f} / {b['middle']:.0f} |")
     print()
 

@@ -11,6 +11,7 @@ extends RefCounted
 ##   from     the commanded units' centre (null with none alive); `heading` their facing (or null); `speed` their mean m/s
 ##   enemies  every KNOWN enemy: seen now, or last seen within MEMORY_S (at its last seen spot). Each {name, at, seen,
 ##            age_s (since last seen), fired_s (since its last round AT the commanded units), hit_s (since one hit them)}
+##   own      the commanded units' drawn ground points (the census's "selection on screen")
 ##   middle   the arena's middle (arenas are point-symmetric about the origin: Arena checks it)
 ## A round is "at" the commanded units when its line passes within IncomingFire.DANGER_RADIUS of one of them inside the
 ## weapon's range, or it struck one. A shooter his team has never seen is not known and does not count: the camera must
@@ -49,13 +50,21 @@ func attach(on_match: Match, on_team: int, commanded: Callable, sees: Callable, 
 	return self
 
 
+## `read` as a Callable that keeps this feed alive. A bare `feed.read` does not: a Callable holds its RefCounted weakly,
+## so `DangerFeed.new().attach(...).read` is freed at once and the rig silently fell back to the heading (K4.2's first
+## dev read measured exactly round 41's camera).
+func reader() -> Callable:
+	var feed := self
+	return func() -> Dictionary: return feed.read()
+
+
 func now() -> float:
 	return float(game_match.tick) / float(SimClock.TICK_RATE) if game_match != null else 0.0
 
 
 func read() -> Dictionary:
 	var t := now()
-	var out := {"t": t, "from": null, "heading": null, "speed": 0.0, "enemies": [], "middle": Vector3.ZERO}
+	var out := {"t": t, "from": null, "heading": null, "speed": 0.0, "enemies": [], "middle": Vector3.ZERO, "own": []}
 	if game_match == null:
 		return out
 	var mine := _commanded()
@@ -64,6 +73,7 @@ func read() -> Dictionary:
 		var speed := 0.0
 		for tank: Tank in mine:
 			centre += Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+			out["own"].append(Shown.ground(tank))
 			speed += absf(tank.speed())
 		out["from"] = centre / float(mine.size())
 		out["speed"] = speed / float(mine.size())

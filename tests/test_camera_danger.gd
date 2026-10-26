@@ -107,3 +107,16 @@ func test_the_readout_shows_the_three_pulls_and_a_cancel() -> void:
 	var cancel := CameraReadout.danger_line(RtsCamera.danger_look(_state(Vector3.ZERO, null, 0.0,
 			[_enemy(Vector3(40, 0, 0), 0.1), _enemy(Vector3(-40, 0, 0), 0.1)])))
 	assert_true(cancel.contains("heading -") and cancel.contains("hold (cancel)"), cancel)
+
+
+func test_the_feed_wired_as_skirmish_mode_does_stays_alive() -> void:
+	var read := DangerFeed.new().reader()  # nobody else holds the feed, as in skirmish_mode
+	assert_true(read.is_valid(), "the Callable still has its feed")
+	var state: Dictionary = read.call()
+	assert_true(state.has("enemies") and state["middle"] == Vector3.ZERO, "and reads: %s" % state)
+	var bare := _bare_read()
+	assert_true(not bare.is_valid(), "the bare method Callable (the bug) does not, once the line that made it is done")
+
+
+func _bare_read() -> Callable:
+	return DangerFeed.new().read

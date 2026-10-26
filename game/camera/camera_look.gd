@@ -16,6 +16,7 @@ extends Node
 ##                 commanded units are WALL_FROM_M or more from it (his retreat case)
 ##   latencies     each episode of a shooter firing at them from off screen: seconds until it is first on screen (null =
 ##                 never, by the end of the run)
+##   own_shown_s   seconds x the fraction of the commanded units on screen (a danger turn must not lose his own squad)
 ##   yaw_reversals the view's turn changing direction after at least REVERSAL_DEG each way (a swinging camera)
 ## CameraTrace attaches it with the trace; the playtest gives it the feed once the controls exist.
 
@@ -39,6 +40,7 @@ var _play_s := 0.0
 var _under_fire_s := 0.0
 var _blind_s := 0.0
 var _wall_s := 0.0
+var _own_shown_s := 0.0
 var _bearings := {"shooter": [], "centroid": [], "middle": []}
 var _open := {}  # shooter name -> its open episode
 var _reversals := 0
@@ -63,6 +65,9 @@ func _process(delta: float) -> void:
 	_play_s += delta
 	var from: Vector3 = state["from"]
 	var yaw := rig._shown_yaw
+	var own: Array = state.get("own", [])
+	if not own.is_empty():
+		_own_shown_s += delta * float(own.filter(func(at: Vector3) -> bool: return on_screen(at)).size()) / float(own.size())
 	var any_on_screen := false
 	var firing: Array = []
 	var centroid := Vector3.ZERO
@@ -165,7 +170,7 @@ func summary() -> Dictionary:
 		var values: Array = _bearings[key]
 		means[key] = snappedf(values.reduce(func(s: float, v: float) -> float: return s + v, 0.0) / maxf(values.size(), 1), 0.1)
 	return {"play_s": snappedf(_play_s, 0.01), "under_fire_s": snappedf(_under_fire_s, 0.01), "blind_s": snappedf(_blind_s, 0.01),
-			"wall_s": snappedf(_wall_s, 0.01), "episodes": episodes.size(), "never": never, "latencies": latencies,
+			"wall_s": snappedf(_wall_s, 0.01), "own_shown_s": snappedf(_own_shown_s, 0.01), "episodes": episodes.size(), "never": never, "latencies": latencies,
 			"mean_abs_bearing": means, "yaw_reversals": _reversals, "minutes": snappedf(_clock / 60.0, 0.001)}
 
 
