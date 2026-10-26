@@ -63,6 +63,38 @@ B5's read decides whether a missile/penetration question goes back to him.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**FINAL REPORT, round 41 (2026-10-26 ~12:20 PDT). GREEN: 4c41c32ee** (builder0 `make check exited 0`, 3244 passed / 0 failed,
+27 targets ALL JUDGED, sim-baseline unmoved; code = 3ef8d5771, later commits are this brief only). **Merge here: 4c41c32ee** (or
+any later Status-only commit on stream/balance). Nothing ships ON: no unit number changes; two measure-only lineups (never dealt in
+play), one demo_flags condition (explicit `cpu:<archetype>` kept; defaults unchanged), the balance tools and the face probe.
+
+| Item | Result |
+|---|---|
+| B5 his levers, dev screen | **DONE.** All-tanks v mixed 85 % (se 3). Turret x0.5: 80 % (-5, se 1); hull x0.75: 81 % (-4, se 3; flanked LESS); both: 80 %. In-bounds IFV +15 % / -15 %: 82 %; turret + IFV: 77 % (-8, se 1), the best inside his rules. Why: the IFV dies in 1-2 shells before its flank fire adds up (187 / 23 / 13 s to kill a tank by face; killed in 9 / 5 / 4); the mixed army already strikes sides/rears 65 % of the time. Dev arms outside the rules: a sharper IFV cannon (pen 7) +0; the artillery-heavy lineup (the deal) **condemned 47 %, gangs 52 %** (his target, no number changed), law 93-96 %, syndicate 87-99 % (their artillery can't hurt tanks). Write-up for him below (FINAL). |
+| Bar B5 | **Not filed.** No lever reaches the target; the turret alone (5 points) is filed only if he wants it for feel. Its guards were screened on the lines (below) so the bar can be filed in a day if he says yes. |
+| Bar B2s v2 | **BLOCKED (R41.13):** Bar Q3 failed; CP41.1 didn't land; carries to round 42 unread (rebuild recipe proven). |
+| B3, B6 | Not started: B5 took the round (built OFF / traced, round 40). |
+
+- **Decisions:** t50 before t30; hull speed and hull turn as one lever; dev screens on 10 seeds then the lines on 10 more;
+  the combined arm in its t50 form (th did not beat t50 by its se, the orchestrator's rule); the deal arm measured with the
+  lineups that exist, then two built measure-only (siege's shape) for law and syndicate; pen7 as a `--tune` (outside the keys).
+- **Questions for the lead (via the orchestrator, in his write-up):** (1) does he want the CPU to field an artillery-heavy lineup
+  against an all-tank army, and the garage to suggest it (condemned / gangs reach his target today)? (2) a number change to Law's
+  and Syndicate's artillery within his 15 % next round? (3) the slow turret (5 points) for feel, or not?
+- **Requests to other streams:** native: GUARD_TARGET (e41b6d70e on stream/native) retires `tools/balance/guard_probe.sh` when it
+  reaches main (the adapter stays until then; `search.py run --probe` then passes GUARD_TARGET=balance-guard-run instead).
+- **Raw data:** `~/balance-guard-raw/b5/` (every arm, FACE lines inside), `~/balance-guard-raw/b5-lines/` (the lines by arm name);
+  drivers `~/balance-runs/b5-*.sh`, logs beside them.
+
+**Lines screen, t50 (12:17; 8f2643375 + overrides, builder2, dev 9411-9420, blob + turtle, 5 guard arenas, both sides, 200 fights an
+arm, paired with base; Bar B5's guards G1-G5 as a dev read, `search.py bar-b5 ~/balance-guard-raw/b5-lines base t50`):** G1 blob
+line 46 -> 40 % (**-6.0, se 2.1**: a slow turret punishes the frontal charge) pass; **G2 turtle line 32 -> 35 % (+3.0, se 1.5)
+FAIL** at the 2-se rule (a parked turtle has the time to track; the rushing tanks don't); G3 every length cell within band (blob
++6 %, turtle +0 %); G4 time-cap +0; G5 flatness 24.5 -> 24.3 (-0.2, se 1.1) pass. **So the slow turret alone is NOT safe to file
+as is: it raises the turtle line.** If he wants it for feel, Bar B5 would need a turtle-neutral form (e.g. the turret lever at
+-30 %, t30, which is built but unscreened) or the turtle guard argued on its merits (a slower tank turret rewards the defender,
+which is the slug-fest direction R38.55 chose). The combined arm's lines follow (~12:50).
+
 **REPORT SKELETON (filled as the last arms land; the numbers above are final where marked DONE):**
 - **Playtest for him (no change ships; the lineups exist today):** his all-tank army v the artillery-heavy CPU:
   `make skirmish ENEMY=cpu:siege ENEMY_FACTION=condemned` and `make skirmish ENEMY=cpu:gang_hail ENEMY_FACTION=gangs` (field
