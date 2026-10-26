@@ -130,6 +130,45 @@ asked for a bar.
     within 2 x its min turn radius ahead (a turn it can't make back to after a swerve). Both bridge ends qualify. Waiting on the
     go.
 
+- **F1 v2 built (3f23a36ab, R40.22, main 6dc9f67d3 merged):** queue only where the route turns by more than FOLLOW_TURN_DEG = 45 deg
+  within FOLLOW_TURN_RADII = 2 x the min turn radius ahead (`Movement._turn_ahead`); elsewhere ORCA passes as today
+  (`follow_open` counts those follows). Laptop NATIVE=off: traffic|test_manoeuvre|movement|steering|wedge 216 passed, 0 failed.
+- **F1 v2 labs (builder0 light; bridge 18 runs an arm; dev cells as lab 2, GDScript drive both arms; `~/overnight-manoeuvre/r40/f1v2lab/`):**
+
+  | Tree | Arm | bridge-pooled | Rim | Deck jam | Worst rim crew | Mean arrival |
+  |---|---|---|---|---|---|---|
+  | 3f23a36ab (main + v2) | OFF | 18/18 | 8.1 s | 7.5 s | 1.5 s | 36.6 s |
+  | 3f23a36ab | ON | 18/18 | 5.9 s | 6.4 s | 1.1 s | 35.6 s |
+  | 5fb35635e (+ d385cd308's overrides) | OFF | 17/18 (rust t15 s2) | 14.2 s | 17.1 s | 5.1 s | 34.9 s |
+  | 5fb35635e | ON | **18/18** | 6.4 s | 13.6 s | 0.8 s | 32.8 s |
+
+  - **Dev cells (follow_judge.py as a lab read, n 12 fights / 24 runs):**
+    - D moving-stuck 137.7 -> 142.9 s (+3.8 %, 0.1 se): flat, nowhere near the 0.8 line.
+    - G4 deaths 493 -> 461 (FAIL, line +/- 25; kill share unmoved).
+    - G7 last-in +2.3 s (FAIL): terminus 5 route s7001 +20.0 s, terminus 5 route s7002 +13.8 s, terminus 3 click s7001 +12.0 s.
+    - G1, G2, G3, G5, G6 pass. G5 never-in 1 -> 0.
+  - **Queue left in open traffic: 0 by construction.** 1,730-8,967 follows a fight passed to ORCA (`follow_open`); 413-1,486
+    queued crew-ticks a fight, all at turns.
+  - **Waits >= 3 s: 0 in every fight.** The longest is 2.23 s (terminus s7003 Rust_Spears2_1 behind Rust_Spears2_5, the
+    leader's least speed 1.27 m/s). No crawler wait outside a turn, so no trace (the orchestrator's condition).
+  - **Reading:** v2 fixes the bridge (rim and deck jam both down, on both trees) and no longer queues in the open. On D it is
+    neutral, so Bar F1 as filed would very likely FAIL on D. The terminus last-in cost (squads queued at street corners) is a
+    risk for G7.
+
+**Twin spec diff, v1 -> v2 (for native; F1 v2's rule is final unless the bar or the orchestrator changes it):**
+- **Added:** after `_following` finds a leader, the queue holds only if `_turn_ahead(here, FOLLOW_TURN_RADII x wheel_radius())`.
+  Otherwise the leader is dropped (`follow_open += 1`, measurement) and the code falls through to today's path.
+- **`_turn_ahead(here, within_m)`:**
+  - prev = flat(here), walked = 0, way_in = 0. For i from `_path_index` to the end of `_path`:
+    - leg = flat(_path[i]) - prev; skip if |leg| < 0.1 (prev is NOT advanced);
+    - way = leg / |leg|; if way_in != 0 and way_in . way < cos(45 deg), return true;
+    - walked += |leg|; if walked > within_m, return false;
+    - way_in = way; prev = flat(_path[i]).
+  - After the loop, return false.
+- **Constants:** FOLLOW_TURN_DEG = 45.0, FOLLOW_TURN_RADII = 2.0.
+- **Measurement only, no twin needed for behaviour:** follow_open, follow_longest, follow_long_waits. The rest is as the v1
+  request above.
+
 ### Bar F1 (filed 2026-10-25 ~19:10 PDT, BEFORE any number on 8125-8148)
 - **Gate:** the tree's full check green on builder0 FIRST (C31.1), F1 OFF. The checked hash is named here before the series starts.
   The series runs from that one frozen tree (R40.13): no game/ or tests/ commits until its `end` line.
