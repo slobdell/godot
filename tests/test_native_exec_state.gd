@@ -39,6 +39,32 @@ static func _owners(mover: Movement) -> Array:
 	return [mover, mover.ctl.gunnery, mover.ctl.gunnery.engagement_lay]
 
 
+## The table's LATE rows (exec_fields.h) the scripts don't declare: [owner, name] -> true. CP42.0: a member an owner asked
+## for lands in the table before the member lands on main; until then it is skipped everywhere below.
+static func _absent_late(table: Array, live: Array) -> Dictionary:
+	var names := {}
+	for row: Array in live:
+		names[[row[0], row[1]]] = true
+	var out := {}
+	for row: Array in NativeBridge.impl.exec_late_fields():
+		assert(table.has(row), "a late row is a table row")
+		if not names.has([row[0], row[1]]):
+			out[[row[0], row[1]]] = true
+	return out
+
+
+static func _live_members(ctl: OrderController) -> Array:
+	return _members(ctl.movement, 0) + _members(ctl.gunnery, 1) + _members(ctl.gunnery.engagement_lay, 2)
+
+
+## The table less its absent late rows (the fields every test below compares).
+static func _present(table: Array) -> Array:
+	var ctl := OrderController.new()
+	var absent := _absent_late(table, _live_members(ctl))
+	ctl.free()
+	return table.filter(func(row: Array) -> bool: return not absent.has([row[0], row[1]]))
+
+
 static func _same(live: Variant, held: Variant) -> bool:
 	if typeof(live) != typeof(held):
 		return false
@@ -81,9 +107,10 @@ func test_the_table_is_the_scripts_members() -> void:
 		print("native: absent, the execute state is not exercised in this run")
 		return
 	var ctl := OrderController.new()
-	var live := _members(ctl.movement, 0) + _members(ctl.gunnery, 1) + _members(ctl.gunnery.engagement_lay, 2)
+	var live := _live_members(ctl)
 	ctl.free()
 	var table: Array = NativeBridge.impl.exec_fields()
+	var absent := _absent_late(table, live)
 	var missing: Array[String] = []
 	var extra: Array[String] = []
 	for row: Array in live:
@@ -91,12 +118,13 @@ func test_the_table_is_the_scripts_members() -> void:
 			var type: int = row[2]
 			missing.append("owner %d: F(%s, %s, %s)" % [row[0], CTYPES.get(type, "?"), VTYPES.get(type, "?"), row[1]])
 	for row: Array in table:
-		if not live.has(row):
+		if not live.has(row) and not absent.has([row[0], row[1]]):
 			extra.append("owner %d: %s (type %d)" % [row[0], row[1], row[2]])
-	print("native exec state: %d fields in the table, %d script members" % [table.size(), live.size()])
+	print("native exec state: %d fields in the table (%d late, not declared yet), %d script members" % [table.size(),
+			absent.size(), live.size()])
 	assert_true(missing.is_empty(), "add to native/src/exec_fields.h: %s" % ", ".join(missing))
 	assert_true(extra.is_empty(), "no longer in the scripts (remove or retype in exec_fields.h): %s" % ", ".join(extra))
-	assert_eq(table.size(), live.size(), "one field per member")
+	assert_eq(table.size(), live.size() + absent.size(), "one field per member (and per late member not declared yet)")
 
 
 func test_the_pull_reads_what_the_gdscript_reads() -> void:
@@ -105,7 +133,7 @@ func test_the_pull_reads_what_the_gdscript_reads() -> void:
 	var native: Object = NativeBridge.impl
 	native.exec_clear()
 	var game_match := await _fight()
-	var table: Array = native.exec_fields()
+	var table := _present(native.exec_fields())
 	var pulls := 0
 	var compared := 0
 	var mismatches := 0
@@ -142,7 +170,7 @@ func test_a_push_after_a_scramble_restores_every_member() -> void:
 	var native: Object = NativeBridge.impl
 	native.exec_clear()
 	var game_match := await _fight()
-	var table: Array = native.exec_fields()
+	var table := _present(native.exec_fields())
 	var checks := 0
 	var scrambled := 0
 	var unrestored := 0
@@ -213,4 +241,45 @@ func test_a_changed_only_push_writes_exactly_the_changed_fields() -> void:
 	assert_eq(lay.progress, 0.625, "the lay member")
 	assert_eq(mover._goal, goal_before, "an unchanged field is untouched")
 	assert_eq(int(native.exec_dirty(mover)), 0, "the push cleared the dirty bits")
+	native.exec_clear()
+
+
+## CP42.0: a late member is skipped while the script lacks it and checked like any other once declared. The declared case
+## runs on a Movement subclass that adds the late members (or on Movement itself once its owner has landed them).
+func test_a_late_member_is_skipped_until_declared_then_mirrored() -> void:
+	if NativeExpect.absent(self):
+		return
+	var native: Object = NativeBridge.impl
+	native.exec_clear()
+	var late: Array = native.exec_late_fields()
+	assert_true(late.size() >= 1, "the table has late members (Q5's four)")
+	var mover_fields: int = native.exec_fields().filter(func(row: Array) -> bool: return int(row[0]) == 0).size()
+	var plain := Movement.new()  # no controller: only the Movement's own members are pulled and pushed
+	var absent := late.filter(func(row: Array) -> bool: return not (String(row[1]) in plain))
+	if not absent.is_empty():
+		assert_eq(int(native.exec_pull(plain)), 0, "a pull of a script without the late members is clean")
+		assert_eq(int(native.exec_push(plain, true)), mover_fields - absent.size(),
+				"a forced push skips the late members the script lacks")
+		native.exec_forget(plain)
+	var source := "extends Movement\n"
+	for row: Array in absent:
+		source += "var %s := %s\n" % [row[1], "\"\"" if int(row[2]) == TYPE_STRING else "-1"]
+	var script := GDScript.new()
+	script.source_code = source
+	assert_eq(script.reload(), OK, "the declaring subclass compiles")
+	var mover: Movement = script.new()
+	for row: Array in late:
+		mover.set(row[1], "q5-friend" if int(row[2]) == TYPE_STRING else 4242)
+	assert_eq(int(native.exec_pull(mover)), 0, "declared: the pull reads the late members with their types")
+	var row: Dictionary = native.exec_row(mover)
+	for field: Array in late:
+		assert_eq(row["m:" + String(field[1])], mover.get(field[1]), "declared: %s pulled" % field[1])
+	assert_eq(int(native.exec_push(mover, true)), mover_fields, "declared: a forced push writes every field")
+	for field: Array in late:
+		assert_true(native.exec_set(mover, "m:" + String(field[1]), "pushed" if int(field[2]) == TYPE_STRING else 7),
+				"set %s" % field[1])
+	assert_eq(int(native.exec_push(mover, false)), late.size(), "declared: a changed-only push writes the late members")
+	for field: Array in late:
+		assert_eq(mover.get(field[1]), "pushed" if int(field[2]) == TYPE_STRING else 7, "declared: %s pushed" % field[1])
+	native.exec_forget(mover)
 	native.exec_clear()
