@@ -208,7 +208,13 @@ Syndicate have no such lineup to field: Law's "dragnet" is three machine-gun sco
 Syndicate's "standoff" is Lancers, which the Railgun Platform kills in one shot from 110 m (99 %).
 *So the recommendation changes:* (1) give every faction an artillery-heavy lineup and make the CPU field it when it faces an
 all-tank army (and show you the same lineup in the garage): no unit changes, the game already has the units; measured at 47-52 %
-for the two factions that have one. (2) The slow turret (5 points) only if you like how it feels. (3) The IFV's trade (it dies
+for the two factions that have one [Law and Syndicate: barrage arm, pending]. *What you'd do differently in the garage:* bring
+two artillery squads with your tanks instead of IFVs (Condemned: two Mortar Carrier squads, two scout squads for eyes, a tank
+squad, one IFV squad; Road Gangs: two Catapult squads, two Rat Rod squads, a Gun Truck squad and a Tanker). Keep the scouts: the
+artillery only hits what someone can see. *What the CPU would field against your all-tank army:* the same lineup, so your
+tank rush meets a wall of indirect fire it can't shoot back at until it closes, and the Rat Rods / Lancers open it from the
+side while it closes. Today the CPU rolls one of three lineups a game and only one of them is this one (Law and Syndicate have
+none), which is why your tanks have walked through most games. (2) The slow turret (5 points) only if you like how it feels. (3) The IFV's trade (it dies
 in one or two shells before its flank fire adds up) is a separate, smaller question: tougher-and-cheaper buys 2 points, a
 sharper cannon [pen7 arm, pending]. The missile is not needed for your target.
 
