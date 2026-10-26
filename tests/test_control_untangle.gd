@@ -13,6 +13,10 @@ const HIS := {"Green_Hunters_1": Vector3(66.1, 0, -72.3), "Green_Hunters_4": Vec
 const CLICK := Vector3(96.0, 0, 23.6)
 
 
+func teardown() -> void:
+	SelectionSquads.reset_g1()
+	super.teardown()
+
 func _squad(number: int, units: Array) -> Dictionary:
 	var typed: Array[String] = []
 	typed.assign(units)
@@ -150,6 +154,7 @@ func test_a_body_of_squads_untangles_only_the_interleaved_ones() -> void:
 ## order ahead. The two lines are made of the vehicles on their own sides (no two crews' paths cross), there are two
 ## pins (one per line, not one per crew), and his groups 1 and 2 still hold the squads he made.
 func test_through_the_controls_interleaved_squads_do_not_cross() -> void:
+	SelectionSquads.set_g1(false)  # the crew re-deal is the group click before G1 (G1 keeps squads whole: test_control_untangle_whole)
 	var f := preload("res://tests/support/control_fixture.gd").new(self)
 	await f.build_scale(10)
 	var s1: Array[String] = f.controls.groups.members(1).slice(0, 3)

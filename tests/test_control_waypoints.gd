@@ -20,7 +20,7 @@ var _lab: TacticsLab
 
 
 func teardown() -> void:
-	SelectionSquads.GROUP_LAY = OS.get_cmdline_user_args().has("--group-lay=column")
+	SelectionSquads.reset_g1()
 	SelectionSquads.GROUP_LEGS = OS.get_cmdline_user_args().has("--group-legs=on")
 	SelectionSquads.GROUP_GATE_MAIN = OS.get_cmdline_user_args().has("--group-gate=main")
 	if _lab != null:

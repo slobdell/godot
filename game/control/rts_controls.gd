@@ -1171,6 +1171,16 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			var laid := SelectionSquads.column_lay(lay_blocks, click, approach,
 					func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors, path_back, reached, false, queue_leg)
+			if not laid.is_empty() and SelectionSquads.COLUMN_TOWARD and SelectionSquads.column_sends_away(laid, lay_blocks, click):
+				SelectionSquads.columns_refused_away += 1
+				laid = []  # G1 v8: today's places stand
+			elif not laid.is_empty() and SelectionSquads.COLUMN_STAY:
+				var kept_l: Array = SelectionSquads.column_keep_away(laid, lay_blocks, click)
+				SelectionSquads.kept_away += int(kept_l[1])
+				var stayed: Array[Vector3] = []
+				for p: Vector3 in kept_l[0]:
+					stayed.append(p)
+				laid = stayed  # G1 v9: the column stands; a squad it would send away stays on its spot
 			column = not laid.is_empty()
 			if column:
 				today_places = anchors.duplicate()

@@ -265,7 +265,7 @@ def main(argv):
         ok = ok and passed
         lines.append("%s guard friend_contacts %d -> %d (<= %.1f)" % ("PASS" if passed else "FAIL", b, n, b * 1.1 + 5))
         ok = probe_guards(rows, base, new, lines) and ok
-    elif mode in ("g1", "g1v4"):
+    elif mode in ("g1", "g1v4", "g1v8"):
         # Round 38 G1 (O7 v2)'s bar, filed in the brief's Status: places outside the click's corridor <= 25 % of base; metres
         # driven outside it after a crew was once inside (route_left_m) <= 50 % of base; crews re-dealt 0; guards as gl;
         # the open-ground cell (yard_open) rows identical, both arms.
@@ -280,14 +280,14 @@ def main(argv):
         bm, nm = total(clicks, base, "route_left_m"), total(clicks, new, "route_left_m")
         # G1 v4 (R38.44): squads stay whole on plain clicks only; a route's queued legs are dealt as main, so re-deals count
         # over the click cells (his click included).
-        dealt = clicks if mode == "g1v4" else rows
+        dealt = clicks if mode in ("g1v4", "g1v8") else rows
         nr = sum(1 for r in dealt if r["arm"] == new and r.get("redealt", 0) > 0)
         d1, d2, d3 = no <= 0.25 * bo, nm <= 0.5 * bm, nr == 0
         lines.append("%s deciding: places outside the corridor (click cells) %d -> %d (<= %.1f)" % ("PASS" if d1 else "FAIL", bo, no, 0.25 * bo))
         lines.append("%s deciding: metres driven outside the corridor after being in it (click cells) %.0f -> %.0f (<= %.0f)" % (
             "PASS" if d2 else "FAIL", bm, nm, 0.5 * bm))
         lines.append("%s deciding: squads with crews re-dealt (arm%s) %d (base %d)" % ("PASS" if d3 else "FAIL",
-                     ", click cells" if mode == "g1v4" else "", nr, sum(1 for r in dealt if r["arm"] == base and r.get("redealt", 0) > 0)))
+                     ", click cells" if mode in ("g1v4", "g1v8") else "", nr, sum(1 for r in dealt if r["arm"] == base and r.get("redealt", 0) > 0)))
         lines.append("  reported: metres outside incl. the drive in (route_out_m) %.0f -> %.0f" % (
             total(rows, base, "route_out_m"), total(rows, new, "route_out_m")))
         # R40.5: the corridor read moved (O1, past posts <= 8 m); round 39's read (`*_gate`) is reported beside every line,
@@ -327,6 +327,14 @@ def main(argv):
             ok = ok and passed
             lines.append("%s guard no-change cell yard_open: %d of %d squad rows identical (arm rows %d)" % (
                 "PASS" if passed else "FAIL", same, len(yb), len(yn)))
+        if mode == "g1v8":
+            # G1 v8 (round 41, filed with its bar before any number): no place > 10 m farther from the click than its squad
+            # stood (toward_m < -10), arm count <= base's + 2, over every judged cell.
+            ba = sum(1 for r in rows if r["arm"] == base and r.get("toward_m", 0.0) < -10.0)
+            na = sum(1 for r in rows if r["arm"] == new and r.get("toward_m", 0.0) < -10.0)
+            passed = na <= ba + 2
+            ok = ok and passed
+            lines.append("%s guard places sent away from the click (> 10 m) %d -> %d (<= %d)" % ("PASS" if passed else "FAIL", ba, na, ba + 2))
     elif mode == "g3":
         # Round 38 G3's bar (R38.15), filed in the brief's Status: place pairs closer than 12 m <= 25 % of base (amended);
         # never-in squads no more; offset guards (worst place-to-click median per cell

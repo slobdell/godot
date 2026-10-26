@@ -56,6 +56,33 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### NOW (2026-10-26)
+- **CLOSE REPORT (2026-10-26):**
+  - **Done:** O1 (census, 8b828ec59); O2 written up, switches OFF (orchestrator's R41.4; merged as ba0d14aab); C41.4
+    (b973ba955); stretch **G1 v9 ON (5693c0b66, R41.15)**.
+  - **Bar G1 v9: PASS** (builder2, frozen 872dab643, native on, 9101-9112, n 12 a cell, judge g1v8; evidence
+    `references/round41/orders/barg1v9-builder2-872dab643/`). Places outside the corridor 57 -> 8 (<= 14.2); metres
+    outside after in 2281 -> 436 (<= 1140); re-dealt 0 (base 48); friend_contacts 13425 -> 10393 (<= 14772.5); probe
+    guards 14 cells; yard_open 192 / 192 identical; sent away > 10 m 24 -> 0 (<= 26). Reported only: parked re-deals
+    (duck-excluded) 376 -> 396.
+  - **What ships:** with no flags his group click lays the column (`selection_squads.gd`: GROUP_LAY, RANK_SHIFT_HALF,
+    GROUP_WHOLE_CLICK, CLEAR_REACHED, GROUP_LEAD, SIDES_BOTH, COLUMN_STAY ON). Escapes: `--group-lay=off`,
+    `--group-rank-shift=off`, `--group-whole=off`, `--group-clear=click`, `--group-lead=off`, `--group-sides=off`,
+    `--group-column-toward=off`; `--group-g1=off` = all seven off (the group click before G1). The probe's `main:` arm is
+    now G1 ON; a future bar against pre-G1 uses `old:--group-g1=off`.
+  - **Tests:** five tests of the pre-G1 group click pin it with `SelectionSquads.set_g1(false)` (untangle's crew
+    re-deal, requeue x2, R37.29's lay, v6's one-sided line); teardowns call `reset_g1()`. Laptop NATIVE=off control +
+    orders: 625 / 0.
+  - **Known issues:** with G1 ON interleaved squads stay whole, so crews can cross where the old re-deal untangled them
+    (the whole-squad untangle takes the fewest crossings; contacts fell on the bar). crossing 5 route is unchanged by G1
+    (route legs are G2's). perf-judge judged on the ON commit's check (5693c0b66), so no quiet re-run is needed for it.
+  - **Smoke (laptop, 5693c0b66, terminus s7007 his click, no flags):** columns_laid 1, two-sided 1; the shot 5 s after
+    all in is identical to the v9-flags shot (`g1-his-click-shots-laptop/terminus-5-click-v9-arrival_plus5-desktop.png`).
+  - **Question for the lead:** the feel question under Bar G1 v9 below (a tail squad that stays on a click beside it).
+  - **Playtest:** `make skirmish ARENA=terminus`, select all five squads at the start, click the street just left of
+    them; then a far click across the map. Compare `SKIRMISH_FLAGS="--group-g1=off"`.
+  - **Next:** Q2 (what a blocked crew does inside merges) is where group-move time goes (O1 / O2); departure order is not.
+  - **Merge notes:** 5693c0b66 alone (code + tests + evidence). **GREEN: full check of 5693c0b66 on builder0 exited 0,
+    27 targets all passed, ALL JUDGED (perf-judge judged), 3258 tests / 0 failed.** Later commits are Status only.
 - **REPORT so far (2026-10-26 ~03:00):**
   - **O1 DONE (8b828ec59, `make orders-group`).** Census (builder0, 8b828ec59, native off, dev seeds 7001-7006, n 6 a
     cell; evidence `references/round41/orders/o1-census-builder0-8b828ec59/`): his "pointed different ways" is mostly not
@@ -79,8 +106,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     main, crossing never-in 5 -> 4, terminus 57.1 -> 62.8; paired -1.0 +/- 2.0 s; 16 of 120 queued, 2 by the cap.
   - **Finding:** the corridor rule rarely fires (16-18 of 120 squads); the jams form where roads merge mid-way.
     **v3 `--group-depart=merge` (b8116ec21):** each pair's first merge outside the halt area; the shorter-drive squad
-    goes when the longer one's tail is no farther from the merge than it is, less 10 m. Dev read 3 running.
-  - Full check of 25525980a on builder0: queued behind native's (the lock held since 02:12).
+    goes when the longer one's tail is no farther from the merge than it is, less 10 m.
+  - **Dev read 3 (v3, b8116ec21, same setup):** the only variant that moves never-in (15 -> 8 squads; locks 2 -> 0;
+    contacts 34157 -> 26085; paired all-in -8.7 +/- 6.6 s, deciding still fails) and it does it by holding squads: median
+    18 s of the 40 that waited, 17 released by the 20 s cap, 18 of 24 clicks with a squad waiting > 5 s (every wait
+    guard fails: he would see squads that did not hear him). Third variant on the same seeds: partly fitted.
+  - **O2 RESULT: written up, no bar** (orchestrator's call for this case). Departure order is not where the time goes:
+    the time is crews meeting inside the merges (stalled / crossing / same_way, manoeuvre's Q1), i.e. what a blocked crew
+    does, which is Q2. Switches stay OFF in code (`--group-depart=queue|merge`, `--group-depart-rank=drive`); evidence
+    `references/round41/orders/o2-dev-reads-builder0/` (ba0d14aab). Full check of ba0d14aab (builder0): exited 0,
+    25 passed, 3255 tests / 0 failed, 2 NOT JUDGED (perf-judge refused: box busy with my dev reads; ai cpu-budget
+    unpinned) -- named to the orchestrator for the merge.
 - **Plan:** O1 census probe (done, 8b828ec59) -> census on builder0 dev seeds 7001-7006 (crew v formed headings) -> hash to
   manoeuvre + orchestrator -> O2: pick the lever from the numbers, build OFF, lab, file Bar O2 on 9101-9124 before any number
   -> C41.4 getter if camera asks -> stretch G1 v7.
@@ -132,3 +168,66 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - **Known risk:** a squad whose own place sits inside a squad-ahead's corridor start waits for it to arrive; the 20 s
     cap bounds it. A waiting squad keeps its old task; in his case (parked or holding) it stands still.
   - **Plus:** paired top-down shots of the across click on terminus, main v queue, looked at. A pass ships ON.
+- **WITHDRAWN UNREAD (2026-10-26): Bar G1 v7**, replaced by Bar G1 v8 below before any bar number: its plus (the shots of
+  his click, laptop s7007) showed the arm giving 3 of 5 squads places no nearer his click than they stood (squad 5's 103 m
+  from it, 15 m farther than it stood; "in" at 0.1 s without moving). The deciding lines miss it on the open yard. Kept:
+- **Bar G1 v7 TWO SIDES ON T1 (orders, round 41; filed 2026-10-26 before any number on 9101-9112; code ba0d14aab, all
+  OFF).** What he would see: select all and click a street; every squad lands in that street, the nearest on it, the
+  others stacked back along their own way in, none driving through another's halt, every squad in without a reshuffle.
+  It is Bar G1 v6 (round 40, failed on one guard: terminus 5 route twitch, a cap deploy among passers) re-run on today's
+  main, where T1 (`--deploy-arrive=settled`) is ON in both arms.
+  - **Arm:** `sides:--group-lay=column,--group-rank-shift=half,--group-whole=click,--group-clear=reached,--group-lead=drive,--group-sides=both`
+    (G1 v6's, unchanged). Base `main:`.
+  - **Tree:** a frozen detached worktree at the commit whose full check is named green here (ba0d14aab or a docs-only
+    descendant; main as launched; T1 ON both arms; DEPLOY_HOLD ON both; every G2 / G3 switch and O2's `--group-depart`
+    OFF both arms; manoeuvre's Q2 OFF both arms).
+  - **Probe:** `tests/control/orders_bar.sh b2 g1v4 <arm> "9101 ... 9112" <out> 8` (builder2, Spot re-runs), **FRESH
+    seeds 9101-9112** (round 41's orders block; O2's bar was withdrawn unread, so they are unseen), n 12 a cell. Cells as
+    Bar G1 v6: the 12 street cells, his click (terminus_his 3 / 5), yard_open 3 / 5 x click / route.
+  - **Judge:** `orders_judge.py g1v4`, unamended from G1 v6 (deciding: places outside the corridor <= 25 % of base,
+    route_left_m <= 50 %, re-dealt 0; guards: every R36.6 guard per cell over all 14 cells, contacts <= base x 1.1 + 5,
+    yard_open identical; the old gate read reported beside).
+  - **Dev evidence:** builder0 light, 941325eaa (= ba0d14aab + docs), native on, dev seeds 7007-7012, n 6 a cell: PASS
+    every line (outside 26 -> 2, route_left 1037 -> 335, re-dealt 0, contacts 6554 -> 5155, 14 cells' probe guards,
+    yard_open 96 / 96). `references/round41/orders/g1v7-dev-builder0-941325eaa/`. One variant read (G1 v6's arm, as is).
+  - **Known risk:** round 40's s3805 squad-1 wedge (R38.44's whole-squad deal on a route's first click). On today's main
+    (laptop, s3805, terminus 5 route) it is main that leaves a squad never in (squad 5), and the arm gets all five in.
+  - **Plus:** paired top-down shots of his click, main v sides, looked at. A pass ships ON.
+- **WITHDRAWN UNREAD (2026-10-26): Bar G1 v8**, replaced by Bar G1 v9 before any bar number. Its dev read (builder0 light,
+  099a3f135, native on, 7007-7012, n 6): FAIL deciding places outside (click cells) 26 -> 9 (<= 6.5); every guard passed
+  (away 12 -> 12, contacts 6554 -> 5421, 14 cells, yard_open 96 / 96). Cause: refusing the whole column gives his-click
+  squad 5 main's own place, outside the corridor on all six seeds (main has the same 12). Kept:
+- **Bar G1 v8 TWO SIDES, NEVER AWAY (orders, round 41; filed 2026-10-26 before any number on 9101-9112; code: the commit
+  below, all OFF).** G1 v7 + `--group-column-toward=on`: a column that would give any squad a place > 10 m farther from his
+  click than it stands is refused (today's places stand). What he would see: as G1 v7, and a click beside his army never
+  sends a squad away from it.
+  - **Arm:** `v8:--group-lay=column,--group-rank-shift=half,--group-whole=click,--group-clear=reached,--group-lead=drive,--group-sides=both,--group-column-toward=on`.
+    Base `main:`. Tree, probe, seeds (9101-9112, n 12 a cell), cells and judge (`orders_judge.py g1v4`, unamended) as
+    G1 v7. **Added guard (filed now, before any number):** no squad row's place more than 10 m farther from the click
+    than its start (`toward_m < -10`) in the arm beyond base's count + 2, over all cells.
+  - **Variants read on the dev block 7007-7012: two** (v7's arm; v8). Lab: his click s7007 falls back to main's places;
+    s3805 terminus 5 route keeps the column (all five in).
+- **Bar G1 v9 TWO SIDES, THE TAIL STAYS (orders, round 41; filed 2026-10-26 before any number on 9101-9112; code: the
+  commit below, all OFF).** G1 v7 + `--group-column-toward=stay`: the column stands; only a squad it would put > 10 m
+  farther from his click than it stands keeps the spot it stands on (it is already in the street, at the column's tail).
+  What he would see: as G1 v7, and a click beside his army never makes a squad back away; the tail squads hold.
+  - **Arm:** `v9:--group-lay=column,--group-rank-shift=half,--group-whole=click,--group-clear=reached,--group-lead=drive,--group-sides=both,--group-column-toward=stay`.
+    Base `main:`. Tree, probe, seeds (9101-9112, n 12 a cell), cells and judge (`orders_judge.py g1v8`: g1v4 unamended +
+    the never-away guard filed with v8) as above. Runner `tests/control/orders_bar.sh b2 g1v8 <arm> "9101 ... 9112" <out> 8`.
+  - **Variants read on the dev block 7007-7012: three** (v7, v8, v9), so a dev pass there is partly fitted.
+  - **Dev read (builder0 light, 383828c39 code, native on, 7007-7012, n 6 a cell; partly fitted): PASS every line.**
+    Places outside 26 -> 3 (<= 6.5); metres outside after in 1037 -> 180 (<= 519); re-dealt 0 (base 24); friend_contacts
+    6554 -> 5179 (<= 7214.4); probe guards 14 cells; yard_open 96 / 96; places sent away > 10 m 12 -> 0 (<= 14).
+    The orchestrator ruled v9 the LAST re-file: if the bar fails, G1 is written up (no v10).
+  - **Tree:** the full check of 872dab643 (v9 code + docs) on builder0 decides the frozen worktree's commit.
+  - Lab (laptop, s7007 his click, 5 squads): squad 5 stays (toward 0.0); squads 3 / 4 step < 10 m back into their ranks.
+  - **Question for the lead (feel), in his terms:** "You have all five squads selected at the start and click a spot in
+    the street just beside them (30 m away). Today they all try to crowd round that spot, and two of them end up up the
+    side street. With the change, the squads line up along the street you clicked, one behind another, starting at your
+    spot; the squads already standing further down that street stay where they are instead of backing up to join the
+    queue. Does a squad that doesn't move on that click feel like it ignored you, or like it's already where it should
+    be?" Shots (laptop, s7007, 5 s after all in; white = his click, coloured posts = each squad's place):
+    `references/round41/orders/g1-his-click-shots-laptop/terminus-5-click-v9-arrival_plus5-desktop.png` v
+    `...-main-...` (today) and `...-sides-...` (v7, which backed squad 5 up 15 m). Smoke: `make skirmish ARENA=terminus
+    SKIRMISH_FLAGS="--group-lay=column --group-rank-shift=half --group-whole=click --group-clear=reached --group-lead=drive
+    --group-sides=both --group-column-toward=stay"`, select all at the start, click the street just left of them.
