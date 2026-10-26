@@ -247,6 +247,13 @@ _(filed bars go here, before their numbers)_
   Manoeuvre: Bar Q6 first (it unblocks B2s v2), then ONE lab of a v3 on the same dev cells: ease only against a friend ahead that is
   itself moving (clearing), and press at once behind a head that has stood > ~1 s (a stalled head is the case the column must grind
   through); if the v3 dev read passes G5 / G6 and keeps D1 / D2, file Bar Q5 v3 on the unseen 9801-9824 (the last re-file).
+- **R42.9 (2026-10-26 ~16:50) B8: +/-15 % on Law's and Syndicate's artillery doesn't change who wins; no Bar B8.** Balance's dev
+  screen (9d8e26e44, builder2, 10201-10220 x 5 arenas x mono on both teams, n 200 an arm, guard none; all-tanks v the faction's barrage
+  lineup): Law base 96 % mono wins; Gas Rocket Truck damage +15 % and cost -15 % each 92 % (paired -5, se 3). Syndicate base 84 %;
+  Missile Ring cost -15 % + hull/shield +15 % 86 % (+2, se 3). Written up as measured, nothing ships; for him: inside his 15 % those
+  two factions' artillery cannot be made to hurt tanks (the Gas Rocket Truck is a suppression weapon; the Missile Ring dies to the
+  Railgun), so Law's and the Syndicate's counter stays off under B7 and their tank-rush answer is their own tank until he allows a
+  larger change. builder2 free at 16:44: balance's R42.3 firing screen starts now and pauses at a leg boundary for engage's guards.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
