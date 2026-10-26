@@ -1,5 +1,6 @@
-extends "res://tests/orders_probe.gd"
-## Round 41 (manoeuvre Q1, the jam census; measurement only): orders' multi-squad probe (tests/orders_probe.gd, unchanged) with a
+extends "res://tests/orders_probe_group.gd"
+## Round 41 (manoeuvre Q1, the jam census; measurement only): orders' group-order probe (tests/orders_probe_group.gd, O1: his five
+## full squads at mixed headings, one click across the map; unchanged, its own census rides along) with a
 ## read of every stretch in which a crew under way is SLOWED BY A FRIEND: ORCA cut its pace (Movement.pace_now < SLOW_PACE) or
 ## moved its steer point (_deflected), it is giving way (yield_to), or it is held at a street mouth (Traffic.holding). Its
 ## BLOCKER is read in this order: the crew it yields to; a friendly hull it touches; the nearest friend in its lane ahead
@@ -13,13 +14,15 @@ extends "res://tests/orders_probe.gd"
 ## of that lane AND will not enter it at the asker's preferred velocity (no time to meet), capped at CLEAR_CAP_S (-1 = never
 ## within the cap; `lane_start` false = the blocker was not in the lane at the start either: a friend touching from the side, or
 ## one the asker gives way to). Caveat: the blocker's motion is not independent of what the asker then did.
-## `--jam-scatter=on`: the tick after the order every crew's hull is turned to a seeded random heading (his "a scout is pointed
-## north and thus blocking a unit that's trying to go West"; the probe's squads otherwise start formed, facing the enemy).
+## Headings are the base probe's `--probe-headings=crew|squad|formed` (crew: every hull a seeded random heading just before the
+## click, his "a scout is pointed north and thus blocking a unit that's trying to go West"; formed: the control).
 ## Rows at quit: JAM_EP per episode (asker, blocker, squads, class_start, class_mode, classes, s, t_clear, action, lateral_m,
 ## stopped_s, start_s, at), JAM_RUN per run (totals by class and action, the waitable shares at WAIT_N_S, held_s).
+## Run with `make manoeuvre-probe-jam` (mk/manoeuvre.mk).
 ##
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/manoeuvre/probe_jam.gd -- --arena=terminus --seed=7001 \
-##     --probe-squads=5 --probe-route=route --probe-arm=main [--jam-scatter=on]
+##     --probe-squads=5 --probe-army=res://tests/control/orders_probe_group_5.json --probe-headings=crew --probe-target=across \
+##     --probe-route=click --probe-arm=main
 
 const JamClass := preload("res://tests/manoeuvre/jam_class.gd")
 
@@ -36,7 +39,6 @@ const WAIT_N_S: Array[float] = [2.0, 3.0, 5.0, 8.0]
 const MIN_EPISODE_TICKS := 3
 
 var _jam_last_tick := -1
-var _scattered := false
 var _yaws := {}  # crew -> ring of yaws, the last YAW_WINDOW + 1 ticks
 var _open := {}  # asker -> episode
 var _pending: Array = []  # closed episodes still waiting for t_clear
@@ -59,26 +61,7 @@ func _jam_trace() -> void:
 		if _match.tick == _jam_last_tick:
 			continue
 		_jam_last_tick = _match.tick
-		if not _scattered:
-			_scattered = true
-			if _flag("jam-scatter", "off") == "on":
-				_scatter()
 		_jam_observe()
-
-
-## His case: crews pointed every which way when the order comes.
-func _scatter() -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = int(_flag("seed", "0")) * 7919 + 41
-	var turned: Array = []
-	for node in _match.tanks.get_children():
-		var tank := node as Tank
-		if tank == null or tank.team != Match.Team.GREEN or not tank.is_alive():
-			continue
-		var yaw := rng.randf_range(-PI, PI)
-		tank.rotation.y = yaw
-		turned.append([String(tank.name), snappedf(rad_to_deg(yaw), 1.0)])
-	print("JAM_SCATTER " + JSON.stringify({"seed": int(_flag("seed", "0")), "turned": turned}))
 
 
 func _jam_squad_of(crew: String) -> int:
@@ -287,7 +270,7 @@ func _finalize() -> void:
 	var seed := int(_flag("seed", "0"))
 	var arena := _flag("arena", "")
 	var arm := _flag("probe-arm", "")
-	var scatter := _flag("jam-scatter", "off")
+	var headings := _flag("probe-headings", "crew")
 	var route := _flag("probe-route", "click")
 	var by_class := {}
 	var by_action := {}
@@ -314,7 +297,7 @@ func _finalize() -> void:
 					waitable["%d" % int(n)] = float(waitable["%d" % int(n)]) + s
 			if t_clear < s:
 				faster += s
-		print("JAM_EP " + JSON.stringify({"seed": seed, "arena": arena, "route": route, "arm": arm, "scatter": scatter,
+		print("JAM_EP " + JSON.stringify({"seed": seed, "arena": arena, "route": route, "arm": arm, "headings": headings,
 				"asker": ep["asker"], "asker_squad": ep["asker_squad"], "unit": ep["unit"], "wheeled": ep["wheeled"],
 				"blocker": ep["blocker"], "blocker_squad": ep["blocker_squad"], "blocker_unit": ep["blocker_unit"],
 				"same_squad": int(ep["asker_squad"]) == int(ep["blocker_squad"]), "blocker_wheeled": ep["blocker_wheeled"],
@@ -325,7 +308,7 @@ func _finalize() -> void:
 				"start_s": snappedf((int(ep["start_tick"]) - start_tick) / float(SimClock.TICK_RATE), 0.1),
 				"at": [snappedf((ep["origin"] as Vector2).x, 0.1), snappedf((ep["origin"] as Vector2).y, 0.1)],
 				"blocker_heading_off_deg": snappedf(rad_to_deg(absf(angle_difference(float(ep["asker_yaw_start"]), float(ep["blocker_yaw_start"])))), 1.0)}))
-	print("JAM_RUN " + JSON.stringify({"seed": seed, "arena": arena, "route": route, "arm": arm, "scatter": scatter,
+	print("JAM_RUN " + JSON.stringify({"seed": seed, "arena": arena, "route": route, "arm": arm, "headings": headings,
 			"episodes": _episodes.size(), "jam_s": snappedf(total, 0.1), "by_class": by_class, "by_action": by_action,
 			"waitable_s": waitable, "faster_s": snappedf(faster, 0.1), "held_s": snappedf(_held_ticks / float(SimClock.TICK_RATE), 0.1),
 			"slowed_s": snappedf(_slowed_ticks / float(SimClock.TICK_RATE), 0.1),

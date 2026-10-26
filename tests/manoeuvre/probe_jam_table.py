@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Round 41 (manoeuvre Q1, the jam census): pool `make manoeuvre-probe-jam` logs (JAM_EP / JAM_RUN rows from
-tests/manoeuvre/probe_jam.gd beside the probe's own ORDERS_PROBE rows) into the census the brief asks for, per arm x scatter:
+tests/manoeuvre/probe_jam.gd beside the probe's own ORDERS_PROBE rows) into the census the brief asks for, per arm x headings:
 jam-seconds by what the blocker was doing, by what the asker did, and the share of jam-seconds whose blocker had cleared the
 asker's frozen lane within N s (the "wait, don't detour" counterfactual); the longest episodes; each run's all-in time.
 
@@ -44,7 +44,7 @@ def load(folder):
 
 
 def key(r):
-    return "%s/scatter=%s" % (r["arm"], r["scatter"])
+    return "%s/headings=%s" % (r["arm"], r["headings"])
 
 
 def pct(part, whole):
@@ -71,7 +71,7 @@ def main(argv):
     ep_groups = collections.defaultdict(list)
     for e in eps:
         ep_groups[key(e)].append(e)
-    print("== runs by arm x scatter: n, never-in runs, all-in median s, jam-seconds a run (mean), episodes a run, held s, slowed-by-nobody s")
+    print("== runs by arm x headings: n, never-in runs, all-in median s, jam-seconds a run (mean), episodes a run, held s, slowed-by-nobody s")
     for k in sorted(groups):
         rs = groups[k]
         never = [r for r in rs if r["all_in_s"] < 0]
