@@ -62,7 +62,15 @@ GREEN on builder2 (`make check exited 0`, 25 passed + 2 NOT JUDGED: perf-judge, 
 **2026-10-25 ~09:30: main (c30136971 code = 0badbb09e + docs) GREEN on builder0, 27 targets ALL JUDGED** (`make check exited 0`,
 3237 passed / 0 failed; perf-judge judged in the check). This is round 40's verified main without B2s.
 
-**ROUND 40 STATE (2026-10-25 ~20:50 PDT): heading to close; main unchanged (verified 0badbb09e + docs).** B2s v2's ARM (d385cd308,
+**ROUND 40 CLOSING (2026-10-25 ~22:45 PDT). main dc95e98ca+ = code 0a7097ee7, GREEN on builder0, 27 targets ALL JUDGED
+(`make native check exited 0`, 3243 passed / 0 failed; sim-baseline 13 unmoved).** Shipped ON this round: T1 (`--deploy-arrive=settled`,
+cap deploys 265 -> 83). Everything else OFF with its cause recorded (M1 v2, G1 v6, S1 v3, G3 v9, cap deal, M3, F1, B2s). Closed: settle,
+orders, native, manoeuvre (worktrees + builder0/builder2 folders removed; branches renamed `round40/<s>`; briefs archived to
+`streams/archive/round40/`; side refs kept: round40/settle-dev9d, round40/orders-t1on, pair/native-follow, pair/native-chainrelease).
+Still open: balance (v2 dev screen on builder2, ~01:30; then its close Status and docs tip), the judging table (native, laptop).
+builder0 disk 82 % (19 G free) after cleanup.
+
+**Earlier: ROUND 40 STATE (2026-10-25 ~20:50 PDT): heading to close; main unchanged (verified 0badbb09e + docs).** B2s v2's ARM (d385cd308,
 fm_c5r2_lawt5: Law +5 % toughness) went red on bridge-pooled (rust t15 s2, one crew 5.4 s at the rim v 3 s). Cause: ORCA steers a
 wheeled follower out past the deck mouth while its leader turns (R40.21; not the twin). Manoeuvre's follow-queue F1 took three forms
 (R40.22-R40.24); each fixed its case and broke another, so F1 stays OFF. bridge-pooled is not waived, so **the stat change carries to
