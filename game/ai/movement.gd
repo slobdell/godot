@@ -232,6 +232,10 @@ const FOLLOW_MOVING_MPS := 1.0
 ## ORCA has carried it wide: the bridge's deck mouth turns ~80 deg 2.5 m ahead of an 8 m radius). Elsewhere ORCA passes as today.
 const FOLLOW_TURN_DEG := 45.0
 const FOLLOW_TURN_RADII := 2.0
+## ...and only while the LEADER is in that turn: within FOLLOW_AT_TURN_M of its vertex (R40.23's trace, terminus 5 route s7001 on
+## 3f23a36ab: a crew queued at 3.5 m/s for 6 s behind a friend driving steadily up a street whose route turned 16 m ahead, reached
+## the junction late into a crossing squad and came in 20 s later). The bridge's leader is ~3 m from the deck-mouth vertex.
+const FOLLOW_AT_TURN_M := 8.0
 ## Measurement only: crew-ticks a friend was followed but no turn lay ahead (v2 left ORCA to pass).
 static var follow_open := 0
 ## Measurement only: crew-ticks the queue rule kept a wheeled crew on its route behind a friend.
@@ -2821,6 +2825,11 @@ func _around_fire(waypoint: Vector3, goal: Vector3, order: Dictionary) -> Vector
 ## Round 40 (F1 v2): does the route from `here` turn by more than FOLLOW_TURN_DEG at a vertex within `within_m` along it? The
 ## legs are here -> _path[_path_index] -> ... (a vertex's turn is between its incoming and outgoing legs; legs under 0.1 m skipped).
 func _turn_ahead(here: Vector3, within_m: float) -> bool:
+	return _turn_vertex(here, within_m) != Vector3.INF
+
+
+## The vertex of that turn (the first one), or Vector3.INF when there is none within `within_m`.
+func _turn_vertex(here: Vector3, within_m: float) -> Vector3:
 	var prev := Vector2(here.x, here.z)
 	var walked := 0.0
 	var way_in := Vector2.ZERO
@@ -2833,13 +2842,13 @@ func _turn_ahead(here: Vector3, within_m: float) -> bool:
 			continue
 		var way := leg / length
 		if way_in != Vector2.ZERO and way_in.dot(way) < limit:
-			return true
+			return Vector3(prev.x, 0.0, prev.y)
 		walked += length
 		if walked > within_m:
-			return false
+			return Vector3.INF
 		way_in = way
 		prev = at
-	return false
+	return Vector3.INF
 
 
 ## Round 40 (F1), measurement only: an unbroken queue wait is one with no gap of more than a tick between its queued ticks.
@@ -2939,9 +2948,11 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 	# Round 40 (F1): a wheeled crew queues behind a friend going its way instead of being steered round it (FOLLOW_SWITCH).
 	if not held and not Traffic.off(FOLLOW_SWITCH) and wheel_radius() > 0.0:
 		var leader := _following(here, to / distance)
-		if leader != null and not _turn_ahead(here, FOLLOW_TURN_RADII * wheel_radius()):
-			follow_open += 1
-			leader = null
+		if leader != null:
+			var turn := _turn_vertex(here, FOLLOW_TURN_RADII * wheel_radius())
+			if turn == Vector3.INF or _flat_distance(leader.global_position, turn) > FOLLOW_AT_TURN_M:
+				follow_open += 1
+				leader = null
 		if leader != null:
 			follow_queued += 1
 			_follow_note(leader)

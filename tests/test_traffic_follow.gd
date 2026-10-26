@@ -78,6 +78,7 @@ func test_turn_ahead_reads_the_route() -> void:
 	mover._path_index = 0
 	mover._path = PackedVector3Array([Vector3(0, 0, -5), Vector3(8, 0, -5), Vector3(8, 0, -40)])
 	assert_true(mover._turn_ahead(here, 16.0), "a 90 deg turn 5 m ahead")
+	assert_true(mover._turn_vertex(here, 16.0).is_equal_approx(Vector3(0, 0, -5)), "its vertex: the corner where the legs meet")
 	mover._path = PackedVector3Array([Vector3(0, 0, -5), Vector3(2, 0, -15), Vector3(4, 0, -40)])
 	assert_true(not mover._turn_ahead(here, 16.0), "a gentle bend (11 deg) is not a turn")
 	mover._path = PackedVector3Array([Vector3(0, 0, -30), Vector3(20, 0, -30)])
