@@ -126,8 +126,9 @@ dec9725f5 GUARD_SIDES (light quick + shell-tools-test, the orchestrator's call) 
   user dirs last written before 10-17 (no process held any). df: 11G -> 15G free (90 % -> 86 %). Not ours, for the lead:
   ~/Videos 23G (models/ and tmp/ each beside a .tar of itself), ~/projects 12G, ~/.cache/tracker3 1.9G.
 - **Inserted by the orchestrator: F1's follow-queue twin (R40.21), `pair/native-follow` 1838537d7** (on manoeuvre's 25595cae4;
-  worktree `../godot-native-follow`). **ON HOLD (R40.22):** F1 queued in open traffic in manoeuvre's lab; v2 adds a turn-ahead
-  condition (route turns > 45 deg within 2x the min turn radius); the orchestrator sends the spec diff, then add it here.
+  worktree `../godot-native-follow`). **UNMERGED, KEPT AS A REFERENCE (R40.24: F1 stopped OFF; no v2 spec this round).** Round 41
+  may want a speed-only version: start from this branch (the follow test, the queue branch, the stage are reusable). R40.22's
+  v2 (turn > 45 deg within 2x the min turn radius ahead) was never specified.
   Built: drive_native.cpp `avoid` (after chosen / keep, before the grace): follow on (configured from Movement.FOLLOW_AHEAD_M;
   absent: off), not held, wheeled, `following(way)` -> follow_queued, steer point kept, pace clamp(chosen.way / max(desired,
   0.1)). Traffic._chain_native keeps native_drive for follow (reroute still turns it off); test_traffic_follow's switch test
@@ -139,5 +140,5 @@ dec9725f5 GUARD_SIDES (light quick + shell-tools-test, the orchestrator's call) 
   drive twins; the follow stages 2880 drives each, 0 mismatches, 752 queued ON = the laptop's). Per-seed native-proof on v off
   (laptop, sumps, seeds 92721 / 8001 / 8002): EQUAL on all six (follow ON and OFF); ON's hash differs from OFF's on every
   seed, so the rule moved those fights (the match log prints no follow_queued).
-- **N4 (the trig's ~2 %):** waits for a quiet builder0 window (none soon: three streams have series queued, the orchestrator).
+- **N4 (the trig's ~2 %):** waits for a quiet builder0 window (maybe tonight, after manoeuvre's lanes); ASK the orchestrator before starting it.
 - **N5:** waits on his Ryzen purchase.
