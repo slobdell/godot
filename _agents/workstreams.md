@@ -121,6 +121,15 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   all-in -8.7 +/- 6.6 s) but only by holding squads (median 18 s among 40 that waited, 17 cap releases, 18/24 clicks with a wait > 5 s:
   every wait guard fails; his "didn't hear me" case). All switches stay OFF in code; evidence `references/round41/orders/o2-dev-reads-builder0/`
   (ba0d14aab). The time is inside the merges: manoeuvre's Q2 ground. Orders moves to G1 v7.
+- **R41.5 (2026-10-26 ~04:35) Q2's broad wait stops OFF (no bar); Q3 = the wait on a turning leader.** Three Q2 variants on the same
+  16 dev cells (builder0 light, GDScript drive, his 5-squad across click, 4 maps x 7001-7004 crew): v1 a553f85b0 jam-seconds +8.8 %
+  (2.4 se worse), v2 6268e08a5 +7.3 % (1.9 se), v3 aaac5c133 +8.5 % (2.3 se); terminus worse in every cell; waits average 0.22-0.25 s
+  (the crosser slows for someone and stops qualifying; crews behind read the waiter as stalled). Where 25 crews merge into one street,
+  waiting for a crossing friend costs more than ORCA's steer-round. The crossing key stays in code OFF (`waitcross`, for the record).
+  Kept: the wait fixed the bridge outright (overrides tree 17/18 -> 18/18, pooled rim 14.2 -> 1.3 s, v1 lab). Q3 = v4: wait on a leader
+  that is itself turning (moving, nose > 30 deg off its next leg) + the chain behind it; bridge reads on main and overrides, a group-order
+  lab showing no harm, then Bar Q3 on 9025-9048 (variants labbed noted; deciding on unseen seeds). Next for his traffic note after Q3:
+  the long episodes are the give-way machinery (yields 46 %, reversing 33 % of episodes >= 3 s): a lab on cutting those (Q4).
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
