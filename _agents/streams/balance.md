@@ -78,6 +78,13 @@ Nothing (B2 answered: R40.1).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**Bar B2s v2 (R40.19; FILED 2026-10-25 before any number on 8801-8840 + 8901-8940).** Same as Bar B2s, word for word, with its seeds
+moved: BASE = the tree as it ships without the change; ARM = the same tree + the v2 candidate (named in Status from the dev screen on
+8501-8540 before the series), one frozen ARM tree (R40.13). Lines 8801-8840 + 8901-8940 (blob + turtle, 5 guard arenas, both sides,
+1600 an arm); none line 8801-8820 (one guard side: its two sides are one fight); G8 mono-tank line 8801-8820, mono on each team in
+turn, per faction. Builder2, J24, after a full check of ARM (green but for sim-baseline, recorded twice) and BASE. Deciding and G1-G8
+and the judge's readings exactly as Bar B2s (`search.py bar <root> <BASE> <ARM>`).
+
 **BAR B2s, LINES VERDICT (2026-10-25 17:30 PDT): FAILS on G3 (one cell); deciding, G1, G2 and G4 pass.** BASE 5be511659 v ARM
 66c4839a2, builder2 J24, 8301-8340 + 8401-8440, 1600 fights an arm, 80 of 80 seeds each (ARM: 1 attempt lost, retried),
 `search.py bar ~/balance-guard-raw/bar-b2s 5be511659 66c4839a2`:
