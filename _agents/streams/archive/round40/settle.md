@@ -1,3 +1,5 @@
+> **ARCHIVED (round 40 closed 2026-10-25).** Final state of this brief; round 40's results are in `workstreams.md` *Bars (round 40)* and *Rulings (round 40)*.
+
 # Stream: settle (a squad that stops counts its crews in, and never parks on a road a friend still drives)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 40** (C40.1, C40.2,

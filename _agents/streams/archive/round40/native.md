@@ -1,3 +1,5 @@
+> **ARCHIVED (round 40 closed 2026-10-25).** Final state of this brief; round 40's results are in `workstreams.md` *Bars (round 40)* and *Rulings (round 40)*.
+
 # Stream: native (the measuring tools under round 40: per-unit counts, same sim on every machine, fast)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/remote_builds.md`, `_agents/judging.md`, `_agents/workstreams.md`
