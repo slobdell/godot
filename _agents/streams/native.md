@@ -60,7 +60,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 runs -> N2 twins as asked (Q5 nopush, Q6 bridge, any E1 seam) -> N3 lines_r42 as bars are filed -> N4 quiet-box lint-fast read when
 builder0 is quiet -> N5 perf-judge windows when the orchestrator asks -> spare (test-shard time).
 
-- **N1 CP42.0: 75495744b. builder0 full check RUNNING (started ~evening 2026-10-26).** Decision (the brief's first option, one line
+- **N1 CP42.0 DONE: 75495744b GREEN on builder0** (`make check exited 0`, 3290 passed / 0 failed, 27 passed + 1 NOT JUDGED:
+  remote-guard-test refused its quiet window at load 16.7 / 10 cores; sim-baseline 13 unmoved; determinism 258cc8b1c957a796;
+  perf-judge PASS 1.01x, 7,460 us/tick). **Merged alone as main bf99631b5** (orchestrator, INHERIT). Decision (the brief's first option, one line
   why): Q5's four members (`_nopush_for` String, `_nopush_until`, `_nopush_since`, `_nopush_press_until` int) go in a new
   `EXEC_MOVER_LATE_FIELDS` list in `exec_fields.h` instead of declaring them in movement.gd: the merge stays inside native's paths,
   and manoeuvre's cherry-pick of a45c0b953 + fc8f3697d stays conflict-free. A late member the script doesn't declare is left
@@ -73,3 +75,21 @@ builder0 is quiet -> N5 perf-judge windows when the orchestrator asks -> spare (
 - **N3:** lines_r41.py + K3 v2 (5), G1 v9 (7), B5 dev (3, `REPORTED (dev)`): 0e93002cd. Step 5b for round 41: 3df630755
   (`references/round41/native/sizing/`: inventory 563 lines / 271 with noise; table unchanged; note in judging.md). lines_r42.py
   scaffold: c63142b73. Judge tests 86/86 (laptop).
+- **R42.2 answer (to the orchestrator):** no C++ twin of TankBrain._act or CombatMotion.plan_lay. Gunnery._shootable IS twinned
+  (gun_native.cpp, E3), and so is CoverMap.clear_line_coarse (CoverNative; situation_native.cpp calls it). New GDScript calls to it
+  are free. Changing either, or adding reads inside tank_brain's situation block, needs a twin step. No twin of
+  ElementPlan / ElementSituation / order_executor.
+- **N2 Q6 (deckwait) read: 0b47dfbd8 on stream/manoeuvre.** Twin plan sent to the orchestrator. **OFF-path risk flagged for
+  manoeuvre:** `_avoid`'s clear-way return is now `clampf(desired / maxf(wish, 0.1))`, which is < 1.0 when wish < 0.1 even with
+  deckwait OFF (main returns 1.0, as the native drive does). Suggested guard: 1.0 unless desired < wish. No new exec fields (it
+  reuses Q2's `_wait_*`).
+- **Spare (report only): builder0 test time, from 75495744b's check** (builder0, test x6 rr, load ~16 on 10 cores): shard walls
+  2636 / 1225 / 1569 / 1270 / 1451 / 2844 s; test wall 2844 s; sum 10,989 s over 605 files; ideal 6-way 1,832 s. The two long shards
+  hold the heaviest files (shard 5: test_native_execute 923 s, test_native_gate 667, test_native_yield 316; shard 0:
+  test_native_gate_foundry 643, test_native_drive_kturn_odd 531). Files named test_native* are 67 % of the time (7,383 s).
+  `tests/shard_times.txt` dates from 2026-10-16 (stale). **Proposal:** keep round-robin but deal the 6 heaviest files first, one
+  per shard, by measured time ("rr + heavy heads"). On these times it gives shards 1,690-1,939 s (max/mean 1.06), about -32 % on the
+  test wall's sum bound. Round 29's full time plan failed its bar (-6 % v -30 %) because all-busy shards competed on a loaded
+  box; heavy-heads keeps rr's early finishers for the other ~595 files, so it is less exposed. It still needs an A/B (3 pairs,
+  builder0) before anyone relies on it, and `make test-times` should refresh shard_times.txt first. Owner: core.mk / run_tests.gd
+  (not native's paths).
