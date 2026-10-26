@@ -72,6 +72,17 @@ workers (plane_maker): never touch processes you didn't start. Never delete buil
 O2; 9201-9240 + 9301-9340 balance B5 bar; 9401-9440 balance B5 dev screening (never a bar); 8801-8840 + 8901-8940 Bar B2s v2 (filed
 round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001-7012 as before (never a bar).
 
+- **Bar O2, a coordinated departure (orders; FILED 25525980a, 2026-10-26 ~03:00, before any number on 9101-9124).** Switch
+  `--group-depart=queue` (DEFAULT_OFF): squads of a plain move/attack-move to 2+ squads rank front to back along the approach; each sets
+  off when its corridor (first 30 m of its route, 7 m a side) holds no crew of a squad ranked ahead; 20 s cap; a new order cancels the
+  wait; waiting squads acknowledged on the click. Manoeuvre's Q2 OFF in both arms (re-run on Q2-ON main if Q2 ships first). Runner
+  `tests/control/orders_o2_bar.sh` (builder2), judge `tests/control/orders_group_judge.py`. **Part A** (his 5-squad across click, crew
+  headings, 4 maps crossing/locks/sumps/terminus, 180 s window, 9101-9124, n 24 a map): deciding = all-in mean paired diff + 1.645 se < 0
+  (never-in = 180 s) AND never-in squads ARM <= BASE. Guards: per-map all-in median <= base + 5 s; contacts <= base x 1.1 + 5; of squads
+  that waited, median wait <= 6 s; cap releases <= 10 % of queued; clicks with any wait > 5 s <= 50 %; per-squad wait median/max reported.
+  **Parts B/C** (9101-9112, n 12): R36.6 probe guards on the 12 street cells + his click, contacts, fight lines (kills, losses, CPU losses
+  within 1.645 se). Lab before filing (laptop s7001, n 1 a map, not a number): terminus all-in 75.4 -> 59.0 s; crossing never-in -> 93.4 s.
+
 ## Rulings (round 41)
 
 - **R41.1 (2026-10-26 ~03:20) camera's K1 read; C41.4 getter granted to orders.** K1 (de509b00f code, builder0 headless 1920x1080 @60,
