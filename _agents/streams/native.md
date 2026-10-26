@@ -44,6 +44,28 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**ROUND 41 CLOSE REPORT (native, 2026-10-26 ~08:30).**
+- **Final green hash: c19dc10ec** (builder0 full check: `make check exited 0`, test 3243 passed / 0 failed, `26 passed, 2 NOT
+  JUDGED` (timing refusals on a 2.1-2.45x loaded box), sim-baseline 13 unmoved, determinism 258cc8b1c957a796; merged as 6209e9f89).
+  Commits after it on stream/native, none with a full check of its own: a0c281dec (tools/test_full_check_lock.sh case 7 only; builder0
+  light shell-tools-test exited 0, 22/0; in the orchestrator's next main batch), 467d36596 + a18a8a2b8 (tools/judge/lines_r41.py
+  data; 548 lines load, judge tests pass, laptop) and Status commits. A tip full check can run whenever the orchestrator gives it the lock.
+- **N1 DONE** (bfd033228; remote.sh's re-copy no longer passes a literal `~` with --files-from; covered by c19dc10ec's real re-copy).
+- **N2:** pair/native-wait-fields e59aca6aa (the four `_wait_*` members; on manoeuvre's tree) and **pair/native-wait 20300bb52** (Q2 v2's
+  wait rule twinned; builder0 quick 151/0, native-proof EQUAL x6). Bar Q3 FAILED (R41.13): 20300bb52 is KEPT AS A REF BRANCH,
+  UNMERGED (do not delete). Q5's nopush fields not built (Q5 closed OFF, R41.10).
+- **N3:** lines_r41.py holds Bar K3 v1 (4 lines) and Bar Q3 (7 lines). Not added (no verdict lines): O2, G1 v7 / v8 (withdrawn
+  unread), Q4 / Q5 (closed OFF, no bar). Owed when they land: K3 v2, G1 v9, B5, B2s v2 (carried). Note:
+  references/round35/native/sizing/inventory.{md,csv} were last rendered in round 35; `python3 tools/judge/inventory.py` would add
+  rounds 36-41 (~470 lines of diff): left for whoever owns the next inventory pass.
+- **N4 (report) -> N5 (R41.2, granted core.mk's lint gate): lint-fast is the check's gate** (a64611c15; merged with c19dc10ec): 715 s
+  gate -> 17 s on builder0; the critical path is test alone (~-700 s projected at main's test speed; the after-read was on a loaded
+  box: a quiet-box read is still owed, not blocking).
+- **Asks done for others:** GUARD_TARGET (balance, e41b6d70e); case 7 flake (a0c281dec).
+- **Known issue:** slot.sh kills a full check at 5,400 s; a saturated builder0 (c32dc33ff's N1-alone check, CHECK_JOBS=2) hit it.
+- **Worktrees:** `../godot-native-pair` (pair branches, local.mk offset 9) can be removed at the round's close; builder0 folders
+  `godot-native-pair*` likewise. Nothing waits on the lead.
+
 **2026-10-26 (session 1).** Plan: N1 (now) -> N2 on request (waiting on manoeuvre's Q2/Q3 spec via the orchestrator) -> N3 lines_r41.py
 as bars are filed -> spare: builder0 test-time read.
 
@@ -62,8 +84,8 @@ as bars are filed -> spare: builder0 test-time read.
   scenario_perf unpinned), sim-baseline 13 unmoved, determinism 258cc8b1c957a796, copy-back verified 237 files, 4,077 s. Merged to
   main as 6209e9f89 by the orchestrator.
 - **N3 scaffold: 7a1cd1227.** `tools/judge/lines_r41.py` (empty `LINES`, same fields as lines_r40) wired into `tools/judge/lines.py`
-  (537 lines load). Lines are added as round 41's verdicts land. **467d36596: Bar K3 v1** (R41.11; lines 1, 2, 4 PASS, 3 FAIL; 541
-  load, judge tests pass). No lines for O2 / G1 v7 / v8 (withdrawn unread) or Q4 / Q5 (closed OFF, no bar). Q3 when its read lands.
+  (537 lines load). **467d36596: Bar K3 v1** (R41.11; lines 1, 2, 4 PASS, 3 FAIL). **a18a8a2b8: Bar Q3** (R41.13, 7 lines: both
+  deciding lines, the crossing line, G5-G7, fight G1-G4). 548 load, judge tests pass.
 - **N4 (spare, REPORT ONLY): what dominates a builder0 full check, and one proposal.**
   *Read:* main's last full check on builder0 (`~/tank_squad/godot/build/check/{started,done}` mtimes, 2026-10-26 01:20, main
   c36217f79-era tree): wall **2,208 s**. `lint` **715 s** (start +14 to +729), then `test` **1,479 s** (+729 to +2,208); every other
@@ -104,8 +126,8 @@ as bars are filed -> spare: builder0 test-time read.
 - **test_full_check_lock case 7 (orchestrator, a builder2 flake): a0c281dec.** The holder holds until released; builder_checks is polled
   up to 10 s for the holder's folder (was a fixed 0.3 s). Laptop 22/0 (and x3 under 8 busy loops); builder0 light shell-tools-test
   exited 0, 22/0.
-- **Q5 `nopush` fields: NOT BUILT** (Q5 closed OFF, R41.10; orchestrator: don't build). pair/native-wait 20300bb52 is parked until
-  Bar Q3's full read (its main-tree deciding line was failing on significance at the orchestrator's last look).
+- **Q5 `nopush` fields: NOT BUILT** (Q5 closed OFF, R41.10). Bar Q3 FAILED (R41.13): pair/native-wait 20300bb52 kept as a ref,
+  unmerged.
 - **N5 (R41.2, granted core.mk's lint gate): lint-fast.** a64611c15 (+ .uid 0165f3d67). `make lint-fast`: tests/lint/lint_fast.gd loads
   every script in one process; tools/lint_fast.py turns `SCRIPT ERROR`/`Parse Error` + `at: (res://f:l)` into `f:l: msg` findings; no
   baseline; fails on: any finding, a planted file not reported, a file count short, no LINT_FAST_DONE. Planted every run: syntax error,
