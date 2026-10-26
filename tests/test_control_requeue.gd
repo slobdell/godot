@@ -12,6 +12,7 @@ var _was := RtsControls.REQUEUE
 
 func teardown() -> void:
 	RtsControls.REQUEUE = _was
+	SelectionSquads.reset_g1()
 	super.teardown()
 
 
@@ -29,6 +30,7 @@ func _interleaved(f: Fixture) -> Array[String]:
 
 func test_a_shift_click_after_an_untangled_click_queues_on_every_squad() -> void:
 	RtsControls.REQUEUE = true  # D6 is off by default until its A/B
+	SelectionSquads.set_g1(false)  # the untangle's re-deal is the group click before G1
 	var f := Fixture.new(self)
 	await f.build_scale(10)
 	var all := _interleaved(f)
@@ -57,6 +59,7 @@ func test_a_shift_click_after_an_untangled_click_queues_on_every_squad() -> void
 
 func test_switched_off_the_shift_click_replaces_as_round_34_did() -> void:
 	RtsControls.REQUEUE = false
+	SelectionSquads.set_g1(false)
 	var f := Fixture.new(self)
 	await f.build_scale(10)
 	var all := _interleaved(f)

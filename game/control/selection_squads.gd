@@ -38,6 +38,39 @@ static var column_gap_m := COLUMN_GAP_M
 ## 3. Then a whole group bigger than a squad, dealt into squads of at most MAX_MEMBERS west to east, sharing the
 ##    group's number (so they share its formation too).
 ## 4. Everything else is loose: units in no squad of the selection (part of a squad, or in no group at all).
+## A G1 switch (Bar G1 v9, ON): on unless one of its escapes or `--group-g1=off` is on the command line.
+static func g1_on(escapes: Array) -> bool:
+	var args := OS.get_cmdline_user_args()
+	if args.has("--group-g1=off"):
+		return false
+	for escape in escapes:
+		if args.has(escape):
+			return false
+	return true
+
+
+## Sets all seven G1 switches (tests of the group click before G1); reset_g1 puts them back.
+static func set_g1(on: bool) -> void:
+	GROUP_LAY = on
+	GROUP_LEAD = on
+	SIDES_BOTH = on
+	COLUMN_STAY = on
+	CLEAR_REACHED = on
+	GROUP_WHOLE_CLICK = on
+	RANK_SHIFT_HALF = on
+
+
+## Puts the G1 switches back to their command-line values (tests' teardown).
+static func reset_g1() -> void:
+	GROUP_LAY = g1_on(["--group-lay=off"]) or OS.get_environment("GROUP_LAY") == "column"
+	GROUP_LEAD = g1_on(["--group-lead=off"])
+	SIDES_BOTH = g1_on(["--group-sides=off"])
+	COLUMN_STAY = g1_on(["--group-column-toward=off", "--group-column-toward=on"])
+	CLEAR_REACHED = g1_on(["--group-clear=click", "--group-clear=rank"])
+	GROUP_WHOLE_CLICK = g1_on(["--group-whole=off"])
+	RANK_SHIFT_HALF = g1_on(["--group-rank-shift=off"])
+
+
 static func split(units: Array, groups: ControlGroups, elements: Elements, alive: Callable, position: Callable) -> Dictionary:
 	var living: Array[String] = []
 	for unit_name: Variant in units:
@@ -307,7 +340,7 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 ## G1 v5 (round 39; R38.51's trace, crossing 3 click s4710: the column gave the far place to Bravo and the near one to
 ## Alpha, whose crews led; Alpha arrived at 3.3 s and parked in the street, and Bravo's last crew wedged behind it until
 ## t = 90). `--group-lead=drive`: a column's places go to its squads in the order their crews reach the click by ground.
-static var GROUP_LEAD := OS.get_cmdline_user_args().has("--group-lead=drive")
+static var GROUP_LEAD := g1_on(["--group-lead=off"])
 ## Two squads (or two places) closer than this along the drive count as level: either may take either place.
 const LEAD_SLACK_M := 6.0
 
@@ -330,12 +363,16 @@ static func lead_breaks(leads: Array, arcs: Array) -> int:
 ## farthest along the approach (nearest the click) in front, the farthest back last; each rank as many squads abreast as its
 ## own clear width holds (at most MAX_ABREAST and MAX_FRONTAGE_M), centred in that width, re-read at the rank's own point so
 ## the column follows the street; narrower than a squad, single file on the approach line. Crossing squads swap places whole
-## (no crew re-deal). OFF until its bar passes.
+## (no crew re-deal). ON since Bar G1 v9 (round 41).
 ## Round 38 (orders G1, v2): "open ground" is no longer the scan reaching GROUP_SCAN_M (yard_open's walls stand inside 100 m
 ## and v1 changed 52 of its 96 rows, R37.38): today's body stands wherever every one of its places is already on the clear
 ## ground read at its own rank (`today`), and the column is laid only when one of them is not. The same lay serves a queued
 ## leg (each squad's block centred where its previous leg ends) and a gate.
-static var GROUP_LAY := OS.get_cmdline_user_args().has("--group-lay=column") or OS.get_environment("GROUP_LAY") == "column"
+## Round 41: Bar G1 v9 PASSED (872dab643, builder2, 9101-9112, n 12 a cell), so its seven switches ship ON. Each has
+## its own escape (`--group-lay=off`, `--group-rank-shift=off`, `--group-whole=off`, `--group-clear=click`,
+## `--group-lead=off`, `--group-sides=off`, `--group-column-toward=off`); `--group-g1=off` turns all seven off (today's
+## group click before G1, the probe's old `main:` arm).
+static var GROUP_LAY := g1_on(["--group-lay=off"]) or OS.get_environment("GROUP_LAY") == "column"
 ## G1 dev variants (read side by side on dev seeds; the judged arm uses the defaults): `--group-room=rearmost` lets no column
 ## reach behind its rearmost squad (default: one rank); `--group-leg-room=starts` lets a shifted leg's column reach no further
 ## back than its squads' starts. G2 (his shift-click route, OFF until its own bar): `--group-legs=on` lays the column on
@@ -530,8 +567,8 @@ static func _lay_side(blocks: Array, flat_click: Vector3, ahead: Vector3, at_cli
 	return result
 
 
-## G1 v6 (round 40): `--group-sides=both` lays squads standing past the click on their own side (OFF until its bar).
-static var SIDES_BOTH := OS.get_cmdline_user_args().has("--group-sides=both")
+## G1 v6 (round 40): `--group-sides=both` lays squads standing past the click on their own side (ON since Bar G1 v9).
+static var SIDES_BOTH := g1_on(["--group-sides=off"])
 ## G1 v8 (round 41, the shots of Bar G1 v7's dev read): `--group-column-toward=on` refuses a column that gives any squad a
 ## place more than COLUMN_AWAY_M farther from the click than it stands. His click on Terminus (-29.3, 85.8), 30 m from the
 ## body's middle: the column laid back along the approach ran east through the squads themselves, squad 5's place 103 m from
@@ -540,7 +577,7 @@ static var COLUMN_TOWARD := OS.get_cmdline_user_args().has("--group-column-towar
 ## G1 v9 (its dev read: refusing the whole column put his-click squad 5 back on main's place, outside the corridor on all six
 ## seeds): `--group-column-toward=stay` keeps the column and gives only a squad it would send away the spot it stands on (it
 ## is already in the street, at the column's tail; it stays rather than backing up). `kept_away` counts them.
-static var COLUMN_STAY := OS.get_cmdline_user_args().has("--group-column-toward=stay")
+static var COLUMN_STAY := g1_on(["--group-column-toward=off", "--group-column-toward=on"])
 static var kept_away := 0
 const COLUMN_AWAY_M := 10.0
 ## Measurement: columns refused so.
@@ -975,7 +1012,7 @@ static var CLEAR_AT_CLICK := not OS.get_cmdline_user_args().has("--group-clear=r
 ## G1 v4 (three-arm dev read 7bfb06384, yard_open 5 click s3806: the click's width read 36 m, today's place stood 39.3 m
 ## aside on the same open yard, and a column was laid). `--group-clear=reached`: a place past the click's width that the
 ## click reaches straight by ground (`reached`: no long way round, no crossing) is on the ground he clicked.
-static var CLEAR_REACHED := OS.get_cmdline_user_args().has("--group-clear=reached")
+static var CLEAR_REACHED := g1_on(["--group-clear=click", "--group-clear=rank"])
 
 
 ## G1: whether every place in `places` stands inside the clear width read across `ahead` at its own rank (the point on
@@ -1137,7 +1174,7 @@ const MAX_ABREAST := 3
 ## G1 v5 (three-arm dev read 7bfb06384: squads whole on a route's queued legs put the same places under different whole
 ## squads than main's re-deal; they crossed lanes, crossing 5 route twitch 22.2 -> 33.5 m). `--group-whole=click`: squads
 ## stay whole on his plain group click only; a queued leg is dealt as today (route legs are G2's).
-static var GROUP_WHOLE_CLICK := OS.get_cmdline_user_args().has("--group-whole=click")
+static var GROUP_WHOLE_CLICK := g1_on(["--group-whole=off"])
 
 
 ## G1: whether a group move under GROUP_LAY keeps every squad's own vehicles (untangle_whole) rather than re-dealing them.
@@ -1145,7 +1182,7 @@ static func whole_on(queued: bool) -> bool:
 	return GROUP_LAY and not (GROUP_WHOLE_CLICK and queued)
 
 
-static var RANK_SHIFT_HALF := OS.get_cmdline_user_args().has("--group-rank-shift=half")
+static var RANK_SHIFT_HALF := g1_on(["--group-rank-shift=off"])
 ## The widest one rank may be, edge squad's centre to edge squad's centre plus their half-widths: 200 m, so the
 ## body fits across the narrowest drivable middle we deal (foundry's ±116 m square, 232 m) with a crew's room to
 ## spare on each side, and a click anywhere but the outer 16 m keeps every squad where it was laid. Two of the gangs'

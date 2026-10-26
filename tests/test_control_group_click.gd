@@ -25,15 +25,10 @@ var _lab: TacticsLab
 
 
 func teardown() -> void:
-	SelectionSquads.GROUP_LAY = OS.get_cmdline_user_args().has("--group-lay=column")
+	SelectionSquads.reset_g1()
 	SelectionSquads.CLEAR_AT_CLICK = not OS.get_cmdline_user_args().has("--group-clear=rank")
 	SelectionSquads.LEG_WIDTH_ALONG = OS.get_cmdline_user_args().has("--group-leg-width=along")
 	SelectionSquads.PLACE_CLEAR_NEAR = OS.get_cmdline_user_args().has("--place-clear-trigger=near")
-	SelectionSquads.RANK_SHIFT_HALF = OS.get_cmdline_user_args().has("--group-rank-shift=half")
-	SelectionSquads.GROUP_WHOLE_CLICK = OS.get_cmdline_user_args().has("--group-whole=click")
-	SelectionSquads.CLEAR_REACHED = OS.get_cmdline_user_args().has("--group-clear=reached")
-	SelectionSquads.GROUP_LEAD = OS.get_cmdline_user_args().has("--group-lead=drive")
-	SelectionSquads.SIDES_BOTH = OS.get_cmdline_user_args().has("--group-sides=both")
 	SelectionSquads.PLACE_CLEAR_LANE = OS.get_cmdline_user_args().has("--place-clear-lane=on")
 	SelectionSquads.LANE_COLUMN = OS.get_cmdline_user_args().has("--place-clear-lane=column")
 	SelectionSquads.ROUTE_CORNER = OS.get_cmdline_user_args().has("--group-route-corner=line")
@@ -122,6 +117,7 @@ func _his_click() -> Dictionary:
 ## R37.29, the column of wedges on his click: every place inside the corridor read at its own rank, and the squad nearest
 ## the click in front, the farthest at the back (the orchestrator's order check).
 func test_his_click_as_a_column_stays_in_the_corridor_nearest_squad_in_front() -> void:
+	SelectionSquads.set_g1(false)  # R37.29's lay: today's places judged at each rank, no `reached` (v4)
 	var f := await _his_click()
 	var blocks: Array = f["blocks"]
 	var ahead: Vector3 = f["approach"]
@@ -626,6 +622,7 @@ func test_g1v6_a_squad_past_the_click_keeps_to_its_own_side() -> void:
 			{"center": Vector3(70, 0, 0), "width": 29.0, "depth": 20.0}]
 	var west := Vector3(-1, 0, 0)  # the approach: from the body's middle (22.5, 0) to the click
 	var clamp := func(p: Vector3) -> Vector3: return p
+	SelectionSquads.SIDES_BOTH = false
 	var v5 := SelectionSquads.column_lay(blocks, Vector3.ZERO, west, street, clamp)
 	print("GROUP_CLICK g1v6 one-sided (v5) %s" % [v5])
 	assert_true(v5[0].x > -0.5, "v5: Alpha stacked behind the click, on the far side from where it stands (%s)" % [v5[0]])
