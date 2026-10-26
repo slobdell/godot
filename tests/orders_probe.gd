@@ -179,7 +179,8 @@ func _run() -> void:
 		squad["shuffle"] = 0.0
 		_last_centre[squad["number"]] = squad["start"]
 	var all_in_tick := -1
-	var window_s := WINDOW_S + (FIGHT_AFTER_S - AFTER_ARRIVAL_S if fight else 0.0)
+	# Round 41 (O2): `--probe-window=S` replaces WINDOW_S (his across-the-map group order outruns 90 s).
+	var window_s := float(_flag("probe-window", str(WINDOW_S))) + (FIGHT_AFTER_S - AFTER_ARRIVAL_S if fight else 0.0)
 	var after_s := FIGHT_AFTER_S if fight else AFTER_ARRIVAL_S
 	while _match.tick - _order_tick < int(window_s * SimClock.TICK_RATE):
 		await physics_frame

@@ -177,10 +177,20 @@ func _run_extra() -> Dictionary:
 				"slow_s": snappedf(int(row["slow"]) * tick_s, 0.1)}))
 	var keys: Array = squad_pairs.keys()
 	keys.sort()
-	return {"group": {"headings": _flag("probe-headings", "crew"), "crews": names.size(), "nose_read": read,
+	# O2: each squad's wait in the departure queue (seconds; 0 = it left on the click), by squad number.
+	var waits := {}
+	for squad: Dictionary in _squads:
+		var ticks := 0
+		for n: String in squad["units"]:
+			ticks = maxi(ticks, int(DepartureQueue.waits.get(n, 0)))
+		waits[str(squad["number"])] = snappedf(ticks * tick_s, 0.1)
+	return {"seed": int(_flag("seed", "34")), "group": {"headings": _flag("probe-headings", "crew"), "crews": names.size(), "nose_read": read,
 			"nose_away": nose_away, "crossing_pairs": pairs, "squads_crossing": squads_crossing.size(), "squad_pairs": keys,
 			"blocked_s": snappedf(blocked * tick_s, 0.1), "yielding_s": snappedf(yielding * tick_s, 0.1),
-			"slow_s": snappedf(slow * tick_s, 0.1), "turn_worst_s": turn_worst}}
+			"slow_s": snappedf(slow * tick_s, 0.1), "turn_worst_s": turn_worst,
+			"depart": "queue" if DepartureQueue.ENABLED else "off", "depart_queued": DepartureQueue.queued,
+			"depart_clear": DepartureQueue.released_clear, "depart_timeout": DepartureQueue.released_timeout,
+			"waits_s": waits}}
 
 
 ## Two first legs cross: some segment of each intersects the other's at more than CROSS_DEG (shared roads merge, not cross).

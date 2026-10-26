@@ -71,3 +71,37 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **O1 first look (laptop, 8b828ec59-equivalent tree, terminus s7001, crew headings, n 1):** all in 75.4 s; squads 1 and 5
   (the flanks) 75 / 63 s, the middle three 23-39 s; squad 1 drove 224 m for a 150 m route; 12 of 25 crews nose > 90 deg
   off their first leg; first-leg crossings 0; crew-seconds under way: yielding 80, slow 60, blocked 10.
+
+### Bars (filed here before any judged number; the orchestrator records them on main)
+- **Bar O2 DEPARTURE QUEUE (orders, round 41; filed 2026-10-26 before any number on 9101-9124; switch
+  `--group-depart=queue`, OFF).** What he would see: he selects all five squads and clicks across the map. Every squad
+  takes the order (the same marker on the click). The front squad sets off at once, and each squad behind it sets off as
+  soon as the street in front of it is clear of the squads ahead, so the crews pull out one squad after another instead
+  of all nosing into one street together. Every squad gets in sooner, and no squad stands long enough to look as if it
+  didn't hear him.
+  - **Turn rule (as sent to the orchestrator, approved):** rank front to back along the approach; corridor = the first
+    30 m of the squad's own navmesh route (at most half of it), 7 m a side; it leaves on the first tick no living crew
+    of a squad ranked ahead stands in it (an arrived squad's crews don't count; a still-waiting squad's do); cap 20 s;
+    a squad still driving an earlier task leaves at once; a new order cancels the wait. Plain move / attack-move to 2+
+    squads only (no shift).
+  - **Arm:** `queue:--group-depart=queue`. Base `main:`. **Manoeuvre's Q2 OFF in both arms** (C41.3: OFF until it
+    ships; if Q2 ships first, the series re-runs on that main with Q2 ON in both arms).
+  - **Tree:** a frozen detached worktree at the commit whose full check is named green here (main as launched + O1's
+    probe + O2's switch; T1 ON both arms as main has it; every G1 / G2 / G3 switch OFF both arms).
+  - **Probe:** `tests/control/orders_o2_bar.sh b2 queue:--group-depart=queue "9101 ... 9124" "9101 ... 9112" <out> 8`
+    (builder2, Spot re-runs). Part A his group order (`make orders-group`: crossing / locks / sumps / terminus, crew
+    headings, five full squads, the across click, window 180 s), **FRESH seeds 9101-9124**, n 24 a map. Parts B / C
+    (guards) seeds 9101-9112, n 12 a cell: B the probe's 12 street cells (locks / crossing / terminus x 3 / 5 x click /
+    route) + his click (terminus `--probe-click=-29.3/85.8`, 3 / 5); C the probe's fight (`--probe-fight=on`, terminus /
+    locks, 5 squads, click).
+  - **Judge:** `tests/control/orders_group_judge.py <out> main queue` (filed with this bar, unamended once numbers are
+    seen). Counter: squads queued > 0. **Deciding (part A, pooled, paired by map and seed):** all-in time (a never-in run
+    counts as 180 s) mean paired difference + 1.645 se < 0; AND squads never in, arm <= base. **Guards:** part A: each
+    map's median all-in <= base + 5 s; friendly contacts <= base x 1.1 + 5; **the wait** (orchestrator's): of squads that
+    waited, median <= 6 s; released by the 20 s cap <= 10 % of squads queued; clicks with any squad waiting > 5 s <= 50 %
+    (per-squad median / max reported). Part B: every R36.6 probe guard per cell (`orders_judge.probe_guards`: all-in <=
+    base x 1.2 + 3 s, never-in no more, twitch <= base + 3 m, end foreign >= base - 3 m, crossed no higher), contacts
+    <= base x 1.1 + 5. Part C: his kills, his losses, the CPU's losses within base +/- 1.645 se.
+  - **Known risk:** a squad whose own place sits inside a squad-ahead's corridor start waits for it to arrive; the 20 s
+    cap bounds it. A waiting squad keeps its old task; in his case (parked or holding) it stands still.
+  - **Plus:** paired top-down shots of the across click on terminus, main v queue, looked at. A pass ships ON.
