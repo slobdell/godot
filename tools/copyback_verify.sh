@@ -33,6 +33,11 @@ if [ ! -r "$manifest" ]; then
 fi
 
 src=${3:-}
+# Round 41 (N1): a remote source written `host:~/dir/` is made home-relative (`host:dir/`). With --files-from, rsync 3.4's
+# sender takes the `~` literally and fails with change_dir "/home/<user>/~/dir/" (exit 12 on the laptop's side; manoeuvre,
+# builder2, 2026-10-25), so the re-copy that was meant to fix a mismatch never ran. A remote path is relative to the
+# login's home already, so dropping `~/` names the same folder on every rsync version.
+case "$src" in *':~/'*) src="${src%%':~/'*}:${src#*':~/'}" ;; esac
 failed=$(mktemp); trap 'rm -f "$failed"' EXIT
 check() {  # one pass over the manifest; the paths that failed go to $failed
 	total=0; bad=0; missing=0; : > "$failed"
