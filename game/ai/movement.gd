@@ -285,8 +285,8 @@ static var wait_by_kind := {}  # moving / turning -> crew-ticks
 ## rim, the leader reverses into it and it yields. With this on, a wheeled crew with a friend ahead in its lane (WAIT_AHEAD_M, both
 ## radii + WAIT_SLACK_M) that is in a deck's MOUTH (a bridge deck's rectangle grown by DECKWAIT_MOUTH_M, less the water it spans:
 ## the aprons and the bank ends, from the arena's terrain) lowers its SPEED WISH to a following speed (the friend's speed my way,
-## closing to WAIT_GAP_M over WAIT_FOLLOW_S) BEFORE ORCA solves: the direction wish and ORCA's answer to it are untouched (speed
-## only); a friend through the mouth at speed lowers nothing, one turning off my lane counts by its speed away from me, and one
+## closing to WAIT_GAP_M over WAIT_FOLLOW_S, never under DECKWAIT_FLOOR_SHARE of its top speed: a limit, not a queue) BEFORE ORCA
+## solves: the direction wish and ORCA's answer to it are untouched (speed only); a friend through the mouth at speed lowers nothing, one turning off my lane counts by its speed away from me, and one
 ## already beyond the water (through the crossing, on the far apron) is passed as today. The asks, give-ways and right-of-way are
 ## as today. DECKWAIT_CAP_S per friend, then today's wish for WAIT_COOLDOWN_S (a head that
 ## never clears is passed as today). The trigger is the friend's place, not my route's turn vertex: the path's vertex
@@ -296,6 +296,10 @@ static var wait_by_kind := {}  # moving / turning -> crew-ticks
 const DECKWAIT_SWITCH := "deckwait"
 const DECKWAIT_MOUTH_M := 6.0
 const DECKWAIT_CAP_S := 5.0
+## v4: the wish never drops under this share of the hull's top speed: a speed LIMIT at the mouth, not a queue (v3 on main's drill,
+## q6dev9 green s2 t1: a follower crawling at 2-3 m/s into the mouth corner caught the near rail's end and stood 16 s; OFF it went
+## through at 4-6 m/s). 0.4 x 12 m/s = 4.8 m/s for the Law tank; the rim case (q6trace1) arrived at 11 m/s.
+const DECKWAIT_FLOOR_SHARE := 0.4
 static var deckwait_waits := 0
 static var deckwait_queued := 0
 static var deckwait_timeouts := 0
@@ -3065,7 +3069,7 @@ func _deckwait(here: Vector3, way: Vector2) -> float:
 	# The leader's speed AWAY from me (a leader turning off my lane onto the deck is clearing it, though its speed my way reads 0:
 	# q6dev3's trace had followers standing 8 m behind a leader turning north at 3 m/s), never negative.
 	var its_along := maxf(Vector2(leader.real_velocity.x, leader.real_velocity.z).dot(off.normalized()), 0.0) if off.length() > 0.01 else 0.0
-	var cap := maxf(off.dot(way) - gap, 0.0) / WAIT_FOLLOW_S + its_along
+	var cap := maxf(maxf(off.dot(way) - gap, 0.0) / WAIT_FOLLOW_S + its_along, DECKWAIT_FLOOR_SHARE * ctl.tank.max_forward_speed)
 	if deckwait_trace and tick % (SimClock.TICK_RATE / 2) == 0:
 		print("DECKWAIT " + JSON.stringify({"tick": tick, "crew": String(ctl.tank.name), "for": name, "since": _wait_since,
 				"at": [snappedf(here.x, 0.1), snappedf(here.z, 0.1)], "way": [snappedf(way.x, 0.01), snappedf(way.y, 0.01)],
