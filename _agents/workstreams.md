@@ -161,6 +161,22 @@ another project's workers (plane_maker): never touch processes you didn't start.
   that clip 99.7 % while the scout was invisible). The 91ebddc9f check is cancelled unstarted; 4fd517b83's is queued; the series
   starts on the commit whose check greens.
 
+- **Bar Q6, the deck-mouth wait (manoeuvre; FILED 7569747ce = the frozen tree, code ac64ce939, 2026-10-26 ~16:30, before any number on
+  9825-9848; R42.7).** Rule = deckwait v4 (`--traffic-on=deckwait`, OFF): a wheeled crew with a friend ahead in its lane that is in a
+  deck's mouth, not yet beyond the water, lowers its speed wish before ORCA solves to the friend's speed away from me + closing, never
+  under 0.4 x its top speed; 5 s per friend then refused 6 s; asks as today; state = Q2's wait members (no new exec fields); speed only
+  (C42.4). Gate: one full check of 7569747ce on builder0 (behind engage's and camera's) gates Bar Q5 and Bar Q6. **Deciding 1:**
+  bridge-pooled 18/18 under the overrides ON. **Deciding 2** (each tree, main and overrides, 9825-9836 x ticks 1/8/15 x both sides =
+  72 runs an arm): pooled rim ON <= OFF, every survivor crosses, worst crew <= 3 s. **Arrival guard** (R42.7, each tree): paired
+  per-run arrival ON <= OFF + 1.645 se. **Group-order guards** R41.6's lines on 9837-9848 (`q3_judge --arm=deckwait`: G5 all-in, G6
+  never-in, G7 contacts 1.05x); fight guards G1-G4 on 9837-9842 (follow_judge). Reported: deck jam, arrival, counters. Dev history
+  (C42.1, the drill's seeds 1-3, builder0 light, GDScript, n 18 a cell): v1 460f3591b (route vertex, flickered); v2 0b47dfbd8 (main
+  arrival +2.5 s, deck jam x2); v3 a765e2ba6 (entry only; main arrival +2.5 s, 1.8 se); v4 ac64ce939 (floor 0.4 x top): OVERRIDES OFF
+  17/18 -> ON 18/18, rim 14.2 -> 8.6 s (-39 %), worst 1.3 s, arrival +1.33 s (line +1.57) PASS; MAIN 18/18 both, rim 8.1 -> 7.4, worst
+  1.1, arrival +1.36 (line +2.02) PASS. Four variants labbed on seeds 1-3: 9825-9836 decide. Machines: Bar Q6's halves on builder0's
+  light lanes (this worktree's and the overrides tree's); Bar Q5's 96-run series on builder2 after engage's guards. A pass = CP42.1
+  (native's twin, then ON); a fail: OFF, the bridge as R40.24 left it, B2s v2 carries.
+
 _(filed bars go here, before their numbers)_
 
 ## Rulings (round 42)
