@@ -6,7 +6,9 @@
 > (unit numbers within C42.5; `army.gd`'s ARCHETYPES and `cpu_army`), `tools/balance/**`, `mk/balance.mk`, `tests/rules/**`,
 > `mk/rules.mk`, `mk/tactics.mk`, your probes in `tests/tactics/` (`face_probe.gd`, `army_probe.gd`, the `*_table.py` / `*_bar.py`
 > tools); GRANTS: `game/garage/garage_advice.gd` / `garage_opponent.gd` for the one suggestion line and the opponent deal (merge
-> note); `game/modes/skirmish_mode.gd` demo_flags as R41.12. **Model:** Opus. **Machine:** builder2 (series, J24; `make gcp-start`,
+> note); `game/modes/skirmish_mode.gd` demo_flags as R41.12; GRANTED 2026-10-26 (B7 call sites): `skirmish_mode.gd` `_start_match` loads both
+> armies through `Army.load_pair()` before the spawn loop (stay clear of the `rig.facing` feed lines, camera's C42.3), and
+> `game/garage/garage_mode.gd` `fight()` passes `screen.draft.to_doctrine()` into `GarageOpponent.build` as one argument (merge note). **Model:** Opus. **Machine:** builder2 (series, J24; `make gcp-start`,
 > it is STOPPED at launch; Spot: read the verdict line, re-queue on preemption), builder0 light lane for checks. **Seeds:** B7 bar
 > 9901-9940; B8 bar 10001-10040 + 10101-10140, B8 dev 10201-10240 (never a bar); Bar B2s v2 keeps 8801-8840 + 8901-8940 (filed round
 > 40, unread); Bar B5 t50 keeps 9201-9240 + 9301-9340 (unread; only on his yes).

@@ -46,7 +46,10 @@ another project's workers (plane_maker): never touch processes you didn't start.
 - **balance:** `game/units/**` (numbers within C42.5; `army.gd` ARCHETYPES / `cpu_army`), `tools/balance/**`, `mk/balance.mk`,
   `tests/rules/**`, `mk/rules.mk`, `mk/tactics.mk`, its probes in `tests/tactics/` (`face_probe.gd`, `army_probe.gd`, the `*_table.py` /
   `*_bar.py` tools); GRANTS `game/garage/garage_advice.gd` / `garage_opponent.gd` (the suggestion line, the opponent deal),
-  `game/modes/skirmish_mode.gd` demo_flags (R41.12); `game/combat/weapons.gd` / `armor.gd` NUMBERS only if B8 needs them.
+  `game/modes/skirmish_mode.gd` demo_flags (R41.12) and (R42 grant, 2026-10-26) `_start_match`'s army load only: both armies through
+  `Army.load_pair()` before the spawn loop, not the `rig.facing` feed region (camera's C42.3); `game/garage/garage_mode.gd` `fight()`:
+  one argument (`screen.draft.to_doctrine()`) into `GarageOpponent.build` (merge note; OFF = unchanged, tests pin it); `game/combat/weapons.gd` /
+  `armor.gd` NUMBERS only if B8 needs them.
 - **native:** `native/**`, `mk/native.mk`, `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**`, `tools/perf_judge.sh`,
   `tools/loaded.sh`, `tools/slot.sh`, `tools/remote.sh`, `tools/full_check_lock.sh`, `tools/copyback_verify.sh`,
   `tests/ai_scenarios/guard_line.gd`, `mk/play.mk`'s skirmish recipe, `_agents/judging.md`.
