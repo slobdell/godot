@@ -153,9 +153,11 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 	# Round 42 (engage E2, C42.2): each member's LINE OF FIRE to the contacts within its reach, read here once a plan tick
 	# from the cover map (pure 2D boxes, memoized at CoverMap.QUANTUM), so ElementPlan can say "in range" means a shot
 	# without a physics call. Bounded: SHOT_CONTACTS nearest contacts in reach per member.
-	var cover_map := CoverMap.of(game_match)
-	if cover_map != null:
-		shots_into(members, contacts, cover_map)
+	# Read only under the rule (`--attack-shot`): OFF asks the map for nothing (round 41 to the line).
+	if ElementPlan.ATTACK_SHOT:
+		var cover_map := CoverMap.of(game_match)
+		if cover_map != null:
+			shots_into(members, contacts, cover_map)
 
 	# Round 38 (settle S1): where a seat asked at `point` will stand for a hull of `unit`, grounded as Element.ground
 	# grounds a slot (on its anchor's bank, then pushed out of geometry toward the side the element stands on). The

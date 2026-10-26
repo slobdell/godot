@@ -231,6 +231,7 @@ func _run() -> void:
 	var death_moving := {}
 	var flips := {}
 	var last_shot := {}
+	var stuck_suppress_ticks := {}
 	for unit_name: String in names:
 		stuck_ticks[unit_name] = 0
 		in_range_no_shot_ticks[unit_name] = 0
@@ -269,6 +270,11 @@ func _run() -> void:
 				in_range_no_shot_ticks[unit_name] = int(in_range_no_shot_ticks[unit_name]) + 1
 				if not moving:
 					stuck_ticks[unit_name] = int(stuck_ticks[unit_name]) + 1
+					# Pre-registered (R42.6): the share of the stuck seconds spent in the brain's SUPPRESS (a stand in band with
+					# no line, outside the R42.2 branch), so a v2 seam can be judged from the same series.
+					var brain := game_match.brains.get_node_or_null("Brain_" + unit_name) as TankBrain
+					if brain != null and String(brain.choice.get("option", "")) == "SUPPRESS":
+						stuck_suppress_ticks[unit_name] = int(stuck_suppress_ticks.get(unit_name, 0)) + 1
 			moving_for_shot[unit_name] = moving and not shot
 			if last_shot.has(unit_name) and bool(last_shot[unit_name]) != shot:
 				flips[unit_name] = int(flips.get(unit_name, 0)) + 1
@@ -309,7 +315,9 @@ func _run() -> void:
 			deaths_moving += 1
 	var stuck_s := {}
 	var no_shot_s := {}
+	var stuck_suppress_s := {}
 	for unit_name: String in names:
+		stuck_suppress_s[unit_name] = _r(float(stuck_suppress_ticks.get(unit_name, 0)) / SimClock.TICK_RATE)
 		stuck_s[unit_name] = _r(float(stuck_ticks[unit_name]) / SimClock.TICK_RATE)
 		no_shot_s[unit_name] = _r(float(in_range_no_shot_ticks[unit_name]) / SimClock.TICK_RATE)
 	print("ENGAGE_PROBE %s" % JSON.stringify({"seed": seed_value, "arena": arena, "arm": "on" if ElementPlan.ATTACK_SHOT else "off",
@@ -318,7 +326,7 @@ func _run() -> void:
 			"crew_at": placed, "target_placed": [_r(target.global_position.x), _r(target.global_position.z)],
 			"start_m": start_m, "stage_ok": stage_ok, "ground_moved": ground_moved, "line_flips": line_flips,
 			"start_line": start_lines, "window_s": _r(window), "seconds": seconds,
-			"stuck_s": stuck_s, "no_shot_s": no_shot_s, "first_hit_s": first_hit, "hits": _hits,
+			"stuck_s": stuck_s, "stuck_suppress_s": stuck_suppress_s, "no_shot_s": no_shot_s, "first_hit_s": first_hit, "hits": _hits,
 			"deaths": _deaths.keys().filter(func(k: String) -> bool: return names.has(k)).size(), "deaths_moving": deaths_moving,
 			"target_dead_s": _r(float(target_dead_tick - order_tick) / SimClock.TICK_RATE) if target_dead_tick >= 0 else -1.0,
 			"spot_changes": spot_changes, "never_reached": never_reached,

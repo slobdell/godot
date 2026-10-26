@@ -41,6 +41,7 @@ def metrics(d):
     first = [float(d["first_hit_s"][c]) if float(d["first_hit_s"][c]) >= 0 else window for c in crews]
     return {
         "stuck": sum(float(v) for v in d["stuck_s"].values()),
+        "stuck_suppress": sum(float(v) for v in d.get("stuck_suppress_s", {}).values()),
         "no_shot": sum(float(v) for v in d["no_shot_s"].values()),
         "first_hit": sum(first) / len(first),
         "never_hit": sum(1 for c in crews if float(d["first_hit_s"][c]) < 0),
@@ -55,7 +56,7 @@ def metrics(d):
     }
 
 
-KEYS = ["stuck", "no_shot", "first_hit", "never_hit", "deaths_moving", "deaths", "never_reached", "dither", "line_flips", "hits",
+KEYS = ["stuck", "stuck_suppress", "no_shot", "first_hit", "never_hit", "deaths_moving", "deaths", "never_reached", "dither", "line_flips", "hits",
         "target_dead", "lines_per_plan_tick"]
 
 
@@ -76,6 +77,8 @@ def one(folder):
             totals[k] += m[k]
     n = len(rows)
     if n:
+        print("SUPPRESS share of stuck: %.1f of %.1f s (%.0f %%)" % (totals["stuck_suppress"], totals["stuck"],
+            100.0 * totals["stuck_suppress"] / totals["stuck"] if totals["stuck"] > 0 else 0.0))
         print("n %d | stuck %.1f | first_hit mean %.1f | never_hit %d | deaths_moving %d | deaths %d | never_reached %d | dither mean %.2f | hits %d | lines/plan tick %.1f" % (
             n, totals["stuck"], totals["first_hit"] / n, totals["never_hit"], totals["deaths_moving"], totals["deaths"],
             totals["never_reached"], totals["dither"] / n, totals["hits"], totals["lines_per_plan_tick"] / n))
@@ -109,12 +112,14 @@ def pair(off_dir, on_dir):
         elif k == "deaths_moving":
             ok = total_on <= total_off + 1.645 * se * n
             reading = "GUARD: ON <= OFF + 1.645 se (totals; se of the total %.2f) -> %s" % (se * n, "PASS" if ok else "FAIL")
+        elif k == "stuck_suppress":
+            reading = "REPORTED (R42.6): SUPPRESS share of ON's stuck = %.0f %%" % (100.0 * total_on / sum(metrics(on[s])["stuck"] for s in seeds) if sum(metrics(on[s])["stuck"] for s in seeds) > 0 else 0.0)
         elif k == "dither":
             ok = (total_on / n if n else 0.0) <= 2.0
             reading = "REPORTED, cap 2.0 a crew an order -> %s" % ("within" if ok else "OVER")
         else:
             reading = "reported"
-        if k in ("stuck", "no_shot", "never_hit", "deaths_moving", "deaths", "never_reached", "hits"):
+        if k in ("stuck", "stuck_suppress", "no_shot", "never_hit", "deaths_moving", "deaths", "never_reached", "hits"):
             print("%-16s %10.1f %10.1f %10.2f %8.2f %8.2f | %s" % (k, total_off, total_on, mean, se, z, reading))
         else:
             print("%-16s %10.2f %10.2f %10.2f %8.2f %8.2f | %s" % (k, total_off / n if n else 0, total_on / n if n else 0, mean, se, z, reading))
