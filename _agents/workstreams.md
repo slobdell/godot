@@ -322,6 +322,16 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   seconds on FRESH seeds (the bridge drill at BRIDGE_POOLED_SEEDS 8125-8136 x ticks {1,8,15} x both sides, on main AND under v2's
   overrides): ON <= 0.8 x OFF pooled at >= 2 se, and every surviving crew crosses in both trees. Guards on 8137-8148: wedge trace +
   orders probe, M3's guards, G4 deaths and G7 last-in included, unchanged lines. Frozen tree, gate green first.
+- **R40.24 (2026-10-25 ~20:50) F1 stops OFF (round 41: speed-only); B2s v2 carries to round 41; bridge-pooled stays a hard check.**
+  e516edcec (leader within 8 m of the turn vertex; builder0 light): bridge-pooled main ON 17/18 (green t1 s1 rim 4.0 s; rim 8.1 -> 9.2,
+  deck 7.5 -> 4.8), under v2's overrides (0c5d4ca6f) ON 18/18 (rim 14.2 -> 8.6); terminus 5 route s7001 squad 1 51.0 -> 24.6 s (OFF 21.9)
+  but squad 5 43.1 v 31.0; dev cells D -12 % (-0.4 se), G3 +13 % and G7 +3.3 s lab FAILs. Each F1 form fixed its case and moved a
+  failure (n 1 a cell; any change to ORCA's answer reshuffles meetings). **Ruled:** F1 stays OFF, Bar F1 / F1 v2 never filed, 8125-8148
+  returned unspent. Native's pair/native-follow 1838537d7 (v1 twin, quick-green) kept as a reference, not merged. bridge-pooled is NOT
+  loosened, re-seeded or waived for v2 (it is his bridge complaint, and a guard is never amended after it fails). So fm_c5r2_lawt5
+  cannot ship this round: Bar B2s v2 (8801-8840 + 8901-8940, unread) carries to round 41 behind a bridge fix. Round 41 candidates: a
+  speed-only follow rule (slow before a sharp turn the leader is in; ORCA's steering untouched) with a bar on fresh bridge-drill seeds;
+  whether bridge-pooled's single-seed 3 s line should become a pooled measure is a round-41 design item, decided before any number.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
