@@ -738,3 +738,16 @@ rulings printed 2.9-3.8) and a 4-point move needs ~660 fights a line (D3's power
 size from this row). The win share keeps the fights that don't flip (they are the noise of a 0/1); fights inside a seed are taken as
 independent here, so a bar's per-seed se is the stricter read. Cost 3.3 core-minutes a fight (R39.1's series). Judge tests 12/12
 in test_table (laptop).
+
+## Round 40's own lines (2026-10-25, native, close step 5b)
+
+`tools/judge/lines_r40.py`: 30 lines over nine bars and one dev gate, every number quoted from *Bars (round 40)* and *Rulings
+(round 40)* (G3 v9's from orders' final report, round40/orders); nothing re-measured. PASS: T1 (ships ON, CP40.1). FAIL: M1 v2 (G5),
+G1 v6 (terminus 5 route twitch), S1 v3 (twitch >= 15 m), G3 v8 (dev gate, no bar), G3 v9 (deciding + never-in), cap deal (deciding
+line 1), M3 (D), B2s (G3: the Law blob cell; 17 of 18 rules hold, G1-G8 and the deciding line all filed). `inventory.py` ->
+`references/round40/native/sizing/inventory.{csv,md}` (537 lines, 266 with a noise estimate); `table.py` re-run, no table change.
+Ten of the new lines printed an se; none is inside its own noise. The verdicts within 1.645 se of going the other way: **B2s's
+failing G3 (the Law blob cell +24.6 % v its +/-20 % band at se 3.6: -1.28 se)**, B2s's G4 time-cap guard (+1.67) and G2 turtle
+guard (+1.71) just outside. M3's failing D sat 2.05 se short of the bar's own 2-se gain; M1 v2's deciding drift cleared by 7.1 se.
+So B2s's one failure is the closest call of the round: a re-read on fresh seeds could go either way, which is why R40.19 moves v2 to
+a fresh block rather than re-reading 8301-8340 + 8401-8440. Judge tests 86/86 (laptop).
