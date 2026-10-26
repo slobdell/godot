@@ -537,9 +537,28 @@ static var SIDES_BOTH := OS.get_cmdline_user_args().has("--group-sides=both")
 ## body's middle: the column laid back along the approach ran east through the squads themselves, squad 5's place 103 m from
 ## the click (15 m farther than it stood) and three squads "in" without moving -- he would see them ignore the click.
 static var COLUMN_TOWARD := OS.get_cmdline_user_args().has("--group-column-toward=on")
+## G1 v9 (its dev read: refusing the whole column put his-click squad 5 back on main's place, outside the corridor on all six
+## seeds): `--group-column-toward=stay` keeps the column and gives only a squad it would send away the spot it stands on (it
+## is already in the street, at the column's tail; it stays rather than backing up). `kept_away` counts them.
+static var COLUMN_STAY := OS.get_cmdline_user_args().has("--group-column-toward=stay")
+static var kept_away := 0
 const COLUMN_AWAY_M := 10.0
 ## Measurement: columns refused so.
 static var columns_refused_away := 0
+
+
+## `laid` with every squad it sends more than COLUMN_AWAY_M farther from `click` than its block's centre given that centre
+## (flat) instead. Pure; returns [places, how many kept].
+static func column_keep_away(laid: Array, blocks: Array, click: Vector3) -> Array:
+	var out: Array = laid.duplicate()
+	var kept := 0
+	for i in mini(laid.size(), blocks.size()):
+		var at: Vector3 = (blocks[i] as Dictionary)["center"]
+		var place: Vector3 = laid[i]
+		if Vector2(place.x - click.x, place.z - click.z).length() > Vector2(at.x - click.x, at.z - click.z).length() + COLUMN_AWAY_M:
+			out[i] = Vector3(at.x, place.y, at.z)
+			kept += 1
+	return [out, kept]
 
 
 ## Whether `laid` (one place a squad, in `blocks`' order) sends some squad more than COLUMN_AWAY_M farther from `click` than

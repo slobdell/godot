@@ -165,6 +165,10 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - **Known risk:** round 40's s3805 squad-1 wedge (R38.44's whole-squad deal on a route's first click). On today's main
     (laptop, s3805, terminus 5 route) it is main that leaves a squad never in (squad 5), and the arm gets all five in.
   - **Plus:** paired top-down shots of his click, main v sides, looked at. A pass ships ON.
+- **WITHDRAWN UNREAD (2026-10-26): Bar G1 v8**, replaced by Bar G1 v9 before any bar number. Its dev read (builder0 light,
+  099a3f135, native on, 7007-7012, n 6): FAIL deciding places outside (click cells) 26 -> 9 (<= 6.5); every guard passed
+  (away 12 -> 12, contacts 6554 -> 5421, 14 cells, yard_open 96 / 96). Cause: refusing the whole column gives his-click
+  squad 5 main's own place, outside the corridor on all six seeds (main has the same 12). Kept:
 - **Bar G1 v8 TWO SIDES, NEVER AWAY (orders, round 41; filed 2026-10-26 before any number on 9101-9112; code: the commit
   below, all OFF).** G1 v7 + `--group-column-toward=on`: a column that would give any squad a place > 10 m farther from his
   click than it stands is refused (today's places stand). What he would see: as G1 v7, and a click beside his army never
@@ -175,3 +179,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     than its start (`toward_m < -10`) in the arm beyond base's count + 2, over all cells.
   - **Variants read on the dev block 7007-7012: two** (v7's arm; v8). Lab: his click s7007 falls back to main's places;
     s3805 terminus 5 route keeps the column (all five in).
+- **Bar G1 v9 TWO SIDES, THE TAIL STAYS (orders, round 41; filed 2026-10-26 before any number on 9101-9112; code: the
+  commit below, all OFF).** G1 v7 + `--group-column-toward=stay`: the column stands; only a squad it would put > 10 m
+  farther from his click than it stands keeps the spot it stands on (it is already in the street, at the column's tail).
+  What he would see: as G1 v7, and a click beside his army never makes a squad back away; the tail squads hold.
+  - **Arm:** `v9:--group-lay=column,--group-rank-shift=half,--group-whole=click,--group-clear=reached,--group-lead=drive,--group-sides=both,--group-column-toward=stay`.
+    Base `main:`. Tree, probe, seeds (9101-9112, n 12 a cell), cells and judge (`orders_judge.py g1v8`: g1v4 unamended +
+    the never-away guard filed with v8) as above. Runner `tests/control/orders_bar.sh b2 g1v8 <arm> "9101 ... 9112" <out> 8`.
+  - **Variants read on the dev block 7007-7012: three** (v7, v8, v9), so a dev pass there is partly fitted.
+  - Lab (laptop, s7007 his click, 5 squads): squad 5 stays (toward 0.0); squads 3 / 4 step < 10 m back into their ranks.
+  - **Question for the lead (feel):** on a click right beside his army, the squads already in that street (the column's
+    tail) stay put; only the near squads move. Smoke: `make skirmish ARENA=terminus SKIRMISH_FLAGS="<the arm's flags, spaces>"`.

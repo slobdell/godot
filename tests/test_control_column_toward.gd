@@ -18,3 +18,13 @@ func test_his_terminus_click_beside_the_body_is_refused() -> void:
 	assert_true(SelectionSquads.column_sends_away(laid, blocks, click), "squad 5 sent 15 m farther than it stood")
 	laid[1] = Vector3(65.0, 0, 95.0)  # 94.4 m: within COLUMN_AWAY_M of where it stood
 	assert_true(not SelectionSquads.column_sends_away(laid, blocks, click), "a few metres back is a rank, not away")
+
+
+func test_v9_only_the_squad_sent_away_stays_on_its_spot() -> void:
+	var click := Vector3(-29.3, 0, 85.8)
+	var blocks := [{"center": Vector3(-26.7, 0, 94.2)}, {"center": Vector3(59.0, 0, 93.3)}]
+	var laid := [Vector3(-29.3, 0, 85.8), Vector3(71.4, 0, 108.3)]
+	var kept: Array = SelectionSquads.column_keep_away(laid, blocks, click)
+	assert_eq(int(kept[1]), 1, "one squad kept")
+	assert_eq(kept[0][0], laid[0], "the column's head stands")
+	assert_eq(kept[0][1], Vector3(59.0, 0, 93.3), "squad 5 stays where it stands")
