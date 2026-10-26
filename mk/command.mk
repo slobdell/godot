@@ -651,6 +651,34 @@ orders-probe: import ## O5: the multi-squad player probe, headless, ORDERS_PROBE
 	@$(PYTHON) tests/control/orders_probe_table.py $(ORDERS_PROBE_DIR)/rows.jsonl | tee $(ORDERS_PROBE_DIR)/table.txt
 	@$(PYTHON) tests/control/halt_flips.py $(ORDERS_PROBE_DIR)/rows.jsonl > $(ORDERS_PROBE_DIR)/halt_flips.txt && grep '^TOTAL' $(ORDERS_PROBE_DIR)/halt_flips.txt || true
 
+# Round 41 (orders O1): his group order. Five full squads (tests/control/orders_probe_group_5.json), crews turned to mixed
+# headings (ORDERS_GROUP_HEADINGS: crew / squad / formed), every squad selected, one click across the map
+# (tests/orders_probe_group.gd), ORDERS_GROUP_MAPS x _SEEDS x _HEADINGS x _ARMS -> build/orders-group/runs.jsonl,
+# crews.jsonl and table.txt (tests/control/orders_group_table.py). An arm is NAME:FLAGS (commas for spaces). Dev seeds
+# 7001-7012 for census reads; O2's bar seeds are 9101-9124 (C41.1).
+ORDERS_GROUP_MAPS ?= terminus crossing locks sumps
+ORDERS_GROUP_SEEDS ?= 7001 7002 7003 7004 7005 7006
+ORDERS_GROUP_HEADINGS ?= crew formed
+ORDERS_GROUP_ARMS ?= main:
+ORDERS_GROUP_TARGET ?= across
+ORDERS_GROUP_JOBS ?= 4
+ORDERS_GROUP_DIR ?= $(BUILD_DIR)/orders-group
+.PHONY: orders-group
+orders-group: import ## O1 (round 41): his group order (5 full squads, mixed headings, one click across the map) start census -> build/orders-group/table.txt
+	@rm -rf $(ORDERS_GROUP_DIR) && mkdir -p $(ORDERS_GROUP_DIR)/logs
+	@echo ">> orders-group on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(ORDERS_GROUP_SEEDS); do for map in $(ORDERS_GROUP_MAPS); do for h in $(ORDERS_GROUP_HEADINGS); do for arm in $(ORDERS_GROUP_ARMS); do \
+		echo "$$map $$h $$arm $$seed"; done; done; done; done | xargs -P $(ORDERS_GROUP_JOBS) -L 1 sh -c \
+		'name=$${2%%:*}; flags=$$(echo "$${2#*:}" | tr "," " "); \
+		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe_group.gd -- --arena=$$0 --seed=$$3 \
+			--probe-squads=5 --probe-army=res://tests/control/orders_probe_group_5.json --probe-headings=$$1 \
+			--probe-target=$(ORDERS_GROUP_TARGET) --probe-arm=$$name $$flags > $(ORDERS_GROUP_DIR)/logs/$$0-$$1-$$name-s$$3.log 2>&1 || true'
+	@cat $(ORDERS_GROUP_DIR)/logs/*.log | grep -h '^ORDERS_PROBE {' | sed 's/^ORDERS_PROBE //' > $(ORDERS_GROUP_DIR)/runs.jsonl || true
+	@cat $(ORDERS_GROUP_DIR)/logs/*.log | grep -h '^ORDERS_PROBE_SQUAD ' | sed 's/^ORDERS_PROBE_SQUAD //' > $(ORDERS_GROUP_DIR)/rows.jsonl || true
+	@cat $(ORDERS_GROUP_DIR)/logs/*.log | grep -h '^ORDERS_GROUP_CREW ' | sed 's/^ORDERS_GROUP_CREW //' > $(ORDERS_GROUP_DIR)/crews.jsonl || true
+	@grep -L '^ORDERS_PROBE {' $(ORDERS_GROUP_DIR)/logs/*.log | sed 's/^/MISSING (no ORDERS_PROBE line): /' || true
+	@$(PYTHON) tests/control/orders_group_table.py $(ORDERS_GROUP_DIR)/runs.jsonl $(ORDERS_GROUP_DIR)/crews.jsonl | tee $(ORDERS_GROUP_DIR)/table.txt
+
 ORDERS_PROBE_SHOT_SQUADS ?= 3 5
 ORDERS_PROBE_SHOT_ARMS ?= main: deploy_off:--deploy-step=off
 ORDERS_PROBE_SHOT_ROUTES ?= click

@@ -73,14 +73,15 @@ func _run() -> void:
 	var fight := _flag("probe-fight", "off") == "on"
 	var enemy := "--enemy=%s" % _flag("probe-enemy", "cpu") if fight else "--enemy=res://tests/control/orders_probe_enemy.json"
 	var budget := "--budget=%s" % _flag("probe-budget", "2500") if fight else "--budget=6000"
-	for extra: String in ["--skirmish", "--player=res://tests/control/orders_probe_%d.json" % count,
+	# Round 41 (orders O1): `--probe-army=PATH` fields another army of `count` squads (his five full squads).
+	var player_path := _flag("probe-army", "res://tests/control/orders_probe_%d.json" % count)
+	for extra: String in ["--skirmish", "--player=" + player_path,
 			enemy, budget, "--no-control", "--no-pick-faction",
 			"--hints=off", "--no-record", "--squad-cap=%d" % count]:
 		var parts := extra.trim_prefix("--").split("=", true, 1)
 		flags.values[parts[0]] = parts[1] if parts.size() > 1 else ""
 	# Round 38 (settle's report): a budget his army is over stops the skirmish before the controls exist, and the probe used to
 	# say only "no RtsControls". Say why, and stop (C38.1: a probe that cannot run its case stops the run).
-	var player_path := "res://tests/control/orders_probe_%d.json" % count
 	var player: Variant = JSON.parse_string(FileAccess.get_file_as_string(player_path))
 	var refusal := Army.check_budget(player, int(budget.split("=")[1])) if player is Dictionary else ""
 	if refusal != "":
@@ -137,6 +138,7 @@ func _run() -> void:
 	print("ORDERS_PROBE_SETUP " + JSON.stringify({"map": map, "squads": _squads.size(), "units": units.size(),
 			"click": _xz(_click), "route": _route.map(func(p: Vector3) -> Array: return _xz(p)),
 			"ground_cap": SelectionSquads.GROUND_CAP, "decks": SlotGround.deck_boxes()}))
+	_before_order(units)
 	_controls.selection.set_units(units)
 	await physics_frame
 	var returned: Array = []
@@ -149,6 +151,7 @@ func _run() -> void:
 				print("ORDERS_PROBE_CLICK %d squad %d task %s queued %s" % [i, int(squad["number"]),
 						str(held.task.get("to")) if held != null else "-", str(held.queued_tasks.map(func(t: Dictionary) -> Variant: return t.get("to"))) if held != null else "-"])
 	_order_tick = _match.tick
+	_after_order(units)
 	_read_corridor(units)
 	_read_streets(units)
 	# Round 35 (D5): every squad's legs as dealt (its element's task, then its queued tasks' destinations).
@@ -181,6 +184,7 @@ func _run() -> void:
 	while _match.tick - _order_tick < int(window_s * SimClock.TICK_RATE):
 		await physics_frame
 		_watch()
+		_watch_extra()
 		var all_in := _squads.all(func(s: Dictionary) -> bool: return int(s["arrived_tick"]) >= 0)
 		if all_in and all_in_tick < 0:
 			all_in_tick = _match.tick
@@ -275,8 +279,27 @@ func _run() -> void:
 					if all_in_tick >= 0 else -1.0, "on_deck": rows.filter(func(r: Dictionary) -> bool: return r["deck"]).size(),
 			"crossed": rows.filter(func(r: Dictionary) -> bool: return r["crossed"]).size(),
 			"worst_offset_m": rows.map(func(r: Dictionary) -> float: return r["anchor_offset_m"]).max(),
-			"worst_shuffle_m": rows.map(func(r: Dictionary) -> float: return r["shuffle_m"]).max()}))
+			"worst_shuffle_m": rows.map(func(r: Dictionary) -> float: return r["shuffle_m"]).max()}.merged(_run_extra())))
 	quit(0)
+
+
+## Round 41 (orders O1): hooks for a subclass probe (tests/orders_probe_group.gd); no-ops here. `_before_order` runs just
+## before he selects and clicks, `_after_order` on the order's tick, `_watch_extra` every tick after `_watch`, and
+## `_run_extra` adds fields to the ORDERS_PROBE line.
+func _before_order(_units: Array) -> void:
+	pass
+
+
+func _after_order(_units: Array) -> void:
+	pass
+
+
+func _watch_extra() -> void:
+	pass
+
+
+func _run_extra() -> Dictionary:
+	return {}
 
 
 ## Past a deck to the far side from the click: within a deck's span across the river (its x range, widened by
