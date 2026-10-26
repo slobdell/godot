@@ -106,6 +106,14 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   becomes the gate; per-file lint stays in the check as an ordinary target beside test (no coverage dropped); mutation test; before/after
   builder0 wall time named. Merged alone with its own check. Also relayed: orders' O1 probe 8b828ec59 -> manoeuvre's Q1;
   orders' is_aiming b973ba955 -> camera; native's GUARD_TARGET e41b6d70e -> balance.
+- **R41.3 (2026-10-26 ~03:30) bridge-pooled stays a hard guard; Bar Q3 decides on pooled rim-seconds; Q3 may be Q2.** Manoeuvre's
+  proposal (Status, written before any bridge number) accepted: the single-run line (every surviving crew crosses, no crew at the rim
+  > 3 s, 18/18) is unchanged and stays a guard. Bar Q3's deciding line = pooled rim-seconds on fresh 9025-9036 x ticks {1,8,15} x both
+  sides (72 runs an arm a tree), on main AND under balance's v2 overrides: ON <= 0.8 x OFF pooled and paired per-run mean < 0 by >= 2 se;
+  every surviving crew crosses in both trees; runs with a crew over 3 s ON <= OFF. The first bridge read tries `--traffic-on=wait`; if
+  it clears the rim, Q3 = Q2 (one rule, one twin). Also: Q2's classes and 5 s cap approved from Q1's census (pooled 64 runs: crossing
+  never-in 16/16; blockers stalled 30 / crossing 27 / same_way 25 / head_on 10 / turning 5 / parked 5 %); orders' O2 v1 dev read mixed
+  (locks worse: front-first ranks the longest drive last), v2 rank=drive approved to dev-read and re-file on unseen 9101-9124.
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
