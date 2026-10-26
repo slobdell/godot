@@ -98,6 +98,19 @@ _(filed bars go here, before their numbers)_
   `--cpu-counter` OFF nothing changes (tests pin it); the orchestrator reviews the diff at merge. The ownership line above and balance's
   brief carry the same grant (400c73af4, written by a second main-checkout session, godot-45, which was then asked to stand down:
   one orchestrator, godot-8c, for the rest of the round).
+- **R42.2 (2026-10-26 ~15:20) engage's E1 trace; GRANT in `game/ai/tank_brain.gd` `_act` ENGAGE.** Replay (`tests/engage/replay_probe.gd`,
+  3848c229e, laptop, Locks s49326, 40 s): the crew stood 39.8 of 40 s, moved 0.3 m, 26.1 m from the Missile Ring, zero hits. The chain:
+  ticks 6-470 the element's `attack_move` names the target and the brain holds ENGAGE "holding at standoff" (gun on nothing, own ray
+  BLOCKED, team sees it); ticks 471+ the plan's `attack` by distance (element_plan.gd:3250, the C42.2 hypothesis confirmed), same hold.
+  `TankBrain.EXECUTES_ORDERS` is true, so `OrderExecutor`'s attack branch (:126) is dead code (engage will not edit it). The brain's
+  `_act` ENGAGE (:2573) takes the TEAM's sight + distance as "fight here"; `CombatMotion.plan_lay` scores a gear-0 hold with no sight
+  test from the hull; `Gunnery._shootable`'s ray is blocked by the container. So "in range" is wrong twice (the plan's distance, the
+  brain's team-sight hold); fixing the plan alone would not move him. **Ruled:** GRANT engage `tank_brain.gd` `_act` ENGAGE (:2573-2592)
+  only, one guarded branch behind `--attack-shot` (OFF = byte-identical): a crew whose OWN line to its target is blocked
+  (`cover_map.clear_line_coarse`, memoized) does not hold at standoff; it closes on the target (the existing not-visible branch) unless
+  its element sent it a firing spot. The `plan_lay` gear-0 seam (combat_motion.gd:1340, every fixed gun) stays in reserve: use it only
+  if the trace shows the hold survives the brain change, with its own line in the bar. Nobody owns tank_brain.gd this round; native
+  confirms `_act` has no twin. Symmetric (the CPU gets it). Merge note.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
