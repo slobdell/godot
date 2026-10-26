@@ -81,6 +81,63 @@ the trace target; n 1 a run, deterministic):**
 is passed as today. Symmetric, OFF until judged, GDScript first, then a C++ twin request. Expected to move guard lines, so seeds were
 asked for a bar.
 
+### F1, the follow-queue (R40.21, approved 2026-10-25 evening; `--traffic-on=follow`, DEFAULT_OFF until judged)
+
+**Built OFF (1267b1635, main 7f9414dd5 merged).**
+- **The rule:** in `Movement._avoid`, when ORCA would deflect a WHEELED crew and the nearest living friend ahead along its way (16 m,
+  35 deg cone) is moving its way (Traffic.FOLLOW_COS, >= 1 m/s), the crew keeps its route's steering and takes ORCA's along-route
+  speed. A stopped friend is passed as today. Counter: `Movement.follow_queued` (crew-ticks, in route_arms()).
+- **Native:** ON turns native_drive off (Traffic._chain_native, M3's pattern): `_avoid` runs inside the drive's C++ mirror.
+- **Tests** (tests/test_traffic_follow.gd, 5): off by default; the follow test (ahead and moving = followed; behind, off the way or
+  stopped = not); live, two law_tanks in file, ON keeps the follower's line (0.00 m, 236 queued crew-ticks); ON runs the GDScript
+  drive. Laptop NATIVE=off: 5 / 0; traffic|test_manoeuvre|movement|steering 197 passed, 0 failed (1267b1635).
+- **Lab 1 (running, builder0 light):** bridge-pooled OFF / ON on 1267b1635, and on 1267b1635 + balance's 8e257f3bc + d385cd308
+  cherry-picked (side worktree `../godot-manoeuvre-bt`, detached 29b9072ed; nothing of balance's on this branch). Raw data:
+  `~/overnight-manoeuvre/r40/f1lab1/`.
+
+**C++ twin request (for native, via the orchestrator; F1 can't ship ON without it):**
+- **Where:** native's mirror of `Movement._avoid` (drive_native.cpp), after ORCA's `chosen` velocity and its `keep` are computed,
+  BEFORE the start-of-order grace / min-pace branch.
+- **When:** `follow` is ON (Traffic.DEFAULT_OFF lists it; `--traffic-on=follow`), the call isn't a hold's inner call (`held` false),
+  and the hull is wheeled (`wheel_radius() > 0`).
+- **The test, `_following(here, way)`:** `way` = (waypoint - here) flat, normalised. Over the living friends of its team (not
+  itself), take the NEAREST whose flat offset `off` has length d with 0.01 <= d < FOLLOW_AHEAD_M = 16.0 and off.way >=
+  FOLLOW_CONE_COS (0.819) x d. It is followed if its flat `real_velocity` v has |v| >= FOLLOW_MOVING_MPS = 1.0 and v.way >=
+  Traffic.FOLLOW_COS (0.866) x |v|. Ties go to the first in tanks_root child order (the strict `d >= best_d` skip).
+- **Then:** `follow_queued += 1`; return [waypoint, clamp(chosen.way / max(desired, 0.1), 0, 1)]. The steer point is unchanged and
+  the pace is ORCA's along-route share.
+- **OFF: nothing changes.** Twin check: tests/test_traffic_follow.gd under native, and bit-identity per seed (R38.24) with
+  `--traffic-on=follow` on and off.
+
+### Bar F1 (filed 2026-10-25 ~19:10 PDT, BEFORE any number on 8125-8148)
+- **Gate:** the tree's full check green on builder0 FIRST (C31.1), F1 OFF. The checked hash is named here before the series starts.
+  The series runs from that one frozen tree (R40.13): no game/ or tests/ commits until its `end` line.
+- **Arms:** OFF (default) v ON `--traffic-on=follow`. **Both run the GDScript drive (`--brains-off=native_drive` in BOTH),** as Bar
+  M3, so the pair compares the rule alone. Native ON otherwise. settle's switches at main's defaults in both.
+- **Machine:** builder0 light lane, J 4. **Seeds (R40.21):** A on 8125-8136, B on 8137-8148.
+- **A, wedge trace** (`manoeuvre-wedge-trace`, locks/terminus/sumps x 8125-8136, 180 s, 36 fights an arm, paired by fight):
+  - **D (deciding): moving-stuck seconds:** long episodes (touching a hull, net < 0.5 m, >= 3 s) whose `phase` has `arrived` under
+    half its ticks (M3's lesson: a parked crew touching a parked friend is not stuck to the player). PASS: ON <= 0.8 x OFF AND
+    paired per-fight mean < 0 by >= 2 se.
+  - G1 give-way deaths (jam:yielding + jam:friend), G2 stuck deaths (stuck:*): ON - OFF <= max(2 paired se x n, 3).
+  - G3 friendly contact ticks: ON <= 1.10 x OFF.
+  - G4 kill share within +/- 0.03 of OFF; total deaths within +/- 5 %.
+- **B, orders probe** (locks/crossing/terminus x 3,5 squads x click,route x 8137-8148, 144 runs an arm, arms
+  `main:--brains-off=native_drive` / `follow:--traffic-on=follow,--brains-off=native_drive`):
+  - **G5 never-in runs: ON <= OFF.**
+  - G6 all-in, paired median ON - OFF <= +2.0 s.
+  - G7 last-in, paired mean <= +2.0 s AND runs > 10 s later <= runs > 10 s earlier + 3.
+- **G8 bridge-pooled:** 18/18 with `--traffic-on=follow` on the bar's tree (builder0 light, native, as the check runs it; ON forces
+  the GDScript drive).
+- **Reported, not judged:**
+  - long episodes (all) and the three longest;
+  - follow_queued, if the wedge logs carry route_arms;
+  - bridge-pooled ON under d385cd308's overrides (the lab's ask; it's balance's tree, not this bar's).
+- **Judge:** `python3 tests/manoeuvre/follow_judge.py wedge-off wedge-on probe/rows.jsonl --on-arm=follow` (D on moving-stuck
+  seconds, the rest as reroute_judge.py), plus bridge_verdict.py's line for G8. Committed before the series starts.
+- **A pass** goes to the orchestrator; F1 ships ON only with native's twin matching. **A fail:** F1 stays OFF; no re-run on these
+  seeds.
+
 ### CLOSE REPORT (round 40, 2026-10-25 ~08:00 PDT): done for the round
 
 **Done:** every backlog item.
