@@ -109,6 +109,27 @@ asked for a bar.
 - **OFF: nothing changes.** Twin check: tests/test_traffic_follow.gd under native, and bit-identity per seed (R38.24) with
   `--traffic-on=follow` on and off.
 
+- **Lab 1 (builder0 light, bridge-pooled, 18 runs an arm, n 1 a run):**
+
+  | Tree | Arm | bridge-pooled | Rim | Deck jam | Worst rim crew | Mean arrival |
+  |---|---|---|---|---|---|---|
+  | 1267b1635 (main + F1) | OFF | 18/18 | 8.1 s | 7.5 s | 1.5 s | 36.6 s |
+  | 1267b1635 | ON | 18/18 | 9.9 s | 16.2 s | 2.0 s | 37.8 s |
+  | 29b9072ed (+ d385cd308's overrides) | OFF | 17/18 (rust t15 s2) | 14.2 s | 17.1 s | 5.1 s | 34.9 s |
+  | 29b9072ed | ON | **18/18** | 10.0 s | 23.2 s | 1.1 s | 36.4 s |
+
+- **Lab 2 (a4e34d70e, builder0 light J4, both arms GDScript drive; dev seeds: wedge locks/terminus/sumps x 7001-7004, 12 fights;
+  orders x 7001-7002, 24 runs; follow_judge.py as a lab read): F1 as built is TOO BROAD.**
+  - D moving-stuck 137.7 -> 234.4 s (+70 %).
+  - G3 contacts +19 % (FAIL). G4 deaths 493 -> 466 (FAIL). G7 last-in +2.2 s (FAIL). G1, G2, G5, G6 pass.
+  - The rule fires all over open traffic: 2,756-10,490 queued crew-ticks a fight, 0-13 waits >= 3 s.
+  - The longest waits run 2.8-8.8 s, behind leaders crawling at 1.1-1.3 m/s, just over the 1 m/s floor (locks s7001
+    Green_Wrenches_7 8.8 s behind Green_Wrenches_3).
+  - **Not gated; series not started** (it would spend 8125-8148 on a near-certain FAIL).
+  - Proposed to the orchestrator: **F1 v2, corner-gated.** Queue only when the wheeled crew's route turns by more than 45 deg
+    within 2 x its min turn radius ahead (a turn it can't make back to after a swerve). Both bridge ends qualify. Waiting on the
+    go.
+
 ### Bar F1 (filed 2026-10-25 ~19:10 PDT, BEFORE any number on 8125-8148)
 - **Gate:** the tree's full check green on builder0 FIRST (C31.1), F1 OFF. The checked hash is named here before the series starts.
   The series runs from that one frozen tree (R40.13): no game/ or tests/ commits until its `end` line.
