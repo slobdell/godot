@@ -145,6 +145,12 @@ into THIS tree (the script's own ROOT): units.gd / weapons.gd carried fm_c5r2_la
 them (adds by path); the series ran guard.sh's clean checkout of 8f2643375; but **the quick-remote "green" on 752f1b266 was of
 that dirty tree and is void**: re-run on 88f9b139b: **GREEN** (builder0 `make quick exited 0`, 103 passed / 0 failed, 28 scripts lint; test_tactics_mono_army and test_control_showmatch in the filter). `apply --tree` now names the checkout and prints it. **Confirmed 08:15: `git status` in godot-balance is clean** (the smoke's untracked overrides/ removed too). **No B5 arm ran from the working tree:** every raw folder's driver.txt reads "8f2643375 on slobdell@builder2" (41 runs so far), guard.sh runs `git checkout --force --detach` + `git clean` in ../godot-balance-guard (now at 8f2643375 with no diff under game/) and overlays only mk/scoreboard.mk, guard_line.gd and tools/*; the remote tree is rsynced from that worktree, never from this one.
 
+**Backlog item 3, Bar B2s v2: BLOCKED this round (R41.13, ~08:30): Bar Q3 FAILED**, the wait family stops, CP41.1 won't land, and
+Bar B2s v2 (8801-8840 + 8901-8940) carries into round 42 unread. For round 42's notes (the orchestrator's fact): on 72 fresh
+bridge runs (9025-9036 x 3 ticks x 2 sides) the v2 overrides tree with the rule OFF crossed 72/72, worst crew 2.2 s; its only
+known bridge failure remains the 18-run drill's rust t15 s2 (R40.20). The ARM rebuild recipe (apply + cherry-pick ad956031b)
+is proven mechanical on ff30edf87 (`apply --tree` now). builder2 stays on B5: the deal arm, pen7, then the lines screen.
+
 **B5 WRITE-UP FOR HIM (draft 07:45; the combined arm's line is filled in when it lands; the orchestrator takes it to him).**
 *What you noticed is real, and it is not about facing.* An army of only tanks beats the same faction's normal mixed army, same
 money, 85 % of the time (CPU v CPU, 5 maps, both sides, 400 fights). Your target was the mixed army winning 60-65 %, so the
