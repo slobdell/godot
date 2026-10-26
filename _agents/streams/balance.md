@@ -179,7 +179,7 @@ is proven mechanical on ff30edf87 (`apply --tree` now). builder2 stays on B5: th
 **Barrage arm (the orchestrator's ask ~10:05; queued behind pen7, then the lines):** `law_barrage` and `syndicate_barrage`
 (army.gd ARCHETYPES, `measure_only`: never rolled by a seeded "cpu" deal nor offered by the garage; loads by name through R41.12),
 siege's shape in each roster (artillery, scout, tank, artillery, IFV, scout), same money as the base deal. All-tanks v each, mono
-on each team, 9401-9410, paired with base (`~/balance-runs/b5-barrage.sh`). Test pins the roll and the load. Quick-remote on the first cut failed twice (no assert_false in the harness; then test_army_economy's 17-archetype digest, which now skips measure-only lineups: one additive condition in a shared test, **merge note**); the arm runs on 3ef8d5771 (quick pending).
+on each team, 9401-9410, paired with base (`~/balance-runs/b5-barrage.sh`). Test pins the roll and the load. Quick-remote on the first cut failed twice (no assert_false in the harness; then test_army_economy's 17-archetype digest, which now skips measure-only lineups: one additive condition in a shared test, **merge note**); the arm runs on 3ef8d5771: **quick-remote GREEN** on 601963cd5 = 3ef8d5771 + Status (builder0 `make quick exited 0`, 269 passed / 0 failed, 71 scripts lint).
 
 **B5 WRITE-UP FOR HIM (deal-arm version 10:00; pen7's line pending; the orchestrator takes it to him).**
 *What you noticed is real, and it is not about facing.* An army of only tanks beats the same faction's normal mixed army, same
