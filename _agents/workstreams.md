@@ -177,6 +177,11 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   parked friend of the same column at crossing/locks street mouths. Q5: a crew touching a friend ahead that isn't moving away eases off
   (speed only, ORCA untouched, real members); lab on fresh dev 7009-7012, read contacts, shoved-ticks, all-in, never-in; bar seeds from
   the orchestrator.
+- **R41.9 (2026-10-26 ~06:40) Q5 v1 OFF; one capped variant, last.** nopush a45c0b953 (builder0 light, his group order 4 maps x 7009-7012
+  crew, 16 paired runs, GDScript): contacts 233,375 -> 168,531 (-28 %), shoved crew-ticks -36 %, but jam-seconds +23 % (4.9 se worse),
+  all-in +4.7 s, never-in runs 6 -> 10: a crew that never pushes never clears a stalled head. v2 (ease off ~3 s per friend, then today's
+  press) gets one lab on the same cells; if it doesn't beat main on jam-seconds and never-in, Q5 closes OFF and the round's traffic work
+  is Bar Q3.
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
