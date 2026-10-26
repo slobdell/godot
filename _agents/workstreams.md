@@ -287,6 +287,9 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   the dev block 8501-8540 INCLUDING a per-faction G3 length read; then file Bar B2s v2 (same lines and guards as B2s) before any number
   on the fresh block 8801-8840 + 8901-8940, one frozen ARM tree (R40.13), builder2. Round 40 closes around it; v2 carries into round 41
   if it is not judged first.
+  **R40.19 full verdict (2026-10-25 ~21:00, balance):** FAIL, 17 of 18 rules hold. G5 none-line flatness -4.89 ± 3.91 (n 100) pass;
+  G8 mono-tank -1.38 ± 1.20 (n 800) pass (mono wins 84 % at the bar's seeds, the R40.16 lead question stands); G6 perf-judge PASS and
+  G7 green-but-sim-baseline on ARM; 3 attempts lost to preemption, retried, 0 fights missing. The only failure: G3 Law blob +24.6 %.
 - **R40.20 (2026-10-25 ~19:00) v2 ARM d385cd308 red on bridge-pooled; cause is traffic, routed to manoeuvre.** builder0 `make check
   exited 2`, 3212/0, sim-baseline (expected) + bridge-pooled 17/18 (rust t15 s2: one crew at the rim 5.4 s v the 3 s bar, all 4 crossed;
   base and c5r2 pass). Balance's trace (balance/bridge-trace 5a233f42b, builder0 light): Rust_S_3's slot goal re-dealt 3x on the
