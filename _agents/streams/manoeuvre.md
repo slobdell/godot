@@ -281,6 +281,16 @@ touching 13 -> 1. **Lab 1** (`~/overnight-manoeuvre/r41/q5lab1/`): his group ord
 shoved ticks (the reverse attribution), all-in, never-in; the orchestrator's risk to watch: a pusher that never pushes never clears
 a stalled friend (never-in, all-in). No bar without the read; bar seeds from the orchestrator.
 
+**Lab 1 read (a45c0b953, builder0 light J4, 16 paired runs, both GDScript drive; `q5lab1/`, judge and reverse table filed under
+`references/round41/manoeuvre/q2-labs-builder0/`): the rule does what it says and his order gets worse.** Friendly contact ticks
+233,375 -> 168,531 (**-28 %**); shoved crew-ticks (the reverse attribution) 26,997 -> 17,332 (**-36 %**). But jam-seconds 13,650 ->
+16,812 (**+23 %**, paired +198 s a run, se 40, 4.9 se WORSE); every-squad-in 76.9 -> 81.6 s (+4.7 s, 1.5 se); **never-in runs 6 ->
+10** (squads a run 0.94 -> 1.44): locks s7009 82.3 -> never, locks s7010 48.5 -> never, sumps s7010 73.3 -> never, sumps s7012
+69.3 -> never; terminus +2-3 s on three of four cells. The orchestrator's risk came true: a crew that never pushes never clears a
+stalled friend, and a column whose head has stopped now stands instead of grinding through. Q5 as built stays OFF; no bar. If it
+goes on, the one variant worth a lab is a cap (ease off for ~3 s per friend, then today's press) so a stalled head is still pushed
+eventually while a moving one is not shoved; not built without a ruling.
+
 ### M1 v3 (stretch): BUILT OFF on the side branch wip/manoeuvre-m1v3 (9087f3b12); dev lab running
 
 While Bar Q3's tree is frozen, M1 v3 lives in the side worktree `../godot-manoeuvre-m1` (branch `wip/manoeuvre-m1v3`, off
