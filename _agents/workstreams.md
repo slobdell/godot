@@ -304,6 +304,14 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   stopped friend is passed as today. Symmetric, OFF until judged; GDScript first, C++ twin to native. Lab: bridge-pooled on main and
   under d385cd308's overrides, then the wedge and orders cells. Bar on 8125-8148, filed before any number on them, frozen tree (R40.13),
   guards as M3's (deaths, stuck deaths, contact ticks, kill share, never-in, all-in / last-in) plus bridge-pooled 18/18.
+- **R40.22 (2026-10-25 ~20:00) F1 as built too broad (dev lab); F1 v2 = queue only before a turn it can't recover; Bar F1 unchanged.**
+  Lab 1 (1267b1635, builder0 light, bridge-pooled 18 runs an arm): main OFF 18/18 rim 8.1 s, deck jam 7.5 s, arrival 36.6 s; ON 18/18 rim
+  9.9, deck jam 16.2, arrival 37.8; under v2's overrides (29b9072ed) OFF 17/18 (worst 5.1 s), ON 18/18 (worst 1.1 s). Lab 2 (a4e34d70e,
+  builder0 light J4, GDScript both arms, dev 7001-7004 wedge x3 + 7001-7002 orders): D moving-stuck 137.7 -> 234.4 s (+70 %), G3
+  contacts +19 % FAIL, G4 and G7 (+2.2 s) FAIL; 2,756-10,490 queued crew-ticks a fight, longest waits 2.8-8.8 s behind leaders at
+  1.1-1.3 m/s (locks s7001 Green_Wrenches_7 8.8 s behind _3). **Ruled:** F1 v2 = the same follow test, only for a wheeled crew whose route
+  turns > 45 deg within 2 x its min turn radius ahead; elsewhere ORCA as today. Lab again (bridge-pooled both trees, then the dev cells);
+  Bar F1 stays as filed (no 8125-8148 number read), gated on v2's hash. Native's twin waits for v2's final rule.
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
