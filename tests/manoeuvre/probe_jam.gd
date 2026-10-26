@@ -215,6 +215,10 @@ func _tick_episode(ep: Dictionary, tank: Tank, mover: Movement, blocker: Tank, w
 	phases[mover.phase] = int(phases.get(mover.phase, 0)) + 1
 	if mover.yield_to != "":
 		ep["yield_ticks"] = int(ep["yield_ticks"]) + 1
+	# Round 42 (Bar Q5, reported column): the ticks the asker itself was easing off under the no-pressing rule (its own throttle held
+	# at 0 by `_nopush`), so jam-seconds can be read with the rule's own easing taken out. Zero on a tree without the rule's members.
+	if "_nopush_until" in mover and int(mover.get("_nopush_until")) >= Engine.get_physics_frames():
+		ep["eased_ticks"] = int(ep.get("eased_ticks", 0)) + 1
 	var v := Vector2(tank.real_velocity.x, tank.real_velocity.z)
 	if v.length() < STILL_MPS:
 		ep["stopped_ticks"] = int(ep["stopped_ticks"]) + 1
@@ -343,6 +347,7 @@ func _finalize() -> void:
 				"blocker_heading_off_deg": snappedf(rad_to_deg(absf(angle_difference(float(ep["asker_yaw_start"]), float(ep["blocker_yaw_start"])))), 1.0),
 				"reverse_why": ep["reverse_why"], "reverse_m": snappedf(float(ep["reverse_m"]), 0.1), "reverse_max_m": snappedf(float(ep["reverse_max_m"]), 0.1),
 				"reverse_end_m": snappedf(float(ep.get("reverse_end_m", -1.0)), 0.1),
+				"eased_s": snappedf(int(ep.get("eased_ticks", 0)) / float(SimClock.TICK_RATE), 0.01),
 				"reverse_reentered": ep["reverse_from"] != Vector2.INF and float(ep["reverse_max_m"]) > 3.0 and float(ep.get("reverse_end_m", 99.0)) < 2.0}))
 	print("JAM_RUN " + JSON.stringify({"seed": seed, "arena": arena, "route": route, "arm": arm, "headings": headings,
 			"episodes": _episodes.size(), "jam_s": snappedf(total, 0.1), "by_class": by_class, "by_action": by_action,
