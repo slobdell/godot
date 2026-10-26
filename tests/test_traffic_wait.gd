@@ -3,7 +3,8 @@ extends TestCase
 ## steer round a FRIEND that will clear its lane by itself soon WAITS instead: it keeps its route's steering, drives at a
 ## following speed behind the friend (slows, stops) and does not ask it to give way; after WAIT_CAP_S on one friend it hands back
 ## to today's avoidance. "Will clear soon": the friend is moving and not head-on (crossing my lane, or a leader going my way),
-## or it is slow, under way and still turning toward where it is going. Parked, stalled and head-on friends are passed as today.
+## or it is slow, under way and still turning toward where it is going. Parked, stalled, head-on friends and a leader going my way
+## are passed as today (v2: same_way dropped after lab 1, a553f85b0).
 ## Forward is -Z (trip-up 2); yard_open is flat and empty.
 
 var _lab: TacticsLab
@@ -60,6 +61,12 @@ func test_wait_kind_reads_what_the_friend_is_doing() -> void:
 	print("MEASURE wait kind head-on: friend v %s" % (staged[1] as Tank).real_velocity)
 	assert_eq(me._wait_kind(staged[1], north), "", "a friend coming at me is not waited on")
 	_lab.dispose()
+	staged = await _stage(Vector3(0.0, 0.0, -12.0), 0.0, {"type": "move_to", "x": 0.0, "z": -70.0, "speed": 0.3})
+	me = Movement.of(staged[0])
+	await _steps(2 * SimClock.TICK_RATE)
+	print("MEASURE wait kind leader: friend v %s" % (staged[1] as Tank).real_velocity)
+	assert_eq(me._wait_kind(staged[1], north), "", "a slower leader going my way is passed as today (v2)")
+	_lab.dispose()
 	# Facing east, ordered north: a tracked hull pivots first (slow, nose 90 deg off its way).
 	staged = await _stage(Vector3(0.0, 0.0, -9.0), -PI / 2.0, {"type": "move_to", "x": 0.0, "z": -70.0})
 	me = Movement.of(staged[0])
@@ -103,32 +110,36 @@ func test_on_holds_the_line_for_a_crossing_friend() -> void:
 	assert_true(float(ahead["on"]) > 20.0, "and goes on once the friend is past (more than 20 m north in 8 s)")
 
 
-## Live: a leader crawling up my lane going my way never clears it. ON, I wait WAIT_CAP_S behind it, then today's avoidance passes
-## it as OFF does from the start (the leader sits 1 m left of my line, so ORCA has a side to pass on).
+## The cap: a wait begun WAIT_CAP_S ago on a friend still crossing hands back to ORCA, counts a time-out and refuses that friend
+## for WAIT_COOLDOWN_S; a fresh wait on it is taken again once the cooldown has passed.
 func test_the_wait_times_out_and_hands_back_to_avoidance() -> void:
-	var passed := {}
-	for arm: String in ["off", "on"]:
-		Traffic.set_off("wait", arm == "off")
-		var staged: Array = await _stage(Vector3(-1.0, 0.0, -8.0), 0.0, {"type": "move_to", "x": -1.0, "z": -70.0, "speed": 0.2})
-		var me := staged[0] as Tank
-		var leader := staged[1] as Tank
-		var timeouts := Movement.wait_timeouts
-		var passed_at := -1.0
-		for i in 16 * SimClock.TICK_RATE:
-			await _lab.step()
-			if passed_at < 0.0 and me.global_position.z < leader.global_position.z:
-				passed_at = i / float(SimClock.TICK_RATE)
-		passed[arm] = passed_at
-		print("MEASURE wait timeout %s: timeouts %d, longest %s, passed at %.1f s, me %s leader %s" % [arm, Movement.wait_timeouts - timeouts,
-				Movement.wait_longest, passed_at, me.global_position, leader.global_position])
-		if arm == "on":
-			assert_true(Movement.wait_timeouts > timeouts, "the wait timed out on the crawler")
-		_lab.dispose()
-		_lab = null
-	assert_true(float(passed["off"]) > 0.0, "OFF passes the crawler within 16 s (the stage's premise)")
-	assert_true(float(passed["on"]) > 0.0, "ON passes it too, after the cap")
-	assert_true(float(passed["on"]) >= Movement.WAIT_CAP_S, "no pass before the cap")
-	assert_true(float(passed["on"]) <= float(passed["off"]) + Movement.WAIT_CAP_S + 2.0, "and not much later than the cap's worth")
+	# My crew stands still (its order withdrawn) while a friend 20 m west drives east across its lane, the rule OFF meanwhile so the
+	# two don't interact; then the rule's own calls, ON, with the clock set by hand.
+	var staged: Array = await _stage(Vector3(-20.0, 0.0, -9.0), -PI / 2.0, {"type": "move_to", "x": 60.0, "z": -9.0})
+	var me := Movement.of(staged[0])
+	me.ctl.set_orders({"type": "stop"}, {"type": "fire_at_will"})
+	var north := Vector2(0.0, -1.0)
+	await _steps(2 * SimClock.TICK_RATE)
+	Traffic.set_off("wait", false)
+	var here: Vector3 = (staged[0] as Tank).global_position
+	var preferred := north * (staged[0] as Tank).max_forward_speed
+	print("MEASURE wait cap stage: blocker %s, friend at %s v %s, me at %s" % [me._wait_blocker(here, north, preferred),
+			(staged[1] as Tank).global_position, (staged[1] as Tank).real_velocity, here])
+	assert_true(not me._wait_blocker(here, north, preferred).is_empty(), "the crossing friend is one to wait on")
+	var timeouts := Movement.wait_timeouts
+	var now := Engine.get_physics_frames()
+	me._wait_for = "Green_Friend"
+	me._wait_since = now - int(Movement.WAIT_CAP_S * SimClock.TICK_RATE)
+	assert_eq(me._wait(here, north, preferred, 9.0), -1.0, "at the cap the wait hands back to avoidance")
+	assert_eq(Movement.wait_timeouts, timeouts + 1, "and counts a time-out")
+	assert_eq(me._wait_for, "", "the wait is over")
+	assert_eq(me._wait_refused, "Green_Friend", "that friend is refused")
+	assert_eq(me._wait(here, north, preferred, 9.0), -1.0, "and not waited on again during the cooldown")
+	me._wait_refused_until = now - 1
+	var pace := me._wait(here, north, preferred, 9.0)
+	assert_true(pace >= 0.0 and pace < 1.0, "after the cooldown a fresh wait on it is taken, at a following pace (%.2f)" % pace)
+	assert_eq(me._wait_for, "Green_Friend", "and recorded")
+	print("MEASURE wait cap: pace after cooldown %.2f, longest %s" % [pace, Movement.wait_longest])
 
 
 ## Until twinned in C++, ON runs the GDScript drive (as M3 and F1); OFF leaves native_drive as it was.

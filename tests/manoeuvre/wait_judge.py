@@ -95,6 +95,12 @@ def main(argv):
         tot = sum(by.values()) or 1.0
         lines.append("  %s jam-s by blocker: %s" % (name, ", ".join("%s %.0f (%.0f %%)" % (c, s, 100 * s / tot)
                                                                      for c, s in sorted(by.items(), key=lambda kv: -kv[1]))))
+    w = [on[k] for k in keys if "waits" in on[k]]
+    if w:
+        lines.append("  %s rule counters a run (mean): waits %.0f, queued crew-ticks %.0f, time-outs %.0f, longest %.1f s; by kind %s" % (
+            on_arm, statistics.mean(r["waits"] for r in w), statistics.mean(r["wait_queued"] for r in w),
+            statistics.mean(r["wait_timeouts"] for r in w), max(float(r["wait_longest"].get("s", 0)) for r in w),
+            {k: sum(r["wait_by_kind"].get(k, 0) for r in w) for k in sorted(set().union(*[r["wait_by_kind"].keys() for r in w]))}))
     per = []
     for k in keys:
         per.append("%s s%s %s: jam %.0f -> %.0f, all-in %.1f -> %.1f" % (k[0], k[1], k[2], off[k]["jam_s"], on[k]["jam_s"],

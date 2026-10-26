@@ -252,9 +252,10 @@ static var _follow_runs := {}
 ## FRIEND that will clear its lane by itself soon WAITS instead: it keeps its route's steering, drives at a following speed behind
 ## the friend (slows, stops) and does not ask it to give way. "Will clear soon" (Q1's census, 32851c0d8, terminus crew s7001: 57 %
 ## of jam-seconds had the blocker out of the asker's lane within 3 s, 71 % within 5 s): the friend is MOVING (>= WAIT_MOVING_MPS)
-## and not head-on (crossing the lane, or a leader going my way), or it is slow, under way and still turning toward where it is
-## going (nose more than WAIT_TURN_DEG off its own travel direction, which is not head-on to mine). A parked friend, a stalled one
-## (slow, under way, already facing its way: blocked itself) and a head-on one are passed as today; one that is itself waiting
+## ACROSS my lane (not head-on, not going my way), or it is slow, under way and still turning toward where it is going (nose more
+## than WAIT_TURN_DEG off its own travel direction, which is not head-on to mine). A parked friend, a stalled one (slow, under
+## way, already facing its way: blocked itself), a head-on one and a leader going my way are passed as today (v2: following a
+## slower leader instead of passing it cost more than it saved, lab 1 a553f85b0); one that is itself waiting
 ## for such a friend is waited on too (the cars behind the jam keep their lane; a cycle is not). The wait hands back to ORCA
 ## after WAIT_CAP_S on one friend, and that friend is not waited on again for WAIT_COOLDOWN_S. His words: "wait for the cars ahead
 ## of us to move forward, which they inevitably will"; the cap is for the ones that don't. The lane: WAIT_AHEAD_M ahead, both hull
@@ -269,7 +270,7 @@ const WAIT_HEAD_ON_COS := -0.5  # cos 120 deg
 const WAIT_TURN_DEG := 30.0
 const WAIT_GAP_M := 1.0
 const WAIT_FOLLOW_S := 1.5
-const WAIT_CAP_S := 4.0
+const WAIT_CAP_S := 5.0  # Q1's census (32851c0d8): 79 % of the waitable jam-seconds clear within 5 s; past it each second buys < 5 points
 const WAIT_COOLDOWN_S := 6.0
 static var wait_queued := 0  # crew-ticks held by the rule
 static var waits := 0  # waits begun
@@ -3009,15 +3010,19 @@ func _wait_blocker(here: Vector3, way: Vector2, preferred: Vector2) -> Array:
 	return [best, kind] if kind != "" else []
 
 
-## "" when `other` is not a friend to wait on (parked; stalled: slow, under way and already facing its way; head-on); "moving" when
-## it drives across my lane or ahead of me my way; "waiting" when it is itself waiting for a friend that will clear (not for me);
+## "" when `other` is not a friend to wait on (parked; stalled: slow, under way and already facing its way; head-on; a leader going
+## my way, which is passed as today); "moving" when it drives across my lane; "waiting" when it is itself waiting for a friend that will clear (not for me);
 ## "turning" when it is slow, under way and its nose is still WAIT_TURN_DEG or more off its own travel direction (it is getting
 ## oriented, as his scout was).
 func _wait_kind(other: Tank, way: Vector2) -> String:
 	var v := Vector2(other.real_velocity.x, other.real_velocity.z)
 	var speed := v.length()
 	if speed >= WAIT_MOVING_MPS:
-		return "" if v.dot(way) <= WAIT_HEAD_ON_COS * speed else "moving"
+		var cos_way := v.dot(way) / speed
+		# v2 (lab 1, a553f85b0: waiting behind a slower friend going my way turned ORCA's overtake into following at its pace, and
+		# the crews behind chained up: same_way jam-seconds +32 %, stalled +32 %): a leader going my way is passed as today; only a
+		# friend driving ACROSS my lane is waited on.
+		return "moving" if cos_way > WAIT_HEAD_ON_COS and cos_way < Traffic.FOLLOW_COS else ""
 	var mover := Movement.of(other)
 	if mover == null or not mover.is_under_way() or mover._goal == Vector3.INF:
 		return ""
