@@ -1,0 +1,69 @@
+== runs by arm x headings: n, never-in runs, all-in median s, jam-seconds a run (mean), episodes a run, held s, slowed-by-nobody s
+  main/headings=crew       runs 32 never-in 18 all-in med   61.9 s | jam  832.8 s/run  eps 883.3/run | held  29.7 s  no-blocker  63.1 s | native_drive ['True']
+  main/headings=formed     runs 32 never-in 16 all-in med   67.5 s | jam  743.1 s/run  eps 774.3/run | held  36.9 s  no-blocker  58.0 s | native_drive ['True']
+
+== main/headings=crew: 28265 episodes, 26646.6 jam-seconds over 32 runs
+  by what the BLOCKER was doing (episode mode): jam-s, share, episodes, median s, share of those jam-s whose blocker cleared the frozen lane within N s
+    turning    1306.2 s   4.9 %  eps 1685  med  0.3 s | <=2s  35%  <=3s  46%  <=5s  59%  <=8s  71% | never-cleared  12%
+    crossing   7226.5 s  27.1 %  eps 8667  med  0.4 s | <=2s  46%  <=3s  61%  <=5s  78%  <=8s  88% | never-cleared   5%
+    same_way   6718.1 s  25.2 %  eps 8423  med  0.4 s | <=2s  54%  <=3s  70%  <=5s  85%  <=8s  93% | never-cleared   2%
+    head_on    2587.3 s   9.7 %  eps 2973  med  0.3 s | <=2s  42%  <=3s  53%  <=5s  69%  <=8s  81% | never-cleared   7%
+    stalled    7580.5 s  28.4 %  eps 5272  med  0.5 s | <=2s  31%  <=3s  35%  <=5s  42%  <=8s  55% | never-cleared  24%
+    parked     1228.0 s   4.6 %  eps 1245  med  0.4 s | <=2s  19%  <=3s  24%  <=5s  31%  <=8s  40% | never-cleared  50%
+  by what the ASKER did: jam-s, share, episodes
+    reversed   7946.1 s  29.8 %  eps 4998
+    slowed     6556.1 s  24.6 %  eps 16670
+    yielded    5813.3 s  21.8 %  eps 1180
+    steered    4583.0 s  17.2 %  eps 3129
+    stopped    1748.2 s   6.6 %  eps 2288
+  the counterfactual over ALL jam-seconds: blocker cleared the frozen lane within  <=2s  42%  <=3s  53%  <=5s  66%  <=8s  76%
+  ...over the 24705 episodes (22999.4 s = 86 %) whose blocker WAS in the asker's lane at the start:  <=2s  32%  <=3s  45%  <=5s  60%  <=8s  72%  never  14%
+  jam-seconds in episodes the blocker cleared BEFORE the episode ended (waiting would have been shorter than what happened): 10719.3 s = 40 %
+  same-squad blocker 37 % of jam-s; wheeled asker 71 %; wheeled blocker 74 %; episodes >= 3 s: 2006 (10988.8 s); >= 8 s: 179
+  blocker heading off the asker's at the start (deg), jam-s weighted: <45 55 %, 45-135 35 %, >135 10 %
+  longest 12 episodes: s, t_clear, class (start -> mode), action, asker (sq) <- blocker (sq), at, start, file
+     44.1 s  clear never  stalled  -> stalled  stopped  Green_Bravo_2          (sq2) <- Green_Bravo_3          (sq2) at [-35.1, -8.0] t+46s lat 0.0 m  crossing-click-main-crew-s7004
+     38.5 s  clear never  same_way -> stalled  reversed Green_Bravo_3          (sq2) <- Green_Bravo_4          (sq2) at [-45.3, -9.3] t+51s lat 1.5 m  crossing-click-main-crew-s7007
+     34.9 s  clear never  stalled  -> parked   reversed Green_Bravo_5          (sq2) <- Green_Bravo_1          (sq2) at [-37.9, -9.5] t+49s lat 0.8 m  crossing-click-main-crew-s7006
+     32.9 s  clear never  parked   -> parked   reversed Green_Echo_2           (sq5) <- Green_Delta_3          (sq4) at [16.1, -10.2] t+49s lat 5.2 m  terminus-click-main-crew-s7006
+     30.5 s  clear never  stalled  -> stalled  reversed Green_Bravo_3          (sq2) <- Green_Bravo_5          (sq2) at [-40.0, -4.5] t+51s lat 0.3 m  crossing-click-main-crew-s7006
+     30.1 s  clear never  head_on  -> stalled  reversed Green_Bravo_3          (sq2) <- Green_Bravo_1          (sq2) at [-46.3, -9.9] t+40s lat 2.4 m  crossing-click-main-crew-s7002
+     26.1 s  clear  13.0  stalled  -> stalled  yielded  Green_Bravo_2          (sq2) <- Green_Bravo_4          (sq2) at [-27.9, -8.7] t+60s lat 0.7 m  crossing-click-main-crew-s7002
+     22.1 s  clear never  parked   -> parked   reversed Green_Bravo_3          (sq2) <- Green_Delta_5          (sq4) at [-11.9, -19.7] t+55s lat 0.4 m  locks-click-main-crew-s7006
+     20.8 s  clear never  turning  -> stalled  yielded  Green_Delta_1          (sq4) <- Green_Echo_1           (sq5) at [25.0, -12.8] t+69s lat 0.0 m  sumps-click-main-crew-s7005
+     20.5 s  clear  10.6  stalled  -> stalled  reversed Green_Alpha_1          (sq1) <- Green_Alpha_4          (sq1) at [-5.0, -0.5] t+46s lat 0.8 m  locks-click-main-crew-s7002
+     20.4 s  clear never  stalled  -> stalled  reversed Green_Bravo_4          (sq2) <- Green_Bravo_2          (sq2) at [-37.5, -8.2] t+51s lat 1.4 m  crossing-click-main-crew-s7007
+     20.1 s  clear never  stalled  -> stalled  reversed Green_Bravo_5          (sq2) <- Green_Bravo_3          (sq2) at [-28.7, -10.7] t+43s lat 1.0 m  crossing-click-main-crew-s7004
+
+== main/headings=formed: 24777 episodes, 23776.7 jam-seconds over 32 runs
+  by what the BLOCKER was doing (episode mode): jam-s, share, episodes, median s, share of those jam-s whose blocker cleared the frozen lane within N s
+    turning    1029.6 s   4.3 %  eps 1449  med  0.3 s | <=2s  37%  <=3s  46%  <=5s  67%  <=8s  79% | never-cleared   8%
+    crossing   6190.9 s  26.0 %  eps 7175  med  0.4 s | <=2s  45%  <=3s  61%  <=5s  76%  <=8s  86% | never-cleared   5%
+    same_way   5704.4 s  24.0 %  eps 7288  med  0.4 s | <=2s  57%  <=3s  72%  <=5s  85%  <=8s  92% | never-cleared   3%
+    head_on    2289.1 s   9.6 %  eps 2674  med  0.3 s | <=2s  45%  <=3s  59%  <=5s  75%  <=8s  83% | never-cleared   6%
+    stalled    7419.9 s  31.2 %  eps 4882  med  0.5 s | <=2s  28%  <=3s  32%  <=5s  41%  <=8s  54% | never-cleared  22%
+    parked     1142.8 s   4.8 %  eps 1309  med  0.4 s | <=2s  21%  <=3s  28%  <=5s  37%  <=8s  43% | never-cleared  43%
+  by what the ASKER did: jam-s, share, episodes
+    reversed   7320.1 s  30.8 %  eps 4385
+    slowed     5614.1 s  23.6 %  eps 14537
+    yielded    5403.3 s  22.7 %  eps 1086
+    steered    3850.8 s  16.2 %  eps 2647
+    stopped    1588.3 s   6.7 %  eps 2122
+  the counterfactual over ALL jam-seconds: blocker cleared the frozen lane within  <=2s  41%  <=3s  52%  <=5s  65%  <=8s  75%
+  ...over the 21752 episodes (20490.0 s = 86 %) whose blocker WAS in the asker's lane at the start:  <=2s  32%  <=3s  44%  <=5s  59%  <=8s  71%  never  14%
+  jam-seconds in episodes the blocker cleared BEFORE the episode ended (waiting would have been shorter than what happened): 9679.3 s = 41 %
+  same-squad blocker 40 % of jam-s; wheeled asker 70 %; wheeled blocker 72 %; episodes >= 3 s: 1852 (10313.9 s); >= 8 s: 160
+  blocker heading off the asker's at the start (deg), jam-s weighted: <45 58 %, 45-135 33 %, >135 9 %
+  longest 12 episodes: s, t_clear, class (start -> mode), action, asker (sq) <- blocker (sq), at, start, file
+     55.2 s  clear never  same_way -> stalled  reversed Green_Bravo_3          (sq2) <- Green_Bravo_2          (sq2) at [-43.8, -10.5] t+35s lat 0.6 m  crossing-click-main-formed-s7005
+     42.6 s  clear never  parked   -> parked   reversed Green_Echo_3           (sq5) <- Green_Delta_2          (sq4) at [34.1, 17.2] t+45s lat 8.9 m  sumps-click-main-formed-s7003
+     41.3 s  clear never  head_on  -> stalled  reversed Green_Bravo_2          (sq2) <- Green_Bravo_4          (sq2) at [-38.1, -7.2] t+40s lat 2.9 m  crossing-click-main-formed-s7007
+     40.6 s  clear   7.6  stalled  -> stalled  reversed Green_Bravo_3          (sq2) <- Green_Bravo_2          (sq2) at [-46.3, -10.0] t+49s lat 3.5 m  crossing-click-main-formed-s7006
+     33.7 s  clear never  stalled  -> stalled  stopped  Green_Bravo_2          (sq2) <- Green_Bravo_4          (sq2) at [-32.9, -7.4] t+56s lat 0.0 m  crossing-click-main-formed-s7005
+     29.4 s  clear never  stalled  -> stalled  reversed Green_Bravo_3          (sq2) <- Green_Bravo_1          (sq2) at [-54.7, -11.1] t+60s lat 0.5 m  crossing-click-main-formed-s7002
+     27.0 s  clear never  stalled  -> stalled  reversed Green_Bravo_2          (sq2) <- Green_Bravo_3          (sq2) at [-39.9, -5.3] t+38s lat 1.5 m  crossing-click-main-formed-s7004
+     26.5 s  clear never  stalled  -> stalled  reversed Green_Alpha_1          (sq1) <- Green_Alpha_4          (sq1) at [-29.2, 31.3] t+41s lat 2.7 m  sumps-click-main-formed-s7001
+     25.8 s  clear   1.5  parked   -> parked   reversed Green_Echo_3           (sq5) <- Green_Delta_1          (sq4) at [18.3, -14.4] t+51s lat 3.9 m  locks-click-main-formed-s7002
+     22.4 s  clear never  stalled  -> stalled  reversed Green_Alpha_3          (sq1) <- Green_Delta_4          (sq4) at [52.1, 6.5] t+68s lat 0.5 m  sumps-click-main-formed-s7004
+     22.1 s  clear never  parked   -> stalled  stopped  Green_Alpha_5          (sq1) <- Green_Bravo_3          (sq2) at [-17.1, -20.5] t+68s lat 0.0 m  locks-click-main-formed-s7003
+     21.8 s  clear  21.4  same_way -> stalled  stopped  Green_Echo_2           (sq5) <- Green_Alpha_3          (sq1) at [3.0, 47.7] t+26s lat 0.8 m  locks-click-main-formed-s7007

@@ -1,0 +1,8 @@
+paired runs: 16 (unpaired: none)
+PASS G5 every-squad-in mean: 76.9 -> 81.6 s (never-in reads as 90; line <= 82.0 = base + 1.645 x se 3.11)
+FAIL G6 never-in squads a run: 0.94 -> 1.44 (line <= 1.33, se 0.242); runs never-in 6 -> 10
+PASS G7 friendly contact ticks: 233375 -> 168531 (line <= 245044)
+reported jam-seconds 13650 -> 16812 (+23.2 %)
+reported nopush counters a run (mean): waits 0, queued crew-ticks 0, time-outs 0, longest 0.0 s
+per cell: crossing s7009: all-in -1.0 -> -1.0, never-in squads 3 -> 4 | crossing s7010: all-in -1.0 -> -1.0, never-in squads 4 -> 3 | crossing s7011: all-in -1.0 -> -1.0, never-in squads 2 -> 4 | crossing s7012: all-in -1.0 -> -1.0, never-in squads 2 -> 2 | locks s7009: all-in 82.3 -> -1.0, never-in squads 0 -> 1 | locks s7010: all-in 48.5 -> -1.0, never-in squads 0 -> 1 | locks s7011: all-in 86.1 -> 82.0, never-in squads 0 -> 0 | locks s7012: all-in 71.0 -> 65.8, never-in squads 0 -> 0 | sumps s7009: all-in -1.0 -> -1.0, never-in squads 3 -> 2 | sumps s7010: all-in 73.3 -> -1.0, never-in squads 0 -> 2 | sumps s7011: all-in -1.0 -> -1.0, never-in squads 1 -> 2 | sumps s7012: all-in 69.3 -> -1.0, never-in squads 0 -> 2 | terminus s7009: all-in 58.1 -> 61.4, never-in squads 0 -> 0 | terminus s7010: all-in 57.1 -> 60.4, never-in squads 0 -> 0 | terminus s7011: all-in 70.9 -> 73.1, never-in squads 0 -> 0 | terminus s7012: all-in 73.7 -> 62.8, never-in squads 0 -> 0
+VERDICT FAIL

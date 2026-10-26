@@ -248,6 +248,45 @@ static var follow_long_waits := 0
 ## Per crew (instance id) -> [run's first tick, last queued tick, the leader's least speed, counted as long]: a static table, not
 ## members, so native's exec-state table (native/src/exec_fields.h, one field per member) is unchanged by a measurement.
 static var _follow_runs := {}
+## Round 41 (manoeuvre Q2, his rule, C41.2; `--traffic-on=wait`, Traffic.DEFAULT_OFF until judged): a crew ORCA would steer round a
+## FRIEND that will clear its lane by itself soon WAITS instead: it keeps its route's steering, drives at a following speed behind
+## the friend (slows, stops) and does not ask it to give way. "Will clear soon" (Q1's census, 32851c0d8, terminus crew s7001: 57 %
+## of jam-seconds had the blocker out of the asker's lane within 3 s, 71 % within 5 s): the friend is MOVING (>= WAIT_MOVING_MPS)
+## ACROSS my lane (not head-on, not going my way), or it is slow, under way and still turning toward where it is going (nose more
+## than WAIT_TURN_DEG off its own travel direction, which is not head-on to mine). A parked friend, a stalled one (slow, under
+## way, already facing its way: blocked itself), a head-on one and a leader going my way are passed as today (v2: following a
+## slower leader instead of passing it cost more than it saved, lab 1 a553f85b0); one that is itself waiting
+## for such a friend is waited on too (the cars behind the jam keep their lane; a cycle is not). The wait hands back to ORCA
+## after WAIT_CAP_S on one friend, and that friend is not waited on again for WAIT_COOLDOWN_S. His words: "wait for the cars ahead
+## of us to move forward, which they inevitably will"; the cap is for the ones that don't. The lane: WAIT_AHEAD_M ahead, both hull
+## radii + WAIT_SLACK_M wide; a friend not yet in it but meeting me there within WAIT_HORIZON_S at my route's velocity counts.
+## Per-crew state is the four `_wait_*` members (exec_fields.h); the counters are measurement.
+const WAIT_SWITCH := "wait"
+const WAIT_AHEAD_M := 12.0
+const WAIT_SLACK_M := 0.5
+const WAIT_HORIZON_S := 2.0
+const WAIT_MOVING_MPS := 1.0
+const WAIT_HEAD_ON_COS := -0.5  # cos 120 deg
+const WAIT_TURN_DEG := 30.0
+const WAIT_GAP_M := 1.0
+const WAIT_FOLLOW_S := 1.5
+const WAIT_CAP_S := 5.0  # Q1's census (32851c0d8): 79 % of the waitable jam-seconds clear within 5 s; past it each second buys < 5 points
+const WAIT_COOLDOWN_S := 6.0
+static var wait_queued := 0  # crew-ticks held by the rule
+static var waits := 0  # waits begun
+static var wait_timeouts := 0
+static var wait_longest := {}  # {crew, for, s}
+static var wait_long := 0  # waits of WAIT_LONG_S or more
+const WAIT_LONG_S := 2.0
+static var wait_by_kind := {}  # moving / turning -> crew-ticks
+## Round 41 (manoeuvre Q4, R41.5; `--traffic-on=holdlane`, DEFAULT_OFF until judged): Q1's census put 42 % of the jam-seconds in
+## long episodes, and those were 46 % give-ways and 33 % reversing: his "cars driving around the jam". A crew stalled behind a
+## FRIEND that will clear by itself (a wait kind, the crosser included) asks nobody to give way, gives way to nobody and does not
+## back off: it holds its lane and slows (ORCA keeps it clear) until the friend has moved. Parked, stalled and head-on friends keep
+## today's asks, yields and unstick. Measurement: holdlane_skips (asks skipped), holdlane_holds (unstick back-offs held).
+const HOLDLANE_SWITCH := "holdlane"
+static var holdlane_skips := 0
+static var holdlane_holds := 0
 
 ## X4 right-of-way. A unit that has made no progress for ASK_SECONDS asks the friend in its way to give way, at most
 ## once every ASK_EVERY seconds.
@@ -302,14 +341,14 @@ static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
 			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
-			"route_not_ready": route_not_ready, "follow_queued": follow_queued, "follow_open": follow_open, "follow_longest": follow_longest.duplicate(), "follow_long_waits": follow_long_waits, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
+			"route_not_ready": route_not_ready, "wait_queued": wait_queued, "waits": waits, "wait_timeouts": wait_timeouts, "wait_long": wait_long, "holdlane_skips": holdlane_skips, "holdlane_holds": holdlane_holds, "wait_longest": wait_longest.duplicate(), "wait_by_kind": wait_by_kind.duplicate(), "follow_queued": follow_queued, "follow_open": follow_open, "follow_longest": follow_longest.duplicate(), "follow_long_waits": follow_long_waits, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
 			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
-			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
+			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_settled_passes": chain_settled_passes, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
 			"yield_spots_shortened": yield_spots_shortened, "yield_holds": yield_holds,
 			"circle_kept": circle_kept, "circle_forward": circle_forward, "circle_none": circle_none,
@@ -358,6 +397,7 @@ static func reset_route_arms() -> void:
 	chain_spots_skipped = 0
 	chain_refusals = 0
 	chain_releases = 0
+	chain_settled_passes = 0
 	chain_holds_refused = 0
 	chain_side_spots = 0
 	setup_refusals = 0
@@ -383,6 +423,14 @@ static func reset_route_arms() -> void:
 	follow_longest = {}
 	follow_long_waits = 0
 	_follow_runs = {}
+	wait_queued = 0
+	waits = 0
+	wait_timeouts = 0
+	wait_long = 0
+	wait_longest = {}
+	wait_by_kind = {}
+	holdlane_skips = 0
+	holdlane_holds = 0
 	press_escapes = 0
 	nose_stops = 0
 	driver_ticks = {}
@@ -926,6 +974,8 @@ func reset() -> void:
 	stalled_ticks = 0
 	_progress_goal = Vector3.INF
 	yield_to = ""  # a new order outranks giving way (K1 response guarantee)
+	_wait_for = ""  # Q2: and a wait
+	_wait_since = -1
 	_order_ticks = 0
 	_repair_for = Vector3.INF
 	_repair_to = Vector3.INF
@@ -1178,7 +1228,8 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# unit back behind a friend that is going nowhere (StarCraft's "idle units get pushed aside": a parked unit should
 	# not cost a moving one a second of standing still before it asks).
 	var held_back := pace < AVOID_ASK_PACE and _order_ticks >= AVOID_GRACE_TICKS and not _off.has("pushidle")
-	if stalled_ticks >= int(ASK_SECONDS * SimClock.TICK_RATE) or held_back:
+	# Round 41 (Q2): a crew waiting for a friend that will clear its lane asks nobody to give way until the wait's cap.
+	if (stalled_ticks >= int(ASK_SECONDS * SimClock.TICK_RATE) or held_back) and _wait_for == "":
 		_ask_left -= ctl._step
 		if _ask_left <= 0:
 			_ask_left = int(ASK_EVERY_SECONDS * SimClock.TICK_RATE)
@@ -1984,6 +2035,29 @@ static func chain_side_on() -> bool:
 	return not Traffic.off("chainside")
 
 
+# ---- Round 41 (manoeuvre M1 v3, stretch; `--giveway-chain=v3` = givewaychain + chainarriving, DEFAULT_OFF until judged) -----------
+# Bar M1 v2's G5 trace (round 40): the last squads in threaded through squads already PARKED at the objective, and the reach kept
+# those crews by their seats in a street with no way round. The chain drift M1 stops is the arrivals' cost: a parked crew pushed
+# down the street while its own squad is still forming up. A parked squad making way for a later squad is the job. So with this
+# on, the reach is in play only while the crew's OWN element is still arriving (not `arrived`, or with tasks queued); once its
+# squad is settled it gives way as today. Native: no mirror yet, so while on the native drive calls _negotiate back (native_yield off).
+static var chain_settled_passes := 0  # measurement: reaches lifted because the crew's own squad was settled
+
+
+static func chain_arriving_on() -> bool:
+	return not Traffic.off("chainarriving")
+
+
+## Is this crew's own element settled (arrived, nothing queued)? False without a brain, a match or an element.
+func _own_squad_settled() -> bool:
+	var brain := ctl as TankBrain
+	if brain == null or brain.game_match == null:
+		return false
+	var elements := Elements.of_match(brain.game_match)
+	var element: Element = elements.of(String(ctl.tank.name)) if elements != null else null
+	return element != null and element.arrived and element.queued_tasks.is_empty()
+
+
 ## The crew's own seat: its move_to point, else the slot its face keeps; INF when it has neither (round 37 M5's seat).
 func yield_seat() -> Vector3:
 	var order: Dictionary = ctl.move_order
@@ -2005,6 +2079,9 @@ func _chain_reach(asker := "", along := Vector2.ZERO) -> Array:
 		return []
 	var off_seat := _flat_distance(ctl.tank.global_position, seat)
 	if off_seat <= CHAIN_M:
+		return []
+	if chain_arriving_on() and _own_squad_settled():
+		chain_settled_passes += 1
 		return []
 	if chain_release_on() and _chain_asker_wedged(asker):
 		chain_releases += 1
@@ -2629,6 +2706,10 @@ func _negotiate(goal: Vector3, direct: bool, still_only := false) -> void:
 		return  # held back by a mover: avoidance is sharing that out; only a stall makes it a negotiation
 	var here := tank.global_position
 	var my_way := _travel_direction(goal, direct)
+	# Round 41 (Q4): a friend that will clear by itself is neither asked nor given way to: hold the lane and let it.
+	if not Traffic.off(HOLDLANE_SWITCH) and _holdlane_patient(other, my_way):
+		holdlane_skips += 1
+		return
 	var i_give_way := false
 	if mover.is_under_way():
 		var difference := _remaining - mover._remaining
@@ -2896,6 +2977,133 @@ func _following(here: Vector3, way: Vector2) -> Tank:
 	return best
 
 
+## Round 41 (Q2): the pace to drive my route at while waiting behind a friend that will clear my lane, or -1.0 when there is nothing
+## to wait for (ORCA's answer stands): a following speed, closing to WAIT_GAP_M behind it over WAIT_FOLLOW_S plus its speed my way.
+func _wait(here: Vector3, way: Vector2, preferred: Vector2, desired: float) -> float:
+	var tick := Engine.get_physics_frames()
+	if _wait_for != "" and tick - _wait_since >= int(WAIT_CAP_S * SimClock.TICK_RATE):
+		wait_timeouts += 1
+		_wait_refused = _wait_for
+		_wait_refused_until = tick + int(WAIT_COOLDOWN_S * SimClock.TICK_RATE)
+		_wait_end()
+		return -1.0
+	var found := _wait_blocker(here, way, preferred)
+	if found.is_empty():
+		_wait_end()
+		return -1.0
+	var other: Tank = found[0]
+	var kind: String = found[1]
+	var name := String(other.name)
+	if name == _wait_refused and tick < _wait_refused_until:
+		_wait_end()
+		return -1.0
+	if _wait_for != name:
+		_wait_end()
+		_wait_for = name
+		_wait_since = tick
+		waits += 1
+	wait_queued += 1
+	wait_by_kind[kind] = int(wait_by_kind.get(kind, 0)) + 1
+	var off := Vector2(other.global_position.x - here.x, other.global_position.z - here.z)
+	var gap := Avoidance.radius_of(ctl.tank.unit_id) + Avoidance.radius_of(other.unit_id) + WAIT_GAP_M
+	var its_along := maxf(Vector2(other.real_velocity.x, other.real_velocity.z).dot(way), 0.0)
+	var v := maxf(off.dot(way) - gap, 0.0) / WAIT_FOLLOW_S + its_along
+	return clampf(v / maxf(desired, 0.1), 0.0, 1.0)
+
+
+func _wait_end() -> void:
+	if _wait_for == "":
+		return
+	var s := (Engine.get_physics_frames() - _wait_since) / float(SimClock.TICK_RATE)
+	if s > float(wait_longest.get("s", 0.0)):
+		wait_longest = {"crew": String(ctl.tank.name), "for": _wait_for, "s": snappedf(s, 0.01)}
+	_wait_for = ""
+	_wait_since = -1
+
+
+## Round 41 (Q2): the friend to wait for: the nearest living friend ahead in my lane (WAIT_AHEAD_M, both radii + WAIT_SLACK_M), else
+## the one meeting me there first within WAIT_HORIZON_S at `preferred`; [] unless `_wait_kind` says it will clear by itself.
+func _wait_blocker(here: Vector3, way: Vector2, preferred: Vector2) -> Array:
+	var tank := ctl.tank
+	var my_r := Avoidance.radius_of(tank.unit_id)
+	var best: Tank = null
+	var best_along := INF
+	var best_meet := WAIT_HORIZON_S
+	for node in ctl.tanks_root.get_children():
+		var other := node as Tank
+		if other == null or other == tank or other.team != tank.team or not other.is_alive():
+			continue
+		var off := Vector2(other.global_position.x - here.x, other.global_position.z - here.z)
+		var along := off.dot(way)
+		if along <= 0.0:
+			continue
+		var width := my_r + Avoidance.radius_of(other.unit_id) + WAIT_SLACK_M
+		if along <= WAIT_AHEAD_M and absf(off.cross(way)) <= width:
+			if along < best_along:
+				best = other
+				best_along = along
+		elif best_along == INF:
+			var v_rel := Vector2(other.real_velocity.x, other.real_velocity.z) - preferred
+			var t := _meet_in(off, v_rel, width)
+			if t < best_meet:
+				best = other
+				best_meet = t
+	if best == null:
+		return []
+	var kind := _wait_kind(best, way)
+	return [best, kind] if kind != "" else []
+
+
+## "" when `other` is not a friend to wait on (parked; stalled: slow, under way and already facing its way; head-on; a leader going
+## my way, which is passed as today); "moving" when it drives across my lane; "waiting" when it is itself waiting for a friend that will clear (not for me);
+## "turning" when it is slow, under way and its nose is still WAIT_TURN_DEG or more off its own travel direction (it is getting
+## oriented, as his scout was).
+func _wait_kind(other: Tank, way: Vector2) -> String:
+	var v := Vector2(other.real_velocity.x, other.real_velocity.z)
+	var speed := v.length()
+	if speed >= WAIT_MOVING_MPS:
+		var cos_way := v.dot(way) / speed
+		# v2 (lab 1, a553f85b0: waiting behind a slower friend going my way turned ORCA's overtake into following at its pace, and
+		# the crews behind chained up: same_way jam-seconds +32 %, stalled +32 %): a leader going my way is passed as today; only a
+		# friend driving ACROSS my lane is waited on.
+		return "moving" if cos_way > WAIT_HEAD_ON_COS and cos_way < Traffic.FOLLOW_COS else ""
+	var mover := Movement.of(other)
+	if mover == null or not mover.is_under_way() or mover._goal == Vector3.INF:
+		return ""
+	# The car ahead of me in the jam is itself waiting for one that will clear: it will move when that one does (a chain, bounded by
+	# the cap); unless it is waiting for ME (a cycle: ORCA sorts that out as today).
+	if mover._wait_for != "":
+		return "" if mover._wait_for == String(ctl.tank.name) else "waiting"
+	var its_way := mover._travel_direction(mover._goal, false)
+	if its_way == Vector2.ZERO or its_way.dot(way) <= WAIT_HEAD_ON_COS:
+		return ""
+	var nose := Vector2(-other.global_basis.z.x, -other.global_basis.z.z).normalized()
+	return "turning" if nose.dot(its_way) < cos(deg_to_rad(WAIT_TURN_DEG)) else ""
+
+
+## When two discs of summed radius `r`, me at the origin, the other at `p` moving at `v_rel` relative to me, first touch (s), or INF.
+static func _meet_in(p: Vector2, v_rel: Vector2, r: float) -> float:
+	var a := v_rel.length_squared()
+	var b := 2.0 * p.dot(v_rel)
+	var c := p.length_squared() - r * r
+	if c <= 0.0:
+		return 0.0 if b < 0.0 else INF
+	if a < 0.000001:
+		return INF
+	var disc := b * b - 4.0 * a * c
+	if disc < 0.0:
+		return INF
+	var t := (-b - sqrt(disc)) / (2.0 * a)
+	return t if t >= 0.0 else INF
+
+
+## Round 41 (Q4, HOLDLANE_SWITCH): is `other` a friend that will clear my way by itself (any wait kind)?
+func _holdlane_patient(other: Tank, way: Vector2) -> bool:
+	if other == null or other.team != ctl.tank.team or not other.is_alive():
+		return false
+	return _wait_kind(other, way) != ""
+
+
 func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false) -> Array:
 	var tank := ctl.tank
 	var here := tank.global_position
@@ -2943,9 +3151,19 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 			Avoidance.radius_of(tank.unit_id), delta, BrainLevers.orca_neighbours(tank.team, String(tank.name)))
 	OrderController._lap("avoid.solve", lap)
 	if chosen.distance_squared_to(route_preferred) < 0.04:
+		if _wait_for != "":
+			_wait_end()  # Q2: ORCA no longer deflects me: the way is clear
 		return [waypoint, 1.0]
 	var speed := chosen.length()
 	var keep := clampf(speed / maxf(desired, 0.1), 0.0, 1.0)
+	# Round 41 (Q2, his rule): wait for a friend that will clear my lane by itself instead of steering round it (WAIT_SWITCH).
+	if not held and not Traffic.off(WAIT_SWITCH):
+		if yield_to != "" or _pass_by != "" or _order_ticks < AVOID_GRACE_TICKS:
+			_wait_end()
+		else:
+			var waited := _wait(here, to / distance, route_preferred, desired)
+			if waited >= 0.0:
+				return [waypoint, waited]
 	# Round 40 (F1): a wheeled crew queues behind a friend going its way instead of being steered round it (FOLLOW_SWITCH).
 	if not held and not Traffic.off(FOLLOW_SWITCH) and wheel_radius() > 0.0:
 		var leader := _following(here, to / distance)
@@ -4033,6 +4251,11 @@ func _unstick(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 		if _stuck_time == 0.0:
 			_stuck_from = ctl.tank.global_position
 		_stuck_time += delta
+		# Round 41 (Q4): stalled against a friend that will clear by itself: no back-off, no escape; the clock restarts.
+		if _stuck_time >= STUCK_SECONDS and not Traffic.off(HOLDLANE_SWITCH) and _holdlane_patient(_holdlane_blocker(order), _travel_direction(_goal, bool(order.get("direct", false)))):
+			_stuck_time = 0.0
+			holdlane_holds += 1
+			return
 		if _stuck_time >= STUCK_SECONDS and honest:
 			_stuck_time = 0.0
 			_escape_begin(cmd, order, pinned_on)
@@ -4157,6 +4380,19 @@ static func reset_escape_arms() -> void:
 
 ## The hull's escape is the honest one under this order: returns what pins it (a Tank, or the hull itself standing for
 ## "terrain"), or null for round 29's rule. Only a routed `move_to` (a goal; never a raw `drive`, a face or a direct hop).
+## Round 41 (Q4): the hull this crew is stalled against: a hull it touches, else the nearest hull ahead (BLOCKER_REACH); null if none.
+func _holdlane_blocker(order: Dictionary) -> Tank:
+	var tank := ctl.tank
+	for i in tank.get_slide_collision_count():
+		var hull := tank.get_slide_collision(i).get_collider() as Tank
+		if hull != null:
+			return hull
+	if _goal == Vector3.INF:
+		return null
+	var name := _hull_ahead(_goal, bool(order.get("direct", false)))
+	return ctl.tanks_root.get_node_or_null(NodePath(name)) as Tank if name != "" else null
+
+
 func _honest_blocker(order: Dictionary) -> Object:
 	if String(order.get("type", "")) != "move_to" or bool(order.get("direct", false)):
 		return null
@@ -6041,6 +6277,12 @@ var _kturn_hit_m := INF
 
 ## The spot the current give-way took (round 6's table name, `back(m)`, `short:…`, or `hold`); "" when not yielding.
 var yield_spot := ""
+## Round 41 (Q2, WAIT_SWITCH): the friend this crew is waiting for and since which physics frame; the friend a timed-out wait refuses
+## until `_wait_refused_until`. Declared last: native's exec-state table (exec_fields.h) appends them after yield_spot.
+var _wait_for := ""
+var _wait_since := -1
+var _wait_refused := ""
+var _wait_refused_until := -1
 const CENSUS_HOPS := 4
 
 

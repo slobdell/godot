@@ -1,0 +1,25 @@
+32 runs, 32236 episodes (30460 jam-s); reversing episodes 5906 (18 % of episodes, 9696 jam-s = 32 %)
+
+what has the hull moving backward (reversed crew-ticks, all): coasting 40 %, shoved 30 %, other 13 %, kturn 6 %, yield 3 %, other+touch 3 %, kturn+touch 3 %, unstick 1 %, unstick+touch 0 %, yield+touch 0 %
+  wheeled (85652 ticks): coasting 44 %, shoved 24 %, other 15 %, kturn 7 %, other+touch 3 %, kturn+touch 3 %, yield 3 %, unstick 1 %, unstick+touch 0 %, yield+touch 0 %
+  tracked ( 8392 ticks): shoved 89 %, yield 7 %, unstick 2 %, coasting 1 %, yield+touch 1 %, unstick+touch 0 %, other 0 %
+  shoved = moving backward with no reverse throttle while touching a hull; coasting = the same, touching nothing; kturn = a planned three-point-turn leg; unstick = the blind back-off; escape = H1's escape; yield = a give-way's own drive; order:<type> = a face / hold / stop order's gears; circle = Steering's circle test on a forward order; other = the drive's own reverse toward a steer point behind the hull; +touch = a hull in contact
+
+reversing jam-seconds by the episode's dominant cause: coasting 44 %, shoved 33 %, other 13 %, kturn 5 %, yield 3 %, unstick 2 %
+
+how far it backed (metres moving backward, an episode): median 0.5, p75 1.1, p90 2.1, max 19.1; farthest from where the reverse began: median 0.7, p90 4.2
+episodes that got more than 3 m from where the reverse began: 873 (3718 jam-s); of those, back within 2 m of it by the episode's end (re-entered): 26 (3 %)
+
+blocker during reversing episodes (jam-s): stalled 42 %, crossing 23 %, same_way 18 %, head_on 6 %, turning 6 %, parked 5 %
+asker's drive phase during them (ticks): driving 86 %, blocked 12 %, yielding 2 %
+by hull (jam-s): wheeled 85 %, tracked 15 %; by unit: ifv 50 %, scout 36 %, tank 15 %
+
+longest 8 reversing episodes: s, dominant cause, backed m, max m, re-entered, class, asker <- blocker, file
+   44.0 s  other+touch    back 18.4 m  max  6.2 m  re-entered False  stalled  Green_Bravo_4        <- Green_Bravo_3        crossing-click-nopush-crew-s7010
+   33.3 s  shoved         back  4.4 m  max 16.7 m  re-entered False  stalled  Green_Charlie_4      <- Green_Delta_5        crossing-click-main-crew-s7010
+   32.5 s  yield          back 18.3 m  max 17.1 m  re-entered False  stalled  Green_Alpha_4        <- Green_Bravo_1        crossing-click-nopush-crew-s7012
+   32.4 s  coasting       back  0.9 m  max  9.1 m  re-entered False  stalled  Green_Bravo_2        <- Green_Bravo_3        crossing-click-nopush-crew-s7012
+   29.3 s  yield          back  4.7 m  max  4.5 m  re-entered True   stalled  Green_Bravo_3        <- Green_Bravo_2        crossing-click-nopush-crew-s7012
+   29.2 s  yield          back  4.8 m  max  4.8 m  re-entered True   stalled  Green_Bravo_3        <- Green_Bravo_1        crossing-click-main-crew-s7012
+   29.0 s  coasting       back 10.5 m  max  4.4 m  re-entered True   stalled  Green_Bravo_1        <- Green_Bravo_2        crossing-click-nopush-crew-s7011
+   28.3 s  coasting       back 13.1 m  max  7.9 m  re-entered False  stalled  Green_Bravo_5        <- Green_Bravo_1        locks-click-nopush-crew-s7010

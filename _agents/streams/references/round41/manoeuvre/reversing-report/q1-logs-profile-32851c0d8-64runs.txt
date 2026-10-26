@@ -1,0 +1,9 @@
+Q1 lab 1 logs (32851c0d8, builder0, 64 runs, native drive): reversing episodes (>= 5 ticks moving backward)
+episodes 53042 (50423 jam-s); reversing 9383 (18% of episodes, 15266 jam-s = 30%); median 0.9 s, p90 3.5 s; >= 3 s: 1256 (7219 jam-s)
+by blocker class (jam-s):    stalled 35%, crossing 27%, same_way 17%, head_on 8%, parked 7%, turning 6%
+by asker unit (jam-s):       ifv 48%, scout 29%, tank 23%
+by asker hull (jam-s):       wheeled 77%, tracked 23%
+by map (jam-s):              crossing 37%, sumps 25%, locks 24%, terminus 14%
+same-squad blocker (jam-s):  other_squad 57%, same_squad 43%
+asker's drive phase during reversing episodes (ticks):  driving 85%, blocked 13%, yielding 1%
+t_clear in reversing episodes: median 2.4 s, never within 20 s: 13%; blocker cleared before the episode ended: 32% of their jam-s

@@ -1,0 +1,5 @@
+arm             runs     pass    rim s  deck jam    worst   arrival over 3 s
+arm-off           72    72/72     26.7      58.4      2.2      32.9        0
+arm-on            72    71/72     25.2      47.6      4.2      32.8        1
+    FAIL locks green seed 9030 tick 15: crossed 4/4, worst rim 4.2 s (Green_S_3 4.2, Green_S_1 0.0)
+paired arm-off -> arm-on over 72 runs: rim 26.7 -> 25.2 s (-6 %; line <= 21.4 = 0.8 x OFF), per-run mean -0.02 s, se 0.09 (-0.2 se; line <= -2 se)

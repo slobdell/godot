@@ -1,0 +1,10 @@
+paired runs: 16 (unpaired: none)
+FAIL D1 jam-seconds: 13365.4 -> 14506.1 s (+8.5 %; line <= 10692.3); paired mean +71.3 s a run, se 31.5 (2.3 se; line <= -2 se)
+FAIL D2 every-squad-in: mean 80.4 -> 83.3 s (never-in reads as 90); paired mean +2.9 s, se 2.3 (1.2 se)
+PASS G5 never-in runs: 10 -> 9 of 16
+PASS G6 friendly contact ticks: 235328 -> 237104 (line <= 258861)
+  main jam-s by blocker: stalled 3924 (29 %), crossing 3656 (27 %), same_way 3241 (24 %), head_on 1302 (10 %), turning 685 (5 %), parked 557 (4 %)
+  wait jam-s by blocker: stalled 4797 (33 %), same_way 3614 (25 %), crossing 3456 (24 %), head_on 1334 (9 %), turning 807 (6 %), parked 498 (3 %)
+  wait rule counters a run (mean): waits 1725 (>= 2 s: 31), queued crew-ticks 11229, time-outs 6, longest 9.6 s; by kind {'moving': 131395, 'turning': 18156, 'waiting': 30114}
+  per cell: crossing s7001 crew: jam 938 -> 1182, all-in -1.0 -> -1.0 | crossing s7002 crew: jam 1182 -> 1137, all-in -1.0 -> -1.0 | crossing s7003 crew: jam 1026 -> 1065, all-in -1.0 -> -1.0 | crossing s7004 crew: jam 1181 -> 1014, all-in -1.0 -> -1.0 | locks s7001 crew: jam 824 -> 796, all-in -1.0 -> 69.1 | locks s7002 crew: jam 996 -> 1043, all-in -1.0 -> 89.9 | locks s7003 crew: jam 930 -> 1065, all-in -1.0 -> -1.0 | locks s7004 crew: jam 736 -> 820, all-in 80.8 -> -1.0 | sumps s7001 crew: jam 1022 -> 1051, all-in -1.0 -> -1.0 | sumps s7002 crew: jam 721 -> 872, all-in -1.0 -> 88.9 | sumps s7003 crew: jam 740 -> 1114, all-in 67.2 -> -1.0 | sumps s7004 crew: jam 968 -> 955, all-in -1.0 -> -1.0 | terminus s7001 crew: jam 474 -> 642, all-in 55.7 -> 66.5 | terminus s7002 crew: jam 467 -> 549, all-in 57.6 -> 69.0 | terminus s7003 crew: jam 593 -> 635, all-in 56.6 -> 69.2 | terminus s7004 crew: jam 566 -> 567, all-in 68.6 -> 70.3
+VERDICT FAIL
