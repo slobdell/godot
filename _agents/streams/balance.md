@@ -87,6 +87,15 @@ and the judge's readings exactly as Bar B2s (`search.py bar <root> <BASE> <ARM>`
 hp/shield/front-side armour at +5 %, its damage +15 %). **Frozen ARM = d385cd308** (`balance/b2s-v2-arm` in ../godot-balance-arm:
 5be511659 + apply, 0 mismatches + the R40.18 re-pins, prices unchanged from c5r2); its full check + sim-baseline-record x2 run on
 builder0 now; the dev screen (base + lawt5 on 5be511659 + overrides, 8501-8540) on builder2 after B2s's series.
+  **v2 ARM d385cd308's full check: red on sim-baseline (expected) AND bridge-pooled** (builder0 `make check exited 2`, 3212 passed /
+  0 failed; bridge-pooled 17 of 18: rust tick 15 seed 2, one crew 5.4 s on the river's rim, bar 3 s). sim-baseline-record: 13 maps read
+  twice, agreeing (`~/balance-runs/sim_baseline_adopt-d385cd308.json`). **Cause (traced, builder0 light, branch balance/bridge-trace
+  5a233f42b = ARM + a `bridge-trace` target only):** the drill is 4 Law Assault Guns v 3 Syndicate Lancers; v2's Law toughness changes
+  the far-bank fight and who reaches the bridge mouth first. Rust_S_3's slot goal is re-dealt three times on the approach, it wedges
+  at the deck entry (17.5-20 s), yields 7 m back to Rust_S_1 (20.5-24.5 s) and wedges at the far end (29-32 s): the crossing queue's
+  traffic (manoeuvre's give-way / queue), not the brains. Routed to manoeuvre via the orchestrator; trace in
+  `~/balance-runs/bridge-trace-d385cd308-rust-t15-s2.log`. The laptop doesn't reproduce it (no native library there: the GDScript brain
+  plays a different fight, arrived 31.0 s, rim 0). Bar v2 waits for an ARM green but for sim-baseline; bridge-pooled is not retuned.
 
 **BAR B2s, LINES VERDICT (2026-10-25 17:30 PDT): FAILS on G3 (one cell); deciding, G1, G2 and G4 pass.** BASE 5be511659 v ARM
 66c4839a2, builder2 J24, 8301-8340 + 8401-8440, 1600 fights an arm, 80 of 80 seeds each (ARM: 1 attempt lost, retried),
