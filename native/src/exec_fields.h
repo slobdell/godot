@@ -176,7 +176,11 @@
 	F(bool, BOOL, _kturn_rolling) \
 	F(Array, ARRAY, _kturn_plan_pose) \
 	F(double, FLOAT, _kturn_hit_m) \
-	F(String, STRING, yield_spot)
+	F(String, STRING, yield_spot) \
+	F(String, STRING, _wait_for) \
+	F(int64_t, INT, _wait_since) \
+	F(String, STRING, _wait_refused) \
+	F(int64_t, INT, _wait_refused_until)
 
 #define EXEC_GUNNERY_FIELDS(F) \
 	F(Variant, OBJECT, ctl) \
