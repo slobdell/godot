@@ -101,6 +101,14 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   v8 = v7 + `--group-column-toward=on`: a column that would put any squad > 10 m farther from the click than it stands is refused and
   today's places stand. Judge `g1v8` = g1v4 unamended + one guard: places sent > 10 m away (toward_m < -10) ARM <= BASE + 2 over all
   cells (v7's dev data reads 12 -> 20: fails, catches the flaw). Two variants dev-read on 7007-7012. The frozen tree gets its own full check.
+- **Bar Q3, the bridge wait (manoeuvre; FILED in Status on tree f6d9d7b1b = code 1199fad11, 2026-10-26 ~05:00, before any number on
+  9025-9048).** Rule = Q2 v2's keying (`--traffic-on=wait`: crossing + turning friends + the waiting chain; v3/v4/waitcross to history;
+  Q4 holdlane OFF). R41.6 condition (1) met first (overrides tree 0740c8ece, builder0 light, 18 runs: 17/18 -> 18/18, pooled rim 14.2 ->
+  6.4 s, worst crew 5.1 -> 3.0 s, deck 17.1 -> 19.2). Deciding (R41.3): pooled rim on 9025-9036 x ticks {1,8,15} x both sides, on main AND
+  the overrides tree, ON <= 0.8 x OFF and paired mean < 0 by >= 2 se; every crew crosses; runs over 3 s ON <= OFF. Guards (R41.6):
+  9037-9048 his 5-squad across click, all-in mean and never-in squads each ARM <= BASE + 1.645 se, contacts <= BASE x 1.05 (q3_judge.py);
+  fight guards G1-G4 via wedge trace on 9037-9042. Both arms `--brains-off=native_drive`; O2 OFF; four variants labbed on 7001-7004 +
+  the 18-run drill noted. Ships ON only with native's twin and bridge-pooled's hard line green.
 
 ## Rulings (round 41)
 
