@@ -110,7 +110,9 @@ a set with no off-screen shot at all reads 0 (the best result: the camera faced 
 - G3 action share ARM >= BASE - 10 points (ATTACK).
 - G4 no swinging: yaw reversals/min ARM <= BASE + 1, on each workload (ATTACK, AMBUSH pooled, RETREAT).
 - G5 his own squad stays on screen (the orchestrator's ask: a turn toward a threat while he drives away could lose his squad): own
-  on screen % ARM >= BASE - 5 points, on each workload.
+  on screen % ARM >= BASE - 5 points, on each workload. **Amended before any 9701+ number (4fd517b83):** a unit behind an uncut
+  perimeter wall is not on screen (`CameraLook.wall_hides`): projection alone scored the first retreat clip 99.7 % while the wall
+  hid his scout.
 - G6 every run CAMERA_TRACE_DONE ok=true, no SCRIPT ERROR, every scenario run staged ok, both arms.
 
 ### K4.2 dev reads (dev seeds 7001-7012, NEVER a bar; builder0 light; headless 1920x1080 @60; Terminus; 12 runs a row)
