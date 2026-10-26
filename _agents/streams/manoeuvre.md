@@ -195,6 +195,61 @@ met by v2's crosser key (-58 %) and failed by v4's turning key (+32 %): at the d
 CROSSER by its velocity before its nose is 30 deg off its next leg, so v4 fires late. The group order is neutral-to-worse for all
 four (v4 the mildest). The wait family trades the bridge for his group order; the orchestrator rules (message sent 04:50).
 
+### Bar Q3: FILED 2026-10-26 ~05:00 PDT on tree f6d9d7b1b, BEFORE any number on 9025-9048 (R41.3 + R41.6)
+
+- **The rule judged:** `--traffic-on=wait` as restored at 1199fad11 (v2's functions byte for byte; c8e329b23's reads are its dev
+  reads): a crew ORCA would steer round a FRIEND ahead in its lane (12 m, both radii + 0.5 m; or meeting it there within 2 s) that is
+  crossing its lane (moving >= 1 m/s, not head-on, not going its way), or slow, under way and turning toward its own next leg, or
+  itself waiting for such a friend, keeps its route's steer point and follows at a closing pace, asking nobody to give way; 5 s cap,
+  6 s cooldown. **Why these classes:** Q1's census (crossing 27 %, turning 5 % of jam-seconds, the blocker gone within 5 s for
+  78 % / 59 % of them); same_way dropped after lab 1 (following a slower leader cost more than passing it). Q4 `holdlane` OFF.
+  Orders' O2 OFF in both arms (`--group-depart` unset; R41.4). The overrides tree = f6d9d7b1b + 8e257f3bc + d385cd308.
+- **Gate:** the tree's full check green on builder0 FIRST (C31.1; `make remote T=check` on f6d9d7b1b, result below), then the series from
+  that frozen tree (R40.13: no game/ or tests/ commits until its end line).
+- **Arms:** OFF (default) v ON `--traffic-on=wait`; **both `--brains-off=native_drive`** (the pair compares the rule alone; the
+  GDScript and C++ drives are bit-identical per test_native_drive). Settle's and orders' switches at main's defaults.
+- **Deciding (R41.3): pooled rim-seconds** on bridge-drill seeds 9025-9036 x start ticks (1, 8, 15) x both sides (72 runs an arm a
+  tree), on main AND the overrides tree: ON <= 0.8 x OFF pooled AND the paired per-run mean < 0 by >= 2 se, on BOTH trees. Every
+  surviving crew crosses in both trees with ON. Runs with a crew over the 3 s rim line: ON <= OFF (named). bridge-pooled's own 18/18
+  line stays a hard guard (the check).
+- **Group-order guards (R41.6, strict):** orders' O1 probe cells crossing / locks / sumps / terminus x 9037-9048 x crew headings
+  (48 runs an arm), `q3_judge.py`: G5 every-squad-in mean ARM <= BASE + 1.645 se (paired; never-in reads as 90 s); G6 never-in
+  squads a run ARM <= BASE + 1.645 se; G7 friendly contact ticks ARM <= 1.05 x BASE. "He asked for better traffic on exactly that
+  order. A bridge fix that visibly worsens it doesn't ship."
+- **Fight guards:** `manoeuvre-wedge-trace` locks / terminus / sumps x 9037-9042 (18 fights an arm), `follow_judge.py --on-arm=wait`
+  G1-G4: give-way deaths and stuck deaths ON - OFF <= max(2 paired se x n, 3); friendly contact ticks <= 1.10 x; kill share within
+  0.03 and deaths within 5 %. (Its D and G5-G7 lines are reported here, not judged: the group-order guards above replace them.)
+- **Reported:** deck-jam seconds, mean arrival, jam-seconds (probe_jam), the rule's counters (waits, time-outs, longest) per tree
+  and arm.
+- **Dev history (C41.1):** four wait variants were labbed on the group-order cells 7001-7004 (v1 +8.8 %, v2 +7.3 %, v3 +8.5 %, v4
+  +4.9 % jam-seconds) and the bridge drill's seeds 1-3 (v1 / v2 / v4 under the overrides; v2 / v4 on main). No number on 9025-9048
+  has been read. Evidence: `~/overnight-manoeuvre/r41/` (jamlab2-4, v4labs, bridgelab1, bridgev2).
+- **Judge:** `bridge_lab_table.py --pair` per tree (deciding), `q3_judge.py` (group-order guards), `follow_judge.py` (fight guards);
+  `~/overnight-manoeuvre/r41/barq3.sh` runs the series. A pass goes to the orchestrator: ships ON with native's twin (CP41.1, the
+  orchestrator merges it alone and tells balance). A fail: OFF, no re-run on these seeds; then R41.6's (c).
+
+### v4 reads (f7fd7819a; `~/overnight-manoeuvre/r41/v4labs/`, builder0 light, native for the bridge, GDScript both arms for the group order)
+
+| Read | OFF -> v4 ON |
+|---|---|
+| bridge, overrides tree (225087f27) | **17/18 -> 18/18**; pooled rim 14.2 -> 9.8 s (-31 %; paired -0.24 s a run, se 0.30, -0.8 se); deck jam 17.1 -> 10.4; worst crew 5.1 -> 1.5; arrival 34.9 -> 36.7 |
+| bridge, main (f7fd7819a) | 18/18 -> 18/18; pooled rim 8.1 -> **10.7 s (+32 %**; +0.14 s a run, se 0.20); deck jam 7.5 -> 9.7; worst 1.5 -> 2.4; arrival 36.6 -> 37.8 |
+| group order, 16 paired cells (7001-7004 crew) | jam-seconds 13,365 -> 14,015 (+4.9 %; +41 s a run, se 46, 0.9 se); all-in 80.4 -> 82.3 (+1.9 s, se 2.7); never-in 10 -> 10; contacts -1.3 %; waits 1,129 a run (17 >= 2 s), turning 57k / waiting 48k crew-ticks |
+
+**The wait family's table so far (bridge rim pooled, 18 runs; group order 16 paired cells):**
+
+| Variant | Keys | Overrides bridge | Main bridge | Group order jam-s |
+|---|---|---|---|---|
+| v1 (a553f85b0) | crossing + same_way + turning(slow) + chain | 17/18 -> 18/18, rim 14.2 -> 1.3, arrival 34.9 -> 32.7 | not read | +8.8 % (2.4 se) |
+| v2 (c8e329b23) | crossing + turning(slow) + chain | read running (`bridgev2/`) | 18/18, rim 8.1 -> 3.4, deck 7.5 -> 16.2 | +7.3 % (1.9 se) |
+| v3 (aaac5c133) | v2 + lock-on, lane-exit, tie-break | not read | not read | +8.5 % (2.3 se) |
+| v4 (f7fd7819a) | turning leader (moving or slow) + chain | 17/18 -> 18/18, rim 14.2 -> 9.8 | 18/18, rim 8.1 -> 10.7 (+32 %) | +4.9 % (0.9 se) |
+
+Reading: every variant clears the overrides' failing run (the CP41.1 gate as a hard guard); the deciding pooled-rim line on main is
+met by v2's crosser key (-58 %) and failed by v4's turning key (+32 %): at the deck mouth the leader swinging onto the deck reads as a
+CROSSER by its velocity before its nose is 30 deg off its next leg, so v4 fires late. The group order is neutral-to-worse for all
+four (v4 the mildest). The wait family trades the bridge for his group order; the orchestrator rules (message sent 04:50).
+
 ### Bar Q3 (DRAFT, not filed; filed the minute v4's dev reads justify it, BEFORE any number on 9025-9048)
 
 - **The rule judged:** `--traffic-on=wait` as of v4 (f7fd7819a or a later hash named at filing): a crew waits (holds its route's
