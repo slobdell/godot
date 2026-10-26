@@ -89,6 +89,10 @@ OFF code since perf-judged 245499bf1.
 the mixed army's IFVs and MG scouts can't hurt tanks (autocannon 5-10 % of its damage on a tank's front). Recommended: give IFVs a
 real anti-tank missile (as the Bradley's TOW), slow and limited; the alternative is letting penetration change too.
 
+**Round-41 candidate (native, tools):** `tools/remote.sh`'s `--checksum` re-copy after a failed copy-back used a literal `~` path
+(`/home/slobdell/~/tank_squad/godot-manoeuvre/`, exit 12; manoeuvre, builder2, 2026-10-25 ~21:00). Also: N4 done, no fix (CORE-MATH v
+libm 4-4 over 8 rounds, c004fc377, builder0 quiet); builder0 disk 91 % (9.6 G free) before close cleanup.
+
 **Round-41 candidate (orders, 385a9be32):** G1 v7 starts on T1-ON main: there the G1 v6 arm's terminus 5 route twitch gap closes (dev,
 builder2 J4, a1602cca9 = main 9d5907ddd + c7d642aeb, 3801-3812, n 12: 27.6 v 27.0 m); its open item is s3805's whole-squad wedge (never-in
 0 v 1, R38.44). Settle's matching item: a cap deploy with a bunched squad deals least-total (_fit_deal), maybe with a street-axis lay
