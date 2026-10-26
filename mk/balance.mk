@@ -18,3 +18,25 @@ balance-tuned: import ## B4: the stats as the simulation reads them under a cand
 	$(GODOT) --headless --path . --script res://tools/balance/catalog_dump.gd -- --tune=$(TUNE_SPEC) 2>&1 \
 		| sed -n 's/^TUNED_JSON //p' > $(BUILD_DIR)/balance/tuned.json
 	test -s $(BUILD_DIR)/balance/tuned.json
+
+# Round 41 (B5, C41.5): guard-run (mk/scoreboard.mk) played by tests/tactics/face_probe.gd: the same fights, folders, stamp
+# and resume (GUARD_* are scoreboard.mk's), plus a FACE line a fight (where the rounds land on tanks). Driven on builder2 by
+# tools/balance/guard_probe.sh (guard.sh with this target's name); read by tools/balance/search.py faces.
+.PHONY: balance-guard-run
+balance-guard-run: import ## B5: guard-run through the face probe (FACE lines) -> build/guards/ (tools/balance/guard_probe.sh drives it)
+	@stamp="$(GUARD_STAMP) | probe face"; if [ -n "$(GUARD_RESUME)" ] && [ "$$(cat $(GUARD_DIR)/stamp 2>/dev/null)" = "$$stamp" ]; then \
+		echo ">> balance-guard-run: resuming, $$(grep -l '^GUARD_RESULT' $(GUARD_DIR)/*/*.log 2>/dev/null | wc -l) fights already read"; \
+	else rm -rf $(GUARD_DIR) && mkdir -p $(GUARD_DIR) && echo "$$stamp" > $(GUARD_DIR)/stamp; fi
+	@echo ">> guard-run on $$(hostname) | commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)} | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | kinds '$(GUARD_KINDS)' | args '$(GUARD_ARGS)' | seeds $(firstword $(GUARD_SEEDS))+ | probe face | load $$(cut -d' ' -f1-3 /proc/loadavg)" | tee -a $(GUARD_DIR)/run.txt
+	@for kind in $(GUARD_KINDS); do mkdir -p $(GUARD_DIR)/$$kind; for seed in $(GUARD_SEEDS); do for arena in $(GUARD_AT); do \
+		for side in $(GUARD_SIDES); do echo "$$kind $$arena $$seed $$side"; done; done; done; done | \
+		while read -r kind arena seed side; do grep -qs "^FACE" $(GUARD_DIR)/$$kind/$$arena-$$seed-$$side.log \
+			|| echo "$$kind $$arena $$seed $$side"; done | \
+		xargs -r -P $(GUARD_JOBS) -L 1 sh -c 'timeout 1800 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/tactics/face_probe.gd -- --skirmish --demo-match --clean --seed=$$2 --arena=$$1 --mute \
+		--guard=$$0 --guard-side=$$3 --seconds=$(GUARD_SECONDS) $(GUARD_ARGS) > $(GUARD_DIR)/$$0/$$1-$$2-$$3.log 2>&1 || true; \
+		grep -q "^FACE" $(GUARD_DIR)/$$0/$$1-$$2-$$3.log || echo "  MISSING FACE $$0 $$1 s$$2 $$3"'
+	@echo ">> guard-run done: $$(grep -l '^GUARD_RESULT' $(GUARD_DIR)/*/*.log 2>/dev/null | wc -l) of $$(ls $(GUARD_DIR)/*/*.log | wc -l) fights" | tee -a $(GUARD_DIR)/run.txt
+
+balance-faces: ## B5: the mixed army's damage to tanks by face from a face-probed mono series: ROOT=~/balance-guard-raw/b5 MATCH=-mono-base- [BASE_MATCH=...]
+	$(PYTHON) tools/balance/search.py faces $(ROOT) --match "$(MATCH)" $(if $(BASE_MATCH),--base-match "$(BASE_MATCH)")

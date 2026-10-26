@@ -6,12 +6,17 @@ values, the same file native's `--unit-overrides` reads):
      "weapons": {"scrap_cannon": {"damage": 299}}}
 
 His bounds (R40.1): each value within +/-15 % of today's (toughness = max_health, max_shield, armor faces; damage =
-weapon damage; cost), no other key. Subcommands:
+weapon damage; cost), no other key. Round 41 (B5, C41.5): his own two levers, a tank's turret traverse
+(turret_turn_rate_deg) and hull speed / turn (max_forward_speed, max_reverse_speed, hull_turn_rate_deg), may be screened at
+ANY size (LEVER_KEYS; `scale`'s turret= / speed= / hturn= multipliers are not clamped). Subcommands:
 
     search.py check CAND.json            bounds + shared-weapon check; prints the --tune string
     search.py scale NAME OUT.json gangs:hp=1.15,dmg=1.15 syndicate:hp=0.85 ...   a per-faction candidate
-    search.py run CAND.json COMMIT SEEDS...   guard.sh on builder2 (GUARD_OVERRIDES, J16, its own folder)
+    search.py run CAND.json COMMIT SEEDS...   guard.sh on builder2 (GUARD_OVERRIDES, J16, its own folder); --probe runs
+                                              tools/balance/guard_probe.sh instead (the face probe: FACE lines, B5)
     search.py score RAW [--base RAW]          the faction table and its flatness (and the paired change v BASE)
+    search.py mono ROOT [--match X --base-match Y]   the mono-tank line (B5 / G8): win share, units, median length
+    search.py faces ROOT [--match X --base-match Y]  B5's WHY: the mixed army's damage to tanks by the face it struck
 
 `run` passes the candidate through native's N3 (`GUARD_OVERRIDES` -> `--unit-overrides`, on main since b25b803e5), which
 honours cost in the deal too; its commit must carry N3. (066d0ff95's dry run used `--tune`, which can't move a cost.)
@@ -39,6 +44,12 @@ ROOT = HERE.parent.parent
 BOUND = 0.15
 FACTIONS = ["condemned", "gangs", "law", "syndicate"]
 UNIT_KEYS = {"max_health", "max_shield", "cost"}
+# Round 41 (C41.5): his levers, any size; `scale` multiplies them with turret= (turret_turn_rate_deg), speed= (forward AND
+# reverse: a slower hull is slower both ways) and hturn= (hull_turn_rate_deg).
+LEVER_KEYS = {"turret_turn_rate_deg", "max_forward_speed", "max_reverse_speed", "hull_turn_rate_deg"}
+LEVER_MULT = {"turret": ("turret_turn_rate_deg",), "speed": ("max_forward_speed", "max_reverse_speed"),
+              "hturn": ("hull_turn_rate_deg",)}
+FACES = ("front", "side", "rear")
 ARMOR_FACES = {"front", "side", "rear"}
 WEAPON_KEYS = {"damage"}
 LOG = re.compile(r"^(?P<arena>[a-z_]+)-(?P<seed>\d+)-(?P<side>green|rust)\.log$")
@@ -76,8 +87,14 @@ def check(cand: dict, catalog: dict) -> list[str]:
                         problems.append(f"{unit_id}.armor.{face}: no such face")
                     elif not _within(float(v), float(units[unit_id]["armor"][face])):
                         problems.append(f"{unit_id}.armor.{face}={v} is past +/-15 % of {units[unit_id]['armor'][face]}")
+            elif key in LEVER_KEYS:
+                if key not in units[unit_id]:
+                    problems.append(f"{unit_id}.{key}: not in the catalog (re-run make balance-catalog)")
+                elif not (float(value) > 0):
+                    problems.append(f"{unit_id}.{key}={value}: a lever must stay positive")
             elif key not in UNIT_KEYS:
-                problems.append(f"{unit_id}.{key}: not a stat he allowed (hp, shield, armour, damage, cost)")
+                problems.append(f"{unit_id}.{key}: not a stat he allowed (hp, shield, armour, damage, cost; levers: "
+                                + ", ".join(sorted(LEVER_KEYS)) + ")")
             elif not _within(float(value), float(units[unit_id][key])):
                 problems.append(f"{unit_id}.{key}={value} is past +/-15 % of {units[unit_id][key]}")
     for weapon_id, over in cand.get("weapons", {}).items():
@@ -211,7 +228,7 @@ def scale(name: str, specs: list[str], catalog: dict) -> dict:
             for k, v in mult.items():
                 by_unit[unit_id][k] = by_unit[unit_id].get(k, 1.0) * v
     for unit_id in by_unit:
-        by_unit[unit_id] = {k: min(1 + BOUND, max(1 - BOUND, v)) for k, v in by_unit[unit_id].items()}
+        by_unit[unit_id] = {k: v if k in LEVER_MULT else min(1 + BOUND, max(1 - BOUND, v)) for k, v in by_unit[unit_id].items()}
     for unit_id, row in sorted(units.items()):
         mult = by_unit.get(unit_id)
         if mult:
@@ -224,6 +241,12 @@ def scale(name: str, specs: list[str], catalog: dict) -> dict:
                 over["armor"] = {f: round(v * mult["armor"], 3) for f, v in row["armor"].items()}
             if "cost" in mult:
                 over["cost"] = int(round(row["cost"] * mult["cost"]))
+            for lever, keys in LEVER_MULT.items():
+                if lever in mult:
+                    for key in keys:
+                        if key not in row:
+                            sys.exit(f"the catalog has no {unit_id}.{key}: re-run make balance-catalog")
+                        over[key] = round(float(row[key]) * mult[lever], 3)
             if over:
                 cand["units"][unit_id] = over
             if "dmg" in mult:
@@ -406,10 +429,11 @@ def mono_report(root: Path, match: str = "", base_match: str | None = None) -> d
         for k in keys:
             seeds[k[3]].append(arm[k])
         se = bootstrap(seeds, lambda fs: 100 * sum(f["mono_won"] for f in fs) / len(fs)) if len(seeds) > 1 else float("nan")
+        median_s = _median([arm[k]["seconds"] for k in keys])
         line = (f"  {faction:10} mono wins {100 * won:3.0f} % (n {len(keys)}, se {se:.0f}) | on Green "
                 + " ".join(f"{t}={100 * sum(v) / len(v):.0f}%" for t, v in by_team.items() if v)
-                + f" | units mono {units[0]:.1f} v mixed {units[1]:.1f}")
-        rows[faction] = {"won": won, "n": len(keys), "se": se, "units": units}
+                + f" | units mono {units[0]:.1f} v mixed {units[1]:.1f} | median {median_s:.0f} s")
+        rows[faction] = {"won": won, "n": len(keys), "se": se, "units": units, "median_s": median_s}
         if base_match is not None:
             b = read_mono(root, base_match)
             paired = [(b[k]["mono_won"], arm[k]["mono_won"], k[3]) for k in keys if k in b]
@@ -421,8 +445,86 @@ def mono_report(root: Path, match: str = "", base_match: str | None = None) -> d
                 cse = bootstrap(ps, lambda xs: 100 * sum(a - b for b, a in xs) / len(xs)) if len(ps) > 1 else float("nan")
                 line += f" | paired v base {change:+.0f} (se {cse:.0f}, n {len(paired)})"
                 rows[faction]["change"], rows[faction]["change_se"] = change, cse
+                base_median = _median([b[k]["seconds"] for k in keys if k in b])
+                if base_median > 0:
+                    line += f" | length {100 * (median_s / base_median - 1):+.0f} %"
+                    rows[faction]["length_change_pct"] = 100 * (median_s / base_median - 1)
         print(line)
     return rows
+
+
+# ---- B5 (round 41): WHY, the mixed army's damage to tanks by the face it struck (tests/tactics/face_probe.gd) ----------
+
+def read_faces(root: Path, match: str = "") -> dict:
+    """(faction, team, arena, seed) -> the MIXED side's FACE row against the mono-tank side: {"to_tanks": {face: points},
+    "by_role": {role: {face: points}}, "dealt": its UnitTally total (cones included, which have no event)}."""
+    out = {}
+    for d in sorted(p for p in root.iterdir() if p.is_dir()):
+        m = MONO_DIR.search(d.name)
+        if not m or match not in d.name:
+            continue
+        mono_team = "green" if m["team"] == "player" else "rust"
+        mixed = "rust" if mono_team == "green" else "green"
+        for log in sorted((d / "none").glob("*-green.log")):
+            lm = LOG.match(log.name)
+            for line in log.read_text(errors="replace").splitlines():
+                if line.startswith("FACE "):
+                    r = json.loads(line[len("FACE "):])["teams"][mixed]
+                    out[(m["faction"], m["team"], lm["arena"], int(lm["seed"]))] = {
+                        "to_tanks": r["to_tanks"], "by_role": r["to_tanks_by_role"], "dealt": float(r["dealt"])}
+                    break
+    return out
+
+
+def _flank_share(rows: list) -> float:
+    """Points of the mixed army's faced damage to tanks that struck a side or rear, in percent of all faced."""
+    faced = sum(sum(r["to_tanks"].values()) for r in rows)
+    return 100 * sum(r["to_tanks"]["side"] + r["to_tanks"]["rear"] for r in rows) / faced if faced else float("nan")
+
+
+def faces_report(root: Path, match: str = "", base_match: str | None = None) -> dict:
+    arm = read_faces(root, match)
+    base = read_faces(root, base_match) if base_match is not None else {}
+    print(f"BALANCE_FACES fights={len(arm)} (the mixed army's damage to the mono-tank army's tanks, by the face struck)")
+    out = {}
+    for faction in FACTIONS + ["all"]:
+        keys = [k for k in arm if faction in ("all", k[0])]
+        if not keys:
+            continue
+        rows = [arm[k] for k in keys]
+        faced = {f: sum(r["to_tanks"][f] for r in rows) for f in FACES}
+        total_faced = sum(faced.values()) or float("nan")
+        dealt = sum(r["dealt"] for r in rows) or float("nan")
+        seeds = defaultdict(list)
+        for k in keys:
+            seeds[k[3]].append(arm[k])
+        share = _flank_share(rows)
+        se = bootstrap(seeds, _flank_share) if len(seeds) > 1 else float("nan")
+        line = (f"  {faction:10} to tanks: front {100 * faced['front'] / total_faced:3.0f} % side {100 * faced['side'] / total_faced:3.0f} % "
+                f"rear {100 * faced['rear'] / total_faced:3.0f} % | side+rear {share:.1f} (se {se:.1f}) | faced {100 * total_faced / dealt:.0f} % of dealt")
+        out[faction] = {"share": share, "se": se, "faced": faced, "n": len(keys)}
+        if base:
+            pairs = defaultdict(list)
+            for k in keys:
+                if k in base:
+                    pairs[k[3]].append((base[k], arm[k]))
+            if pairs:
+                diff = lambda ps: _flank_share([a for _, a in ps]) - _flank_share([b for b, _ in ps])
+                d, dse, n = _change(pairs, diff)
+                line += f" | paired v base {d:+.1f} (se {dse:.1f}, n {n})"
+                out[faction]["change"], out[faction]["change_se"] = d, dse
+        print(line)
+        roles = defaultdict(lambda: {f: 0.0 for f in FACES})
+        for r in rows:
+            for role, by in r["by_role"].items():
+                for f in FACES:
+                    roles[role][f] += float(by.get(f, 0.0))
+        for role, by in sorted(roles.items(), key=lambda kv: -sum(kv[1].values())):
+            t = sum(by.values())
+            if t > 0:
+                print(f"             {role:10} {100 * t / total_faced:3.0f} % of it: front {100 * by['front'] / t:3.0f} side "
+                      f"{100 * by['side'] / t:3.0f} rear {100 * by['rear'] / t:3.0f}")
+    return out
 
 
 # ---- Bar B2s (filed d479a17a1 + 16bfd1cc6): the verdict, one line a rule ---------------------------------------------
@@ -534,6 +636,7 @@ def main(argv=None) -> int:
     p.add_argument("seeds", nargs="+")
     p.add_argument("--out", type=Path, default=Path.home() / "balance-guard-raw")
     p.add_argument("--tag", help="folder tag (default bal-<name>); GUARD_ARGS / GUARD_KINDS pass through the environment")
+    p.add_argument("--probe", action="store_true", help="B5: run the fights through tests/tactics/face_probe.gd (FACE lines)")
     p = sub.add_parser("apply")
     p.add_argument("cand", type=Path)
     p = sub.add_parser("bar")
@@ -544,6 +647,10 @@ def main(argv=None) -> int:
     p.add_argument("root", type=Path, help="the folder holding <commit>-<tag>mono-<faction>-<player|enemy>/ runs")
     p.add_argument("--match", default="", help="only folders whose name contains this (e.g. -mono-base-)")
     p.add_argument("--base-match", help="pair with the folders whose name contains this")
+    p = sub.add_parser("faces")
+    p.add_argument("root", type=Path, help="the folder holding <commit>-<tag>mono-<faction>-<player|enemy>/ runs (face-probed)")
+    p.add_argument("--match", default="")
+    p.add_argument("--base-match")
     p = sub.add_parser("score")
     p.add_argument("raw", nargs="+", type=Path)
     p.add_argument("--base", nargs="+", type=Path)
@@ -554,6 +661,9 @@ def main(argv=None) -> int:
         return bar(args.root, args.base_commit, args.arm_commit)
     if args.cmd == "mono":
         mono_report(args.root, args.match, args.base_match)
+        return 0
+    if args.cmd == "faces":
+        faces_report(args.root, args.match, args.base_match)
         return 0
     if args.cmd == "score":
         report = score(args.raw, args.base)
@@ -591,7 +701,8 @@ def main(argv=None) -> int:
                GUARD_WORKTREE=os.environ.get("GUARD_WORKTREE", str(ROOT.parent / "godot-balance-guard")))
     if not clean:
         env.pop("GUARD_OVERRIDES")
-    return subprocess.call(["bash", str(ROOT / "tools/scoreboard/guard.sh"), args.commit], env=env, cwd=ROOT)
+    driver = ROOT / ("tools/balance/guard_probe.sh" if args.probe else "tools/scoreboard/guard.sh")
+    return subprocess.call(["bash", str(driver), args.commit], env=env, cwd=ROOT)
 
 if __name__ == "__main__":
     sys.exit(main())

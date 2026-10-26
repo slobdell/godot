@@ -62,3 +62,25 @@ B5's read decides whether a missile/penetration question goes back to him.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Report (2026-10-26, in progress; started from main 98179d62b = code c36217f79 GREEN builder0, no baseline re-run).**
+Plan, in order: B5 plumbing (levers in the harness, a face probe for WHY) -> B5 round 1 on 9401-9410 (base, t50, h25, th; mono
+line, 400 fights an arm, builder2 J24) -> read, expand the lever that moves the share (9411-9440, the lines for the faction table)
+-> name Bar B5's lever and file the bar before any 92xx/93xx number -> Bar B2s v2 when CP41.1 lands (parallel if builder2 is free)
+-> B3, B6. Reason: the mono line is the deciding read for his levers and the cheapest; the faction table follows the lever that works.
+
+- **B5 plumbing (built, this branch):** `search.py` takes his levers at any size (C41.5: `turret_turn_rate_deg`,
+  `max_forward_speed`, `max_reverse_speed`, `hull_turn_rate_deg`; `scale role:tank:turret=0.5,speed=0.75,hturn=0.75`, unclamped;
+  the +/-15 % keys as before); `catalog_dump.gd` carries them. `tests/tactics/face_probe.gd` (extends guard_line, read-only)
+  prints a FACE line a fight: each team's hull+shield points on ENEMY tanks by the face struck, by shooter role, and on every
+  enemy; `mk/balance.mk balance-guard-run` plays guard-run through it; `tools/balance/guard_probe.sh` is guard.sh with that
+  target's name (an adapter, guard.sh is native's); `search.py run --probe`, `search.py faces` (side+rear share, se by seed
+  bootstrap, paired v base), `search.py mono` now prints the median fight length. Candidates: `t30`, `t50` (tank turret
+  traverse x0.7 / x0.5), `h25` (tank hull forward+reverse speed and hull turn x0.75), `th` (t50 + h25). Catalog tank rows today:
+  turret 60 / 70 / 55 / 50 deg/s (gangs / law / syndicate / condemned), hull 12 / 12 / 11 / 9 m/s, hull turn 55 / 85 / 90 / 80.
+- **Decisions:** a slower hull slows reverse too (one lever, "the tank is slower"); hull turn goes with hull speed in h25 (his
+  "slower than they are" read as the whole hull); t50 before t30 (if -50 % doesn't move the share, -30 % won't); 10 dev seeds
+  first (400 fights an arm; the mono share's se was 3 at n 320, and the gap to close is ~45 points), the winner expanded after.
+- **Questions for the lead:** none yet (B5's read decides).
+- **Requests to other streams:** native: a `GUARD_TARGET` knob in tools/scoreboard/guard.sh (default guard-run) would retire
+  tools/balance/guard_probe.sh (not urgent; the adapter works).
