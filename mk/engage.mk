@@ -45,7 +45,7 @@ engage-bar: import ## engage E4: engage-probe in both arms on ENGAGE_SEEDS, then
 # A quick parse check of the stream's own scripts.
 ENGAGE_PARSE ?= game/tactics/firing_position.gd game/tactics/element_situation.gd game/tactics/element_plan.gd game/ai/tank_brain.gd \
 	game/control/rts_controls.gd tests/tactics/test_engage_shot.gd tests/engage/replay_probe.gd tests/engage/attack_shot_probe.gd \
-	tests/engage/test_engage_hud_words.gd
+	tests/engage/test_engage_hud_words.gd tests/tactics/test_engage_flank_side.gd tests/engage/far_ambush_trace.gd
 .PHONY: engage-parse
 engage-parse: import ## engage: --check-only on the stream's scripts (ENGAGE_PARSE), the real messages printed
 	@for f in $(ENGAGE_PARSE); do out=$$($(GODOT) --headless --path . --check-only --script res://$$f 2>&1 | grep -E "Parse Error|SCRIPT ERROR|ERROR" | grep -v "depended scripts" || true); \
