@@ -83,7 +83,10 @@ moved: BASE = the tree as it ships without the change; ARM = the same tree + the
 8501-8540 before the series), one frozen ARM tree (R40.13). Lines 8801-8840 + 8901-8940 (blob + turtle, 5 guard arenas, both sides,
 1600 an arm); none line 8801-8820 (one guard side: its two sides are one fight); G8 mono-tank line 8801-8820, mono on each team in
 turn, per faction. Builder2, J24, after a full check of ARM (green but for sim-baseline, recorded twice) and BASE. Deciding and G1-G8
-and the judge's readings exactly as Bar B2s (`search.py bar <root> <BASE> <ARM>`).
+and the judge's readings exactly as Bar B2s (`search.py bar <root> <BASE> <ARM>`). **v2 candidate (draft): `fm_c5r2_lawt5`** (fm_law_c5r2 with Law's
+hp/shield/front-side armour at +5 %, its damage +15 %). **Frozen ARM = d385cd308** (`balance/b2s-v2-arm` in ../godot-balance-arm:
+5be511659 + apply, 0 mismatches + the R40.18 re-pins, prices unchanged from c5r2); its full check + sim-baseline-record x2 run on
+builder0 now; the dev screen (base + lawt5 on 5be511659 + overrides, 8501-8540) on builder2 after B2s's series.
 
 **BAR B2s, LINES VERDICT (2026-10-25 17:30 PDT): FAILS on G3 (one cell); deciding, G1, G2 and G4 pass.** BASE 5be511659 v ARM
 66c4839a2, builder2 J24, 8301-8340 + 8401-8440, 1600 fights an arm, 80 of 80 seeds each (ARM: 1 attempt lost, retried),
