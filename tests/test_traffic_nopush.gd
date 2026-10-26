@@ -1,7 +1,7 @@
 extends TestCase
 ## Round 41, manoeuvre Q5 (R41.8; `--traffic-on=nopush`, Traffic.DEFAULT_OFF until judged): a crew whose hull touches a FRIEND
 ## ahead that is not pulling away eases off (forward throttle 0 while the contact lasts, and half a second after) instead of
-## pushing it, for at most NOPUSH_CAP_S per friend (v2), then presses as today for NOPUSH_PRESS_S. Speed only: ORCA's steer point, asks and give-ways as today. The reversing report: 59 % of a jammed crew's
+## pushing it. Speed only: ORCA's steer point, asks and give-ways as today. The reversing report: 59 % of a jammed crew's
 ## backward motion was being shoved by a friend. Forward -Z; yard_open.
 
 var _lab: TacticsLab
@@ -43,7 +43,6 @@ func test_on_eases_off_against_a_parked_friend() -> void:
 		var pressing_ticks := 0
 		var episodes := Movement.nopush_episodes
 		var ticks := Movement.nopush_ticks
-		var capped := Movement.nopush_capped
 		for i in 6 * SimClock.TICK_RATE:
 			await _lab.step()
 			var touching := false
@@ -56,16 +55,14 @@ func test_on_eases_off_against_a_parked_friend() -> void:
 					pressing_ticks += 1
 		read[arm] = {"touch_ticks": touch_ticks, "pressing_ticks": pressing_ticks, "shoved_m": snappedf(Vector2(friend.global_position.x - start.x,
 				friend.global_position.z - start.z).length(), 0.01), "nopush_ticks": Movement.nopush_ticks - ticks,
-				"nopush_episodes": Movement.nopush_episodes - episodes, "nopush_capped": Movement.nopush_capped - capped, "me_z": snappedf(me.global_position.z, 0.1)}
+				"nopush_episodes": Movement.nopush_episodes - episodes, "me_z": snappedf(me.global_position.z, 0.1)}
 		print("MEASURE nopush %s: %s" % [arm, read[arm]])
 		_lab.dispose()
 		_lab = null
 	assert_true(int(read["off"]["touch_ticks"]) > 0, "the stage: the crew reaches the friend's tail")
 	assert_true(int(read["on"]["nopush_ticks"]) > 0, "ON: the rule acted")
-	assert_true(int(read["on"]["pressing_ticks"]) < int(read["off"]["pressing_ticks"]), "ON: less pressing while touching than OFF")
+	assert_true(int(read["on"]["pressing_ticks"]) <= int(read["off"]["pressing_ticks"]) / 4, "ON: no pressing while touching (a quarter of OFF's at most)")
 	assert_true(float(read["on"]["shoved_m"]) <= float(read["off"]["shoved_m"]), "ON: the friend is shoved no farther than OFF")
-	assert_true(int(read["on"]["nopush_ticks"]) <= int(Movement.NOPUSH_CAP_S * SimClock.TICK_RATE) + Movement.NOPUSH_HOLD_TICKS + 2,
-			"v2: the ease on one friend is capped at NOPUSH_CAP_S (+ the hold)")
 
 
 ## Until twinned in C++, ON runs the GDScript drive; OFF leaves native_drive as it was.
