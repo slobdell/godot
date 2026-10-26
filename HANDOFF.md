@@ -62,6 +62,9 @@ GREEN on builder2 (`make check exited 0`, 25 passed + 2 NOT JUDGED: perf-judge, 
 **2026-10-25 ~09:30: main (c30136971 code = 0badbb09e + docs) GREEN on builder0, 27 targets ALL JUDGED** (`make check exited 0`,
 3237 passed / 0 failed; perf-judge judged in the check). This is round 40's verified main without B2s.
 
+**2026-10-25 23:56: main c36217f79 GREEN on builder0, 27 targets ALL JUDGED** (`make check exited 0`, 3243 passed / 0 failed;
+sim-baseline 13 unmoved). Covers every round-40 merge incl. manoeuvre's F1 (OFF) and the round-40 judging table.
+
 **ROUND 40 CLOSING (2026-10-25 ~22:45 PDT). main dc95e98ca+ = code 0a7097ee7, GREEN on builder0, 27 targets ALL JUDGED
 (`make native check exited 0`, 3243 passed / 0 failed; sim-baseline 13 unmoved).** Shipped ON this round: T1 (`--deploy-arrive=settled`,
 cap deploys 265 -> 83). Everything else OFF with its cause recorded (M1 v2, G1 v6, S1 v3, G3 v9, cap deal, M3, F1, B2s). Closed: settle,
