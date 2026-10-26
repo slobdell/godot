@@ -89,12 +89,18 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   <= 40 px AND <= half BASE; (3) jerks: ARM total <= 3.0/min, no automatic source > 1.5/min, automatic snaps = 0 (JERK_PX_S2 15,000,
   SNAP_PX 24 at 1080 rows, fixed first); (4) the vision camera still finds the action: ARM auto_frame px/min >= 25 % of BASE, no
   trace failure or SCRIPT ERROR. Shake separately: windowed laptop run, shake slip at the cursor ARM <= 1 px p95. The lead judges feel.
-- **Bar G1 v7 (orders; FILED b4190e37e, 2026-10-26 ~04:40, before any number on 9101-9112).** G1 v6's arm unchanged (round 40,
+- **Bar G1 v7 (orders; WITHDRAWN UNREAD -> G1 v8; FILED b4190e37e, 2026-10-26 ~04:40, before any number on 9101-9112).** G1 v6's arm unchanged (round 40,
   OFF: failed on the terminus 5 route twitch on T1-OFF main) re-judged on T1-ON main by `orders_judge.py g1v4`, unamended. Seeds
   9101-9112 reassigned from O2's withdrawn-unread bar (unseen). Runner `orders_bar.sh b2`, builder2 J8, from a frozen tree after
   ba0d14aab's full check. Only variant dev-read (builder0 light, 941325eaa, native, 7007-7012, n 6 a cell): places outside 26 -> 2,
   route_left 1037 -> 335, re-dealt 0, contacts 6554 -> 5155, all 14 cells' probe guards incl. the terminus 5 route twitch, yard_open 96/96
   identical; laptop terminus 5 route: main leaves squad 5 never in, the arm gets all five in (s3805's risk reverses).
+- **Bar G1 v8 (orders; FILED 099a3f135, 2026-10-26 ~05:00, before any number on 9101-9112).** v7 withdrawn unread: its own shots of
+  his click (laptop, terminus s7007, 5 squads, click ~30 m from the army's middle) gave 3 of 5 squads places no nearer the click than
+  they stood (squad 5 placed 103 m out, 15 m farther than it started; "in" at 0.1 s without moving: he'd see them ignore the click).
+  v8 = v7 + `--group-column-toward=on`: a column that would put any squad > 10 m farther from the click than it stands is refused and
+  today's places stand. Judge `g1v8` = g1v4 unamended + one guard: places sent > 10 m away (toward_m < -10) ARM <= BASE + 2 over all
+  cells (v7's dev data reads 12 -> 20: fails, catches the flaw). Two variants dev-read on 7007-7012. The frozen tree gets its own full check.
 
 ## Rulings (round 41)
 
