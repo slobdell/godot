@@ -245,10 +245,9 @@ static var follow_queued := 0
 const FOLLOW_LONG_S := 3.0
 static var follow_longest := {}
 static var follow_long_waits := 0
-var _follow_since := -1
-var _follow_last := -1
-var _follow_leader_min := INF
-var _follow_counted := false
+## Per crew (instance id) -> [run's first tick, last queued tick, the leader's least speed, counted as long]: a static table, not
+## members, so native's exec-state table (native/src/exec_fields.h, one field per member) is unchanged by a measurement.
+static var _follow_runs := {}
 
 ## X4 right-of-way. A unit that has made no progress for ASK_SECONDS asks the friend in its way to give way, at most
 ## once every ASK_EVERY seconds.
@@ -303,7 +302,7 @@ static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
 			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
-			"route_not_ready": route_not_ready, "follow_queued": follow_queued, "follow_open": follow_open, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
+			"route_not_ready": route_not_ready, "follow_queued": follow_queued, "follow_open": follow_open, "follow_longest": follow_longest.duplicate(), "follow_long_waits": follow_long_waits, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
@@ -383,6 +382,7 @@ static func reset_route_arms() -> void:
 	follow_open = 0
 	follow_longest = {}
 	follow_long_waits = 0
+	_follow_runs = {}
 	press_escapes = 0
 	nose_stops = 0
 	driver_ticks = {}
@@ -2854,19 +2854,20 @@ func _turn_vertex(here: Vector3, within_m: float) -> Vector3:
 ## Round 40 (F1), measurement only: an unbroken queue wait is one with no gap of more than a tick between its queued ticks.
 func _follow_note(leader: Tank) -> void:
 	var tick := Engine.get_physics_frames()
-	if _follow_last < 0 or tick - _follow_last > 2:
-		_follow_since = tick
-		_follow_leader_min = INF
-		_follow_counted = false
-	_follow_last = tick
-	_follow_leader_min = minf(_follow_leader_min, leader.real_velocity.length())
-	var s := (tick - _follow_since + 1) / float(SimClock.TICK_RATE)
-	if s >= FOLLOW_LONG_S and not _follow_counted:
-		_follow_counted = true
+	var id := get_instance_id()
+	var run: Array = _follow_runs.get(id, [-1, -1, INF, false])
+	if int(run[1]) < 0 or tick - int(run[1]) > 2:
+		run = [tick, tick, INF, false]
+	run[1] = tick
+	run[2] = minf(float(run[2]), leader.real_velocity.length())
+	_follow_runs[id] = run
+	var s := (tick - int(run[0]) + 1) / float(SimClock.TICK_RATE)
+	if s >= FOLLOW_LONG_S and not bool(run[3]):
+		run[3] = true
 		follow_long_waits += 1
 	if s > float(follow_longest.get("s", 0.0)):
 		follow_longest = {"crew": String(ctl.tank.name), "behind": String(leader.name), "s": snappedf(s, 0.01),
-				"from_tick": _follow_since, "leader_min_mps": snappedf(_follow_leader_min, 0.01)}
+				"from_tick": int(run[0]), "leader_min_mps": snappedf(float(run[2]), 0.01)}
 
 
 ## Round 40 (F1): the nearest living friend ahead of `here` along `way` (unit, flat) within FOLLOW_AHEAD_M and FOLLOW_CONE_COS,
