@@ -55,6 +55,32 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Late round-40 item: bridge-pooled at the bridge mouth (orchestrator, 2026-10-25 evening)
+
+**Ask:** balance's ARM d385cd308 (stat overrides fm_c5r2_lawt5) fails bridge-pooled 17 / 18 on builder0. Rust, start tick 15, seed 2:
+Rust_S_3 pressed at the rim 5.1 s against the 3 s bar, though all 4 crossed (4 Law Assault Guns, wheeled, v 3 Lancers). Find the
+cause, propose a fix in one line, build only on the orchestrator's go. A symmetric fix ships ON if bridge-pooled stays green on main
+AND on d385cd308's overrides, the rest of the check green, and the C++ twin matches; one that moves guard lines needs a bar.
+
+**Cause (traced 2026-10-25 18:20-18:40 PDT, builder0 light, my side worktree `../godot-manoeuvre-bt` at balance's 5a233f42b = d385cd308 +
+the trace target; n 1 a run, deterministic):**
+- **Not the native drive:** `--brains-off=native_drive` is identical (arrived 48.9 s, Rust_S_3 rim 5.1 s, rim_total 5.4 s). The
+  laptop's 31.0 s is some other difference.
+- **ORCA moves a wheeled follower around its leader at the deck mouth** (`--turn-trace=Rust_S_3`):
+  - S3 is the second crew of a single-file move at 10-11 m/s, about 7 m behind Rust_S_1, which slows to turn onto the deck.
+  - f 515-535: ORCA's answer (pace 0.96 -> 0.71) moves the steer point off the route to the outside, past the entry: (91.3, -12.4)
+    to (94.6, -9.2), against the route corner at (86, -10.5). The two hulls touch at f 520.
+  - When the steer point returns to the deck, S3 is heading east beside the mouth. A fixed 8 m turning radius can't reach the deck
+    at any speed.
+  - It presses at the rim and circles (17.5-20 s), then yields to S1 backing out (20.5-24.5 s). The same thing happens at the far
+    end behind S1 (28.5-32 s).
+- **Diagnostic, n 1:** `--no-avoidance` gives rim 0 (arrived 38.8 s).
+
+**Proposed (sent 18:45 PDT; no build until the go):** a WHEELED crew whose ORCA conflict is a friend ahead on its route going its way
+(FOLLOW_COS, moving) keeps steering on its route and takes only ORCA's along-route speed: it queues instead of passing. A stopped friend
+is passed as today. Symmetric, OFF until judged, GDScript first, then a C++ twin request. Expected to move guard lines, so seeds were
+asked for a bar.
+
 ### CLOSE REPORT (round 40, 2026-10-25 ~08:00 PDT): done for the round
 
 **Done:** every backlog item.
