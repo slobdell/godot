@@ -80,8 +80,19 @@ func test_wait_kind_reads_what_the_friend_is_doing() -> void:
 	fm._wait_since = Engine.get_physics_frames()
 	assert_eq(me._wait_kind(friend, north), "waiting", "the car ahead in the jam, itself waiting, will move when its friend does")
 	fm._wait_for = "Green_Me"
-	assert_eq(me._wait_kind(friend, north), "", "but not when it is waiting for me")
+	assert_eq(me._wait_kind(friend, north), "waiting", "waiting for me: the four-way stop's tie-break, Green_Friend < Green_Me goes, I wait")
+	assert_eq(fm._wait_kind(staged[0], Vector2(0.0, -1.0)), "", "...and from its side, with my wait on it, it goes")
 	fm._wait_for = ""
+
+
+## v3's "will clear": the friend's own motion takes it out of my lane within the cap. Forward -Z, lane half-width 4 m.
+func test_lane_exit_reads_the_friends_own_motion() -> void:
+	var north := Vector2(0.0, -1.0)
+	assert_near(Movement._lane_exit_s(Vector2(-1.0, -8.0), Vector2(5.0, 0.0), north, 4.0), 1.0, 0.001, "1 m left, driving east at 5 m/s: out past the right edge (5 m) in 1 s")
+	assert_near(Movement._lane_exit_s(Vector2(-1.0, -8.0), Vector2(-5.0, 0.0), north, 4.0), 0.6, 0.001, "1 m left, driving west: out past the left edge (3 m) in 0.6 s")
+	assert_eq(Movement._lane_exit_s(Vector2(0.0, -8.0), Vector2(0.0, -5.0), north, 4.0), INF, "a leader going my way never leaves it")
+	assert_eq(Movement._lane_exit_s(Vector2(0.0, -8.0), Vector2(0.0, 5.0), north, 4.0), INF, "nor one coming at me")
+	assert_near(Movement._lane_exit_s(Vector2(0.0, -8.0), Vector2(0.5, -5.0), north, 4.0), 8.0, 0.001, "a diagonal leader drifting out at 0.5 m/s: 8 s, past the cap")
 
 
 ## Live: a friend crosses my lane 9 m ahead. OFF, ORCA steers me round it; ON, I hold my line and slow, and go on once it is past.
@@ -130,13 +141,13 @@ func test_the_wait_times_out_and_hands_back_to_avoidance() -> void:
 	var now := Engine.get_physics_frames()
 	me._wait_for = "Green_Friend"
 	me._wait_since = now - int(Movement.WAIT_CAP_S * SimClock.TICK_RATE)
-	assert_eq(me._wait(here, north, preferred, 9.0), -1.0, "at the cap the wait hands back to avoidance")
+	assert_eq(me._wait(here, north, preferred, 9.0, true), -1.0, "at the cap the wait hands back to avoidance")
 	assert_eq(Movement.wait_timeouts, timeouts + 1, "and counts a time-out")
 	assert_eq(me._wait_for, "", "the wait is over")
 	assert_eq(me._wait_refused, "Green_Friend", "that friend is refused")
-	assert_eq(me._wait(here, north, preferred, 9.0), -1.0, "and not waited on again during the cooldown")
+	assert_eq(me._wait(here, north, preferred, 9.0, true), -1.0, "and not waited on again during the cooldown")
 	me._wait_refused_until = now - 1
-	var pace := me._wait(here, north, preferred, 9.0)
+	var pace := me._wait(here, north, preferred, 9.0, true)
 	assert_true(pace >= 0.0 and pace < 1.0, "after the cooldown a fresh wait on it is taken, at a following pace (%.2f)" % pace)
 	assert_eq(me._wait_for, "Green_Friend", "and recorded")
 	print("MEASURE wait cap: pace after cooldown %.2f, longest %s" % [pace, Movement.wait_longest])

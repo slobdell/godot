@@ -97,8 +97,8 @@ def main(argv):
                                                                      for c, s in sorted(by.items(), key=lambda kv: -kv[1]))))
     w = [on[k] for k in keys if "waits" in on[k]]
     if w:
-        lines.append("  %s rule counters a run (mean): waits %.0f, queued crew-ticks %.0f, time-outs %.0f, longest %.1f s; by kind %s" % (
-            on_arm, statistics.mean(r["waits"] for r in w), statistics.mean(r["wait_queued"] for r in w),
+        lines.append("  %s rule counters a run (mean): waits %.0f (>= 2 s: %.0f), queued crew-ticks %.0f, time-outs %.0f, longest %.1f s; by kind %s" % (
+            on_arm, statistics.mean(r["waits"] for r in w), statistics.mean(r.get("wait_long", 0) for r in w), statistics.mean(r["wait_queued"] for r in w),
             statistics.mean(r["wait_timeouts"] for r in w), max(float(r["wait_longest"].get("s", 0)) for r in w),
             {k: sum(r["wait_by_kind"].get(k, 0) for r in w) for k in sorted(set().union(*[r["wait_by_kind"].keys() for r in w]))}))
     per = []
