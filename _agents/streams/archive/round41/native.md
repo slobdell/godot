@@ -1,3 +1,5 @@
+> **ARCHIVED (round 41 closed 2026-10-26).** Final state of this brief; round 41's results are in `workstreams.md` *Bars (round 41)* and *Rulings (round 41)*.
+
 # Stream: native (C++ twins for manoeuvre's traffic rules; the tools every stream leans on)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/workstreams.md` **Round 41** (C41.1, C41.2), and your round-40 brief
