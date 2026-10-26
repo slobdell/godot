@@ -16,7 +16,8 @@ extends Node
 ##                 commanded units are WALL_FROM_M or more from it (his retreat case)
 ##   latencies     each episode of a shooter firing at them from off screen: seconds until it is first on screen (null =
 ##                 never, by the end of the run)
-##   own_shown_s   seconds x the fraction of the commanded units on screen (a danger turn must not lose his own squad)
+##   own_shown_s   seconds x the fraction of the commanded units on screen and not behind an uncut wall (a danger
+##                 turn must not lose his own squad)
 ##   yaw_reversals the view's turn changing direction after at least REVERSAL_DEG each way (a swinging camera)
 ## CameraTrace attaches it with the trace; the playtest gives it the feed once the controls exist.
 
@@ -66,8 +67,9 @@ func _process(delta: float) -> void:
 	var from: Vector3 = state["from"]
 	var yaw := rig._shown_yaw
 	var own: Array = state.get("own", [])
+	var own_shown := own.filter(func(at: Vector3) -> bool: return on_screen(at) and not wall_hides(at))
 	if not own.is_empty():
-		_own_shown_s += delta * float(own.filter(func(at: Vector3) -> bool: return on_screen(at)).size()) / float(own.size())
+		_own_shown_s += delta * float(own_shown.size()) / float(own.size())
 	var any_on_screen := false
 	var firing: Array = []
 	var centroid := Vector3.ZERO
@@ -97,13 +99,29 @@ func _process(delta: float) -> void:
 	var middle: Vector3 = state["middle"]
 	if CameraLook.facing_wall(yaw, from, middle):
 		_wall_s += delta
-		row["wall"] = true
+		row["facing_wall"] = true
 	if from.distance_to(middle) >= WALL_FROM_M:
 		var b := CameraLook.bearing(yaw, from, middle)
 		_bearings["middle"].append(absf(b))
 		row["middle"] = snappedf(b, 0.1)
 	_track_episodes(state["enemies"], from)
 	if keep_frames:
+		var eye := rig.camera.global_position
+		row["cam"] = [snappedf(eye.x, 0.1), snappedf(eye.y, 0.1), snappedf(eye.z, 0.1), snappedf(rad_to_deg(yaw), 0.1)]
+		row["from"] = [snappedf(from.x, 0.1), snappedf(from.z, 0.1)]
+		row["own"] = "%d/%d" % [own_shown.size(), own.size()]
+		row["near"] = snappedf(rig.camera.near, 0.01)
+		var f := rig._shown_focus
+		row["focus"] = [snappedf(f.x, 0.1), snappedf(f.z, 0.1)]
+		row["boom"] = [snappedf(RtsCamera.distance_for(rig._shown_zoom), 0.1), snappedf(rig.lifted_deg, 0.1),
+				snappedf(RtsCamera.tilt_at(rig._shown_pitch, RtsCamera.distance_for(rig._shown_zoom)), 0.1)]
+		var fhit := RtsCamera.perimeter_crossing(Vector2(f.x, f.z), Vector2(sin(yaw), cos(yaw)))
+		row["fwall"] = snappedf(float(fhit.get("reach", -1.0)), 0.1)
+		row["profile"] = str(RtsCamera.stands_profile())
+		var hit := RtsCamera.perimeter_crossing(Vector2(from.x, from.z), Vector2(sin(yaw), cos(yaw)))
+		row["wall"] = [snappedf(float(hit.get("reach", -1.0)), 0.1), str(hit.get("kind", "")), float(hit.get("wall_height_m", 0.0))]
+		row["blocked"] = own.filter(func(at: Vector3) -> bool:
+			return RtsCamera.sight_blocked(eye, at + Vector3.UP, RtsCamera.seen(), 0.0)).size()
 		frames.append(row)
 
 
@@ -155,6 +173,26 @@ func on_screen(point: Vector3) -> bool:
 			floor_y = top - 20.0
 	var at := camera.unproject_position(point)
 	return at.x > SCREEN_MARGIN_PX and at.x < size.x - SCREEN_MARGIN_PX and at.y > SCREEN_MARGIN_PX and at.y < floor_y
+
+
+## Whether the perimeter wall stands between the camera and his unit at `at` and the cutaway has not cut it: the sight
+## line from the camera to the unit's middle (1 m up) crosses the wall's inner face lower than the wall's top, and that
+## crossing is in front of the near plane. (Seed 7005, the first retreat clip: a scout parked at his own wall, looked at
+## from 80 m outside it, was "on screen" by projection and invisible behind the wall.)
+func wall_hides(at: Vector3) -> bool:
+	var eye := rig.camera.global_position
+	var flat := Vector2(eye.x - at.x, eye.z - at.z)
+	if flat.length() < 0.5:
+		return false
+	var hit := RtsCamera.perimeter_crossing(Vector2(at.x, at.z), flat.normalized())
+	if hit.is_empty() or float(hit["reach"]) >= flat.length():
+		return false  # the camera is inside the wall: nothing of it stands between
+	var t := float(hit["reach"]) / flat.length()
+	var crossing := at + Vector3.UP + (eye - at - Vector3.UP) * t
+	if crossing.y >= float(hit.get("wall_height_m", RtsCamera.WALL_HEIGHT_M)):
+		return false
+	var forward := -rig.camera.global_basis.z
+	return (crossing - eye).dot(forward) > rig.camera.near
 
 
 func summary() -> Dictionary:

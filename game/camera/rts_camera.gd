@@ -1310,6 +1310,54 @@ func _update_yaw_follow(delta: float) -> void:
 	wrote["yaw"] = writer
 
 
+## K4.2: how far inside the wall the danger camera keeps its focus and the frame's mirror points.
+const DANGER_WALL_MARGIN_M := 4.0
+
+
+## K4.2: the vision frame's points with every contact's mirror (the points after `own` come in [contact, mirror] pairs)
+## kept inside the wall: framing a mirror out in the stands only zooms the view out over the wall. Pure, for tests.
+static func danger_frame(points: Array, own: int) -> Array:
+	var out := points.duplicate()
+	for i in range(own + 1, out.size(), 2):
+		out[i] = RtsCamera.inside_wall(out[i], DANGER_WALL_MARGIN_M)
+	return out
+
+
+static func _middle(points: Array, own: int) -> Vector3:
+	var sum := Vector3.ZERO
+	var count := mini(own, points.size())
+	for i in count:
+		sum += points[i] as Vector3
+	return sum / float(count) if count > 0 else Vector3.ZERO
+
+
+## Whether `point` lies behind a view at `yaw` seen from `from` (more than 90 deg off its direction). Pure.
+static func behind_view(yaw: float, from: Vector3, point: Vector3) -> bool:
+	var flat := Vector3(point.x - from.x, 0.0, point.z - from.z)
+	return flat.length() > 0.5 and flat.dot(heading_of(yaw)) < 0.0
+
+
+## `point` pulled back toward the arena's middle until it is `margin` inside the wall (the perimeter polygon, else the
+## square fallback). Arenas contain their middle (the origin), so the ray from it always crosses the wall once. Pure.
+static func inside_wall(point: Vector3, margin: float) -> Vector3:
+	var flat := Vector2(point.x, point.z)
+	if flat.length() < 0.001:
+		return point
+	var room: float
+	if perimeter_poly.size() >= 3:
+		var hit := RtsCamera.perimeter_crossing(Vector2.ZERO, flat.normalized())
+		if hit.is_empty():
+			return point
+		room = float(hit["reach"]) - margin
+	else:
+		var half := perimeter_half() - 1.0 - margin
+		room = half / maxf(absf(flat.normalized().x), absf(flat.normalized().y))
+	if flat.length() <= room:
+		return point
+	var inside := flat.normalized() * maxf(room, 0.0)
+	return Vector3(inside.x, point.y, inside.y)
+
+
 ## Round 42 (K4.2): the direction the view should look, from a DangerFeed reading: {"look": a ground unit Vector3, or
 ## null when there is nothing to look at or the pulls cancel; "pulls": {heading, enemies, war} (each a ground Vector3,
 ## the weighted pull); "strength": the sum's length over its weights}. Pure, for tests.
@@ -1701,6 +1749,14 @@ func _update_vision_tracking() -> void:
 		stop_tracking("arrived")
 		return
 	var destination: Variant = _vision_state.get("destination")
+	if danger_on:
+		# K4.2: the frame was made for a view along the heading. Looking at the danger instead, a contact's mirror and the
+		# lean toward where he is going can lie BEHIND the view, and at his edge outside the wall (dev seed 7005: the
+		# focus 30 m past the wall, so the cutaway found no wall to cut and the wall hid his scout).
+		points = RtsCamera.danger_frame(points, int(_vision_state.get("own", points.size())))
+		if destination is Vector3 and RtsCamera.behind_view(yaw, RtsCamera._middle(points, int(_vision_state.get("own", points.size()))),
+				destination as Vector3):
+			destination = null
 	var goal: Array
 	if destination is Vector3:
 		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch,
@@ -1710,6 +1766,8 @@ func _update_vision_tracking() -> void:
 				float(_vision_state.get("pad_m", 0.0)))
 	zoom = minf(minf(float(goal[1]), vision_zoom), RtsCamera.level_for(auto_frame_max_m))
 	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
+	if danger_on:
+		focus = RtsCamera.inside_wall(focus, DANGER_WALL_MARGIN_M)
 	wrote["focus"] = "auto_frame"
 	wrote["zoom"] = "auto_frame"
 	if glide:

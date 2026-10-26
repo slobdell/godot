@@ -120,3 +120,20 @@ func test_the_feed_wired_as_skirmish_mode_does_stays_alive() -> void:
 
 func _bare_read() -> Callable:
 	return DangerFeed.new().read
+
+
+func test_the_danger_frame_keeps_mirrors_and_the_focus_inside_the_wall() -> void:
+	var saved := RtsCamera.perimeter_poly
+	# A square wall at +-100 (the polygon path, as the hexagon uses).
+	RtsCamera.perimeter_poly = PackedVector2Array([Vector2(-100, -100), Vector2(100, -100), Vector2(100, 100), Vector2(-100, 100)])
+	var inside := RtsCamera.inside_wall(Vector3(0, 0, 150), 4.0)
+	assert_near(inside.z, 96.0, 0.01, "a point past the south wall comes back to 4 m inside it")
+	assert_eq(RtsCamera.inside_wall(Vector3(10, 0, 20), 4.0), Vector3(10, 0, 20), "a point inside is left alone")
+	# His scout at the south edge (z 90), a contact north at z 10: its mirror (z 170) is outside; the contact is not.
+	var frame := [Vector3(0, 0, 90), Vector3(0, 0, 10), Vector3(0, 0, 170)]
+	var kept := RtsCamera.danger_frame(frame, 1)
+	assert_eq(kept[1], Vector3(0, 0, 10), "the contact stays where it is")
+	assert_near((kept[2] as Vector3).z, 96.0, 0.01, "its mirror is pulled inside the wall")
+	assert_true(RtsCamera.behind_view(0.0, Vector3(0, 0, 90), Vector3(0, 0, 120)), "a destination south of a north view is behind it")
+	assert_true(not RtsCamera.behind_view(0.0, Vector3(0, 0, 90), Vector3(5, 0, 40)), "one north of it is not")
+	RtsCamera.perimeter_poly = saved
