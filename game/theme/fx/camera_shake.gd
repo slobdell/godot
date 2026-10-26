@@ -17,6 +17,11 @@ const FREQUENCY := 22.0
 
 var trauma := 0.0
 var enabled := true
+## Round 41 (camera K2): the world point the shake must not move on screen (the ground under the player's cursor), or an
+## invalid Callable / null for the plain view offset. RtsCamera sets it while it glides. The lead: it's "hard to click on
+## the target because the camera jerks". With a pivot the camera still shakes, but as a small move plus the turn that
+## keeps the pivot on the same pixel, so the view around the cursor stays still and the rest of the frame shakes.
+static var pivot := Callable()
 
 var _time := 0.0
 var _noise := FastNoiseLite.new()
@@ -30,6 +35,7 @@ func _init() -> void:
 	_noise.seed = 3
 	_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
 	_noise.frequency = 1.0
+	process_priority = 100  # after the camera rigs have placed the camera this frame (a pivot turns their pose)
 
 
 ## Add trauma for an event at `position` (null = no falloff). Full strength within `radius` of the
@@ -68,10 +74,25 @@ func _process(delta: float) -> void:
 	trauma = maxf(0.0, trauma - DECAY * delta)
 	var scale := MAX_OFFSET if _camera.projection == Camera3D.PROJECTION_PERSPECTIVE else _camera.size * ORTHO_MAX_FRACTION
 	var offset := offset_at(trauma, _time) * scale
+	var around: Variant = pivot.call() if pivot.is_valid() and _camera.projection == Camera3D.PROJECTION_PERSPECTIVE else null
+	if around is Vector3:
+		_restore()
+		_camera.global_transform = CameraShake.pivoted(_camera.global_transform, offset, around as Vector3)
+		return
 	# Remove last frame's shake before adding this frame's, so other offsets on the camera survive.
 	_camera.h_offset += offset.x - _applied.x
 	_camera.v_offset += offset.y - _applied.y
 	_applied = offset
+
+
+## `pose` moved by `offset` (camera-local x, y metres) and turned so `around` stays on the same pixel. Pure, for tests.
+static func pivoted(pose: Transform3D, offset: Vector2, around: Vector3) -> Transform3D:
+	var moved := pose.origin + pose.basis.x * offset.x + pose.basis.y * offset.y
+	var before := (around - pose.origin).normalized()
+	var after := (around - moved).normalized()
+	if before.is_zero_approx() or after.is_zero_approx() or before.is_equal_approx(after):
+		return Transform3D(pose.basis, moved)
+	return Transform3D(Basis(Quaternion(before, after)) * pose.basis, moved)
 
 
 func _restore() -> void:
