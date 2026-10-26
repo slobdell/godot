@@ -112,8 +112,8 @@ toughness +5, its damage +15). targeted (B1's units only, -5.5) and fm_law_ca (B
 - **Known issues:** dev screens at 240 fights can't see a per-faction length cell (B2s's Law cell read +13 % se 10 on dev, +25 % se 4
   at the bar): screen G3 cells at 800+. The laptop has no native library, so its bridge-drill fight differs from builder0's.
 - **Playtest (no change ships):** the faction gap as is: `make skirmish SKIRMISH_FLAGS="--player-faction=syndicate
-  --enemy-faction=gangs"`, then the reverse. The candidate in a real fight: `make skirmish SKIRMISH_FLAGS="--unit-overrides=<abs path
-  to tools/balance/candidates/fm_c5r2_lawt5.json minus name/why keys>"` (N3's flag), or check out d385cd308.
+  --enemy-faction=gangs"`, then the reverse. The candidate in a real fight: `make skirmish SKIRMISH_FLAGS="--unit-overrides=$HOME/balance-guard-raw/v2/overrides-fm_c5r2_lawt5.json"`
+  (N3's flag; that file is the candidate's units/weapons only, written by `search.py run`), or check out d385cd308.
 - **Next steps (round 41):** after the bridge fix, rebuild v2's ARM on that main + apply fm_c5r2_lawt5 + the R40.18 re-pins
   (cherry-pick ad956031b), full check + `sim-baseline-record`, then Bar B2s v2 (`~/balance-runs/bar-b2s.sh` with BASE/ARM edited,
   seeds 8801-8840 + 8901-8940, J24, `search.py bar`). Then B3 on top, B6, a second balance pass.
@@ -282,7 +282,7 @@ army's money (44-61 %) is in vehicles that can't hurt a tank at all. An IFV's ca
 (0.2-0.8 per credit), a scout's machine gun 5 %, and the support trucks nothing. So the tank army fights half an army.
 *What's inside your +/-15 % on unit numbers:* tank armour -15 % only doubles an IFV's effect on a tank's front (5-10 % -> ~10-20 %),
 and when we tried every tank -15 % (with +15 % cost) the faction table got worse again (the Syndicate back on top; turtles winning
-more). [Measured mono rate with that change: PENDING.] It doesn't reach the target.
+more). (Its mono read was not run: builder time went to the bar.) It doesn't reach the target.
 *What would (outside the numbers):* (1) give the IFV a real anti-tank weapon, slow and limited, like a Bradley's TOW (the orchestrator's
 recommendation: fixed units, authentic); (2) let armour-piercing ("penetration") move per unit, not just damage; (3) change what each
 faction's army buys (fewer IFVs, more anti-tank). Recommendation: (1).
