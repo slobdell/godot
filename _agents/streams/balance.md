@@ -94,6 +94,16 @@ line, 400 fights an arm, builder2 J24) -> read, expand the lever that moves the 
   damage to tanks UP; if a lever moves the share without moving the faces, something else (fight length, the tanks' own
   fire) did it, and the read says so.
 
+**B5 round 1, BASE arm read (8f2643375, builder2 J24, 9401-9410, mono line both teams, 400 fights, 0 attempts lost, 55 min):**
+mono-tank wins **85 % (se 3)**: condemned 77 (se 9), gangs 78 (5), law 92 (2), syndicate 92 (3); on Green 82 / on Rust 87; median
+fight 179 s (syndicate 94 s). Units: mono 21.5 v mixed 30.2. Same shape as round 40's 82 %.
+**WHY, today (`search.py faces`, direct fire = every shooter role but artillery):** the mixed army's direct fire on the tanks
+ALREADY strikes a side or rear **65 % of the time (se 1.0)**: condemned 62, gangs 71, law 66, syndicate 51. By shooter: the mixed
+army's own tanks do 35 % of all damage on the mono tanks, artillery 34 %, scouts 13 %, IFVs **10 %**, lancers 7 %. So the fast
+units are not failing to get round; the IFV's share is small even though 72 % of its hits land on a side or rear (its damage a
+hit is small, and 2-6 % of IFVs live, round 40). What a slower turret / hull can still buy: fewer tank hits a minute (the tank
+can't track a crossing target), and more time for the mixed army's artillery; the t50 / h25 / th arms say how much.
+
 **Bar B5 (DRAFT; filed for real, lever named, before any number on 9201-9240 + 9301-9340).** BASE = the tree as it ships
 without the lever; ARM = the same tree + the lever's values written into units.gd (`search.py apply`), one frozen ARM
 (R40.13). Workload: the mono-tank line (B5's: guard none, 5 guard arenas, mono on each team in turn, per faction; 9201-9240
