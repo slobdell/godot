@@ -229,6 +229,18 @@ met by v2's crosser key (-58 %) and failed by v4's turning key (+32 %): at the d
 CROSSER by its velocity before its nose is 30 deg off its next leg, so v4 fires late. The group order is neutral-to-worse for all
 four (v4 the mildest). The wait family trades the bridge for his group order; the orchestrator rules (message sent 04:50).
 
+### M1 v3 (stretch): BUILT OFF on the side branch wip/manoeuvre-m1v3 (9087f3b12); dev lab running
+
+While Bar Q3's tree is frozen, M1 v3 lives in the side worktree `../godot-manoeuvre-m1` (branch `wip/manoeuvre-m1v3`, off
+2e5848acd; cherry-picked onto stream/manoeuvre when the series ends). `--giveway-chain=v3` = givewaychain + `chainarriving`
+(DEFAULT_OFF): M1's reach (a parked crew more than CHAIN_M off its seat takes no give-way spot farther from it) is in play only while
+the crew's OWN element is still arriving (`Movement._own_squad_settled`: Elements.of_match(...).of(me).arrived and nothing queued);
+a settled squad gives way as today, so the last squads threading past parked squads (Bar M1 v2's G5 trace) are not wedged behind
+refusers. `chain_settled_passes` counts lifted reaches. No C++ mirror yet: ON runs the GDScript ask (native_yield off). Tests
+`tests/test_traffic_chainarriving.gd` 3/0, `test_traffic_chain` 11/0 (laptop NATIVE=off). **Lab 1** (round 40 lab2's cells: the five
+G5 regressions + two old never-ins + s3866, arms main / v3, both `--brains-off=native_yield`, probe_wedge, builder0 light J4):
+running, `~/overnight-manoeuvre/r41/m1v3lab1/`.
+
 ### Q4 hold the lane (R41.5): BUILT OFF (0dc8a435f), lab 1 a NULL; stays OFF, no bar
 
 `--traffic-on=holdlane`: a crew stalled behind a friend of a wait kind (crossing, turning, waiting) skips the ask / yield in
