@@ -74,7 +74,13 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
 
 ## Rulings (round 41)
 
-_(none yet)_
+- **R41.1 (2026-10-26 ~03:20) camera's K1 read; C41.4 getter granted to orders.** K1 (de509b00f code, builder0 headless 1920x1080 @60,
+  Terminus, dev 7001-7006, 9.9 min, 74 scripted attack clicks): jerk events 22.7/min (auto_frame 13.6, most one-frame goal jumps up to
+  780 px; building clearance 5.7; yaw_follow 3.5); ground slip under the cursor in the 0.5 s before a click p50 31 / p95 389 / max 1087
+  px; attack clicks still on the aimed unit 37/74 (50 %), with auto_frame + yaw follow off 49/62 (79 %). Shake not measured (headless).
+  **Ruled:** orders adds read-only `RtsControls.is_aiming()` and the one line `rig.aiming = controls.is_aiming` in
+  `game/modes/skirmish_mode.gd` (granted); camera builds K2 behind `--camera-glide` (ON when it passes) and files K3's lines (clicks on
+  target, slip p95, jerks/min by source) before numbers on 9501-9512.
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
