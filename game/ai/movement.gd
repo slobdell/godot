@@ -286,8 +286,9 @@ static var wait_by_kind := {}  # moving / turning -> crew-ticks
 ## radii + WAIT_SLACK_M) that is in a deck's MOUTH (a bridge deck's rectangle grown by DECKWAIT_MOUTH_M, less the water it spans:
 ## the aprons and the bank ends, from the arena's terrain) lowers its SPEED WISH to a following speed (the friend's speed my way,
 ## closing to WAIT_GAP_M over WAIT_FOLLOW_S) BEFORE ORCA solves: the direction wish and ORCA's answer to it are untouched (speed
-## only); a friend through the mouth at speed lowers nothing. DECKWAIT_CAP_S per friend, then today's wish for WAIT_COOLDOWN_S (a
-## head that never clears is passed as today). The trigger is the friend's place, not my route's turn vertex: the path's vertex
+## only); a friend through the mouth at speed lowers nothing, and one turning off my lane counts by its speed away from me. The
+## asks, give-ways and right-of-way are as today. DECKWAIT_CAP_S per friend, then today's wish for WAIT_COOLDOWN_S (a head that
+## never clears is passed as today). The trigger is the friend's place, not my route's turn vertex: the path's vertex
 ## comes and goes while ORCA deflects me (the first build, traced in test_traffic_deckwait). Per-crew state is Q2's wait members
 ## (`_wait_for`, `_wait_since`, `_wait_refused`, `_wait_refused_until`: the same meaning, exec_fields.h lines in place); `deckwait`
 ## and `wait` are exclusive (both named: `wait` wins). Measurement: deckwait_waits / _queued / _timeouts; the longest is `wait_longest`.
@@ -1257,7 +1258,9 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	# not cost a moving one a second of standing still before it asks).
 	var held_back := pace < AVOID_ASK_PACE and _order_ticks >= AVOID_GRACE_TICKS and not _off.has("pushidle")
 	# Round 41 (Q2): a crew waiting for a friend that will clear its lane asks nobody to give way until the wait's cap.
-	if (stalled_ticks >= int(ASK_SECONDS * SimClock.TICK_RATE) or held_back) and _wait_for == "":
+	# Round 42 (Q6): a deckwait is speed only; the ask stays as today (q6dev3's trace: a leader parked on the far apron was never asked
+	# to give way while the column behind it waited, 8 s). Only Q2's wait holds the ask.
+	if (stalled_ticks >= int(ASK_SECONDS * SimClock.TICK_RATE) or held_back) and (_wait_for == "" or Traffic.off(WAIT_SWITCH)):
 		_ask_left -= ctl._step
 		if _ask_left <= 0:
 			_ask_left = int(ASK_EVERY_SECONDS * SimClock.TICK_RATE)
@@ -3030,7 +3033,9 @@ func _deckwait(here: Vector3, way: Vector2) -> float:
 	deckwait_queued += 1
 	var off := Vector2(leader.global_position.x - here.x, leader.global_position.z - here.z)
 	var gap := Avoidance.radius_of(ctl.tank.unit_id) + Avoidance.radius_of(leader.unit_id) + WAIT_GAP_M
-	var its_along := maxf(Vector2(leader.real_velocity.x, leader.real_velocity.z).dot(way), 0.0)
+	# The leader's speed AWAY from me (a leader turning off my lane onto the deck is clearing it, though its speed my way reads 0:
+	# q6dev3's trace had followers standing 8 m behind a leader turning north at 3 m/s), never negative.
+	var its_along := maxf(Vector2(leader.real_velocity.x, leader.real_velocity.z).dot(off.normalized()), 0.0) if off.length() > 0.01 else 0.0
 	var cap := maxf(off.dot(way) - gap, 0.0) / WAIT_FOLLOW_S + its_along
 	if deckwait_trace and tick % (SimClock.TICK_RATE / 2) == 0:
 		print("DECKWAIT " + JSON.stringify({"tick": tick, "crew": String(ctl.tank.name), "for": name, "since": _wait_since,
