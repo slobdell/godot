@@ -227,6 +227,12 @@ round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9548 camera K3 v2 (36 see
   `--group-g1=off` turns all off; five pre-G1 tests pin the switches off. Evidence `references/round41/orders/barg1v9-builder2-872dab643/`.
   Merge on its builder0 green; perf-judge in a quiet builder0 window before close (an ON flip). His feel question (a click beside his
   army) goes to him with the shots.
+- **R41.16 (2026-10-26 ~10:00) B5 deal arm: artillery-heavy mixes already reach his target.** 9204009f6, builder2, 9401-9410, 400 mono
+  fights, all-tanks v the faction's named archetype at the same money, no stat change: Condemned v siege 77 -> 47 % (-30, se 10);
+  Gangs v gang_hail 78 -> 52 % (-26, se 6); Law v dragnet 93 % (+1); Syndicate v standoff 99 % (+7: the Railgun one-shots Lancers from
+  110 m). Pooled -12 (se 3). Artillery wins: 5.1-5.4 dealt a credit, 94-99 % alive at the end (siege fields 10 artillery a fight v 2.9 in
+  the normal deal); the two that fail carry no artillery weight. Next: pen7 (09:51), then hand-built artillery-heavy Law and Syndicate
+  lineups (army.gd ARCHETYPES, OFF in play) at the same money, then the write-up for him with four faction numbers.
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
