@@ -49,8 +49,11 @@ on B8's dev screen), E1 (engage: the brain held his crew at standoff on the TEAM
 fires at 0.8 s; builder2 guards queued behind balance). Camera's K4.1 census (R42.5): the round-41 camera finds a flank ambush but
 goes blind on a rear one (5 of 9 shooters never on screen) and faces the wall 37 % of his retreat; K4.2 built OFF, Bar K4 next.
 Manoeuvre: Q6's first read reproduces R40.21's crew exactly (locks rust s2 t15, rim 5.1 s); Bar Q5's judge written; dev tree up.
-Native: CP42.0 candidate 75495744b (Q5's members as LATE exec_fields rows), full check on builder0 since ~15:05. Main = docs only
-since 21b20bdce (+ two comment lines in mk/camera.mk).
+**CP42.0 LANDED: main bf99631b5** = native's 75495744b merged alone (builder0 `make check exited 0`, 3290 passed / 0 failed, 27 passed +
+1 NOT JUDGED (remote-guard-test load refusal), sim-baseline 13 unmoved, perf-judge PASS 1.01x 7,460 us/tick; merge_check_needed INHERIT).
+Manoeuvre told to cherry-pick Q5 onto it. Bars filed before numbers: B7, E1 (frozen 57e2e7eb5), Q5, K4. builder0's full-check queue:
+engage's ON check, camera's 91ebddc9f, manoeuvre's Q5 gate; builder2: balance's B8 screen (legs to ~18:15), engage's guards on "pause",
+then manoeuvre's series.
 
 **Waiting on him (player terms, one recommendation each; none blocks a stream):**
 1. **Combined arms:** the round proceeds on the recommendation (the CPU fields an artillery-heavy army against an all-tank army and
