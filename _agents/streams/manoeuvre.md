@@ -155,7 +155,29 @@ asked for a bar.
     neutral, so Bar F1 as filed would very likely FAIL on D. The terminus last-in cost (squads queued at street corners) is a
     risk for G7.
 
-**Twin spec diff, v1 -> v2 (for native; F1 v2's rule is final unless the bar or the orchestrator changes it):**
+- **R40.23 terminus trace (3f23a36ab, builder0 light, `--turn-trace=Green_Alpha_4` both arms, terminus 5 route s7001):** squad 1 at
+  21.9 -> 51.0 s. Green_Alpha_4 queued at 3.5 m/s for 6 s (f 440-620) behind a friend driving steadily up the street, because the
+  route turned within 16 m (the leader nowhere near it). It reached the junction late into crossing squad 3 (Green_Charlie_1,
+  f 700), circled, and spent 20 s off the drive path. OFF: 5-12 m/s up the same street.
+- **Fix (e516edcec):** queue only while the LEADER is within FOLLOW_AT_TURN_M = 8 m of the turn's vertex (`_turn_vertex`).
+  Laptop NATIVE=off 216 / 0.
+- **Labs on e516edcec (builder0 light; overrides tree 0c5d4ca6f): NOT a clean fix.**
+  - bridge-pooled main: OFF 18/18 -> ON **17/18** (green t1 s1, a crew at the rim 4.0 s; rim 8.1 -> 9.2 s, deck jam 7.5 -> 4.8 s,
+    arrival 36.6 -> 36.2 s).
+  - bridge-pooled under the overrides: OFF 17/18 -> ON 18/18 (rim 14.2 -> 8.6 s, deck 17.1 -> 17.7 s, worst 1.8 s).
+  - Dev cells: D 137.7 -> 120.9 s (-12 %, -0.4 se); G3 contacts +13 % (lab FAIL); G7 last-in +3.3 s (lab FAIL, 4 runs > 10 s
+    later v 1 earlier); G1, G2, G4, G5, G6 pass. Queued 201-955 crew-ticks a fight; waits >= 3 s: 0; the longest 2.4 s.
+  - terminus 5 route s7001: squad 1 24.6 s (fixed, OFF 21.9), but squad 5 43.1 v 31.0 s.
+- **Reading:**
+  - Each F1 form fixed the case in front of it and moved a failure somewhere else: v1 open-ground queues; v2 the terminus corner;
+    v2 + the leader-in-turn gate fails main's own bridge seed (green t1 s1).
+  - n 1 a cell and any change to ORCA's answer reshuffles who meets whom where. Tuning the gate further against these labs is
+    fitting noise.
+  - Recommended to the orchestrator: stop F1 here (OFF, no bar run, 8125-8148 unspent). Balance's ARM fails bridge-pooled on a
+    traffic-order seed, a known fragility, not a new defect of the stat change. Round 41 could try a speed-only rule (a wheeled
+    crew slows before a sharp turn its leader is in, ORCA's steering untouched) with a bar built on the bridge drill.
+
+**Twin spec diff, v1 -> v2 (NOT final, not sent to native: F1 is recommended stopped; on e516edcec the queue also needs the leader within FOLLOW_AT_TURN_M = 8 m of `_turn_vertex`'s vertex):**
 - **Added:** after `_following` finds a leader, the queue holds only if `_turn_ahead(here, FOLLOW_TURN_RADII x wheel_radius())`.
   Otherwise the leader is dropped (`follow_open += 1`, measurement) and the code falls through to today's path.
 - **`_turn_ahead(here, within_m)`:**
