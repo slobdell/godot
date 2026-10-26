@@ -77,6 +77,112 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-26 ~02:10 PDT (Fable). Starting commit de509b00f = main at launch (code c36217f79 GREEN builder0, 3243/0; no
 baseline check re-run, per the contract). Orchestrator session: `godot-d6`.**
 
+### CLOSE REPORT (round 41, 2026-10-26 ~08:30 PDT; R41.13: Bar Q3 fails, option (c)): done for the round
+
+**Final hash: code 292724143 GREEN on builder0** (`make remote T=check`: `>> remote: make check exited 0 (build/ copied back)`; 3264 passed, 0 failed; ``; sim-baseline 13 maps unmoved; 2412 s; perf-judge judged scenario_perf; Status commits on top). The first candidate, 312375735 (the five side-branch cherry-picks), read `>> remote: make check exited 2`: 3266 passed, 1 failed, 26 targets passed, 1 FAILED, sim-baseline 13 maps unmoved; the one failure was test_native_exec_state::test_the_table_is_the_scripts_members: Q5's four members (`_nopush_for`, `_nopush_until`, `_nopush_since`, `_nopush_press_until`) have no `native/src/exec_fields.h` lines (191 members, 187 fields) and native/** is not this stream's. Q5 is a closed-OFF rule, so its two commits were reverted off the branch (628efe8c1, 292724143); the code stays on `wip/manoeuvre-m1v3` (a45c0b953, fc8f3697d) for round 42.
+
+**Done:** every backlog item, plus the orchestrator's three adds (Q4, Q5, the reversing report).
+1. **Q1 the jam census:** REPORTED (32851c0d8, builder0 light J4, native ON, 64 runs of orders' O1 group order). Blockers by jam-seconds:
+   stalled 30 %, crossing 27 %, same-way 25 %, head-on 10 %, turning 5 %, parked 5 %; the "will clear by itself" classes are 56 % of
+   jam-seconds and 79 % of those clear within 5 s; crossing's click never gets every squad in (16/16 runs) in either heading mix.
+2. **Q2 wait, don't detour:** BUILT OFF (`--traffic-on=wait`; v2's keying as restored at 1199fad11; `waitcross` keeps the broad crosser
+   key for the record). Four variants labbed on the group order (jam-seconds v1 +8.8 %, v2 +7.3 %, v3 +8.5 %, v4 +4.9 %): R41.5 stopped
+   the broad wait OFF with no Bar Q2 (9001-9024 untouched); the rule was judged on the bridge under Bar Q3 instead (Q3 = Q2, the written
+   design decision). **Stays OFF.**
+3. **Q3 the bridge:** the pooled-measure decision was written before any number and approved (R41.3); the wait rule, not a separate
+   wheeled speed cap, was the one rule judged (the bridge read: v1 under the overrides 17/18 -> 18/18, rim 14.2 -> 1.3 s on seeds 1-3).
+   **Bar Q3 FAIL as filed** (table below); the speed cap of round 40's spec was not built (one rule, as decided; R41.13 leaves the bridge
+   as R40.24 left it).
+4. **Stretch, M1 v3** (`--giveway-chain=v3`, the reach only while the own squad arrives): BUILT OFF, lab 1 a NULL (bit-identical to main
+   on all 8 of round 40's cells: the crews M1 held were in settled squads). Stays OFF, no bar.
+5. **Q4 hold the lane** (R41.5 add, `--traffic-on=holdlane`): BUILT OFF; lab 1 jam -1.5 % (flat), every-squad-in +3.0 s (2.1 se worse),
+   contacts +10.8 %. **OFF, no bar** (R41.7).
+6. **Q5 no pressing** (R41.8 add, `--traffic-on=nopush`, v2 = capped ease): BUILT OFF; contacts -28 %, shoved crew-ticks -34 to -36 %,
+   but jam-seconds +22.5 to +23 % and never-in runs 6 -> 7 (v2) / 10 (v1). **OFF, no bar** (R41.8's own condition). Its code is NOT on
+   this branch (the exec_fields gap above): `wip/manoeuvre-m1v3` holds it.
+7. **The reversing report** (read-only): a jammed crew moving backward is 59 % being shoved (no reverse throttle, touching a hull), 4 %
+   re-enters the spot it left; `reverse_table.py` and probe_jam's attribution are on the branch.
+
+**Bar Q3 verdict: FAIL** (every line and the trace in the *Bar Q3: FAIL AS FILED* section; judges under
+`references/round41/manoeuvre/barq3-builder0-f6d9d7b1b/`). Code f6d9d7b1b, bar tree 7f4eabcd1, overrides tree 368aa08dd, builder0 light
+lane, both arms `--brains-off=native_drive`.
+
+| Line | OFF | ON | Result |
+|---|---|---|---|
+| **Deciding, main:** pooled rim s, 72 runs | 32.7 | 25.3 (-23 %) | ratio PASS (<= 26.2); **significance FAIL** (paired -0.10 s, se 0.09 = -1.2 se) |
+| main: pass / worst crew / over 3 s | 72/72 / 3.0 s / 0 | 72/72 / 1.5 s / 0 | PASS |
+| **Deciding, overrides:** pooled rim s, 72 runs | 26.7 | 25.2 (-6 %) | **FAIL** (<= 21.4); paired -0.02 s, se 0.09 = -0.2 se **FAIL** |
+| overrides: pass / worst crew / over 3 s | 72/72 / 2.2 s / 0 | **71/72** / 4.2 s / 1 | **FAIL** (locks green s9030 t15, Green_S_3 4.2 s) |
+| G5 every-squad-in mean, 48 paired runs | 78.4 s | 82.5 s | **FAIL** (line <= 82.0) |
+| G6 never-in squads a run | 1.08 | 1.29 | PASS (line <= 1.34); runs 25 -> 29 |
+| G7 friendly contact ticks (group order) | 692,784 | 761,129 (+9.9 %) | **FAIL** (line <= 727,423) |
+| G1 give-way deaths, 18 paired fights | 32 | 55 | **FAIL** (line +22.1) |
+| G2 stuck deaths | 116 | 141 | PASS (line +31.4) |
+| G3 friendly contact ticks (fights) | 415,690 | 378,664 | PASS |
+| G4 kill share Green / deaths | 0.609 / 816 | 0.593 / 805 | PASS |
+| reported: jam-seconds (group order) | 41,005 | 44,983 (+9.7 %) | |
+| reported: moving-stuck s (fights) | 282.8 | 232.8 (-17.7 %, -0.3 se) | |
+
+**Decisions (this round's rulings, R41.2-R41.13):** Q2's keying approved with a 5 s cap and 6 s cooldown (R41.2); the pooled bridge
+measure (R41.3); orders' O2 OFF in both arms (R41.4); the broad wait stops OFF, v4 keys on a turning leader, Q4 added (R41.5); bar path
+(a) with strict group-order guards (R41.6); Q4 OFF (R41.7); Q5 one lab then one variant, closes OFF if it doesn't beat main (R41.8);
+Bar Q3 fails, option (c): the wait family stops, the bridge stays as R40.24 left it (R41.13). The gate for the bar ran on builder2 (the
+orchestrator's call: builder0's lock had a queue); its one failed target (shell-tools-test, a 0.3 s timing case) was re-run alone and
+passed 34/34, both lines quoted in the FILED section.
+
+**Known issues (all in OFF code):**
+- `_wait`'s timer: `_wait` runs only from `_avoid`, so a crew that leaves the avoidance path with `_wait_for` set keeps `_wait_since`
+  (the cap trips and `wait_longest` records the gap on the next `_avoid`: 24.4 s against a 5 s cap in the bar's counters) and the
+  drive's ask gate (`_wait_for == ""`) stays shut in between. Fix if revived: `_wait_end()` from every drive phase that is not `_avoid`.
+- ON for `wait` / `holdlane` / `nopush` forces `native_drive` off, and `chainarriving` forces `native_yield` off (`Traffic._chain_native`):
+  none is twinned in C++ (native's `pair/native-wait` built the wait twin; unmerged, moot on the fail).
+- Q5's members need four `exec_fields.h` lines before its commits can sit on a checked tree (the test prints them verbatim); a round-42
+  cherry-pick of a45c0b953 + fc8f3697d goes with native's lines.
+- `probe_jam_table.py` / `wait_judge.py` assume the ON arm's JAM_RUN carries the wait counters; a nopush-only arm raises KeyError on
+  the counters line (the Q5 labs were read with reverse_table and q3_judge).
+- Status carries each lab's reads in order; the Bar Q3 FILED section's gate lines are the record of the builder2 gate.
+
+**Requests:** none. The C++ twin request (section below) was conditional on a pass and is withdrawn.
+
+**Questions for the lead:** none. His observation stands as written: on his order the waiting crews did not make the squads arrive
+sooner (every-squad-in +4 s, contacts +10 %), and on the bridge the gain was real but small (a quarter second a run).
+
+**Playtest / drill commands (laptop, every switch OFF by default):**
+- `make skirmish ARENA=terminus SKIRMISH_FLAGS="--traffic-on=wait"` against without: select every squad, send them across; who waits, who
+  weaves. `--giveway-chain=v3` (M1 v3) the same way; `--traffic-on=nopush` only on the side branch.
+- `make remote T=native bridge-pooled BRIDGE_POOLED_SEEDS="9025 9026" BRIDGE_FLAGS="--traffic-on=wait --brains-off=native_drive"`;
+  `python3 tests/manoeuvre/bridge_lab_table.py off=A.jsonl on=B.jsonl --pair=off,on`.
+- `make manoeuvre-probe-jam PJ_CELLS=locks:click:9037 PJ_HEADINGS=crew PJ_ARMS='main:--brains-off=native_drive wait:--traffic-on=wait,--brains-off=native_drive'`;
+  `python3 tests/manoeuvre/q3_judge.py <dir>`; `python3 tests/manoeuvre/probe_jam_table.py <dir>`; `python3 tests/manoeuvre/reverse_table.py <dir>`.
+- Tests: `make test FILTER=traffic NATIVE=off` on 312375735 (laptop): 120 passed, 0 failed (wait 5, holdlane 4, chainarriving 3, nopush 3, jam_class 6, the native exec-state table test among them).
+
+**Merge notes:** branch off de509b00f (main at launch); game changes in `game/ai/movement.gd` (wait, holdlane, chainarriving
+blocks and members, all behind switches; members declared last) and `game/ai/traffic.gd` (DEFAULT_OFF += wait, holdlane, chainarriving; `--giveway-chain=v3`; `_chain_native`); instruments under `tests/manoeuvre/` (jam_class, probe_jam + attribution, the judges
+and tables), `mk/manoeuvre.mk` (`manoeuvre-probe-jam`), three new test files (wait, holdlane, chainarriving). No `native/**`, `game/control/**`, baselines or balance
+paths touched. Side worktrees `../godot-manoeuvre-bt` (the overrides tree) and `../godot-manoeuvre-m1` (cherry-picked except Q5; keep its branch
+`wip/manoeuvre-m1v3` for round 42) can be removed, and their builder0 folders `~/tank_squad/godot-manoeuvre-bt-light`, `godot-manoeuvre-m1-light` with them.
+
+**Round-42 notes (the orchestrator asked for these three):**
+1. **A Q5 bar (a proposal for the round-42 orchestrator; R41.10 rules the frame).** R41.10, verbatim from workstreams: "Q5 closes OFF
+   this round; a round-42 candidate. v2 capped ease (fc8f3697d, same 7009-7012 cells, 16 paired runs, GDScript): contacts -28 %, shoved
+   crew-ticks -34 %, all-in +2.0 s (0.6 se), never-in runs 6 -> 7 (squads a run 0.94 -> 1.06), jam-seconds +22.5 % (4.4 se; the eased
+   ticks count as 'slowed by a friend' in that measure, so it is biased against the rule). Per R41.9 it beat main on neither line, so
+   OFF, no bar. Round 42: a bar decided on what he sees (friendly contacts / shoved ticks), with all-in and never-in as strict guards,
+   on fresh seeds; jam-seconds reported, not deciding (named here before any such bar's number)." **Manoeuvre's proposed lines inside
+   that frame:** deciding = friendly contact ticks AND shoved crew-ticks (the reverse attribution) on his group order, ON <= 0.8 x OFF
+   pooled and paired mean < 0 by >= 2 se, both; strict guards (filed first) = never-in runs ON <= OFF, every-squad-in mean ON <= OFF +
+   1.645 se, the wedge trace's G1-G4; jam-seconds reported (R41.10). **Manoeuvre's variant, marked as ours for the ruling:** also a
+   jam-seconds guard ON <= 1.05 x OFF, but only with the eased crew-ticks taken out of the measure first (a measurement change filed
+   before any number, so the guard reads the standing columns and not the rule's own easing); R41.10 says reported only. Both arms
+   GDScript drive until twinned; v2 (3 s ease, 6 s press) is the arm, v1 would fail never-in. The two labs say the deciding half
+   passes; the risk the guards watch is columns that stand behind a stalled head.
+2. **The overrides tree OFF passes bridge-pooled 72/72 on fresh seeds 9025-9036 x ticks 1/8/15** (pooled rim 26.7 s, worst crew 2.2 s,
+   no crew over 3 s) where seeds 1-3 read 17/18 (locks rust seed 2 tick 15, Rust_S_3 5.1 s). Balance's v2 stats do not break the bridge
+   in general; the seed-2 crew is one deterministic outlier, which is the case for judging the bridge on the pooled measure (R41.3)
+   rather than the single-seed line.
+3. **The `_wait` timer artefact** (known issues above): any revived wait or hold rule needs its timer ended from every drive phase, or a
+   tick stamp the cap reads, before its counters are trusted.
+
 ### Q1 the jam census: REPORTED (lab 1: 32851c0d8, builder0 light J4, native ON, 64 runs; sent to the orchestrator 03:15, decisions approved)
 
 Workload: orders' O1 probe, his five full squads (25 crews), one click across the map, terminus / locks / crossing / sumps x dev seeds
