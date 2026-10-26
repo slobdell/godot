@@ -120,7 +120,7 @@ dec9725f5 GUARD_SIDES (light quick + shell-tools-test, the orchestrator's call) 
   inherited on both builders). **Named to the orchestrator: 62a7d653d** (GUARD_SIDES + oom + slot fix + the judging
   re-render). After the reboot builder0's slot pool (/tmp, tmpfs) and full-check lock (a kernel flock) held nothing stale.
   **Lesson:** a test of a recursion guard must run the real recursion (make through the wrapper), fenced by its own cap.
-- **Merged: 62a7d653d -> main 5a9743c2c** (its main full check queued on builder0; main unverified until it is green).
+- **Merged: 62a7d653d -> main 5a9743c2c. GREEN by ancestry:** 5a9743c2c is in 0badbb09e; main c30136971 (code = 0badbb09e + docs): builder0 ~09:30 2026-10-25 `make check exited 0`, 3237 passed / 0 failed, all 27 targets judged (the orchestrator's line).
 - **builder0 disk (the orchestrator's ask, approved list only):** deleted ~/tank_squad/godot-light (main's light folder, last
   used 10-12), ~/tank_squad_feel_look + ~/tank_squad_feel_c (round-~10 feel tree copies) and the 128 ~/.local/share/tank_squad_*
   user dirs last written before 10-17 (no process held any). df: 11G -> 15G free (90 % -> 86 %). Not ours, for the lead:
@@ -140,5 +140,12 @@ dec9725f5 GUARD_SIDES (light quick + shell-tools-test, the orchestrator's call) 
   drive twins; the follow stages 2880 drives each, 0 mismatches, 752 queued ON = the laptop's). Per-seed native-proof on v off
   (laptop, sumps, seeds 92721 / 8001 / 8002): EQUAL on all six (follow ON and OFF); ON's hash differs from OFF's on every
   seed, so the rule moved those fights (the match log prints no follow_queued).
-- **N4 (the trig's ~2 %):** waits for a quiet builder0 window (maybe tonight, after manoeuvre's lanes); ASK the orchestrator before starting it.
+- **N4 (the trig's ~2 %) DONE: NO FIX, the sign does not hold.** builder0, quiet window HELD (the orchestrator kept the box
+  clear), stream/native c004fc377 (code = 0badbb09e), perf-judge ai_usec_per_tick, cr minus libm, alternating:
+  **5 rounds: +25, +158, +150, +14, -25 (paired +64; cr 7582 sd 69, libm 7518 sd 71; load1 0.93-1.03)**. The run before it
+  had 3 rounds (TRIG_AB_ROUNDS given outside `T=` never reaches builder0: write `T="trig-perf-ab TRIG_AB_ROUNDS=5"`) and
+  went the other way: -167, -157, -24 (paired -116). 8 rounds, 4 signs each way: the ~2 % of R39.10 (+169 on 6a1c77752) is
+  inside the box's run-to-run spread (each arm's range ~2 %). The brief's rule (a fix only if the sign holds 5/5): no FMA
+  clone, no resolve-to-libm; CORE-MATH stays. Evidence: `references/round40/native/n4-trig-ab-builder0-c004fc377/`
+  (rounds5/, rounds3/; the .so copies dropped).
 - **N5:** waits on his Ryzen purchase.

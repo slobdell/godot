@@ -1,0 +1,4 @@
+>> native: the build tree is another machine's or another flag set's (host=builder0 tree=/home/slobdell/tank_squad/godot-native/native flags=-O2 -ffp-contract=off -fno-fast-math godot-cpp=10.0.0-stable lib=/home/slobdell/tank_squad/godot-native/.tools/godot-cpp-10.0.0-stable/build-e0f3854d/bin/libgodot-cpp.linux.template_debug.x86_64.a trig=libm): rebuilding
+>> native: src-sync: no record of the last build's sources: every input touched (a full rebuild, once)
+/home/slobdell/tank_squad/godot-native/native/src/decide_native.cpp:133:8: warning: ‘double godot::{anonymous}::priority(const godot::DecideConsts&, const DN&, const godot::String&, const godot::Dictionary&, double)’ defined but not used [-Wunused-function]
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder0, -O2 -ffp-contract=off -fno-fast-math, trig cr) and native/bin/tank_squad.gdextension

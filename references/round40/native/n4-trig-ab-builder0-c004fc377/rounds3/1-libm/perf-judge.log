@@ -1,0 +1,50 @@
+==== attempt 1 (cpus 0-3, 99% idle after 0s wait, load 0.66)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+RENDER_PRESET desktop (headless) adapter='' type=0 levers=
+MEASURE perf_start scenario_index=0 match_tick=1
+Rust_S3_5 destroyed Green_S2_4 (score Green 0 : 1 Rust)
+Green_S3_5 destroyed Rust_S2_4 (score Green 1 : 1 Rust)
+NATIVE_EXEC 19999 native, 0 handed back (dead 0, reflexes 0, yielding 0, face 0, drive 0, other 0), 69 stale pulls, 2131 part pulls, 0 verified, 0 verify mismatches 
+Rust_S0_1 destroyed Green_S5_5 (score Green 1 : 2 Rust)
+Rust_S5_4 destroyed Green_S0_4 (score Green 1 : 3 Rust)
+Green_S5_4 destroyed Rust_S0_4 (score Green 2 : 3 Rust)
+Green_S0_5 destroyed Rust_S4_2 (score Green 3 : 3 Rust)
+Rust_S1_5 destroyed Green_S3_4 (score Green 3 : 4 Rust)
+Rust_S1_2 destroyed Green_S5_3 (score Green 3 : 5 Rust)
+Green_S2_3 destroyed Rust_S3_1 (score Green 4 : 5 Rust)
+Rust_S2_3 destroyed Green_S3_1 (score Green 4 : 6 Rust)
+Rust_S0_1 destroyed Green_S5_4 (score Green 4 : 7 Rust)
+Green_S1_3 destroyed Rust_S3_4 (score Green 5 : 7 Rust)
+Rust_S1_3 destroyed Green_S4_2 (score Green 5 : 8 Rust)
+Rust_S3_3 destroyed Green_S1_3 (score Green 5 : 9 Rust)
+Rust_S5_4 destroyed Green_S0_2 (score Green 5 : 10 Rust)
+Rust_S0_3 destroyed teammate Rust_S1_5 (friendly fire)
+Green_S4_3 destroyed Rust_S1_3 (score Green 6 : 10 Rust)
+Rust_S5_1 destroyed Green_S1_2 (score Green 6 : 11 Rust)
+Green_S2_3 destroyed Rust_S3_5 (score Green 7 : 11 Rust)
+Green_S1_1 destroyed Rust_S4_4 (score Green 8 : 11 Rust)
+Rust_S0_5 destroyed Green_S4_3 (score Green 8 : 12 Rust)
+Rust_S2_3 destroyed Green_S4_1 (score Green 8 : 13 Rust)
+Rust_S5_2 destroyed Green_S0_3 (score Green 8 : 14 Rust)
+Rust_S4_3 destroyed Green_S0_1 (score Green 8 : 15 Rust)
+NATIVE_EXEC 39999 native, 0 handed back (dead 0, reflexes 0, yielding 0, face 0, drive 0, other 0), 73 stale pulls, 6387 part pulls, 0 verified, 0 verify mismatches 
+Rust_S2_1 destroyed Green_S2_2 (score Green 8 : 16 Rust)
+Green_S3_2 destroyed Rust_S3_3 (score Green 9 : 16 Rust)
+Rust_S2_5 destroyed Green_S2_1 (score Green 9 : 17 Rust)
+Rust_S1_4 destroyed Green_S2_3 (score Green 9 : 18 Rust)
+Rust_S0_5 destroyed Green_S5_2 (score Green 9 : 19 Rust)
+MEASURE ai_usec_per_tick 7636 at 60 brains (budget 4000); 677 ticks fighting, 31 alive at the end; LOS 172991 queries, 115809 computed
+MEASURE ai_band_per_tick wall 8005 usec, thread cpu 7879 usec; per living unit per tick 159.3 usec cpu (the -10 priority band: brains and orders; cpu time doesn't grow with other load, and per unit compares variants that fight different battles)
+MEASURE ai_band_per_second 236.4 ms cpu per second of match time, 4780.4 usec per living unit per second (at 30 Hz)
+MEASURE ai_execution full 54000 held 0
+MEASURE ai_usec_per_tick_parts act 1010, decide 618, motion 486, situation 1482, sz.tr.look_gd 43, sz.tr.refresh_gd 124, sz.tr.shape_gd 170 (the rest: executing orders, aiming, firing)
+      (--profile-parts, i.e. make ai-perf DETAIL=1, adds the finer laps inside moving and shooting)
+MEASURE perf_reference 0.776 ms median during the fight (30 samples), 0.753 before it, nominal 0.774 on builder0: 1.00x (refuses above 1.2x)
+MEASURE ai_usec_per_ref_ms 9840 (ai_usec_per_tick 7636 / perf_reference 0.776 ms during the fight; machine builder0, cpu P)
+  PASS  scenario_perf::test_the_brains_stay_inside_the_cpu_budget (9.2s)
+
+expected engine messages: 0 seen, from 1 allowed pattern(s) in res://tests/baselines/engine_expected.txt
+
+scenarios not judged: 0
+scenarios: 1 passed, 0 failed, 0 pending, 0 unexpectedly passing

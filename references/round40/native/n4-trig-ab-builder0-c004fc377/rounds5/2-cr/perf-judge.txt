@@ -1,0 +1,4 @@
+PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.01x ai_usec_per_tick=7645 per_ref_ms=9826 cpus=0-3 idle=99% waited=0s load=0.93 run=12s
+PERF_JUDGE_RELATIVE attempt=1 host=builder0 absolute=PASS relative=PASS per_ref_ms=9826 line=25840 ai_usec_per_tick=7645 ratio=1.01x cpu="13th Gen Intel(R) Core(TM) i5-1345U"
+>> perf-judge: relative line (recorded, not deciding): PASS, 9826 usec per reference ms v 25840; agrees with the absolute
+>> perf-judge: JUDGED, PASS on attempt 1 of 3 (14s)

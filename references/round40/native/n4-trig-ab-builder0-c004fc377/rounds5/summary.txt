@@ -1,0 +1,26 @@
+TRIG_AB commit c004fc377 host builder0 rounds 5
+TRIG_AB settled: load1 1.02
+TRIG_AB using cr (libm imports: none)
+TRIG_AB round=1 arm=cr PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.00x ai_usec_per_tick=7487 per_ref_ms=9636 cpus=0-3 idle=99% waited=0s load=1.02 run=12s
+TRIG_AB using libm (libm imports: acosf asinf atan2f atanf )
+TRIG_AB round=1 arm=libm PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.00x ai_usec_per_tick=7462 per_ref_ms=9615 cpus=0-3 idle=98% waited=0s load=1.01 run=12s
+TRIG_AB using libm (libm imports: acosf asinf atan2f atanf )
+TRIG_AB round=2 arm=libm PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.00x ai_usec_per_tick=7487 per_ref_ms=9635 cpus=0-3 idle=99% waited=0s load=0.93 run=12s
+TRIG_AB using cr (libm imports: none)
+TRIG_AB round=2 arm=cr PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.01x ai_usec_per_tick=7645 per_ref_ms=9826 cpus=0-3 idle=99% waited=0s load=0.93 run=12s
+TRIG_AB using cr (libm imports: none)
+TRIG_AB round=3 arm=cr PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.00x ai_usec_per_tick=7637 per_ref_ms=9828 cpus=0-3 idle=99% waited=0s load=0.94 run=12s
+TRIG_AB using libm (libm imports: acosf asinf atan2f atanf )
+TRIG_AB round=3 arm=libm PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.00x ai_usec_per_tick=7487 per_ref_ms=9699 cpus=0-3 idle=99% waited=0s load=1.04 run=11s
+TRIG_AB using libm (libm imports: acosf asinf atan2f atanf )
+TRIG_AB round=4 arm=libm PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.01x ai_usec_per_tick=7496 per_ref_ms=9622 cpus=0-3 idle=98% waited=0s load=1.03 run=11s
+TRIG_AB using cr (libm imports: none)
+TRIG_AB round=4 arm=cr PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.01x ai_usec_per_tick=7510 per_ref_ms=9628 cpus=0-3 idle=99% waited=0s load=0.94 run=12s
+TRIG_AB using cr (libm imports: none)
+TRIG_AB round=5 arm=cr PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.01x ai_usec_per_tick=7633 per_ref_ms=9736 cpus=0-3 idle=99% waited=0s load=0.94 run=12s
+TRIG_AB using libm (libm imports: acosf asinf atan2f atanf )
+TRIG_AB round=5 arm=libm PERF_JUDGE attempt=1 state=PASS exit=0 ratio=1.00x ai_usec_per_tick=7658 per_ref_ms=9855 cpus=0-3 idle=99% waited=0s load=1.03 run=12s
+TRIG_AB mean arm=cr n=5 ai_usec_per_tick=7582 (sd 69, range 7487-7645 = 2.1 % of the mean) per_ref_ms=9731 (sd 87, range 9628-9828)
+TRIG_AB mean arm=libm n=5 ai_usec_per_tick=7518 (sd 71, range 7462-7658 = 2.6 % of the mean) per_ref_ms=9685 (sd 90, range 9615-9855)
+TRIG_AB paired cr-libm n=5 ai_usec_per_tick +64 (per round [25, 158, 150, 14, -25]) per_ref_ms +46 (per round [21, 191, 129, 6, -119])
+QUIET WINDOW: HELD -- 9 samples over 141s, this run alone on the box, load1 0.93-1.03 (bound 4.00).
