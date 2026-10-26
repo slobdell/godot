@@ -78,6 +78,23 @@ Nothing (B2 answered: R40.1).
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**BAR B2s, LINES VERDICT (2026-10-25 17:30 PDT): FAILS on G3 (one cell); deciding, G1, G2 and G4 pass.** BASE 5be511659 v ARM
+66c4839a2, builder2 J24, 8301-8340 + 8401-8440, 1600 fights an arm, 80 of 80 seeds each (ARM: 1 attempt lost, retried),
+`search.py bar ~/balance-guard-raw/bar-b2s 5be511659 66c4839a2`:
+| rule | change (paired se) | result |
+|---|---|---|
+| DECIDING flatness 18.5 -> 8.9 | -9.64 (2.18) | pass (4.4 se) |
+| blob v a gangs CPU / v a syndicate CPU | 79 -> 50 % / 7 -> 36 % | pass (both toward the mean) |
+| G1 blob line 41 -> 35 % | -6.4 (2.2) | pass (down) |
+| G2 turtle line 34 -> 34 % | +0.4 (1.4) | pass |
+| G3 blob median length | +10.4 % (2.3) | pass (band 15 %): fights he'd notice are longer |
+| G3 blob, LAW guard median length | **+24.6 % (3.6)** | **FAIL** (band 20 %) |
+| G3 other 9 cells | -9.3 .. +14.0 % | pass |
+| G4 time-cap share | +0.06 (0.18) | pass |
+Table after: blob v a CPU of each faction (cond/gangs/law/synd) 24 / 50 / 29 / 36 %; a guard of each faction 38 / 26 / 53 / 22 %. Why
+G3: Law's +15 % hp/shield/armour makes a Law blob's fights run long. The dev screen read that cell +13.2 % (se 10.1, n 35): too small
+an n to see it (lesson: screen the per-faction length cells at the bar's n, or bound toughness and damage separately). G5/G8 pending.
+
 **Report (2026-10-24, in progress).** Plan, in order: B1 tally (DONE, no fights) -> B4 harness + dry run of two candidates on
 dev seeds (running) -> pick the candidate -> Bar B2s series on 8301-8340 + 8401-8440 -> ship -> B3 on top. Reason: R40.1 put the stat
 change before B3, and B4 is ready before B3 would be.
