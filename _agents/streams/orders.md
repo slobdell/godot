@@ -188,5 +188,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     the never-away guard filed with v8) as above. Runner `tests/control/orders_bar.sh b2 g1v8 <arm> "9101 ... 9112" <out> 8`.
   - **Variants read on the dev block 7007-7012: three** (v7, v8, v9), so a dev pass there is partly fitted.
   - Lab (laptop, s7007 his click, 5 squads): squad 5 stays (toward 0.0); squads 3 / 4 step < 10 m back into their ranks.
-  - **Question for the lead (feel):** on a click right beside his army, the squads already in that street (the column's
-    tail) stay put; only the near squads move. Smoke: `make skirmish ARENA=terminus SKIRMISH_FLAGS="<the arm's flags, spaces>"`.
+  - **Question for the lead (feel), in his terms:** "You have all five squads selected at the start and click a spot in
+    the street just beside them (30 m away). Today they all try to crowd round that spot, and two of them end up up the
+    side street. With the change, the squads line up along the street you clicked, one behind another, starting at your
+    spot; the squads already standing further down that street stay where they are instead of backing up to join the
+    queue. Does a squad that doesn't move on that click feel like it ignored you, or like it's already where it should
+    be?" Shots (laptop, s7007, 5 s after all in; white = his click, coloured posts = each squad's place):
+    `references/round41/orders/g1-his-click-shots-laptop/terminus-5-click-v9-arrival_plus5-desktop.png` v
+    `...-main-...` (today) and `...-sides-...` (v7, which backed squad 5 up 15 m). Smoke: `make skirmish ARENA=terminus
+    SKIRMISH_FLAGS="--group-lay=column --group-rank-shift=half --group-whole=click --group-clear=reached --group-lead=drive
+    --group-sides=both --group-column-toward=stay"`, select all at the start, click the street just left of them.
