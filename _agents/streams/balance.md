@@ -78,3 +78,65 @@ His answer to the combined-arms recommendation (the round proceeds on it); the s
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Round 42, in progress (2026-10-26; started from main 18982e8df, launch green 21b20bdce, no baseline re-run).**
+
+**Plan (in order; decisions in one line each):**
+1. B7 code (DONE, OFF): the counter rule, the pair loader, the garage deal and suggestion line, tests first.
+2. B8 dev screen (RUNNING, builder2): "both" arms first (Gas Rocket Truck damage +15 % and cost -15 %; Missile Ring cost -15 %
+   and hull/shield +15 %), v base, 10201-10220 (dev), 200 fights an arm a faction. *Why both first:* the largest move inside
+   his 15 %; if "both" moves nothing, the single-change arms can't, and they are skipped (saves ~2 h of builder2).
+3. Bar B8 (filed before its numbers) on the arm that moves all-tanks v barrage most, with the faction lines as guards.
+4. Bar B7 on the tree that carries whatever B8 ships. *Why B8 before B7's series:* B7's deciding line is pooled over the four
+   factions, and last round's dev reads (all-tanks v condemned siege 47 %, gangs gang_hail 52 %, law_barrage 96 %,
+   syndicate_barrage 87 %, ~70 % pooled) say B7 alone would FAIL ≤ 60 %; its fresh seeds (9901-9940) are spent once.
+5. B9 (Bar B2s v2) when CP42.1 lands; B10 only on his yes; then stretch B3, B6.
+
+**B7 design (41d047cf3; R42.1 grant from the orchestrator):**
+- *How the deal knows his army:* the garage knows it exactly: `GarageMode.fight` hands `screen.draft.to_doctrine()` to
+  `GarageOpponent.build(..., opposing)`. The skirmish loads both sides first through `Army.load_pair` (before, GREEN loaded
+  and spawned before RUST was dealt, so a CPU on GREEN could not see a tank rush on RUST), and each plain `cpu` side is dealt
+  against the other side's army as named or rolled (so two plain CPUs are exactly their two rolls).
+- *The rule:* opposing army's cost >= **70 % tanks** -> the CPU fields its faction's artillery-heavy lineup (`siege`, `gang_hail`,
+  `law_barrage`, `syndicate_barrage`), seeded and bought the same way; an explicit `cpu:<name>` is never swapped. *Why 70 %, not
+  60:* every army the CPU itself deals stays below it (the most tank-heavy, Condemned's `armor`, is ~63 % tanks, so a 60 % rule
+  would counter the CPU's own armor rolls and change the demo); 70 % is seven tanks in ten, a tank rush. A test walks every
+  archetype x 12 seeds x two budgets and pins every deal under the line.
+- *The switch:* `--cpu-counter=on|off`, `Army.COUNTER_DEFAULT = false` until Bar B7 passes. A `CPU_COUNTER faction= tank_share=
+  archetype=` line prints when it fires.
+- *The garage line (ON):* a draft >= 70 % tanks gets "Bring two artillery squads with your tanks." first among the hints, when
+  the faction's artillery is unlocked; `--tank-rush-hint=off` is the escape.
+- *Tests:* `tests/test_army_counter.gd` (8): share, no rolled deal tank-heavy, the counter per faction (>= 2 artillery, cap,
+  budget), OFF / named / mixed opponents unchanged, the pair whichever side loads first, OFF pair = each side loaded alone
+  (default `cpu`, the demo, `player_default`), the garage deal ON/OFF, the hint. Laptop 8/8 at 41d047cf3's tree.
+- *Smoke (laptop, 41d047cf3's tree, seed 9901, terminus, Law v Law, `--enemy=cpu:mono_tank` = the rush on RUST):* ON:
+  `CPU_COUNTER faction=law tank_share=1.00 archetype=law_barrage`, GREEN fields 9 Pursuit Cruisers, 4 Retired APCs, 4 Assault
+  Guns, 8 Gas Rocket Trucks; OFF: GREEN rolls law_line (4 / 8 / 8 Assault Guns / 4 Sonic Emitters), no counter line.
+
+**Bar B7 (FILED 2026-10-26 ~15:20, before any number on 9901-9940).** builder2, one frozen commit (B7's code + whatever Bar B8
+ships), BASE `--cpu-counter=off`, ARM `--cpu-counter=on`, nothing else different. Fights: all-tanks (`--<team>=cpu:mono_tank`) v
+the plain `cpu` deal, same faction both sides (B5's line, BASE ~85 %), the four factions x mono on Green and on Rust x seeds
+9901-9940 x ONE arena a seed (9901-9908 terminus, 9909-9916 locks, 9917-9924 sumps, 9925-9932 gorge, 9933-9940 parade), guard
+none: 320 fights an arm, paired by (faction, team, arena, seed); se by bootstrap over seeds.
+- **DECIDING:** all-tanks win share, pooled over the four factions, ARM <= 60 % AND the paired change < 0 by >= 2 se.
+- **G1 (a normal army is not punished):** CPU v CPU, both plain `cpu`, the four factions mirrored, 9901-9910 terminus (40
+  fights an arm): every fight's GUARD_RESULT (winner, seconds, tanks left) identical ON v OFF. (By construction no rolled deal
+  reaches 70 %; this proves it in the game.) The mixed-army win share is therefore BASE exactly, inside BASE +/- 1.645 se.
+- **G2 fight length:** the deciding fights' median length, ARM within +/-20 % of BASE.
+- **G3 the deal loads and fields:** 0 load errors in 320 ARM fights; every countered army within the cap (ARMY_CAP_FIELDED).
+- **G4 defaults:** `test_army_counter` and `test_tactics_mono_army` green on the frozen commit (default `cpu`, demo unchanged).
+- Reported, not deciding: each faction's win share and change; how many ARM fights the counter fired (expected 320/320).
+- **Expected before the numbers (from R41.16/R41.18 dev reads on 9401-9410):** condemned ~47, gangs ~52, law ~95, syndicate
+  ~87 -> ~70 % pooled: **the deciding line fails on B7 alone**; it passes only if B8 moves Law's and Syndicate's barrage by
+  ~40 points between them. A pass ships ON (the orchestrator tells him; his veto stands).
+
+**Questions for the orchestrator (sent):** (1) B7's deciding line is pooled; Law's and Syndicate's counter lineups don't beat
+tanks today (96 / 87 %). If B8 can't fix them inside 15 %, may Bar B7 be judged per countered faction (Condemned and Gangs:
+each ARM <= 60 % and down >= 2 se) with the counter firing only for the factions whose lineup works? Asked BEFORE any 9901+ number.
+
+**Merge notes (shared-path edits, R42.1):** `game/modes/skirmish_mode.gd` `_start_match`: 3 lines before the spawn loop
+(`Army.load_pair`) and the loop's `load_army` call replaced by `armies[team]` (nowhere near `rig.facing`); `game/garage/garage_mode.gd`
+`fight()`: one argument, `screen.draft.to_doctrine()`. Granted paths: `garage_opponent.gd` (`build`'s `opposing` + 4 lines),
+`garage_advice.gd` (the hint + its switch). Mine: `game/units/army.gd` (counter rule, `load_pair`, `load_army`'s `opposing`),
+`tests/test_army_counter.gd` (+ .uid), `tools/balance/candidates/b8_*.json`.
+
