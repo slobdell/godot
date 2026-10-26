@@ -67,6 +67,14 @@ func test_wait_kind_reads_what_the_friend_is_doing() -> void:
 	var friend := staged[1] as Tank
 	print("MEASURE wait kind turning: friend v %s nose %s" % [friend.real_velocity, -friend.global_basis.z])
 	assert_eq(me._wait_kind(friend, north), "turning", "a slow friend still turning toward its own way will clear mine")
+	# The chain: a friend ahead that is itself waiting for one that will clear is waited on; one waiting for ME is not (a cycle).
+	var fm := Movement.of(friend)
+	fm._wait_for = "Green_Someone"
+	fm._wait_since = Engine.get_physics_frames()
+	assert_eq(me._wait_kind(friend, north), "waiting", "the car ahead in the jam, itself waiting, will move when its friend does")
+	fm._wait_for = "Green_Me"
+	assert_eq(me._wait_kind(friend, north), "", "but not when it is waiting for me")
+	fm._wait_for = ""
 
 
 ## Live: a friend crosses my lane 9 m ahead. OFF, ORCA steers me round it; ON, I hold my line and slow, and go on once it is past.

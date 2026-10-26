@@ -254,7 +254,8 @@ static var _follow_runs := {}
 ## of jam-seconds had the blocker out of the asker's lane within 3 s, 71 % within 5 s): the friend is MOVING (>= WAIT_MOVING_MPS)
 ## and not head-on (crossing the lane, or a leader going my way), or it is slow, under way and still turning toward where it is
 ## going (nose more than WAIT_TURN_DEG off its own travel direction, which is not head-on to mine). A parked friend, a stalled one
-## (slow, under way, already facing its way: blocked itself) and a head-on one are passed as today. The wait hands back to ORCA
+## (slow, under way, already facing its way: blocked itself) and a head-on one are passed as today; one that is itself waiting
+## for such a friend is waited on too (the cars behind the jam keep their lane; a cycle is not). The wait hands back to ORCA
 ## after WAIT_CAP_S on one friend, and that friend is not waited on again for WAIT_COOLDOWN_S. His words: "wait for the cars ahead
 ## of us to move forward, which they inevitably will"; the cap is for the ones that don't. The lane: WAIT_AHEAD_M ahead, both hull
 ## radii + WAIT_SLACK_M wide; a friend not yet in it but meeting me there within WAIT_HORIZON_S at my route's velocity counts.
@@ -3009,8 +3010,9 @@ func _wait_blocker(here: Vector3, way: Vector2, preferred: Vector2) -> Array:
 
 
 ## "" when `other` is not a friend to wait on (parked; stalled: slow, under way and already facing its way; head-on); "moving" when
-## it drives across my lane or ahead of me my way; "turning" when it is slow, under way and its nose is still WAIT_TURN_DEG or
-## more off its own travel direction (it is getting oriented, as his scout was).
+## it drives across my lane or ahead of me my way; "waiting" when it is itself waiting for a friend that will clear (not for me);
+## "turning" when it is slow, under way and its nose is still WAIT_TURN_DEG or more off its own travel direction (it is getting
+## oriented, as his scout was).
 func _wait_kind(other: Tank, way: Vector2) -> String:
 	var v := Vector2(other.real_velocity.x, other.real_velocity.z)
 	var speed := v.length()
@@ -3019,6 +3021,10 @@ func _wait_kind(other: Tank, way: Vector2) -> String:
 	var mover := Movement.of(other)
 	if mover == null or not mover.is_under_way() or mover._goal == Vector3.INF:
 		return ""
+	# The car ahead of me in the jam is itself waiting for one that will clear: it will move when that one does (a chain, bounded by
+	# the cap); unless it is waiting for ME (a cycle: ORCA sorts that out as today).
+	if mover._wait_for != "":
+		return "" if mover._wait_for == String(ctl.tank.name) else "waiting"
 	var its_way := mover._travel_direction(mover._goal, false)
 	if its_way == Vector2.ZERO or its_way.dot(way) <= WAIT_HEAD_ON_COS:
 		return ""
