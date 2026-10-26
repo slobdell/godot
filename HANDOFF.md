@@ -62,7 +62,13 @@ GREEN on builder2 (`make check exited 0`, 25 passed + 2 NOT JUDGED: perf-judge, 
 **2026-10-25 ~09:30: main (c30136971 code = 0badbb09e + docs) GREEN on builder0, 27 targets ALL JUDGED** (`make check exited 0`,
 3237 passed / 0 failed; perf-judge judged in the check). This is round 40's verified main without B2s.
 
-**ROUND 40 STATE (2026-10-25 ~08:35 PDT):** settle, manoeuvre, orders DONE (merged; only T1 shipped ON). native idle (N4 trig rerun
+**ROUND 40 STATE (2026-10-25 ~18:10 PDT): Bar B2s FAILED on G3 (R40.19).** BASE 5be511659 v ARM 66c4839a2, builder2, 1600 fights an
+arm: flatness 18.5 -> 8.9 (-9.6 ± 2.2) PASS, G1 blob 41 -> 35 % PASS, G2 turtle +0.4 PASS, G4 PASS, but G3's LAW blob fight length
++24.6 % ± 3.6 (band ±20 %) FAILS (Law's +15 % toughness). fm_law_c5r2 stays OFF; main unchanged (verified 0badbb09e + docs). Balance
+works v2 (Law toughness trimmed): dev screen on 8501-8540 with a per-faction G3 read, then Bar B2s v2 on fresh 8801-8840 + 8901-8940
+(builder2). The round can close around it; v2 carries into round 41 if unjudged. G5/G8 of B2s land ~20:00 for the record.
+
+**Earlier (ROUND 40 STATE (2026-10-25 ~08:35 PDT):** settle, manoeuvre, orders DONE (merged; only T1 shipped ON). native idle (N4 trig rerun
 waits a quiet builder0). **balance's Bar B2s series running on builder2** (fm_law_c5r2; BASE 5be511659 / ARM 66c4839a2; ~8-10 h): on a
 PASS the orchestrator merges ARM, ADOPTS its 13 recorded sim-baseline maps (`~/balance-runs/sim_baseline_adopt-66c4839a2.json`, laptop
 copy under references), runs one main check + a quiet perf-judge, then closes the round. Main batch check (0badbb09e + docs) running on
