@@ -1,0 +1,64 @@
+# Stream: balance (an all-tank army stops being the easy win; no faction a free win)
+
+> Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 41** (C41.1, C41.5,
+> CP41.1) and *Rulings (round 40)* R40.1, R40.6, R40.16, R40.18-R40.25. Your round-40 brief: `streams/archive/round40/balance.md`
+> (Status: FINAL REPORT, the candidate chain, Bar B2s's verdict, B5's write-up, *Next steps (round 41)*). **You own:** `game/units/**`
+> unit numbers (C41.5), `tools/balance/**`, `mk/balance.mk`, round 40's brain paths (`tests/tactics/**`, `tests/rules/**`,
+> `mk/tactics.mk`, `mk/rules.mk`); `game/combat/weapons.gd` / `armor.gd` numbers only if B5 needs them. **Model:** Fable.
+> **Machine:** builder2 (series, J24), builder0 light lane for checks. **Seeds:** B5 bar 9201-9240 + 9301-9340, B5 dev 9401-9440;
+> Bar B2s v2 8801-8840 + 8901-8940 (filed round 40, unread).
+
+## The lead's direction
+
+Combined arms (2026-10-24): "using a variety of units should theoretically create the advantage ... having a mix of unit types should
+protect other units' weaknesses." Target (R40.6): a well-mixed army beats an all-tank army of equal cost ~60-65 % (all-tanks 35-40 %).
+
+His answer to the IFV-missile recommendation (2026-10-26, verbatim): "what do you mean by giving the IFV a slow, limited anti-tank
+missile? Isn't this just turning an IFV into a tank? What about making the tanks slower than they currently are? Or what about making
+tank's turrets turn slower?" **So his levers go first; the missile is not built** unless his levers fall short and he asks for it.
+
+Faction balance (R40.1): "when a faction keeps losing, we should change its units' numbers" (+/-15 %; gangs loses in his play).
+
+## Where things stand (main at launch: see HANDOFF)
+
+- All-tanks beats its own faction's mixed deal 82-84 % (CPU v CPU, every map, 320 fights). Cause (B5): about half of each mixed army's
+  money can't hurt a tank's front. Armour (armor.gd `penetration_multiplier`, autocannon penetration 5 v tank armour front 8 / side 4 /
+  rear 2): an IFV does ~5 % of its damage to a tank's front, ~50 % to its side, ~100 % to its rear. Tank turret 50-60 deg/s (scout 200,
+  IFV 175-190); tank hull 9-12 m/s (IFV 10.5-13, scout 14-18). **Why his levers can work:** a slow turret and hull give fast units time
+  to get round to the side and rear, where they do hurt. Whether the CPU's mixed army actually flanks is the open question.
+- The faction stat change fm_c5r2_lawt5 (ARM d385cd308): v2 dev screen (R40.25, 5be511659 + overrides, builder2, 800 fights an arm):
+  flatness 17.9 -> 7.0 (-10.9 +/- 2.2); all 10 G3 cells pass; syndicate blob 76 -> 17 % wins (watch). Its ARM is red on bridge-pooled;
+  it waits on manoeuvre's Q3 (CP41.1).
+
+## Backlog (in order)
+
+1. **B5 his levers, dev screen (9401-9440, never a bar).** Arms against today's main, the mono-tank v mixed table per faction (B5's
+   workload): (a) tank turret traverse slower (try ~-30 % and ~-50 %), (b) tank hull slower (speed and/or hull turn), (c) both. Read the
+   all-tank win share (target 35-40 %), the faction table (must not undo flatness), the blob/turtle lines, fight length. Also read WHY:
+   share of mixed-army damage to tanks landing on side/rear, before v after. If none reaches the target, report the gap and what moved
+   it (the orchestrator takes it to him; the missile or penetration options come back only with his yes).
+2. **Bar B5** on 9201-9240 + 9301-9340, filed before any number, for the lever B5's screen picks (combined with or separate from
+   fm_c5r2_lawt5: say which, and why). Guards as Bar B2s (blob/turtle not up, lengths, time-cap, none line, perf, full check with the
+   sim baseline adopted on purpose).
+3. **Bar B2s v2 after CP41.1:** when the orchestrator tells you Q3 is on main, rebuild v2's ARM on that main + fm_c5r2_lawt5 + the
+   R40.18 re-pins (cherry-pick ad956031b), full check + `sim-baseline-record`, then the filed bar (`~/balance-runs/bar-b2s.sh` with
+   BASE/ARM edited, J24, `search.py bar`). If B5's lever ships first, say whether B2s v2 needs re-screening on top before running it.
+4. **Then:** B3 faction-aware CPU (built OFF, round 40), B6 ADVANCE off a travel seat (traced, round 40).
+
+## How to verify
+
+`python3 -m unittest discover -s tools/balance`; `search.py check` (the from-behind rule); `make quick-remote`; a full check of every
+hash you name. Playtest commands for him: `make skirmish SKIRMISH_FLAGS="--unit-overrides=<file>"` (N3's flag) with an all-tank army.
+
+## Don't touch
+
+manoeuvre's movement/traffic, orders' control, camera, `native/**`, `tests/baselines/**` (the orchestrator adopts). No new weapon or
+ability. Don't push.
+
+## Waiting on the lead
+
+B5's read decides whether a missile/penetration question goes back to him.
+
+## Status
+
+_(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_

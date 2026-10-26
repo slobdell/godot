@@ -1,0 +1,75 @@
+# Stream: manoeuvre (traffic that queues: a crew waits for a turning friend instead of driving round it)
+
+> Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 41** (C41.1-C41.3,
+> CP41.1) and *Rulings (round 40)* R40.20-R40.24. Your round-40 brief: `streams/archive/round40/manoeuvre.md` (Status: *ROUND-41 ITEM 1*,
+> the F1 evidence table, the CLOSE REPORT). **You own:** movement's drive / unstick / side-step / avoidance and traffic's give-way
+> block, `game/ai/traffic.gd`, `tests/manoeuvre/**`, `tests/traffic/**`, `tests/test_manoeuvre*.gd`, `tests/test_traffic*.gd`,
+> `mk/manoeuvre.mk`. The C++ mirror (`native/**`) is native's: request twins through the orchestrator. **Model:** Fable.
+> **Machine:** builder0 light lane (J<=4); builder2 for any series over 24 fights. **Seeds:** Q2 9001-9024, Q3 9025-9048 (C41.1).
+
+## The lead's direction
+
+His standing bar: "the feel of the game needs to have the user perceive that the units are smart and under their control".
+His playtest of round-40 main (2026-10-26, verbatim in `game_design.md`): "when I'm controlling a large set of squads at once and
+commanding all of them to go somewhere, a bunch of units block other units, but this is a symptom of all units generally not moving in
+the same direction (i.e. a scout is pointed north and thus blocking a unit that's trying to go West) ... if a unit is blocked, instead of
+trying to figure out how to navigate around a blockage, if they're aware that the blocking unit will eventually get oriented correctly
+to move out of the way, a unit might be able to just stand by and wait for the other unit to finish their turn, which is likely faster
+than trying to navigate around it - ... if all cars tried to drive around the traffic jam it would just increase the traffic jam; the
+correct thing to do would be for all cars to maintain their orientation in the road and wait for the cars ahead of us to move forward,
+which they inevitably will."
+
+He also allowed that some of it is the game ("a function of some vehicles needing wide turning radiuses"): the aim is fewer and shorter
+jams, not zero contact.
+
+## Where things stand (main at launch: see HANDOFF)
+
+- ORCA avoidance steers every crew round every neighbour, friend or not, moving or turning. Round 40's F1 (a follower queues behind its
+  leader) took three forms; each fixed its case and moved a failure elsewhere because it changed ORCA's direction (R40.22-R40.24). F1's
+  code is OFF on main (`--traffic-on=follow`); don't build on its static table (`Movement._follow_runs`).
+- The bridge drill: main's worst rims 1.5 / 1.4 / 1.1 s v the 3 s line (deterministic). Balance's stat change (v2 overrides) pushes one
+  crew to 5.1 s (rust t15 s2: ORCA carries a wheeled follower wide past the deck mouth while its leader turns; 5a233f42b reproduces).
+- Instruments: `tests/manoeuvre/probe_wedge.gd`, wedge_trace partner classes, `partner_table.py`, bridge-series / bridge-pooled,
+  follow_judge.py (F1's), orders' `tests/orders_probe.gd` (shared: don't rename `_match`/`_squads`/`_order_tick` without telling orders).
+
+## Backlog (in order)
+
+1. **Q1 the jam census (report).** On orders' group-order workload (many squads, one click, mixed start headings; orders' O1 builds the
+   probe: ask the orchestrator for its hash, or use probe_wedge's group order meanwhile), classify every stretch where a crew is slowed
+   by a friend: is the blocker turning in place, about to drive off the asker's line, parked, or coming head-on? How long was each, and
+   what did the asker do (steered round, stopped, reversed)? Name what share of jam-seconds would end by itself within N s if the asker
+   just held its heading and waited. This number decides whether Q2 is worth building; send it to the orchestrator.
+2. **Q2 wait, don't detour (his rule).** A crew blocked by a FRIEND that will clear its line soon (turning toward a heading that takes it
+   off the line, or already pulling away) holds its heading and waits (slows / stops) instead of taking ORCA's sideways answer. A
+   time-out (a few seconds; Q1's numbers pick it) hands back to today's avoidance, so a parked or wedged blocker is never waited on
+   forever. Speed / hold only (C41.2): ORCA's direction is not rewritten while waiting; the crew just doesn't move into the gap. Build
+   OFF (`--traffic-on=wait` or similar), lab on Q1's worst cases first, then file **Bar Q2** on 9001-9024 before any number: deciding =
+   jam-seconds (or every-squad-in time) on the group-order workload; guards = G5 never-in, the wedge trace, bridge-pooled, fight lines
+   (the dev cells round 40 used). Name orders' O2 switch state (C41.3). A pass ships ON with native's twin.
+3. **Q3 the bridge speed cap (round-40 item 1, CP41.1).** A WHEELED crew slows before a sharp turn on its route that its leader is in, so
+   it reaches the turn at a speed it can make with its 8 m radius; ORCA's steering untouched. Spec and evidence: your archived Status
+   *ROUND-41 ITEM 1*. Before any number, decide (and write down) whether bridge-pooled's single-seed 3 s line becomes a pooled measure
+   (R40.24's design item; the orchestrator rules on your proposal). **Bar Q3** on bridge-drill seeds 9025-9048, on main AND under
+   balance's v2 overrides (`~/balance-guard-raw/v2/overrides-fm_c5r2_lawt5.json`, or check out balance/b2s-v2-arm d385cd308). Q3 and Q2
+   may share one rule if Q1 shows the bridge case is the same "wait for a turning friend" case; say so before building twice.
+4. **Stretch:** round 40's M1 v3 (archived orders/manoeuvre Status): limit a parked crew's give-way reach only while its own squad is
+   still arriving.
+
+## How to verify
+
+Pure tests (`tests/test_traffic*.gd`); the wedge probe; bridge-series; `make quick-remote`; a full check of every hash you name before a
+series. Smoke he can run: `make skirmish ARENA=terminus SKIRMISH_FLAGS="--traffic-on=wait"` against without: select every squad, send
+them across the map, watch who waits and who weaves.
+
+## Don't touch
+
+orders' `game/control/**` and the planner (orders' C41.3 grant), settle's deploy functions in `element_plan.gd`, balance's paths,
+`native/**` (request), `tests/baselines/**`. Don't push.
+
+## Waiting on the lead
+
+Nothing.
+
+## Status
+
+_(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_

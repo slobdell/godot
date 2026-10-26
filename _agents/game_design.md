@@ -4423,3 +4423,40 @@ had strengths and weaknesses, and having a mix of unit types should protect othe
 army v a mixed army of the same faction and budget, every map). Target: a well-mixed army beats an all-tank army of equal cost ~60-65 %
 of the time (mono stays playable, never the better choice). The lever is counters within R40.1's +/-15 % (anti-armour punishes a tank
 blob, tanks crush light units, MGs beat light armour); if the bounds can't build real counters, ask him before going past them.
+
+## His playtest and answers after round 40 (2026-10-26 ~02:30, verbatim)
+
+On the combined-arms recommendation (an IFV anti-tank missile): **"what do you mean by giving the IFV a slow, limited anti-tank missile?
+Isn't this just turning an IFV into a tank? What about making the tanks slower than they currently are? Or what about making tank's
+turrets turn slower?"**
+
+On the portrait order-preview line: **"I don't see a problem with order-preview lines."** (Closed; not a defect.)
+
+His playtest of round-40 main: **"I just played a game, I don't see any obvious flaws - navigation seems like it could be improved; I
+notice that when I'm controlling a large set of squads at once and commanding all of them to go somewhere, a bunch of units block other
+units , but this is a symptom of all units generally not moving in the same direction (i.e. a scout is pointed north and thus blocking a
+unit that's trying to go West); maybe this isn't necessarily bad and part of the game and also a function of some vehicles needing wide
+turning radiuses and such, but I suspect that we might get better navigation with a little more coordinated movements (for example, if a
+unit is blocked, instead of trying to figure out how to navigate around a blockage, if they're aware that the blocking unit will
+eventually get oriented correctly to move out of the way, a unit might be able to just stand by and wait for the other unit to finish
+their turn, which is likely faster than trying to navigate around it - an analogy here is that if I'm in a traffic jam in the road, if
+all cars tried to drive around the traffic jam it would just increase the traffic jam; the correct thing to do would be for all cars to
+maintain their orientation in the road and wait for the cars ahead of us to move forward, which they inevitably will). Another obvious
+game flaw: we have some pretty good camera work, but it also jerks around a lot, which becomes problematic if I'm trying to command a
+bunch of units to attack a target, and then it's hard to click on the target because the camera jerks. I think ideally the camera moves
+around in smooth cinematic motion (unless there's a good reason not to)."**
+
+On builder0 files that aren't the project's: **"Don't delete files on builder0 that aren't the project's."**
+
+**What round 41 takes from it (orchestrator):**
+- **Traffic as a queue, not a detour (manoeuvre):** a crew blocked by a friend that is turning or about to move off keeps its heading
+  and waits for it, instead of steering round. Cars in a jam keep their lane. Judged on what he saw: a large group order where squads
+  start facing different ways.
+- **A group order moves as one (orders):** when he sends many squads at once, they set off in a shared direction and in an order that
+  doesn't cross (who goes first, who turns where), so fewer crews start nose-to-nose.
+- **A smooth camera (camera):** no jumps, snaps or sudden swings during play; above all, the target he is about to click stays still
+  under the cursor. Moves glide with eased starts and stops. A cut only for a reason he'd accept (e.g. he asked to jump to a squad).
+- **Combined arms, his levers first (balance):** measure slower tank turrets, slower tank hulls, and both, against the all-tank v mixed
+  table (target 35-40 % for all-tanks). Why it can work: an IFV's autocannon does ~5 % of its damage on a tank's front but ~50 % on the
+  side and ~100 % on the rear (armor.gd penetration v front 8 / side 4 / rear 2), so a slow turret and hull let fast units get round.
+  The missile idea is not built unless his levers fall short and he asks for it.

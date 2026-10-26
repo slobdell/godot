@@ -4,11 +4,36 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
 
+
+## 🚀 ROUND 41 IS PREPARED (2026-10-26 ~03:00) — read this first
+
+**Goal: a big group order flows like traffic (crews wait for a friend to turn instead of steering round it), the camera never jerks
+under his cursor, and a mixed army beats an all-tank one.** From his playtest of round-40 main (`game_design.md` *His playtest and
+answers after round 40*). Split, ownership, contracts C41.1-C41.5 / CP41.1 and the seed registry in `workstreams.md` *Round 41*; briefs
+in `_agents/streams/`. **Main at launch: code c36217f79 GREEN builder0, 27 ALL JUDGED (3243/0)** + balance's tools/docs (04513fc92, its
+own check below) + docs. Workers start from it without a baseline check.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | a crew waits for a turning friend instead of driving round it; clean bridge | Q1 the jam census |
+| **balance** | `godot-balance` (1) | **Fable** | an all-tank army stops being the easy win (his levers: slower tank turret / hull) | B5 dev screen |
+| **camera** | `godot-camera` (3) | Opus | the camera glides; what he's about to click stays put | K1 find every jerk |
+| **native** | `godot-native` (4) | Opus | nothing alone: C++ twins for manoeuvre; remote.sh fix | N1 remote.sh literal-~ |
+| **orders** | `godot-orders` (5) | Opus | his many-squad order sets off in one direction | O1 group-order census |
+
+Kickoff: the same one line for every stream, `_agents/orchestration.md` *The kickoff prompt*. All five are FRESH sessions.
+
+**Orchestrator, after launch:** run the round loop; relay orders' O1 probe hash to manoeuvre (its Q1 reads on it); CP41.1: merge
+manoeuvre's Q3 alone when its bar passes (with native's twin) and tell balance the same minute (Bar B2s v2 runs then); take balance's
+B5 read and camera's K3 clip to him in player terms.
+
+**Waiting on him:** nothing blocking. Later: B5's read (if his levers fall short, the missile / penetration question comes back); the
+camera clip.
 
 ## 🏁 ROUND 40 IS CLOSED (2026-10-26 ~02:15 PDT) — read this first
 
@@ -33,10 +58,8 @@ only; merge_check_needed said CHECK on the Python files, so a builder0 check ran
 3. G1 v7 (orders) and the least-total cap deal (settle), M1 v3 (manoeuvre): the round-41 candidates below.
 4. Tools: remote.sh's literal-`~` `--checksum` re-copy path (exit 12), below.
 
-**Waiting on him (player terms, one recommendation each):** (a) combined arms, R40.16: all-tanks beats its own mixed army 82-84 %
-(target 35-40 %); recommended: give the IFV a slow, limited anti-tank missile (as the Bradley's TOW); alternatives: let penetration move
-±15 %, or leave it. (b) The portrait order-preview line floating mid-screen. (c) His playtest notes on T1 ON main. (d) May we delete
-builder0 files that aren't the project's (~/Videos .tar duplicates ~11 GB, ~/.cache/tracker3 1.9 GB)?
+**His answers (2026-10-26, game_design.md):** combined arms: try slower tank turrets / hulls first (balance B5); order-preview line: no
+problem; playtest: group-order traffic (manoeuvre Q2, orders O2) and a jerky camera (camera stream); builder0's foreign files: don't delete.
 
 ## (CLOSED) ROUND 40 AS PREPARED (2026-10-24 evening) — read this first
 

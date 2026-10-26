@@ -1,10 +1,80 @@
 # Workstreams: the current round
 
-> **ROUND 40 PREPARED (2026-10-24 evening, from round 39's traced failures and its faction table; launch FRESH: round 39's `stream/*`
-> branches are `round39/<stream>`, every stream gets a new session). FIVE streams: balance and settle on FABLE (the blob's faction
-> matchups; the halt seat), manoeuvre, orders, native on Opus. No feedback stream this round (its one known issue, the portrait
-> order-preview line, waits for his playtest notes). Builders: builder0 AND builder2 (C40.1 = C39.1).** Briefs in `streams/`; round 39's
-> in `streams/archive/round39/`. Round 39's section follows.
+> **ROUND 41 PREPARED (2026-10-26 ~03:00, from his playtest of round-40 main and round 40's carried items; launch FRESH: round 40's
+> `stream/*` branches are `round40/<stream>`, every stream gets a new session). FIVE streams: manoeuvre and balance on FABLE (traffic
+> that queues instead of detouring + the bridge; combined arms + the faction stat change), camera, orders, native on Opus. Builders:
+> builder0 AND builder2 (C41.1).** Briefs in `streams/`; round 40's in `streams/archive/round40/`. Round 40's section follows round 41's.
+
+## Round 41: five streams (prepared 2026-10-26; briefs in `streams/`)
+
+**Goal: a big group order flows like traffic (crews wait for a friend to turn instead of steering round it), the camera never jerks
+under his cursor, and a mixed army beats an all-tank one.** His words: `game_design.md` *His playtest and answers after round 40*.
+From round 40 (HANDOFF *ROUND 40 IS CLOSED*): T1 ON; the faction stat change fm_c5r2_lawt5 waits on the bridge drill (R40.24/R40.25);
+F1 (three forms) moved failures because each changed ORCA's answer; all-tanks beats a mixed army 82-84 % (R40.16; armour: an IFV's
+autocannon does 5 % on a tank's front, 50 % on its side, 100 % on its rear).
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | a crew waits for a turning friend instead of driving round it; the bridge crossing is clean | Q1 the jam census |
+| **balance** | `godot-balance` (1) | **Fable** | [streams/balance.md](streams/balance.md) | an all-tank army stops being the easy win; no faction a free win | B5 his levers (turret, hull) |
+| **camera** | `godot-camera` (3) | Opus | [streams/camera.md](streams/camera.md) | the camera glides; what he is about to click stays still | K1 find every jerk |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: C++ twins for manoeuvre's rules; tools | N1 remote.sh's literal-~ path |
+| **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | his many-squad order sets off in one direction, nobody nose-to-nose | O1 the group-order start census |
+
+No settle or feedback stream: settle's least-total cap deal and orders' G1 v7 are parked (round-40 archive Status); the order-preview line
+is closed ("I don't see a problem").
+
+**Machines (C41.1 = C40.1):** builder0 = manoeuvre's, orders' and camera's light lanes (J<=4); builder2 (`make gcp-start`; Spot: read the
+verdict line, re-queue on preemption) = balance's series, native's rows, any bar series over 24 fights. ONE full check + ONE judged series
+per builder at a time (`tools/builder_checks.sh --wait-below 1`; the full-check lock). Perf-judge on builder0 only, quiet window
+(`make remote-quiet`). One laptop Godot run at a time (`flock /tmp/tank-squad-laptop-godot.lock`). builder2 also runs another project's
+workers (plane_maker): never touch processes you didn't start. Never delete builder files that aren't ours (his call, 2026-10-26).
+
+**Ownership (round 41):** each brief's *You own* line is the contract; in short:
+- **manoeuvre:** movement's drive / unstick / side-step / avoidance, `game/ai/traffic.gd`, `tests/manoeuvre/**`, `tests/traffic/**`,
+  `tests/test_manoeuvre*.gd`, `tests/test_traffic*.gd`, `mk/manoeuvre.mk`.
+- **orders:** `game/control/**`, `tests/test_control*.gd`, `tests/control/**`, `tests/orders_probe*.gd`, `mk/command.mk`; GRANT (C41.3)
+  `game/ai/planner/**` for departure order/route spread of a group order.
+- **camera:** `game/camera/**`, `game/theme/fx/camera_shake.gd`, `game/ui/camera_readout.gd`, `tests/test_camera*.gd`, `tests/camera/**`,
+  `mk/camera.mk` (new). Orders' click/pick code stays orders' (C41.4).
+- **balance:** `game/units/**` unit numbers (C41.5), `tools/balance/**`, `mk/balance.mk`, round 40's brain paths (`tests/tactics/**`,
+  `tests/rules/**`, `mk/tactics.mk`, `mk/rules.mk`); `game/combat/weapons.gd` and `armor.gd` NUMBERS only if B5 needs them (C41.5).
+- **native:** `native/**`, `mk/native.mk`, `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**`, `tools/perf_judge.sh`,
+  `tools/loaded.sh`, `tools/slot.sh`, `tools/remote.sh`, `tools/full_check_lock.sh`, `tools/copyback_verify.sh`,
+  `tests/ai_scenarios/guard_line.gd`, `mk/play.mk`'s skirmish recipe.
+- **Nobody:** `game/ui/**` (but camera_readout), `game/audio/**`, `game/announcer/**`, `game/match/**`, `game/tank/**` (but C41.5's stat
+  reads), the settle functions in `element_plan.gd`, `arenas/**`, `tests/baselines/**` (the orchestrator adopts).
+
+**Contracts (round 41):**
+- **C41.1 Fresh start; two builders; bars before numbers on FRESH seeds (C37.1-C40.1 stand).** Registry below; a guard is never amended
+  after its numbers are seen.
+- **C41.2 Manoeuvre's rules keep ORCA's answer unless the bar says otherwise.** Round 40's lesson (R40.22-R40.24): each F1 form that
+  changed ORCA's direction reshuffled meetings map-wide. Q2 (wait for a turning friend) and Q3 (the bridge speed cap) change SPEED or
+  hold a crew; any rule that steers differently names that in its bar. Every per-crew state is a real Movement member with a
+  `native/src/exec_fields.h` entry (no static tables). Native twins each rule before it ships ON (requests via the orchestrator).
+- **C41.3 orders sets who leaves when and on which route; manoeuvre sets what a blocked crew does.** Orders' O2 (a group order's
+  departure order / shared heading) and manoeuvre's Q2 are judged on the same workload (orders' group-order probe, many squads, his
+  click), each bar naming the other's switch state. Orders' planner GRANT covers departure order and route spread only.
+- **C41.4 The camera never moves the ground under his cursor while he commands.** Camera owns how the view moves; orders owns what a
+  click picks. If K2 needs a "player is aiming" signal (cursor over a unit, a drag, a pending order), orders exposes a read-only getter
+  on request; camera doesn't edit `game/control/**`.
+- **C41.5 Unit stats (balance; R40.1 stands, extended by his 2026-10-26 levers).** Toughness/damage/cost within +/-15 % per unit as R40.1.
+  His own two levers, tank turret traverse (`turret_turn_rate_deg`) and tank hull speed (`max_forward_speed`, `hull_turn_rate_deg`),
+  may be screened at any size; a shipped change states its size to him in player terms. No new weapon (the IFV missile is NOT built
+  unless he asks after B5's read). The stat change fm_c5r2_lawt5 judges Bar B2s v2 (FILED 8165a8830; seeds 8801-8840 + 8901-8940,
+  unread) only after Q3 is on main and bridge-pooled is green under the overrides.
+- **CP41.1 The bridge (manoeuvre Q3).** When Q3's bar passes and it ships ON (twin included), the orchestrator merges it alone and tells
+  balance the same minute; balance rebuilds v2's ARM on that main (cherry-pick ad956031b's re-pins) and runs Bar B2s v2.
+
+## Bars (round 41)
+
+**Seed registry (round 41):** 9001-9024 manoeuvre Q2; 9025-9048 manoeuvre Q3 (bridge-drill seeds: BRIDGE_POOLED_SEEDS); 9101-9124 orders
+O2; 9201-9240 + 9301-9340 balance B5 bar; 9401-9440 balance B5 dev screening (never a bar); 8801-8840 + 8901-8940 Bar B2s v2 (filed
+round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001-7012 as before (never a bar).
+
+## Rulings (round 41)
+
+_(none yet)_
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
