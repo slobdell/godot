@@ -9,8 +9,8 @@ import search  # noqa: E402
 
 CATALOG = {
     "units": {
-        "gang_tank": {"faction": "gangs", "cost": 175, "max_health": 420, "max_shield": 0.0, "weapon": "scrap_cannon",
-                      "armor": {"front": 7.0, "side": 4.0, "rear": 2.0}},
+        "gang_tank": {"faction": "gangs", "role": "tank", "cost": 175, "max_health": 420, "max_shield": 0.0,
+                      "weapon": "scrap_cannon", "armor": {"front": 7.0, "side": 4.0, "rear": 2.0}},
         "ifv": {"faction": "condemned", "cost": 150, "max_health": 220, "max_shield": 100, "weapon": "autocannon",
                 "armor": {"front": 7.0, "side": 3.0, "rear": 2.0}},
         "law_ifv": {"faction": "law", "cost": 195, "max_health": 280, "max_shield": 120.0, "weapon": "autocannon",
@@ -26,7 +26,20 @@ class SearchTest(unittest.TestCase):
         self.assertEqual(search.check(ok, CATALOG), [])
         far = {"units": {"gang_tank": {"max_health": 484}}}
         self.assertEqual(len(search.check(far, CATALOG)), 1)
+        self.assertEqual(len(search.check({"units": {"gang_tank": {"sight_radius": 12}}}, CATALOG)), 1)
+
+    def test_levers_any_size_once_catalogued(self):
+        # Round 41 (C41.5): his levers are not bounded, but the catalog must carry them (make balance-catalog).
         self.assertEqual(len(search.check({"units": {"gang_tank": {"max_forward_speed": 12}}}, CATALOG)), 1)
+        cat = {"units": {"gang_tank": dict(CATALOG["units"]["gang_tank"], max_forward_speed=11.0, max_reverse_speed=5.0,
+                                           hull_turn_rate_deg=70.0, turret_turn_rate_deg=60.0)}, "weapons": CATALOG["weapons"]}
+        self.assertEqual(search.check({"units": {"gang_tank": {"turret_turn_rate_deg": 30, "max_forward_speed": 5.5}}}, cat), [])
+        self.assertEqual(len(search.check({"units": {"gang_tank": {"turret_turn_rate_deg": 0}}}, cat)), 1)
+        cand = search.scale("t50h25", ["role:tank:turret=0.5,speed=0.75,hturn=0.75"], cat)
+        self.assertEqual(cand["units"]["gang_tank"], {"turret_turn_rate_deg": 30.0, "max_forward_speed": 8.25,
+                                                      "max_reverse_speed": 3.75, "hull_turn_rate_deg": 52.5})
+        self.assertEqual(search.check(cand, cat), [])
+        self.assertIn("gang_tank.turret_turn_rate_deg=30", search.tune_string(cand))
 
     def test_shared_weapon_refused(self):
         problems = search.check({"weapons": {"autocannon": {"damage": 16}}}, CATALOG)

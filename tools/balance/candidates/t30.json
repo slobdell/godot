@@ -1,0 +1,19 @@
+{
+ "name": "t30",
+ "units": {
+  "gang_tank": {
+   "turret_turn_rate_deg": 42.0
+  },
+  "law_tank": {
+   "turret_turn_rate_deg": 49.0
+  },
+  "syn_tank": {
+   "turret_turn_rate_deg": 38.5
+  },
+  "tank": {
+   "turret_turn_rate_deg": 35.0
+  }
+ },
+ "weapons": {},
+ "skipped": []
+}

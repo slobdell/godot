@@ -1,0 +1,59 @@
+{
+ "name": "t50_ifv15",
+ "units": {
+  "gang_ifv": {
+   "max_health": 195.5,
+   "armor": {
+    "front": 3.45,
+    "rear": 1.5,
+    "side": 2.3
+   },
+   "cost": 94
+  },
+  "gang_tank": {
+   "turret_turn_rate_deg": 30.0
+  },
+  "ifv": {
+   "max_health": 253.0,
+   "max_shield": 115.0,
+   "armor": {
+    "front": 8.05,
+    "rear": 2.0,
+    "side": 3.45
+   },
+   "cost": 128
+  },
+  "law_ifv": {
+   "max_health": 322.0,
+   "max_shield": 138.0,
+   "armor": {
+    "front": 10.35,
+    "rear": 2.0,
+    "side": 4.6
+   },
+   "cost": 166
+  },
+  "law_tank": {
+   "turret_turn_rate_deg": 35.0
+  },
+  "syn_ifv": {
+   "max_health": 276.0,
+   "max_shield": 230.0,
+   "armor": {
+    "front": 5.75,
+    "rear": 2.0,
+    "side": 4.6
+   },
+   "cost": 255
+  },
+  "syn_tank": {
+   "turret_turn_rate_deg": 27.5
+  },
+  "tank": {
+   "turret_turn_rate_deg": 25.0
+  }
+ },
+ "weapons": {},
+ "skipped": [],
+ "why": "B5 round 2's combined arm, the t50 form: tank turret x0.5 + ifv15 (IFV toughness +15 %, cost -15 %, rear armour kept)"
+}

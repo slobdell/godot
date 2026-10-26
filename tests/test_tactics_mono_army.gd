@@ -31,9 +31,38 @@ func test_mono_is_never_rolled_and_needs_a_faction_role() -> void:
 	assert_true(Army.load_army("cpu:mono_wizard", 1, Units.BASELINE_BUDGET, "law").has("error"), "an unknown role is an error")
 
 
-func test_demo_keeps_a_named_mono_lineup_only() -> void:
+func test_demo_keeps_a_named_cpu_lineup_and_rolls_the_rest() -> void:
 	var flags := LaunchFlags.new()
 	flags.values = {"seed": "8501", "player": "cpu:mono_tank", "enemy": "cpu:law_line"}
 	var demo := SkirmishMode.demo_flags(flags)
 	assert_eq(demo.text("player"), "cpu:mono_tank", "the demo keeps a mono lineup named on the command line")
-	assert_eq(demo.text("enemy"), "cpu", "any other lineup is still the demo's own deal")
+	assert_eq(demo.text("enemy"), "cpu:law_line", "R41.12: and any explicit cpu:<archetype> (a measurement's deal arm)")
+	# The default path is unchanged: no flag, a plain "cpu", or a doctrine file all become the demo's own seeded deal.
+	for given: Variant in [null, "cpu", "res://doctrines/doctrine_gangs.json", "combined_arms"]:
+		var plain := LaunchFlags.new()
+		plain.values = {"seed": "8501"}
+		if given != null:
+			plain.values["player"] = given
+			plain.values["enemy"] = given
+		var rolled := SkirmishMode.demo_flags(plain)
+		assert_eq(rolled.text("player"), "cpu", "the demo's own deal when nothing explicit is named (%s)" % [given])
+		assert_eq(rolled.text("enemy"), "cpu", "both sides (%s)" % [given])
+
+
+func test_measure_only_archetypes_load_by_name_and_are_never_rolled() -> void:
+	# B5 (round 41): law_barrage / syndicate_barrage exist for the all-tank measurement only.
+	for faction: String in ["law", "syndicate"]:
+		var name := faction + "_barrage"
+		assert_true(not Array(Army.archetypes_for(faction)).has(name), "%s is not in the seeded roll's list" % name)
+		assert_true(Array(Army.archetypes_for(faction, true)).has(name), "%s is a %s army when asked for by name" % [name, faction])
+		var army := Army.load_army("cpu:" + name, 1, Units.BASELINE_BUDGET, faction)
+		assert_true(not army.has("error"), "cpu:%s loads (%s)" % [name, army.get("error", "")])
+		var artillery := 0
+		for squad: Dictionary in army["doctrine"]["squads"]:
+			for entry: Dictionary in squad["units"]:
+				if Units.role_of(String(entry["unit"])) == "artillery":
+					artillery += 1
+		assert_true(artillery >= 2, "%s fields artillery (%d)" % [name, artillery])
+	for seed_value in range(40):
+		var rolled := Army.cpu_army("cpu", seed_value, Units.BASELINE_BUDGET, "law")
+		assert_true(not String(rolled.get("archetype", "")).ends_with("_barrage"), "a seeded law deal never rolls the barrage")

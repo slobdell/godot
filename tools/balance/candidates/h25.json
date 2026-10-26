@@ -1,0 +1,27 @@
+{
+ "name": "h25",
+ "units": {
+  "gang_tank": {
+   "max_forward_speed": 9.0,
+   "max_reverse_speed": 3.0,
+   "hull_turn_rate_deg": 41.25
+  },
+  "law_tank": {
+   "max_forward_speed": 9.0,
+   "max_reverse_speed": 3.75,
+   "hull_turn_rate_deg": 63.75
+  },
+  "syn_tank": {
+   "max_forward_speed": 8.25,
+   "max_reverse_speed": 5.25,
+   "hull_turn_rate_deg": 67.5
+  },
+  "tank": {
+   "max_forward_speed": 6.75,
+   "max_reverse_speed": 3.0,
+   "hull_turn_rate_deg": 60.0
+  }
+ },
+ "weapons": {},
+ "skipped": []
+}
