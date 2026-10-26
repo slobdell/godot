@@ -562,8 +562,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.movement.provider = MovementReadout.from_movement(game_match)  # X5: silent until nav's N1 is on main
 	controls.element_log.attach(controls.elements, game_match)  # X7: "why did my element do that"
 	rig.facing = controls.selection_facing  # round 7 (A): the camera's yaw follows the selection's facing
-	# Round 41 (C41.4, R41.1): the camera holds the ground still while he aims. set(): camera's RtsCamera.aiming may land after.
-	rig.set("aiming", controls.is_aiming)
+	rig.aiming = controls.is_aiming  # round 41 (C41.4, R41.1): the camera holds the ground still while he aims
 	main.hud.add_child(controls)
 	var markers := SelectionMarkers.new()
 	markers.name = "SelectionMarkers"

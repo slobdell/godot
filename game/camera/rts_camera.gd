@@ -231,6 +231,91 @@ var _clock := 0.0
 var _manual_at := -1e9
 ## This frame's `vision` reading, so the tracking and the cap agree and it is called once.
 var _vision_state := {}
+## Round 41 (camera K1): who last set each part of the WANTED pose ("player", "jump", "follow", "order_track",
+## "auto_frame", "yaw_follow", "cap", "frame"), and the layers `_apply` stacked on the shown pose this frame (the solid
+## and airship moves), for CameraTrace to say which of them moved the ground under the cursor. Tags only: nothing
+## reads them to decide anything.
+var wrote := {"focus": "frame", "yaw": "frame", "zoom": "frame", "pitch": "frame"}
+var layers := {}
+
+## Round 41 (camera K2): the camera glides. The lead, after playing round-40 main: "it also jerks around a lot, which
+## becomes problematic if I'm trying to command a bunch of units to attack a target ... ideally the camera moves around
+## in smooth cinematic motion (unless there's a good reason not to)." K1's trace (CameraTrace) found what he felt: every
+## move the camera made BY ITSELF started from rest in one frame (an exponential lerp toward a goal that jumps whenever a
+## contact appears, a destination is set or the selection changes), the vision frame re-aimed at every wobble of the
+## squad, the yaw swung 35 deg in the half second before his click, and the building clearance snapped. With `glide` on:
+##   * every automatic move (auto_frame, order tracking, yaw follow, the zoom cap) is a critically damped spring: it
+##     starts and stops with no jump in speed, the same at 30 or 144 fps (`spring`);
+##   * the vision frame is on a leash (FRAME_LEASH): the squad may wander that far from the frame's centre before the
+##     camera follows, so a squad milling about leaves the view still and a squad driving off drags it smoothly;
+##   * while he is aiming (`aiming_now`: a button held; his hand just stopped (DWELL_S); or an order armed or the cursor
+##     on a unit) the automatic moves coast to a stop and wait: the ground under his cursor stays put. They resume,
+##     eased, after; his click ends the aim. A hand sweeping is not aiming (an RTS hand never rests: K3's first bar run
+##     held the camera 58 % of the match that way and it found a fifth fewer fights);
+##   * no automatic move carries the view faster than GLIDE_SCREENS_PER_S, and while his hand moves they ease down to
+##     HAND_PACE of that (a hold that only began when his hand stopped let the camera coast into his aim: 130 px);
+##   * the building clearance eases in over ~0.1 s instead of one frame, and CameraShake pivots on the ground under the
+##     cursor (the view shakes, the point he is about to click does not).
+## His own input (keys, wheel, drag, F, O, jumps) is untouched: it was never the jerk. `--camera-glide=off` is round 40.
+var glide := true
+## How quickly each automatic move closes on its goal (1/s; a critically damped spring settles in ~4.7/omega seconds).
+const GLIDE_FOCUS_OMEGA := 3.0
+const GLIDE_ZOOM_OMEGA := 2.5
+const GLIDE_YAW_OMEGA := 3.0
+## The yaw follow's top speed while gliding (round 40's goal turned at YAW_FOLLOW_DEG_PER_S, 70): K1's biggest slip
+## source was a 35 deg swing in the half second before his click, so the glide turns at most this fast.
+const GLIDE_YAW_DEG_PER_S := 45.0
+## While he aims, how quickly an automatic move coasts to a stop (1/s; its speed falls by e every 1/omega s).
+const GLIDE_STOP_OMEGA := 10.0
+## The leash: how far the frame's ideal centre may wander from where the camera aims before it follows, as a fraction of
+## the half-height of the ground in view (~2.3 m at his 49 m), and how far its zoom may (zoom levels).
+const FRAME_LEASH := 0.15
+const FRAME_ZOOM_LEASH := 0.025
+## The hand: while orders' getter says he aims, an automatic move waits up to this long after the cursor last moved (a
+## cursor left resting on a unit must not freeze the camera for good).
+const HOVER_HOLD_S := 1.5
+## A hand that has stopped this long has found what it will click (a sweep never pauses; a reach ends in a stop).
+const DWELL_S := 0.1
+## While his hand moves (it moved within HAND_MOVING_S) the automatic moves' top speeds ease down to this fraction, at
+## PACE_OMEGA (1/s: never a step in speed), and back up once it rests.
+const HAND_PACE := 0.25
+const HAND_MOVING_S := 0.25
+const PACE_OMEGA := 12.0
+## An automatic move's top speed, in heights of the ground in view per second at the focus (K3: an uncapped spring
+## crossed a whole screen in 0.7 s on a long re-frame: smooth, but not cinematic, and 12 frames over SNAP_PX).
+const GLIDE_SCREENS_PER_S := 0.6
+## K3's dev knobs (`--camera-glide-screens=`, `--camera-hand-pace=`, `--camera-aim-hold=off`, `--camera-leash=`,
+## `--camera-glide-yaw=`, `--camera-glide-omega=`), read once in _ready: the bar runs at the constants.
+var screens_per_s := GLIDE_SCREENS_PER_S
+var frame_leash := FRAME_LEASH
+var yaw_deg_per_s := GLIDE_YAW_DEG_PER_S
+var focus_omega := GLIDE_FOCUS_OMEGA
+var hand_pace := HAND_PACE
+var aim_hold := true
+## The building clearance: how fast it eases toward more clearance (fast: the camera must not sit in a wall), and back.
+const SOLID_IN_OMEGA := 22.0
+const SOLID_OUT_OMEGA := 4.0
+## C41.4 (R41.1): orders' read-only "player is aiming" getter (RtsControls.is_aiming; skirmish_mode wires it). The rig
+## also watches the mouse itself in `_input` (`aiming_now`).
+var aiming: Callable = Callable()
+## Whether the automatic moves are holding for him this frame (the readout and the trace show it).
+var holding := false
+var _focus_velocity := Vector3.ZERO
+var _zoom_velocity := 0.0
+var _yaw_velocity := 0.0
+var _pitch_velocity := 0.0
+var _leash_focus: Variant = null
+var _leash_zoom := -1.0
+var _mouse_at := Vector2(-1, -1)
+var _mouse_moved_at := -1e9
+var _aim_spent_at := -1e9
+var _pace := 1.0
+var _buttons_down := 0
+var _solid_d := 0.0
+var _solid_p := 0.0
+var _solid_d_velocity := 0.0
+var _solid_p_velocity := 0.0
+var _solid_want := Vector2.ZERO
 ## Frames left before the zoom-out cap is re-derived (see VISION_CAP_EVERY).
 var _cap_countdown := 0
 
@@ -246,7 +331,18 @@ func _ready() -> void:
 	# (combat's 30 Hz tick) must not also smooth it, or it trails a tick behind its own targets.
 	camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	RtsCamera.load_perimeter()  # round 7: the arena's own wall shape, when it has one
+	var flags := LaunchFlags.from_environment()
+	glide = flags.text("camera-glide", "on") != "off"
+	screens_per_s = float(flags.text("camera-glide-screens", str(GLIDE_SCREENS_PER_S)))
+	hand_pace = float(flags.text("camera-hand-pace", str(HAND_PACE)))
+	aim_hold = flags.text("camera-aim-hold", "on") != "off"
+	frame_leash = float(flags.text("camera-leash", str(FRAME_LEASH)))
+	yaw_deg_per_s = float(flags.text("camera-glide-yaw", str(GLIDE_YAW_DEG_PER_S)))
+	focus_omega = float(flags.text("camera-glide-omega", str(GLIDE_FOCUS_OMEGA)))
+	if glide:
+		CameraShake.pivot = cursor_ground
 	snap()
+	CameraTrace.attach_from_args(self)  # round 41 (K1): --camera-trace=DIR records what moved the ground under the cursor
 
 
 ## Jump the shown pose to the wanted pose (no smoothing).
@@ -255,6 +351,9 @@ func snap() -> void:
 	_shown_yaw = yaw
 	_shown_zoom = zoom
 	_shown_pitch = pitch
+	_apply()
+	_solid_d = _solid_want.x  # a jump has nothing to ease from
+	_solid_p = _solid_want.y
 	_apply()
 
 
@@ -293,12 +392,29 @@ func _process_timed(delta: float) -> void:
 		tilt_by(tilt_keys * TILT_SPEED_DEG * delta)
 	if follow_target != null and is_instance_valid(follow_target) and follow_target.is_inside_tree():
 		focus = Shown.ground(follow_target)
+		wrote["focus"] = "follow"
 	var _hc2 := HudClock.begin()
 	_update_yaw_follow(delta)
 	HudClock.end(&"cam.yaw_follow", _hc2)
 	var _hc3 := HudClock.begin()
 	_update_tracking()
 	HudClock.end(&"cam.tracking", _hc3)
+	if glide:
+		holding = aiming_now()
+		_glide(delta)
+	else:
+		_move_shown(delta)
+	var eased := RtsCamera.ease_hull_lift(hull_lift_m, _hull_wanted, _hull_held, delta)
+	hull_lift_m = float(eased[0])
+	_hull_held = float(eased[1])
+	var eased_back := RtsCamera.ease_hull_lift(hull_back_m, _hull_wanted_back, _hull_held_back, delta)
+	hull_back_m = float(eased_back[0])
+	_hull_held_back = float(eased_back[1])
+	_apply()
+
+
+## Round 40's motion (`--camera-glide=off`): exponential smoothing toward the wanted pose, gentler while tracking.
+func _move_shown(delta: float) -> void:
 	var weight := 1.0 - exp(-SMOOTHING * delta)
 	if _track != Track.NONE:
 		# Gentle and speed-limited, so a long camera move never whips (no motion sickness).
@@ -311,13 +427,137 @@ func _process_timed(delta: float) -> void:
 		_shown_zoom = lerpf(_shown_zoom, zoom, weight)
 	_shown_yaw = lerp_angle(_shown_yaw, yaw, weight)
 	_shown_pitch = lerpf(_shown_pitch, pitch, weight)
-	var eased := RtsCamera.ease_hull_lift(hull_lift_m, _hull_wanted, _hull_held, delta)
-	hull_lift_m = float(eased[0])
-	_hull_held = float(eased[1])
-	var eased_back := RtsCamera.ease_hull_lift(hull_back_m, _hull_wanted_back, _hull_held_back, delta)
-	hull_back_m = float(eased_back[0])
-	_hull_held_back = float(eased_back[1])
-	_apply()
+	_solid_d = _solid_want.x
+	_solid_p = _solid_want.y
+
+
+## Round 41 (K2): the shown pose glides toward the wanted one. A part of the pose his hand set (or a jump he asked for,
+## or a unit he follows) keeps round 40's quick smoothing; a part the camera set itself is a critically damped spring,
+## speed-limited, and while he aims it coasts to a stop (its goal goes on being worked out; the view waits for him).
+func _glide(delta: float) -> void:
+	var weight := 1.0 - exp(-SMOOTHING * delta)
+	var pace_goal := hand_pace if _clock - _mouse_moved_at < HAND_MOVING_S else 1.0
+	_pace = pace_goal + (_pace - pace_goal) * exp(-PACE_OMEGA * delta)
+	var before_focus := _shown_focus
+	if RtsCamera.hand_set(wrote["focus"]):
+		_shown_focus = _shown_focus.lerp(focus, weight)
+		_focus_velocity = (_shown_focus - before_focus) / delta
+	elif holding:
+		_focus_velocity *= exp(-GLIDE_STOP_OMEGA * delta)
+		_shown_focus += _focus_velocity * delta
+	else:
+		var next := RtsCamera.spring(_shown_focus, _focus_velocity, focus, focus_omega, delta)
+		_focus_velocity = (next[1] as Vector3).limit_length(glide_top_speed())
+		_shown_focus = next[0] if (next[1] as Vector3).length() == _focus_velocity.length() else before_focus + _focus_velocity * delta
+	var before_zoom := _shown_zoom
+	if RtsCamera.hand_set(wrote["zoom"]):
+		_shown_zoom = lerpf(_shown_zoom, zoom, weight)
+		_zoom_velocity = (_shown_zoom - before_zoom) / delta
+	elif holding and _shown_zoom <= vision_zoom:
+		_zoom_velocity *= exp(-GLIDE_STOP_OMEGA * delta)
+		_shown_zoom += _zoom_velocity * delta
+	else:
+		var next := RtsCamera.spring(_shown_zoom, _zoom_velocity, zoom, GLIDE_ZOOM_OMEGA, delta)
+		_zoom_velocity = clampf(float(next[1]), -TRACK_ZOOM_SPEED * _pace, TRACK_ZOOM_SPEED * _pace)
+		_shown_zoom = float(next[0]) if float(next[1]) == _zoom_velocity else before_zoom + _zoom_velocity * delta
+	var before_yaw := _shown_yaw
+	if RtsCamera.hand_set(wrote["yaw"]):
+		_shown_yaw = lerp_angle(_shown_yaw, yaw, weight)
+		_yaw_velocity = angle_difference(before_yaw, _shown_yaw) / delta
+	elif holding:
+		_yaw_velocity *= exp(-GLIDE_STOP_OMEGA * delta)
+		_shown_yaw = wrapf(_shown_yaw + _yaw_velocity * delta, -PI, PI)
+	else:
+		var gap := angle_difference(yaw, _shown_yaw)  # shown - wanted, the short way round
+		var next := RtsCamera.spring(gap, _yaw_velocity, 0.0, GLIDE_YAW_OMEGA, delta)
+		var limit := deg_to_rad(yaw_deg_per_s) * _pace
+		_yaw_velocity = clampf(float(next[1]), -limit, limit)
+		_shown_yaw = wrapf(yaw + float(next[0]) if float(next[1]) == _yaw_velocity else before_yaw + _yaw_velocity * delta, -PI, PI)
+	var before_pitch := _shown_pitch
+	if RtsCamera.hand_set(wrote["pitch"]):
+		_shown_pitch = lerpf(_shown_pitch, pitch, weight)
+		_pitch_velocity = (_shown_pitch - before_pitch) / delta
+	else:
+		var next := RtsCamera.spring(_shown_pitch, _pitch_velocity, pitch, GLIDE_ZOOM_OMEGA, delta)
+		_shown_pitch = float(next[0])
+		_pitch_velocity = float(next[1])
+	# The building clearance (measured by the last `_apply`): quick toward more clearance, slow back.
+	var solid_d := RtsCamera.spring(_solid_d, _solid_d_velocity, _solid_want.x,
+			SOLID_IN_OMEGA if absf(_solid_want.x) > absf(_solid_d) else SOLID_OUT_OMEGA, delta)
+	_solid_d = float(solid_d[0])
+	_solid_d_velocity = float(solid_d[1])
+	var solid_p := RtsCamera.spring(_solid_p, _solid_p_velocity, _solid_want.y,
+			SOLID_IN_OMEGA if absf(_solid_want.y) > absf(_solid_p) else SOLID_OUT_OMEGA, delta)
+	_solid_p = float(solid_p[0])
+	_solid_p_velocity = float(solid_p[1])
+
+
+## Whether a part of the wanted pose was set by his hand (or by a jump or a follow he asked for): those keep their quick
+## smoothing under glide; everything else glides.
+static func hand_set(writer: String) -> bool:
+	return writer == "player" or writer == "jump" or writer == "follow"
+
+
+## One step of a critically damped spring from `x` (moving at `v`) toward `goal`: [position, velocity]. Exact for any
+## `delta` (the closed form, not an Euler step), so the glide is the same at 30 fps on his laptop as at 144. Works for
+## floats and Vector3s alike. Pure, for tests.
+static func spring(x: Variant, v: Variant, goal: Variant, omega: float, delta: float) -> Array:
+	var away: Variant = x - goal
+	var decay := exp(-omega * delta)
+	var lead: Variant = (v + away * omega) * delta
+	return [goal + (away + lead) * decay, (v - lead * omega) * decay]
+
+
+## Round 41 (K2, C41.4): is he about to click something? A mouse button held (a box, a drag) always. Otherwise only
+## while his hand is on the mouse (it moved within HOVER_HOLD_S, and he has not clicked since: a click spends the aim),
+## and then when it has stopped (DWELL_S) or orders' getter says so (`RtsControls.is_aiming`: the cursor on a unit a
+## click would pick, an armed order).
+func aiming_now() -> bool:
+	if not aim_hold:
+		return false
+	if _buttons_down != 0:
+		return true
+	var still := _clock - _mouse_moved_at
+	if _aim_spent_at >= _mouse_moved_at or still >= HOVER_HOLD_S:
+		return false
+	return still >= DWELL_S or (aiming.is_valid() and bool(aiming.call()))
+
+
+## The top speed of an automatic focus move (m/s): GLIDE_SCREENS_PER_S heights of the ground in view at the shown
+## zoom, under round 40's TRACK_SPEED, times the hand's pace.
+func glide_top_speed() -> float:
+	var height := 2.0 * RtsCamera.distance_for(_shown_zoom) * tan(deg_to_rad(fov) / 2.0)
+	return minf(screens_per_s * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom)) * _pace
+
+
+## The ground under the cursor, or null (no cursor seen yet, or sky): CameraShake's pivot while gliding.
+func cursor_ground() -> Variant:
+	if not is_inside_tree() or _mouse_at.x < 0.0:
+		return null
+	return ground_point(_mouse_at)
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		var motion := event as InputEventMouseMotion
+		if motion.position != _mouse_at:
+			_mouse_at = motion.position
+			_mouse_moved_at = _clock
+	elif event is InputEventMouseButton:
+		var button := event as InputEventMouseButton
+		_mouse_at = button.position
+		if button.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
+			var bit := 1 << int(button.button_index)
+			_buttons_down = (_buttons_down | bit) if button.pressed else (_buttons_down & ~bit)
+			if button.pressed:
+				_mouse_moved_at = _clock
+			else:
+				_aim_spent_at = _clock
+
+
+func _exit_tree() -> void:
+	if CameraShake.pivot.is_valid() and CameraShake.pivot.get_object() == self:
+		CameraShake.pivot = Callable()
 
 
 ## Round 9: how many degrees the camera lifted itself to get out of a building this frame (0 in the open). The
@@ -353,6 +593,11 @@ func _apply() -> void:
 		# from whatever the solid test leaves - otherwise a camera pulled in by a building would also un-tilt itself.
 		var tilt := RtsCamera.tilt_at(_shown_pitch, distance)
 		var clear := RtsCamera.clear_pose(_shown_focus, _shown_yaw, distance, tilt)
+		_solid_want = Vector2(float(clear["distance"]) - distance, float(clear["pitch_deg"]) - tilt)
+		if glide:
+			# K2: the clearance eases in (see `_glide`) instead of arriving in one frame.
+			clear = {"distance": distance + _solid_d, "pitch_deg": tilt + _solid_p}
+		var solid := clear
 		# The airship: what lifting over it would take is measured from the pose WITHOUT the lift already applied, so
 		# the camera rising out of the hull's box cannot talk itself back down (no pump); the lift itself is damped.
 		var occluders := _occluders()
@@ -370,6 +615,10 @@ func _apply() -> void:
 			var up := RtsCamera.raise_pose(float(clear["distance"]), float(clear["pitch_deg"]), hull_lift_m, hull_back_m)
 			clear = RtsCamera.clear_pose(_shown_focus, _shown_yaw, float(up[0]), minf(float(up[1]), MAX_PITCH_DEG))
 		lifted_deg = float(clear["pitch_deg"]) - tilt
+		layers = {"f": _shown_focus, "y": _shown_yaw, "d": distance, "p": tilt, "fov": fov,
+				"sd": float(solid["distance"]) - distance, "sp": float(solid["pitch_deg"]) - tilt,
+				"hd": float(clear["distance"]) - float(solid["distance"]), "hp": float(clear["pitch_deg"]) - float(solid["pitch_deg"]),
+				"overview": overview_inset_px > 0.0 and _before_overview != null}
 		camera.global_transform = RtsCamera.pose_at(_shown_focus, _shown_yaw, float(clear["distance"]), float(clear["pitch_deg"]))
 		camera.near = RtsCamera.cutaway_near(_shown_focus, _shown_yaw, float(clear["distance"]), float(clear["pitch_deg"]),
 				RtsCamera.perimeter_half())
@@ -920,6 +1169,7 @@ static func welded_pitch(level: float) -> float:
 ## Move the focus by a world-space amount in the camera's frame: +x = screen right, +y = screen down.
 func pan_world(amount: Vector2) -> void:
 	_manual()
+	wrote["focus"] = "player"
 	var right := Vector3.RIGHT.rotated(Vector3.UP, yaw)
 	var down := Vector3.BACK.rotated(Vector3.UP, yaw)
 	focus += right * amount.x + down * amount.y
@@ -938,6 +1188,7 @@ func pan_screen(from: Vector2, to: Vector2) -> void:
 		return
 	follow_target = null
 	_manual()
+	wrote["focus"] = "player"
 	var shift: Vector3 = (a as Vector3) - (b as Vector3)
 	focus += Vector3(shift.x, 0.0, shift.z)
 	focus.x = clampf(focus.x, -FOCUS_LIMIT, FOCUS_LIMIT)
@@ -950,11 +1201,13 @@ func pan_screen(from: Vector2, to: Vector2) -> void:
 
 func rotate_by(radians: float) -> void:
 	_manual()
+	wrote["yaw"] = "player"
 	yaw = wrapf(yaw + radians, -PI, PI)
 
 
 func zoom_by(amount: float) -> void:
 	_manual()
+	wrote["zoom"] = "player"
 	zoom = clampf(zoom + amount, 0.0, vision_zoom)
 
 
@@ -964,6 +1217,7 @@ func tilt_by(degrees: float) -> void:
 	if _before_overview != null:
 		toggle_overview(0)
 	pitch = clampf(pitch + degrees, MIN_PITCH_DEG, MAX_PITCH_DEG)
+	wrote["pitch"] = "player"
 
 
 ## Widen (positive) or narrow the field of view by `degrees`, within MIN/MAX_FOV_DEG.
@@ -994,6 +1248,7 @@ func _update_yaw_follow(delta: float) -> void:
 	_yaw_turning = absf(gap) > deg_to_rad(YAW_SETTLE_DEG)
 	var step := deg_to_rad(YAW_FOLLOW_DEG_PER_S) * delta
 	yaw = wrapf(yaw + clampf(gap, -step, step), -PI, PI)
+	wrote["yaw"] = "yaw_follow"
 
 
 ## How far below the screen's centre a lean may put the squad, as a fraction of the half-height: derived from where
@@ -1024,6 +1279,7 @@ func pose_text() -> String:
 func reset_tilt() -> void:
 	if _before_overview == null:
 		pitch = DEFAULT_PITCH_DEG
+		wrote["pitch"] = "player"
 
 
 ## Zoom toward (or away from) a screen point, keeping the ground under it roughly in place.
@@ -1034,12 +1290,14 @@ func zoom_at(screen: Vector2, amount: float) -> void:
 		follow_target = null
 		var toward: Vector3 = (before as Vector3) - focus
 		focus += Vector3(toward.x, 0.0, toward.z) * clampf(-amount * 2.5, 0.0, 0.5)
+		wrote["focus"] = "player"
 
 
 func focus_on(point: Vector3) -> void:
 	follow_target = null
 	_manual()
 	focus = look_clamp(Vector3(point.x, 0.0, point.z))
+	wrote["focus"] = "jump"
 
 
 func follow(target: Node3D) -> void:
@@ -1047,11 +1305,14 @@ func follow(target: Node3D) -> void:
 	follow_target = target
 	if target != null:
 		zoom = minf(zoom, FOLLOW_ZOOM)
+		wrote["zoom"] = "jump"
 
 
 ## Toggle a high view over the whole arena, and back to where you were.
 func toggle_overview(team: int) -> void:
 	stop_tracking("replaced")
+	for part: String in wrote:
+		wrote[part] = "jump"
 	if _before_overview == null:
 		_before_overview = [focus, yaw, zoom, follow_target, pitch]
 		follow_target = null
@@ -1094,6 +1355,8 @@ func frame(points: Array, instant := false, floor_zoom := FRAME_MIN_ZOOM) -> voi
 	var goal := RtsCamera.frame_pose(points, yaw, _aspect(), floor_zoom, FRAME_INSET, pitch)
 	focus = goal[0]
 	zoom = minf(float(goal[1]), vision_zoom)
+	wrote["focus"] = "frame"
+	wrote["zoom"] = "frame"
 	if instant:
 		snap()
 
@@ -1203,6 +1466,7 @@ func track(points: Callable, mode := Track.ORDER) -> void:
 		toggle_overview(0)
 	_track = mode
 	_track_points = points
+	_leash_focus = null
 	_track_floor_zoom = VISION_MIN_ZOOM if mode == Track.VISION else maxf(zoom, FRAME_MIN_ZOOM)
 	_update_tracking()
 
@@ -1244,6 +1508,10 @@ func _update_tracking() -> void:
 		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, FRAME_INSET, pitch)
 	focus = goal[0]
 	zoom = minf(float(goal[1]), vision_zoom)
+	wrote["focus"] = "order_track"
+	wrote["zoom"] = "order_track"
+	if glide:
+		_on_leash()
 
 
 ## [focus, zoom] for order tracking: `units` and `destination` together when that fits under TRACK_MAX_ZOOM
@@ -1300,7 +1568,9 @@ func _update_vision() -> void:
 	if _cap_countdown <= 0:
 		_cap_countdown = VISION_CAP_EVERY
 		vision_zoom = RtsCamera.horizon_zoom(region, look_clamp(focus), yaw, _aspect(), pitch)
-	zoom = minf(zoom, vision_zoom)
+	if zoom > vision_zoom:
+		zoom = vision_zoom
+		wrote["zoom"] = "cap"
 	if auto_frame and _track == Track.NONE and follow_target == null and _before_overview == null \
 			and _clock - _manual_at >= handback_seconds and not (_vision_state.get("frame", []) as Array).is_empty():
 		track(Callable(), Track.VISION)
@@ -1333,9 +1603,36 @@ func _update_vision_tracking() -> void:
 				float(_vision_state.get("pad_m", 0.0)))
 	zoom = minf(minf(float(goal[1]), vision_zoom), RtsCamera.level_for(auto_frame_max_m))
 	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
+	wrote["focus"] = "auto_frame"
+	wrote["zoom"] = "auto_frame"
+	if glide:
+		_on_leash()
 	# Only our own vehicles (the first `own` points; the rest are contacts and their mirrors, framed only if they fit).
 	var own := points.slice(0, int(_vision_state.get("own", points.size())))
 	frame_short = RtsCamera.cuts_off(own, focus, yaw, zoom, _aspect(), pitch)
+
+
+## K2: the frame's goal on a leash. The goal the frame asks for moves with every wobble of the squad and every contact
+## that comes and goes; the camera aims at a point that only moves once the goal has wandered FRAME_LEASH of the view
+## away from it (then it is dragged along, so a squad driving off is followed smoothly, never in steps). Zoom likewise.
+func _on_leash() -> void:
+	var reach := RtsCamera.distance_for(zoom) * tan(deg_to_rad(fov) / 2.0) * frame_leash
+	if _leash_focus == null or _leash_zoom < 0.0:
+		_leash_focus = focus
+		_leash_zoom = zoom
+	_leash_focus = RtsCamera.leash(_leash_focus as Vector3, focus, reach)
+	_leash_zoom = clampf(_leash_zoom, zoom, zoom + FRAME_ZOOM_LEASH)  # never closer than the frame asks: all stay on screen
+	# The zoom cap (no god view) and the auto frame's furthest-out still bind.
+	_leash_zoom = minf(_leash_zoom, minf(vision_zoom, RtsCamera.level_for(auto_frame_max_m)) if _track == Track.VISION else vision_zoom)
+	focus = _leash_focus
+	zoom = _leash_zoom
+
+
+## Where a leashed point sits when its goal is at `goal`: unmoved while within `reach`, else dragged to `reach` short of
+## it. Pure, for tests.
+static func leash(held: Vector3, goal: Vector3, reach: float) -> Vector3:
+	var gap := goal - held
+	return held if gap.length() <= reach else goal - gap.normalized() * reach
 
 
 ## Round 10 (control stretch): whether a camera at this pose leaves any of `points` off the whole screen. At the lowest
