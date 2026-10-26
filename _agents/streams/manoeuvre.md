@@ -77,6 +77,38 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-26 ~02:10 PDT (Fable). Starting commit de509b00f = main at launch (code c36217f79 GREEN builder0, 3243/0; no
 baseline check re-run, per the contract). Orchestrator session: `godot-d6`.**
 
+### Q1 the jam census: INSTRUMENT BUILT (32851c0d8), lab 1 running on builder0 (light J4, native, 64 runs)
+
+- `tests/manoeuvre/probe_jam.gd` extends orders' O1 probe (`tests/orders_probe_group.gd`, cherry-picked 8b828ec59 = f8c9867c6 here:
+  his five full squads, 25 crews, one click across the map, `--probe-headings=crew|formed`). Classifier `jam_class.gd` (pure,
+  `test_jam_class.gd` 6/0 laptop). `make manoeuvre-probe-jam PJ_CELLS=map:route:seed... PJ_HEADINGS="formed crew"`;
+  `probe_jam_table.py` pools. Rows: JAM_EP (one per asker x blocker episode), JAM_RUN.
+- **Laptop read (32851c0d8, terminus crew s7001, n 1, 25 crews, all in 75.4 s = orders' own number):** 611 jam-seconds in 602
+  episodes. Blockers (episode mode): crossing 29 %, same_way 28 %, stalled 24 %, head_on 10 %, parked 5 %, turning-in-place 4 %.
+  Askers: reversed 31 %, slowed 26 %, steered 21 %, yielded 17 %, stopped 5 %. **Counterfactual:** the blocker had left the
+  asker's frozen lane within 2 s for 46 % of jam-seconds, 3 s 57 %, 5 s 71 %, 8 s 80 %; in 45 % of jam-seconds the blocker
+  cleared BEFORE the asker's own detour/yield ended. Same-squad blocker 25 %. Lab 1 (4 maps x 7001-7008 x crew/formed) pools it.
+
+### Q2 wait, don't detour: SCAFFOLD BUILT OFF (e6624abe5, `--traffic-on=wait`)
+
+- **The rule** (Movement._wait / _wait_blocker / _wait_kind, in `_avoid` after ORCA's answer, before F1's block): when ORCA would
+  deflect a crew and the nearest living friend ahead in its lane (12 m, both radii + 0.5 m), or the friend meeting it there first
+  within 2 s at its route velocity, is "moving" (>= 1 m/s, not head-on: crossing, or a leader going its way) or "turning" (slow,
+  under way, nose > 30 deg off its own travel direction, which is not head-on to mine), the crew keeps its route's steer point and
+  drives at a following pace: (along - (r_me + r_it + 1 m)) / 1.5 s + the friend's speed my way. It asks nobody to give way while
+  waiting (the ask in `drive` is skipped while `_wait_for != ""`). After WAIT_CAP_S = 4 s on one friend: hand back to ORCA,
+  that friend refused for 6 s. Parked / stalled / head-on friends: ORCA as today. The orchestrator's keying (2026-10-26 ~02:45):
+  wait on "will clear soon", never on stalled or parked; the cap is for the ones that don't.
+- Per-crew state: `_wait_for`, `_wait_since`, `_wait_refused`, `_wait_refused_until`, declared last; native has the four
+  exec_fields.h lines (requested via the orchestrator 02:50; until the pair lands test_native_exec_state is red under native on
+  this branch). ON runs the GDScript drive (Traffic._chain_native, as F1). Counters in route_arms: wait_queued, waits,
+  wait_timeouts, wait_longest, wait_by_kind.
+- Tests `tests/test_traffic_wait.gd` 5/0 (laptop NATIVE=off, e6624abe5): off by default; the kind read (crossing = moving, parked =
+  no, head-on = no, pivoting tracked friend = turning); live crossing friend: ON lateral 0.32 m v OFF 0.94 m, waited 69 crew-ticks,
+  50.6 m north in 8 s (OFF 66.3); crawler in lane: OFF passes at 4.7 s, ON times out at 4.0 s and passes at 8.7 s. OFF regression
+  set traffic|test_manoeuvre|movement|steering|wedge|jam_class: 227 passed, 0 failed (laptop NATIVE=off).
+- Next: lab on lab 1's cells (crossing first) ON v OFF, both GDScript drive; then Bar Q2 filed on 9001-9024 before any number.
+
 ### Plan (ordered; the brief's backlog as built)
 
 1. **Q1 the jam census** (report, dev seeds 7001-7008, builder0 light J4). Instrument: `tests/manoeuvre/probe_jam.gd` (extends
