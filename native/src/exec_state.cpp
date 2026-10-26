@@ -142,8 +142,23 @@ int ExecState::pull(Object *mover) {
 		bad += type_ok(v, Variant::vt) ? 0 : 1;     \
 		m.n = static_cast<t>(v);                    \
 	}
-	EXEC_MOVER_FIELDS(EXEC_PULL_M)
+	EXEC_MOVER_CORE_FIELDS(EXEC_PULL_M)
 #undef EXEC_PULL_M
+	// A late member the script doesn't declare (get gives nil: none of them is an untyped Variant) stays at its default.
+	m_absent.clear();
+#define EXEC_PULL_LATE(t, vt, n)                    \
+	{                                               \
+		const Variant v = mover->get(k.m.n);        \
+		if (v.get_type() == Variant::NIL) {         \
+			m.n = t{};                              \
+			m_absent.mark(MF::n);                   \
+		} else {                                    \
+			bad += type_ok(v, Variant::vt) ? 0 : 1; \
+			m.n = static_cast<t>(v);                \
+		}                                           \
+	}
+	EXEC_MOVER_LATE_FIELDS(EXEC_PULL_LATE)
+#undef EXEC_PULL_LATE
 	m_dirty.clear();
 	bad += pull_gun();
 	pulls++;
@@ -200,7 +215,7 @@ int ExecState::push(Object *mover, bool force) {
 	const ExecNames &k = exec_names();
 	int written = 0;
 #define EXEC_PUSH_M(t, vt, n)                       \
-	if (force || m_dirty.has(MF::n)) {              \
+	if ((force || m_dirty.has(MF::n)) && !m_absent.has(MF::n)) { \
 		mover->set(k.m.n, Variant(m.n));            \
 		written++;                                  \
 	}
@@ -300,8 +315,18 @@ int ExecState::scramble(Object *mover) {
 #define EXEC_SCRAMBLE_M(t, vt, n)                                              \
 	mover->set(k.m.n, scrambled(mover->get(k.m.n), Variant::vt, changed));     \
 	changed_count += changed ? 1 : 0;
-	EXEC_MOVER_FIELDS(EXEC_SCRAMBLE_M)
+	EXEC_MOVER_CORE_FIELDS(EXEC_SCRAMBLE_M)
 #undef EXEC_SCRAMBLE_M
+#define EXEC_SCRAMBLE_LATE(t, vt, n)                                           \
+	{                                                                          \
+		const Variant v = mover->get(k.m.n);                                   \
+		if (v.get_type() != Variant::NIL) {                                    \
+			mover->set(k.m.n, scrambled(v, Variant::vt, changed));             \
+			changed_count += changed ? 1 : 0;                                  \
+		}                                                                      \
+	}
+	EXEC_MOVER_LATE_FIELDS(EXEC_SCRAMBLE_LATE)
+#undef EXEC_SCRAMBLE_LATE
 	return changed_count;
 }
 
@@ -378,6 +403,21 @@ Array exec_field_table() {
 #undef EXEC_TABLE_G
 #undef EXEC_TABLE_L
 #undef EXEC_TABLE
+	return out;
+}
+
+Array exec_late_field_table() {
+	Array out;
+#define EXEC_LATE_ROW(t, vt, n)                                                       \
+	{                                                                                 \
+		Array row;                                                                    \
+		row.push_back(0);                                                             \
+		row.push_back(String(#n));                                                    \
+		row.push_back((int64_t)Variant::vt);                                          \
+		out.push_back(row);                                                           \
+	}
+	EXEC_MOVER_LATE_FIELDS(EXEC_LATE_ROW)
+#undef EXEC_LATE_ROW
 	return out;
 }
 

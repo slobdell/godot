@@ -103,6 +103,7 @@ struct ExecState {
 	ExecDirty<MF::COUNT> m_dirty;
 	ExecDirty<GF::COUNT> g_dirty;
 	ExecDirty<LF::COUNT> l_dirty;
+	ExecDirty<MF::COUNT> m_absent; // late members (exec_fields.h) the script doesn't declare, as of the last pull: never pushed
 	int64_t pulls = 0, pushes = 0, pushed_fields = 0;
 	bool fresh = false; // E5b: pulled at least once (the registry's states start empty)
 
@@ -145,5 +146,7 @@ ExecStates &exec_states();
 
 // [owner, name, Variant::Type] for every field of the table, in order (the drift test).
 Array exec_field_table();
+// The same rows for the LATE members only (exec_fields.h): the drift test accepts these absent from the script.
+Array exec_late_field_table();
 
 } // namespace godot

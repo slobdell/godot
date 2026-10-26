@@ -8,9 +8,17 @@
 // F(ctype, Variant::Type the member holds, name). Object members are held as a Variant (OBJECT; null allowed),
 // an untyped `Variant` member as NIL (anything). Array and Dictionary members are SHARED references (the struct holds the
 // same container the GDScript does, so an in-place change is seen by both); packed arrays are values.
+//
+// LATE members (round 42, CP42.0): a Movement member its owner has asked for that main may not declare yet (a lab rule
+// still on the owner's branch). The table carries it so the owner's change merges with no native step; until the script
+// declares it, the pull leaves it at its default, the scramble and the push skip it, and the test accepts it as absent.
+// Once declared it is checked exactly like any other member (its type must match). Move it up to the core list when the
+// member is on main for good.
 #pragma once
 
-#define EXEC_MOVER_FIELDS(F) \
+#define EXEC_MOVER_FIELDS(F) EXEC_MOVER_CORE_FIELDS(F) EXEC_MOVER_LATE_FIELDS(F)
+
+#define EXEC_MOVER_CORE_FIELDS(F) \
 	F(Variant, OBJECT, ctl) \
 	F(int64_t, INT, native_stale) \
 	F(int64_t, INT, stalled_ticks) \
@@ -181,6 +189,13 @@
 	F(int64_t, INT, _wait_since) \
 	F(String, STRING, _wait_refused) \
 	F(int64_t, INT, _wait_refused_until)
+
+// Q5 no-pressing (manoeuvre, round 41 lab wip/manoeuvre-m1v3 a45c0b953 + fc8f3697d; CP42.0).
+#define EXEC_MOVER_LATE_FIELDS(F) \
+	F(String, STRING, _nopush_for) \
+	F(int64_t, INT, _nopush_until) \
+	F(int64_t, INT, _nopush_since) \
+	F(int64_t, INT, _nopush_press_until)
 
 #define EXEC_GUNNERY_FIELDS(F) \
 	F(Variant, OBJECT, ctl) \
