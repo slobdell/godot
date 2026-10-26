@@ -182,6 +182,11 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   all-in +4.7 s, never-in runs 6 -> 10: a crew that never pushes never clears a stalled head. v2 (ease off ~3 s per friend, then today's
   press) gets one lab on the same cells; if it doesn't beat main on jam-seconds and never-in, Q5 closes OFF and the round's traffic work
   is Bar Q3.
+- **R41.10 (2026-10-26 ~07:00) Q5 closes OFF this round; a round-42 candidate.** v2 capped ease (fc8f3697d, same 7009-7012 cells, 16
+  paired runs, GDScript): contacts -28 %, shoved crew-ticks -34 %, all-in +2.0 s (0.6 se), never-in runs 6 -> 7 (squads a run 0.94 ->
+  1.06), jam-seconds +22.5 % (4.4 se; the eased ticks count as "slowed by a friend" in that measure, so it is biased against the rule).
+  Per R41.9 it beat main on neither line, so OFF, no bar. Round 42: a bar decided on what he sees (friendly contacts / shoved ticks),
+  with all-in and never-in as strict guards, on fresh seeds; jam-seconds reported, not deciding (named here before any such bar's number).
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
