@@ -87,6 +87,20 @@ another project's workers (plane_maker): never touch processes you didn't start.
 9901-9940 balance Bar B7; 10001-10040 + 10101-10140 balance Bar B8; 10201-10240 balance B8 dev (never a bar); carried unread:
 8801-8840 + 8901-8940 Bar B2s v2; 9201-9240 + 9301-9340 Bar B5 t50 (only on his yes). Dev blocks 7001-7012 as before (never a bar).
 
+- **Bar B7, the CPU counter-lineup (balance; FILED fa9006e69, 2026-10-26 ~15:20, before any number on 9901-9940; amended by R42.3 before
+  any read).** Switch `--cpu-counter` (OFF; `Army.COUNTER_DEFAULT`): a plain `cpu` deal against an army >= 70 % tanks by cost fields the
+  faction's artillery-heavy lineup (siege / gang_hail / law_barrage / syndicate_barrage); 70 because the CPU's own most tank-heavy roll
+  (Condemned armor) is ~63 %, so 60 would change the demo. Garage hint "Bring two artillery squads with your tanks." ON
+  (`--tank-rush-hint=off`). builder2, one frozen commit (B7 + whatever Bar B8 ships), BASE off v ARM on; all-tanks (`cpu:mono_tank`) v
+  the plain `cpu` deal, same faction both sides, 4 factions x Green/Rust x 9901-9940 x one arena a seed (terminus / locks / sumps /
+  gorge / parade, 8 seeds each), 320 fights an arm, paired by (faction, team, arena, seed), se by seed bootstrap. **Deciding (R42.3, per
+  faction):** for each faction whose counter FIRES, all-tanks' win share ARM <= 60 % AND the paired change < 0 by >= 2 se; the counter
+  fires only for factions whose lineup beats the roll on B8's dev screen (ON <= OFF - 2 se there), and the pooled share is reported.
+  Guards: G1 CPU v CPU plain `cpu` mirrored, 9901-9910 terminus, 40 fights, GUARD_RESULT identical ON v OFF; G2 fight length median
+  within +/-20 %; G3 0 load errors, every countered army within the fielded cap; G4 `test_army_counter` + `test_tactics_mono_army` green;
+  reported: each faction's share, fires (expected 320/320 for firing factions). Expected before numbers: condemned ~47, gangs ~52, law
+  ~95, syndicate ~87 (pooled ~70: the pooled line would fail on B7 alone). A pass ships ON (he hears it; his veto stands).
+
 _(filed bars go here, before their numbers)_
 
 ## Rulings (round 42)
@@ -111,6 +125,12 @@ _(filed bars go here, before their numbers)_
   its element sent it a firing spot. The `plan_lay` gear-0 seam (combat_motion.gd:1340, every fixed gun) stays in reserve: use it only
   if the trace shows the hold survives the brain change, with its own line in the bar. Nobody owns tank_brain.gd this round; native
   confirms `_act` has no twin. Symmetric (the CPU gets it). Merge note.
+- **R42.3 (2026-10-26 ~15:30) Bar B7 judged per countered faction; the counter fires only where it beats the roll.** Balance's ask,
+  before any 9901+ number: last round's dev reads put B7 alone at ~70 % pooled (Law's and Syndicate's barrage lineups lose to tanks
+  worse than the roll, 96 v 92). Ruled: the deciding line is per faction whose counter fires (<= 60 % AND down >= 2 se, paired);
+  the counter fires for a faction only if B8's dev screen shows its barrage lineup beating the roll (ON <= OFF - 2 se); for a faction
+  where it doesn't, the counter stays off and that is reported (a counter that loses worse than the roll must not fire). B8's dev
+  screen runs first; Bar B7 freezes on the tree that carries whatever B8 ships. The pooled share stays a reported column.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
