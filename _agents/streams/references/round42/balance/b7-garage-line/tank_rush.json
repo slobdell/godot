@@ -1,0 +1,57 @@
+{
+ "name": "Tank Rush",
+ "squads": [
+  {
+   "name": "Alpha",
+   "units": [
+    {
+     "unit": "tank"
+    },
+    {
+     "unit": "tank"
+    },
+    {
+     "unit": "tank"
+    },
+    {
+     "unit": "tank"
+    },
+    {
+     "unit": "tank"
+    }
+   ]
+  },
+  {
+   "name": "Bravo",
+   "units": [
+    {
+     "unit": "tank"
+    },
+    {
+     "unit": "tank"
+    },
+    {
+     "unit": "tank"
+    },
+    {
+     "unit": "tank"
+    }
+   ]
+  },
+  {
+   "name": "Charlie",
+   "units": [
+    {
+     "unit": "scout"
+    }
+   ]
+  }
+ ],
+ "garage": {
+  "schema": 2,
+  "budget": 2000,
+  "cost": 1910,
+  "points_per_credit": 1.75,
+  "faction": "condemned"
+ }
+}

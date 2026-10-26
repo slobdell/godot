@@ -26,6 +26,15 @@ static func tank_rush_hint_on() -> bool:
 	return _tank_rush_hint
 
 
+## TANK_RUSH_HINT when `draft` is a tank rush (>= Army.COUNTER_TANK_SHARE of its cost in tanks) and the faction's artillery is
+## unlocked; "" otherwise or with the switch off. The garage's status line shows it (GarageScreen._hint).
+static func tank_rush_line(draft: ArmyDraft) -> String:
+	if not tank_rush_hint_on() or Army.tank_share(draft.to_doctrine()) < Army.COUNTER_TANK_SHARE:
+		return ""
+	var artillery := ArmyPresets.unit_for_role(draft.catalog, "artillery")
+	return TANK_RUSH_HINT if artillery != "" and draft.catalog.role(artillery) == "artillery" else ""
+
+
 ## Short, actionable hints about an army's composition, most important first.
 static func composition_hints(draft: ArmyDraft) -> PackedStringArray:
 	var catalog := draft.catalog
@@ -37,10 +46,8 @@ static func composition_hints(draft: ArmyDraft) -> PackedStringArray:
 	for unit_id: String in counts:
 		my_roles[catalog.role(unit_id)] = true
 	# B7 (round 42, balance): a tank rush is what the CPU answers with artillery (Army.COUNTER_TANK_SHARE); say so first.
-	if tank_rush_hint_on() and Army.tank_share(draft.to_doctrine()) >= Army.COUNTER_TANK_SHARE \
-			and ArmyPresets.unit_for_role(catalog, "artillery") != "" \
-			and catalog.role(ArmyPresets.unit_for_role(catalog, "artillery")) == "artillery":
-		hints.append(TANK_RUSH_HINT)
+	if tank_rush_line(draft) != "":
+		hints.append(tank_rush_line(draft))
 	# Each weakness of a unit I own that nothing I own is good against.
 	var reported := {}
 	for unit_id: String in counts:

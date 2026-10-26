@@ -112,10 +112,12 @@ func test_the_garage_suggests_artillery_to_a_tank_draft() -> void:
 		draft.add_unit(0, "tank")
 	assert_true(Array(GarageAdvice.composition_hints(draft)).has(GarageAdvice.TANK_RUSH_HINT), "all tanks: the line shows")
 	assert_eq(GarageAdvice.composition_hints(draft)[0], GarageAdvice.TANK_RUSH_HINT, "and comes first")
+	assert_eq(GarageAdvice.tank_rush_line(draft), GarageAdvice.TANK_RUSH_HINT, "the garage's status line reads it")
 	var mixed := ArmyDraft.new(ArmyCatalog.from_game(100000))
 	for unit_id: String in ["tank", "artillery", "scout", "ifv"]:
 		mixed.add_unit(0, unit_id)
 	assert_true(not Array(GarageAdvice.composition_hints(mixed)).has(GarageAdvice.TANK_RUSH_HINT), "a mixed draft: no line")
+	assert_eq(GarageAdvice.tank_rush_line(mixed), "", "and no status line")
 
 
 func test_off_the_pair_is_each_side_loaded_alone() -> void:
