@@ -173,6 +173,40 @@ ordered north reads "turning" at 4.4 m/s). Running (`~/overnight-manoeuvre/r41/v
 Then Bar Q3 on 9025-9048. **Q4 (the orchestrator's add, R41.5):** the long episodes (42 % of jam-seconds) are yields and reversing:
 lab a cut of the give-way machinery when the blocker is a moving friend (slow and hold the lane), on fresh dev cells 7005-7008.
 
+### C++ twin request for the judged rule (ready; the orchestrator relays it to native on a Bar Q3 pass)
+
+The rule lives in the drive's C++ mirror (drive_native.cpp's `_avoid`) and in the drive's ask gate; its state is the four members
+native already holds (pair/native-wait-fields). Twin check: `tests/test_traffic_wait.gd` under native, and bit-identity per seed
+(R38.24) with `--traffic-on=wait` on and off once the GDScript path no longer forces native_drive off (Traffic._chain_native).
+- **Where (in `_avoid`):** after ORCA's `chosen`, (1) in the branch `chosen.distance_squared_to(route_preferred) < 0.04`: if
+  `_wait_for != ""` then `_wait_end()`; return [waypoint, 1.0]. (2) After `keep` is computed, BEFORE F1's block: if not `held` and
+  `wait` is on: if `yield_to != ""` or `_pass_by != ""` or `_order_ticks < AVOID_GRACE_TICKS` then `_wait_end()`; else
+  `waited = _wait(here, to / distance, route_preferred, desired)`; if `waited >= 0` return [waypoint, waited].
+- **`_wait(here, way, preferred, desired)`:** tick = physics frame. If `_wait_for != ""` and tick - `_wait_since` >= 5 s x TICK_RATE:
+  wait_timeouts++, `_wait_refused = _wait_for`, `_wait_refused_until = tick + 6 s x TICK_RATE`, `_wait_end()`, return -1. found =
+  `_wait_blocker(here, way, preferred)`; empty: `_wait_end()`, return -1. other = found[0], kind = found[1], name = other.name. If
+  name == `_wait_refused` and tick < `_wait_refused_until`: `_wait_end()`, return -1. If `_wait_for != name`: `_wait_end()`,
+  `_wait_for = name`, `_wait_since = tick`, waits++. wait_queued++, wait_by_kind[kind]++ (measurement). off = other - here (flat);
+  gap = radius_of(me) + radius_of(other) + 1.0; its_along = max(other.real_velocity (flat) . way, 0); v = max(off . way - gap, 0) /
+  1.5 + its_along; return clamp(v / max(desired, 0.1), 0, 1).
+- **`_wait_end()`:** if `_wait_for == ""` return; s = (frame - `_wait_since`) / TICK_RATE; if s >= 2.0 wait_long++; if s > wait_longest.s
+  record {crew, for, s} (measurement); `_wait_for = ""`, `_wait_since = -1`.
+- **`_wait_blocker(here, way, preferred)`:** over the living friends of my team (tanks_root children, not me): off = other - here,
+  along = off . way; skip along <= 0. width = radius_of(me) + radius_of(other) + 0.5. If along <= 12.0 and |off x way| <= width: a lane
+  candidate, nearest `along` wins. Else, only while no lane candidate yet (best_along == INF): v_rel = other.real_velocity (flat) -
+  preferred; t = `_meet_in(off, v_rel, width)`; the smallest t < 2.0 wins. None: []. kind = `_wait_kind(best, way)`; "" -> [].
+- **`_meet_in(p, v_rel, r)`:** a = |v_rel|^2, b = 2 p . v_rel, c = |p|^2 - r^2; c <= 0: 0 if b < 0 else INF; a < 1e-6: INF; disc = b^2 -
+  4ac < 0: INF; t = (-b - sqrt(disc)) / 2a; t if t >= 0 else INF.
+- **`_wait_kind(other, way)`:** v = other.real_velocity (flat), speed = |v|. If speed >= 1.0: cos = v . way / speed; "" if cos <= -0.5
+  (head-on); "" if cos >= Traffic.FOLLOW_COS (0.866, going my way); else "moving". Else: mover = Movement.of(other); "" if null, not
+  under way (phase == "arrived") or `_goal` == INF. If mover.`_wait_for` != "": "" if it equals MY name (a cycle) else "waiting".
+  its_way = mover.`_travel_direction`(`_goal`, false); "" if zero or its_way . way <= -0.5. nose = -other.basis.z (flat, unit);
+  "turning" if nose . its_way < cos(30 deg) else "".
+- **The ask gate (drive):** the `_negotiate` call runs only if `(stalled_ticks >= ASK_SECONDS x TICK_RATE or held_back) and _wait_for == ""`.
+- **`reset()`:** `_wait_for = ""`, `_wait_since = -1` beside `yield_to = ""`.
+- **Traffic:** `wait` in DEFAULT_OFF; `--traffic-on=wait` turns it on; while on, Traffic._chain_native sets native_drive false until
+  the twin lands (drop that clause when it does).
+
 ### v4 reads (f7fd7819a; `~/overnight-manoeuvre/r41/v4labs/`, builder0 light, native for the bridge, GDScript both arms for the group order)
 
 | Read | OFF -> v4 ON |
@@ -227,6 +261,40 @@ four (v4 the mildest). The wait family trades the bridge for his group order; th
 - **Judge:** `bridge_lab_table.py --pair` per tree (deciding), `q3_judge.py` (group-order guards), `follow_judge.py` (fight guards);
   `~/overnight-manoeuvre/r41/barq3.sh` runs the series. A pass goes to the orchestrator: ships ON with native's twin (CP41.1, the
   orchestrator merges it alone and tells balance). A fail: OFF, no re-run on these seeds; then R41.6's (c).
+
+### C++ twin request for the judged rule (ready; the orchestrator relays it to native on a Bar Q3 pass)
+
+The rule lives in the drive's C++ mirror (drive_native.cpp's `_avoid`) and in the drive's ask gate; its state is the four members
+native already holds (pair/native-wait-fields). Twin check: `tests/test_traffic_wait.gd` under native, and bit-identity per seed
+(R38.24) with `--traffic-on=wait` on and off once the GDScript path no longer forces native_drive off (Traffic._chain_native).
+- **Where (in `_avoid`):** after ORCA's `chosen`, (1) in the branch `chosen.distance_squared_to(route_preferred) < 0.04`: if
+  `_wait_for != ""` then `_wait_end()`; return [waypoint, 1.0]. (2) After `keep` is computed, BEFORE F1's block: if not `held` and
+  `wait` is on: if `yield_to != ""` or `_pass_by != ""` or `_order_ticks < AVOID_GRACE_TICKS` then `_wait_end()`; else
+  `waited = _wait(here, to / distance, route_preferred, desired)`; if `waited >= 0` return [waypoint, waited].
+- **`_wait(here, way, preferred, desired)`:** tick = physics frame. If `_wait_for != ""` and tick - `_wait_since` >= 5 s x TICK_RATE:
+  wait_timeouts++, `_wait_refused = _wait_for`, `_wait_refused_until = tick + 6 s x TICK_RATE`, `_wait_end()`, return -1. found =
+  `_wait_blocker(here, way, preferred)`; empty: `_wait_end()`, return -1. other = found[0], kind = found[1], name = other.name. If
+  name == `_wait_refused` and tick < `_wait_refused_until`: `_wait_end()`, return -1. If `_wait_for != name`: `_wait_end()`,
+  `_wait_for = name`, `_wait_since = tick`, waits++. wait_queued++, wait_by_kind[kind]++ (measurement). off = other - here (flat);
+  gap = radius_of(me) + radius_of(other) + 1.0; its_along = max(other.real_velocity (flat) . way, 0); v = max(off . way - gap, 0) /
+  1.5 + its_along; return clamp(v / max(desired, 0.1), 0, 1).
+- **`_wait_end()`:** if `_wait_for == ""` return; s = (frame - `_wait_since`) / TICK_RATE; if s >= 2.0 wait_long++; if s > wait_longest.s
+  record {crew, for, s} (measurement); `_wait_for = ""`, `_wait_since = -1`.
+- **`_wait_blocker(here, way, preferred)`:** over the living friends of my team (tanks_root children, not me): off = other - here,
+  along = off . way; skip along <= 0. width = radius_of(me) + radius_of(other) + 0.5. If along <= 12.0 and |off x way| <= width: a lane
+  candidate, nearest `along` wins. Else, only while no lane candidate yet (best_along == INF): v_rel = other.real_velocity (flat) -
+  preferred; t = `_meet_in(off, v_rel, width)`; the smallest t < 2.0 wins. None: []. kind = `_wait_kind(best, way)`; "" -> [].
+- **`_meet_in(p, v_rel, r)`:** a = |v_rel|^2, b = 2 p . v_rel, c = |p|^2 - r^2; c <= 0: 0 if b < 0 else INF; a < 1e-6: INF; disc = b^2 -
+  4ac < 0: INF; t = (-b - sqrt(disc)) / 2a; t if t >= 0 else INF.
+- **`_wait_kind(other, way)`:** v = other.real_velocity (flat), speed = |v|. If speed >= 1.0: cos = v . way / speed; "" if cos <= -0.5
+  (head-on); "" if cos >= Traffic.FOLLOW_COS (0.866, going my way); else "moving". Else: mover = Movement.of(other); "" if null, not
+  under way (phase == "arrived") or `_goal` == INF. If mover.`_wait_for` != "": "" if it equals MY name (a cycle) else "waiting".
+  its_way = mover.`_travel_direction`(`_goal`, false); "" if zero or its_way . way <= -0.5. nose = -other.basis.z (flat, unit);
+  "turning" if nose . its_way < cos(30 deg) else "".
+- **The ask gate (drive):** the `_negotiate` call runs only if `(stalled_ticks >= ASK_SECONDS x TICK_RATE or held_back) and _wait_for == ""`.
+- **`reset()`:** `_wait_for = ""`, `_wait_since = -1` beside `yield_to = ""`.
+- **Traffic:** `wait` in DEFAULT_OFF; `--traffic-on=wait` turns it on; while on, Traffic._chain_native sets native_drive false until
+  the twin lands (drop that clause when it does).
 
 ### v4 reads (f7fd7819a; `~/overnight-manoeuvre/r41/v4labs/`, builder0 light, native for the bridge, GDScript both arms for the group order)
 

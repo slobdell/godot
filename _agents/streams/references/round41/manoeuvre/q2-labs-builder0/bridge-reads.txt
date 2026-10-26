@@ -1,0 +1,10 @@
+bridge-pooled reads (builder0 light, native, 18 runs an arm; OFF arms from bridgelab1):
+arm             runs     pass    rim s  deck jam    worst   arrival over 3 s
+arm-off           18    17/18     14.2      17.1      5.1      34.9        1
+    FAIL locks rust seed 2 tick 15: crossed 4/4, worst rim 5.1 s (Rust_S_3 5.1, Rust_S_1 0.3)
+arm-on-v1         18    18/18      1.3      12.2      0.6      32.7        0
+arm-on-v2         18    18/18      6.4      19.2      3.0      35.0        0
+arm-on-v4         18    18/18      9.8      10.4      1.5      36.7        0
+main-off          18    18/18      8.1       7.5      1.5      36.6        0
+main-on-v2        18    18/18      3.4      16.2      1.0      37.0        0
+main-on-v4        18    18/18     10.7       9.7      2.4      37.8        0
