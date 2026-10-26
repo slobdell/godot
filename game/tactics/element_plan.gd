@@ -675,8 +675,9 @@ static func _plan_flank_line(plan: Dictionary, situation: Dictionary, state: Dic
 		if is_battery(situation):
 			sector = APPROACH_CONE_DEG
 		var crew_reach := float(member["range"]) * ENGAGE_RANGE_FACTOR + (PURSUIT_HYSTERESIS_M if keeps else 0.0)
+		# Round 42 (engage E5): and a line to it (ATTACK_SHOT); without one it drives on to its place on the line, gun on it.
 		if target != "" and absf(approach_off_deg(position, target_point, approach)) <= sector \
-				and position.distance_to(target_point) <= crew_reach:
+				and position.distance_to(target_point) <= crew_reach and (not ATTACK_SHOT or has_shot(member, target)):
 			_order(plan, name, "attack", null, target)
 
 
@@ -3074,8 +3075,10 @@ static func _plan_encircle(plan: Dictionary, situation: Dictionary, table: Doctr
 	var closing: Array = []
 	var target := String(contact.get("name", ""))
 	for member: Dictionary in ordered:
+		# Round 42 (engage E5): in range AND with a shot (ATTACK_SHOT); a ring crew without a line keeps going round.
 		var in_range: bool = target != "" \
-				and (member["position"] as Vector3).distance_to(focus) <= float(member["range"]) * ENGAGE_RANGE_FACTOR
+				and (member["position"] as Vector3).distance_to(focus) <= float(member["range"]) * ENGAGE_RANGE_FACTOR \
+				and (not ATTACK_SHOT or has_shot(member, target))
 		if in_range:
 			_order(plan, String(member["name"]), "attack", null, target)
 		else:
@@ -3329,7 +3332,9 @@ static func _hold(plan: Dictionary, members: Array, situation: Dictionary, facin
 		var name := String(member["name"])
 		var position: Vector3 = member["position"]
 		var target := String(contact.get("name", ""))
-		if target != "" and (contact["position"] as Vector3).distance_to(position) <= float(member["range"]) * ENGAGE_RANGE_FACTOR:
+		# Round 42 (engage E5): a covering crew fights only what it has a line to (ATTACK_SHOT); it stays on its spot either way.
+		if target != "" and (contact["position"] as Vector3).distance_to(position) <= float(member["range"]) * ENGAGE_RANGE_FACTOR \
+				and (not ATTACK_SHOT or has_shot(member, target)):
 			_order(plan, name, "attack", null, target)
 		else:
 			# X5: "guns toward `facing`" was the docstring and nothing in the order said it. Now it does.
