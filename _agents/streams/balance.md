@@ -126,6 +126,15 @@ nowhere, so toughness buys it nothing), law -5 (se 2; length -15 %), syndicate -
 10 -> 12 %; its dealt a credit 0.8 -> 1.1 (condemned, law), still 6-7 % alive, ~66 s lived. Flank share -0.9 (se 0.9). **The
 in-bounds IFV buff is worth ~2 points.** Combined arm t50_ifv15 running (ends ~08:30).
 
+**B5 round 2c (queued behind the combined arm; the orchestrator's ask ~07:50; dev 9401-9410, NEVER a bar, OUTSIDE R40.1's keys: a read
+for his decision):** `pen7` = the IFV guns' penetration up as a `--tune` on the base tree (autocannon 5 -> 7: Condemned IFV + Law IFV;
+pulse cannon 6 -> 7: Syndicate IFV; twin MG 2.5 -> 4: Gun Truck), mono line, paired with base (`~/balance-runs/b5-r2c.sh`, driver
+`b5-arm.sh` = b5-r1.sh + B5_EXTRA_ARGS). Static: an IFV behind a tank kills it in 11 s instead of 13, from the side 17 instead of 23,
+from the FRONT 44 instead of 187 (the front stops being a wall: the design cost); v non-tanks only fronts change (IFV v IFV head-on
+~3x). Expected (written before the number): 3-5 points. **Grant asked** (via the orchestrator): widen R40.7's demo_flags line to keep
+any explicit `cpu:<archetype>` so a `deal` arm (all-tanks v the faction's anti-armour archetype: siege / gang_hail / law_dragnet /
+syndicate_standoff) can run: "change what the mixed army buys" with no stat change. Round 3 (the lines) now waits behind 2c.
+
 **B5 WRITE-UP FOR HIM (draft 07:45; the combined arm's line is filled in when it lands; the orchestrator takes it to him).**
 *What you noticed is real, and it is not about facing.* An army of only tanks beats the same faction's normal mixed army, same
 money, 85 % of the time (CPU v CPU, 5 maps, both sides, 400 fights). Your target was the mixed army winning 60-65 %, so the
