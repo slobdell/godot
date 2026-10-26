@@ -87,8 +87,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - **O2 RESULT: written up, no bar** (orchestrator's call for this case). Departure order is not where the time goes:
     the time is crews meeting inside the merges (stalled / crossing / same_way, manoeuvre's Q1), i.e. what a blocked crew
     does, which is Q2. Switches stay OFF in code (`--group-depart=queue|merge`, `--group-depart-rank=drive`); evidence
-    `references/round41/orders/o2-dev-reads-builder0/` (ba0d14aab). The stale check of 25525980a was stopped (mine,
-    exit 143); a full check of ba0d14aab runs on builder0.
+    `references/round41/orders/o2-dev-reads-builder0/` (ba0d14aab). Full check of ba0d14aab (builder0): exited 0,
+    25 passed, 3255 tests / 0 failed, 2 NOT JUDGED (perf-judge refused: box busy with my dev reads; ai cpu-budget
+    unpinned) -- named to the orchestrator for the merge.
 - **Plan:** O1 census probe (done, 8b828ec59) -> census on builder0 dev seeds 7001-7006 (crew v formed headings) -> hash to
   manoeuvre + orchestrator -> O2: pick the lever from the numbers, build OFF, lab, file Bar O2 on 9101-9124 before any number
   -> C41.4 getter if camera asks -> stretch G1 v7.
@@ -187,6 +188,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     Base `main:`. Tree, probe, seeds (9101-9112, n 12 a cell), cells and judge (`orders_judge.py g1v8`: g1v4 unamended +
     the never-away guard filed with v8) as above. Runner `tests/control/orders_bar.sh b2 g1v8 <arm> "9101 ... 9112" <out> 8`.
   - **Variants read on the dev block 7007-7012: three** (v7, v8, v9), so a dev pass there is partly fitted.
+  - **Dev read (builder0 light, 383828c39 code, native on, 7007-7012, n 6 a cell; partly fitted): PASS every line.**
+    Places outside 26 -> 3 (<= 6.5); metres outside after in 1037 -> 180 (<= 519); re-dealt 0 (base 24); friend_contacts
+    6554 -> 5179 (<= 7214.4); probe guards 14 cells; yard_open 96 / 96; places sent away > 10 m 12 -> 0 (<= 14).
+    The orchestrator ruled v9 the LAST re-file: if the bar fails, G1 is written up (no v10).
+  - **Tree:** the full check of 872dab643 (v9 code + docs) on builder0 decides the frozen worktree's commit.
   - Lab (laptop, s7007 his click, 5 squads): squad 5 stays (toward 0.0); squads 3 / 4 step < 10 m back into their ranks.
   - **Question for the lead (feel), in his terms:** "You have all five squads selected at the start and click a spot in
     the street just beside them (30 m away). Today they all try to crowd round that spot, and two of them end up up the
