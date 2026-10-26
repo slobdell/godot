@@ -136,6 +136,12 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   that is itself turning (moving, nose > 30 deg off its next leg) + the chain behind it; bridge reads on main and overrides, a group-order
   lab showing no harm, then Bar Q3 on 9025-9048 (variants labbed noted; deciding on unseen seeds). Next for his traffic note after Q3:
   the long episodes are the give-way machinery (yields 46 %, reversing 33 % of episodes >= 3 s): a lab on cutting those (Q4).
+- **R41.6 (2026-10-26 ~04:50) Bar Q3 files on v2's crosser key, with a strict group-order guard.** v4 (turning-leader key, f7fd7819a)
+  fires late at the deck mouth (the leader swinging on reads as a crosser before its nose is 30 deg off): overrides rim 14.2 -> 9.8 s,
+  main rim 8.1 -> 10.7 s (+32 %), so it fails R41.3's rim line on main. v2 (crossing + turning + chain): main rim 8.1 -> 3.4 s (-58 %),
+  group-order dev +7.3 % (1.9 se). Ruled: file on v2 IF its overrides read clears the failing run (18/18) with the rim down; group-order
+  guards on 9037-9048 (his 5-squad across click): all-in mean and never-in squads ARM <= BASE + 1.645 se, contacts <= BASE x 1.05; a
+  bridge fix that visibly worsens his big order doesn't ship (then option (c): wait family stops, bridge as R40.24 left it, B2s v2 waits).
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
