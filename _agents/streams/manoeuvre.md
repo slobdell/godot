@@ -70,6 +70,13 @@ the crew keeps ORCA's direction and only its speed is capped, so it reaches the 
   - Guards: the wedge trace and the orders probe with M3's lines.
   - BRIDGE_POOLED_SEEDS is a plain make variable (bridge-series loops BRIDGE_SEEDS), so any seeds work.
 - **A C++ twin** is needed before it ships ON (the cap would sit in the drive, inside native_drive's mirror).
+- **Its per-crew state must be real Movement members with native/src/exec_fields.h entries** (the orchestrator, close of round
+  40), not a static table hidden from test_native_exec_state. F1's measurement uses a static table, `Movement._follow_runs` keyed
+  by instance id (0a7097ee7). That passes the exec-state test only because F1 forces native_drive off. Instance ids are reused,
+  and the table is cleared only by `reset_route_arms()`, which only tests call, so in play it would outlive a match.
+- **F1's table is harmless today, checked in the code:** `_follow_runs` is written only by `_follow_note`, called only inside
+  `_avoid`'s `if not held and not Traffic.off(FOLLOW_SWITCH) and wheel_radius() > 0.0` branch (movement.gd ~2950-2959). With
+  `follow` OFF (DEFAULT_OFF) it is never written. Don't copy the pattern.
 
 **The evidence it starts from (all builder0 light, n 1 a run; bridge-pooled 18 runs an arm):**
 
