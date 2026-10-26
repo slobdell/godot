@@ -96,6 +96,10 @@ func test_while_he_aims_the_automatic_moves_wait() -> void:
 	assert_true(rig._focus_velocity.length() > 1.0, "setup: the camera is on its way")
 	aiming[0] = true
 	var screen := Vector2(640, 300)
+	# His hand has just come to rest on the target (a hover with no hand for HOVER_HOLD_S is a resting mouse, not aim).
+	var motion := InputEventMouseMotion.new()
+	motion.position = screen
+	rig._input(motion)
 	for i in 30:
 		rig._process(1.0 / 60.0)
 	var under: Vector3 = rig.ground_point(screen)

@@ -58,7 +58,21 @@ The clip, when K3 has one.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-26: K1 DONE (report below, sent to the orchestrator); K2 in progress.**
+**2026-10-26: K1 DONE (sent to the orchestrator). K2 built (`--camera-glide`, ON; d6f0da32e), dev read below; full check on
+d6f0da32e running on builder0; then Bar K3 v1 on 9501-9512.**
+
+### K2 dev read (dev seeds 7001-7006, NEVER a bar; d6f0da32e's code; builder0 headless 1920x1080 60 fps)
+Autoplay now carries the cursor onto the target over 0.3 s (a hand's reach) before the 0.5 s aim, both arms.
+| | glide OFF (round 40) | glide ON |
+|---|---|---|
+| jerk events / min (all) | 18.2 (auto_frame 13.1, solid 3.1, yaw 1.7) | 0.08 (solid 0.08) |
+| one-frame snaps (all) | 77 | 0 |
+| target slip p50 / p95 / max (px) | 19 / 220 / 599 | 0.5 / 7.3 / 66 |
+| attack clicks on the aimed unit | 38 / 69 (55 %) | 39 / 54 (72 %) |
+| auto_frame px moved / min | 4766 | 2165 (it still re-frames) |
+Shake (laptop, windowed 1920x1080 ~28 fps, seed 7001, 60 s each arm): shake moved the cursor's ground <= 0.5 px at any click with the
+pivot (0 OFF: no hit landed near the camera during an aim); shake is small at his pose (10-45 px/min of all motion). Note: at
+28 fps a smooth fast yaw counts as per-frame "snaps" (24 px/frame = 670 px/s), so snap counts are only read at 60 fps.
 
 ### Plan (in order; reasons in one line)
 1. K1 instruments: `CameraTrace` (per frame, the screen motion of the ground under the cursor split by WHO moved it, by
