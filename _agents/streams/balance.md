@@ -176,6 +176,11 @@ bridge runs (9025-9036 x 3 ticks x 2 sides) the v2 overrides tree with the rule 
 known bridge failure remains the 18-run drill's rust t15 s2 (R40.20). The ARM rebuild recipe (apply + cherry-pick ad956031b)
 is proven mechanical on ff30edf87 (`apply --tree` now). builder2 stays on B5: the deal arm, pen7, then the lines screen.
 
+**Barrage arm (the orchestrator's ask ~10:05; queued behind pen7, then the lines):** `law_barrage` and `syndicate_barrage`
+(army.gd ARCHETYPES, `measure_only`: never rolled by a seeded "cpu" deal nor offered by the garage; loads by name through R41.12),
+siege's shape in each roster (artillery, scout, tank, artillery, IFV, scout), same money as the base deal. All-tanks v each, mono
+on each team, 9401-9410, paired with base (`~/balance-runs/b5-barrage.sh`). Test pins the roll and the load; quick-remote pending.
+
 **B5 WRITE-UP FOR HIM (deal-arm version 10:00; pen7's line pending; the orchestrator takes it to him).**
 *What you noticed is real, and it is not about facing.* An army of only tanks beats the same faction's normal mixed army, same
 money, 85 % of the time (CPU v CPU, 5 maps, both sides, 400 fights). Your target was the mixed army winning 60-65 %, so the
