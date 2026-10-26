@@ -91,4 +91,60 @@ Nothing.
 
 ## Status
 
-_(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+**2026-10-26 evening (Fable, builder0 light lane / laptop).** E1 DONE (the mechanism below, replayed and named); E2 in progress.
+
+### Plan (in order)
+
+1. E1 replay + failing test (done; the report below).
+2. E2 `--attack-shot`: (a) the situation builder's per-member `shot` read (pure, from the situation's cover map); (b) `_engage`
+   gives `attack` only with a shot, else a firing position (`firing_position.gd`, pure) as a move naming the target; (c) the
+   crew brain's ENGAGE hold needs the crew's OWN line (the real executor: see E1; a GRANT request, below); (d) the orbit drill
+   and `_hold` get the same truth if cheap.
+3. E3 the HUD words (C42.6).
+4. E4 Bar E1 filed, then run on 9601-9648.
+5. E5 stretch.
+
+### E1: who held Green_Spears2_3 still (report)
+
+**Rebuilt** with `tests/engage/replay_probe.gd` (Locks, seed 49326 spawns, the census's places: his crew at (44.3, -74.4) with
+17 hp, Spears2_4 at (46.4, -95.1), the Missile Ring at (24.3, -91.7) held alive, the squad given his attack task; laptop,
+18982e8df + the probe, 40 s, one run, deterministic). **Result: still 39.8 of 40 s, moved 0.3 m, ended 26.1 m from the
+target, zero hits of its own** (the ring's 1459 damage came from Spears2_4). The same picture as his 37 s.
+
+| ticks (probe) | the element issued | the brain chose / why | brain move | mover | gun on | own ray | cover map | team sees | HUD |
+|---|---|---|---|---|---|---|---|---|---|
+| 2-3 | `move` to its echelon slot (32.2, -87.8) | MOVE, "ordered" | move_to slot | driving | - | blocked | blocked | no, then yes | CAN'T SEE, then NOT FIRING |
+| 6-470 | `attack_move` naming the target (near_ambush, then assault_through: slot 50 m off at (-5.9, -108.8)) | ENGAGE on it, "holding at standoff" | **stop** | **arrived** | "" | blocked | blocked | yes | "" (reads as moving round) |
+| 471-1200 | `attack` (react_to_contact, then none: `_engage` by distance, 26.1 <= 30 x 1.15) | ENGAGE on it, "holding at standoff" | **stop** | **arrived** | "" | blocked | blocked | yes | **NOT FIRING** |
+
+**The chain, in code:**
+1. `ElementPlan._engage` (element_plan.gd:3250) hands it `attack` by distance alone (26 m <= 34.5 m); the drills' `attack_move`
+   before that named the target too. Neither tests a line of fire (the orchestrator's hypothesis, confirmed). But that is not
+   what stops the hull:
+2. **`OrderExecutor` is dead code.** `TankBrain.EXECUTES_ORDERS` is true (tank_brain.gd:15), so the executor steps aside in its
+   `_ready` (order_executor.gd:37) and the `attack` branch at :126 never runs. The crew's own brain executes his order.
+3. `TankBrain._obey` (tank_brain.gd:1833): the ordered target is "fresh" through the TEAM's intel (Spears2_4 sees it), so the
+   only candidate kept is ENGAGE on it; under the drills' `attack_move` the target counts as "met on the way" (`in_reach`:
+   team-visible and within range + 10 m), so ENGAGE outscores MOVE and the crew never drives to the assault slot either.
+4. `TankBrain._act` ENGAGE (tank_brain.gd:2573): `contact["visible"]` is the team's read, not this crew's eyes; visible and
+   within range + 15 m means `_combat_move`, whose gunlay planner (`CombatMotion.plan_lay`, combat_motion.gd:1236) scores a
+   gear-0 "hold" on aim and turning room only, with NO sight test from the hull, so it answers hold: "holding at standoff"
+   (tank_brain.gd:3283) and the move order is `stop`.
+5. `Gunnery._shootable` (gunnery.gd:220) needs the physics ray; it is blocked by the 20-ft container at (42, -80) (the cover
+   map agrees, `clear_line` false), so `engaged_target` stays "" and the fixed mount never even turns.
+6. Movement under `stop` reports `arrived` (the census's phase).
+7. The HUD (rts_controls.gd:3372): gun on nothing, verb `attack` (not "moving round"), the team sees the target, 26 < 30 m,
+   standing still: NOT FIRING. Under the drills' `attack_move` the same crew read as carrying the order out ("" for 15 s).
+
+**So "in range" is wrong twice:** the squad plan sends `attack` by distance, and the crew brain HOLDS by distance (the team's
+sight, the gunlay's aim), while the gun needs a line the hull does not have. The fix has to land in both: the plan's `attack`
+needs a shot (C42.2, mine) and the brain's ENGAGE hold needs the crew's OWN line (the real "executor's attack branch").
+Both are symmetric: the CPU's crews run the same brain and the same plan.
+
+**Requests to the orchestrator:** (1) GRANT for `game/ai/tank_brain.gd` `_act` ENGAGE (:2573-2592) only: one guarded branch
+behind `--attack-shot`, "a crew whose own line to its target is blocked (cover map, coarse) does not hold at standoff: it closes
+on the target" (the brain already holds `cover_map`; `clear_line_coarse` is memoized). Nobody owns tank_brain.gd this round;
+`_act` is not twinned natively (NativeDecide twins `decide` only; the ENGAGE branch is GDScript). Alternative seam if preferred:
+`CombatMotion.plan_lay`'s gear-0 hold requires `map.clear_line_coarse(here, target)` (combat_motion.gd:1340; shared by every
+fixed gun). (2) Note for the brief: order_executor.gd's attack branch is unreachable; I will not edit it.
+
