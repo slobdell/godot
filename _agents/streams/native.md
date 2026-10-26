@@ -74,3 +74,22 @@ as bars are filed -> spare: builder0 test-time read.
   error). Expected: test starts ~700 s earlier, wall ~2,208 -> ~1,500-1,600 s (-25-30 %) at that load; lint's 6 checkers + test x5
   on 12 threads will slow test somewhat, so the bar is an A/B of 3 pairs on builder0 like T1's (round 9). Unknowns: the 8 baselined
   lint artefacts are per-file findings and may not appear in a one-process load (the gate needs its own small baseline, or none).
+- **GUARD_TARGET (balance's ask via the orchestrator): e41b6d70e.** `tools/scoreboard/guard.sh` takes `GUARD_TARGET` (default
+  `guard-run`; validated as a target name; the exit-line match follows it). `tools/test_guard_target.sh` runs guard.sh end to end on a
+  stub repo, 8/0 (4 fail without the knob). Retires `tools/balance/guard_probe.sh` (its sed now refuses, by design, on the new line).
+- **N2 first piece: pair/native-wait-fields e59aca6aa** (off manoeuvre e6624abe5; worktree `../godot-native-pair`, local.mk offset 9).
+  exec_fields.h: `_wait_for`, `_wait_since`, `_wait_refused`, `_wait_refused_until` after `yield_spot`. builder0: `make native quick`
+  exited 0; `make native test FILTER=test_native_exec_state` 4/0; native-proof EQUAL on/off/ab 5cf09094178e2984. Merge WITH manoeuvre's
+  Q2 scaffold (on main the members don't exist). The Q2 rule's twin waits on manoeuvre's spec.
+- **N5 (R41.2, granted core.mk's lint gate): lint-fast.** a64611c15 (+ .uid 0165f3d67). `make lint-fast`: tests/lint/lint_fast.gd loads
+  every script in one process; tools/lint_fast.py turns `SCRIPT ERROR`/`Parse Error` + `at: (res://f:l)` into `f:l: msg` findings; no
+  baseline; fails on: any finding, a planted file not reported, a file count short, no LINT_FAST_DONE. Planted every run: syntax error,
+  a script preloading it, a typed-assignment error (tests/fixtures/lint_fast/), lint's ternary probe. CHECK_TARGETS = lint-fast lint
+  test ...; every wrapper ordered after `_cp-lint-fast`. Tests: tools/test_lint_fast.sh 12/0 (canned engine output);
+  test_engine_log_gate.sh now stubs lint-fast (23/0). builder0 light lane on the real tree: 1,217 scripts, 24.4 s, 4 planted seen,
+  0 findings.
+  *What per-file lint catches that lint-fast misses (builder0, planted, both checkers):* no real error found. A preload cycle (b reads a
+  missing const of a): lint-fast names b:4, plus `Compile Error: Failed to compile depended scripts` on a when a loads first; per-file
+  names both files with the same message. Typed errors in an inner class, a runtime error in a static initializer: both see them.
+  An unused-variable warning: neither. What lint-fast does NOT have are lint's 8 baselined --check-only artefacts (false positives).
+  *Before v after full checks:* pending (N1's check is the before; the after runs on this tip next).
