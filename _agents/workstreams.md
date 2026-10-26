@@ -115,7 +115,7 @@ round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9548 camera K3 v2 (36 see
   squad it would send > 10 m away keeps the spot it stands on (tail of the street). Judge g1v8 unamended. Three variants dev-read on
   7007-7012 (noted). Feel question for him (orders' Status): on a click right beside his army, squads already in that street hold and
   only the near ones move.
-- **Bar K3 v2 (camera; FILED 355a5b0a7, 2026-10-26 ~07:30, before any number on 9513-9524).** v1's workload on fresh 9513-9524, both
+- **Bar K3 v2 (camera; PASSED, ships ON R41.17; FILED 355a5b0a7, 2026-10-26 ~07:30, before any number on 9513-9524).** v1's workload on fresh 9513-9524, both
   arms on one commit (GLIDE_SCREENS_PER_S 0.6 + the aim fix), lines 1-4 at v1's levels unamended, plus (5) the camera still finds the
   action: ARM held time <= 25 % of play AND ARM attack aims/min >= 90 % of BASE. 9501-9512 are dev seeds now.
 
@@ -233,6 +233,12 @@ round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9548 camera K3 v2 (36 see
   110 m). Pooled -12 (se 3). Artillery wins: 5.1-5.4 dealt a credit, 94-99 % alive at the end (siege fields 10 artillery a fight v 2.9 in
   the normal deal); the two that fail carry no artillery weight. Next: pen7 (09:51), then hand-built artillery-heavy Law and Syndicate
   lineups (army.gd ARCHETYPES, OFF in play) at the same money, then the write-up for him with four faction numbers.
+- **R41.17 (2026-10-26 ~10:05) Bar K3 v2 PASSES every line; `--camera-glide` ships ON.** Both arms 8a2974e85, builder0 light,
+  headless 1920x1080 @60, Terminus v CPU, autoplay, 36 seeds an arm 9513-9548 (BASE 51.4 min / 899 clicks, ARM 53.1 / 918): (1) attack
+  clicks on the aimed unit 52.4 -> 77.5 %; (2) slip p95 294.6 -> 34.7 px; (3) jerks 18.27 -> 0.19/min (worst automatic: solid 0.17),
+  automatic snaps 594 -> 0; (4) auto_frame px/min 61 % of BASE, 36/36 runs ok; (5) held 15.0 % of play, action share 41.8 -> 41.4 %.
+  Shake (laptop windowed, s7001, d6f0da32e): <= 0.5 px at any click. Clip for him: `build/camera-clip/camera_glide_clip.mp4` (laptop,
+  72 s, dev seed 9501, left off / right on). Merge on camera's green hash; perf-judge in the close's quiet window (an ON flip).
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
