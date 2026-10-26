@@ -140,3 +140,25 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - **Known risk:** a squad whose own place sits inside a squad-ahead's corridor start waits for it to arrive; the 20 s
     cap bounds it. A waiting squad keeps its old task; in his case (parked or holding) it stands still.
   - **Plus:** paired top-down shots of the across click on terminus, main v queue, looked at. A pass ships ON.
+- **Bar G1 v7 TWO SIDES ON T1 (orders, round 41; filed 2026-10-26 before any number on 9101-9112; code ba0d14aab, all
+  OFF).** What he would see: select all and click a street; every squad lands in that street, the nearest on it, the
+  others stacked back along their own way in, none driving through another's halt, every squad in without a reshuffle.
+  It is Bar G1 v6 (round 40, failed on one guard: terminus 5 route twitch, a cap deploy among passers) re-run on today's
+  main, where T1 (`--deploy-arrive=settled`) is ON in both arms.
+  - **Arm:** `sides:--group-lay=column,--group-rank-shift=half,--group-whole=click,--group-clear=reached,--group-lead=drive,--group-sides=both`
+    (G1 v6's, unchanged). Base `main:`.
+  - **Tree:** a frozen detached worktree at the commit whose full check is named green here (ba0d14aab or a docs-only
+    descendant; main as launched; T1 ON both arms; DEPLOY_HOLD ON both; every G2 / G3 switch and O2's `--group-depart`
+    OFF both arms; manoeuvre's Q2 OFF both arms).
+  - **Probe:** `tests/control/orders_bar.sh b2 g1v4 <arm> "9101 ... 9112" <out> 8` (builder2, Spot re-runs), **FRESH
+    seeds 9101-9112** (round 41's orders block; O2's bar was withdrawn unread, so they are unseen), n 12 a cell. Cells as
+    Bar G1 v6: the 12 street cells, his click (terminus_his 3 / 5), yard_open 3 / 5 x click / route.
+  - **Judge:** `orders_judge.py g1v4`, unamended from G1 v6 (deciding: places outside the corridor <= 25 % of base,
+    route_left_m <= 50 %, re-dealt 0; guards: every R36.6 guard per cell over all 14 cells, contacts <= base x 1.1 + 5,
+    yard_open identical; the old gate read reported beside).
+  - **Dev evidence:** builder0 light, 941325eaa (= ba0d14aab + docs), native on, dev seeds 7007-7012, n 6 a cell: PASS
+    every line (outside 26 -> 2, route_left 1037 -> 335, re-dealt 0, contacts 6554 -> 5155, 14 cells' probe guards,
+    yard_open 96 / 96). `references/round41/orders/g1v7-dev-builder0-941325eaa/`. One variant read (G1 v6's arm, as is).
+  - **Known risk:** round 40's s3805 squad-1 wedge (R38.44's whole-squad deal on a route's first click). On today's main
+    (laptop, s3805, terminus 5 route) it is main that leaves a squad never in (squad 5), and the arm gets all five in.
+  - **Plus:** paired top-down shots of his click, main v sides, looked at. A pass ships ON.
