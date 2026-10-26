@@ -376,61 +376,57 @@ combination is not pursued this round: both halves read neutral-to-worse on his 
   `~/overnight-manoeuvre/r41/barq3.sh` runs the series. A pass goes to the orchestrator: ships ON with native's twin (CP41.1, the
   orchestrator merges it alone and tells balance). A fail: OFF, no re-run on these seeds; then R41.6's (c).
 
-### C++ twin request for the judged rule (ready; the orchestrator relays it to native on a Bar Q3 pass)
+### Bar Q3: FAIL AS FILED (series 05:43-08:00 PDT 2026-10-26, builder0 light lane; code f6d9d7b1b, bar tree 7f4eabcd1, overrides tree 368aa08dd). The wait stays OFF.
 
-The rule lives in the drive's C++ mirror (drive_native.cpp's `_avoid`) and in the drive's ask gate; its state is the four members
-native already holds (pair/native-wait-fields). Twin check: `tests/test_traffic_wait.gd` under native, and bit-identity per seed
-(R38.24) with `--traffic-on=wait` on and off once the GDScript path no longer forces native_drive off (Traffic._chain_native).
-- **Where (in `_avoid`):** after ORCA's `chosen`, (1) in the branch `chosen.distance_squared_to(route_preferred) < 0.04`: if
-  `_wait_for != ""` then `_wait_end()`; return [waypoint, 1.0]. (2) After `keep` is computed, BEFORE F1's block: if not `held` and
-  `wait` is on: if `yield_to != ""` or `_pass_by != ""` or `_order_ticks < AVOID_GRACE_TICKS` then `_wait_end()`; else
-  `waited = _wait(here, to / distance, route_preferred, desired)`; if `waited >= 0` return [waypoint, waited].
-- **`_wait(here, way, preferred, desired)`:** tick = physics frame. If `_wait_for != ""` and tick - `_wait_since` >= 5 s x TICK_RATE:
-  wait_timeouts++, `_wait_refused = _wait_for`, `_wait_refused_until = tick + 6 s x TICK_RATE`, `_wait_end()`, return -1. found =
-  `_wait_blocker(here, way, preferred)`; empty: `_wait_end()`, return -1. other = found[0], kind = found[1], name = other.name. If
-  name == `_wait_refused` and tick < `_wait_refused_until`: `_wait_end()`, return -1. If `_wait_for != name`: `_wait_end()`,
-  `_wait_for = name`, `_wait_since = tick`, waits++. wait_queued++, wait_by_kind[kind]++ (measurement). off = other - here (flat);
-  gap = radius_of(me) + radius_of(other) + 1.0; its_along = max(other.real_velocity (flat) . way, 0); v = max(off . way - gap, 0) /
-  1.5 + its_along; return clamp(v / max(desired, 0.1), 0, 1).
-- **`_wait_end()`:** if `_wait_for == ""` return; s = (frame - `_wait_since`) / TICK_RATE; if s >= 2.0 wait_long++; if s > wait_longest.s
-  record {crew, for, s} (measurement); `_wait_for = ""`, `_wait_since = -1`.
-- **`_wait_blocker(here, way, preferred)`:** over the living friends of my team (tanks_root children, not me): off = other - here,
-  along = off . way; skip along <= 0. width = radius_of(me) + radius_of(other) + 0.5. If along <= 12.0 and |off x way| <= width: a lane
-  candidate, nearest `along` wins. Else, only while no lane candidate yet (best_along == INF): v_rel = other.real_velocity (flat) -
-  preferred; t = `_meet_in(off, v_rel, width)`; the smallest t < 2.0 wins. None: []. kind = `_wait_kind(best, way)`; "" -> [].
-- **`_meet_in(p, v_rel, r)`:** a = |v_rel|^2, b = 2 p . v_rel, c = |p|^2 - r^2; c <= 0: 0 if b < 0 else INF; a < 1e-6: INF; disc = b^2 -
-  4ac < 0: INF; t = (-b - sqrt(disc)) / 2a; t if t >= 0 else INF.
-- **`_wait_kind(other, way)`:** v = other.real_velocity (flat), speed = |v|. If speed >= 1.0: cos = v . way / speed; "" if cos <= -0.5
-  (head-on); "" if cos >= Traffic.FOLLOW_COS (0.866, going my way); else "moving". Else: mover = Movement.of(other); "" if null, not
-  under way (phase == "arrived") or `_goal` == INF. If mover.`_wait_for` != "": "" if it equals MY name (a cycle) else "waiting".
-  its_way = mover.`_travel_direction`(`_goal`, false); "" if zero or its_way . way <= -0.5. nose = -other.basis.z (flat, unit);
-  "turning" if nose . its_way < cos(30 deg) else "".
-- **The ask gate (drive):** the `_negotiate` call runs only if `(stalled_ticks >= ASK_SECONDS x TICK_RATE or held_back) and _wait_for == ""`.
-- **`reset()`:** `_wait_for = ""`, `_wait_since = -1` beside `yield_to = ""`.
-- **Traffic:** `wait` in DEFAULT_OFF; `--traffic-on=wait` turns it on; while on, Traffic._chain_native sets native_drive false until
-  the twin lands (drop that clause when it does).
+Every line, as the filed judges printed them (`references/round41/manoeuvre/barq3-builder0-f6d9d7b1b/`: judge-*.txt, meta.txt,
+the four bridge-series.jsonl, `bridge-paired-per-run.txt` with all 144 pairs, group-table.txt, barq3.sh). Both arms
+`--brains-off=native_drive`; ON = `--traffic-on=wait`; n = 72 runs an arm a tree on the bridge, 48 paired runs on the group order, 18
+paired fights.
 
-### v4 reads (f7fd7819a; `~/overnight-manoeuvre/r41/v4labs/`, builder0 light, native for the bridge, GDScript both arms for the group order)
+- **Deciding, main tree (bridge-pooled 9025-9036 x ticks 1/8/15 x both sides):** OFF 72/72, ON 72/72; pooled rim 32.7 -> 25.3 s
+  (**-23 %, PASSES <= 26.2 = 0.8 x OFF**); deck jam 53.8 -> 41.5 s; worst single crew 3.0 -> 1.5 s; mean arrival 36.2 -> 35.0 s; runs with a
+  crew over 3 s 0 -> 0. **Paired per-run mean -0.10 s, se 0.09 = -1.2 se: FAILS the "< 0 by >= 2 se" half.** Per run: ON better in 37,
+  worse in 21, unchanged in 14 (sd of the difference 0.74 s).
+- **Deciding, overrides tree (balance's v2 stats, 368aa08dd):** OFF 72/72, **ON 71/72**: locks green seed 9030 tick 15 has Green_S_3 at the
+  rim 4.2 s (OFF: Green_S_4 0.3 s) = bridge-pooled's own hard line broken; pooled rim 26.7 -> 25.2 s (**-6 %, FAILS <= 21.4**); paired mean
+  -0.02 s, se 0.09 (**-0.2 se, FAILS**); deck jam 58.4 -> 47.6; worst crew 2.2 -> 4.2 s; arrival 32.9 -> 32.8; over-3 s runs 0 -> 1. Per
+  run: better 32, worse 25, unchanged 15.
+- **Group-order guards (q3_judge, 48 paired runs crossing/locks/sumps/terminus x 9037-9048, crew headings):** **FAIL G5** every-squad-in
+  mean 78.4 -> 82.5 s (never-in reads as 90; line <= 82.0 = base + 1.645 x se 2.21); **PASS G6** never-in squads a run 1.08 -> 1.29 (line
+  <= 1.34, se 0.157), never-in runs 25 -> 29; **FAIL G7** friendly contact ticks 692,784 -> 761,129 (+9.9 %; line <= 727,423). Reported:
+  jam-seconds 41,005 -> 44,983 (+9.7 %); the rule a run (mean): 1,010 waits, 7,550 queued crew-ticks, 4 time-outs, longest 24.4 s (a
+  counter artefact, see known issues). Per cell: locks lost 5 of 12 runs to never-in and won 3 back; sumps 5 lost / 1 won; terminus 2
+  lost / 1 won; crossing never-in in all 12 both arms (squads 36 -> 35).
+- **Fight guards (follow_judge --on-arm=wait, 18 paired wedge fights locks/terminus/sumps x 9037-9042):** **FAIL G1** deaths in give-ways
+  32 -> 55 (line +22.1 = max(2 paired se x n, 3)); PASS G2 stuck deaths 116 -> 141 (line +31.4); PASS G3 friendly contact ticks 415,690 ->
+  378,664 (line <= 457,259); PASS G4 kill share Green 0.609 -> 0.593 (worst move 0.015, line 0.03), deaths 816 -> 805 (line +/- 41).
+  Reported, not judged: D moving-stuck seconds 282.8 -> 232.8 (-17.7 %; paired -2.78 s a fight, se 8.08 = -0.3 se); long episodes 39 /
+  414 s -> 28 / 237 s; follow_judge's own B lines on the group rows read never-in runs 25 -> 29, all-in median +8.3 s and last squad
+  +8.9 s over the 14 runs in both arms.
+- **Verdict: FAIL.** Both deciding lines fail (main on significance, overrides on all of ratio, significance and the 18/18 hard line), and
+  two of three group-order guards plus one fight guard fail with them. Per the bar as filed: `wait` stays in `Traffic.DEFAULT_OFF`, no
+  re-run on these seeds, no amendment; R41.6's (c) is the orchestrator's call. The C++ twin request below is moot (native's pair
+  `pair/native-wait` built, unmerged).
 
-| Read | OFF -> v4 ON |
-|---|---|
-| bridge, overrides tree (225087f27) | **17/18 -> 18/18**; pooled rim 14.2 -> 9.8 s (-31 %; paired -0.24 s a run, se 0.30, -0.8 se); deck jam 17.1 -> 10.4; worst crew 5.1 -> 1.5; arrival 34.9 -> 36.7 |
-| bridge, main (f7fd7819a) | 18/18 -> 18/18; pooled rim 8.1 -> **10.7 s (+32 %**; +0.14 s a run, se 0.20); deck jam 7.5 -> 9.7; worst 1.5 -> 2.4; arrival 36.6 -> 37.8 |
-| group order, 16 paired cells (7001-7004 crew) | jam-seconds 13,365 -> 14,015 (+4.9 %; +41 s a run, se 46, 0.9 se); all-in 80.4 -> 82.3 (+1.9 s, se 2.7); never-in 10 -> 10; contacts -1.3 %; waits 1,129 a run (17 >= 2 s), turning 57k / waiting 48k crew-ticks |
+**The trace of the failing line (main tree, significance half).** The pair fails on spread, not on one crew. ON removes rim time in 37 runs,
+the biggest -2.6 s at locks green seed 9036 tick 15 (OFF: Green_S_1 sat 3.0 s at the rim, the drill's worst; ON: Green_S_4 0.4 s) and
+-2.3 s at locks rust 9035 t15 (Rust_S_1 2.3 -> 0.2); it adds rim time in 21 runs, by 0.2-1.9 s. The worst of those is **locks green seed
+9035 tick 15**: OFF had Green_S_2 at the rim 0.3 s with the deck jammed 0.9 s; with the wait ON Green_S_2 stood at the rim 1.5 s and
+Green_S_4 0.5 s behind it while the deck jam rose to 3.2 s: the reading is that the crew ahead on the deck was slow, and a rim crew that
+would have slotted onto the deck beside it under ORCA instead held its lane behind it (the rule's turning-leader key). Next worst: locks
+rust 9030 t15 (0.0 -> 1.8 s: Rust_S_3 0.9, Rust_S_2 0.6; deck 0.0 -> 1.4), locks green 9033 t8 (0.3 -> 1.8: Green_S_4 1.4; deck 0.8 ->
+1.0), locks green 9029 t1 (0.0 -> 1.1: Green_S_1 0.8), locks rust 9025 t15 (0.3 -> 1.3: Rust_S_4 0.8), locks rust 9029 t8 (0.2 -> 1.2:
+Rust_S_2 1.2), locks rust 9028 t1 (0.0 -> 0.9: Rust_S_4 0.9), locks rust 9027 t15 (0.9 -> 1.7), locks green 9029 t15 (0.6 -> 1.3); the
+other 12 worse runs are 0.2-0.5 s. The -23 % pooled gain is carried by the few large OFF rims (3.0, 2.5, 1.5, 1.2 s) that ON removes;
+most runs move +/- 0.3 s either way, so with sd 0.74 s over 72 runs the mean would have needed -0.18 s to clear 2 se and the rule's
+typical effect is about half that. The one over-3 s crew of the whole series (overrides tree, locks green 9030 t15, Green_S_3 4.2 s with
+ON; OFF 0.3 s) cannot be attributed from the drill's rows (no per-crew wait trace in bridge-series.jsonl); a wait is capped at 5 s, so a
+single capped wait at the rim fits it, as does a rim queue behind one.
 
-**The wait family's table so far (bridge rim pooled, 18 runs; group order 16 paired cells):**
-
-| Variant | Keys | Overrides bridge | Main bridge | Group order jam-s |
-|---|---|---|---|---|
-| v1 (a553f85b0) | crossing + same_way + turning(slow) + chain | 17/18 -> 18/18, rim 14.2 -> 1.3, arrival 34.9 -> 32.7 | not read | +8.8 % (2.4 se) |
-| v2 (c8e329b23) | crossing + turning(slow) + chain | read running (`bridgev2/`) | 18/18, rim 8.1 -> 3.4, deck 7.5 -> 16.2 | +7.3 % (1.9 se) |
-| v3 (aaac5c133) | v2 + lock-on, lane-exit, tie-break | not read | not read | +8.5 % (2.3 se) |
-| v4 (f7fd7819a) | turning leader (moving or slow) + chain | 17/18 -> 18/18, rim 14.2 -> 9.8 | 18/18, rim 8.1 -> 10.7 (+32 %) | +4.9 % (0.9 se) |
-
-Reading: every variant clears the overrides' failing run (the CP41.1 gate as a hard guard); the deciding pooled-rim line on main is
-met by v2's crosser key (-58 %) and failed by v4's turning key (+32 %): at the deck mouth the leader swinging onto the deck reads as a
-CROSSER by its velocity before its nose is 30 deg off its next leg, so v4 fires late. The group order is neutral-to-worse for all
-four (v4 the mildest). The wait family trades the bridge for his group order; the orchestrator rules (message sent 04:50).
+**Known issue found by the counters (no fix while OFF):** `wait_longest` 24.4 s against a 5 s cap. `_wait` runs only from `_avoid`; a crew
+that leaves the avoidance path with `_wait_for` set (stopped on an order, firing) keeps its `_wait_since`, so the cap trips, and
+`_wait_end` records the gap, on its next `_avoid` call, and the drive's ask gate (`_wait_for == ""`) stays shut in between. The right form
+is `_wait_end()` from every drive phase that is not `_avoid` (or a tick stamp the cap reads). Noted for whoever revives the rule.
 
 ### Bar Q3 (DRAFT, not filed; filed the minute v4's dev reads justify it, BEFORE any number on 9025-9048)
 

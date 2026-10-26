@@ -1,0 +1,4 @@
+arm             runs     pass    rim s  deck jam    worst   arrival over 3 s
+main-off          72    72/72     32.7      53.8      3.0      36.2        0
+main-on           72    72/72     25.3      41.5      1.5      35.0        0
+paired main-off -> main-on over 72 runs: rim 32.7 -> 25.3 s (-23 %; line <= 26.2 = 0.8 x OFF), per-run mean -0.10 s, se 0.09 (-1.2 se; line <= -2 se)
