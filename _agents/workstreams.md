@@ -279,6 +279,13 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   the dev block 8501-8540 INCLUDING a per-faction G3 length read; then file Bar B2s v2 (same lines and guards as B2s) before any number
   on the fresh block 8801-8840 + 8901-8940, one frozen ARM tree (R40.13), builder2. Round 40 closes around it; v2 carries into round 41
   if it is not judged first.
+- **R40.20 (2026-10-25 ~19:00) v2 ARM d385cd308 red on bridge-pooled; cause is traffic, routed to manoeuvre.** builder0 `make check
+  exited 2`, 3212/0, sim-baseline (expected) + bridge-pooled 17/18 (rust t15 s2: one crew at the rim 5.4 s v the 3 s bar, all 4 crossed;
+  base and c5r2 pass). Balance's trace (balance/bridge-trace 5a233f42b, builder0 light): Rust_S_3's slot goal re-dealt 3x on the
+  approach, wedged at the deck mouth, yields and backs 7 m, wedged again at the far end; native drive arrived 48.9 s v the laptop's
+  GDScript drive 31.0 s (rim 0). **Ruled:** bridge-pooled is not loosened or re-seeded; manoeuvre owns the fix (symmetric, ON if
+  bridge-pooled is green on main AND under v2's overrides, twin matching). Then v2's ARM is rebuilt on that main; Bar B2s v2's BASE is
+  that main (no number on 8801-8840 + 8901-8940 read yet, so it is the same bar).
 
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
