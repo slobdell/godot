@@ -104,6 +104,22 @@ units are not failing to get round; the IFV's share is small even though 72 % of
 hit is small, and 2-6 % of IFVs live, round 40). What a slower turret / hull can still buy: fewer tank hits a minute (the tank
 can't track a crossing target), and more time for the mixed army's artillery; the t50 / h25 / th arms say how much.
 
+**B5 ROUND 1 DONE (2026-10-26 06:36 PDT; 8f2643375 + overrides, builder2 J24, dev 9401-9410, mono line both teams, 400 fights an
+arm, 0 attempts lost, 4 h for 4 arms).** All-tank army's win share v its own faction's mixed deal, paired v base (85 %, se 3):
+| arm (tank levers) | all | condemned | gangs | law | syndicate | median length | direct fire on tanks side+rear |
+|---|---|---|---|---|---|---|---|
+| base | 85 % | 77 | 78 | 92 | 92 | 179 s | 64.6 % |
+| t50 turret x0.5 | 80 % (**-5, se 1**) | -7 (2) | -3 (5) | -7 (2) | -4 (2) | +8 % | +1.1 (0.7) |
+| h25 hull speed + turn x0.75 | 81 % (-4, se 3) | -2 (7) | -3 (6) | -6 (3) | -4 (3) | -1 % | **-2.9 (0.6)** |
+| th both | 80 % (-5, se 2) | -5 (5) | -1 (3) | -5 (4) | **-9 (3)** | +3 % | -2.5 (0.6) |
+**Verdict:** each of his levers buys ~5 of the ~45 points to his target (35-40 %), and both together buy no more than the turret
+alone (syndicate is the one faction where they add: -9). The turret lever works by the tank missing crossing targets (flank
+share unchanged); the hull lever costs flanking (a slow tank crawls front-first). **Pick: t50 (the turret alone)**: as much as
+th, one lever for him to feel, no flanking cost. **Round 2's combined arm is therefore `t50_ifv15`** (the orchestrator's rule:
+th did not beat t50 by more than its se). Round 2 (ifv15, then t50_ifv15) started 06:36 on the same seeds; round 3 (the blob +
+turtle lines for base / t50 / t50_ifv15 on 9411-9420, 200 fights an arm, Bar B5's guards as a dev screen) is queued behind it
+(`~/balance-runs/b5-r3.sh`; stop by PID if Bar B2s v2's ARM goes green first).
+
 **B5 round 1, t50 arm read (tank turret traverse x0.5; 8f2643375 + overrides, builder2 J24, 9401-9410, 400 fights, paired):**
 mono-tank wins 85 -> **80 % (-5, se 1)**: condemned 77 -> 70 (-7, se 2), gangs 78 -> 75 (-3, se 5), law 92 -> 85 (-7, se 2),
 syndicate 92 -> 88 (-4, se 2). Median length +8 % (syndicate +37 %: 94 -> 128 s; the others +0-2 %). Faces unchanged: direct fire
