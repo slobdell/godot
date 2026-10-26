@@ -1,0 +1,9 @@
+{
+ "name": "b8_grt_dmg",
+ "why": "B8: Law's Gas Rocket Truck damage +15 %",
+ "weapons": {
+  "gas_rockets": {
+   "damage": 63.25
+  }
+ }
+}

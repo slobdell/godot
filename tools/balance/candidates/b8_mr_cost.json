@@ -1,0 +1,9 @@
+{
+ "name": "b8_mr_cost",
+ "why": "B8: Syndicate's Missile Ring cost -15 %",
+ "units": {
+  "syn_artillery": {
+   "cost": 323
+  }
+ }
+}

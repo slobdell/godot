@@ -1,0 +1,11 @@
+{
+ "name": "b8_mr_both",
+ "why": "B8: Missile Ring cost -15 % and hull and shield +15 % (armour unchanged: a thicker rear fails the from-behind check)",
+ "units": {
+  "syn_artillery": {
+   "cost": 323,
+   "max_health": 253,
+   "max_shield": 184
+  }
+ }
+}
