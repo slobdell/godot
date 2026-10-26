@@ -268,6 +268,19 @@ Filed: `references/round41/manoeuvre/reversing-report/` (the table, and the 64-r
   not moving away eases off instead of pressing (ORCA's answer untouched), judged on contact-ticks and shoved-ticks; not built
   this round without a ruling.
 
+### Q5 no pressing (R41.8): BUILT OFF on the side branch (a45c0b953); lab 1 queued on 7009-7012
+
+`--traffic-on=nopush` (DEFAULT_OFF): in `Movement.drive`, after ORCA's pace and the give-way block, a crew whose hull touches a
+friend whose centre is forward of its own and whose speed along its nose is not more than NOPUSH_AWAY_MPS = 0.3 above its own
+takes pace 0 (forward throttle 0) while the contact lasts and for NOPUSH_HOLD_TICKS = 15 after; the steer point, asks, give-ways
+and right-of-way are as today; reverse orders exempt. Members `_nopush_for`, `_nopush_until` (declared last; exec_fields lines
+requested of native via the orchestrator). Counters nopush_ticks / nopush_episodes (route_arms, JAM_RUN). ON runs the GDScript
+drive until twinned. `tests/test_traffic_nopush.gd` 3/0 (laptop NATIVE=off): into a parked friend's tail, pressing ticks while
+touching 13 -> 1. **Lab 1** (`~/overnight-manoeuvre/r41/q5lab1/`): his group order, crossing / locks / sumps / terminus x
+7009-7012 crew, main v nopush, both GDScript drive, builder0 light J4 (one lane; queued behind the bar series). Read: contact ticks,
+shoved ticks (the reverse attribution), all-in, never-in; the orchestrator's risk to watch: a pusher that never pushes never clears
+a stalled friend (never-in, all-in). No bar without the read; bar seeds from the orchestrator.
+
 ### M1 v3 (stretch): BUILT OFF on the side branch wip/manoeuvre-m1v3 (9087f3b12); dev lab running
 
 While Bar Q3's tree is frozen, M1 v3 lives in the side worktree `../godot-manoeuvre-m1` (branch `wip/manoeuvre-m1v3`, off
