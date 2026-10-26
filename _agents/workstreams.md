@@ -101,6 +101,22 @@ another project's workers (plane_maker): never touch processes you didn't start.
   reported: each faction's share, fires (expected 320/320 for firing factions). Expected before numbers: condemned ~47, gangs ~52, law
   ~95, syndicate ~87 (pooled ~70: the pooled line would fail on B7 alone). A pass ships ON (he hears it; his veto stands).
 
+- **Bar E1, the attack order gets a clear shot (engage; FILED b37e7f4a4 / docs ab7269d4f, 2026-10-26 ~15:50, before any number on
+  9601-9648).** Switch `--attack-shot` (OFF; ON on a pass): the situation carries a per-member shot read (cover map; 3.7 lines a plan
+  tick in the probe); `_engage` gives `attack` only with a shot, else `FiringPosition` (pure) -> a `move` to the spot naming the target
+  (a move, not attack_move: under attack-move the brain fights a team-visible target from where it stands, E1's ticks 6-470); the
+  R42.2 branch in `_act` ENGAGE (own line from clear_line). HUD (C42.6): NO LINE OF FIRE standing, nothing while driving for a shot,
+  NOT FIRING only with a clear shot. Quick gate green builder0 7322318a3 (169/0). His case replayed (laptop): OFF 39.8 of 40 s still,
+  no hit; ON drives round in 1.5 s and fires from 17.8 m 0.8 s after the order. Dev read (laptop, b37e7f4a4, 7001-7012, 60 s, n 12, not
+  a number): stuck crew-seconds 314.9 -> 29.9 (paired -23.8, se 10.0); first hit 9.0 -> 3.8 s; deaths 7 = 7; dither 0. **Deciding**
+  (`make engage-bar`, builder0 light, 9601-9624): stuck crew-seconds ON <= 0.25 x OFF AND paired mean < 0 by >= 2 se; first hit ON < OFF
+  by >= 2 se. **Guards (filed first):** exposure deaths ON <= OFF + max(1.645 se, 2 crews); all deaths reported; spots never reached,
+  dither (cap 2.0) and line flips reported; fight lines G1-G4 = guard-run kind none, 24 x 600 s on locks, 9625-9648, kills / losses /
+  length / kill ratio each within OFF +/- 1.645 paired se; G5 no missing result; sim-baseline rows that move listed for adoption; the
+  whole suite ON (C31.1) before the series; a cost line. Could break: a crew leaving standoff dies in the open; an unreachable spot or a
+  corner flicker oscillates; CPU fights change; baseline rows move. Known, outside the grant: under an attack order a crew can pick
+  SUPPRESS and stand in band with no line (7001 ON: 7.8 s into the container); the stuck line counts it.
+
 _(filed bars go here, before their numbers)_
 
 ## Rulings (round 42)
@@ -145,6 +161,12 @@ _(filed bars go here, before their numbers)_
   brief, with "never on screen" counted as 20 s in the latency line (so a mean and se exist; the never count reported beside), the
   deciding workload = ambush (all lanes, 55 m) + his retreat, the rear lane and the retreat read separately as well as pooled; the
   reversal guard is against this baseline (ARM <= BASE + 1/min). K4.2 built OFF; two read-only lines in skirmish_mode.gd (C42.3).
+- **R42.6 (2026-10-26 ~15:55) Bar E1 recorded; builder2 queue; the SUPPRESS seam pre-registered.** Engage's fight guards (48 x 600 s,
+  J8, ~30 min) run on builder2 behind balance's B8 dev screen (one judged series per builder, C42.1: `tools/builder_checks.sh
+  --wait-below 1`; balance says when its screen ends); the deciding series on builder0 light after the ON check reads green. Decided
+  before any bar number: if the bar's stuck crew-seconds ON are mostly SUPPRESS (a crew standing in band with no line), that is a
+  real result and the SUPPRESS seam (the same own-line guard, `_act` SUPPRESS) is granted on the same terms as R42.2 for a v2; the
+  `plan_lay` reserve stays second.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
