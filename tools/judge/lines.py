@@ -731,3 +731,8 @@ import lines_r38  # noqa: E402
 import lines_r39  # noqa: E402
 
 LINES += lines_r37.LINES + lines_r38.LINES + lines_r39.LINES
+
+# ---------------------------------------------------------------- round 40 (round 40 native, close step 5b) ---------------
+import lines_r40  # noqa: E402  (the same fields)
+
+LINES += lines_r40.LINES
