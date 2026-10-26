@@ -73,8 +73,14 @@ func _after_order(units: Array) -> void:
 			_crew[n] = {"nose_off_deg": -1.0, "leg": PackedVector2Array(), "blocked": 0, "yielding": 0, "slow": 0, "turn_s": -1.0}
 
 
+## O2: a top-down shot DEPART_SHOT_S after the click (with `--probe-shots`): who set off first.
+const DEPART_SHOT_S := 4
+
+
 func _watch_extra() -> void:
 	var since := _match.tick - _order_tick
+	if since == DEPART_SHOT_S * SimClock.TICK_RATE:
+		await _shots("depart_%ds" % DEPART_SHOT_S)
 	for squad: Dictionary in _squads:
 		var squad_in := int(squad["arrived_tick"]) >= 0
 		for n: String in squad["units"]:
