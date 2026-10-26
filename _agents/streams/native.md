@@ -54,3 +54,23 @@ as bars are filed -> spare: builder0 test-time read.
   copyback_verify.sh rewrites any `host:~/x` source to `host:x`. Test: a stub rsync on PATH that fails `~` + --files-from the same way
   runs the re-copy branch (32/0 with the fix, 29/3 without). `make remote T=shell-tools-test` exited 0 and `make quick-remote` exited 0
   on bfd033228 (builder0). Full check: running on builder0 (result below when it lands).
+- **N3 scaffold: 7a1cd1227.** `tools/judge/lines_r41.py` (empty `LINES`, same fields as lines_r40) wired into `tools/judge/lines.py`
+  (537 lines load). Lines are added as round 41's verdicts land.
+- **N4 (spare, REPORT ONLY): what dominates a builder0 full check, and one proposal.**
+  *Read:* main's last full check on builder0 (`~/tank_squad/godot/build/check/{started,done}` mtimes, 2026-10-26 01:20, main
+  c36217f79-era tree): wall **2,208 s**. `lint` **715 s** (start +14 to +729), then `test` **1,479 s** (+729 to +2,208); every other
+  target ran inside test's shadow (native-verify-scenarios 385, ai-scenarios-check 376, remote-guard-test 219, bridge-pooled 192,
+  announcer-check 152, web-smoke 143, audio-check 120; the rest <= 44 s). **Critical path = lint + test = 2,194 s of 2,208.** Lint gates
+  every target by design (`mk/core.mk:582`, `_cp-X: | _cp-lint`), so for 12 minutes builder0 runs only lint's 6 checkers.
+  *Why lint is slow:* 1,212 files, one Godot `--check-only` process each at -P6 = ~3.5 s a file. The cost is each process re-loading
+  the file's dependency graph: builder0, load ~5.7, single runs: `steering.gd` 0.26 s / 103 MB, `movement.gd` 4.40 s / 493 MB,
+  `match.gd` 4.57 s / 470 MB, a bare `--quit` 5.3 s.
+  *Measured alternative:* one Godot process that `ResourceLoader.load`s all 1,212 scripts (scratch loader, not committed; builder0,
+  load 5.9, the round-40 godot-native-score tree): **13.9 s wall, 495 MB peak**. Mutation check (same run + three planted files): a
+  syntax error, the file that preloads it, and a typed-assignment error each print `SCRIPT ERROR: Parse Error ... (res://<file>:<line>)`.
+  *Proposal (core.mk is not mine; whoever owns check decides):* add `lint-fast` (that one-process load, ~15 s, fails on any `Parse
+  Error`/`SCRIPT ERROR` not in the baseline) as THE gate, and make the per-file `lint` an ordinary check target running beside `test`.
+  Coverage is unchanged (per-file lint still runs and judges exactly as now; the gate still stops 25 targets running into a parse
+  error). Expected: test starts ~700 s earlier, wall ~2,208 -> ~1,500-1,600 s (-25-30 %) at that load; lint's 6 checkers + test x5
+  on 12 threads will slow test somewhat, so the bar is an A/B of 3 pairs on builder0 like T1's (round 9). Unknowns: the 8 baselined
+  lint artefacts are per-file findings and may not appear in a one-process load (the gate needs its own small baseline, or none).
