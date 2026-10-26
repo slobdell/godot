@@ -284,6 +284,11 @@ const PACE_OMEGA := 12.0
 ## An automatic move's top speed, in heights of the ground in view per second at the focus (K3: an uncapped spring
 ## crossed a whole screen in 0.7 s on a long re-frame: smooth, but not cinematic, and 12 frames over SNAP_PX).
 const GLIDE_SCREENS_PER_S := 0.6
+## K3's dev knobs (`--camera-glide-screens=`, `--camera-hand-pace=`, `--camera-aim-hold=off`), read once in _ready: the
+## bar runs at the constants.
+var screens_per_s := GLIDE_SCREENS_PER_S
+var hand_pace := HAND_PACE
+var aim_hold := true
 ## The building clearance: how fast it eases toward more clearance (fast: the camera must not sit in a wall), and back.
 const SOLID_IN_OMEGA := 22.0
 const SOLID_OUT_OMEGA := 4.0
@@ -323,7 +328,11 @@ func _ready() -> void:
 	# (combat's 30 Hz tick) must not also smooth it, or it trails a tick behind its own targets.
 	camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	RtsCamera.load_perimeter()  # round 7: the arena's own wall shape, when it has one
-	glide = LaunchFlags.from_environment().text("camera-glide", "on") != "off"
+	var flags := LaunchFlags.from_environment()
+	glide = flags.text("camera-glide", "on") != "off"
+	screens_per_s = float(flags.text("camera-glide-screens", str(GLIDE_SCREENS_PER_S)))
+	hand_pace = float(flags.text("camera-hand-pace", str(HAND_PACE)))
+	aim_hold = flags.text("camera-aim-hold", "on") != "off"
 	if glide:
 		CameraShake.pivot = cursor_ground
 	snap()
@@ -421,7 +430,7 @@ func _move_shown(delta: float) -> void:
 ## speed-limited, and while he aims it coasts to a stop (its goal goes on being worked out; the view waits for him).
 func _glide(delta: float) -> void:
 	var weight := 1.0 - exp(-SMOOTHING * delta)
-	var pace_goal := HAND_PACE if _clock - _mouse_moved_at < HAND_MOVING_S else 1.0
+	var pace_goal := hand_pace if _clock - _mouse_moved_at < HAND_MOVING_S else 1.0
 	_pace = pace_goal + (_pace - pace_goal) * exp(-PACE_OMEGA * delta)
 	var before_focus := _shown_focus
 	if RtsCamera.hand_set(wrote["focus"]):
@@ -498,6 +507,8 @@ static func spring(x: Variant, v: Variant, goal: Variant, omega: float, delta: f
 ## and then when it has stopped (DWELL_S) or orders' getter says so (`RtsControls.is_aiming`: the cursor on a unit a
 ## click would pick, an armed order).
 func aiming_now() -> bool:
+	if not aim_hold:
+		return false
 	if _buttons_down != 0:
 		return true
 	var still := _clock - _mouse_moved_at
@@ -510,7 +521,7 @@ func aiming_now() -> bool:
 ## zoom, under round 40's TRACK_SPEED, times the hand's pace.
 func glide_top_speed() -> float:
 	var height := 2.0 * RtsCamera.distance_for(_shown_zoom) * tan(deg_to_rad(fov) / 2.0)
-	return minf(GLIDE_SCREENS_PER_S * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom)) * _pace
+	return minf(screens_per_s * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom)) * _pace
 
 
 ## The ground under the cursor, or null (no cursor seen yet, or sky): CameraShake's pivot while gliding.

@@ -39,6 +39,9 @@ var _overlay: Control
 var _clicked_at := Vector2(-1, -1)
 var _clicked_clock := -10.0
 var _caption := ""
+## Seconds with an enemy the autoplay could aim at on screen (the camera finding the action; K3 v2 line 5's why).
+var _action_s := 0.0
+var _playing := false
 
 
 func _ready() -> void:
@@ -62,6 +65,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_clock += delta
+	if _playing and not _ended and not _aimable().is_empty():
+		_action_s += delta
 	if _overlay != null:
 		_overlay.queue_redraw()
 
@@ -125,6 +130,7 @@ func _run() -> void:
 		rig.yaw_follow = false
 	await _wait(1.0)
 	controls.set_paused(false, "")
+	_playing = true
 	while _clock < _seconds and not _ended:
 		await _select()
 		await _wait(_rng.randf_range(0.3, 0.8))
@@ -145,7 +151,8 @@ func _finish() -> void:
 	var aimed := clicks.filter(func(c: Dictionary) -> bool: return c["kind"] == "attack")
 	var hits := aimed.filter(func(c: Dictionary) -> bool: return bool(c["hit"]))
 	var slip := {"clicks": clicks.size(), "attacks": aimed.size(), "hit": hits.size(), "p50": CameraTrace.quantile(slips, 0.5),
-			"p95": CameraTrace.quantile(slips, 0.95), "max": slips.back() if not slips.is_empty() else 0.0}
+			"p95": CameraTrace.quantile(slips, 0.95), "max": slips.back() if not slips.is_empty() else 0.0,
+			"action_s": snappedf(_action_s, 0.01)}
 	var report := {"seed": _seed, "args": " ".join(OS.get_cmdline_user_args()), "summary": summary, "slip": slip,
 			"clicks": clicks, "events": trace.events}
 	if out_dir != "":
@@ -166,8 +173,8 @@ func _finish() -> void:
 		print("CAMERA_TRACE seed=%d source=%s events=%d per_min=%.2f dv_p50=%.0f dv_max=%.0f snaps=%d reversals=%d px_per_min=%.0f" % [
 				_seed, source, row["events"], row["per_min"], row["dv_p50"], row["dv_max"], row["snaps"], row["reversals"],
 				row["px_per_min"]])
-	print("CAMERA_SLIP seed=%d clicks=%d attacks=%d hit=%d p50=%.1f p95=%.1f max=%.1f" % [_seed, slip["clicks"], slip["attacks"],
-			slip["hit"], slip["p50"], slip["p95"], slip["max"]])
+	print("CAMERA_SLIP seed=%d clicks=%d attacks=%d hit=%d p50=%.1f p95=%.1f max=%.1f action_s=%.1f" % [_seed, slip["clicks"],
+			slip["attacks"], slip["hit"], slip["p50"], slip["p95"], slip["max"], _action_s])
 	print("CAMERA_TRACE_DONE ok=true seed=%d seconds=%.1f frames=%d" % [_seed, summary["seconds"], summary["frames"]])
 
 
@@ -190,6 +197,17 @@ func _select() -> void:
 
 ## Aim at an enemy on screen and right-click it. False when no enemy is on screen.
 func _attack() -> bool:
+	var choices := _aimable()
+	if choices.is_empty() or controls.selection.units.is_empty():
+		return false
+	var target: Tank = choices[_rng.randi_range(0, choices.size() - 1)]
+	var aim := rig.camera.unproject_position(Shown.at(target))
+	await _click_after_aim(aim, "attack", target)
+	return true
+
+
+## The enemies he could aim at now: seen, alive, on screen inside a margin and above the HUD.
+func _aimable() -> Array:
 	var size := get_viewport().get_visible_rect().size
 	var floor_y := size.y * 0.72
 	if rig.hud_bottom.is_valid():
@@ -206,12 +224,7 @@ func _attack() -> bool:
 		var at := rig.camera.unproject_position(Shown.at(tank))
 		if at.x > 60.0 and at.x < size.x - 60.0 and at.y > 60.0 and at.y < floor_y:
 			choices.append(tank)
-	if choices.is_empty() or controls.selection.units.is_empty():
-		return false
-	var target: Tank = choices[_rng.randi_range(0, choices.size() - 1)]
-	var aim := rig.camera.unproject_position(Shown.at(target))
-	await _click_after_aim(aim, "attack", target)
-	return true
+	return choices
 
 
 ## A move order up-screen of the selection, where a player sends an army.
