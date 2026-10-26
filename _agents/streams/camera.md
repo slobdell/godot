@@ -59,7 +59,7 @@ The clip, when K3 has one.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 **2026-10-26: K1, K2, K3 DONE; waiting on the lead's eye (the clip). Bar K3 v2 PASSED every line on fresh seeds 9513-9548
-(8a2974e85). `--camera-glide` ships ON, `--camera-glide=off` is round 40. Full check: see "Green" below.**
+(8a2974e85). `--camera-glide` ships ON, `--camera-glide=off` is round 40. Green: d4a070c69 (builder2).**
 
 ### Report (for the orchestrator and the lead)
 **What he gets (ON):** every automatic camera move (vision frame, yaw follow, order tracking, zoom cap, building clearance)
@@ -92,7 +92,9 @@ and `game/theme/fx/camera_shake.gd` (owned; the pivot). New: `game/camera/camera
 `mk/camera.mk` (`camera-trace`, `camera-trace-windowed`, `camera-clip`), `tests/camera/camera_report.py`,
 `tests/test_camera_trace.gd`, `tests/test_camera_glide.gd`. Dev-only flags: `--camera-glide-screens`, `--camera-hand-pace`,
 `--camera-aim-hold=off`, `--camera-leash`, `--camera-glide-yaw`, `--camera-glide-omega` (the bar runs at the constants).
-**Green:** (pending: the full check of the last commit).
+**Green: d4a070c69** (`make gcp-remote T=check` on builder2: `>> remote: make check exited 0`, 3261 passed, 0 failed; 25 passed,
+2 NOT JUDGED for the machine: perf-judge (builder2 is not a judging machine) and scenario_perf (loaded): judge on builder0). The
+commit after it only edits this Status.
 
 ### K2 dev read (dev seeds 7001-7006, NEVER a bar; d6f0da32e's code; builder0 headless 1920x1080 60 fps)
 Autoplay now carries the cursor onto the target over 0.3 s (a hand's reach) before the 0.5 s aim, both arms.
