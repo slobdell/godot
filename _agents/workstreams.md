@@ -198,6 +198,13 @@ round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9524 camera K3 v2. Dev bl
   attacks/min 9.8 -> 7.9, 4 ON seeds hit the 150 s cap, the s9501 clip never shows an enemy in 76 s. Fix: aiming = a held button, or
   is_aiming while the hand moved in 1.5 s; a click ends the aim; automatic moves capped at 0.6 screen heights/s. Bar v2 adds: held <= 25 %
   of match time and attacks/min >= 90 % of BASE; lines 1-4 unamended; fresh seeds 9513-9524.
+- **R41.12 (2026-10-26 ~08:00) B5 round 2 read; deal arm granted.** ifv15 (IFV hp/shield/front+side armour +15 %, cost -15 %; builder2,
+  9401-9410, 400 mono fights, paired): all-tanks 85 -> 82 % (-2, se 2; gangs +2: the Gun Truck's pen 2.5 gets through nowhere); IFV share
+  of tank damage 10 -> 12 %. Autocannon (Condemned and Law IFVs only) pen 5 -> 7, static: tank rear kill 13 -> 11 s, side 23 -> 17, front
+  187 -> 44 (the front stops being a wall); IFV v IFV head-on ~3x bloodier. GRANT to balance: one line in `game/modes/skirmish_mode.gd`
+  demo_flags keeps any explicit `cpu:<archetype>` (measurement only; default path unchanged, with a test). Order: the deal arm (all-tanks
+  v the faction's anti-armour archetype: condemned siege, gangs gang_hail, law law_dragnet, syndicate standoff, same money) before pen7
+  (autocannon 7, pulse 7, twin MG 4; dev only, outside R40.1).
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
