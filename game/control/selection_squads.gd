@@ -532,6 +532,25 @@ static func _lay_side(blocks: Array, flat_click: Vector3, ahead: Vector3, at_cli
 
 ## G1 v6 (round 40): `--group-sides=both` lays squads standing past the click on their own side (OFF until its bar).
 static var SIDES_BOTH := OS.get_cmdline_user_args().has("--group-sides=both")
+## G1 v8 (round 41, the shots of Bar G1 v7's dev read): `--group-column-toward=on` refuses a column that gives any squad a
+## place more than COLUMN_AWAY_M farther from the click than it stands. His click on Terminus (-29.3, 85.8), 30 m from the
+## body's middle: the column laid back along the approach ran east through the squads themselves, squad 5's place 103 m from
+## the click (15 m farther than it stood) and three squads "in" without moving -- he would see them ignore the click.
+static var COLUMN_TOWARD := OS.get_cmdline_user_args().has("--group-column-toward=on")
+const COLUMN_AWAY_M := 10.0
+## Measurement: columns refused so.
+static var columns_refused_away := 0
+
+
+## Whether `laid` (one place a squad, in `blocks`' order) sends some squad more than COLUMN_AWAY_M farther from `click` than
+## its block's centre stands. Pure.
+static func column_sends_away(laid: Array, blocks: Array, click: Vector3) -> bool:
+	for i in mini(laid.size(), blocks.size()):
+		var at: Vector3 = (blocks[i] as Dictionary)["center"]
+		var place: Vector3 = laid[i]
+		if Vector2(place.x - click.x, place.z - click.z).length() > Vector2(at.x - click.x, at.z - click.z).length() + COLUMN_AWAY_M:
+			return true
+	return false
 ## G1 v6: how far past the click (along the approach) a squad's centre stands to count as on the far side.
 const FAR_SIDE_M := 15.0
 ## Measurement (G1 v6): columns laid on both sides of the click.

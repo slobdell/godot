@@ -140,6 +140,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - **Known risk:** a squad whose own place sits inside a squad-ahead's corridor start waits for it to arrive; the 20 s
     cap bounds it. A waiting squad keeps its old task; in his case (parked or holding) it stands still.
   - **Plus:** paired top-down shots of the across click on terminus, main v queue, looked at. A pass ships ON.
+- **WITHDRAWN UNREAD (2026-10-26): Bar G1 v7**, replaced by Bar G1 v8 below before any bar number: its plus (the shots of
+  his click, laptop s7007) showed the arm giving 3 of 5 squads places no nearer his click than they stood (squad 5's 103 m
+  from it, 15 m farther than it stood; "in" at 0.1 s without moving). The deciding lines miss it on the open yard. Kept:
 - **Bar G1 v7 TWO SIDES ON T1 (orders, round 41; filed 2026-10-26 before any number on 9101-9112; code ba0d14aab, all
   OFF).** What he would see: select all and click a street; every squad lands in that street, the nearest on it, the
   others stacked back along their own way in, none driving through another's halt, every squad in without a reshuffle.
@@ -162,3 +165,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - **Known risk:** round 40's s3805 squad-1 wedge (R38.44's whole-squad deal on a route's first click). On today's main
     (laptop, s3805, terminus 5 route) it is main that leaves a squad never in (squad 5), and the arm gets all five in.
   - **Plus:** paired top-down shots of his click, main v sides, looked at. A pass ships ON.
+- **Bar G1 v8 TWO SIDES, NEVER AWAY (orders, round 41; filed 2026-10-26 before any number on 9101-9112; code: the commit
+  below, all OFF).** G1 v7 + `--group-column-toward=on`: a column that would give any squad a place > 10 m farther from his
+  click than it stands is refused (today's places stand). What he would see: as G1 v7, and a click beside his army never
+  sends a squad away from it.
+  - **Arm:** `v8:--group-lay=column,--group-rank-shift=half,--group-whole=click,--group-clear=reached,--group-lead=drive,--group-sides=both,--group-column-toward=on`.
+    Base `main:`. Tree, probe, seeds (9101-9112, n 12 a cell), cells and judge (`orders_judge.py g1v4`, unamended) as
+    G1 v7. **Added guard (filed now, before any number):** no squad row's place more than 10 m farther from the click
+    than its start (`toward_m < -10`) in the arm beyond base's count + 2, over all cells.
+  - **Variants read on the dev block 7007-7012: two** (v7's arm; v8). Lab: his click s7007 falls back to main's places;
+    s3805 terminus 5 route keeps the column (all five in).
