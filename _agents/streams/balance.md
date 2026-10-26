@@ -133,14 +133,14 @@ arm: condemned 0.8 -> 1.5, law 0.8 -> 1.15, still 4-8 % alive. Next (running): t
 named archetype at the same money, no stat change):** all **85 -> 73 % (-12, se 3)**; **condemned v `siege`** (2 artillery, 2
 scouts, tank, IFV) **77 -> 47 % (-30, se 10)**, 38 % with the tanks on Green; **gangs v `gang_hail`** (2 artillery, 2 Rat Rods, Gun
 Truck, Tanker) **78 -> 52 % (-26, se 6)**, 40 % on Green; law v `law_dragnet` (3 scouts, artillery, tank, suppressor) 92 -> 93 %
-(+1); syndicate v `syndicate_standoff` (2 Lancers, 2 Spotters, Missile Ring, IFV) 92 -> 99 % (+7, se 3). **What wins is artillery:**
+(+1); syndicate v `syndicate_standoff` (2 Spotter Platforms = its lancer, 2 Skimmers, Missile Ring, Gunship) 92 -> 99 % (+7, se 3). **What wins is artillery:**
 5.1-5.4 points dealt a credit, 94-99 % alive at the end (condemned siege fields 10 artillery a fight v 2.9 in its normal deal).
 The two archetypes that fail are the ones with no artillery weight (law's is three MG scouts; syndicate's Lancers die to the
 Railgun in 30 s). So "a well-mixed army beats tanks" is TRUE today for the artillery-heavy mixes, with no number changed; the
 CPU's seeded deal just rarely fields one, and law / syndicate have none to field. (Detail from the first reads, kept:)
 **Deal arm, in progress (9204009f6, builder2, 9401-9410, paired with base):** gangs v `gang_hail` (2 artillery, 2 Rat Rods, Gun
 Truck, Tanker; no tank): all-tanks **78 -> 52 % (-26, se 6)**, 40 % when the tanks are Green, 64 % when Rust; length +2 %.
-Syndicate v `syndicate_standoff` (2 Lancers, 2 Spotters, Missile Ring, IFV; no tank): all-tanks **92 -> 99 % (+7, se 3)**,
+Syndicate v `syndicate_standoff` (2 Spotter Platforms = its lancer, 2 Skimmers, Missile Ring, Gunship; no tank): all-tanks **92 -> 99 % (+7, se 3)**,
 length +71 %: the Railgun Platform (110 m, 420 a shot) one-shots Lancers (1 % alive, 30 s lived, 0.43 dealt a credit); the
 syndicate's best anti-tank unit IS its tank (1.58 dealt a credit in the base deal), so a no-tank deal loses harder. The deal
 answer is per faction, not one rule. Law and condemned running.
@@ -205,11 +205,11 @@ the tank army wins 47 % (38 % when it attacks from the Green side). Road Gangs "
 Gun Truck squad, a Tanker): 52 % (40 % from Green). That is your target, today. What does it is artillery: a credit of artillery
 puts 5 points of damage on the tanks and 94-99 % of it is still alive at the end; a credit of IFV puts 0.8 and dies. Law and
 Syndicate have no such lineup to field: Law's "dragnet" is three machine-gun scout squads (the tank army still wins 93 %) and
-Syndicate's "standoff" is Lancers, which the Railgun Platform kills in one shot from 110 m (99 %).
+Syndicate's "standoff" is Spotter Platforms (its lancer), which the Railgun Platform kills in one shot from 110 m (99 %).
 *So the recommendation changes:* (1) give every faction an artillery-heavy lineup and make the CPU field it when it faces an
 all-tank army (and show you the same lineup in the garage): no unit changes, the game already has the units; measured at 47-52 %
 for the two factions that have one [Law and Syndicate: barrage arm, pending]. *What you'd do differently in the garage:* bring
-two artillery squads with your tanks instead of IFVs (Condemned: two Mortar Carrier squads, two scout squads for eyes, a tank
+two artillery squads with your tanks instead of IFVs (Condemned: two Artillery squads, two Scout squads for eyes, a Tank
 squad, one IFV squad; Road Gangs: two Catapult squads, two Rat Rod squads, a Gun Truck squad and a Tanker). Keep the scouts: the
 artillery only hits what someone can see. *What the CPU would field against your all-tank army:* the same lineup, so your
 tank rush meets a wall of indirect fire it can't shoot back at until it closes, and the Rat Rods / Lancers open it from the
