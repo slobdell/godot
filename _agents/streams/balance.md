@@ -135,6 +135,16 @@ from the FRONT 44 instead of 187 (the front stops being a wall: the design cost)
 any explicit `cpu:<archetype>` so a `deal` arm (all-tanks v the faction's anti-armour archetype: siege / gang_hail / law_dragnet /
 syndicate_standoff) can run: "change what the mixed army buys" with no stat change. Round 3 (the lines) now waits behind 2c.
 
+**R41.12 (granted ~08:00) at 9204009f6:** `SkirmishMode.demo_flags` keeps any explicit `cpu:<archetype>` (was: only cpu:mono_*);
+`test_tactics_mono_army` pins the default path unchanged. **Deal arm** (`~/balance-runs/b5-deal.sh`, chained before pen7): all-tanks
+v the faction's anti-armour archetype (condemned siege, gangs gang_hail, law law_dragnet, syndicate standoff), same money, mono on
+each team, 9401-9410, paired with base. Expected (before the number): if these win 60 %+, the problem is what the CPU buys, not
+the numbers.
+**Incident (08:05):** the 02:20 dry run of the v2 ARM rebuild ran `search.py apply` from the scratch worktree, but `apply` wrote
+into THIS tree (the script's own ROOT): units.gd / weapons.gd carried fm_c5r2_lawt5 uncommitted 02:20-08:05. No commit carried
+them (adds by path); the series ran guard.sh's clean checkout of 8f2643375; but **the quick-remote "green" on 752f1b266 was of
+that dirty tree and is void**: re-run on 88f9b139b (pending). `apply --tree` now names the checkout and prints it.
+
 **B5 WRITE-UP FOR HIM (draft 07:45; the combined arm's line is filled in when it lands; the orchestrator takes it to him).**
 *What you noticed is real, and it is not about facing.* An army of only tanks beats the same faction's normal mixed army, same
 money, 85 % of the time (CPU v CPU, 5 maps, both sides, 400 fights). Your target was the mixed army winning 60-65 %, so the
