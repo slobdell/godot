@@ -55,3 +55,21 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-26 (session 1, round 42).** Plan: N1 CP42.0 (first; the round's first merge) -> N3 lines_r41 + step 5b while N1's check
+runs -> N2 twins as asked (Q5 nopush, Q6 bridge, any E1 seam) -> N3 lines_r42 as bars are filed -> N4 quiet-box lint-fast read when
+builder0 is quiet -> N5 perf-judge windows when the orchestrator asks -> spare (test-shard time).
+
+- **N1 CP42.0: 75495744b. builder0 full check RUNNING (started ~evening 2026-10-26).** Decision (the brief's first option, one line
+  why): Q5's four members (`_nopush_for` String, `_nopush_until`, `_nopush_since`, `_nopush_press_until` int) go in a new
+  `EXEC_MOVER_LATE_FIELDS` list in `exec_fields.h` instead of declaring them in movement.gd: the merge stays inside native's paths,
+  and manoeuvre's cherry-pick of a45c0b953 + fc8f3697d stays conflict-free. A late member the script doesn't declare is left
+  at its default by the pull (`m_absent` bit), skipped by the scramble and the push, and accepted as absent by
+  `test_the_table_is_the_scripts_members`. Once declared it is checked like any other member. New test
+  `test_a_late_member_is_skipped_until_declared_then_mirrored` (a Movement subclass declares them). Lab (laptop): without Q5,
+  test_native_exec_state 5/0; with Q5 cherry-picked on a scratch branch (clean apply), the table's 191 rows = 191 members,
+  the pull compares 114,600 values with 0 mismatches, scramble + push leaves 0 unrestored, and test_native_exec_state +
+  test_traffic_nopush 8/0. After Q5 is on main for good, the four lines can move up to the core list (cosmetic).
+- **N3:** lines_r41.py + K3 v2 (5), G1 v9 (7), B5 dev (3, `REPORTED (dev)`): 0e93002cd. Step 5b for round 41: 3df630755
+  (`references/round41/native/sizing/`: inventory 563 lines / 271 with noise; table unchanged; note in judging.md). lines_r42.py
+  scaffold: c63142b73. Judge tests 86/86 (laptop).
