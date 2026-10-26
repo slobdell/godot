@@ -63,7 +63,11 @@ B5's read decides whether a missile/penetration question goes back to him.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-26, in progress; started from main 98179d62b = code c36217f79 GREEN builder0, no baseline re-run).**
+**Report (2026-10-26, in progress; started from main 98179d62b = code c36217f79 GREEN builder0, no baseline re-run).
+RUNNING: B5 round 1 on builder2 since 02:34 PDT (8f2643375 + overrides; `~/balance-runs/b5-r1.log`). Probe smoke: 8f2643375 on
+builder0's light lane, one gangs mono fight (terminus 9401, 150 s, th overrides): native on, UNIT_OVERRIDES applied, GUARD_RESULT +
+FACE printed; `search.py faces` reads it (in that one fight the mixed side's artillery did 99 % of the damage on the slow-turret
+tanks, which hit 11 of 19 shots: an anecdote). Branch tip 407876c0a (tools/docs only after 8f2643375); quick-remote on builder0 pending.**
 Plan, in order: B5 plumbing (levers in the harness, a face probe for WHY) -> B5 round 1 on 9401-9410 (base, t50, h25, th; mono
 line, 400 fights an arm, builder2 J24) -> read, expand the lever that moves the share (9411-9440, the lines for the faction table)
 -> name Bar B5's lever and file the bar before any 92xx/93xx number -> Bar B2s v2 when CP41.1 lands (parallel if builder2 is free)
