@@ -109,7 +109,7 @@ round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9548 camera K3 v2 (36 see
   9037-9048 his 5-squad across click, all-in mean and never-in squads each ARM <= BASE + 1.645 se, contacts <= BASE x 1.05 (q3_judge.py);
   fight guards G1-G4 via wedge trace on 9037-9042. Both arms `--brains-off=native_drive`; O2 OFF; four variants labbed on 7001-7004 +
   the 18-run drill noted. Ships ON only with native's twin and bridge-pooled's hard line green.
-- **Bar G1 v9 (orders; FILED 383828c39, 2026-10-26 ~05:30, before any number on 9101-9112).** v8 withdrawn unread: its dev read
+- **Bar G1 v9 (orders; PASSED, ships ON R41.15; FILED 383828c39, 2026-10-26 ~05:30, before any number on 9101-9112).** v8 withdrawn unread: its dev read
   (builder0 light, 099a3f135, native, 7007-7012, n 6) failed places-outside 26 -> 9 v <= 6.5 (refusing the whole column hands squad 5
   main's own place, outside the corridor on all six seeds); guards passed. v9 = `--group-column-toward=stay`: the column stands; only a
   squad it would send > 10 m away keeps the spot it stands on (tail of the street). Judge g1v8 unamended. Three variants dev-read on
@@ -220,6 +220,13 @@ round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9548 camera K3 v2 (36 see
   share ARM >= BASE - 10 points; lines 1-4 unchanged; all read on 9513-9548 (36 seeds an arm, se ~4). Current ON (580e29909) on dev:
   hits 78.6 %, slip p95 32 px, jerks 0.40/min, 0 automatic snaps, held 15.4 %, auto_frame 60 % of BASE, action 44.0 v 55.8 % (-11.8:
   would FAIL the new line too, so the amendment is about power, not passing).
+- **R41.15 (2026-10-26 ~09:30) Bar G1 v9 PASSES every line; G1 ships ON.** builder2, frozen 872dab643, native on, 9101-9112, n 12 a
+  cell, judge g1v8: places outside the corridor 57 -> 8 (<= 14.2); metres outside after in 2281 -> 436 (<= 1140); re-dealt 0 (base 48);
+  guards: friend contacts 13425 -> 10393 (<= 14772.5), probe guards held in 14 cells, yard_open 192/192 identical, places sent away
+  > 10 m 24 -> 0 (<= 26); reported: parked re-deals 376 -> 396. ON in 5693c0b66: seven switches default ON with their own =off escapes,
+  `--group-g1=off` turns all off; five pre-G1 tests pin the switches off. Evidence `references/round41/orders/barg1v9-builder2-872dab643/`.
+  Merge on its builder0 green; perf-judge in a quiet builder0 window before close (an ON flip). His feel question (a click beside his
+  army) goes to him with the shots.
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
