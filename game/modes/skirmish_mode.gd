@@ -283,9 +283,11 @@ static func demo_flags(current: LaunchFlags) -> LaunchFlags:
 	next.values["enemy-faction"] = enemy
 	next.values["player"] = "cpu"
 	next.values["enemy"] = "cpu"
-	# B5 (round 40, balance; R40.7): a measurement's mono army (Army.MONO_PREFIX) named on the command line stays.
+	# B5 (round 40, balance; R40.7): a measurement's mono army (Army.MONO_PREFIX) named on the command line stays. Round 41
+	# (R41.12, balance's deal arm): so does any explicit "cpu:<archetype>" (measurement only; a plain "cpu" or no flag is
+	# still the demo's own seeded deal).
 	for side: String in ["player", "enemy"]:
-		if current.text(side).begins_with("cpu:" + Army.MONO_PREFIX):
+		if current.text(side).begins_with("cpu:"):
 			next.values[side] = current.text(side)
 	next.values["cinematic"] = ""
 	next.values["no-pick-faction"] = ""

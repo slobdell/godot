@@ -31,9 +31,19 @@ func test_mono_is_never_rolled_and_needs_a_faction_role() -> void:
 	assert_true(Army.load_army("cpu:mono_wizard", 1, Units.BASELINE_BUDGET, "law").has("error"), "an unknown role is an error")
 
 
-func test_demo_keeps_a_named_mono_lineup_only() -> void:
+func test_demo_keeps_a_named_cpu_lineup_and_rolls_the_rest() -> void:
 	var flags := LaunchFlags.new()
 	flags.values = {"seed": "8501", "player": "cpu:mono_tank", "enemy": "cpu:law_line"}
 	var demo := SkirmishMode.demo_flags(flags)
 	assert_eq(demo.text("player"), "cpu:mono_tank", "the demo keeps a mono lineup named on the command line")
-	assert_eq(demo.text("enemy"), "cpu", "any other lineup is still the demo's own deal")
+	assert_eq(demo.text("enemy"), "cpu:law_line", "R41.12: and any explicit cpu:<archetype> (a measurement's deal arm)")
+	# The default path is unchanged: no flag, a plain "cpu", or a doctrine file all become the demo's own seeded deal.
+	for given: Variant in [null, "cpu", "res://doctrines/doctrine_gangs.json", "combined_arms"]:
+		var plain := LaunchFlags.new()
+		plain.values = {"seed": "8501"}
+		if given != null:
+			plain.values["player"] = given
+			plain.values["enemy"] = given
+		var rolled := SkirmishMode.demo_flags(plain)
+		assert_eq(rolled.text("player"), "cpu", "the demo's own deal when nothing explicit is named (%s)" % [given])
+		assert_eq(rolled.text("enemy"), "cpu", "both sides (%s)" % [given])
