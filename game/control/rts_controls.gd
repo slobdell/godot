@@ -1688,7 +1688,6 @@ func _depart_later(squad: Dictionary, i: int, squads: Array, depart_rank: Dictio
 	if ground == null or ahead.is_empty():
 		return false
 	var route := Pathing.find_path(ground, _middle_of(squad["units"]), anchors[i])
-	var corridor := DepartureQueue.corridor_of(route)
 	if departures == null:
 		departures = DepartureQueue.new()
 		departures.name = "DepartureQueue"
@@ -1698,7 +1697,25 @@ func _depart_later(squad: Dictionary, i: int, squads: Array, depart_rank: Dictio
 	var arrived_of := func(n: String) -> bool:
 		var owner := elements.of(n) if elements != null else null
 		return owner != null and owner.arrived
-	if not departures.add(units, ahead, corridor, _task_squad.bind(squad, verb, given, false), arrived_of):
+	var release := _task_squad.bind(squad, verb, given, false)
+	if DepartureQueue.MERGE:
+		# v3: one merge per squad ranked ahead whose road this one's meets before the halt area.
+		var mine := DepartureQueue.flat(route)
+		var merges: Array = []
+		for k in squads.size():
+			if not depart_rank.has(k) or int(depart_rank[k]) >= int(depart_rank[i]):
+				continue
+			var lead := _first_living(squads[k]["units"])
+			if lead == null:
+				continue
+			var other := DepartureQueue.flat(Pathing.find_path(lead, _middle_of(squads[k]["units"]), anchors[k]))
+			var merge := DepartureQueue.merge_of(mine, other)
+			if not merge.is_empty():
+				merges.append({"names": (squads[k]["units"] as Array).duplicate(), "road": other,
+						"at_m": merge["at_m"], "mine_m": merge["mine_m"]})
+		if not departures.add_merges(units, merges, release, arrived_of):
+			return false
+	elif not departures.add(units, ahead, DepartureQueue.corridor_of(route), release, arrived_of):
 		return false
 	var command := UnitCommand.make(units, verb, given)
 	command["task"] = true

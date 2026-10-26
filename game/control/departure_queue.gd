@@ -16,10 +16,24 @@ extends Node
 ## `--group-depart=queue` turns it on (OFF: RtsControls dispatches every squad on the click, as before). Deterministic:
 ## it runs on physics ticks, in rank order, on crew positions only.
 
-static var ENABLED := OS.get_cmdline_user_args().has("--group-depart=queue")
+static var ENABLED := OS.get_cmdline_user_args().has("--group-depart=queue") \
+		or OS.get_cmdline_user_args().has("--group-depart=merge")
+## O2 v3 (`--group-depart=merge`): the turn is read where two squads' roads MERGE, not only in the first CORRIDOR_M. Dev
+## reads 1-2 (builder0, 25525980a / 3d35eee6f, 7001-7006): the corridor rule queued 16-18 squads of 120; the jams are
+## where the roads meet mid-way (decks, the shared streets). For each squad ranked ahead (the longer planned drive), the
+## MERGE is the first point of this squad's road (sampled every MERGE_STEP_M, its last MERGE_SKIP_END_M left out: the halt
+## area) within MERGE_M of that squad's road (its last MERGE_SKIP_END_M left out too). This squad sets off when the other
+## squad's last crew is no farther from the merge, along its own road, than this squad is less MERGE_GAP_M: it reaches the
+## merge behind the other's tail instead of into its side. Implies RANK "drive".
+static var MERGE := OS.get_cmdline_user_args().has("--group-depart=merge")
+const MERGE_M := 8.0
+const MERGE_STEP_M := 2.0
+const MERGE_SKIP_END_M := 30.0
+const MERGE_GAP_M := 10.0
 ## Who goes first. "front" (O2 v1): front to back along the approach. "drive" (v2, the dev read's finding: on Locks the
 ## flank squad with the longest drive sets the all-in time, and v1 made exactly it wait): the longest planned drive first.
-static var RANK := "drive" if OS.get_cmdline_user_args().has("--group-depart-rank=drive") else "front"
+static var RANK := "drive" if OS.get_cmdline_user_args().has("--group-depart-rank=drive") \
+		or OS.get_cmdline_user_args().has("--group-depart=merge") else "front"
 const CORRIDOR_M := 30.0
 const CORRIDOR_HALF_M := 7.0
 const MAX_WAIT_S := 20.0
@@ -54,6 +68,101 @@ func add(units: Array, ahead: Array, corridor: PackedVector2Array, release: Call
 	return true
 
 
+## O2 v3: queue a squad behind the merges in `merges` ([{names: crews of the squad ahead, road: its PackedVector2Array,
+## at_m: the merge's arc length along that road, mine_m: this squad's distance to the merge along its own road}]).
+## Returns true when it must wait.
+func add_merges(units: Array, merges: Array, release: Callable, arrived_of: Callable) -> bool:
+	waits[String(units[0])] = 0
+	if merges.is_empty():
+		return false
+	var entry := {"units": units.duplicate(), "merges": merges, "release": release,
+			"since": game_match.tick if game_match != null else 0, "arrived_of": arrived_of}
+	if _merges_clear(entry):
+		return false
+	queued += 1
+	waiting.append(entry)
+	return true
+
+
+func _merges_clear(entry: Dictionary) -> bool:
+	for merge: Dictionary in entry["merges"]:
+		var crews := _positions(merge["names"], entry["arrived_of"])
+		if not merge_clear(merge["road"], float(merge["at_m"]), float(merge["mine_m"]), crews.values()):
+			return false
+	return true
+
+
+## Whether the crews at `positions` (Vector2) of a squad driving `road` are all within `mine_m - MERGE_GAP_M` of the merge at
+## arc length `at_m` (or past it): a squad `mine_m` from the merge, setting off now, comes in behind their tail. Pure.
+static func merge_clear(road: PackedVector2Array, at_m: float, mine_m: float, positions: Array) -> bool:
+	for p: Vector2 in positions:
+		if at_m - arc_of(road, p) > mine_m - MERGE_GAP_M:
+			return false
+	return true
+
+
+## The arc length along `road` of the point on it closest to `p`. Pure.
+static func arc_of(road: PackedVector2Array, p: Vector2) -> float:
+	var best := INF
+	var best_s := 0.0
+	var s := 0.0
+	for i in road.size() - 1:
+		var q := Geometry2D.get_closest_point_to_segment(p, road[i], road[i + 1])
+		var d := p.distance_squared_to(q)
+		if d < best:
+			best = d
+			best_s = s + road[i].distance_to(q)
+		s += road[i].distance_to(road[i + 1])
+	return best_s
+
+
+## The first merge of `mine` into `other` (flat roads): {mine_m, at_m} or {} when they never come within MERGE_M before
+## either's last MERGE_SKIP_END_M. Pure.
+static func merge_of(mine: PackedVector2Array, other: PackedVector2Array) -> Dictionary:
+	var other_len := 0.0
+	for i in other.size() - 1:
+		other_len += other[i].distance_to(other[i + 1])
+	var mine_len := 0.0
+	for i in mine.size() - 1:
+		mine_len += mine[i].distance_to(mine[i + 1])
+	var s := 0.0
+	for i in mine.size() - 1:
+		var a := mine[i]
+		var b := mine[i + 1]
+		var leg := a.distance_to(b)
+		var t := 0.0
+		while t <= leg:
+			var at := s + t
+			if at > mine_len - MERGE_SKIP_END_M:
+				return {}
+			var p := a.lerp(b, t / leg) if leg > 0.0 else a
+			var on := arc_of(other, p)
+			if on <= other_len - MERGE_SKIP_END_M:
+				var q := _point_at(other, on)
+				if p.distance_to(q) <= MERGE_M:
+					return {"mine_m": at, "at_m": on}
+			t += MERGE_STEP_M
+		s += leg
+	return {}
+
+
+static func _point_at(road: PackedVector2Array, at: float) -> Vector2:
+	var s := 0.0
+	for i in road.size() - 1:
+		var leg := road[i].distance_to(road[i + 1])
+		if s + leg >= at and leg > 0.0:
+			return road[i].lerp(road[i + 1], (at - s) / leg)
+		s += leg
+	return road[road.size() - 1] if road.size() > 0 else Vector2.ZERO
+
+
+static func flat(route: PackedVector3Array) -> PackedVector2Array:
+	var out := PackedVector2Array()
+	for p: Vector3 in route:
+		out.append(Vector2(p.x, p.z))
+	return out
+
+
 ## A new order for any of `units` takes its squad out of the queue (it has been given something else).
 func cancel(units: Array) -> void:
 	waiting = waiting.filter(func(e: Dictionary) -> bool:
@@ -67,7 +176,9 @@ func _physics_process(_delta: float) -> void:
 	var due: Array = []
 	for entry: Dictionary in waiting:
 		var timed_out := game_match.tick - int(entry["since"]) >= int(MAX_WAIT_S * SimClock.TICK_RATE)
-		if timed_out or blockers(entry["corridor"], _positions(entry["ahead"], entry["arrived_of"])).is_empty():
+		var clear := _merges_clear(entry) if entry.has("merges") \
+				else blockers(entry["corridor"], _positions(entry["ahead"], entry["arrived_of"])).is_empty()
+		if timed_out or clear:
 			if timed_out:
 				released_timeout += 1
 			else:
