@@ -79,8 +79,9 @@ autoplay, 36 seeds per arm 9513-9548, BASE 51.4 min of play / 899 clicks, ARM 53
 | 5 held for his aim; action share | 0 %; 41.8 % | 15.0 %; 41.4 % | <= 25 %; >= 31.8 % | PASS |
 Shake (line outside the headless bar): laptop windowed 1920x1080 ~28 fps, seed 7001, 60 s, d6f0da32e (the pivot is unchanged
 since): shake moved the cursor's ground <= 0.5 px at any click (<= 1 px p95: PASS).
-**The clip** (K3; the lead is the only check for feel): `build/camera-clip/camera_glide_clip.mp4` on the laptop (flightdeck),
-72 s, 1920x540, made by `make camera-clip` at 8a2974e85: the same autoplay on seed 9501 (a dev seed; the clip is not a bar),
+**The clip** (K3; the lead is the only check for feel): `~/projects/godot/build/camera-clip/camera_glide_clip.mp4` on the
+laptop (flightdeck), outside the worktree, re-filmed at ec0a2cabb (the first film at 8a2974e85 was wiped: Known issues). It is
+~72 s at 1920x540, made by `make camera-clip`: the same autoplay on seed 9501 (a dev seed; the clip is not a bar),
 LEFT glide off (round 40), RIGHT glide on. The white cross is the autoplay's cursor (a movie has no OS cursor), and a yellow
 ring marks each right-click. Left: 6 of 13 attack clicks on the unit, slip p95 163 px. Right: 11 of 14, slip p95 24 px.
 LEFT ends at 48 s (it won the match there) and holds its last frame. Re-film: `make camera-clip` (needs a display; laptop lock).
@@ -223,6 +224,12 @@ alone (DWELL) read slip p95 73.5 (the camera coasted into the aim: 650 px/s x 0.
 - **orders (C41.4):** a read-only `RtsControls.is_aiming() -> bool` (cursor on a unit, a box or right-drag in progress, an
   armed order), and one line in `skirmish_mode.gd` next to `rig.facing = ...`: `rig.aiming = controls.is_aiming`. Until it
   lands the rig's adapter does the same from public members.
+
+### Known issues
+- **A remote check's copy-back wipes local `build/` artefacts.** The copy-back mirrors builder `build/` over the local one with
+  `--delete` (`_agents/remote_builds.md`: "Evidence never lives only in `build/`"). The first K3 clip
+  (`build/camera-clip/camera_glide_clip.mp4`, 8a2974e85) vanished when the builder2 check of d4a070c69 copied back. Film with
+  `CAMERA_CLIP_MOVIE=` outside `build/`, or copy the mp4 out before any `make remote` / `make gcp-remote`.
 
 ### Questions for the lead
 _(none yet)_

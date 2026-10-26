@@ -38,6 +38,8 @@ camera-trace-windowed: native-fresh import ## Round 41 (camera K1): camera-trace
 # -> CAMERA_CLIP_MOVIE (needs a display; on the laptop take /tmp/tank-squad-laptop-godot.lock). Movie mode renders every
 # frame at DEMO_FPS whatever the machine's speed, so the clip plays at game speed. The overlay draws the autoplay's cursor
 # (a movie has no OS cursor) and a ring where it right-clicks.
+# The default CAMERA_CLIP_MOVIE is under build/, which the next `make remote` / `make gcp-remote` copy-back wipes (--delete):
+# copy the mp4 out, or pass CAMERA_CLIP_MOVIE=<a path outside build/>.
 CAMERA_CLIP_SEED ?= 9501
 CAMERA_CLIP_SECONDS ?= 75
 CAMERA_CLIP_FROM ?= 4
