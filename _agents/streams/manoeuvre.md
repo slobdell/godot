@@ -229,6 +229,19 @@ met by v2's crosser key (-58 %) and failed by v4's turning key (+32 %): at the d
 CROSSER by its velocity before its nose is 30 deg off its next leg, so v4 fires late. The group order is neutral-to-worse for all
 four (v4 the mildest). The wait family trades the bridge for his group order; the orchestrator rules (message sent 04:50).
 
+### Q4 hold the lane (R41.5): BUILT OFF (0dc8a435f), lab 1 a NULL; stays OFF, no bar
+
+`--traffic-on=holdlane`: a crew stalled behind a friend of a wait kind (crossing, turning, waiting) skips the ask / yield in
+`_negotiate` (holdlane_skips) and, at the stuck clock, restarts it instead of backing off or escaping (holdlane_holds).
+`tests/test_traffic_holdlane.gd` 4/0. **Lab 1** (ca843a664, builder0 light J4, orders' O1 probe, FRESH dev cells crossing / locks /
+sumps / terminus x 7005-7008 crew, 16 paired runs, both arms GDScript drive; `~/overnight-manoeuvre/r41/q4lab1/`, judge filed under
+`references/round41/manoeuvre/q2-labs-builder0/`): jam-seconds 13,284 -> 13,081 (-1.5 %; -13 s a run, se 19: flat); every-squad-in
+75.2 -> 78.2 s (+3.0 s, se 1.5, **2.1 se WORSE**); never-in runs 8 -> 9 (squads a run 1.00 -> 1.06); **friendly contact ticks
++10.8 %** (223,917 -> 247,999; the strict 1.05x line fails). The rule acted 29 skips + 6 holds a run. Reading: not asking a
+crossing friend to give way leaves the two nose-to-tail against each other (contacts up) until it has crossed; what the give-way
+machinery costs in long episodes it also buys in separation. Q4 stays OFF; no bar (one lab, as R41.5 asked). A later Q4 + wait
+combination is not pursued this round: both halves read neutral-to-worse on his group order on their own.
+
 ### Bar Q3: FILED 2026-10-26 ~05:00 PDT on tree f6d9d7b1b, BEFORE any number on 9025-9048 (R41.3 + R41.6)
 
 - **The rule judged:** `--traffic-on=wait` as restored at 1199fad11 (v2's functions byte for byte; c8e329b23's reads are its dev
