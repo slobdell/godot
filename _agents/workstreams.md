@@ -169,6 +169,14 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   (wait for a friend to clear: Q2 v1-v3, +7-9 % jam time; hold the lane: Q4, +3 s to all-in) and both made the jam slightly worse,
   because 25 crews squeeze into one street and stepping aside is what keeps them apart; the wait does fix the bridge (Bar Q3).
   Manoeuvre next: Bar Q3 series, then M1 v3.
+- **R41.8 (2026-10-26 ~06:00) Q5 "no pressing" approved to lab (OFF).** Manoeuvre's reversing report (side branch dd4d28907, builder0
+  light, GDScript, main, his group order 4 maps x 7001-7002, 8 runs, 6,830 episodes, 1,209 reversing = 18 % of episodes / 30 % of
+  jam-seconds): by reversed crew-ticks SHOVED by a friend in contact 45 % (93 % for tracked hulls), coasting after it 17 %, the drive's
+  own reverse to a steer point behind 21 % and K-turn legs 13 % (wheeled only), blind back-off 2 %, give-way's drive 1 %. Median 0.7 m
+  backed, p90 2.5 m; of 235 that got > 3 m away, 4 % returned to the spot. Longest 8 (15-30 s): shoved/coasting against a stalled or
+  parked friend of the same column at crossing/locks street mouths. Q5: a crew touching a friend ahead that isn't moving away eases off
+  (speed only, ORCA untouched, real members); lab on fresh dev 7009-7012, read contacts, shoved-ticks, all-in, never-in; bar seeds from
+  the orchestrator.
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
