@@ -1,3 +1,5 @@
+> **ARCHIVED (round 40 closed 2026-10-26).** Final state of this brief; round 40's results are in `workstreams.md` *Bars (round 40)* and *Rulings (round 40)*.
+
 # Stream: balance (no army wins by charging just because of which faction it is; tactics decide)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/game_design.md` (*Summary of his answers*, *His

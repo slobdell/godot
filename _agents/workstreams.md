@@ -336,6 +336,15 @@ G3 v7 8213-8224, G2 8225-8236); 8301-8340 + 8401-8440 balance; 8501-8540 balance
   speed-only follow rule (slow before a sharp turn the leader is in; ORCA's steering untouched) with a bar on fresh bridge-drill seeds;
   whether bridge-pooled's single-seed 3 s line should become a pooled measure is a round-41 design item, decided before any number.
 
+- **R40.25 (2026-10-26 ~02:00) balance closed; v2 dev screen read (not a bar).** BASE tree 5be511659 + fm_c5r2_lawt5 overrides,
+  builder2 J24, dev seeds 8501-8540, 800 fights an arm, paired, bar judge: flatness 17.9 -> 7.0 (-10.9, se 2.2); blob v gangs CPU
+  72 -> 42 %, v syndicate CPU 9 -> 34 %; G1 blob -9.3 (se 3.0), G2 turtle -1.0 (se 2.4), G4 +0.1; all 10 per-faction G3 cells pass
+  (Law blob +4.3 % se 6.1, was +24.6 under B2s; nearest the band: gangs turtle +15.8 % se 6.2 v 20). To watch: a syndicate blob now
+  wins 17 % (was 76 %); by CPU every faction cell is 31-42 %. A dev read only: **Bar B2s v2 (8801-8840 + 8901-8940) stays unread** and
+  is round 41's first balance read once bridge-pooled is green under the overrides. Final tip c83a6a75d merged (04513fc92; docs +
+  tools/balance only; last full check on the branch 5be511659 builder0 3212/0). Kept: balance/b2s-v2-arm d385cd308,
+  balance/bridge-trace 5a233f42b, balance/b2s-arm-r2 66c4839a2 (B2s's ARM, for the record).
+
 ## Round 39: six streams (prepared 2026-10-23; CLOSED 2026-10-24; briefs in `streams/archive/round39/`)
 
 **Goal: squads that stop never block the squad behind them, and tactics (not a frontal blob) win, with R1-R3 ON.** From round 38

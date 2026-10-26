@@ -4,13 +4,41 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
 
 
-## 🚀 ROUND 40 IS PREPARED (2026-10-24 evening) — read this first
+## 🏁 ROUND 40 IS CLOSED (2026-10-26 ~02:15 PDT) — read this first
+
+**Shipped ON: T1 only** (`--deploy-arrive=settled`, cap deploys 265 -> 83). Everything else stays OFF with its cause recorded in
+`workstreams.md` *Bars/Rulings (round 40)* (R40.1-R40.25): M1 v2, G1 v6, S1 v3, G3 v8/v9, cap deal, M3, F1, B2s. All five streams
+closed: worktrees removed (laptop, builder0, builder2), branches renamed `round40/<s>`, briefs in `streams/archive/round40/`. Refs kept:
+round40/settle-dev9d, round40/orders-t1on, pair/native-follow 1838537d7, pair/native-chainrelease 18e5dbca8, balance/b2s-v2-arm
+d385cd308, balance/bridge-trace 5a233f42b, balance/b2s-arm-r2 66c4839a2. Not ours / not removed: `godot-doctrine-guard` worktree
+(773412e49, older round), builder2's godot-native-score-light and plane_maker. Disk: builder0 76 % (25 G free), builder2 52 %.
+
+**Main:** c36217f79 GREEN builder0, 27 ALL JUDGED (3243/0). Balance's close tip c83a6a75d merged as 04513fc92 (tools/balance + docs
+only; merge_check_needed said CHECK on the Python files, so a builder0 check ran: result line below when it lands).
+
+**Round 41 starts from (in order):**
+1. **Bridge fix first** (manoeuvre): a speed-only follow rule (slow before a sharp turn the leader is in; ORCA's steering untouched),
+   bar on fresh bridge-drill seeds. Decide BEFORE any number whether bridge-pooled's single-seed 3 s rim line becomes a pooled measure
+   (R40.24). Main's worst rims today: 1.5 / 1.4 / 1.1 s.
+2. **The stat change (balance):** fm_c5r2_lawt5 (ARM d385cd308). Bar B2s v2 is FILED (8165a8830) and UNREAD on 8801-8840 + 8901-8940;
+   BASE becomes main once the bridge fix is in and bridge-pooled is green under the overrides. v2 dev screen (R40.25, 5be511659 +
+   overrides, builder2, 800 fights an arm): flatness 17.9 -> 7.0 (-10.9 ± 2.2), blob v gangs CPU 72 -> 42 %, v syndicate 9 -> 34 %,
+   all 10 G3 cells pass (Law blob +4.3 ± 6.1); watch the syndicate blob (76 -> 17 % wins).
+3. G1 v7 (orders) and the least-total cap deal (settle), M1 v3 (manoeuvre): the round-41 candidates below.
+4. Tools: remote.sh's literal-`~` `--checksum` re-copy path (exit 12), below.
+
+**Waiting on him (player terms, one recommendation each):** (a) combined arms, R40.16: all-tanks beats its own mixed army 82-84 %
+(target 35-40 %); recommended: give the IFV a slow, limited anti-tank missile (as the Bradley's TOW); alternatives: let penetration move
+±15 %, or leave it. (b) The portrait order-preview line floating mid-screen. (c) His playtest notes on T1 ON main. (d) May we delete
+builder0 files that aren't the project's (~/Videos .tar duplicates ~11 GB, ~/.cache/tracker3 1.9 GB)?
+
+## (CLOSED) ROUND 40 AS PREPARED (2026-10-24 evening) — read this first
 
 **Goal: every squad of his group click and route gets in without a reshuffle, and no army wins a frontal charge because of its
 faction.** Split, ownership, contracts C40.1-C40.5 / CP40.0-CP40.1 and the seed registry in `workstreams.md` *Round 40*; briefs in
