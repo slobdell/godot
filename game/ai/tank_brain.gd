@@ -2574,6 +2574,15 @@ func _act(s: Dictionary) -> void:
 			var distance := my_position.distance_to(contact["position"])
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
 			var ordered: Variant = s.get("order")
+			# Round 42 (engage E2, R42.2 GRANT, C42.2): "visible" below is the TEAM's sight. His Rat Rod (Locks, seed 49326)
+			# held at standoff for 37 s with its nose on a target a squadmate saw and a container hid from its own gun
+			# (E1's trace: "holding at standoff", stop, gun on nothing). Under --attack-shot a crew whose OWN line to the
+			# target is blocked (the cover map, memoized) does not hold: it closes on the target (the not-visible branch
+			# below; the route goes round the box). A crew its element sent to a firing spot never gets here (a `move`).
+			var own_line := true
+			if ElementPlan.ATTACK_SHOT:
+				var own_map := CoverMap.of(tank)
+				own_line = own_map == null or own_map.clear_line(my_position, contact["position"])
 			if TankBrain.chases(ordered if ordered is Dictionary else {}, contact, my_position, weapon):
 				# Round 21 (brains P2): the target it was ORDERED to kill is driving away beyond the gun's band. The combat
 				# micro below circles the target's spot inside the band, and a running target has left it: his scouts
@@ -2581,12 +2590,14 @@ func _act(s: Dictionary) -> void:
 				why = TankBrain._join(why, "it is running: after it")
 				var ahead: Vector3 = contact["position"] + _flat(contact["velocity"] as Vector3) * CHASE_LEAD_S
 				_order_move(_move_to(ahead, false, 1.0, 2.0))
-			elif contact["visible"] and distance <= float(weapon["range"]) + MOTION_REACH_MARGIN and _moves_while_fighting(s):
+			elif contact["visible"] and own_line and distance <= float(weapon["range"]) + MOTION_REACH_MARGIN and _moves_while_fighting(s):
 				var combat_clock := Time.get_ticks_usec() if OrderController.profile_detail else 0
 				var combat := _combat_move(s, contact)
 				_lap("act.combat_move", combat_clock)
 				_order_move(combat)
-			elif not contact["visible"] or distance > float(weapon["preferred_max"]):
+			elif not contact["visible"] or not own_line or distance > float(weapon["preferred_max"]):
+				if not own_line:
+					why = TankBrain._join(why, "no line of fire: going round")
 				_order_move(_move_to(contact["position"]))
 			elif distance < float(weapon["preferred_min"]):
 				var away: Vector3 = my_position + (my_position - contact["position"]).normalized() * 8.0

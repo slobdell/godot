@@ -113,6 +113,21 @@ const SCREEN_SPREAD := 1.5
 const IN_POSITION_M := 8.0
 ## Attack orders are given to units within this multiple of their weapon range; the rest keep moving up.
 const ENGAGE_RANGE_FACTOR := 1.15
+## Round 42 (engage E2, C42.2): "IN RANGE" MEANS A CLEAR SHOT. His playtest after round 41: a Rat Rod under his attack
+## order sat 37 s behind a container 26 m from its target, NOT FIRING, because `_engage` gave `attack` by distance. With
+## `--attack-shot=on` (env ATTACK_SHOT=on) a crew in distance-range gets `attack` only when the situation's per-member
+## `shot` read (ElementSituation.shots_into, the cover map) says it has a line to the target; one without a line is sent
+## to a FIRING POSITION (FiringPosition.find: round the obstacle, toward the enemy, in the gun's band, off its friends,
+## kept while it stays good) as a `move` naming the target, so its gun stays laid on it and the HUD reads "carrying out".
+## A `move`, not an `attack_move`: under an attack-move the crew brain fights a target the TEAM sees from where it
+## stands (E1's trace, ticks 6-470: ENGAGE outscored MOVE for 15 s), so the spot would never be driven to. With no spot
+## inside the bounded search the crew keeps closing straight (today's out-of-range branch). The crew brain's ENGAGE hold
+## gets the same truth (TankBrain._act, R42.2). OFF: round 41 byte for byte.
+static var ATTACK_SHOT := OS.get_cmdline_user_args().has("--attack-shot=on") or OS.get_environment("ATTACK_SHOT") == "on"
+## Measurement only: crews sent to a firing position / given attack by a shot / kept closing (no spot), since start.
+static var shot_moves := 0
+static var shot_attacks := 0
+static var shot_none := 0
 ## Round 21 (orders' R2): whether the element's anchor is a LEG's that a drill has left standing (`anchor_by_drill`
 ## false: movement set it, no drill since has set its own), so when the drill ends it is where the leg stood before the
 ## drill took the element on. Pure.
@@ -3247,6 +3262,7 @@ static func _threat_points(situation: Dictionary) -> Array:
 # ---- Order helpers -------------------------------------------------------------------------------------
 
 ## Units in range shoot; the rest close up on the enemy so they can.
+## Round 42 (engage E2): in range AND with a shot (ATTACK_SHOT); in range without one, to a firing position.
 static func _engage(plan: Dictionary, members: Array, situation: Dictionary, toward: Vector3,
 		contact: Dictionary) -> void:
 	var target := String(contact.get("name", ""))
@@ -3254,12 +3270,56 @@ static func _engage(plan: Dictionary, members: Array, situation: Dictionary, tow
 	for member: Dictionary in members:
 		var name := String(member["name"])
 		var position: Vector3 = member["position"]
-		if target != "" and focus is Vector3 and position.distance_to(focus) <= float(member["range"]) * ENGAGE_RANGE_FACTOR:
+		var in_reach: bool = target != "" and focus is Vector3 \
+				and position.distance_to(focus) <= float(member["range"]) * ENGAGE_RANGE_FACTOR
+		if in_reach and (not ATTACK_SHOT or has_shot(member, target)):
+			if ATTACK_SHOT:
+				shot_attacks += 1
 			_order(plan, name, "attack", null, target)
+		elif in_reach:
+			var spot: Variant = firing_spot(plan, situation, member, target, focus)
+			if spot is Vector3:
+				shot_moves += 1
+				_order(plan, name, "move", spot, target)
+				plan["slots"][name] = spot
+			else:
+				shot_none += 1
+				_order(plan, name, "attack_move", clamp_to_arena(position + toward * 15.0), target)
 		elif target != "":
 			_order(plan, name, "attack_move", clamp_to_arena(position + toward * 15.0), "")
 		else:
 			_order(plan, name, "hold", null, "")
+
+
+## Round 42 (engage E2): whether `member` has a line of fire to `target` by the situation's shot read. A situation with no
+## read for this pair (built by hand, or the contact beyond the read's reach) answers true: no read, no refusal.
+static func has_shot(member: Dictionary, target: String) -> bool:
+	var shot: Variant = member.get("shot")
+	if not (shot is Dictionary) or not (shot as Dictionary).has(target):
+		return true
+	return bool((shot as Dictionary)[target])
+
+
+## Round 42 (engage E2): the firing position for `member` on `target` at `focus`, or null when the bounded search has
+## none. Friends: every other member's position and every spot already dealt this plan. The previous spot (last
+## update's slot for this crew, carried back as `previous_slots`) is offered for hysteresis.
+static func firing_spot(plan: Dictionary, situation: Dictionary, member: Dictionary, target: String, focus: Vector3) -> Variant:
+	var map: CoverMap = situation.get("cover_map")
+	var name := String(member["name"])
+	var friends: Array = []
+	for other: Dictionary in situation.get("members", []):
+		if String(other["name"]) != name:
+			friends.append(other["position"])
+	for other_name: String in plan["slots"]:
+		if other_name != name and plan["slots"][other_name] is Vector3:
+			friends.append(plan["slots"][other_name])
+	var previous: Variant = (plan.get("previous_slots", {}) as Dictionary).get(name)
+	var band := float(member.get("effective_range", member.get("range", 60.0)))
+	var spot := FiringPosition.find(map, member["position"], focus, band, float(member.get("preferred_min", 0.0)), friends,
+			previous if previous is Vector3 else null)
+	if spot.is_empty():
+		return null
+	return clamp_to_arena(spot["point"])
 
 
 ## Stand and cover: hold where you are, guns toward `facing`.
