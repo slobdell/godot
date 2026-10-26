@@ -62,7 +62,8 @@ as bars are filed -> spare: builder0 test-time read.
   scenario_perf unpinned), sim-baseline 13 unmoved, determinism 258cc8b1c957a796, copy-back verified 237 files, 4,077 s. Merged to
   main as 6209e9f89 by the orchestrator.
 - **N3 scaffold: 7a1cd1227.** `tools/judge/lines_r41.py` (empty `LINES`, same fields as lines_r40) wired into `tools/judge/lines.py`
-  (537 lines load). Lines are added as round 41's verdicts land.
+  (537 lines load). Lines are added as round 41's verdicts land. **467d36596: Bar K3 v1** (R41.11; lines 1, 2, 4 PASS, 3 FAIL; 541
+  load, judge tests pass). No lines for O2 / G1 v7 / v8 (withdrawn unread) or Q4 / Q5 (closed OFF, no bar). Q3 when its read lands.
 - **N4 (spare, REPORT ONLY): what dominates a builder0 full check, and one proposal.**
   *Read:* main's last full check on builder0 (`~/tank_squad/godot/build/check/{started,done}` mtimes, 2026-10-26 01:20, main
   c36217f79-era tree): wall **2,208 s**. `lint` **715 s** (start +14 to +729), then `test` **1,479 s** (+729 to +2,208); every other
@@ -103,8 +104,8 @@ as bars are filed -> spare: builder0 test-time read.
 - **test_full_check_lock case 7 (orchestrator, a builder2 flake): a0c281dec.** The holder holds until released; builder_checks is polled
   up to 10 s for the holder's folder (was a fixed 0.3 s). Laptop 22/0 (and x3 under 8 busy loops); builder0 light shell-tools-test
   exited 0, 22/0.
-- **Queued, gated:** Q5 `nopush` fields (`_nopush_for`, `_nopush_until` after the wait fields, off wip/manoeuvre-m1v3 a45c0b953): build
-  ONLY if the orchestrator says Q5's last lab passed.
+- **Q5 `nopush` fields: NOT BUILT** (Q5 closed OFF, R41.10; orchestrator: don't build). pair/native-wait 20300bb52 is parked until
+  Bar Q3's full read (its main-tree deciding line was failing on significance at the orchestrator's last look).
 - **N5 (R41.2, granted core.mk's lint gate): lint-fast.** a64611c15 (+ .uid 0165f3d67). `make lint-fast`: tests/lint/lint_fast.gd loads
   every script in one process; tools/lint_fast.py turns `SCRIPT ERROR`/`Parse Error` + `at: (res://f:l)` into `f:l: msg` findings; no
   baseline; fails on: any finding, a planted file not reported, a file count short, no LINT_FAST_DONE. Planted every run: syntax error,
