@@ -228,6 +228,15 @@ const FOLLOW_CONE_COS := 0.819  # cos 35 deg
 const FOLLOW_MOVING_MPS := 1.0
 ## Measurement only: crew-ticks the queue rule kept a wheeled crew on its route behind a friend.
 static var follow_queued := 0
+## Measurement only (the orchestrator's ask, R40.21: "a crew nose-to-tail for seconds with the deck ahead clear reads as dumb"): the
+## longest unbroken queue wait of the run ({crew, behind, s, from_tick, leader_min_mps}) and how many waits lasted FOLLOW_LONG_S+.
+const FOLLOW_LONG_S := 3.0
+static var follow_longest := {}
+static var follow_long_waits := 0
+var _follow_since := -1
+var _follow_last := -1
+var _follow_leader_min := INF
+var _follow_counted := false
 
 ## X4 right-of-way. A unit that has made no progress for ASK_SECONDS asks the friend in its way to give way, at most
 ## once every ASK_EVERY seconds.
@@ -359,6 +368,8 @@ static func reset_route_arms() -> void:
 	corners_inflated = 0
 	corners_kept = 0
 	follow_queued = 0
+	follow_longest = {}
+	follow_long_waits = 0
 	press_escapes = 0
 	nose_stops = 0
 	driver_ticks = {}
@@ -2798,6 +2809,24 @@ func _around_fire(waypoint: Vector3, goal: Vector3, order: Dictionary) -> Vector
 ## (toward `waypoint` at this order's speed, easing off for the end of the route); Avoidance returns the nearest
 ## velocity that keeps clear of every neighbour, sharing the avoiding with movers. A velocity that would take the hull
 ## off the navmesh is refused (static geometry wins): the unit keeps its route and slows to the avoiding speed instead.
+## Round 40 (F1), measurement only: an unbroken queue wait is one with no gap of more than a tick between its queued ticks.
+func _follow_note(leader: Tank) -> void:
+	var tick := Engine.get_physics_frames()
+	if _follow_last < 0 or tick - _follow_last > 2:
+		_follow_since = tick
+		_follow_leader_min = INF
+		_follow_counted = false
+	_follow_last = tick
+	_follow_leader_min = minf(_follow_leader_min, leader.real_velocity.length())
+	var s := (tick - _follow_since + 1) / float(SimClock.TICK_RATE)
+	if s >= FOLLOW_LONG_S and not _follow_counted:
+		_follow_counted = true
+		follow_long_waits += 1
+	if s > float(follow_longest.get("s", 0.0)):
+		follow_longest = {"crew": String(ctl.tank.name), "behind": String(leader.name), "s": snappedf(s, 0.01),
+				"from_tick": _follow_since, "leader_min_mps": snappedf(_follow_leader_min, 0.01)}
+
+
 ## Round 40 (F1): the nearest living friend ahead of `here` along `way` (unit, flat) within FOLLOW_AHEAD_M and FOLLOW_CONE_COS,
 ## if it is moving at least FOLLOW_MOVING_MPS within Traffic.FOLLOW_COS of `way`; null otherwise (none ahead, or the nearest
 ## one ahead is stopped or going another way: today's rules).
@@ -2875,9 +2904,12 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 	var speed := chosen.length()
 	var keep := clampf(speed / maxf(desired, 0.1), 0.0, 1.0)
 	# Round 40 (F1): a wheeled crew queues behind a friend going its way instead of being steered round it (FOLLOW_SWITCH).
-	if not held and not Traffic.off(FOLLOW_SWITCH) and wheel_radius() > 0.0 and _following(here, to / distance) != null:
-		follow_queued += 1
-		return [waypoint, clampf(chosen.dot(to / distance) / maxf(desired, 0.1), 0.0, 1.0)]
+	if not held and not Traffic.off(FOLLOW_SWITCH) and wheel_radius() > 0.0:
+		var leader := _following(here, to / distance)
+		if leader != null:
+			follow_queued += 1
+			_follow_note(leader)
+			return [waypoint, clampf(chosen.dot(to / distance) / maxf(desired, 0.1), 0.0, 1.0)]
 	# K1's response guarantee (100 ms = 3 ticks) outranks avoidance: an order takes effect at once and avoidance only
 	# SHAPES the movement. So for a moment after a new order the hull steers along its route (avoidance can't turn it
 	# away from where it was told to go before it has visibly gone), and it never sits at zero throttle while the way on

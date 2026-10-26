@@ -76,6 +76,10 @@ func test_on_the_follower_queues_behind_a_slower_leader() -> void:
 		if arm == "on":
 			assert_true(worst < 1.0, "ON: kept its line behind the leader (%.2f m)" % worst)
 			assert_true(Movement.follow_queued > 0, "ON: the queue rule fired")
+			print("MEASURE follow longest wait %s, waits >= %.0f s: %d" % [Movement.follow_longest, Movement.FOLLOW_LONG_S,
+					Movement.follow_long_waits])
+			assert_eq(String(Movement.follow_longest.get("crew", "")), "Green_Follow", "the longest wait is the follower's")
+			assert_eq(String(Movement.follow_longest.get("behind", "")), "Green_Lead", "behind the leader")
 			assert_true(follower.global_position.z > leader.global_position.z, "ON: still behind the leader")
 		_lab.dispose()
 		_lab = null
