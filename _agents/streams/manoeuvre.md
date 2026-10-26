@@ -270,6 +270,13 @@ combination is not pursued this round: both halves read neutral-to-worse on his 
   Orders' O2 OFF in both arms (`--group-depart` unset; R41.4). The overrides tree = f6d9d7b1b + 8e257f3bc + d385cd308.
 - **Gate:** the tree's full check green on builder0 FIRST (C31.1; `make remote T=check` on f6d9d7b1b, result below), then the series from
   that frozen tree (R40.13: no game/ or tests/ commits until its end line).
+  **Gate MET (builder2, the orchestrator's call: builder0's lock had a queue):** `make gcp-remote T=check` on tree 2e5848acd (code
+  f6d9d7b1b): `>> remote: make check exited 2 (build/ copied back)` = 24 passed, 1 FAILED, 0 NOT RUN, 2 NOT JUDGED (perf-judge: builder2 never judges; ai-scenarios-check: scenario_perf
+  refused at load 2.83x); tests 3261 passed / 0 failed; sim-baseline 13 maps unmoved; determinism passed on foundry and crossing. The
+  one FAILED target, remote-guard-test = shell-tools-test, was tools/test_full_check_lock.sh case 7 ("builder_checks holder", a
+  0.3 s timing case) on a loaded box; nothing in the diff touches tools/. Ruled: re-run that target alone in the same folder:
+  `>> remote: make shell-tools-test exited 0 (build/ copied back)`: 34 suites, 34 x "passed, 0 failed" (and on the laptop: all 34 pass). Gate green; the series launches
+  from this tree (R40.13: no game/ or tests/ commits until its end line). Native is hardening case 7's timing (its file).
 - **Arms:** OFF (default) v ON `--traffic-on=wait`; **both `--brains-off=native_drive`** (the pair compares the rule alone; the
   GDScript and C++ drives are bit-identical per test_native_drive). Settle's and orders' switches at main's defaults.
 - **Deciding (R41.3): pooled rim-seconds** on bridge-drill seeds 9025-9036 x start ticks (1, 8, 15) x both sides (72 runs an arm a
