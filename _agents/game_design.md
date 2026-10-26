@@ -4477,3 +4477,19 @@ in code: `ElementPlan._engage` (element_plan.gd ~3250) orders `attack` to every 
 line-of-fire test, so a crew in range behind a container stands still and the HUD calls it NOT FIRING (rts_controls.gd
 `attack_shortfall`). **The rule he wants:** a crew under his attack order that cannot hit its target moves to a spot that can, round the
 obstacle and toward the enemy, and fires. "In range" means a clear shot, not a distance.
+
+**His camera note, same session (verbatim):** "ok, I want to say the camera work needs improvement, but I don't know exactly how to
+describe what's wrong or how to fix. Maybe you can make some suggestions. Basically the camera is in line with my initial guidance that
+perspective is actually a limitation of the game, but basically we get impractical camera angles relative to where the actual fight is
+happening. THis is a subtle detail that will make a player feel like the game is no good - if the camera is following the direction at
+which a squad is moving, and then there's an ambush from the east (assuming we're driving north), the camera doesn't end up pointing at
+the action. In general, action is usually happening in the middle of the map sow hen the camera is pointing outward it's a little
+impractical. All to say: I know the camera behavior is currently in line with my previous guidance which was correct in spirit. What do
+you recommend here?"
+
+**Read in code (orchestrator):** the yaw comes only from the selection's facing (`rts_camera.gd` `yaw_follow` / `facing`, round 7). Enemies
+move the frame's centre and zoom, never its direction. At pitch 21 deg with a 35 deg lens the view is a narrow wedge, so a fight 90 deg
+off the heading is simply off screen. **Recommended to him (pending his answer): "look where the danger is".** Yaw = heading when the
+selection is quiet; = the bearing to the fight once it has contact or takes fire, with squad and enemy both in frame; when quiet, never
+look out at the wall (bias toward the arena's middle); an off-screen hit gets an edge marker and the camera turns at glide speed, never
+while he is aiming.
