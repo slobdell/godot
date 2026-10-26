@@ -115,6 +115,9 @@ round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9524 camera K3 v2. Dev bl
   squad it would send > 10 m away keeps the spot it stands on (tail of the street). Judge g1v8 unamended. Three variants dev-read on
   7007-7012 (noted). Feel question for him (orders' Status): on a click right beside his army, squads already in that street hold and
   only the near ones move.
+- **Bar K3 v2 (camera; FILED 355a5b0a7, 2026-10-26 ~07:30, before any number on 9513-9524).** v1's workload on fresh 9513-9524, both
+  arms on one commit (GLIDE_SCREENS_PER_S 0.6 + the aim fix), lines 1-4 at v1's levels unamended, plus (5) the camera still finds the
+  action: ARM held time <= 25 % of play AND ARM attack aims/min >= 90 % of BASE. 9501-9512 are dev seeds now.
 
 ## Rulings (round 41)
 
