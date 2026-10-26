@@ -87,7 +87,51 @@ The clip, when K4.4 has one.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-26: K4.1 DONE (census sent to the orchestrator); K4.2 built OFF (4cfadc6ee), dev reads next.** Start: 18982e8df
+**2026-10-26: K4.1 DONE (census sent); K4.2 built OFF (91ebddc9f), dev reads promising; Bar K4 FILED below (no 9701+ number
+read yet); full check of 91ebddc9f queued on builder0.**
+
+### Bar K4 (FILED before any number on 9701-9736; R42.5 folded in; guards never amended after their numbers)
+**Arms:** BASE `--camera-danger=off` (round 41) v ARM `--camera-danger=on`, BOTH on one commit (named with the result; the constants
+as committed), builder0 light lane, `make camera-trace` J=4, headless 1920x1080 @60, Terminus, CPU enemy, seeds 9701-9736 (36 an arm).
+**Workloads (each run on all 36 seeds, both arms):** AMBUSH = `CAMERA_SECONDS=45 CAMERA_FLAGS="--camera-scenario=ambush
+--camera-ambush-m=55"` (lane = seed % 3: 12 right, 12 left, 12 rear); RETREAT = `CAMERA_SECONDS=45 CAMERA_FLAGS="--camera-scenario=retreat"`;
+ATTACK (guards only) = round 41's autoplay, `CAMERA_SECONDS=150`. Read off `camera_report.py`.
+**Latency** = an off-screen shot's seconds until that shooter is first on screen; never = 20 s (R42.5); mean +- se over episodes;
+a set with no off-screen shot at all reads 0 (the best result: the camera faced the gun before it fired).
+**Deciding (ship ON = every line passes):**
+- D1 latency, AMBUSH + RETREAT pooled: ARM mean < BASE mean by >= 2 se of the difference (sqrt(se_A^2 + se_B^2)).
+- D2 read separately (R42.5: a pass carried by the flank lanes is not his fix): on the AMBUSH REAR lane alone AND on RETREAT alone,
+  ARM latency mean < BASE's AND ARM blind % of play <= BASE's.
+- D3 facing the wall: AMBUSH + RETREAT pooled ARM <= half BASE's; RETREAT alone ARM <= half BASE's.
+**Guards (what the rule could break):**
+- G1 Bar K3 v2 lines 1-3 at their levels, ARM, ATTACK workload: attack clicks still on the aimed unit >= 70 %; slip p95 <= 40 px;
+  jerk events <= 3.0/min all, no automatic source (danger included) > 1.5/min; automatic snaps 0 (snaps 0 on every workload).
+- G2 held for his aim <= 25 % of play (ATTACK).
+- G3 action share ARM >= BASE - 10 points (ATTACK).
+- G4 no swinging: yaw reversals/min ARM <= BASE + 1, on each workload (ATTACK, AMBUSH pooled, RETREAT).
+- G5 his own squad stays on screen (the orchestrator's ask: a turn toward a threat while he drives away could lose his squad): own
+  on screen % ARM >= BASE - 5 points, on each workload.
+- G6 every run CAMERA_TRACE_DONE ok=true, no SCRIPT ERROR, every scenario run staged ok, both arms.
+
+### K4.2 dev reads (dev seeds 7001-7012, NEVER a bar; builder0 light; headless 1920x1080 @60; Terminus; 12 runs a row)
+Rows: ambush/retreat 45 s at 4cfadc6ee+fix = 91ebddc9f's camera; attack 150 s at 91ebddc9f.
+| workload | arm | blind % of play | facing wall % | own on screen % | off-screen shots (never) | latency mean (never=20) | reversals/min |
+|---|---|---|---|---|---|---|---|
+| ambush 55 m | OFF | 2.8 | 16.0 | - | 7 (3) | 3.5 p50 | 5.18 |
+| ambush 55 m | ON | 1.2 | 9.7 | 98.8 | 7 (2) | 6.8 +- 3.4 | 1.91 |
+| ambush rear | OFF / ON | 6.5 / 1.4 | 5.3 / 12.5 | - / 98.3 | 3 (2) / 5 (2) | never / 8.7 +- 4.6 | 8.91 / 3.58 |
+| retreat | OFF | 8.2 | 37.3 | - | 29 (17) | 16.3 +- 1.3 | 2.16 |
+| retreat | ON | 0.9 | 0.6 | 99.7 | 1 (0) | 8.6 | 1.36 |
+| attack | OFF | 2.2 | 42.4 | 97.3 | 15 (3) | 8.5 +- 2.2 | 11.69 |
+| attack | ON | 0.2 | 17.0 | 95.1 | 19 (4) | 6.4 +- 1.8 | 5.30 |
+Attack guards, OFF v ON: clicks on the aimed unit 122/148 82.4 % v 118/146 80.8 %; slip p95 34.6 v 24.4 px; jerks 0.21 v 0.21/min
+(solid only), snaps 0 v 0; held 15.1 v 16.6 %; action share 35.9 v 59.4 %. (OFF rows of ambush/retreat are the census.)
+Read: his retreat is fixed outright; the ambush is blind less than half as often; the yaw swings less, not more, because the
+heading (which attack orders keep re-aiming) is now only a light pull. The rear lane's latency mean has 3-5 episodes a set:
+36 seeds is what makes D2 readable.
+**Found and fixed in dev:** the first ON read matched OFF to the digit: `DangerFeed.new().attach(...).read` is a Callable on a
+RefCounted that nothing holds, so the feed was freed at once and the rig fell back to the heading. `reader()` captures it; a test
+pins it. Start: 18982e8df
 (= 21b20bdce's code, GREEN builder0 per HANDOFF; no baseline check).
 
 ### K4.1 census: where the round-41 camera looks (camera code = 4cfadc6ee with `--camera-danger` off = round 41; builder0 light lane; headless 1920x1080 @60; Terminus; CPU enemy; dev seeds 7001-7012, NEVER a bar; 45 s a run)
