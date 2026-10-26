@@ -70,7 +70,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     **Bar O2 FILED** (25525980a, below). Probe fix 4c9dd0a67 (a waiting squad read "in" from its old task; OFF unaffected).
   - Lab (laptop, 4c9dd0a67 tree, s7001, n 1 a map; a sign, not a number): terminus all-in 75.4 -> 59.0 s; crossing
     never-in -> 93.4 s; waits 0-5.5 s, none by the cap; yielding 80 -> 53 and 320 -> 147 crew-s.
-  - Waiting: full check of 25525980a on builder0 (queued behind native's); dev read on 7001-7006 (builder0 light).
+  - **Dev read 1 (v1 front-first; builder0 light, 25525980a, native on, crew headings, across click, 180 s window,
+    7001-7006, n 6 a map):** all-in median main -> queue: sumps 120.0 -> 56.5 s, crossing 149.7 -> 91.4 (never-in 5 -> 4
+    of 6), terminus 57.1 -> 61.4, **locks 73.5 -> 87.6 (never-in 2 -> 3)**. Dev judge: deciding FAILS (-7.9 +/- 7.6 s);
+    wait guards pass (median 5.1 s of the 18 squads of 120 that waited; 0 by the cap). Locks: the flank squad with the
+    longest drive sets the all-in time and v1 ranks it last, so it is the one that waits. No run touched by the old probe bug.
+  - **Dev read 2 (v2 `--group-depart-rank=drive`; 3d35eee6f, same setup):** nearly nothing: locks and sumps identical to
+    main, crossing never-in 5 -> 4, terminus 57.1 -> 62.8; paired -1.0 +/- 2.0 s; 16 of 120 queued, 2 by the cap.
+  - **Finding:** the corridor rule rarely fires (16-18 of 120 squads); the jams form where roads merge mid-way.
+    **v3 `--group-depart=merge` (b8116ec21):** each pair's first merge outside the halt area; the shorter-drive squad
+    goes when the longer one's tail is no farther from the merge than it is, less 10 m. Dev read 3 running.
+  - Full check of 25525980a on builder0: queued behind native's (the lock held since 02:12).
 - **Plan:** O1 census probe (done, 8b828ec59) -> census on builder0 dev seeds 7001-7006 (crew v formed headings) -> hash to
   manoeuvre + orchestrator -> O2: pick the lever from the numbers, build OFF, lab, file Bar O2 on 9101-9124 before any number
   -> C41.4 getter if camera asks -> stretch G1 v7.
@@ -88,6 +98,8 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   off their first leg; first-leg crossings 0; crew-seconds under way: yielding 80, slow 60, blocked 10.
 
 ### Bars (filed here before any judged number; the orchestrator records them on main)
+- **WITHDRAWN UNREAD (2026-10-26, orchestrator agreed): Bar O2 v1** (no bar number was ever read; dev reads 1-3 below
+  replace its rule). Kept for the record:
 - **Bar O2 DEPARTURE QUEUE (orders, round 41; filed 2026-10-26 before any number on 9101-9124; switch
   `--group-depart=queue`, OFF).** What he would see: he selects all five squads and clicks across the map. Every squad
   takes the order (the same marker on the click). The front squad sets off at once, and each squad behind it sets off as
