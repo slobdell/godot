@@ -92,6 +92,16 @@ worktree: `~/overnight-manoeuvre/r42/`.
   at a time if `tools/loaded.sh` says the lane is full.
 - **Stretch 3 (running, dev seeds):** the long shoved episodes with Q5 ON, `q5lab3` (crossing/locks/sumps/terminus x 7009-7012,
   main v nopush, GDScript both): what remains after no-pressing.
+- **Stretch 3 READ (q5lab3, the frozen tree, 7009-7012 x 4 maps, main v nopush v2, GDScript, builder0 light, 16 paired runs;
+  `references/round42/manoeuvre/q5lab3-builder0-7569747ce/`):** through `q5_judge.py`: D1 contacts 239,703 -> 176,321 (-26 %, -3.8 se)
+  PASS, D2 shoved ticks 28,432 -> 17,783 (-38 %, -4.5 se) PASS, **G5 all-in 74.8 -> 80.5 s (+5.7, line +4.8) FAIL, G6 never-in runs
+  7 -> 9 FAIL**; jam-seconds +21 % (eased ticks out: -19.5 %; the eased ticks are 5,576 of the ON arm's 16,598 jam-s). On round 41's
+  main the same cells read all-in +2.0 s / never-in 6 -> 7: with G1 v9's column on today's main, standing behind a stalled head costs
+  more. What remains ON: the longest episodes (20-45 s) are columns standing ("coasting": throttle 0, rolling) behind a stalled head
+  of the same column at the Crossing's street mouths (Green_Bravo_3 <- Bravo_1 44.8 s, s7012). Told the orchestrator (17:05): Bar Q5
+  as filed will most likely fail G5 / G6 on 9801-9824; recommended run as filed with the fights skipped on a group-guard fail
+  (barq5.sh does that), or withdraw unread (R41.4's precedent). A rule that keeps the contacts down without the standing needs to know
+  which head will move (Q2's question again); not built this round.
 - Rulings this round so far: R42.7 (the arrival guard; one check gates both bars; v4 the last re-file).
 
 ### Plan (ordered; the brief's backlog as built)
