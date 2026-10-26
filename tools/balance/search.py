@@ -727,6 +727,9 @@ def main(argv=None) -> int:
     p.add_argument("--probe", action="store_true", help="B5: run the fights through tests/tactics/face_probe.gd (FACE lines)")
     p = sub.add_parser("apply")
     p.add_argument("cand", type=Path)
+    p.add_argument("--tree", type=Path, default=ROOT,
+                   help="the checkout to write into (default: this script's own tree, NOT the current directory: round 41 wrote "
+                        "a dry run into stream/balance's working tree that way)")
     p = sub.add_parser("bar")
     p.add_argument("root", type=Path)
     p.add_argument("base_commit")
@@ -776,7 +779,9 @@ def main(argv=None) -> int:
     if args.cmd == "apply":
         if problems:
             sys.exit("refused:\n" + "\n".join(problems))
-        print("\n".join(apply(cand, ROOT / "game/units/units.gd", ROOT / "game/combat/weapons.gd")))
+        tree = args.tree.resolve()
+        print(f"apply: writing into {tree}")
+        print("\n".join(apply(cand, tree / "game/units/units.gd", tree / "game/combat/weapons.gd")))
         return 0
     if args.cmd == "check":
         print("\n".join(problems) or "ok: inside +/-15 %")
