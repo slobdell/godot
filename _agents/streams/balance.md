@@ -196,6 +196,10 @@ bridge runs (9025-9036 x 3 ticks x 2 sides) the v2 overrides tree with the rule 
 known bridge failure remains the 18-run drill's rust t15 s2 (R40.20). The ARM rebuild recipe (apply + cherry-pick ad956031b)
 is proven mechanical on ff30edf87 (`apply --tree` now). builder2 stays on B5: the deal arm, pen7, then the lines screen.
 
+**pen7 arm, first run (gangs, mono on Green, 50 fights, 10:02):** the tune landed (GUARD_RESULT args carry it; the Gun Truck's
+dealt a credit 0.23 -> 0.50, its side-face rate 0.09 -> 0.42 pts a second alive: twin MG pen 4 gets through a War Rig's side now);
+all-tanks 82 -> 80 % (-2, se 3). Seven runs to go.
+
 **Barrage arm (the orchestrator's ask ~10:05; queued behind pen7, then the lines):** `law_barrage` and `syndicate_barrage`
 (army.gd ARCHETYPES, `measure_only`: never rolled by a seeded "cpu" deal nor offered by the garage; loads by name through R41.12),
 siege's shape in each roster (artillery, scout, tank, artillery, IFV, scout), same money as the base deal. All-tanks v each, mono
