@@ -206,7 +206,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "reroute", "rerouteany", "follow", "wait"]  # round 41 Q2 wait (manoeuvre, until judged); round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "reroute", "rerouteany", "follow", "wait", "waitcross"]  # round 41 Q2 wait (+ waitcross, the broad crosser rule, labbed OFF) (manoeuvre, until judged); round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off

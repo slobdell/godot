@@ -262,6 +262,7 @@ static var _follow_runs := {}
 ## radii + WAIT_SLACK_M wide; a friend not yet in it but meeting me there within WAIT_HORIZON_S at my route's velocity counts.
 ## Per-crew state is the four `_wait_*` members (exec_fields.h); the counters are measurement.
 const WAIT_SWITCH := "wait"
+const WAIT_CROSS_SWITCH := "waitcross"  # with `wait`: also wait for a friend crossing my lane (the broad rule, OFF: labs 1-3)
 const WAIT_AHEAD_M := 12.0
 const WAIT_SLACK_M := 0.5
 const WAIT_HORIZON_S := 2.0
@@ -3036,7 +3037,8 @@ func _wait_blocker(here: Vector3, way: Vector2, preferred: Vector2) -> Array:
 
 
 ## "" when `other` is not a friend to wait on (parked; stalled: slow, under way and already facing its way; head-on; a leader going
-## my way, which is passed as today); "moving" when it drives across my lane; "waiting" when it is itself waiting for a friend that will clear (not for me);
+## my way straight, which is passed as today); "turning" when it is under way with its nose off its own next leg (moving or slow);
+## "moving" (only with `waitcross`) when it drives across my lane; "waiting" when it is itself waiting for a friend that will clear (not for me);
 ## "turning" when it is slow, under way and its nose is still WAIT_TURN_DEG or more off its own travel direction (it is getting
 ## oriented, as his scout was).
 func _wait_kind(other: Tank, way: Vector2) -> String:
@@ -3047,27 +3049,27 @@ func _wait_kind(other: Tank, way: Vector2) -> String:
 		return "" if String(ctl.tank.name) < String(other.name) else "waiting"
 	var v := Vector2(other.real_velocity.x, other.real_velocity.z)
 	var speed := v.length()
-	if speed >= WAIT_MOVING_MPS:
-		# v2 (lab 1, a553f85b0: waiting behind a slower friend going my way turned ORCA's overtake into following at its pace, and
-		# the crews behind chained up: same_way jam-seconds +32 %, stalled +32 %): a leader going my way is passed as today. v3: a
-		# friend is "moving" off my lane when its own motion takes it out of the lane within the cap (a leader's lateral speed is
-		# ~0, so it never qualifies; a crosser does), and it is not head-on.
-		if v.dot(way) <= WAIT_HEAD_ON_COS * speed:
-			return ""
+	if speed >= WAIT_MOVING_MPS and v.dot(way) <= WAIT_HEAD_ON_COS * speed:
+		return ""
+	var under_way := mover != null and mover.is_under_way() and mover._goal != Vector3.INF
+	# A friend that is itself turning toward where it is going (nose more than WAIT_TURN_DEG off its own next leg, which is not
+	# head-on to mine) will be off my line when its turn is done: the bridge's leader swinging onto the deck (R40.21), his scout
+	# "pointed north". v4 (R41.3's gate): moving or slow alike; a leader driving straight (nose on its leg) is passed as today.
+	if under_way:
+		if mover._wait_for != "":
+			return "waiting"  # the car ahead in the jam is itself waiting for one that will clear: a chain, bounded by the cap
+		var its_way := mover._travel_direction(mover._goal, false)
+		if its_way != Vector2.ZERO and its_way.dot(way) > WAIT_HEAD_ON_COS:
+			var nose := Vector2(-other.global_basis.z.x, -other.global_basis.z.z).normalized()
+			if nose.dot(its_way) < cos(deg_to_rad(WAIT_TURN_DEG)):
+				return "turning"
+	if speed >= WAIT_MOVING_MPS and not Traffic.off(WAIT_CROSS_SWITCH):
+		# `waitcross` (OFF; the broad rule, three variants labbed on 7001-7004 at +7-9 % jam-seconds, lab 1-3): a friend driving
+		# ACROSS my lane whose own motion takes it out of the lane within the cap (a leader's lateral speed is ~0: never).
 		var off := Vector2(other.global_position.x - ctl.tank.global_position.x, other.global_position.z - ctl.tank.global_position.z)
 		var width := Avoidance.radius_of(ctl.tank.unit_id) + Avoidance.radius_of(other.unit_id) + WAIT_SLACK_M
 		return "moving" if _lane_exit_s(off, v, way, width) <= WAIT_CAP_S else ""
-	if mover == null or not mover.is_under_way() or mover._goal == Vector3.INF:
-		return ""
-	# The car ahead of me in the jam is itself waiting for one that will clear: it will move when that one does (a chain, bounded by
-	# the cap).
-	if mover._wait_for != "":
-		return "waiting"
-	var its_way := mover._travel_direction(mover._goal, false)
-	if its_way == Vector2.ZERO or its_way.dot(way) <= WAIT_HEAD_ON_COS:
-		return ""
-	var nose := Vector2(-other.global_basis.z.x, -other.global_basis.z.z).normalized()
-	return "turning" if nose.dot(its_way) < cos(deg_to_rad(WAIT_TURN_DEG)) else ""
+	return ""
 
 
 ## Seconds until a hull at `off` (relative to me) moving at `v` is out of my lane along `way` (half-width `width`) by its own
