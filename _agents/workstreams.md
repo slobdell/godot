@@ -74,7 +74,20 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
 
 ## Rulings (round 41)
 
-_(none yet)_
+- **R41.1 (2026-10-26 ~03:20) camera's K1 read; C41.4 getter granted to orders.** K1 (de509b00f code, builder0 headless 1920x1080 @60,
+  Terminus, dev 7001-7006, 9.9 min, 74 scripted attack clicks): jerk events 22.7/min (auto_frame 13.6, most one-frame goal jumps up to
+  780 px; building clearance 5.7; yaw_follow 3.5); ground slip under the cursor in the 0.5 s before a click p50 31 / p95 389 / max 1087
+  px; attack clicks still on the aimed unit 37/74 (50 %), with auto_frame + yaw follow off 49/62 (79 %). Shake not measured (headless).
+  **Ruled:** orders adds read-only `RtsControls.is_aiming()` and the one line `rig.aiming = controls.is_aiming` in
+  `game/modes/skirmish_mode.gd` (granted); camera builds K2 behind `--camera-glide` (ON when it passes) and files K3's lines (clicks on
+  target, slip p95, jerks/min by source) before numbers on 9501-9512.
+
+- **R41.2 (2026-10-26 ~02:35) native N5 lint-fast approved; mk/core.mk's lint gate granted to native for it.** N4's read (builder0,
+  c36217f79-era tree): full check wall 2,208 s = lint 715 s (1,212 files, one `--check-only` process each at -P6) gating test 1,479 s.
+  One Godot process loading every script: 13.9 s, 495 MB, catches planted parse / preload / typed-assignment errors. Ruled: lint-fast
+  becomes the gate; per-file lint stays in the check as an ordinary target beside test (no coverage dropped); mutation test; before/after
+  builder0 wall time named. Merged alone with its own check. Also relayed: orders' O1 probe 8b828ec59 -> manoeuvre's Q1;
+  orders' is_aiming b973ba955 -> camera; native's GUARD_TARGET e41b6d70e -> balance.
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 

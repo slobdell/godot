@@ -15,8 +15,8 @@ ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers belo
 **Goal: a big group order flows like traffic (crews wait for a friend to turn instead of steering round it), the camera never jerks
 under his cursor, and a mixed army beats an all-tank one.** From his playtest of round-40 main (`game_design.md` *His playtest and
 answers after round 40*). Split, ownership, contracts C41.1-C41.5 / CP41.1 and the seed registry in `workstreams.md` *Round 41*; briefs
-in `_agents/streams/`. **Main at launch: code c36217f79 GREEN builder0, 27 ALL JUDGED (3243/0)** + balance's tools/docs (04513fc92, its
-own check below) + docs. Workers start from it without a baseline check.
+in `_agents/streams/`. **Main at launch: code c36217f79 GREEN builder0, 27 ALL JUDGED (3243/0)** + balance's tools/docs: **main 04513fc92 GREEN
+builder0, 27 ALL JUDGED** (`make check exited 0`, 3243 passed / 0 failed; sim-baseline 13 unmoved) + docs. Workers start from it without a baseline check.
 
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
@@ -45,7 +45,7 @@ d385cd308, balance/bridge-trace 5a233f42b, balance/b2s-arm-r2 66c4839a2. Not our
 (773412e49, older round), builder2's godot-native-score-light and plane_maker. Disk: builder0 76 % (25 G free), builder2 52 %.
 
 **Main:** c36217f79 GREEN builder0, 27 ALL JUDGED (3243/0). Balance's close tip c83a6a75d merged as 04513fc92 (tools/balance + docs
-only; merge_check_needed said CHECK on the Python files, so a builder0 check ran: result line below when it lands).
+only; merge_check_needed said CHECK on the Python files, so a builder0 check ran: `make check exited 0`, 3243/0, 27 ALL JUDGED, sim-baseline 13 unmoved).
 
 **Round 41 starts from (in order):**
 1. **Bridge fix first** (manoeuvre): a speed-only follow rule (slow before a sharp turn the leader is in; ORCA's steering untouched),
