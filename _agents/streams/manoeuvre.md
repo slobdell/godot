@@ -173,6 +173,30 @@ ordered north reads "turning" at 4.4 m/s). Running (`~/overnight-manoeuvre/r41/v
 Then Bar Q3 on 9025-9048. **Q4 (the orchestrator's add, R41.5):** the long episodes (42 % of jam-seconds) are yields and reversing:
 lab a cut of the give-way machinery when the blocker is a moving friend (slow and hold the lane), on fresh dev cells 7005-7008.
 
+### Bar Q3 (DRAFT, not filed; filed the minute v4's dev reads justify it, BEFORE any number on 9025-9048)
+
+- **The rule judged:** `--traffic-on=wait` as of v4 (f7fd7819a or a later hash named at filing): a crew waits (holds its route's
+  steering, follows at a closing pace, asks nobody) behind a friend that is itself turning toward its own next leg, or behind a
+  friend waiting for such a one; 5 s cap, 6 s cooldown. `waitcross` OFF. Orders' O2 OFF in both arms (`--group-depart` unset, R41.4).
+- **Gate:** the tree's full check green on builder0 first (C31.1), named here; the series from that frozen tree (R40.13).
+- **Arms:** OFF (default) v ON `--traffic-on=wait`; both `--brains-off=native_drive` (the pair compares the rule alone; ON forces the
+  GDScript drive anyway until the twin lands). **Trees:** main AND balance's v2 overrides (bt = the bar's hash + 8e257f3bc + d385cd308).
+- **Deciding (R41.3): pooled rim-seconds** on bridge-drill seeds 9025-9036 x start ticks {1, 8, 15} x both sides (72 runs an arm a
+  tree): ON <= 0.8 x OFF pooled AND the paired per-run mean < 0 by >= 2 se, on BOTH trees. Every surviving crew crosses in both trees
+  with ON. Runs with a crew over the 3 s rim line: ON <= OFF (named). bridge-pooled's own 18/18 line stays a hard guard (check).
+- **Guards on 9037-9048** (the group-order lines, so the bridge fix never costs his big order): orders' O1 probe cells crossing /
+  locks / sumps / terminus x 9037-9048 x crew headings (48 runs an arm): G5 never-in runs ON <= OFF; D-style jam-seconds ON <= 1.05 x
+  OFF (not deciding; a no-harm line); every-squad-in paired mean <= +2.0 s; friendly contact ticks ON <= 1.10 x OFF
+  (`wait_judge.py` lines). Fight lines: the dev cells round 40 used (`manoeuvre-wedge-trace` locks/terminus/sumps x 9037-9042, M3's
+  G1-G4 via `follow_judge.py`'s rows): give-way and stuck deaths within max(2 paired se x n, 3); contacts <= 1.10 x; kill share
+  within 0.03 and deaths within 5 %.
+- **Reported:** deck-jam seconds, mean arrival, the rule's counters (waits, >= 2 s waits, time-outs, longest) per tree and arm.
+- **Dev history (C41.1):** Q2's three broad variants were labbed on 7001-7004 (+8.8 / +7.3 / +8.5 % jam-seconds) and stopped (R41.5);
+  v4's dev reads: the bridge on seeds 1-3 (bridge-pooled), the group-order cells 7001-7004. No number on 9025-9048 has been read.
+- **Judge:** `bridge_lab_table.py --pair` per tree for the deciding line; `wait_judge.py` for the group-order guards; `follow_judge.py`
+  for the fight guards. A pass ships ON with native's twin (CP41.1: the orchestrator merges it alone and tells balance). A fail: OFF,
+  no re-run on these seeds.
+
 ### The bridge read (R41.3: bridge-pooled with `--traffic-on=wait`): THE WAIT RULE CLEARS THE BRIDGE
 
 bridgelab1 (builder0 light, native, bridge-pooled 18 runs an arm, deterministic; `~/overnight-manoeuvre/r41/bridgelab1/`; reader
