@@ -53,6 +53,18 @@ Nothing.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 ### NOW (2026-10-24 night)
+- **FINAL REPORT (round 40, 2026-10-25).** Green: **893180a31** (builder0 `make native check exited 0`, 25 passed, 2
+  NOT JUDGED for machine load). Every later commit is docs and evidence only (`references/`, `_agents/`).
+  - O1 DONE (c08d8f720): locks 5 "outside" was the probe's corridor stopping at a floodlight; probe reads past posts.
+  - O2 G3: v7 and v8 dev reads failed (causes traced); v9 passed its dev read; **Bar G3 v9 FAIL** (pairs 48 -> 13 v
+    <= 12.0; never-in crossing 5 click 0 v 1, traced to a crew's own road). OFF.
+  - O3 G1 v6: **Bar G1 v6 FAIL on one guard** (terminus 5 route twitch 20.6 v 25.4) with every deciding line passing
+    (outside 65 -> 8, route_left 3864 -> 589). Traced to a cap deploy among passers; on T1-ON main (dev) the twitch gap
+    closes (27.6 v 27.0) and s3805's never-in remains. OFF; round 41's G1 v7 starts on T1-ON main.
+  - O4 G2 v2c: re-read does not hold (guards, 10 cells); no bar (R40.10); its one re-read waits on settle's S1 v3.
+  - Stretch: no bar passed, so nothing ships.
+  - Frozen trees (detached worktrees, mine, safe to remove after the round): `/home/slobdell/projects/godot-orders-g1v6`
+    (c7d642aeb), `-g3v9` (893180a31), `-t1` (a1602cca9 = main 9d5907ddd + c7d642aeb, no branch).
 - **REPORT (2026-10-25): Bar G3 v9 FAILS** (frozen tree 893180a31, green; builder0 light J4; 8213-8224, n 12 a cell;
   evidence `references/round40/orders/g3v9-judged-builder0-893180a31/`). Switch stays OFF.
   - FAIL deciding: pairs < 12 m 48 -> 13 (<= 12.0). 12 of the 13 are main's own places left unmoved on crossing route
@@ -63,6 +75,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   - PASS: places_cleared 47; offsets (worst +24.0 m, 0 of 864 > 40 m); contacts 15046 -> 15049.
   - For round 41 (a new version needs a fresh block): read each crew's own road, not the squad centre's; and the
     crossing route pairs G3 never moves.
+  - **Crossing route pairs, offline from the bar's runs (no new runs):** G3 is not idle there (places_cleared 8 / 7 on
+    crossing 3 / 5 route), but the road test refuses about one step a run (places_off_lanes 11 / 12 over 12 runs) and the
+    pairs left are exactly main's (squads 2 / 3 and 3 / 4 at x -74 to -67, z 29-36): on that leg every way out of the
+    pair lands on a road still to be driven into the west quay, where the roads converge. Per-crew roads would make
+    this stricter, not looser, so round 41 needs a different exit there (e.g. the later squad holds short, not aside).
 - **REPORT (2026-10-25): Bar G1 v6 FAILS on one guard** (frozen tree c7d642aeb = green 8bbafb376 + docs; builder2 J4;
   8201-8212, n 12 a cell; evidence `references/round40/orders/g1v6-judged-builder2-c7d642aeb/`). Switch stays OFF.
   - FAIL guard: **terminus 5 route twitch** 20.6 v 25.4 (median of per-run worst; bar base + 3). Four seeds differ
