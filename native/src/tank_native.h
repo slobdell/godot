@@ -286,6 +286,7 @@ public:
 	// field, or only the changed ones; returns the fields written), `exec_mirror` is the in-game proof (pull, scramble,
 	// push: measurement only, --native-exec-mirror). The rest are for the tests.
 	Array exec_fields() const { return exec_field_table(); }
+	Array exec_late_fields() const { return exec_late_field_table(); }
 	int exec_pull(Object *mover);
 	int exec_push(Object *mover, bool force);
 	Dictionary exec_row(Object *mover) const;

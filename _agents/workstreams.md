@@ -46,7 +46,10 @@ another project's workers (plane_maker): never touch processes you didn't start.
 - **balance:** `game/units/**` (numbers within C42.5; `army.gd` ARCHETYPES / `cpu_army`), `tools/balance/**`, `mk/balance.mk`,
   `tests/rules/**`, `mk/rules.mk`, `mk/tactics.mk`, its probes in `tests/tactics/` (`face_probe.gd`, `army_probe.gd`, the `*_table.py` /
   `*_bar.py` tools); GRANTS `game/garage/garage_advice.gd` / `garage_opponent.gd` (the suggestion line, the opponent deal),
-  `game/modes/skirmish_mode.gd` demo_flags (R41.12); `game/combat/weapons.gd` / `armor.gd` NUMBERS only if B8 needs them.
+  `game/modes/skirmish_mode.gd` demo_flags (R41.12) and (R42 grant, 2026-10-26) `_start_match`'s army load only: both armies through
+  `Army.load_pair()` before the spawn loop, not the `rig.facing` feed region (camera's C42.3); `game/garage/garage_mode.gd` `fight()`:
+  one argument (`screen.draft.to_doctrine()`) into `GarageOpponent.build` (merge note; OFF = unchanged, tests pin it); `game/combat/weapons.gd` /
+  `armor.gd` NUMBERS only if B8 needs them.
 - **native:** `native/**`, `mk/native.mk`, `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**`, `tools/perf_judge.sh`,
   `tools/loaded.sh`, `tools/slot.sh`, `tools/remote.sh`, `tools/full_check_lock.sh`, `tools/copyback_verify.sh`,
   `tests/ai_scenarios/guard_line.gd`, `mk/play.mk`'s skirmish recipe, `_agents/judging.md`.
@@ -84,11 +87,123 @@ another project's workers (plane_maker): never touch processes you didn't start.
 9901-9940 balance Bar B7; 10001-10040 + 10101-10140 balance Bar B8; 10201-10240 balance B8 dev (never a bar); carried unread:
 8801-8840 + 8901-8940 Bar B2s v2; 9201-9240 + 9301-9340 Bar B5 t50 (only on his yes). Dev blocks 7001-7012 as before (never a bar).
 
+- **Bar B7, the CPU counter-lineup (balance; FILED fa9006e69, 2026-10-26 ~15:20, before any number on 9901-9940; amended by R42.3 before
+  any read).** Switch `--cpu-counter` (OFF; `Army.COUNTER_DEFAULT`): a plain `cpu` deal against an army >= 70 % tanks by cost fields the
+  faction's artillery-heavy lineup (siege / gang_hail / law_barrage / syndicate_barrage); 70 because the CPU's own most tank-heavy roll
+  (Condemned armor) is ~63 %, so 60 would change the demo. Garage hint "Bring two artillery squads with your tanks." ON
+  (`--tank-rush-hint=off`). builder2, one frozen commit (B7 + whatever Bar B8 ships), BASE off v ARM on; all-tanks (`cpu:mono_tank`) v
+  the plain `cpu` deal, same faction both sides, 4 factions x Green/Rust x 9901-9940 x one arena a seed (terminus / locks / sumps /
+  gorge / parade, 8 seeds each), 320 fights an arm, paired by (faction, team, arena, seed), se by seed bootstrap. **Deciding (R42.3, per
+  faction):** for each faction whose counter FIRES, all-tanks' win share ARM <= 60 % AND the paired change < 0 by >= 2 se; the counter
+  fires only for factions whose lineup beats the roll on B8's dev screen (ON <= OFF - 2 se there), and the pooled share is reported.
+  Guards: G1 CPU v CPU plain `cpu` mirrored, 9901-9910 terminus, 40 fights, GUARD_RESULT identical ON v OFF; G2 fight length median
+  within +/-20 %; G3 0 load errors, every countered army within the fielded cap; G4 `test_army_counter` + `test_tactics_mono_army` green;
+  reported: each faction's share, fires (expected 320/320 for firing factions). Expected before numbers: condemned ~47, gangs ~52, law
+  ~95, syndicate ~87 (pooled ~70: the pooled line would fail on B7 alone). A pass ships ON (he hears it; his veto stands).
+
+- **Bar E1, the attack order gets a clear shot (engage; FILED b37e7f4a4 / docs ab7269d4f, 2026-10-26 ~15:50, before any number on
+  9601-9648).** Switch `--attack-shot` (OFF; ON on a pass): the situation carries a per-member shot read (cover map; 3.7 lines a plan
+  tick in the probe); `_engage` gives `attack` only with a shot, else `FiringPosition` (pure) -> a `move` to the spot naming the target
+  (a move, not attack_move: under attack-move the brain fights a team-visible target from where it stands, E1's ticks 6-470); the
+  R42.2 branch in `_act` ENGAGE (own line from clear_line). HUD (C42.6): NO LINE OF FIRE standing, nothing while driving for a shot,
+  NOT FIRING only with a clear shot. Quick gate green builder0 7322318a3 (169/0). His case replayed (laptop): OFF 39.8 of 40 s still,
+  no hit; ON drives round in 1.5 s and fires from 17.8 m 0.8 s after the order. Dev read (laptop, b37e7f4a4, 7001-7012, 60 s, n 12, not
+  a number): stuck crew-seconds 314.9 -> 29.9 (paired -23.8, se 10.0); first hit 9.0 -> 3.8 s; deaths 7 = 7; dither 0. **Deciding**
+  (`make engage-bar`, builder0 light, 9601-9624): stuck crew-seconds ON <= 0.25 x OFF AND paired mean < 0 by >= 2 se; first hit ON < OFF
+  by >= 2 se. **Guards (filed first):** exposure deaths ON <= OFF + max(1.645 se, 2 crews); all deaths reported; spots never reached,
+  dither (cap 2.0) and line flips reported; fight lines G1-G4 = guard-run kind none, 24 x 600 s on locks, 9625-9648, kills / losses /
+  length / kill ratio each within OFF +/- 1.645 paired se; G5 no missing result; sim-baseline rows that move listed for adoption; the
+  whole suite ON (C31.1) before the series; a cost line. Could break: a crew leaving standoff dies in the open; an unreachable spot or a
+  corner flicker oscillates; CPU fights change; baseline rows move. Known, outside the grant: under an attack order a crew can pick
+  SUPPRESS and stand in band with no line (7001 ON: 7.8 s into the container); the stuck line counts it.
+  **Amended before any number (engage, frozen tree 57e2e7eb5):** the situation's shot read runs only under `--attack-shot` (OFF asks the
+  cover map for nothing: 7001 reads 0 lines OFF, 210 ON); the probe reports the SUPPRESS share of stuck seconds (R42.6); the cost line's
+  pass level: lines a plan tick in the ON arm <= crews + 1 (series mean; memoized at 0.5 m), OFF 0, and the ON check's perf-judge PASS.
+  Player smoke (laptop, his pose): OFF the Rat Rod sits nose-on behind the container 20 s; ON it is past the container's end at 1 s,
+  gun on the ring, firing by 3 s (frames in Status).
+
+- **Bar Q5, no pressing (manoeuvre; FILED 361fb9d24 Status, 2026-10-26 ~15:20, before any number on 9801-9824; R41.10's frame).** Rule
+  = `--traffic-on=nopush` v2 exactly as fc8f3697d: a crew whose hull touches a FRIEND ahead that is not pulling away (speed along my
+  nose <= mine + 0.3 m/s) holds forward throttle at 0 while the contact lasts and 0.5 s after, at most 3 s per friend, then today's
+  press for 6 s; reverse orders exempt; ORCA's steer, asks, give-ways and right-of-way as today (speed only, C42.4). Tree = CP42.0's
+  main + a45c0b953 + fc8f3697d + the judge / instrument, frozen, hash named at launch; every other switch at main's defaults. Gate: the
+  frozen tree's full check green on builder0 first (C31.1). Arms OFF v ON, both `--brains-off=native_drive`. Workload: his 5-squad
+  across click (`make manoeuvre-probe-jam`, PJ_HEADINGS=crew), crossing / locks / sumps / terminus x 9801-9824 = 96 paired runs an
+  arm, 90 s window; fights `manoeuvre-wedge-trace` locks / terminus / sumps x 9801-9806 (18 an arm). **Deciding (both):** D1 friendly
+  contact ticks ON <= 0.8 x OFF pooled AND paired mean < 0 by >= 2 se; D2 shoved crew-ticks (the reverse attribution) the same.
+  **Strict guards (filed first):** G5 every-squad-in mean ON <= OFF + 1.645 se (never-in = 90 s); G6 never-in runs ON <= OFF (a count,
+  no slack); fight G1-G4 (`follow_judge.py --on-arm=nopush`: give-way and stuck deaths ON - OFF <= max(2 paired se x n, 3), contacts
+  <= 1.10 x, kill share within 0.03, deaths within 5 %). Reported, never deciding: jam-seconds, jam-seconds with the rule's own eased
+  ticks removed (the orchestrator's ruling: a reported column), the rule's counters, never-in squads, per-cell table. Could break: a
+  column behind a stopped head stands (G5 / G6); a crew easing in a fight dies (G1-G4). Dev history: round 41's two labs (16 paired
+  runs) D1 -27.7 % (-3.6 se), D2 -34.5 % (-3.2 se), G5 inside, **G6 6 -> 7 (would fail)**; the judge reproduces them. Machine: builder2
+  for the group-order series if up, else builder0 light; fights builder0 light. A pass: native's twin, then ON; a fail: OFF, no re-run.
+
+- **Bar K4, the camera looks where the danger is (camera; FILED 76cb5053b Status, 2026-10-26 ~16:00, before any number on 9701-9736;
+  R42.5).** Switch `--camera-danger` (OFF; ON on a pass; off = round 41): the agreed weighted sum (heading by speed, lightly; each known
+  enemy by threat with decay; the war's pull: enemy centroid else the arena's middle), cancel / deadband / hold guards, no turn while he
+  aims, manual yaw wins, the glide's speed cap; two read-only feed lines in skirmish_mode.gd (C42.3). BASE off v ARM on, one commit,
+  builder0 light J4, headless 1920x1080 @60, Terminus, 9701-9736 x 3 workloads: AMBUSH (55 m, lanes by seed % 3), RETREAT (his case),
+  ATTACK (round 41's autoplay, 150 s; guards only). **Deciding:** D1 latency first shot -> shooter on screen (never = 20 s) on
+  AMBUSH + RETREAT pooled, ARM < BASE by >= 2 se of the difference; D2 REAR lane alone AND RETREAT alone, ARM latency mean < BASE and
+  blind % <= BASE; D3 facing the wall, pooled and RETREAT alone, ARM <= half BASE. **Guards:** K3 v2 lines 1-3 on ATTACK (clicks on
+  the aimed unit >= 70 %, slip p95 <= 40 px, jerks <= 3/min with no automatic source > 1.5, snaps 0 everywhere); held <= 25 %; action
+  share >= BASE - 10; yaw reversals ARM <= BASE + 1/min per workload; own squad on screen ARM >= BASE - 5 points per workload; every
+  run ok, no SCRIPT ERROR, every scenario staged ok. Dev reads (7001-7012, never a bar, 91ebddc9f): retreat facing the wall 37.3 ->
+  0.6 %, off-screen shots 29 -> 1; ambush blind 2.8 -> 1.2 %; attack guards hold (clicks 80.8 v 82.4 %, slip p95 24 px, held 16.6 %,
+  action share 35.9 -> 59.4 %, reversals 11.7 -> 5.3/min). The full check of 91ebddc9f queued behind builder0's lock; the series
+  starts on the commit that check greens (light lane, ~2.5 h both arms). A pass ships ON; the clip (K4.4) goes to him.
+
 _(filed bars go here, before their numbers)_
 
 ## Rulings (round 42)
 
-_(R42.1 onward)_
+- **R42.1 (2026-10-26 evening) balance's B7 call-site GRANT.** Two additive edits outside balance's paths, OFF-pinned by tests, merge
+  note: (1) `game/modes/skirmish_mode.gd` `_start_match` loads both armies through a new `Army.load_pair()` before the spawn loop (today
+  GREEN loads before RUST, so a plain `cpu` on GREEN can't see a tank rush on RUST: half of every mono series); (2) `game/garage/
+  garage_mode.gd` `fight()` passes `screen.draft.to_doctrine()` into `GarageOpponent.build` as the opposing army (one argument). With
+  `--cpu-counter` OFF nothing changes (tests pin it); the orchestrator reviews the diff at merge. The ownership line above and balance's
+  brief carry the same grant (400c73af4, written by a second main-checkout session, godot-45, which was then asked to stand down:
+  one orchestrator, godot-8c, for the rest of the round).
+- **R42.2 (2026-10-26 ~15:20) engage's E1 trace; GRANT in `game/ai/tank_brain.gd` `_act` ENGAGE.** Replay (`tests/engage/replay_probe.gd`,
+  3848c229e, laptop, Locks s49326, 40 s): the crew stood 39.8 of 40 s, moved 0.3 m, 26.1 m from the Missile Ring, zero hits. The chain:
+  ticks 6-470 the element's `attack_move` names the target and the brain holds ENGAGE "holding at standoff" (gun on nothing, own ray
+  BLOCKED, team sees it); ticks 471+ the plan's `attack` by distance (element_plan.gd:3250, the C42.2 hypothesis confirmed), same hold.
+  `TankBrain.EXECUTES_ORDERS` is true, so `OrderExecutor`'s attack branch (:126) is dead code (engage will not edit it). The brain's
+  `_act` ENGAGE (:2573) takes the TEAM's sight + distance as "fight here"; `CombatMotion.plan_lay` scores a gear-0 hold with no sight
+  test from the hull; `Gunnery._shootable`'s ray is blocked by the container. So "in range" is wrong twice (the plan's distance, the
+  brain's team-sight hold); fixing the plan alone would not move him. **Ruled:** GRANT engage `tank_brain.gd` `_act` ENGAGE (:2573-2592)
+  only, one guarded branch behind `--attack-shot` (OFF = byte-identical): a crew whose OWN line to its target is blocked
+  (`cover_map.clear_line_coarse`, memoized) does not hold at standoff; it closes on the target (the existing not-visible branch) unless
+  its element sent it a firing spot. The `plan_lay` gear-0 seam (combat_motion.gd:1340, every fixed gun) stays in reserve: use it only
+  if the trace shows the hold survives the brain change, with its own line in the bar. Nobody owns tank_brain.gd this round; native
+  confirms `_act` has no twin. Symmetric (the CPU gets it). Merge note.
+- **R42.3 (2026-10-26 ~15:30) Bar B7 judged per countered faction; the counter fires only where it beats the roll.** Balance's ask,
+  before any 9901+ number: last round's dev reads put B7 alone at ~70 % pooled (Law's and Syndicate's barrage lineups lose to tanks
+  worse than the roll, 96 v 92). Ruled: the deciding line is per faction whose counter fires (<= 60 % AND down >= 2 se, paired);
+  the counter fires for a faction only if B8's dev screen shows its barrage lineup beating the roll (ON <= OFF - 2 se); for a faction
+  where it doesn't, the counter stays off and that is reported (a counter that loses worse than the roll must not fire). B8's dev
+  screen runs first; Bar B7 freezes on the tree that carries whatever B8 ships. The pooled share stays a reported column.
+- **R42.4 (2026-10-26 ~15:40) GRANT balance one line in `game/garage/garage_screen.gd` `_hint()`.** `GarageAdvice.composition_hints`
+  is shown nowhere in the game (tests only), so the brief's suggestion could not be seen. Granted: `_hint()` returns
+  `GarageAdvice.tank_rush_line(draft)` + " · FIGHT when ready" when the line is non-empty (the status line under the credits bar);
+  the function and `--tank-rush-hint=off` live in garage_advice.gd. Additive, merge note, screenshot at desktop and phone.
+- **R42.5 (2026-10-26 ~15:45) camera's K4.1 census; Bar K4's frame approved.** 3f73a1378 Status (camera code 4cfadc6ee, danger off =
+  round 41; builder0 light, headless 1920x1080 @60, Terminus, CPU, dev 7001-7012, 45 s a run, never a bar): ambush 40 m, 12 runs: blind
+  (under fire, no enemy on screen) 3.7 % of play, 12 off-screen shots, 5 never on screen; flank lanes fine (latency p50 0.7-1.6 s: the
+  vision frame widens, an attack order turns the heading); REAR lane (4 runs) blind 9.8 % of play (19.9 % of time under fire), 5 of 9
+  shooters never on screen. His retreat (12 runs): the view faces the wall 37.3 % of the run (~60 % after the order), 17 of 29
+  off-screen shots never on screen. Yaw already reverses 2-9 times/min in a fight (the swing baseline). Player terms: a fight from the
+  side mostly shows up already; a gun behind the squad, or the fight he is retreating from, stays off screen. **Ruled:** Bar K4 as the
+  brief, with "never on screen" counted as 20 s in the latency line (so a mean and se exist; the never count reported beside), the
+  deciding workload = ambush (all lanes, 55 m) + his retreat, the rear lane and the retreat read separately as well as pooled; the
+  reversal guard is against this baseline (ARM <= BASE + 1/min). K4.2 built OFF; two read-only lines in skirmish_mode.gd (C42.3).
+- **R42.6 (2026-10-26 ~15:55) Bar E1 recorded; builder2 queue; the SUPPRESS seam pre-registered.** Engage's fight guards (48 x 600 s,
+  J8, ~30 min) run on builder2 behind balance's B8 dev screen (one judged series per builder, C42.1: `tools/builder_checks.sh
+  --wait-below 1`; balance says when its screen ends); the deciding series on builder0 light after the ON check reads green. Decided
+  before any bar number: if the bar's stuck crew-seconds ON are mostly SUPPRESS (a crew standing in band with no line), that is a
+  real result and the SUPPRESS seam (the same own-line guard, `_act` SUPPRESS) is granted on the same terms as R42.2 for a v2; the
+  `plan_lay` reserve stays second.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 

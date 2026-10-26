@@ -37,6 +37,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mover_record_usec"), &TankNative::mover_record_usec);
 	ClassDB::bind_method(D_METHOD("mover_record_mismatches"), &TankNative::mover_record_mismatches);
 	ClassDB::bind_method(D_METHOD("exec_fields"), &TankNative::exec_fields);
+	ClassDB::bind_method(D_METHOD("exec_late_fields"), &TankNative::exec_late_fields);
 	ClassDB::bind_method(D_METHOD("drive_owned", "mover", "cmd", "order", "delta"), &TankNative::drive_owned);
 	ClassDB::bind_method(D_METHOD("drive_owned_counts", "reset"), &TankNative::drive_owned_counts);
 	ClassDB::bind_method(D_METHOD("gun_configure", "config"), &TankNative::gun_configure);
