@@ -117,6 +117,23 @@ another project's workers (plane_maker): never touch processes you didn't start.
   corner flicker oscillates; CPU fights change; baseline rows move. Known, outside the grant: under an attack order a crew can pick
   SUPPRESS and stand in band with no line (7001 ON: 7.8 s into the container); the stuck line counts it.
 
+- **Bar Q5, no pressing (manoeuvre; FILED 361fb9d24 Status, 2026-10-26 ~15:20, before any number on 9801-9824; R41.10's frame).** Rule
+  = `--traffic-on=nopush` v2 exactly as fc8f3697d: a crew whose hull touches a FRIEND ahead that is not pulling away (speed along my
+  nose <= mine + 0.3 m/s) holds forward throttle at 0 while the contact lasts and 0.5 s after, at most 3 s per friend, then today's
+  press for 6 s; reverse orders exempt; ORCA's steer, asks, give-ways and right-of-way as today (speed only, C42.4). Tree = CP42.0's
+  main + a45c0b953 + fc8f3697d + the judge / instrument, frozen, hash named at launch; every other switch at main's defaults. Gate: the
+  frozen tree's full check green on builder0 first (C31.1). Arms OFF v ON, both `--brains-off=native_drive`. Workload: his 5-squad
+  across click (`make manoeuvre-probe-jam`, PJ_HEADINGS=crew), crossing / locks / sumps / terminus x 9801-9824 = 96 paired runs an
+  arm, 90 s window; fights `manoeuvre-wedge-trace` locks / terminus / sumps x 9801-9806 (18 an arm). **Deciding (both):** D1 friendly
+  contact ticks ON <= 0.8 x OFF pooled AND paired mean < 0 by >= 2 se; D2 shoved crew-ticks (the reverse attribution) the same.
+  **Strict guards (filed first):** G5 every-squad-in mean ON <= OFF + 1.645 se (never-in = 90 s); G6 never-in runs ON <= OFF (a count,
+  no slack); fight G1-G4 (`follow_judge.py --on-arm=nopush`: give-way and stuck deaths ON - OFF <= max(2 paired se x n, 3), contacts
+  <= 1.10 x, kill share within 0.03, deaths within 5 %). Reported, never deciding: jam-seconds, jam-seconds with the rule's own eased
+  ticks removed (the orchestrator's ruling: a reported column), the rule's counters, never-in squads, per-cell table. Could break: a
+  column behind a stopped head stands (G5 / G6); a crew easing in a fight dies (G1-G4). Dev history: round 41's two labs (16 paired
+  runs) D1 -27.7 % (-3.6 se), D2 -34.5 % (-3.2 se), G5 inside, **G6 6 -> 7 (would fail)**; the judge reproduces them. Machine: builder2
+  for the group-order series if up, else builder0 light; fights builder0 light. A pass: native's twin, then ON; a fail: OFF, no re-run.
+
 _(filed bars go here, before their numbers)_
 
 ## Rulings (round 42)
