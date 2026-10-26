@@ -53,7 +53,14 @@ as bars are filed -> spare: builder0 test-time read.
   copy-back is unaffected; home-relative `host:tank_squad/...` with --files-from exits 0. Fix: remote.sh passes `$host:$remote_dir/`;
   copyback_verify.sh rewrites any `host:~/x` source to `host:x`. Test: a stub rsync on PATH that fails `~` + --files-from the same way
   runs the re-copy branch (32/0 with the fix, 29/3 without). `make remote T=shell-tools-test` exited 0 and `make quick-remote` exited 0
-  on bfd033228 (builder0). Full check: running on builder0 (result below when it lands).
+  on bfd033228 (builder0). Full check c32dc33ff (N1 alone, builder0, CHECK_JOBS=2 on a saturated box): **killed by slot.sh at 5,400 s**
+  with 3243 passed / 0 failed in test, sim-baseline 13 unmoved, determinism 258cc8b1c957a796; army-loop-smoke and
+  native-verify-scenarios read FAIL only because they were mid-run at the kill (empty logs). Its copy-back's --checksum re-copy ran for
+  real with no exit 12. N1 is covered by the tip check below (orchestrator: no N1-alone re-run).
+- **TIP CHECK GREEN: c19dc10ec (N1 + GUARD_TARGET + N5), builder0, 2026-10-26: `make check exited 0 (build/ copied back)`, test
+  3243 passed / 0 failed, `>> check: 26 passed, 2 NOT JUDGED`** (perf-judge refused 3x at 1.33-2.45x load; ai-scenarios-check's
+  scenario_perf unpinned), sim-baseline 13 unmoved, determinism 258cc8b1c957a796, copy-back verified 237 files, 4,077 s. Merged to
+  main as 6209e9f89 by the orchestrator.
 - **N3 scaffold: 7a1cd1227.** `tools/judge/lines_r41.py` (empty `LINES`, same fields as lines_r40) wired into `tools/judge/lines.py`
   (537 lines load). Lines are added as round 41's verdicts land.
 - **N4 (spare, REPORT ONLY): what dominates a builder0 full check, and one proposal.**
@@ -80,7 +87,16 @@ as bars are filed -> spare: builder0 test-time read.
 - **N2 first piece: pair/native-wait-fields e59aca6aa** (off manoeuvre e6624abe5; worktree `../godot-native-pair`, local.mk offset 9).
   exec_fields.h: `_wait_for`, `_wait_since`, `_wait_refused`, `_wait_refused_until` after `yield_spot`. builder0: `make native quick`
   exited 0; `make native test FILTER=test_native_exec_state` 4/0; native-proof EQUAL on/off/ab 5cf09094178e2984. Merge WITH manoeuvre's
-  Q2 scaffold (on main the members don't exist). The Q2 rule's twin waits on manoeuvre's spec.
+  Q2 scaffold (on main the members don't exist).
+- **N2 the wait rule's twin (Bar Q3, `--traffic-on=wait` v2): pair/native-wait 20300bb52** (off manoeuvre f6d9d7b1b; worktree
+  `../godot-native-pair`). drive_native.cpp: `avoid`'s two wait points, `wait` / `wait_end` / `wait_blocker` / `wait_kind` (the other
+  mover through its ObjectView) / `meet_in`, the ask gate's `_wait_for == ""`; configured from Movement.WAIT_* (absent: off).
+  Traffic._chain_native keeps native_drive for wait; test_traffic_wait's switch test flipped. New tests/test_native_wait.gd (a file
+  crossed by a column, a crew behind a pivoting tracked friend, one behind a parked friend; ON / ON owned / OFF). Laptop: 2,880
+  drives a stage, 0 mismatches; ON 491 crew-ticks held, 21 waits (moving 464, turning 6, waiting 20), OFF 0; with
+  test_traffic_wait 8/0. Mutations: wait branch dropped -> 377 mismatches, the ask gate's clause dropped -> 400. `wait_long` is never
+  incremented, mirroring the GDScript (manoeuvre: the spec line came from v3; keep it). If Bar Q3 fails, the twin is discarded.
+  builder0 quick + native-proof (seeds 92721 / 8001 / 8002, wait on and off): running.
 - **N5 (R41.2, granted core.mk's lint gate): lint-fast.** a64611c15 (+ .uid 0165f3d67). `make lint-fast`: tests/lint/lint_fast.gd loads
   every script in one process; tools/lint_fast.py turns `SCRIPT ERROR`/`Parse Error` + `at: (res://f:l)` into `f:l: msg` findings; no
   baseline; fails on: any finding, a planted file not reported, a file count short, no LINT_FAST_DONE. Planted every run: syntax error,
@@ -92,4 +108,9 @@ as bars are filed -> spare: builder0 test-time read.
   missing const of a): lint-fast names b:4, plus `Compile Error: Failed to compile depended scripts` on a when a loads first; per-file
   names both files with the same message. Typed errors in an inner class, a runtime error in a static initializer: both see them.
   An unused-variable warning: neither. What lint-fast does NOT have are lint's 8 baselined --check-only artefacts (false positives).
-  *Before v after full checks:* pending (N1's check is the before; the after runs on this tip next).
+  *Before v after full checks (builder0):* before = main's 01:20 check, wall 2,208 s (lint gate 715 s, then test 1,479 s). After =
+  c19dc10ec's tip check on a box loaded 2.1-2.45x (perf-judge's ratios): lint-fast gate **17 s** (1,217 scripts, 16.2 s, 4 planted
+  seen), test started at +17 s and ran 3,385 s (2.3x main's: the load), per-file lint 2,445 s beside it, wall 4,077 s. The walls are
+  NOT comparable (load). What the load cannot move: the gate fell 715 -> 17 s, so the critical path is test alone (projected ~1,496 s
+  v 2,194 s at main's test speed, ~-700 s; a projection, not a reading). A quiet-box read is wanted when one opens (orchestrator:
+  don't hold anything for it).
