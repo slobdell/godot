@@ -95,7 +95,9 @@ _(filed bars go here, before their numbers)_
   note: (1) `game/modes/skirmish_mode.gd` `_start_match` loads both armies through a new `Army.load_pair()` before the spawn loop (today
   GREEN loads before RUST, so a plain `cpu` on GREEN can't see a tank rush on RUST: half of every mono series); (2) `game/garage/
   garage_mode.gd` `fight()` passes `screen.draft.to_doctrine()` into `GarageOpponent.build` as the opposing army (one argument). With
-  `--cpu-counter` OFF nothing changes (tests pin it); the orchestrator reviews the diff at merge.
+  `--cpu-counter` OFF nothing changes (tests pin it); the orchestrator reviews the diff at merge. The ownership line above and balance's
+  brief carry the same grant (400c73af4, written by a second main-checkout session, godot-45, which was then asked to stand down:
+  one orchestrator, godot-8c, for the rest of the round).
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
