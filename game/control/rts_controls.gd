@@ -811,6 +811,17 @@ func pick_unit(screen: Vector2) -> Tank:
 	return best
 
 
+## Round 41 (C41.4, R41.1; camera's K2): read-only, "the player is aiming": the cursor rests on a unit a click would pick,
+## a press or drag of either button is in progress (a box, a drawn facing, a press on an enemy), or an order is armed.
+## The camera holds the ground still under his cursor while this is true. Changes nothing; pick_unit is today's pick.
+func is_aiming() -> bool:
+	if mode != "" or _press_at != null or _right_press_at != null or _armed_press_at != null or not _attack_press.is_empty():
+		return true
+	if _hover_at.x < 0.0 or game_match == null or camera == null or not is_instance_valid(camera) or not camera.is_inside_tree():
+		return false
+	return pick_unit(_hover_at) != null
+
+
 ## Our living units whose screen position lies inside `rect`.
 func units_in_box(rect: Rect2) -> Array[String]:
 	var grown := rect.grow(BOX_MARGIN_PX)
