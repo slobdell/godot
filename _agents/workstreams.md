@@ -72,7 +72,7 @@ workers (plane_maker): never touch processes you didn't start. Never delete buil
 O2; 9201-9240 + 9301-9340 balance B5 bar; 9401-9440 balance B5 dev screening (never a bar); 8801-8840 + 8901-8940 Bar B2s v2 (filed
 round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001-7012 as before (never a bar).
 
-- **Bar O2, a coordinated departure (orders; FILED 25525980a, 2026-10-26 ~03:00, before any number on 9101-9124).** Switch
+- **Bar O2, a coordinated departure (orders; WITHDRAWN UNREAD R41.4; FILED 25525980a, 2026-10-26 ~03:00, before any number on 9101-9124).** Switch
   `--group-depart=queue` (DEFAULT_OFF): squads of a plain move/attack-move to 2+ squads rank front to back along the approach; each sets
   off when its corridor (first 30 m of its route, 7 m a side) holds no crew of a squad ranked ahead; 20 s cap; a new order cancels the
   wait; waiting squads acknowledged on the click. Manoeuvre's Q2 OFF in both arms (re-run on Q2-ON main if Q2 ships first). Runner
@@ -114,6 +114,13 @@ round 40, unread); 9501-9512 camera (if K needs seeded matches). Dev blocks 7001
   it clears the rim, Q3 = Q2 (one rule, one twin). Also: Q2's classes and 5 s cap approved from Q1's census (pooled 64 runs: crossing
   never-in 16/16; blockers stalled 30 / crossing 27 / same_way 25 / head_on 10 / turning 5 / parked 5 %); orders' O2 v1 dev read mixed
   (locks worse: front-first ranks the longest drive last), v2 rank=drive approved to dev-read and re-file on unseen 9101-9124.
+- **R41.4 (2026-10-26 ~04:00) O2 closed OFF: "departure order isn't where the time goes"; Bar O2 withdrawn unread.** Three dev reads
+  (builder0 light, native, 7001-7006, n 6 a map, his 5-squad across click): v1 queue front-first (25525980a) paired all-in -7.9 +/- 7.6 s,
+  locks worse (the longest drive ranked last); v2 rank=drive (3d35eee6f) -1.0 +/- 2.0 s, few squads queued (corridor rule seldom fires:
+  jams form at mid-route merges); v3 merge timing (b8116ec21) the only one that moves never-in (15 -> 8, contacts 34,157 -> 26,085,
+  all-in -8.7 +/- 6.6 s) but only by holding squads (median 18 s among 40 that waited, 17 cap releases, 18/24 clicks with a wait > 5 s:
+  every wait guard fails; his "didn't hear me" case). All switches stay OFF in code; evidence `references/round41/orders/o2-dev-reads-builder0/`
+  (ba0d14aab). The time is inside the merges: manoeuvre's Q2 ground. Orders moves to G1 v7.
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
