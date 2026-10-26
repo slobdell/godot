@@ -226,6 +226,14 @@ const FOLLOW_SWITCH := "follow"
 const FOLLOW_AHEAD_M := 16.0
 const FOLLOW_CONE_COS := 0.819  # cos 35 deg
 const FOLLOW_MOVING_MPS := 1.0
+## Round 40 (F1 v2, R40.22; lab 2 on a4e34d70e: queuing everywhere cost +70 % moving-stuck seconds, crews nose-to-tail behind
+## crawlers in open ground): the rule holds only where a swerve is what hurts, i.e. where the crew's route turns by more than
+## FOLLOW_TURN_DEG within FOLLOW_TURN_RADII x its minimum turning radius ahead (a turn a wheeled hull can't make back to once
+## ORCA has carried it wide: the bridge's deck mouth turns ~80 deg 2.5 m ahead of an 8 m radius). Elsewhere ORCA passes as today.
+const FOLLOW_TURN_DEG := 45.0
+const FOLLOW_TURN_RADII := 2.0
+## Measurement only: crew-ticks a friend was followed but no turn lay ahead (v2 left ORCA to pass).
+static var follow_open := 0
 ## Measurement only: crew-ticks the queue rule kept a wheeled crew on its route behind a friend.
 static var follow_queued := 0
 ## Measurement only (the orchestrator's ask, R40.21: "a crew nose-to-tail for seconds with the deck ahead clear reads as dumb"): the
@@ -291,7 +299,7 @@ static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
 			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
-			"route_not_ready": route_not_ready, "follow_queued": follow_queued, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
+			"route_not_ready": route_not_ready, "follow_queued": follow_queued, "follow_open": follow_open, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
@@ -368,6 +376,7 @@ static func reset_route_arms() -> void:
 	corners_inflated = 0
 	corners_kept = 0
 	follow_queued = 0
+	follow_open = 0
 	follow_longest = {}
 	follow_long_waits = 0
 	press_escapes = 0
@@ -2809,6 +2818,30 @@ func _around_fire(waypoint: Vector3, goal: Vector3, order: Dictionary) -> Vector
 ## (toward `waypoint` at this order's speed, easing off for the end of the route); Avoidance returns the nearest
 ## velocity that keeps clear of every neighbour, sharing the avoiding with movers. A velocity that would take the hull
 ## off the navmesh is refused (static geometry wins): the unit keeps its route and slows to the avoiding speed instead.
+## Round 40 (F1 v2): does the route from `here` turn by more than FOLLOW_TURN_DEG at a vertex within `within_m` along it? The
+## legs are here -> _path[_path_index] -> ... (a vertex's turn is between its incoming and outgoing legs; legs under 0.1 m skipped).
+func _turn_ahead(here: Vector3, within_m: float) -> bool:
+	var prev := Vector2(here.x, here.z)
+	var walked := 0.0
+	var way_in := Vector2.ZERO
+	var limit := cos(deg_to_rad(FOLLOW_TURN_DEG))
+	for i in range(_path_index, _path.size()):
+		var at := Vector2(_path[i].x, _path[i].z)
+		var leg := at - prev
+		var length := leg.length()
+		if length < 0.1:
+			continue
+		var way := leg / length
+		if way_in != Vector2.ZERO and way_in.dot(way) < limit:
+			return true
+		walked += length
+		if walked > within_m:
+			return false
+		way_in = way
+		prev = at
+	return false
+
+
 ## Round 40 (F1), measurement only: an unbroken queue wait is one with no gap of more than a tick between its queued ticks.
 func _follow_note(leader: Tank) -> void:
 	var tick := Engine.get_physics_frames()
@@ -2906,6 +2939,9 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 	# Round 40 (F1): a wheeled crew queues behind a friend going its way instead of being steered round it (FOLLOW_SWITCH).
 	if not held and not Traffic.off(FOLLOW_SWITCH) and wheel_radius() > 0.0:
 		var leader := _following(here, to / distance)
+		if leader != null and not _turn_ahead(here, FOLLOW_TURN_RADII * wheel_radius()):
+			follow_open += 1
+			leader = null
 		if leader != null:
 			follow_queued += 1
 			_follow_note(leader)

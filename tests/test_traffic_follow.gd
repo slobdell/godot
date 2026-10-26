@@ -56,33 +56,35 @@ func test_a_stopped_friend_is_not_followed() -> void:
 			"a stopped friend is passed as today")
 
 
-## Live: ON, the fast follower queues in the file behind the slow leader (never steered off its line); measured OFF beside it.
-func test_on_the_follower_queues_behind_a_slower_leader() -> void:
-	var lateral := {}
-	for arm in ["off", "on"]:
-		Traffic.set_off("follow", arm == "off")
-		var staged: Array = await _stage(10.0, 0.35)
-		var follower: Tank = staged[1]
-		var leader: Tank = staged[0]
-		var worst := 0.0
-		var closest := INF
-		for i in 8 * SimClock.TICK_RATE:
-			await _lab.step()
-			worst = maxf(worst, absf(follower.global_position.x))
-			closest = minf(closest, Movement._flat_distance(follower.global_position, leader.global_position))
-		lateral[arm] = worst
-		print("MEASURE follow %s: follower's worst lateral %.2f m, closest to the leader %.1f m, ended at %s (leader %s); queued %d" % [
-				arm, worst, closest, follower.global_position, leader.global_position, Movement.follow_queued])
-		if arm == "on":
-			assert_true(worst < 1.0, "ON: kept its line behind the leader (%.2f m)" % worst)
-			assert_true(Movement.follow_queued > 0, "ON: the queue rule fired")
-			print("MEASURE follow longest wait %s, waits >= %.0f s: %d" % [Movement.follow_longest, Movement.FOLLOW_LONG_S,
-					Movement.follow_long_waits])
-			assert_eq(String(Movement.follow_longest.get("crew", "")), "Green_Follow", "the longest wait is the follower's")
-			assert_eq(String(Movement.follow_longest.get("behind", "")), "Green_Lead", "behind the leader")
-			assert_true(follower.global_position.z > leader.global_position.z, "ON: still behind the leader")
-		_lab.dispose()
-		_lab = null
+## Live, v2 (R40.22): in open ground on a straight route, ON leaves ORCA to pass as today (no turn ahead): nothing is queued.
+func test_on_a_straight_route_in_open_ground_is_not_queued() -> void:
+	Traffic.set_off("follow", false)
+	var staged: Array = await _stage(10.0, 0.35)
+	var queued := Movement.follow_queued
+	var open := Movement.follow_open
+	for i in 6 * SimClock.TICK_RATE:
+		await _lab.step()
+	print("MEASURE follow straight: queued %d, followed in the open %d, follower at %s" % [Movement.follow_queued - queued,
+			Movement.follow_open - open, (staged[1] as Tank).global_position])
+	assert_eq(Movement.follow_queued, queued, "no turn ahead: never queued")
+
+
+## v2's gate, on a written route: a turn of more than FOLLOW_TURN_DEG within the reach counts; a gentle bend, or a sharp turn
+## beyond the reach, does not.
+func test_turn_ahead_reads_the_route() -> void:
+	var staged: Array = await _stage(10.0, 0.0)
+	var mover := Movement.of(staged[1])
+	var here := Vector3.ZERO
+	mover._path_index = 0
+	mover._path = PackedVector3Array([Vector3(0, 0, -5), Vector3(8, 0, -5), Vector3(8, 0, -40)])
+	assert_true(mover._turn_ahead(here, 16.0), "a 90 deg turn 5 m ahead")
+	mover._path = PackedVector3Array([Vector3(0, 0, -5), Vector3(2, 0, -15), Vector3(4, 0, -40)])
+	assert_true(not mover._turn_ahead(here, 16.0), "a gentle bend (11 deg) is not a turn")
+	mover._path = PackedVector3Array([Vector3(0, 0, -30), Vector3(20, 0, -30)])
+	assert_true(not mover._turn_ahead(here, 16.0), "a 90 deg turn 30 m ahead is beyond the reach")
+	mover._path = PackedVector3Array([Vector3(0, 0, -30), Vector3(20, 0, -30)])
+	mover._path_index = 1
+	assert_true(not mover._turn_ahead(here, 16.0), "past the turn: the route ahead is one straight leg")
 
 
 ## Until twinned in C++, ON runs the GDScript drive (as M3); OFF leaves native_drive as it was.
