@@ -1364,6 +1364,12 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			centres.append((blocks[k] as Dictionary)["center"])
 		var order := DepartureQueue.rank(centres, SelectionSquads.approach_of(blocks,
 				Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), Match.team_frame(team)["forward"]))
+		if DepartureQueue.RANK == "drive":
+			var drives: Array = []
+			for k in squads.size():
+				var lead := _first_living(squads[k]["units"])
+				drives.append(DepartureQueue.route_length(Pathing.find_path(lead, centres[k], anchors[k])) if lead != null else 0.0)
+			order = DepartureQueue.rank_by_drive(drives)
 		for r in order.size():
 			depart_rank[order[r]] = r
 	for i in squads.size():
@@ -1648,6 +1654,17 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary, acknowledge
 	if error == "" and acknowledge:
 		_acknowledge(command)
 	return error
+
+
+## Round 41 (O2): the first living Tank of `units` (null when none).
+func _first_living(units: Array) -> Tank:
+	if game_match == null:
+		return null
+	for n: String in units:
+		var tank := game_match.tanks.get_node_or_null(NodePath(n)) as Tank
+		if tank != null and tank.is_alive():
+			return tank
+	return null
 
 
 ## Round 41 (O2): queue squad `i` behind the squads ranked ahead of it when its corridor (DepartureQueue) holds one of

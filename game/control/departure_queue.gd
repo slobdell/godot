@@ -17,6 +17,9 @@ extends Node
 ## it runs on physics ticks, in rank order, on crew positions only.
 
 static var ENABLED := OS.get_cmdline_user_args().has("--group-depart=queue")
+## Who goes first. "front" (O2 v1): front to back along the approach. "drive" (v2, the dev read's finding: on Locks the
+## flank squad with the longest drive sets the all-in time, and v1 made exactly it wait): the longest planned drive first.
+static var RANK := "drive" if OS.get_cmdline_user_args().has("--group-depart-rank=drive") else "front"
 const CORRIDOR_M := 30.0
 const CORRIDOR_HALF_M := 7.0
 const MAX_WAIT_S := 20.0
@@ -146,6 +149,24 @@ static func rank(centres: Array, approach: Vector3) -> Array:
 		var db := (centres[b] as Vector3).dot(approach)
 		return da > db + 0.001 or (absf(da - db) <= 0.001 and a < b))
 	return order
+
+
+## Rank squads by `drives` (metres, one a squad) longest first; ties keep the dealt order. Pure.
+static func rank_by_drive(drives: Array) -> Array:
+	var order: Array = range(drives.size())
+	order.sort_custom(func(a: int, b: int) -> bool:
+		var da := float(drives[a])
+		var db := float(drives[b])
+		return da > db + 0.001 or (absf(da - db) <= 0.001 and a < b))
+	return order
+
+
+## The flat length of `route` (metres). Pure.
+static func route_length(route: PackedVector3Array) -> float:
+	var total := 0.0
+	for i in route.size() - 1:
+		total += Vector2(route[i].x, route[i].z).distance_to(Vector2(route[i + 1].x, route[i + 1].z))
+	return total
 
 
 static func reset_counters() -> void:

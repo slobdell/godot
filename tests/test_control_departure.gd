@@ -25,3 +25,9 @@ func test_crews_in_the_corridor_block_and_crews_beside_it_do_not() -> void:
 	var crews := {"in_road": Vector2(3, -12), "beside": Vector2(12, -12), "beyond": Vector2(0, -45), "edge": Vector2(-7, -20)}
 	assert_eq(DepartureQueue.blockers(corridor, crews), ["edge", "in_road"], "within CORRIDOR_HALF_M of the road, sorted")
 	assert_eq(DepartureQueue.blockers(corridor, {}), [], "an empty road is clear")
+
+
+func test_the_longest_drive_ranks_first_and_route_length_is_flat() -> void:
+	assert_eq(DepartureQueue.rank_by_drive([120.0, 240.0, 120.0, 90.0]), [1, 0, 2, 3], "longest first, ties in dealt order")
+	var route := PackedVector3Array([Vector3(0, 0, 0), Vector3(3, 5, 4), Vector3(3, 0, 14)])
+	assert_true(absf(DepartureQueue.route_length(route) - 15.0) < 0.001, "flat metres along the route")
