@@ -1,0 +1,16 @@
+{
+  "name": "Orders probe, his group order: 5 squads of 5",
+  "note": "Round 41 O1 (tests/orders_probe_group.gd): his biggest army, five full mixed squads (Units.MAX_SQUADS of 5). Formed and holding until ordered; the probe turns the crews to mixed headings before the click.",
+  "squads": [
+    {"name": "Alpha", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "ifv"}, {"unit": "ifv"}, {"unit": "scout"}]},
+    {"name": "Bravo", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "ifv"}, {"unit": "ifv"}, {"unit": "ifv"}, {"unit": "scout"}, {"unit": "scout"}]},
+    {"name": "Charlie", "formation": "wedge", "verb": "hold", "directive": {"role": "scout"},
+     "units": [{"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}, {"unit": "scout"}, {"unit": "ifv"}]},
+    {"name": "Delta", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "tank"}, {"unit": "ifv"}, {"unit": "ifv"}]},
+    {"name": "Echo", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "ifv"}, {"unit": "ifv"}, {"unit": "tank"}, {"unit": "scout"}, {"unit": "scout"}]}
+  ]
+}

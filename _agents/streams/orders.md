@@ -54,3 +54,20 @@ Nothing.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### NOW (2026-10-26)
+- **Plan:** O1 census probe (done, 8b828ec59) -> census on builder0 dev seeds 7001-7006 (crew v formed headings) -> hash to
+  manoeuvre + orchestrator -> O2: pick the lever from the numbers, build OFF, lab, file Bar O2 on 9101-9124 before any number
+  -> C41.4 getter if camera asks -> stretch G1 v7.
+- **Decisions:**
+  - "8+ squads" in the brief: the game fields at most `Units.MAX_SQUADS` = 5 squads a side (garage and skirmish), so his
+    biggest group order is five FULL squads (25 crews, `tests/control/orders_probe_group_5.json`, mixed tanks/IFVs/scouts).
+  - Mixed headings: every crew a seeded random heading just before the click (`--probe-headings=crew`), as squads stand
+    after a fight; `formed` (untouched) is the control.
+  - "Across the map": the click is the point opposite his army through the arena's middle, halfway to the far edge
+    (`--probe-target=across`), so every squad drives 110-150 m through streets; the base probe's deck click is short.
+  - Blocked-seconds are split by Movement's own phase: `blocked` (by a friend), `yielding` (stepping aside), `slow` (any
+    other under-way tick < 1 m/s, its own turn on the spot included).
+- **O1 first look (laptop, 8b828ec59-equivalent tree, terminus s7001, crew headings, n 1):** all in 75.4 s; squads 1 and 5
+  (the flanks) 75 / 63 s, the middle three 23-39 s; squad 1 drove 224 m for a 150 m route; 12 of 25 crews nose > 90 deg
+  off their first leg; first-leg crossings 0; crew-seconds under way: yielding 80, slow 60, blocked 10.
