@@ -86,6 +86,15 @@ play), one demo_flags condition (explicit `cpu:<archetype>` kept; defaults uncha
 - **Raw data:** `~/balance-guard-raw/b5/` (every arm, FACE lines inside), `~/balance-guard-raw/b5-lines/` (the lines by arm name);
   drivers `~/balance-runs/b5-*.sh`, logs beside them.
 
+**Lines screen, t50 (12:17; 8f2643375 + overrides, builder2, dev 9411-9420, blob + turtle, 5 guard arenas, both sides, 200 fights an
+arm, paired with base; Bar B5's guards G1-G5 as a dev read, `search.py bar-b5 ~/balance-guard-raw/b5-lines base t50`):** G1 blob
+line 46 -> 40 % (**-6.0, se 2.1**: a slow turret punishes the frontal charge) pass; **G2 turtle line 32 -> 35 % (+3.0, se 1.5)
+FAIL** at the 2-se rule (a parked turtle has the time to track; the rushing tanks don't); G3 every length cell within band (blob
++6 %, turtle +0 %); G4 time-cap +0; G5 flatness 24.5 -> 24.3 (-0.2, se 1.1) pass. **So the slow turret alone is NOT safe to file
+as is: it raises the turtle line.** If he wants it for feel, Bar B5 would need a turtle-neutral form (e.g. the turret lever at
+-30 %, t30, which is built but unscreened) or the turtle guard argued on its merits (a slower tank turret rewards the defender,
+which is the slug-fest direction R38.55 chose). The combined arm's lines follow (~12:50).
+
 **REPORT SKELETON (filled as the last arms land; the numbers above are final where marked DONE):**
 - **Playtest for him (no change ships; the lineups exist today):** his all-tank army v the artillery-heavy CPU:
   `make skirmish ENEMY=cpu:siege ENEMY_FACTION=condemned` and `make skirmish ENEMY=cpu:gang_hail ENEMY_FACTION=gangs` (field
