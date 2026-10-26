@@ -32,7 +32,7 @@ Q5 bar on what he sees (contacts / shoved ticks); refs kept: pair/native-wait 20
 balance/b2s-v2-arm d385cd308.
 
 **Waiting on him (player terms, one recommendation each):**
-1. **The smooth camera:** watch `~/projects/godot-camera/build/camera-clip/camera_glide_clip.mp4` (left old, right new) or play
+1. **The smooth camera:** watch `~/projects/godot/build/camera-clip/camera_glide_clip.mp4` (left old, right new) or play
    `make skirmish ARENA=terminus` v `SKIRMISH_FLAGS="--camera-glide=off"`: does it glide, does the target stay under the cursor, does
    it still find the fight fast enough? (Ships ON; his eye decides.)
 2. **A click right beside his army:** squads already in that street now hold their places and only the near ones move. Right?
