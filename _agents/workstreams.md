@@ -70,7 +70,7 @@ workers (plane_maker): never touch processes you didn't start. Never delete buil
 
 **Seed registry (round 41):** 9001-9024 manoeuvre Q2; 9025-9048 manoeuvre Q3 (bridge-drill seeds: BRIDGE_POOLED_SEEDS); 9101-9124 orders
 O2 (withdrawn unread; 9101-9112 -> Bar G1 v7); 9201-9240 + 9301-9340 balance B5 bar; 9401-9440 balance B5 dev screening (never a bar); 8801-8840 + 8901-8940 Bar B2s v2 (filed
-round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9524 camera K3 v2. Dev blocks 7001-7012 as before (never a bar).
+round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9548 camera K3 v2 (36 seeds, R41.14). Dev blocks 7001-7012 as before (never a bar).
 
 - **Bar O2, a coordinated departure (orders; WITHDRAWN UNREAD R41.4; FILED 25525980a, 2026-10-26 ~03:00, before any number on 9101-9124).** Switch
   `--group-depart=queue` (DEFAULT_OFF): squads of a plain move/attack-move to 2+ squads rank front to back along the approach; each sets
@@ -214,6 +214,12 @@ round 40, unread); 9501-9512 camera K3 v1 (read); 9513-9524 camera K3 v2. Dev bl
   native's pair/native-wait 20300bb52 kept as a ref, unmerged. Evidence `references/round41/manoeuvre/barq3-builder0-f6d9d7b1b/`.
   Note for round 42 (no action now): the overrides tree with the rule OFF crossed 72/72 on these fresh bridge seeds; its only known
   bridge failure stays the 18-run drill's rust t15 s2 (bridge-pooled is not re-seeded or loosened, R40.24).
+- **R41.14 (2026-10-26 ~09:00) Bar K3 v2 line 5 amended BEFORE any 9513+ number; 36 seeds.** Camera's dev evidence (9501-9512, builder0
+  light, 112b0a339 / 8ffe4651a, 9 arms x 12 seeds): the action share's per-seed SD ~25 points (the camera changes the autoplay's choices,
+  the match diverges), so a 12-seed mean is +/-7; aims/min at 12 seeds is underpowered. New line 5: ARM held <= 25 % of play AND action
+  share ARM >= BASE - 10 points; lines 1-4 unchanged; all read on 9513-9548 (36 seeds an arm, se ~4). Current ON (580e29909) on dev:
+  hits 78.6 %, slip p95 32 px, jerks 0.40/min, 0 automatic snaps, held 15.4 %, auto_frame 60 % of BASE, action 44.0 v 55.8 % (-11.8:
+  would FAIL the new line too, so the amendment is about power, not passing).
 
 ## Round 40: five streams (prepared 2026-10-24; briefs in `streams/`)
 
