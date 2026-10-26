@@ -751,3 +751,16 @@ failing G3 (the Law blob cell +24.6 % v its +/-20 % band at se 3.6: -1.28 se)**,
 guard (+1.71) just outside. M3's failing D sat 2.05 se short of the bar's own 2-se gain; M1 v2's deciding drift cleared by 7.1 se.
 So B2s's one failure is the closest call of the round: a re-read on fresh seeds could go either way, which is why R40.19 moves v2 to
 a fresh block rather than re-reading 8301-8340 + 8401-8440. Judge tests 86/86 (laptop).
+
+## Round 41's lines (2026-10-26, round 42 native N3, close step 5b owed by round 41)
+
+`tools/judge/lines_r41.py`: 26 lines, every number quoted from *Bars (round 41)* and *Rulings (round 41)* (nothing
+re-measured): Bar K3 v1 (4; FAIL line 3), Bar Q3 (7; FAIL), Bar K3 v2 (5; PASS, ships ON R41.17), Bar G1 v9 (7; PASS, ships ON
+R41.15; one REPORTED line) and B5's three dev reads (verdict `REPORTED (dev)`, never a bar; R41.16 / R41.18). O2, G1 v7 / v8
+(withdrawn unread), Q2 / Q4 / Q5 / M1 v3 (closed OFF without a bar) have no lines. `inventory.py` ->
+`references/round41/native/sizing/inventory.{csv,md}` (563 lines, 271 with a noise estimate); `table.py` re-run -> `table.csv`
+there, **no table change** (round 41's K3 and G1 rows are not on main as probe rows, so no pair was added). Five of the new lines
+carry an se and none is inside its own noise. The verdicts within 1.645 se of going the other way are all Q3's: the main-tree
+deciding line (-0.89 se), G5 (-0.21) and G6's PASS (+0.31). Q3 failed on more than one line, so no single close call decided it. The
+B5 pooled dev read sits 2.35 se clear. K3 v2's and G1 v9's lines are counts and totals that printed no se (noise `none`). Judge
+tests 86/86 (laptop).
