@@ -173,6 +173,28 @@ ordered north reads "turning" at 4.4 m/s). Running (`~/overnight-manoeuvre/r41/v
 Then Bar Q3 on 9025-9048. **Q4 (the orchestrator's add, R41.5):** the long episodes (42 % of jam-seconds) are yields and reversing:
 lab a cut of the give-way machinery when the blocker is a moving friend (slow and hold the lane), on fresh dev cells 7005-7008.
 
+### v4 reads (f7fd7819a; `~/overnight-manoeuvre/r41/v4labs/`, builder0 light, native for the bridge, GDScript both arms for the group order)
+
+| Read | OFF -> v4 ON |
+|---|---|
+| bridge, overrides tree (225087f27) | **17/18 -> 18/18**; pooled rim 14.2 -> 9.8 s (-31 %; paired -0.24 s a run, se 0.30, -0.8 se); deck jam 17.1 -> 10.4; worst crew 5.1 -> 1.5; arrival 34.9 -> 36.7 |
+| bridge, main (f7fd7819a) | 18/18 -> 18/18; pooled rim 8.1 -> **10.7 s (+32 %**; +0.14 s a run, se 0.20); deck jam 7.5 -> 9.7; worst 1.5 -> 2.4; arrival 36.6 -> 37.8 |
+| group order, 16 paired cells (7001-7004 crew) | jam-seconds 13,365 -> 14,015 (+4.9 %; +41 s a run, se 46, 0.9 se); all-in 80.4 -> 82.3 (+1.9 s, se 2.7); never-in 10 -> 10; contacts -1.3 %; waits 1,129 a run (17 >= 2 s), turning 57k / waiting 48k crew-ticks |
+
+**The wait family's table so far (bridge rim pooled, 18 runs; group order 16 paired cells):**
+
+| Variant | Keys | Overrides bridge | Main bridge | Group order jam-s |
+|---|---|---|---|---|
+| v1 (a553f85b0) | crossing + same_way + turning(slow) + chain | 17/18 -> 18/18, rim 14.2 -> 1.3, arrival 34.9 -> 32.7 | not read | +8.8 % (2.4 se) |
+| v2 (c8e329b23) | crossing + turning(slow) + chain | read running (`bridgev2/`) | 18/18, rim 8.1 -> 3.4, deck 7.5 -> 16.2 | +7.3 % (1.9 se) |
+| v3 (aaac5c133) | v2 + lock-on, lane-exit, tie-break | not read | not read | +8.5 % (2.3 se) |
+| v4 (f7fd7819a) | turning leader (moving or slow) + chain | 17/18 -> 18/18, rim 14.2 -> 9.8 | 18/18, rim 8.1 -> 10.7 (+32 %) | +4.9 % (0.9 se) |
+
+Reading: every variant clears the overrides' failing run (the CP41.1 gate as a hard guard); the deciding pooled-rim line on main is
+met by v2's crosser key (-58 %) and failed by v4's turning key (+32 %): at the deck mouth the leader swinging onto the deck reads as a
+CROSSER by its velocity before its nose is 30 deg off its next leg, so v4 fires late. The group order is neutral-to-worse for all
+four (v4 the mildest). The wait family trades the bridge for his group order; the orchestrator rules (message sent 04:50).
+
 ### Bar Q3 (DRAFT, not filed; filed the minute v4's dev reads justify it, BEFORE any number on 9025-9048)
 
 - **The rule judged:** `--traffic-on=wait` as of v4 (f7fd7819a or a later hash named at filing): a crew waits (holds its route's
