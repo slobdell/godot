@@ -45,6 +45,14 @@ const ARCHETYPES := {
 			"units": ["syn_lancer", "syn_scout", "syn_artillery", "syn_lancer", "syn_scout", "syn_ifv"]},
 	"syndicate_escort": {"faction": "syndicate",
 			"units": ["syn_ifv", "syn_scout", "syn_tank", "syn_ifv", "syn_artillery"]},
+	# B5 (round 41, balance; the orchestrator's ask 2026-10-26): the artillery-heavy lineup each faction lacked, siege's shape
+	# (two artillery entries in six) in the faction's own roster. `measure_only`: NEVER rolled by a seeded "cpu" deal nor
+	# offered by the garage (archetypes_for skips it); it loads only by name ("cpu:law_barrage", R41.12), so a measurement
+	# can put an all-tank army against it. Condemned's siege and the gangs' hail are the two that already existed.
+	"law_barrage": {"faction": "law", "measure_only": true,
+			"units": ["law_artillery", "law_scout", "law_tank", "law_artillery", "law_ifv", "law_scout"]},
+	"syndicate_barrage": {"faction": "syndicate", "measure_only": true,
+			"units": ["syn_artillery", "syn_scout", "syn_tank", "syn_artillery", "syn_ifv", "syn_scout"]},
 }
 ## L3/X5: how many vehicles one side may field. Doctrine.MAX_UNITS (25) is the cap on a HAND-WRITTEN five-squad
 ## army; a faction army at Units.BASELINE_BUDGET is bigger than that, so it is split over as many five-unit squads
@@ -77,12 +85,16 @@ static func is_cpu(name: String) -> bool:
 	return name == "cpu" or name.begins_with("cpu:")
 
 
-## L3: the archetype names belonging to `faction`, sorted (a deterministic pick order).
-static func archetypes_for(faction: String) -> PackedStringArray:
+## L3: the archetype names belonging to `faction`, sorted (a deterministic pick order). B5 (round 41): a `measure_only`
+## archetype is left out unless `with_measure_only`, so the seeded roll and the garage never deal it.
+static func archetypes_for(faction: String, with_measure_only := false) -> PackedStringArray:
 	var names: PackedStringArray = []
 	for archetype: String in ARCHETYPES:
-		if String(ARCHETYPES[archetype].get("faction", Units.DEFAULT_FACTION)) == faction:
-			names.append(archetype)
+		if String(ARCHETYPES[archetype].get("faction", Units.DEFAULT_FACTION)) != faction:
+			continue
+		if bool(ARCHETYPES[archetype].get("measure_only", false)) and not with_measure_only:
+			continue
+		names.append(archetype)
 	names.sort()
 	return names
 
@@ -135,9 +147,9 @@ static func load_army(name_or_path: String, seed_value: int, budget: int = Units
 			return {"error": "no faction '%s' (have %s)" % [faction, ", ".join(Units.FACTIONS)]}
 		if archetypes_for(faction).is_empty():
 			return {"error": "faction '%s' has no armies yet" % faction}
-		if name_or_path != "cpu" and not archetypes_for(faction).has(archetype):
+		if name_or_path != "cpu" and not archetypes_for(faction, true).has(archetype):
 			return {"error": "archetype '%s' is not a %s army (have %s)" % [archetype, faction,
-					", ".join(archetypes_for(faction))]}
+					", ".join(archetypes_for(faction, true))]}
 		return parse_scaled(cpu_army(name_or_path, seed_value, budget, faction))
 	var path := name_or_path if name_or_path.contains("://") else "res://doctrines/%s.json" % name_or_path
 	return Doctrine.load_file(path)
