@@ -216,6 +216,18 @@ const AVOID_ASK_PACE := 0.5
 const NEW_GOAL_JUMP := 3.0
 ## ...and during those ticks a way on that is crowded but not reversed is still driven at this share of its speed at least.
 const AVOID_MIN_PACE := 0.15
+## Round 40 (manoeuvre F1, R40.21; `--traffic-on=follow`, Traffic.DEFAULT_OFF until judged): a WHEELED crew whose ORCA answer
+## would steer it round a friend ahead on its route going its way QUEUES: it keeps its route's steering and takes only ORCA's
+## along-route speed. bridge-pooled's rust t15 s2 (d385cd308): a Law Assault Gun moved round its slowing leader at the deck
+## mouth went past the entry, where its 8 m turning circle could not reach the deck, and pressed at the rim (5.1 s). A
+## stopped friend is passed as today. Ahead = within FOLLOW_AHEAD_M and FOLLOW_CONE_COS of the way; going its way = moving
+## at least FOLLOW_MOVING_MPS within Traffic.FOLLOW_COS of it.
+const FOLLOW_SWITCH := "follow"
+const FOLLOW_AHEAD_M := 16.0
+const FOLLOW_CONE_COS := 0.819  # cos 35 deg
+const FOLLOW_MOVING_MPS := 1.0
+## Measurement only: crew-ticks the queue rule kept a wheeled crew on its route behind a friend.
+static var follow_queued := 0
 
 ## X4 right-of-way. A unit that has made no progress for ASK_SECONDS asks the friend in its way to give way, at most
 ## once every ASK_EVERY seconds.
@@ -270,7 +282,7 @@ static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
 			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
-			"route_not_ready": route_not_ready,"a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
+			"route_not_ready": route_not_ready, "follow_queued": follow_queued, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
@@ -346,6 +358,7 @@ static func reset_route_arms() -> void:
 	goal_repairs_refused = 0
 	corners_inflated = 0
 	corners_kept = 0
+	follow_queued = 0
 	press_escapes = 0
 	nose_stops = 0
 	driver_ticks = {}
@@ -2785,6 +2798,32 @@ func _around_fire(waypoint: Vector3, goal: Vector3, order: Dictionary) -> Vector
 ## (toward `waypoint` at this order's speed, easing off for the end of the route); Avoidance returns the nearest
 ## velocity that keeps clear of every neighbour, sharing the avoiding with movers. A velocity that would take the hull
 ## off the navmesh is refused (static geometry wins): the unit keeps its route and slows to the avoiding speed instead.
+## Round 40 (F1): the nearest living friend ahead of `here` along `way` (unit, flat) within FOLLOW_AHEAD_M and FOLLOW_CONE_COS,
+## if it is moving at least FOLLOW_MOVING_MPS within Traffic.FOLLOW_COS of `way`; null otherwise (none ahead, or the nearest
+## one ahead is stopped or going another way: today's rules).
+func _following(here: Vector3, way: Vector2) -> Tank:
+	var tank := ctl.tank
+	var best: Tank = null
+	var best_d := FOLLOW_AHEAD_M
+	for node in ctl.tanks_root.get_children():
+		var other := node as Tank
+		if other == null or other == tank or other.team != tank.team or not other.is_alive():
+			continue
+		var off := Vector2(other.global_position.x - here.x, other.global_position.z - here.z)
+		var d := off.length()
+		if d >= best_d or d < 0.01 or off.dot(way) < FOLLOW_CONE_COS * d:
+			continue
+		best = other
+		best_d = d
+	if best == null:
+		return null
+	var v := Vector2(best.real_velocity.x, best.real_velocity.z)
+	var speed := v.length()
+	if speed < FOLLOW_MOVING_MPS or v.dot(way) < Traffic.FOLLOW_COS * speed:
+		return null
+	return best
+
+
 func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false) -> Array:
 	var tank := ctl.tank
 	var here := tank.global_position
@@ -2835,6 +2874,10 @@ func _avoid(waypoint: Vector3, speed_factor: float, delta: float, held := false)
 		return [waypoint, 1.0]
 	var speed := chosen.length()
 	var keep := clampf(speed / maxf(desired, 0.1), 0.0, 1.0)
+	# Round 40 (F1): a wheeled crew queues behind a friend going its way instead of being steered round it (FOLLOW_SWITCH).
+	if not held and not Traffic.off(FOLLOW_SWITCH) and wheel_radius() > 0.0 and _following(here, to / distance) != null:
+		follow_queued += 1
+		return [waypoint, clampf(chosen.dot(to / distance) / maxf(desired, 0.1), 0.0, 1.0)]
 	# K1's response guarantee (100 ms = 3 ticks) outranks avoidance: an order takes effect at once and avoidance only
 	# SHAPES the movement. So for a moment after a new order the hull steers along its route (avoidance can't turn it
 	# away from where it was told to go before it has visibly gone), and it never sits at zero throttle while the way on

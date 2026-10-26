@@ -206,7 +206,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "reroute", "rerouteany"]  # round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "reroute", "rerouteany", "follow"]  # round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -257,8 +257,10 @@ static func _chain_native() -> void:
 	# Round 40 (M3): the seam's once-a-tick re-route scan, connected only while ON; and a re-route's leg is driven unscaled by
 	# ORCA's share in Movement.drive, which has no C++ mirror yet, so while ON the drive runs the GDScript (native_drive off;
 	# the GDScript and C++ drives are bit-identical per test_native_drive). Off, native_drive is left as it was.
+	# Round 40 (F1, `follow`): the queue rule is in Movement._avoid, inside the drive's C++ mirror, so the same GDScript drive.
 	if not _off.has("reroute"):
 		PlannerSeam.hook_reroute()
+	if not _off.has("reroute") or not _off.has("follow"):
 		if _reroute_saved_native_drive == null:
 			_reroute_saved_native_drive = BrainSwitches.native_drive
 		BrainSwitches.native_drive = false
