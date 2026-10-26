@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-26 ~14:30 PDT — **ROUND 41 CLOSED (box below)**; his post-close playtest recorded (attack order behind a container); main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-26 ~15:00 PDT — **ROUND 41 CLOSED; ROUND 42 NOT YET PREPARED.** The next orchestrator prepares it from the box below (his post-close playtest: the attack order behind a container, and the danger-weighted camera), `game_design.md` *His playtest after round 41*, and the carry-overs. No agents, loops or builder jobs running at this handoff. Earlier: **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
@@ -37,7 +37,15 @@ order sat 37 s behind a container, NOT FIRING, 22-26 m from the target** (record
 Green_Spears2_3 ticks 3240-4350). Cause: `ElementPlan._engage` gives `attack` by distance, with no line-of-fire test. **Round 42's
 first item (orders):** an attacked target that a crew can't hit puts the crew on the move to a spot with a clear shot.
 
-**Round-42 starting points:** his attack-order fix above; his three decisions below; Law/Syndicate artillery numbers within +/-15 % (balance); B2s v2 behind the
+**His camera note after the close (same `game_design.md` section): the camera faces the squad's heading and ignores the fight,
+so an ambush from the side is off screen and a retreat to the edge looks out at the audience.** Agreed design (his idea, refined; his OK
+pending only in that he hasn't played it): **the look direction is a weighted blend** of heading (light, by speed), each known enemy (by
+threat, decaying), and the centroid of known enemies else the arena's middle; guards against cancel/swing; no turn while he aims; manual
+yaw wins. Cause in code: `rts_camera.gd` yaw comes only from `facing`. **Round 42's camera item.** Bar idea: side/rear ambush seeds,
+seconds from first shot to the shooter on screen, and share of time facing the wall, v round 41's camera.
+
+**Round-42 starting points:** his attack-order fix above; the danger-weighted camera above; his decisions 2-3 below (1 is superseded by
+the camera note); Law/Syndicate artillery numbers within +/-15 % (balance); B2s v2 behind the
 bridge (the overrides tree with no rule crossed 72/72 fresh bridge runs; its only known failure is the 18-run drill's rust t15 s2);
 Q5 bar on what he sees (contacts / shoved ticks); refs kept: pair/native-wait 20300bb52, wip/manoeuvre-m1v3 (Q5 a45c0b953 / fc8f3697d),
 balance/b2s-v2-arm d385cd308.
