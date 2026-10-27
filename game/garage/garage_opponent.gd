@@ -15,7 +15,7 @@ const UNIT_CAP := ArmyCatalog.MAX_UNITS
 
 ## The army for `spec` ("cpu" = a seeded archetype of `faction`, "cpu:<archetype>" = that one, when it is the
 ## faction's) at `credits`. {"doctrine": Dictionary} or {"error": String}. B7 (round 42, balance): `opposing` is his draft; against a
-## tank rush a plain deal is the faction's counter lineup (Army.counter_archetype; OFF behind --cpu-counter), rolled the same way.
+## tank rush a plain deal is the faction's counter lineup (Army.counter_archetype; ON, --cpu-counter=off the escape), rolled the same way.
 static func build(spec: String, faction: String, seed_value: int, credits: int = Credits.GAME_CREDITS,
 		opposing: Dictionary = {}) -> Dictionary:
 	if not Units.FACTIONS.has(faction):

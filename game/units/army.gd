@@ -85,13 +85,13 @@ const SQUADS := {
 ## "cpu" deal fields its faction's artillery-heavy lineup (COUNTER_ARCHETYPES) instead of its roll: artillery is what beats
 ## an all-tank army (R41.16/R41.18). 0.7 sits above every army the CPU itself deals (the most tank-heavy, Condemned's
 ## `armor`, comes to ~63-67 %), so CPU v CPU never counters and a mixed player army is never punished; an army that is
-## seven-tenths tanks is a tank rush. `syndicate_barrage` is `measure_only`: dealt only by this rule, never rolled.
-## Only the factions whose counter beats all-tanks better than their roll (R42.3's firing screen, 9d8e26e44, builder2, n 200
-## each): Condemned 80 -> 50 %, Gangs 79 -> 56 %, Syndicate 92 -> 84 %; Law's `law_barrage` made it 92 -> 96 %, so Law keeps its roll.
+## seven-tenths tanks is a tank rush. Only the factions that passed Bar B7 (R42.21; fb9e2a95a, builder2, seeds 9901-9940, n 80
+## each, all-tanks v the plain deal OFF -> ON): Condemned 75 -> 46 %, Gangs 76 -> 60 %. Syndicate's lineup cut it 92 -> 78 %, short of
+## the bar's 60 %, and Law's made all-tanks stronger (R42.3), so both keep their roll (their `*_barrage` stay measure_only).
 const COUNTER_TANK_SHARE := 0.7
-const COUNTER_ARCHETYPES := {"condemned": "siege", "gangs": "gang_hail", "syndicate": "syndicate_barrage"}
-## `--cpu-counter=on|off`; OFF until Bar B7 passes.
-const COUNTER_DEFAULT := false
+const COUNTER_ARCHETYPES := {"condemned": "siege", "gangs": "gang_hail"}
+## `--cpu-counter=on|off`; ON since Bar B7 passed (R42.21), `off` the escape.
+const COUNTER_DEFAULT := true
 static var _counter := COUNTER_DEFAULT
 static var _counter_read := false
 

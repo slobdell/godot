@@ -1,8 +1,9 @@
 extends TestCase
 ## B7 (round 42, balance; C42.5): the CPU counter-lineup. When the opposing army's cost is mostly tanks
 ## (Army.COUNTER_TANK_SHARE), a plain "cpu" deal fields its faction's artillery-heavy lineup instead of its roll.
-## OFF behind --cpu-counter until Bar B7 passes; with it OFF nothing changes. Only the factions whose counter lineup beats all-tanks
-## better than their roll counter (R42.3's firing screen): Law's `law_barrage` made all-tanks stronger, so Law keeps its roll.
+## ON since Bar B7 passed (R42.21) for the factions that passed it: Condemned and Gangs. `--cpu-counter=off` is the escape, and with
+## it OFF nothing changes. Law's lineup made all-tanks stronger (R42.3) and Syndicate's missed the bar's 60 % (92 -> 78 %): both keep
+## their roll.
 
 const SEEDS := [1, 2, 3, 7, 11, 42, 99, 123, 777, 8501, 9901, 31337]
 
@@ -42,14 +43,19 @@ func test_no_rolled_deal_is_tank_heavy() -> void:
 		assert_true(Army.tank_share(plain) < Army.COUNTER_TANK_SHARE, "the plain cpu deal s%d" % seed_value)
 
 
-func test_only_the_firing_factions_counter() -> void:
+func test_the_counter_is_on_by_default() -> void:
+	assert_true(Army.COUNTER_DEFAULT, "Bar B7 passed (R42.21): ON, --cpu-counter=off the escape")
+
+
+func test_only_the_factions_that_passed_counter() -> void:
 	Army.set_counter(true)
-	assert_eq(Array(Army.COUNTER_ARCHETYPES.keys()), ["condemned", "gangs", "syndicate"], "R42.3's firing list")
-	assert_eq(Army.counter_archetype("law", _mono("law")), "", "Law's counter lineup made all-tanks stronger")
-	assert_eq(Army.load_army("cpu", 9901, Units.BASELINE_BUDGET, "law", _mono("law")),
-			Army.load_army("cpu", 9901, Units.BASELINE_BUDGET, "law"), "Law meets a tank rush with its roll")
-	assert_true(not Army.load_army("cpu:law_barrage", 1, Units.BASELINE_BUDGET, "law").has("error"),
-			"law_barrage stays loadable by name (a measurement lineup)")
+	assert_eq(Array(Army.COUNTER_ARCHETYPES.keys()), ["condemned", "gangs"], "Bar B7's passing factions")
+	for faction: String in ["law", "syndicate"]:
+		assert_eq(Army.counter_archetype(faction, _mono(faction)), "", "%s keeps its roll" % faction)
+		assert_eq(Army.load_army("cpu", 9901, Units.BASELINE_BUDGET, faction, _mono(faction)),
+				Army.load_army("cpu", 9901, Units.BASELINE_BUDGET, faction), "%s meets a tank rush with its roll" % faction)
+		assert_true(not Army.load_army("cpu:%s_barrage" % faction, 1, Units.BASELINE_BUDGET, faction).has("error"),
+				"%s_barrage stays loadable by name (a measurement lineup)" % faction)
 
 
 func test_a_cpu_meets_a_tank_rush_with_its_artillery_lineup() -> void:
@@ -107,8 +113,9 @@ func _tank_draft(faction: String) -> Dictionary:
 
 func test_the_garage_opponent_counters_his_tank_draft() -> void:
 	Army.set_counter(true)
-	assert_eq(GarageOpponent.build("cpu", "law", 9904, Credits.GAME_CREDITS, _tank_draft("law")), GarageOpponent.build("cpu", "law", 9904),
-			"Law's garage CPU keeps its deal against his tanks")
+	for faction: String in ["law", "syndicate"]:
+		assert_eq(GarageOpponent.build("cpu", faction, 9904, Credits.GAME_CREDITS, _tank_draft(faction)),
+				GarageOpponent.build("cpu", faction, 9904), "%s's garage CPU keeps its deal against his tanks" % faction)
 	for faction: String in Army.COUNTER_ARCHETYPES:
 		var tanks := _tank_draft(faction)
 		var built := GarageOpponent.build("cpu", faction, 9904, Credits.GAME_CREDITS, tanks)
