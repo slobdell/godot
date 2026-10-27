@@ -299,6 +299,17 @@ _(filed bars go here, before their numbers)_
   Ruled: a real result per R42.6; **v2 = the same own-line guard on the SUPPRESS stand in `_act`, granted on R42.2's terms, built OFF
   after E1's flip, labbed on dev seeds, its own bar on fresh 9649-9672** (registry). The flip of E1 waits only on the builder2 fight
   guards (line 5) and the OFF check of the merge candidate.
+- **R42.13 (2026-10-26 ~19:20) Bar E1 fight guards: G3 PASSES on the paired mean (the judging table's form); Bar E1 PASSES; flip ON.**
+  builder2, native on, b08d54df3 (= 4658fa514's code), locks, kinds none, green side, 9625-9648, 600 s, n 24 paired: G1 kills 18.96 ->
+  19.79 (+0.83, se 1.24, band +/-2.03) PASS; G2 losses 18.62 -> 18.54 (-0.08, se 0.99) PASS; G4 kill ratio 1.02 -> 1.07 (+0.05, se 1.47)
+  PASS; G5 48/48, no SCRIPT ERROR PASS. G3 fight length: `guard.py --pair` prints the two arms' MEDIANS (181.0 -> 193.4, +12.4) against
+  the paired se of the MEAN (7.05; band 11.6): outside by 0.8 s; the paired per-seed reading, which is how `judging.md` line 114 reads
+  this line ("G2's median, read as a mean here"), is +4.8 s, se 7.05, z 0.69 (median of the paired diffs 0.0; 9 longer, 9 shorter, 6
+  identical; end reasons 15 control / 9 elimination both arms; without s9625's +95.6 s the mean is +0.9 s). The filing says "within
+  OFF +/- 1.645 PAIRED se", which only reads on the paired mean; comparing arm medians against the mean's se is the tool's mismatch,
+  not the bar's line. Ruled PASS, the literal median reading recorded beside it. Lesson for the tool (native): `guard.py --pair` must
+  print the statistic the filing names. Engage flips `--attack-shot` ON with `=off`, adopts the 9 ON sim-baseline maps with the
+  reason, runs the OFF-default check of the merge candidate, names both hashes; perf-judge in a quiet window before the close.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
