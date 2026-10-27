@@ -87,30 +87,62 @@ The clip, when K4.4 has one.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-27: K4.1 DONE; K4.2 DONE OFF at 0e4d4f732, GREEN builder0 (`make check exited 0`, 26 passed, 2 NOT JUDGED:
-perf-judge refused on a busy box, scenario_perf unpinned); Bar K4 FILED (R42.5 + G5 amendment recorded on main); **Bar K4 v2 PASSED (9737-9772 at ef55e64b8, GREEN builder0 ALL JUDGED): the danger camera ships ON (`--camera-danger=off` =
-round 41); the ON commit's full check is queued. (Bar K4 on 9701-9736: FAIL, kept below.)**
-(D2 rear lane, G1 snaps; table below): the danger camera stays OFF by default. Next: fix the solid snap and the rear lane on dev
-seeds only, then a fresh series (proposed 9801-9836, Bar K4 text unchanged) on the fixed commit, asked of the orchestrator. K4.4 clips
-filmed (dev seed, laptop): `~/camera-clips-round42/retreat_7005.mp4`, `ambush_rear_7001.mp4` (to re-film on the bar commit).**
-Start: 18982e8df (= 21b20bdce's code, GREEN builder0 per HANDOFF; no baseline check).
+**2026-10-27, FINAL: every backlog item DONE. The danger camera ships ON at c27f8011c, GREEN builder0 (`>> remote: make check
+exited 0`, 28 targets all passed, ALL JUDGED); merged into main by the orchestrator (R42.22). `--camera-danger=off` = round 41.**
+- K4.1 census DONE (table below). K4.2 the rule DONE (behind the flag, then ON). K4.3: Bar K4 on 9701-9736 FAILED (D2 rear lane,
+  G1 solid snaps), R42.16 fixes (a)-(c), R42.18 D2's blind as a share of time under fire; **Bar K4 v2 on 9737-9772 PASSED every
+  line** (camera ef55e64b8, GREEN builder0 ALL JUDGED; table below). K4.4 clips filmed on the ON commit (below), earlier takes kept.
+- Stretch (off-screen hit edge marker): needs `game/ui/**`, not ours: written up as a proposal for next round (below).
+- Start: 18982e8df (= 21b20bdce's code, GREEN builder0 per HANDOFF; no baseline check).
+
+**Decisions made here (each with its reason):** the danger frame frames his units only (lean 0) plus the contacts ahead that fit
+under the zoom cap (a lean or mirrors behind the view lost his squad off the bottom: own on screen 55-86 % on dev); SOLID_IN_OMEGA
+stays 22 and the clearance is capped at the glide's 0.6 screens/s instead of softened (omega 10 doubled the seconds inside a
+building); a gun firing from outside the view breaks the hold and the deadband (the first bar's rear-lane nevers); a 90 deg/s
+danger turn was tried and dropped (201 snaps).
+
+**Watch items (Bar K4 v2, ARM v BASE):** attack clicks still on the aimed unit 76.1 v 83.8 % (line 70); ambush building-clearance
+jerks 1.88/min v 0.07 (gentle eases; G1 judges ATTACK: 0.84); seconds the camera sits inside a building rose (dev ambush 7001-7036:
+~26 s v ~5 s in 27 min of play; the cutaway shows the units, but it is the next camera item); rear-lane own on screen ~94-95 %.
+
+**Questions for the lead (none blocking):** does the view turning to the gun shooting at his squad feel right, or too eager while
+he drives? Does the retreat looking back over his own wall read clearly?
 
 ### For him (K4.4; the orchestrator relays, in player terms)
-**The clips** (laptop flightdeck, filmed at 0ba17b80a = 0e4d4f732's camera, LEFT round 41 / RIGHT danger camera, a dev seed, not
-a bar): `~/camera-clips-round42/retreat_7005.mp4` (his case: scouts take fire, then drive back to his own edge: left stares at the
-crowd, right keeps his IFV at the wall with the fight beyond it; still `evidence/retreat_7005_t30_0ba17b80a_FINAL.jpg`) and
-`~/camera-clips-round42/ambush_rear_7007.mp4` (a squad driving north is shot at from behind). The white cross is the autoplay's
-cursor. The matches diverge after the first seconds (one seed in a window is not deterministic): the bar is the evidence, the clip is
-for feel.
-**His smoke:** `make skirmish ARENA=terminus SKIRMISH_FLAGS="--camera-danger=on"` v plain `make skirmish ARENA=terminus` (round 41
-until the bar ships it ON): drive a squad north and get shot at from a side street or from behind; send scouts at a fight and then
-back to your own edge. Watch for: does the view turn to whoever is shooting at the selected squad, does a retreat look back at the
-fight, does it ever swing back and forth, does your own squad stay on screen. `--camera-readout=on` adds a DANGER line (the three
-pulls and where it looks).
-**Merge notes:** shared edit = 3 lines in `game/modes/skirmish_mode.gd` beside `rig.facing` (C42.3: `rig.danger =
-DangerFeed...reader()`), plus `game/ui/camera_readout.gd` (owned). New: `game/camera/danger_feed.gd`, `camera_look.gd` (+ .uid),
-`tests/test_camera_look.gd`, `tests/test_camera_danger.gd` (+ .uid). Dev-only flags: `--camera-scenario=ambush|retreat`,
-`--camera-lane=`, `--camera-ambush-m=`, `--camera-danger-lean=`, `--camera-solid-in=`.
+**The clips** (laptop flightdeck, LEFT round 41 (`--camera-danger=off`) / RIGHT the danger camera; dev seeds, not a bar; the white
+cross is the autoplay's cursor; the two matches diverge after the first seconds, so the bar is the evidence and the clip is for feel):
+- ON commit c27f8011c: `~/camera-clips-round42/on_c27f8011c/retreat_7005.mp4` (his case: scouts take fire, then drive back to his
+  own edge; left stares at the crowd past the wall, right looks back at the fight) and
+  `~/camera-clips-round42/on_c27f8011c/ambush_rear_7007.mp4` (a squad driving north is shot at from behind; the matches
+  diverge early, left was barely shot at (under fire 2.8 s v 18.1 s), so this one is for feel only). Stills I looked at:
+  `evidence/on_retreat_7005_t{12,24,36}_c27f8011c.jpg` (t36: left = the crowd past the wall; right = his IFV and the fight) and
+  `evidence/on_ambush_rear_7007_t{12,24,36}_c27f8011c.jpg`. Census of the retreat take: facing the wall 33.8 s left v 0.0 s right.
+- Earlier takes kept: `~/camera-clips-round42/take_0ba17b80a/` (0e4d4f732's camera), `first_take_76cb5053b/`,
+  `second_take_9a1185dbd/`; stills in `evidence/` (`retreat_7005_t30_0ba17b80a_FINAL.jpg`).
+**His smoke:** `make skirmish ARENA=terminus` (the danger camera, ON) v `make skirmish ARENA=terminus
+SKIRMISH_FLAGS="--camera-danger=off"` (round 41): drive a squad north and get shot at from a side street or from behind; send scouts
+at a fight and then back to your own edge. Watch for: does the view turn to whoever is shooting at the selected squad, does a
+retreat look back at the fight, does it ever swing back and forth, does your own squad stay on screen. `--camera-readout=debug`
+adds a DANGER line (the three pulls and where it looks).
+**Merge notes:** merged at c27f8011c (R42.22). Shared edit = 3 lines in `game/modes/skirmish_mode.gd` beside `rig.facing` (C42.3:
+`rig.danger = DangerFeed...reader()`), plus `game/ui/camera_readout.gd` (owned). New: `game/camera/danger_feed.gd`,
+`camera_look.gd` (+ .uid), `tests/test_camera_look.gd`, `tests/test_camera_danger.gd` (+ .uid). Changed: `rts_camera.gd` (the
+rule, the clearance cap), `camera_playtest.gd` / `camera_trace.gd` (scenarios, the look census), `tests/camera/camera_report.py`,
+`mk/camera.mk`. The clearance cap also changes `--camera-danger=off` (both arms ran it). Dev-only flags: `--camera-scenario=ambush|retreat`,
+`--camera-lane=`, `--camera-ambush-m=`, `--camera-danger-lean=`, `--camera-solid-in=`, `--camera-glide-yaw=`.
+**Playtest commands (measuring):** `tools/remote.sh --light camera-trace "CAMERA_SEEDS=..." CAMERA_SECONDS=45
+"CAMERA_FLAGS=--camera-scenario=ambush --camera-ambush-m=55 --camera-danger=off|on" CAMERA_JOBS=4` (or `--camera-scenario=retreat`;
+attack = no scenario, 150 s), then `tests/camera/camera_report.py build/light/build/camera-trace` (copy it out first: the next remote run
+wipes build/).
+
+### Proposal for next round's brief: the off-screen hit edge marker (camera stretch, needs `game/ui/**`)
+When a unit he commands is hit by a gun he cannot see on screen, a short-lived marker at the screen edge points along the bearing to
+the shooter (from the same DangerFeed the danger camera reads: known shooters only, so nothing in the fog is given away; never a
+UI button). It covers the seconds the camera spends turning (rear lane: the shooter reaches the screen in ~4.8 s mean on Bar K4 v2)
+and the case where he holds the view himself. Owner: HUD (`game/ui/**`), reading `DangerFeed.read()` read-only; the camera stream
+supplies the bearing helper (`CameraLook.bearing`). Bar: on the ambush rear lane and retreat, the marker's bearing within 20 deg of
+the shooter for >= 90 % of the blind seconds, at most one marker per shooter, gone within 1.5 s of the shooter coming on screen; the
+lead judges whether it reads as information or clutter.
 
 ### Bar K4 (FILED before any number on 9701-9736; R42.5 folded in; guards never amended after their numbers)
 **Arms:** BASE `--camera-danger=off` (round 41) v ARM `--camera-danger=on`, BOTH on one commit (named with the result; the constants
