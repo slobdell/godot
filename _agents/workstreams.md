@@ -276,6 +276,10 @@ _(filed bars go here, before their numbers)_
   commit, lines unchanged, no number read; the suite-ON check re-runs on it (C31.1) before the series. Perf-judge under ON: PASS.
   Built 4658fa514 (`ElementPlan.flank_side`, pure; two lines under `if ATTACK_SHOT`; 4 tests; laptop `ATTACK_SHOT=on make
   tactics-drills` 0 failures, far_ambush widest 75.0 m v OFF 73.3): **Bar E1's frozen tree = 4658fa514**; its suite-ON check queued.
+  **Suite-ON check on 4658fa514 (builder0, 18:23): green by the filing's terms:** `make check ATTACK_SHOT=on exited 2`, 3303 passed /
+  0 failed, 27 passed + 1 FAILED = sim-baseline only (the same 9 maps and hashes as at 57e2e7eb5: the side pick moved no baseline
+  fight; adopted at the ship flip), perf-judge PASS (9510 usec per reference ms v 25840), far_ambush ON 75.0 m. Deciding series
+  launched on builder0 light (`engage-bar`, 9601-9624, J4, native off); guards on builder2 after balance pauses.
 - **R42.11 (2026-10-26 ~17:15) Q5 written up OFF; v3 the best variant; no Bar Q5 v3.** Manoeuvre's v3 lab (wip/manoeuvre-q5v3 4c8db69b6
   = the frozen tree + v3: ease only against a friend whose drive is under way, a friend standing still under the ease for a second is
   pressed at once; the same 16 dev cells 7009-7012 x 4 maps, GDScript, builder0 light): D1 contacts -27 % (-4.5 se), D2 shoved ticks
