@@ -125,7 +125,7 @@ instead of being carried past the mouth to the rim? `make skirmish ARENA=terminu
 5-squad order; who shoves, who stands. Drill: `make remote T="native bridge-pooled BRIDGE_FLAGS='--traffic-on=deckwait
 --brains-off=native_drive'"`; `python3 tests/manoeuvre/bridge_lab_table.py off=A.jsonl on=B.jsonl --pair=off,on --q6`.
 
-**Merge notes:** branch off 18982e8df, main bf99631b5 merged (8026d9696). Game changes: `game/ai/movement.gd` (deckwait block, the
+**Merge notes:** branch off 18982e8df, main bf99631b5 merged (8026d9696); merged into main at 903c34217 (R42.15). Game changes: `game/ai/movement.gd` (deckwait block, the
 `wish` / `desired` split in `_avoid` with the OFF-identical clear-way return, the drive-tick `_wait_end`, Q5's nopush v2 from the
 cherry-picks, the ask gate scoped to Q2's wait), `game/ai/traffic.gd` (DEFAULT_OFF += deckwait, nopush; `_chain_native`). Tests:
 `tests/test_traffic_deckwait.gd` (7), `tests/test_traffic_nopush.gd` (3, as cherry-picked), `tests/manoeuvre/q5_judge.py`,
@@ -138,6 +138,10 @@ the close. Evidence under `references/round42/manoeuvre/` (q6trace1, q5lab3, q5l
 
 - **Bar Q6's series ended 19:27 PDT, verdict FAIL** (the table above); evidence `references/round42/manoeuvre/barq6-builder0-7569747ce/`.
   No re-run on 9825-9848; no code change after the numbers. The branch's hand-over hash stays **7569747ce**.
+- **R42.15 (19:55 PDT): the verdict recorded, the branch merged into main at 903c34217 (both rules OFF)**; the "carried-past case"
+  shape is in the ruling for a later round. The side worktrees and builder0 light folders are the orchestrator's to remove at the
+  close. The stream is done; the bullets below are the round's log in time order (a later bullet supersedes an earlier "running" /
+  "starts after" one).
 
 - **Frozen tree 7569747ce GREEN on builder0** (code ac64ce939 = main bf99631b5 with CP42.0 + Q5 a45c0b953 / fc8f3697d cherry-picked +
   deckwait v4 + this stream's judges/instruments): `make remote T=check` 16:23-17:30: `>> remote: make check exited 0 (build/ copied
