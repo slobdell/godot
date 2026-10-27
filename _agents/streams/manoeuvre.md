@@ -81,9 +81,11 @@ worktree: `~/overnight-manoeuvre/r42/`.
 
 ### Where it stands (2026-10-26 ~16:50 PDT): both bars filed; the gate check of the frozen tree 7569747ce is queued on builder0
 
-- **Frozen tree 7569747ce** (code ac64ce939 = main bf99631b5 with CP42.0 + Q5 a45c0b953 / fc8f3697d cherry-picked + deckwait v4 +
-  this stream's judges/instruments): `make remote T=check` launched ~16:45 (`~/overnight-manoeuvre/r42/gate1/`; behind engage's and
-  camera's checks in builder0's lock). One check gates Bar Q5 and Bar Q6 (R42.7). Laptop: `make test FILTER=traffic NATIVE=off`
+- **Frozen tree 7569747ce GREEN on builder0** (code ac64ce939 = main bf99631b5 with CP42.0 + Q5 a45c0b953 / fc8f3697d cherry-picked +
+  deckwait v4 + this stream's judges/instruments): `make remote T=check` 16:23-17:30: `>> remote: make check exited 0 (build/ copied
+  back)`, 3300 passed / 0 failed, `27 passed, 1 NOT JUDGED` (remote-guard-test's quiet window refused at load 16.78 on 10 cores: a
+  load refusal), sim-baseline 13 maps unmoved (`~/overnight-manoeuvre/r42/gate1/check.log`). **This commit is green, merge here:
+  7569747ce** (docs commits sit on top). **Bar Q6's series started 17:38 PDT** (`barq6.sh`; `~/overnight-manoeuvre/r42/barq6/`). Laptop: `make test FILTER=traffic NATIVE=off`
   127/0 at 520516ec3; deckwait 7/0 at ac64ce939.
 - **Bar Q5** (recorded on main as filed): the series `~/overnight-manoeuvre/r42/barq5.sh` (HOST=builder2 on the orchestrator's word
   after engage's guards, else builder0 light) starts after the gate's green wrapper line.
