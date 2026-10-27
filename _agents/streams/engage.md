@@ -91,15 +91,19 @@ Nothing.
 
 ## Status
 
-**2026-10-26 ~19:10 PDT (Fable). BAR E1 PASSED (R42.13); `--attack-shot` is ON BY DEFAULT at f9b675a56** (`=off` / env
-ATTACK_SHOT=off = round 41). E1 DONE (the mechanism, below); E2 built and shipped; E3 DONE (the HUD's words); E4 = Bar E1
-(below: deciding lines z -3.6 and -3.9, the guards within their bands, G3 ruled on the paired mean, R42.13); E5 (cheap half)
-done; R42.10 (the flank side) shipped with the rule. **In flight:** `make sim-baseline-adopt` on builder0 (the 9 maps the rule
-moves, same hashes in both flag-ON checks; WHY in the commit), then the DEFAULT check of the merge candidate (`make remote
-T=check`, now ON) -> the hash named here. **Next: v2** (the SUPPRESS stand's own-line guard, R42.12), OFF, on dev seeds then
-its own bar on 9649-9672, filed before any number. The flag-ON checks: 4658fa514 green by the filing's terms (`3303 passed,
-0 failed`, `27 passed, 1 FAILED` = sim-baseline's 9 maps; perf-judge PASS, 9510 usec per reference ms); 57e2e7eb5 (16:40)
-exit 2 with far_ambush red -> R42.10.
+**2026-10-26 ~22:10 PDT (Fable). ROUND DONE. BAR E1 PASSED (R42.13); `--attack-shot` is ON BY DEFAULT at f9b675a56** (`=off`
+/ env ATTACK_SHOT=off = round 41) **and ON MAIN as 9405f4dfb** (the orchestrator merged the merge candidate 76f43fb6d alone).
+E1 DONE (the mechanism, below); E2 built and shipped; E3 DONE (the HUD's words); E4 = Bar E1 (below: deciding lines z -3.6
+and -3.9, the guards within their bands, G3 ruled on the paired mean, R42.13); E5 (cheap half) done; R42.10 (the flank side)
+shipped with the rule. **The two green hashes:** the flag-ON check **4658fa514** (green by the filing's terms: `3303 passed,
+0 failed`, `27 passed, 1 FAILED` = sim-baseline's 9 maps, perf-judge PASS 9510 usec per reference ms) and the merge candidate
+**76f43fb6d** (the flip + the 9 adopted baselines; its DEFAULT check on builder0: `>> remote: make check exited 0`, `3303 passed,
+0 failed`, `sim-baseline: 53 passed, 0 failed`, perf-judge `JUDGED, PASS on attempt 1 of 3`, 9522 usec per reference ms v 25840;
+the synced tree verified = 76f43fb6d by md5; 20:16 PDT). **v2 (the SUPPRESS stand's own line, R42.12): built OFF at eb4024fe3,
+Bar E2 INCONCLUSIVE (R42.19, below: 1 of 48 natural-draw seeds exercised the line; where it fired, ON removed 13.6 s of a
+crew standing NOT FIRING with no cost anywhere), NOT shipped; it stays behind `--attack-shot-suppress=on` with its two tests.**
+The tip (v2 OFF + tooling + Status) carries no behaviour change at the default; its default check is named at the end of
+the Bar E2 section when it lands. The earlier flag-ON check 57e2e7eb5 (16:40) exited 2 with far_ambush red -> R42.10.
 
 **Launching (a trip-up for the next agent):** `make remote T=...` rejects `' " ( ) ; & | \` $` in T, so a quoted seed list
 cannot go through it; call `tools/remote.sh [--light] <target> 'VAR=a b c' VAR2=x` directly (and `REMOTE_HOST=slobdell@builder2`
@@ -291,9 +295,112 @@ behind a container or block 18-42 m away, one crew with a clear line from the st
 2. The reading of Bar E1 (lines 1-4, 6-9 above: PASS / reported; line 5 from the guards).
 3. A pass: the default flip ON (`--attack-shot=off` / `ATTACK_SHOT=off` the escape), then the OFF (= default) check of the
    merge candidate (`make remote T=check`); name both hashes (the flag-ON check's 4658fa514 and the merge candidate's).
+   **DONE: the flag-ON check 4658fa514 (green by the filing's terms), the merge candidate 76f43fb6d (default check green, exit 0,
+   3303/0, sim-baseline 53/0, perf-judge PASS; builder0, 20:16 PDT).**
 4. **v2 (granted on R42.2's terms, built OFF, AFTER the flip, not in this bar):** the same own-line guard on the SUPPRESS stand
    in `_act` (81 % of ON's remaining stuck seconds, above); labbed on dev seeds 7001-7012; its own bar on fresh 9649-9672,
    filed before any number.
+
+### v2: the SUPPRESS stand's own line (R42.12; built OFF at eb4024fe3, after the merge candidate 76f43fb6d)
+
+`TankBrain.SUPPRESS_LINE` (`--attack-shot-suppress=on`, env ATTACK_SHOT_SUPPRESS=on): the in-band SUPPRESS stand (a face, or
+a stop when already facing) becomes a move toward the target when the cover map says the crew's own line is blocked, as
+ENGAGE's hold does under --attack-shot (`_own_line_to`, shared; ENGAGE's read unchanged; `line_of_fire` Callable seam for
+tests). OFF: the stand as before. Test: `tests/tactics/test_engage_suppress_line.gd` (2: both arms, both lines, the act step
+on a built situation). The probe takes `--hull= --target=` and `ENGAGE_TAG` names its folder.
+
+**Dev lab (laptop, eb4024fe3, `engage-probe` 7001-7012, `--hull=gang_ifv --target=ifv`, --attack-shot ON both arms, 60 s,
+n 12 paired, NOT a bar number):** stuck_suppress 6.5 -> 0.0 s (one seed carried all of it: 7008, locks, gang_ifv v ifv, 3 crews, Green_E_2: stuck 7.2 s of which 6.5 in SUPPRESS, first hit 15.2 s OFF), stuck
+8.4 -> 1.6, first hit 2.91 -> 2.73 s, deaths 20 = 20, none moving, dither 0, hits 3047 -> 3093, target dead by 26.1 = 26.1,
+lines a plan tick 3.47 -> 3.50. The stand is RARE (1 of 12 dev seeds; 2 of 24 in Bar E1's series) and mechanistic (the sim
+is deterministic: where it happens, ON removes it), so a 2-se line on the paired mean cannot decide it at n 24 (k seeds of n
+with the effect give z ~ sqrt(k)): v2's bar is filed with a dominance line (below), and an "exercised" floor.
+
+### Bar E2 (v2; FILED 10262d932 / code eb4024fe3, 2026-10-26 ~19:50 PDT, before any number on 9649-9672)
+
+**Switch:** `--attack-shot-suppress` (OFF at filing; a pass ships ON with `=off`). **Arms:** OFF = today's default (--attack-shot
+ON, the merge candidate 76f43fb6d's rule); ON = + `--attack-shot-suppress=on`. **Tree:** eb4024fe3's code frozen for both arms
+(abe954fc8 / 10262d932 are mk + Status). **What it could break:** a crew that leaves a suppressing stand to go round may die
+in the open; a crew whose line flickers may dither; the squad loses the pin's effect while it moves (first hit, deaths).
+**Workload:** `engage-probe` on 9649-9672, the natural draw (hull/target by seed, as E1), 60 s windows, builder0's light
+lane J4, n 24 paired, `attack_shot_table.py --pair --deciding=suppress`.
+
+**Deciding:**
+1. **SUPPRESS stuck crew-seconds** (`stuck_suppress`, sum a series): ON <= 0.25 x OFF, AND no seed worse (ON <= OFF + 0.5 s
+   on every seed). The effect is sparse and mechanistic (the sim is deterministic per flags: where the stand happens, ON removes
+   it), so a 2-se line on the paired mean cannot decide it at n 24 (k seeds of n carrying it give z ~ sqrt(k); E1's series:
+   2 of 24, the dev lab 1 of 12): a dominance line instead, with an **exercised floor: at least 3 seeds with OFF >= 2 s**;
+   fewer -> NOT EXERCISED: extend with 9673-9696 (the two sets pooled as one n 48 series, same lines); still fewer than 3
+   -> INCONCLUSIVE, no ship, written up.
+**Guards (filed first; paired se as E1):**
+2. **All stuck crew-seconds:** ON <= OFF + 1.645 se (v1's win holds).
+3. **Exposure:** deaths while moving for a shot ON <= OFF + max(1.645 se, 2 crews); all deaths ON <= OFF + 1.645 se.
+4. **First hit** (mean a run): ON <= OFF + 1.645 se (not worse); **never hit** reported.
+5. **Dither** cap 2.0 a crew an order; **spots never reached** and **line flips** reported.
+6. **Cost:** lines a plan tick ON <= OFF + 0.5 (the stand's read is the memoized map, the same quantum); the ON check's
+   perf-judge PASS on its own line.
+7. **Suite ON (C31.1):** `make remote T="check ATTACK_SHOT_SUPPRESS=on"` on the frozen tree before the series: every test passes
+   (sim-baseline rows excepted, listed with the reason; adopted at the ship).
+8. **Fight guards G1-G5** as E1 (24 x 600 s, locks, kinds none, green side, builder2 on the orchestrator's word), **seeds
+   9697-9720 (R42.14); the extension set for line 1 is 9673-9696.** The hand-over to balance costs it a leg: ask for the
+   guard window once, when the series is read.
+**A pass ships ON** (line 1 decided, 2-8 within). **Recorded on main as R42.14** (the dominance form accepted). The table:
+`attack_shot_table.py --pair OFF ON --deciding=suppress` (7a8f7fb2e).
+
+**READ, line 7 (the suite ON; builder0, dcf83c66a = eb4024fe3's code, native on, 20:18-21:50 PDT, the box at load 4-12 with
+"12 other godot" and main's batch check queued):** `>> remote: make check ATTACK_SHOT_SUPPRESS=on exited 2`, `3304 passed,
+1 failed`, `24 passed, 2 FAILED, 0 NOT RUN, 2 NOT JUDGED`. The two FAILED: **sim-baseline** (expected: 6 maps move under the
+stand's line: foundry, pit, sumps, gorge, archipelago, cut; yard, terminus, crossing, locks, parade, docks, yard_open unmoved;
+adopted at the ship) and **test** = one wall-clock test, `test_announcer_cost::test_the_booth_costs_well_under_a_tenth_of_a_millisecond_a_tick`
+(booth tick 0.3403 ms mean v its 0.3 ms line; the test times the booth alone with `Time.get_ticks_usec` and nothing in
+the booth reads the flag: `SUPPRESS_LINE` is read on one line of `TankBrain._act`'s SUPPRESS branch and nowhere else). The
+NOT JUDGED: **perf-judge** (`refused 3 times (ratios 1.45x 1.45x 1.38x 1.38x 1.25x 1.25x) in 86s: the box was truly busy`)
+and ai-scenarios-check's scenario_perf (always: perf-judge judges it). **To close line 7 and line 6's perf-judge:** rerun
+`make remote T="test FILTER=announcer_cost ATTACK_SHOT_SUPPRESS=on"` and `make remote T="perf-judge ATTACK_SHOT_SUPPRESS=on"`
+on a quiet builder0 (after the series and main's batch check); the 3303 other tests at the flag stand as read.
+**main:** the orchestrator merged 76f43fb6d alone as **9405f4dfb** (--attack-shot ON on main; v2 not in it).
+
+**READ, lines 1-6 on 9649-9672 (builder0 light lane, native off, dcf83c66a = eb4024fe3's code, n 24 paired, 60 s, 21:49-21:52
+PDT; `scratchpad/series2/pair_table.txt`):** the two arms are BYTE-IDENTICAL on every seed. **Line 1 NOT EXERCISED:** stuck_suppress
+0.0 = 0.0 (0 of 24 seeds with OFF >= 2 s; the floor is 3). The rest, reported: stuck 4.6 = 4.6 crew-s, first hit 9.48 = 9.48 s,
+never hit 18 = 18, deaths 30 = 30 (none moving), never reached 0, dither 0, line flips 1.26 = 1.26, hits 2655 = 2655, target
+dead 30.53 = 30.53 s, lines a plan tick 2.96 = 2.96. The draw: gang_scout 10, law_scout 9, gang_ifv 3, scout 2, on terminus /
+crossing / locks; no seed put a crew on a blocked SUPPRESS stand (E1's series had 2 of 24 with the stand, its ON arm). The ON arm's
+recipe verified by `make -n` (`--attack-shot=on --attack-shot-suppress=on` on the probe's command line; the probe's json does not
+record the second flag). **The extension 9673-9696 is running** (started 21:53 PDT, same lane, the pooled n 48 table in
+`scratchpad/series2pool/`): fewer than 3 exercised seeds in the 48 -> INCONCLUSIVE, no ship, written up. **The guards are held**
+(builder2 to balance's B7) until the pooled table exercises the line: 48 fights for a bar that cannot ship would be waste.
+**R42.19 (the orchestrator):** extend to n 48 as filed, no guards before the line is exercised; fewer than 3 in the 48 -> E2 written
+up INCONCLUSIVE with the evidence and a proposal for how a later bar would force the case, and the round is done.
+
+**READ, the pooled n 48 (9649-9696; the extension on builder0's light lane, native off, 23728c73d = eb4024fe3's code, 21:53-21:57
+PDT at load 10-16; `scratchpad/series2pool/pair_table.txt`): BAR E2 INCONCLUSIVE, NO SHIP.** Line 1: exercised **1 of 48** seeds
+(needs 3). Where it fired it did what it is for: **seed 9695** (crossing, 4 scouts v an ifv, container_20, starts 16.5-20.1 m, in
+the band): Green_E_3 stood 13.8 s stuck of which 13.6 in SUPPRESS, no shot 24.3 s, first hit 25.9 s OFF; ON: stuck 0.1 s, no
+shot 19.8 s, first hit 21.5 s, +3 hits of its own; deaths 4 = 4, dither 0, never reached 1 = 1 (another crew). The other 47 seeds
+are byte-identical in both arms. The pooled lines: stuck 20.2 -> 6.5 crew-s (all of it 9695) PASS; stuck_suppress 13.6 -> 0.0
+(ON <= 0.25 x OFF true, no seed worse) but NOT EXERCISED; first hit 8.05 -> 8.03 s PASS; deaths 59 = 59, none moving PASS;
+never hit 31 = 31; hits 6546 -> 6552; lines a plan tick 3.07 = 3.07 PASS; dither 0. The draw over the 48: gang_scout 18,
+law_scout 16, scout 7, gang_ifv 7, targets syn_artillery 13 / syn_ifv 13 / law_artillery 9 / ifv 7 / syn_scout 6. **Why rare:**
+the stand needs a gun that cannot kill its target from in band (an ifv as the target: 20 of 48 draws), a crew already in the
+band (the stage starts crews at 15-28 m, so often), AND the feature on that crew's own line with a squadmate's clear, which the
+random feature placement gives about one draw in twenty (E1's series: 2 of 24, both gang_ifv v an ifv; the dev lab 1 of 12,
+gang_ifv v ifv; here 1 of 48, scout v ifv). Line 7 (the suite ON) read above with its one busy-box wobble; line 8 (the guards)
+never run (R42.19: no guards before the line is exercised; builder2 to balance). **No number here is a ship: v2 stays OFF.**
+
+**For the record, how a later bar would force the case (a staged probe with a SUPPRESS-prone draw):** the stand needs three
+things at once that the natural draw rarely gives together: a gun that cannot kill its target quickly (E1's two seeds and the
+dev lab's one were gang_ifv squads v an ifv, the pooled series' one was scouts v an ifv: `--target=ifv` with any light hull;
+`--hull= --target=` are already probe flags), a crew in the
+SUPPRESS band [10, 28] m of the target, and a feature on that crew's own line while a squadmate's line is clear (so the
+element holds the attack and the brain's choice is SUPPRESS, not a move). The probe stages crews at STAGE_MIN..STAGE_MAX m
+and draws the feature between: a `--stage=suppress` mode would place one crew of three INSIDE the band behind the feature
+(its line blocked by the map, checked with CoverMap.clear_line at placement, re-drawn until true) and the other two in the
+clear at 20-28 m, a light hull v an ifv, on locks / crossing (the maps the stand showed on). Seed 9695 is the replay to start
+from: `make engage-probe ENGAGE_ARM=on ENGAGE_TAG=v2off ENGAGE_SEEDS=9695` v `... ENGAGE_TAG=v2on ENGAGE_FLAGS=--attack-shot-suppress=on`. Then every seed exercises line 1
+by construction and the bar's deciding line can be the paired mean on stuck_suppress at n 24 (z, not dominance), with the
+natural-draw series kept as the "does it cost anything where it never fires" guard (lines 2-6 at identity, as read here).
+The mechanism itself is pinned today by `tests/tactics/test_engage_suppress_line.gd` (both arms, both lines, the act step).
 
 ### Requests to the orchestrator
 
@@ -314,12 +421,20 @@ behind a container or block 18-42 m away, one crew with a clear line from the st
 
 `make skirmish ARENA=locks SEED=49326 SKIRMISH_FLAGS="--attack-shot=on"`: select two Rat Rods, attack a Missile Ring behind a
 container; the far crew drives round and fires; the banner never sits on NOT FIRING (NO LINE OF FIRE at most, briefly). The
-OFF arm is the same without the flag.
+OFF arm is the same without the flag (the rule is ON by default since f9b675a56: `--attack-shot=off` to see round 41).
+v2 (OFF, not shipped): `make skirmish ARENA=crossing SEED=49326 SKIRMISH_FLAGS="--attack-shot-suppress=on"`: a scout squad
+told to attack an IFV it cannot kill quickly, one crew in band behind a container: with the flag it goes round instead of
+standing on "no line of fire"; without, it stands (the stand is rare: seed 9695 of the probe is the sure replay, above).
 
 ### Merge notes (shared-file edits)
 
-- `game/ai/tank_brain.gd` `_act` ENGAGE: the R42.2 GRANT branch only (own_line; `cover_map` is a fresh `CoverMap.of(tank)`).
+- `game/ai/tank_brain.gd` `_act` ENGAGE: the R42.2 GRANT branch only (own_line via `_own_line_to`); SUPPRESS: one `elif
+  SUPPRESS_LINE and not _own_line_to(...)` before the final stand (v2, OFF: dead at the default); `SUPPRESS_LINE` static var
+  beside `BOUND_SUPPRESS_MOVES`; `line_of_fire` Callable (test seam) + `_own_line_to`. Not natively twinned (`_act` is GDScript).
 - `game/control/rts_controls.gd`: `line_of_fire` var + `_has_line_of_fire` + the two wording lines in `attack_shortfall`.
 - `game/tactics/element_situation.gd`: additive `preferred_min` and `shot` member fields; `shots_into` static.
 - `game/tactics/element_plan.gd` `_plan_fire_and_maneuver`: two lines under `if ATTACK_SHOT` + the pure `flank_side` (R42.10).
 - `order_executor.gd` untouched (unreachable under EXECUTES_ORDERS).
+- New files, all engage's: `tests/tactics/test_engage_flank_side.gd`, `tests/tactics/test_engage_suppress_line.gd` (+ .uid),
+  `tests/engage/far_ambush_trace.gd`, `mk/engage.mk` targets (engage-far-trace, engage-bar2, ENGAGE_TAG/ENGAGE_FLAGS).
+- `tests/baselines/sim_state_hash.txt`: the 9 maps adopted at 76f43fb6d (on main). The 6 maps v2 moves are NOT adopted (v2 OFF).

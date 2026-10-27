@@ -135,6 +135,10 @@ func _run() -> void:
 	var crews_n := int(_flag("crews", str(2 + rng.randi_range(0, 3))))
 	var hull: String = HULLS[rng.randi_range(0, HULLS.size() - 1)]
 	var target_unit: String = TARGETS[rng.randi_range(0, TARGETS.size() - 1)]
+	# Round 42 (v2's dev lab): `--hull=gang_ifv --target=ifv` forces the draw (a SUPPRESS stage: a gun that cannot kill the
+	# target quickly); the rng has already been pulled the same way, so the rest of the stage is the seed's.
+	hull = _flag("hull", hull)
+	target_unit = _flag("target", target_unit)
 	# The seed's arena, else the next in the cycle (a seed whose draw stands nowhere on one map: 7012 on terminus).
 	var lab: TacticsLab = null
 	var game_match: Match = null

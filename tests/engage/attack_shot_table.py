@@ -4,6 +4,7 @@ json line per seed).
 
     attack_shot_table.py DIR                 one arm: a row per seed and the totals
     attack_shot_table.py --pair OFF_DIR ON_DIR   the bar: paired by seed, each line with its paired mean difference and se
+    ... --deciding=suppress                       Bar E2's lines (v2: the SUPPRESS stand): a dominance line with an exercised floor
 
 Lines (the bar names them before any number; this prints what they read):
   stuck      crew-seconds under the order, in distance-range, no line, not moving (sum a run)    deciding: ON <= 0.25 x OFF
@@ -84,11 +85,18 @@ def one(folder):
             totals["never_reached"], totals["dither"] / n, totals["hits"], totals["lines_per_plan_tick"] / n))
 
 
-def pair(off_dir, on_dir):
+## Bar E2 (round 42, v2): the dominance line on the SUPPRESS stand. ON <= 0.25 x OFF over the series AND no seed worse (ON <= OFF
+## + WORSE_S on every seed), decided only when the series is EXERCISED (>= EXERCISED_SEEDS seeds with OFF >= EXERCISED_S).
+WORSE_S = 0.5
+EXERCISED_SEEDS = 3
+EXERCISED_S = 2.0
+
+
+def pair(off_dir, on_dir, deciding="stuck"):
     off = read(off_dir)
     on = read(on_dir)
     seeds = sorted(set(off) & set(on))
-    print("paired seeds: %d (off %d, on %d)" % (len(seeds), len(off), len(on)))
+    print("paired seeds: %d (off %d, on %d)%s" % (len(seeds), len(off), len(on), " | Bar E2 lines (--deciding=suppress)" if deciding == "suppress" else ""))
     print("%-16s %10s %10s %10s %8s %8s | %s" % ("line", "OFF", "ON", "mean diff", "se", "z", "reading"))
     for k in KEYS:
         a = [metrics(off[s])[k] for s in seeds]
@@ -102,7 +110,29 @@ def pair(off_dir, on_dir):
         total_off = sum(a)
         total_on = sum(b)
         reading = ""
-        if k == "stuck":
+        if deciding == "suppress" and k == "stuck_suppress":
+            exercised = sum(1 for x in a if x >= EXERCISED_S)
+            worse = [seeds[i] for i in range(n) if b[i] > a[i] + WORSE_S]
+            quarter = total_on <= 0.25 * total_off
+            if exercised < EXERCISED_SEEDS:
+                verdict = "NOT EXERCISED (%d of %d seeds with OFF >= %.0f s; needs %d): extend" % (exercised, n, EXERCISED_S, EXERCISED_SEEDS)
+            else:
+                verdict = "PASS" if (quarter and not worse) else "FAIL"
+            reading = "DECIDING (E2): ON <= 0.25 x OFF (%s), no seed worse by > %.1f s (%s) | exercised %d seeds -> %s" % (
+                quarter, WORSE_S, "none" if not worse else worse, exercised, verdict)
+        elif deciding == "suppress" and k == "stuck":
+            ok = total_on <= total_off + 1.645 * se * n
+            reading = "GUARD (E2): ON <= OFF + 1.645 se (totals; se of the total %.2f) -> %s" % (se * n, "PASS" if ok else "FAIL")
+        elif deciding == "suppress" and k == "first_hit":
+            ok = mean <= 1.645 * se
+            reading = "GUARD (E2): ON <= OFF + 1.645 se (not worse) -> %s" % ("PASS" if ok else "FAIL")
+        elif deciding == "suppress" and k == "deaths":
+            ok = total_on <= total_off + 1.645 * se * n
+            reading = "GUARD (E2): ON <= OFF + 1.645 se (totals; se of the total %.2f) -> %s" % (se * n, "PASS" if ok else "FAIL")
+        elif deciding == "suppress" and k == "lines_per_plan_tick":
+            ok = mean <= 0.5
+            reading = "GUARD (E2): ON <= OFF + 0.5 a plan tick -> %s" % ("PASS" if ok else "FAIL")
+        elif k == "stuck":
             ok = total_on <= 0.25 * total_off and (se > 0 and mean < 0 and -z >= 2.0)
             reading = "DECIDING: ON <= 0.25 x OFF (%s) and mean < 0 by >= 2 se (%s) -> %s" % (
                 total_on <= 0.25 * total_off, se > 0 and mean < 0 and -z >= 2.0, "PASS" if ok else "FAIL")
@@ -110,8 +140,9 @@ def pair(off_dir, on_dir):
             ok = se > 0 and mean < 0 and -z >= 2.0
             reading = "DECIDING: ON < OFF by >= 2 se -> %s" % ("PASS" if ok else "FAIL")
         elif k == "deaths_moving":
-            ok = total_on <= total_off + 1.645 * se * n
-            reading = "GUARD: ON <= OFF + 1.645 se (totals; se of the total %.2f) -> %s" % (se * n, "PASS" if ok else "FAIL")
+            ok = total_on <= total_off + max(1.645 * se * n, 2.0 if deciding == "suppress" else 0.0)
+            reading = "GUARD: ON <= OFF + %s (totals; se of the total %.2f) -> %s" % (
+                "max(1.645 se, 2)" if deciding == "suppress" else "1.645 se", se * n, "PASS" if ok else "FAIL")
         elif k == "stuck_suppress":
             reading = "REPORTED (R42.6): SUPPRESS share of ON's stuck = %.0f %%" % (100.0 * total_on / sum(metrics(on[s])["stuck"] for s in seeds) if sum(metrics(on[s])["stuck"] for s in seeds) > 0 else 0.0)
         elif k == "dither":
@@ -127,7 +158,11 @@ def pair(off_dir, on_dir):
 
 if __name__ == "__main__":
     if len(sys.argv) >= 4 and sys.argv[1] == "--pair":
-        pair(sys.argv[2], sys.argv[3])
+        deciding = "stuck"
+        for arg in sys.argv[4:]:
+            if arg.startswith("--deciding="):
+                deciding = arg.split("=", 1)[1]
+        pair(sys.argv[2], sys.argv[3], deciding)
     elif len(sys.argv) == 2:
         one(sys.argv[1])
     else:

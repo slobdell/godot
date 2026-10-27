@@ -26,14 +26,18 @@ ENGAGE_SEEDS ?= 7001 7002 7003
 ENGAGE_PROBE_SECONDS ?= 60
 ENGAGE_JOBS ?= 4
 .PHONY: engage-probe
+# Round 42 (v2's lab): ENGAGE_TAG names the result folder (default: the arm), so two arms of a SECOND switch can sit side
+# by side under the same --attack-shot arm: ENGAGE_ARM=on ENGAGE_TAG=v2off / ENGAGE_FLAGS=--attack-shot-suppress=on ENGAGE_TAG=v2on.
+ENGAGE_TAG ?= $(ENGAGE_ARM)
+
 engage-probe: import ## engage E4: the attack-shot probe over ENGAGE_SEEDS (ENGAGE_ARM=on|off, ENGAGE_PROBE_SECONDS, ENGAGE_JOBS) -> build/engage/probe/<arm>/<seed>.log + the table
-	@mkdir -p $(BUILD_DIR)/engage/probe/$(ENGAGE_ARM)
+	@mkdir -p $(BUILD_DIR)/engage/probe/$(ENGAGE_TAG)
 	@echo ">> engage-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | arm $(ENGAGE_ARM) | seeds $(firstword $(ENGAGE_SEEDS))+ | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@for seed in $(ENGAGE_SEEDS); do echo $$seed; done | xargs -r -P $(ENGAGE_JOBS) -I{} sh -c \
 		'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/attack_shot_probe.gd -- \
-		--seed={} --seconds=$(ENGAGE_PROBE_SECONDS) --attack-shot=$(ENGAGE_ARM) $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/probe/$(ENGAGE_ARM)/{}.log 2>&1 || true; \
-		grep -q "^ENGAGE_PROBE " $(BUILD_DIR)/engage/probe/$(ENGAGE_ARM)/{}.log || echo "  MISSING ENGAGE_PROBE seed {}"'
-	$(PYTHON) tests/engage/attack_shot_table.py $(BUILD_DIR)/engage/probe/$(ENGAGE_ARM)
+		--seed={} --seconds=$(ENGAGE_PROBE_SECONDS) --attack-shot=$(ENGAGE_ARM) $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/probe/$(ENGAGE_TAG)/{}.log 2>&1 || true; \
+		grep -q "^ENGAGE_PROBE " $(BUILD_DIR)/engage/probe/$(ENGAGE_TAG)/{}.log || echo "  MISSING ENGAGE_PROBE seed {}"'
+	$(PYTHON) tests/engage/attack_shot_table.py $(BUILD_DIR)/engage/probe/$(ENGAGE_TAG)
 
 # Both arms on the same seeds, then the paired table (Bar E1's lines read from it).
 .PHONY: engage-bar
@@ -41,6 +45,14 @@ engage-bar: import ## engage E4: engage-probe in both arms on ENGAGE_SEEDS, then
 	@$(MAKE) --no-print-directory engage-probe ENGAGE_ARM=off
 	@$(MAKE) --no-print-directory engage-probe ENGAGE_ARM=on
 	$(PYTHON) tests/engage/attack_shot_table.py --pair $(BUILD_DIR)/engage/probe/off $(BUILD_DIR)/engage/probe/on
+
+# Round 42 (Bar E2, R42.14): v2's two arms under --attack-shot ON (today's default): OFF = the stand as shipped, ON = + the
+# SUPPRESS stand's own line (--attack-shot-suppress=on); the table's --deciding=suppress mode (the dominance line, the floor).
+.PHONY: engage-bar2
+engage-bar2: import ## engage Bar E2: engage-probe v2off/v2on on ENGAGE_SEEDS (both under --attack-shot=on), then the paired table --deciding=suppress
+	@$(MAKE) --no-print-directory engage-probe ENGAGE_ARM=on ENGAGE_TAG=v2off
+	@$(MAKE) --no-print-directory engage-probe ENGAGE_ARM=on ENGAGE_TAG=v2on ENGAGE_FLAGS=--attack-shot-suppress=on
+	$(PYTHON) tests/engage/attack_shot_table.py --pair $(BUILD_DIR)/engage/probe/v2off $(BUILD_DIR)/engage/probe/v2on --deciding=suppress
 
 # A quick parse check of the stream's own scripts.
 ENGAGE_PARSE ?= game/tactics/firing_position.gd game/tactics/element_situation.gd game/tactics/element_plan.gd game/ai/tank_brain.gd \
