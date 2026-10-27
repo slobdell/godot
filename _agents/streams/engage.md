@@ -94,10 +94,13 @@ Nothing.
 **2026-10-26 ~19:10 PDT (Fable). BAR E1 PASSED (R42.13); `--attack-shot` is ON BY DEFAULT at f9b675a56** (`=off` / env
 ATTACK_SHOT=off = round 41). E1 DONE (the mechanism, below); E2 built and shipped; E3 DONE (the HUD's words); E4 = Bar E1
 (below: deciding lines z -3.6 and -3.9, the guards within their bands, G3 ruled on the paired mean, R42.13); E5 (cheap half)
-done; R42.10 (the flank side) shipped with the rule. **In flight:** `make sim-baseline-adopt` on builder0 (the 9 maps the rule
-moves, same hashes in both flag-ON checks; WHY in the commit), then the DEFAULT check of the merge candidate (`make remote
-T=check`, now ON) -> the hash named here. **Next: v2** (the SUPPRESS stand's own-line guard, R42.12), OFF, on dev seeds then
-its own bar on 9649-9672, filed before any number. The flag-ON checks: 4658fa514 green by the filing's terms (`3303 passed,
+done; R42.10 (the flank side) shipped with the rule. **MERGE CANDIDATE: 76f43fb6d** (the flip f9b675a56 + the 9 adopted
+baselines): its DEFAULT check (now ON) on builder0 is GREEN: `>> remote: make check exited 0`, `3303 passed, 0 failed`,
+`sim-baseline: 53 passed, 0 failed`, perf-judge `JUDGED, PASS on attempt 1 of 3` (9522 usec per reference ms v 25840); the
+synced tree verified = 76f43fb6d by md5 of the files later commits touch (done 20:16 PDT after 1167 s behind camera's lock).
+**Now: v2** (the SUPPRESS stand's own-line guard, R42.12) built OFF at eb4024fe3, labbed on 7001-7012, Bar E2 filed and recorded
+(R42.14, below); in flight: its suite-ON check (`check ATTACK_SHOT_SUPPRESS=on`) then its series on 9649-9672 (builder0's light
+lane, `engage-bar2`, one chained script `scratchpad/engage-e2.sh`); then the guard window asked for once. The flag-ON checks: 4658fa514 green by the filing's terms (`3303 passed,
 0 failed`, `27 passed, 1 FAILED` = sim-baseline's 9 maps; perf-judge PASS, 9510 usec per reference ms); 57e2e7eb5 (16:40)
 exit 2 with far_ambush red -> R42.10.
 
@@ -291,6 +294,8 @@ behind a container or block 18-42 m away, one crew with a clear line from the st
 2. The reading of Bar E1 (lines 1-4, 6-9 above: PASS / reported; line 5 from the guards).
 3. A pass: the default flip ON (`--attack-shot=off` / `ATTACK_SHOT=off` the escape), then the OFF (= default) check of the
    merge candidate (`make remote T=check`); name both hashes (the flag-ON check's 4658fa514 and the merge candidate's).
+   **DONE: the flag-ON check 4658fa514 (green by the filing's terms), the merge candidate 76f43fb6d (default check green, exit 0,
+   3303/0, sim-baseline 53/0, perf-judge PASS; builder0, 20:16 PDT).**
 4. **v2 (granted on R42.2's terms, built OFF, AFTER the flip, not in this bar):** the same own-line guard on the SUPPRESS stand
    in `_act` (81 % of ON's remaining stuck seconds, above); labbed on dev seeds 7001-7012; its own bar on fresh 9649-9672,
    filed before any number.

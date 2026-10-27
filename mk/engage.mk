@@ -46,6 +46,14 @@ engage-bar: import ## engage E4: engage-probe in both arms on ENGAGE_SEEDS, then
 	@$(MAKE) --no-print-directory engage-probe ENGAGE_ARM=on
 	$(PYTHON) tests/engage/attack_shot_table.py --pair $(BUILD_DIR)/engage/probe/off $(BUILD_DIR)/engage/probe/on
 
+# Round 42 (Bar E2, R42.14): v2's two arms under --attack-shot ON (today's default): OFF = the stand as shipped, ON = + the
+# SUPPRESS stand's own line (--attack-shot-suppress=on); the table's --deciding=suppress mode (the dominance line, the floor).
+.PHONY: engage-bar2
+engage-bar2: import ## engage Bar E2: engage-probe v2off/v2on on ENGAGE_SEEDS (both under --attack-shot=on), then the paired table --deciding=suppress
+	@$(MAKE) --no-print-directory engage-probe ENGAGE_ARM=on ENGAGE_TAG=v2off
+	@$(MAKE) --no-print-directory engage-probe ENGAGE_ARM=on ENGAGE_TAG=v2on ENGAGE_FLAGS=--attack-shot-suppress=on
+	$(PYTHON) tests/engage/attack_shot_table.py --pair $(BUILD_DIR)/engage/probe/v2off $(BUILD_DIR)/engage/probe/v2on --deciding=suppress
+
 # A quick parse check of the stream's own scripts.
 ENGAGE_PARSE ?= game/tactics/firing_position.gd game/tactics/element_situation.gd game/tactics/element_plan.gd game/ai/tank_brain.gd \
 	game/control/rts_controls.gd tests/tactics/test_engage_shot.gd tests/engage/replay_probe.gd tests/engage/attack_shot_probe.gd \
