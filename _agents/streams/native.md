@@ -56,20 +56,23 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**REPORT (native, round 42, 2026-10-26 evening). Every item is done or waiting on another stream's bar / the close.**
-- **Latest tip quick-green: 98a0c6ce3** (tools only since 75495744b). **Green:** 75495744b (builder0 full check, `make check exited 0`, 3290/0, 27 passed + 1 NOT JUDGED by load) = CP42.0, merged as
-  main bf99631b5. Tip 653bf50d7 adds only tools/judge + docs (0e93002cd, 3df630755, c63142b73, Status commits): builder0
-  `make quick-remote QUICK_BASE=75495744b` exited 0 (57 s, no test touched); `python3 -m pytest tools/judge` 86/86 (laptop). For
-  the orchestrator's next batch.
+**FINAL REPORT (native, round 42, 2026-10-26 night). DONE: every item done, or waiting on a bar that is not filed yet.**
+- **Hashes on main:** CP42.0 75495744b (builder0 full check green, 3290/0) = main bf99631b5; tools + Status 8571d044c = main
+  7815e5b15 (main's batch check GREEN builder0, 3314/0, 28 targets ALL JUDGED); lines_r42 c35573fe8 + Status ba872e86f = main
+  06c7d5212 (rides the next batch check). This Status commit is docs only.
+- **N5 done (R41.15's precedent: no quiet re-run).** The perf-judge inside main 7815e5b15's check (attack-shot ON) read clean:
+  `PERF_JUDGE attempt=1 state=PASS ratio=1.06x ai_usec_per_tick=7989`, cpus 0-3 pinned, idle 97 %, load 0.97, relative line PASS
+  (9754 v 25840), builder0. Against CP42.0's 7,460 us/tick (1.01x) that is +7 %, about what E1's 3.35 lines a plan tick costs.
+  The check's own ai-scenarios scenario_perf was refused (unpinned) and NOT JUDGED, as designed: perf-judge's verdict stands.
 - **N1 done; N3 done for round 41** (lines + step 5b). **lines_r42.py: c35573fe8** (merged main 7815e5b15 + Bar E1 PASS 11 lines,
   Bar Q6 FAIL 12, Bar K4 FAIL 10 = 33, from workstreams.md R42.12/13/15/16 and camera's c28470f2f table; nothing re-measured);
   builder0 `make remote T=shell-tools-test LIGHT=1` exited 0. Still owed when filed: Bar K4 v2, Bar E2, B7, B8, B2s v2.
   Note: `inventory.py` with no args writes into references/round35/ (its default); pass --csv/--md for a round's render.
 - **N2: no twins this round** (orchestrator, after R42.15: Bar Q6 FAILED, Q5 withdrawn; both OFF; engage's seams untwinned, R42.2).
-- **N4 waiting** on a quiet builder0 (queued all evening, orchestrator). **N5 next:** a quiet-window perf-judge on main for the
-  `--attack-shot` flip (9405f4dfb, in 7815e5b15) once main's batch check is green, on the orchestrator's ask.
+- **N4 not run** (blocked: no quiet builder0 window). N4 was never run: builder0 was
+  never quiet in round 42. It carries to a later round as written.
 - **R42.13 tool fix: 98a0c6ce3** (`guard.py --pair`: every paired line is a paired MEAN diff with its se; `mean s` added; medians a
-  labelled extra without an se). test_guard 71/0; builder0 shell-tools-test LIGHT exited 0; quick-remote exited 0 (54 s). Next batch.
+  labelled extra without an se). test_guard 71/0; builder0 shell-tools-test LIGHT exited 0; quick-remote exited 0 (54 s). Merged (7815e5b15).
 - **Spare done** (report below: "rr + heavy heads", ~-32 % on the test wall's sum bound; needs an A/B by core.mk's owner).
 - **Questions for the lead:** none. **Requests to other streams:** manoeuvre: the `_avoid` OFF-path guard (relayed, accepted).
 - **Merge notes:** `tests/test_native_exec_state.gd` changed (native's test of native's table). When Q5 is on main for good, its
