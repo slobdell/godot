@@ -51,6 +51,12 @@ goes blind on a rear one (5 of 9 shooters never on screen) and faces the wall 37
 Manoeuvre: Q6's first read reproduces R40.21's crew exactly (locks rust s2 t15, rim 5.1 s); Bar Q5's judge written; dev tree up.
 **CP42.0 LANDED: main bf99631b5** = native's 75495744b merged alone (builder0 `make check exited 0`, 3290 passed / 0 failed, 27 passed +
 1 NOT JUDGED (remote-guard-test load refusal), sim-baseline 13 unmoved, perf-judge PASS 1.01x 7,460 us/tick; merge_check_needed INHERIT).
+**22:35 PDT: MAIN 7815e5b15 GREEN on builder0, 28 targets ALL JUDGED** (`>> remote: make check exited 0`, 3314 passed / 0 failed; log
+`build/orch/main-check-7815e5b15.log`) = `--attack-shot` ON + manoeuvre's OFF rules + native's tools. Perf-judge judged inside this check
+(an ON flip's judge, as R41.15's precedent). Since: native's lines_r42 (docs + tools/judge; next batch). Rulings to R42.20: Bar E2
+INCONCLUSIVE (1 of 48 seeds exercised the SUPPRESS stand; v2 OFF), Bar K4 v2 filed on 9737-9772 (R42.18: blind as a share of time under
+fire), balance's overnight chain armed (Bar B7 then Bar B2s v2 on builder2, gated on fb9e2a95a's check). Engage and manoeuvre DONE.
+
 **~20:30 PDT, rulings R42.1-R42.16. MAIN 7815e5b15 = engage's `--attack-shot` ON (9405f4dfb: Bar E1 PASSED, R42.12/R42.13; 9 sim-baseline
 maps adopted) + manoeuvre's Q5/Q6 OFF (c0b61be2e, Bar Q6 FAILED R42.15, Bar Q5 withdrawn R42.8) + native's tools (guard.py paired
 means, lines_r41, round-41 step 5b). Its batch check is RUNNING on builder0 (`build/orch/main-check-7815e5b15.log`; the wrapper's exit
