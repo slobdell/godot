@@ -304,11 +304,40 @@ tests). OFF: the stand as before. Test: `tests/tactics/test_engage_suppress_line
 on a built situation). The probe takes `--hull= --target=` and `ENGAGE_TAG` names its folder.
 
 **Dev lab (laptop, eb4024fe3, `engage-probe` 7001-7012, `--hull=gang_ifv --target=ifv`, --attack-shot ON both arms, 60 s,
-n 12 paired, NOT a bar number):** stuck_suppress 6.5 -> 0.0 s (one seed carried all of it: 7004? see the table), stuck
+n 12 paired, NOT a bar number):** stuck_suppress 6.5 -> 0.0 s (one seed carried all of it: 7008, locks, gang_ifv v ifv, 3 crews, Green_E_2: stuck 7.2 s of which 6.5 in SUPPRESS, first hit 15.2 s OFF), stuck
 8.4 -> 1.6, first hit 2.91 -> 2.73 s, deaths 20 = 20, none moving, dither 0, hits 3047 -> 3093, target dead by 26.1 = 26.1,
 lines a plan tick 3.47 -> 3.50. The stand is RARE (1 of 12 dev seeds; 2 of 24 in Bar E1's series) and mechanistic (the sim
 is deterministic: where it happens, ON removes it), so a 2-se line on the paired mean cannot decide it at n 24 (k seeds of n
 with the effect give z ~ sqrt(k)): v2's bar is filed with a dominance line (below), and an "exercised" floor.
+
+### Bar E2 (v2; FILED 10262d932 / code eb4024fe3, 2026-10-26 ~19:50 PDT, before any number on 9649-9672)
+
+**Switch:** `--attack-shot-suppress` (OFF at filing; a pass ships ON with `=off`). **Arms:** OFF = today's default (--attack-shot
+ON, the merge candidate 76f43fb6d's rule); ON = + `--attack-shot-suppress=on`. **Tree:** eb4024fe3's code frozen for both arms
+(abe954fc8 / 10262d932 are mk + Status). **What it could break:** a crew that leaves a suppressing stand to go round may die
+in the open; a crew whose line flickers may dither; the squad loses the pin's effect while it moves (first hit, deaths).
+**Workload:** `engage-probe` on 9649-9672, the natural draw (hull/target by seed, as E1), 60 s windows, builder0's light
+lane J4, n 24 paired, `attack_shot_table.py --pair --deciding=suppress`.
+
+**Deciding:**
+1. **SUPPRESS stuck crew-seconds** (`stuck_suppress`, sum a series): ON <= 0.25 x OFF, AND no seed worse (ON <= OFF + 0.5 s
+   on every seed). The effect is sparse and mechanistic (the sim is deterministic per flags: where the stand happens, ON removes
+   it), so a 2-se line on the paired mean cannot decide it at n 24 (k seeds of n carrying it give z ~ sqrt(k); E1's series:
+   2 of 24, the dev lab 1 of 12): a dominance line instead, with an **exercised floor: at least 3 seeds with OFF >= 2 s**;
+   fewer -> NOT EXERCISED: extend with 9673-9696 (the two sets pooled as one n 48 series, same lines); still fewer than 3
+   -> INCONCLUSIVE, no ship, written up.
+**Guards (filed first; paired se as E1):**
+2. **All stuck crew-seconds:** ON <= OFF + 1.645 se (v1's win holds).
+3. **Exposure:** deaths while moving for a shot ON <= OFF + max(1.645 se, 2 crews); all deaths ON <= OFF + 1.645 se.
+4. **First hit** (mean a run): ON <= OFF + 1.645 se (not worse); **never hit** reported.
+5. **Dither** cap 2.0 a crew an order; **spots never reached** and **line flips** reported.
+6. **Cost:** lines a plan tick ON <= OFF + 0.5 (the stand's read is the memoized map, the same quantum); the ON check's
+   perf-judge PASS on its own line.
+7. **Suite ON (C31.1):** `make remote T="check ATTACK_SHOT_SUPPRESS=on"` on the frozen tree before the series: every test passes
+   (sim-baseline rows excepted, listed with the reason; adopted at the ship).
+8. **Fight guards G1-G5** as E1 (24 x 600 s, locks, kinds none, green side, builder2 on the orchestrator's word), seeds to be
+   assigned by the orchestrator (requested: 9697-9720, so 9673-9696 stays the extension set).
+**A pass ships ON** (line 1 decided, 2-8 within).
 
 ### Requests to the orchestrator
 
