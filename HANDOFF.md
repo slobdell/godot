@@ -51,6 +51,13 @@ goes blind on a rear one (5 of 9 shooters never on screen) and faces the wall 37
 Manoeuvre: Q6's first read reproduces R40.21's crew exactly (locks rust s2 t15, rim 5.1 s); Bar Q5's judge written; dev tree up.
 **CP42.0 LANDED: main bf99631b5** = native's 75495744b merged alone (builder0 `make check exited 0`, 3290 passed / 0 failed, 27 passed +
 1 NOT JUDGED (remote-guard-test load refusal), sim-baseline 13 unmoved, perf-judge PASS 1.01x 7,460 us/tick; merge_check_needed INHERIT).
+**2026-10-27 ~02:00 PDT, rulings to R42.22. MAIN 2d60c14e9 (UNCHECKED as a whole; last verified 7815e5b15)** = 7815e5b15 + native's
+lines_r42 + engage's v2 OFF (b595a2e1b, green 3305/0) + **balance's B7 ON** (b3841b301, green 3299/0: the CPU counter-lineup for
+Condemned and Gangs, `--cpu-counter=off`; the garage tank-rush line). **Bar K4 v2 PASSED every line (R42.22): the danger camera ships
+ON** at camera's c27f8011c, whose check is queued on builder0; it merges alone on green, then ONE main batch check covers the three
+merges. Then the close: perf-judge is judged inside each flip's check (R41.15's precedent); Bar B2s v2 (builder2, since 00:39) reads in
+the morning, the stat change stays unshipped (R42.15). Engage, manoeuvre, native DONE and merged.
+
 **2026-10-27 ~00:55 PDT, rulings to R42.21.** **Bar B7 PASSED for Condemned and Gangs** (all-tanks 75 -> 46 %, 76 -> 60 % on fresh 9901-9940,
 n 80 a faction; Syndicate 92 -> 78 % short of its line, stays off; Law never fires): balance ships `COUNTER_DEFAULT = true` for condemned +
 gangs (`--cpu-counter=off`), tests + full check, merge alone on its hash. Bar B2s v2 running on builder2 since 00:39 (read verdict only).
