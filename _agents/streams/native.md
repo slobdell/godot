@@ -61,10 +61,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   main bf99631b5. Tip 653bf50d7 adds only tools/judge + docs (0e93002cd, 3df630755, c63142b73, Status commits): builder0
   `make quick-remote QUICK_BASE=75495744b` exited 0 (57 s, no test touched); `python3 -m pytest tools/judge` 86/86 (laptop). For
   the orchestrator's next batch.
-- **N1 done; N3 done for round 41** (lines + step 5b); lines_r42.py waits on round 42's verdicts.
-- **N2 waiting:** Q6 twin approved as planned (Status below), built only on a Bar Q6 pass off the bar's hash. Q5 twin on a Bar Q5
-  pass. Any E1 seam: none needed so far (R42.2).
-- **N4 waiting** on a quiet builder0 (queued all evening, orchestrator). **N5** at the close, on the orchestrator's ask.
+- **N1 done; N3 done for round 41** (lines + step 5b). **lines_r42.py: c35573fe8** (merged main 7815e5b15 + Bar E1 PASS 11 lines,
+  Bar Q6 FAIL 12, Bar K4 FAIL 10 = 33, from workstreams.md R42.12/13/15/16 and camera's c28470f2f table; nothing re-measured);
+  builder0 `make remote T=shell-tools-test LIGHT=1` exited 0. Still owed when filed: Bar K4 v2, Bar E2, B7, B8, B2s v2.
+  Note: `inventory.py` with no args writes into references/round35/ (its default); pass --csv/--md for a round's render.
+- **N2: no twins this round** (orchestrator, after R42.15: Bar Q6 FAILED, Q5 withdrawn; both OFF; engage's seams untwinned, R42.2).
+- **N4 waiting** on a quiet builder0 (queued all evening, orchestrator). **N5 next:** a quiet-window perf-judge on main for the
+  `--attack-shot` flip (9405f4dfb, in 7815e5b15) once main's batch check is green, on the orchestrator's ask.
 - **R42.13 tool fix: 98a0c6ce3** (`guard.py --pair`: every paired line is a paired MEAN diff with its se; `mean s` added; medians a
   labelled extra without an se). test_guard 71/0; builder0 shell-tools-test LIGHT exited 0; quick-remote exited 0 (54 s). Next batch.
 - **Spare done** (report below: "rr + heavy heads", ~-32 % on the test wall's sum bound; needs an A/B by core.mk's owner).
