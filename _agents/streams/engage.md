@@ -91,19 +91,25 @@ Nothing.
 
 ## Status
 
-**2026-10-26 ~17:10 PDT (Fable).** E1 DONE (the mechanism, below). E2 built, OFF behind `--attack-shot` (quick gate green on
+**2026-10-26 ~18:30 PDT (Fable).** E1 DONE (the mechanism, below). E2 built, OFF behind `--attack-shot` (quick gate green on
 builder0 at 7322318a3: 169 passed / 0 failed, 631 s). E3 DONE (the HUD's words, tests). E5 (cheap half) done. **Bar E1 FILED
-below (recorded on main as R42.6); the frozen tree is now 4658fa514** (57e2e7eb5 + R42.10's flank side pick, gated; filed
-before any number on 9601-9648, none read yet). **The suite-ON check at 57e2e7eb5 was NOT green (builder0, 16:40 PDT):**
-`>> remote: make check ATTACK_SHOT=on exited 2`, unit tests `3297 passed, 0 failed`, `26 passed, 2 FAILED`: sim-baseline
-(9 maps moved, expected under the flag: yard pit terminus crossing sumps gorge archipelago cut yard_open; foundry locks parade
-docks unmoved; adopted at the ship flip) and **tactics-drills: far_ambush "one half went round them" red** (widest_lateral 17.0
-v OFF 73.3; needs > 20). perf-judge JUDGED PASS (attempt 1; relative line 9504 usec per reference ms v 25840). Mechanism and
-the fix (R42.10) in *Done*; every drill passes ON on the laptop at 4658fa514 (`ATTACK_SHOT=on make tactics-drills`:
-failures 0, far_ambush off_axis 5.3 8.5 43.5 75.0). Running: the suite ON (C31.1) `make remote T="check ATTACK_SHOT=on"` on
-4658fa514, builder0 (queued behind manoeuvre's full check, 16:40). Next: the deciding series on builder0's light lane once the
-ON check reads green; the fight guards on builder2 on the orchestrator's word (balance runs there in short legs; pauses on
-"pause"); the OFF check of the merge candidate.
+below (recorded on main as R42.6); the frozen tree is 4658fa514** (57e2e7eb5 + R42.10's flank side pick, gated; filed before
+any number on 9601-9648). **The suite-ON check (C31.1) on 4658fa514 is GREEN by the filing's terms (builder0, 18:23 PDT):**
+`>> remote: make check ATTACK_SHOT=on exited 2`, `3303 passed, 0 failed`, `27 passed, 1 FAILED`: the one FAIL is sim-baseline,
+the 9 maps the flag moves (yard pit terminus crossing sumps gorge archipelago cut yard_open; foundry locks parade docks unmoved;
+the same hashes as at 57e2e7eb5, so the side pick moved no baseline fight; determinism bcbc93318e48e011), adopted at the ship
+flip. perf-judge `JUDGED, PASS on attempt 1 of 3` (relative line 9510 usec per reference ms v 25840). tactics-drills green
+(far_ambush ON off_axis 5.3 8.5 43.5 75.0, builder0 = laptop). The first ON check, at 57e2e7eb5 (16:40): exit 2, `3297 passed,
+0 failed`, `26 passed, 2 FAILED` (sim-baseline as above + tactics-drills far_ambush red: widest_lateral 17.0 v OFF 73.3) ->
+R42.10, in *Done*. **Running: the deciding series** (`tools/remote.sh --light engage-bar 'ENGAGE_SEEDS=9601..9624'
+ENGAGE_JOBS=4 ENGAGE_PROBE_SECONDS=60`, builder0's light lane = its own folder, native off; launched 18:24 PDT on tip
+5e9518da0 = 4658fa514's code). Next: the paired table; the fight guards on builder2 on the orchestrator's word (balance runs
+there in short legs); the OFF check of the merge candidate.
+
+**Launching (a trip-up for the next agent):** `make remote T=...` rejects `' " ( ) ; & | \` $` in T, so a quoted seed list
+cannot go through it; call `tools/remote.sh [--light] <target> 'VAR=a b c' VAR2=x` directly (and `REMOTE_HOST=slobdell@builder2`
+in the environment for builder2: `make gcp-remote` is the same `make remote`). The light lane's results land in
+`build/light/build/` (copy them out before the next copy-back).
 
 **Player smoke (laptop, 57e2e7eb5, `tests/engage/engage_shots.gd`, his pose, desktop 1920x1080 and phone 1200x540, frames at
 0/1/3/8/20 s in `build/engage/shots/`, copied to the scratchpad):** OFF: the Rat Rod sits nose-on behind the blue container all
