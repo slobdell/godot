@@ -51,6 +51,14 @@ goes blind on a rear one (5 of 9 shooters never on screen) and faces the wall 37
 Manoeuvre: Q6's first read reproduces R40.21's crew exactly (locks rust s2 t15, rim 5.1 s); Bar Q5's judge written; dev tree up.
 **CP42.0 LANDED: main bf99631b5** = native's 75495744b merged alone (builder0 `make check exited 0`, 3290 passed / 0 failed, 27 passed +
 1 NOT JUDGED (remote-guard-test load refusal), sim-baseline 13 unmoved, perf-judge PASS 1.01x 7,460 us/tick; merge_check_needed INHERIT).
+**2026-10-27 ~02:50 PDT: MAIN b12b17ac7 = every round-42 merge (`--attack-shot` ON, `--camera-danger` ON, the CPU counter-lineup ON
+for Condemned and Gangs, Q5/Q6/E2 OFF, native's tools); its batch check is RUNNING on builder0 (`build/orch/main-check-b12b17ac7.log`;
+read the wrapper line).** Each ON flip's own check judged perf (R41.15's precedent): attack-shot 7,989 us/tick 1.06x; the others ALL
+JUDGED. Still open: camera's K4.4 clips + final Status (docs only), balance's Bar B2s v2 verdict (builder2, morning; unshipped either
+way, R42.15). Then the close (orchestration.md §8): rescue clips, archive briefs to `streams/archive/round42/`, remove the five worktrees
++ side worktrees (`godot-manoeuvre-bt`, `godot-manoeuvre-q5`, `godot-balance-arm`, `godot-balance-b7`?) + builder0/builder2 folders,
+branches `round42/<s>`, the judging table (lines_r42 still owes K4 v2, E2, B7, B8, B2s v2), HANDOFF closed box.
+
 **2026-10-27 ~02:00 PDT, rulings to R42.22. MAIN 2d60c14e9 (UNCHECKED as a whole; last verified 7815e5b15)** = 7815e5b15 + native's
 lines_r42 + engage's v2 OFF (b595a2e1b, green 3305/0) + **balance's B7 ON** (b3841b301, green 3299/0: the CPU counter-lineup for
 Condemned and Gangs, `--cpu-counter=off`; the garage tank-rush line). **Bar K4 v2 PASSED every line (R42.22): the danger camera ships
