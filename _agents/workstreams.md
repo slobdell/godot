@@ -160,6 +160,12 @@ another project's workers (plane_maker): never touch processes you didn't start.
   visible). **G5 "own squad on screen" also requires the unit not to be behind an uncut perimeter wall** (projection-only scored
   that clip 99.7 % while the scout was invisible). The 91ebddc9f check is cancelled unstarted; 4fd517b83's is queued; the series
   starts on the commit whose check greens.
+  **Settled 0e4d4f732 (docs tip 0ba17b80a), before any 9701+ number, bar unchanged:** the danger camera frames only his units,
+  centred (no lean): framing contacts or leaning toward the danger slid his squad under the HUD on the retreat (own on screen
+  55-86 % v 96 % now; round 41 95 %). Dev table (7001-7012, never a bar): retreat facing the wall 37.3 -> 0.6 %, off-screen shots
+  29 -> 1; ambush latency 9.3 -> 2.5 s (rear 13.5 -> 2.9); reversals ~halved; attack guards hold (clicks 76.9 %, slip p95 30 px, held
+  16 %, action share 36 -> 50 %). Watch: the building clearance's jerks 1.20/min on the attack workload v G1's 1.5/min line (left as
+  round 41 shipped it: softening doubled time inside buildings). The full check of 0e4d4f732 is the gate.
 
 - **Bar Q6, the deck-mouth wait (manoeuvre; FILED 7569747ce = the frozen tree, code ac64ce939, 2026-10-26 ~16:30, before any number on
   9825-9848; R42.7).** Rule = deckwait v4 (`--traffic-on=deckwait`, OFF): a wheeled crew with a friend ahead in its lane that is in a
