@@ -91,18 +91,19 @@ Nothing.
 
 ## Status
 
-**2026-10-26 ~19:10 PDT (Fable). BAR E1 PASSED (R42.13); `--attack-shot` is ON BY DEFAULT at f9b675a56** (`=off` / env
-ATTACK_SHOT=off = round 41). E1 DONE (the mechanism, below); E2 built and shipped; E3 DONE (the HUD's words); E4 = Bar E1
-(below: deciding lines z -3.6 and -3.9, the guards within their bands, G3 ruled on the paired mean, R42.13); E5 (cheap half)
-done; R42.10 (the flank side) shipped with the rule. **MERGE CANDIDATE: 76f43fb6d** (the flip f9b675a56 + the 9 adopted
-baselines): its DEFAULT check (now ON) on builder0 is GREEN: `>> remote: make check exited 0`, `3303 passed, 0 failed`,
-`sim-baseline: 53 passed, 0 failed`, perf-judge `JUDGED, PASS on attempt 1 of 3` (9522 usec per reference ms v 25840); the
-synced tree verified = 76f43fb6d by md5 of the files later commits touch (done 20:16 PDT after 1167 s behind camera's lock).
-**Now: v2** (the SUPPRESS stand's own-line guard, R42.12) built OFF at eb4024fe3, labbed on 7001-7012, Bar E2 filed and recorded
-(R42.14, below); in flight: its suite-ON check (`check ATTACK_SHOT_SUPPRESS=on`) then its series on 9649-9672 (builder0's light
-lane, `engage-bar2`, one chained script `scratchpad/engage-e2.sh`); then the guard window asked for once. The flag-ON checks: 4658fa514 green by the filing's terms (`3303 passed,
-0 failed`, `27 passed, 1 FAILED` = sim-baseline's 9 maps; perf-judge PASS, 9510 usec per reference ms); 57e2e7eb5 (16:40)
-exit 2 with far_ambush red -> R42.10.
+**2026-10-26 ~22:10 PDT (Fable). ROUND DONE. BAR E1 PASSED (R42.13); `--attack-shot` is ON BY DEFAULT at f9b675a56** (`=off`
+/ env ATTACK_SHOT=off = round 41) **and ON MAIN as 9405f4dfb** (the orchestrator merged the merge candidate 76f43fb6d alone).
+E1 DONE (the mechanism, below); E2 built and shipped; E3 DONE (the HUD's words); E4 = Bar E1 (below: deciding lines z -3.6
+and -3.9, the guards within their bands, G3 ruled on the paired mean, R42.13); E5 (cheap half) done; R42.10 (the flank side)
+shipped with the rule. **The two green hashes:** the flag-ON check **4658fa514** (green by the filing's terms: `3303 passed,
+0 failed`, `27 passed, 1 FAILED` = sim-baseline's 9 maps, perf-judge PASS 9510 usec per reference ms) and the merge candidate
+**76f43fb6d** (the flip + the 9 adopted baselines; its DEFAULT check on builder0: `>> remote: make check exited 0`, `3303 passed,
+0 failed`, `sim-baseline: 53 passed, 0 failed`, perf-judge `JUDGED, PASS on attempt 1 of 3`, 9522 usec per reference ms v 25840;
+the synced tree verified = 76f43fb6d by md5; 20:16 PDT). **v2 (the SUPPRESS stand's own line, R42.12): built OFF at eb4024fe3,
+Bar E2 INCONCLUSIVE (R42.19, below: 1 of 48 natural-draw seeds exercised the line; where it fired, ON removed 13.6 s of a
+crew standing NOT FIRING with no cost anywhere), NOT shipped; it stays behind `--attack-shot-suppress=on` with its two tests.**
+The tip (v2 OFF + tooling + Status) carries no behaviour change at the default; its default check is named at the end of
+the Bar E2 section when it lands. The earlier flag-ON check 57e2e7eb5 (16:40) exited 2 with far_ambush red -> R42.10.
 
 **Launching (a trip-up for the next agent):** `make remote T=...` rejects `' " ( ) ; & | \` $` in T, so a quoted seed list
 cannot go through it; call `tools/remote.sh [--light] <target> 'VAR=a b c' VAR2=x` directly (and `REMOTE_HOST=slobdell@builder2`
@@ -372,14 +373,31 @@ record the second flag). **The extension 9673-9696 is running** (started 21:53 P
 **R42.19 (the orchestrator):** extend to n 48 as filed, no guards before the line is exercised; fewer than 3 in the 48 -> E2 written
 up INCONCLUSIVE with the evidence and a proposal for how a later bar would force the case, and the round is done.
 
+**READ, the pooled n 48 (9649-9696; the extension on builder0's light lane, native off, 23728c73d = eb4024fe3's code, 21:53-21:57
+PDT at load 10-16; `scratchpad/series2pool/pair_table.txt`): BAR E2 INCONCLUSIVE, NO SHIP.** Line 1: exercised **1 of 48** seeds
+(needs 3). Where it fired it did what it is for: **seed 9695** (crossing, 4 scouts v an ifv, container_20, starts 16.5-20.1 m, in
+the band): Green_E_3 stood 13.8 s stuck of which 13.6 in SUPPRESS, no shot 24.3 s, first hit 25.9 s OFF; ON: stuck 0.1 s, no
+shot 19.8 s, first hit 21.5 s, +3 hits of its own; deaths 4 = 4, dither 0, never reached 1 = 1 (another crew). The other 47 seeds
+are byte-identical in both arms. The pooled lines: stuck 20.2 -> 6.5 crew-s (all of it 9695) PASS; stuck_suppress 13.6 -> 0.0
+(ON <= 0.25 x OFF true, no seed worse) but NOT EXERCISED; first hit 8.05 -> 8.03 s PASS; deaths 59 = 59, none moving PASS;
+never hit 31 = 31; hits 6546 -> 6552; lines a plan tick 3.07 = 3.07 PASS; dither 0. The draw over the 48: gang_scout 18,
+law_scout 16, scout 7, gang_ifv 7, targets syn_artillery 13 / syn_ifv 13 / law_artillery 9 / ifv 7 / syn_scout 6. **Why rare:**
+the stand needs a gun that cannot kill its target from in band (an ifv as the target: 20 of 48 draws), a crew already in the
+band (the stage starts crews at 15-28 m, so often), AND the feature on that crew's own line with a squadmate's clear, which the
+random feature placement gives about one draw in twenty (E1's series: 2 of 24, both gang_ifv v an ifv; the dev lab 1 of 12,
+gang_ifv v ifv; here 1 of 48, scout v ifv). Line 7 (the suite ON) read above with its one busy-box wobble; line 8 (the guards)
+never run (R42.19: no guards before the line is exercised; builder2 to balance). **No number here is a ship: v2 stays OFF.**
+
 **For the record, how a later bar would force the case (a staged probe with a SUPPRESS-prone draw):** the stand needs three
 things at once that the natural draw rarely gives together: a gun that cannot kill its target quickly (E1's two seeds and the
-dev lab's one were all gang_ifv squads v an ifv; `--hull=gang_ifv --target=ifv` is already a probe flag), a crew in the
+dev lab's one were gang_ifv squads v an ifv, the pooled series' one was scouts v an ifv: `--target=ifv` with any light hull;
+`--hull= --target=` are already probe flags), a crew in the
 SUPPRESS band [10, 28] m of the target, and a feature on that crew's own line while a squadmate's line is clear (so the
 element holds the attack and the brain's choice is SUPPRESS, not a move). The probe stages crews at STAGE_MIN..STAGE_MAX m
 and draws the feature between: a `--stage=suppress` mode would place one crew of three INSIDE the band behind the feature
 (its line blocked by the map, checked with CoverMap.clear_line at placement, re-drawn until true) and the other two in the
-clear at 20-28 m, hull gang_ifv v ifv, on locks / crossing (the maps the stand showed on). Then every seed exercises line 1
+clear at 20-28 m, a light hull v an ifv, on locks / crossing (the maps the stand showed on). Seed 9695 is the replay to start
+from: `make engage-probe ENGAGE_ARM=on ENGAGE_TAG=v2off ENGAGE_SEEDS=9695` v `... ENGAGE_TAG=v2on ENGAGE_FLAGS=--attack-shot-suppress=on`. Then every seed exercises line 1
 by construction and the bar's deciding line can be the paired mean on stuck_suppress at n 24 (z, not dominance), with the
 natural-draw series kept as the "does it cost anything where it never fires" guard (lines 2-6 at identity, as read here).
 The mechanism itself is pinned today by `tests/tactics/test_engage_suppress_line.gd` (both arms, both lines, the act step).
@@ -403,12 +421,20 @@ The mechanism itself is pinned today by `tests/tactics/test_engage_suppress_line
 
 `make skirmish ARENA=locks SEED=49326 SKIRMISH_FLAGS="--attack-shot=on"`: select two Rat Rods, attack a Missile Ring behind a
 container; the far crew drives round and fires; the banner never sits on NOT FIRING (NO LINE OF FIRE at most, briefly). The
-OFF arm is the same without the flag.
+OFF arm is the same without the flag (the rule is ON by default since f9b675a56: `--attack-shot=off` to see round 41).
+v2 (OFF, not shipped): `make skirmish ARENA=crossing SEED=49326 SKIRMISH_FLAGS="--attack-shot-suppress=on"`: a scout squad
+told to attack an IFV it cannot kill quickly, one crew in band behind a container: with the flag it goes round instead of
+standing on "no line of fire"; without, it stands (the stand is rare: seed 9695 of the probe is the sure replay, above).
 
 ### Merge notes (shared-file edits)
 
-- `game/ai/tank_brain.gd` `_act` ENGAGE: the R42.2 GRANT branch only (own_line; `cover_map` is a fresh `CoverMap.of(tank)`).
+- `game/ai/tank_brain.gd` `_act` ENGAGE: the R42.2 GRANT branch only (own_line via `_own_line_to`); SUPPRESS: one `elif
+  SUPPRESS_LINE and not _own_line_to(...)` before the final stand (v2, OFF: dead at the default); `SUPPRESS_LINE` static var
+  beside `BOUND_SUPPRESS_MOVES`; `line_of_fire` Callable (test seam) + `_own_line_to`. Not natively twinned (`_act` is GDScript).
 - `game/control/rts_controls.gd`: `line_of_fire` var + `_has_line_of_fire` + the two wording lines in `attack_shortfall`.
 - `game/tactics/element_situation.gd`: additive `preferred_min` and `shot` member fields; `shots_into` static.
 - `game/tactics/element_plan.gd` `_plan_fire_and_maneuver`: two lines under `if ATTACK_SHOT` + the pure `flank_side` (R42.10).
 - `order_executor.gd` untouched (unreachable under EXECUTES_ORDERS).
+- New files, all engage's: `tests/tactics/test_engage_flank_side.gd`, `tests/tactics/test_engage_suppress_line.gd` (+ .uid),
+  `tests/engage/far_ambush_trace.gd`, `mk/engage.mk` targets (engage-far-trace, engage-bar2, ENGAGE_TAG/ENGAGE_FLAGS).
+- `tests/baselines/sim_state_hash.txt`: the 9 maps adopted at 76f43fb6d (on main). The 6 maps v2 moves are NOT adopted (v2 OFF).
