@@ -359,6 +359,17 @@ and ai-scenarios-check's scenario_perf (always: perf-judge judges it). **To clos
 on a quiet builder0 (after the series and main's batch check); the 3303 other tests at the flag stand as read.
 **main:** the orchestrator merged 76f43fb6d alone as **9405f4dfb** (--attack-shot ON on main; v2 not in it).
 
+**READ, lines 1-6 on 9649-9672 (builder0 light lane, native off, dcf83c66a = eb4024fe3's code, n 24 paired, 60 s, 21:49-21:52
+PDT; `scratchpad/series2/pair_table.txt`):** the two arms are BYTE-IDENTICAL on every seed. **Line 1 NOT EXERCISED:** stuck_suppress
+0.0 = 0.0 (0 of 24 seeds with OFF >= 2 s; the floor is 3). The rest, reported: stuck 4.6 = 4.6 crew-s, first hit 9.48 = 9.48 s,
+never hit 18 = 18, deaths 30 = 30 (none moving), never reached 0, dither 0, line flips 1.26 = 1.26, hits 2655 = 2655, target
+dead 30.53 = 30.53 s, lines a plan tick 2.96 = 2.96. The draw: gang_scout 10, law_scout 9, gang_ifv 3, scout 2, on terminus /
+crossing / locks; no seed put a crew on a blocked SUPPRESS stand (E1's series had 2 of 24 with the stand, its ON arm). The ON arm's
+recipe verified by `make -n` (`--attack-shot=on --attack-shot-suppress=on` on the probe's command line; the probe's json does not
+record the second flag). **The extension 9673-9696 is running** (started 21:53 PDT, same lane, the pooled n 48 table in
+`scratchpad/series2pool/`): fewer than 3 exercised seeds in the 48 -> INCONCLUSIVE, no ship, written up. **The guards are held**
+(builder2 to balance's B7) until the pooled table exercises the line: 48 fights for a bar that cannot ship would be waste.
+
 ### Requests to the orchestrator
 
 - **builder2** for the fight guards (24 x 600 s fights x 2 arms, J8) when balance's series is done; until then they wait (the
