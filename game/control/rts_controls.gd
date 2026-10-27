@@ -3353,6 +3353,9 @@ const ORDER_ARRIVED_M := 8.0
 const COMPLY_GRACE_S := 2.0
 ## What a unit's gun is actually on (OrderExecutor.engaged_target_of, set by the mode). Unset: read the unit's brain.
 var engaged_of: Callable
+## Round 42 (engage E3, C42.6): whether a unit has a LINE OF FIRE to a target (unit name, target name -> bool). Unset: the
+## arena's cover map (CoverMap.of, memoized), the same read the squad plan and the crew brain decide by. Tests stub it.
+var line_of_fire: Callable
 ## unit name -> seconds its current attack order has gone unmet, and why.
 var _unmet := {}
 const ORDER_MARK_PX := 34.0
@@ -3385,10 +3388,25 @@ func attack_shortfall(unit_name: String, order: Dictionary) -> String:
 		return ""  # its order names the target and it is on its way round to it: carrying the order out
 	if not game_match.is_visible_to(team, target):
 		return "CAN'T SEE TARGET"
+	var moving := tank.estimated_velocity.length() > 0.5
 	var out_of_range := tank.global_position.distance_to(target.global_position) > float(tank.weapon.get("range", 0.0))
-	if out_of_range and tank.estimated_velocity.length() > 0.5:
+	if out_of_range and moving:
 		return ""  # closing in: that is the order being carried out
+	# Round 42 (engage E3, C42.6): the words follow the truth. His Rat Rod behind the container read NOT FIRING for 37 s
+	# while its gun had no line to the target. A crew driving for a shot is carrying the order out (nothing to say); one
+	# standing with no line says so; NOT FIRING is kept for a crew standing with a clear shot that does not fire (a bug,
+	# not a state).
+	if not _has_line_of_fire(unit_name, tank, target):
+		return "" if moving else "NO LINE OF FIRE"
 	return "NOT FIRING"
+
+
+## Round 42 (engage E3): the line-of-fire read behind attack_shortfall (see `line_of_fire`).
+func _has_line_of_fire(unit_name: String, tank: Tank, target: Tank) -> bool:
+	if line_of_fire.is_valid():
+		return bool(line_of_fire.call(unit_name, String(target.name)))
+	var map := CoverMap.of(game_match)
+	return map == null or map.clear_line(tank.global_position, target.global_position)
 
 
 ## The target the PLAYER told `unit_name` to attack, or "": its own attack order, else its squad's attack task (a

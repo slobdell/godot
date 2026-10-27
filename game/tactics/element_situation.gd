@@ -94,6 +94,8 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 				"forward": TacticsFormation.flat(-tank.global_basis.z), "role": Units.role_of(tank.unit_id),
 				"unit": tank.unit_id, "speed": tank.max_forward_speed, "range": float(tank.weapon.get("range", 60.0)),
 				"effective_range": float(tank.weapon.get("effective_range", tank.weapon.get("range", 60.0))),
+				# Round 42 (engage E2): the gun's minimum, for the firing position a crew without a shot is sent to.
+				"preferred_min": float(tank.weapon.get("preferred_min", 0.0)),
 				"sight": tank.sight_radius, "health": clampf((hull + shield) * 0.5 + hull * 0.5, 0.0, 1.0),
 				"suppression": suppression_of(tank), "taking_fire": hit_recently,
 				# Round 33 (brains battery stretch): set up to fire (Tank.deploy_ratio at 1), for the battery seat rule.
@@ -148,6 +150,14 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 		if absf(float(a["distance"]) - float(b["distance"])) > 0.001:
 			return float(a["distance"]) < float(b["distance"])
 		return String(a["name"]) < String(b["name"]))
+	# Round 42 (engage E2, C42.2): each member's LINE OF FIRE to the contacts within its reach, read here once a plan tick
+	# from the cover map (pure 2D boxes, memoized at CoverMap.QUANTUM), so ElementPlan can say "in range" means a shot
+	# without a physics call. Bounded: SHOT_CONTACTS nearest contacts in reach per member.
+	# Read only under the rule (`--attack-shot`): OFF asks the map for nothing (round 41 to the line).
+	if ElementPlan.ATTACK_SHOT:
+		var cover_map := CoverMap.of(game_match)
+		if cover_map != null:
+			shots_into(members, contacts, cover_map)
 
 	# Round 38 (settle S1): where a seat asked at `point` will stand for a hull of `unit`, grounded as Element.ground
 	# grounds a slot (on its anchor's bank, then pushed out of geometry toward the side the element stands on). The
@@ -168,6 +178,36 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 			"arrived": bool(state.get("arrived", false)),
 			# X7: what route choice needs — sight lines against the arena, its annotated lanes (M2), how far we see.
 			"cover_map": CoverMap.of(game_match), "lanes": Arena.lanes_of(Arena.active), "sight": _sight_of(members)}
+
+
+## Round 42 (engage E2): how many contacts (nearest first) a member's shot read covers.
+const SHOT_CONTACTS := 6
+## Contacts within reach x this read a shot: the plan's reach (ENGAGE_RANGE_FACTOR) plus its hysteresis margin.
+const SHOT_REACH_FACTOR := 1.15
+const SHOT_REACH_MARGIN_M := 15.0
+## Measurement only: lines asked of the cover map by shots_into since the process started (rays per plan tick).
+static var shot_lines := 0
+
+
+## Pure (the map given): sets `member["shot"]` = {contact name: bool} for the SHOT_CONTACTS nearest contacts within
+## range x SHOT_REACH_FACTOR + SHOT_REACH_MARGIN_M of each member, true when the cover map has a clear line from the
+## member to the contact at eye height. Contacts farther out are not in the dictionary (no read, no claim).
+static func shots_into(members: Array, contacts: Array, cover_map: CoverMap) -> void:
+	for member: Dictionary in members:
+		var position: Vector3 = member["position"]
+		var reach := float(member.get("range", 60.0)) * SHOT_REACH_FACTOR + SHOT_REACH_MARGIN_M
+		var shot := {}
+		var read := 0
+		for contact: Dictionary in contacts:
+			if read >= SHOT_CONTACTS:
+				break
+			var at: Vector3 = contact["position"]
+			if Vector2(at.x - position.x, at.z - position.z).length() > reach:
+				continue
+			shot[String(contact["name"])] = cover_map.clear_line(position, at)
+			shot_lines += 1
+			read += 1
+		member["shot"] = shot
 
 
 static func _sight_of(members: Array) -> float:
