@@ -162,11 +162,18 @@ on Green and on Rust = 200 fights an arm a faction; raw `~/balance-guard-raw/b8/
   (condemned, gangs: 77 -> 47, 78 -> 52 on 9401-9410) or within ~1 se (law +4, syndicate -5), and 200 paired fights an arm give
   se ~3; 10221-10240 stay in reserve if a read lands near its 2-se line.
 
-**R42.3 firing screen (RUNNING; PAUSED 18:32 for engage's Bar E1 guards, held until the orchestrator's "resume"; commit 9d8e26e44,
-builder2 J24, counter OFF, dev seeds 10201-10220 x 5 arenas x mono on Green and on Rust, n 200 a cell, paired by fight):**
-- Condemned: all-tanks v the roll **80 %** (se 4) -> v `siege` **50 %** (se 2), paired **-30 (se 5)**: **FIRES** (line: <= roll - 2 se).
-- Gangs: v the roll **79 %** (se 5); v `gang_hail` pending (the paused leg).
-- Law (v law_barrage 96 %, from B8 base) and Syndicate (v syndicate_barrage 84 %): v the roll pending.
+**R42.3 firing screen (DONE 20:33; commit 9d8e26e44, builder2 J24, counter OFF, dev seeds 10201-10220 x 5 arenas x mono on Green
+and on Rust, n 200 a cell, paired by fight, se bootstrap over seeds; paused 18:32-19:00 for engage):**
+| faction | all-tanks v the roll | v the counter lineup | paired | fires (counter <= roll - 2 se)? |
+|---|---|---|---|---|
+| Condemned | 80 % (se 4) | `siege` 50 % (se 2) | -30 (se 5) | **yes** |
+| Gangs | 79 % (se 5) | `gang_hail` 56 % (se 3) | -22 (se 5) | **yes** |
+| Law | 92 % (se 2) | `law_barrage` 96 % (se 1) | +5 (se 1) | no |
+| Syndicate | 92 % (se 2) | `syndicate_barrage` 84 % (se 2) | -8 (se 3) | **yes** (-8 <= -6) |
+
+**FIRING LIST for Bar B7 (written 2026-10-26 20:40, before any number on 9901-9940): condemned, gangs, syndicate.** Law keeps its roll
+against a tank rush (its counter makes all-tanks stronger). Syndicate fires by the filed line but sits at 84 %, far above the
+deciding 60 %: asked the orchestrator whether the verdict is per faction (ON for the factions that pass) or all firing factions.
 
 **R42.15 (orchestrator, ~19:10):** Bar Q6 FAILED, so CP42.1 is not reached and the bridge gate for shipping fm_c5r2_lawt5 is not met
 (not loosened). RULED: run Bar B2s v2 anyway, overnight on builder2 after the firing screen, B9_MAIN = current main (hash named by
