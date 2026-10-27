@@ -211,7 +211,7 @@ OFF base), so **Bar B7 PASSES for Condemned and Gangs**; Syndicate fails its lin
 line stays ON. Tests first (test_army_counter red 7/3 -> green; laptop `make test FILTER=army` 168/0). Smoke (laptop, seed 9905,
 terminus, Gangs v a Gangs tank rush on Rust): no flag -> `CPU_COUNTER faction=gangs tank_share=1.00 archetype=gang_hail` (16 Rat
 Rods, 7 Gun Trucks, 14 Wrecker Catapults, 7 Resupply Tankers); `--cpu-counter=off` -> today's roll (7 War Rigs, no Catapults).
-Full check on builder0 running (unit balance-ship-check).
+**b3841b301 GREEN: builder0 `make check` exited 0, 3299 passed, 0 failed** (2026-10-27 01:49). Merge it alone (R42.21).
 
 **R42.15 (orchestrator, ~19:10):** Bar Q6 FAILED, so CP42.1 is not reached and the bridge gate for shipping fm_c5r2_lawt5 is not met
 (not loosened). RULED: run Bar B2s v2 anyway, overnight on builder2 after the firing screen, B9_MAIN = current main (hash named by
