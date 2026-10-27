@@ -217,7 +217,24 @@ n 24 paired, 60 s windows, J4, 18:24-18:26 PDT; the table `tests/engage/attack_s
 | 9 SUPPRESS share of ON's stuck | 15.0 of 598.4 (3 %) | 23.3 of 28.8 (**81 %**) | | | | REPORTED (R42.6): most of what is left is the brain's SUPPRESS stand -> a real result; v2 on R42.2's terms |
 | also | never hit 32 -> 14 of 91 crews; target dead by 36.6 -> 26.9 s (mean -9.6, se 4.3); hits 3195 -> 3301 | | | | | |
 
-Lines 6 and 7 read above (the 9 maps; the suite ON green at 4658fa514). **Line 5 (the fight guards G1-G5) pending builder2.**
+Lines 6 and 7 read above (the 9 maps; the suite ON green at 4658fa514).
+
+**Line 5 READ, the fight guards (builder2, native on, commit b08d54df3 = 4658fa514's code, `native guard-run` kinds none, green
+side, locks, 9625-9648, 600 s, J8, n 24 paired, 18:33-19:00 PDT; `tools/scoreboard/guard.py --pair`):**
+
+| guard | OFF | ON | paired diff | se | band 1.645 se | reading |
+|---|---|---|---|---|---|---|
+| G1 green kills a fight | 18.96 | 19.79 | +0.83 | 1.24 | 2.03 | **PASS** |
+| G2 green losses a fight | 18.62 | 18.54 | -0.08 | 0.99 | 1.63 | **PASS** |
+| G3 fight length | arm medians 181.0 / 193.4 | | +12.4 (medians) / **+4.8 (paired mean)** | 7.05 | 11.6 | medians: outside by 0.8 s (z 1.76); paired mean (judging.md's form for this line, "read as a mean"): z 0.69, median of diffs 0.0, 9 longer / 9 shorter / 6 identical, end reasons 15 control / 9 elimination both arms -> **ruling asked (R42.12 thread)** |
+| G4 green kill ratio | 1.02 | 1.07 | +0.05 | 1.47 | | **PASS** |
+| G5 no SCRIPT ERROR / missing result | 24 of 24 | 24 of 24 | | | | **PASS** |
+
+Per faction (reported): condemned losses 21.0 -> 17.7 (se 1.5), gangs kills 6.6 -> 8.8 (se 1.8), syndicate median +20 s
+(se 17). The largest length diff is 9625 (+95.6 s: elimination at 120 s OFF -> the control clock at 216 s ON; kills 27 -> 26,
+losses 3 -> 8); without it the mean is +0.9 s (se 6.1). Why the medians step: half the fights end on the control clock in a
+cluster at 193-195 s, and the median jumps between that cluster and the eliminations below it. Per-seed table:
+`scratchpad/guards/pair.txt` + the two `guards-<arm>/none/locks-<seed>-green.log` sets (copied out of build/).
 What is left of stuck under ON is 9609 (13.7 s) and 9619 (10.5 s), both gang_ifv squads v a target that kills the whole
 squad (tdead 60 = never died, deaths 4 of 4): crews in SUPPRESS in band with no line while dying. The never-reached spots:
 9607 and 9609, one crew each (below). Four seeds (9601 9605 9607 9614, all crossing) carry STAGE-OFF (the stage's grounding
