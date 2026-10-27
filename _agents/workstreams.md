@@ -356,6 +356,15 @@ _(filed bars go here, before their numbers)_
   glide's cap); the rear lane is worked on dev seeds only (the design's weighted sum must let a second shooter pull the view: the hold
   time against a new bearing); **Bar K4 v2 on fresh 9737-9772, the bar text unchanged, the LAST re-file**; if it fails, the danger camera
   is written up OFF with the retreat result for him. The K4.4 clips stay as filmed (the retreat win) with the bar's verdict beside them.
+- **R42.17 (2026-10-26 ~20:40) Bar B7's firing list and the per-faction verdict.** Balance's firing screen (9d8e26e44, builder2, dev
+  10201-10220 x 5 arenas x mono both teams, n 200 an arm, paired): all-tanks v the roll -> v the counter: Condemned 80 -> 50 % (-30,
+  se 5) FIRES; Gangs 79 -> 56 % (-22, se 5) FIRES; Law 92 -> 96 % (+5, se 1) does NOT fire; Syndicate 92 -> 84 % (-8, se 3) FIRES by the
+  filed line. Firing list (Status f5027f9ad, before any 9901+ number): condemned, gangs, syndicate; `COUNTER_ARCHETYPES` keeps only
+  those, Law keeps its roll. Ruled (R42.3's form, read 1): **the verdict is per firing faction; the counter ships ON for each firing
+  faction that passes its own deciding line (<= 60 % AND down >= 2 se) and stays OFF for the rest.** Syndicate's line is not amended:
+  if it reads ~84 % it fails its line and its counter stays off, recorded as "beats the roll by 8 points but short of the target" (for
+  him: the Syndicate's artillery lineup cannot stop a tank rush inside his 15 %, R42.9). A faction that passes ships; the bar as a
+  whole is reported per faction, never pooled.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
