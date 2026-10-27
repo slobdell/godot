@@ -268,6 +268,18 @@ behind a container or block 18-42 m away, one crew with a clear line from the st
 - SHOT_CONTACTS 6 nearest contacts in reach a member: bounded cost; a contact beyond the read is "no read, no refusal".
 - The stage's hulls: five fixed mounts to one gun truck (his case is a fixed gun's hold; a turret circles and is seldom held).
 
+### The order from here (R42.12, the orchestrator)
+
+1. The fight guards G1-G5 on builder2 on its "go" (balance pausing at a leg boundary): `scratchpad/engage-guards.sh` = OFF then
+   ON, `native guard-run GUARD_DIR=build/guards-<arm> GUARD_KINDS=none GUARD_SIDES=green GUARD_AT=locks GUARD_SEEDS=9625..9648
+   GUARD_JOBS=8 GUARD_SECONDS=600 GUARD_ARGS=[--attack-shot=on]`, read with `tools/scoreboard/guard.py --pair`.
+2. The reading of Bar E1 (lines 1-4, 6-9 above: PASS / reported; line 5 from the guards).
+3. A pass: the default flip ON (`--attack-shot=off` / `ATTACK_SHOT=off` the escape), then the OFF (= default) check of the
+   merge candidate (`make remote T=check`); name both hashes (the flag-ON check's 4658fa514 and the merge candidate's).
+4. **v2 (granted on R42.2's terms, built OFF, AFTER the flip, not in this bar):** the same own-line guard on the SUPPRESS stand
+   in `_act` (81 % of ON's remaining stuck seconds, above); labbed on dev seeds 7001-7012; its own bar on fresh 9649-9672,
+   filed before any number.
+
 ### Requests to the orchestrator
 
 - **builder2** for the fight guards (24 x 600 s fights x 2 arms, J8) when balance's series is done; until then they wait (the
