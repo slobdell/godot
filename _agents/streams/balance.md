@@ -162,6 +162,13 @@ on Green and on Rust = 200 fights an arm a faction; raw `~/balance-guard-raw/b8/
   (condemned, gangs: 77 -> 47, 78 -> 52 on 9401-9410) or within ~1 se (law +4, syndicate -5), and 200 paired fights an arm give
   se ~3; 10221-10240 stay in reserve if a read lands near its 2-se line.
 
+**B9 ready (rebuild recipe, dry-run 2026-10-26 ~17:45):** `B9_MAIN=<CP42.1 hash> ~/balance-runs/b2s-v2-rebuild.sh` = a worktree
+`../godot-balance-arm` on branch `balance/b2s-v2-arm-r42` = MAIN + cherry-pick 8e257f3bc (fm_c5r2_lawt5, 55 values) + d385cd308
+(= ad956031b's re-pins, identical diff), then builder0 `make remote T=check` + sim-baseline-record (expected red ONLY on
+sim-baseline). Both picks apply cleanly onto main 4bf0f3703 (`git merge-tree`). The series driver is
+`~/balance-runs/bar-b2s-v2.sh.template` (the filed bar's seeds 8801-8840 + 8901-8940 / 8801-8820, J24, raw
+`~/balance-guard-raw/bar-b2s-v2`), started only after the ARM's check and after builder2 is free of the firing screen.
+
 **Stretch, read now:** B6 (ADVANCE walks a deploying crew off its seat) is a brain/element fix (`TankBrain` ADVANCE while the
 element deals travel seats, read through `ElementFeed`): `game/ai/**` and `game/tactics/**` are engage's and settle's this round,
 so it is BLOCKED by ownership (not asked: engage's E1 is the round's first item). B3 (faction-aware CPU, v1 built OFF round 40 at
