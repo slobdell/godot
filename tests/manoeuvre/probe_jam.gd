@@ -215,6 +215,10 @@ func _tick_episode(ep: Dictionary, tank: Tank, mover: Movement, blocker: Tank, w
 	phases[mover.phase] = int(phases.get(mover.phase, 0)) + 1
 	if mover.yield_to != "":
 		ep["yield_ticks"] = int(ep["yield_ticks"]) + 1
+	# Round 42 (Bar Q5, reported column): the ticks the asker itself was easing off under the no-pressing rule (its own throttle held
+	# at 0 by `_nopush`), so jam-seconds can be read with the rule's own easing taken out. Zero on a tree without the rule's members.
+	if "_nopush_until" in mover and int(mover.get("_nopush_until")) >= Engine.get_physics_frames():
+		ep["eased_ticks"] = int(ep.get("eased_ticks", 0)) + 1
 	var v := Vector2(tank.real_velocity.x, tank.real_velocity.z)
 	if v.length() < STILL_MPS:
 		ep["stopped_ticks"] = int(ep["stopped_ticks"]) + 1
@@ -343,6 +347,7 @@ func _finalize() -> void:
 				"blocker_heading_off_deg": snappedf(rad_to_deg(absf(angle_difference(float(ep["asker_yaw_start"]), float(ep["blocker_yaw_start"])))), 1.0),
 				"reverse_why": ep["reverse_why"], "reverse_m": snappedf(float(ep["reverse_m"]), 0.1), "reverse_max_m": snappedf(float(ep["reverse_max_m"]), 0.1),
 				"reverse_end_m": snappedf(float(ep.get("reverse_end_m", -1.0)), 0.1),
+				"eased_s": snappedf(int(ep.get("eased_ticks", 0)) / float(SimClock.TICK_RATE), 0.01),
 				"reverse_reentered": ep["reverse_from"] != Vector2.INF and float(ep["reverse_max_m"]) > 3.0 and float(ep.get("reverse_end_m", 99.0)) < 2.0}))
 	print("JAM_RUN " + JSON.stringify({"seed": seed, "arena": arena, "route": route, "arm": arm, "headings": headings,
 			"episodes": _episodes.size(), "jam_s": snappedf(total, 0.1), "by_class": by_class, "by_action": by_action,
@@ -350,4 +355,7 @@ func _finalize() -> void:
 			"slowed_s": snappedf(_slowed_ticks / float(SimClock.TICK_RATE), 0.1),
 			"no_blocker_s": snappedf(_no_blocker_ticks / float(SimClock.TICK_RATE), 0.1), "native_drive": BrainSwitches.native_drive,
 			"wait_queued": Movement.wait_queued, "waits": Movement.waits, "wait_timeouts": Movement.wait_timeouts, "wait_long": Movement.wait_long, "holdlane_skips": Movement.holdlane_skips, "holdlane_holds": Movement.holdlane_holds,
-			"wait_longest": Movement.wait_longest, "wait_by_kind": Movement.wait_by_kind}))
+			"wait_longest": Movement.wait_longest, "wait_by_kind": Movement.wait_by_kind,
+			"deckwait_waits": Movement.deckwait_waits, "deckwait_queued": Movement.deckwait_queued, "deckwait_timeouts": Movement.deckwait_timeouts,
+			"nopush_ticks": int(Movement.route_arms().get("nopush_ticks", 0)), "nopush_episodes": int(Movement.route_arms().get("nopush_episodes", 0)),
+			"nopush_capped": int(Movement.route_arms().get("nopush_capped", 0))}))

@@ -1,0 +1,19 @@
+BRIDGE locks      green guns=3 seed=1 wet=on  rim_crews=0 rim_total_s=0.8 deck_jam_s=0.0 wet_hops=0 crossed=4/4 alive=4 arrived_s=32.6
+BRIDGE locks      green guns=3 seed=1 wet=on  rim_crews=0 rim_total_s=0.9 deck_jam_s=1.2 wet_hops=0 crossed=4/4 alive=4 arrived_s=43.0
+BRIDGE locks      green guns=3 seed=1 wet=on  rim_crews=0 rim_total_s=0.3 deck_jam_s=0.6 wet_hops=0 crossed=4/4 alive=4 arrived_s=32.9
+BRIDGE locks      green guns=3 seed=2 wet=on  rim_crews=0 rim_total_s=0.0 deck_jam_s=0.3 wet_hops=0 crossed=4/4 alive=4 arrived_s=33.4
+BRIDGE locks      green guns=3 seed=2 wet=on  rim_crews=0 rim_total_s=1.8 deck_jam_s=1.3 wet_hops=0 crossed=4/4 alive=4 arrived_s=39.1
+BRIDGE locks      green guns=3 seed=2 wet=on  rim_crews=0 rim_total_s=0.7 deck_jam_s=0.6 wet_hops=0 crossed=4/4 alive=4 arrived_s=35.0
+BRIDGE locks      green guns=3 seed=3 wet=on  rim_crews=0 rim_total_s=0.0 deck_jam_s=0.3 wet_hops=0 crossed=4/4 alive=4 arrived_s=27.2
+BRIDGE locks      green guns=3 seed=3 wet=on  rim_crews=0 rim_total_s=0.0 deck_jam_s=0.5 wet_hops=0 crossed=4/4 alive=4 arrived_s=29.2
+BRIDGE locks      green guns=3 seed=3 wet=on  rim_crews=0 rim_total_s=0.0 deck_jam_s=0.3 wet_hops=0 crossed=4/4 alive=4 arrived_s=25.7
+BRIDGE locks      rust  guns=3 seed=1 wet=on  rim_crews=0 rim_total_s=0.0 deck_jam_s=0.0 wet_hops=0 crossed=4/4 alive=4 arrived_s=33.2
+BRIDGE locks      rust  guns=3 seed=1 wet=on  rim_crews=0 rim_total_s=0.2 deck_jam_s=0.7 wet_hops=0 crossed=4/4 alive=4 arrived_s=32.8
+BRIDGE locks      rust  guns=3 seed=1 wet=on  rim_crews=0 rim_total_s=0.1 deck_jam_s=2.0 wet_hops=0 crossed=4/4 alive=4 arrived_s=38.8
+BRIDGE locks      rust  guns=3 seed=2 wet=on  rim_crews=0 rim_total_s=0.1 deck_jam_s=1.5 wet_hops=0 crossed=4/4 alive=4 arrived_s=39.9
+BRIDGE locks      rust  guns=3 seed=2 wet=on  rim_crews=0 rim_total_s=0.9 deck_jam_s=0.1 wet_hops=0 crossed=4/4 alive=4 arrived_s=34.2
+BRIDGE locks      rust  guns=3 seed=2 wet=on  rim_crews=1 rim_total_s=5.4 deck_jam_s=2.7 wet_hops=0 crossed=4/4 alive=4 arrived_s=48.9
+BRIDGE locks      rust  guns=3 seed=3 wet=on  rim_crews=0 rim_total_s=1.4 deck_jam_s=2.2 wet_hops=0 crossed=4/4 alive=4 arrived_s=39.6
+BRIDGE locks      rust  guns=3 seed=3 wet=on  rim_crews=0 rim_total_s=0.9 deck_jam_s=2.8 wet_hops=0 crossed=4/4 alive=4 arrived_s=32.5
+BRIDGE locks      rust  guns=3 seed=3 wet=on  rim_crews=0 rim_total_s=0.7 deck_jam_s=0.0 wet_hops=0 crossed=4/4 alive=4 arrived_s=30.2
+BRIDGE_POOLED 17 of 18 runs pass; failing: rust tick 15 seed 2: rim_crews 1

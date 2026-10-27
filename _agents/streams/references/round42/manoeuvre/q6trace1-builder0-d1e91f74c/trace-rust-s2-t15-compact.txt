@@ -1,0 +1,248 @@
+== Rust_S_1
+t  6.0 at [66.8, -12.2]  v 0.0 sp 0.0 thr 0.00 yaw  160 ph=arrived  steer=[65.5, -11.5]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_2', 'Collision', 66.3, 3.75, -15.6, 0.94, 0.0, 0.35]] rch=True
+t  6.5 at [66.8, -12.2]  v 0.0 sp 0.0 thr 0.00 yaw  160 ph=arrived  steer=[65.5, -11.5]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_2', 'Collision', 66.3, 3.75, -15.6, 0.94, 0.0, 0.35]] rch=True
+t  7.0 at [66.8, -12.2]  v 0.0 sp 0.0 thr 0.00 yaw  160 ph=arrived  steer=[68.7, -30.1]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t  7.5 at [66.8, -12.2]  v 0.0 sp 0.0 thr 0.00 yaw  160 ph=arrived  steer=[68.7, -30.1]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_2', 'Collision', 66.3, 3.75, -15.6, 0.94, 0.0, 0.35]] rch=True
+t  8.0 at [66.8, -12.2]  v 0.0 sp 0.0 thr 0.00 yaw  160 ph=arrived  steer=[68.7, -30.1]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_2', 'Collision', 66.3, 3.75, -15.6, 0.94, 0.0, 0.35]] rch=True
+t  8.5 at [66.8, -12.2]  v 0.0 sp 0.0 thr 0.00 yaw  160 ph=arrived  steer=[68.7, -30.1]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_2', 'Collision', 66.3, 3.75, -15.6, 0.94, 0.0, 0.35]] rch=True
+t  9.0 at [67.2, -12.4]  v 1.4 sp-1.4 thr 0.00 yaw  162 ph=arrived  steer=[86.0, -10.5]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_2', 'Collision', 66.7, 2.22, -16.4, 0.21, 0.0, 0.98]] rch=True
+t  9.5 at [67.5, -12.2]  v 0.3 sp-0.3 thr-0.70 yaw  163 ph=driving  steer=[86.0, -10.5]  blk=          st=0.0 wdg=False ord=move_to,58.1,17.3 hits=[] rch=True
+t 10.0 at [68.3, -12.3]  v 3.5 sp-3.5 thr-0.70 yaw  171 ph=driving  steer=[86.0, -10.5]  blk=          st=0.1 wdg=False ord=move_to,57.8,24.8 hits=[['Rust_S_2', 'Collision', 67.8, 2.24, -16.0, -0.16, 0.0, 0.99]] rch=True
+t 10.5 at [67.8, -12.9]  v 3.5 sp-3.5 thr-0.70 yaw -177 ph=driving  steer=[86.0, -10.5]  blk=          st=0.266666666666667 wdg=False ord=move_to,57.8,24.8 hits=[['Rust_S_2', 'Collision', 69.3, 1.9, -16.6, -0.55, 0.0, 0.83]] rch=True
+t 11.0 at [66.9, -14.3]  v 3.5 sp-3.5 thr-0.70 yaw -164 ph=driving  steer=[86.0, -10.5]  blk=          st=0.766666666666667 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 11.5 at [66.3, -15.9]  v 2.3 sp-2.3 thr 0.39 yaw -152 ph=driving  steer=[83.5, -11.2]  blk=          st=0.0666666666666667 wdg=True ord=move_to,57.8,24.8 hits=[] rch=True
+t 12.0 at [66.6, -15.8]  v 2.8 sp 2.8 thr 0.65 yaw -147 ph=driving  steer=[83.5, -11.2]  blk=          st=0.566666666666667 wdg=True ord=move_to,57.8,24.8 hits=[['Rust_S_4', 'Collision', 67.1, 2.6, -11.9, 0.07, 0.0, -1.0]] rch=True
+t 12.5 at [68.9, -15.4]  v 5.9 sp 5.9 thr 0.46 yaw -132 ph=driving  steer=[78.3, -14.2]  blk=          st=0.0 wdg=True ord=move_to,57.8,24.8 hits=[['Rust_S_4', 'Collision', 70.4, 2.34, -11.7, 0.0, 0.0, -1.0]] rch=True
+t 13.0 at [71.9, -15.0]  v 7.6 sp 7.6 thr 0.63 yaw -121 ph=driving  steer=[80.5, -11.2]  blk=          st=0.0 wdg=True ord=move_to,57.8,24.8 hits=[['Rust_S_4', 'Collision', 74.0, 1.9, -11.7, -0.03, 0.0, -1.0]] rch=True
+t 13.5 at [76.1, -14.9]  v 9.1 sp 9.1 thr 0.75 yaw -116 ph=driving  steer=[84.5, -11.0]  blk=          st=0.0 wdg=False ord=move_to,57.8,24.8 hits=[['Rust_S_4', 'Collision', 78.3, 1.9, -11.8, -0.05, 0.0, -1.0]] rch=True
+t 14.0 at [78.8, -14.9]  v 3.1 sp 3.1 thr 0.19 yaw -117 ph=driving  steer=[86.8, -9.7]   blk=          st=0.1 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 14.5 at [80.5, -14.0]  v 5.9 sp 5.9 thr 0.64 yaw -119 ph=driving  steer=[86.0, -10.5]  blk=          st=0.0666666666666667 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 15.0 at [83.6, -12.1]  v 7.3 sp 7.3 thr 0.61 yaw -123 ph=driving  steer=[86.0, -10.5]  blk=          st=0.0666666666666667 wdg=False ord=move_to,57.8,24.8 hits=[['Rust_S_4', 'Collision', 86.2, 3.31, -9.4, -0.84, 0.0, -0.54]] rch=True
+t 15.5 at [86.1, -10.6]  v 7.8 sp 7.8 thr 0.60 yaw -122 ph=driving  steer=[93.3, -4.5]   blk=          st=0.0666666666666667 wdg=False ord=move_to,57.8,24.8 hits=[['Rust_S_4', 'Collision', 89.0, 2.62, -8.4, -0.85, 0.0, -0.52]] rch=True
+t 16.0 at [88.4, -8.6]   v 5.4 sp 5.4 thr 0.35 yaw -141 ph=driving  steer=[88.0, 8.9]    blk=          st=0.0333333333333333 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 16.5 at [89.3, -7.2]   v 0.6 sp 0.6 thr 0.32 yaw -154 ph=driving  steer=[88.0, 2.5]    blk=          st=0.0 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 17.0 at [89.9, -6.4]   v 3.8 sp 3.8 thr 0.37 yaw -158 ph=driving  steer=[89.4, 3.1]    blk=          st=0.0333333333333333 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 17.5 at [90.6, -4.1]   v 5.0 sp 5.0 thr 0.41 yaw -168 ph=driving  steer=[89.6, 5.3]    blk=          st=0.1 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 18.0 at [90.9, -1.9]   v 3.4 sp 3.4 thr 0.29 yaw -176 ph=driving  steer=[88.3, 7.3]    blk=          st=0.166666666666667 wdg=True ord=move_to,57.8,24.8 hits=[] rch=True
+t 18.5 at [90.9, -1.7]   v 2.0 sp-2.0 thr-0.70 yaw  179 ph=driving  steer=[88.1, 7.8]    blk=          st=0.466666666666667 wdg=True ord=move_to,57.8,24.8 hits=[] rch=True
+t 19.0 at [91.0, -2.9]   v 3.5 sp-3.5 thr-0.70 yaw  167 ph=driving  steer=[90.4, 0.0]    blk=          st=0.366666666666667 wdg=True ord=move_to,57.8,24.8 hits=[['Rust_S_3', 'Collision', 92.3, 3.09, -6.4, -0.22, 0.0, 0.98]] rch=True
+t 19.5 at [91.0, -3.0]   v 3.5 sp-3.5 thr-0.70 yaw  155 ph=driving  steer=[88.4, 7.3]    blk=          st=0.866666666666667 wdg=True ord=move_to,57.8,24.8 hits=[['Rust_S_3', 'Collision', 92.6, 2.79, -6.3, -0.43, 0.0, 0.9]] rch=True
+t 20.0 at [91.0, -2.9]   v 3.5 sp-3.5 thr-0.70 yaw  142 ph=driving  steer=[88.4, 7.3]    blk=          st=1.36666666666667 wdg=True ord=move_to,57.8,24.8 hits=[['Rust_S_3', 'Collision', 92.7, 2.44, -6.2, -0.61, 0.0, 0.79]] rch=True
+t 20.5 at [91.0, -2.9]   v 0.0 sp 0.0 thr 0.00 yaw  142 ph=driving  steer=[88.4, 7.3]    blk=          st=1.86666666666667 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 21.0 at [91.3, -3.3]   v 2.7 sp-2.7 thr-0.70 yaw  140 ph=blocked  steer=[88.7, 6.4]    blk=terrain   st=2.36666666666667 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 21.5 at [92.4, -4.4]   v 2.5 sp-2.5 thr-0.45 yaw  135 ph=blocked  steer=[89.3, 5.0]    blk=terrain   st=2.86666666666667 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 22.0 at [92.3, -4.2]   v 2.7 sp 2.7 thr 0.62 yaw  138 ph=blocked  steer=[89.3, 5.0]    blk=terrain   st=3.36666666666667 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 22.5 at [90.8, -2.2]   v 7.2 sp 7.2 thr 0.65 yaw  148 ph=blocked  steer=[88.6, 7.0]    blk=terrain   st=3.86666666666667 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 23.0 at [89.1, 1.5]    v 8.1 sp 8.1 thr 0.66 yaw  159 ph=driving  steer=[88.0, 9.0]    blk=          st=0.0333333333333333 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 23.5 at [88.0, 5.2]    v 7.7 sp 7.7 thr 0.64 yaw  170 ph=driving  steer=[88.9, 14.6]   blk=          st=0.0 wdg=False ord=move_to,57.8,24.8 hits=[] rch=True
+t 24.0 at [87.9, 8.6]    v 4.4 sp 4.4 thr-0.30 yaw  178 ph=driving  steer=[86.1, 10.4]   blk=          st=0.0 wdg=False ord=move_to,57.3,16.4 hits=[] rch=True
+t 24.5 at [87.8, 9.2]    v 0.5 sp-0.5 thr 0.26 yaw  171 ph=driving  steer=[70.9, 13.6]   blk=          st=0.366666666666667 wdg=False ord=move_to,57.3,16.4 hits=[] rch=True
+t 25.0 at [87.6, 10.2]   v 3.5 sp 3.5 thr 0.35 yaw  165 ph=driving  steer=[57.3, 16.4]   blk=          st=0.1 wdg=False ord=move_to,57.3,16.4 hits=[] rch=True
+t 25.5 at [87.5, 10.5]   v 1.2 sp-1.2 thr 0.30 yaw  160 ph=driving  steer=[70.2, 14.0]   blk=          st=0.266666666666667 wdg=True ord=move_to,57.3,16.4 hits=[] rch=True
+t 26.0 at [87.2, 11.2]   v 3.0 sp 3.0 thr 0.30 yaw  154 ph=driving  steer=[57.3, 16.4]   blk=          st=0.766666666666667 wdg=True ord=move_to,57.3,16.4 hits=[] rch=True
+t 26.5 at [87.2, 11.2]   v 1.6 sp-1.6 thr 0.45 yaw  149 ph=driving  steer=[57.3, 16.4]   blk=          st=1.26666666666667 wdg=True ord=move_to,57.3,16.4 hits=[] rch=True
+t 27.0 at [86.9, 11.7]   v 2.7 sp 2.7 thr 0.45 yaw  144 ph=driving  steer=[57.3, 16.4]   blk=          st=1.76666666666667 wdg=False ord=move_to,57.3,16.4 hits=[] rch=True
+t 27.5 at [86.9, 11.7]   v 0.4 sp-0.4 thr 0.29 yaw  140 ph=driving  steer=[69.4, 14.6]   blk=          st=0.233333333333333 wdg=False ord=move_to,57.3,16.4 hits=[] rch=True
+t 28.0 at [86.2, 12.4]   v 3.6 sp 3.6 thr 0.27 yaw  134 ph=driving  steer=[68.8, 14.6]   blk=          st=0.733333333333333 wdg=False ord=move_to,57.3,16.4 hits=[] rch=True
+t 28.5 at [85.8, 12.8]   v 1.1 sp-1.1 thr 0.25 yaw  130 ph=driving  steer=[57.3, 16.4]   blk=          st=0.466666666666667 wdg=True ord=move_to,57.3,16.4 hits=[['Rust_S_3', 'Collision', 89.0, 3.15, 10.9, -0.77, 0.0, 0.64]] rch=True
+t 29.0 at [85.2, 13.3]   v 3.7 sp 3.7 thr 0.67 yaw  125 ph=driving  steer=[57.3, 16.4]   blk=          st=0.966666666666667 wdg=True ord=move_to,57.3,16.4 hits=[] rch=True
+t 29.5 at [82.9, 14.5]   v 6.0 sp 6.0 thr 0.51 yaw  113 ph=yielding steer=[73.9, 12.7]   blk=Rust_S_3  st=0.0666666666666667 wdg=True ord=move_to,57.3,16.4 hits=[] rch=True
+t 30.0 at [80.7, 15.5]   v 3.8 sp 3.8 thr 0.31 yaw  118 ph=yielding steer=[73.9, 12.7]   blk=Rust_S_3  st=0.0666666666666667 wdg=True ord=move_to,57.3,16.4 hits=[] rch=True
+t 30.5 at [79.4, 16.3]   v 2.9 sp 2.9 thr 0.24 yaw  121 ph=yielding steer=[73.9, 12.7]   blk=Rust_S_3  st=0.0666666666666667 wdg=True ord=move_to,57.3,16.4 hits=[] rch=True
+t 31.0 at [78.1, 17.1]   v 3.3 sp 3.3 thr 0.13 yaw  120 ph=driving  steer=[68.6, 18.2]   blk=          st=0.0 wdg=False ord=move_to,57.3,16.4 hits=[] rch=True
+t 31.5 at [77.0, 17.6]   v 3.2 sp 3.2 thr 0.11 yaw  115 ph=driving  steer=[67.4, 18.4]   blk=          st=0.1 wdg=False ord=move_to,57.3,16.4 hits=[['Rust_S_2', 'Collision', 73.0, 1.9, 17.8, 0.91, 0.0, -0.42]] rch=True
+t 32.0 at [76.9, 17.7]   v 3.3 sp 3.3 thr 0.12 yaw  111 ph=driving  steer=[67.3, 18.0]   blk=          st=0.6 wdg=False ord=move_to,57.3,16.4 hits=[['Rust_S_2', 'Collision', 73.0, 1.9, 17.8, 0.94, 0.0, -0.35]] rch=True
+t 32.5 at [76.8, 17.7]   v 2.9 sp 2.9 thr 0.17 yaw  107 ph=driving  steer=[68.3, 22.2]   blk=          st=1.1 wdg=False ord=move_to,57.3,16.4 hits=[['Rust_S_2', 'Collision', 73.0, 1.9, 17.8, 0.96, 0.0, -0.29]] rch=True
+t 33.0 at [76.9, 17.7]   v 3.3 sp 3.3 thr 0.25 yaw  109 ph=driving  steer=[69.3, 23.7]   blk=          st=1.6 wdg=True ord=move_to,57.3,16.4 hits=[['Rust_S_2', 'Collision', 73.0, 1.9, 17.8, 0.94, 0.0, -0.33]] rch=True
+t 33.5 at [76.9, 17.7]   v 2.8 sp 2.8 thr 0.17 yaw  113 ph=blocked  steer=[69.4, 23.6]   blk=Rust_S_2  st=2.1 wdg=True ord=move_to,57.3,16.4 hits=[['Rust_S_2', 'Collision', 73.0, 1.9, 17.8, 0.92, 0.0, -0.39]] rch=True
+t 34.0 at [76.8, 17.7]   v 6.1 sp 6.1 thr 0.68 yaw  106 ph=blocked  steer=[67.2, 17.1]   blk=Rust_S_2  st=2.6 wdg=True ord=move_to,57.3,16.4 hits=[['Rust_S_2', 'Collision', 73.0, 1.9, 17.8, 0.96, 0.0, -0.28]] rch=True
+t 34.5 at [76.4, 17.8]   v 5.5 sp 5.5 thr 0.46 yaw   94 ph=driving  steer=[67.1, 15.7]   blk=          st=0.0666666666666667 wdg=True ord=move_to,57.3,16.4 hits=[['Rust_S_2', 'Collision', 72.9, 2.97, 19.7, 1.0, 0.0, -0.08]] rch=True
+t 35.0 at [75.6, 17.8]   v 5.3 sp 5.3 thr 0.50 yaw   88 ph=driving  steer=[66.7, 14.3]   blk=          st=0.133333333333333 wdg=True ord=move_to,57.3,16.4 hits=[['Rust_S_2', 'Collision', 71.9, 1.9, 19.2, 1.0, 0.0, 0.03]] rch=True
+t 35.5 at [74.2, 17.7]   v 8.0 sp 8.0 thr 0.67 yaw   83 ph=driving  steer=[64.9, 15.6]   blk=          st=0.2 wdg=True ord=move_to,57.3,16.4 hits=[['Rust_S_2', 'Collision', 70.7, 3.12, 16.7, 0.99, 0.0, 0.13]] rch=True
+t 36.0 at [73.9, 17.6]   v 7.7 sp 7.7 thr 0.64 yaw   78 ph=driving  steer=[64.6, 15.2]   blk=          st=0.433333333333333 wdg=True ord=move_to,57.3,16.4 hits=[['Rust_S_2', 'Collision', 70.5, 3.29, 16.1, 0.98, 0.0, 0.2]] rch=True
+== Rust_S_2
+t  6.0 at [64.6, -19.2]  v 0.6 sp 0.6 thr 0.00 yaw -180 ph=arrived  steer=[64.6, -12.9]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_1', 'Collision', 66.3, 3.75, -15.6, -0.94, 0.0, -0.35], ['Rust_S_3', 'Collision', 62.9, 3.75, -22.2, 1.0, 0.0, 0.0]] rch=True
+t  6.5 at [64.6, -19.2]  v 0.0 sp 0.0 thr 0.00 yaw -180 ph=arrived  steer=[64.6, -12.9]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_3', 'Collision', 62.9, 3.75, -21.7, 1.0, 0.0, 0.0]] rch=True
+t  7.0 at [64.6, -19.2]  v 0.0 sp 0.0 thr 0.00 yaw -180 ph=arrived  steer=[64.6, -12.9]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_3', 'Collision', 62.9, 3.75, -21.1, 1.0, 0.0, 0.0]] rch=True
+t  7.5 at [64.6, -19.2]  v 1.8 sp 1.8 thr 0.79 yaw -180 ph=driving  steer=[64.6, -12.9]  blk=          st=0.166666666666667 wdg=False ord=move_to,64.6,-12.9 hits=[['Rust_S_1', 'Collision', 66.3, 3.75, -15.6, -0.94, 0.0, -0.35], ['Rust_S_3', 'Collision', 62.9, 3.75, -21.1, 1.0, 0.0, 0.0]] rch=True
+t  8.0 at [64.6, -19.2]  v 6.3 sp 6.3 thr 0.79 yaw -180 ph=driving  steer=[64.6, -12.9]  blk=          st=0.0 wdg=False ord=move_to,64.6,-12.9 hits=[['Rust_S_1', 'Collision', 66.3, 3.75, -15.6, -0.94, 0.0, -0.35], ['Rust_S_3', 'Collision', 62.9, 3.75, -21.1, 1.0, 0.0, 0.0]] rch=True
+t  8.5 at [64.6, -19.3]  v 9.6 sp 9.6 thr 0.80 yaw -180 ph=driving  steer=[64.6, -12.8]  blk=          st=0.4 wdg=False ord=move_to,64.6,-12.8 hits=[['Rust_S_1', 'Collision', 66.3, 3.75, -15.7, -0.94, 0.0, -0.35], ['Rust_S_3', 'Collision', 62.9, 3.75, -21.1, 1.0, 0.0, -0.01]] rch=True
+t  9.0 at [64.9, -19.8]  v 8.2 sp 8.2 thr 0.00 yaw -168 ph=arrived  steer=[81.0, -12.7]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_1', 'Collision', 66.7, 2.22, -16.4, -0.21, 0.0, -0.98]] rch=True
+t  9.5 at [65.5, -19.3]  v 7.0 sp 7.0 thr 0.76 yaw -156 ph=driving  steer=[81.5, -12.4]  blk=          st=0.0 wdg=False ord=move_to,72.3,12.1 hits=[['Rust_S_3', 'Collision', 62.9, 2.18, -21.1, 0.91, 0.0, -0.41]] rch=True
+t 10.0 at [66.7, -19.8]  v 8.2 sp 8.2 thr 0.68 yaw -134 ph=driving  steer=[75.2, -15.7]  blk=          st=0.0 wdg=False ord=move_to,45.0,11.9 hits=[['Rust_S_1', 'Collision', 67.9, 2.25, -16.1, 0.17, 0.0, -0.98]] rch=True
+t 10.5 at [70.5, -17.8]  v 9.0 sp 9.0 thr 0.75 yaw -123 ph=driving  steer=[78.9, -13.9]  blk=          st=0.0333333333333333 wdg=False ord=move_to,53.2,12.2 hits=[] rch=True
+t 11.0 at [74.4, -15.7]  v 9.3 sp 9.3 thr 0.78 yaw -118 ph=driving  steer=[83.0, -12.0]  blk=          st=0.0 wdg=False ord=move_to,53.2,12.2 hits=[] rch=True
+t 11.5 at [79.0, -13.5]  v10.7 sp10.7 thr 0.89 yaw -115 ph=driving  steer=[87.2, -9.3]   blk=          st=0.0 wdg=False ord=move_to,45.1,11.9 hits=[] rch=True
+t 12.0 at [83.6, -11.2]  v 9.4 sp 9.4 thr 0.76 yaw -113 ph=driving  steer=[86.1, -10.4]  blk=          st=0.0333333333333333 wdg=False ord=move_to,45.1,11.9 hits=[] rch=True
+t 12.5 at [87.5, -8.9]   v 8.4 sp 8.4 thr 0.70 yaw -133 ph=driving  steer=[88.0, 8.4]    blk=          st=0.0 wdg=False ord=move_to,45.1,11.9 hits=[] rch=True
+t 13.0 at [89.5, -5.7]   v 8.5 sp 8.5 thr 0.72 yaw -159 ph=driving  steer=[88.3, 3.6]    blk=          st=0.0333333333333333 wdg=False ord=move_to,45.1,11.9 hits=[] rch=True
+t 13.5 at [90.3, -1.3]   v 9.1 sp 9.1 thr 0.76 yaw -178 ph=driving  steer=[88.2, 7.8]    blk=          st=0.0 wdg=False ord=move_to,53.1,12.2 hits=[] rch=True
+t 14.0 at [89.9, 2.9]    v 7.7 sp 7.7 thr 0.64 yaw  168 ph=driving  steer=[85.5, 10.5]   blk=          st=0.0 wdg=False ord=move_to,53.1,12.2 hits=[] rch=True
+t 14.5 at [88.7, 6.8]    v 8.6 sp 8.6 thr 0.71 yaw  160 ph=driving  steer=[87.8, 9.2]    blk=          st=0.0333333333333333 wdg=False ord=move_to,53.1,12.2 hits=[] rch=True
+t 15.0 at [87.5, 9.2]    v 2.5 sp 2.5 thr-0.36 yaw  145 ph=driving  steer=[86.0, 10.5]   blk=          st=0.1 wdg=False ord=move_to,53.1,12.2 hits=[] rch=True
+t 15.5 at [86.6, 10.3]   v 4.9 sp 4.9 thr 0.46 yaw  135 ph=driving  steer=[69.1, 11.4]   blk=          st=0.0 wdg=False ord=move_to,53.1,12.2 hits=[] rch=True
+t 16.0 at [84.3, 11.9]   v 5.2 sp 5.2 thr-0.50 yaw  119 ph=driving  steer=[79.0, 12.1]   blk=          st=0.0 wdg=False ord=move_to,79.0,12.1 hits=[] rch=True
+t 16.5 at [83.2, 12.6]   v 0.0 sp 0.0 thr 0.00 yaw  123 ph=arrived  steer=[79.0, 12.1]   blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 17.0 at [83.2, 12.6]   v 0.0 sp 0.0 thr 0.00 yaw  123 ph=arrived  steer=[79.0, 12.1]   blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 17.5 at [83.2, 12.6]   v 0.0 sp 0.0 thr 0.00 yaw  123 ph=arrived  steer=[79.0, 12.1]   blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 18.0 at [83.2, 12.6]   v 0.5 sp 0.5 thr 0.53 yaw  123 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 18.5 at [83.0, 12.8]   v 0.8 sp 0.8 thr 0.53 yaw  125 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 19.0 at [82.8, 12.9]   v 0.4 sp 0.4 thr-0.42 yaw  127 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 19.5 at [82.6, 13.1]   v 0.7 sp 0.7 thr 0.53 yaw  129 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 20.0 at [82.4, 13.2]   v 0.3 sp 0.3 thr-0.42 yaw  130 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 20.5 at [82.2, 13.4]   v 0.6 sp 0.6 thr 0.53 yaw  132 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 21.0 at [82.0, 13.6]   v 0.2 sp 0.2 thr-0.42 yaw  134 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 21.5 at [81.8, 13.8]   v 0.5 sp 0.5 thr 0.53 yaw  136 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 22.0 at [81.7, 13.9]   v 0.8 sp 0.8 thr 0.53 yaw  137 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 22.5 at [81.5, 14.1]   v 0.4 sp 0.4 thr-0.42 yaw  139 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 23.0 at [81.3, 14.3]   v 0.7 sp 0.7 thr 0.53 yaw  141 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 23.5 at [81.2, 14.5]   v 0.3 sp 0.3 thr-0.42 yaw  143 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_4  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 24.0 at [81.1, 14.6]   v 0.0 sp 0.0 thr 0.00 yaw  144 ph=arrived  steer=[79.0, 12.1]   blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 24.5 at [80.9, 14.8]   v 1.9 sp 1.9 thr 0.60 yaw  143 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_1  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 25.0 at [79.5, 16.5]   v 6.4 sp 6.4 thr 0.59 yaw  135 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_1  st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t 25.5 at [77.3, 18.2]   v 4.6 sp 4.6 thr 0.38 yaw  123 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_1  st=0.0 wdg=False ord=face,57.6,18.8 hits=[] rch=True
+t 26.0 at [75.7, 19.1]   v 3.2 sp 3.2 thr 0.24 yaw  116 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_1  st=0.0 wdg=False ord=face,57.6,18.8 hits=[] rch=True
+t 26.5 at [74.4, 19.7]   v 1.6 sp 1.6 thr 0.24 yaw  110 ph=yielding steer=[79.0, 12.1]   blk=Rust_S_1  st=0.0 wdg=False ord=face,55.6,20.0 hits=[] rch=True
+t 27.0 at [74.2, 19.8]   v 1.8 sp-1.8 thr-0.55 yaw  107 ph=arrived  steer=[79.0, 12.1]   blk=          st=0.0 wdg=False ord=face,55.6,20.0 hits=[] rch=True
+t 27.5 at [75.4, 19.5]   v 2.5 sp-2.5 thr-0.27 yaw   98 ph=driving  steer=[70.0, 12.7]   blk=          st=0.233333333333333 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 28.0 at [75.5, 19.5]   v 2.1 sp 2.1 thr-0.27 yaw   93 ph=driving  steer=[70.0, 12.7]   blk=          st=0.733333333333333 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 28.5 at [74.8, 19.5]   v 2.4 sp 2.4 thr 0.54 yaw   90 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 29.0 at [72.6, 19.5]   v 4.4 sp 4.4 thr 0.37 yaw   92 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 29.5 at [70.9, 19.6]   v 2.9 sp 2.9 thr 0.24 yaw   93 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 30.0 at [69.6, 19.7]   v 1.3 sp 1.3 thr 0.00 yaw   94 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 30.5 at [69.5, 19.7]   v 0.0 sp 0.0 thr 0.00 yaw   94 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 31.0 at [69.5, 19.7]   v 0.0 sp 0.0 thr 0.00 yaw   94 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 31.5 at [69.5, 19.7]   v 0.0 sp 0.0 thr 0.00 yaw   94 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 32.0 at [69.5, 19.7]   v 0.0 sp 0.0 thr 0.00 yaw   94 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 32.5 at [69.5, 19.7]   v 0.0 sp 0.0 thr 0.00 yaw   94 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 33.0 at [69.5, 19.7]   v 0.0 sp 0.0 thr 0.00 yaw   94 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 33.5 at [69.5, 19.7]   v 0.0 sp 0.0 thr 0.00 yaw   94 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 34.0 at [69.5, 19.7]   v 0.0 sp 0.0 thr 0.00 yaw   94 ph=yielding steer=[70.0, 12.7]   blk=Rust_S_4  st=1.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 34.5 at [69.2, 19.7]   v 2.4 sp 2.4 thr 0.51 yaw   95 ph=yielding steer=[61.1, 15.1]   blk=Rust_S_4  st=0.0 wdg=False ord=move_to,70.0,12.7 hits=[] rch=True
+t 35.0 at [67.9, 18.3]   v 4.8 sp 4.8 thr 0.40 yaw  104 ph=yielding steer=[61.1, 15.1]   blk=Rust_S_4  st=0.0 wdg=False ord=move_to,70.0,12.7 hits=[['Rust_S_4', 'Collision', 64.8, 2.16, 20.9, 0.73, 0.0, -0.68]] rch=True
+t 35.5 at [66.7, 17.2]   v 4.8 sp 4.8 thr 0.38 yaw  122 ph=yielding steer=[61.1, 15.1]   blk=Rust_S_4  st=0.0 wdg=False ord=move_to,70.0,12.7 hits=[['Rust_S_4', 'Collision', 64.5, 2.16, 20.5, 0.78, 0.0, -0.62]] rch=True
+t 36.0 at [66.7, 17.2]   v 5.3 sp 5.3 thr 0.44 yaw  131 ph=yielding steer=[61.1, 15.1]   blk=Rust_S_4  st=0.0 wdg=False ord=move_to,70.0,12.7 hits=[['Rust_S_4', 'Collision', 63.5, 3.22, 19.0, 0.75, 0.0, -0.66]] rch=True
+== Rust_S_3
+t  6.0 at [59.9, -19.5]  v10.2 sp10.2 thr 0.91 yaw  157 ph=driving  steer=[57.1, -12.8]  blk=          st=1.1 wdg=False ord=move_to,57.1,-12.8 hits=[['Rust_S_4', 'Collision', 57.0, 3.75, -16.8, 0.88, 0.0, -0.48], ['Rust_S_2', 'Collision', 62.9, 3.75, -22.2, -1.0, 0.0, 0.0]] rch=True
+t  6.5 at [60.4, -18.4]  v 9.3 sp 9.3 thr 0.57 yaw  165 ph=driving  steer=[59.9, -13.2]  blk=          st=0.0 wdg=False ord=move_to,59.9,-13.2 hits=[['Rust_S_4', 'Collision', 57.7, 3.75, -15.5, 0.88, 0.0, -0.48], ['Rust_S_2', 'Collision', 62.9, 3.75, -21.5, -1.0, 0.0, 0.0]] rch=True
+t  7.0 at [60.5, -17.9]  v 3.3 sp 3.3 thr 0.00 yaw  169 ph=arrived  steer=[60.5, -13.5]  blk=          st=0.0 wdg=False ord=move_to,60.5,-13.5 hits=[['Rust_S_4', 'Collision', 58.2, 3.75, -14.6, 0.88, 0.0, -0.48], ['Rust_S_2', 'Collision', 62.9, 3.75, -21.1, -1.0, 0.0, 0.0]] rch=True
+t  7.5 at [60.5, -17.9]  v 0.0 sp 0.0 thr 0.00 yaw  169 ph=arrived  steer=[60.5, -13.5]  blk=          st=0.0 wdg=False ord=move_to,60.5,-13.5 hits=[['Rust_S_4', 'Collision', 58.2, 3.75, -14.6, 0.88, 0.0, -0.48]] rch=True
+t  8.0 at [60.5, -17.9]  v 0.0 sp 0.0 thr 0.00 yaw  169 ph=arrived  steer=[60.5, -13.5]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_4', 'Collision', 58.2, 3.75, -14.6, 0.88, 0.0, -0.48]] rch=True
+t  8.5 at [60.5, -17.9]  v 0.0 sp 0.0 thr 0.00 yaw  169 ph=arrived  steer=[60.5, -13.5]  blk=          st=0.0 wdg=False ord=move_to,60.5,-13.5 hits=[['Rust_S_4', 'Collision', 58.2, 3.75, -14.6, 0.88, 0.0, -0.48]] rch=True
+t  9.0 at [60.5, -17.9]  v 0.0 sp 0.0 thr 0.00 yaw  169 ph=arrived  steer=[60.5, -13.5]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_4', 'Collision', 58.2, 3.75, -14.6, 0.88, 0.0, -0.48]] rch=True
+t  9.5 at [60.5, -17.9]  v 0.0 sp 0.0 thr 0.00 yaw  169 ph=arrived  steer=[60.5, -13.5]  blk=          st=0.0 wdg=False ord=face,59.6,2.1 hits=[['Rust_S_4', 'Collision', 58.2, 3.75, -14.6, 0.88, 0.0, -0.48]] rch=True
+t 10.0 at [60.6, -17.6]  v 0.8 sp-0.8 thr-0.70 yaw  171 ph=driving  steer=[86.0, -10.5]  blk=          st=0.4 wdg=False ord=move_to,65.9,12.2 hits=[] rch=True
+t 10.5 at [60.7, -19.0]  v 3.5 sp-3.5 thr-0.70 yaw -179 ph=driving  steer=[86.0, -10.5]  blk=          st=0.9 wdg=False ord=move_to,65.9,12.2 hits=[] rch=True
+t 11.0 at [60.6, -20.1]  v 0.1 sp 0.1 thr 0.35 yaw -171 ph=driving  steer=[60.4, -10.6]  blk=          st=1.4 wdg=False ord=move_to,65.9,12.2 hits=[] rch=True
+t 11.5 at [60.7, -18.9]  v 4.6 sp 4.6 thr 0.42 yaw -178 ph=yielding steer=[60.1, -10.3]  blk=Rust_S_1  st=1.63333333333333 wdg=True ord=move_to,65.9,12.2 hits=[] rch=True
+t 12.0 at [60.7, -17.2]  v 0.7 sp 0.7 thr-0.64 yaw  177 ph=yielding steer=[60.1, -10.3]  blk=Rust_S_1  st=1.63333333333333 wdg=True ord=move_to,65.9,12.2 hits=[] rch=True
+t 12.5 at [60.8, -18.1]  v 2.9 sp-2.9 thr-0.58 yaw  176 ph=yielding steer=[60.1, -10.3]  blk=Rust_S_1  st=1.63333333333333 wdg=True ord=move_to,65.9,12.2 hits=[] rch=True
+t 13.0 at [60.9, -19.4]  v 2.3 sp-2.3 thr-0.47 yaw  174 ph=yielding steer=[60.1, -10.3]  blk=Rust_S_1  st=1.63333333333333 wdg=True ord=move_to,65.9,12.2 hits=[] rch=True
+t 13.5 at [60.9, -19.4]  v 2.2 sp 2.2 thr 0.75 yaw  177 ph=driving  steer=[86.0, -10.5]  blk=          st=0.333333333333333 wdg=True ord=move_to,78.8,12.1 hits=[] rch=True
+t 14.0 at [61.1, -17.1]  v 6.7 sp 6.7 thr 0.75 yaw -167 ph=driving  steer=[86.0, -10.5]  blk=          st=0.133333333333333 wdg=True ord=move_to,78.8,12.1 hits=[] rch=True
+t 14.5 at [63.0, -13.5]  v 7.7 sp 7.7 thr 0.75 yaw -138 ph=driving  steer=[81.0, -12.3]  blk=          st=0.0 wdg=False ord=move_to,78.8,12.1 hits=[] rch=True
+t 15.0 at [66.8, -11.1]  v 9.8 sp 9.8 thr 0.82 yaw -111 ph=driving  steer=[76.2, -11.8]  blk=          st=0.0333333333333333 wdg=False ord=move_to,78.8,12.1 hits=[['TerrainRims', '@CollisionShape3D@164', 69.5, 0.71, -8.2, 0.0, 0.0, -1.0]] rch=True
+t 15.5 at [72.0, -10.2]  v11.2 sp11.2 thr 0.93 yaw  -94 ph=driving  steer=[81.4, -11.1]  blk=          st=0.0 wdg=False ord=move_to,78.8,12.1 hits=[] rch=True
+t 16.0 at [77.0, -10.1]  v 9.7 sp 9.7 thr 0.81 yaw  -89 ph=driving  steer=[82.5, -10.5]  blk=          st=0.0 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 16.5 at [82.0, -10.3]  v 9.3 sp 9.3 thr 0.78 yaw  -86 ph=driving  steer=[91.1, -12.1]  blk=          st=0.0 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 17.0 at [83.5, -10.8]  v11.1 sp11.1 thr 0.92 yaw  -82 ph=driving  steer=[92.7, -11.3]  blk=          st=0.133333333333333 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 17.5 at [87.7, -10.8]  v 5.7 sp 5.7 thr 0.22 yaw -102 ph=driving  steer=[88.0, 9.0]    blk=          st=0.133333333333333 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 18.0 at [89.6, -10.1]  v 4.1 sp 4.1 thr 0.32 yaw -116 ph=driving  steer=[95.8, -2.9]   blk=          st=0.633333333333333 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 18.5 at [90.1, -9.8]   v 1.3 sp-1.3 thr 0.36 yaw -122 ph=driving  steer=[88.0, 9.0]    blk=          st=1.13333333333333 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 19.0 at [90.3, -9.8]   v 1.6 sp 1.6 thr 0.54 yaw -125 ph=driving  steer=[88.0, 9.0]    blk=          st=1.63333333333333 wdg=True ord=move_to,53.4,12.1 hits=[['Rust_S_1', 'Collision', 92.3, 3.11, -6.4, 0.21, 0.0, -0.98]] rch=True
+t 19.5 at [90.9, -9.9]   v 1.9 sp 1.9 thr 0.51 yaw -131 ph=driving  steer=[88.0, 9.0]    blk=          st=0.1 wdg=True ord=move_to,53.4,12.1 hits=[['Rust_S_1', 'Collision', 92.5, 2.81, -6.3, 0.42, 0.0, -0.91]] rch=True
+t 20.0 at [91.4, -10.0]  v 0.9 sp 0.9 thr 0.50 yaw -135 ph=driving  steer=[88.0, 9.0]    blk=          st=0.6 wdg=True ord=move_to,53.4,12.1 hits=[['Rust_S_1', 'Collision', 92.7, 2.46, -6.2, 0.6, 0.0, -0.8]] rch=True
+t 20.5 at [90.8, -10.5]  v 3.2 sp-3.2 thr-0.64 yaw -133 ph=yielding steer=[88.0, 9.0]    blk=Rust_S_1  st=0.6 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 21.0 at [89.6, -11.6]  v 3.2 sp-3.2 thr-0.64 yaw -129 ph=yielding steer=[88.0, 9.0]    blk=Rust_S_1  st=0.6 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 21.5 at [88.4, -12.5]  v 2.6 sp-2.6 thr-0.52 yaw -125 ph=yielding steer=[88.0, 9.0]    blk=Rust_S_1  st=0.6 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 22.0 at [87.4, -13.1]  v 2.2 sp-2.2 thr-0.43 yaw -122 ph=yielding steer=[88.0, 9.0]    blk=Rust_S_1  st=0.6 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 22.5 at [86.6, -13.6]  v 1.8 sp-1.8 thr-0.35 yaw -120 ph=yielding steer=[88.0, 9.0]    blk=Rust_S_1  st=0.6 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 23.0 at [85.9, -14.0]  v 1.4 sp-1.4 thr-0.29 yaw -118 ph=yielding steer=[88.0, 9.0]    blk=Rust_S_1  st=0.6 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 23.5 at [85.3, -14.3]  v 1.2 sp-1.2 thr-0.24 yaw -116 ph=yielding steer=[88.0, 9.0]    blk=Rust_S_1  st=0.6 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 24.0 at [84.8, -14.6]  v 1.2 sp-1.2 thr-0.24 yaw -115 ph=yielding steer=[88.0, 9.0]    blk=Rust_S_1  st=0.6 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 24.5 at [84.2, -14.8]  v 1.2 sp-1.2 thr-0.24 yaw -113 ph=yielding steer=[88.0, 9.0]    blk=Rust_S_1  st=0.6 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 25.0 at [83.3, -15.3]  v 3.0 sp-3.0 thr-0.60 yaw -118 ph=driving  steer=[87.7, -6.2]   blk=          st=0.3 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 25.5 at [82.5, -15.7]  v 0.5 sp 0.5 thr 0.83 yaw -125 ph=driving  steer=[87.7, -6.2]   blk=          st=0.8 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 26.0 at [83.6, -14.8]  v 5.0 sp 5.0 thr 0.83 yaw -131 ph=driving  steer=[87.7, -6.2]   blk=          st=1.3 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 26.5 at [86.0, -12.0]  v 9.5 sp 9.5 thr 0.82 yaw -148 ph=driving  steer=[87.6, -6.9]   blk=          st=0.0 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 27.0 at [87.9, -7.2]   v10.8 sp10.8 thr 0.90 yaw -166 ph=driving  steer=[88.0, 2.1]    blk=          st=0.0333333333333333 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 27.5 at [88.6, -1.7]   v11.0 sp11.0 thr 0.87 yaw -176 ph=driving  steer=[90.6, 7.3]    blk=          st=0.0 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 28.0 at [89.2, 3.5]    v10.5 sp10.5 thr 0.87 yaw -174 ph=driving  steer=[89.7, 12.8]   blk=          st=0.0333333333333333 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 28.5 at [90.2, 7.2]    v 5.6 sp 5.6 thr 0.37 yaw -171 ph=driving  steer=[93.5, 16.0]   blk=          st=0.166666666666667 wdg=False ord=move_to,53.4,12.1 hits=[['Rust_S_1', 'Collision', 89.0, 3.18, 10.9, 0.76, 0.0, -0.64]] rch=True
+t 29.0 at [91.4, 9.3]    v 5.7 sp 5.7 thr 0.15 yaw  170 ph=driving  steer=[84.9, 16.2]   blk=          st=0.666666666666667 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 29.5 at [91.1, 10.6]   v 0.0 sp 0.0 thr 0.34 yaw  159 ph=driving  steer=[53.4, 12.1]   blk=          st=1.16666666666667 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 30.0 at [90.7, 11.5]   v 4.0 sp 4.0 thr 0.24 yaw  154 ph=driving  steer=[53.4, 12.1]   blk=          st=1.66666666666667 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 30.5 at [90.3, 12.1]   v 1.1 sp-1.1 thr 0.37 yaw  146 ph=driving  steer=[72.7, 12.1]   blk=          st=0.133333333333333 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 31.0 at [90.0, 12.6]   v 3.2 sp 3.2 thr 0.32 yaw  142 ph=driving  steer=[72.5, 12.1]   blk=          st=0.633333333333333 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 31.5 at [89.7, 12.9]   v 1.6 sp-1.6 thr 0.38 yaw  136 ph=driving  steer=[72.1, 12.1]   blk=          st=0.266666666666667 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 32.0 at [90.2, 12.5]   v 0.9 sp 0.9 thr 0.77 yaw  131 ph=driving  steer=[72.6, 12.1]   blk=          st=0.766666666666667 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 32.5 at [88.9, 13.4]   v 4.8 sp 4.8 thr 0.39 yaw  121 ph=driving  steer=[71.4, 12.1]   blk=          st=0.0 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 33.0 at [86.2, 14.5]   v 7.4 sp 7.4 thr 0.72 yaw  105 ph=driving  steer=[74.5, 12.1]   blk=          st=0.266666666666667 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 33.5 at [82.8, 12.8]   v11.7 sp11.7 thr 0.97 yaw   89 ph=driving  steer=[73.6, 12.1]   blk=          st=0.0 wdg=True ord=move_to,53.4,12.1 hits=[] rch=True
+t 34.0 at [77.0, 12.5]   v11.7 sp11.7 thr 0.98 yaw   85 ph=driving  steer=[67.8, 12.1]   blk=          st=0.0333333333333333 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 34.5 at [71.2, 12.0]   v11.7 sp11.7 thr 0.98 yaw   87 ph=driving  steer=[62.0, 12.1]   blk=          st=0.0333333333333333 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 35.0 at [65.3, 11.9]   v11.9 sp11.9 thr 0.99 yaw   90 ph=driving  steer=[56.1, 12.1]   blk=          st=0.0 wdg=False ord=move_to,53.4,12.1 hits=[] rch=True
+t 35.5 at [59.5, 11.9]   v11.0 sp11.0 thr 0.99 yaw   91 ph=driving  steer=[50.2, 11.9]   blk=          st=0.0 wdg=False ord=move_to,45.4,11.9 hits=[] rch=True
+t 36.0 at [54.4, 12.0]   v 7.5 sp 7.5 thr-0.15 yaw   90 ph=driving  steer=[45.4, 11.9]   blk=          st=0.0 wdg=False ord=move_to,45.4,11.9 hits=[] rch=True
+== Rust_S_4
+t  6.0 at [55.9, -15.3]  v 0.0 sp 0.0 thr 0.00 yaw -151 ph=yielding steer=[56.8, -13.1]  blk=Rust_S_3  st=0.0 wdg=False ord=move_to,56.8,-13.1 hits=[['Rust_S_3', 'Collision', 56.9, 3.75, -16.9, -0.88, 0.0, 0.48]] rch=True
+t  6.5 at [55.9, -15.3]  v 0.0 sp 0.0 thr 0.00 yaw -151 ph=arrived  steer=[56.8, -13.1]  blk=          st=0.0 wdg=False ord=move_to,56.8,-13.1 hits=[['Rust_S_3', 'Collision', 56.9, 3.75, -16.9, -0.88, 0.0, 0.48]] rch=True
+t  7.0 at [55.9, -15.3]  v 0.0 sp 0.0 thr 0.00 yaw -151 ph=arrived  steer=[56.8, -13.1]  blk=          st=0.0 wdg=False ord=move_to,56.8,-13.1 hits=[['Rust_S_3', 'Collision', 56.9, 3.75, -16.9, -0.88, 0.0, 0.48]] rch=True
+t  7.5 at [55.9, -15.3]  v 0.0 sp 0.0 thr 0.00 yaw -151 ph=arrived  steer=[56.8, -13.1]  blk=          st=0.0 wdg=False ord=move_to,56.8,-13.1 hits=[['Rust_S_3', 'Collision', 56.9, 3.75, -16.9, -0.88, 0.0, 0.48]] rch=True
+t  8.0 at [55.9, -15.3]  v 0.0 sp 0.0 thr 0.00 yaw -151 ph=arrived  steer=[56.8, -13.1]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[['Rust_S_3', 'Collision', 56.9, 3.75, -16.9, -0.88, 0.0, 0.48]] rch=True
+t  8.5 at [55.9, -15.3]  v 0.0 sp 0.0 thr 0.00 yaw -151 ph=arrived  steer=[56.8, -13.1]  blk=          st=0.0 wdg=False ord=move_to,56.8,-13.1 hits=[['Rust_S_3', 'Collision', 56.9, 3.75, -16.9, -0.88, 0.0, 0.48]] rch=True
+t  9.0 at [55.8, -15.4]  v 0.5 sp-0.5 thr 0.00 yaw -152 ph=arrived  steer=[56.8, -13.1]  blk=          st=0.0 wdg=False ord=stop,0.0,0.0 hits=[] rch=True
+t  9.5 at [55.8, -15.6]  v 0.3 sp-0.3 thr-0.55 yaw -152 ph=arrived  steer=[56.8, -13.1]  blk=          st=0.0 wdg=False ord=face,54.8,4.4 hits=[] rch=True
+t 10.0 at [56.0, -15.0]  v 3.3 sp 3.3 thr 0.65 yaw -148 ph=driving  steer=[73.3, -12.6]  blk=          st=0.4 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 10.5 at [57.8, -12.9]  v 7.8 sp 7.8 thr 0.66 yaw -130 ph=driving  steer=[86.0, -10.5]  blk=          st=0.0666666666666667 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 11.0 at [61.3, -11.1]  v 7.7 sp 7.7 thr 0.64 yaw -112 ph=driving  steer=[86.0, -10.5]  blk=          st=0.0666666666666667 wdg=True ord=move_to,72.0,12.1 hits=[['TerrainRims', '@CollisionShape3D@164', 63.9, 0.86, -8.2, 0.0, 0.0, -1.0]] rch=True
+t 11.5 at [63.7, -10.6]  v 9.8 sp 9.8 thr 0.82 yaw -102 ph=driving  steer=[86.0, -10.5]  blk=          st=0.0333333333333333 wdg=False ord=move_to,72.0,12.1 hits=[['TerrainRims', '@CollisionShape3D@164', 66.8, 0.86, -8.2, 0.0, 0.0, -1.0]] rch=True
+t 12.0 at [68.2, -10.1]  v 8.7 sp 8.7 thr 0.72 yaw  -94 ph=driving  steer=[77.5, -10.3]  blk=          st=0.0 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 12.5 at [72.5, -10.0]  v 8.8 sp 8.8 thr 0.73 yaw  -90 ph=driving  steer=[81.8, -10.5]  blk=          st=0.0333333333333333 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 13.0 at [77.0, -10.1]  v 9.0 sp 9.0 thr 0.75 yaw  -88 ph=driving  steer=[86.2, -10.3]  blk=          st=0.0 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 13.5 at [81.4, -10.3]  v 8.7 sp 8.7 thr 0.72 yaw  -87 ph=driving  steer=[84.0, -10.5]  blk=          st=0.0333333333333333 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 14.0 at [85.3, -10.2]  v 6.2 sp 6.2 thr-0.45 yaw  -91 ph=driving  steer=[87.5, -9.0]   blk=          st=0.0 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 14.5 at [87.4, -9.9]   v 5.1 sp 5.1 thr 0.56 yaw -106 ph=driving  steer=[88.0, 9.0]    blk=          st=0.133333333333333 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 15.0 at [90.3, -8.4]   v 6.8 sp 6.8 thr 0.56 yaw -129 ph=driving  steer=[88.0, 9.0]    blk=          st=0.133333333333333 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 15.5 at [92.3, -5.8]   v 6.8 sp 6.8 thr 0.57 yaw -153 ph=driving  steer=[88.0, 9.0]    blk=          st=0.0333333333333333 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 16.0 at [93.2, -2.4]   v 7.0 sp 7.0 thr 0.59 yaw -175 ph=driving  steer=[89.0, 6.1]    blk=          st=0.0 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 16.5 at [92.9, 1.3]    v 7.7 sp 7.7 thr 0.64 yaw  167 ph=driving  steer=[87.6, 9.3]    blk=          st=0.0333333333333333 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 17.0 at [91.8, 4.7]    v 5.1 sp 5.1 thr 0.42 yaw  163 ph=driving  steer=[89.0, 13.7]   blk=          st=0.0333333333333333 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 17.5 at [91.1, 7.1]    v 4.7 sp 4.7 thr 0.39 yaw  163 ph=driving  steer=[88.2, 16.1]   blk=          st=0.0 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 18.0 at [90.5, 8.9]    v 1.8 sp 1.8 thr 0.13 yaw  162 ph=driving  steer=[86.2, 17.3]   blk=          st=0.1 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 18.5 at [90.1, 10.0]   v 2.3 sp 2.3 thr 0.08 yaw  159 ph=driving  steer=[83.4, 16.7]   blk=          st=0.6 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 19.0 at [89.7, 11.0]   v 2.1 sp 2.1 thr 0.08 yaw  156 ph=driving  steer=[82.1, 16.8]   blk=          st=1.1 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 19.5 at [89.3, 11.8]   v 1.6 sp 1.6 thr 0.13 yaw  154 ph=driving  steer=[84.7, 20.2]   blk=          st=0.366666666666667 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 20.0 at [88.9, 12.7]   v 1.6 sp 1.6 thr 0.13 yaw  153 ph=driving  steer=[83.9, 20.8]   blk=          st=0.866666666666667 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 20.5 at [88.5, 13.5]   v 1.9 sp 1.9 thr 0.16 yaw  153 ph=driving  steer=[84.2, 22.0]   blk=          st=1.36666666666667 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 21.0 at [88.1, 14.2]   v 1.7 sp 1.7 thr 0.14 yaw  153 ph=driving  steer=[83.4, 22.6]   blk=          st=0.333333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 21.5 at [87.7, 15.0]   v 1.6 sp 1.6 thr 0.13 yaw  152 ph=driving  steer=[83.3, 23.4]   blk=          st=0.833333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 22.0 at [87.4, 15.7]   v 1.6 sp 1.6 thr 0.13 yaw  152 ph=driving  steer=[82.5, 23.9]   blk=          st=1.33333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 22.5 at [87.0, 16.4]   v 1.7 sp 1.7 thr 0.14 yaw  152 ph=driving  steer=[81.9, 24.4]   blk=          st=1.83333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 23.0 at [86.5, 17.2]   v 2.0 sp 2.0 thr 0.16 yaw  151 ph=driving  steer=[81.2, 25.0]   blk=          st=0.3 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 23.5 at [85.9, 18.2]   v 3.3 sp 3.3 thr 0.28 yaw  149 ph=driving  steer=[79.7, 25.4]   blk=          st=0.8 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 24.0 at [85.0, 19.6]   v 4.6 sp 4.6 thr 0.26 yaw  142 ph=driving  steer=[75.9, 22.4]   blk=          st=1.3 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 24.5 at [83.0, 21.5]   v 5.0 sp 5.0 thr 0.41 yaw  125 ph=driving  steer=[73.7, 23.2]   blk=          st=0.133333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 25.0 at [80.6, 22.8]   v 6.0 sp 6.0 thr 0.50 yaw  118 ph=driving  steer=[72.3, 27.2]   blk=          st=0.633333333333333 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 25.5 at [78.4, 24.1]   v 4.7 sp 4.7 thr 0.13 yaw  127 ph=driving  steer=[74.2, 32.6]   blk=          st=0.1 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 26.0 at [77.8, 24.6]   v 1.0 sp-1.0 thr-0.01 yaw  123 ph=driving  steer=[72.0, 12.1]   blk=          st=0.6 wdg=False ord=move_to,72.0,12.1 hits=[] rch=True
+t 26.5 at [77.3, 24.9]   v 3.3 sp 3.3 thr 0.03 yaw  119 ph=driving  steer=[71.9, 32.7]   blk=          st=1.1 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 27.0 at [77.0, 25.1]   v 1.5 sp-1.5 thr-0.01 yaw  119 ph=driving  steer=[72.0, 12.1]   blk=          st=1.6 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 27.5 at [76.7, 25.2]   v 2.9 sp 2.9 thr-0.05 yaw  115 ph=driving  steer=[72.0, 12.1]   blk=          st=0.233333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 28.0 at [75.1, 25.8]   v 4.1 sp 4.1 thr 0.35 yaw  108 ph=driving  steer=[65.7, 25.1]   blk=          st=0.733333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 28.5 at [73.0, 26.3]   v 4.7 sp 4.7 thr 0.39 yaw   97 ph=driving  steer=[63.9, 23.6]   blk=          st=1.23333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 29.0 at [72.0, 26.4]   v 0.7 sp-0.7 thr-0.16 yaw   93 ph=driving  steer=[72.0, 12.1]   blk=          st=1.73333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 29.5 at [72.5, 26.4]   v 0.9 sp 0.9 thr-0.25 yaw   88 ph=blocked  steer=[72.0, 12.1]   blk=Rust_S_2  st=2.23333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 30.0 at [71.9, 26.3]   v 0.7 sp-0.7 thr-0.26 yaw   83 ph=blocked  steer=[72.0, 12.1]   blk=Rust_S_2  st=2.73333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 30.5 at [72.4, 26.4]   v 0.9 sp 0.9 thr-0.02 yaw   79 ph=blocked  steer=[72.0, 12.1]   blk=Rust_S_2  st=3.23333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 31.0 at [71.7, 26.3]   v 1.4 sp 1.4 thr 0.07 yaw   77 ph=blocked  steer=[62.7, 22.9]   blk=Rust_S_2  st=3.73333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 31.5 at [71.1, 26.1]   v 1.0 sp 1.0 thr 0.08 yaw   76 ph=blocked  steer=[61.8, 23.6]   blk=Rust_S_2  st=4.23333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 32.0 at [70.6, 26.0]   v 0.9 sp 0.9 thr 0.08 yaw   76 ph=blocked  steer=[61.4, 23.5]   blk=Rust_S_2  st=4.73333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 32.5 at [70.4, 25.9]   v 0.8 sp-0.8 thr-0.09 yaw   76 ph=blocked  steer=[72.0, 12.1]   blk=Rust_S_2  st=5.23333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 33.0 at [71.3, 26.3]   v 0.9 sp-0.9 thr-0.15 yaw   69 ph=blocked  steer=[72.0, 12.1]   blk=Rust_S_2  st=5.73333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 33.5 at [71.0, 26.1]   v 0.9 sp 0.9 thr 0.08 yaw   68 ph=blocked  steer=[62.1, 22.5]   blk=Rust_S_2  st=6.23333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 34.0 at [69.9, 25.7]   v 4.2 sp 4.2 thr 0.35 yaw   69 ph=blocked  steer=[60.8, 23.1]   blk=Rust_S_2  st=6.73333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 34.5 at [67.5, 24.7]   v 6.0 sp 6.0 thr-0.42 yaw   60 ph=driving  steer=[72.0, 12.1]   blk=          st=0.0333333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 35.0 at [65.3, 23.9]   v 2.0 sp 2.0 thr-0.03 yaw   42 ph=driving  steer=[72.0, 12.1]   blk=          st=0.533333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 35.5 at [64.7, 23.5]   v 3.1 sp 3.1 thr-0.30 yaw   38 ph=driving  steer=[72.0, 12.1]   blk=          st=0.133333333333333 wdg=True ord=move_to,72.0,12.1 hits=[] rch=True
+t 36.0 at [63.6, 23.0]   v 0.6 sp 0.6 thr-0.27 yaw   27 ph=driving  steer=[72.0, 12.1]   blk=          st=0.333333333333333 wdg=True ord=move_to,72.0,12.1 hits=[['Rust_S_2', 'Collision', 63.5, 3.2, 19.0, -0.76, 0.0, 0.65]] rch=True

@@ -1,0 +1,10 @@
+arm             runs     pass    rim s  deck jam    worst   arrival over 3 s
+main-off          72    72/72     31.1      49.2      1.9      35.8        0
+main-on           72    72/72     35.7      61.2      2.5      36.9        0
+paired main-off -> main-on over 72 runs: rim 31.1 -> 35.7 s (+15 %; line <= 24.9 = 0.8 x OFF), per-run mean +0.06 s, se 0.05 (1.2 se; line <= -2 se)
+paired arrival main-off -> main-on: mean 35.8 -> 36.9 s, per-run mean +1.11 s, se 0.61 (+1.8 se)
+FAIL Q6 rim pooled ON <= OFF: 31.1 -> 35.7 s
+PASS Q6 every surviving crew crosses ON: 72/72 runs
+PASS Q6 worst crew ON <= 3 s: 2.5 s
+FAIL Q6 arrival guard: paired mean ON <= OFF + 1.645 se: +1.11 s a run (line <= +1.00)
+Q6 TREE VERDICT FAIL

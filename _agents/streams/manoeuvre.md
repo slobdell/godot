@@ -72,3 +72,313 @@ Nothing. (His decision 2, a click beside his army, is orders' question and needs
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Session start 2026-10-26 ~14:55 PDT (Fable). Starting commit 18982e8df = main at launch (code 21b20bdce GREEN builder0, 3289/0, 28 ALL
+JUDGED; no baseline check re-run, per the contract). Orchestrator session: `godot-8c` (godot-45 stood down).** Side trees: `../godot-manoeuvre-bt`
+(`wip/manoeuvre-bt-r42` = main + 8e257f3bc + d385cd308: balance's v2 overrides, for the bridge reads), `../godot-manoeuvre-q5`
+(`wip/manoeuvre-q5-r42` = main + native's 75495744b + a45c0b953 + fc8f3697d: Q5 dev until CP42.0 lands). Evidence outside every
+worktree: `~/overnight-manoeuvre/r42/`.
+
+### REPORT (round 42, final, 2026-10-26 19:45 PDT)
+
+**Green hash: 7569747ce** (builder0, `make check exited 0`, 3300/0, 27 passed + 1 NOT JUDGED load refusal, sim-baseline unmoved;
+docs commits on top; no game/ or tests/ commit since). Deliverables: Bar Q5 filed and withdrawn unread (R42.8 / R42.11: Q5 OFF, v3
+best); **Bar Q6 filed (R42.7), run on 9825-9848 and FAILED** (the table under *Bar Q6: VERDICT FAIL*; deckwait OFF, CP42.1 not
+reached); the `_wait` timer artefact fixed (stretch 1); the long-episode lab read (stretch 3); the jam probe's judge and counters for
+both rules. Both rules ship on the branch OFF behind `--traffic-on=<name>` with their tests; nothing changes for the player at
+main's defaults.
+1. **Q5.1 Bar Q5:** filed before any number (361fb9d24; the judge `tests/manoeuvre/q5_judge.py`, the eased-ticks column); the dev
+   read on today's main (q5lab3) failed his two strict guards, the bar was withdrawn unread (R42.8), v3 (R42.8's design) built and
+   labbed on the side tree (q5lab4: G6 7 -> 8, one run) and Q5 closed OFF (R42.11). 9801-9824 unseen. Code on the branch: v2 OFF
+   (`--traffic-on=nopush`, the cherry-picks on CP42.0's rows); v3 on `wip/manoeuvre-q5v3` 4c8db69b6.
+2. **Q6 the bridge rim crew:** `--traffic-on=deckwait` v4 built OFF (speed-only, C42.4), four variants labbed on the drill's seeds
+   1-3 (dev reads 1-13); Bar Q6 filed with R42.7's arrival guard and run: **FAIL** on both trees' pooled rim line (main 31.1 -> 35.7
+   s, overrides 34.3 -> 41.1 s over 72 runs), the overrides' worst crew (6.1 s), main's arrival guard (+1.11 s, line +1.00) and the
+   fights' kill share (0.040, line 0.03); the drill 18/18, every crew crosses, the group guards G5-G7 and G1-G3 pass. The fresh
+   seeds have no rim failure to fix OFF (0.4-0.5 s a run), so a cap at every mouth only costs. Next round's shape: fire only on the
+   carried-past case (a follower at speed behind a leader turning in the mouth), not on every follower near a deck.
+3. **Stretch:** the `_wait` timer artefact fixed with a test (drive ends a wait on any tick that never weighs it); the long shoved
+   episodes with Q5 ON read (columns behind a stalled head at the Crossing's street mouths; R42.11's framing for the next round).
+
+**Decisions (mine, one line each):** the Q6 trigger is the friend's place in the deck's mouth, not my route's turn vertex (the
+vertex flickers under ORCA's deflection); the leader counts by its speed away from me (a leader turning off my lane is clearing it);
+asks stay as today (a parked head on the far apron was never asked while a column waited); the rule is the entry's (a leader beyond
+the water is passed as today); a speed floor at 0.4 x top speed (a limit, not a queue: a crawling follower caught the rail's end);
+Q2's wait members carry deckwait's state (the same meaning, no new exec field); Bar Q5's fights run only if its group-order guards
+hold; Q5 v3 reads the stand as still under the ease for a second (a yielding head reads as under way; `stalled_ticks` reads a
+crawling friend as stood).
+
+**Questions for the lead:** none. **Requests to other streams:** none now (Bar Q6 failed, so native's twin of deckwait is not asked
+for; native's plan stays on file for a next version: wait_end, deckwait cap/refuse, lane_friend, in_a_deck_mouth over Arena terrain,
+the wish/desired split, DECKWAIT_* in DriveConfig; no new exec fields). Balance's Bar B2s v2 stays on today's bridge.
+
+**Known issues:** ON for `deckwait` / `nopush` / `wait` / `holdlane` forces `native_drive` off until twinned; `deckwait` and `wait`
+are exclusive (`wait` wins); `_in_a_deck_mouth` reads `Arena.active` (a match without an arena has no mouths); Q5 v2's eased crews
+read as "slowed by a friend" in jam-seconds (the eased-ticks column reports it); the trace flags `--deckwait-trace` (DECKWAIT lines)
+and probe_jam's eased_s are measurement only; `q3_judge.py`'s reported counters line reads Q2's `waits` / `wait_queued` keys, so
+under `--arm=deckwait` it prints zeros (deckwait_* are on JAM_RUN; a one-line fix, left for after the handover so the green hash
+stands).
+
+**Playtest (laptop, every switch OFF by default):** `make skirmish ARENA=locks SKIRMISH_FLAGS="--traffic-on=deckwait"` v without:
+select a wheeled squad on one bank, send it over the swing bridge; does the third crew slow behind the one turning onto the deck
+instead of being carried past the mouth to the rim? `make skirmish ARENA=terminus SKIRMISH_FLAGS="--traffic-on=nopush"`: his
+5-squad order; who shoves, who stands. Drill: `make remote T="native bridge-pooled BRIDGE_FLAGS='--traffic-on=deckwait
+--brains-off=native_drive'"`; `python3 tests/manoeuvre/bridge_lab_table.py off=A.jsonl on=B.jsonl --pair=off,on --q6`.
+
+**Merge notes:** branch off 18982e8df, main bf99631b5 merged (8026d9696). Game changes: `game/ai/movement.gd` (deckwait block, the
+`wish` / `desired` split in `_avoid` with the OFF-identical clear-way return, the drive-tick `_wait_end`, Q5's nopush v2 from the
+cherry-picks, the ask gate scoped to Q2's wait), `game/ai/traffic.gd` (DEFAULT_OFF += deckwait, nopush; `_chain_native`). Tests:
+`tests/test_traffic_deckwait.gd` (7), `tests/test_traffic_nopush.gd` (3, as cherry-picked), `tests/manoeuvre/q5_judge.py`,
+`probe_jam.gd` (eased_s, the counters on JAM_RUN), `bridge_lab_table.py --q6`. No native/, control, tactics, units or baseline paths
+touched. Side worktrees `../godot-manoeuvre-bt` (`wip/manoeuvre-bt-r42`) and `../godot-manoeuvre-q5` (`wip/manoeuvre-q5v3`, keep
+the branch as a ref) and their builder0 light folders `~/tank_squad/godot-manoeuvre-bt-light`, `godot-manoeuvre-q5-light` can go at
+the close. Evidence under `references/round42/manoeuvre/` (q6trace1, q5lab3, q5lab4; barq6 at the verdict).
+
+### Where it stands (2026-10-26 19:45 PDT): the gate is green on 7569747ce; Bar Q6 FAILED (deckwait OFF); Q5 closed OFF; done
+
+- **Bar Q6's series ended 19:27 PDT, verdict FAIL** (the table above); evidence `references/round42/manoeuvre/barq6-builder0-7569747ce/`.
+  No re-run on 9825-9848; no code change after the numbers. The branch's hand-over hash stays **7569747ce**.
+
+- **Frozen tree 7569747ce GREEN on builder0** (code ac64ce939 = main bf99631b5 with CP42.0 + Q5 a45c0b953 / fc8f3697d cherry-picked +
+  deckwait v4 + this stream's judges/instruments): `make remote T=check` 16:23-17:30: `>> remote: make check exited 0 (build/ copied
+  back)`, 3300 passed / 0 failed, `27 passed, 1 NOT JUDGED` (remote-guard-test's quiet window refused at load 16.78 on 10 cores: a
+  load refusal), sim-baseline 13 maps unmoved (`~/overnight-manoeuvre/r42/gate1/check.log`). **This commit is green, merge here:
+  7569747ce** (docs commits sit on top). **Bar Q6's series started 17:38 PDT** (`barq6.sh`; `~/overnight-manoeuvre/r42/barq6/`). Laptop: `make test FILTER=traffic NATIVE=off`
+  127/0 at 520516ec3; deckwait 7/0 at ac64ce939.
+- **Bar Q5** (recorded on main as filed): the series `~/overnight-manoeuvre/r42/barq5.sh` (HOST=builder2 on the orchestrator's word
+  after engage's guards, else builder0 light) starts after the gate's green wrapper line.
+- **Bar Q6** (recorded on main as filed, 7569747ce): `~/overnight-manoeuvre/r42/barq6.sh` (builder0 light lanes: this worktree's and
+  the overrides tree's `../godot-manoeuvre-bt` = d9382eed7 = 7569747ce + 8e257f3bc + d385cd308) after the same green line; one half
+  at a time if `tools/loaded.sh` says the lane is full.
+- **Stretch 3 (running, dev seeds):** the long shoved episodes with Q5 ON, `q5lab3` (crossing/locks/sumps/terminus x 7009-7012,
+  main v nopush, GDScript both): what remains after no-pressing.
+- **Stretch 3 READ (q5lab3, the frozen tree, 7009-7012 x 4 maps, main v nopush v2, GDScript, builder0 light, 16 paired runs;
+  `references/round42/manoeuvre/q5lab3-builder0-7569747ce/`):** through `q5_judge.py`: D1 contacts 239,703 -> 176,321 (-26 %, -3.8 se)
+  PASS, D2 shoved ticks 28,432 -> 17,783 (-38 %, -4.5 se) PASS, **G5 all-in 74.8 -> 80.5 s (+5.7, line +4.8) FAIL, G6 never-in runs
+  7 -> 9 FAIL**; jam-seconds +21 % (eased ticks out: -19.5 %; the eased ticks are 5,576 of the ON arm's 16,598 jam-s). On round 41's
+  main the same cells read all-in +2.0 s / never-in 6 -> 7: with G1 v9's column on today's main, standing behind a stalled head costs
+  more. What remains ON: the longest episodes (20-45 s) are columns standing ("coasting": throttle 0, rolling) behind a stalled head
+  of the same column at the Crossing's street mouths (Green_Bravo_3 <- Bravo_1 44.8 s, s7012). Told the orchestrator (17:05): Bar Q5
+  as filed will most likely fail G5 / G6 on 9801-9824; recommended run as filed with the fights skipped on a group-guard fail
+  (barq5.sh does that), or withdraw unread (R41.4's precedent). A rule that keeps the contacts down without the standing needs to know
+  which head will move (Q2's question again); not built this round.
+- **R42.8 (~17:15): Bar Q5 WITHDRAWN UNREAD** (9801-9824 stay unseen; the dev read above; builder2 to balance and engage). Q5 v2 OFF,
+  no series. Order: Bar Q6 the minute the gate is green; then ONE lab of **Q5 v3** on the same dev cells: ease only against a friend
+  that is itself moving (clearing); press at once behind a head that has stood > ~1 s. A v3 pass on G5 / G6 with D1 / D2 kept =
+  Bar Q5 v3 filed on the unseen 9801-9824 (the LAST re-file); else Q5 is written up OFF with this evidence.
+- **Q5 v3 BUILT on the side worktree `../godot-manoeuvre-q5` (`wip/manoeuvre-q5v3` 4c8db69b6 = 9ffdfbd37 + v3; the stream branch
+  stays frozen for Bar Q6):** the ease is only against a friend whose drive is under way (a parked or arrived head is pressed as
+  today), and a friend standing still (< 0.5 m/s) under the ease for NOPUSH_STOOD_TICKS (1 s) since the ease began is pressed at once
+  (its drive's state alone read a yielding-but-still head as moving, and `stalled_ticks` read a crawling friend as stood); a moving
+  friend keeps v2's 3 s cap / 6 s press. `tests/test_traffic_nopush.gd` 4/0 (laptop NATIVE=off): the standing head eased <= 1 s then
+  pressed; a slow friend still moving eased against (pressing while touching 13 -> 6 ticks). **Lab q5lab4 (running):** the same 16
+  dev cells as q5lab3, main v nopush v3, GDScript both, builder0 light (the q5 tree's own light folder); read with q5_judge.
+- **Q5 v3 LAB READ (q5lab4, 4c8db69b6, 16 paired dev runs, builder0 light, GDScript; `references/round42/manoeuvre/
+  q5lab4-v3-builder0-4c8db69b6/`):** D1 contacts 239,703 -> 175,367 (-27 %, -4.5 se) PASS; D2 shoved ticks 28,432 -> 19,542 (-31 %,
+  -2.8 se) PASS; G5 all-in 74.8 -> 78.0 s (line 78.5) PASS; **G6 never-in runs 7 -> 8 (line 7) FAIL** (squads 16 -> 19); jam-seconds
+  +16.8 % (eased ticks out: -15.1 %); eased crew-ticks a run 8,961 (v2 11,292), capped 23 (v2 4). v3 beats v2 on every guard
+  (all-in +3.2 v +5.7 s, never-in runs 8 v 9) and keeps the deciding half, but one more run than OFF never gets every squad in, so
+  by R42.8 **Q5 is written up OFF this round, v3 the best variant** (code on `wip/manoeuvre-q5v3` 4c8db69b6, a side ref; not on the
+  stream branch). What remains ON: a column whose head stands at a street mouth of the Crossing still stands a second longer per
+  friend before it grinds; the never-in cells are the Crossing's (3 of 4 seeds never-in in BOTH arms) plus one locks / sumps run.
+- **R42.11 (~17:10): Q5 OFF this round, v3 the best variant, no Bar Q5 v3, no builder2.** For the next round's framing: the
+  never-in squads are columns behind a STALLED HEAD at the Crossing's street mouths, so the next traffic rule must clear the head
+  (why it stands: the deploy / seat / mouth it is waiting on), not only ease the follower behind it.
+- Rulings this round so far: R42.7 (the arrival guard; one check gates both bars; v4 the last re-file); R42.8 (above); R42.11 (above).
+
+### Plan (ordered; the brief's backlog as built)
+
+1. **Bar Q5 FILED** (below) before any number; its judge `tests/manoeuvre/q5_judge.py` and the reported column's instrument
+   (`probe_jam.gd` eased ticks) on the branch. Waits on CP42.0 for the frozen tree (cherry-pick, quick-green, full check, series).
+2. **Q6 step 1 (done, below):** the failure reproduced on today's main + overrides and traced. Step 2: the rule, speed-only, built OFF
+   behind `--traffic-on=<name>`, with its test; Bar Q6 filed before any number on 9825-9848; dev reads on the drill's seeds 1-3 only.
+3. Stretch: the `_wait` timer fix; the long shoved episodes lab.
+
+### Q6 step 1: the bridge failure is on today's main + overrides, and it is the mouth (2026-10-26 ~15:05 PDT)
+
+Tree d1e91f74c (`wip/manoeuvre-bt-r42` = 18982e8df + 8e257f3bc + d385cd308), builder0 light lane, `--brains-off=native_drive`,
+`~/overnight-manoeuvre/r42/q6trace1/`: **bridge-pooled 17 of 18, failing rust tick 15 seed 2, Rust_S_3 rim 5.1 s (rim_total 5.4,
+deck jam 2.7, arrived 48.9 s)**: R40.21's numbers exactly, so the case is unchanged by rounds 41-42's merges. The trace (BRIDGE_TRACK,
+every 0.5 s): the east swing bridge's deck is x 85-99, z -12..12 (the canal z -7..7); the route's lane hugs the deck's west side
+(steer points (86,-10.5) -> (88,9) -> (86,11.7)), so each crew arrives heading east along the north bank and turns right (south) at the
+mouth. S_4 (first) enters at t14 at 6 m/s and swings wide to x 93; S_1 (second) reaches the mouth at t15.5 at 7.8 m/s with S_4 3 m
+ahead, is steered east (93,-4.5), crawls to (91,-2) by t18 and spends t18.5-22.5 reversing / "blocked by terrain" at x 91 before
+driving south at t22.5 (6 s lost, rim 0.3 s: it was never still). **S_3 (third) arrives at t17.0 at 11.1 m/s, 4 m behind S_1 which
+is in the mouth at 0.6-3.8 m/s; ORCA moves its steer point east past the mouth ((92.7,-11.3) then (95.8,-2.9)); S_3 stalls at
+(90-91,-10) by t18.5, S_1 reverses into it (t19-20), S_3 yields to S_1 and backs west 7 m (t20.5-24.5), re-enters at t26.5 and
+crosses at 10 m/s.** At the exit every crew swings wide again (x 90-91, z 7-13, v 0-4 for 2-4 s). The rim seconds are S_3's two stalls
+(the mouth, then the exit). **What a speed-only rule must do:** S_3 must not arrive at the mouth at 11 m/s while S_1 is turning in it;
+at S_1's speed ORCA has no reason to carry S_3 east past the mouth, and S_1 has room to come round. That is the brief's rule (slow
+a wheeled follower at the deck mouth while its leader turns), with the trigger read from the trace: a friend ahead on my route, within
+~12 m, inside the deck's mouth (the turn vertex within 8 m of it) and slow or turning. Built next, OFF, with a test on this case.
+
+### Q6 step 2: `deckwait` built OFF (v1 460f3591b ... v4 ac64ce939; `--traffic-on=deckwait`); dev reads 1-13 (2026-10-26 15:25-16:35 PDT)
+
+**The rule (speed only, C42.4):** a WHEELED crew with a friend ahead in its lane (WAIT_AHEAD_M 12 m, both radii + 0.5 m) that is in
+a bridge deck's MOUTH (the deck's rectangle grown by DECKWAIT_MOUTH_M 6 m, less the water it spans: the aprons and the bank at
+either end, read from `Arena.active`'s terrain) lowers its SPEED WISH to a following speed (the friend's speed my way, closing to
+WAIT_GAP_M over WAIT_FOLLOW_S) BEFORE ORCA solves; the direction wish and ORCA's answer (direction, steer point) are untouched, and
+the pace returned is read against the route's full wish so the cap reaches the throttle. A friend through the mouth at speed lowers
+nothing. DECKWAIT_CAP_S 5 s per friend, then today's wish for WAIT_COOLDOWN_S 6 s (a head that never clears is passed as today).
+**Why the friend's place and not my route's turn vertex:** the first build keyed on `_turn_vertex` and the trace in
+`test_traffic_deckwait` showed the vertex come and go while ORCA deflects me (the path is re-planned / the index advances), which
+reset the cap every few ticks. **State:** Q2's wait members (`_wait_for`, `_wait_since`, `_wait_refused`, `_wait_refused_until`:
+the same meaning; exec_fields.h lines already in place, so no native request for a checked tree); `deckwait` and `wait` are
+exclusive (`wait` wins). Counters deckwait_waits / _queued / _timeouts (route_arms, JAM_RUN); ON forces the GDScript drive
+(`Traffic._chain_native`) until twinned. **The `_wait` timer artefact (stretch 3, done with it):** `drive()` ends a wait on any tick
+that never reaches the rule (goal within reach, a reverse, no avoidance), and `_avoid`'s hold path and near-waypoint return end it
+too, so `_wait_since` only counts ticks the rule was asked on (test: `test_a_wait_ends_on_a_tick_that_never_weighs_it`).
+**Tests** (`tests/test_traffic_deckwait.gd`, laptop NATIVE=off, 80d8b5582): 6/0: off by default; the mouth test on the Locks (the
+deck's corners and apron in, over the water and the bank 20 m west out, no mouths on yard_open); the slow-leader case (ON queues
+300 ticks and still crosses; in that staging the leader crawls at 3 m/s and ON costs the cap twice, 27.1 s v 9.5 s to cross:
+whether waiting beats passing in the real mouth is the drill's question); a parked head (waited on 150 ticks = the 5 s cap, then
+timed out and refused for the cooldown); tracked crews / a clear lane / `wait` named too leave it off; the timer artefact.
+`make test FILTER=traffic NATIVE=off` on the branch: pending (the full traffic filter runs after the drill read).
+**Dev read 1 (39c2f55ad = d1e91f74c + the rule, builder0 light, GDScript drive, `~/overnight-manoeuvre/r42/q6dev1/`): the hard
+line passes, the squad is slower.** bridge-pooled under the overrides ON **18/18** (OFF 17/18): rust s2 t15 Rust_S_3 rim 5.4 -> 2.3 s,
+arrived 48.9 -> 41.8 s. But pooled rim 14.2 -> 15.5 s and mean arrival 34.9 -> 39.0 s over the 18 runs (worst: green s1 t8 43.0 ->
+60.1 s, rust s3 t1 39.6 -> 51.3, green s3 t1 27.2 -> 37.3). The ON trace of rust s2 t15: the rule never slowed S_3 before the mouth
+(S_1, the leader, was 1 m onto the water at 1-3 m/s, and the first mouth zone excluded the whole water span), S_3 still arrived at
+10.5 m/s and stalled at the deck's north-east edge 4.5 s; what the rule changed was downstream. Fixed in 550e96c07: the mouth reaches
+DECKWAIT_MOUTH_M onto the water. **Dev read 2 (q6dev2, traces of green s1 t8 OFF / ON, 39c2f55ad):** ON, Green_S_2 sat 8 s at v 0
+on the north apron (-81,-12) after crossing (OFF: 1-2 s there, blocked, then on), and S_1 and S_4 queued 6 s behind that; a chain of
+waits in the exit's mouth zone, each capped at 5 s on a new friend. **Dev read 3 (q6dev3, the same run ON with `--deckwait-trace`, 550e96c07):** two causes. (1) At the entry the followers stood
+8 m behind a leader that was turning north onto the deck at 3 m/s: its speed along MY way read 0, so the cap was the closing term
+alone (0.5-1.3 m/s) for the whole 5 s. (2) At the exit a leader parked on the far apron (Green_S_2 at (-81,-12), v 0 for 8 s) was
+never asked to give way: the ask gate (`_wait_for == ""`, Q2's) was shut for every waiting follower, each 5 s on a new friend.
+**v2 (0b47dfbd8):** the leader counts by its speed AWAY from me (`v . off_hat`, never negative), and the ask stays as today (only
+Q2's `wait` holds it). Unit tests 6/0 (laptop). **Dev read 4 (q6dev4, v2 on the overrides tree, bridge-pooled ON, builder0 light,
+GDScript):** **18/18, pooled rim 14.2 -> 9.3 s (-35 %), worst crew 1.5 s** (rust s2 t15: rim 5.4 -> 0.8, deck jam 2.7 -> 4.6,
+arrived 48.9 -> 53.4); mean arrival 34.9 -> 36.5 s (+1.6; green s2 t8 39.1 -> 48.0, green s2 t15 35.0 -> 41.8, green s1 t8 43.0 ->
+38.5, rust s3 t1 39.6 -> 36.2). **Dev read 5 (q6dev5, green s2 t8 traced OFF / ON, 0b47dfbd8):** the crossing itself is +3.6 s (crossed 23.2 -> 26.8:
+S_4 waited ~2 s at the deck's north end on S_3 stopped on the far apron, S_1 behind S_4; rim 1.8 v 1.9, deck jam 1.3 both); the
+other +5.4 s of the arrival (39.1 -> 48.0) is after the bridge: the crews reach the far quay in another order and their regroup
+differs (no DECKWAIT line after t 28). Arrival on 18 deterministic cells is a reshuffle (R40.24's lesson), which is why the bar
+decides on rim-seconds pooled over 72 fresh runs a tree and reports arrival. **Dev read 6 (q6dev6, v2 on MAIN, OFF / ON, this stream's light folder):** 18/18 both; pooled rim 8.1 -> 7.3 s, worst 1.5 -> 1.1;
+but deck-jam seconds 7.5 -> 17.2 and mean arrival 36.6 -> 39.1 s: followers queued on the deck behind a leader stopped at the exit.
+**v3 (a765e2ba6): a leader already beyond the water (through the crossing, on the far apron) is passed as today; the rule is the
+entry's.** Dev reads 7-8 (v3 ON, both trees, `bridge_lab_table.py --q6`): OVERRIDES 18/18, rim 14.2 -> 11.2 s (-21 %), worst 1.9,
+arrival +0.92 s a run (se 0.66); MAIN 18/18, rim 8.1 -> 7.8, worst 1.1, deck jam 7.5 -> 17.2, **arrival +2.51 s a run (se 1.38,
++1.8 se)**. An arrival guard joins Bar Q6 (paired per-run arrival ON <= OFF + 1.645 se, each tree: a bridge fix that makes every
+crossing slower is not what he asked for), and v3 would fail it on main's drill seeds, so dev read 9 (q6dev9, running) traces
+main's worst run (green s2 t1, 28.8 -> 42.6 s) OFF / ON before the rule is tuned or the bar filed. Native's OFF-path read of
+0b47dfbd8 (a wish under 0.1 m/s read wish / 0.1 on the clear-way return) fixed in 520516ec3 with a test. CP42.0 taken: main
+bf99631b5 merged (8026d9696), Q5 cherry-picked (09db261b7, 8f1166f69; conflicts in DEFAULT_OFF / _chain_native / route_arms
+resolved); `make test FILTER=traffic NATIVE=off` laptop 127/0.
+
+### Bar Q6: FILED 2026-10-26 ~16:40 PDT, BEFORE any number on 9825-9848 (the brief's lines + R42.7's arrival guard)
+
+- **The rule judged:** `--traffic-on=deckwait` **v4** as at code ac64ce939 (the frozen tree = this branch's tip at the gate check,
+  named below; R40.13: no game/ or tests/ commit until the series' end line): a WHEELED crew with a friend ahead in its lane
+  (WAIT_AHEAD_M 12 m, both radii + 0.5 m) that is in a bridge deck's MOUTH (the deck's rectangle grown by 6 m, less the water more than
+  6 m in from its edge) and not yet beyond the water lowers its SPEED WISH, before ORCA solves, to the friend's speed away from me plus
+  closing to 1 m behind it over 1.5 s, never under 0.4 x its own top speed (a limit at the mouth, not a queue); ORCA's direction and
+  steer point are its own answer to that wish (speed only, C42.4); asks, give-ways and right-of-way as today; 5 s per friend then that
+  friend refused for 6 s. State = Q2's wait members (exec_fields in place); `wait` and `deckwait` exclusive; ON runs the GDScript
+  drive until twinned. Every other switch at main's defaults; `nopush` OFF in both arms.
+- **What it could break (named first):** a slower approach to every mouth (the drill's arrival: the arrival guard; his 5-squad order on
+  the two maps with decks, crossing and locks: G5 / G6); a crew easing in a fight (G1-G4); contacts (G7).
+- **Gate:** the frozen tree's full check green on builder0 FIRST (C31.1; one check gates Bar Q5 and Bar Q6, R42.7). **Arms:** OFF
+  (default) v ON `--traffic-on=deckwait`, both `--brains-off=native_drive`; same seeds, same cells, paired.
+- **Deciding 1 (the hard line):** bridge-pooled 18/18 under balance's v2 overrides, ON (seeds 1-3 x ticks {1,8,15} x both sides; the
+  overrides tree = the frozen tree + 8e257f3bc + d385cd308).
+- **Deciding 2 (`bridge_lab_table.py --q6`, each tree, main AND overrides):** pooled rim-seconds on fresh 9825-9836 x ticks {1,8,15}
+  x both sides (72 runs an arm a tree) ON <= OFF; every surviving crew crosses ON; the worst crew's rim ON <= 3 s.
+- **Arrival guard (R42.7), each tree:** paired per-run arrival ON <= OFF + 1.645 se over the 72 runs.
+- **Group-order guards (R41.6's lines, `q3_judge.py --arm=deckwait`):** orders' O1 probe cells crossing / locks / sumps / terminus x
+  9837-9848 x crew headings (48 paired runs): G5 all-in mean ARM <= BASE + 1.645 se (paired; never-in reads as 90 s); G6 never-in
+  squads a run ARM <= BASE + 1.645 se; G7 friendly contact ticks ARM <= 1.05 x BASE.
+- **Fight guards:** `manoeuvre-wedge-trace` locks / terminus / sumps x 9837-9842 (18 fights an arm), `follow_judge.py --on-arm=deckwait`
+  G1-G4 (give-way deaths and stuck deaths ON - OFF <= max(2 paired se x n, 3); friendly contact ticks <= 1.10 x; kill share within
+  0.03 and deaths within 5 %).
+- **Reported:** deck-jam seconds, mean arrival per tree, the rule's counters (deckwait_waits / _queued / _timeouts; wait_longest),
+  jam-seconds and the per-cell table on the group order.
+- **Dev history (C42.1, R42.7: four variants, the drill's seeds 1-3 only; no number on 9825-9848 read):** v1 460f3591b (keyed on my
+  route's turn vertex; the vertex flickered under ORCA's deflection, the cap reset); v2 0b47dfbd8 (keyed on the friend's place in the
+  mouth, the leader's speed away from me, the ask as today): overrides 18/18, rim 14.2 -> 9.3, arrival +1.6 s; main rim 8.1 -> 7.3,
+  arrival +2.5 s, deck jam 7.5 -> 17.2 (followers queued on the deck behind a leader at the exit); v3 a765e2ba6 (a leader beyond the
+  water passed as today): overrides rim -21 %, arrival +0.9; main rim -4 %, arrival +2.5 s (1.8 se: would FAIL the arrival guard; the
+  trace: a follower crawling at 2-3 m/s into the mouth corner caught the near rail's end, 16 s); **v4 ac64ce939 (the wish never under
+  0.4 x top speed):** OVERRIDES (q6dev12 OFF 17/18 / q6dev10 ON 18/18, tree 2dca03baf): rim 14.2 -> 8.6 s (-39 %), worst 1.3 s,
+  arrival +1.33 s a run (se 0.95; line +1.57) PASS; MAIN (q6dev13 / q6dev11, ac64ce939): 18/18 both, rim 8.1 -> 7.4 s, worst 1.1,
+  arrival +1.36 s a run (se 1.23; line +2.02) PASS; both trees PASS every --q6 line. builder0 light lane, GDScript drive, n 18 a cell.
+- **Machine:** the drill halves on builder0's light lane from this worktree's and the overrides tree's folders (deterministic cells);
+  the group-order guards on builder2 if free, else builder0 light; the fights on builder0 light. `~/overnight-manoeuvre/r42/barq6.sh`
+  runs it; evidence `~/overnight-manoeuvre/r42/barq6/`, filed under `references/round42/manoeuvre/barq6-<machine>-<hash>/`. A pass =
+  CP42.1 (the orchestrator asks native for the twin, merges it alone, tells balance). A fail: OFF, no re-run on these seeds.
+
+### Bar Q6: VERDICT FAIL (series 17:38-19:27 PDT, builder0 light lanes, frozen tree 7569747ce / overrides d9382eed7, GDScript drive)
+
+Evidence `references/round42/manoeuvre/barq6-builder0-7569747ce/` (the judges, the bridge rows, `rim-by-run.txt`; the raw group
+and fight logs stay in `~/overnight-manoeuvre/r42/barq6/`). The bar as filed; no line amended; no re-run on 9825-9848.
+
+| line | tree | OFF -> ON | se / line | verdict |
+|---|---|---|---|---|
+| Deciding 1: drill 18/18 under the overrides, ON (seeds 1-3) | overrides | 18 of 18 pass | the hard line | PASS |
+| Deciding 2a: pooled rim-seconds, 72 runs an arm | main | 31.1 -> 35.7 s (+15 %); per-run mean +0.06 s | se 0.05 (+1.2 se); line ON <= OFF | **FAIL** |
+| | overrides | 34.3 -> 41.1 s (+20 %); per-run mean +0.09 s | se 0.10 (+1.0 se); line ON <= OFF | **FAIL** |
+| Deciding 2b: every surviving crew crosses ON | main / overrides | 72/72 and 72/72 runs | | PASS |
+| Deciding 2c: worst crew's rim ON | main | 2.5 s | line <= 3 s | PASS |
+| | overrides | 6.1 s (green s9836 t15, Green_S_2; rust s9829 t1 Rust_S_4 3.1 s) | line <= 3 s | **FAIL** |
+| Arrival guard (R42.7): paired per-run arrival | main | 35.8 -> 36.9 s; +1.11 s a run | se 0.61 (+1.8 se); line <= +1.00 | **FAIL** |
+| | overrides | 32.8 -> 33.7 s; +0.93 s a run | se 0.64 (+1.5 se); line <= +1.05 | PASS |
+| G5 all-in mean (48 paired group runs) | main | 72.3 -> 74.1 s | se 1.39; line <= 74.6 | PASS |
+| G6 never-in squads a run | main | 1.04 -> 1.02 (runs never-in 22 -> 22) | se 0.109; line <= 1.22 | PASS |
+| G7 friendly contact ticks (group) | main | 684,184 -> 687,995 | line <= 718,393 | PASS |
+| G1 deaths in give-ways (18 paired fights) | main | 39 -> 51 | line +19.7 | PASS |
+| G2 stuck deaths | main | 166 -> 162 | line +23.4 | PASS |
+| G3 friendly contact ticks (fights) | main | 465,930 -> 472,207 | line <= 512,523 | PASS |
+| G4 kill share within 0.03, deaths within 5 % | main | Green 0.49 -> 0.53 (worst move 0.040); deaths 805 -> 807 | line 0.03 / +-40 | **FAIL** (share) |
+
+**Reported:** deck-jam seconds main 49.2 -> 61.2, overrides 51.1 -> 75.0; group jam-seconds 37,716 -> 39,107 (+3.7 %); the rule's
+counters over the 12 ON group runs a map (`q3_judge.py`'s counters line printed Q2's `waits` keys, a reporting slip, so from
+JAM_RUN): locks 1,179 waits / 33,179 queued crew-ticks / 63 time-outs, crossing 2,158 / 46,796 / 44, sumps 5, terminus 0;
+`follow_judge.py`'s own D line (moving-stuck seconds, not a Bar Q6 line) 254.7 -> 358.5 s (+41 %, +1.1 se), its longest ON
+episode locks s9839 Rust_Battery2_3 62.0 s.
+
+**What the fresh seeds say (the read, after the numbers):** the failure the rule was built on does not occur on 9825-9836 OFF: the
+overrides tree passes 72/72 OFF (R40.21's 17/18 was seeds 1-3's), OFF rim a run is 0.43 s (main) / 0.48 s (overrides) and the
+worst OFF crew 2.6 s / 2.2 s. With nothing to fix, the rule's cost shows: 42-44 of 72 runs flat, rim up in 21 (main) / 18
+(overrides) runs against down in 9 / 10, the up-runs a follower slowed at the mouth that then rode the rim (green s9836 t15 under
+the overrides 0.7 -> 6.1 s; main's +1.5 s runs at s9830 and s9834). The dev win on seeds 1-3 (14.2 -> 8.6 s) was one rescued crew
+(Rust_S_3's 5.1 s) outweighing this cost; across 12 fresh seeds the cost outweighs. A speed cap at every mouth is the wrong
+trigger: the next version must fire only on the carried-past case (a follower arriving at speed while its leader turns in the
+mouth, ORCA's steer east of the deck), and leave an orderly column alone. **`deckwait` stays OFF** (DEFAULT_OFF, the code and its
+7 tests on the branch); CP42.1 not reached; native's twin not requested; balance's Bar B2s v2 stays on today's bridge.
+
+### Bar Q5: FILED 2026-10-26 ~15:20 PDT, BEFORE any number on 9801-9824 (R41.10's frame; the brief's lines)
+
+- **The rule judged:** `--traffic-on=nopush` v2 exactly as at fc8f3697d (no pressing, capped): a crew whose hull touches a FRIEND ahead
+  (the friend's centre forward of mine) that is not pulling away (its speed along my nose no more than 0.3 m/s above mine) holds its
+  forward throttle at 0 while the contact lasts and 0.5 s after, for at most 3 s per friend, then today's press for 6 s, then it may
+  ease again; reverse orders exempt; ORCA's steer point, the asks, the give-ways and right-of-way exactly as today (speed only,
+  C42.4). The tree = CP42.0's main + a45c0b953 + fc8f3697d + this branch's judge/instrument; its hash is named at the series' launch
+  (frozen, R40.13: no game/ or tests/ commit until the end line). Every other switch at main's defaults (G1 v9 ON, camera-glide ON).
+- **What it could break (named first, round 37's lesson):** a column whose head has stopped stands instead of grinding through (his
+  squads never arrive: G6 / G5); a crew easing in a fight dies where it would have pushed clear (fight G1-G4); jam-seconds rise by
+  construction (the eased ticks count as "slowed by a friend"), so they are reported, never deciding (R41.10).
+- **Gate:** the frozen tree's full check green on builder0 FIRST (C31.1), read from the wrapper line. **Arms:** OFF (default) v ON
+  `--traffic-on=nopush`, BOTH `--brains-off=native_drive` (the rule alone; the GDScript and C++ drives are bit-identical per
+  test_native_drive). Same seeds, same cells, paired.
+- **Workload:** his 5-squad across click (orders' O1 probe through `make manoeuvre-probe-jam`, `PJ_HEADINGS=crew`), 4 maps crossing /
+  locks / sumps / terminus x seeds 9801-9824 = **96 paired runs an arm**, 90 s window. Fight guards: `manoeuvre-wedge-trace` locks /
+  terminus / sumps x 9801-9806 (18 fights an arm).
+- **Deciding (both must hold; `q5_judge.py`):**
+  - **D1 friendly contact ticks** (ORDERS_PROBE.contact_ticks): ON pooled <= 0.8 x OFF pooled AND the paired per-run mean < 0 by >= 2 se.
+  - **D2 shoved crew-ticks** (JAM_EP.reverse_why "shoved": moving backward with no reverse throttle, a hull in contact; the reverse
+    attribution of the reversing report): ON pooled <= 0.8 x OFF pooled AND the paired per-run mean < 0 by >= 2 se.
+- **Strict guards (filed first):** **G5** every-squad-in mean ON <= OFF + 1.645 se (paired; a never-in run reads as 90 s); **G6** never-in
+  runs ON <= OFF (a count, no slack); **fight G1-G4** (`follow_judge.py --on-arm=nopush`): give-way deaths and stuck deaths ON - OFF <=
+  max(2 paired se x n, 3); friendly contact ticks <= 1.10 x; kill share within 0.03 and deaths within 5 %.
+- **Reported, never deciding:** jam-seconds (probe_jam's); jam-seconds with the rule's own eased ticks taken out (JAM_EP.eased_s, this
+  branch's instrument: the asker's ticks under `_nopush_until`; the orchestrator's ruling on the variant: a reported column); the rule's
+  counters a run (eased crew-ticks, episodes, capped); never-in squads; per-cell table.
+- **Power / dev history (C42.1):** the same rule's two dev labs (round 41, 7009-7012 x 4 maps = 16 paired runs, builder0 light, GDScript):
+  v2 D1 233,375 -> 168,724 (-27.7 %, paired -3.6 se), D2 26,997 -> 17,689 (-34.5 %, -3.2 se), G5 76.9 -> 78.9 s (inside the line),
+  **G6 6 -> 7 runs (would FAIL)**; `q5_judge.py` on those logs reproduces every number (the judge's own check). At n 96 the deciding
+  se is ~2.4x smaller; G6 is the line at risk and is a count, so one more standing column than OFF fails the bar. No number on
+  9801-9824 has been read. No early stop (deterministic cells, the grid runs out).
+- **Machine:** the group-order series on builder2 (`make gcp-remote`; C42.1: a bar series over 24 fights) if it is up, else builder0's
+  light lane; the fights on builder0 light; the gate check on builder0. Evidence `~/overnight-manoeuvre/r42/barq5/`, filed under
+  `references/round42/manoeuvre/barq5-<machine>-<hash>/`. A pass: the orchestrator asks native for the twin, then ON (perf-judge in a
+  quiet window). A fail: OFF, no re-run on these seeds; the long-episode lab (stretch 3) says what remains.

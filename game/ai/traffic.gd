@@ -206,7 +206,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane"]  # round 41 Q2 wait + Q4 holdlane (manoeuvre, until judged) (manoeuvre, until judged); round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush"]  # round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane (manoeuvre, until judged) (manoeuvre, until judged); round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -265,7 +265,8 @@ static func _chain_native() -> void:
 		PlannerSeam.hook_reroute()
 	# Round 41 (Q2, `wait`): the same: Movement._wait is inside the drive's C++ mirror, so ON runs the GDScript drive until twinned.
 	# Round 41 (Q4, `holdlane`): the unstick hold is inside the drive's mirror too, and the ask skip inside _negotiate's (native_yield).
-	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane"):
+	# Round 42 (Q6, `deckwait`): the speed wish at a deck's mouth is inside the drive's mirror: ON runs the GDScript drive until twinned.
+	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush"):
 		if _reroute_saved_native_drive == null:
 			_reroute_saved_native_drive = BrainSwitches.native_drive
 		BrainSwitches.native_drive = false
