@@ -207,7 +207,13 @@ five, applied only under the ceiling; a dealt faction army's cap on desktop is A
 asserts and the OFF rolls reach). Read as filed ("every countered army within the cap"): 320 loaded, 0 over 45 (largest 44; OFF
 largest 45) -> pass, VERDICT PASS, ON for Condemned and Gangs. The judge fix came AFTER the numbers, so it went to the
 orchestrator for a ruling (both outputs kept: `~/balance-runs/bar-b7-verdict-as-run.log`, `bar-b7-verdict-g3-fixed.log`).
-Nothing ships until the ruling.
+**R42.21 (orchestrator): the as-filed G3 reading stands** (lesson 318: the ruler failed; the as-run judge would have failed its own
+OFF base), so **Bar B7 PASSES for Condemned and Gangs**; Syndicate fails its line and stays off. **SHIPPED ON at b3841b301:**
+`COUNTER_DEFAULT = true`, `COUNTER_ARCHETYPES` = condemned `siege` + gangs `gang_hail`, `--cpu-counter=off` the escape; the garage
+line stays ON. Tests first (test_army_counter red 7/3 -> green; laptop `make test FILTER=army` 168/0). Smoke (laptop, seed 9905,
+terminus, Gangs v a Gangs tank rush on Rust): no flag -> `CPU_COUNTER faction=gangs tank_share=1.00 archetype=gang_hail` (16 Rat
+Rods, 7 Gun Trucks, 14 Wrecker Catapults, 7 Resupply Tankers); `--cpu-counter=off` -> today's roll (7 War Rigs, no Catapults).
+**b3841b301 GREEN: builder0 `make check` exited 0, 3299 passed, 0 failed** (2026-10-27 01:49). Merge it alone (R42.21).
 
 **R42.15 (orchestrator, ~19:10):** Bar Q6 FAILED, so CP42.1 is not reached and the bridge gate for shipping fm_c5r2_lawt5 is not met
 (not loosened). RULED: run Bar B2s v2 anyway, overnight on builder2 after the firing screen, B9_MAIN = current main (hash named by
