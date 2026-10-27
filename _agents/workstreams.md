@@ -84,7 +84,7 @@ another project's workers (plane_maker): never touch processes you didn't start.
 
 **Seed registry (round 42):** 9601-9624 engage Bar E1 deciding; 9625-9648 engage fight guards; 9701-9736 camera Bar K4 (36 an arm);
 9801-9824 manoeuvre Bar Q5; 9825-9848 manoeuvre Bar Q6 (fresh BRIDGE_POOLED_SEEDS 9825-9836, group-order guards 9837-9848);
-9901-9940 balance Bar B7; 10001-10040 + 10101-10140 balance Bar B8; 10201-10240 balance B8 dev (never a bar); 9649-9672 engage Bar E2 (the SUPPRESS stand, R42.12); carried unread:
+9901-9940 balance Bar B7; 10001-10040 + 10101-10140 balance Bar B8; 10201-10240 balance B8 dev (never a bar); 9649-9672 engage Bar E2 (the SUPPRESS stand, R42.12), 9673-9696 its extension set, 9697-9720 its fight guards (R42.14); carried unread:
 8801-8840 + 8901-8940 Bar B2s v2; 9201-9240 + 9301-9340 Bar B5 t50 (only on his yes). Dev blocks 7001-7012 as before (never a bar).
 
 - **Bar B7, the CPU counter-lineup (balance; FILED fa9006e69, 2026-10-26 ~15:20, before any number on 9901-9940; amended by R42.3 before
@@ -185,6 +185,19 @@ another project's workers (plane_maker): never touch processes you didn't start.
   **Gate GREEN:** 7569747ce builder0 `make check exited 0`, 3300 passed / 0 failed, 27 passed + 1 NOT JUDGED (remote-guard-test load
   refusal), sim-baseline 13 unmoved. Series started 17:38 PDT (overrides tree d9382eed7 = 7569747ce + 8e257f3bc + d385cd308; both
   halves in builder0's light lanes, then the group-order guards and fights); verdict ~19:30.
+
+- **Bar E2, the SUPPRESS stand gets the same truth (engage; FILED in Status at eb4024fe3, 2026-10-26 ~19:35, before any number on
+  9649-9672; R42.12).** v2 = `TankBrain.SUPPRESS_LINE` (`--attack-shot-suppress=on`, OFF): the in-band SUPPRESS stand becomes a move
+  toward the target when the cover map says the crew's own line is blocked, as ENGAGE's hold does under `--attack-shot` (shared
+  `_own_line_to`; ENGAGE unchanged). Arms: OFF = today's default (attack-shot ON), ON = + suppress; tree eb4024fe3's code; workload
+  `engage-probe` 9649-9672, natural draw, 60 s, builder0 light J4, n 24 paired. Dev lab (laptop, 7001-7012, forced gang_ifv v ifv, n 12,
+  not a number): stuck_suppress 6.5 -> 0.0 s (one seed carried it), stuck 8.4 -> 1.6, deaths 20 = 20, dither 0. The stand is rare (1 of
+  12; 2 of 24 in E1's series) and deterministic where it happens, so **deciding 1 = dominance:** stuck_suppress ON <= 0.25 x OFF AND
+  no seed worse (ON <= OFF + 0.5 s every seed), with an exercised floor of >= 3 seeds with OFF >= 2 s; fewer -> extend with 9673-9696
+  pooled to n 48; still fewer -> INCONCLUSIVE, no ship. Guards: all stuck ON <= OFF + 1.645 se; deaths moving ON <= OFF + max(1.645
+  se, 2), all deaths ON <= OFF + 1.645 se; first hit ON <= OFF + 1.645 se; dither cap 2.0; never-reached and line flips reported; cost
+  lines a tick ON <= OFF + 0.5 and perf-judge PASS; the suite ON (`check ATTACK_SHOT_SUPPRESS=on`) on the frozen tree before the
+  series; fight guards G1-G5 as E1 on builder2 (seeds 9697-9720, R42.14). A pass ships ON.
 
 _(filed bars go here, before their numbers)_
 
@@ -310,6 +323,9 @@ _(filed bars go here, before their numbers)_
   not the bar's line. Ruled PASS, the literal median reading recorded beside it. Lesson for the tool (native): `guard.py --pair` must
   print the statistic the filing names. Engage flips `--attack-shot` ON with `=off`, adopts the 9 ON sim-baseline maps with the
   reason, runs the OFF-default check of the merge candidate, names both hashes; perf-judge in a quiet window before the close.
+- **R42.14 (2026-10-26 ~19:40) Bar E2 recorded; dominance form accepted; guard seeds 9697-9720.** A rare deterministic stand cannot be
+  decided by a 2-se line at n 24, so "no seed worse + an exercised floor, else extend, else INCONCLUSIVE" is the right form and is
+  filed before any number. Fight guards on builder2 on the orchestrator's word (balance's firing screen pauses at a leg boundary).
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
