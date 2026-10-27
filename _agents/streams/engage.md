@@ -295,6 +295,21 @@ behind a container or block 18-42 m away, one crew with a clear line from the st
    in `_act` (81 % of ON's remaining stuck seconds, above); labbed on dev seeds 7001-7012; its own bar on fresh 9649-9672,
    filed before any number.
 
+### v2: the SUPPRESS stand's own line (R42.12; built OFF at eb4024fe3, after the merge candidate 76f43fb6d)
+
+`TankBrain.SUPPRESS_LINE` (`--attack-shot-suppress=on`, env ATTACK_SHOT_SUPPRESS=on): the in-band SUPPRESS stand (a face, or
+a stop when already facing) becomes a move toward the target when the cover map says the crew's own line is blocked, as
+ENGAGE's hold does under --attack-shot (`_own_line_to`, shared; ENGAGE's read unchanged; `line_of_fire` Callable seam for
+tests). OFF: the stand as before. Test: `tests/tactics/test_engage_suppress_line.gd` (2: both arms, both lines, the act step
+on a built situation). The probe takes `--hull= --target=` and `ENGAGE_TAG` names its folder.
+
+**Dev lab (laptop, eb4024fe3, `engage-probe` 7001-7012, `--hull=gang_ifv --target=ifv`, --attack-shot ON both arms, 60 s,
+n 12 paired, NOT a bar number):** stuck_suppress 6.5 -> 0.0 s (one seed carried all of it: 7004? see the table), stuck
+8.4 -> 1.6, first hit 2.91 -> 2.73 s, deaths 20 = 20, none moving, dither 0, hits 3047 -> 3093, target dead by 26.1 = 26.1,
+lines a plan tick 3.47 -> 3.50. The stand is RARE (1 of 12 dev seeds; 2 of 24 in Bar E1's series) and mechanistic (the sim
+is deterministic: where it happens, ON removes it), so a 2-se line on the paired mean cannot decide it at n 24 (k seeds of n
+with the effect give z ~ sqrt(k)): v2's bar is filed with a dominance line (below), and an "exercised" floor.
+
 ### Requests to the orchestrator
 
 - **builder2** for the fight guards (24 x 600 s fights x 2 arms, J8) when balance's series is done; until then they wait (the
