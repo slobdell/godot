@@ -162,6 +162,12 @@ on Green and on Rust = 200 fights an arm a faction; raw `~/balance-guard-raw/b8/
   (condemned, gangs: 77 -> 47, 78 -> 52 on 9401-9410) or within ~1 se (law +4, syndicate -5), and 200 paired fights an arm give
   se ~3; 10221-10240 stay in reserve if a read lands near its 2-se line.
 
+**R42.3 firing screen (RUNNING; PAUSED 18:32 for engage's Bar E1 guards, held until the orchestrator's "resume"; commit 9d8e26e44,
+builder2 J24, counter OFF, dev seeds 10201-10220 x 5 arenas x mono on Green and on Rust, n 200 a cell, paired by fight):**
+- Condemned: all-tanks v the roll **80 %** (se 4) -> v `siege` **50 %** (se 2), paired **-30 (se 5)**: **FIRES** (line: <= roll - 2 se).
+- Gangs: v the roll **79 %** (se 5); v `gang_hail` pending (the paused leg).
+- Law (v law_barrage 96 %, from B8 base) and Syndicate (v syndicate_barrage 84 %): v the roll pending.
+
 **B9 ready (rebuild recipe, dry-run 2026-10-26 ~17:45):** `B9_MAIN=<CP42.1 hash> ~/balance-runs/b2s-v2-rebuild.sh` = a worktree
 `../godot-balance-arm` on branch `balance/b2s-v2-arm-r42` = MAIN + cherry-pick 8e257f3bc (fm_c5r2_lawt5, 55 values) + d385cd308
 (= ad956031b's re-pins, identical diff), then builder0 `make remote T=check` + sim-baseline-record (expected red ONLY on
