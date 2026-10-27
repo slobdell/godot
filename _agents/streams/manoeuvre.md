@@ -79,7 +79,54 @@ JUDGED; no baseline check re-run, per the contract). Orchestrator session: `godo
 (`wip/manoeuvre-q5-r42` = main + native's 75495744b + a45c0b953 + fc8f3697d: Q5 dev until CP42.0 lands). Evidence outside every
 worktree: `~/overnight-manoeuvre/r42/`.
 
-### Where it stands (2026-10-26 ~16:50 PDT): both bars filed; the gate check of the frozen tree 7569747ce is queued on builder0
+### REPORT (round 42, in progress; Bar Q6's verdict fills in when the series ends)
+
+**Green hash: 7569747ce** (builder0, `make check exited 0`, 3300/0, 27 passed + 1 NOT JUDGED load refusal, sim-baseline unmoved;
+docs commits on top). Deliverables: Bar Q5 filed and withdrawn unread (R42.8 / R42.11: Q5 OFF, v3 best); Bar Q6 filed (R42.7) and its
+series running; the `_wait` timer artefact fixed (stretch 1); the long-episode lab read (stretch 3); the jam probe's judge and
+counters for both rules.
+1. **Q5.1 Bar Q5:** filed before any number (361fb9d24; the judge `tests/manoeuvre/q5_judge.py`, the eased-ticks column); the dev
+   read on today's main (q5lab3) failed his two strict guards, the bar was withdrawn unread (R42.8), v3 (R42.8's design) built and
+   labbed on the side tree (q5lab4: G6 7 -> 8, one run) and Q5 closed OFF (R42.11). 9801-9824 unseen. Code on the branch: v2 OFF
+   (`--traffic-on=nopush`, the cherry-picks on CP42.0's rows); v3 on `wip/manoeuvre-q5v3` 4c8db69b6.
+2. **Q6 the bridge rim crew:** `--traffic-on=deckwait` v4 built OFF (speed-only, C42.4), four variants labbed on the drill's seeds
+   1-3 (dev reads 1-13); Bar Q6 filed with R42.7's arrival guard; verdict below when in. A pass = CP42.1 (native's twin, then ON).
+3. **Stretch:** the `_wait` timer artefact fixed with a test (drive ends a wait on any tick that never weighs it); the long shoved
+   episodes with Q5 ON read (columns behind a stalled head at the Crossing's street mouths; R42.11's framing for the next round).
+
+**Decisions (mine, one line each):** the Q6 trigger is the friend's place in the deck's mouth, not my route's turn vertex (the
+vertex flickers under ORCA's deflection); the leader counts by its speed away from me (a leader turning off my lane is clearing it);
+asks stay as today (a parked head on the far apron was never asked while a column waited); the rule is the entry's (a leader beyond
+the water is passed as today); a speed floor at 0.4 x top speed (a limit, not a queue: a crawling follower caught the rail's end);
+Q2's wait members carry deckwait's state (the same meaning, no new exec field); Bar Q5's fights run only if its group-order guards
+hold; Q5 v3 reads the stand as still under the ease for a second (a yielding head reads as under way; `stalled_ticks` reads a
+crawling friend as stood).
+
+**Questions for the lead:** none. **Requests to other streams:** native's twin of deckwait v4 only on a Bar Q6 pass (native's plan
+is ready: wait_end, deckwait cap/refuse, lane_friend, in_a_deck_mouth over Arena terrain, the wish/desired split, DECKWAIT_* in
+DriveConfig; no new exec fields).
+
+**Known issues:** ON for `deckwait` / `nopush` / `wait` / `holdlane` forces `native_drive` off until twinned; `deckwait` and `wait`
+are exclusive (`wait` wins); `_in_a_deck_mouth` reads `Arena.active` (a match without an arena has no mouths); Q5 v2's eased crews
+read as "slowed by a friend" in jam-seconds (the eased-ticks column reports it); the trace flags `--deckwait-trace` (DECKWAIT lines)
+and probe_jam's eased_s are measurement only.
+
+**Playtest (laptop, every switch OFF by default):** `make skirmish ARENA=locks SKIRMISH_FLAGS="--traffic-on=deckwait"` v without:
+select a wheeled squad on one bank, send it over the swing bridge; does the third crew slow behind the one turning onto the deck
+instead of being carried past the mouth to the rim? `make skirmish ARENA=terminus SKIRMISH_FLAGS="--traffic-on=nopush"`: his
+5-squad order; who shoves, who stands. Drill: `make remote T="native bridge-pooled BRIDGE_FLAGS='--traffic-on=deckwait
+--brains-off=native_drive'"`; `python3 tests/manoeuvre/bridge_lab_table.py off=A.jsonl on=B.jsonl --pair=off,on --q6`.
+
+**Merge notes:** branch off 18982e8df, main bf99631b5 merged (8026d9696). Game changes: `game/ai/movement.gd` (deckwait block, the
+`wish` / `desired` split in `_avoid` with the OFF-identical clear-way return, the drive-tick `_wait_end`, Q5's nopush v2 from the
+cherry-picks, the ask gate scoped to Q2's wait), `game/ai/traffic.gd` (DEFAULT_OFF += deckwait, nopush; `_chain_native`). Tests:
+`tests/test_traffic_deckwait.gd` (7), `tests/test_traffic_nopush.gd` (3, as cherry-picked), `tests/manoeuvre/q5_judge.py`,
+`probe_jam.gd` (eased_s, the counters on JAM_RUN), `bridge_lab_table.py --q6`. No native/, control, tactics, units or baseline paths
+touched. Side worktrees `../godot-manoeuvre-bt` (`wip/manoeuvre-bt-r42`) and `../godot-manoeuvre-q5` (`wip/manoeuvre-q5v3`, keep
+the branch as a ref) and their builder0 light folders `~/tank_squad/godot-manoeuvre-bt-light`, `godot-manoeuvre-q5-light` can go at
+the close. Evidence under `references/round42/manoeuvre/` (q6trace1, q5lab3, q5lab4; barq6 at the verdict).
+
+### Where it stands (2026-10-26 ~17:40 PDT): the gate is green; Bar Q6's series runs; Q5 closed OFF
 
 - **Frozen tree 7569747ce GREEN on builder0** (code ac64ce939 = main bf99631b5 with CP42.0 + Q5 a45c0b953 / fc8f3697d cherry-picked +
   deckwait v4 + this stream's judges/instruments): `make remote T=check` 16:23-17:30: `>> remote: make check exited 0 (build/ copied
