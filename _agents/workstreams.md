@@ -188,7 +188,7 @@ another project's workers (plane_maker): never touch processes you didn't start.
   refusal), sim-baseline 13 unmoved. Series started 17:38 PDT (overrides tree d9382eed7 = 7569747ce + 8e257f3bc + d385cd308; both
   halves in builder0's light lanes, then the group-order guards and fights); verdict ~19:30.
 
-- **Bar E2, the SUPPRESS stand gets the same truth (engage; FILED in Status at eb4024fe3, 2026-10-26 ~19:35, before any number on
+- **INCONCLUSIVE (R42.20: 1 of 48 seeds exercised; no ship). Bar E2, the SUPPRESS stand gets the same truth (engage; FILED in Status at eb4024fe3, 2026-10-26 ~19:35, before any number on
   9649-9672; R42.12).** v2 = `TankBrain.SUPPRESS_LINE` (`--attack-shot-suppress=on`, OFF): the in-band SUPPRESS stand becomes a move
   toward the target when the cover map says the crew's own line is blocked, as ENGAGE's hold does under `--attack-shot` (shared
   `_own_line_to`; ENGAGE unchanged). Arms: OFF = today's default (attack-shot ON), ON = + suppress; tree eb4024fe3's code; workload
@@ -395,6 +395,14 @@ _(filed bars go here, before their numbers)_
   builder2 stays balance's for Bar B7. E2's suite-ON check at dcf83c66a: 3304 passed / 1 failed (test_announcer_cost's wall-clock line
   on a loaded box, unrelated to the flag), perf-judge refused 3x (busy), 6 sim-baseline maps move under the stand's line: a quiet re-run
   of the one test and perf-judge only if the bar comes to a ship.
+- **R42.20 (2026-10-26 ~22:25) Bar E2 INCONCLUSIVE on the pooled n 48; v2 stays OFF; engage's round is done.** 9649-9696, builder0
+  light, native off, eb4024fe3's code: 1 of 48 seeds exercised the line (floor 3); 47 of 48 byte-identical both arms. Pooled OFF -> ON:
+  stuck 20.2 -> 6.5 crew-s, stuck_suppress 13.6 -> 0.0, first hit 8.05 -> 8.03 s, deaths 59 = 59, hits 6546 -> 6552, lines a tick 3.07
+  = 3.07. The one seed (9695, crossing, 4 scouts v an IFV behind a container): OFF one crew stuck 13.8 s (13.6 in SUPPRESS), first hit
+  25.9 s; ON stuck 0.1 s, first hit 21.5 s, +3 hits, deaths equal. No guards run, no ship; `--attack-shot-suppress=on` stays with its
+  two tests; the why-rare evidence and a staged-draw proposal for a later bar are in engage's Status (b595a2e1b). Engage's green
+  hashes: the flag-ON check 4658fa514, the merge candidate 76f43fb6d (= main 9405f4dfb); the tip's default check (v2 OFF + tooling,
+  no behaviour change at the default) running on builder0 heavy lane since 21:58, merged on its green or left (it carries no ship).
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
