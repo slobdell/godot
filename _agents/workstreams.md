@@ -365,6 +365,18 @@ _(filed bars go here, before their numbers)_
   if it reads ~84 % it fails its line and its counter stays off, recorded as "beats the roll by 8 points but short of the target" (for
   him: the Syndicate's artillery lineup cannot stop a tank rush inside his 15 %, R42.9). A faction that passes ships; the bar as a
   whole is reported per faction, never pooled.
+- **R42.18 (2026-10-26 ~21:20) Bar K4 v2's D2 reads blind as a share of time UNDER FIRE; filed before any 9737+ number.** Camera's dev
+  reads at ef55e64b8 (builder0 light J4; ambush 7001-7036, 12 runs a lane; retreat / attack 7001-7012; on v off): snaps 0 from any
+  single source (one combined frame 24.1 px on 7016); rear lane latency 5.5 v 11.1 s, nevers 8 v 9, blind % of play 4.6 v 3.8 (fails the
+  old form) but blind % of time under fire 8.4 v 8.4, because the arm fights more in that lane (under fire 55.6 % v 44.7 % of play);
+  retreat latency 10.6 v 16.3, blind 0.6 v 8.2 %, facing the wall 0.3 v 37.3 %; attack on the unit 81.8 %, slip p95 29.6 v 36.2, jerks
+  0.71/min, held 16.5 %, action share 49.7 v 39.4, reversals 6.6 v 11.0, own on screen 96.0 v 97.5. A 90 deg/s danger turn was tried and
+  dropped (201 snaps). Changes named for the filing: (a) the clearance moves under the glide cap; (b) a gun that fired at his units
+  within 3 s and sits > 25 deg off the view cancels the 1.5 s hold, deadband 20 -> 2 deg; (c) the danger frame keeps known contacts
+  ahead of the view and drops them when they don't fit under the zoom cap. Ruled (option 2): "blind % of play" penalises the arm for
+  finding more fights, which G3 already counts as good; **D2 (rear lane and retreat, each alone) = latency mean ARM < BASE AND blind as
+  a share of time under fire ARM <= BASE; blind % of play REPORTED beside it.** Every other line unchanged; 9737-9772; the last
+  re-file; a fail ships OFF with the retreat result for him. Option 3 (retreat-only scoping) is a design change and is not taken.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
