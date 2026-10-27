@@ -91,20 +91,15 @@ Nothing.
 
 ## Status
 
-**2026-10-26 ~18:30 PDT (Fable).** E1 DONE (the mechanism, below). E2 built, OFF behind `--attack-shot` (quick gate green on
-builder0 at 7322318a3: 169 passed / 0 failed, 631 s). E3 DONE (the HUD's words, tests). E5 (cheap half) done. **Bar E1 FILED
-below (recorded on main as R42.6); the frozen tree is 4658fa514** (57e2e7eb5 + R42.10's flank side pick, gated; filed before
-any number on 9601-9648). **The suite-ON check (C31.1) on 4658fa514 is GREEN by the filing's terms (builder0, 18:23 PDT):**
-`>> remote: make check ATTACK_SHOT=on exited 2`, `3303 passed, 0 failed`, `27 passed, 1 FAILED`: the one FAIL is sim-baseline,
-the 9 maps the flag moves (yard pit terminus crossing sumps gorge archipelago cut yard_open; foundry locks parade docks unmoved;
-the same hashes as at 57e2e7eb5, so the side pick moved no baseline fight; determinism bcbc93318e48e011), adopted at the ship
-flip. perf-judge `JUDGED, PASS on attempt 1 of 3` (relative line 9510 usec per reference ms v 25840). tactics-drills green
-(far_ambush ON off_axis 5.3 8.5 43.5 75.0, builder0 = laptop). The first ON check, at 57e2e7eb5 (16:40): exit 2, `3297 passed,
-0 failed`, `26 passed, 2 FAILED` (sim-baseline as above + tactics-drills far_ambush red: widest_lateral 17.0 v OFF 73.3) ->
-R42.10, in *Done*. **Running: the deciding series** (`tools/remote.sh --light engage-bar 'ENGAGE_SEEDS=9601..9624'
-ENGAGE_JOBS=4 ENGAGE_PROBE_SECONDS=60`, builder0's light lane = its own folder, native off; launched 18:24 PDT on tip
-5e9518da0 = 4658fa514's code). Next: the paired table; the fight guards on builder2 on the orchestrator's word (balance runs
-there in short legs); the OFF check of the merge candidate.
+**2026-10-26 ~19:10 PDT (Fable). BAR E1 PASSED (R42.13); `--attack-shot` is ON BY DEFAULT at f9b675a56** (`=off` / env
+ATTACK_SHOT=off = round 41). E1 DONE (the mechanism, below); E2 built and shipped; E3 DONE (the HUD's words); E4 = Bar E1
+(below: deciding lines z -3.6 and -3.9, the guards within their bands, G3 ruled on the paired mean, R42.13); E5 (cheap half)
+done; R42.10 (the flank side) shipped with the rule. **In flight:** `make sim-baseline-adopt` on builder0 (the 9 maps the rule
+moves, same hashes in both flag-ON checks; WHY in the commit), then the DEFAULT check of the merge candidate (`make remote
+T=check`, now ON) -> the hash named here. **Next: v2** (the SUPPRESS stand's own-line guard, R42.12), OFF, on dev seeds then
+its own bar on 9649-9672, filed before any number. The flag-ON checks: 4658fa514 green by the filing's terms (`3303 passed,
+0 failed`, `27 passed, 1 FAILED` = sim-baseline's 9 maps; perf-judge PASS, 9510 usec per reference ms); 57e2e7eb5 (16:40)
+exit 2 with far_ambush red -> R42.10.
 
 **Launching (a trip-up for the next agent):** `make remote T=...` rejects `' " ( ) ; & | \` $` in T, so a quoted seed list
 cannot go through it; call `tools/remote.sh [--light] <target> 'VAR=a b c' VAR2=x` directly (and `REMOTE_HOST=slobdell@builder2`
@@ -229,6 +224,9 @@ side, locks, 9625-9648, 600 s, J8, n 24 paired, 18:33-19:00 PDT; `tools/scoreboa
 | G3 fight length | arm medians 181.0 / 193.4 | | +12.4 (medians) / **+4.8 (paired mean)** | 7.05 | 11.6 | medians: outside by 0.8 s (z 1.76); paired mean (judging.md's form for this line, "read as a mean"): z 0.69, median of diffs 0.0, 9 longer / 9 shorter / 6 identical, end reasons 15 control / 9 elimination both arms -> **ruling asked (R42.12 thread)** |
 | G4 green kill ratio | 1.02 | 1.07 | +0.05 | 1.47 | | **PASS** |
 | G5 no SCRIPT ERROR / missing result | 24 of 24 | 24 of 24 | | | | **PASS** |
+
+**RULED (R42.13): G3 passes on the paired mean (judging.md line 114's form for this line); the tool's median-v-mean's-se
+reading is recorded beside it as the tool's mismatch, not the bar's. Bar E1 PASSES; shipped ON at f9b675a56.**
 
 Per faction (reported): condemned losses 21.0 -> 17.7 (se 1.5), gangs kills 6.6 -> 8.8 (se 1.8), syndicate median +20 s
 (se 17). The largest length diff is 9625 (+95.6 s: elimination at 120 s OFF -> the control clock at 216 s ON; kills 27 -> 26,
