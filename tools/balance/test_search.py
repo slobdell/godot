@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """tools/balance/search.py's own tests (`make balance-pytest`): his +/-15 % bounds, shared weapons, the --tune string."""
+import json
 import sys
 import pathlib
 import unittest
@@ -97,6 +98,35 @@ class SearchTest(unittest.TestCase):
         # A cut front under an unmoved rear: the rear is now harder than the front (the ARM ad956031b failure).
         self.assertTrue(search.check({"units": {"syn_scout": {"armor": {"front": 1.7, "side": 1.7}}}}, cat))
         self.assertEqual(search.check({"units": {"syn_scout": {"armor": {"front": 1.7, "side": 1.7, "rear": 1.7}}}}, cat), [])
+
+    def test_bar_b7_lists_and_judge(self):
+        self.assertEqual([search.b7_arena(s) for s in (9901, 9908, 9909, 9933, 9940)],
+                         ["terminus", "terminus", "locks", "parade", "parade"])
+        on = search.b7_fights("on")
+        self.assertEqual(len(on), 360, "320 deciding + 40 G1 an arm")
+        self.assertEqual(len({tuple(x.split()[:3]) for x in on}), 360, "every fight its own (folder, arena, seed)")
+        self.assertTrue(all(x.endswith("--cpu-counter=on") for x in on))
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            for arm in ("off", "on"):
+                for line in search.b7_fights(arm):
+                    folder, arena, seed = line.split()[:3]
+                    seed = int(seed)
+                    d = root / f"c0ffee-{folder}" / "none"
+                    d.mkdir(parents=True, exist_ok=True)
+                    mono_green = "-player " in f"{folder} " or folder.endswith("-player")
+                    countered = arm == "on" and folder.startswith("b7-") and "-condemned-" in folder
+                    # condemned's counter halves all-tanks' wins; every other fight is the same ON and OFF.
+                    mono_won = (seed % 2 == 0) if countered else (seed % 5 != 0)
+                    winner = ("Green" if mono_green else "Rust") if mono_won else ("Rust" if mono_green else "Green")
+                    r = {"winner": winner, "seconds": 200 + seed % 7, "tanks": {"green": 9, "rust": 7}}
+                    (d / f"{arena}-{seed}-green.log").write_text(
+                        "ARMY_CAP preset=desktop squads=5 units=25\n" + ("CPU_COUNTER faction=condemned\n" if countered else "")
+                        + "ARMY_CAP_FIELDED squads=5 green_squads=4 green=20 rust_squads=5 rust=25\n"
+                        + "GUARD_RESULT " + json.dumps(r) + "\n")
+            self.assertEqual(search.bar_b7(root, "c0ffee", ["condemned"]), 0, "condemned 80 -> 50 % passes")
+            self.assertEqual(search.bar_b7(root, "c0ffee", ["condemned", "law"]), 1, "law did not move: fails")
 
 
 if __name__ == "__main__":

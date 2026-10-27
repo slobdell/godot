@@ -709,6 +709,116 @@ def bar_b5(root: Path, base_c: str, arm_c: str) -> int:
     return 0 if all(verdict) else 1
 
 
+# ---- Bar B7 (round 42; FILED in the brief before any number on 9901-9940): the CPU counter-lineup, ON v OFF -------------
+
+B7_SEEDS = range(9901, 9941)
+B7_ARENAS = ["terminus", "locks", "sumps", "gorge", "parade"]  # ONE arena a seed: 9901-9908 terminus, 9909-9916 locks, ...
+B7_G1_SEEDS = range(9901, 9911)  # G1: CPU v CPU, terminus
+
+
+def b7_arena(seed: int) -> str:
+    return B7_ARENAS[(seed - B7_SEEDS[0]) // 8]
+
+
+def b7_fights(arm: str) -> list:
+    """The fight list of one arm (`off` = BASE, `on` = ARM) for mk/balance.mk's balance-fights-run: the deciding line
+    (all-tanks v the plain cpu deal, same faction, mono on each team, one arena a seed) and G1 (two plain CPUs, mirrored)."""
+    lines = []
+    for f in FACTIONS:
+        for team, other in (("player", "enemy"), ("enemy", "player")):
+            for seed in B7_SEEDS:
+                lines.append(f"b7-{arm}-mono-{f}-{team} {b7_arena(seed)} {seed} --player-faction={f} --enemy-faction={f} "
+                             f"--{team}=cpu:mono_tank --{other}=cpu --cpu-counter={arm}")
+        for seed in B7_G1_SEEDS:
+            lines.append(f"g1-{arm}-{f} terminus {seed} --player-faction={f} --enemy-faction={f} --player=cpu --enemy=cpu "
+                         f"--cpu-counter={arm}")
+    return lines
+
+
+def _results(folder: Path) -> dict:
+    """arena-seed -> {"result": GUARD_RESULT dict or None, "fielded": (green, rust) or None, "cap": int or None, "counter": n}."""
+    out = {}
+    for log in sorted((folder / "none").glob("*-green.log")):
+        lm = LOG.match(log.name)
+        row = {"result": None, "fielded": None, "cap": None, "counter": 0}
+        for line in log.read_text(errors="replace").splitlines():
+            if line.startswith("GUARD_RESULT "):
+                row["result"] = json.loads(line[len("GUARD_RESULT "):])
+            elif line.startswith("ARMY_CAP_FIELDED "):
+                kv = dict(x.split("=") for x in line.split()[1:])
+                row["fielded"] = (int(kv["green"]), int(kv["rust"]))
+            elif line.startswith("ARMY_CAP "):
+                row["cap"] = int(dict(x.split("=") for x in line.split()[1:] if "=" in x)["units"])
+            elif line.startswith("CPU_COUNTER "):
+                row["counter"] += 1
+        out[(lm["arena"], int(lm["seed"]))] = row
+    return out
+
+
+def bar_b7(root: Path, commit: str, firing: list) -> int:
+    """Judge Bar B7 (R42.3): DECIDING per faction whose counter fires: ARM <= 60 % AND paired change < 0 by >= 2 se; the
+    pooled share reported. G1 every CPU v CPU fight identical ON v OFF; G2 median length within +/-20 %; G3 every ARM fight
+    loads and fields within its cap. G4 (the tests) is the frozen commit's check."""
+    verdict = []
+
+    def judge(name, ok, text):
+        verdict.append(ok)
+        print(f"BAR_B7 {name:34} {text} -> {'pass' if ok else 'FAIL'}")
+
+    base, arm = read_mono(root, f"{commit}-b7-off-"), read_mono(root, f"{commit}-b7-on-")
+    print(f"BAR_B7 commit {commit}: BASE --cpu-counter=off {len(base)} fights, ARM on {len(arm)} (expect 320 each); "
+          f"firing: {', '.join(firing) or 'none'}")
+    lengths = {}
+    for faction in FACTIONS + ["fired", "all"]:
+        keys = [k for k in arm if k in base and (faction == "all" or faction == k[0] or (faction == "fired" and k[0] in firing))]
+        if not keys:
+            continue
+        share = 100 * sum(arm[k]["mono_won"] for k in keys) / len(keys)
+        ps = defaultdict(list)
+        for k in keys:
+            ps[k[3]].append((base[k]["mono_won"], arm[k]["mono_won"]))
+        change = 100 * sum(a - b for v in ps.values() for b, a in v) / len(keys)
+        cse = bootstrap(ps, lambda xs: 100 * sum(a - b for b, a in xs) / len(xs))
+        bshare = 100 * sum(base[k]["mono_won"] for k in keys) / len(keys)
+        text = f"all-tanks {bshare:3.0f} -> {share:3.0f} % (n {len(keys)}), paired {change:+.1f} se {cse:.1f}"
+        lengths[faction] = (_median([base[k]["seconds"] for k in keys]), _median([arm[k]["seconds"] for k in keys]))
+        if faction in firing:
+            judge(f"DECIDING {faction}", share <= 60 and change + 2 * cse < 0, text + " (line <= 60 % and < -2 se)")
+        else:
+            print(f"BAR_B7 {'reported ' + faction:34} {text}")
+    for name in ("fired", "all"):
+        if name in lengths and (name == "all" or firing):
+            b, a = lengths[name]
+            judge(f"G2 median length ({name})", abs(a / b - 1) <= 0.20, f"{b:.0f} -> {a:.0f} s ({100 * (a / b - 1):+.1f} %)")
+    same, n, diffs = 0, 0, []
+    for f in FACTIONS:
+        off, on = _results(root / f"{commit}-g1-off-{f}"), _results(root / f"{commit}-g1-on-{f}") if (root / f"{commit}-g1-on-{f}").is_dir() else {}
+        if not (root / f"{commit}-g1-off-{f}").is_dir():
+            off = {}
+        for k in sorted(set(off) | set(on)):
+            n += 1
+            ro, ra = (off.get(k) or {}).get("result"), (on.get(k) or {}).get("result")
+            key = lambda r: (r["winner"], r["seconds"], r["tanks"]) if r else None
+            if ro and ra and key(ro) == key(ra) and on[k]["counter"] == 0:
+                same += 1
+            else:
+                diffs.append(f"{f} {k[0]} s{k[1]}")
+    judge("G1 CPU v CPU identical", n == 40 and same == n, f"{same} of {n} identical (expect 40)" + (f": {diffs[:6]}" if diffs else ""))
+    loaded, fielded_ok, fired, total = 0, 0, defaultdict(int), 0
+    for d in sorted(root.glob(f"{commit}-b7-on-mono-*")):
+        m = MONO_DIR.search(d.name)
+        for k, row in _results(d).items():
+            total += 1
+            loaded += row["result"] is not None and row["fielded"] is not None
+            fielded_ok += row["fielded"] is not None and row["cap"] is not None and max(row["fielded"]) <= row["cap"]
+            fired[m["faction"]] += row["counter"] > 0
+    judge("G3 loads and fields", total == 320 and loaded == total and fielded_ok == total,
+          f"{loaded} loaded, {fielded_ok} within the cap, of {total} (expect 320)")
+    print("BAR_B7 reported: counter fired in " + ", ".join(f"{f} {fired[f]}/80" for f in FACTIONS))
+    print(f"BAR_B7 VERDICT {'PASS' if all(verdict) else 'FAIL'} ({sum(verdict)} of {len(verdict)} lines)")
+    return 0 if all(verdict) else 1
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--catalog", type=Path)
@@ -739,6 +849,12 @@ def main(argv=None) -> int:
     p.add_argument("root", type=Path)
     p.add_argument("base_commit")
     p.add_argument("arm_commit")
+    p = sub.add_parser("b7-lists")
+    p.add_argument("out", type=Path, help="writes b7-off.txt and b7-on.txt (tools/balance/fights.sh lists) here")
+    p = sub.add_parser("bar-b7")
+    p.add_argument("root", type=Path)
+    p.add_argument("commit")
+    p.add_argument("--firing", default="", help="the factions whose counter fires (R42.3), comma-separated")
     p = sub.add_parser("mono")
     p.add_argument("root", type=Path, help="the folder holding <commit>-<tag>mono-<faction>-<player|enemy>/ runs")
     p.add_argument("--match", default="", help="only folders whose name contains this (e.g. -mono-base-)")
@@ -757,6 +873,14 @@ def main(argv=None) -> int:
         return bar(args.root, args.base_commit, args.arm_commit)
     if args.cmd == "bar-b5":
         return bar_b5(args.root, args.base_commit, args.arm_commit)
+    if args.cmd == "b7-lists":
+        args.out.mkdir(parents=True, exist_ok=True)
+        for arm in ("off", "on"):
+            (args.out / f"b7-{arm}.txt").write_text("\n".join(b7_fights(arm)) + "\n")
+        print(f"b7-lists: {len(b7_fights('off'))} fights an arm -> {args.out}")
+        return 0
+    if args.cmd == "bar-b7":
+        return bar_b7(args.root, args.commit, [f for f in args.firing.split(",") if f])
     if args.cmd == "mono":
         mono_report(args.root, args.match, args.base_match)
         return 0
