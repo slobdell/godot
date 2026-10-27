@@ -396,6 +396,15 @@ static func scout_fights_back(me: Dictionary, contacts: Array, matchups: Diction
 static var PURSUIT_STAYS := true
 ## Round 25 (brains F4): a bounding crew suppresses on the move to its bound slot (`--bound-suppress=stand` = the arm).
 static var BOUND_SUPPRESS_MOVES := true
+## Round 42 (engage v2, R42.12, on R42.2's terms): under `--attack-shot-suppress=on` (env ATTACK_SHOT_SUPPRESS=on) a crew that
+## would STAND to suppress a target its own line of fire cannot reach (the cover map: a container between) goes round instead,
+## as the ENGAGE hold does under --attack-shot. Bar E1's series: 81 % of the stuck crew-seconds left under the rule were this
+## stand (9609, 9619: gang IFVs in band behind cover, "suppressing", rounds into the box). OFF: the stand as before.
+static var SUPPRESS_LINE := OS.get_cmdline_user_args().has("--attack-shot-suppress=on") \
+		or OS.get_environment("ATTACK_SHOT_SUPPRESS") == "on"
+## Test seam: a Callable(point: Vector3) -> bool answering whether this crew has a line of fire to `point`; unset, the
+## cover map's `clear_line` (the plan's read, so the two agree at the same quantum).
+var line_of_fire: Callable
 ## Shield down, a gun on me, and the hull below this fraction: break contact to recharge (G6).
 const SHIELD_DOWN_BREAK_HP := 0.75
 ## RECHARGE continues until the shield is back to this fraction.
@@ -2581,8 +2590,7 @@ func _act(s: Dictionary) -> void:
 			# below; the route goes round the box). A crew its element sent to a firing spot never gets here (a `move`).
 			var own_line := true
 			if ElementPlan.ATTACK_SHOT:
-				var own_map := CoverMap.of(tank)
-				own_line = own_map == null or own_map.clear_line(my_position, contact["position"])
+				own_line = _own_line_to(my_position, contact["position"])
 			if TankBrain.chases(ordered if ordered is Dictionary else {}, contact, my_position, weapon):
 				# Round 21 (brains P2): the target it was ORDERED to kill is driving away beyond the gun's band. The combat
 				# micro below circles the target's spot inside the band, and a running target has left it: his scouts
@@ -2625,6 +2633,11 @@ func _act(s: Dictionary) -> void:
 				# of 0-5: the commander ended at z -13 of -60). The overwatch element is the one that stands and fires.
 				why = TankBrain._join(why, "on the bound")
 				_order_move(_move_to(_bounding_slot(s)))
+			elif SUPPRESS_LINE and not _own_line_to(my_position, contact["position"]):
+				# Round 42 (engage v2): the stand would put its rounds into the cover between; go round to a line (the route
+				# goes round the box), as ENGAGE does under --attack-shot.
+				why = TankBrain._join(why, "no line of fire: going round")
+				_order_move(_move_to(contact["position"]))
 			else:
 				# Standing still is what makes fire effective (Match.shot_spread charges movement), and a base of
 				# fire is meant to stay put anyway.
@@ -2985,6 +2998,15 @@ func _act(s: Dictionary) -> void:
 ## the fire rather than followed from behind) and then KEPT, so the rounds land in the same cells — that is what makes
 ## fire suppressive rather than merely aimed. Re-laid when the target has left it by SUPPRESS_REAIM or after
 ## SUPPRESS_REAIM_TICKS.
+## Round 42 (engage): whether this crew's own line of fire to `point` is clear by the cover map (memoized, the plan's read);
+## no map = clear. `line_of_fire` (tests) answers instead when set.
+func _own_line_to(from: Vector3, point: Vector3) -> bool:
+	if line_of_fire.is_valid():
+		return bool(line_of_fire.call(point))
+	var own_map := CoverMap.of(tank)
+	return own_map == null or own_map.clear_line(from, point)
+
+
 func _suppression_point(contact: Dictionary) -> Vector3:
 	var predicted: Vector3 = contact["position"] + (contact["velocity"] as Vector3) * SUPPRESS_LEAD_SECONDS
 	if _suppress_point == null or _suppress_for != String(contact["name"]) \
