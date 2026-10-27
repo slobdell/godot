@@ -81,7 +81,7 @@ His answer to the combined-arms recommendation (the round proceeds on it); the s
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Round 42, in progress (2026-10-26; started from main 18982e8df, launch green 21b20bdce, no baseline re-run).**
+**Round 42, in progress (2026-10-26; B7 ON merged as main 626303ea8 (b3841b301 green builder0 3299/0); Bar B2s v2 running; started from main 18982e8df, launch green 21b20bdce, no baseline re-run).**
 
 **Plan (in order; decisions in one line each):**
 1. B7 code (DONE, OFF): the counter rule, the pair loader, the garage deal and suggestion line, tests first.
@@ -200,6 +200,7 @@ list in ONE builder2 call (`mk/balance.mk balance-fights-run`, J24, GUARD_RESUME
 | Syndicate | 92 -> 78 % | -15.0 (se 4.6) | FAIL: stays OFF ("beats the roll by 15 but short of the target") |
 | Law (not firing) | 91 -> 91 % | 0 | reported (no counter) |
 | fired / all | 81 -> 61 % / 84 -> 69 % | -20.0 (se 3.9) / -15.0 (se 3.0) | reported |
+*In player terms:* if he drafts all tanks against Condemned or Gangs, the CPU now brings artillery and he wins about half (Condemned) to six in ten (Gangs) of those fights instead of three in four; against Syndicate or Law a tank rush still wins about nine in ten. The garage tells him "Bring two artillery squads with your tanks." `--cpu-counter=off` puts the old deal back.
 G1 40/40 CPU v CPU fights identical ON v OFF; G2 median length -1.2 % (fired) / -3.5 % (all); counter fired 80/80 in each firing
 faction, 0/80 Law. **G3: the judge as run read FAIL (134 of 320) because it checked max(both sides) <= ARMY_CAP's `units=25`**:
 the wrong side (the all-tanks side is a named lineup, 26-29 vehicles ON and OFF) and the wrong cap (25 is the player's squads x
