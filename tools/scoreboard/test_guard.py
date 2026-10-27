@@ -106,8 +106,21 @@ with tempfile.TemporaryDirectory() as base_root, tempfile.TemporaryDirectory() a
     check("pair law median arm", law["median_s"]["arm"], 60.0)   # sorted (40, 60)[n // 2], stats_of's median
     check("pair law median se", law["median_s"]["se"], 10.0)    # per-seed diffs -40, -60: sd 14.14 / sqrt 2
     check("pair gangs kills diff", gangs["kills_pf"]["diff"], 0.0)
+    # Round 42 (R42.13, Bar E1's G3): the length's paired line is the MEAN, the statistic its se is of. Here the pooled medians
+    # don't move (100 -> 100: arm (40, 60, 100, 100)[2]) while the paired mean drops 25 s (se 5: per-seed diffs -20, -30).
+    check("pair mean s base", paired["all"]["mean_s"]["base"], 100.0)
+    check("pair mean s arm", paired["all"]["mean_s"]["arm"], 75.0)
+    check("pair mean s diff", paired["all"]["mean_s"]["diff"], -25.0)
+    check("pair mean s se", round(paired["all"]["mean_s"]["se"], 6), 5.0)
+    check("pair median s diff (extra)", paired["all"]["median_s"]["diff"], 0.0)
+    check("pair law mean s diff", law["mean_s"]["diff"], -50.0)
+    check("pair law mean s se", law["mean_s"]["se"], 10.0)
     pair_text = guard.render_pair(guard.pair([base_root], [arm_root]))
-    check("render pair faction line", "law (n 2): kills a fight 10.00 -> 5.00 (diff -5.00, se 0.00)" in pair_text, True)
+    check("render pair faction line",
+          "law (n 2): kills a fight 10.00 -> 5.00 (paired mean diff -5.00, se 0.00)" in pair_text, True)
+    check("render pair mean length", "mean s 100.0 -> 75.0 (paired mean diff -25.0, se 5.0)" in pair_text, True)
+    check("render pair median labelled extra", "extra: median s 100.0 -> 100.0 (not paired)" in pair_text, True)
+    check("render pair no median se", "median s 100.0 -> 100.0 (diff" in pair_text, False)
     # Jsonl input reads the same fights as the logs.
     jsonl = os.path.join(base_root, "fights.jsonl")
     with open(jsonl, "w") as out:

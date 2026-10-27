@@ -14,7 +14,8 @@ the repo so a rule's arm can be paired with it).
 --pair: each fight of ARM matched to BASE's same (line, arena, seed, side); per line the guard's wins base -> arm, the fights
 that flipped each way and an exact one-sided McNemar p (the arm made the guard lose more), and the paired differences of the
 win share and the kill ratio with their se from the per-seed differences (sd / sqrt(seeds)); and (round 38, Bar G2) the guard's
-kills and losses a fight and the median match length, all and per guard faction, each with its paired se the same way.
+kills and losses a fight and the mean match length (the median as a labelled extra), all and per guard faction, each
+with its paired se the same way.
 
 Per line (blob, turtle, none): fights read, the guard's win / loss / draw share, the share capped at the time limit (won on
 points), its kill ratio (its kills / its losses, totals), its zone-point margin (guard minus tactics, per fight), match
@@ -222,12 +223,15 @@ def _se(values):
 
 def _rates(rows):
     s = stats_of(rows)
-    return {"kills_pf": s["kills"] / s["n"], "losses_pf": s["losses"] / s["n"], "median_s": s["median_s"]}
+    return {"kills_pf": s["kills"] / s["n"], "losses_pf": s["losses"] / s["n"],
+            "mean_s": sum(float(f["r"]["seconds"]) for f in rows) / s["n"], "median_s": s["median_s"]}
 
 
 def _paired_rates(keys, base, arm):
-    """Round 38 (doctrine's Bar G2): the guard's kills and losses a fight and the median length over `keys`, base -> arm, each
-    with its paired se from the per-seed differences (a seed's fights in this group, arm minus base)."""
+    """Round 38 (doctrine's Bar G2): the guard's kills and losses a fight and the fight's length over `keys`, base -> arm, each
+    with its paired se from the per-seed differences (a seed's fights in this group, arm minus base). Round 42 (R42.13): the
+    length's paired line is the MEAN (`mean_s`), the same statistic as its se; `median_s` is kept as a labelled extra (its `se` is
+    of the per-seed median differences, not a noise for the pooled medians' difference)."""
     out = {"n": len(keys)}
     if not keys:
         return out
@@ -246,11 +250,15 @@ def _paired_rates(keys, base, arm):
 
 
 def _rates_line(label, r):
+    """Every paired line is a paired MEAN difference with its se (R42.13: Bar E1's G3 read the length's medians against the
+    mean's se); the medians follow as an extra, without an se."""
     parts = []
-    for m, name, digits in (("kills_pf", "kills a fight", 2), ("losses_pf", "losses a fight", 2), ("median_s", "median s", 0)):
+    for m, name, digits in (("kills_pf", "kills a fight", 2), ("losses_pf", "losses a fight", 2), ("mean_s", "mean s", 1)):
         v = r[m]
-        parts.append("%s %s -> %s (diff %+.*f, se %s)" % (name, _num(v["base"], digits), _num(v["arm"], digits), digits,
-                                                         v["diff"], _num(v["se"], digits)))
+        parts.append("%s %s -> %s (paired mean diff %+.*f, se %s)" % (name, _num(v["base"], digits), _num(v["arm"], digits),
+                                                                     digits, v["diff"], _num(v["se"], digits)))
+    med = r["median_s"]
+    parts.append("extra: median s %s -> %s (not paired)" % (_num(med["base"], 1), _num(med["arm"], 1)))
     return "  %s (n %d): %s" % (label, r["n"], "; ".join(parts))
 
 
