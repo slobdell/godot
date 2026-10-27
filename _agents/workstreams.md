@@ -169,7 +169,7 @@ another project's workers (plane_maker): never touch processes you didn't start.
   **Gate GREEN:** 0e4d4f732 builder0 `make check exited 0`, 26 passed + 2 NOT JUDGED (perf-judge refused on a busy box; scenario_perf
   unpinned); the series started ~19:40 on 0e4d4f732 (9701-9736, 36 an arm, light lane J4, workloads one after another; ~2.5 h).
 
-- **Bar Q6, the deck-mouth wait (manoeuvre; FILED 7569747ce = the frozen tree, code ac64ce939, 2026-10-26 ~16:30, before any number on
+- **FAILED (R42.15). Bar Q6, the deck-mouth wait (manoeuvre; FILED 7569747ce = the frozen tree, code ac64ce939, 2026-10-26 ~16:30, before any number on
   9825-9848; R42.7).** Rule = deckwait v4 (`--traffic-on=deckwait`, OFF): a wheeled crew with a friend ahead in its lane that is in a
   deck's mouth, not yet beyond the water, lowers its speed wish before ORCA solves to the friend's speed away from me + closing, never
   under 0.4 x its top speed; 5 s per friend then refused 6 s; asks as today; state = Q2's wait members (no new exec fields); speed only
@@ -328,6 +328,22 @@ _(filed bars go here, before their numbers)_
 - **R42.14 (2026-10-26 ~19:40) Bar E2 recorded; dominance form accepted; guard seeds 9697-9720.** A rare deterministic stand cannot be
   decided by a 2-se line at n 24, so "no seed worse + an exercised floor, else extend, else INCONCLUSIVE" is the right form and is
   filed before any number. Fight guards on builder2 on the orchestrator's word (balance's firing screen pauses at a leg boundary).
+- **R42.15 (2026-10-26 ~19:50) Bar Q6 FAILS on 9825-9848 (both trees); deckwait stays OFF; CP42.1 not reached; the stat change's
+  bridge gate stands.** builder0 light lanes 17:38-19:27, frozen 7569747ce / overrides d9382eed7, GDScript, as filed. Deciding 1 (the
+  drill 18/18 under overrides ON) PASS; Deciding 2a pooled rim: main 31.1 -> 35.7 s (+15 %, +1.2 se) FAIL, overrides 34.3 -> 41.1 s
+  (+20 %, +1.0 se) FAIL; 2b every crew crosses 72/72 both PASS; 2c worst crew main 2.5 s PASS, overrides 6.1 s (green s9836 t15) FAIL;
+  arrival guard main +1.11 s (line +1.00) FAIL, overrides +0.93 (line +1.05) PASS; G5-G7, G1-G3 PASS; G4 kill share moved 0.040 (line
+  0.03) FAIL. Reported: deck-jam s main 49 -> 61, overrides 51 -> 75. The read (after the numbers): the failure the rule was built on
+  is absent on fresh seeds OFF (the overrides tree crosses 72/72 OFF, rim 0.4-0.5 s a run, worst OFF crew 2.6 s; R40.21's 17/18 is
+  seeds 1-3's one crew), so a cap at every mouth only costs (42-44 of 72 runs flat, rim up in 21/18 runs v down in 9/10). Next shape
+  (a later round): fire only on the carried-past case (a follower arriving at speed behind a leader turning in the mouth). Evidence
+  `references/round42/manoeuvre/barq6-builder0-7569747ce/`. **Merged:** stream/manoeuvre 903c34217 (= green 7569747ce + Status) as
+  main's merge; both rules OFF with tests. Manoeuvre's backlog is done; its side worktrees come down at the close.
+  **For balance (B9):** the bridge gate (C41.5 / R40.24: bridge-pooled green under the overrides, the drill included) is NOT met and
+  is not loosened: the overrides tree still reads 17/18 on the drill (one deterministic crew, rust s2 t15). Ruled: **Bar B2s v2 RUNS
+  anyway, overnight on builder2 after the firing screen** (his stat-change question deserves its answer and builder2 would idle; the
+  cost is Spot hours he has approved); its verdict is recorded, but the stat change does NOT ship this round unless the drill crew is
+  fixed; it carries with a read verdict instead of an unread one.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
