@@ -1,3 +1,5 @@
+> **ARCHIVED (round 42 closed 2026-10-27).** Final state of this brief; round 42's results are in `workstreams.md` *Bars (round 42)* and *Rulings (round 42)*.
+
 # Stream: engage (a crew under his attack order never stands behind a container NOT FIRING: it drives to a spot with a clear shot and fires)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 42** (C42.1, C42.2,

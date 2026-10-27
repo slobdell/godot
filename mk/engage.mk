@@ -1,5 +1,5 @@
 # ---- engage (round 42): "in range" means a clear shot ---------------------------------------------------------------
-# Owner: the engage stream (_agents/streams/engage.md). The rule is `--attack-shot=on|off` (env ATTACK_SHOT).
+# Owner: the engage stream (_agents/streams/archive/round42/engage.md). The rule is `--attack-shot=on|off` (env ATTACK_SHOT).
 
 # E1: his crew behind the container, rebuilt (Locks, seed 49326, the census's places), one ENGAGE_TRACE row per sample tick
 # (and on every change): the element's order, the brain's choice and move, the mover's phase, the gun, both sight reads, the HUD's

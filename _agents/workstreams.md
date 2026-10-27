@@ -1,10 +1,10 @@
 # Workstreams: the current round
 
-> **ROUND 42 PREPARED 2026-10-26 evening (from his playtest after round 41; `stream/*` branches are fresh off main 21b20bdce+docs;
-> every stream gets a new session). FIVE streams: engage and manoeuvre on FABLE (his attack order gets a clear shot; Q5 judged on what
-> he sees + the bridge rim crew), camera, balance, native on Opus. Builders: builder0 AND builder2 (C42.1). Round 41 CLOSED 2026-10-26
-> ~13:05 (main 21b20bdce green builder0 ALL JUDGED; briefs in `streams/archive/round41/`).** Briefs in `streams/`; round 41's section
-> follows round 42's.
+> **ROUND 42 CLOSING 2026-10-27 ~03:30 (main b12b17ac7 GREEN builder0, 28 targets ALL JUDGED, 3343/0 = every round-42 merge; later
+> commits docs only). Shipped ON: `--attack-shot` (engage, Bar E1), `--camera-danger` (camera, Bar K4 v2), the CPU counter-lineup for
+> Condemned and Gangs (balance, Bar B7). OFF with causes: Q5, Q6 (manoeuvre), E2 (engage, inconclusive). Engage, manoeuvre, native,
+> camera CLOSED (briefs in `streams/archive/round42/`, branches `round42/<s>`); balance open until Bar B2s v2 reads (morning).**
+> Round 41's section follows round 42's.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
@@ -18,11 +18,11 @@ and Gangs, Law and Syndicate have none that does.
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **engage** | `godot-engage` (5) | **Fable** | [streams/engage.md](streams/engage.md) | a crew he tells to attack goes round the container and fires; no NOT FIRING banner | E1 replay his recording |
-| **camera** | `godot-camera` (3) | Opus | [streams/camera.md](streams/camera.md) | an ambush from the side is on screen; a retreat to the edge looks back at the fight | K4.1 the look census |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | fewer shoves in his big order; the bridge crossing clean under the stat change | Q5.1 Bar Q5 (after CP42.0) |
+| **engage** | `godot-engage` (5) | **Fable** | [streams/archive/round42/engage.md](streams/archive/round42/engage.md) | a crew he tells to attack goes round the container and fires; no NOT FIRING banner | E1 replay his recording |
+| **camera** | `godot-camera` (3) | Opus | [streams/archive/round42/camera.md](streams/archive/round42/camera.md) | an ambush from the side is on screen; a retreat to the edge looks back at the fight | K4.1 the look census |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/archive/round42/manoeuvre.md](streams/archive/round42/manoeuvre.md) | fewer shoves in his big order; the bridge crossing clean under the stat change | Q5.1 Bar Q5 (after CP42.0) |
 | **balance** | `godot-balance` (1) | Opus | [streams/balance.md](streams/balance.md) | the CPU meets his tank rush with artillery; Law / Syndicate artillery hurts tanks | B7 the CPU counter-lineup |
-| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: Q5's fields (CP42.0), twins, the judged lines and table | N1 CP42.0 exec_fields |
+| **native** | `godot-native` (4) | Opus | [streams/archive/round42/native.md](streams/archive/round42/native.md) | nothing alone: Q5's fields (CP42.0), twins, the judged lines and table | N1 CP42.0 exec_fields |
 
 No orders stream: G1 v9 shipped; his decision 2 (a click beside his army: squads already in that street hold) is a feel question with
 no code behind it. No settle stream: nothing of settle's is on his list.
