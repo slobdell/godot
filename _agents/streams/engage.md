@@ -346,6 +346,19 @@ lane J4, n 24 paired, `attack_shot_table.py --pair --deciding=suppress`.
 **A pass ships ON** (line 1 decided, 2-8 within). **Recorded on main as R42.14** (the dominance form accepted). The table:
 `attack_shot_table.py --pair OFF ON --deciding=suppress` (7a8f7fb2e).
 
+**READ, line 7 (the suite ON; builder0, dcf83c66a = eb4024fe3's code, native on, 20:18-21:50 PDT, the box at load 4-12 with
+"12 other godot" and main's batch check queued):** `>> remote: make check ATTACK_SHOT_SUPPRESS=on exited 2`, `3304 passed,
+1 failed`, `24 passed, 2 FAILED, 0 NOT RUN, 2 NOT JUDGED`. The two FAILED: **sim-baseline** (expected: 6 maps move under the
+stand's line: foundry, pit, sumps, gorge, archipelago, cut; yard, terminus, crossing, locks, parade, docks, yard_open unmoved;
+adopted at the ship) and **test** = one wall-clock test, `test_announcer_cost::test_the_booth_costs_well_under_a_tenth_of_a_millisecond_a_tick`
+(booth tick 0.3403 ms mean v its 0.3 ms line; the test times the booth alone with `Time.get_ticks_usec` and nothing in
+the booth reads the flag: `SUPPRESS_LINE` is read on one line of `TankBrain._act`'s SUPPRESS branch and nowhere else). The
+NOT JUDGED: **perf-judge** (`refused 3 times (ratios 1.45x 1.45x 1.38x 1.38x 1.25x 1.25x) in 86s: the box was truly busy`)
+and ai-scenarios-check's scenario_perf (always: perf-judge judges it). **To close line 7 and line 6's perf-judge:** rerun
+`make remote T="test FILTER=announcer_cost ATTACK_SHOT_SUPPRESS=on"` and `make remote T="perf-judge ATTACK_SHOT_SUPPRESS=on"`
+on a quiet builder0 (after the series and main's batch check); the 3303 other tests at the flag stand as read.
+**main:** the orchestrator merged 76f43fb6d alone as **9405f4dfb** (--attack-shot ON on main; v2 not in it).
+
 ### Requests to the orchestrator
 
 - **builder2** for the fight guards (24 x 600 s fights x 2 arms, J8) when balance's series is done; until then they wait (the
