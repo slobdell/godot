@@ -179,7 +179,11 @@ but short of the target").
 
 **Bar B7's frozen tree: fb9e2a95a** (`COUNTER_ARCHETYPES` = condemned siege, gangs gang_hail, syndicate syndicate_barrage; Law keeps
 its roll, `law_barrage` loadable by name; tests first: test_army_counter red 7/2 -> 9/0, laptop `make test FILTER=army` 167/0).
-Its full check runs on builder0 from `../godot-balance-b7` after B9's (unit balance-b7-check, log `~/balance-runs/b7-check.log`).
+**fb9e2a95a GREEN: builder0 `make remote T=check` -> `make check exited 0`, 3298 passed / 0 failed (23:06).** Bar B7 started
+on builder2 23:07 (unit balance-overnight: B7 OFF list, ON list, verdict, then Bar B2s v2 on the orchestrator's word given ~22:40).
+**B9 ARM 7aceba95f** (c0b61be2e + 8e257f3bc + d385cd308): builder0 `make check exited 2`, 3300 passed / 0 failed, FAILED only
+sim-baseline (expected) and bridge-pooled (the drill crew, R42.15's ship gate); Bar B2s v2 runs for its read verdict (BASE
+c0b61be2e, `~/balance-runs/bar-b2s-v2.sh`).
 **How it runs (8004b9d62):** `search.py b7-lists DIR` writes the two arm lists (360 fights each: 320 deciding + 40 G1, one arena
 a seed as filed); `tools/balance/fights.sh fb9e2a95a DIR/b7-off.txt ~/balance-guard-raw/b7` then `... b7-on.txt ...` plays each
 list in ONE builder2 call (`mk/balance.mk balance-fights-run`, J24, GUARD_RESUME on preemption, pausable between the arms);
