@@ -210,6 +210,9 @@ another project's workers (plane_maker): never touch processes you didn't start.
   frame keeps known contacts ahead of the view (inside the wall, no mirrors), dropped when they don't fit under the zoom cap. Weights
   unchanged; tried and dropped: a 90 deg/s danger turn. Lines most at risk (dev, BASE v ARM): G5 rear-lane own on screen 97.0 v 94.4
   (judged per workload); G1 one combined frame 24.1 px on 7016 v SNAP_PX 24; D2 rear blind % of fire 8.4 v 8.4 (a tie passes).
+  **Gate GREEN:** ef55e64b8 (tip 4165f4619 docs only) builder0 `make check exited 0`, 28 targets ALL JUDGED, 13 sim-baseline maps
+  unmoved; the series started ~00:30 on builder0 light J4 (`~/camera-bar-k4v2/4165f4619/`). Noted, not camera's: two control-timing
+  OVER BUDGET lines NOT JUDGED (a right click on 30 units 2699.8 v 104 workloads; control per frame 28.25 v 26.0) on a loaded box.
 
 _(filed bars go here, before their numbers)_
 
