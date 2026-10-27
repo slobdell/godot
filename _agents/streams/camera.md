@@ -88,8 +88,9 @@ The clip, when K4.4 has one.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 **2026-10-27: K4.1 DONE; K4.2 DONE OFF at 0e4d4f732, GREEN builder0 (`make check exited 0`, 26 passed, 2 NOT JUDGED:
-perf-judge refused on a busy box, scenario_perf unpinned); Bar K4 FILED (R42.5 + G5 amendment recorded on main); the bar series
-(9701-9736, builder0 light J4) is RUNNING on that code (tip 204a28707, docs-only), out to `~/camera-bar-k4/204a28707/`. K4.4 clips
+perf-judge refused on a busy box, scenario_perf unpinned); Bar K4 FILED (R42.5 + G5 amendment recorded on main); **Bar K4 READ: FAIL**
+(D2 rear lane, G1 snaps; table below): the danger camera stays OFF by default. Next: fix the solid snap and the rear lane on dev
+seeds only, then a fresh series (proposed 9801-9836, Bar K4 text unchanged) on the fixed commit, asked of the orchestrator. K4.4 clips
 filmed (dev seed, laptop): `~/camera-clips-round42/retreat_7005.mp4`, `ambush_rear_7001.mp4` (to re-film on the bar commit).**
 Start: 18982e8df (= 21b20bdce's code, GREEN builder0 per HANDOFF; no baseline check).
 
@@ -134,6 +135,23 @@ a set with no off-screen shot at all reads 0 (the best result: the camera faced 
   perimeter wall is not on screen (`CameraLook.wall_hides`): projection alone scored the first retreat clip 99.7 % while the wall
   hid his scout.
 - G6 every run CAMERA_TRACE_DONE ok=true, no SCRIPT ERROR, every scenario run staged ok, both arms.
+
+### Bar K4 result (9701-9736; camera 0e4d4f732, tip 204a28707 docs-only; GREEN builder0 `make check exited 0`, 26 passed, 2 NOT JUDGED perf; builder0 light J4; 36 runs an arm a workload; out `~/camera-bar-k4/204a28707/`)
+| line | BASE (off) | ARM (on) | verdict |
+|---|---|---|---|
+| D1 latency, ambush+retreat pooled (never = 20 s) | 12.29 +- 0.80 (125 episodes) | 5.63 +- 0.97 (60) | PASS (5.3 se) |
+| D2 rear lane latency / blind % of play | 6.5 +- 1.9 (3 never) / 0.8 | 6.6 +- 1.4 (7 never) / 3.2 | **FAIL** |
+| D2 retreat latency / blind % | 16.2 +- 0.8 (62 never) / 9.5 | 8.0 +- 2.7 (3 never) / 0.7 | PASS |
+| D3 facing wall pooled / retreat | 26.7 / 37.8 % | 7.0 / 0.0 % | PASS |
+| G1 attack: on the unit / slip p95 / jerks / top automatic source / snaps | 79.7 % / 34.7 / 0.33 / 0.27 / 0 | 82.7 % / 31.5 / 1.50 / solid 1.500 / **2** (+1 ambush) | **FAIL** (snaps: att 9721, 9731; amb 9732) |
+| G2 held (attack) | 15.2 % | 16.0 % | PASS |
+| G3 action share (attack) | 42.9 % | 47.5 % | PASS |
+| G4 reversals/min attack / ambush / retreat | 10.64 / 5.32 / 1.48 | 4.95 / 2.58 / 1.55 | PASS |
+| G5 own on screen attack / ambush / retreat | 97.0 / 99.5 / 97.6 | 96.3 / 96.4 / 94.6 | PASS |
+| G6 | 216 runs ok, 0 SCRIPT ERROR, 72/72 staged | | PASS |
+Causes: (1) rear: BASE's rear lane on these seeds was already short (6.5 s v 13.5 on dev); ARM fights more (33 off-screen
+episodes v 17) and its nevers are mostly a second shooter at a new bearing while the view holds on the first. (2) the solid
+(building clearance) source snaps when the danger view faces new ways among buildings (ambush solid jerks 2.31/min ARM v 0.18).
 
 ### K4.2 dev reads, as committed (0e4d4f732's camera; dev seeds 7001-7012, NEVER a bar; builder0 light; headless 1920x1080 @60; Terminus; 12 runs a row; 45 s, attack 150 s)
 | workload | arm | blind % of play | facing wall % | own on screen % | off-screen shots (never) | latency mean, never=20 s | reversals/min | jerks/min (solid) |
