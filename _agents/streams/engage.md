@@ -204,6 +204,25 @@ reads it as material, the seam is `_act` SUPPRESS's stand (same guard) or `Comba
 
 ### Bar E1 (FILED b37e7f4a4, 2026-10-26 ~15:50 PDT, before any number on 9601-9648)
 
+**READ, the deciding series (builder0 LIGHT lane, native off, commit 5e9518da0 = 4658fa514's code, `engage-bar` 9601-9624,
+n 24 paired, 60 s windows, J4, 18:24-18:26 PDT; the table `tests/engage/attack_shot_table.py --pair`):**
+
+| line | OFF | ON | paired mean | se | z | reading |
+|---|---|---|---|---|---|---|
+| 1 stuck crew-s (sum) | 598.4 | 28.8 | -23.7 | 6.6 | -3.6 | DECIDING: 0.048 x OFF, < 0 by 3.6 se -> **PASS** |
+| 2 first hit s (mean a run) | 13.5 | 4.0 | -9.4 | 2.4 | -3.9 | DECIDING: by 3.9 se -> **PASS** |
+| 3 deaths while moving for a shot | 1 | 0 | -0.04 | 0.04 | -1.0 | GUARD -> **PASS**; all deaths 39 -> 31 (mean -0.33, se 0.30) |
+| 4 spots never reached | 0 | 2 | | | | reported (9607, 9609: one crew each); dither 0.00 both arms (cap 2.0: within); line flips 1.20 -> 1.25 a crew |
+| 8 cost: lines a plan tick | 0.00 | 3.35 | | 0.25 | | <= crews + 1 (mean crews 3.8 -> 4.8) -> **PASS**; perf-judge PASS (above) |
+| 9 SUPPRESS share of ON's stuck | 15.0 of 598.4 (3 %) | 23.3 of 28.8 (**81 %**) | | | | REPORTED (R42.6): most of what is left is the brain's SUPPRESS stand -> a real result; v2 on R42.2's terms |
+| also | never hit 32 -> 14 of 91 crews; target dead by 36.6 -> 26.9 s (mean -9.6, se 4.3); hits 3195 -> 3301 | | | | | |
+
+Lines 6 and 7 read above (the 9 maps; the suite ON green at 4658fa514). **Line 5 (the fight guards G1-G5) pending builder2.**
+What is left of stuck under ON is 9609 (13.7 s) and 9619 (10.5 s), both gang_ifv squads v a target that kills the whole
+squad (tdead 60 = never died, deaths 4 of 4): crews in SUPPRESS in band with no line while dying. The never-reached spots:
+9607 and 9609, one crew each (below). Four seeds (9601 9605 9607 9614, all crossing) carry STAGE-OFF (the stage's grounding
+moved a hull off its drawn spot); paired, same stage both arms.
+
 **Switch:** `--attack-shot` (DEFAULT OFF at filing; a pass ships ON with `=off` = round 41). **Tree:** 4658fa514 frozen for every
 arm (was 57e2e7eb5 = e81c93ae8 + the read gated behind the flag + the probe, the table and the shot tool; moved to 4658fa514 on
 R42.10's flank side pick after the suite-ON check at 57e2e7eb5 turned far_ambush red, before any number on 9601-9648 was read;
