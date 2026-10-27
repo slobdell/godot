@@ -51,6 +51,15 @@ goes blind on a rear one (5 of 9 shooters never on screen) and faces the wall 37
 Manoeuvre: Q6's first read reproduces R40.21's crew exactly (locks rust s2 t15, rim 5.1 s); Bar Q5's judge written; dev tree up.
 **CP42.0 LANDED: main bf99631b5** = native's 75495744b merged alone (builder0 `make check exited 0`, 3290 passed / 0 failed, 27 passed +
 1 NOT JUDGED (remote-guard-test load refusal), sim-baseline 13 unmoved, perf-judge PASS 1.01x 7,460 us/tick; merge_check_needed INHERIT).
+**~20:30 PDT, rulings R42.1-R42.16. MAIN 7815e5b15 = engage's `--attack-shot` ON (9405f4dfb: Bar E1 PASSED, R42.12/R42.13; 9 sim-baseline
+maps adopted) + manoeuvre's Q5/Q6 OFF (c0b61be2e, Bar Q6 FAILED R42.15, Bar Q5 withdrawn R42.8) + native's tools (guard.py paired
+means, lines_r41, round-41 step 5b). Its batch check is RUNNING on builder0 (`build/orch/main-check-7815e5b15.log`; the wrapper's exit
+line decides; merge_check_needed read CHECK because engage's tree predates CP42.0). Last verified main before it: c0b61be2e (INHERIT of
+manoeuvre's 7569747ce, 3300/0). Camera's Bar K4 FAILED (R42.16: rear lane, two clearance snaps; the retreat passed); danger camera OFF;
+v2 on fresh 9737-9772, the last re-file. Engage's Bar E2 (the SUPPRESS stand) chain running on builder0; its builder2 guards need a
+window. Balance: firing screen ending ~20:30, then Bar B7 on builder2, then Bar B2s v2 overnight (read verdict only: the bridge gate
+stands, R42.15). Manoeuvre DONE and merged. Close still owed: a quiet-window perf-judge on main for the attack-shot flip; his clips.
+
 **~19:00 PDT, rulings R42.1-R42.12.** Bars: **E1 (engage) deciding read PASS** on fresh 9601-9624 (stuck crew-seconds 598 -> 29, first
 hit 13.5 -> 4.0 s, deaths 39 -> 31; R42.12; frozen tree 4658fa514, suite-ON green by its terms, 3303/0; the 48 fight guards on builder2
 since ~18:40, then the flip ON + OFF check); what is left of stuck is the SUPPRESS stand (v2 after the flip, seeds 9649-9672).
