@@ -113,6 +113,14 @@ worktree: `~/overnight-manoeuvre/r42/`.
   friend keeps v2's 3 s cap / 6 s press. `tests/test_traffic_nopush.gd` 4/0 (laptop NATIVE=off): the standing head eased <= 1 s then
   pressed; a slow friend still moving eased against (pressing while touching 13 -> 6 ticks). **Lab q5lab4 (running):** the same 16
   dev cells as q5lab3, main v nopush v3, GDScript both, builder0 light (the q5 tree's own light folder); read with q5_judge.
+- **Q5 v3 LAB READ (q5lab4, 4c8db69b6, 16 paired dev runs, builder0 light, GDScript; `references/round42/manoeuvre/
+  q5lab4-v3-builder0-4c8db69b6/`):** D1 contacts 239,703 -> 175,367 (-27 %, -4.5 se) PASS; D2 shoved ticks 28,432 -> 19,542 (-31 %,
+  -2.8 se) PASS; G5 all-in 74.8 -> 78.0 s (line 78.5) PASS; **G6 never-in runs 7 -> 8 (line 7) FAIL** (squads 16 -> 19); jam-seconds
+  +16.8 % (eased ticks out: -15.1 %); eased crew-ticks a run 8,961 (v2 11,292), capped 23 (v2 4). v3 beats v2 on every guard
+  (all-in +3.2 v +5.7 s, never-in runs 8 v 9) and keeps the deciding half, but one more run than OFF never gets every squad in, so
+  by R42.8 **Q5 is written up OFF this round, v3 the best variant** (code on `wip/manoeuvre-q5v3` 4c8db69b6, a side ref; not on the
+  stream branch). What remains ON: a column whose head stands at a street mouth of the Crossing still stands a second longer per
+  friend before it grinds; the never-in cells are the Crossing's (3 of 4 seeds never-in in BOTH arms) plus one locks / sumps run.
 - Rulings this round so far: R42.7 (the arrival guard; one check gates both bars; v4 the last re-file); R42.8 (above).
 
 ### Plan (ordered; the brief's backlog as built)
