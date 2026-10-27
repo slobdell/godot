@@ -82,7 +82,7 @@ another project's workers (plane_maker): never touch processes you didn't start.
 
 ## Bars (round 42)
 
-**Seed registry (round 42):** 9601-9624 engage Bar E1 deciding; 9625-9648 engage fight guards; 9701-9736 camera Bar K4 (36 an arm);
+**Seed registry (round 42):** 9601-9624 engage Bar E1 deciding; 9625-9648 engage fight guards; 9701-9736 camera Bar K4 (36 an arm; read, FAILED R42.16); 9737-9772 camera Bar K4 v2 (R42.16);
 9801-9824 manoeuvre Bar Q5; 9825-9848 manoeuvre Bar Q6 (fresh BRIDGE_POOLED_SEEDS 9825-9836, group-order guards 9837-9848);
 9901-9940 balance Bar B7; 10001-10040 + 10101-10140 balance Bar B8; 10201-10240 balance B8 dev (never a bar); 9649-9672 engage Bar E2 (the SUPPRESS stand, R42.12), 9673-9696 its extension set, 9697-9720 its fight guards (R42.14); carried unread:
 8801-8840 + 8901-8940 Bar B2s v2; 9201-9240 + 9301-9340 Bar B5 t50 (only on his yes). Dev blocks 7001-7012 as before (never a bar).
@@ -139,7 +139,7 @@ another project's workers (plane_maker): never touch processes you didn't start.
   runs) D1 -27.7 % (-3.6 se), D2 -34.5 % (-3.2 se), G5 inside, **G6 6 -> 7 (would fail)**; the judge reproduces them. Machine: builder2
   for the group-order series if up, else builder0 light; fights builder0 light. A pass: native's twin, then ON; a fail: OFF, no re-run.
 
-- **Bar K4, the camera looks where the danger is (camera; FILED 76cb5053b Status, 2026-10-26 ~16:00, before any number on 9701-9736;
+- **FAILED (R42.16: D2 rear lane, G1 snaps; v2 on 9737-9772). Bar K4, the camera looks where the danger is (camera; FILED 76cb5053b Status, 2026-10-26 ~16:00, before any number on 9701-9736;
   R42.5).** Switch `--camera-danger` (OFF; ON on a pass; off = round 41): the agreed weighted sum (heading by speed, lightly; each known
   enemy by threat with decay; the war's pull: enemy centroid else the arena's middle), cancel / deadband / hold guards, no turn while he
   aims, manual yaw wins, the glide's speed cap; two read-only feed lines in skirmish_mode.gd (C42.3). BASE off v ARM on, one commit,
@@ -344,6 +344,18 @@ _(filed bars go here, before their numbers)_
   anyway, overnight on builder2 after the firing screen** (his stat-change question deserves its answer and builder2 would idle; the
   cost is Spot hours he has approved); its verdict is recorded, but the stat change does NOT ship this round unless the drill crew is
   fixed; it carries with a read verdict instead of an unread one.
+- **R42.16 (2026-10-26 ~20:10) Bar K4 FAILS on D2 (rear lane) and G1 (snaps); the danger camera stays OFF; one v2 on fresh 9737-9772.**
+  Camera code 0e4d4f732 (green builder0), light lane J4, 9701-9736, 36 runs an arm a workload, 216 runs ok: D1 latency pooled 12.29 ->
+  5.63 s (5.3 se) PASS; D2 retreat 16.2 -> 8.0 s, blind 9.5 -> 0.7 % PASS; D3 facing the wall 26.7 -> 7.0 % pooled, retreat 37.8 -> 0.0 %
+  PASS; **D2 rear lane 6.5 -> 6.6 s, nevers 3 -> 7, blind 0.8 -> 3.2 % FAIL**; **G1 snaps 0 -> 2 (solid, attack s9721/s9731) FAIL**, solid
+  jerks 1.500/min exactly at the line; clicks 79.7 -> 82.7 %, slip p95 34.7 -> 31.5 PASS; G2-G6 PASS (reversals 10.6 -> 5.0/min; own on
+  screen >= 94.6 %). Causes (camera's read, after the numbers): the rear lane's BASE on these seeds was already short (6.5 s v 13.5 on
+  dev seeds) and the ARM finds and fights more (33 off-screen episodes v 17); its nevers are a SECOND shooter at a new bearing while the
+  view holds on the first; the snaps are the building clearance (solid) now that the view faces new ways among buildings (ambush solid
+  jerks 2.31/min ARM v 0.18 BASE). Ruled: no re-judging on 9701-9736; the solid snap is fixed as a bug (the clearance's move under the
+  glide's cap); the rear lane is worked on dev seeds only (the design's weighted sum must let a second shooter pull the view: the hold
+  time against a new bearing); **Bar K4 v2 on fresh 9737-9772, the bar text unchanged, the LAST re-file**; if it fails, the danger camera
+  is written up OFF with the retreat result for him. The K4.4 clips stay as filmed (the retreat win) with the bar's verdict beside them.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
