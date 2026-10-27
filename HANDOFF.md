@@ -51,9 +51,15 @@ goes blind on a rear one (5 of 9 shooters never on screen) and faces the wall 37
 Manoeuvre: Q6's first read reproduces R40.21's crew exactly (locks rust s2 t15, rim 5.1 s); Bar Q5's judge written; dev tree up.
 **CP42.0 LANDED: main bf99631b5** = native's 75495744b merged alone (builder0 `make check exited 0`, 3290 passed / 0 failed, 27 passed +
 1 NOT JUDGED (remote-guard-test load refusal), sim-baseline 13 unmoved, perf-judge PASS 1.01x 7,460 us/tick; merge_check_needed INHERIT).
-Manoeuvre told to cherry-pick Q5 onto it. Bars filed before numbers: B7, E1 (frozen 57e2e7eb5), Q5, K4. builder0's full-check queue:
-engage's ON check, camera's 91ebddc9f, manoeuvre's Q5 gate; builder2: balance's B8 screen (legs to ~18:15), engage's guards on "pause",
-then manoeuvre's series.
+**~19:00 PDT, rulings R42.1-R42.12.** Bars: **E1 (engage) deciding read PASS** on fresh 9601-9624 (stuck crew-seconds 598 -> 29, first
+hit 13.5 -> 4.0 s, deaths 39 -> 31; R42.12; frozen tree 4658fa514, suite-ON green by its terms, 3303/0; the 48 fight guards on builder2
+since ~18:40, then the flip ON + OFF check); what is left of stuck is the SUPPRESS stand (v2 after the flip, seeds 9649-9672).
+**Q6 (manoeuvre, the deck-mouth wait) series running** on builder0 since 17:38 (gate 7569747ce green 3300/0; dev read: overrides
+17/18 -> 18/18, rim 14.2 -> 8.6 s); verdict ~19:30 = CP42.1 on a pass, native's twin plan ready. **Q5 withdrawn unread and written up
+OFF** (R42.8, R42.11: v3 the best variant, one never-in run over his guard). **K4 (camera)** filed, settled tree 0e4d4f732, full check
+queued on builder0; clips filmed on dev seeds. **B7 (balance)** filed, judged per countered faction (R42.3); **B8 closed as measured**
+(R42.9: +/-15 % can't make Law's or Syndicate's artillery hurt tanks); the firing screen on builder2 is PAUSED at leg 6/12 for engage;
+the B2s v2 rebuild is staged for CP42.1. Native: CP42.0 merged; lines_r41 + step 5b for round 41 done on its branch (next batch).
 
 **Waiting on him (player terms, one recommendation each; none blocks a stream):**
 1. **Combined arms:** the round proceeds on the recommendation (the CPU fields an artillery-heavy army against an all-tank army and
