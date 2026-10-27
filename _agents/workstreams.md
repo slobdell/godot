@@ -87,7 +87,7 @@ another project's workers (plane_maker): never touch processes you didn't start.
 9901-9940 balance Bar B7; 10001-10040 + 10101-10140 balance Bar B8; 10201-10240 balance B8 dev (never a bar); 9649-9672 engage Bar E2 (the SUPPRESS stand, R42.12), 9673-9696 its extension set, 9697-9720 its fight guards (R42.14); carried unread:
 8801-8840 + 8901-8940 Bar B2s v2; 9201-9240 + 9301-9340 Bar B5 t50 (only on his yes). Dev blocks 7001-7012 as before (never a bar).
 
-- **Bar B7, the CPU counter-lineup (balance; FILED fa9006e69, 2026-10-26 ~15:20, before any number on 9901-9940; amended by R42.3 before
+- **PASSED for Condemned and Gangs, Syndicate FAILS its line (R42.21). Bar B7, the CPU counter-lineup (balance; FILED fa9006e69, 2026-10-26 ~15:20, before any number on 9901-9940; amended by R42.3 before
   any read).** Switch `--cpu-counter` (OFF; `Army.COUNTER_DEFAULT`): a plain `cpu` deal against an army >= 70 % tanks by cost fields the
   faction's artillery-heavy lineup (siege / gang_hail / law_barrage / syndicate_barrage); 70 because the CPU's own most tank-heavy roll
   (Condemned armor) is ~63 %, so 60 would change the demo. Garage hint "Bring two artillery squads with your tanks." ON
@@ -398,6 +398,20 @@ _(filed bars go here, before their numbers)_
   builder2 stays balance's for Bar B7. E2's suite-ON check at dcf83c66a: 3304 passed / 1 failed (test_announcer_cost's wall-clock line
   on a loaded box, unrelated to the flag), perf-judge refused 3x (busy), 6 sim-baseline maps move under the stand's line: a quiet re-run
   of the one test and perf-judge only if the bar comes to a ship.
+- **R42.21 (2026-10-27 ~00:50) Bar B7 PASSES for Condemned and Gangs; the counter ships ON for them; G3 read as filed (the judge's
+  cap was wrong).** Frozen fb9e2a95a (green builder0 3298/0), builder2 J24, 23:07-00:39, 720/720 fights, 0 lost, 9901-9940 one arena a
+  seed, n 80 a faction, paired; all-tanks OFF -> ON: Condemned 75 -> 46 % (-28.8, se 7.5) PASS; Gangs 76 -> 60 % (-16.2, se 6.9) PASS
+  (at the 60 % line, 2.4 points past the 2-se line); Syndicate 92 -> 78 % (-15.0, se 4.6) FAIL, stays OFF ("beats the roll by 15,
+  short of the target"); Law (not firing) 91 -> 91 %; firing factions pooled 81 -> 61 %, all four 84 -> 69 %. G1 40/40 CPU v CPU fights
+  identical; G2 length -1.2 % / -3.5 %; the counter fired 80/80 per firing faction, 0/80 Law. G3: the judge as run printed FAIL (134 of
+  320 "within the cap") because it compared max(both sides) against `units=25` (the player's squads x five under the laptop ceiling,
+  C25.6), the wrong side and the wrong number: the all-tanks lineup fields 26-29 both arms and OFF's own rolls reach 45, so the as-run
+  judge would fail its own base. Read as filed ("every countered army within the cap (ARMY_CAP_FIELDED)", the game's desktop cap
+  `Army.MAX_ARMY_UNITS` = 45, asserted by test_army_counter): 320/320 loaded, 0 CPU armies over 45 (largest 44 ON): PASS. Ruled: the
+  as-filed reading stands (lesson 318: when the miss lands on the judge, fix the judge; both outputs kept, 8b709db70). **Ship:**
+  `COUNTER_DEFAULT = true`, `COUNTER_ARCHETYPES` = condemned + gangs (Syndicate's entry removed), `--cpu-counter=off` the escape, tests
+  first, a full check, the hash named; for him: "against your all-tank army the Condemned and the Road Gangs now bring two artillery
+  squads and scouts; your tank rush wins about half the time instead of three quarters". Bar B2s v2 started on builder2 00:39.
 - **R42.20 (2026-10-26 ~22:25) Bar E2 INCONCLUSIVE on the pooled n 48; v2 stays OFF; engage's round is done.** 9649-9696, builder0
   light, native off, eb4024fe3's code: 1 of 48 seeds exercised the line (floor 3); 47 of 48 byte-identical both arms. Pooled OFF -> ON:
   stuck 20.2 -> 6.5 crew-s, stuck_suppress 13.6 -> 0.0, first hit 8.05 -> 8.03 s, deaths 59 = 59, hits 6546 -> 6552, lines a tick 3.07
