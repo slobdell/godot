@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Round 41 (camera K1): add CameraPlaytest's per-seed camera_trace_<seed>.json files into one table.
+Round 42 (camera K4.1): plus the look table (CameraLook: where the view looks against where the danger is), per
+scenario and lane. A shooter that never came on screen counts as never (infinite) in the latency quantiles.
 
 usage: camera_report.py DIR [DIR_B]   (two dirs: side by side, e.g. a switch off v on)
 """
@@ -8,7 +10,7 @@ import json
 import os
 import sys
 
-SOURCES = ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "cap", "frame", "solid", "hull", "shake",
+SOURCES = ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "danger", "cap", "frame", "solid", "hull", "shake",
            "all"]
 
 
@@ -32,9 +34,11 @@ def table(runs):
     rows = {}
     for source in SOURCES:
         events = [e for r in runs for e in r["events"] if e["source"] == source]
-        moved = sum(r["summary"]["by_source"][source]["px_per_min"] * r["summary"]["seconds"] / 60.0 for r in runs)
-        snaps = sum(r["summary"]["by_source"][source]["snaps"] for r in runs)
-        reversals = sum(r["summary"]["by_source"][source]["reversals"] for r in runs)
+        rows_of = [(r, r["summary"]["by_source"].get(source)) for r in runs]  # round 41's traces have no "danger"
+        rows_of = [(r, row) for r, row in rows_of if row]
+        moved = sum(row["px_per_min"] * r["summary"]["seconds"] / 60.0 for r, row in rows_of)
+        snaps = sum(row["snaps"] for _, row in rows_of)
+        reversals = sum(row["reversals"] for _, row in rows_of)
         dv = [e["dv_px_s"] for e in events]
         rows[source] = {"events": len(events), "per_min": len(events) / minutes, "dv_p50": quantile(dv, 0.5),
                         "dv_p95": quantile(dv, 0.95), "snaps": snaps, "reversals_per_min": reversals / minutes,
@@ -57,6 +61,75 @@ def table(runs):
     play = {"held_pct": 100.0 * held / seconds, "action_pct": 100.0 * action / seconds,
             "aims_per_min": len(attacks) / minutes}
     return {"minutes": minutes, "seeds": [r["seed"] for r in runs], "rows": rows, "slip": slip, "play": play}
+
+
+def fmt_s(x):
+    return "never" if x == float("inf") else f"{x:.1f}"
+
+
+NEVER_S = 20.0  # R42.5: a shooter never on screen counts as 20 s in Bar K4's latency line
+
+
+def mean_se(values):
+    if not values:
+        return 0.0, 0.0
+    m = sum(values) / len(values)
+    if len(values) < 2:
+        return m, 0.0
+    var = sum((v - m) ** 2 for v in values) / (len(values) - 1)
+    return m, (var / len(values)) ** 0.5
+
+
+def look_table(runs):
+    groups = {}
+    for r in runs:
+        if "look" not in r:
+            continue
+        key = (r.get("scenario") or "attack", r.get("lane", "") if r.get("scenario") == "ambush" else "")
+        groups.setdefault(key, []).append(r)
+        if key[1]:
+            groups.setdefault((key[0], "all"), []).append(r)
+    rows = []
+    for key in sorted(groups):
+        rs = groups[key]
+        looks = [r["look"] for r in rs]
+        play = sum(l["play_s"] for l in looks) or 1e-6
+        under = sum(l["under_fire_s"] for l in looks)
+        blind = sum(l["blind_s"] for l in looks)
+        wall = sum(l["wall_s"] for l in looks)
+        own = sum(l.get("own_shown_s", 0.0) for l in looks)
+        inside = sum(l.get("inside_s", 0.0) for l in looks)
+        lat = [x for l in looks for x in l["latencies"]] + [float("inf")] * sum(l["never"] for l in looks)
+        minutes = sum(l["minutes"] for l in looks) or 1e-6
+        bearing = {}
+        for k in ("shooter", "centroid", "middle"):
+            vals = [l["mean_abs_bearing"][k] for l in looks if l["mean_abs_bearing"].get(k)]
+            bearing[k] = sum(vals) / len(vals) if vals else 0.0
+        rows.append({"scenario": key[0], "lane": key[1], "runs": len(rs),
+                     "staged": sum(1 for r in rs if r.get("staged", {}).get("ok", key[0] == "attack")),
+                     "play_s": play, "under_pct": 100 * under / play, "blind_pct": 100 * blind / play,
+                     "blind_of_fire_pct": 100 * blind / under if under else 0.0, "wall_pct": 100 * wall / play, "own_pct": 100 * own / play, "inside_s": inside,
+                     "episodes": len(lat), "never": sum(l["never"] for l in looks),
+                     "p50": quantile(lat, 0.5), "p90": quantile(lat, 0.9),
+                     "capped": mean_se([min(x, NEVER_S) for x in lat]),
+                     "reversals_per_min": sum(l["yaw_reversals"] for l in looks) / minutes, "bearing": bearing})
+    return rows
+
+
+def show_look(rows):
+    if not rows:
+        return
+    print("| scenario | lane | runs (staged ok) | play s | under fire % | blind % of play | blind % of fire | facing wall % "
+          "| own on screen % | off-screen shots | never | first shot -> on screen p50 / p90 s | mean (never = 20 s) +- se | yaw reversals/min "
+          "| mean abs bearing shooter / enemies / middle (deg) | camera inside a solid s |")
+    print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for r in rows:
+        b = r["bearing"]
+        print(f"| {r['scenario']} | {r['lane']} | {r['runs']} ({r['staged']}) | {r['play_s']:.0f} | {r['under_pct']:.1f} | "
+              f"{r['blind_pct']:.1f} | {r['blind_of_fire_pct']:.1f} | {r['wall_pct']:.1f} | {r['own_pct']:.1f} | {r['episodes']} | {r['never']} | "
+              f"{fmt_s(r['p50'])} / {fmt_s(r['p90'])} | {r['capped'][0]:.1f} +- {r['capped'][1]:.1f} | {r['reversals_per_min']:.2f} | "
+              f"{b['shooter']:.0f} / {b['centroid']:.0f} / {b['middle']:.0f} | {r['inside_s']:.2f} |")
+    print()
 
 
 def show(name, t):
@@ -90,6 +163,7 @@ def main():
             print(f"no camera_trace_*.json in {directory}")
             return 1
         show(directory, table(runs))
+        show_look(look_table(runs))
     return 0
 
 

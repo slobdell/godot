@@ -86,7 +86,22 @@ func lines() -> Array[String]:
 		result.append("COLUMN TOO LONG FOR THIS TILT: part of the selection is off screen (PgUp tilts up)")
 	if _copied_left > 0.0:
 		result.append("Copied: " + _copied)
+	if rig.danger_on and not rig.danger_last.is_empty():
+		result.append(CameraReadout.danger_line(rig.danger_last))
 	return result
+
+
+## Round 42 (camera K4.2): the danger camera's three pulls, each as weight @ yaw (degrees, as the yaw above), and where
+## the view is turning. Dev only (the readout is off for a player).
+static func danger_line(last: Dictionary) -> String:
+	var parts: Array[String] = []
+	var pulls: Dictionary = last.get("pulls", {})
+	for key: String in ["heading", "enemies", "war"]:
+		var pull: Vector3 = pulls.get(key, Vector3.ZERO)
+		parts.append("%s %.1f @ %d°" % [key, pull.length(), roundi(rad_to_deg(RtsCamera.yaw_facing(pull)))] if pull.length() > 0.01 else "%s -" % key)
+	var look: Variant = last.get("look")
+	var to := ("look %d°" % roundi(rad_to_deg(RtsCamera.yaw_facing(look as Vector3)))) if look is Vector3 else "look: hold (cancel)"
+	return "DANGER  %s   %s   strength %.2f" % ["   ".join(parts), to, float(last.get("strength", 0.0))]
 
 
 func _draw() -> void:

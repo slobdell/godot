@@ -86,3 +86,171 @@ The clip, when K4.4 has one.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-27: K4.1 DONE; K4.2 DONE OFF at 0e4d4f732, GREEN builder0 (`make check exited 0`, 26 passed, 2 NOT JUDGED:
+perf-judge refused on a busy box, scenario_perf unpinned); Bar K4 FILED (R42.5 + G5 amendment recorded on main); **Bar K4 v2 PASSED (9737-9772 at ef55e64b8, GREEN builder0 ALL JUDGED): the danger camera ships ON (`--camera-danger=off` =
+round 41); the ON commit's full check is queued. (Bar K4 on 9701-9736: FAIL, kept below.)**
+(D2 rear lane, G1 snaps; table below): the danger camera stays OFF by default. Next: fix the solid snap and the rear lane on dev
+seeds only, then a fresh series (proposed 9801-9836, Bar K4 text unchanged) on the fixed commit, asked of the orchestrator. K4.4 clips
+filmed (dev seed, laptop): `~/camera-clips-round42/retreat_7005.mp4`, `ambush_rear_7001.mp4` (to re-film on the bar commit).**
+Start: 18982e8df (= 21b20bdce's code, GREEN builder0 per HANDOFF; no baseline check).
+
+### For him (K4.4; the orchestrator relays, in player terms)
+**The clips** (laptop flightdeck, filmed at 0ba17b80a = 0e4d4f732's camera, LEFT round 41 / RIGHT danger camera, a dev seed, not
+a bar): `~/camera-clips-round42/retreat_7005.mp4` (his case: scouts take fire, then drive back to his own edge: left stares at the
+crowd, right keeps his IFV at the wall with the fight beyond it; still `evidence/retreat_7005_t30_0ba17b80a_FINAL.jpg`) and
+`~/camera-clips-round42/ambush_rear_7007.mp4` (a squad driving north is shot at from behind). The white cross is the autoplay's
+cursor. The matches diverge after the first seconds (one seed in a window is not deterministic): the bar is the evidence, the clip is
+for feel.
+**His smoke:** `make skirmish ARENA=terminus SKIRMISH_FLAGS="--camera-danger=on"` v plain `make skirmish ARENA=terminus` (round 41
+until the bar ships it ON): drive a squad north and get shot at from a side street or from behind; send scouts at a fight and then
+back to your own edge. Watch for: does the view turn to whoever is shooting at the selected squad, does a retreat look back at the
+fight, does it ever swing back and forth, does your own squad stay on screen. `--camera-readout=on` adds a DANGER line (the three
+pulls and where it looks).
+**Merge notes:** shared edit = 3 lines in `game/modes/skirmish_mode.gd` beside `rig.facing` (C42.3: `rig.danger =
+DangerFeed...reader()`), plus `game/ui/camera_readout.gd` (owned). New: `game/camera/danger_feed.gd`, `camera_look.gd` (+ .uid),
+`tests/test_camera_look.gd`, `tests/test_camera_danger.gd` (+ .uid). Dev-only flags: `--camera-scenario=ambush|retreat`,
+`--camera-lane=`, `--camera-ambush-m=`, `--camera-danger-lean=`, `--camera-solid-in=`.
+
+### Bar K4 (FILED before any number on 9701-9736; R42.5 folded in; guards never amended after their numbers)
+**Arms:** BASE `--camera-danger=off` (round 41) v ARM `--camera-danger=on`, BOTH on one commit (named with the result; the constants
+as committed), builder0 light lane, `make camera-trace` J=4, headless 1920x1080 @60, Terminus, CPU enemy, seeds 9701-9736 (36 an arm).
+**Workloads (each run on all 36 seeds, both arms):** AMBUSH = `CAMERA_SECONDS=45 CAMERA_FLAGS="--camera-scenario=ambush
+--camera-ambush-m=55"` (lane = seed % 3: 12 right, 12 left, 12 rear); RETREAT = `CAMERA_SECONDS=45 CAMERA_FLAGS="--camera-scenario=retreat"`;
+ATTACK (guards only) = round 41's autoplay, `CAMERA_SECONDS=150`. Read off `camera_report.py`.
+**Latency** = an off-screen shot's seconds until that shooter is first on screen; never = 20 s (R42.5); mean +- se over episodes;
+a set with no off-screen shot at all reads 0 (the best result: the camera faced the gun before it fired).
+**Deciding (ship ON = every line passes):**
+- D1 latency, AMBUSH + RETREAT pooled: ARM mean < BASE mean by >= 2 se of the difference (sqrt(se_A^2 + se_B^2)).
+- D2 read separately (R42.5: a pass carried by the flank lanes is not his fix): on the AMBUSH REAR lane alone AND on RETREAT alone,
+  ARM latency mean < BASE's AND ARM blind % of play <= BASE's.
+- D3 facing the wall: AMBUSH + RETREAT pooled ARM <= half BASE's; RETREAT alone ARM <= half BASE's.
+**Guards (what the rule could break):**
+- G1 Bar K3 v2 lines 1-3 at their levels, ARM, ATTACK workload: attack clicks still on the aimed unit >= 70 %; slip p95 <= 40 px;
+  jerk events <= 3.0/min all, no automatic source (danger included) > 1.5/min; automatic snaps 0 (snaps 0 on every workload).
+- G2 held for his aim <= 25 % of play (ATTACK).
+- G3 action share ARM >= BASE - 10 points (ATTACK).
+- G4 no swinging: yaw reversals/min ARM <= BASE + 1, on each workload (ATTACK, AMBUSH pooled, RETREAT).
+- G5 his own squad stays on screen (the orchestrator's ask: a turn toward a threat while he drives away could lose his squad): own
+  on screen % ARM >= BASE - 5 points, on each workload. **Amended before any 9701+ number (4fd517b83):** a unit behind an uncut
+  perimeter wall is not on screen (`CameraLook.wall_hides`): projection alone scored the first retreat clip 99.7 % while the wall
+  hid his scout.
+- G6 every run CAMERA_TRACE_DONE ok=true, no SCRIPT ERROR, every scenario run staged ok, both arms.
+
+### Bar K4 v2 result: PASS (9737-9772; camera ef55e64b8, tree 4165f4619 docs-only; GREEN builder0 `make check exited 0`, 28 targets all passed, ALL JUDGED; builder0 light J4; 36 runs an arm a workload; out `~/camera-bar-k4v2/4165f4619/`)
+| line | BASE (off) | ARM (on) | verdict |
+|---|---|---|---|
+| D1 latency, ambush+retreat pooled (never = 20 s) | 11.61 +- 0.88 (109 episodes) | 5.60 +- 0.86 (78) | PASS (4.9 se) |
+| D2 rear lane: latency / blind % of fire (blind % of play) | 14.03 +- 1.90 / 16.4 (6.5) | 4.77 +- 1.07 / 14.0 (6.4) | PASS |
+| D2 retreat: latency / blind % of fire (of play) | 13.94 +- 1.06 / 19.3 (8.9) | 9.06 +- 2.18 / 2.9 (1.3) | PASS |
+| D3 facing wall pooled / retreat | 26.4 / 27.8 % | 9.2 / 0.0 % | PASS |
+| G1 attack: on the unit / slip p95 / jerks / top automatic source / snaps | 330/394 83.8 % / 31.2 / 0.19 / 0.19 / 0 | 309/406 76.1 % / 33.5 / 0.84 / solid 0.84 / 0 (0 on every workload, "all" too) | PASS |
+| G2 held (attack) | 15.0 % | 15.9 % | PASS |
+| G3 action share (attack) | 40.8 % | 49.2 % | PASS |
+| G4 yaw reversals/min attack / ambush / retreat | 10.81 / 4.76 / 2.84 | 5.47 / 2.95 / 1.74 | PASS |
+| G5 own on screen attack / ambush / retreat | 96.8 / 98.7 / 96.2 | 95.9 / 97.2 / 94.7 | PASS |
+| G6 | 216 runs ok, 0 SCRIPT ERROR, 72/72 staged | | PASS |
+Watch items: ambush solid jerks 1.88/min ON v 0.07 (G1 judges ATTACK: 0.84); attack clicks on the unit 76.1 v 83.8 %.
+
+### Bar K4 v2 (FILED before any number on 9737-9772; R42.16 + R42.18; the LAST re-file: a fail ships the danger camera OFF with the retreat result for him)
+**Unchanged from Bar K4** (above) except D2's blind clause. Arms, workloads, latency, D1, D3, G1-G6 as filed; BOTH arms on one
+commit, the one whose full check greens; builder0 light lane, `make camera-trace` J=4; seeds **9737-9772** (36 an arm).
+- **D2 (R42.18)**, on the AMBUSH REAR lane alone AND on RETREAT alone: ARM latency mean < BASE's AND ARM blind as a share of the
+  time UNDER FIRE (`blind % of fire`) <= BASE's. Blind % of play stays a reported column beside it (not judged): the danger
+  camera finds more fights (dev rear lane under fire 55.6 v 44.7 % of play), and the action share (G3) already counts that.
+**What changed since Bar K4's commit (0e4d4f732), the rule the v2 series judges:**
+- (a) the building clearance (`solid`) moves under the glide cap: pitch at most 0.6 screens/s x FOV (21 deg/s), distance at most
+  0.6 x the boom per second (`RtsCamera.solid_caps`). Bar K4's three snaps were that spring closing a big step uncapped. It also
+  caps BASE's clearance (both arms run it).
+- (b) a gun outside the view breaks both swing guards: an enemy that fired at the commanded units within DANGER_RECENT_S (3 s) and
+  lies more than DANGER_VIEW_DEG (25) off the view cancels the 1.5 s hold, and the deadband drops from 20 deg to YAW_SETTLE_DEG (2).
+- (c) the danger frame keeps the known contacts ahead of the view (`danger_ahead`, inside the wall, no mirrors), and drops them,
+  framing his units alone, when they do not fit under the zoom cap.
+Weights unchanged. Tried and dropped: a 90 deg/s danger turn (201 danger snaps in the ambush, rear blind still 4.1 %).
+**Lines most at risk (dev, ef55e64b8, NEVER a bar; builder0 light; ambush 7001-7036, retreat/attack 7001-7012; OFF v ON):**
+- G5 rear lane own on screen 97.0 v 94.4 (the line is BASE - 5; G5 judges per workload, ambush pooled 98.2 v 97.5).
+- G1 snaps: no source snapped; one combined frame on seed 7016 moved 24.1 px (SNAP_PX 24; three capped moves added together).
+- D2 rear: latency 11.1 +- 2.4 v 5.5 +- 1.1 s; blind % of fire 8.4 v 8.4 (the line is ARM <= BASE: a tie).
+
+### Bar K4 result (9701-9736; camera 0e4d4f732, tip 204a28707 docs-only; GREEN builder0 `make check exited 0`, 26 passed, 2 NOT JUDGED perf; builder0 light J4; 36 runs an arm a workload; out `~/camera-bar-k4/204a28707/`)
+| line | BASE (off) | ARM (on) | verdict |
+|---|---|---|---|
+| D1 latency, ambush+retreat pooled (never = 20 s) | 12.29 +- 0.80 (125 episodes) | 5.63 +- 0.97 (60) | PASS (5.3 se) |
+| D2 rear lane latency / blind % of play | 6.5 +- 1.9 (3 never) / 0.8 | 6.6 +- 1.4 (7 never) / 3.2 | **FAIL** |
+| D2 retreat latency / blind % | 16.2 +- 0.8 (62 never) / 9.5 | 8.0 +- 2.7 (3 never) / 0.7 | PASS |
+| D3 facing wall pooled / retreat | 26.7 / 37.8 % | 7.0 / 0.0 % | PASS |
+| G1 attack: on the unit / slip p95 / jerks / top automatic source / snaps | 79.7 % / 34.7 / 0.33 / 0.27 / 0 | 82.7 % / 31.5 / 1.50 / solid 1.500 / **2** (+1 ambush) | **FAIL** (snaps: att 9721, 9731; amb 9732) |
+| G2 held (attack) | 15.2 % | 16.0 % | PASS |
+| G3 action share (attack) | 42.9 % | 47.5 % | PASS |
+| G4 reversals/min attack / ambush / retreat | 10.64 / 5.32 / 1.48 | 4.95 / 2.58 / 1.55 | PASS |
+| G5 own on screen attack / ambush / retreat | 97.0 / 99.5 / 97.6 | 96.3 / 96.4 / 94.6 | PASS |
+| G6 | 216 runs ok, 0 SCRIPT ERROR, 72/72 staged | | PASS |
+Causes: (1) rear: BASE's rear lane on these seeds was already short (6.5 s v 13.5 on dev); ARM fights more (33 off-screen
+episodes v 17) and its nevers are mostly a second shooter at a new bearing while the view holds on the first. (2) the solid
+(building clearance) source snaps when the danger view faces new ways among buildings (ambush solid jerks 2.31/min ARM v 0.18).
+
+### K4.2 dev reads, as committed (0e4d4f732's camera; dev seeds 7001-7012, NEVER a bar; builder0 light; headless 1920x1080 @60; Terminus; 12 runs a row; 45 s, attack 150 s)
+| workload | arm | blind % of play | facing wall % | own on screen % | off-screen shots (never) | latency mean, never=20 s | reversals/min | jerks/min (solid) |
+|---|---|---|---|---|---|---|---|---|
+| ambush 55 m | OFF | 2.8 | 16.0 | 97.1 | 7 (3) | 9.3 +- 3.8 | 5.18 | 0.22 |
+| ambush 55 m | ON | 2.0 | 10.6 | 97.8 | 22 (1) | 2.5 +- 0.9 | 2.09 | 1.83 (1.72) |
+| ambush rear | OFF / ON | 6.5 / 3.8 | 5.3 / 11.5 | 94.8 / 95.7 | 3 (2) / 18 (1) | 13.5 +- 6.5 / 2.9 +- 1.1 | 8.91 / 3.68 | |
+| retreat | OFF | 8.2 | 37.3 | 94.7 | 29 (17) | 16.3 +- 1.3 | 2.16 | 0 |
+| retreat | ON | 0.9 | 0.6 | 95.9 | 1 (0) | 8.6 | 1.36 | 0.22 |
+| attack | OFF | 2.2 | 42.4 | 97.3 | 15 (3) | 8.5 +- 2.2 | 11.69 | 0.21 |
+| attack | ON | 1.5 | 18.4 | 96.5 | 28 (6) | 5.8 +- 1.5 | 5.48 | 1.20 (1.20) |
+Attack guards OFF v ON: clicks on the aimed unit 122/148 82.4 % v 113/147 76.9 %; slip p95 34.6 v 29.6 px; snaps 0 v 0; held 15.1 v
+16.2 %; action share 35.9 v 50.2 %. ON has MORE off-screen shots in the ambush (22 v 7): more fights are found and fought (action
+share up, the shooters come on screen in ~1-3 s instead of never). The "solid" jerks (building clearance, gentle: dv p50 ~380 px/s)
+rose because the danger camera sits at his 49 m pose facing new ways among the buildings: 1.20/min on ATTACK v G1's 1.5 line.
+A softer ease-in (`--camera-solid-in=10`) removed them but doubled the seconds the camera sat inside a building (6.6 -> 12.2 s
+in 16 min), so SOLID_IN_OMEGA stays 22 (round 41's).
+**Three fixes in dev, each from a picture or a number (decisions):**
+1. `DangerFeed.reader()`: a Callable on an unheld RefCounted is freed at once (the first ON read matched OFF to the digit).
+2. At his edge the frame's mirrors and destination lean lay behind the view and outside the wall, so the cutaway found no wall and
+   the wall hid his scout (the first retreat clip, 76cb5053b; frames in `~/camera-clips-round42/evidence/`). Then mirrors kept
+   inside the wall left a frame the zoom cap could not fit (his units slid under the HUD, own on screen 55 %).
+3. So the danger camera frames HIS units only, centred, no lean (`DANGER_LEAN_M` 0): the yaw facing the danger already shows it.
+   Own on screen by lean: 60 m 86 %, 30 m 69 %, 0 m 96 % (retreat). The focus is kept 4 m inside the wall.
+
+### K4.1 census: where the round-41 camera looks (camera code = 4cfadc6ee with `--camera-danger` off = round 41; builder0 light lane; headless 1920x1080 @60; Terminus; CPU enemy; dev seeds 7001-7012, NEVER a bar; 45 s a run)
+Workloads (CameraPlaytest `--camera-scenario=`): **ambush** = group 1 ordered 110 m north; 5 s in, up to 3 units of one CPU squad
+are set down 40 m (or 55 m) off its right / left / rear (seed % 3; 4 seeds a lane), facing it, told to hold (they fire from there);
+the autoplay then attacks enemies it can see on screen (round 41's hand), else waits. **retreat** = his scout group drives north at
+a CPU squad held 70 m ahead, takes fire (<= 15 s), fights 4 s, then is ordered to his own (south) edge.
+"Under fire" = a known enemy's round passed within 6 m of a commanded unit in the last 3 s. "Blind" = under fire and no known enemy
+on screen (clickable: 60 px margin, above the HUD). "Facing the wall" = the arena's middle > 90 deg off the view, units >= 30 m from
+it. An off-screen shot = an episode; latency = until that shooter is first on screen ("never" = not by the run's end).
+
+| workload | runs | play s | under fire % | blind % of play (of fire) | facing wall % | off-screen shots | never | latency p50 / p90 s | yaw reversals/min |
+|---|---|---|---|---|---|---|---|---|---|
+| ambush 40 m, right | 4 | 178 | 36.3 | 0.5 (1.4) | 4.9 | 2 | 0 | 0.7 / 3.4 | 4.71 |
+| ambush 40 m, left | 4 | 182 | 28.5 | 0.7 (2.3) | 36.5 | 1 | 0 | 1.6 / 1.6 | 4.61 |
+| ambush 40 m, **rear** | 4 | 185 | 49.0 | **9.8 (19.9)** | 11.5 | 9 | **5** | **never / never** | 7.12 |
+| ambush 40 m, all | 12 | 546 | 38.0 | 3.7 (9.7) | 17.7 | 12 | 5 | 3.4 / never | 5.49 |
+| ambush 55 m, all | 12 | 544 | 37.8 | 2.8 (7.3) | 16.0 | 7 | 3 | 3.5 / never | 5.18 |
+| ambush 55 m, rear | 4 | 182 | 51.4 | 6.5 (12.7) | 5.3 | 3 | 2 | never / never | 8.91 |
+| **retreat** (his case) | 12 | 528 | 42.8 | 8.2 (19.1) | **37.3** | 29 | **17** | **never / never** | 2.16 |
+
+Read: (1) a FLANK ambush is mostly found already: the vision frame widens to the contacts his units see, and an attack order turns
+the heading (so the yaw) onto the target. (2) The **rear** is where it fails: the selection keeps its heading, the shooters stay
+behind the camera (5 of 9 never on screen). (3) His **retreat** is the clearest: the view faces the wall/stands 37 % of the run
+(~60 % of the time after the retreat order), and 17 of 29 off-screen shots never came on screen. (4) The round-41 yaw already
+reverses ~2-9 times a minute in a fight (attack orders re-aim the heading): that is BASE for the swing guard.
+Caveat: the autoplay attacks only what it sees, so it never turns the camera by hand; he would (`,` `.`). These numbers are the
+camera alone.
+
+
+### Plan (in order; reasons in one line)
+1. `DangerFeed` (`game/camera/danger_feed.gd`): one reader of the danger, used by BOTH the census and the rule (so the bar
+   measures what the rule sees). Known enemies of his team (seen now, or last seen within MEMORY_S), each with "fired at the
+   selection" and "hit the selection" recency, from `Match.weapon_fired` / `projectile_impact` (read-only signal hooks; a
+   shot "at" the selection = an enemy round whose line passes within IncomingFire.DANGER_RADIUS of a selected unit). The
+   arena's middle = the origin (arenas are point-symmetric, `Arena` checks it). Unseen shooters do not count (no cheating view).
+2. `CameraLook` (`game/camera/camera_look.gd`): the census per frame (bearings from the view's yaw to the nearest shooter, the
+   enemy centroid and the middle; shooter-on-screen by projecting it; first-shot-off-screen -> on-screen events; the shares).
+3. CameraPlaytest scenarios `--camera-scenario=ambush|retreat`: ambush = group 1 drives north, one CPU squad is placed on its
+   flank/rear (lane = seed % 3: right, left, rear) at ~45 m and told to hold (it fires from there); retreat = his scout squad
+   drives at a held enemy squad, takes fire, then is ordered back to his own edge. The autoplay's aim/attack loop is round 41's.
+4. `camera_report.py` look table; census on dev seeds 7001-7012 -> orchestrator. Then K4.2 (the rule), K4.3 (Bar K4), K4.4 clip.
+

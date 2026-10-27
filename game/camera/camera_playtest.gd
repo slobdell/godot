@@ -15,13 +15,38 @@ extends Node
 ## `--camera-hold` turns auto_frame and yaw follow off: the floor a click's miss has from the units' own motion.
 ## `--camera-clip=CAPTION` (for a filmed clip, `make camera-clip`): a recorded movie has no OS cursor, so it draws the
 ## autoplay's cursor, a ring where it clicks, and CAPTION in a corner.
+## Round 42 (K4.1), `--camera-scenario=`: his two camera cases, staged, with CameraLook measuring where the view looks.
+##   ambush   group 1 drives north; AMBUSH_AT_S in, one CPU squad (up to AMBUSH_UNITS) is set down AMBUSH_M off its flank
+##            or rear (the lane: `--camera-lane=right|left|rear`, else seed % 3) facing it, told to hold, and fires from
+##            there. The autoplay then plays round 41's hand: an enemy on screen is aimed at and attacked, else it waits.
+##   retreat  his scout squad (the group with the most scouts) drives north at a CPU squad held RETREAT_ENEMY_M ahead; once
+##            it is under fire (or RETREAT_CONTACT_S passes) and has fought RETREAT_FIGHT_S, it is ordered back to his own
+##            edge behind his lines (the lead: "the camera pointed out completely to the audience").
 
 const AIM_S := 0.5
 ## How long his hand takes to carry the cursor to what he aims at (a Fitts-law reach across a 1080p screen is ~0.25-0.4 s).
 const REACH_S := 0.3
 const SECONDS := 150.0
+## K4.1's staged cases (see the header).
+const AMBUSH_AT_S := 5.0
+const AMBUSH_M := 40.0
+const AMBUSH_UNITS := 3
+const AMBUSH_SPACING_M := 8.0
+const DRIVE_M := 110.0
+const RETREAT_ENEMY_M := 70.0
+const RETREAT_CONTACT_S := 15.0
+const RETREAT_FIGHT_S := 4.0
+const EDGE_M := 128.0
+## A staged unit is set down at least this far from any obstacle's footprint.
+const CLEAR_M := 4.0
+const LANES := ["right", "left", "rear"]
 
 var trace: CameraTrace
+var look: CameraLook
+var scenario := ""
+var lane := ""
+## How far off the selection the ambush is set down (`--camera-ambush-m=`, default AMBUSH_M).
+var ambush_m := AMBUSH_M
 var rig: RtsCamera
 var out_dir := ""
 var autoplay := false
@@ -42,6 +67,8 @@ var _caption := ""
 ## Seconds with an enemy the autoplay could aim at on screen (the camera finding the action; K3 v2 line 5's why).
 var _action_s := 0.0
 var _playing := false
+## What the staged scenario set up (who, where, when), for the report.
+var _staged := {}
 
 
 func _ready() -> void:
@@ -53,6 +80,19 @@ func _ready() -> void:
 			_seed = int(arg.trim_prefix("--seed="))
 		elif arg.begins_with("--camera-clip="):
 			_caption = arg.trim_prefix("--camera-clip=")
+		elif arg.begins_with("--camera-scenario="):
+			scenario = arg.trim_prefix("--camera-scenario=")
+		elif arg.begins_with("--camera-lane="):
+			lane = arg.trim_prefix("--camera-lane=")
+		elif arg.begins_with("--camera-ambush-m="):
+			ambush_m = float(arg.trim_prefix("--camera-ambush-m="))
+	if lane == "":
+		lane = LANES[posmod(_seed, LANES.size())]
+	if scenario != "" and not ["ambush", "retreat"].has(scenario):
+		push_error("CameraPlaytest: unknown --camera-scenario=%s" % scenario)  # a probe flag that fails must stop the run
+		print("CAMERA_TRACE_DONE ok=false reason=unknown_scenario")
+		get_tree().quit(1)
+		return
 	_rng.seed = hash(["camera-playtest", _seed])
 	trace.keep_frames = OS.get_cmdline_user_args().has("--camera-trace-frames")
 	if DisplayServer.get_name() == "headless":
@@ -121,6 +161,9 @@ func _run() -> void:
 		get_tree().quit(1)
 		return
 	controls.game_match.finished.connect(func(_result: Dictionary) -> void: _ended = true)
+	if look != null:
+		look.feed = DangerFeed.new().attach(controls.game_match, controls.team, controls.commanded_units, controls.can_see,
+				controls.selection_facing)
 	if not autoplay:
 		return
 	rig.edge_pan = false
@@ -131,7 +174,11 @@ func _run() -> void:
 	await _wait(1.0)
 	controls.set_paused(false, "")
 	_playing = true
-	while _clock < _seconds and not _ended:
+	if scenario == "ambush":
+		await _ambush()
+	elif scenario == "retreat":
+		await _retreat()
+	while scenario == "" and _clock < _seconds and not _ended:
 		await _select()
 		await _wait(_rng.randf_range(0.3, 0.8))
 		if not await _attack():
@@ -154,7 +201,10 @@ func _finish() -> void:
 			"p95": CameraTrace.quantile(slips, 0.95), "max": slips.back() if not slips.is_empty() else 0.0,
 			"action_s": snappedf(_action_s, 0.01)}
 	var report := {"seed": _seed, "args": " ".join(OS.get_cmdline_user_args()), "summary": summary, "slip": slip,
-			"clicks": clicks, "events": trace.events}
+			"clicks": clicks, "events": trace.events, "scenario": scenario, "lane": lane, "staged": _staged}
+	if look != null:
+		report["look"] = look.summary()
+		report["episodes"] = look.episodes
 	if out_dir != "":
 		DirAccess.make_dir_recursive_absolute(out_dir)
 		var file := FileAccess.open(out_dir.path_join("camera_trace_%d.json" % _seed), FileAccess.WRITE)
@@ -165,6 +215,11 @@ func _finish() -> void:
 			for row: Dictionary in trace.frames:
 				rows.store_line(JSON.stringify(row))
 			rows.close()
+			if look != null:
+				var looks := FileAccess.open(out_dir.path_join("camera_look_%d.jsonl" % _seed), FileAccess.WRITE)
+				for row: Dictionary in look.frames:
+					looks.store_line(JSON.stringify(row))
+				looks.close()
 	var by: Dictionary = summary["by_source"]
 	for source: String in by:
 		var row: Dictionary = by[source]
@@ -175,6 +230,11 @@ func _finish() -> void:
 				row["px_per_min"]])
 	print("CAMERA_SLIP seed=%d clicks=%d attacks=%d hit=%d p50=%.1f p95=%.1f max=%.1f action_s=%.1f" % [_seed, slip["clicks"],
 			slip["attacks"], slip["hit"], slip["p50"], slip["p95"], slip["max"], _action_s])
+	if look != null:
+		var l: Dictionary = report["look"]
+		print("CAMERA_LOOK seed=%d scenario=%s lane=%s staged=%s play_s=%.1f under_fire_s=%.1f blind_s=%.1f wall_s=%.1f episodes=%d never=%d latencies=%s reversals=%d" % [
+				_seed, scenario if scenario != "" else "attack", lane, _staged.get("ok", false), l["play_s"], l["under_fire_s"],
+				l["blind_s"], l["wall_s"], l["episodes"], l["never"], JSON.stringify(l["latencies"]), l["yaw_reversals"]])
 	print("CAMERA_TRACE_DONE ok=true seed=%d seconds=%.1f frames=%d" % [_seed, summary["seconds"], summary["frames"]])
 
 
@@ -313,3 +373,158 @@ func _key(keycode: Key, ctrl := false) -> void:
 		event.ctrl_pressed = ctrl
 		get_viewport().push_input(event)
 	await get_tree().process_frame
+
+
+# ---- Round 42 (K4.1): his two camera cases, staged ---------------------------------------------------------------
+
+## Group 1 drives north; a CPU squad is set down on its flank or rear and opens fire. Then round 41's hand.
+func _ambush() -> void:
+	await _key(KEY_0 + _first_group() as Key)
+	var from: Variant = _centre(controls.selection.units)
+	if from == null:
+		_staged = {"ok": false, "why": "group 1 has no living units"}
+		return
+	var north: Vector3 = Match.team_frame(controls.team)["forward"]
+	controls.order_selection("move", {"to": _pair(ElementPlan.clamp_to_arena((from as Vector3) + north * DRIVE_M))})
+	await _wait(AMBUSH_AT_S)
+	from = _centre(controls.selection.units)
+	if from == null:
+		_staged = {"ok": false, "why": "group 1 died before the ambush"}
+		return
+	var heading: Variant = controls.selection_facing()
+	var ahead: Vector3 = heading if heading is Vector3 else north
+	var side: Vector3 = {"right": ahead.cross(Vector3.UP), "left": -ahead.cross(Vector3.UP), "rear": -ahead}[lane]
+	_staged = _stage_enemy(from as Vector3, side.normalized(), ambush_m)
+	_staged["lane"] = lane
+	_staged["at_s"] = snappedf(_clock, 0.01)
+	while _clock < _seconds and not _ended:
+		if not await _attack():
+			await _wait(0.5)
+		await _wait(_rng.randf_range(1.0, 3.0))
+
+
+## His scouts drive at a held CPU squad, take fire, and are ordered back to his own edge.
+func _retreat() -> void:
+	var group := _scout_group()
+	await _key(KEY_0 + group as Key)
+	var from: Variant = _centre(controls.selection.units)
+	if from == null:
+		_staged = {"ok": false, "why": "no scout group"}
+		return
+	var north: Vector3 = Match.team_frame(controls.team)["forward"]
+	_staged = _stage_enemy(from as Vector3, north, RETREAT_ENEMY_M)
+	_staged["group"] = group
+	controls.order_selection("move", {"to": _pair(ElementPlan.clamp_to_arena((from as Vector3) + north * DRIVE_M))})
+	var start := _clock
+	while _clock - start < RETREAT_CONTACT_S and not _ended and not _under_fire():
+		await _wait(0.2)
+	_staged["contact_s"] = snappedf(_clock - start, 0.01)
+	await _wait(RETREAT_FIGHT_S)
+	from = _centre(controls.selection.units)
+	if from == null or _ended:
+		_staged["why"] = "the scouts died before the retreat"
+		return
+	var edge := ElementPlan.clamp_to_arena(Vector3((from as Vector3).x, 0.0, 0.0) - north * EDGE_M)
+	controls.order_selection("move", {"to": _pair(edge)})
+	_staged["retreat_s"] = snappedf(_clock, 0.01)
+	await _wait(_seconds - _clock)
+
+
+func _under_fire() -> bool:
+	if look == null or look.feed == null:
+		return false
+	for enemy: Dictionary in look.feed.read()["enemies"]:
+		if float(enemy["fired_s"]) <= CameraLook.FIRING_S:
+			return true
+	return false
+
+
+## Up to AMBUSH_UNITS of one CPU squad set down `metres` from `from` along `direction` (in a line across it, each on
+## clear ground), facing `from`, out of their element and told to hold (they fire at what comes in range).
+func _stage_enemy(from: Vector3, direction: Vector3, metres: float) -> Dictionary:
+	var enemy_team := Match.Team.RUST if controls.team == Match.Team.GREEN else Match.Team.GREEN
+	var squad: Array = []
+	for candidate in controls.game_match.team_squads(enemy_team):
+		var alive: Array = []
+		for unit_name: String in candidate.roster:
+			var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if tank != null and tank.is_alive():
+				alive.append(tank)
+		if alive.size() >= 2:
+			squad = alive.slice(0, AMBUSH_UNITS)
+			break
+	if squad.is_empty():
+		return {"ok": false, "why": "no CPU squad with two living units"}
+	var across := direction.cross(Vector3.UP).normalized()
+	var names: Array = []
+	var spots: Array = []
+	for i in squad.size():
+		var tank: Tank = squad[i]
+		var offset := (float(i) - float(squad.size() - 1) * 0.5) * AMBUSH_SPACING_M
+		var at := CameraPlaytest.clear_spot(ElementPlan.clamp_to_arena(from + direction * metres + across * offset), from)
+		var owner: Element = controls.elements.of(String(tank.name)) if controls.elements != null else null
+		if owner != null:
+			owner.remove(String(tank.name))
+		tank.place(Vector3(at.x, tank.global_position.y, at.z), RtsCamera.yaw_facing(from - at))
+		names.append(String(tank.name))
+		spots.append([snappedf(at.x, 0.1), snappedf(at.z, 0.1)])
+	var error := controls.orders.issue({"units": names, "verb": "hold", "source": "player"}, enemy_team)
+	return {"ok": error == "", "why": error, "units": names, "spots": spots}
+
+
+## The nearest point to `point` (searching rings toward `toward`, then around) that is CLEAR_M from every obstacle.
+static func clear_spot(point: Vector3, toward: Vector3) -> Vector3:
+	var data := RtsCamera.seen()
+	if CameraPlaytest.clearance(point, data) >= CLEAR_M:
+		return point
+	for ring in range(1, 9):
+		for k in 12:
+			var probe := ElementPlan.clamp_to_arena(point + Vector3.FORWARD.rotated(Vector3.UP, TAU * k / 12.0) * 3.0 * ring)
+			if CameraPlaytest.clearance(probe, data) >= CLEAR_M:
+				return probe
+	return point.lerp(toward, 0.3)
+
+
+static func clearance(point: Vector3, data: Dictionary) -> float:
+	var nearest := INF
+	for obstacle: Dictionary in data.get("obstacles", []):
+		var centre := Vector2(float(obstacle["position"][0]), float(obstacle["position"][1]))
+		nearest = minf(nearest, ArenaKit.distance_to_footprint(Vector2(point.x, point.z), centre, Arena.obstacle_size(obstacle),
+				float(obstacle.get("rotation_deg", 0.0))))
+	return nearest
+
+
+func _first_group() -> int:
+	var numbers: Array = controls.groups.numbers()
+	return int(numbers[0]) if not numbers.is_empty() else 1
+
+
+## The group with the most scouts (his "group of scouts"), else group 1.
+func _scout_group() -> int:
+	var best := _first_group()
+	var most := 0
+	for number: int in controls.groups.numbers():
+		var scouts := 0
+		for unit_name: String in controls.groups.members(number):
+			var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+			if tank != null and tank.is_alive() and tank.unit_id.contains("scout"):
+				scouts += 1
+		if scouts > most:
+			most = scouts
+			best = number
+	return best
+
+
+func _centre(names: Array) -> Variant:
+	var sum := Vector3.ZERO
+	var count := 0
+	for unit_name: String in names:
+		var tank := controls.game_match.tanks.get_node_or_null(NodePath(unit_name)) as Tank
+		if tank != null and tank.is_alive():
+			sum += Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+			count += 1
+	return sum / float(count) if count > 0 else null
+
+
+static func _pair(point: Vector3) -> Array:
+	return [snappedf(point.x, 0.01), snappedf(point.z, 0.01)]
