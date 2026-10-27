@@ -1821,14 +1821,13 @@ func _update_vision_tracking() -> void:
 			points = RtsCamera.danger_frame(points, own_n)
 			if destination is Vector3 and RtsCamera.behind_view(yaw, RtsCamera._middle(points, own_n), destination as Vector3):
 				destination = null
-	var goal: Array
-	if destination is Vector3:
-		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch,
-				frame_bottom())
-	else:
-		goal = RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch,
-				float(_vision_state.get("pad_m", 0.0)))
-	zoom = minf(minf(float(goal[1]), vision_zoom), RtsCamera.level_for(auto_frame_max_m))
+	var goal := _vision_goal(points, destination)
+	var cap := minf(vision_zoom, RtsCamera.level_for(auto_frame_max_m))
+	if danger_on and float(goal[1]) > cap and points.size() > int(_vision_state.get("own", points.size())):
+		# The contacts ahead do not fit under the zoom cap with his units: frame his units alone (G5: they stay on screen).
+		points = points.slice(0, int(_vision_state.get("own", points.size())))
+		goal = _vision_goal(points, destination)
+	zoom = minf(float(goal[1]), cap)
 	focus = look_clamp(RtsCamera.lift(goal[0], heading_of(yaw), zoom, VISION_FRAME_LIFT))
 	if danger_on:
 		focus = RtsCamera.inside_wall(focus, DANGER_WALL_MARGIN_M)
@@ -1839,6 +1838,14 @@ func _update_vision_tracking() -> void:
 	# Only our own vehicles (the first `own` points; the rest are contacts and their mirrors, framed only if they fit).
 	var own := points.slice(0, int(_vision_state.get("own", points.size())))
 	frame_short = RtsCamera.cuts_off(own, focus, yaw, zoom, _aspect(), pitch)
+
+
+func _vision_goal(points: Array, destination: Variant) -> Array:
+	if destination is Vector3:
+		return RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch,
+				frame_bottom())
+	return RtsCamera.frame_pose(points, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch,
+			float(_vision_state.get("pad_m", 0.0)))
 
 
 ## K2: the frame's goal on a leash. The goal the frame asks for moves with every wobble of the squad and every contact
