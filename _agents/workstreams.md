@@ -387,6 +387,14 @@ _(filed bars go here, before their numbers)_
   finding more fights, which G3 already counts as good; **D2 (rear lane and retreat, each alone) = latency mean ARM < BASE AND blind as
   a share of time under fire ARM <= BASE; blind % of play REPORTED beside it.** Every other line unchanged; 9737-9772; the last
   re-file; a fail ships OFF with the retreat result for him. Option 3 (retreat-only scoping) is a design change and is not taken.
+- **R42.19 (2026-10-26 ~21:55) Bar E2's 9649-9672 read: the deciding line is NOT EXERCISED (0 of 24 seeds with a blocked SUPPRESS
+  stand); extending to 9673-9696 as filed; guards held.** builder0 light, native off, dcf83c66a (= eb4024fe3's code), n 24 paired, 60 s:
+  both arms byte-identical on every seed (stuck 4.6 = 4.6, stuck_suppress 0.0 = 0.0, first hit 9.48 = 9.48, deaths 30 = 30, lines a
+  tick 2.96 = 2.96); the ON recipe verified. Per the filing, pooled to n 48 with 9673-9696 (started 21:53); fewer than 3 exercised seeds
+  = INCONCLUSIVE, no ship. Agreed: the builder2 guards are not run before the line is exercised (P(>= 3 of 24) ~ 0.25 at E1's rate);
+  builder2 stays balance's for Bar B7. E2's suite-ON check at dcf83c66a: 3304 passed / 1 failed (test_announcer_cost's wall-clock line
+  on a loaded box, unrelated to the flag), perf-judge refused 3x (busy), 6 sim-baseline maps move under the stand's line: a quiet re-run
+  of the one test and perf-judge only if the bar comes to a ship.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
