@@ -121,7 +121,10 @@ worktree: `~/overnight-manoeuvre/r42/`.
   by R42.8 **Q5 is written up OFF this round, v3 the best variant** (code on `wip/manoeuvre-q5v3` 4c8db69b6, a side ref; not on the
   stream branch). What remains ON: a column whose head stands at a street mouth of the Crossing still stands a second longer per
   friend before it grinds; the never-in cells are the Crossing's (3 of 4 seeds never-in in BOTH arms) plus one locks / sumps run.
-- Rulings this round so far: R42.7 (the arrival guard; one check gates both bars; v4 the last re-file); R42.8 (above).
+- **R42.11 (~17:10): Q5 OFF this round, v3 the best variant, no Bar Q5 v3, no builder2.** For the next round's framing: the
+  never-in squads are columns behind a STALLED HEAD at the Crossing's street mouths, so the next traffic rule must clear the head
+  (why it stands: the deploy / seat / mouth it is waiting on), not only ease the follower behind it.
+- Rulings this round so far: R42.7 (the arrival guard; one check gates both bars; v4 the last re-file); R42.8 (above); R42.11 (above).
 
 ### Plan (ordered; the brief's backlog as built)
 
