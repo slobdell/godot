@@ -267,6 +267,14 @@ _(filed bars go here, before their numbers)_
   commit, lines unchanged, no number read; the suite-ON check re-runs on it (C31.1) before the series. Perf-judge under ON: PASS.
   Built 4658fa514 (`ElementPlan.flank_side`, pure; two lines under `if ATTACK_SHOT`; 4 tests; laptop `ATTACK_SHOT=on make
   tactics-drills` 0 failures, far_ambush widest 75.0 m v OFF 73.3): **Bar E1's frozen tree = 4658fa514**; its suite-ON check queued.
+- **R42.11 (2026-10-26 ~17:15) Q5 written up OFF; v3 the best variant; no Bar Q5 v3.** Manoeuvre's v3 lab (wip/manoeuvre-q5v3 4c8db69b6
+  = the frozen tree + v3: ease only against a friend whose drive is under way, a friend standing still under the ease for a second is
+  pressed at once; the same 16 dev cells 7009-7012 x 4 maps, GDScript, builder0 light): D1 contacts -27 % (-4.5 se), D2 shoved ticks
+  -31 % (-2.8 se), G5 all-in 74.8 -> 78.0 s (line 78.5) pass, **G6 never-in runs 7 -> 8 (line 7) FAIL** (squads 16 -> 19); jam-seconds
+  +17 % (-15 % with the easing removed). v3 beats v2 on every guard and keeps the deciding half, but it leaves one more run with a squad
+  never in. Ruled as manoeuvre proposed: OFF this round, written up with the evidence (`references/round42/manoeuvre/q5lab4-v3-
+  builder0-4c8db69b6/`), no builder2 series; the frame for a later round: the never-in squads are columns behind a stalled head at the
+  Crossing's street mouths, and a rule that eases must also clear the head (not a speed rule).
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
