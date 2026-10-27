@@ -168,6 +168,11 @@ builder2 J24, counter OFF, dev seeds 10201-10220 x 5 arenas x mono on Green and 
 - Gangs: v the roll **79 %** (se 5); v `gang_hail` pending (the paused leg).
 - Law (v law_barrage 96 %, from B8 base) and Syndicate (v syndicate_barrage 84 %): v the roll pending.
 
+**R42.15 (orchestrator, ~19:10):** Bar Q6 FAILED, so CP42.1 is not reached and the bridge gate for shipping fm_c5r2_lawt5 is not met
+(not loosened). RULED: run Bar B2s v2 anyway, overnight on builder2 after the firing screen, B9_MAIN = current main (hash named by
+the orchestrator when the screen ends), so his stat-change question gets a read verdict; the change does not ship this round unless
+the drill's rust s2 t15 crew is fixed; the verdict carries.
+
 **B9 ready (rebuild recipe, dry-run 2026-10-26 ~17:45):** `B9_MAIN=<CP42.1 hash> ~/balance-runs/b2s-v2-rebuild.sh` = a worktree
 `../godot-balance-arm` on branch `balance/b2s-v2-arm-r42` = MAIN + cherry-pick 8e257f3bc (fm_c5r2_lawt5, 55 values) + d385cd308
 (= ad956031b's re-pins, identical diff), then builder0 `make remote T=check` + sim-baseline-record (expected red ONLY on
