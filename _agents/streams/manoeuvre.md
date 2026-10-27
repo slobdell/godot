@@ -79,18 +79,24 @@ JUDGED; no baseline check re-run, per the contract). Orchestrator session: `godo
 (`wip/manoeuvre-q5-r42` = main + native's 75495744b + a45c0b953 + fc8f3697d: Q5 dev until CP42.0 lands). Evidence outside every
 worktree: `~/overnight-manoeuvre/r42/`.
 
-### REPORT (round 42, in progress; Bar Q6's verdict fills in when the series ends)
+### REPORT (round 42, final, 2026-10-26 19:45 PDT)
 
 **Green hash: 7569747ce** (builder0, `make check exited 0`, 3300/0, 27 passed + 1 NOT JUDGED load refusal, sim-baseline unmoved;
-docs commits on top). Deliverables: Bar Q5 filed and withdrawn unread (R42.8 / R42.11: Q5 OFF, v3 best); Bar Q6 filed (R42.7) and its
-series running; the `_wait` timer artefact fixed (stretch 1); the long-episode lab read (stretch 3); the jam probe's judge and
-counters for both rules.
+docs commits on top; no game/ or tests/ commit since). Deliverables: Bar Q5 filed and withdrawn unread (R42.8 / R42.11: Q5 OFF, v3
+best); **Bar Q6 filed (R42.7), run on 9825-9848 and FAILED** (the table under *Bar Q6: VERDICT FAIL*; deckwait OFF, CP42.1 not
+reached); the `_wait` timer artefact fixed (stretch 1); the long-episode lab read (stretch 3); the jam probe's judge and counters for
+both rules. Both rules ship on the branch OFF behind `--traffic-on=<name>` with their tests; nothing changes for the player at
+main's defaults.
 1. **Q5.1 Bar Q5:** filed before any number (361fb9d24; the judge `tests/manoeuvre/q5_judge.py`, the eased-ticks column); the dev
    read on today's main (q5lab3) failed his two strict guards, the bar was withdrawn unread (R42.8), v3 (R42.8's design) built and
    labbed on the side tree (q5lab4: G6 7 -> 8, one run) and Q5 closed OFF (R42.11). 9801-9824 unseen. Code on the branch: v2 OFF
    (`--traffic-on=nopush`, the cherry-picks on CP42.0's rows); v3 on `wip/manoeuvre-q5v3` 4c8db69b6.
 2. **Q6 the bridge rim crew:** `--traffic-on=deckwait` v4 built OFF (speed-only, C42.4), four variants labbed on the drill's seeds
-   1-3 (dev reads 1-13); Bar Q6 filed with R42.7's arrival guard; verdict below when in. A pass = CP42.1 (native's twin, then ON).
+   1-3 (dev reads 1-13); Bar Q6 filed with R42.7's arrival guard and run: **FAIL** on both trees' pooled rim line (main 31.1 -> 35.7
+   s, overrides 34.3 -> 41.1 s over 72 runs), the overrides' worst crew (6.1 s), main's arrival guard (+1.11 s, line +1.00) and the
+   fights' kill share (0.040, line 0.03); the drill 18/18, every crew crosses, the group guards G5-G7 and G1-G3 pass. The fresh
+   seeds have no rim failure to fix OFF (0.4-0.5 s a run), so a cap at every mouth only costs. Next round's shape: fire only on the
+   carried-past case (a follower at speed behind a leader turning in the mouth), not on every follower near a deck.
 3. **Stretch:** the `_wait` timer artefact fixed with a test (drive ends a wait on any tick that never weighs it); the long shoved
    episodes with Q5 ON read (columns behind a stalled head at the Crossing's street mouths; R42.11's framing for the next round).
 
@@ -102,14 +108,16 @@ Q2's wait members carry deckwait's state (the same meaning, no new exec field); 
 hold; Q5 v3 reads the stand as still under the ease for a second (a yielding head reads as under way; `stalled_ticks` reads a
 crawling friend as stood).
 
-**Questions for the lead:** none. **Requests to other streams:** native's twin of deckwait v4 only on a Bar Q6 pass (native's plan
-is ready: wait_end, deckwait cap/refuse, lane_friend, in_a_deck_mouth over Arena terrain, the wish/desired split, DECKWAIT_* in
-DriveConfig; no new exec fields).
+**Questions for the lead:** none. **Requests to other streams:** none now (Bar Q6 failed, so native's twin of deckwait is not asked
+for; native's plan stays on file for a next version: wait_end, deckwait cap/refuse, lane_friend, in_a_deck_mouth over Arena terrain,
+the wish/desired split, DECKWAIT_* in DriveConfig; no new exec fields). Balance's Bar B2s v2 stays on today's bridge.
 
 **Known issues:** ON for `deckwait` / `nopush` / `wait` / `holdlane` forces `native_drive` off until twinned; `deckwait` and `wait`
 are exclusive (`wait` wins); `_in_a_deck_mouth` reads `Arena.active` (a match without an arena has no mouths); Q5 v2's eased crews
 read as "slowed by a friend" in jam-seconds (the eased-ticks column reports it); the trace flags `--deckwait-trace` (DECKWAIT lines)
-and probe_jam's eased_s are measurement only.
+and probe_jam's eased_s are measurement only; `q3_judge.py`'s reported counters line reads Q2's `waits` / `wait_queued` keys, so
+under `--arm=deckwait` it prints zeros (deckwait_* are on JAM_RUN; a one-line fix, left for after the handover so the green hash
+stands).
 
 **Playtest (laptop, every switch OFF by default):** `make skirmish ARENA=locks SKIRMISH_FLAGS="--traffic-on=deckwait"` v without:
 select a wheeled squad on one bank, send it over the swing bridge; does the third crew slow behind the one turning onto the deck
@@ -126,7 +134,10 @@ touched. Side worktrees `../godot-manoeuvre-bt` (`wip/manoeuvre-bt-r42`) and `..
 the branch as a ref) and their builder0 light folders `~/tank_squad/godot-manoeuvre-bt-light`, `godot-manoeuvre-q5-light` can go at
 the close. Evidence under `references/round42/manoeuvre/` (q6trace1, q5lab3, q5lab4; barq6 at the verdict).
 
-### Where it stands (2026-10-26 ~17:40 PDT): the gate is green; Bar Q6's series runs; Q5 closed OFF
+### Where it stands (2026-10-26 19:45 PDT): the gate is green on 7569747ce; Bar Q6 FAILED (deckwait OFF); Q5 closed OFF; done
+
+- **Bar Q6's series ended 19:27 PDT, verdict FAIL** (the table above); evidence `references/round42/manoeuvre/barq6-builder0-7569747ce/`.
+  No re-run on 9825-9848; no code change after the numbers. The branch's hand-over hash stays **7569747ce**.
 
 - **Frozen tree 7569747ce GREEN on builder0** (code ac64ce939 = main bf99631b5 with CP42.0 + Q5 a45c0b953 / fc8f3697d cherry-picked +
   deckwait v4 + this stream's judges/instruments): `make remote T=check` 16:23-17:30: `>> remote: make check exited 0 (build/ copied
@@ -295,6 +306,45 @@ resolved); `make test FILTER=traffic NATIVE=off` laptop 127/0.
   the group-order guards on builder2 if free, else builder0 light; the fights on builder0 light. `~/overnight-manoeuvre/r42/barq6.sh`
   runs it; evidence `~/overnight-manoeuvre/r42/barq6/`, filed under `references/round42/manoeuvre/barq6-<machine>-<hash>/`. A pass =
   CP42.1 (the orchestrator asks native for the twin, merges it alone, tells balance). A fail: OFF, no re-run on these seeds.
+
+### Bar Q6: VERDICT FAIL (series 17:38-19:27 PDT, builder0 light lanes, frozen tree 7569747ce / overrides d9382eed7, GDScript drive)
+
+Evidence `references/round42/manoeuvre/barq6-builder0-7569747ce/` (the judges, the bridge rows, `rim-by-run.txt`; the raw group
+and fight logs stay in `~/overnight-manoeuvre/r42/barq6/`). The bar as filed; no line amended; no re-run on 9825-9848.
+
+| line | tree | OFF -> ON | se / line | verdict |
+|---|---|---|---|---|
+| Deciding 1: drill 18/18 under the overrides, ON (seeds 1-3) | overrides | 18 of 18 pass | the hard line | PASS |
+| Deciding 2a: pooled rim-seconds, 72 runs an arm | main | 31.1 -> 35.7 s (+15 %); per-run mean +0.06 s | se 0.05 (+1.2 se); line ON <= OFF | **FAIL** |
+| | overrides | 34.3 -> 41.1 s (+20 %); per-run mean +0.09 s | se 0.10 (+1.0 se); line ON <= OFF | **FAIL** |
+| Deciding 2b: every surviving crew crosses ON | main / overrides | 72/72 and 72/72 runs | | PASS |
+| Deciding 2c: worst crew's rim ON | main | 2.5 s | line <= 3 s | PASS |
+| | overrides | 6.1 s (green s9836 t15, Green_S_2; rust s9829 t1 Rust_S_4 3.1 s) | line <= 3 s | **FAIL** |
+| Arrival guard (R42.7): paired per-run arrival | main | 35.8 -> 36.9 s; +1.11 s a run | se 0.61 (+1.8 se); line <= +1.00 | **FAIL** |
+| | overrides | 32.8 -> 33.7 s; +0.93 s a run | se 0.64 (+1.5 se); line <= +1.05 | PASS |
+| G5 all-in mean (48 paired group runs) | main | 72.3 -> 74.1 s | se 1.39; line <= 74.6 | PASS |
+| G6 never-in squads a run | main | 1.04 -> 1.02 (runs never-in 22 -> 22) | se 0.109; line <= 1.22 | PASS |
+| G7 friendly contact ticks (group) | main | 684,184 -> 687,995 | line <= 718,393 | PASS |
+| G1 deaths in give-ways (18 paired fights) | main | 39 -> 51 | line +19.7 | PASS |
+| G2 stuck deaths | main | 166 -> 162 | line +23.4 | PASS |
+| G3 friendly contact ticks (fights) | main | 465,930 -> 472,207 | line <= 512,523 | PASS |
+| G4 kill share within 0.03, deaths within 5 % | main | Green 0.49 -> 0.53 (worst move 0.040); deaths 805 -> 807 | line 0.03 / +-40 | **FAIL** (share) |
+
+**Reported:** deck-jam seconds main 49.2 -> 61.2, overrides 51.1 -> 75.0; group jam-seconds 37,716 -> 39,107 (+3.7 %); the rule's
+counters over the 12 ON group runs a map (`q3_judge.py`'s counters line printed Q2's `waits` keys, a reporting slip, so from
+JAM_RUN): locks 1,179 waits / 33,179 queued crew-ticks / 63 time-outs, crossing 2,158 / 46,796 / 44, sumps 5, terminus 0;
+`follow_judge.py`'s own D line (moving-stuck seconds, not a Bar Q6 line) 254.7 -> 358.5 s (+41 %, +1.1 se), its longest ON
+episode locks s9839 Rust_Battery2_3 62.0 s.
+
+**What the fresh seeds say (the read, after the numbers):** the failure the rule was built on does not occur on 9825-9836 OFF: the
+overrides tree passes 72/72 OFF (R40.21's 17/18 was seeds 1-3's), OFF rim a run is 0.43 s (main) / 0.48 s (overrides) and the
+worst OFF crew 2.6 s / 2.2 s. With nothing to fix, the rule's cost shows: 42-44 of 72 runs flat, rim up in 21 (main) / 18
+(overrides) runs against down in 9 / 10, the up-runs a follower slowed at the mouth that then rode the rim (green s9836 t15 under
+the overrides 0.7 -> 6.1 s; main's +1.5 s runs at s9830 and s9834). The dev win on seeds 1-3 (14.2 -> 8.6 s) was one rescued crew
+(Rust_S_3's 5.1 s) outweighing this cost; across 12 fresh seeds the cost outweighs. A speed cap at every mouth is the wrong
+trigger: the next version must fire only on the carried-past case (a follower arriving at speed while its leader turns in the
+mouth, ORCA's steer east of the deck), and leave an orderly column alone. **`deckwait` stays OFF** (DEFAULT_OFF, the code and its
+7 tests on the branch); CP42.1 not reached; native's twin not requested; balance's Bar B2s v2 stays on today's bridge.
 
 ### Bar Q5: FILED 2026-10-26 ~15:20 PDT, BEFORE any number on 9801-9824 (R41.10's frame; the brief's lines)
 

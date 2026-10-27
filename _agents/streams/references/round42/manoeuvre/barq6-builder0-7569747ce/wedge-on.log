@@ -1,0 +1,64 @@
+>> remote: syncing godot-manoeuvre to slobdell@builder0:~/tank_squad/godot-manoeuvre-light
+>> remote: make native manoeuvre-wedge-trace WEDGE_AT=locks,terminus,sumps WEDGE_RANGE=9837-9842 WEDGE_JOBS=4 WEDGE_DIR=build/barq6-wedge-on WEDGE_FLAGS=--traffic-on=deckwait --brains-off=native_drive TANK_SQUAD_SLOT_TIMEOUT=14400 WEB_PORT=8580 NET_PORT=9600 SMOKE_PORT=8581 SMOKE_NET_PORT=9701 AGENT_PORT=9285 on slobdell@builder0
+>> native: src-sync: 0 changed
+>> native: ON: native/bin/libtank_native.linux.x86_64.so (4.2M, builder0, -O2 -ffp-contract=off -fno-fast-math, trig cr) and native/bin/tank_squad.gdextension
+.tools/godot-4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --import
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+>> manoeuvre-wedge-trace on builder0 | commit a882a56d3 | arenas 'locks,terminus,sumps' seeds '9837-9842' | flags '--traffic-on=deckwait --brains-off=native_drive' | load 9.34 18.67 18.46
+  ran terminus s9837
+  ran locks s9837
+  ran sumps s9837
+  ran locks s9838
+  ran terminus s9838
+  ran sumps s9838
+  ran locks s9839
+  ran terminus s9839
+  ran sumps s9839
+  ran terminus s9840
+  ran locks s9840
+  ran sumps s9840
+  ran locks s9841
+  ran terminus s9841
+  ran sumps s9841
+  ran locks s9842
+  ran terminus s9842
+  ran sumps s9842
+fights 18  deaths 807  wedged deaths 79 (9.8 %)
+deaths by cause: open:driving 47%, open:parked 27%, stuck:wedged 10%, stuck:still 6%, jam:yielding 5%, stuck:static 4%, jam:friend 1%, stuck:no_path 0%, open:enemy 0%
+unstick fires (WEDGE_TRACE totals): 2275 in 18 of 18 fights
+under fire (hit within 5 s): 641; jam under fire 39 (jam:yielding 31, jam:friend 8)
+wheeled pace-0 drive ticks 24333, moving >= 0.5 m/s (creep) 14846 (61 %), of those held 14710
+
+stuck:wedged deaths traced: 79
+  force on the death tick: orca_slow 42%, orca_turn 23%, drive 20%, shove 6%, hold 5%, kturn 4%
+  force over the last 3 s: orca_slow 45%, orca_turn 19%, drive 14%, kturn 8%, yield 6%, hold 5%, shove 1%, unstick 1%
+  speed at death median 2.17 m/s; >= 0.5 m/s 57/79
+  hit in the last 10 s 64/79; stall rule counting in the last 3 s 14/79; Traffic hold at death 4/79; touching a hull 15/79
+  option at death: MOVE 71%, ENGAGE 11%, HOLD 6%, CLEAR_LANE 4%, RETREAT 3%, TAKE_COVER 3%, COVER_FIRE 1%, FLANK 1%
+  order at death: move 67%, attack_move 16%, attack 8%, hold 6%, (none) 3%
+  units: ifv 16%, gang_artillery 13%, law_ifv 13%, gang_support 11%, scout 9%, artillery 8%, tank 6%, gang_ifv 6%, gang_scout 6%, syn_tank 3%, syn_ifv 3%, lancer 3%, law_tank 1%, syn_scout 1%, law_suppressor 1%
+
+the 3 longest wedged-death episodes:
+  sumps s9839 Green_Sirens_3 (law_suppressor) 43.9 s wedged at (61.8, 3.0), net 2.34 m, median 0.0 m/s; force {'kturn': 402, 'orca_slow': 751, 'orca_turn': 3, 'unstick': 161}; phase {'blocked': 1157, 'driving': 160}; stall ticks 77, unstick fires 13; option {'HOLD': 1243, 'MOVE': 74}; order {'hold': 1243, 'move': 74}; friends<=14m max 2, enemies<=56m max 1
+  locks s9842 Rust_Wrenches_1 (gang_support) 39.93 s wedged at (-92.9, 11.1), net 4.2 m, median 0.0 m/s; force {'drive': 29, 'kturn': 750, 'orca_slow': 235, 'orca_turn': 14, 'yield': 170}; phase {'arrived': 822, 'blocked': 9, 'driving': 196, 'yielding': 171}; stall ticks 5, unstick fires 20; option {'HOLD': 1138, 'MOVE': 60}; order {'hold': 1138, 'move': 60}; friends<=14m max 4, enemies<=56m max 4
+  terminus s9839 Rust_Battery3_3 (gang_artillery) 21.87 s wedged at (0.9, -62.2), net 6.34 m, median 0.0 m/s; force {'hold': 425, 'kturn': 119, 'orca_slow': 41, 'orca_turn': 15, 'unstick': 56}; phase {'blocked': 59, 'driving': 597}; stall ticks 129, unstick fires 48; option {'MOVE': 656}; order {'move': 656}; friends<=14m max 8, enemies<=56m max 1
+
+all wedged episodes: 5812, 26586 s; force share: orca_slow 42%, yield 16%, drive 13%, orca_turn 11%, hold 9%, kturn 4%, unstick 4%, shove 1%, press 0%
+>> remote: copy-back verified, 202 files, sha256
+>> remote: make native manoeuvre-wedge-trace WEDGE_AT=locks,terminus,sumps WEDGE_RANGE=9837-9842 WEDGE_JOBS=4 WEDGE_DIR=build/barq6-wedge-on WEDGE_FLAGS=--traffic-on=deckwait --brains-off=native_drive TANK_SQUAD_SLOT_TIMEOUT=14400 WEB_PORT=8580 NET_PORT=9600 SMOKE_PORT=8581 SMOKE_NET_PORT=9701 AGENT_PORT=9285 exited 0 (light lane, build/light/build/ copied back)
+WRAPPER_DONE 0
