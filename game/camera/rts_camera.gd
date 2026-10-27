@@ -258,6 +258,11 @@ const DANGER_CANCEL := 0.2
 ## Swing guards: start a turn only DANGER_DEADBAND_DEG off, finish within YAW_SETTLE_DEG, then hold DANGER_HOLD_S.
 const DANGER_DEADBAND_DEG := 20.0
 const DANGER_HOLD_S := 1.5
+## Round 42 (R42.16, Bar K4's rear lane): a gun outside the view breaks both swing guards. An enemy that fired at the
+## commanded units within DANGER_RECENT_S and lies more than DANGER_VIEW_DEG off the view (his 35 deg lens shows ~+-29 deg
+## at 16:9) is a reason to turn now, held or not, and to any look past YAW_SETTLE_DEG: Bar K4's rear-lane nevers were a
+## second shooter at a new bearing while the view held on the first, or a sum that moved less than the deadband.
+const DANGER_VIEW_DEG := 25.0
 var _danger_settled_at := -1e9
 
 var _shown_focus := Vector3.ZERO
@@ -531,15 +536,17 @@ func _glide(delta: float) -> void:
 		var next := RtsCamera.spring(_shown_pitch, _pitch_velocity, pitch, GLIDE_ZOOM_OMEGA, delta)
 		_shown_pitch = float(next[0])
 		_pitch_velocity = float(next[1])
-	# The building clearance (measured by the last `_apply`): quick toward more clearance, slow back.
+	# The building clearance (measured by the last `_apply`): quick toward more clearance, slow back. Round 42 (R42.16):
+	# under the glide's cap like every other automatic move (Bar K4's three snaps were this spring closing a big step).
+	var caps := RtsCamera.solid_caps(RtsCamera.distance_for(_shown_zoom), fov, screens_per_s)
 	var solid_d := RtsCamera.spring(_solid_d, _solid_d_velocity, _solid_want.x,
 			solid_in_omega if absf(_solid_want.x) > absf(_solid_d) else SOLID_OUT_OMEGA, delta)
-	_solid_d = float(solid_d[0])
-	_solid_d_velocity = float(solid_d[1])
+	_solid_d_velocity = clampf(float(solid_d[1]), -caps.x, caps.x)
+	_solid_d = float(solid_d[0]) if float(solid_d[1]) == _solid_d_velocity else _solid_d + _solid_d_velocity * delta
 	var solid_p := RtsCamera.spring(_solid_p, _solid_p_velocity, _solid_want.y,
 			solid_in_omega if absf(_solid_want.y) > absf(_solid_p) else SOLID_OUT_OMEGA, delta)
-	_solid_p = float(solid_p[0])
-	_solid_p_velocity = float(solid_p[1])
+	_solid_p_velocity = clampf(float(solid_p[1]), -caps.y, caps.y)
+	_solid_p = float(solid_p[0]) if float(solid_p[1]) == _solid_p_velocity else _solid_p + _solid_p_velocity * delta
 
 
 ## Whether a part of the wanted pose was set by his hand (or by a jump or a follow he asked for): those keep their quick
@@ -551,6 +558,12 @@ static func hand_set(writer: String) -> bool:
 ## One step of a critically damped spring from `x` (moving at `v`) toward `goal`: [position, velocity]. Exact for any
 ## `delta` (the closed form, not an Euler step), so the glide is the same at 30 fps on his laptop as at 144. Works for
 ## floats and Vector3s alike. Pure, for tests.
+## The building clearance's top speeds at the glide's cap: (distance m/s, pitch deg/s). A pitch turn sweeps the screen
+## at its rate over the FOV; a distance change scales the view about the focus, the edge moving at rate/distance.
+static func solid_caps(distance: float, fov_deg: float, screens: float) -> Vector2:
+	return Vector2(screens * distance, screens * fov_deg)
+
+
 static func spring(x: Variant, v: Variant, goal: Variant, omega: float, delta: float) -> Array:
 	var away: Variant = x - goal
 	var decay := exp(-omega * delta)
@@ -1293,12 +1306,16 @@ func _update_yaw_follow(delta: float) -> void:
 	var deadband := YAW_DEADBAND_DEG
 	var writer := "yaw_follow"
 	if danger_on and danger.is_valid():
-		danger_last = RtsCamera.danger_look(danger.call())
+		var state: Dictionary = danger.call()
+		danger_last = RtsCamera.danger_look(state)
 		wanted = danger_last.get("look")
-		deadband = DANGER_DEADBAND_DEG
 		writer = "danger"
-		if not _yaw_turning and _clock - _danger_settled_at < DANGER_HOLD_S:
-			return
+		if RtsCamera.gun_off_view(yaw, state):
+			deadband = YAW_SETTLE_DEG
+		else:
+			deadband = DANGER_DEADBAND_DEG
+			if not _yaw_turning and _clock - _danger_settled_at < DANGER_HOLD_S:
+				return
 	else:
 		wanted = facing.call()
 	if not wanted is Vector3:
@@ -1343,6 +1360,21 @@ static func _middle(points: Array, own: int) -> Vector3:
 
 
 ## Whether `point` lies behind a view at `yaw` seen from `from` (more than 90 deg off its direction). Pure.
+## Whether an enemy that fired at the commanded units within DANGER_RECENT_S lies more than DANGER_VIEW_DEG off a view at
+## `yaw` from the state's `from` (a DangerFeed.read()). Pure, for tests.
+static func gun_off_view(yaw: float, state: Dictionary) -> bool:
+	var from: Variant = state.get("from")
+	if not from is Vector3:
+		return false
+	for enemy: Dictionary in state.get("enemies", []):
+		if float(enemy.get("fired_s", DangerFeed.NEVER)) > DANGER_RECENT_S:
+			continue
+		var flat := Vector3((enemy["at"] as Vector3).x - (from as Vector3).x, 0.0, (enemy["at"] as Vector3).z - (from as Vector3).z)
+		if flat.length() > 0.5 and absf(angle_difference(yaw, RtsCamera.yaw_facing(flat))) > deg_to_rad(DANGER_VIEW_DEG):
+			return true
+	return false
+
+
 static func behind_view(yaw: float, from: Vector3, point: Vector3) -> bool:
 	var flat := Vector3(point.x - from.x, 0.0, point.z - from.z)
 	return flat.length() > 0.5 and flat.dot(heading_of(yaw)) < 0.0

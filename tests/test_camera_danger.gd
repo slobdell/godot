@@ -92,9 +92,10 @@ func test_the_rig_turns_toward_the_danger_only_when_on_and_holds_after_settling(
 	var wanted := RtsCamera.yaw_facing(RtsCamera.danger_look(state)["look"])
 	assert_near(rig.yaw, wanted, deg_to_rad(RtsCamera.YAW_SETTLE_DEG + 0.1), "on: it turns to the danger and settles")
 	assert_eq(rig.wrote["yaw"], "danger", "the trace can tell the danger turn from the heading's")
-	# A new pull just past the deadband right after settling waits out the hold.
+	# A new pull just past the deadband right after settling waits out the hold (a contact, not a gun firing off view:
+	# that one breaks the hold, see below).
 	var settled := rig.yaw
-	state["enemies"] = [_enemy(Vector3(40, 0, 20), 0.1, 0.1)]
+	state["enemies"] = [_enemy(Vector3(40, 0, 60), DangerFeed.NEVER, 0.1), _enemy(Vector3(40, 0, 20))]
 	rig._update_yaw_follow(1.0 / 60.0)
 	assert_near(rig.yaw, settled, 0.0001, "held for DANGER_HOLD_S after a turn: no swinging")
 
@@ -137,3 +138,37 @@ func test_the_danger_frame_keeps_mirrors_and_the_focus_inside_the_wall() -> void
 	assert_true(RtsCamera.behind_view(0.0, Vector3(0, 0, 90), Vector3(0, 0, 120)), "a destination south of a north view is behind it")
 	assert_true(not RtsCamera.behind_view(0.0, Vector3(0, 0, 90), Vector3(5, 0, 40)), "one north of it is not")
 	RtsCamera.perimeter_poly = saved
+
+
+func test_a_gun_outside_the_view_breaks_the_hold_and_the_deadband() -> void:
+	var from := Vector3(0, 0, 60)
+	var behind := {"from": from, "heading": NORTH, "speed": 8.0, "middle": Vector3.ZERO,
+			"enemies": [_enemy(from + SOUTH * 40.0, 0.5)]}
+	assert_true(RtsCamera.gun_off_view(0.0, behind), "a gun firing from behind a north view is off it")
+	assert_true(not RtsCamera.gun_off_view(PI, behind), "facing it, it is not")
+	var quiet := behind.duplicate()
+	quiet["enemies"] = [_enemy(from + SOUTH * 40.0, RtsCamera.DANGER_RECENT_S + 1.0)]
+	assert_true(not RtsCamera.gun_off_view(0.0, quiet), "a gun that stopped firing does not break the guards")
+	# The rig: settled a moment ago (inside DANGER_HOLD_S), a new gun fires from behind: it turns at once.
+	var rig := _rig()
+	rig.yaw = 0.0
+	rig.facing = func() -> Variant: return NORTH
+	rig.danger = func() -> Dictionary: return behind
+	rig.danger_on = true
+	rig._danger_settled_at = rig._clock
+	rig._update_yaw_follow(1.0 / 60.0)
+	assert_true(absf(rig.yaw) > 0.0, "the hold does not keep a gun behind him off screen")
+
+
+func test_the_building_clearance_moves_under_the_glide_cap() -> void:
+	var caps := RtsCamera.solid_caps(49.0, 35.0, RtsCamera.GLIDE_SCREENS_PER_S)
+	assert_near(caps.y, 21.0, 0.01, "pitch: 0.6 screens/s of a 35 deg lens")
+	assert_near(caps.x, 29.4, 0.01, "distance: 0.6 x the boom per second")
+	var rig := _rig()
+	rig._solid_want = Vector2(0.0, 30.0)  # a big step: a tall roof came into the boom
+	var before := rig._solid_p
+	rig._glide(1.0 / 60.0)
+	assert_true(rig._solid_p - before <= caps.y / 60.0 + 1e-4, "one frame's lift is under the cap (%.3f deg)" % (rig._solid_p - before))
+	for i in 120:
+		rig._glide(1.0 / 60.0)
+	assert_near(rig._solid_p, 30.0, 0.5, "and it still arrives (%.2f)" % rig._solid_p)
