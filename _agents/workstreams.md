@@ -201,7 +201,7 @@ another project's workers (plane_maker): never touch processes you didn't start.
   lines a tick ON <= OFF + 0.5 and perf-judge PASS; the suite ON (`check ATTACK_SHOT_SUPPRESS=on`) on the frozen tree before the
   series; fight guards G1-G5 as E1 on builder2 (seeds 9697-9720, R42.14). A pass ships ON.
 
-- **Bar K4 v2 (camera; FILED 4165f4619 Status, 2026-10-26 ~21:30, before any number on 9737-9772; R42.16 + R42.18; the LAST re-file).**
+- **PASSED (R42.22; ships ON). Bar K4 v2 (camera; FILED 4165f4619 Status, 2026-10-26 ~21:30, before any number on 9737-9772; R42.16 + R42.18; the LAST re-file).**
   Unchanged from Bar K4 except D2's blind clause: D2 on the AMBUSH REAR lane alone AND on RETREAT alone = ARM latency mean < BASE AND
   ARM blind as a share of time UNDER FIRE <= BASE (blind % of play reported, not judged). Arms, workloads, D1, D3, G1-G6 as filed; both
   arms on one commit (the one whose full check greens; candidate ef55e64b8), builder0 light J4, 36 an arm. Changes since 0e4d4f732:
@@ -398,6 +398,16 @@ _(filed bars go here, before their numbers)_
   builder2 stays balance's for Bar B7. E2's suite-ON check at dcf83c66a: 3304 passed / 1 failed (test_announcer_cost's wall-clock line
   on a loaded box, unrelated to the flag), perf-judge refused 3x (busy), 6 sim-baseline maps move under the stand's line: a quiet re-run
   of the one test and perf-judge only if the bar comes to a ship.
+- **R42.22 (2026-10-27 ~01:10) Bar K4 v2 PASSES every line; `--camera-danger` ships ON (c27f8011c; `=off` = round 41).** Camera
+  ef55e64b8 (green ALL JUDGED), 9737-9772, 36 runs an arm a workload, builder0 light J4, 216 runs ok: D1 latency pooled 11.61 -> 5.60 s
+  (4.9 se); D2 rear lane latency 14.03 -> 4.77 s, blind % of fire 16.4 -> 14.0 (of play 6.5 -> 6.4); D2 retreat 13.94 -> 9.06 s, blind
+  19.3 -> 2.9 % (of play 8.9 -> 1.3); D3 facing the wall 26.4 -> 9.2 % pooled, retreat 27.8 -> 0.0 %; G1 attack: on the unit 83.8 ->
+  76.1 % (>= 70), slip p95 31.2 -> 33.5, jerks 0.19 -> 0.84/min (solid), snaps 0 everywhere; G2 held 15.0 -> 15.9 %; G3 action share
+  40.8 -> 49.2; G4 reversals 10.8 -> 5.5 / 4.8 -> 3.0 / 2.8 -> 1.7; G5 own on screen 96.8 -> 95.9 / 98.7 -> 97.2 / 96.2 -> 94.7; G6
+  72/72 staged. Watch: ambush solid jerks 1.88/min ON v 0.07 (gentle clearance eases; G1 judges attack, 0.84); clicks on the aimed
+  unit fell 7.7 points, above the line. Ships on c27f8011c's green check (merge alone; perf-judge judged in it or a quiet window); the
+  K4.4 clip refilmed on the ON commit for him. For him: "the camera now turns to whoever is shooting at you, including from behind,
+  and when you pull back to your own edge it looks at the fight you are leaving, not at the audience."
 - **R42.21 (2026-10-27 ~00:50) Bar B7 PASSES for Condemned and Gangs; the counter ships ON for them; G3 read as filed (the judge's
   cap was wrong).** Frozen fb9e2a95a (green builder0 3298/0), builder2 J24, 23:07-00:39, 720/720 fights, 0 lost, 9901-9940 one arena a
   seed, n 80 a faction, paired; all-tanks OFF -> ON: Condemned 75 -> 46 % (-28.8, se 7.5) PASS; Gangs 76 -> 60 % (-16.2, se 6.9) PASS
