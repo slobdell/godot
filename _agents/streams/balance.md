@@ -173,7 +173,17 @@ and on Rust, n 200 a cell, paired by fight, se bootstrap over seeds; paused 18:3
 
 **FIRING LIST for Bar B7 (written 2026-10-26 20:40, before any number on 9901-9940): condemned, gangs, syndicate.** Law keeps its roll
 against a tank rush (its counter makes all-tanks stronger). Syndicate fires by the filed line but sits at 84 %, far above the
-deciding 60 %: asked the orchestrator whether the verdict is per faction (ON for the factions that pass) or all firing factions.
+deciding 60 %. **R42.17 (orchestrator):** the verdict is per firing faction: the counter ships ON for each firing faction that
+passes its own deciding line and stays OFF for the rest (lines not amended; Syndicate at ~84 % would read "beats the roll by 8
+but short of the target").
+
+**Bar B7's frozen tree: fb9e2a95a** (`COUNTER_ARCHETYPES` = condemned siege, gangs gang_hail, syndicate syndicate_barrage; Law keeps
+its roll, `law_barrage` loadable by name; tests first: test_army_counter red 7/2 -> 9/0, laptop `make test FILTER=army` 167/0).
+Its full check runs on builder0 from `../godot-balance-b7` after B9's (unit balance-b7-check, log `~/balance-runs/b7-check.log`).
+**How it runs (8004b9d62):** `search.py b7-lists DIR` writes the two arm lists (360 fights each: 320 deciding + 40 G1, one arena
+a seed as filed); `tools/balance/fights.sh fb9e2a95a DIR/b7-off.txt ~/balance-guard-raw/b7` then `... b7-on.txt ...` plays each
+list in ONE builder2 call (`mk/balance.mk balance-fights-run`, J24, GUARD_RESUME on preemption, pausable between the arms);
+`search.py bar-b7 ~/balance-guard-raw/b7 fb9e2a95a --firing condemned,gangs,syndicate` is the verdict (per faction, R42.17).
 
 **R42.15 (orchestrator, ~19:10):** Bar Q6 FAILED, so CP42.1 is not reached and the bridge gate for shipping fm_c5r2_lawt5 is not met
 (not loosened). RULED: run Bar B2s v2 anyway, overnight on builder2 after the firing screen, B9_MAIN = current main (hash named by
@@ -191,6 +201,9 @@ sim-baseline). Both picks apply cleanly onto main 4bf0f3703 (`git merge-tree`). 
 element deals travel seats, read through `ElementFeed`): `game/ai/**` and `game/tactics/**` are engage's and settle's this round,
 so it is BLOCKED by ownership (not asked: engage's E1 is the round's first item). B3 (faction-aware CPU, v1 built OFF round 40 at
 2979ee5c8) goes on top of the faction stat change (R40.1), which waits on CP42.1 with B9.
+
+**Known issue (for him, not blocking):** the garage line "Bring two artillery squads with your tanks" shows for every faction's tank
+draft, Law's too, while Law's artillery lineup does not beat all-tanks (96 %). Kept as approved (ON); a Law-specific line is his call.
 
 **Questions for the orchestrator (sent; R42.3 answered (1)):** (1) B7's deciding line is pooled; Law's and Syndicate's counter lineups don't beat
 tanks today (96 / 87 %). If B8 can't fix them inside 15 %, may Bar B7 be judged per countered faction (Condemned and Gangs:
