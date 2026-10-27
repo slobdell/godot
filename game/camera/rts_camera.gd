@@ -1351,6 +1351,18 @@ static func danger_frame(points: Array, own: int) -> Array:
 	return out
 
 
+## K4.2 (R42.16, Bar K4's rear lane): the danger frame's points: his units, plus every contact in front of the view (not
+## its mirror, and kept inside the wall), so a gun far ahead zooms the view out to it instead of firing from above the
+## top edge (dev seeds 7001-7036: shooters within 20 deg of the view took 3-4 s to come on screen). Pure, for tests.
+static func danger_ahead(points: Array, own: int, yaw: float) -> Array:
+	var out := points.slice(0, own)
+	var middle := RtsCamera._middle(points, own)
+	for i in range(own, points.size(), 2):
+		if not RtsCamera.behind_view(yaw, middle, points[i] as Vector3):
+			out.append(RtsCamera.inside_wall(points[i] as Vector3, DANGER_WALL_MARGIN_M))
+	return out
+
+
 static func _middle(points: Array, own: int) -> Vector3:
 	var sum := Vector3.ZERO
 	var count := mini(own, points.size())
@@ -1802,9 +1814,9 @@ func _update_vision_tracking() -> void:
 		var own_n := int(_vision_state.get("own", points.size()))
 		var look: Variant = danger_last.get("look")
 		if look is Vector3 and own_n > 0:
-			points = points.slice(0, own_n)
-			destination = RtsCamera.inside_wall(RtsCamera._middle(points, own_n) + (look as Vector3) * danger_lean_m,
-					DANGER_WALL_MARGIN_M)
+			var middle := RtsCamera._middle(points, own_n)
+			points = RtsCamera.danger_ahead(points, own_n, yaw)
+			destination = RtsCamera.inside_wall(middle + (look as Vector3) * danger_lean_m, DANGER_WALL_MARGIN_M)
 		else:
 			points = RtsCamera.danger_frame(points, own_n)
 			if destination is Vector3 and RtsCamera.behind_view(yaw, RtsCamera._middle(points, own_n), destination as Vector3):

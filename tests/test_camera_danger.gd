@@ -172,3 +172,11 @@ func test_the_building_clearance_moves_under_the_glide_cap() -> void:
 	for i in 120:
 		rig._glide(1.0 / 60.0)
 	assert_near(rig._solid_p, 30.0, 0.5, "and it still arrives (%.2f)" % rig._solid_p)
+
+
+func test_the_danger_frame_keeps_contacts_ahead_and_drops_mirrors_and_contacts_behind() -> void:
+	# His units at z 60 facing north (yaw 0): a contact ahead (z 0) and its mirror (z 120); one behind (z 100), mirror z 20.
+	var points := [Vector3(0, 0, 60), Vector3(4, 0, 60), Vector3(0, 0, 0), Vector3(0, 0, 120), Vector3(0, 0, 100), Vector3(0, 0, 20)]
+	var kept := RtsCamera.danger_ahead(points, 2, 0.0)
+	assert_eq(kept.size(), 3, "his two units and the contact ahead: %s" % [kept])
+	assert_eq(kept[2], Vector3(0, 0, 0), "the gun ahead is framed")
