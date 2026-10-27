@@ -123,7 +123,9 @@ const ENGAGE_RANGE_FACTOR := 1.15
 ## stands (E1's trace, ticks 6-470: ENGAGE outscored MOVE for 15 s), so the spot would never be driven to. With no spot
 ## inside the bounded search the crew keeps closing straight (today's out-of-range branch). The crew brain's ENGAGE hold
 ## gets the same truth (TankBrain._act, R42.2). OFF: round 41 byte for byte.
-static var ATTACK_SHOT := OS.get_cmdline_user_args().has("--attack-shot=on") or OS.get_environment("ATTACK_SHOT") == "on"
+## ON BY DEFAULT since Bar E1 passed (R42.13, 2026-10-26: stuck crew-seconds 598 -> 29 and first hit 13.5 -> 4.0 s on 24
+## paired seeds, deaths 39 -> 31, the fight guards within their bands); `--attack-shot=off` (env ATTACK_SHOT=off) is the escape.
+static var ATTACK_SHOT := not (OS.get_cmdline_user_args().has("--attack-shot=off") or OS.get_environment("ATTACK_SHOT") == "off")
 ## Measurement only: crews sent to a firing position / given attack by a shot / kept closing (no spot), since start.
 static var shot_moves := 0
 static var shot_attacks := 0

@@ -11,7 +11,7 @@ const BOX := {"position": [0.0, -11.0], "size": [6.06, 2.59, 2.44], "rotation_de
 
 
 func teardown() -> void:
-	ElementPlan.ATTACK_SHOT = false
+	ElementPlan.ATTACK_SHOT = true  # the default since R42.13
 	super.teardown()
 
 

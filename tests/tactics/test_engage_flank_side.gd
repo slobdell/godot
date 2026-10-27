@@ -20,7 +20,7 @@ func _square() -> void:
 
 
 func teardown() -> void:
-	ElementPlan.ATTACK_SHOT = false
+	ElementPlan.ATTACK_SHOT = true  # the default since R42.13
 	if _arena_was != null:
 		Arena.active = _arena_was
 	super.teardown()
