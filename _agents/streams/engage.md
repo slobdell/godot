@@ -102,8 +102,13 @@ shipped with the rule. **The two green hashes:** the flag-ON check **4658fa514**
 the synced tree verified = 76f43fb6d by md5; 20:16 PDT). **v2 (the SUPPRESS stand's own line, R42.12): built OFF at eb4024fe3,
 Bar E2 INCONCLUSIVE (R42.19, below: 1 of 48 natural-draw seeds exercised the line; where it fired, ON removed 13.6 s of a
 crew standing NOT FIRING with no cost anywhere), NOT shipped; it stays behind `--attack-shot-suppress=on` with its two tests.**
-The tip (v2 OFF + tooling + Status) carries no behaviour change at the default; its default check is named at the end of
-the Bar E2 section when it lands. The earlier flag-ON check 57e2e7eb5 (16:40) exited 2 with far_ambush red -> R42.10.
+**The tip b595a2e1b** (v2 OFF + tooling + the write-up; no behaviour change at the default) **is GREEN at the default:** `>> remote:
+make check exited 0`, `3305 passed, 0 failed`, `sim-baseline: 53 passed, 0 failed` (all 13 maps unmoved), perf-judge `JUDGED,
+PASS on attempt 1 of 3` (9548 usec per reference ms; builder0, 2026-10-27 01:12 PDT, the log's commit line b595a2e1b; R42.20:
+the orchestrator merges it on this line). Its FIRST run (23:08 PDT) was red on a bare `Killed` in shard 5 at 125 s: builder0's
+kernel OOM killer took a 473 MB Godot with three full checks queued and camera's series on the 15 GB box, nothing of ours
+(the kernel log names it: `Out of memory: Killed process ... (Godot_v4.7.2-st)`); the rerun on a quieter box is the line above.
+A shard that dies without its summary line fails `test` by design, so read `journalctl -k` on the box before blaming a test. The earlier flag-ON check 57e2e7eb5 (16:40) exited 2 with far_ambush red -> R42.10.
 
 **Launching (a trip-up for the next agent):** `make remote T=...` rejects `' " ( ) ; & | \` $` in T, so a quoted seed list
 cannot go through it; call `tools/remote.sh [--light] <target> 'VAR=a b c' VAR2=x` directly (and `REMOTE_HOST=slobdell@builder2`
