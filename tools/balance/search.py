@@ -756,10 +756,10 @@ def _results(folder: Path) -> dict:
 
 
 def bar_b7(root: Path, commit: str, firing: list) -> int:
-    """Judge Bar B7 (R42.3): DECIDING per faction whose counter fires: ARM <= 60 % AND paired change < 0 by >= 2 se; the
-    pooled share reported. G1 every CPU v CPU fight identical ON v OFF; G2 median length within +/-20 %; G3 every ARM fight
+    """Judge Bar B7 (R42.3, R42.17): DECIDING per faction whose counter fires: ARM <= 60 % AND paired change < 0 by >= 2 se; the
+    counter ships ON for each firing faction that passes it (and OFF for the rest) when every guard passes; pooled reported. G1 every CPU v CPU fight identical ON v OFF; G2 median length within +/-20 %; G3 every ARM fight
     loads and fields within its cap. G4 (the tests) is the frozen commit's check."""
-    verdict = []
+    verdict, ships = [], []
 
     def judge(name, ok, text):
         verdict.append(ok)
@@ -783,7 +783,9 @@ def bar_b7(root: Path, commit: str, firing: list) -> int:
         text = f"all-tanks {bshare:3.0f} -> {share:3.0f} % (n {len(keys)}), paired {change:+.1f} se {cse:.1f}"
         lengths[faction] = (_median([base[k]["seconds"] for k in keys]), _median([arm[k]["seconds"] for k in keys]))
         if faction in firing:
-            judge(f"DECIDING {faction}", share <= 60 and change + 2 * cse < 0, text + " (line <= 60 % and < -2 se)")
+            ok = share <= 60 and change + 2 * cse < 0
+            ships += [faction] if ok else []
+            print(f"BAR_B7 {'DECIDING ' + faction:34} {text} (line <= 60 % and < -2 se) -> {'pass: ON' if ok else 'FAIL: stays OFF'}")
         else:
             print(f"BAR_B7 {'reported ' + faction:34} {text}")
     for name in ("fired", "all"):
@@ -815,8 +817,11 @@ def bar_b7(root: Path, commit: str, firing: list) -> int:
     judge("G3 loads and fields", total == 320 and loaded == total and fielded_ok == total,
           f"{loaded} loaded, {fielded_ok} within the cap, of {total} (expect 320)")
     print("BAR_B7 reported: counter fired in " + ", ".join(f"{f} {fired[f]}/80" for f in FACTIONS))
-    print(f"BAR_B7 VERDICT {'PASS' if all(verdict) else 'FAIL'} ({sum(verdict)} of {len(verdict)} lines)")
-    return 0 if all(verdict) else 1
+    passed = all(verdict) and ships
+    print(f"BAR_B7 VERDICT {'PASS' if passed else 'FAIL'}: guards {sum(verdict)} of {len(verdict)}; "
+          f"ships ON for {', '.join(ships) or 'no faction'}" + (f"; stays OFF for {', '.join(f for f in firing if f not in ships)}"
+                                                              if any(f not in ships for f in firing) else ""))
+    return 0 if passed else 1
 
 
 def main(argv=None) -> int:

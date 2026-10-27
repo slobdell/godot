@@ -1,7 +1,8 @@
 extends TestCase
 ## B7 (round 42, balance; C42.5): the CPU counter-lineup. When the opposing army's cost is mostly tanks
 ## (Army.COUNTER_TANK_SHARE), a plain "cpu" deal fields its faction's artillery-heavy lineup instead of its roll.
-## OFF behind --cpu-counter until Bar B7 passes; with it OFF nothing changes.
+## OFF behind --cpu-counter until Bar B7 passes; with it OFF nothing changes. Only the factions whose counter lineup beats all-tanks
+## better than their roll counter (R42.3's firing screen): Law's `law_barrage` made all-tanks stronger, so Law keeps its roll.
 
 const SEEDS := [1, 2, 3, 7, 11, 42, 99, 123, 777, 8501, 9901, 31337]
 
@@ -20,6 +21,7 @@ func test_tank_share_reads_cost() -> void:
 	assert_eq(Army.tank_share({}), 0.0, "an empty army has no tanks")
 	for faction: String in Units.FACTIONS:
 		assert_eq(Army.tank_share(_mono(faction)), 1.0, "%s mono_tank is all tanks" % faction)
+	for faction: String in Army.COUNTER_ARCHETYPES:
 		var siege := Army.load_army("cpu:" + String(Army.COUNTER_ARCHETYPES[faction]), 1, Units.BASELINE_BUDGET, faction)
 		assert_true(Army.tank_share(siege["doctrine"]) < 0.3, "%s's counter lineup is not tank-heavy" % faction)
 
@@ -40,9 +42,19 @@ func test_no_rolled_deal_is_tank_heavy() -> void:
 		assert_true(Army.tank_share(plain) < Army.COUNTER_TANK_SHARE, "the plain cpu deal s%d" % seed_value)
 
 
+func test_only_the_firing_factions_counter() -> void:
+	Army.set_counter(true)
+	assert_eq(Array(Army.COUNTER_ARCHETYPES.keys()), ["condemned", "gangs", "syndicate"], "R42.3's firing list")
+	assert_eq(Army.counter_archetype("law", _mono("law")), "", "Law's counter lineup made all-tanks stronger")
+	assert_eq(Army.load_army("cpu", 9901, Units.BASELINE_BUDGET, "law", _mono("law")),
+			Army.load_army("cpu", 9901, Units.BASELINE_BUDGET, "law"), "Law meets a tank rush with its roll")
+	assert_true(not Army.load_army("cpu:law_barrage", 1, Units.BASELINE_BUDGET, "law").has("error"),
+			"law_barrage stays loadable by name (a measurement lineup)")
+
+
 func test_a_cpu_meets_a_tank_rush_with_its_artillery_lineup() -> void:
 	Army.set_counter(true)
-	for faction: String in Units.FACTIONS:
+	for faction: String in Army.COUNTER_ARCHETYPES:
 		var dealt := Army.load_army("cpu", 9901, Units.BASELINE_BUDGET, faction, _mono(faction))
 		assert_true(not dealt.has("error"), "%s counter deal loads: %s" % [faction, dealt.get("error", "")])
 		assert_eq(String(dealt["doctrine"].get("archetype")), String(Army.COUNTER_ARCHETYPES[faction]),
@@ -77,9 +89,9 @@ func test_load_pair_sees_the_other_side_whichever_loads_first() -> void:
 	for mono_team: int in [Match.Team.GREEN, Match.Team.RUST]:
 		var other := Match.Team.RUST if mono_team == Match.Team.GREEN else Match.Team.GREEN
 		var lineups := {mono_team: "cpu:mono_tank", other: "cpu"}
-		var factions := {Match.Team.GREEN: "law", Match.Team.RUST: "law"}
+		var factions := {Match.Team.GREEN: "gangs", Match.Team.RUST: "gangs"}
 		var armies := Army.load_pair(lineups, factions, 9903, Units.BASELINE_BUDGET)
-		assert_eq(String(armies[other]["doctrine"]["archetype"]), "law_barrage", "the CPU on %d counters" % other)
+		assert_eq(String(armies[other]["doctrine"]["archetype"]), "gang_hail", "the CPU on %d counters" % other)
 		assert_eq(Army.tank_share(armies[mono_team]["doctrine"]), 1.0, "the tank rush is as named")
 	# Two plain CPUs: nobody rolls a tank rush, so the pair is exactly the two rolls (the demo, unchanged).
 	var plain := Army.load_pair({Match.Team.GREEN: "cpu", Match.Team.RUST: "cpu"},
@@ -88,11 +100,17 @@ func test_load_pair_sees_the_other_side_whichever_loads_first() -> void:
 	assert_eq(plain[Match.Team.RUST], Army.load_army("cpu", 4242, Units.BASELINE_BUDGET, "law"), "rust's roll")
 
 
+func _tank_draft(faction: String) -> Dictionary:
+	return {"squads": [{"name": "Guns", "units": [{"unit": Array(Units.roster(faction)).filter(
+			func(u: String) -> bool: return Units.role_of(u) == "tank")[0]}]}]}
+
+
 func test_the_garage_opponent_counters_his_tank_draft() -> void:
 	Army.set_counter(true)
-	for faction: String in Units.FACTIONS:
-		var tanks := {"squads": [{"name": "Guns", "units": [{"unit": Array(Units.roster(faction)).filter(
-				func(u: String) -> bool: return Units.role_of(u) == "tank")[0]}]}]}
+	assert_eq(GarageOpponent.build("cpu", "law", 9904, Credits.GAME_CREDITS, _tank_draft("law")), GarageOpponent.build("cpu", "law", 9904),
+			"Law's garage CPU keeps its deal against his tanks")
+	for faction: String in Army.COUNTER_ARCHETYPES:
+		var tanks := _tank_draft(faction)
 		var built := GarageOpponent.build("cpu", faction, 9904, Credits.GAME_CREDITS, tanks)
 		assert_true(not built.has("error"), "%s garage counter builds: %s" % [faction, built.get("error", "")])
 		assert_eq(String(built["doctrine"]["archetype"]), String(Army.COUNTER_ARCHETYPES[faction]),

@@ -126,7 +126,9 @@ class SearchTest(unittest.TestCase):
                         + "ARMY_CAP_FIELDED squads=5 green_squads=4 green=20 rust_squads=5 rust=25\n"
                         + "GUARD_RESULT " + json.dumps(r) + "\n")
             self.assertEqual(search.bar_b7(root, "c0ffee", ["condemned"]), 0, "condemned 80 -> 50 % passes")
-            self.assertEqual(search.bar_b7(root, "c0ffee", ["condemned", "law"]), 1, "law did not move: fails")
+            # R42.17: per faction. Law did not move: condemned still ships, law stays off.
+            self.assertEqual(search.bar_b7(root, "c0ffee", ["condemned", "law"]), 0, "condemned ships; law stays off")
+            self.assertEqual(search.bar_b7(root, "c0ffee", ["law"]), 1, "no firing faction passes: FAIL")
 
 
 if __name__ == "__main__":
