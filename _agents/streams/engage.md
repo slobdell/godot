@@ -335,9 +335,11 @@ lane J4, n 24 paired, `attack_shot_table.py --pair --deciding=suppress`.
    perf-judge PASS on its own line.
 7. **Suite ON (C31.1):** `make remote T="check ATTACK_SHOT_SUPPRESS=on"` on the frozen tree before the series: every test passes
    (sim-baseline rows excepted, listed with the reason; adopted at the ship).
-8. **Fight guards G1-G5** as E1 (24 x 600 s, locks, kinds none, green side, builder2 on the orchestrator's word), seeds to be
-   assigned by the orchestrator (requested: 9697-9720, so 9673-9696 stays the extension set).
-**A pass ships ON** (line 1 decided, 2-8 within).
+8. **Fight guards G1-G5** as E1 (24 x 600 s, locks, kinds none, green side, builder2 on the orchestrator's word), **seeds
+   9697-9720 (R42.14); the extension set for line 1 is 9673-9696.** The hand-over to balance costs it a leg: ask for the
+   guard window once, when the series is read.
+**A pass ships ON** (line 1 decided, 2-8 within). **Recorded on main as R42.14** (the dominance form accepted). The table:
+`attack_shot_table.py --pair OFF ON --deciding=suppress` (7a8f7fb2e).
 
 ### Requests to the orchestrator
 
