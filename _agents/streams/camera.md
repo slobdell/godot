@@ -87,8 +87,10 @@ The clip, when K4.4 has one.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-26: K4.1 DONE (census sent); K4.2 built OFF (91ebddc9f), dev reads promising; Bar K4 FILED below (no 9701+ number
-read yet); full check of 91ebddc9f queued on builder0.**
+**2026-10-27: K4.1 DONE; K4.2 DONE OFF at 0e4d4f732 (full check queued on builder0 behind the full-check lock); Bar K4 FILED
+(R42.5 + G5 amendment recorded on main; no 9701+ number read); the bar series starts on the commit whose check greens. K4.4 clips
+filmed (dev seed, laptop): `~/camera-clips-round42/retreat_7005.mp4`, `ambush_rear_7001.mp4` (to re-film on the bar commit).**
+Start: 18982e8df (= 21b20bdce's code, GREEN builder0 per HANDOFF; no baseline check).
 
 ### Bar K4 (FILED before any number on 9701-9736; R42.5 folded in; guards never amended after their numbers)
 **Arms:** BASE `--camera-danger=off` (round 41) v ARM `--camera-danger=on`, BOTH on one commit (named with the result; the constants
@@ -115,26 +117,29 @@ a set with no off-screen shot at all reads 0 (the best result: the camera faced 
   hid his scout.
 - G6 every run CAMERA_TRACE_DONE ok=true, no SCRIPT ERROR, every scenario run staged ok, both arms.
 
-### K4.2 dev reads (dev seeds 7001-7012, NEVER a bar; builder0 light; headless 1920x1080 @60; Terminus; 12 runs a row)
-Rows: ambush/retreat 45 s at 4cfadc6ee+fix = 91ebddc9f's camera; attack 150 s at 91ebddc9f.
-| workload | arm | blind % of play | facing wall % | own on screen % | off-screen shots (never) | latency mean (never=20) | reversals/min |
-|---|---|---|---|---|---|---|---|
-| ambush 55 m | OFF | 2.8 | 16.0 | - | 7 (3) | 3.5 p50 | 5.18 |
-| ambush 55 m | ON | 1.2 | 9.7 | 98.8 | 7 (2) | 6.8 +- 3.4 | 1.91 |
-| ambush rear | OFF / ON | 6.5 / 1.4 | 5.3 / 12.5 | - / 98.3 | 3 (2) / 5 (2) | never / 8.7 +- 4.6 | 8.91 / 3.58 |
-| retreat | OFF | 8.2 | 37.3 | - | 29 (17) | 16.3 +- 1.3 | 2.16 |
-| retreat | ON | 0.9 | 0.6 | 99.7 | 1 (0) | 8.6 | 1.36 |
-| attack | OFF | 2.2 | 42.4 | 97.3 | 15 (3) | 8.5 +- 2.2 | 11.69 |
-| attack | ON | 0.2 | 17.0 | 95.1 | 19 (4) | 6.4 +- 1.8 | 5.30 |
-Attack guards, OFF v ON: clicks on the aimed unit 122/148 82.4 % v 118/146 80.8 %; slip p95 34.6 v 24.4 px; jerks 0.21 v 0.21/min
-(solid only), snaps 0 v 0; held 15.1 v 16.6 %; action share 35.9 v 59.4 %. (OFF rows of ambush/retreat are the census.)
-Read: his retreat is fixed outright; the ambush is blind less than half as often; the yaw swings less, not more, because the
-heading (which attack orders keep re-aiming) is now only a light pull. The rear lane's latency mean has 3-5 episodes a set:
-36 seeds is what makes D2 readable.
-**Found and fixed in dev:** the first ON read matched OFF to the digit: `DangerFeed.new().attach(...).read` is a Callable on a
-RefCounted that nothing holds, so the feed was freed at once and the rig fell back to the heading. `reader()` captures it; a test
-pins it. Start: 18982e8df
-(= 21b20bdce's code, GREEN builder0 per HANDOFF; no baseline check).
+### K4.2 dev reads, as committed (0e4d4f732's camera; dev seeds 7001-7012, NEVER a bar; builder0 light; headless 1920x1080 @60; Terminus; 12 runs a row; 45 s, attack 150 s)
+| workload | arm | blind % of play | facing wall % | own on screen % | off-screen shots (never) | latency mean, never=20 s | reversals/min | jerks/min (solid) |
+|---|---|---|---|---|---|---|---|---|
+| ambush 55 m | OFF | 2.8 | 16.0 | 97.1 | 7 (3) | 9.3 +- 3.8 | 5.18 | 0.22 |
+| ambush 55 m | ON | 2.0 | 10.6 | 97.8 | 22 (1) | 2.5 +- 0.9 | 2.09 | 1.83 (1.72) |
+| ambush rear | OFF / ON | 6.5 / 3.8 | 5.3 / 11.5 | 94.8 / 95.7 | 3 (2) / 18 (1) | 13.5 +- 6.5 / 2.9 +- 1.1 | 8.91 / 3.68 | |
+| retreat | OFF | 8.2 | 37.3 | 94.7 | 29 (17) | 16.3 +- 1.3 | 2.16 | 0 |
+| retreat | ON | 0.9 | 0.6 | 95.9 | 1 (0) | 8.6 | 1.36 | 0.22 |
+| attack | OFF | 2.2 | 42.4 | 97.3 | 15 (3) | 8.5 +- 2.2 | 11.69 | 0.21 |
+| attack | ON | 1.5 | 18.4 | 96.5 | 28 (6) | 5.8 +- 1.5 | 5.48 | 1.20 (1.20) |
+Attack guards OFF v ON: clicks on the aimed unit 122/148 82.4 % v 113/147 76.9 %; slip p95 34.6 v 29.6 px; snaps 0 v 0; held 15.1 v
+16.2 %; action share 35.9 v 50.2 %. ON has MORE off-screen shots in the ambush (22 v 7): more fights are found and fought (action
+share up, the shooters come on screen in ~1-3 s instead of never). The "solid" jerks (building clearance, gentle: dv p50 ~380 px/s)
+rose because the danger camera sits at his 49 m pose facing new ways among the buildings: 1.20/min on ATTACK v G1's 1.5 line.
+A softer ease-in (`--camera-solid-in=10`) removed them but doubled the seconds the camera sat inside a building (6.6 -> 12.2 s
+in 16 min), so SOLID_IN_OMEGA stays 22 (round 41's).
+**Three fixes in dev, each from a picture or a number (decisions):**
+1. `DangerFeed.reader()`: a Callable on an unheld RefCounted is freed at once (the first ON read matched OFF to the digit).
+2. At his edge the frame's mirrors and destination lean lay behind the view and outside the wall, so the cutaway found no wall and
+   the wall hid his scout (the first retreat clip, 76cb5053b; frames in `~/camera-clips-round42/evidence/`). Then mirrors kept
+   inside the wall left a frame the zoom cap could not fit (his units slid under the HUD, own on screen 55 %).
+3. So the danger camera frames HIS units only, centred, no lean (`DANGER_LEAN_M` 0): the yaw facing the danger already shows it.
+   Own on screen by lean: 60 m 86 %, 30 m 69 %, 0 m 96 % (retreat). The focus is kept 4 m inside the wall.
 
 ### K4.1 census: where the round-41 camera looks (camera code = 4cfadc6ee with `--camera-danger` off = round 41; builder0 light lane; headless 1920x1080 @60; Terminus; CPU enemy; dev seeds 7001-7012, NEVER a bar; 45 s a run)
 Workloads (CameraPlaytest `--camera-scenario=`): **ambush** = group 1 ordered 110 m north; 5 s in, up to 3 units of one CPU squad
