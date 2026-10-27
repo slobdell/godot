@@ -226,9 +226,10 @@ var _yaw_turning := false
 ## a retreat to his own edge looks back at the fight (b + c outweigh a backward heading). Guards: a sum that nearly
 ## cancels (threats on opposite sides) keeps the current yaw; a deadband, a settle and a minimum hold stop it swinging;
 ## while he aims the glide holds the view (C41.4); his own turn wins for the hand-back time; the turn is the glide's.
-## `danger` is DangerFeed.read (skirmish_mode wires it, C42.3). `--camera-danger=off` is round 41 (the heading only).
+## `danger` is DangerFeed.read (skirmish_mode wires it, C42.3). ON since Bar K4 v2 (round 42, 9737-9772 at ef55e64b8);
+## `--camera-danger=off` is round 41 (the heading only).
 var danger: Callable = Callable()
-var danger_on := false
+var danger_on := true
 ## The last `danger_look` (the readout shows its pulls; the trace its strength).
 var danger_last := {}
 ## K4.2 dev knob (`--camera-danger-lean=`): the bar runs at DANGER_LEAN_M.
@@ -391,7 +392,7 @@ func _ready() -> void:
 	frame_leash = float(flags.text("camera-leash", str(FRAME_LEASH)))
 	yaw_deg_per_s = float(flags.text("camera-glide-yaw", str(GLIDE_YAW_DEG_PER_S)))
 	focus_omega = float(flags.text("camera-glide-omega", str(GLIDE_FOCUS_OMEGA)))
-	danger_on = flags.text("camera-danger", "off") != "off"  # K4.2: OFF until Bar K4 passes (then ON; =off = round 41)
+	danger_on = flags.text("camera-danger", "on") != "off"  # K4.3: ON (Bar K4 v2 passed, 9737-9772); =off = round 41
 	danger_lean_m = float(flags.text("camera-danger-lean", str(DANGER_LEAN_M)))
 	solid_in_omega = float(flags.text("camera-solid-in", str(SOLID_IN_OMEGA)))
 	if glide:

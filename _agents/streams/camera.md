@@ -88,7 +88,8 @@ The clip, when K4.4 has one.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 **2026-10-27: K4.1 DONE; K4.2 DONE OFF at 0e4d4f732, GREEN builder0 (`make check exited 0`, 26 passed, 2 NOT JUDGED:
-perf-judge refused on a busy box, scenario_perf unpinned); Bar K4 FILED (R42.5 + G5 amendment recorded on main); **Bar K4 v2 FILED (R42.18; seeds 9737-9772; candidate ef55e64b8, full check queued); Bar K4 READ: FAIL**
+perf-judge refused on a busy box, scenario_perf unpinned); Bar K4 FILED (R42.5 + G5 amendment recorded on main); **Bar K4 v2 PASSED (9737-9772 at ef55e64b8, GREEN builder0 ALL JUDGED): the danger camera ships ON (`--camera-danger=off` =
+round 41); the ON commit's full check is queued. (Bar K4 on 9701-9736: FAIL, kept below.)**
 (D2 rear lane, G1 snaps; table below): the danger camera stays OFF by default. Next: fix the solid snap and the rear lane on dev
 seeds only, then a fresh series (proposed 9801-9836, Bar K4 text unchanged) on the fixed commit, asked of the orchestrator. K4.4 clips
 filmed (dev seed, laptop): `~/camera-clips-round42/retreat_7005.mp4`, `ambush_rear_7001.mp4` (to re-film on the bar commit).**
@@ -135,6 +136,21 @@ a set with no off-screen shot at all reads 0 (the best result: the camera faced 
   perimeter wall is not on screen (`CameraLook.wall_hides`): projection alone scored the first retreat clip 99.7 % while the wall
   hid his scout.
 - G6 every run CAMERA_TRACE_DONE ok=true, no SCRIPT ERROR, every scenario run staged ok, both arms.
+
+### Bar K4 v2 result: PASS (9737-9772; camera ef55e64b8, tree 4165f4619 docs-only; GREEN builder0 `make check exited 0`, 28 targets all passed, ALL JUDGED; builder0 light J4; 36 runs an arm a workload; out `~/camera-bar-k4v2/4165f4619/`)
+| line | BASE (off) | ARM (on) | verdict |
+|---|---|---|---|
+| D1 latency, ambush+retreat pooled (never = 20 s) | 11.61 +- 0.88 (109 episodes) | 5.60 +- 0.86 (78) | PASS (4.9 se) |
+| D2 rear lane: latency / blind % of fire (blind % of play) | 14.03 +- 1.90 / 16.4 (6.5) | 4.77 +- 1.07 / 14.0 (6.4) | PASS |
+| D2 retreat: latency / blind % of fire (of play) | 13.94 +- 1.06 / 19.3 (8.9) | 9.06 +- 2.18 / 2.9 (1.3) | PASS |
+| D3 facing wall pooled / retreat | 26.4 / 27.8 % | 9.2 / 0.0 % | PASS |
+| G1 attack: on the unit / slip p95 / jerks / top automatic source / snaps | 330/394 83.8 % / 31.2 / 0.19 / 0.19 / 0 | 309/406 76.1 % / 33.5 / 0.84 / solid 0.84 / 0 (0 on every workload, "all" too) | PASS |
+| G2 held (attack) | 15.0 % | 15.9 % | PASS |
+| G3 action share (attack) | 40.8 % | 49.2 % | PASS |
+| G4 yaw reversals/min attack / ambush / retreat | 10.81 / 4.76 / 2.84 | 5.47 / 2.95 / 1.74 | PASS |
+| G5 own on screen attack / ambush / retreat | 96.8 / 98.7 / 96.2 | 95.9 / 97.2 / 94.7 | PASS |
+| G6 | 216 runs ok, 0 SCRIPT ERROR, 72/72 staged | | PASS |
+Watch items: ambush solid jerks 1.88/min ON v 0.07 (G1 judges ATTACK: 0.84); attack clicks on the unit 76.1 v 83.8 %.
 
 ### Bar K4 v2 (FILED before any number on 9737-9772; R42.16 + R42.18; the LAST re-file: a fail ships the danger camera OFF with the retreat result for him)
 **Unchanged from Bar K4** (above) except D2's blind clause. Arms, workloads, latency, D1, D3, G1-G6 as filed; BOTH arms on one

@@ -6,7 +6,8 @@
 # CAMERA_TRACE / CAMERA_SLIP lines; tests/camera/camera_report.py adds the seeds up into one table.
 # CAMERA_FLAGS passes game flags (a K2 switch, e.g. CAMERA_FLAGS="--camera-glide=off"). Seeds: 9501-9512 (C41.1).
 # Round 42 (K4.1): CAMERA_FLAGS="--camera-scenario=ambush|retreat" stages his two camera cases (CameraPlaytest) and
-# CameraLook adds the look table (where the view looks against where the danger is); `--camera-danger=on` is K4.2.
+# CameraLook adds the look table (where the view looks against where the danger is); the danger camera (K4) is ON;
+# `--camera-danger=off` is round 41's camera (the BASE arm).
 .PHONY: camera-trace camera-trace-windowed camera-clip
 
 CAMERA_TRACE_DIR := $(BUILD_DIR)/camera-trace

@@ -180,3 +180,10 @@ func test_the_danger_frame_keeps_contacts_ahead_and_drops_mirrors_and_contacts_b
 	var kept := RtsCamera.danger_ahead(points, 2, 0.0)
 	assert_eq(kept.size(), 3, "his two units and the contact ahead: %s" % [kept])
 	assert_eq(kept[2], Vector3(0, 0, 0), "the gun ahead is framed")
+
+
+func test_the_danger_camera_ships_on_and_off_is_round_41() -> void:
+	var rig := _rig()  # _ready read the launch flags: the tests pass no --camera-danger
+	assert_true(rig.danger_on, "Bar K4 v2 passed (9737-9772): ON by default")
+	assert_true(LaunchFlags.parse(PackedStringArray(["--camera-danger=off"])).text("camera-danger", "on") == "off",
+			"--camera-danger=off reads as off (round 41's camera)")
