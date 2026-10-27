@@ -3970,3 +3970,24 @@ instrument that cannot lie about load — removal within one run — and let eve
     of makes, OOMed builder0 into a 15-minute thrash and a forced poweroff, and lost four streams' runs. Any change to slot.sh, remote.sh or
     a make wrapper is tested with a real nested make under `timeout`, and remote jobs run at a raised oom_score_adj so the kernel kills a
     build, not the box.
+329. **Name the orchestrator session at launch.** (Round 42.) A worker's first grant request reached an idle second session in the main
+     checkout before the orchestrator, and both answered and committed the same grant to main. The HANDOFF launch box now names the
+     orchestrator session (`ListAgents` shows it); a second main-checkout session that gets a worker message says it is not the
+     orchestrator and stands down, and workers address the named session only.
+330. **Three full checks queued plus a light-lane series exhausted builder0's 15 GB.** (Round 42, 23:08.) The full-check lock serialises
+     checks, but the queued ones had already synced and the light lanes carried camera's series and engage's; the kernel OOM-killed a
+     test shard of the running check (a load failure read as "5 of 6 shards reported"). Rule beside 321: the orchestrator holds the
+     queue (`tools/builder_checks.sh --wait-below 1` before a launch, `free -g` read first) and lets at most one full check plus one
+     light series run; a shard "Killed" with no test failure is re-run, never ruled on.
+331. **A guard tool must print the statistic the filing names.** (Round 42, Bar E1's G3.) `guard.py --pair` printed the two arms'
+     medians against the paired se of the mean, 0.8 s outside a band the paired mean (the judging table's form, z 0.69) passed. Lesson
+     318's family: when the miss lands on the ruler, fix the ruler (it now prints paired means, medians as a labelled extra) and read
+     the line as filed; record both outputs.
+332. **Read the OFF arm on fresh seeds before building a rule for a drill's failure.** (Round 42, Q6.) The deck-mouth wait was built for
+     one deterministic crew on the 18-run drill's seed 2; on fresh seeds the OFF arm crossed 72/72 with a 0.4 s rim, so a cap at every
+     mouth could only cost (+15-20 % rim, +1.1 s arrival) and the bar failed. R41.13 had already shown the 72/72 OFF; a rule that fixes
+     a case absent from its own bar's seeds needs a trigger that fires only on that case, or no rule.
+333. **A rare mechanism needs a dominance line or a staged draw, not a 2-se mean.** (Round 42, Bar E2.) The SUPPRESS stand behind cover
+     fired on 2 of 24 seeds in E1's series and 1 of 48 in E2's; a paired mean cannot decide it. E2 filed "no seed worse + an exercised
+     floor, else extend, else INCONCLUSIVE" and ended INCONCLUSIVE honestly. The next bar for such a case stages the draw that
+     produces it (filed as a staged probe, never a natural draw) and judges per exercised seed.
