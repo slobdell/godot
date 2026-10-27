@@ -84,7 +84,7 @@ another project's workers (plane_maker): never touch processes you didn't start.
 
 **Seed registry (round 42):** 9601-9624 engage Bar E1 deciding; 9625-9648 engage fight guards; 9701-9736 camera Bar K4 (36 an arm);
 9801-9824 manoeuvre Bar Q5; 9825-9848 manoeuvre Bar Q6 (fresh BRIDGE_POOLED_SEEDS 9825-9836, group-order guards 9837-9848);
-9901-9940 balance Bar B7; 10001-10040 + 10101-10140 balance Bar B8; 10201-10240 balance B8 dev (never a bar); carried unread:
+9901-9940 balance Bar B7; 10001-10040 + 10101-10140 balance Bar B8; 10201-10240 balance B8 dev (never a bar); 9649-9672 engage Bar E2 (the SUPPRESS stand, R42.12); carried unread:
 8801-8840 + 8901-8940 Bar B2s v2; 9201-9240 + 9301-9340 Bar B5 t50 (only on his yes). Dev blocks 7001-7012 as before (never a bar).
 
 - **Bar B7, the CPU counter-lineup (balance; FILED fa9006e69, 2026-10-26 ~15:20, before any number on 9901-9940; amended by R42.3 before
@@ -288,6 +288,17 @@ _(filed bars go here, before their numbers)_
   never in. Ruled as manoeuvre proposed: OFF this round, written up with the evidence (`references/round42/manoeuvre/q5lab4-v3-
   builder0-4c8db69b6/`), no builder2 series; the frame for a later round: the never-in squads are columns behind a stalled head at the
   Crossing's street mouths, and a rule that eases must also clear the head (not a speed rule).
+- **R42.12 (2026-10-26 ~18:35) Bar E1 deciding read: PASS on every line the builder0 series covers; fight guards pending builder2;
+  the SUPPRESS stand gets a v2 on R42.2's terms, after the flip.** builder0 light (native off), 5e9518da0 (= 4658fa514's code),
+  `engage-bar` 9601-9624, n 24 paired, 60 s windows, J4: (1) stuck crew-seconds OFF 598.4 -> ON 28.8 (0.048x; paired -23.7 a run, se
+  6.6, z -3.6) PASS; (2) seconds to each crew's first hit 13.5 -> 4.0 (-9.4, se 2.4, z -3.9) PASS; (3) deaths moving for a shot 1 -> 0
+  PASS (all deaths 39 -> 31; crews that never hit 32 -> 14 of 91; target dead by 36.6 -> 26.9 s); (4) reported: spots never reached
+  0 -> 2, dither 0.00 both, line flips 1.20 -> 1.25; (8) cost 3.35 lines a plan tick ON (<= 4.8) PASS; (9) SUPPRESS share of stuck:
+  OFF 15.0 of 598.4 s (3 %), ON 23.3 of 28.8 s (81 %): what is left is two seeds (9609, 9619), gang_ifv squads wiped by their target,
+  crews in the brain's SUPPRESS stand in band with no line while dying. Four crossing seeds carry STAGE-OFF, same stage both arms.
+  Ruled: a real result per R42.6; **v2 = the same own-line guard on the SUPPRESS stand in `_act`, granted on R42.2's terms, built OFF
+  after E1's flip, labbed on dev seeds, its own bar on fresh 9649-9672** (registry). The flip of E1 waits only on the builder2 fight
+  guards (line 5) and the OFF check of the merge candidate.
 
 ## Round 41: five streams (prepared 2026-10-26; CLOSED 2026-10-26; briefs in `streams/archive/round41/`)
 
