@@ -182,6 +182,9 @@ another project's workers (plane_maker): never touch processes you didn't start.
   1.1, arrival +1.36 (line +2.02) PASS. Four variants labbed on seeds 1-3: 9825-9836 decide. Machines: Bar Q6's halves on builder0's
   light lanes (this worktree's and the overrides tree's); Bar Q5's 96-run series on builder2 after engage's guards. A pass = CP42.1
   (native's twin, then ON); a fail: OFF, the bridge as R40.24 left it, B2s v2 carries.
+  **Gate GREEN:** 7569747ce builder0 `make check exited 0`, 3300 passed / 0 failed, 27 passed + 1 NOT JUDGED (remote-guard-test load
+  refusal), sim-baseline 13 unmoved. Series started 17:38 PDT (overrides tree d9382eed7 = 7569747ce + 8e257f3bc + d385cd308; both
+  halves in builder0's light lanes, then the group-order guards and fights); verdict ~19:30.
 
 _(filed bars go here, before their numbers)_
 
