@@ -18,6 +18,7 @@ extends Node
 ##                 never, by the end of the run)
 ##   own_shown_s   seconds x the fraction of the commanded units on screen and not behind an uncut wall (a danger
 ##                 turn must not lose his own squad)
+##   inside_s      seconds the camera itself sat inside a solid (the building clearance easing in too slowly)
 ##   yaw_reversals the view's turn changing direction after at least REVERSAL_DEG each way (a swinging camera)
 ## CameraTrace attaches it with the trace; the playtest gives it the feed once the controls exist.
 
@@ -42,6 +43,7 @@ var _under_fire_s := 0.0
 var _blind_s := 0.0
 var _wall_s := 0.0
 var _own_shown_s := 0.0
+var _inside_s := 0.0
 var _bearings := {"shooter": [], "centroid": [], "middle": []}
 var _open := {}  # shooter name -> its open episode
 var _reversals := 0
@@ -61,6 +63,8 @@ func _process(delta: float) -> void:
 	_clock += delta
 	var state := feed.read()
 	_count_reversal(rad_to_deg(rig._shown_yaw))
+	if not RtsCamera.solid_at(rig.camera.global_position).is_empty():
+		_inside_s += delta  # the building clearance's job: never sit inside a solid
 	if state["from"] == null:
 		return
 	_play_s += delta
@@ -189,10 +193,13 @@ func wall_hides(at: Vector3) -> bool:
 		return false  # the camera is inside the wall: nothing of it stands between
 	var t := float(hit["reach"]) / flat.length()
 	var crossing := at + Vector3.UP + (eye - at - Vector3.UP) * t
-	if crossing.y >= float(hit.get("wall_height_m", RtsCamera.WALL_HEIGHT_M)):
+	var height := float(hit.get("wall_height_m", RtsCamera.WALL_HEIGHT_M))
+	if crossing.y >= height:
 		return false
-	var forward := -rig.camera.global_basis.z
-	return (crossing - eye).dot(forward) > rig.camera.near
+	# The cutaway cuts at the wall's TOP edge (RtsCamera._cut); seen from outside, the face below it is the inner face,
+	# turned away and culled. So the wall still hides him only where the cut has not reached its top.
+	var top := Vector3(crossing.x, height, crossing.z)
+	return (top - eye).dot(-rig.camera.global_basis.z) > rig.camera.near
 
 
 func summary() -> Dictionary:
@@ -208,7 +215,7 @@ func summary() -> Dictionary:
 		var values: Array = _bearings[key]
 		means[key] = snappedf(values.reduce(func(s: float, v: float) -> float: return s + v, 0.0) / maxf(values.size(), 1), 0.1)
 	return {"play_s": snappedf(_play_s, 0.01), "under_fire_s": snappedf(_under_fire_s, 0.01), "blind_s": snappedf(_blind_s, 0.01),
-			"wall_s": snappedf(_wall_s, 0.01), "own_shown_s": snappedf(_own_shown_s, 0.01), "episodes": episodes.size(), "never": never, "latencies": latencies,
+			"wall_s": snappedf(_wall_s, 0.01), "own_shown_s": snappedf(_own_shown_s, 0.01), "inside_s": snappedf(_inside_s, 0.01), "episodes": episodes.size(), "never": never, "latencies": latencies,
 			"mean_abs_bearing": means, "yaw_reversals": _reversals, "minutes": snappedf(_clock / 60.0, 0.001)}
 
 

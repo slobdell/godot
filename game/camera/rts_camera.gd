@@ -231,6 +231,10 @@ var danger: Callable = Callable()
 var danger_on := false
 ## The last `danger_look` (the readout shows its pulls; the trace its strength).
 var danger_last := {}
+## K4.2 dev knob (`--camera-danger-lean=`): the bar runs at DANGER_LEAN_M.
+var danger_lean_m := DANGER_LEAN_M
+## K4.2 dev knob (`--camera-solid-in=`): how fast the building clearance eases in (the bar runs at SOLID_IN_OMEGA).
+var solid_in_omega := SOLID_IN_OMEGA
 ## (a) The heading is a light pull: it decides only when nothing else does (a quiet drive, no enemy known).
 const DANGER_HEADING_W := 0.6
 ## The heading's weight is full at this speed (m/s; a scout's cruise) and zero at rest: a parked squad has no heading.
@@ -383,6 +387,8 @@ func _ready() -> void:
 	yaw_deg_per_s = float(flags.text("camera-glide-yaw", str(GLIDE_YAW_DEG_PER_S)))
 	focus_omega = float(flags.text("camera-glide-omega", str(GLIDE_FOCUS_OMEGA)))
 	danger_on = flags.text("camera-danger", "off") != "off"  # K4.2: OFF until Bar K4 passes (then ON; =off = round 41)
+	danger_lean_m = float(flags.text("camera-danger-lean", str(DANGER_LEAN_M)))
+	solid_in_omega = float(flags.text("camera-solid-in", str(SOLID_IN_OMEGA)))
 	if glide:
 		CameraShake.pivot = cursor_ground
 	snap()
@@ -527,11 +533,11 @@ func _glide(delta: float) -> void:
 		_pitch_velocity = float(next[1])
 	# The building clearance (measured by the last `_apply`): quick toward more clearance, slow back.
 	var solid_d := RtsCamera.spring(_solid_d, _solid_d_velocity, _solid_want.x,
-			SOLID_IN_OMEGA if absf(_solid_want.x) > absf(_solid_d) else SOLID_OUT_OMEGA, delta)
+			solid_in_omega if absf(_solid_want.x) > absf(_solid_d) else SOLID_OUT_OMEGA, delta)
 	_solid_d = float(solid_d[0])
 	_solid_d_velocity = float(solid_d[1])
 	var solid_p := RtsCamera.spring(_solid_p, _solid_p_velocity, _solid_want.y,
-			SOLID_IN_OMEGA if absf(_solid_want.y) > absf(_solid_p) else SOLID_OUT_OMEGA, delta)
+			solid_in_omega if absf(_solid_want.y) > absf(_solid_p) else SOLID_OUT_OMEGA, delta)
 	_solid_p = float(solid_p[0])
 	_solid_p_velocity = float(solid_p[1])
 
@@ -1312,6 +1318,11 @@ func _update_yaw_follow(delta: float) -> void:
 
 ## K4.2: how far inside the wall the danger camera keeps its focus and the frame's mirror points.
 const DANGER_WALL_MARGIN_M := 4.0
+## K4.2: how far toward the danger the view leans from his units. 0: the danger camera frames his units, centred,
+## facing the danger, and the yaw does the rest. A lean puts them at the frame's bottom bound, and while they drive
+## TOWARD the camera (his retreat, looking back at the fight) the glide's lag slides them under the HUD: dev seeds
+## 7001-7012 (4fd517b83+), own units on screen 86 % at 60 m, 69 % at 30, 96 % at 0 (round 41: 95 %).
+const DANGER_LEAN_M := 0.0
 
 
 ## K4.2: the vision frame's points with every contact's mirror (the points after `own` come in [contact, mirror] pairs)
@@ -1750,13 +1761,22 @@ func _update_vision_tracking() -> void:
 		return
 	var destination: Variant = _vision_state.get("destination")
 	if danger_on:
-		# K4.2: the frame was made for a view along the heading. Looking at the danger instead, a contact's mirror and the
-		# lean toward where he is going can lie BEHIND the view, and at his edge outside the wall (dev seed 7005: the
-		# focus 30 m past the wall, so the cutaway found no wall to cut and the wall hid his scout).
-		points = RtsCamera.danger_frame(points, int(_vision_state.get("own", points.size())))
-		if destination is Vector3 and RtsCamera.behind_view(yaw, RtsCamera._middle(points, int(_vision_state.get("own", points.size()))),
-				destination as Vector3):
-			destination = null
+		# K4.2: the frame was made for a view along the heading: each contact framed with its mirror about his units (so
+		# they stay centred), leaning toward where he is going. Looking at the danger instead, the mirrors and that lean
+		# lie BEHIND the view, at his edge outside the wall (dev seed 7005: the focus 30 m past the wall, so the cutaway
+		# found no wall to cut and the wall hid his scout); and mirrors kept inside the wall left a frame the zoom cap
+		# could not fit, so his units slid off the bottom (seeds 7001-7012). So the danger camera frames his units only and
+		# LEANS toward the danger it faces (order_pose: his units stay framed, the view leans as far as that allows).
+		var own_n := int(_vision_state.get("own", points.size()))
+		var look: Variant = danger_last.get("look")
+		if look is Vector3 and own_n > 0:
+			points = points.slice(0, own_n)
+			destination = RtsCamera.inside_wall(RtsCamera._middle(points, own_n) + (look as Vector3) * danger_lean_m,
+					DANGER_WALL_MARGIN_M)
+		else:
+			points = RtsCamera.danger_frame(points, own_n)
+			if destination is Vector3 and RtsCamera.behind_view(yaw, RtsCamera._middle(points, own_n), destination as Vector3):
+				destination = null
 	var goal: Array
 	if destination is Vector3:
 		goal = RtsCamera.order_pose(points, destination as Vector3, yaw, _aspect(), _track_floor_zoom, vision_inset, pitch,

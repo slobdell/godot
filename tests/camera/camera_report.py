@@ -98,6 +98,7 @@ def look_table(runs):
         blind = sum(l["blind_s"] for l in looks)
         wall = sum(l["wall_s"] for l in looks)
         own = sum(l.get("own_shown_s", 0.0) for l in looks)
+        inside = sum(l.get("inside_s", 0.0) for l in looks)
         lat = [x for l in looks for x in l["latencies"]] + [float("inf")] * sum(l["never"] for l in looks)
         minutes = sum(l["minutes"] for l in looks) or 1e-6
         bearing = {}
@@ -107,7 +108,7 @@ def look_table(runs):
         rows.append({"scenario": key[0], "lane": key[1], "runs": len(rs),
                      "staged": sum(1 for r in rs if r.get("staged", {}).get("ok", key[0] == "attack")),
                      "play_s": play, "under_pct": 100 * under / play, "blind_pct": 100 * blind / play,
-                     "blind_of_fire_pct": 100 * blind / under if under else 0.0, "wall_pct": 100 * wall / play, "own_pct": 100 * own / play,
+                     "blind_of_fire_pct": 100 * blind / under if under else 0.0, "wall_pct": 100 * wall / play, "own_pct": 100 * own / play, "inside_s": inside,
                      "episodes": len(lat), "never": sum(l["never"] for l in looks),
                      "p50": quantile(lat, 0.5), "p90": quantile(lat, 0.9),
                      "capped": mean_se([min(x, NEVER_S) for x in lat]),
@@ -120,14 +121,14 @@ def show_look(rows):
         return
     print("| scenario | lane | runs (staged ok) | play s | under fire % | blind % of play | blind % of fire | facing wall % "
           "| own on screen % | off-screen shots | never | first shot -> on screen p50 / p90 s | mean (never = 20 s) +- se | yaw reversals/min "
-          "| mean abs bearing shooter / enemies / middle (deg) |")
-    print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+          "| mean abs bearing shooter / enemies / middle (deg) | camera inside a solid s |")
+    print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
     for r in rows:
         b = r["bearing"]
         print(f"| {r['scenario']} | {r['lane']} | {r['runs']} ({r['staged']}) | {r['play_s']:.0f} | {r['under_pct']:.1f} | "
               f"{r['blind_pct']:.1f} | {r['blind_of_fire_pct']:.1f} | {r['wall_pct']:.1f} | {r['own_pct']:.1f} | {r['episodes']} | {r['never']} | "
               f"{fmt_s(r['p50'])} / {fmt_s(r['p90'])} | {r['capped'][0]:.1f} +- {r['capped'][1]:.1f} | {r['reversals_per_min']:.2f} | "
-              f"{b['shooter']:.0f} / {b['centroid']:.0f} / {b['middle']:.0f} |")
+              f"{b['shooter']:.0f} / {b['centroid']:.0f} / {b['middle']:.0f} | {r['inside_s']:.2f} |")
     print()
 
 
