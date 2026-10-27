@@ -166,6 +166,8 @@ another project's workers (plane_maker): never touch processes you didn't start.
   29 -> 1; ambush latency 9.3 -> 2.5 s (rear 13.5 -> 2.9); reversals ~halved; attack guards hold (clicks 76.9 %, slip p95 30 px, held
   16 %, action share 36 -> 50 %). Watch: the building clearance's jerks 1.20/min on the attack workload v G1's 1.5/min line (left as
   round 41 shipped it: softening doubled time inside buildings). The full check of 0e4d4f732 is the gate.
+  **Gate GREEN:** 0e4d4f732 builder0 `make check exited 0`, 26 passed + 2 NOT JUDGED (perf-judge refused on a busy box; scenario_perf
+  unpinned); the series started ~19:40 on 0e4d4f732 (9701-9736, 36 an arm, light lane J4, workloads one after another; ~2.5 h).
 
 - **Bar Q6, the deck-mouth wait (manoeuvre; FILED 7569747ce = the frozen tree, code ac64ce939, 2026-10-26 ~16:30, before any number on
   9825-9848; R42.7).** Rule = deckwait v4 (`--traffic-on=deckwait`, OFF): a wheeled crew with a friend ahead in its lane that is in a
