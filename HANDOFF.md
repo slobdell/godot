@@ -53,7 +53,9 @@ Manoeuvre: Q6's first read reproduces R40.21's crew exactly (locks rust s2 t15, 
 1 NOT JUDGED (remote-guard-test load refusal), sim-baseline 13 unmoved, perf-judge PASS 1.01x 7,460 us/tick; merge_check_needed INHERIT).
 **22:35 PDT: MAIN 7815e5b15 GREEN on builder0, 28 targets ALL JUDGED** (`>> remote: make check exited 0`, 3314 passed / 0 failed; log
 `build/orch/main-check-7815e5b15.log`) = `--attack-shot` ON + manoeuvre's OFF rules + native's tools. Perf-judge judged inside this check
-(an ON flip's judge, as R41.15's precedent). Since: native's lines_r42 (docs + tools/judge; next batch). Rulings to R42.20: Bar E2
+(an ON flip's judge, as R41.15's precedent): PERF_JUDGE PASS ratio 1.06x, 7,989 us/tick on builder0 (cpus 0-3 pinned, idle 97 %), +7 %
+on CP42.0's 7,460: about E1's 3.35 cover-map lines a plan tick. Native DONE (final Status merged; lines_r42 still owes K4 v2, E2, B7, B8,
+B2s v2 to whoever holds N3 next). Since: native's lines_r42 (docs + tools/judge; next batch). Rulings to R42.20: Bar E2
 INCONCLUSIVE (1 of 48 seeds exercised the SUPPRESS stand; v2 OFF), Bar K4 v2 filed on 9737-9772 (R42.18: blind as a share of time under
 fire), balance's overnight chain armed (Bar B7 then Bar B2s v2 on builder2, gated on fb9e2a95a's check). Engage and manoeuvre DONE.
 
