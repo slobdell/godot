@@ -87,8 +87,9 @@ The clip, when K4.4 has one.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-27: K4.1 DONE; K4.2 DONE OFF at 0e4d4f732 (full check queued on builder0 behind the full-check lock); Bar K4 FILED
-(R42.5 + G5 amendment recorded on main; no 9701+ number read); the bar series starts on the commit whose check greens. K4.4 clips
+**2026-10-27: K4.1 DONE; K4.2 DONE OFF at 0e4d4f732, GREEN builder0 (`make check exited 0`, 26 passed, 2 NOT JUDGED:
+perf-judge refused on a busy box, scenario_perf unpinned); Bar K4 FILED (R42.5 + G5 amendment recorded on main); the bar series
+(9701-9736, builder0 light J4) is RUNNING on that code (tip 204a28707, docs-only), out to `~/camera-bar-k4/204a28707/`. K4.4 clips
 filmed (dev seed, laptop): `~/camera-clips-round42/retreat_7005.mp4`, `ambush_rear_7001.mp4` (to re-film on the bar commit).**
 Start: 18982e8df (= 21b20bdce's code, GREEN builder0 per HANDOFF; no baseline check).
 
