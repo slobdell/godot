@@ -88,7 +88,7 @@ The clip, when K4.4 has one.
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 **2026-10-27: K4.1 DONE; K4.2 DONE OFF at 0e4d4f732, GREEN builder0 (`make check exited 0`, 26 passed, 2 NOT JUDGED:
-perf-judge refused on a busy box, scenario_perf unpinned); Bar K4 FILED (R42.5 + G5 amendment recorded on main); **Bar K4 READ: FAIL**
+perf-judge refused on a busy box, scenario_perf unpinned); Bar K4 FILED (R42.5 + G5 amendment recorded on main); **Bar K4 v2 FILED (R42.18; seeds 9737-9772; candidate ef55e64b8, full check queued); Bar K4 READ: FAIL**
 (D2 rear lane, G1 snaps; table below): the danger camera stays OFF by default. Next: fix the solid snap and the rear lane on dev
 seeds only, then a fresh series (proposed 9801-9836, Bar K4 text unchanged) on the fixed commit, asked of the orchestrator. K4.4 clips
 filmed (dev seed, laptop): `~/camera-clips-round42/retreat_7005.mp4`, `ambush_rear_7001.mp4` (to re-film on the bar commit).**
@@ -135,6 +135,26 @@ a set with no off-screen shot at all reads 0 (the best result: the camera faced 
   perimeter wall is not on screen (`CameraLook.wall_hides`): projection alone scored the first retreat clip 99.7 % while the wall
   hid his scout.
 - G6 every run CAMERA_TRACE_DONE ok=true, no SCRIPT ERROR, every scenario run staged ok, both arms.
+
+### Bar K4 v2 (FILED before any number on 9737-9772; R42.16 + R42.18; the LAST re-file: a fail ships the danger camera OFF with the retreat result for him)
+**Unchanged from Bar K4** (above) except D2's blind clause. Arms, workloads, latency, D1, D3, G1-G6 as filed; BOTH arms on one
+commit, the one whose full check greens; builder0 light lane, `make camera-trace` J=4; seeds **9737-9772** (36 an arm).
+- **D2 (R42.18)**, on the AMBUSH REAR lane alone AND on RETREAT alone: ARM latency mean < BASE's AND ARM blind as a share of the
+  time UNDER FIRE (`blind % of fire`) <= BASE's. Blind % of play stays a reported column beside it (not judged): the danger
+  camera finds more fights (dev rear lane under fire 55.6 v 44.7 % of play), and the action share (G3) already counts that.
+**What changed since Bar K4's commit (0e4d4f732), the rule the v2 series judges:**
+- (a) the building clearance (`solid`) moves under the glide cap: pitch at most 0.6 screens/s x FOV (21 deg/s), distance at most
+  0.6 x the boom per second (`RtsCamera.solid_caps`). Bar K4's three snaps were that spring closing a big step uncapped. It also
+  caps BASE's clearance (both arms run it).
+- (b) a gun outside the view breaks both swing guards: an enemy that fired at the commanded units within DANGER_RECENT_S (3 s) and
+  lies more than DANGER_VIEW_DEG (25) off the view cancels the 1.5 s hold, and the deadband drops from 20 deg to YAW_SETTLE_DEG (2).
+- (c) the danger frame keeps the known contacts ahead of the view (`danger_ahead`, inside the wall, no mirrors), and drops them,
+  framing his units alone, when they do not fit under the zoom cap.
+Weights unchanged. Tried and dropped: a 90 deg/s danger turn (201 danger snaps in the ambush, rear blind still 4.1 %).
+**Lines most at risk (dev, ef55e64b8, NEVER a bar; builder0 light; ambush 7001-7036, retreat/attack 7001-7012; OFF v ON):**
+- G5 rear lane own on screen 97.0 v 94.4 (the line is BASE - 5; G5 judges per workload, ambush pooled 98.2 v 97.5).
+- G1 snaps: no source snapped; one combined frame on seed 7016 moved 24.1 px (SNAP_PX 24; three capped moves added together).
+- D2 rear: latency 11.1 +- 2.4 v 5.5 +- 1.1 s; blind % of fire 8.4 v 8.4 (the line is ARM <= BASE: a tie).
 
 ### Bar K4 result (9701-9736; camera 0e4d4f732, tip 204a28707 docs-only; GREEN builder0 `make check exited 0`, 26 passed, 2 NOT JUDGED perf; builder0 light J4; 36 runs an arm a workload; out `~/camera-bar-k4/204a28707/`)
 | line | BASE (off) | ARM (on) | verdict |
