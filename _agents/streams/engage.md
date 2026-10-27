@@ -369,6 +369,20 @@ recipe verified by `make -n` (`--attack-shot=on --attack-shot-suppress=on` on th
 record the second flag). **The extension 9673-9696 is running** (started 21:53 PDT, same lane, the pooled n 48 table in
 `scratchpad/series2pool/`): fewer than 3 exercised seeds in the 48 -> INCONCLUSIVE, no ship, written up. **The guards are held**
 (builder2 to balance's B7) until the pooled table exercises the line: 48 fights for a bar that cannot ship would be waste.
+**R42.19 (the orchestrator):** extend to n 48 as filed, no guards before the line is exercised; fewer than 3 in the 48 -> E2 written
+up INCONCLUSIVE with the evidence and a proposal for how a later bar would force the case, and the round is done.
+
+**For the record, how a later bar would force the case (a staged probe with a SUPPRESS-prone draw):** the stand needs three
+things at once that the natural draw rarely gives together: a gun that cannot kill its target quickly (E1's two seeds and the
+dev lab's one were all gang_ifv squads v an ifv; `--hull=gang_ifv --target=ifv` is already a probe flag), a crew in the
+SUPPRESS band [10, 28] m of the target, and a feature on that crew's own line while a squadmate's line is clear (so the
+element holds the attack and the brain's choice is SUPPRESS, not a move). The probe stages crews at STAGE_MIN..STAGE_MAX m
+and draws the feature between: a `--stage=suppress` mode would place one crew of three INSIDE the band behind the feature
+(its line blocked by the map, checked with CoverMap.clear_line at placement, re-drawn until true) and the other two in the
+clear at 20-28 m, hull gang_ifv v ifv, on locks / crossing (the maps the stand showed on). Then every seed exercises line 1
+by construction and the bar's deciding line can be the paired mean on stuck_suppress at n 24 (z, not dominance), with the
+natural-draw series kept as the "does it cost anything where it never fires" guard (lines 2-6 at identity, as read here).
+The mechanism itself is pinned today by `tests/tactics/test_engage_suppress_line.gd` (both arms, both lines, the act step).
 
 ### Requests to the orchestrator
 
