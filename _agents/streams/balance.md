@@ -189,6 +189,24 @@ a seed as filed); `tools/balance/fights.sh fb9e2a95a DIR/b7-off.txt ~/balance-gu
 list in ONE builder2 call (`mk/balance.mk balance-fights-run`, J24, GUARD_RESUME on preemption, pausable between the arms);
 `search.py bar-b7 ~/balance-guard-raw/b7 fb9e2a95a --firing condemned,gangs,syndicate` is the verdict (per faction, R42.17).
 
+**BAR B7 READ (2026-10-27 00:39; frozen fb9e2a95a, green builder0 3298/0; builder2 J24, 2 calls of 360 fights, 0 lost; seeds
+9901-9940 one arena a seed, mono on Green and Rust; n 80 a faction, paired by fight, se bootstrap over seeds; `search.py bar-b7`):**
+| faction | all-tanks OFF -> ON | paired | deciding (<= 60 % AND < -2 se) |
+|---|---|---|---|
+| Condemned | 75 -> **46 %** | -28.8 (se 7.5) | **pass: ON** |
+| Gangs | 76 -> **60 %** | -16.2 (se 6.9) | **pass: ON** (at the line; -2.4 below 2 se) |
+| Syndicate | 92 -> 78 % | -15.0 (se 4.6) | FAIL: stays OFF ("beats the roll by 15 but short of the target") |
+| Law (not firing) | 91 -> 91 % | 0 | reported (no counter) |
+| fired / all | 81 -> 61 % / 84 -> 69 % | -20.0 (se 3.9) / -15.0 (se 3.0) | reported |
+G1 40/40 CPU v CPU fights identical ON v OFF; G2 median length -1.2 % (fired) / -3.5 % (all); counter fired 80/80 in each firing
+faction, 0/80 Law. **G3: the judge as run read FAIL (134 of 320) because it checked max(both sides) <= ARMY_CAP's `units=25`**:
+the wrong side (the all-tanks side is a named lineup, 26-29 vehicles ON and OFF) and the wrong cap (25 is the player's squads x
+five, applied only under the ceiling; a dealt faction army's cap on desktop is Army.MAX_ARMY_UNITS = 45, which test_army_counter
+asserts and the OFF rolls reach). Read as filed ("every countered army within the cap"): 320 loaded, 0 over 45 (largest 44; OFF
+largest 45) -> pass, VERDICT PASS, ON for Condemned and Gangs. The judge fix came AFTER the numbers, so it went to the
+orchestrator for a ruling (both outputs kept: `~/balance-runs/bar-b7-verdict-as-run.log`, `bar-b7-verdict-g3-fixed.log`).
+Nothing ships until the ruling.
+
 **R42.15 (orchestrator, ~19:10):** Bar Q6 FAILED, so CP42.1 is not reached and the bridge gate for shipping fm_c5r2_lawt5 is not met
 (not loosened). RULED: run Bar B2s v2 anyway, overnight on builder2 after the firing screen, B9_MAIN = current main (hash named by
 the orchestrator when the screen ends), so his stat-change question gets a read verdict; the change does not ship this round unless

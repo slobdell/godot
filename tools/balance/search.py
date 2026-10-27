@@ -714,6 +714,7 @@ def bar_b5(root: Path, base_c: str, arm_c: str) -> int:
 B7_SEEDS = range(9901, 9941)
 B7_ARENAS = ["terminus", "locks", "sumps", "gorge", "parade"]  # ONE arena a seed: 9901-9908 terminus, 9909-9916 locks, ...
 B7_G1_SEEDS = range(9901, 9911)  # G1: CPU v CPU, terminus
+MAX_ARMY_UNITS = 45  # game/units/army.gd: a dealt faction army's cap (desktop preset)
 
 
 def b7_arena(seed: int) -> str:
@@ -806,16 +807,21 @@ def bar_b7(root: Path, commit: str, firing: list) -> int:
             else:
                 diffs.append(f"{f} {k[0]} s{k[1]}")
     judge("G1 CPU v CPU identical", n == 40 and same == n, f"{same} of {n} identical (expect 40)" + (f": {diffs[:6]}" if diffs else ""))
-    loaded, fielded_ok, fired, total = 0, 0, defaultdict(int), 0
+    # G3 as filed: the COUNTERED (plain cpu) side within its cap. On the desktop preset a dealt faction army's cap is
+    # Army.MAX_ARMY_UNITS; ARMY_CAP's `units=` is the player's squads x five, applied only under the ceiling (C25.6), and the
+    # all-tanks side is a named lineup, the same ON and OFF. (First run judged max(both sides) <= 25: wrong side, wrong cap.)
+    loaded, fielded_ok, fired, total, largest = 0, 0, defaultdict(int), 0, 0
     for d in sorted(root.glob(f"{commit}-b7-on-mono-*")):
         m = MONO_DIR.search(d.name)
         for k, row in _results(d).items():
             total += 1
             loaded += row["result"] is not None and row["fielded"] is not None
-            fielded_ok += row["fielded"] is not None and row["cap"] is not None and max(row["fielded"]) <= row["cap"]
+            cpu = None if row["fielded"] is None else row["fielded"][1 if m["team"] == "player" else 0]
+            fielded_ok += cpu is not None and cpu <= MAX_ARMY_UNITS
+            largest = max(largest, cpu or 0)
             fired[m["faction"]] += row["counter"] > 0
     judge("G3 loads and fields", total == 320 and loaded == total and fielded_ok == total,
-          f"{loaded} loaded, {fielded_ok} within the cap, of {total} (expect 320)")
+          f"{loaded} loaded, {fielded_ok} CPU armies within {MAX_ARMY_UNITS} (largest {largest}), of {total} (expect 320)")
     print("BAR_B7 reported: counter fired in " + ", ".join(f"{f} {fired[f]}/80" for f in FACTIONS))
     passed = all(verdict) and ships
     print(f"BAR_B7 VERDICT {'PASS' if passed else 'FAIL'}: guards {sum(verdict)} of {len(verdict)}; "
