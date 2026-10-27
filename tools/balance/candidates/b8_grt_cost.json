@@ -1,0 +1,9 @@
+{
+ "name": "b8_grt_cost",
+ "why": "B8: Law's Gas Rocket Truck cost -15 %",
+ "units": {
+  "law_artillery": {
+   "cost": 213
+  }
+ }
+}

@@ -524,6 +524,8 @@ func ready_problems() -> PackedStringArray:
 
 
 func _hint() -> String:
+	if GarageAdvice.tank_rush_line(draft) != "":  # B7 (round 42, balance; R42 grant): his tank rush, the counter's advice
+		return "%s · FIGHT when ready" % GarageAdvice.tank_rush_line(draft).trim_suffix(".")
 	if army_full():
 		return GarageScreen.full_line(draft)
 	var squad_name := String(draft.squad(selected_squad).get("name", "a squad")).to_upper()

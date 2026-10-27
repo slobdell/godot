@@ -1,0 +1,14 @@
+{
+ "name": "b8_grt_both",
+ "why": "B8: Gas Rocket Truck damage +15 % and cost -15 %",
+ "units": {
+  "law_artillery": {
+   "cost": 213
+  }
+ },
+ "weapons": {
+  "gas_rockets": {
+   "damage": 63.25
+  }
+ }
+}

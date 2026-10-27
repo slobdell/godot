@@ -81,8 +81,74 @@ const SQUADS := {
 }
 
 
+## B7 (round 42, balance; C42.5): the CPU counter-lineup. When the opposing army's cost is at least this share tanks, a plain
+## "cpu" deal fields its faction's artillery-heavy lineup (COUNTER_ARCHETYPES) instead of its roll: artillery is what beats
+## an all-tank army (R41.16/R41.18). 0.7 sits above every army the CPU itself deals (the most tank-heavy, Condemned's
+## `armor`, comes to ~63-67 %), so CPU v CPU never counters and a mixed player army is never punished; an army that is
+## seven-tenths tanks is a tank rush. Only the factions that passed Bar B7 (R42.21; fb9e2a95a, builder2, seeds 9901-9940, n 80
+## each, all-tanks v the plain deal OFF -> ON): Condemned 75 -> 46 %, Gangs 76 -> 60 %. Syndicate's lineup cut it 92 -> 78 %, short of
+## the bar's 60 %, and Law's made all-tanks stronger (R42.3), so both keep their roll (their `*_barrage` stay measure_only).
+const COUNTER_TANK_SHARE := 0.7
+const COUNTER_ARCHETYPES := {"condemned": "siege", "gangs": "gang_hail"}
+## `--cpu-counter=on|off`; ON since Bar B7 passed (R42.21), `off` the escape.
+const COUNTER_DEFAULT := true
+static var _counter := COUNTER_DEFAULT
+static var _counter_read := false
+
+
+static func counter_on() -> bool:
+	if not _counter_read:
+		_counter_read = true
+		for arg in OS.get_cmdline_user_args():
+			if String(arg).begins_with("--cpu-counter="):
+				_counter = String(arg).split("=", true, 1)[1] != "off"
+	return _counter
+
+
+## Tests (and nothing else) pin the switch.
+static func set_counter(on: bool) -> void:
+	_counter_read = true
+	_counter = on
+
+
+## The share of an army's cost that is tanks, 0..1.
+static func tank_share(doctrine: Dictionary) -> float:
+	var total := 0.0
+	var tanks := 0.0
+	for item: Dictionary in Doctrine.entries(doctrine):
+		var cost := float(Units.cost_of(item["entry"]))
+		total += cost
+		if Units.role_of(String(item["entry"].get("unit", ""))) == "tank":
+			tanks += cost
+	return 0.0 if total <= 0.0 else tanks / total
+
+
+## The archetype a CPU of `faction` fields against `opposing` under the counter rule, or "" for its usual deal.
+static func counter_archetype(faction: String, opposing: Dictionary) -> String:
+	if not counter_on() or opposing.is_empty() or tank_share(opposing) < COUNTER_TANK_SHARE:
+		return ""
+	return String(COUNTER_ARCHETYPES.get(faction if faction != "" else Units.DEFAULT_FACTION, ""))
+
+
 static func is_cpu(name: String) -> bool:
 	return name == "cpu" or name.begins_with("cpu:")
+
+
+## B7: both sides' armies, each plain "cpu" side dealt against the other side's army as named or rolled (so the order the
+## sides load in doesn't matter, and two plain CPUs are exactly their two rolls). `lineups` / `factions`: {team: String}.
+static func load_pair(lineups: Dictionary, factions: Dictionary, seed_value: int, budget: int) -> Dictionary:
+	var first := {}
+	for team: Variant in lineups:
+		first[team] = load_army(String(lineups[team]), seed_value, budget, String(factions.get(team, "")))
+	var armies := first.duplicate()
+	for team: Variant in lineups:
+		for other: Variant in lineups:
+			if other != team and String(lineups[team]) == "cpu" and not first[other].has("error"):
+				var counter := counter_archetype(String(factions.get(team, "")), first[other]["doctrine"])
+				if counter != "":
+					armies[team] = load_army(String(lineups[team]), seed_value, budget, String(factions.get(team, "")),
+							first[other]["doctrine"])
+	return armies
 
 
 ## L3: the archetype names belonging to `faction`, sorted (a deterministic pick order). B5 (round 41): a `measure_only`
@@ -133,8 +199,14 @@ static func ensure_overrides() -> void:
 ## res://doctrines/, or a full path. `faction` (L3, optional) restricts a CPU army to one faction's archetypes and
 ## units, and lets it grow past Doctrine.MAX_UNITS. Returns {"doctrine": Dictionary} or {"error": String}.
 static func load_army(name_or_path: String, seed_value: int, budget: int = Units.DEFAULT_BUDGET,
-		faction: String = "") -> Dictionary:
+		faction: String = "", opposing: Dictionary = {}) -> Dictionary:
 	ensure_overrides()
+	# B7: a plain "cpu" against a tank rush is its faction's counter lineup (an explicit name is never swapped).
+	if name_or_path == "cpu":
+		var counter := counter_archetype(faction, opposing)
+		if counter != "":
+			print("CPU_COUNTER faction=%s tank_share=%.2f archetype=%s" % [faction, tank_share(opposing), counter])
+			name_or_path = "cpu:" + counter
 	if is_cpu(name_or_path):
 		var archetype := name_or_path.trim_prefix("cpu:")
 		if archetype.begins_with(MONO_PREFIX):

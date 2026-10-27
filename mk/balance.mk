@@ -40,3 +40,25 @@ balance-guard-run: import ## B5: guard-run through the face probe (FACE lines) -
 
 balance-faces: ## B5: the mixed army's damage to tanks by face from a face-probed mono series: ROOT=~/balance-guard-raw/b5 MATCH=-mono-base- [BASE_MATCH=...]
 	$(PYTHON) tools/balance/search.py faces $(ROOT) --match "$(MATCH)" $(if $(BASE_MATCH),--base-match "$(BASE_MATCH)")
+
+# Round 42 (B7, balance): a fight LIST, one remote call. guard-run plays every seed on every GUARD_AT arena with one GUARD_ARGS;
+# Bar B7 plays ONE arena a seed and several arms (faction, team, switch), which through guard.sh is ~80 calls. FIGHTS is a file
+# in the tree (tools/balance/fights.sh lays it in before the sync), one fight a line: `<folder> <arena> <seed> <switches...>`,
+# played as the none line's green side (guard_line.gd, GUARD_SECONDS) -> build/guards/fights/<folder>/<arena>-<seed>-green.log.
+# Resume as guard-run (GUARD_RESUME=1 and the same stamp: commit, list, seconds; a fight with its GUARD_RESULT is not replayed).
+FIGHTS ?= fights/fights.txt
+.PHONY: balance-fights-run
+balance-fights-run: import ## B7: play a fight list (FIGHTS=<file>: folder arena seed switches...) -> build/guards/fights/ (tools/balance/fights.sh drives it)
+	@test -s $(FIGHTS) || { echo ">> balance-fights-run: no fight list at $(FIGHTS)"; exit 2; }
+	@stamp="$${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)} | fights $$(sha256sum $(FIGHTS) | cut -c1-12) | seconds $(GUARD_SECONDS)"; \
+	if [ -n "$(GUARD_RESUME)" ] && [ "$$(cat $(GUARD_DIR)/stamp 2>/dev/null)" = "$$stamp" ]; then \
+		echo ">> balance-fights-run: resuming, $$(grep -l '^GUARD_RESULT' $(GUARD_DIR)/fights/*/*.log 2>/dev/null | wc -l) fights already read"; \
+	else rm -rf $(GUARD_DIR) && mkdir -p $(GUARD_DIR) && echo "$$stamp" > $(GUARD_DIR)/stamp; fi
+	@echo ">> guard-run on $$(hostname) | commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null || echo unknown)} | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | fights $$(grep -cv '^\s*\(#\|$$\)' $(FIGHTS)) from $(FIGHTS) | load $$(cut -d' ' -f1-3 /proc/loadavg)" | tee -a $(GUARD_DIR)/run.txt
+	@grep -v '^\s*\(#\|$$\)' $(FIGHTS) | while read -r folder arena seed rest; do mkdir -p $(GUARD_DIR)/fights/$$folder; \
+		grep -qs "^GUARD_RESULT" $(GUARD_DIR)/fights/$$folder/$$arena-$$seed-green.log || echo "$$folder $$arena $$seed $$rest"; done | \
+		xargs -r -P $(GUARD_JOBS) -L 1 sh -c 'f=$$0 a=$$1 s=$$2; shift 2; timeout 1800 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . \
+		--script res://tests/ai_scenarios/guard_line.gd -- --skirmish --demo-match --clean --seed=$$s --arena=$$a --mute \
+		--guard=none --guard-side=green --seconds=$(GUARD_SECONDS) "$$@" > $(GUARD_DIR)/fights/$$f/$$a-$$s-green.log 2>&1 || true; \
+		grep -q "^GUARD_RESULT" $(GUARD_DIR)/fights/$$f/$$a-$$s-green.log || echo "  MISSING GUARD_RESULT $$f $$a s$$s"'
+	@echo ">> guard-run done: $$(grep -l '^GUARD_RESULT' $(GUARD_DIR)/fights/*/*.log 2>/dev/null | wc -l) of $$(grep -cv '^\s*\(#\|$$\)' $(FIGHTS)) fights" | tee -a $(GUARD_DIR)/run.txt

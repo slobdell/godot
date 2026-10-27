@@ -1,0 +1,10 @@
+{
+ "name": "b8_mr_tough",
+ "why": "B8: Missile Ring hull and shield +15 % (armour unchanged: a thicker rear fails the from-behind check)",
+ "units": {
+  "syn_artillery": {
+   "max_health": 253,
+   "max_shield": 184
+  }
+ }
+}
