@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-26 evening — **ROUND 42 PREPARED (box below; launch = the lead starts five CLIs: two Fable, three Opus)**; round 41 closed. Main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); every later commit is docs only. Earlier: 2026-10-26 ~15:00 PDT — ROUND 41 CLOSED; round 42 not yet prepared. Earlier: **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-27 ~03:30 PDT — **ROUND 42 CLOSING (box below): main b12b17ac7 GREEN builder0 ALL JUDGED (3343/0); attack-shot, danger camera and the CPU counter-lineup shipped ON; four streams closed, balance's Bar B2s v2 reads in the morning.** Earlier: 2026-10-26 evening — ROUND 42 PREPARED; round 41 closed. Main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); every later commit is docs only. Earlier: 2026-10-26 ~15:00 PDT — ROUND 41 CLOSED; round 42 not yet prepared. Earlier: **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
@@ -51,6 +51,37 @@ goes blind on a rear one (5 of 9 shooters never on screen) and faces the wall 37
 Manoeuvre: Q6's first read reproduces R40.21's crew exactly (locks rust s2 t15, rim 5.1 s); Bar Q5's judge written; dev tree up.
 **CP42.0 LANDED: main bf99631b5** = native's 75495744b merged alone (builder0 `make check exited 0`, 3290 passed / 0 failed, 27 passed +
 1 NOT JUDGED (remote-guard-test load refusal), sim-baseline 13 unmoved, perf-judge PASS 1.01x 7,460 us/tick; merge_check_needed INHERIT).
+## 🏁 ROUND 42 CLOSING (2026-10-27 ~03:30 PDT) — read this first
+
+**Main: b12b17ac7 GREEN on builder0, 28 targets ALL JUDGED** (`>> remote: make check exited 0`, 3343 passed / 0 failed; sim-baseline 53/0;
+perf-judge JUDGED PASS, relative line 9574 usec per reference ms v 25840; log `build/orch/main-check-b12b17ac7.log`) = every round-42
+merge; later commits are docs only (balance's Status, the archive). **Shipped ON:** (1) **`--attack-shot`** (engage; Bar E1 PASS, R42.12/
+R42.13: a crew under his attack order with no line of fire drives to a firing spot and fires; his Locks crew: OFF 39.8 of 40 s still,
+ON drives round in 1.5 s and fires at 0.8 s; on 24 fresh seeds stuck crew-seconds 598 -> 29, first hit 13.5 -> 4.0 s, deaths 39 -> 31;
+`=off` escape; +7 % us/tick). (2) **`--camera-danger`** (camera; Bar K4 v2 PASS, R42.22: the view turns to whoever shoots at him, rear
+included, and a retreat looks back at the fight: facing the wall on the retreat 27.8 -> 0.0 %, rear-lane latency 14.0 -> 4.8 s; `=off` =
+round 41). (3) **the CPU counter-lineup** (balance; Bar B7 PASS R42.21: against an all-tank army the Condemned and the Road Gangs field
+their artillery-heavy lineup; all-tanks 75 -> 46 % and 76 -> 60 %; Syndicate short of its line, Law never fires; `--cpu-counter=off`;
+the garage says "Bring two artillery squads with your tanks"). **OFF with causes:** Q5 no-pressing (R42.8/R42.11: never-in +1 run),
+Q6 deck-mouth wait (R42.15: the fresh-seed bridge has nothing to fix OFF), E2 the SUPPRESS stand (R42.20: 1 of 48 seeds exercised),
+B8 (R42.9: +/-15 % cannot make Law's or Syndicate's artillery hurt tanks). **Still open:** Bar B2s v2 on builder2 (read verdict only;
+the stat change stays unshipped, R42.15), balance's close, the judging table (lines_r42 owes K4 v2, E2, B7, B8, B2s v2), the
+orchestration lessons. Four streams CLOSED: worktrees + builder0 folders removed (builder0 81 %, 21 G free), branches `round42/<s>`,
+briefs in `streams/archive/round42/`. Side worktrees kept: godot-balance-arm / -b7 / -guard (balance's, until its close),
+godot-doctrine-guard, godot-native-guard, godot-native-score (not ours to remove). Clips for him: `~/camera-clips-round42/on_c27f8011c/`
+(retreat_7005.mp4 strong; ambush_rear_7007.mp4 feel only), stills under `references/round42/camera/`; his recording under
+`references/round42/engage/`.
+
+**Waiting on him (player terms, one recommendation each):**
+1. **Play main** on Locks (`make skirmish ARENA=locks SEED=49326`): tell two Rat Rods to attack a Missile Ring behind a container; the
+   far one should drive round and fire within seconds, no NOT FIRING banner. And a Terminus fight with the camera: a shot from behind
+   should turn the view; a retreat to your edge should look at the fight. `SKIRMISH_FLAGS="--attack-shot=off"` / `"--camera-danger=off"`
+   are the old behaviours; the clip `~/camera-clips-round42/on_c27f8011c/retreat_7005.mp4` (left old, right new).
+2. **The CPU's counter:** bring an all-tank army against the Condemned or the Road Gangs: they now field two artillery squads and
+   scouts; your rush should win about half the time instead of three quarters. The Syndicate's and Law's artillery can't do it inside
+   your 15 % rule (B8); their answer stays their own tank unless you allow a bigger change. Recommended: leave it.
+3. Carried: the slow turret (no), a click beside your army (G1 v9 holds the squads already in the street), the smooth-camera clip.
+
 **2026-10-27 ~02:50 PDT: MAIN b12b17ac7 = every round-42 merge (`--attack-shot` ON, `--camera-danger` ON, the CPU counter-lineup ON
 for Condemned and Gangs, Q5/Q6/E2 OFF, native's tools); its batch check is RUNNING on builder0 (`build/orch/main-check-b12b17ac7.log`;
 read the wrapper line).** Each ON flip's own check judged perf (R41.15's precedent): attack-shot 7,989 us/tick 1.06x; the others ALL
