@@ -201,6 +201,16 @@ another project's workers (plane_maker): never touch processes you didn't start.
   lines a tick ON <= OFF + 0.5 and perf-judge PASS; the suite ON (`check ATTACK_SHOT_SUPPRESS=on`) on the frozen tree before the
   series; fight guards G1-G5 as E1 on builder2 (seeds 9697-9720, R42.14). A pass ships ON.
 
+- **Bar K4 v2 (camera; FILED 4165f4619 Status, 2026-10-26 ~21:30, before any number on 9737-9772; R42.16 + R42.18; the LAST re-file).**
+  Unchanged from Bar K4 except D2's blind clause: D2 on the AMBUSH REAR lane alone AND on RETREAT alone = ARM latency mean < BASE AND
+  ARM blind as a share of time UNDER FIRE <= BASE (blind % of play reported, not judged). Arms, workloads, D1, D3, G1-G6 as filed; both
+  arms on one commit (the one whose full check greens; candidate ef55e64b8), builder0 light J4, 36 an arm. Changes since 0e4d4f732:
+  (a) the clearance under the glide cap (pitch <= 0.6 screens/s x FOV = 21 deg/s, distance <= 0.6 x boom/s; both arms); (b) a gun that
+  fired at the commanded units within 3 s and sits > 25 deg off the view cancels the 1.5 s hold, deadband 20 -> 2 deg; (c) the danger
+  frame keeps known contacts ahead of the view (inside the wall, no mirrors), dropped when they don't fit under the zoom cap. Weights
+  unchanged; tried and dropped: a 90 deg/s danger turn. Lines most at risk (dev, BASE v ARM): G5 rear-lane own on screen 97.0 v 94.4
+  (judged per workload); G1 one combined frame 24.1 px on 7016 v SNAP_PX 24; D2 rear blind % of fire 8.4 v 8.4 (a tie passes).
+
 _(filed bars go here, before their numbers)_
 
 ## Rulings (round 42)
