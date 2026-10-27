@@ -92,6 +92,23 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 filmed (dev seed, laptop): `~/camera-clips-round42/retreat_7005.mp4`, `ambush_rear_7001.mp4` (to re-film on the bar commit).**
 Start: 18982e8df (= 21b20bdce's code, GREEN builder0 per HANDOFF; no baseline check).
 
+### For him (K4.4; the orchestrator relays, in player terms)
+**The clips** (laptop flightdeck, filmed at 0ba17b80a = 0e4d4f732's camera, LEFT round 41 / RIGHT danger camera, a dev seed, not
+a bar): `~/camera-clips-round42/retreat_7005.mp4` (his case: scouts take fire, then drive back to his own edge: left stares at the
+crowd, right keeps his IFV at the wall with the fight beyond it; still `evidence/retreat_7005_t30_0ba17b80a_FINAL.jpg`) and
+`~/camera-clips-round42/ambush_rear_7007.mp4` (a squad driving north is shot at from behind). The white cross is the autoplay's
+cursor. The matches diverge after the first seconds (one seed in a window is not deterministic): the bar is the evidence, the clip is
+for feel.
+**His smoke:** `make skirmish ARENA=terminus SKIRMISH_FLAGS="--camera-danger=on"` v plain `make skirmish ARENA=terminus` (round 41
+until the bar ships it ON): drive a squad north and get shot at from a side street or from behind; send scouts at a fight and then
+back to your own edge. Watch for: does the view turn to whoever is shooting at the selected squad, does a retreat look back at the
+fight, does it ever swing back and forth, does your own squad stay on screen. `--camera-readout=on` adds a DANGER line (the three
+pulls and where it looks).
+**Merge notes:** shared edit = 3 lines in `game/modes/skirmish_mode.gd` beside `rig.facing` (C42.3: `rig.danger =
+DangerFeed...reader()`), plus `game/ui/camera_readout.gd` (owned). New: `game/camera/danger_feed.gd`, `camera_look.gd` (+ .uid),
+`tests/test_camera_look.gd`, `tests/test_camera_danger.gd` (+ .uid). Dev-only flags: `--camera-scenario=ambush|retreat`,
+`--camera-lane=`, `--camera-ambush-m=`, `--camera-danger-lean=`, `--camera-solid-in=`.
+
 ### Bar K4 (FILED before any number on 9701-9736; R42.5 folded in; guards never amended after their numbers)
 **Arms:** BASE `--camera-danger=off` (round 41) v ARM `--camera-danger=on`, BOTH on one commit (named with the result; the constants
 as committed), builder0 light lane, `make camera-trace` J=4, headless 1920x1080 @60, Terminus, CPU enemy, seeds 9701-9736 (36 an arm).
