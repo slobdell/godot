@@ -77,6 +77,16 @@ already read, or 7001-7012.
 
 ## Rulings (round 44)
 
+- **R44.1 (2026-10-28 ~10:50) orders' O0 + O1 land as ONE commit (716e6304e):** both are additive keys at the same two call sites;
+  also `UnitCommand.KEYS` + `click`, `group` (the direct no-element path validates key by key). CP44.0 proof: G1 v9 probe 60 / 60
+  byte-identical v main 711f3e94f (builder0 light, native off). Merged alone on its full check's green; manoeuvre told the same minute.
+- **R44.2 (~10:50) the O2 cause and the build:** his tick-1512 click was (-35, 97), 44 m west of his row on the OPEN north yard (lab
+  match 4.5 m summed over four squads); the column never ran (`column_lay` keeps today's body on open ground; G1 v9's deciding cells
+  were streets), `ranks` laid three squads abreast across the click 58 m apart (160 m north-south) and `fit_inside` slid the body 32 m
+  south off the map edge. Orders builds reading A: the column on open ground too (front squad on the click, the rest behind along the
+  way they came, nearest in front, nobody sent back past its spot); Bar G1 v10 adds an edge-clamp line. Reading B (the click is the
+  army's middle) goes to him as the alternative.
+
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
 **Goal: his first squad settles where he clicks; a crew under his attack-move drives toward the enemy, not away; the camera swings to
