@@ -400,6 +400,24 @@ unchanged since de626d7e1). **A pass ships ON** (1-2 decided, 3-11 within).
 10 (z -8.0), off_order_m 352 -> 60 (z -4.1), water_s 759 -> 147, deaths 28 -> 20 (z -2.4), kills 26 = 26, last_a 720 -> 668
 (se 3.0), damage_water 5796 -> 1215 (the attribution artefact above), first_hit_water 96.6 -> 42.5.
 
+### Bar A7 READ, lines 1-8 (builder2, 8ac00d19b's probe + de626d7e1's rule (the Status commit 7b873d365 on top), `native engage-bar-a7` 10649-10672, J10, 60 s, both pairs with `--brains-off=native_decide` (the library present: the wrapper's `native on`; the exec report line is absent from every log, so the arms are read as "the same path in both", not "native"), 2026-10-28 ~03:40-04:10 PDT, the box at load 30-54 with camera's work; tables `scratchpad/bar-a7/pair_move.txt`, `pair_named.txt`; 24 results an arm, no timeout)
+
+| line | BASE | ARM | paired mean | se | z | reading |
+|---|---|---|---|---|---|---|
+| 1 hop_s (deciding) | 835.2 (34.8 s a run) | 16.1 (0.7) | **-34.1** | 2.85 | **-12.0** | **PASS** |
+| 2 off_order_m (deciding) | 515.8 (21.5 m a run) | 254.4 (10.6) | **-10.9** | 4.33 | **-2.52** | **PASS** |
+| 3 damage_total | 32341 | 35273 | +122 | 108 | +1.13 | PASS (>= BASE - 1.645 se) |
+| 4 first_hit_s | 104.0 (4.3 s a run) | 114.8 (4.8) | +0.45 | 0.68 | +0.66 | PASS (<= BASE + 1.12) |
+| 5 deaths | 64 | 48 | -0.67 | 0.23 | -2.89 | PASS (fewer) |
+| 6 kills | 49 | 57 | +0.33 | 0.20 | +1.70 | PASS (more) |
+| 7 last_a_s | 1374.6 | 1239.6 | -5.63 | 3.11 | -1.81 | PASS (sooner) |
+| 8 the named-attack pair: deaths | 60 | 57 | -0.12 | 0.31 | -0.40 | PASS (<= BASE + 2 se); hop_s 656 -> 12, off_order_m 781 -> 405 (z -1.9), damage_total 32576 -> 30929 (se 109), kills 54 -> 53, first_hit 151.9 -> 107.8 |
+| reported | water_s 1353 -> 467, water_far_s 161 -> 50, fire_s 1171 -> 401, hop_rev_s 267 -> 4, hop_far_s 75 -> 2, damage_water 12415 -> 2875 (the across-water attribution, above), hits_water 400 -> 58, first_hit_water_s 138.8 -> 171.7 (se 3.2), crews_far 68 -> 44 | | | | | |
+
+**Lines 1-8 PASS.** Lines 9 (Bar E1's lines on 10673-10696, running on builder2's light lane), 10 (perf-judge on the ON check)
+and 11 (the suite ON, `make remote T="check ENGAGE_WATER=on"` on builder0) follow; the tip's own check (21dbaf662's code) is
+still on builder0 ahead of them.
+
 ### A1: the turnaround on his seed (laptop, native library ON, `make engage-replay-trace ENGAGE_TAG=on`, 2d43b1e88, his recording, 50 s, n 1, deterministic)
 
 The replay (native's CP43.0, `tests/replay_orders.gd`) puts Green_Guns_1 **0.0 m off his census at every second for 48 s**
