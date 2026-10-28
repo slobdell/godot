@@ -158,6 +158,13 @@ never touch processes you didn't start. Never delete builder files that aren't o
   3360 passed / 0 failed, 27 passed + 1 NOT JUDGED (remote-guard-test quiet refusal at load 18.16; perf-judge JUDGED scenario_perf). Carries
   the `cam` row (C43.2), native's recorder keys 2fd2e5d4e, the corner workload and `--camera-corner` (OFF). Also covers R43.4's replay
   files (95331c3cd is in the tree). **His next playtest records the camera's yaw and target** (`tests/camera/camera_recording.py`).
+- **R43.11 (~23:15) The 30-unit right-click hitch is G1 v9 ON (merge 09564e582, round 41); native fixes it output-identical (N2b).**
+  Native's bisect (builder2, GDScript at every commit, `test_control_scale` "ordering 30 units"): 8952c3d64 10.90 ms (ratio 96.4) ...
+  a1af3ba9e (09564e582's first parent) 10.90 / 95.6; 09564e582 313.19 / 2747.2; 21b20bdce 312.57; main 84f914f78 312.17. Today's code on
+  the laptop: ON 248.94 ms v `--group-g1=off` 8.26 ms (budget 104). In his terms: ~0.25 s freeze per whole-army click since round 41.
+  GRANT native the G1 pack's cost path (`selection_squads.gd`, `rts_controls.gd`: pack_halts, seat_ok / reached probes) + `native/**`; the
+  contract is OUTPUT-IDENTICAL seats (an equality test on R41.15's corpus + control_scale), timing inside budget 104 on the bisect's box,
+  full check. After CP43.0, before N3.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
