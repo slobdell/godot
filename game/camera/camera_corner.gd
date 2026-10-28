@@ -329,8 +329,9 @@ const PULL_FADE_M := 30.0
 ## Where the blind spot is: behind the far end, this far off the hidden face and this far back from the end (a squad
 ## parked against the back of a building sits about here; CameraCorner.lanes stages at HIDE_OFFS_M / HIDE_BACK_M).
 const PULL_OFF_M := 10.0
-## Level with the far end (dev 6847581f7: 6 m back put the early look through the wall, Locks facing 29 -> 46 %).
-const PULL_BACK_M := 0.0
+## Negative = past the far end, round the corner. Dev (dev seeds, builder0): 6 m back (6847581f7) and level (b931bbf52)
+## both left the view grazing a wide block's far face once past it (Locks, facing after the opening 27 -> 48 %).
+const PULL_BACK_M := -8.0
 ## Only walls whose centre is this close to the squad are read (a building's half length plus PULL_FAR_M and some).
 const PULL_SEARCH_M := 60.0
 

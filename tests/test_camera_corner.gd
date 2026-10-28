@@ -83,7 +83,7 @@ func test_the_pull_ramps_in_before_the_corner_points_at_the_blind_spot_and_lets_
 	var near := _column(-10.0)  # 5 m short
 	var p := CameraCorner.pull(map, _centre(near), near, north)
 	assert_true(float(p["w"]) > 0.5 and float(p["w"]) < 1.0, "ramping in before the corner opens (%s)" % [p])
-	assert_true((p["look"] as Vector3).x > 0.8, "toward the blind spot east of the building: %s" % [p["look"]])
+	assert_true((p["look"] as Vector3).x > 0.7, "toward round the corner, east of the building: %s" % [p["look"]])
 	var at := _column(-20.0)  # 5 m past
 	assert_eq(float(CameraCorner.pull(map, _centre(at), at, north)["w"]), 1.0, "full just past the corner")
 	var gone := _column(-50.0)  # 35 m past
@@ -119,7 +119,7 @@ func test_in_the_look_it_swings_the_view_toward_the_blind_spot_and_a_gun_outrank
 	state["corner"] = CameraCorner.pull(map, state["from"], at, state["heading"])
 	var swung := RtsCamera.danger_look(state)
 	var bearing := rad_to_deg(RtsCamera.yaw_facing(swung["look"]))
-	assert_true(bearing < -45.0 and bearing > -110.0, "clockwise toward the east (yaw %.0f; east is -90)" % bearing)
+	assert_true(bearing < -30.0 and bearing > -110.0, "clockwise, round the corner to the east (yaw %.0f; east is -90)" % bearing)
 	assert_true(RtsCamera.corner_leads(swung), "the trace and the recording say corner")
 	var gun := {"name": "Gun", "at": Vector3(-40, 0, -30), "seen": true, "age_s": 0.0, "fired_s": 0.5, "hit_s": DangerFeed.NEVER}
 	var fired := _state(_centre(at), at, [gun])
