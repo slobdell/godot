@@ -197,6 +197,12 @@ never touch processes you didn't start. Never delete builder files that aren't o
   3.6 s creep on Locks). Built OFF: `--traffic-on=kturngoal` (a reverse ends once its goal leaves the turning circle). GRANT
   `ElementPlan.converge` / `transit_starts` for the root fix; each fix its own arm in Bar S; guards include yield+blocked and k-turn
   seconds per arena (not pooled), ARM <= BASE + 2 se. War Rig 3's 20 s HOLD is the per-crew give-way (no room for a 14 m hull), not R43.13.
+- **R43.15 (~00:10) CORRECTION to R43.2 / R43.11: his real right-click hitch is a frame or two, not ~0.25 s.** Native's profile (laptop,
+  82bbe3da8 + uncommitted timers, test_control_scale "ordering 30 units", 260 ms): `SelectionSquads.untangle_whole` 247.5 ms. The test's army is
+  6 squads, every squad one knot in a column, so all 720 permutations x 15 pairs x 25 segment tests (~270k per click); `column_lay` 8.0 ms
+  (one `gate_width`). Only `--group-lay=off` removes it. A side fields at most 5 squads (MAX_SQUADS), 4 on his laptop preset: 120 or 24
+  permutations, so ~40 ms at 5 and ~8 ms at 4 on the laptop by scaling. N2b = memoise `_pair_crosses` (output-identical, equality test),
+  GDScript only; no C++ port unless 5 squads still misses budget 104. Below CP43.0's merge in priority.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 

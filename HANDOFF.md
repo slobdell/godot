@@ -46,8 +46,8 @@ library). **His War Rig's turnaround: cause found by removal** (engage, R43.8): 
 street mouth to its holding spot for 18 s; `--traffic-off=hold` -> it reaches the far quay in 12 s. Not a round-42 regression. Fix granted
 to engage. **His first order's arrival** (manoeuvre, R43.6/7): the Gangs swarm laid 112 m wide and flipped shape 4 times; shape latch +
 seat bound built OFF (his start re-read: anchor on his click, seats within 32 m). Camera: `cam` row + recorder keys (d489eaa2b) in full
-check; corner census read (the view faces the wall 53-57 % of a corner). Native: the 30-unit right-click is ~112 ms on a quiet box
-(R43.2, bisecting). builder2 restarted ~21:35 (it idle-stops after 20 min; the loop restarts it when work is pending).
+check; corner census read (the view faces the wall 53-57 % of a corner). Native: the 30-unit right-click test reads ~112 ms on a quiet box, but its army is 6 squads; his real hitch at 4 squads is ~8 ms
+on the laptop (R43.15; a memo fix, output-identical). builder2 restarted ~21:35 (it idle-stops after 20 min; the loop restarts it when work is pending).
 **~23:00: main b31d3ddea GREEN by inheritance (camera d489eaa2b: builder0 3360/0, 27 + 1 NOT JUDGED) = the `cam` row + native's recorder keys + the replay; `--camera-corner` OFF.** Next merge: native 409f70d66 (CP43.0, check queued) then one main check.
 
 ## (DONE) ROUND 42 AS PREPARED (2026-10-26 evening) — kept for the record
