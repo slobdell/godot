@@ -104,3 +104,68 @@ func test_the_re_run_keeps_headless_its_frame_rate_and_the_project() -> void:
 	assert_eq(windowed.count("--fixed-fps"), 1, "an option already there is not doubled")
 	assert_eq(windowed.count("--path"), 1, "nor the project")
 
+
+
+# ---- Round 44 (native N2): his round-43 match, whose seed was not recorded ---------------------------------------------
+
+const HIS_0821 := "res://_agents/streams/references/round43/playtest/2026-10-28T08-21-31-locks.jsonl"
+
+
+static func _header(path: String) -> Dictionary:
+	var file := FileAccess.open(path, FileAccess.READ)
+	return JSON.parse_string(file.get_line()) if file != null else {}
+
+
+func test_his_seed_text_is_passed_as_typed() -> void:
+	assert_eq(ReplaySetup.seed_text({"seed": -1, "flags": {"seed": "56416."}}), "56416.", "the switch as he typed it")
+	assert_eq(ReplaySetup.seed_text({"seed": 56416}), "56416", "an old header: the recorded seed")
+
+
+func test_the_clock_seeds_start_at_the_recorders_second_in_his_zone() -> void:
+	# 2026-10-28 08:21:31 PDT (bias -420 min) = unix 1793200891.
+	var seeds := ReplaySetup.clock_seeds("build/recordings/2026-10-28T08-21-31-locks.jsonl", -420)
+	assert_eq(seeds[0], 891, "the recorder's own second first")
+	assert_eq(seeds[1], 890, "then a second earlier")
+	assert_true(seeds.has(posmod(1793200891 - 7 * 3600 + 420 * 60, 100000)), "another zone's reading is tried too")
+	assert_eq(ReplaySetup.clock_seeds("build/recordings/latest.jsonl", 0), [], "a name without a time stamp: none")
+
+
+func test_his_0821_army_seed_is_found_from_his_roster_on_his_preset() -> void:
+	var header := _header(HIS_0821)
+	assert_eq(int(header.get("seed", 0)), -1, "the recording lost the seed")
+	var setup := ReplaySetup.from_header(header)
+	RenderLevers.apply_preset("laptop", "test")
+	var found := ReplaySetup.army_seed(header, setup, 0, ReplaySetup.clock_seeds(String(header["path"]), -420, 5))
+	var on_desktop := -2
+	RenderLevers.apply_preset("desktop", "test")
+	on_desktop = ReplaySetup.army_seed(header, setup, 0, [891])
+	assert_eq(found, 891, "the laptop's roll at 891 fields every one of his 40 units")
+	assert_eq(on_desktop, -1, "the desktop preset's roll at 891 does not (the laptop caps the roll at 20 vehicles)")
+
+
+func test_a_group_click_with_its_click_key_replays_as_one_order_at_the_click() -> void:
+	# C44.2: one click over four squads writes a row per squad, each with its own laid-out `to` and the shared `click`.
+	var rows := [{"t": "order", "tick": 1512, "verb": "move", "to": [-50.5, 15.2], "click": [-48.0, 60.0], "group": 4, "units": ["G_4"]},
+		{"t": "order", "tick": 1512, "verb": "move", "to": [-45.9, 69.5], "click": [-48.0, 60.0], "group": 4, "units": ["H_1", "H_2"]},
+		{"t": "order", "tick": 1512, "verb": "move", "to": [7.9, 57.7], "click": [-48.0, 60.0], "group": 4, "units": ["S_1"]},
+		{"t": "order", "tick": 1520, "verb": "move", "to": [1.0, 1.0], "click": [1.0, 1.0], "units": ["W_1"]}]
+	var merged := ReplaySetup.merge_clicks(rows)
+	assert_eq(merged.size(), 2, "the three rows of his group click are one order; the next click is its own")
+	assert_eq(merged[0]["units"], ["G_4", "H_1", "H_2", "S_1"], "the union, in order")
+	assert_eq(merged[0]["to"], [-48.0, 60.0], "the merged order goes to his click, so the replay lays the squads out again")
+	assert_eq(merged[1]["to"], [1.0, 1.0], "a one-squad click keeps its recorded point")
+	assert_eq(rows[0]["to"], [-50.5, 15.2], "the input rows are not changed")
+
+
+func test_a_click_given_by_hand_merges_an_old_recordings_group_click() -> void:
+	# His 08-21 recording (before C44.2): four rows on tick 1512, four points, no click. `--click=1512:-48,60` supplies it.
+	var rows := [{"t": "order", "tick": 0, "verb": "move", "to": [-85.7, 52.6], "units": ["G_1"], "paused": true},
+		{"t": "order", "tick": 1512, "verb": "move", "to": [-50.5, 15.2], "units": ["G_4"]},
+		{"t": "order", "tick": 1512, "verb": "move", "to": [-45.9, 69.5], "units": ["H_1"]},
+		{"t": "order", "tick": 1808, "verb": "move", "to": [-59.5, 19.9], "units": ["G_4"]}]
+	var given := ReplaySetup.with_click(rows, "1512:-48,60")
+	assert_eq(given[1]["click"], [-48.0, 60.0], "every row of that tick carries the click")
+	assert_true(not given[0].has("click") and not given[3].has("click"), "other ticks are left alone")
+	assert_eq(ReplaySetup.merge_clicks(given).size(), 3, "the 1512 rows merge into one order")
+	assert_eq(ReplaySetup.with_click(rows, ""), rows, "no --click: unchanged")
+	assert_eq(ReplaySetup.with_click(rows, "nonsense"), rows, "a malformed --click: unchanged")

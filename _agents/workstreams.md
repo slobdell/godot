@@ -110,7 +110,7 @@ already read, or 7001-7012.
     near click may squeeze into two ranks abreast (two abreast x two deep + one) rather than spread as the yard allowed.
   - **Plus:** his tick-1512 click on native's exact replay (O5), before / after, top-down shots looked at. A pass ships ON
     (`--group-column=always` the default, `--group-column=off` the escape).
-- **Bar G1 v10b (orders; RE-FILED ~13:00 PDT before any number on 10801-10848; two dev reads on 7001-7006 drove it).** As v10 but
+- **Bar G1 v10b (orders; RE-FILED ~10:40 PDT before any number on 10801-10848; two dev reads on 7001-7006 drove it).** As v10 but
   lines 1 (across_m) and 3 (aside_max_m) are read over the squads the click MOVES (place > 2 m from its start); `held` reported per
   cell. Why: the `across` start (four squads 90 m abreast, 30 m off the map's edge, click 20 m ahead) has no room for ranks behind the
   click, so two hold where they stand and line 1 could never pass while line 2 (nobody sent back) holds. Lines 2, 4, guards, parts B/C,
@@ -118,6 +118,33 @@ already read, or 7001-7012.
   >= 90 % of runs (on a far click every squad moves), and in every cell the arm's held squads <= base's moved-less-than-2-m squads + 1
   a run (median). Dev read 2 (builder2, native on, 7001-7006, dev only): along / his cells across 113-125 m -> 2-16 m, contacts 5893 -> 4921.
 
+- **Bar G1 v10c (RE-FILED on R44.9, 2026-10-28 ~11:45 PDT laptop clock, BEFORE any number on 10801-10848; code: the commit of this
+  text).** His answers: side by side where the open ground fits them, otherwise stacked behind, nearest in front; a short click holds
+  the squads already in place. What he would see: he selects every squad and clicks. Where the ground at his click holds two squads
+  side by side centred on the spot, two land there side by side and the rest stack behind; where it holds one, they land one behind
+  another; nobody slides off the spot toward the open side, nobody is sent back past where it stands, the nearest squad is in front.
+  - **Deciding 1 (re-shaped):** every arm run's across-spread over MOVED squads <= the front the clear ground at the click fits
+    centred with no slide, + 2 m: (fit_abreast - 1) x (widest + 14), fit_abreast = the most squads (<= 2) whose frontage fits twice
+    the narrower clear side (the probe's `clear` at the click, the group scan, 100 m a side).
+  - **Deciding 3 (re-shaped):** every arm run's farthest MOVED place off the click line <= 52 m AND <= half the fitted front + 2 m
+    (no edge or wall slide).
+  - **Deciding 2, 4, 6 (R44.6's shape), the guards (all-in, never-in, contacts; parts B and C), seeds, n, the tree rule:** unchanged.
+  - **Corpus (part A):** locks / crossing / terminus / yard_open x his / along / across x reach 20 / 80 (24 cells) + the fixed cell
+    locks his (-62, 50) (his far click into the west quay): 25 cells x n 24 on 10801-10824, both arms.
+  - **Note for the orchestrator:** the abreast cap stays 2, so line 3's 52 m holds by construction (a two-abreast place is 29 m
+    off the line); with three abreast allowed, line 3 would have to read half the fitted front (58 m).
+
+  - **Code since the filing (all under the switch; G1 v9 unchanged, its tests pass):** the near-click keep is skipped on the plain
+    click; places are dealt by distance along the approach (no drive-time re-deal, no whole-squad untangle: it read collinear
+    drives as crossings and swapped ranks end to end); the stay rule is re-read after the lay; ranks keep off water and decks
+    (`wet_or_deck`, stepped back along the line; the deck clear runs even for a click on the lock's bank); the straight-line
+    ground cap does not apply to a column's places (they lie along the road back from the click); the ranks behind keep the
+    front rank's slide where their frontage fits (no zigzag); squads with no room behind hold their spot instead of merging into
+    a three-wide rank.
+  - **Dev read 2 (builder2, native on, bb70c0152 arm v main 711f3e94f tree, 7001-7006, n 6; before the last four fixes):** along /
+    his cells 113-125 -> 2-16 m across; contacts 5893 -> 4921; the failures that led to the fixes above: across-20 cells kept a
+    3-wide rank (116 m), the rearmost squad dealt the front (locks along-80, 17 %), 1-2 never-in on the lock's bank and mouth.
+  _(Recorded on main by the orchestrator as filed at 0dad32818 on stream/orders. R44.11: two abreast stays the cap this round.)_
 - **FILED Bar S v3, his first order settles AND his War Rig backs out of the box first (manoeuvre; FILED at fba709bfa on stream/manoeuvre before any 10901-10948
   number, recorded on main by the orchestrator; C44.1, C44.3, C44.4, C44.5, R43.42's round-44 shape).** Arms, every switch on ONE frozen commit **9215b8ab9** (``wip/manoeuvre-bars-v3` = stream/manoeuvre 67998860d + orders' CP44.0 commit 716e6304e merged (the `group` key the scoping reads; main's merge of it is pending its check), worktree `../godot-manoeuvre-v3``; no
   game/ or tests/ commit until the series' end line), each v `base` = `--shape-latch=off` on the same tree:
@@ -225,35 +252,35 @@ already read, or 7001-7012.
 
 ## Rulings (round 44)
 
-- **R44.1 (2026-10-28 ~10:50) orders' O0 + O1 land as ONE commit (716e6304e):** both are additive keys at the same two call sites;
+- **R44.1 (2026-10-28 ~09:54) orders' O0 + O1 land as ONE commit (716e6304e):** both are additive keys at the same two call sites;
   also `UnitCommand.KEYS` + `click`, `group` (the direct no-element path validates key by key). CP44.0 proof: G1 v9 probe 60 / 60
   byte-identical v main 711f3e94f (builder0 light, native off). Merged alone on its full check's green; manoeuvre told the same minute.
-- **R44.2 (~10:50) the O2 cause and the build:** his tick-1512 click was (-35, 97), 44 m west of his row on the OPEN north yard (lab
+- **R44.2 (~09:54) the O2 cause and the build:** his tick-1512 click was (-35, 97), 44 m west of his row on the OPEN north yard (lab
   match 4.5 m summed over four squads); the column never ran (`column_lay` keeps today's body on open ground; G1 v9's deciding cells
   were streets), `ranks` laid three squads abreast across the click 58 m apart (160 m north-south) and `fit_inside` slid the body 32 m
   south off the map edge. Orders builds reading A: the column on open ground too (front squad on the click, the rest behind along the
   way they came, nearest in front, nobody sent back past its spot); Bar G1 v10 adds an edge-clamp line. Reading B (the click is the
   army's middle) goes to him as the alternative.
-- **R44.3 (~11:00) manoeuvre's M2 cause: his container start.** His War Rig crept ~1 s toward a station a metre ahead, planned the
+- **R44.3 (~10:06) manoeuvre's M2 cause: his container start.** His War Rig crept ~1 s toward a station a metre ahead, planned the
   back-up only at tick 30 and left at tick 97; none of round 43's switches touched it (his second match: the same spot, 5 s, unnoticed).
   `--traffic-on=backout` (e0a746667, OFF): reversing by tick 2, past the box at tick 91 v 142 on his rebuilt start (builder0). M1
   scoping proof take 5: 591/0, G1 v9 probe 60/60 identical (builder2 light, native ON, CP44.0 lines applied uncommitted). Native twins
   `backout` (N3, after N1); it ships only inside Bar S v3, with a reverse-into-a-friend risk line.
-- **R44.4 (~11:20) his round-43 matches were not seed 56416.** Both ran `SEED=56416.` (the HANDOFF sentence's full stop); seed -1, the
+- **R44.4 (~10:08) his round-43 matches were not seed 56416.** Both ran `SEED=56416.` (the HANDOFF sentence's full stop); seed -1, the
   armies from the clock (army seeds 891 for 08-21, 542 for 08-15, recovered from his rosters by native's N2 0d4b08cd8). The replay of
   both is now exact (laptop, native ON: 20/20 crews 0.0 m for 63 s / 60 s). `make skirmish` keeps digits only (fff546ef6). Orders'
   O2 lab and manoeuvre's M2 rebuild placed his vehicles from the census, so their causes stand; re-read on the exact replay at O5 / M5.
   Native: six trial clicks all scatter 60-110 m; z = 117.24 is a hard edge (his Wrenches at exactly (-25.49, 117.24)), as R44.2's slide.
-- **R44.5 (~13:05) Bar G1 v10b accepted** (amended before any fresh number; dev seeds only), with line 6 added by the orchestrator: a
+- **R44.5 (~10:44) Bar G1 v10b accepted** (amended before any fresh number; dev seeds only), with line 6 added by the orchestrator: a
   held squad is excluded from the spread lines only if holding stays rare where there is room (reach-80 held = 0 in >= 90 % of runs).
-- **R44.6 (~13:30) line 6 re-shaped before any fresh number, on orders' read of dev read 2 (7001-7006):** 6(b) as first written
+- **R44.6 (~10:46) line 6 re-shaped before any fresh number, on orders' read of dev read 2 (7001-7006):** 6(b) as first written
   contradicts reading A on his own click (reach 20: the front moves 20 m, the three already in file behind hold; base moves all four
   and scatters them 100 m). Now: **6(a)** unchanged (reach-80: every squad moves in >= 90 % of runs); **6(b)** reach-80 cells only;
   **6(c)** reach-20 cells: per run, held <= the squads whose start lies within the column's length behind the click (the judge
   computes it from the arm's own laid column; no +1). 6(a)'s dev failure (ranks stepping 50 m back past the rearmost squad's start)
   is a code fix (no rank behind the rearmost start less 10 m), read on dev read 4; any reach-80 cell still failing 6(a) there comes
   to the orchestrator before 10801 runs.
-- **R44.7 (~14:30) Bar S v3 FAILS as filed; nothing from it ships.** Deciding (frozen 9215b8ab9, builder2, 72 paired cells 10901-10924):
+- **R44.7 (~11:04) Bar S v3 FAILS as filed; nothing from it ships.** Deciding (frozen 9215b8ab9, builder2, 72 paired cells 10901-10924):
   v3 D1 191 -> 383 (+14.6 se) PASS, D2 -4.1 se PASS, per-arena yield+blocked and k-turn PASS; but the filed per-arena wedged guard FAILS
   (crossing +2.6 se, Locks +9.2 s a run / +5.5 se; v3core Locks +7.3 se). It is the seat bound's converging press, not backout's. No
   amendment after numbers. **Two follow-ups:** (1) **Bar B1, backout ALONE** (his container ask): `--traffic-on=backout` (+ native's
@@ -261,6 +288,45 @@ already read, or 7001-7012.
   guards incl. wedged and friendly contacts, G1 probe byte-identical; dev history: neutral on an open row (wedged +0.8 s, Locks
   7001-7012). Ships ON if it passes. (2) the converging press (M3's two shapes: seats dealt in arrival order; a squadmate's give-way
   deferred until the seat ahead is taken) built on dev seeds, then Bar S v4 on fresh 11149-11196 if time allows, else round 45.
+- **R44.8 (~11:15) native's session ended mid-round; its next session starts here.** In flight when it ended: (a) N2's full check of
+  7e9c199ae on builder0 (log `~/tank_squad/remote-logs/godot-native-check-20261028-104851-1025702.log`; the orchestrator reads it and
+  merges on green); (b) the builder2 native-proof of `pair/native-m2m3-r2` 39b063c7c (log on the laptop `~/native-r44/m2m3-proof-39b063c7c.log`).
+  **Pending for native (relayed from manoeuvre):** backout's GDScript look (`Movement._backout_look`: stream/manoeuvre **c9ea1a6b4** (R44.12; NOT 813f36a5b, superseded))
+  no longer requires the steering point within a hull's length, and BACKOUT_MIN_ERROR_DEG = 20; the C++ cheap look's pre-filter
+  drops its |goal| < hull-length term, keeps drive_vector zero + near rest, then calls `_backout_due` as now. Re-cut the backout twin
+  on manoeuvre's tip with that, prove EQUAL on builder2, name the hash to manoeuvre and the orchestrator: Bar B1 freezes on it.
+  parkedpass's twin stays parked (S v3 failed, R44.7).
+- **R44.9 (~11:15) his answers (`game_design.md` *His answers on the group click*) re-shape Bar G1 v10b BEFORE any 10801 number.**
+  (1) He meant the open area on the west side; the dispersal lost him the match. (2) **Fit first:** side by side on open ground when
+  the line fits at his click; when it won't fit (the edge / walls would push a squad off its place), stack behind, nearest in front.
+  (3) Short click: squads already in place hold (6(c) stands). Orders re-files lines 1 and 3 for this before the fresh series: the
+  arm lays abreast where the whole front fits the clear ground at the click without any edge or wall slide, else ranks behind; line
+  1 becomes "across spread <= the front the clear ground fits" with no slide (aside line 3 unchanged: <= 52 m), and the corpus gets a
+  far click INTO the west open area of Locks (his target) and an abreast-fits cell. Lines 2, 4, 6 and the guards stand.
+- **R44.10 (~11:20) Bar B1's deciding shape (b), before any fresh number.** Dev read of manoeuvre's staged nose-on corpus (14 poses,
+  builder0 light, mixed drive, dev only): ON sooner in 5/14, median +0.0 s; +1.7 to +3.6 s on four poses where base crept and drove off
+  anyway, +6.2 s gain on one, his faithful start t144 -> t99. Decide on poses where the BASE sticks (criterion named and committed
+  first; poses jittered by FRESH seeds 11101+): ARM sooner >= 80 % (floor 8), median gain >= 1 s, plus his start past the box < t110;
+  cost ceiling elsewhere per pose ON <= OFF + 3 s and median <= +1 s; workload and unneeded-back-up guards as filed. Tighten the gate
+  on the 14 dev poses first (an unneeded back-up is as visible as nosing in).
+- **R44.11 (~11:27) Bar G1 v10c recorded; at most TWO abreast this round.** Fit first as R44.9: abreast as many as fit centred with no
+  slide, capped at 2; the rest stack behind. Three or four abreast where the ground fits (a 102-160 m front) is the shape that
+  dispersed him; the cap keeps line 3's 52 m by construction. Feel question for him after he plays it: on a wide yard, does he want
+  more squads side by side? His west-quay target reads one abreast (the quay is 42-50 m clear): his army arrives in file along it.
+- **R44.12 (~11:35) backout's ship candidate c9ea1a6b4; Bar B1's stuck class.** The look: a hull >= 10 m at rest, steering point within a
+  hull's length, nose blocked within 4 m, 20 deg gate; a departure look no longer goes to the lattice seam (it refused the vertex as
+  GOAL_BLOCKED, 2.6-3.6 s a pose). Dev (14 poses): cost ceiling PASS (worst +1.7 s, median -0.07 s); his start past the box ~91 v 142;
+  Locks dev backout alone neutral on every line. Base-stuck = base not cleared 8 m within 6 s AND the base's rig has no yield /
+  blocked-by-friend seconds in its first 6 s (both read from BASE only; three crawl poses were pinned by the squad, not the box).
+  Deciding as R44.10 on those (floor 8; jitter count named at filing; under 8 qualifying = NOT JUDGED). Native twins c9ea1a6b4.
+- **R44.13 (~12:00) Bar G1 v10c's lines 1 and 3 measured off the ROAD, before any fresh number.** Dev read 6 (7001-7006, 25 cells):
+  lines 2, 4, contacts PASS; line 6 all reach-80 but one Crossing; lines 1 / 3 FAILED on 17 cells because the judge measured off the
+  straight click-to-army line while the column follows the road (a place 2 m off a bending street read 13-40 m aside; yard_open and
+  Locks across read exactly the fitted front). Now: offsets from the navmesh drive click -> the army's START centroid, computed from
+  the start state, identical in both arms (straight line the fallback); straight-line across / aside REPORTED beside. Thresholds
+  unchanged. Code: every rank capped by the fit at his click; the stay rule reads 10 m less a metre; reach clicks pulled onto dry
+  ground. Named risk: all-in guard failed two near cells on dev 6 (terminus across-20 7.7 -> 14.3 s, yard_open across-80 11.8 -> 19.0
+  s); it stays as filed and decides. Frozen after dev read 7.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
