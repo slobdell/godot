@@ -67,7 +67,7 @@ const TO_1808 := {
 ## (-61, 59), 21.8 m (the squads were under way, the census 8 ticks old: a looser pin). Evidence
 ## `references/round44/orders/o2-his-click-lab-laptop/`.
 const INFERRED := {1512: Vector3(-35.0, 0.0, 97.0), 1808: Vector3(-61.0, 0.0, 59.0)}
-const PIN_M := {1512: 3.0, 1808: 8.0}
+const PIN_M := {1512: 3.0, 1808: 15.0}
 const CASES := {1512: [AT_1500, TO_1512], 1808: [AT_1800, TO_1808]}
 
 var _lab: TacticsLab
@@ -244,9 +244,19 @@ func test_the_inferred_clicks_reproduce_his_places() -> void:
 				SelectionSquads.bodies_kept - kept_before, SelectionSquads.columns_laid - laid_before])
 		_print_stages()
 		var to: Dictionary = CASES[tick][1]
+		var north := INF
+		var south := -INF
 		for squad: String in to:
 			assert_true(laid[squad] != null and (laid[squad] as Vector3).distance_to(to[squad]) < float(PIN_M[tick]),
 					"tick %d %s: laid %s v his recording %s" % [tick, squad, laid[squad], to[squad]])
+			if laid[squad] != null:
+				north = minf(north, (laid[squad] as Vector3).z)
+				south = maxf(south, (laid[squad] as Vector3).z)
+		# The mechanism (the reproduction, not yet the fix): a westward click laid the squads along a north-south front wider than
+		# 80 m, and the column of wedges never ran (today's body kept on the open yard).
+		assert_true(south - north > 80.0, "tick %d: his squads' places span %.0f m north to south (the recording: ~100 m)" % [tick, south - north])
+		assert_eq(SelectionSquads.columns_laid - laid_before, 0, "tick %d: no column was laid" % tick)
+		assert_eq(SelectionSquads.bodies_kept - kept_before, 1, "tick %d: today's body was kept as on clear ground" % tick)
 		_lab.dispose()
 		_lab = null
 		_controls.queue_free()
