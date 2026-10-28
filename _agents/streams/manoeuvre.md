@@ -100,14 +100,16 @@ switches with their tests. **The shape latch is ON by default per R43.6 ("switch
    leg): `--converge-on-crew=on` (R43.14) and `--traffic-on=kturngoal` (the reverse leg ends when its goal has moved out of the
    circle; native twin b2dea555a); `--traffic-on=parkaside` (a seat under a parked friend of another squad is taken beside it;
    twin 5b5a2c365).
-4. **S4 Bar S (FAIL as filed, R43.31) and Bar S v2 (FAIL as filed on Locks' per-arena guard, +2.4 se; D1 +13.8 se, D2 -2.4 se,
-   never-arrived -37 %, every other guard green).** The tables are below; the round-44 shape is named there.
+4. **S4 Bar S (FAIL as filed, R43.31) and Bar S v2 (FAIL as filed on Locks' per-arena guard, +2.4 se, and on the group-order guard
+   G5, +3.8 s a run; D1 +13.8 se, D2 -2.4 se, never-arrived -37 %; fights and the G1 v9 lines still running on builder0 light).** The
+   tables are below; the round-44 shape is named there.
 5. **S5 Bar S5 (FAIL as filed):** deckwait v5 rescues the drill's own crew (17/18 -> 18/18) and costs rim seconds on the fresh
    seeds; deckwait stays OFF; balance's bridge re-read not reached.
 6. **Stretch:** the `_wait` timer artefact was fixed in round 42; `q3_judge.py`'s counters line under `--arm=deckwait` fixed (on
-   `wip/manoeuvre-s5` 55d6344c1: cherry-pick with the ship). **R43.34 candidate (round 44):** `wip/manoeuvre-scope-g1` 5b23227e0, a
-   squad under one G1 group click (`halt_at`) keeps today's seats / stations / shape pick / parkaside; its tests and the G1 v9
-   byte-identical proof: below.
+   `wip/manoeuvre-s5` 55d6344c1: cherry-pick with the ship). **R43.34 candidate (round 44):** `wip/manoeuvre-scope-g1` 4132802e7, a
+   squad under one order to many squads (the pack's `group` key, or `halt_at`) keeps today's seats / stations / transit start / shape
+   pick / converge / kturngoal / parkaside; its tests (21/0 laptop) and the G1 v9 byte-identical proof (take 3 queued behind the ship
+   check): below, under "R43.34 candidate".
 
 **Decisions (mine, one line each):** the bound = max(18 m, 1.5 hull lengths + the hull floor along) (the wedge of War Rigs at 29 m
 is physics, the swarm's 58 m is not); the latch stores the formation only (the technique follows the table); kturngoal ends the
@@ -276,6 +278,31 @@ GDScript drive by its own switch); the pair merges at ship, and with it kturngoa
 The player-view frames (`make remote T=orders-probe-shots`, locks, 5 squads, base v all, desktop 1280x720 and phone 1560x720, at
 arrival and 5 s later): `~/overnight-manoeuvre/r43/shots/frames/`; the group click's column stands alike in both arms (the halts
 are laid as today), no pile-up.
+
+### Bar S v2: VERDICT FAIL as filed (series 05:14-05:43 PDT, builder2 light, J 12, frozen 04ddbcabb (its full check green: `check_v2/check.log`, 3370 / 0); 72 paired cells = locks / terminus / crossing x 10701-10724; the fights and the G1 v9 lines on builder0 light after it)
+
+Evidence `references/round43/manoeuvre/barsv2-builder2-04ddbcabb/judge-deciding-v2.txt` (per-cell rows inside) and `judge-group-v2.txt`;
+raw logs `~/overnight-manoeuvre/r43/bars_v2/`. The bar as filed; no line amended; nothing re-run.
+
+| line (v2 v base, paired per cell) | v2 = all + parkaside |
+|---|---|
+| D1 crews within the bound at 15 s (pooled, of 720) | 199 -> 362, +2.26 a run, se 0.16 (**+13.8 se**) PASS |
+| D2 start-zone yield + blocked s (pooled) | 1486 -> 1226, -3.62 s a run, se 1.52 (**-2.4 se**) PASS |
+| G crossing yield+blocked <= +2 se / k-turn s | +0.31 s (+0.1 se) PASS / -7.63 (-4.4 se) PASS |
+| G locks yield+blocked / k-turn s | **+4.12 s a run, se 1.72 (+2.4 se) FAIL** (Bar S's all: +7.50, +5.4 se) / -4.23 (-2.5 se) PASS |
+| G terminus yield+blocked / k-turn s | -15.3 (-8.1 se) PASS / -14.6 (-6.5 se) PASS |
+| reported: never-arrived crews (of 720) / arrival s a crew / k-turn s a run / seat moves a run | 226 -> 142 / -0.96 / -8.8 / -32.6 |
+| group-order guards (10725-10736 x 4 maps x crew, 48 paired runs, `judge-group-v2.txt`) | **G5 all-in 74.0 -> 77.8 s (line 77.0) FAIL**; G6 never-in 0.96 -> 1.04 (line 1.13) PASS; G7 contacts 657,611 -> 679,824 (line 690,492) PASS; jam-seconds +2.0 % |
+| fights (10737-10742, G1-G4) and the G1 v9 lines (10725-10736) | running on builder0 light from `../godot-manoeuvre-v2`; recorded below when they end |
+| **verdict as filed (D1 AND D2 AND every guard)** | **FAIL** (the Locks per-arena guard; G5) |
+
+**The read (after the numbers):** v2 does what he asked everywhere it is measured against his own first order (both deciding lines, by
+a wide margin on D1; a third fewer crews never arrive; seat moves a third of base's), and its cost is the one Bar S named, halved but
+not gone: on Locks five crews converging on seats within 37 m of each other still give way to each other on the way in (+4.1 s a run
+v +7.5). On his 5-squad order (the group guards) v2 also slows the last squad in by 3.8 s a run (G5; Bar S's `all` had passed it
+74.5 -> 73.6): parkaside's seats-beside on a group click is a second thing the round-44 scoping must settle (the candidate below
+leaves a grouped squad's crews to drive as today). **Nothing ships (R43.42)**; the round-44 filing is: the bound + converge + kturngoal
++ parkaside scoped to a squad on its own order (the candidate), with Locks' give-way line and G5 as its two named risks.
 
 ### Bar S5: VERDICT FAIL on the deciding lines (series 02:48-04:12 PDT, builder2 light, GDScript drive both arms, trees 55d6344c1 (overrides) / 64b547192 (main); the group guards and fights running for the record)
 
