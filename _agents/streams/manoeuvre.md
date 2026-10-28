@@ -87,6 +87,22 @@ builder0, 3420/0; no baseline check re-run, per the contract). Orchestrator sess
 
 Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for testing only (the brief's option), never committed here.
 
+### WHERE IT STANDS (2026-10-28 ~10:55 PDT): Bar S v3 FILED and RUNNING; M1-M3 built; native's backout twin merged
+
+- **Bar S v3 filed at fba709bfa (10:49 PDT, before any 10901+ number; workstreams.md *Bars (round 44)*).** Frozen tree **9215b8ab9**
+  = `wip/manoeuvre-bars-v3` (stream/manoeuvre 67998860d + orders' CP44.0 commit 716e6304e merged: the `group` key the scoping reads),
+  worktree `../godot-manoeuvre-v3` (ports offset 7). Gate: `make remote T=check` from it on builder0 (`~/overnight-manoeuvre/r44/
+  bars_v3/check.log`, read its `>> remote: make check exited` line). Series: `~/overnight-manoeuvre/r44/bars_v3.sh` (deciding + group
+  on builder2 light, fights + the orders probe on builder0 light), evidence `~/overnight-manoeuvre/r44/bars_v3/`, `meta.txt` for
+  progress. Arms: `v3` (the scoped four + backout + parkedpass), `v3core` (the four); nothing on 10901+ read before the judges run.
+- **Native's backout twin (pair/native-backout edbb120a5: 1192 drives / 0 mismatches on my staged start, builder2) merged into
+  stream/manoeuvre at 8a7a94d70;** traffic.gd's drive gate no longer lists backout (ON keeps the C++ drive). The twin was cut off
+  e0a746667 and defers to GDScript where a departure swap may apply; the merged tree's parity test is running (run8, builder0 light).
+  parkedpass's twin (the yield mirror) is queued at native. The bar's frozen tree predates the twin (GDScript drive while ON, as filed).
+- Tests on the final rule set (67998860d, builder0 light): test_manoeuvre_backout + test_manoeuvre_parkedpass 4 / 0; on e0a746667
+  (builder2 light): native_drive | manoeuvre | traffic | formation | kturn | element | nav_ files 529 / 0.
+- The two CP44.0 lines are no longer in my worktree (dropped before the merge); `git merge main` once the orchestrator names the hash.
+
 ### M1: the scoping rebased (2026-10-28 ~09:30 PDT)
 
 - **1354362f8** = everything of `wip/manoeuvre-scope-g1` e883fc4eb but `game/control/rts_controls.gd` and `ElementTask.KEYS` (CP44.0).
