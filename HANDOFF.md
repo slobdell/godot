@@ -31,14 +31,14 @@ builder2 STARTED ~09:20 (`make gcp-start`; it idle-stops after 20 min, `make gcp
 alone on green and tell manoeuvre the same minute (`git merge main`). Merge orders' O1 (`click` row) alone the minute it is green so his
 next playtest carries it; native's N1 report alone too. Take orders' O2 cause to him in player terms the hour it lands.
 
-**RUNNING (~11:15 PDT):** orders (godot-orders-e9), manoeuvre (godot-manoeuvre-c0), native (godot-native-65); rulings R44.1-R44.7.
-**Main 875ee5dd0** = native fff546ef6 (N1 the one-screen report + SEED digits; GREEN builder0 3420/0 ALL JUDGED) + orders c844fc3b8
-(CP44.0 `group` + C44.2 `click`; GREEN builder0 3426/0 ALL JUDGED). merge_check_needed reads CHECK (the pair): ONE main check after
-native's N2 (7e9c199ae, check running) merges. Bars: G1 v10b (orders, frozen after dev read 5, then 10801-10848); Bar S v3 FAILED its
-wedged guard (R44.7, nothing ships); Bar B1 backout alone to be filed on 11101-11148; Bar A6 v3 queued. Native: backout twin
-edbb120a5 (merged on stream/manoeuvre 8a7a94d70); parkedpass twin requested. **Open to him:** did he mean the far west; two abreast or
-strict single file; on a short click only the front squad drives (recommended yes).
-**Native's session ended ~11:10 (R44.8):** a fresh native session (Opus, same kickoff) reads R44.8 first.
+**RUNNING (~11:55 PDT):** orders (godot-orders-e9), manoeuvre (godot-manoeuvre-c0); **native's session ended ~11:10 (R44.8):
+a fresh native session (Opus, same kickoff) reads R44.8 first: re-cut the backout twin on manoeuvre's c9ea1a6b4.** Rulings
+R44.1-R44.12. **Main 7975d1455** = native fff546ef6 (N1, green 3420/0) + orders c844fc3b8 (CP44.0 + click, green 3426/0) + native
+7e9c199ae (N2 the exact replay, green 3425/0), each builder0 ALL JUDGED; merge_check_needed reads CHECK: ONE main batch check queued
+on builder0 behind manoeuvre's gate check (`~/orch-r44/main-check-7975d1455.log`). Bars: G1 v10c (orders, fit first, two abreast;
+after dev read 6 -> frozen tree check -> 10801-10848); Bar S v3 FAILED its wedged guard (R44.7); Bar B1 backout alone (R44.10/12)
+waits on native's twin; Bar A6 v3 queued. **His answers (game_design.md *His answers on the group click*):** the open area in the
+west; fit first (abreast if it fits, else stack behind); short click holds. Feel question for after: more than two abreast on a wide yard?
 
 ### What prompted it (his playtest after round 43; was the NEXT box)
 
