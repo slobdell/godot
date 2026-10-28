@@ -14,11 +14,12 @@ func teardown() -> void:
 	super.teardown()
 
 
-## A Gun Truck parked 20 m ahead of me (no order: arrived, still); me ordered to a point half a metre from its centre.
+## A War Rig parked 20 m ahead of me (no order: arrived, still; its 7 m radius keeps a Gun Truck from "arriving" at its centre);
+## me, a Gun Truck, ordered to a point half a metre from its centre. ON runs the GDScript drive (Traffic._chain_native).
 func _stage() -> Array:
 	_lab = TacticsLab.create(self, 7, "yard_open")
 	var me := _lab.gun(Match.Team.GREEN, "Green_Me", Vector3.ZERO, 0.0, "gang_ifv")
-	var parked := _lab.gun(Match.Team.GREEN, "Green_Parked", Vector3(0.0, 0.0, -20.0), 0.0, "gang_ifv")
+	var parked := _lab.gun(Match.Team.GREEN, "Green_Parked", Vector3(0.0, 0.0, -20.0), 0.0, "gang_tank")
 	await _lab.start()
 	Movement.of(me).ctl.set_orders({"type": "move_to", "x": 0.5, "z": -20.5}, {"type": "fire_at_will"})
 	return [me, parked]
@@ -62,10 +63,10 @@ func test_a_seat_under_a_parked_friend_is_taken_beside_it() -> void:
 	var on: Dictionary = out["on"]
 	assert_eq(int(off["moved"]), 0, "OFF: no seat is moved")
 	assert_true(int(on["moved"]) >= 1, "ON: the seat under the parked friend is moved beside it (counter %d)" % on["moved"])
-	assert_true(float(on["goal_off"]) >= Avoidance.radius_of("gang_ifv") * 2.0 + Movement.PARKASIDE_CLEAR_M - 0.1,
+	assert_true(float(on["goal_off"]) >= Avoidance.radius_of("gang_ifv") + Avoidance.radius_of("gang_tank") + Movement.PARKASIDE_CLEAR_M - 0.1,
 			"ON: the goal taken is outside the friend's clearance disc (%.1f m from it)" % on["goal_off"])
 	assert_true(int(on["arrived"]) > 0, "ON: I arrive beside it (tick %d)" % on["arrived"])
-	assert_true(float(on["gap"]) >= Avoidance.radius_of("gang_ifv") * 2.0, "ON: ...standing clear of it (%.1f m)" % on["gap"])
+	assert_true(float(on["gap"]) >= Avoidance.radius_of("gang_ifv") + Avoidance.radius_of("gang_tank") - 0.5, "ON: ...standing clear of it (%.1f m)" % on["gap"])
 	assert_true(int(on["stuck"]) <= 15, "ON: no yielding / blocked ticks to speak of (%d)" % on["stuck"])
 	assert_true(float(on["parked_moved"]) < 1.0, "ON: the parked friend never moved (%.1f m)" % on["parked_moved"])
 	assert_true(int(off["stuck"]) > int(on["stuck"]) or int(off["parked_yield"]) > 0 or float(off["parked_moved"]) >= 1.0,
