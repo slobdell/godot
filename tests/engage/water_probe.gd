@@ -10,6 +10,7 @@ extends SceneTree
 ## kills, the squad's arrival. One run = one seed; the arm is the A7 rule's switch (built after this census).
 ##
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/engage/water_probe.gd -- --seed=N [--arena=A] [--seconds=60] [--trace=on]
+##         [--named=on] [--engage-water=on] [--brains-off=native_decide]
 ## Prints ENGAGE_WATER {json} once (read by tests/engage/water_table.py).
 
 const ARRIVED_M := 20.0
@@ -98,7 +99,19 @@ func _run() -> void:
 	for i in 3:
 		await lab.step()
 	var element := lab.elements.form(names, "SquadA")
-	element.assign({"verb": "move", "to": [to.x, to.z]})  # an attack-move: a move task with drills
+	# `--named=on` (Bar A7's guard 8): the squad's order is a named ATTACK on the nearest defender instead of the attack-move.
+	var named := _flag("named", "off") == "on"
+	if named:
+		var nearest := ""
+		var best := INF
+		for unit_name: String in defenders:
+			var d := _flat(lab.tank_of(unit_name).global_position).distance_to(from)
+			if d < best:
+				best = d
+				nearest = unit_name
+		element.assign({"verb": "attack", "target": nearest})
+	else:
+		element.assign({"verb": "move", "to": [to.x, to.z]})  # an attack-move: a move task with drills
 	var guard := lab.elements.form(defenders, "Line")
 	guard.assign({"verb": "hold", "to": [line.x, line.z], "facing": [face_dir.x, face_dir.z]})
 	var given: int = game_match.tick
@@ -221,7 +234,7 @@ func _run() -> void:
 			kills += 1
 	var hz := float(SimClock.TICK_RATE)
 	print("ENGAGE_WATER %s" % JSON.stringify({"seed": seed_value, "arena": arena, "hulls": hulls, "seconds": seconds,
-			"arm": "on" if TankBrain.ENGAGE_WATER else "off", "flags": " ".join(OS.get_cmdline_user_args()),
+			"arm": "on" if TankBrain.ENGAGE_WATER else "off", "named": named, "flags": " ".join(OS.get_cmdline_user_args()),
 			"water_s": _r(water_ticks / hz), "water_far_s": _r(water_far_ticks / hz), "fire_s": _r(fire_ticks / hz),
 			"fire_far_s": _r(fire_far_ticks / hz), "damage_water": _r(damage_water), "hits_water": hits_water, "first_hit_water_s": _r(first_hit_s),
 			"hop_s": _r(hop_ticks / hz),
