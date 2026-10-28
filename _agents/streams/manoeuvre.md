@@ -120,11 +120,19 @@ START_RUN rows (paired per cell, the judge reports wedged pooled only). Nothing 
 | reported: never-arrived / arrival s a crew / k-turn s a run / seat moves a run | 252 -> 172 / -1.12 / -7.7 / -21.5 | 252 -> 205 / -0.59 / -8.7 / -21.3 |
 | **verdict as filed (D1 AND D2 AND every guard)** | **FAIL on the wedged guard** (crossing, locks) | **FAIL** (D2, crossing, locks wedged) |
 
+| group-order guards (10925-10936 x 4 maps x crew, 48 paired, `judge-group.txt`) | **G5 all-in 74.0 -> 70.0 s PASS** (line 76.5); G6 never-in 1.06 -> 0.83 PASS; G7 contacts 672,933 -> 653,422 PASS | not run (v3core is not the ship) |
+| fights (locks / terminus / sumps x 10937-10942, 18 paired, `judge-fights.txt`) | G1 give-way deaths 32 -> 34 PASS; G2 stuck deaths 140 -> 140 PASS; G3 contacts 465,061 -> 466,018 PASS; G4 kill share worst move 0.001, deaths 785 -> 774 PASS (the judge's own moving-stuck line 158 -> 219 s, reported) | |
+| G1 v9 corridor (10925-10936 x 3 maps x 5 squads x click, `judge-g1v9.txt`) | places outside 9 -> 9 PASS (<= base); **metres outside after 334 -> 337 (+1 %): the rows are NOT byte-identical** (the guard as filed FAILS); re-dealt 0 -> 0; friend contacts 1,537 -> 1,621 PASS (<= 1,696); the judge's own twitch guard crossing 5: 5.8 v 14.7 | |
+| gate: 9215b8ab9's full check (builder0, started 11:50 behind orders' and native's) | pending at this write | |
+
 **The read (after the numbers, not a re-read of the bar):** v3 does what he asked everywhere the round-43 bars measured it, by wide
 margins, and Bar S v2's failing line (Locks yield+blocked) passes at +0.2 se: backout and parkedpass carry it (v3core fails D2 and
 crossing). The cost is the one THIS filing named first and v2 only reported: crews pressed against each other on the way in (wedged
 seconds), +9 crew-seconds a run on Locks in the first 15 s, the same with or without backout, so it is the bound's (five crews
-converging on seats within 37 m). As filed nothing ships ON; the orchestrator rules. The brief's two M3 shapes (seats dealt in
+converging on seats within 37 m). As filed nothing ships ON (R44.7). **The G1 byte-identity line:** the player's group column itself is untouched (places outside 9 -> 9, re-dealt
+0, friend contacts within the line) but the rows move by 1 % because backout and parkedpass reach the CPU's crews too (C44.5), and
+the probe's CPU army fights the player's squads: a byte-identical probe cannot be asked of a symmetric rule. Bar B1 carries the same
+wording: restated for B1 before any number (the orchestrator told). The brief's two M3 shapes (seats dealt in
 arrival order along the approach; a squadmate's give-way deferred until the seat ahead is taken) are aimed at this converging press.
 
 ### After R44.7 (2026-10-28 ~11:50 PDT): B1 in preparation, the look widened, S v4's press read
