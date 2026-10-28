@@ -154,13 +154,14 @@ engage-water: import ## engage A7: the across-water census over ENGAGE_WATER_SEE
 	$(PYTHON) tests/engage/water_table.py $(BUILD_DIR)/engage/water/$(ENGAGE_WATER_TAG)
 
 # Bar A7 (round 43): the two pairs on ENGAGE_WATER_SEEDS: the attack-move (off / on) and the named attack (named_off / named_on,
-# guard 8), both arms on the GDScript decide (--brains-off=native_decide: decide_native twins _obey's in_reach, C43.4), then the tables.
+# guard 8), both arms on the GDScript decide (--brains-off=native_decide; the bar's read; native twinned the skip after it,
+# pair/native-a7), then the tables. Since the flip (Bar A7 PASS) the rule is ON by default: `--engage-water=off` is the BASE arm.
 ENGAGE_WATER_COMMON ?= --brains-off=native_decide
 .PHONY: engage-bar-a7
 engage-bar-a7: import ## engage Bar A7: engage-water off / on and named_off / named_on on ENGAGE_WATER_SEEDS, then the paired tables
-	@$(MAKE) --no-print-directory engage-water ENGAGE_WATER_TAG=off ENGAGE_FLAGS="$(ENGAGE_WATER_COMMON)"
-	@$(MAKE) --no-print-directory engage-water ENGAGE_WATER_TAG=on ENGAGE_FLAGS="$(ENGAGE_WATER_COMMON) --engage-water=on"
-	@$(MAKE) --no-print-directory engage-water ENGAGE_WATER_TAG=named_off ENGAGE_FLAGS="$(ENGAGE_WATER_COMMON) --named=on"
-	@$(MAKE) --no-print-directory engage-water ENGAGE_WATER_TAG=named_on ENGAGE_FLAGS="$(ENGAGE_WATER_COMMON) --named=on --engage-water=on"
+	@$(MAKE) --no-print-directory engage-water ENGAGE_WATER_TAG=off ENGAGE_FLAGS="$(ENGAGE_WATER_COMMON) --engage-water=off"
+	@$(MAKE) --no-print-directory engage-water ENGAGE_WATER_TAG=on ENGAGE_FLAGS="$(ENGAGE_WATER_COMMON)"
+	@$(MAKE) --no-print-directory engage-water ENGAGE_WATER_TAG=named_off ENGAGE_FLAGS="$(ENGAGE_WATER_COMMON) --named=on --engage-water=off"
+	@$(MAKE) --no-print-directory engage-water ENGAGE_WATER_TAG=named_on ENGAGE_FLAGS="$(ENGAGE_WATER_COMMON) --named=on"
 	@echo "##### the attack-move pair"; $(PYTHON) tests/engage/water_table.py --pair $(BUILD_DIR)/engage/water/off $(BUILD_DIR)/engage/water/on
 	@echo "##### the named-attack pair (guard 8)"; $(PYTHON) tests/engage/water_table.py --pair $(BUILD_DIR)/engage/water/named_off $(BUILD_DIR)/engage/water/named_on

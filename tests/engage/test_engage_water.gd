@@ -92,5 +92,5 @@ func test_on_a_target_across_water_is_fired_at_and_never_hopped_for() -> void:
 	assert_true(not String(dry["why"]).contains("water between"), "ON, dry: today's combat move (%s)" % dry["why"])
 
 
-func test_the_switch_is_off_by_default_until_bar_a7() -> void:
-	assert_true(not OS.get_cmdline_user_args().has("--engage-water=on") or TankBrain.ENGAGE_WATER, "the flag sets it")
+func test_the_rule_is_on_by_default_since_bar_a7() -> void:
+	assert_true(OS.get_cmdline_user_args().has("--engage-water=off") or OS.get_environment("ENGAGE_WATER") == "off" or TankBrain.ENGAGE_WATER, "ON unless the escape")

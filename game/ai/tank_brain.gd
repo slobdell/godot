@@ -417,7 +417,7 @@ static var BOUND_SUPPRESS_MOVES := true
 static var SUPPRESS_LINE := OS.get_cmdline_user_args().has("--attack-shot-suppress=on") \
 		or OS.get_environment("ATTACK_SHOT_SUPPRESS") == "on"
 
-## Round 43 (engage A7, R43.5 / R43.21; `--engage-water=on`, env ENGAGE_WATER=on; OFF until Bar A7, then `=off` the escape):
+## Round 43 (engage A7, R43.5 / R43.21; ON since Bar A7 passed, `--engage-water=off` / env ENGAGE_WATER=off the escape):
 ## a crew keeps its gun on a hittable target across water but never MOVES for it. (1) Under an attack-move a contact across
 ## water (SlotGround.leg_wet from the crew) is not "met on the way" (_obey's in_reach), so MOVE keeps the route and the gun
 ## fires at will; (2) in ENGAGE on a contact across water the crew never takes a combat hop: under a named attack it drives
@@ -425,7 +425,8 @@ static var SUPPRESS_LINE := OS.get_cmdline_user_args().has("--attack-shot-suppre
 ## ticks 556-694): a War Rig under attack-move engaged a Syndicate crew across the canal 58-61 m away and hopped along the
 ## bank, one reverse hop 36 m, swinging the hull round; the census (dev 7001-7012): 19 s a run of such hops, 5 s in reverse,
 ## the crew 23 m (up to 75) off its own order.
-static var ENGAGE_WATER := OS.get_cmdline_user_args().has("--engage-water=on") or OS.get_environment("ENGAGE_WATER") == "on"
+## Bar A7 PASSED (R43.21 / R43.23, 2026-10-28): ON by default; `--engage-water=off` (env ENGAGE_WATER=off) is round 42's rule.
+static var ENGAGE_WATER := not (OS.get_cmdline_user_args().has("--engage-water=off") or OS.get_environment("ENGAGE_WATER") == "off")
 ## Tests: answers "is there water between these two points" instead of the arena (a Callable(from, to) -> bool).
 static var water_between: Callable
 

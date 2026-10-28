@@ -10,7 +10,7 @@ extends SceneTree
 ## kills, the squad's arrival. One run = one seed; the arm is the A7 rule's switch (built after this census).
 ##
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/engage/water_probe.gd -- --seed=N [--arena=A] [--seconds=60] [--trace=on]
-##         [--named=on] [--engage-water=on] [--brains-off=native_decide]
+##         [--named=on] [--engage-water=off] [--brains-off=native_decide]
 ## Prints ENGAGE_WATER {json} once (read by tests/engage/water_table.py).
 
 const ARRIVED_M := 20.0
