@@ -184,5 +184,5 @@ func _trace() -> void:
 		return
 	for tank: Tank in _match.sorted_team_tanks(0) + _match.sorted_team_tanks(1):
 		if tank.is_alive():
-			print("REPLAY_TRACE %d %s %.6f %.6f %.6f %.6f" % [_match.tick, tank.name, tank.global_position.x,
-					tank.global_position.z, tank.rotation.y, tank.velocity.length()])
+			print("REPLAY_TRACE %d %s %.6f %.6f %.6f %.6f cmd %.9f %.9f" % [_match.tick, tank.name, tank.global_position.x,
+					tank.global_position.z, tank.rotation.y, tank.velocity.length(), tank.command.throttle, tank.command.turn])
