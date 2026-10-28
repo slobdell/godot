@@ -142,11 +142,53 @@ func test_the_corner_swing_ships_off_and_reads_no_enemy() -> void:
 
 
 func test_a_lane_beside_the_water_is_dropped() -> void:
-	# A canal 4 m wide just west of the west lane (x -14): Locks' quay case, where his crews never reached the corner.
-	var water := CameraCorner.water_of({"terrain": [{"kind": "water", "rect": [-20.0, 0.0, 4.0, 300.0]},
+	# A canal 4 m wide under the west lanes (x -11 to -18): Locks' quay case, where his crews never reached the corner.
+	var water := CameraCorner.water_of({"terrain": [{"kind": "water", "rect": [-14.0, 0.0, 4.0, 300.0]},
 			{"kind": "bridge", "rect": [0.0, 0.0, 16.0, 24.0]}]})
 	assert_eq(water.size(), 1, "only water counts")
 	var lanes := CameraCorner.lanes(_warehouse(), Match.DRIVABLE_LIMIT - 6.0, water)
-	for l: Dictionary in lanes:
-		assert_true((l["start"] as Vector2).x > 0.0, "every west lane (x <= -11) is within WATER_CLEAR_M of it: %s" % [l["start"]])
-	assert_true(not _lane(lanes, NORTH, Vector2(1, 0)).is_empty(), "the east lane stands")
+	assert_eq(lanes.size(), 0, "the west lanes run in it and the east lanes' hiding spot (x -15) lies in it: %s" % [lanes])
+	var dry := CameraCorner.lanes(_warehouse(), Match.DRIVABLE_LIMIT - 6.0,
+			CameraCorner.water_of({"terrain": [{"kind": "water", "rect": [-40.0, 0.0, 4.0, 300.0]}]}))
+	assert_eq(dry.size(), 4, "a canal 22 m off the west lane leaves all four")
+
+
+func _yaw_run(rig: RtsCamera, feed: DangerFeed, frames: int) -> Array:
+	rig.danger = feed.reader()
+	rig.yaw = 0.0
+	rig._yaw_turning = false
+	rig._danger_settled_at = -1e9
+	var out: Array = []
+	for i in frames:
+		rig._update_yaw_follow(1.0 / 60.0)
+		out.append(rig.yaw)
+	return out
+
+
+func test_no_fog_cheat_an_unseen_enemy_changes_no_yaw() -> void:
+	# C43.6 (Bar K5's no-fog-cheat line, pinned): his squad drives north past a corner with the swing ON; an enemy his
+	# team cannot see parked in the blind spot moves the yaw by not one bit.
+	var arena := add_to_tree(load("res://game/arena/arena.tscn").instantiate())
+	var m: Match = add_to_tree(load("res://game/match/match.tscn").instantiate())
+	var mine := m.spawn_tank("Mine", 0, Match.Team.GREEN)
+	mine.place(Vector3(-14, 0, -18), 0.0)
+	var hidden := m.spawn_tank("Hidden", 0, Match.Team.RUST)
+	hidden.place(Vector3(15, 0, -9), 0.0)
+	await wait_physics_frames(1)
+	if tree.root.size.x < 640:
+		tree.root.size = Vector2i(1280, 720)
+	var camera := Camera3D.new()
+	add_to_tree(camera)
+	var rig := RtsCamera.new()
+	rig.camera = camera
+	rig.edge_pan = false
+	add_to_tree(rig)
+	rig.corner_on = true
+	rig.facing = func() -> Variant: return Vector3(0, 0, -1)
+	var feed := DangerFeed.new().attach(m, Match.Team.GREEN, func() -> Array[String]: return ["Mine"],
+			func(_t: Tank) -> bool: return false, rig.facing)
+	var with_it := _yaw_run(rig, feed, 120)
+	hidden.free()
+	var without := _yaw_run(rig, feed, 120)
+	assert_eq(with_it, without, "the yaw sequence is identical with and without the unseen enemy")
+	assert_true(arena != null, "an arena (the cover map's source)")

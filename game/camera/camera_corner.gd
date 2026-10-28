@@ -31,7 +31,7 @@ const LEAD_IN_M := 15.0
 const RUN_OUT_M := 35.0
 ## The lane must clear every other feature by this much (a hull's half width and some), and water by WATER_CLEAR_M.
 const LANE_CLEAR_M := 3.5
-const WATER_CLEAR_M := 8.0
+const WATER_CLEAR_M := 4.0  # a hull's half width and some: Locks' quay lanes 6 m off the canal drive, 2 m off do not
 ## The hiding spot: this far off the far face (the first that works), this far back from the far end, CLEAR_M from
 ## everything.
 const HIDE_OFFS_M: Array[float] = [10.0, 6.0, 14.0]
@@ -67,6 +67,13 @@ var _facing_s := 0.0
 var _bearing_sum := 0.0
 var _bearing_n := 0
 var _toward_s := 0.0
+var _away_s := 0.0
+var _back_s := 0.0
+var _frame := 0
+## Bar K5's no-fog-cheat line (C43.6): every frame from the staging, the shown and wanted yaw at full precision and how
+## many enemies his team knows. Run the same lane with and without the hidden squad (`--camera-corner-hidden=off`):
+## up to the first frame either run knows an enemy, the two yaw columns must be identical (tests/camera/corner_nocheat.py).
+var yaw_log: Array = []
 
 
 func _ready() -> void:
@@ -136,7 +143,7 @@ static func _lane(map: CoverMap, wall: Dictionary, way: float, face: float, offs
 
 
 ## Whether the segment a -> b comes within `grow` of any water rect (Rect2, ground x/z). The cover map knows walls, not
-## the canal: Locks' quay lanes ran 2 m off the water and his crews never reached the corner (K5.2 census, 9e14c3ade).
+## the canal: Locks' right quay lanes ran 2 m off the water and his crews never reached the corner (K5.2 census, 9e14c3ade).
 static func _wet(a: Vector2, b: Vector2, water: Array, grow: float) -> bool:
 	var steps := maxi(1, ceili(a.distance_to(b) / 2.0))
 	for rect: Rect2 in water:
@@ -232,7 +239,9 @@ func _process(delta: float) -> void:
 	if rig == null or feed == null or lane.is_empty() or delta <= 0.0 or get_tree().paused:
 		return
 	_clock += delta
+	_frame += 1
 	var state := feed.read()
+	yaw_log.append([_frame, game_tick(), "%.9f" % rig._shown_yaw, "%.9f" % rig.yaw, (state.get("enemies", []) as Array).size()])
 	var own: Array = state.get("own", [])
 	if state["from"] == null or own.is_empty():
 		return
@@ -267,9 +276,21 @@ func _process(delta: float) -> void:
 		_facing_s += delta
 	if absf(bearing) <= 45.0:
 		_toward_s += delta
+	# The swing's cost (Bar K5's empty corner): seconds the view looks more than 90 / 135 deg off the way they drive.
+	var travel: Variant = state.get("heading")
+	if travel is Vector3 and (travel as Vector3).length() > 0.01:
+		var off := absf(CameraLook.bearing(yaw, from, from + (travel as Vector3)))
+		if off > 90.0:
+			_away_s += delta
+		if off > 135.0:
+			_back_s += delta
 	if keep_frames:
 		frames.append({"t": snappedf(_clock, 0.001), "past": snappedf(past, 0.1), "bearing": snappedf(bearing, 0.1),
 				"facing": facing, "seen": hidden_seen, "shown": hidden_shown})
+
+
+func game_tick() -> int:
+	return feed.game_match.tick if feed != null and feed.game_match != null else -1
 
 
 func summary() -> Dictionary:
@@ -279,6 +300,7 @@ func summary() -> Dictionary:
 			"seen_to_screen_s": CameraCorner._gap(_seen, _screen) if _seen >= 0.0 else null,
 			"seen": _seen >= 0.0, "shown": _screen >= 0.0,
 			"corner_s": snappedf(_corner_s, 0.01), "facing_s": snappedf(_facing_s, 0.01), "toward_s": snappedf(_toward_s, 0.01),
+			"away_s": snappedf(_away_s, 0.01), "back_s": snappedf(_back_s, 0.01), "hidden": not hidden.is_empty(),
 			"mean_abs_bearing": snappedf(_bearing_sum / maxf(_corner_s, 1e-6), 0.1) if _corner_s > 0.0 else null}
 
 
