@@ -1,0 +1,133 @@
+paired seeds n 24
+exercised (a verdict in BASE and a far crew) 24 of 24; floor 16
+          line       BASE        ARM  paired mean       se       z
+  off_arrive_s      645.5      557.0        -3.69     2.15   -1.71
+    held_off_s      147.0       22.0        -5.21     1.79   -2.92
+     held_on_s     1350.0      503.0       -35.29     6.52   -5.41
+  way_released        0.0        0.0         0.00     0.00     nan
+route_ms_per_verdict        0.0        0.0         0.00     0.00     nan
+ route_queries        0.0        0.0         0.00     0.00     nan
+  far_arrive_s     1391.0     1210.5        -7.52     3.04   -2.48
+        away_s       35.0       23.0        -0.50     0.58   -0.86
+        away_m       35.1       40.8         0.24     0.91    0.26
+      last_a_s     1702.0     1509.0        -8.04     3.30   -2.44
+contacts_mouth      741.0      831.0         3.75    12.35    0.30
+  contacts_far       60.0       33.0        -1.12     1.86   -0.61
+         jam_s      622.0      238.0       -16.00     5.23   -3.06
+      contacts     1213.0     1125.0        -3.67    12.85   -0.29
+ contacts_fast      693.0      606.0        -3.62     8.00   -0.45
+contacts_cross      487.0      442.0        -1.88     6.78   -0.28
+       stuck_s     4551.0     3687.0       -36.00    10.95   -3.29
+        held_s     1762.0     1003.0       -31.62     6.36   -4.97
+      a_held_s     1497.0      525.0       -40.50     7.47   -5.42
+      last_b_s     1548.0     1344.0        -8.50     4.95   -1.72
+  far_released        0.0        0.0         0.00     0.00     nan
+      far_held        0.0        0.0         0.00     0.00     nan
+      verdicts       24.0       14.0        -0.42     0.10   -4.05
+per seed (away_s BASE -> ARM, away_m, last_a_s, contacts_far):
+  10949  terminus_side far  83.1: away_s 2 -> 0, away_m 1.1 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10950  terminus_west far  63.5: away_s 11 -> 8, away_m 7.6 -> 22.0, last_a 75.0 -> 75.0, contacts_far 51 -> 8, verdicts 1 -> 1, far_released 0 far_held 0
+  10951  terminus_side far  82.2: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10952  terminus_east far  66.1: away_s 3 -> 0, away_m 5.3 -> 0.0, last_a 75.0 -> 20.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10953  terminus_side far  82.7: away_s 1 -> 0, away_m 1.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10954     locks_lock far  69.8: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 62.0 -> 47.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10955  terminus_side far  83.2: away_s 1 -> 3, away_m 1.7 -> 5.6, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10956  terminus_west far  67.2: away_s 0 -> 1, away_m 0.0 -> 1.3, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10957  terminus_side far  83.9: away_s 0 -> 4, away_m 0.0 -> 5.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10958  terminus_east far  67.2: away_s 0 -> 1, away_m 0.0 -> 1.5, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10959  terminus_side far  82.3: away_s 11 -> 0, away_m 12.3 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10960     locks_lock far  61.0: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 9 -> 15, verdicts 1 -> 1, far_released 0 far_held 0
+  10961  terminus_side far  82.3: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10962  terminus_west far  67.2: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 5, verdicts 1 -> 1, far_released 0 far_held 0
+  10963  terminus_side far  83.6: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 40.0 -> 18.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10964  terminus_east far  67.2: away_s 0 -> 1, away_m 0.0 -> 1.1, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10965  terminus_side far  82.7: away_s 2 -> 0, away_m 2.8 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10966     locks_lock far  65.8: away_s 0 -> 2, away_m 0.0 -> 2.1, last_a 75.0 -> 49.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10967  terminus_side far  83.0: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10968  terminus_west far  67.2: away_s 0 -> 3, away_m 0.0 -> 2.2, last_a 75.0 -> 75.0, contacts_far 0 -> 5, verdicts 1 -> 1, far_released 0 far_held 0
+  10969  terminus_side far  82.1: away_s 1 -> 0, away_m 1.0 -> 0.0, last_a 37.0 -> 28.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10970  terminus_east far  67.2: away_s 3 -> 0, away_m 2.3 -> 0.0, last_a 75.0 -> 21.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10971  terminus_side far  84.1: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10972     locks_lock far  77.2: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 63.0 -> 51.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+
+=== the side-street seeds (Bar A6's deciding line: off_arrive_s)
+paired seeds n 12 (unpaired: [10950, 10952, 10954, 10956, 10958, 10960, 10962, 10964, 10966, 10968, 10970, 10972])
+exercised (a verdict in BASE and a far crew) 12 of 12; floor 16
+          line       BASE        ARM  paired mean       se       z
+  off_arrive_s      657.5      569.0        -7.38     4.11   -1.79
+    held_off_s      147.0       22.0       -10.42     2.90   -3.59
+     held_on_s      581.0       44.0       -44.75     5.52   -8.11
+  way_released        0.0        0.0         0.00     0.00     nan
+route_ms_per_verdict        0.0        0.0         0.00     0.00     nan
+ route_queries        0.0        0.0         0.00     0.00     nan
+  far_arrive_s      657.5      569.0        -7.38     4.11   -1.79
+        away_s       18.0        7.0        -0.92     1.03   -0.89
+        away_m       19.9       10.6        -0.78     1.22   -0.64
+      last_a_s      827.0      796.0        -2.58     1.92   -1.35
+contacts_mouth      490.0      348.0       -11.83    14.17   -0.84
+  contacts_far        0.0        0.0         0.00     0.00     nan
+         jam_s      348.0       43.0       -25.42     4.48   -5.68
+      contacts      620.0      424.0       -16.33    14.31   -1.14
+ contacts_fast      386.0      233.0       -12.75    10.28   -1.24
+contacts_cross      264.0      169.0        -7.92     6.70   -1.18
+       stuck_s     2242.0     2016.0       -18.83    17.27   -1.09
+        held_s      728.0      149.0       -48.25     7.90   -6.10
+      a_held_s      728.0       66.0       -55.17     7.95   -6.94
+      last_b_s      720.0      590.0       -10.83     6.77   -1.60
+  far_released        0.0        0.0         0.00     0.00     nan
+      far_held        0.0        0.0         0.00     0.00     nan
+      verdicts       12.0        4.0        -0.67     0.14   -4.69
+per seed (away_s BASE -> ARM, away_m, last_a_s, contacts_far):
+  10949  terminus_side far  83.1: away_s 2 -> 0, away_m 1.1 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10951  terminus_side far  82.2: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10953  terminus_side far  82.7: away_s 1 -> 0, away_m 1.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10955  terminus_side far  83.2: away_s 1 -> 3, away_m 1.7 -> 5.6, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10957  terminus_side far  83.9: away_s 0 -> 4, away_m 0.0 -> 5.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10959  terminus_side far  82.3: away_s 11 -> 0, away_m 12.3 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10961  terminus_side far  82.3: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10963  terminus_side far  83.6: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 40.0 -> 18.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10965  terminus_side far  82.7: away_s 2 -> 0, away_m 2.8 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10967  terminus_side far  83.0: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10969  terminus_side far  82.1: away_s 1 -> 0, away_m 1.0 -> 0.0, last_a 37.0 -> 28.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10971  terminus_side far  84.1: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+
+=== the head-on seeds (Bar A6's mechanism guard: verdicts, held_on_s)
+paired seeds n 12 (unpaired: [10949, 10951, 10953, 10955, 10957, 10959, 10961, 10963, 10965, 10967, 10969, 10971])
+exercised (a verdict in BASE and a far crew) 12 of 12; floor 16
+          line       BASE        ARM  paired mean       se       z
+  off_arrive_s      -12.0      -12.0         0.00     0.00     nan
+    held_off_s        0.0        0.0         0.00     0.00     nan
+     held_on_s      769.0      459.0       -25.83    11.45   -2.26
+  way_released        0.0        0.0         0.00     0.00     nan
+route_ms_per_verdict        0.0        0.0         0.00     0.00     nan
+ route_queries        0.0        0.0         0.00     0.00     nan
+  far_arrive_s      733.5      641.5        -7.67     4.65   -1.65
+        away_s       17.0       16.0        -0.08     0.57   -0.15
+        away_m       15.2       30.2         1.25     1.34    0.93
+      last_a_s      875.0      713.0       -13.50     6.03   -2.24
+contacts_mouth      251.0      483.0        19.33    19.83    0.97
+  contacts_far       60.0       33.0        -2.25     3.77   -0.60
+         jam_s      274.0      195.0        -6.58     8.84   -0.74
+      contacts      593.0      701.0         9.00    21.37    0.42
+ contacts_fast      307.0      373.0         5.50    12.12    0.45
+contacts_cross      223.0      273.0         4.17    11.85    0.35
+       stuck_s     2309.0     1671.0       -53.17    12.22   -4.35
+        held_s     1034.0      854.0       -15.00     7.52   -2.00
+      a_held_s      769.0      459.0       -25.83    11.45   -2.26
+      last_b_s      828.0      754.0        -6.17     7.46   -0.83
+  far_released        0.0        0.0         0.00     0.00     nan
+      far_held        0.0        0.0         0.00     0.00     nan
+      verdicts       12.0       10.0        -0.17     0.11   -1.48
+per seed (away_s BASE -> ARM, away_m, last_a_s, contacts_far):
+  10950  terminus_west far  63.5: away_s 11 -> 8, away_m 7.6 -> 22.0, last_a 75.0 -> 75.0, contacts_far 51 -> 8, verdicts 1 -> 1, far_released 0 far_held 0
+  10952  terminus_east far  66.1: away_s 3 -> 0, away_m 5.3 -> 0.0, last_a 75.0 -> 20.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10954     locks_lock far  69.8: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 62.0 -> 47.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10956  terminus_west far  67.2: away_s 0 -> 1, away_m 0.0 -> 1.3, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10958  terminus_east far  67.2: away_s 0 -> 1, away_m 0.0 -> 1.5, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10960     locks_lock far  61.0: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 9 -> 15, verdicts 1 -> 1, far_released 0 far_held 0
+  10962  terminus_west far  67.2: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 75.0 -> 75.0, contacts_far 0 -> 5, verdicts 1 -> 1, far_released 0 far_held 0
+  10964  terminus_east far  67.2: away_s 0 -> 1, away_m 0.0 -> 1.1, last_a 75.0 -> 75.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10966     locks_lock far  65.8: away_s 0 -> 2, away_m 0.0 -> 2.1, last_a 75.0 -> 49.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0
+  10968  terminus_west far  67.2: away_s 0 -> 3, away_m 0.0 -> 2.2, last_a 75.0 -> 75.0, contacts_far 0 -> 5, verdicts 1 -> 1, far_released 0 far_held 0
+  10970  terminus_east far  67.2: away_s 3 -> 0, away_m 2.3 -> 0.0, last_a 75.0 -> 21.0, contacts_far 0 -> 0, verdicts 1 -> 0, far_released 0 far_held 0
+  10972     locks_lock far  77.2: away_s 0 -> 0, away_m 0.0 -> 0.0, last_a 63.0 -> 51.0, contacts_far 0 -> 0, verdicts 1 -> 1, far_released 0 far_held 0

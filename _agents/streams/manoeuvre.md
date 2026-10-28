@@ -213,6 +213,33 @@ seats put the first squad across the second squad's way in. The press has two sq
 Round-45 candidate as a design note: the second squad's seats and approach must be dealt with the first squad's standing shape in
 view (parkaside's rim is the seat only; the approach lane is not), or the press measured per squad in the bar.
 
+### Bar A6 v3 (the street hold's way read, decided on the side stage's jam): FAILS AS FILED on guard 2b, by 0.26 se
+(series 12:10-12:16 PDT, builder2 light, native ON, frozen 9215b8ab9, `native engage-hold` 10949-10972, n 24 paired = 12 side + 12
+head-on, 75 s, J10; E1's lines on 10973-10996; 0 SCRIPT ERROR in 96 logs; judges filed under `references/round44/manoeuvre/
+barsa6v3-builder2-9215b8ab9/`; nothing amended; no re-run)
+
+| line | BASE -> ARM-W (`--traffic-on=holdway`) | reading |
+|---|---|---|
+| exercised (side 12) | 12 verdicts of 12 | floor 8 met |
+| **Deciding: jam_s (side 12)** | 348 -> 43 crew-s; paired -25.4 s a run, se 4.48 (**-5.7 se**); pooled ARM < BASE | **PASS** |
+| 1 off_arrive_s (side 12) ARM <= BASE + 2 se | 657.5 -> 569.0; -7.4 a run, se 4.11 (-1.8 se) | PASS |
+| 2a verdicts (head-on 12) within +/- 2 se | 12 -> 10; -0.17 a run, se 0.11 (-1.5 se) | PASS |
+| **2b held_on_s (head-on 12) within +/- 2 se** | 769 -> 459; **-25.8 s a run, se 11.45 (-2.26 se)** | **FAIL** (the two-sided mechanism guard: the way read releases head-on crews today's nose read held, 40 % fewer holding seconds) |
+| 3 contacts_mouth (24) <= +1.645 se | 741 -> 831; +3.8 a run, se 12.35 (+0.3 se) | PASS |
+| 4 contacts_far (24) <= +max(1.645 se, 2) | 60 -> 33; -1.1 a run (-0.6 se) | PASS |
+| 5 last_a_s (24) <= +1.645 se | 1702 -> 1509; -8.0 a run, se 3.30 (-2.4 se) | PASS |
+| 6 Bar E1's lines (10973-10996, attack-shot ON both arms) | stuck 15.0 -> 15.0, first hit 2.87 -> 2.87, deaths 14 -> 14: byte-identical | PASS (a null read, as expected) |
+| 7 perf: 9215b8ab9's check perf-judge | pending (the gate check running on builder0) | |
+| reported | side held_on_s 581 -> 44 (-8.1 se), side a_held 728 -> 66, side verdicts 12 -> 4; head-on last_a_s -13.5 s a run (-2.2 se), head-on contacts_mouth 251 -> 483 (+19 a run, +1.0 se), head-on stuck_s 2309 -> 1671 (-4.4 se) | |
+| **verdict as filed (the deciding line AND every guard)** | **FAIL on 2b (-2.26 se v +/- 2)** | holdway stays OFF |
+
+**The read (after the numbers):** on the side stage the way read does what R43.21 said it would (the squad waiting beside a street
+no longer jams at its mouth: jam -5.7 se, held seconds -94 %, arrivals sooner, no more contacts), and on the head-on stage it changes
+the mechanism more than the guard allowed: crews that today's nose read held are released (held_on_s -40 %, -2.26 se), their last
+arrival comes 13 s a run sooner and the mouth sees +19 contacts a run (+1.0 se, within its own line). The guard was two-sided to say
+"the head-on hold is unchanged", and it is not: by 0.26 se. As filed, OFF. Round-45 framing if the orchestrator wants it: a one-sided
+head-on guard (contacts and arrivals, not holding seconds) and the way read as the candidate again, on fresh seeds.
+
 ### Stretch, the bridge drill crew's own cause (R43.38): the case does not reproduce on main (2026-10-28 ~12:30 PDT)
 
 `make bridge-trace` locks / rust / seed 2 / tick 15 / wet-ground on (R40.21's crew: Rust_S_3 rim 5.1 s, arrival 48.9 s at 5a233f42b)
