@@ -195,6 +195,16 @@ arrival order along the approach; a squadmate's give-way deferred until the seat
 - **main 7975d1455 merged (native's N2: his round-43 matches replay exactly, the army seed recovered):** M5 on both recordings re-read on
   the exact replay (`make replay-match`, base v backout, running on builder0).
 
+### S v4's candidate, the dev read (Locks 7001-7012, builder2, a2cc20e5e, `~/overnight-manoeuvre/r44/m3/dev12_logs`): NOT a candidate on this block
+
+`--seat-order=on` (seats dealt in the crews' lateral order on a squad's own plain move; `tests/test_formation_seat_order.gd` 2 / 0:
+least driving crosses on 15 of 20 seeded stages, the rule never) read as v3 + seat-order v v3, each v base: the FIRST squad's press
+drops (its wedged -2.1 s a run, -3.6 se, v v3's -1.0) and its seat moves stay down (-20.6 a run), but the second squad wedges more
+(all crews +4.6 s a run v v3's +2.9), yields rise (+3.6 s a run, +2.8 se v +1.0) and D1 falls from +6.6 to +4.6 se: the ordered
+seats put the first squad across the second squad's way in. The press has two squads in it; a seat order for one is not the shape.
+Round-45 candidate as a design note: the second squad's seats and approach must be dealt with the first squad's standing shape in
+view (parkaside's rim is the seat only; the approach lane is not), or the press measured per squad in the bar.
+
 ### M5 READ on native's EXACT replay (main 7975d1455 merged at 158b6d45c; builder0, native ON, `make replay-match ... CREWS=all`,
 `~/overnight-manoeuvre/r44/m5/replay_*`; base = main's drive, bo = `--traffic-on=backout` on the GDScript drive): BOTH his rigs back out first
 
