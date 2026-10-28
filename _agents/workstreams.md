@@ -174,7 +174,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   -> 0.7 s a run (-34.1, se 2.85, z -12.0); 2 off_order_m 21.5 -> 10.6 m (-10.9, se 4.33, z -2.52); 3 damage +122 (se 108); 4 first hit
   +0.45 s (se 0.68); 5 deaths 64 -> 48 (z -2.9, fewer); 6 kills 49 -> 57; 7 last_a -5.6 s; 8 named attack deaths 60 -> 57 (se 0.31).
   Line 9 PASS: Bar E1's probe on 10673-10696 byte-identical ON v OFF (stuck 128.5 = 128.5 crew-s, first hit 7.02 = 7.02 s, deaths 25 = 25:
-  no water between crew and target, the rule never fires). Lines 10-11 (suite ON check, builder0) next.
+  no water between crew and target, the rule never fires). **Lines 10-11 PASS** (`check ENGAGE_WATER=on` on builder0: every test passed,
+  perf-judge judged; 1 FAILED = sim-baseline only: crossing, locks, gorge MOVED, the three water maps). **Bar A7 PASSES every line.** Flip
+  committed cbf1eb935 (ENGAGE_WATER default ON, `--engage-water=off`); baseline adoption waits for builder0's load (first try OOM-killed,
+  exit 137 on six maps at load 58); the three moved maps read twice, identical.
 
 - **FILED Bar S5, the bridge's carried-past wait (manoeuvre; FILED in Status before any 10449+ number; side branch `wip/manoeuvre-s5`
   = fed356a8b + balance's v2 overrides + 5a5e7b434).** deckwait v5: a wait begins only on the carried-past case (a follower at >= 0.6 x top
