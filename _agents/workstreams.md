@@ -216,6 +216,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
 - **R43.16 (~00:25) builder2 may run two judged series at once (camera's Bar K5, engage's Bar A) plus one full check.** It has 32 cores
   and 31 GB (29 GB free at 05:22 box time, load 13); C43.1's one-series rule came from builder0's 15 GB OOM (round 42). Condition:
   total jobs <= 24, no perf read on builder2 (fight and camera numbers are tick/frame-paced). A load-induced failure reruns the workload.
+- **R43.17 (~00:40) N2b done at the memo; no C++ this round.** Native 6afe991bb (unchecked yet): `untangle_whole`'s crossings memoised,
+  drives precomputed in the same order, permutations built once, a losing permutation stops early; identity: `test_untangle_whole_memo.gd`
+  (the old function verbatim v the new on 1,500 seeded knots, same places / return / counters). Laptop, "ordering N units" v budget 104:
+  6 squads 249.2 -> 20.19 ms (ratio 2738.8 -> 232.1); 5 squads 13.39 ms (155.7); **4 squads (his laptop) 6.50 ms (78.3): in budget**. The
+  rest at 5-6 squads is one `RtsControls.gate_width` scan (~7 ms); 6 squads can't meet 104 (G1 off alone 96). gate_width in C++: later.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
