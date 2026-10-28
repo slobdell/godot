@@ -252,7 +252,7 @@ already read, or 7001-7012.
 - **R44.8 (~11:15) native's session ended mid-round; its next session starts here.** In flight when it ended: (a) N2's full check of
   7e9c199ae on builder0 (log `~/tank_squad/remote-logs/godot-native-check-20261028-104851-1025702.log`; the orchestrator reads it and
   merges on green); (b) the builder2 native-proof of `pair/native-m2m3-r2` 39b063c7c (log on the laptop `~/native-r44/m2m3-proof-39b063c7c.log`).
-  **Pending for native (relayed from manoeuvre):** backout's GDScript look (`Movement._backout_look`: the tightened look after 1d055d498 on stream/manoeuvre, hash named in R44.12; NOT 813f36a5b, superseded)
+  **Pending for native (relayed from manoeuvre):** backout's GDScript look (`Movement._backout_look`: stream/manoeuvre **c9ea1a6b4** (R44.12; NOT 813f36a5b, superseded))
   no longer requires the steering point within a hull's length, and BACKOUT_MIN_ERROR_DEG = 20; the C++ cheap look's pre-filter
   drops its |goal| < hull-length term, keeps drive_vector zero + near rest, then calls `_backout_due` as now. Re-cut the backout twin
   on manoeuvre's tip with that, prove EQUAL on builder2, name the hash to manoeuvre and the orchestrator: Bar B1 freezes on it.
@@ -274,6 +274,12 @@ already read, or 7001-7012.
   slide, capped at 2; the rest stack behind. Three or four abreast where the ground fits (a 102-160 m front) is the shape that
   dispersed him; the cap keeps line 3's 52 m by construction. Feel question for him after he plays it: on a wide yard, does he want
   more squads side by side? His west-quay target reads one abreast (the quay is 42-50 m clear): his army arrives in file along it.
+- **R44.12 (~11:35) backout's ship candidate c9ea1a6b4; Bar B1's stuck class.** The look: a hull >= 10 m at rest, steering point within a
+  hull's length, nose blocked within 4 m, 20 deg gate; a departure look no longer goes to the lattice seam (it refused the vertex as
+  GOAL_BLOCKED, 2.6-3.6 s a pose). Dev (14 poses): cost ceiling PASS (worst +1.7 s, median -0.07 s); his start past the box ~91 v 142;
+  Locks dev backout alone neutral on every line. Base-stuck = base not cleared 8 m within 6 s AND the base's rig has no yield /
+  blocked-by-friend seconds in its first 6 s (both read from BASE only; three crawl poses were pinned by the squad, not the box).
+  Deciding as R44.10 on those (floor 8; jitter count named at filing; under 8 qualifying = NOT JUDGED). Native twins c9ea1a6b4.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
