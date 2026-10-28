@@ -81,6 +81,19 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-27 ~20:40 PDT (Fable). Starting commit 2f1620a77 = main at launch (code b12b17ac7 GREEN builder0, 3343/0; no
 baseline check re-run, per the contract). CP43.0 taken at f6b930a3d (main 84f914f78 merged). Orchestrator session: `godot-b8`.**
 
+### FROZEN fed356a8b (2026-10-28 ~02:20 PDT): Bar S's tree; the gate check running on builder0; the series queued behind it
+
+- **The tree:** fed356a8b = main 84f914f78 (CP43.0) + S2 (cf70440ac, c2e03f40e, bbca98093) + S3 / Bar S (fed356a8b). No game/ or
+  tests/ commit until the series' end line (R40.13); docs on top.
+- **The gate:** `make remote T=check` from `../godot-manoeuvre-b0` (a detached worktree at the hash; its own builder0 folder),
+  systemd unit `manoeuvre-r43-check1`, log `~/overnight-manoeuvre/r43/check1/check.log` (read the `>> remote: make check exited N`
+  line). **The series** (`~/overnight-manoeuvre/r43/bars.sh`) starts by itself from unit `manoeuvre-r43-bars`
+  (`after_check.sh`: waits for the wrapper line, refuses a red gate, waits for builder2 to be free of full checks, then runs);
+  progress in `~/overnight-manoeuvre/r43/launcher.txt` and `bars/meta.txt`; the judges land in `bars/judge-*.txt`.
+- **Laptop runs by hand (native's note, 2026-10-28):** a Godot started by hand on the laptop runs the system atan2f, 1 ulp off the
+  CORE-MATH `make` preloads, so my hand-run rebuilds (traceC / F / G) drift from his match after ~13 s; through `make` (the
+  manoeuvre-start-trace target) or with `LD_PRELOAD` from `make -s trig-info` they would not. Builder runs are unaffected.
+
 ### Bar S: FILED 2026-10-28 ~01:30 PDT, BEFORE any number on 10401-10448 (C43.1, C43.4, C43.5, R43.6, R43.7, R43.14)
 
 - **The rules judged, as four arms each removable alone, every switch on ONE frozen commit (named at the series' launch; R40.13:
