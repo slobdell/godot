@@ -34,8 +34,9 @@ next playtest carries it; native's N1 report alone too. Take orders' O2 cause to
 **RUNNING (~11:55 PDT):** orders (godot-orders-e9), manoeuvre (godot-manoeuvre-c0); **native's session ended ~11:10 (R44.8):
 a fresh native session (Opus, same kickoff) reads R44.8 first: re-cut the backout twin on manoeuvre's c9ea1a6b4.** Rulings
 R44.1-R44.12. **Main 7975d1455** = native fff546ef6 (N1, green 3420/0) + orders c844fc3b8 (CP44.0 + click, green 3426/0) + native
-7e9c199ae (N2 the exact replay, green 3425/0), each builder0 ALL JUDGED; merge_check_needed reads CHECK: ONE main batch check queued
-on builder0 behind manoeuvre's gate check (`~/orch-r44/main-check-7975d1455.log`). Bars: G1 v10c (orders, fit first, two abreast;
+7e9c199ae (N2 the exact replay, green 3425/0), each builder0 ALL JUDGED; **main 7975d1455 GREEN builder0, 28 targets ALL JUDGED (3431 passed / 0
+failed, `>> remote: make check exited 0`; `~/orch-r44/main-check-7975d1455.log`).** Watch: the NOT JUDGED right-click-on-30-units timing
+read 878 workloads (88.7 ms) on this loaded run v 272 on native's tree (orders asked to re-read it quiet). Bars: G1 v10c (orders, fit first, two abreast;
 after dev read 6 -> frozen tree check -> 10801-10848); Bar S v3 FAILED its wedged guard (R44.7); Bar B1 backout alone (R44.10/12)
 waits on native's twin; Bar A6 v3 queued. **His answers (game_design.md *His answers on the group click*):** the open area in the
 west; fit first (abreast if it fits, else stack behind); short click holds. Feel question for after: more than two abreast on a wide yard?
