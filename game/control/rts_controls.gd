@@ -1374,6 +1374,18 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if SelectionSquads.PLACE_CLEAR and ground != null and anchors.size() >= squads.size() and not clear_later:
 			anchors = _place_clear(squads, blocks, anchors, click, ground, team, from_leg)
 			_trace_stage("place_clear", squads, anchors)
+		# G1 v10: the last word on a column's places: after every move above (standable ground, the pack, the water and deck
+		# clear) a squad whose place lies more than COLUMN_AWAY_M behind where it stands along the approach keeps its spot (dev
+		# read 3, crossing his-20: the deck clear stepped ranks back past their squads' starts).
+		if v10_column and column_ahead != Vector3.ZERO and anchors.size() >= squads.size():
+			var kept_f: Array = SelectionSquads.column_keep_away(anchors, lay_blocks, click, column_ahead)
+			if int(kept_f[1]) > 0:
+				SelectionSquads.kept_away += int(kept_f[1])
+				var stayed_f: Array[Vector3] = []
+				for p_f: Vector3 in kept_f[0]:
+					stayed_f.append(p_f)
+				anchors = stayed_f
+				_trace_stage("column_stay_final", squads, anchors)
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
 		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
 				column and column_moved, today_places)
