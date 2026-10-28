@@ -110,6 +110,13 @@ already read, or 7001-7012.
     near click may squeeze into two ranks abreast (two abreast x two deep + one) rather than spread as the yard allowed.
   - **Plus:** his tick-1512 click on native's exact replay (O5), before / after, top-down shots looked at. A pass ships ON
     (`--group-column=always` the default, `--group-column=off` the escape).
+- **Bar G1 v10b (orders; RE-FILED ~13:00 PDT before any number on 10801-10848; two dev reads on 7001-7006 drove it).** As v10 but
+  lines 1 (across_m) and 3 (aside_max_m) are read over the squads the click MOVES (place > 2 m from its start); `held` reported per
+  cell. Why: the `across` start (four squads 90 m abreast, 30 m off the map's edge, click 20 m ahead) has no room for ranks behind the
+  click, so two hold where they stand and line 1 could never pass while line 2 (nobody sent back) holds. Lines 2, 4, guards, parts B/C,
+  seeds and n unchanged. **Orchestrator's added line (R44.5), so holding can't buy the pass:** (6) in every reach-80 cell, `held` = 0 in
+  >= 90 % of runs (on a far click every squad moves), and in every cell the arm's held squads <= base's moved-less-than-2-m squads + 1
+  a run (median). Dev read 2 (builder2, native on, 7001-7006, dev only): along / his cells across 113-125 m -> 2-16 m, contacts 5893 -> 4921.
 
 ## Rulings (round 44)
 
@@ -132,6 +139,8 @@ already read, or 7001-7012.
   both is now exact (laptop, native ON: 20/20 crews 0.0 m for 63 s / 60 s). `make skirmish` keeps digits only (fff546ef6). Orders'
   O2 lab and manoeuvre's M2 rebuild placed his vehicles from the census, so their causes stand; re-read on the exact replay at O5 / M5.
   Native: six trial clicks all scatter 60-110 m; z = 117.24 is a hard edge (his Wrenches at exactly (-25.49, 117.24)), as R44.2's slide.
+- **R44.5 (~13:05) Bar G1 v10b accepted** (amended before any fresh number; dev seeds only), with line 6 added by the orchestrator: a
+  held squad is excluded from the spread lines only if holding stays rare where there is room (reach-80 held = 0 in >= 90 % of runs).
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
