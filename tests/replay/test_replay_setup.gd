@@ -90,3 +90,17 @@ func test_his_round41_formation_picks_are_inferred_from_the_task_rows() -> void:
 func test_the_trig_probe_reads_this_process() -> void:
 	# Through make (the shim on an old glibc, or glibc >= 2.41) it is correctly rounded; test_native_trig pins the same input.
 	assert_true(ReplaySetup.trig_is_correctly_rounded(), "atan2f correctly rounded in a make-started test run")
+
+
+func test_the_re_run_keeps_headless_its_frame_rate_and_the_project() -> void:
+	# What Godot 4.7.2 hands a script started as `--headless --fixed-fps 30 --path P --script S -- --orders=x`.
+	var args := ReplaySetup.reexec_args(PackedStringArray(["--script", "res://tests/replay_orders.gd"]),
+			PackedStringArray(["--orders=x"]), ["--arena=locks"], true, "/p/")
+	assert_eq(args, PackedStringArray(["--headless", "--fixed-fps", "30", "--path", "/p/", "--script",
+			"res://tests/replay_orders.gd", "--", "--orders=x", "--arena=locks"]), "the engine's own options go back in front")
+	var windowed := ReplaySetup.reexec_args(PackedStringArray(["--fixed-fps", "30", "--path", "/q/"]), PackedStringArray(), [],
+			false, "/p/")
+	assert_true(not windowed.has("--headless"), "a windowed run stays windowed")
+	assert_eq(windowed.count("--fixed-fps"), 1, "an option already there is not doubled")
+	assert_eq(windowed.count("--path"), 1, "nor the project")
+

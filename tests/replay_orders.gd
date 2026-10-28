@@ -105,10 +105,8 @@ func _run() -> void:
 			# The re-run inherits the environment: the same LD_PRELOAD make gives every Godot it starts.
 			OS.set_environment("LD_PRELOAD", shim)
 			print("REPLAY_TRIG_SHIM " + shim)
-		var args := OS.get_cmdline_args()
-		args.append("--")
-		args.append_array(OS.get_cmdline_user_args())
-		args.append_array(wanted)
+		var args := ReplaySetup.reexec_args(OS.get_cmdline_args(), OS.get_cmdline_user_args(), wanted,
+				DisplayServer.get_name() == "headless", ProjectSettings.globalize_path("res://"))
 		print("REPLAY_REEXEC " + " ".join(wanted))
 		var output: Array = []
 		var code := OS.execute(OS.get_executable_path(), args, output, true)

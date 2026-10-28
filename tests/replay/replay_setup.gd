@@ -183,3 +183,24 @@ static func trig_shim() -> String:
 		if file.begins_with("libtank_trig-") and file.ends_with(".so"):
 			return dir.path_join(file)
 	return ""
+
+
+## The re-run's command line. Godot keeps its own options out of OS.get_cmdline_args(): `--headless`, `--fixed-fps 30` and
+## `--path` never reach it (probe, 4.7.2: `--headless --fixed-fps 30 --path P --script S -- U` reads `["--script", S]`), so a
+## re-run built from it alone opened a window on the laptop and could not start on a builder (no display). They go back
+## here: headless when this process is, the replay's fixed 30 fps (make replay-match's), this project.
+static func reexec_args(engine_args: PackedStringArray, user_args: PackedStringArray, wanted: Array, headless: bool,
+		project: String) -> PackedStringArray:
+	var args := PackedStringArray()
+	if headless and not engine_args.has("--headless"):
+		args.append("--headless")
+	if not engine_args.has("--fixed-fps"):
+		args.append_array(["--fixed-fps", "30"])
+	if not engine_args.has("--path"):
+		args.append_array(["--path", project])
+	args.append_array(engine_args)
+	args.append("--")
+	args.append_array(user_args)
+	for flag: String in wanted:
+		args.append(flag)
+	return args
