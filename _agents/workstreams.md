@@ -75,6 +75,51 @@ builder0 at prep: load 0.00, 77 %, 24 G free.
 deciding + guards); 10949-10996 manoeuvre reserve; 11001-11024 native (lines_r44, any twin pair). Dev seeds: anything at or below 10748
 already read, or 7001-7012.
 
+- **FILED Bar S v3, his first order settles AND his War Rig backs out of the box first (manoeuvre; FILED before any 10901-10948
+  number; C44.1, C44.3, C44.4, C44.5, R43.42's round-44 shape).** Arms, every switch on ONE frozen commit **9215b8ab9** (``wip/manoeuvre-bars-v3` = stream/manoeuvre 67998860d + orders' CP44.0 commit 716e6304e merged (the `group` key the scoping reads; main's merge of it is pending its check), worktree `../godot-manoeuvre-v3``; no
+  game/ or tests/ commit until the series' end line), each v `base` = `--shape-latch=off` on the same tree:
+  - **v3** = `--seat-bound=on --converge-on-crew=on --traffic-on=kturngoal --traffic-on=parkaside --traffic-on=backout
+    --traffic-on=parkedpass` (+ the latch ON): the shipping candidate. Round 43's four rules scoped to a squad on its own order
+    (M1, `ElementPlan.grouped`), plus **backout** (M2: a hull near rest at an order's start whose steering point is within its own
+    length decides its k-turn against the first vertex of its own route to its final seat a hull's length out, when that leaves
+    40 deg or more off the nose and 2 m behind are clear of hulls; the circle plan / single back-up / away leg are today's, the back-
+    up search stops at any hull; the station PID off a planned leg) and **parkedpass** (M3: a crew that has arrived and stands, asked
+    by another squad's crew with a lane past it, refuses with the lane and the asker passes; no lane = today's give-way; never a
+    squadmate's, never a grouped crew's). Both DEFAULT_OFF; ON they run the GDScript drive / yield (Traffic._chain_native) until
+    native twins them (C44.4: said here; the two drives are row-identical on his start, 3000 / 3000 rows, and on the G1 probe).
+  - **v3core** = the round-43 four (scoped) + the latch, without backout and parkedpass: the orchestrator's "see which one does the
+    work" arm. An arm ships ON only if it passes every line; v3 is read first; v3core ships alone if v3 fails and it passes.
+- **What each could break (named first):** the bound's cost on Locks (five crews packed within 37 m: yield + blocked s UP, Bar S v2's
+  failing line); G5 (parkaside's seats-beside on a group click, v2's second fail); **backout: a crew reversing into the friend behind
+  it (wedged s UP; friendly contacts UP), and a back-up where none was needed (k-turn s UP, seated-by-15 s DOWN: Locks dev 7001-7012
+  read both ways across its versions); parkedpass: a passer squeezed between the parked crew and a wall (wedged s, stuck deaths), a
+  pass refused by every parked crew of a column (never-in UP)**; the G1 v9 group column must be untouched (C44.3: byte-identical).
+- **Gate:** the frozen tree's full check green FIRST (read from the wrapper line; builder0 or builder2).
+- **Workload (deciding), `make manoeuvre-bar-s`, exactly Bar S's:** locks / terminus / crossing x **10901-10924** = 72 paired cells an
+  arm, 20 s, squads 1-2 traced; `tests/manoeuvre/s_judge.py` paired per cell. **D1** crews seated within the bound 15 s after their
+  order ARM > BASE by >= 2 se AND pooled; **D2** start-zone yield + blocked s ARM < BASE by >= 2 se AND pooled.
+- **Per-arena guards (each of the three, paired over its 24 seeds):** yield + blocked s ARM <= BASE + 2 se; k-turn s ARM <= BASE + 2
+  se; **NEW: wedged s ARM <= BASE + 2 se** (backout's and parkedpass's named risk). Reported: never-arrived, mean arrival, seat moves.
+- **Group-order guards (`q3_judge.py`), 10925-10936 x crossing / locks / sumps / terminus x crew:** G5 all-in mean ARM <= BASE +
+  1.645 se, G6 never-in ARM <= BASE + 1.645 se, G7 friendly contact ticks ARM <= 1.05 x BASE.
+- **G1 v9 corridor (C44.3), 10925-10936:** `make orders-probe` locks / crossing / terminus x 5 squads x click: the ORDERS_PROBE_SQUAD
+  rows base v v3 **byte-identical** (the scoping's proof, every rule); and `orders_judge.py g1v8`'s lines each ARM <= BASE.
+- **Fight guards (`manoeuvre-wedge-trace` locks / terminus / sumps x 10937-10942, 18 fights an arm, `follow_judge.py`):** G1-G4 as Bar S.
+- **Perf:** the frozen tree's check perf-judge PASS; the GDScript-drive rules perf-judged after native's twins (as v2).
+- **No SCRIPT ERROR in any log. Ships ON only if D1, D2, every per-arena guard and every guard pass; no re-file after a number.**
+- **Machine:** `~/overnight-manoeuvre/r44/bars_v3.sh` from the frozen worktree `../godot-manoeuvre-v3`: deciding + group on builder2
+  light (J 12), fights + the orders probe on builder0 light; evidence `~/overnight-manoeuvre/r44/bars_v3/`, filed under
+  `references/round44/manoeuvre/barsv3-<machine>-<hash>/`.
+- **Dev history (C42.1; Locks 7001-7012 only, never a bar; `~/overnight-manoeuvre/r44/m3/`):** Locks only (never a bar), base v arms, 12 paired cells, builder2, the rule set as committed at 67998860d (dev6 / dev7,
+  `~/overnight-manoeuvre/r44/m3/dev6_logs`, `dev7_logs`): **v3** D1 53 -> 85 (+2.67 a run, +5.9 se) PASS, D2 -0.98 s a run (-0.4 se)
+  FAIL on Locks alone (v2 passed D2 on the three arenas pooled), Locks yield+blocked -0.4 se PASS, k-turn -1.6 se PASS, wedged +4.7 s a
+  run (the bound's second squad: Hunters 1.8 -> 4.3 s; the new guard line's risk), never 13 -> 14; **backout alone** D1 +0.17 a run
+  (+1.5 se), yield+blocked +1.0 se, k-turn +1.4 se, wedged +0.8 s, never 13 -> 15 (neutral on an open row; the earlier shapes without
+  the nose test cost up to +5.6 se); **the round-43 four + parkedpass** D1 +5.3 se, yield+blocked +0.2 se, k-turn -3.0 se, wedged +5.1 s
+  (parkedpass changes little here: a parked rig in a packed squad seldom has a lane). His start (builder0, the recording rebuilt):
+  Guns_2 backs out at tick 11 and is past the box at ~91 v 142 on main (bo8).
+
+
 ## Rulings (round 44)
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
