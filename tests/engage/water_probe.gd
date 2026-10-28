@@ -21,7 +21,9 @@ const HULL_SETS := [
 	["gang_tank", "gang_ifv", "gang_scout", "gang_tank", "gang_scout"],
 	["tank", "ifv", "scout", "tank", "ifv"],
 ]
-const DEFENDERS := ["syn_ifv", "syn_ifv", "syn_tank", "syn_ifv", "syn_scout"]
+## The census ran five defenders with a Railgun (dev 7001-7012: 4.75 of 5 attackers died, nobody arrived in 60 s); the bar's
+## stage is three Limousines, so the squad's arrival and the named-attack cost can be read.
+const DEFENDERS := ["syn_ifv", "syn_ifv", "syn_ifv"]
 ## Per arena: the squad's start (the near bank, by the crossing's approach), its attack-move point (the far-bank objective),
 ## the defenders' line (the far bank beside the crossing's exit) and their facing (toward the near bank).
 const STAGES := {
@@ -84,7 +86,7 @@ func _run() -> void:
 	var line_across := Vector3(-face_dir.z, 0.0, face_dir.x)
 	var defenders: Array = []
 	for i in DEFENDERS.size():
-		var at := line + line_across * (float(i) - 2.0) * 10.0 + Vector3(rng.randf_range(-JITTER_M, JITTER_M), 0.0, rng.randf_range(-JITTER_M, JITTER_M))
+		var at := line + line_across * (float(i) - float(DEFENDERS.size() - 1) * 0.5) * 10.0 + Vector3(rng.randf_range(-JITTER_M, JITTER_M), 0.0, rng.randf_range(-JITTER_M, JITTER_M))
 		var face := atan2(-face_dir.x, -face_dir.z)
 		defenders.append(String(lab.unit(Match.Team.RUST, "Rust_D_%d" % (i + 1), ElementPlan.clamp_to_arena(at), face, DEFENDERS[i]).name))
 	await lab.start()
@@ -219,7 +221,7 @@ func _run() -> void:
 			kills += 1
 	var hz := float(SimClock.TICK_RATE)
 	print("ENGAGE_WATER %s" % JSON.stringify({"seed": seed_value, "arena": arena, "hulls": hulls, "seconds": seconds,
-			"arm": "on" if OS.get_cmdline_user_args().has("--engage-water=off") else "off", "flags": " ".join(OS.get_cmdline_user_args()),
+			"arm": "on" if TankBrain.ENGAGE_WATER else "off", "flags": " ".join(OS.get_cmdline_user_args()),
 			"water_s": _r(water_ticks / hz), "water_far_s": _r(water_far_ticks / hz), "fire_s": _r(fire_ticks / hz),
 			"fire_far_s": _r(fire_far_ticks / hz), "damage_water": _r(damage_water), "hits_water": hits_water, "first_hit_water_s": _r(first_hit_s),
 			"hop_s": _r(hop_ticks / hz),
