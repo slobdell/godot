@@ -327,10 +327,13 @@ func _run() -> void:
 	for unit_name: String in members["b"]:
 		b_arrivals.append(float(arrive.get(unit_name, seconds)))
 	var report := Traffic.report()
-	print("ENGAGE_HOLD %s" % JSON.stringify({"seed": seed_value, "arena": arena, "arm": "on" if not Traffic.off("holdfar") else "off",
+	print("ENGAGE_HOLD %s" % JSON.stringify({"seed": seed_value, "arena": arena, "arm": "on" if not (Traffic.off("holdfar") and Traffic.off("holdway") and Traffic.off("holdroute")) else "off",
+			"switches": ("holdfar " if not Traffic.off("holdfar") else "") + ("holdway " if not Traffic.off("holdway") else "") + ("holdroute" if not Traffic.off("holdroute") else ""),
 			"stage": stage["name"], "hulls": hulls, "far_m": _r(far_actual), "far_drawn_m": _r(far_m), "far_crews": far_crews, "seconds": seconds,
 			"away_s": away_s, "away_m": _r(away_m), "held_s": held_s, "a_held_s": a_held_s, "held_off_s": held_off_s, "held_on_s": held_on_s,
 			"off_crews": off_crews, "off_arrive_s": _r(off_arrive_mean), "way_released": report.get("tr_way_released", 0),
+			"route_ms_per_verdict": _r(float(report.get("tr_route_usec", 0)) / 1000.0 / float(maxi(int(report.get("tr_verdicts", 0)), 1))),
+			"route_queries": report.get("tr_route_queries", 0),
 			"far_released": report.get("tr_far_released", 0), "far_held": report.get("tr_far_held", 0),
 			"verdicts": report.get("tr_verdicts", 0), "holds": report.get("tr_holds", 0),
 			"arrive_a_s": a_arrivals, "last_a_s": a_arrivals.max(), "far_arrive_s": _r(far_arrive_mean), "far_arrivals": far_arrivals, "arrive_b_s": b_arrivals, "last_b_s": b_arrivals.max(),

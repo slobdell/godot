@@ -23,7 +23,7 @@ import os
 import sys
 
 
-LINES = ["off_arrive_s", "held_off_s", "held_on_s", "way_released", "far_arrive_s", "away_s", "away_m", "last_a_s", "contacts_mouth", "contacts_far", "jam_s", "contacts", "contacts_fast",
+LINES = ["off_arrive_s", "held_off_s", "held_on_s", "way_released", "route_ms_per_verdict", "route_queries", "far_arrive_s", "away_s", "away_m", "last_a_s", "contacts_mouth", "contacts_far", "jam_s", "contacts", "contacts_fast",
          "contacts_cross", "stuck_s", "held_s", "a_held_s", "last_b_s", "far_released", "far_held", "verdicts"]
 
 

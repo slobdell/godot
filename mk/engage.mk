@@ -124,3 +124,13 @@ engage-bar-a: import ## engage Bar A / A6: engage-hold in both arms on ENGAGE_HO
 	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=off
 	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=on
 	$(PYTHON) tests/engage/hold_table.py --pair $(BUILD_DIR)/engage/hold/off $(BUILD_DIR)/engage/hold/on --by-stage
+
+# Round 43 (Bar A6 v2, R43.20): two arms against one base. ARM-W = the ordered-way read alone (holdway), ARM-WR = the read +
+# the release judged on the crew's route to its squad's destination (holdway,holdroute). Each arm's table against the base.
+.PHONY: engage-bar-a6
+engage-bar-a6: import ## engage Bar A6 v2: engage-hold off / w / wr on ENGAGE_HOLD_SEEDS, then the two paired tables by stage
+	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=off ENGAGE_HOLD_TAG=off
+	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=on ENGAGE_HOLD_SWITCH=holdway ENGAGE_HOLD_TAG=w
+	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=on ENGAGE_HOLD_SWITCH=holdway,holdroute ENGAGE_HOLD_TAG=wr
+	@echo "##### ARM-W (holdway) v BASE"; $(PYTHON) tests/engage/hold_table.py --pair $(BUILD_DIR)/engage/hold/off $(BUILD_DIR)/engage/hold/w --by-stage
+	@echo "##### ARM-WR (holdway,holdroute) v BASE"; $(PYTHON) tests/engage/hold_table.py --pair $(BUILD_DIR)/engage/hold/off $(BUILD_DIR)/engage/hold/wr --by-stage

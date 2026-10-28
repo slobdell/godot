@@ -160,6 +160,10 @@ static var far_held := 0
 ## Round 43 (engage A6, R43.13, `holdway`): crews of a waiting squad released at the verdict because their own route never
 ## runs through the street (whatever their distance to it).
 static var way_released := 0
+## Round 43 (engage A6 v2, R43.20, `holdroute`): the cost of the route test at the verdict (one navmesh route a crew of the
+## waiting squad to its squad's destination): microseconds and queries, reported by the probe as ms a verdict.
+static var route_usec := 0
+static var route_queries := 0
 ## A far crew's own mouth within this of the squad's mouth (m) means its route runs through the same street.
 const FAR_THROUGH_M := 20.0
 ## ...looked for along that route this far (m): a far crew's own drive to the mouth, with some road to spare.
@@ -218,7 +222,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdway"]  # round 43 holdway (engage A6, R43.13/R43.18: the verdict reads ordered ways and binds only crews on the street; until Bar A6); holdfar (engage A3, R43.8: the far crew of a waiting squad is not sent to the mouth; until Bar A)  # round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane (manoeuvre, until judged) (manoeuvre, until judged); round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdway", "holdroute"]  # round 43 holdway (engage A6, R43.13/R43.18: the verdict reads ordered ways and binds only crews on the street; until Bar A6); holdfar (engage A3, R43.8: the far crew of a waiting squad is not sent to the mouth; until Bar A)  # round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane (manoeuvre, until judged) (manoeuvre, until judged); round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -317,7 +321,7 @@ static func holding(crew: String) -> bool:
 ## The counters as one reading (the traffic probe reports it), and back to zero.
 static func report() -> Dictionary:
 	return {"tr_verdicts": verdicts, "tr_holds": holds, "tr_hold_ticks": hold_ticks, "tr_released_passed": released_passed,
-			"tr_released_cap": released_cap, "tr_released_fire": released_fire, "tr_no_spot": no_spot, "tr_far_released": far_released, "tr_far_held": far_held, "tr_way_released": way_released, "tr_cross_verdicts": cross_verdicts,
+			"tr_released_cap": released_cap, "tr_released_fire": released_fire, "tr_no_spot": no_spot, "tr_far_released": far_released, "tr_far_held": far_held, "tr_way_released": way_released, "tr_route_usec": route_usec, "tr_route_queries": route_queries, "tr_cross_verdicts": cross_verdicts,
 			"tr_cross_slowed": cross_slowed, "tr_cross_reach_free": cross_reach_free}
 
 
@@ -332,6 +336,8 @@ static func reset_counters() -> void:
 	far_released = 0
 	far_held = 0
 	way_released = 0
+	route_usec = 0
+	route_queries = 0
 	cross_verdicts = 0
 	cross_slowed = 0
 	cross_reach_free = 0
@@ -784,15 +790,18 @@ static func _begin_wait(waiter: String, passer: String, key: String, frame: int,
 		var to: Vector2 = destination[0]
 		runs.append([centre, to, biggest + PASSER_CLEAR_M])
 		runs.append([to, to, biggest + float(destination[1]) + PASSER_CLEAR_M])
+	var waiter_to: Array = _destination(waiter, cols) if not off("holdroute") else []
 	var far_reach := HOLD_BACK_M[HOLD_BACK_M.size() - 1]
 	for entry: Array in order:
 		var k: int = entry[1]
 		var here := Vector2(xs[k], zs[k])
 		var spot := Vector2.INF
-		# Round 43 (engage A6, `holdway`, R43.13): a crew whose own route (its path, then straight on its OWN ordered way)
-		# never runs through this street is not bound by the verdict at all, near or far (his Guns_1 and Guns_4: routes to
-		# the bridge, held for a corridor 60-76 m away).
-		if not off("holdway") and not _route_passes(names[k], here, Vector2(dxs[k], dzs[k]), mouth):
+		# Round 43 (engage A6 v2, `holdroute`, R43.13 / R43.20): a crew whose own route to its SQUAD'S DESTINATION (the
+		# navmesh route at the verdict; the straight line without a map; its current leg and way when the squad has no
+		# destination) never runs through this street is not bound by the verdict at all, near or far (his Guns_1 and
+		# Guns_4: routes to the bridge, held for a corridor 60-76 m away). Bar A6's first cut judged the crew's CURRENT leg,
+		# which is laid to a seat often beside the street, and let real head-on crews through (R43.20).
+		if not off("holdroute") and not _route_reaches(names[k], here, Vector2(dxs[k], dzs[k]), mouth, waiter_to):
 			(wait["released"] as Dictionary)[names[k]] = true
 			way_released += 1
 			continue
@@ -841,6 +850,42 @@ static func _begin_wait(waiter: String, passer: String, key: String, frame: int,
 		print("TRAFFIC_WAIT " + JSON.stringify({"frame": frame, "waiter": waiter, "passer": passer, "dir": [snappedf(dir.x, 0.01),
 				snappedf(dir.y, 0.01)], "mouth": str(mouth), "centre": str(centre), "spots": listed,
 				"runs": runs.map(func(r: Array) -> String: return str(r[1]))}))
+
+
+## Round 43 (engage A6 v2, `holdroute`): does crew `me`'s route to its squad's destination `to` ([Vector2, spread], or [])
+## pass within FAR_THROUGH_M of `mouth`? The navmesh route from where it stands (Pathing.find_path, one query, timed into
+## route_usec); the straight line when there is no map (tests); `_route_passes` (its current leg and own way) when the
+## squad has no destination. Sampled every MOUTH_STEP_M along the route's legs.
+static func _route_reaches(me: String, from: Vector2, dir: Vector2, mouth: Vector2, to: Array) -> bool:
+	if to.is_empty():
+		return _route_passes(me, from, dir, mouth)
+	var goal: Vector2 = to[0]
+	var points: Array[Vector2] = [from]
+	var mover: Movement = _movers.get(me)
+	var tank: Node3D = mover.ctl.tank if mover != null and mover.ctl != null else null
+	if _map.is_valid() and tank != null and tank.is_inside_tree():
+		var started := Time.get_ticks_usec()
+		var path := Pathing.find_path(tank, Vector3(from.x, 0.0, from.y), Vector3(goal.x, 0.0, goal.y))
+		route_usec += int(Time.get_ticks_usec() - started)
+		route_queries += 1
+		for p in path:
+			points.append(Vector2(p.x, p.z))
+	points.append(goal)
+	for s in range(1, points.size()):
+		var a: Vector2 = points[s - 1]
+		var b: Vector2 = points[s]
+		var leg := a.distance_to(b)
+		if leg < 0.01:
+			continue
+		var u := (b - a) / leg
+		var t := 0.0
+		while t <= leg:
+			if (a + u * t).distance_to(mouth) <= FAR_THROUGH_M:
+				return true
+			t += MOUTH_STEP_M
+		if b.distance_to(mouth) <= FAR_THROUGH_M:
+			return true
+	return false
 
 
 ## Round 43 (holdfar): does crew `me`'s route (its mover's path ahead, then straight on along `dir`, FAR_ROUTE_M in all)
