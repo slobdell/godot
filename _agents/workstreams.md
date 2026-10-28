@@ -95,6 +95,8 @@ never touch processes you didn't start. Never delete builder files that aren't o
   G1 the empty corner not seasick (reversals <= BASE + 1, off-travel > 135 deg <= BASE + 3 points, jerks, snaps 0); G2 K4 v2's lines; G3
   K3 v2's lines; G4 no swinging on every workload; G5 own squad on screen >= BASE - 5; G6 runs clean. Named at risk (dev, never a bar):
   G1 Terminus EMPTY reversals BASE + 1.22; D2 Locks EMPTY 0.0 -> 7.3 % (pooled at the line's edge).
+  Workload fix before any number (65e6e7e92): Locks' far-bank lane started in the enemy's half at the lock bridge (0 of 6 opened);
+  lanes now drawn from his half only; lines unchanged. Series commit 65e6e7e92.
 
 ## Rulings (round 43)
 
