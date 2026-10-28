@@ -8,20 +8,20 @@ extends TestCase
 const CLICK := Vector3(-69.1, 0.0, 50.7)
 
 
-var _latch_was := false
+var _latch_was := ElementPlan.SHAPE_LATCH  # the default as the command line set it
 
 
-func before_each() -> void:
-	_latch_was = ElementPlan.SHAPE_LATCH
-	ElementPlan.SHAPE_LATCH = true  # the arm under test; OFF by default (R43.42)
+## The arm under test, ON for one test (the harness runs teardown() only: no before_each).
+func _arm() -> void:
+	ElementPlan.SHAPE_LATCH = true
 
 
-func after_each() -> void:
+func teardown() -> void:
 	ElementPlan.SHAPE_LATCH = _latch_was
+	super.teardown()
 
 
 func test_off_by_default() -> void:
-	ElementPlan.SHAPE_LATCH = _latch_was
 	assert_true(not ElementPlan.SHAPE_LATCH or OS.get_cmdline_user_args().has("--shape-latch=on") or OS.get_environment("SHAPE_LATCH") == "on",
 			"the latch is off unless --shape-latch=on is on the command line (R43.42)")
 
@@ -64,6 +64,7 @@ func _step(table: DoctrineTable, task: Dictionary, latch: Dictionary, tick: int,
 
 
 func test_his_guns_keep_the_swarm_through_the_threat_flapping() -> void:
+	_arm()
 	var gangs := _table("gangs")
 	# War Rig 3's sequence: none (swarm) -> likely (the vee, t251) -> contact-less possible (swarm, t278) -> likely (vee, t350).
 	var first := _step(gangs, _move(), {}, 1, "none")
@@ -80,6 +81,7 @@ func test_his_guns_keep_the_swarm_through_the_threat_flapping() -> void:
 
 
 func test_the_kept_shape_says_so() -> void:
+	_arm()
 	var gangs := _table("gangs")
 	var latch: Dictionary = _step(gangs, _move(), {}, 1, "none")["latch"]
 	var kept := _step(gangs, _move(), latch, 251, "likely")
@@ -88,6 +90,7 @@ func test_the_kept_shape_says_so() -> void:
 
 
 func test_a_new_order_re_picks() -> void:
+	_arm()
 	var gangs := _table("gangs")
 	var latch: Dictionary = _step(gangs, _move(), {}, 1, "none")["latch"]
 	var elsewhere := {"verb": "move", "to": [CLICK.x - 30.0, CLICK.z], "drills": false}
@@ -97,6 +100,7 @@ func test_a_new_order_re_picks() -> void:
 
 
 func test_the_elements_own_contact_re_picks_once_after_a_second() -> void:
+	_arm()
 	var standard := _table("standard")
 	var task := _move()
 	var start := _step(standard, task, {}, 1, "none")
@@ -124,6 +128,7 @@ func test_the_elements_own_contact_re_picks_once_after_a_second() -> void:
 
 
 func test_a_chosen_shape_and_an_arrived_element_need_no_latch() -> void:
+	_arm()
 	var gangs := _table("gangs")
 	var chosen := {"verb": "move", "to": [CLICK.x, CLICK.z], "drills": false, "formation": "column"}
 	var picked := _step(gangs, chosen, {}, 1, "none")
@@ -134,6 +139,7 @@ func test_a_chosen_shape_and_an_arrived_element_need_no_latch() -> void:
 
 
 func test_the_cpu_latches_too() -> void:
+	_arm()
 	var gangs := _table("gangs")
 	var task := _move()
 	var plan := ElementPlan.build(_situation(1, "none"), _state(task).merged({"player": false}, true), gangs)

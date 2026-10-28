@@ -5,15 +5,12 @@ extends TestCase
 ## length off the crew (terminus / crossing 7001: 7.5 m right-behind a War Rig, 110 degrees off its nose, inside its turning
 ## circle, so it k-turned for it). Pure: ElementPlan.transit_starts / converge on a bent route.
 
-var _was := false
+var _was := ElementPlan.CONVERGE_ON_CREW  # the default as the command line set it
 
 
-func before_each() -> void:
-	_was = ElementPlan.CONVERGE_ON_CREW
-
-
-func after_each() -> void:
-	ElementPlan.CONVERGE_ON_CREW = _was
+func teardown() -> void:
+	ElementPlan.CONVERGE_ON_CREW = _was  # the harness runs teardown() only (no after_each)
+	super.teardown()
 
 
 ## A route whose first leg runs south-east for 12 m and then bends south-west; the anchor starts 14 m along it (past the

@@ -10,15 +10,12 @@ const HEADING := Vector3(-0.5, 0.0, -0.87)
 ## The Gangs' "lanes" spacing, what the Guns were laid at on Locks.
 const SPACING := 14.0
 
-var _was := false
+var _was := TacticsFormation.SEAT_BOUND  # the default as the command line set it
 
 
-func before_each() -> void:
-	_was = TacticsFormation.SEAT_BOUND
-
-
-func after_each() -> void:
-	TacticsFormation.SEAT_BOUND = _was
+func teardown() -> void:
+	TacticsFormation.SEAT_BOUND = _was  # the harness runs teardown() only (no after_each)
+	super.teardown()
 
 
 static func his_guns() -> Array:
