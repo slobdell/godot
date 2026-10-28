@@ -81,6 +81,19 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-27 ~20:40 PDT (Fable). Starting commit 2f1620a77 = main at launch (code b12b17ac7 GREEN builder0, 3343/0; no
 baseline check re-run, per the contract). CP43.0 taken at f6b930a3d (main 84f914f78 merged). Orchestrator session: `godot-b8`.**
 
+### S5 (the bridge crew, R42.15 / R42.23): deckwait v5 built on a SIDE branch while the stream is frozen (2026-10-28 ~03:00 PDT)
+
+- `wip/manoeuvre-s5` (`../godot-manoeuvre-s5`) = fed356a8b + balance's v2 overrides (8e257f3bc, d385cd308 cherry-picked) + 5a5e7b434:
+  **`--traffic-on=deckwait` v5 begins a wait ONLY on the carried-past case**: a follower arriving at >= DECKWAIT_FAST_SHARE (0.6) of
+  its top speed behind a leader in the mouth whose speed away from it is under DECKWAIT_LEADER_SLOW_MPS (4 m/s); an orderly
+  approach (a crew at a pace, or a leader through at speed) is left alone (`deckwait_skipped` counts the looks). Once begun, v4's
+  cap, floor and 5 s cap stand. Test `test_v5_a_slow_arrival_behind_a_slow_leader_is_left_alone` + v4's 7; the deckwait, drive-twin
+  and exec-state filters 19/0 on builder2 (native library ON). Dev read 1 (running): the drill's own seeds 1-3 x ticks {1,8,15} x
+  both sides under the overrides, v5 ON v OFF (the OFF read is R40.21's 17/18: rust s2 t15 Rust_S_3 rim 5.1 s), builder2 light,
+  `~/overnight-manoeuvre/r43/s5dev1/`. A Bar S5 (the hard line 18/18 ON + Bar Q6's fresh-seed lines on 10449-10460 x ticks x both
+  sides, main and overrides trees, ON <= OFF and the worst crew <= 3 s; the arrival guard) is filed before any number on 10449+,
+  after Bar S's series has the builders.
+
 ### FROZEN fed356a8b (2026-10-28 ~02:20 PDT): Bar S's tree; the gate check running on builder0; the series queued behind it
 
 - **The tree:** fed356a8b = main 84f914f78 (CP43.0) + S2 (cf70440ac, c2e03f40e, bbca98093) + S3 / Bar S (fed356a8b). No game/ or
