@@ -131,6 +131,16 @@ never touch processes you didn't start. Never delete builder files that aren't o
   10 route_ms_per_verdict and queries a verdict (ARM-WR, reported). Each arm judged alone; ship the arm passing every line (both: the
   better line 1). The last re-file of this item this round.
 
+- **FILED Bar S, his first order settles (manoeuvre; FILED ~01:30 before any number on 10401-10448; tree FROZEN fed356a8b; full text in
+  `streams/manoeuvre.md`).** One BASE (`--shape-latch=off` = today's main) v four arms each removable alone: **seats** (`--seat-bound=on` +
+  the latch), **converge** (`--converge-on-crew=on`), **kturngoal** (`--traffic-on=kturngoal`, GDScript drive while ON), **all** (the
+  shipping candidate); native ON. Workload `make manoeuvre-bar-s`: his first-order shape synthesised on each deploy, locks / terminus /
+  crossing x 10401-10424 (72 cells an arm, 20 s). **Deciding:** D1 crews seated within the bound by 15 s; D2 start-zone yield seconds; each
+  arm v base, ARM better by >= 2 se. **Guards:** yield+blocked s and k-turn s ARM <= BASE + 2 se on EVERY arena (R43.14); group guards
+  (q3_judge) and the G1 v9 corridor lines on 10425-10436; fights 10437-10442; perf (check's perf-judge + sim-profile base v all, quiet
+  builder0). Named at risk (dev, never a bar): seats on crossing +21 s a run of yield+blocked. kturngoal needs native's twin before ON
+  (requested); seats / latch / converge are planner-side, no twin.
+
 ## Rulings (round 43)
 
 - **R43.1 (2026-10-27 ~20:55) Every replay of his match made before native's fix is void.** Native (N2, laptop): `tests/replay_orders.gd`
