@@ -9,8 +9,14 @@ extends TestCase
 ## (`TankBrain.water_between`), the act step on a built situation (test_engage_suppress_line's pattern).
 
 
+## The shipped default, as tank_brain.gd computes it: ON unless the escape. Each test sets the switch itself; the teardown puts
+## the default back (a static var: the first check of the flip read `false` left by the test before, 1c20cc1c2 on builder0).
+static func _default_on() -> bool:
+	return not (OS.get_cmdline_user_args().has("--engage-water=off") or OS.get_environment("ENGAGE_WATER") == "off")
+
+
 func teardown() -> void:
-	TankBrain.ENGAGE_WATER = false
+	TankBrain.ENGAGE_WATER = _default_on()
 	TankBrain.water_between = Callable()
 	super.teardown()
 
@@ -93,4 +99,4 @@ func test_on_a_target_across_water_is_fired_at_and_never_hopped_for() -> void:
 
 
 func test_the_rule_is_on_by_default_since_bar_a7() -> void:
-	assert_true(OS.get_cmdline_user_args().has("--engage-water=off") or OS.get_environment("ENGAGE_WATER") == "off" or TankBrain.ENGAGE_WATER, "ON unless the escape")
+	assert_eq(TankBrain.ENGAGE_WATER, _default_on(), "ON unless the escape (whatever order the tests ran in)")
