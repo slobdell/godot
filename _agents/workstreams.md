@@ -324,6 +324,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
   Nothing switched ON in the batch (camera's corner OFF, native's memo output-identical), and native's own builder0 checks judged perf
   1.00x, so the batch stands. The web-smoke and perf-judge NOT JUDGED rows are re-read in the next quiet builder0 window with the next
   batch (main 37fa46c6c = + engage's tools/OFF rules).
+- **R43.26 (~05:20) A7's twin GREEN: `pair/native-a7` 457effa1a off de626d7e1** (builder2 `exited 0`, 15/0; native-proof EQUAL with
+  `--engage-water=on`; decide-water twin 2400/0 on the seam and 2400/0 on Locks' canal). The first version (C++ calling back into
+  `TankBrain._across_water`) cost ~1.4 ms a tick on his match (~7 % of a laptop tick); leg_wet now runs natively on TankNative's ElTerrain
+  (~32 us a tick, ~0.2 %). The `_act` half stays GDScript on both paths (~0.13 ms a tick, engage's). kturngoal's pair a907a541e green
+  (R43.22). Both pairs merge with their streams' ship candidates.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
