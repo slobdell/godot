@@ -464,6 +464,13 @@ never touch processes you didn't start. Never delete builder files that aren't o
   hook TestCase never calls (before_each / after_all / setup / ...). `tools/judge/lines_r43.py` 49 lines; close step 5b done
   (`references/round43/native/sizing/`, judging.md *Round 43's lines*, no table change). Closest call of the round: Bar S v2's Locks
   yield+blocked FAIL at -0.40 se (+4.12 s a run v a +3.44 line), so a fresh re-read could go either way (round 44).
+- **R43.45 (~14:00) Manoeuvre CLOSED: main dbf0bf637 = manoeuvre fbc734afa** (b482f0d46 green on builder2: `>> remote: make check exited 0`,
+  3417 passed / 0 failed, sim-baseline unmoved; its two load-refused targets rerun alone on quiet builder2: web-smoke exited 0 (first
+  sound 13.6 s v 30), remote-guard-test exited 0 554/0). Every round-43 rule OFF by default (`--shape-latch=on`, `--seat-bound=on`,
+  `--converge-on-crew=on`, `--traffic-on=kturngoal,parkaside,deckwait`), both pairs merged with the code. Round-44 candidate
+  `wip/manoeuvre-scope-g1` e883fc4eb: the round-43 rules scoped off squads under one G1 group click, G1 v9 probe 60/60 byte-identical
+  (581 tests); one control-stream contract line (a `group` key the pack stamps). The round's final main check of dbf0bf637 is running
+  on builder0 (`~/orch-r43/main-check-dbf0bf637.log`).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
