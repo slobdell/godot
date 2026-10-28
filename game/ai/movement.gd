@@ -300,6 +300,15 @@ const DECKWAIT_CAP_S := 5.0
 ## q6dev9 green s2 t1: a follower crawling at 2-3 m/s into the mouth corner caught the near rail's end and stood 16 s; OFF it went
 ## through at 4-6 m/s). 0.4 x 12 m/s = 4.8 m/s for the Law tank; the rim case (q6trace1) arrived at 11 m/s.
 const DECKWAIT_FLOOR_SHARE := 0.4
+## v5 (round 43, S5; R42.15's shape): the wait STARTS only on the carried-past case, a follower arriving FAST (at least this share
+## of its top speed) behind a leader that is slow or turning in the mouth (its speed away from me under DECKWAIT_LEADER_SLOW_MPS);
+## an orderly column (everyone at a pace, or the leader through the mouth at speed) is left alone. Bar Q6 (round 42) on fresh seeds:
+## v4 capped every follower at every mouth, the 72 fresh runs had no rim failure to fix OFF, and the cap cost 21 of 72 runs rim
+## seconds (a follower slowed at the mouth that then rode the rim); the one rescued crew (rust s2 t15 Rust_S_3, 11 m/s behind a
+## leader at 0.6-3.8 m/s) is the case this keys on. Once begun, a wait runs as v4 (the cap, the floor, DECKWAIT_CAP_S).
+const DECKWAIT_FAST_SHARE := 0.6
+const DECKWAIT_LEADER_SLOW_MPS := 4.0
+static var deckwait_skipped := 0  # v5: followers at a mouth behind a slow leader that were NOT fast: left alone
 static var deckwait_waits := 0
 static var deckwait_queued := 0
 static var deckwait_timeouts := 0
@@ -384,7 +393,7 @@ static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
 			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
-			"route_not_ready": route_not_ready, "wait_queued": wait_queued, "waits": waits, "wait_timeouts": wait_timeouts, "wait_long": wait_long, "deckwait_waits": deckwait_waits, "deckwait_queued": deckwait_queued, "deckwait_timeouts": deckwait_timeouts, "nopush_ticks": nopush_ticks, "nopush_episodes": nopush_episodes, "nopush_capped": nopush_capped, "holdlane_skips": holdlane_skips, "holdlane_holds": holdlane_holds, "wait_longest": wait_longest.duplicate(), "wait_by_kind": wait_by_kind.duplicate(), "follow_queued": follow_queued, "follow_open": follow_open, "follow_longest": follow_longest.duplicate(), "follow_long_waits": follow_long_waits, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
+			"route_not_ready": route_not_ready, "wait_queued": wait_queued, "waits": waits, "wait_timeouts": wait_timeouts, "wait_long": wait_long, "deckwait_waits": deckwait_waits, "deckwait_queued": deckwait_queued, "deckwait_timeouts": deckwait_timeouts, "deckwait_skipped": deckwait_skipped, "nopush_ticks": nopush_ticks, "nopush_episodes": nopush_episodes, "nopush_capped": nopush_capped, "holdlane_skips": holdlane_skips, "holdlane_holds": holdlane_holds, "wait_longest": wait_longest.duplicate(), "wait_by_kind": wait_by_kind.duplicate(), "follow_queued": follow_queued, "follow_open": follow_open, "follow_longest": follow_longest.duplicate(), "follow_long_waits": follow_long_waits, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
@@ -3153,17 +3162,21 @@ func _deckwait(here: Vector3, way: Vector2) -> float:
 	var name := String(leader.name)
 	if name == _wait_refused and tick < _wait_refused_until:
 		return -1.0
-	if _wait_for != name:
-		_wait_end()
-		_wait_for = name
-		_wait_since = tick
-		deckwait_waits += 1
-	deckwait_queued += 1
 	var off := Vector2(leader.global_position.x - here.x, leader.global_position.z - here.z)
 	var gap := Avoidance.radius_of(ctl.tank.unit_id) + Avoidance.radius_of(leader.unit_id) + WAIT_GAP_M
 	# The leader's speed AWAY from me (a leader turning off my lane onto the deck is clearing it, though its speed my way reads 0:
 	# q6dev3's trace had followers standing 8 m behind a leader turning north at 3 m/s), never negative.
 	var its_along := maxf(Vector2(leader.real_velocity.x, leader.real_velocity.z).dot(off.normalized()), 0.0) if off.length() > 0.01 else 0.0
+	if _wait_for != name:
+		# v5: only the carried-past case begins a wait: me fast, the leader slow or turning in the mouth.
+		if ctl.tank.speed() < DECKWAIT_FAST_SHARE * ctl.tank.max_forward_speed or its_along >= DECKWAIT_LEADER_SLOW_MPS:
+			deckwait_skipped += 1
+			return -1.0
+		_wait_end()
+		_wait_for = name
+		_wait_since = tick
+		deckwait_waits += 1
+	deckwait_queued += 1
 	var cap := maxf(maxf(off.dot(way) - gap, 0.0) / WAIT_FOLLOW_S + its_along, DECKWAIT_FLOOR_SHARE * ctl.tank.max_forward_speed)
 	if deckwait_trace and tick % (SimClock.TICK_RATE / 2) == 0:
 		print("DECKWAIT " + JSON.stringify({"tick": tick, "crew": String(ctl.tank.name), "for": name, "since": _wait_since,
