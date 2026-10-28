@@ -39,6 +39,9 @@ the minute it is green so his next playtest records the yaw; **CP43.0**: merge n
 manoeuvre the same minute; rule the owner within the hour if engage's A1 cause lands in the mover / planner / order_controller (C43.3);
 take engage's A1 and manoeuvre's S1 tables to him in player terms.
 
+**RUNNING (2026-10-27 ~21:15 PDT): all four streams started (godot-engage-0c, godot-manoeuvre-1d, godot-camera-0a, godot-native-45); the
+orchestrator loop is godot-b8 in the main checkout. builder2 started 21:10 (`make gcp-start`; it idle-stops after 20 min).**
+
 ## (DONE) ROUND 42 AS PREPARED (2026-10-26 evening) — kept for the record
 
 **Goal: a crew under his attack order never stands behind a container NOT FIRING (it drives to a spot with a clear shot and fires);
