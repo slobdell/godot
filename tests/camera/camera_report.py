@@ -154,6 +154,7 @@ def corner_table(runs):
                      "seen_screen": mean_se(gaps("seen_to_screen_s")), "corner_s": corner,
                      "facing_pct": 100 * sum(c["facing_s"] for c in cs) / corner,
                      "toward_pct": 100 * sum(c.get("toward_s", 0.0) for c in cs) / corner,
+                     "facing_open_pct": 100 * sum(c.get("facing_open_s", 0.0) for c in cs) / (sum(c.get("open_s", 0.0) for c in cs) or 1e-6),
                      "away_pct": 100 * sum(c.get("away_s", 0.0) for c in cs) / corner,
                      "back_pct": 100 * sum(c.get("back_s", 0.0) for c in cs) / corner,
                      "bearing": sum(bearings) / len(bearings) if bearings else 0.0})
@@ -167,12 +168,12 @@ def show_corner(rows):
           "screen, and seen -> on screen (mean +- se; never = 20 s); the corner seconds' share facing the building, within 45 deg "
           "of the uncovering side, and the mean |bearing| from the view to that side.")
     print("| lane | runs (opened / seen / on screen) | open -> seen s | open -> on screen s | seen -> on screen s | corner s "
-          "| facing the building % | toward the hidden side % | mean abs bearing to it (deg) | off the travel > 90 / > 135 deg % |")
+          "| facing the building % (after it opens %) | toward the hidden side % | mean abs bearing to it (deg) | off the travel > 90 / > 135 deg % |")
     print("|---|---|---|---|---|---|---|---|---|---|")
     for r in rows:
         print(f"| {r['lane']} | {r['runs']} ({r['opened']} / {r['seen']} / {r['shown']}) | "
               f"{r['open_seen'][0]:.1f} +- {r['open_seen'][1]:.1f} | {r['open_screen'][0]:.1f} +- {r['open_screen'][1]:.1f} | "
-              f"{r['seen_screen'][0]:.1f} +- {r['seen_screen'][1]:.1f} | {r['corner_s']:.0f} | {r['facing_pct']:.1f} | "
+              f"{r['seen_screen'][0]:.1f} +- {r['seen_screen'][1]:.1f} | {r['corner_s']:.0f} | {r['facing_pct']:.1f} ({r['facing_open_pct']:.1f}) | "
               f"{r['toward_pct']:.1f} | {r['bearing']:.0f} | {r['away_pct']:.1f} / {r['back_pct']:.1f} |")
     print()
 

@@ -529,6 +529,7 @@ func _corner() -> void:
 	rig.wrote["zoom"] = "jump"
 	rig.wrote["pitch"] = "jump"
 	rig.snap()  # the camera jumps to the staged column, looking down the drive (a jump has nothing to ease from)
+	trace.skip_frame()
 	controls.order_selection("move", {"to": _pair(Vector3(end.x, 0.0, end.y))})
 	_staged["at_s"] = snappedf(_clock, 0.01)
 	while _clock < _seconds and not _ended:

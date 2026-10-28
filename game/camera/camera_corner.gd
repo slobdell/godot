@@ -68,6 +68,8 @@ var _bearing_sum := 0.0
 var _bearing_n := 0
 var _toward_s := 0.0
 var _away_s := 0.0
+var _open_s := 0.0
+var _facing_open_s := 0.0
 var _back_s := 0.0
 var _frame := 0
 ## Bar K5's no-fog-cheat line (C43.6): every frame from the staging, the shown and wanted yaw at full precision and how
@@ -274,6 +276,12 @@ func _process(delta: float) -> void:
 	_bearing_n += 1
 	if facing:
 		_facing_s += delta
+	# His words were about AFTER the corner ("when they got past the building ... the camera was still just angled
+	# toward the building"): before it, the blind spot lies behind the wall, so looking at it faces the wall.
+	if _opened >= 0.0:
+		_open_s += delta
+		if facing:
+			_facing_open_s += delta
 	if absf(bearing) <= 45.0:
 		_toward_s += delta
 	# The swing's cost (Bar K5's empty corner): seconds the view looks more than 90 / 135 deg off the way they drive.
@@ -300,6 +308,7 @@ func summary() -> Dictionary:
 			"seen_to_screen_s": CameraCorner._gap(_seen, _screen) if _seen >= 0.0 else null,
 			"seen": _seen >= 0.0, "shown": _screen >= 0.0,
 			"corner_s": snappedf(_corner_s, 0.01), "facing_s": snappedf(_facing_s, 0.01), "toward_s": snappedf(_toward_s, 0.01),
+			"open_s": snappedf(_open_s, 0.01), "facing_open_s": snappedf(_facing_open_s, 0.01),
 			"away_s": snappedf(_away_s, 0.01), "back_s": snappedf(_back_s, 0.01), "hidden": not hidden.is_empty(),
 			"mean_abs_bearing": snappedf(_bearing_sum / maxf(_corner_s, 1e-6), 0.1) if _corner_s > 0.0 else null}
 
@@ -320,7 +329,8 @@ const PULL_FADE_M := 30.0
 ## Where the blind spot is: behind the far end, this far off the hidden face and this far back from the end (a squad
 ## parked against the back of a building sits about here; CameraCorner.lanes stages at HIDE_OFFS_M / HIDE_BACK_M).
 const PULL_OFF_M := 10.0
-const PULL_BACK_M := 6.0
+## Level with the far end (dev 6847581f7: 6 m back put the early look through the wall, Locks facing 29 -> 46 %).
+const PULL_BACK_M := 0.0
 ## Only walls whose centre is this close to the squad are read (a building's half length plus PULL_FAR_M and some).
 const PULL_SEARCH_M := 60.0
 
