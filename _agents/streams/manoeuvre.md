@@ -213,6 +213,24 @@ seats put the first squad across the second squad's way in. The press has two sq
 Round-45 candidate as a design note: the second squad's seats and approach must be dealt with the first squad's standing shape in
 view (parkaside's rim is the seat only; the approach lane is not), or the press measured per squad in the bar.
 
+### Stretch, the bridge drill crew's own cause (R43.38): the case does not reproduce on main (2026-10-28 ~12:30 PDT)
+
+`make bridge-trace` locks / rust / seed 2 / tick 15 / wet-ground on (R40.21's crew: Rust_S_3 rim 5.1 s, arrival 48.9 s at 5a233f42b)
+on today's tree (918498713, builder0, native ON, `~/overnight-manoeuvre/r44/s5/removal.txt`, each arm one run): **base: every crew
+rim 0.0 s, all four cross, arrival 21.6 s**; the GDScript drive the same; `--no-avoidance` rim 3.3 s (Rust_S_4 2.8: the opposite of
+R40.21's control); `--nav-off=` a1 / carrot / chord / repath / guard / inflate / leash / sidestand / yield / r5sidestep / oriented
+all rim 0 (arrivals 19.3-21.6 s). Nothing to remove: the rim crew is gone from this cell on main. Bar S5's dev read saw it under
+balance's fm_c5r2_lawt5 overrides (8e257f3bc's stats, not on main). The 18-run hard line on main (`make bridge-pooled`) is running
+to see whether any cell still has a rim crew; the overrides tree is the next place to look, then the write-up.
+
+### R44.16 (2026-10-28 ~12:25 PDT): the G1 probe's 1 % was not the CPU; the leak found and fixed
+
+Orders: the default probe is CPU-free in effect. Both rules were gated by grouped() in the frozen tree (the look since e0a746667;
+`_parked_for_pass` at 67998860d:5474). The leak: the station-PID gate for backout's legs read "any k-turn leg under way or planned this
+tick while the switch is ON", so his grouped crews' ordinary k-turns lost the PID too. **cf6eabc22: the PID is kept off `_backout_leg`
+only.** Proof (builder0 light, the default probe x 7001-7004, base v backout v parkedpass): running; B1's byte-identity guard
+restored on its pass.
+
 ### M5 READ on native's EXACT replay (main 7975d1455 merged at 158b6d45c; builder0, native ON, `make replay-match ... CREWS=all`,
 `~/overnight-manoeuvre/r44/m5/replay_*`; base = main's drive, bo = `--traffic-on=backout` on the GDScript drive): BOTH his rigs back out first
 
