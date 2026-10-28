@@ -417,6 +417,11 @@ unchanged since de626d7e1). **A pass ships ON** (1-2 decided, 3-11 within).
 | 8 the named-attack pair: deaths | 60 | 57 | -0.12 | 0.31 | -0.40 | PASS (<= BASE + 2 se); hop_s 656 -> 12, off_order_m 781 -> 405 (z -1.9), damage_total 32576 -> 30929 (se 109), kills 54 -> 53, first_hit 151.9 -> 107.8 |
 | reported | water_s 1353 -> 467, water_far_s 161 -> 50, fire_s 1171 -> 401, hop_rev_s 267 -> 4, hop_far_s 75 -> 2, damage_water 12415 -> 2875 (the across-water attribution, above), hits_water 400 -> 58, first_hit_water_s 138.8 -> 171.7 (se 3.2), crews_far 68 -> 44 | | | | | |
 
+**Lines 10-11 PASS** (builder0, `make remote T="check ENGAGE_WATER=on"` on 5f22f82cc's tree = 8ac00d19b's code with the
+rule forced ON, 2845 s, 2026-10-28 ~05:35 PDT: `27 passed, 1 FAILED` where the one FAILED is sim-baseline, as a default-ON
+flip must before its rows are adopted: **crossing, locks and gorge MOVED** (the maps with water between the lines; foundry, yard,
+pit, terminus, sumps, parade, archipelago, cut, docks, yard_open unmoved); every test passed; perf-judge JUDGED on its own line
+(scenario_perf refused by ai-scenarios-check as always: perf-judge judges it). **Bar A7 PASSES every line: the rule ships ON.**
 **Lines 1-8 PASS. Line 9 PASS** (builder2 light lane, native off in that folder, `engage-probe` ENGAGE_ARM=on on 10673-10696,
 ewoff = `--brains-off=native_decide` v ewon = + `--engage-water=on`, n 24 paired, 04:15-04:30 PDT: BYTE-IDENTICAL on every
 seed: stuck 128.5 = 128.5, first hit 7.02 = 7.02, deaths 25 = 25, hits 3094 = 3094; the E1 stage has no water between a crew
