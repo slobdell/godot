@@ -79,7 +79,19 @@ His answer to the combined-arms recommendation (the round proceeds on it); the s
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Round 42, in progress (2026-10-26; B7 ON merged as main 626303ea8 (b3841b301 green builder0 3299/0); Bar B2s v2 read FAIL 17/18 (G3 Gangs turtle +20.75 %), unshipped; started from main 18982e8df, launch green 21b20bdce, no baseline re-run).**
+**Round 42 REPORT (2026-10-27 19:40; started from main 18982e8df, launch green 21b20bdce, no baseline re-run).**
+- **B7 DONE, SHIPPED ON** (R42.21): merged alone as main 626303ea8 from **b3841b301, green builder0 `make check` exited 0, 3299 passed
+  / 0 failed**. Against a tank rush (>= 70 % of cost in tanks) a plain CPU deal fields Condemned `siege` / Gangs `gang_hail`; Law
+  and Syndicate keep their roll; the garage line is ON. Bar B7 table and player-terms line below.
+- **B8 DONE, nothing ships** (R42.9): no arm moved its line inside his 15 % (Law 96 -> 92 %, Syndicate 84 -> 86 %; 9d8e26e44,
+  builder2, n 200).
+- **B9 DONE, read verdict FAIL 17/18** (Bar B2s v2, BASE c0b61be2e v ARM 7aceba95f): deciding passes, G3 Gangs turtle length
+  +20.75 % v within 20. Unshipped (R42.15) whatever it read.
+- **B10 waits on the lead gate** (his yes to the slow turret; not asked of me). **B3** stacks on the faction stat change (unshipped,
+  so it waits with it); **B6 BLOCKED** by ownership (`game/tactics/**`, engage's).
+- **Playtest:** `make skirmish ARENA=terminus` with an all-tank garage army v a Gangs or Condemned CPU: it brings artillery (log
+  `CPU_COUNTER ... archetype=gang_hail`); add `--cpu-counter=off` for the old deal, `--tank-rush-hint=off` to hide the garage line.
+- Everything after b3841b301 on this branch is Status-only (tip named in the last commit's message to the orchestrator).
 
 **Plan (in order; decisions in one line each):**
 1. B7 code (DONE, OFF): the counter rule, the pair loader, the garage deal and suggestion line, tests first.
