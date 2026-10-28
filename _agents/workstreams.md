@@ -104,6 +104,14 @@ never touch processes you didn't start. Never delete builder files that aren't o
   perf-judge PASS 1.06x but ai_usec_per_tick 14,002 v round 42's 7,989 at the same ratio (relative line 17,035 v 25,840 PASS). Judge on
   ratios and same-window paired arms only; never quote a builder0 us/tick against an earlier round's. (Not changed: builder0's power
   settings are not ours to touch without the lead.)
+- **R43.4 (~21:25) The faithful replay is merged early, alone: main 84f914f78 = native 95331c3cd** (tests/replay_orders.gd REPLAY_REEXEC,
+  tests/replay/**; merge_check_needed INHERIT; no full check of it yet: native's builder0 `make quick exited 0` on 2fd2e5d4e, which contains it,
+  plus laptop recorder/replay tests 7/0; the next main batch check covers it). Native (laptop, his round-42 recording, native library):
+  first two orders' crews 0.0 m off his census for 20 s (CP43.0's 3 m bar met), bit-exact to ~28 s, **his War Rig's turnaround
+  reproduces** (attack-move, AWAY 75 m v his 82 m). On GDScript it leaves his match at tick ~300 (a 1-ULP twin gap, two Rust crews'
+  speed at tick 22: native's). CP43.0's hash is not named yet (the twin gap and round 41's recording on its own tree 21b20bdce first).
+  The recorder keys (native 2fd2e5d4e) and camera's `cam` row merge together after ONE full check on camera's tip (camera merges
+  2fd2e5d4e, authorised).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
