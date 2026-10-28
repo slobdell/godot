@@ -39,6 +39,19 @@ the minute it is green so his next playtest records the yaw; **CP43.0**: merge n
 manoeuvre the same minute; rule the owner within the hour if engage's A1 cause lands in the mover / planner / order_controller (C43.3);
 take engage's A1 and manoeuvre's S1 tables to him in player terms.
 
+**RUNNING (2026-10-27 ~21:15 PDT): all four streams started (godot-engage-0c, godot-manoeuvre-1d, godot-camera-0a, godot-native-45); the
+orchestrator loop is godot-b8 in the main checkout. builder2 started 21:10 (`make gcp-start`; it idle-stops after 20 min).**
+**Progress (~21:40 PDT, rulings R43.1-R43.8):** main 84f914f78 = native's faithful replay (his round-42 match bit-exact ~28 s with the
+library). **His War Rig's turnaround: cause found by removal** (engage, R43.8): Traffic's round-29 street hold sent a crew 80 m from the
+street mouth to its holding spot for 18 s; `--traffic-off=hold` -> it reaches the far quay in 12 s. Not a round-42 regression. Fix granted
+to engage. **His first order's arrival** (manoeuvre, R43.6/7): the Gangs swarm laid 112 m wide and flipped shape 4 times; shape latch +
+seat bound built OFF (his start re-read: anchor on his click, seats within 32 m). Camera: `cam` row + recorder keys (d489eaa2b) in full
+check; corner census read (the view faces the wall 53-57 % of a corner). Native: the 30-unit right-click test reads ~112 ms on a quiet box, but its army is 6 squads; his real hitch at 4 squads is ~8 ms
+on the laptop (R43.15; a memo fix, output-identical). builder2 restarted ~21:35 (it idle-stops after 20 min; the loop restarts it when work is pending).
+**~23:00: main b31d3ddea GREEN by inheritance (camera d489eaa2b: builder0 3360/0, 27 + 1 NOT JUDGED) = the `cam` row + native's recorder keys + the replay; `--camera-corner` OFF.** **~01:15: main c57fc616b = + native 409f70d66 (CP43.0, its own check green 3352/0 ALL JUDGED); unchecked as a whole (laptop lint-fast + recorder tests green); one main check after native's 356ce50d2.** Bar A FAILED (holdfar OFF, R43.18); Bar A6 (holdway) and Bar K5 series running on builder2.
+**~02:40: main 5cb6b9802 = + native b840544de (green 3354/0 ALL JUDGED): his whole match replays exactly; the right-click memo. ONE main check of the batch running on builder2 (`~/orch-r43/main-check-5cb6b9802.log`).** Street-hold item stopped (Bar A, A6, A6 v2 failed; R43.21; round-44 candidate: side jam). Bars in flight: K5 (camera), S (manoeuvre), A7 (engage, across water).
+**~05:00: main 5cb6b9802 GREEN builder2 (3365/0; 24 + 4 NOT JUDGED for the machine/load, R43.25). Main 37fa46c6c = + engage 21dbaf662 (tools + OFF rules, its own check green 3362/0 ALL JUDGED); next batch check covers it.** Bar A7 (across water) PASSED lines 1-9; the flip ships with native's decide twin (R43.23).
+
 ## (DONE) ROUND 42 AS PREPARED (2026-10-26 evening) — kept for the record
 
 **Goal: a crew under his attack order never stands behind a container NOT FIRING (it drives to a spot with a clear shot and fires);

@@ -70,3 +70,25 @@ The clip, when K5.5 has one.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-27 (in progress).** Start: 2f1620a77 (main's docs on b12b17ac7's green check; no baseline check, per HANDOFF).
+- **K5.1 DONE at 1929707b7** (full check on builder0 running; the hash is named when it greens). The `cam` row:
+  `{"t":"cam", tick, yaw, want, pitch, dist, target:[x,z], mode, turn?}`, the SHOWN pose (yaw in degrees, 0 = north/-Z,
+  positive turns left, so -90 looks east), `want` = the yaw it is turning to, `mode` follow / danger / manual / aim-hold /
+  corner, `turn: true` on a row written at an automatic turn's start. Written every CENSUS_S (1 s) and at each turn start.
+  The recorder reads `controls.rig` (`RtsCamera.record_row()`); no rig, no rows (headless harnesses, the native twin test).
+  Smoke (builder0 light, 1929707b7's tree, Locks seed 7001, 30 s camera autoplay): 34 cam rows, 3 turn rows (danger),
+  `tools/recording_arrivals.py` still reads the file. Scrub a recording: `python3 tests/camera/camera_recording.py <file>`.
+
+**Plan (in order; reasons in one line):**
+1. K5.1 the `cam` row (C43.2): first, so his next playtest records the yaw (the orchestrator merges it alone).
+2. K5.2 the corner workload: `--camera-scenario=corner` (CameraPlaytest) + `CameraCorner` census; the lane is found from
+   the cover map (`CameraCorner.lanes`: a wall >= 12 m, a lane 9 m off its long face, a hiding spot behind its far end that
+   the lane cannot see until the corner), so it runs on any arena (Locks and Terminus); side = seed % 2 (right/left), one of
+   the 3 nearest lanes by seed. His crews (group 1) are set down in a column at the lane's start; one CPU squad holds at the
+   spot. Table first (to the orchestrator).
+3. K5.3 the rule: a fourth pull in `danger_look`'s sum (CORNER_W 3.0 x a ramp from 14 m short of the far end, full to 8 m
+   past, out by 30 m) toward the blind spot behind the far end (`CameraCorner.pull`: the cover map and his units only);
+   a gun firing at him drops it; `--camera-corner=on`, OFF until Bar K5. Reason for "toward the spot" rather than "the
+   face's normal": just past the corner the hidden squad lies ESE of the lead crew (behind the wall), not E.
+4. K5.4 Bar K5 filed before any 10501+ number; 5. K5.5 the clip; 6. stretch.

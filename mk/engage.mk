@@ -62,3 +62,75 @@ ENGAGE_PARSE ?= game/tactics/firing_position.gd game/tactics/element_situation.g
 engage-parse: import ## engage: --check-only on the stream's scripts (ENGAGE_PARSE), the real messages printed
 	@for f in $(ENGAGE_PARSE); do out=$$($(GODOT) --headless --path . --check-only --script res://$$f 2>&1 | grep -E "Parse Error|SCRIPT ERROR|ERROR" | grep -v "depended scripts" || true); \
 		if [ -n "$$out" ]; then echo "== $$f"; echo "$$out" | head -8; else echo "ok $$f"; fi; done
+
+# ---- engage (round 43): his War Rig's turnaround under attack-move (A1) ---------------------------------------------
+# Owner: the engage stream (_agents/streams/engage.md). His recording: _agents/streams/references/round42/playtest/ (gzipped);
+# `engage-his` unpacks it to build/engage/his.jsonl (the probes read plain jsonl).
+ENGAGE_HIS_GZ ?= _agents/streams/references/round42/playtest/2026-10-27T20-00-48-locks.jsonl.gz
+ENGAGE_HIS ?= $(BUILD_DIR)/engage/his.jsonl
+ENGAGE_CREW ?= Green_Guns_1
+ENGAGE_FROM ?= 630
+ENGAGE_TA_SECONDS ?= 30
+$(ENGAGE_HIS): $(ENGAGE_HIS_GZ)
+	@mkdir -p $(BUILD_DIR)/engage
+	zcat $(ENGAGE_HIS_GZ) > $(ENGAGE_HIS)
+
+.PHONY: engage-his engage-rebuild engage-replay-trace engage-paths
+engage-his: $(ENGAGE_HIS) ## engage A1: unpack his Locks 56416 recording to build/engage/his.jsonl
+
+engage-rebuild: import $(ENGAGE_HIS) ## engage A1: census-places rebuild of his match from ENGAGE_FROM, ENGAGE_CREW traced (ENGAGE_FLAGS) -> build/engage/ta_<from>.log
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/turnaround_probe.gd -- \
+		--recording=$(ENGAGE_HIS) --from=$(ENGAGE_FROM) --seconds=$(ENGAGE_TA_SECONDS) --every=30 --crew=$(ENGAGE_CREW) \
+		--crew-trace=$(ENGAGE_CREW) --element-trace=Guns $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/ta_$(ENGAGE_FROM).log 2>&1 || true
+	@grep -E "ENGAGE_TA_SETUP|ENGAGE_TA_SUMMARY|SCRIPT ERROR" $(BUILD_DIR)/engage/ta_$(ENGAGE_FROM).log | cut -c1-400
+
+# The faithful replay (native's tests/replay_orders.gd, CP43.0) with the crew and element traces on; its own recording
+# lands in build/engage/rec/<tag>/ (read it with tools/recording_arrivals.py and tests/replay/divergence.py). ENGAGE_TAG
+# names the run (an arm); ENGAGE_FLAGS are the switches under test (e.g. --attack-shot=off, --nav-off=a11).
+ENGAGE_REPLAY_SECONDS ?= 50
+engage-replay-trace: import $(ENGAGE_HIS) ## engage A1: his match replayed (CP43.0) with --crew-trace=ENGAGE_CREW, ENGAGE_FLAGS -> build/engage/replay_<tag>.log + rec/<tag>/
+	@mkdir -p $(BUILD_DIR)/engage/rec/$(ENGAGE_TAG)
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/replay_orders.gd -- --orders=$(ENGAGE_HIS) \
+		--seconds=$(ENGAGE_REPLAY_SECONDS) --record-dir=$(BUILD_DIR)/engage/rec/$(ENGAGE_TAG) --crew-trace=$(ENGAGE_CREW) \
+		--element-trace=Guns $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/replay_$(ENGAGE_TAG).log 2>&1 || true
+	@grep -E "REPLAY_SETUP|REPLAY_SPAWN|REPLAY_NATIVE|REPLAY_ROSTER|REPLAY_DONE|SCRIPT ERROR" $(BUILD_DIR)/engage/replay_$(ENGAGE_TAG).log | cut -c1-300
+	@$(PYTHON) tools/recording_arrivals.py $$(ls -t $(BUILD_DIR)/engage/rec/$(ENGAGE_TAG)/*.jsonl | head -1) | grep -E "attack_move|===" || true
+
+engage-paths: import ## engage A1: the navmesh's routes on Locks for ENGAGE_LEGS ("x,z>x,z;...")
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/path_probe.gd -- "--legs=$(ENGAGE_LEGS)" 2>&1 | grep -E "ENGAGE_PATH|SCRIPT ERROR"
+
+# ---- engage (round 43): Bar A, the street hold's far crew (A3 `holdfar`, A4) ----------------------------------------
+# Workload: tests/engage/hold_probe.gd (two friendly squads head-on in a street, the waiting squad's rear crews 55-95 m back).
+# ENGAGE_HOLD_ARM=off|on selects the arm (on = --traffic-on=$(ENGAGE_HOLD_SWITCH)); ENGAGE_HOLD_SEEDS the seeds (Bar A: 10301-10324,
+# FAILED R43.18; Bar A6: 10373-10396).
+ENGAGE_HOLD_SEEDS ?= 10301 10302 10303
+ENGAGE_HOLD_ARM ?= off
+ENGAGE_HOLD_SECONDS ?= 75
+ENGAGE_HOLD_TAG ?= $(ENGAGE_HOLD_ARM)
+## The Traffic switch the ARM turns on: holdfar (Bar A, FAILED R43.18) or holdway (Bar A6).
+ENGAGE_HOLD_SWITCH ?= holdway
+.PHONY: engage-hold engage-bar-a
+engage-hold: import ## engage A4: the street-hold probe over ENGAGE_HOLD_SEEDS (ENGAGE_HOLD_ARM=off|on, ENGAGE_JOBS) -> build/engage/hold/<tag>/<seed>.log + the table
+	@mkdir -p $(BUILD_DIR)/engage/hold/$(ENGAGE_HOLD_TAG)
+	@rm -f $(BUILD_DIR)/engage/hold/$(ENGAGE_HOLD_TAG)/*.log  # one series per folder: an earlier run's rows would pair with this one's
+	@echo ">> engage-hold on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | arm $(ENGAGE_HOLD_ARM) | seeds $(firstword $(ENGAGE_HOLD_SEEDS))+ | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(ENGAGE_HOLD_SEEDS); do echo $$seed; done | xargs -r -P $(ENGAGE_JOBS) -I{} sh -c \
+		'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/hold_probe.gd -- \
+		--seed={} --seconds=$(ENGAGE_HOLD_SECONDS) $(if $(filter on,$(ENGAGE_HOLD_ARM)),--traffic-on=$(ENGAGE_HOLD_SWITCH),) $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/hold/$(ENGAGE_HOLD_TAG)/{}.log 2>&1 || true; \
+		grep -q "^ENGAGE_HOLD " $(BUILD_DIR)/engage/hold/$(ENGAGE_HOLD_TAG)/{}.log || echo "  MISSING ENGAGE_HOLD seed {}"'
+	$(PYTHON) tests/engage/hold_table.py $(BUILD_DIR)/engage/hold/$(ENGAGE_HOLD_TAG)
+
+engage-bar-a: import ## engage Bar A / A6: engage-hold in both arms on ENGAGE_HOLD_SEEDS, then the paired table (tests/engage/hold_table.py --pair)
+	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=off
+	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=on
+	$(PYTHON) tests/engage/hold_table.py --pair $(BUILD_DIR)/engage/hold/off $(BUILD_DIR)/engage/hold/on --by-stage
+
+# Round 43 (Bar A6 v2, R43.20): two arms against one base. ARM-W = the ordered-way read alone (holdway), ARM-WR = the read +
+# the release judged on the crew's route to its squad's destination (holdway,holdroute). Each arm's table against the base.
+.PHONY: engage-bar-a6
+engage-bar-a6: import ## engage Bar A6 v2: engage-hold off / w / wr on ENGAGE_HOLD_SEEDS, then the two paired tables by stage
+	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=off ENGAGE_HOLD_TAG=off
+	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=on ENGAGE_HOLD_SWITCH=holdway ENGAGE_HOLD_TAG=w
+	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=on ENGAGE_HOLD_SWITCH=holdway,holdroute ENGAGE_HOLD_TAG=wr
+	@echo "##### ARM-W (holdway) v BASE"; $(PYTHON) tests/engage/hold_table.py --pair $(BUILD_DIR)/engage/hold/off $(BUILD_DIR)/engage/hold/w --by-stage
+	@echo "##### ARM-WR (holdway,holdroute) v BASE"; $(PYTHON) tests/engage/hold_table.py --pair $(BUILD_DIR)/engage/hold/off $(BUILD_DIR)/engage/hold/wr --by-stage
