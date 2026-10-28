@@ -195,7 +195,18 @@ arrival order along the approach; a squadmate's give-way deferred until the seat
 - **main 7975d1455 merged (native's N2: his round-43 matches replay exactly, the army seed recovered):** M5 on both recordings re-read on
   the exact replay (`make replay-match`, base v backout, running on builder0).
 
-### M5 (acceptance read, in progress) and the twin's parity (2026-10-28 ~11:00 PDT)
+### M5 READ on native's EXACT replay (main 7975d1455 merged at 158b6d45c; builder0, native ON, `make replay-match ... CREWS=all`,
+`~/overnight-manoeuvre/r44/m5/replay_*`; base = main's drive, bo = `--traffic-on=backout` on the GDScript drive): BOTH his rigs back out first
+
+| recording / the rig on the box spot | base (main), its centre each second | backout |
+|---|---|---|
+| 08-15, Green_Guns_2 (his first match) | at (-42.1, 89.5..91.9) from t30 to t120 (4 s), (-47.1, 81.2) at t150 | (-42.0, 92.0) at t30 (backed), (-46.6, 82.3) at t90, (-47.7, 77.9) at t120: **past the box ~2 s sooner** |
+| 08-21, Green_Guns_4 (his second match, the one he did not notice) | at (-42.1, 89.6) from t30 to t150 (**5 s still, his match reproduced**), (-46.8, 80.9) at t210 | (-42.1, 90.7) at t30, (-44.9, 86.4) at t90, (-51.2, 77.2) at t120: **past the box ~3 s sooner**, arrives t270 |
+
+In his terms: the rig behind the container backs out the moment he clicks and is round the box before main's has moved. The base
+arm reproduces both his matches (the 5 s stand in the second). One match each: the look he asked for; Bar B1 is the number.
+
+### M5 (acceptance read, earlier rebuilds) and the twin's parity (2026-10-28 ~11:00 PDT)
 
 - **08-15, his container start, the full v3 set ON (fdb1c6fc4, builder0, native ON, the GDScript drive for backout, `~/overnight-manoeuvre/
   r44/m5/start_trace_r1_v3.log`):** Guns_2 looks at tick 1 (the vertex 45 deg off), circle plan back 2.0 m / away 3.5 m, backs out
