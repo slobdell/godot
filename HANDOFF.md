@@ -4,9 +4,9 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-28 ~09:40 PDT (laptop clock) — **ROUND 44 PREPARED (box below; launch = the lead starts three CLIs: orders + manoeuvre on Fable, native on Opus).** Earlier: 2026-10-28 ~08:40 PDT — ROUND 43 IS CLOSED; his playtest after it is in.
+_Last updated: 2026-10-28 ~09:20 PDT (laptop clock) — **ROUND 44 PREPARED (box below; launch = the lead starts three CLIs: orders + manoeuvre on Fable, native on Opus).** Earlier: 2026-10-28 ~08:40 PDT — ROUND 43 IS CLOSED; his playtest after it is in.
 
-## ▶ ROUND 44 AS PREPARED (2026-10-28 ~09:40 PDT) — read this first
+## ▶ ROUND 44 AS PREPARED (2026-10-28 ~09:20 PDT) — read this first
 
 **Goal: his all-squads click sends every squad the same way into a column of wedges at his click (never four destinations 100 m apart,
 never a squad sent back to its own edge); a War Rig nose-on to a container backs out first; `make playtest-report` fits on one screen.**
@@ -31,13 +31,14 @@ builder2 STARTED ~09:20 (`make gcp-start`; it idle-stops after 20 min, `make gcp
 alone on green and tell manoeuvre the same minute (`git merge main`). Merge orders' O1 (`click` row) alone the minute it is green so his
 next playtest carries it; native's N1 report alone too. Take orders' O2 cause to him in player terms the hour it lands.
 
-**RUNNING (~14:45 PDT):** orders (godot-orders-e9), manoeuvre (godot-manoeuvre-c0), native (godot-native-65); rulings R44.1-R44.7.
+**RUNNING (~11:15 PDT):** orders (godot-orders-e9), manoeuvre (godot-manoeuvre-c0), native (godot-native-65); rulings R44.1-R44.7.
 **Main 875ee5dd0** = native fff546ef6 (N1 the one-screen report + SEED digits; GREEN builder0 3420/0 ALL JUDGED) + orders c844fc3b8
 (CP44.0 `group` + C44.2 `click`; GREEN builder0 3426/0 ALL JUDGED). merge_check_needed reads CHECK (the pair): ONE main check after
 native's N2 (7e9c199ae, check running) merges. Bars: G1 v10b (orders, frozen after dev read 5, then 10801-10848); Bar S v3 FAILED its
 wedged guard (R44.7, nothing ships); Bar B1 backout alone to be filed on 11101-11148; Bar A6 v3 queued. Native: backout twin
 edbb120a5 (merged on stream/manoeuvre 8a7a94d70); parkedpass twin requested. **Open to him:** did he mean the far west; two abreast or
 strict single file; on a short click only the front squad drives (recommended yes).
+**Native's session ended ~11:10 (R44.8):** a fresh native session (Opus, same kickoff) reads R44.8 first.
 
 ### What prompted it (his playtest after round 43; was the NEXT box)
 
