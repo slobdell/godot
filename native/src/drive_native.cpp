@@ -780,8 +780,35 @@ struct Drive {
 		}
 		if (answered) {
 			v.set__kturn_check(lever_of(L_KTURN_CHECK));
+			// Round 43 (S3): the GDScript notes the goal right after its error, before every exit this look answers for.
+			if ((double)to.length() >= 0.5 && kturn_goal_on()) {
+				static const StringName kturn_goal_note("kturn_goal_note");
+				c.manoeuvre_script->call(kturn_goal_note, m, waypoint);
+			}
 		}
 		return answered;
+	}
+
+	// Round 43 (manoeuvre S3): Traffic.off("kturngoal") read live, as Movement.kturn_goal_on() does.
+	bool kturn_goal_on() {
+		static const String kturngoal("kturngoal");
+		return c.kturn_goal_ready && !traffic_off(kturngoal);
+	}
+
+	// Movement._kturn_goal_moved_out(waypoint), line by line.
+	bool kturn_goal_moved_out(const Vector3 &waypoint) {
+		static const StringName kturn_goal_of("kturn_goal_of");
+		const Variant planned = c.manoeuvre_script->call(kturn_goal_of, m);
+		if (planned.get_type() != Variant::VECTOR3 || flat_distance(waypoint, (Vector3)planned) < c.KTURN_GOAL_MOVED_M) {
+			return false;
+		}
+		if ((double)tank->get(k._speed) > 0.5) {  // tank.speed() returns _speed
+			return false;
+		}
+		const Vector3 nose = Vector3(-basis_z.x, 0, -basis_z.z).normalized();
+		const Vector3 to((real_t)((double)waypoint.x - (double)here.x), 0, (real_t)((double)waypoint.z - (double)here.z));
+		return (double)to.length() >= 0.5 && !inside_circle(nose, waypoint) &&
+				std::fabs((double)nose.signed_angle_to(to, Vector3(0, 1, 0))) <= deg_to_rad(c.KTURN_GOAL_AHEAD_DEG);
 	}
 
 	// Movement._inside_circle(here, forward, point)
@@ -3722,6 +3749,12 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				const int64_t check_left = (int64_t)v._kturn_check() - step;
 				if (seam_live()) {
 					// Round 31 (planner CP-P1): PlannerSeam.hold() opens _planned_reverse for a crew the seam holds.
+					Timed t("planned_reverse");
+					planned = cb(k._planned_reverse, leg_ref, waypoint, delta);
+				} else if ((double)v._kturn_left_m() > 0.0 && kturn_goal_on() && v._kturn_gear() < 0 &&
+						kturn_goal_moved_out(waypoint)) {
+					// Round 43 (S3, kturngoal): a backing leg whose goal moved to where a forward arc reaches it ends; the
+					// GDScript ends it (its first lines: the release, _kturn_end("goal_moved"), the counter) and returns false.
 					Timed t("planned_reverse");
 					planned = cb(k._planned_reverse, leg_ref, waypoint, delta);
 				} else if ((double)v._kturn_left_m() > 0.0) {
