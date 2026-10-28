@@ -1,0 +1,12 @@
+REPLAY_CLICKS_MERGED 11 rows -> 8 orders
+REPLAY_REEXEC --skirmish --enemy=cpu --seed=56416. --arena=locks --no-pick-faction --hints=off --player-faction=gangs --enemy-faction=condemned --squad-cap=4 --render-preset=laptop
+REPLAY_CLICKS_MERGED 11 rows -> 8 orders
+REPLAY_SEED_RECOVERED {"army_seed":891,"typed":"56416."}
+REPLAY_NATIVE_MISMATCH recorded=true replay=false: expect a different match (make native, or NATIVE=off)
+REPLAY_SETUP {"arena":"locks","layout":"locks","objectives":["the far quay","the far quay (far)"],"orders":8,"seed":-1.0,"tick":0,"units":40}
+REPLAY_SPAWN {"placed":0,"recorded":40}
+REPLAY_ORDER {"at":0.0,"n":5,"said":"","tick":0,"verb":"move"}
+REPLAY_ORDER {"at":750.0,"n":4,"said":"","tick":750,"verb":"attack"}
+REPLAY_ORDER {"at":1188.0,"n":1,"said":"","tick":1188,"verb":"stop"}
+REPLAY_ORDER {"at":1512.0,"n":16,"said":"","tick":1512,"verb":"move"}
+REPLAY_DONE {"tick":1710}

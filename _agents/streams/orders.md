@@ -160,6 +160,18 @@ _(worker keeps this current: report at the top, every number with commit, machin
   west onto his spot, the other three stand where they are, in file behind it; on a far click every squad drives, nearest in
   front. **Symmetric (C44.5):** the CPU gives no group clicks (its planner tasks elements one by one; SelectionSquads is the
   player's layout only), so there is no CPU twin, as for G1 v9.
+- **O5 (the acceptance READ in numbers; shots still to take):** his tick-1512 click on native's exact replay (N2 `--click=1512:-35,97`,
+  a scratch tree = 7b9e7d1a4 + stream/native 9f4eb4f59; laptop, GDScript drive: the layout is the read, not the drive), before /
+  after `--group-column=always`: **before** = his recording to within 2 m (Guns_4 (-51.5, 15.3), Hunters (-45.9, 69.5), Spears
+  (6.8, 56.5), Wrenches (-23.7, 117.2)); **after** = Hunters (-35.4, 95.1) ON his click, Guns_4 / Spears / Wrenches hold where
+  they stand, in file behind it; every order row carries `click` [-35, 97] and `group` 4. Evidence
+  `references/round44/orders/o5-replay-laptop/`. Top-down shots need a display (a short windowed run; said here before it runs).
+- **Main's dev read of his geometry (O3; builder2, native on, faa56b5c3, 7001-7006, n 6 a cell; `references/round44/orders/
+  o3-geometry-dev-builder2/main.txt`):** 13 of 18 cells lay the squads 108-125 m ACROSS the approach (today's three-abreast
+  ranks: every `across` cell, every locks cell but along-20, every terminus cell); only crossing's along / his cells stand in a
+  column already (its streets; across 4-34 m). The nearest squad lands in front in 17-100 % of runs by cell; nobody is sent
+  back > 10 m (0.0-0.5 squads a run); aside max 16-80 m; crossing across-20 never gets every squad in (6 / 6). The v10 arm's
+  read on the same cells follows.
 - **Decisions:** `click` goes on the one-squad row too (its `to` is the click, but one key the tools can rely on beats a
   rule); `group` only on orders to two or more squads (C44.3: his one-squad order stays manoeuvre's); loose units' row
   carries `click`, not `group`.
