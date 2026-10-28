@@ -167,6 +167,16 @@ arrival order along the approach; a squadmate's give-way deferred until the seat
   first), with the open poses as a cost ceiling, or let B1 fail as the orchestrator's corpus stands. The clean read (the GDScript
   drive, NOSED_GDSCRIPT=on, the swing code) is queued on builder0 light (corpus2).
 
+- **The corpus' clean read (corpus3: the GDScript drive, the widened look + the swing leg; `~/overnight-manoeuvre/r44/m2/test/
+  corpus3_b0.log`), with each pose's route angle and nose room:** the poses where ON lost time are the ALONE ones with a far
+  steering point (pose 1: the base crept 6.4 m and cleared in 2.2 s; ON's back-up cost +2.6 s; pose 3 +3.6 s), where the base turns
+  away at its own lock and clears; the crawl poses (a station a metre ahead) are where the base sticks (poses 6 / 10 / 12 never clear
+  in 12 s) and where ON gains (pose 10: -3.6 s) or the squad shape pins both arms. The swing leg fired on two poses and bought nothing
+  (dropped). Locks dev 7007's "far seat" crew turned out to be a 6.6 m hull (the roster rolls by run): the circle plan and the away
+  leg are rig-only by design (KTURN_BRAKE_HULL_M); the look is now scoped to long hulls. **Restored: the steering point within a
+  hull's length** (the station crawl is what pins a boxed rig; with a far steering point the drive turns away itself). Gate 20 deg
+  kept. Re-reading (corpus4, bo10, dev10).
+
 ### M5 (acceptance read, in progress) and the twin's parity (2026-10-28 ~11:00 PDT)
 
 - **08-15, his container start, the full v3 set ON (fdb1c6fc4, builder0, native ON, the GDScript drive for backout, `~/overnight-manoeuvre/

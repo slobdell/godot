@@ -95,6 +95,17 @@ func _run(pose_id: int, pose: Array, arm: String) -> Dictionary:
 	var cleared := -1
 	var crept := 0.0
 	var nose0 := -rig.global_basis.z
+	# The pose's own numbers (the same in both arms): the navmesh run past the nose (the rule's nose test) and the route's departure
+	# angle (the first vertex of the rig's route to the order a hull's length out, off the nose).
+	var mover := Movement.of(rig)
+	var frame: Array = mover._kturn_frame(rig)
+	var nose_room := Movement._free_run(rig.get_world_3d().navigation_map, rig.global_position + nose0 * float(frame[1]),
+			Vector3(nose0.x, 0.0, nose0.z).normalized(), float(frame[2]))
+	var depart_deg := 0.0
+	for point in Pathing.find_path(rig, rig.global_position, Vector3(to.x, 0.0, to.y)):
+		if Vector2(point.x - spot.x, point.z - spot.z).length() >= float(frame[1]) * 2.0:
+			depart_deg = rad_to_deg(Vector3(nose0.x, 0.0, nose0.z).signed_angle_to(Vector3(point.x - spot.x, 0.0, point.z - spot.z), Vector3.UP))
+			break
 	for i in WATCH_S * SimClock.TICK_RATE:
 		await _lab.step()
 		var along := rig.real_velocity.dot(-rig.global_basis.z)
@@ -107,7 +118,8 @@ func _run(pose_id: int, pose: Array, arm: String) -> Dictionary:
 			break
 	var row := {"pose": pose_id, "arena": pose[0], "shape": pose[5], "angle": pose[6], "arm": arm, "clear_tick": cleared,
 			"first_reverse": first_reverse, "crept_m": snappedf(crept, 0.01), "looks": int(Movement.route_arms().get("backout_looks", 0)),
-			"native_drive": BrainSwitches.native_drive}
+			"kturns": int(Movement.route_arms().get("kturns", 0)),
+			"nose_room_m": snappedf(nose_room, 0.1), "depart_deg": snappedf(depart_deg, 1.0), "native_drive": BrainSwitches.native_drive}
 	print("NOSED_ROW " + JSON.stringify(row))
 	_lab.dispose()
 	_lab = null

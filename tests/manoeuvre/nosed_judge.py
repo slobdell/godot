@@ -28,9 +28,10 @@ def main():
         d = (a - b) / 30.0
         diffs.append(d)
         wins += 1 if a < b else 0
-        print("  pose %2d %-8s %-5s %+4.0f deg: clear t%d -> t%d (%+.1f s); first reverse t%d -> t%d; crept %.2f -> %.2f m; looks %d; native_drive %s" % (
-            pose, pair["off"]["arena"], pair["off"]["shape"], pair["off"]["angle"], b, a, d, pair["off"]["first_reverse"], pair["on"]["first_reverse"],
-            pair["off"]["crept_m"], pair["on"]["crept_m"], pair["on"]["looks"], pair["on"]["native_drive"]))
+        print("  pose %2d %-8s %-5s %+4.0f deg (route %+4.0f, nose %4.1f m): clear t%d -> t%d (%+.1f s); first reverse t%d -> t%d; crept %.2f -> %.2f m; looks %d swings %d kturns %d; native_drive %s" % (
+            pose, pair["off"]["arena"], pair["off"]["shape"], pair["off"]["angle"], pair["off"].get("depart_deg", 0.0), pair["off"].get("nose_room_m", -1.0),
+            b, a, d, pair["off"]["first_reverse"], pair["on"]["first_reverse"],
+            pair["off"]["crept_m"], pair["on"]["crept_m"], pair["on"]["looks"], pair["on"].get("swings", 0), pair["on"].get("kturns", 0), pair["on"]["native_drive"]))
     med = statistics.median(diffs) if diffs else 0.0
     ok = n >= 12 and wins >= win_of and med <= median_line
     print("Bar B1 corpus: %d poses, ON sooner in %d (line >= %d), median %+.2f s (line <= %+.1f): %s" % (n, wins, win_of, med, median_line, "PASS" if ok else "FAIL"))

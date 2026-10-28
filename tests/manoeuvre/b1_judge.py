@@ -13,6 +13,7 @@ else INCONCLUSIVE.
 """
 import glob, json, math, os, re, sys
 
+HULL_MIN_M = 10.0      # Movement.KTURN_BRAKE_HULL_M: the hulls the away leg and the circle plan serve (a War Rig, 14 m)
 NOSED_ROOM_M = 4.0     # Movement.BACKOUT_NOSED_M: the START_RUN row's nose_room_m (the probe's own navmesh run past the nose)
 NOSED_REACH_M = 11.0   # the fallback for logs without nose_room_m: 7 m (a War Rig's half length) + the rule's 4 m, a ray v containers
 CLEAR_M = 8.0
@@ -115,6 +116,7 @@ def main():
             continue
         bounds = {c["name"]: c.get("bound_m", 0.0) for c in brun["per_crew"]}
         rooms = {c["name"]: float(c.get("nose_room_m", -1.0)) for c in brun["per_crew"]}  # the probe's own nose test (-1: an older log)
+        hulls = {c["name"]: float(c.get("hull_m", -1.0)) for c in brun["per_crew"]}  # the crew's own hull length (-1: an older log)
         orders = {c["name"]: int(c.get("order_tick", 0)) for c in brun["per_crew"]}
         seated_b = {c["name"]: 1 if c.get("within_bound_15s") else 0 for c in brun["per_crew"]}
         seated_a = {c["name"]: 1 if c.get("within_bound_15s") else 0 for c in arun["per_crew"]}
@@ -122,7 +124,11 @@ def main():
         last = max((r[0] for rs in br.values() for r in rs), default=0)
         boxes = props(project, arena)
         for n, pose in bp.items():
-            if bounds.get(n, 0.0) < 30.0 or n not in ap:
+            if n not in ap:
+                continue
+            # A long hull (a War Rig: the away leg and the circle plan are for hulls of KTURN_BRAKE_HULL_M and over); an older log
+            # without hull_m falls back to the squad's bound (a War Rig squad's is 30 m and over).
+            if (hulls.get(n, -1.0) >= 0.0 and hulls[n] < HULL_MIN_M) or (hulls.get(n, -1.0) < 0.0 and bounds.get(n, 0.0) < 30.0):
                 continue
             room = rooms.get(n, -1.0)
             if room >= 0.0:
