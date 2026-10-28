@@ -334,6 +334,11 @@ already read, or 7001-7012.
   the second squad wedges more (+4.6 s), yields +2.8 se, D1 +6.6 -> +4.6 se: the press is two squads, so a one-squad seat order is
   not the shape. Committed OFF with its test; round-45 design note (the second squad's seats and approach with the first's standing
   shape in view).
+- **R44.15 (~12:35) Bar B1's G1 guard restated before any number.** Bar S v3's remaining guards (record): G5 74.0 -> 70.0 s, G6, G7,
+  fights G1-G4 PASS (deaths 785 -> 774); the G1 v9 probe NOT byte-identical (metres outside after 334 -> 337, places outside 9 -> 9,
+  re-dealt 0): backout and parkedpass reach the CPU's crews (C44.5) and the probe's CPU army meets his squads. B1's guard: the g1v8
+  lines (places outside, metres outside after, re-dealt) each ARM <= BASE + 2 paired se over 12 seeds, friend contacts <= the judge's
+  line; byte-identity added on a CPU-free probe form only if orders confirms one exists.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
