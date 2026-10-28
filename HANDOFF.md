@@ -31,6 +31,8 @@ builder2 STARTED ~09:20 (`make gcp-start`; it idle-stops after 20 min, `make gcp
 alone on green and tell manoeuvre the same minute (`git merge main`). Merge orders' O1 (`click` row) alone the minute it is green so his
 next playtest carries it; native's N1 report alone too. Take orders' O2 cause to him in player terms the hour it lands.
 
+**MAIN NOW (16:40 PDT): 1eacac735** = 9b72f5339 (orders 805eae5e1 merged, G1 v10c OFF; **GREEN builder0, 28 targets ALL JUDGED, 3433 passed / 0 failed, `>> remote: make check exited 0`**, `~/orch-r44/main-check-9b72f5339.log`) + orders' close tip c7f1f1b1a (docs + tests/control). main 1eacac735 inherits 9b72f5339's check: merge_check_needed lists only tests/control/orders_g1v10_bar.sh and orders_geometry_table.py, which only `make orders-geometry`/the bar runner call, never check (grep of Makefile/mk/tools/tests). **Orders stream DONE.** Manoeuvre: Bar B1 waits on a native session (none started).
+
 **RUNNING (~11:55 PDT):** orders (godot-orders-e9), manoeuvre (godot-manoeuvre-c0); **native's session ended ~11:10 (R44.8):
 a fresh native session (Opus, same kickoff) reads R44.8 first: re-cut the backout twin on manoeuvre's c9ea1a6b4.** Rulings
 R44.1-R44.12. **Main 7975d1455** = native fff546ef6 (N1, green 3420/0) + orders c844fc3b8 (CP44.0 + click, green 3426/0) + native
