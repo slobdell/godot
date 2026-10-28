@@ -103,6 +103,21 @@ Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for
   (builder2 light): native_drive | manoeuvre | traffic | formation | kturn | element | nav_ files 529 / 0.
 - The two CP44.0 lines are no longer in my worktree (dropped before the merge); `git merge main` once the orchestrator names the hash.
 
+### M5 (acceptance read, in progress) and the twin's parity (2026-10-28 ~11:00 PDT)
+
+- **08-15, his container start, the full v3 set ON (fdb1c6fc4, builder0, native ON, the GDScript drive for backout, `~/overnight-manoeuvre/
+  r44/m5/start_trace_r1_v3.log`):** Guns_2 looks at tick 1 (the vertex 45 deg off), circle plan back 2.0 m / away 3.5 m, backs out
+  first; arrivals (s; main's in brackets): Guns_1 12.6 (18.9), Guns_2 9.8 (8.4), Guns_3 8.9 (never), Guns_4 9.0 (7.6), Guns_5 never
+  (9.9; nearest 34 m). One start, one seed: his read is the look, the bar is the number.
+- **08-21, his second match:** the first rebuild ran the roster's default layout (the trace's `--snap-deploy` is opt-in; the header's
+  spawn has the rigs shuffled, Guns_4 on the box spot): re-running snapped (r2s_base / r2s_v3). Without the snap, v3 brought all five
+  Guns in by 8.5 s where main left Guns_5 50 m out.
+- **The twin on the merged tree (8a7a94d70, builder0 light):** my two tests PASS on the C++ drive with the same numbers (reverse t10,
+  past the box t98); `test_native_drive_backout` FAILS (1199 drives, 100 mismatches): the pair was cut off e0a746667 and does not see
+  the nose test / the 40 deg gate / the hull checks; native asked to re-cut deferring on the superset. `test_native_exec_state`'s
+  table line failed on my `_departure_hulls` member: now a static scratch (428d300cd); rerunning. **stream/manoeuvre is RED on the
+  twin's parity test until native re-cuts**; the bar's frozen tree (no twin) is unaffected.
+
 ### M1: the scoping rebased (2026-10-28 ~09:30 PDT)
 
 - **1354362f8** = everything of `wip/manoeuvre-scope-g1` e883fc4eb but `game/control/rts_controls.gd` and `ElementTask.KEYS` (CP44.0).
