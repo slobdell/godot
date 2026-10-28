@@ -727,6 +727,11 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 	var last_start := 0
 	var merged := false
 	var wet_steps := 0  # G1 v10: ranks stepped back off water / a deck
+	# G1 v10c (R44.13): the column follows the ROAD back from his click from the first rank (the navmesh drive to the body), the
+	# one line the bar reads slide against; G1 v9 walked the straight approach while the click reached it (dev read 7: a street's
+	# road bends 5-14 m off that straight line and read as a slide).
+	if fit_first and road.size() >= 2:
+		on_road = true
 	while start < by_along.size():
 		var at := _walk_back(straight, behind)
 		if start > 0 and not on_road:

@@ -45,12 +45,18 @@ def signed_off_road(p, road, click, d):
         across = (-d[1], d[0])
         return (p[0] - click[0]) * across[0] + (p[1] - click[1]) * across[1]
     best = None
-    for a, b in zip(pts, pts[1:]):
+    segs = list(zip(pts, pts[1:]))
+    for i, (a, b) in enumerate(segs):
         vx, vz = b[0] - a[0], b[1] - a[1]
         ln = (vx * vx + vz * vz) ** 0.5
         if ln < 0.01:
             continue
-        t = max(0.0, min(1.0, ((p[0] - a[0]) * vx + (p[1] - a[1]) * vz) / (ln * ln)))
+        t = ((p[0] - a[0]) * vx + (p[1] - a[1]) * vz) / (ln * ln)
+        # the first and last segments extend beyond the road's ends, as the layout's own walk does (a rank behind the squads'
+        # centroid stands on the road's line carried on, not 60 m from its end point)
+        lo = -1e9 if i == 0 else 0.0
+        hi = 1e9 if i == len(segs) - 1 else 1.0
+        t = max(lo, min(hi, t))
         qx, qz = a[0] + vx * t, a[1] + vz * t
         dist = flat(p, (qx, qz))
         # the road runs from the click BACK to the army, so "right of the approach" is left of the road's direction

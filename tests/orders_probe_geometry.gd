@@ -22,6 +22,45 @@ const DRY_CLICK_M := 12.0
 
 var _starts_mode := ""
 var _reach := -1.0
+var _geometry_d := Vector3.ZERO
+var _geometry_across := Vector3.ZERO
+var _geometry_ground: Tank = null
+var _geometry_map := ""
+
+
+## Just before the order: the squads' starts re-read (the hold task drifts a crew a metre or two between the placing and the
+## click), then the run's geometry line (R44.13: the road from the click to the squads' START centroid, recorded once a run).
+func _before_order(units: Array) -> void:
+	super(units)
+	for squad: Dictionary in _squads:
+		squad["start"] = _centre(squad["units"])
+	var click := _click
+	var d := _geometry_d
+	var across := _geometry_across
+	var ground := _geometry_ground
+	var map := _geometry_map
+	# R44.9 (fit first): the clear ground across the approach at the click, as the layout reads it (RtsControls.gate_width, the
+	# group scan), and the widest squad: the judge's "front the ground fits" is read from these.
+	var clear: Array = [0.0, 0.0]
+	var widest := 0.0
+	# R44.13: the road = the navmesh drive from the click to the army's START centroid (the squads as they stand at the click,
+	# identical in both arms, recorded once a run; no layout moves it): the judge reads slide off it.
+	var road: Array = []
+	var centroid := Vector3.ZERO
+	for squad: Dictionary in _squads:
+		centroid += (squad["start"] as Vector3) / _squads.size()
+	if ground != null:
+		var drive := SelectionSquads.drive_on(ground)
+		var crosses := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
+		clear = RtsControls.gate_width(click, across, drive, crosses, SelectionSquads.GROUP_SCAN_M)
+		for p: Vector3 in Pathing.find_path(ground, click, Vector3(centroid.x, 0.0, centroid.z)):
+			road.append(_xz(p))
+	for squad: Dictionary in _squads:
+		widest = maxf(widest, _controls._squad_width(squad))
+	print("ORDERS_GEOMETRY " + JSON.stringify({"map": map, "seed": int(_flag("seed", "34")), "arm": _flag("probe-arm", ""),
+			"starts": _starts_mode, "reach": _reach, "click": _xz(click), "approach": [snappedf(d.x, 0.001), snappedf(d.z, 0.001)],
+			"clear": [snappedf(float(clear[0]), 0.1), snappedf(float(clear[1]), 0.1)], "widest": snappedf(widest, 0.1), "road": road,
+			"squads": _squads.map(func(s: Dictionary) -> Array: return _xz(s["start"]))}))
 
 
 func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
@@ -74,28 +113,10 @@ func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
 				click = SlotGround.standable(ground, click)
 			click = Vector3(click.x, 0.0, click.z)
 			pulled += 4.0
-	# R44.9 (fit first): the clear ground across the approach at the click, as the layout reads it (RtsControls.gate_width, the
-	# group scan), and the widest squad: the judge's "front the ground fits" is read from these.
-	var clear: Array = [0.0, 0.0]
-	var widest := 0.0
-	# R44.13: the road = the navmesh drive from the click to the army's START centroid (the squads as they stand at the click,
-	# identical in both arms, recorded once a run; no layout moves it): the judge reads slide off it.
-	var road: Array = []
-	var centroid := Vector3.ZERO
-	for squad: Dictionary in _squads:
-		centroid += (squad["start"] as Vector3) / _squads.size()
-	if ground != null:
-		var drive := SelectionSquads.drive_on(ground)
-		var crosses := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
-		clear = RtsControls.gate_width(click, across, drive, crosses, SelectionSquads.GROUP_SCAN_M)
-		for p: Vector3 in Pathing.find_path(ground, click, Vector3(centroid.x, 0.0, centroid.z)):
-			road.append(_xz(p))
-	for squad: Dictionary in _squads:
-		widest = maxf(widest, _controls._squad_width(squad))
-	print("ORDERS_GEOMETRY " + JSON.stringify({"map": map, "seed": int(_flag("seed", "34")), "arm": _flag("probe-arm", ""),
-			"starts": _starts_mode, "reach": _reach, "click": _xz(click), "approach": [snappedf(d.x, 0.001), snappedf(d.z, 0.001)],
-			"clear": [snappedf(float(clear[0]), 0.1), snappedf(float(clear[1]), 0.1)], "widest": snappedf(widest, 0.1), "road": road,
-			"squads": _squads.map(func(s: Dictionary) -> Array: return _xz(s["start"]))}))
+	_geometry_d = d
+	_geometry_across = across
+	_geometry_ground = ground
+	_geometry_map = map
 	return click
 
 
