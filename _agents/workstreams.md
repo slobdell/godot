@@ -154,6 +154,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   `make replay-match RECORDING=<file>`. Open: both matches part at ~28 s (cause not found); the GDScript v native 1-ULP gap (twin).
   Merge plan: camera d489eaa2b alone on green, native 409f70d66 alone on green (match_recorder.gd resolved on main, both additive),
   ONE main check on the pair.
+- **R43.10 (~23:00) Camera's K5.1 merged alone: main b31d3ddea = camera d489eaa2b (INHERIT).** builder0 `>> remote: make check exited 0`,
+  3360 passed / 0 failed, 27 passed + 1 NOT JUDGED (remote-guard-test quiet refusal at load 18.16; perf-judge JUDGED scenario_perf). Carries
+  the `cam` row (C43.2), native's recorder keys 2fd2e5d4e, the corner workload and `--camera-corner` (OFF). Also covers R43.4's replay
+  files (95331c3cd is in the tree). **His next playtest records the camera's yaw and target** (`tests/camera/camera_recording.py`).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
