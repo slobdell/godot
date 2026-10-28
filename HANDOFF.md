@@ -41,6 +41,13 @@ take engage's A1 and manoeuvre's S1 tables to him in player terms.
 
 **RUNNING (2026-10-27 ~21:15 PDT): all four streams started (godot-engage-0c, godot-manoeuvre-1d, godot-camera-0a, godot-native-45); the
 orchestrator loop is godot-b8 in the main checkout. builder2 started 21:10 (`make gcp-start`; it idle-stops after 20 min).**
+**Progress (~21:40 PDT, rulings R43.1-R43.8):** main 84f914f78 = native's faithful replay (his round-42 match bit-exact ~28 s with the
+library). **His War Rig's turnaround: cause found by removal** (engage, R43.8): Traffic's round-29 street hold sent a crew 80 m from the
+street mouth to its holding spot for 18 s; `--traffic-off=hold` -> it reaches the far quay in 12 s. Not a round-42 regression. Fix granted
+to engage. **His first order's arrival** (manoeuvre, R43.6/7): the Gangs swarm laid 112 m wide and flipped shape 4 times; shape latch +
+seat bound built OFF (his start re-read: anchor on his click, seats within 32 m). Camera: `cam` row + recorder keys (d489eaa2b) in full
+check; corner census read (the view faces the wall 53-57 % of a corner). Native: the 30-unit right-click is ~112 ms on a quiet box
+(R43.2, bisecting). builder2 restarted ~21:35 (it idle-stops after 20 min; the loop restarts it when work is pending).
 
 ## (DONE) ROUND 42 AS PREPARED (2026-10-26 evening) — kept for the record
 
