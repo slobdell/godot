@@ -173,6 +173,23 @@ passed + the usual NOT JUDGED pair (perf-judge: not a judging machine; scenario_
   `manoeuvre-r43-barsv2c`; the v2 gate check runs on builder2 (unit `manoeuvre-r43-checkv2`, `~/overnight-manoeuvre/r43/check_v2/
   check.log`); the v2 series runs the fights and the orders probe from the v2 tree in sequence after builder2's parts (one worktree).
 
+### R43.34 candidate (round 44): `wip/manoeuvre-scope-g1` 4132802e7 in `../godot-manoeuvre-s5m` (off 04ddbcabb; rebased onto the ship at round 44's start)
+
+- **What it does:** `ElementPlan.grouped(task)` names a squad's share of one order to many squads; such a squad keeps today's seats
+  (no bound), stations and transit start (today's shapes), shape pick (no latch), converge (today's rebuild), and its crews' drive
+  skips kturngoal and parkaside (`Movement._grouped_crew`); a squad on its own order gets all of it. Tests
+  `tests/test_formation_group_scope.gd` (4 + the key) + the four rule tests: 21 / 0 on the laptop at 4132802e7.
+- **The marker, and why it changed:** the first cut read `halt_at` (the pack's packed-halt key). Proof take 2 (f44728527, builder2
+  light, G1 v9 probe locks / crossing / terminus x 5 squads x click x 7001-7004, base `--shape-latch=off` v scoped = the four
+  switches ON): **58 of 60 rows differ** (every map; `~/overnight-manoeuvre/r43/scope/rows2.jsonl`), the probe itself deterministic
+  (base v base, scoped v scoped across takes: 60 / 60 identical). Cause: the controls drop `halt_at` / `halt_shape` / `lay` whenever
+  they re-lay a leg (the corridor's re-laid first leg `_route_first_today`, a cut leg, a cleared leg), so most group-click squads lose
+  the marker in their first second. 4132802e7: the pack stamps `given["group"] = squads.size()` on every squad of an order to two or
+  more (one line in `game/control/rts_controls.gd` and one key in `ElementTask.KEYS`, control's files: a contract line for round 44),
+  the re-lays keep it, `grouped()` reads either key.
+- **Proof take 3:** queued behind the ship check on builder2 (unit `manoeuvre-r43-proof3`, `~/overnight-manoeuvre/r43/scope/
+  proof3.sh`, result `proof3.txt`): the tests, then the same probe; the candidate stands only at 60 / 60 identical.
+
 ### Bar S v2: FILED 2026-10-28 ~03:35 PDT, BEFORE any number on 10701-10748 (R43.31: the one re-file, ONE arm; the dev read below)
 
 - **The arm judged:** `v2` = `--seat-bound=on --converge-on-crew=on --traffic-on=kturngoal --traffic-on=parkaside` (+ the latch ON) on the
