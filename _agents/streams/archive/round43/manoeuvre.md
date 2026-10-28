@@ -1,3 +1,5 @@
+> **ARCHIVED (round 43 closed 2026-10-28).** Final state of this brief; round 43's results are in `workstreams.md` *Bars (round 43)* and *Rulings (round 43)*.
+
 # Stream: manoeuvre (his first squad settles where he clicks: no 20 s jam in the start zone, no seat 29 m off, no crew lost on the way)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/workstreams.md` **Round 43** (C43.1, C43.4, C43.5, CP43.0), your

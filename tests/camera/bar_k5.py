@@ -6,7 +6,7 @@
                                                       empty-terminus, ambush, retreat, attack)
 Each line: ARM, BASE, se where it has one, n, PASS/FAIL; the last line the bar's verdict. `--v2` = Bar K5 v2 (R43.27):
 D1's per-arena clause is ARM >= BASE - 2 se of the difference (per-run shares), not ARM > BASE. The lines are the ones FILED in
-_agents/streams/camera.md *Bar K5* (before any 10501-10536 number); do not edit them after a number is seen.
+_agents/streams/archive/round43/camera.md *Bar K5* (before any 10501-10536 number); do not edit them after a number is seen.
 """
 import glob
 import os

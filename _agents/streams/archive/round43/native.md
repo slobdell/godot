@@ -1,3 +1,5 @@
+> **ARCHIVED (round 43 closed 2026-10-28).** Final state of this brief; round 43's results are in `workstreams.md` *Bars (round 43)* and *Rulings (round 43)*.
+
 # Stream: native (the quiet reads; his match replayed faithfully (CP43.0); twins for what ships; the judged lines)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/workstreams.md` **Round 43** (C43.1, C43.2, C43.4, CP43.0), your

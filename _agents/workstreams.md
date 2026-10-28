@@ -16,10 +16,10 @@ deliverable in engage and native is the cause shown on his seed, not a rule.
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **engage** | `godot-engage` (5) | **Fable** | [streams/engage.md](streams/engage.md) | a crew under attack-move keeps going for the far quay; no 20 s drive back to his own edge | A1 the turnaround traced on his seed |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | his first order on Locks: all five crews at his click within seconds, nobody parked 20 s in the start zone, the lead War Rig not 29 m off | S1 the arrival census of his first order |
-| **camera** | `godot-camera` (3) | Opus | [streams/camera.md](streams/camera.md) | rounding a building's corner, the view swings to the side the wall was hiding | K5.1 the camera in the recording |
-| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: the replay of his match reproduces it (CP43.0), quiet reads, lines_r43 | N1 the quiet reads (builder0 idle at launch) |
+| **engage** | `godot-engage` (5) | **Fable** | [streams/archive/round43/engage.md](streams/archive/round43/engage.md) | a crew under attack-move keeps going for the far quay; no 20 s drive back to his own edge | A1 the turnaround traced on his seed |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/archive/round43/manoeuvre.md](streams/archive/round43/manoeuvre.md) | his first order on Locks: all five crews at his click within seconds, nobody parked 20 s in the start zone, the lead War Rig not 29 m off | S1 the arrival census of his first order |
+| **camera** | `godot-camera` (3) | Opus | [streams/archive/round43/camera.md](streams/archive/round43/camera.md) | rounding a building's corner, the view swings to the side the wall was hiding | K5.1 the camera in the recording |
+| **native** | `godot-native` (4) | Opus | [streams/archive/round43/native.md](streams/archive/round43/native.md) | nothing alone: the replay of his match reproduces it (CP43.0), quiet reads, lines_r43 | N1 the quiet reads (builder0 idle at launch) |
 
 **Not this round: balance.** Its open items wait on others (R42.23: Bar B2s v2's bridge drill crew rust s2 t15 is manoeuvre's S5;
 the Gangs turtle length is re-read only after that), and his decision 2 (the Syndicate's / Law's counter) is recommended "leave it".
@@ -925,10 +925,10 @@ autocannon does 5 % on a tank's front, 50 % on its side, 100 % on its rear).
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | a crew waits for a turning friend instead of driving round it; the bridge crossing is clean | Q1 the jam census |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/archive/round43/manoeuvre.md](streams/archive/round43/manoeuvre.md) | a crew waits for a turning friend instead of driving round it; the bridge crossing is clean | Q1 the jam census |
 | **balance** | `godot-balance` (1) | **Fable** | [streams/archive/round41/balance.md](streams/archive/round41/balance.md) | an all-tank army stops being the easy win; no faction a free win | B5 his levers (turret, hull) |
-| **camera** | `godot-camera` (3) | Opus | [streams/camera.md](streams/camera.md) | the camera glides; what he is about to click stays still | K1 find every jerk |
-| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: C++ twins for manoeuvre's rules; tools | N1 remote.sh's literal-~ path |
+| **camera** | `godot-camera` (3) | Opus | [streams/archive/round43/camera.md](streams/archive/round43/camera.md) | the camera glides; what he is about to click stays still | K1 find every jerk |
+| **native** | `godot-native` (4) | Opus | [streams/archive/round43/native.md](streams/archive/round43/native.md) | nothing alone: C++ twins for manoeuvre's rules; tools | N1 remote.sh's literal-~ path |
 | **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | his many-squad order sets off in one direction, nobody nose-to-nose | O1 the group-order start census |
 
 No settle or feedback stream: settle's least-total cap deal and orders' G1 v7 are parked (round-40 archive Status); the order-preview line
@@ -1170,9 +1170,9 @@ matchups (any blob v a gangs CPU 72 %, v a syndicate CPU 12 %).
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
 | **balance** | `godot-balance` (1) | **Fable** | [streams/archive/round40/balance.md](streams/archive/round40/balance.md) | a gangs army isn't a free win, a syndicate army isn't a wall | B1 the per-unit tally |
-| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a crew steps aside for a friend without wedging the squads behind | M1 v2 on the 5 G5 runs |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/archive/round43/manoeuvre.md](streams/archive/round43/manoeuvre.md) | a crew steps aside for a friend without wedging the squads behind | M1 v2 on the 5 G5 runs |
 | **settle** | `godot-settle` (3) | **Fable** | [streams/settle.md](streams/settle.md) | a squad that stops doesn't sit 10 s and reshuffle; never parks on a friend's road | T1 the deploy trigger |
-| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: per-unit counts for balance; the balance runner | N1 per-unit GUARD_RESULT (CP40.0) |
+| **native** | `godot-native` (4) | Opus | [streams/archive/round43/native.md](streams/archive/round43/native.md) | nothing alone: per-unit counts for balance; the balance runner | N1 per-unit GUARD_RESULT (CP40.0) |
 | **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | his group click puts every squad in, the far one first | O1 trace locks 5 |
 
 **Machines (C40.1 = C39.1):** builder0 = settle's, manoeuvre's and orders' light lanes (J<=4); builder2 (`make gcp-start`; Spot: read the

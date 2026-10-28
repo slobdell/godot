@@ -342,7 +342,7 @@ static func _plan_via(plan: Dictionary, situation: Dictionary, table: DoctrineTa
 
 # ---- Round 43 (manoeuvre S2b, R43.6): THE SHAPE LATCH ---------------------------------------------------------------
 #
-# His first order on Locks 56416 (2026-10-27; _agents/streams/manoeuvre.md S1): the Guns' travel shape flipped swarm / vee /
+# His first order on Locks 56416 (2026-10-27; _agents/streams/archive/round43/manoeuvre.md S1): the Guns' travel shape flipped swarm / vee /
 # swarm / vee / swarm at 8.4, 9.3, 11.7 and 14.6 s as the threat reading changed ("likely" picks the Gangs' vee, everything
 # else their swarm), and every flip re-seated War Rig 3 50-95 m away (east, west, east, west); it never left a 5 m circle in
 # 16 s. The ruling: a move order keeps the shape it started with until it arrives or he re-orders; the element's OWN contact

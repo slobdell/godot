@@ -108,7 +108,7 @@ static func hull_floor(members: Array, rule := "") -> Vector2:
 
 # ---- Round 43 (manoeuvre S2, C43.5): the seat bound ---------------------------------------------------------------
 #
-# His first order on Locks (2026-10-27, _agents/streams/manoeuvre.md S1): the Gangs doctrine lays a travelling squad as a SWARM,
+# His first order on Locks (2026-10-27, _agents/streams/archive/round43/manoeuvre.md S1): the Gangs doctrine lays a travelling squad as a SWARM,
 # SWARM_SPREAD 1.9 x the pitch across the heading, and the War Rig's hull floors the pitch at 14.7 m, so five crews were seated
 # over 112 m: War Rig 3 72 m east of his click, the Tanker 63 m east, through the next squad's deploy row, and ElementPlan's
 # inset_anchor slid the squad's centre 15 m off the click to fit that reach into the arena. His words: "my first squad of tanks

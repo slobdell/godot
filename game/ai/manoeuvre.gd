@@ -398,7 +398,7 @@ static var _arrive_hold_until := {}
 
 # ---- Round 43 (manoeuvre S3, `--traffic-on=kturngoal`): the goal a k-turn was planned for -----------------------------------
 #
-# His first order on Locks 56416 and Bar S's dev cells (terminus / crossing 7001, `_agents/streams/manoeuvre.md` S3): at a move's
+# His first order on Locks 56416 and Bar S's dev cells (terminus / crossing 7001, `_agents/streams/archive/round43/manoeuvre.md` S3): at a move's
 # first tick a War Rig's goal is the transit's converging STATION, which can sit a hull's length away at 110 degrees off its
 # nose (inside its 12 m turning circle), so the mover plans a circle k-turn (back 7.5 m, then the away arc) and commits to it;
 # half a second later the station has moved 45 m toward the click, where a forward arc reaches it, but the leg backs its 7.5 m

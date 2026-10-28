@@ -64,7 +64,7 @@ engage-parse: import ## engage: --check-only on the stream's scripts (ENGAGE_PAR
 		if [ -n "$$out" ]; then echo "== $$f"; echo "$$out" | head -8; else echo "ok $$f"; fi; done
 
 # ---- engage (round 43): his War Rig's turnaround under attack-move (A1) ---------------------------------------------
-# Owner: the engage stream (_agents/streams/engage.md). His recording: _agents/streams/references/round42/playtest/ (gzipped);
+# Owner: the engage stream (_agents/streams/archive/round43/engage.md). His recording: _agents/streams/references/round42/playtest/ (gzipped);
 # `engage-his` unpacks it to build/engage/his.jsonl (the probes read plain jsonl).
 ENGAGE_HIS_GZ ?= _agents/streams/references/round42/playtest/2026-10-27T20-00-48-locks.jsonl.gz
 ENGAGE_HIS ?= $(BUILD_DIR)/engage/his.jsonl
