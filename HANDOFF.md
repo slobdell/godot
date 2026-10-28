@@ -86,7 +86,10 @@ ambush_rear_7007.mp4 feel only), stills under `references/round42/camera/`; his 
 drove 100 m back to the north-east edge for 20 s, firing at nothing (recording `references/round42/playtest/`, read with
 `tools/recording_arrivals.py`; the replay probe `tests/replay_orders.gd` re-runs his orders headless but diverges from his match inside
 2 s, so the turnaround is not yet reproduced: regression neither shown nor ruled out). Also from that playtest: the start-zone jam
-(a War Rig 20 s yielding to his Hunters; in the round-41 recording too) and the wedge seating a War Rig 29 m from his click. Other
+(a War Rig 20 s yielding to his Hunters; in the round-41 recording too) and the wedge seating a War Rig 29 m from his click. **Camera (his request, same playtest, `game_design.md` *His camera request*): when a squad rounds a building's corner the camera
+should swing toward the side the wall is uncovering before the enemies there are seen ("recognized the blind spot and rotated clockwise
+such that it ended up pointing east"); first record the camera's yaw and target in match recordings (today's hold none), then a corner
+workload beside K4's. Other
 candidates from this round's evidence: the SUPPRESS stand on a staged draw (E2's proposal in engage's
 archived Status); the deck-mouth wait that fires only on the carried-past case (R42.15); Bar B2s v2's two open items; the Syndicate's
 counter (its lineup beats the roll by 15, short of the 60 % line); the two control-timing OVER BUDGET lines noted by camera (a right

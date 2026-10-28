@@ -4529,3 +4529,19 @@ ask that match (18 asks, all k-turns: START_BLOCKED 8, GOAL_BLOCKED 1, NO_PATH 1
 did not reproduce the turnaround, with attack-shot on or off: **not shown to be a regression, not ruled out.** Round 43: find what sends
 that crew north under attack-move on Locks (engage or manoeuvre; instrument the crew's brain and mover on that seed), and why an
 interactive match and a headless replay of the same orders diverge at once.
+
+### His camera request from the same playtest (2026-10-27 ~20:10, verbatim)
+
+**"the camera work is definitely good, but I have a request - there are cases where a squad rounds a building's corner (if you want to
+look at the recording, example case is toward the end of the game for the last kill); in other words my vehicles were driving north, and
+a building was to the east of it, when they got past the building there were enemies hiding to the east. The camera was still just
+angled toward the building, and ideally the camera would have recognized the blind spot and rotated clockwise such that it ended up
+pointing east as well"**
+
+**Orchestrator's note:** the danger camera (round 42, K4 v2) turns to KNOWN contacts; his case is the corner BEFORE contact: a squad
+moving along a building's wall is about to open a blind side, and the camera should swing toward the side the wall is uncovering as the
+crews clear the corner (the cover map knows the wall and the side). The recording (`references/round42/playtest/`) ends at 49 s with
+his last loss (War Rig 3 at (-56, 62), tick 1371) and holds no enemy deaths and NO CAMERA YAW, so the exact moment cannot be scrubbed:
+round 43's camera item starts by recording the camera's yaw and target in the match recording, then builds the corner rule
+(a "clearing a corner" workload on Locks beside K4's ambush / retreat / attack ones). "North" and "east" are his screen's, not the
+arena's.
