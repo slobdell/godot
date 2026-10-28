@@ -203,6 +203,9 @@ never touch processes you didn't start. Never delete builder files that aren't o
   at risk), never-arrived 249 -> 163. Bar S's last guards for the record: fights PASS (moving-stuck -58 %); G1 v9 metres outside 168 -> 180
   FAIL and the Locks twitch FAIL (grouped squads pick up the bound and latch). R43.34: scope the round-43 rules to single-squad orders
   (C43.5) and re-file before any number, else v2 runs as filed.
+  **READ (R43.42): FAILS as filed on one line.** builder2, 04ddbcabb, 72 paired cells on 10701-10724, 0 SCRIPT ERROR. D1 199 -> 362 of 720
+  (+13.8 se) PASS; D2 -3.62 s a run (-2.4 se) PASS; crossing +0.1 se, terminus -8.1 se PASS; k-turn lines PASS; **Locks yield+blocked
+  +4.12 s a run (se 1.72, +2.4 se) v line +2 se FAIL**. Reported: never-arrived 226 -> 142, arrival -0.96 s a crew, seat moves -33 a run.
 
 ## Rulings (round 43)
 
@@ -443,6 +446,12 @@ never touch processes you didn't start. Never delete builder files that aren't o
   log `~/orch-r43/main-check-aa9753028.log`) = A7 ON + camera's close + native's N5 + every earlier round-43 merge. Reported-only timing
   lines (make control-timing judges): ordering 30 units 258 reference workloads v budget 104 (the 6-squad case past MAX_SQUADS, R43.15),
   control per frame with 60 units 27.60 v 26.0 (OVER by 6 %, reported only; round-42 camera noted 28.25 on a loaded box: a watch item).
+- **R43.42 (~12:20) Bar S v2 FAILS (Locks yield+blocked +2.4 se v +2); nothing from Bar S ships; the shape latch flips OFF by default**
+  (it was ON by default on manoeuvre's branch per R43.6's switch but never judged alone: nothing unjudged ships ON). Manoeuvre's close:
+  every round-43 rule OFF by default with tests pinning OFF = today's main, both pairs merged with their code, main merged, one full
+  check. Round-44 read: what is left on Locks is the first squad's own five crews converging from one deploy row onto seats within 37 m
+  (seats dealt in arrival order along the approach, or a squadmate's give-way deferred until the seat ahead is taken); the G1
+  group-click scoping candidate `wip/manoeuvre-scope-g1` 5b23227e0.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
