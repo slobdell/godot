@@ -318,6 +318,12 @@ never touch processes you didn't start. Never delete builder files that aren't o
   3362 passed / 0 failed, 28 targets ALL JUDGED, sim-baseline unmoved): A1's tools, CREW_TRACE (trace-only, default off), holdfar / holdway
   / holdroute OFF with tests (traffic.gd, tank_brain.gd under R43.5/R43.8). merge_check_needed CHECK; verified by the next batch main check
   (the current one, on builder2, covers 5cb6b9802).
+- **R43.25 (~05:00) MAIN 5cb6b9802 GREEN on builder2** (`>> remote: make check exited 0`, 3365 passed / 0 failed, scenarios 54/0; 24
+  targets passed + 4 NOT JUDGED for the machine: perf-judge (builder2 is not a judging machine), scenario_perf (loaded 4.82x),
+  remote-guard-test (no quiet window, load 51.6), web-smoke (first sound 41.3 s at load 43.5); log `~/orch-r43/main-check-5cb6b9802.log`).
+  Nothing switched ON in the batch (camera's corner OFF, native's memo output-identical), and native's own builder0 checks judged perf
+  1.00x, so the batch stands. The web-smoke and perf-judge NOT JUDGED rows are re-read in the next quiet builder0 window with the next
+  batch (main 37fa46c6c = + engage's tools/OFF rules).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
