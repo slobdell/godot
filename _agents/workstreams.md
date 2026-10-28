@@ -344,6 +344,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
   hold the look until his next order, a > 45 deg heading turn or a contact. D1's per-arena clause becomes ARM >= BASE - 2 se (Terminus
   sits at an 85 % ceiling), pooled +10 points unchanged; every other line as filed; ruled before any v2 number. For him: on Locks a
   squad hidden round a corner reached the screen in 0.5 s v 4.0 s (n 36).
+- **R43.28 (~06:10) Native's remote.sh builder-side log merged: main 36eacb71f = native 1b6535335** (builder0 `>> remote: make check
+  exited 0`, 3354 passed / 0 failed, 28 targets ALL JUDGED, perf-judge PASS 1.00x; its own run's log on builder0
+  `~/tank_squad/remote-logs/` ends `>> builder: make check exited 0`). Lesson 336's tool fix is in. merge_check_needed CHECK (engage's
+  21dbaf662 too): engage's combined A7 check, on a tree that merges main 36eacb71f, verifies the batch. Native: every backlog item done;
+  N5 `make playtest-report` (arrivals, cam scrub, replay divergence) for his next playtest.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
