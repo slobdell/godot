@@ -95,8 +95,8 @@ Traffic's street hold at tick 478 dealt his lead War Rig a spot behind a corrido
 nose, not its orders, made; `--traffic-off=hold` -> the crew arrives on the far quay at tick 810). **A2 DONE** (no queue). **A3 built
 OFF** (`holdfar`, R43.8): **Bar A FAILED** its deciding line (z -1.73, guards all pass; R43.18: stays OFF with its read). **A6 built
 OFF** (`holdway` the ordered-way read, `holdroute` the route-bound release, R43.13/R43.18/R43.20): **Bar A6 FAILED** guard 2b
-(the first cut released real head-on crews: it judged the crew's current leg); **Bar A6 v2 FILED at 13fbe1a5d**, two arms against
-one base on 10601-10624, the series on builder2 now (the LAST re-file of this item this round). A4 = these bars; A5 = his replay
+(the first cut released real head-on crews: it judged the crew's current leg); **Bar A6 v2 READ: FAILED its deciding line in
+both arms** (W z -1.23, WR z -0.90; every guard passes); R43.20: both stay OFF with their reads, the item stops for the round. A4 = these bars; A5 = his replay
 by removal (dev, in each bar). Tools on the branch: the rebuild probe, the path probe, CREW_TRACE, `engage-replay-trace`,
 `engage-bar-a` / `engage-bar-a6`. Last green hashes: tests only on the laptop (no full check yet: nothing has passed a bar);
 main 84f914f78 merged at a51c8d5af; the full check comes with a shipping arm's merge candidate.**
@@ -234,6 +234,29 @@ that passes every line; both -> the better line 1; neither -> both stay OFF with
 **Tests** (laptop, 13fbe1a5d): `test_engage_hold_way.gd` 9/0 (adds: a crew whose route to the destination runs by another street is
 released; a crew whose leg lies beside the street but whose route crosses it is HELD, Bar A6's miss; the way read alone releases
 nobody), `test_engage_far_hold.gd` 6/0, `test_traffic_hold.gd` 18/0.
+
+### Bar A6 v2 READ (builder2, native ON in all 72 logs, 13fbe1a5d, `native engage-bar-a6` 10601-10624, J10, 75 s, n 24 paired = 12 side + 12 head-on, one arm at a time, 2026-10-28 ~01:50-02:20 PDT, box load 4-42 (camera's work beside); tables `scratchpad/bar-a6v2/pair_w.txt`, `pair_wr.txt`)
+
+| line | BASE | ARM-W | mean / se / z | ARM-WR | mean / se / z | reading |
+|---|---|---|---|---|---|---|
+| exercised (side) | 12 verdicts of 12 | | | | | floor 8 met |
+| 1 off_arrive_s (deciding, side 12) | 717.5 (59.8 s a run) | 641.5 (53.5) | -6.33 / 5.16 / **-1.23** | 664.0 (55.3) | -4.46 / 4.96 / **-0.90** | the right way, short of 2 se: **FAIL, both arms** |
+| 2a verdicts (head-on 12) | 13 | 13 | 0 / 0 | 13 | 0 / 0 | PASS both |
+| 2b held_on_s (head-on 12) | 652 | 577 | -6.25 / 7.70 / -0.81 | 406 | -20.5 / 11.85 / -1.73 | within 2 se: PASS both (v2's route test fixed Bar A6's miss: z -3.07 -> -1.73) |
+| 3 contacts_mouth (24) | 861 | 624 | -9.88 / 7.08 | 617 | -10.17 / 7.13 | PASS both (fewer) |
+| 4 contacts_far (24) | 59 | 44 | -0.62 / 1.70 | 46 | -0.54 / 1.69 | PASS both |
+| 5 jam_s (24) | 591 | 385 | -8.58 / 5.97 | 405 | -7.75 / 6.48 | PASS both |
+| 6 last_a_s (24) | 1702 | 1628 | -3.08 / 2.99 | 1628 | -3.08 / 2.99 | PASS both |
+| 10 route cost (WR) | | | | 0.59 ms a verdict a run (3.3 find_path queries); head-on 0.98 ms, side 0.20 ms | | reported |
+| reported | side verdicts 12 -> 4 (both arms: the way read), side held 705 -> 96 (W) / 54 (WR), side jam 352 -> 45 / 41 (z -5.2), head-on way_released 13 crews (WR), far_arrive_s -3.3 / -2.4 (se 3.2), away_s 71 -> 36 / 28 | | | | | |
+
+**Verdict: Bar A6 v2 FAILS its deciding line in both arms** (W z -1.23, WR z -0.90; every guard passes in both; the mechanism
+guard that failed Bar A6 passes for WR at z -1.73). The effect on the side stage is real but smaller and noisier than Bar A6's
+read on 10373-10396 (-11.6 s, se 4.1 there; -6.3 / -4.5 s, se 5 here: the seeds' hull sets and jitter), and at n 24 neither arm
+clears 2 se. **R43.20: both stay OFF with their reads; the item stops for the round. Not amended; lines 7-9 not run.**
+For the record (not a ship): on the side stage the way read alone removes two thirds of the mis-aimed verdicts (12 -> 4), 86 %
+of the waiting squad's holding seconds and 87 % of its jam-seconds at the mouth, at no cost on any guard; the route release adds
+little on top and costs 0.6 ms a verdict.
 
 ### Bar A6 READ (builder2, native ON in all 48 logs, 98739047a, `native engage-bar-a ENGAGE_HOLD_SWITCH=holdway` 10373-10396, J10, 75 s, n 24 paired = 12 side + 12 head-on, 2026-10-28 ~00:45-01:05 PDT, the box at load 23-37 with camera's work; table `scratchpad/bar-a6/pair_table.txt`)
 
