@@ -68,8 +68,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   exactly), N2a (the G1 v9 hitch bisected), N2b (R43.11 untangle memo), N3 three twins (A7 landed via engage; kturngoal b2dea555a and
   parkaside 5b5a2c365 ride manoeuvre's close as OFF code), N4 lines_r43 (49 lines, every round-43 bar), N5 `make playtest-report`,
   stretch `make replay-match`, remote.sh's builder-side log, close step 5b (round 43's inventory + table, judging.md section).
-- **Merges:** 24744f2df = main c707aff67; 3bc207d16 = main b72f4f13c. **To merge at the close: the tip** (lines_r43 + step 5b + this
-  Status: tools/judge, _agents docs and references only, no game code; named in the message to the orchestrator).
+- **N6 (GRANT tests/run_tests.gd):** the runner FAILS a test file that defines a hook TestCase never calls (before_each,
+  after_each, before_all, after_all, setup, set_up, tear_down, ...: run_tests.gd UNCALLED_HOOKS), naming it with "TestCase calls
+  only teardown()". 6cd8e65e4; test_runner_hooks 2/0 with tests/support/uncalled_hooks_fixture.gd; a demo copy under a test_
+  name FAILS as `<file>` (laptop). Cause: manoeuvre's latch tests armed in before_each, so they passed for the wrong reason.
+- **Merges:** 24744f2df = main c707aff67; 3bc207d16 = main b72f4f13c. **GREEN, to merge at the close: 6cd8e65e4** (main b72f4f13c
+  merged in, lines_r43's 49 lines, step 5b, N6): builder0 `>> remote: make check exited 0`, 3393 passed / 0 failed, 28 targets ALL
+  JUDGED, perf-judge PASS 1.00x (7398 us/tick). The tip above it is this Status only (docs).
 - **Findings:** the kturngoal pair's native-proof had compared GDScript with GDScript (gate lifted in b2dea555a, re-proved C++ v
   GDScript); the replay's re-run lost --headless/--fixed-fps/--path (6fa677a85); the lock test's atomic-claim race read a late start as
   two winners (37a9253c1; the lock itself is atomic); S v2 failed on the round's closest line (-0.40 se, judging.md round 43).
