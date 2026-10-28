@@ -155,6 +155,13 @@ never touch processes you didn't start. Never delete builder files that aren't o
   Census (dev 7001-7012, laptop, n 12, never a bar): 27.1 crew-s a run engaged across water, gun on it 23.0 s, 372 damage across water;
   19.2 s of hops (5.2 reverse), off-order +22.6 m (max 74.5).
 
+- **FILED Bar S5, the bridge's carried-past wait (manoeuvre; FILED in Status before any 10449+ number; side branch `wip/manoeuvre-s5`
+  = fed356a8b + balance's v2 overrides + 5a5e7b434).** deckwait v5: a wait begins only on the carried-past case (a follower at >= 0.6 x top
+  speed behind a leader in the deck's mouth slower than 4 m/s away from it). Bar Q6's lines unamended on fresh 10449-10460 x ticks x both
+  sides, main and overrides trees; group guards 10461-10472; fights 10461-10466; chained behind Bar S's series. Dev (drill's own seeds,
+  overrides, builder2 light, GDScript, n 18, never a bar): OFF 17/18 (rust s2 t15 rim 5.1 s) -> ON 18/18, pooled rim 14.2 -> 7.8 s,
+  arrival -0.14 s a run (se 1.5). A pass is balance's bridge gate (R42.15) for round 44's B2s re-read.
+
 ## Rulings (round 43)
 
 - **R43.1 (2026-10-27 ~20:55) Every replay of his match made before native's fix is void.** Native (N2, laptop): `tests/replay_orders.gd`
