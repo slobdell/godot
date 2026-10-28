@@ -147,6 +147,13 @@ never touch processes you didn't start. Never delete builder files that aren't o
   29's): the far-crew case was always there. GRANT engage `traffic.gd` `_begin_wait` / `_spot_behind` / `hold_of` + one switch name
   (manoeuvre keeps out); rule: a crew farther than HOLD_BACK_M's 43 m + its hull is released, or `spot = here` if its route runs through
   the street; symmetric, switched, C43.4's twin rule applies. Bar A re-aimed at the street-hold far-crew case on 10301-10324.
+- **R43.9 (~22:40) CP43.0 PASSES on both recordings (native 409f70d66, quick 18/0 builder0; full check queued).** Round 42 (56416, today's
+  code + library): 10/10 crews 0.0 m for 20 s, exact to ~28 s. Round 41 (49326): an UNRECORDED INPUT, the formation pick
+  (`RtsControls.set_formation` emits no command_issued; he put three squads in column in the pause): inferred from task rows for old
+  recordings, recorded as `order` verb "formation" from now on (C43.2 additive); on its own tree 21b20bdce: 5/5 crews 0.0 m for 20 s.
+  `make replay-match RECORDING=<file>`. Open: both matches part at ~28 s (cause not found); the GDScript v native 1-ULP gap (twin).
+  Merge plan: camera d489eaa2b alone on green, native 409f70d66 alone on green (match_recorder.gd resolved on main, both additive),
+  ONE main check on the pair.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
