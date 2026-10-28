@@ -162,7 +162,8 @@ never touch processes you didn't start. Never delete builder files that aren't o
   **READ lines 1-8 (R43.23): PASS.** builder2, 8ac00d19b, 10649-10672, n 24 paired, no timeout, both arms GDScript decide. 1 hop_s 34.8
   -> 0.7 s a run (-34.1, se 2.85, z -12.0); 2 off_order_m 21.5 -> 10.6 m (-10.9, se 4.33, z -2.52); 3 damage +122 (se 108); 4 first hit
   +0.45 s (se 0.68); 5 deaths 64 -> 48 (z -2.9, fewer); 6 kills 49 -> 57; 7 last_a -5.6 s; 8 named attack deaths 60 -> 57 (se 0.31).
-  Lines 9 (E1's probe, 10673-10696), 10-11 (suite ON check) running.
+  Line 9 PASS: Bar E1's probe on 10673-10696 byte-identical ON v OFF (stuck 128.5 = 128.5 crew-s, first hit 7.02 = 7.02 s, deaths 25 = 25:
+  no water between crew and target, the rule never fires). Lines 10-11 (suite ON check, builder0) next.
 
 - **FILED Bar S5, the bridge's carried-past wait (manoeuvre; FILED in Status before any 10449+ number; side branch `wip/manoeuvre-s5`
   = fed356a8b + balance's v2 overrides + 5a5e7b434).** deckwait v5: a wait begins only on the carried-past case (a follower at >= 0.6 x top
