@@ -489,13 +489,16 @@ replay-match: native-fresh import ## Replay a match recording headless (RECORDIN
 
 # Round 43 (native N5): his playtest in one command: (a) the match and recording_arrivals per order, (b) the camera at each hit
 # and death (the `cam` rows; older recordings say they have none), (c) a 30 s replay-match of every crew with its divergence table
-# (through make: the native library and, on an old glibc, the trig shim). HTML=<path> also writes the report as a page.
+# (through make: the native library and, on an old glibc, the trig shim). Round 44 (N1): it PRINTS one screen he can paste (the
+# match, one line per click, the off-screen count, the replay's verdict) and WRITES the full report to
+# build/playtest-report/<recording>.txt and .html (HTML=<path> moves the page).
 #   make playtest-report RECORDING=build/recordings/<his>.jsonl [HTML=build/playtest-report/report.html]
 PLAYTEST_REPORT_DIR := $(BUILD_DIR)/playtest-report
 .PHONY: playtest-report
-playtest-report: ## His playtest in one report: arrivals per order, the camera at each hit/death, a 30 s replay's divergence (RECORDING=file[.gz], HTML=out.html)
+playtest-report: ## His playtest on one screen (the full report to build/playtest-report/<recording>.txt + .html): clicks and arrivals, the camera at each hit/death, a 30 s replay (RECORDING=file[.gz], HTML=out.html)
 	@test -n "$(RECORDING)" || { echo 'usage: make playtest-report RECORDING=build/recordings/X.jsonl[.gz] [HTML=build/playtest-report/report.html]'; exit 2; }
 	@mkdir -p $(PLAYTEST_REPORT_DIR)
 	@$(MAKE) --no-print-directory replay-match RECORDING="$(RECORDING)" REPLAY_SECONDS=30 CREWS=all > $(PLAYTEST_REPORT_DIR)/replay.txt 2>&1 || true
-	@$(PYTHON) tests/replay/playtest_report.py "$(RECORDING)" --replay $(PLAYTEST_REPORT_DIR)/replay.txt $(if $(HTML),--html $(HTML)) \
-		| tee $(PLAYTEST_REPORT_DIR)/report.txt
+	@name=$$(basename "$(RECORDING)" .gz); name=$${name%.jsonl}; \
+	$(PYTHON) tests/replay/playtest_report.py "$(RECORDING)" --replay $(PLAYTEST_REPORT_DIR)/replay.txt \
+		--out $(PLAYTEST_REPORT_DIR)/$$name.txt $(if $(HTML),--html $(HTML))
