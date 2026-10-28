@@ -1,4 +1,4 @@
-# Faction balance (round 40, balance stream; _agents/streams/balance.md). Included by the root Makefile.
+# Faction balance (round 40, balance stream; _agents/streams/archive/round42/balance.md). Included by the root Makefile.
 .PHONY: balance-catalog balance-tally balance-pytest balance-tuned
 
 balance-catalog: import ## The unit and weapon catalogs as JSON -> build/balance/catalog.json (read-only; the tally prices units with it)

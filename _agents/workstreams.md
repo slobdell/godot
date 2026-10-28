@@ -1,10 +1,10 @@
 # Workstreams: the current round
 
-> **ROUND 42 CLOSING 2026-10-27 ~03:30 (main b12b17ac7 GREEN builder0, 28 targets ALL JUDGED, 3343/0 = every round-42 merge; later
+> **ROUND 42 CLOSED 2026-10-27 ~20:00 (main b12b17ac7 GREEN builder0, 28 targets ALL JUDGED, 3343/0 = every round-42 merge; later
 > commits docs only). Shipped ON: `--attack-shot` (engage, Bar E1), `--camera-danger` (camera, Bar K4 v2), the CPU counter-lineup for
 > Condemned and Gangs (balance, Bar B7). OFF with causes: Q5, Q6 (manoeuvre), E2 (engage, inconclusive). Engage, manoeuvre, native,
-> camera CLOSED (briefs in `streams/archive/round42/`, branches `round42/<s>`); Bar B2s v2 read 19:30 FAIL 17/18 (R42.23,
-> unshipped either way); balance CLOSED.**
+> camera, balance CLOSED (briefs in `streams/archive/round42/`, branches `round42/<s>`); Bar B2s v2 read 19:30 FAIL 17/18 (R42.23,
+> unshipped either way); judging table re-rendered (judging.md *Round 42's lines*).**
 > Round 41's section follows round 42's.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
@@ -22,7 +22,7 @@ and Gangs, Law and Syndicate have none that does.
 | **engage** | `godot-engage` (5) | **Fable** | [streams/archive/round42/engage.md](streams/archive/round42/engage.md) | a crew he tells to attack goes round the container and fires; no NOT FIRING banner | E1 replay his recording |
 | **camera** | `godot-camera` (3) | Opus | [streams/archive/round42/camera.md](streams/archive/round42/camera.md) | an ambush from the side is on screen; a retreat to the edge looks back at the fight | K4.1 the look census |
 | **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/archive/round42/manoeuvre.md](streams/archive/round42/manoeuvre.md) | fewer shoves in his big order; the bridge crossing clean under the stat change | Q5.1 Bar Q5 (after CP42.0) |
-| **balance** | `godot-balance` (1) | Opus | [streams/balance.md](streams/balance.md) | the CPU meets his tank rush with artillery; Law / Syndicate artillery hurts tanks | B7 the CPU counter-lineup |
+| **balance** | `godot-balance` (1) | Opus | [streams/archive/round42/balance.md](streams/archive/round42/balance.md) | the CPU meets his tank rush with artillery; Law / Syndicate artillery hurts tanks | B7 the CPU counter-lineup |
 | **native** | `godot-native` (4) | Opus | [streams/archive/round42/native.md](streams/archive/round42/native.md) | nothing alone: Q5's fields (CP42.0), twins, the judged lines and table | N1 CP42.0 exec_fields |
 
 No orders stream: G1 v9 shipped; his decision 2 (a click beside his army: squads already in that street hold) is a feel question with
@@ -461,7 +461,7 @@ autocannon does 5 % on a tank's front, 50 % on its side, 100 % on its rear).
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
 | **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | a crew waits for a turning friend instead of driving round it; the bridge crossing is clean | Q1 the jam census |
-| **balance** | `godot-balance` (1) | **Fable** | [streams/balance.md](streams/balance.md) | an all-tank army stops being the easy win; no faction a free win | B5 his levers (turret, hull) |
+| **balance** | `godot-balance` (1) | **Fable** | [streams/archive/round41/balance.md](streams/archive/round41/balance.md) | an all-tank army stops being the easy win; no faction a free win | B5 his levers (turret, hull) |
 | **camera** | `godot-camera` (3) | Opus | [streams/camera.md](streams/camera.md) | the camera glides; what he is about to click stays still | K1 find every jerk |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: C++ twins for manoeuvre's rules; tools | N1 remote.sh's literal-~ path |
 | **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | his many-squad order sets off in one direction, nobody nose-to-nose | O1 the group-order start census |
@@ -704,7 +704,7 @@ matchups (any blob v a gangs CPU 72 %, v a syndicate CPU 12 %).
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **balance** | `godot-balance` (1) | **Fable** | [streams/balance.md](streams/balance.md) | a gangs army isn't a free win, a syndicate army isn't a wall | B1 the per-unit tally |
+| **balance** | `godot-balance` (1) | **Fable** | [streams/archive/round40/balance.md](streams/archive/round40/balance.md) | a gangs army isn't a free win, a syndicate army isn't a wall | B1 the per-unit tally |
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a crew steps aside for a friend without wedging the squads behind | M1 v2 on the 5 G5 runs |
 | **settle** | `godot-settle` (3) | **Fable** | [streams/settle.md](streams/settle.md) | a squad that stops doesn't sit 10 s and reshuffle; never parks on a friend's road | T1 the deploy trigger |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: per-unit counts for balance; the balance runner | N1 per-unit GUARD_RESULT (CP40.0) |
