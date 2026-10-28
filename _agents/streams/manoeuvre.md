@@ -81,6 +81,17 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-27 ~20:40 PDT (Fable). Starting commit 2f1620a77 = main at launch (code b12b17ac7 GREEN builder0, 3343/0; no
 baseline check re-run, per the contract). CP43.0 taken at f6b930a3d (main 84f914f78 merged). Orchestrator session: `godot-b8`.**
 
+### Native's twin of kturngoal is GREEN (2026-10-28 ~03:50 PDT): `pair/native-kturngoal` a907a541e off fed356a8b
+
+builder2 light: native-proof EQUAL with kturngoal ON (on / off / ab the same state hash), 12/0; a C++-driven backing leg whose goal
+moved out calls back into `_planned_reverse` (ends it the GDScript way) and the cheap look writes `Manoeuvre.kturn_goal_note`; no
+new exec field; OFF byte-identical. Files are native's (native/src/drive_native.{cpp,h}, tank_native.cpp, native_drive.gd,
+tests/native/drive_twin_case.gd, tests/test_native_drive_kturn_goal.gd). Bar S runs as filed on the frozen tree (kturngoal on the
+GDScript drive by its own switch); the pair merges at ship, and with it kturngoal can ship ON with native_drive ON (C43.4).
+The player-view frames (`make remote T=orders-probe-shots`, locks, 5 squads, base v all, desktop 1280x720 and phone 1560x720, at
+arrival and 5 s later): `~/overnight-manoeuvre/r43/shots/frames/`; the group click's column stands alike in both arms (the halts
+are laid as today), no pile-up.
+
 ### Bar S5: FILED 2026-10-28 ~03:40 PDT, BEFORE any number on 10449-10472 (Bar Q6's lines, R42.7, unamended; the dev read of the drill's own seeds below)
 
 - **The rule judged:** `--traffic-on=deckwait` **v5** as at 5a5e7b434 (on `wip/manoeuvre-s5` = fed356a8b + balance's v2 overrides
