@@ -159,6 +159,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   damage_water 5796 -> 1215 at equal kills): now damage to the defenders from ANY bank >= BASE - 1.645 se and the squad's first hit from
   any bank <= BASE + 1.645 se; the across-water versions reported. Dev (laptop, n 12, never a bar): hop_s 459 -> 10, off_order_m 352 -> 60,
   deaths 28 -> 20, kills 26 = 26.
+  **READ lines 1-8 (R43.23): PASS.** builder2, 8ac00d19b, 10649-10672, n 24 paired, no timeout, both arms GDScript decide. 1 hop_s 34.8
+  -> 0.7 s a run (-34.1, se 2.85, z -12.0); 2 off_order_m 21.5 -> 10.6 m (-10.9, se 4.33, z -2.52); 3 damage +122 (se 108); 4 first hit
+  +0.45 s (se 0.68); 5 deaths 64 -> 48 (z -2.9, fewer); 6 kills 49 -> 57; 7 last_a -5.6 s; 8 named attack deaths 60 -> 57 (se 0.31).
+  Lines 9 (E1's probe, 10673-10696), 10-11 (suite ON check) running.
 
 - **FILED Bar S5, the bridge's carried-past wait (manoeuvre; FILED in Status before any 10449+ number; side branch `wip/manoeuvre-s5`
   = fed356a8b + balance's v2 overrides + 5a5e7b434).** deckwait v5: a wait begins only on the carried-past case (a follower at >= 0.6 x top
@@ -305,6 +309,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   on builder2 (builder0 held two checks), log `~/orch-r43/main-check-5cb6b9802.log` on the laptop. Not in it: native 1b6535335 (remote.sh
   keeps verdicts on the builder; its own check next). Twins: kturngoal pair `pair/native-kturngoal` a907a541e ready (laptop 1440 drives,
   0 mismatches; builder2 native-proof running); A7's decide twin after Bar A7 reads.
+- **R43.23 (~04:15) Bar A7 passes lines 1-8; the flip ships WITH native's twin of the in_reach skip** (not with native_decide forced
+  off: a GDScript decide for every crew is a cost in every fight). Native builds the pair off engage's rule commit de626d7e1 now; the
+  merge candidate = engage's flip (ENGAGE_WATER default ON, `--engage-water=off`) + the twin, ONE full check on the combined tree (native
+  path; perf-judge inside it, R41.15's precedent), after lines 9-11 pass.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
