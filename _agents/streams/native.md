@@ -70,7 +70,14 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   tools/test_playtest_report.sh 12/0. **Full check, first run: exited 2, not ours:** builder0's kernel OOM killer took all six test
   shards (pids 3056076-81, 140-385 MB RSS each, builder clock 01:46:46-01:48:24, then other Godots to 01:51) while the box was shared,
   and full-check-lock's atomic-claim race read 19/20 under that load. Every other target passed (perf-judge PASS 1.00x,
-  playtest_report 12/0, lint 1259 parse, scenarios 54/0). Re-run queued; its hash and line go here when it reads.
+  playtest_report 12/0, lint 1259 parse, scenarios 54/0). **GREEN, to merge: 24744f2df** (N5 + the lock-test fix 37a9253c1 +
+  Status): builder0 `>> remote: make check exited 0`, 3380 passed / 0 failed, 28 targets ALL JUDGED, sim-baseline unmoved,
+  perf-judge PASS 1.00x (7441 us/tick), full-check-lock 22/0.
+- **N3 third twin, parkaside (manoeuvre Bar S v2):** `pair/native-parkaside` f57dbb144 off manoeuvre's 04ddbcabb. The C++ drive
+  called `_manoeuvre` back only on decision ticks, so a twin was needed: _park_aside's memo and cheap exits natively, the decision
+  called back only when a still friend's disc holds the goal (exact: a superset of what _park_aside can find); ON keeps the C++
+  drive (traffic.gd's gate lifted for it). test_native_drive_parkaside: builder2, 2790 drives, 11 seats moved, 0 mismatches; the
+  six other drive twins 7/0. Proof and the ON/OFF cost read: in progress.
 - **Merged:** 95331c3cd = main 84f914f78 (R43.1); 2fd2e5d4e rode camera's d489eaa2b (main b31d3ddea); **CP43.0 409f70d66 GREEN**
   (builder0 `>> remote: make check exited 0`, 3352 passed / 0 failed, 28 targets ALL JUDGED, sim-baseline 53/0 unmoved, perf-judge
   PASS 1.00x) = main c57fc616b.
