@@ -186,6 +186,15 @@ arrival order along the approach; a squadmate's give-way deferred until the seat
   unchanged (bo11: look at tick 1, past the box ~91). Locks dev (dev11): backout alone D1 +1.0 se, yield+blocked -0.1 se, k-turn
   +1.6 se, the other crews' reversing +1.0 se, seated +1.0 se: neutral; the full set D1 +6.2 se, every guard PASS.
 
+- **Bar B1 FILED at eafbd3a80 (11:51 PDT; workstreams.md *Bars (round 44)*; R44.12):** backout alone v base, the C++ drive ON in both
+  arms once native's twin (target c9ea1a6b4) reads EQUAL on builder2; deciding = his start (reversing before t15, past the box before
+  t110) + the staged corpus on 48 jittered poses 11101-11148 (base-stuck poses by R44.12, floor 8 else NOT JUDGED: >= 80 % sooner,
+  median gain >= 1 s; the rest under the cost ceiling +3 s / median +1 s); Bar S v3's lines and the two unneeded-back-up lines as
+  guards on 11101-11142. Driver `~/overnight-manoeuvre/r44/bars_b1.sh` (frozen worktree `../godot-manoeuvre-b1`, created at launch).
+  **Waiting on native's EQUAL; then the freeze, its gate check and the series.**
+- **main 7975d1455 merged (native's N2: his round-43 matches replay exactly, the army seed recovered):** M5 on both recordings re-read on
+  the exact replay (`make replay-match`, base v backout, running on builder0).
+
 ### M5 (acceptance read, in progress) and the twin's parity (2026-10-28 ~11:00 PDT)
 
 - **08-15, his container start, the full v3 set ON (fdb1c6fc4, builder0, native ON, the GDScript drive for backout, `~/overnight-manoeuvre/
