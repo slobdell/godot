@@ -219,9 +219,13 @@ view (parkaside's rim is the seat only; the approach lane is not), or the press 
 on today's tree (918498713, builder0, native ON, `~/overnight-manoeuvre/r44/s5/removal.txt`, each arm one run): **base: every crew
 rim 0.0 s, all four cross, arrival 21.6 s**; the GDScript drive the same; `--no-avoidance` rim 3.3 s (Rust_S_4 2.8: the opposite of
 R40.21's control); `--nav-off=` a1 / carrot / chord / repath / guard / inflate / leash / sidestand / yield / r5sidestep / oriented
-all rim 0 (arrivals 19.3-21.6 s). Nothing to remove: the rim crew is gone from this cell on main. Bar S5's dev read saw it under
-balance's fm_c5r2_lawt5 overrides (8e257f3bc's stats, not on main). The 18-run hard line on main (`make bridge-pooled`) is running
-to see whether any cell still has a rim crew; the overrides tree is the next place to look, then the write-up.
+all rim 0 (arrivals 19.3-21.6 s). Nothing to remove: the rim crew is gone from this cell on main. **The 18-cell hard line on main
+(`make bridge-pooled`: seeds 1-3 x ticks 1 / 8 / 15 x both sides, 918498713, builder0, native ON, `~/overnight-manoeuvre/r44/s5/
+pooled_main.jsonl`): 18 / 18 runs every crew crosses, rim crews 0, the worst single crew 1.9 s at the water (green s3 t8, under the
+3 s line), pooled rim 3.5 s over 18 runs, mean arrival 19.4 s (R40.21's cell: 48.9 s).** Bar S5's dev read saw the crew only under
+balance's fm_c5r2_lawt5 overrides (8e257f3bc's stats, not on main; not chased, the orchestrator's word). **CLOSED: the bridge drill
+crew's own case is gone on main at 918498713; no rule.** Whichever round-42/43 change took it (A7's across-water engage, the hold
+family's reads, or the stat tree) is for the record, not for a fix.
 
 ### R44.16 (2026-10-28 ~12:25 PDT): the G1 probe's 1 % was not the CPU; the leak found and fixed
 
