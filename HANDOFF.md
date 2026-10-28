@@ -4,13 +4,60 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-27 ~21:00 PDT — **ROUND 43 PREPARED (box below; launch = the lead starts four CLIs: engage + manoeuvre on Fable, camera + native on Opus).** Earlier: 2026-10-27 ~20:00 PDT — **ROUND 42 IS CLOSED (box below); round 43 not yet prepared. Main b12b17ac7 GREEN builder0 ALL JUDGED (3343/0); every later commit is docs only (balance's Status, the archive, the judging table). Attack-shot, the danger camera and the CPU counter-lineup shipped ON; Bar B2s v2 read FAIL 17/18, the stat change stays unshipped.** Earlier: 2026-10-27 ~03:30 PDT — ROUND 42 CLOSING; four streams closed. Earlier: 2026-10-26 evening — ROUND 42 PREPARED; round 41 closed. Main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); every later commit is docs only. Earlier: 2026-10-26 ~15:00 PDT — ROUND 41 CLOSED; round 42 not yet prepared. Earlier: **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-28 ~14:30 PDT — **ROUND 43 IS CLOSED (box below); round 44 not yet prepared. Main 4dd362916+ (code = dbf0bf637, final batch check on builder0: see the box). A7 shipped ON (never move for a shot across water); everything else OFF with causes.** Earlier: 2026-10-27 ~21:00 PDT — **ROUND 43 PREPARED (box below; launch = the lead starts four CLIs: engage + manoeuvre on Fable, camera + native on Opus).** Earlier: 2026-10-27 ~20:00 PDT — **ROUND 42 IS CLOSED (box below); round 43 not yet prepared. Main b12b17ac7 GREEN builder0 ALL JUDGED (3343/0); every later commit is docs only (balance's Status, the archive, the judging table). Attack-shot, the danger camera and the CPU counter-lineup shipped ON; Bar B2s v2 read FAIL 17/18, the stat change stays unshipped.** Earlier: 2026-10-27 ~03:30 PDT — ROUND 42 CLOSING; four streams closed. Earlier: 2026-10-26 evening — ROUND 42 PREPARED; round 41 closed. Main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); every later commit is docs only. Earlier: 2026-10-26 ~15:00 PDT — ROUND 41 CLOSED; round 42 not yet prepared. Earlier: **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
 
 
-## 🚀 ROUND 43 PREPARED (2026-10-27 ~21:00 PDT) — read this first
+## 🏁 ROUND 43 IS CLOSED (2026-10-28 ~14:30 PDT) — read this first
+
+**Main: code = dbf0bf637** (every round-43 merge; later commits are docs, the archive, five comment lines and one test `.uid`). Its final
+batch check on builder0 is in `~/orch-r43/main-check-dbf0bf637.log` (laptop) — **FINAL CHECK LINE: see the line under this box** (the
+orchestrator records it when it reads). The last verified whole-tree main before it: aa9753028 GREEN builder0, 28 targets ALL JUDGED,
+3390/0 (R43.41). Rulings R43.1-R43.45 in `workstreams.md`; briefs in `streams/archive/round43/`; branches `round43/{engage,manoeuvre,
+camera,native}` (all ancestors of main); worktrees and builder0/builder2 folders removed (builder0 77 %, builder2 52 %; laptop 91 %).
+
+**His War Rig (his ask): the cause is found, by removal, on his exact match.** Native made the replay faithful (his whole 49 s match
+bit-exact: wrong arena, his formation picks unrecorded, the laptop's atan2f shim; R43.1/R43.9). Engage traced it (R43.8): Traffic's
+round-29 STREET HOLD told his Guns to wait for his Hunters with the squad's "way" read from the crews' momentary noses, and dealt a crew
+80 m from the street mouth a holding spot 90 m the wrong way (`--traffic-off=hold` -> it reaches the far quay in 12 s). **Not a round-42
+regression.** The hold's own fixes (holdfar, holdway, holdroute) all failed their bars (Bar A, A6, A6 v2) and stay OFF. **But A7 SHIPPED ON
+(Bar A7 PASS every line, R43.23/R43.39): a crew never drives around chasing a shot at a target across water** (hops 34.8 -> 0.7 s a run,
+off its order 21.5 -> 10.6 m, deaths 64 -> 48, kills 49 -> 57) **and on his Locks match the War Rig no longer drives away (best 43 m from
+his click; `--engage-water=off` = the old 82 m drive)**, because its crews no longer hop for the Syndicate across the canal, so the mis-aimed
+verdict never forms.
+
+**His first squad settling (his ask):** the cause was the Gangs SWARM laid 112 m wide and flipping shape 4 times (R43.6). The seat bound +
+shape latch + converge + kturngoal + parkaside put twice as many crews at his click by 15 s (Bar S v2 D1 +13.8 se) and cut the start
+jam, but Locks' yield+blocked guard missed by 0.40 se (R43.42, the round's closest call): **nothing shipped; all OFF by default**
+(`--shape-latch=on`, `--seat-bound=on`, `--converge-on-crew=on`, `--traffic-on=kturngoal,parkaside`), twins merged. Round-44 candidate
+`wip/manoeuvre-scope-g1` e883fc4eb (scoped off his group clicks, 60/60 byte-identical). Bar S5 (the bridge wait) FAILED; deckwait OFF.
+
+**His camera request (corner):** Bar K5 FAILED (6 lines, R43.27); v2 stopped unspent on a second dev block (R43.30): the corner swing is
+OFF. On Locks the hidden squad reached the screen in 0.5 s v 4.0 s (n 36), but the swing costs elsewhere. **His recordings now carry the
+camera's yaw** (`cam` rows, K5.1), so his next corner moment can be scrubbed:
+`python3 tests/camera/camera_recording.py "$(cat build/recordings/latest.txt)" --from 40 --to 60`.
+
+**Also shipped:** `make playtest-report RECORDING=<file>` (arrivals, the camera at every hit, a 30 s replay's divergence); `make
+replay-match`; the right-click hitch memo (his 4-squad click 6.5 ms, output-identical; R43.17); remote.sh keeps verdicts on the builder;
+the runner fails uncalled test hooks; the lock test's late-start race fixed. Lessons 334-337 in `orchestration.md`.
+
+**Waiting on him (player terms, one recommendation each):**
+1. **Play main on Locks** (`make skirmish ARENA=locks SEED=56416`, Gangs v Syndicate): attack-move a War Rig squad to the far quay; it should
+   keep going, and crews with a target across the canal should keep firing without hopping along the bank (`SKIRMISH_FLAGS="--engage-water=off"`
+   is the old behaviour). Then run `make playtest-report RECORDING="$(cat build/recordings/latest.txt)"` and send it.
+2. **A corner moment:** if the camera misses one again, tell me roughly when; the recording now has the camera's look, and the rule is
+   rebuilt from his real case. Recommended: yes, that's how round 44 does it.
+3. **Disk on the laptop** (it filled overnight): `~/balance-guard-raw` (6.2 GB, round 42's raw rows) and old `/tmp/claude-1000` folders
+   (~1 GB) are his to delete. Recommended: delete balance-guard-raw (its verdicts are in references/).
+4. Carried: Bar B2s v2's bridge gate is still not reached (Bar S5 failed); the Syndicate's counter.
+
+**Round 44 candidates:** his first order: the Locks convergence of one squad's own five crews (two shapes on file) + the G1 scoping
+candidate; the street hold on a bar decided on side jam_s (A6 v2's z -5.2, R43.21); the bridge drill crew's own cause (R43.38); the
+corner swing rebuilt from his recorded moment; E2's staged draw; the control-per-frame line (27.60 v 26.0, a watch item); gate_width in C++.
+
+## (DONE) ROUND 43 AS PREPARED (2026-10-27 ~21:00 PDT) — read this first
 
 **Goal: his first squad settles where he clicks; a crew under his attack-move drives toward the enemy, not away; the camera swings to
 the side a building's corner is uncovering.** From his playtest after round 42 (`game_design.md` *His playtest after round 42*, *His

@@ -1,12 +1,11 @@
 # Workstreams: the current round
 
-> **ROUND 43 PREPARED 2026-10-27 ~21:00 (four streams; briefs in `streams/`). Main at launch: b12b17ac7 GREEN builder0, 28 targets ALL
-> JUDGED (3343/0); every later commit is docs, tools-of-record (`tools/recording_arrivals.py`, `tests/replay_orders.gd` + .uid: no
-> check target runs them) and one comment line in `mk/engage.mk`. Workers start from it without a baseline check.**
-> Round 42 CLOSED 2026-10-27 ~20:00: shipped ON `--attack-shot`, `--camera-danger`, the CPU counter-lineup (Condemned, Gangs); OFF with
-> causes Q5, Q6, E2; Bar B2s v2 FAIL 17/18 (R42.23). Round 42's section follows round 43's.
+> **ROUND 43 CLOSED 2026-10-28 ~14:30 (main code = dbf0bf637; final batch check: HANDOFF's closed box). Shipped ON: A7, never move for a
+> shot across water (engage, Bar A7). OFF with causes: holdfar / holdway / holdroute (Bar A, A6, A6 v2), the corner swing (Bar K5), the
+> seat bound / latch / converge / kturngoal / parkaside (Bar S, S v2), deckwait v5 (Bar S5). Briefs in `streams/archive/round43/`, branches
+> `round43/<s>`.** Round 42's section follows round 43's.
 
-## Round 43: four streams (prepared 2026-10-27 evening; briefs in `streams/`)
+## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
 **Goal: his first squad settles where he clicks; a crew under his attack-move drives toward the enemy, not away; the camera swings to
 the side a building's corner is uncovering before the enemy there is seen.** His words: `game_design.md` *His playtest after round 42*
