@@ -1,0 +1,44 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+terminus 3 click          main      |   60.8 /   32.5   |    0   0 |      0.1 |              12.4 |            31.7 | 1.10 | 0.0
+terminus 3 click          v10       |   57.6 /   28.8   |    0   0 |      0.1 |              12.4 |            31.7 | 5.08 | 3.2
+terminus 5 click          main      |   88.6 /   34.4   |    0   0 |      2.0 |              15.7 |            31.6 | 2.48 | -6.7
+terminus 5 click          v10       |   88.6 /   34.4   |    0   0 |      2.0 |              15.7 |            31.6 | 2.40 | -6.7
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+terminus 3 click          main      |           3.2 |          27.8 |            0.0 |               9.0 |          68.4
+terminus 3 click          v10       |           3.3 |          27.8 |           14.2 |               4.2 |          65.3
+terminus 5 click          main      |           6.9 |          18.9 |           14.2 |               5.5 |         102.3
+terminus 5 click          v10       |           6.9 |          18.9 |           10.7 |               5.5 |         102.3
+
+MEDIANS over seeds [10825, 10826, 10827, 10828, 10829, 10830, 10831, 10832, 10833, 10834, 10835, 10836] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+terminus 3 click          main        | 12 |          0.1 |     0 |          31.7 |          0.0 |          68.4 |               9.0 |    0   0 | 1.10
+terminus 3 click          v10         | 12 |          0.1 |     0 |          31.7 |         14.2 |          65.3 |               4.2 |    0   0 | 5.08
+terminus 5 click          main        | 12 |          2.0 |     0 |          31.6 |         14.2 |         102.3 |               5.5 |    0   0 | 2.48
+terminus 5 click          v10         | 12 |          2.0 |     0 |          31.6 |         10.7 |         102.3 |               5.5 |    0   0 | 2.40
+
+EQUALITY click cells: 0 identical across arms, 24 differ
+  DIFFER terminus 3 click seed 10825
+  DIFFER terminus 3 click seed 10826
+  DIFFER terminus 3 click seed 10827
+  DIFFER terminus 3 click seed 10828
+  DIFFER terminus 3 click seed 10829
+  DIFFER terminus 3 click seed 10830
+  DIFFER terminus 3 click seed 10831
+  DIFFER terminus 3 click seed 10832
+  DIFFER terminus 3 click seed 10833
+  DIFFER terminus 3 click seed 10834
+  DIFFER terminus 3 click seed 10835
+  DIFFER terminus 3 click seed 10836
+  DIFFER terminus 5 click seed 10825
+  DIFFER terminus 5 click seed 10826
+  DIFFER terminus 5 click seed 10827
+  DIFFER terminus 5 click seed 10828
+  DIFFER terminus 5 click seed 10829
+  DIFFER terminus 5 click seed 10830
+  DIFFER terminus 5 click seed 10831
+  DIFFER terminus 5 click seed 10832
+  DIFFER terminus 5 click seed 10833
+  DIFFER terminus 5 click seed 10834
+  DIFFER terminus 5 click seed 10835
+  DIFFER terminus 5 click seed 10836

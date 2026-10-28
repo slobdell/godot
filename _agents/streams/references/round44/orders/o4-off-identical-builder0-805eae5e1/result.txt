@@ -1,0 +1,5 @@
+PROBE START 15:54 805eae5e1 load:  15:54:25 up 3 days, 17:32,  2 users,  load average: 0.09, 1.62, 5.15
+PROBE DONE 15:56 >> remote: make orders-probe ORDERS_PROBE_SQUADS=5 ORDERS_PROBE_ROUTES=click ORDERS_PROBE_ARMS=main: ORDERS_PROBE_SEEDS=7001 7002 7003 7004 WEB_PORT=8620 NET_PORT=9640 SMOKE_PORT=8621 SMOKE_NET_PORT=9741 AGENT_PORT=9325 exited 0 (light lane, build/light/build/ copied back)
+ROWS 60 at build/light/build/orders-probe/rows.jsonl
+IDENTICAL 60 / 60 rows (new 60, record 60)
+IDENTICAL_DONE
