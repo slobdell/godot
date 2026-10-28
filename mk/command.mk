@@ -687,7 +687,7 @@ ORDERS_PROBE_SHOT_ROUTES ?= click
 # just before the click as a row along the approach / across it / his row with one squad detached, the click ORDERS_GEOMETRY_REACH m past
 # the nearest squad (his: ~20) or the probe's own; every cell its own folder under build/orders-geometry/<starts>-r<reach>/, then one
 # table (tests/control/orders_geometry_table.py). Dev seeds 7001-7006; Bar G1 v10's are 10801-10848 (C44.1).
-ORDERS_GEOMETRY_MAPS ?= locks crossing terminus
+ORDERS_GEOMETRY_MAPS ?= locks crossing terminus yard_open
 ORDERS_GEOMETRY_SEEDS ?= 7001 7002 7003 7004 7005 7006
 ORDERS_GEOMETRY_STARTS ?= his along across
 ORDERS_GEOMETRY_REACH ?= 20 80
@@ -697,6 +697,8 @@ ORDERS_GEOMETRY_ARMY ?= res://tests/control/orders_probe_his_4.json
 ORDERS_GEOMETRY_FLAGS ?=
 ORDERS_GEOMETRY_JOBS ?= 4
 ORDERS_GEOMETRY_DIR ?= $(BUILD_DIR)/orders-geometry
+# R44.9: fixed-click cells, "map:starts:x/z" (his target: a far click INTO Locks' west open area from his north-edge row).
+ORDERS_GEOMETRY_FIXED ?= locks:his:-62/50
 .PHONY: orders-geometry
 orders-geometry: import ## O3 (round 44): his group click's geometry (a row along / across the approach, one squad detached, a near click) -> build/orders-geometry/table.txt
 	@rm -rf $(ORDERS_GEOMETRY_DIR) && mkdir -p $(ORDERS_GEOMETRY_DIR)/logs
@@ -707,13 +709,24 @@ orders-geometry: import ## O3 (round 44): his group click's geometry (a row alon
 		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe_geometry.gd -- --arena=$$0 --seed=$$4 \
 			--probe-squads=$(ORDERS_GEOMETRY_SQUADS) --probe-army=$(ORDERS_GEOMETRY_ARMY) --probe-starts=$$1 --probe-reach=$$2 \
 			--probe-arm=$$name $(ORDERS_GEOMETRY_FLAGS) $$flags > $(ORDERS_GEOMETRY_DIR)/logs/$$0-$$1-r$$2-$$name-s$$4.log 2>&1 || true'
+	@for seed in $(ORDERS_GEOMETRY_SEEDS); do for cell in $(ORDERS_GEOMETRY_FIXED); do for arm in $(ORDERS_GEOMETRY_ARMS); do \
+		echo "$$cell $$arm $$seed"; done; done; done | xargs -P $(ORDERS_GEOMETRY_JOBS) -L 1 sh -c \
+		'map=$${0%%:*}; rest=$${0#*:}; st=$${rest%%:*}; click=$${rest#*:}; name=$${1%%:*}; flags=$$(echo "$${1#*:}" | tr "," " "); \
+		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe_geometry.gd -- --arena=$$map --seed=$$2 \
+			--probe-squads=$(ORDERS_GEOMETRY_SQUADS) --probe-army=$(ORDERS_GEOMETRY_ARMY) --probe-starts=$$st --probe-click=$$click \
+			--probe-arm=$$name $(ORDERS_GEOMETRY_FLAGS) $$flags > $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-$$name-s$$2.log 2>&1 || true'
+	@for cell in $(ORDERS_GEOMETRY_FIXED); do map=$${cell%%:*}; rest=$${cell#*:}; st=$${rest%%:*}; d=$(ORDERS_GEOMETRY_DIR)/$$st-rfixed-$$map; mkdir -p $$d; \
+		cat $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-*.log | grep -h '^ORDERS_PROBE {' | sed 's/^ORDERS_PROBE //' > $$d/runs.jsonl || true; \
+		cat $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-*.log | grep -h '^ORDERS_PROBE_SQUAD ' | sed 's/^ORDERS_PROBE_SQUAD //' > $$d/rows.jsonl || true; \
+		cat $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-*.log | grep -h '^ORDERS_GEOMETRY ' | sed 's/^ORDERS_GEOMETRY //' > $$d/geometry.jsonl || true; \
+		done
 	@for st in $(ORDERS_GEOMETRY_STARTS); do for reach in $(ORDERS_GEOMETRY_REACH); do d=$(ORDERS_GEOMETRY_DIR)/$$st-r$$reach; mkdir -p $$d; \
 		cat $(ORDERS_GEOMETRY_DIR)/logs/*-$$st-r$$reach-*.log | grep -h '^ORDERS_PROBE {' | sed 's/^ORDERS_PROBE //' > $$d/runs.jsonl || true; \
 		cat $(ORDERS_GEOMETRY_DIR)/logs/*-$$st-r$$reach-*.log | grep -h '^ORDERS_PROBE_SQUAD ' | sed 's/^ORDERS_PROBE_SQUAD //' > $$d/rows.jsonl || true; \
 		cat $(ORDERS_GEOMETRY_DIR)/logs/*-$$st-r$$reach-*.log | grep -h '^ORDERS_GEOMETRY ' | sed 's/^ORDERS_GEOMETRY //' > $$d/geometry.jsonl || true; \
 		done; done
 	@grep -L '^ORDERS_PROBE {' $(ORDERS_GEOMETRY_DIR)/logs/*.log | sed 's/^/MISSING (no ORDERS_PROBE line): /' || true
-	@for st in $(ORDERS_GEOMETRY_STARTS); do for reach in $(ORDERS_GEOMETRY_REACH); do $(PYTHON) tests/control/orders_geometry_table.py $(ORDERS_GEOMETRY_DIR)/$$st-r$$reach | grep -v '^map '; done; done | sort | tee $(ORDERS_GEOMETRY_DIR)/table.txt
+	@for d in $(ORDERS_GEOMETRY_DIR)/*-r*; do $(PYTHON) tests/control/orders_geometry_table.py $$d | grep -v '^map '; done | sort | tee $(ORDERS_GEOMETRY_DIR)/table.txt
 
 orders-probe-shots: import ## O5: in a window, top-down at arrival and 5 s later (desktop 1280x720, phone 1560x720), ORDERS_PROBE_MAPS x _SHOT_SQUADS x _SHOT_ROUTES x _SHOT_ARMS -> build/orders-probe/shots/*.png (needs a display)
 	@mkdir -p $(ORDERS_PROBE_DIR)/shots

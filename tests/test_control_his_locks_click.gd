@@ -303,3 +303,20 @@ func test_v10_lays_his_click_as_one_column() -> void:
 		south = maxf(south, at.z)
 	assert_true((laid["Green_Hunters"] as Vector3).distance_to(click) < 12.0, "the nearest squad, the Hunters, lands on his click")
 	assert_true(south - north < 40.0, "no north-south front: the places span %.0f m (today: 100 m)" % (south - north))
+
+
+## O3 (R44.9): the clear ground at candidate clicks in Locks' west open area (his target), read as the layout reads it, so the
+## corpus's west cell sits on open ground. Diagnostic: prints only.
+func test_west_open_area_candidates() -> void:
+	await _build(AT_1500)
+	var ground: Tank = _lab.tank_of(_all()[0])
+	var drive := SelectionSquads.drive_on(ground)
+	var crosses := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
+	var middle := Vector3(8.8, 0.0, 88.3)
+	for cand: Vector3 in [Vector3(-80, 0, 55), Vector3(-70, 0, 45), Vector3(-90, 0, 40), Vector3(-75, 0, 65), Vector3(-60, 0, 50), Vector3(-100, 0, 45), Vector3(-85, 0, 30)]:
+		var ahead := Vector3(cand.x - middle.x, 0.0, cand.z - middle.z).normalized()
+		var across := Vector3(-ahead.z, 0.0, ahead.x)
+		var sides := RtsControls.gate_width(cand, across, drive, crosses, SelectionSquads.GROUP_SCAN_M)
+		var along := RtsControls.gate_width(cand, ahead, drive, crosses, SelectionSquads.GROUP_SCAN_M)
+		print("WEST_OPEN (%.0f, %.0f): standable %s, clear across [%.0f, %.0f] m, along [%.0f, %.0f] m" % [cand.x, cand.z,
+				SlotGround.is_standable(ground, cand), sides[0], sides[1], along[0], along[1]])

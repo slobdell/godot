@@ -6,9 +6,11 @@
 <out> is tests/control/orders_g1v10_bar.sh's folder: geometry/<starts>-r<reach>/{rows,geometry,runs}.jsonl (part A, his geometry),
 streets/ + his/ (part B, G1 v9's own cells, judged by orders_judge.py g1v8 with yard_open REPORTED, not guarded), fight/runs.jsonl
 (part C). Deciding (part A, per cell = map x starts x reach, medians over seeds, and per run):
-  1 across_m: every cell's median <= ACROSS_CELL_M and no arm run > ACROSS_RUN_M
+  1 (R44.9) across_m over moved squads <= the front the clear ground at the click fits, centred with no slide
+    ((fit_abreast - 1) x (widest + gap), + SLIDE_M), every arm run
   2 backward: 0 squads in every arm run (a place > COLUMN_AWAY_M behind its start along the approach)
-  3 aside_max_m: every arm run <= ASIDE_M (the orchestrator's map-edge line)
+  3 aside_max_m over moved squads: every arm run <= ASIDE_M (the orchestrator's map-edge line) AND <= half the fitted front
+    + SLIDE_M (R44.9: no edge or wall slide)
   4 front_ok: >= FRONT_SHARE of runs in every cell
   5 spread_m reported
   6 (the orchestrator's, R44.5 / R44.6: holding a squad cannot buy the pass) (a) in every reach-80 cell `held` = 0 in >=
@@ -32,6 +34,7 @@ import orders_judge as oj  # noqa: E402
 ACROSS_CELL_M = 60.0
 ACROSS_RUN_M = 80.0
 ASIDE_M = 52.0
+SLIDE_M = 2.0
 FRONT_SHARE = 0.9
 HELD_FAR_SHARE = 0.9
 HELD_SLACK = 1
@@ -70,7 +73,9 @@ def part_a(out, base, new, lines):
         backward = sum(r["backward"] for r in n)
         aside = max(r["aside_max_m"] for r in n)
         front = sum(1 for r in n if r["front_ok"]) / len(n)
-        c1, c2, c3, c4 = across <= ACROSS_CELL_M and worst_across <= ACROSS_RUN_M, backward == 0, aside <= ASIDE_M, front >= FRONT_SHARE
+        c1 = all(r["across_m"] <= r["fit_across_m"] + SLIDE_M for r in n)
+        c3 = aside <= ASIDE_M and all(r["aside_max_m"] <= r["fit_aside_m"] + SLIDE_M for r in n)
+        c2, c4 = backward == 0, front >= FRONT_SHARE
         held_n, held_b = geo.med([r["held"] for r in n]), geo.med([r["held"] for r in b])
         far_moving = sum(1 for r in n if r["held"] == 0) / len(n)
         if cell[2] >= 80:
@@ -83,17 +88,18 @@ def part_a(out, base, new, lines):
         g_all = (not b_in) or geo.med(n_in) <= geo.med(b_in) * 1.2 + 3.0
         g_never = sum(1 for r in n if r["all_in_s"] < 0) <= sum(1 for r in b if r["all_in_s"] < 0)
         ok = ok and g_all and g_never
-        lines.append("  %s %-9s %-6s r%-3.0f n %d/%d: across med %.0f (base %.0f) worst %.0f | backward %d (base %d) | aside max %.0f (base %.0f) | front %.0f%% (base %.0f%%) | held med %.1f (base %.1f) all-move %.0f%%%s | spread med %.0f (base %.0f) | all-in %.1f v %.1f%s never %d v %d%s" % (
+        lines.append("  %s %-9s %-6s r%-3.0f n %d/%d: fit %d abreast (across <= %.0f) | across med %.0f (base %.0f) worst %.0f%s | backward %d (base %d) | aside max %.0f (base %.0f)%s | front %.0f%% (base %.0f%%) | held med %.1f (base %.1f) all-move %.0f%%%s | spread med %.0f (base %.0f) | all-in %.1f v %.1f%s never %d v %d%s" % (
             "PASS" if (c1 and c2 and c3 and c4 and c6 and g_all and g_never) else "FAIL", cell[0], cell[1], cell[2], len(b), len(n),
-            across, geo.med([r["across_m"] for r in b]), worst_across, backward, sum(r["backward"] for r in b), aside,
-            max(r["aside_max_m"] for r in b), 100 * front, 100 * sum(1 for r in b if r["front_ok"]) / len(b),
+            geo.med([r["fit_abreast"] for r in n]), geo.med([r["fit_across_m"] for r in n]),
+            across, geo.med([r["across_m"] for r in b]), worst_across, "" if c1 else " FIT", backward, sum(r["backward"] for r in b), aside,
+            max(r["aside_max_m"] for r in b), "" if c3 else " SLIDE", 100 * front, 100 * sum(1 for r in b if r["front_ok"]) / len(b),
             held_n, held_b, 100 * far_moving, "" if c6 else " HELD",
             geo.med([r["spread_m"] for r in n]), geo.med([r["spread_m"] for r in b]),
             geo.med(b_in) if b_in else -1, geo.med(n_in) if n_in else -1, "" if g_all else " GUARD", sum(1 for r in b if r["all_in_s"] < 0),
             sum(1 for r in n if r["all_in_s"] < 0), "" if g_never else " GUARD"))
-    lines.append("%s deciding 1: across-spread median <= %.0f m every cell and no run > %.0f m" % ("PASS" if d1 else "FAIL", ACROSS_CELL_M, ACROSS_RUN_M))
+    lines.append("%s deciding 1 (R44.9): every arm run's across-spread (moved squads) <= the front the clear ground fits centred, + %.0f m" % ("PASS" if d1 else "FAIL", SLIDE_M))
     lines.append("%s deciding 2: squads sent back (> %.0f m behind their start along the approach) = 0 every arm run" % ("PASS" if d2 else "FAIL", geo.BACK_M))
-    lines.append("%s deciding 3: farthest place off the click line <= %.0f m every arm run" % ("PASS" if d3 else "FAIL", ASIDE_M))
+    lines.append("%s deciding 3: farthest moved place off the click line <= %.0f m and <= half the fitted front + %.0f m, every arm run" % ("PASS" if d3 else "FAIL", ASIDE_M, SLIDE_M))
     lines.append("%s deciding 4: the nearest squad lands in front in >= %.0f %% of runs every cell" % ("PASS" if d4 else "FAIL", 100 * FRONT_SHARE))
     lines.append("%s deciding 6 (R44.5 / R44.6): reach-80 cells move every squad in >= %.0f %% of runs and hold <= base's unmoved + %d; reach-20 runs hold only squads already within the column's length" % (
         "PASS" if d6 else "FAIL", 100 * HELD_FAR_SHARE, HELD_SLACK))

@@ -610,16 +610,15 @@ static func _lay_side(blocks: Array, flat_click: Vector3, ahead: Vector3, at_cli
 		room = minf(room, _arc_of(road, road[road.size() - 1]))
 	# G2 v2: on a leg, ranks behind the road's first corner stand centred on it.
 	var corner := _first_turn_arc(road) if leg and ROUTE_CORNER else INF
-	# G1 v10: his plain click stacks at most COLUMN_ABREAST abreast, and single file when the squads already stand in file.
+	# G1 v10 (R44.9, FIT FIRST): on his plain click a rank holds as many squads abreast as fit CENTRED on the line with no slide,
+	# at most COLUMN_ABREAST; the rest fold into ranks behind, nearest in front.
 	var cap := MAX_ABREAST
-	if COLUMN_ALWAYS and not passing and not leg:
+	var fit_first := COLUMN_ALWAYS and not passing and not leg
+	if fit_first:
 		cap = COLUMN_ABREAST
-		if in_file(blocks, flat_click, ahead, widest * 0.5):
-			cap = 1
-			columns_in_file += 1
 	for attempt in COLUMN_SQUEEZES + 1:
 		var laid := _lay_ranks(blocks, by_along, flat_click, ahead, straight, road, at_click, width_at, clamp, reached, widest,
-				step * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)), room, attempt == COLUMN_SQUEEZES, corner, cap, blocked)
+				step * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)), room, attempt == COLUMN_SQUEEZES, corner, cap, blocked, fit_first)
 		if not laid.is_empty():
 			result = laid
 			break
@@ -689,6 +688,16 @@ const COLUMN_NEAR_M := 30.0
 const COLUMN_SQUEEZES := 4
 
 
+## G1 v10 (R44.9): how many squads of `widest` stand abreast CENTRED on the column's line with no slide: the frontage of k
+## (k x widest + (k - 1) x GAP_M) must fit twice the narrower clear side; at least one, at most `cap`. Pure.
+static func fit_abreast(cap: int, widest: float, sides: Array) -> int:
+	var room := 2.0 * minf(float(sides[0]), float(sides[1]))
+	var k := 1
+	while k < cap and (k + 1) * widest + k * GAP_M <= room:
+		k += 1
+	return k
+
+
 ## G1 v10: whether every block's centre stands within `slack` metres across `ahead` of the line through `flat_click` along it
 ## (the squads already stand in file along the approach). Pure.
 static func in_file(blocks: Array, flat_click: Vector3, ahead: Vector3, slack: float) -> bool:
@@ -705,7 +714,7 @@ static func in_file(blocks: Array, flat_click: Vector3, ahead: Vector3, slack: f
 ## `last_try`: then the rest stand abreast in the last rank inside).
 static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahead: Vector3, straight: PackedVector3Array,
 		road: PackedVector3Array, at_click: Array, width_at: Callable, clamp: Callable, reached: Callable, widest: float,
-		step: float, room: float, last_try: bool, corner := INF, cap := MAX_ABREAST, blocked := Callable()) -> Array[Vector3]:
+		step: float, room: float, last_try: bool, corner := INF, cap := MAX_ABREAST, blocked := Callable(), fit_first := false) -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	result.resize(blocks.size())
 	var behind := 0.0
@@ -715,7 +724,6 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 	var last_start := 0
 	var merged := false
 	var wet_steps := 0  # G1 v10: ranks stepped back off water / a deck
-	var front_shift := INF  # G1 v10: the front rank's slide off the line, kept by the ranks behind where it fits
 	while start < by_along.size():
 		var at := _walk_back(straight, behind)
 		if start > 0 and not on_road:
@@ -758,20 +766,15 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		# G2 v2: past the corner of his route the rank stands centred on the route line, as wide as that street.
 		var past_corner := on_road and behind > corner + CORNER_SLACK_M
 		var abreast := 1 if single else mini(cap, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
+		if fit_first:
+			# R44.9: as many abreast as fit centred on the line with NO slide (his words: side by side where they fit, else stack).
+			abreast = fit_abreast(cap, widest, sides)
 		abreast = by_along.size() - start if merged else mini(abreast, by_along.size() - start)
-		if RANK_SHIFT_HALF and not merged:
+		if RANK_SHIFT_HALF and not merged and not fit_first:
 			while abreast > 1 and absf(_rank_shift(abreast, widest, sides)) > widest * 0.5:
 				abreast -= 1
 		single = single and abreast == 1
-		var shift := 0.0 if single or past_corner else _rank_shift(abreast, widest, sides)
-		# G1 v10: the ranks behind keep the front rank's slide where their frontage fits there (dev read 2: each rank slid to its
-		# own clear width, so a two-abreast column zigzagged, 62-73 m across instead of 58).
-		if cap < MAX_ABREAST and not single and not past_corner:
-			var frontage := abreast * widest + (abreast - 1) * GAP_M
-			if front_shift == INF:
-				front_shift = shift
-			elif front_shift - frontage * 0.5 >= -float(sides[0]) and front_shift + frontage * 0.5 <= float(sides[1]):
-				shift = front_shift
+		var shift := 0.0 if single or past_corner or fit_first else _rank_shift(abreast, widest, sides)
 		var centre := point + rank_across * shift
 		var rank_members: Array = []
 		for n in range(start, start + abreast):

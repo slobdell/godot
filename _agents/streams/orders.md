@@ -183,6 +183,21 @@ _(worker keeps this current: report at the top, every number with commit, machin
   walked 135 m back and three squads held -> water is read at half the footprint (the leader's seat and the inner ring; the
   outer seats are the deploy's), a wet rank follows the road, a lone vehicle's footprint is a hull (4 m); traced on crossing
   along-80 s7002: Guns to the click, Hunters / Spears / Wrenches 4-15 m ahead of their starts in file. Dev read 5 carries these.
+- **Dev read 5 (builder2, native on, fee735f2a arm v main, 7001-7006, n 6):** 14 of 18 cells pass every line of v10b as frozen by
+  R44.6; lines 1, 3, 4 pass everywhere; contacts 5893 -> 2408. Still failing: crossing his-80 (one squad held in 3 of 6 runs,
+  6(a)), locks his-20 (three held, three "backward": the squads behind his click on the narrow bank), terminus across-20 (two
+  held; 6(c)). **Superseded by R44.9 before any fresh number:** his answers (`game_design.md` *His answers on the group click*)
+  make the rule FIT FIRST; the code and the bar are re-shaped below (v10c) and dev read 6 reads them.
+- **O4 v10c (R44.9, FIT FIRST; this commit):** on his plain click a rank holds as many squads abreast as fit CENTRED on the column's
+  line with NO slide (`fit_abreast`: k x widest + (k - 1) x GAP_M within twice the narrower clear side; at most COLUMN_ABREAST = 2),
+  the rest fold into ranks behind, nearest in front; no rank slides to one side any more (RANK_SHIFT_HALF is G1 v9's), and the
+  "single file when the squads stand in file" rule is gone (the ground decides, his answer 2). His Locks click: the yard reads
+  [20, 90] m, so one abreast: the Hunters ON his click (-35, 97), the three behind fall in a few metres (Guns_4 14 m north onto the
+  line, Spears 9 m, Wrenches 14 m). His target, "the open area in the west side": Locks' west quay reads [42, 50] m at (-62, 50)
+  and [46, 48] at (-60, 50): two wedges abreast (102 m) do not fit centred there, so his army would arrive in single file along
+  the quay. **Corpus (O3):** `yard_open` added to the maps (an abreast-fits cell: the open yard holds two abreast), and a FIXED
+  cell `locks:his:-62/50` (his row along the north edge, a far click INTO the west quay). The geometry line now carries the clear
+  ground at the click and the widest squad, for the judge.
 - **Decisions:** `click` goes on the one-squad row too (its `to` is the click, but one key the tools can rely on beats a
   rule); `group` only on orders to two or more squads (C44.3: his one-squad order stays manoeuvre's); loose units' row
   carries `click`, not `group`.
@@ -243,7 +258,23 @@ _(worker keeps this current: report at the top, every number with commit, machin
     in >= 90 % of the arm's runs (on a far click every squad moves); (b) in every reach-80 cell the arm's held squads (median a run)
     <= base's squads that moved less than 2 m + 1; (c) in every reach-20 cell, per run, held <= the squads whose start lies within
     the arm's own laid column's length behind the click (the farthest moved place), no slack. `held` is also reported per cell.
-    **The bar is FROZEN after dev read 4 (R44.6): no more amendments.**
+    **The bar is FROZEN after dev read 4 (R44.6): no more amendments.** (Re-opened once by R44.9, his answers: v10c below.)
+- **Bar G1 v10c (RE-FILED on R44.9, 2026-10-28 ~11:45 PDT laptop clock, BEFORE any number on 10801-10848; code: the commit of this
+  text).** His answers: side by side where the open ground fits them, otherwise stacked behind, nearest in front; a short click holds
+  the squads already in place. What he would see: he selects every squad and clicks. Where the ground at his click holds two squads
+  side by side centred on the spot, two land there side by side and the rest stack behind; where it holds one, they land one behind
+  another; nobody slides off the spot toward the open side, nobody is sent back past where it stands, the nearest squad is in front.
+  - **Deciding 1 (re-shaped):** every arm run's across-spread over MOVED squads <= the front the clear ground at the click fits
+    centred with no slide, + 2 m: (fit_abreast - 1) x (widest + 14), fit_abreast = the most squads (<= 2) whose frontage fits twice
+    the narrower clear side (the probe's `clear` at the click, the group scan, 100 m a side).
+  - **Deciding 3 (re-shaped):** every arm run's farthest MOVED place off the click line <= 52 m AND <= half the fitted front + 2 m
+    (no edge or wall slide).
+  - **Deciding 2, 4, 6 (R44.6's shape), the guards (all-in, never-in, contacts; parts B and C), seeds, n, the tree rule:** unchanged.
+  - **Corpus (part A):** locks / crossing / terminus / yard_open x his / along / across x reach 20 / 80 (24 cells) + the fixed cell
+    locks his (-62, 50) (his far click into the west quay): 25 cells x n 24 on 10801-10824, both arms.
+  - **Note for the orchestrator:** the abreast cap stays 2, so line 3's 52 m holds by construction (a two-abreast place is 29 m
+    off the line); with three abreast allowed, line 3 would have to read half the fitted front (58 m).
+
   - **Code since the filing (all under the switch; G1 v9 unchanged, its tests pass):** the near-click keep is skipped on the plain
     click; places are dealt by distance along the approach (no drive-time re-deal, no whole-squad untangle: it read collinear
     drives as crossings and swapped ranks end to end); the stay rule is re-read after the lay; ranks keep off water and decks

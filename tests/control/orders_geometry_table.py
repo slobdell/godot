@@ -19,7 +19,9 @@ import sys
 from collections import defaultdict
 
 HOLD_M = 2.0
-BACK_M = 10.0  # SelectionSquads.COLUMN_AWAY_M: a squad whose place is behind its start along the approach by more than this was sent back
+BACK_M = 10.0
+GAP_M = 14.0  # SelectionSquads.GAP_M
+ABREAST_CAP = 2  # SelectionSquads.COLUMN_ABREAST  # SelectionSquads.COLUMN_AWAY_M: a squad whose place is behind its start along the approach by more than this was sent back
 
 
 def load(path):
@@ -55,6 +57,15 @@ def read_run(rows, geo):
     times = [r["arrived_s"] for r in rows]
     all_in = -1.0 if any(t < 0 for t in times) else max(times)
     held = len(rows) - sum(1 for r in rows if r.get("anchor") and flat(r["anchor"], r["start"]) > HOLD_M)
+    # R44.9 (fit first): the front the clear ground at the click fits CENTRED with no slide: k squads of the widest, at most
+    # ABREAST_CAP, whose frontage k x widest + (k - 1) x GAP fits twice the narrower clear side; the places' spread across is then
+    # (k - 1) x (widest + GAP) and the farthest place off the line (k - 1) x (widest + GAP) / 2 (SelectionSquads.fit_abreast).
+    widest = float(geo.get("widest", 44.0))
+    clear = geo.get("clear", [0.0, 0.0])
+    k = 1
+    while k < ABREAST_CAP and (k + 1) * widest + k * GAP_M <= 2.0 * min(float(clear[0]), float(clear[1])):
+        k += 1
+    fit_across = (k - 1) * (widest + GAP_M)
     # R44.6, line 6(c) (reach-20 cells): a squad may hold only if it already stands within the column's length behind the click,
     # the length read from the arm's own laid column (the farthest MOVED place behind the click); held <= those squads, no slack.
     moved_rows = [r for r in rows if r.get("anchor") and flat(r["anchor"], r["start"]) > HOLD_M]
@@ -62,7 +73,8 @@ def read_run(rows, geo):
     within = sum(1 for r in rows if 0.0 <= -along(r["start"]) <= column_len + HOLD_M)
     return {"spread_m": spread, "across_m": max(asides) - min(asides), "aside_max_m": max(abs(a) for a in asides),
             "backward": backward, "front_ok": front_ok, "all_in_s": all_in, "squads": len(rows), "moved": len(moved),
-            "held": held, "within": within, "column_len_m": column_len}
+            "held": held, "within": within, "column_len_m": column_len, "fit_abreast": k, "fit_across_m": fit_across,
+            "fit_aside_m": fit_across * 0.5, "reach": geo.get("reach", -1.0)}
 
 
 def med(xs):

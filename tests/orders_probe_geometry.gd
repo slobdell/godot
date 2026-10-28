@@ -25,7 +25,7 @@ var _reach := -1.0
 func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
 	var target := super(map, army, forward)
 	_starts_mode = _flag("probe-starts", "spawn")
-	_reach = float(_flag("probe-reach", "-1"))
+	_reach = float(_flag("probe-reach", "-1")) if _flag("probe-reach", "-1") != "" else -1.0
 	var d := Vector3(target.x - army.x, 0.0, target.z - army.z)
 	if d.length() < 1.0:
 		d = Vector3(forward.x, 0.0, forward.z)
@@ -63,8 +63,19 @@ func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
 		if ground != null:
 			click = SlotGround.standable(ground, click)
 		click = Vector3(click.x, 0.0, click.z)
+	# R44.9 (fit first): the clear ground across the approach at the click, as the layout reads it (RtsControls.gate_width, the
+	# group scan), and the widest squad: the judge's "front the ground fits" is read from these.
+	var clear: Array = [0.0, 0.0]
+	var widest := 0.0
+	if ground != null:
+		var drive := SelectionSquads.drive_on(ground)
+		var crosses := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
+		clear = RtsControls.gate_width(click, across, drive, crosses, SelectionSquads.GROUP_SCAN_M)
+	for squad: Dictionary in _squads:
+		widest = maxf(widest, _controls._squad_width(squad))
 	print("ORDERS_GEOMETRY " + JSON.stringify({"map": map, "seed": int(_flag("seed", "34")), "arm": _flag("probe-arm", ""),
 			"starts": _starts_mode, "reach": _reach, "click": _xz(click), "approach": [snappedf(d.x, 0.001), snappedf(d.z, 0.001)],
+			"clear": [snappedf(float(clear[0]), 0.1), snappedf(float(clear[1]), 0.1)], "widest": snappedf(widest, 0.1),
 			"squads": _squads.map(func(s: Dictionary) -> Array: return _xz(s["start"]))}))
 	return click
 
