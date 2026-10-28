@@ -154,6 +154,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
   defender (same seeds, `--named=on`): deaths ARM <= BASE + 2 se; Bar E1's lines on 10673-10696; perf; suite ON with ENGAGE_WATER=on.
   Census (dev 7001-7012, laptop, n 12, never a bar): 27.1 crew-s a run engaged across water, gun on it 23.0 s, 372 damage across water;
   19.2 s of hops (5.2 reverse), off-order +22.6 m (max 74.5).
+  **RE-FILED at tree 8ac00d19b before any 10649+ number** (rule unchanged; probe + `make engage-bar-a7`; four arms of 24: attack-move
+  off/on, named-attack off/on). Guards 3-4 amended on a dev read (a squad that crosses sooner reads as shooting less "across water":
+  damage_water 5796 -> 1215 at equal kills): now damage to the defenders from ANY bank >= BASE - 1.645 se and the squad's first hit from
+  any bank <= BASE + 1.645 se; the across-water versions reported. Dev (laptop, n 12, never a bar): hop_s 459 -> 10, off_order_m 352 -> 60,
+  deaths 28 -> 20, kills 26 = 26.
 
 - **FILED Bar S5, the bridge's carried-past wait (manoeuvre; FILED in Status before any 10449+ number; side branch `wip/manoeuvre-s5`
   = fed356a8b + balance's v2 overrides + 5a5e7b434).** deckwait v5: a wait begins only on the carried-past case (a follower at >= 0.6 x top
