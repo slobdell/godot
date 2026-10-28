@@ -183,6 +183,8 @@ var ducks := {}
 ## Round 27 (B0, C27.3): an attack with a drawn approach, {"in", "side"}: whether the element has come round to the side
 ## he drew (then it goes in, for the life of the task) and which way round it is going (ElementPlan._plan_approach).
 var approach_round := {}
+## Round 43 (manoeuvre, R43.6): the shape a move started with, kept until it arrives or the task changes (ElementPlan.latch_shape).
+var shape_latch := {}
 ## Round 28 (B2): this element is a battery driving to its firing position on a drawn side: its crews drive with their
 ## guns quiet (a gun that fires deploys and stays: ElementFeed passes it to TankBrain's MOVE).
 var relocating := false
@@ -564,7 +566,8 @@ func update(game_match: Match, orders: Object) -> bool:
 			# His element (Drills.obeys_player: no elective drill under any task of his; round 20 M1b, round 21 P1).
 			"player": team == OrderFeed.player_team(game_match),
 			"pursuit": pursuit, "pursuing": pursuing, "attacking": _attacking(), "anchor_by_drill": anchor_by_drill,
-			"ducks": ducks, "approach_round": approach_round, "crossing": crossing}
+			"ducks": ducks, "approach_round": approach_round, "crossing": crossing,
+			"shape_latch": shape_latch}  # round 43 (manoeuvre, R43.6): the shape this move started with
 	var reseating := _reseat
 	_reseat = false
 	_reseat_keep = {}
@@ -1849,6 +1852,7 @@ func _take(plan: Dictionary, situation: Dictionary) -> void:
 	anchor_by_drill = bool(plan.get("anchor_by_drill", false))
 	ducks = plan.get("ducks", {})
 	approach_round = plan.get("approach_round", approach_round)
+	shape_latch = plan.get("shape_latch", {})
 	relocating = bool(plan.get("relocating", false))
 	var new_drill := String(plan["drill"])
 	if new_drill != drill:

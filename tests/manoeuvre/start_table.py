@@ -66,7 +66,11 @@ def table(rows, seats, yields):
         arrived = None
         for d in r:
             driven = driven or d["ph"] == "driving"
-            if driven and d["ph"] == "arrived":
+            try:
+                near_seat = float(d["dseat"]) <= 12.0
+            except ValueError:
+                near_seat = True
+            if driven and d["ph"] == "arrived" and near_seat:
                 arrived = int(d["t"])
                 break
         nearest = min(math.dist((float(d["x"]), float(d["z"])), click) for d in r) if click else float("nan")

@@ -292,6 +292,8 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	if asked != "":
 		plan["formation"] = asked
 		plan["why"] = "%s, as ordered" % asked.replace("_", " ")
+	# Round 43 (manoeuvre, R43.6): a move keeps the shape it started with (the latch below; Element carries it back).
+	plan["shape_latch"] = latch_shape(plan, situation, state, task, asked)
 	plan["drill"] = drill["drill"]
 	# Round 21 (R2): who set the anchor, a drill or the movement (stale_anchor reads it back next update).
 	plan["anchor_by_drill"] = bool(state.get("anchor_by_drill", false))
@@ -336,6 +338,50 @@ static func _plan_via(plan: Dictionary, situation: Dictionary, table: DoctrineTa
 	var verb := "attack_move" if String(situation.get("threat", "none")) in ["likely", "contact"] else "move"
 	_group(plan, slot_order(situation), String(plan["formation"]), via, plan["heading"], table.spacing(String(situation["terrain"])),
 			verb)
+
+
+# ---- Round 43 (manoeuvre S2b, R43.6): THE SHAPE LATCH ---------------------------------------------------------------
+#
+# His first order on Locks 56416 (2026-10-27; _agents/streams/manoeuvre.md S1): the Guns' travel shape flipped swarm / vee /
+# swarm / vee / swarm at 8.4, 9.3, 11.7 and 14.6 s as the threat reading changed ("likely" picks the Gangs' vee, everything
+# else their swarm), and every flip re-seated War Rig 3 50-95 m away (east, west, east, west); it never left a 5 m circle in
+# 16 s. The ruling: a move order keeps the shape it started with until it arrives or he re-orders; the element's OWN contact
+# (threat "contact": fired on, or the enemy inside fighting range; not an estimate) may change it ONCE, after
+# SHAPE_LATCH_CONTACT_TICKS of it (hysteresis). Symmetric: the CPU's elements latch the same way. A shape he chose with G
+# is his and needs no latch; a halt (arrived) picks its stand as today; drills, the contact band's line, a crossing's file
+# and the deploy still override the shape where they always did. `--shape-latch=off` is today's pick every update.
+static var SHAPE_LATCH := not OS.get_cmdline_user_args().has("--shape-latch=off")
+## The element's own contact must last this long before the latched shape is re-picked, once.
+const SHAPE_LATCH_CONTACT_TICKS := SimClock.TICK_RATE
+
+
+## The latch for this update ({} when none applies): keeps `plan["formation"]` / `plan["why"]` as the move started them,
+## or re-picks once on the element's own contact. `state["shape_latch"]` is last update's (Element carries it back). Pure.
+static func latch_shape(plan: Dictionary, situation: Dictionary, state: Dictionary, task: Dictionary, asked: String) -> Dictionary:
+	if not SHAPE_LATCH or asked != "" or bool(state.get("arrived", false)) or not (ElementTask.destination(task) is Vector3):
+		return {}
+	var key := JSON.stringify(task)
+	var tick := int(situation.get("tick", 0))
+	var was: Dictionary = state.get("shape_latch", {}) if typeof(state.get("shape_latch")) == TYPE_DICTIONARY else {}
+	if String(was.get("key", "")) != key or int(was.get("tick", 0)) > tick:
+		# A new order (or a new match): the pick stands and is latched.
+		return {"key": key, "tick": tick, "formation": String(plan["formation"]), "why": String(plan["why"]),
+				"contact_since": -1, "contact_used": false}
+	var latch := was.duplicate()
+	if String(situation.get("threat", "none")) == "contact" and not bool(latch["contact_used"]):
+		if int(latch["contact_since"]) < 0:
+			latch["contact_since"] = tick
+		if tick - int(latch["contact_since"]) >= SHAPE_LATCH_CONTACT_TICKS:
+			latch["contact_used"] = true
+			latch["formation"] = String(plan["formation"])
+			latch["why"] = String(plan["why"])
+			return latch
+	elif String(situation.get("threat", "none")) != "contact":
+		latch["contact_since"] = -1
+	if String(plan["formation"]) != String(latch["formation"]):
+		plan["why"] = "%s (kept: the shape this move started with)" % String(latch["why"])
+	plan["formation"] = String(latch["formation"])
+	return latch
 
 
 ## The shape the player chose for `task` with G, or "" under AUTO (the table decides). Pure.
