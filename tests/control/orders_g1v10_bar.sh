@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Round 44 (orders, Bar G1 v10): the three parts on builder2, read to a verdict (tests/control/orders_geometry_judge.py).
 #   tests/control/orders_g1v10_bar.sh <b0|b2> <arm name:flag,flag> "<A seeds>" "<B seeds>" "<C seeds>" <out dir outside build/> [jobs]
-# A geometry: make orders-geometry (locks / crossing / terminus x his / along / across x reach 20 / 80), `main:` v <arm>.
+# A geometry: make orders-geometry (locks / crossing / terminus / yard_open x his / along / across x reach 20 / 80, + the fixed
+#   cell locks:his:-62/50, his far click into the west quay; R44.9), `main:` v <arm>.
 # B streets: the orders probe's street cells (locks / crossing / terminus / yard_open x 3 / 5 x click / route) + his terminus click.
 # C fight: the probe's fight (`--probe-fight=on`), terminus / locks, 5 squads, click.
 # Spot (builder2): a part counts only with its wrapper's `exited 0`, every expected run and no MISSING line; else it re-runs
@@ -41,8 +42,8 @@ part() {  # part <name> <target> <dir var> <want> <make args...>
 	done
 	return 1
 }
-part geometry orders-geometry ORDERS_GEOMETRY_DIR $((3 * 3 * 2 * 2 * na)) "ORDERS_GEOMETRY_MAPS=locks crossing terminus" \
-	"ORDERS_GEOMETRY_STARTS=his along across" "ORDERS_GEOMETRY_REACH=20 80" "ORDERS_GEOMETRY_ARMS=main: $arm" \
+part geometry orders-geometry ORDERS_GEOMETRY_DIR $(((4 * 3 * 2 + 1) * 2 * na)) "ORDERS_GEOMETRY_MAPS=locks crossing terminus yard_open" \
+	"ORDERS_GEOMETRY_STARTS=his along across" "ORDERS_GEOMETRY_REACH=20 80" "ORDERS_GEOMETRY_FIXED=locks:his:-62/50" "ORDERS_GEOMETRY_ARMS=main: $arm" \
 	"ORDERS_GEOMETRY_SEEDS=$aseeds" "ORDERS_GEOMETRY_JOBS=$jobs" || { echo "BAR NOT RUN: geometry"; exit 1; }
 part streets orders-probe ORDERS_PROBE_DIR $((4 * 2 * 2 * 2 * nb)) "ORDERS_PROBE_MAPS=locks crossing terminus yard_open" \
 	"ORDERS_PROBE_SQUADS=3 5" "ORDERS_PROBE_ROUTES=click route" "ORDERS_PROBE_ARMS=main: $arm" "ORDERS_PROBE_SEEDS=$bseeds" \
