@@ -4526,7 +4526,7 @@ to the far quay (-100, -15), the lead War Rig reached the west bank at (-105, 46
 `blocked terrain` at (-9, 95); his attack order on it at tick 806 showed on the crew only at tick 1380. The planner seam refused every
 ask that match (18 asks, all k-turns: START_BLOCKED 8, GOAL_BLOCKED 1, NO_PATH 1, 0 plans). A headless replay of his orders
 (`tests/replay_orders.gd`, same seed/army/cap) diverges from his match inside 2 s (his Guns jam at the start, the replay's drive off) and
-did not reproduce the turnaround, with attack-shot on or off: **not shown to be a regression, not ruled out.** Round 43: find what sends
+did not reproduce the turnaround, with attack-shot on or off: **not shown to be a regression, not ruled out.** *(VOID, R43.1: those replays ran on foundry, not Locks; `--arena` never reached `Arena._ready`. Native's fixed replay holds every unit 0.0 m off his census for 10 s.)* Round 43: find what sends
 that crew north under attack-move on Locks (engage or manoeuvre; instrument the crew's brain and mover on that seed), and why an
 interactive match and a headless replay of the same orders diverge at once.
 
