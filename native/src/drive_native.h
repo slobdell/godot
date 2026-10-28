@@ -175,6 +175,8 @@ struct DriveConfig {
 	// Round 44 (native N3, manoeuvre M2 `backout`): the departure look at an order's start (Movement._backout_due, the
 	// `_backout_leg` continuation, the station PID kept off a planned leg). False on a tree without M2: the switch does not exist.
 	bool backout_ready = false;
+	// Round 44 (native N3, manoeuvre M3 `parkedpass`): the parked crew's pass offer in ask(). False on a tree without M3.
+	bool parkedpass_ready = false;
 	// Round 28 (N5): Movement._repair natively (SlotGround.for_unit called; repair_ready false: the callback).
 	bool repair_ready = false;
 	double REPAIR_MAX_M = 0.0;

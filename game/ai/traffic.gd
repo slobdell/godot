@@ -295,8 +295,9 @@ static func _chain_native() -> void:
 	elif _reroute_saved_native_drive != null:
 		BrainSwitches.native_drive = bool(_reroute_saved_native_drive)
 		_reroute_saved_native_drive = null
-	# Round 44 (M3, `parkedpass`): the refusal with a lane is inside ask(), inside the yield's C++ mirror: ON runs the GDScript yield until twinned.
-	if not _off.has("chainside") or not _off.has("holdlane") or not _off.has("chainarriving") or not _off.has("parkedpass"):
+	# Round 44 (M3, `parkedpass`): the refusal with a lane in ask() is twinned (native N3, pair/native-m2m3: drive_native.cpp
+	# ask), so ON keeps the C++ yield.
+	if not _off.has("chainside") or not _off.has("holdlane") or not _off.has("chainarriving"):
 		if _chain_saved_native_yield == null:
 			_chain_saved_native_yield = BrainSwitches.native_yield
 		BrainSwitches.native_yield = false
