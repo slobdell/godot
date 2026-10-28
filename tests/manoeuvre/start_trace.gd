@@ -334,7 +334,14 @@ func _row(tank: Tank, tick: int) -> void:
 	if started >= 0:
 		var rec: Dictionary = _runs.get(name, {"squad": squad, "order_tick": started, "arrived_tick": -1, "driven": false,
 				"yield_s": 0.0, "blocked_s": 0.0, "kturn_s": 0.0, "wedged_s": 0.0, "seat_moves": 0, "seat_move_max_m": 0.0,
-				"last_seat": null, "d_click_15s": -1.0, "within_bound_15s": false, "bound_m": -1.0, "min_d_click": INF})
+				"last_seat": null, "d_click_15s": -1.0, "within_bound_15s": false, "bound_m": -1.0, "min_d_click": INF,
+				"nose_room_m": -1.0})
+		if float(rec["nose_room_m"]) < 0.0 and mover != null and Pathing.enabled and Pathing.is_ready(tank):
+			# Round 44 (Bar B1): the straight run past the nose at the crew's first traced tick after its order (Movement._free_run,
+			# the backout rule's own nose test): the judge's nose-on classifier, the same geometry in every arm.
+			var frame: Array = mover._kturn_frame(tank)
+			rec["nose_room_m"] = snappedf(Movement._free_run(tank.get_world_3d().navigation_map,
+					here + fwd * float(frame[1]), Vector3(fwd.x, 0.0, fwd.z).normalized(), float(frame[2])), 0.1)
 		var in_window: bool = tick - started <= int(READ_S * 30.0)
 		if mover != null:
 			if mover.phase == "driving":
@@ -457,7 +464,7 @@ func _run_row(tick: int) -> void:
 		row["click"] = [snappedf(click.x, 0.1), snappedf(click.z, 0.1)]
 		row["arrived_s"] = snappedf((int(rec["arrived_tick"]) - int(rec["order_tick"])) / 30.0, 0.1) if int(rec["arrived_tick"]) >= 0 else -1.0
 		row["min_d_click"] = snappedf(float(rec["min_d_click"]), 0.1) if is_finite(float(rec["min_d_click"])) else -1.0
-		for key in ["yield_s", "blocked_s", "kturn_s", "wedged_s", "seat_move_max_m", "d_click_15s", "bound_m"]:
+		for key in ["yield_s", "blocked_s", "kturn_s", "wedged_s", "seat_move_max_m", "d_click_15s", "bound_m", "nose_room_m"]:
 			row[key] = snappedf(float(row[key]), 0.1)
 		crews.append(row)
 		if bool(rec["within_bound_15s"]):

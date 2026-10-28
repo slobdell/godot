@@ -5498,7 +5498,9 @@ func _parked_for_pass(asker: String) -> bool:
 ## inside the turning circle, the swept arc and the reverse search for one beyond it): only what it is made against changes.
 ## Not for a squad under one G1 group click (`_grouped_crew`, C44.3). Counter `backout_looks` (route_arms). Untwinned: ON runs
 ## the GDScript drive (Traffic._chain_native) until native twins it.
-const BACKOUT_MIN_ERROR_DEG := 40.0  # his Guns_2's departure was 44 deg off; today's k-turn gate is 45 (a gentle bend never needs a reverse)
+## The route may leave only this far off the nose and still need the back-up: the box is what blocks, not the bend (Locks dev 7007: the
+## route's first vertex 24 deg off, the drive at 18 deg clipped the box corner; today's k-turn gate of 45 deg is for open ground).
+const BACKOUT_MIN_ERROR_DEG := 20.0
 const BACKOUT_WINDOW_TICKS := SimClock.TICK_RATE * 3
 const BACKOUT_MOVED_M := 1.0
 const BACKOUT_RUN_STEP_M := 1.0
@@ -5545,7 +5547,9 @@ func _backout_due(direct: bool, drive_vector: Vector2, goal: Vector3) -> bool:
 ## its own length, not a grouped squad's crew, within the order's window, its route to its final goal leaving BACKOUT_MIN_ERROR_DEG
 ## or more off the nose, and BACKOUT_ROOM_M of straight run behind it clear of other hulls. Memoised per final goal (the path).
 func _backout_look(here: Vector3, forward: Vector3, to: Vector3) -> Vector3:
-	if not backout_on() or absf(ctl.tank.speed()) >= KTURN_CIRCLE_SPEED or to.length() >= _backout_near_m() or _grouped_crew():
+	# Not "the steering point within a hull's length" any more (Locks dev 7007: a boxed rig with its FAR seat as the steering point drove
+	# into the box corner at 18 deg and sat wedged 1.5 s in both arms): the nose test below is what "boxed" means.
+	if not backout_on() or absf(ctl.tank.speed()) >= KTURN_CIRCLE_SPEED or _grouped_crew():
 		return Vector3.INF
 	var departure: Variant = _backout_departure(here)
 	if not (departure is Vector3):
