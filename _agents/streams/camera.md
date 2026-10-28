@@ -71,39 +71,60 @@ The clip, when K5.5 has one.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-27 ~22:30 (in progress): K5.1 MERGED (main b31d3ddea); K5.2 census sent; K5.3 built OFF; Bar K5 FILED; its
-series runs on builder2 after 65e6e7e92's full check there.**
-- **K5.1 DONE, green, merged.** d489eaa2b (K5.1 + native's 2fd2e5d4e recorder keys + K5.2/K5.3 OFF): builder0
-  `>> remote: make check exited 0`, test 3360 passed / 0 failed, 27 passed + 1 NOT JUDGED (remote-guard-test quiet window);
-  merged alone by the orchestrator (main b31d3ddea, R43.10). The `cam` row: `{"t":"cam", tick, yaw, want, pitch, dist,
-  target:[x,z], mode, turn?}`, the SHOWN pose (yaw in degrees, 0 = north/-Z, positive turns left: -90 looks east), `want` the
-  yaw it is turning to, `mode` follow / danger / manual / aim-hold / corner, `turn: true` on a row written as an automatic turn
-  starts; every CENSUS_S (1 s) and at each turn start; no rig, no rows. Scrub: `python3 tests/camera/camera_recording.py <file>`.
-- **K5.2 census DONE (sent to the orchestrator).** `--camera-scenario=corner` (CameraPlaytest + `CameraCorner`), dev 7001-7012,
-  builder0 light, today's camera (9e14c3ade): Terminus open->seen 1.0 s, seen->on screen 0.2 s, facing the building 53 % of the
-  corner seconds, toward the hidden side 79 %; Locks (left lanes) open->seen 5.2 s, seen->on screen 0.8 s, facing 57 %,
-  toward 48 %. In player terms: once the enemy shows itself the camera already finds it in about a second; the fix is the
-  seconds before, when it stares at the wall half the time.
-- **K5.3 built, OFF** (`--camera-corner=on`). Dev, ON v OFF (f8166f5e8 / b931bbf52's OFF, builder0 light, 7001-7012): toward the
-  hidden side Locks 6.4 -> 34.9 %, Terminus 78.7 -> 81.6; seen->on screen Locks 6.8 -> 0.2 s, Terminus 0.2 -> 0.4; EMPTY corner
-  facing after the opening Locks 0.0 -> 7.3 %, Terminus 22.2 -> 13.3; EMPTY Terminus reversals 2.67 -> 3.89 /min (over G1's
-  BASE + 1 on dev: a swing out and back is one reversal a corner). No-fog-cheat yaw equality: 24/24 dev seeds (6847581f7).
-- **Bar K5 FILED** (below, eb6deaf78; one workload fix before any number, 65e6e7e92: lanes from his half only). Judge:
-  `python3 tests/camera/bar_k5.py ~/camera-bar-k5/<hash>`. Driver `~/camera-r43/bar_k5.sh` (not in the repo: it holds paths).
+**2026-10-28, FINAL: every backlog item DONE or stopped by ruling. K5.1 (the camera in the recording) is ON MAIN; the corner
+swing (K5.3) ships OFF (Bar K5 FAILED at 08931da4e; v2 STOPPED unspent on the second dev block, R43.29/R43.30); the corner
+workload, its census, the no-cheat check and Bar K5's judge go to main OFF for round 44's rebuild from his recording.
+Merge candidate: the tip after `main` 893f45ab9 was merged in (hash and its check below).**
 
-**For him (the part he would notice, from Bar K5's series, 10501-10536, builder2, n 36 a workload an arm):** rounding a
-building on Locks with an enemy squad hidden behind it, the moment his crews see it the camera has it on screen in
-about half a second instead of four (seen -> on screen 3.98 +- 0.99 s -> 0.49 +- 0.10 s, both arenas pooled; the gain is
-Locks'). The swing still ships OFF: it lost on the rest of its bar (looking at the next building on close streets, a
-swing back after each corner, firing mid-fight); v2 (R43.27) answers those three.
+**For him (player terms):** the camera now writes where it was looking into every match recording, once a second and every
+time it starts turning by itself, so the next time a squad rounds a building and the view stays on the wall, we can see
+exactly what it was doing at that second. The swing toward the hidden side that I built for his request did one thing he
+would notice: on Locks, the moment his crews spotted a squad hiding behind a building it was on his screen in about half
+a second instead of about four (36 matches each way). But it also turned the view toward the next building on tight
+streets, swung back after every corner, and sometimes turned during fights, so it is switched off. The next try starts
+from his own recorded corner. **To scrub his next corner moment:** after `make skirmish ARENA=locks`, run
+`python3 tests/camera/camera_recording.py "$(cat build/recordings/latest.txt)" --from 40 --to 60` (seconds of the match;
+`look` is where the view pointed, in screen terms N/E/S/W with N = up his screen at the start, `want` where it was turning,
+`mode` who turned it, `TURN` the moment a turn began). `--camera-corner=on` in `SKIRMISH_FLAGS` tries the swing.
 
-**Decisions (one line each):** the recorder reads `controls.rig` (no skirmish_mode edit; the camera stays unaware of the
-recorder); the corner pull aims at a spot 8 m round the far end behind the wall (straight at the hidden face put the view
-through the wall); facing the building is judged after the opening on the EMPTY corner (with a squad there the danger
-turn rightly looks at it against the corner); lanes keep 4 m from water (Locks' canal) and come from his half.
-**Watch items:** `camera-trace` runs now carry a per-run timeout (a parse error had hung the light lane 90 minutes);
-the corner workload's staging jump is skipped by the trace (it read as 12 snaps).
-**Questions for the lead:** none blocking.
+**Done (every number with commit, machine, workload, n):**
+- **K5.1 DONE, merged** (d489eaa2b, GREEN builder0, `>> remote: make check exited 0`, test 3360/0, 27 passed + 1 NOT JUDGED;
+  main b31d3ddea, R43.10). The `cam` row: `{"t":"cam", tick, yaw, want, pitch, dist, target:[x,z], mode, turn?}`, the SHOWN
+  pose (yaw degrees, 0 = north/-Z, +left: -90 looks east), `mode` follow / danger / manual / aim-hold / corner; every 1 s and at
+  each automatic turn's start; no rig, no rows. Smoke: Locks 7001 30 s, 34 rows, 3 turns; recording_arrivals.py still reads.
+- **K5.2 DONE** (census sent): `--camera-scenario=corner` + `CameraCorner` (lanes from the cover map, his half only, 4 m off
+  water; hidden squad behind the far end; `--camera-corner-hidden=off` = the empty corner). Today's camera, 9e14c3ade, dev
+  7001-7012, builder0 light: Terminus seen->on screen 0.2 s, facing the building 53 % of the corner seconds; Locks 0.8 s, 57 %.
+- **K5.3 built, OFF.** v1 (aim round the far end) and v2 (R43.27/R43.29: quiet move only, the open side's normal once the
+  squad's centre is past the end where a 30 m sight line is clear, held until his next order / a 45 deg turn / a contact,
+  none within 6 s of an order). `--camera-corner=on`.
+- **K5.4 Bar K5: FAIL, 6 lines** (table below; 10501-10536, 08931da4e, builder2). Kept: D3 seen->on screen 3.98+-0.99 ->
+  0.49+-0.10 s (pooled; Locks' gain), G0 no fog cheat 72/72 identical, no snaps. **v2 STOPPED unspent** (R43.30): on
+  9501-9512 (e6c12fb8d, builder0 light, n 12) D1 pooled 56.3 v 57.6 %, D2 9.5 v 0.0 %, G4 ambush 5.68 v 3.61 /min,
+  G1 Terminus > 135 deg 18.8 v 11.8 %: the 7001-7012 gains did not hold on a second block.
+- **K5.5 clips** (laptop flightdeck, 08931da4e v1, dev, feel only, NOT for him as evidence): `~/camera-clips-round43/
+  corner_locks_7002_08931da4e.mp4` (both takes reach the corner; ON faces the next block: the D2 cause),
+  `corner_locks_7003_08931da4e.mp4` (OFF never reached the corner). No v2 clip (stopped).
+- **Stretch: seconds inside a building** (K4 v2 watch item): dev flag `--camera-solid-escape=on` (OFF) lifts the clearance's
+  glide cap x3 while the camera is inside a solid. e6c12fb8d, builder0 light, Terminus, 7001-7012, n 12: inside ambush 1.59
+  -> 0.86 % of play, attack 1.03 -> 0.62 %; but solid jerks ambush 1.39 -> 2.25 /min (over K3's 1.5 automatic-source line),
+  attack 0.70 -> 1.15; snaps 0; attack clicks on the unit 125/143 v 125/144. A proposal for a bar, not shipped.
+- The off-screen hit marker stays a proposal (needs `game/ui/**`; round 42's text in `streams/archive/round42/camera.md`).
+
+**Decisions (one line each):** the recorder reads `controls.rig` (the camera stays unaware of it); the census is the
+instrument and may know the hidden squad, the rule never (C43.6, pinned by a unit test and G0); lanes from his half
+and 4 m off water (Locks); the staging jump is skipped by the trace; `camera-trace` runs carry a per-run timeout (a
+parse error had hung the light lane 90 min).
+**Questions for the lead:** none blocking. When he next plays, a corner moment like his ("driving north, enemies hiding
+east of the building") with the time in the match lets round 44 build the swing from what actually happened.
+**Requests to other streams:** none. (Native's laptop kill of my check wrapper cost one full check; native was told.)
+**Known issues:** Terminus' K4 war pull looks across buildings toward the arena's middle (traces 130412bdf): it is why
+"facing the building" is high in both arms; a round-44 item if he notices it.
+**Merge notes:** shared edits: `game/match/match_recorder.gd` (the `cam` row, C43.2, merged), `game/modes/skirmish_mode.gd`
+(4 lines beside `rig.facing`: `rig.order_now`, read-only, C42.3), `game/ui/camera_readout.gd` (corner pull on the DANGER
+line). New: `game/camera/camera_corner.gd`, `tests/test_camera_corner.gd`, `tests/test_camera_record.gd` (+ .uid),
+`tests/camera/{camera_recording,corner_nocheat,bar_k5}.py`. All behaviour OFF by default.
+**Next steps (round 44):** take his next recorded corner (cam rows) and rebuild the rule from it; the solid-escape bar.
 
 **Plan (in order; reasons in one line):**
 1. K5.1 the `cam` row (C43.2): first, so his next playtest records the yaw (the orchestrator merges it alone).
