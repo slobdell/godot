@@ -83,4 +83,29 @@ recommendation in your Status; keep building the recommended one.
 
 ## Status
 
-_(worker keeps this current)_
+_(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### NOW (2026-10-28, Fable, worktree `godot-orders`, branch `stream/orders`, started from main 711f3e94f = dbf0bf637's code)
+
+- **Plan (in order):** O0 + O1 as ONE commit (both are additive keys at the same two call sites, one check certifies both,
+  both merge the same minute; CP44.0's `group` and C44.2's `click`) -> quick-remote -> the G1 v9 probe byte-identical v main
+  (locks / crossing / terminus x 7001-7004, 5 squads, click: manoeuvre's R43.34 proof shape, 60 rows) -> `make remote T=check`
+  -> green hash to the orchestrator -> O2 (replay 08-21 to tick 1512 / 1808, the per-squad table, remove candidates one at
+  a time; cause written here BEFORE any fix) -> O3 (the corpus grows his geometry) -> O4 (the fix behind a switch, Bar G1 v10
+  filed before any number on 10801-10848) -> O5 (his case, the acceptance read, shots looked at) -> stretch.
+- **O0 + O1 built (this commit):** `order_selection` stamps `click` (the cursor's ground point before any layout) on every order
+  of a click; `_order_squads` stamps `group` = the squads of an order to two or more; `_copy_pack` carries `group` onto the
+  element's task (e883fc4eb's two lines); `ElementTask.KEYS` + `group`; `UnitCommand.KEYS` + `click`, `group` (the direct,
+  no-element path validates commands key by key and would have refused them: a hole in e883fc4eb that the probe, which runs
+  with elements, never crossed); the recorder's `order` row copies `click` and `group` when present (additive).
+  Test `tests/test_control_order_click_row.gd` (4 tests: row + task on a two-squad click; a one-squad click has `click` and no
+  `group`; `group` survives the re-lays of a three-click route on both the running and the queued legs; an old-style command
+  writes a row without the keys, and the validator takes them). Laptop NATIVE=off, this tree: the new file + recorder /
+  requeue / queued_task / commands / orders / order_refused / preempt / element_task / pack neighbours **71 / 0**.
+- **Decisions:** `click` goes on the one-squad row too (its `to` is the click, but one key the tools can rely on beats a
+  rule); `group` only on orders to two or more squads (C44.3: his one-squad order stays manoeuvre's); loose units' row
+  carries `click`, not `group`.
+- **Questions for the lead:** none yet.
+- **Requests to other streams:** native: `tests/replay_orders.gd` / `ReplaySetup.merge_clicks` may merge a click's rows by
+  `click` + `tick` (today by `to`, which differs per squad, so his group click replays as four orders; it still works).
+

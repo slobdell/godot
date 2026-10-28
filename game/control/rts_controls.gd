@@ -1020,6 +1020,12 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 		return ""
 	if departures != null:
 		departures.cancel(selection.units)  # O2: a new order takes a waiting squad out of the queue
+	# Round 44 (orders, C44.2): the ground point under his cursor rides every order of this click to the recorder's `order`
+	# row (`click`). One squad: its `to` is that point; several: each squad's `to` is its own laid place, and the click was
+	# the one thing his round-43 recording did not hold. A copy: the caller's dictionary is not written.
+	if extra.has("to") and not extra.has("click"):
+		extra = extra.duplicate()
+		extra["click"] = [float(extra["to"][0]), float(extra["to"][1])]
 	# Round 19 (orders, C19.1): a selection holding several squads (two selected together, or one group over both)
 	# is ordered one squad at a time, side by side - never as one heap of vehicles, never as one element.
 	if verb != "stop" and several_squads():
@@ -1385,6 +1391,13 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	for i in squads.size():
 		var squad: Dictionary = squads[i]
 		var given := extra.duplicate()
+		# Round 44 (orders, C44.2): the ground point under his cursor, BEFORE any per-squad layout, rides every squad's order so
+		# the recorder's `order` row carries it (his round-43 recording held each squad's `to` and not his click). CP44.0
+		# (R43.34): `group` = a share of one order to two or more squads, kept through the re-lays that drop `halt_at`.
+		if extra.has("to") and not given.has("click"):
+			given["click"] = [float(extra["to"][0]), float(extra["to"][1])]  # a caller that is not order_selection
+		if squads.size() >= 2:
+			given["group"] = squads.size()
 		if not anchors.is_empty():
 			var at := Orders.clamp_to_arena(anchors[i])
 			given["to"] = [at.x, at.z]
@@ -1423,6 +1436,8 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			first_error = error
 	if not loose.is_empty():
 		var given := extra.duplicate()
+		if extra.has("to") and not given.has("click"):
+			given["click"] = [float(extra["to"][0]), float(extra["to"][1])]  # C44.2: his click, on the loose units' row too
 		if not anchors.is_empty():
 			var at := Orders.clamp_to_arena(anchors[anchors.size() - 1])
 			given["to"] = [at.x, at.z]
@@ -1899,7 +1914,11 @@ func _squads_on_their_elements(squads: Array) -> Array:
 
 
 ## D3 (C35.4): a packed squad's halt (where, in what shape, on what heading) rides its move task, queued or not.
+## Round 44 (CP44.0, R43.34): and `group`, a share of one order to many squads (the task is built key by key, so without this
+## line the key never reached any task; manoeuvre's ElementPlan.grouped() reads it once `halt_at` is dropped by a re-lay).
 func _copy_pack(extra: Dictionary, task: Dictionary) -> void:
+	if extra.has("group") and task["verb"] == "move":
+		task["group"] = int(extra["group"])
 	if extra.has("halt_at") and task["verb"] == "move":
 		for key: String in ["halt_at", "halt_shape", "lay"]:
 			if extra.has(key):
