@@ -62,3 +62,39 @@ ENGAGE_PARSE ?= game/tactics/firing_position.gd game/tactics/element_situation.g
 engage-parse: import ## engage: --check-only on the stream's scripts (ENGAGE_PARSE), the real messages printed
 	@for f in $(ENGAGE_PARSE); do out=$$($(GODOT) --headless --path . --check-only --script res://$$f 2>&1 | grep -E "Parse Error|SCRIPT ERROR|ERROR" | grep -v "depended scripts" || true); \
 		if [ -n "$$out" ]; then echo "== $$f"; echo "$$out" | head -8; else echo "ok $$f"; fi; done
+
+# ---- engage (round 43): his War Rig's turnaround under attack-move (A1) ---------------------------------------------
+# Owner: the engage stream (_agents/streams/engage.md). His recording: _agents/streams/references/round42/playtest/ (gzipped);
+# `engage-his` unpacks it to build/engage/his.jsonl (the probes read plain jsonl).
+ENGAGE_HIS_GZ ?= _agents/streams/references/round42/playtest/2026-10-27T20-00-48-locks.jsonl.gz
+ENGAGE_HIS ?= $(BUILD_DIR)/engage/his.jsonl
+ENGAGE_CREW ?= Green_Guns_1
+ENGAGE_FROM ?= 630
+ENGAGE_TA_SECONDS ?= 30
+$(ENGAGE_HIS): $(ENGAGE_HIS_GZ)
+	@mkdir -p $(BUILD_DIR)/engage
+	zcat $(ENGAGE_HIS_GZ) > $(ENGAGE_HIS)
+
+.PHONY: engage-his engage-rebuild engage-replay-trace engage-paths
+engage-his: $(ENGAGE_HIS) ## engage A1: unpack his Locks 56416 recording to build/engage/his.jsonl
+
+engage-rebuild: import $(ENGAGE_HIS) ## engage A1: census-places rebuild of his match from ENGAGE_FROM, ENGAGE_CREW traced (ENGAGE_FLAGS) -> build/engage/ta_<from>.log
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/turnaround_probe.gd -- \
+		--recording=$(ENGAGE_HIS) --from=$(ENGAGE_FROM) --seconds=$(ENGAGE_TA_SECONDS) --every=30 --crew=$(ENGAGE_CREW) \
+		--crew-trace=$(ENGAGE_CREW) --element-trace=Guns $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/ta_$(ENGAGE_FROM).log 2>&1 || true
+	@grep -E "ENGAGE_TA_SETUP|ENGAGE_TA_SUMMARY|SCRIPT ERROR" $(BUILD_DIR)/engage/ta_$(ENGAGE_FROM).log | cut -c1-400
+
+# The faithful replay (native's tests/replay_orders.gd, CP43.0) with the crew and element traces on; its own recording
+# lands in build/engage/rec/<tag>/ (read it with tools/recording_arrivals.py and tests/replay/divergence.py). ENGAGE_TAG
+# names the run (an arm); ENGAGE_FLAGS are the switches under test (e.g. --attack-shot=off, --nav-off=a11).
+ENGAGE_REPLAY_SECONDS ?= 50
+engage-replay-trace: import $(ENGAGE_HIS) ## engage A1: his match replayed (CP43.0) with --crew-trace=ENGAGE_CREW, ENGAGE_FLAGS -> build/engage/replay_<tag>.log + rec/<tag>/
+	@mkdir -p $(BUILD_DIR)/engage/rec/$(ENGAGE_TAG)
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/replay_orders.gd -- --orders=$(ENGAGE_HIS) \
+		--seconds=$(ENGAGE_REPLAY_SECONDS) --record-dir=$(BUILD_DIR)/engage/rec/$(ENGAGE_TAG) --crew-trace=$(ENGAGE_CREW) \
+		--element-trace=Guns $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/replay_$(ENGAGE_TAG).log 2>&1 || true
+	@grep -E "REPLAY_SETUP|REPLAY_SPAWN|REPLAY_NATIVE|REPLAY_ROSTER|REPLAY_DONE|SCRIPT ERROR" $(BUILD_DIR)/engage/replay_$(ENGAGE_TAG).log | cut -c1-300
+	@$(PYTHON) tools/recording_arrivals.py $$(ls -t $(BUILD_DIR)/engage/rec/$(ENGAGE_TAG)/*.jsonl | head -1) | grep -E "attack_move|===" || true
+
+engage-paths: import ## engage A1: the navmesh's routes on Locks for ENGAGE_LEGS ("x,z>x,z;...")
+	$(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/path_probe.gd -- "--legs=$(ENGAGE_LEGS)" 2>&1 | grep -E "ENGAGE_PATH|SCRIPT ERROR"

@@ -829,6 +829,42 @@ func _crew_trace(s: Dictionary) -> void:
 			"incoming": (s.get("incoming", []) as Array).size(),
 			"slot": [snappedf((element["slot"] as Vector3).x, 0.1), snappedf((element["slot"] as Vector3).z, 0.1)] if element.get("slot") is Vector3 else null,
 			"role": element.get("role", ""), "station": element.get("station") is Vector3}
+	var mover := Movement.of(tank)
+	if mover != null:
+		var reading := mover.reading()
+		var points: PackedVector3Array = reading.get("path_points", PackedVector3Array())
+		var path: Array = []
+		for i in mini(points.size(), 3):
+			path.append([snappedf(points[i].x, 0.1), snappedf(points[i].z, 0.1)])
+		var decided: Dictionary = mover.contact.decided
+		var steer: Variant = reading.get("steer_to")
+		row["mover"] = {"phase": mover.phase, "blocked": mover.blocked_by, "stalled": mover.stalled_ticks,
+				"goal": [snappedf((reading["goal"] as Vector3).x, 0.1), snappedf((reading["goal"] as Vector3).z, 0.1)] if reading.get("goal") is Vector3 else null,
+				"steer": [snappedf((steer as Vector3).x, 0.1), snappedf((steer as Vector3).z, 0.1)] if steer is Vector3 else null,
+				"path": path, "path_n": points.size(), "path_end": [snappedf(points[-1].x, 0.1), snappedf(points[-1].z, 0.1)] if points.size() > 0 else null,
+				"remaining": snappedf(float(reading.get("remaining_m", 0.0)), 0.1), "reachable": reading.get("reachable"),
+				"replan": String(reading.get("replan", "")), "driver": String(decided.get("driver", "")),
+				"throttle": snappedf(float(decided.get("throttle", 0.0)), 0.01), "turn": snappedf(float(decided.get("turn", 0.0)), 0.01),
+				"reverse_why": String(decided.get("why", "")), "kturn_m": snappedf(mover._kturn_left_m, 0.1),
+				"circle_away": mover._circle_away, "circling": mover._circling, "unstick": mover._unstick_left > 0.0,
+				"wedged": mover.wedged, "refusal": PlannerSeam.last_refusal(String(tank.name)),
+				"planner_live": PlannerSeam.live(String(tank.name)), "rerouting": PlannerSeam.rerouting(String(tank.name))}
+		# Round 43 (A1): the street hold (Traffic T1) this crew is under, if any: its spot, and the wait it belongs to.
+		var hold: Array = Traffic.hold_of(String(tank.name))
+		if not hold.is_empty():
+			var held := {"spot": [snappedf((hold[0] as Vector2).x, 0.1), snappedf((hold[0] as Vector2).y, 0.1)], "there": hold[2]}
+			var where: Variant = Traffic._where.get(String(tank.name))
+			if where != null:
+				var cols: Dictionary = Traffic._teams[where[0]]
+				var group := String((cols["group"] as PackedStringArray)[int(where[1])])
+				var wait: Variant = Traffic._waits.get(group)
+				if wait is Dictionary:
+					held["group"] = group
+					held["passer"] = String((wait as Dictionary).get("passer", ""))
+					held["since"] = (wait as Dictionary).get("since")
+					held["key"] = String((wait as Dictionary).get("key", ""))
+					held["spots"] = ((wait as Dictionary).get("spots", {}) as Dictionary).keys()
+			row["hold"] = held
 	print("CREW_TRACE %s" % JSON.stringify(row))
 
 
