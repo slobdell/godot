@@ -237,6 +237,12 @@ already read, or 7001-7012.
   arm lays abreast where the whole front fits the clear ground at the click without any edge or wall slide, else ranks behind; line
   1 becomes "across spread <= the front the clear ground fits" with no slide (aside line 3 unchanged: <= 52 m), and the corpus gets a
   far click INTO the west open area of Locks (his target) and an abreast-fits cell. Lines 2, 4, 6 and the guards stand.
+- **R44.10 (~11:40) Bar B1's deciding shape (b), before any fresh number.** Dev read of manoeuvre's staged nose-on corpus (14 poses,
+  builder0 light, mixed drive, dev only): ON sooner in 5/14, median +0.0 s; +1.7 to +3.6 s on four poses where base crept and drove off
+  anyway, +6.2 s gain on one, his faithful start t144 -> t99. Decide on poses where the BASE sticks (criterion named and committed
+  first; poses jittered by FRESH seeds 11101+): ARM sooner >= 80 % (floor 8), median gain >= 1 s, plus his start past the box < t110;
+  cost ceiling elsewhere per pose ON <= OFF + 3 s and median <= +1 s; workload and unneeded-back-up guards as filed. Tighten the gate
+  on the 14 dev poses first (an unneeded back-up is as visible as nosing in).
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
