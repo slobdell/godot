@@ -106,7 +106,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
   proof: the G1 v9 probe (locks / crossing / terminus x 7001-7004, 5 squads, click; manoeuvre's R43.34 shape) 716e6304e v main
   711f3e94f, builder0 light, native off: 60 / 60 rows byte-identical** (`references/round44/orders/o0-probe-identical-builder0-716e6304e/`).
   Full check: launched on the tip (below), the hash named when it is green.
-- **O2 CAUSE (found 2026-10-28 ~10:30 PDT; his tick-1512 click reproduced to the metre, tick 1808 to ~5 m):**
+- **O2 CAUSE (found 2026-10-28 ~09:50 PDT, laptop clock; his tick-1512 click reproduced to the metre, tick 1808 to ~5 m):**
   - **Where he clicked:** the lab (`tests/test_control_his_locks_click.gd`: his sixteen living vehicles where the census had them,
     on the real Locks navmesh, through `order_selection`) searched the west half for the click whose four places match the
     recording: **tick 1512 = (-35, 97)**, score 4.5 m summed over four squads; **tick 1808 = (-61, 59)**, 21.8 m (the squads were
@@ -183,7 +183,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
 
 
 ### Bars (filed here before any judged number; the orchestrator records them on main)
-- **Bar G1 v10 THE COLUMN ON OPEN GROUND (orders, round 44; filed 2026-10-28 ~12:00 PDT BEFORE any number on 10801-10848; code
+- **Bar G1 v10 THE COLUMN ON OPEN GROUND (orders, round 44; filed 2026-10-28 ~10:05 PDT (laptop clock) BEFORE any number on 10801-10848; code
   add0c2dcb, OFF; dev read on 7001-7006 only).** What he would see: he selects every squad and clicks once. The squad nearest
   his click drives to it; the others fall in behind it along the way they came, one behind another (two side by side at most
   where the ground is wide), nearest in front and farthest at the back; nobody is sent back past where it stands; the places

@@ -1,4 +1,4 @@
-# O5: his tick-1512 click on native's exact replay, before / after G1 v10 (laptop, 2026-10-28 ~13:00 PDT)
+# O5: his tick-1512 click on native's exact replay, before / after G1 v10 (laptop, 2026-10-28 ~10:20 PDT, laptop clock)
 
 Scratch tree = orders 7b9e7d1a4 merged with stream/native 9f4eb4f59 (N2: `--click=TICK:X,Z` replays the four recorded rows as ONE
 group click). `make replay-match RECORDING=.../2026-10-28T08-21-31-locks.jsonl REPLAY_SECONDS=56 CREWS=all REPLAY_FLAGS="[--group-column=always] --click=1512:-35,97"`.
