@@ -145,6 +145,16 @@ never touch processes you didn't start. Never delete builder files that aren't o
   builder0). Named at risk (dev, never a bar): seats on crossing +21 s a run of yield+blocked. kturngoal needs native's twin before ON
   (requested); seats / latch / converge are planner-side, no twin.
 
+- **FILED Bar A7, never move for a shot across water (engage; FILED before any 10649+ number on de626d7e1's rule + the probe's
+  `--named` arm; full text in `streams/engage.md`).** BASE `--engage-water` off v ARM on, both arms `--brains-off=native_decide` (native's
+  decide twins `_obey`'s in_reach, so the skip acts only on GDScript; native twins it before any ON), builder2 J10, 10649-10672; stage:
+  a squad under attack-move across the canal (Locks / Crossing), three Limousines dug in on the far bank. **Deciding:** hop_s (combat
+  hops while engaging a contact across water) AND off_order_m (rise of the crew's distance to its own order goal), each ARM < BASE by
+  >= 2 se. **Guards:** damage_water, first_hit_water_s, deaths, kills, last_a_s (1.645 se); line 8 a named ATTACK on the nearest
+  defender (same seeds, `--named=on`): deaths ARM <= BASE + 2 se; Bar E1's lines on 10673-10696; perf; suite ON with ENGAGE_WATER=on.
+  Census (dev 7001-7012, laptop, n 12, never a bar): 27.1 crew-s a run engaged across water, gun on it 23.0 s, 372 damage across water;
+  19.2 s of hops (5.2 reverse), off-order +22.6 m (max 74.5).
+
 ## Rulings (round 43)
 
 - **R43.1 (2026-10-27 ~20:55) Every replay of his match made before native's fix is void.** Native (N2, laptop): `tests/replay_orders.gd`
