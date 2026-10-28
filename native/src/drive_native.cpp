@@ -2600,8 +2600,15 @@ template <class V>
 Dictionary Drive<V>::park_aside(const Dictionary &order) {
 	static const String parkaside("parkaside");
 	static const StringName aside("_aside"), park("_park_aside");
+	static const StringName parsed("_parsed"), off_table("_off");
 	Timed look("park_aside_look"); // the whole look, the switch read included (its cost ON and OFF: --native-drive-profile)
-	if (!c.parkaside_ready || traffic_off(parkaside) || (bool)order.get(k.direct, false) || !order.has(k.x) || !order.has(k.z)) {
+	if (!c.parkaside_ready) {
+		return order;
+	}
+	// Traffic.off("parkaside"): once parsed it is `_off.has(name)`; read here (a call cost ~2 us a drive, OFF too).
+	const bool off = (bool)c.traffic_script->get(parsed) ? ((Dictionary)c.traffic_script->get(off_table)).has(parkaside)
+														 : traffic_off(parkaside);
+	if (off || (bool)order.get(k.direct, false) || !order.has(k.x) || !order.has(k.z)) {
 		return order;
 	}
 	const Vector3 goal((real_t)(double)order[k.x], 0, (real_t)(double)order[k.z]);
@@ -2629,21 +2636,40 @@ Dictionary Drive<V>::park_aside(const Dictionary &order) {
 		return order;
 	}
 	const double my_r = avoid_radius(tank->get(k.unit_id));
-	const int64_t team = tank->get(k.team);
+	int64_t team = -1;
+	bool team_known = false;
 	const int children = root->get_child_count();
 	for (int i = 0; i < children; i++) {
+		// The disc first (an id lookup and a position: no Variant read for a hull far from the goal), then the rest.
 		Node *child = root->get_child(i);
-		if (child == tank || !is_tank(child) || (int64_t)child->get(k.team) != team) {
+		if (child == tank) {
 			continue;
 		}
-		if ((double)((Vector3)child->get(k.real_velocity)).length() > c.PARKASIDE_STILL_MPS) {
+		const int64_t id = (int64_t)child->get_instance_id();
+		const double *known = c.radius_by_hull.getptr(id);
+		double r;
+		if (known != nullptr) {
+			r = *known;
+		} else {
+			r = is_tank(child) ? avoid_radius(child->get(k.unit_id)) : -1.0;
+			c.radius_by_hull.insert(id, r);
+		}
+		if (r < 0.0) {
 			continue;
 		}
 		const Vector3 at = Object::cast_to<Node3D>(child)->get_global_position();
-		if (flat_distance(goal, Vector3(at.x, 0, at.z)) < avoid_radius(child->get(k.unit_id)) + my_r + c.PARKASIDE_CLEAR_M) {
-			Timed t("park_aside");
-			return cb(park, order);
+		if (!(flat_distance(goal, Vector3(at.x, 0, at.z)) < r + my_r + c.PARKASIDE_CLEAR_M)) {
+			continue;
 		}
+		if (!team_known) {
+			team = tank->get(k.team);
+			team_known = true;
+		}
+		if ((int64_t)child->get(k.team) != team || (double)((Vector3)child->get(k.real_velocity)).length() > c.PARKASIDE_STILL_MPS) {
+			continue;
+		}
+		Timed t("park_aside");
+		return cb(park, order);
 	}
 	return order;
 }

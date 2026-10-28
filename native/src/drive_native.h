@@ -46,6 +46,8 @@ struct DriveConfig {
 	Object *switches = nullptr; // BrainSwitches (native_avoid, native_nav: the A/B flips them between ticks)
 	const struct AvoidanceTable *avoidance = nullptr; // N1's native table (TankNative's)
 	mutable HashMap<String, double> radius_of; // Avoidance.radius_of, a pure function of the unit
+	// Round 43 (parkaside): Avoidance.radius_of by hull instance id (a hull keeps its unit); -1 for a child that is no Tank.
+	mutable HashMap<int64_t, double> radius_by_hull;
 	mutable HashMap<String, double> settle_of; // Movement.settle_radius(unit), pure (Units' table)
 	mutable HashMap<String, double> hull_length_of; // Movement.hull_box(unit)[2], pure (Units' table)
 	mutable HashMap<String, double> hull_width_of; // Movement.hull_box(unit)[0]

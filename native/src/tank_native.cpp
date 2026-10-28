@@ -619,6 +619,7 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.switches = c.keep_switches.get_validated_object();
 	c.avoidance = &avoidance;
 	c.radius_of.clear();
+	c.radius_by_hull.clear();
 	c.settle_of.clear();
 	c.hull_length_of.clear();
 	c.hull_width_of.clear();
