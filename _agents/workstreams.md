@@ -238,6 +238,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
   run through the street and reads the squad's way from its ordered heading: his Guns_1 (route west, never through that street) would
   never be bound, so it removes the cause holdfar patched. Deciding line one the head-on stage can move (held_s of crews whose route
   doesn't cross the street); Bar A's guards + E1's lines; his replay as dev evidence by removal.
+- **R43.19 (~01:15) CP43.0 MERGED: main c57fc616b = native 409f70d66 (builder0 `>> remote: make check exited 0`, 3352 passed / 0 failed,
+  28 targets ALL JUDGED, sim-baseline 53/0, perf-judge PASS 1.00x).** match_recorder.gd auto-merged (native's replay_keys / frame / paused /
+  formation_changed hook beside camera's `cam` row; both additive). merge_check_needed CHECK (camera's files are not in 409f70d66's tree),
+  so main c57fc616b is unchecked as a whole: laptop `make lint-fast` exit 0 (1257 scripts) and `make test FILTER="match_recorder|camera_record"`
+  7 passed / 0 failed. ONE main check after native's second merge (356ce50d2, its check running on builder0).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
