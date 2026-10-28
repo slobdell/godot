@@ -89,7 +89,21 @@ never touch processes you didn't start. Never delete builder files that aren't o
 
 ## Rulings (round 43)
 
-_(none yet)_
+- **R43.1 (2026-10-27 ~20:55) Every replay of his match made before native's fix is void.** Native (N2, laptop): `tests/replay_orders.gd`
+  ran on the WRONG ARENA (`Arena._ready` reads the OS cmdline, not `Main.next_flags`, so `--arena=locks` never arrived: every replay was
+  foundry); `--no-control` removed the objectives; the headless cap fielded 5 squads / 45 units v his laptop's 4 / 20 (the CPU's
+  counter-lineup differed). With `--arena`/`--seed` on the real cmdline, squad cap 4 and his pause orders issued in the pause: every unit
+  0.0 m off his census for the first 10 s; first divergence Green ticks 300-330 (Hunters_2 2.1 m). CP43.0 not yet passed (native library
+  v GDScript next). Engage and manoeuvre told the same minute; the orchestrator's own "did not reproduce" read in game_design.md is void.
+- **R43.2 (~20:55) The big right-click hitch is real; native bisects it as N2a, interleaved with CP43.0 (CP43.0 first on any contest).**
+  Quiet builder0, 2f1620a77 (= b12b17ac7 code): control-timing 3 passed / 2 failed: ordering 30 units 111.85 ms (2485.6 workloads v
+  budget 104), right click 113.92 ms (2649.4); per-frame UI 20.82 v 26 PASS. History: rounds 24-26 3.4-12 ms; round 38 ~109. About a
+  0.3 s freeze on his laptop per big right-click (laptop ~2.75x). Native bisects to the commit on the light lane (measurement only); the
+  fix's owner is ruled when the commit is known (`game/control/**` is nobody's: a GRANT then).
+- **R43.3 (~20:55) builder0's absolute us/tick is not comparable with round 42's.** Its governor reads `powersave` (scaling 55 %):
+  perf-judge PASS 1.06x but ai_usec_per_tick 14,002 v round 42's 7,989 at the same ratio (relative line 17,035 v 25,840 PASS). Judge on
+  ratios and same-window paired arms only; never quote a builder0 us/tick against an earlier round's. (Not changed: builder0's power
+  settings are not ours to touch without the lead.)
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
