@@ -81,6 +81,59 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-27 ~20:40 PDT (Fable). Starting commit 2f1620a77 = main at launch (code b12b17ac7 GREEN builder0, 3343/0; no
 baseline check re-run, per the contract). CP43.0 taken at f6b930a3d (main 84f914f78 merged). Orchestrator session: `godot-b8`.**
 
+### R43.34 and the disk (2026-10-28 ~04:05 PDT): v2 runs AS FILED; the G1 group-click scoping is a round-44 candidate
+
+- **R43.34 (the orchestrator):** C43.5's "G1 v9 group column unchanged" was moved by Bar S's `all` (grouped squads travel as elements,
+  so the bound, the latch's stations and parkaside reach the group click's drive: metres outside after +12 m, the Locks twitch).
+  Scope them OFF for squads under one G1 group click (a task with `halt_at` = a grouped squad; single-squad orders only) and prove
+  the G1 v9 probe byte-identical v base. **Correction (same hour): v2 cannot be re-filed after its numbers (R43.31: the last re-file);
+  if v2's G1 v9 lines move, v2 FAILS as filed; the scoping is built and proved as a ROUND-44 candidate.** v2 runs as filed; if it
+  passes every line incl. G1 v9 it ships as is.
+- **The laptop's disk filled (~03:40 PDT, 0 MB free on /):** my session's temp outputs, the copy-back folders of my worktrees, Bar S's
+  raw guard logs (judges in references) and the void dev reads freed ~3.6 GB; worktrees `godot-manoeuvre-b0` and `-v2b0` removed
+  (s5 / s5m stay for Bar S5's series, v2 for its gate and series; each goes as its series ends). The full disk also emptied this
+  brief on one edit (commit 20e9874d3, reset away) and `after_s5.sh` (the chain unit died on exec): both rewritten; the chain unit is
+  `manoeuvre-r43-barsv2c`; the v2 gate check runs on builder2 (unit `manoeuvre-r43-checkv2`, `~/overnight-manoeuvre/r43/check_v2/
+  check.log`); the v2 series runs the fights and the orders probe from the v2 tree in sequence after builder2's parts (one worktree).
+
+### Bar S v2: FILED 2026-10-28 ~03:35 PDT, BEFORE any number on 10701-10748 (R43.31: the one re-file, ONE arm; the dev read below)
+
+- **The arm judged:** `v2` = `--seat-bound=on --converge-on-crew=on --traffic-on=kturngoal --traffic-on=parkaside` (+ the latch ON) on the
+  FROZEN tree **04ddbcabb** (`wip/manoeuvre-bars-v2` = fed356a8b + parkaside; no game/ or tests/ commit until the series' end line) v `base`
+  = `--shape-latch=off` on the same tree. **parkaside** (`Traffic.DEFAULT_OFF`): in the drive's callback layer (`Movement._manoeuvre`), a
+  move goal within 30 m that lies inside the clearance disc (both radii + 1 m) of a friend that is PARKED (arrived, under 0.3 m/s) and
+  not of my element is taken on the nearest free point of that disc's rim (12 looks, the seat's side first, on the navmesh, clear of
+  every other parked friend), remembered per goal only once moved (a Manoeuvre static by instance id; no exec field); the drive, the
+  asks and ORCA untouched (C43.4). ON runs the GDScript drive (`Traffic._chain_native`: the C++ drive calls `_manoeuvre` back only after
+  its cheap look; native's twin before ON). Test `tests/test_manoeuvre_parkaside.gd` (3; the drive twins beside it, 16/0 on builder2).
+- **Why (Bar S's read):** with the bound the first squad sits compactly at its click and the second squad, clicked 17 m past it, was
+  dealt seats ON its parked hulls (the slot grounding reads the navmesh only); the two then asked each other to give way (Locks
+  yield + blocked +6.9 s a run, +3.4 se). Not squadmates (their seats keep the hull floor).
+- **What it could break (named first):** the same as Bar S's, plus: a crew taken beside a parked friend standing farther from the
+  click (D1), a rim point on a street's wall (never-in), two crews taken to the same rim point (contacts); the G1 v9 group click's
+  drive (Bar S's read: the bounded stations and the latch reach it: metres outside after +12 m, twitch locks 16.9 -> 20.6 m).
+- **Gate:** the frozen tree's full check green FIRST (on builder2, unit `manoeuvre-r43-checkv2`, `~/overnight-manoeuvre/r43/check_v2/
+  check.log`; `after_s5.sh` refuses a red gate). **Workload, deciding, per-arena guards:** exactly Bar S's, unamended, on fresh
+  **10701-10724** (72 paired cells): D1 crews within the bound at 15 s ARM > BASE by >= 2 se AND pooled; D2 start-zone yield +
+  blocked s ARM < BASE by >= 2 se AND pooled; per arena yield + blocked s and k-turn s ARM <= BASE + 2 se. **Guards:** group-order
+  (q3_judge G5 / G6 / G7) crossing / locks / sumps / terminus x 10725-10736 x crew; G1 v9 lines (`orders_judge.py g1v8`: places outside,
+  metres outside after, re-dealt, each ARM <= BASE; the judge's own twitch guard reported) locks / crossing / terminus x 5 squads x
+  click x 10725-10736; fights (wedge trace locks / terminus / sumps x 10737-10742, G1-G4); perf on builder0 quiet (the check's
+  perf-judge stage + `sim-profile` base v v2 us/tick <= 1.05 x for the native-drive arms; the GDScript-drive rules (kturngoal,
+  parkaside) perf-judged after native's twins); no SCRIPT ERROR. **Ships ON only if D1, D2, every per-arena guard and every guard
+  pass; no re-file (R43.31).**
+- **Machine:** `~/overnight-manoeuvre/r43/bars_v2.sh` from unit `manoeuvre-r43-barsv2c` (after Bar S5's series ends and the gate is
+  green): deciding + group on builder2 (J 12), then the fights + the orders probe on builder0 light, all from `../godot-manoeuvre-v2`;
+  evidence `~/overnight-manoeuvre/r43/bars_v2/`, filed under `references/round43/manoeuvre/barsv2-<machine>-04ddbcabb/`.
+- **Dev history (C42.1; dev seeds only; nothing on 10701+ read):** dev reads v2-1 and v2-2 were void: parkaside never fired (a memo
+  written before the other squad had parked; then the arm list's commas split `--traffic-on=kturngoal,parkaside`, so the name was a
+  bare argument: `all` and `v2` byte-identical). **Dev read v2-3 (`~/overnight-manoeuvre/r43/bars-dev/v2dev3`; 7001-7012 + 9501-9512 x
+  locks / terminus / crossing = 72 paired cells, builder2 light, base v all v v2):** all: D1 221 -> 372 (+9.5 se), D2 -2.96 s a run
+  (-1.9 se) FAIL, locks yield+blocked +3.7 s (+2.5 se) FAIL (Bar S's picture again); **v2: D1 221 -> 363 (+1.97 a run, +10.0 se)
+  PASS, D2 1473 -> 1214 s (-3.60 s a run, -2.5 se) PASS, per arena: crossing +0.86 s (+0.4 se) PASS, locks +3.0 s (+1.8 se) PASS,
+  terminus -14.7 s PASS, every k-turn line PASS; never-arrived 249 -> 163, arrival -1.01 s a crew, k-turn -9.0 s a run: VERDICT PASS.**
+  Locks is the line at risk (+1.8 se on dev); the bar decides it, unamended.
+
 ### Bar S: THE DECIDING READ (series 01:21-01:38 PDT, builder2, J 12, native library ON (kturngoal on the GDScript drive by its switch), frozen fed356a8b; 72 paired cells an arm = locks / terminus / crossing x 10401-10424; 0 SCRIPT ERROR in 360 logs; the guards still running)
 
 Evidence `references/round43/manoeuvre/bars-builder2-fed356a8b/judge-deciding-<arm>.txt` (per-cell rows inside); raw logs
