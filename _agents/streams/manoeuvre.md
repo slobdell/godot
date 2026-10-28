@@ -80,8 +80,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 
 ### CLOSE REPORT (round 43, manoeuvre; 2026-10-28 ~05:40 PDT, the v2 guards and the scoping proof still landing: appended below as they do)
 
-**Green hash: fed356a8b** (builder2, `make check exited 0`, 3367 / 0, 26 targets + 2 NOT JUDGED; every later commit on the branch is
-`_agents/` only). **Nothing ships ON this round:** Bar S (four arms) and Bar S v2 (its one re-file) and Bar S5 all FAIL as filed;
+**Ship candidate (R43.42): d61f98cbc** = stream/manoeuvre with every round-43 rule OFF by default (the latch flipped, dc2da5cd2) +
+`wip/manoeuvre-bars-v2` (parkaside) + native's pairs `pair/native-parkaside` 5b5a2c365 and `pair/native-kturngoal` b2dea555a (the
+GDScript-drive gate keeps neither: both twinned) + deckwait v5 and the q3_judge fix cherry-picked from `wip/manoeuvre-s5` + main
+e1a1c2ad7 (DEFAULT_OFF keeps engage's holdfar / holdway / holdroute and my kturngoal / parkaside). **Its ONE full check is running on
+builder2** (unit `manoeuvre-r43-checkship`, `~/overnight-manoeuvre/r43/check_ship/check.log`); its wrapper line names the green
+hash. Before it: **fed356a8b** green (builder2, 3367 / 0) and 04ddbcabb green (3370 / 0). **Nothing ships ON this round:** Bar S (four arms) and Bar S v2 (its one re-file) and Bar S5 all FAIL as filed;
 the seat bound, the converge fix, kturngoal, parkaside and deckwait v5 are on the branch (or its side branches) OFF behind their
 switches with their tests. **The shape latch is ON by default per R43.6 ("switch with =off") but was judged only inside Bar S's
 `seats` arm: the orchestrator decides at the merge whether it stays ON.**
