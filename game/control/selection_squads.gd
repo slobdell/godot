@@ -709,6 +709,7 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 	var last_start := 0
 	var merged := false
 	var wet_steps := 0  # G1 v10: ranks stepped back off water / a deck
+	var front_shift := INF  # G1 v10: the front rank's slide off the line, kept by the ranks behind where it fits
 	while start < by_along.size():
 		var at := _walk_back(straight, behind)
 		if start > 0 and not on_road:
@@ -725,6 +726,16 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		var out_of_room := behind > room + 0.01 or (clamp.call(at[0]) as Vector3).distance_to(at[0]) > 1.0
 		if out_of_room and not last_try:
 			return []
+		if out_of_room and start > 0 and cap < MAX_ABREAST:
+			# G1 v10: no room behind for the rest (his row stood 30 m from the map's edge, the click 20 m ahead): they keep the spot
+			# they stand on, in the column's sense already behind; v9 merged them into the last rank abreast, three wide (dev read 2,
+			# terminus across-20: a 116 m line again).
+			for n in range(start, by_along.size()):
+				var i_s := int(by_along[n][1])
+				var c_s: Vector3 = blocks[i_s]["center"]
+				result[i_s] = Vector3(c_s.x, 0.0, c_s.z)
+				ranks_stayed_for_room += 1
+			return result
 		if out_of_room and start > 0:
 			# The rest join the last rank inside, laid again wider (never two squads on one place).
 			at = last_inside
@@ -747,6 +758,14 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 				abreast -= 1
 		single = single and abreast == 1
 		var shift := 0.0 if single or past_corner else _rank_shift(abreast, widest, sides)
+		# G1 v10: the ranks behind keep the front rank's slide where their frontage fits there (dev read 2: each rank slid to its
+		# own clear width, so a two-abreast column zigzagged, 62-73 m across instead of 58).
+		if cap < MAX_ABREAST and not single and not past_corner:
+			var frontage := abreast * widest + (abreast - 1) * GAP_M
+			if front_shift == INF:
+				front_shift = shift
+			elif front_shift - frontage * 0.5 >= -float(sides[0]) and front_shift + frontage * 0.5 <= float(sides[1]):
+				shift = front_shift
 		var centre := point + rank_across * shift
 		var rank_members: Array = []
 		for n in range(start, start + abreast):
@@ -782,8 +801,9 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 ## G1 v10: how far a wet rank steps back at a time, and how many steps one lay may take in all.
 const WET_STEP_M := 4.0
 const WET_STEPS_MAX := 40
-## Measurement (G1 v10): rank steps taken off water / decks.
+## Measurement (G1 v10): rank steps taken off water / decks; squads that kept their spot for want of room behind.
 static var ranks_wet_stepped := 0
+static var ranks_stayed_for_room := 0
 
 
 ## G1 v10: whether `point`'s footprint (a disc of `reach`) touches water or a deck: the centre and eight points round the disc
@@ -2374,10 +2394,10 @@ static var deck_cleared := 0
 
 
 static func deck_clear(anchors: Array[Vector3], reach: Array, click: Vector3, back: Vector3, near_deck: Callable,
-		clamp: Callable) -> Array[Vector3]:
+		clamp: Callable, skip_at_click := true) -> Array[Vector3]:
 	var out: Array[Vector3] = anchors.duplicate()
-	if not DECK_CLEAR or bool(near_deck.call(Vector3(click.x, 0.0, click.z), DECK_CLEAR_CLICK_M)):
-		return out
+	if not DECK_CLEAR or (skip_at_click and bool(near_deck.call(Vector3(click.x, 0.0, click.z), DECK_CLEAR_CLICK_M))):
+		return out  # G1 v10 passes skip_at_click = false: a click on the lock's bank still clears its ranks off the water
 	var away := TacticsFormation.flat(back)
 	for i in out.size():
 		var r := float(reach[i]) if i < reach.size() else 0.0

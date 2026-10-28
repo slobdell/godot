@@ -18,6 +18,7 @@ import statistics as st
 import sys
 from collections import defaultdict
 
+HOLD_M = 2.0
 BACK_M = 10.0  # SelectionSquads.COLUMN_AWAY_M: a squad whose place is behind its start along the approach by more than this was sent back
 
 
@@ -40,7 +41,11 @@ def read_run(rows, geo):
     if len(anchors) < 2:
         return None
     spread = max(flat(a, b) for a in anchors for b in anchors)
-    asides = [((a[0] - click[0]) * across[0] + (a[1] - click[1]) * across[1]) for a in anchors]
+    # Bar G1 v10b: across and aside are read over the squads the click MOVES (a place more than HOLD_M from where the squad
+    # stands); a squad that holds its spot is not a destination he reads as scattered (the across row near the map's edge:
+    # two squads go to the click, two hold 90 m apart). all_in still counts every squad.
+    moved = [r["anchor"] for r in rows if r.get("anchor") and flat(r["anchor"], r["start"]) > HOLD_M] or anchors
+    asides = [((a[0] - click[0]) * across[0] + (a[1] - click[1]) * across[1]) for a in moved]
     along = lambda p: (p[0] - click[0]) * d[0] + (p[1] - click[1]) * d[1]
     backward = sum(1 for r in rows if r.get("anchor") and along(r["anchor"]) - along(r["start"]) < -BACK_M)
     nearest_start = max(rows, key=lambda r: along(r["start"]))  # farthest along the approach = nearest the click
@@ -50,7 +55,8 @@ def read_run(rows, geo):
     times = [r["arrived_s"] for r in rows]
     all_in = -1.0 if any(t < 0 for t in times) else max(times)
     return {"spread_m": spread, "across_m": max(asides) - min(asides), "aside_max_m": max(abs(a) for a in asides),
-            "backward": backward, "front_ok": front_ok, "all_in_s": all_in, "squads": len(rows)}
+            "backward": backward, "front_ok": front_ok, "all_in_s": all_in, "squads": len(rows), "moved": len(moved),
+            "held": len(rows) - sum(1 for r in rows if r.get("anchor") and flat(r["anchor"], r["start"]) > HOLD_M)}
 
 
 def med(xs):

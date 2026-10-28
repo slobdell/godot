@@ -218,3 +218,24 @@ _(worker keeps this current: report at the top, every number with commit, machin
     near click may squeeze into two ranks abreast (two abreast x two deep + one) rather than spread as the yard allowed.
   - **Plus:** his tick-1512 click on native's exact replay (O5), before / after, top-down shots looked at. A pass ships ON
     (`--group-column=always` the default, `--group-column=off` the escape).
+- **Bar G1 v10b (RE-FILED 2026-10-28 ~11:00 PDT, laptop clock, after two DEV reads on 7001-7006 and BEFORE any number on
+  10801-10848; code: the commit below).** The same bar with two lines re-shaped and the code's dev-read fixes; the dev reads are
+  in the Status above (`references/round44/orders/o3-geometry-dev-builder2/`). Why: the `across` row standing 30 m from the
+  map's edge with the click 20 m ahead has no room for ranks behind, so two squads go to the click and two HOLD where they stand
+  90 m apart; v10 as first filed measured the across-spread and the off-line distance over every destination, holders included,
+  so that cell could never pass while "nobody sent back past where it stands" holds. A squad that holds its spot is not a
+  destination he reads as scattered.
+  - **Deciding 1 (re-shaped):** across_m over the squads the click MOVES (a place > 2 m from where the squad stands): every
+    cell's median <= 60 m, no run > 80 m. **Deciding 3 (re-shaped):** aside_max_m over moved squads, every run <= 52 m.
+    Deciding 2 and 4, the guards, parts B and C, seeds, n and the tree rule: unchanged. `held` (squads that kept their spot) is
+    REPORTED per cell.
+  - **Code since the filing (all under the switch; G1 v9 unchanged, its tests pass):** the near-click keep is skipped on the plain
+    click; places are dealt by distance along the approach (no drive-time re-deal, no whole-squad untangle: it read collinear
+    drives as crossings and swapped ranks end to end); the stay rule is re-read after the lay; ranks keep off water and decks
+    (`wet_or_deck`, stepped back along the line; the deck clear runs even for a click on the lock's bank); the straight-line
+    ground cap does not apply to a column's places (they lie along the road back from the click); the ranks behind keep the
+    front rank's slide where their frontage fits (no zigzag); squads with no room behind hold their spot instead of merging into
+    a three-wide rank.
+  - **Dev read 2 (builder2, native on, bb70c0152 arm v main 711f3e94f tree, 7001-7006, n 6; before the last four fixes):** along /
+    his cells 113-125 -> 2-16 m across; contacts 5893 -> 4921; the failures that led to the fixes above: across-20 cells kept a
+    3-wide rank (116 m), the rearmost squad dealt the front (locks along-80, 17 %), 1-2 never-in on the lock's bank and mouth.

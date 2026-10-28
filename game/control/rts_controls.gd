@@ -1247,7 +1247,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 						func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance_t, from))
 		# Round 34 (C34.11, O1, his scouts sent over the bridge): every anchor where the click reaches it by ground, read on
 		# the navmesh of one of the ordered vehicles.
-		if ground != null:
+		# G1 v10: a column's places lie along the ground road back from his click (column_lay's `reached` / `path_back`), so the
+		# straight-line cap does not apply to them (dev read 2, locks his-20 s7006: the cap pulled three ranks laid north of the
+		# lock back onto the click, a 1.5 x detour round the lock wall; locks across-80: it undid a rank's step off the canal bank).
+		var v10_column := column and SelectionSquads.COLUMN_ALWAYS and not queue_leg
+		if ground != null and not v10_column:
 			anchors = SelectionSquads.ground_cap(anchors, click, SelectionSquads.drive_on(ground), SelectionSquads.crosses_on(ground),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
 			_trace_stage("ground_cap", squads, anchors)
@@ -1293,10 +1297,12 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			var reach: Array = []
 			for block: Dictionary in blocks:
 				reach.append(0.5 * maxf(float(block["width"]), float(block.get("depth", 0.0))))
+			# G1 v10: a column's places keep off water too, and even when his click is at the water's edge (the lock's bank).
 			anchors = SelectionSquads.deck_clear(anchors, reach, click,
 					-SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
-					func(p: Vector3, r: float) -> bool: return SlotGround.near_deck(p, r),
-					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+					(func(p: Vector3, r: float) -> bool: return SelectionSquads.wet_or_deck(p, r)) if v10_column \
+							else (func(p: Vector3, r: float) -> bool: return SlotGround.near_deck(p, r)),
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), not v10_column)
 			_trace_stage("deck_clear", squads, anchors)
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
@@ -1308,7 +1314,12 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		for i in mini(queue_starts.size(), squads.size()):
 			for unit_name: String in squads[i]["units"]:
 				from_leg[unit_name] = queue_starts[i]
-		if (column or (SelectionSquads.whole_on(queue_leg) and (verb == "move" or verb == "attack_move"))) \
+		# G1 v10: a column's places are dealt by distance along the approach as laid (nearest in front) and stay so: the whole-squad
+		# untangle reads collinear drives along one line as crossings and swapped ranks end to end (dev read 2, locks along-80:
+		# the rearmost squad was dealt the front).
+		if v10_column:
+			pass
+		elif (column or (SelectionSquads.whole_on(queue_leg) and (verb == "move" or verb == "attack_move"))) \
 				and anchors.size() >= squads.size():
 			var at_of := func(n: String) -> Vector3: return from_leg[n] if from_leg.has(n) else _flat_position(n)
 			# G1 v5: a column's places go to its squads in the order their crews reach the click by ground.
