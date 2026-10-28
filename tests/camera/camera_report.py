@@ -10,7 +10,7 @@ import json
 import os
 import sys
 
-SOURCES = ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "danger", "cap", "frame", "solid", "hull", "shake",
+SOURCES = ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "danger", "corner", "cap", "frame", "solid", "hull", "shake",
            "all"]
 
 

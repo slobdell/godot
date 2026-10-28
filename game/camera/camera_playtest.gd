@@ -472,6 +472,13 @@ func _corner() -> void:
 	var all := CameraCorner.lanes(cover, Match.DRIVABLE_LIMIT - 6.0, CameraCorner.water_of(Arena.active))
 	print("CAMERA_CORNER_LANES walls=%d lanes=%d right=%d rejects=%s" % [CameraCorner.walls(cover).size(), all.size(),
 			all.filter(func(l: Dictionary) -> bool: return l["side"] == "right").size(), JSON.stringify(CameraCorner.rejects)])
+	# His half only (the side of the middle group 1 starts on): Locks' far-bank lane starts at the lock bridge's mouth in
+	# the enemy's half and opened 0 of 6 dev runs (f8166f5e8), its near-bank twin 6 of 6.
+	var forward: Vector3 = Match.team_frame(controls.team)["forward"]
+	var mine := (from as Vector3).dot(forward)
+	all = all.filter(func(l: Dictionary) -> bool:
+		var at := Vector3((l["start"] as Vector2).x, 0.0, (l["start"] as Vector2).y)
+		return signf(at.dot(forward)) == signf(mine))
 	var near := all.filter(func(l: Dictionary) -> bool: return l["side"] == side)
 	if near.is_empty() and not given:
 		# An arena with corners on one side only (Locks: the canal takes its right lanes): the seed drives the other.

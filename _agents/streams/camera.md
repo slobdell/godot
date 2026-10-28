@@ -94,8 +94,9 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 4. K5.4 Bar K5 filed before any 10501+ number; 5. K5.5 the clip; 6. stretch.
 
 ### Bar K5 (FILED before any number on 10501-10536, 2026-10-27; R-lines from the orchestrator folded in; guards never amended after their numbers)
-**Arms:** BASE `--camera-corner=off` (round 42's danger camera) v ARM `--camera-corner=on`, BOTH on f8166f5e8's code (the
-series commit is named with the result; its full check greens first, C31.1), `make camera-trace`, headless 1920x1080 @60,
+**Arms:** BASE `--camera-corner=off` (round 42's danger camera) v ARM `--camera-corner=on`, BOTH on one commit: f8166f5e8's
+rule plus one workload fix made before any bar number (the corner lanes are drawn from his half only: Locks' far-bank lane
+opened 0 of 6 dev runs; named with the result; its full check greens first, C31.1), `make camera-trace`, headless 1920x1080 @60,
 CPU enemy, seeds 10501-10536 (36 an arm a workload). **Machine: builder2** (builder0 reads load ~15; CAMERA_JOBS=8; camera
 traces are frame-paced, so the box's speed moves no number); a re-queue on preemption reruns the whole workload.
 **Workloads:** CORNER = `--camera-scenario=corner`, 45 s, on Locks and on Terminus (side = seed % 2, falling back to the
