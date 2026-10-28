@@ -781,3 +781,18 @@ at se 7.71, the closest call of the round), B2s v2's deciding flatness (+1.46) a
 B7's Gangs deciding line (+0.35: at the 60 % line, 2.4 points past 2 se), B7's Syndicate FAIL (-1.91, clear), E1's G1 / G3 guards
 (+0.98 / +0.96), Q6's arrival guards (-0.17 / +0.19) and G5 (+0.35). B8's Law read (-0.33 se short of the 2-se firing rule) is why
 Law's counter does not fire. Judge tests 86/86 (laptop).
+
+## Round 43's lines (2026-10-28, native N4, close step 5b)
+
+`tools/judge/lines_r43.py`: 49 lines, every number quoted from *Bars (round 43)* and *Rulings (round 43)* (nothing re-measured):
+Bar A (7; FAIL line 1, R43.18), Bar A6 (4; FAIL 2b, R43.20), Bar A6 v2 (5; FAIL line 1 in both arms, R43.21), Bar A7 (6; PASS every
+line 1-11, ships ON R43.39 at main aa9753028), Bar K5 (7; FAIL 6 lines, R43.27), Bar S (11; FAILS in every arm, R43.31), Bar S v2 (5;
+FAIL on Locks yield+blocked, R43.42) and Bar S5 (4; FAIL, R43.38). K5 v2 has no lines: it stopped unspent on its dev confirmation
+(R43.30), 10537-10572 never read. Bar S's and S5's lines were filed as z only (se units), so they carry noise `none` with a note.
+`inventory.py` -> `_agents/streams/references/round43/native/sizing/inventory.{csv,md}` (682 lines, 318 with a noise estimate);
+`table.py` re-run -> `table.csv` there, **no table change** (no round-43 pair's rows are on main as probe rows). 16 of the round's
+lines carry an se and **none is inside its own noise**. The verdicts within 1.645 se of going the other way: Bar A's deciding FAIL
+(-0.26 se), A6 v2 ARM-WR's 2b PASS (+0.27), **Bar S v2's only FAIL, Locks yield+blocked (-0.40 se: +4.12 s a run v a +3.44 line at
+se 1.72) and its D2 PASS (+0.40)**, so S v2 failed on the round's closest line and a re-read on fresh seeds could go either way; Bar
+A7's off_order_m PASS (+0.52, A7 shipped ON), A6's 2a (+0.61) and line 1 (+0.85), A6 v2 ARM-W's line 1 (-0.77) and 2b (+1.19), A6
+v2 ARM-WR's line 1 (-1.10), A6's 2b FAIL (-1.07), Bar A's G3 (+0.84) and G2 (+1.52). Judge tests 86/86 (laptop).

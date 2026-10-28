@@ -63,7 +63,25 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**REPORT (native, round 43, session 1, 2026-10-28 ~02:20). Every backlog item done (N5 included); waiting only on bars (N4) and ship merges.**
+**FINAL REPORT (native, round 43, 2026-10-28 ~13:30). Every backlog item and stretch done; nothing waiting on the lead.**
+- **Done:** N1 the quiet reads (N4 lint-fast's quiet read never got a quiet window: not done), N2 / CP43.0 (his round-42 match replays
+  exactly), N2a (the G1 v9 hitch bisected), N2b (R43.11 untangle memo), N3 three twins (A7 landed via engage; kturngoal b2dea555a and
+  parkaside 5b5a2c365 ride manoeuvre's close as OFF code), N4 lines_r43 (49 lines, every round-43 bar), N5 `make playtest-report`,
+  stretch `make replay-match`, remote.sh's builder-side log, close step 5b (round 43's inventory + table, judging.md section).
+- **N6 (GRANT tests/run_tests.gd):** the runner FAILS a test file that defines a hook TestCase never calls (before_each,
+  after_each, before_all, after_all, setup, set_up, tear_down, ...: run_tests.gd UNCALLED_HOOKS), naming it with "TestCase calls
+  only teardown()". 6cd8e65e4; test_runner_hooks 2/0 with tests/support/uncalled_hooks_fixture.gd; a demo copy under a test_
+  name FAILS as `<file>` (laptop). Cause: manoeuvre's latch tests armed in before_each, so they passed for the wrong reason.
+- **Merges:** 24744f2df = main c707aff67; 3bc207d16 = main b72f4f13c. **GREEN, to merge at the close: 6cd8e65e4** (main b72f4f13c
+  merged in, lines_r43's 49 lines, step 5b, N6): builder0 `>> remote: make check exited 0`, 3393 passed / 0 failed, 28 targets ALL
+  JUDGED, perf-judge PASS 1.00x (7398 us/tick). The tip above it is this Status only (docs).
+- **Findings:** the kturngoal pair's native-proof had compared GDScript with GDScript (gate lifted in b2dea555a, re-proved C++ v
+  GDScript); the replay's re-run lost --headless/--fixed-fps/--path (6fa677a85); the lock test's atomic-claim race read a late start as
+  two winners (37a9253c1; the lock itself is atomic); S v2 failed on the round's closest line (-0.40 se, judging.md round 43).
+- **Later (not this round):** RtsControls.gate_width's scan in C++ (R43.11); a quiet builder0 window for N4's lint-fast before/after.
+- **Questions for the lead:** none.
+
+**REPORT (native, round 43, session 1, 2026-10-28 ~02:20; superseded by the final report above).**
 - **N5 `make playtest-report RECORDING=<file> [HTML=<out.html>]`: 952d06a78** (on main e90421990). One report of his playtest: (a) the
   match and every order's arrivals (tools/recording_arrivals.py), (b) the camera at each hit and death (the `cam` rows, C43.2; a
   recording from before round 43 says it has none), (c) the replay's divergence over 30 s, all crews, with its verdict line.
@@ -91,12 +109,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Replay fix 6fa677a85:** Godot keeps `--headless`, `--fixed-fps 30` and `--path` out of OS.get_cmdline_args(), so the
   replay's re-run had none: it opened a window on the laptop and could not start on a builder (found running replay-match on
   builder2). ReplaySetup.reexec_args puts them back; test_replay_setup 8/0; his round-42 replay still PASS 10/10 for 20 s (laptop).
+  **GREEN, to merge: 3bc207d16** (builder0 `>> remote: make check exited 0`, 3381 passed / 0 failed, 28 ALL JUDGED, perf-judge PASS 1.00x).
   Builder disk: the pair worktrees are removed after their proofs (lesson 337); the branches are kept.
 - **Merged:** 95331c3cd = main 84f914f78 (R43.1); 2fd2e5d4e rode camera's d489eaa2b (main b31d3ddea); **CP43.0 409f70d66 GREEN**
   (builder0 `>> remote: make check exited 0`, 3352 passed / 0 failed, 28 targets ALL JUDGED, sim-baseline 53/0 unmoved, perf-judge
   PASS 1.00x) = main c57fc616b.
-- **Next merge (one full check on the final tip, named below when it reads):** N2b memo 6afe991bb, REPLAY_SECONDS 82bbe3da8, the
-  budget note 2383d9f94, the trace's command columns, lines_r43 c9f6aadde, **the trig fix 45d5b28ce**, this Status.
+- **(merged in b840544de = main 5cb6b9802):** N2b memo 6afe991bb, REPLAY_SECONDS 82bbe3da8, the budget note 2383d9f94, the trace's
+  command columns, lines_r43 c9f6aadde, the trig fix 45d5b28ce.
 - **CP43.0, final:** his round-42 match replays EXACTLY: 49 s, both teams, 0.0 m for every unit at every census, the 18 deaths on the
   same ticks, Guns_1's turnaround AWAY 82 m as his. Round 41's on its own commit 21b20bdce: 5/5 crews 0.0 m for 20 s (bar PASS); on
   today's code it parts at 16 s (behaviour changed since round 41, real).
@@ -118,12 +137,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **N3 twins (pairs; each stream told directly):**
   - **kturngoal (manoeuvre S3):** `pair/native-kturngoal` a907a541e off fed356a8b. builder2 `exited 0`, 12/0, native-proof EQUAL with
     `--traffic-on=kturngoal` (5cbf9970e14eb29c x3); the drive twin with the goal jumping ahead mid-leg: 1440 drives, 0 mismatches, 6
-    goal-moved ends. Merges at ship with Bar S (manoeuvre runs the bar on its frozen tree).
+    goal-moved ends. **Superseded by b2dea555a** (the gate lift; see FINDING above). Rides manoeuvre's close as OFF code.
   - **A7 (engage `--engage-water`):** `pair/native-a7` 457effa1a off de626d7e1. decide_native's `obey` skips a contact across water;
     the water test natively (ElTerrain.leg_wet, synced once an _obey), the brain's seam through the GDScript. Laptop: seam case
     2400 / 0 (509 changed), Locks' canal 2400 / 0 (74 changed), decide twin 7536 / 0. **Cost** (his match, ENGAGE_WATER on, laptop):
     a per-contact callback was ~1.4 ms a tick (11,292 calls x ~185 us); native ~32 us a tick (upper bound). builder2 `exited 0`,
-    15/0, native-proof EQUAL with `--engage-water=on` (4a04ea921011cd9a x3). Merges at ship with Bar A7.
+    15/0, native-proof EQUAL with `--engage-water=on` (4a04ea921011cd9a x3). **Landed** with A7 ON (R43.39, main aa9753028).
 - **Done:** N1 (but N4 lint-fast quiet read: no quiet window), N2 / CP43.0, N2a, N2b, stretch `make replay-match`, N3 as asked (two
   pairs), N5. **N4:** lines_r43.py b40bd054b, 27 lines: Bar A (R43.18) 7, A6 (R43.20) 4, A6 v2 (R43.21) 5, A7 lines 1-9 (R43.23) 4, K5
   (R43.27) 7. Still to add as verdicts land: S, S5, K5 v2, A7 lines 10-11.

@@ -5,8 +5,8 @@ The same fields, helpers and noise kinds as `lines_r31_34.py` (read its docstrin
 in *Bars (round 43)* / *Rulings (round 43)* in `_agents/workstreams.md` (or the stream's own report); nothing is re-measured.
 Round 43's bars by the seed registry: engage A (10301-10324 deciding, 10325-10348 fight guards + A's pooled extension, 10349-10372
 G1-G5), engage A6 (10373-10396; guards 10397-10400 + 10573-10592), manoeuvre S (10401-10424; guards 10425-10448; bridge 10449-10472),
-camera K5 (10501-10536 an arm; K5 v2 10537-10572); native none. Read so far: A, A6, A6 v2, A7 (1-9), K5; not yet: S, S5, K5 v2,
-A7 lines 10-11.
+camera K5 (10501-10536 an arm; K5 v2 10537-10572); native none. Every bar of the round is read: A, A6, A6 v2, A7 (1-11), K5, S, S v2,
+S5. K5 v2 has no line: it stopped unspent (R43.30: the 9501-9512 dev confirmation failed, 10537-10572 never read).
 """
 from lines_r31_34 import DET, L, band, gain, se_line, up, within  # noqa: F401
 
@@ -89,6 +89,15 @@ LINES += [
     L(line="9 Bar E1's probe byte-identical ON v OFF (10673-10696)", form="deterministic", rule="identical", base="stuck 128.5",
       arm="128.5 crew-s; first hit 7.02 = 7.02 s; deaths 25 = 25", verdict="PASS", noise=DET, **A7),
 ]
+A7S = dict(A7, machine="builder0", n="make check ENGAGE_WATER=on (the suite ON)",
+           source=src43 + " Bars 'Bar A7' ('Lines 10-11 PASS') and R43.39 (shipped ON at main aa9753028)")
+LINES += [
+    L(line="10 perf: check's perf-judge with ENGAGE_WATER=on", form="perf", rule="judged PASS", base="-",
+      arm="perf-judge judged", verdict="PASS", noise=NONE, **A7S),
+    L(line="11 the suite ON: every test passes with ENGAGE_WATER=on", form="deterministic", rule="every test", base="-",
+      arm="every test passed; 1 FAILED = sim-baseline only (crossing, locks, gorge MOVED: the three water maps, re-adopted)",
+      verdict="PASS", noise=DET, **A7S),
+]
 
 # --------------------------------------------------------- Bar K5, the corner swing (camera; READ R43.27: FAILS 6 lines) ---
 k5 = src43 + " Bars 'FILED Bar K5, the corner swing' (FILED eb6deaf78; series 65e6e7e92) and 'READ (R43.27): FAILS 6 lines'"
@@ -110,4 +119,71 @@ LINES += [
       arm="ambush 4.73; attack 7.01", verdict="FAIL", noise=NONE, **K5),
     L(line="G2 K4 v2's lines, G3 K3 v2's lines, G5 own squad on screen, G6 runs clean", form="reported", rule="as filed", base="-",
       arm="all PASS", verdict="PASS", noise=NONE, **K5),
+]
+
+# ------------------------------------------- Bar S, his first order settles (manoeuvre; READ R43.31: FAILS in every arm) ---
+s_src = (src43 + " Bars 'FILED Bar S, his first order settles' (tree FROZEN fed356a8b) and 'READ deciding (R43.31): FAILS as "
+         "filed in every arm'")
+S = {"round": 43, "stream": "manoeuvre", "commit": "fed356a8b", "machine": "builder2",
+     "n": "locks / terminus / crossing x 10401-10424, 72 paired cells an arm, native on", "source": s_src}
+SE = {"note": "filed as z only (se units); no se to build a margin from"}
+LINES += [
+    L(item="S seats (--seat-bound=on + latch)", line="D1 crews seated within the bound by 15 s, ARM better by >= 2 se",
+      form="count", rule="+2 se", base="197 of 720", arm="329 (+9.2 se)", verdict="PASS", noise=dict(NONE, **SE), **S),
+    L(item="S seats (--seat-bound=on + latch)", line="D2 start-zone yield s, ARM better by >= 2 se", form="total", rule="-2 se",
+      base="-", arm="-1.2 se", verdict="FAIL", noise=dict(NONE, **SE), **S),
+    L(item="S seats (--seat-bound=on + latch)", line="guard Locks yield+blocked s ARM <= BASE + 2 se", form="total",
+      rule="<= base + 2 se", base="-", arm="+3.4 se", verdict="FAIL", noise=dict(NONE, **SE), **S),
+    L(item="S converge (--converge-on-crew=on)", line="D1 crews seated by 15 s", form="count", rule="+2 se", base="-",
+      arm="-2.7 se", verdict="FAIL", noise=dict(NONE, **SE), **S),
+    L(item="S converge (--converge-on-crew=on)", line="D2 start-zone yield s", form="total", rule="-2 se", base="-",
+      arm="-4.5 se", verdict="PASS", noise=dict(NONE, **SE), **S),
+    L(item="S kturngoal (--traffic-on=kturngoal)", line="D1 crews seated by 15 s", form="count", rule="+2 se", base="-",
+      arm="-2.7 se", verdict="FAIL", noise=dict(NONE, **SE), **S),
+    L(item="S kturngoal (--traffic-on=kturngoal)", line="D2 start-zone yield s", form="total", rule="-2 se", base="-",
+      arm="-3.4 se (never-arrived 253 -> 214)", verdict="PASS", noise=dict(NONE, **SE), **S),
+    L(item="S all (the shipping candidate)", line="D1 crews seated by 15 s", form="count", rule="+2 se", base="-",
+      arm="+8.9 se", verdict="PASS", noise=dict(NONE, **SE), **S),
+    L(item="S all (the shipping candidate)", line="D2 start-zone yield s", form="total", rule="-2 se", base="-", arm="-0.9 se",
+      verdict="FAIL", noise=dict(NONE, **SE), **S),
+    L(item="S all (the shipping candidate)", line="guard Locks yield+blocked s ARM <= BASE + 2 se", form="total",
+      rule="<= base + 2 se", base="-", arm="+5.4 se", verdict="FAIL", noise=dict(NONE, **SE), **S),
+    L(item="S all (the shipping candidate)", line="guards: fights, G1 v9 corridor, Locks twitch", form="reported",
+      rule="as filed", base="G1 v9 metres outside 168", arm="fights PASS (moving-stuck -58 %); G1 v9 180 FAIL; Locks twitch FAIL",
+      verdict="FAIL", noise=NONE, **S),
+]
+
+# ---------------------------------------- Bar S v2, one arm: all + parkaside (manoeuvre; READ R43.42: FAILS on one line) ---
+s2_src = (src43 + " Bars 'FILED Bar S v2, his first order settles, one arm' (frozen wip/manoeuvre-bars-v2) and 'READ (R43.42): "
+          "FAILS as filed on one line'")
+S2 = {"round": 43, "stream": "manoeuvre", "item": "S v2 all + --traffic-on=parkaside", "commit": "04ddbcabb",
+      "machine": "builder2", "n": "72 paired cells on 10701-10724, 0 SCRIPT ERROR (GDScript drive while ON: native's twin "
+      "5b5a2c365 came after)", "source": s2_src}
+LINES += [
+    L(line="D1 crews seated within the bound by 15 s, ARM better by >= 2 se", form="count", rule="+2 se", base="199 of 720",
+      arm="362 (+13.8 se)", verdict="PASS", noise=dict(NONE, **SE), **S2),
+    L(line="D2 start-zone yield s, ARM better by >= 2 se", form="mean", rule="-2 se", base="-",
+      arm="-3.62 s a run (-2.4 se)", verdict="PASS", noise=gain(3.62 / 2.4, -3.62, k=2.0), **S2),
+    L(line="guard yield+blocked s per arena ARM <= BASE + 2 se: Locks", form="mean", rule="<= base + 2 se", base="-",
+      arm="+4.12 s a run (se 1.72, +2.4 se)", verdict="FAIL", noise=up(1.72, 4.12, k=2.0), **S2),
+    L(line="guard yield+blocked s per arena: crossing, terminus; k-turn lines", form="mean", rule="<= base + 2 se", base="-",
+      arm="crossing +0.1 se, terminus -8.1 se; k-turn PASS", verdict="PASS", noise=dict(NONE, **SE), **S2),
+    L(line="reported: never-arrived, arrival, seat moves", form="reported", rule="-", base="never-arrived 226",
+      arm="142; arrival -0.96 s a crew; seat moves -33 a run", verdict="REPORTED", noise=NONE, **S2),
+]
+
+# --------------------------------------------- Bar S5, the bridge's carried-past wait (manoeuvre; READ R43.38: FAILS) ---
+s5_src = (src43 + " Bars 'FILED Bar S5, the bridge's carried-past wait' (wip/manoeuvre-s5) and 'READ (R43.38): FAILS as "
+          "filed'")
+S5 = {"round": 43, "stream": "manoeuvre", "commit": "wip/manoeuvre-s5 (fed356a8b + overrides + 5a5e7b434)",
+      "machine": "builder2", "n": "fresh 10449-10460 x ticks x both sides, 72 runs an arm, both trees", "source": s5_src}
+LINES += [
+    L(item="S5 deckwait v5 (overrides tree)", line="Q6 rim seconds", form="total", rule="as Bar Q6", base="32.0 s",
+      arm="40.3 s (+26 %, +1.7 se)", verdict="FAIL", noise=dict(NONE, **SE), **S5),
+    L(item="S5 deckwait v5 (overrides tree)", line="Q6 worst crew; crosses; arrival", form="reported", rule="as Bar Q6",
+      base="-", arm="worst crew 3.9 s FAIL; crosses PASS; arrival +0.87 s PASS", verdict="FAIL", noise=NONE, **S5),
+    L(item="S5 deckwait v5 (main tree)", line="Q6 rim seconds", form="total", rule="as Bar Q6", base="32.9 s", arm="38.6 s",
+      verdict="FAIL", noise=NONE, **S5),
+    L(item="S5 deckwait v5 (main tree)", line="Q6 worst crew; crosses; arrival", form="reported", rule="as Bar Q6", base="-",
+      arm="worst 2.5 s PASS; crosses PASS; arrival +0.99 s a run FAIL", verdict="FAIL", noise=NONE, **S5),
 ]
