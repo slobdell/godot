@@ -389,7 +389,7 @@ static func route_arms() -> Dictionary:
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
-			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved,
+			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_settled_passes": chain_settled_passes, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
@@ -405,6 +405,7 @@ static func reset_route_arms() -> void:
 	ManoeuvreCensus.reset()
 	Manoeuvre.reset()
 	kturn_goal_moved = 0
+	parkaside_moved = 0
 	behind_asked = 0
 	behind_reverses = 0
 	post_faces_kept = 0
@@ -1321,8 +1322,102 @@ static func behind_on() -> bool:
 
 
 ## The move order this tick drives: `order` itself, or (Manoeuvre chose `reverse` for this goal) a copy that reverses
+## Round 43 (Bar S v2, `--traffic-on=parkaside`, Traffic.DEFAULT_OFF until judged): A SEAT UNDER A PARKED FRIEND OF ANOTHER SQUAD
+## IS TAKEN BESIDE IT. Bar S's read (fed356a8b, 72 cells an arm): with the seat bound a squad sits compactly at its click, and a
+## second squad clicked 17 m from it is dealt seats ON the parked hulls (the slot grounding reads the navmesh only); the two
+## squads then ask each other to give way (Locks yield + blocked +6.9 s a run). Here, in the callback layer every drive runs
+## (GDScript and C++ alike: C26.2), a move goal within PARKASIDE_REACH_M that lies inside the clearance disc of a friend that is
+## PARKED (arrived, still) and not of my element is moved to the nearest free point on that disc's rim (12 looks round it, the
+## side nearest the seat first, no other parked friend's disc, on the navmesh), ONCE per goal (Manoeuvre's aside memo, by
+## instance id); the drive, the asks and ORCA are untouched (C43.4). Squadmates are not moved for (their seats keep the hull floor).
+const PARKASIDE_SWITCH := "parkaside"
+const PARKASIDE_REACH_M := 30.0
+const PARKASIDE_CLEAR_M := 1.0
+const PARKASIDE_STILL_MPS := 0.3
+const PARKASIDE_LOOKS := 12
+static var parkaside_moved := 0
+
+
+static func parkaside_on() -> bool:
+	return not Traffic.off(PARKASIDE_SWITCH)
+
+
+func _park_aside(order: Dictionary) -> Dictionary:
+	var goal := Vector3(float(order["x"]), 0.0, float(order["z"]))
+	var known: Variant = Manoeuvre.aside_of(self, goal)
+	if known is Vector3:
+		if (known as Vector3).distance_to(goal) < 0.01:
+			return order
+		var moved := order.duplicate()
+		moved["x"] = (known as Vector3).x
+		moved["z"] = (known as Vector3).z
+		return moved
+	var tank := ctl.tank
+	if _flat_distance(tank.global_position, goal) > PARKASIDE_REACH_M or ctl.tanks_root == null:
+		return order
+	var my_r := Avoidance.radius_of(tank.unit_id)
+	var brain := ctl as TankBrain
+	var elements: Variant = Elements.of_match(brain.game_match) if brain != null and brain.game_match != null else null
+	var mine: Variant = elements.of(String(tank.name)) if elements != null else null
+	var parked: Array = []  # [centre (Vector3), clearance radius]
+	for node in ctl.tanks_root.get_children():
+		var other := node as Tank
+		if other == null or other == tank or other.team != tank.team or not other.is_alive():
+			continue
+		if mine != null and elements != null and elements.of(String(other.name)) == mine:
+			continue
+		var mover := Movement.of(other)
+		if (mover != null and mover.phase != "arrived") or other.real_velocity.length() > PARKASIDE_STILL_MPS:
+			continue
+		parked.append([Vector3(other.global_position.x, 0.0, other.global_position.z), Avoidance.radius_of(other.unit_id) + my_r + PARKASIDE_CLEAR_M])
+	var under: Variant = null
+	for entry: Array in parked:
+		if _flat_distance(goal, entry[0]) < float(entry[1]):
+			under = entry
+			break
+	if under == null:
+		Manoeuvre.aside_note(self, goal, goal)
+		return order
+	var centre: Vector3 = under[0]
+	var ring: float = float(under[1]) + 0.5
+	var out := Vector3(goal.x - centre.x, 0.0, goal.z - centre.z)
+	var start := atan2(out.x, -out.z) if out.length_squared() > 0.01 else 0.0
+	var map: RID = tank.get_world_3d().navigation_map if tank.is_inside_tree() else RID()
+	var taken := goal
+	var found := false
+	for i in PARKASIDE_LOOKS:
+		# The side nearest the seat first, then alternately either way round the rim.
+		var step := (i + 1) / 2 * (1 if i % 2 == 1 else -1)
+		var angle := start + step * TAU / PARKASIDE_LOOKS
+		var candidate := centre + Vector3(sin(angle), 0.0, -cos(angle)) * ring
+		if map.is_valid():
+			var on_mesh := NavigationServer3D.map_get_closest_point(map, candidate)
+			if Vector2(on_mesh.x - candidate.x, on_mesh.z - candidate.z).length() > 1.5:
+				continue
+			candidate = Vector3(on_mesh.x, 0.0, on_mesh.z)
+		var clear := true
+		for entry: Array in parked:
+			if _flat_distance(candidate, entry[0]) < float(entry[1]) - 0.01:
+				clear = false
+				break
+		if clear:
+			taken = candidate
+			found = true
+			break
+	Manoeuvre.aside_note(self, goal, taken)
+	if not found:
+		return order
+	parkaside_moved += 1
+	var moved := order.duplicate()
+	moved["x"] = taken.x
+	moved["z"] = taken.z
+	return moved
+
+
 ## onto it with no facing. Called back by the native drive before anything else (C26.2).
 func _manoeuvre(order: Dictionary) -> Dictionary:
+	if parkaside_on() and not bool(order.get("direct", false)) and order.has("x") and order.has("z"):
+		order = _park_aside(order)  # round 43 (Bar S v2): a seat under a parked friend of another squad, taken beside it
 	if not behind_on() or bool(order.get("reverse", false)) or bool(order.get("direct", false)) or wheel_radius() < 0.0:
 		return order
 	var goal := Vector3(float(order["x"]), 0.0, float(order["z"]))
