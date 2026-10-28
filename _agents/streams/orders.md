@@ -198,6 +198,24 @@ _(worker keeps this current: report at the top, every number with commit, machin
   the quay. **Corpus (O3):** `yard_open` added to the maps (an abreast-fits cell: the open yard holds two abreast), and a FIXED
   cell `locks:his:-62/50` (his row along the north edge, a far click INTO the west quay). The geometry line now carries the clear
   ground at the click and the widest squad, for the judge.
+- **Windowed run on the lead's desktop (said before it runs, ~12:50 PDT laptop clock):** six short probe runs with `--probe-shots`
+  (R44.18's three dev cells x main / v10c), top-down frames at arrival and 5 s after; a stray click during them would be an order
+  in a probe match, nothing more.
+- **R44.18's three shots (laptop, e2d1b499f, top-down frames 5 s after the last arrival, main v v10c; looked at, with the rows;
+  `references/round44/orders/o4-shots-dev8-laptop/`):**
+  - **His yard click** (locks, his row along the north edge, click (-35, 97); the probe's row put two squads PAST the click, which
+    his real case did not): v10c = the nearest squad lands ON the click, the two east of it hold in file behind it, and the lone
+    tank standing 20 m past the click is moved 18 m north onto the far side's line: one file along the edge plus one tank
+    aside, no scatter (main: four places 60-90 m apart, one squad sent 30 m south-west). His exact geometry (the lab, no squad
+    past the click): one clean file, the Hunters on the spot.
+  - **A bending street** (crossing along-20 s7001): v10c = one column along the road, the lone tank on the click and the three
+    squads one behind another round the bend (places (-68, 72), (-40, 85), (-5, 85) on the road back); main sent one squad 30 m up
+    a side street and left two where they stood. Visibly one column.
+  - **The Crossing far cell** (crossing his-80 s7001, the click 80 m on, just across the west bridge): v10c = the lone tank
+    crosses to the click, the three squads stand one behind another along the road to the bridge on the near bank (a file, the
+    bridge between its head and its body); main spread them 120 m apart with one squad across the bridge and one holding.
+  No frame shows a scatter the numbers missed. **FROZEN TREE: this commit (docs only over e2d1b499f's code); its full check runs on
+  builder2 after dev read 8, the hash is named here when green, then 10801-10848.**
 - **Decisions:** `click` goes on the one-squad row too (its `to` is the click, but one key the tools can rely on beats a
   rule); `group` only on orders to two or more squads (C44.3: his one-squad order stays manoeuvre's); loose units' row
   carries `click`, not `group`.
