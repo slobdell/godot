@@ -190,8 +190,14 @@ passed + the usual NOT JUDGED pair (perf-judge: not a judging machine; scenario_
   the marker in their first second. 4132802e7: the pack stamps `given["group"] = squads.size()` on every squad of an order to two or
   more (one line in `game/control/rts_controls.gd` and one key in `ElementTask.KEYS`, control's files: a contract line for round 44),
   the re-lays keep it, `grouped()` reads either key.
-- **Proof take 3:** queued behind the ship check on builder2 (unit `manoeuvre-r43-proof3`, `~/overnight-manoeuvre/r43/scope/
-  proof3.sh`, result `proof3.txt`): the tests, then the same probe; the candidate stands only at 60 / 60 identical.
+- **Proof take 3 (4132802e7, builder2 light, 06:22-06:28 PDT, `proof3.txt`, `rows3.jsonl`):** tests 21 / 0; the probe **still 58 of
+  60 differing**, and the scoped rows are byte-identical to take 2's (60 / 60): the `group` key changed nothing, so the leak is not
+  in any path `grouped()` gates. The one path the candidate does not gate: with kturngoal / parkaside ON, `Traffic._chain_native`
+  turns the C++ drive OFF for every crew (the untwinned-rule gate of that tree), and the GDScript drive is not row-identical to the
+  C++ one on this probe. **Bisection running** (`bisect.txt`, `rows4.jsonl`; builder2 light): one arm per rule (seat bound,
+  converge, kturngoal, parkaside, the latch) and a `--brains-off=native_drive` arm with nothing else ON, each v base. If the drive
+  arm alone reproduces the 58, the candidate's proof must run with native's twins (the ship tree, where both rules are twinned and
+  the gate no longer lists them): the candidate is rebased onto the ship at round 44's start and proved there.
 
 ### Bar S v2: FILED 2026-10-28 ~03:35 PDT, BEFORE any number on 10701-10748 (R43.31: the one re-file, ONE arm; the dev read below)
 
