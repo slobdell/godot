@@ -313,15 +313,18 @@ raw logs `~/overnight-manoeuvre/r43/bars_v2/`. The bar as filed; no line amended
 | G terminus yield+blocked / k-turn s | -15.3 (-8.1 se) PASS / -14.6 (-6.5 se) PASS |
 | reported: never-arrived crews (of 720) / arrival s a crew / k-turn s a run / seat moves a run | 226 -> 142 / -0.96 / -8.8 / -32.6 |
 | group-order guards (10725-10736 x 4 maps x crew, 48 paired runs, `judge-group-v2.txt`) | **G5 all-in 74.0 -> 77.8 s (line 77.0) FAIL**; G6 never-in 0.96 -> 1.04 (line 1.13) PASS; G7 contacts 657,611 -> 679,824 (line 690,492) PASS; jam-seconds +2.0 % |
-| fights (10737-10742, G1-G4) and the G1 v9 lines (10725-10736) | running on builder0 light from `../godot-manoeuvre-v2`; recorded below when they end |
-| **verdict as filed (D1 AND D2 AND every guard)** | **FAIL** (the Locks per-arena guard; G5) |
+| fights (locks / terminus / sumps x 10737-10742, 18 paired fights, builder0 light, `judge-fights-v2.txt`) | G1 give-way deaths 52 -> 35 PASS; G2 stuck deaths 116 -> 117 PASS; G3 contacts 388,103 -> 394,827 PASS; **G4 deaths 704 -> 756 FAIL** (line +/- 35; kill share worst move 0.019 < 0.03 PASS); the judge's own D line (moving-stuck s) 356 -> 263 (-26 %, -0.6 se) |
+| G1 v9 lines (locks / crossing / terminus x 5 squads x click x 10725-10736, `judge-g1v9-v2.txt`, `orders_judge.py g1v8`) | places outside 3 -> 3 PASS (<= base); metres outside after being in 375 -> 329 PASS (<= base); re-dealt 0 -> 0 PASS; the judge's own guard **friend contacts 1,935 -> 2,148 FAIL** (line 2,133); places sent away 0 -> 0 PASS; columns laid 12 / bodies kept 24 as base |
+| **verdict as filed (D1 AND D2 AND every guard)** | **FAIL** (the Locks per-arena guard; G5; G4's deaths; the G1 v9 judge's contact guard) |
 
 **The read (after the numbers):** v2 does what he asked everywhere it is measured against his own first order (both deciding lines, by
 a wide margin on D1; a third fewer crews never arrive; seat moves a third of base's), and its cost is the one Bar S named, halved but
 not gone: on Locks five crews converging on seats within 37 m of each other still give way to each other on the way in (+4.1 s a run
 v +7.5). On his 5-squad order (the group guards) v2 also slows the last squad in by 3.8 s a run (G5; Bar S's `all` had passed it
 74.5 -> 73.6): parkaside's seats-beside on a group click is a second thing the round-44 scoping must settle (the candidate below
-leaves a grouped squad's crews to drive as today). **Nothing ships (R43.42)**; the round-44 filing is: the bound + converge + kturngoal
+leaves a grouped squad's crews to drive as today). The fights and the corridor say the same thing a third and fourth way: the
+give-ways and the stuck crews are fewer (G1 -17, moving-stuck -26 %) but the crews that reach their seats faster meet the enemy more
+(+52 deaths of 704, +11 % friendly contacts on the group click; the corridor itself is kept: metres outside after being in -12 %). **Nothing ships (R43.42)**; the round-44 filing is: the bound + converge + kturngoal
 + parkaside scoped to a squad on its own order (the candidate), with Locks' give-way line and G5 as its two named risks.
 
 ### Bar S5: VERDICT FAIL on the deciding lines (series 02:48-04:12 PDT, builder2 light, GDScript drive both arms, trees 55d6344c1 (overrides) / 64b547192 (main); the group guards and fights running for the record)
