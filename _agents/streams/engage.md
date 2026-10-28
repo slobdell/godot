@@ -430,7 +430,10 @@ unchanged since de626d7e1). **A pass ships ON** (1-2 decided, 3-11 within).
 | 8 the named-attack pair: deaths | 60 | 57 | -0.12 | 0.31 | -0.40 | PASS (<= BASE + 2 se); hop_s 656 -> 12, off_order_m 781 -> 405 (z -1.9), damage_total 32576 -> 30929 (se 109), kills 54 -> 53, first_hit 151.9 -> 107.8 |
 | reported | water_s 1353 -> 467, water_far_s 161 -> 50, fire_s 1171 -> 401, hop_rev_s 267 -> 4, hop_far_s 75 -> 2, damage_water 12415 -> 2875 (the across-water attribution, above), hits_water 400 -> 58, first_hit_water_s 138.8 -> 171.7 (se 3.2), crews_far 68 -> 44 | | | | | |
 
-**Lines 10-11 PASS** (builder0, `make remote T="check ENGAGE_WATER=on"` on 5f22f82cc's tree = 8ac00d19b's code with the
+**His seed on the shipped tree** (laptop, 5e6bed8c3's code = 1c20cc1c2, `engage-replay-trace`, native library, shimmed):
+ON (the default) Guns_1 best 43 m from his click and NO drive away (the match leaves his at 15 s: the crews no longer hop
+for the Syndicate line across the canal, so the street hold's mis-aimed verdict at 478 never forms as it did); OFF
+(`--engage-water=off`) his match exactly: AWAY 82 m. **Lines 10-11 PASS** (builder0, `make remote T="check ENGAGE_WATER=on"` on 5f22f82cc's tree = 8ac00d19b's code with the
 rule forced ON, 2845 s, 2026-10-28 ~05:35 PDT: `27 passed, 1 FAILED` where the one FAILED is sim-baseline, as a default-ON
 flip must before its rows are adopted: **crossing, locks and gorge MOVED** (the maps with water between the lines; foundry, yard,
 pit, terminus, sumps, parade, archipelago, cut, docks, yard_open unmoved); every test passed; perf-judge JUDGED on its own line
