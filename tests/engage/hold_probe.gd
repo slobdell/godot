@@ -12,7 +12,8 @@ extends SceneTree
 ##   away_s        crew-seconds (A's crews) UNDER A STREET HOLD with the distance to their own K1 goal rising (> AWAY_M a second):
 ##                 driving away from where they were sent to reach a hold spot (the deciding line; his War Rig: 15 s)
 ##   away_m        the largest rise of that distance under a hold, any crew (his: 82 m)
-##   held_s        crew-seconds holding (Traffic.holding), far_released / far_held: Traffic's counters
+##   held_s        crew-seconds holding (Traffic.holding), a_held_s the same for A's crews (A waited at all: the exercised test),
+##                 far_released / far_held: Traffic's counters
 ##   arrive_a_s    seconds until each A crew is within ARRIVED_M of A's destination (the window when never); last_a_s the last;
 ##                 far_arrive_s the mean over A's far crews (the crews the rule is about: what the player sees of them)
 ##   arrive_b_s    the same for B
@@ -44,6 +45,34 @@ const STAGES := [
 	{"name": "terminus_east", "arena": "terminus", "a": [Vector3(70, 0, 50), Vector3(70, 0, -55)], "b": [Vector3(70, 0, -15), Vector3(70, 0, 75)], "middle": Vector3(70, 0, 0)},
 	{"name": "locks_lock", "arena": "locks", "a": [Vector3(0, 0, 40), Vector3(0, 0, -70)], "b": [Vector3(0, 0, -40), Vector3(0, 0, 70)], "middle": Vector3(0, 0, 0)},
 ]
+## R43.12's SIDE-STREET stage, his geometry planted (Locks, seed 56416, tick 478): squad A's lead crew stands in the east-west
+## corridor between the block at (-30, 42) (40 m square, north edge z 62) with the container_40 at (-30, 66) and the two
+## container_20s at (-42, 80) / (-20, 80): a street ~10 m wide at z 68-77. It has just been told to go SOUTH-WEST (the far quay
+## over the west swing bridge) and its NOSE is still east (his Guns_3, yielding); squad B (his Hunters) comes WEST through the
+## corridor at it. Traffic reads a head-on meeting in a street, A waits, and A's way is read from its crews' noses (east), so the
+## spots go behind the corridor's mouth: north and east, off every A crew's route. A's far crews stand where his War Rigs stood,
+## 60-80 m south-west, their seats south: in round 29's rule they are sent to the spots (AWAY); under holdfar they are released.
+## Explicit placements ([x, z, yaw deg], his census at tick 480; yaw -90 = nose east); `middle` is the corridor's west end.
+## The planting that fires: Terminus's west street (blocks at x -120..-80 and -60..-20, z -20..20, 40 m walls). Squad A has
+## just been told to go EAST along the north ring road (its destination (30, 40)); its lead crew stands at the street's north
+## mouth with its NOSE SOUTH, into the street (his Guns_3, yielding into the corridor), in the open (z 24, past the blocks'
+## end), two squadmates beside it, and its far crews 65-75 m EAST near the destination. Squad B comes NORTH through the street
+## at it. Traffic reads a head-on meeting in a street; A's lead is in the open and B's inside it, so A waits whatever the
+## speeds; A's way reads south (its crews' noses), so the spots go behind the mouth: north of the blocks, 55-70 m WEST of the
+## far crews' seats: AWAY from where they were sent (his geometry). Under holdfar the far crews are released (their route
+## east never passes the west street). Yaw 0 = nose south (-z), 180 = north, -90 = east.
+const SIDE_STAGE := {"name": "terminus_side", "arena": "terminus", "a_to": Vector3(30, 0, 40), "b_to": Vector3(-70, 0, 75),
+	"a_crews": [[-70.0, 24.0, 0.0], [-62.0, 30.0, 0.0], [-78.0, 30.0, 0.0], [-8.0, 58.0, -90.0], [2.0, 52.0, -90.0]],
+	"b_crews": [[-70.0, 2.0, 180.0], [-67.0, -8.0, 180.0], [-73.0, -8.0, 180.0], [-70.0, -17.0, 180.0], [-70.0, -26.0, 180.0]],
+	"middle": Vector3(-70, 0, 10)}
+## R43.12 asked for a side-street workload with his AWAY geometry as a second deciding line, time-boxed. Four plantings (dev
+## 7007-7013, laptop) failed to make it: (1) his corridor with the leads inside it: the verdict went to B on half the seeds
+## (both leads "in the open" by the 6 m containers, the tie by speed); (2) A's lead west of the corridor: its own route found
+## the BRIDGE as the mouth (on the squad's way); (3) both leads inside: the meeting's middle fell between the containers (no
+## street) on 3 of 4 seeds; (4) this terminus stage: every seed a verdict, but the mouth lands on A's own way east, or at the
+## far crews' feet when they are the farthest along the squad's mean heading (the lead), so no crew drives away. The stage is
+## kept for `--stage=terminus_side` and the record; Bar A's seeds all cycle the head-on stages (R43.12's line (1) alone).
+const SIDE_SEEDS_ODD := false
 ## His case's hulls first (gangs: three War Rigs); the other draws keep a squad of 14 m hulls and lighter ones.
 const HULL_SETS := [
 	["gang_tank", "gang_tank", "gang_ifv", "gang_tank", "gang_support"],
@@ -81,8 +110,8 @@ func _run() -> void:
 	var seed_value := int(_flag("seed", "10301"))
 	var seconds := float(_flag("seconds", "75"))
 	var trace := _flag("trace", "off") == "on"
-	var stage: Dictionary = STAGES[seed_value % STAGES.size()]
-	for candidate: Dictionary in STAGES:
+	var stage: Dictionary = SIDE_STAGE if SIDE_SEEDS_ODD and seed_value % 2 == 1 else STAGES[(seed_value / 2) % STAGES.size()]
+	for candidate: Dictionary in STAGES + [SIDE_STAGE]:
 		if String(candidate["name"]) == _flag("stage", ""):
 			stage = candidate
 	var arena := String(stage["arena"])
@@ -97,7 +126,24 @@ func _run() -> void:
 	game_match.set_meta("player_team", Match.Team.GREEN)
 	var members := {}
 	var far_crews: Array = []
-	for squad: String in ["a", "b"]:
+	if stage.has("a_crews"):
+		# The planted stage: every crew where the stage says, the hull set's hulls in order; A's last two are the far crews.
+		for squad: String in ["a", "b"]:
+			var names: Array = []
+			var crews: Array = stage[squad + "_crews"]
+			for i in crews.size():
+				var c: Array = crews[i]
+				var at := Vector3(float(c[0]) + rng.randf_range(-JITTER_M, JITTER_M), 0.0, float(c[1]) + rng.randf_range(-JITTER_M, JITTER_M))
+				var face := deg_to_rad(float(c[2]) + rng.randf_range(-8.0, 8.0))
+				var unit_name := "Green_%s_%d" % [squad.to_upper(), i + 1]
+				names.append(String(lab.unit(Match.Team.GREEN, unit_name, at, face, String(hulls[i])).name))
+				if squad == "a" and i >= crews.size() - 2:
+					far_crews.append(unit_name)
+			members[squad] = names
+		stage = stage.duplicate()
+		stage["a"] = [Vector3((stage["a_crews"][0] as Array)[0], 0.0, (stage["a_crews"][0] as Array)[1]), stage["a_to"]]
+		stage["b"] = [Vector3((stage["b_crews"][0] as Array)[0], 0.0, (stage["b_crews"][0] as Array)[1]), stage["b_to"]]
+	for squad: String in (["a", "b"] if not stage.has("a_crews") else []):
 		var from: Vector3 = stage[squad][0]
 		var to: Vector3 = stage[squad][1]
 		var along := (to - from).normalized()
@@ -123,6 +169,9 @@ func _run() -> void:
 	await lab.start()
 	var far_actual := 0.0
 	for unit_name: String in far_crews:
+		if stage.has("a_crews"):
+			far_actual = maxf(far_actual, _flat(lab.tank_of(unit_name).global_position).distance_to(stage["middle"]))
+			continue
 		var a_along: Vector3 = ((stage["a"][1] as Vector3) - (stage["a"][0] as Vector3)).normalized()
 		far_actual = maxf(far_actual, -(_flat(lab.tank_of(unit_name).global_position) - (stage["a"][0] as Vector3)).dot(a_along))
 	var everyone: Array = []
@@ -147,6 +196,7 @@ func _run() -> void:
 	var away_s := 0.0
 	var away_m := 0.0
 	var held_s := 0.0
+	var a_held_s := 0.0
 	var stuck_s := 0.0
 	var jam_s := 0.0
 	var arrive := {}
@@ -222,6 +272,8 @@ func _run() -> void:
 				var holding := Traffic.holding(unit_name)
 				if holding:
 					held_s += 1.0
+					if squad == "a":
+						a_held_s += 1.0
 				# Away: the distance to its own K1 goal rising while under a hold.
 				var order: Dictionary = orders.call("current", unit_name)
 				var goal: Variant = order.get("goal")
@@ -257,7 +309,7 @@ func _run() -> void:
 	var report := Traffic.report()
 	print("ENGAGE_HOLD %s" % JSON.stringify({"seed": seed_value, "arena": arena, "arm": "on" if not Traffic.off("holdfar") else "off",
 			"stage": stage["name"], "hulls": hulls, "far_m": _r(far_actual), "far_drawn_m": _r(far_m), "far_crews": far_crews, "seconds": seconds,
-			"away_s": away_s, "away_m": _r(away_m), "held_s": held_s,
+			"away_s": away_s, "away_m": _r(away_m), "held_s": held_s, "a_held_s": a_held_s,
 			"far_released": report.get("tr_far_released", 0), "far_held": report.get("tr_far_held", 0),
 			"verdicts": report.get("tr_verdicts", 0), "holds": report.get("tr_holds", 0),
 			"arrive_a_s": a_arrivals, "last_a_s": a_arrivals.max(), "far_arrive_s": _r(far_arrive_mean), "far_arrivals": far_arrivals, "arrive_b_s": b_arrivals, "last_b_s": b_arrivals.max(),

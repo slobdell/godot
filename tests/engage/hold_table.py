@@ -24,7 +24,7 @@ import sys
 
 
 LINES = ["far_arrive_s", "away_s", "away_m", "last_a_s", "contacts_mouth", "contacts_far", "jam_s", "contacts", "contacts_fast",
-         "contacts_cross", "stuck_s", "held_s", "last_b_s", "far_released", "far_held", "verdicts"]
+         "contacts_cross", "stuck_s", "held_s", "a_held_s", "last_b_s", "far_released", "far_held", "verdicts"]
 
 
 def read(folder):
