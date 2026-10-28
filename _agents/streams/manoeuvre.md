@@ -87,13 +87,16 @@ builder0, 3420/0; no baseline check re-run, per the contract). Orchestrator sess
 
 Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for testing only (the brief's option), never committed here.
 
-### WHERE IT STANDS (2026-10-28 ~12:45 PDT): Bars S v3 and A6 v3 FAILED as filed; Bar B1 filed, waiting on native's twin; M1-M5 done
+### WHERE IT STANDS (2026-10-28 ~16:45 PDT): Bars S v3 and A6 v3 FAILED as filed; Bar B1 filed, waiting on native's twin; M1-M5 done
 
-- **Tip: stream/manoeuvre 34ec935c9** (= main 7975d1455 + native's m2m3-r2 pair + this stream). Tests of the stream's files on it
-  (builder0 light, 8172913e1's code): 17 / 0 (`manoeuvre_backout` ON: reverse t4, past the box t93 v 144; `manoeuvre_parkedpass`;
-  `native_exec_state`; `formation_group_scope`; `formation_seat_order`; the corpus test skipped without NOSED_CORPUS). **No full
-  check of the tip yet**: its gate is B1's (below). The last green full check that covers this stream's code: none this round (Bar
-  S v3's gate for 9215b8ab9 was withdrawn after both bars failed; main's batch check of 7975d1455 holds builder0's lock).
+- **Tip: stream/manoeuvre 6b319c75f** (= main 0691e6aad, orders closed, G1 v10c OFF + native's m2m3-r2 pair + this stream; the
+  merge of 9b72f5339 is f56bb7c5f, one conflict in workstreams.md's B1 entry: the stream's R44.16 guard text kept, the orchestrator's
+  "recorded" note appended). Tests of the stream's files (builder0 light, 8172913e1's code): 17 / 0 (`manoeuvre_backout` ON: reverse
+  t4, past the box t93 v 144; `manoeuvre_parkedpass`; `native_exec_state`; `formation_group_scope`; `formation_seat_order`; the
+  corpus test skipped without NOSED_CORPUS). **Full check of the tip: a builder2 check of 74416a85d died at 18/27 (16 min in, no
+  failure; builder2 then unreachable = a Spot preemption, `~/overnight-manoeuvre/r44/check_tip/check.log`); the check of 6b319c75f
+  is running on builder0 (`~/overnight-manoeuvre/r44/check_tip0/check.log`); its verdict goes here.** Main 9b72f5339 is green on
+  builder0 (the orchestrator: 28 targets ALL JUDGED, 3433 / 0); this stream's code differs from it only behind OFF switches.
 - **Shipped ON this round: nothing.** Every rule is OFF behind its switch: round 43's four (scoped to a squad's own order, M1),
   `--traffic-on=backout` (M2), `--traffic-on=parkedpass` (M3), `--seat-order=on` (S v4's half). Bar S v3 FAILED as filed on its new
   wedged guard (R44.7: the bound's press, +9 crew-seconds a run on Locks); Bar A6 v3 FAILED on the head-on hold guard by 0.26 se
