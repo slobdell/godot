@@ -63,7 +63,7 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**REPORT (native, round 43, session 1, 2026-10-28 ~00:00).**
+**REPORT (native, round 43, session 1, 2026-10-28 ~01:30). Every backlog item done; waiting only on bars (N4) and ship merges.**
 - **Merged:** 95331c3cd = main 84f914f78 (R43.1); 2fd2e5d4e rode camera's d489eaa2b (main b31d3ddea); **CP43.0 409f70d66 GREEN**
   (builder0 `>> remote: make check exited 0`, 3352 passed / 0 failed, 28 targets ALL JUDGED, sim-baseline 53/0 unmoved, perf-judge
   PASS 1.00x) = main c57fc616b.
@@ -81,8 +81,23 @@ _(the worker keeps this current: report at the top, every number with commit, ma
   (`REPLAY_TRIG_SHIM`), or says `REPLAY_TRIG_MISMATCH`. Builders (glibc 2.43) were never affected. Engage, manoeuvre told (CC
   orchestrator): any laptop Godot started by hand must go through make or carry the shim.
 - **Later (not this round, R43.11):** RtsControls.gate_width's scan in C++ (the ~7 ms left of a 5-6 squad group click).
-- **Done:** N1 (but N4 lint-fast quiet read: no quiet window), N2 / CP43.0, N2a, N2b, stretch `make replay-match`. **N3:** no twin asked
-  this round so far. **N4:** lines_r43.py has Bar A (R43.18, 7 lines); K5 and A6 when their verdicts land.
+- **Merged since:** b840544de GREEN (builder0 `make check exited 0`, 3354/0, 28 ALL JUDGED, perf-judge 1.00x) = main 5cb6b9802.
+- **GREEN, to merge: 1b6535335** (builder0 `>> remote: make check exited 0`, 3354 passed / 0 failed, 28 ALL JUDGED, perf-judge 1.00x;
+  its own builder log ends `>> builder: make check exited 0`), remote.sh's builder-side log (tools/remote_log.sh: each remote run's output and its
+  `>> builder: make <args> exited N` line in `~/tank_squad/remote-logs/<folder>-<target>-<stamp>.log`, the newest 300 kept; a dead
+  laptop wrapper no longer loses a finished verdict; test_remote_log.sh 11/0; seen live on builder0). A lost session still stops its
+  full check (full_check_lock.sh, round 39, unchanged); the log then ends with the lock's own line.
+- **N3 twins (pairs; each stream told directly):**
+  - **kturngoal (manoeuvre S3):** `pair/native-kturngoal` a907a541e off fed356a8b. builder2 `exited 0`, 12/0, native-proof EQUAL with
+    `--traffic-on=kturngoal` (5cbf9970e14eb29c x3); the drive twin with the goal jumping ahead mid-leg: 1440 drives, 0 mismatches, 6
+    goal-moved ends. Merges at ship with Bar S (manoeuvre runs the bar on its frozen tree).
+  - **A7 (engage `--engage-water`):** `pair/native-a7` 457effa1a off de626d7e1. decide_native's `obey` skips a contact across water;
+    the water test natively (ElTerrain.leg_wet, synced once an _obey), the brain's seam through the GDScript. Laptop: seam case
+    2400 / 0 (509 changed), Locks' canal 2400 / 0 (74 changed), decide twin 7536 / 0. **Cost** (his match, ENGAGE_WATER on, laptop):
+    a per-contact callback was ~1.4 ms a tick (11,292 calls x ~185 us); native ~32 us a tick (upper bound). builder2 `exited 0`,
+    15/0, native-proof EQUAL with `--engage-water=on` (4a04ea921011cd9a x3). Merges at ship with Bar A7.
+- **Done:** N1 (but N4 lint-fast quiet read: no quiet window), N2 / CP43.0, N2a, N2b, stretch `make replay-match`, N3 as asked (two
+  pairs). **N4:** lines_r43.py has Bar A (R43.18, 7 lines); K5, A6, A7, S when their verdicts land.
 - **Questions for the lead:** none. **Note for the orchestrator:** while stopping my superseded tip check I killed two local
   `make remote T=check` process pairs by pattern (4146475/7 mine; 4154223/4 not verified as mine before the kill). No other folder had
   a live run on builder0 afterwards, so it was most likely a duplicate of mine; said here in case anyone's check vanished at ~22:50.
