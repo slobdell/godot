@@ -120,17 +120,6 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**REPORT (native, round 43, session 1, 2026-10-27 ~23:30). In progress.**
-- **Merged:** 95331c3cd (the replay fix) = main 84f914f78 (R43.1). 2fd2e5d4e (C43.2 keys) rode camera's d489eaa2b = main b31d3ddea.
-- **Waiting:** **409f70d66** (CP43.0 complete: formation picks, merged clicks, `make replay-match`, tests) full check RUNNING on
-  builder0; the orchestrator merges it alone. Then ONE full check on the tip **2383d9f94** (+ N2b memo 6afe991bb, REPLAY_SECONDS fix
-  82bbe3da8, the budget-line note) for the second merge.
-- **Plan (order):** N1 quiet reads (done but N4) -> N2 CP43.0 (bar PASS on both recordings) -> N2a bisect (done: G1 v9 ON) -> N2b
-  (R43.11, done: the memo) -> twin gap (native_drive, tick 22) -> N3 twins as asked -> N4 lines_r43 -> stretch `make replay-match`
-  (done).
-- **Later (not this round, R43.11):** RtsControls.gate_width's scan in C++ (the ~7 ms left of a 5-6 squad group click: a navmesh
-  drive query per step, 100 m each side); needs its own identity proof.
-
 **N2a the 30-unit order hitch: G1 v9 ON (merge 09564e582, round 41).** builder2 (loads 2.4-3.6), GDScript path at every commit,
 test_control_scale "ordering 30 units": 8952c3d64 10.90 ms / ratio 96.4; 63fec0c19 10.91 / 96.6; d8cb5c685 11.05 / 97.8; 04513fc92
 10.81 / 95.7; a1af3ba9e (09564e582's parent) 10.90 / 95.6; **09564e582 313.19 / 2747.2**; 21b20bdce 312.57 / 2741.9; main 84f914f78
@@ -157,11 +146,9 @@ census second, replay v his census; bar 3 m, first two orders' crews, 20 s):
    line), not `Main.next_flags`, so `--arena=locks` never arrived: every replay ran on **foundry** (same spawn spots). Fixed in the
    replay (no arena.gd change): it re-runs itself once with the match's switches on its own command line (`REPLAY_REEXEC`).
 4. His planning-pause orders now land in the pause, before the CPU's first plan.
-   -> his round-42 match, **GDScript path: 0.0 m to 10 s**, first parting at tick 300-330.
-5. **The native library:** with it (the build he played) **every unit 0.0 m for 20 s: bar PASS (10/10 crews)**; whole match exact to
-   ~28 s; **his War Rig's turnaround reproduced**: under attack-move Guns_1 drives AWAY 75 m (his match: 82 m). The GDScript path
-   is a different match: the twins part by 1 ULP in two Rust crews' speed at tick 22 (Rust_Eyes_1 |v| 8.791900 v 8.791899; positions
-   equal until tick 26) and that grows chaotically. -> twin item below.
+   -> his round-42 match 0.0 m to 10 s in a hand-started laptop run (the parting after it was the trig trap, item 8).
+5. **The native library + make's trig** (the build he played, through make): **every unit 0.0 m for 20 s: bar PASS (10/10 crews)**;
+   with the trig shim the whole 49 s match is exact (item 8); the GDScript path is the same match bit for bit.
 6. **Round 41's recording (`references/round42/engage/`, seed 49326): an UNRECORDED INPUT.** A formation pick (G / Shift+G / the
    panel, `RtsControls.set_formation`) re-tasks the selected squads without `command_issued`, so the recording never held it: he put
    Hunters, Spears and Spears2 in **column** in the planning pause. The replay now infers those picks from the task rows
@@ -171,6 +158,9 @@ census second, replay v his census; bar 3 m, first two orders' crews, 20 s):
    The recorder now writes a pick as an `order` row with verb `formation` (C43.2, additive), so the next playtest holds it.
 7. One click over several squads is written as one row per squad (same tick, verb, target); replayed as separate one-squad orders it
    is a different order (his tick-806 attack on Rust_Hunters_4: the parting at ~28 s). The replay merges them back (`merge_clicks`).
+8. **The trig shim** (see the REPORT): a laptop Godot started by hand runs glibc 2.39's atan2f, 1 ulp off the CORE-MATH make
+   preloads and the native library carries. With it: 49 s, both teams, 0.0 m, all 18 deaths on the same ticks; the replay shims
+   itself now (`REPLAY_TRIG_SHIM`).
 - **What a replay needs (and now has):** the native state he ran (`native` key; `REPLAY_NATIVE_MISMATCH` warns), the cap, factions,
   switches (`flags`), unrounded spawn, the pause, formation picks. **Not yet held:** a garage army saved under his `user://`
   (the match keeps no doctrine; `REPLAY_ROSTER_MISMATCH` says so instead of diverging silently).

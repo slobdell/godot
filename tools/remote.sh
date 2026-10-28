@@ -269,6 +269,12 @@ if [ -n "\$TANK_SQUAD_QUIET" ] && [ -f tools/quiet_window.sh ]; then
 	bash tools/quiet_window.sh watch $guard_dir ~/$root "\$PWD" build/quiet-window.tsv 15 >/dev/null 2>&1 &
 	watcher=\$!
 fi
+# Round 43 (native): the builder keeps its own copy of this run's output and verdict (tools/remote_log.sh), outside the
+# synced folder, so a laptop wrapper that dies never takes a finished verdict with it (camera lost a 26-of-27 check so).
+if [ -f tools/remote_log.sh ]; then
+	. tools/remote_log.sh
+	remote_log_begin ~/$root/remote-logs "\$(basename "\$PWD")" "\$@"
+fi
 # Round 39 (native): ONE full check per builder, claimed atomically (tools/full_check_lock.sh: a kernel flock on
 # ~/$root/.full-check.lock, dropped when the holder dies). A second full check WAITS here, before any slot, and says so;
 # builder_checks.sh's gate reads the same lock. Light runs never take it; REMOTE_FULL_CHECK_LOCK=0 skips it. The ssh
@@ -287,6 +293,7 @@ if [ -n "\${watcher:-}" ]; then
 	bash tools/quiet_window.sh verdict build/quiet-window.tsv || true
 fi
 write_manifest
+if type remote_log_end >/dev/null 2>&1; then remote_log_end \$make_status "\$@"; fi
 exit \$make_status
 EOF
 
