@@ -377,6 +377,10 @@ already read, or 7001-7012.
   a far-side place, and the edge clamp put it 18 m north on the map edge. Not his geometry (his row stopped short of the click); not
   stopped. **Round-45 note:** a squad standing past his click should join the column, not take an edge seat (his "sent back to the
   north edge" complaint in another form).
+- **R44.21 (~14:00) C44.3 proven for backout and parkedpass on the GDScript path:** default orders probe base v `--traffic-on=backout`,
+  8172913e1 (cf6eabc22's `_backout_leg`-only PID gate; backout in the GDScript-drive gate), builder0 light, 7001-7004 x 3 maps x 5
+  squads: 60/60 byte-identical (proof7); parkedpass 60/60 (proof6). B1's byte-identity guard restored. 9215b8ab9's gate check
+  withdrawn (both its bars already failed): S v3's and A6 v3's perf lines NOT JUDGED.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
