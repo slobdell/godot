@@ -98,8 +98,11 @@ OFF** (`holdway` the ordered-way read, `holdroute` the route-bound release, R43.
 (the first cut released real head-on crews: it judged the crew's current leg); **Bar A6 v2 READ: FAILED its deciding line in
 both arms** (W z -1.23, WR z -0.90; every guard passes); R43.20: both stay OFF with their reads, the item stops for the round. A4 = these bars; A5 = his replay
 by removal (dev, in each bar). Tools on the branch: the rebuild probe, the path probe, CREW_TRACE, `engage-replay-trace`,
-`engage-bar-a` / `engage-bar-a6`. Last green hashes: tests only on the laptop (no full check yet: nothing has passed a bar);
-main 84f914f78 merged at a51c8d5af; the full check comes with a shipping arm's merge candidate.**
+`engage-bar-a` / `engage-bar-a6`. **GREEN: 21dbaf662's code** (= the tools, CREW_TRACE and the three OFF
+traffic rules; every commit after it is Status, the A7 rule and its probe): builder0 `>> remote: make check exited 0`, 3362
+passed / 0 failed, 28 targets ALL JUDGED, sim-baseline every map unmoved, 2026-10-28 ~04:40 PDT. **Bar A7 (the across-water
+rule, `--engage-water=on`): lines 1-9 PASS**; 10-11 (the suite ON check) running; R43.23: ships with native's twin, one check
+on the combined tree. main 84f914f78 merged at a51c8d5af.**
 
 ### A3 (R43.8): the street hold's far crew, built OFF at 724ccb5ce (`holdfar`)
 
