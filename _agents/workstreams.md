@@ -287,6 +287,12 @@ never touch processes you didn't start. Never delete builder files that aren't o
   z -5.2; every guard passed). His War Rig's cause stays shown by removal on his seed (R43.8). Engage moves to A7: the across-water
   ENGAGE choice (R43.5's trace: the cover map's own line ignores water; `_combat_move` hops along the bank), report first, then its bar on
   fresh 10649-10696.
+- **R43.22 (~02:40) Native's second merge: main 5cb6b9802 = native b840544de (builder0 `>> remote: make check exited 0`, 3354 passed / 0
+  failed, 28 targets ALL JUDGED, sim-baseline 53/0, perf-judge PASS 1.00x).** Carries his whole match replaying exactly (the trig shim,
+  45d5b28ce), N2b's memo (output-identical, R43.17), lines_r43. merge_check_needed CHECK (camera's files): the batch's ONE main check runs
+  on builder2 (builder0 held two checks), log `~/orch-r43/main-check-5cb6b9802.log` on the laptop. Not in it: native 1b6535335 (remote.sh
+  keeps verdicts on the builder; its own check next). Twins: kturngoal pair `pair/native-kturngoal` a907a541e ready (laptop 1440 drives,
+  0 mismatches; builder2 native-proof running); A7's decide twin after Bar A7 reads.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 

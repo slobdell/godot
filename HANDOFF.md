@@ -49,6 +49,7 @@ seat bound built OFF (his start re-read: anchor on his click, seats within 32 m)
 check; corner census read (the view faces the wall 53-57 % of a corner). Native: the 30-unit right-click test reads ~112 ms on a quiet box, but its army is 6 squads; his real hitch at 4 squads is ~8 ms
 on the laptop (R43.15; a memo fix, output-identical). builder2 restarted ~21:35 (it idle-stops after 20 min; the loop restarts it when work is pending).
 **~23:00: main b31d3ddea GREEN by inheritance (camera d489eaa2b: builder0 3360/0, 27 + 1 NOT JUDGED) = the `cam` row + native's recorder keys + the replay; `--camera-corner` OFF.** **~01:15: main c57fc616b = + native 409f70d66 (CP43.0, its own check green 3352/0 ALL JUDGED); unchecked as a whole (laptop lint-fast + recorder tests green); one main check after native's 356ce50d2.** Bar A FAILED (holdfar OFF, R43.18); Bar A6 (holdway) and Bar K5 series running on builder2.
+**~02:40: main 5cb6b9802 = + native b840544de (green 3354/0 ALL JUDGED): his whole match replays exactly; the right-click memo. ONE main check of the batch running on builder2 (`~/orch-r43/main-check-5cb6b9802.log`).** Street-hold item stopped (Bar A, A6, A6 v2 failed; R43.21; round-44 candidate: side jam). Bars in flight: K5 (camera), S (manoeuvre), A7 (engage, across water).
 
 ## (DONE) ROUND 42 AS PREPARED (2026-10-26 evening) — kept for the record
 
