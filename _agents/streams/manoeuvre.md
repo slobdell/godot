@@ -108,7 +108,8 @@ Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for
 - **His ask is answered on his own recordings (M5):** on native's exact replay both his boxed War Rigs back out the second he clicks and
   are round the box 2-3 s before main's has moved (the table below); main reproduces his matches (the 5 s stand in the second one).
 - **CP44.0 is merged** (main 875ee5dd0's `group` key); the scoping's byte-identity proof stands (60/60 at proof5; parkedpass 60/60 at
-  proof6; backout 60/60 at proof7 on the GDScript drive).
+  proof6; backout 60/60 at proof7 on the GDScript drive; **proof8 = the same probe on the merged tip df31afba8 after main's G1 v10c
+  column landed OFF: 60 / 60 byte-identical, builder2 light, GDScript drive, `~/overnight-manoeuvre/r44/m1/proof8/`**).
 - **The stretch items:** A6 v3 read (above); the bridge drill crew's own case is GONE on main at 918498713 (18/18, rim crews 0): closed.
 - **Round 45 notes** below (the two-squad press, holdway's one-sided head-on guard, backout on grouped squads after G1 v10, the corpus
   lesson). **Evidence:** `~/overnight-manoeuvre/r44/` (m1 proofs, m2 traces / shots / tests, m3 dev series, m5 replays, s5 removal,
