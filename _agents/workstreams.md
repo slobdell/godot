@@ -75,7 +75,63 @@ builder0 at prep: load 0.00, 77 %, 24 G free.
 deciding + guards); 10949-10996 manoeuvre reserve; 11001-11024 native (lines_r44, any twin pair). Dev seeds: anything at or below 10748
 already read, or 7001-7012.
 
+- **Bar G1 v10 THE COLUMN ON OPEN GROUND (orders, round 44; filed 2026-10-28 ~12:00 PDT in orders' Status f01673852, recorded here by the orchestrator BEFORE any number on 10801-10848; code
+  add0c2dcb, OFF; dev read on 7001-7006 only).** What he would see: he selects every squad and clicks once. The squad nearest
+  his click drives to it; the others fall in behind it along the way they came, one behind another (two side by side at most
+  where the ground is wide), nearest in front and farthest at the back; nobody is sent back past where it stands; the places
+  are never strung across the way he clicked, and the map's edge never pushes a squad off the column. On his Locks click:
+  the Hunters on the spot, the other three hold in file behind. On a far click: one army, one way.
+  - **Arm:** `v10:--group-column=always` (everything else as main: G1 v9 ON). Base `main:`.
+  - **Tree:** a frozen detached worktree at the commit whose full check is named green here (add0c2dcb or a descendant of it
+    with docs only; main's switches as launched).
+  - **Part A, his geometry (DECIDING):** `make orders-geometry` on builder2 (native on; the series lock, re-queue on preemption):
+    locks / crossing / terminus x starts his / along / across x reach 20 / 80 x arm, **FRESH seeds 10801-10824**, n 24 a cell
+    (18 cells, 432 runs an arm). Judge `tests/control/orders_geometry_table.py` per cell (medians over seeds) and per run:
+    1. **across_m** (the places' spread across the approach): every cell's median <= 60 m (two abreast = a 44 m slot + the 14 m
+       gap; main's smoke: 115-126 m), and no run > 80 m;
+    2. **backward** (a place more than 10 m behind its squad's start along the approach): 0 squads in every arm run (main reported);
+    3. **aside_max_m** (the farthest place off the click line, the orchestrator's line on the map-edge push): every run <= 52 m
+       (a two-abreast place is 29 m off the line and RANK_SHIFT_HALF may slide a rank half a slot, 22 m; nothing else may move
+       it); main reported;
+    4. **front_ok** (the squad nearest the click at the start gets the place nearest the click, within 10 m): >= 90 % of runs in
+       every cell;
+    5. **spread_m** reported (end to end; his recording ~100 m for a 44 m move).
+  - **Guards (filed now):** part A: each cell's all-in median <= base x 1.2 + 3 s and never-in no more than base; friendly
+    contacts (the run row's `friend_contacts`) <= base x 1.1 + 5 pooled. **Part B, G1 v9's own lines:** `tests/control/orders_bar.sh
+    b2 g1v8 v10:--group-column=always "10825 ... 10836" <out> 8` (the 12 street cells + his terminus click, n 12 a cell, judge
+    `orders_judge.py g1v8` unamended): every R36.6 probe guard per cell, places outside the corridor <= base + 2, sent away > 10 m
+    <= base + 2, re-dealt 0; yard_open is NOT a guard this time (v10 changes the open yard on purpose: its rows are REPORTED,
+    the deciding lines above judge them through part A). **Part C, fights:** the probe's fight (`--probe-fight=on`, terminus /
+    locks, 5 squads, click) on 10837-10848, n 12 a cell: his kills, his losses, the CPU's losses within base +/- 1.645 se.
+    **C44.3:** a one-squad order never enters this code (squads.size() >= 2), so manoeuvre's one-squad arrival is unchanged by
+    construction; stated, not measured. Fresh-seed series are never amended after their numbers are seen.
+  - **Known risk:** a click right among the squads (every squad within COLUMN_NEAR_M = 30 m along the approach) still keeps
+    today's body (unchanged by v10; not his case, said here before the numbers); a clump of five squads on open ground with a
+    near click may squeeze into two ranks abreast (two abreast x two deep + one) rather than spread as the yard allowed.
+  - **Plus:** his tick-1512 click on native's exact replay (O5), before / after, top-down shots looked at. A pass ships ON
+    (`--group-column=always` the default, `--group-column=off` the escape).
+
 ## Rulings (round 44)
+
+- **R44.1 (2026-10-28 ~10:50) orders' O0 + O1 land as ONE commit (716e6304e):** both are additive keys at the same two call sites;
+  also `UnitCommand.KEYS` + `click`, `group` (the direct no-element path validates key by key). CP44.0 proof: G1 v9 probe 60 / 60
+  byte-identical v main 711f3e94f (builder0 light, native off). Merged alone on its full check's green; manoeuvre told the same minute.
+- **R44.2 (~10:50) the O2 cause and the build:** his tick-1512 click was (-35, 97), 44 m west of his row on the OPEN north yard (lab
+  match 4.5 m summed over four squads); the column never ran (`column_lay` keeps today's body on open ground; G1 v9's deciding cells
+  were streets), `ranks` laid three squads abreast across the click 58 m apart (160 m north-south) and `fit_inside` slid the body 32 m
+  south off the map edge. Orders builds reading A: the column on open ground too (front squad on the click, the rest behind along the
+  way they came, nearest in front, nobody sent back past its spot); Bar G1 v10 adds an edge-clamp line. Reading B (the click is the
+  army's middle) goes to him as the alternative.
+- **R44.3 (~11:00) manoeuvre's M2 cause: his container start.** His War Rig crept ~1 s toward a station a metre ahead, planned the
+  back-up only at tick 30 and left at tick 97; none of round 43's switches touched it (his second match: the same spot, 5 s, unnoticed).
+  `--traffic-on=backout` (e0a746667, OFF): reversing by tick 2, past the box at tick 91 v 142 on his rebuilt start (builder0). M1
+  scoping proof take 5: 591/0, G1 v9 probe 60/60 identical (builder2 light, native ON, CP44.0 lines applied uncommitted). Native twins
+  `backout` (N3, after N1); it ships only inside Bar S v3, with a reverse-into-a-friend risk line.
+- **R44.4 (~11:20) his round-43 matches were not seed 56416.** Both ran `SEED=56416.` (the HANDOFF sentence's full stop); seed -1, the
+  armies from the clock (army seeds 891 for 08-21, 542 for 08-15, recovered from his rosters by native's N2 0d4b08cd8). The replay of
+  both is now exact (laptop, native ON: 20/20 crews 0.0 m for 63 s / 60 s). `make skirmish` keeps digits only (fff546ef6). Orders'
+  O2 lab and manoeuvre's M2 rebuild placed his vehicles from the census, so their causes stand; re-read on the exact replay at O5 / M5.
+  Native: six trial clicks all scatter 60-110 m; z = 117.24 is a hard edge (his Wrenches at exactly (-25.49, 117.24)), as R44.2's slide.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
