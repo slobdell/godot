@@ -118,6 +118,33 @@ already read, or 7001-7012.
   >= 90 % of runs (on a far click every squad moves), and in every cell the arm's held squads <= base's moved-less-than-2-m squads + 1
   a run (median). Dev read 2 (builder2, native on, 7001-7006, dev only): along / his cells across 113-125 m -> 2-16 m, contacts 5893 -> 4921.
 
+- **Bar G1 v10c (RE-FILED on R44.9, 2026-10-28 ~11:45 PDT laptop clock, BEFORE any number on 10801-10848; code: the commit of this
+  text).** His answers: side by side where the open ground fits them, otherwise stacked behind, nearest in front; a short click holds
+  the squads already in place. What he would see: he selects every squad and clicks. Where the ground at his click holds two squads
+  side by side centred on the spot, two land there side by side and the rest stack behind; where it holds one, they land one behind
+  another; nobody slides off the spot toward the open side, nobody is sent back past where it stands, the nearest squad is in front.
+  - **Deciding 1 (re-shaped):** every arm run's across-spread over MOVED squads <= the front the clear ground at the click fits
+    centred with no slide, + 2 m: (fit_abreast - 1) x (widest + 14), fit_abreast = the most squads (<= 2) whose frontage fits twice
+    the narrower clear side (the probe's `clear` at the click, the group scan, 100 m a side).
+  - **Deciding 3 (re-shaped):** every arm run's farthest MOVED place off the click line <= 52 m AND <= half the fitted front + 2 m
+    (no edge or wall slide).
+  - **Deciding 2, 4, 6 (R44.6's shape), the guards (all-in, never-in, contacts; parts B and C), seeds, n, the tree rule:** unchanged.
+  - **Corpus (part A):** locks / crossing / terminus / yard_open x his / along / across x reach 20 / 80 (24 cells) + the fixed cell
+    locks his (-62, 50) (his far click into the west quay): 25 cells x n 24 on 10801-10824, both arms.
+  - **Note for the orchestrator:** the abreast cap stays 2, so line 3's 52 m holds by construction (a two-abreast place is 29 m
+    off the line); with three abreast allowed, line 3 would have to read half the fitted front (58 m).
+
+  - **Code since the filing (all under the switch; G1 v9 unchanged, its tests pass):** the near-click keep is skipped on the plain
+    click; places are dealt by distance along the approach (no drive-time re-deal, no whole-squad untangle: it read collinear
+    drives as crossings and swapped ranks end to end); the stay rule is re-read after the lay; ranks keep off water and decks
+    (`wet_or_deck`, stepped back along the line; the deck clear runs even for a click on the lock's bank); the straight-line
+    ground cap does not apply to a column's places (they lie along the road back from the click); the ranks behind keep the
+    front rank's slide where their frontage fits (no zigzag); squads with no room behind hold their spot instead of merging into
+    a three-wide rank.
+  - **Dev read 2 (builder2, native on, bb70c0152 arm v main 711f3e94f tree, 7001-7006, n 6; before the last four fixes):** along /
+    his cells 113-125 -> 2-16 m across; contacts 5893 -> 4921; the failures that led to the fixes above: across-20 cells kept a
+    3-wide rank (116 m), the rearmost squad dealt the front (locks along-80, 17 %), 1-2 never-in on the lock's bank and mouth.
+  _(Recorded on main by the orchestrator as filed at 0dad32818 on stream/orders. R44.11: two abreast stays the cap this round.)_
 - **FILED Bar S v3, his first order settles AND his War Rig backs out of the box first (manoeuvre; FILED at fba709bfa on stream/manoeuvre before any 10901-10948
   number, recorded on main by the orchestrator; C44.1, C44.3, C44.4, C44.5, R43.42's round-44 shape).** Arms, every switch on ONE frozen commit **9215b8ab9** (``wip/manoeuvre-bars-v3` = stream/manoeuvre 67998860d + orders' CP44.0 commit 716e6304e merged (the `group` key the scoping reads; main's merge of it is pending its check), worktree `../godot-manoeuvre-v3``; no
   game/ or tests/ commit until the series' end line), each v `base` = `--shape-latch=off` on the same tree:
@@ -243,6 +270,10 @@ already read, or 7001-7012.
   first; poses jittered by FRESH seeds 11101+): ARM sooner >= 80 % (floor 8), median gain >= 1 s, plus his start past the box < t110;
   cost ceiling elsewhere per pose ON <= OFF + 3 s and median <= +1 s; workload and unneeded-back-up guards as filed. Tighten the gate
   on the 14 dev poses first (an unneeded back-up is as visible as nosing in).
+- **R44.11 (~11:50) Bar G1 v10c recorded; at most TWO abreast this round.** Fit first as R44.9: abreast as many as fit centred with no
+  slide, capped at 2; the rest stack behind. Three or four abreast where the ground fits (a 102-160 m front) is the shape that
+  dispersed him; the cap keeps line 3's 52 m by construction. Feel question for him after he plays it: on a wide yard, does he want
+  more squads side by side? His west-quay target reads one abreast (the quay is 42-50 m clear): his army arrives in file along it.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
