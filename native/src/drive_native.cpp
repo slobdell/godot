@@ -788,10 +788,11 @@ struct Drive {
 				static const StringName kturn_goal_note("kturn_goal_note");
 				c.manoeuvre_script->call(kturn_goal_note, m, waypoint);
 			}
-			// Round 44 (M2 v2): every look past the 0.5 m exit writes `_departure_hulls = [] ` (no departure look here: the
-			// cheap look does not answer one, backout_look_due).
+			// Round 44 (M2 v2): every look past the 0.5 m exit writes Movement's static scratch `_departure_hulls = []` (no
+			// departure look here: the cheap look does not answer one, backout_look_due).
 			if ((double)to.length() >= 0.5 && c.backout_ready) {
-				v.set__departure_hulls(Array());
+				static const StringName departure_hulls("_departure_hulls");
+				script->set(departure_hulls, Array());
 			}
 		}
 		return answered;
