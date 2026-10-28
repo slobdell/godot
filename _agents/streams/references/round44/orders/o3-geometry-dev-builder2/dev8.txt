@@ -1,0 +1,58 @@
+  FAIL crossing  across r20  n 6/6: fit 1 abreast (across <= 0) | across med 0 (base 124) worst 0 | backward 0 (base 0) | aside max 0 (base 81) | front 100% (base 83%) | held med 2.0 (base 0.0) all-move 0% HELD | spread med 56 (base 125) | all-in -1.0 v 9.7 never 6 v 0
+      straight-line read (R44.13 b): across med 2 (base 125) worst 2 | aside max 2 (base 80)
+  PASS crossing  across r80  n 6/6: fit 1 abreast (across <= 0) | across med 0 (base 6) worst 0 | backward 0 (base 0) | aside max 0 (base 18) | front 100% (base 100%) | held med 0.0 (base 1.0) all-move 100% | spread med 90 (base 108) | all-in 16.0 v 9.8 never 0 v 0
+      straight-line read (R44.13 b): across med 26 (base 25) worst 26 | aside max 24 (base 29)
+  PASS crossing  along  r20  n 6/6: fit 1 abreast (across <= 0) | across med 0 (base 8) worst 0 | backward 0 (base 6) | aside max 0 (base 19) | front 100% (base 100%) | held med 0.0 (base 2.0) all-move 100% | spread med 90 (base 107) | all-in 4.5 v 5.2 never 0 v 0
+      straight-line read (R44.13 b): across med 24 (base 19) worst 29 | aside max 21 (base 22)
+  PASS crossing  along  r80  n 6/6: fit 1 abreast (across <= 0) | across med 0 (base 83) worst 0 | backward 0 (base 0) | aside max 0 (base 56) | front 100% (base 83%) | held med 0.0 (base 0.0) all-move 100% | spread med 90 (base 130) | all-in 49.6 v 3.9 never 1 v 0
+      straight-line read (R44.13 b): across med 22 (base 129) worst 23 | aside max 45 (base 91)
+  PASS crossing  his    r20  n 6/6: fit 1 abreast (across <= 0) | across med 0 (base 5) worst 0 | backward 0 (base 0) | aside max 0 (base 18) | front 100% (base 100%) | held med 0.0 (base 2.5) all-move 100% | spread med 70 (base 100) | all-in 3.2 v 5.8 never 0 v 0
+      straight-line read (R44.13 b): across med 30 (base 18) worst 31 | aside max 30 (base 36)
+  FAIL crossing  his    r80  n 6/6: fit 1 abreast (across <= 0) | across med 0 (base 82) worst 67 FIT | backward 0 (base 0) | aside max 75 (base 99) SLIDE | front 100% (base 83%) | held med 2.0 (base 0.0) all-move 33% HELD | spread med 84 (base 133) | all-in 53.8 v 3.7 never 0 v 0
+      straight-line read (R44.13 b): across med 28 (base 133) worst 37 | aside max 38 (base 108)
+  PASS locks     across r20  n 6/6: fit 2 abreast (across <= 58) | across med 58 (base 116) worst 58 | backward 0 (base 0) | aside max 29 (base 59) | front 100% (base 100%) | held med 0.0 (base 0.0) all-move 100% | spread med 68 (base 116) | all-in 6.1 v 6.0 never 0 v 0
+      straight-line read (R44.13 b): across med 58 (base 116) worst 58 | aside max 29 (base 59)
+  PASS locks     across r80  n 6/6: fit 1 abreast (across <= 29) | across med 29 (base 118) worst 58 | backward 0 (base 0) | aside max 29 (base 64) | front 100% (base 100%) | held med 0.0 (base 0.0) all-move 100% | spread med 78 (base 118) | all-in 15.7 v 8.3 never 0 v 0
+      straight-line read (R44.13 b): across med 29 (base 118) worst 58 | aside max 29 (base 65)
+  FAIL locks     along  r20  n 6/6: fit 1 abreast (across <= 29) | across med 4 (base 116) worst 35 FIT | backward 1 (base 2) | aside max 29 (base 62) SLIDE | front 100% (base 100%) | held med 1.5 (base 0.0) all-move 17% HELD | spread med 102 (base 116) | all-in 21.4 v 0.9 never 2 v 0
+      straight-line read (R44.13 b): across med 1 (base 113) worst 23 | aside max 29 (base 62)
+  PASS locks     along  r80  n 6/6: fit 2 abreast (across <= 58) | across med 56 (base 114) worst 58 | backward 0 (base 0) | aside max 29 (base 61) | front 100% (base 17%) | held med 0.0 (base 0.0) all-move 100% | spread med 166 (base 116) | all-in 44.3 v 21.2 never 0 v 0
+      straight-line read (R44.13 b): across med 58 (base 116) worst 58 | aside max 29 (base 62)
+  FAIL locks     his    r-1  n 6/6: fit 1 abreast (across <= 0) | across med 2 (base 2) worst 2 FIT | backward 0 (base 6) | aside max 2 (base 2) SLIDE | front 100% (base 0%) | held med 0.0 (base 2.0) all-move 100% | spread med 79 (base 89) | all-in 5.8 v 8.3 never 0 v 0
+      straight-line read (R44.13 b): across med 25 (base 3) worst 25 | aside max 22 (base 3)
+  FAIL locks     his    r20  n 6/6: fit 1 abreast (across <= 0) | across med 0 (base 118) worst 31 FIT | backward 3 (base 0) | aside max 20 (base 68) SLIDE | front 100% (base 100%) | held med 3.0 (base 0.0) all-move 0% HELD | spread med 70 (base 118) | all-in -1.0 v 7.6 never 6 v 0
+      straight-line read (R44.13 b): across med 0 (base 117) worst 20 | aside max 20 (base 67)
+  PASS locks     his    r80  n 6/6: fit 1 abreast (across <= 0) | across med 0 (base 125) worst 0 | backward 0 (base 0) | aside max 0 (base 68) | front 100% (base 83%) | held med 0.0 (base 0.0) all-move 100% | spread med 157 (base 125) | all-in 34.7 v 14.1 never 0 v 0
+      straight-line read (R44.13 b): across med 6 (base 125) worst 12 | aside max 12 (base 68)
+  FAIL terminus  across r20  n 6/6: fit 1 abreast (across <= 0) | across med 0 (base 116) worst 0 | backward 0 (base 0) | aside max 0 (base 59) | front 100% (base 83%) | held med 2.0 (base 0.0) all-move 0% | spread med 55 (base 116) | all-in 7.7 v 14.3 GUARD never 0 v 0
+      straight-line read (R44.13 b): across med 0 (base 116) worst 3 | aside max 3 (base 59)
+  FAIL terminus  across r80  n 6/6: fit 1 abreast (across <= 29) | across med 29 (base 117) worst 58 | backward 0 (base 0) | aside max 29 (base 74) | front 100% (base 50%) | held med 0.0 (base 0.0) all-move 100% | spread med 83 (base 121) | all-in 21.8 v 19.1 never 0 v 1 GUARD
+      straight-line read (R44.13 b): across med 32 (base 120) worst 58 | aside max 29 (base 75)
+  FAIL terminus  along  r20  n 6/6: fit 1 abreast (across <= 29) | across med 1 (base 118) worst 3 | backward 0 (base 0) | aside max 32 (base 65) SLIDE | front 100% (base 67%) | held med 1.0 (base 0.0) all-move 50% | spread med 107 (base 118) | all-in 34.2 v 5.7 never 0 v 0
+      straight-line read (R44.13 b): across med 2 (base 118) worst 12 | aside max 29 (base 65)
+  PASS terminus  along  r80  n 6/6: fit 2 abreast (across <= 58) | across med 58 (base 74) worst 58 | backward 0 (base 0) | aside max 29 (base 61) | front 100% (base 17%) | held med 0.0 (base 0.0) all-move 100% | spread med 86 (base 116) | all-in 51.2 v 21.8 never 0 v 0
+      straight-line read (R44.13 b): across med 58 (base 116) worst 69 | aside max 47 (base 63)
+  PASS terminus  his    r20  n 6/6: fit 1 abreast (across <= 0) | across med 1 (base 98) worst 58 | backward 0 (base 0) | aside max 29 (base 68) | front 100% (base 100%) | held med 0.0 (base 0.0) all-move 83% | spread med 84 (base 119) | all-in 19.4 v 5.7 never 0 v 0
+      straight-line read (R44.13 b): across med 7 (base 114) worst 58 | aside max 31 (base 67)
+  PASS terminus  his    r80  n 6/6: fit 1 abreast (across <= 29) | across med 29 (base 110) worst 58 | backward 0 (base 0) | aside max 29 (base 64) | front 100% (base 67%) | held med 0.0 (base 0.0) all-move 100% | spread med 135 (base 119) | all-in 38.4 v 15.2 never 0 v 0
+      straight-line read (R44.13 b): across med 31 (base 113) worst 66 | aside max 37 (base 63)
+  PASS yard_open across r20  n 6/6: fit 2 abreast (across <= 58) | across med 58 (base 113) worst 58 | backward 0 (base 0) | aside max 29 (base 67) | front 100% (base 100%) | held med 0.0 (base 0.0) all-move 100% | spread med 68 (base 116) | all-in 5.5 v 3.5 never 0 v 0
+      straight-line read (R44.13 b): across med 58 (base 116) worst 59 | aside max 30 (base 67)
+  FAIL yard_open across r80  n 6/6: fit 1 abreast (across <= 0) | across med 0 (base 115) worst 58 | backward 0 (base 0) | aside max 29 (base 58) | front 100% (base 100%) | held med 0.0 (base 0.0) all-move 100% | spread med 83 (base 116) | all-in 11.8 v 22.5 GUARD never 0 v 0
+      straight-line read (R44.13 b): across med 7 (base 116) worst 65 | aside max 36 (base 58)
+  PASS yard_open along  r20  n 6/6: fit 2 abreast (across <= 58) | across med 58 (base 116) worst 58 | backward 0 (base 0) | aside max 29 (base 58) | front 100% (base 100%) | held med 0.0 (base 0.0) all-move 100% | spread med 80 (base 116) | all-in 27.5 v 8.7 never 0 v 0
+      straight-line read (R44.13 b): across med 58 (base 116) worst 58 | aside max 29 (base 58)
+  PASS yard_open along  r80  n 6/6: fit 2 abreast (across <= 58) | across med 57 (base 111) worst 58 | backward 0 (base 0) | aside max 29 (base 63) | front 100% (base 17%) | held med 0.0 (base 0.0) all-move 100% | spread med 111 (base 116) | all-in 31.9 v 12.6 never 0 v 0
+      straight-line read (R44.13 b): across med 58 (base 116) worst 58 | aside max 30 (base 63)
+  FAIL yard_open his    r20  n 6/6: fit 1 abreast (across <= 29) | across med 35 (base 116) worst 58 FIT | backward 0 (base 0) | aside max 29 (base 58) SLIDE | front 100% (base 100%) | held med 0.0 (base 0.0) all-move 100% | spread med 84 (base 116) | all-in 19.6 v 5.2 never 0 v 0
+      straight-line read (R44.13 b): across med 36 (base 115) worst 64 | aside max 35 (base 58)
+  PASS yard_open his    r80  n 6/6: fit 2 abreast (across <= 58) | across med 58 (base 116) worst 58 | backward 0 (base 0) | aside max 29 (base 60) | front 100% (base 100%) | held med 0.0 (base 0.0) all-move 100% | spread med 80 (base 116) | all-in 25.6 v 11.4 never 0 v 0
+      straight-line read (R44.13 b): across med 60 (base 116) worst 60 | aside max 32 (base 60)
+FAIL deciding 1 (R44.9): every arm run's across-spread (moved squads) <= the front the clear ground fits centred, + 2 m
+FAIL deciding 2: squads sent back (> 10 m behind their start along the approach) = 0 every arm run
+FAIL deciding 3: farthest moved place off the click line <= 52 m and <= half the fitted front + 2 m, every arm run
+PASS deciding 4: the nearest squad lands in front in >= 90 % of runs every cell
+FAIL deciding 6 (R44.5 / R44.6): reach-80 cells move every squad in >= 90 % of runs and hold <= base's unmoved + 1; reach-20 runs hold only squads already within the column's length
+PASS guard friend_contacts (part A, pooled) 5478 -> 2840 (<= 6030.8)
+FAIL guard part A all-in / never-in per cell
+VERDICT Bar G1 v10: FAIL (A False, B False, C False)

@@ -1,0 +1,14 @@
+{
+  "name": "Orders probe, his Locks army: 4 squads as he fielded them (2026-10-28T08-21-31)",
+  "note": "Round 44 O3 (tests/orders_probe_geometry.gd): his roster at the click, Gangs: five IFVs, four scouts and a tank, three support trucks and two IFVs, and the one surviving gun tank on its own (a squad of one takes a full rank slot in today's body). Formed and holding until ordered.",
+  "squads": [
+    {"name": "Hunters", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "gang_ifv"}, {"unit": "gang_ifv"}, {"unit": "gang_ifv"}, {"unit": "gang_ifv"}, {"unit": "gang_ifv"}]},
+    {"name": "Spears", "formation": "wedge", "verb": "hold", "directive": {"role": "scout"},
+     "units": [{"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_scout"}, {"unit": "gang_tank"}]},
+    {"name": "Wrenches", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "gang_support"}, {"unit": "gang_support"}, {"unit": "gang_support"}, {"unit": "gang_ifv"}, {"unit": "gang_ifv"}]},
+    {"name": "Guns", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "gang_tank"}]}
+  ]
+}
