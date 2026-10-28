@@ -29,8 +29,9 @@ const HIDE_HEIGHT_M := 2.5
 const LANE_OFFSETS_M: Array[float] = [9.0, 6.0, 13.0]
 const LEAD_IN_M := 15.0
 const RUN_OUT_M := 35.0
-## The lane must clear every other feature by this much (a hull's half width and some).
+## The lane must clear every other feature by this much (a hull's half width and some), and water by WATER_CLEAR_M.
 const LANE_CLEAR_M := 3.5
+const WATER_CLEAR_M := 4.0  # a hull's half width and some: Locks' quay lanes 6 m off the canal drive, 2 m off do not
 ## The hiding spot: this far off the far face (the first that works), this far back from the far end, CLEAR_M from
 ## everything.
 const HIDE_OFFS_M: Array[float] = [10.0, 6.0, 14.0]
@@ -66,6 +67,17 @@ var _facing_s := 0.0
 var _bearing_sum := 0.0
 var _bearing_n := 0
 var _toward_s := 0.0
+var _away_s := 0.0
+var _open_s := 0.0
+var _facing_open_s := 0.0
+var _open_free_s := 0.0
+var _facing_free_s := 0.0
+var _back_s := 0.0
+var _frame := 0
+## Bar K5's no-fog-cheat line (C43.6): every frame from the staging, the shown and wanted yaw at full precision and how
+## many enemies his team knows. Run the same lane with and without the hidden squad (`--camera-corner-hidden=off`):
+## up to the first frame either run knows an enemy, the two yaw columns must be identical (tests/camera/corner_nocheat.py).
+var yaw_log: Array = []
 
 
 func _ready() -> void:
@@ -77,7 +89,7 @@ func _ready() -> void:
 ## centre, along (the drive's unit direction), normal (the lane face's outward normal; the hidden side is -normal),
 ## half_len, half_w, start, end, hide (Vector2 ground points), side ("right" | "left": where the hidden face lies
 ## relative to the drive, his screen's words)}. Pure, for tests.
-static func lanes(map: CoverMap, limit := Match.DRIVABLE_LIMIT - 6.0) -> Array:
+static func lanes(map: CoverMap, limit := Match.DRIVABLE_LIMIT - 6.0, water: Array = []) -> Array:
 	var out: Array = []
 	rejects = {}
 	for wall: Dictionary in CameraCorner.walls(map):
@@ -86,7 +98,7 @@ static func lanes(map: CoverMap, limit := Match.DRIVABLE_LIMIT - 6.0) -> Array:
 				var why := ""
 				for offset: float in LANE_OFFSETS_M:
 					for hide_off: float in HIDE_OFFS_M:
-						var entry := CameraCorner._lane(map, wall, way, face, offset, hide_off, limit)
+						var entry := CameraCorner._lane(map, wall, way, face, offset, hide_off, limit, water)
 						if entry.has("why"):
 							why = String(entry["why"]) if why == "" else why
 							continue
@@ -105,7 +117,8 @@ static var rejects := {}
 
 ## One lane down `wall` (`way` along its length, on the face `face` x its normal), `offset` off the face, the hiding spot
 ## `hide_off` off the far face: the lanes() entry, or {"why": the first test it failed}.
-static func _lane(map: CoverMap, wall: Dictionary, way: float, face: float, offset: float, hide_off: float, limit: float) -> Dictionary:
+static func _lane(map: CoverMap, wall: Dictionary, way: float, face: float, offset: float, hide_off: float, limit: float,
+		water: Array = []) -> Dictionary:
 	var centre: Vector2 = wall["centre"]
 	var half_len: float = wall["half_len"]
 	var half_w: float = wall["half_w"]
@@ -119,6 +132,8 @@ static func _lane(map: CoverMap, wall: Dictionary, way: float, face: float, offs
 		return {"why": "outside"}
 	if map.path_blocked(start, end, LANE_CLEAR_M):
 		return {"why": "lane_blocked"}
+	if CameraCorner._wet(start, end, water, WATER_CLEAR_M) or CameraCorner._wet(hide, hide, water, HIDE_CLEAR_M):
+		return {"why": "water"}
 	if map.inside_any(hide, HIDE_CLEAR_M):
 		return {"why": "hide_blocked"}
 	if not CameraCorner._hidden_until_corner(map, line, along, half_len, hide):
@@ -129,6 +144,29 @@ static func _lane(map: CoverMap, wall: Dictionary, way: float, face: float, offs
 	var side := "right" if along.x * hidden_dir.y - along.y * hidden_dir.x > 0.0 else "left"
 	return {"feature": int(wall["index"]), "centre": centre, "along": along, "normal": normal, "half_len": half_len,
 			"half_w": half_w, "start": start, "end": end, "hide": hide, "side": side, "offset": offset}
+
+
+## Whether the segment a -> b comes within `grow` of any water rect (Rect2, ground x/z). The cover map knows walls, not
+## the canal: Locks' right quay lanes ran 2 m off the water and his crews never reached the corner (K5.2 census, 9e14c3ade).
+static func _wet(a: Vector2, b: Vector2, water: Array, grow: float) -> bool:
+	var steps := maxi(1, ceili(a.distance_to(b) / 2.0))
+	for rect: Rect2 in water:
+		var grown := rect.grow(grow)
+		for i in steps + 1:
+			if grown.has_point(a.lerp(b, float(i) / float(steps))):
+				return true
+	return false
+
+
+## The arena's water as ground rects (Arena terrain "water": rect = [centre x, centre z, size x, size z]).
+static func water_of(arena: Dictionary) -> Array:
+	var out: Array = []
+	for zone: Dictionary in arena.get("terrain", []):
+		if String(zone.get("kind", "")) != "water":
+			continue
+		var r: Array = zone["rect"]
+		out.append(Rect2(float(r[0]) - float(r[2]) * 0.5, float(r[1]) - float(r[3]) * 0.5, float(r[2]), float(r[3])))
+	return out
 
 
 static var _walls: Array = []
@@ -193,6 +231,26 @@ static func lead_past(lane_entry: Dictionary, points: Array) -> float:
 	return best - float(lane_entry["half_len"])
 
 
+## How far the squad's centre `from` is along the lane, from the wall's far end (0 = level with the corner). Pure.
+static func centre_past(lane_entry: Dictionary, from: Vector3) -> float:
+	return (Vector2(from.x, from.z) - (lane_entry["centre"] as Vector2)).dot(lane_entry["along"] as Vector2) \
+			- float(lane_entry["half_len"])
+
+
+## Which pull wins the danger look this frame (RtsCamera.danger_last): "heading" / "enemies" / "war" / "corner", or ""
+## when there is none. Pure.
+static func winner(last: Dictionary) -> String:
+	var best := ""
+	var most := 0.01
+	var pulls: Dictionary = last.get("pulls", {})
+	for key: String in ["heading", "enemies", "war", "corner"]:
+		var length := (pulls.get(key, Vector3.ZERO) as Vector3).length()
+		if length > most:
+			most = length
+			best = key
+	return best
+
+
 ## Whether the view's ground ray from `from` at `yaw` crosses the lane's building within FACING_M. Pure (given the map).
 static func faces_building(map: CoverMap, lane_entry: Dictionary, yaw: float, from: Vector3) -> bool:
 	var ahead := RtsCamera.heading_of(yaw)
@@ -205,12 +263,16 @@ func _process(delta: float) -> void:
 	if rig == null or feed == null or lane.is_empty() or delta <= 0.0 or get_tree().paused:
 		return
 	_clock += delta
+	_frame += 1
 	var state := feed.read()
+	yaw_log.append([_frame, game_tick(), "%.9f" % rig._shown_yaw, "%.9f" % rig.yaw, (state.get("enemies", []) as Array).size()])
 	var own: Array = state.get("own", [])
 	if state["from"] == null or own.is_empty():
 		return
 	var from: Vector3 = state["from"]
-	var past := CameraCorner.lead_past(lane, own)
+	# R43.29 (2a): the corner opens on the squad's CENTRE past the far end, as the rule takes it (the lead crew's opening
+	# counted the 1-2 s the squad's middle still stood beside the wall).
+	var past := CameraCorner.centre_past(lane, from)
 	if _opened < 0.0 and past > 0.0:
 		_opened = _clock
 	var hidden_seen := false
@@ -238,11 +300,35 @@ func _process(delta: float) -> void:
 	_bearing_n += 1
 	if facing:
 		_facing_s += delta
+	# His words were about AFTER the corner ("when they got past the building ... the camera was still just angled
+	# toward the building"): before it, the blind spot lies behind the wall, so looking at it faces the wall.
+	if _opened >= 0.0:
+		_open_s += delta
+		if facing:
+			_facing_open_s += delta
+		# R43.29 (2a): D2 leaves out the frames K4's war pull wins the yaw, in both arms (traces 130412bdf: on Terminus the
+		# war pull looks across the building at the arena's middle whatever the corner swing does).
+		if CameraCorner.winner(rig.danger_last) != "war":
+			_open_free_s += delta
+			if facing:
+				_facing_free_s += delta
 	if absf(bearing) <= 45.0:
 		_toward_s += delta
+	# The swing's cost (Bar K5's empty corner): seconds the view looks more than 90 / 135 deg off the way they drive.
+	var travel: Variant = state.get("heading")
+	if travel is Vector3 and (travel as Vector3).length() > 0.01:
+		var off := absf(CameraLook.bearing(yaw, from, from + (travel as Vector3)))
+		if off > 90.0:
+			_away_s += delta
+		if off > 135.0:
+			_back_s += delta
 	if keep_frames:
 		frames.append({"t": snappedf(_clock, 0.001), "past": snappedf(past, 0.1), "bearing": snappedf(bearing, 0.1),
 				"facing": facing, "seen": hidden_seen, "shown": hidden_shown})
+
+
+func game_tick() -> int:
+	return feed.game_match.tick if feed != null and feed.game_match != null else -1
 
 
 func summary() -> Dictionary:
@@ -252,34 +338,48 @@ func summary() -> Dictionary:
 			"seen_to_screen_s": CameraCorner._gap(_seen, _screen) if _seen >= 0.0 else null,
 			"seen": _seen >= 0.0, "shown": _screen >= 0.0,
 			"corner_s": snappedf(_corner_s, 0.01), "facing_s": snappedf(_facing_s, 0.01), "toward_s": snappedf(_toward_s, 0.01),
+			"open_s": snappedf(_open_s, 0.01), "facing_open_s": snappedf(_facing_open_s, 0.01),
+			"open_free_s": snappedf(_open_free_s, 0.01), "facing_free_s": snappedf(_facing_free_s, 0.01),
+			"away_s": snappedf(_away_s, 0.01), "back_s": snappedf(_back_s, 0.01), "hidden": not hidden.is_empty(),
 			"mean_abs_bearing": snappedf(_bearing_sum / maxf(_corner_s, 1e-6), 0.1) if _corner_s > 0.0 else null}
 
 
-# ---- K5.3: the corner pull (the rule's half; walls and his units only, C43.6) -----------------------------------------
+# ---- K5.3 v2 (R43.27): the corner look (the rule's half; walls, his units and his own order only, C43.6) ------------
+# Bar K5 (10501-10536, 08931da4e) FAILED with three causes, each answered here: the pull fired near buildings mid-fight
+# (now only on a quiet move: a move or attack-move order, no known enemy); aiming round the far end landed on the next
+# block (now along the open side's normal once past the end, only where that ray is clear of walls); easing back made
+# one reversal a corner (now the look is held until his next order, a turn of the squad's heading, or a contact).
 
 ## A squad drives ALONG a wall when its heading is within this of the wall's length...
 const PULL_ALONG_DEG := 35.0
 ## ...and its centre is this far off the wall's face, at least and at most (beside it, not through it, not across the road).
 const PULL_NEAR_M := 1.0
 const PULL_FAR_M := 25.0
-## The pull ramps in from the lead crew PULL_IN_M short of the far end to full at the corner, holds PULL_HOLD_M past it
-## and fades out by PULL_FADE_M past: the swing starts before the hidden side opens (his "recognized the blind spot") and
-## lets go once the crews are clear of it.
-const PULL_IN_M := 14.0
-const PULL_HOLD_M := 8.0
-const PULL_FADE_M := 30.0
-## Where the blind spot is: behind the far end, this far off the hidden face and this far back from the end (a squad
-## parked against the back of a building sits about here; CameraCorner.lanes stages at HIDE_OFFS_M / HIDE_BACK_M).
-const PULL_OFF_M := 10.0
-const PULL_BACK_M := 6.0
+## The look is taken once the squad's centre is past the far end, until this far past it (a squad already well clear of a
+## corner when it starts a move is not rounding it).
+const PULL_FROM_M := 0.0
+const PULL_UNTIL_M := 25.0
+## The open side must be open: the sight line from the squad's centre along it, this long, clear of every wall (Bar K5: on
+## Locks' close blocks the look round the end landed on the next building).
+const PULL_CLEAR_M := 30.0
 ## Only walls whose centre is this close to the squad are read (a building's half length plus PULL_FAR_M and some).
 const PULL_SEARCH_M := 60.0
+## The held look lets go when the squad's heading has turned this far from where it was when the look was taken.
+const HOLD_TURN_DEG := 45.0
+## R43.29 (2b): no corner look is TAKEN within this many seconds of the order's start. The camera has just framed his
+## click (the order track, K2) and a corner met in the first seconds of a drive is the street he set off down, already in
+## view; and Bar K5's ambush drive (contact AMBUSH_AT_S = 5 s after its order) took a corner look K4 then reversed
+## (v2 dev 130412bdf: ambush reversals 3.16 -> 5.18 /min). 6 s = that contact and a second; the corner workload's corners
+## open ~8-10 s after the order (dev), so they keep the look.
+const ORDER_SETTLE_S := 6.0
+## Orders under which the squad is just driving (no target of his to look at).
+const QUIET_VERBS := ["move", "attack_move"]
 
 
-## The pull toward the blind spot of the wall his squad is driving along, from the cover map and his units only (never an
-## enemy): {"look": the ground unit Vector3 from `from` toward the spot behind the far end, or null; "w": 0..1 the ramp;
-## "feature": its index or -1; "past": metres the lead crew is past the far end}. `own` = his commanded units' ground
-## points, `heading` their facing (a ground Vector3 or null). Pure, for tests.
+## The open side of the wall his squad has just driven past, from the cover map and his units only (never an enemy):
+## {"look": the ground unit Vector3 along the hidden face's outward normal, or null; "w": 1 or 0; "feature": its index or
+## -1; "past": metres the squad's centre is past the far end}. `own` = his commanded units' ground points, `heading` their
+## facing (a ground Vector3 or null). Pure, for tests.
 static func pull(map: CoverMap, from: Variant, own: Array, heading: Variant) -> Dictionary:
 	var out := {"look": null, "w": 0.0, "feature": -1, "past": 0.0}
 	if map == null or not from is Vector3 or not heading is Vector3 or own.is_empty():
@@ -290,49 +390,57 @@ static func pull(map: CoverMap, from: Variant, own: Array, heading: Variant) -> 
 	flat_heading = flat_heading.normalized()
 	var at := Vector2((from as Vector3).x, (from as Vector3).z)
 	var cos_along := cos(deg_to_rad(PULL_ALONG_DEG))
+	var best := INF
 	for wall: Dictionary in CameraCorner.walls(map):
 		var centre: Vector2 = wall["centre"]
 		if centre.distance_to(at) > PULL_SEARCH_M:
 			continue
-		var index: int = wall["index"]
 		var long_axis: Vector2 = wall["long"]
 		var normal_axis: Vector2 = wall["normal"]
 		var half_len: float = wall["half_len"]
-		var half_w: float = wall["half_w"]
 		var dot := flat_heading.dot(long_axis)
 		if absf(dot) < cos_along:
 			continue
 		var along := long_axis * signf(dot)
 		var off := (at - centre).dot(normal_axis)
-		var gap := absf(off) - half_w
+		var gap := absf(off) - float(wall["half_w"])
 		if gap < PULL_NEAR_M or gap > PULL_FAR_M:
 			continue
-		var normal := normal_axis * signf(off)  # the squad's face; the blind side is -normal
-		var lead := -INF
-		for p: Vector3 in own:
-			lead = maxf(lead, (Vector2(p.x, p.z) - centre).dot(along))
-		var past := lead - half_len
-		var w := CameraCorner.ramp(past)
-		if w <= float(out["w"]):
+		# The squad's CENTRE past the end, as his words ("when they got past the building") and as the view frames it: on
+		# the lead crew (v2 dev, bb4c83e56) the column's middle still stood beside the wall and the look faced its flank
+		# (EMPTY facing after the opening 10.7 -> 17.0 %).
+		var past := (at - centre).dot(along) - half_len
+		if past < PULL_FROM_M or past > PULL_UNTIL_M or past >= best:
 			continue
-		var spot := centre - normal * (half_w + PULL_OFF_M) + along * (half_len - PULL_BACK_M)
-		var toward := spot - at
-		if toward.length() < 0.5:
+		var open_dir := -normal_axis * signf(off)  # away from the squad's face: the side the wall hid
+		var far := at + open_dir * PULL_CLEAR_M
+		if not map.clear_line(Vector3(at.x, 0.0, at.y), Vector3(far.x, 0.0, far.y)):
 			continue
-		toward = toward.normalized()
-		out = {"look": Vector3(toward.x, 0.0, toward.y), "w": w, "feature": index, "past": past}
+		best = past
+		out = {"look": Vector3(open_dir.x, 0.0, open_dir.y), "w": 1.0, "feature": int(wall["index"]), "past": past}
 	return out
 
 
-## The pull's weight by how far the lead crew is past the far end (see PULL_IN_M). Pure.
-static func ramp(past: float) -> float:
-	if past <= -PULL_IN_M or past >= PULL_FADE_M:
-		return 0.0
-	if past < 0.0:
-		return smoothstep(-PULL_IN_M, 0.0, past)
-	if past <= PULL_HOLD_M:
-		return 1.0
-	return 1.0 - smoothstep(PULL_HOLD_M, PULL_FADE_M, past)
+## One frame of the held corner look (R43.27 (a) + (c)). `hold` = the last frame's ({} = none), `candidate` = this frame's
+## pull(), `order` = the commanded units' current order ({id, verb}), `heading` their facing, `known` how many enemies his
+## team knows. Returns the new hold: {look, w, order_id, heading} or {}. Pure, for tests.
+static func step(hold: Dictionary, candidate: Dictionary, order: Dictionary, heading: Variant, known: int,
+		order_age_s := INF) -> Dictionary:
+	if known > 0 or not String(order.get("verb", "")) in QUIET_VERBS:
+		return {}  # a fight is K4's; a hold, an attack or no order is not a drive past a corner
+	if not hold.is_empty():
+		var turned := false
+		if heading is Vector3 and hold.get("heading") is Vector3:
+			var a := Vector2((heading as Vector3).x, (heading as Vector3).z)
+			var b := Vector2((hold["heading"] as Vector3).x, (hold["heading"] as Vector3).z)
+			turned = a.length() > 0.01 and b.length() > 0.01 and absf(rad_to_deg(a.angle_to(b))) > HOLD_TURN_DEG
+		if order.get("id") == hold.get("order_id") and not turned:
+			return hold
+	if order_age_s < ORDER_SETTLE_S:
+		return {}  # R43.29 (2b): the first seconds of a drive are his click's (see ORDER_SETTLE_S)
+	if candidate.get("look") is Vector3 and float(candidate.get("w", 0.0)) > 0.0:
+		return {"look": candidate["look"], "w": 1.0, "order_id": order.get("id"), "heading": heading}
+	return {}
 
 
 ## Seconds from `a` to `b` (each a clock reading, -1 = never): never reads NEVER_S; `a` never reads null.

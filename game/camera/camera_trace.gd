@@ -52,6 +52,13 @@ var _reversals := {}
 var _frames_seen := 0
 var _scale := 1.0
 var _held := 0.0
+## Round 43 (K5.2): a staged scenario's jump (the harness setting his column down and the camera on it) is not the
+## camera's move: `skip_frame()` drops the next frame's comparison (CameraPlaytest's corner counted it as 12 snaps).
+var _skip := false
+
+
+func skip_frame() -> void:
+	_skip = true
 
 
 func _ready() -> void:
@@ -103,6 +110,9 @@ func _process(delta: float) -> void:
 	cur["T"] = camera.get_camera_transform()  # what was really drawn: a pivoted shake turns the camera (the residual)
 	if rig.holding:
 		_held += delta
+	if _skip:
+		_skip = false
+		_prev = {}
 	if not _prev.is_empty():
 		var at: Vector2 = _cursor(size)
 		var ground: Variant = CameraTrace.ground_at(_prev, size, at)
