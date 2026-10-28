@@ -55,3 +55,31 @@ func test_an_order_row_keeps_its_keys_and_gains_frame_and_paused() -> void:
 	assert_true(order.has("frame") and order.has("paused"), "the order row gains frame and paused")
 	assert_eq(order["paused"], false, "not paused")
 	DirAccess.remove_absolute(recorder.path)
+
+
+class FakeControls extends Node:
+	signal formation_changed(id: String)
+	var selection := Selection.new()
+
+
+func test_a_formation_pick_is_an_order_row() -> void:
+	add_to_tree(ARENA.instantiate())
+	var m: Match = MATCH.instantiate()
+	add_to_tree(m)
+	var controls := FakeControls.new()
+	add_to_tree(controls)
+	controls.selection.set_units(["Green_A_1", "Green_A_2"])
+	var recorder := MatchRecorder.start(m, null, controls, null, "user://test_recorder_replay_keys", "pick")
+	await wait_physics_frames(1)
+	controls.formation_changed.emit("column")
+	recorder._exit_tree()
+	var picks: Array = []
+	for line in FileAccess.get_file_as_string(recorder.path).split("\n"):
+		var row: Variant = JSON.parse_string(line) if line.strip_edges() != "" else null
+		if row is Dictionary and row["t"] == "order":
+			picks.append(row)
+	assert_eq(picks.size(), 1, "one row for the pick")
+	assert_eq([picks[0]["verb"], picks[0]["formation"], picks[0]["units"]], ["formation", "column", ["Green_A_1", "Green_A_2"]],
+			"the verb, the shape and the selection it applied to")
+	assert_true(not picks[0].has("to"), "no `to`: recording_arrivals.py skips it")
+	DirAccess.remove_absolute(recorder.path)

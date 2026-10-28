@@ -210,6 +210,20 @@ func _hold_return(spot: Vector3, here: Vector3, forward: Vector3) -> Dictionary:
 
 ## Round 32 (C32.12), MEASUREMENT ONLY: `--order-trace` prints how each move order completed (ORDER_TRACE).
 static var ORDER_TRACE := OS.get_cmdline_user_args().has("--order-trace")
+## Round 43 (engage A1), MEASUREMENT ONLY: `--crew-trace=<name substring|all>` prints CREW_TRACE for the named crews
+## after every think whose choice, move or order changed (and every CREW_TRACE_EVERY ticks): the order it holds, the
+## option it chose and why, the move it asked for (a direct hop or a routed move), the contact it is on. Default off.
+static var CREW_TRACE := _crew_trace_flag()
+const CREW_TRACE_EVERY := 15
+var _crew_trace_key := ""
+var _crew_trace_tick := -1000
+
+
+static func _crew_trace_flag() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if String(arg).begins_with("--crew-trace="):
+			return String(arg).trim_prefix("--crew-trace=")
+	return ""
 ## A stop order is done once the unit is slower than this (m/s).
 const STOPPED_SPEED := 0.5
 ## ...no sooner than this many ticks after it was issued.
@@ -779,8 +793,85 @@ func think(_delta: float) -> void:
 	if OrderController.profiling:
 		OrderController.add_part("act", Time.get_ticks_usec() - clock)
 		_lap("act." + String(choice["option"]), clock)  # measurement only: act by option
+	if CREW_TRACE != "":
+		_crew_trace(situation)
 	watch_point = TankBrain.watch_for(situation, choice)
 	tank.intent = TankBrain.label(choice) + ("" if why == "" else " - " + why)
+
+
+## Round 43 (engage A1), MEASUREMENT ONLY: one CREW_TRACE line (see CREW_TRACE).
+func _crew_trace(s: Dictionary) -> void:
+	if CREW_TRACE != "all" and not String(tank.name).contains(CREW_TRACE):
+		return
+	var o: Dictionary = s.get("order", {})
+	var goal: Variant = o.get("goal")
+	var contact := _contact(s, String(choice.get("target", "")))
+	var here := _flat(tank.global_position)
+	var key := "%s|%s|%s|%s|%s|%s" % [o.get("verb", ""), goal, choice.get("option", ""), choice.get("target", ""),
+			move_order.get("type", ""), [snappedf(float(move_order.get("x", 0.0)), 1.0), snappedf(float(move_order.get("z", 0.0)), 1.0)]]
+	if key == _crew_trace_key and game_match.tick - _crew_trace_tick < CREW_TRACE_EVERY:
+		return
+	_crew_trace_key = key
+	_crew_trace_tick = game_match.tick
+	var row := {"t": game_match.tick, "n": String(tank.name), "pos": [snappedf(here.x, 0.1), snappedf(here.z, 0.1)],
+			"yaw": snappedf(rad_to_deg(tank.rotation.y), 1.0), "speed": snappedf(tank.speed(), 0.1),
+			"order": String(o.get("verb", "")), "goal": [snappedf((goal as Vector3).x, 0.1), snappedf((goal as Vector3).z, 0.1)] if goal is Vector3 else null,
+			"order_target": String(o.get("target", "")), "pace": o.get("speed"),
+			"choice": String(choice.get("option", "")), "target": String(choice.get("target", "")), "why": why,
+			"move": String(move_order.get("type", "")),
+			"move_to": [snappedf(float(move_order.get("x", 0.0)), 0.1), snappedf(float(move_order.get("z", 0.0)), 0.1)] if move_order.has("x") else null,
+			"direct": bool(move_order.get("direct", false)), "reverse": bool(move_order.get("reverse", false)),
+			"move_speed": move_order.get("speed"), "engaged": engaged_target,
+			"contact": String(contact.get("name", "")), "contact_at": [snappedf((contact["position"] as Vector3).x, 0.1),
+			snappedf((contact["position"] as Vector3).z, 0.1)] if contact.has("position") else null,
+			"contact_dist": snappedf(here.distance_to(_flat(contact["position"])), 0.1) if contact.has("position") else null,
+			"contact_visible": contact.get("visible"), "contacts": (s.get("contacts", []) as Array).size(),
+			"incoming": (s.get("incoming", []) as Array).size(),
+			"slot": [snappedf((element["slot"] as Vector3).x, 0.1), snappedf((element["slot"] as Vector3).z, 0.1)] if element.get("slot") is Vector3 else null,
+			"role": element.get("role", ""), "station": element.get("station") is Vector3}
+	var mover := Movement.of(tank)
+	if mover != null:
+		var reading := mover.reading()
+		var points: PackedVector3Array = reading.get("path_points", PackedVector3Array())
+		var path: Array = []
+		for i in mini(points.size(), 3):
+			path.append([snappedf(points[i].x, 0.1), snappedf(points[i].z, 0.1)])
+		var decided: Dictionary = mover.contact.decided
+		var steer: Variant = reading.get("steer_to")
+		row["mover"] = {"phase": mover.phase, "blocked": mover.blocked_by, "stalled": mover.stalled_ticks,
+				"goal": [snappedf((reading["goal"] as Vector3).x, 0.1), snappedf((reading["goal"] as Vector3).z, 0.1)] if reading.get("goal") is Vector3 else null,
+				"steer": [snappedf((steer as Vector3).x, 0.1), snappedf((steer as Vector3).z, 0.1)] if steer is Vector3 else null,
+				"path": path, "path_n": points.size(), "path_end": [snappedf(points[-1].x, 0.1), snappedf(points[-1].z, 0.1)] if points.size() > 0 else null,
+				"remaining": snappedf(float(reading.get("remaining_m", 0.0)), 0.1), "reachable": reading.get("reachable"),
+				"replan": String(reading.get("replan", "")), "driver": String(decided.get("driver", "")),
+				"throttle": snappedf(float(decided.get("throttle", 0.0)), 0.01), "turn": snappedf(float(decided.get("turn", 0.0)), 0.01),
+				"reverse_why": String(decided.get("why", "")), "kturn_m": snappedf(mover._kturn_left_m, 0.1),
+				"circle_away": mover._circle_away, "circling": mover._circling, "unstick": mover._unstick_left > 0.0,
+				"wedged": mover.wedged, "refusal": PlannerSeam.last_refusal(String(tank.name)),
+				"planner_live": PlannerSeam.live(String(tank.name)), "rerouting": PlannerSeam.rerouting(String(tank.name))}
+		# Round 43 (A1): the street hold (Traffic T1) this crew is under, if any: its spot, and the wait it belongs to.
+		var hold: Array = Traffic.hold_of(String(tank.name))
+		if not hold.is_empty():
+			var held := {"spot": [snappedf((hold[0] as Vector2).x, 0.1), snappedf((hold[0] as Vector2).y, 0.1)], "there": hold[2]}
+			var where: Variant = Traffic._where.get(String(tank.name))
+			if where != null:
+				var cols: Dictionary = Traffic._teams[where[0]]
+				var group := String((cols["group"] as PackedStringArray)[int(where[1])])
+				var wait: Variant = Traffic._waits.get(group)
+				if wait is Dictionary:
+					held["group"] = group
+					held["passer"] = String((wait as Dictionary).get("passer", ""))
+					held["since"] = (wait as Dictionary).get("since")
+					held["key"] = String((wait as Dictionary).get("key", ""))
+					var listed := {}
+					for crew_name: String in (wait as Dictionary).get("spots", {}):
+						var at: Vector2 = ((wait as Dictionary)["spots"][crew_name] as Array)[0]
+						listed[crew_name] = [snappedf(at.x, 0.1), snappedf(at.y, 0.1)]
+					held["spots"] = listed
+					var wdir: Vector2 = (wait as Dictionary).get("dir", Vector2.ZERO)
+					held["dir"] = [snappedf(wdir.x, 0.01), snappedf(wdir.y, 0.01)]
+			row["hold"] = held
+	print("CREW_TRACE %s" % JSON.stringify(row))
 
 
 # ---- K1 orders (round-3 X1) ---------------------------------------------------------
