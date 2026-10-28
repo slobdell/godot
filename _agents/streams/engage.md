@@ -85,3 +85,99 @@ Nothing. The clip, when A5 has one.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-27 ~21:40 PDT (Fable). A1 DONE: the turnaround is reproduced bit-exact on native's faithful replay and its cause is
+shown by removal. Cause: Traffic's STREET HOLD (round 29 T1, `game/ai/traffic.gd` `_begin_wait`, manoeuvre's path): when two
+friendly squads meet head-on in a street, the waiting squad's EVERY moving crew is dealt a spot behind the street's mouth, however
+far from the mouth it stands; his lead War Rig, 80 m from the mouth, was sent to its spot (-29.7, 100.0) at full pace and drove
+there for 18 s. Ownership asked of the orchestrator (C43.3); nothing built yet. A2 answered (below: no queue). Code: 2d43b1e88
+(main 84f914f78 merged at a51c8d5af).**
+
+### A1: the turnaround on his seed (laptop, native library ON, `make engage-replay-trace ENGAGE_TAG=on`, 2d43b1e88, his recording, 50 s, n 1, deterministic)
+
+The replay (native's CP43.0, `tests/replay_orders.gd`) puts Green_Guns_1 **0.0 m off his census at every second for 48 s**
+(`tests/replay/divergence.py --crews=Green_Guns_1,Green_Guns_3`: both crews 0.0, PASS) and `tools/recording_arrivals.py` reads the
+replay's own recording exactly as his: `Guns_1:best61m/no-arr/AWAY82m`. The trace (`--crew-trace=Green_Guns_1`, a new
+measurement-only TankBrain line: the K1 order, the choice and why, the move asked, the mover's goal / steering point / path / driver,
+the planner's last refusal, the street hold) and `--element-trace=Guns`, ticks 445-1400:
+
+| ticks | the crew holds (K1) | the element (task, slot for Guns_1) | the brain chose | the mover drove at | what happened |
+|---|---|---|---|---|---|
+| 445-550 | `attack_move` to its vee seat (-85, 18.5) then react-to-contact's (-95, 38) / (-102, 36), paced 0.35-1.0 | task move+drills to (-100, -15); anchor (-89.5, 8.8); crossing = the west bridge (-88, 12)->(-98, -11) | MOVE | the seat, then **from tick 478 the hold spot (-29.7, 100.0)** (`steer`), driver `route` | Traffic verdict at 478: squad e:5 (Guns) WAITS for e:6 (his Hunters, moving west at z 50-65 across the Guns' way); spots dealt to Guns_3, Guns_4 AND Guns_1 |
+| 556-694 | `attack_move` (react to contact: 15 m toward the contact / the seat across the bridge) | task move+drills; drill react_to_contact; swarm/vee flapping | **ENGAGE Rust_Hunters_3 / _4 across the canal, 58-61 m** ("going for its side, weaving" / "no line of fire: going round") | direct REVERSE hops to (-69, 64) and (-71, 61); a direct forward hop to (-112, 81); routed moves to the contact's spot (-112, -12) | the hops swing the 14 m hull from yaw 110 deg to -178 deg (nose north) at 9 m/s; no shot (the gun's range 50, effective 36) |
+| 700-1005 | `attack_move` to the seat (-80.6, 20.6), then (-77.0, 24.4): on the NORTH bank, 45 m south-east of the crew, steady | task move+drills, then his attack on Rust_Hunters_4 (tick 807: the task is `attack` from t 27.0); slot (-77, 24.4) stands t 27-35 | MOVE ("attack-move") | **steering point (-29.7, 100.0) for 15 s** (driver `route`, throttle 0.75-0.99, no k-turn, no unstick, no planner refusal, no fire detour) | **the drive away: (-103, 55) -> (-24, 98), 90 m north-east at 8-12 m/s, 47 -> 90 m off its own seat** |
+| 1023-1060 | same | same | MOVE | the seat (-77, 24.4): the hold released at ~1023 (18.2 s after the verdict; HOLD_CAP_S is 20) | the hull starts its turn back (yaw -117 -> -67) |
+| 1063-1108 | react-to-contact `attack_move` naming Rust_Hunters_4, (-24, 87) / (-11, 85) / (-11, 75) | task attack; drill react_to_contact | MOVE | those points | 10 s more at the north edge |
+| 1124-1320 | `attack_move` to the seat (-60, 41) | task attack; slot (-60, 41) | MOVE | the planner seam LIVE (a lattice plan pending), the circle rule reversing at 2.8 m/s, phase `blocked terrain` 1248-1320 | **the container stall: 6.5 s against the container_20 at (-20, 80), the 14 m hull turning round in the gap by the arena edge** (its own line, manoeuvre's: k-turn / circle-fit) |
+| 1336-1449 | `attack_move` to (-96.5, -30.8) then `attack` Rust_Hunters_4 | task attack, pursuing | MOVE, then ENGAGE / PURSUE | the far quay, routed | drives south-west at 12 m/s, as his did from tick 1380 |
+
+**Killed by REMOVAL (C43.3): the street hold.** `make engage-replay-trace ENGAGE_TAG=nohold ENGAGE_FLAGS=--traffic-off=hold`
+(same tree, native ON, the match identical to his for 17 s and then only this crew's drive differs): **Guns_1 best 29.8 m, ARRIVED
+on the far quay at tick 810 (12 s after his order), drive-away seconds 1 v 19, farthest north-east (-91.6, 55.3) v (-8.6, 95.4).**
+(It then died at ~28 s in the five Hunters' line, alone: the crew obeyed; the squad was already dead or held.) The hold's own
+read, from Traffic's tables in the trace: `{"group": "e:5", "passer": "e:6", "since": frame 511 (tick 478), "spot": [-29.7, 100.0],
+"spots": [Guns_3, Guns_4, Guns_1]}`; the mover's steering point equals the spot from tick 478 until 1023 whenever the driver is
+`route`. In code: `Traffic._begin_wait` deals a spot to every moving crew of the waiting squad; a crew behind the centre line gets
+`_spot_behind(centre, ...)` (HOLD_BACK_M 8-43 m behind the MOUTH, HOLD_SIDE_M to the right), whatever its own distance to the mouth;
+`hold_of` returns pace `approach` = 1.0 beyond HOLD_SLOW_M (16 m), so a far crew drives to the mouth at full speed for up to HOLD_CAP_S
+(20 s) or until the passer is past. His War Rig stood 80 m from the mouth.
+
+**The other hypotheses, each killed:** (a) a route via the lock: the navmesh (`tests/engage/path_probe.gd`, `make engage-paths`)
+routes every leg from (-105, 46) to the far quay / a far-bank seat over the west bridge (63-67 m); the lock is 108 m to (-14, 84)
+alone; and the crew's K1 goal was never across the canal to the east (the trace: its seats were (-85, 18), (-80, 21), (-77, 24),
+(-60, 41), (-96, -31)). (b) the element re-aimed it: the element trace shows the slot standing at (-80.6, 20.6) -> (-77.0, 24.4)
+through t 25-35 while the hull drove 90 m the other way; the task changed once (his attack, 807). (c) attack-shot's firing spot:
+no `move`-to-spot order on this crew in 50 s (every K1 order was `attack_move` / `attack`); the `--attack-shot=off` arm
+(ENGAGE_TAG=asoff) is a different match from 14 s (the rule changes the fight before the hold) and has no drive away either, so it
+neither shows nor rules out, and the trace does the ruling out. (d) an unstick / k-turn chain after START_BLOCKED: `kturn_m` 0,
+`unstick` false, `refusal` [] and the planner not live for the whole drive 700-1005; the planner goes live only at the container
+stall (1124+). (e) the order latency (A2): below. **The combat hops (556-694, ENGAGE on a target across the canal) are real and
+turned the hull north, but they are not the drive: with the hold off the same hops happen and the crew still arrives in 12 s.**
+They remain a known issue (below).
+
+**Why a rebuild from the census could not show it** (`tests/engage/turnaround_probe.gd`, `make engage-rebuild ENGAGE_FROM=420|540|600|630|660`,
+laptop, 0e7664821): a task assigned fresh forms the elements fresh, so Traffic's verdict (made at 478 between two squads moving
+through each other) never recurs, and every rebuild went for the bridge (from 660: on the deck by 790, 16 m from his click at 30 s).
+The rebuild probe stays as a tool (any census tick, both sides' task rows replayed, the crew traced).
+
+### A2: his attack at tick 806 "reached the crew at 1380": no queue
+
+The order reached the ELEMENT the next tick (task row 807: `attack Rust_Hunters_4`; the element trace: task `attack` from t 27.0).
+What the census' `order` column shows is the crew's K1 verb, which the element chooses: out of reach of the target (131 m, across the
+canal) `ElementPlan._engage` and react_to_contact issue `attack_move` legs toward it (naming the target from 1063), and the K1 verb
+becomes `attack` only when the element's pursuit (`_plan_pursuit`) or in-reach `attack` takes over (1372 in the replay, 1380 in his
+census). Nothing held the order; the HUD's "carrying out" reads the named attack-move the same way (round 42's `_moving_round`).
+
+### Known issues found (not built on)
+
+- **ENGAGE across water (mine, R43.5 GRANT if the orchestrator confirms):** under attack-move the crew brain engages a team-seen
+  contact across the canal when within range + 15 m: `_own_line_to` (the cover map) ignores water, and `_combat_move` answers direct
+  hops (one of them reverse, 36 m) that swing a 14 m hull round and away. No shot results (effective range 36 m). Measured on his seed
+  only (556-694); it did not cause the drive, but it costs 5 s and a 180 deg turn. A rule: no ENGAGE hop toward a contact the hull
+  cannot reach without a crossing (SlotGround.leg_wet on the hop), or "water between: firing across" (the existing hold) applied to
+  the choice, not only the hop. Symmetric for the CPU.
+- **The container stall (manoeuvre's):** 1124-1320, the rig turning round beside the container_20 at (-20, 80) with the planner live
+  and the circle rule reversing; 6.5 s `blocked terrain`. Same family as round 42's rust s2 t15.
+- The vee/swarm flap on this element (t 17-23 and 36) re-seated the crew each time (the orchestrator's note); not the drive either.
+
+### Requests to the orchestrator
+
+- **Ruling (C43.3): the cause is in `game/ai/traffic.gd` (`_begin_wait`, `_spot_behind`), manoeuvre's path.** Proposed rule, symmetric
+  (the CPU's squads take the same holds), behind a switch (`--traffic-on/off`): a crew of the waiting squad farther from the street's
+  mouth than the spot grid reaches (HOLD_BACK_M's last row, 43 m, plus its hull) is not sent to the mouth: it is released from the hold
+  (ORCA keeps it clear as always), or holds where it is (`spot = here`, the existing "nowhere to pull aside" branch) if its route runs
+  through the street. A test: a two-squad head-on meeting with one crew of the waiting squad 80 m back; today it is dealt a spot at
+  the mouth and drives there; with the rule it keeps its route. If granted to me I build it (A3) and file Bar A; if manoeuvre's, the
+  trace and the replay recipe above are theirs (`make engage-replay-trace ENGAGE_TAG=<x> ENGAGE_FLAGS=...`, `--crew-trace=<name>`).
+
+### Tools (all engage's)
+
+- `tests/engage/turnaround_probe.gd` (`make engage-rebuild`): a census-places rebuild of a recorded match from any tick, both sides'
+  task rows replayed at their ticks, one ENGAGE_TA row per change / sample for one crew, ENGAGE_TA_SUMMARY (drive-away, nearest, the
+  farthest north-east, the bridge tick, the planner's report).
+- `tests/engage/path_probe.gd` (`make engage-paths ENGAGE_LEGS="x,z>x,z;..."`): the navmesh's route and crossing per leg.
+- `TankBrain.CREW_TRACE` (`--crew-trace=<name|all>`, default off, no behaviour): CREW_TRACE per think change / 15 ticks.
+- `make engage-replay-trace ENGAGE_TAG=<arm> ENGAGE_FLAGS=<switches>`: native's replay of his match with the traces on, its recording
+  under `build/engage/rec/<arm>/` for `tools/recording_arrivals.py` and `tests/replay/divergence.py`; `make engage-his` unpacks the gz.
+- Merge note: `game/ai/tank_brain.gd` gains `CREW_TRACE` (static), `_crew_trace()` and one call after `_act` (3 hunks, trace only).
+
