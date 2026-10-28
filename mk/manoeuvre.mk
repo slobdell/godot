@@ -440,3 +440,27 @@ manoeuvre-probe-jam: import ## manoeuvre Q1 (round 41): the jam census on his gr
 			--probe-route=$$1 --probe-arm=$$name $$flags > $(PJ_DIR)/$$0-$$1-$$name-$$4-s$$2.log 2>&1 || true'
 	@grep -L '^JAM_RUN' $(PJ_DIR)/*.log | sed 's/^/MISSING (no JAM_RUN line): /' || true
 	$(PYTHON) tests/manoeuvre/probe_jam_table.py $(PJ_DIR)
+
+# ---- round 43 (S1): rebuild a recorded match's START and trace its crews per tick -------------------------------------
+# tests/manoeuvre/start_trace.gd on a recording (ST_RECORDING: a plain .jsonl; zcat a references/*.jsonl.gz into build/ first),
+# the arena and seed on the REAL command line (Arena._ready reads OS args, not Main.next_flags: R43.1), the laptop's squad
+# cap (ST_SQUAD_CAP=4 reproduces his 4 x 5 army), the squads traced (ST_CREWS), ST_SECONDS, ST_FLAGS for any game switch.
+# Rows START_ROW / START_SEAT / START_YIELD / START_GAP -> ST_LOG; tests/manoeuvre/start_table.py prints the per-crew table
+# (--crew=Guns_3 for one crew's timeline). On his Locks 56416 recording the rebuild is within 0.1 m of his census for 10 s.
+ST_RECORDING ?= build/recordings/his.jsonl
+ST_ARENA ?= locks
+ST_SEED ?= 56416
+ST_SQUAD_CAP ?= 4
+ST_CREWS ?= Guns,Hunters
+ST_SECONDS ?= 20
+ST_FLAGS ?=
+ST_LOG ?= $(BUILD_DIR)/manoeuvre/start_trace.log
+.PHONY: manoeuvre-start-trace
+manoeuvre-start-trace: import ## manoeuvre S1 (round 43): rebuild ST_RECORDING's start (ST_ARENA, ST_SEED, ST_SQUAD_CAP) and trace ST_CREWS per tick for ST_SECONDS -> ST_LOG + the per-crew table
+	@mkdir -p $(dir $(ST_LOG))
+	@echo ">> manoeuvre-start-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | $(ST_RECORDING) $(ST_ARENA) $(ST_SEED) cap $(ST_SQUAD_CAP) crews $(ST_CREWS) | flags '$(ST_FLAGS)'"
+	@timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/start_trace.gd -- \
+		--orders=$(ST_RECORDING) --arena=$(ST_ARENA) --seed=$(ST_SEED) --squad-cap=$(ST_SQUAD_CAP) --crews=$(ST_CREWS) \
+		--trace-seconds=$(ST_SECONDS) --mute $(ST_FLAGS) > $(ST_LOG) 2>&1 || true
+	@grep -E '^START_(SETUP|DONE)' $(ST_LOG) || true
+	@$(PYTHON) tests/manoeuvre/start_table.py $(ST_LOG)
