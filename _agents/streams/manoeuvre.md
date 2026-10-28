@@ -81,6 +81,18 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-27 ~20:40 PDT (Fable). Starting commit 2f1620a77 = main at launch (code b12b17ac7 GREEN builder0, 3343/0; no
 baseline check re-run, per the contract). CP43.0 taken at f6b930a3d (main 84f914f78 merged). Orchestrator session: `godot-b8`.**
 
+### GATE GREEN on builder2 (2026-10-28 01:20 PDT): fed356a8b's code (the b0 worktree at that hash) `make check exited 0`, 3367 passed / 0 failed, 26 targets passed + 2 NOT JUDGED; Bar S's series started 01:21
+
+- `~/overnight-manoeuvre/r43/check1/check.log`: the wrapper line `>> remote: make check exited 0 (build/ copied back)`; `3367
+  passed, 0 failed` (11 shards); `check passed: 27 targets`; sim-baseline unmoved on every map (builder2, glibc 2.43); NOT JUDGED:
+  perf-judge (builder2 is not a judging machine: judged on builder0 in a quiet window after the series, as the bar's perf line
+  says) and ai-scenarios-check's scenario_perf (loaded, ref 4.70x). Two earlier tries: builder0 segfaulted in `make import` (a
+  font reimport in the fresh folder), then queued 55 min behind native's and engage's checks; moved to builder2 on the
+  orchestrator's word (my builder0 waiter killed by its folder).
+- **This commit is green: fed356a8b** (the stream branch's later commits are `_agents/streams/manoeuvre.md` only).
+- The series (`bars.sh`) started 01:21 PDT on builder2 (deciding + group guards, J 12) and builder0 light (fights + the G1 v9
+  probe, from `../godot-manoeuvre-b0`); Bar S5's series is chained behind it (unit `manoeuvre-r43-bars5`).
+
 ### Native's twin of kturngoal is GREEN (2026-10-28 ~03:50 PDT): `pair/native-kturngoal` a907a541e off fed356a8b
 
 builder2 light: native-proof EQUAL with kturngoal ON (on / off / ab the same state hash), 12/0; a C++-driven backing leg whose goal
