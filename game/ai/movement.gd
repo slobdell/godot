@@ -1376,8 +1376,7 @@ func _park_aside(order: Dictionary) -> Dictionary:
 			under = entry
 			break
 	if under == null:
-		Manoeuvre.aside_note(self, goal, goal)
-		return order
+		return order  # nothing parked under it NOW; looked at again next tick (the other squad parks later: no memo here)
 	var centre: Vector3 = under[0]
 	var ring: float = float(under[1]) + 0.5
 	var out := Vector3(goal.x - centre.x, 0.0, goal.z - centre.z)
@@ -1404,9 +1403,9 @@ func _park_aside(order: Dictionary) -> Dictionary:
 			taken = candidate
 			found = true
 			break
-	Manoeuvre.aside_note(self, goal, taken)
 	if not found:
-		return order
+		return order  # no free rim this tick; looked at again
+	Manoeuvre.aside_note(self, goal, taken)
 	parkaside_moved += 1
 	var moved := order.duplicate()
 	moved["x"] = taken.x
