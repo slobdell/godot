@@ -1,6 +1,6 @@
 # Workstreams: the current round
 
-> **ROUND 43 CLOSED 2026-10-28 ~14:30 (main code = dbf0bf637; final batch check: HANDOFF's closed box). Shipped ON: A7, never move for a
+> **ROUND 43 CLOSED 2026-10-28 ~14:30 (main code = dbf0bf637 GREEN builder0, 28 targets ALL JUDGED, 3420/0, perf-judge PASS 1.00x). Shipped ON: A7, never move for a
 > shot across water (engage, Bar A7). OFF with causes: holdfar / holdway / holdroute (Bar A, A6, A6 v2), the corner swing (Bar K5), the
 > seat bound / latch / converge / kturngoal / parkaside (Bar S, S v2), deckwait v5 (Bar S5). Briefs in `streams/archive/round43/`, branches
 > `round43/<s>`.** Round 42's section follows round 43's.
