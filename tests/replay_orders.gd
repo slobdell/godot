@@ -4,14 +4,25 @@ extends SceneTree
 ## REPLAY_DONE with the new recording's path (MatchRecorder writes the census as in play).
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- --orders=build/recordings/X.jsonl \
 ##         --seconds=50 [--player-faction=gangs --enemy-faction=syndicate] [any game switch, e.g. --attack-shot=off]
+## CP43.0 (round 43, native): what the recording holds is replayed as he played it, not as a headless start would deal it.
+##   - the squad cap and the factions: his laptop preset fields four squads (a headless run is the desktop's five, and the
+##     CPU's counter-lineup is dealt against the army it meets), read from the `match` row (`squad_cap`, `factions`) or,
+##     on an older recording, from its roster (squads per side, Units.faction_of);
+##   - the spawn: the army layout checks slots against the navmesh only once it is baked, which an interactive start and a
+##     headless one reach at different moments (ARMY_LAYOUT_UNCHECKED), so every unit is placed where his match had it
+##     (the `spawn` key, else the tick-0 census at 0.1 m);
+##   - the orders he gave in the planning pause land in the pause, before the CPU's first plan (tick 1), as his did.
 
 const MAIN := "res://game/main.tscn"
+const ReplaySetup := preload("res://tests/replay/replay_setup.gd")
 
 var _controls: RtsControls
 var _match: Match
 var _orders: Array = []
 var _next := 0
 var _until := 0
+## Where each unit stood at his match's start: name -> [x, z] or [x, z, yaw].
+var _spawn := {}
 
 
 func _initialize() -> void:
@@ -38,12 +49,42 @@ func _run() -> void:
 			header = row
 		elif row["t"] == "order":
 			_orders.append(row)
+		elif row["t"] == "census" and _spawn.is_empty():
+			for unit: Dictionary in row["units"]:
+				_spawn[String(unit["n"])] = unit["pos"]
+	if header.has("spawn"):
+		_spawn = header["spawn"]
+	var setup := ReplaySetup.from_header(header)
 	var flags := LaunchFlags.from_environment()
+	var wanted: Array[String] = []
 	for extra: String in ["--skirmish", "--enemy=cpu", "--seed=%d" % int(header.get("seed", 0)),
-			"--arena=%s" % String(header.get("arena", "locks")), "--no-control", "--no-pick-faction", "--hints=off",
-			"--player-faction=%s" % _flag("player-faction", "gangs"), "--enemy-faction=%s" % _flag("enemy-faction", "syndicate")]:
+			"--arena=%s" % String(header.get("arena", "locks")), "--no-pick-faction", "--hints=off",
+			"--player-faction=%s" % _flag("player-faction", setup["player_faction"]),
+			"--enemy-faction=%s" % _flag("enemy-faction", setup["enemy_faction"]),
+			"--squad-cap=%s" % _flag("squad-cap", str(setup["squad_cap"]))]:
 		var parts := extra.trim_prefix("--").split("=", true, 1)
-		flags.values[parts[0]] = parts[1] if parts.size() > 1 else ""
+		if not flags.values.has(parts[0]):  # a switch on the command line wins (an A/B of the replay)
+			wanted.append(extra)
+	for key: String in ReplaySetup.match_switches(header):
+		if not flags.values.has(key) and not wanted.any(func(w: String) -> bool: return w.begins_with("--%s=" % key) or w == "--" + key):
+			var value := String(header["flags"][key])
+			wanted.append("--%s=%s" % [key, value] if value != "" else "--" + key)
+	# CP43.0: the match's own switches go on the PROCESS's command line, not only into Main.next_flags. Arena._ready, the
+	# planner seam and every `--<switch>=off` read LaunchFlags.from_environment(), so a flag that is only in next_flags
+	# never reaches them: until round 43 every replay of his Locks match ran on the default layout (foundry: the same
+	# spawn spots, other streets) with no objectives. Missing ones re-run this script once with them appended.
+	if not wanted.is_empty():
+		var args := OS.get_cmdline_args()
+		args.append("--")
+		args.append_array(OS.get_cmdline_user_args())
+		args.append_array(wanted)
+		print("REPLAY_REEXEC " + " ".join(wanted))
+		var output: Array = []
+		var code := OS.execute(OS.get_executable_path(), args, output, true)
+		for chunk: String in output:
+			printraw(chunk)
+		quit(code)
+		return
 	Main.next_flags = flags
 	change_scene_to_file(MAIN)
 	for i in 40:
@@ -54,8 +95,21 @@ func _run() -> void:
 		quit(2)
 		return
 	_match = _controls.game_match
+	var roster := ReplaySetup.roster_difference(header, _match)
+	if roster != "":
+		print("REPLAY_ROSTER_MISMATCH " + roster)
+	if header.has("native") and bool(header["native"]) != BrainSwitches.native:
+		# His seed 56416: the GDScript path leaves his native match at tick ~300 (round 43). Said, never silent.
+		print("REPLAY_NATIVE_MISMATCH recorded=%s replay=%s: expect a different match (make native, or NATIVE=off)"
+				% [header["native"], BrainSwitches.native])
 	print("REPLAY_SETUP " + JSON.stringify({"orders": _orders.size(), "seed": header.get("seed"), "arena": header.get("arena"),
+			"layout": String(Arena.active.get("name", "")), "objectives": _match.objectives.map(func(o: Dictionary) -> String: return String(o["name"])),
 			"tick": _match.tick, "units": _match.tanks.get_child_count()}))
+	var placed := 0
+	if _flag("spawn", "on") != "off":
+		placed = ReplaySetup.place(_match, _spawn)
+	print("REPLAY_SPAWN " + JSON.stringify({"placed": placed, "recorded": _spawn.size()}))
+	_issue()  # the orders of the planning pause, before the CPU's first plan
 	if paused:
 		_controls.set_paused(false, "")
 	_until = int(float(_flag("seconds", "50")) * 30.0)
@@ -65,6 +119,13 @@ func _run() -> void:
 func _step() -> void:
 	if _match == null:
 		return
+	_issue()
+	if _match.tick >= _until:
+		print("REPLAY_DONE " + JSON.stringify({"tick": _match.tick}))
+		quit(0)
+
+
+func _issue() -> void:
 	while _next < _orders.size() and int(_orders[_next]["tick"]) <= _match.tick:
 		var o: Dictionary = _orders[_next]
 		_next += 1
@@ -84,6 +145,3 @@ func _step() -> void:
 			extra["target"] = o["target"]
 		var said: String = _controls.order_selection(String(o["verb"]), extra)
 		print("REPLAY_ORDER " + JSON.stringify({"tick": _match.tick, "at": o["tick"], "verb": o["verb"], "n": names.size(), "said": said}))
-	if _match.tick >= _until:
-		print("REPLAY_DONE " + JSON.stringify({"tick": _match.tick}))
-		quit(0)
