@@ -599,11 +599,12 @@ static func _lay_side(blocks: Array, flat_click: Vector3, ahead: Vector3, at_cli
 	# G2 v2 (dev read 4ce8784d5, terminus 5 avenue: one step behind the rearmost start put squad 4 back at the army's
 	# start, 122.7 m off his route): on a leg, no rank behind its squads' rearmost start.
 	var room := rearmost + (0.0 if (leg and (GROUP_LEG_ROOM or ROUTE_CORNER)) or GROUP_ROOM_REARMOST else step)
-	# G1 v10 (R44.5, line 6: on a far click every squad moves): no rank behind the rearmost squad's start, less ROOM_AHEAD_M, so
-	# the column's tail stands ahead of where the last squad stood and it moves too; the ranks squeeze to fit, and on a click too
-	# near for even the squeezed ranks the rest hold (above).
+	# G1 v10 (R44.5 / R44.6, line 6): the column's last rank stands no more than ROOM_BEHIND_M behind the rearmost squad's start
+	# (= COLUMN_AWAY_M: a place that far back is still taken, not held), so on a far click every squad moves, on his near click the
+	# ranks squeeze and every squad falls in a few metres (dev read 4: with the room read ahead of the rearmost start, the
+	# squeezed ranks never fitted a near click and two or three squads held, which R44.6 counts only within the column's length).
 	if COLUMN_ALWAYS and not passing and not leg:
-		room = rearmost - ROOM_AHEAD_M
+		room = rearmost + ROOM_BEHIND_M
 	# G2 v2: and never further back than the road runs (his route's first click): the ranks squeeze instead.
 	if leg and ROUTE_CORNER and road.size() >= 2:
 		room = minf(room, _arc_of(road, road[road.size() - 1]))
@@ -803,8 +804,8 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 	return result
 
 
-## G1 v10: how far ahead of the rearmost squad's start the column's last rank must stand.
-const ROOM_AHEAD_M := 10.0
+## G1 v10: how far behind the rearmost squad's start the column's last rank may stand (COLUMN_AWAY_M: still taken, not held).
+const ROOM_BEHIND_M := 10.0
 ## G1 v10: how far a wet rank steps back at a time, and how many steps one lay may take in all.
 const WET_STEP_M := 4.0
 const WET_STEPS_MAX := 40
