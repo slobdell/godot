@@ -350,6 +350,10 @@ already read, or 7001-7012.
   drive gate; the look is c9ea1a6b4's). Proof: default probe base v bo v parkedpass, 60/60 byte-identical required (builder0 light).
   Stretch: the bridge drill crew (R43.38, locks rust s2 t15) does NOT reproduce on main 918498713 (rim 0.0 s, arrival 21.6 s); the
   18-cell hard line on main is running.
+- **R44.17 (~13:05) the bridge drill crew (R43.38) is GONE on main 918498713.** `make bridge-pooled` (seeds 1-3 x ticks 1/8/15 x both
+  sides), builder0, native ON: 18/18 every crew crosses, rim crews 0, worst crew 1.9 s at the water (under 3 s), pooled rim 3.5 s,
+  mean arrival 19.4 s (R40.21's cell: 48.9 s, rim 5.1 s); rust s2 t15 rim 0.0 s, arrival 21.6 s. Closed. **Round-45 note:** balance's
+  Bar B2s v2 bridge gate waited on this crew (R42.23); it may now be reachable on main.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
