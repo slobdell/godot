@@ -438,6 +438,21 @@ const LEG_WIDTH_ENDS_M := 12.0
 const GROUP_SCAN_M := 100.0
 ## Measurement: group clicks laid as a column (not open ground), since start.
 static var columns_laid := 0
+## G1 v10 (round 44, orders O4; his Locks click of 2026-10-28, tick 1512, reproduced in tests/test_control_his_locks_click.gd):
+## his four squads stood in a row along the north edge and he clicked 44 m west on the OPEN yard; today's body (`ranks`, round
+## 21) laid them THREE abreast across the approach, 58 m apart, and the column (G1) never ran, because every place stood on
+## clear ground. `--group-column=always`: on his plain group click the column is laid on open ground too (today's body is not
+## kept for standing on clear ground), at most COLUMN_ABREAST squads abreast (his "stacks of wedges"; "spread out" on open
+## ground means two abreast, not three), and SINGLE FILE when the squads already stand in file across the approach (his row:
+## their centres within half a slot of the column's line), so a row heading one way stays one row. Gates (a waypoint passed
+## through) and shifted legs (G2) lay as before. The rest of G1 v9 stands: nearest in front, a squad the column would send
+## more than COLUMN_AWAY_M farther from the click stays on its spot (`--group-column-toward=stay`), two sides, the lead by
+## drive. OFF until Bar G1 v10; `--group-column=off` is the escape once it ships.
+static var COLUMN_ALWAYS := OS.get_cmdline_user_args().has("--group-column=always")
+const COLUMN_ABREAST := 2
+## Measurement (G1 v10): columns laid on clear ground that G1 v9 would have kept today's body on; and columns laid single file.
+static var columns_on_open := 0
+static var columns_in_file := 0
 ## Measurement (G1): group lays where today's body already stood on clear ground and was kept, since start.
 static var bodies_kept := 0
 
@@ -454,7 +469,8 @@ static var bodies_kept := 0
 ## read e3389f1fc, locks 5 route: a rear squad's last place stood behind its own start; it drove on through the waypoints
 ## and back).
 static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_at: Callable, clamp: Callable,
-		today: Array[Vector3] = [], path_back := Callable(), reached := Callable(), passing := false, leg := false) -> Array[Vector3]:
+		today: Array[Vector3] = [], path_back := Callable(), reached := Callable(), passing := false, leg := false,
+		blocked := Callable()) -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	if blocks.size() < 2:
 		return result
@@ -481,16 +497,18 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 			return result  # no body given: open = the scan reaches its limit both sides (v1)
 	elif on_clear_ground(today, flat_click, ahead, width_at, at_click, reached if CLEAR_REACHED else Callable()) \
 			and fits_along(today, ahead, narrowest):
-		bodies_kept += 1
-		return result  # today's body already stands on the ground he clicked
+		if not (COLUMN_ALWAYS and not passing and not leg):
+			bodies_kept += 1
+			return result  # today's body already stands on the ground he clicked
+		columns_on_open += 1  # G1 v10: his yard click: the column is laid here too
 	# Every squad already within COLUMN_NEAR_M of the click: no approach to stack along (the same trace: re-laid, they only
 	# shuffled sideways); today's body stands.
 	var near_check: Array = []
 	for i in blocks.size():
 		near_check.append(_arc_of(_back_line(PackedVector3Array(), flat_click, ahead), blocks[i]["center"]))
-	if near_check.max() < COLUMN_NEAR_M:
+	if near_check.max() < COLUMN_NEAR_M and not (COLUMN_ALWAYS and not passing and not leg):
 		bodies_kept += 1
-		return result
+		return result  # G1 v10 lays the column even here (his row's front stood 20 m from his click)
 	# G1 v6 (round 40, `--group-sides=both`): a squad standing past the click (his-5 s6201: Alpha 29 m west of it, the body
 	# coming in from the east) is laid on its own side, a column out from the click the other way, so it never drives
 	# through the squads stacked on the near side (v5 gave it the second place, 34 m east: it drove 62 m through Bravo's halt).
@@ -505,11 +523,11 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 		else:
 			near.append(i)
 	if far.is_empty() or near.is_empty():
-		result = _lay_side(blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg)
+		result = _lay_side(blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg, blocked)
 	else:
 		var near_blocks: Array = near.map(func(i: int) -> Dictionary: return blocks[i])
 		var far_blocks: Array = far.map(func(i: int) -> Dictionary: return blocks[i])
-		var near_laid := _lay_side(near_blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg)
+		var near_laid := _lay_side(near_blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg, blocked)
 		var deepest := 0.0
 		for block: Dictionary in blocks:
 			deepest = maxf(deepest, float(block.get("travel_depth", block.get("depth", 0.0))) if passing else column_depth(block))
@@ -530,14 +548,14 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 				continue
 			# Read across the far side's own way in (-across): the click's sides swap.
 			far_laid = _lay_side(far_blocks, far_click, -ahead, _within_click(width_at.call(far_click, -across), [at_click[1], at_click[0]]),
-					width_at, clamp, Callable(), reached, passing, false)
+					width_at, clamp, Callable(), reached, passing, false, blocked)
 			if not far_laid.is_empty():
 				break
 		if COLUMN_TRACE:
 			print("COLUMN_TRACE sides far %s near %s far_click %s clamped %s reached %s near_laid %s far_laid %s" % [far, near, far_click,
 					(clamp.call(far_click) as Vector3).distance_to(far_click), reached.is_valid() and bool(reached.call(far_click)), near_laid, far_laid])
 		if near_laid.is_empty() or far_laid.is_empty():
-			result = _lay_side(blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg)
+			result = _lay_side(blocks, flat_click, ahead, at_click, width_at, clamp, path_back, reached, passing, leg, blocked)
 		else:
 			result.resize(blocks.size())
 			for k in near.size():
@@ -552,7 +570,7 @@ static func column_lay(blocks: Array, click: Vector3, approach: Vector3, width_a
 ## G1: one side's column (v1-v5's lay, every squad): ranks back from `flat_click` along -`ahead`, squeezed when too long;
 ## [] when no squeeze fits.
 static func _lay_side(blocks: Array, flat_click: Vector3, ahead: Vector3, at_click: Array, width_at: Callable, clamp: Callable,
-		path_back: Callable, reached: Callable, passing: bool, leg: bool) -> Array[Vector3]:
+		path_back: Callable, reached: Callable, passing: bool, leg: bool, blocked := Callable()) -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	var widest := 0.0
 	var deepest := 0.0
@@ -581,14 +599,26 @@ static func _lay_side(blocks: Array, flat_click: Vector3, ahead: Vector3, at_cli
 	# G2 v2 (dev read 4ce8784d5, terminus 5 avenue: one step behind the rearmost start put squad 4 back at the army's
 	# start, 122.7 m off his route): on a leg, no rank behind its squads' rearmost start.
 	var room := rearmost + (0.0 if (leg and (GROUP_LEG_ROOM or ROUTE_CORNER)) or GROUP_ROOM_REARMOST else step)
+	# G1 v10 (R44.5 / R44.6, line 6): the column's last rank stands no more than ROOM_BEHIND_M behind the rearmost squad's start
+	# (= COLUMN_AWAY_M: a place that far back is still taken, not held), so on a far click every squad moves, on his near click the
+	# ranks squeeze and every squad falls in a few metres (dev read 4: with the room read ahead of the rearmost start, the
+	# squeezed ranks never fitted a near click and two or three squads held, which R44.6 counts only within the column's length).
+	if COLUMN_ALWAYS and not passing and not leg:
+		room = rearmost + ROOM_BEHIND_M
 	# G2 v2: and never further back than the road runs (his route's first click): the ranks squeeze instead.
 	if leg and ROUTE_CORNER and road.size() >= 2:
 		room = minf(room, _arc_of(road, road[road.size() - 1]))
 	# G2 v2: on a leg, ranks behind the road's first corner stand centred on it.
 	var corner := _first_turn_arc(road) if leg and ROUTE_CORNER else INF
+	# G1 v10 (R44.9, FIT FIRST): on his plain click a rank holds as many squads abreast as fit CENTRED on the line with no slide,
+	# at most COLUMN_ABREAST; the rest fold into ranks behind, nearest in front.
+	var cap := MAX_ABREAST
+	var fit_first := COLUMN_ALWAYS and not passing and not leg
+	if fit_first:
+		cap = COLUMN_ABREAST
 	for attempt in COLUMN_SQUEEZES + 1:
 		var laid := _lay_ranks(blocks, by_along, flat_click, ahead, straight, road, at_click, width_at, clamp, reached, widest,
-				step * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)), room, attempt == COLUMN_SQUEEZES, corner)
+				step * (1.0 - 0.5 * attempt / float(COLUMN_SQUEEZES)), room, attempt == COLUMN_SQUEEZES, corner, cap, blocked, fit_first)
 		if not laid.is_empty():
 			result = laid
 			break
@@ -608,19 +638,29 @@ static var COLUMN_TOWARD := OS.get_cmdline_user_args().has("--group-column-towar
 static var COLUMN_STAY := g1_on(["--group-column-toward=off", "--group-column-toward=on"])
 static var kept_away := 0
 const COLUMN_AWAY_M := 10.0
+## G1 v10: the along-the-approach read keeps a metre inside COLUMN_AWAY_M (the bar's judge reads "> 10 m" on positions snapped to
+## 0.1 m, after the deck clear's 4 m steps).
+const AWAY_SLACK_M := 1.0
 ## Measurement: columns refused so.
 static var columns_refused_away := 0
 
 
 ## `laid` with every squad it sends more than COLUMN_AWAY_M farther from `click` than its block's centre given that centre
-## (flat) instead. Pure; returns [places, how many kept].
-static func column_keep_away(laid: Array, blocks: Array, click: Vector3) -> Array:
+## (flat) instead. Pure; returns [places, how many kept]. G1 v10: with `ahead` given, "farther" is read ALONG the approach
+## (the place behind where the squad stands by more than COLUMN_AWAY_M), the brief's rule: no squad's goal behind its start
+## along the click direction; a lone vehicle 15 m off the column's line still falls in beside it.
+static func column_keep_away(laid: Array, blocks: Array, click: Vector3, ahead := Vector3.ZERO) -> Array:
 	var out: Array = laid.duplicate()
 	var kept := 0
 	for i in mini(laid.size(), blocks.size()):
 		var at: Vector3 = (blocks[i] as Dictionary)["center"]
 		var place: Vector3 = laid[i]
-		if Vector2(place.x - click.x, place.z - click.z).length() > Vector2(at.x - click.x, at.z - click.z).length() + COLUMN_AWAY_M:
+		var away := false
+		if ahead != Vector3.ZERO:
+			away = (Vector3(at.x, 0.0, at.z) - place).dot(ahead) > COLUMN_AWAY_M - AWAY_SLACK_M
+		else:
+			away = Vector2(place.x - click.x, place.z - click.z).length() > Vector2(at.x - click.x, at.z - click.z).length() + COLUMN_AWAY_M
+		if away:
 			out[i] = Vector3(at.x, place.y, at.z)
 			kept += 1
 	return [out, kept]
@@ -651,12 +691,33 @@ const COLUMN_NEAR_M := 30.0
 const COLUMN_SQUEEZES := 4
 
 
+## G1 v10 (R44.9): how many squads of `widest` stand abreast CENTRED on the column's line with no slide: the frontage of k
+## (k x widest + (k - 1) x GAP_M) must fit twice the narrower clear side; at least one, at most `cap`. Pure.
+static func fit_abreast(cap: int, widest: float, sides: Array) -> int:
+	var room := 2.0 * minf(float(sides[0]), float(sides[1]))
+	var k := 1
+	while k < cap and (k + 1) * widest + k * GAP_M <= room:
+		k += 1
+	return k
+
+
+## G1 v10: whether every block's centre stands within `slack` metres across `ahead` of the line through `flat_click` along it
+## (the squads already stand in file along the approach). Pure.
+static func in_file(blocks: Array, flat_click: Vector3, ahead: Vector3, slack: float) -> bool:
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	for block: Dictionary in blocks:
+		var c: Vector3 = block["center"]
+		if absf((Vector3(c.x, 0.0, c.z) - flat_click).dot(across)) > slack:
+			return false
+	return not blocks.is_empty()
+
+
 ## G1: the ranks of a column `step` metres apart, front to back in `by_along`'s order: straight back along the approach
 ## while reached, then along the road; [] when a rank would stand off the map or more than `room` metres back (unless
 ## `last_try`: then the rest stand abreast in the last rank inside).
 static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahead: Vector3, straight: PackedVector3Array,
 		road: PackedVector3Array, at_click: Array, width_at: Callable, clamp: Callable, reached: Callable, widest: float,
-		step: float, room: float, last_try: bool, corner := INF) -> Array[Vector3]:
+		step: float, room: float, last_try: bool, corner := INF, cap := MAX_ABREAST, blocked := Callable(), fit_first := false) -> Array[Vector3]:
 	var result: Array[Vector3] = []
 	result.resize(blocks.size())
 	var behind := 0.0
@@ -665,6 +726,12 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 	var last_inside := [flat_click, ahead]
 	var last_start := 0
 	var merged := false
+	var wet_steps := 0  # G1 v10: ranks stepped back off water / a deck
+	# G1 v10c (R44.13): the column follows the ROAD back from his click from the first rank (the navmesh drive to the body), the
+	# one line the bar reads slide against; G1 v9 walked the straight approach while the click reached it (dev read 7: a street's
+	# road bends 5-14 m off that straight line and read as a slide).
+	if fit_first and road.size() >= 2:
+		on_road = true
 	while start < by_along.size():
 		var at := _walk_back(straight, behind)
 		if start > 0 and not on_road:
@@ -681,6 +748,16 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		var out_of_room := behind > room + 0.01 or (clamp.call(at[0]) as Vector3).distance_to(at[0]) > 1.0
 		if out_of_room and not last_try:
 			return []
+		if out_of_room and start > 0 and cap < MAX_ABREAST:
+			# G1 v10: no room behind for the rest (his row stood 30 m from the map's edge, the click 20 m ahead): they keep the spot
+			# they stand on, in the column's sense already behind; v9 merged them into the last rank abreast, three wide (dev read 2,
+			# terminus across-20: a 116 m line again).
+			for n in range(start, by_along.size()):
+				var i_s := int(by_along[n][1])
+				var c_s: Vector3 = blocks[i_s]["center"]
+				result[i_s] = Vector3(c_s.x, 0.0, c_s.z)
+				ranks_stayed_for_room += 1
+			return result
 		if out_of_room and start > 0:
 			# The rest join the last rank inside, laid again wider (never two squads on one place).
 			at = last_inside
@@ -696,13 +773,17 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		var single := clear < widest
 		# G2 v2: past the corner of his route the rank stands centred on the route line, as wide as that street.
 		var past_corner := on_road and behind > corner + CORNER_SLACK_M
-		var abreast := 1 if single else mini(MAX_ABREAST, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
+		var abreast := 1 if single else mini(cap, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
+		if fit_first:
+			# R44.9: as many abreast as fit centred on the line with NO slide (his words: side by side where they fit, else stack),
+			# and never wider behind than the front the ground AT HIS CLICK fits (a rear rank on wider ground does not fan out).
+			abreast = mini(fit_abreast(cap, widest, sides), fit_abreast(cap, widest, at_click))
 		abreast = by_along.size() - start if merged else mini(abreast, by_along.size() - start)
-		if RANK_SHIFT_HALF and not merged:
+		if RANK_SHIFT_HALF and not merged and not fit_first:
 			while abreast > 1 and absf(_rank_shift(abreast, widest, sides)) > widest * 0.5:
 				abreast -= 1
 		single = single and abreast == 1
-		var shift := 0.0 if single or past_corner else _rank_shift(abreast, widest, sides)
+		var shift := 0.0 if single or past_corner or fit_first else _rank_shift(abreast, widest, sides)
 		var centre := point + rank_across * shift
 		var rank_members: Array = []
 		for n in range(start, start + abreast):
@@ -710,12 +791,61 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 			var c: Vector3 = blocks[i]["center"]
 			rank_members.append([Vector3(c.x - point.x, 0.0, c.z - point.z).dot(rank_across), i])
 		rank_members.sort()
+		# G1 v10 (locks, a click on the canal bank; the lock's mouth): a rank whose place would stand its halt in water or on a
+		# deck steps back along the line (through the deck if that is where the road goes) until every place is dry, within
+		# room; `blocked(place, reach)`, reach = the block's own half footprint.
+		if blocked.is_valid() and wet_steps < WET_STEPS_MAX:
+			var wet := false
+			for k in rank_members.size():
+				var aside_w := (float(k) - (abreast - 1) * 0.5) * (widest + GAP_M)
+				var i_w := int(rank_members[k][1])
+				var reach_w := maxf(HULL_REACH_M, 0.5 * maxf(float(blocks[i_w].get("width", 0.0)), column_depth(blocks[i_w])))
+				if bool(blocked.call(clamp.call(centre + rank_across * aside_w), reach_w)):
+					wet = true
+					break
+			if COLUMN_TRACE:
+				print("COLUMN_TRACE rank %d behind %.1f at %s road %s abreast %d wet %s" % [start, behind, point, on_road, abreast, wet])
+			if wet:
+				behind += WET_STEP_M
+				wet_steps += 1
+				ranks_wet_stepped += 1
+				on_road = true  # a column meeting water follows the road back (the straight line may hug the bank for 60 m)
+				continue
 		for k in rank_members.size():
 			var aside := (float(k) - (abreast - 1) * 0.5) * (widest + GAP_M)
 			result[int(rank_members[k][1])] = clamp.call(centre + rank_across * aside)
 		start += abreast
 		behind += step
 	return result
+
+
+## G1 v10: how far behind the rearmost squad's start the column's last rank may stand (COLUMN_AWAY_M: still taken, not held).
+const ROOM_BEHIND_M := 10.0
+## G1 v10: a lone vehicle's footprint (a block of one has no width or depth of its own).
+const HULL_REACH_M := 4.0
+## G1 v10: how far a wet rank steps back at a time, and how many steps one lay may take in all.
+const WET_STEP_M := 4.0
+const WET_STEPS_MAX := 40
+## Measurement (G1 v10): rank steps taken off water / decks; squads that kept their spot for want of room behind.
+static var ranks_wet_stepped := 0
+static var ranks_stayed_for_room := 0
+
+
+## G1 v10: whether `point`'s footprint touches a deck (within `reach`, as deck_clear reads it) or water (the centre and eight
+## points at WATER_SHARE of `reach`: the leader's seat and the squad's inner ring; a road running 25 m from a bank is dry
+## ground, the outer seats are the deploy's to settle). Pure given the arena.
+const WATER_SHARE := 0.5
+static func wet_or_deck(point: Vector3, reach: float) -> bool:
+	var flat := Vector3(point.x, 0.0, point.z)
+	if SlotGround.near_deck(flat, reach) or SlotGround.over_water(flat):
+		return true
+	if reach <= 0.5:
+		return false
+	for k in 8:
+		var a := TAU * k / 8.0
+		if SlotGround.over_water(flat + Vector3(cos(a), 0.0, sin(a)) * reach * WATER_SHARE):
+			return true
+	return false
 
 
 ## G2 v2: how far past the corner a rank stands before it is in the street behind it (a rank at the corner itself stands
@@ -2291,10 +2421,10 @@ static var deck_cleared := 0
 
 
 static func deck_clear(anchors: Array[Vector3], reach: Array, click: Vector3, back: Vector3, near_deck: Callable,
-		clamp: Callable) -> Array[Vector3]:
+		clamp: Callable, skip_at_click := true) -> Array[Vector3]:
 	var out: Array[Vector3] = anchors.duplicate()
-	if not DECK_CLEAR or bool(near_deck.call(Vector3(click.x, 0.0, click.z), DECK_CLEAR_CLICK_M)):
-		return out
+	if not DECK_CLEAR or (skip_at_click and bool(near_deck.call(Vector3(click.x, 0.0, click.z), DECK_CLEAR_CLICK_M))):
+		return out  # G1 v10 passes skip_at_click = false: a click on the lock's bank still clears its ranks off the water
 	var away := TacticsFormation.flat(back)
 	for i in out.size():
 		var r := float(reach[i]) if i < reach.size() else 0.0
