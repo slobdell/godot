@@ -32,7 +32,9 @@ extends RefCounted
 const VERBS := ["move", "attack", "attack_move", "follow", "hold", "stop"]
 const NEEDS_TO := ["move", "attack_move"]
 const NEEDS_TARGET := ["attack", "follow"]
-const KEYS := ["units", "verb", "to", "target", "queue", "formation", "source", "facing", "slot", "task"]
+## Round 44 (orders, C44.2 / CP44.0): "click" = the ground point under his cursor before any per-squad layout, "group" = the
+## squads one order was given to; both ride the command to the recorder's `order` row and mean nothing to Orders.
+const KEYS := ["units", "verb", "to", "target", "queue", "formation", "source", "facing", "slot", "task", "click", "group"]
 const TAKES_FACING := ["move", "attack_move", "hold"]
 const SOURCES := ["player", "element", ""]
 const AUTO := "auto"

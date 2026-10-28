@@ -29,10 +29,12 @@ extends RefCounted
 const VERBS := ["move", "attack", "screen", "support_by_fire", "ambush", "hold"]
 const NEEDS_TO := ["move", "screen", "support_by_fire", "ambush"]
 const NEEDS_TARGET := ["attack"]
+## Round 44 (CP44.0, R43.34): "group": N marks a squad's share of one order given to N squads at once (the controls' group
+## click); the controls' re-lays (a cut leg, a re-laid first leg, a cleared leg) drop `halt_at` / `halt_shape` / `lay` but keep it.
 ## Round 28 (B5): "facing_from": "waypoint" marks a facing the controls set from his last waypoint (a queued task), not
 ## one he drew; only the readout differs.
 const KEYS := ["verb", "to", "target", "drills", "facing", "formation", "from", "approach", "facing_from", "lay", "via",
-		"halt_at", "halt_shape"]
+		"halt_at", "halt_shape", "group"]
 ## Round 11 (the lead, 2026-09-25: *"they're still not really forming up when I give them a formation to use"*).
 ## His 2026-09-16 ruling stands as the DEFAULT -- "there's essentially always a formation for any given task OR
 ## there's always a central decision maker ... that automatically determines what the formation is" -- so a task with
