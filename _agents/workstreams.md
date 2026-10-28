@@ -3,7 +3,8 @@
 > **ROUND 42 CLOSING 2026-10-27 ~03:30 (main b12b17ac7 GREEN builder0, 28 targets ALL JUDGED, 3343/0 = every round-42 merge; later
 > commits docs only). Shipped ON: `--attack-shot` (engage, Bar E1), `--camera-danger` (camera, Bar K4 v2), the CPU counter-lineup for
 > Condemned and Gangs (balance, Bar B7). OFF with causes: Q5, Q6 (manoeuvre), E2 (engage, inconclusive). Engage, manoeuvre, native,
-> camera CLOSED (briefs in `streams/archive/round42/`, branches `round42/<s>`); balance open until Bar B2s v2 reads (morning).**
+> camera CLOSED (briefs in `streams/archive/round42/`, branches `round42/<s>`); Bar B2s v2 read 19:30 FAIL 17/18 (R42.23,
+> unshipped either way); balance CLOSED.**
 > Round 41's section follows round 42's.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
@@ -214,9 +215,27 @@ another project's workers (plane_maker): never touch processes you didn't start.
   unmoved; the series started ~00:30 on builder0 light J4 (`~/camera-bar-k4v2/4165f4619/`). Noted, not camera's: two control-timing
   OVER BUDGET lines NOT JUDGED (a right click on 30 units 2699.8 v 104 workloads; control per frame 28.25 v 26.0) on a loaded box.
 
+- **FAILED (R42.23; read verdict only, the stat change stays unshipped per R42.15). Bar B2s v2 (balance; FILED 8165a8830 round 40,
+  R40.19; re-armed round 42 per R42.15: BASE c0b61be2e, ARM 7aceba95f = c0b61be2e + 8e257f3bc (fm_c5r2_lawt5, 55 values) + d385cd308
+  (re-pins), named before any number on 8801-8840 + 8901-8940).** Lines, guards and judge word for word as filed (see round 40's Bars).
+  Read 2026-10-27 19:30, builder2 J24, 0 attempts lost: **17 of 18 rules hold; the one miss is G3 Gangs turtle length +20.75 % (se 7.71,
+  n 210) against "within 20", over by 0.75 inside one se, read as filed.** Deciding passes: flatness 18.5 -> 11.6 (-6.93, se 2.00,
+  n 1600); blob v Gangs CPU 80 -> 54 %, blob v Syndicate CPU 11 -> 42 %, both toward the line mean. Guards: G1 blob line -4.50 (se 1.92,
+  n 800); G2 turtle -1.62 (se 1.31); G3 blob +5.8 % overall, every faction within 20 (+5.4/+12.4/+5.8/-10.3), turtle +0.3 % overall,
+  Condemned/Law/Syndicate +0.1/+0.3/-18.2; G4 time-cap -0.06 (se 0.21); G5 none-line flatness -17.74 (se 5.16, n 200); G8 mono-tank
+  -1.62 (se 0.92); G6/G7 from the ARM's check (builder0 exited 2: sim-baseline expected; bridge-pooled = the drill crew, R42.15).
+  Judge output `~/balance-runs/bar-b2s-v2-verdict.log` on builder2; balance's Status 282c2832d.
+
 _(filed bars go here, before their numbers)_
 
 ## Rulings (round 42)
+- **R42.23 (2026-10-27 ~19:35) Bar B2s v2 FAILS 17/18 on the read; fm_c5r2_lawt5 stays unshipped; the read verdict carries.** BASE
+  c0b61be2e v ARM 7aceba95f, builder2 J24, 8801-8840 + 8901-8940 as filed, 0 lost. Deciding passes (flatness 18.5 -> 11.6, -6.93 se
+  2.00 n 1600; blob v Gangs CPU 80 -> 54 %, v Syndicate 11 -> 42 %); the miss is G3 Gangs turtle length +20.75 % (se 7.71, n 210) v
+  within 20, 0.75 over inside one se, read as filed (a guard is never amended after numbers). The ship gate (CP42.1, the bridge fix)
+  was not reached either (R42.15), so the verdict changes nothing on main this round. For him: "the fights sit much closer to even,
+  but Gangs fights against a dug-in line run about a fifth longer, just past the limit". Carried to a later round as a candidate with
+  two open items: the bridge's drill crew (rust s2 t15) and the Gangs turtle length. Balance closes on its Status merge (docs only).
 
 - **R42.1 (2026-10-26 evening) balance's B7 call-site GRANT.** Two additive edits outside balance's paths, OFF-pinned by tests, merge
   note: (1) `game/modes/skirmish_mode.gd` `_start_match` loads both armies through a new `Army.load_pair()` before the spawn loop (today
