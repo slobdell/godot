@@ -141,6 +141,13 @@ already read, or 7001-7012.
   Native: six trial clicks all scatter 60-110 m; z = 117.24 is a hard edge (his Wrenches at exactly (-25.49, 117.24)), as R44.2's slide.
 - **R44.5 (~13:05) Bar G1 v10b accepted** (amended before any fresh number; dev seeds only), with line 6 added by the orchestrator: a
   held squad is excluded from the spread lines only if holding stays rare where there is room (reach-80 held = 0 in >= 90 % of runs).
+- **R44.6 (~13:30) line 6 re-shaped before any fresh number, on orders' read of dev read 2 (7001-7006):** 6(b) as first written
+  contradicts reading A on his own click (reach 20: the front moves 20 m, the three already in file behind hold; base moves all four
+  and scatters them 100 m). Now: **6(a)** unchanged (reach-80: every squad moves in >= 90 % of runs); **6(b)** reach-80 cells only;
+  **6(c)** reach-20 cells: per run, held <= the squads whose start lies within the column's length behind the click (the judge
+  computes it from the arm's own laid column; no +1). 6(a)'s dev failure (ranks stepping 50 m back past the rearmost squad's start)
+  is a code fix (no rank behind the rearmost start less 10 m), read on dev read 4; any reach-80 cell still failing 6(a) there comes
+  to the orchestrator before 10801 runs.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
