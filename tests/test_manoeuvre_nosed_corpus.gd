@@ -33,7 +33,7 @@ const POSES := [
 ]
 ## The crawl shape's squadmates in the rig's frame (x: right, z: behind), his deploy around Guns_2.
 const CRAWL_MATES := [Vector2(-8.0, 1.0), Vector2(5.0, 1.0), Vector2(-5.0, 15.0), Vector2(1.5, 15.0)]
-## Bar B1's FRESH poses (NOSED_SEED=<n> in the environment): every pose jittered from the seed, the same in both arms: the spot
+## Bar B1's FRESH poses (NOSED_SEEDS=a-b in the environment: one pose a seed): the pose jittered from its seed, the same in both arms: the spot
 ## +/- JITTER_ALONG_M along the box face, the nose gap NOSE_GAP_M +/- JITTER_GAP_M, the nose JITTER_YAW_DEG either way off square, the
 ## order's angle +/- JITTER_ANGLE_DEG. Unset: the 14 dev poses as listed (read already; never a bar).
 const JITTER_ALONG_M := 3.0
@@ -69,13 +69,12 @@ static func rig_pose(pose: Array, jitter: Array = [0.0, 0.0, 0.0, 0.0]) -> Array
 	return [Vector3(spot.x, 0.0, spot.y), yaw, forward]
 
 
-## A pose's jitter from NOSED_SEED (one RandomNumberGenerator per pose, seeded by seed * 100 + pose: the same in both arms).
-static func jitter_of(pose_id: int) -> Array:
-	var seed_text := OS.get_environment("NOSED_SEED")
-	if seed_text == "":
+## A pose's jitter from its seed (one RandomNumberGenerator, seeded by seed * 100 + pose: the same in both arms); 0 = none.
+static func jitter_of(pose_id: int, seed_value: int) -> Array:
+	if seed_value == 0:
 		return [0.0, 0.0, 0.0, 0.0]
 	var rng := RandomNumberGenerator.new()
-	rng.seed = int(seed_text) * 100 + pose_id
+	rng.seed = seed_value * 100 + pose_id
 	return [rng.randf_range(-JITTER_ALONG_M, JITTER_ALONG_M), rng.randf_range(-JITTER_GAP_M, JITTER_GAP_M),
 			rng.randf_range(-JITTER_YAW_DEG, JITTER_YAW_DEG), rng.randf_range(-JITTER_ANGLE_DEG, JITTER_ANGLE_DEG)]
 
@@ -83,12 +82,12 @@ static func jitter_of(pose_id: int) -> Array:
 var _native_drive_was := BrainSwitches.native_drive
 
 
-func _run(pose_id: int, pose: Array, arm: String) -> Dictionary:
+func _run(pose_id: int, pose: Array, arm: String, seed_value := 0) -> Dictionary:
 	Traffic.set_off("backout", arm == "off")
 	if OS.get_environment("NOSED_GDSCRIPT") == "on":
 		BrainSwitches.native_drive = false  # a dev read of a GDScript change before native's twin follows it
 	_lab = TacticsLab.create(self, 7, String(pose[0]))
-	var jitter := jitter_of(pose_id)
+	var jitter := jitter_of(pose_id, seed_value)
 	var rp := rig_pose(pose, jitter)
 	var spot: Vector3 = rp[0]
 	var yaw: float = rp[1]
@@ -115,6 +114,8 @@ func _run(pose_id: int, pose: Array, arm: String) -> Dictionary:
 	var first_reverse := -1
 	var cleared := -1
 	var crept := 0.0
+	var yield_ticks := 0  # R44.12: the rig's yielding ticks and blocked-by-a-friend ticks in its first 6 s (the base row's stuck test)
+	var blocked_friend_ticks := 0
 	var nose0 := -rig.global_basis.z
 	# The pose's own numbers (the same in both arms): the navmesh run past the nose (the rule's nose test) and the route's departure
 	# angle (the first vertex of the rig's route to the order a hull's length out, off the nose).
@@ -134,12 +135,18 @@ func _run(pose_id: int, pose: Array, arm: String) -> Dictionary:
 			first_reverse = i + 1
 		if first_reverse < 0:
 			crept = maxf(crept, (rig.global_position - spot).dot(nose0))
+		if i < 6 * SimClock.TICK_RATE:
+			if mover.phase == "yielding":
+				yield_ticks += 1
+			elif mover.phase == "blocked" and mover.blocked_by != "" and mover.blocked_by.begins_with("Green_"):
+				blocked_friend_ticks += 1
 		if Vector2(rig.global_position.x - spot.x, rig.global_position.z - spot.z).length() >= CLEAR_M:
 			cleared = i + 1
 			break
 	var row := {"pose": pose_id, "arena": pose[0], "shape": pose[5], "angle": pose[6], "arm": arm, "clear_tick": cleared,
-			"seed": OS.get_environment("NOSED_SEED"), "jitter": [snappedf(jitter[0], 0.1), snappedf(jitter[1], 0.1), snappedf(jitter[2], 0.1), snappedf(jitter[3], 0.1)],
+			"seed": seed_value, "jitter": [snappedf(jitter[0], 0.1), snappedf(jitter[1], 0.1), snappedf(jitter[2], 0.1), snappedf(jitter[3], 0.1)],
 			"first_reverse": first_reverse, "crept_m": snappedf(crept, 0.01), "looks": int(Movement.route_arms().get("backout_looks", 0)),
+			"yield_ticks_6s": yield_ticks, "blocked_friend_ticks_6s": blocked_friend_ticks,
 			"kturns": int(Movement.route_arms().get("kturns", 0)),
 			"nose_room_m": snappedf(nose_room, 0.1), "depart_deg": snappedf(depart_deg, 1.0), "native_drive": BrainSwitches.native_drive}
 	print("NOSED_ROW " + JSON.stringify(row))
@@ -152,10 +159,20 @@ func test_the_staged_nose_on_corpus_runs_both_arms() -> void:
 	if OS.get_environment("NOSED_CORPUS") != "on":
 		print("NOSED_CORPUS: skipped (NOSED_CORPUS=on runs the %d poses in both arms)" % POSES.size())
 		return
+	# NOSED_SEEDS=a-b (Bar B1's fresh poses): seed s runs pose (s - a) mod POSES.size(), jittered by s; unset: the 14 dev poses.
+	var cells: Array = []
+	var seeds_text := OS.get_environment("NOSED_SEEDS")
+	if seeds_text != "":
+		var parts := seeds_text.split("-")
+		for s in range(int(parts[0]), int(parts[parts.size() - 1]) + 1):
+			cells.append([(s - int(parts[0])) % POSES.size(), s])
+	else:
+		for i in POSES.size():
+			cells.append([i, 0])
 	var rows := 0
-	for i in POSES.size():
+	for cell in cells:
 		for arm in ["off", "on"]:
-			var row := await _run(i, POSES[i], arm)
+			var row := await _run(int(cell[0]), POSES[int(cell[0])], arm, int(cell[1]))
 			rows += 1
-			assert_true(int(row["clear_tick"]) != 0, "pose %d %s produced a row" % [i, arm])
-	assert_eq(rows, POSES.size() * 2, "every pose ran in both arms")
+			assert_true(int(row["clear_tick"]) != 0, "pose %d seed %d %s produced a row" % [cell[0], cell[1], arm])
+	assert_eq(rows, cells.size() * 2, "every pose ran in both arms")
