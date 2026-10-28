@@ -142,6 +142,24 @@ _(worker keeps this current: report at the top, every number with commit, machin
     Spears about where they stood). Everything heads one way. **B:** your click is where the army's MIDDLE goes: front squads a rank
     past the click, rear squads a rank short of it, so every squad moves about the same distance. Easier to read on a short click
     (nobody stands still), but the front overshoots the spot you clicked, and round 37 chose "the column stands at the click".
+- **O3 BUILT (faa56b5c3): `make orders-geometry`** (`tests/orders_probe_geometry.gd` extends the orders probe; his 4-squad army
+  `tests/control/orders_probe_his_4.json`, Gangs: 5 IFVs / 4 scouts + a tank / 3 support + 2 IFVs / ONE tank): `--probe-starts=
+  his|along|across|spawn` re-stands the squads just before the click (a row along the approach 30 m apart as his stood; across it;
+  his row with the lone tank 20 m off it just ahead of the front squad), `--probe-reach=M` puts the click M m past the nearest
+  squad (his: 20; 80 = a real move); `tests/control/orders_geometry_table.py` reads per run from `start` / `anchor` / the click:
+  spread, across-spread, aside_max (the farthest place off the click line: the map-edge push), backward squads (a place behind
+  its start along the approach by > 10 m = COLUMN_AWAY_M), front_ok (the nearest squad gets the nearest place), all-in. Main's
+  read: builder2, native on, locks / crossing / terminus x his / along / across x reach 20 / 80 x 7001-7006 (108 runs): below.
+- **O4 BUILT OFF (add0c2dcb): G1 v10, `--group-column=always`.** The column is laid on open ground too (the clear-ground keep of
+  today's body is skipped on a plain click; gates and G2 legs as before), at most TWO abreast (COLUMN_ABREAST), SINGLE FILE when
+  the squads already stand in file across the approach (every centre within half a slot of the click line: his row), and the
+  G1 v9 stay rule reads ALONG the approach (a place more than 10 m behind where the squad stands keeps it on its spot; a lone
+  vehicle 15 m off the line still falls in). Lab (laptop, his tick-1512 click): the Hunters (nearest) land on the click (-35, 95),
+  the Spears / Wrenches / Guns_4 hold (already in the column behind it, 0 m back), places within 16 m of the click line, no
+  north-south front (today 100 m). `test_v10_lays_his_click_as_one_column`. What he would see on THAT click: one squad moves 20 m
+  west onto his spot, the other three stand where they are, in file behind it; on a far click every squad drives, nearest in
+  front. **Symmetric (C44.5):** the CPU gives no group clicks (its planner tasks elements one by one; SelectionSquads is the
+  player's layout only), so there is no CPU twin, as for G1 v9.
 - **Decisions:** `click` goes on the one-squad row too (its `to` is the click, but one key the tools can rely on beats a
   rule); `group` only on orders to two or more squads (C44.3: his one-squad order stays manoeuvre's); loose units' row
   carries `click`, not `group`.
@@ -150,3 +168,41 @@ _(worker keeps this current: report at the top, every number with commit, machin
 - **Requests to other streams:** native: `tests/replay_orders.gd` / `ReplaySetup.merge_clicks` may merge a click's rows by
   `click` + `tick` (today by `to`, which differs per squad, so his group click replays as four orders; it still works).
 
+
+
+### Bars (filed here before any judged number; the orchestrator records them on main)
+- **Bar G1 v10 THE COLUMN ON OPEN GROUND (orders, round 44; filed 2026-10-28 ~12:00 PDT BEFORE any number on 10801-10848; code
+  add0c2dcb, OFF; dev read on 7001-7006 only).** What he would see: he selects every squad and clicks once. The squad nearest
+  his click drives to it; the others fall in behind it along the way they came, one behind another (two side by side at most
+  where the ground is wide), nearest in front and farthest at the back; nobody is sent back past where it stands; the places
+  are never strung across the way he clicked, and the map's edge never pushes a squad off the column. On his Locks click:
+  the Hunters on the spot, the other three hold in file behind. On a far click: one army, one way.
+  - **Arm:** `v10:--group-column=always` (everything else as main: G1 v9 ON). Base `main:`.
+  - **Tree:** a frozen detached worktree at the commit whose full check is named green here (add0c2dcb or a descendant of it
+    with docs only; main's switches as launched).
+  - **Part A, his geometry (DECIDING):** `make orders-geometry` on builder2 (native on; the series lock, re-queue on preemption):
+    locks / crossing / terminus x starts his / along / across x reach 20 / 80 x arm, **FRESH seeds 10801-10824**, n 24 a cell
+    (18 cells, 432 runs an arm). Judge `tests/control/orders_geometry_table.py` per cell (medians over seeds) and per run:
+    1. **across_m** (the places' spread across the approach): every cell's median <= 60 m (two abreast = a 44 m slot + the 14 m
+       gap; main's smoke: 115-126 m), and no run > 80 m;
+    2. **backward** (a place more than 10 m behind its squad's start along the approach): 0 squads in every arm run (main reported);
+    3. **aside_max_m** (the farthest place off the click line, the orchestrator's line on the map-edge push): every run <= 52 m
+       (a two-abreast place is 29 m off the line and RANK_SHIFT_HALF may slide a rank half a slot, 22 m; nothing else may move
+       it); main reported;
+    4. **front_ok** (the squad nearest the click at the start gets the place nearest the click, within 10 m): >= 90 % of runs in
+       every cell;
+    5. **spread_m** reported (end to end; his recording ~100 m for a 44 m move).
+  - **Guards (filed now):** part A: each cell's all-in median <= base x 1.2 + 3 s and never-in no more than base; friendly
+    contacts (the run row's `friend_contacts`) <= base x 1.1 + 5 pooled. **Part B, G1 v9's own lines:** `tests/control/orders_bar.sh
+    b2 g1v8 v10:--group-column=always "10825 ... 10836" <out> 8` (the 12 street cells + his terminus click, n 12 a cell, judge
+    `orders_judge.py g1v8` unamended): every R36.6 probe guard per cell, places outside the corridor <= base + 2, sent away > 10 m
+    <= base + 2, re-dealt 0; yard_open is NOT a guard this time (v10 changes the open yard on purpose: its rows are REPORTED,
+    the deciding lines above judge them through part A). **Part C, fights:** the probe's fight (`--probe-fight=on`, terminus /
+    locks, 5 squads, click) on 10837-10848, n 12 a cell: his kills, his losses, the CPU's losses within base +/- 1.645 se.
+    **C44.3:** a one-squad order never enters this code (squads.size() >= 2), so manoeuvre's one-squad arrival is unchanged by
+    construction; stated, not measured. Fresh-seed series are never amended after their numbers are seen.
+  - **Known risk:** a click right among the squads (every squad within COLUMN_NEAR_M = 30 m along the approach) still keeps
+    today's body (unchanged by v10; not his case, said here before the numbers); a clump of five squads on open ground with a
+    near click may squeeze into two ranks abreast (two abreast x two deep + one) rather than spread as the yard allowed.
+  - **Plus:** his tick-1512 click on native's exact replay (O5), before / after, top-down shots looked at. A pass ships ON
+    (`--group-column=always` the default, `--group-column=off` the escape).
