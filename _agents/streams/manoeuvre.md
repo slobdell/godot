@@ -68,4 +68,58 @@ Nothing at launch.
 
 ## Status
 
-_(worker keeps this current)_
+_(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Session start 2026-10-28 ~09:20 PDT (Fable, `godot-manoeuvre-c0`). Starting commit 711f3e94f = main at launch (code dbf0bf637 GREEN
+builder0, 3420/0; no baseline check re-run, per the contract). Orchestrator session: `godot-b8`. CP44.0 not yet merged at start.**
+
+### Plan (smallest foundation first; the brief's order kept)
+
+1. **M1** rebase the R43.34 scoping (done: 1354362f8, below); proof take 5 = the G1 v9 probe byte-identical base v all-ON on the rebased
+   tree (running, builder2 light); re-proved on the merged tree once CP44.0 lands (`git merge main`).
+2. **M2** his container moment: the 08-15 start rebuilt on builder0 (native ON) in three arms (base / converge+kturngoal / all), the
+   Guns traced per tick; read why Guns_2's first leg points into the box; fix the k-turn so a first leg blocked within a hull length
+   starts in reverse; before/after trace + screenshot pair.
+3. **M3** the Locks give-way: pick by removal between (a) seats dealt in arrival order along the approach and (b) a squadmate's
+   give-way deferred until the seat ahead is taken, on dev seeds; build the winner behind a switch.
+4. **M4** Bar S v3 FILED before any 10901-10948 number; gate check on the frozen tree; series on builder2.
+5. **M5** his acceptance read on both recordings' first orders. Stretch: R43.38, the street hold on side jam_s.
+
+Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for testing only (the brief's option), never committed here.
+
+### M1: the scoping rebased (2026-10-28 ~09:30 PDT)
+
+- **1354362f8** = everything of `wip/manoeuvre-scope-g1` e883fc4eb but `game/control/rts_controls.gd` and `ElementTask.KEYS` (CP44.0).
+  The patch applied three-way without conflict onto 711f3e94f. The scope test's `before_each` / `after_each` (hooks the runner now
+  fails, N6) became `teardown()`; its validator line on `group` waits for CP44.0 (orders' test pins the key).
+- Laptop, 1354362f8 + the two CP44.0 files uncommitted: `make test FILTER=` the five rule files + group_scope + element_task =
+  **28 passed / 0 failed**.
+- **Proof take 5 PASSED (builder2 light, native ON, 1354362f8 + the two CP44.0 files uncommitted, 09:30-09:41 PDT,
+  `~/overnight-manoeuvre/r44/m1/proof5.txt`, `rows.jsonl`):** tests 591 / 0 (the five rule files, group_scope, element_task, every
+  `control_` file); the G1 v9 probe (locks / crossing / terminus x 5 squads x click x 7001-7004) base (`--shape-latch=off`) v scoped
+  (`--seat-bound=on --converge-on-crew=on --traffic-on=kturngoal --traffic-on=parkaside`) **60 / 60 rows byte-identical**. M1 stands;
+  re-proved on the merged tree once CP44.0 is in.
+
+### M2: his container moment, the cause (2026-10-28 ~09:45 PDT; builder0, native ON, 1354362f8, `~/overnight-manoeuvre/r44/m2/`)
+
+- **The rebuild is faithful:** `make manoeuvre-start-trace ST_RECORDING=<his 08-15> ST_CREWS=Guns` puts Guns_2 within 0.1-1.5 m of his
+  census for the first 4 s (START_GAP), every Guns crew within 1.5 m to 3 s.
+- **What happens (base = main; identical row for row in the `--converge-on-crew=on --traffic-on=kturngoal` arm AND in the all-four
+  arm for Guns_2's first 130 ticks: none of round 43's rules touches it):** Green_Guns_2 (War Rig, 14 m, 12 m turning circle) at
+  (-42.1, 90) faces south; ArenaKit `container_20` at (-42, 80) (6.06 x 2.44 m, long axis x) has its north face 1.8 m past the nose;
+  his click is 87 m WSW and the squad's route leaves 35 deg right, round the box's west end (x -45). Ticks 1-27: the transit's
+  converging station starts ON the crew and creeps 1-2 m ahead (goal (-42.7, 89.2), (-43.5, 88.4), once 1.4 m BEHIND); the k-turn
+  planner sees a steering point a metre off the nose (nothing to turn for) and the rig creeps 0.6 m forward at 0.4-1.4 m/s. Tick 28:
+  the station jumps 9.6 m west, 70 deg off the nose, inside the turning circle; tick 30: the circle plan (back 4.0 m, away 7.5 m: the
+  right answer); ticks 31-48 lost braking the creep's roll; ticks 49-70 it backs 2 m at 2.8 m/s; tick 70 a reseat moves the goal to
+  13 deg off the nose and the leg is cut; tick 85 it rolls forward and clears the box's west end at tick ~142 by ~0.6 m. In his eyes:
+  moved forward right away, stuck, then backed up: 3.3 s in front of a box it could see at tick 1.
+- **His second match (08-21):** the same spot (-42.1, 90) held Green_Guns_4 (a War Rig too, all five Guns 420 hp); his click was
+  (-85.7, 52.6); that rig stood for 150 ticks (5 s) before moving: the same thing, LONGER, unnoticed (the camera was elsewhere).
+  Nothing differed in the mechanism; the roster order and the click did.
+- **The fix (`--traffic-on=backout`, built, test running):** at an order's start, a hull near rest whose steering point is within its
+  own length makes the k-turn decision against the DEPARTURE POINT (the first point of its own navmesh route to its FINAL seat at
+  least a hull's length away) when that is >= 25 deg off the nose; the decision machinery is today's (circle plan / arc sweep /
+  reverse search). Scoped off grouped squads (C44.3). Untwinned: ON runs the GDScript drive (chain gate); native asked for a twin
+  once the numbers are read. Test `tests/test_manoeuvre_backout.gd` (his geometry in the lab: Locks, a War Rig at his spawn, an
+  element's move to his click).
