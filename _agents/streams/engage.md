@@ -95,9 +95,13 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 line** (below: hops across water 34.8 -> 0.7 s a run, z -12; the drift off the crew's own order 21.5 -> 10.6 m, z -2.5; deaths
 fewer, kills more, arrival sooner, damage and first hit unchanged, the named-attack cost within, Bar E1's lines byte-identical,
 the suite ON green but for the three water maps' baseline rows, adopted: crossing, locks, gorge, read twice on builder0 at the
-combined tree). **Merge candidate: 1c20cc1c2** = the flip cbf1eb935 + native's twin (pair/native-a7 457effa1a, the obey skip
-natively, bit-identical) + main 36eacb71f + the three rows; its ONE full check (native path, perf-judge inside) is running on
-builder0; the hash is named green or not when it reads. **A1 DONE** (the turnaround reproduced bit-exact on native's replay,
+combined tree). **Merge candidate: 05fa7bce3** (code) = the flip cbf1eb935 + native's twin (pair/native-a7 457effa1a, the obey skip
+natively, bit-identical) + main 36eacb71f + the three rows + one test fix. **1c20cc1c2's check on builder0 read RED on one
+test** (25 passed, 1 FAILED, perf-judge NOT JUDGED: "refused 3 times ... the box was truly busy", two full checks and a
+bridge series at once; sim-baseline 13 maps unmoved; the rest green): test_engage_water's "ON by default" read `false` left
+by the test before (the teardown set the static to false and the default test ran last in its file). Test-only, no sim code
+moved (05fa7bce3; laptop 5/5). Its check on builder0 is launched on the branch tip; the hash is named green or not when it
+reads. **A1 DONE** (the turnaround reproduced bit-exact on native's replay,
 its cause shown by removal: Traffic's street hold at tick 478 dealt his lead War Rig a spot behind a corridor mouth 76 m away,
 for a verdict his lead crew's nose, not its orders, made; `--traffic-off=hold` -> the crew arrives on the far quay at tick 810).
 **A2 DONE** (no queue). **A3 built OFF** (`holdfar`, R43.8): Bar A FAILED (z -1.73; R43.18). **A6 built OFF** (`holdway`,
@@ -316,7 +320,7 @@ fix) gives the head-on stage something to measure.
 **Done:** A1 (the cause, shown by removal on his exact match), A2 (no queue), A3 (`holdfar`, OFF), A4 (Bar A, Bar A6, Bar A6 v2:
 all FAILED their deciding lines; every guard passed in every bar), A5 (his replay by removal in each bar: AWAY 82 m -> best 17 m
 under holdfar / 38 m under holdway; the GDScript-v-native caveat is native's, now a shim), A6 (`holdway`, `holdroute`, OFF),
-**A7 (the across-water rule, ON: Bar A7 PASSED every line; merge candidate 1c20cc1c2)**.
+**A7 (the across-water rule, ON: Bar A7 PASSED every line; merge candidate 05fa7bce3's code, 1c20cc1c2 + a test-only fix)**.
 **Not done:** the stretch (E2's staged draw, the flank latch): no time after three bars.
 **Decisions:** the far rule measures the crew's straight distance to the mouth (the squad's mean way lied on his seed); the
 route-bound release walks the crew's navmesh route to its SQUAD'S destination (its current leg lied on the head-on stages);
