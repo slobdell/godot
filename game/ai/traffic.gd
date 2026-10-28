@@ -286,8 +286,9 @@ static func _chain_native() -> void:
 	# pair/native-kturngoal: drive_native.cpp kturn_goal_moved_out, test_native_drive_kturn_goal), so ON keeps the C++ drive.
 	# Round 43 (Bar S v2, `parkaside`): the goal taken beside a parked friend is decided in _manoeuvre's first line; twinned
 	# (native N3, pair/native-parkaside: drive_native.cpp park_aside, test_native_drive_parkaside), so ON keeps the C++ drive.
-	# Round 44 (M2, `backout`): the departure look is inside _planned_reverse, inside the drive's mirror: ON runs the GDScript drive until twinned.
-	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush") or not _off.has("backout"):
+	# Round 44 (M2, `backout`): the departure look (_backout_due, the cheap look's deferral, `_backout_leg`, the station gate) is
+	# twinned (native N3, pair/native-backout: drive_native.cpp backout_due / backout_look_due), so ON keeps the C++ drive.
+	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush"):
 		if _reroute_saved_native_drive == null:
 			_reroute_saved_native_drive = BrainSwitches.native_drive
 		BrainSwitches.native_drive = false

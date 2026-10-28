@@ -739,6 +739,7 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.KTURN_GOAL_AHEAD_DEG = config.get("KTURN_GOAL_AHEAD_DEG", -1.0);
 	c.kturn_goal_ready = c.KTURN_GOAL_MOVED_M >= 0.0 && c.KTURN_GOAL_AHEAD_DEG >= 0.0 && c.manoeuvre_script != nullptr &&
 			c.traffic_script != nullptr;
+	c.backout_ready = (double)config.get("BACKOUT_MIN_ERROR_DEG", -1.0) >= 0.0 && c.traffic_script != nullptr;
 	// N4: _around_fire's constants and scripts; a missing one leaves the callback in place (fire_ready false).
 	c.fire_ready = false;
 	const char *fire_doubles[] = { "FIRE_LOOKAHEAD", "FIRE_DETOUR_MARGIN", "FIRE_DETOUR_REACHED", "FIRE_KEEP_SHARE",

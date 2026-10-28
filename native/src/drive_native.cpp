@@ -767,6 +767,9 @@ struct Drive {
 		}
 		const Vector3 forward = Vector3(-basis_z.x, 0, -basis_z.z).normalized();
 		const Vector3 to((real_t)((double)waypoint.x - (double)here.x), 0, (real_t)((double)waypoint.z - (double)here.z));
+		if (backout_look_due(to)) {
+			return false; // round 44 (M2): the departure look, before the 0.5 m exit: the GDScript
+		}
 		bool answered = false;
 		if ((double)to.length() < 0.5) {
 			answered = true;
@@ -793,6 +796,41 @@ struct Drive {
 	bool kturn_goal_on() {
 		static const String kturngoal("kturngoal");
 		return c.kturn_goal_ready && !traffic_off(kturngoal);
+	}
+
+	// ---- Round 44 (native N3, manoeuvre M2 `--traffic-on=backout`, C44.4) ----
+	static const StringName &k_backout_looks() {
+		static const StringName name("backout_looks");
+		return name;
+	}
+	// Movement.backout_on(): Traffic.off("backout") read live; false on a tree without M2 (backout_ready).
+	bool backout_on() {
+		static const String backout("backout");
+		return c.backout_ready && !traffic_off(backout);
+	}
+	// Movement._grouped_crew() (a squad under one group click, C44.3): the GDScript, read only, asked last.
+	bool grouped_crew() {
+		static const StringName grouped("_grouped_crew");
+		return m->call(grouped);
+	}
+	// Movement._backout_due(direct, drive_vector, goal), line by line (kturn_on() is true in the native drive's configuration;
+	// the cheap terms first: none has a side effect). Reached only where today's look is not due.
+	bool backout_due(bool direct, const Vector2 &drive_vector, const Vector3 &goal) {
+		if (direct || !c.backout_ready || !pathing_ready()) {
+			return false;
+		}
+		if ((bool)v._backout_leg()) {
+			return backout_on();
+		}
+		return drive_vector == Vector2() && std::fabs((double)tank->get(k._speed)) < c.KTURN_CIRCLE_SPEED &&
+				flat_distance(here, goal) < hull_length(tank->get(k.unit_id)) && backout_on() && !grouped_crew();
+	}
+	// _planned_reverse's departure look (`if backout_on() and absf(speed) < KTURN_CIRCLE_SPEED and to.length() < hull length and
+	// not _grouped_crew()`): when it may swap the steering point, the GDScript runs the look (its _backout_departure memo and
+	// route read are state), so the cheap look must not answer.
+	bool backout_look_due(const Vector3 &to) {
+		return c.backout_ready && std::fabs((double)tank->get(k._speed)) < c.KTURN_CIRCLE_SPEED &&
+				(double)to.length() < hull_length(tank->get(k.unit_id)) && backout_on() && !grouped_crew();
 	}
 
 	// Movement._kturn_goal_moved_out(waypoint), line by line.
@@ -3822,6 +3860,7 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 		waypoint = guard_steer(waypoint);
 	}
 	Vector2 drive_vector;
+	bool planned_leg = false; // round 44 (M2): the GDScript's `planned_leg`, for the station gate below
 	const Vector3 forward = -basis_z;
 	const double speed = tank->get(k._speed);
 	if (radius > 0.0) {
@@ -3829,12 +3868,14 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 			drive_vector = wheels(c, here, forward, waypoint, arrive, radius, speed, remaining, -1.0);
 		} else {
 			drive_vector = wheels(c, here, forward, waypoint, arrive, radius, speed, remaining, 1.0);
-			if (!direct && drive_vector != Vector2() && pathing_ready()) {
+			// Round 44 (M2, backout): or the departure look / its leg (Movement._backout_due) where today's look is not due.
+			if ((!direct && drive_vector != Vector2() && pathing_ready()) || backout_due(direct, drive_vector, goal)) {
 				// kturn_on() (default) and circle_fit_on() (opt-in, off): the planned reverse.
 				// TankCommand.new(): the Variant holds the only reference (a RefCounted), so it lives as long as `leg`.
 				const Variant leg_ref = c.tank_command->call(k.new_);
 				Object *leg = leg_ref;
 				bool planned = false;
+				const int64_t looked = c.backout_ready ? (int64_t)sget(k_backout_looks()) : 0; // `var looked := backout_looks`
 				const int64_t check_left = (int64_t)v._kturn_check() - step;
 				if (seam_live()) {
 					// Round 31 (planner CP-P1): PlannerSeam.hold() opens _planned_reverse for a crew the seam holds.
@@ -3868,6 +3909,11 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				if (planned) {
 					drive_vector = Vector2((real_t)(double)leg->get(k.throttle), (real_t)(double)leg->get(k.turn));
 				}
+				if (c.backout_ready) {
+					// `_backout_leg = _backout_leg or backout_looks > looked` on a planned leg, else false.
+					v.set__backout_leg(planned && ((bool)v._backout_leg() || (int64_t)sget(k_backout_looks()) > looked));
+				}
+				planned_leg = planned;
 			} else if ((double)v._kturn_left_m() > 0.0) {
 				// Movement._kturn_end("cancelled"): its looks cleared; the rest writes the diagnosis record, empty in the
 				// native drive's configuration (no kturn_log / reverse_log) (round 28, N5).
@@ -3924,7 +3970,8 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 	bool stationed = false;
 	v.set_stationed_now(false);
 	if ((bool)sget(k.station_on) && !direct && !reverse && pace >= 0.99 && waypoint == goal &&
-			remaining <= c.STATION_RANGE && (double)((Vector2)v._goal_velocity()).length() >= c.STATION_MIN_SPEED) {
+			remaining <= c.STATION_RANGE && (double)((Vector2)v._goal_velocity()).length() >= c.STATION_MIN_SPEED &&
+			!(c.backout_ready && ((double)v._kturn_left_m() > 0.0 || planned_leg) && backout_on())) {
 		{
 			Timed t("keep_station");
 			const double cap = (bool)order.get(k.paced, false) ? speed_factor : 1.0;
