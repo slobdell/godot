@@ -137,6 +137,54 @@ Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for
 - **Native twin needed before ON (C44.4):** `Movement._backout_due`, `_backout_departure`, `_backout_final_goal`, the waypoint swap at
   the top of `_planned_reverse`'s look, `BACKOUT_MIN_ERROR_DEG` as the gate, `_backout_leg`'s continuation at the call site, the station
   PID gate; new members `_backout_goal/_tick/_point/_from/_leg` (exec_fields). Requested through the orchestrator.
+- **Dev read with backout in the round-43 set (Locks dev 7001-7012, 12 paired cells, builder2, e0a746667, `make manoeuvre-bar-s`,
+  `~/overnight-manoeuvre/r44/m3/dev1_logs`; never a bar):** base v `all` (bound + converge + kturngoal + parkaside) v `allbo` (all +
+  backout). D1 seated within the bound by 15 s: 53 -> 88 (+4.6 se) -> 83 (+6.3 se); Locks yield+blocked +0.3 se both (v2's failing
+  line passes on this block); k-turn s 106 -> 43 (-3.0 se) -> 83 (-1.2 se). Per squad (s a run): Guns (squad 1) yield 4.0 / 2.6 / 2.8,
+  blocked 5.2 / 4.7 / 4.1, wedged 3.9 / 3.7 / 2.9, k-turn 4.1 / 0.7 / 3.8, within the bound 19 / 35 / 30 of 50; Hunters (squad 2)
+  yield 1.0 / 2.0 / 4.8, wedged 1.8 / 5.1 / 6.2. **Read:** (a) the Locks cost of the bound is the SECOND squad through the first's
+  zone (wedged, yields), not the first squad's own crews; (b) backout as first built over-triggered: every rig whose route left
+  ~40 deg off got the circle plan's back-up on open ground (the departure vertex 15 m out lies inside a 12 m turning circle whatever
+  is around): Guns k-turn 0.7 -> 3.8 s a run. **Changed (uncommitted, re-reading):** a departure look skips the circle plan; only the
+  swept arc decides (a back-up when the forward swing toward the route would hit something within 5 m): his box still hits, open
+  ground does not.
+- **Iterations after the dev reads (all uncommitted on top of e0a746667 until the re-read lands; `~/overnight-manoeuvre/r44/m2/`,
+  `m3/dev2_logs`, `dev3_logs`):** (i) the circle plan skipped for a departure look: Guns k-turn 3.8 -> 3.4 s a run, but with the
+  departure vertex inside the circle the plan had no away leg and the drive crept back toward the station and scraped the box
+  (backout alone: wedged 3.9 -> 8.5 s a run, dev2). (ii) The look made toward a FAR point (60 m) along the way the route leaves (an
+  away leg aligns with it), the gate 40 deg (today's k-turn gate is 45; his departure is 44), kturngoal's goal-moved end kept off a
+  backout leg, and a run-clear check behind: on his start the check counted Guns_4 fifteen metres behind-left as in the way
+  (Manoeuvre._hull_hit's disc is a hull's half-length wide), the look never fired, and my call-site hook still ran TODAY's planner
+  on a station 1.4 m behind the rig: a 3 m left-turning back-up and a 13 s arrival (bo5; dev3 `bo` alone: wedged +6.3 s a run,
+  never-arrived 13 -> 22). (iii) Restructured (current): the hook calls the planner only when the departure look WILL apply
+  (`_backout_look`: near rest, station within a hull's length, not grouped, within the window, the route leaving >= 40 deg off,
+  2 m of straight run behind clear of hulls), and the single back-up search stops at any hull (`departure_look` adds
+  Manoeuvre._hull_hit to its navmesh test). Re-reading on his start (bo6) and Locks dev (dev4).
+- **(iv) NOSE-ON (current, the keeper):** back to the circle-plan look at the route's vertex (bo3's shape: back 2.0 m, away 3.5 m,
+  past the box at tick ~91 on his start; bo7 / bo8) with the restructured hook, the hull checks in both back-up searches, the 40 deg
+  gate, 2 m of clear run behind, AND the lead's own condition: the straight run past the nose blocked within 4 m (`_free_run`; his box
+  1.8 m). Locks dev 7001-7012 (dev6, builder2): **backout alone v base: D1 53 -> 55, yield+blocked +1.0 se, k-turn +1.4 se, wedged
+  +0.8 s a run, never 13 -> 15: neutral on an open deploy row** (the versions without the nose test: wedged +5 s a run, never 13 ->
+  28, yield+blocked up to +5.6 se); **the round-43 four + backout: D1 +5.9 se PASS, Locks yield+blocked -0.4 se PASS, k-turn -1.6 se,
+  wedged +4.8 s a run (the bound's second-squad cost, Hunters 1.8 -> 4.3 s), never 13 -> 13.** Lab test (builder0 light): OFF forward
+  t12 / reverse t46 / crept 0.62 m / past the box t144; ON reverse t11 / crept 0.0 / past the box t102: PASS.
+- **parkedpass lab test (builder0 light):** ON: 6 refusals with a lane, 1 pass, the rigs moved 0.0 m (OFF: the rig backed 9.0 m);
+  the truck arrives t324 v t232 OFF: the pass costs the passer ~3 s round a 14 m rig; the rule buys the parked squad's stillness.
+  Test line relaxed to four seconds with that reason; the squad-level net is the bar's. Locks dev arm with parkedpass running (dev7).
+- **Screenshots:** `make manoeuvre-start-shots` (tests/manoeuvre/start_shot.gd: the faithful replay in a window, the RTS camera
+  focused on SS_FOLLOW every tick; `follow()` is overridden by the skirmish's own framing) -> `~/overnight-manoeuvre/r44/m2/shots3/`
+  (base) and shots4 (base + the current rule), t15/45/75/105/135. The base frames show Guns_2 nose-on to the brown container; the
+  pair is read once shots4 lands.
+- **M3 built (uncommitted, test queued): `--traffic-on=parkedpass`.** Bar S v2's Locks logs (24 cells, `~/overnight-manoeuvre/r43/
+  bars_v2/deciding`) read per squad: the Guns' yield s 51 -> 92 and the Hunters' 36 -> 60 over 24 runs, the Guns' blocked 86 -> 71;
+  the yields are the SECOND squad driving into the first's compact zone (a parked rig backs 6 m for a Hunter, `back(6)`, then asks
+  the squadmate behind it to back too: seeds 10703/04/11/13/16/19 all +8.6 s), not the first squad's five crews converging (the
+  squadmate-to-squadmate yields on Locks dev FELL under the bound, 21 -> 14 of 12 seeds). Rule: a crew that has arrived and stands
+  (not under way, its element arrived or none), asked by another squad's crew with a lane past it (T7's `_pass_lane`), refuses with
+  the offer and the asker passes beside it; no lane = today's give-way; never for a squadmate. In `Movement.ask()`; counter
+  `parkedpass_refusals`; ON runs the GDScript yield (native_yield off). Test `tests/test_manoeuvre_parkedpass.gd` (two rigs abreast,
+  a gun truck sent through the right one with open ground to its right). The brief's two shapes (seats in arrival order; a
+  squadmate's give-way deferred) are not what the logs show: not built.
 - **The fix as first built (`--traffic-on=backout`, superseded above):** at an order's start, a hull near rest whose steering point is within its
   own length makes the k-turn decision against the DEPARTURE POINT (the first point of its own navmesh route to its FINAL seat at
   least a hull's length away) when that is >= 25 deg off the nose; the decision machinery is today's (circle plan / arc sweep /

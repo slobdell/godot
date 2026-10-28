@@ -398,7 +398,7 @@ static func route_arms() -> Dictionary:
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
-			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks,
+			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks, "parkedpass_refusals": parkedpass_refusals,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_settled_passes": chain_settled_passes, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
@@ -416,6 +416,7 @@ static func reset_route_arms() -> void:
 	kturn_goal_moved = 0
 	parkaside_moved = 0
 	backout_looks = 0
+	parkedpass_refusals = 0
 	behind_asked = 0
 	behind_reverses = 0
 	post_faces_kept = 0
@@ -2058,6 +2059,21 @@ func ask(asker: String, from: Vector3, direction: Vector2, via := "asked") -> bo
 			pass_offer = side
 			return false
 		underfire_gives += 1
+	# Round 44 (manoeuvre M3, `--traffic-on=parkedpass`, Traffic.DEFAULT_OFF until Bar S v3): A PARKED CREW WITH A LANE BESIDE IT
+	# OFFERS THE PASS. Bar S v2's Locks cost (R43.42, +4.1 s a run yield+blocked) read in its logs: not the first squad's crews
+	# converging on each other but the SECOND squad driving into the first's compact zone, where a parked War Rig asked by a
+	# Hunter backs 6 m for it (`back(6)`) and then asks the squadmate behind it to back too (Guns yield s 51 -> 92 over 24 runs,
+	# the Hunters' +24). Here a crew that has arrived and stands (not under way, its element arrived or none) asked by another
+	# squad's crew with a lane past it (T7's `_pass_lane`, swept for the asker's hull) refuses with the offer, as a crew under
+	# fire does, and the asker passes beside it; with no lane it gives way as today. Never for a squadmate (its own shape is
+	# forming) nor for an unsticking crew asking for room behind. Counter `parkedpass_refusals` (route_arms). Untwinned: ON runs
+	# the GDScript yield (Traffic._chain_native, native_yield off).
+	if parkedpass_on() and via != "behind" and _parked_for_pass(asker):
+		var lane := _pass_lane(asker, from, direction)
+		if lane != 0.0:
+			parkedpass_refusals += 1
+			pass_offer = lane
+			return false
 	if _begin_yield(asker, from, direction, via):
 		return true
 	asks_refused += 1
@@ -5445,6 +5461,29 @@ const KTURN_GOAL_AHEAD_DEG := 100.0
 static var kturn_goal_moved := 0
 
 
+## Round 44 (manoeuvre M3, `--traffic-on=parkedpass`): see ask().
+static var parkedpass_refusals := 0
+
+
+static func parkedpass_on() -> bool:
+	return not Traffic.off("parkedpass")
+
+
+## Standing on an arrived place, asked by another squad's crew: not under way, my element (if any) arrived, the asker not mine.
+func _parked_for_pass(asker: String) -> bool:
+	if is_under_way() or _grouped_crew():  # C44.3: a squad under one G1 group click drives (and gives way) as main
+		return false
+	var other := ctl.tanks_root.get_node_or_null(NodePath(asker)) as Tank if ctl.tanks_root != null else null
+	if other == null:
+		return false
+	var brain := ctl as TankBrain
+	var elements: Variant = Elements.of_match(brain.game_match) if brain != null and brain.game_match != null else null
+	var mine: Variant = elements.of(String(ctl.tank.name)) if elements != null else null
+	if mine != null and (not mine.arrived or mine == elements.of(asker)):
+		return false
+	return true
+
+
 ## Round 44 (manoeuvre M2, `--traffic-on=backout`, Traffic.DEFAULT_OFF until Bar S v3): THE BACK-UP THAT CLEARS THE BOX COMES
 ## FIRST. His case (Locks 56416, 2026-10-28 08:15; `make manoeuvre-start-trace` rebuilds it to 1.5 m of his census): Green_Guns_2,
 ## a War Rig (14 m, 12 m turning circle), stood facing south at (-42.1, 90) with a 20-foot container two metres past its nose and
@@ -5459,9 +5498,12 @@ static var kturn_goal_moved := 0
 ## inside the turning circle, the swept arc and the reverse search for one beyond it): only what it is made against changes.
 ## Not for a squad under one G1 group click (`_grouped_crew`, C44.3). Counter `backout_looks` (route_arms). Untwinned: ON runs
 ## the GDScript drive (Traffic._chain_native) until native twins it.
-const BACKOUT_MIN_ERROR_DEG := 25.0
+const BACKOUT_MIN_ERROR_DEG := 40.0  # his Guns_2's departure was 44 deg off; today's k-turn gate is 45 (a gentle bend never needs a reverse)
 const BACKOUT_WINDOW_TICKS := SimClock.TICK_RATE * 3
 const BACKOUT_MOVED_M := 1.0
+const BACKOUT_RUN_STEP_M := 1.0
+const BACKOUT_ROOM_M := 2.0
+const BACKOUT_NOSED_M := 4.0
 static var backout_looks := 0  # k-turn decisions made against the departure point (measurement)
 var _backout_goal := Vector3.INF   # the final goal the window was opened for
 var _backout_tick := 0
@@ -5470,22 +5512,73 @@ var _backout_from := Vector3.INF
 
 
 var _backout_leg := false  # a k-turn planned from a departure look is under way (it runs to its end whatever steering says)
+var _departure_hulls: Array = []  # the other hulls a departure look's back-up search stops at (empty: today's search)
+
+
+## Round 44 (M2): on a departure look, would the hull centred at `at` come too near another hull (Manoeuvre._hull_hit's disc)?
+func _departure_hull_hit(at: Vector3, frame: Array, from: Vector3) -> bool:
+	return not _departure_hulls.is_empty() and Manoeuvre._hull_hit(at, frame, _departure_hulls, from) != ""
 
 
 static func backout_on() -> bool:
 	return not Traffic.off("backout")
 
 
-## Does the drive call the k-turn planner this tick for the departure look (or its leg) although steering has nothing to do? A
-## routed move, the planner on and the navmesh ready, as today's call; then the leg under way, or a hull near rest whose goal
-## (the station) is within its own length and not a grouped squad's crew.
+## Does the drive call the k-turn planner this tick although steering has nothing to do: a backout leg under way, or a departure
+## look that WILL apply (never today's planner on a station a metre off: that planned a back-up for a station behind the rig).
 func _backout_due(direct: bool, drive_vector: Vector2, goal: Vector3) -> bool:
 	if direct or not backout_on() or not kturn_on() or not (Pathing.enabled and Pathing.is_ready(ctl.tank)):
 		return false
 	if _backout_leg:
 		return true
-	return drive_vector == Vector2.ZERO and absf(ctl.tank.speed()) < KTURN_CIRCLE_SPEED \
-			and _flat_distance(ctl.tank.global_position, goal) < _backout_near_m() and not _grouped_crew()
+	if drive_vector != Vector2.ZERO:
+		return false
+	var tank := ctl.tank
+	var here := tank.global_position
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	return _backout_look(here, forward, Vector3(goal.x - here.x, 0.0, goal.z - here.z)) != Vector3.INF
+
+
+## The far point the departure look is made toward (INF = no look this tick): a hull near rest whose steering point `to` is within
+## its own length, not a grouped squad's crew, within the order's window, its route to its final goal leaving BACKOUT_MIN_ERROR_DEG
+## or more off the nose, and BACKOUT_ROOM_M of straight run behind it clear of other hulls. Memoised per final goal (the path).
+func _backout_look(here: Vector3, forward: Vector3, to: Vector3) -> Vector3:
+	if not backout_on() or absf(ctl.tank.speed()) >= KTURN_CIRCLE_SPEED or to.length() >= _backout_near_m() or _grouped_crew():
+		return Vector3.INF
+	var departure: Variant = _backout_departure(here)
+	if not (departure is Vector3):
+		return Vector3.INF
+	# The vertex itself (a hull's length out, inside a 12 m turning circle for a War Rig): the circle plan backs until an arc reaches
+	# it and drives that arc as the away leg (his start: back 2.0 m, away 3.5 m, past the box at tick 91). Tried and dropped (Locks
+	# dev, `~/overnight-manoeuvre/r44/m3/dev2-4`): the arc-only look (no away leg: the drive crept back to the station and scraped
+	# the box) and a far point 60 m out (at full lock the arc just clears his box, no plan; five rigs abreast swinging in unison on
+	# planned away legs wedge each other: +5.6 s a run).
+	var way := Vector3((departure as Vector3).x - here.x, 0.0, (departure as Vector3).z - here.z).normalized()
+	if absf(forward.signed_angle_to(way, Vector3.UP)) < deg_to_rad(BACKOUT_MIN_ERROR_DEG):
+		return Vector3.INF
+	# NOSE-ON: the straight run past the nose is blocked within BACKOUT_NOSED_M (his box 1.8 m past the nose). Without this every
+	# rig on an open deploy row whose route left 40 deg off backed up too, swinging its tail into the neighbour 1.5 m beside it
+	# (Locks dev 7001-7012, backout alone: yield + blocked +5.6 se, wedged +5.1 s a run, never-arrived 13 -> 28).
+	var frame := _kturn_frame(ctl.tank)
+	var map := ctl.tank.get_world_3d().navigation_map
+	if _free_run(map, here + forward * float(frame[1]), forward, float(frame[2])) >= BACKOUT_NOSED_M:
+		return Vector3.INF
+	if not _backout_run_clear(here, forward):
+		return Vector3.INF
+	return departure
+
+
+## No other hull within BACKOUT_ROOM_M of straight run behind (Manoeuvre._hull_hit's disc); the reverse search then stops at a hull
+## for the rest (`departure_look` in _planned_reverse): the risk the look must not take is a crew reversing into the squadmate behind it.
+func _backout_run_clear(here: Vector3, forward: Vector3) -> bool:
+	var frame := _kturn_frame(ctl.tank)
+	var others := Manoeuvre._others(self)
+	var backed := BACKOUT_RUN_STEP_M
+	while backed <= BACKOUT_ROOM_M:
+		if Manoeuvre._hull_hit(here - forward * backed, frame, others, here) != "":
+			return false
+		backed += BACKOUT_RUN_STEP_M
+	return true
 
 
 ## A steering point counts as near within the hull's own length.
@@ -5570,8 +5663,9 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	# Round 43 (S3, kturngoal): the goal a plan was made for has moved to where a forward arc reaches it. For a leg of the circle
 	# k-turn (a reverse leg under way) and for the lattice planner's seam (a plan pending or being driven for that goal: released
 	# through its own release, the forward drive takes the tick) alike.
-	if kturn_goal_on() and not _grouped_crew() and (PlannerSeam.on() and PlannerSeam.live(String(tank.name)) or (_kturn_left_m > 0.0 and _kturn_gear < 0)) \
-			and _kturn_goal_moved_out(waypoint):
+	if kturn_goal_on() and not _grouped_crew() and not _backout_leg \
+			and (PlannerSeam.on() and PlannerSeam.live(String(tank.name)) or (_kturn_left_m > 0.0 and _kturn_gear < 0)) \
+			and _kturn_goal_moved_out(waypoint):  # round 44 (M2): a backout leg's goal is the far departure point; it runs to its end
 		if ManoeuvreCensus.trace_unit == String(tank.name):
 			print("MANOEUVRE_TRACE leg f %d ended: the goal moved to %s, a forward arc reaches it (%s)" % [
 					Engine.get_physics_frames(), str(_flat_xz(waypoint)), "seam" if _kturn_left_m <= 0.0 else "circle"])
@@ -5668,26 +5762,25 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	var to := Vector3(waypoint.x - here.x, 0.0, waypoint.z - here.z)
 	var error := forward.signed_angle_to(to, Vector3.UP)
 	var min_error := KTURN_MIN_ERROR_DEG
+	var departure_look := false
 	# Round 44 (manoeuvre M2, `--traffic-on=backout`): at an order's start a hull near rest whose steering point is within its own
 	# length (the transit's converging station, a metre ahead of his War Rig's nose with a container two metres beyond it) decides
 	# its k-turn against where its OWN route to its final seat leaves instead, so the back-up that clears the box comes first and
 	# not after a second's creep into the gap (his Guns_2, Locks 56416, 2026-10-28). Everything below is unchanged: the circle
 	# plan, the arc sweep and the reverse search simply run on that departure point.
-	if backout_on() and absf(tank.speed()) < KTURN_CIRCLE_SPEED and to.length() < _backout_near_m() and not _grouped_crew():
-		var departure: Variant = _backout_departure(here)
-		if departure is Vector3:
-			var to_departure := Vector3((departure as Vector3).x - here.x, 0.0, (departure as Vector3).z - here.z)
-			var departure_error := forward.signed_angle_to(to_departure, Vector3.UP)
-			if absf(departure_error) >= deg_to_rad(BACKOUT_MIN_ERROR_DEG):
-				if ManoeuvreCensus.trace_unit == String(tank.name):
-					print("MANOEUVRE_TRACE backout look f %d: steer %s %.1f m err %.0f -> departure %s %.1f m err %.0f" % [
-							Engine.get_physics_frames(), str(_flat_xz(waypoint)), to.length(), rad_to_deg(error),
-							str(_flat_xz(departure)), to_departure.length(), rad_to_deg(departure_error)])
-				waypoint = departure
-				to = to_departure
-				error = departure_error
-				min_error = BACKOUT_MIN_ERROR_DEG
-				backout_looks += 1
+	var far: Vector3 = _backout_look(here, forward, to)
+	if far != Vector3.INF:
+		var to_departure := far - here
+		if ManoeuvreCensus.trace_unit == String(tank.name):
+			print("MANOEUVRE_TRACE backout look f %d: steer %s %.1f m err %.0f -> departure %s err %.0f" % [
+					Engine.get_physics_frames(), str(_flat_xz(waypoint)), to.length(), rad_to_deg(error),
+					str(_flat_xz(far)), rad_to_deg(forward.signed_angle_to(to_departure, Vector3.UP))])
+		waypoint = far
+		to = to_departure
+		error = forward.signed_angle_to(to, Vector3.UP)
+		min_error = BACKOUT_MIN_ERROR_DEG
+		departure_look = true
+		backout_looks += 1
 	if to.length() < 0.5:
 		return false
 	if kturn_goal_on():
@@ -5702,6 +5795,8 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	if ManoeuvreCensus.trace_unit == String(tank.name):
 		print("MANOEUVRE_TRACE planner look f %d v %.2f inside %s err %.0f" % [Engine.get_physics_frames(), tank.speed(),
 				_inside_circle(here, forward, waypoint), rad_to_deg(error)])
+	# Round 44 (M2): a departure look's back-up (the circle plan's or the single's) stops at any other hull (`_departure_hulls`).
+	_departure_hulls = Manoeuvre._others(self) if departure_look else []
 	if circle_plan_on() and _away_here() and absf(tank.speed()) < KTURN_CIRCLE_SPEED and _inside_circle(here, forward, waypoint):
 		# Round 31 (planner CP-P1, R31.2): the lattice planner's seam, where the circle plan would be made (`--nav-off=planner`).
 		if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
@@ -5770,7 +5865,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		heading = TankMotion.turn_heading(heading, KTURN_BACK_STEP_M * turn / radius)
 		at -= heading * KTURN_BACK_STEP_M
 		backed += KTURN_BACK_STEP_M
-		if not _outline_ok(map, frame, at, heading, start):
+		if not _outline_ok(map, frame, at, heading, start) or _departure_hull_hit(at, frame, here):
 			blocked_at = backed
 			break  # the hull would hit what is behind (or swing its nose into what is beside): no further back
 		if _arc_hit(map, frame, at, heading, turn, waypoint, start) == INF:
@@ -5903,7 +5998,7 @@ func _plan_circle(cmd: TankCommand, map: RID, frame: Array, here: Vector3, forwa
 	var backed := 0.0
 	while backed < KTURN_BACK_MAX_M:
 		var next := _fill_step(at, heading, -1, turn, radius, KTURN_BACK_STEP_M)
-		if not _outline_ok(map, frame, next[0], next[1], start):
+		if not _outline_ok(map, frame, next[0], next[1], start) or _departure_hull_hit(next[0], frame, here):
 			if ManoeuvreCensus.trace_unit == String(ctl.tank.name):
 				print("MANOEUVRE_TRACE circle plan refused: blocked behind at %.1f m" % (backed + KTURN_BACK_STEP_M))
 			return false  # a wall behind before the point leaves the circle: the reactive rules, as before

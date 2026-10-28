@@ -490,19 +490,18 @@ manoeuvre-bar-s: import ## manoeuvre Bar S (round 43): his first-order shape on 
 	$(PYTHON) tests/manoeuvre/s_judge.py $(BS_DIR) --base=base --arm=both --cells || true
 
 # ---- round 44 (M2): his recorded start replayed IN A WINDOW and photographed (needs a display: make remote T=...) -----------------
-# tests/replay_orders.gd re-executes the real skirmish with his orders (CP43.0's faithful replay); --screenshot / --screenshot-delay
-# are main.gd's (a wall-clock delay from READY, then quit). SS_RECORDING, SS_DELAYS (seconds, one PNG each), SS_FLAGS (an arm),
-# SS_NAME -> build/manoeuvre/shots/<SS_NAME>-<delay>s.png.
+# tests/manoeuvre/start_shot.gd: the faithful replay's setup with the RTS camera following SS_FOLLOW; a PNG per tick of SS_TICKS.
+# SS_FLAGS = the arm, SS_NAME the file prefix -> build/manoeuvre/shots/<SS_NAME>-t<tick>.png (+ the run's log).
 SS_RECORDING ?= _agents/streams/references/round43/playtest/2026-10-28T08-15-42-locks.jsonl
-SS_DELAYS ?= 2 4
+SS_TICKS ?= 30,60,90,120
+SS_FOLLOW ?= Green_Guns_2
 SS_FLAGS ?=
 SS_NAME ?= base
 SS_DIR ?= $(BUILD_DIR)/manoeuvre/shots
 .PHONY: manoeuvre-start-shots
-manoeuvre-start-shots: import ## manoeuvre M2: SS_RECORDING's start replayed in a window, a PNG at each of SS_DELAYS seconds (SS_FLAGS = the arm, SS_NAME) -> build/manoeuvre/shots/ (needs a display)
+manoeuvre-start-shots: import ## manoeuvre M2: SS_RECORDING's start replayed in a window, the camera on SS_FOLLOW, a PNG at each tick of SS_TICKS (SS_FLAGS = the arm, SS_NAME) -> build/manoeuvre/shots/ (needs a display)
 	@mkdir -p $(SS_DIR)
-	@for d in $(SS_DELAYS); do \
-		timeout 600 $(GODOT) --fixed-fps $(SIM_HZ) --resolution 1920x1080 --path . --script res://tests/replay_orders.gd -- \
-			--orders=$(CURDIR)/$(SS_RECORDING) --seconds=$$(( d + 2 )) --mute --screenshot=$(CURDIR)/$(SS_DIR)/$(SS_NAME)-$${d}s.png \
-			--screenshot-delay=$$d $(SS_FLAGS) > $(SS_DIR)/$(SS_NAME)-$${d}s.log 2>&1 || true; \
-		grep -E 'screenshot saved|screenshot failed|REPLAY_(SETUP|SPAWN|NATIVE)' $(SS_DIR)/$(SS_NAME)-$${d}s.log | cut -c1-160; done
+	@timeout 900 $(GODOT) --fixed-fps $(SIM_HZ) --resolution 1920x1080 --path . --script res://tests/manoeuvre/start_shot.gd -- \
+		--orders=$(CURDIR)/$(SS_RECORDING) --shots=$(SS_TICKS) --follow=$(SS_FOLLOW) --out=$(CURDIR)/$(SS_DIR) --name=$(SS_NAME) --mute \
+		$(SS_FLAGS) > $(SS_DIR)/$(SS_NAME).log 2>&1 || true
+	@grep -E '^SHOT_' $(SS_DIR)/$(SS_NAME).log | cut -c1-200
