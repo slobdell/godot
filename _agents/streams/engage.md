@@ -358,6 +358,40 @@ is the bridge) with the gun on it, never `_combat_move`. Symmetric. Bar A7 to be
 lines on 10673-10696): deciding hop_s (across water) ARM < BASE by >= 2 se and off_order_m ARM < BASE by >= 2 se; guards
 damage_water, first_hit_water_s, deaths, kills, last_a_s no worse (1.645 se), Bar E1's lines, perf, suite ON.
 
+### A7 built OFF (`--engage-water=on` / env ENGAGE_WATER=on the arm; a pass ships ON with `=off`): a54e1bf52
+
+`game/ai/tank_brain.gd`: `ENGAGE_WATER` (static) + `_across_water` (SlotGround.leg_wet; `water_between` a static test seam);
+(1) `_obey`: a visible contact across water is not in `in_reach` (not "met on the way" under an attack-move: MOVE keeps the
+route, the gun fires at will); (2) `_act` ENGAGE: a contact across water never reaches `_combat_move`: a named attack on it
+drives to it by the route ("water between: going round by the road"), anything else stands and fires across ("water between:
+firing across"); the gun order is set before the branch, unchanged. Symmetric (the CPU's crews run the same brain). OFF:
+byte-identical. Tests `tests/engage/test_engage_water.gd` (5: the control fights across water as today, under the rule a
+contact across water is not met on the way and a dry one still is, the act step stands and fires across and never hops, OFF
+unchanged, the flag).
+
+### Bar A7 (FILED a54e1bf52, 2026-10-28 ~03:30 PDT, before any number on 10649-10696)
+
+**Switch:** `--engage-water=on` (OFF at filing). **Tree:** the filing hash's code for both arms. **Native (C43.4):** `decide_native.cpp` twins `_obey`'s in_reach
+(line ~258), so the rule's half (1) does not act on the native decide; `_act` is GDScript on both paths. **Both arms run with
+`--brains-off=native_decide`** (the drive and the rest native; the decide on GDScript for both), said here before the series;
+native is asked to twin the across-water in_reach test before any ship ON. **Workload:** `tests/engage/water_probe.gd` via `make engage-water` (ENGAGE_FLAGS=--engage-water=on the
+ARM), seeds 10649-10672 (Locks even, Crossing odd), 60 s, n 24 paired, builder2 J10: a squad of five (his hull sets) under
+attack-move to the far-bank objective, three Limousines dug in on the far bank by the crossing's exit. **What it could break:**
+a crew that no longer closes on a target across water may shoot it less (damage, first hit) or arrive later; a crew that
+drives round by the bridge under a named attack may die on the dug-in bank; the CPU's crews change the same way (fight lines).
+**Deciding (paired by seed, pooled):** 1. **hop_s** (crew-seconds of direct combat hops while in ENGAGE/SUPPRESS on a contact
+across water under an attack / attack-move order): ARM < BASE by >= 2 se. 2. **off_order_m** (the largest rise of a crew's
+distance to its own order goal while in that state, a run): ARM < BASE by >= 2 se. **Both.**
+**Guards (filed first; paired se):** 3. damage_water ARM >= BASE - 1.645 se; 4. first_hit_water_s ARM <= BASE + 1.645 se;
+5. deaths ARM <= BASE + 1.645 se; 6. kills ARM >= BASE - 1.645 se; 7. last_a_s ARM <= BASE + 1.645 se; 8. **the named-attack
+cost** (the orchestrator's): the probe's named-attack arm (`--named=on`: the squad's order is `attack` on the nearest defender
+instead of the attack-move; a second 24-seed pair on the same seeds, BASE-named v ARM-named): deaths ARM <= BASE + 2 se,
+hop_s reported; 9. Bar E1's lines (`make engage-bar` on 10673-10696, ARM = `ENGAGE_FLAGS=--engage-water=on`): stuck crew-
+seconds, first hit, deaths within 1.645 se; 10. perf: the ON check's perf-judge <= 1.05x (builder0); 11. suite ON (C31.1):
+`make remote T="check ENGAGE_WATER=on"` green, sim-baseline rows that move listed and adopted at the ship.
+**Reported:** water_s, water_far_s, fire_s, hop_rev_s, hop_far_s, crews_water / crews_far, hits_water.
+**A pass ships ON** (1-2 decided, 3-11 within).
+
 ### A1: the turnaround on his seed (laptop, native library ON, `make engage-replay-trace ENGAGE_TAG=on`, 2d43b1e88, his recording, 50 s, n 1, deterministic)
 
 The replay (native's CP43.0, `tests/replay_orders.gd`) puts Green_Guns_1 **0.0 m off his census at every second for 48 s**
