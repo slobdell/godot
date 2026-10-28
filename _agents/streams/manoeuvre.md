@@ -81,6 +81,70 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-27 ~20:40 PDT (Fable). Starting commit 2f1620a77 = main at launch (code b12b17ac7 GREEN builder0, 3343/0; no
 baseline check re-run, per the contract). CP43.0 taken at f6b930a3d (main 84f914f78 merged). Orchestrator session: `godot-b8`.**
 
+### Bar S: FILED 2026-10-28 ~01:30 PDT, BEFORE any number on 10401-10448 (C43.1, C43.4, C43.5, R43.6, R43.7, R43.14)
+
+- **The rules judged, as four arms each removable alone, every switch on ONE frozen commit (named at the series' launch; R40.13:
+  no game/ or tests/ commit until the end line), BASE = that commit with every round-43 rule off:**
+  - **base** `--shape-latch=off` (today's main: the seat bound, the converge fix and kturngoal are off by default; the latch is on by
+    default and is switched off here);
+  - **seats** `--seat-bound=on` (+ the latch ON): C43.5's pair: a platoon's farthest seat within max(18 m, 1.5 hull lengths + the
+    hull floor along) of its anchor, the shape scaled as a whole, never below the hull floor between two seats, halts and groups
+    past a platoon as today; the transit's stations and its start the same (R43.7); a move keeps the shape it started with until it
+    arrives or its task changes, one re-pick on the element's own contact after 1 s (R43.6);
+  - **converge** `--shape-latch=off,--converge-on-crew=on`: a converging station starts ON its crew (its world point carried by the
+    anchor's progress; today's rebuild from the route frame lands a hull's length off a crew behind a bent first leg) (R43.14);
+  - **kturngoal** `--shape-latch=off,--traffic-on=kturngoal`: a reverse leg (the circle k-turn's, or the lattice planner's) ends when
+    the goal it was planned for has moved 10 m or more to a point outside the forward turning circle and within 100 degrees of the
+    nose; the forward drive takes the tick (S3; the GDScript drive while ON, as deckwait: C43.4, native twins before ON);
+  - **all** `--seat-bound=on,--converge-on-crew=on,--traffic-on=kturngoal` (+ the latch): the shipping candidate.
+  Every other switch at main's defaults; the native library ON for every arm (the drive is twinned; kturngoal's own switch runs the
+  GDScript drive).
+- **What each could break (named first):** the bound packs five crews' first turns into a tighter space (yield / blocked and k-turn
+  seconds UP on a cramped deploy: crossing in the dev read); a kept shape that no longer fits the ground (never-in); a station on
+  the crew that the shape's hand-off then has to pull back; a reverse leg ended early that then needs a second plan (k-turn count
+  up, a crew driving at a goal inside its circle); the G1 v9 group column (his group click) must be untouched; contacts in fights.
+- **Gate:** the frozen tree's full check green FIRST (C31.1), read from the wrapper line, on builder0 (or builder2 once camera's
+  check is out: R43's machine note).
+- **Workload (deciding), `make manoeuvre-bar-s`:** his first-order shape synthesised from the deploy (`tests/manoeuvre/start_trace.gd`
+  header: the roster's first squad clicked, in the planning pause, 45 m toward the arena's centre + 25 m away from the army, the
+  second squad at t56 to a point 23 m back toward the deploy and at t141 to one 17 m past the click; every click on the navmesh;
+  `--squad-cap=4`, Gangs v Syndicate) on locks / terminus / crossing x seeds **10401-10424** = 72 cells an arm, 20 s each, the ten
+  crews of squads 1-2 traced; one START_RUN row a run; `tests/manoeuvre/s_judge.py` paired per cell.
+- **Deciding (each arm v base; the brief's lines):** **D1** crews seated within the bound 15 s after their order (the bound =
+  `TacticsFormation.seat_bound` of their squad, a pure function of the hulls: the same yardstick in every arm) ARM mean > BASE by
+  >= 2 se (paired per-run difference) AND pooled ARM > BASE; **D2** start-zone yield + blocked seconds (the ten crews, the 15 s after
+  their order) ARM mean < BASE by >= 2 se AND pooled ARM < BASE. An arm SHIPS ON only if it passes both and every guard; the `all`
+  arm is read first; an arm that passes alone while `all` fails ships alone (the orchestrator's ask: see which one does the work).
+- **Per-arena guards (R43.14; each arena of the three, paired over its 24 seeds):** yield + blocked seconds ARM <= BASE + 2 se AND
+  k-turn seconds ARM <= BASE + 2 se, for every arm that ships. Reported beside them: never-arrived crews, mean arrival (never = 15 s),
+  wedged seconds, seat moves, per-cell rows.
+- **Group-order guards (R41.6's lines, `q3_judge.py --base=base --arm=all`), 10425-10436:** orders' O1 probe crossing / locks / sumps /
+  terminus x crew headings (48 paired runs): G5 all-in mean ARM <= BASE + 1.645 se, G6 never-in squads a run ARM <= BASE + 1.645 se,
+  G7 friendly contact ticks ARM <= 1.05 x BASE.
+- **G1 v9 corridor lines (C43.5), 10425-10436:** `make orders-probe` locks / crossing / terminus x 5 squads x click, base v all,
+  `tests/control/orders_judge.py g1v8`: places outside the corridor, metres outside after, re-dealt places each ARM <= BASE (the
+  g1v8 lines unamended) -- the group column is laid by halts, which the bound leaves alone (a test pins it).
+- **Fight guards (`manoeuvre-wedge-trace` locks / terminus / sumps x 10437-10442, 18 fights an arm, `follow_judge.py --on-arm=all`):**
+  G1-G4: give-way deaths and stuck deaths ON - OFF <= max(2 paired se x n, 3); friendly contact ticks <= 1.10 x; kill share within
+  0.03 and deaths within 5 %.
+- **Perf:** the frozen tree's check perf-judge stage PASS (the latch is the one rule ON there); for the switches, `make sim-profile`
+  base v all on builder0 in a quiet window (`make remote-quiet`), us/tick ALL <= 1.05 x BASE for the arms that keep the native drive
+  (seats, converge); kturngoal runs the GDScript drive by construction and is perf-judged after native's twin. No SCRIPT ERROR in
+  any log of any part (s_judge counts them; a run with one fails the bar).
+- **Dev history (C42.1; dev seeds 7001-7002 only; nothing on 10401+ read):** dev read 1 (7001, base v seats, before the converge fix
+  and kturngoal): crews in bound 9 -> 16 of 30, yield+blocked 74 -> 95 s (crossing / terminus worse), k-turn 72 -> 90 s. Dev read 4
+  (7001-7002 x 3 arenas, builder2, native ON, 6 paired cells an arm; `~/overnight-manoeuvre/r43/bars-dev/dev4`): **seats** D1 16 ->
+  32 (+2.1 se), D2 162 -> 131 s (-1.2 se), k-turn 160 -> 78 s, never 13 -> 11; **converge** D1 16 -> 16, D2 162 -> 171 (+0.7 se),
+  k-turn 160 -> 157 (alone it changes little: the stations still run to the unbounded seats); **kturngoal** D1 16 -> 21 (+1.5 se),
+  D2 162 -> 96 s (-3.3 se), never 13 -> 4, k-turn 160 -> 97; **all** D1 16 -> 34 (+3.1 se), D2 162 -> 168 (+0.2 se: crossing 27 ->
+  47 s a run, locks / terminus better), never 13 -> 8, k-turn 160 -> 66. The dev read says kturngoal passes D2 and the bound is the
+  arm at risk on crossing (five War Rigs from one deploy row to seats within 37 m of each other give way to each other); the bar
+  decides it per arena, unamended.
+- **Machine:** the deciding runs and the group guards on builder2 (`REMOTE_HOST=slobdell@builder2 tools/remote.sh --light native
+  manoeuvre-bar-s ...`, after camera's check is out), the fights and the G1 v9 probe on builder0's light lane from a second worktree
+  at the frozen hash (`../godot-manoeuvre-b0`); `~/overnight-manoeuvre/r43/bars.sh` runs it; evidence `~/overnight-manoeuvre/r43/bars/`,
+  filed under `references/round43/manoeuvre/bars-<machine>-<hash>/`. A fail on an arm: that arm stays OFF, no re-run on these seeds.
+
 ### WHERE IT STANDS (2026-10-28 ~00:30 PDT): S1 read, S2 built (seat bound + shape latch, R43.6 / R43.7), S3's cause found and its rule built, Bar S's workload built; nothing on bar seeds read
 
 **Rulings taken:** R43.6 (the shape latch, GRANT: `ElementPlan.latch_shape` beside `chosen_formation`, `inset_anchor`; symmetric;

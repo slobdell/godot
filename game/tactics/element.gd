@@ -1159,6 +1159,7 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 				"pace": 1.0, "anchor": first["point"], "heading": first["tangent"],
 				"velocity": Vector2.ZERO, "final_heading": final_heading, "arrived": false,
 				"starts": starts["starts"], "converge_m": starts["converge_m"],
+				"worlds": starts.get("worlds", {}),  # round 43 (R43.14): each crew's own point, for a station that starts ON it
 				# Round 25 (brains F2): the corridor along the route (where the shape must funnel) and the widest hull.
 				"profile": SlotGround.route_profile(ground, found) if ElementPlan.FUNNEL_ENABLED and ground != null else [],
 				"hull_w": TacticsFormation.hull_extent(situation.get("members", [])).x}

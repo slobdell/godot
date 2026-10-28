@@ -389,7 +389,7 @@ static func route_arms() -> Dictionary:
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
-			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
+			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_settled_passes": chain_settled_passes, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
@@ -404,6 +404,7 @@ static func route_arms() -> Dictionary:
 static func reset_route_arms() -> void:
 	ManoeuvreCensus.reset()
 	Manoeuvre.reset()
+	kturn_goal_moved = 0
 	behind_asked = 0
 	behind_reverses = 0
 	post_faces_kept = 0
@@ -5313,13 +5314,63 @@ func straight_and_clear() -> bool:
 	return absf(nose.angle_to(to)) <= deg_to_rad(STRAIGHT_LEG_DEG)
 
 
+## Round 43 (manoeuvre S3, `--traffic-on=kturngoal`, Traffic.DEFAULT_OFF until Bar S): A REVERSE LEG ENDS WHEN ITS GOAL HAS
+## MOVED TO WHERE A FORWARD ARC REACHES IT. The plan was made for one steering point (Manoeuvre.kturn_goal_note); while a
+## reverse leg runs, a waypoint now KTURN_GOAL_MOVED_M or more from it, outside the forward turning circle and within
+## KTURN_GOAL_AHEAD_DEG of the nose ends the leg ("goal_moved") and the forward drive takes the tick. A goal that stays, or
+## one still inside the circle or behind, is driven as planned (the circle rule's own case). The away (forward) leg is left
+## alone: it is already driving forward. Counter `kturn_goal_moved` (route_arms).
+const KTURN_GOAL_MOVED_M := 10.0
+const KTURN_GOAL_AHEAD_DEG := 100.0
+static var kturn_goal_moved := 0
+
+
+static func kturn_goal_on() -> bool:
+	return not Traffic.off("kturngoal")
+
+
+## S3: has the goal the current plan was made for (Manoeuvre.kturn_goal_note) moved KTURN_GOAL_MOVED_M or more to a `waypoint`
+## outside the forward turning circle and within KTURN_GOAL_AHEAD_DEG of the nose, while the hull is not already driving forward?
+func _kturn_goal_moved_out(waypoint: Vector3) -> bool:
+	var planned: Variant = Manoeuvre.kturn_goal_of(self)
+	if not (planned is Vector3) or _flat_distance(waypoint, planned) < KTURN_GOAL_MOVED_M:
+		return false
+	var tank := ctl.tank
+	if tank.speed() > 0.5:
+		return false  # already under way forward (the away leg, or the seam's forward leg): nothing to end
+	var here := tank.global_position
+	var nose := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	var to := Vector3(waypoint.x - here.x, 0.0, waypoint.z - here.z)
+	return to.length() >= 0.5 and not _inside_circle(here, nose, waypoint) \
+			and absf(nose.signed_angle_to(to, Vector3.UP)) <= deg_to_rad(KTURN_GOAL_AHEAD_DEG)
+
+
 ## Called by drive() for a wheeled hull on a routed forward move: fills `cmd` and returns true while a planned reverse
 ## leg is being driven (planning one first when the forward arc toward `waypoint` would hit a wall).
 func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool:
 	# Round 31 (planner CP-P1, R31.2): a crew the lattice planner's seam holds (a plan pending or being driven) is driven
 	# by it; the seam ASKS only where this function decides a plan is needed (the two `take` lines below).
-	if PlannerSeam.on() and PlannerSeam.hold(self, cmd, "kturn", waypoint, delta): return true
 	var tank := ctl.tank
+	# Round 43 (S3, kturngoal): the goal a plan was made for has moved to where a forward arc reaches it. For a leg of the circle
+	# k-turn (a reverse leg under way) and for the lattice planner's seam (a plan pending or being driven for that goal: released
+	# through its own release, the forward drive takes the tick) alike.
+	if kturn_goal_on() and (PlannerSeam.on() and PlannerSeam.live(String(tank.name)) or (_kturn_left_m > 0.0 and _kturn_gear < 0)) \
+			and _kturn_goal_moved_out(waypoint):
+		if ManoeuvreCensus.trace_unit == String(tank.name):
+			print("MANOEUVRE_TRACE leg f %d ended: the goal moved to %s, a forward arc reaches it (%s)" % [
+					Engine.get_physics_frames(), str(_flat_xz(waypoint)), "seam" if _kturn_left_m <= 0.0 else "circle"])
+		if PlannerSeam.on() and PlannerSeam.live(String(tank.name)):
+			PlannerSeam._release(String(tank.name), true)
+		if _kturn_left_m > 0.0:
+			_kturn_end("goal_moved")
+		kturn_goal_moved += 1
+		_kturn_left_m = 0.0
+		_kturn_legs.clear()
+		_kturn_check = 0
+		_repath_left = 0.0
+		Manoeuvre.kturn_goal_forget(self)
+		return false
+	if PlannerSeam.on() and PlannerSeam.hold(self, cmd, "kturn", waypoint, delta): return true
 	if _kturn_left_m > 0.0:
 		if not _kturn_rolling:
 			# Round 14 (N2): the leg counts from where the hull STOPPED rolling the other way, not from where it was
@@ -5402,6 +5453,8 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	if to.length() < 0.5:
 		return false
 	var error := forward.signed_angle_to(to, Vector3.UP)
+	if kturn_goal_on():
+		Manoeuvre.kturn_goal_note(self, waypoint)  # round 43 (S3): the goal any plan made below is for
 	if reverse_log:
 		_note_look(waypoint, here, forward, error)
 	# Round 26 (manoeuvre M2): the steering point INSIDE the forward turning circle (no forward arc ever points at it;
