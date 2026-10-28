@@ -90,8 +90,25 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 shown by removal. Cause: Traffic's STREET HOLD (round 29 T1, `game/ai/traffic.gd` `_begin_wait`, manoeuvre's path): when two
 friendly squads meet head-on in a street, the waiting squad's EVERY moving crew is dealt a spot behind the street's mouth, however
 far from the mouth it stands; his lead War Rig, 80 m from the mouth, was sent to its spot (-29.7, 100.0) at full pace and drove
-there for 18 s. Ownership asked of the orchestrator (C43.3); nothing built yet. A2 answered (below: no queue). Code: 2d43b1e88
-(main 84f914f78 merged at a51c8d5af).**
+there for 18 s. R43.8 granted the fix to engage; **A3 built OFF at 724ccb5ce** (`holdfar`, below), its tests green on the laptop. A2 answered
+(below: no queue). Bar A's workload written (`make engage-bar-a`); the filing follows its dev run. Code: 724ccb5ce (main 84f914f78
+merged at a51c8d5af).**
+
+### A3 (R43.8): the street hold's far crew, built OFF at 724ccb5ce (`holdfar`)
+
+`game/ai/traffic.gd` `_begin_wait` (the only behaviour hunk; `_spot_behind` / `hold_of` unchanged): a crew of the waiting squad
+standing farther behind the street's mouth than the spot grid reaches (HOLD_BACK_M's last row, 43 m, + 2 x its radius) is not
+dealt a spot. Its own route is walked with `_mouth` (its mover's path, then straight on along the squad's way, 80 m): if that
+route meets THIS street's mouth (within FAR_THROUGH_M 20 m) the crew holds where it stands (`spot = here`, round 29's
+"nowhere to pull aside" spot: `_live` written, `holding()` true on both paths; counter `tr_far_held`); otherwise it is
+released from the wait (no spot, no `_live` entry, `holding()` false; counter `tr_far_released`). A wait left with no spots
+ends at once. Symmetric (Traffic serves both teams). **Switch:** `holdfar` in `Traffic.DEFAULT_OFF` (OFF; `--traffic-on=holdfar`
+is the arm); a pass removes it from the list and `--traffic-off=holdfar` is round 29's rule. **C43.4:** no C++ twin exists for
+the spot dealing (native, 21:50: the only native read of the hold is `holding()` over `_live`, which this keeps); native_drive
+stays ON under the rule. **Tests** (laptop, 724ccb5ce): `tests/engage/test_engage_far_hold.gd` 6/0 (the control dealt a spot at
+the mouth to a crew 100 m back, the far crew released and the near crews still held, the grid's edge still held, a far crew
+whose route runs into the street holds where it stands, symmetric for team 1, the switch listed OFF) and
+`tests/test_traffic_hold.gd` 18/0 unchanged.
 
 ### A1: the turnaround on his seed (laptop, native library ON, `make engage-replay-trace ENGAGE_TAG=on`, 2d43b1e88, his recording, 50 s, n 1, deterministic)
 
