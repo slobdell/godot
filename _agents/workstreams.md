@@ -87,6 +87,15 @@ never touch processes you didn't start. Never delete builder files that aren't o
 10537-10572 camera K5 v2 (one re-file); native none. Dev: 7001-7012, 9501-9512, his 56416 (never a bar). Carried unread: 9201-9240 +
 9301-9340 Bar B5 t50 (only on his yes).
 
+- **FILED Bar K5, the corner swing (camera; FILED eb6deaf78 before any number on 10501-10536; full text in `streams/camera.md`).**
+  BASE `--camera-corner=off` v ARM on, f8166f5e8's code (its full check first), builder2 J8, 36 seeds an arm a workload; CORNER (Locks +
+  Terminus), EMPTY (nobody behind the wall), K4's AMBUSH / RETREAT / ATTACK. **Deciding:** D1 toward the hidden side CORNER pooled ARM >=
+  BASE + 10 points and ARM > BASE each arena; D2 facing the building after the corner opens, EMPTY pooled, ARM <= 0.75 x BASE; D3 seen ->
+  on screen ARM mean <= BASE. **Guards:** G0 no fog cheat (per-frame yaw identical CORNER v EMPTY up to the first known enemy, every seed);
+  G1 the empty corner not seasick (reversals <= BASE + 1, off-travel > 135 deg <= BASE + 3 points, jerks, snaps 0); G2 K4 v2's lines; G3
+  K3 v2's lines; G4 no swinging on every workload; G5 own squad on screen >= BASE - 5; G6 runs clean. Named at risk (dev, never a bar):
+  G1 Terminus EMPTY reversals BASE + 1.22; D2 Locks EMPTY 0.0 -> 7.3 % (pooled at the line's edge).
+
 ## Rulings (round 43)
 
 - **R43.1 (2026-10-27 ~20:55) Every replay of his match made before native's fix is void.** Native (N2, laptop): `tests/replay_orders.gd`
