@@ -147,6 +147,15 @@ func _run() -> void:
 			print("  FAIL  ", stem, "::<file>")
 			print("          no test_ methods: a parse error leaves a loadable script with none")
 			continue
+		# Round 43 (N6): a hook another framework would call runs NEVER here, so a test that relies on it passes for the
+		# wrong reason (manoeuvre's latch tests armed their switch in before_each; five went red only when the default flipped).
+		var hooks := uncalled_hooks(script)
+		if not hooks.is_empty() and _matches(stem, filter_parts):
+			failed += 1
+			print("  FAIL  ", stem, "::<file>")
+			print("          defines %s: TestCase calls only teardown(), never these (arm in each test, or in a helper the test"
+					% ", ".join(hooks) + " calls)")
+			continue
 		for method in script.get_script_method_list():
 			var method_name: String = method["name"]
 			if not method_name.begins_with("test_"):
@@ -276,6 +285,23 @@ func _run() -> void:
 		print("  The filter is a SUBSTRING of \"file::method\" (use | for alternatives), not a regex.")
 		quit(1)
 	quit(1 if failed > 0 else 0)
+
+
+## Round 43 (N6): setup and teardown names other frameworks call (GUT, JUnit, pytest, xUnit) that TestCase never does: it calls
+## only `teardown()` (through `_teardown()`), after each test. A case's own helpers (`_setup()`, called by its tests) are not here.
+const UNCALLED_HOOKS: Array[String] = ["before_each", "after_each", "before_all", "after_all", "before_test", "after_test",
+		"before", "after", "setup", "set_up", "tear_down", "setup_all", "teardown_all", "setup_method", "teardown_method",
+		"setup_class", "teardown_class"]
+
+
+## The UNCALLED_HOOKS a test script defines (its own or a base script's), in the script's method order.
+static func uncalled_hooks(script: Script) -> PackedStringArray:
+	var found := PackedStringArray()
+	for method in script.get_script_method_list():
+		var method_name := String(method["name"])
+		if UNCALLED_HOOKS.has(method_name) and not found.has(method_name):
+			found.append(method_name)
+	return found
 
 
 ## Does `label` match any alternative? No alternatives means everything matches.
