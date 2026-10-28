@@ -103,6 +103,30 @@ Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for
   (builder2 light): native_drive | manoeuvre | traffic | formation | kturn | element | nav_ files 529 / 0.
 - The two CP44.0 lines are no longer in my worktree (dropped before the merge); `git merge main` once the orchestrator names the hash.
 
+### Bar S v3: THE DECIDING READ (series 10:50-11:03 PDT, builder2 light, J 12, frozen 9215b8ab9, 72 paired cells = locks / terminus /
+crossing x 10901-10924; 0 SCRIPT ERROR in 216 logs; the group guards, fights, the orders probe and the gate check still running)
+
+Judge `tests/manoeuvre/s_judge.py` (`~/overnight-manoeuvre/r44/bars_v3/deciding`); the per-arena wedged line computed from the same
+START_RUN rows (paired per cell, the judge reports wedged pooled only). Nothing amended; nothing re-run.
+
+| line (ARM v base, paired per cell) | v3 = scoped four + backout + parkedpass | v3core = the scoped four |
+|---|---|---|
+| D1 crews within the bound at 15 s (of 720) | 191 -> 383, +2.67 a run, se 0.18 (**+14.6 se**) PASS | 191 -> 357 (+10.4 se) PASS |
+| D2 start-zone yield + blocked s | 1415 -> 1020, -5.50 s a run, se 1.35 (**-4.1 se**) PASS | -1.13 s (-0.9 se) **FAIL** |
+| G crossing yield+blocked / k-turn s | -3.65 (-1.8 se) PASS / -4.08 (-5.7 se) PASS | +4.53 (+2.4 se) **FAIL** / -3.04 PASS |
+| G locks yield+blocked / k-turn s | **+0.43 (+0.2 se) PASS** / -1.86 (-1.1 se) PASS | +2.80 (+1.5 se) PASS / -2.01 PASS |
+| G terminus yield+blocked / k-turn s | -13.3 (-6.4 se) PASS / -17.1 (-7.5 se) PASS | -10.7 PASS / -20.9 PASS |
+| **G wedged s per arena (NEW this filing)** | crossing +3.00 s a run, se 1.18 (**+2.6 se FAIL**); **locks +9.16, se 1.66 (+5.5 se FAIL)**; terminus -3.78 (-2.1 se) PASS | crossing -2.71 PASS; **locks +9.60 (+7.3 se) FAIL**; terminus -2.78 PASS |
+| reported: never-arrived / arrival s a crew / k-turn s a run / seat moves a run | 252 -> 172 / -1.12 / -7.7 / -21.5 | 252 -> 205 / -0.59 / -8.7 / -21.3 |
+| **verdict as filed (D1 AND D2 AND every guard)** | **FAIL on the wedged guard** (crossing, locks) | **FAIL** (D2, crossing, locks wedged) |
+
+**The read (after the numbers, not a re-read of the bar):** v3 does what he asked everywhere the round-43 bars measured it, by wide
+margins, and Bar S v2's failing line (Locks yield+blocked) passes at +0.2 se: backout and parkedpass carry it (v3core fails D2 and
+crossing). The cost is the one THIS filing named first and v2 only reported: crews pressed against each other on the way in (wedged
+seconds), +9 crew-seconds a run on Locks in the first 15 s, the same with or without backout, so it is the bound's (five crews
+converging on seats within 37 m). As filed nothing ships ON; the orchestrator rules. The brief's two M3 shapes (seats dealt in
+arrival order along the approach; a squadmate's give-way deferred until the seat ahead is taken) are aimed at this converging press.
+
 ### M5 (acceptance read, in progress) and the twin's parity (2026-10-28 ~11:00 PDT)
 
 - **08-15, his container start, the full v3 set ON (fdb1c6fc4, builder0, native ON, the GDScript drive for backout, `~/overnight-manoeuvre/
