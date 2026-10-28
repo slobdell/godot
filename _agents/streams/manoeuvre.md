@@ -81,6 +81,60 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-27 ~20:40 PDT (Fable). Starting commit 2f1620a77 = main at launch (code b12b17ac7 GREEN builder0, 3343/0; no
 baseline check re-run, per the contract). CP43.0 taken at f6b930a3d (main 84f914f78 merged). Orchestrator session: `godot-b8`.**
 
+### WHERE IT STANDS (2026-10-28 ~00:30 PDT): S1 read, S2 built (seat bound + shape latch, R43.6 / R43.7), S3's cause found and its rule built, Bar S's workload built; nothing on bar seeds read
+
+**Rulings taken:** R43.6 (the shape latch, GRANT: `ElementPlan.latch_shape` beside `chosen_formation`, `inset_anchor`; symmetric;
+`--shape-latch=off`), R43.7 (the bounded centred shape at `route_seats` / `stations_along` / `Element._rank_file` under the same
+`--seat-bound` switch; the latch lines in `element.gd`), R43.8 (engage owns Traffic's street hold: `_begin_wait`, `_spot_behind`,
+`hold_of`; my traffic.gd hunks stay out of them). CP43.0 merged (f6b930a3d).
+
+**S2 (C43.5), on the branch:** `--seat-bound=on` (TacticsFormation.SEAT_BOUND, OFF): a platoon's farthest seat within
+max(18 m, 1.5 hull lengths + the hull floor along) of its anchor, the centred shape scaled as a whole, never below the hull floor
+between two seats; halts (the G1 v9 column's squads), groups past a platoon and `"seat_bound": false` callers as today; the
+transit's stations the same (R43.7). War Rigs' swarm 58 -> 37 m, Gun Trucks' 55 -> 18 m, the wedge / vee of War Rigs 29.3 m
+untouched. **The shape latch** (ON, `--shape-latch=off`): a move keeps the shape it started with until it arrives or its task
+changes; the element's own contact re-picks it once after 1 s; the CPU's elements too. Tests: `tests/test_formation_seat_bound.gd`
+(8), `tests/test_formation_shape_latch.gd` (6); the tactics plan / formation / settle / converge filters 78/0 and 64/0 (laptop,
+NATIVE=off). Commits cf70440ac, c2e03f40e, bbca98093.
+
+**S2 re-read of his start (laptop, GDScript, `make manoeuvre-start-trace ST_RECORDING=<his> ST_FLAGS=--seat-bound=on`, bbca98093,
+n 1 deterministic; `~/overnight-manoeuvre/r43/s1/traceG.log`):** the Guns' anchor is exactly his click (-69.1, 50.7) (the
+inset shift is gone with the 37 m reach), no shape flip in 20 s (swarm throughout), every seat within 32 m of the click, ONE seat
+move per crew (the station -> the seat): **all five arrive: Guns_4 5.2 s, Guns_5 (the Tanker) 6.7 s, Guns_2 7.7 s, Guns_1 7.8 s,
+Guns_3 9.5 s** (his match: three of five in 5.5-8.4 s, two never); the Hunters' second click all five in 10.8-17.1 s (his: three).
+Before R43.7 (the stations unbounded, traceF): War Rig 3's goal at 2 s was a station 70 m east, then a 150-degree k-turn in the
+container alley with the Tanker backing up behind it; the lead War Rig stood 4 s "blocked terrain" at the wreck prop (-96, 62).
+With the stations bounded the lead War Rig still k-turns 5.3 s near its seat (S3's family) but arrives.
+
+**S3: the start-zone jam's remaining head is the War Rig's FIRST-TICK K-TURN** (`~/overnight-manoeuvre/r43/s1/kturn1.log`, terminus
+7001, `--turn-trace=Green_Guns_1`, builder2): at a move's first tick the crew's goal is the transit's converging STATION, which on
+terminus / crossing sits 7.5 m from the hull at 110 degrees off its nose (inside the 12 m turning circle; on Locks the first
+station is ON the crew, as `ElementPlan.converge` intends; on terminus / crossing it lands right-behind, the first route leg bent,
+I think: ElementPlan's, not granted, reported), so `_planned_reverse` plans a circle k-turn (back 7.5 m, away 4.5 m) and commits;
+at f50 the station is 30 m away, at f55 45 m (a forward arc reaches it), and the leg backs its 7.5 m at 2.8 m/s into the arena's
+north edge regardless ("blocked terrain"), the squadmates asking it to give way meanwhile. His Guns_2's 3.6 s "crept north" on
+Locks is the same. **The rule (built, OFF: `--traffic-on=kturngoal`, Traffic.DEFAULT_OFF; the GDScript drive while ON, as
+deckwait, C43.4): a REVERSE leg ends when its planned goal has moved KTURN_GOAL_MOVED_M (10 m) or more to a point outside the
+forward turning circle and within 100 degrees of the nose; the forward drive takes the tick.** The planned goal lives in a
+`Manoeuvre` static keyed by the mover's instance id (trip-up 84: no exec field); counter `kturn_goal_moved`. Test
+`tests/test_manoeuvre_kturn_goal.gd` (3; running on builder2 with the drive twins as this is written).
+
+**Bar S (S4): the workload and judge are built, nothing on bar seeds read.** `make manoeuvre-bar-s` = `tests/manoeuvre/start_trace.gd`
+with no recording: his first-order shape synthesised from the deploy (squad 1 clicked 45 m toward the arena's centre + 25 m
+away from the rest of the army, in the planning pause; squad 2 at t56 to a point 23 m back toward the deploy, at t141 to one
+17 m past the click; `--squad-cap=4`, Gangs v Syndicate), one START_RUN row a run, `tests/manoeuvre/s_judge.py` (the brief's D1 /
+D2, paired per cell). **Dev read 1 (builder2 light, GDScript, 7001 x locks / terminus / crossing, base v bound+latch, n 3 cells,
+`~/overnight-manoeuvre/r43/bars-dev/dev1-7001`):** crews within the bound by 15 s 9 -> 16 (of 30), seat moves 117 -> 45, mean
+arrival 35.8 -> 33.0 s pooled, BUT yield+blocked s 73.8 -> 95.0 (locks 21 -> 12, crossing 15 -> 32, terminus 37 -> 50) and k-turn s
+72 -> 90: the bound packs five first-tick k-turns (above) into a tighter space. The bar is filed only once the kturngoal arm has
+been read on the same dev cells (the brief's order: S3 before S4); its arms will be base / seats (bound+latch) / kturngoal / all,
+each removable alone (the orchestrator's ask), on 10401-10424 x locks / terminus / crossing; guards on 10425-10448.
+
+**Requests / notes for other streams:** (a) ElementPlan.converge's first station off the crew on terminus / crossing (above):
+numbers on request. (b) engage's R43.8 street hold is the same Guns-waits-for-Hunters interaction as his start jam; nothing of
+mine touches `_begin_wait` / `_spot_behind` / `hold_of`. (c) native: `kturngoal` needs a twin before ON (the k-turn leg end in
+`_planned_reverse`); the seat bound and the latch are planner-side (no Movement member) and run with native_drive ON.
+
 ### S1 REPORT: the arrival census of his first order (2026-10-27 ~22:30 PDT; laptop, 847e569cf, the rebuild of his Locks 56416 start)
 
 **How it was read.** `tests/manoeuvre/start_trace.gd` (`make manoeuvre-start-trace`) restarts his match (seed 56416, Locks, Gangs v
