@@ -191,6 +191,15 @@ never touch processes you didn't start. Never delete builder files that aren't o
   order, a > 45 deg turn or a contact; CORNER_W 4.0. Lines as Bar K5 except D1 per arena ARM >= BASE - 2 se (per-run shares), pooled +10
   points unchanged; builder2 J8; `tests/camera/bar_k5.py --v2`. The one re-file of K5 this round.
 
+- **FILED Bar S v2, his first order settles, one arm (manoeuvre; FILED before any 10701-10748 number; R43.31).** BASE v ARM = all +
+  `--traffic-on=parkaside` (a move goal within 30 m inside a PARKED other-squad friend's clearance disc is taken on its rim, once per
+  goal, in the drive's callback layer; GDScript drive while ON until native confirms or twins), frozen `wip/manoeuvre-bars-v2`, gate check
+  builder2; lines as Bar S (D1, D2, per-arena yield+blocked and k-turn, group guards, fights, G1 v9, perf on builder0 quiet). Dev (both
+  blocks 7001-7012 + 9501-9512, 72 paired cells, builder2, never a bar): D1 +10.0 se, D2 -2.5 se, per arena PASS (Locks +1.8 se, the line
+  at risk), never-arrived 249 -> 163. Bar S's last guards for the record: fights PASS (moving-stuck -58 %); G1 v9 metres outside 168 -> 180
+  FAIL and the Locks twitch FAIL (grouped squads pick up the bound and latch). R43.34: scope the round-43 rules to single-squad orders
+  (C43.5) and re-file before any number, else v2 runs as filed.
+
 ## Rulings (round 43)
 
 - **R43.1 (2026-10-27 ~20:55) Every replay of his match made before native's fix is void.** Native (N2, laptop): `tests/replay_orders.gd`
@@ -392,6 +401,9 @@ never touch processes you didn't start. Never delete builder files that aren't o
   that always succeeds FAILS 0/20. **builder0's OOM (01:46-01:51 builder clock) was NOT two full checks** (remote-logs show one); the kernel
   took native's six test shards (140-385 MB each) with "2 other godot" already running outside the lock (light lanes / labs). Cause
   unproven; watch item: lab Godots on builder0 while a full check holds the lock.
+- **R43.34 (~08:15) Bar S v2: the bound, the latch's stations and parkaside scoped OFF for squads under one G1 group click** (C43.5:
+  the group column stays unchanged; Bar S's `all` moved G1 v9's lines), proven by the G1 v9 probe byte-identical v base on dev, and
+  re-filed before any 10701+ number; else v2 runs as filed. Native asked whether parkaside needs a twin.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
