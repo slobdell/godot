@@ -252,25 +252,25 @@ already read, or 7001-7012.
 - **R44.8 (~11:15) native's session ended mid-round; its next session starts here.** In flight when it ended: (a) N2's full check of
   7e9c199ae on builder0 (log `~/tank_squad/remote-logs/godot-native-check-20261028-104851-1025702.log`; the orchestrator reads it and
   merges on green); (b) the builder2 native-proof of `pair/native-m2m3-r2` 39b063c7c (log on the laptop `~/native-r44/m2m3-proof-39b063c7c.log`).
-  **Pending for native (relayed from manoeuvre):** backout's GDScript look (`Movement._backout_look`, stream/manoeuvre 813f36a5b)
+  **Pending for native (relayed from manoeuvre):** backout's GDScript look (`Movement._backout_look`: the tightened look after 1d055d498 on stream/manoeuvre, hash named in R44.12; NOT 813f36a5b, superseded)
   no longer requires the steering point within a hull's length, and BACKOUT_MIN_ERROR_DEG = 20; the C++ cheap look's pre-filter
   drops its |goal| < hull-length term, keeps drive_vector zero + near rest, then calls `_backout_due` as now. Re-cut the backout twin
   on manoeuvre's tip with that, prove EQUAL on builder2, name the hash to manoeuvre and the orchestrator: Bar B1 freezes on it.
   parkedpass's twin stays parked (S v3 failed, R44.7).
-- **R44.9 (~11:25) his answers (`game_design.md` *His answers on the group click*) re-shape Bar G1 v10b BEFORE any 10801 number.**
+- **R44.9 (~11:15) his answers (`game_design.md` *His answers on the group click*) re-shape Bar G1 v10b BEFORE any 10801 number.**
   (1) He meant the open area on the west side; the dispersal lost him the match. (2) **Fit first:** side by side on open ground when
   the line fits at his click; when it won't fit (the edge / walls would push a squad off its place), stack behind, nearest in front.
   (3) Short click: squads already in place hold (6(c) stands). Orders re-files lines 1 and 3 for this before the fresh series: the
   arm lays abreast where the whole front fits the clear ground at the click without any edge or wall slide, else ranks behind; line
   1 becomes "across spread <= the front the clear ground fits" with no slide (aside line 3 unchanged: <= 52 m), and the corpus gets a
   far click INTO the west open area of Locks (his target) and an abreast-fits cell. Lines 2, 4, 6 and the guards stand.
-- **R44.10 (~11:40) Bar B1's deciding shape (b), before any fresh number.** Dev read of manoeuvre's staged nose-on corpus (14 poses,
+- **R44.10 (~11:20) Bar B1's deciding shape (b), before any fresh number.** Dev read of manoeuvre's staged nose-on corpus (14 poses,
   builder0 light, mixed drive, dev only): ON sooner in 5/14, median +0.0 s; +1.7 to +3.6 s on four poses where base crept and drove off
   anyway, +6.2 s gain on one, his faithful start t144 -> t99. Decide on poses where the BASE sticks (criterion named and committed
   first; poses jittered by FRESH seeds 11101+): ARM sooner >= 80 % (floor 8), median gain >= 1 s, plus his start past the box < t110;
   cost ceiling elsewhere per pose ON <= OFF + 3 s and median <= +1 s; workload and unneeded-back-up guards as filed. Tighten the gate
   on the 14 dev poses first (an unneeded back-up is as visible as nosing in).
-- **R44.11 (~11:50) Bar G1 v10c recorded; at most TWO abreast this round.** Fit first as R44.9: abreast as many as fit centred with no
+- **R44.11 (~11:27) Bar G1 v10c recorded; at most TWO abreast this round.** Fit first as R44.9: abreast as many as fit centred with no
   slide, capped at 2; the rest stack behind. Three or four abreast where the ground fits (a 102-160 m front) is the shape that
   dispersed him; the cap keeps line 3's 52 m by construction. Feel question for him after he plays it: on a wide yard, does he want
   more squads side by side? His west-quay target reads one abreast (the quay is 42-50 m clear): his army arrives in file along it.

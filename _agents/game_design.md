@@ -4573,7 +4573,7 @@ another or something so that they can all share roughly the same destination)"
   other", "the squad furthest away to land in the back and the closest squad to land in the front") and that G1 v9 shipped in round 41
   (R41.15). The recording holds each squad's destination but not his click point (round 44: record the click).
 
-## His answers on the group click (2026-10-28 ~11:25, round 44, verbatim)
+## His answers on the group click (2026-10-28 ~11:15, round 44, verbatim)
 
 Asked: (1) where he meant to send them; (2) two squads abreast on open ground, or strict single file; (3) on a short click, only the
 front squad drives and squads already lined up behind it stay put (recommended yes).
