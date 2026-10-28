@@ -280,8 +280,11 @@ family's reads, or the stat tree) is for the record, not for a fix.
 Orders: the default probe is CPU-free in effect. Both rules were gated by grouped() in the frozen tree (the look since e0a746667;
 `_parked_for_pass` at 67998860d:5474). The leak: the station-PID gate for backout's legs read "any k-turn leg under way or planned this
 tick while the switch is ON", so his grouped crews' ordinary k-turns lost the PID too. **cf6eabc22: the PID is kept off `_backout_leg`
-only.** Proof (builder0 light, the default probe x 7001-7004, base v backout v parkedpass): running; B1's byte-identity guard
-restored on its pass.
+only.** Proof (builder0 light, the default probe x 7001-7004, base v backout v parkedpass, `~/overnight-manoeuvre/r44/m1/proof6`):
+**parkedpass 60 / 60 byte-identical; backout 37 of 60 rows differ on the C++ drive**: native's merged twin (m2m3-r2) took backout out
+of the GDScript-drive gate and still carries the OLD station-PID rule (every planned leg while ON), so the leak now lives in C++.
+8172913e1: backout ON runs the GDScript drive again until the twin matches cf6eabc22. Proof re-running on the GDScript drive (proof7);
+B1's byte-identity guard restored on its pass; native's re-cut must mirror the `_backout_leg`-only gate.
 
 ### M5 READ on native's EXACT replay (main 7975d1455 merged at 158b6d45c; builder0, native ON, `make replay-match ... CREWS=all`,
 `~/overnight-manoeuvre/r44/m5/replay_*`; base = main's drive, bo = `--traffic-on=backout` on the GDScript drive): BOTH his rigs back out first
