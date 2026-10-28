@@ -1199,9 +1199,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				path_back = func() -> PackedVector3Array: return line
 				reached = func(_p: Vector3) -> bool: return false
 			# G1 v10: on his plain click the column's ranks keep off water and decks (a Callable only then: G1 v9 lays as before).
+			# ...and off ground a hull cannot stand on (dev read 4, terminus across-80: a rank laid into a city block was pushed 12 m
+			# aside onto standable ground after the lay, 59 m off the line).
 			var blocked := Callable()
 			if SelectionSquads.COLUMN_ALWAYS and not queue_leg:
-				blocked = func(p: Vector3, r: float) -> bool: return SelectionSquads.wet_or_deck(p, r)
+				blocked = func(p: Vector3, r: float) -> bool: return SelectionSquads.wet_or_deck(p, r) or not SlotGround.is_standable(ground, p)
 			var laid := SelectionSquads.column_lay(lay_blocks, click, approach,
 					func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors, path_back, reached, false, queue_leg, blocked)

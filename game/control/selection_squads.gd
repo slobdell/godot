@@ -787,14 +787,17 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 			for k in rank_members.size():
 				var aside_w := (float(k) - (abreast - 1) * 0.5) * (widest + GAP_M)
 				var i_w := int(rank_members[k][1])
-				var reach_w := 0.5 * maxf(float(blocks[i_w].get("width", 0.0)), column_depth(blocks[i_w]))
+				var reach_w := maxf(HULL_REACH_M, 0.5 * maxf(float(blocks[i_w].get("width", 0.0)), column_depth(blocks[i_w])))
 				if bool(blocked.call(clamp.call(centre + rank_across * aside_w), reach_w)):
 					wet = true
 					break
+			if COLUMN_TRACE:
+				print("COLUMN_TRACE rank %d behind %.1f at %s road %s abreast %d wet %s" % [start, behind, point, on_road, abreast, wet])
 			if wet:
 				behind += WET_STEP_M
 				wet_steps += 1
 				ranks_wet_stepped += 1
+				on_road = true  # a column meeting water follows the road back (the straight line may hug the bank for 60 m)
 				continue
 		for k in rank_members.size():
 			var aside := (float(k) - (abreast - 1) * 0.5) * (widest + GAP_M)
@@ -806,6 +809,8 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 
 ## G1 v10: how far behind the rearmost squad's start the column's last rank may stand (COLUMN_AWAY_M: still taken, not held).
 const ROOM_BEHIND_M := 10.0
+## G1 v10: a lone vehicle's footprint (a block of one has no width or depth of its own).
+const HULL_REACH_M := 4.0
 ## G1 v10: how far a wet rank steps back at a time, and how many steps one lay may take in all.
 const WET_STEP_M := 4.0
 const WET_STEPS_MAX := 40
@@ -814,8 +819,10 @@ static var ranks_wet_stepped := 0
 static var ranks_stayed_for_room := 0
 
 
-## G1 v10: whether `point`'s footprint (a disc of `reach`) touches water or a deck: the centre and eight points round the disc
-## (SlotGround.over_water / near_deck on the arena's terrain). Pure given the arena.
+## G1 v10: whether `point`'s footprint touches a deck (within `reach`, as deck_clear reads it) or water (the centre and eight
+## points at WATER_SHARE of `reach`: the leader's seat and the squad's inner ring; a road running 25 m from a bank is dry
+## ground, the outer seats are the deploy's to settle). Pure given the arena.
+const WATER_SHARE := 0.5
 static func wet_or_deck(point: Vector3, reach: float) -> bool:
 	var flat := Vector3(point.x, 0.0, point.z)
 	if SlotGround.near_deck(flat, reach) or SlotGround.over_water(flat):
@@ -824,7 +831,7 @@ static func wet_or_deck(point: Vector3, reach: float) -> bool:
 		return false
 	for k in 8:
 		var a := TAU * k / 8.0
-		if SlotGround.over_water(flat + Vector3(cos(a), 0.0, sin(a)) * reach):
+		if SlotGround.over_water(flat + Vector3(cos(a), 0.0, sin(a)) * reach * WATER_SHARE):
 			return true
 	return false
 

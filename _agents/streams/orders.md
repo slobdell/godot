@@ -172,6 +172,17 @@ _(worker keeps this current: report at the top, every number with commit, machin
   column already (its streets; across 4-34 m). The nearest squad lands in front in 17-100 % of runs by cell; nobody is sent
   back > 10 m (0.0-0.5 squads a run); aside max 16-80 m; crossing across-20 never gets every squad in (6 / 6). The v10 arm's
   read on the same cells follows.
+- **Dev reads 3 and 4 (builder2, native on, 7001-7006, n 6; `references/round44/orders/o3-geometry-dev-builder2/`) and the code
+  they drove (all under the switch):** read 3 (bb70c0152 + the deal / cap / water / shift / hold fixes): contacts 5893 -> 2033,
+  10 of 18 cells pass every line; read 4 (+ the final stay rule): 8 cells pass under R44.6's line 6. What read 4 showed and what
+  changed since: (a) the room rule read AHEAD of the rearmost start never fitted a near click, so 2-3 squads held where R44.6
+  counts them only within the column's length -> the last rank may stand up to 10 m behind the rearmost start (taken, not held;
+  on his click every squad falls in a few metres); (b) a rank laid into a Terminus city block was pushed 12 m aside after the lay
+  (59 m off the line) -> unstandable ground is `blocked` at the lay, like water; (c) on Crossing a reach-80 click lands at the
+  river bank beyond a bridge, and the water read (a 22 m disc) kept every rank "wet" along a road 25 m from the bank, so ranks
+  walked 135 m back and three squads held -> water is read at half the footprint (the leader's seat and the inner ring; the
+  outer seats are the deploy's), a wet rank follows the road, a lone vehicle's footprint is a hull (4 m); traced on crossing
+  along-80 s7002: Guns to the click, Hunters / Spears / Wrenches 4-15 m ahead of their starts in file. Dev read 5 carries these.
 - **Decisions:** `click` goes on the one-squad row too (its `to` is the click, but one key the tools can rely on beats a
   rule); `group` only on orders to two or more squads (C44.3: his one-squad order stays manoeuvre's); loose units' row
   carries `click`, not `group`.
