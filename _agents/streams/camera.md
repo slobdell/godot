@@ -71,14 +71,33 @@ The clip, when K5.5 has one.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-27 (in progress).** Start: 2f1620a77 (main's docs on b12b17ac7's green check; no baseline check, per HANDOFF).
-- **K5.1 DONE at 1929707b7** (full check on builder0 running; the hash is named when it greens). The `cam` row:
-  `{"t":"cam", tick, yaw, want, pitch, dist, target:[x,z], mode, turn?}`, the SHOWN pose (yaw in degrees, 0 = north/-Z,
-  positive turns left, so -90 looks east), `want` = the yaw it is turning to, `mode` follow / danger / manual / aim-hold /
-  corner, `turn: true` on a row written at an automatic turn's start. Written every CENSUS_S (1 s) and at each turn start.
-  The recorder reads `controls.rig` (`RtsCamera.record_row()`); no rig, no rows (headless harnesses, the native twin test).
-  Smoke (builder0 light, 1929707b7's tree, Locks seed 7001, 30 s camera autoplay): 34 cam rows, 3 turn rows (danger),
-  `tools/recording_arrivals.py` still reads the file. Scrub a recording: `python3 tests/camera/camera_recording.py <file>`.
+**2026-10-27 ~22:30 (in progress): K5.1 MERGED (main b31d3ddea); K5.2 census sent; K5.3 built OFF; Bar K5 FILED; its
+series runs on builder2 after 65e6e7e92's full check there.**
+- **K5.1 DONE, green, merged.** d489eaa2b (K5.1 + native's 2fd2e5d4e recorder keys + K5.2/K5.3 OFF): builder0
+  `>> remote: make check exited 0`, test 3360 passed / 0 failed, 27 passed + 1 NOT JUDGED (remote-guard-test quiet window);
+  merged alone by the orchestrator (main b31d3ddea, R43.10). The `cam` row: `{"t":"cam", tick, yaw, want, pitch, dist,
+  target:[x,z], mode, turn?}`, the SHOWN pose (yaw in degrees, 0 = north/-Z, positive turns left: -90 looks east), `want` the
+  yaw it is turning to, `mode` follow / danger / manual / aim-hold / corner, `turn: true` on a row written as an automatic turn
+  starts; every CENSUS_S (1 s) and at each turn start; no rig, no rows. Scrub: `python3 tests/camera/camera_recording.py <file>`.
+- **K5.2 census DONE (sent to the orchestrator).** `--camera-scenario=corner` (CameraPlaytest + `CameraCorner`), dev 7001-7012,
+  builder0 light, today's camera (9e14c3ade): Terminus open->seen 1.0 s, seen->on screen 0.2 s, facing the building 53 % of the
+  corner seconds, toward the hidden side 79 %; Locks (left lanes) open->seen 5.2 s, seen->on screen 0.8 s, facing 57 %,
+  toward 48 %. In player terms: once the enemy shows itself the camera already finds it in about a second; the fix is the
+  seconds before, when it stares at the wall half the time.
+- **K5.3 built, OFF** (`--camera-corner=on`). Dev, ON v OFF (f8166f5e8 / b931bbf52's OFF, builder0 light, 7001-7012): toward the
+  hidden side Locks 6.4 -> 34.9 %, Terminus 78.7 -> 81.6; seen->on screen Locks 6.8 -> 0.2 s, Terminus 0.2 -> 0.4; EMPTY corner
+  facing after the opening Locks 0.0 -> 7.3 %, Terminus 22.2 -> 13.3; EMPTY Terminus reversals 2.67 -> 3.89 /min (over G1's
+  BASE + 1 on dev: a swing out and back is one reversal a corner). No-fog-cheat yaw equality: 24/24 dev seeds (6847581f7).
+- **Bar K5 FILED** (below, eb6deaf78; one workload fix before any number, 65e6e7e92: lanes from his half only). Judge:
+  `python3 tests/camera/bar_k5.py ~/camera-bar-k5/<hash>`. Driver `~/camera-r43/bar_k5.sh` (not in the repo: it holds paths).
+
+**Decisions (one line each):** the recorder reads `controls.rig` (no skirmish_mode edit; the camera stays unaware of the
+recorder); the corner pull aims at a spot 8 m round the far end behind the wall (straight at the hidden face put the view
+through the wall); facing the building is judged after the opening on the EMPTY corner (with a squad there the danger
+turn rightly looks at it against the corner); lanes keep 4 m from water (Locks' canal) and come from his half.
+**Watch items:** `camera-trace` runs now carry a per-run timeout (a parse error had hung the light lane 90 minutes);
+the corner workload's staging jump is skipped by the trace (it read as 12 snaps).
+**Questions for the lead:** none blocking.
 
 **Plan (in order; reasons in one line):**
 1. K5.1 the `cam` row (C43.2): first, so his next playtest records the yaw (the orchestrator merges it alone).
