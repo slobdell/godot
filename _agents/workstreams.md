@@ -371,6 +371,12 @@ already read, or 7001-7012.
   head-on mechanism guard 2b (two-sided +/- 2 se) FAILS: held_on_s 769 -> 459 (-2.26 se; last arrival 13 s sooner, +19 touches a run
   at the mouth, +1.0 se inside its line). Round-45 candidate: re-file with a one-sided head-on guard (contacts and arrivals, not
   holding seconds) on fresh seeds.
+- **R44.20 (~13:50) G1 v10c frozen at 0df45e555; the series runs.** Orders looked at three dev-8 top-down pairs (his yard, a bending
+  Crossing street, Crossing far): one column at the click in each; main 60-120 m apart. The orchestrator looked at the yard pair: the
+  one marker apart (red, (-55, 117)) is the probe's lone tank that stood 20 m PAST the click; G1 v6's two-sided lay (unchanged) gives it
+  a far-side place, and the edge clamp put it 18 m north on the map edge. Not his geometry (his row stopped short of the click); not
+  stopped. **Round-45 note:** a squad standing past his click should join the column, not take an edge seat (his "sent back to the
+  north edge" complaint in another form).
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
