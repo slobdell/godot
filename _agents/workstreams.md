@@ -112,6 +112,13 @@ never touch processes you didn't start. Never delete builder files that aren't o
   speed at tick 22: native's). CP43.0's hash is not named yet (the twin gap and round 41's recording on its own tree 21b20bdce first).
   The recorder keys (native 2fd2e5d4e) and camera's `cam` row merge together after ONE full check on camera's tip (camera merges
   2fd2e5d4e, authorised).
+- **R43.5 (~21:40) Ownership ruled ahead for engage's A1 (C43.3).** Engage's interim (laptop, census-places rebuild 0e7664821,
+  `tests/engage/turnaround_probe.gd` / `path_probe.gd`): a fresh task from his positions never drives north-east; every navmesh route
+  from (-105, 46) to the far quay is the west bridge (63-67 m); under attack-move the crew brain picks ENGAGE on a Syndicate crew across
+  the canal (56-60 m; the cover map's own line ignores water; inside range 50 + 15 m) and `_combat_move` answers direct hops, one a
+  reverse hop 36 m north-east; the DWA lattice then has no closer candidate, the leash drops ("boxed in"). Not yet shown on his seed's
+  replay. If confirmed: GRANT engage `game/ai/tank_brain.gd`'s engage choice and `_combat_move`, `game/ai/combat_motion.gd` (symmetric,
+  switch with `=off`, merge note); `game/ai/cover_map.gd` read-only (camera reads it); DWA / leash in `movement.gd` stays manoeuvre's.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
