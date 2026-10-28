@@ -101,7 +101,9 @@ test** (25 passed, 1 FAILED, perf-judge NOT JUDGED: "refused 3 times ... the box
 bridge series at once; sim-baseline 13 maps unmoved; the rest green): test_engage_water's "ON by default" read `false` left
 by the test before (the teardown set the static to false and the default test ran last in its file). Test-only, no sim code
 moved (05fa7bce3; laptop 5/5). Its check on builder0 is launched on the branch tip; the hash is named green or not when it
-reads. **A1 DONE** (the turnaround reproduced bit-exact on native's replay,
+reads. R43.36 (ruled ahead): if that check is green on every other line and only perf-judge is NOT JUDGED from load, a
+perf-judge alone on the same commit in a quiet builder0 window (`make remote-quiet`, the perf-judge target) satisfies the gate,
+no full rerun; both lines reported (the wrapper's, and perf-judge's PASS with ratio and us/tick, machine named). **A1 DONE** (the turnaround reproduced bit-exact on native's replay,
 its cause shown by removal: Traffic's street hold at tick 478 dealt his lead War Rig a spot behind a corridor mouth 76 m away,
 for a verdict his lead crew's nose, not its orders, made; `--traffic-off=hold` -> the crew arrives on the far quay at tick 810).
 **A2 DONE** (no queue). **A3 built OFF** (`holdfar`, R43.8): Bar A FAILED (z -1.73; R43.18). **A6 built OFF** (`holdway`,
