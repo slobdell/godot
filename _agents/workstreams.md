@@ -328,6 +328,12 @@ already read, or 7001-7012.
   unchanged. Code: every rank capped by the fit at his click; the stay rule reads 10 m less a metre; reach clicks pulled onto dry
   ground. Named risk: all-in guard failed two near cells on dev 6 (terminus across-20 7.7 -> 14.3 s, yard_open across-80 11.8 -> 19.0
   s); it stays as filed and decides. Frozen after dev read 7.
+- **R44.14 (~12:20) no Bar S v4 this round.** M5 on native's exact replay (builder0): on main his War Rig behind the container stands
+  4 s (08-15) and 5 s (08-21) before moving; under backout it backs out at his click and is round the box 2-3 s before main's moves.
+  S v4 shape (a) `--seat-order=on` (a2cc20e5e, Locks dev 7001-7012, builder2): the first squad's press drops (wedged -2.1 s a run) but
+  the second squad wedges more (+4.6 s), yields +2.8 se, D1 +6.6 -> +4.6 se: the press is two squads, so a one-squad seat order is
+  not the shape. Committed OFF with its test; round-45 design note (the second squad's seats and approach with the first's standing
+  shape in view).
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
