@@ -82,7 +82,7 @@ never touch processes you didn't start. Never delete builder files that aren't o
 
 ## Bars (round 43)
 
-**Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards; 10401-10424 manoeuvre bar S (arrival);
+**Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards (and Bar A's pooled extension); 10349-10372 engage G1-G5 guards; 10401-10424 manoeuvre bar S (arrival);
 10425-10448 manoeuvre guards; 10449-10472 manoeuvre bridge (S5, BRIDGE_POOLED_SEEDS); 10501-10536 camera Bar K5 (36 an arm);
 10537-10572 camera K5 v2 (one re-file); native none. Dev: 7001-7012, 9501-9512, his 56416 (never a bar). Carried unread: 9201-9240 +
 9301-9340 Bar B5 t50 (only on his yes).
@@ -97,6 +97,16 @@ never touch processes you didn't start. Never delete builder files that aren't o
   G1 Terminus EMPTY reversals BASE + 1.22; D2 Locks EMPTY 0.0 -> 7.3 % (pooled at the line's edge).
   Workload fix before any number (65e6e7e92): Locks' far-bank lane started in the enemy's half at the lock bridge (0 of 6 opened);
   lanes now drawn from his half only; lines unchanged. Series commit 65e6e7e92.
+
+- **FILED Bar A, the street hold's far crews (engage; FILED 677199e2b on tree 9e8313f8d before any 10301+ number; full text in
+  `streams/engage.md`).** BASE `holdfar` off v ARM `--traffic-on=holdfar`, builder2, native path, 10301-10324 on three head-on stages
+  (terminus west, terminus east, Locks' lock; 8 seeds each). **Deciding:** far_arrive_s (the far crews' mean arrival at the destination)
+  ARM < BASE by >= 2 se. **Guards:** contacts_mouth, contacts_far (released far crews at the mouth while the passer comes), jam_s,
+  last_a_s, Bar E1's lines (10325-10348), G1-G5 (10349-10372), perf on builder0's ON check, suite ON; exercised floor 16 of 24 (10325-10348
+  pooled extension). **R43.12's side-street line (2) did NOT plant in its 90-min box** (four plantings on dev 7007-7013: the verdict fell
+  to the other squad, the route found the bridge as the mouth, or the mouth landed on A's own way; away_s 8/0/1/2 OFF v 8/0/1/4 ON), so
+  his AWAY geometry is dev evidence by removal on his seed (AWAY 82 m -> best 17 m, identical to his match for 17 s). `--stage=terminus_side`
+  kept for the record.
 
 ## Rulings (round 43)
 
@@ -203,6 +213,9 @@ never touch processes you didn't start. Never delete builder files that aren't o
   (one `gate_width`). Only `--group-lay=off` removes it. A side fields at most 5 squads (MAX_SQUADS), 4 on his laptop preset: 120 or 24
   permutations, so ~40 ms at 5 and ~8 ms at 4 on the laptop by scaling. N2b = memoise `_pair_crosses` (output-identical, equality test),
   GDScript only; no C++ port unless 5 squads still misses budget 104. Below CP43.0's merge in priority.
+- **R43.16 (~00:25) builder2 may run two judged series at once (camera's Bar K5, engage's Bar A) plus one full check.** It has 32 cores
+  and 31 GB (29 GB free at 05:22 box time, load 13); C43.1's one-series rule came from builder0's 15 GB OOM (round 42). Condition:
+  total jobs <= 24, no perf read on builder2 (fight and camera numbers are tick/frame-paced). A load-induced failure reruns the workload.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
