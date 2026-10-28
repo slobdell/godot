@@ -83,7 +83,7 @@ never touch processes you didn't start. Never delete builder files that aren't o
 ## Bars (round 43)
 
 **Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards (and Bar A's pooled extension); 10349-10372 engage G1-G5 guards; 10373-10396 engage Bar A6 (+ 10397-10400, 10573-10592 its guards); 10601-10624 engage Bar A6 v2 (+ 10625-10648 its E1 lines); 10649-10696 engage A7 (the across-water engage); 10401-10424 manoeuvre bar S (arrival);
-10425-10448 manoeuvre guards; 10449-10472 manoeuvre bridge (S5, BRIDGE_POOLED_SEEDS); 10501-10536 camera Bar K5 (36 an arm);
+10425-10448 manoeuvre guards; 10449-10472 manoeuvre bridge (S5, BRIDGE_POOLED_SEEDS); 10701-10724 manoeuvre Bar S v2 (+ 10725-10748 its guards); 10501-10536 camera Bar K5 (36 an arm);
 10537-10572 camera K5 v2 (one re-file); native none. Dev: 7001-7012, 9501-9512, his 56416 (never a bar). Carried unread: 9201-9240 +
 9301-9340 Bar B5 t50 (only on his yes).
 
@@ -151,6 +151,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   (requested); seats / latch / converge are planner-side, no twin.
   Gate GREEN: fed356a8b on builder2 (`make check exited 0`, 3367 passed / 0 failed, 26 + 2 NOT JUDGED: perf-judge (builder2), scenario_perf
   (loaded); perf judged on builder0 quiet after the series per the bar). Series started 01:21 PDT; Bar S5's chained behind it.
+  **READ deciding (R43.31): FAILS as filed in every arm.** builder2, fed356a8b, 72 paired cells an arm, 0 SCRIPT ERROR. seats: D1 197 ->
+  329 of 720 (+9.2 se) PASS, D2 -1.2 se FAIL, Locks yield+blocked +3.4 se FAIL. converge: D1 -2.7 se FAIL, D2 -4.5 se PASS, guards PASS.
+  kturngoal: D1 -2.7 se FAIL, D2 -3.4 se PASS, guards PASS (never-arrived 253 -> 214). all: D1 +8.9 se PASS, D2 -0.9 se FAIL, Locks
+  yield+blocked +5.4 se FAIL. Guards (group / fights / G1 v9) pending.
 
 - **FILED Bar A7, never move for a shot across water (engage; FILED before any 10649+ number on de626d7e1's rule + the probe's
   `--named` arm; full text in `streams/engage.md`).** BASE `--engage-water` off v ARM on, both arms `--brains-off=native_decide` (native's
@@ -364,6 +368,12 @@ never touch processes you didn't start. Never delete builder files that aren't o
   series showed the Locks gain (seen -> on screen 3.98 -> 0.49 s, n 36) but the swing costs elsewhere; his next recording carries the
   camera's yaw, so the rule is rebuilt from his actual corner moment (round-44 candidate). Camera moves to its stretch (seconds inside a
   building) and its close.
+- **R43.31 (~07:00) Bar S FAILS as filed in every arm; nothing ships; Bar S v2 (the one re-file) = all + a Locks converging give-way fix.**
+  converge and kturngoal pass D2 but lose D1 by 2.7 se each: calling D1 "inapplicable without the bound" after the numbers would read
+  the bar after the fact (R43.14 said an arm passing EVERYTHING ships), and D1 is closest to his words. The bound alone doubles D1
+  (+9.2 se); its cost is Locks' five crews giving way to each other converging on seats within 37 m. v2: one arm on fresh 10701-10724
+  (+ 10725-10748), D1 and D2 as filed, per-arena guards as filed; time-boxed ~2 h on two dev blocks (7001-7012 and 9501-9512), else all
+  OFF with this read.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
