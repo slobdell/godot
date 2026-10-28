@@ -361,6 +361,11 @@ already read, or 7001-7012.
   two-abreast places 60-65 m across the road); the probe re-reads each squad's start just before the click. No threshold changes;
   straight-line across / aside reported beside every cell. After four dev re-measurements the fresh series decides whatever lines
   1 / 3 read; orders looks at top-down shots of three dev-8 cells (his yard, a bending street, Crossing far) before freezing.
+- **R44.19 (~13:25) Bar A6 v3 FAILS as filed; holdway stays OFF.** builder2, frozen 9215b8ab9, 10949-10972 n 24 (E1 on 10973-10996),
+  0 SCRIPT ERROR: deciding side-stage jam 348 -> 43 crew-s (-25.4 s a run, -5.7 se) PASS, every side guard PASS, E1 byte-identical;
+  head-on mechanism guard 2b (two-sided +/- 2 se) FAILS: held_on_s 769 -> 459 (-2.26 se; last arrival 13 s sooner, +19 touches a run
+  at the mouth, +1.0 se inside its line). Round-45 candidate: re-file with a one-sided head-on guard (contacts and arrivals, not
+  holding seconds) on fresh seeds.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
