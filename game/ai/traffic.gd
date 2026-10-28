@@ -266,9 +266,9 @@ static func _chain_native() -> void:
 	# Round 41 (Q2, `wait`): the same: Movement._wait is inside the drive's C++ mirror, so ON runs the GDScript drive until twinned.
 	# Round 41 (Q4, `holdlane`): the unstick hold is inside the drive's mirror too, and the ask skip inside _negotiate's (native_yield).
 	# Round 42 (Q6, `deckwait`): the speed wish at a deck's mouth is inside the drive's mirror: ON runs the GDScript drive until twinned.
-	# Round 43 (S3, `kturngoal`): a k-turn leg ended for a goal that moved is inside the drive's mirror: ON runs the GDScript drive until twinned.
-	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush") \
-			or not _off.has("kturngoal"):
+	# Round 43 (S3, `kturngoal`): a k-turn leg ended for a goal that moved is inside the drive's mirror; twinned (native N3,
+	# pair/native-kturngoal: drive_native.cpp kturn_goal_moved_out, test_native_drive_kturn_goal), so ON keeps the C++ drive.
+	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush"):
 		if _reroute_saved_native_drive == null:
 			_reroute_saved_native_drive = BrainSwitches.native_drive
 		BrainSwitches.native_drive = false
