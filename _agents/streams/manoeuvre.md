@@ -83,12 +83,15 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Ship candidate (R43.42): d61f98cbc** = stream/manoeuvre with every round-43 rule OFF by default (the latch flipped, dc2da5cd2) +
 `wip/manoeuvre-bars-v2` (parkaside) + native's pairs `pair/native-parkaside` 5b5a2c365 and `pair/native-kturngoal` b2dea555a (the
 GDScript-drive gate keeps neither: both twinned) + deckwait v5 and the q3_judge fix cherry-picked from `wip/manoeuvre-s5` + main
-e1a1c2ad7 (DEFAULT_OFF keeps engage's holdfar / holdway / holdroute and my kturngoal / parkaside). **Its ONE full check is running on
-builder2** (unit `manoeuvre-r43-checkship`, `~/overnight-manoeuvre/r43/check_ship/check.log`); its wrapper line names the green
-hash. Before it: **fed356a8b** green (builder2, 3367 / 0) and 04ddbcabb green (3370 / 0). **Nothing ships ON this round:** Bar S (four arms) and Bar S v2 (its one re-file) and Bar S5 all FAIL as filed;
+e1a1c2ad7 (DEFAULT_OFF keeps engage's holdfar / holdway / holdroute and my kturngoal / parkaside). **Its full check on builder2 came back RED
+(06:22 PDT, `~/overnight-manoeuvre/r43/check_ship/check.log`: 3412 / 5, 25 targets passed, test FAILED, perf-judge and scenario_perf NOT
+JUDGED): all five in `tests/test_formation_shape_latch.gd`, a test-only cause (the three formation tests' `before_each` / `after_each`
+hooks are never run: `tests/test_case.gd` has `teardown()` only; with the latch OFF by default since R43.42 the latch test saw today's
+pick). Fix 63f92cbe4 (tests/ only; sim-baseline unmoved on every map in the red check); the ship candidate is now 63f92cbe4 and its
+check on builder2 (unit `manoeuvre-r43-checkship2`, `check_ship2/check.log`) names the green hash.** Before it: **fed356a8b** green (builder2, 3367 / 0) and 04ddbcabb green (3370 / 0). **Nothing ships ON this round:** Bar S (four arms) and Bar S v2 (its one re-file) and Bar S5 all FAIL as filed;
 the seat bound, the converge fix, kturngoal, parkaside and deckwait v5 are on the branch (or its side branches) OFF behind their
-switches with their tests. **The shape latch is ON by default per R43.6 ("switch with =off") but was judged only inside Bar S's
-`seats` arm: the orchestrator decides at the merge whether it stays ON.**
+switches with their tests. **The shape latch is OFF by default (R43.42; `--shape-latch=on` /
+`SHAPE_LATCH=on` is the arm): judged only inside Bar S's `seats` arm, R43.6's "ON with =off" is the orchestrator's call for round 44.**
 
 1. **S1 (done, reported):** his first order's three failures are one cause: the Gangs' swarm at the War Rig's hull-floored pitch
    is 112 m wide (seats 72 m and 63 m east of his click), `inset_anchor` slid the centre 15 m off the click for that reach, and the

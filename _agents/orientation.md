@@ -297,6 +297,10 @@ build/   (gitignored)    exports and screenshots
 85. **The laptop is not row-equivalent to the builders, even pinned.** A `--fixed-fps` orbit cell on the laptop gave a
     different row from builder2's at the same commit (in-arc 22 v 12 %, reverse 0 v 13), while builder0 and builder2 agree
     312/312. Laptop runs are for a mechanism's trace; every dev or judged number is a builder's (round 34, manoeuvre).
+88. **The test harness runs `teardown()` only: a `before_each()` / `after_each()` in a test file is never called** (round 43,
+    manoeuvre: three formation tests carried them; one relied on `before_each` to switch its arm ON and passed on a tree where the
+    arm defaulted ON, then went red the moment the default flipped). Set a switch inside each test (a one-line `_arm()`), restore it
+    in `teardown()` with `super.teardown()`, and initialise the "was" at declaration (`var _was := X.SWITCH`).
 87. **A full disk turns an edit into a deletion.** With 0 MB free on the laptop, a `open(path, "w")` in a doc-editing script
     truncated `_agents/streams/manoeuvre.md` to zero bytes and the next `git commit` recorded 406 deleted lines (round 43,
     manoeuvre, 2026-10-28; reset to the last good commit). Heredocs did the same to a launcher script (an empty file, "Exec
