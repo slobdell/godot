@@ -1206,7 +1206,8 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				SelectionSquads.columns_refused_away += 1
 				laid = []  # G1 v8: today's places stand
 			elif not laid.is_empty() and SelectionSquads.COLUMN_STAY:
-				var kept_l: Array = SelectionSquads.column_keep_away(laid, lay_blocks, click)
+				var kept_l: Array = SelectionSquads.column_keep_away(laid, lay_blocks, click,
+						TacticsFormation.flat(approach) if SelectionSquads.COLUMN_ALWAYS and not queue_leg else Vector3.ZERO)
 				SelectionSquads.kept_away += int(kept_l[1])
 				var stayed: Array[Vector3] = []
 				for p: Vector3 in kept_l[0]:

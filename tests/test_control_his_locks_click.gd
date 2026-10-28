@@ -76,6 +76,7 @@ var _controls: RtsControls
 
 func teardown() -> void:
 	RtsControls.order_trace_keep = false
+	SelectionSquads.COLUMN_ALWAYS = OS.get_cmdline_user_args().has("--group-column=always")
 	SelectionSquads.reset_g1()
 	if _lab != null:
 		_lab.dispose()
@@ -261,3 +262,44 @@ func test_the_inferred_clicks_reproduce_his_places() -> void:
 		_lab = null
 		_controls.queue_free()
 		await wait_physics_frames(2)
+
+
+## G1 v10 (O4): with `--group-column=always` his tick-1512 click lays ONE column along his approach: the Hunters (nearest) on the
+## click, every place within half a slot of the click line, nobody sent back past where it stands, no 100 m north-south front.
+func test_v10_lays_his_click_as_one_column() -> void:
+	await _build(AT_1500)
+	SelectionSquads.COLUMN_ALWAYS = true
+	var open_before := SelectionSquads.columns_on_open
+	var laid_before := SelectionSquads.columns_laid
+	RtsControls.order_trace_keep = true
+	var click: Vector3 = INFERRED[1512]
+	var laid := _click(click)
+	_print_stages()
+	print("HIS_CLICK v10 at (%.1f, %.1f): columns_laid +%d on_open +%d in_file %d: %s" % [click.x, click.z,
+			SelectionSquads.columns_laid - laid_before, SelectionSquads.columns_on_open - open_before, SelectionSquads.columns_in_file, laid])
+	assert_eq(SelectionSquads.columns_laid - laid_before, 1, "a column was laid on the open yard")
+	# The approach, as the layout reads it: from the army's middle to the click.
+	var middle := Vector3.ZERO
+	for unit_name: String in AT_1500:
+		middle += AT_1500[unit_name][1] / AT_1500.size()
+	var ahead := Vector3(click.x - middle.x, 0.0, click.z - middle.z).normalized()
+	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var north := INF
+	var south := -INF
+	for squad: String in SQUADS:
+		assert_true(laid[squad] != null, "%s got a place" % squad)
+		if laid[squad] == null:
+			continue
+		var at: Vector3 = laid[squad]
+		var start := Vector3.ZERO
+		for unit_name: String in SQUADS[squad]:
+			start += AT_1500[unit_name][1] / (SQUADS[squad] as Array).size()
+		var aside := absf((at - click).dot(across))
+		var back := (start - click).dot(ahead) - (at - click).dot(ahead)  # > 0: the place is behind where the squad stands
+		print("HIS_CLICK v10 %s start (%.1f, %.1f) place (%.1f, %.1f) aside %.1f m, behind its start %.1f m" % [squad, start.x, start.z, at.x, at.z, aside, back])
+		assert_true(aside <= 30.0, "%s: within half a slot of the click line (%.1f m)" % [squad, aside])
+		assert_true(back <= SelectionSquads.COLUMN_AWAY_M + 1.0, "%s: not sent back past where it stands (%.1f m)" % [squad, back])
+		north = minf(north, at.z)
+		south = maxf(south, at.z)
+	assert_true((laid["Green_Hunters"] as Vector3).distance_to(click) < 12.0, "the nearest squad, the Hunters, lands on his click")
+	assert_true(south - north < 40.0, "no north-south front: the places span %.0f m (today: 100 m)" % (south - north))

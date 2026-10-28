@@ -18,7 +18,7 @@ import statistics as st
 import sys
 from collections import defaultdict
 
-BACK_M = 5.0
+BACK_M = 10.0  # SelectionSquads.COLUMN_AWAY_M: a squad whose place is behind its start along the approach by more than this was sent back
 
 
 def load(path):
