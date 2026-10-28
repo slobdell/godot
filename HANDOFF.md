@@ -31,10 +31,13 @@ builder2 STARTED ~09:20 (`make gcp-start`; it idle-stops after 20 min, `make gcp
 alone on green and tell manoeuvre the same minute (`git merge main`). Merge orders' O1 (`click` row) alone the minute it is green so his
 next playtest carries it; native's N1 report alone too. Take orders' O2 cause to him in player terms the hour it lands.
 
-**RUNNING (~12:30 PDT):** orders (godot-orders-e9), manoeuvre (godot-manoeuvre-c0), native (godot-native-65); rulings R44.1-R44.4,
-Bar G1 v10 filed. **Main c3a6e6a38 = native fff546ef6 (N1 the one-screen report + SEED digits; GREEN builder0 3420/0, 28 ALL JUDGED,
-perf-judge PASS attempt 1 of 3) and INHERITS its check.** Waiting: orders' c844fc3b8 check (CP44.0 + click row); native's N2 replay
-0d4b08cd8 check; native's backout twin. Open to him: did he mean the far west; reading A (two abreast allowed) or strict single file.
+**RUNNING (~14:45 PDT):** orders (godot-orders-e9), manoeuvre (godot-manoeuvre-c0), native (godot-native-65); rulings R44.1-R44.7.
+**Main 875ee5dd0** = native fff546ef6 (N1 the one-screen report + SEED digits; GREEN builder0 3420/0 ALL JUDGED) + orders c844fc3b8
+(CP44.0 `group` + C44.2 `click`; GREEN builder0 3426/0 ALL JUDGED). merge_check_needed reads CHECK (the pair): ONE main check after
+native's N2 (7e9c199ae, check running) merges. Bars: G1 v10b (orders, frozen after dev read 5, then 10801-10848); Bar S v3 FAILED its
+wedged guard (R44.7, nothing ships); Bar B1 backout alone to be filed on 11101-11148; Bar A6 v3 queued. Native: backout twin
+edbb120a5 (merged on stream/manoeuvre 8a7a94d70); parkedpass twin requested. **Open to him:** did he mean the far west; two abreast or
+strict single file; on a short click only the front squad drives (recommended yes).
 
 ### What prompted it (his playtest after round 43; was the NEXT box)
 
