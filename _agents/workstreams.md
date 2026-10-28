@@ -357,6 +357,13 @@ never touch processes you didn't start. Never delete builder files that aren't o
   look returns: D2 mostly measures K4. Ruled: (2a) the corner opens on the squad's centre; D2 counts only frames where K4's war pull is not
   the yaw's winner, same exclusion both arms (an instrument fix); (2b) no corner look within N s of an order start (the ambush drive);
   (2c) confirm D2 and G4 on the OTHER dev block 9501-9512 before launching; if they fail there, stop K5 unspent (ship OFF, report Locks).
+- **R43.30 (~06:50) K5 STOPS unspent: the 9501-9512 confirmation FAILS; `--camera-corner` stays OFF; 10537-10572 unread.** Camera,
+  e6c12fb8d, builder0 light, dev 9501-9512, 12 an arm: D1 pooled 56.3 v 57.6 % FAIL (Locks identical 20.9 v 20.9: the 6 s settle removed
+  every Locks corner look), D2 not-K4 facing 9.5 v 0.0 % FAIL, D3 1.56 v 1.44 s FAIL, G1 Terminus > 135 deg 18.8 v 11.8 % FAIL, G4 ambush
+  5.68 v 3.61 FAIL; G0 24/24 PASS. The 7001-7012 gains did not hold on a second block (the reason 2c existed). For him: Bar K5's own
+  series showed the Locks gain (seen -> on screen 3.98 -> 0.49 s, n 36) but the swing costs elsewhere; his next recording carries the
+  camera's yaw, so the rule is rebuilt from his actual corner moment (round-44 candidate). Camera moves to its stretch (seconds inside a
+  building) and its close.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
