@@ -177,6 +177,15 @@ never touch processes you didn't start. Never delete builder files that aren't o
   south-west), so the spots went behind a mouth only Guns_3 would pass. A6 (later, own bar): a verdict binds only the crews whose own
   routes run through the street (the route walk applied to every crew), and the squad's way is its ORDERED heading. GRANT extends to
   the verdict's way computation in `traffic.gd` for A6; manoeuvre told.
+- **R43.14 (~23:50) Manoeuvre's dev read: the bound alone packs k-turns tighter; the cause is the transit's converging station off the
+  crew; `converge` / `transit_starts` GRANTED.** Bar S workload built (`make manoeuvre-bar-s`, `tests/manoeuvre/s_judge.py`); dev 7001 x
+  locks/terminus/crossing on builder2, base v bound+latch: crews within the bound by 15 s 9 -> 16 of 30, seat moves 117 -> 45, BUT
+  yield+blocked s 74 -> 95, k-turn s 72 -> 90 (Locks better on every line; terminus/crossing worse). Trace: every War Rig k-turns from its
+  first tick in both arms: the converging station lands 7.5 m right-behind (110 deg off the nose) on terminus/crossing (a bent first route
+  leg?), the mover commits to a 7.5 m reverse, the station moves 45 m on, the reverse backs into the edge (11-14 s a War Rig; his Guns_2's
+  3.6 s creep on Locks). Built OFF: `--traffic-on=kturngoal` (a reverse ends once its goal leaves the turning circle). GRANT
+  `ElementPlan.converge` / `transit_starts` for the root fix; each fix its own arm in Bar S; guards include yield+blocked and k-turn
+  seconds per arena (not pooled), ARM <= BASE + 2 se. War Rig 3's 20 s HOLD is the per-crew give-way (no room for a 14 m hull), not R43.13.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
