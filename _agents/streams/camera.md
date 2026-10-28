@@ -92,3 +92,39 @@ _(the worker keeps this current: report at the top, every number with commit, ma
    a gun firing at him drops it; `--camera-corner=on`, OFF until Bar K5. Reason for "toward the spot" rather than "the
    face's normal": just past the corner the hidden squad lies ESE of the lead crew (behind the wall), not E.
 4. K5.4 Bar K5 filed before any 10501+ number; 5. K5.5 the clip; 6. stretch.
+
+### Bar K5 (FILED before any number on 10501-10536, 2026-10-27; R-lines from the orchestrator folded in; guards never amended after their numbers)
+**Arms:** BASE `--camera-corner=off` (round 42's danger camera) v ARM `--camera-corner=on`, BOTH on f8166f5e8's code (the
+series commit is named with the result; its full check greens first, C31.1), `make camera-trace`, headless 1920x1080 @60,
+CPU enemy, seeds 10501-10536 (36 an arm a workload). **Machine: builder2** (builder0 reads load ~15; CAMERA_JOBS=8; camera
+traces are frame-paced, so the box's speed moves no number); a re-queue on preemption reruns the whole workload.
+**Workloads:** CORNER = `--camera-scenario=corner`, 45 s, on Locks and on Terminus (side = seed % 2, falling back to the
+side the arena has; the lane by seed among the 3 nearest); EMPTY = the same with `--camera-corner-hidden=off` (nobody
+behind the wall); and K4's AMBUSH (`--camera-scenario=ambush --camera-ambush-m=55`, 45 s), RETREAT (45 s), ATTACK (150 s)
+on Terminus, as Bar K4 v2 ran them. Read off `tests/camera/camera_report.py` (+ `corner_nocheat.py`).
+**Deciding (ship ON = every line passes):**
+- D1 toward the hidden side (his "rotated clockwise ... pointing east as well"): the share of the corner seconds the view
+  looks within 45 deg of the side the wall is uncovering, CORNER pooled over both arenas: ARM >= BASE + 10 points, and ARM
+  > BASE on each arena.
+- D2 facing the building once past it (his "still just angled toward the building"): the share of the seconds after the
+  corner opens that the view faces the building, EMPTY pooled over both arenas (the swing alone; with the squad there the
+  danger turn rightly looks at it against the corner): ARM <= 0.75 x BASE.
+- D3 on screen when it shows itself: seen -> on screen, CORNER pooled, never = 20 s: ARM mean <= BASE mean (no worse;
+  dev: today's camera already ~0.2-1 s on Terminus).
+**Guards (what the swing could break):**
+- G0 NO FOG CHEAT (C43.6, the orchestrator's): CORNER (ARM) v EMPTY (ARM), same seeds and lanes: the per-frame shown and
+  wanted yaw identical to the last digit up to the first frame either run knows any enemy (`corner_nocheat.py`, every
+  seed of both arenas). Pinned also by `test_no_fog_cheat_an_unseen_enemy_changes_no_yaw`.
+- G1 the empty corner is not seasick (EMPTY, each arena): yaw reversals/min ARM <= BASE + 1; seconds looking more than
+  135 deg off the travel ARM <= BASE + 3 points; jerks <= 3.0/min all and the corner source <= 1.5/min; snaps 0.
+- G2 Bar K4 v2's deciding lines held (AMBUSH + RETREAT, ARM v BASE): pooled latency ARM <= BASE + 2 se; rear lane and
+  retreat latency ARM <= BASE + 2 se each; facing the wall pooled ARM <= BASE + 5 points.
+- G3 Bar K3 v2's lines at their levels, ARM, ATTACK: clicks still on the aimed unit >= 70 %; slip p95 <= 40 px; jerks <=
+  3.0/min all, no automatic source (corner included) > 1.5/min; automatic snaps 0 on every workload.
+- G4 no swinging: yaw reversals/min ARM <= BASE + 1 on CORNER (each arena), AMBUSH, RETREAT, ATTACK.
+- G5 his own squad on screen: own on screen % ARM >= BASE - 5 points on every workload.
+- G6 every run CAMERA_TRACE_DONE ok=true, no SCRIPT ERROR; every corner/empty run staged ok; the corner opened in >= 80 %
+  of each arm's corner and empty runs.
+**Lines most at risk (dev, f8166f5e8 / b931bbf52's BASE, 7001-7012, builder0 light, NEVER a bar):** D1 Locks 6.4 -> 34.9,
+Terminus 78.7 -> 81.6 (pooled ~45 -> ~62); D2 EMPTY Locks 0.0 -> 7.3 %, Terminus 22.2 -> 13.3 % (pooled at the line's edge);
+G1 Terminus EMPTY reversals 2.67 -> 3.89 /min (BASE + 1.22: over the line on dev); D3 Locks 6.8 -> 0.2 s, Terminus 0.2 -> 0.4.
