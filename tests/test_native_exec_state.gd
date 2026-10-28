@@ -247,7 +247,7 @@ func test_a_changed_only_push_writes_exactly_the_changed_fields() -> void:
 ## CP42.0: a late member is skipped while the script lacks it and checked like any other once declared. The declared case
 ## runs on a Movement subclass that adds the late members (or on Movement itself once its owner has landed them).
 ## A late member's value of its type: 0 its declared default, 1 the value set before the pull, 2 the value pushed. Round 44: the
-## backout members (manoeuvre M2) are the first late Vector3 and bool ones.
+## backout members (manoeuvre M2) are the first late Vector3, bool and Array ones.
 static func _late_value(type: int, which: int) -> Variant:
 	match type:
 		TYPE_STRING:
@@ -258,6 +258,8 @@ static func _late_value(type: int, which: int) -> Variant:
 			return [-1.0, 42.5, 7.5][which]
 		TYPE_VECTOR3:
 			return [Vector3.ZERO, Vector3(4, 2, 4.5), Vector3(7, -1, 0.25)][which]
+		TYPE_ARRAY:
+			return [[], ["q5-friend"], [7]][which]
 	return [-1, 4242, 7][which]
 
 

@@ -97,6 +97,8 @@ static func configure() -> bool:
 		"KTURN_GOAL_AHEAD_DEG": float((Movement as Script).get_script_constant_map().get("KTURN_GOAL_AHEAD_DEG", -1.0)),
 		# Round 44 (manoeuvre M2, backout): the departure look's gate; absent (-1) on a tree without it.
 		"BACKOUT_MIN_ERROR_DEG": float((Movement as Script).get_script_constant_map().get("BACKOUT_MIN_ERROR_DEG", -1.0)),
+		# Round 44 (manoeuvre M3, parkedpass): the parked crew's pass offer in ask(); false on a tree without it.
+		"parkedpass": Movement.new().has_method("_parked_for_pass"),
 		# Round 28 (N5): Movement._repair
 		"REPAIR_MAX_M": Movement.REPAIR_MAX_M, "slot_ground": SlotGround, "NAV_AGENT_RADIUS": Movement.NAV_AGENT_RADIUS,
 		# Round 27 (stage 1 E5c): Movement.right_of_way
