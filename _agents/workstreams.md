@@ -404,6 +404,12 @@ never touch processes you didn't start. Never delete builder files that aren't o
 - **R43.34 (~08:15) Bar S v2: the bound, the latch's stations and parkaside scoped OFF for squads under one G1 group click** (C43.5:
   the group column stays unchanged; Bar S's `all` moved G1 v9's lines), proven by the G1 v9 probe byte-identical v base on dev, and
   re-filed before any 10701+ number; else v2 runs as filed. Native asked whether parkaside needs a twin.
+- **R43.35 (~08:40) The laptop's disk filled (411 MB free on /; Claude sessions' writes failed).** Freed by the streams' own side worktrees
+  and outputs: native ~2.0 GB (pair-a7, pair-kg worktrees removed, branches kept; 17 old logs), manoeuvre ~3.6 GB (worktrees -b0, -v2b0;
+  task outputs, build/light copy-backs, raw guard logs judged in references/); / at 4.0 GB free (97 %). Not touched (the lead's to
+  decide): `~/balance-guard-raw` 6.2 GB, older sessions' `/tmp/claude-1000` folders ~1 GB, `~/camera-clips-round42`. Each worktree is
+  ~1.2 GB: a stream removes a side worktree the hour its series ends. **R43.34 lapsed:** the disk ate manoeuvre's box, so Bar S v2 runs AS
+  FILED; if its G1 v9 lines move it FAILS (no re-file after numbers; v2 was the last); the single-squad scoping is a round-44 candidate.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
