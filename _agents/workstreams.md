@@ -439,6 +439,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   `--traffic-on=parkaside`, 129/0; ON ~0.45 ms a tick on his match v OFF ~46 us: ~6 % of builder0's AI tick, so Bar S v2's perf line is
   at risk) and `pair/native-kturngoal` b2dea555a (the gate lift added; native-proof now C++ v GDScript, EQUAL, 129/0). Native's pair worktree
   removed (/ 3.9 GB free). Native's replay re-exec fix (6fa677a85: --headless / --fixed-fps / --path kept) is in its tip's check.
+- **R43.41 (~12:00) MAIN aa9753028 GREEN on builder0, 28 targets ALL JUDGED** (`>> remote: make check exited 0`, 3390 passed / 0 failed;
+  log `~/orch-r43/main-check-aa9753028.log`) = A7 ON + camera's close + native's N5 + every earlier round-43 merge. Reported-only timing
+  lines (make control-timing judges): ordering 30 units 258 reference workloads v budget 104 (the 6-squad case past MAX_SQUADS, R43.15),
+  control per frame with 60 units 27.60 v 26.0 (OVER by 6 %, reported only; round-42 camera noted 28.25 on a loaded box: a watch item).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
