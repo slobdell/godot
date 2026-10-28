@@ -12,7 +12,9 @@ extends SceneTree
 ##   away_s        crew-seconds (A's crews) UNDER A STREET HOLD with the distance to their own K1 goal rising (> AWAY_M a second):
 ##                 driving away from where they were sent to reach a hold spot (the deciding line; his War Rig: 15 s)
 ##   away_m        the largest rise of that distance under a hold, any crew (his: 82 m)
-##   held_s        crew-seconds holding (Traffic.holding), a_held_s the same for A's crews (A waited at all: the exercised test),
+##   held_s        crew-seconds holding (Traffic.holding), a_held_s the same for A's crews (A waited at all: the exercised test);
+##                 held_off_s / held_on_s: A's crews the stage says never route through the street (`off_street`) / the others;
+##                 off_arrive_s the mean arrival of those off-street crews (-1 when the stage has none): Bar A6's deciding line
 ##                 far_released / far_held: Traffic's counters
 ##   arrive_a_s    seconds until each A crew is within ARRIVED_M of A's destination (the window when never); last_a_s the last;
 ##                 far_arrive_s the mean over A's far crews (the crews the rule is about: what the player sees of them)
@@ -64,7 +66,7 @@ const STAGES := [
 const SIDE_STAGE := {"name": "terminus_side", "arena": "terminus", "a_to": Vector3(30, 0, 40), "b_to": Vector3(-70, 0, 75),
 	"a_crews": [[-70.0, 24.0, 0.0], [-62.0, 30.0, 0.0], [-78.0, 30.0, 0.0], [-8.0, 58.0, -90.0], [2.0, 52.0, -90.0]],
 	"b_crews": [[-70.0, 2.0, 180.0], [-67.0, -8.0, 180.0], [-73.0, -8.0, 180.0], [-70.0, -17.0, 180.0], [-70.0, -26.0, 180.0]],
-	"middle": Vector3(-70, 0, 10)}
+	"middle": Vector3(-70, 0, 10), "off_street": [3, 4]}
 ## R43.12 asked for a side-street workload with his AWAY geometry as a second deciding line, time-boxed. Four plantings (dev
 ## 7007-7013, laptop) failed to make it: (1) his corridor with the leads inside it: the verdict went to B on half the seeds
 ## (both leads "in the open" by the 6 m containers, the tie by speed); (2) A's lead west of the corridor: its own route found
@@ -72,7 +74,7 @@ const SIDE_STAGE := {"name": "terminus_side", "arena": "terminus", "a_to": Vecto
 ## street) on 3 of 4 seeds; (4) this terminus stage: every seed a verdict, but the mouth lands on A's own way east, or at the
 ## far crews' feet when they are the farthest along the squad's mean heading (the lead), so no crew drives away. The stage is
 ## kept for `--stage=terminus_side` and the record; Bar A's seeds all cycle the head-on stages (R43.12's line (1) alone).
-const SIDE_SEEDS_ODD := false
+const SIDE_SEEDS_ODD := true
 ## His case's hulls first (gangs: three War Rigs); the other draws keep a squad of 14 m hulls and lighter ones.
 const HULL_SETS := [
 	["gang_tank", "gang_tank", "gang_ifv", "gang_tank", "gang_support"],
@@ -197,6 +199,12 @@ func _run() -> void:
 	var away_m := 0.0
 	var held_s := 0.0
 	var a_held_s := 0.0
+	# Round 43 (Bar A6): the crews the stage says never route through the street (`off_street`, indices into A), and A's others.
+	var off_crews: Array = []
+	for i: int in stage.get("off_street", []):
+		off_crews.append("Green_A_%d" % (int(i) + 1))
+	var held_off_s := 0.0
+	var held_on_s := 0.0
 	var stuck_s := 0.0
 	var jam_s := 0.0
 	var arrive := {}
@@ -274,6 +282,10 @@ func _run() -> void:
 					held_s += 1.0
 					if squad == "a":
 						a_held_s += 1.0
+						if off_crews.has(unit_name):
+							held_off_s += 1.0
+						else:
+							held_on_s += 1.0
 				# Away: the distance to its own K1 goal rising while under a hold.
 				var order: Dictionary = orders.call("current", unit_name)
 				var goal: Variant = order.get("goal")
@@ -302,6 +314,14 @@ func _run() -> void:
 	var far_arrive_mean := 0.0
 	for a: float in far_arrivals:
 		far_arrive_mean += a / float(maxi(far_arrivals.size(), 1))
+	var off_arrivals: Array = []
+	for unit_name: String in off_crews:
+		off_arrivals.append(float(arrive.get(unit_name, seconds)))
+	var off_arrive_mean := -1.0
+	if not off_arrivals.is_empty():
+		off_arrive_mean = 0.0
+		for a: float in off_arrivals:
+			off_arrive_mean += a / float(off_arrivals.size())
 	for unit_name: String in members["a"]:
 		a_arrivals.append(float(arrive.get(unit_name, seconds)))
 	for unit_name: String in members["b"]:
@@ -309,7 +329,8 @@ func _run() -> void:
 	var report := Traffic.report()
 	print("ENGAGE_HOLD %s" % JSON.stringify({"seed": seed_value, "arena": arena, "arm": "on" if not Traffic.off("holdfar") else "off",
 			"stage": stage["name"], "hulls": hulls, "far_m": _r(far_actual), "far_drawn_m": _r(far_m), "far_crews": far_crews, "seconds": seconds,
-			"away_s": away_s, "away_m": _r(away_m), "held_s": held_s, "a_held_s": a_held_s,
+			"away_s": away_s, "away_m": _r(away_m), "held_s": held_s, "a_held_s": a_held_s, "held_off_s": held_off_s, "held_on_s": held_on_s,
+			"off_crews": off_crews, "off_arrive_s": _r(off_arrive_mean), "way_released": report.get("tr_way_released", 0),
 			"far_released": report.get("tr_far_released", 0), "far_held": report.get("tr_far_held", 0),
 			"verdicts": report.get("tr_verdicts", 0), "holds": report.get("tr_holds", 0),
 			"arrive_a_s": a_arrivals, "last_a_s": a_arrivals.max(), "far_arrive_s": _r(far_arrive_mean), "far_arrivals": far_arrivals, "arrive_b_s": b_arrivals, "last_b_s": b_arrivals.max(),

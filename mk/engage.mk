@@ -101,22 +101,26 @@ engage-paths: import ## engage A1: the navmesh's routes on Locks for ENGAGE_LEGS
 
 # ---- engage (round 43): Bar A, the street hold's far crew (A3 `holdfar`, A4) ----------------------------------------
 # Workload: tests/engage/hold_probe.gd (two friendly squads head-on in a street, the waiting squad's rear crews 55-95 m back).
-# ENGAGE_HOLD_ARM=off|on selects the arm (on = --traffic-on=holdfar); ENGAGE_HOLD_SEEDS the seeds (Bar A: 10301-10324).
+# ENGAGE_HOLD_ARM=off|on selects the arm (on = --traffic-on=$(ENGAGE_HOLD_SWITCH)); ENGAGE_HOLD_SEEDS the seeds (Bar A: 10301-10324,
+# FAILED R43.18; Bar A6: 10373-10396).
 ENGAGE_HOLD_SEEDS ?= 10301 10302 10303
 ENGAGE_HOLD_ARM ?= off
 ENGAGE_HOLD_SECONDS ?= 75
 ENGAGE_HOLD_TAG ?= $(ENGAGE_HOLD_ARM)
+## The Traffic switch the ARM turns on: holdfar (Bar A, FAILED R43.18) or holdway (Bar A6).
+ENGAGE_HOLD_SWITCH ?= holdway
 .PHONY: engage-hold engage-bar-a
 engage-hold: import ## engage A4: the street-hold probe over ENGAGE_HOLD_SEEDS (ENGAGE_HOLD_ARM=off|on, ENGAGE_JOBS) -> build/engage/hold/<tag>/<seed>.log + the table
 	@mkdir -p $(BUILD_DIR)/engage/hold/$(ENGAGE_HOLD_TAG)
+	@rm -f $(BUILD_DIR)/engage/hold/$(ENGAGE_HOLD_TAG)/*.log  # one series per folder: an earlier run's rows would pair with this one's
 	@echo ">> engage-hold on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | arm $(ENGAGE_HOLD_ARM) | seeds $(firstword $(ENGAGE_HOLD_SEEDS))+ | load $$(cut -d' ' -f1-3 /proc/loadavg)"
 	@for seed in $(ENGAGE_HOLD_SEEDS); do echo $$seed; done | xargs -r -P $(ENGAGE_JOBS) -I{} sh -c \
 		'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/hold_probe.gd -- \
-		--seed={} --seconds=$(ENGAGE_HOLD_SECONDS) $(if $(filter on,$(ENGAGE_HOLD_ARM)),--traffic-on=holdfar,) $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/hold/$(ENGAGE_HOLD_TAG)/{}.log 2>&1 || true; \
+		--seed={} --seconds=$(ENGAGE_HOLD_SECONDS) $(if $(filter on,$(ENGAGE_HOLD_ARM)),--traffic-on=$(ENGAGE_HOLD_SWITCH),) $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/hold/$(ENGAGE_HOLD_TAG)/{}.log 2>&1 || true; \
 		grep -q "^ENGAGE_HOLD " $(BUILD_DIR)/engage/hold/$(ENGAGE_HOLD_TAG)/{}.log || echo "  MISSING ENGAGE_HOLD seed {}"'
 	$(PYTHON) tests/engage/hold_table.py $(BUILD_DIR)/engage/hold/$(ENGAGE_HOLD_TAG)
 
-engage-bar-a: import ## engage Bar A: engage-hold in both arms on ENGAGE_HOLD_SEEDS, then the paired table (tests/engage/hold_table.py --pair)
+engage-bar-a: import ## engage Bar A / A6: engage-hold in both arms on ENGAGE_HOLD_SEEDS, then the paired table (tests/engage/hold_table.py --pair)
 	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=off
 	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=on
-	$(PYTHON) tests/engage/hold_table.py --pair $(BUILD_DIR)/engage/hold/off $(BUILD_DIR)/engage/hold/on
+	$(PYTHON) tests/engage/hold_table.py --pair $(BUILD_DIR)/engage/hold/off $(BUILD_DIR)/engage/hold/on --by-stage

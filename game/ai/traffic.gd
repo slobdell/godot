@@ -157,6 +157,9 @@ static var no_spot := 0
 static var far_released := 0
 ## ...and the far crews held where they stood because their own route runs into the held street (`spot = here`).
 static var far_held := 0
+## Round 43 (engage A6, R43.13, `holdway`): crews of a waiting squad released at the verdict because their own route never
+## runs through the street (whatever their distance to it).
+static var way_released := 0
 ## A far crew's own mouth within this of the squad's mouth (m) means its route runs through the same street.
 const FAR_THROUGH_M := 20.0
 ## ...looked for along that route this far (m): a far crew's own drive to the mouth, with some road to spare.
@@ -215,7 +218,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar"]  # round 43 holdfar (engage A3, R43.8: the far crew of a waiting squad is not sent to the mouth; until Bar A)  # round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane (manoeuvre, until judged) (manoeuvre, until judged); round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdway"]  # round 43 holdway (engage A6, R43.13/R43.18: the verdict reads ordered ways and binds only crews on the street; until Bar A6); holdfar (engage A3, R43.8: the far crew of a waiting squad is not sent to the mouth; until Bar A)  # round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane (manoeuvre, until judged) (manoeuvre, until judged); round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -314,7 +317,7 @@ static func holding(crew: String) -> bool:
 ## The counters as one reading (the traffic probe reports it), and back to zero.
 static func report() -> Dictionary:
 	return {"tr_verdicts": verdicts, "tr_holds": holds, "tr_hold_ticks": hold_ticks, "tr_released_passed": released_passed,
-			"tr_released_cap": released_cap, "tr_released_fire": released_fire, "tr_no_spot": no_spot, "tr_far_released": far_released, "tr_far_held": far_held, "tr_cross_verdicts": cross_verdicts,
+			"tr_released_cap": released_cap, "tr_released_fire": released_fire, "tr_no_spot": no_spot, "tr_far_released": far_released, "tr_far_held": far_held, "tr_way_released": way_released, "tr_cross_verdicts": cross_verdicts,
 			"tr_cross_slowed": cross_slowed, "tr_cross_reach_free": cross_reach_free}
 
 
@@ -328,6 +331,7 @@ static func reset_counters() -> void:
 	no_spot = 0
 	far_released = 0
 	far_held = 0
+	way_released = 0
 	cross_verdicts = 0
 	cross_slowed = 0
 	cross_reach_free = 0
@@ -736,6 +740,8 @@ static func _begin_wait(waiter: String, passer: String, key: String, frame: int,
 	var xs: PackedFloat64Array = cols["x"]
 	var zs: PackedFloat64Array = cols["z"]
 	var radii: PackedFloat64Array = cols["radius"]
+	var dxs: PackedFloat64Array = cols["dx"]
+	var dzs: PackedFloat64Array = cols["dz"]
 	var dir := (cols["gdir"] as Dictionary).get(waiter, Vector2.ZERO) as Vector2
 	var wait := {"passer": passer, "key": key, "since": frame, "dir": dir, "spots": {}, "released": {}}
 	_waits[waiter] = wait
@@ -783,6 +789,13 @@ static func _begin_wait(waiter: String, passer: String, key: String, frame: int,
 		var k: int = entry[1]
 		var here := Vector2(xs[k], zs[k])
 		var spot := Vector2.INF
+		# Round 43 (engage A6, `holdway`, R43.13): a crew whose own route (its path, then straight on its OWN ordered way)
+		# never runs through this street is not bound by the verdict at all, near or far (his Guns_1 and Guns_4: routes to
+		# the bridge, held for a corridor 60-76 m away).
+		if not off("holdway") and not _route_passes(names[k], here, Vector2(dxs[k], dzs[k]), mouth):
+			(wait["released"] as Dictionary)[names[k]] = true
+			way_released += 1
+			continue
 		if (here - centre).dot(dir) < 0.0:
 			# Round 43 (engage A3, R43.8; his Locks 56416 War Rig, 80 m from the mouth, driven 90 m away to its spot for 18 s):
 			# a crew farther behind the mouth than the grid reaches (its last row plus the hull) is not sent to the mouth. It
@@ -1065,10 +1078,15 @@ static func refresh(tanks_root: Node) -> void:
 		var velocity := tank.estimated_velocity
 		if mover != null:
 			_movers[String(tank.name)] = mover
+		# Round 43 (engage A6, `holdway`): the way the crew is GOING (its route's next point), beside its velocity and nose.
+		# A crew yielding sideways or pushed off its line keeps its ordered way; a crew with no goal has none (ZERO).
+		var ordered := Vector2.ZERO
+		if mover != null and mover._goal != Vector3.INF and not off("holdway"):
+			ordered = mover._travel_direction(mover._goal, false)
 		rows.append([String(tank.name), tank.team, tank.global_position.x, tank.global_position.z, velocity.x, velocity.z,
 				-basis_z.x, -basis_z.z, Avoidance.radius_of(tank.unit_id),
 				mover != null and mover.is_under_way() and mover.yield_to == "" and not mover.in_kturn(),
-				_group_of(tank, mover), mover != null and mover.is_under_way()])
+				_group_of(tank, mover), mover != null and mover.is_under_way(), ordered.x, ordered.y])
 	_load(rows)
 	for key: String in _cross_kept.keys():
 		if int(_cross_kept[key][1]) < frame:
@@ -1108,8 +1126,9 @@ static func _forget() -> void:
 
 
 ## Tests: load the table directly (and forget every verdict and wait). `rows` = [[name, team, x, z, vx, vz, heading_x,
-## heading_z, radius, moving, group, under way], ...]; a row without a group is its own squad, one without `under way`
-## is under way when it is moving. `frame` = the table's frame.
+## heading_z, radius, moving, group, under way, ordered_x, ordered_z], ...]; a row without a group is its own squad, one
+## without `under way` is under way when it is moving, one without an ordered way (round 43, `holdway`) goes by its
+## velocity / heading. `frame` = the table's frame.
 static func load_rows(rows: Array, frame := 0, forget := true) -> void:
 	_root = -1
 	_frame = frame
@@ -1145,6 +1164,13 @@ static func _load(rows: Array) -> void:
 			var velocity := Vector2(float(row[4]), float(row[5]))
 			var speed := velocity.length()
 			var direction := velocity / speed if speed >= MOVING_MPS else Vector2(float(row[6]), float(row[7])).normalized()
+			# Round 43 (engage A6, `holdway`): a row that carries the crew's ordered way (refresh; a test's row[12..13]) is read
+			# by it: the meeting test, the squad's mean way and the lead are then about where crews are going. His Locks seed:
+			# a War Rig yielding with its nose east, ordered south-west, read as "coming east" and its squad's way as east.
+			if not off("holdway") and row.size() > 13:
+				var ordered := Vector2(float(row[12]), float(row[13]))
+				if ordered.length_squared() > 0.25:
+					direction = ordered.normalized()
 			_where[String(row[0])] = [team, names.size()]
 			names.append(String(row[0]))
 			xs.append(float(row[2]))

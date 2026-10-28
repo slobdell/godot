@@ -23,7 +23,7 @@ import os
 import sys
 
 
-LINES = ["far_arrive_s", "away_s", "away_m", "last_a_s", "contacts_mouth", "contacts_far", "jam_s", "contacts", "contacts_fast",
+LINES = ["off_arrive_s", "held_off_s", "held_on_s", "way_released", "far_arrive_s", "away_s", "away_m", "last_a_s", "contacts_mouth", "contacts_far", "jam_s", "contacts", "contacts_fast",
          "contacts_cross", "stuck_s", "held_s", "a_held_s", "last_b_s", "far_released", "far_held", "verdicts"]
 
 
@@ -65,10 +65,10 @@ def one(folder):
         print(f"  {k:>14}: sum {sum(vals):10.1f} mean {m:8.2f} se {se:6.2f}")
 
 
-def pair(base_dir, arm_dir):
+def pair(base_dir, arm_dir, only=None):
     base = read(base_dir)
     arm = read(arm_dir)
-    seeds = sorted(set(base) & set(arm))
+    seeds = sorted(s for s in set(base) & set(arm) if only is None or only(base[s]))
     missing = sorted((set(base) | set(arm)) - set(seeds))
     print(f"paired seeds n {len(seeds)}" + (f" (unpaired: {missing})" if missing else ""))
     exercised = sum(1 for s in seeds if base[s].get("verdicts", 0) >= 1 and base[s].get("far_crews"))
@@ -92,6 +92,11 @@ def pair(base_dir, arm_dir):
 if __name__ == "__main__":
     if len(sys.argv) >= 4 and sys.argv[1] == "--pair":
         pair(sys.argv[2], sys.argv[3])
+        if "--by-stage" in sys.argv:
+            print("\n=== the side-street seeds (Bar A6's deciding line: off_arrive_s)")
+            pair(sys.argv[2], sys.argv[3], lambda d: d.get("off_crews"))
+            print("\n=== the head-on seeds (Bar A6's mechanism guard: verdicts, held_on_s)")
+            pair(sys.argv[2], sys.argv[3], lambda d: not d.get("off_crews"))
     elif len(sys.argv) == 2:
         one(sys.argv[1])
     else:
