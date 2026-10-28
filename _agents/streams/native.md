@@ -91,6 +91,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 - **Replay fix 6fa677a85:** Godot keeps `--headless`, `--fixed-fps 30` and `--path` out of OS.get_cmdline_args(), so the
   replay's re-run had none: it opened a window on the laptop and could not start on a builder (found running replay-match on
   builder2). ReplaySetup.reexec_args puts them back; test_replay_setup 8/0; his round-42 replay still PASS 10/10 for 20 s (laptop).
+  **GREEN, to merge: 3bc207d16** (builder0 `>> remote: make check exited 0`, 3381 passed / 0 failed, 28 ALL JUDGED, perf-judge PASS 1.00x).
   Builder disk: the pair worktrees are removed after their proofs (lesson 337); the branches are kept.
 - **Merged:** 95331c3cd = main 84f914f78 (R43.1); 2fd2e5d4e rode camera's d489eaa2b (main b31d3ddea); **CP43.0 409f70d66 GREEN**
   (builder0 `>> remote: make check exited 0`, 3352 passed / 0 failed, 28 targets ALL JUDGED, sim-baseline 53/0 unmoved, perf-judge
