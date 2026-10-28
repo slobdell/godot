@@ -72,7 +72,7 @@ builder0 at prep: load 0.00, 77 %, 24 G free.
 ## Bars (round 44)
 
 **Seed registry (round 44):** 10801-10848 orders (G-bar deciding + guards); 10849-10896 orders reserve; 10901-10948 manoeuvre (Bar S v3
-deciding + guards); 10949-10996 manoeuvre reserve; 11001-11024 native (lines_r44, any twin pair). Dev seeds: anything at or below 10748
+deciding + guards); 10949-10996 manoeuvre reserve; 11001-11024 native (lines_r44, any twin pair); 11101-11148 manoeuvre Bar B1 (backout alone, R44.7); 11149-11196 manoeuvre Bar S v4. Dev seeds: anything at or below 10748
 already read, or 7001-7012.
 
 - **Bar G1 v10 THE COLUMN ON OPEN GROUND (orders, round 44; filed 2026-10-28 ~12:00 PDT in orders' Status f01673852, recorded here by the orchestrator BEFORE any number on 10801-10848; code
@@ -214,6 +214,14 @@ already read, or 7001-7012.
   computes it from the arm's own laid column; no +1). 6(a)'s dev failure (ranks stepping 50 m back past the rearmost squad's start)
   is a code fix (no rank behind the rearmost start less 10 m), read on dev read 4; any reach-80 cell still failing 6(a) there comes
   to the orchestrator before 10801 runs.
+- **R44.7 (~14:30) Bar S v3 FAILS as filed; nothing from it ships.** Deciding (frozen 9215b8ab9, builder2, 72 paired cells 10901-10924):
+  v3 D1 191 -> 383 (+14.6 se) PASS, D2 -4.1 se PASS, per-arena yield+blocked and k-turn PASS; but the filed per-arena wedged guard FAILS
+  (crossing +2.6 se, Locks +9.2 s a run / +5.5 se; v3core Locks +7.3 se). It is the seat bound's converging press, not backout's. No
+  amendment after numbers. **Two follow-ups:** (1) **Bar B1, backout ALONE** (his container ask): `--traffic-on=backout` (+ native's
+  twin, 8a7a94d70) v base, filed before any number on FRESH 11101-11148 (registry extension, manoeuvre), with Bar S v3's lines as
+  guards incl. wedged and friendly contacts, G1 probe byte-identical; dev history: neutral on an open row (wedged +0.8 s, Locks
+  7001-7012). Ships ON if it passes. (2) the converging press (M3's two shapes: seats dealt in arrival order; a squadmate's give-way
+  deferred until the seat ahead is taken) built on dev seeds, then Bar S v4 on fresh 11149-11196 if time allows, else round 45.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
