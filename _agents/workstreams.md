@@ -435,6 +435,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   its gun on it and its route (hops 34.8 -> 0.7 s a run, deaths 64 -> 48, kills 49 -> 57); his Locks War Rig on the shipped tree: no
   drive away, best 43 m (OFF: AWAY 82 m). `--engage-water=off` is the escape. merge_check_needed CHECK (camera's close and native's N5
   are not in engage's tree): ONE main batch check of aa9753028 running on builder0 (`~/orch-r43/main-check-aa9753028.log`).
+- **R43.40 (~11:40) Both manoeuvre pairs proved C++ v GDScript on builder2:** `pair/native-parkaside` 5b5a2c365 (native-proof EQUAL with
+  `--traffic-on=parkaside`, 129/0; ON ~0.45 ms a tick on his match v OFF ~46 us: ~6 % of builder0's AI tick, so Bar S v2's perf line is
+  at risk) and `pair/native-kturngoal` b2dea555a (the gate lift added; native-proof now C++ v GDScript, EQUAL, 129/0). Native's pair worktree
+  removed (/ 3.9 GB free). Native's replay re-exec fix (6fa677a85: --headless / --fixed-fps / --path kept) is in its tip's check.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
