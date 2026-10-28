@@ -93,7 +93,18 @@ func _run() -> void:
 	# planner seam and every `--<switch>=off` read LaunchFlags.from_environment(), so a flag that is only in next_flags
 	# never reaches them: until round 43 every replay of his Locks match ran on the default layout (foundry: the same
 	# spawn spots, other streets) with no objectives. Missing ones re-run this script once with them appended.
-	if not wanted.is_empty():
+	var shim := ""
+	if not ReplaySetup.trig_is_correctly_rounded():
+		shim = ReplaySetup.trig_shim()
+		if shim == "" or OS.get_environment("LD_PRELOAD").contains(shim):
+			print("REPLAY_TRIG_MISMATCH this process's atan2f is not correctly rounded and no shim helps: the replay will leave"
+					+ " his match within a second (run it through make: make replay-match)")
+			shim = ""
+	if not wanted.is_empty() or shim != "":
+		if shim != "":
+			# The re-run inherits the environment: the same LD_PRELOAD make gives every Godot it starts.
+			OS.set_environment("LD_PRELOAD", shim)
+			print("REPLAY_TRIG_SHIM " + shim)
 		var args := OS.get_cmdline_args()
 		args.append("--")
 		args.append_array(OS.get_cmdline_user_args())
@@ -184,5 +195,5 @@ func _trace() -> void:
 		return
 	for tank: Tank in _match.sorted_team_tanks(0) + _match.sorted_team_tanks(1):
 		if tank.is_alive():
-			print("REPLAY_TRACE %d %s %.6f %.6f %.6f %.6f" % [_match.tick, tank.name, tank.global_position.x,
-					tank.global_position.z, tank.rotation.y, tank.velocity.length()])
+			print("REPLAY_TRACE %d %s %.6f %.6f %.6f %.6f cmd %.9f %.9f" % [_match.tick, tank.name, tank.global_position.x,
+					tank.global_position.z, tank.rotation.y, tank.velocity.length(), tank.command.throttle, tank.command.turn])
