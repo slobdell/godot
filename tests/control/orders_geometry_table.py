@@ -36,9 +36,34 @@ def flat(a, b):
     return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
 
 
+def signed_off_road(p, road, click, d):
+    """The signed distance of p from the column's line: the road back from the click (left negative, right positive, as the
+    approach sees it); the straight click line when no road was recorded. A column follows the street it is laid along, so a
+    place 30 m from the straight line but 2 m from the road has not slid (R44.9's "no edge or wall slide")."""
+    pts = [tuple(q) for q in (road or [])]
+    if len(pts) < 2:
+        across = (-d[1], d[0])
+        return (p[0] - click[0]) * across[0] + (p[1] - click[1]) * across[1]
+    best = None
+    for a, b in zip(pts, pts[1:]):
+        vx, vz = b[0] - a[0], b[1] - a[1]
+        ln = (vx * vx + vz * vz) ** 0.5
+        if ln < 0.01:
+            continue
+        t = max(0.0, min(1.0, ((p[0] - a[0]) * vx + (p[1] - a[1]) * vz) / (ln * ln)))
+        qx, qz = a[0] + vx * t, a[1] + vz * t
+        dist = flat(p, (qx, qz))
+        # the road runs from the click BACK to the army, so "right of the approach" is left of the road's direction
+        side = -((p[0] - qx) * (-vz / ln) + (p[1] - qz) * (vx / ln))
+        if best is None or dist < abs(best):
+            best = dist if side >= 0 else -dist
+    return best
+
+
 def read_run(rows, geo):
     click, d = geo["click"], geo["approach"]
     across = (-d[1], d[0])
+    road = geo.get("road", [])
     anchors = [r["anchor"] for r in rows if r.get("anchor")]
     if len(anchors) < 2:
         return None
@@ -47,7 +72,7 @@ def read_run(rows, geo):
     # stands); a squad that holds its spot is not a destination he reads as scattered (the across row near the map's edge:
     # two squads go to the click, two hold 90 m apart). all_in still counts every squad.
     moved = [r["anchor"] for r in rows if r.get("anchor") and flat(r["anchor"], r["start"]) > HOLD_M] or anchors
-    asides = [((a[0] - click[0]) * across[0] + (a[1] - click[1]) * across[1]) for a in moved]
+    asides = [signed_off_road(a, road, click, d) for a in moved]
     along = lambda p: (p[0] - click[0]) * d[0] + (p[1] - click[1]) * d[1]
     backward = sum(1 for r in rows if r.get("anchor") and along(r["anchor"]) - along(r["start"]) < -BACK_M)
     nearest_start = max(rows, key=lambda r: along(r["start"]))  # farthest along the approach = nearest the click

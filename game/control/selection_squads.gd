@@ -638,6 +638,9 @@ static var COLUMN_TOWARD := OS.get_cmdline_user_args().has("--group-column-towar
 static var COLUMN_STAY := g1_on(["--group-column-toward=off", "--group-column-toward=on"])
 static var kept_away := 0
 const COLUMN_AWAY_M := 10.0
+## G1 v10: the along-the-approach read keeps a metre inside COLUMN_AWAY_M (the bar's judge reads "> 10 m" on positions snapped to
+## 0.1 m, after the deck clear's 4 m steps).
+const AWAY_SLACK_M := 1.0
 ## Measurement: columns refused so.
 static var columns_refused_away := 0
 
@@ -654,7 +657,7 @@ static func column_keep_away(laid: Array, blocks: Array, click: Vector3, ahead :
 		var place: Vector3 = laid[i]
 		var away := false
 		if ahead != Vector3.ZERO:
-			away = (Vector3(at.x, 0.0, at.z) - place).dot(ahead) > COLUMN_AWAY_M
+			away = (Vector3(at.x, 0.0, at.z) - place).dot(ahead) > COLUMN_AWAY_M - AWAY_SLACK_M
 		else:
 			away = Vector2(place.x - click.x, place.z - click.z).length() > Vector2(at.x - click.x, at.z - click.z).length() + COLUMN_AWAY_M
 		if away:
@@ -767,8 +770,9 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 		var past_corner := on_road and behind > corner + CORNER_SLACK_M
 		var abreast := 1 if single else mini(cap, maxi(1, int(floor((clear + GAP_M) / maxf(widest + GAP_M, 1.0)))))
 		if fit_first:
-			# R44.9: as many abreast as fit centred on the line with NO slide (his words: side by side where they fit, else stack).
-			abreast = fit_abreast(cap, widest, sides)
+			# R44.9: as many abreast as fit centred on the line with NO slide (his words: side by side where they fit, else stack),
+			# and never wider behind than the front the ground AT HIS CLICK fits (a rear rank on wider ground does not fan out).
+			abreast = mini(fit_abreast(cap, widest, sides), fit_abreast(cap, widest, at_click))
 		abreast = by_along.size() - start if merged else mini(abreast, by_along.size() - start)
 		if RANK_SHIFT_HALF and not merged and not fit_first:
 			while abreast > 1 and absf(_rank_shift(abreast, widest, sides)) > widest * 0.5:
