@@ -13,7 +13,7 @@ goal while in the state), last_a_s (the squad's last arrival), deaths, kills. Re
 import glob, json, math, os, sys
 
 LINES = ["water_s", "water_far_s", "fire_s", "fire_far_s", "hop_s", "hop_rev_s", "hop_far_s", "damage_water", "hits_water",
-         "first_hit_water_s", "crews_water", "crews_far", "off_order_m", "last_a_s", "deaths", "kills"]
+         "first_hit_water_s", "damage_total", "hits_total", "first_hit_s", "crews_water", "crews_far", "off_order_m", "last_a_s", "deaths", "kills"]
 
 
 def read(folder):

@@ -122,6 +122,9 @@ func _run() -> void:
 	var damage_water := 0.0
 	var hits_water := 0
 	var first_hit_s := -1.0
+	var damage_total := 0.0  # every hit on the defenders, whichever bank the squad fires from
+	var hits_total := 0
+	var first_hit_any_s := -1.0
 	var last_hp := {}
 	for unit_name: String in defenders:
 		var d := lab.tank_of(unit_name)
@@ -149,6 +152,10 @@ func _run() -> void:
 				continue
 			var hp := float(d.health) + d.shield if d.is_alive() else 0.0
 			if hp < float(last_hp[unit_name]) - 0.01:
+				damage_total += float(last_hp[unit_name]) - hp
+				hits_total += 1
+				if first_hit_any_s < 0.0:
+					first_hit_any_s = float(now) / SimClock.TICK_RATE
 				var across_all := true
 				var any_alive := false
 				for crew_name: String in names:
@@ -237,6 +244,7 @@ func _run() -> void:
 			"arm": "on" if TankBrain.ENGAGE_WATER else "off", "named": named, "flags": " ".join(OS.get_cmdline_user_args()),
 			"water_s": _r(water_ticks / hz), "water_far_s": _r(water_far_ticks / hz), "fire_s": _r(fire_ticks / hz),
 			"fire_far_s": _r(fire_far_ticks / hz), "damage_water": _r(damage_water), "hits_water": hits_water, "first_hit_water_s": _r(first_hit_s),
+			"damage_total": _r(damage_total), "hits_total": hits_total, "first_hit_s": _r(first_hit_any_s),
 			"hop_s": _r(hop_ticks / hz),
 			"hop_rev_s": _r(hop_rev_ticks / hz), "hop_far_s": _r(hop_far_ticks / hz), "crews_water": crews_water.size(),
 			"crews_far": crews_far.size(), "off_order_m": _r(off_order_m), "arrivals": arrivals, "last_a_s": arrivals.max(),
