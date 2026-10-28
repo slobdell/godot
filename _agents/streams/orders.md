@@ -228,9 +228,11 @@ _(worker keeps this current: report at the top, every number with commit, machin
   - **Deciding 1 (re-shaped):** across_m over the squads the click MOVES (a place > 2 m from where the squad stands): every
     cell's median <= 60 m, no run > 80 m. **Deciding 3 (re-shaped):** aside_max_m over moved squads, every run <= 52 m.
     Deciding 2 and 4, the guards, parts B and C, seeds, n and the tree rule: unchanged. **Deciding 6 (the orchestrator's, R44.5,
-    added before any fresh number: holding a squad cannot buy the pass):** in every reach-80 cell `held` = 0 in >= 90 % of the
-    arm's runs (on a far click every squad moves); in every cell the arm's held squads (median a run) <= base's squads that moved
-    less than 2 m + 1. `held` is also reported per cell.
+    added before any fresh number: holding a squad cannot buy the pass; R44.6 shaped it):** (a) in every reach-80 cell `held` = 0
+    in >= 90 % of the arm's runs (on a far click every squad moves); (b) in every reach-80 cell the arm's held squads (median a run)
+    <= base's squads that moved less than 2 m + 1; (c) in every reach-20 cell, per run, held <= the squads whose start lies within
+    the arm's own laid column's length behind the click (the farthest moved place), no slack. `held` is also reported per cell.
+    **The bar is FROZEN after dev read 4 (R44.6): no more amendments.**
   - **Code since the filing (all under the switch; G1 v9 unchanged, its tests pass):** the near-click keep is skipped on the plain
     click; places are dealt by distance along the approach (no drive-time re-deal, no whole-squad untangle: it read collinear
     drives as crossings and swapped ranks end to end); the stay rule is re-read after the lay; ranks keep off water and decks

@@ -54,9 +54,15 @@ def read_run(rows, geo):
         abs(along(nearest_start.get("anchor") or nearest_start["start"]) - along(nearest_place["anchor"])) <= BACK_M
     times = [r["arrived_s"] for r in rows]
     all_in = -1.0 if any(t < 0 for t in times) else max(times)
+    held = len(rows) - sum(1 for r in rows if r.get("anchor") and flat(r["anchor"], r["start"]) > HOLD_M)
+    # R44.6, line 6(c) (reach-20 cells): a squad may hold only if it already stands within the column's length behind the click,
+    # the length read from the arm's own laid column (the farthest MOVED place behind the click); held <= those squads, no slack.
+    moved_rows = [r for r in rows if r.get("anchor") and flat(r["anchor"], r["start"]) > HOLD_M]
+    column_len = max((-along(r["anchor"]) for r in moved_rows), default=0.0)
+    within = sum(1 for r in rows if 0.0 <= -along(r["start"]) <= column_len + HOLD_M)
     return {"spread_m": spread, "across_m": max(asides) - min(asides), "aside_max_m": max(abs(a) for a in asides),
             "backward": backward, "front_ok": front_ok, "all_in_s": all_in, "squads": len(rows), "moved": len(moved),
-            "held": len(rows) - sum(1 for r in rows if r.get("anchor") and flat(r["anchor"], r["start"]) > HOLD_M)}
+            "held": held, "within": within, "column_len_m": column_len}
 
 
 def med(xs):

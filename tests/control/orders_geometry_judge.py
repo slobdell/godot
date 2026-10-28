@@ -11,8 +11,10 @@ streets/ + his/ (part B, G1 v9's own cells, judged by orders_judge.py g1v8 with 
   3 aside_max_m: every arm run <= ASIDE_M (the orchestrator's map-edge line)
   4 front_ok: >= FRONT_SHARE of runs in every cell
   5 spread_m reported
-  6 (the orchestrator's, R44.5: holding a squad cannot buy the pass) in every reach-80 cell `held` = 0 in >= HELD_FAR_SHARE of arm
-    runs; in every cell the arm's held squads (median a run) <= base's squads that moved less than 2 m + HELD_SLACK
+  6 (the orchestrator's, R44.5 / R44.6: holding a squad cannot buy the pass) (a) in every reach-80 cell `held` = 0 in >=
+    HELD_FAR_SHARE of arm runs; (b) in every reach-80 cell the arm's held squads (median a run) <= base's squads that moved less
+    than 2 m + HELD_SLACK; (c) in every reach-20 cell, per run, held <= the squads whose start lies within the arm's own laid
+    column's length behind the click, no slack
 Guards: part A all-in median <= base x 1.2 + 3 s and never-in <= base per cell; friend_contacts pooled <= base x 1.1 + 5;
 part B's verdict; part C's fight guards. Never amended after a number is seen.
 """
@@ -71,7 +73,10 @@ def part_a(out, base, new, lines):
         c1, c2, c3, c4 = across <= ACROSS_CELL_M and worst_across <= ACROSS_RUN_M, backward == 0, aside <= ASIDE_M, front >= FRONT_SHARE
         held_n, held_b = geo.med([r["held"] for r in n]), geo.med([r["held"] for r in b])
         far_moving = sum(1 for r in n if r["held"] == 0) / len(n)
-        c6 = held_n <= held_b + HELD_SLACK and (cell[2] < 80 or far_moving >= HELD_FAR_SHARE)
+        if cell[2] >= 80:
+            c6 = held_n <= held_b + HELD_SLACK and far_moving >= HELD_FAR_SHARE
+        else:
+            c6 = all(r["held"] <= r["within"] for r in n)
         d1, d2, d3, d4, d6 = d1 and c1, d2 and c2, d3 and c3, d4 and c4, d6 and c6
         b_in = [r["all_in_s"] for r in b if r["all_in_s"] >= 0]
         n_in = [r["all_in_s"] for r in n if r["all_in_s"] >= 0]
@@ -90,7 +95,7 @@ def part_a(out, base, new, lines):
     lines.append("%s deciding 2: squads sent back (> %.0f m behind their start along the approach) = 0 every arm run" % ("PASS" if d2 else "FAIL", geo.BACK_M))
     lines.append("%s deciding 3: farthest place off the click line <= %.0f m every arm run" % ("PASS" if d3 else "FAIL", ASIDE_M))
     lines.append("%s deciding 4: the nearest squad lands in front in >= %.0f %% of runs every cell" % ("PASS" if d4 else "FAIL", 100 * FRONT_SHARE))
-    lines.append("%s deciding 6 (R44.5): every reach-80 cell moves every squad in >= %.0f %% of runs; held squads (median a run) <= base's unmoved + %d every cell" % (
+    lines.append("%s deciding 6 (R44.5 / R44.6): reach-80 cells move every squad in >= %.0f %% of runs and hold <= base's unmoved + %d; reach-20 runs hold only squads already within the column's length" % (
         "PASS" if d6 else "FAIL", 100 * HELD_FAR_SHARE, HELD_SLACK))
     bc = sum(r.get("friend_contacts", 0) for r in runs_by_arm[base])
     nc = sum(r.get("friend_contacts", 0) for r in runs_by_arm[new])
