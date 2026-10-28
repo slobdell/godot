@@ -139,3 +139,14 @@ func test_the_corner_swing_ships_off_and_reads_no_enemy() -> void:
 		if method["name"] == "pull":
 			args = method["args"].map(func(a: Dictionary) -> String: return a["name"])
 	assert_eq(args, ["map", "from", "own", "heading"], "walls and his units only")
+
+
+func test_a_lane_beside_the_water_is_dropped() -> void:
+	# A canal 4 m wide just west of the west lane (x -14): Locks' quay case, where his crews never reached the corner.
+	var water := CameraCorner.water_of({"terrain": [{"kind": "water", "rect": [-20.0, 0.0, 4.0, 300.0]},
+			{"kind": "bridge", "rect": [0.0, 0.0, 16.0, 24.0]}]})
+	assert_eq(water.size(), 1, "only water counts")
+	var lanes := CameraCorner.lanes(_warehouse(), Match.DRIVABLE_LIMIT - 6.0, water)
+	for l: Dictionary in lanes:
+		assert_true((l["start"] as Vector2).x > 0.0, "every west lane (x <= -11) is within WATER_CLEAR_M of it: %s" % [l["start"]])
+	assert_true(not _lane(lanes, NORTH, Vector2(1, 0)).is_empty(), "the east lane stands")

@@ -465,7 +465,7 @@ func _corner() -> void:
 	var side: String = lane if given and lane in ["right", "left"] else ["right", "left"][posmod(_seed, 2)]
 	lane = side
 	var cover := CoverMap.of(controls)
-	var all := CameraCorner.lanes(cover)
+	var all := CameraCorner.lanes(cover, Match.DRIVABLE_LIMIT - 6.0, CameraCorner.water_of(Arena.active))
 	print("CAMERA_CORNER_LANES walls=%d lanes=%d right=%d rejects=%s" % [CameraCorner.walls(cover).size(), all.size(),
 			all.filter(func(l: Dictionary) -> bool: return l["side"] == "right").size(), JSON.stringify(CameraCorner.rejects)])
 	var near := all.filter(func(l: Dictionary) -> bool: return l["side"] == side)

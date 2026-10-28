@@ -29,8 +29,9 @@ const HIDE_HEIGHT_M := 2.5
 const LANE_OFFSETS_M: Array[float] = [9.0, 6.0, 13.0]
 const LEAD_IN_M := 15.0
 const RUN_OUT_M := 35.0
-## The lane must clear every other feature by this much (a hull's half width and some).
+## The lane must clear every other feature by this much (a hull's half width and some), and water by WATER_CLEAR_M.
 const LANE_CLEAR_M := 3.5
+const WATER_CLEAR_M := 8.0
 ## The hiding spot: this far off the far face (the first that works), this far back from the far end, CLEAR_M from
 ## everything.
 const HIDE_OFFS_M: Array[float] = [10.0, 6.0, 14.0]
@@ -77,7 +78,7 @@ func _ready() -> void:
 ## centre, along (the drive's unit direction), normal (the lane face's outward normal; the hidden side is -normal),
 ## half_len, half_w, start, end, hide (Vector2 ground points), side ("right" | "left": where the hidden face lies
 ## relative to the drive, his screen's words)}. Pure, for tests.
-static func lanes(map: CoverMap, limit := Match.DRIVABLE_LIMIT - 6.0) -> Array:
+static func lanes(map: CoverMap, limit := Match.DRIVABLE_LIMIT - 6.0, water: Array = []) -> Array:
 	var out: Array = []
 	rejects = {}
 	for wall: Dictionary in CameraCorner.walls(map):
@@ -86,7 +87,7 @@ static func lanes(map: CoverMap, limit := Match.DRIVABLE_LIMIT - 6.0) -> Array:
 				var why := ""
 				for offset: float in LANE_OFFSETS_M:
 					for hide_off: float in HIDE_OFFS_M:
-						var entry := CameraCorner._lane(map, wall, way, face, offset, hide_off, limit)
+						var entry := CameraCorner._lane(map, wall, way, face, offset, hide_off, limit, water)
 						if entry.has("why"):
 							why = String(entry["why"]) if why == "" else why
 							continue
@@ -105,7 +106,8 @@ static var rejects := {}
 
 ## One lane down `wall` (`way` along its length, on the face `face` x its normal), `offset` off the face, the hiding spot
 ## `hide_off` off the far face: the lanes() entry, or {"why": the first test it failed}.
-static func _lane(map: CoverMap, wall: Dictionary, way: float, face: float, offset: float, hide_off: float, limit: float) -> Dictionary:
+static func _lane(map: CoverMap, wall: Dictionary, way: float, face: float, offset: float, hide_off: float, limit: float,
+		water: Array = []) -> Dictionary:
 	var centre: Vector2 = wall["centre"]
 	var half_len: float = wall["half_len"]
 	var half_w: float = wall["half_w"]
@@ -119,6 +121,8 @@ static func _lane(map: CoverMap, wall: Dictionary, way: float, face: float, offs
 		return {"why": "outside"}
 	if map.path_blocked(start, end, LANE_CLEAR_M):
 		return {"why": "lane_blocked"}
+	if CameraCorner._wet(start, end, water, WATER_CLEAR_M) or CameraCorner._wet(hide, hide, water, HIDE_CLEAR_M):
+		return {"why": "water"}
 	if map.inside_any(hide, HIDE_CLEAR_M):
 		return {"why": "hide_blocked"}
 	if not CameraCorner._hidden_until_corner(map, line, along, half_len, hide):
@@ -129,6 +133,29 @@ static func _lane(map: CoverMap, wall: Dictionary, way: float, face: float, offs
 	var side := "right" if along.x * hidden_dir.y - along.y * hidden_dir.x > 0.0 else "left"
 	return {"feature": int(wall["index"]), "centre": centre, "along": along, "normal": normal, "half_len": half_len,
 			"half_w": half_w, "start": start, "end": end, "hide": hide, "side": side, "offset": offset}
+
+
+## Whether the segment a -> b comes within `grow` of any water rect (Rect2, ground x/z). The cover map knows walls, not
+## the canal: Locks' quay lanes ran 2 m off the water and his crews never reached the corner (K5.2 census, 9e14c3ade).
+static func _wet(a: Vector2, b: Vector2, water: Array, grow: float) -> bool:
+	var steps := maxi(1, ceili(a.distance_to(b) / 2.0))
+	for rect: Rect2 in water:
+		var grown := rect.grow(grow)
+		for i in steps + 1:
+			if grown.has_point(a.lerp(b, float(i) / float(steps))):
+				return true
+	return false
+
+
+## The arena's water as ground rects (Arena terrain "water": rect = [centre x, centre z, size x, size z]).
+static func water_of(arena: Dictionary) -> Array:
+	var out: Array = []
+	for zone: Dictionary in arena.get("terrain", []):
+		if String(zone.get("kind", "")) != "water":
+			continue
+		var r: Array = zone["rect"]
+		out.append(Rect2(float(r[0]) - float(r[2]) * 0.5, float(r[1]) - float(r[3]) * 0.5, float(r[2]), float(r[3])))
+	return out
 
 
 static var _walls: Array = []
