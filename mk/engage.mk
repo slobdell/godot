@@ -104,7 +104,7 @@ engage-paths: import ## engage A1: the navmesh's routes on Locks for ENGAGE_LEGS
 # ENGAGE_HOLD_ARM=off|on selects the arm (on = --traffic-on=holdfar); ENGAGE_HOLD_SEEDS the seeds (Bar A: 10301-10324).
 ENGAGE_HOLD_SEEDS ?= 10301 10302 10303
 ENGAGE_HOLD_ARM ?= off
-ENGAGE_HOLD_SECONDS ?= 60
+ENGAGE_HOLD_SECONDS ?= 75
 ENGAGE_HOLD_TAG ?= $(ENGAGE_HOLD_ARM)
 .PHONY: engage-hold engage-bar-a
 engage-hold: import ## engage A4: the street-hold probe over ENGAGE_HOLD_SEEDS (ENGAGE_HOLD_ARM=off|on, ENGAGE_JOBS) -> build/engage/hold/<tag>/<seed>.log + the table

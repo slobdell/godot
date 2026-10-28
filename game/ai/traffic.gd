@@ -159,6 +159,8 @@ static var far_released := 0
 static var far_held := 0
 ## A far crew's own mouth within this of the squad's mouth (m) means its route runs through the same street.
 const FAR_THROUGH_M := 20.0
+## ...looked for along that route this far (m): a far crew's own drive to the mouth, with some road to spare.
+const FAR_ROUTE_M := 140.0
 ## The crossing's counters (measurement only): squad-pair verdicts made, crew-ticks a wish was slowed.
 static var cross_verdicts := 0
 static var cross_slowed := 0
@@ -787,12 +789,18 @@ static func _begin_wait(waiter: String, passer: String, key: String, frame: int,
 			# is released from this wait: it keeps its route (ORCA as always) and reaches the street after the passer is through.
 			# The crews at the street take turns as before. `--traffic-off=holdfar` (or its DEFAULT_OFF listing before Bar A)
 			# is round 29's rule.
-			if not off("holdfar") and (centre - here).dot(dir) > far_reach + 2.0 * radii[k]:
+			# The STRAIGHT distance to the mouth, not the projection on the squad's way: on his seed the squad's mean heading
+			# read east while its crews drove south-west, and his War Rig, 76 m from the mouth, projected to 48 m "behind".
+			if not off("holdfar") and here.distance_to(mouth) > far_reach + 2.0 * radii[k]:
 				# R43.8's second branch: a far crew whose own route (its mover's path, then straight on its squad's way) runs
 				# into THIS street waits where it stands (round 29's "nowhere to pull aside" spot) rather than driving on
 				# into the passer; one whose route does not is released.
-				var own := _mouth(names[k], here, dir, frame)
-				if own != Vector2.INF and own.distance_to(mouth) <= FAR_THROUGH_M:
+				var through := _route_passes(names[k], here, dir, mouth)
+				if log_waits:
+					print("TRAFFIC_FAR " + JSON.stringify({"frame": frame, "crew": names[k], "here": [snappedf(here.x, 0.1), snappedf(here.y, 0.1)],
+							"behind_m": snappedf((centre - here).dot(dir), 0.1), "to_mouth_m": snappedf(here.distance_to(mouth), 0.1),
+							"mouth": str(mouth), "through": through}))
+				if through:
 					far_held += 1
 					spot = here
 				else:
@@ -820,6 +828,35 @@ static func _begin_wait(waiter: String, passer: String, key: String, frame: int,
 		print("TRAFFIC_WAIT " + JSON.stringify({"frame": frame, "waiter": waiter, "passer": passer, "dir": [snappedf(dir.x, 0.01),
 				snappedf(dir.y, 0.01)], "mouth": str(mouth), "centre": str(centre), "spots": listed,
 				"runs": runs.map(func(r: Array) -> String: return str(r[1]))}))
+
+
+## Round 43 (holdfar): does crew `me`'s route (its mover's path ahead, then straight on along `dir`, FAR_ROUTE_M in all)
+## pass within FAR_THROUGH_M of `mouth`? (Not `_mouth`: that answers the FIRST street on the way, and a far crew's way may
+## cross another street first; dev seed 7004's rear crews were released for that and drove into the lock the passer was on.)
+static func _route_passes(me: String, from: Vector2, dir: Vector2, mouth: Vector2) -> bool:
+	var points: Array[Vector2] = [from]
+	var mover: Movement = _movers.get(me)
+	if mover != null:
+		for p in range(mover._path_index, mover._path.size()):
+			points.append(Vector2(mover._path[p].x, mover._path[p].z))
+	points.append(points[points.size() - 1] + dir * FAR_ROUTE_M)
+	var walked := 0.0
+	for s in range(1, points.size()):
+		var a: Vector2 = points[s - 1]
+		var b: Vector2 = points[s]
+		var leg := a.distance_to(b)
+		if leg < 0.01:
+			continue
+		var u := (b - a) / leg
+		var t := 0.0
+		while t <= leg and walked + t <= FAR_ROUTE_M:
+			if (a + u * t).distance_to(mouth) <= FAR_THROUGH_M:
+				return true
+			t += MOUTH_STEP_M
+		walked += leg
+		if walked > FAR_ROUTE_M:
+			break
+	return false
 
 
 ## The first point of a street on the lead's route (its mover's path ahead, then straight on along `dir`), or INF.

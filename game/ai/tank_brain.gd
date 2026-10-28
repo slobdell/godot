@@ -863,7 +863,13 @@ func _crew_trace(s: Dictionary) -> void:
 					held["passer"] = String((wait as Dictionary).get("passer", ""))
 					held["since"] = (wait as Dictionary).get("since")
 					held["key"] = String((wait as Dictionary).get("key", ""))
-					held["spots"] = ((wait as Dictionary).get("spots", {}) as Dictionary).keys()
+					var listed := {}
+					for crew_name: String in (wait as Dictionary).get("spots", {}):
+						var at: Vector2 = ((wait as Dictionary)["spots"][crew_name] as Array)[0]
+						listed[crew_name] = [snappedf(at.x, 0.1), snappedf(at.y, 0.1)]
+					held["spots"] = listed
+					var wdir: Vector2 = (wait as Dictionary).get("dir", Vector2.ZERO)
+					held["dir"] = [snappedf(wdir.x, 0.01), snappedf(wdir.y, 0.01)]
 			row["hold"] = held
 	print("CREW_TRACE %s" % JSON.stringify(row))
 

@@ -5,7 +5,8 @@
     hold_table.py --pair BASE_DIR ARM_DIR  the bar: paired by seed, each line with its paired mean difference, se and z
 
 Lines (the bar names them before any number; this prints what they read):
-  away_s         crew-seconds under a street hold driving AWAY from the crew's own K1 goal (sum a run)   deciding: ARM < BASE by >= 2 se
+  far_arrive_s   the far crews' arrival at the squad's destination (mean a run, s)                       deciding: ARM < BASE by >= 2 se
+  away_s         crew-seconds under a street hold driving AWAY from the crew's own K1 goal (sum a run)   reported (his geometry: dev)
   away_m         the largest such drive (m, max a run)                                                  reported
   last_a_s       the waiting squad's last arrival (s; the window when never)                            reported (expected lower)
   contacts_mouth friendly contacts within 25 m of the street's middle (sum)                             guard: ARM <= BASE + 1.645 se (T1's purpose)
@@ -22,7 +23,7 @@ import os
 import sys
 
 
-LINES = ["away_s", "away_m", "last_a_s", "contacts_mouth", "contacts_far", "jam_s", "contacts", "contacts_fast",
+LINES = ["far_arrive_s", "away_s", "away_m", "last_a_s", "contacts_mouth", "contacts_far", "jam_s", "contacts", "contacts_fast",
          "contacts_cross", "stuck_s", "held_s", "last_b_s", "far_released", "far_held", "verdicts"]
 
 
@@ -52,10 +53,10 @@ def mean_se(values):
 
 def one(folder):
     rows = read(folder)
-    print(f"{'seed':>6} {'arena':>9} {'arm':>3} {'far_m':>5} " + " ".join(f"{k:>14}" for k in LINES))
+    print(f"{'seed':>6} {'stage':>14} {'arm':>3} {'far_m':>5} " + " ".join(f"{k:>14}" for k in LINES))
     for seed in sorted(rows):
         d = rows[seed]
-        print(f"{seed:>6} {d['arena']:>9} {d['arm']:>3} {d['far_m']:>5} " + " ".join(f"{float(d.get(k, 0)):>14.1f}" for k in LINES))
+        print(f"{seed:>6} {d.get('stage', d['arena']):>14} {d['arm']:>3} {d['far_m']:>5} " + " ".join(f"{float(d.get(k, 0)):>14.1f}" for k in LINES))
     exercised = sum(1 for d in rows.values() if d.get("verdicts", 0) >= 1 and d.get("far_crews"))
     print(f"n {len(rows)} exercised {exercised}")
     for k in LINES:
@@ -82,7 +83,7 @@ def pair(base_dir, arm_dir):
         print(f"{k:>14} {sum(b):>10.1f} {sum(a):>10.1f} {m:>12.2f} {se:>8.2f} {z:>7.2f}")
     print("per seed (away_s BASE -> ARM, away_m, last_a_s, contacts_far):")
     for s in seeds:
-        print(f"  {s} {base[s]['arena']:>9} far {base[s]['far_m']:>5}: away_s {base[s]['away_s']:.0f} -> {arm[s]['away_s']:.0f}, "
+        print(f"  {s} {base[s].get('stage', base[s]['arena']):>14} far {base[s]['far_m']:>5}: away_s {base[s]['away_s']:.0f} -> {arm[s]['away_s']:.0f}, "
               f"away_m {base[s]['away_m']:.1f} -> {arm[s]['away_m']:.1f}, last_a {base[s]['last_a_s']:.1f} -> {arm[s]['last_a_s']:.1f}, "
               f"contacts_far {base[s]['contacts_far']} -> {arm[s]['contacts_far']}, verdicts {base[s]['verdicts']} -> {arm[s]['verdicts']}, "
               f"far_released {arm[s]['far_released']} far_held {arm[s]['far_held']}")

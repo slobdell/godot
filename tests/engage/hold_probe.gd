@@ -6,14 +6,15 @@ extends SceneTree
 ## arm is Traffic's `holdfar` (`--traffic-on=holdfar`; OFF = round 29's rule: every crew of the waiting squad is dealt a spot at
 ## the mouth). Arena, hulls, the far distance and the jitter are drawn from the seed, so the two arms see the same stage.
 ##
-##   godot --headless --fixed-fps 30 --path . --script res://tests/engage/hold_probe.gd -- --seed=N [--arena=A] [--seconds=60]
+##   godot --headless --fixed-fps 30 --path . --script res://tests/engage/hold_probe.gd -- --seed=N [--stage=terminus_west] [--seconds=75]
 ##         [--traffic-on=holdfar] [--trace=on]
 ## Prints ENGAGE_HOLD {json} once (read by tests/engage/hold_table.py):
 ##   away_s        crew-seconds (A's crews) UNDER A STREET HOLD with the distance to their own K1 goal rising (> AWAY_M a second):
 ##                 driving away from where they were sent to reach a hold spot (the deciding line; his War Rig: 15 s)
 ##   away_m        the largest rise of that distance under a hold, any crew (his: 82 m)
 ##   held_s        crew-seconds holding (Traffic.holding), far_released / far_held: Traffic's counters
-##   arrive_a_s    seconds until each A crew is within ARRIVED_M of A's destination (the window when never); last_a_s the last
+##   arrive_a_s    seconds until each A crew is within ARRIVED_M of A's destination (the window when never); last_a_s the last;
+##                 far_arrive_s the mean over A's far crews (the crews the rule is about: what the player sees of them)
 ##   arrive_b_s    the same for B
 ##   contacts      friendly hull contacts (box gap < CONTACT_GAP_M, counted once per touch), contacts_fast (closing > 2 m/s),
 ##                 contacts_cross (between the two squads), contacts_mouth (within MOUTH_R_M of the street's middle),
@@ -31,7 +32,18 @@ const JITTER_M := 1.5
 const SQUAD_PITCH_M := 9.0
 const FAR_MIN_M := 55.0
 const FAR_MAX_M := 95.0
-const ARENAS := ["terminus", "yard_open", "locks"]
+## The stages (by seed): round 29 T1's head-on meeting in Terminus's west street (blocks at x -120..-80 and -60..-20, z -20..20),
+## its mirror in the east street, and the Locks' LOCK (the 16 m deck over the canal, walled by water both sides: a one-lane
+## crossing, his attack-move across the canal). Squad A's start and destination, squad B's start and destination (B starts
+## lead INSIDE the street on terminus, so A, still in the open, waits; dev 7002 with B at -30 had B wait), the street's middle.
+## A starts 40-50 m from the middle so
+## that its rear rank, 55-95 m further back, stays inside the arena (the first terminus stage at 75 m had the clamp pull the rear
+## rank in to 42 m: inside the grid's reach). yard_open and the Locks' west quay were tried (dev 7001 / 7003): no street there.
+const STAGES := [
+	{"name": "terminus_west", "arena": "terminus", "a": [Vector3(-70, 0, 50), Vector3(-70, 0, -55)], "b": [Vector3(-70, 0, -15), Vector3(-70, 0, 75)], "middle": Vector3(-70, 0, 0)},
+	{"name": "terminus_east", "arena": "terminus", "a": [Vector3(70, 0, 50), Vector3(70, 0, -55)], "b": [Vector3(70, 0, -15), Vector3(70, 0, 75)], "middle": Vector3(70, 0, 0)},
+	{"name": "locks_lock", "arena": "locks", "a": [Vector3(0, 0, 40), Vector3(0, 0, -70)], "b": [Vector3(0, 0, -40), Vector3(0, 0, 70)], "middle": Vector3(0, 0, 0)},
+]
 ## His case's hulls first (gangs: three War Rigs); the other draws keep a squad of 14 m hulls and lighter ones.
 const HULL_SETS := [
 	["gang_tank", "gang_tank", "gang_ifv", "gang_tank", "gang_support"],
@@ -39,14 +51,6 @@ const HULL_SETS := [
 	["gang_tank", "gang_ifv", "gang_scout", "gang_tank", "gang_scout"],
 	["tank", "ifv", "scout", "tank", "ifv"],
 ]
-## Per arena: squad A's start and destination, squad B's start and destination (B starts nearer the street so A waits), and
-## the street's middle (round 29 T1's stages on terminus / yard_open; on Locks the west street between the warehouses,
-## A then over the west swing bridge: his attack-move across the canal).
-const STAGES := {
-	"terminus": {"a": [Vector3(-70, 0, 75), Vector3(-70, 0, -55)], "b": [Vector3(-70, 0, -40), Vector3(-70, 0, 75)], "middle": Vector3(-70, 0, 0)},
-	"yard_open": {"a": [Vector3(0, 0, 60), Vector3(0, 0, -60)], "b": [Vector3(0, 0, -40), Vector3(0, 0, 60)], "middle": Vector3(0, 0, 0)},
-	"locks": {"a": [Vector3(-45, 0, 100), Vector3(-100, 0, -15)], "b": [Vector3(-48, 0, 40), Vector3(-40, 0, 105)], "middle": Vector3(-46, 0, 60)},
-}
 
 var case: TestCase
 
@@ -75,14 +79,17 @@ func _run() -> void:
 	case.tree = self
 	BrainSwitches.ensure_parsed()
 	var seed_value := int(_flag("seed", "10301"))
-	var seconds := float(_flag("seconds", "60"))
+	var seconds := float(_flag("seconds", "75"))
 	var trace := _flag("trace", "off") == "on"
-	var arena := _flag("arena", ARENAS[seed_value % ARENAS.size()])
+	var stage: Dictionary = STAGES[seed_value % STAGES.size()]
+	for candidate: Dictionary in STAGES:
+		if String(candidate["name"]) == _flag("stage", ""):
+			stage = candidate
+	var arena := String(stage["arena"])
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
 	var hulls: Array = HULL_SETS[rng.randi_range(0, HULL_SETS.size() - 1)]
 	var far_m := rng.randf_range(FAR_MIN_M, FAR_MAX_M)
-	var stage: Dictionary = STAGES[arena]
 	Traffic.reset_counters()
 	Traffic.log_waits = trace
 	var lab := TacticsLab.create(case, seed_value, arena)
@@ -114,6 +121,10 @@ func _run() -> void:
 				far_crews.append(unit_name)
 		members[squad] = names
 	await lab.start()
+	var far_actual := 0.0
+	for unit_name: String in far_crews:
+		var a_along: Vector3 = ((stage["a"][1] as Vector3) - (stage["a"][0] as Vector3)).normalized()
+		far_actual = maxf(far_actual, -(_flat(lab.tank_of(unit_name).global_position) - (stage["a"][0] as Vector3)).dot(a_along))
 	var everyone: Array = []
 	for squad: String in ["a", "b"]:
 		for unit_name: String in members[squad]:
@@ -233,17 +244,23 @@ func _run() -> void:
 					rows += 1
 	var a_arrivals: Array = []
 	var b_arrivals: Array = []
+	var far_arrivals: Array = []
+	for unit_name: String in far_crews:
+		far_arrivals.append(float(arrive.get(unit_name, seconds)))
+	var far_arrive_mean := 0.0
+	for a: float in far_arrivals:
+		far_arrive_mean += a / float(maxi(far_arrivals.size(), 1))
 	for unit_name: String in members["a"]:
 		a_arrivals.append(float(arrive.get(unit_name, seconds)))
 	for unit_name: String in members["b"]:
 		b_arrivals.append(float(arrive.get(unit_name, seconds)))
 	var report := Traffic.report()
 	print("ENGAGE_HOLD %s" % JSON.stringify({"seed": seed_value, "arena": arena, "arm": "on" if not Traffic.off("holdfar") else "off",
-			"hulls": hulls, "far_m": _r(far_m), "far_crews": far_crews, "seconds": seconds,
+			"stage": stage["name"], "hulls": hulls, "far_m": _r(far_actual), "far_drawn_m": _r(far_m), "far_crews": far_crews, "seconds": seconds,
 			"away_s": away_s, "away_m": _r(away_m), "held_s": held_s,
 			"far_released": report.get("tr_far_released", 0), "far_held": report.get("tr_far_held", 0),
 			"verdicts": report.get("tr_verdicts", 0), "holds": report.get("tr_holds", 0),
-			"arrive_a_s": a_arrivals, "last_a_s": a_arrivals.max(), "arrive_b_s": b_arrivals, "last_b_s": b_arrivals.max(),
+			"arrive_a_s": a_arrivals, "last_a_s": a_arrivals.max(), "far_arrive_s": _r(far_arrive_mean), "far_arrivals": far_arrivals, "arrive_b_s": b_arrivals, "last_b_s": b_arrivals.max(),
 			"nearest_a_m": members["a"].map(func(n: String) -> float: return _r(float(nearest.get(n, -1.0)))),
 			"contacts": contacts, "contacts_fast": contacts_fast, "contacts_cross": contacts_cross, "contacts_mouth": contacts_mouth,
 			"contacts_far": contacts_far, "stuck_s": stuck_s, "jam_s": jam_s, "b_through": b_through, "rows": rows}))

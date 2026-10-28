@@ -39,14 +39,16 @@ func teardown() -> void:
 
 
 ## Squad A: three crews coming south out of the open toward the north mouth, and A4 the same way FAR_Z - 20 m behind the
-## mouth (his War Rig). Squad B: three crews in the street coming north. `team` puts both squads on that team (the CPU's).
-func _rows(holdfar: bool, team := 0) -> void:
+## mouth (his War Rig: 76 m from a mouth its own way never reached), standing west of the blocks at `far_x` so that its own
+## straight way south misses the held street (x -80..-60) by 50 m. Squad B: three crews in the street coming north. `team`
+## puts both squads on that team (the CPU's).
+func _rows(holdfar: bool, team := 0, far_x := -120.0) -> void:
 	_fresh(holdfar)
 	var rows := [
 		["A1", team, -70.0, 35.0, 0.0, -6.0, 0.0, -1.0, R, true, "e:A"],
 		["A2", team, -64.0, 44.0, 0.0, -6.0, 0.0, -1.0, R, true, "e:A"],
 		["A3", team, -76.0, 44.0, 0.0, -6.0, 0.0, -1.0, R, true, "e:A"],
-		["A4", team, -70.0, FAR_Z, 0.0, -6.0, 0.0, -1.0, R, true, "e:A"],
+		["A4", team, far_x, FAR_Z, 0.0, -6.0, 0.0, -1.0, R, true, "e:A"],
 	]
 	for k in 3:
 		rows.append(["B%d" % (k + 1), team, -70.0 + (k - 1) * 3.0, 0.0 - k * 9.0, 0.0, 6.0, 0.0, 1.0, R, true, "e:B", true])
@@ -70,7 +72,7 @@ func test_under_holdfar_the_far_crew_keeps_its_route_and_the_near_crews_still_wa
 	_rows(true)
 	Traffic.hold_of("A1")  # the verdict
 	assert_eq(Traffic.report()["tr_verdicts"], 1, "one verdict for the squad pair")
-	assert_true(Traffic.hold_of("A4").is_empty(), "A4 is not held: it keeps its route")
+	assert_true(Traffic.hold_of("A4").is_empty(), "A4 is not held: it keeps its route (its way south misses the street by 50 m)")
 	assert_true(not Traffic.holding("A4"), "holding() says so")
 	for name: String in ["A1", "A2", "A3"]:
 		var hold := Traffic.hold_of(name)
@@ -78,7 +80,7 @@ func test_under_holdfar_the_far_crew_keeps_its_route_and_the_near_crews_still_wa
 		assert_true((hold[0] as Vector2).y > 20.0, "at a spot short of the mouth")
 	assert_true(Traffic.hold_of("B1").is_empty(), "B comes through")
 	assert_eq(Traffic.report()["tr_holds"], 3, "three crews sent to a spot")
-	assert_eq(Traffic.report()["tr_far_released"], 1, "one far crew released at the verdict (its straight way on, 80 m, meets no street)")
+	assert_eq(Traffic.report()["tr_far_released"], 1, "one far crew released at the verdict (its way misses the held street)")
 	assert_eq(Traffic.report()["tr_far_held"], 0, "none held in place")
 
 
@@ -100,7 +102,7 @@ func test_a_crew_just_inside_the_grids_reach_is_still_held() -> void:
 func test_a_far_crew_whose_route_runs_into_the_street_waits_where_it_stands() -> void:
 	# A4 50 m behind the mouth (past the grid's 43 m + a hull) and heading straight for the street: its own route reaches the
 	# same mouth, so it holds where it is (R43.8's second branch) instead of driving on into the passer.
-	_rows(true)
+	_rows(true, 0, -70.0)
 	var rows := [
 		["A1", 0, -70.0, 35.0, 0.0, -6.0, 0.0, -1.0, R, true, "e:A"],
 		["A2", 0, -64.0, 44.0, 0.0, -6.0, 0.0, -1.0, R, true, "e:A"],
@@ -118,6 +120,12 @@ func test_a_far_crew_whose_route_runs_into_the_street_waits_where_it_stands() ->
 	assert_eq(Traffic.report()["tr_far_held"], 1, "counted as held in place")
 	assert_eq(Traffic.report()["tr_far_released"], 0, "not released")
 	assert_true(not Traffic.hold_of("A1").is_empty(), "the crew at the street waits at its spot")
+	# ...and from 100 m straight back (the control test's geometry) the same: its way runs into the street.
+	_rows(true, 0, -70.0)
+	Traffic.hold_of("A1")
+	var far := Traffic.hold_of("A4")
+	assert_true(not far.is_empty() and (far[0] as Vector2).distance_to(Vector2(-70.0, FAR_Z)) < 0.01, "held where it stands, 100 m back")
+	assert_eq(Traffic.report()["tr_far_held"], 1, "counted")
 
 
 func test_symmetric_for_the_cpus_squads() -> void:
