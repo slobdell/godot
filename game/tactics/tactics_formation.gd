@@ -106,6 +106,67 @@ static func hull_floor(members: Array, rule := "") -> Vector2:
 	return Vector2(maxf(floor_v.x, turning_pitch(extent, rule if rule != "" else LATERAL_FLOOR)), floor_v.y)
 
 
+# ---- Round 43 (manoeuvre S2, C43.5): the seat bound ---------------------------------------------------------------
+#
+# His first order on Locks (2026-10-27, _agents/streams/manoeuvre.md S1): the Gangs doctrine lays a travelling squad as a SWARM,
+# SWARM_SPREAD 1.9 x the pitch across the heading, and the War Rig's hull floors the pitch at 14.7 m, so five crews were seated
+# over 112 m: War Rig 3 72 m east of his click, the Tanker 63 m east, through the next squad's deploy row, and ElementPlan's
+# inset_anchor slid the squad's centre 15 m off the click to fit that reach into the arena. His words: "my first squad of tanks
+# was never even able to settle for a simple target destination". The bound: a squad's farthest seat is within SEAT_BOUND of
+# its anchor (the click), the shape scaled toward the anchor as a whole (its raggedness and depth order kept), never below
+# the hull floor between any two seats (C38's floors: side by side the dressing pitch, nose to tail the length + clearance).
+# A wedge / vee of five War Rigs reaches 29.3 m at its floor and is untouched; a swarm of them goes 58 -> 37 m; a swarm of
+# Gun Trucks 55 -> 18 m. A halt (`"halt": true`, the G1 v9 group column's squads and every stand) is laid as today (C43.5),
+# a caller may say `"seat_bound": false`, and a group bigger than a platoon (rows) is not a squad. `--seat-bound=on` /
+# env SEAT_BOUND=on: OFF until Bar S (round 43) reads it.
+static var SEAT_BOUND := OS.get_cmdline_user_args().has("--seat-bound=on") or OS.get_environment("SEAT_BOUND") == "on"
+## The bound in hull lengths of the longest hull, plus the hull floor along the heading (one more hull's room).
+const SEAT_BOUND_HULLS := 1.5
+## ...and never under this (metres): the biggest doctrine spacing ("open" 18 m), so a squad of small hulls keeps its dispersion.
+const SEAT_BOUND_MIN_M := 18.0
+
+
+## How far from its anchor the farthest seat of a squad of `members` may be (metres); INF for members with no known hull.
+static func seat_bound(members: Array) -> float:
+	var extent := hull_extent(members)
+	if extent == NO_HULL:
+		return INF
+	return maxf(SEAT_BOUND_MIN_M, SEAT_BOUND_HULLS * extent.y + hull_floor(members).y)
+
+
+## The farthest slot of a (centred) shape from its origin (metres).
+static func reach_of(shape: Array[Vector2]) -> float:
+	var reach := 0.0
+	for slot in shape:
+		reach = maxf(reach, slot.length())
+	return reach
+
+
+## `shape` (slots about its anchor) scaled toward the anchor until its reach is within `bound`, but no further than the hull
+## floor allows: every pair of seats stays separated on at least one axis by `floor_v` (across: x, along: y), the same rule
+## `closest_boxes` reads a formation by. The scale is one number for the whole shape, so the depth order, the sides and the
+## stagger are what they were; nothing crosses and nobody is re-seated. A shape already within the bound comes back as is.
+static func bounded(shape: Array[Vector2], bound: float, floor_v: Vector2) -> Array[Vector2]:
+	var reach := reach_of(shape)
+	if not is_finite(bound) or reach <= bound or reach <= 0.0:
+		return shape
+	var scale := bound / reach
+	var least := 0.0  # the smallest scale the floor allows: the tightest pair decides
+	for i in shape.size():
+		for j in range(i + 1, shape.size()):
+			var apart: Vector2 = (shape[i] - shape[j]).abs()
+			var across := floor_v.x / apart.x if apart.x > 0.001 else INF
+			var along := floor_v.y / apart.y if apart.y > 0.001 else INF
+			least = maxf(least, minf(across, along))
+	scale = maxf(scale, minf(least, 1.0))
+	if scale >= 1.0:
+		return shape
+	var result: Array[Vector2] = []
+	for slot in shape:
+		result.append(slot * scale)
+	return result
+
+
 ## Round 10 (squad item 4): which motion the LATERAL floor licenses. The clearance vocabulary (B5) names four things;
 ## this is the turning envelope, a circle of the hull's half-diagonal about its centre.
 ##   "width"         round 9: side by side and parallel only (width + HULL_CLEAR_M); hulls may clip while they turn
@@ -1032,6 +1093,11 @@ static func place(members: Array, formation: String, anchor: Vector3, heading: V
 	var pitch_v: Vector2 = fit["pitch"]
 	var raw := offsets_deformed(formation, count, fit)
 	var shape: Array[Vector2] = centered(raw) if bool(opts.get("centered", true)) else raw
+	# Round 43 (manoeuvre S2, C43.5): a squad's seats stay within the bound of the anchor; halts and groups past a platoon as today.
+	var bound_applies: bool = SEAT_BOUND and count <= PLATOON and bool(opts.get("centered", true)) \
+			and bool(opts.get("seat_bound", not bool(opts.get("halt", false))))
+	if bound_applies:
+		shape = bounded(shape, seat_bound(members), hull_floor(members, String(opts.get("floor_rule", ""))))
 	var sector_list := sectors(formation if NAMES.has(formation) else "line", count)
 	var seat_opts := opts.duplicate()
 	# The hysteresis margin is a fraction of the biggest step between neighbouring slots, which is the larger axis.
