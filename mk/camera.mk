@@ -8,6 +8,9 @@
 # Round 42 (K4.1): CAMERA_FLAGS="--camera-scenario=ambush|retreat" stages his two camera cases (CameraPlaytest) and
 # CameraLook adds the look table (where the view looks against where the danger is); the danger camera (K4) is ON;
 # `--camera-danger=off` is round 41's camera (the BASE arm).
+# Round 43 (K5.2): CAMERA_FLAGS="--camera-scenario=corner" (CAMERA_ARENA=locks or terminus) drives group 1 along a
+# building's wall past its far corner with a CPU squad parked behind it (CameraCorner); the report adds the corner table.
+# K5.3: `--camera-corner=on` is the corner swing (OFF until Bar K5).
 .PHONY: camera-trace camera-trace-windowed camera-clip
 
 CAMERA_TRACE_DIR := $(BUILD_DIR)/camera-trace
@@ -15,12 +18,15 @@ CAMERA_SEEDS ?= 9501
 CAMERA_ARENA ?= terminus
 CAMERA_SECONDS ?= 150
 CAMERA_JOBS ?= 4
+# Round 43: a run that cannot finish (a parse error leaves headless Godot waiting forever) is killed after this many
+# seconds instead of holding the light lane for the wrapper's 90 minutes; its log then lacks CAMERA_TRACE_DONE.
+CAMERA_RUN_TIMEOUT ?= $(shell echo $$(( $(CAMERA_SECONDS) * 6 + 300 )))
 CAMERA_GAME_FLAGS = --skirmish --enemy=cpu --arena=$(CAMERA_ARENA) --no-pick-faction --hints=off --announcer=off --music=off \
 	--announcer-history=off --music-history=off --camera-readout=off --camera-autoplay --camera-seconds=$(CAMERA_SECONDS)
 
 camera-trace: native-fresh import ## Round 41 (camera K1): his attack-click case played headless; jerk events by source + target slip (CAMERA_SEEDS="9501 9502" CAMERA_ARENA=terminus CAMERA_SECONDS=150 CAMERA_FLAGS=...)
 	rm -rf $(CAMERA_TRACE_DIR) && mkdir -p $(CAMERA_TRACE_DIR)
-	printf '%s\n' $(CAMERA_SEEDS) | xargs -P $(CAMERA_JOBS) -I{} sh -c '$(GODOT) --headless --fixed-fps 60 --path . -- $(CAMERA_GAME_FLAGS) \
+	printf '%s\n' $(CAMERA_SEEDS) | xargs -P $(CAMERA_JOBS) -I{} sh -c 'timeout $(CAMERA_RUN_TIMEOUT) $(GODOT) --headless --fixed-fps 60 --path . -- $(CAMERA_GAME_FLAGS) \
 		--seed={} --camera-trace=$(CURDIR)/$(CAMERA_TRACE_DIR) $(CAMERA_FLAGS) > $(CAMERA_TRACE_DIR)/run_{}.log 2>&1 || true'
 	grep -h -E 'CAMERA_TRACE|CAMERA_SLIP|SCRIPT ERROR' $(CAMERA_TRACE_DIR)/run_*.log || true
 	python3 tests/camera/camera_report.py $(CAMERA_TRACE_DIR) | tee $(CAMERA_TRACE_DIR)/report.md

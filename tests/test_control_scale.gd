@@ -16,6 +16,10 @@ const PER_SIDE := 30
 const FRAME_BUDGET_REFERENCES := 26.0
 ## A player's order must reach Orders in well under a frame: the old 8 ms, in reference workloads (Fixture.reference_work
 ## is 0.077 ms on the idle laptop): 104. Measured 36-42 at 53a2af87+ (laptop, idle and loaded).
+## R43.11 (round 43): this army is SIX squads, past any side's cap (MAX_SQUADS 5; 4 on his laptop preset), and with G1 ON
+## (its group-click column) six squads cannot meet 104: G1 off alone reads 96. The line is judged at the caps: after
+## 6afe991bb, laptop, 20 units / 4 squads 78.3 (in budget), 25 / 5 squads 155.7, 30 / 6 232.1 (was 2738.8). The rest at
+## 5-6 squads is one RtsControls.gate_width scan (a later C++ item, native's Status).
 const ORDER_BUDGET_REFERENCES := 104.0
 
 

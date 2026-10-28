@@ -298,7 +298,23 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 		var best: Array = []
 		var best_key := [INF, INF, INF]
 		var best_wrong := INF
-		for perm: Array in _permutations(members.size()):
+		# R43.11 (native N2b): every permutation used to re-run _pair_crosses for every pair (a six-squad column: 720
+		# permutations x 15 pairs x 25 segment tests, 247 of the 30-unit click's 260 ms on the laptop). It is a pure function
+		# of (squad, place, squad, place), so each is counted once here and looked up; each crew's straight drive to each
+		# place likewise, added in the same order as before. Same integers, same floats: the same places for every click
+		# (tests/test_untangle_whole_memo.gd against the function as it stood).
+		var m := members.size()
+		var crossed := PackedInt32Array()
+		crossed.resize(m * m * m * m)
+		crossed.fill(-1)
+		var drives: Array = []  # [a * m + place] -> PackedFloat64Array, one per crew of members[a]
+		for a in m:
+			for q in m:
+				var row := PackedFloat64Array()
+				for unit_name: String in squads[members[a]]["units"]:
+					row.append(_xz(starts[unit_name]).distance_to(_xz(places[q])))
+				drives.append(row)
+		for perm: Array in _permutations(m):
 			var wrong := 0
 			if misplaced.is_valid():
 				for a in members.size():
@@ -314,14 +330,26 @@ static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Cal
 				breaks = lead_breaks(member_leads, arcs)
 				if wrong == best_wrong and breaks > best_key[0]:
 					continue
+			# A permutation that wins on neither `wrong` nor `breaks` must have no more crossings than the best: counts only
+			# grow, so its count stops once past it (it could not be taken), and its drive is never needed.
+			var bound: float = INF if (wrong < best_wrong or breaks < best_key[0]) else best_key[1]
 			var crossings := 0
+			for a in m:
+				var pa: int = perm[a]
+				for b in range(a + 1, m):
+					var key: int = ((a * m + pa) * m + b) * m + int(perm[b])
+					if crossed[key] < 0:
+						crossed[key] = _pair_crosses(squads[members[a]]["units"], places[pa], squads[members[b]]["units"],
+								places[perm[b]], starts)
+					crossings += crossed[key]
+				if crossings > bound:
+					break
+			if crossings > bound:
+				continue
 			var drive := 0.0
-			for a in members.size():
-				var at: Vector3 = places[perm[a]]
-				for unit_name: String in squads[members[a]]["units"]:
-					drive += _xz(starts[unit_name]).distance_to(_xz(at))
-				for b in range(a + 1, members.size()):
-					crossings += _pair_crosses(squads[members[a]]["units"], at, squads[members[b]]["units"], places[perm[b]], starts)
+			for a in m:
+				for d: float in drives[a * m + int(perm[a])]:
+					drive += d
 			if wrong < best_wrong or breaks < best_key[0] or (breaks == best_key[0] and (crossings < best_key[1]
 					or (crossings == best_key[1] and drive < best_key[2] - 0.01))):
 				best_wrong = wrong
@@ -1087,12 +1115,22 @@ static func _pair_crosses(units_a: Array, at_a: Vector3, units_b: Array, at_b: V
 	return count
 
 
-## Every ordering of 0..n-1, the identity first (so a tie keeps the order they had).
+## Every ordering of 0..n-1, the identity first (so a tie keeps the order they had). R43.11: built once per n (a six-squad
+## click asked for its 720 every time); callers only read them.
 static func _permutations(n: int) -> Array:
+	if not _perms_memo.has(n):
+		_perms_memo[n] = _build_permutations(n)
+	return _perms_memo[n]
+
+
+static var _perms_memo := {}
+
+
+static func _build_permutations(n: int) -> Array:
 	if n <= 1:
 		return [[0]] if n == 1 else [[]]
 	var result: Array = []
-	for rest: Array in _permutations(n - 1):
+	for rest: Array in _build_permutations(n - 1):
 		for k in range(rest.size(), -1, -1):
 			var perm := rest.duplicate()
 			perm.insert(k, n - 1)

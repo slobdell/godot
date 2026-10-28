@@ -82,10 +82,114 @@ never touch processes you didn't start. Never delete builder files that aren't o
 
 ## Bars (round 43)
 
-**Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards; 10401-10424 manoeuvre bar S (arrival);
-10425-10448 manoeuvre guards; 10449-10472 manoeuvre bridge (S5, BRIDGE_POOLED_SEEDS); 10501-10536 camera Bar K5 (36 an arm);
+**Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards (and Bar A's pooled extension); 10349-10372 engage G1-G5 guards; 10373-10396 engage Bar A6 (+ 10397-10400, 10573-10592 its guards); 10601-10624 engage Bar A6 v2 (+ 10625-10648 its E1 lines); 10649-10696 engage A7 (the across-water engage); 10401-10424 manoeuvre bar S (arrival);
+10425-10448 manoeuvre guards; 10449-10472 manoeuvre bridge (S5, BRIDGE_POOLED_SEEDS); 10701-10724 manoeuvre Bar S v2 (+ 10725-10748 its guards); 10501-10536 camera Bar K5 (36 an arm);
 10537-10572 camera K5 v2 (one re-file); native none. Dev: 7001-7012, 9501-9512, his 56416 (never a bar). Carried unread: 9201-9240 +
 9301-9340 Bar B5 t50 (only on his yes).
+
+- **FILED Bar K5, the corner swing (camera; FILED eb6deaf78 before any number on 10501-10536; full text in `streams/camera.md`).**
+  BASE `--camera-corner=off` v ARM on, f8166f5e8's code (its full check first), builder2 J8, 36 seeds an arm a workload; CORNER (Locks +
+  Terminus), EMPTY (nobody behind the wall), K4's AMBUSH / RETREAT / ATTACK. **Deciding:** D1 toward the hidden side CORNER pooled ARM >=
+  BASE + 10 points and ARM > BASE each arena; D2 facing the building after the corner opens, EMPTY pooled, ARM <= 0.75 x BASE; D3 seen ->
+  on screen ARM mean <= BASE. **Guards:** G0 no fog cheat (per-frame yaw identical CORNER v EMPTY up to the first known enemy, every seed);
+  G1 the empty corner not seasick (reversals <= BASE + 1, off-travel > 135 deg <= BASE + 3 points, jerks, snaps 0); G2 K4 v2's lines; G3
+  K3 v2's lines; G4 no swinging on every workload; G5 own squad on screen >= BASE - 5; G6 runs clean. Named at risk (dev, never a bar):
+  G1 Terminus EMPTY reversals BASE + 1.22; D2 Locks EMPTY 0.0 -> 7.3 % (pooled at the line's edge).
+  Workload fix before any number (65e6e7e92): Locks' far-bank lane started in the enemy's half at the lock bridge (0 of 6 opened);
+  lanes now drawn from his half only; lines unchanged. Series commit 65e6e7e92.
+  **READ (R43.27): FAILS 6 lines; the corner swing stays OFF.** builder2 J8, 08931da4e (65e6e7e92's code), n 36 an arm a workload, 36/36
+  DONE everywhere. D1 pooled 65.6 v 56.7 % (+8.9 v +10) FAIL (Locks 48.4 v 27.6, Terminus 83.3 v 85.0 FAIL); D2 EMPTY 13.8 v 11.4 % FAIL;
+  D3 seen -> on screen 0.49 v 3.98 s PASS; G0 no fog cheat 72/72 identical PASS; G1 Terminus EMPTY reversals 4.38 v 2.76 FAIL; G2, G3, G5,
+  G6 PASS; G4 ambush 4.73 v 2.91 and attack 7.01 v 5.98 FAIL. Causes (camera): Terminus has no room (K4 already faces the hidden side 85 %);
+  aiming round the far end lands on the next block on tight streets; the pull's out-and-back is a reversal a corner and fires mid-fight.
+
+- **FILED Bar A, the street hold's far crews (engage; FILED 677199e2b on tree 9e8313f8d before any 10301+ number; full text in
+  `streams/engage.md`).** BASE `holdfar` off v ARM `--traffic-on=holdfar`, builder2, native path, 10301-10324 on three head-on stages
+  (terminus west, terminus east, Locks' lock; 8 seeds each). **Deciding:** far_arrive_s (the far crews' mean arrival at the destination)
+  ARM < BASE by >= 2 se. **Guards:** contacts_mouth, contacts_far (released far crews at the mouth while the passer comes), jam_s,
+  last_a_s, Bar E1's lines (10325-10348), G1-G5 (10349-10372), perf on builder0's ON check, suite ON; exercised floor 16 of 24 (10325-10348
+  pooled extension). **R43.12's side-street line (2) did NOT plant in its 90-min box** (four plantings on dev 7007-7013: the verdict fell
+  to the other squad, the route found the bridge as the mouth, or the mouth landed on A's own way; away_s 8/0/1/2 OFF v 8/0/1/4 ON), so
+  his AWAY geometry is dev evidence by removal on his seed (AWAY 82 m -> best 17 m, identical to his match for 17 s). `--stage=terminus_side`
+  kept for the record.
+  **READ (R43.18): FAILS as filed.** builder2, native ON, 9e8313f8d, n 24 paired, no timeout; floor 16 of 24 met. Line 1 far_arrive_s
+  53.9 -> 51.5 s a run, paired -2.40 s, se 1.38, z -1.73 (short of 2 se). Guards: contacts_mouth +0.17 (se 1.39), contacts_far +0.17 (se
+  0.21), jam_s -2.50 (z -2.14, better), last_a_s -1.12 (se 2.07): all PASS. Reported: held_s -13.3 s a run (z -3.65). Lines 6-9 not run.
+
+- **FILED Bar A6, the street-hold verdict by ordered way (engage; FILED a72983638 on tree 98739047a before any 10373+ number; full text in
+  `streams/engage.md`).** BASE `holdway` off v ARM `--traffic-on=holdway`, builder2 J10, native both arms, 10373-10396: odd seeds the
+  terminus_side planting (the mis-aimed verdict), even seeds the three head-on stages. **Deciding:** off_arrive_s (the stage's two
+  off-street crews A4, A5: the same set both arms) on the 12 side seeds, ARM < BASE by >= 2 se; held_off_s reported only (near-circular,
+  R43.18 note). **Mechanism guard** (12 head-on seeds): verdicts and held_on_s (crews whose routes cross the street) each within BASE +/-
+  2 se. **Outcome guards** (all 24): contacts_mouth, contacts_far (+2 floor), jam_s, last_a_s; Bar E1's lines on 10397-10400 + 10573-10592;
+  perf and suite ON on the merge candidate. Floor: 8 of 12 side seeds with a BASE verdict, else the declared extension (the same 24 as
+  `--stage=terminus_side`). Dev (never a bar): his seed with holdway leaves his match at 14 s, Guns_1 best 38 m, no AWAY (OFF AWAY 82 m).
+  **READ (R43.20): FAILS guard 2b.** builder2, native, 98739047a, n 24 (12 side + 12 head-on), no timeout, floor 12/12. Line 1 off_arrive_s
+  49.5 -> 37.9 s a run, paired -11.58 s, se 4.07, z -2.84 PASS; 2a verdicts -0.25 (se 0.18) PASS; **2b held_on_s -40.8 s (se 13.3, z -3.07)
+  FAIL** (real head-on crews released: `_route_passes` walks the crew's current leg to its seat, not its squad's destination); 3-6 PASS
+  (jam_s -9.29 better). Reported: side verdicts 12 -> 2, side held 433 -> 10.
+
+- **FILED Bar A6 v2, two arms (engage; FILED d4a91fc6b on tree 13fbe1a5d before any 10601+ number; R43.20).** One BASE v ARM-W
+  (`--traffic-on=holdway`, the ordered-way read) v ARM-WR (`holdway,holdroute`: release judged on the crew's navmesh route to its squad's
+  destination at the verdict), builder2 J10, one arm at a time, 10601-10624; lines as Bar A6 (1 off_arrive_s side seeds; 2a/2b head-on
+  verdicts and held_on_s within 2 se; 3-6 outcome guards; 7 Bar E1's lines on 10625-10648; 8 perf-judge on the ON check; 9 suite ON) +
+  10 route_ms_per_verdict and queries a verdict (ARM-WR, reported). Each arm judged alone; ship the arm passing every line (both: the
+  better line 1). The last re-file of this item this round.
+  **READ (R43.21): FAILS line 1 in both arms.** builder2, native, 13fbe1a5d, n 24, no timeout, floor 12/12. Line 1 off_arrive_s (side,
+  BASE 59.8 s a run): ARM-W -6.33 s (se 5.16, z -1.23), ARM-WR -4.46 (se 4.96, z -0.90). 2a 13 -> 13 PASS; 2b W -6.25 (se 7.70), WR -20.5
+  (se 11.85, z -1.73) PASS; 3-6 PASS (contacts_mouth -10, jam_s -8.6 / -7.8); 10 WR 0.59 ms a verdict, 3.3 queries. Reported: side
+  verdicts 12 -> 4, side held 705 -> 96 / 54, side jam 352 -> 45 / 41 (z -5.2).
+
+- **FILED Bar S, his first order settles (manoeuvre; FILED ~01:30 before any number on 10401-10448; tree FROZEN fed356a8b; full text in
+  `streams/manoeuvre.md`).** One BASE (`--shape-latch=off` = today's main) v four arms each removable alone: **seats** (`--seat-bound=on` +
+  the latch), **converge** (`--converge-on-crew=on`), **kturngoal** (`--traffic-on=kturngoal`, GDScript drive while ON), **all** (the
+  shipping candidate); native ON. Workload `make manoeuvre-bar-s`: his first-order shape synthesised on each deploy, locks / terminus /
+  crossing x 10401-10424 (72 cells an arm, 20 s). **Deciding:** D1 crews seated within the bound by 15 s; D2 start-zone yield seconds; each
+  arm v base, ARM better by >= 2 se. **Guards:** yield+blocked s and k-turn s ARM <= BASE + 2 se on EVERY arena (R43.14); group guards
+  (q3_judge) and the G1 v9 corridor lines on 10425-10436; fights 10437-10442; perf (check's perf-judge + sim-profile base v all, quiet
+  builder0). Named at risk (dev, never a bar): seats on crossing +21 s a run of yield+blocked. kturngoal needs native's twin before ON
+  (requested); seats / latch / converge are planner-side, no twin.
+  Gate GREEN: fed356a8b on builder2 (`make check exited 0`, 3367 passed / 0 failed, 26 + 2 NOT JUDGED: perf-judge (builder2), scenario_perf
+  (loaded); perf judged on builder0 quiet after the series per the bar). Series started 01:21 PDT; Bar S5's chained behind it.
+  **READ deciding (R43.31): FAILS as filed in every arm.** builder2, fed356a8b, 72 paired cells an arm, 0 SCRIPT ERROR. seats: D1 197 ->
+  329 of 720 (+9.2 se) PASS, D2 -1.2 se FAIL, Locks yield+blocked +3.4 se FAIL. converge: D1 -2.7 se FAIL, D2 -4.5 se PASS, guards PASS.
+  kturngoal: D1 -2.7 se FAIL, D2 -3.4 se PASS, guards PASS (never-arrived 253 -> 214). all: D1 +8.9 se PASS, D2 -0.9 se FAIL, Locks
+  yield+blocked +5.4 se FAIL. Guards (group / fights / G1 v9) pending.
+
+- **FILED Bar A7, never move for a shot across water (engage; FILED before any 10649+ number on de626d7e1's rule + the probe's
+  `--named` arm; full text in `streams/engage.md`).** BASE `--engage-water` off v ARM on, both arms `--brains-off=native_decide` (native's
+  decide twins `_obey`'s in_reach, so the skip acts only on GDScript; native twins it before any ON), builder2 J10, 10649-10672; stage:
+  a squad under attack-move across the canal (Locks / Crossing), three Limousines dug in on the far bank. **Deciding:** hop_s (combat
+  hops while engaging a contact across water) AND off_order_m (rise of the crew's distance to its own order goal), each ARM < BASE by
+  >= 2 se. **Guards:** damage_water, first_hit_water_s, deaths, kills, last_a_s (1.645 se); line 8 a named ATTACK on the nearest
+  defender (same seeds, `--named=on`): deaths ARM <= BASE + 2 se; Bar E1's lines on 10673-10696; perf; suite ON with ENGAGE_WATER=on.
+  Census (dev 7001-7012, laptop, n 12, never a bar): 27.1 crew-s a run engaged across water, gun on it 23.0 s, 372 damage across water;
+  19.2 s of hops (5.2 reverse), off-order +22.6 m (max 74.5).
+  **RE-FILED at tree 8ac00d19b before any 10649+ number** (rule unchanged; probe + `make engage-bar-a7`; four arms of 24: attack-move
+  off/on, named-attack off/on). Guards 3-4 amended on a dev read (a squad that crosses sooner reads as shooting less "across water":
+  damage_water 5796 -> 1215 at equal kills): now damage to the defenders from ANY bank >= BASE - 1.645 se and the squad's first hit from
+  any bank <= BASE + 1.645 se; the across-water versions reported. Dev (laptop, n 12, never a bar): hop_s 459 -> 10, off_order_m 352 -> 60,
+  deaths 28 -> 20, kills 26 = 26.
+  **READ lines 1-8 (R43.23): PASS.** builder2, 8ac00d19b, 10649-10672, n 24 paired, no timeout, both arms GDScript decide. 1 hop_s 34.8
+  -> 0.7 s a run (-34.1, se 2.85, z -12.0); 2 off_order_m 21.5 -> 10.6 m (-10.9, se 4.33, z -2.52); 3 damage +122 (se 108); 4 first hit
+  +0.45 s (se 0.68); 5 deaths 64 -> 48 (z -2.9, fewer); 6 kills 49 -> 57; 7 last_a -5.6 s; 8 named attack deaths 60 -> 57 (se 0.31).
+  Line 9 PASS: Bar E1's probe on 10673-10696 byte-identical ON v OFF (stuck 128.5 = 128.5 crew-s, first hit 7.02 = 7.02 s, deaths 25 = 25:
+  no water between crew and target, the rule never fires). **Lines 10-11 PASS** (`check ENGAGE_WATER=on` on builder0: every test passed,
+  perf-judge judged; 1 FAILED = sim-baseline only: crossing, locks, gorge MOVED, the three water maps). **Bar A7 PASSES every line.** Flip
+  committed cbf1eb935 (ENGAGE_WATER default ON, `--engage-water=off`); baseline adoption waits for builder0's load (first try OOM-killed,
+  exit 137 on six maps at load 58); the three moved maps read twice, identical.
+
+- **FILED Bar S5, the bridge's carried-past wait (manoeuvre; FILED in Status before any 10449+ number; side branch `wip/manoeuvre-s5`
+  = fed356a8b + balance's v2 overrides + 5a5e7b434).** deckwait v5: a wait begins only on the carried-past case (a follower at >= 0.6 x top
+  speed behind a leader in the deck's mouth slower than 4 m/s away from it). Bar Q6's lines unamended on fresh 10449-10460 x ticks x both
+  sides, main and overrides trees; group guards 10461-10472; fights 10461-10466; chained behind Bar S's series. Dev (drill's own seeds,
+  overrides, builder2 light, GDScript, n 18, never a bar): OFF 17/18 (rust s2 t15 rim 5.1 s) -> ON 18/18, pooled rim 14.2 -> 7.8 s,
+  arrival -0.14 s a run (se 1.5). A pass is balance's bridge gate (R42.15) for round 44's B2s re-read.
+
+- **FILED Bar K5 v2 (camera; FILED 54a0de2ed before any 10537-10572 number; R43.27).** Rule bb4c83e56: the pull only under a quiet
+  move order (no known enemy); past the end, aim along the open side's normal where a 30 m sight line is clear; held until his next
+  order, a > 45 deg turn or a contact; CORNER_W 4.0. Lines as Bar K5 except D1 per arena ARM >= BASE - 2 se (per-run shares), pooled +10
+  points unchanged; builder2 J8; `tests/camera/bar_k5.py --v2`. The one re-file of K5 this round.
 
 ## Rulings (round 43)
 
@@ -112,6 +216,167 @@ never touch processes you didn't start. Never delete builder files that aren't o
   speed at tick 22: native's). CP43.0's hash is not named yet (the twin gap and round 41's recording on its own tree 21b20bdce first).
   The recorder keys (native 2fd2e5d4e) and camera's `cam` row merge together after ONE full check on camera's tip (camera merges
   2fd2e5d4e, authorised).
+- **R43.5 (~21:40) Ownership ruled ahead for engage's A1 (C43.3).** Engage's interim (laptop, census-places rebuild 0e7664821,
+  `tests/engage/turnaround_probe.gd` / `path_probe.gd`): a fresh task from his positions never drives north-east; every navmesh route
+  from (-105, 46) to the far quay is the west bridge (63-67 m); under attack-move the crew brain picks ENGAGE on a Syndicate crew across
+  the canal (56-60 m; the cover map's own line ignores water; inside range 50 + 15 m) and `_combat_move` answers direct hops, one a
+  reverse hop 36 m north-east; the DWA lattice then has no closer candidate, the leash drops ("boxed in"). Not yet shown on his seed's
+  replay. If confirmed: GRANT engage `game/ai/tank_brain.gd`'s engage choice and `_combat_move`, `game/ai/combat_motion.gd` (symmetric,
+  switch with `=off`, merge note); `game/ai/cover_map.gd` read-only (camera reads it); DWA / leash in `movement.gd` stays manoeuvre's.
+- **R43.6 (~21:50) Manoeuvre's S1: his first order's three failures are one cause, the travel SHAPE (manoeuvre 4ca7692f9; laptop rebuild
+  `tests/manoeuvre/start_trace.gd`, within 0.1 m of his census for 10 s).** The Gangs doctrine's SWARM laid his Guns 112 m wide (SWARM_SPREAD
+  1.9 x the 14.7 m hull-floored pitch): War Rig 3's seat 72 m east of his click, the Tanker's 63 m east, through the Hunters' deploy row;
+  `inset_anchor` slid the centre 15 m off the click; the shape flipped swarm/vee x4 (8.4-14.6 s) on the threat reading, moving War Rig 3's
+  seat 50-95 m each time; the "20 s yield" is War Rig 3 (no give-way spot for a 14 m hull) answering HOLD across Hunters_1's lane for the
+  6 s cap, then Hunters_4's. The lead War Rig's 29 m seat is the vee's rear corner at the hull floor (physics, fine). Round 41's start:
+  four ~100 m swarms over each other. **Ruled:** (a) latch the travel shape: a move keeps its shape until arrival or re-order; the
+  element's own contact may change it once with hysteresis; symmetric for the CPU; switch `=off`; GRANT manoeuvre `element_plan.gd`
+  `_plan_movement` / `chosen_formation` / `inset_anchor` (engage keeps the engagement functions). (b) the swarm stays (doctrine flavour;
+  `doctrines/*.json` unchanged); S2's seat bound (max(18 m, 1.5 hull lengths + hull floor), `--seat-bound`) is the size fix. Bar S judges
+  the latch and the bound as separately removable arms.
+- **R43.7 (~22:05) Manoeuvre's grant widened to the transit stations.** With the latch (c2e03f40e, `--shape-latch`) and the seat bound
+  (cf70440ac, `--seat-bound`) ON, his start re-read (laptop, GDScript): anchor exactly on his click, no shape flip in 20 s, final seats
+  within 32 m; Guns_2 9.3 s, Guns_4 5.4 s, War Rig 3 13 s, Tanker 14 s; the lead War Rig not (oscillates "blocked terrain" 4 s at a wreck
+  prop (-96, 62): the mover, manoeuvre's). The transit stations are still laid from the unbounded shape (War Rig 3's goal at 2 s 70 m
+  east, then a 150 deg k-turn in the container alley). GRANT: the bounded centred shape at `ElementPlan.route_seats` / `stations_along` and
+  `Element._rank_file`, plus `element.gd`'s `shape_latch` lines; under the same `--seat-bound` switch (one arm; `=off` = today, tested).
+- **R43.8 (~22:15) His War Rig's turnaround: the cause is Traffic's STREET HOLD, shown by removal; the far-crew fix GRANTED to engage.**
+  Engage (A1, 2d43b1e88, native's replay with the library: Guns_1 0.0 m off his census for 48 s, AWAY 82 m as his): at tick 478 Traffic
+  ruled his Guns (e:5) WAIT for his Hunters (e:6, crossing z 50-65); `_begin_wait` deals a spot behind the street mouth to every moving
+  crew of the waiting squad however far, and `hold_of` returns pace 1.0 beyond 16 m, so Guns_1, 80 m from the mouth, was steered at
+  (-29.7, 100.0) for ticks 478-1023 (18.2 s) with its seat 45 m the other way. **Removal:** `--traffic-off=hold`, same tree, native ON:
+  Guns_1 arrived on the far quay 12 s after his order (drive-away seconds 1 v 19). Hypotheses (a)-(e) killed (engage's Status). The
+  across-water ENGAGE hops (ticks 556-694) are real but not the drive (logged). A2: no order queue (the attack reached the element at
+  807). The container_20 stall (-20, 80), ticks 1124-1320: manoeuvre's k-turn family. **Not a regression of round 42** (the hold is round
+  29's): the far-crew case was always there. GRANT engage `traffic.gd` `_begin_wait` / `_spot_behind` / `hold_of` + one switch name
+  (manoeuvre keeps out); rule: a crew farther than HOLD_BACK_M's 43 m + its hull is released, or `spot = here` if its route runs through
+  the street; symmetric, switched, C43.4's twin rule applies. Bar A re-aimed at the street-hold far-crew case on 10301-10324.
+- **R43.9 (~22:40) CP43.0 PASSES on both recordings (native 409f70d66, quick 18/0 builder0; full check queued).** Round 42 (56416, today's
+  code + library): 10/10 crews 0.0 m for 20 s, exact to ~28 s. Round 41 (49326): an UNRECORDED INPUT, the formation pick
+  (`RtsControls.set_formation` emits no command_issued; he put three squads in column in the pause): inferred from task rows for old
+  recordings, recorded as `order` verb "formation" from now on (C43.2 additive); on its own tree 21b20bdce: 5/5 crews 0.0 m for 20 s.
+  `make replay-match RECORDING=<file>`. Open: both matches part at ~28 s (cause not found); the GDScript v native 1-ULP gap (twin).
+  Merge plan: camera d489eaa2b alone on green, native 409f70d66 alone on green (match_recorder.gd resolved on main, both additive),
+  ONE main check on the pair.
+- **R43.10 (~23:00) Camera's K5.1 merged alone: main b31d3ddea = camera d489eaa2b (INHERIT).** builder0 `>> remote: make check exited 0`,
+  3360 passed / 0 failed, 27 passed + 1 NOT JUDGED (remote-guard-test quiet refusal at load 18.16; perf-judge JUDGED scenario_perf). Carries
+  the `cam` row (C43.2), native's recorder keys 2fd2e5d4e, the corner workload and `--camera-corner` (OFF). Also covers R43.4's replay
+  files (95331c3cd is in the tree). **His next playtest records the camera's yaw and target** (`tests/camera/camera_recording.py`).
+- **R43.11 (~23:15) The 30-unit right-click hitch is G1 v9 ON (merge 09564e582, round 41); native fixes it output-identical (N2b).**
+  Native's bisect (builder2, GDScript at every commit, `test_control_scale` "ordering 30 units"): 8952c3d64 10.90 ms (ratio 96.4) ...
+  a1af3ba9e (09564e582's first parent) 10.90 / 95.6; 09564e582 313.19 / 2747.2; 21b20bdce 312.57; main 84f914f78 312.17. Today's code on
+  the laptop: ON 248.94 ms v `--group-g1=off` 8.26 ms (budget 104). In his terms: ~0.25 s freeze per whole-army click since round 41.
+  GRANT native the G1 pack's cost path (`selection_squads.gd`, `rts_controls.gd`: pack_halts, seat_ok / reached probes) + `native/**`; the
+  contract is OUTPUT-IDENTICAL seats (an equality test on R41.15's corpus + control_scale), timing inside budget 104 on the bisect's box,
+  full check. After CP43.0, before N3.
+- **R43.12 (~23:30) Bar A decides on TWO workloads (before any 10301+ number).** Engage's dev (7001-7006, laptop): his replay with
+  `--traffic-on=holdfar` (the crew's straight distance to the mouth; the route-through walk over the whole route) keeps Guns_1 on his
+  attack-move (best 17 m from his click; OFF AWAY 82 m). A staged head-on meeting puts the mouth ON the waiting squad's way, so away_s
+  reads 9 = 9 there; what it moves is the far crews' arrival (dev n 6, not a number). Ruled: (1) head-on stage, far_arrive_s ARM < BASE by
+  >= 2 se; (2) a side-street stage (the verdict aims off the squad's way, his geometry), away_s ARM < BASE by >= 2 se; both pass to ship.
+  Side-street stage time-boxed ~90 min, else (1) alone with the reason written. Whether his verdict itself was mis-aimed: asked.
+- **R43.13 (~23:40) His seed's street-hold VERDICT was mis-aimed; the verdict fix is engage's A6, after Bar A.** Engage: the meeting
+  was real (Guns_3, nose east while yielding, met Hunters_4 head-on in the corridor (-30, 42)-(-20, 80)), but the whole Guns squad was
+  told to wait with its way read as EAST (the mean of its crews' momentary headings; two slow and nose-east while their orders ran
+  south-west), so the spots went behind a mouth only Guns_3 would pass. A6 (later, own bar): a verdict binds only the crews whose own
+  routes run through the street (the route walk applied to every crew), and the squad's way is its ORDERED heading. GRANT extends to
+  the verdict's way computation in `traffic.gd` for A6; manoeuvre told.
+- **R43.14 (~23:50) Manoeuvre's dev read: the bound alone packs k-turns tighter; the cause is the transit's converging station off the
+  crew; `converge` / `transit_starts` GRANTED.** Bar S workload built (`make manoeuvre-bar-s`, `tests/manoeuvre/s_judge.py`); dev 7001 x
+  locks/terminus/crossing on builder2, base v bound+latch: crews within the bound by 15 s 9 -> 16 of 30, seat moves 117 -> 45, BUT
+  yield+blocked s 74 -> 95, k-turn s 72 -> 90 (Locks better on every line; terminus/crossing worse). Trace: every War Rig k-turns from its
+  first tick in both arms: the converging station lands 7.5 m right-behind (110 deg off the nose) on terminus/crossing (a bent first route
+  leg?), the mover commits to a 7.5 m reverse, the station moves 45 m on, the reverse backs into the edge (11-14 s a War Rig; his Guns_2's
+  3.6 s creep on Locks). Built OFF: `--traffic-on=kturngoal` (a reverse ends once its goal leaves the turning circle). GRANT
+  `ElementPlan.converge` / `transit_starts` for the root fix; each fix its own arm in Bar S; guards include yield+blocked and k-turn
+  seconds per arena (not pooled), ARM <= BASE + 2 se. War Rig 3's 20 s HOLD is the per-crew give-way (no room for a 14 m hull), not R43.13.
+- **R43.15 (~00:10) CORRECTION to R43.2 / R43.11: his real right-click hitch is a frame or two, not ~0.25 s.** Native's profile (laptop,
+  82bbe3da8 + uncommitted timers, test_control_scale "ordering 30 units", 260 ms): `SelectionSquads.untangle_whole` 247.5 ms. The test's army is
+  6 squads, every squad one knot in a column, so all 720 permutations x 15 pairs x 25 segment tests (~270k per click); `column_lay` 8.0 ms
+  (one `gate_width`). Only `--group-lay=off` removes it. A side fields at most 5 squads (MAX_SQUADS), 4 on his laptop preset: 120 or 24
+  permutations, so ~40 ms at 5 and ~8 ms at 4 on the laptop by scaling. N2b = memoise `_pair_crosses` (output-identical, equality test),
+  GDScript only; no C++ port unless 5 squads still misses budget 104. Below CP43.0's merge in priority.
+- **R43.16 (~00:25) builder2 may run two judged series at once (camera's Bar K5, engage's Bar A) plus one full check.** It has 32 cores
+  and 31 GB (29 GB free at 05:22 box time, load 13); C43.1's one-series rule came from builder0's 15 GB OOM (round 42). Condition:
+  total jobs <= 24, no perf read on builder2 (fight and camera numbers are tick/frame-paced). A load-induced failure reruns the workload.
+- **R43.17 (~00:40) N2b done at the memo; no C++ this round.** Native 6afe991bb (unchecked yet): `untangle_whole`'s crossings memoised,
+  drives precomputed in the same order, permutations built once, a losing permutation stops early; identity: `test_untangle_whole_memo.gd`
+  (the old function verbatim v the new on 1,500 seeded knots, same places / return / counters). Laptop, "ordering N units" v budget 104:
+  6 squads 249.2 -> 20.19 ms (ratio 2738.8 -> 232.1); 5 squads 13.39 ms (155.7); **4 squads (his laptop) 6.50 ms (78.3): in budget**. The
+  rest at 5-6 squads is one `RtsControls.gate_width` scan (~7 ms); 6 squads can't meet 104 (G1 off alone 96). gate_width in C++: later.
+- **R43.18 (~00:55) Bar A FAILS as filed; holdfar stays OFF; A6 (the verdict fix, R43.13) next with Bar A6 on fresh 10373-10396.**
+  No pooled extension after a deciding line is seen (optional stopping). A6 binds a street-hold verdict only to crews whose own routes
+  run through the street and reads the squad's way from its ordered heading: his Guns_1 (route west, never through that street) would
+  never be bound, so it removes the cause holdfar patched. Deciding line one the head-on stage can move (held_s of crews whose route
+  doesn't cross the street); Bar A's guards + E1's lines; his replay as dev evidence by removal.
+- **R43.19 (~01:15) CP43.0 MERGED: main c57fc616b = native 409f70d66 (builder0 `>> remote: make check exited 0`, 3352 passed / 0 failed,
+  28 targets ALL JUDGED, sim-baseline 53/0, perf-judge PASS 1.00x).** match_recorder.gd auto-merged (native's replay_keys / frame / paused /
+  formation_changed hook beside camera's `cam` row; both additive). merge_check_needed CHECK (camera's files are not in 409f70d66's tree),
+  so main c57fc616b is unchecked as a whole: laptop `make lint-fast` exit 0 (1257 scripts) and `make test FILTER="match_recorder|camera_record"`
+  7 passed / 0 failed. ONE main check after native's second merge (356ce50d2, its check running on builder0).
+- **R43.20 (~01:35) Bar A6 FAILS guard 2b; A6 v2 is the LAST re-file of this item this round,** two arms v one BASE on fresh
+  10601-10624 (+ 10625-10648 E1's lines): ARM-W the ordered-way read alone; ARM-WR ordered way + release judged on the crew's navmesh
+  route to its squad's destination. Same lines (2b as filed) + a perf guard (find_path per crew at the verdict; ON check perf-judge
+  <= 1.05x). Ship the arm that passes every line (both: the better line 1). Fail = both OFF with reads, item stops for the round.
+- **R43.21 (~02:25) Bar A6 v2 FAILS line 1 in both arms: holdfar, holdway, holdroute stay OFF; the street-hold item stops for the round.**
+  Round-44 candidate (not this round's filing): a bar DECIDED on the side stage's jam_s on fresh seeds (v2's reported side jam 352 -> 45,
+  z -5.2; every guard passed). His War Rig's cause stays shown by removal on his seed (R43.8). Engage moves to A7: the across-water
+  ENGAGE choice (R43.5's trace: the cover map's own line ignores water; `_combat_move` hops along the bank), report first, then its bar on
+  fresh 10649-10696.
+- **R43.22 (~02:40) Native's second merge: main 5cb6b9802 = native b840544de (builder0 `>> remote: make check exited 0`, 3354 passed / 0
+  failed, 28 targets ALL JUDGED, sim-baseline 53/0, perf-judge PASS 1.00x).** Carries his whole match replaying exactly (the trig shim,
+  45d5b28ce), N2b's memo (output-identical, R43.17), lines_r43. merge_check_needed CHECK (camera's files): the batch's ONE main check runs
+  on builder2 (builder0 held two checks), log `~/orch-r43/main-check-5cb6b9802.log` on the laptop. Not in it: native 1b6535335 (remote.sh
+  keeps verdicts on the builder; its own check next). Twins: kturngoal pair `pair/native-kturngoal` a907a541e ready (laptop 1440 drives,
+  0 mismatches; builder2 native-proof running); A7's decide twin after Bar A7 reads.
+- **R43.23 (~04:15) Bar A7 passes lines 1-8; the flip ships WITH native's twin of the in_reach skip** (not with native_decide forced
+  off: a GDScript decide for every crew is a cost in every fight). Native builds the pair off engage's rule commit de626d7e1 now; the
+  merge candidate = engage's flip (ENGAGE_WATER default ON, `--engage-water=off`) + the twin, ONE full check on the combined tree (native
+  path; perf-judge inside it, R41.15's precedent), after lines 9-11 pass.
+- **R43.24 (~04:45) Engage's tools and OFF rules merged: main 37fa46c6c = engage 21dbaf662** (builder0 `>> remote: make check exited 0`,
+  3362 passed / 0 failed, 28 targets ALL JUDGED, sim-baseline unmoved): A1's tools, CREW_TRACE (trace-only, default off), holdfar / holdway
+  / holdroute OFF with tests (traffic.gd, tank_brain.gd under R43.5/R43.8). merge_check_needed CHECK; verified by the next batch main check
+  (the current one, on builder2, covers 5cb6b9802).
+- **R43.25 (~05:00) MAIN 5cb6b9802 GREEN on builder2** (`>> remote: make check exited 0`, 3365 passed / 0 failed, scenarios 54/0; 24
+  targets passed + 4 NOT JUDGED for the machine: perf-judge (builder2 is not a judging machine), scenario_perf (loaded 4.82x),
+  remote-guard-test (no quiet window, load 51.6), web-smoke (first sound 41.3 s at load 43.5); log `~/orch-r43/main-check-5cb6b9802.log`).
+  Nothing switched ON in the batch (camera's corner OFF, native's memo output-identical), and native's own builder0 checks judged perf
+  1.00x, so the batch stands. The web-smoke and perf-judge NOT JUDGED rows are re-read in the next quiet builder0 window with the next
+  batch (main 37fa46c6c = + engage's tools/OFF rules).
+- **R43.26 (~05:20) A7's twin GREEN: `pair/native-a7` 457effa1a off de626d7e1** (builder2 `exited 0`, 15/0; native-proof EQUAL with
+  `--engage-water=on`; decide-water twin 2400/0 on the seam and 2400/0 on Locks' canal). The first version (C++ calling back into
+  `TankBrain._across_water`) cost ~1.4 ms a tick on his match (~7 % of a laptop tick); leg_wet now runs natively on TankNative's ElTerrain
+  (~32 us a tick, ~0.2 %). The `_act` half stays GDScript on both paths (~0.13 ms a tick, engage's). kturngoal's pair a907a541e green
+  (R43.22). Both pairs merge with their streams' ship candidates.
+- **R43.27 (~05:40) Bar K5 FAILS; K5 v2 (the one re-file) on fresh 10537-10572 with all three directions:** (a) the pull only under a
+  move order with no known enemy; (b) past the end, aim along the open side's normal only where that ray is clear of other walls; (c)
+  hold the look until his next order, a > 45 deg heading turn or a contact. D1's per-arena clause becomes ARM >= BASE - 2 se (Terminus
+  sits at an 85 % ceiling), pooled +10 points unchanged; every other line as filed; ruled before any v2 number. For him: on Locks a
+  squad hidden round a corner reached the screen in 0.5 s v 4.0 s (n 36).
+- **R43.28 (~06:10) Native's remote.sh builder-side log merged: main 36eacb71f = native 1b6535335** (builder0 `>> remote: make check
+  exited 0`, 3354 passed / 0 failed, 28 targets ALL JUDGED, perf-judge PASS 1.00x; its own run's log on builder0
+  `~/tank_squad/remote-logs/` ends `>> builder: make check exited 0`). Lesson 336's tool fix is in. merge_check_needed CHECK (engage's
+  21dbaf662 too): engage's combined A7 check, on a tree that merges main 36eacb71f, verifies the batch. Native: every backlog item done;
+  N5 `make playtest-report` (arrivals, cam scrub, replay divergence) for his next playtest.
+- **R43.29 (~06:20) K5 v2 amended before any v2 number (camera's dev 7001-7012, 130412bdf: D1 pooled 65.5 v 53.3, Locks 58.5 v 26.2,
+  Terminus inside 2 se, G1 now passes; D2 16.2 v 10.7 % and G4 ambush +2.0 fail).** Cause of D2 (per-frame traces): the view faces the
+  building in BOTH arms before the corner (K4's war pull across the building), the census opens on the lead crew, and after arrival K4's
+  look returns: D2 mostly measures K4. Ruled: (2a) the corner opens on the squad's centre; D2 counts only frames where K4's war pull is not
+  the yaw's winner, same exclusion both arms (an instrument fix); (2b) no corner look within N s of an order start (the ambush drive);
+  (2c) confirm D2 and G4 on the OTHER dev block 9501-9512 before launching; if they fail there, stop K5 unspent (ship OFF, report Locks).
+- **R43.30 (~06:50) K5 STOPS unspent: the 9501-9512 confirmation FAILS; `--camera-corner` stays OFF; 10537-10572 unread.** Camera,
+  e6c12fb8d, builder0 light, dev 9501-9512, 12 an arm: D1 pooled 56.3 v 57.6 % FAIL (Locks identical 20.9 v 20.9: the 6 s settle removed
+  every Locks corner look), D2 not-K4 facing 9.5 v 0.0 % FAIL, D3 1.56 v 1.44 s FAIL, G1 Terminus > 135 deg 18.8 v 11.8 % FAIL, G4 ambush
+  5.68 v 3.61 FAIL; G0 24/24 PASS. The 7001-7012 gains did not hold on a second block (the reason 2c existed). For him: Bar K5's own
+  series showed the Locks gain (seen -> on screen 3.98 -> 0.49 s, n 36) but the swing costs elsewhere; his next recording carries the
+  camera's yaw, so the rule is rebuilt from his actual corner moment (round-44 candidate). Camera moves to its stretch (seconds inside a
+  building) and its close.
+- **R43.31 (~07:00) Bar S FAILS as filed in every arm; nothing ships; Bar S v2 (the one re-file) = all + a Locks converging give-way fix.**
+  converge and kturngoal pass D2 but lose D1 by 2.7 se each: calling D1 "inapplicable without the bound" after the numbers would read
+  the bar after the fact (R43.14 said an arm passing EVERYTHING ships), and D1 is closest to his words. The bound alone doubles D1
+  (+9.2 se); its cost is Locks' five crews giving way to each other converging on seats within 37 m. v2: one arm on fresh 10701-10724
+  (+ 10725-10748), D1 and D2 as filed, per-arena guards as filed; time-boxed ~2 h on two dev blocks (7001-7012 and 9501-9512), else all
+  OFF with this read.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 

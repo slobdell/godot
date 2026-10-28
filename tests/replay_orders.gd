@@ -39,12 +39,14 @@ func _flag(name: String, fallback: String) -> String:
 func _run() -> void:
 	var path := _flag("orders", "")
 	var header := {}
+	var all_rows: Array = []
 	for line in FileAccess.get_file_as_string(path).split("\n"):
 		if line.strip_edges() == "":
 			continue
 		var row: Variant = JSON.parse_string(line)
 		if not (row is Dictionary):
 			continue
+		all_rows.append(row)
 		if row["t"] == "match":
 			header = row
 		elif row["t"] == "order":
@@ -52,6 +54,24 @@ func _run() -> void:
 		elif row["t"] == "census" and _spawn.is_empty():
 			for unit: Dictionary in row["units"]:
 				_spawn[String(unit["n"])] = unit["pos"]
+	var merged := _orders.size()
+	_orders = ReplaySetup.merge_clicks(_orders)
+	if _orders.size() < merged:
+		print("REPLAY_CLICKS_MERGED %d rows -> %d orders" % [merged, _orders.size()])
+	var picks := ReplaySetup.inferred_formations(all_rows)
+	if not picks.is_empty():
+		print("REPLAY_FORMATIONS_INFERRED %d" % picks.size())
+		# Each pick just before the first order of its tick that names its squad (else after that tick's orders): a pick
+		# FORMS an idle squad's element, and elements plan in the order they were formed, so his Guns (ordered first,
+		# formed first: the first task row) stay first.
+		for pick: Dictionary in picks:
+			var at := 0
+			while at < _orders.size() and int(_orders[at]["tick"]) < int(pick["tick"]):
+				at += 1
+			while at < _orders.size() and int(_orders[at]["tick"]) == int(pick["tick"]) \
+					and not (_orders[at]["units"] as Array).has(pick["units"][0]):
+				at += 1
+			_orders.insert(at, pick)
 	if header.has("spawn"):
 		_spawn = header["spawn"]
 	var setup := ReplaySetup.from_header(header)
@@ -73,7 +93,18 @@ func _run() -> void:
 	# planner seam and every `--<switch>=off` read LaunchFlags.from_environment(), so a flag that is only in next_flags
 	# never reaches them: until round 43 every replay of his Locks match ran on the default layout (foundry: the same
 	# spawn spots, other streets) with no objectives. Missing ones re-run this script once with them appended.
-	if not wanted.is_empty():
+	var shim := ""
+	if not ReplaySetup.trig_is_correctly_rounded():
+		shim = ReplaySetup.trig_shim()
+		if shim == "" or OS.get_environment("LD_PRELOAD").contains(shim):
+			print("REPLAY_TRIG_MISMATCH this process's atan2f is not correctly rounded and no shim helps: the replay will leave"
+					+ " his match within a second (run it through make: make replay-match)")
+			shim = ""
+	if not wanted.is_empty() or shim != "":
+		if shim != "":
+			# The re-run inherits the environment: the same LD_PRELOAD make gives every Godot it starts.
+			OS.set_environment("LD_PRELOAD", shim)
+			print("REPLAY_TRIG_SHIM " + shim)
 		var args := OS.get_cmdline_args()
 		args.append("--")
 		args.append_array(OS.get_cmdline_user_args())
@@ -120,6 +151,7 @@ func _step() -> void:
 	if _match == null:
 		return
 	_issue()
+	_trace()
 	if _match.tick >= _until:
 		print("REPLAY_DONE " + JSON.stringify({"tick": _match.tick}))
 		quit(0)
@@ -138,6 +170,11 @@ func _issue() -> void:
 			print("REPLAY_ORDER " + JSON.stringify({"tick": _match.tick, "skipped": o}))
 			continue
 		_controls.selection.set_units(names)
+		if String(o["verb"]) == "formation":
+			var picked := _controls.set_formation(String(o["formation"]))
+			print("REPLAY_ORDER " + JSON.stringify({"tick": _match.tick, "at": o["tick"], "verb": "formation",
+					"formation": o["formation"], "n": names.size(), "said": picked}))
+			continue
 		var extra := {"queue": bool(o.get("queue", false))}
 		if o.has("to"):
 			extra["to"] = o["to"]
@@ -145,3 +182,18 @@ func _issue() -> void:
 			extra["target"] = o["target"]
 		var said: String = _controls.order_selection(String(o["verb"]), extra)
 		print("REPLAY_ORDER " + JSON.stringify({"tick": _match.tick, "at": o["tick"], "verb": o["verb"], "n": names.size(), "said": said}))
+
+
+## `--trace=FROM-TO` (ticks): every unit's pose at full precision each tick of the window, one REPLAY_TRACE line per
+## unit, so two arms (e.g. native v `--brains-off=native`) can be diffed for the first tick and crew that part.
+func _trace() -> void:
+	var window := _flag("trace", "")
+	if window == "":
+		return
+	var bounds := window.split("-")
+	if _match.tick < int(bounds[0]) or _match.tick > int(bounds[bounds.size() - 1]):
+		return
+	for tank: Tank in _match.sorted_team_tanks(0) + _match.sorted_team_tanks(1):
+		if tank.is_alive():
+			print("REPLAY_TRACE %d %s %.6f %.6f %.6f %.6f cmd %.9f %.9f" % [_match.tick, tank.name, tank.global_position.x,
+					tank.global_position.z, tank.rotation.y, tank.velocity.length(), tank.command.throttle, tank.command.turn])

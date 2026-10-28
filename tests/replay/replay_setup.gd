@@ -87,3 +87,99 @@ static func difference(his: Dictionary, mine: Dictionary) -> String:
 		if his[unit_name] != mine[unit_name]:
 			return "%s is %s, his was %s" % [unit_name, mine[unit_name], his[unit_name]]
 	return ""
+
+
+## His formation picks in a recording made before they were recorded (round 41's): a Green squad's task in the exact
+## shape RtsControls._give_formation gives an idle squad it re-forms where it stands ({verb move, to: the squad's middle,
+## drills false, facing: the sum of its hulls' forwards, formation}; no `facing_from`, which a waypoint's task has),
+## whose `to` no order of that tick names, is a pick. Returned as `order`-shaped rows
+## (verb "formation", `inferred`), to be issued BEFORE that tick's recorded orders: the task rows are scanned once a
+## tick, so a pick and the move that carried its shape share a tick and the pick's row is written first.
+static func inferred_formations(rows: Array) -> Array:
+	var ordered := {}  # tick -> the `to` points his orders named
+	for row: Dictionary in rows:
+		if row.get("t") == "order":
+			if String(row.get("verb", "")) == "formation":
+				return []  # this recording holds its picks
+			var tick := int(row["tick"])
+			if not ordered.has(tick):
+				ordered[tick] = []
+			if row.has("to"):
+				ordered[tick].append(row["to"])
+	var out: Array = []
+	for row: Dictionary in rows:
+		if row.get("t") != "task" or int(row.get("team", -1)) != 0:
+			continue
+		var task: Dictionary = row.get("task", {})
+		if not task.has("formation") or not task.has("facing") or task.has("facing_from") \
+				or task.get("drills", true) != false or String(task.get("verb", "")) != "move":
+			continue
+		var tick := int(row["tick"])
+		var units: Array = []
+		for unit: Dictionary in _roster(rows):
+			if String(unit["name"]).begins_with("Green_%s_" % String(row["element"])):
+				units.append(String(unit["name"]))
+		if units.is_empty() or (ordered.get(tick, []) as Array).has(task.get("to")):
+			continue
+		out.append({"t": "order", "tick": tick, "verb": "formation", "units": units, "formation": task["formation"],
+				"inferred": true})
+	return out
+
+
+static func _roster(rows: Array) -> Array:
+	for row: Dictionary in rows:
+		if row.get("t") == "match":
+			return row.get("units", [])
+	return []
+
+
+## One click over a selection of several squads is written as one `order` row PER SQUAD (RtsControls tasks each squad
+## and signals each), all on one tick with the same verb, point, target and queue. Replayed one squad at a time it is a
+## different order (the group click lays the squads out together, an attack shares its target among them), so rows a
+## hand could only have given in one click are merged back into one order over the union of their units. Pure.
+static func merge_clicks(orders: Array) -> Array:
+	var out: Array = []
+	for row: Dictionary in orders:
+		var last: Dictionary = out[out.size() - 1] if not out.is_empty() else {}
+		if not last.is_empty() and String(row.get("verb", "")) != "formation" and _same_click(last, row):
+			var units: Array = (last["units"] as Array).duplicate()
+			for unit_name in row.get("units", []):
+				if not units.has(unit_name):
+					units.append(unit_name)
+			last["units"] = units
+			last["merged"] = int(last.get("merged", 1)) + 1
+			continue
+		out.append(row.duplicate())
+	return out
+
+
+static func _same_click(a: Dictionary, b: Dictionary) -> bool:
+	for key in ["tick", "verb", "to", "target", "queue"]:
+		if a.get(key) != b.get(key):
+			return false
+	return String(a.get("error", "")) == "" and String(b.get("error", "")) == ""
+
+
+## Whether this process's float trig is the correctly rounded one his match ran (native.md *Machine-independent trig*): a
+## Godot started by hand on a glibc older than 2.41 (the laptop: 2.39) rounds atan2f & co. 1 ulp off CORE-MATH, while the
+## native library carries CORE-MATH inside, so the replay leaves his match within a second (round 43: "a twin gap" at tick 22
+## and "a parting at ~28 s" were both this). make preloads the shim (`make trig-info`). The probe is tests/test_native_trig.gd's.
+static func trig_is_correctly_rounded() -> bool:
+	var b := PackedByteArray()
+	b.resize(8)
+	b.encode_u32(0, 0xad04f469)
+	b.encode_u32(4, 0x73c66291)
+	var angle := Vector2(b.decode_float(0), b.decode_float(4)).angle()
+	var out := PackedByteArray()
+	out.resize(4)
+	out.encode_float(0, angle)
+	return out.decode_u32(0) == 0x3fc90fdb
+
+
+## The shim make preloads on an old glibc (.tools/trig/libtank_trig-<sha>.so), "" when there is none.
+static func trig_shim() -> String:
+	var dir := ProjectSettings.globalize_path("res://.tools/trig")
+	for file in DirAccess.get_files_at(dir):
+		if file.begins_with("libtank_trig-") and file.ends_with(".so"):
+			return dir.path_join(file)
+	return ""
