@@ -185,6 +185,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   sides, main and overrides trees; group guards 10461-10472; fights 10461-10466; chained behind Bar S's series. Dev (drill's own seeds,
   overrides, builder2 light, GDScript, n 18, never a bar): OFF 17/18 (rust s2 t15 rim 5.1 s) -> ON 18/18, pooled rim 14.2 -> 7.8 s,
   arrival -0.14 s a run (se 1.5). A pass is balance's bridge gate (R42.15) for round 44's B2s re-read.
+  **READ (R43.38): FAILS as filed.** builder2, fresh 10449-10460 x ticks x both sides, 72 runs an arm, both trees. Overrides: rim 32.0 ->
+  40.3 s (+26 %, +1.7 se) FAIL, worst crew 3.9 s FAIL, crosses PASS, arrival +0.87 s PASS. Main: rim 32.9 -> 38.6 s FAIL, worst 2.5 s PASS,
+  crosses PASS, arrival +0.99 s a run FAIL. The fresh seeds have no rim failure OFF (72/72); the wait rescues the drill's crew and every
+  other crossing pays. deckwait stays OFF (v5 ref `wip/manoeuvre-s5`); balance's bridge gate not reached.
 
 - **FILED Bar K5 v2 (camera; FILED 54a0de2ed before any 10537-10572 number; R43.27).** Rule bb4c83e56: the pull only under a quiet
   move order (no known enemy); past the end, aim along the open side's normal where a 30 m sight line is clear; held until his next
@@ -421,6 +425,9 @@ never touch processes you didn't start. Never delete builder files that aren't o
   parkaside pair `pair/native-parkaside` f57dbb144 (2790 drives, 11 seats moved, 0 mismatches; lifts parkaside from traffic.gd's
   GDScript-drive gate). **Finding: the kturngoal pair a907a541e did not lift kturngoal's gate**, so its native-proof EQUAL compared
   GDScript with GDScript (the direct twin tests are real); native adds the lift and re-proves.
+- **R43.38 (~10:00) Bar S5 FAILS as filed; deckwait stays OFF; the bridge gate for balance's B2s v2 re-read is not reached (R42.23).**
+  Third round the deck-mouth wait fails on fresh seeds (Q6 R42.15, v4, v5): the fresh crossings have no rim failure to fix, so any wait
+  costs. Round-44 framing: fix the drill crew's own case (rust s2 t15) at its cause, not with a wait that fires on every crossing.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
