@@ -314,6 +314,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   off: a GDScript decide for every crew is a cost in every fight). Native builds the pair off engage's rule commit de626d7e1 now; the
   merge candidate = engage's flip (ENGAGE_WATER default ON, `--engage-water=off`) + the twin, ONE full check on the combined tree (native
   path; perf-judge inside it, R41.15's precedent), after lines 9-11 pass.
+- **R43.24 (~04:45) Engage's tools and OFF rules merged: main 37fa46c6c = engage 21dbaf662** (builder0 `>> remote: make check exited 0`,
+  3362 passed / 0 failed, 28 targets ALL JUDGED, sim-baseline unmoved): A1's tools, CREW_TRACE (trace-only, default off), holdfar / holdway
+  / holdroute OFF with tests (traffic.gd, tank_brain.gd under R43.5/R43.8). merge_check_needed CHECK; verified by the next batch main check
+  (the current one, on builder2, covers 5cb6b9802).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
