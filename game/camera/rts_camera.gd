@@ -212,6 +212,9 @@ const YAW_FOLLOW_DEG_PER_S := 70.0
 const YAW_DEADBAND_DEG := 12.0
 const YAW_SETTLE_DEG := 2.0
 var _yaw_turning := false
+## K5.1: automatic turns started so far, and who started the last one (the recorder writes a `cam` row on each).
+var turns := 0
+var turn_mode := ""
 
 ## Round 42 (camera K4.2): the yaw looks where the danger is. The lead, after round 41: "if the camera is following the
 ## direction at which a squad is moving, and then there's an ambush from the east (assuming we're driving north), the
@@ -265,6 +268,26 @@ const DANGER_HOLD_S := 1.5
 ## second shooter at a new bearing while the view held on the first, or a sum that moved less than the deadband.
 const DANGER_VIEW_DEG := 25.0
 var _danger_settled_at := -1e9
+## Round 43 (camera K5.3): rounding a building's corner, the view swings to the side the wall was hiding. The lead, after
+## round 42: "my vehicles were driving north, and a building was to the east of it, when they got past the building there
+## were enemies hiding to the east. The camera was still just angled toward the building, and ideally the camera would
+## have recognized the blind spot and rotated clockwise such that it ended up pointing east as well." A fourth pull in
+## `danger_look`'s sum (one yaw writer): (d) along the open side of the wall his squad has just driven past, CORNER_W
+## (v2, R43.27: CameraCorner.pull + step: only on a quiet move, once past the far end, only where that side is open, held
+## until his next order, a 45 deg turn or a contact). It reads the cover map, his units and his own order, never an
+## enemy (C43.6: no fog cheat); a gun firing at him drops it (the danger turn outranks it); manual yaw, the aim hold, the
+## deadband, the hold and the glide's cap are the danger camera's. It rides the danger camera: with `--camera-danger=off`
+## there is no corner pull either. `--camera-corner=on` (OFF: Bar K5 failed at 08931da4e; v2 on 10537-10572).
+var corner_on := false
+## R43.27: the held corner look (CameraCorner.step), and `order_now` () -> the commanded units' current order ({id, verb}),
+## read-only (skirmish_mode wires it beside `facing`, C42.3).
+var corner_hold := {}
+var order_now: Callable = Callable()
+var _order_id: Variant = null
+var _order_at := -1e9
+## (d) Strong enough to outweigh a full-speed heading and the war together (0.6 + 1.0): past the corner the view turns
+## most of the way to the open side (a north drive, the war north, the side east: atan(4 / 1.6) ~ 68 deg east).
+const CORNER_W := 4.0
 
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
@@ -347,6 +370,9 @@ var hand_pace := HAND_PACE
 var aim_hold := true
 ## The building clearance: how fast it eases toward more clearance (fast: the camera must not sit in a wall), and back.
 const SOLID_IN_OMEGA := 22.0
+## Round 43 (stretch, dev): how much faster than the glide's cap the clearance may move while the camera is inside a solid.
+const SOLID_ESCAPE_X := 3.0
+var solid_escape := false
 const SOLID_OUT_OMEGA := 4.0
 ## C41.4 (R41.1): orders' read-only "player is aiming" getter (RtsControls.is_aiming; skirmish_mode wires it). The rig
 ## also watches the mouse itself in `_input` (`aiming_now`).
@@ -393,6 +419,8 @@ func _ready() -> void:
 	yaw_deg_per_s = float(flags.text("camera-glide-yaw", str(GLIDE_YAW_DEG_PER_S)))
 	focus_omega = float(flags.text("camera-glide-omega", str(GLIDE_FOCUS_OMEGA)))
 	danger_on = flags.text("camera-danger", "on") != "off"  # K4.3: ON (Bar K4 v2 passed, 9737-9772); =off = round 41
+	corner_on = flags.text("camera-corner", "off") == "on"  # K5.3: OFF until Bar K5 passes
+	solid_escape = flags.text("camera-solid-escape", "off") == "on"  # round 43 stretch: dev only
 	danger_lean_m = float(flags.text("camera-danger-lean", str(DANGER_LEAN_M)))
 	solid_in_omega = float(flags.text("camera-solid-in", str(SOLID_IN_OMEGA)))
 	if glide:
@@ -540,6 +568,10 @@ func _glide(delta: float) -> void:
 	# The building clearance (measured by the last `_apply`): quick toward more clearance, slow back. Round 42 (R42.16):
 	# under the glide's cap like every other automatic move (Bar K4's three snaps were this spring closing a big step).
 	var caps := RtsCamera.solid_caps(RtsCamera.distance_for(_shown_zoom), fov, screens_per_s)
+	# Round 43 (stretch, the K4 v2 watch item `--camera-solid-escape=on`, dev): a camera already INSIDE a building gets out
+	# at SOLID_ESCAPE_X the cap (the cap made the clearance trail a quick turn into the wall: ~1 s inside per 45 s run).
+	if solid_escape and camera != null and not RtsCamera.solid_at(camera.global_position).is_empty():
+		caps *= SOLID_ESCAPE_X
 	var solid_d := RtsCamera.spring(_solid_d, _solid_d_velocity, _solid_want.x,
 			solid_in_omega if absf(_solid_want.x) > absf(_solid_d) else SOLID_OUT_OMEGA, delta)
 	_solid_d_velocity = clampf(float(solid_d[1]), -caps.x, caps.x)
@@ -1308,9 +1340,19 @@ func _update_yaw_follow(delta: float) -> void:
 	var writer := "yaw_follow"
 	if danger_on and danger.is_valid():
 		var state: Dictionary = danger.call()
+		if corner_on:
+			var candidate := CameraCorner.pull(CoverMap.of(self) if is_inside_tree() else null, state.get("from"),
+					state.get("own", []), state.get("heading"))
+			var order: Dictionary = order_now.call() if order_now.is_valid() else {}
+			if order.get("id") != _order_id:
+				_order_id = order.get("id")
+				_order_at = _clock
+			corner_hold = CameraCorner.step(corner_hold, candidate, order, state.get("heading"),
+					(state.get("enemies", []) as Array).size(), _clock - _order_at)
+			state["corner"] = corner_hold
 		danger_last = RtsCamera.danger_look(state)
 		wanted = danger_last.get("look")
-		writer = "danger"
+		writer = "corner" if RtsCamera.corner_leads(danger_last) else "danger"
 		if RtsCamera.gun_off_view(yaw, state):
 			deadband = YAW_SETTLE_DEG
 		else:
@@ -1329,6 +1371,9 @@ func _update_yaw_follow(delta: float) -> void:
 	_yaw_turning = absf(gap) > deg_to_rad(YAW_SETTLE_DEG)
 	if was_turning and not _yaw_turning:
 		_danger_settled_at = _clock
+	if _yaw_turning and not was_turning:
+		turns += 1  # K5.1: an automatic turn starts (the recorder writes a `cam` row on it)
+		turn_mode = "follow" if writer == "yaw_follow" else writer
 	var step := deg_to_rad(YAW_FOLLOW_DEG_PER_S) * delta
 	yaw = wrapf(yaw + clampf(gap, -step, step), -PI, PI)
 	wrote["yaw"] = writer
@@ -1414,6 +1459,18 @@ static func inside_wall(point: Vector3, margin: float) -> Vector3:
 	return Vector3(inside.x, point.y, inside.y)
 
 
+## K5.3: whether the corner pull is the biggest of the look's pulls this frame (the trace and the recording say "corner").
+static func corner_leads(last: Dictionary) -> bool:
+	var pulls: Dictionary = last.get("pulls", {})
+	var corner: Vector3 = pulls.get("corner", Vector3.ZERO)
+	if corner.length() < 0.01:
+		return false
+	for key: String in ["heading", "enemies", "war"]:
+		if (pulls.get(key, Vector3.ZERO) as Vector3).length() >= corner.length():
+			return false
+	return true
+
+
 ## Round 42 (K4.2): the direction the view should look, from a DangerFeed reading: {"look": a ground unit Vector3, or
 ## null when there is nothing to look at or the pulls cancel; "pulls": {heading, enemies, war} (each a ground Vector3,
 ## the weighted pull); "strength": the sum's length over its weights}. Pure, for tests.
@@ -1450,12 +1507,28 @@ static func danger_look(state: Dictionary) -> Dictionary:
 	if to_war.length() > DANGER_WAR_NEAR_M:
 		war = to_war.normalized() * DANGER_WAR_W
 		weights += DANGER_WAR_W
-	var total := heading + enemies + war
-	out["pulls"] = {"heading": heading, "enemies": enemies, "war": war}
+	# (d) Round 43 (K5.3): the blind spot behind the wall his squad drives along (CameraCorner.pull: walls and his units
+	# only). The danger turn outranks it: a gun firing at him within DANGER_RECENT_S drops it.
+	var corner := Vector3.ZERO
+	var blind: Dictionary = state.get("corner", {})
+	if blind.get("look") is Vector3 and float(blind.get("w", 0.0)) > 0.0 and not RtsCamera.under_fire(state):
+		var w := CORNER_W * float(blind["w"])
+		corner = (blind["look"] as Vector3) * w
+		weights += w
+	var total := heading + enemies + war + corner
+	out["pulls"] = {"heading": heading, "enemies": enemies, "war": war, "corner": corner}
 	out["strength"] = total.length() / weights if weights > 0.0 else 0.0
 	if weights > 0.0 and float(out["strength"]) >= DANGER_CANCEL:
 		out["look"] = total.normalized()
 	return out
+
+
+## Whether any known enemy fired at the commanded units within DANGER_RECENT_S (a DangerFeed.read()). Pure.
+static func under_fire(state: Dictionary) -> bool:
+	for enemy: Dictionary in state.get("enemies", []):
+		if float(enemy.get("fired_s", DangerFeed.NEVER)) <= DANGER_RECENT_S:
+			return true
+	return false
 
 
 static func _flat(v: Vector3) -> Vector3:
@@ -1477,6 +1550,33 @@ func frame_bottom() -> float:
 ## The yaw that looks along `direction` on the ground (0 looks north, -Z; positive turns left: trip-up 2).
 static func yaw_facing(direction: Vector3) -> float:
 	return atan2(-direction.x, -direction.z)
+
+
+## Round 43 (K5.1, C43.2): what decides the yaw right now, in the recording's words: "manual" (his hand, for the
+## hand-back time), "aim-hold" (the glide holds while he aims), "danger" (K4's look), "corner" (K5's swing), "follow"
+## (the selection's heading, or nothing turning it).
+func yaw_mode() -> String:
+	if wrote["yaw"] == "player" or _clock - _manual_at < handback_seconds:
+		return "manual"
+	if holding:
+		return "aim-hold"
+	match String(wrote["yaw"]):
+		"danger", "corner":
+			return String(wrote["yaw"])
+	return "follow"
+
+
+## K5.1 (C43.2): the camera's `cam` row for the match recording (MatchRecorder adds `t` and `tick`): the SHOWN pose
+## (what was on his screen: yaw in degrees, 0 looks north (-Z), positive turns left; the pitch and distance after the
+## building clearance and the airship lift; the ground point it looks at), the yaw it is turning to, and the mode.
+func record_row() -> Dictionary:
+	var d := float(layers.get("d", RtsCamera.distance_for(_shown_zoom)))
+	var p := float(layers.get("p", _shown_pitch))
+	return {"yaw": snappedf(rad_to_deg(_shown_yaw), 0.1), "want": snappedf(rad_to_deg(yaw), 0.1),
+			"pitch": snappedf(p + float(layers.get("sp", 0.0)) + float(layers.get("hp", 0.0)), 0.1),
+			"dist": snappedf(d + float(layers.get("sd", 0.0)) + float(layers.get("hd", 0.0)), 0.1),
+			"target": [snappedf(_shown_focus.x, 0.1), snappedf(_shown_focus.z, 0.1)],
+			"mode": yaw_mode()}
 
 
 ## The current pose, in the words the lead pastes back: the values the defaults are made from.

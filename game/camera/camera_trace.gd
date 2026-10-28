@@ -17,7 +17,7 @@ extends Node
 ## than SNAP_PX; a REVERSAL is a source's velocity turning back on itself (jitter). The player's own input is counted
 ## under "player" and is not a defect. `--camera-trace=DIR` turns it on in any skirmish (CameraPlaytest drives one).
 
-const SOURCES := ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "danger", "cap", "frame", "solid", "hull",
+const SOURCES := ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "danger", "corner", "cap", "frame", "solid", "hull",
 		"shake"]
 ## Screen acceleration of one source that counts as a jerk (px/s^2 at 1080 rows; scaled by the window's height). A
 ## critically damped move of 300 px peaks near 300 * omega^2 = 4,800 px/s^2 at omega 4/s; a lerp from rest at the rig's
@@ -52,6 +52,13 @@ var _reversals := {}
 var _frames_seen := 0
 var _scale := 1.0
 var _held := 0.0
+## Round 43 (K5.2): a staged scenario's jump (the harness setting his column down and the camera on it) is not the
+## camera's move: `skip_frame()` drops the next frame's comparison (CameraPlaytest's corner counted it as 12 snaps).
+var _skip := false
+
+
+func skip_frame() -> void:
+	_skip = true
 
 
 func _ready() -> void:
@@ -103,6 +110,9 @@ func _process(delta: float) -> void:
 	cur["T"] = camera.get_camera_transform()  # what was really drawn: a pivoted shake turns the camera (the residual)
 	if rig.holding:
 		_held += delta
+	if _skip:
+		_skip = false
+		_prev = {}
 	if not _prev.is_empty():
 		var at: Vector2 = _cursor(size)
 		var ground: Variant = CameraTrace.ground_at(_prev, size, at)

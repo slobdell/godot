@@ -3991,3 +3991,19 @@ instrument that cannot lie about load — removal within one run — and let eve
      fired on 2 of 24 seeds in E1's series and 1 of 48 in E2's; a paired mean cannot decide it. E2 filed "no seed worse + an exercised
      floor, else extend, else INCONCLUSIVE" and ended INCONCLUSIVE honestly. The next bar for such a case stages the draw that
      produces it (filed as a staged probe, never a natural draw) and judges per exercised seed.
+334. **A playtest replays only through the same process setup he played under.** (Round 43, CP43.0.) His laptop match ran through
+   `make`, which LD_PRELOADs the CORE-MATH trig shim (glibc 2.39's atan2f is 1 ulp off; native.md round 39 N4); a Godot a worker
+   started by hand ran the system atan2f, so the "twin gap" and the ~28 s parting were the harness, not the game. Earlier the replay
+   ran on the wrong arena for the same kind of reason (`Arena._ready` reads the OS cmdline, not `Main.next_flags`). Start every lab Godot
+   through make (or carry the shim), and prove a replay against his census before reading anything off it.
+335. **A deciding line must not be the rule's own definition.** (Round 43, Bar A6.) "Holding seconds of crews the rule releases" goes to
+   ~0 by construction; decide on what he'd see (those crews' arrival) and guard the mechanism the rule could break (real head-on holds).
+   The mechanism guard is what caught A6's flaw (held_on_s -41 s a run).
+336. **Never stop a process by pattern; a remote check's verdict must survive its laptop wrapper.** (Round 43.) Native, stopping its own
+   superseded check, killed `make remote T=check` processes by pattern; two were camera's builder2 check wrapper (3362 passed, 26 of 27
+   targets done), and the verdict, which travelled over ssh only, was lost: an hour of builder2. Stop only by a PID you started, its cwd
+   verified; `tools/remote.sh` keeps the remote output and exit line in a log on the builder (native, round 43).
+337. **Watch the laptop's disk; a side worktree costs ~1.2 GB.** (Round 43.) Seven side worktrees (manoeuvre's five, native's two pairs)
+   plus raw series rows filled the laptop's / to 411 MB free overnight: every session's tool output (Claude's temp directory lives on /)
+   failed at once. The orchestrator's sweep reads `df -h /` each tick and asks a stream to remove a side worktree the hour its series ends;
+   raw rows are judged into `references/` and then deleted.

@@ -10,12 +10,16 @@ extends Node
 ## the guns actually did** — as one JSONL file per match:
 ##
 ##   {"t":"match",  ...}                          once: seed, arena, factions, the roster with every unit's stats
+##                                                (+ C43.2: squad_cap, factions, preset, native, flags, spawn, frame)
 ##   {"t":"order",  tick, units, verb, source, to, target, formation, error}   every command, WITH its refusal
+##                                                (+ C43.2: frame, paused; verb "formation" = a formation pick)
 ##   {"t":"task",   tick, element, verb, to, formation}                        every squad task the leader took
 ##   {"t":"hit",    tick, shooter, target, weapon, face, weak, shield, hull, killed}
 ##   {"t":"census", tick, units:[{name, id, team, pos, hp, hp_max, shield, order, phase, blocked}]}  every CENSUS_S
 ##   {"t":"dead",   tick, unit, killer, cause}
 ##   {"t":"end",    tick, result}
+##   {"t":"cam",    tick, yaw, want, pitch, dist, target:[x,z], mode, turn}  every CENSUS_S and at each automatic turn's start
+##                  (round 43, camera K5.1, C43.2: the camera's own row, RtsCamera.record_row; none without a camera)
 ##
 ## `hit` is the row that answers the unkillable-IFV class of report on its own: it separates SHIELD damage from HULL
 ## damage, so "everyone is shooting it and its health bar never moves" is visibly either shots that never land, or
@@ -40,6 +44,8 @@ var seed_value := -1
 var _file: FileAccess
 var _next_census := 0.0
 var _seen_tasks := {}
+var _next_cam := 0.0
+var _cam_turns := 0
 
 
 static func start(p_match: Match, p_orders: Object, p_controls: Object, p_elements: Object,
@@ -69,10 +75,12 @@ func _ready() -> void:
 	var latest := FileAccess.open(path.get_base_dir().path_join("latest.txt"), FileAccess.WRITE)
 	if latest != null:
 		latest.store_string(path)
-	_write({"t": "match", "path": path, "arena": String(Arena.active.get("name", "")),
+	var row := {"t": "match", "path": path, "arena": String(Arena.active.get("name", "")),
 			"seed": seed_value,
 			"tick_rate": SimClock.TICK_RATE, "tuning": Units.tuning.duplicate(),
-			"units": _roster()})
+			"units": _roster()}
+	row.merge(replay_keys(game_match, _launch_flags()))
+	_write(row)
 	if game_match.has_signal("projectile_impact"):
 		game_match.projectile_impact.connect(_on_impact)
 	if game_match.has_signal("unit_destroyed"):
@@ -82,7 +90,47 @@ func _ready() -> void:
 			_write({"t": "end", "tick": game_match.tick, "result": result}))
 	if controls != null and controls.has_signal("command_issued"):
 		controls.command_issued.connect(_on_command)
+	# C43.2 (round 43): a formation pick (G, Shift+G, the panel) re-tasks the selected squads WITHOUT a command, so it
+	# was never recorded and his round-41 match could not be replayed (three squads in column from tick 0). It is an
+	# `order` row with verb "formation" (an added verb; no `to`, so tools/recording_arrivals.py skips it).
+	if controls != null and controls.has_signal("formation_changed"):
+		controls.formation_changed.connect(_on_formation)
 	print("MATCH_RECORDING %s" % path)
+
+
+## C43.2 (round 43, native): what a replay of this match needs that the rest of the header does not hold (CP43.0:
+## tests/replay_orders.gd). ADDITIVE keys; nothing above changes meaning.
+##   squad_cap  the squads a side fields (his laptop preset: 4; a headless replay would otherwise field 5)
+##   factions   {green, rust}, from each side's first unit
+##   preset     RenderLevers' preset (the cap and the planner slice are read from it)
+##   native     whether the C++ library ran the crews: the GDScript path is a different match after ~10 s on his seed
+##   flags      the match's launch switches (`--attack-shot=off`, ...), as Main read them
+##   spawn      {name: [x, z, yaw]} at full precision, where the army layout put every unit
+##   frame      the physics frame the match started on (an order row's `frame` is counted from the same clock)
+static func replay_keys(p_match: Match, flags: LaunchFlags) -> Dictionary:
+	var faction := {"green": "", "rust": ""}
+	var spawn := {}
+	if p_match.tanks != null:
+		for child in p_match.tanks.get_children():
+			var tank := child as Tank
+			if tank == null:
+				continue
+			var side := "green" if tank.team == Match.Team.GREEN else "rust"
+			if String(faction[side]) == "":
+				faction[side] = Units.faction_of(String(tank.unit_id))
+			spawn[String(tank.name)] = [tank.global_position.x, tank.global_position.z, tank.rotation.y]
+	return {"squad_cap": SkirmishMode.squad_cap_for(flags), "factions": faction, "preset": RenderLevers.preset(),
+			"native": BrainSwitches.native, "flags": flags.values.duplicate(), "spawn": spawn,
+			"frame": Engine.get_physics_frames()}
+
+
+## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the
+## process's command line.
+func _launch_flags() -> LaunchFlags:
+	var main := get_tree().current_scene if is_inside_tree() else null
+	if main != null and "flags" in main and main.flags is LaunchFlags:
+		return main.flags
+	return LaunchFlags.from_environment()
 
 
 ## Every unit in the match with the numbers a report is usually about: what it is, how much health and shield it has,
@@ -118,7 +166,18 @@ func _on_command(command: Dictionary, error: String) -> void:
 			row[key] = command[key]
 	if error != "":
 		row["error"] = error  # the refusal the player saw, beside the order he tried to give
+	# C43.2: when the order landed: the physics frame (the `match` row's `frame` is the start) and whether the match was
+	# paused (the planning pause: such an order is in force before the CPU's first plan).
+	row["frame"] = Engine.get_physics_frames()
+	row["paused"] = get_tree().paused if is_inside_tree() else false
 	_write(row)
+
+
+func _on_formation(id: String) -> void:
+	var units: Array = []
+	if "selection" in controls and controls.selection != null:
+		units = Array(controls.selection.units).duplicate()
+	_on_command({"verb": "formation", "units": units, "source": "player", "formation": id}, "")
 
 
 func _on_impact(event: Dictionary) -> void:
@@ -144,6 +203,7 @@ func _on_destroyed(event: Dictionary) -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	_record_camera()
 	if NativeRecorder.usable():  # round 28 (native N7.6): the task scan, the census and their rows natively
 		NativeBridge.impl.recorder_tick(self)
 		return
@@ -182,6 +242,29 @@ static func census_row(tank: Tank, p_orders: Object) -> Dictionary:
 			"hp": snappedf(tank.health, 0.1), "shield": snappedf(tank.shield if "shield" in tank else 0.0, 0.1),
 			"order": String(order.get("verb", "")), "src": String(order.get("source", "")),
 			"phase": phase, "blocked": blocked}
+
+
+## Round 43 (camera K5.1, C43.2): where the camera looked, so "the camera was still angled toward the building" can be
+## scrubbed. The rig is the controls' (`controls.rig`); a match without one (headless harnesses) writes no `cam` rows.
+func _record_camera() -> void:
+	if _file == null or game_match == null or controls == null:
+		return
+	var rig: Variant = controls.get("rig")
+	if rig == null or not is_instance_valid(rig) or not (rig as Object).has_method("record_row"):
+		return
+	var turned := int(rig.turns) != _cam_turns
+	var now := float(game_match.tick) / float(SimClock.TICK_RATE)
+	if not turned and now < _next_cam:
+		return
+	var row := {"t": "cam", "tick": game_match.tick}
+	row.merge(rig.record_row())
+	if turned:
+		_cam_turns = int(rig.turns)
+		row["mode"] = String(rig.turn_mode)
+		row["turn"] = true
+	else:
+		_next_cam = now + CENSUS_S
+	_write(row)
 
 
 ## A squad's task, written when it CHANGES: the bridge between "what he clicked" and "what the crews carried".

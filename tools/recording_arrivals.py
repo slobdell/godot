@@ -31,4 +31,5 @@ def report(f):
                 if arrived is None and u['phase']=='arrived' and c['tick']>t0: arrived=(c['tick']-t0)/30
             res.append((n.replace('Green_',''),round(best or -1),arrived,round(away)))
         print(f" t{t0:5d} {o['verb']:11s} to ({tx:6.1f},{ty:6.1f}) window {int((tend-t0)/30)} s:", ' '.join(f"{n}:best{b}m{'/arr%.0fs'%a if a else '/no-arr'}{'/AWAY%dm'%w if w>=30 else ''}" for n,b,a,w in res))
-for f in sys.argv[1:]: report(f)
+if __name__ == "__main__":
+    for f in sys.argv[1:]: report(f)

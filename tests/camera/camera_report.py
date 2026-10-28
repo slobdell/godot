@@ -10,7 +10,7 @@ import json
 import os
 import sys
 
-SOURCES = ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "danger", "cap", "frame", "solid", "hull", "shake",
+SOURCES = ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "danger", "corner", "cap", "frame", "solid", "hull", "shake",
            "all"]
 
 
@@ -85,7 +85,7 @@ def look_table(runs):
     for r in runs:
         if "look" not in r:
             continue
-        key = (r.get("scenario") or "attack", r.get("lane", "") if r.get("scenario") == "ambush" else "")
+        key = (r.get("scenario") or "attack", r.get("lane", "") if r.get("scenario") in ("ambush", "corner") else "")
         groups.setdefault(key, []).append(r)
         if key[1]:
             groups.setdefault((key[0], "all"), []).append(r)
@@ -132,6 +132,53 @@ def show_look(rows):
     print()
 
 
+def corner_table(runs):
+    """Round 43 (K5.2): the corner census (CameraCorner) per lane side and pooled."""
+    groups = {}
+    for r in runs:
+        if "corner" not in r:
+            continue
+        groups.setdefault(r.get("lane", ""), []).append(r)
+        groups.setdefault("all", []).append(r)
+    rows = []
+    for lane in sorted(groups):
+        rs = groups[lane]
+        cs = [r["corner"] for r in rs]
+        corner = sum(c["corner_s"] for c in cs) or 1e-6
+        def gaps(key):
+            return [c[key] for c in cs if c.get(key) is not None]
+        bearings = [c["mean_abs_bearing"] for c in cs if c.get("mean_abs_bearing") is not None]
+        rows.append({"lane": lane, "runs": len(rs), "opened": sum(1 for c in cs if c["opened"]),
+                     "seen": sum(1 for c in cs if c["seen"]), "shown": sum(1 for c in cs if c["shown"]),
+                     "open_seen": mean_se(gaps("open_to_seen_s")), "open_screen": mean_se(gaps("open_to_screen_s")),
+                     "seen_screen": mean_se(gaps("seen_to_screen_s")), "corner_s": corner,
+                     "facing_pct": 100 * sum(c["facing_s"] for c in cs) / corner,
+                     "toward_pct": 100 * sum(c.get("toward_s", 0.0) for c in cs) / corner,
+                     "facing_open_pct": 100 * sum(c.get("facing_open_s", 0.0) for c in cs) / (sum(c.get("open_s", 0.0) for c in cs) or 1e-6),
+                     "facing_free_pct": 100 * sum(c.get("facing_free_s", 0.0) for c in cs) / (sum(c.get("open_free_s", 0.0) for c in cs) or 1e-6),
+                     "away_pct": 100 * sum(c.get("away_s", 0.0) for c in cs) / corner,
+                     "back_pct": 100 * sum(c.get("back_s", 0.0) for c in cs) / corner,
+                     "bearing": sum(bearings) / len(bearings) if bearings else 0.0})
+    return rows
+
+
+def show_corner(rows):
+    if not rows:
+        return
+    print("Corner (K5.2): seconds from the corner opening (his first crew past the wall's end) to the hidden squad seen / on "
+          "screen, and seen -> on screen (mean +- se; never = 20 s); the corner seconds' share facing the building, within 45 deg "
+          "of the uncovering side, and the mean |bearing| from the view to that side.")
+    print("| lane | runs (opened / seen / on screen) | open -> seen s | open -> on screen s | seen -> on screen s | corner s "
+          "| facing the building % (after it opens %) | toward the hidden side % | mean abs bearing to it (deg) | off the travel > 90 / > 135 deg % |")
+    print("|---|---|---|---|---|---|---|---|---|---|")
+    for r in rows:
+        print(f"| {r['lane']} | {r['runs']} ({r['opened']} / {r['seen']} / {r['shown']}) | "
+              f"{r['open_seen'][0]:.1f} +- {r['open_seen'][1]:.1f} | {r['open_screen'][0]:.1f} +- {r['open_screen'][1]:.1f} | "
+              f"{r['seen_screen'][0]:.1f} +- {r['seen_screen'][1]:.1f} | {r['corner_s']:.0f} | {r['facing_pct']:.1f} ({r['facing_open_pct']:.1f}; not K4 {r['facing_free_pct']:.1f}) | "
+              f"{r['toward_pct']:.1f} | {r['bearing']:.0f} | {r['away_pct']:.1f} / {r['back_pct']:.1f} |")
+    print()
+
+
 def show(name, t):
     print(f"## {name}: {len(t['seeds'])} seeds {t['seeds']}, {t['minutes']:.1f} min of play\n")
     print("| source | jerk events | per min | dv p50 (px/s) | dv p95 | snaps | reversals/min | px moved/min |")
@@ -164,6 +211,7 @@ def main():
             return 1
         show(directory, table(runs))
         show_look(look_table(runs))
+        show_corner(corner_table(runs))
     return 0
 
 

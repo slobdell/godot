@@ -96,7 +96,7 @@ func lines() -> Array[String]:
 static func danger_line(last: Dictionary) -> String:
 	var parts: Array[String] = []
 	var pulls: Dictionary = last.get("pulls", {})
-	for key: String in ["heading", "enemies", "war"]:
+	for key: String in ["heading", "enemies", "war", "corner"]:  # corner: round 43 (K5.3)
 		var pull: Vector3 = pulls.get(key, Vector3.ZERO)
 		parts.append("%s %.1f @ %d°" % [key, pull.length(), roundi(rad_to_deg(RtsCamera.yaw_facing(pull)))] if pull.length() > 0.01 else "%s -" % key)
 	var look: Variant = last.get("look")
