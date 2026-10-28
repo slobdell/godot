@@ -131,8 +131,8 @@ already read, or 7001-7012.
   on 10601-10624; a fresh block decides). **Exercised floor:** 8 of 12 side seeds with a verdict in BASE, else INCONCLUSIVE (no
   extension pool). **Guards (A6 v2's lines, unamended, now all guards):** 1 off_arrive_s (side 12) ARM <= BASE + 2 se; 2a verdicts
   and 2b held_on_s (head-on 12) within BASE +/- 2 se; 3 contacts_mouth (24) ARM <= BASE + 1.645 se; 4 contacts_far (24) ARM <= BASE +
-  max(1.645 se, 2); 5 last_a_s (24) ARM <= BASE + 1.645 se; 6 Bar E1's lines (`make engage-bar` on **10973-10996**, ARM =
-  `ENGAGE_FLAGS=--traffic-on=holdway` v BASE, builder2 light): stuck crew-seconds, first hit, deaths each within BASE +/- 1.645 se;
+  max(1.645 se, 2); 5 last_a_s (24) ARM <= BASE + 1.645 se; 6 Bar E1's lines (`make engage-probe` with today's attack-shot ON in both arms on
+  **10973-10996**, ARM = `ENGAGE_FLAGS=--traffic-on=holdway` v BASE, builder2 light): stuck crew-seconds, first hit, deaths each within BASE +/- 1.645 se;
   7 the frozen tree's check perf-judge (Bar S v3's gate); 8 no SCRIPT ERROR. **What it could break (named first):** a crew held
   by the way read that today's nose read released (held_on_s UP on the head-on stage, 2b); a crew released that then meets the passer
   at the mouth (contacts_far, 4); the far crew's own arrival (off_arrive_s, 1). **Ships ON** (`holdway` out of DEFAULT_OFF, `=off`
