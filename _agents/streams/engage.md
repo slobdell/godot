@@ -165,6 +165,27 @@ his seed (dev, never a bar): `make engage-replay-trace ENGAGE_TAG=x ENGAGE_FLAGS
 17 m and no drive away, the match identical to his for 17 s (laptop, f920ba34d).
 **A pass ships ON** (line 1 decided, 2-9 within).
 
+### Bar A READ (builder2, native ON in every log, 9e8313f8d, `native engage-bar-a` 10301-10324, J14, 75 s, n 24 paired, 2026-10-27 22:05-22:28 PDT; 24 of 24 results an arm, no timeout, the box also carrying camera's full check; table `scratchpad/bar-a/pair_table.txt`)
+
+| line | BASE | ARM | paired mean | se | z | reading |
+|---|---|---|---|---|---|---|
+| exercised floor | 23 verdicts | the rule acted on 16 seeds (far_released 18 + far_held 15 crews) | | | | 16 of 24: the floor (16) met exactly |
+| 1 far_arrive_s (deciding) | 1294.0 (53.9 s a run) | 1236.5 (51.5) | **-2.40** | 1.38 | **-1.73** | the right way, **short of 2 se: FAIL as filed** |
+| 2 contacts_mouth | 622 | 626 | +0.17 | 1.39 | 0.12 | PASS |
+| 3 contacts_far | 141 | 145 | +0.17 | 0.21 | 0.78 | PASS (<= BASE + 2) |
+| 4 jam_s | 620 | 560 | -2.50 | 1.17 | -2.14 | PASS (better) |
+| 5 last_a_s | 1517 | 1490 | -1.12 | 2.07 | -0.54 | PASS |
+| reported | away_s 74 -> 71, away_m 100.7 -> 100.0 (the head-on stage, as expected: no AWAY geometry), held_s 2005 -> 1686 (-13.3 a run, z -3.65), a_held_s 1162 -> 860 (z -3.41), stuck_s 4118 -> 4041, contacts 1015 -> 1031, last_b_s 1626 -> 1602 | | | | | |
+
+**Verdict: Bar A FAILS its deciding line as filed** (z -1.73; the guards all pass; the rule acts where it should and takes 13 s
+of holding a run off the squad). Lines 6-9 (Bar E1's probe, the fight guards, perf, the suite ON) were not run: a failed deciding
+line ships nothing. Where the arm gained: 10323 (A's last arrival 75 -> 34 s), 10324 (63 -> 51), 10305 away 11 -> 7; lost: 10317
+(51 -> 75: a far crew held in place, `far_held`, arrived late). The eight seeds the rule never touched (10303 no verdict; 10308-11,
+10313, 10315, 10322: B waited, A's far crews unheld) are identical in both arms, as they must be. **Not amended.** Proposed to the
+orchestrator: a second filing (Bar A v2) on fresh 10325-10348, same workload and lines, read pooled with these as n 48 (a declared
+extension, R42.19's form), OR the rule stays OFF and his seed's removal evidence stands as A1's finding until A6 (the verdict
+fix) gives the head-on stage something to measure.
+
 ### A1: the turnaround on his seed (laptop, native library ON, `make engage-replay-trace ENGAGE_TAG=on`, 2d43b1e88, his recording, 50 s, n 1, deterministic)
 
 The replay (native's CP43.0, `tests/replay_orders.gd`) puts Green_Guns_1 **0.0 m off his census at every second for 48 s**
