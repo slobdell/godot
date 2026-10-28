@@ -410,6 +410,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
   decide): `~/balance-guard-raw` 6.2 GB, older sessions' `/tmp/claude-1000` folders ~1 GB, `~/camera-clips-round42`. Each worktree is
   ~1.2 GB: a stream removes a side worktree the hour its series ends. **R43.34 lapsed:** the disk ate manoeuvre's box, so Bar S v2 runs AS
   FILED; if its G1 v9 lines move it FAILS (no re-file after numbers; v2 was the last); the single-squad scoping is a round-44 candidate.
+- **R43.36 (~09:00) A7's combined check: RED on one test-only line; candidate re-checked.** 1c20cc1c2 on builder0: `>> remote: make
+  check exited 2`, 25 passed, 1 FAILED (test_engage_water::test_the_rule_is_on_by_default_since_bar_a7: the file's teardown clobbered the
+  static switch), 2 NOT JUDGED (perf-judge refused 3 times at 1.77-2.00x on a shared box); sim-baseline 13 maps on the adopted rows.
+  Fix 05fa7bce3 (test file only; baselines stand); its one check queued on builder0. Ruled ahead: if only perf-judge is NOT JUDGED from
+  load, a perf-judge alone on the same commit in a quiet builder0 window satisfies the gate.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
