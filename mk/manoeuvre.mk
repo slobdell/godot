@@ -505,3 +505,9 @@ manoeuvre-start-shots: import ## manoeuvre M2: SS_RECORDING's start replayed in 
 		--orders=$(CURDIR)/$(SS_RECORDING) --shots=$(SS_TICKS) --follow=$(SS_FOLLOW) --out=$(CURDIR)/$(SS_DIR) --name=$(SS_NAME) --mute \
 		$(SS_FLAGS) > $(SS_DIR)/$(SS_NAME).log 2>&1 || true
 	@grep -E '^SHOT_' $(SS_DIR)/$(SS_NAME).log | cut -c1-200
+
+# Round 44 (Bar B1): the staged nose-on corpus test runs only with NOSED_CORPUS=on (make test FILTER=nosed_corpus NOSED_CORPUS=on).
+NOSED_CORPUS ?=
+export NOSED_CORPUS
+NOSED_GDSCRIPT ?=
+export NOSED_GDSCRIPT

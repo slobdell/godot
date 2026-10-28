@@ -398,7 +398,7 @@ static func route_arms() -> Dictionary:
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
-			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks, "parkedpass_refusals": parkedpass_refusals,
+			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks, "backout_swings": backout_swings, "parkedpass_refusals": parkedpass_refusals,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_settled_passes": chain_settled_passes, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
@@ -417,6 +417,7 @@ static func reset_route_arms() -> void:
 	parkaside_moved = 0
 	backout_looks = 0
 	parkedpass_refusals = 0
+	backout_swings = 0
 	behind_asked = 0
 	behind_reverses = 0
 	post_faces_kept = 0
@@ -5524,6 +5525,27 @@ func _departure_hull_hit(at: Vector3, frame: Array, from: Vector3) -> bool:
 	return not _departure_hulls.is_empty() and Manoeuvre._hull_hit(at, frame, _departure_hulls, from) != ""
 
 
+## The full-lock forward arc from (here, forward) until the hull points at `target`, stepped KTURN_BACK_STEP_M, clear of other hulls.
+func _departure_arc_clear(here: Vector3, forward: Vector3, turn: float, target: Vector3, frame: Array) -> bool:
+	var away := _arc_align_m(here, forward, turn, target)
+	if away <= 0.0:
+		return false
+	var at := here
+	var heading := forward
+	var gone := 0.0
+	while gone < away:
+		var next := _fill_step(at, heading, 1, turn, wheel_radius(), KTURN_BACK_STEP_M)
+		at = next[0]
+		heading = next[1]
+		gone += KTURN_BACK_STEP_M
+		if _departure_hull_hit(at, frame, here):
+			return false
+	return true
+
+
+static var backout_swings := 0  # departure looks that planned the clear arc as a leg (measurement)
+
+
 static func backout_on() -> bool:
 	return not Traffic.off("backout")
 
@@ -5842,11 +5864,36 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	var cap := KTURN_HIT_WITHIN_M + stop if BrainSwitches.kturn_cap else INF
 	_kturn_hit_m = _arc_hit(map, frame, here, forward, turn, waypoint, start, cap)
 	if _kturn_hit_m > KTURN_HIT_WITHIN_M:
+		# Round 44 (M2, backout): a boxed nose whose full-lock arc toward the departure is CLEAR still drives that arc as a planned
+		# leg: the drive's own pursuit turns more gently than the sweep assumed and clipped the box corner (Locks dev 7007: the look
+		# at tick 1, no hit, then wedged on the corner 1.5 s). The leg is the arc the sweep validated, until the hull points at the
+		# departure; refused when another hull stands in it (today's drive then).
+		if departure_look and _away_here() and _departure_arc_clear(here, forward, turn, waypoint, frame):
+			var away := _arc_align_m(here, forward, turn, waypoint)
+			if away > 0.0:
+				_kturn_turn = turn
+				_kturn_plan_kind = "away"
+				_kturn_start_offs = start
+				_kturn_leg_no = 0
+				_kturn_legs.clear()
+				_kturn_start_leg(Vector2(1.0, away))
+				kturns += 1
+				kturn_away += 1
+				backout_swings += 1
+				if ManoeuvreCensus.trace_unit == String(tank.name):
+					print("MANOEUVRE_TRACE backout swing: away %.1f m at full lock (the arc is clear)" % away)
+				cmd.throttle = KTURN_THROTTLE
+				cmd.turn = turn
+				kturn_ticks += ctl._step
+				return true
 		if stop > 0.0 and _kturn_hit_m <= KTURN_HIT_WITHIN_M + stop:
 			_ease_for(_kturn_hit_m)
 		return false
 	# Round 31 (planner CP-P1, R31.2): the forward arc is blocked within reach: the lattice planner's seam, where the
 	# back-and-fill would be planned (`--nav-off=planner`).
+	if ManoeuvreCensus.trace_unit == String(tank.name):
+		print("MANOEUVRE_TRACE planner hit f %d: arc hit at %.1f m (cap %.1f), seam %s" % [Engine.get_physics_frames(), _kturn_hit_m, cap,
+				"on" if PlannerSeam.on() else "off"])
 	if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
 	if lazy:
 		for i in KTURN_OUTLINE.size():
@@ -5873,6 +5920,8 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		backed += KTURN_BACK_STEP_M
 		if not _outline_ok(map, frame, at, heading, start) or _departure_hull_hit(at, frame, here):
 			blocked_at = backed
+			if ManoeuvreCensus.trace_unit == String(tank.name):
+				print("MANOEUVRE_TRACE single search blocked at %.1f m back (%s)" % [backed, "hull" if _departure_hull_hit(at, frame, here) else "navmesh"])
 			break  # the hull would hit what is behind (or swing its nose into what is beside): no further back
 		if _arc_hit(map, frame, at, heading, turn, waypoint, start) == INF:
 			_kturn_turn = turn

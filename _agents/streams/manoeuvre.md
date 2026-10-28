@@ -152,6 +152,21 @@ arrival order along the approach; a squadmate's give-way deferred until the seat
   arrival. The shape to build: seats dealt in arrival order along the approach, never a seat a neighbour's path crosses (the brief's
   shape (a)); round-45 candidate unless B1 is quick.
 
+- **The swing leg (uncommitted):** on 7007 the look fires at tick 1 (the vertex 23 deg off, outside the circle) and the full-lock sweep
+  toward it CLEARS the box, so no back-up is planned; the real drive then turns more gently and clips the corner. Added: a boxed nose
+  whose swept arc is clear drives that arc as a planned leg (`backout_swings`), refused when a hull stands in it. It did not fire on
+  7007 either (dev9 = dev8 tick for tick); the planner's answer after the look is being traced (the seam's `take`, the hit distance,
+  the single search).
+- **The staged nose-on corpus (the orchestrator's condition for B1: one start is too thin):** `tests/test_manoeuvre_nosed_corpus.gd`
+  (NOSED_CORPUS=on; 14 poses: Locks + Crossing containers, crawl and alone shapes, 20-60 deg off the nose, OFF and ON each; NOSED_ROW
+  rows), `tests/manoeuvre/nosed_judge.py` (ON clears 8 m sooner in >= 10 poses and the median gain >= 1 s). **First read (builder0
+  light, the pre-swing look on the merged tree, the C++ drive with native's stale twin: a dev read): ON sooner in 5 of 14, median
+  +0.0 s; +1.7 / +2.6 / +3.6 / +2.2 s on four poses where the base crept 2-6 m and drove off anyway; -6.2 s on crossing alone 20 deg;
+  ~-1.5 s on his faithful lab start (the one stage where the base sticks).** The rule pays only where the base sticks, and a staged
+  2 m nose gap seldom makes it stick. Put to the orchestrator: file the corpus restricted to poses where the BASE sticks (named
+  first), with the open poses as a cost ceiling, or let B1 fail as the orchestrator's corpus stands. The clean read (the GDScript
+  drive, NOSED_GDSCRIPT=on, the swing code) is queued on builder0 light (corpus2).
+
 ### M5 (acceptance read, in progress) and the twin's parity (2026-10-28 ~11:00 PDT)
 
 - **08-15, his container start, the full v3 set ON (fdb1c6fc4, builder0, native ON, the GDScript drive for backout, `~/overnight-manoeuvre/
