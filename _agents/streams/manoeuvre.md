@@ -107,7 +107,15 @@ loss on a deciding line; D1 is the line nearest his words). One re-file, Bar S v
 = all + a fix for the converging give-way, same lines, same workload, perf on builder0 quiet; time-box ~2 h on the dev blocks
 7001-7012 and 9501-9512, else all OFF with this read. **Group-order guards (for the record, base v all, 10425-10436 x 4 maps x crew,
 48 paired runs, builder2, `judge-group-all.txt`): G5 all-in 74.5 -> 73.6 s PASS, G6 never-in squads a run 0.94 -> 1.08 (line 1.14)
-PASS, G7 contacts 663,350 -> 656,229 PASS; jam-seconds -0.2 %.** Fights and the G1 v9 lines: running on builder0.
+PASS, G7 contacts 663,350 -> 656,229 PASS; jam-seconds -0.2 %.** **Fight guards (base v all, locks / terminus / sumps x
+10437-10442, 18 paired fights, builder0 light, `judge-fights-all.txt`): G1 give-way deaths 41 -> 56 (line +16.5) PASS, G2 stuck
+deaths 143 -> 120 PASS, G3 contacts 380,442 -> 351,514 PASS, G4 kill share worst move 0.008 / deaths 701 -> 713 PASS; the judge's own
+D line (moving-stuck seconds) 500 -> 208 s (-58 %, -2.2 se).** **G1 v9 corridor lines (base v all, locks / crossing / terminus x 5
+squads x click x 10425-10436, `judge-g1v9-all.txt`, `orders_judge.py g1v8`): places outside the corridor 5 -> 5 PASS (<= base),
+re-dealt 0 -> 0 PASS, **metres driven outside after being in 168 -> 180 FAIL** (<= base; all of it crossing's cells), and the probe's
+own twitch guard **FAIL on locks (16.9 -> 20.6 m, line base + 3)**: the group's squads travel as elements, so the bounded stations
+and the latch do reach the group click's drive (the halts themselves are untouched: columns laid 12, bodies kept 24).** Perf: not
+run (nothing ships, R43.31). Series ended 02:47 PDT; Bar S5's started 02:48.
 
 **The read (after the numbers):** the two lines pull apart by construction. D1 measures the distance from his click, and without the
 bound a squad's seats stay the doctrine's (the swarm's 58 m), so the two mover-side arms cannot move it (they lose it slightly: a
