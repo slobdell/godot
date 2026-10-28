@@ -300,6 +300,15 @@ const DECKWAIT_CAP_S := 5.0
 ## q6dev9 green s2 t1: a follower crawling at 2-3 m/s into the mouth corner caught the near rail's end and stood 16 s; OFF it went
 ## through at 4-6 m/s). 0.4 x 12 m/s = 4.8 m/s for the Law tank; the rim case (q6trace1) arrived at 11 m/s.
 const DECKWAIT_FLOOR_SHARE := 0.4
+## v5 (round 43, S5; R42.15's shape): the wait STARTS only on the carried-past case, a follower arriving FAST (at least this share
+## of its top speed) behind a leader that is slow or turning in the mouth (its speed away from me under DECKWAIT_LEADER_SLOW_MPS);
+## an orderly column (everyone at a pace, or the leader through the mouth at speed) is left alone. Bar Q6 (round 42) on fresh seeds:
+## v4 capped every follower at every mouth, the 72 fresh runs had no rim failure to fix OFF, and the cap cost 21 of 72 runs rim
+## seconds (a follower slowed at the mouth that then rode the rim); the one rescued crew (rust s2 t15 Rust_S_3, 11 m/s behind a
+## leader at 0.6-3.8 m/s) is the case this keys on. Once begun, a wait runs as v4 (the cap, the floor, DECKWAIT_CAP_S).
+const DECKWAIT_FAST_SHARE := 0.6
+const DECKWAIT_LEADER_SLOW_MPS := 4.0
+static var deckwait_skipped := 0  # v5: followers at a mouth behind a slow leader that were NOT fast: left alone
 static var deckwait_waits := 0
 static var deckwait_queued := 0
 static var deckwait_timeouts := 0
@@ -384,12 +393,12 @@ static func route_arms() -> Dictionary:
 	return {"corners_inflated": corners_inflated, "corners_kept": corners_kept, "press_escapes": press_escapes,
 			"nose_stops": nose_stops, "oriented_pairs": Avoidance.oriented_pairs, "driver_ticks": driver_ticks.duplicate(),
 			"yield_spots_refused": yield_spots_refused, "leash_clamps": leash_clamps, "leash_orders": leash_orders,
-			"route_not_ready": route_not_ready, "wait_queued": wait_queued, "waits": waits, "wait_timeouts": wait_timeouts, "wait_long": wait_long, "deckwait_waits": deckwait_waits, "deckwait_queued": deckwait_queued, "deckwait_timeouts": deckwait_timeouts, "nopush_ticks": nopush_ticks, "nopush_episodes": nopush_episodes, "nopush_capped": nopush_capped, "holdlane_skips": holdlane_skips, "holdlane_holds": holdlane_holds, "wait_longest": wait_longest.duplicate(), "wait_by_kind": wait_by_kind.duplicate(), "follow_queued": follow_queued, "follow_open": follow_open, "follow_longest": follow_longest.duplicate(), "follow_long_waits": follow_long_waits, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
+			"route_not_ready": route_not_ready, "wait_queued": wait_queued, "waits": waits, "wait_timeouts": wait_timeouts, "wait_long": wait_long, "deckwait_waits": deckwait_waits, "deckwait_queued": deckwait_queued, "deckwait_timeouts": deckwait_timeouts, "deckwait_skipped": deckwait_skipped, "nopush_ticks": nopush_ticks, "nopush_episodes": nopush_episodes, "nopush_capped": nopush_capped, "holdlane_skips": holdlane_skips, "holdlane_holds": holdlane_holds, "wait_longest": wait_longest.duplicate(), "wait_by_kind": wait_by_kind.duplicate(), "follow_queued": follow_queued, "follow_open": follow_open, "follow_longest": follow_longest.duplicate(), "follow_long_waits": follow_long_waits, "a1_replans": a1_replans, "a1_cadence_due": a1_cadence_due, "a1_tube_skips": a1_tube_skips,
 			"by_cause": a1_by_cause.duplicate(),
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
-			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks,
+			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_settled_passes": chain_settled_passes, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
@@ -404,6 +413,8 @@ static func route_arms() -> Dictionary:
 static func reset_route_arms() -> void:
 	ManoeuvreCensus.reset()
 	Manoeuvre.reset()
+	kturn_goal_moved = 0
+	parkaside_moved = 0
 	behind_asked = 0
 	behind_reverses = 0
 	post_faces_kept = 0
@@ -1320,8 +1331,101 @@ static func behind_on() -> bool:
 
 
 ## The move order this tick drives: `order` itself, or (Manoeuvre chose `reverse` for this goal) a copy that reverses
+## Round 43 (Bar S v2, `--traffic-on=parkaside`, Traffic.DEFAULT_OFF until judged): A SEAT UNDER A PARKED FRIEND OF ANOTHER SQUAD
+## IS TAKEN BESIDE IT. Bar S's read (fed356a8b, 72 cells an arm): with the seat bound a squad sits compactly at its click, and a
+## second squad clicked 17 m from it is dealt seats ON the parked hulls (the slot grounding reads the navmesh only); the two
+## squads then ask each other to give way (Locks yield + blocked +6.9 s a run). Here, in the callback layer every drive runs
+## (GDScript and C++ alike: C26.2), a move goal within PARKASIDE_REACH_M that lies inside the clearance disc of a friend that is
+## PARKED (arrived, still) and not of my element is moved to the nearest free point on that disc's rim (12 looks round it, the
+## side nearest the seat first, no other parked friend's disc, on the navmesh), ONCE per goal (Manoeuvre's aside memo, by
+## instance id); the drive, the asks and ORCA are untouched (C43.4). Squadmates are not moved for (their seats keep the hull floor).
+const PARKASIDE_SWITCH := "parkaside"
+const PARKASIDE_REACH_M := 30.0
+const PARKASIDE_CLEAR_M := 1.0
+const PARKASIDE_STILL_MPS := 0.3
+const PARKASIDE_LOOKS := 12
+static var parkaside_moved := 0
+
+
+static func parkaside_on() -> bool:
+	return not Traffic.off(PARKASIDE_SWITCH)
+
+
+func _park_aside(order: Dictionary) -> Dictionary:
+	var goal := Vector3(float(order["x"]), 0.0, float(order["z"]))
+	var known: Variant = Manoeuvre.aside_of(self, goal)
+	if known is Vector3:
+		if (known as Vector3).distance_to(goal) < 0.01:
+			return order
+		var moved := order.duplicate()
+		moved["x"] = (known as Vector3).x
+		moved["z"] = (known as Vector3).z
+		return moved
+	var tank := ctl.tank
+	if _flat_distance(tank.global_position, goal) > PARKASIDE_REACH_M or ctl.tanks_root == null:
+		return order
+	var my_r := Avoidance.radius_of(tank.unit_id)
+	var brain := ctl as TankBrain
+	var elements: Variant = Elements.of_match(brain.game_match) if brain != null and brain.game_match != null else null
+	var mine: Variant = elements.of(String(tank.name)) if elements != null else null
+	var parked: Array = []  # [centre (Vector3), clearance radius]
+	for node in ctl.tanks_root.get_children():
+		var other := node as Tank
+		if other == null or other == tank or other.team != tank.team or not other.is_alive():
+			continue
+		if mine != null and elements != null and elements.of(String(other.name)) == mine:
+			continue
+		var mover := Movement.of(other)
+		if (mover != null and mover.phase != "arrived") or other.real_velocity.length() > PARKASIDE_STILL_MPS:
+			continue
+		parked.append([Vector3(other.global_position.x, 0.0, other.global_position.z), Avoidance.radius_of(other.unit_id) + my_r + PARKASIDE_CLEAR_M])
+	var under: Variant = null
+	for entry: Array in parked:
+		if _flat_distance(goal, entry[0]) < float(entry[1]):
+			under = entry
+			break
+	if under == null:
+		return order  # nothing parked under it NOW; looked at again next tick (the other squad parks later: no memo here)
+	var centre: Vector3 = under[0]
+	var ring: float = float(under[1]) + 0.5
+	var out := Vector3(goal.x - centre.x, 0.0, goal.z - centre.z)
+	var start := atan2(out.x, -out.z) if out.length_squared() > 0.01 else 0.0
+	var map: RID = tank.get_world_3d().navigation_map if tank.is_inside_tree() else RID()
+	var taken := goal
+	var found := false
+	for i in PARKASIDE_LOOKS:
+		# The side nearest the seat first, then alternately either way round the rim.
+		var step := (i + 1) / 2 * (1 if i % 2 == 1 else -1)
+		var angle := start + step * TAU / PARKASIDE_LOOKS
+		var candidate := centre + Vector3(sin(angle), 0.0, -cos(angle)) * ring
+		if map.is_valid():
+			var on_mesh := NavigationServer3D.map_get_closest_point(map, candidate)
+			if Vector2(on_mesh.x - candidate.x, on_mesh.z - candidate.z).length() > 1.5:
+				continue
+			candidate = Vector3(on_mesh.x, 0.0, on_mesh.z)
+		var clear := true
+		for entry: Array in parked:
+			if _flat_distance(candidate, entry[0]) < float(entry[1]) - 0.01:
+				clear = false
+				break
+		if clear:
+			taken = candidate
+			found = true
+			break
+	if not found:
+		return order  # no free rim this tick; looked at again
+	Manoeuvre.aside_note(self, goal, taken)
+	parkaside_moved += 1
+	var moved := order.duplicate()
+	moved["x"] = taken.x
+	moved["z"] = taken.z
+	return moved
+
+
 ## onto it with no facing. Called back by the native drive before anything else (C26.2).
 func _manoeuvre(order: Dictionary) -> Dictionary:
+	if parkaside_on() and not bool(order.get("direct", false)) and order.has("x") and order.has("z"):
+		order = _park_aside(order)  # round 43 (Bar S v2): a seat under a parked friend of another squad, taken beside it
 	if not behind_on() or bool(order.get("reverse", false)) or bool(order.get("direct", false)) or wheel_radius() < 0.0:
 		return order
 	var goal := Vector3(float(order["x"]), 0.0, float(order["z"]))
@@ -3058,17 +3162,21 @@ func _deckwait(here: Vector3, way: Vector2) -> float:
 	var name := String(leader.name)
 	if name == _wait_refused and tick < _wait_refused_until:
 		return -1.0
-	if _wait_for != name:
-		_wait_end()
-		_wait_for = name
-		_wait_since = tick
-		deckwait_waits += 1
-	deckwait_queued += 1
 	var off := Vector2(leader.global_position.x - here.x, leader.global_position.z - here.z)
 	var gap := Avoidance.radius_of(ctl.tank.unit_id) + Avoidance.radius_of(leader.unit_id) + WAIT_GAP_M
 	# The leader's speed AWAY from me (a leader turning off my lane onto the deck is clearing it, though its speed my way reads 0:
 	# q6dev3's trace had followers standing 8 m behind a leader turning north at 3 m/s), never negative.
 	var its_along := maxf(Vector2(leader.real_velocity.x, leader.real_velocity.z).dot(off.normalized()), 0.0) if off.length() > 0.01 else 0.0
+	if _wait_for != name:
+		# v5: only the carried-past case begins a wait: me fast, the leader slow or turning in the mouth.
+		if ctl.tank.speed() < DECKWAIT_FAST_SHARE * ctl.tank.max_forward_speed or its_along >= DECKWAIT_LEADER_SLOW_MPS:
+			deckwait_skipped += 1
+			return -1.0
+		_wait_end()
+		_wait_for = name
+		_wait_since = tick
+		deckwait_waits += 1
+	deckwait_queued += 1
 	var cap := maxf(maxf(off.dot(way) - gap, 0.0) / WAIT_FOLLOW_S + its_along, DECKWAIT_FLOOR_SHARE * ctl.tank.max_forward_speed)
 	if deckwait_trace and tick % (SimClock.TICK_RATE / 2) == 0:
 		print("DECKWAIT " + JSON.stringify({"tick": tick, "crew": String(ctl.tank.name), "for": name, "since": _wait_since,
@@ -5313,13 +5421,63 @@ func straight_and_clear() -> bool:
 	return absf(nose.angle_to(to)) <= deg_to_rad(STRAIGHT_LEG_DEG)
 
 
+## Round 43 (manoeuvre S3, `--traffic-on=kturngoal`, Traffic.DEFAULT_OFF until Bar S): A REVERSE LEG ENDS WHEN ITS GOAL HAS
+## MOVED TO WHERE A FORWARD ARC REACHES IT. The plan was made for one steering point (Manoeuvre.kturn_goal_note); while a
+## reverse leg runs, a waypoint now KTURN_GOAL_MOVED_M or more from it, outside the forward turning circle and within
+## KTURN_GOAL_AHEAD_DEG of the nose ends the leg ("goal_moved") and the forward drive takes the tick. A goal that stays, or
+## one still inside the circle or behind, is driven as planned (the circle rule's own case). The away (forward) leg is left
+## alone: it is already driving forward. Counter `kturn_goal_moved` (route_arms).
+const KTURN_GOAL_MOVED_M := 10.0
+const KTURN_GOAL_AHEAD_DEG := 100.0
+static var kturn_goal_moved := 0
+
+
+static func kturn_goal_on() -> bool:
+	return not Traffic.off("kturngoal")
+
+
+## S3: has the goal the current plan was made for (Manoeuvre.kturn_goal_note) moved KTURN_GOAL_MOVED_M or more to a `waypoint`
+## outside the forward turning circle and within KTURN_GOAL_AHEAD_DEG of the nose, while the hull is not already driving forward?
+func _kturn_goal_moved_out(waypoint: Vector3) -> bool:
+	var planned: Variant = Manoeuvre.kturn_goal_of(self)
+	if not (planned is Vector3) or _flat_distance(waypoint, planned) < KTURN_GOAL_MOVED_M:
+		return false
+	var tank := ctl.tank
+	if tank.speed() > 0.5:
+		return false  # already under way forward (the away leg, or the seam's forward leg): nothing to end
+	var here := tank.global_position
+	var nose := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	var to := Vector3(waypoint.x - here.x, 0.0, waypoint.z - here.z)
+	return to.length() >= 0.5 and not _inside_circle(here, nose, waypoint) \
+			and absf(nose.signed_angle_to(to, Vector3.UP)) <= deg_to_rad(KTURN_GOAL_AHEAD_DEG)
+
+
 ## Called by drive() for a wheeled hull on a routed forward move: fills `cmd` and returns true while a planned reverse
 ## leg is being driven (planning one first when the forward arc toward `waypoint` would hit a wall).
 func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool:
 	# Round 31 (planner CP-P1, R31.2): a crew the lattice planner's seam holds (a plan pending or being driven) is driven
 	# by it; the seam ASKS only where this function decides a plan is needed (the two `take` lines below).
-	if PlannerSeam.on() and PlannerSeam.hold(self, cmd, "kturn", waypoint, delta): return true
 	var tank := ctl.tank
+	# Round 43 (S3, kturngoal): the goal a plan was made for has moved to where a forward arc reaches it. For a leg of the circle
+	# k-turn (a reverse leg under way) and for the lattice planner's seam (a plan pending or being driven for that goal: released
+	# through its own release, the forward drive takes the tick) alike.
+	if kturn_goal_on() and (PlannerSeam.on() and PlannerSeam.live(String(tank.name)) or (_kturn_left_m > 0.0 and _kturn_gear < 0)) \
+			and _kturn_goal_moved_out(waypoint):
+		if ManoeuvreCensus.trace_unit == String(tank.name):
+			print("MANOEUVRE_TRACE leg f %d ended: the goal moved to %s, a forward arc reaches it (%s)" % [
+					Engine.get_physics_frames(), str(_flat_xz(waypoint)), "seam" if _kturn_left_m <= 0.0 else "circle"])
+		if PlannerSeam.on() and PlannerSeam.live(String(tank.name)):
+			PlannerSeam._release(String(tank.name), true)
+		if _kturn_left_m > 0.0:
+			_kturn_end("goal_moved")
+		kturn_goal_moved += 1
+		_kturn_left_m = 0.0
+		_kturn_legs.clear()
+		_kturn_check = 0
+		_repath_left = 0.0
+		Manoeuvre.kturn_goal_forget(self)
+		return false
+	if PlannerSeam.on() and PlannerSeam.hold(self, cmd, "kturn", waypoint, delta): return true
 	if _kturn_left_m > 0.0:
 		if not _kturn_rolling:
 			# Round 14 (N2): the leg counts from where the hull STOPPED rolling the other way, not from where it was
@@ -5402,6 +5560,8 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	if to.length() < 0.5:
 		return false
 	var error := forward.signed_angle_to(to, Vector3.UP)
+	if kturn_goal_on():
+		Manoeuvre.kturn_goal_note(self, waypoint)  # round 43 (S3): the goal any plan made below is for
 	if reverse_log:
 		_note_look(waypoint, here, forward, error)
 	# Round 26 (manoeuvre M2): the steering point INSIDE the forward turning circle (no forward arc ever points at it;

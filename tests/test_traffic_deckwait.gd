@@ -202,3 +202,31 @@ func test_a_wait_ends_on_a_tick_that_never_weighs_it() -> void:
 	Movement.avoidance_on = true
 	assert_eq(mover._wait_for, "", "a tick that never weighed the wait ended it")
 	assert_eq(mover._wait_since, -1, "and its timer")
+
+
+## v5 (round 43, S5): an ORDERLY approach is left alone. Me arriving at a walking pace (a quarter of top speed) behind the same slow
+## leader in the mouth: ON begins no wait (deckwait_skipped counts the looks), and my crossing is as OFF.
+func test_v5_a_slow_arrival_behind_a_slow_leader_is_left_alone() -> void:
+	var crossed := {}
+	for arm in ["off", "on"]:
+		Traffic.set_off("deckwait", arm == "off")
+		var staged: Array = await _stage({"type": "move_to", "x": 88.0, "z": 20.0, "speed": 0.25}, Vector3(85.0, 0.0, -11.0), -PI / 2.0)
+		var me := staged[0] as Tank
+		var mover := Movement.of(me)
+		mover.ctl.set_orders({"type": "move_to", "x": 88.0, "z": 20.0, "speed": 0.25}, {"type": "fire_at_will"})
+		Movement.reset_route_arms()
+		var crossed_tick := -1
+		for i in 40 * SimClock.TICK_RATE:
+			await _lab.step()
+			if me.global_position.z > 12.0 and crossed_tick < 0:
+				crossed_tick = i
+				break
+		var arms := Movement.route_arms()
+		crossed[arm] = crossed_tick
+		if arm == "on":
+			assert_eq(int(arms.get("deckwait_waits", 0)), 0, "ON: a slow arrival begins no wait (v5)")
+			assert_true(int(arms.get("deckwait_skipped", 0)) > 0, "...and the looks are counted as skipped (%d)" % int(arms.get("deckwait_skipped", 0)))
+		_lab.dispose()
+		_lab = null
+	assert_true(int(crossed["on"]) > 0 and int(crossed["off"]) > 0, "both arms cross (off %d, on %d)" % [crossed["off"], crossed["on"]])
+	assert_true(absi(int(crossed["on"]) - int(crossed["off"])) <= 5, "and at the same tick but for noise (off %d, on %d)" % [crossed["off"], crossed["on"]])

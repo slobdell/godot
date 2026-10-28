@@ -47,6 +47,8 @@ static var refused := {}     # why reverse was not taken -> count (measurement)
 
 
 static func reset() -> void:
+	_kturn_for.clear()  # round 43 (S3)
+	_aside.clear()  # round 43 (Bar S v2)
 	plans = {}
 	refused = {}
 	face_plans = 0
@@ -392,6 +394,54 @@ static var arrivals_held_ticks := 0
 ## Movement member: every Movement member is a field of native's exec-state table (exec_fields.h), and this is GDScript
 ## decision state the C++ never reads.
 static var _arrive_hold_until := {}
+
+
+# ---- Round 43 (manoeuvre S3, `--traffic-on=kturngoal`): the goal a k-turn was planned for -----------------------------------
+#
+# His first order on Locks 56416 and Bar S's dev cells (terminus / crossing 7001, `_agents/streams/manoeuvre.md` S3): at a move's
+# first tick a War Rig's goal is the transit's converging STATION, which can sit a hull's length away at 110 degrees off its
+# nose (inside its 12 m turning circle), so the mover plans a circle k-turn (back 7.5 m, then the away arc) and commits to it;
+# half a second later the station has moved 45 m toward the click, where a forward arc reaches it, but the leg backs its 7.5 m
+# into the arena's edge regardless (his Guns_2 "crept north" 3.6 s; terminus: 11-14 s of k-turn per War Rig). Kept here by the
+# Movement's instance id (never a crew's name: C34.6), not as a Movement member: every member is a field of native's exec-state
+# table (exec_fields.h), and this is GDScript decision state the C++ never reads (the rule runs the GDScript drive while ON).
+static var _kturn_for := {}
+
+
+# ---- Round 43 (Bar S v2, `--traffic-on=parkaside`): the seat taken beside a parked friend, once per goal ------------------------
+## mover instance id -> [the goal as ordered, the goal taken]; GDScript decision state, no exec field (trip-up 84).
+static var _aside := {}
+
+
+static func aside_of(mover: Object, goal: Vector3) -> Variant:
+	var rec: Variant = _aside.get(mover.get_instance_id())
+	if rec is Array and (rec[0] as Vector3).distance_to(goal) <= 0.5:
+		return rec[1]
+	return null
+
+
+static func aside_note(mover: Object, goal: Vector3, taken: Vector3) -> void:
+	_aside[mover.get_instance_id()] = [goal, taken]
+	if _aside.size() > 256:
+		for id: int in _aside.keys():
+			if not is_instance_id_valid(id):
+				_aside.erase(id)
+
+
+static func kturn_goal_note(mover: Object, goal: Vector3) -> void:
+	_kturn_for[mover.get_instance_id()] = goal
+	if _kturn_for.size() > 256:
+		for id: int in _kturn_for.keys():
+			if not is_instance_id_valid(id):
+				_kturn_for.erase(id)
+
+
+static func kturn_goal_of(mover: Object) -> Variant:
+	return _kturn_for.get(mover.get_instance_id())
+
+
+static func kturn_goal_forget(mover: Object) -> void:
+	_kturn_for.erase(mover.get_instance_id())
 
 
 static func arrive_hold_forget(mover: Object) -> void:

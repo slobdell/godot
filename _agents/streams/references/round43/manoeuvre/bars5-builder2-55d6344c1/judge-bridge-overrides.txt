@@ -1,0 +1,11 @@
+arm             runs     pass    rim s  deck jam    worst   arrival over 3 s
+arm-off           72    72/72     32.0      60.3      1.8      31.9        0
+arm-on            72    71/72     40.3      73.3      3.9      32.7        1
+    FAIL locks green seed 10450 tick 8: crossed 4/4, worst rim 3.9 s (Green_S_1 3.9, Green_S_3 0.5)
+paired arm-off -> arm-on over 72 runs: rim 32.0 -> 40.3 s (+26 %; line <= 25.6 = 0.8 x OFF), per-run mean +0.12 s, se 0.07 (1.7 se; line <= -2 se)
+paired arrival arm-off -> arm-on: mean 31.9 -> 32.7 s, per-run mean +0.87 s, se 0.64 (+1.4 se)
+FAIL Q6 rim pooled ON <= OFF: 32.0 -> 40.3 s
+PASS Q6 every surviving crew crosses ON: 72/72 runs
+FAIL Q6 worst crew ON <= 3 s: 3.9 s
+PASS Q6 arrival guard: paired mean ON <= OFF + 1.645 se: +0.87 s a run (line <= +1.05)
+Q6 TREE VERDICT FAIL

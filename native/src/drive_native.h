@@ -46,6 +46,8 @@ struct DriveConfig {
 	Object *switches = nullptr; // BrainSwitches (native_avoid, native_nav: the A/B flips them between ticks)
 	const struct AvoidanceTable *avoidance = nullptr; // N1's native table (TankNative's)
 	mutable HashMap<String, double> radius_of; // Avoidance.radius_of, a pure function of the unit
+	// Round 43 (parkaside): Avoidance.radius_of by hull instance id (a hull keeps its unit); -1 for a child that is no Tank.
+	mutable HashMap<int64_t, double> radius_by_hull;
 	mutable HashMap<String, double> settle_of; // Movement.settle_radius(unit), pure (Units' table)
 	mutable HashMap<String, double> hull_length_of; // Movement.hull_box(unit)[2], pure (Units' table)
 	mutable HashMap<String, double> hull_width_of; // Movement.hull_box(unit)[0]
@@ -63,6 +65,10 @@ struct DriveConfig {
 	// Round 26 (perf, C26.2, manoeuvre M1): Movement._manoeuvre's per-tick gate natively; the decision (a new goal or a
 	// gap in the drive ticks) is called back. BEHIND_GAP_TICKS < 0: this movement.gd has no _manoeuvre (no gate).
 	int64_t BEHIND_GAP_TICKS = -1;
+	// Round 43 (native N3, manoeuvre Bar S v2 `parkaside`): Movement._park_aside's memo and cheap exits natively, its
+	// decision called back. False on a tree without it (its constants absent): the switch does not exist there.
+	bool parkaside_ready = false;
+	double PARKASIDE_REACH_M = 0.0, PARKASIDE_CLEAR_M = 0.0, PARKASIDE_STILL_MPS = 0.0;
 	mutable HashMap<String, double> braking_of; // Movement._braking() by unit: max(Units.stat(unit, "braking_mps2", 8), 0.1)
 	// Round 29 (traffic T1, C29.2): the street hold. traffic_hold is false on a tree without it (Traffic has no hold_of):
 	// then no gate and no callback, the drive as before. With it, _avoid's first lines call NativeTraffic.avoid_hold back
@@ -162,6 +168,10 @@ struct DriveConfig {
 	// Round 27 (E2): Movement._planned_reverse's look up to its cheap exits natively (kturn_look_ready false: the callback).
 	bool kturn_look_ready = false;
 	double KTURN_MIN_ERROR_DEG = 0.0, KTURN_CIRCLE_SPEED = 0.0;
+	// Round 43 (native N3, manoeuvre S3 `kturngoal`): Movement._kturn_goal_moved_out natively and Manoeuvre.kturn_goal_note
+	// where the cheap look answers. False on a tree without S3 (its constants absent): the switch does not exist there.
+	bool kturn_goal_ready = false;
+	double KTURN_GOAL_MOVED_M = 0.0, KTURN_GOAL_AHEAD_DEG = 0.0;
 	// Round 28 (N5): Movement._repair natively (SlotGround.for_unit called; repair_ready false: the callback).
 	bool repair_ready = false;
 	double REPAIR_MAX_M = 0.0;

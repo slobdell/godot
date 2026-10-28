@@ -58,6 +58,8 @@ static func capture(mover: Movement) -> Dictionary:
 	state["static:Manoeuvre.refused"] = _copy(Manoeuvre.refused)
 	if (Manoeuvre as Script).get_script_constant_map().has("STALL_INTENT_DEFAULT"):  # round 35 (W1c)
 		state["static:Manoeuvre.stall_intent_ticks"] = Manoeuvre.stall_intent_ticks
+	if "_aside" in (Manoeuvre as Script):  # round 43 (Bar S v2, parkaside): the seat-aside memo _park_aside reads and notes
+		state["static:Manoeuvre._aside"] = _copy((Manoeuvre as Script).get("_aside"))
 	var station: Object = mover._station
 	if station != null:
 		for prop: Dictionary in station.get_property_list():
@@ -81,6 +83,9 @@ static func restore(mover: Movement, state: Dictionary) -> void:
 			continue
 		if key == "static:Manoeuvre.stall_intent_ticks":
 			Manoeuvre.stall_intent_ticks = int(state[key])
+			continue
+		if key == "static:Manoeuvre._aside":
+			(Manoeuvre as Script).set("_aside", _copy(state[key]))
 			continue
 		mover.set(key.trim_prefix("static:"), _copy(state[key]))
 	var station: Object = mover._station

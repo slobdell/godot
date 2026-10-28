@@ -1,0 +1,88 @@
+Bar S judge: base v v2, 72 paired runs (base 72, arm 72), 0 files with SCRIPT ERROR
+D1 seated within the bound by 15 s: pooled 199 -> 362; paired mean +2.264 a run, se 0.164 (+13.8 se); line >= +2 se and ARM > BASE: PASS
+D2 start-zone yield + blocked s: pooled 1486.0 -> 1225.6; paired mean -3.617 s a run, se 1.520 (-2.4 se); line <= -2 se and ARM < BASE: PASS
+G crossing  yield+blocked s  pooled   447.3 ->   454.7; paired mean +0.308 a run, se 2.399 (+0.1 se); line <= +2 se: PASS
+G crossing  k-turn s         pooled   562.0 ->   379.0; paired mean -7.625 a run, se 1.749 (-4.4 se); line <= +2 se: PASS
+G locks     yield+blocked s  pooled   314.2 ->   413.0; paired mean +4.117 a run, se 1.715 (+2.4 se); line <= +2 se: FAIL
+G locks     k-turn s         pooled   223.3 ->   121.7; paired mean -4.233 a run, se 1.665 (-2.5 se); line <= +2 se: PASS
+G terminus  yield+blocked s  pooled   724.5 ->   357.9; paired mean -15.275 a run, se 1.878 (-8.1 se); line <= +2 se: PASS
+G terminus  k-turn s         pooled   651.6 ->   301.5; paired mean -14.588 a run, se 2.242 (-6.5 se); line <= +2 se: PASS
+  reported never-arrived crews          pooled    226.0 ->    142.0; paired mean -1.167 (se 0.203)
+  reported mean arrival s (never = 15)  pooled    846.1 ->    776.7; paired mean -0.963 (se 0.210)
+  reported k-turn s                     pooled   1436.9 ->    802.2; paired mean -8.815 (se 1.198)
+  reported wedged s                     pooled   1456.3 ->   1440.5; paired mean -0.219 (se 1.034)
+  reported seat moves                   pooled   3463.0 ->   1115.0; paired mean -32.611 (se 2.758)
+  per cell (arena seed): seated base->arm | yield+blocked base->arm | never base->arm
+   crossing    10701:  0 ->  2 |   8.8 ->   8.6 | 6 -> 5
+   crossing    10702:  3 ->  4 |  25.0 ->  41.4 | 2 -> 1
+   crossing    10703:  4 ->  4 |  20.9 ->  30.2 | 2 -> 2
+   crossing    10704:  5 ->  4 |  21.7 ->  30.2 | 2 -> 2
+   crossing    10705:  0 ->  4 |  16.3 ->   6.7 | 8 -> 5
+   crossing    10706:  2 ->  6 |  19.6 ->   5.2 | 4 -> 0
+   crossing    10707:  1 ->  2 |  15.3 ->   4.5 | 6 -> 5
+   crossing    10708:  1 ->  3 |  14.3 ->   5.4 | 8 -> 4
+   crossing    10709:  4 ->  6 |  28.6 ->  39.8 | 2 -> 1
+   crossing    10710:  3 ->  4 |  25.0 ->  41.4 | 2 -> 1
+   crossing    10711:  4 ->  4 |  20.9 ->  30.2 | 3 -> 2
+   crossing    10712:  2 ->  6 |  19.6 ->   5.2 | 5 -> 0
+   crossing    10713:  4 ->  4 |  20.9 ->  30.2 | 2 -> 2
+   crossing    10714:  2 ->  6 |  19.6 ->   5.2 | 5 -> 0
+   crossing    10715:  2 ->  6 |  19.6 ->   5.2 | 5 -> 0
+   crossing    10716:  4 ->  4 |  20.9 ->  30.2 | 2 -> 2
+   crossing    10717:  4 ->  4 |  23.4 ->  41.4 | 1 -> 1
+   crossing    10718:  3 ->  6 |  28.6 ->  39.8 | 2 -> 1
+   crossing    10719:  4 ->  4 |  20.9 ->  30.2 | 2 -> 2
+   crossing    10720:  0 ->  1 |  18.4 ->   4.5 | 7 -> 5
+   crossing    10721:  1 ->  1 |  11.0 ->   4.5 | 5 -> 5
+   crossing    10722:  1 ->  2 |   2.4 ->   3.5 | 5 -> 5
+   crossing    10723:  2 ->  6 |  19.6 ->   5.2 | 4 -> 0
+   crossing    10724:  0 ->  2 |   6.0 ->   6.0 | 6 -> 5
+   locks       10701:  4 ->  6 |   6.7 ->  25.5 | 2 -> 1
+   locks       10702:  2 ->  7 |  23.7 ->  14.1 | 0 -> 0
+   locks       10703:  2 ->  6 |   4.2 ->  14.5 | 1 -> 1
+   locks       10704:  4 ->  6 |   7.6 ->  14.5 | 2 -> 1
+   locks       10705:  3 ->  4 |  16.5 ->  16.9 | 0 -> 1
+   locks       10706:  6 ->  8 |   1.7 ->   7.3 | 1 -> 1
+   locks       10707:  3 ->  7 |  19.0 ->  29.3 | 1 -> 2
+   locks       10708:  3 ->  5 |  30.5 ->  30.4 | 1 -> 3
+   locks       10709:  3 ->  7 |  25.8 ->  14.1 | 0 -> 0
+   locks       10710:  3 ->  7 |  22.7 ->  14.1 | 0 -> 0
+   locks       10711:  3 ->  6 |   6.5 ->  14.5 | 1 -> 1
+   locks       10712:  6 ->  8 |   1.7 ->   6.7 | 1 -> 0
+   locks       10713:  2 ->  6 |   4.2 ->  14.5 | 1 -> 1
+   locks       10714:  6 ->  8 |   1.7 ->   6.7 | 1 -> 0
+   locks       10715:  6 ->  6 |   1.7 ->   6.7 | 1 -> 0
+   locks       10716:  3 ->  6 |   4.2 ->  14.5 | 1 -> 1
+   locks       10717:  4 ->  7 |  24.3 ->  13.0 | 1 -> 1
+   locks       10718:  3 ->  7 |  23.5 ->  14.2 | 1 -> 0
+   locks       10719:  3 ->  6 |   6.5 ->  14.5 | 1 -> 1
+   locks       10720:  3 ->  7 |  19.0 ->  29.3 | 1 -> 2
+   locks       10721:  3 ->  7 |  17.9 ->  29.3 | 1 -> 2
+   locks       10722:  3 ->  5 |  20.7 ->  28.3 | 0 -> 2
+   locks       10723:  6 ->  7 |   2.3 ->   6.7 | 1 -> 1
+   locks       10724:  5 ->  6 |  21.6 ->  33.4 | 1 -> 2
+   terminus    10701:  0 ->  5 |   8.7 ->   2.9 | 5 -> 3
+   terminus    10702:  3 ->  5 |  31.8 ->  22.0 | 3 -> 2
+   terminus    10703:  3 ->  5 |  41.4 ->  18.5 | 4 -> 1
+   terminus    10704:  3 ->  5 |  41.4 ->  18.5 | 4 -> 1
+   terminus    10705:  1 ->  4 |  11.1 ->   9.3 | 6 -> 6
+   terminus    10706:  4 ->  6 |  42.7 ->  15.8 | 5 -> 1
+   terminus    10707:  1 ->  2 |  18.9 ->  10.0 | 5 -> 6
+   terminus    10708:  1 ->  2 |   7.5 ->   0.1 | 6 -> 5
+   terminus    10709:  1 ->  5 |  29.3 ->  22.0 | 4 -> 1
+   terminus    10710:  3 ->  5 |  31.1 ->  22.0 | 4 -> 2
+   terminus    10711:  3 ->  5 |  41.4 ->  18.5 | 4 -> 2
+   terminus    10712:  4 ->  6 |  42.7 ->  15.8 | 4 -> 1
+   terminus    10713:  3 ->  5 |  41.4 ->  18.5 | 4 -> 2
+   terminus    10714:  4 ->  6 |  42.7 ->  15.8 | 5 -> 1
+   terminus    10715:  4 ->  6 |  42.7 ->  15.8 | 4 -> 1
+   terminus    10716:  3 ->  5 |  41.4 ->  18.5 | 4 -> 2
+   terminus    10717:  2 ->  5 |  34.3 ->  22.0 | 5 -> 2
+   terminus    10718:  2 ->  5 |  29.1 ->  22.0 | 4 -> 1
+   terminus    10719:  3 ->  5 |  41.4 ->  18.5 | 4 -> 1
+   terminus    10720:  1 ->  4 |  18.9 ->  10.9 | 6 -> 6
+   terminus    10721:  1 ->  3 |  18.9 ->  10.9 | 5 -> 6
+   terminus    10722:  0 ->  3 |  15.3 ->  12.6 | 5 -> 5
+   terminus    10723:  4 ->  6 |  42.7 ->  15.8 | 5 -> 1
+   terminus    10724:  0 ->  4 |   7.7 ->   1.2 | 4 -> 3
+VERDICT: FAIL

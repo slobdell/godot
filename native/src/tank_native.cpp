@@ -619,6 +619,7 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.switches = c.keep_switches.get_validated_object();
 	c.avoidance = &avoidance;
 	c.radius_of.clear();
+	c.radius_by_hull.clear();
 	c.settle_of.clear();
 	c.hull_length_of.clear();
 	c.hull_width_of.clear();
@@ -728,7 +729,16 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.YIELD_REACHED = config.get("YIELD_REACHED", 0.0);
 	c.YIELD_CLEAR = config.get("YIELD_CLEAR", 0.0);
 	c.YIELD_HOLD_SECONDS = config.get("YIELD_HOLD_SECONDS", 0.0);
+	c.PARKASIDE_REACH_M = config.get("PARKASIDE_REACH_M", -1.0);
+	c.PARKASIDE_CLEAR_M = config.get("PARKASIDE_CLEAR_M", -1.0);
+	c.PARKASIDE_STILL_MPS = config.get("PARKASIDE_STILL_MPS", -1.0);
+	c.parkaside_ready = c.PARKASIDE_REACH_M >= 0.0 && c.PARKASIDE_CLEAR_M >= 0.0 && c.PARKASIDE_STILL_MPS >= 0.0 &&
+			c.manoeuvre_script != nullptr && c.traffic_script != nullptr && c.avoidance_script != nullptr && c.tank_script.is_valid();
 	c.kturn_look_ready = config.has("KTURN_MIN_ERROR_DEG") && config.has("KTURN_CIRCLE_SPEED") && c.manoeuvre_census != nullptr;
+	c.KTURN_GOAL_MOVED_M = config.get("KTURN_GOAL_MOVED_M", -1.0);
+	c.KTURN_GOAL_AHEAD_DEG = config.get("KTURN_GOAL_AHEAD_DEG", -1.0);
+	c.kturn_goal_ready = c.KTURN_GOAL_MOVED_M >= 0.0 && c.KTURN_GOAL_AHEAD_DEG >= 0.0 && c.manoeuvre_script != nullptr &&
+			c.traffic_script != nullptr;
 	// N4: _around_fire's constants and scripts; a missing one leaves the callback in place (fire_ready false).
 	c.fire_ready = false;
 	const char *fire_doubles[] = { "FIRE_LOOKAHEAD", "FIRE_DETOUR_MARGIN", "FIRE_DETOUR_REACHED", "FIRE_KEEP_SHARE",

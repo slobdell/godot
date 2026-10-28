@@ -222,7 +222,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdway", "holdroute"]  # round 43 holdway (engage A6, R43.13/R43.18: the verdict reads ordered ways and binds only crews on the street; until Bar A6); holdfar (engage A3, R43.8: the far crew of a waiting squad is not sent to the mouth; until Bar A)  # round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane (manoeuvre, until judged) (manoeuvre, until judged); round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdway", "holdroute", "kturngoal", "parkaside"]  # round 43: holdfar / holdway / holdroute (engage A6, until judged), kturngoal (manoeuvre S3) + parkaside (manoeuvre Bar S v2), all OFF after Bar S / S v2 (R43.42); round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane; round 39-40 givewaychain / chainrelease / chainside / reroute / rerouteany / follow (manoeuvre, until judged)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -282,6 +282,10 @@ static func _chain_native() -> void:
 	# Round 41 (Q2, `wait`): the same: Movement._wait is inside the drive's C++ mirror, so ON runs the GDScript drive until twinned.
 	# Round 41 (Q4, `holdlane`): the unstick hold is inside the drive's mirror too, and the ask skip inside _negotiate's (native_yield).
 	# Round 42 (Q6, `deckwait`): the speed wish at a deck's mouth is inside the drive's mirror: ON runs the GDScript drive until twinned.
+	# Round 43 (S3, `kturngoal`): a k-turn leg ended for a goal that moved is inside the drive's mirror; twinned (native N3,
+	# pair/native-kturngoal: drive_native.cpp kturn_goal_moved_out, test_native_drive_kturn_goal), so ON keeps the C++ drive.
+	# Round 43 (Bar S v2, `parkaside`): the goal taken beside a parked friend is decided in _manoeuvre's first line; twinned
+	# (native N3, pair/native-parkaside: drive_native.cpp park_aside, test_native_drive_parkaside), so ON keeps the C++ drive.
 	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush"):
 		if _reroute_saved_native_drive == null:
 			_reroute_saved_native_drive = BrainSwitches.native_drive

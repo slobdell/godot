@@ -780,8 +780,35 @@ struct Drive {
 		}
 		if (answered) {
 			v.set__kturn_check(lever_of(L_KTURN_CHECK));
+			// Round 43 (S3): the GDScript notes the goal right after its error, before every exit this look answers for.
+			if ((double)to.length() >= 0.5 && kturn_goal_on()) {
+				static const StringName kturn_goal_note("kturn_goal_note");
+				c.manoeuvre_script->call(kturn_goal_note, m, waypoint);
+			}
 		}
 		return answered;
+	}
+
+	// Round 43 (manoeuvre S3): Traffic.off("kturngoal") read live, as Movement.kturn_goal_on() does.
+	bool kturn_goal_on() {
+		static const String kturngoal("kturngoal");
+		return c.kturn_goal_ready && !traffic_off(kturngoal);
+	}
+
+	// Movement._kturn_goal_moved_out(waypoint), line by line.
+	bool kturn_goal_moved_out(const Vector3 &waypoint) {
+		static const StringName kturn_goal_of("kturn_goal_of");
+		const Variant planned = c.manoeuvre_script->call(kturn_goal_of, m);
+		if (planned.get_type() != Variant::VECTOR3 || flat_distance(waypoint, (Vector3)planned) < c.KTURN_GOAL_MOVED_M) {
+			return false;
+		}
+		if ((double)tank->get(k._speed) > 0.5) {  // tank.speed() returns _speed
+			return false;
+		}
+		const Vector3 nose = Vector3(-basis_z.x, 0, -basis_z.z).normalized();
+		const Vector3 to((real_t)((double)waypoint.x - (double)here.x), 0, (real_t)((double)waypoint.z - (double)here.z));
+		return (double)to.length() >= 0.5 && !inside_circle(nose, waypoint) &&
+				std::fabs((double)nose.signed_angle_to(to, Vector3(0, 1, 0))) <= deg_to_rad(c.KTURN_GOAL_AHEAD_DEG);
 	}
 
 	// Movement._inside_circle(here, forward, point)
@@ -2518,6 +2545,7 @@ struct Drive {
 	bool cb_on = false;
 	bool run(Object *cmd, const Dictionary &order, double delta);
 	Dictionary manoeuvre(const Dictionary &order);
+	Dictionary park_aside(const Dictionary &order);
 
 	// ---- Round 33 (N5.M): `_manoeuvre`'s decision and Manoeuvre's choose / behind / simulate, line by line ----
 	struct Sim {
@@ -2588,12 +2616,98 @@ int64_t Drive<V>::Engine_frames() {
 //   if gap or _behind_goal == INF or _flat_distance(goal, _behind_goal) > NEW_GOAL_JUMP: <the decision>
 //   if _behind_plan != "reverse": return order
 //   reversed := order.duplicate(); reversed["reverse"] = true; reversed.erase("facing"); return reversed
+// Round 43 (native N3, manoeuvre Bar S v2 `parkaside`, C43.4): Movement._park_aside, _manoeuvre's first line:
+//   if parkaside_on() and not order.get("direct", false) and order.has("x") and order.has("z"): order = _park_aside(order)
+// The memo (Manoeuvre.aside_of: the goal within 0.5 m of the one noted) and the cheap exits natively; the decision (a parked
+// friend under the goal, the rim's looks, the note) is the live GDScript, called back only when a friend of my team stands
+// still (real_velocity <= PARKASIDE_STILL_MPS) with the goal inside its disc (both radii + PARKASIDE_CLEAR_M). Every friend
+// _park_aside can find under the goal meets both (its element, phase and life tests only narrow it), so with no such friend
+// it returns the order untouched, with nothing written: the answer is the GDScript's.
 template <class V>
-Dictionary Drive<V>::manoeuvre(const Dictionary &order) {
-	static const String r_reverse_plan("reverse");
-	if (c.BEHIND_GAP_TICKS < 0) {
+Dictionary Drive<V>::park_aside(const Dictionary &order) {
+	static const String parkaside("parkaside");
+	static const StringName aside("_aside"), park("_park_aside");
+	static const StringName parsed("_parsed"), off_table("_off");
+	Timed look("park_aside_look"); // the whole look, the switch read included (its cost ON and OFF: --native-drive-profile)
+	if (!c.parkaside_ready) {
 		return order;
 	}
+	// Traffic.off("parkaside"): once parsed it is `_off.has(name)`; read here (a call cost ~2 us a drive, OFF too).
+	const bool off = (bool)c.traffic_script->get(parsed) ? ((Dictionary)c.traffic_script->get(off_table)).has(parkaside)
+														 : traffic_off(parkaside);
+	if (off || (bool)order.get(k.direct, false) || !order.has(k.x) || !order.has(k.z)) {
+		return order;
+	}
+	const Vector3 goal((real_t)(double)order[k.x], 0, (real_t)(double)order[k.z]);
+	// Manoeuvre.aside_of(self, goal), then the known branch.
+	const Dictionary memo = c.manoeuvre_script->get(aside);
+	const Variant rec = memo.get((int64_t)m->get_instance_id(), Variant());
+	if (rec.get_type() == Variant::ARRAY) {
+		const Array noted = rec;
+		if (((Vector3)noted[0]).distance_to(goal) <= 0.5) {
+			const Vector3 known = noted[1];
+			if (known.distance_to(goal) < 0.01) {
+				return order;
+			}
+			Dictionary moved = order.duplicate();
+			moved[k.x] = known.x;
+			moved[k.z] = known.z;
+			return moved;
+		}
+	}
+	if (flat_distance(here, goal) > c.PARKASIDE_REACH_M) {
+		return order;
+	}
+	Node *root = Object::cast_to<Node>(ctl->get(k.tanks_root).get_validated_object());
+	if (root == nullptr) {
+		return order;
+	}
+	const double my_r = avoid_radius(tank->get(k.unit_id));
+	int64_t team = -1;
+	bool team_known = false;
+	const int children = root->get_child_count();
+	for (int i = 0; i < children; i++) {
+		// The disc first (an id lookup and a position: no Variant read for a hull far from the goal), then the rest.
+		Node *child = root->get_child(i);
+		if (child == tank) {
+			continue;
+		}
+		const int64_t id = (int64_t)child->get_instance_id();
+		const double *known = c.radius_by_hull.getptr(id);
+		double r;
+		if (known != nullptr) {
+			r = *known;
+		} else {
+			r = is_tank(child) ? avoid_radius(child->get(k.unit_id)) : -1.0;
+			c.radius_by_hull.insert(id, r);
+		}
+		if (r < 0.0) {
+			continue;
+		}
+		const Vector3 at = Object::cast_to<Node3D>(child)->get_global_position();
+		if (!(flat_distance(goal, Vector3(at.x, 0, at.z)) < r + my_r + c.PARKASIDE_CLEAR_M)) {
+			continue;
+		}
+		if (!team_known) {
+			team = tank->get(k.team);
+			team_known = true;
+		}
+		if ((int64_t)child->get(k.team) != team || (double)((Vector3)child->get(k.real_velocity)).length() > c.PARKASIDE_STILL_MPS) {
+			continue;
+		}
+		Timed t("park_aside");
+		return cb(park, order);
+	}
+	return order;
+}
+
+template <class V>
+Dictionary Drive<V>::manoeuvre(const Dictionary &given) {
+	static const String r_reverse_plan("reverse");
+	if (c.BEHIND_GAP_TICKS < 0) {
+		return given;
+	}
+	const Dictionary order = park_aside(given); // round 43 (parkaside): the rest reads the goal taken
 	if ((bool)order.get(k.reverse, false) || (bool)order.get(k.direct, false) || wheel_radius() < 0.0) {
 		return order;
 	}
@@ -2605,7 +2719,9 @@ Dictionary Drive<V>::manoeuvre(const Dictionary &order) {
 		Timed t("manoeuvre");
 		if (!manoeuvre_native_on()) {
 			manoeuvre_counts_.called_back++;
-			return cb(k._manoeuvre, order); // nothing written above: the GDScript decides from the same state
+			// Nothing written above: the GDScript decides from the same state. It is handed the order as GIVEN: its own first
+			// line takes the aside again (the memo answers a seat moved above; an untouched one is looked at the same way).
+			return cb(k._manoeuvre, given);
 		}
 		manoeuvre_counts_.native++;
 		manoeuvre_decide(order, goal, tick, gap); // writes _behind_tick with the rest
@@ -3722,6 +3838,12 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				const int64_t check_left = (int64_t)v._kturn_check() - step;
 				if (seam_live()) {
 					// Round 31 (planner CP-P1): PlannerSeam.hold() opens _planned_reverse for a crew the seam holds.
+					Timed t("planned_reverse");
+					planned = cb(k._planned_reverse, leg_ref, waypoint, delta);
+				} else if ((double)v._kturn_left_m() > 0.0 && kturn_goal_on() && v._kturn_gear() < 0 &&
+						kturn_goal_moved_out(waypoint)) {
+					// Round 43 (S3, kturngoal): a backing leg whose goal moved to where a forward arc reaches it ends; the
+					// GDScript ends it (its first lines: the release, _kturn_end("goal_moved"), the counter) and returns false.
 					Timed t("planned_reverse");
 					planned = cb(k._planned_reverse, leg_ref, waypoint, delta);
 				} else if ((double)v._kturn_left_m() > 0.0) {

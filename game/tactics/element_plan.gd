@@ -292,6 +292,8 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	if asked != "":
 		plan["formation"] = asked
 		plan["why"] = "%s, as ordered" % asked.replace("_", " ")
+	# Round 43 (manoeuvre, R43.6): a move keeps the shape it started with (the latch below; Element carries it back).
+	plan["shape_latch"] = latch_shape(plan, situation, state, task, asked)
 	plan["drill"] = drill["drill"]
 	# Round 21 (R2): who set the anchor, a drill or the movement (stale_anchor reads it back next update).
 	plan["anchor_by_drill"] = bool(state.get("anchor_by_drill", false))
@@ -336,6 +338,50 @@ static func _plan_via(plan: Dictionary, situation: Dictionary, table: DoctrineTa
 	var verb := "attack_move" if String(situation.get("threat", "none")) in ["likely", "contact"] else "move"
 	_group(plan, slot_order(situation), String(plan["formation"]), via, plan["heading"], table.spacing(String(situation["terrain"])),
 			verb)
+
+
+# ---- Round 43 (manoeuvre S2b, R43.6): THE SHAPE LATCH ---------------------------------------------------------------
+#
+# His first order on Locks 56416 (2026-10-27; _agents/streams/manoeuvre.md S1): the Guns' travel shape flipped swarm / vee /
+# swarm / vee / swarm at 8.4, 9.3, 11.7 and 14.6 s as the threat reading changed ("likely" picks the Gangs' vee, everything
+# else their swarm), and every flip re-seated War Rig 3 50-95 m away (east, west, east, west); it never left a 5 m circle in
+# 16 s. The ruling: a move order keeps the shape it started with until it arrives or he re-orders; the element's OWN contact
+# (threat "contact": fired on, or the enemy inside fighting range; not an estimate) may change it ONCE, after
+# SHAPE_LATCH_CONTACT_TICKS of it (hysteresis). Symmetric: the CPU's elements latch the same way. A shape he chose with G
+# is his and needs no latch; a halt (arrived) picks its stand as today; drills, the contact band's line, a crossing's file
+# and the deploy still override the shape where they always did. `--shape-latch=off` is today's pick every update.
+static var SHAPE_LATCH := OS.get_cmdline_user_args().has("--shape-latch=on") or OS.get_environment("SHAPE_LATCH") == "on"
+## The element's own contact must last this long before the latched shape is re-picked, once.
+const SHAPE_LATCH_CONTACT_TICKS := SimClock.TICK_RATE
+
+
+## The latch for this update ({} when none applies): keeps `plan["formation"]` / `plan["why"]` as the move started them,
+## or re-picks once on the element's own contact. `state["shape_latch"]` is last update's (Element carries it back). Pure.
+static func latch_shape(plan: Dictionary, situation: Dictionary, state: Dictionary, task: Dictionary, asked: String) -> Dictionary:
+	if not SHAPE_LATCH or asked != "" or bool(state.get("arrived", false)) or not (ElementTask.destination(task) is Vector3):
+		return {}
+	var key := JSON.stringify(task)
+	var tick := int(situation.get("tick", 0))
+	var was: Dictionary = state.get("shape_latch", {}) if typeof(state.get("shape_latch")) == TYPE_DICTIONARY else {}
+	if String(was.get("key", "")) != key or int(was.get("tick", 0)) > tick:
+		# A new order (or a new match): the pick stands and is latched.
+		return {"key": key, "tick": tick, "formation": String(plan["formation"]), "why": String(plan["why"]),
+				"contact_since": -1, "contact_used": false}
+	var latch := was.duplicate()
+	if String(situation.get("threat", "none")) == "contact" and not bool(latch["contact_used"]):
+		if int(latch["contact_since"]) < 0:
+			latch["contact_since"] = tick
+		if tick - int(latch["contact_since"]) >= SHAPE_LATCH_CONTACT_TICKS:
+			latch["contact_used"] = true
+			latch["formation"] = String(plan["formation"])
+			latch["why"] = String(plan["why"])
+			return latch
+	elif String(situation.get("threat", "none")) != "contact":
+		latch["contact_since"] = -1
+	if String(plan["formation"]) != String(latch["formation"]):
+		plan["why"] = "%s (kept: the shape this move started with)" % String(latch["why"])
+	plan["formation"] = String(latch["formation"])
+	return latch
 
 
 ## The shape the player chose for `task` with G, or "" under AUTO (the table decides). Pure.
@@ -937,7 +983,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		# `move` to the final slots, and the brain drives to its station while one is published (TankBrain._order_context).
 		# No follow orders: the flow's leader-relative station is what this replaces.
 		# Round 20 (M1): eased in from where each crew stood when the order came (`converge`).
-		var shape_along := stations_along(plan, transit)
+		var shape_along := stations_along(plan, transit, ordered)  # round 43 (manoeuvre S2): the stations keep the seat bound
 		plan["stations"] = converge(shape_along, transit)
 		# Round 23 (B1): the shape's own stations, what the pacing rules measure against (Element.shape_along).
 		plan["shape_along"] = shape_along
@@ -992,8 +1038,8 @@ const HALT_RESEAT_TICKS := SimClock.TICK_RATE * 2
 ## point per slot index, for TacticsFormation.seat's `at`. Pure.
 static func route_seats(members: Array, formation: String, spacing: float, transit: Dictionary) -> Array:
 	var count := members.size()
-	var shape := TacticsFormation.centered(TacticsFormation.offsets_at(formation, count,
-			TacticsFormation.pitch(members, spacing)))
+	# Round 43 (manoeuvre S2): the stations keep the seat bound the final slots have (TacticsFormation.shape_at).
+	var shape := TacticsFormation.shape_at(members, formation, count, TacticsFormation.pitch(members, spacing))
 	var route: Array = transit.get("route", [])
 	var s := float(transit.get("s", 0.0))
 	var out: Array = []
@@ -1070,6 +1116,16 @@ const TRANSIT_HANDOFF_M := 12.0
 static func transit_start_m(formation: String, members: Array, spacing: float) -> float:
 	var count := maxi(members.size(), 1)
 	var pitch_v := TacticsFormation.pitch(members, spacing)
+	if TacticsFormation.SEAT_BOUND and count <= TacticsFormation.PLATOON:
+		# Round 43 (manoeuvre S2, R43.7): the bounded shape's depth, as its stations are laid (an unbounded swarm of War Rigs is
+		# 51 m deep, and its half put the anchor's start 25 m past every crew: their starts were rebuilt from 25-40 m behind it).
+		var shape := TacticsFormation.shape_at(members, formation, count, pitch_v)
+		var front := INF
+		var back := -INF
+		for slot in shape:
+			front = minf(front, slot.y)
+			back = maxf(back, slot.y)
+		return 0.5 * maxf(back - front, 0.0)
 	return 0.5 * TacticsFormation.depth(formation, count, pitch_v.y)
 
 
@@ -1108,7 +1164,7 @@ static func route_length(route: Array) -> float:
 ## {unit: Vector3}. Slot i's place is the route point `back_i` metres behind the anchor's progress, pushed `right_i`
 ## across the tangent THERE — so the shape follows the road rather than swinging rigidly round each corner. With no
 ## route in `transit` (a bare anchor and heading) the shape is laid rigidly at the anchor. Pure.
-static func stations_along(plan: Dictionary, transit: Dictionary) -> Dictionary:
+static func stations_along(plan: Dictionary, transit: Dictionary, members: Array = []) -> Dictionary:
 	var result := {}
 	var seats: Dictionary = plan.get("seats", {})
 	if seats.is_empty():
@@ -1118,7 +1174,8 @@ static func stations_along(plan: Dictionary, transit: Dictionary) -> Dictionary:
 	for unit_name: String in seats:
 		count = maxi(count, int((seats[unit_name] as Array)[1]))
 	var pitch_v: Vector2 = plan.get("pitch", Vector2(TacticsFormation.DEFAULT_SPACING, TacticsFormation.DEFAULT_SPACING))
-	var shape := TacticsFormation.centered(TacticsFormation.offsets_at(formation, count, pitch_v))
+	# Round 43 (manoeuvre S2): with `members` the stations keep the seat bound the final slots have (TacticsFormation.shape_at).
+	var shape := TacticsFormation.shape_at(members, formation, count, pitch_v)
 	var route: Array = transit.get("route", [])
 	var s := float(transit.get("s", 0.0))
 	var anchor: Vector3 = transit.get("anchor", Vector3.ZERO)
@@ -1446,6 +1503,15 @@ const CONVERGE_MARGIN_M := 5.0
 ## 0.4/6.7/0.6 m, lead 10 5.9/8.4/6.9, lead 20 4.5/9.8/12.0, lead 30 3.2/9.5/9.1, round 12 6.3/10.5/8.9: a station
 ## ahead and off the hull's nose is what puts it inside a wheeled hull's turning circle.
 static var CONVERGE_LEAD_M := 0.0
+## Round 43 (manoeuvre S3, R43.14; `--converge-on-crew=on`, OFF until Bar S): the converging station starts ON THE CREW, exactly.
+## `transit_starts` keeps each crew's place as (lateral, along) in the frame of the route's pose at `start_s`, and `converge`
+## rebuilds it from the pose at `s + along`: a crew BEHIND the anchor's start is rebuilt from a pose extrapolated back along
+## the route's FIRST leg, and where that leg bends away from the start pose's tangent (terminus / crossing 7001: the first
+## corner of the navmesh path sits between the crew and the anchor) the rebuilt "own place" lands a hull's length off the
+## crew, 110 degrees off its nose, inside a War Rig's turning circle: the mover plans a k-turn for it (the S3 trace). With
+## this on, each start also keeps the crew's WORLD point and the route pose it was carried from, and the station is that point
+## translated by the anchor's progress along the route at the crew's own along-offset: at the first tick it IS the crew.
+static var CONVERGE_ON_CREW := OS.get_cmdline_user_args().has("--converge-on-crew=on") or OS.get_environment("CONVERGE_ON_CREW") == "on"
 
 
 ## The crews' own places in the route's frame at the transit's start, and how far the anchor travels while their
@@ -1460,18 +1526,22 @@ static func transit_starts(members: Array, route: Array, start_s: float, depth: 
 	var tangent: Vector3 = pose["tangent"]
 	var right := Vector3(-tangent.z, 0.0, tangent.x)
 	var drop := 0.0
+	var worlds := {}
 	for member: Dictionary in members:
 		var at := member["position"] as Vector3
 		var rel := Vector3(at.x - origin.x, 0.0, at.z - origin.z)
 		var along := rel.dot(tangent) + CONVERGE_LEAD_M
 		starts[String(member["name"])] = Vector2(rel.dot(right), along)
+		# Round 43 (R43.14): the crew's own point, and where the route pose at its along-offset was when it was taken.
+		var carried := route_pose(route, start_s + along)
+		worlds[String(member["name"])] = [Vector3(at.x, 0.0, at.z), carried["point"]]
 		# The shape's stations sit within half a depth of the anchor: the most a crew can have to fall back.
 		drop = maxf(drop, along + 0.5 * depth)
 	var converge := maxf(maxf(CONVERGE_MIN_M, depth), 1.5 * drop + CONVERGE_MARGIN_M)
 	var room := route_length(route) - TRANSIT_HANDOFF_M - start_s
 	if room > 0.0:
 		converge = minf(converge, room)
-	return {"starts": starts, "converge_m": converge}
+	return {"starts": starts, "converge_m": converge, "worlds": worlds}
 
 
 ## `stations` (the shape's, from stations_along) eased in from each crew's own start (transit_starts) by how far the
@@ -1498,6 +1568,11 @@ static func converge(stations: Dictionary, transit: Dictionary) -> Dictionary:
 		var pose := route_pose(route, s + start.y)
 		var tangent: Vector3 = pose["tangent"]
 		var own := (pose["point"] as Vector3) + Vector3(-tangent.z, 0.0, tangent.x) * start.x
+		var worlds: Dictionary = transit.get("worlds", {})
+		if CONVERGE_ON_CREW and worlds.has(unit_name):
+			# Round 43 (R43.14): the crew's own point, carried by the anchor's progress at its along-offset: ON the crew at the start.
+			var world: Array = worlds[unit_name]
+			own = (world[0] as Vector3) + ((pose["point"] as Vector3) - (world[1] as Vector3))
 		result[unit_name] = clamp_to_arena(own.lerp(stations[unit_name] as Vector3, weight))
 	return result
 

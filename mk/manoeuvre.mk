@@ -440,3 +440,51 @@ manoeuvre-probe-jam: import ## manoeuvre Q1 (round 41): the jam census on his gr
 			--probe-route=$$1 --probe-arm=$$name $$flags > $(PJ_DIR)/$$0-$$1-$$name-$$4-s$$2.log 2>&1 || true'
 	@grep -L '^JAM_RUN' $(PJ_DIR)/*.log | sed 's/^/MISSING (no JAM_RUN line): /' || true
 	$(PYTHON) tests/manoeuvre/probe_jam_table.py $(PJ_DIR)
+
+# ---- round 43 (S1): rebuild a recorded match's START and trace its crews per tick -------------------------------------
+# tests/manoeuvre/start_trace.gd on a recording (ST_RECORDING: a plain .jsonl; zcat a references/*.jsonl.gz into build/ first),
+# the arena and seed on the REAL command line (Arena._ready reads OS args, not Main.next_flags: R43.1), the laptop's squad
+# cap (ST_SQUAD_CAP=4 reproduces his 4 x 5 army), the squads traced (ST_CREWS), ST_SECONDS, ST_FLAGS for any game switch.
+# Rows START_ROW / START_SEAT / START_YIELD / START_GAP -> ST_LOG; tests/manoeuvre/start_table.py prints the per-crew table
+# (--crew=Guns_3 for one crew's timeline). On his Locks 56416 recording the rebuild is within 0.1 m of his census for 10 s.
+ST_RECORDING ?=  # a recording's .jsonl; empty = his first-order shape synthesised from the deploy (Bar S's workload)
+ST_ARENA ?= locks
+ST_SEED ?= 56416
+ST_SQUAD_CAP ?= 4
+ST_CREWS ?= Guns,Hunters
+ST_SECONDS ?= 20
+ST_FLAGS ?=
+ST_LOG ?= $(BUILD_DIR)/manoeuvre/start_trace.log
+.PHONY: manoeuvre-start-trace
+manoeuvre-start-trace: import ## manoeuvre S1 (round 43): rebuild ST_RECORDING's start (ST_ARENA, ST_SEED, ST_SQUAD_CAP) and trace ST_CREWS per tick for ST_SECONDS -> ST_LOG + the per-crew table
+	@mkdir -p $(dir $(ST_LOG))
+	@echo ">> manoeuvre-start-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | $(ST_RECORDING) $(ST_ARENA) $(ST_SEED) cap $(ST_SQUAD_CAP) crews $(ST_CREWS) | flags '$(ST_FLAGS)'"
+	@timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/start_trace.gd -- \
+		$(if $(strip $(ST_RECORDING)),--orders=$(strip $(ST_RECORDING))) --arena=$(ST_ARENA) --seed=$(ST_SEED) --squad-cap=$(ST_SQUAD_CAP) $(if $(strip $(ST_CREWS)),--crews=$(strip $(ST_CREWS))) \
+		--trace-seconds=$(ST_SECONDS) --mute $(ST_FLAGS) > $(ST_LOG) 2>&1 || true
+	@grep -E '^START_(SETUP|DONE)' $(ST_LOG) || true
+	@$(PYTHON) tests/manoeuvre/start_table.py $(ST_LOG)
+
+# ---- round 43 (Bar S, C43.5): his first-order shape, BS_CELLS (arena:seed) x BS_ARMS (name:flags) --------------------------------
+# tests/manoeuvre/start_trace.gd with no --orders synthesises his first order from the deploy (the header of that file), his
+# laptop's squad cap, the Gangs (BS_PLAYER) against BS_ENEMY; one START_RUN row per log -> tests/manoeuvre/s_judge.py. Arms are
+# switch sets: base = --shape-latch=off (the seat bound is off by default); bound = --seat-bound=on,--shape-latch=off; latch = (none);
+# both = --seat-bound=on. A judged read is `native manoeuvre-bar-s` (the drive is twinned; neither rule touches Movement).
+BS_CELLS ?= locks:7001 terminus:7001 crossing:7001
+BS_ARMS ?= base:--shape-latch=off both:--seat-bound=on
+BS_PLAYER ?= gangs
+BS_ENEMY ?= syndicate
+BS_SECONDS ?= 20
+BS_DIR ?= $(BUILD_DIR)/manoeuvre/bar-s
+BS_JOBS ?= 4
+.PHONY: manoeuvre-bar-s
+manoeuvre-bar-s: import ## manoeuvre Bar S (round 43): his first-order shape on BS_CELLS x BS_ARMS -> $(BS_DIR)/*.log + s_judge (BS_PLAYER v BS_ENEMY, BS_SECONDS)
+	@rm -rf $(BS_DIR) && mkdir -p $(BS_DIR)
+	@echo ">> manoeuvre-bar-s on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | cells '$(BS_CELLS)' arms '$(BS_ARMS)' | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for cell in $(BS_CELLS); do for arm in $(BS_ARMS); do echo "$$(echo $$cell | tr ':' ' ') $$arm"; done; done | xargs -P $(BS_JOBS) -L 1 sh -c \
+		'name=$${2%%:*}; flags=$$(echo "$${2#*:}" | tr "," " "); \
+		timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/start_trace.gd -- --arena=$$0 --seed=$$1 \
+			--squad-cap=4 --player-faction=$(BS_PLAYER) --enemy-faction=$(BS_ENEMY) --trace-seconds=$(BS_SECONDS) --every=5 --mute \
+			--probe-arm=$$name $$flags > $(BS_DIR)/$$0-$$name-s$$1.log 2>&1 || true'
+	@grep -L '^START_RUN' $(BS_DIR)/*.log | sed 's/^/MISSING (no START_RUN line): /' || true
+	$(PYTHON) tests/manoeuvre/s_judge.py $(BS_DIR) --base=base --arm=both --cells || true
