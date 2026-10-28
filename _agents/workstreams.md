@@ -428,6 +428,13 @@ never touch processes you didn't start. Never delete builder files that aren't o
 - **R43.38 (~10:00) Bar S5 FAILS as filed; deckwait stays OFF; the bridge gate for balance's B2s v2 re-read is not reached (R42.23).**
   Third round the deck-mouth wait fails on fresh seeds (Q6 R42.15, v4, v5): the fresh crossings have no rim failure to fix, so any wait
   costs. Round-44 framing: fix the drill crew's own case (rust s2 t15) at its cause, not with a wait that fires on every crossing.
+- **R43.39 (~11:10) A7 SHIPPED ON: main aa9753028 = engage 71d1bb0c5** (A7 ON + native's decide twin + main 36eacb71f + three adopted
+  baseline rows + the test-teardown fix; builder0 `>> remote: make check exited 0`, 3387 passed / 0 failed, 28 targets ALL JUDGED,
+  perf-judge PASS 1.00x 7413 us/tick (cpus 0-3 idle 99 %), sim-baseline 13 maps on the adopted rows: crossing 0586c5bbbcc51fa3, locks
+  b16a0b93c56a35f2, gorge 1aed9c1d6aeb382e). In his terms: a crew never drives around chasing a shot at a target across water; it keeps
+  its gun on it and its route (hops 34.8 -> 0.7 s a run, deaths 64 -> 48, kills 49 -> 57); his Locks War Rig on the shipped tree: no
+  drive away, best 43 m (OFF: AWAY 82 m). `--engage-water=off` is the escape. merge_check_needed CHECK (camera's close and native's N5
+  are not in engage's tree): ONE main batch check of aa9753028 running on builder0 (`~/orch-r43/main-check-aa9753028.log`).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
