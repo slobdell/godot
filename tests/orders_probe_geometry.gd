@@ -78,12 +78,17 @@ func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
 	# group scan), and the widest squad: the judge's "front the ground fits" is read from these.
 	var clear: Array = [0.0, 0.0]
 	var widest := 0.0
-	var road: Array = []  # the drive from the click back to the army (the column follows it): the judge reads slide off it
+	# R44.13: the road = the navmesh drive from the click to the army's START centroid (the squads as they stand at the click,
+	# identical in both arms, recorded once a run; no layout moves it): the judge reads slide off it.
+	var road: Array = []
+	var centroid := Vector3.ZERO
+	for squad: Dictionary in _squads:
+		centroid += (squad["start"] as Vector3) / _squads.size()
 	if ground != null:
 		var drive := SelectionSquads.drive_on(ground)
 		var crosses := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
 		clear = RtsControls.gate_width(click, across, drive, crosses, SelectionSquads.GROUP_SCAN_M)
-		for p: Vector3 in Pathing.find_path(ground, click, army):
+		for p: Vector3 in Pathing.find_path(ground, click, Vector3(centroid.x, 0.0, centroid.z)):
 			road.append(_xz(p))
 	for squad: Dictionary in _squads:
 		widest = maxf(widest, _controls._squad_width(squad))

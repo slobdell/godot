@@ -97,6 +97,9 @@ def part_a(out, base, new, lines):
             geo.med([r["spread_m"] for r in n]), geo.med([r["spread_m"] for r in b]),
             geo.med(b_in) if b_in else -1, geo.med(n_in) if n_in else -1, "" if g_all else " GUARD", sum(1 for r in b if r["all_in_s"] < 0),
             sum(1 for r in n if r["all_in_s"] < 0), "" if g_never else " GUARD"))
+        lines.append("      straight-line read (R44.13 b): across med %.0f (base %.0f) worst %.0f | aside max %.0f (base %.0f)" % (
+            geo.med([r["across_line_m"] for r in n]), geo.med([r["across_line_m"] for r in b]), max(r["across_line_m"] for r in n),
+            max(r["aside_line_max_m"] for r in n), max(r["aside_line_max_m"] for r in b)))
     lines.append("%s deciding 1 (R44.9): every arm run's across-spread (moved squads) <= the front the clear ground fits centred, + %.0f m" % ("PASS" if d1 else "FAIL", SLIDE_M))
     lines.append("%s deciding 2: squads sent back (> %.0f m behind their start along the approach) = 0 every arm run" % ("PASS" if d2 else "FAIL", geo.BACK_M))
     lines.append("%s deciding 3: farthest moved place off the click line <= %.0f m and <= half the fitted front + %.0f m, every arm run" % ("PASS" if d3 else "FAIL", ASIDE_M, SLIDE_M))

@@ -73,6 +73,8 @@ def read_run(rows, geo):
     # two squads go to the click, two hold 90 m apart). all_in still counts every squad.
     moved = [r["anchor"] for r in rows if r.get("anchor") and flat(r["anchor"], r["start"]) > HOLD_M] or anchors
     asides = [signed_off_road(a, road, click, d) for a in moved]
+    # R44.13 (b): the straight-line read beside it, for the record.
+    line_asides = [((a[0] - click[0]) * across[0] + (a[1] - click[1]) * across[1]) for a in moved]
     along = lambda p: (p[0] - click[0]) * d[0] + (p[1] - click[1]) * d[1]
     backward = sum(1 for r in rows if r.get("anchor") and along(r["anchor"]) - along(r["start"]) < -BACK_M)
     nearest_start = max(rows, key=lambda r: along(r["start"]))  # farthest along the approach = nearest the click
@@ -99,7 +101,8 @@ def read_run(rows, geo):
     return {"spread_m": spread, "across_m": max(asides) - min(asides), "aside_max_m": max(abs(a) for a in asides),
             "backward": backward, "front_ok": front_ok, "all_in_s": all_in, "squads": len(rows), "moved": len(moved),
             "held": held, "within": within, "column_len_m": column_len, "fit_abreast": k, "fit_across_m": fit_across,
-            "fit_aside_m": fit_across * 0.5, "reach": geo.get("reach", -1.0)}
+            "fit_aside_m": fit_across * 0.5, "reach": geo.get("reach", -1.0),
+            "across_line_m": max(line_asides) - min(line_asides), "aside_line_max_m": max(abs(a) for a in line_asides)}
 
 
 def med(xs):

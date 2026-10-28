@@ -273,7 +273,14 @@ _(worker keeps this current: report at the top, every number with commit, machin
   - **Corpus (part A):** locks / crossing / terminus / yard_open x his / along / across x reach 20 / 80 (24 cells) + the fixed cell
     locks his (-62, 50) (his far click into the west quay): 25 cells x n 24 on 10801-10824, both arms.
   - **Note for the orchestrator:** the abreast cap stays 2, so line 3's 52 m holds by construction (a two-abreast place is 29 m
-    off the line); with three abreast allowed, line 3 would have to read half the fitted front (58 m).
+    off the line); with three abreast allowed, line 3 would have to read half the fitted front (58 m). **R44.11: the cap stays 2.**
+  - **R44.13 (dev read 6's finding, accepted before any fresh number): "off the line" in lines 1 and 3 is the signed distance
+    from the ROAD back from his click** (the navmesh drive from the click to the army's START centroid, the squads as they stand
+    at the click; identical in both arms; recorded once a run by the probe, never moved by a layout), the straight click line
+    when no road was recorded; across = right-most minus left-most offset over moved squads. Thresholds unchanged. The straight-
+    line across / aside are REPORTED beside every cell. Code accepted with it: every rank capped by the fit at his click, the
+    stay rule a metre inside 10 m, the probe's reach click pulled onto dry ground. The all-in guard decides as filed. **After
+    dev read 7: freeze, check, name the hash, run 10801. No further amendments.**
 
   - **Code since the filing (all under the switch; G1 v9 unchanged, its tests pass):** the near-click keep is skipped on the plain
     click; places are dealt by distance along the approach (no drive-time re-deal, no whole-squad untangle: it read collinear
