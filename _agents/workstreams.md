@@ -82,7 +82,7 @@ never touch processes you didn't start. Never delete builder files that aren't o
 
 ## Bars (round 43)
 
-**Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards (and Bar A's pooled extension); 10349-10372 engage G1-G5 guards; 10401-10424 manoeuvre bar S (arrival);
+**Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards (and Bar A's pooled extension); 10349-10372 engage G1-G5 guards; 10373-10396 engage Bar A6 (+ 10397-10400, 10573-10592 its guards); 10401-10424 manoeuvre bar S (arrival);
 10425-10448 manoeuvre guards; 10449-10472 manoeuvre bridge (S5, BRIDGE_POOLED_SEEDS); 10501-10536 camera Bar K5 (36 an arm);
 10537-10572 camera K5 v2 (one re-file); native none. Dev: 7001-7012, 9501-9512, his 56416 (never a bar). Carried unread: 9201-9240 +
 9301-9340 Bar B5 t50 (only on his yes).
@@ -107,6 +107,9 @@ never touch processes you didn't start. Never delete builder files that aren't o
   to the other squad, the route found the bridge as the mouth, or the mouth landed on A's own way; away_s 8/0/1/2 OFF v 8/0/1/4 ON), so
   his AWAY geometry is dev evidence by removal on his seed (AWAY 82 m -> best 17 m, identical to his match for 17 s). `--stage=terminus_side`
   kept for the record.
+  **READ (R43.18): FAILS as filed.** builder2, native ON, 9e8313f8d, n 24 paired, no timeout; floor 16 of 24 met. Line 1 far_arrive_s
+  53.9 -> 51.5 s a run, paired -2.40 s, se 1.38, z -1.73 (short of 2 se). Guards: contacts_mouth +0.17 (se 1.39), contacts_far +0.17 (se
+  0.21), jam_s -2.50 (z -2.14, better), last_a_s -1.12 (se 2.07): all PASS. Reported: held_s -13.3 s a run (z -3.65). Lines 6-9 not run.
 
 ## Rulings (round 43)
 
@@ -221,6 +224,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
   (the old function verbatim v the new on 1,500 seeded knots, same places / return / counters). Laptop, "ordering N units" v budget 104:
   6 squads 249.2 -> 20.19 ms (ratio 2738.8 -> 232.1); 5 squads 13.39 ms (155.7); **4 squads (his laptop) 6.50 ms (78.3): in budget**. The
   rest at 5-6 squads is one `RtsControls.gate_width` scan (~7 ms); 6 squads can't meet 104 (G1 off alone 96). gate_width in C++: later.
+- **R43.18 (~00:55) Bar A FAILS as filed; holdfar stays OFF; A6 (the verdict fix, R43.13) next with Bar A6 on fresh 10373-10396.**
+  No pooled extension after a deciding line is seen (optional stopping). A6 binds a street-hold verdict only to crews whose own routes
+  run through the street and reads the squad's way from its ordered heading: his Guns_1 (route west, never through that street) would
+  never be bound, so it removes the cause holdfar patched. Deciding line one the head-on stage can move (held_s of crews whose route
+  doesn't cross the street); Bar A's guards + E1's lines; his replay as dev evidence by removal.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
