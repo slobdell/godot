@@ -64,7 +64,11 @@ it's a bug per se, but it warrants investigation and improvement."
    fight length, perf (us/tick within 1.05x), no SCRIPT ERROR; fight guards 10325-10348 on builder2 if over 24 fights.
 5. **A5 after CP43.0:** read his turnaround on the faithful replay, ON and OFF; the clip for him if the fix ships (laptop, one Godot
    run under the lock; film outside `build/`).
-6. **Stretch:** E2, the SUPPRESS stand on a STAGED draw (your round-42 proposal in the archived Status: a workload that exercises it,
+6. **A6 (R43.13, after Bar A, its own bar; the R43.8 grant extended to the verdict's way in `traffic.gd`):** the street-hold
+   VERDICT binds only the crews whose own routes run through the street (the route walk of A3 applied to every crew, not only
+   the far ones), and the squad's way is its ORDERED heading, not the momentary mean of its crews' noses (his Guns read "east"
+   with two crews slow and nose-east while their orders ran south-west).
+7. **Stretch:** E2, the SUPPRESS stand on a STAGED draw (your round-42 proposal in the archived Status: a workload that exercises it,
    since 1 of 48 seeds did); the flank side latch.
 
 ## How to verify
@@ -109,6 +113,57 @@ stays ON under the rule. **Tests** (laptop, 724ccb5ce): `tests/engage/test_engag
 the mouth to a crew 100 m back, the far crew released and the near crews still held, the grid's edge still held, a far crew
 whose route runs into the street holds where it stands, symmetric for team 1, the switch listed OFF) and
 `tests/test_traffic_hold.gd` 18/0 unchanged.
+
+### Bar A (FILED 9e8313f8d, 2026-10-27 ~23:40 PDT, before any number on 10301-10324; R43.12: line (1) alone, the side-street
+stage could not be planted in its time-box, below)
+
+**Switch:** `holdfar` (Traffic.DEFAULT_OFF at filing; `--traffic-on=holdfar` is the ARM; a pass ships ON by removing it from the
+list, `--traffic-off=holdfar` the escape). **Tree:** the filing hash's code frozen for both arms (Status-only commits after it are
+not the tree). **Native:** the library ON on builder2 (`native engage-bar-a`), both arms on the native path (C43.4: no twin
+exists for the spot dealing; native confirmed `holding()` reads only `_live`, which the rule keeps). **Workload:**
+`tests/engage/hold_probe.gd` via `make engage-bar-a` (`hold_table.py --pair`): two friendly squads of one side meet head-on in a
+street, squad A (five crews; by seed one of four hull sets, his three War Rigs first) coming out of the open with its rear rank
+55-95 m behind its front (the arena clamp can pull it in; the actual gap is `far_m`), squad B (five) committed to the street from
+the other side; A waits (round 29 T1's verdict), B passes. Stages by seed (seed / 2 mod 3): Terminus's west street, its east
+street, the Locks' lock (the 16 m deck over the canal, walled by water: an attack-move across the canal), 8 seeds each. 75 s
+windows, seeds 10301-10324, n 24 paired by seed, builder2 J14. **R43.12's second workload (a side-street stage with his AWAY
+geometry as its own deciding line) was time-boxed and failed to plant** (four plantings on dev 7007-7013, laptop; the record in
+`hold_probe.gd`'s SIDE_STAGE comment: his corridor's 6 m containers make the verdict's "lead in the open" and the meeting's
+street test a knife-edge, a lead west of the corridor finds the bridge as its mouth, and on Terminus the mouth lands on the
+squad's own way or at the far crews' feet when their noses make them the squad's "lead"); his seed stays the dev evidence for
+that geometry, shown by removal (A1) and by the rule (below). **What it could break:** round 29 T1's purpose (a far crew released drives into the street while the passer is
+in it: contacts and jam-seconds at the mouth); a far crew held where it stands arrives later (A's last arrival); the squad's
+cohesion (the leg gate waits on a crew held far back); the CPU's squads take the same holds (fight lines).
+
+**Deciding (paired by seed, pooled):**
+1. **far_arrive_s**: the mean arrival (s) of A's far crews at the squad's destination (within 20 m; the window, 75 s, when never):
+   ARM < BASE by >= 2 se (the paired mean). The far crews are the crews the rule is about, and their arrival is what the player
+   sees of them. (The dev seeds showed the stage cannot plant his AWAY geometry: a staged head-on meeting puts the mouth ON the
+   waiting squad's way, so a far crew's mouth spot is always roughly toward its own seat and `away_s` reads the same in both
+   arms, 9 = 9 over 7001-7006; his drive came from a mis-aimed verdict in a side street off the squad's route. His seed is the
+   dev case for that, shown by removal, below.)
+**Exercised floor:** at least 16 of 24 seeds with a verdict in BASE AND the rule acting in ARM (`far_released + far_held >= 1`);
+fewer -> NOT EXERCISED: extend with 10325-10348 pooled as one n 48 series on the same lines (the fight guards move to 10349-10372);
+still fewer than 16 of 48 -> INCONCLUSIVE, no ship.
+**Guards (filed first; paired se):**
+2. **contacts_mouth** (friendly hull touches within 25 m of the street's middle, sum): ARM <= BASE + 1.645 se (T1's purpose).
+3. **contacts_far** (a touch at the mouth involving one of A's far crews while B is still coming through, sum): ARM <= BASE +
+   max(1.645 se, 2 touches) (the floor because BASE may read 0: a 0 se is no guard). The orchestrator's released-crew line.
+4. **jam_s** (crew-seconds under 0.5 m/s within 25 m of the middle before arriving, sum): ARM <= BASE + 1.645 se.
+5. **last_a_s** (A's last arrival within 20 m of its destination; the window when never; mean a run): ARM <= BASE + 1.645 se.
+6. **Bar E1's lines** (`make engage-bar` on 10325-10348, ARM = `ENGAGE_FLAGS=--traffic-on=holdfar` v BASE, builder2 light):
+   stuck crew-seconds, first hit, deaths each ARM within BASE +/- 1.645 se (the rule does not touch them: a null read expected).
+7. **Fight lines G1-G5** (`native guard-run GUARD_KINDS=none GUARD_SIDES=green GUARD_AT=locks GUARD_SEEDS=10349..10372`, 600 s,
+   CPU v CPU, 24 fights an arm, builder2 J14, `tools/scoreboard/guard.py --pair`): G1 green kills, G2 losses, G3 length (the
+   paired mean, R42.13's form), G4 kill ratio each within BASE +/- 1.645 paired se; G5 no SCRIPT ERROR / missing GUARD_RESULT.
+8. **Perf:** the merge candidate's (ON) full check on builder0, perf-judge PASS on its own line (ratio <= 1.05x); builder2 never
+   judges perf (R37.20).
+9. **Suite ON (C31.1):** the merge candidate = the filing tree with `holdfar` removed from DEFAULT_OFF: `make remote T=check`
+   green (sim-baseline rows that move listed with the reason, adopted at the ship).
+**Reported:** away_s and away_m (his geometry), held_s, far_released / far_held, verdicts, contacts / contacts_fast / contacts_cross, stuck_s, last_b_s;
+his seed (dev, never a bar): `make engage-replay-trace ENGAGE_TAG=x ENGAGE_FLAGS=--traffic-on=holdfar`: OFF AWAY 82 m, ON best
+17 m and no drive away, the match identical to his for 17 s (laptop, f920ba34d).
+**A pass ships ON** (line 1 decided, 2-9 within).
 
 ### A1: the turnaround on his seed (laptop, native library ON, `make engage-replay-trace ENGAGE_TAG=on`, 2d43b1e88, his recording, 50 s, n 1, deterministic)
 
