@@ -61,7 +61,14 @@ def table(rows, seats, yields):
                 maxmv = max(maxmv, math.dist(p, last))
             last = p
         t0 = int(r[0]["t"])
-        arrived = next((int(d["t"]) for d in r if d["ph"] == "arrived" and int(d["t"]) > t0 + 2 and d["ord"].split("/")[0] != ""), None)
+        # The first "arrived" AFTER the crew has driven (the idle mover reads arrived before its order's first drive).
+        driven = False
+        arrived = None
+        for d in r:
+            driven = driven or d["ph"] == "driving"
+            if driven and d["ph"] == "arrived":
+                arrived = int(d["t"])
+                break
         nearest = min(math.dist((float(d["x"]), float(d["z"])), click) for d in r) if click else float("nan")
         yielding = sum(1 for d in r if d["ph"] == "yielding") / 30.0
         blocked = sum(1 for d in r if d["ph"] == "blocked") / 30.0
