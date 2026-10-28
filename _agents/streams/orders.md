@@ -286,6 +286,12 @@ _(worker keeps this current: report at the top, every number with commit, machin
   builder2 always gives: perf-judge (not a judging machine) and scenario_perf (loaded, ref 2.88x) -> a builder0 read before any
   merge. Bar G1 v10c's series started 13:15 on builder2 (`tests/control/orders_g1v10_bar.sh b2 v10:--group-column=always
   10801-10824 / 10825-10836 / 10837-10848`, jobs 10); the verdict lands here with BAR_DONE.**
+  **805eae5e1 GREEN on builder0 too (15:15-15:51 laptop clock): `>> remote: make check exited 0`, 28 targets, all passed, ALL JUDGED
+  (3428 / 0; perf-judge judged scenario_perf; load 4.77 at start, 2 other godot).** The orchestrator merges 805eae5e1 itself OFF
+  (R44.23) once the switch-off output proof reads 60 / 60 on that commit (the G1 v9 probe, the o0 recipe, builder0 light; running
+  from a scratch tree at 805eae5e1; the earlier 60 / 60 on record is 716e6304e's, before the v10 code). **Proof read 15:54-15:56
+  builder0 light: 60 / 60 rows byte-identical v the o0 record** (`references/round44/orders/o4-off-identical-builder0-805eae5e1/`).
+  **MERGE HASH NAMED: 805eae5e1.** This Status and the tests/control fixes merge in the docs/tools merge at close or on a green tip.
 - **Watch item (the orchestrator, after main 7975d1455's check):** control-timing's NOT JUDGED line "a right click on 30 units" read
   878 workloads (88.7 ms) on main v 272 on native's tree an hour earlier (both loaded); "ordering 30 units" 557 v 264. Possible
   causes in my paths: load (likely: `--order-trace` is a static read of the command line and `_trace_stage` returns on its first
@@ -296,6 +302,14 @@ _(worker keeps this current: report at the top, every number with commit, machin
   104; 9.96 ms)"; "a right click on 30 units takes 236.0 reference workloads (budget 104; 10.38 ms)". Load explains 878 -> 236
   and 557 -> 226; both still 2.2x the budget. Next, same machine and flags in the next quiet window (chained after the builder0
   check): the round-44 base 711f3e94f, to tell round 44's merges (O0+O1's keys, native N2) from what was there before.
+  **The record already dates it before round 44:** `tests/test_control_scale.gd`'s header (R43.11): the timing army is SIX squads,
+  past MAX_SQUADS 5, and with G1 ON six squads cannot meet 104 (G1 off alone 96); 6afe991bb on the laptop read 30 units / 6
+  squads at 232.1 ("the rest at 5-6 squads is one RtsControls.gate_width scan, a later C++ item"); `_agents/workstreams.md`
+  R43.41: main aa9753028 on builder0 "ordering 30 units 258 v 104". Today's quiet 226 / 236 is that state. Between 711f3e94f
+  and main the only control file changed is `game/control/rts_controls.gd` (+55, O0+O1). **Base read (711f3e94f, builder0 15:51,
+  load 0.60 / 2.59 / 6.03 right after the check ended, same target and flags): ordering 30 units 226.0 (9.27 ms), a right click on
+  30 units 233.7 (9.81 ms) v main 57a20c9a4's 226.3 / 236.0.** Round 44 added nothing; the cost is round 43's six-squad case.
+  Filed for round 45 (the orchestrator's HANDOFF 6211aa124: gate_width twins in C++).
 - **Decisions:** `click` goes on the one-squad row too (its `to` is the click, but one key the tools can rely on beats a
   rule); `group` only on orders to two or more squads (C44.3: his one-squad order stays manoeuvre's); loose units' row
   carries `click`, not `group`.
