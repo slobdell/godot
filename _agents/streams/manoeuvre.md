@@ -228,6 +228,10 @@ to cost rim seconds and arrivals, and once rode the rim itself (3.9 s). The dril
 the fresh seeds say the price of rescuing it is paid on every other crossing. **`deckwait` stays OFF** (v5 on `wip/manoeuvre-s5` as a
 ref; v4 on main OFF); balance's Bar B2s v2 stays on today's bridge (R42.23 not reached). The next shape, if any, must fire on the
 rim crew's own signature (ORCA's steer point carried PAST the deck's edge while the leader turns), not on the approach speed.
+**Group-order guards (for the record, main v deckwait, 10461-10472 x 4 maps x crew, 48 paired runs, builder2,
+`judge-group-deckwait.txt`): G5 all-in 72.0 -> 73.9 s (line 73.4) FAIL, G6 never-in 0.90 -> 0.90 PASS, G7 contacts 648,939 -> 673,640
+(line 681,386) PASS; jam-seconds +2.1 %; the rule's counters a run: 24 waits, 606 queued crew-ticks, 1 time-out, longest 10.3 s
+(the round-42 counters-line slip fixed on the side branch: `q3_judge.py --arm=deckwait` reads deckwait_*).** Fights: running for the record.
 
 ### Bar S5: FILED 2026-10-28 ~03:40 PDT, BEFORE any number on 10449-10472 (Bar Q6's lines, R42.7, unamended; the dev read of the drill's own seeds below)
 
