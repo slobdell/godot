@@ -256,9 +256,17 @@ Array obey(const DecideConsts &c, const DN &k, const Array &candidates, const Di
 	const Dictionary me = s[k.self];
 	const Vector3 my_position = me[k.position];
 	const double reach = (double)((Dictionary)me[k.weapon])[k.range] + c.ATTACK_MOVE_REACH_MARGIN;
+	// Round 43 (native N3, engage A7 `--engage-water=on`): a contact across water is not met on the way. TankBrain.ENGAGE_WATER
+	// read live (tests set it) and the water test asked of TankBrain._across_water itself (its test seam included), so the
+	// answer is the GDScript's by construction; OFF (or a tree without A7: no such member) the loop is as before.
+	static const StringName engage_water("ENGAGE_WATER"), across_water("_across_water");
+	const bool water = c.brain_script != nullptr && (bool)c.brain_script->get(engage_water); // absent: Nil, false
 	for (int64_t i = 0; i < contacts.size(); i++) {
 		const Dictionary cc = contacts[i];
 		if ((bool)cc[k.visible] && (double)my_position.distance_to(cc[k.position]) <= reach) {
+			if (water && (bool)c.brain_script->call(across_water, my_position, cc[k.position])) {
+				continue;
+			}
 			in_reach.push_back(cc[k.name]);
 		}
 	}
