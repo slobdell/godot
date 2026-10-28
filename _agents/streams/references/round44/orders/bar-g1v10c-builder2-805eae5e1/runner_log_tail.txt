@@ -1,0 +1,7 @@
+PART geometry OK: 1200 of 1200 runs (try 1)
+PART streets OK: 384 of 384 runs (try 1)
+PART his OK: 48 of 48 runs (try 1)
+PART fight OK: 48 of 48 runs (try 1)
+Traceback (most recent call last):
+KeyError: 'arm'
+BAR_DONE

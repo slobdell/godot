@@ -25,11 +25,18 @@ ABREAST_CAP = 2  # SelectionSquads.COLUMN_ABREAST  # SelectionSquads.COLUMN_AWAY
 
 
 def load(path):
+    """The rows of a .jsonl file; none when it does not exist. A row of {"error": ...} is a probe that could not start (Bar G1
+    v10c's part C: 48 of them, over the fight budget), not a run: the judge refuses the whole file rather than read around it
+    (R44.23), so a series with a setup error can never be read to a verdict."""
     try:
         with open(path) as f:
-            return [json.loads(line) for line in f if line.strip()]
+            rows = [json.loads(line) for line in f if line.strip()]
     except FileNotFoundError:
         return []
+    errors = [r for r in rows if isinstance(r, dict) and "error" in r]
+    if errors:
+        sys.exit("REFUSED %s: %d of %d rows are errors; first: %s" % (path, len(errors), len(rows), str(errors[0].get("error"))[:200]))
+    return rows
 
 
 def flat(a, b):
