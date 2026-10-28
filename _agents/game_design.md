@@ -4572,3 +4572,18 @@ another or something so that they can all share roughly the same destination)"
   wedges he asked for in round 37 (*Round 37: his playtest note on a group click*: "stacks of wedges, one squad immediately behind the
   other", "the squad furthest away to land in the back and the closest squad to land in the front") and that G1 v9 shipped in round 41
   (R41.15). The recording holds each squad's destination but not his click point (round 44: record the click).
+
+## His answers on the group click (2026-10-28 ~11:25, round 44, verbatim)
+
+Asked: (1) where he meant to send them; (2) two squads abreast on open ground, or strict single file; (3) on a short click, only the
+front squad drives and squads already lined up behind it stay put (recommended yes).
+
+"1. I meant to send them to the open area in the west side, and the resultant waypoints across squad were scattered all over resulting
+in armies completely dispersing and immediately making me lose the match. 2. We had talked about this a long time ago - in an open area
+it makes sense for squads to be side by side, but if the squads won't fit side by side and we get this aforementioned case, my intuition
+says that units should be able to stack generally behind each other. 3, I will agree with your recommendation"
+
+**Read (orchestrator, R44.9):** the rule is FIT FIRST. Where the open ground at his click holds the squads side by side (no squad pushed
+by the map edge or a wall off its place), they land side by side, centred on his click. Where it does not, they fold into ranks behind
+the front, nearest in front, rather than slide or spread. The dispersal cost him the match: the army arriving apart is the failure,
+whatever the shape. On a short click the squads already in place hold (answer 3).

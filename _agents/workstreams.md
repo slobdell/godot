@@ -230,6 +230,13 @@ already read, or 7001-7012.
   drops its |goal| < hull-length term, keeps drive_vector zero + near rest, then calls `_backout_due` as now. Re-cut the backout twin
   on manoeuvre's tip with that, prove EQUAL on builder2, name the hash to manoeuvre and the orchestrator: Bar B1 freezes on it.
   parkedpass's twin stays parked (S v3 failed, R44.7).
+- **R44.9 (~11:25) his answers (`game_design.md` *His answers on the group click*) re-shape Bar G1 v10b BEFORE any 10801 number.**
+  (1) He meant the open area on the west side; the dispersal lost him the match. (2) **Fit first:** side by side on open ground when
+  the line fits at his click; when it won't fit (the edge / walls would push a squad off its place), stack behind, nearest in front.
+  (3) Short click: squads already in place hold (6(c) stands). Orders re-files lines 1 and 3 for this before the fresh series: the
+  arm lays abreast where the whole front fits the clear ground at the click without any edge or wall slide, else ranks behind; line
+  1 becomes "across spread <= the front the clear ground fits" with no slide (aside line 3 unchanged: <= 52 m), and the corpus gets a
+  far click INTO the west open area of Locks (his target) and an abreast-fits cell. Lines 2, 4, 6 and the guards stand.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
