@@ -4,9 +4,9 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-28 ~09:40 PDT (laptop clock) — **ROUND 44 PREPARED (box below; launch = the lead starts three CLIs: orders + manoeuvre on Fable, native on Opus).** Earlier: 2026-10-28 ~08:40 PDT — ROUND 43 IS CLOSED; his playtest after it is in.
+_Last updated: 2026-10-28 ~09:20 PDT (laptop clock) — **ROUND 44 PREPARED (box below; launch = the lead starts three CLIs: orders + manoeuvre on Fable, native on Opus).** Earlier: 2026-10-28 ~08:40 PDT — ROUND 43 IS CLOSED; his playtest after it is in.
 
-## ▶ ROUND 44 AS PREPARED (2026-10-28 ~09:40 PDT) — read this first
+## ▶ ROUND 44 AS PREPARED (2026-10-28 ~09:20 PDT) — read this first
 
 **Goal: his all-squads click sends every squad the same way into a column of wedges at his click (never four destinations 100 m apart,
 never a squad sent back to its own edge); a War Rig nose-on to a container backs out first; `make playtest-report` fits on one screen.**
@@ -31,10 +31,16 @@ builder2 STARTED ~09:20 (`make gcp-start`; it idle-stops after 20 min, `make gcp
 alone on green and tell manoeuvre the same minute (`git merge main`). Merge orders' O1 (`click` row) alone the minute it is green so his
 next playtest carries it; native's N1 report alone too. Take orders' O2 cause to him in player terms the hour it lands.
 
-**RUNNING (~12:30 PDT):** orders (godot-orders-e9), manoeuvre (godot-manoeuvre-c0), native (godot-native-65); rulings R44.1-R44.4,
-Bar G1 v10 filed. **Main c3a6e6a38 = native fff546ef6 (N1 the one-screen report + SEED digits; GREEN builder0 3420/0, 28 ALL JUDGED,
-perf-judge PASS attempt 1 of 3) and INHERITS its check.** Waiting: orders' c844fc3b8 check (CP44.0 + click row); native's N2 replay
-0d4b08cd8 check; native's backout twin. Open to him: did he mean the far west; reading A (two abreast allowed) or strict single file.
+**MAIN NOW (16:40 PDT): 1eacac735** = 9b72f5339 (orders 805eae5e1 merged, G1 v10c OFF; **GREEN builder0, 28 targets ALL JUDGED, 3433 passed / 0 failed, `>> remote: make check exited 0`**, `~/orch-r44/main-check-9b72f5339.log`) + orders' close tip c7f1f1b1a (docs + tests/control). main 1eacac735 inherits 9b72f5339's check: merge_check_needed lists only tests/control/orders_g1v10_bar.sh and orders_geometry_table.py, which only `make orders-geometry`/the bar runner call, never check (grep of Makefile/mk/tools/tests). **Orders stream DONE.** Manoeuvre: Bar B1 waits on a native session (none started).
+
+**RUNNING (~11:55 PDT):** orders (godot-orders-e9), manoeuvre (godot-manoeuvre-c0); **native's session ended ~11:10 (R44.8):
+a fresh native session (Opus, same kickoff) reads R44.8 first: re-cut the backout twin on manoeuvre's c9ea1a6b4.** Rulings
+R44.1-R44.12. **Main 7975d1455** = native fff546ef6 (N1, green 3420/0) + orders c844fc3b8 (CP44.0 + click, green 3426/0) + native
+7e9c199ae (N2 the exact replay, green 3425/0), each builder0 ALL JUDGED; **main 7975d1455 GREEN builder0, 28 targets ALL JUDGED (3431 passed / 0
+failed, `>> remote: make check exited 0`; `~/orch-r44/main-check-7975d1455.log`).** Watch: the NOT JUDGED right-click-on-30-units timing
+read 878 workloads (88.7 ms) on this loaded run v 272 on native's tree (orders asked to re-read it quiet). **Quiet read (orders, builder0 load 0.02, main 57a20c9a4, 15:14): JUDGED FAIL 3/2: right click on 30 units 236.0 workloads (budget 104; 10.38 ms), ordering 226.3 (9.96 ms).** Load explained 878 -> 236; still 2.2x budget. **Older than round 44:** the same 6-squad case read 258 on main aa9753028 builder0 (R43.41; test_control_scale.gd header R43.11: six squads past MAX_SQUADS 5, the rest is one RtsControls.gate_width scan, a C++ item). Round 45: twin gate_width in C++. The base 711f3e94f quiet read stays queued as confirmation only. Bars: **G1 v10c FAILED (R44.23, 15:15 builder2 805eae5e1): `--group-column=always` stays OFF**; dormant code merges OFF only if its builder0 check is ALL JUDGED green; Bar S v3 FAILED its wedged guard (R44.7); Bar B1 backout alone (R44.10/12)
+waits on native's twin; Bar A6 v3 queued. **His answers (game_design.md *His answers on the group click*):** the open area in the
+west; fit first (abreast if it fits, else stack behind); short click holds. Feel question for after: more than two abreast on a wide yard?
 
 ### What prompted it (his playtest after round 43; was the NEXT box)
 

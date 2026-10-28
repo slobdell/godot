@@ -1020,6 +1020,12 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 		return ""
 	if departures != null:
 		departures.cancel(selection.units)  # O2: a new order takes a waiting squad out of the queue
+	# Round 44 (orders, C44.2): the ground point under his cursor rides every order of this click to the recorder's `order`
+	# row (`click`). One squad: its `to` is that point; several: each squad's `to` is its own laid place, and the click was
+	# the one thing his round-43 recording did not hold. A copy: the caller's dictionary is not written.
+	if extra.has("to") and not extra.has("click"):
+		extra = extra.duplicate()
+		extra["click"] = [float(extra["to"][0]), float(extra["to"][1])]
 	# Round 19 (orders, C19.1): a selection holding several squads (two selected together, or one group over both)
 	# is ordered one squad at a time, side by side - never as one heap of vehicles, never as one element.
 	if verb != "stop" and several_squads():
@@ -1100,9 +1106,32 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 ## laid abreast across the line of approach in the left-to-right order they stand in now (SelectionSquads.row), each
 ## squad's element travelling from ITS OWN position. Units in no squad of the selection move as a group of their own
 ## (today's direct path among themselves), standing beside the squads. Returns "" or the first refusal.
+## Round 44 (orders O2): `--order-trace` prints each stage of a group order's layout (ORDER_TRACE <stage> squad:(x, z) ...);
+## `order_trace_keep` (tests) keeps the same rows in `order_trace` for the last order. Diagnostic only: no decision reads it.
+static var ORDER_TRACE := OS.get_cmdline_user_args().has("--order-trace")
+static var order_trace_keep := false
+static var order_trace: Array = []
+
+
+func _trace_stage(stage: String, squads: Array, anchors: Array) -> void:
+	if not ORDER_TRACE and not order_trace_keep:
+		return
+	var row := {"stage": stage, "places": []}
+	var text := ""
+	for i in mini(squads.size(), anchors.size()):
+		var at: Vector3 = anchors[i]
+		var who := String((squads[i]["units"] as Array)[0]) if not (squads[i]["units"] as Array).is_empty() else "?"
+		(row["places"] as Array).append({"squad": who, "at": Vector3(at.x, 0.0, at.z)})
+		text += " %s:(%.1f, %.1f)" % [who.trim_prefix("Green_").trim_prefix("Rust_"), at.x, at.z]
+	order_trace.append(row)
+	if ORDER_TRACE:
+		print("ORDER_TRACE %s%s" % [stage, text])
+
+
 func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String:
 	var squads: Array = found["squads"]
 	var loose: Array = found["loose"]
+	order_trace = []
 	# D6 (R35.28): a shifted move's squads stand on the elements their units belong to now (the gate below reads each
 	# squad's element for where its previous leg ends), and again after untangle, which re-deals vehicles.
 	if bool(extra.get("queue", false)) and elements != null and REQUEUE:
@@ -1141,6 +1170,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					ground = tank
 		anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"]),
 				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+		_trace_stage("ranks", squads, anchors)
 		# Round 37 (orders, R37.29): his group click on narrow ground lays a column of wedges along the approach.
 		# Round 38 (G1): only when one of today's places stands off the clear ground; and a shifted leg too (his route
 		# through a street), each squad's block where its previous leg ends (`queue_starts`), approached from there.
@@ -1168,19 +1198,28 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				approach = line[0] - line[1]
 				path_back = func() -> PackedVector3Array: return line
 				reached = func(_p: Vector3) -> bool: return false
+			# G1 v10: on his plain click the column's ranks keep off water and decks (a Callable only then: G1 v9 lays as before).
+			# ...and off ground a hull cannot stand on (dev read 4, terminus across-80: a rank laid into a city block was pushed 12 m
+			# aside onto standable ground after the lay, 59 m off the line).
+			var blocked := Callable()
+			if SelectionSquads.COLUMN_ALWAYS and not queue_leg:
+				blocked = func(p: Vector3, r: float) -> bool: return SelectionSquads.wet_or_deck(p, r) or not SlotGround.is_standable(ground, p)
 			var laid := SelectionSquads.column_lay(lay_blocks, click, approach,
 					func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M),
-					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors, path_back, reached, false, queue_leg)
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors, path_back, reached, false, queue_leg, blocked)
+			_trace_stage("column_lay", squads, laid)
 			if not laid.is_empty() and SelectionSquads.COLUMN_TOWARD and SelectionSquads.column_sends_away(laid, lay_blocks, click):
 				SelectionSquads.columns_refused_away += 1
 				laid = []  # G1 v8: today's places stand
 			elif not laid.is_empty() and SelectionSquads.COLUMN_STAY:
-				var kept_l: Array = SelectionSquads.column_keep_away(laid, lay_blocks, click)
+				var kept_l: Array = SelectionSquads.column_keep_away(laid, lay_blocks, click,
+						TacticsFormation.flat(approach) if SelectionSquads.COLUMN_ALWAYS and not queue_leg else Vector3.ZERO)
 				SelectionSquads.kept_away += int(kept_l[1])
 				var stayed: Array[Vector3] = []
 				for p: Vector3 in kept_l[0]:
 					stayed.append(p)
 				laid = stayed  # G1 v9: the column stands; a squad it would send away stays on its spot
+				_trace_stage("column_stay", squads, laid)
 			column = not laid.is_empty()
 			if column:
 				today_places = anchors.duplicate()
@@ -1196,6 +1235,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if not column:
 			anchors = SelectionSquads.never_behind(anchors, blocks, click,
 					SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]))  # the approach, not his drawn facing
+			_trace_stage("never_behind", squads, anchors)
 		elif not today_places.is_empty():
 			# G1 v3: today's places go through the same passes main gives them (for the first-click re-lay).
 			today_places = SelectionSquads.never_behind(today_places, blocks, click,
@@ -1209,9 +1249,14 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 						func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance_t, from))
 		# Round 34 (C34.11, O1, his scouts sent over the bridge): every anchor where the click reaches it by ground, read on
 		# the navmesh of one of the ordered vehicles.
-		if ground != null:
+		# G1 v10: a column's places lie along the ground road back from his click (column_lay's `reached` / `path_back`), so the
+		# straight-line cap does not apply to them (dev read 2, locks his-20 s7006: the cap pulled three ranks laid north of the
+		# lock back onto the click, a 1.5 x detour round the lock wall; locks across-80: it undid a rank's step off the canal bank).
+		var v10_column := column and SelectionSquads.COLUMN_ALWAYS and not queue_leg
+		if ground != null and not v10_column:
 			anchors = SelectionSquads.ground_cap(anchors, click, SelectionSquads.drive_on(ground), SelectionSquads.crosses_on(ground),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+			_trace_stage("ground_cap", squads, anchors)
 		# Round 34 (planner's O5, the Terminus 3-squad route): an anchor laid ON an obstacle (O3's narrower body put squad
 		# 3's at (32.7, 67.4), inside a block) can never be arrived at: every seat was pushed 11-19 m off it, the leader
 		# held at its own and the squad never moved on. Each anchor not standable goes to the nearest standable point
@@ -1221,6 +1266,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			anchors = SelectionSquads.ground_anchors(anchors, blocks,
 					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p),
 					func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance, from))
+			_trace_stage("ground_anchors", squads, anchors)
 		# Round 35 (D3, C35.4): with the deploy step on, an AUTO body's halts are packed now by their seats (hull clearance,
 		# his correction 1) on the approach; the ranks above stand when the pack does not apply or finds no fit.
 		packed_shapes = _pack_halts(squads, blocks, click, drawn, loose, verb, extra, ground, anchors)
@@ -1228,6 +1274,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			anchors.clear()
 			for at: Vector3 in packed_shapes:
 				anchors.append(at)
+			_trace_stage("packed", squads, anchors)
 		# Round 34 (planner's O5, the Locks route): a route leg through one gate is dealt first through, farthest along,
 		# each squad starting the leg where its previous one ends.
 		# G1: a column's leg is already dealt front to back by where each squad comes from.
@@ -1252,10 +1299,13 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			var reach: Array = []
 			for block: Dictionary in blocks:
 				reach.append(0.5 * maxf(float(block["width"]), float(block.get("depth", 0.0))))
+			# G1 v10: a column's places keep off water too, and even when his click is at the water's edge (the lock's bank).
 			anchors = SelectionSquads.deck_clear(anchors, reach, click,
 					-SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"]),
-					func(p: Vector3, r: float) -> bool: return SlotGround.near_deck(p, r),
-					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+					(func(p: Vector3, r: float) -> bool: return SelectionSquads.wet_or_deck(p, r)) if v10_column \
+							else (func(p: Vector3, r: float) -> bool: return SlotGround.near_deck(p, r)),
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), not v10_column)
+			_trace_stage("deck_clear", squads, anchors)
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
@@ -1266,13 +1316,21 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		for i in mini(queue_starts.size(), squads.size()):
 			for unit_name: String in squads[i]["units"]:
 				from_leg[unit_name] = queue_starts[i]
-		if (column or (SelectionSquads.whole_on(queue_leg) and (verb == "move" or verb == "attack_move"))) \
+		# G1 v10: a column's places are dealt by distance along the approach as laid (nearest in front) and stay so: the whole-squad
+		# untangle reads collinear drives along one line as crossings and swapped ranks end to end (dev read 2, locks along-80:
+		# the rearmost squad was dealt the front).
+		if v10_column:
+			pass
+		elif (column or (SelectionSquads.whole_on(queue_leg) and (verb == "move" or verb == "attack_move"))) \
 				and anchors.size() >= squads.size():
 			var at_of := func(n: String) -> Vector3: return from_leg[n] if from_leg.has(n) else _flat_position(n)
 			# G1 v5: a column's places go to its squads in the order their crews reach the click by ground.
 			var leads: Array = []
 			var arc := Callable()
-			if column and SelectionSquads.GROUP_LEAD and ground != null:
+			# G1 v10: on his plain click the places stay dealt by distance along the approach (nearest in front, his words); the
+			# drive-time re-deal (v5) could hand the front to a lone fast crew and send the nearest squad 30 m back (dev read,
+			# terminus his-20: the Wrenches, 3 m nearer than the lone tank, were dealt 17 m behind where they stood).
+			if column and SelectionSquads.GROUP_LEAD and ground != null and not (SelectionSquads.COLUMN_ALWAYS and not queue_leg):
 				var drive_l := SelectionSquads.drive_on(ground)
 				var to := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 				for squad: Dictionary in squads:
@@ -1293,8 +1351,21 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					far_of[i] = (centre - click_s).dot(column_ahead) > SelectionSquads.FAR_SIDE_M
 				misplaced = func(i: int, p: Vector3) -> bool: return bool(far_of[i]) != ((p - click_s).dot(column_ahead) > 1.0)
 			SelectionSquads.untangle_whole(squads, anchors, at_of, leads, arc, misplaced)
+			_trace_stage("untangle_whole", squads, anchors)
+			# G1 v10: a crossing swap may still have handed a squad a place behind where it stands: it keeps its spot (the stay
+			# rule once more, along the approach).
+			if column and SelectionSquads.COLUMN_ALWAYS and not queue_leg and column_ahead != Vector3.ZERO:
+				var kept_u: Array = SelectionSquads.column_keep_away(anchors, lay_blocks, click, column_ahead)
+				SelectionSquads.kept_away += int(kept_u[1])
+				if int(kept_u[1]) > 0:
+					var stayed_u: Array[Vector3] = []
+					for p_u: Vector3 in kept_u[0]:
+						stayed_u.append(p_u)
+					anchors = stayed_u
+					_trace_stage("column_stay_dealt", squads, anchors)
 		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
+			_trace_stage("untangle", squads, anchors)
 		# Round 38 (G3): no place on another squad's halt (settle's S2 trace, crossing 5 click s3866). After the untangle, so
 		# the crews are dealt exactly as today and G3 only moves places, each squad's drive read from its own vehicles (dev
 		# read 7, e94ee14af: G3 before the untangle changed the dealing on terminus 5 route legs it later sent back; s3805's
@@ -1304,6 +1375,19 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		var clear_later := SelectionSquads.PLACE_CLEAR_AFTER and bool(extra.get("queue", false))
 		if SelectionSquads.PLACE_CLEAR and ground != null and anchors.size() >= squads.size() and not clear_later:
 			anchors = _place_clear(squads, blocks, anchors, click, ground, team, from_leg)
+			_trace_stage("place_clear", squads, anchors)
+		# G1 v10: the last word on a column's places: after every move above (standable ground, the pack, the water and deck
+		# clear) a squad whose place lies more than COLUMN_AWAY_M behind where it stands along the approach keeps its spot (dev
+		# read 3, crossing his-20: the deck clear stepped ranks back past their squads' starts).
+		if v10_column and column_ahead != Vector3.ZERO and anchors.size() >= squads.size():
+			var kept_f: Array = SelectionSquads.column_keep_away(anchors, lay_blocks, click, column_ahead)
+			if int(kept_f[1]) > 0:
+				SelectionSquads.kept_away += int(kept_f[1])
+				var stayed_f: Array[Vector3] = []
+				for p_f: Vector3 in kept_f[0]:
+					stayed_f.append(p_f)
+				anchors = stayed_f
+				_trace_stage("column_stay_final", squads, anchors)
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
 		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
 				column and column_moved, today_places)
@@ -1385,9 +1469,18 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 	for i in squads.size():
 		var squad: Dictionary = squads[i]
 		var given := extra.duplicate()
+		# Round 44 (orders, C44.2): the ground point under his cursor, BEFORE any per-squad layout, rides every squad's order so
+		# the recorder's `order` row carries it (his round-43 recording held each squad's `to` and not his click). CP44.0
+		# (R43.34): `group` = a share of one order to two or more squads, kept through the re-lays that drop `halt_at`.
+		if extra.has("to") and not given.has("click"):
+			given["click"] = [float(extra["to"][0]), float(extra["to"][1])]  # a caller that is not order_selection
+		if squads.size() >= 2:
+			given["group"] = squads.size()
 		if not anchors.is_empty():
 			var at := Orders.clamp_to_arena(anchors[i])
 			given["to"] = [at.x, at.z]
+			if i == squads.size() - 1:
+				_trace_stage("given", squads, anchors)
 			# D3: a packed squad deploys exactly where the pack laid its seats, in that shape, on the pack's heading.
 			if packed_shapes.has(anchors[i]):
 				given["halt_at"] = [anchors[i].x, anchors[i].z]
@@ -1423,6 +1516,8 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			first_error = error
 	if not loose.is_empty():
 		var given := extra.duplicate()
+		if extra.has("to") and not given.has("click"):
+			given["click"] = [float(extra["to"][0]), float(extra["to"][1])]  # C44.2: his click, on the loose units' row too
 		if not anchors.is_empty():
 			var at := Orders.clamp_to_arena(anchors[anchors.size() - 1])
 			given["to"] = [at.x, at.z]
@@ -1899,7 +1994,11 @@ func _squads_on_their_elements(squads: Array) -> Array:
 
 
 ## D3 (C35.4): a packed squad's halt (where, in what shape, on what heading) rides its move task, queued or not.
+## Round 44 (CP44.0, R43.34): and `group`, a share of one order to many squads (the task is built key by key, so without this
+## line the key never reached any task; manoeuvre's ElementPlan.grouped() reads it once `halt_at` is dropped by a re-lay).
 func _copy_pack(extra: Dictionary, task: Dictionary) -> void:
+	if extra.has("group") and task["verb"] == "move":
+		task["group"] = int(extra["group"])
 	if extra.has("halt_at") and task["verb"] == "move":
 		for key: String in ["halt_at", "halt_shape", "lay"]:
 			if extra.has(key):

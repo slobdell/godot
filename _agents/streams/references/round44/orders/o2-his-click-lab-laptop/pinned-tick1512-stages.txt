@@ -1,0 +1,23 @@
+HIS_CLICK search skipped (HIS_CLICK_SEARCH=1 runs it)
+HIS_CLICK_BLOCK Green_Guns_4 centre (-7.7, 77.6) width 0.0 depth 0.0 shape - halt -
+HIS_CLICK_BLOCK Green_Hunters_1 centre (-14.6, 91.6) width 44.0 depth 36.0 shape wedge halt coil
+HIS_CLICK_BLOCK Green_Spears_1 centre (13.7, 91.5) width 44.0 depth 36.0 shape wedge halt coil
+HIS_CLICK_BLOCK Green_Wrenches_1 centre (43.9, 92.4) width 44.0 depth 36.0 shape wedge halt coil
+HIS_CLICK_DIAG click (-35.0, 97.0) heading (-0.98, 0.20) across (-0.20, -0.98) widest 44.0 rank_sizes [3, 1] one_rank false corridor at the click [20, 90] m
+HIS_CLICK_RANKS Green_Guns_4 raw (-46.3, 40.2) fitted (-46.3, 8.0) aside 89.5 behind 6.3
+HIS_CLICK_RANKS Green_Hunters_1 raw (-35.0, 97.0) fitted (-35.0, 64.8) aside 31.5 behind 6.3
+HIS_CLICK_RANKS Green_Spears_1 raw (14.0, 87.2) fitted (14.0, 55.1) aside 31.5 behind 56.3
+HIS_CLICK_RANKS Green_Wrenches_1 raw (-23.7, 153.8) fitted (-23.7, 117.2) aside -22.1 behind 7.1
+COLUMN_TRACE place (-46.3146, 0.0, 8.0) aside 89.5 sides [20.0, 90.0] off_width false reached false
+COLUMN_TRACE place (-35.0, 0.0, 64.84685) aside 31.5 sides [20.0, 90.0] off_width false reached false
+COLUMN_TRACE place (14.0381, 0.0, 55.08648) aside 31.5 sides [20.0, 90.0] off_width false reached false
+COLUMN_TRACE place (-23.6854, 0.0, 117.2436) aside -22.1 sides [20.0, 90.0] off_width true reached true
+HIS_CLICK tick 1512 at (-35.0, 97.0): bodies_kept +1 columns_laid +0
+HIS_CLICK_STAGE ranks          Guns_4:(-46.3, 8.0) Hunters_1:(-35.0, 64.8) Spears_1:(14.0, 55.1) Wrenches_1:(-23.7, 117.2)
+HIS_CLICK_STAGE column_lay    
+HIS_CLICK_STAGE never_behind   Guns_4:(-46.3, 8.0) Hunters_1:(-35.0, 64.8) Spears_1:(6.8, 56.5) Wrenches_1:(-23.7, 117.2)
+HIS_CLICK_STAGE ground_cap     Guns_4:(-46.3, 8.0) Hunters_1:(-35.0, 64.8) Spears_1:(6.8, 56.5) Wrenches_1:(-23.7, 117.2)
+HIS_CLICK_STAGE ground_anchors Guns_4:(-51.5, 15.3) Hunters_1:(-45.9, 69.5) Spears_1:(6.8, 56.5) Wrenches_1:(-23.7, 117.2)
+HIS_CLICK_STAGE untangle_whole Guns_4:(-51.5, 15.3) Hunters_1:(-45.9, 69.5) Spears_1:(6.8, 56.5) Wrenches_1:(-23.7, 117.2)
+HIS_CLICK_STAGE given          Guns_4:(-51.5, 15.3) Hunters_1:(-45.9, 69.5) Spears_1:(6.8, 56.5) Wrenches_1:(-23.7, 117.2)
+HIS_CLICK tick 1808: no inferred click yet (HIS_CLICK_SEARCH=1 HIS_CLICK_TICK=1808)
