@@ -87,6 +87,65 @@ _(worker keeps this current: report at the top, every number with commit, machin
 
 ### NOW (2026-10-28, Fable, worktree `godot-orders`, branch `stream/orders`, started from main 711f3e94f = dbf0bf637's code)
 
+- **REPORT (round 44 close, 2026-10-28 ~16:00 PDT laptop clock).** O0 + O1 merged ON (main 875ee5dd0; `click` / `group` on the
+  recorder's order row and the task). O2 cause found and reproduced to the metre (below). O3 corpus grew his geometry (`make
+  orders-geometry`, the probe's starts / reach / approach). O4 built behind `--group-column=always`; **Bar G1 v10c FAILS (R44.23)**,
+  the code merged OFF as 805eae5e1 -> main 9b72f5339 (byte-identical off, 60 / 60). O5: the acceptance read in numbers on native's
+  exact replay (`o5-replay-laptop/`), **top-down shots of his click not taken** (the bar failed; nothing ships for him to accept).
+  Stretch: the feel question answered by the lead (a click beside the army: hold = yes) and folded into round-45 idea 1 below;
+  the departure order not built (O2 showed scatter, not crossing crews, and the round closed on the bar). Not done otherwise:
+  nothing. Last commit's check: 805eae5e1 green on both machines; the commits after it are docs and tests/control scripts that
+  `make check` does not run (the orchestrator merges them at close).
+- **VERDICT (R44.23): Bar G1 v10c FAILS (part A FAIL, part B FAIL, part C NO DATA). `--group-column=always` stays OFF; nothing
+  ships ON.** Series on builder2, BAR_DONE 15:09 laptop clock, frozen tree 805eae5e1 (game code e2d1b499f, probe adc0362f7), arms
+  `main` v `--group-column=always`, seeds 10801-10824 (geometry, 1200 runs) / 10825-10836 (streets 384 + his 48) / 10837-10848
+  (fights, 48 error rows). Judge read on the laptop over the recorded rows with the judge as frozen; the reading, the tables and
+  the runner's log tail: `_agents/streams/references/round44/orders/bar-g1v10c-builder2-805eae5e1/` (verdict_ab.txt). Part A:
+  11 of 25 cells pass; deciding 2 (nobody sent back) and 4 (nearest squad in front) PASS every cell; deciding 1, 3, 6 and the
+  all-in / never-in guard FAIL; pooled friend contacts 21550 -> 12105 PASS. Part B: places outside the corridor on click cells
+  8 -> 26 (bar <= 2), metres driven outside after being in 356 -> 3489 (bar <= 178), all on the Crossing; Locks and Terminus
+  unchanged; guards twitch / all-in / end-foreign fail on Terminus and Locks 5-squad cells. Part C never ran: the 5-squad army
+  costs 2970 against the probe's 2500 fight budget, both arms wrote 48 error rows, the runner counted them as runs and the judge
+  crashed on them (my runner defect; the fight part was never dev-run). Not re-run (R44.23: A and B decide). Fixed on the branch
+  for round 45 (this commit): the runner counts error rows and stops the part on the first, the fight arms carry
+  `--probe-budget=3000`, the judge's row loader refuses any file with an error row (tested on the series' fight file: REFUSED;
+  dev read 9's folder still judges).
+- **The five causes, in his terms (what he would see with the switch on):**
+  1. **A short click holds half his army.** Click 20 m ahead of squads standing side by side (or with one squad detached) and
+     two or three squads sit still (the column counts them as already in it) while the rest drive round to the back of a 90 m
+     column: all-move 0-4 % on Crossing across-20 / his-20 and Locks along-20 / his-20; the movers take twice as long to all
+     arrive (Terminus across-20 7.2 s -> 14.6 s, Crossing his-20 3.2 -> 8.1 s; builder2, 805eae5e1, n 24).
+  2. **On the Crossing a far click lays the column along the wrong street.** His detached-squad start, click 80 m away: the road
+     back from the click bends away from where he pointed, the farthest squad lands 67 m across and 75 m aside (bar 52 m), two
+     squads hold (all-move 25 %). The same bend is part B's whole failure: 10 of 10 new places outside the street corridor
+     on Crossing 3-click (main 0), 16 on 5-click (main 8), and 1728 / 1760 m driven out of the street to reach them (main 83 / 274).
+     He would see his squads leave the street he is on to park on the next one over.
+  3. **The width he gets is not the width the ground fits.** On along-20 cells (Locks, Terminus, Yard, Yard his-20) some runs lay
+     two abreast where that run's clear-ground read fits one (across 35-58 m with fit 1); every SLIDE flag is the same run. He
+     would see a two-wide column on a one-wide road in roughly a run in six.
+  4. **A squad that never arrives.** Locks across-20 0 -> 2 runs, Terminus across-80 0 -> 3, Yard across-80 0 -> 1 with some squad
+     still short of the click at the end; the base's own never-ins vanish elsewhere (Crossing across-20 23 -> 0, Locks his-20
+     20 -> 0). He would see one squad of four stuck behind the column at the lock's bank.
+  5. **His exact Locks click passes in everything but the judge's 2 m.** The column lays, spread 89 -> 79 m, nearest squad in
+     front 0 % -> 100 %, no holds, no one sent back; lines 1 and 3 fail on the tolerance edge (across 2.x m, aside 2.x m against
+     fit-one's 0 + 2 m). This cell is the fix doing what he asked, failed by the width of a hull. Honest reading: the shape is
+     right on his click and wrong on the clicks around it.
+- **Round 45 ideas (ideas, not code; the orchestrator asked for my best on two):**
+  1. **Short clicks: seats in place, no column.** When the click is within the column's own length of the army (reach <= about
+     the squads' count x 20 m), do not lay a column at all: deal the squads the places nearest the click that they already stand
+     nearest to (a stable assignment by distance, every squad moves <= its own slot's distance), so nobody holds and nobody
+     drives to the back. A column only makes sense when there is a drive in front of it; a 20 m click is a shuffle, and he reads
+     a shuffle as "they moved up", a column as "half of them ignored me". The hold rule (line 6c) then has nothing to hold.
+     Test: the across-20 / his-20 cells' all-move goes to 100 % and all-in <= base; today's dev probes read it in a dev read.
+  2. **A column on bending streets keeps to the click line.** Read the road only as far back from the click as it stays within
+     the street he clicked in (stop the walk at the first bend over ~30 degrees or at the first junction), then lay the rest of
+     the column along the straight line back toward the army's centroid, each rank's place pulled onto the nearest standable
+     ground (the blocked callable already does this for water and decks). The Crossing's failure is the walk following the road
+     round the corner; a column that stops at the corner and continues straight stays in his street and in the corridor. Where
+     the straight line leaves standable ground (a wall), the column shortens: squads with no room hold in place per idea 1's
+     rule, not behind the corner. Test: part B's Crossing click cells back to main's places-outside; part A's Crossing his-80
+     aside <= 52.
+  Both are symmetric (C44.5) and live in `SelectionSquads` under the same switch.
 - **Plan (in order):** O0 + O1 as ONE commit (both are additive keys at the same two call sites, one check certifies both,
   both merge the same minute; CP44.0's `group` and C44.2's `click`) -> quick-remote -> the G1 v9 probe byte-identical v main
   (locks / crossing / terminus x 7001-7004, 5 squads, click: manoeuvre's R43.34 proof shape, 60 rows) -> `make remote T=check`
@@ -231,8 +290,35 @@ _(worker keeps this current: report at the top, every number with commit, machin
   off the layout's, and a physics frame earlier (50 m clear read where the layout read 52: fit one v two; roads 2.3 m apart v a
   2 m slack). Fixed in the probe alone (adc0362f7: the geometry line is read on the order's tick with the layout's own approach;
   smoke: the probe's clear = the lay's sides). The check queued for f12e61c38 was stopped before it started (remote side first,
-  by cwd, then the wrapper) and relaunched on the tip. **FROZEN TREE: this commit (docs + the probe over e2d1b499f's game code);
-  its full check runs on builder2, the hash is named here when green, then 10801-10848.**
+  by cwd, then the wrapper) and relaunched on the tip. **FROZEN TREE: 805eae5e1 (docs + the probe over e2d1b499f's game code).
+  GREEN on builder2 (13:14 laptop clock): `>> remote: make check exited 0`, 27 targets, 3428 passed / 0 failed; NOT JUDGED as
+  builder2 always gives: perf-judge (not a judging machine) and scenario_perf (loaded, ref 2.88x) -> a builder0 read before any
+  merge. Bar G1 v10c's series started 13:15 on builder2 (`tests/control/orders_g1v10_bar.sh b2 v10:--group-column=always
+  10801-10824 / 10825-10836 / 10837-10848`, jobs 10); the verdict lands here with BAR_DONE.**
+  **805eae5e1 GREEN on builder0 too (15:15-15:51 laptop clock): `>> remote: make check exited 0`, 28 targets, all passed, ALL JUDGED
+  (3428 / 0; perf-judge judged scenario_perf; load 4.77 at start, 2 other godot).** The orchestrator merges 805eae5e1 itself OFF
+  (R44.23) once the switch-off output proof reads 60 / 60 on that commit (the G1 v9 probe, the o0 recipe, builder0 light; running
+  from a scratch tree at 805eae5e1; the earlier 60 / 60 on record is 716e6304e's, before the v10 code). **Proof read 15:54-15:56
+  builder0 light: 60 / 60 rows byte-identical v the o0 record** (`references/round44/orders/o4-off-identical-builder0-805eae5e1/`).
+  **MERGE HASH NAMED: 805eae5e1.** This Status and the tests/control fixes merge in the docs/tools merge at close or on a green tip.
+- **Watch item (the orchestrator, after main 7975d1455's check):** control-timing's NOT JUDGED line "a right click on 30 units" read
+  878 workloads (88.7 ms) on main v 272 on native's tree an hour earlier (both loaded); "ordering 30 units" 557 v 264. Possible
+  causes in my paths: load (likely: `--order-trace` is a static read of the command line and `_trace_stage` returns on its first
+  line when off; the `click` / `group` keys are one `duplicate()` and two writes an order), to be read on a quiet builder0 with
+  `make control-timing` on main AFTER BAR_DONE (no change to the frozen tree before it); the two lines with commit and load go here.
+  **Read (main 57a20c9a4, builder0 QUIET, load 0.02 / 0.01 / 0.00 at 15:14 laptop clock, `make remote T=control-timing` from a
+  scratch tree at main, --fixed-fps 30; JUDGED 3 passed, 2 failed):** "ordering 30 units takes 226.3 reference workloads (budget
+  104; 9.96 ms)"; "a right click on 30 units takes 236.0 reference workloads (budget 104; 10.38 ms)". Load explains 878 -> 236
+  and 557 -> 226; both still 2.2x the budget. Next, same machine and flags in the next quiet window (chained after the builder0
+  check): the round-44 base 711f3e94f, to tell round 44's merges (O0+O1's keys, native N2) from what was there before.
+  **The record already dates it before round 44:** `tests/test_control_scale.gd`'s header (R43.11): the timing army is SIX squads,
+  past MAX_SQUADS 5, and with G1 ON six squads cannot meet 104 (G1 off alone 96); 6afe991bb on the laptop read 30 units / 6
+  squads at 232.1 ("the rest at 5-6 squads is one RtsControls.gate_width scan, a later C++ item"); `_agents/workstreams.md`
+  R43.41: main aa9753028 on builder0 "ordering 30 units 258 v 104". Today's quiet 226 / 236 is that state. Between 711f3e94f
+  and main the only control file changed is `game/control/rts_controls.gd` (+55, O0+O1). **Base read (711f3e94f, builder0 15:51,
+  load 0.60 / 2.59 / 6.03 right after the check ended, same target and flags): ordering 30 units 226.0 (9.27 ms), a right click on
+  30 units 233.7 (9.81 ms) v main 57a20c9a4's 226.3 / 236.0.** Round 44 added nothing; the cost is round 43's six-squad case.
+  Filed for round 45 (the orchestrator's HANDOFF 6211aa124: gate_width twins in C++).
 - **Decisions:** `click` goes on the one-squad row too (its `to` is the click, but one key the tools can rely on beats a
   rule); `group` only on orders to two or more squads (C44.3: his one-squad order stays manoeuvre's); loose units' row
   carries `click`, not `group`.
