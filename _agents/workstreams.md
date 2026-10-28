@@ -452,6 +452,13 @@ never touch processes you didn't start. Never delete builder files that aren't o
   check. Round-44 read: what is left on Locks is the first squad's own five crews converging from one deploy row onto seats within 37 m
   (seats dealt in arrival order along the approach, or a squadmate's give-way deferred until the seat ahead is taken); the G1
   group-click scoping candidate `wip/manoeuvre-scope-g1` 5b23227e0.
+- **R43.43 (~13:00) Manoeuvre's close candidate d61f98cbc RED on its own tests** (builder2, 3412 passed / 5 failed, all in
+  tests/test_formation_shape_latch.gd): the round-43 formation tests armed their switch in before_each / after_each, which TestCase never
+  calls (teardown() only), so once R43.42 flipped the latch OFF the "latch holds" tests saw today's pick (before that they passed for the
+  wrong reason). Fix 63f92cbe4 (tests only); its one check on builder2. Main has no file with those hooks (grep). N6 (native, GRANT
+  tests/run_tests.gd, tests/test_case.gd): the runner fails a file that defines a hook it never calls. Bar S v2's G5 FAILED too (74.0 ->
+  77.8 s a run v line 77.0). The R43.34 scoping candidate needs a `group` key stamped by the pack (one line in rts_controls.gd + one key in
+  ElementTask.KEYS): a contract line for round 44.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
