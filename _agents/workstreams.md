@@ -280,6 +280,14 @@ already read, or 7001-7012.
   Locks dev backout alone neutral on every line. Base-stuck = base not cleared 8 m within 6 s AND the base's rig has no yield /
   blocked-by-friend seconds in its first 6 s (both read from BASE only; three crawl poses were pinned by the squad, not the box).
   Deciding as R44.10 on those (floor 8; jitter count named at filing; under 8 qualifying = NOT JUDGED). Native twins c9ea1a6b4.
+- **R44.13 (~12:00) Bar G1 v10c's lines 1 and 3 measured off the ROAD, before any fresh number.** Dev read 6 (7001-7006, 25 cells):
+  lines 2, 4, contacts PASS; line 6 all reach-80 but one Crossing; lines 1 / 3 FAILED on 17 cells because the judge measured off the
+  straight click-to-army line while the column follows the road (a place 2 m off a bending street read 13-40 m aside; yard_open and
+  Locks across read exactly the fitted front). Now: offsets from the navmesh drive click -> the army's START centroid, computed from
+  the start state, identical in both arms (straight line the fallback); straight-line across / aside REPORTED beside. Thresholds
+  unchanged. Code: every rank capped by the fit at his click; the stay rule reads 10 m less a metre; reach clicks pulled onto dry
+  ground. Named risk: all-in guard failed two near cells on dev 6 (terminus across-20 7.7 -> 14.3 s, yard_open across-80 11.8 -> 19.0
+  s); it stays as filed and decides. Frozen after dev read 7.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
