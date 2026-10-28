@@ -324,11 +324,11 @@ const PULL_ALONG_DEG := 35.0
 ## ...and its centre is this far off the wall's face, at least and at most (beside it, not through it, not across the road).
 const PULL_NEAR_M := 1.0
 const PULL_FAR_M := 25.0
-## The look is taken once the lead crew is past the far end, until this far past it (a squad already well clear of a
+## The look is taken once the squad's centre is past the far end, until this far past it (a squad already well clear of a
 ## corner when it starts a move is not rounding it).
 const PULL_FROM_M := 0.0
 const PULL_UNTIL_M := 25.0
-## The open side must be open: the sight line from the lead crew along it, this long, clear of every wall (Bar K5: on
+## The open side must be open: the sight line from the squad's centre along it, this long, clear of every wall (Bar K5: on
 ## Locks' close blocks the look round the end landed on the next building).
 const PULL_CLEAR_M := 30.0
 ## Only walls whose centre is this close to the squad are read (a building's half length plus PULL_FAR_M and some).
@@ -341,7 +341,7 @@ const QUIET_VERBS := ["move", "attack_move"]
 
 ## The open side of the wall his squad has just driven past, from the cover map and his units only (never an enemy):
 ## {"look": the ground unit Vector3 along the hidden face's outward normal, or null; "w": 1 or 0; "feature": its index or
-## -1; "past": metres the lead crew is past the far end}. `own` = his commanded units' ground points, `heading` their
+## -1; "past": metres the squad's centre is past the far end}. `own` = his commanded units' ground points, `heading` their
 ## facing (a ground Vector3 or null). Pure, for tests.
 static func pull(map: CoverMap, from: Variant, own: Array, heading: Variant) -> Dictionary:
 	var out := {"look": null, "w": 0.0, "feature": -1, "past": 0.0}
@@ -369,19 +369,15 @@ static func pull(map: CoverMap, from: Variant, own: Array, heading: Variant) -> 
 		var gap := absf(off) - float(wall["half_w"])
 		if gap < PULL_NEAR_M or gap > PULL_FAR_M:
 			continue
-		var lead := -INF
-		var lead_at := Vector2.ZERO
-		for p: Vector3 in own:
-			var along_p := (Vector2(p.x, p.z) - centre).dot(along)
-			if along_p > lead:
-				lead = along_p
-				lead_at = Vector2(p.x, p.z)
-		var past := lead - half_len
+		# The squad's CENTRE past the end, as his words ("when they got past the building") and as the view frames it: on
+		# the lead crew (v2 dev, bb4c83e56) the column's middle still stood beside the wall and the look faced its flank
+		# (EMPTY facing after the opening 10.7 -> 17.0 %).
+		var past := (at - centre).dot(along) - half_len
 		if past < PULL_FROM_M or past > PULL_UNTIL_M or past >= best:
 			continue
 		var open_dir := -normal_axis * signf(off)  # away from the squad's face: the side the wall hid
-		var far := lead_at + open_dir * PULL_CLEAR_M
-		if not map.clear_line(Vector3(lead_at.x, 0.0, lead_at.y), Vector3(far.x, 0.0, far.y)):
+		var far := at + open_dir * PULL_CLEAR_M
+		if not map.clear_line(Vector3(at.x, 0.0, at.y), Vector3(far.x, 0.0, far.y)):
 			continue
 		best = past
 		out = {"look": Vector3(open_dir.x, 0.0, open_dir.y), "w": 1.0, "feature": int(wall["index"]), "past": past}

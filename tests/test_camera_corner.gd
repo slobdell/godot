@@ -80,24 +80,26 @@ func test_the_look_is_the_open_side_once_past_the_end_and_only_where_it_is_open(
 	var north := Vector3(0, 0, -1)
 	var near := _column(-10.0)  # the lead 5 m short of the far end (z -15)
 	assert_true(CameraCorner.pull(map, _centre(near), near, north)["look"] == null, "short of the corner: nothing yet")
-	var at := _column(-20.0)  # 5 m past
+	var lead_past := _column(-20.0)  # the lead 5 m past, the squad's centre (z -11) still beside the wall
+	assert_true(CameraCorner.pull(map, _centre(lead_past), lead_past, north)["look"] == null, "the lead alone past: not yet")
+	var at := _column(-30.0)  # the centre (z -21) 6 m past
 	var p := CameraCorner.pull(map, _centre(at), at, north)
 	assert_true(p["look"] is Vector3 and (p["look"] as Vector3).distance_to(Vector3(1, 0, 0)) < 0.01,
 			"past it: along the open side's normal, east, his words (%s)" % [p])
-	var gone := _column(-45.0)  # 30 m past
+	var gone := _column(-55.0)  # the centre 31 m past
 	assert_true(CameraCorner.pull(map, _centre(gone), gone, north)["look"] == null, "well clear of it: not rounding it")
 	assert_true(CameraCorner.pull(map, _centre(at), at, Vector3(1, 0, 0))["look"] == null, "driving AT the wall: not along it")
 	var far := [Vector3(-60, 0, -20)]
 	assert_true(CameraCorner.pull(map, far[0], far, north)["look"] == null, "a road beyond PULL_FAR_M is not beside it")
 	# Bar K5's D2 miss: the next block stands across the open side (Locks' close blocks): no look.
-	var blocked := _warehouse([{"position": Vector2(5, -20), "size": Vector2(6, 20), "axis": Vector2.RIGHT, "height": 6.0}])
+	var blocked := _warehouse([{"position": Vector2(5, -24), "size": Vector2(6, 14), "axis": Vector2.RIGHT, "height": 6.0}])
 	assert_true(CameraCorner.pull(blocked, _centre(at), at, north)["look"] == null, "a wall across the open side: no look")
 
 
 func test_the_look_holds_until_his_next_order_a_turn_or_a_contact() -> void:
 	var map := _warehouse()
 	var north := Vector3(0, 0, -1)
-	var at := _column(-20.0)
+	var at := _column(-30.0)
 	var move := {"id": 7, "verb": "move"}
 	var hold := CameraCorner.step({}, CameraCorner.pull(map, _centre(at), at, north), move, north, 0)
 	assert_true(hold.get("look") is Vector3, "a quiet move past the corner takes the look")
@@ -123,7 +125,7 @@ func _state(from: Vector3, own: Array, enemies: Array = []) -> Dictionary:
 
 func test_in_the_look_it_swings_the_view_toward_the_open_side_and_a_gun_outranks_it() -> void:
 	var map := _warehouse()
-	var at := _column(-18.0)
+	var at := _column(-30.0)
 	var state := _state(_centre(at), at)
 	var quiet := RtsCamera.danger_look(state)
 	assert_near(RtsCamera.yaw_facing(quiet["look"]), 0.0, 0.05, "without the pull: up the road (north)")
