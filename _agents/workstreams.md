@@ -86,6 +86,11 @@ already read, or 7001-7012.
   south off the map edge. Orders builds reading A: the column on open ground too (front squad on the click, the rest behind along the
   way they came, nearest in front, nobody sent back past its spot); Bar G1 v10 adds an edge-clamp line. Reading B (the click is the
   army's middle) goes to him as the alternative.
+- **R44.3 (~11:00) manoeuvre's M2 cause: his container start.** His War Rig crept ~1 s toward a station a metre ahead, planned the
+  back-up only at tick 30 and left at tick 97; none of round 43's switches touched it (his second match: the same spot, 5 s, unnoticed).
+  `--traffic-on=backout` (e0a746667, OFF): reversing by tick 2, past the box at tick 91 v 142 on his rebuilt start (builder0). M1
+  scoping proof take 5: 591/0, G1 v9 probe 60/60 identical (builder2 light, native ON, CP44.0 lines applied uncommitted). Native twins
+  `backout` (N3, after N1); it ships only inside Bar S v3, with a reverse-into-a-friend risk line.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
