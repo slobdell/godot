@@ -81,6 +81,36 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-27 ~20:40 PDT (Fable). Starting commit 2f1620a77 = main at launch (code b12b17ac7 GREEN builder0, 3343/0; no
 baseline check re-run, per the contract). CP43.0 taken at f6b930a3d (main 84f914f78 merged). Orchestrator session: `godot-b8`.**
 
+### Bar S: THE DECIDING READ (series 01:21-01:38 PDT, builder2, J 12, native library ON (kturngoal on the GDScript drive by its switch), frozen fed356a8b; 72 paired cells an arm = locks / terminus / crossing x 10401-10424; 0 SCRIPT ERROR in 360 logs; the guards still running)
+
+Evidence `references/round43/manoeuvre/bars-builder2-fed356a8b/judge-deciding-<arm>.txt` (per-cell rows inside); raw logs
+`~/overnight-manoeuvre/r43/bars/deciding/`. The bar as filed; no line amended; nothing re-run.
+
+| line (each arm v base, paired per cell) | seats | converge | kturngoal | all |
+|---|---|---|---|---|
+| D1 crews within the bound at 15 s (pooled, of 720) | 197 -> 329, +1.83 a run, se 0.20 (+9.2 se) **PASS** | 197 -> 170 (-2.7 se) FAIL | 197 -> 175 (-2.7 se) FAIL | 197 -> 338 (+8.9 se) **PASS** |
+| D2 start-zone yield + blocked s (pooled) | 1422 -> 1295, -1.76 s a run, se 1.46 (-1.2 se) FAIL | 1422 -> 1033, -5.40 s (-4.5 se) **PASS** | 1422 -> 1127, -4.10 s (-3.4 se) **PASS** | 1422 -> 1328, -1.30 s (-0.9 se) FAIL |
+| G crossing yield+blocked <= +2 se | +2.28 s a run, se 1.16 (+2.0 se) PASS | -3.74 (-1.8 se) PASS | -1.56 (-1.1 se) PASS | +2.95 (+1.3 se) PASS |
+| G crossing k-turn s | -6.09 (-5.4 se) PASS | -3.54 (-2.7 se) PASS | -5.65 (-7.8 se) PASS | -7.23 (-6.8 se) PASS |
+| G locks yield+blocked | **+6.90 s a run, se 2.0 (+3.4 se) FAIL** | -0.13 (-0.3 se) PASS | +0.83 (+0.9 se) PASS | **+7.50 (+5.4 se) FAIL** |
+| G locks k-turn s | -3.04 (-2.0 se) PASS | +0.32 (+1.8 se) PASS | -0.45 (-1.0 se) PASS | -1.35 (-0.9 se) PASS |
+| G terminus yield+blocked | -14.45 (-7.9 se) PASS | -12.33 (-5.3 se) PASS | -11.57 (-4.4 se) PASS | -14.35 (-9.0 se) PASS |
+| G terminus k-turn s | -10.70 (-7.6 se) PASS | -7.08 (-4.8 se) PASS | -11.12 (-4.8 se) PASS | -17.26 (-7.0 se) PASS |
+| reported: never-arrived crews (of 720) | 253 -> 226 | 253 -> 247 | 253 -> 214 | 253 -> 227 |
+| reported: mean arrival s a crew (never = 15) | -0.95 a run (se 0.14) | -0.15 | -0.35 (se 0.10) | -0.77 |
+| reported: k-turn s a run | -6.6 | -3.4 | -5.7 | -8.6 |
+| reported: seat moves a run | -29.1 | +0.3 | -1.5 | -30.0 |
+| **verdict as filed (D1 AND D2 AND every guard)** | **FAIL** (D2; locks guard) | **FAIL** (D1) | **FAIL** (D1) | **FAIL** (D2; locks guard) |
+
+**The read (after the numbers):** the two lines pull apart by construction. D1 measures the distance from his click, and without the
+bound a squad's seats stay the doctrine's (the swarm's 58 m), so the two mover-side arms cannot move it (they lose it slightly: a
+crew that now reaches its far seat is farther from the click than one stuck half-way); only the bound moves D1, and it moves it
+hugely (+9 se, 197 -> 329 of 720 crews within the bound at 15 s; seat moves -29 a run; arrival -0.95 s a crew). The bound's cost
+is on Locks: five crews converging on seats within 37 m of each other give way to each other on the way in (yield + blocked
++6.9 s a run, +3.4 se; most Locks cells 7-24 -> 25-34 s; never-arrived there 29 -> 32 of 240, arrival still better), while
+terminus and crossing improve. The mover-side arms pass D2 and every per-arena guard (converge -4.5 se, kturngoal -3.4 se on
+D2; kturngoal never-arrived 253 -> 214, k-turn -5.7 s a run) and cost nothing anywhere. No arm passes the bar as filed; the
+orchestrator rules (R43.14's own rule: an arm without seats that passes everything ships; these pass everything but D1).
 ### GATE GREEN on builder2 (2026-10-28 01:20 PDT): fed356a8b's code (the b0 worktree at that hash) `make check exited 0`, 3367 passed / 0 failed, 26 targets passed + 2 NOT JUDGED; Bar S's series started 01:21
 
 - `~/overnight-manoeuvre/r43/check1/check.log`: the wrapper line `>> remote: make check exited 0 (build/ copied back)`; `3367
