@@ -466,3 +466,23 @@ physics-share: import native-for-check ## Stretch (round 39): the physics engine
 			--seed=$$seed > $(BUILD_DIR)/physics-share/seed-$$seed.log 2>&1 || exit 1; \
 	done
 	@$(PYTHON) tools/judge/physics_share.py $(BUILD_DIR)/physics-share/seed-*.log
+
+# Round 43 (native, CP43.0 stretch; `replay` is net.mk's relay replay): re-run a playtest from its recording, headless, and print how far the replay's crews are
+# from his census (tests/replay/divergence.py; bar 3 m by default, the first two orders' crews, 20 s). The native library is
+# built first: his match ran it, and the GDScript path is a different match after ~10 s (Status, round 43). The replay puts the
+# recording's switches on its own command line (tests/replay_orders.gd); REPLAY_FLAGS adds an A/B switch (`--attack-shot=off`).
+#   make replay-match RECORDING=_agents/streams/references/round42/playtest/2026-10-27T20-00-48-locks.jsonl.gz [SECONDS=49 CREWS=all]
+REPLAY_MATCH_DIR := $(BUILD_DIR)/replay-match
+.PHONY: replay-match
+replay-match: native-fresh import ## Replay a match recording headless (RECORDING=file[.gz], SECONDS=20, CREWS=first2|all, REPLAY_FLAGS=...) and print the divergence table v his census
+	@test -n "$(RECORDING)" || { echo 'usage: make replay-match RECORDING=build/recordings/X.jsonl[.gz] [SECONDS=20] [CREWS=first2|all] [REPLAY_FLAGS="--attack-shot=off"]'; exit 2; }
+	@rm -rf $(REPLAY_MATCH_DIR) && mkdir -p $(REPLAY_MATCH_DIR)/out
+	@case "$(RECORDING)" in *.gz) gzip -dc "$(RECORDING)" > $(REPLAY_MATCH_DIR)/his.jsonl;; *) cp "$(RECORDING)" $(REPLAY_MATCH_DIR)/his.jsonl;; esac
+	@s=0; $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- \
+		--orders=$(CURDIR)/$(REPLAY_MATCH_DIR)/his.jsonl --seconds=$$(( $(or $(SECONDS),20) + 1 )) --record-dir=$(REPLAY_MATCH_DIR)/out \
+		$(REPLAY_FLAGS) > $(REPLAY_MATCH_DIR)/replay.log 2>&1 || s=$$?; \
+	grep -E '^REPLAY_(REEXEC|SETUP|SPAWN|ROSTER|NATIVE|CLICKS|FORMATIONS|DONE)|^NATIVE_EXEC' $(REPLAY_MATCH_DIR)/replay.log; \
+	[ $$s -eq 0 ] || { echo "replay: godot exited $$s (log $(REPLAY_MATCH_DIR)/replay.log)"; exit $$s; }; \
+	out=$$(ls $(REPLAY_MATCH_DIR)/out/*.jsonl | head -1); \
+	test -n "$$out" || { echo "replay: no recording written (log $(REPLAY_MATCH_DIR)/replay.log)"; exit 1; }; \
+	$(PYTHON) tests/replay/divergence.py $(REPLAY_MATCH_DIR)/his.jsonl $$out --seconds=$(or $(SECONDS),20) --crews=$(or $(CREWS),first2)
