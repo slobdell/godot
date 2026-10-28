@@ -87,6 +87,15 @@ _(worker keeps this current: report at the top, every number with commit, machin
 
 ### NOW (2026-10-28, Fable, worktree `godot-orders`, branch `stream/orders`, started from main 711f3e94f = dbf0bf637's code)
 
+- **REPORT (round 44 close, 2026-10-28 ~16:00 PDT laptop clock).** O0 + O1 merged ON (main 875ee5dd0; `click` / `group` on the
+  recorder's order row and the task). O2 cause found and reproduced to the metre (below). O3 corpus grew his geometry (`make
+  orders-geometry`, the probe's starts / reach / approach). O4 built behind `--group-column=always`; **Bar G1 v10c FAILS (R44.23)**,
+  the code merged OFF as 805eae5e1 -> main 9b72f5339 (byte-identical off, 60 / 60). O5: the acceptance read in numbers on native's
+  exact replay (`o5-replay-laptop/`), **top-down shots of his click not taken** (the bar failed; nothing ships for him to accept).
+  Stretch: the feel question answered by the lead (a click beside the army: hold = yes) and folded into round-45 idea 1 below;
+  the departure order not built (O2 showed scatter, not crossing crews, and the round closed on the bar). Not done otherwise:
+  nothing. Last commit's check: 805eae5e1 green on both machines; the commits after it are docs and tests/control scripts that
+  `make check` does not run (the orchestrator merges them at close).
 - **VERDICT (R44.23): Bar G1 v10c FAILS (part A FAIL, part B FAIL, part C NO DATA). `--group-column=always` stays OFF; nothing
   ships ON.** Series on builder2, BAR_DONE 15:09 laptop clock, frozen tree 805eae5e1 (game code e2d1b499f, probe adc0362f7), arms
   `main` v `--group-column=always`, seeds 10801-10824 (geometry, 1200 runs) / 10825-10836 (streets 384 + his 48) / 10837-10848
