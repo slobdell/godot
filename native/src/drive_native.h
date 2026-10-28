@@ -63,6 +63,10 @@ struct DriveConfig {
 	// Round 26 (perf, C26.2, manoeuvre M1): Movement._manoeuvre's per-tick gate natively; the decision (a new goal or a
 	// gap in the drive ticks) is called back. BEHIND_GAP_TICKS < 0: this movement.gd has no _manoeuvre (no gate).
 	int64_t BEHIND_GAP_TICKS = -1;
+	// Round 43 (native N3, manoeuvre Bar S v2 `parkaside`): Movement._park_aside's memo and cheap exits natively, its
+	// decision called back. False on a tree without it (its constants absent): the switch does not exist there.
+	bool parkaside_ready = false;
+	double PARKASIDE_REACH_M = 0.0, PARKASIDE_CLEAR_M = 0.0, PARKASIDE_STILL_MPS = 0.0;
 	mutable HashMap<String, double> braking_of; // Movement._braking() by unit: max(Units.stat(unit, "braking_mps2", 8), 0.1)
 	// Round 29 (traffic T1, C29.2): the street hold. traffic_hold is false on a tree without it (Traffic has no hold_of):
 	// then no gate and no callback, the drive as before. With it, _avoid's first lines call NativeTraffic.avoid_hold back
