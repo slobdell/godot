@@ -388,6 +388,18 @@ already read, or 7001-7012.
   `tests/orders_probe_geometry.gd` only (no threshold, judge or arm code change); the frozen tree moves to that tip, its check
   re-launched on builder2. Any further defect is a finding read after BAR_DONE, never a change before it. Expected risk: the near-bank
   and near-click cells above.
+- **R44.23 (15:15) Bar G1 v10c FAILS as filed; `--group-column=always` stays OFF.** builder2, frozen 805eae5e1 (code e2d1b499f +
+  probe adc0362f7; check builder2 3428/0, perf NOT JUDGED), 10801-10848, judge `tests/control/orders_geometry_judge.py` unchanged;
+  evidence `_agents/streams/references/round44/orders/bar-g1v10c-builder2-805eae5e1/`. Part A FAIL (11/25 cells pass; lines 2, 4
+  and pooled contacts 21550 -> 12105 PASS; lines 1, 3, 6 and the all-in/never-in guard FAIL), part B FAIL (Crossing only: places
+  outside 8 -> 26, metres outside 356 -> 3489), part C NO DATA (runner defect: fight budget 2500 < army 2970; not re-run: A and B
+  decide the bar and a fight read cannot change it). Causes, his terms: (1) short clicks (reach 20) hold 2-3 squads and send the
+  rest round the back of a 90 m column, so half the army sits and arrival time doubles; (2) on the bending Crossing the column follows
+  the road away from his click line and off the street; (3) fit disagreements on along-20 cells. His exact Locks click LAYS as he
+  asked (nearest in front 0 -> 100 %, no holds) and fails lines 1/3 by ~2 m. **Dormant code:** orders' builder0 check of 805eae5e1
+  (chained after control-timing) decides it: ALL JUDGED green and CP44.0 60/60 off -> merge it OFF (the probe and judge serve round
+  45); otherwise it stays on the branch. Round 45: a short click is not a column (squads already near the click take the near seats
+  in place); the column on bending streets keeps to the click line, not the road.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
