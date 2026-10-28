@@ -91,6 +91,12 @@ series runs on builder2 after 65e6e7e92's full check there.**
 - **Bar K5 FILED** (below, eb6deaf78; one workload fix before any number, 65e6e7e92: lanes from his half only). Judge:
   `python3 tests/camera/bar_k5.py ~/camera-bar-k5/<hash>`. Driver `~/camera-r43/bar_k5.sh` (not in the repo: it holds paths).
 
+**For him (the part he would notice, from Bar K5's series, 10501-10536, builder2, n 36 a workload an arm):** rounding a
+building on Locks with an enemy squad hidden behind it, the moment his crews see it the camera has it on screen in
+about half a second instead of four (seen -> on screen 3.98 +- 0.99 s -> 0.49 +- 0.10 s, both arenas pooled; the gain is
+Locks'). The swing still ships OFF: it lost on the rest of its bar (looking at the next building on close streets, a
+swing back after each corner, firing mid-fight); v2 (R43.27) answers those three.
+
 **Decisions (one line each):** the recorder reads `controls.rig` (no skirmish_mode edit; the camera stays unaware of the
 recorder); the corner pull aims at a spot 8 m round the far end behind the wall (straight at the hidden face put the view
 through the wall); facing the building is judged after the opening on the EMPTY corner (with a squad there the danger
@@ -111,6 +117,20 @@ the corner workload's staging jump is skipped by the trace (it read as 12 snaps)
    a gun firing at him drops it; `--camera-corner=on`, OFF until Bar K5. Reason for "toward the spot" rather than "the
    face's normal": just past the corner the hidden squad lies ESE of the lead crew (behind the wall), not E.
 4. K5.4 Bar K5 filed before any 10501+ number; 5. K5.5 the clip; 6. stretch.
+
+### Bar K5 v2 (FILED before any number on 10537-10572, 2026-10-28; R43.27; the LAST re-file: a fail ships the corner swing OFF with the Locks result for him)
+**Unchanged from Bar K5** (below) except the rule it judges and D1's per-arena clause. Arms BASE `--camera-corner=off` v ARM
+`--camera-corner=on`, BOTH on one commit (the K5 v2 rule, bb4c83e56's or a later commit named with the result, whose full
+check greens first); **machine builder2**, CAMERA_JOBS=8; seeds **10537-10572** (36 an arm a workload); the same seven
+workloads (CORNER and EMPTY on Locks and Terminus; AMBUSH, RETREAT, ATTACK on Terminus); judge `tests/camera/bar_k5.py --v2`.
+**What changed (R43.27, the three causes of Bar K5's fail):** (a) the look only under a move / attack-move order with no
+known enemy (never mid-fight: G4 ambush / attack); (b) once past the far end, along the open side's outward normal, only
+where a 30 m sight line that way is clear of walls, else none (D2: the next block); (c) the look held until his next
+order, the squad's heading turning > 45 deg, or a contact (K4 takes over), not eased back (one reversal fewer a corner,
+G1). CORNER_W 4.0 (from 3.0: past the corner the view turns ~68 deg toward the open side on a north drive).
+**D1 (R43.27, ruled before any v2 number; reason: Terminus sits at an 85 % ceiling):** CORNER pooled ARM >= BASE + 10
+points (unchanged), and on EACH arena ARM >= BASE - 2 se of the difference (per-run shares, mean +- se).
+**Everything else as filed:** D2 (EMPTY pooled, facing the building after the opening, ARM <= 0.75 x BASE), D3, G0-G6.
 
 ### Bar K5 result: FAIL, 6 lines (10501-10536; series commit 08931da4e = 65e6e7e92's code + docs, GREEN builder2 `>> remote: make check exited 0`, test 3362/0, 26 passed + 2 NOT JUDGED (perf on builder2, scenario_perf loaded); builder2 J8; 36 runs an arm a workload; every wrapper exited 0, 36/36 CAMERA_TRACE_DONE in all 14 dirs; out `~/camera-bar-k5/08931da4e/`, table `references/round43/camera/bar_k5_verdict_08931da4e.md`)
 | line | ARM (on) | BASE (off) | verdict |

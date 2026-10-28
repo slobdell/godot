@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Round 43 (camera K5.4): Bar K5's verdict, line by line, from the series' trace directories.
 
-    python3 tests/camera/bar_k5.py <series dir>      (holds <workload>-off/ and <workload>-on/, as ~/camera-r43/bar_k5.sh
+    python3 tests/camera/bar_k5.py <series dir> [--v2] (holds <workload>-off/ and <workload>-on/, as ~/camera-r43/bar_k5.sh
                                                       writes them; workloads corner-locks, corner-terminus, empty-locks,
                                                       empty-terminus, ambush, retreat, attack)
-Each line: ARM, BASE, se where it has one, n, PASS/FAIL; the last line the bar's verdict. The lines are the ones FILED in
+Each line: ARM, BASE, se where it has one, n, PASS/FAIL; the last line the bar's verdict. `--v2` = Bar K5 v2 (R43.27):
+D1's per-arena clause is ARM >= BASE - 2 se of the difference (per-run shares), not ARM > BASE. The lines are the ones FILED in
 _agents/streams/camera.md *Bar K5* (before any 10501-10536 number); do not edit them after a number is seen.
 """
 import glob
@@ -16,6 +17,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import camera_report as cr  # noqa: E402
 
 HAND = {"player", "jump", "follow", "all"}
+V2 = "--v2" in sys.argv
+
+
+def shares(rs):
+    """Per-run share (%) of the corner seconds within 45 deg of the hidden side (runs with corner seconds)."""
+    return [100.0 * r["corner"]["toward_s"] / r["corner"]["corner_s"] for r in rs
+            if r.get("corner") and r["corner"].get("corner_s", 0.0) > 0.0]
 lines = []
 
 
@@ -52,7 +60,7 @@ def capped(rs):
 
 
 def main():
-    root = sys.argv[1]
+    root = [a for a in sys.argv[1:] if not a.startswith("--")][0]
     W = {}
     for name in ["corner-locks", "corner-terminus", "empty-locks", "empty-terminus", "ambush", "retreat", "attack"]:
         W[name] = {arm: runs(os.path.join(root, f"{name}-{arm}")) for arm in ("off", "on")}
@@ -62,7 +70,14 @@ def main():
     line("D1 toward the hidden side, CORNER pooled (% of corner s)", a, b, a >= b + 10.0, f"n {pool['on']['runs']} v {pool['off']['runs']}")
     for arena in ("locks", "terminus"):
         ra, rb = corner_all(W[f"corner-{arena}"]["on"]), corner_all(W[f"corner-{arena}"]["off"])
-        line(f"D1 toward the hidden side, {arena}", ra["toward_pct"], rb["toward_pct"], ra["toward_pct"] > rb["toward_pct"])
+        if V2:
+            sa = cr.mean_se(shares(W[f"corner-{arena}"]["on"]))
+            sb = cr.mean_se(shares(W[f"corner-{arena}"]["off"]))
+            se = (sa[1] ** 2 + sb[1] ** 2) ** 0.5
+            line(f"D1 toward the hidden side, {arena} (per-run mean +- se)", f"{sa[0]:.1f} +- {sa[1]:.1f}",
+                 f"{sb[0]:.1f} +- {sb[1]:.1f}", sa[0] >= sb[0] - 2.0 * se, f"line: ARM >= BASE - 2 se ({2 * se:.1f}); pooled {ra['toward_pct']:.1f} v {rb['toward_pct']:.1f}")
+        else:
+            line(f"D1 toward the hidden side, {arena}", ra["toward_pct"], rb["toward_pct"], ra["toward_pct"] > rb["toward_pct"])
     # D2 facing the building after the opening, EMPTY pooled
     ep = {arm: corner_all(W["empty-locks"][arm] + W["empty-terminus"][arm]) for arm in ("off", "on")}
     a, b = ep["on"]["facing_open_pct"], ep["off"]["facing_open_pct"]
