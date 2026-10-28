@@ -10,7 +10,9 @@ extends Node
 ## the guns actually did** — as one JSONL file per match:
 ##
 ##   {"t":"match",  ...}                          once: seed, arena, factions, the roster with every unit's stats
+##                                                (+ C43.2: squad_cap, factions, preset, native, flags, spawn, frame)
 ##   {"t":"order",  tick, units, verb, source, to, target, formation, error}   every command, WITH its refusal
+##                                                (+ C43.2: frame, paused)
 ##   {"t":"task",   tick, element, verb, to, formation}                        every squad task the leader took
 ##   {"t":"hit",    tick, shooter, target, weapon, face, weak, shield, hull, killed}
 ##   {"t":"census", tick, units:[{name, id, team, pos, hp, hp_max, shield, order, phase, blocked}]}  every CENSUS_S
@@ -69,10 +71,12 @@ func _ready() -> void:
 	var latest := FileAccess.open(path.get_base_dir().path_join("latest.txt"), FileAccess.WRITE)
 	if latest != null:
 		latest.store_string(path)
-	_write({"t": "match", "path": path, "arena": String(Arena.active.get("name", "")),
+	var row := {"t": "match", "path": path, "arena": String(Arena.active.get("name", "")),
 			"seed": seed_value,
 			"tick_rate": SimClock.TICK_RATE, "tuning": Units.tuning.duplicate(),
-			"units": _roster()})
+			"units": _roster()}
+	row.merge(replay_keys(game_match, _launch_flags()))
+	_write(row)
 	if game_match.has_signal("projectile_impact"):
 		game_match.projectile_impact.connect(_on_impact)
 	if game_match.has_signal("unit_destroyed"):
@@ -83,6 +87,41 @@ func _ready() -> void:
 	if controls != null and controls.has_signal("command_issued"):
 		controls.command_issued.connect(_on_command)
 	print("MATCH_RECORDING %s" % path)
+
+
+## C43.2 (round 43, native): what a replay of this match needs that the rest of the header does not hold (CP43.0:
+## tests/replay_orders.gd). ADDITIVE keys; nothing above changes meaning.
+##   squad_cap  the squads a side fields (his laptop preset: 4; a headless replay would otherwise field 5)
+##   factions   {green, rust}, from each side's first unit
+##   preset     RenderLevers' preset (the cap and the planner slice are read from it)
+##   native     whether the C++ library ran the crews: the GDScript path is a different match after ~10 s on his seed
+##   flags      the match's launch switches (`--attack-shot=off`, ...), as Main read them
+##   spawn      {name: [x, z, yaw]} at full precision, where the army layout put every unit
+##   frame      the physics frame the match started on (an order row's `frame` is counted from the same clock)
+static func replay_keys(p_match: Match, flags: LaunchFlags) -> Dictionary:
+	var faction := {"green": "", "rust": ""}
+	var spawn := {}
+	if p_match.tanks != null:
+		for child in p_match.tanks.get_children():
+			var tank := child as Tank
+			if tank == null:
+				continue
+			var side := "green" if tank.team == Match.Team.GREEN else "rust"
+			if String(faction[side]) == "":
+				faction[side] = Units.faction_of(String(tank.unit_id))
+			spawn[String(tank.name)] = [tank.global_position.x, tank.global_position.z, tank.rotation.y]
+	return {"squad_cap": SkirmishMode.squad_cap_for(flags), "factions": faction, "preset": RenderLevers.preset(),
+			"native": BrainSwitches.native, "flags": flags.values.duplicate(), "spawn": spawn,
+			"frame": Engine.get_physics_frames()}
+
+
+## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the
+## process's command line.
+func _launch_flags() -> LaunchFlags:
+	var main := get_tree().current_scene if is_inside_tree() else null
+	if main != null and "flags" in main and main.flags is LaunchFlags:
+		return main.flags
+	return LaunchFlags.from_environment()
 
 
 ## Every unit in the match with the numbers a report is usually about: what it is, how much health and shield it has,
@@ -118,6 +157,10 @@ func _on_command(command: Dictionary, error: String) -> void:
 			row[key] = command[key]
 	if error != "":
 		row["error"] = error  # the refusal the player saw, beside the order he tried to give
+	# C43.2: when the order landed: the physics frame (the `match` row's `frame` is the start) and whether the match was
+	# paused (the planning pause: such an order is in force before the CPU's first plan).
+	row["frame"] = Engine.get_physics_frames()
+	row["paused"] = get_tree().paused if is_inside_tree() else false
 	_write(row)
 
 
