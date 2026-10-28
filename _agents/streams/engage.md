@@ -332,6 +332,32 @@ hold tests unchanged (18/0). `game/ai/tank_brain.gd`: CREW_TRACE (static, `_crew
 `mk/engage.mk`: the round-43 targets. New files all engage's (tests/engage/*, .uid beside each .gd). No baseline moves expected
 (nothing ON). The full check of the tip: below when it reads.
 
+### A7 (R43.5 / R43.21): the across-water census (laptop, e996756d0 + the probe, `make engage-water`, dev 7001-7012, 60 s, n 12, native on; NOT a number)
+
+The stage (`tests/engage/water_probe.gd`): a squad of five under attack-move to the far-bank objective (Locks on even seeds, Crossing
+on odd), five Syndicate defenders (3 Limousines, a Railgun, a Skimmer) dug in on the far bank beside the crossing's exit. Per crew-tick
+under an attack / attack-move order, the brain in ENGAGE / SUPPRESS on a contact whose straight leg crosses water:
+
+| line (a run, mean of 12) | value | se | reading |
+|---|---|---|---|
+| water_s: crew-seconds in the state | 27.1 (4.5 of 5 crews) | 3.9 | every seed |
+| water_far_s: of those, the contact beyond the gun's range (cannot hit) | 4.0 (3.2 crews) | 1.3 | every seed, small |
+| fire_s: the gun on that contact | 23.0 | 4.2 | the guns DO fire across: fine |
+| hop_s: direct combat hops while in the state (hop_rev_s reverse; hop_far_s while far) | 19.2 (5.2 reverse; 2.1 far) | 3.1 | **the dumb part: 70 % of the state is spent moving for a shot across water** |
+| damage_water / hits / first hit (the squad's guns on the defenders while the whole squad is across water) | 372 / 11.8 / 10.2 s | 105 / 3.3 / 2.5 | the guard: must not get worse |
+| off_order_m: the largest rise of a crew's distance to its own order goal while in the state | 22.6 (max 74.5, seed 7001) | 6.3 | his drift, in miniature, every seed |
+| last_a_s / deaths / kills | 60 (never) / 4.75 / 1.75 | | the stage is too lethal for an arrival line (the bar's stage: three Limousines) |
+
+**So:** the crew brain engages across water in every seed, mostly on contacts it CAN hit (the guns fire, 372 damage a run), and
+the harm is the combat move: 19 s a run of direct hops along the bank, a quarter of them in reverse, 22 m (up to 75 m) off the
+crew's own order. **The rule (A7, OFF behind `--engage-water=on` until its bar; `=off` the escape after):** keep the gun on a
+hittable target across water, never move for it: (1) under attack-move a contact across water (SlotGround.leg_wet from the crew)
+is not "met on the way" (`_obey`'s in_reach), so MOVE keeps the route and the gun fires at will; (2) under a named attack or an
+ENGAGE already chosen, a contact across water takes the not-visible branch (`_move_to(contact.position)`, routed: the way round
+is the bridge) with the gun on it, never `_combat_move`. Symmetric. Bar A7 to be filed before any number on 10649-10672 (Bar E1's
+lines on 10673-10696): deciding hop_s (across water) ARM < BASE by >= 2 se and off_order_m ARM < BASE by >= 2 se; guards
+damage_water, first_hit_water_s, deaths, kills, last_a_s no worse (1.645 se), Bar E1's lines, perf, suite ON.
+
 ### A1: the turnaround on his seed (laptop, native library ON, `make engage-replay-trace ENGAGE_TAG=on`, 2d43b1e88, his recording, 50 s, n 1, deterministic)
 
 The replay (native's CP43.0, `tests/replay_orders.gd`) puts Green_Guns_1 **0.0 m off his census at every second for 48 s**

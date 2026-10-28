@@ -134,3 +134,21 @@ engage-bar-a6: import ## engage Bar A6 v2: engage-hold off / w / wr on ENGAGE_HO
 	@$(MAKE) --no-print-directory engage-hold ENGAGE_HOLD_ARM=on ENGAGE_HOLD_SWITCH=holdway,holdroute ENGAGE_HOLD_TAG=wr
 	@echo "##### ARM-W (holdway) v BASE"; $(PYTHON) tests/engage/hold_table.py --pair $(BUILD_DIR)/engage/hold/off $(BUILD_DIR)/engage/hold/w --by-stage
 	@echo "##### ARM-WR (holdway,holdroute) v BASE"; $(PYTHON) tests/engage/hold_table.py --pair $(BUILD_DIR)/engage/hold/off $(BUILD_DIR)/engage/hold/wr --by-stage
+
+# ---- engage (round 43): A7, the engage-across-water census and bar ----------------------------------------------------
+# Workload: tests/engage/water_probe.gd (a squad under attack-move across the canal, the CPU dug in on the far bank; Locks on even
+# seeds, Crossing on odd). ENGAGE_WATER_ARM=off|on (on = --engage-water=off, the A7 rule's escape... the ARM turns the rule ON once
+# it is built: see the probe's header); ENGAGE_WATER_SEEDS the seeds.
+ENGAGE_WATER_SEEDS ?= 7001 7002 7003 7004 7005 7006 7007 7008 7009 7010 7011 7012
+ENGAGE_WATER_TAG ?= census
+ENGAGE_WATER_SECONDS ?= 60
+.PHONY: engage-water
+engage-water: import ## engage A7: the across-water census over ENGAGE_WATER_SEEDS (ENGAGE_FLAGS for an arm, ENGAGE_WATER_TAG the folder) -> build/engage/water/<tag>/ + the table
+	@mkdir -p $(BUILD_DIR)/engage/water/$(ENGAGE_WATER_TAG)
+	@rm -f $(BUILD_DIR)/engage/water/$(ENGAGE_WATER_TAG)/*.log
+	@echo ">> engage-water on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | flags '$(ENGAGE_FLAGS)' | seeds $(firstword $(ENGAGE_WATER_SEEDS))+ | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(ENGAGE_WATER_SEEDS); do echo $$seed; done | xargs -r -P $(ENGAGE_JOBS) -I{} sh -c \
+		'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/water_probe.gd -- \
+		--seed={} --seconds=$(ENGAGE_WATER_SECONDS) $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/water/$(ENGAGE_WATER_TAG)/{}.log 2>&1 || true; \
+		grep -q "^ENGAGE_WATER " $(BUILD_DIR)/engage/water/$(ENGAGE_WATER_TAG)/{}.log || echo "  MISSING ENGAGE_WATER seed {}"'
+	$(PYTHON) tests/engage/water_table.py $(BUILD_DIR)/engage/water/$(ENGAGE_WATER_TAG)
