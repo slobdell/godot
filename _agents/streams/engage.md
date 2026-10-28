@@ -382,15 +382,23 @@ drives round by the bridge under a named attack may die on the dug-in bank; the 
 **Deciding (paired by seed, pooled):** 1. **hop_s** (crew-seconds of direct combat hops while in ENGAGE/SUPPRESS on a contact
 across water under an attack / attack-move order): ARM < BASE by >= 2 se. 2. **off_order_m** (the largest rise of a crew's
 distance to its own order goal while in that state, a run): ARM < BASE by >= 2 se. **Both.**
-**Guards (filed first; paired se):** 3. damage_water ARM >= BASE - 1.645 se; 4. first_hit_water_s ARM <= BASE + 1.645 se;
-5. deaths ARM <= BASE + 1.645 se; 6. kills ARM >= BASE - 1.645 se; 7. last_a_s ARM <= BASE + 1.645 se; 8. **the named-attack
+**Guards (filed first; paired se):** 3. **damage_total** (every hit on the defenders, from any bank; sum a run) ARM >= BASE -
+1.645 se; 4. **first_hit_s** (the squad's first hit on a defender, any bank) ARM <= BASE + 1.645 se; 5. deaths ARM <= BASE +
+1.645 se; (3 and 4 AMENDED before any bar number, at the dev run on 7001-7012 below: `damage_water` and `first_hit_water_s` count
+only while the WHOLE squad is still across water from the victim, so a squad that crosses sooner reads as "shooting less across
+water" (5796 -> 1215 at equal kills and fewer deaths); the outcome a player sees is the damage done and the first hit, whichever
+bank. damage_water, hits_water and first_hit_water_s stay reported); 6. kills ARM >= BASE - 1.645 se; 7. last_a_s ARM <= BASE + 1.645 se; 8. **the named-attack
 cost** (the orchestrator's): the probe's named-attack arm (`--named=on`: the squad's order is `attack` on the nearest defender
 instead of the attack-move; a second 24-seed pair on the same seeds, BASE-named v ARM-named): deaths ARM <= BASE + 2 se,
 hop_s reported; 9. Bar E1's lines (`make engage-bar` on 10673-10696, ARM = `ENGAGE_FLAGS=--engage-water=on`): stuck crew-
 seconds, first hit, deaths within 1.645 se; 10. perf: the ON check's perf-judge <= 1.05x (builder0); 11. suite ON (C31.1):
 `make remote T="check ENGAGE_WATER=on"` green, sim-baseline rows that move listed and adopted at the ship.
-**Reported:** water_s, water_far_s, fire_s, hop_rev_s, hop_far_s, crews_water / crews_far, hits_water.
-**A pass ships ON** (1-2 decided, 3-11 within).
+**Reported:** water_s, water_far_s, fire_s, hop_rev_s, hop_far_s, crews_water / crews_far, hits_water, damage_water,
+first_hit_water_s. **Tree, re-filed:** 8ac00d19b (the probe's damage_total lines and the `engage-bar-a7` target; the rule's code
+unchanged since de626d7e1). **A pass ships ON** (1-2 decided, 3-11 within).
+**Dev (laptop, a54e1bf52's code, both arms `--brains-off=native_decide`, 7001-7012, 60 s, n 12 paired, NOT a number):** hop_s 459 ->
+10 (z -8.0), off_order_m 352 -> 60 (z -4.1), water_s 759 -> 147, deaths 28 -> 20 (z -2.4), kills 26 = 26, last_a 720 -> 668
+(se 3.0), damage_water 5796 -> 1215 (the attribution artefact above), first_hit_water 96.6 -> 42.5.
 
 ### A1: the turnaround on his seed (laptop, native library ON, `make engage-replay-trace ENGAGE_TAG=on`, 2d43b1e88, his recording, 50 s, n 1, deterministic)
 
