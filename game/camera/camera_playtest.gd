@@ -40,9 +40,14 @@ const EDGE_M := 128.0
 ## A staged unit is set down at least this far from any obstacle's footprint.
 const CLEAR_M := 4.0
 const LANES := ["right", "left", "rear"]
+## K5.2's corner: the lanes per side a seed picks from (the nearest to group 1), and his column's spacing at the start.
+const CORNER_LANES := 3
+const CORNER_COLUMN_M := 9.0
 
 var trace: CameraTrace
 var look: CameraLook
+## K5.2: the corner census, made when the corner scenario is staged.
+var corner: CameraCorner
 var scenario := ""
 var lane := ""
 ## How far off the selection the ambush is set down (`--camera-ambush-m=`, default AMBUSH_M).
@@ -88,7 +93,7 @@ func _ready() -> void:
 			ambush_m = float(arg.trim_prefix("--camera-ambush-m="))
 	if lane == "":
 		lane = LANES[posmod(_seed, LANES.size())]
-	if scenario != "" and not ["ambush", "retreat"].has(scenario):
+	if scenario != "" and not ["ambush", "retreat", "corner"].has(scenario):
 		push_error("CameraPlaytest: unknown --camera-scenario=%s" % scenario)  # a probe flag that fails must stop the run
 		print("CAMERA_TRACE_DONE ok=false reason=unknown_scenario")
 		get_tree().quit(1)
@@ -178,6 +183,8 @@ func _run() -> void:
 		await _ambush()
 	elif scenario == "retreat":
 		await _retreat()
+	elif scenario == "corner":
+		await _corner()
 	while scenario == "" and _clock < _seconds and not _ended:
 		await _select()
 		await _wait(_rng.randf_range(0.3, 0.8))
@@ -205,6 +212,8 @@ func _finish() -> void:
 	if look != null:
 		report["look"] = look.summary()
 		report["episodes"] = look.episodes
+	if corner != null:
+		report["corner"] = corner.summary()
 	if out_dir != "":
 		DirAccess.make_dir_recursive_absolute(out_dir)
 		var file := FileAccess.open(out_dir.path_join("camera_trace_%d.json" % _seed), FileAccess.WRITE)
@@ -235,6 +244,16 @@ func _finish() -> void:
 		print("CAMERA_LOOK seed=%d scenario=%s lane=%s staged=%s play_s=%.1f under_fire_s=%.1f blind_s=%.1f wall_s=%.1f episodes=%d never=%d latencies=%s reversals=%d" % [
 				_seed, scenario if scenario != "" else "attack", lane, _staged.get("ok", false), l["play_s"], l["under_fire_s"],
 				l["blind_s"], l["wall_s"], l["episodes"], l["never"], JSON.stringify(l["latencies"]), l["yaw_reversals"]])
+	if corner != null:
+		var c: Dictionary = report["corner"]
+		print("CAMERA_CORNER seed=%d lane=%s feature=%s opened=%s open_to_seen=%s open_to_screen=%s seen_to_screen=%s corner_s=%.1f facing_s=%.1f toward_s=%.1f mean_abs_bearing=%s" % [
+				_seed, lane, _staged.get("feature", -1), c["opened"], c["open_to_seen_s"], c["open_to_screen_s"], c["seen_to_screen_s"],
+				c["corner_s"], c["facing_s"], c["toward_s"], c["mean_abs_bearing"]])
+		if corner.keep_frames and out_dir != "":
+			var rows := FileAccess.open(out_dir.path_join("camera_corner_%d.jsonl" % _seed), FileAccess.WRITE)
+			for row: Dictionary in corner.frames:
+				rows.store_line(JSON.stringify(row))
+			rows.close()
 	print("CAMERA_TRACE_DONE ok=true seed=%d seconds=%.1f frames=%d" % [_seed, summary["seconds"], summary["frames"]])
 
 
@@ -430,6 +449,76 @@ func _retreat() -> void:
 	await _wait(_seconds - _clock)
 
 
+## Round 43 (K5.2): group 1 drives along a building's wall past its far corner, a CPU squad parked out of sight behind
+## it (CameraCorner.lanes: the side is `--camera-lane=right|left`, else seed % 2; the lane one of the CORNER_LANES
+## nearest group 1 on that side, by seed). His crews are set down in a column at the lane's start and ordered to its
+## end; then round 41's hand, as in the ambush.
+func _corner() -> void:
+	var group := _first_group()
+	await _key(KEY_0 + group as Key)
+	var names: Array = controls.selection.units.duplicate()
+	var from: Variant = _centre(names)
+	if from == null:
+		_staged = {"ok": false, "why": "group 1 has no living units"}
+		return
+	var given := OS.get_cmdline_user_args().has("--camera-lane=" + lane)
+	var side: String = lane if given and lane in ["right", "left"] else ["right", "left"][posmod(_seed, 2)]
+	lane = side
+	var cover := CoverMap.of(controls)
+	var all := CameraCorner.lanes(cover)
+	print("CAMERA_CORNER_LANES walls=%d lanes=%d right=%d rejects=%s" % [CameraCorner.walls(cover).size(), all.size(),
+			all.filter(func(l: Dictionary) -> bool: return l["side"] == "right").size(), JSON.stringify(CameraCorner.rejects)])
+	var near := all.filter(func(l: Dictionary) -> bool: return l["side"] == side)
+	var here := Vector2((from as Vector3).x, (from as Vector3).z)
+	near.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return (a["start"] as Vector2).distance_to(here) < (b["start"] as Vector2).distance_to(here))
+	if near.is_empty():
+		_staged = {"ok": false, "why": "no %s corner on this arena" % side}
+		return
+	var pick: Dictionary = near[posmod(_seed / 2, mini(CORNER_LANES, near.size()))]
+	var along: Vector2 = pick["along"]
+	var start: Vector2 = pick["start"]
+	var end: Vector2 = pick["end"]
+	var ahead := Vector3(along.x, 0.0, along.y)
+	for i in names.size():
+		var tank := controls.game_match.tanks.get_node_or_null(NodePath(String(names[i]))) as Tank
+		if tank == null or not tank.is_alive():
+			continue
+		var at := CameraPlaytest.clear_spot(Vector3(start.x, 0.0, start.y) - ahead * CORNER_COLUMN_M * float(i), Vector3(end.x, 0.0, end.y))
+		tank.place(Vector3(at.x, tank.global_position.y, at.z), RtsCamera.yaw_facing(ahead))
+	var squad := _cpu_squad()
+	if squad.is_empty():
+		_staged = {"ok": false, "why": "no CPU squad with two living units"}
+		return
+	var hide: Vector2 = pick["hide"]
+	_staged = _stage_squad(squad, Vector3(hide.x, 0.0, hide.y), ahead, Vector3(hide.x, 0.0, hide.y) - ahead * 10.0)
+	_staged["lane"] = side
+	_staged["feature"] = pick["feature"]
+	_staged["start"] = [snappedf(start.x, 0.1), snappedf(start.y, 0.1)]
+	_staged["end"] = [snappedf(end.x, 0.1), snappedf(end.y, 0.1)]
+	_staged["hide"] = [snappedf(hide.x, 0.1), snappedf(hide.y, 0.1)]
+	_staged["lanes"] = near.size()
+	corner = CameraCorner.new()
+	corner.name = "CameraCorner"
+	corner.rig = rig
+	corner.look = look
+	corner.feed = look.feed if look != null else null
+	corner.cover = cover
+	corner.lane = pick
+	corner.hidden = _staged.get("units", [])
+	corner.keep_frames = OS.get_cmdline_user_args().has("--camera-trace-frames")
+	rig.add_child(corner)
+	rig.focus = Vector3(start.x, 0.0, start.y)
+	rig.yaw = RtsCamera.yaw_facing(ahead)
+	rig.snap()  # the camera jumps to the staged column, looking down the drive (a jump has nothing to ease from)
+	controls.order_selection("move", {"to": _pair(Vector3(end.x, 0.0, end.y))})
+	_staged["at_s"] = snappedf(_clock, 0.01)
+	while _clock < _seconds and not _ended:
+		if not await _attack():
+			await _wait(0.5)
+		await _wait(_rng.randf_range(1.0, 3.0))
+
+
 func _under_fire() -> bool:
 	if look == null or look.feed == null:
 		return false
@@ -442,8 +531,15 @@ func _under_fire() -> bool:
 ## Up to AMBUSH_UNITS of one CPU squad set down `metres` from `from` along `direction` (in a line across it, each on
 ## clear ground), facing `from`, out of their element and told to hold (they fire at what comes in range).
 func _stage_enemy(from: Vector3, direction: Vector3, metres: float) -> Dictionary:
+	var squad := _cpu_squad()
+	if squad.is_empty():
+		return {"ok": false, "why": "no CPU squad with two living units"}
+	return _stage_squad(squad, from + direction * metres, direction.cross(Vector3.UP).normalized(), from)
+
+
+## Up to AMBUSH_UNITS living tanks of the first CPU squad with two or more alive.
+func _cpu_squad() -> Array:
 	var enemy_team := Match.Team.RUST if controls.team == Match.Team.GREEN else Match.Team.GREEN
-	var squad: Array = []
 	for candidate in controls.game_match.team_squads(enemy_team):
 		var alive: Array = []
 		for unit_name: String in candidate.roster:
@@ -451,17 +547,21 @@ func _stage_enemy(from: Vector3, direction: Vector3, metres: float) -> Dictionar
 			if tank != null and tank.is_alive():
 				alive.append(tank)
 		if alive.size() >= 2:
-			squad = alive.slice(0, AMBUSH_UNITS)
-			break
-	if squad.is_empty():
-		return {"ok": false, "why": "no CPU squad with two living units"}
-	var across := direction.cross(Vector3.UP).normalized()
+			return alive.slice(0, AMBUSH_UNITS)
+	return []
+
+
+## `squad` (living CPU tanks) set down in a line across `across` centred on `centre`, each on clear ground, facing
+## `face`, out of their element and told to hold.
+func _stage_squad(squad: Array, centre: Vector3, across: Vector3, face: Vector3) -> Dictionary:
+	var enemy_team := Match.Team.RUST if controls.team == Match.Team.GREEN else Match.Team.GREEN
+	var from := face
 	var names: Array = []
 	var spots: Array = []
 	for i in squad.size():
 		var tank: Tank = squad[i]
 		var offset := (float(i) - float(squad.size() - 1) * 0.5) * AMBUSH_SPACING_M
-		var at := CameraPlaytest.clear_spot(ElementPlan.clamp_to_arena(from + direction * metres + across * offset), from)
+		var at := CameraPlaytest.clear_spot(ElementPlan.clamp_to_arena(centre + across * offset), from)
 		var owner: Element = controls.elements.of(String(tank.name)) if controls.elements != null else null
 		if owner != null:
 			owner.remove(String(tank.name))

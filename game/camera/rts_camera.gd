@@ -268,6 +268,19 @@ const DANGER_HOLD_S := 1.5
 ## second shooter at a new bearing while the view held on the first, or a sum that moved less than the deadband.
 const DANGER_VIEW_DEG := 25.0
 var _danger_settled_at := -1e9
+## Round 43 (camera K5.3): rounding a building's corner, the view swings to the side the wall was hiding. The lead, after
+## round 42: "my vehicles were driving north, and a building was to the east of it, when they got past the building there
+## were enemies hiding to the east. The camera was still just angled toward the building, and ideally the camera would
+## have recognized the blind spot and rotated clockwise such that it ended up pointing east as well." A fourth pull in
+## `danger_look`'s sum (one yaw writer): (d) toward the blind spot behind the far end of the wall his squad drives along,
+## CORNER_W x the ramp (CameraCorner.pull: in from PULL_IN_M short of the corner, out by PULL_FADE_M past it). It reads
+## the cover map and his units only, never an enemy (C43.6: no fog cheat); a gun firing at him drops it (the danger turn
+## outranks it); manual yaw, the aim hold, the deadband, the hold and the glide's cap are the danger camera's. It rides
+## the danger camera: with `--camera-danger=off` there is no corner pull either. `--camera-corner=on` (OFF until Bar K5).
+var corner_on := false
+## (d) Strong enough to outweigh a full-speed heading and the war together (0.6 + 1.0): at the corner the view turns
+## most of the way to the blind spot (a north drive with the war north and the spot east looks ~60 deg east).
+const CORNER_W := 3.0
 
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
@@ -396,6 +409,7 @@ func _ready() -> void:
 	yaw_deg_per_s = float(flags.text("camera-glide-yaw", str(GLIDE_YAW_DEG_PER_S)))
 	focus_omega = float(flags.text("camera-glide-omega", str(GLIDE_FOCUS_OMEGA)))
 	danger_on = flags.text("camera-danger", "on") != "off"  # K4.3: ON (Bar K4 v2 passed, 9737-9772); =off = round 41
+	corner_on = flags.text("camera-corner", "off") == "on"  # K5.3: OFF until Bar K5 passes
 	danger_lean_m = float(flags.text("camera-danger-lean", str(DANGER_LEAN_M)))
 	solid_in_omega = float(flags.text("camera-solid-in", str(SOLID_IN_OMEGA)))
 	if glide:
@@ -1311,9 +1325,12 @@ func _update_yaw_follow(delta: float) -> void:
 	var writer := "yaw_follow"
 	if danger_on and danger.is_valid():
 		var state: Dictionary = danger.call()
+		if corner_on:
+			state["corner"] = CameraCorner.pull(CoverMap.of(self) if is_inside_tree() else null, state.get("from"),
+					state.get("own", []), state.get("heading"))
 		danger_last = RtsCamera.danger_look(state)
 		wanted = danger_last.get("look")
-		writer = "danger"
+		writer = "corner" if RtsCamera.corner_leads(danger_last) else "danger"
 		if RtsCamera.gun_off_view(yaw, state):
 			deadband = YAW_SETTLE_DEG
 		else:
@@ -1420,6 +1437,18 @@ static func inside_wall(point: Vector3, margin: float) -> Vector3:
 	return Vector3(inside.x, point.y, inside.y)
 
 
+## K5.3: whether the corner pull is the biggest of the look's pulls this frame (the trace and the recording say "corner").
+static func corner_leads(last: Dictionary) -> bool:
+	var pulls: Dictionary = last.get("pulls", {})
+	var corner: Vector3 = pulls.get("corner", Vector3.ZERO)
+	if corner.length() < 0.01:
+		return false
+	for key: String in ["heading", "enemies", "war"]:
+		if (pulls.get(key, Vector3.ZERO) as Vector3).length() >= corner.length():
+			return false
+	return true
+
+
 ## Round 42 (K4.2): the direction the view should look, from a DangerFeed reading: {"look": a ground unit Vector3, or
 ## null when there is nothing to look at or the pulls cancel; "pulls": {heading, enemies, war} (each a ground Vector3,
 ## the weighted pull); "strength": the sum's length over its weights}. Pure, for tests.
@@ -1456,12 +1485,28 @@ static func danger_look(state: Dictionary) -> Dictionary:
 	if to_war.length() > DANGER_WAR_NEAR_M:
 		war = to_war.normalized() * DANGER_WAR_W
 		weights += DANGER_WAR_W
-	var total := heading + enemies + war
-	out["pulls"] = {"heading": heading, "enemies": enemies, "war": war}
+	# (d) Round 43 (K5.3): the blind spot behind the wall his squad drives along (CameraCorner.pull: walls and his units
+	# only). The danger turn outranks it: a gun firing at him within DANGER_RECENT_S drops it.
+	var corner := Vector3.ZERO
+	var blind: Dictionary = state.get("corner", {})
+	if blind.get("look") is Vector3 and float(blind.get("w", 0.0)) > 0.0 and not RtsCamera.under_fire(state):
+		var w := CORNER_W * float(blind["w"])
+		corner = (blind["look"] as Vector3) * w
+		weights += w
+	var total := heading + enemies + war + corner
+	out["pulls"] = {"heading": heading, "enemies": enemies, "war": war, "corner": corner}
 	out["strength"] = total.length() / weights if weights > 0.0 else 0.0
 	if weights > 0.0 and float(out["strength"]) >= DANGER_CANCEL:
 		out["look"] = total.normalized()
 	return out
+
+
+## Whether any known enemy fired at the commanded units within DANGER_RECENT_S (a DangerFeed.read()). Pure.
+static func under_fire(state: Dictionary) -> bool:
+	for enemy: Dictionary in state.get("enemies", []):
+		if float(enemy.get("fired_s", DangerFeed.NEVER)) <= DANGER_RECENT_S:
+			return true
+	return false
 
 
 static func _flat(v: Vector3) -> Vector3:
