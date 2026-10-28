@@ -105,7 +105,8 @@ moved (05fa7bce3; laptop 5/5). **71d1bb0c5 (= 05fa7bce3's code) GREEN on builder
 ai_usec_per_tick 7413 at 60 brains, cpus 0-3 idle 99 %, builder0 i5-1345U); sim-baseline 13 maps unmoved (crossing
 0586c5bbbcc51fa3, locks b16a0b93c56a35f2, gorge 1aed9c1d6aeb382e); builder log ~/tank_squad/remote-logs/
 godot-engage-check-20261028-031018-3458119.log. The four TIMING NOT JUDGED lines are control's reported-only timings (make
-control-timing judges), not this branch's. That is the merge candidate. R43.36 (ruled ahead): if that check is green on every other line and only perf-judge is NOT JUDGED from load, a
+control-timing judges), not this branch's. **MERGED: main aa9753028** (71d1bb0c5 alone; the orchestrator's batch check of main runs on builder0).
+The stream is DONE for round 43; no new builder work this round. R43.36 (ruled ahead): if that check is green on every other line and only perf-judge is NOT JUDGED from load, a
 perf-judge alone on the same commit in a quiet builder0 window (`make remote-quiet`, the perf-judge target) satisfies the gate,
 no full rerun; both lines reported (the wrapper's, and perf-judge's PASS with ratio and us/tick, machine named). **A1 DONE** (the turnaround reproduced bit-exact on native's replay,
 its cause shown by removal: Traffic's street hold at tick 478 dealt his lead War Rig a spot behind a corridor mouth 76 m away,
@@ -327,7 +328,8 @@ fix) gives the head-on stage something to measure.
 all FAILED their deciding lines; every guard passed in every bar), A5 (his replay by removal in each bar: AWAY 82 m -> best 17 m
 under holdfar / 38 m under holdway; the GDScript-v-native caveat is native's, now a shim), A6 (`holdway`, `holdroute`, OFF),
 **A7 (the across-water rule, ON: Bar A7 PASSED every line; merge candidate 05fa7bce3's code, 1c20cc1c2 + a test-only fix)**.
-**Not done:** the stretch (E2's staged draw, the flank latch): no time after three bars.
+**Not done, for round 44's list:** the stretch (E2's staged draw, the flank latch): no time after three bars. Also round 44's
+candidate from Bar A6 v2: the side-street jam and holds (jam 352 -> 45 / 41 s, z -5.2; holds 705 -> 96 / 54 s), every guard passed.
 **Decisions:** the far rule measures the crew's straight distance to the mouth (the squad's mean way lied on his seed); the
 route-bound release walks the crew's navmesh route to its SQUAD'S destination (its current leg lied on the head-on stages);
 the side-street stage is the terminus planting that fires a verdict every seed (his corridor's 6 m containers made every other
