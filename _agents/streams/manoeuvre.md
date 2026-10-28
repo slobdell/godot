@@ -123,7 +123,7 @@ START_RUN rows (paired per cell, the judge reports wedged pooled only). Nothing 
 | group-order guards (10925-10936 x 4 maps x crew, 48 paired, `judge-group.txt`) | **G5 all-in 74.0 -> 70.0 s PASS** (line 76.5); G6 never-in 1.06 -> 0.83 PASS; G7 contacts 672,933 -> 653,422 PASS | not run (v3core is not the ship) |
 | fights (locks / terminus / sumps x 10937-10942, 18 paired, `judge-fights.txt`) | G1 give-way deaths 32 -> 34 PASS; G2 stuck deaths 140 -> 140 PASS; G3 contacts 465,061 -> 466,018 PASS; G4 kill share worst move 0.001, deaths 785 -> 774 PASS (the judge's own moving-stuck line 158 -> 219 s, reported) | |
 | G1 v9 corridor (10925-10936 x 3 maps x 5 squads x click, `judge-g1v9.txt`) | places outside 9 -> 9 PASS (<= base); **metres outside after 334 -> 337 (+1 %): the rows are NOT byte-identical** (the guard as filed FAILS); re-dealt 0 -> 0; friend contacts 1,537 -> 1,621 PASS (<= 1,696); the judge's own twitch guard crossing 5: 5.8 v 14.7 | |
-| gate: 9215b8ab9's full check (builder0, started 11:50 behind orders' and native's) | pending at this write | |
+| gate: 9215b8ab9's full check (builder0, started 11:50 behind orders' and native's) | **WITHDRAWN at 12:30 at the orchestrator's ask** (both bars it served had already failed on their lines; main's batch check 7975d1455 was waiting behind it): **the perf line is NOT JUDGED** for Bar S v3 and Bar A6 v3 | |
 
 **The read (after the numbers, not a re-read of the bar):** v3 does what he asked everywhere the round-43 bars measured it, by wide
 margins, and Bar S v2's failing line (Locks yield+blocked) passes at +0.2 se: backout and parkedpass carry it (v3core fails D2 and
@@ -250,7 +250,7 @@ barsa6v3-builder2-9215b8ab9/`; nothing amended; no re-run)
 | 4 contacts_far (24) <= +max(1.645 se, 2) | 60 -> 33; -1.1 a run (-0.6 se) | PASS |
 | 5 last_a_s (24) <= +1.645 se | 1702 -> 1509; -8.0 a run, se 3.30 (-2.4 se) | PASS |
 | 6 Bar E1's lines (10973-10996, attack-shot ON both arms) | stuck 15.0 -> 15.0, first hit 2.87 -> 2.87, deaths 14 -> 14: byte-identical | PASS (a null read, as expected) |
-| 7 perf: 9215b8ab9's check perf-judge | pending (the gate check running on builder0) | |
+| 7 perf: 9215b8ab9's check perf-judge | **NOT JUDGED**: the gate check withdrawn at 12:30 after the fail (the orchestrator's ask: main's batch check was behind it) | |
 | reported | side held_on_s 581 -> 44 (-8.1 se), side a_held 728 -> 66, side verdicts 12 -> 4; head-on last_a_s -13.5 s a run (-2.2 se), head-on contacts_mouth 251 -> 483 (+19 a run, +1.0 se), head-on stuck_s 2309 -> 1671 (-4.4 se) | |
 | **verdict as filed (the deciding line AND every guard)** | **FAIL on 2b (-2.26 se v +/- 2)** | holdway stays OFF |
 
