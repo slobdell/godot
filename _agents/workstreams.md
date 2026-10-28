@@ -171,6 +171,12 @@ never touch processes you didn't start. Never delete builder files that aren't o
   reads 9 = 9 there; what it moves is the far crews' arrival (dev n 6, not a number). Ruled: (1) head-on stage, far_arrive_s ARM < BASE by
   >= 2 se; (2) a side-street stage (the verdict aims off the squad's way, his geometry), away_s ARM < BASE by >= 2 se; both pass to ship.
   Side-street stage time-boxed ~90 min, else (1) alone with the reason written. Whether his verdict itself was mis-aimed: asked.
+- **R43.13 (~23:40) His seed's street-hold VERDICT was mis-aimed; the verdict fix is engage's A6, after Bar A.** Engage: the meeting
+  was real (Guns_3, nose east while yielding, met Hunters_4 head-on in the corridor (-30, 42)-(-20, 80)), but the whole Guns squad was
+  told to wait with its way read as EAST (the mean of its crews' momentary headings; two slow and nose-east while their orders ran
+  south-west), so the spots went behind a mouth only Guns_3 would pass. A6 (later, own bar): a verdict binds only the crews whose own
+  routes run through the street (the route walk applied to every crew), and the squad's way is its ORDERED heading. GRANT extends to
+  the verdict's way computation in `traffic.gd` for A6; manoeuvre told.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
