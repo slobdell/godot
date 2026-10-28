@@ -113,10 +113,10 @@ switches with their tests. **The shape latch is OFF by default (R43.42; `--shape
 5. **S5 Bar S5 (FAIL as filed):** deckwait v5 rescues the drill's own crew (17/18 -> 18/18) and costs rim seconds on the fresh
    seeds; deckwait stays OFF; balance's bridge re-read not reached.
 6. **Stretch:** the `_wait` timer artefact was fixed in round 42; `q3_judge.py`'s counters line under `--arm=deckwait` fixed (on
-   `wip/manoeuvre-s5` 55d6344c1: cherry-pick with the ship). **R43.34 candidate (round 44):** `wip/manoeuvre-scope-g1` 4132802e7, a
-   squad under one order to many squads (the pack's `group` key, or `halt_at`) keeps today's seats / stations / transit start / shape
-   pick / converge / kturngoal / parkaside; its tests (21/0 laptop) and the G1 v9 byte-identical proof (take 3 queued behind the ship
-   check): below, under "R43.34 candidate".
+   `wip/manoeuvre-s5` 55d6344c1: cherry-pick with the ship). **R43.34 candidate (round 44):** `wip/manoeuvre-scope-g1` e883fc4eb, a
+   squad under one order to many squads (the pack's `group` key on its task, or `halt_at`) keeps today's seats / stations / transit
+   start / shape pick / converge / kturngoal / parkaside; tests 581 / 0 and the G1 v9 probe **60 / 60 rows byte-identical** v base
+   (take 4, builder2): below, under "R43.34 candidate".
 
 **Decisions (mine, one line each):** the bound = max(18 m, 1.5 hull lengths + the hull floor along) (the wedge of War Rigs at 29 m
 is physics, the swarm's 58 m is not); the latch stores the formation only (the technique follows the table); kturngoal ends the
@@ -211,6 +211,13 @@ passed + the usual NOT JUDGED pair (perf-judge: not a judging machine; scenario_
   `halt_at` goes at the first re-lay. Fix e883fc4eb: `_copy_pack` carries `group` too. **Proof take 4** (unit `manoeuvre-r43-proof4`,
   `proof4.txt`, `rows5.jsonl`) is queued behind the ship re-check, after a quiet web-smoke of the ship tree (its first-sound bound
   went NOT JUDGED under my bisection's load: a probe beside a check on the same box was my mistake; `check_ship2/websmoke.txt`).
+- **Proof take 4 (e883fc4eb, builder2 light, 06:57-07:10 PDT, `proof4.txt`, `rows5.jsonl`): tests 581 / 0 (the four rule files, the
+  scope file, element_task and every control test); the G1 v9 probe base v scoped (all four switches ON + the latch) **60 / 60 rows
+  byte-identical** on locks / crossing / terminus x 7001-7004. THE CANDIDATE STANDS:** a squad on its own order gets the bound, the
+  latch, the converge fix, kturngoal and parkaside; a squad under one order to many squads drives exactly as today. Round 44's
+  filing starts from it (rebase onto the ship first: it is off 04ddbcabb, before native's twins and main's merge; the `group` key
+  touches `rts_controls.gd` (`_order_squads`, `_copy_pack`) and `ElementTask.KEYS`, control's files: one contract line). The s5m
+  worktree is removed; the branch `wip/manoeuvre-scope-g1` e883fc4eb is the reference.
 
 ### Bar S v2: FILED 2026-10-28 ~03:35 PDT, BEFORE any number on 10701-10748 (R43.31: the one re-file, ONE arm; the dev read below)
 
