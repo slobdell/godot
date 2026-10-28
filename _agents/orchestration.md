@@ -4003,3 +4003,7 @@ instrument that cannot lie about load — removal within one run — and let eve
    superseded check, killed `make remote T=check` processes by pattern; two were camera's builder2 check wrapper (3362 passed, 26 of 27
    targets done), and the verdict, which travelled over ssh only, was lost: an hour of builder2. Stop only by a PID you started, its cwd
    verified; `tools/remote.sh` keeps the remote output and exit line in a log on the builder (native, round 43).
+337. **Watch the laptop's disk; a side worktree costs ~1.2 GB.** (Round 43.) Seven side worktrees (manoeuvre's five, native's two pairs)
+   plus raw series rows filled the laptop's / to 411 MB free overnight: every session's tool output (Claude's temp directory lives on /)
+   failed at once. The orchestrator's sweep reads `df -h /` each tick and asks a stream to remove a side worktree the hour its series ends;
+   raw rows are judged into `references/` and then deleted.
