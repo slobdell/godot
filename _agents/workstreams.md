@@ -349,6 +349,12 @@ never touch processes you didn't start. Never delete builder files that aren't o
   `~/tank_squad/remote-logs/` ends `>> builder: make check exited 0`). Lesson 336's tool fix is in. merge_check_needed CHECK (engage's
   21dbaf662 too): engage's combined A7 check, on a tree that merges main 36eacb71f, verifies the batch. Native: every backlog item done;
   N5 `make playtest-report` (arrivals, cam scrub, replay divergence) for his next playtest.
+- **R43.29 (~06:20) K5 v2 amended before any v2 number (camera's dev 7001-7012, 130412bdf: D1 pooled 65.5 v 53.3, Locks 58.5 v 26.2,
+  Terminus inside 2 se, G1 now passes; D2 16.2 v 10.7 % and G4 ambush +2.0 fail).** Cause of D2 (per-frame traces): the view faces the
+  building in BOTH arms before the corner (K4's war pull across the building), the census opens on the lead crew, and after arrival K4's
+  look returns: D2 mostly measures K4. Ruled: (2a) the corner opens on the squad's centre; D2 counts only frames where K4's war pull is not
+  the yaw's winner, same exclusion both arms (an instrument fix); (2b) no corner look within N s of an order start (the ambush drive);
+  (2c) confirm D2 and G4 on the OTHER dev block 9501-9512 before launching; if they fail there, stop K5 unspent (ship OFF, report Locks).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
