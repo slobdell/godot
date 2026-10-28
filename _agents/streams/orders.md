@@ -214,6 +214,14 @@ _(worker keeps this current: report at the top, every number with commit, machin
   - **The Crossing far cell** (crossing his-80 s7001, the click 80 m on, just across the west bridge): v10c = the lone tank
     crosses to the click, the three squads stand one behind another along the road to the bridge on the near bank (a file, the
     bridge between its head and its body); main spread them 120 m apart with one squad across the bridge and one holding.
+  **The yard frame's markers (the orchestrator's question):** white = his click (-35, 97), drawn at the frame's centre-left; the
+  frame looks down with the north edge (z 90-117, his spawn row and the barrier) at the BOTTOM, west to the left. Posts (the
+  probe's squad order): red = squad 1, the lone tank; yellow = squad 2; green = squad 3; blue = squad 4, the detached 5-crew
+  squad. v10c: blue is under the white dot (squad 4, 27 m from the click, took it); yellow (-15, 95) and green (14, 92) hold in
+  file east of it; red at the bottom-left = the lone tank's own far-side place (-55, 117): it stood (-55, 99), 20 m PAST the
+  click (the probe's row ran through the click), and G1 v6's two-sided lay gives a squad past the click a place on the far side's
+  line, which the edge clamp and the standable step put 18 m north of where it stood, on the edge. Not a held squad, not a squad
+  the column skipped: the one squad the probe put beyond the click, moved 18 m sideways. His real click had no squad past it.
   No frame shows a scatter the numbers missed. **FROZEN TREE: this commit (docs only over e2d1b499f's code); its full check runs on
   builder2 after dev read 8, the hash is named here when green, then 10801-10848.**
 - **Decisions:** `click` goes on the one-squad row too (its `to` is the click, but one key the tools can rely on beats a
