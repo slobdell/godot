@@ -4,7 +4,27 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-28 ~14:30 PDT — **ROUND 43 IS CLOSED (box below); round 44 not yet prepared. Main code = dbf0bf637 GREEN builder0, 28 targets ALL JUDGED (3420/0, perf 1.00x); later commits are docs, comments and one test .uid. A7 shipped ON (never move for a shot across water); everything else OFF with causes.** Earlier: 2026-10-27 ~21:00 PDT — **ROUND 43 PREPARED (box below; launch = the lead starts four CLIs: engage + manoeuvre on Fable, camera + native on Opus).** Earlier: 2026-10-27 ~20:00 PDT — **ROUND 42 IS CLOSED (box below); round 43 not yet prepared. Main b12b17ac7 GREEN builder0 ALL JUDGED (3343/0); every later commit is docs only (balance's Status, the archive, the judging table). Attack-shot, the danger camera and the CPU counter-lineup shipped ON; Bar B2s v2 read FAIL 17/18, the stat change stays unshipped.** Earlier: 2026-10-27 ~03:30 PDT — ROUND 42 CLOSING; four streams closed. Earlier: 2026-10-26 evening — ROUND 42 PREPARED; round 41 closed. Main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); every later commit is docs only. Earlier: 2026-10-26 ~15:00 PDT — ROUND 41 CLOSED; round 42 not yet prepared. Earlier: **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-28 ~08:40 PDT (laptop clock) — **ROUND 43 IS CLOSED; HIS PLAYTEST AFTER IT IS IN; ROUND 44 NOT YET PREPARED.**
+
+## ▶ NEXT: prepare round 44 (read this first)
+
+**He played round-43 main twice on Locks (2026-10-28 ~08:15-08:25) and wants round 44 prepared.** His words and the recordings' read:
+`game_design.md` *His playtest after round 43*; recordings in `_agents/streams/references/round43/playtest/`. "Camera seemed ok."
+1. **LEAD ITEM, his group click is scattered AGAIN** (reported since round 37, "stacks of wedges, one squad immediately behind the other";
+   G1 v9 shipped round 41 to do it): one click west from four squads standing side by side on the north edge gave four destinations
+   100 m apart north to south (one squad sent back to the edge). Find why G1 v9's column doesn't form here (his squads started side by
+   side, not clumped?); the recording lacks his click point: record it (`match_recorder.gd` order rows) first. Owner: an orders stream
+   (`game/control/**` G1 pack, `selection_squads.gd`), Fable-worthy (lingering since round 37).
+2. **The War Rig nosing into the container at the start** (first match, Guns_2 4 s stuck at (-42, 90) before backing out): round 43's
+   OFF rules target it (kturngoal, the converge station: `--traffic-on=kturngoal`, `--converge-on-crew=on`; twins merged). Bar S v2 missed
+   by 0.40 se on Locks only (R43.42); round-44 candidates on file: the Locks convergence of one squad's own crews (two shapes, manoeuvre's
+   archived Status) and the G1 scoping candidate `wip/manoeuvre-scope-g1` e883fc4eb (60/60 byte-identical). Fresh seeds for a re-read.
+3. **`make playtest-report` output is too long to paste**: write the full report to a file, print a one-screen summary (native).
+Other round-44 candidates: the closed box below. He answered the disk question ("delete whatever you need to"): `~/balance-guard-raw` and
+closed rounds' `/tmp/claude-1000` folders deleted (laptop 85 %, 18 GB free). All round-43 sessions (orchestrator + four workers) are being
+cleared; no worktree, branch or builder run is live. Main is unpushed (he pushes).
+
+Earlier: 2026-10-28 ~14:30 PDT — **ROUND 43 IS CLOSED (box below); round 44 not yet prepared. Main code = dbf0bf637 GREEN builder0, 28 targets ALL JUDGED (3420/0, perf 1.00x); later commits are docs, comments and one test .uid. A7 shipped ON (never move for a shot across water); everything else OFF with causes.** Earlier: 2026-10-27 ~21:00 PDT — **ROUND 43 PREPARED (box below; launch = the lead starts four CLIs: engage + manoeuvre on Fable, camera + native on Opus).** Earlier: 2026-10-27 ~20:00 PDT — **ROUND 42 IS CLOSED (box below); round 43 not yet prepared. Main b12b17ac7 GREEN builder0 ALL JUDGED (3343/0); every later commit is docs only (balance's Status, the archive, the judging table). Attack-shot, the danger camera and the CPU counter-lineup shipped ON; Bar B2s v2 read FAIL 17/18, the stat change stays unshipped.** Earlier: 2026-10-27 ~03:30 PDT — ROUND 42 CLOSING; four streams closed. Earlier: 2026-10-26 evening — ROUND 42 PREPARED; round 41 closed. Main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); every later commit is docs only. Earlier: 2026-10-26 ~15:00 PDT — ROUND 41 CLOSED; round 42 not yet prepared. Earlier: **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
@@ -43,7 +63,7 @@ camera's yaw** (`cam` rows, K5.1), so his next corner moment can be scrubbed:
 replay-match`; the right-click hitch memo (his 4-squad click 6.5 ms, output-identical; R43.17); remote.sh keeps verdicts on the builder;
 the runner fails uncalled test hooks; the lock test's late-start race fixed. Lessons 334-337 in `orchestration.md`.
 
-**Waiting on him (player terms, one recommendation each):**
+**Waiting on him (player terms, one recommendation each):** *(1 DONE 2026-10-28: see NEXT above)*
 1. **Play main on Locks** (`make skirmish ARENA=locks SEED=56416`, Gangs v Syndicate): attack-move a War Rig squad to the far quay; it should
    keep going, and crews with a target across the canal should keep firing without hopping along the bank (`SKIRMISH_FLAGS="--engage-water=off"`
    is the old behaviour). Then run `make playtest-report RECORDING="$(cat build/recordings/latest.txt)"` and send it.
