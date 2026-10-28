@@ -130,6 +130,12 @@ never touch processes you didn't start. Never delete builder files that aren't o
   `_plan_movement` / `chosen_formation` / `inset_anchor` (engage keeps the engagement functions). (b) the swarm stays (doctrine flavour;
   `doctrines/*.json` unchanged); S2's seat bound (max(18 m, 1.5 hull lengths + hull floor), `--seat-bound`) is the size fix. Bar S judges
   the latch and the bound as separately removable arms.
+- **R43.7 (~22:05) Manoeuvre's grant widened to the transit stations.** With the latch (c2e03f40e, `--shape-latch`) and the seat bound
+  (cf70440ac, `--seat-bound`) ON, his start re-read (laptop, GDScript): anchor exactly on his click, no shape flip in 20 s, final seats
+  within 32 m; Guns_2 9.3 s, Guns_4 5.4 s, War Rig 3 13 s, Tanker 14 s; the lead War Rig not (oscillates "blocked terrain" 4 s at a wreck
+  prop (-96, 62): the mover, manoeuvre's). The transit stations are still laid from the unbounded shape (War Rig 3's goal at 2 s 70 m
+  east, then a 150 deg k-turn in the container alley). GRANT: the bounded centred shape at `ElementPlan.route_seats` / `stations_along` and
+  `Element._rank_file`, plus `element.gd`'s `shape_latch` lines; under the same `--seat-bound` switch (one arm; `=off` = today, tested).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
