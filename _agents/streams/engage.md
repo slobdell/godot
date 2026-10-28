@@ -414,9 +414,14 @@ unchanged since de626d7e1). **A pass ships ON** (1-2 decided, 3-11 within).
 | 8 the named-attack pair: deaths | 60 | 57 | -0.12 | 0.31 | -0.40 | PASS (<= BASE + 2 se); hop_s 656 -> 12, off_order_m 781 -> 405 (z -1.9), damage_total 32576 -> 30929 (se 109), kills 54 -> 53, first_hit 151.9 -> 107.8 |
 | reported | water_s 1353 -> 467, water_far_s 161 -> 50, fire_s 1171 -> 401, hop_rev_s 267 -> 4, hop_far_s 75 -> 2, damage_water 12415 -> 2875 (the across-water attribution, above), hits_water 400 -> 58, first_hit_water_s 138.8 -> 171.7 (se 3.2), crews_far 68 -> 44 | | | | | |
 
-**Lines 1-8 PASS.** Lines 9 (Bar E1's lines on 10673-10696, running on builder2's light lane), 10 (perf-judge on the ON check)
-and 11 (the suite ON, `make remote T="check ENGAGE_WATER=on"` on builder0) follow; the tip's own check (21dbaf662's code) is
-still on builder0 ahead of them.
+**Lines 1-8 PASS. Line 9 PASS** (builder2 light lane, native off in that folder, `engage-probe` ENGAGE_ARM=on on 10673-10696,
+ewoff = `--brains-off=native_decide` v ewon = + `--engage-water=on`, n 24 paired, 04:15-04:30 PDT: BYTE-IDENTICAL on every
+seed: stuck 128.5 = 128.5, first hit 7.02 = 7.02, deaths 25 = 25, hits 3094 = 3094; the E1 stage has no water between a crew
+and its target, so the rule never fires there: the null read expected). Lines 10 (perf-judge on the ON check) and 11 (the
+suite ON, `make remote T="check ENGAGE_WATER=on"` on builder0) follow the tip's own check (21dbaf662's code), still on builder0.
+**R43.23:** the flip ships WITH native's twin of the in_reach skip (native is on it, off de626d7e1); the merge candidate = the
+flip (ENGAGE_WATER default ON, `--engage-water=off`) + the twin, ONE full check on the combined tree (native path, its
+perf-judge inside it).
 
 ### A1: the turnaround on his seed (laptop, native library ON, `make engage-replay-trace ENGAGE_TAG=on`, 2d43b1e88, his recording, 50 s, n 1, deterministic)
 
