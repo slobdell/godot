@@ -5809,7 +5809,9 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	_departure_hulls = Manoeuvre._others(self) if departure_look else []
 	if circle_plan_on() and _away_here() and absf(tank.speed()) < KTURN_CIRCLE_SPEED and _inside_circle(here, forward, waypoint):
 		# Round 31 (planner CP-P1, R31.2): the lattice planner's seam, where the circle plan would be made (`--nav-off=planner`).
-		if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
+		# Round 44 (M2): not for a departure look: the seam holds the hull while it searches and refuses the route's vertex as
+		# GOAL_BLOCKED (it sits on the navmesh edge by the box); the staged corpus lost 2.6-3.6 s a pose to that hold.
+		if PlannerSeam.on() and not departure_look and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
 		var lock := -1.0 if error >= 0.0 else 1.0
 		var circle_map := tank.get_world_3d().navigation_map
 		if _plan_circle(cmd, circle_map, _kturn_frame(tank), here, forward, lock, waypoint):
@@ -5854,7 +5856,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	if ManoeuvreCensus.trace_unit == String(tank.name):
 		print("MANOEUVRE_TRACE planner hit f %d: arc hit at %.1f m (cap %.1f), seam %s" % [Engine.get_physics_frames(), _kturn_hit_m, cap,
 				"on" if PlannerSeam.on() else "off"])
-	if PlannerSeam.on() and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true
+	if PlannerSeam.on() and not departure_look and PlannerSeam.take(self, cmd, "kturn", waypoint, delta): return true  # round 44 (M2): as above
 	if lazy:
 		for i in KTURN_OUTLINE.size():
 			_lazy_start_at(i)

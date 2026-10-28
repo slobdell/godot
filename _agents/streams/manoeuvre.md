@@ -177,6 +177,15 @@ arrival order along the approach; a squadmate's give-way deferred until the seat
   hull's length** (the station crawl is what pins a boxed rig; with a far steering point the drive turns away itself). Gate 20 deg
   kept. Re-reading (corpus4, bo10, dev10).
 
+- **The seam's hold found and removed (corpus5, bo11, dev11):** after the look the planner handed the departure request to the lattice
+  seam, which held the hull while it searched and refused the vertex as GOAL_BLOCKED (it sits on the navmesh edge by the box); the
+  base never asks the seam at rest. A departure look no longer goes to the seam. **Corpus (GDScript drive, 14 dev poses): the cost
+  ceiling PASSES (worst +1.7 s on pose 0, median -0.07 s); the alone poses now GAIN 1.2 / 1.3 / 2.1 s (poses 2-4) or lose 0.7 (pose
+  1); the base-stuck poses (6, the 6 s criterion): sooner in 2 (-0.9, -3.9 s), equal in 4: the crawl-shape poses 6 / 10 / 12 never
+  clear 8 m in 12 s in EITHER arm (the staged squad pins the rig: pacing, not the box), so they cannot decide anything.** His start
+  unchanged (bo11: look at tick 1, past the box ~91). Locks dev (dev11): backout alone D1 +1.0 se, yield+blocked -0.1 se, k-turn
+  +1.6 se, the other crews' reversing +1.0 se, seated +1.0 se: neutral; the full set D1 +6.2 se, every guard PASS.
+
 ### M5 (acceptance read, in progress) and the twin's parity (2026-10-28 ~11:00 PDT)
 
 - **08-15, his container start, the full v3 set ON (fdb1c6fc4, builder0, native ON, the GDScript drive for backout, `~/overnight-manoeuvre/

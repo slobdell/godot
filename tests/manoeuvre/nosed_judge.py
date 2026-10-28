@@ -1,41 +1,56 @@
 #!/usr/bin/env python3
-"""Bar B1's staged corpus judge: NOSED_ROW lines from tests/test_manoeuvre_nosed_corpus.gd (NOSED_CORPUS=on), off v on per pose.
-Deciding: ON clears CLEAR_M sooner than OFF in at least WIN_OF of the poses (a pose that never clears in the window counts as the
-window's end), and the median of (ON - OFF) is MEDIAN_S seconds or better. Reported: the first reversing tick and the metres crept
-forward before it, per pose.    python3 tests/manoeuvre/nosed_judge.py <test log> [--win=10] [--median=-1.0]"""
+"""Bar B1's staged corpus judge (round 44, R44's conditions): NOSED_ROW lines from tests/test_manoeuvre_nosed_corpus.gd
+(NOSED_CORPUS=on, NOSED_SEED=<n> for the bar's fresh jittered poses), off v on per pose, time to clear CLEAR_M.
+A pose is BASE-STUCK when the base has not cleared within STUCK_TICKS of the order (180 = 6 s: a rig turning away at its own lock clears 8 m in 2-5 s; the stuck ones take 6-12 s or never); a pose that never clears in the
+window counts as the window's end. Deciding (on the base-stuck poses, floor STUCK_FLOOR): ON clears sooner in >= WIN_SHARE of them
+and the median gain is MEDIAN_S or better. The cost ceiling (on the other poses): every pose ON <= OFF + CEIL_S, and the median
+<= CEIL_MEDIAN_S. Reported per pose: the first reversing tick, the metres crept before it, the pose's nose room and route angle.
+    python3 tests/manoeuvre/nosed_judge.py <test log(s)...>"""
 import json, sys, statistics
 
 WATCH_TICKS = 12 * 30
+STUCK_TICKS = 180
+STUCK_FLOOR = 8
+WIN_SHARE = 0.8
+MEDIAN_S = -1.0
+CEIL_S = 3.0
+CEIL_MEDIAN_S = 1.0
 
 
 def main():
-    path = [a for a in sys.argv[1:] if not a.startswith("--")][0]
-    opt = dict(a[2:].split("=", 1) for a in sys.argv[1:] if a.startswith("--") and "=" in a)
-    win_of, median_line = int(opt.get("win", 10)), float(opt.get("median", -1.0))
+    paths = [a for a in sys.argv[1:] if not a.startswith("--")]
     rows = {}
-    for line in open(path):
-        if line.startswith("NOSED_ROW "):
-            r = json.loads(line[len("NOSED_ROW "):])
-            rows.setdefault(int(r["pose"]), {})[r["arm"]] = r
-    diffs, wins, n = [], 0, 0
-    for pose in sorted(rows):
-        pair = rows[pose]
+    for path in paths:
+        for line in open(path):
+            if line.startswith("NOSED_ROW "):
+                r = json.loads(line[len("NOSED_ROW "):])
+                key = (str(r.get("seed", "")), int(r["pose"]))
+                rows.setdefault(key, {})[r["arm"]] = r
+    stuck, open_ = [], []
+    for key in sorted(rows):
+        pair = rows[key]
         if "off" not in pair or "on" not in pair:
             continue
-        n += 1
         b = pair["off"]["clear_tick"] if pair["off"]["clear_tick"] > 0 else WATCH_TICKS
         a = pair["on"]["clear_tick"] if pair["on"]["clear_tick"] > 0 else WATCH_TICKS
         d = (a - b) / 30.0
-        diffs.append(d)
-        wins += 1 if a < b else 0
-        print("  pose %2d %-8s %-5s %+4.0f deg (route %+4.0f, nose %4.1f m): clear t%d -> t%d (%+.1f s); first reverse t%d -> t%d; crept %.2f -> %.2f m; looks %d swings %d kturns %d; native_drive %s" % (
-            pose, pair["off"]["arena"], pair["off"]["shape"], pair["off"]["angle"], pair["off"].get("depart_deg", 0.0), pair["off"].get("nose_room_m", -1.0),
-            b, a, d, pair["off"]["first_reverse"], pair["on"]["first_reverse"],
-            pair["off"]["crept_m"], pair["on"]["crept_m"], pair["on"]["looks"], pair["on"].get("swings", 0), pair["on"].get("kturns", 0), pair["on"]["native_drive"]))
-    med = statistics.median(diffs) if diffs else 0.0
-    ok = n >= 12 and wins >= win_of and med <= median_line
-    print("Bar B1 corpus: %d poses, ON sooner in %d (line >= %d), median %+.2f s (line <= %+.1f): %s" % (n, wins, win_of, med, median_line, "PASS" if ok else "FAIL"))
-    print("VERDICT: %s" % ("PASS" if ok else ("INCONCLUSIVE (under 12 poses)" if n < 12 else "FAIL")))
+        kind = "STUCK" if b > STUCK_TICKS else "open"
+        (stuck if kind == "STUCK" else open_).append(d)
+        print("  %s pose %2d %-8s %-5s %+4.0f deg (route %+4.0f, nose %4.1f m) %s: clear t%d -> t%d (%+.1f s); first reverse t%d -> t%d; crept %.2f -> %.2f m; looks %d kturns %d; native_drive %s" % (
+            key[0] or "dev", key[1], pair["off"]["arena"], pair["off"]["shape"], pair["off"]["angle"], pair["off"].get("depart_deg", 0.0),
+            pair["off"].get("nose_room_m", -1.0), kind, b, a, d, pair["off"]["first_reverse"], pair["on"]["first_reverse"],
+            pair["off"]["crept_m"], pair["on"]["crept_m"], pair["on"]["looks"], pair["on"].get("kturns", 0), pair["on"]["native_drive"]))
+    wins = sum(1 for d in stuck if d < 0)
+    med = statistics.median(stuck) if stuck else 0.0
+    d_ok = len(stuck) >= STUCK_FLOOR and wins >= WIN_SHARE * len(stuck) and med <= MEDIAN_S
+    print("D (base-stuck poses, floor %d): %d poses, ON sooner in %d (line >= %.0f %%), median %+.2f s (line <= %+.1f): %s" % (
+        STUCK_FLOOR, len(stuck), wins, WIN_SHARE * 100, med, MEDIAN_S, "PASS" if d_ok else ("INCONCLUSIVE" if len(stuck) < STUCK_FLOOR else "FAIL")))
+    worst = max(open_) if open_ else 0.0
+    omed = statistics.median(open_) if open_ else 0.0
+    c_ok = worst <= CEIL_S and omed <= CEIL_MEDIAN_S
+    print("C (the other poses' cost ceiling): %d poses, worst %+.1f s (line <= +%.1f), median %+.2f s (line <= +%.1f): %s" % (
+        len(open_), worst, CEIL_S, omed, CEIL_MEDIAN_S, "PASS" if c_ok else "FAIL"))
+    print("VERDICT: %s" % ("PASS" if d_ok and c_ok else ("INCONCLUSIVE (under the floor)" if len(stuck) < STUCK_FLOOR else "FAIL")))
 
 
 if __name__ == "__main__":
