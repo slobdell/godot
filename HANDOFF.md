@@ -81,7 +81,13 @@ godot-native-score and builder folders `godot-native-score*` (older, not round 4
 Rulings R42.1-R42.23 in `workstreams.md`. **Clips for him:** `~/camera-clips-round42/on_c27f8011c/` (retreat_7005.mp4 strong;
 ambush_rear_7007.mp4 feel only), stills under `references/round42/camera/`; his recording under `references/round42/engage/`.
 
-**Round 43 is not prepared.** Candidates from this round's evidence: the SUPPRESS stand on a staged draw (E2's proposal in engage's
+**Round 43 is not prepared.** His ask after playing round-42 main (2026-10-27 ~20:00, `game_design.md` *His playtest after round 42*):
+**investigate and improve** the lead War Rig that, under his attack-move to the far quay on Locks (seed 56416), turned at the west bank and
+drove 100 m back to the north-east edge for 20 s, firing at nothing (recording `references/round42/playtest/`, read with
+`tools/recording_arrivals.py`; the replay probe `tests/replay_orders.gd` re-runs his orders headless but diverges from his match inside
+2 s, so the turnaround is not yet reproduced: regression neither shown nor ruled out). Also from that playtest: the start-zone jam
+(a War Rig 20 s yielding to his Hunters; in the round-41 recording too) and the wedge seating a War Rig 29 m from his click. Other
+candidates from this round's evidence: the SUPPRESS stand on a staged draw (E2's proposal in engage's
 archived Status); the deck-mouth wait that fires only on the carried-past case (R42.15); Bar B2s v2's two open items; the Syndicate's
 counter (its lineup beats the roll by 15, short of the 60 % line); the two control-timing OVER BUDGET lines noted by camera (a right
 click on 30 units 2699.8 v 104 workloads; control per frame 28.25 v 26.0, on a loaded box: re-read quiet before anyone acts on them).

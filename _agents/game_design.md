@@ -4505,3 +4505,27 @@ weigh more; memory decays over seconds); (c) a "where the war is" pull, toward t
 His retreat-to-the-edge case falls out: (b)+(c) outweigh a backward heading, so the camera looks back at the fight he is leaving.
 Guards: when the sum nearly cancels (threats on opposite sides) keep the current yaw; a deadband and minimum hold time stop it swinging;
 no turn while he aims; his manual yaw wins for the hand-back time; the turn speed is the glide's.
+
+## His playtest after round 42 (2026-10-27 ~20:00, verbatim)
+
+Recording: `references/round42/playtest/2026-10-27T20-00-48-locks.jsonl.gz` (Locks, seed 56416, Gangs v Syndicate, round-42 main
+b12b17ac7 + docs, 49 s; the laptop at 26-31 fps). He was looking at the camera and stopped early.
+
+**"I was paying attention to the camera, but I didn't get far before seeing that my units all seemed incapable of moving to the west
+side of the map. ... My first squad of tanks was never even able to settle for a simple target destination. I don't know if this is a
+regression"** and, on the read below: **"I want you to track that as something to investigate in the next round. I'm not sure if it's a
+bug per se, but it warrants investigation and improvement."**
+
+**What the recording shows (orchestrator, `tools/recording_arrivals.py`):** his first squad (Guns: three War Rigs, a Gun Truck, a Tanker)
+ordered to (-69, 51) at tick 0: three of five arrived in 6-9 s (the wedge seats the lead War Rig 29 m west of the click: formation spacing
+for 14 m hulls, the same spread as his round-41 recording); War Rig 3 spent 20 s yielding to his Hunters in the deploy zone (the same
+start-zone jam is in the round-41 recording); the Tanker routed east round the warehouses and never arrived in 14 s. Units did reach the
+west: Hunters to x -101 on the near bank, a Spears2 Rat Rod over the west swing bridge at 44 s. **The anomaly:** under his attack-move
+to the far quay (-100, -15), the lead War Rig reached the west bank at (-105, 46), 46 m short of the swing bridge, then turned and drove
+100 m back to the north-east edge over 20 s (tick 660-1320), fired nothing, met nothing (every enemy was south of the canal), ended
+`blocked terrain` at (-9, 95); his attack order on it at tick 806 showed on the crew only at tick 1380. The planner seam refused every
+ask that match (18 asks, all k-turns: START_BLOCKED 8, GOAL_BLOCKED 1, NO_PATH 1, 0 plans). A headless replay of his orders
+(`tests/replay_orders.gd`, same seed/army/cap) diverges from his match inside 2 s (his Guns jam at the start, the replay's drive off) and
+did not reproduce the turnaround, with attack-shot on or off: **not shown to be a regression, not ruled out.** Round 43: find what sends
+that crew north under attack-move on Locks (engage or manoeuvre; instrument the crew's brain and mover on that seed), and why an
+interactive match and a headless replay of the same orders diverge at once.
