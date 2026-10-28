@@ -84,6 +84,11 @@ def main(argv):
     jb = sum(float(base[k]["jam_s"]) for k in keys)
     ja = sum(float(arm[k]["jam_s"]) for k in keys)
     lines.append("reported jam-seconds %.0f -> %.0f (%+.1f %%)" % (jb, ja, 100.0 * (ja - jb) / jb if jb else 0.0))
+    # Round 43 (the round-42 slip): under --arm=deckwait the counters are deckwait_* (JAM_RUN), not Q2's waits / wait_queued.
+    if on_arm == "deckwait":
+        for r in arm.values():
+            if "deckwait_waits" in r:
+                r["waits"], r["wait_queued"], r["wait_timeouts"] = r["deckwait_waits"], r["deckwait_queued"], r["deckwait_timeouts"]
     w = [arm[k] for k in keys if "waits" in arm[k]]
     if w:
         lines.append("reported %s counters a run (mean): waits %.0f, queued crew-ticks %.0f, time-outs %.0f, longest %.1f s" % (
