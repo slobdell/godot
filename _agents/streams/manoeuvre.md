@@ -87,8 +87,12 @@ e1a1c2ad7 (DEFAULT_OFF keeps engage's holdfar / holdway / holdroute and my kturn
 (06:22 PDT, `~/overnight-manoeuvre/r43/check_ship/check.log`: 3412 / 5, 25 targets passed, test FAILED, perf-judge and scenario_perf NOT
 JUDGED): all five in `tests/test_formation_shape_latch.gd`, a test-only cause (the three formation tests' `before_each` / `after_each`
 hooks are never run: `tests/test_case.gd` has `teardown()` only; with the latch OFF by default since R43.42 the latch test saw today's
-pick). Fix 63f92cbe4 (tests/ only; sim-baseline unmoved on every map in the red check); the ship candidate is now 63f92cbe4 and its
-check on builder2 (unit `manoeuvre-r43-checkship2`, `check_ship2/check.log`) names the green hash.** Before it: **fed356a8b** green (builder2, 3367 / 0) and 04ddbcabb green (3370 / 0). **Nothing ships ON this round:** Bar S (four arms) and Bar S v2 (its one re-file) and Bar S5 all FAIL as filed;
+pick). Fix 63f92cbe4 (tests/ only; sim-baseline unmoved on every map in the red check); **THIS COMMIT IS GREEN: b482f0d46** (= 63f92cbe4's
+code + docs; builder2, 06:24-07:03 PDT, `check_ship2/check.log`: `make check exited 0`, 3417 passed / 0 failed, 24 targets passed,
+4 NOT JUDGED: perf-judge (builder2 is not a judging machine) and scenario_perf (loaded, ref 4.82x) as on every builder2 gate this
+round, plus web-smoke's first-sound bound and remote-guard-test's quiet window, both NOT JUDGED at load 45 on 16 cores because my
+candidate bisection ran beside the check (my mistake): each re-run ALONE on the quiet box after it, `check_ship2/websmoke.txt` and
+`guard.txt`; sim-baseline unmoved on every map).** Before it: **fed356a8b** green (builder2, 3367 / 0) and 04ddbcabb green (3370 / 0). **Nothing ships ON this round:** Bar S (four arms) and Bar S v2 (its one re-file) and Bar S5 all FAIL as filed;
 the seat bound, the converge fix, kturngoal, parkaside and deckwait v5 are on the branch (or its side branches) OFF behind their
 switches with their tests. **The shape latch is OFF by default (R43.42; `--shape-latch=on` /
 `SHAPE_LATCH=on` is the arm): judged only inside Bar S's `seats` arm, R43.6's "ON with =off" is the orchestrator's call for round 44.**
