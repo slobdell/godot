@@ -251,6 +251,10 @@ static func build(situation: Dictionary, state: Dictionary, table: DoctrineTable
 	# than the one that was asked for or a constant. X2's corridor deformation is reported separately (`file`), so
 	# this stays the element's dispersion rather than whatever the narrowest gap squeezed it to.
 	plan["pitch"] = TacticsFormation.pitch(members, table.spacing(String(situation["terrain"])))
+	# Round 43 (R43.34, a round-44 candidate): a squad moving under one G1 group click (the controls' PACK sets `halt_at`) keeps
+	# today's seats, stations and shape pick: the seat bound, the bounded stations, the latch and parkaside are for his single-
+	# squad orders (C43.5: the G1 v9 group column unchanged).
+	plan["grouped"] = grouped(task)
 
 	# Round 28 (B1): how long the target of a drawn flank still going round has been running (before `pursues` reads it).
 	if carries(situation):
@@ -358,7 +362,8 @@ const SHAPE_LATCH_CONTACT_TICKS := SimClock.TICK_RATE
 ## The latch for this update ({} when none applies): keeps `plan["formation"]` / `plan["why"]` as the move started them,
 ## or re-picks once on the element's own contact. `state["shape_latch"]` is last update's (Element carries it back). Pure.
 static func latch_shape(plan: Dictionary, situation: Dictionary, state: Dictionary, task: Dictionary, asked: String) -> Dictionary:
-	if not SHAPE_LATCH or asked != "" or bool(state.get("arrived", false)) or not (ElementTask.destination(task) is Vector3):
+	if not SHAPE_LATCH or asked != "" or bool(state.get("arrived", false)) or not (ElementTask.destination(task) is Vector3) \
+			or grouped(task):
 		return {}
 	var key := JSON.stringify(task)
 	var tick := int(situation.get("tick", 0))
@@ -382,6 +387,16 @@ static func latch_shape(plan: Dictionary, situation: Dictionary, state: Dictiona
 		plan["why"] = "%s (kept: the shape this move started with)" % String(latch["why"])
 	plan["formation"] = String(latch["formation"])
 	return latch
+
+
+## Round 43 (R43.34): is `task` a squad's share of one G1 group click? The controls' pack stamps `group` (the squad count) on every
+## squad of an order to two or more, and `halt_at` on each it packs; a re-laid leg (a cut leg, the corridor's re-laid first leg, a
+## cleared leg) keeps `group` and drops `halt_at`, so either marks it (the dev proof: 58 of 60 corridor rows reached by `halt_at` alone).
+static func grouped(task: Variant) -> bool:
+	if typeof(task) != TYPE_DICTIONARY:
+		return false
+	var t := task as Dictionary
+	return t.has("group") or t.has("halt_at")
 
 
 ## The shape the player chose for `task` with G, or "" under AUTO (the table decides). Pure.
@@ -416,7 +431,7 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 	if verb == "move" and destination is Vector3 and center.distance_to(destination) <= INSET_NEAR_M:
 		var asked: Vector3 = destination
 		destination = inset_anchor(members_of(situation), String(plan["formation"]), destination,
-				table.spacing(String(situation["terrain"])))
+				table.spacing(String(situation["terrain"])), not bool(plan.get("grouped", false)))
 		plan["inset_m"] = asked.distance_to(destination)
 		# C34.9 (brains B3), MEASUREMENT ONLY: how far out the element stood when the inset moved its spot (Element
 		# latches the first per task for ELEMENT_TRACE).
@@ -428,7 +443,7 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 					else TacticsFormation.flat(destination - center) if center.distance_to(destination) > 2.0 \
 					else TacticsFormation.flat(situation.get("heading", Vector3.FORWARD))
 			var laid := laid_centroid(members_of(situation), String(plan["formation"]), destination, facing,
-					table.spacing(String(situation["terrain"])))
+					table.spacing(String(situation["terrain"])), not bool(plan.get("grouped", false)))
 			if bool(laid["clipped"]):
 				plan["arrive_point"] = laid["centroid"]
 	var to_go := center.distance_to(plan.get("arrive_point", destination))
@@ -961,7 +976,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		seat_extra = {"halted": true, "policy": "exposure", "fixed": false}
 	elif in_transit and NEAREST_ON_ROUTE and TacticsFormation.NEAREST_ENABLED:
 		seat_extra = {"at": route_seats(ordered, String(plan["formation"]), table.spacing(String(situation["terrain"])),
-				transit)}
+				transit, not bool(plan.get("grouped", false)))}
 	_group(plan, ordered, String(plan["formation"]), destination, plan["heading"],
 			table.spacing(String(situation["terrain"])), "hold" if holding_heading else "move", "",
 			# Round 10 (item 3): on a plain move EVERYONE, the leader included, is seated by the least total driving (the
@@ -983,7 +998,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		# `move` to the final slots, and the brain drives to its station while one is published (TankBrain._order_context).
 		# No follow orders: the flow's leader-relative station is what this replaces.
 		# Round 20 (M1): eased in from where each crew stood when the order came (`converge`).
-		var shape_along := stations_along(plan, transit, ordered)  # round 43 (manoeuvre S2): the stations keep the seat bound
+		var shape_along := stations_along(plan, transit, [] if bool(plan.get("grouped", false)) else ordered)  # round 43 (S2): the bound; R43.34: not grouped
 		plan["stations"] = converge(shape_along, transit)
 		# Round 23 (B1): the shape's own stations, what the pacing rules measure against (Element.shape_along).
 		plan["shape_along"] = shape_along
@@ -1036,10 +1051,11 @@ const HALT_RESEAT_TICKS := SimClock.TICK_RATE * 2
 ## Round 25 (brains F1): where each seat of `formation` for `members` stands NOW along a plain move's route — the
 ## stations the travelling shape will give them (stations_along's geometry, the transit's progress `s`) — one world
 ## point per slot index, for TacticsFormation.seat's `at`. Pure.
-static func route_seats(members: Array, formation: String, spacing: float, transit: Dictionary) -> Array:
+static func route_seats(members: Array, formation: String, spacing: float, transit: Dictionary, bound := true) -> Array:
 	var count := members.size()
-	# Round 43 (manoeuvre S2): the stations keep the seat bound the final slots have (TacticsFormation.shape_at).
-	var shape := TacticsFormation.shape_at(members, formation, count, TacticsFormation.pitch(members, spacing))
+	# Round 43 (manoeuvre S2): the stations keep the seat bound the final slots have (TacticsFormation.shape_at); R43.34: not a
+	# grouped squad's (`bound` false: today's shape).
+	var shape := TacticsFormation.shape_at(members if bound else [], formation, count, TacticsFormation.pitch(members, spacing))
 	var route: Array = transit.get("route", [])
 	var s := float(transit.get("s", 0.0))
 	var out: Array = []
@@ -1113,10 +1129,10 @@ const TRANSIT_HANDOFF_M := 12.0
 
 ## How far along its route the anchor STARTS: half the depth of `formation` for `members` at the doctrine `spacing`
 ## (the shape's rearmost station then sits on the squad's centre and every other station is ahead of it). Pure.
-static func transit_start_m(formation: String, members: Array, spacing: float) -> float:
+static func transit_start_m(formation: String, members: Array, spacing: float, bound := true) -> float:
 	var count := maxi(members.size(), 1)
 	var pitch_v := TacticsFormation.pitch(members, spacing)
-	if TacticsFormation.SEAT_BOUND and count <= TacticsFormation.PLATOON:
+	if bound and TacticsFormation.SEAT_BOUND and count <= TacticsFormation.PLATOON:
 		# Round 43 (manoeuvre S2, R43.7): the bounded shape's depth, as its stations are laid (an unbounded swarm of War Rigs is
 		# 51 m deep, and its half put the anchor's start 25 m past every crew: their starts were rebuilt from 25-40 m behind it).
 		var shape := TacticsFormation.shape_at(members, formation, count, pitch_v)
@@ -3453,6 +3469,8 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 			# X5: a halt's crews face their sectors of fire, so place() gives each entry that facing rather than the
 			# direction of travel, and the order carries it.
 			"halt": halt,
+			# Round 43 (R43.34): a grouped squad's seats are laid as today (no seat bound).
+			"seat_bound": not bool(plan.get("grouped", false)) and not halt,
 			# X2 (A8): a MOVING formation deforms to the corridor it is driving through; a halt does not — it is
 			# standing in an area, not filing through a gap, and its all-round sectors are the point of it.
 			"corridor_m": INF if halt else float(plan.get("corridor_m", INF))}
@@ -3847,11 +3865,12 @@ static func clamp_to_arena(point: Vector3) -> Vector3:
 ## (a shape wider than the arena) cancel to the middle. Traced (builder0, foundry faced drag s8): a destination on the
 ## north edge had two seats clamped onto it, the centroid sat 17-20 m off, and the element never arrived.
 ## `--anchor-inset=off`: `destination` unchanged.
-static func inset_anchor(members: Array, formation: String, destination: Vector3, spacing: float) -> Vector3:
+static func inset_anchor(members: Array, formation: String, destination: Vector3, spacing: float, bound := true) -> Vector3:
 	if not ANCHOR_INSET or members.is_empty():
 		return destination
 	var reach := 0.0
-	for entry in TacticsFormation.place(members, formation, destination, Vector3.FORWARD, spacing, {"corridor_m": INF}):
+	# R43.34: a grouped squad's reach is today's (no seat bound), so its inset is today's.
+	for entry in TacticsFormation.place(members, formation, destination, Vector3.FORWARD, spacing, {"corridor_m": INF, "seat_bound": bound}):
 		reach = maxf(reach, Vector2((entry["to"] as Vector3).x - destination.x, (entry["to"] as Vector3).z - destination.z).length())
 	var up := Vector2.ZERO
 	var down := Vector2.ZERO
@@ -3869,10 +3888,10 @@ static func inset_anchor(members: Array, formation: String, destination: Vector3
 ## Overnight item 3 (cap + fold): where an element laid at `anchor` facing `heading` stands once its seats are clamped
 ## into the arena, the mean of the clamped seats, and whether any seat was clamped at all ({"centroid", "clipped"}).
 ## Inland nothing is clamped and the centroid is the anchor (the shapes are centred), so callers keep the anchor there.
-static func laid_centroid(members: Array, formation: String, anchor: Vector3, heading: Vector3, spacing: float) -> Dictionary:
+static func laid_centroid(members: Array, formation: String, anchor: Vector3, heading: Vector3, spacing: float, bound := true) -> Dictionary:
 	var sum := Vector3.ZERO
 	var clipped := false
-	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing, {"corridor_m": INF})
+	var placed := TacticsFormation.place(members, formation, anchor, heading, spacing, {"corridor_m": INF, "seat_bound": bound})
 	for entry in placed:
 		var seat: Vector3 = entry["to"]
 		var laid := clamp_to_arena(seat)

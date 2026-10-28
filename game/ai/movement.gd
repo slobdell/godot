@@ -1368,6 +1368,8 @@ func _park_aside(order: Dictionary) -> Dictionary:
 	var brain := ctl as TankBrain
 	var elements: Variant = Elements.of_match(brain.game_match) if brain != null and brain.game_match != null else null
 	var mine: Variant = elements.of(String(tank.name)) if elements != null else null
+	if mine != null and ElementPlan.grouped(mine.task):
+		return order  # R43.34: a squad under one G1 group click drives as today (see _grouped_crew)
 	var parked: Array = []  # [centre (Vector3), clearance radius]
 	for node in ctl.tanks_root.get_children():
 		var other := node as Tank
@@ -5436,6 +5438,17 @@ static func kturn_goal_on() -> bool:
 	return not Traffic.off("kturngoal")
 
 
+## R43.34 (a round-44 candidate): is this crew's element moving under one G1 group click (its task carries `halt_at`)? The round-43
+## rules (kturngoal, parkaside; the planner's bound, latch and converge) leave such a crew to drive as today.
+func _grouped_crew() -> bool:
+	var brain := ctl as TankBrain
+	if brain == null or brain.game_match == null:
+		return false
+	var elements: Variant = Elements.of_match(brain.game_match)
+	var mine: Variant = elements.of(String(ctl.tank.name)) if elements != null else null
+	return mine != null and ElementPlan.grouped(mine.task)
+
+
 ## S3: has the goal the current plan was made for (Manoeuvre.kturn_goal_note) moved KTURN_GOAL_MOVED_M or more to a `waypoint`
 ## outside the forward turning circle and within KTURN_GOAL_AHEAD_DEG of the nose, while the hull is not already driving forward?
 func _kturn_goal_moved_out(waypoint: Vector3) -> bool:
@@ -5461,7 +5474,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	# Round 43 (S3, kturngoal): the goal a plan was made for has moved to where a forward arc reaches it. For a leg of the circle
 	# k-turn (a reverse leg under way) and for the lattice planner's seam (a plan pending or being driven for that goal: released
 	# through its own release, the forward drive takes the tick) alike.
-	if kturn_goal_on() and (PlannerSeam.on() and PlannerSeam.live(String(tank.name)) or (_kturn_left_m > 0.0 and _kturn_gear < 0)) \
+	if kturn_goal_on() and not _grouped_crew() and (PlannerSeam.on() and PlannerSeam.live(String(tank.name)) or (_kturn_left_m > 0.0 and _kturn_gear < 0)) \
 			and _kturn_goal_moved_out(waypoint):
 		if ManoeuvreCensus.trace_unit == String(tank.name):
 			print("MANOEUVRE_TRACE leg f %d ended: the goal moved to %s, a forward arc reaches it (%s)" % [
