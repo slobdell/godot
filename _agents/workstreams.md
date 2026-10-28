@@ -149,6 +149,8 @@ never touch processes you didn't start. Never delete builder files that aren't o
   (q3_judge) and the G1 v9 corridor lines on 10425-10436; fights 10437-10442; perf (check's perf-judge + sim-profile base v all, quiet
   builder0). Named at risk (dev, never a bar): seats on crossing +21 s a run of yield+blocked. kturngoal needs native's twin before ON
   (requested); seats / latch / converge are planner-side, no twin.
+  Gate GREEN: fed356a8b on builder2 (`make check exited 0`, 3367 passed / 0 failed, 26 + 2 NOT JUDGED: perf-judge (builder2), scenario_perf
+  (loaded); perf judged on builder0 quiet after the series per the bar). Series started 01:21 PDT; Bar S5's chained behind it.
 
 - **FILED Bar A7, never move for a shot across water (engage; FILED before any 10649+ number on de626d7e1's rule + the probe's
   `--named` arm; full text in `streams/engage.md`).** BASE `--engage-water` off v ARM on, both arms `--brains-off=native_decide` (native's
