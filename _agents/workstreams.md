@@ -165,6 +165,12 @@ never touch processes you didn't start. Never delete builder files that aren't o
   GRANT native the G1 pack's cost path (`selection_squads.gd`, `rts_controls.gd`: pack_halts, seat_ok / reached probes) + `native/**`; the
   contract is OUTPUT-IDENTICAL seats (an equality test on R41.15's corpus + control_scale), timing inside budget 104 on the bisect's box,
   full check. After CP43.0, before N3.
+- **R43.12 (~23:30) Bar A decides on TWO workloads (before any 10301+ number).** Engage's dev (7001-7006, laptop): his replay with
+  `--traffic-on=holdfar` (the crew's straight distance to the mouth; the route-through walk over the whole route) keeps Guns_1 on his
+  attack-move (best 17 m from his click; OFF AWAY 82 m). A staged head-on meeting puts the mouth ON the waiting squad's way, so away_s
+  reads 9 = 9 there; what it moves is the far crews' arrival (dev n 6, not a number). Ruled: (1) head-on stage, far_arrive_s ARM < BASE by
+  >= 2 se; (2) a side-street stage (the verdict aims off the squad's way, his geometry), away_s ARM < BASE by >= 2 se; both pass to ship.
+  Side-street stage time-boxed ~90 min, else (1) alone with the reason written. Whether his verdict itself was mis-aimed: asked.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
