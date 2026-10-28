@@ -1,9 +1,81 @@
 # Workstreams: the current round
 
-> **ROUND 43 CLOSED 2026-10-28 ~14:30 (main code = dbf0bf637 GREEN builder0, 28 targets ALL JUDGED, 3420/0, perf-judge PASS 1.00x). Shipped ON: A7, never move for a
-> shot across water (engage, Bar A7). OFF with causes: holdfar / holdway / holdroute (Bar A, A6, A6 v2), the corner swing (Bar K5), the
-> seat bound / latch / converge / kturngoal / parkaside (Bar S, S v2), deckwait v5 (Bar S5). Briefs in `streams/archive/round43/`, branches
-> `round43/<s>`.** Round 42's section follows round 43's.
+> **ROUND 44 PREPARED 2026-10-28 (three streams: orders + manoeuvre on Fable, native on Opus; main code = dbf0bf637 GREEN builder0, 28 targets
+> ALL JUDGED, 3420/0).** Round 43 (CLOSED, A7 shipped ON) follows round 44's section; briefs in `streams/archive/round43/`, branches `round43/<s>`.
+
+## Round 44: three streams (prepared 2026-10-28; briefs in `streams/`)
+
+**Goal: one click for his whole army sends every squad the same way, packed one behind another near his click (never four
+destinations 100 m apart, never a squad sent back to its own edge); a War Rig that starts nose-on to a container backs out first
+instead of driving into it; `make playtest-report` prints one screen he can paste.** His words: `game_design.md` *His playtest after
+round 43*; recordings `references/round43/playtest/2026-10-28T08-15-42-locks.jsonl` (the container) and `...T08-21-31-locks.jsonl`
+(the group click, tick 1512 and tick 1808). "Camera seemed ok."
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **orders** | `godot-orders` (6) | **Fable** | [streams/orders.md](streams/orders.md) | his all-squads click: every squad heads the same way and lands in a column of wedges at his click | O1 record the click, then trace tick 1512 |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | a War Rig nose-on to a container backs out first; his one-squad order lands at his click | M1 rebase the R43.34 scoping onto main |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | `make playtest-report` fits on one screen; the replay of his group click | N1 the one-screen report |
+
+**Not this round: camera** ("Camera seemed ok"; the corner swing waits for a recorded corner moment), **engage** (the street hold's
+side-jam candidate and E2 wait; his War Rig no longer drives away on Locks, R43.39), **balance** (waits on the bridge crew).
+**Two Fable sessions:** orders (the group click, reported since round 37 and back after G1 v9 shipped) and manoeuvre (the k-turn
+family, three rounds of bars missed by a hair).
+
+**Machines (C44.1 = C43.1):** builder0 = every stream's light lane (J<=4) and checks; builder2 (`make gcp-start`; STARTED at prep,
+idle-stops after 20 min; Spot: read the verdict line, re-queue on preemption) = any series over 24 fights. ONE full check + ONE judged
+series per builder at a time (`tools/builder_checks.sh --wait-below 1`; the full-check lock). Perf-judge on builder0 only, quiet window.
+One laptop Godot run at a time (`flock /tmp/tank-squad-laptop-godot.lock`). Never touch processes or files on a builder that aren't ours.
+builder0 at prep: load 0.00, 77 %, 24 G free.
+
+**Ownership (round 44):** each brief's *You own* line is the contract; in short:
+- **orders:** `game/control/**` (incl. `selection_squads.gd`, `group_formation.gd`, `rts_controls.gd`), `tests/test_control*.gd`,
+  `tests/control/**`, `tests/orders_probe*.gd`, `mk/command.mk`; GRANT (C44.2) a `click` key on the `order` row of
+  `game/match/match_recorder.gd`; GRANT `game/ai/planner/**` for a group order's departure order and route spread only (as C41.3).
+- **manoeuvre:** movement's drive / unstick / side-step / avoidance / yield (`game/ai/movement.gd` but the planner seam),
+  `game/ai/traffic.gd`, `game/tactics/tactics_formation.gd`'s `pitch` / `hull_floor` / `offsets_at` / `fit_to_corridor` / the seat
+  bound / the shape latch, `game/tactics/element_plan.gd`'s `grouped()` and converge, `game/tactics/element.gd` (as the candidate);
+  `tests/manoeuvre/**`, `tests/traffic/**`, `tests/test_manoeuvre*.gd`, `tests/test_traffic*.gd`, `tests/test_formation*.gd`,
+  `mk/manoeuvre.mk`. NOT `game/control/**`: the two `group` lines of e883fc4eb land through CP44.0.
+- **native:** `native/**`, `mk/native.mk` (incl. `playtest-report`), `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**`,
+  `tools/perf_judge.sh`, `tools/loaded.sh`, `tools/slot.sh`, `tools/remote.sh`, `tools/full_check_lock.sh`, `tools/copyback_verify.sh`,
+  `tests/ai_scenarios/guard_line.gd`, `mk/play.mk`'s skirmish recipe, `_agents/judging.md`, `tests/replay_orders.gd`,
+  `tools/recording_arrivals.py`, `tools/playtest_report*`, `tests/replay/**`, `tests/camera/camera_recording.py` (read-only use).
+- **Nobody:** the planner (but orders' grant; trace lines only), `game/camera/**`, `game/ui/**`, `game/units/**`, `game/audio/**`,
+  `game/announcer/**`, `game/match/**` (but C44.2), `game/tank/**`, element_plan's engagement and settle functions, `arenas/**`,
+  `tests/baselines/**` (the orchestrator adopts).
+
+**Contracts (round 44):**
+- **C44.1 Fresh start; two builders; bars before numbers on FRESH seeds (C37.1-C43.1 stand).** Registry below; a guard is never
+  amended after its numbers are seen; a bar names what the change could BREAK before its numbers. His seed 56416 and dev blocks are
+  never a bar. His two recordings are the acceptance READ (does his case now do what he asked), not a bar.
+- **C44.2 The click is recorded (orders, additive, C43.2's rules).** The `order` row gains `click:[x,z]` (the ground point under his
+  cursor, before any per-squad layout) and `group:<n squads>`; existing keys keep their meaning; the replay, `recording_arrivals.py`
+  and old recordings still read (a recorder test pins it). Orders merges it ALONE the minute it is green, so his next playtest carries
+  it; native's replay reads it if present.
+- **CP44.0 The `group` marker (orders -> manoeuvre).** Orders lands e883fc4eb's two lines (`_order_squads` stamps `given["group"] =
+  squads.size()` on every squad of an order to two or more; `_copy_pack` carries `group` onto the element's task; GRANT the one
+  `"group"` entry in `ElementTask.KEYS` with its comment) as its first commit, with a test, OUTPUT-IDENTICAL (the G1 v9 probe
+  byte-identical v main); the orchestrator merges it alone and tells manoeuvre the same minute. Manoeuvre reads it through
+  `ElementPlan.grouped()` (`git diff $(git merge-base wip/manoeuvre-scope-g1 main) wip/manoeuvre-scope-g1` is the reference). If orders' group-click fix later
+  re-lays legs, the key must survive (a test pins it).
+- **C44.3 The group click is orders'; a squad's own order is manoeuvre's.** A squad under one order to many squads (`grouped()`)
+  drives exactly as main does unless orders' bar ships a change to it; manoeuvre's rules (seat bound, converge, kturngoal, parkaside,
+  the latch) apply only to a squad on its own order. Each stream's bar names the other's lines as guards (orders: his one-squad
+  first-order arrival; manoeuvre: the G1 group probe), on a tree frozen at filing.
+- **C44.4 = C43.4:** manoeuvre's rules keep ORCA's answer unless the bar says otherwise; per-crew state is a real Movement member with
+  an `exec_fields.h` entry; native twins a rule before it ships ON (or it ships with `native_drive` forced off for that rule, said in
+  the bar). Orders' group layout, if it moves into C++, is output-identical first.
+- **C44.5 Symmetric (memory: smart AI on both sides).** Every rule reaches the CPU's crews and the CPU's group orders too; ships behind
+  a switch with an `=off` escape; approved behaviour ships ON once its bar passes.
+
+## Bars (round 44)
+
+**Seed registry (round 44):** 10801-10848 orders (G-bar deciding + guards); 10849-10896 orders reserve; 10901-10948 manoeuvre (Bar S v3
+deciding + guards); 10949-10996 manoeuvre reserve; 11001-11024 native (lines_r44, any twin pair). Dev seeds: anything at or below 10748
+already read, or 7001-7012.
+
+## Rulings (round 44)
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 

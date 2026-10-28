@@ -4,9 +4,34 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-28 ~08:40 PDT (laptop clock) — **ROUND 43 IS CLOSED; HIS PLAYTEST AFTER IT IS IN; ROUND 44 NOT YET PREPARED.**
+_Last updated: 2026-10-28 ~09:40 PDT (laptop clock) — **ROUND 44 PREPARED (box below; launch = the lead starts three CLIs: orders + manoeuvre on Fable, native on Opus).** Earlier: 2026-10-28 ~08:40 PDT — ROUND 43 IS CLOSED; his playtest after it is in.
 
-## ▶ NEXT: prepare round 44 (read this first)
+## ▶ ROUND 44 AS PREPARED (2026-10-28 ~09:40 PDT) — read this first
+
+**Goal: his all-squads click sends every squad the same way into a column of wedges at his click (never four destinations 100 m apart,
+never a squad sent back to its own edge); a War Rig nose-on to a container backs out first; `make playtest-report` fits on one screen.**
+From his playtest after round 43 (`game_design.md` *His playtest after round 43*; recordings `references/round43/playtest/`). Split,
+ownership, contracts C44.1-C44.5 / CP44.0 and the seed registry in `workstreams.md` *Round 44*; briefs in `_agents/streams/`.
+**Main at launch: dbf0bf637's check stands** (GREEN builder0, 28 targets ALL JUDGED, 3420/0); later commits are docs, comments, one test
+`.uid`. Workers start without a baseline check.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **orders** | `godot-orders` (6) | **Fable** | his all-squads click: one direction, a column of wedges at his click | O0 CP44.0 the `group` key, O1 record the click |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | a War Rig behind a container backs out first; his one-squad order lands at his click | M1 rebase the R43.34 scoping |
+| **native** | `godot-native` (4) | Opus | `make playtest-report` prints one screen | N1 the one-screen report |
+
+**Not this round:** camera ("Camera seemed ok"), engage, balance (reasons in `workstreams.md`). Kickoff: the same one line for every
+stream, `_agents/orchestration.md` *The kickoff prompt*. All three are FRESH sessions.
+
+**Done at preparation:** builder0 has only `godot`, `godot-native-score`, `godot-native-score-light` (77 %, 24 G free, load 0.00);
+builder2 STARTED ~09:20 (`make gcp-start`; it idle-stops after 20 min, `make gcp-start` wakes it). Worktrees created after the docs commit.
+
+**Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*). **CP44.0:** merge orders' `group` key
+alone on green and tell manoeuvre the same minute (`git merge main`). Merge orders' O1 (`click` row) alone the minute it is green so his
+next playtest carries it; native's N1 report alone too. Take orders' O2 cause to him in player terms the hour it lands.
+
+### What prompted it (his playtest after round 43; was the NEXT box)
 
 **He played round-43 main twice on Locks (2026-10-28 ~08:15-08:25) and wants round 44 prepared.** His words and the recordings' read:
 `game_design.md` *His playtest after round 43*; recordings in `_agents/streams/references/round43/playtest/`. "Camera seemed ok."
