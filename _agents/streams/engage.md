@@ -303,6 +303,35 @@ orchestrator: a second filing (Bar A v2) on fresh 10325-10348, same workload and
 extension, R42.19's form), OR the rule stays OFF and his seed's removal evidence stands as A1's finding until A6 (the verdict
 fix) gives the head-on stage something to measure.
 
+### Report for the close (round 43, engage)
+
+**Done:** A1 (the cause, shown by removal on his exact match), A2 (no queue), A3 (`holdfar`, OFF), A4 (Bar A, Bar A6, Bar A6 v2:
+all FAILED their deciding lines; every guard passed in every bar), A5 (his replay by removal in each bar: AWAY 82 m -> best 17 m
+under holdfar / 38 m under holdway; the GDScript-v-native caveat is native's, now a shim), A6 (`holdway`, `holdroute`, OFF).
+**Not done:** the stretch (E2's staged draw, the flank latch): no time after three bars.
+**Decisions:** the far rule measures the crew's straight distance to the mouth (the squad's mean way lied on his seed); the
+route-bound release walks the crew's navmesh route to its SQUAD'S destination (its current leg lied on the head-on stages);
+the side-street stage is the terminus planting that fires a verdict every seed (his corridor's 6 m containers made every other
+planting a knife-edge). **Questions for the lead:** none; the item is his "investigate and improve": investigated (the cause is
+a traffic rule, not his units' will), improved only on the branch behind switches (nothing passed its bar).
+**Known issues (left):** (1) the street hold's verdict reads crews' noses and binds the whole squad (A6 removes it on the
+side stage: verdicts 12 -> 4, holding -86 %, jam -87 %; it did not clear a 2-se arrival line at n 24 twice); (2) the ENGAGE-across-
+water hops (R43.5 grant, unbuilt: a crew under attack-move engages a team-seen contact across the canal within range + 15 m and
+hops direct, swinging a 14 m hull round); (3) the container_20 stall (manoeuvre's, R43.8); (4) round 42's: the SUPPRESS stand,
+the flank side knife-edge. **What to playtest:** nothing shipped ON. To see the cause: `make engage-replay-trace ENGAGE_TAG=x`
+(his match, the War Rig's drive) v `ENGAGE_FLAGS=--traffic-off=hold` (it arrives); `--traffic-on=holdway` is A6's arm.
+**Next steps (a later round):** A6 with a deciding line the head-on stage moves at n 24 (the side stage's arrival is noisy:
+se 4-5 s; a verdict-count or holding line would decide at n 12, but is mechanism), or his geometry in the natural draw (CPU v
+CPU censuses of mis-aimed verdicts: a verdict whose waiting crews' routes never cross the street); the across-water hops.
+**Merge notes (shared files):** `game/ai/traffic.gd` (R43.8 / R43.13 / R43.20 grants): DEFAULT_OFF += holdfar, holdway,
+holdroute; counters far_released / far_held / way_released / route_usec / route_queries in report() and reset_counters();
+`refresh` rows carry [12..13] the ordered way (ZERO unless holdway); `_load` reads it under holdway; `_begin_wait`: the holdroute
+release, the holdfar far rule (`_spot_behind` only for the rest), a wait with no spots ends; new `_route_reaches`, `_route_passes`,
+FAR_THROUGH_M / FAR_ROUTE_M; a TRAFFIC_FAR line under log_waits. All dead at the defaults (every switch in DEFAULT_OFF); the
+hold tests unchanged (18/0). `game/ai/tank_brain.gd`: CREW_TRACE (static, `_crew_trace`, one call after `_act`; default off).
+`mk/engage.mk`: the round-43 targets. New files all engage's (tests/engage/*, .uid beside each .gd). No baseline moves expected
+(nothing ON). The full check of the tip: below when it reads.
+
 ### A1: the turnaround on his seed (laptop, native library ON, `make engage-replay-trace ENGAGE_TAG=on`, 2d43b1e88, his recording, 50 s, n 1, deterministic)
 
 The replay (native's CP43.0, `tests/replay_orders.gd`) puts Green_Guns_1 **0.0 m off his census at every second for 48 s**
