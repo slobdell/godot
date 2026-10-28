@@ -4,6 +4,7 @@ extends SceneTree
 ## REPLAY_DONE with the new recording's path (MatchRecorder writes the census as in play).
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- --orders=build/recordings/X.jsonl \
 ##         --seconds=50 [--player-faction=gangs --enemy-faction=syndicate] [any game switch, e.g. --attack-shot=off]
+##         [--click=TICK:X,Z: the click of the group order at TICK, for a recording made before C44.2 recorded it]
 ## CP43.0 (round 43, native): what the recording holds is replayed as he played it, not as a headless start would deal it.
 ##   - the squad cap and the factions: his laptop preset fields four squads (a headless run is the desktop's five, and the
 ##     CPU's counter-lineup is dealt against the army it meets), read from the `match` row (`squad_cap`, `factions`) or,
@@ -55,7 +56,7 @@ func _run() -> void:
 			for unit: Dictionary in row["units"]:
 				_spawn[String(unit["n"])] = unit["pos"]
 	var merged := _orders.size()
-	_orders = ReplaySetup.merge_clicks(_orders)
+	_orders = ReplaySetup.merge_clicks(ReplaySetup.with_click(_orders, _flag("click", "")))
 	if _orders.size() < merged:
 		print("REPLAY_CLICKS_MERGED %d rows -> %d orders" % [merged, _orders.size()])
 	var picks := ReplaySetup.inferred_formations(all_rows)
@@ -77,11 +78,15 @@ func _run() -> void:
 	var setup := ReplaySetup.from_header(header)
 	var flags := LaunchFlags.from_environment()
 	var wanted: Array[String] = []
-	for extra: String in ["--skirmish", "--enemy=cpu", "--seed=%d" % int(header.get("seed", 0)),
+	# Round 44: his seed as he typed it (ReplaySetup.seed_text) and his render preset (the laptop rolls armies of at most 20).
+	var extras: Array = ["--skirmish", "--enemy=cpu", "--seed=%s" % ReplaySetup.seed_text(header),
 			"--arena=%s" % String(header.get("arena", "locks")), "--no-pick-faction", "--hints=off",
 			"--player-faction=%s" % _flag("player-faction", setup["player_faction"]),
 			"--enemy-faction=%s" % _flag("enemy-faction", setup["enemy_faction"]),
-			"--squad-cap=%s" % _flag("squad-cap", str(setup["squad_cap"]))]:
+			"--squad-cap=%s" % _flag("squad-cap", str(setup["squad_cap"]))]
+	if header.has("preset"):
+		extras.append("--render-preset=%s" % String(header["preset"]))
+	for extra: String in extras:
 		var parts := extra.trim_prefix("--").split("=", true, 1)
 		if not flags.values.has(parts[0]):  # a switch on the command line wins (an A/B of the replay)
 			wanted.append(extra)
@@ -114,6 +119,17 @@ func _run() -> void:
 			printraw(chunk)
 		quit(code)
 		return
+	# Round 44 (native N2): a match whose seed was not recorded (seed -1: his `--seed=56416.`) rolled its armies from the
+	# clock. The army seed that fields his exact roster goes to the skirmish only (Main.next_flags); the process command line
+	# keeps his seed text, so Match's fire RNG falls back as his did. A `--seed` given to the replay by hand is left alone.
+	if int(header.get("seed", 0)) < 0 and flags.text("seed") == ReplaySetup.seed_text(header):
+		var found := ReplaySetup.army_seed(header, setup, flags.integer("budget", 0),
+				ReplaySetup.clock_seeds(String(header.get("path", "")), int(Time.get_time_zone_from_system().get("bias", 0))))
+		if found >= 0:
+			flags.values["seed"] = str(found)
+			print("REPLAY_SEED_RECOVERED " + JSON.stringify({"army_seed": found, "typed": ReplaySetup.seed_text(header)}))
+		else:
+			print("REPLAY_SEED_UNKNOWN his seed was not recorded and no clock seed near the recorder's start fields his roster")
 	Main.next_flags = flags
 	change_scene_to_file(MAIN)
 	for i in 40:

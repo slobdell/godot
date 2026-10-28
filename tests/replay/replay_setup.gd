@@ -148,13 +148,18 @@ static func merge_clicks(orders: Array) -> Array:
 					units.append(unit_name)
 			last["units"] = units
 			last["merged"] = int(last.get("merged", 1)) + 1
+			if last.has("click") and last.has("to"):
+				last["to"] = last["click"]  # C44.2: the point under his cursor; the replay's group layout spreads it again
 			continue
 		out.append(row.duplicate())
 	return out
 
 
+## Round 44 (C44.2): from G1 v9 on, a group click's rows carry each squad's OWN laid-out point in `to`, so `to` no longer
+## says which rows were one click; the `click` key (the ground under his cursor) does, when both rows have it.
 static func _same_click(a: Dictionary, b: Dictionary) -> bool:
-	for key in ["tick", "verb", "to", "target", "queue"]:
+	var point := "click" if a.has("click") and b.has("click") else "to"
+	for key in ["tick", "verb", point, "target", "queue"]:
 		if a.get(key) != b.get(key):
 			return false
 	return String(a.get("error", "")) == "" and String(b.get("error", "")) == ""
@@ -204,3 +209,91 @@ static func reexec_args(engine_args: PackedStringArray, user_args: PackedStringA
 	for flag: String in wanted:
 		args.append(flag)
 	return args
+
+
+# ---- Round 44 (native N2): a match whose seed was not recorded ---------------------------------------------------------
+#
+# His round-43 playtests ran `--seed=56416.` (a full stop typed after it; `make skirmish` keeps digits only since): the flag
+# did not parse, so SkirmishMode rolled both armies from the clock (unix time % 100000), the recorder wrote seed -1, and
+# Match's fire RNG (`--seed` from the PROCESS command line, else 0, + 7919) started from 0. A replay matches all three by
+# passing his seed TEXT on its command line (every reader of the process's flags falls back exactly as his did) and giving
+# the skirmish (Main.next_flags) the army seed found from his roster. His 08-21 match: seed 891, the recorder's second.
+
+## The `--seed` text his match was launched with: the switch as typed when the header has it, else the recorded seed.
+static func seed_text(header: Dictionary) -> String:
+	var flags: Dictionary = header.get("flags", {})
+	return String(flags["seed"]) if flags.has("seed") else str(int(header.get("seed", 0)))
+
+
+## The roster a skirmish with these settings fields from `seed_value`, name -> unit id, both sides: SkirmishMode._start_match's
+## roll (lineup_plan, Army.load_pair, fielded) and Match.load_doctrine's names. Units.max_squads() must already be his preset's
+## (the laptop rolls at most 20 vehicles a side: Army.cpu_army's unit cap), so the replay runs with `--render-preset`.
+static func rolled_roster(setup: Dictionary, budget: int, seed_value: int, player := "player_default") -> Dictionary:
+	var plan := SkirmishMode.lineup_plan(player, "cpu", String(setup["player_faction"]), String(setup["enemy_faction"]), budget)
+	var lineups := {Match.Team.GREEN: String(plan[Match.Team.GREEN]["lineup"]), Match.Team.RUST: String(plan[Match.Team.RUST]["lineup"])}
+	var armies := Army.load_pair(lineups, {Match.Team.GREEN: String(plan[Match.Team.GREEN]["faction"]),
+			Match.Team.RUST: String(plan[Match.Team.RUST]["faction"])}, seed_value, int(plan["budget"]))
+	var roster := {}
+	for team: int in [Match.Team.GREEN, Match.Team.RUST]:
+		var loaded: Dictionary = armies[team]
+		if loaded.has("error"):
+			return {}
+		var doctrine := SkirmishMode.fielded(loaded["doctrine"], team == Match.Team.GREEN, int(setup["squad_cap"]))
+		for squad: Dictionary in doctrine["squads"]:
+			var index := 1
+			for entry: Dictionary in squad["units"]:
+				roster["%s_%s_%d" % [Match.TEAM_NAMES[team], squad["name"], index]] = String(entry["unit"])
+				index += 1
+	return roster
+
+
+## Clock seeds to try, nearest first. The recorder names its file by the LOCAL time it opened (`2026-10-28T08-21-31`), a
+## moment after the roll; the seed is the UTC unix second % 100000. `bias_minutes` is the local zone's offset (his laptop's:
+## Time.get_time_zone_from_system()); every other zone follows, so a replay on a builder in UTC still finds it.
+static func clock_seeds(recorder_path: String, bias_minutes: int, back_s := 20) -> Array:
+	var stamp := recorder_path.get_file().substr(0, 19)
+	if stamp.length() < 19 or stamp[10] != "T":
+		return []
+	var local := Time.get_unix_time_from_datetime_string(stamp.substr(0, 11) + stamp.substr(11).replace("-", ":"))
+	var biases: Array = [bias_minutes]
+	for minutes in range(-720, 841, 30):
+		if minutes != bias_minutes:
+			biases.append(minutes)
+	var seeds: Array = []
+	for minutes: int in biases:
+		for back in range(0, back_s + 1):
+			var value := posmod(int(local) - minutes * 60 - back, 100000)
+			if not seeds.has(value):
+				seeds.append(value)
+	return seeds
+
+
+## The army seed that fields exactly his roster (both sides, every name and unit id), -1 when none of `seeds` does.
+static func army_seed(header: Dictionary, setup: Dictionary, budget: int, seeds: Array) -> int:
+	var his := {}
+	for unit: Dictionary in header.get("units", []):
+		his[String(unit.get("name", ""))] = String(unit.get("id", ""))
+	var player := String(header.get("flags", {}).get("player", "player_default"))
+	for value: int in seeds:
+		if difference(his, rolled_roster(setup, budget, value, player)) == "":
+			return value
+	return -1
+
+
+## Round 44 (native N2): `--click=TICK:X,Z` gives a recording made before C44.2 the click of its group order at TICK: every
+## row of that tick carries `click` [X, Z], so merge_clicks replays them as ONE order there (to search his click: the one
+## whose replayed layout gives his recorded points). Rows are copied; a malformed spec changes nothing. Pure.
+static func with_click(orders: Array, spec: String) -> Array:
+	var parts := spec.split(":")
+	if parts.size() != 2 or not parts[0].is_valid_int():
+		return orders
+	var point := parts[1].split(",")
+	if point.size() != 2 or not point[0].is_valid_float() or not point[1].is_valid_float():
+		return orders
+	var out: Array = []
+	for row: Dictionary in orders:
+		var copy := row.duplicate()
+		if int(row.get("tick", -1)) == int(parts[0]):
+			copy["click"] = [float(point[0]), float(point[1])]
+		out.append(copy)
+	return out
