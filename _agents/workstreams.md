@@ -377,6 +377,14 @@ never touch processes you didn't start. Never delete builder files that aren't o
   (+9.2 se); its cost is Locks' five crews giving way to each other converging on seats within 37 m. v2: one arm on fresh 10701-10724
   (+ 10725-10748), D1 and D2 as filed, per-arena guards as filed; time-boxed ~2 h on two dev blocks (7001-7012 and 9501-9512), else all
   OFF with this read.
+- **R43.32 (~07:40) Camera CLOSED: main 08ea3ef7d = camera f9758b051 (INHERIT).** Its builder2 check: `>> remote: make check exited 2`,
+  3383 passed / 0 failed; 25 passed, 1 FAILED, 2 NOT JUDGED (perf-judge: builder2; scenario_perf loaded). The FAILED is
+  remote-guard-test's `test_full_check_lock.sh` "atomic claim: 19 of 20 races had exactly one winner" at load ~48; rerun alone on the same
+  commit `make remote-guard-test exited 0`, 22/0. Merged as NOT a clean green, on these grounds: nothing in camera's diff touches the lock
+  or its test, every behaviour is OFF by default, and the target passes alone. Native investigates whether the race can give TWO winners (a
+  real lock bug) or only zero (the test's barrier). Carries the corner code OFF (`--camera-corner`, `--camera-solid-escape`), its tests,
+  workload and `bar_k5.py`; `skirmish_mode.gd` +4 read-only lines (rig.order_now, C42.3). For him: the scrub command
+  `python3 tests/camera/camera_recording.py "$(cat build/recordings/latest.txt)" --from 40 --to 60`.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
