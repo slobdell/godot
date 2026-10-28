@@ -111,6 +111,15 @@ never touch processes you didn't start. Never delete builder files that aren't o
   53.9 -> 51.5 s a run, paired -2.40 s, se 1.38, z -1.73 (short of 2 se). Guards: contacts_mouth +0.17 (se 1.39), contacts_far +0.17 (se
   0.21), jam_s -2.50 (z -2.14, better), last_a_s -1.12 (se 2.07): all PASS. Reported: held_s -13.3 s a run (z -3.65). Lines 6-9 not run.
 
+- **FILED Bar A6, the street-hold verdict by ordered way (engage; FILED a72983638 on tree 98739047a before any 10373+ number; full text in
+  `streams/engage.md`).** BASE `holdway` off v ARM `--traffic-on=holdway`, builder2 J10, native both arms, 10373-10396: odd seeds the
+  terminus_side planting (the mis-aimed verdict), even seeds the three head-on stages. **Deciding:** off_arrive_s (the stage's two
+  off-street crews A4, A5: the same set both arms) on the 12 side seeds, ARM < BASE by >= 2 se; held_off_s reported only (near-circular,
+  R43.18 note). **Mechanism guard** (12 head-on seeds): verdicts and held_on_s (crews whose routes cross the street) each within BASE +/-
+  2 se. **Outcome guards** (all 24): contacts_mouth, contacts_far (+2 floor), jam_s, last_a_s; Bar E1's lines on 10397-10400 + 10573-10592;
+  perf and suite ON on the merge candidate. Floor: 8 of 12 side seeds with a BASE verdict, else the declared extension (the same 24 as
+  `--stage=terminus_side`). Dev (never a bar): his seed with holdway leaves his match at 14 s, Guns_1 best 38 m, no AWAY (OFF AWAY 82 m).
+
 ## Rulings (round 43)
 
 - **R43.1 (2026-10-27 ~20:55) Every replay of his match made before native's fix is void.** Native (N2, laptop): `tests/replay_orders.gd`
