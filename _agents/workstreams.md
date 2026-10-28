@@ -415,6 +415,12 @@ never touch processes you didn't start. Never delete builder files that aren't o
   static switch), 2 NOT JUDGED (perf-judge refused 3 times at 1.77-2.00x on a shared box); sim-baseline 13 maps on the adopted rows.
   Fix 05fa7bce3 (test file only; baselines stand); its one check queued on builder0. Ruled ahead: if only perf-judge is NOT JUDGED from
   load, a perf-judge alone on the same commit in a quiet builder0 window satisfies the gate.
+- **R43.37 (~09:30) Native N5 merged: main c707aff67 = native 24744f2df** (builder0 `>> remote: make check exited 0`, 3380 passed / 0 failed,
+  28 targets ALL JUDGED, sim-baseline unmoved, perf-judge PASS 1.00x 7441 us/tick, full-check-lock 22/0): `make playtest-report
+  RECORDING=<file>` and the lock test's fix. merge_check_needed CHECK (camera's close is not in its tree): next batch main check. Twins:
+  parkaside pair `pair/native-parkaside` f57dbb144 (2790 drives, 11 seats moved, 0 mismatches; lifts parkaside from traffic.gd's
+  GDScript-drive gate). **Finding: the kturngoal pair a907a541e did not lift kturngoal's gate**, so its native-proof EQUAL compared
+  GDScript with GDScript (the direct twin tests are real); native adds the lift and re-proves.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
