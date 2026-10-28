@@ -257,15 +257,33 @@ Array obey(const DecideConsts &c, const DN &k, const Array &candidates, const Di
 	const Vector3 my_position = me[k.position];
 	const double reach = (double)((Dictionary)me[k.weapon])[k.range] + c.ATTACK_MOVE_REACH_MARGIN;
 	// Round 43 (native N3, engage A7 `--engage-water=on`): a contact across water is not met on the way. TankBrain.ENGAGE_WATER
-	// read live (tests set it) and the water test asked of TankBrain._across_water itself (its test seam included), so the
-	// answer is the GDScript's by construction; OFF (or a tree without A7: no such member) the loop is as before.
-	static const StringName engage_water("ENGAGE_WATER"), across_water("_across_water");
+	// read live (tests set it); OFF (or a tree without A7: no such member) the loop is as before. The water test is
+	// TankBrain._across_water: its test seam (`water_between`) is asked through the GDScript; otherwise SlotGround.leg_wet on
+	// the flat points natively (ElTerrain, the el twin's; the table synced once here by NativeEl._terrain_for(Arena.active)).
+	// The GDScript call was ~185 us a contact on the laptop (his Locks match: 11,292 calls, ~1.4 ms a tick).
+	static const StringName engage_water("ENGAGE_WATER"), across_water("_across_water"), water_between("water_between"),
+			terrain_for("_terrain_for"), active("active");
 	const bool water = c.brain_script != nullptr && (bool)c.brain_script->get(engage_water); // absent: Nil, false
+	int water_mode = -1; // -1 not yet asked; 0 no terrain (dry); 1 native; 2 the GDScript
 	for (int64_t i = 0; i < contacts.size(); i++) {
 		const Dictionary cc = contacts[i];
 		if ((bool)cc[k.visible] && (double)my_position.distance_to(cc[k.position]) <= reach) {
-			if (water && (bool)c.brain_script->call(across_water, my_position, cc[k.position])) {
-				continue;
+			if (water) {
+				if (water_mode < 0) {
+					const Variant seam = c.brain_script->get(water_between);
+					if ((seam.get_type() == Variant::CALLABLE && ((Callable)seam).is_valid()) || c.native_el == nullptr ||
+							c.arena == nullptr) {
+						water_mode = 2;
+					} else {
+						water_mode = (bool)c.native_el->call(terrain_for, c.arena->get(active)) ? 1 : 0;
+					}
+				}
+				const Vector3 to = cc[k.position];
+				const bool wet = water_mode == 2 ? (bool)c.brain_script->call(across_water, my_position, to)
+						: water_mode == 1 && c.terrain->leg_wet(Vector3(my_position.x, 0, my_position.z), Vector3(to.x, 0, to.z));
+				if (wet) {
+					continue;
+				}
 			}
 			in_reach.push_back(cc[k.name]);
 		}
@@ -420,6 +438,11 @@ bool TankNative::decide_configure(const Dictionary &config) {
 	c.keep_element = config.get("element_feed", Variant());
 	c.keep_units = config.get("units", Variant());
 	c.units = c.keep_units.get_validated_object();
+	c.terrain = &el_terrain_table;
+	c.keep_native_el = config.get("native_el", Variant());
+	c.native_el = c.keep_native_el.get_validated_object();
+	c.keep_arena = config.get("arena", Variant());
+	c.arena = c.keep_arena.get_validated_object();
 	c.SUPPRESS_PENETRATION = config.get("SUPPRESS_PENETRATION", 0.0);
 	c.SUPPRESSING_WEAPON = config.get("SUPPRESSING_WEAPON", 0.0);
 	c.brain_script = c.keep_brain.get_validated_object();

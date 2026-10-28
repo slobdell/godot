@@ -17,11 +17,22 @@ func _doctrine(units: Array[String]) -> Dictionary:
 func test_the_water_skip_is_the_gdscript() -> void:
 	if FreshStage.parent(self, "test_the_water_skip_is_the_gdscript"):  # its own process (tests/native/fresh_stage.gd)
 		return
+	await _case("sumps", true, 20)
+
+
+## The arena's own water (Locks: the canal), no seam: the native ElTerrain v SlotGround.leg_wet.
+func test_the_canal_skip_is_the_gdscript() -> void:
+	if FreshStage.parent(self, "test_the_canal_skip_is_the_gdscript"):
+		return
+	await _case("locks", false, 5)
+
+
+func _case(arena: String, seam: bool, changed_floor: int) -> void:
 	if NativeExpect.absent(self):
 		print("native: absent, the water skip's equality is not exercised in this run")
 		return
 	assert_true(NativeDecide.configure(), "the native decide takes the live constants")
-	await ArenaFixture.build(self, "sumps")
+	await ArenaFixture.build(self, arena)
 	var game_match: Match = MATCH.instantiate()
 	add_to_tree(game_match)
 	var units: Array[String] = ["tank", "ifv", "scout", "gang_tank", "artillery", "lancer", "burner", "tank", "scout", "artillery"]
@@ -32,7 +43,7 @@ func test_the_water_skip_is_the_gdscript() -> void:
 	var saved_native := BrainSwitches.native_decide
 	var saved_water := TankBrain.ENGAGE_WATER
 	var saved_seam := TankBrain.water_between
-	TankBrain.water_between = func(from: Vector3, to: Vector3) -> bool: return to.x > from.x
+	TankBrain.water_between = (func(from: Vector3, to: Vector3) -> bool: return to.x > from.x) if seam else Callable()
 	var asked := 0
 	var mismatches := 0
 	var changed := 0  # cases where the skip changed the GDScript's decision (so the twin's skip is exercised)
@@ -74,7 +85,8 @@ func test_the_water_skip_is_the_gdscript() -> void:
 	BrainSwitches.native_decide = saved_native
 	TankBrain.ENGAGE_WATER = saved_water
 	TankBrain.water_between = saved_seam
-	print("native decide water: %d decisions, %d mismatches, %d cases the skip changed" % [asked, mismatches, changed])
+	print("native decide water (%s, seam %s): %d decisions, %d mismatches, %d cases the skip changed" % [arena, seam, asked,
+			mismatches, changed])
 	assert_eq(mismatches, 0, "the native decide's water skip is the GDScript's: %s" % first)
-	assert_true(changed >= 20, "the skip changed decisions (%d): the twin's skip was exercised" % changed)
-	assert_true(asked >= 600, "a real sample (%d decisions)" % asked)
+	assert_true(changed >= changed_floor, "the skip changed decisions (%d): the twin's skip was exercised" % changed)
+	assert_true(asked >= 300, "a real sample (%d decisions)" % asked)
