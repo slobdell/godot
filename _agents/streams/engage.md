@@ -165,6 +165,54 @@ his seed (dev, never a bar): `make engage-replay-trace ENGAGE_TAG=x ENGAGE_FLAGS
 17 m and no drive away, the match identical to his for 17 s (laptop, f920ba34d).
 **A pass ships ON** (line 1 decided, 2-9 within).
 
+### A6 (R43.13 / R43.18): the verdict reads ordered ways and binds only crews on the street, built OFF (`holdway`)
+
+`game/ai/traffic.gd`: (1) `refresh` writes each crew's ORDERED way into its row (Movement._travel_direction toward its route's
+next point; ZERO without a goal) and `_load` reads it as the crew's direction when present (a test's row[12..13]): the meeting
+test, the squad's mean way (`gdir`), the lead and the hold's heading are then about where crews are GOING; a crew yielding
+sideways is not "coming the other way". (2) `_begin_wait`: every crew of the waiting squad whose own route (its path, then
+straight on its own way, 140 m: A3's `_route_passes`) never comes within 20 m of the mouth is released at the verdict (counter
+`tr_way_released`); the others are dealt spots as round 29 says (and A3's far rule applies to them when `holdfar` is on too).
+Symmetric. **Switch:** `holdway` in DEFAULT_OFF (`--traffic-on=holdway` the arm; a pass removes it from the list,
+`--traffic-off=holdway` the escape). **Native:** nothing twinned reads the table's rows but through Traffic's GDScript
+(`holding()` over `_live`, unchanged). **On his seed** (laptop, this tree, `engage-replay-trace ENGAGE_TAG=holdway
+ENGAGE_FLAGS=--traffic-on=holdway`): the match leaves his at 14 s (the table's ways change every verdict from the start) and
+Guns_1 reads best 38 m / no AWAY (OFF: AWAY 82 m). **Tests:** `tests/engage/test_engage_hold_way.gd` (7: the control reads
+velocities, the ring-road squad is not held for a squad leaving the street, a yielding crew still meets head-on by its order,
+a near crew whose route misses the street is released, its control, symmetric, the switch OFF).
+
+### Bar A6 (FILED 98739047a, 2026-10-28 ~00:40 PDT, before any number on 10373-10396)
+
+**Switch:** `holdway` (OFF at filing). **Tree:** the filing hash's code frozen for both arms. **Native:** ON on builder2
+(`native engage-bar-a ENGAGE_HOLD_SWITCH=holdway`), both arms on the native path. **Workload:** `tests/engage/hold_probe.gd`,
+seeds 10373-10396, n 24 paired by seed, 75 s, builder2 J10: **odd seeds (12)** the side-street planting `terminus_side` (his
+mis-aimed case: squad A ordered EAST along Terminus's north ring road, its lead crew at the west street's north mouth nose-south,
+two squadmates beside it, two far crews 65-75 m east on routes that never enter the street; squad B comes north through the
+street: round 29 reads a head-on and holds all five A crews, two of them at their feet); **even seeds (12)** the three head-on
+stages (terminus west / east, the Locks' lock; 4 each). **What it could break:** a real head-on no longer waited for (the
+verdict now needs ordered ways within 40 deg of opposite); a crew on the street released by a route walk that missed it;
+the hold's purpose at the mouth (contacts, jam).
+**Deciding (the side-street seeds, paired, pooled):**
+1. **off_arrive_s**: the mean arrival (s) of the stage's two off-street crews (A4, A5: the set is the stage's, so both arms
+   count the same crews) at the squad's destination (within 20 m; the window, 75 s, when never): ARM < BASE by >= 2 se.
+**Exercised floor (side seeds):** at least 8 of 12 with a verdict in BASE; fewer -> extend with 10397-10400 + 10573-10592 run
+as `--stage=terminus_side` (pooled as one series, same lines); fewer than 8 of the pooled -> INCONCLUSIVE, no ship.
+**Guards (filed first; paired se):**
+2. **The hold's purpose, the mechanism (the head-on seeds):** verdicts ARM within BASE +/- 2 se, and held_on_s (crew-seconds
+   holding of A's crews whose routes DO cross the street: all of A on these stages) ARM within BASE +/- 2 se. Real head-ons
+   must still wait.
+3. **contacts_mouth** (all 24): ARM <= BASE + 1.645 se. 4. **contacts_far** (all 24): ARM <= BASE + max(1.645 se, 2).
+5. **jam_s** (all 24): ARM <= BASE + 1.645 se. 6. **last_a_s** (all 24): ARM <= BASE + 1.645 se.
+7. **Bar E1's lines** (`make engage-bar` on 10397-10400 + 10573-10592, ARM = `ENGAGE_FLAGS=--traffic-on=holdway`): stuck
+   crew-seconds, first hit, deaths each ARM within BASE +/- 1.645 se (a null read expected). 8. **Perf:** the merge
+   candidate's full check on builder0, perf-judge PASS on its own line (<= 1.05x). 9. **Suite ON (C31.1):** the merge candidate
+   (holdway out of DEFAULT_OFF) `make remote T=check` green; sim-baseline rows that move listed, adopted at the ship.
+**Reported:** held_off_s (the off-street crews' holding: ~0 in ARM by construction, R43.18's note), way_released, away_s /
+away_m, held_s / a_held_s, last_b_s, verdicts on the side seeds (expected 0 in ARM: no head-on by orders), far_arrive_s;
+his seed by removal (dev, above). **Dev (laptop, 7007 / 7009 side, 7008 / 7010 head-on, not a number):** side: verdicts 1 -> 0
+both, off_arrive 88.5 -> 71.5 (two runs), jam 40 -> 2, contacts_mouth 84 -> 24; head-on: verdicts 1 -> 1, held_on 114 -> 93.
+**A pass ships ON** (line 1 decided, 2-9 within).
+
 ### Bar A READ (builder2, native ON in every log, 9e8313f8d, `native engage-bar-a` 10301-10324, J14, 75 s, n 24 paired, 2026-10-27 22:05-22:28 PDT; 24 of 24 results an arm, no timeout, the box also carrying camera's full check; table `scratchpad/bar-a/pair_table.txt`)
 
 | line | BASE | ARM | paired mean | se | z | reading |
