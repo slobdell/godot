@@ -81,6 +81,39 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-27 ~20:40 PDT (Fable). Starting commit 2f1620a77 = main at launch (code b12b17ac7 GREEN builder0, 3343/0; no
 baseline check re-run, per the contract). CP43.0 taken at f6b930a3d (main 84f914f78 merged). Orchestrator session: `godot-b8`.**
 
+### Bar S5: FILED 2026-10-28 ~03:40 PDT, BEFORE any number on 10449-10472 (Bar Q6's lines, R42.7, unamended; the dev read of the drill's own seeds below)
+
+- **The rule judged:** `--traffic-on=deckwait` **v5** as at 5a5e7b434 (on `wip/manoeuvre-s5` = fed356a8b + balance's v2 overrides
+  8e257f3bc + d385cd308 + v5, and `wip/manoeuvre-s5-main` = fed356a8b + v5): v4's rule (a WHEELED crew with a friend ahead in its
+  lane that is in a deck's mouth and not beyond the water lowers its speed wish to a following speed, never under 0.4 x top speed,
+  5 s per friend then 6 s refused) that BEGINS a wait only on the carried-past case: me at >= 0.6 x top speed, the leader's speed
+  away from me under 4 m/s. Both arms `--brains-off=native_drive` (the rule is inside the drive's mirror: GDScript both, as Bar Q6).
+  No game/ or tests/ commit on the side branches until the series' end line.
+- **What it could break (named first):** the same as Q6's: a slower approach at a mouth (the arrival guard; his 5-squad order on the
+  two maps with decks: G5 / G6); a crew easing in a fight (G1-G4); contacts (G7); a fast follower refused its wait that then rides
+  the rim (the fresh seeds' worst crew).
+- **Deciding 1 (the hard line):** bridge-pooled 18/18 under the overrides ON (seeds 1-3 x ticks {1,8,15} x both sides): READ in dev
+  read 1 below (18/18), re-run as part of the series on the frozen side tree.
+- **Deciding 2 (`bridge_lab_table.py --q6`, each tree, main AND overrides):** pooled rim-seconds on fresh **10449-10460** x ticks
+  {1,8,15} x both sides (72 runs an arm a tree) ON <= OFF; every surviving crew crosses ON; the worst crew's rim ON <= 3 s.
+- **Arrival guard (R42.7), each tree:** paired per-run arrival ON <= OFF + 1.645 se over the 72 runs.
+- **Group-order guards (R41.6's lines, `q3_judge.py --arm=deckwait`), 10461-10472 x crew, the overrides tree:** G5 all-in mean ARM <=
+  BASE + 1.645 se; G6 never-in squads a run ARM <= BASE + 1.645 se; G7 friendly contact ticks ARM <= 1.05 x BASE.
+- **Fight guards:** `manoeuvre-wedge-trace` locks / terminus / sumps x 10461-10466 (18 fights an arm), `follow_judge.py
+  --on-arm=deckwait` G1-G4 (give-way deaths and stuck deaths ON - OFF <= max(2 paired se x n, 3); friendly contact ticks <= 1.10 x;
+  kill share within 0.03 and deaths within 5 %).
+- **Reported:** deck-jam seconds, mean arrival per tree, the rule's counters (deckwait_waits / _queued / _timeouts / _skipped).
+- **Gate:** the side trees carry fed356a8b's code + v5 (one rule, 7 + 1 tests green with the drive twins on builder2); the frozen
+  stream tree's full check (Bar S's gate) covers everything but v5's own lines, which its tests do. **Machine:** builder2 light for
+  the drills and the group guards, builder0 light for the fights; `~/overnight-manoeuvre/r43/bars5.sh`, started by unit
+  `manoeuvre-r43-bars5` after Bar S's series ends; evidence `~/overnight-manoeuvre/r43/bars5/`. A pass = R42.23's bridge re-read for
+  balance next round (the orchestrator's call); a fail: OFF, no re-run on these seeds.
+- **Dev read 1 (the drill's own seeds 1-3 under the overrides, builder2 light, GDScript, n 18 a cell, 5a5e7b434;
+  `~/overnight-manoeuvre/r43/s5dev1/table.txt`):** OFF 17/18 (rust s2 t15 Rust_S_3 rim 5.1 s: R40.21's crew), **ON 18/18**, pooled
+  rim 14.2 -> 7.8 s (-45 %), worst crew 0.9 s, **arrival 34.9 -> 34.8 s (paired -0.14 s a run, se 1.50)**: v4 cost +1.3 s a run
+  here and capped every follower; v5's gate leaves the orderly ones alone. Deck jam 17.1 -> 21.4 s (reported). Every Q6 tree line
+  PASS on the drill's seeds. Nothing on 10449+ read.
+
 ### S5 (the bridge crew, R42.15 / R42.23): deckwait v5 built on a SIDE branch while the stream is frozen (2026-10-28 ~03:00 PDT)
 
 - `wip/manoeuvre-s5` (`../godot-manoeuvre-s5`) = fed356a8b + balance's v2 overrides (8e257f3bc, d385cd308 cherry-picked) + 5a5e7b434:
