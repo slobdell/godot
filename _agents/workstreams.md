@@ -459,6 +459,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
   tests/run_tests.gd, tests/test_case.gd): the runner fails a file that defines a hook it never calls. Bar S v2's G5 FAILED too (74.0 ->
   77.8 s a run v line 77.0). The R43.34 scoping candidate needs a `group` key stamped by the pack (one line in rts_controls.gd + one key in
   ElementTask.KEYS): a contract line for round 44.
+- **R43.44 (~13:40) Native CLOSED: main 232b694b8 = native 8dac80f0b (INHERIT of 6cd8e65e4: builder0 `>> remote: make check exited 0`,
+  3393 passed / 0 failed, 28 targets ALL JUDGED, perf-judge PASS 1.00x 7398 us/tick).** N6: `run_tests.gd` fails a file that defines a
+  hook TestCase never calls (before_each / after_all / setup / ...). `tools/judge/lines_r43.py` 49 lines; close step 5b done
+  (`references/round43/native/sizing/`, judging.md *Round 43's lines*, no table change). Closest call of the round: Bar S v2's Locks
+  yield+blocked FAIL at -0.40 se (+4.12 s a run v a +3.44 line), so a fresh re-read could go either way (round 44).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
