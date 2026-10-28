@@ -222,8 +222,17 @@ _(worker keeps this current: report at the top, every number with commit, machin
   click (the probe's row ran through the click), and G1 v6's two-sided lay gives a squad past the click a place on the far side's
   line, which the edge clamp and the standable step put 18 m north of where it stood, on the edge. Not a held squad, not a squad
   the column skipped: the one squad the probe put beyond the click, moved 18 m sideways. His real click had no squad past it.
-  No frame shows a scatter the numbers missed. **FROZEN TREE: this commit (docs only over e2d1b499f's code); its full check runs on
-  builder2 after dev read 8, the hash is named here when green, then 10801-10848.**
+  No frame shows a scatter the numbers missed.
+- **Dev read 8 (the freeze read; builder2, native on, e2d1b499f, both arms, 25 cells, 7001-7006; `references/round44/orders/
+  o3-geometry-dev-builder2/dev8.txt`):** 15 of 25 cells pass every line; lines 2, 4, 6 hold everywhere but the two water's-edge
+  cells (locks his-20, crossing his-80) and locks along-20; the all-in guard fails on terminus across-20 and yard_open across-80
+  (stacked squads arrive later than spread ones; the guard decides as filed, R44.13). Three cells failed lines 1 / 3 on a PROBE
+  defect: the clear ground and the road were read along the approach computed before the squads were re-stood, a few degrees
+  off the layout's, and a physics frame earlier (50 m clear read where the layout read 52: fit one v two; roads 2.3 m apart v a
+  2 m slack). Fixed in the probe alone (adc0362f7: the geometry line is read on the order's tick with the layout's own approach;
+  smoke: the probe's clear = the lay's sides). The check queued for f12e61c38 was stopped before it started (remote side first,
+  by cwd, then the wrapper) and relaunched on the tip. **FROZEN TREE: this commit (docs + the probe over e2d1b499f's game code);
+  its full check runs on builder2, the hash is named here when green, then 10801-10848.**
 - **Decisions:** `click` goes on the one-squad row too (its `to` is the click, but one key the tools can rely on beats a
   rule); `group` only on orders to two or more squads (C44.3: his one-squad order stays manoeuvre's); loose units' row
   carries `click`, not `group`.
