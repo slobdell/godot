@@ -34,5 +34,11 @@ got=$(run SKIRMISH_FLAGS="--arena=pit") || bad "repeat ran" "$(cat "$tmp/make.ou
 [ "$(grep -c -- '^--arena=' <<<"$got")" = 2 ] && [ "$(tail -1 <<<"$got")" = "--arena=pit" ] \
 	&& ok "a repeated flag is appended last (so it wins in LaunchFlags)" || bad "repeat" "$got"
 
+# Round 44: SEED keeps its digits (his round-43 `SEED=56416.` did not parse and the recording said seed -1); none -> the clock's.
+got=$(run SEED=56416.) || bad "SEED=56416. ran" "$(cat "$tmp/make.out")"
+grep -qx -- '--seed=56416' <<<"$got" && ok "SEED=56416. (a full stop) reaches the game as 56416" || bad "SEED=56416." "$got"
+got=$(run SEED=abc) || bad "SEED=abc ran" "$(cat "$tmp/make.out")"
+grep -qxE -- '--seed=[0-9]+' <<<"$got" && ok "SEED with no digits: the clock's seed, a number the recording keeps" || bad "SEED=abc" "$got"
+
 printf '\nskirmish-flags: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

@@ -27,8 +27,11 @@ run: native-fresh import ## Play offline vs BOTS server bots (default 1): WASD/a
 # with the menu still up for his own pick.
 # Round 39 (C39.6): SKIRMISH_FLAGS="..." goes word for word to the end of the game's flags, so any OFF switch can be
 # playtested with `make skirmish`; LaunchFlags keeps the last value of a repeated flag, so it also overrides the ones above.
+# Round 44 (native): SEED keeps its digits only. His round-43 playtests ran `SEED=56416.` (a sentence's full stop copied from
+# HANDOFF): --seed did not parse, the CPU army rolled from the game's own clock and the recording says seed -1, so no replay
+# could repeat his match. A SEED with no digits takes the clock's, which make passes and the recording keeps.
 skirmish: native-fresh import ## Command your squads vs a budgeted CPU army (ENEMY=cpu|cpu:siege|individuals..., ENEMY_FACTION=condemned|gangs|law|syndicate (default: random), SEED=n, ARENA=random|yard|boulevard|pit|boneyard|foundry..., CONTROL=1, COMMANDER=1, ANNOUNCER=voice|text|off, MUSIC=on|off, CAMERA_READOUT=on|off, CPU_LEADERS=1 for the computer's squad leaders: it defends and ambushes, round 19, costs frame time; SKIRMISH_FLAGS="--rules-off=sight --parked-hold=on" passes any game flags, last so they win)
-	$(GODOT) --path . -- --skirmish --enemy=$(ENEMY) --seed=$(if $(filter command line,$(origin SEED)),$(SEED),$$(( $$(date +%s) % 100000 ))) --arena=$(or $(ARENA),random) \
+	$(GODOT) --path . -- --skirmish --enemy=$(ENEMY) --seed=$$(s=$$(printf '%s' '$(if $(filter command line,$(origin SEED)),$(SEED))' | tr -cd 0-9); echo $${s:-$$(( $$(date +%s) % 100000 ))}) --arena=$(or $(ARENA),random) \
 		--announcer=$(or $(ANNOUNCER),voice) --music=$(or $(MUSIC),on) --camera-readout=$(or $(CAMERA_READOUT),on) \
 		$(if $(CONTROL),--control) $(if $(COMMANDER),--commander) $(if $(ENEMY_FACTION),--pick-faction --enemy-faction=$(ENEMY_FACTION)) \
 		$(if $(CPU_LEADERS),--element-cpu) $(SKIRMISH_FLAGS)
