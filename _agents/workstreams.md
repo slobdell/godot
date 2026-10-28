@@ -82,7 +82,7 @@ never touch processes you didn't start. Never delete builder files that aren't o
 
 ## Bars (round 43)
 
-**Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards (and Bar A's pooled extension); 10349-10372 engage G1-G5 guards; 10373-10396 engage Bar A6 (+ 10397-10400, 10573-10592 its guards); 10601-10624 engage Bar A6 v2 (+ 10625-10648 its E1 lines); 10401-10424 manoeuvre bar S (arrival);
+**Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards (and Bar A's pooled extension); 10349-10372 engage G1-G5 guards; 10373-10396 engage Bar A6 (+ 10397-10400, 10573-10592 its guards); 10601-10624 engage Bar A6 v2 (+ 10625-10648 its E1 lines); 10649-10696 engage A7 (the across-water engage); 10401-10424 manoeuvre bar S (arrival);
 10425-10448 manoeuvre guards; 10449-10472 manoeuvre bridge (S5, BRIDGE_POOLED_SEEDS); 10501-10536 camera Bar K5 (36 an arm);
 10537-10572 camera K5 v2 (one re-file); native none. Dev: 7001-7012, 9501-9512, his 56416 (never a bar). Carried unread: 9201-9240 +
 9301-9340 Bar B5 t50 (only on his yes).
@@ -130,6 +130,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   verdicts and held_on_s within 2 se; 3-6 outcome guards; 7 Bar E1's lines on 10625-10648; 8 perf-judge on the ON check; 9 suite ON) +
   10 route_ms_per_verdict and queries a verdict (ARM-WR, reported). Each arm judged alone; ship the arm passing every line (both: the
   better line 1). The last re-file of this item this round.
+  **READ (R43.21): FAILS line 1 in both arms.** builder2, native, 13fbe1a5d, n 24, no timeout, floor 12/12. Line 1 off_arrive_s (side,
+  BASE 59.8 s a run): ARM-W -6.33 s (se 5.16, z -1.23), ARM-WR -4.46 (se 4.96, z -0.90). 2a 13 -> 13 PASS; 2b W -6.25 (se 7.70), WR -20.5
+  (se 11.85, z -1.73) PASS; 3-6 PASS (contacts_mouth -10, jam_s -8.6 / -7.8); 10 WR 0.59 ms a verdict, 3.3 queries. Reported: side
+  verdicts 12 -> 4, side held 705 -> 96 / 54, side jam 352 -> 45 / 41 (z -5.2).
 
 - **FILED Bar S, his first order settles (manoeuvre; FILED ~01:30 before any number on 10401-10448; tree FROZEN fed356a8b; full text in
   `streams/manoeuvre.md`).** One BASE (`--shape-latch=off` = today's main) v four arms each removable alone: **seats** (`--seat-bound=on` +
@@ -268,6 +272,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
   10601-10624 (+ 10625-10648 E1's lines): ARM-W the ordered-way read alone; ARM-WR ordered way + release judged on the crew's navmesh
   route to its squad's destination. Same lines (2b as filed) + a perf guard (find_path per crew at the verdict; ON check perf-judge
   <= 1.05x). Ship the arm that passes every line (both: the better line 1). Fail = both OFF with reads, item stops for the round.
+- **R43.21 (~02:25) Bar A6 v2 FAILS line 1 in both arms: holdfar, holdway, holdroute stay OFF; the street-hold item stops for the round.**
+  Round-44 candidate (not this round's filing): a bar DECIDED on the side stage's jam_s on fresh seeds (v2's reported side jam 352 -> 45,
+  z -5.2; every guard passed). His War Rig's cause stays shown by removal on his seed (R43.8). Engage moves to A7: the across-water
+  ENGAGE choice (R43.5's trace: the cover map's own line ignores water; `_combat_move` hops along the bank), report first, then its bar on
+  fresh 10649-10696.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
