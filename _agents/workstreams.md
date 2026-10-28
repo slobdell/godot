@@ -124,6 +124,13 @@ never touch processes you didn't start. Never delete builder files that aren't o
   FAIL** (real head-on crews released: `_route_passes` walks the crew's current leg to its seat, not its squad's destination); 3-6 PASS
   (jam_s -9.29 better). Reported: side verdicts 12 -> 2, side held 433 -> 10.
 
+- **FILED Bar A6 v2, two arms (engage; FILED d4a91fc6b on tree 13fbe1a5d before any 10601+ number; R43.20).** One BASE v ARM-W
+  (`--traffic-on=holdway`, the ordered-way read) v ARM-WR (`holdway,holdroute`: release judged on the crew's navmesh route to its squad's
+  destination at the verdict), builder2 J10, one arm at a time, 10601-10624; lines as Bar A6 (1 off_arrive_s side seeds; 2a/2b head-on
+  verdicts and held_on_s within 2 se; 3-6 outcome guards; 7 Bar E1's lines on 10625-10648; 8 perf-judge on the ON check; 9 suite ON) +
+  10 route_ms_per_verdict and queries a verdict (ARM-WR, reported). Each arm judged alone; ship the arm passing every line (both: the
+  better line 1). The last re-file of this item this round.
+
 ## Rulings (round 43)
 
 - **R43.1 (2026-10-27 ~20:55) Every replay of his match made before native's fix is void.** Native (N2, laptop): `tests/replay_orders.gd`
