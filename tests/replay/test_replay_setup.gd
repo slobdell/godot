@@ -85,3 +85,8 @@ func test_his_round41_formation_picks_are_inferred_from_the_task_rows() -> void:
 	assert_eq([picks[0]["tick"], picks[0]["formation"], (picks[0]["units"] as Array).size()], [0, "column", 5], "his squad")
 	rows.append({"t": "order", "tick": 3, "verb": "formation", "units": ["Green_Guns_1"], "formation": "line"})
 	assert_eq(ReplaySetup.inferred_formations(rows), [], "a recording that holds its picks infers none")
+
+
+func test_the_trig_probe_reads_this_process() -> void:
+	# Through make (the shim on an old glibc, or glibc >= 2.41) it is correctly rounded; test_native_trig pins the same input.
+	assert_true(ReplaySetup.trig_is_correctly_rounded(), "atan2f correctly rounded in a make-started test run")

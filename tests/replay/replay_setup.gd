@@ -158,3 +158,28 @@ static func _same_click(a: Dictionary, b: Dictionary) -> bool:
 		if a.get(key) != b.get(key):
 			return false
 	return String(a.get("error", "")) == "" and String(b.get("error", "")) == ""
+
+
+## Whether this process's float trig is the correctly rounded one his match ran (native.md *Machine-independent trig*): a
+## Godot started by hand on a glibc older than 2.41 (the laptop: 2.39) rounds atan2f & co. 1 ulp off CORE-MATH, while the
+## native library carries CORE-MATH inside, so the replay leaves his match within a second (round 43: "a twin gap" at tick 22
+## and "a parting at ~28 s" were both this). make preloads the shim (`make trig-info`). The probe is tests/test_native_trig.gd's.
+static func trig_is_correctly_rounded() -> bool:
+	var b := PackedByteArray()
+	b.resize(8)
+	b.encode_u32(0, 0xad04f469)
+	b.encode_u32(4, 0x73c66291)
+	var angle := Vector2(b.decode_float(0), b.decode_float(4)).angle()
+	var out := PackedByteArray()
+	out.resize(4)
+	out.encode_float(0, angle)
+	return out.decode_u32(0) == 0x3fc90fdb
+
+
+## The shim make preloads on an old glibc (.tools/trig/libtank_trig-<sha>.so), "" when there is none.
+static func trig_shim() -> String:
+	var dir := ProjectSettings.globalize_path("res://.tools/trig")
+	for file in DirAccess.get_files_at(dir):
+		if file.begins_with("libtank_trig-") and file.ends_with(".so"):
+			return dir.path_join(file)
+	return ""
