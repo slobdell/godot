@@ -208,6 +208,27 @@ The player-view frames (`make remote T=orders-probe-shots`, locks, 5 squads, bas
 arrival and 5 s later): `~/overnight-manoeuvre/r43/shots/frames/`; the group click's column stands alike in both arms (the halts
 are laid as today), no pile-up.
 
+### Bar S5: VERDICT FAIL on the deciding lines (series 02:48-04:12 PDT, builder2 light, GDScript drive both arms, trees 55d6344c1 (overrides) / 64b547192 (main); the group guards and fights running for the record)
+
+Evidence `references/round43/manoeuvre/bars5-builder2-55d6344c1/` (the two `--q6` tables and the bridge rows). The bar as filed; no
+line amended; no re-run on 10449-10460.
+
+| line | overrides tree (OFF -> ON, 72 runs an arm) | main tree (OFF -> ON) |
+|---|---|---|
+| Deciding 1 (the hard line, seeds 1-3 under the overrides, ON 18/18) | dev read 1: 18/18 (the series re-ran the fresh seeds only) | n/a |
+| Deciding 2a: pooled rim-seconds ON <= OFF | 32.0 -> 40.3 s (+26 %); per-run +0.12 s, se 0.07 (+1.7 se) **FAIL** | 32.9 -> 38.6 s (+17 %); +0.08 s, se 0.06 (+1.3 se) **FAIL** |
+| Deciding 2b: every surviving crew crosses ON | 72/72 PASS | 72/72 PASS |
+| Deciding 2c: the worst crew's rim ON <= 3 s | 3.9 s (green s10450 t8, Green_S_1) **FAIL** | 2.5 s PASS |
+| Arrival guard (R42.7): paired per-run arrival ON <= OFF + 1.645 se | +0.87 s a run (line +1.05) PASS | +0.99 s a run (line +0.69) **FAIL** |
+| reported: deck-jam seconds | 60.3 -> 73.3 | 62.0 -> 65.4 |
+
+**The read (after the numbers):** as with v4, the fresh seeds have no rim failure to fix OFF (72/72 both trees, worst crew 1.8 s), so
+a wait that fires only on a fast follower behind a slow leader still fires often enough (deck-jam seconds +22 % on the overrides tree)
+to cost rim seconds and arrivals, and once rode the rim itself (3.9 s). The drill's own crew (rust s2 t15) is rescued every time;
+the fresh seeds say the price of rescuing it is paid on every other crossing. **`deckwait` stays OFF** (v5 on `wip/manoeuvre-s5` as a
+ref; v4 on main OFF); balance's Bar B2s v2 stays on today's bridge (R42.23 not reached). The next shape, if any, must fire on the
+rim crew's own signature (ORCA's steer point carried PAST the deck's edge while the leader turns), not on the approach speed.
+
 ### Bar S5: FILED 2026-10-28 ~03:40 PDT, BEFORE any number on 10449-10472 (Bar Q6's lines, R42.7, unamended; the dev read of the drill's own seeds below)
 
 - **The rule judged:** `--traffic-on=deckwait` **v5** as at 5a5e7b434 (on `wip/manoeuvre-s5` = fed356a8b + balance's v2 overrides
