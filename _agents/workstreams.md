@@ -292,7 +292,7 @@ already read, or 7001-7012.
 - **R44.8 (~11:15) native's session ended mid-round; its next session starts here.** In flight when it ended: (a) N2's full check of
   7e9c199ae on builder0 (log `~/tank_squad/remote-logs/godot-native-check-20261028-104851-1025702.log`; the orchestrator reads it and
   merges on green); (b) the builder2 native-proof of `pair/native-m2m3-r2` 39b063c7c (log on the laptop `~/native-r44/m2m3-proof-39b063c7c.log`).
-  **Pending for native (relayed from manoeuvre):** backout's GDScript look (`Movement._backout_look`: the SCOPED look after c9ea1a6b4 (R44.16; hash named by manoeuvre; NOT c9ea1a6b4 or 813f36a5b))
+  **Pending for native (relayed from manoeuvre):** backout's GDScript look (`Movement._backout_look`: stream/manoeuvre **cf6eabc22** (R44.16; the look of c9ea1a6b4 + the scoped PID gate; NOT 813f36a5b))
   no longer requires the steering point within a hull's length, and BACKOUT_MIN_ERROR_DEG = 20; the C++ cheap look's pre-filter
   drops its |goal| < hull-length term, keeps drive_vector zero + near rest, then calls `_backout_due` as now. Re-cut the backout twin
   on manoeuvre's tip with that, prove EQUAL on builder2, name the hash to manoeuvre and the orchestrator: Bar B1 freezes on it.
@@ -344,6 +344,12 @@ already read, or 7001-7012.
   v3's probe diff was backout / parkedpass reaching HIS grouped crews (neither is gated by `grouped()`), a C44.3 breach. Backout is
   scoped off grouped crews this round; B1's byte-identity guard on the default probe (60/60 v base) is restored and proved on dev
   before the freeze; native's twin follows the scoped hash. Backout on grouped squads: a round-45 item after G1 v10.
+  **Correction (manoeuvre, ~12:55):** both rules WERE gated by `grouped()` (backout's look `not _grouped_crew()` since e0a746667;
+  `_parked_for_pass` false for a grouped crew). The leak was backout's station-PID gate, which with the switch ON took the PID off his
+  grouped crews' ordinary k-turns too. Fixed at **cf6eabc22** (PID off `_backout_leg` only). **Native's twin target = cf6eabc22** (the
+  drive gate; the look is c9ea1a6b4's). Proof: default probe base v bo v parkedpass, 60/60 byte-identical required (builder0 light).
+  Stretch: the bridge drill crew (R43.38, locks rust s2 t15) does NOT reproduce on main 918498713 (rim 0.0 s, arrival 21.6 s); the
+  18-cell hard line on main is running.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
