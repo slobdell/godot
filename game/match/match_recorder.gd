@@ -12,7 +12,7 @@ extends Node
 ##   {"t":"match",  ...}                          once: seed, arena, factions, the roster with every unit's stats
 ##                                                (+ C43.2: squad_cap, factions, preset, native, flags, spawn, frame)
 ##   {"t":"order",  tick, units, verb, source, to, target, formation, error}   every command, WITH its refusal
-##                                                (+ C43.2: frame, paused)
+##                                                (+ C43.2: frame, paused; verb "formation" = a formation pick)
 ##   {"t":"task",   tick, element, verb, to, formation}                        every squad task the leader took
 ##   {"t":"hit",    tick, shooter, target, weapon, face, weak, shield, hull, killed}
 ##   {"t":"census", tick, units:[{name, id, team, pos, hp, hp_max, shield, order, phase, blocked}]}  every CENSUS_S
@@ -86,6 +86,11 @@ func _ready() -> void:
 			_write({"t": "end", "tick": game_match.tick, "result": result}))
 	if controls != null and controls.has_signal("command_issued"):
 		controls.command_issued.connect(_on_command)
+	# C43.2 (round 43): a formation pick (G, Shift+G, the panel) re-tasks the selected squads WITHOUT a command, so it
+	# was never recorded and his round-41 match could not be replayed (three squads in column from tick 0). It is an
+	# `order` row with verb "formation" (an added verb; no `to`, so tools/recording_arrivals.py skips it).
+	if controls != null and controls.has_signal("formation_changed"):
+		controls.formation_changed.connect(_on_formation)
 	print("MATCH_RECORDING %s" % path)
 
 
@@ -162,6 +167,13 @@ func _on_command(command: Dictionary, error: String) -> void:
 	row["frame"] = Engine.get_physics_frames()
 	row["paused"] = get_tree().paused if is_inside_tree() else false
 	_write(row)
+
+
+func _on_formation(id: String) -> void:
+	var units: Array = []
+	if "selection" in controls and controls.selection != null:
+		units = Array(controls.selection.units).duplicate()
+	_on_command({"verb": "formation", "units": units, "source": "player", "formation": id}, "")
 
 
 func _on_impact(event: Dictionary) -> void:
