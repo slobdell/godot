@@ -13,19 +13,25 @@ tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 lock=$tmp/tank_squad/.full-check.lock
 
 # 1. Two non-blocking claimers released together by one barrier, 20 times: exactly one runs, the other exits 75 (busy).
-races_ok=0
+# The winner holds the claim until the other claimer has answered (its rc file), not for a fixed time: with a fixed 0.3 s
+# hold, a claimer started late on a loaded builder (builder2 at load ~48, 2026-10-28) claimed after the winner had let go,
+# a second winner in turn that read as a broken lock. Now two winners can only be two holders at once. Each race names
+# its outcome, so a FAIL says which way it went.
+races_ok=0; outcomes=""
 for i in $(seq 1 20); do
 	rm -f "$tmp/go" "$tmp"/won.* "$tmp"/rc.*
 	for c in a b; do
+		[ "$c" = a ] && other=b || other=a
 		( while [ ! -e "$tmp/go" ]; do :; done
-		  bash "$fcl" run -n "$lock" bash -c "touch '$tmp/won.$c'; sleep 0.3" 2>/dev/null; echo $? > "$tmp/rc.$c" ) &
+		  bash "$fcl" run -n "$lock" bash -c "touch '$tmp/won.$c'; for _ in \$(seq 1 100); do [ -e '$tmp/rc.$other' ] && break; sleep 0.1; done" \
+				2>/dev/null; echo $? > "$tmp/rc.$c" ) &
 	done
 	sleep 0.2; touch "$tmp/go"; wait
 	won=$(ls "$tmp"/won.* 2>/dev/null | wc -l); rcs=$(cat "$tmp/rc.a" "$tmp/rc.b" | sort | tr '\n' ' ')
-	[ "$won" = 1 ] && [ "$rcs" = "0 75 " ] && races_ok=$((races_ok + 1))
+	if [ "$won" = 1 ] && [ "$rcs" = "0 75 " ]; then races_ok=$((races_ok + 1)); else outcomes+="race $i: $won winner(s), exits $rcs"$'\n'; fi
 done
 [ "$races_ok" = 20 ] && ok "two claimers at once, 20 races: exactly one wins each time, the other is told busy (75)" \
-	|| bad "atomic claim" "$races_ok of 20 races had exactly one winner"
+	|| bad "atomic claim" "$races_ok of 20 races had exactly one winner"$'\n'"$outcomes"
 
 # 2. Two blocking claimers: both run, one after the other, never overlapping.
 : > "$tmp/log"
