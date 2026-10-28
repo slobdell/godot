@@ -91,6 +91,11 @@ already read, or 7001-7012.
   `--traffic-on=backout` (e0a746667, OFF): reversing by tick 2, past the box at tick 91 v 142 on his rebuilt start (builder0). M1
   scoping proof take 5: 591/0, G1 v9 probe 60/60 identical (builder2 light, native ON, CP44.0 lines applied uncommitted). Native twins
   `backout` (N3, after N1); it ships only inside Bar S v3, with a reverse-into-a-friend risk line.
+- **R44.4 (~11:20) his round-43 matches were not seed 56416.** Both ran `SEED=56416.` (the HANDOFF sentence's full stop); seed -1, the
+  armies from the clock (army seeds 891 for 08-21, 542 for 08-15, recovered from his rosters by native's N2 0d4b08cd8). The replay of
+  both is now exact (laptop, native ON: 20/20 crews 0.0 m for 63 s / 60 s). `make skirmish` keeps digits only (fff546ef6). Orders'
+  O2 lab and manoeuvre's M2 rebuild placed his vehicles from the census, so their causes stand; re-read on the exact replay at O5 / M5.
+  Native: six trial clicks all scatter 60-110 m; z = 117.24 is a hard edge (his Wrenches at exactly (-25.49, 117.24)), as R44.2's slide.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
