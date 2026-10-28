@@ -1285,11 +1285,12 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 	_note_wedge(tank.global_position, pace < 0.999)
 	var stationed := false
 	stationed_now = false
-	# Round 44 (manoeuvre M2, `backout`): never while a planned leg is under way: the PID wrote the throttle after the leg did and
-	# the hull rocked +-1.5 m/s on the spot for 80 ticks (his Guns_2's departure leg, builder0 bo2 trace); OFF, today's byte for byte.
+	# Round 44 (manoeuvre M2, `backout`): never while a departure look's leg is under way (`_backout_leg`): the PID wrote the throttle
+	# after the leg did and the hull rocked +-1.5 m/s on the spot for 80 ticks (his Guns_2's departure leg, builder0 bo2 trace). Only
+	# backout's own legs (R44.16: gating every planned leg reached his grouped crews' k-turns, the G1 probe's rows moved 1 %); OFF,
+	# and for every other leg, today's byte for byte.
 	if station_on and not direct and not order.get("reverse", false) and pace >= 0.99 and waypoint == goal \
-			and remaining <= STATION_RANGE and _goal_velocity.length() >= STATION_MIN_SPEED \
-			and not (backout_on() and (_kturn_left_m > 0.0 or planned_leg)):
+			and remaining <= STATION_RANGE and _goal_velocity.length() >= STATION_MIN_SPEED and not _backout_leg:
 		# Round 23 (brains B1): a crew its element paces on the way drives at that pace, whatever the PID would do.
 		drive_vector = _keep_station(cmd, goal, delta, speed_factor if order.get("paced", false) else 1.0)
 		stationed = true
