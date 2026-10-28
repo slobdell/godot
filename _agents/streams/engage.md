@@ -90,19 +90,24 @@ Nothing. The clip, when A5 has one.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-28 ~01:45 PDT (Fable). A1 DONE** (the turnaround reproduced bit-exact on native's replay, its cause shown by removal:
-Traffic's street hold at tick 478 dealt his lead War Rig a spot behind a corridor mouth 76 m away, for a verdict his lead crew's
-nose, not its orders, made; `--traffic-off=hold` -> the crew arrives on the far quay at tick 810). **A2 DONE** (no queue). **A3 built
-OFF** (`holdfar`, R43.8): **Bar A FAILED** its deciding line (z -1.73, guards all pass; R43.18: stays OFF with its read). **A6 built
-OFF** (`holdway` the ordered-way read, `holdroute` the route-bound release, R43.13/R43.18/R43.20): **Bar A6 FAILED** guard 2b
-(the first cut released real head-on crews: it judged the crew's current leg); **Bar A6 v2 READ: FAILED its deciding line in
-both arms** (W z -1.23, WR z -0.90; every guard passes); R43.20: both stay OFF with their reads, the item stops for the round. A4 = these bars; A5 = his replay
-by removal (dev, in each bar). Tools on the branch: the rebuild probe, the path probe, CREW_TRACE, `engage-replay-trace`,
-`engage-bar-a` / `engage-bar-a6`. **GREEN: 21dbaf662's code** (= the tools, CREW_TRACE and the three OFF
-traffic rules; every commit after it is Status, the A7 rule and its probe): builder0 `>> remote: make check exited 0`, 3362
-passed / 0 failed, 28 targets ALL JUDGED, sim-baseline every map unmoved, 2026-10-28 ~04:40 PDT. **Bar A7 (the across-water
-rule, `--engage-water=on`): lines 1-9 PASS**; 10-11 (the suite ON check) running; R43.23: ships with native's twin, one check
-on the combined tree. main 84f914f78 merged at a51c8d5af.**
+**2026-10-28 ~06:30 PDT (Fable). SHIPPED (pending the one combined check): A7, the across-water rule, ON** (`--engage-water=off`
+/ env ENGAGE_WATER=off = round 42): a crew keeps its gun on a target across water but never moves for it. **Bar A7 PASSED every
+line** (below: hops across water 34.8 -> 0.7 s a run, z -12; the drift off the crew's own order 21.5 -> 10.6 m, z -2.5; deaths
+fewer, kills more, arrival sooner, damage and first hit unchanged, the named-attack cost within, Bar E1's lines byte-identical,
+the suite ON green but for the three water maps' baseline rows, adopted: crossing, locks, gorge, read twice on builder0 at the
+combined tree). **Merge candidate: 1c20cc1c2** = the flip cbf1eb935 + native's twin (pair/native-a7 457effa1a, the obey skip
+natively, bit-identical) + main 36eacb71f + the three rows; its ONE full check (native path, perf-judge inside) is running on
+builder0; the hash is named green or not when it reads. **A1 DONE** (the turnaround reproduced bit-exact on native's replay,
+its cause shown by removal: Traffic's street hold at tick 478 dealt his lead War Rig a spot behind a corridor mouth 76 m away,
+for a verdict his lead crew's nose, not its orders, made; `--traffic-off=hold` -> the crew arrives on the far quay at tick 810).
+**A2 DONE** (no queue). **A3 built OFF** (`holdfar`, R43.8): Bar A FAILED (z -1.73; R43.18). **A6 built OFF** (`holdway`,
+`holdroute`; R43.13/R43.18/R43.20): Bar A6 FAILED guard 2b; Bar A6 v2 FAILED line 1 in both arms (R43.21: the street-hold item
+stops for the round; the round-44 candidate: side jam 352 -> 45 / 41 (z -5.2), side holds 705 -> 96 / 54, every guard passed).
+**21dbaf662's code GREEN** on builder0 (3362/0, 28 targets ALL JUDGED: the tools and the OFF rules; on main since 36eacb71f).
+Tools on the branch: the rebuild probe, the path probe, CREW_TRACE, `engage-replay-trace`, the hold probe + tables, the
+across-water probe + table. **What he will notice:** on Locks / Crossing / Gorge a crew under attack-move across the canal no
+longer hops along the bank for a target on the far side; it drives for the crossing with its gun firing across, and a crew told
+to attack a target across the water goes round by the bridge.**
 
 ### A3 (R43.8): the street hold's far crew, built OFF at 724ccb5ce (`holdfar`)
 
@@ -310,7 +315,8 @@ fix) gives the head-on stage something to measure.
 
 **Done:** A1 (the cause, shown by removal on his exact match), A2 (no queue), A3 (`holdfar`, OFF), A4 (Bar A, Bar A6, Bar A6 v2:
 all FAILED their deciding lines; every guard passed in every bar), A5 (his replay by removal in each bar: AWAY 82 m -> best 17 m
-under holdfar / 38 m under holdway; the GDScript-v-native caveat is native's, now a shim), A6 (`holdway`, `holdroute`, OFF).
+under holdfar / 38 m under holdway; the GDScript-v-native caveat is native's, now a shim), A6 (`holdway`, `holdroute`, OFF),
+**A7 (the across-water rule, ON: Bar A7 PASSED every line; merge candidate 1c20cc1c2)**.
 **Not done:** the stretch (E2's staged draw, the flank latch): no time after three bars.
 **Decisions:** the far rule measures the crew's straight distance to the mouth (the squad's mean way lied on his seed); the
 route-bound release walks the crew's navmesh route to its SQUAD'S destination (its current leg lied on the head-on stages);
@@ -321,12 +327,19 @@ a traffic rule, not his units' will), improved only on the branch behind switche
 side stage: verdicts 12 -> 4, holding -86 %, jam -87 %; it did not clear a 2-se arrival line at n 24 twice); (2) the ENGAGE-across-
 water hops (R43.5 grant, unbuilt: a crew under attack-move engages a team-seen contact across the canal within range + 15 m and
 hops direct, swinging a 14 m hull round); (3) the container_20 stall (manoeuvre's, R43.8); (4) round 42's: the SUPPRESS stand,
-the flank side knife-edge. **What to playtest:** nothing shipped ON. To see the cause: `make engage-replay-trace ENGAGE_TAG=x`
+the flank side knife-edge. **What to playtest:** `make skirmish ARENA=locks SEED=56416` (Gangs v Syndicate): attack-move a War Rig
+squad from the north bank to the far quay past the west swing bridge; the crews should drive for the bridge with their guns
+firing across the canal, no hopping back and forth along the bank, no reverse; `SKIRMISH_FLAGS="--engage-water=off"` is
+round 42. His recording's drive-away itself was the street hold (OFF rules on the branch). To see the cause: `make engage-replay-trace ENGAGE_TAG=x`
 (his match, the War Rig's drive) v `ENGAGE_FLAGS=--traffic-off=hold` (it arrives); `--traffic-on=holdway` is A6's arm.
 **Next steps (a later round):** A6 with a deciding line the head-on stage moves at n 24 (the side stage's arrival is noisy:
 se 4-5 s; a verdict-count or holding line would decide at n 12, but is mechanism), or his geometry in the natural draw (CPU v
 CPU censuses of mis-aimed verdicts: a verdict whose waiting crews' routes never cross the street); the across-water hops.
-**Merge notes (shared files):** `game/ai/traffic.gd` (R43.8 / R43.13 / R43.20 grants): DEFAULT_OFF += holdfar, holdway,
+**Merge notes (shared files):** `game/ai/tank_brain.gd` (R43.5 grant, A7): `ENGAGE_WATER` (static, ON; `--engage-water=off`),
+`water_between` (test seam), `_across_water`; `_obey`'s in_reach skips a contact across water; `_act` ENGAGE: the across-water
+branch before `_combat_move` (a named attack routes to it; else face and fire); the gun order unchanged. Twinned: pair/native-a7
+(decide_native.cpp's obey skip, native_decide.gd's two config keys, test_native_decide_water). `tests/baselines/sim_state_hash.txt`:
+crossing, locks, gorge (read twice at 396bf3b0e). `game/ai/traffic.gd` (R43.8 / R43.13 / R43.20 grants): DEFAULT_OFF += holdfar, holdway,
 holdroute; counters far_released / far_held / way_released / route_usec / route_queries in report() and reset_counters();
 `refresh` rows carry [12..13] the ordered way (ZERO unless holdway); `_load` reads it under holdway; `_begin_wait`: the holdroute
 release, the holdfar far rule (`_spot_behind` only for the rest), a wait with no spots ends; new `_route_reaches`, `_route_passes`,
