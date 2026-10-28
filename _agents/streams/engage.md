@@ -213,6 +213,25 @@ his seed by removal (dev, above). **Dev (laptop, 7007 / 7009 side, 7008 / 7010 h
 both, off_arrive 88.5 -> 71.5 (two runs), jam 40 -> 2, contacts_mouth 84 -> 24; head-on: verdicts 1 -> 1, held_on 114 -> 93.
 **A pass ships ON** (line 1 decided, 2-9 within).
 
+### Bar A6 v2 (FILED 13fbe1a5d, 2026-10-28 ~01:40 PDT, before any number on 10601-10648; R43.20: the LAST re-file of this item this round)
+
+**Two arms against one BASE, each judged on the same lines independently:** **ARM-W** = `--traffic-on=holdway` (the ordered-way
+read alone: no release); **ARM-WR** = `--traffic-on=holdway,holdroute` (the read + the release judged on the crew's navmesh route
+to its SQUAD'S destination at the verdict: `_route_reaches`, one `Pathing.find_path` a crew; the straight line without a map;
+its current leg and way when the squad has no destination). Bar A6's first cut (98739047a) judged the crew's current leg
+(FAILED 2b, above). **Tree:** this hash's code for all three arms. **Native:** ON on builder2 (`native engage-bar-a6`), every
+arm on the native path. **Workload and seeds:** as Bar A6 (odd seeds the side-street planting, even the three head-on stages),
+**10601-10624**, n 24 paired by seed, 75 s, J10. **Lines, unchanged from Bar A6:** 1 off_arrive_s (side 12) ARM < BASE by >= 2 se;
+2a verdicts and 2b held_on_s (head-on 12) within BASE +/- 2 se; 3 contacts_mouth, 4 contacts_far (+2 floor), 5 jam_s,
+6 last_a_s (all 24) within 1.645 se; 7 Bar E1's lines on **10625-10648** (ARM = the shipping arm's switches); 8 perf: the ON
+check's perf-judge <= 1.05x on builder0; 9 suite ON. **10 (new, R43.20): the route test's cost**, `route_ms_per_verdict` (Traffic's
+route_usec over its verdicts, ARM-WR) reported with its queries a verdict; the ON check's perf-judge is the line. **Exercised floor**
+as Bar A6 (8 of 12 side seeds with a verdict in BASE; the extension pool is none: a shortfall is INCONCLUSIVE). **Ships:** the arm
+that passes every line; both -> the better line 1; neither -> both stay OFF with their reads and the item stops for the round.
+**Tests** (laptop, 13fbe1a5d): `test_engage_hold_way.gd` 9/0 (adds: a crew whose route to the destination runs by another street is
+released; a crew whose leg lies beside the street but whose route crosses it is HELD, Bar A6's miss; the way read alone releases
+nobody), `test_engage_far_hold.gd` 6/0, `test_traffic_hold.gd` 18/0.
+
 ### Bar A6 READ (builder2, native ON in all 48 logs, 98739047a, `native engage-bar-a ENGAGE_HOLD_SWITCH=holdway` 10373-10396, J10, 75 s, n 24 paired = 12 side + 12 head-on, 2026-10-28 ~00:45-01:05 PDT, the box at load 23-37 with camera's work; table `scratchpad/bar-a6/pair_table.txt`)
 
 | line | BASE | ARM | paired mean | se | z | reading |
