@@ -172,6 +172,9 @@ struct DriveConfig {
 	// where the cheap look answers. False on a tree without S3 (its constants absent): the switch does not exist there.
 	bool kturn_goal_ready = false;
 	double KTURN_GOAL_MOVED_M = 0.0, KTURN_GOAL_AHEAD_DEG = 0.0;
+	// Round 44 (native N3, manoeuvre M2 `backout`): the departure look at an order's start (Movement._backout_due, the
+	// `_backout_leg` continuation, the station PID kept off a planned leg). False on a tree without M2: the switch does not exist.
+	bool backout_ready = false;
 	// Round 28 (N5): Movement._repair natively (SlotGround.for_unit called; repair_ready false: the callback).
 	bool repair_ready = false;
 	double REPAIR_MAX_M = 0.0;
