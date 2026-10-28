@@ -79,7 +79,7 @@ His answer to the combined-arms recommendation (the round proceeds on it); the s
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Round 42, in progress (2026-10-26; B7 ON merged as main 626303ea8 (b3841b301 green builder0 3299/0); Bar B2s v2 running; started from main 18982e8df, launch green 21b20bdce, no baseline re-run).**
+**Round 42, in progress (2026-10-26; B7 ON merged as main 626303ea8 (b3841b301 green builder0 3299/0); Bar B2s v2 read FAIL 17/18 (G3 Gangs turtle +20.75 %), unshipped; started from main 18982e8df, launch green 21b20bdce, no baseline re-run).**
 
 **Plan (in order; decisions in one line each):**
 1. B7 code (DONE, OFF): the counter rule, the pair loader, the garage deal and suggestion line, tests first.
@@ -213,6 +213,21 @@ line stays ON. Tests first (test_army_counter red 7/3 -> green; laptop `make tes
 terminus, Gangs v a Gangs tank rush on Rust): no flag -> `CPU_COUNTER faction=gangs tank_share=1.00 archetype=gang_hail` (16 Rat
 Rods, 7 Gun Trucks, 14 Wrecker Catapults, 7 Resupply Tankers); `--cpu-counter=off` -> today's roll (7 War Rigs, no Catapults).
 **b3841b301 GREEN: builder0 `make check` exited 0, 3299 passed, 0 failed** (2026-10-27 01:49). Merge it alone (R42.21).
+
+**BAR B2s v2 READ (2026-10-27 19:30; BASE c0b61be2e v ARM 7aceba95f = c0b61be2e + 8e257f3bc + d385cd308 (fm_c5r2_lawt5);
+builder2 J24, seeds 8801-8840 + 8901-8940 as filed, 0 attempts lost; `search.py bar ~/balance-guard-raw/bar-b2s-v2 c0b61be2e
+7aceba95f`, output `~/balance-runs/bar-b2s-v2-verdict.log`): VERDICT FAIL (17 of 18 rules hold).**
+- DECIDING passes: flatness 18.5 -> 11.6 (change -6.93, se 2.00, n 1600); blob v a Gangs CPU 80 -> 54 %, blob v a Syndicate
+  CPU 11 -> 42 % (both toward the line mean).
+- G1 blob line win share -4.50 (se 1.92, n 800) pass; G2 turtle -1.62 (se 1.31) pass; G4 time-cap share -0.06 (se 0.21) pass;
+  G5 none-line flatness -17.74 (se 5.16, n 200) pass; G8 mono-tank line -1.62 (se 0.92) pass.
+- G3 lengths: blob +5.8 % overall, per faction +5.4 / +12.4 / +5.8 / -10.3 % (pass); turtle +0.3 % overall, Condemned +0.1,
+  Law +0.3, Syndicate -18.2 % (pass), **Gangs turtle +20.75 % (se 7.71, n 210) v within 20: FAIL** (by 0.75, inside one se;
+  read as filed, no amendment).
+- G6/G7 from ARM's check: builder0 exited 2 (sim-baseline expected; bridge-pooled = the drill crew, R42.15's gate).
+- *In player terms:* the change does what it was for (the four factions' fights sit much closer to even, the Gangs blob stops
+  winning four in five and the Syndicate blob stops losing nine in ten) but Gangs fights against a dug-in line run about a fifth
+  longer, just past the bar's limit. **The stat change stays unshipped (R42.15), carried with this read verdict.**
 
 **R42.15 (orchestrator, ~19:10):** Bar Q6 FAILED, so CP42.1 is not reached and the bridge gate for shipping fm_c5r2_lawt5 is not met
 (not loosened). RULED: run Bar B2s v2 anyway, overnight on builder2 after the firing screen, B9_MAIN = current main (hash named by
