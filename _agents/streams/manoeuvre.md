@@ -198,6 +198,15 @@ passed + the usual NOT JUDGED pair (perf-judge: not a judging machine; scenario_
   converge, kturngoal, parkaside, the latch) and a `--brains-off=native_drive` arm with nothing else ON, each v base. If the drive
   arm alone reproduces the 58, the candidate's proof must run with native's twins (the ship tree, where both rules are twinned and
   the gate no longer lists them): the candidate is rebased onto the ship at round 44's start and proved there.
+- **The bisection (4132802e7, builder2 light, 06:29-06:43 PDT, `bisect.txt`, `rows4.jsonl`; 12 cells, each arm v base):** the
+  GDScript drive alone **60 / 60 identical** (the drive gate is NOT the leak; the two drives are row-identical here), the latch alone
+  60 / 60, the seat bound alone 60 / 60; **converge alone 43 differ, kturngoal alone 25, parkaside alone 50**. So the three rules the
+  candidate gates through the element's task leak, and the two the planner gates do not move a group click on their own. Cause,
+  read in the controls: the element's task is built KEY BY KEY from the pack's dictionary (`_queue_task_for` and the two other
+  builders, through `_copy_pack`, which copies `halt_at` / `halt_shape` / `lay` only), so `group` never reached any task; and
+  `halt_at` goes at the first re-lay. Fix e883fc4eb: `_copy_pack` carries `group` too. **Proof take 4** (unit `manoeuvre-r43-proof4`,
+  `proof4.txt`, `rows5.jsonl`) is queued behind the ship re-check, after a quiet web-smoke of the ship tree (its first-sound bound
+  went NOT JUDGED under my bisection's load: a probe beside a check on the same box was my mistake; `check_ship2/websmoke.txt`).
 
 ### Bar S v2: FILED 2026-10-28 ~03:35 PDT, BEFORE any number on 10701-10748 (R43.31: the one re-file, ONE arm; the dev read below)
 
