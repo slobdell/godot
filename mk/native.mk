@@ -481,7 +481,7 @@ replay-match: native-fresh import ## Replay a match recording headless (RECORDIN
 	@s=0; $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- \
 		--orders=$(CURDIR)/$(REPLAY_MATCH_DIR)/his.jsonl --seconds=$$(( $(or $(REPLAY_SECONDS),20) + 1 )) --record-dir=$(REPLAY_MATCH_DIR)/out \
 		$(REPLAY_FLAGS) > $(REPLAY_MATCH_DIR)/replay.log 2>&1 || s=$$?; \
-	grep -E '^REPLAY_(REEXEC|SETUP|SPAWN|ROSTER|NATIVE|CLICKS|FORMATIONS|DONE)|^NATIVE_EXEC' $(REPLAY_MATCH_DIR)/replay.log; \
+	grep -E '^REPLAY_(REEXEC|SETUP|SPAWN|ROSTER|NATIVE|SEED|CLICKS|FORMATIONS|DONE)|^NATIVE_EXEC' $(REPLAY_MATCH_DIR)/replay.log; \
 	[ $$s -eq 0 ] || { echo "replay: godot exited $$s (log $(REPLAY_MATCH_DIR)/replay.log)"; exit $$s; }; \
 	out=$$(ls $(REPLAY_MATCH_DIR)/out/*.jsonl | head -1); \
 	test -n "$$out" || { echo "replay: no recording written (log $(REPLAY_MATCH_DIR)/replay.log)"; exit 1; }; \
