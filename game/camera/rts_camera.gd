@@ -272,15 +272,20 @@ var _danger_settled_at := -1e9
 ## round 42: "my vehicles were driving north, and a building was to the east of it, when they got past the building there
 ## were enemies hiding to the east. The camera was still just angled toward the building, and ideally the camera would
 ## have recognized the blind spot and rotated clockwise such that it ended up pointing east as well." A fourth pull in
-## `danger_look`'s sum (one yaw writer): (d) toward the blind spot behind the far end of the wall his squad drives along,
-## CORNER_W x the ramp (CameraCorner.pull: in from PULL_IN_M short of the corner, out by PULL_FADE_M past it). It reads
-## the cover map and his units only, never an enemy (C43.6: no fog cheat); a gun firing at him drops it (the danger turn
-## outranks it); manual yaw, the aim hold, the deadband, the hold and the glide's cap are the danger camera's. It rides
-## the danger camera: with `--camera-danger=off` there is no corner pull either. `--camera-corner=on` (OFF until Bar K5).
+## `danger_look`'s sum (one yaw writer): (d) along the open side of the wall his squad has just driven past, CORNER_W
+## (v2, R43.27: CameraCorner.pull + step: only on a quiet move, once past the far end, only where that side is open, held
+## until his next order, a 45 deg turn or a contact). It reads the cover map, his units and his own order, never an
+## enemy (C43.6: no fog cheat); a gun firing at him drops it (the danger turn outranks it); manual yaw, the aim hold, the
+## deadband, the hold and the glide's cap are the danger camera's. It rides the danger camera: with `--camera-danger=off`
+## there is no corner pull either. `--camera-corner=on` (OFF: Bar K5 failed at 08931da4e; v2 on 10537-10572).
 var corner_on := false
-## (d) Strong enough to outweigh a full-speed heading and the war together (0.6 + 1.0): at the corner the view turns
-## most of the way to the blind spot (a north drive with the war north and the spot east looks ~60 deg east).
-const CORNER_W := 3.0
+## R43.27: the held corner look (CameraCorner.step), and `order_now` () -> the commanded units' current order ({id, verb}),
+## read-only (skirmish_mode wires it beside `facing`, C42.3).
+var corner_hold := {}
+var order_now: Callable = Callable()
+## (d) Strong enough to outweigh a full-speed heading and the war together (0.6 + 1.0): past the corner the view turns
+## most of the way to the open side (a north drive, the war north, the side east: atan(4 / 1.6) ~ 68 deg east).
+const CORNER_W := 4.0
 
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
@@ -1326,8 +1331,12 @@ func _update_yaw_follow(delta: float) -> void:
 	if danger_on and danger.is_valid():
 		var state: Dictionary = danger.call()
 		if corner_on:
-			state["corner"] = CameraCorner.pull(CoverMap.of(self) if is_inside_tree() else null, state.get("from"),
+			var candidate := CameraCorner.pull(CoverMap.of(self) if is_inside_tree() else null, state.get("from"),
 					state.get("own", []), state.get("heading"))
+			var order: Dictionary = order_now.call() if order_now.is_valid() else {}
+			corner_hold = CameraCorner.step(corner_hold, candidate, order, state.get("heading"),
+					(state.get("enemies", []) as Array).size())
+			state["corner"] = corner_hold
 		danger_last = RtsCamera.danger_look(state)
 		wanted = danger_last.get("look")
 		writer = "corner" if RtsCamera.corner_leads(danger_last) else "danger"

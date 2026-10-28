@@ -75,34 +75,45 @@ func _centre(points: Array) -> Vector3:
 	return sum / float(points.size())
 
 
-func test_the_pull_ramps_in_before_the_corner_points_at_the_blind_spot_and_lets_go_past_it() -> void:
+func test_the_look_is_the_open_side_once_past_the_end_and_only_where_it_is_open() -> void:
 	var map := _warehouse()
 	var north := Vector3(0, 0, -1)
-	var early := _column(10.0)  # the lead at z 10: 25 m short of the far end (z -15)
-	assert_eq(float(CameraCorner.pull(map, _centre(early), early, north)["w"]), 0.0, "beside the wall's middle: nothing yet")
-	var near := _column(-10.0)  # 5 m short
-	var p := CameraCorner.pull(map, _centre(near), near, north)
-	assert_true(float(p["w"]) > 0.5 and float(p["w"]) < 1.0, "ramping in before the corner opens (%s)" % [p])
-	assert_true((p["look"] as Vector3).x > 0.7, "toward round the corner, east of the building: %s" % [p["look"]])
+	var near := _column(-10.0)  # the lead 5 m short of the far end (z -15)
+	assert_true(CameraCorner.pull(map, _centre(near), near, north)["look"] == null, "short of the corner: nothing yet")
 	var at := _column(-20.0)  # 5 m past
-	assert_eq(float(CameraCorner.pull(map, _centre(at), at, north)["w"]), 1.0, "full just past the corner")
-	var gone := _column(-50.0)  # 35 m past
-	assert_eq(float(CameraCorner.pull(map, _centre(gone), gone, north)["w"]), 0.0, "clear of it: let go")
-	var across := CameraCorner.pull(map, _centre(near), near, Vector3(1, 0, 0))
-	assert_eq(float(across["w"]), 0.0, "driving AT the wall is not driving along it")
-	var far := [Vector3(-60, 0, -12)]
-	assert_eq(float(CameraCorner.pull(map, far[0], far, north)["w"]), 0.0, "a road beyond PULL_FAR_M is not beside it")
+	var p := CameraCorner.pull(map, _centre(at), at, north)
+	assert_true(p["look"] is Vector3 and (p["look"] as Vector3).distance_to(Vector3(1, 0, 0)) < 0.01,
+			"past it: along the open side's normal, east, his words (%s)" % [p])
+	var gone := _column(-45.0)  # 30 m past
+	assert_true(CameraCorner.pull(map, _centre(gone), gone, north)["look"] == null, "well clear of it: not rounding it")
+	assert_true(CameraCorner.pull(map, _centre(at), at, Vector3(1, 0, 0))["look"] == null, "driving AT the wall: not along it")
+	var far := [Vector3(-60, 0, -20)]
+	assert_true(CameraCorner.pull(map, far[0], far, north)["look"] == null, "a road beyond PULL_FAR_M is not beside it")
+	# Bar K5's D2 miss: the next block stands across the open side (Locks' close blocks): no look.
+	var blocked := _warehouse([{"position": Vector2(5, -20), "size": Vector2(6, 20), "axis": Vector2.RIGHT, "height": 6.0}])
+	assert_true(CameraCorner.pull(blocked, _centre(at), at, north)["look"] == null, "a wall across the open side: no look")
 
 
-func test_the_ramp_is_continuous_and_bounded() -> void:
-	var last := 0.0
-	var past := -CameraCorner.PULL_IN_M - 1.0
-	while past < CameraCorner.PULL_FADE_M + 1.0:
-		var w := CameraCorner.ramp(past)
-		assert_true(w >= 0.0 and w <= 1.0, "bounded at %.1f" % past)
-		assert_true(absf(w - last) < 0.06, "no step at %.1f (%.3f -> %.3f)" % [past, last, w])
-		last = w
-		past += 0.25
+func test_the_look_holds_until_his_next_order_a_turn_or_a_contact() -> void:
+	var map := _warehouse()
+	var north := Vector3(0, 0, -1)
+	var at := _column(-20.0)
+	var move := {"id": 7, "verb": "move"}
+	var hold := CameraCorner.step({}, CameraCorner.pull(map, _centre(at), at, north), move, north, 0)
+	assert_true(hold.get("look") is Vector3, "a quiet move past the corner takes the look")
+	var gone := _column(-60.0)
+	var later := CameraCorner.step(hold, CameraCorner.pull(map, _centre(gone), gone, north), move, north, 0)
+	assert_eq(later, hold, "held after the corner, no easing back (one reversal fewer a corner)")
+	assert_eq(CameraCorner.step(hold, {}, {"id": 8, "verb": "move"}, north, 0), {}, "his next order lets go")
+	var turned := Vector3(1, 0, -0.5).normalized()  # 63 deg off north
+	assert_eq(CameraCorner.step(hold, {}, move, turned, 0), {}, "the squad turning > 45 deg lets go")
+	assert_eq(CameraCorner.step(hold, {}, move, Vector3(0.3, 0, -1).normalized(), 0), hold, "a 17 deg wiggle keeps it")
+	assert_eq(CameraCorner.step(hold, {}, move, north, 1), {}, "a contact: K4 takes over")
+	for verb in ["attack", "hold", ""]:
+		assert_eq(CameraCorner.step({}, CameraCorner.pull(map, _centre(at), at, north), {"id": 7, "verb": verb}, north, 0), {},
+				"not a quiet move (%s): no look" % verb)
+	assert_true(CameraCorner.step({}, CameraCorner.pull(map, _centre(at), at, north), {"id": 9, "verb": "attack_move"}, north, 0)
+			.get("look") is Vector3, "an attack-move with nothing known is a quiet move too")
 
 
 func _state(from: Vector3, own: Array, enemies: Array = []) -> Dictionary:
@@ -110,16 +121,17 @@ func _state(from: Vector3, own: Array, enemies: Array = []) -> Dictionary:
 			"own": own}
 
 
-func test_in_the_look_it_swings_the_view_toward_the_blind_spot_and_a_gun_outranks_it() -> void:
+func test_in_the_look_it_swings_the_view_toward_the_open_side_and_a_gun_outranks_it() -> void:
 	var map := _warehouse()
 	var at := _column(-18.0)
 	var state := _state(_centre(at), at)
 	var quiet := RtsCamera.danger_look(state)
 	assert_near(RtsCamera.yaw_facing(quiet["look"]), 0.0, 0.05, "without the pull: up the road (north)")
-	state["corner"] = CameraCorner.pull(map, state["from"], at, state["heading"])
+	state["corner"] = CameraCorner.step({}, CameraCorner.pull(map, state["from"], at, state["heading"]),
+			{"id": 1, "verb": "move"}, state["heading"], 0)
 	var swung := RtsCamera.danger_look(state)
 	var bearing := rad_to_deg(RtsCamera.yaw_facing(swung["look"]))
-	assert_true(bearing < -30.0 and bearing > -110.0, "clockwise, round the corner to the east (yaw %.0f; east is -90)" % bearing)
+	assert_true(bearing < -55.0 and bearing > -90.0, "clockwise, most of the way east (yaw %.0f; east is -90)" % bearing)
 	assert_true(RtsCamera.corner_leads(swung), "the trace and the recording say corner")
 	var gun := {"name": "Gun", "at": Vector3(-40, 0, -30), "seen": true, "age_s": 0.0, "fired_s": 0.5, "hit_s": DangerFeed.NEVER}
 	var fired := _state(_centre(at), at, [gun])
@@ -158,6 +170,7 @@ func _yaw_run(rig: RtsCamera, feed: DangerFeed, frames: int) -> Array:
 	rig.yaw = 0.0
 	rig._yaw_turning = false
 	rig._danger_settled_at = -1e9
+	rig.corner_hold = {}
 	var out: Array = []
 	for i in frames:
 		rig._update_yaw_follow(1.0 / 60.0)
@@ -184,6 +197,7 @@ func test_no_fog_cheat_an_unseen_enemy_changes_no_yaw() -> void:
 	rig.edge_pan = false
 	add_to_tree(rig)
 	rig.corner_on = true
+	rig.order_now = func() -> Dictionary: return {"id": 1, "verb": "move"}
 	rig.facing = func() -> Variant: return Vector3(0, 0, -1)
 	var feed := DangerFeed.new().attach(m, Match.Team.GREEN, func() -> Array[String]: return ["Mine"],
 			func(_t: Tank) -> bool: return false, rig.facing)

@@ -313,33 +313,36 @@ func summary() -> Dictionary:
 			"mean_abs_bearing": snappedf(_bearing_sum / maxf(_corner_s, 1e-6), 0.1) if _corner_s > 0.0 else null}
 
 
-# ---- K5.3: the corner pull (the rule's half; walls and his units only, C43.6) -----------------------------------------
+# ---- K5.3 v2 (R43.27): the corner look (the rule's half; walls, his units and his own order only, C43.6) ------------
+# Bar K5 (10501-10536, 08931da4e) FAILED with three causes, each answered here: the pull fired near buildings mid-fight
+# (now only on a quiet move: a move or attack-move order, no known enemy); aiming round the far end landed on the next
+# block (now along the open side's normal once past the end, only where that ray is clear of walls); easing back made
+# one reversal a corner (now the look is held until his next order, a turn of the squad's heading, or a contact).
 
 ## A squad drives ALONG a wall when its heading is within this of the wall's length...
 const PULL_ALONG_DEG := 35.0
 ## ...and its centre is this far off the wall's face, at least and at most (beside it, not through it, not across the road).
 const PULL_NEAR_M := 1.0
 const PULL_FAR_M := 25.0
-## The pull ramps in from the lead crew PULL_IN_M short of the far end to full at the corner, holds PULL_HOLD_M past it
-## and fades out by PULL_FADE_M past: the swing starts before the hidden side opens (his "recognized the blind spot") and
-## lets go once the crews are clear of it.
-const PULL_IN_M := 14.0
-const PULL_HOLD_M := 8.0
-const PULL_FADE_M := 30.0
-## Where the blind spot is: behind the far end, this far off the hidden face and this far back from the end (a squad
-## parked against the back of a building sits about here; CameraCorner.lanes stages at HIDE_OFFS_M / HIDE_BACK_M).
-const PULL_OFF_M := 10.0
-## Negative = past the far end, round the corner. Dev (dev seeds, builder0): 6 m back (6847581f7) and level (b931bbf52)
-## both left the view grazing a wide block's far face once past it (Locks, facing after the opening 27 -> 48 %).
-const PULL_BACK_M := -8.0
+## The look is taken once the lead crew is past the far end, until this far past it (a squad already well clear of a
+## corner when it starts a move is not rounding it).
+const PULL_FROM_M := 0.0
+const PULL_UNTIL_M := 25.0
+## The open side must be open: the sight line from the lead crew along it, this long, clear of every wall (Bar K5: on
+## Locks' close blocks the look round the end landed on the next building).
+const PULL_CLEAR_M := 30.0
 ## Only walls whose centre is this close to the squad are read (a building's half length plus PULL_FAR_M and some).
 const PULL_SEARCH_M := 60.0
+## The held look lets go when the squad's heading has turned this far from where it was when the look was taken.
+const HOLD_TURN_DEG := 45.0
+## Orders under which the squad is just driving (no target of his to look at).
+const QUIET_VERBS := ["move", "attack_move"]
 
 
-## The pull toward the blind spot of the wall his squad is driving along, from the cover map and his units only (never an
-## enemy): {"look": the ground unit Vector3 from `from` toward the spot behind the far end, or null; "w": 0..1 the ramp;
-## "feature": its index or -1; "past": metres the lead crew is past the far end}. `own` = his commanded units' ground
-## points, `heading` their facing (a ground Vector3 or null). Pure, for tests.
+## The open side of the wall his squad has just driven past, from the cover map and his units only (never an enemy):
+## {"look": the ground unit Vector3 along the hidden face's outward normal, or null; "w": 1 or 0; "feature": its index or
+## -1; "past": metres the lead crew is past the far end}. `own` = his commanded units' ground points, `heading` their
+## facing (a ground Vector3 or null). Pure, for tests.
 static func pull(map: CoverMap, from: Variant, own: Array, heading: Variant) -> Dictionary:
 	var out := {"look": null, "w": 0.0, "feature": -1, "past": 0.0}
 	if map == null or not from is Vector3 or not heading is Vector3 or own.is_empty():
@@ -350,49 +353,58 @@ static func pull(map: CoverMap, from: Variant, own: Array, heading: Variant) -> 
 	flat_heading = flat_heading.normalized()
 	var at := Vector2((from as Vector3).x, (from as Vector3).z)
 	var cos_along := cos(deg_to_rad(PULL_ALONG_DEG))
+	var best := INF
 	for wall: Dictionary in CameraCorner.walls(map):
 		var centre: Vector2 = wall["centre"]
 		if centre.distance_to(at) > PULL_SEARCH_M:
 			continue
-		var index: int = wall["index"]
 		var long_axis: Vector2 = wall["long"]
 		var normal_axis: Vector2 = wall["normal"]
 		var half_len: float = wall["half_len"]
-		var half_w: float = wall["half_w"]
 		var dot := flat_heading.dot(long_axis)
 		if absf(dot) < cos_along:
 			continue
 		var along := long_axis * signf(dot)
 		var off := (at - centre).dot(normal_axis)
-		var gap := absf(off) - half_w
+		var gap := absf(off) - float(wall["half_w"])
 		if gap < PULL_NEAR_M or gap > PULL_FAR_M:
 			continue
-		var normal := normal_axis * signf(off)  # the squad's face; the blind side is -normal
 		var lead := -INF
+		var lead_at := Vector2.ZERO
 		for p: Vector3 in own:
-			lead = maxf(lead, (Vector2(p.x, p.z) - centre).dot(along))
+			var along_p := (Vector2(p.x, p.z) - centre).dot(along)
+			if along_p > lead:
+				lead = along_p
+				lead_at = Vector2(p.x, p.z)
 		var past := lead - half_len
-		var w := CameraCorner.ramp(past)
-		if w <= float(out["w"]):
+		if past < PULL_FROM_M or past > PULL_UNTIL_M or past >= best:
 			continue
-		var spot := centre - normal * (half_w + PULL_OFF_M) + along * (half_len - PULL_BACK_M)
-		var toward := spot - at
-		if toward.length() < 0.5:
+		var open_dir := -normal_axis * signf(off)  # away from the squad's face: the side the wall hid
+		var far := lead_at + open_dir * PULL_CLEAR_M
+		if not map.clear_line(Vector3(lead_at.x, 0.0, lead_at.y), Vector3(far.x, 0.0, far.y)):
 			continue
-		toward = toward.normalized()
-		out = {"look": Vector3(toward.x, 0.0, toward.y), "w": w, "feature": index, "past": past}
+		best = past
+		out = {"look": Vector3(open_dir.x, 0.0, open_dir.y), "w": 1.0, "feature": int(wall["index"]), "past": past}
 	return out
 
 
-## The pull's weight by how far the lead crew is past the far end (see PULL_IN_M). Pure.
-static func ramp(past: float) -> float:
-	if past <= -PULL_IN_M or past >= PULL_FADE_M:
-		return 0.0
-	if past < 0.0:
-		return smoothstep(-PULL_IN_M, 0.0, past)
-	if past <= PULL_HOLD_M:
-		return 1.0
-	return 1.0 - smoothstep(PULL_HOLD_M, PULL_FADE_M, past)
+## One frame of the held corner look (R43.27 (a) + (c)). `hold` = the last frame's ({} = none), `candidate` = this frame's
+## pull(), `order` = the commanded units' current order ({id, verb}), `heading` their facing, `known` how many enemies his
+## team knows. Returns the new hold: {look, w, order_id, heading} or {}. Pure, for tests.
+static func step(hold: Dictionary, candidate: Dictionary, order: Dictionary, heading: Variant, known: int) -> Dictionary:
+	if known > 0 or not String(order.get("verb", "")) in QUIET_VERBS:
+		return {}  # a fight is K4's; a hold, an attack or no order is not a drive past a corner
+	if not hold.is_empty():
+		var turned := false
+		if heading is Vector3 and hold.get("heading") is Vector3:
+			var a := Vector2((heading as Vector3).x, (heading as Vector3).z)
+			var b := Vector2((hold["heading"] as Vector3).x, (hold["heading"] as Vector3).z)
+			turned = a.length() > 0.01 and b.length() > 0.01 and absf(rad_to_deg(a.angle_to(b))) > HOLD_TURN_DEG
+		if order.get("id") == hold.get("order_id") and not turned:
+			return hold
+	if candidate.get("look") is Vector3 and float(candidate.get("w", 0.0)) > 0.0:
+		return {"look": candidate["look"], "w": 1.0, "order_id": order.get("id"), "heading": heading}
+	return {}
 
 
 ## Seconds from `a` to `b` (each a clock reading, -1 = never): never reads NEVER_S; `a` never reads null.
