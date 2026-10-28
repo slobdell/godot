@@ -177,6 +177,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
   overrides, builder2 light, GDScript, n 18, never a bar): OFF 17/18 (rust s2 t15 rim 5.1 s) -> ON 18/18, pooled rim 14.2 -> 7.8 s,
   arrival -0.14 s a run (se 1.5). A pass is balance's bridge gate (R42.15) for round 44's B2s re-read.
 
+- **FILED Bar K5 v2 (camera; FILED ~29b8fe1fd before any 10537-10572 number; R43.27).** Rule bb4c83e56: the pull only under a quiet
+  move order (no known enemy); past the end, aim along the open side's normal where a 30 m sight line is clear; held until his next
+  order, a > 45 deg turn or a contact; CORNER_W 4.0. Lines as Bar K5 except D1 per arena ARM >= BASE - 2 se (per-run shares), pooled +10
+  points unchanged; builder2 J8; `tests/camera/bar_k5.py --v2`. The one re-file of K5 this round.
+
 ## Rulings (round 43)
 
 - **R43.1 (2026-10-27 ~20:55) Every replay of his match made before native's fix is void.** Native (N2, laptop): `tests/replay_orders.gd`
