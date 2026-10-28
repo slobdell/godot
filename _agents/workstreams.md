@@ -184,6 +184,45 @@ already read, or 7001-7012.
   dev read: every guard passed in ARM-W at n 24; the deciding line there, off_arrive_s, missed 2 se).
   _(Recorded on main by the orchestrator as filed at fa9923299 on stream/manoeuvre.)_
 
+- **FILED Bar B1, his War Rig backs out of the box first (manoeuvre; R44.7 / R44.12; FILED before any number on 11101-11148;
+  C44.1, C44.3, C44.4, C44.5).** ONE arm, **bo** = `--traffic-on=backout` v `base` (today), on a FROZEN tree named at the series'
+  launch = stream/manoeuvre a39159330 (backout as of c9ea1a6b4: a long hull (>= 10 m) at rest at an order's start whose steering
+  point is within its own length and whose nose is blocked within 4 m by the navmesh, with 2 m of clear run behind, decides its
+  k-turn against the first vertex of its own route to its final seat (>= 20 deg off the nose): the circle plan or the single
+  back-up, stopping at any hull, never handed to the lattice seam; a leg so planned runs to its end and the station PID stays off
+  it; never a grouped crew's) + native's twin for it (R44.8's target c9ea1a6b4) once their builder2 verdict reads EQUAL, + main.
+  **Native ON in every log, the C++ drive ON in both arms** (the ship's shape). **What it could break (named first):** a crew
+  reversing into the friend behind it (wedged s, friendly contacts); a back-up where none was needed (reversing ticks and seats
+  among the crews NOT nose-on); a rig that backs out and then no longer finds its station (never-arrived, seated by 15 s); the G1 v9
+  group column (C44.3: byte-identical).
+  **Deciding (R44.12):**
+  - **D1 his start:** `make manoeuvre-start-trace` on his 08-15 recording (Locks 56416, native ON), base v bo on the frozen tree:
+    Green_Guns_2 reversing (speed under -0.5 m/s along its nose) before tick 15 and its centre past the box's west end (x < -45.0 and
+    z < 82.0) before tick 110 (main: 142); base must not already do both.
+  - **D2 the staged nose-on corpus:** `make test FILTER=nosed_corpus NOSED_CORPUS=on NOSED_SEEDS=11101-11148` (48 jittered poses: seed s
+    runs dev pose (s - 11101) mod 14 of tests/test_manoeuvre_nosed_corpus.gd, the spot +/- 3 m along the box face, the nose gap 2.0
+    +/- 0.5 m, the nose +/- 5 deg off square, the order's angle +/- 5 deg, from the seed; OFF and ON each; the rig's time to clear
+    8 m from its spot). **A base-stuck pose = the base has not cleared within 6 s AND its rig had no yielding or blocked-by-a-friend
+    ticks in its first 6 s, both read from the base row** (a squadmate pinning it is not the box). On the base-stuck poses, **floor
+    8 (fewer = B1 NOT JUDGED, said so)**: ON clears sooner in >= 80 % of them AND the median gain >= 1 s. **Cost ceiling on every
+    other pose:** ON <= OFF + 3 s each, the median <= +1 s. `tests/manoeuvre/nosed_judge.py`.
+  **Guards (all paired, Bar S v3's lines as guards):** the first-order workload (`make manoeuvre-bar-s` locks / terminus / crossing x
+  **11101-11124**, 72 paired cells): per arena yield+blocked s, k-turn s and wedged s each ARM <= BASE + 2 se; pooled never-arrived
+  ARM <= BASE + 2 se; D1-seated-by-15 s ARM >= BASE - 2 se; **the unneeded-back-up guards (`tests/manoeuvre/b1_judge.py`): among
+  crews NOT nose-on (the START_RUN row's nose_room_m >= 4 m or hull_m < 10), per arena, reversing ticks in the first 15 s ARM <=
+  BASE + 2 se and seated by 15 s ARM >= BASE - 2 se; the nose-on crews' own time to clear 8 m reported.** Group-order guards
+  (`q3_judge.py`, G5 / G6 / G7) and the G1 v9 corridor (ORDERS_PROBE_SQUAD rows base v bo **byte-identical**; `orders_judge.py
+  g1v8`'s lines each ARM <= BASE) on **11125-11136**; fights (`manoeuvre-wedge-trace` locks / terminus / sumps x **11137-11142**,
+  G1-G4); perf: the frozen tree's check perf-judge PASS (the C++ drive carries the rule); no SCRIPT ERROR in any log.
+  **Ships ON (`backout` out of DEFAULT_OFF, `--traffic-off=backout` the escape) only if D1, D2 and every guard pass; no re-file.**
+  **Machine:** `~/overnight-manoeuvre/r44/bars_b1.sh` from the frozen worktree `../godot-manoeuvre-b1`: the corpus and the G1 probe +
+  fights on builder0 light, his start and the workload + group guards on builder2; evidence `~/overnight-manoeuvre/r44/bars_b1/`,
+  filed under `references/round44/manoeuvre/barsb1-<machine>-<hash>/`. **Dev history (C42.1; the 14 dev poses, Locks 7001-7012,
+  his start; never a bar):** corpus5 (the GDScript drive, c9ea1a6b4): cost ceiling worst +1.7 s / median -0.07 s; the base-stuck
+  poses 6 (under the floor), sooner in 2 (-0.9, -3.9 s), three of the rest pinned by the staged squad; the alone poses gain 1.2 /
+  1.3 / 2.1 s; his start past the box ~91 v 142 (bo11); Locks dev11 backout alone: D1 +1.0 se, yield+blocked -0.1 se, k-turn +1.6
+  se, the two guards +1.0 se.
+
 ## Rulings (round 44)
 
 - **R44.1 (2026-10-28 ~10:50) orders' O0 + O1 land as ONE commit (716e6304e):** both are additive keys at the same two call sites;
