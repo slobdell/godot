@@ -288,10 +288,9 @@ static func _chain_native() -> void:
 	# (native N3, pair/native-parkaside: drive_native.cpp park_aside, test_native_drive_parkaside), so ON keeps the C++ drive.
 	# Round 44 (M2, `backout`): the departure look (_backout_due, the cheap look's deferral, `_backout_leg`, the station gate) is
 	# twinned (native N3, pair/native-backout: drive_native.cpp backout_due / backout_look_due), so ON keeps the C++ drive.
-	# Round 44 (R44.16, cf6eabc22): backout's station-PID gate is now `_backout_leg` only; native's merged twin (m2m3-r2) still gates
-	# every planned leg while ON, which reached grouped crews' k-turns (the G1 probe: 37 of 60 rows moved on the C++ drive, 60/60
-	# identical for parkedpass). Until the twin matches cf6eabc22, ON runs the GDScript drive again.
-	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush") or not _off.has("backout"):
+	# Round 44 (R44.16): the twin matches cf6eabc22 (native N3, pair/native-backout-r3: the station-PID gate on `_backout_leg` only,
+	# the long-hull term), so backout ON keeps the C++ drive.
+	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush"):
 		if _reroute_saved_native_drive == null:
 			_reroute_saved_native_drive = BrainSwitches.native_drive
 		BrainSwitches.native_drive = false
