@@ -120,6 +120,27 @@ already read, or 7001-7012.
   Guns_2 backs out at tick 11 and is past the box at ~91 v 142 on main (bo8).
 
 
+- **FILED Bar A6 v3, the street hold decided on the side stage's jam (manoeuvre stretch, R43.21's round-44 framing; FILED before any
+  number on 10949-10996; `game/ai/traffic.gd` is manoeuvre's this round).** ONE arm, **ARM-W** = `--traffic-on=holdway` (engage's
+  ordered-way read alone, unchanged since 13fbe1a5d: a crew of the waiting squad is held only when its ORDERED way, not its momentary
+  nose, runs through the street) v BASE (today), on the same frozen tree as Bar S v3, **9215b8ab9** (its gate check is Bar S v3's),
+  native ON in every log (`native engage-bar-a6`'s workload, the `wr` arm not run). **Workload:** tests/engage/hold_probe.gd as Bar A6
+  v2 (odd seeds the side-street planting, even the three head-on stages), **10949-10972**, n 24 paired by seed = 12 side + 12
+  head-on, 75 s, builder2 light J10. **Deciding:** **jam_s on the side 12** (crew-seconds under 0.5 m/s within 25 m of the street's
+  middle before arriving, sum a run) ARM < BASE by >= 2 se (paired) AND pooled ARM < BASE (A6 v2 reported side jam 352 -> 45, z -5.2,
+  on 10601-10624; a fresh block decides). **Exercised floor:** 8 of 12 side seeds with a verdict in BASE, else INCONCLUSIVE (no
+  extension pool). **Guards (A6 v2's lines, unamended, now all guards):** 1 off_arrive_s (side 12) ARM <= BASE + 2 se; 2a verdicts
+  and 2b held_on_s (head-on 12) within BASE +/- 2 se; 3 contacts_mouth (24) ARM <= BASE + 1.645 se; 4 contacts_far (24) ARM <= BASE +
+  max(1.645 se, 2); 5 last_a_s (24) ARM <= BASE + 1.645 se; 6 Bar E1's lines (`make engage-bar` on **10973-10996**, ARM =
+  `ENGAGE_FLAGS=--traffic-on=holdway` v BASE, builder2 light): stuck crew-seconds, first hit, deaths each within BASE +/- 1.645 se;
+  7 the frozen tree's check perf-judge (Bar S v3's gate); 8 no SCRIPT ERROR. **What it could break (named first):** a crew held
+  by the way read that today's nose read released (held_on_s UP on the head-on stage, 2b); a crew released that then meets the passer
+  at the mouth (contacts_far, 4); the far crew's own arrival (off_arrive_s, 1). **Ships ON** (`holdway` out of DEFAULT_OFF, `=off`
+  the escape) only if the deciding line and every guard pass; no re-file. **Machine:** `~/overnight-manoeuvre/r44/bars_a6v3.sh`
+  from `../godot-manoeuvre-v3`, queued behind Bar S v3's series on builder2 light; evidence `~/overnight-manoeuvre/r44/bars_a6v3/`,
+  filed under `references/round44/manoeuvre/barsa6v3-builder2-9215b8ab9/`. **Dev history:** none this round (A6 v2's read is the
+  dev read: every guard passed in ARM-W at n 24; the deciding line there, off_arrive_s, missed 2 se).
+
 ## Rulings (round 44)
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
