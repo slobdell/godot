@@ -1,0 +1,16 @@
+0:00.0  CALLER   caller.intro.33           I've got chills, folks. Real chills.
+0:02.7  PA       pa.welcome.02             Good evening. On behalf of the Syndicate, welcome to the Locks. Please take a moment to locate the exit nearest your seat. Exits will open after the match.
+0:13.0  VETERAN  color.drill.08            And that's support by fire. I can tell you exactly how that ends, but I'd rather you watched.
+0:15.5  CALLER   caller.interrupt.03       Whoa! Look at this!
+0:17.1  VETERAN  color.contact.15          They found each other in the middle. That's usually a brawl.
+0:20.9  CALLER   caller.kill.16            And the Condemned strike first! The Lancer gets the honors!
+0:24.4  VETERAN  color.trail.09            My old chief had a saying about this exact situation. It was longer than it needed to be.
+0:25.2  CALLER   caller.interrupt.14       Wait a second!
+0:26.5  CALLER   caller.control.01         The Condemned take the control point!
+0:29.6  CALLER   caller.kill.22            That's the matchup! The Lancer does exactly what it was built to do!
+0:33.4  CALLER   caller.kill.178           It's a shooting gallery out there, and only one side is shooting!
+0:37.2  CALLER   caller.kill.127           They cannot be stopped right now! Everything they touch goes down!
+0:41.2  VETERAN  color.trail.03            See, that's what happens when you lead with the wrong... Well. You saw it.
+0:47.5  VETERAN  color.drill.23            They got hit and they didn't freeze. You'd be surprised how many freeze.
+0:52.7  VETERAN  color.teach.spacing01     Spacing is the whole game. Too close and one shell takes two of you. Too far and nobody can help anybody.
+1:01.0  VETERAN  color.kill.05             That's what they built it for. No surprises there.

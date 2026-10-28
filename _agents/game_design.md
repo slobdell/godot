@@ -4545,3 +4545,30 @@ his last loss (War Rig 3 at (-56, 62), tick 1371) and holds no enemy deaths and 
 round 43's camera item starts by recording the camera's yaw and target in the match recording, then builds the corner rule
 (a "clearing a corner" workload on Locks beside K4's ambush / retreat / attack ones). "North" and "east" are his screen's, not the
 arena's.
+
+## His playtest after round 43 (2026-10-28 ~08:15-08:25, verbatim)
+
+Recordings: `references/round43/playtest/2026-10-28T08-15-42-locks.jsonl` and `2026-10-28T08-21-31-locks.jsonl` (Locks, seed 56416, Gangs v
+Condemned, round-43 main, laptop preset, native ON, squad cap 4). Both carry the camera's `cam` rows. He ran `make playtest-report` and found
+its output too long to paste (round 44: the report writes a file and prints a one-screen summary).
+
+"Camera seemed ok. One observation for the game in terms of movement though - I once again told squad 1 to go to the west side of the
+map. These were the gang tanks. The tanks start behind a shipping container. One of the tanks moved forward right away only to get stuck
+right away before recognizing it needed to back up. In that case it should have been obvious to the tank that they should have backed up
+first to create clearance. I played again to try to reproduce and I didn't seem to have the same problem. However, there's another obvious
+problem. I selected all of my squad and told all of them to move to the west side of the map. I had reported this issue long ago: the
+waypoints selected for the respective squads were all over the place, leading to all squads moving in all different directions. We had
+already talked about this at lenth in the path where I was trying to ask for the squads to pack it in or something (i.e. one squad behind
+another or something so that they can all share roughly the same destination)"
+
+**What the recordings show (orchestrator):**
+- **The tank behind the container (first match, 08-15):** his first order (tick 0) sent the Guns to the west; Green_Guns_2 at (-42, 90)
+  read `driving` for 4 s (ticks 0-120) while moving under 2 m, then left; Guns_3 yielded 3 s to Hunters_1. That is a War Rig nosing into
+  the container before backing out: the k-turn family manoeuvre measured this round (kturngoal, the converge station; both OFF).
+- **The group click (second match, 08-21):** at tick 1512 (50 s) all four squads stood along the north edge, side by side (Hunters
+  (-15, 92), Spears (14, 91), Wrenches (44, 93), Guns_4 alone (-8, 78)). His one click west became four destinations about 100 m apart
+  north to south: Guns_4 (-50, 15), Hunters (-46, 70), Spears (8, 58), Wrenches (-25, 117), the Wrenches sent back to the north edge
+  and the Spears barely west of where they stood. The same at tick 1808 (-60, 20) / (-66, 58) / (-1, 66) / (-72, 110). Not the column of
+  wedges he asked for in round 37 (*Round 37: his playtest note on a group click*: "stacks of wedges, one squad immediately behind the
+  other", "the squad furthest away to land in the back and the closest squad to land in the front") and that G1 v9 shipped in round 41
+  (R41.15). The recording holds each squad's destination but not his click point (round 44: record the click).

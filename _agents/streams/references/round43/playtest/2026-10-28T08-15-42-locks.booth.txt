@@ -1,0 +1,21 @@
+0:00.0  PA       pa.welcome.15             We are live. Tonight's crews have been weighed, their vehicles inspected, and their next of kin notified of the start time.
+0:07.3  CALLER   caller.intro.34           This is what we wait all week for! Here we go!
+0:07.8  CALLER   caller.contact.15         First rounds are away! Here comes the fight!
+0:10.3  CALLER   caller.kill.27            The IFV shreds the scout! Too slow to run, too light to take it!
+0:14.4  PA       pa.syndicate.03           Tonight's targeting systems are the same ones protecting Syndicate facilities in all eleven districts.
+0:14.9  CALLER   caller.interrupt.08       Hang on, hang on!
+0:16.6  VETERAN  color.kill.29             He had a way out. He didn't take it. I don't know why.
+0:20.3  CALLER   caller.kill.132           They are dominating this stretch! Absolutely dominating!
+0:24.3  CALLER   caller.kill.122           Same crew, same result! Another vehicle down!
+0:27.3  CALLER   caller.kill.42            Another one for the Syndicate! This is a clinic!
+0:30.3  CALLER   caller.kill.59            Remember when the Syndicate were finished? Nobody told the Syndicate!
+0:34.0  CALLER   caller.kill.66            It is chaos down there! I can't even keep up!
+0:37.0  CALLER   caller.kill.65            Vehicles are going down all over the floor! Two in a matter of seconds!
+0:40.7  CALLER   caller.kill.136           The momentum has completely shifted! What a turnaround!
+0:44.9  CALLER   caller.drill.ambush.02    Oh, they're going right back at them! Straight into the guns!
+0:48.9  CALLER   caller.formation.09       Nice and tidy out there. Somebody has been practicing.
+0:50.8  CALLER   caller.kill.78            Oh, they lit that one up!
+0:52.4  PA       pa.kill.10                Stewards will collect the crew's papers from the vehicle, where possible, and return them to the district office in the morning.
+0:54.6  CALLER   caller.kill.50            It's all on the last Wrecker vehicle now!
+0:55.9  VETERAN  color.kill.22             He saw it too late. In here, too late is about half a second.
+1:00.1  CALLER   caller.result.01          It's all over! The Syndicate win it!
