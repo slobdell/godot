@@ -74,7 +74,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **2026-10-28, FINAL: every backlog item DONE or stopped by ruling. K5.1 (the camera in the recording) is ON MAIN; the corner
 swing (K5.3) ships OFF (Bar K5 FAILED at 08931da4e; v2 STOPPED unspent on the second dev block, R43.29/R43.30); the corner
 workload, its census, the no-cheat check and Bar K5's judge go to main OFF for round 44's rebuild from his recording.
-Merge candidate: the tip after `main` 893f45ab9 was merged in (hash and its check below).**
+Merge candidate: f9758b051 (`main` 893f45ab9 merged in). Its full check on builder2: `>> remote: make check exited 2`, test
+3383 passed / 0 failed, 25 passed + 1 FAILED + 2 NOT JUDGED (perf on builder2; scenario_perf loaded); the FAILED target,
+remote-guard-test (tools/test_full_check_lock.sh "atomic claim: 19 of 20 races", a load-timed race at load ~48 on 16
+cores), rerun alone at the same commit on builder2: `>> remote: make remote-guard-test exited 0`, full-check-lock 22/0.
+Later commits are this Status only.**
 
 **For him (player terms):** the camera now writes where it was looking into every match recording, once a second and every
 time it starts turning by itself, so the next time a squad rounds a building and the view stays on the wall, we can see
