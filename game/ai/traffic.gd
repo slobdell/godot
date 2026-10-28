@@ -152,6 +152,13 @@ static var released_cap := 0
 ## Round 35 (T8): crews released from a hold because they were being hit.
 static var released_fire := 0
 static var no_spot := 0
+## Round 43 (engage A3, R43.8, `holdfar`): crews of a waiting squad released at the verdict for standing farther behind the
+## mouth than the spot grid reaches (never sent to the mouth).
+static var far_released := 0
+## ...and the far crews held where they stood because their own route runs into the held street (`spot = here`).
+static var far_held := 0
+## A far crew's own mouth within this of the squad's mouth (m) means its route runs through the same street.
+const FAR_THROUGH_M := 20.0
 ## The crossing's counters (measurement only): squad-pair verdicts made, crew-ticks a wish was slowed.
 static var cross_verdicts := 0
 static var cross_slowed := 0
@@ -206,7 +213,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush"]  # round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane (manoeuvre, until judged) (manoeuvre, until judged); round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar"]  # round 43 holdfar (engage A3, R43.8: the far crew of a waiting squad is not sent to the mouth; until Bar A)  # round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane (manoeuvre, until judged) (manoeuvre, until judged); round 39 M1 givewaychain + round 40 M1 v2 chainrelease / chainside + M3 reroute / rerouteany + F1 follow (manoeuvre, until judged); T7 ON (shipped); T9 yieldfit2 ON (R35.66, the joint); T8 holdfire ON (C36.2, judged PASS on a2de32420); yieldgap (R36.4) ON (R36.27, Bar S2a series PASS with h1bside)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -305,7 +312,7 @@ static func holding(crew: String) -> bool:
 ## The counters as one reading (the traffic probe reports it), and back to zero.
 static func report() -> Dictionary:
 	return {"tr_verdicts": verdicts, "tr_holds": holds, "tr_hold_ticks": hold_ticks, "tr_released_passed": released_passed,
-			"tr_released_cap": released_cap, "tr_released_fire": released_fire, "tr_no_spot": no_spot, "tr_cross_verdicts": cross_verdicts,
+			"tr_released_cap": released_cap, "tr_released_fire": released_fire, "tr_no_spot": no_spot, "tr_far_released": far_released, "tr_far_held": far_held, "tr_cross_verdicts": cross_verdicts,
 			"tr_cross_slowed": cross_slowed, "tr_cross_reach_free": cross_reach_free}
 
 
@@ -317,6 +324,8 @@ static func reset_counters() -> void:
 	released_cap = 0
 	released_fire = 0
 	no_spot = 0
+	far_released = 0
+	far_held = 0
 	cross_verdicts = 0
 	cross_slowed = 0
 	cross_reach_free = 0
@@ -767,12 +776,31 @@ static func _begin_wait(waiter: String, passer: String, key: String, frame: int,
 		var to: Vector2 = destination[0]
 		runs.append([centre, to, biggest + PASSER_CLEAR_M])
 		runs.append([to, to, biggest + float(destination[1]) + PASSER_CLEAR_M])
+	var far_reach := HOLD_BACK_M[HOLD_BACK_M.size() - 1]
 	for entry: Array in order:
 		var k: int = entry[1]
 		var here := Vector2(xs[k], zs[k])
 		var spot := Vector2.INF
 		if (here - centre).dot(dir) < 0.0:
-			spot = _spot_behind(centre, dir, right, radii[k], taken, runs, cols)
+			# Round 43 (engage A3, R43.8; his Locks 56416 War Rig, 80 m from the mouth, driven 90 m away to its spot for 18 s):
+			# a crew farther behind the mouth than the grid reaches (its last row plus the hull) is not sent to the mouth. It
+			# is released from this wait: it keeps its route (ORCA as always) and reaches the street after the passer is through.
+			# The crews at the street take turns as before. `--traffic-off=holdfar` (or its DEFAULT_OFF listing before Bar A)
+			# is round 29's rule.
+			if not off("holdfar") and (centre - here).dot(dir) > far_reach + 2.0 * radii[k]:
+				# R43.8's second branch: a far crew whose own route (its mover's path, then straight on its squad's way) runs
+				# into THIS street waits where it stands (round 29's "nowhere to pull aside" spot) rather than driving on
+				# into the passer; one whose route does not is released.
+				var own := _mouth(names[k], here, dir, frame)
+				if own != Vector2.INF and own.distance_to(mouth) <= FAR_THROUGH_M:
+					far_held += 1
+					spot = here
+				else:
+					(wait["released"] as Dictionary)[names[k]] = true
+					far_released += 1
+					continue
+			else:
+				spot = _spot_behind(centre, dir, right, radii[k], taken, runs, cols)
 		else:
 			spot = _spot_edge(here, right, radii[k], taken, runs, cols)
 		if spot == Vector2.INF:
@@ -781,6 +809,9 @@ static func _begin_wait(waiter: String, passer: String, key: String, frame: int,
 		taken.append(Vector3(spot.x, spot.y, radii[k]))
 		(wait["spots"] as Dictionary)[names[k]] = [spot, spot + dir * 20.0]
 		holds += 1
+	if (wait["spots"] as Dictionary).is_empty():
+		_end_wait(waiter, frame)  # round 43 (holdfar): every crew was far: nobody waits, the pair is not re-met for REMEET_S
+		return
 	if log_waits:
 		var listed := {}
 		for name: String in wait["spots"]:
