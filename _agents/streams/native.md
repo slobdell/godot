@@ -63,44 +63,29 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**REPORT (native, round 43, session 1, 2026-10-27 ~23:30). In progress.**
-- **Merged:** 95331c3cd (the replay fix) = main 84f914f78 (R43.1). 2fd2e5d4e (C43.2 keys) rode camera's d489eaa2b = main b31d3ddea.
-- **Waiting:** **409f70d66** (CP43.0 complete: formation picks, merged clicks, `make replay-match`, tests) full check RUNNING on
-  builder0; the orchestrator merges it alone. Then ONE full check on the tip **2383d9f94** (+ N2b memo 6afe991bb, REPLAY_SECONDS fix
-  82bbe3da8, the budget-line note) for the second merge.
-- **Plan (order):** N1 quiet reads (done but N4) -> N2 CP43.0 (bar PASS on both recordings) -> N2a bisect (done: G1 v9 ON) -> N2b
-  (R43.11, done: the memo) -> twin gap (native_drive, tick 22) -> N3 twins as asked -> N4 lines_r43 -> stretch `make replay-match`
-  (done).
-- **Later (not this round, R43.11):** RtsControls.gate_width's scan in C++ (the ~7 ms left of a 5-6 squad group click: a navmesh
-  drive query per step, 100 m each side); needs its own identity proof.
-
-**N2a the 30-unit order hitch: G1 v9 ON (merge 09564e582, round 41).** builder2 (loads 2.4-3.6), GDScript path at every commit,
-test_control_scale "ordering 30 units": 8952c3d64 10.90 ms / ratio 96.4; 63fec0c19 10.91 / 96.6; d8cb5c685 11.05 / 97.8; 04513fc92
-10.81 / 95.7; a1af3ba9e (09564e582's parent) 10.90 / 95.6; **09564e582 313.19 / 2747.2**; 21b20bdce 312.57 / 2741.9; main 84f914f78
-312.17 / 2714.5. Laptop, today's code: ON 248.94 / 2735.6 v `--group-g1=off` 8.26 / 96.1. Of G1's seven switches only
-`--group-lay=off` removes it (9.40 ms). **In player terms (corrected):** the test's army is 6 squads, past any side's cap; at his
-laptop's 4 squads the click cost ~8 ms more, at the desktop's 5 ~40 ms: a frame or two, never the 0.25 s I first wrote.
-
-**N2b (R43.11, GRANT: G1 pack cost path; done, GDScript only).** Profile (laptop, temporary lap timers): `untangle_whole` 247.5 of
-260 ms (a 6-squad column: 720 permutations x 15 pairs x 25 segment tests); `column_lay` 8.0 (one gate_width); ground_cap 0.41.
-6afe991bb: crossings memoised per (squad, place, squad, place), drives precomputed and summed in the same order, permutations built
-once per n, a permutation that cannot win stops counting once past the best. **Identity:** tests/test_untangle_whole_memo.gd (the
-function as it stood, verbatim, v the new one on 1,500 seeded knots: same places, return and counters on every one).
-Laptop: 30 units / 6 squads 249.2 ms 2738.8 -> 20.19 ms 232.1; 25 / 5 squads 13.39 ms 155.7; **20 / 4 squads (his laptop) 6.50 ms
-78.3, in budget**. The budget number is unchanged; its comment says it is judged at the caps (R43.11).
-**Merge notes (GRANT lines):** game/control/selection_squads.gd `untangle_whole`'s permutation loop, `_permutations` /
-`_build_permutations` / `_perms_memo`; tests/test_control_scale.gd comment only.
-
-**Twin gap (native, open).** On his seed the GDScript path leaves the native one at tick 22 (1 ULP in two Rust crews' speed:
-Rust_Eyes_1 |v| 8.791900 v 8.791899; positions equal to tick 26). Of 23 native switches turned off alone (`--brains-off=<one>`,
-ticks 0-30), ONLY `native_drive` reproduces the GDScript speed: the drive twin (drive_native.cpp v Movement.drive) rounds one
-operation differently. Not yet pinned to the expression. Consequence today: a replay must run the same path as the match (the
-recording says which: `native`); both paths are each deterministic.
-
-**Known: both whole matches part at ~28 s** (his round 42: 0.1 m right after his tick-806 attack on Rust_Hunters_4, the crews of that
-click; round 41 at its own commit: 28 s). Ruled out: the selection after an order (clearing it changes nothing), one-click merging,
-an `approach` (his tasks match the replay's). Candidates left: an input path the recorder still misses on that click, or a
-frame-phase effect of his 26-31 fps. The bar's 20 s holds on both.
+**REPORT (native, round 43, session 1, 2026-10-28 ~00:00).**
+- **Merged:** 95331c3cd = main 84f914f78 (R43.1); 2fd2e5d4e rode camera's d489eaa2b (main b31d3ddea); **CP43.0 409f70d66 GREEN**
+  (builder0 `>> remote: make check exited 0`, 3352 passed / 0 failed, 28 targets ALL JUDGED, sim-baseline 53/0 unmoved, perf-judge
+  PASS 1.00x) = main c57fc616b.
+- **Next merge (one full check on the final tip, named below when it reads):** N2b memo 6afe991bb, REPLAY_SECONDS 82bbe3da8, the
+  budget note 2383d9f94, the trace's command columns, lines_r43 c9f6aadde, **the trig fix 45d5b28ce**, this Status.
+- **CP43.0, final:** his round-42 match replays EXACTLY: 49 s, both teams, 0.0 m for every unit at every census, the 18 deaths on the
+  same ticks, Guns_1's turnaround AWAY 82 m as his. Round 41's on its own commit 21b20bdce: 5/5 crews 0.0 m for 20 s (bar PASS); on
+  today's code it parts at 16 s (behaviour changed since round 41, real).
+- **THE TRIG TRAP (the cause of both "open" items, now closed):** a Godot started by hand on the laptop (glibc 2.39) runs the system
+  atan2f & co., 1 ulp off CORE-MATH; the native library carries CORE-MATH and make LD_PRELOADs the shim into every Godot it starts
+  (native.md *Machine-independent trig*). His match ran through make; my lab replays did not, so (a) the "twin gap" (GDScript v native,
+  a Syndicate crew's turn 1 ulp apart at tick 1, seen at tick 22) and (b) the "parting at ~28 s" were both the harness. With the shim:
+  native ON v `--brains-off=native` bit-identical (0 of 12,420 trace lines: 36 units x 345 ticks, poses + drive commands), and the
+  whole match exact. **No twin gap exists.** The replay now probes its own atan2f and re-runs itself with the shim
+  (`REPLAY_TRIG_SHIM`), or says `REPLAY_TRIG_MISMATCH`. Builders (glibc 2.43) were never affected. Engage, manoeuvre told (CC
+  orchestrator): any laptop Godot started by hand must go through make or carry the shim.
+- **Later (not this round, R43.11):** RtsControls.gate_width's scan in C++ (the ~7 ms left of a 5-6 squad group click).
+- **Done:** N1 (but N4 lint-fast quiet read: no quiet window), N2 / CP43.0, N2a, N2b, stretch `make replay-match`. **N3:** no twin asked
+  this round so far. **N4:** lines_r43.py has Bar A (R43.18, 7 lines); K5 and A6 when their verdicts land.
+- **Questions for the lead:** none. **Note for the orchestrator:** while stopping my superseded tip check I killed two local
+  `make remote T=check` process pairs by pattern (4146475/7 mine; 4154223/4 not verified as mine before the kill). No other folder had
+  a live run on builder0 afterwards, so it was most likely a duplicate of mine; said here in case anyone's check vanished at ~22:50.
 
 **N1 the quiet reads (now, while builder0 is idle; time-box 60 min, then yield to the others).** `make remote-quiet`: perf-judge on
    main b12b17ac7 (the round's reference), N4 lint-fast before/after wall time, the two control-timing lines re-read. Report each with
@@ -135,23 +120,33 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**REPORT (native, round 43, session 1, 2026-10-27 ~22:30). In progress.**
-- **Merged:** 95331c3cd (the replay fix) = main 84f914f78 (orchestrator, R43.x, INHERIT). **Quick-green, waiting on a full check
-  with camera's `cam` row:** 2fd2e5d4e (C43.2 recorder keys; builder0 `make quick exited 0`, 123 s).
-- **Plan (order):** N1 quiet reads (done) -> N2 CP43.0 (bar PASS on both recordings; formation picks + merged clicks being
-  committed) -> N2a the 30-unit order hitch bisect (R43 ruling: measurement only, CP43.0 first) -> twin gap (GDScript v native at
-  tick 22) -> N3 twins as asked -> N4 lines_r43 -> stretch `make replay`.
+**REPORT (native, round 43, session 1, 2026-10-27 ~23:30). In progress.**
+- **Merged:** 95331c3cd (the replay fix) = main 84f914f78 (R43.1). 2fd2e5d4e (C43.2 keys) rode camera's d489eaa2b = main b31d3ddea.
+- **Waiting:** **409f70d66** (CP43.0 complete: formation picks, merged clicks, `make replay-match`, tests) full check RUNNING on
+  builder0; the orchestrator merges it alone. Then ONE full check on the tip **2383d9f94** (+ N2b memo 6afe991bb, REPLAY_SECONDS fix
+  82bbe3da8, the budget-line note) for the second merge.
+- **Plan (order):** N1 quiet reads (done but N4) -> N2 CP43.0 (bar PASS on both recordings) -> N2a bisect (done: G1 v9 ON) -> N2b
+  (R43.11, done: the memo) -> twin gap (native_drive, tick 22) -> N3 twins as asked -> N4 lines_r43 -> stretch `make replay-match`
+  (done).
+- **Later (not this round, R43.11):** RtsControls.gate_width's scan in C++ (the ~7 ms left of a 5-6 squad group click: a navmesh
+  drive query per step, 100 m each side); needs its own identity proof.
 
-**N1 the quiet reads (builder0, tree 2f1620a77 = b12b17ac7's code + docs; `make remote-quiet T="perf-judge control-timing"`,
-QUIET WINDOW HELD, load1 0.93-1.41, 20:40-20:42).**
-- perf-judge: PASS 1.06x (ai_usec_per_tick 14,002; relative 17,035 usec per reference ms v line 25,840 PASS). builder0's governor is
-  `powersave` (scaling 55 %): its absolute us/tick is ~1.75x round 42's at the same ratio. **Quote ratios only** (R43 ruling).
-- control-timing: 3 passed / 2 FAILED, quiet. Ordering 30 units 111.85 ms = 2485.6 reference workloads (budget 104); a right click on
-  30 units 113.92 ms = 2649.4. The per-frame UI line PASSES (0.875 ms = 20.82 v 26.0; the loaded 28.25 was load). History of the
-  order line (archived check logs): rounds 24-26 3.4-12 ms (ratio 82-90); round 38 ~109 workloads (loaded); now ~2,500. **Real: a
-  ~0.3 s freeze on his laptop per big right click** -> N2a bisect (orchestrator's ruling).
-- N4 lint-fast quiet before/after: NOT READ. camera's full check took builder0's lock at 20:49, before mine started; the
-  quiet window was gone, so I stopped my queued check (my processes, cwd-verified). Carried.
+**N2a the 30-unit order hitch: G1 v9 ON (merge 09564e582, round 41).** builder2 (loads 2.4-3.6), GDScript path at every commit,
+test_control_scale "ordering 30 units": 8952c3d64 10.90 ms / ratio 96.4; 63fec0c19 10.91 / 96.6; d8cb5c685 11.05 / 97.8; 04513fc92
+10.81 / 95.7; a1af3ba9e (09564e582's parent) 10.90 / 95.6; **09564e582 313.19 / 2747.2**; 21b20bdce 312.57 / 2741.9; main 84f914f78
+312.17 / 2714.5. Laptop, today's code: ON 248.94 / 2735.6 v `--group-g1=off` 8.26 / 96.1. Of G1's seven switches only
+`--group-lay=off` removes it (9.40 ms). **In player terms (corrected):** the test's army is 6 squads, past any side's cap; at his
+laptop's 4 squads the click cost ~8 ms more, at the desktop's 5 ~40 ms: a frame or two, never the 0.25 s I first wrote.
+
+**N2b (R43.11, GRANT: G1 pack cost path; done, GDScript only).** Profile (laptop, temporary lap timers): `untangle_whole` 247.5 of
+260 ms (a 6-squad column: 720 permutations x 15 pairs x 25 segment tests); `column_lay` 8.0 (one gate_width); ground_cap 0.41.
+6afe991bb: crossings memoised per (squad, place, squad, place), drives precomputed and summed in the same order, permutations built
+once per n, a permutation that cannot win stops counting once past the best. **Identity:** tests/test_untangle_whole_memo.gd (the
+function as it stood, verbatim, v the new one on 1,500 seeded knots: same places, return and counters on every one).
+Laptop: 30 units / 6 squads 249.2 ms 2738.8 -> 20.19 ms 232.1; 25 / 5 squads 13.39 ms 155.7; **20 / 4 squads (his laptop) 6.50 ms
+78.3, in budget**. The budget number is unchanged; its comment says it is judged at the caps (R43.11).
+**Merge notes (GRANT lines):** game/control/selection_squads.gd `untangle_whole`'s permutation loop, `_permutations` /
+`_build_permutations` / `_perms_memo`; tests/test_control_scale.gd comment only.
 
 **N2 CP43.0: why the probe diverged, each cause removed and measured** (laptop flightdeck, `tests/replay/divergence.py`: per crew per
 census second, replay v his census; bar 3 m, first two orders' crews, 20 s):
