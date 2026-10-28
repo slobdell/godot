@@ -246,9 +246,14 @@ func _finish() -> void:
 				l["blind_s"], l["wall_s"], l["episodes"], l["never"], JSON.stringify(l["latencies"]), l["yaw_reversals"]])
 	if corner != null:
 		var c: Dictionary = report["corner"]
-		print("CAMERA_CORNER seed=%d lane=%s feature=%s opened=%s open_to_seen=%s open_to_screen=%s seen_to_screen=%s corner_s=%.1f facing_s=%.1f toward_s=%.1f mean_abs_bearing=%s" % [
+		print("CAMERA_CORNER seed=%d lane=%s feature=%s opened=%s open_to_seen=%s open_to_screen=%s seen_to_screen=%s corner_s=%.1f facing_s=%.1f toward_s=%.1f away_s=%.1f back_s=%.1f hidden=%s mean_abs_bearing=%s" % [
 				_seed, lane, _staged.get("feature", -1), c["opened"], c["open_to_seen_s"], c["open_to_screen_s"], c["seen_to_screen_s"],
-				c["corner_s"], c["facing_s"], c["toward_s"], c["mean_abs_bearing"]])
+				c["corner_s"], c["facing_s"], c["toward_s"], c["away_s"], c["back_s"], c["hidden"], c["mean_abs_bearing"]])
+		if out_dir != "":
+			var yaws := FileAccess.open(out_dir.path_join("camera_yaw_%d.jsonl" % _seed), FileAccess.WRITE)
+			for row: Array in corner.yaw_log:
+				yaws.store_line(JSON.stringify(row))
+			yaws.close()
 		if corner.keep_frames and out_dir != "":
 			var rows := FileAccess.open(out_dir.path_join("camera_corner_%d.jsonl" % _seed), FileAccess.WRITE)
 			for row: Dictionary in corner.frames:
@@ -463,18 +468,29 @@ func _corner() -> void:
 		return
 	var given := OS.get_cmdline_user_args().has("--camera-lane=" + lane)
 	var side: String = lane if given and lane in ["right", "left"] else ["right", "left"][posmod(_seed, 2)]
-	lane = side
 	var cover := CoverMap.of(controls)
-	var all := CameraCorner.lanes(cover)
+	var all := CameraCorner.lanes(cover, Match.DRIVABLE_LIMIT - 6.0, CameraCorner.water_of(Arena.active))
 	print("CAMERA_CORNER_LANES walls=%d lanes=%d right=%d rejects=%s" % [CameraCorner.walls(cover).size(), all.size(),
 			all.filter(func(l: Dictionary) -> bool: return l["side"] == "right").size(), JSON.stringify(CameraCorner.rejects)])
+	# His half only (the side of the middle group 1 starts on): Locks' far-bank lane starts at the lock bridge's mouth in
+	# the enemy's half and opened 0 of 6 dev runs (f8166f5e8), its near-bank twin 6 of 6.
+	var forward: Vector3 = Match.team_frame(controls.team)["forward"]
+	var mine := (from as Vector3).dot(forward)
+	all = all.filter(func(l: Dictionary) -> bool:
+		var at := Vector3((l["start"] as Vector2).x, 0.0, (l["start"] as Vector2).y)
+		return signf(at.dot(forward)) == signf(mine))
 	var near := all.filter(func(l: Dictionary) -> bool: return l["side"] == side)
+	if near.is_empty() and not given:
+		# An arena with corners on one side only (Locks: the canal takes its right lanes): the seed drives the other.
+		side = "left" if side == "right" else "right"
+		near = all.filter(func(l: Dictionary) -> bool: return l["side"] == side)
 	var here := Vector2((from as Vector3).x, (from as Vector3).z)
 	near.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return (a["start"] as Vector2).distance_to(here) < (b["start"] as Vector2).distance_to(here))
 	if near.is_empty():
 		_staged = {"ok": false, "why": "no %s corner on this arena" % side}
 		return
+	lane = side
 	var pick: Dictionary = near[posmod(_seed / 2, mini(CORNER_LANES, near.size()))]
 	var along: Vector2 = pick["along"]
 	var start: Vector2 = pick["start"]
@@ -486,12 +502,17 @@ func _corner() -> void:
 			continue
 		var at := CameraPlaytest.clear_spot(Vector3(start.x, 0.0, start.y) - ahead * CORNER_COLUMN_M * float(i), Vector3(end.x, 0.0, end.y))
 		tank.place(Vector3(at.x, tank.global_position.y, at.z), RtsCamera.yaw_facing(ahead))
-	var squad := _cpu_squad()
-	if squad.is_empty():
-		_staged = {"ok": false, "why": "no CPU squad with two living units"}
-		return
 	var hide: Vector2 = pick["hide"]
-	_staged = _stage_squad(squad, Vector3(hide.x, 0.0, hide.y), ahead, Vector3(hide.x, 0.0, hide.y) - ahead * 10.0)
+	if OS.get_cmdline_user_args().has("--camera-corner-hidden=off"):
+		# Bar K5's empty corner and its no-fog-cheat twin: the same lane, nobody behind the wall.
+		_staged = {"ok": true, "why": "", "units": [], "hidden": false}
+	else:
+		var squad := _cpu_squad()
+		if squad.is_empty():
+			_staged = {"ok": false, "why": "no CPU squad with two living units"}
+			return
+		_staged = _stage_squad(squad, Vector3(hide.x, 0.0, hide.y), ahead, Vector3(hide.x, 0.0, hide.y) - ahead * 10.0)
+		_staged["hidden"] = true
 	_staged["lane"] = side
 	_staged["feature"] = pick["feature"]
 	_staged["start"] = [snappedf(start.x, 0.1), snappedf(start.y, 0.1)]
@@ -510,7 +531,12 @@ func _corner() -> void:
 	rig.add_child(corner)
 	rig.focus = Vector3(start.x, 0.0, start.y)
 	rig.yaw = RtsCamera.yaw_facing(ahead)
+	rig.wrote["focus"] = "jump"  # the staging jump is the harness's, not an automatic move (CameraTrace: not a snap)
+	rig.wrote["yaw"] = "jump"
+	rig.wrote["zoom"] = "jump"
+	rig.wrote["pitch"] = "jump"
 	rig.snap()  # the camera jumps to the staged column, looking down the drive (a jump has nothing to ease from)
+	trace.skip_frame()
 	controls.order_selection("move", {"to": _pair(Vector3(end.x, 0.0, end.y))})
 	_staged["at_s"] = snappedf(_clock, 0.01)
 	while _clock < _seconds and not _ended:

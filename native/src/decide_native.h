@@ -24,6 +24,11 @@ struct DecideConsts {
 	Array FIGHT_OPTIONS;
 	Object *brain_script = nullptr, *suppression_feed = nullptr, *element_feed = nullptr, *units = nullptr;
 	Variant keep_brain, keep_suppression, keep_element, keep_units;
+	// Round 43 (engage A7): the water between a crew and a contact, natively (TankNative's ElTerrain, synced by
+	// NativeEl._terrain_for(Arena.active) once an _obey; either script absent: the GDScript TankBrain._across_water).
+	const struct ElTerrain *terrain = nullptr;
+	Object *native_el = nullptr, *arena = nullptr;
+	Variant keep_native_el, keep_arena;
 	bool ready = false;
 };
 

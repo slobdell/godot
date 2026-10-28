@@ -566,6 +566,10 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.element_log.attach(controls.elements, game_match)  # X7: "why did my element do that"
 	rig.facing = controls.selection_facing  # round 7 (A): the camera's yaw follows the selection's facing
 	rig.aiming = controls.is_aiming  # round 41 (C41.4, R41.1): the camera holds the ground still while he aims
+	# Round 43 (K5 v2, R43.27, C42.3 read-only): the commanded units' current order, so the corner look rides a quiet move.
+	rig.order_now = func() -> Dictionary:
+		var names: Array[String] = controls.commanded_units()
+		return controls.orders.current(names[0]) if not names.is_empty() else {}
 	# Round 42 (C42.3): where the danger is, read-only (known enemies, who fires at the selection, the arena's middle).
 	rig.danger = DangerFeed.new().attach(game_match, controls.team, controls.commanded_units, controls.can_see,
 			controls.selection_facing).reader()

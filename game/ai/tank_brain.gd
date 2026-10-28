@@ -416,6 +416,26 @@ static var BOUND_SUPPRESS_MOVES := true
 ## stand (9609, 9619: gang IFVs in band behind cover, "suppressing", rounds into the box). OFF: the stand as before.
 static var SUPPRESS_LINE := OS.get_cmdline_user_args().has("--attack-shot-suppress=on") \
 		or OS.get_environment("ATTACK_SHOT_SUPPRESS") == "on"
+
+## Round 43 (engage A7, R43.5 / R43.21; ON since Bar A7 passed, `--engage-water=off` / env ENGAGE_WATER=off the escape):
+## a crew keeps its gun on a hittable target across water but never MOVES for it. (1) Under an attack-move a contact across
+## water (SlotGround.leg_wet from the crew) is not "met on the way" (_obey's in_reach), so MOVE keeps the route and the gun
+## fires at will; (2) in ENGAGE on a contact across water the crew never takes a combat hop: under a named attack it drives
+## to the target by the route (the way round is the bridge), otherwise it stands and fires across. His Locks seed (A1's trace,
+## ticks 556-694): a War Rig under attack-move engaged a Syndicate crew across the canal 58-61 m away and hopped along the
+## bank, one reverse hop 36 m, swinging the hull round; the census (dev 7001-7012): 19 s a run of such hops, 5 s in reverse,
+## the crew 23 m (up to 75) off its own order.
+## Bar A7 PASSED (R43.21 / R43.23, 2026-10-28): ON by default; `--engage-water=off` (env ENGAGE_WATER=off) is round 42's rule.
+static var ENGAGE_WATER := not (OS.get_cmdline_user_args().has("--engage-water=off") or OS.get_environment("ENGAGE_WATER") == "off")
+## Tests: answers "is there water between these two points" instead of the arena (a Callable(from, to) -> bool).
+static var water_between: Callable
+
+
+## Round 43 (A7): is there water between `from` and `to` (the straight leg crosses the arena's water or a deck)?
+static func _across_water(from: Vector3, to: Vector3) -> bool:
+	if water_between.is_valid():
+		return bool(water_between.call(from, to))
+	return SlotGround.leg_wet(Vector3(from.x, 0.0, from.z), Vector3(to.x, 0.0, to.z))
 ## Test seam: a Callable(point: Vector3) -> bool answering whether this crew has a line of fire to `point`; unset, the
 ## cover map's `clear_line` (the plan's read, so the two agree at the same quantum).
 var line_of_fire: Callable
@@ -1944,6 +1964,9 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 	var reach := float(s["self"]["weapon"]["range"]) + ATTACK_MOVE_REACH_MARGIN
 	for c: Dictionary in contacts:
 		if c["visible"] and my_position.distance_to(c["position"]) <= reach:
+			# Round 43 (A7): a contact across water is not met on the way: the crew drives on and shoots what it can.
+			if ENGAGE_WATER and TankBrain._across_water(my_position, c["position"]):
+				continue
 			in_reach.append(c["name"])
 	var result: Array = []
 	for candidate: Dictionary in candidates:
@@ -2689,6 +2712,17 @@ func _act(s: Dictionary) -> void:
 				why = TankBrain._join(why, "it is running: after it")
 				var ahead: Vector3 = contact["position"] + _flat(contact["velocity"] as Vector3) * CHASE_LEAD_S
 				_order_move(_move_to(ahead, false, 1.0, 2.0))
+			elif ENGAGE_WATER and TankBrain._across_water(my_position, contact["position"]):
+				# Round 43 (A7): water between: the gun stays on it (set above); the hull never hops for it. A named attack
+				# drives to it by the route (the bridge); anything else stands and fires across.
+				var named: bool = ordered is Dictionary and String((ordered as Dictionary).get("verb", "")) == "attack" \
+						and String((ordered as Dictionary).get("target", "")) == String(contact["name"])
+				if named:
+					why = TankBrain._join(why, "water between: going round by the road")
+					_order_move(_move_to(contact["position"]))
+				else:
+					why = TankBrain._join(why, "water between: firing across")
+					_order_move({"type": "face", "x": contact["position"].x, "z": contact["position"].z})
 			elif contact["visible"] and own_line and distance <= float(weapon["range"]) + MOTION_REACH_MARGIN and _moves_while_fighting(s):
 				var combat_clock := Time.get_ticks_usec() if OrderController.profile_detail else 0
 				var combat := _combat_move(s, contact)
