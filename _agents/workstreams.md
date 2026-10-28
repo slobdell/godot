@@ -119,6 +119,17 @@ never touch processes you didn't start. Never delete builder files that aren't o
   reverse hop 36 m north-east; the DWA lattice then has no closer candidate, the leash drops ("boxed in"). Not yet shown on his seed's
   replay. If confirmed: GRANT engage `game/ai/tank_brain.gd`'s engage choice and `_combat_move`, `game/ai/combat_motion.gd` (symmetric,
   switch with `=off`, merge note); `game/ai/cover_map.gd` read-only (camera reads it); DWA / leash in `movement.gd` stays manoeuvre's.
+- **R43.6 (~21:50) Manoeuvre's S1: his first order's three failures are one cause, the travel SHAPE (manoeuvre 4ca7692f9; laptop rebuild
+  `tests/manoeuvre/start_trace.gd`, within 0.1 m of his census for 10 s).** The Gangs doctrine's SWARM laid his Guns 112 m wide (SWARM_SPREAD
+  1.9 x the 14.7 m hull-floored pitch): War Rig 3's seat 72 m east of his click, the Tanker's 63 m east, through the Hunters' deploy row;
+  `inset_anchor` slid the centre 15 m off the click; the shape flipped swarm/vee x4 (8.4-14.6 s) on the threat reading, moving War Rig 3's
+  seat 50-95 m each time; the "20 s yield" is War Rig 3 (no give-way spot for a 14 m hull) answering HOLD across Hunters_1's lane for the
+  6 s cap, then Hunters_4's. The lead War Rig's 29 m seat is the vee's rear corner at the hull floor (physics, fine). Round 41's start:
+  four ~100 m swarms over each other. **Ruled:** (a) latch the travel shape: a move keeps its shape until arrival or re-order; the
+  element's own contact may change it once with hysteresis; symmetric for the CPU; switch `=off`; GRANT manoeuvre `element_plan.gd`
+  `_plan_movement` / `chosen_formation` / `inset_anchor` (engage keeps the engagement functions). (b) the swarm stays (doctrine flavour;
+  `doctrines/*.json` unchanged); S2's seat bound (max(18 m, 1.5 hull lengths + hull floor), `--seat-bound`) is the size fix. Bar S judges
+  the latch and the bound as separately removable arms.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
