@@ -5512,7 +5512,9 @@ var _backout_from := Vector3.INF
 
 
 var _backout_leg := false  # a k-turn planned from a departure look is under way (it runs to its end whatever steering says)
-var _departure_hulls: Array = []  # the other hulls a departure look's back-up search stops at (empty: today's search)
+## The other hulls a departure look's back-up search stops at, set and read within one _planned_reverse call (a static scratch,
+## not per-crew state: nothing for exec_fields.h; empty = today's search).
+static var _departure_hulls: Array = []
 
 
 ## Round 44 (M2): on a departure look, would the hull centred at `at` come too near another hull (Manoeuvre._hull_hit's disc)?
