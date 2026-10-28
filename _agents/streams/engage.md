@@ -213,6 +213,30 @@ his seed by removal (dev, above). **Dev (laptop, 7007 / 7009 side, 7008 / 7010 h
 both, off_arrive 88.5 -> 71.5 (two runs), jam 40 -> 2, contacts_mouth 84 -> 24; head-on: verdicts 1 -> 1, held_on 114 -> 93.
 **A pass ships ON** (line 1 decided, 2-9 within).
 
+### Bar A6 READ (builder2, native ON in all 48 logs, 98739047a, `native engage-bar-a ENGAGE_HOLD_SWITCH=holdway` 10373-10396, J10, 75 s, n 24 paired = 12 side + 12 head-on, 2026-10-28 ~00:45-01:05 PDT, the box at load 23-37 with camera's work; table `scratchpad/bar-a6/pair_table.txt`)
+
+| line | BASE | ARM | paired mean | se | z | reading |
+|---|---|---|---|---|---|---|
+| exercised (side) | 12 verdicts of 12 | | | | | floor 8 met |
+| 1 off_arrive_s (deciding, side 12) | 593.5 (49.5 s a run) | 454.5 (37.9) | **-11.58** | 4.07 | **-2.84** | **PASS** |
+| 2a verdicts (mechanism, head-on 12) | 14 | 11 | -0.25 | 0.18 | -1.39 | within +/- 2 se: PASS |
+| 2b held_on_s (mechanism, head-on 12) | 829 | 339 | **-40.8** | 13.3 | **-3.07** | **outside +/- 2 se: FAIL** |
+| 3 contacts_mouth (24) | 607 | 644 | +1.54 | 8.40 | 0.18 | PASS |
+| 4 contacts_far (24) | 50 | 52 | +0.08 | 1.83 | 0.05 | PASS |
+| 5 jam_s (24) | 552 | 329 | -9.29 | 7.67 | -1.21 | PASS (better) |
+| 6 last_a_s (24) | 1578 | 1458 | -5.00 | 3.42 | -1.46 | PASS |
+| reported | side: verdicts 12 -> 2, held 433 -> 10, jam 112 -> 27 (z -2.84), away_s 7 -> 0; head-on: way_released 13 crews, away 24 -> 11, last_b_s 805 -> 861 (se 6.4); all: far_arrive_s -6.9 (se 3.2), stuck -19 (se 15) | | | | | |
+
+**Verdict: Bar A6 FAILS guard 2b as filed** (line 1 passes; the outcome guards pass). The cause is in the release test, not the
+ordered-way read: on the head-on stages 13 crews whose squads WERE going through the street were released (`way_released`),
+because `_route_passes` walks the crew's CURRENT mover path (to its seat, often a short leg laid beside the street) and then a
+straight line on its own way: a seat laid 20 m off the mouth's line misses the 20 m test and the crew is released although
+the squad's destination lies beyond the street. Real head-ons must still wait: that is what 2b guards. **Not amended; nothing
+ships.** Lines 7-9 not run. **A6 v2 (proposed):** judge "the route runs through the street" on the crew's navmesh route to its
+SQUAD'S DESTINATION (`Pathing.find_path` at the verdict, one query a crew), not on its current leg; the ordered-way read (1)
+stays as built (it is what killed the mis-aimed verdict on the side seeds: 12 -> 2). Needs a fresh seed block from the
+orchestrator (the registered 10397-10400 + 10573-10592 are the Bar E1 guard seeds).
+
 ### Bar A READ (builder2, native ON in every log, 9e8313f8d, `native engage-bar-a` 10301-10324, J14, 75 s, n 24 paired, 2026-10-27 22:05-22:28 PDT; 24 of 24 results an arm, no timeout, the box also carrying camera's full check; table `scratchpad/bar-a/pair_table.txt`)
 
 | line | BASE | ARM | paired mean | se | z | reading |
