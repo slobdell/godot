@@ -287,7 +287,9 @@ func _unstick_compare(movers: Array[Movement], controllers: Array[OrderControlle
 
 ## `parts` > 1 (round 33): the unstick compare's `part` of the frames (see `_unstick_compare`); `drive` false leaves the
 ## drive compare to the file that has it (the fight is the same either way: the compares restore what they touch).
-func _k_turn_case(owned: bool, part := 0, parts := 1, drive := true) -> void:
+## Round 43 (native N3, manoeuvre S3 `kturngoal`): `goal_jump` moves each hull's goal, mid-window, to a point 20 m ahead of
+## its nose (out of any turning circle): a backing leg then meets the goal-moved end; the compare covers its ticks.
+func _k_turn_case(owned: bool, part := 0, parts := 1, drive := true, goal_jump := false) -> void:
 	if NativeExpect.absent(self):
 		print("native: absent, the k-turn equality is not exercised in this run")
 		return
@@ -343,6 +345,12 @@ func _k_turn_case(owned: bool, part := 0, parts := 1, drive := true) -> void:
 					var behind := at - Vector3(cos(angle), 0.0, sin(angle)) * rng.randf_range(8.0, 16.0)
 					controllers[i].set_orders({"type": "move_to", "x": behind.x, "z": behind.z}, null)
 					break
+		if goal_jump and frame % 60 in [20, 40]:
+			for i in controllers.size():
+				var tank: Tank = controllers[i].tank
+				var nose := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+				var ahead := NavigationServer3D.map_get_closest_point(map, tank.global_position + nose * 20.0)
+				controllers[i].set_orders({"type": "move_to", "x": ahead.x, "z": ahead.z}, null)
 		await wait_physics_frames(1)
 		var result := _compare_tick(movers, controllers, frame) if drive else [0, 0, ""]
 		drives += result[0]

@@ -168,6 +168,10 @@ struct DriveConfig {
 	// Round 27 (E2): Movement._planned_reverse's look up to its cheap exits natively (kturn_look_ready false: the callback).
 	bool kturn_look_ready = false;
 	double KTURN_MIN_ERROR_DEG = 0.0, KTURN_CIRCLE_SPEED = 0.0;
+	// Round 43 (native N3, manoeuvre S3 `kturngoal`): Movement._kturn_goal_moved_out natively and Manoeuvre.kturn_goal_note
+	// where the cheap look answers. False on a tree without S3 (its constants absent): the switch does not exist there.
+	bool kturn_goal_ready = false;
+	double KTURN_GOAL_MOVED_M = 0.0, KTURN_GOAL_AHEAD_DEG = 0.0;
 	// Round 28 (N5): Movement._repair natively (SlotGround.for_unit called; repair_ready false: the callback).
 	bool repair_ready = false;
 	double REPAIR_MAX_M = 0.0;
