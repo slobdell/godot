@@ -63,7 +63,14 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**REPORT (native, round 43, session 1, 2026-10-28 ~01:30). Every backlog item done; waiting only on bars (N4) and ship merges.**
+**REPORT (native, round 43, session 1, 2026-10-28 ~02:20). Every backlog item done (N5 included); waiting only on bars (N4) and ship merges.**
+- **N5 `make playtest-report RECORDING=<file> [HTML=<out.html>]`: 952d06a78** (on main e90421990). One report of his playtest: (a) the
+  match and every order's arrivals (tools/recording_arrivals.py), (b) the camera at each hit and death (the `cam` rows, C43.2; a
+  recording from before round 43 says it has none), (c) the replay's divergence over 30 s, all crews, with its verdict line.
+  tools/test_playtest_report.sh 12/0. **Full check, first run: exited 2, not ours:** builder0's kernel OOM killer took all six test
+  shards (pids 3056076-81, 140-385 MB RSS each, builder clock 01:46:46-01:48:24, then other Godots to 01:51) while the box was shared,
+  and full-check-lock's atomic-claim race read 19/20 under that load. Every other target passed (perf-judge PASS 1.00x,
+  playtest_report 12/0, lint 1259 parse, scenarios 54/0). Re-run queued; its hash and line go here when it reads.
 - **Merged:** 95331c3cd = main 84f914f78 (R43.1); 2fd2e5d4e rode camera's d489eaa2b (main b31d3ddea); **CP43.0 409f70d66 GREEN**
   (builder0 `>> remote: make check exited 0`, 3352 passed / 0 failed, 28 targets ALL JUDGED, sim-baseline 53/0 unmoved, perf-judge
   PASS 1.00x) = main c57fc616b.
@@ -97,43 +104,11 @@ _(the worker keeps this current: report at the top, every number with commit, ma
     a per-contact callback was ~1.4 ms a tick (11,292 calls x ~185 us); native ~32 us a tick (upper bound). builder2 `exited 0`,
     15/0, native-proof EQUAL with `--engage-water=on` (4a04ea921011cd9a x3). Merges at ship with Bar A7.
 - **Done:** N1 (but N4 lint-fast quiet read: no quiet window), N2 / CP43.0, N2a, N2b, stretch `make replay-match`, N3 as asked (two
-  pairs). **N4:** lines_r43.py has Bar A (R43.18, 7 lines); K5, A6, A7, S when their verdicts land.
+  pairs), N5. **N4:** lines_r43.py b40bd054b, 27 lines: Bar A (R43.18) 7, A6 (R43.20) 4, A6 v2 (R43.21) 5, A7 lines 1-9 (R43.23) 4, K5
+  (R43.27) 7. Still to add as verdicts land: S, S5, K5 v2, A7 lines 10-11.
 - **Questions for the lead:** none. **Note for the orchestrator:** while stopping my superseded tip check I killed two local
-  `make remote T=check` process pairs by pattern (4146475/7 mine; 4154223/4 not verified as mine before the kill). No other folder had
-  a live run on builder0 afterwards, so it was most likely a duplicate of mine; said here in case anyone's check vanished at ~22:50.
-
-**N1 the quiet reads (now, while builder0 is idle; time-box 60 min, then yield to the others).** `make remote-quiet`: perf-judge on
-   main b12b17ac7 (the round's reference), N4 lint-fast before/after wall time, the two control-timing lines re-read. Report each with
-   commit, machine, load. If someone's check starts, stop and record what you got.
-2. **N2 CP43.0 the replay reproduces his match.** First measure the divergence (per crew per census tick: replay v his match). Then find
-   the cause by removing candidates one at a time (run the replay at his frame rate: e.g. `--fixed-fps 28` or the recorded frame times;
-   issue orders on the recorded tick and phase; drive the real input path). Fix in your paths; add to the recording (C43.2: additive keys
-   only) whatever it must hold for the next playtest to replay. Bar (filed before the numbers): every crew of his first two orders
-   within 3 m of his census for the first 20 s, on this recording and on round 41's (`references/round42/engage/`). If an interactive
-   match cannot be replayed bit-faithfully, write why and what would make it so. Name the green hash: the orchestrator merges it alone
-   and tells engage and manoeuvre the same minute.
-3. **N3 twins as asked:** manoeuvre's S2 / S3 rules, engage's A3 if it lands in a mirrored seam (C43.4). Pair branches as before.
-4. **N4 lines_r43** as bars are filed (from workstreams.md *Bars (round 43)* and the streams' tables; nothing re-measured).
-5. **Stretch:** a `make replay RECORDING=<file>` target (headless, prints the divergence table) so every future playtest can be re-run.
-
-## How to verify
-
-`make quick-remote`; `make remote T=check` for a hash you name; native-proof on builder0 for any twin. The replay: its divergence table
-on both recordings, before and after.
-
-## Don't touch
-
-`game/ai/movement.gd`, `traffic.gd` (manoeuvre), `game/tactics/**` (engage), `game/camera/**` (camera), `game/match/**` but your
-C43.2 keys, `tests/baselines/**`. If the divergence's cause is in someone else's code, write it up and message the orchestrator. Don't
-push.
-
-## Waiting on the lead
-
-Nothing.
-
-## Status
-
-_(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+  `make remote T=check` process pairs by pattern (4146475/7 mine; 4154223/4 were **camera's** builder2 check wrapper, 26/27 done, ~1 hour
+  lost). Since then I kill only a PID I recorded at launch and whose cwd I checked (worker contract section 7).
 
 **N2a the 30-unit order hitch: G1 v9 ON (merge 09564e582, round 41).** builder2 (loads 2.4-3.6), GDScript path at every commit,
 test_control_scale "ordering 30 units": 8952c3d64 10.90 ms / ratio 96.4; 63fec0c19 10.91 / 96.6; d8cb5c685 11.05 / 97.8; 04513fc92
