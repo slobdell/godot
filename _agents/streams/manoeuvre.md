@@ -127,6 +127,31 @@ seconds), +9 crew-seconds a run on Locks in the first 15 s, the same with or wit
 converging on seats within 37 m). As filed nothing ships ON; the orchestrator rules. The brief's two M3 shapes (seats dealt in
 arrival order along the approach; a squadmate's give-way deferred until the seat ahead is taken) are aimed at this converging press.
 
+### After R44.7 (2026-10-28 ~11:50 PDT): B1 in preparation, the look widened, S v4's press read
+
+- **R44.7:** Bar S v3 FAILS as filed (the wedged guard); nothing from it ships. Next: Bar B1 (backout alone, with native's twin, fresh
+  11101-11148) then the converging press (S v4 on 11149-11196 if the round allows, else round 45).
+- **The look widened (813f36a5b):** writing B1's judge on Bar S v3's rows showed a second nose-on case (Locks 7007/7008/7012: the rig on
+  the box spot with its FAR seat as the steering point drives into the box corner at 18 deg, sits wedged 1.5 s, reverses, 7 s to
+  clear, both arms): the look no longer requires a steering point within a hull's length and its gate is 20 deg (the nose test
+  carries "boxed"). His start: unchanged (bo9: look at tick 1, past the box at ~91). Locks dev 7001-7012 (dev8): backout alone D1
+  53 -> 55 (+1.5 se), yield+blocked +0.1 se, k-turn +1.4 se, wedged +0.4 s: neutral; BUT tick-identical to base on most seeds for every
+  crew: the look rarely fires on the synthesised start (the boxed crew's first station lies behind it with the round-43 rules OFF and
+  the base drive reverses on its own, or the far seat gets it moving before the near-rest window). Tracing 7007's boxed crew.
+- **B1's judge** `tests/manoeuvre/b1_judge.py`: nose-on crews = the START_RUN row's new `nose_room_m` (the probe runs the rule's own
+  nose test at each crew's first traced tick; an older log falls back to a ray v the arena's containers) under 4 m AND a War Rig squad;
+  deciding: their time to clear 8 m, paired per crew, ARM < BASE by >= 2 se, floor 12; the orchestrator's guards among the other crews
+  per arena: reversing ticks in the first 15 s ARM <= BASE + 2 se, seated by 15 s ARM >= BASE - 2 se (on dev8 Locks: +2.0 se, the
+  ray classifier; +1.5 se PASS). D1 = his start: reversing before tick 15, past the box before tick 110.
+- **The merged tree (main 875ee5dd0 + native's m2m3-r2 39b063c7c, 20d238bff): 15 / 0** on native_drive_backout | native_drive_parkedpass |
+  manoeuvre_backout | manoeuvre_parkedpass | native_exec_state | formation_group_scope (builder0 light) BEFORE the widening; the twin
+  must drop its |goal| < hull-length prefilter for 813f36a5b (R44.8, native's next session). B1 freezes on their EQUAL.
+- **The converging press (S v4's cause, one Locks cell read, 10901 v3, the Battery squad):** five crews in a two-row deploy block get
+  their seats re-dealt 20 m west at ~5 s (one big seat move) and turn through each other toward them in the row: Battery_2 yields to
+  Battery_4, Battery_4 wedged on the box spot, Battery_5 blocked by Battery_2; the wedged seconds are the deploy-row jam, not the
+  arrival. The shape to build: seats dealt in arrival order along the approach, never a seat a neighbour's path crosses (the brief's
+  shape (a)); round-45 candidate unless B1 is quick.
+
 ### M5 (acceptance read, in progress) and the twin's parity (2026-10-28 ~11:00 PDT)
 
 - **08-15, his container start, the full v3 set ON (fdb1c6fc4, builder0, native ON, the GDScript drive for backout, `~/overnight-manoeuvre/
