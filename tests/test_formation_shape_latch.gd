@@ -2,15 +2,28 @@ extends TestCase
 ## Round 43 (manoeuvre, R43.6): a move order keeps the travel shape it started with. His Guns on Locks 56416 (2026-10-27)
 ## flipped swarm / vee / swarm / vee / swarm as the threat reading changed and War Rig 3's seat moved 50-95 m each time. The
 ## latch: the shape the move started with stands until the element arrives or its task changes; the element's OWN contact
-## may re-pick it once, after a second of it; a shape he chose with G is his; `--shape-latch=off` is today's pick each update.
+## may re-pick it once, after a second of it; a shape he chose with G is his; OFF by default (R43.42), `--shape-latch=on` is the arm.
 ## Pure: ElementPlan.build with the Gangs and the standard tables; no scene.
 
 const CLICK := Vector3(-69.1, 0.0, 50.7)
 
 
-func teardown() -> void:
-	ElementPlan.SHAPE_LATCH = true
-	super.teardown()
+var _latch_was := false
+
+
+func before_each() -> void:
+	_latch_was = ElementPlan.SHAPE_LATCH
+	ElementPlan.SHAPE_LATCH = true  # the arm under test; OFF by default (R43.42)
+
+
+func after_each() -> void:
+	ElementPlan.SHAPE_LATCH = _latch_was
+
+
+func test_off_by_default() -> void:
+	ElementPlan.SHAPE_LATCH = _latch_was
+	assert_true(not ElementPlan.SHAPE_LATCH or OS.get_cmdline_user_args().has("--shape-latch=on") or OS.get_environment("SHAPE_LATCH") == "on",
+			"the latch is off unless --shape-latch=on is on the command line (R43.42)")
 
 
 func _table(name: String) -> DoctrineTable:
@@ -62,7 +75,7 @@ func test_his_guns_keep_the_swarm_through_the_threat_flapping() -> void:
 		assert_eq(now["formation"], "swarm", "t%d threat %s: the swarm the move started with stands" % [step[0], step[1]])
 		latch = now["latch"]
 	ElementPlan.SHAPE_LATCH = false
-	assert_eq(_step(gangs, _move(), {}, 251, "likely")["formation"], "vee", "--shape-latch=off: today's pick (the vee) each update")
+	assert_eq(_step(gangs, _move(), {}, 251, "likely")["formation"], "vee", "OFF (the default): today's pick (the vee) each update")
 	assert_true((_step(gangs, _move(), {}, 251, "likely")["latch"] as Dictionary).is_empty(), "...and nothing latched")
 
 

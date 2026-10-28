@@ -350,7 +350,7 @@ static func _plan_via(plan: Dictionary, situation: Dictionary, table: DoctrineTa
 # SHAPE_LATCH_CONTACT_TICKS of it (hysteresis). Symmetric: the CPU's elements latch the same way. A shape he chose with G
 # is his and needs no latch; a halt (arrived) picks its stand as today; drills, the contact band's line, a crossing's file
 # and the deploy still override the shape where they always did. `--shape-latch=off` is today's pick every update.
-static var SHAPE_LATCH := not OS.get_cmdline_user_args().has("--shape-latch=off")
+static var SHAPE_LATCH := OS.get_cmdline_user_args().has("--shape-latch=on") or OS.get_environment("SHAPE_LATCH") == "on"
 ## The element's own contact must last this long before the latched shape is re-picked, once.
 const SHAPE_LATCH_CONTACT_TICKS := SimClock.TICK_RATE
 
