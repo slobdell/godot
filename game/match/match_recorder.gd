@@ -16,6 +16,8 @@ extends Node
 ##   {"t":"census", tick, units:[{name, id, team, pos, hp, hp_max, shield, order, phase, blocked}]}  every CENSUS_S
 ##   {"t":"dead",   tick, unit, killer, cause}
 ##   {"t":"end",    tick, result}
+##   {"t":"cam",    tick, yaw, want, pitch, dist, target:[x,z], mode, turn}  every CENSUS_S and at each automatic turn's start
+##                  (round 43, camera K5.1, C43.2: the camera's own row, RtsCamera.record_row; none without a camera)
 ##
 ## `hit` is the row that answers the unkillable-IFV class of report on its own: it separates SHIELD damage from HULL
 ## damage, so "everyone is shooting it and its health bar never moves" is visibly either shots that never land, or
@@ -40,6 +42,8 @@ var seed_value := -1
 var _file: FileAccess
 var _next_census := 0.0
 var _seen_tasks := {}
+var _next_cam := 0.0
+var _cam_turns := 0
 
 
 static func start(p_match: Match, p_orders: Object, p_controls: Object, p_elements: Object,
@@ -144,6 +148,7 @@ func _on_destroyed(event: Dictionary) -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	_record_camera()
 	if NativeRecorder.usable():  # round 28 (native N7.6): the task scan, the census and their rows natively
 		NativeBridge.impl.recorder_tick(self)
 		return
@@ -182,6 +187,29 @@ static func census_row(tank: Tank, p_orders: Object) -> Dictionary:
 			"hp": snappedf(tank.health, 0.1), "shield": snappedf(tank.shield if "shield" in tank else 0.0, 0.1),
 			"order": String(order.get("verb", "")), "src": String(order.get("source", "")),
 			"phase": phase, "blocked": blocked}
+
+
+## Round 43 (camera K5.1, C43.2): where the camera looked, so "the camera was still angled toward the building" can be
+## scrubbed. The rig is the controls' (`controls.rig`); a match without one (headless harnesses) writes no `cam` rows.
+func _record_camera() -> void:
+	if _file == null or game_match == null or controls == null:
+		return
+	var rig: Variant = controls.get("rig")
+	if rig == null or not is_instance_valid(rig) or not (rig as Object).has_method("record_row"):
+		return
+	var turned := int(rig.turns) != _cam_turns
+	var now := float(game_match.tick) / float(SimClock.TICK_RATE)
+	if not turned and now < _next_cam:
+		return
+	var row := {"t": "cam", "tick": game_match.tick}
+	row.merge(rig.record_row())
+	if turned:
+		_cam_turns = int(rig.turns)
+		row["mode"] = String(rig.turn_mode)
+		row["turn"] = true
+	else:
+		_next_cam = now + CENSUS_S
+	_write(row)
 
 
 ## A squad's task, written when it CHANGES: the bridge between "what he clicked" and "what the crews carried".

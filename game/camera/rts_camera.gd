@@ -212,6 +212,9 @@ const YAW_FOLLOW_DEG_PER_S := 70.0
 const YAW_DEADBAND_DEG := 12.0
 const YAW_SETTLE_DEG := 2.0
 var _yaw_turning := false
+## K5.1: automatic turns started so far, and who started the last one (the recorder writes a `cam` row on each).
+var turns := 0
+var turn_mode := ""
 
 ## Round 42 (camera K4.2): the yaw looks where the danger is. The lead, after round 41: "if the camera is following the
 ## direction at which a squad is moving, and then there's an ambush from the east (assuming we're driving north), the
@@ -1329,6 +1332,9 @@ func _update_yaw_follow(delta: float) -> void:
 	_yaw_turning = absf(gap) > deg_to_rad(YAW_SETTLE_DEG)
 	if was_turning and not _yaw_turning:
 		_danger_settled_at = _clock
+	if _yaw_turning and not was_turning:
+		turns += 1  # K5.1: an automatic turn starts (the recorder writes a `cam` row on it)
+		turn_mode = "follow" if writer == "yaw_follow" else writer
 	var step := deg_to_rad(YAW_FOLLOW_DEG_PER_S) * delta
 	yaw = wrapf(yaw + clampf(gap, -step, step), -PI, PI)
 	wrote["yaw"] = writer
@@ -1477,6 +1483,33 @@ func frame_bottom() -> float:
 ## The yaw that looks along `direction` on the ground (0 looks north, -Z; positive turns left: trip-up 2).
 static func yaw_facing(direction: Vector3) -> float:
 	return atan2(-direction.x, -direction.z)
+
+
+## Round 43 (K5.1, C43.2): what decides the yaw right now, in the recording's words: "manual" (his hand, for the
+## hand-back time), "aim-hold" (the glide holds while he aims), "danger" (K4's look), "corner" (K5's swing), "follow"
+## (the selection's heading, or nothing turning it).
+func yaw_mode() -> String:
+	if wrote["yaw"] == "player" or _clock - _manual_at < handback_seconds:
+		return "manual"
+	if holding:
+		return "aim-hold"
+	match String(wrote["yaw"]):
+		"danger", "corner":
+			return String(wrote["yaw"])
+	return "follow"
+
+
+## K5.1 (C43.2): the camera's `cam` row for the match recording (MatchRecorder adds `t` and `tick`): the SHOWN pose
+## (what was on his screen: yaw in degrees, 0 looks north (-Z), positive turns left; the pitch and distance after the
+## building clearance and the airship lift; the ground point it looks at), the yaw it is turning to, and the mode.
+func record_row() -> Dictionary:
+	var d := float(layers.get("d", RtsCamera.distance_for(_shown_zoom)))
+	var p := float(layers.get("p", _shown_pitch))
+	return {"yaw": snappedf(rad_to_deg(_shown_yaw), 0.1), "want": snappedf(rad_to_deg(yaw), 0.1),
+			"pitch": snappedf(p + float(layers.get("sp", 0.0)) + float(layers.get("hp", 0.0)), 0.1),
+			"dist": snappedf(d + float(layers.get("sd", 0.0)) + float(layers.get("hd", 0.0)), 0.1),
+			"target": [snappedf(_shown_focus.x, 0.1), snappedf(_shown_focus.z, 0.1)],
+			"mode": yaw_mode()}
 
 
 ## The current pose, in the words the lead pastes back: the values the defaults are made from.
