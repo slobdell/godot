@@ -1,11 +1,95 @@
 # Workstreams: the current round
 
-> **ROUND 42 CLOSED 2026-10-27 ~20:00 (main b12b17ac7 GREEN builder0, 28 targets ALL JUDGED, 3343/0 = every round-42 merge; later
-> commits docs only). Shipped ON: `--attack-shot` (engage, Bar E1), `--camera-danger` (camera, Bar K4 v2), the CPU counter-lineup for
-> Condemned and Gangs (balance, Bar B7). OFF with causes: Q5, Q6 (manoeuvre), E2 (engage, inconclusive). Engage, manoeuvre, native,
-> camera, balance CLOSED (briefs in `streams/archive/round42/`, branches `round42/<s>`); Bar B2s v2 read 19:30 FAIL 17/18 (R42.23,
-> unshipped either way); judging table re-rendered (judging.md *Round 42's lines*).**
-> Round 41's section follows round 42's.
+> **ROUND 43 PREPARED 2026-10-27 ~21:00 (four streams; briefs in `streams/`). Main at launch: b12b17ac7 GREEN builder0, 28 targets ALL
+> JUDGED (3343/0); every later commit is docs, tools-of-record (`tools/recording_arrivals.py`, `tests/replay_orders.gd` + .uid: no
+> check target runs them) and one comment line in `mk/engage.mk`. Workers start from it without a baseline check.**
+> Round 42 CLOSED 2026-10-27 ~20:00: shipped ON `--attack-shot`, `--camera-danger`, the CPU counter-lineup (Condemned, Gangs); OFF with
+> causes Q5, Q6, E2; Bar B2s v2 FAIL 17/18 (R42.23). Round 42's section follows round 43's.
+
+## Round 43: four streams (prepared 2026-10-27 evening; briefs in `streams/`)
+
+**Goal: his first squad settles where he clicks; a crew under his attack-move drives toward the enemy, not away; the camera swings to
+the side a building's corner is uncovering before the enemy there is seen.** His words: `game_design.md` *His playtest after round 42*
+and *His camera request from the same playtest*. Recording `references/round42/playtest/2026-10-27T20-00-48-locks.jsonl.gz` (Locks,
+seed 56416, Gangs v Syndicate, laptop, 49 s). "Investigate and improve": the turnaround is not yet reproduced, so this round's first
+deliverable in engage and native is the cause shown on his seed, not a rule.
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **engage** | `godot-engage` (5) | **Fable** | [streams/engage.md](streams/engage.md) | a crew under attack-move keeps going for the far quay; no 20 s drive back to his own edge | A1 the turnaround traced on his seed |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | his first order on Locks: all five crews at his click within seconds, nobody parked 20 s in the start zone, the lead War Rig not 29 m off | S1 the arrival census of his first order |
+| **camera** | `godot-camera` (3) | Opus | [streams/camera.md](streams/camera.md) | rounding a building's corner, the view swings to the side the wall was hiding | K5.1 the camera in the recording |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | nothing alone: the replay of his match reproduces it (CP43.0), quiet reads, lines_r43 | N1 the quiet reads (builder0 idle at launch) |
+
+**Not this round: balance.** Its open items wait on others (R42.23: Bar B2s v2's bridge drill crew rust s2 t15 is manoeuvre's S5;
+the Gangs turtle length is re-read only after that), and his decision 2 (the Syndicate's / Law's counter) is recommended "leave it".
+**No orders stream:** the wedge seat (29 m from his click) is a manoeuvre item under a GRANT (the arrival is one problem).
+**Two Fable sessions** (memory: at most two a round): engage (the unreproduced turnaround) and manoeuvre (traffic, three rounds of bars failed).
+
+**Machines (C43.1):** builder0 = every stream's light lane (J<=4) and checks; builder2 (`make gcp-start`; STOPPED at launch, auto-stops idle;
+Spot: read the verdict line, re-queue on preemption) = any series over 24 fights. ONE full check + ONE judged series per builder at a time
+(`tools/builder_checks.sh --wait-below 1`; the full-check lock). Perf-judge on builder0 only, quiet window (`make remote-quiet`). One
+laptop Godot run at a time (`flock /tmp/tank-squad-laptop-godot.lock`). builder2 also runs another project's workers (plane_maker):
+never touch processes you didn't start. Never delete builder files that aren't ours. builder0 at launch: load 0.00, 77 %, 25 G free.
+
+**Ownership (round 43):** each brief's *You own* line is the contract; in short:
+- **engage:** `game/tactics/element_plan.gd`'s engagement functions (as round 42) and NOT settle's; `game/tactics/element_situation.gd`
+  (additive); `game/tactics/drills.gd`; `game/tactics/firing_position.gd`; `game/control/order_executor.gd`'s `attack` / `attack_move`
+  branches; `game/ai/order_controller.gd` (trace lines; a behaviour change there needs the orchestrator's ruling, C43.3); trace-only
+  lines (flag-gated, default off, no behaviour) anywhere on the crew's order path incl. `game/ai/planner/planner_seam.gd` (merge note);
+  `tests/tactics/test_engage*.gd`, `tests/engage/**`, `mk/engage.mk`.
+- **manoeuvre:** movement's drive / unstick / side-step / avoidance / yield (`game/ai/movement.gd` but the planner seam), `game/ai/traffic.gd`,
+  GRANT (C43.5) the formation's spacing and seat (`game/tactics/tactics_formation.gd` `pitch` / `hull_floor` / `offsets_at` /
+  `fit_to_corridor`, `game/control/group_formation.gd`); `tests/manoeuvre/**`, `tests/traffic/**`, `tests/test_manoeuvre*.gd`,
+  `tests/test_traffic*.gd`, `tests/test_*formation*.gd`, `mk/manoeuvre.mk`.
+- **camera:** `game/camera/**`, `game/theme/fx/camera_shake.gd`, `game/ui/camera_readout.gd`, `tests/test_camera*.gd`, `tests/camera/**`,
+  `mk/camera.mk`; GRANT read-only feed lines in `game/modes/skirmish_mode.gd` beside `rig.facing` (as C42.3); GRANT (C43.2) a `cam` row in
+  `game/match/match_recorder.gd`.
+- **native:** `native/**`, `mk/native.mk`, `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**`, `tools/perf_judge.sh`,
+  `tools/loaded.sh`, `tools/slot.sh`, `tools/remote.sh`, `tools/full_check_lock.sh`, `tools/copyback_verify.sh`,
+  `tests/ai_scenarios/guard_line.gd`, `mk/play.mk`'s skirmish recipe, `_agents/judging.md`; NEW `tests/replay_orders.gd`,
+  `tools/recording_arrivals.py`, `tests/replay/**`; GRANT (C43.2) fields on the `match` / `order` rows of `match_recorder.gd`.
+- **Nobody:** `game/control/**` (but the GRANTs above), the planner (`game/ai/planner/**`, trace lines only), `game/ui/**` (but
+  camera_readout), `game/units/**`, `game/audio/**`, `game/announcer/**`, `game/match/**` (but C43.2), `game/tank/**`, the settle
+  functions in `element_plan.gd`, `arenas/**`, `tests/baselines/**` (the orchestrator adopts).
+
+**Contracts (round 43):**
+- **C43.1 Fresh start; two builders; bars before numbers on FRESH seeds (C37.1-C42.1 stand).** Registry below; a guard is never amended
+  after its numbers are seen; a bar names what the change could BREAK before its numbers. His seed 56416 and the dev blocks are
+  never a bar.
+- **C43.2 The match recording grows, never changes (camera, native).** Additive only: a new row type `{"t":"cam", tick, yaw, pitch,
+  dist, target:[x,z], mode}` (camera; every CENSUS_S and on every automatic turn's start) and new keys on `match` / `order` rows
+  (native: whatever the replay needs, e.g. the frame and physics tick an order landed on, the input path). Existing keys keep their
+  meaning: `tools/recording_arrivals.py`, the replay and the old recordings must still read. A recorder test pins both. Each stream
+  lists its lines in merge notes; whichever merges second rebases on the first.
+- **C43.3 Cause before rule (engage).** The turnaround is shown on his seed (a trace that reproduces it, or a replay that does after
+  CP43.0) before any rule is built. If the cause is in someone else's paths (the mover: manoeuvre; the planner or `order_controller`:
+  nobody), write it up with the trace and message the orchestrator, who rules on the owner the same hour. Any rule is symmetric (the
+  CPU's crews get it) and ships behind a switch with an `=off` escape.
+- **C43.4 = C42.4: manoeuvre's rules keep ORCA's answer unless the bar says otherwise;** speed-only rules where they can be; every
+  per-crew state a real Movement member with an `exec_fields.h` entry; native twins a rule before it ships ON (or it ships with
+  `native_drive` forced off for that rule, said in the bar).
+- **C43.5 The seat and spacing (manoeuvre, GRANT).** A squad's seats are where his click is: the formation's centre on the click and
+  the farthest seat no more than the bar's distance from it; the spacing rule keeps C38's hull floors (no seat overlap); the G1 v9
+  group-click column (`--group-g1`) is unchanged for a group of squads (test pins it).
+- **C43.6 The camera reads, never writes; no fog cheat (camera).** C42.3 stands. The corner swing reads only what the player can know:
+  the arena's walls (cover map / arena geometry) and his units' positions and headings; never an unseen enemy (he rejects "cheating"
+  visuals). Manual yaw wins; no turn while he aims; the glide's speed cap applies; the danger turn (K4 v2) outranks the corner swing.
+- **CP43.0 The replay reproduces his match (native).** When `tests/replay_orders.gd` on his recording puts every crew of his first two
+  orders within the bar's distance of his match's census for the first 20 s (or native writes up why an interactive match cannot be
+  reproduced and what the recording must hold to make it so), the orchestrator merges it alone and tells engage and manoeuvre the same
+  minute; both then read his turnaround and his start-zone jam on the replay.
+
+## Bars (round 43)
+
+**Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards; 10401-10424 manoeuvre bar S (arrival);
+10425-10448 manoeuvre guards; 10449-10472 manoeuvre bridge (S5, BRIDGE_POOLED_SEEDS); 10501-10536 camera Bar K5 (36 an arm);
+10537-10572 camera K5 v2 (one re-file); native none. Dev: 7001-7012, 9501-9512, his 56416 (never a bar). Carried unread: 9201-9240 +
+9301-9340 Bar B5 t50 (only on his yes).
+
+## Rulings (round 43)
+
+_(none yet)_
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 

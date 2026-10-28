@@ -4,11 +4,40 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-27 ~20:00 PDT — **ROUND 42 IS CLOSED (box below); round 43 not yet prepared. Main b12b17ac7 GREEN builder0 ALL JUDGED (3343/0); every later commit is docs only (balance's Status, the archive, the judging table). Attack-shot, the danger camera and the CPU counter-lineup shipped ON; Bar B2s v2 read FAIL 17/18, the stat change stays unshipped.** Earlier: 2026-10-27 ~03:30 PDT — ROUND 42 CLOSING; four streams closed. Earlier: 2026-10-26 evening — ROUND 42 PREPARED; round 41 closed. Main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); every later commit is docs only. Earlier: 2026-10-26 ~15:00 PDT — ROUND 41 CLOSED; round 42 not yet prepared. Earlier: **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
+_Last updated: 2026-10-27 ~21:00 PDT — **ROUND 43 PREPARED (box below; launch = the lead starts four CLIs: engage + manoeuvre on Fable, camera + native on Opus).** Earlier: 2026-10-27 ~20:00 PDT — **ROUND 42 IS CLOSED (box below); round 43 not yet prepared. Main b12b17ac7 GREEN builder0 ALL JUDGED (3343/0); every later commit is docs only (balance's Status, the archive, the judging table). Attack-shot, the danger camera and the CPU counter-lineup shipped ON; Bar B2s v2 read FAIL 17/18, the stat change stays unshipped.** Earlier: 2026-10-27 ~03:30 PDT — ROUND 42 CLOSING; four streams closed. Earlier: 2026-10-26 evening — ROUND 42 PREPARED; round 41 closed. Main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); every later commit is docs only. Earlier: 2026-10-26 ~15:00 PDT — ROUND 41 CLOSED; round 42 not yet prepared. Earlier: **ROUND 41 CLOSED (box below)**; main 21b20bdce GREEN builder0, 28 targets ALL JUDGED (3289/0); later commits docs only. 2026-10-26 ~03:00 PDT — **ROUND 41 PREPARED (box below; launch = the lead starts five CLIs)**; round 40 closed. 2026-10-26 ~02:15 PDT — **ROUND 40 CLOSED (box below); round 41 not yet prepared.** main 04513fc92 = c36217f79 (GREEN builder0, 3243/0, ALL JUDGED) + balance's tools/docs; its own check is in the box. Earlier: 2026-10-24 ~16:45 PDT — **ROUND 40 PREPARED (box below; launch = the lead starts five CLIs)**; round 39 closed; last green full check: main 68d0410d3 (builder0, 3176/0, 7,691 us/tick); later commits are docs only. (main 6a1c77752 green builder0, 7,693 us/tick; box below). Earlier: **ROUND 39 PREPARED (docs on main; launch steps below). Round 38 CLOSED: main 8952c3d64
 GREEN (inherits doctrine's 95a3a8f54, builder0 3135/0) and perf-judged 7,687 us/tick (builder0), R1-R3 ON (R38.55). Briefs archived to
 `streams/archive/round38/`; the round-38 worktrees come down at launch (step 1).** Before that:
 ROUND 38 AT ITS END STATE; round 37 closed at main 1c484a525. Older headers below._
 
+
+## 🚀 ROUND 43 PREPARED (2026-10-27 ~21:00 PDT) — read this first
+
+**Goal: his first squad settles where he clicks; a crew under his attack-move drives toward the enemy, not away; the camera swings to
+the side a building's corner is uncovering.** From his playtest after round 42 (`game_design.md` *His playtest after round 42*, *His
+camera request*). Split, ownership, contracts C43.1-C43.6 / CP43.0 and the seed registry in `workstreams.md` *Round 43*; briefs in
+`_agents/streams/`. **Main at launch: b12b17ac7's check stands** (GREEN builder0, 28 targets ALL JUDGED, 3343/0). Later commits:
+docs, two comment lines (`mk/engage.mk`, `mk/balance.mk`), `tools/judge/lines_r42.py`, and the orchestrator's `tests/replay_orders.gd`
++ `tools/recording_arrivals.py` (no check target runs them; `make lint-fast` on the laptop at 8beedac45: exit 0, 1251 scripts load).
+Workers start without a baseline check.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **engage** | `godot-engage` (5) | **Fable** | a crew under attack-move keeps going for the far quay | A1 the turnaround traced on his seed |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | his first order: all five crews at his click in seconds | S1 the arrival census |
+| **camera** | `godot-camera` (3) | Opus | rounding a corner, the view swings to the hidden side | K5.1 the camera's yaw in the recording |
+| **native** | `godot-native` (4) | Opus | nothing alone: the replay reproduces his match (CP43.0) | N1 quiet reads (builder0 idle at launch) |
+
+**Not this round: balance** (its open items wait on manoeuvre's S5 bridge crew; his decision 2 recommended "leave it").
+Kickoff: the same one line for every stream, `_agents/orchestration.md` *The kickoff prompt*. All four are FRESH sessions.
+
+**Done at preparation:** builder0 has only `godot`, `godot-native-score`, `godot-native-score-light` (77 %, 25 G free, load 0.00);
+builder2 STOPPED (`make gcp-start` wakes it). His recording is under `references/round42/playtest/`. Worktrees created after the docs
+commit (`make worktree STREAM=<s> OFFSET=<n>`).
+
+**Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*). Merge camera's K5.1 (the `cam` row) alone
+the minute it is green so his next playtest records the yaw; **CP43.0**: merge native's replay alone on its pass and tell engage and
+manoeuvre the same minute; rule the owner within the hour if engage's A1 cause lands in the mover / planner / order_controller (C43.3);
+take engage's A1 and manoeuvre's S1 tables to him in player terms.
 
 ## (DONE) ROUND 42 AS PREPARED (2026-10-26 evening) — kept for the record
 
