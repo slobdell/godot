@@ -81,6 +81,12 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 **Session start 2026-10-27 ~20:40 PDT (Fable). Starting commit 2f1620a77 = main at launch (code b12b17ac7 GREEN builder0, 3343/0; no
 baseline check re-run, per the contract). CP43.0 taken at f6b930a3d (main 84f914f78 merged). Orchestrator session: `godot-b8`.**
 
+### v2 GATE GREEN on builder2 (2026-10-28 03:34 PDT): 04ddbcabb `make check exited 0`, 3370 passed / 0 failed; the v2 series starts when Bar S5's ends
+
+`~/overnight-manoeuvre/r43/check_v2/check.log`: the wrapper line, `3370 passed, 0 failed` (Bar S's 3367 + parkaside's 3), 26 targets
+passed + the usual NOT JUDGED pair (perf-judge: not a judging machine; scenario_perf loaded). **This commit is green: 04ddbcabb**
+(`wip/manoeuvre-bars-v2`).
+
 ### R43.34 and the disk (2026-10-28 ~04:05 PDT): v2 runs AS FILED; the G1 group-click scoping is a round-44 candidate
 
 - **R43.34 (the orchestrator):** C43.5's "G1 v9 group column unchanged" was moved by Bar S's `all` (grouped squads travel as elements,
