@@ -238,11 +238,10 @@ already read, or 7001-7012.
   ARM <= BASE + 2 se; D1-seated-by-15 s ARM >= BASE - 2 se; **the unneeded-back-up guards (`tests/manoeuvre/b1_judge.py`): among
   crews NOT nose-on (the START_RUN row's nose_room_m >= 4 m or hull_m < 10), per arena, reversing ticks in the first 15 s ARM <=
   BASE + 2 se and seated by 15 s ARM >= BASE - 2 se; the nose-on crews' own time to clear 8 m reported.** Group-order guards
-  (`q3_judge.py`, G5 / G6 / G7) and the G1 v9 corridor (R44.15, restated before any number: `orders_judge.py g1v8`'s lines, places
-  outside / metres outside after / re-dealt, each ARM <= BASE + 2 paired se over the 12 seeds, and friend contacts <= the judge's
-  line; byte-identity is not asked of a symmetric rule whose CPU crews fight the player's squads in the probe (Bar S v3's record:
-  the rows moved 1 % with the column untouched); a CPU-free form of the probe, if orders has one, adds byte-identity on that form
-  before the freeze) on **11125-11136**; fights (`manoeuvre-wedge-trace` locks / terminus / sumps x **11137-11142**,
+  (`q3_judge.py`, G5 / G6 / G7) and the G1 v9 corridor (R44.16, which replaces R44.15: the default probe is CPU-free in effect, so
+  the ORDERS_PROBE_SQUAD rows base v bo must be **byte-identical, 60 / 60** (the dev proof at 8172913e1 on the GDScript drive: 60 / 60;
+  Bar S v3's 1 % was backout's station-PID gate reaching grouped crews' k-turns, fixed at cf6eabc22), AND `orders_judge.py g1v8`'s
+  lines each ARM <= BASE + 2 paired se with friend contacts <= the judge's line) on **11125-11136**; fights (`manoeuvre-wedge-trace` locks / terminus / sumps x **11137-11142**,
   G1-G4); perf: the frozen tree's check perf-judge PASS (the C++ drive carries the rule); no SCRIPT ERROR in any log.
   **Ships ON (`backout` out of DEFAULT_OFF, `--traffic-off=backout` the escape) only if D1, D2 and every guard pass; no re-file.**
   **Machine:** `~/overnight-manoeuvre/r44/bars_b1.sh` from the frozen worktree `../godot-manoeuvre-b1`: the corpus and the G1 probe +

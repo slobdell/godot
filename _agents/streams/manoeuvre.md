@@ -284,7 +284,7 @@ only.** Proof (builder0 light, the default probe x 7001-7004, base v backout v p
 **parkedpass 60 / 60 byte-identical; backout 37 of 60 rows differ on the C++ drive**: native's merged twin (m2m3-r2) took backout out
 of the GDScript-drive gate and still carries the OLD station-PID rule (every planned leg while ON), so the leak now lives in C++.
 8172913e1: backout ON runs the GDScript drive again until the twin matches cf6eabc22. Proof re-running on the GDScript drive (proof7);
-B1's byte-identity guard restored on its pass; native's re-cut must mirror the `_backout_leg`-only gate.
+**proof7 (the GDScript drive, 8172913e1): backout 60 / 60 byte-identical.** B1's byte-identity guard restored (R44.16); native's re-cut must mirror the `_backout_leg`-only gate and prove the probe 60/60 on the C++ drive.
 
 ### M5 READ on native's EXACT replay (main 7975d1455 merged at 158b6d45c; builder0, native ON, `make replay-match ... CREWS=all`,
 `~/overnight-manoeuvre/r44/m5/replay_*`; base = main's drive, bo = `--traffic-on=backout` on the GDScript drive): BOTH his rigs back out first
