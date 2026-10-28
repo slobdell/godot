@@ -3999,3 +3999,7 @@ instrument that cannot lie about load — removal within one run — and let eve
 335. **A deciding line must not be the rule's own definition.** (Round 43, Bar A6.) "Holding seconds of crews the rule releases" goes to
    ~0 by construction; decide on what he'd see (those crews' arrival) and guard the mechanism the rule could break (real head-on holds).
    The mechanism guard is what caught A6's flaw (held_on_s -41 s a run).
+336. **Never stop a process by pattern; a remote check's verdict must survive its laptop wrapper.** (Round 43.) Native, stopping its own
+   superseded check, killed `make remote T=check` processes by pattern; two were camera's builder2 check wrapper (3362 passed, 26 of 27
+   targets done), and the verdict, which travelled over ssh only, was lost: an hour of builder2. Stop only by a PID you started, its cwd
+   verified; `tools/remote.sh` keeps the remote output and exit line in a log on the builder (native, round 43).
