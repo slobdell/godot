@@ -213,6 +213,27 @@ seats put the first squad across the second squad's way in. The press has two sq
 Round-45 candidate as a design note: the second squad's seats and approach must be dealt with the first squad's standing shape in
 view (parkaside's rim is the seat only; the approach lane is not), or the press measured per squad in the bar.
 
+### Round-45 notes (manoeuvre; written while B1 waits on native's twin)
+
+1. **The two-squad press (Bar S v3's wedged guard, R44.7; the S v4 design):** the bound's remaining cost is the SECOND squad through
+   the first's compact zone, not the first squad's own convergence. Measured: with the bound the first squad's wedged seconds fall
+   (seat-order: -2.1 s a run) while the second squad's rise (+4.6 s a run); the second squad's seats land beside the parked first
+   (parkaside), but its APPROACH still runs through the first's standing shape. The shape to build: the second squad's route and
+   stations laid round the first squad's standing disc (a parked friendly squad as a soft obstacle in the transit's corridor:
+   `fit_to_corridor` / `stations_along`, manoeuvre's), measured per squad in the bar (wedged s of squad 1 and of squad 2 as two
+   lines). `--seat-order=on` stays on the tree OFF with its test (`tests/test_formation_seat_order.gd`) as the first squad's half.
+2. **holdway's re-file (A6 v3 FAILED 2b by 0.26 se, R44.19):** the side-stage jam line is settled (-5.7 se); the head-on guard should
+   be one-sided on what he sees (contacts at the mouth and the last arrival, not holding seconds, which the way read lowers by
+   design); fresh seeds; the same frozen-tree discipline.
+3. **backout on grouped squads (R44.16):** the look is a squad's-own-order rule this round; once orders' G1 v10 column has landed, a
+   grouped crew nose-on to a box at a group click is the same ask, read against the column's own lines.
+4. **The staged corpus as a decider (B1's lesson):** a staged nose-on pose only measures the rule where the BASE sticks; the stuck
+   test must be read from the base row (6 s, no squadmate pinning), the crawl shape pins both arms through pacing, and the seam must
+   be kept out of looks it would refuse (GOAL_BLOCKED on the navmesh edge). `tests/test_manoeuvre_nosed_corpus.gd` + `nosed_judge.py`
+   carry all of it; NOSED_SEEDS jitters.
+5. **The bridge drill crew (R43.38):** gone on main at 918498713 (18/18, rim crews 0); closed. If a rim crew returns, the removal
+   driver is `~/overnight-manoeuvre/r44/s5/removal.sh` (every `--nav-off` arm + avoidance, one cell).
+
 ### Bar A6 v3 (the street hold's way read, decided on the side stage's jam): FAILS AS FILED on guard 2b, by 0.26 se
 (series 12:10-12:16 PDT, builder2 light, native ON, frozen 9215b8ab9, `native engage-hold` 10949-10972, n 24 paired = 12 side + 12
 head-on, 75 s, J10; E1's lines on 10973-10996; 0 SCRIPT ERROR in 96 logs; judges filed under `references/round44/manoeuvre/
