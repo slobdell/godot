@@ -136,6 +136,17 @@ never touch processes you didn't start. Never delete builder files that aren't o
   prop (-96, 62): the mover, manoeuvre's). The transit stations are still laid from the unbounded shape (War Rig 3's goal at 2 s 70 m
   east, then a 150 deg k-turn in the container alley). GRANT: the bounded centred shape at `ElementPlan.route_seats` / `stations_along` and
   `Element._rank_file`, plus `element.gd`'s `shape_latch` lines; under the same `--seat-bound` switch (one arm; `=off` = today, tested).
+- **R43.8 (~22:15) His War Rig's turnaround: the cause is Traffic's STREET HOLD, shown by removal; the far-crew fix GRANTED to engage.**
+  Engage (A1, 2d43b1e88, native's replay with the library: Guns_1 0.0 m off his census for 48 s, AWAY 82 m as his): at tick 478 Traffic
+  ruled his Guns (e:5) WAIT for his Hunters (e:6, crossing z 50-65); `_begin_wait` deals a spot behind the street mouth to every moving
+  crew of the waiting squad however far, and `hold_of` returns pace 1.0 beyond 16 m, so Guns_1, 80 m from the mouth, was steered at
+  (-29.7, 100.0) for ticks 478-1023 (18.2 s) with its seat 45 m the other way. **Removal:** `--traffic-off=hold`, same tree, native ON:
+  Guns_1 arrived on the far quay 12 s after his order (drive-away seconds 1 v 19). Hypotheses (a)-(e) killed (engage's Status). The
+  across-water ENGAGE hops (ticks 556-694) are real but not the drive (logged). A2: no order queue (the attack reached the element at
+  807). The container_20 stall (-20, 80), ticks 1124-1320: manoeuvre's k-turn family. **Not a regression of round 42** (the hold is round
+  29's): the far-crew case was always there. GRANT engage `traffic.gd` `_begin_wait` / `_spot_behind` / `hold_of` + one switch name
+  (manoeuvre keeps out); rule: a crew farther than HOLD_BACK_M's 43 m + its hull is released, or `spot = here` if its route runs through
+  the street; symmetric, switched, C43.4's twin rule applies. Bar A re-aimed at the street-hold far-crew case on 10301-10324.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
