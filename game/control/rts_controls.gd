@@ -1198,9 +1198,13 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				approach = line[0] - line[1]
 				path_back = func() -> PackedVector3Array: return line
 				reached = func(_p: Vector3) -> bool: return false
+			# G1 v10: on his plain click the column's ranks keep off water and decks (a Callable only then: G1 v9 lays as before).
+			var blocked := Callable()
+			if SelectionSquads.COLUMN_ALWAYS and not queue_leg:
+				blocked = func(p: Vector3, r: float) -> bool: return SelectionSquads.wet_or_deck(p, r)
 			var laid := SelectionSquads.column_lay(lay_blocks, click, approach,
 					func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width(p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M),
-					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors, path_back, reached, false, queue_leg)
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors, path_back, reached, false, queue_leg, blocked)
 			_trace_stage("column_lay", squads, laid)
 			if not laid.is_empty() and SelectionSquads.COLUMN_TOWARD and SelectionSquads.column_sends_away(laid, lay_blocks, click):
 				SelectionSquads.columns_refused_away += 1
@@ -1310,7 +1314,10 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			# G1 v5: a column's places go to its squads in the order their crews reach the click by ground.
 			var leads: Array = []
 			var arc := Callable()
-			if column and SelectionSquads.GROUP_LEAD and ground != null:
+			# G1 v10: on his plain click the places stay dealt by distance along the approach (nearest in front, his words); the
+			# drive-time re-deal (v5) could hand the front to a lone fast crew and send the nearest squad 30 m back (dev read,
+			# terminus his-20: the Wrenches, 3 m nearer than the lone tank, were dealt 17 m behind where they stood).
+			if column and SelectionSquads.GROUP_LEAD and ground != null and not (SelectionSquads.COLUMN_ALWAYS and not queue_leg):
 				var drive_l := SelectionSquads.drive_on(ground)
 				var to := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 				for squad: Dictionary in squads:
@@ -1332,6 +1339,17 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				misplaced = func(i: int, p: Vector3) -> bool: return bool(far_of[i]) != ((p - click_s).dot(column_ahead) > 1.0)
 			SelectionSquads.untangle_whole(squads, anchors, at_of, leads, arc, misplaced)
 			_trace_stage("untangle_whole", squads, anchors)
+			# G1 v10: a crossing swap may still have handed a squad a place behind where it stands: it keeps its spot (the stay
+			# rule once more, along the approach).
+			if column and SelectionSquads.COLUMN_ALWAYS and not queue_leg and column_ahead != Vector3.ZERO:
+				var kept_u: Array = SelectionSquads.column_keep_away(anchors, lay_blocks, click, column_ahead)
+				SelectionSquads.kept_away += int(kept_u[1])
+				if int(kept_u[1]) > 0:
+					var stayed_u: Array[Vector3] = []
+					for p_u: Vector3 in kept_u[0]:
+						stayed_u.append(p_u)
+					anchors = stayed_u
+					_trace_stage("column_stay_dealt", squads, anchors)
 		elif untangle_rows:
 			squads = SelectionSquads.untangle(squads, anchors, func(n: String) -> Vector3: return _flat_position(n))
 			_trace_stage("untangle", squads, anchors)
