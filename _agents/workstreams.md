@@ -385,6 +385,13 @@ never touch processes you didn't start. Never delete builder files that aren't o
   real lock bug) or only zero (the test's barrier). Carries the corner code OFF (`--camera-corner`, `--camera-solid-escape`), its tests,
   workload and `bar_k5.py`; `skirmish_mode.gd` +4 read-only lines (rig.order_now, C42.3). For him: the scrub command
   `python3 tests/camera/camera_recording.py "$(cat build/recordings/latest.txt)" --from 40 --to 60`.
+- **R43.33 (~08:00) The full-check lock is atomic; the "19 of 20" flake was its TEST (native 37a9253c1, test only).** The claim is one
+  `flock -n 9`; a claimer holds it or exits 75 before running anything. The bad race was two winners one after the other: the old test's
+  winner held for a fixed 0.3 s, so a claimer starting > 0.3 s late on a loaded box found the lock free (laptop: b started 0.5 s late, the
+  OLD test 0/20 against the real lock). Now the winner holds until the other answers; real lock 22/0, late start 20/20, a mutant lock
+  that always succeeds FAILS 0/20. **builder0's OOM (01:46-01:51 builder clock) was NOT two full checks** (remote-logs show one); the kernel
+  took native's six test shards (140-385 MB each) with "2 other godot" already running outside the lock (light lanes / labs). Cause
+  unproven; watch item: lab Godots on builder0 while a full check holds the lock.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
