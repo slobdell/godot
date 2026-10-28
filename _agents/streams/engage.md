@@ -90,13 +90,16 @@ Nothing. The clip, when A5 has one.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**2026-10-27 ~21:40 PDT (Fable). A1 DONE: the turnaround is reproduced bit-exact on native's faithful replay and its cause is
-shown by removal. Cause: Traffic's STREET HOLD (round 29 T1, `game/ai/traffic.gd` `_begin_wait`, manoeuvre's path): when two
-friendly squads meet head-on in a street, the waiting squad's EVERY moving crew is dealt a spot behind the street's mouth, however
-far from the mouth it stands; his lead War Rig, 80 m from the mouth, was sent to its spot (-29.7, 100.0) at full pace and drove
-there for 18 s. R43.8 granted the fix to engage; **A3 built OFF at 724ccb5ce** (`holdfar`, below), its tests green on the laptop. A2 answered
-(below: no queue). Bar A's workload written (`make engage-bar-a`); the filing follows its dev run. Code: 724ccb5ce (main 84f914f78
-merged at a51c8d5af).**
+**2026-10-28 ~01:45 PDT (Fable). A1 DONE** (the turnaround reproduced bit-exact on native's replay, its cause shown by removal:
+Traffic's street hold at tick 478 dealt his lead War Rig a spot behind a corridor mouth 76 m away, for a verdict his lead crew's
+nose, not its orders, made; `--traffic-off=hold` -> the crew arrives on the far quay at tick 810). **A2 DONE** (no queue). **A3 built
+OFF** (`holdfar`, R43.8): **Bar A FAILED** its deciding line (z -1.73, guards all pass; R43.18: stays OFF with its read). **A6 built
+OFF** (`holdway` the ordered-way read, `holdroute` the route-bound release, R43.13/R43.18/R43.20): **Bar A6 FAILED** guard 2b
+(the first cut released real head-on crews: it judged the crew's current leg); **Bar A6 v2 FILED at 13fbe1a5d**, two arms against
+one base on 10601-10624, the series on builder2 now (the LAST re-file of this item this round). A4 = these bars; A5 = his replay
+by removal (dev, in each bar). Tools on the branch: the rebuild probe, the path probe, CREW_TRACE, `engage-replay-trace`,
+`engage-bar-a` / `engage-bar-a6`. Last green hashes: tests only on the laptop (no full check yet: nothing has passed a bar);
+main 84f914f78 merged at a51c8d5af; the full check comes with a shipping arm's merge candidate.**
 
 ### A3 (R43.8): the street hold's far crew, built OFF at 724ccb5ce (`holdfar`)
 
