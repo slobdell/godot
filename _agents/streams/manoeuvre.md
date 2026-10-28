@@ -112,10 +112,15 @@ Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for
 - **08-21, his second match:** the first rebuild ran the roster's default layout (the trace's `--snap-deploy` is opt-in; the header's
   spawn has the rigs shuffled, Guns_4 on the box spot): re-running snapped (r2s_base / r2s_v3). Without the snap, v3 brought all five
   Guns in by 8.5 s where main left Guns_5 50 m out.
+- **08-21 snapped to his spawn (`--snap-deploy`, r2s_base / r2s_v3):** the rebuild is not his match for Guns_4 (the rig on the box spot):
+  it drives straight off at tick 16 and clears the box by ~61 on main (his census: 5 s still; GAP 10.5 m at t60, 22 m at t90) because the
+  recording's seed "56416." never parsed and the armies rolled from the clock (native's finding: army seed 542). v3 fires no look for it
+  (its route leaves under 40 deg off: correct, it is not boxed in THIS rebuild). **M5 on 08-21 waits for native's exact replay
+  (stream/native 0d4b08cd8) on main; M5 on 08-15 is read above.**
 - **The twin on the merged tree (8a7a94d70, builder0 light):** my two tests PASS on the C++ drive with the same numbers (reverse t10,
   past the box t98); `test_native_drive_backout` FAILS (1199 drives, 100 mismatches): the pair was cut off e0a746667 and does not see
   the nose test / the 40 deg gate / the hull checks; native asked to re-cut deferring on the superset. `test_native_exec_state`'s
-  table line failed on my `_departure_hulls` member: now a static scratch (428d300cd); rerunning. **stream/manoeuvre is RED on the
+  table line failed on my `_departure_hulls` member: now a static scratch (428d300cd): exec_state 5 / 0 on the rerun (run9); the drive parity test still 71 mismatches (native's re-cut). **stream/manoeuvre is RED on the
   twin's parity test until native re-cuts**; the bar's frozen tree (no twin) is unaffected.
 
 ### M1: the scoping rebased (2026-10-28 ~09:30 PDT)
