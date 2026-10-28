@@ -102,6 +102,13 @@ Evidence `references/round43/manoeuvre/bars-builder2-fed356a8b/judge-deciding-<a
 | reported: seat moves a run | -29.1 | +0.3 | -1.5 | -30.0 |
 | **verdict as filed (D1 AND D2 AND every guard)** | **FAIL** (D2; locks guard) | **FAIL** (D1) | **FAIL** (D1) | **FAIL** (D2; locks guard) |
 
+**R43.31 (the orchestrator, ~02:05 PDT): nothing from Bar S ships, as filed** (converge and kturngoal lose D1 at -2.7 se each: a measured
+loss on a deciding line; D1 is the line nearest his words). One re-file, Bar S v2, on fresh 10701-10724 (guards 10725-10748): ONE arm
+= all + a fix for the converging give-way, same lines, same workload, perf on builder0 quiet; time-box ~2 h on the dev blocks
+7001-7012 and 9501-9512, else all OFF with this read. **Group-order guards (for the record, base v all, 10425-10436 x 4 maps x crew,
+48 paired runs, builder2, `judge-group-all.txt`): G5 all-in 74.5 -> 73.6 s PASS, G6 never-in squads a run 0.94 -> 1.08 (line 1.14)
+PASS, G7 contacts 663,350 -> 656,229 PASS; jam-seconds -0.2 %.** Fights and the G1 v9 lines: running on builder0.
+
 **The read (after the numbers):** the two lines pull apart by construction. D1 measures the distance from his click, and without the
 bound a squad's seats stay the doctrine's (the swarm's 58 m), so the two mover-side arms cannot move it (they lose it slightly: a
 crew that now reaches its far seat is farther from the click than one stuck half-way); only the bound moves D1, and it moves it
