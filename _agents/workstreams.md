@@ -97,6 +97,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
   G1 Terminus EMPTY reversals BASE + 1.22; D2 Locks EMPTY 0.0 -> 7.3 % (pooled at the line's edge).
   Workload fix before any number (65e6e7e92): Locks' far-bank lane started in the enemy's half at the lock bridge (0 of 6 opened);
   lanes now drawn from his half only; lines unchanged. Series commit 65e6e7e92.
+  **READ (R43.27): FAILS 6 lines; the corner swing stays OFF.** builder2 J8, 08931da4e (65e6e7e92's code), n 36 an arm a workload, 36/36
+  DONE everywhere. D1 pooled 65.6 v 56.7 % (+8.9 v +10) FAIL (Locks 48.4 v 27.6, Terminus 83.3 v 85.0 FAIL); D2 EMPTY 13.8 v 11.4 % FAIL;
+  D3 seen -> on screen 0.49 v 3.98 s PASS; G0 no fog cheat 72/72 identical PASS; G1 Terminus EMPTY reversals 4.38 v 2.76 FAIL; G2, G3, G5,
+  G6 PASS; G4 ambush 4.73 v 2.91 and attack 7.01 v 5.98 FAIL. Causes (camera): Terminus has no room (K4 already faces the hidden side 85 %);
+  aiming round the far end lands on the next block on tight streets; the pull's out-and-back is a reversal a corner and fires mid-fight.
 
 - **FILED Bar A, the street hold's far crews (engage; FILED 677199e2b on tree 9e8313f8d before any 10301+ number; full text in
   `streams/engage.md`).** BASE `holdfar` off v ARM `--traffic-on=holdfar`, builder2, native path, 10301-10324 on three head-on stages
@@ -329,6 +334,11 @@ never touch processes you didn't start. Never delete builder files that aren't o
   `TankBrain._across_water`) cost ~1.4 ms a tick on his match (~7 % of a laptop tick); leg_wet now runs natively on TankNative's ElTerrain
   (~32 us a tick, ~0.2 %). The `_act` half stays GDScript on both paths (~0.13 ms a tick, engage's). kturngoal's pair a907a541e green
   (R43.22). Both pairs merge with their streams' ship candidates.
+- **R43.27 (~05:40) Bar K5 FAILS; K5 v2 (the one re-file) on fresh 10537-10572 with all three directions:** (a) the pull only under a
+  move order with no known enemy; (b) past the end, aim along the open side's normal only where that ray is clear of other walls; (c)
+  hold the look until his next order, a > 45 deg heading turn or a contact. D1's per-arena clause becomes ARM >= BASE - 2 se (Terminus
+  sits at an 85 % ceiling), pooled +10 points unchanged; every other line as filed; ruled before any v2 number. For him: on Locks a
+  squad hidden round a corner reached the screen in 0.5 s v 4.0 s (n 36).
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
