@@ -23,22 +23,27 @@ const DRY_CLICK_M := 12.0
 var _starts_mode := ""
 var _reach := -1.0
 var _geometry_d := Vector3.ZERO
-var _geometry_across := Vector3.ZERO
 var _geometry_ground: Tank = null
 var _geometry_map := ""
 
 
-## Just before the order: the squads' starts re-read (the hold task drifts a crew a metre or two between the placing and the
-## click), then the run's geometry line (R44.13: the road from the click to the squads' START centroid, recorded once a run).
-func _before_order(units: Array) -> void:
+## On the order's tick, right after it: the squads' starts re-read where they stood AT the click (the hold task drifts a crew a
+## metre between the placing and the click, and the layout reads the squads on the order's tick), the approach as the layout
+## reads it (the click less the squads' centroid), then the run's geometry line (R44.13: the road from the click to the squads'
+## START centroid, recorded once a run; the clear ground across that approach at the click). Nothing has moved yet on this tick.
+func _after_order(units: Array) -> void:
 	super(units)
 	for squad: Dictionary in _squads:
 		squad["start"] = _centre(squad["units"])
 	var click := _click
-	var d := _geometry_d
-	var across := _geometry_across
 	var ground := _geometry_ground
 	var map := _geometry_map
+	var centroid_d := Vector3.ZERO
+	for squad: Dictionary in _squads:
+		centroid_d += (squad["start"] as Vector3) / _squads.size()
+	var d := Vector3(click.x - centroid_d.x, 0.0, click.z - centroid_d.z)
+	d = d.normalized() if d.length() > 2.0 else _geometry_d
+	var across := Vector3(-d.z, 0.0, d.x)
 	# R44.9 (fit first): the clear ground across the approach at the click, as the layout reads it (RtsControls.gate_width, the
 	# group scan), and the widest squad: the judge's "front the ground fits" is read from these.
 	var clear: Array = [0.0, 0.0]
@@ -114,7 +119,6 @@ func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
 			click = Vector3(click.x, 0.0, click.z)
 			pulled += 4.0
 	_geometry_d = d
-	_geometry_across = across
 	_geometry_ground = ground
 	_geometry_map = map
 	return click
