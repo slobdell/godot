@@ -3471,6 +3471,8 @@ static func _group(plan: Dictionary, members: Array, formation: String, anchor: 
 			"halt": halt,
 			# Round 43 (R43.34): a grouped squad's seats are laid as today (no seat bound).
 			"seat_bound": not bool(plan.get("grouped", false)) and not halt,
+			# Round 44 (Bar S v4's candidate): seats dealt in the crews' lateral order on a squad's own plain move (TacticsFormation.SEAT_ORDER).
+			"seat_order": not bool(plan.get("grouped", false)) and not halt,
 			# X2 (A8): a MOVING formation deforms to the corridor it is driving through; a halt does not — it is
 			# standing in an area, not filing through a gap, and its all-round sectors are the point of it.
 			"corridor_m": INF if halt else float(plan.get("corridor_m", INF))}
