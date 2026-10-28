@@ -231,7 +231,11 @@ rim crew's own signature (ORCA's steer point carried PAST the deck's edge while 
 **Group-order guards (for the record, main v deckwait, 10461-10472 x 4 maps x crew, 48 paired runs, builder2,
 `judge-group-deckwait.txt`): G5 all-in 72.0 -> 73.9 s (line 73.4) FAIL, G6 never-in 0.90 -> 0.90 PASS, G7 contacts 648,939 -> 673,640
 (line 681,386) PASS; jam-seconds +2.1 %; the rule's counters a run: 24 waits, 606 queued crew-ticks, 1 time-out, longest 10.3 s
-(the round-42 counters-line slip fixed on the side branch: `q3_judge.py --arm=deckwait` reads deckwait_*).** Fights: running for the record.
+(the round-42 counters-line slip fixed on the side branch: `q3_judge.py --arm=deckwait` reads deckwait_*).** **Fight guards (for the
+record, main v deckwait, locks / terminus / sumps x 10461-10466, 18 paired fights, builder0 light, `judge-fights-deckwait.txt`): G1
+give-way deaths 55 -> 55 PASS, G2 stuck deaths 133 -> 127 PASS, G3 contacts 525,790 -> 553,692 (line 578,369) PASS, G4 kill share
+worst move 0.004 / deaths 796 -> 785 PASS.** Series ended 05:13 PDT; the s5 worktree removed, s5m repointed at the round-44 scoping
+candidate; raw group / fight logs removed (judges filed). **Bar S5 is closed: FAIL on the deciding lines, deckwait OFF.**
 
 ### Bar S5: FILED 2026-10-28 ~03:40 PDT, BEFORE any number on 10449-10472 (Bar Q6's lines, R42.7, unamended; the dev read of the drill's own seeds below)
 
