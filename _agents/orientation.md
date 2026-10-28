@@ -297,6 +297,13 @@ build/   (gitignored)    exports and screenshots
 85. **The laptop is not row-equivalent to the builders, even pinned.** A `--fixed-fps` orbit cell on the laptop gave a
     different row from builder2's at the same commit (in-arc 22 v 12 %, reverse 0 v 13), while builder0 and builder2 agree
     312/312. Laptop runs are for a mechanism's trace; every dev or judged number is a builder's (round 34, manoeuvre).
+87. **A full disk turns an edit into a deletion.** With 0 MB free on the laptop, a `open(path, "w")` in a doc-editing script
+    truncated `_agents/streams/manoeuvre.md` to zero bytes and the next `git commit` recorded 406 deleted lines (round 43,
+    manoeuvre, 2026-10-28; reset to the last good commit). Heredocs did the same to a launcher script (an empty file, "Exec
+    format error" from systemd). Before a long night of series: `df -h /`; and after any disk-full error, re-read every file
+    written in that window before trusting it. Where the space goes: Claude Code's `/tmp/claude-1000/<session>/tasks/*.output`
+    (every background command's whole output, 2 GB across sessions), each worktree's `.godot` import cache (~780 MB), `build/light`
+    copy-backs, and raw series logs under `~/overnight-*` once their judges are filed.
 86. **`setsid nohup … &` is NOT enough for a long remote run from a laptop session (round 34, manoeuvre).** Two
     `make remote T="native check"` wrappers detached that way died mid-run with no `>> remote: … exited` line while their
     remote makes ran on (orphans, killed by cwd); a third wrapper died inside a judged series' step. The brief's rule is

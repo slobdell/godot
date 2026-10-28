@@ -78,6 +78,71 @@ Nothing.
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### CLOSE REPORT (round 43, manoeuvre; 2026-10-28 ~05:40 PDT, the v2 guards and the scoping proof still landing: appended below as they do)
+
+**Green hash: fed356a8b** (builder2, `make check exited 0`, 3367 / 0, 26 targets + 2 NOT JUDGED; every later commit on the branch is
+`_agents/` only). **Nothing ships ON this round:** Bar S (four arms) and Bar S v2 (its one re-file) and Bar S5 all FAIL as filed;
+the seat bound, the converge fix, kturngoal, parkaside and deckwait v5 are on the branch (or its side branches) OFF behind their
+switches with their tests. **The shape latch is ON by default per R43.6 ("switch with =off") but was judged only inside Bar S's
+`seats` arm: the orchestrator decides at the merge whether it stays ON.**
+
+1. **S1 (done, reported):** his first order's three failures are one cause: the Gangs' swarm at the War Rig's hull-floored pitch
+   is 112 m wide (seats 72 m and 63 m east of his click), `inset_anchor` slid the centre 15 m off the click for that reach, and the
+   shape flipped swarm / vee four times on the threat reading; War Rig 3 held across the Hunters' lane for a seat on the wrong side
+   of the map; the 29 m lead seat is the hull floor. Rebuilt to 0.1 m of his census for 10 s (`make manoeuvre-start-trace`).
+2. **S2 (built, OFF):** the seat bound (`--seat-bound=on`; 37 m for War Rigs, 18 m for Gun Trucks; the transit's stations and start
+   bounded too, R43.7) and the shape latch (R43.6). His start re-read: all five Guns at his click in 5-10 s.
+3. **S3 (built, OFF):** the first-tick k-turn for a station a hull's length off the crew (the converge rebuild behind a bent first
+   leg): `--converge-on-crew=on` (R43.14) and `--traffic-on=kturngoal` (the reverse leg ends when its goal has moved out of the
+   circle; native twin b2dea555a); `--traffic-on=parkaside` (a seat under a parked friend of another squad is taken beside it;
+   twin 5b5a2c365).
+4. **S4 Bar S (FAIL as filed, R43.31) and Bar S v2 (FAIL as filed on Locks' per-arena guard, +2.4 se; D1 +13.8 se, D2 -2.4 se,
+   never-arrived -37 %, every other guard green).** The tables are below; the round-44 shape is named there.
+5. **S5 Bar S5 (FAIL as filed):** deckwait v5 rescues the drill's own crew (17/18 -> 18/18) and costs rim seconds on the fresh
+   seeds; deckwait stays OFF; balance's bridge re-read not reached.
+6. **Stretch:** the `_wait` timer artefact was fixed in round 42; `q3_judge.py`'s counters line under `--arm=deckwait` fixed (on
+   `wip/manoeuvre-s5` 55d6344c1: cherry-pick with the ship). **R43.34 candidate (round 44):** `wip/manoeuvre-scope-g1` 5b23227e0, a
+   squad under one G1 group click (`halt_at`) keeps today's seats / stations / shape pick / parkaside; its tests and the G1 v9
+   byte-identical proof: below.
+
+**Decisions (mine, one line each):** the bound = max(18 m, 1.5 hull lengths + the hull floor along) (the wedge of War Rigs at 29 m
+is physics, the swarm's 58 m is not); the latch stores the formation only (the technique follows the table); kturngoal ends the
+circle plan's leg and the seam's plan alike, by the same geometry; parkaside memoises only once a seat is moved (the other squad
+parks after the first look); v2 = one arm (R43.31), the Locks line judged per arena as ruled; nothing amended after a number.
+
+**Questions for the lead:** none that block. **For the orchestrator:** the latch's default at the merge (above); the round-44
+candidates (the Locks convergence fix; the G1 scoping) are design work, not bars yet.
+
+**Requests to other streams:** native: the kturngoal and parkaside pairs merge with any ship of those switches (both proved);
+nothing else. Engage: none (Traffic's street hold untouched, R43.8).
+
+**Known issues:** ON for `kturngoal` / `parkaside` / `deckwait` / `nopush` / `wait` / `holdlane` forces `native_drive` off until the
+pairs merge; parkaside's per-tick look costs ~0.45 ms a tick ON (native's measure: ~6 % of the AI tick; a look every few ticks on
+the approach's last stretch is the cheap form); the bounded shapes reach a G1 group click's drive (R43.34; the scoping candidate);
+a hand-run laptop Godot drifts from his match after ~13 s without the trig preload (go through `make`).
+
+**What to playtest (laptop, every switch OFF by default):** `make skirmish ARENA=locks SEED=56416 SKIRMISH_FLAGS="--seat-bound=on
+--converge-on-crew=on --traffic-on=kturngoal --traffic-on=parkaside"` v without: Gangs, send squad 1 (the War Rigs) to (-69, 51) in
+the planning pause, squad 2 next to it two seconds later: do all five rigs sit at the click within ten seconds, does anyone back
+into the edge, do the two squads jostle? Headless: `make manoeuvre-start-trace ST_RECORDING=build/his.jsonl ST_ARENA=locks
+ST_SEED=56416 'ST_FLAGS=--seat-bound=on --converge-on-crew=on --traffic-on=kturngoal'` (zcat his recording into build/ first).
+
+**Merge notes:** branch off 2f1620a77; main 84f914f78 merged at f6b930a3d (CP43.0). Game changes: `game/tactics/tactics_formation.gd`
+(SEAT_BOUND, seat_bound / reach_of / bounded / shape_at, the bound in place), `game/tactics/element_plan.gd` (latch_shape + the
+pick's latch line, inset_anchor untouched, route_seats / stations_along bounded, transit_start_m's bounded depth, converge /
+transit_starts `worlds`), `game/tactics/element.gd` (shape_latch field + state + readback; the transit's `worlds`; the stations'
+members; transit_start_m's arg on the scope branch only), `game/control/group_formation.gd` untouched, `game/ai/movement.gd`
+(kturngoal: `_planned_reverse`'s goal-moved end, `_kturn_goal_moved_out`, the note; on the v2 branch parkaside in `_manoeuvre`),
+`game/ai/manoeuvre.gd` (the kturn-goal and aside statics), `game/ai/traffic.gd` (DEFAULT_OFF += kturngoal [+ parkaside on v2];
+`_chain_native`). Tests: `tests/test_formation_seat_bound.gd`, `test_formation_shape_latch.gd`, `test_formation_converge_start.gd`,
+`test_manoeuvre_kturn_goal.gd` (+ `test_manoeuvre_parkaside.gd` on v2, `test_formation_group_scope.gd` on scope-g1); probes and
+judges `tests/manoeuvre/start_trace.gd`, `start_table.py`, `s_judge.py`; `mk/manoeuvre.mk` (manoeuvre-start-trace, manoeuvre-bar-s).
+`_agents/orientation.md` trip-up 87 (the full disk). Side branches: `wip/manoeuvre-bars-v2` (04ddbcabb, green on builder2 3370/0),
+`wip/manoeuvre-s5` (55d6344c1), `wip/manoeuvre-s5-main` (64b547192), `wip/manoeuvre-scope-g1` (5b23227e0); worktrees
+`../godot-manoeuvre-v2` and `../godot-manoeuvre-s5m` (on scope-g1) come down when their runs end. Evidence
+`references/round43/manoeuvre/` (Bar S, S5, v2 judges) and `~/overnight-manoeuvre/r43/`.
+
+
 **Session start 2026-10-27 ~20:40 PDT (Fable). Starting commit 2f1620a77 = main at launch (code b12b17ac7 GREEN builder0, 3343/0; no
 baseline check re-run, per the contract). CP43.0 taken at f6b930a3d (main 84f914f78 merged). Orchestrator session: `godot-b8`.**
 
