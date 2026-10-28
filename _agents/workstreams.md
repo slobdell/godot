@@ -381,6 +381,13 @@ already read, or 7001-7012.
   8172913e1 (cf6eabc22's `_backout_leg`-only PID gate; backout in the GDScript-drive gate), builder0 light, 7001-7004 x 3 maps x 5
   squads: 60/60 byte-identical (proof7); parkedpass 60/60 (proof6). B1's byte-identity guard restored. 9215b8ab9's gate check
   withdrawn (both its bars already failed): S v3's and A6 v3's perf lines NOT JUDGED.
+- **R44.22 (~14:15) G1 v10c's probe reads on the order's tick (probe only; the LAST change).** Dev read 8 (freeze read, 7001-7006, 25
+  cells): 15/25 pass every line; lines 2 / 6 fail on the near-bank cells (locks his-20, crossing his-80) and locks along-20; the
+  all-in guard fails terminus across-20 and yard_open across-80; lines 1 / 3 failed three more cells on a PROBE defect (clear ground
+  and road read before re-standing the squads, a few degrees / one frame off the layout's own reads). Fixed in
+  `tests/orders_probe_geometry.gd` only (no threshold, judge or arm code change); the frozen tree moves to that tip, its check
+  re-launched on builder2. Any further defect is a finding read after BAR_DONE, never a change before it. Expected risk: the near-bank
+  and near-click cells above.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
