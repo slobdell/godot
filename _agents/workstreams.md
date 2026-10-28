@@ -297,6 +297,11 @@ already read, or 7001-7012.
   drops its |goal| < hull-length term, keeps drive_vector zero + near rest, then calls `_backout_due` as now. Re-cut the backout twin
   on manoeuvre's tip with that, prove EQUAL on builder2, name the hash to manoeuvre and the orchestrator: Bar B1 freezes on it.
   parkedpass's twin stays parked (S v3 failed, R44.7).
+  **Addendum (~13:35, manoeuvre's cf6eabc22 probe proof):** the merged twin m2m3-r2 (39b063c7c) took backout out of the GDScript-drive
+  gate but still carries the OLD station-PID rule (PID off every planned leg while ON): on the C++ drive backout's probe rows differ
+  37/60 (parkedpass 60/60). The twin's station-PID gate must be `_backout_leg` only (cf6eabc22); until it is, `traffic.gd` keeps
+  backout in the GDScript gate (manoeuvre's tip after e49d1d3a2 does). Native proves EQUAL v cf6eabc22 AND the default orders probe
+  60/60 byte-identical base v backout on the C++ drive.
 - **R44.9 (~11:15) his answers (`game_design.md` *His answers on the group click*) re-shape Bar G1 v10b BEFORE any 10801 number.**
   (1) He meant the open area on the west side; the dispersal lost him the match. (2) **Fit first:** side by side on open ground when
   the line fits at his click; when it won't fit (the edge / walls would push a squad off its place), stack behind, nearest in front.
