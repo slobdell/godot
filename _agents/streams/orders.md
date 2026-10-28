@@ -102,10 +102,51 @@ _(worker keeps this current: report at the top, every number with commit, machin
   `group`; `group` survives the re-lays of a three-click route on both the running and the queued legs; an old-style command
   writes a row without the keys, and the validator takes them). Laptop NATIVE=off, this tree: the new file + recorder /
   requeue / queued_task / commands / orders / order_refused / preempt / element_task / pack neighbours **71 / 0**.
+- **O0 + O1 VERIFIED:** `make quick-remote` builder0, 716e6304e, native on: **425 / 0** (quick passed in 516 s). **CP44.0 output
+  proof: the G1 v9 probe (locks / crossing / terminus x 7001-7004, 5 squads, click; manoeuvre's R43.34 shape) 716e6304e v main
+  711f3e94f, builder0 light, native off: 60 / 60 rows byte-identical** (`references/round44/orders/o0-probe-identical-builder0-716e6304e/`).
+  Full check: launched on the tip (below), the hash named when it is green.
+- **O2 CAUSE (found 2026-10-28 ~10:30 PDT; his tick-1512 click reproduced to the metre, tick 1808 to ~5 m):**
+  - **Where he clicked:** the lab (`tests/test_control_his_locks_click.gd`: his sixteen living vehicles where the census had them,
+    on the real Locks navmesh, through `order_selection`) searched the west half for the click whose four places match the
+    recording: **tick 1512 = (-35, 97)**, score 4.5 m summed over four squads; **tick 1808 = (-61, 59)**, 21.8 m (the squads were
+    under way). So his first click was **44 m west of his army's middle, 20 m past his Hunters**, on the open north yard: not the
+    far west side he describes (the camera stood 100 m back at a 21 deg pitch, target (8, 86); a cursor near the horizon lands on
+    near ground). With O1 merged the click itself is recorded, so the next playtest settles that.
+  - **What the layout did with it (the per-stage table, `RtsControls.order_trace`):**
+    `ranks` (today's body, round 21): four blocks, the widest a 5-crew wedge 44 m wide, **`rank_sizes` = [3, 1]** (3 x 44 + 2 x 14 =
+    160 <= MAX_FRONTAGE_M 200): THREE squads abreast ACROSS the approach, 58 m apart, the fourth one rank (56 m) behind. The approach
+    was west, so "across" was north-south: a 160 m north-south front for a 44 m move. Raw slots z = 154 / 97 / 40 plus the rear at
+    (14, 87); the north edge is 20 m from the click, so `fit_inside` slid the WHOLE body 32 m south: Wrenches (-23.7, 117) at the
+    north edge, Hunters (-35, 65) 32 m south of his click, Guns_4 (-46, 8) 89 m south, Spears (14, 55) 56 m EAST of the click (7 m
+    from where they stood). `column_lay` returned nothing: the corridor at the click reads [20, 90] m (the yard is open 110 m across)
+    and every place is within it or reached by ground, so `on_clear_ground` KEPT today's body (`bodies_kept` +1, `columns_laid` +0).
+    `never_behind` pulled the Spears 7 m west; `ground_anchors` moved Guns_4 and the Hunters 7-11 m onto standable ground. Result =
+    his recording. Tick 1808: the same ([3, 1], corridor [58, 52], body kept; Wrenches 58 m north, Guns_4 51 m south, Spears 50 m
+    east).
+  - **Why Bar G1 v9 passed and this still happens:** the column (G1) runs only where the ground at the click is narrower than the
+    body; its bar's deciding cells were street clicks (locks / crossing / terminus streets), and its yard_open cell was a GUARD that
+    the open yard stays as today. His click was on the open yard, where today's body is kept BY DESIGN (his round-37 note allowed
+    "spread out" in an open field), and today's body is round 21's ranks: up to three abreast across the approach. None of the four
+    suspicions in the brief (column axis, corridor re-lay, column-toward=stay, planner route spread) is it: the column never ran.
+  - **In player terms:** "Your four squads stood in a row along the north edge and you clicked about 45 m west of them, on the open
+    yard. On open ground the game lines the army up ACROSS the way you clicked, up to three squads side by side 58 m apart, with
+    the fourth behind. Clicking west, 'across' is north-south, so it drew a 160 m north-south line; the map edge was 20 m north of
+    your click, so the whole line slid 32 m south: the Wrenches went to the north edge, the Hunters 30 m south of your click, the
+    lone Guns tank 90 m south, and the Spears, in the back rank, barely moved. The column of wedges from round 41 only runs in
+    streets, never on a yard."
+  - **Two readings of "pack it in" on open ground (both in player terms; I build A):**
+    **A (recommended, the brief's O4):** the column always: the front squad (or two side by side when the ground is wide) lands ON
+    your click, the rest stack behind it along the way you came, nearest in front, farthest at the back; no squad is sent back past
+    where it stands. On your click: Hunters and the Guns tank at the click side by side, Spears and Wrenches one rank behind (the
+    Spears about where they stood). Everything heads one way. **B:** your click is where the army's MIDDLE goes: front squads a rank
+    past the click, rear squads a rank short of it, so every squad moves about the same distance. Easier to read on a short click
+    (nobody stands still), but the front overshoots the spot you clicked, and round 37 chose "the column stands at the click".
 - **Decisions:** `click` goes on the one-squad row too (its `to` is the click, but one key the tools can rely on beats a
   rule); `group` only on orders to two or more squads (C44.3: his one-squad order stays manoeuvre's); loose units' row
   carries `click`, not `group`.
-- **Questions for the lead:** none yet.
+- **Questions for the lead (no block; A is being built):** (1) reading A or B above; (2) did you mean the far west side? The
+  recording puts your click 45 m from your army (see O2); the next playtest's recording will carry the click itself.
 - **Requests to other streams:** native: `tests/replay_orders.gd` / `ReplaySetup.merge_clicks` may merge a click's rows by
   `click` + `tick` (today by `to`, which differs per squad, so his group click replays as four orders; it still works).
 
