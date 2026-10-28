@@ -1,0 +1,13 @@
+BAR_B7 commit fb9e2a95a: BASE --cpu-counter=off 320 fights, ARM on 320 (expect 320 each); firing: condemned, gangs, syndicate
+BAR_B7 DECIDING condemned                 all-tanks  75 ->  46 % (n 80), paired -28.8 se 7.5 (line <= 60 % and < -2 se) -> pass: ON
+BAR_B7 DECIDING gangs                     all-tanks  76 ->  60 % (n 80), paired -16.2 se 6.9 (line <= 60 % and < -2 se) -> pass: ON
+BAR_B7 reported law                       all-tanks  91 ->  91 % (n 80), paired +0.0 se 0.0
+BAR_B7 DECIDING syndicate                 all-tanks  92 ->  78 % (n 80), paired -15.0 se 4.6 (line <= 60 % and < -2 se) -> FAIL: stays OFF
+BAR_B7 reported fired                     all-tanks  81 ->  61 % (n 240), paired -20.0 se 3.9
+BAR_B7 reported all                       all-tanks  84 ->  69 % (n 320), paired -15.0 se 3.0
+BAR_B7 G2 median length (fired)           176 -> 173 s (-1.2 %) -> pass
+BAR_B7 G2 median length (all)             186 -> 180 s (-3.5 %) -> pass
+BAR_B7 G1 CPU v CPU identical             40 of 40 identical (expect 40) -> pass
+BAR_B7 G3 loads and fields                320 loaded, 320 CPU armies within 45 (largest 44), of 320 (expect 320) -> pass
+BAR_B7 reported: counter fired in condemned 80/80, gangs 80/80, law 0/80, syndicate 80/80
+BAR_B7 VERDICT PASS: guards 4 of 4; ships ON for condemned, gangs; stays OFF for syndicate

@@ -764,3 +764,20 @@ carry an se and none is inside its own noise. The verdicts within 1.645 se of go
 deciding line (-0.89 se), G5 (-0.21) and G6's PASS (+0.31). Q3 failed on more than one line, so no single close call decided it. The
 B5 pooled dev read sits 2.35 se clear. K3 v2's and G1 v9's lines are counts and totals that printed no se (noise `none`). Judge
 tests 86/86 (laptop).
+
+## Round 42's lines (2026-10-27, the orchestrator at the close; close step 5b)
+
+`tools/judge/lines_r42.py`: 70 lines, every number quoted from *Bars (round 42)* and *Rulings (round 42)* and the balance verdict
+logs under `references/round42/balance/` (nothing re-measured): Bar E1 (11; PASS, ships ON R42.13), Bar Q6 (12; FAIL R42.15), Bar
+K4 (10; FAIL R42.16) and Bar K4 v2 (10; PASS, ships ON R42.22), Bar E2 (2; NULL: 1 of 48 seeds exercised, R42.20), Bar B7 (8; PASS
+for Condemned and Gangs, Syndicate FAILS its line, R42.21), B8's two dev reads (`REPORTED (dev)`, never a bar, R42.9) and Bar B2s v2
+(15; FAIL 17/18 on the Gangs turtle length cell, R42.23). Q5 (withdrawn unread, R42.11) has no lines. `inventory.py` ->
+`references/round42/native/sizing/inventory.{csv,md}` (633 lines, 302 with a noise estimate); `table.py` re-run -> `table.csv`
+there, **no table change** (no round-42 pair's rows are on main as probe rows). 31 of the round's lines carry an se; one pass line
+sits inside its own noise: **B2s v2's G3 turtle Syndicate cell (-18.2 % at se 12.2 against a +/-20 band: 1.645 se = 20.07 > 20)**,
+so that band could not have failed a null change at n 190; Q6's two deciding rim FAILS (-1.28 / -0.94 se) were already flagged in
+round 42's own read. The verdicts within 1.645 se of going the other way: B2s v2's failing G3 Gangs turtle cell (-0.10 se: 0.75 over
+at se 7.71, the closest call of the round), B2s v2's deciding flatness (+1.46) and its G3 blob faction cells (+1.42, the Gangs cell),
+B7's Gangs deciding line (+0.35: at the 60 % line, 2.4 points past 2 se), B7's Syndicate FAIL (-1.91, clear), E1's G1 / G3 guards
+(+0.98 / +0.96), Q6's arrival guards (-0.17 / +0.19) and G5 (+0.35). B8's Law read (-0.33 se short of the 2-se firing rule) is why
+Law's counter does not fire. Judge tests 86/86 (laptop).

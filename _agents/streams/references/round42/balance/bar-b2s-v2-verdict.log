@@ -1,0 +1,21 @@
+BAR_B2S flatness base 18.5 -> arm 11.6
+BAR_B2S DECIDING flatness change (down > 2 se)       -6.93 se  2.00 (n 1600) -> pass 
+BAR_B2S DECIDING blob v a gangs CPU 80 -> 54 % (toward the line mean) -> pass
+BAR_B2S DECIDING blob v a syndicate CPU 11 -> 42 % (toward the line mean) -> pass
+BAR_B2S G1 blob line guard win share (not up)        -4.50 se  1.92 (n 800) -> pass 
+BAR_B2S G2 turtle line guard win share (not up)      -1.62 se  1.31 (n 800) -> pass 
+BAR_B2S G3 blob median length % (within 15)          +5.82 se  2.06 (n 800) -> pass 
+BAR_B2S G3 blob condemned median length % (within 20)   +5.44 se  4.67 (n 190) -> pass 
+BAR_B2S G3 blob gangs median length % (within 20)   +12.40 se  5.37 (n 210) -> pass 
+BAR_B2S G3 blob law median length % (within 20)      +5.82 se  3.61 (n 210) -> pass 
+BAR_B2S G3 blob syndicate median length % (within 20)  -10.34 se  3.82 (n 190) -> pass 
+BAR_B2S G3 turtle median length % (within 15)        +0.26 se  0.15 (n 800) -> pass 
+BAR_B2S G3 turtle condemned median length % (within 20)   +0.05 se  0.14 (n 190) -> pass 
+BAR_B2S G3 turtle gangs median length % (within 20)  +20.75 se  7.71 (n 210) -> FAIL 
+BAR_B2S G3 turtle law median length % (within 20)    +0.34 se  0.24 (n 210) -> pass 
+BAR_B2S G3 turtle syndicate median length % (within 20)  -18.20 se 12.20 (n 190) -> pass 
+BAR_B2S G4 time-cap share (not up)                   -0.06 se  0.21 (n 1600) -> pass 
+BAR_B2S G5 none line flatness (not worse)           -17.74 se  5.16 (n 200) -> pass 
+BAR_B2S G8 mono-tank line win share (not up)         -1.62 se  0.92 (n 800) -> pass 
+BAR_B2S G6 perf / G7 full check: read from ARM's check (not here)
+BAR_B2S VERDICT FAIL (17 of 18 rules hold)
