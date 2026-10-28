@@ -4007,3 +4007,7 @@ instrument that cannot lie about load — removal within one run — and let eve
    plus raw series rows filled the laptop's / to 411 MB free overnight: every session's tool output (Claude's temp directory lives on /)
    failed at once. The orchestrator's sweep reads `df -h /` each tick and asks a stream to remove a side worktree the hour its series ends;
    raw rows are judged into `references/` and then deleted.
+338. **A command we send him never ends in punctuation.** (Round 44.) Both of his round-43 playtests ran `SEED=56416.` (the full stop
+   of our sentence): `--seed` did not parse, the armies rolled from the clock and the recording said seed -1; a day of "his seed"
+   reads were on a different match. Put every command he runs in backticks or a code block, nothing after it; `make skirmish` now
+   keeps digits only (native fff546ef6).

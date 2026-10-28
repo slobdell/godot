@@ -13,6 +13,8 @@ extends Node
 ##                                                (+ C43.2: squad_cap, factions, preset, native, flags, spawn, frame)
 ##   {"t":"order",  tick, units, verb, source, to, target, formation, error}   every command, WITH its refusal
 ##                                                (+ C43.2: frame, paused; verb "formation" = a formation pick)
+##                                                (+ C44.2: click [x, z] = his cursor's ground point before any layout,
+##                                                 group = how many squads that one order went to)
 ##   {"t":"task",   tick, element, verb, to, formation}                        every squad task the leader took
 ##   {"t":"hit",    tick, shooter, target, weapon, face, weak, shield, hull, killed}
 ##   {"t":"census", tick, units:[{name, id, team, pos, hp, hp_max, shield, order, phase, blocked}]}  every CENSUS_S
@@ -161,7 +163,9 @@ func _roster() -> Array:
 func _on_command(command: Dictionary, error: String) -> void:
 	var row := {"t": "order", "tick": game_match.tick, "verb": String(command.get("verb", "")),
 			"units": command.get("units", []), "source": String(command.get("source", ""))}
-	for key in ["to", "target", "formation", "queue", "facing"]:
+	# C44.2 (round 44, orders): `click` = the ground point under his cursor before any per-squad layout, `group` = the squads
+	# his one order went to; ADDITIVE (older rows have neither; `to` keeps its meaning: where that squad was sent).
+	for key in ["to", "target", "formation", "queue", "facing", "click", "group"]:
 		if command.has(key):
 			row[key] = command[key]
 	if error != "":
