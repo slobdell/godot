@@ -50,6 +50,7 @@ static func configure() -> bool:
 		"LANE_BLOCKED_TICKS": TankBrain.LANE_BLOCKED_TICKS, "TICK_RATE": SimClock.TICK_RATE,
 		"KIND_ARC": Weapons.Kind.ARC, "ORDER_OPTIONS": TankBrain.ORDER_OPTIONS, "FIGHT_OPTIONS": TankBrain.FIGHT_OPTIONS,
 		"brain": TankBrain, "suppression_feed": SuppressionFeed, "element_feed": ElementFeed, "units": Units,
+		"native_el": NativeEl, "arena": Arena,  # round 43 (A7): the water between a crew and a contact, natively
 		"SUPPRESS_PENETRATION": TankBrain.SUPPRESS_PENETRATION, "SUPPRESSING_WEAPON": SuppressionFeed.SUPPRESSING_WEAPON,
 	})
 	return _configured
