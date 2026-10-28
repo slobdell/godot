@@ -117,7 +117,27 @@ Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for
 - **His second match (08-21):** the same spot (-42.1, 90) held Green_Guns_4 (a War Rig too, all five Guns 420 hp); his click was
   (-85.7, 52.6); that rig stood for 150 ticks (5 s) before moving: the same thing, LONGER, unnoticed (the camera was elsewhere).
   Nothing differed in the mechanism; the roster order and the click did.
-- **The fix (`--traffic-on=backout`, built, test running):** at an order's start, a hull near rest whose steering point is within its
+- **The fix, BUILT and committed: e0a746667 (`--traffic-on=backout`, DEFAULT_OFF).** His real start rebuilt under it (builder0, native
+  base v the rule on the GDScript drive (the chain gate; the two drives are row-identical over all 3000 rows of his 20 s start at
+  1354362f8, builder0), `start_trace_bo3.log`): the look at tick 1 (departure point (-52.7, 79.1), 15 m, 44 deg off the nose, inside
+  the circle), the circle plan "back 2.0 m, away 3.5 m" at tick 1, reversing by tick 2 (-1.2 m/s at tick 6, -2.8 at 16), 2 m back by
+  tick 31 with the nose 10 deg west, rolling forward at tick 36, 6 m/s by tick 61, **past the box's west end at tick 91 (main: 142)**.
+  No creep: 0.0 m forward before the reverse (main 0.6 m). The squad (20 s window, arrival s): Guns_1 18.9 -> 14.3, Guns_2 8.4 ->
+  8.9, Guns_3 never (20.0) -> 10.8, Guns_4 7.6 -> 7.7, Guns_5 9.9 -> 13.3; k-turn s Guns_2 1.3 -> 1.9. One start, one seed: a read,
+  not a number; Bar S v3 decides.
+- **The lab test** `tests/test_manoeuvre_backout.gd` (his five Guns at the header's spawns on Locks, the Gangs table, an element's
+  move to his click; a rig ALONE reverses straight under M1's `behind` rule and never shows the creep, so the squad is staged):
+  OFF: forward at t12, reverse t46, crept 0.62 m, past the box t144; ON: reverse t10, crept 0.0 m, forward t36, past the box t99
+  (builder2 light, e0a746667's code: 2 passed / 0 failed).
+- **Three things had to change, all behind the switch (OFF = today byte for byte):** (1) the look happens while the hull still sits
+  "arrived" on the station (today the planner is only called when steering wants to drive); (2) the k-turn decision is made against the
+  departure point instead of the station; (3) the station PID (Movement._keep_station, a station within 14 m moving >= 0.5 m/s) is kept
+  off a planned leg: it wrote the throttle after the leg and the hull rocked +-1.5 m/s on the spot for 80 ticks (bo2 trace). (3) is a
+  bug for ANY k-turn planned near a moving station; it is gated for C44.4 and the native twin should carry it.
+- **Native twin needed before ON (C44.4):** `Movement._backout_due`, `_backout_departure`, `_backout_final_goal`, the waypoint swap at
+  the top of `_planned_reverse`'s look, `BACKOUT_MIN_ERROR_DEG` as the gate, `_backout_leg`'s continuation at the call site, the station
+  PID gate; new members `_backout_goal/_tick/_point/_from/_leg` (exec_fields). Requested through the orchestrator.
+- **The fix as first built (`--traffic-on=backout`, superseded above):** at an order's start, a hull near rest whose steering point is within its
   own length makes the k-turn decision against the DEPARTURE POINT (the first point of its own navmesh route to its FINAL seat at
   least a hull's length away) when that is >= 25 deg off the nose; the decision machinery is today's (circle plan / arc sweep /
   reverse search). Scoped off grouped squads (C44.3). Untwinned: ON runs the GDScript drive (chain gate); native asked for a twin
