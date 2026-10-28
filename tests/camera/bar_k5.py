@@ -80,8 +80,10 @@ def main():
             line(f"D1 toward the hidden side, {arena}", ra["toward_pct"], rb["toward_pct"], ra["toward_pct"] > rb["toward_pct"])
     # D2 facing the building after the opening, EMPTY pooled
     ep = {arm: corner_all(W["empty-locks"][arm] + W["empty-terminus"][arm]) for arm in ("off", "on")}
-    a, b = ep["on"]["facing_open_pct"], ep["off"]["facing_open_pct"]
-    line("D2 facing the building after the opening, EMPTY pooled (%)", a, b, a <= 0.75 * b, "line: ARM <= 0.75 x BASE")
+    key = "facing_free_pct" if V2 else "facing_open_pct"
+    a, b = ep["on"][key], ep["off"][key]
+    line("D2 facing the building after the opening, EMPTY pooled (%)" + (" (R43.29: frames K4's war pull wins left out)" if V2 else ""),
+         a, b, a <= 0.75 * b, "line: ARM <= 0.75 x BASE")
     # D3 seen -> on screen
     a, b = pool["on"]["seen_screen"], pool["off"]["seen_screen"]
     line("D3 seen -> on screen, CORNER pooled (s, mean +- se)", f"{a[0]:.2f} +- {a[1]:.2f}", f"{b[0]:.2f} +- {b[1]:.2f}", a[0] <= b[0])

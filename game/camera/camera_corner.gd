@@ -70,6 +70,8 @@ var _toward_s := 0.0
 var _away_s := 0.0
 var _open_s := 0.0
 var _facing_open_s := 0.0
+var _open_free_s := 0.0
+var _facing_free_s := 0.0
 var _back_s := 0.0
 var _frame := 0
 ## Bar K5's no-fog-cheat line (C43.6): every frame from the staging, the shown and wanted yaw at full precision and how
@@ -229,6 +231,26 @@ static func lead_past(lane_entry: Dictionary, points: Array) -> float:
 	return best - float(lane_entry["half_len"])
 
 
+## How far the squad's centre `from` is along the lane, from the wall's far end (0 = level with the corner). Pure.
+static func centre_past(lane_entry: Dictionary, from: Vector3) -> float:
+	return (Vector2(from.x, from.z) - (lane_entry["centre"] as Vector2)).dot(lane_entry["along"] as Vector2) \
+			- float(lane_entry["half_len"])
+
+
+## Which pull wins the danger look this frame (RtsCamera.danger_last): "heading" / "enemies" / "war" / "corner", or ""
+## when there is none. Pure.
+static func winner(last: Dictionary) -> String:
+	var best := ""
+	var most := 0.01
+	var pulls: Dictionary = last.get("pulls", {})
+	for key: String in ["heading", "enemies", "war", "corner"]:
+		var length := (pulls.get(key, Vector3.ZERO) as Vector3).length()
+		if length > most:
+			most = length
+			best = key
+	return best
+
+
 ## Whether the view's ground ray from `from` at `yaw` crosses the lane's building within FACING_M. Pure (given the map).
 static func faces_building(map: CoverMap, lane_entry: Dictionary, yaw: float, from: Vector3) -> bool:
 	var ahead := RtsCamera.heading_of(yaw)
@@ -248,7 +270,9 @@ func _process(delta: float) -> void:
 	if state["from"] == null or own.is_empty():
 		return
 	var from: Vector3 = state["from"]
-	var past := CameraCorner.lead_past(lane, own)
+	# R43.29 (2a): the corner opens on the squad's CENTRE past the far end, as the rule takes it (the lead crew's opening
+	# counted the 1-2 s the squad's middle still stood beside the wall).
+	var past := CameraCorner.centre_past(lane, from)
 	if _opened < 0.0 and past > 0.0:
 		_opened = _clock
 	var hidden_seen := false
@@ -282,6 +306,12 @@ func _process(delta: float) -> void:
 		_open_s += delta
 		if facing:
 			_facing_open_s += delta
+		# R43.29 (2a): D2 leaves out the frames K4's war pull wins the yaw, in both arms (traces 130412bdf: on Terminus the
+		# war pull looks across the building at the arena's middle whatever the corner swing does).
+		if CameraCorner.winner(rig.danger_last) != "war":
+			_open_free_s += delta
+			if facing:
+				_facing_free_s += delta
 	if absf(bearing) <= 45.0:
 		_toward_s += delta
 	# The swing's cost (Bar K5's empty corner): seconds the view looks more than 90 / 135 deg off the way they drive.
@@ -309,6 +339,7 @@ func summary() -> Dictionary:
 			"seen": _seen >= 0.0, "shown": _screen >= 0.0,
 			"corner_s": snappedf(_corner_s, 0.01), "facing_s": snappedf(_facing_s, 0.01), "toward_s": snappedf(_toward_s, 0.01),
 			"open_s": snappedf(_open_s, 0.01), "facing_open_s": snappedf(_facing_open_s, 0.01),
+			"open_free_s": snappedf(_open_free_s, 0.01), "facing_free_s": snappedf(_facing_free_s, 0.01),
 			"away_s": snappedf(_away_s, 0.01), "back_s": snappedf(_back_s, 0.01), "hidden": not hidden.is_empty(),
 			"mean_abs_bearing": snappedf(_bearing_sum / maxf(_corner_s, 1e-6), 0.1) if _corner_s > 0.0 else null}
 
@@ -335,6 +366,12 @@ const PULL_CLEAR_M := 30.0
 const PULL_SEARCH_M := 60.0
 ## The held look lets go when the squad's heading has turned this far from where it was when the look was taken.
 const HOLD_TURN_DEG := 45.0
+## R43.29 (2b): no corner look is TAKEN within this many seconds of the order's start. The camera has just framed his
+## click (the order track, K2) and a corner met in the first seconds of a drive is the street he set off down, already in
+## view; and Bar K5's ambush drive (contact AMBUSH_AT_S = 5 s after its order) took a corner look K4 then reversed
+## (v2 dev 130412bdf: ambush reversals 3.16 -> 5.18 /min). 6 s = that contact and a second; the corner workload's corners
+## open ~8-10 s after the order (dev), so they keep the look.
+const ORDER_SETTLE_S := 6.0
 ## Orders under which the squad is just driving (no target of his to look at).
 const QUIET_VERBS := ["move", "attack_move"]
 
@@ -387,7 +424,8 @@ static func pull(map: CoverMap, from: Variant, own: Array, heading: Variant) -> 
 ## One frame of the held corner look (R43.27 (a) + (c)). `hold` = the last frame's ({} = none), `candidate` = this frame's
 ## pull(), `order` = the commanded units' current order ({id, verb}), `heading` their facing, `known` how many enemies his
 ## team knows. Returns the new hold: {look, w, order_id, heading} or {}. Pure, for tests.
-static func step(hold: Dictionary, candidate: Dictionary, order: Dictionary, heading: Variant, known: int) -> Dictionary:
+static func step(hold: Dictionary, candidate: Dictionary, order: Dictionary, heading: Variant, known: int,
+		order_age_s := INF) -> Dictionary:
 	if known > 0 or not String(order.get("verb", "")) in QUIET_VERBS:
 		return {}  # a fight is K4's; a hold, an attack or no order is not a drive past a corner
 	if not hold.is_empty():
@@ -398,6 +436,8 @@ static func step(hold: Dictionary, candidate: Dictionary, order: Dictionary, hea
 			turned = a.length() > 0.01 and b.length() > 0.01 and absf(rad_to_deg(a.angle_to(b))) > HOLD_TURN_DEG
 		if order.get("id") == hold.get("order_id") and not turned:
 			return hold
+	if order_age_s < ORDER_SETTLE_S:
+		return {}  # R43.29 (2b): the first seconds of a drive are his click's (see ORDER_SETTLE_S)
 	if candidate.get("look") is Vector3 and float(candidate.get("w", 0.0)) > 0.0:
 		return {"look": candidate["look"], "w": 1.0, "order_id": order.get("id"), "heading": heading}
 	return {}

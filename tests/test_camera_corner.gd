@@ -208,3 +208,21 @@ func test_no_fog_cheat_an_unseen_enemy_changes_no_yaw() -> void:
 	var without := _yaw_run(rig, feed, 120)
 	assert_eq(with_it, without, "the yaw sequence is identical with and without the unseen enemy")
 	assert_true(arena != null, "an arena (the cover map's source)")
+
+
+func test_no_corner_look_in_the_first_seconds_of_an_order_and_the_census_opens_on_the_centre() -> void:
+	# R43.29 (2b): a corner met within ORDER_SETTLE_S of his click is not taken (the ambush drive's contact came at 5 s).
+	var map := _warehouse()
+	var north := Vector3(0, 0, -1)
+	var at := _column(-30.0)
+	var candidate := CameraCorner.pull(map, _centre(at), at, north)
+	var move := {"id": 3, "verb": "move"}
+	assert_eq(CameraCorner.step({}, candidate, move, north, 0, CameraCorner.ORDER_SETTLE_S - 0.5), {}, "too soon after his click")
+	assert_true(CameraCorner.step({}, candidate, move, north, 0, CameraCorner.ORDER_SETTLE_S + 0.5).get("look") is Vector3,
+			"settled into the drive: taken")
+	# R43.29 (2a): the census's corner opens on the squad's centre, as the rule takes it.
+	var his := _lane(CameraCorner.lanes(map), NORTH, Vector2(-1, 0))
+	assert_near(CameraCorner.centre_past(his, Vector3(-14, 0, -20)), 5.0, 0.01, "the centre 5 m past the far end")
+	assert_eq(CameraCorner.winner({"pulls": {"heading": Vector3(0, 0, -0.6), "war": Vector3(1, 0, 0), "corner": Vector3.ZERO}}),
+			"war", "the biggest pull wins (D2 leaves the war's frames out)")
+	assert_eq(CameraCorner.winner({}), "", "no look, no winner")

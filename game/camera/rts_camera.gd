@@ -283,6 +283,8 @@ var corner_on := false
 ## read-only (skirmish_mode wires it beside `facing`, C42.3).
 var corner_hold := {}
 var order_now: Callable = Callable()
+var _order_id: Variant = null
+var _order_at := -1e9
 ## (d) Strong enough to outweigh a full-speed heading and the war together (0.6 + 1.0): past the corner the view turns
 ## most of the way to the open side (a north drive, the war north, the side east: atan(4 / 1.6) ~ 68 deg east).
 const CORNER_W := 4.0
@@ -368,6 +370,9 @@ var hand_pace := HAND_PACE
 var aim_hold := true
 ## The building clearance: how fast it eases toward more clearance (fast: the camera must not sit in a wall), and back.
 const SOLID_IN_OMEGA := 22.0
+## Round 43 (stretch, dev): how much faster than the glide's cap the clearance may move while the camera is inside a solid.
+const SOLID_ESCAPE_X := 3.0
+var solid_escape := false
 const SOLID_OUT_OMEGA := 4.0
 ## C41.4 (R41.1): orders' read-only "player is aiming" getter (RtsControls.is_aiming; skirmish_mode wires it). The rig
 ## also watches the mouse itself in `_input` (`aiming_now`).
@@ -415,6 +420,7 @@ func _ready() -> void:
 	focus_omega = float(flags.text("camera-glide-omega", str(GLIDE_FOCUS_OMEGA)))
 	danger_on = flags.text("camera-danger", "on") != "off"  # K4.3: ON (Bar K4 v2 passed, 9737-9772); =off = round 41
 	corner_on = flags.text("camera-corner", "off") == "on"  # K5.3: OFF until Bar K5 passes
+	solid_escape = flags.text("camera-solid-escape", "off") == "on"  # round 43 stretch: dev only
 	danger_lean_m = float(flags.text("camera-danger-lean", str(DANGER_LEAN_M)))
 	solid_in_omega = float(flags.text("camera-solid-in", str(SOLID_IN_OMEGA)))
 	if glide:
@@ -562,6 +568,10 @@ func _glide(delta: float) -> void:
 	# The building clearance (measured by the last `_apply`): quick toward more clearance, slow back. Round 42 (R42.16):
 	# under the glide's cap like every other automatic move (Bar K4's three snaps were this spring closing a big step).
 	var caps := RtsCamera.solid_caps(RtsCamera.distance_for(_shown_zoom), fov, screens_per_s)
+	# Round 43 (stretch, the K4 v2 watch item `--camera-solid-escape=on`, dev): a camera already INSIDE a building gets out
+	# at SOLID_ESCAPE_X the cap (the cap made the clearance trail a quick turn into the wall: ~1 s inside per 45 s run).
+	if solid_escape and camera != null and not RtsCamera.solid_at(camera.global_position).is_empty():
+		caps *= SOLID_ESCAPE_X
 	var solid_d := RtsCamera.spring(_solid_d, _solid_d_velocity, _solid_want.x,
 			solid_in_omega if absf(_solid_want.x) > absf(_solid_d) else SOLID_OUT_OMEGA, delta)
 	_solid_d_velocity = clampf(float(solid_d[1]), -caps.x, caps.x)
@@ -1334,8 +1344,11 @@ func _update_yaw_follow(delta: float) -> void:
 			var candidate := CameraCorner.pull(CoverMap.of(self) if is_inside_tree() else null, state.get("from"),
 					state.get("own", []), state.get("heading"))
 			var order: Dictionary = order_now.call() if order_now.is_valid() else {}
+			if order.get("id") != _order_id:
+				_order_id = order.get("id")
+				_order_at = _clock
 			corner_hold = CameraCorner.step(corner_hold, candidate, order, state.get("heading"),
-					(state.get("enemies", []) as Array).size())
+					(state.get("enemies", []) as Array).size(), _clock - _order_at)
 			state["corner"] = corner_hold
 		danger_last = RtsCamera.danger_look(state)
 		wanted = danger_last.get("look")
