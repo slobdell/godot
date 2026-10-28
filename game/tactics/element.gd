@@ -1201,7 +1201,7 @@ func _rank_file(situation: Dictionary) -> void:
 	if not ElementPlan.FUNNEL_ENABLED or (transit.get("profile", []) as Array).is_empty():
 		return
 	var members: Array = situation.get("members", [])
-	var shape := TacticsFormation.centered(TacticsFormation.offsets_at(formation, maxi(members.size(), 1), pitch))
+	var shape := TacticsFormation.shape_at(members, formation, maxi(members.size(), 1), pitch)  # round 43 (manoeuvre S2): bounded as the seats
 	var squeeze := ElementPlan.funnel(shape, pitch, transit)
 	if float(squeeze["weight"]) <= 0.0:
 		transit.erase("file")

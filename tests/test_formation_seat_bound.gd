@@ -142,3 +142,42 @@ func test_bounded_is_pure_geometry() -> void:
 	assert_true(TacticsFormation.reach_of(floored) > 10.0, "a bound under the floor stops at the floor")
 	assert_eq(TacticsFormation.bounded(shape, 100.0, Vector2(10.0, 12.0)), shape, "a shape within the bound comes back as is")
 	assert_eq(TacticsFormation.bounded(shape, INF, Vector2(10.0, 12.0)), shape, "no bound: as is")
+
+
+func test_the_travelling_stations_keep_the_bound() -> void:
+	# The transit lays its stations itself (ElementPlan.route_seats / stations_along): without the bound War Rig 3's first
+	# station on Locks was 70 m east; with it the stations are the bounded shape along the route. OFF: today's exactly.
+	var members := his_guns()
+	for i in members.size():
+		members[i]["position"] = Vector3(-43.0 + i * 6.5, 0.0, 95.0)
+	var route: Array = [Vector3(-43.0, 0.0, 95.0), Vector3(-69.1, 0.0, 50.7)]
+	var pose := ElementPlan.route_pose(route, 30.0)
+	var transit := {"route": route, "s": 30.0, "anchor": pose["point"], "heading": pose["tangent"]}
+	var seats := {}
+	for i in members.size():
+		seats[String(members[i]["name"])] = ["swarm", 5, i]
+	var plan := {"seats": seats, "formation": "swarm", "pitch": TacticsFormation.pitch(members, SPACING)}
+	TacticsFormation.SEAT_BOUND = false
+	var open_seats: Array = ElementPlan.route_seats(members, "swarm", SPACING, transit)
+	var open_stations: Dictionary = ElementPlan.stations_along(plan, transit, members)
+	var bare_stations: Dictionary = ElementPlan.stations_along(plan, transit)
+	TacticsFormation.SEAT_BOUND = true
+	var tight_seats: Array = ElementPlan.route_seats(members, "swarm", SPACING, transit)
+	var tight_stations: Dictionary = ElementPlan.stations_along(plan, transit, members)
+	var anchor: Vector3 = pose["point"]
+	var far_open := 0.0
+	var far_tight := 0.0
+	for i in open_seats.size():
+		far_open = maxf(far_open, Vector2((open_seats[i] as Vector3).x - anchor.x, (open_seats[i] as Vector3).z - anchor.z).length())
+		far_tight = maxf(far_tight, Vector2((tight_seats[i] as Vector3).x - anchor.x, (tight_seats[i] as Vector3).z - anchor.z).length())
+	assert_true(far_open > 50.0, "OFF: a route seat of the swarm sits over 50 m from the travelling anchor (%.1f)" % far_open)
+	assert_true(far_tight <= 37.0 + 0.5, "ON: every route seat within the bound of the travelling anchor (%.1f)" % far_tight)
+	for unit_name: String in tight_stations:
+		var station: Vector3 = tight_stations[unit_name]
+		assert_true(Vector2(station.x - anchor.x, station.z - anchor.z).length() <= 37.0 + 0.5, "ON: %s's station within the bound" % unit_name)
+		assert_true((bare_stations[unit_name] as Vector3).distance_to(open_stations[unit_name]) < 0.01,
+				"OFF: stations with members are today's stations without them, exactly")
+	for unit_name: String in open_stations:
+		assert_true((tight_stations[unit_name] as Vector3).distance_to(open_stations[unit_name]) > 0.1
+				or Vector2((open_stations[unit_name] as Vector3).x - anchor.x, (open_stations[unit_name] as Vector3).z - anchor.z).length() <= 37.5,
+				"ON changes the stations that were past the bound")

@@ -983,7 +983,7 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 		# `move` to the final slots, and the brain drives to its station while one is published (TankBrain._order_context).
 		# No follow orders: the flow's leader-relative station is what this replaces.
 		# Round 20 (M1): eased in from where each crew stood when the order came (`converge`).
-		var shape_along := stations_along(plan, transit)
+		var shape_along := stations_along(plan, transit, ordered)  # round 43 (manoeuvre S2): the stations keep the seat bound
 		plan["stations"] = converge(shape_along, transit)
 		# Round 23 (B1): the shape's own stations, what the pacing rules measure against (Element.shape_along).
 		plan["shape_along"] = shape_along
@@ -1038,8 +1038,8 @@ const HALT_RESEAT_TICKS := SimClock.TICK_RATE * 2
 ## point per slot index, for TacticsFormation.seat's `at`. Pure.
 static func route_seats(members: Array, formation: String, spacing: float, transit: Dictionary) -> Array:
 	var count := members.size()
-	var shape := TacticsFormation.centered(TacticsFormation.offsets_at(formation, count,
-			TacticsFormation.pitch(members, spacing)))
+	# Round 43 (manoeuvre S2): the stations keep the seat bound the final slots have (TacticsFormation.shape_at).
+	var shape := TacticsFormation.shape_at(members, formation, count, TacticsFormation.pitch(members, spacing))
 	var route: Array = transit.get("route", [])
 	var s := float(transit.get("s", 0.0))
 	var out: Array = []
@@ -1154,7 +1154,7 @@ static func route_length(route: Array) -> float:
 ## {unit: Vector3}. Slot i's place is the route point `back_i` metres behind the anchor's progress, pushed `right_i`
 ## across the tangent THERE — so the shape follows the road rather than swinging rigidly round each corner. With no
 ## route in `transit` (a bare anchor and heading) the shape is laid rigidly at the anchor. Pure.
-static func stations_along(plan: Dictionary, transit: Dictionary) -> Dictionary:
+static func stations_along(plan: Dictionary, transit: Dictionary, members: Array = []) -> Dictionary:
 	var result := {}
 	var seats: Dictionary = plan.get("seats", {})
 	if seats.is_empty():
@@ -1164,7 +1164,8 @@ static func stations_along(plan: Dictionary, transit: Dictionary) -> Dictionary:
 	for unit_name: String in seats:
 		count = maxi(count, int((seats[unit_name] as Array)[1]))
 	var pitch_v: Vector2 = plan.get("pitch", Vector2(TacticsFormation.DEFAULT_SPACING, TacticsFormation.DEFAULT_SPACING))
-	var shape := TacticsFormation.centered(TacticsFormation.offsets_at(formation, count, pitch_v))
+	# Round 43 (manoeuvre S2): with `members` the stations keep the seat bound the final slots have (TacticsFormation.shape_at).
+	var shape := TacticsFormation.shape_at(members, formation, count, pitch_v)
 	var route: Array = transit.get("route", [])
 	var s := float(transit.get("s", 0.0))
 	var anchor: Vector3 = transit.get("anchor", Vector3.ZERO)

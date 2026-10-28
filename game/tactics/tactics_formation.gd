@@ -142,6 +142,16 @@ static func reach_of(shape: Array[Vector2]) -> float:
 	return reach
 
 
+## The centred shape of `members` in `formation` at `pitch_v`, bounded as place() lays it, for the callers that lay the
+## shape themselves (the transit's stations: ElementPlan.route_seats / stations_along, Element._rank_file). Without
+## members, or a group past a platoon, it is `centered(offsets_at(...))` exactly: no hull, no bound.
+static func shape_at(members: Array, formation: String, count: int, pitch_v: Vector2, rule := "") -> Array[Vector2]:
+	var shape := centered(offsets_at(formation, count, pitch_v))
+	if SEAT_BOUND and count <= PLATOON and not members.is_empty():
+		shape = bounded(shape, seat_bound(members), hull_floor(members, rule))
+	return shape
+
+
 ## `shape` (slots about its anchor) scaled toward the anchor until its reach is within `bound`, but no further than the hull
 ## floor allows: every pair of seats stays separated on at least one axis by `floor_v` (across: x, along: y), the same rule
 ## `closest_boxes` reads a formation by. The scale is one number for the whole shape, so the depth order, the sides and the
