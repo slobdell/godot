@@ -82,7 +82,7 @@ never touch processes you didn't start. Never delete builder files that aren't o
 
 ## Bars (round 43)
 
-**Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards (and Bar A's pooled extension); 10349-10372 engage G1-G5 guards; 10373-10396 engage Bar A6 (+ 10397-10400, 10573-10592 its guards); 10401-10424 manoeuvre bar S (arrival);
+**Seed registry (round 43):** 10301-10324 engage bar A; 10325-10348 engage fight guards (and Bar A's pooled extension); 10349-10372 engage G1-G5 guards; 10373-10396 engage Bar A6 (+ 10397-10400, 10573-10592 its guards); 10601-10624 engage Bar A6 v2 (+ 10625-10648 its E1 lines); 10401-10424 manoeuvre bar S (arrival);
 10425-10448 manoeuvre guards; 10449-10472 manoeuvre bridge (S5, BRIDGE_POOLED_SEEDS); 10501-10536 camera Bar K5 (36 an arm);
 10537-10572 camera K5 v2 (one re-file); native none. Dev: 7001-7012, 9501-9512, his 56416 (never a bar). Carried unread: 9201-9240 +
 9301-9340 Bar B5 t50 (only on his yes).
@@ -119,6 +119,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   2 se. **Outcome guards** (all 24): contacts_mouth, contacts_far (+2 floor), jam_s, last_a_s; Bar E1's lines on 10397-10400 + 10573-10592;
   perf and suite ON on the merge candidate. Floor: 8 of 12 side seeds with a BASE verdict, else the declared extension (the same 24 as
   `--stage=terminus_side`). Dev (never a bar): his seed with holdway leaves his match at 14 s, Guns_1 best 38 m, no AWAY (OFF AWAY 82 m).
+  **READ (R43.20): FAILS guard 2b.** builder2, native, 98739047a, n 24 (12 side + 12 head-on), no timeout, floor 12/12. Line 1 off_arrive_s
+  49.5 -> 37.9 s a run, paired -11.58 s, se 4.07, z -2.84 PASS; 2a verdicts -0.25 (se 0.18) PASS; **2b held_on_s -40.8 s (se 13.3, z -3.07)
+  FAIL** (real head-on crews released: `_route_passes` walks the crew's current leg to its seat, not its squad's destination); 3-6 PASS
+  (jam_s -9.29 better). Reported: side verdicts 12 -> 2, side held 433 -> 10.
 
 ## Rulings (round 43)
 
@@ -243,6 +247,10 @@ never touch processes you didn't start. Never delete builder files that aren't o
   formation_changed hook beside camera's `cam` row; both additive). merge_check_needed CHECK (camera's files are not in 409f70d66's tree),
   so main c57fc616b is unchecked as a whole: laptop `make lint-fast` exit 0 (1257 scripts) and `make test FILTER="match_recorder|camera_record"`
   7 passed / 0 failed. ONE main check after native's second merge (356ce50d2, its check running on builder0).
+- **R43.20 (~01:35) Bar A6 FAILS guard 2b; A6 v2 is the LAST re-file of this item this round,** two arms v one BASE on fresh
+  10601-10624 (+ 10625-10648 E1's lines): ARM-W the ordered-way read alone; ARM-WR ordered way + release judged on the crew's navmesh
+  route to its squad's destination. Same lines (2b as filed) + a perf guard (find_path per crew at the verdict; ON check perf-judge
+  <= 1.05x). Ship the arm that passes every line (both: the better line 1). Fail = both OFF with reads, item stops for the round.
 
 ## Round 42: five streams (prepared 2026-10-26 evening; briefs in `streams/`)
 
