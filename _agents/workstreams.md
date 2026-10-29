@@ -326,6 +326,15 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   the same as or better than OFF, and D2 (what he reported) passes outright, so E2 ships ON at 60262534f once G6 (orders-probe,
   manoeuvre-behind identity) passes and 11326's cause is written; a fix for 11326 lands separately with its own test and the
   authority probe byte-identical elsewhere. Lesson 339 applies.
+- **R45.20 (~15:40) Bar A6 v4 (holdway) FAILS as filed on guard 4; stays OFF. S v5 not filed (dev read not clean).** A6 v4 (frozen
+  0493977ed, builder0 light, 24 + 24 seeds; evidence `references/round45/manoeuvre/barsa6v4-builder0-0493977ed/`): deciding side jam_s
+  397 -> 48 pooled, -29.1 s a run, z -5.6 PASS; guards 1, 2a, 2b (one-sided), 3, 5, 6 (engage's lines identical), 8 PASS; **guard 4
+  contacts_far 9 -> 70 pooled, +2.54 a run (z 1.81) v the filed +2.32: FAIL by 0.22 a run**, all on head-on stages (11450 0 -> 9, 11458
+  3 -> 9, 11460 6 -> 15, 11464 0 -> 5, 11466 0 -> 32). In his terms: the side-street squad that sits jammed 30 s today would roll through,
+  but on a head-on meeting the released crews brush the passer at the mouth a couple more times a match. Not overridden: C45.2 covers G2
+  and E2 only, and brushing friends is its own "doesn't look smart". Round 46: the head-on release (seed 11466's 0 -> 32 first).
+  S v5's three-arena dev read: Locks wedged -0.5 s a run, Terminus +8.0 s (+1.7 se), Crossing +2.4 s; never-arrived 115 -> 109: no bar
+  (R45.18's condition). C45.4: seat / bounded are GDScript only; no twin needed.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
