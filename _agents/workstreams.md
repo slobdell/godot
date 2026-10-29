@@ -85,6 +85,15 @@ _(each stream files its bar here BEFORE any number on its block; the orchestrato
 
 - **R45.1 (prep) Gorge's geometry, for every stream.** The drop's pits run z 38-50: west drop x -92..-48, middle -32..32; the gap
   x -48..-32 is "the bridge" he named. His click (-43.2, 53.2) is on his side (z > 50). His start line is z ~90.
+- **R45.2 (~10:30) Engage's E1 cause (builder0, 8d59b2bdf, his Gorge replay faithful 20/20 for 107 s) and its grant.** Three layers:
+  (1) his HOLD on a one-crew squad goes down the squad TASK path (`rts_controls._is_task`), so `Drills.select` runs react_to_contact and
+  `ElementPlan._engage` issues attack_move 15 m toward the contact every update (z 41 -> 12); (2) his direct STOP latches the goal where
+  the order was read, the scout overshoots ~11 m at 15 m/s and drives back, then the idle brain's ENGAGE creeps it 6 m on with no
+  order; (3) his last move's goal was his click, the scout already 22 m past it from (1). The drive's arrival is not the cause.
+  **GRANT to engage:** `game/ai/tank_brain.gd` for the `--player-authority` switch only (his stop brakes in place; after his direct
+  stop / move the crew holds its post until his next order), and an additive `player` key in `game/ai/order_feed.gd`'s normalize.
+  `order_executor.gd`'s grant stands but is inert. **C45.4 applies:** `native/src/decide_native.cpp` reads TankBrain's decide; engage
+  proves the switch native on v off EQUAL on its authority probe, or asks native for the twin before E1's bar is frozen.
 
 ## Round 44: three streams (prepared 2026-10-28; CLOSED 2026-10-28; briefs in `streams/archive/round44/`)
 
