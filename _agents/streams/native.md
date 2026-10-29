@@ -75,6 +75,9 @@ _(worker keeps this current: report at the top, every number with commit, machin
   never quiet while the bars ran).
 - **Stretch:** the control-per-frame quiet read was done by orders (main 887059084: the watch item closed); `gate_width` in C++ is
   round 45 (HANDOFF 6211aa124; orders' code this round).
+- **GREEN, merge at the close: a011c20df** (main 0691e6aad merged, lines_r44, Status): builder2 `>> remote: make check exited 0`,
+  3433 passed / 0 failed, 26 passed + 2 NOT JUDGED (perf-judge and scenario_perf: builder2 is not a judging machine). Above it: this
+  Status line only (docs).
 - **Questions for the lead:** none. **Known issues:** a replay of a recording made before A7 (his round-42) parts at 15 s on today's
   main (`--engage-water=off` makes it exact): behaviour changed, expected. Builder folders `godot-native-backout*` on builder2 can go.
 
