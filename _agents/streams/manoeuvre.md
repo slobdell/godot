@@ -146,6 +146,18 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   every pose ok (ON v OFF clear +0.0 / +0.3 / -0.6 / +0.0 / +0.0 / +0.0 s; wall ticks +1 / -36 / +11 / 0 / +4 / 0; looks fire on four
   of them, no plan survives the hull / navmesh tests, stalls 0): **G PASS 6 / 6** on the dev poses (D3's line: <= +1.0 s, <= +15 ticks).
 
+### M3 / M4: the twin and the freeze candidate (2026-10-29 ~11:15 PDT)
+
+- **Native's twin: `pair/native-backout-b2` b2b129f9f** (= 0af772a85 + the C++ stalled leg + `_backout_stall_ticks` + a staged test
+  `tests/test_native_drive_backout_stall.gd`); its builder2 native-proof and the default orders probe run on native's side (the
+  orchestrator relays the verdict). **main 47a15f434 merged** (native's cold-import watchdog, tools only; the conflict in
+  workstreams.md resolved to main's recorded copies of B2 / A6 v4): 79710edca.
+- **Freeze candidate: `wip/manoeuvre-b2-freeze` 27f00d3f0** in `../godot-manoeuvre-b2` = stream/manoeuvre 89ff738b9 + the pair. Its gate
+  check runs on builder2 (`~/overnight-manoeuvre/r45/check_b2/check-27f00d3f0.log`; a fresh builder2 folder: the watchdog's first
+  real cold import). B2's series launches on it once native's verdict reads EQUAL + 60/60 AND the check is green; a different twin
+  hash re-cuts the freeze. The check of 0af772a85 alone (dormant-code merge candidate) runs on builder0
+  (`~/overnight-manoeuvre/r45/check_0af772a85/check.log`; perf REFUSED by load there: NOT JUDGED).
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
@@ -174,6 +186,14 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   arm = `--seat-bound=on --seat-order=on` (latch off, no kturngoal, no converge, no parkaside), filed with the wedged guard as S v3's
   (ARM <= BASE + 2 se per arena) and the risk named; if it fails, the press needs the second shape (a squadmate's give-way deferred
   until the seat ahead is taken), not another switch mix. Filed after B2's freeze (same tree).
+
+- **Who carries the bound's press (removal read 2, bound + seat-order, Locks dev, `s_judge.py --cells` now prints wedged per run
+  with the crews over 1 s):** one or two crews a run, not the squad: **Guns_5 (the Resupply Tanker, 6.6 m, the squad's last crew) 7 s on
+  seeds 7001 / 7002 / 7004 / 7010**, Battery_4 / Battery_5 7-10 s on 7003 / 7006, Guns2_2 10 s on 7011; the War Rigs 2-3 s. Read: the
+  slowest, longest-arriving crew converges on a bound the other four already fill and wedges against them. If S v4 misses its wedged
+  guard, the press fix is for the LAST crew's seat (dealt outside the filled bound, or its give-way deferred until the seat ahead is
+  taken: the archived "second shape"), not a wider switch mix. The orchestrator's watch item (a D1 pass with a wedged miss) is the
+  likely failure shape; the per-run rows are in the judge's `--cells` output for the bar.
 
 Decisions so far: dev reads run on the laptop's GDScript drive under `flock /tmp/tank-squad-laptop-godot.lock` (one pose pair ~1 min;
 nothing of the lead's runs while he is away); every judged number comes from a builder.
