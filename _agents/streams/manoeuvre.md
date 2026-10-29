@@ -158,6 +158,28 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   hash re-cuts the freeze. The check of 0af772a85 alone (dormant-code merge candidate) runs on builder0
   (`~/overnight-manoeuvre/r45/check_0af772a85/check.log`; perf REFUSED by load there: NOT JUDGED).
 
+- **Checks read (~11:45 PDT):** (a) **0af772a85 alone on builder0: 3445 / 1 FAILED** (`make check exited 2`): `test_native_exec_state::
+  test_the_table_is_the_scripts_members` wants `_backout_stall_ticks` in `native/src/exec_fields.h` (197 members v 196 fields) — by
+  design: the OFF code ships WITH native's twin or not at all; perf NOT JUDGED (the box busy, 2.19x). (b) **27f00d3f0 (the freeze
+  candidate) on builder2: 3446 / 1 FAILED**: native's `test_native_drive_backout_stall` — the twin EQUAL (1197 drives, 0 mismatches),
+  its own stage assertion `stalls >= 1` failed (0 stalls): it drops a StaticBody3D behind the tail, and a static collider is a
+  WallContact, so the leg ends through today's `lead_hit` wall rule before a stall tick can count; the stall rule is for HULLS (no
+  WallContact). Told the orchestrator (relayed to native: a parked Tank, not a box). My own stage of it added to
+  `tests/test_manoeuvre_backout.gd` (a parked War Rig placed 1 m behind the tail the moment the leg reverses): running on builder2 light.
+  **B2's freeze re-cuts on native's corrected pair.**
+
+- **The stall rule, re-cut on net progress (~12:30 PDT):** my own stage (`test_manoeuvre_backout`: a parked War Rig placed 1 m behind
+  Guns_2's tail the moment its departure leg reverses, GDScript drive, builder2 light) read **0 stalls, max 2 stall ticks** under the
+  velocity rule, and the per-tick trace showed why (native's trace of its parked-hull stage said the same): pressed on the hull the
+  plant's `real_velocity` flips sign every tick (+2.7 / -2.8 m/s, the contact bounce) while the body moves 0.02 m a tick, so "no
+  motion for 15 consecutive ticks" reset every other tick. Now the stall is judged on the CENTRE's net progress: a window opens where
+  the hull stands (`_backout_stall_from`, a new Vector3 exec field) and counts ticks while the plant is asked for >= 0.3 m/s in the
+  leg's gear; it re-opens on 1.0 m of progress (`BACKOUT_STALL_PROGRESS_M`); 30 ticks (`BACKOUT_STALL_TICKS` = 1 s) without = stalled.
+  A free leg from rest covers ~2.2 m in its first second. **Stage read: placed t3, stalled t33, the rig moving its own way again t33,
+  1 stall; his start unchanged (ON reverse t4, past the box t98; 3 / 0 tests).** Shoving a squadmate along counts as progress (the
+  centre moves); B2's wedged and friendly-contact guards read that. Native re-twins on this hash (two exec fields now:
+  `_backout_stall_ticks`, `_backout_stall_from`).
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):

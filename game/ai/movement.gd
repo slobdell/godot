@@ -5508,15 +5508,20 @@ const BACKOUT_MOVED_M := 1.0
 const BACKOUT_RUN_STEP_M := 1.0
 const BACKOUT_ROOM_M := 2.0
 const BACKOUT_NOSED_M := 4.0
-## Round 45 (manoeuvre M2): a departure look's leg that is not moving its way (real motion along the nose in the leg's gear under
-## BACKOUT_STALL_MPS while the plant is asked for KTURN_ROLLING_SPEED or more) for BACKOUT_STALL_TICKS ends as "stalled" instead of
-## standing until its timeout (1.5 s a metre + 1 s: pose 10 of the staged corpus stood 5 s against the squadmate behind it).
+## Round 45 (manoeuvre M2): a departure look's leg that makes no PROGRESS (the hull's centre within BACKOUT_STALL_PROGRESS_M of
+## where the window opened) for BACKOUT_STALL_TICKS while the plant is asked for KTURN_ROLLING_SPEED or more ends as "stalled" instead
+## of standing until its timeout (1.5 s a metre + 1 s: pose 10 of the staged corpus stood 5 s against the squadmate behind it). Net
+## progress of the CENTRE, not the tick's velocity: pressed on another hull the plant's real_velocity flips sign every tick (+2.7 /
+## -2.8 m/s, the contact bounce) while the body moves 0.02 m a tick (the lab stage of a parked rig 1 m behind the tail, builder2;
+## native's trace of the same), so a velocity test counted 1 tick and reset. A leg from rest covers ~2.5 m in its first second:
+## under BACKOUT_STALL_PROGRESS_M in BACKOUT_STALL_TICKS is a stall. Shoving a squadmate along IS progress by this measure (the
+## centre moves); B2's friendly-contact and wedged guards read that.
 ## Round 45 (M2): the air a departure look keeps between footprints (its oriented-box hull test). Manoeuvre.HULL_MARGIN_M (1.0) was
 ## the centre disc's allowance; between boxes it refused every back-up on lock with a squadmate 1.7 m beside (the tail's swing at 1.5
 ## m back is 0.85 m: the staged corpus' crawl poses, his own deploy's Guns_3 at 4.8 m).
 const BACKOUT_HULL_GAP_M := 0.5
-const BACKOUT_STALL_MPS := 0.1
-const BACKOUT_STALL_TICKS := SimClock.TICK_RATE / 2
+const BACKOUT_STALL_PROGRESS_M := 1.0
+const BACKOUT_STALL_TICKS := SimClock.TICK_RATE
 static var backout_looks := 0  # k-turn decisions made against the departure point (measurement)
 static var backout_stalls := 0  # departure legs ended as stalled (measurement)
 var _backout_goal := Vector3.INF   # the final goal the window was opened for
@@ -5526,7 +5531,8 @@ var _backout_from := Vector3.INF
 
 
 var _backout_leg := false  # a k-turn planned from a departure look is under way (it runs to its end whatever steering says)
-var _backout_stall_ticks := 0  # round 45 (M2): ticks the departure leg has been asked to move without moving (exec_fields)
+var _backout_stall_ticks := 0  # round 45 (M2): ticks the departure leg has been asked to move without progress (exec_fields)
+var _backout_stall_from := Vector3.INF  # round 45 (M2): where the stall window opened (exec_fields)
 ## The other hulls a departure look's back-up search stops at, set and read within one _planned_reverse call (a static scratch,
 ## not per-crew state: nothing for exec_fields.h; empty = today's search). Round 45 (M2): rows of `_backout_hulls` (oriented boxes).
 static var _departure_hulls: Array = []
@@ -5834,16 +5840,17 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		# forward leg at 5.7 m/s ended 0.25 m from the clear reach and the reverse leg began with the nose going in).
 		var reached := backed + _kturn_stopping() >= _kturn_left_m
 		# Round 45 (manoeuvre M2, `backout`): a departure look's leg pressed against something its look could not see (a hull that
-		# arrived behind it) ends as "stalled" after BACKOUT_STALL_TICKS without moving its way, instead of standing until the leg's
+		# arrived behind it) ends as "stalled" after BACKOUT_STALL_TICKS without progress, instead of standing until the leg's
 		# timeout; the next look (within the order's window) then reads the hull. Only backout's own legs (OFF and every other leg:
 		# today's, byte for byte).
 		var stalled := false
 		if _backout_leg:
-			var nose_motion := tank.real_velocity.dot(Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()) * float(_kturn_gear)
-			if tank.speed() * _kturn_gear > KTURN_ROLLING_SPEED and nose_motion < BACKOUT_STALL_MPS:
-				_backout_stall_ticks += ctl._step
-			else:
+			if _backout_stall_from == Vector3.INF or _flat_distance(tank.global_position, _backout_stall_from) >= BACKOUT_STALL_PROGRESS_M \
+					or tank.speed() * _kturn_gear <= KTURN_ROLLING_SPEED:
+				_backout_stall_from = tank.global_position  # progress made, or not asked to move: the window opens here
 				_backout_stall_ticks = 0
+			else:
+				_backout_stall_ticks += ctl._step
 			stalled = _backout_stall_ticks >= BACKOUT_STALL_TICKS
 		if ManoeuvreCensus.trace_unit == String(tank.name):
 			# Measurement only (`--turn-trace=<unit>`): round 30's scratch leg print, kept (the arc v the chord, per tick).
@@ -6330,6 +6337,7 @@ static func fill_on() -> bool:
 func _kturn_start_leg(leg: Vector2) -> void:
 	native_stale |= STALE_ALL  # round 27 (native E5b): a door into the owned state (the planner, or a test that sets up a leg)
 	_backout_stall_ticks = 0  # round 45 (M2): read only on a departure look's leg
+	_backout_stall_from = Vector3.INF
 	_kturn_gear = int(leg.x)
 	_kturn_left_m = leg.y
 	_kturn_from = ctl.tank.global_position
