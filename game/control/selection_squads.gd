@@ -1836,6 +1836,8 @@ static func _heading(blocks: Array, flat_click: Vector3, facing: Variant, fallba
 ## ten squads), the same least total by the Hungarian method: round 21's greedy deal (front ranks to the blocks
 ## furthest forward) sent the west squads of an abreast army to the front across the middle ones.
 static func _assign(centers: Array[Vector3], slots: Array[Vector3]) -> Array[int]:
+	if centers.size() <= SEARCH_LIMIT and slots.size() >= centers.size() and NativeAssign.usable():  # round 45 (R45.16): in C++
+		return NativeAssign.assign(centers, slots)
 	var n := centers.size()
 	var best: Array[int] = []
 	if n <= SEARCH_LIMIT:

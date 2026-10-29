@@ -20,6 +20,7 @@
 #include "pathing_native.h"
 #include "gate_width_native.h"
 #include "untangle_native.h"
+#include "assign_native.h"
 #include "perception_native.h"
 #include "incoming_native.h"
 #include "shell_native.h"
@@ -191,6 +192,10 @@ public:
 	Dictionary untangle_whole(const Array &starts, const Array &anchors, bool by_lead, const PackedFloat64Array &leads,
 			const PackedFloat64Array &arcs, const PackedByteArray &misplaced, double slack) const {
 		return ::godot::untangle_whole(starts, anchors, by_lead, leads, arcs, misplaced, slack);
+	}
+	// Round 45 (R45.16): SelectionSquads._assign's exhaustive search (assign_native.cpp).
+	PackedInt32Array assign_least_total(const PackedVector3Array &centers, const PackedVector3Array &slots) const {
+		return ::godot::assign_least_total(centers, slots);
 	}
 	// Round 28 (N6.3): perception's batched pass (perception_native.cpp); the rays it cast, for SimProfile.
 	bool perception_configure(const Dictionary &config);

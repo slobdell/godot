@@ -24,7 +24,8 @@ ELSEWHERE = {"native_recorder": "tests/test_native_recorder.gd (the tick profile
              # match is CPU elements, which never lay a group click through RtsControls); held by their twins and the
              # 30-unit click test (test_control_scale), which takes both.
              "native_gate_width": "tests/test_native_gate_width.gd (RtsControls' group click only; none in the profile)",
-             "native_untangle": "tests/test_native_untangle.gd (RtsControls' group click only; none in the profile)"}
+             "native_untangle": "tests/test_native_untangle.gd (RtsControls' group click only; none in the profile)",
+             "native_assign": "tests/test_native_assign.gd (SelectionSquads' group lays, RtsControls only; none in the profile)"}
 
 
 def main(path: str) -> int:
