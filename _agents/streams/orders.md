@@ -316,7 +316,11 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   across, drive_x, crosses_edge_x, SelectionSquads.GUARD_RANK_SCAN_M)` (after the merge that brings `gate_width_edge_on`).
   **By stage (native, builder2, native ON, 30 units / 6 squads, on top of N2):** the fit 9.5 ms, guard_lay 6.6, untangle 0.8,
   ground_cap 1.2, given 1.1 (~20.5 ms); main without G2 3.68 ms on builder0 (ratio 89.8 v 104, not judged: box busy). Native
-  ports the dominant stages after the final freeze (R45.16).
+  ports the dominant stages after the final freeze (R45.16). **Native's third seam (relayed): the top of `SelectionSquads._assign`
+  behind BrainSwitches.native_assign (stream/native 1921e09eb; 3000 sets / 0 mismatches; the probe 192/192 on v off); on the G2
+  tree the 6-squad click reads 10.85 ms, ratio 92.8 v budget 104 (builder2, not judged).** G2 calls `_assign(centres, seats)`
+  exactly as `ranks` does (two equal-length Array[Vector3], the slot index per centre), for a two-abreast body in `guard_lay`;
+  its inputs and outputs are unchanged. Native re-proves gate_width, untangle and assign EQUAL on the final freeze, guard on and off.
 - **Next steps (round 46, not changed now):** (a) the fit's gate_width at his click costs 4.9 ms on builder2 (native): ~60 engine
   A* path queries (GROUP_SCAN_M each side at 2 m steps), which C++ cannot speed up; fewer queries (a coarser step, a bisection
   to the first blocked sample, or reusing the column's own scan: the memo already serves the column from the guard's read)
