@@ -4,9 +4,36 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-28 ~09:20 PDT (laptop clock) — **ROUND 44 PREPARED (box below; launch = the lead starts three CLIs: orders + manoeuvre on Fable, native on Opus).** Earlier: 2026-10-28 ~08:40 PDT — ROUND 43 IS CLOSED; his playtest after it is in.
+_Last updated: 2026-10-28 ~23:30 PDT (laptop clock) — **ROUND 44 IS CLOSED (box below).** Earlier: 2026-10-28 ~09:20 PDT — round 44 prepared.
 
-## ▶ ROUND 44 AS PREPARED (2026-10-28 ~09:20 PDT) — read this first
+## 🏁 ROUND 44 IS CLOSED (2026-10-28 ~23:30 PDT) — read this first
+
+**Nothing new ships ON for him.** Both behaviour bars failed as filed, so their switches stay OFF on main (code kept for round 45).
+What he gets: the exact replay of his matches (seed recovery: his round-43 seed never parsed, R44.4), the `click` row on every order
+in his recordings, and `make playtest-report` on one screen.
+
+**Main = a93271a66 GREEN builder0, 28 targets ALL JUDGED, 3446 passed / 0 failed, `>> remote: make check exited 0`, sim-baseline unmoved, perf-judge PASS** (`~/orch-r44/main-check-a93271a66.log`); later commits are docs only and inherit it. Streams merged: orders c7f1f1b1a (G1 v10c code 805eae5e1 behind
+`--group-column=always`, OFF, off-identical 60/60), manoeuvre 45484c71e (backout/parkedpass/holdway etc., all OFF; backout's C++ twin
+r3 30e37f336, EQUAL + default orders probe 60/60 on the C++ drive), native 95281529d (N1, N2, lines_r44).
+
+| Bar | Verdict | What he'd notice / why it failed | Round 45 |
+|---|---|---|---|
+| G1 v10c (orders) | **FAIL** (R44.23) | his exact Locks click lays as he asked; but short clicks (20 m) hold 2-3 squads and send the rest round a 90 m column, and on the Crossing's bending streets the column follows the road off his click line | a short click is not a column (squads near the click take near seats in place); keep the column on the click line |
+| S v3 (manoeuvre) | FAIL wedged guard (R44.7) | more crews wedged with it on | S v4 (seeds 11149-11196) |
+| A6 v3 holdway | FAIL head-on guard (R44.19) | head-on meetings got worse with it on | one-sided head-on guard |
+| B1 backout (manoeuvre) | **FAIL** (R44.25) | his start PASSES (Guns_2 backs out at t4 v t44); corpus ON-sooner 71 % v 80 %; every guard passes | fix pose 13 (look never fires) + crossing crawl 10/6 (back-up then second k-turn); Bar B2 on 11149-11196 |
+
+**Round-45 notes:** the above; two-squad press design; squad past the click joins column (R44.20); backout on grouped squads; more than
+two abreast on a wide yard (feel question for him); `RtsControls.gate_width` in C++ (right click on 30 units / 6 squads reads 236
+workloads v budget 104 on builder0 quiet, same before round 44: 711f3e94f 233.7, R43.41 258); a cold-import watchdog on fresh builder
+folders (B1 lost 4 h to a hung font import); builder2 Spot preempted twice on 10-28 evening (`make gcp-start` restarts it); B1 lines
+not yet in tools/judge (lines_r44 has G1 v10c, S v3, A6 v3).
+
+**Cleanup done at close:** briefs archived to `_agents/streams/archive/round44/`; judging table re-rendered (`references/round44/sizing`,
+judging.md unchanged); worktrees godot-orders, godot-manoeuvre, godot-native, godot-native-backout and their branches removed, plus their builder0 folders (builder0 has only godot-native-score*; 24 G free). **builder2 was down at close (Spot); its godot-native-backout* folders are still there: remove them next time it is up.**
+Old detached worktrees from rounds 38-40 (godot-doctrine-guard, godot-native-guard, godot-native-score) left untouched.
+
+## (DONE) ROUND 44 AS PREPARED (2026-10-28 ~09:20 PDT) — read this first
 
 **Goal: his all-squads click sends every squad the same way into a column of wedges at his click (never four destinations 100 m apart,
 never a squad sent back to its own edge); a War Rig nose-on to a container backs out first; `make playtest-report` fits on one screen.**
