@@ -45,6 +45,8 @@ else
 fi
 
 mkdir -p "$(dirname "$log")" build && touch build/.gdignore   # as mk/core.mk's import: build/ is never a resource
+verdict=${log%.log}.verdict   # the double-hang line, for remote.sh to end on (a stale one must never speak)
+rm -f "$verdict" "$log.hung1" "$log.hung2"
 child=""
 stop_child() {
 	[ -n "$child" ] || return 0
@@ -111,5 +113,5 @@ if attempt; then
 	run_then 0
 fi
 cp "$log" "$log.hung2" 2>/dev/null
-echo ">> remote: import hung on $(file_of "$stalled_on") (no progress for ${stall}s, twice; .godot/ cleared between; first hang on $first; $log.hung1, $log.hung2)" >&2
+echo ">> remote: import hung on $(file_of "$stalled_on") (no progress for ${stall}s, twice; .godot/ cleared between; first hang on $first; $log.hung1, $log.hung2)" | tee "$verdict" >&2
 exit 75

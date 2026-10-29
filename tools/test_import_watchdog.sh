@@ -65,10 +65,14 @@ pgrep -f "$tmp/fake-hang" >/dev/null && bad "no hung import is left running" "$(
 [ -s "$P/build/import-watch.log.hung1" ] && [ -s "$P/build/import-watch.log.hung2" ] && ok "both hung logs are kept" \
 	|| bad "both hung logs are kept"
 
+grep -q '^>> remote: import hung on Oswald-Latin.ttf ' "$P/build/import-watch.verdict" 2>/dev/null \
+	&& ok "the verdict line is in build/import-watch.verdict (remote.sh ends on it, exit 75)" || bad "the verdict line is in build/import-watch.verdict"
+
 # ---- 3. a hang that clears with the cache: the retry imports and the command runs ----------------
 fresh
 st=$(run "$ONCE" bash -c 'touch ran; exit 0')
-[ "$st" = 0 ] && [ -e "$P/ran" ] && grep -q 'the retry worked' "$tmp/out" && ok "one hang, then a clean retry: the command runs (status 0)" \
+[ "$st" = 0 ] && [ -e "$P/ran" ] && grep -q 'the retry worked' "$tmp/out" && [ ! -e "$P/build/import-watch.verdict" ] \
+	&& ok "one hang, then a clean retry: the command runs (status 0, no verdict file)" \
 	|| bad "one hang, then a clean retry: the command runs" "status $st; $(cat "$tmp/out")"
 
 # ---- 4. a silent hang (no output at all) is a hang too -------------------------------------------
@@ -118,6 +122,9 @@ st=$?
 	|| bad "through slot.sh a double hang ends the run" "status $st; $(tail -3 "$tmp/out")"
 
 # ---- 8. remote.sh asks for it (and REMOTE_IMPORT_WATCH=0 is the escape) ---------------------------
+grep -q 'import-watch.verdict' "$tools/remote.sh" && ! sed -n "/^read -r -d '' script <<EOF/,/^EOF/p" "$tools/remote.sh" | grep -q '`' \
+	&& ok "remote.sh ends a hung run on the verdict file; its remote heredoc has no backticks (they run)" \
+	|| bad "remote.sh ends a hung run on the verdict file; no backticks in its heredoc"
 grep -q 'export TANK_SQUAD_IMPORT_WATCH=1' "$tools/remote.sh" && grep -q 'REMOTE_IMPORT_WATCH:-1' "$tools/remote.sh" \
 	&& ok "remote.sh exports TANK_SQUAD_IMPORT_WATCH (REMOTE_IMPORT_WATCH=0 turns it off)" \
 	|| bad "remote.sh exports TANK_SQUAD_IMPORT_WATCH"
