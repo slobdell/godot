@@ -77,6 +77,7 @@ var _controls: RtsControls
 func teardown() -> void:
 	RtsControls.order_trace_keep = false
 	SelectionSquads.COLUMN_ALWAYS = OS.get_cmdline_user_args().has("--group-column=always")
+	SelectionSquads.GROUP_GUARD = not OS.get_cmdline_user_args().has("--group-guard=off")
 	SelectionSquads.reset_g1()
 	if _lab != null:
 		_lab.dispose()
@@ -234,6 +235,7 @@ func test_the_inferred_clicks_reproduce_his_places() -> void:
 			print("HIS_CLICK tick %d: no inferred click yet (HIS_CLICK_SEARCH=1 HIS_CLICK_TICK=%d)" % [tick, tick])
 			continue
 		await _build(CASES[tick][0])
+		SelectionSquads.GROUP_GUARD = false  # G2 (round 45): this is the reproduction of main's lay; the guard's own test is below
 		var kept_before := SelectionSquads.bodies_kept
 		var laid_before := SelectionSquads.columns_laid
 		_diagnose(click)
@@ -269,6 +271,7 @@ func test_the_inferred_clicks_reproduce_his_places() -> void:
 func test_v10_lays_his_click_as_one_column() -> void:
 	await _build(AT_1500)
 	SelectionSquads.COLUMN_ALWAYS = true
+	SelectionSquads.GROUP_GUARD = false  # G2 (round 45): G1 v10c's column on its own (C45.2: it continues behind its switch)
 	var open_before := SelectionSquads.columns_on_open
 	var laid_before := SelectionSquads.columns_laid
 	RtsControls.order_trace_keep = true
@@ -320,3 +323,50 @@ func test_west_open_area_candidates() -> void:
 		var along := RtsControls.gate_width(cand, ahead, drive, crosses, SelectionSquads.GROUP_SCAN_M)
 		print("WEST_OPEN (%.0f, %.0f): standable %s, clear across [%.0f, %.0f] m, along [%.0f, %.0f] m" % [cand.x, cand.z,
 				SlotGround.is_standable(ground, cand), sides[0], sides[1], along[0], along[1]])
+
+
+## G2 (round 45, O4): with the group guard ON (the default) his two round-43 Locks clicks lay one body at his click: nobody at the
+## north edge, nobody across the canal, every place within the fitted body's reach of the click and no squad sent back.
+func test_guard_lays_his_locks_clicks_as_one_body() -> void:
+	for tick: int in INFERRED:
+		await _build(CASES[tick][0])
+		SelectionSquads.GROUP_GUARD = true
+		var relaid_before := SelectionSquads.guard_relaid
+		RtsControls.order_trace_keep = true
+		var click: Vector3 = INFERRED[tick]
+		var laid := _click(click)
+		_print_stages()
+		var middle := Vector3.ZERO
+		var at: Dictionary = CASES[tick][0]
+		for unit_name: String in at:
+			middle += at[unit_name][1] / at.size()
+		var ahead := Vector3(click.x - middle.x, 0.0, click.z - middle.z).normalized()
+		var north := INF
+		var south := -INF
+		for squad: String in SQUADS:
+			assert_true(laid[squad] != null, "tick %d %s got a place" % [tick, squad])
+			if laid[squad] == null:
+				continue
+			var p: Vector3 = laid[squad]
+			var start := Vector3.ZERO
+			for unit_name: String in SQUADS[squad]:
+				start += at[unit_name][1] / (SQUADS[squad] as Array).size()
+			var back := (start - click).dot(ahead) - (p - click).dot(ahead)
+			var dist := Vector2(p.x - click.x, p.z - click.z).length()
+			print("HIS_CLICK guard tick %d %s start (%.1f, %.1f) place (%.1f, %.1f) behind its start %.1f m, %.1f m from his click" % [
+					tick, squad, start.x, start.z, p.x, p.z, back, dist])
+			assert_true(not (SlotGround.over_water(p)), "tick %d %s: dry (%.1f, %.1f)" % [tick, squad, p.x, p.z])
+			assert_true(p.z > 7.0, "tick %d %s: on his side of the canal (z %.1f)" % [tick, squad, p.z])
+			assert_true(p.z < 110.0, "tick %d %s: not sent back to the north edge (z %.1f)" % [tick, squad, p.z])
+			assert_true(back <= SelectionSquads.GUARD_BEHIND_M + 1.0, "tick %d %s: not sent back past where it stands (%.1f m)" % [tick, squad, back])
+			assert_true(dist <= SelectionSquads.guard_last_reach_m + 6.0, "tick %d %s: within the body's reach %.0f m (%.0f m)" % [
+					tick, squad, SelectionSquads.guard_last_reach_m, dist])
+			north = minf(north, p.z)
+			south = maxf(south, p.z)
+		print("HIS_CLICK guard tick %d: places span %.0f m north to south (today: ~100 m); relaid +%d fit %d reach %.0f m" % [
+				tick, south - north, SelectionSquads.guard_relaid - relaid_before, SelectionSquads.guard_last_fit, SelectionSquads.guard_last_reach_m])
+		assert_true(south - north < 70.0, "tick %d: no 100 m north-south front (%.0f m)" % [tick, south - north])
+		_lab.dispose()
+		_lab = null
+		_controls.queue_free()
+		await wait_physics_frames(2)

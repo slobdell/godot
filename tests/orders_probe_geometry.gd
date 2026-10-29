@@ -62,10 +62,20 @@ func _after_order(units: Array) -> void:
 			road.append(_xz(p))
 	for squad: Dictionary in _squads:
 		widest = maxf(widest, _controls._squad_width(squad))
+	# G2 (round 45): per squad, whether its place is across a gap from the click as the guard reads it (water, a pit, a deck's
+	# mouth, a wet straight leg, through a neck); the guard's counters (this run's one order: the process's totals) and its
+	# last lay's fit and reach (the farthest seat of the fitted body from the click), for Bar G2's lines.
+	var across_gap: Array = []
+	for squad: Dictionary in _squads:
+		var anchor: Variant = squad.get("anchor")
+		across_gap.append(SelectionSquads.guard_across_gap(click, anchor, d) if anchor is Vector3 else false)
 	print("ORDERS_GEOMETRY " + JSON.stringify({"map": map, "seed": int(_flag("seed", "34")), "arm": _flag("probe-arm", ""),
 			"starts": _starts_mode, "reach": _reach, "click": _xz(click), "approach": [snappedf(d.x, 0.001), snappedf(d.z, 0.001)],
 			"clear": [snappedf(float(clear[0]), 0.1), snappedf(float(clear[1]), 0.1)], "widest": snappedf(widest, 0.1), "road": road,
-			"squads": _squads.map(func(s: Dictionary) -> Array: return _xz(s["start"]))}))
+			"squads": _squads.map(func(s: Dictionary) -> Array: return _xz(s["start"])),
+			"across_gap": across_gap, "guard": {"on": SelectionSquads.GROUP_GUARD, "relaid": SelectionSquads.guard_relaid,
+			"held": SelectionSquads.guard_held, "unlaid": SelectionSquads.guard_unlaid, "fit_capped": SelectionSquads.guard_fit_capped,
+			"fit": SelectionSquads.guard_last_fit, "reach_m": snappedf(SelectionSquads.guard_last_reach_m, 0.1)}}))
 
 
 func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:

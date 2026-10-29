@@ -711,14 +711,16 @@ orders-geometry: import ## O3 (round 44): his group click's geometry (a row alon
 			--probe-arm=$$name $(ORDERS_GEOMETRY_FLAGS) $$flags > $(ORDERS_GEOMETRY_DIR)/logs/$$0-$$1-r$$2-$$name-s$$4.log 2>&1 || true'
 	@for seed in $(ORDERS_GEOMETRY_SEEDS); do for cell in $(ORDERS_GEOMETRY_FIXED); do for arm in $(ORDERS_GEOMETRY_ARMS); do \
 		echo "$$cell $$arm $$seed"; done; done; done | xargs -P $(ORDERS_GEOMETRY_JOBS) -L 1 sh -c \
-		'map=$${0%%:*}; rest=$${0#*:}; st=$${rest%%:*}; click=$${rest#*:}; name=$${1%%:*}; flags=$$(echo "$${1#*:}" | tr "," " "); \
+		'map=$${0%%:*}; rest=$${0#*:}; st=$${rest%%:*}; click=$${rest#*:}; tag=$$(echo "$$click" | tr "/" "_"); name=$${1%%:*}; flags=$$(echo "$${1#*:}" | tr "," " "); \
 		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe_geometry.gd -- --arena=$$map --seed=$$2 \
 			--probe-squads=$(ORDERS_GEOMETRY_SQUADS) --probe-army=$(ORDERS_GEOMETRY_ARMY) --probe-starts=$$st --probe-click=$$click \
-			--probe-arm=$$name $(ORDERS_GEOMETRY_FLAGS) $$flags > $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-$$name-s$$2.log 2>&1 || true'
-	@for cell in $(ORDERS_GEOMETRY_FIXED); do map=$${cell%%:*}; rest=$${cell#*:}; st=$${rest%%:*}; d=$(ORDERS_GEOMETRY_DIR)/$$st-rfixed-$$map; mkdir -p $$d; \
-		cat $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-*.log | grep -h '^ORDERS_PROBE {' | sed 's/^ORDERS_PROBE //' > $$d/runs.jsonl || true; \
-		cat $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-*.log | grep -h '^ORDERS_PROBE_SQUAD ' | sed 's/^ORDERS_PROBE_SQUAD //' > $$d/rows.jsonl || true; \
-		cat $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-*.log | grep -h '^ORDERS_GEOMETRY ' | sed 's/^ORDERS_GEOMETRY //' > $$d/geometry.jsonl || true; \
+			--probe-arm=$$name $(ORDERS_GEOMETRY_FLAGS) $$flags > $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-$$tag-$$name-s$$2.log 2>&1 || true'
+	@# G2 (round 45): one folder per fixed CLICK (round 44 keyed them by map and starts: two clicks on one map overwrote each other).
+	@for cell in $(ORDERS_GEOMETRY_FIXED); do map=$${cell%%:*}; rest=$${cell#*:}; st=$${rest%%:*}; click=$${rest#*:}; tag=$$(echo "$$click" | tr "/" "_"); \
+		d=$(ORDERS_GEOMETRY_DIR)/$$st-rfixed-$$map-$$tag; mkdir -p $$d; \
+		cat $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-$$tag-*.log | grep -h '^ORDERS_PROBE {' | sed 's/^ORDERS_PROBE //' > $$d/runs.jsonl || true; \
+		cat $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-$$tag-*.log | grep -h '^ORDERS_PROBE_SQUAD ' | sed 's/^ORDERS_PROBE_SQUAD //' > $$d/rows.jsonl || true; \
+		cat $(ORDERS_GEOMETRY_DIR)/logs/$$map-$$st-rfixed-$$tag-*.log | grep -h '^ORDERS_GEOMETRY ' | sed 's/^ORDERS_GEOMETRY //' > $$d/geometry.jsonl || true; \
 		done
 	@for st in $(ORDERS_GEOMETRY_STARTS); do for reach in $(ORDERS_GEOMETRY_REACH); do d=$(ORDERS_GEOMETRY_DIR)/$$st-r$$reach; mkdir -p $$d; \
 		cat $(ORDERS_GEOMETRY_DIR)/logs/*-$$st-r$$reach-*.log | grep -h '^ORDERS_PROBE {' | sed 's/^ORDERS_PROBE //' > $$d/runs.jsonl || true; \

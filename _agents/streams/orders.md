@@ -77,3 +77,111 @@ hour (C45.2): the call is his, not round 46's.
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### NOW (2026-10-29, Fable, worktree `godot-orders`, branch `stream/orders`, started from main 8d59b2bdf = a93271a66's code)
+
+- **Plan (in order):** O1 the cause on his replay (done, below) -> O2 the guard G2 ON (`--group-guard=off` the escape), his Gorge
+  lab test first, then the Locks-beside-a-lock and bridge-deck cases -> quick-remote -> file Bar G2 here and message the
+  orchestrator BEFORE any 11201 number -> `make remote T=check` on the frozen hash -> the series on builder2 -> O4 the
+  acceptance read (his replay + his two round-43 Locks clicks, top-down shots) -> O5 G1 v10c behind its switch, if time.
+
+- **O1 CAUSE (his Gorge click, reproduced to the decimetre).** `make remote T="replay-match RECORDING=references/round44/playtest/
+  2026-10-29T09-35-51-gorge.jsonl REPLAY_SECONDS=5 CREWS=all REPLAY_FLAGS=--order-trace"` on builder0, main 8d59b2bdf (code a93271a66),
+  replay PASS 20/20 within 3 m for 5 s. The order trace, per stage, every place identical to his recording's `to` rows:
+  `ranks` Hunters (-76.0, 101.0) / Spears (-43.2, 53.2) / Wrenches (-10.4, 5.4); `column_lay` EMPTY (G1 v9 kept today's body:
+  every place stands on clear ground, the far one on the valley floor across the drop); `never_behind`, `ground_cap`,
+  `ground_anchors`, `untangle_whole` unchanged. So the default lay is `SelectionSquads.ranks` -> `row`: three squads fit one rank
+  (3 <= MAX_ABREAST, 3 x 44 + 28 = 160 m <= 200 m), laid ABREAST 58 m apart across the approach, which here runs diagonally
+  south-west from the army's middle (~(0, 93)) to his click (heading (-0.73, -0.68)), so "abreast" runs north-west / south-east:
+  the Spears on the click, the Hunters 58 m north-west of it (level with the click along the approach, 8 m behind their own start
+  in z: behind his start line), the Wrenches 58 m south-east of it, a leg that threads the west neck (x -48..-32, the pits either
+  side at z 38-50) and ends 33 m past the drop toward the enemy. Why nothing caught it: never_behind reads only along the
+  approach (the Hunters' place is level with the click there); the ground cap passes a place whose drive from the click is at
+  most 1.5 x the straight line + 8 m and crosses no DECK (the neck is land: drive ~60 m v 58 m straight); the column only runs
+  when a place stands off clear ground, and both outer places do stand on clear ground. The fit at his click, read as the layout
+  reads it (`RtsControls.gate_width` across the approach): the north-west side open, the south-east side ends at the neck's far
+  wall ~16 m out -> ONE squad abreast fits centred (`fit_abreast`), not three.
+- **O1 ANSWER to the brief's question (the simplest thing):** yes. "Every place within one body of the click, on the click's side,
+  nobody behind its start, packed by fit" removes what he saw with no column machinery: (1) lay the body at most as many abreast as
+  the ground at the click fits (one here) -> the three stand in file along the approach, Spears on the click, Hunters and Wrenches
+  in ranks behind on the open strip between the drop and his base, every place on his side; (2) a guard that reads each place for
+  "across water / a pit / through a neck from the click, off the click line by more than the body's frontage, farther than its last
+  rank, behind its own start" and, on any failure, re-lays the body on those seats. Built as G2 (O2 below).
+
+- **O2 G2 BUILT (this tree; ON by default, `--group-guard=off` / `GROUP_GUARD=off` the escape).** `SelectionSquads` *G2 (round
+  45)*: (1) FIT FIRST: `ranks` takes a cap = `guard_fit` (fit_abreast at the click across the approach, at most two) read on the
+  gate scan CUT at the first sample across a gap from the click (`guard_trim_sides`: the scan threads a neck, his Gorge click read
+  58 m "clear" to the south-east over the valley floor; the column keeps the uncut scan, G1 v9 unchanged); `rank_sizes` /
+  `rank_slots_for` factored so the seats can be asked for with spares in the body's own shape; (2) `guard_failures`: a place across a gap from the click
+  (`guard_across_gap`: on water / a pit / a deck's mouth, a wet straight leg, or `beyond_neck`: the leg crosses the segment between
+  two drops closer than GUARD_NECK_M 24 m and runs > 2 m past it; a place behind the click along the approach is never "across":
+  the squads' own side), off the click line by more than the fitted frontage + 4 m, farther behind the click than the last rank +
+  4 m, or > 10 m behind its own start along the approach; (3) `guard_relay`: the whole body re-laid on the fitted ranks' seats
+  (3 spares): the front on the click, or (a click on a deck / in water / on a wall) on the first point back along the approach
+  the ground takes (4 m steps, 40 m); each seat snapped to standable ground within 12 m (as ground_anchors does), refused on
+  water / a deck's mouth / off the map / not `reached_from` the click by ground, skipped when across a gap from the click;
+  NEAREST IN FRONT (`assign_by_distance`: ranks dealt by each squad's distance to the click, left to right within a rank; the
+  fitted `ranks` lay is dealt the same way under the guard, not by the least total driving, which put the squad already at the
+  tail's distance on the tail and drove the farthest through the middle); a squad the seat would send > COLUMN_AWAY_M farther
+  than it stands holds; too few seats -> today's places (counted: `guard_unlaid`); a packed body (D3, `--pack=on`) is read, not
+  re-laid. `RtsControls._order_squads`: one gate_width scan at the click (kept for the column: no second scan), the
+  guard the last pass on the anchors before the squads are dealt (stage `group_guard` in the order trace); gated
+  `squads.size() >= 2`, plain clicks only (a shifted leg lays as before). Measurements: `guard_relaid / held / unlaid /
+  fit_capped`, `guard_last_fit / reach_m`, printed on the geometry probe's row with per-squad `across_gap`.
+  Tests: `tests/test_control_his_gorge_click.gd` (his click reproduced with the guard off; with it on every place on his side,
+  the Spears on the click; the neck read pure), `tests/test_control_guard_locks.gd` (a click beside the lock, a click on the
+  swing bridge's deck: dry, off the deck, the click's side, one body). Judge `tests/control/orders_g2_judge.py`, runner
+  `tests/control/orders_g2_bar.sh` (Gorge cells added; a fixed cell's folder now keyed by its click, `mk/command.mk`).
+
+### Bar G2 THE GROUP GUARD (orders, round 45; filed here BEFORE any number on 11201-11248; dev reads on 7001-7006 only)
+
+**What he would see:** he selects two or more squads and clicks once. Every squad lands at his click or in a short stack behind
+it on HIS side of any drop, water or neck: nobody is sent across the gap toward the enemy, nobody is sent back behind where it
+stands, nobody is strung 58 m off to one side. Where the ground at his click holds two squads side by side they stand side by
+side; where it does not (a neck, a bank, a street) they stand in file along the way they came, nearest in front. On his Gorge
+click (the lab, builder0, this tree): the Hunters (his nearest squad, 49 m off) ON the click, the Spears 33 m behind them, the
+Wrenches 66 m behind, one file along his approach on the open strip between the drop and his base; today: Spears on the click,
+Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
+- **Arms:** base `base:--group-guard=off` (today's lay) v `g2:` (the tree's default: the guard ON). Everything else as main.
+- **Tree:** a frozen detached worktree at the commit named green here (`make remote T=check` on builder0, ALL JUDGED), or a docs-only
+  descendant.
+- **Part A, his geometry (DECIDING): `tests/control/orders_g2_bar.sh b2 g2: "11201 ... 11224" ...`** = `make orders-geometry` on
+  builder2 (native on): gorge / locks / crossing / terminus / yard_open x his / along / across x reach 20 / 80, plus fixed clicks
+  `locks:his:-62/50` (his round-43 target) and FIVE Gorge clicks: his own (`gorge:spawn:-43.2/53.2`, his rows at their spawn) and a
+  click either side of each neck with his row side by side (`gorge:across:-40/58`, `-40/30`, `40/58`, `40/30`: near = his side,
+  far = the valley through the neck). FRESH seeds 11201-11224, n 24 a cell. Judge `tests/control/orders_g2_judge.py`, over the
+  ARM's runs, base reported beside, per cell (a fixed click its own cell) and per run:
+  1. **D1 across_gap = 0 in every arm run** (the probe's per-squad flag as the guard reads it: a place on water / a pit / a deck's
+     mouth, a wet straight leg from the click, or through a neck and out the far side; a place behind the click along the approach
+     never counts): his Wrenches.
+  2. **D2 backward = 0 in every arm run** (a place > 10 m behind its own start along the approach).
+  3. **D3 every MOVED place within the fitted body's reach + 6 m of the click, every arm run** (reach = the farthest seat of the ranks
+     the guard lays for that run, `guard.reach_m`; a moved place = one > 2 m from its squad's start): his Hunters, 58 m off.
+  4. **D4 (R45.5) the fallback (`guard.unlaid`, too few seats: today's places stand) = 0 on every Gorge run**; reported per cell
+     everywhere (how often his old scatter can still happen with the guard ON).
+  5. **D5 held = 0 on every Gorge run** (a squad that keeps its spot did not land at his click); `held` reported per cell.
+  Reported: spread, across, fit per cell, relaid per cell.
+- **Guards (what it could break), filed now:** part A per cell: all-in median <= base x 1.2 + 3 s, never-in <= base, held median <=
+  base's unmoved + 1; friendly contacts pooled <= base x 1.1 + 5. **Part B, G1 v9's street lines:** `orders-probe` locks / crossing /
+  terminus / yard_open x 3 / 5 squads x click / route + his terminus click, seeds 11225-11236, n 12 a cell, `orders_judge.py g1v8`
+  unamended (places outside the corridor <= base + 2, sent away <= base + 2, re-dealt 0; yard_open REPORTED: the guard changes a
+  three-abreast body there on purpose). **Part C, fights:** `--probe-fight=on --probe-budget=3000`, terminus / locks, 5 squads,
+  click, seeds 11237-11248, n 12 a cell: his kills, his losses, the CPU's losses within base +/- 1.645 se. **C45.3:** a one-squad
+  order never enters this code (`squads.size() >= 2`): engage's authority probe and manoeuvre's one-squad arrival are unchanged by
+  construction (stated, not measured; the frozen tree carries whichever of their probes main holds at the freeze and they run in
+  its full check). **C45.5:** the CPU never lays a group click (its elements are ordered one by one): no CPU case. **Perf:**
+  no new scan on a group click (the guard's gate_width read is the one the column already made); `control-timing` on the
+  frozen tree's builder0 check REPORTED (the 30-unit click already reads over budget on main, R43.41: native's item).
+- **Known risks, said before the numbers:** (a) a 3+-squad click on open ground now stands 2 + 1 (or 2 + 2 + 1) instead of three
+  abreast: all-in may lengthen where the third squad drives to the rank behind (the guard above decides); (b) a click past a neck
+  (the far Gorge cells) stacks the ranks back THROUGH the neck, on the squads' own side: that is the column he asked for, but the
+  never-in guard may bite if a rear rank stands in the neck's lane; (c) the stay rule can hold a squad on a short click (reach 20)
+  when its seat is farther than its spot: D5 only decides it on Gorge; (d) a seat on a bending street is laid on the straight
+  approach, not the road (part B decides).
+- **Ships ON** the minute every line passes (`--group-guard=off` the escape); if a deciding line fails, what he would see with it
+  ON v OFF goes to the orchestrator in player terms the same hour (C45.2).
+
+- **Questions for the lead:** none yet.
+- **Requests to other streams:** none. Relays taken: engage's E1 (a one-crew order never enters the group path: `squads.size() >= 2`,
+  as before and as G2 is gated); native's R45.3 seam at the top of `untangle_whole` (G2 does not touch that function's body;
+  it changes only the anchors handed to it, as any lay does).
