@@ -184,6 +184,11 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   ceiling worst +1.5 s / median -0.07 s PASS, guard poses 6 / 6 ok, 0 stalls anywhere: the rule only acts where a leg is pressed).
   B2's filing sentence on rule (3) amended to the net-progress wording (no number seen on 11149-11196).
 
+- **quick-remote of 57e02fed5 (builder2 heavy folder, ~12:55): 37 / 1, lint 203 scripts parse**; the one failure was my new stall stage
+  running on the folder's OLD C++ library (no twin: 0 stalls). **dab58b334** (test only) makes the stage force the GDScript drive (the
+  GDScript rule is what it proves; native's `test_native_drive_backout_stall` proves the twin, C45.4): heavy folder, library present,
+  **3 / 0** (his start OFF t46 / t144, ON t4 / t98; the stage placed t3, stalled t33, 1 stall). **Native re-twins on dab58b334.**
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
