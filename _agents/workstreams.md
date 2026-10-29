@@ -81,6 +81,34 @@ builder that aren't ours. builder0 at prep: load 0.02, 77 %, 24 G free; builder2
 
 _(each stream files its bar here BEFORE any number on its block; the orchestrator records it.)_
 
+- **Bar S v4 (recorded by the orchestrator ~11:15 PDT from stream/manoeuvre, before any number on 11401-11448), his first squad settles where he clicks (manoeuvre M5; R44.7 / R45.7's removal; FILED before any number on
+  11401-11448; C45.1, C45.3, C45.4, C45.5).** ONE arm, **s4** = `--seat-bound=on --seat-order=on` (the seat bound: a squad on its own
+  order seats within TacticsFormation.seat_bound of its click; seat-order: seats dealt in the crews' own left-to-right order so they do
+  not cross on the way in) v **base** = `--shape-latch=off` (today), both with the latch OFF, NO kturngoal, NO converge, NO parkaside
+  (the removal read, R45.7: the bound alone delivers the settle, kturngoal alone costs +4.3 s wedged a run and D1 -2.2 se on Locks,
+  the latch costs D1, converge and parkaside add nothing). On Bar B2's frozen tree (its gate check is B2's), native ON in every log
+  (both rules are planner-side GDScript in tactics_formation.gd; the drive is twinned). **What it could break (named first):** the
+  bound's converging press on Locks (wedged s UP: S v3 FAILED here at +9.2 s a run; the dev read of this arm on Locks 7001-7012 is
+  +3.5 s a run, +1.7 se, so this guard may fail on a fresh block: said here); never-arrived UP (dev 13 -> 16 of 12 runs); the G1 group
+  column (C45.3: byte-identical, the rules are scoped to a squad on its own order, R43.34). **Workload (deciding), `make
+  manoeuvre-bar-s`, exactly Bar S's:** locks / terminus / crossing x **11401-11424** = 72 paired cells an arm, 20 s, squads 1-2
+  traced; `tests/manoeuvre/s_judge.py` paired per cell. **D1** crews seated within the bound 15 s after their order ARM > BASE by >= 2
+  se AND pooled; **D2** start-zone yield + blocked s ARM < BASE by >= 2 se AND pooled, OR (the dev read of this arm: +0.0 s a run) ARM
+  <= BASE + 2 se per arena with D1 carrying the bar: **D2 is a guard in this filing, not a deciding line** (S v3 passed D2 at -4.1 se
+  with kturngoal in the mix; the bound alone does not move it). **Per-arena guards (paired over 24 seeds each):** yield + blocked s
+  ARM <= BASE + 2 se; k-turn s ARM <= BASE + 2 se; **wedged s ARM <= BASE + 2 se** (the named risk); never-arrived pooled ARM <= BASE +
+  2 se. **Group-order guards (`q3_judge.py`), 11425-11436 x crossing / locks / sumps / terminus x crew:** G5 all-in mean ARM <= BASE +
+  1.645 se, G6 never-in ARM <= BASE + 1.645 se, G7 friendly contact ticks ARM <= 1.05 x BASE. **G1 v9 corridor (C45.3), 11425-11436:**
+  `make orders-probe` locks / crossing / terminus x 5 squads x click: the ORDERS_PROBE_SQUAD rows base v s4 **byte-identical**; and
+  `orders_judge.py g1v8`'s lines each ARM <= BASE + 2 se. **Fight guards (`manoeuvre-wedge-trace` locks / terminus / sumps x
+  11437-11442, G1-G4 as Bar S).** **Perf:** the frozen tree's check perf-judge PASS (B2's gate). **Ships ON** (`SEAT_BOUND` and
+  `SEAT_ORDER` default on, `--seat-bound=off` / `--seat-order=off` the escapes) only if D1 and every guard pass; no re-file. C45.5: the
+  bound seats any squad on its own order (the CPU's too). **Machine:** `~/overnight-manoeuvre/r45/bars_s4.sh` from the B2 frozen
+  worktree, queued behind B2's series on builder2; evidence `~/overnight-manoeuvre/r45/bars_s4/`, filed under
+  `references/round45/manoeuvre/barss4-builder2-<hash>/`. **Dev history (never a bar):** removal reads 1 and 2 (streams/manoeuvre.md
+  Status, Locks 7001-7012, 12 paired runs an arm): bound + seat-order D1 53 -> 83 (+3.5 se), wedged +3.5 s a run (+1.7 se), k-turn
+  -3.7 s a run, yield + blocked +0.0; S v3 (R44.7) D1 191 -> 383 (+14.6 se) with the wedged guard failed at +5.5 se.
+
 - **Bar A6 v4 (recorded by the orchestrator ~11:00 PDT from stream/manoeuvre, before any number on 11449-11496), the street hold decided on the side stage's jam, re-filed with a ONE-SIDED head-on guard (manoeuvre M6; R44.19's
   round-45 candidate; FILED before any number on 11449-11496).** ONE arm, **ARM-W** = `--traffic-on=holdway` (engage's ordered-way
   read, unchanged on main since 13fbe1a5d: a crew of the waiting squad is held only when its ORDERED way, not its momentary nose,
