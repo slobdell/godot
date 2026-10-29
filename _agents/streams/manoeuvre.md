@@ -83,6 +83,9 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   squad is going (his start: reversing at tick 4, past the box at tick 98 v 144 today); a rig whose back-up is pressed on a squadmate
   gives up within a second instead of standing 4-5 s. **To playtest (after the merge):** `make skirmish` Locks seed 56416 as the
   Gangs, click west from the start; the shots pair `make manoeuvre-start-shots SS_FLAGS=--traffic-on=backout` v none.
+- **Merge notes (shared files):** `Makefile` LIGHT_GOALS += `gcp-remote gcp-status gcp-start gcp-stop` (one line; round 45: `make
+  gcp-remote` took a laptop heavy slot and queued 20+ min behind two other streams' local lints while `make remote` is light; the
+  gcp goals are ssh / gcloud calls, no CPU). Nothing else outside the stream's paths.
 - **Questions for the lead:** none blocking. **Requests to other streams:** native (done: the twin); orders / engage: none.
 - **Known issues / next:** S v4's wedged guard is the likely miss (+1.7 se on dev; the squad's LAST crew carries the press: the next
   shape is that crew's seat); the one-crew swarm / coil slot ~5 m off his click (engage's relay, R45.2) is a stretch after M4; a
