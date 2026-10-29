@@ -219,6 +219,11 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   | Wrenches (43.9, 93.6) | sent to (-10.4, 5.4): through the neck, across the drop, 65 m past his click toward the enemy (crews still 62-83 m short at his stop) | 66 m behind the click (10.8, 90.3), on his side, in file: arrive 5-11 s |
   One body, one file along his approach, every place on his side of the drop; the farthest crew 66 m from his click (today: 58 m
   north-west and 65 m across the drop). The lab (`test_control_his_gorge_click.gd`) holds the same places to the decimetre.
+  **Top-down shots, looked at** (`references/round45/orders/o4-gorge-shots/`, the laptop, his four-squad army at the spawn, his
+  click, five seconds after arrival): OFF = four destinations four ways, one across the middle drop toward the enemy, one at the
+  west wall (all-in 36.1 s); ON = four places on his side in one body behind his click, nobody across (all-in 3.1 s). builder0 has
+  no display (0 frames); the probe in a window needed a longer wait for the controls (tests/orders_probe.gd, this tree) and the
+  four-squad army named (`--probe-army=.../orders_probe_his_4.json`: there is no orders_probe_4.json).
 - **Dev read 1 (builder2, 5225a024b, 7001-7006, base `--group-guard=off` v g2, `~/orders-r45/dev1/`, judge
   `orders_g2_judge.py`):** D1 PASS every cell (base 0 too: the probe's 4-squad army does not reproduce his 3-squad diagonal; the
   lab does); D6 PASS on his click (backward max 0.1 m v base -15.3); D2 FAIL (crossing along-20 4, locks along-20 3, terminus
