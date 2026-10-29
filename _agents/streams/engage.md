@@ -125,7 +125,9 @@ squad's take-back point (118.5, -86.6), off the arena, grounds to exactly that m
 ("Already doing that"): no new id, but the crew is already on the squad's newest word. Not a missed order; he cannot click off the
 map. No test was written for a probe metric; the byte-identical re-read is the proof R45.19 named.
 
-**Next steps:** merge main once the orchestrator's main check of 8ef4f584d is green; nothing else open in the backlog.
+**Closed (2026-10-29 ~16:00 PDT):** main 8ef4f584d GREEN builder0 (3453/0, 28 targets ALL JUDGED, `make check exited 0`, the
+orchestrator's check) carries E2 ON; the probe fix 4b359f635 merged on top (tests/engage only). stream/engage fast-forwarded to main
+6c4a3592a. Backlog done; idle until the orchestrator sends something.
 
 #### Working notes (chronological)
 
