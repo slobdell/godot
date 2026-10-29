@@ -288,6 +288,16 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
 - **main 78ef25caf merged (275aceb2e; R45.15, native N2, remote.sh's preemption re-queue; the workstreams.md conflict resolved to main's
   recorded copies again).** S v4's series (builder2 light, from 14:17) and A6 v4's (builder0 light, from 14:24) run on the frozen tree.
 
+### M6 (A6 v4): FAIL as filed on guard 4 (2026-10-29 ~15:10 PDT)
+
+- Frozen 0493977ed, builder0 light (`~/overnight-manoeuvre/r45/bars_a6v4/`; waited 27 min for the light slot behind B2's driver A),
+  11449-11472 hold probe + 11473-11496 E1 probe, 0 SCRIPT ERROR. **Deciding side jam_s 397 -> 48 pooled, -29.1 s a run, z -5.6 PASS**
+  (12 / 12 exercised); guards 1 (-14.3 s, z -5.0), 2a (+0.17, z 1.0), 2b one-sided (-30.2 s, z -1.8), 3 (contacts_mouth +14.2 a run,
+  z 1.52), 5 (-2.3 s), 6 (E1 lines identical), 8: PASS; **guard 4 contacts_far 9 -> 70 pooled, +2.54 a run (se 1.41, z 1.81) v the
+  line +max(1.645 se, 2) = +2.32: FAIL by 0.22 a run**, all on the head-on stages (11450 / 11458 / 11460 / 11464 / 11466). holdway
+  stays OFF. Evidence `references/round45/manoeuvre/barsa6v4-builder0-0493977ed/README.md`. Round 46: the head-on release's brush with
+  the passer at the mouth (v3 read the same line at +1.0 se).
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
@@ -350,6 +360,12 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   | **s5 (s4 + seat-last, rear crew)** | **53 -> 89 (+7.7 se)** | -1.7 (-0.9 se) | **-5.5 (-3.1 se)** | **13 -> 3** | **-0.5 (se 1.3)** |
   **The press is gone on Locks dev**: per cell the Guns seeds read 5-8 s wedged (base 4-8), three cells read 2.3 (base 7.9), one cell
   (7009, the Guns2 squad) 14.6 -> 25.1. Round 46's S v5 starts from these numbers (a bar on fresh seeds; the three-arena read next).
+- **S v5 dev read 3 (three arenas x 7001-7012, 36 paired cells an arm, builder2 heavy, `s5/dev3/`): NOT clean.** s5 v base: D1 127 -> 187
+  (+5.1 se); never-arrived 115 -> 109 (s4: 89); k-turn -3.1 s a run (s4: -6.9); **wedged per arena: Locks -0.5 s a run (-0.4 se), Crossing
+  +2.4 (+0.8 se), Terminus +8.0 (se 4.6, +1.7 se)**; s4's Terminus gains (yield+blocked -12.3 s a run, k-turn -13.5) shrink to -3.8 /
+  -2.8 under s5. The open rear seat cures Locks' press and costs Terminus (the rear crew's far seat on that deploy). **No S v5 bar
+  this round** (the orchestrator's condition: no arena worse than base). Round 46: the open seat only where the bound actually
+  shrinks the shape past the rear crew's reach (Locks' 37 m v Terminus' room), or a per-arena read of what the Terminus rear crew does.
 - **Design note for the press (if S v4 misses its wedged guard; for round 46 or an S v5 after B2):** the dev rows say the bound's
   wedged seconds sit on the squad's LAST crew (the 6.6 m Tanker, Guns_5: 7 s a run on 4 of 12 Locks seeds; the Battery's rear crews
   7-10 s): the crew arriving last converges on a bound (1.5 hull lengths of the longest hull, `SEAT_BOUND_HULLS`, floor 18 m) the four
