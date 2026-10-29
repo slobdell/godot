@@ -81,6 +81,55 @@ builder that aren't ours. builder0 at prep: load 0.02, 77 %, 24 G free; builder2
 
 _(each stream files its bar here BEFORE any number on its block; the orchestrator records it.)_
 
+- **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
+  11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
+  `--traffic-on=backout` v `base` (today), on a FROZEN tree named at the series' launch = stream/manoeuvre at the hash whose check is
+  green + native's twin of round 45's two changes (the oriented-box hull test, the stalled-leg end; `_backout_stall_ticks` an exec
+  field) once its verdict reads EQUAL (C45.4). **Native ON in every log, the C++ drive ON in both arms** (the ship's shape).
+  **What changed since B1, named here first (C45.1):** (1) the deciding corpus was RE-STAGED (R45.4): six of round 44's fourteen poses
+  were mis-staged (5 / 6 the hexagon wall 0.7 m behind the tail; 7 the rear squadmates on a container; 11 / 12 in the water channel;
+  13 inside a city block, 11 m off the mesh), found by the test's new setup print and `tests/manoeuvre/stage_check.py`, and moved to
+  containers with open ground; the crawl shape's squadmates are his deploy's hulls (two War Rigs beside, a Gun Truck and a Tanker 15
+  m behind: gaps 4.7-6.3 m, where round 44 staged four War Rigs with a nose 1.0 m off the lead rig's tail); every rig of a pose is
+  asserted within 0.5 m of the navmesh. (2) **The six old stagings are KEPT VERBATIM as GUARD POSES** (`NOSED_GUARD=on`; no back-up is
+  possible on any of them). (3) The rule: the look's "2 m clear behind" and the plan's hull test see ORIENTED BOXES (the centre disc
+  could not see a 14 m hull straight behind); a departure leg that does not move its way for 0.5 s ends as `stalled` instead of
+  standing to its timeout. Both behind the switch; OFF byte for byte (the default orders probe 60/60 proves it, below).
+  **What it could break (named first):** a crew reversing into the friend behind it (wedged s, friendly contacts); a back-up where none
+  was needed (reversing ticks and seats among the crews NOT nose-on); a rig that backs out and then no longer finds its station
+  (never-arrived, seated by 15 s); the group column (C45.3: byte-identical); on the guard poses, a rig made later or pressed harder
+  into what blocks it.
+  **Deciding (B1's lines, R44.12):**
+  - **D1 his start:** `make manoeuvre-start-trace` on his 08-15 recording (Locks 56416, native ON), base v bo on the frozen tree:
+    Green_Guns_2 reversing (speed under -0.5 m/s along its nose) before tick 15 and its centre past the box's west end (x < -45.0 and
+    z < 82.0) before tick 110 (main: 142); base must not already do both.
+  - **D2 the staged nose-on corpus:** `make test FILTER=nosed_corpus NOSED_CORPUS=on NOSED_SEEDS=11149-11196` (48 jittered poses: seed
+    s runs pose (s - 11149) mod 14 of the RE-STAGED table, jitter as B1); the same base-stuck definition, **floor 8 (fewer = NOT
+    JUDGED, said so)**: ON clears sooner in >= 80 % of them AND the median gain >= 1 s; the cost ceiling on every other pose: ON <=
+    OFF + 3 s each, the median <= +1 s. `tests/manoeuvre/nosed_judge.py`.
+  - **D3 the guard poses (R45.4):** `NOSED_GUARD=on NOSED_SEEDS=11149-11172` (24 jittered poses of the six old stagings, seed s runs
+    guard pose (s - 11149) mod 6): EVERY pose ON clears no later than OFF + 1.0 s AND its wall-contact ticks in the 12 s watch <= OFF +
+    15. One worse pose fails the bar.
+  **Guards (all paired, Bar S v3's lines, as B1):** the first-order workload (`make manoeuvre-bar-s` locks / terminus / crossing x
+  **11149-11172**, 72 paired cells): per arena yield+blocked s, k-turn s and wedged s each ARM <= BASE + 2 se; pooled never-arrived
+  ARM <= BASE + 2 se; D1-seated-by-15 s ARM >= BASE - 2 se; the unneeded-back-up guards (`tests/manoeuvre/b1_judge.py`): among crews
+  NOT nose-on, per arena, reversing ticks in the first 15 s ARM <= BASE + 2 se and seated by 15 s ARM >= BASE - 2 se; the nose-on
+  crews' own time to clear 8 m reported. Group-order guards (`q3_judge.py`, G5 / G6 / G7) and the G1 v9 corridor: the
+  ORDERS_PROBE_SQUAD rows base v bo **byte-identical, 60 / 60**, AND `orders_judge.py g1v8`'s lines each ARM <= BASE + 2 paired se
+  with friend contacts <= the judge's line, on **11173-11184** (C45.3: his order to squads lays places by orders' code; a grouped
+  crew never looks). **Engage's line (C45.3):** his Gorge recording (`make replay-match RECORDING=references/round44/playtest/
+  2026-10-29T09-35-51-gorge.jsonl REPLAY_SECONDS=107`) base v bo: the per-crew divergence table identical (no crew of his is nose-on
+  there; engage's authority probe is named instead if it is on main at the freeze). Fights (`manoeuvre-wedge-trace` locks /
+  terminus / sumps x **11185-11190**, G1-G4); perf: the frozen tree's builder0 check perf-judge PASS before ON (the C++ drive carries
+  the rule); no SCRIPT ERROR in any log.
+  **Ships ON (`backout` out of DEFAULT_OFF, `--traffic-off=backout` the escape) only if D1, D2, D3 and every guard pass; no re-file.**
+  C45.5: the rule reads a crew's own order whoever gave it (the CPU's crews too); grouped crews excepted as filed (C44.3).
+  **Machine:** `~/overnight-manoeuvre/r45/bars_b2.sh` from a frozen worktree `../godot-manoeuvre-b2`: the corpus + guard poses and
+  the G1 probe + fights on builder0 light, his start and the workload + group guards on builder2; evidence
+  `~/overnight-manoeuvre/r45/bars_b2/`, filed under `references/round45/manoeuvre/barsb2-<machine>-<hash>/`. **Dev history (C42.1;
+  never a bar):** round 44's B1 (R44.25) and the M1 audit (streams/manoeuvre.md Status); the dev corpus read on the re-staged table
+  with the two fixes (laptop / builder2, GDScript drive) is recorded in Status before the freeze.
+
 ## Rulings (round 45)
 
 - **R45.1 (prep) Gorge's geometry, for every stream.** The drop's pits run z 38-50: west drop x -92..-48, middle -32..32; the gap
