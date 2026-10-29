@@ -1882,6 +1882,9 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 				continue
 			seats.append(fixed as Vector3)
 			laid += 1
+		if RtsControls.ORDER_TRACE:
+			print("ORDER_TRACE guard rank at %.0f m behind the front (%.1f, %.1f): fit %d, %d of %d seats laid, army %.0f m back" % [
+					behind, centre_r.x, centre_r.z, fit, laid, size, army_back])
 		if laid == 0 and behind > 0.0:
 			break  # the ground behind the click ran out
 		var step := maxf(rank_step(size, fit, slot_width, slot_depth, nest, clearance), min_step(blocks))
@@ -1932,7 +1935,7 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 			reach = maxf(reach, places[i].distance_to(flat_click))
 	guard_held += held
 	guard_relaid += 1
-	return {"places": places, "reach": reach, "held": held, "seats": seats.size()}
+	return {"places": places, "reach": reach, "held": held, "seats": seats.size(), "holding": holding}
 
 
 ## The same anchors moved together, as little as it takes, until the arena's clamp would leave every one where it is:

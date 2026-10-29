@@ -60,6 +60,12 @@ n_fixed=$((1 + 5))
 part geometry orders-geometry ORDERS_GEOMETRY_DIR $(((5 * 3 * 2 + n_fixed) * 2 * na)) "ORDERS_GEOMETRY_MAPS=gorge locks crossing terminus yard_open" \
 	"ORDERS_GEOMETRY_STARTS=his along across" "ORDERS_GEOMETRY_REACH=20 80" "ORDERS_GEOMETRY_FIXED=locks:his:-62/50 $gorge_fixed" "ORDERS_GEOMETRY_ARMS=$base $arm" \
 	"ORDERS_GEOMETRY_SEEDS=$aseeds" "ORDERS_GEOMETRY_JOBS=$jobs" || { echo "BAR NOT RUN: geometry"; exit 1; }
+# Part A2 (R45.9, D5b): his exact click with his THREE squads at their recorded starts (the recording's spawn), the same seeds.
+part his3 orders-geometry ORDERS_GEOMETRY_DIR $((1 * 2 * na)) "ORDERS_GEOMETRY_MAPS=" "ORDERS_GEOMETRY_STARTS=" \
+	"ORDERS_GEOMETRY_FIXED=gorge:recorded:-43.2/53.2" "ORDERS_GEOMETRY_SQUADS=3" "ORDERS_GEOMETRY_ARMY=res://tests/control/orders_probe_gorge_his3.json" \
+	"ORDERS_GEOMETRY_FLAGS=--probe-stand=res://tests/control/orders_probe_gorge_his3_starts.json" "ORDERS_GEOMETRY_ARMS=$base $arm" \
+	"ORDERS_GEOMETRY_SEEDS=$aseeds" "ORDERS_GEOMETRY_JOBS=$jobs" || { echo "BAR NOT RUN: his3"; exit 1; }
+mkdir -p "$out/geometry" && cp -r "$out/his3/"*-r* "$out/geometry/" 2>/dev/null
 part streets orders-probe ORDERS_PROBE_DIR $((4 * 2 * 2 * 2 * nb)) "ORDERS_PROBE_MAPS=locks crossing terminus yard_open" \
 	"ORDERS_PROBE_SQUADS=3 5" "ORDERS_PROBE_ROUTES=click route" "ORDERS_PROBE_ARMS=$base $arm" "ORDERS_PROBE_SEEDS=$bseeds" \
 	"ORDERS_PROBE_JOBS=$jobs" || { echo "BAR NOT RUN: streets"; exit 1; }

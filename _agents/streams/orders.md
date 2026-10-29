@@ -167,11 +167,17 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
      the guard lays for that run, `guard.reach_m`; a moved place = one > 2 m from its squad's start): his Hunters, 58 m off.
   4. **D4 (R45.5) the fallback (`guard.unlaid`, too few seats: today's places stand) = 0 on every Gorge run**; reported per cell
      everywhere (how often his old scatter can still happen with the guard ON).
-  5. **D5 held = 0 on every Gorge run** (a squad that keeps its spot did not land at his click); `held` reported per cell.
-     Exact test: `held` = the squads whose place is within HOLD_M = 2 m of where they stood (the probe's row, as the geometry
-     table reads it): the stay rule fired (the seat was > 10 m farther from the click than the squad stands, or > 2 m behind its
-     start along the approach, so its place = its own centre). A squad that moves 4 m to a seat counts as moved, not held; a
-     squad already within its rank's depth of its seat still MOVES to it (there is no "close enough" hold: a seat is a seat).
+  5. **D5 (R45.9, re-filed before any 11201 number): on every Gorge run every HELD squad stands within the body's reach + 6 m of
+     the click** (`guard.reach_m`, D3's reach): a squad that holds is already part of the group at his click; one held farther
+     away fails. `held` = the squads whose place is within HOLD_M = 2 m of where they stood (the stay rule fired: the seat was
+     > 10 m farther from the click than the squad stands, > 2 m behind its start along the approach, under a holding squad, or
+     the ground held no seat for it; its place = its own centre), reported per cell with the farthest held squad's distance.
+     (As first filed: held = 0 on every Gorge run; dev read 2 showed the probe's four-squad row 45-60 m from his click has room
+     for two seats before the map edge, so by R45.6 the rest hold: his round-44 answer 3.)
+  5b. **D5b (R45.9, NEW): the fixed cell with his EXACT Gorge click and his three squads at their recorded starts**
+     (`gorge:recorded:-43.2/53.2`: army `tests/control/orders_probe_gorge_his3.json`, starts
+     `orders_probe_gorge_his3_starts.json` from the recording's spawn row; the bar's part A2, the same seeds 11201-11224): held = 0
+     every run, plus D1-D4 and D6 there.
   6. **D6 (R45.6) on the Gorge `spawn` cell (his own click): no place more than 2 m behind its squad's start along the approach,
      every arm run.** Exact test: per run, max over squads of (start - click).approach - (place - click).approach <= 2.0 m
      (`backward_m` in the judge, from the probe's row `start` / `anchor` and the geometry row's `approach`). The guard itself
@@ -188,8 +194,9 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   Nobody turns round: the file runs straight back along the diagonal approach, so its tail seat is 29 m AHEAD of the Wrenches'
   start along the approach (it sits 3 m north of their start in z, 33 m west of it). Today: Spears on the click, Hunters 58 m
   north-west, Wrenches 58 m south-east through the neck.
-- **Guards (what it could break), filed now:** part A per cell: all-in median <= base x 1.2 + 3 s, never-in <= base, held median <=
-  base's unmoved + 1; friendly contacts pooled <= base x 1.1 + 5. **Part B, G1 v9's street lines:** `orders-probe` locks / crossing /
+- **Guards (what it could break), filed now:** part A per cell: all-in median <= base x 1.2 + 3 s, never-in <= base; held median <=
+  base's unmoved + 1 on the reach-80 cells only (R45.9, R44.5's shape; reach-20 and fixed cells REPORT it); friendly contacts
+  pooled <= base x 1.1 + 5. **Part B, G1 v9's street lines:** `orders-probe` locks / crossing /
   terminus / yard_open x 3 / 5 squads x click / route + his terminus click, seeds 11225-11236, n 12 a cell, `orders_judge.py g1v8`
   unamended (places outside the corridor <= base + 2, sent away <= base + 2, re-dealt 0; yard_open REPORTED: the guard changes a
   three-abreast body there on purpose). **Part C, fights:** `--probe-fight=on --probe-budget=3000`, terminus / locks, 5 squads,
@@ -224,6 +231,13 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   west wall (all-in 36.1 s); ON = four places on his side in one body behind his click, nobody across (all-in 3.1 s). builder0 has
   no display (0 frames); the probe in a window needed a longer wait for the controls (tests/orders_probe.gd, this tree) and the
   four-squad army named (`--probe-army=.../orders_probe_his_4.json`: there is no orders_probe_4.json).
+- **Dev read 2 (builder2, 4f7525afa, 7001-7006, `~/orders-r45/dev2/`; the run finished before builder2's Spot preemption, all
+  432 runs pulled from its disk):** PASS D1, D2, D4 (fallback 0 everywhere), D6 (his click backward 0.0 m), contacts 8429 -> 5545.
+  FAIL D5 as first filed / the held guard (holds by R45.6: the four-squad row's file has two seats before the map edge; the
+  across-20 rows: the front one or two move up, the rest stay), D3 and never-in (a bug: after the guard's lay, untangle_whole
+  swapped a holding squad's spot with another squad's seat: a squad drove into a standing squad, gorge 40/58 never-in 6/6).
+  Fixed: a holder's spot is pinned in the untangle (`misplaced`), seated squads may still swap seats. R45.9 re-shaped D5, added
+  D5b and moved the held guard to reach-80 cells (above). Dev read 3 on this tree next.
 - **Dev read 1 (builder2, 5225a024b, 7001-7006, base `--group-guard=off` v g2, `~/orders-r45/dev1/`, judge
   `orders_g2_judge.py`):** D1 PASS every cell (base 0 too: the probe's 4-squad army does not reproduce his 3-squad diagonal; the
   lab does); D6 PASS on his click (backward max 0.1 m v base -15.3); D2 FAIL (crossing along-20 4, locks along-20 3, terminus

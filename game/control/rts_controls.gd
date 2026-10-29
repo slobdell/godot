@@ -1431,7 +1431,22 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				arc = func(p: Vector3) -> float: return float(drive_l.call(to, p))
 			# G1 v6: a squad keeps to its own side of the click (column_lay laid the far side's places past it).
 			var misplaced := Callable()
-			if column and SelectionSquads.SIDES_BOTH and SelectionSquads.columns_two_sided > two_sided_before:
+			# G2: a squad holding its spot keeps it and nobody else takes it (dev read 2: the swap sent a squad into a standing one,
+			# never in); the seated squads may still swap seats to uncross their drives.
+			if not guard_laid.is_empty() and (guard_laid["holding"] as Array).size() >= squads.size():
+				var holding_g: Array = guard_laid["holding"]
+				var centre_g: Array = []
+				for i in squads.size():
+					centre_g.append(Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z))
+				misplaced = func(i: int, p: Vector3) -> bool:
+					var flat_p := Vector3(p.x, 0.0, p.z)
+					if bool(holding_g[i]):
+						return flat_p.distance_to(centre_g[i]) > 0.5
+					for j in holding_g.size():
+						if bool(holding_g[j]) and flat_p.distance_to(centre_g[j]) < 0.5:
+							return true
+					return false
+			elif column and SelectionSquads.SIDES_BOTH and SelectionSquads.columns_two_sided > two_sided_before:
 				var click_s := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 				var far_of := {}
 				for i in squads.size():
