@@ -74,3 +74,36 @@ write both in player terms with one recommendation in Status and build the recom
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### Report (2026-10-29, in progress)
+
+**Plan (order):** E1 cause by removal-trace (DONE) -> E2 rule behind `--player-authority` ON, tests first -> E3 Bar E1 filed before
+numbers -> E4 his replay read -> stretch (short moves, the one-crew slot).
+
+**E1 DONE: which layer moved the scout.** Workload: his Gorge replay, `make replay-match ... REPLAY_SECONDS=107 CREWS=all` =
+**faithful, builder0 8d59b2bdf, 20/20 crews within 3 m every second for all 107 s** (`DIVERGENCE ... verdict=PASS`; ignore its
+`REPLAY_NATIVE_MISMATCH replay=false` line, the 0.0 m table is his match). Probe: `make engage-authority-trace` (new,
+`tests/engage/authority_trace.gd`: per tick, the crew's K1 order + source, its element's task / drill / detached, the brain's option,
+the mover's goal). Rows from builder0 8d59b2bdf, n = 1 replay (deterministic):
+
+| His order (tick, s) | How it reached the crew | What issued the next rows, and why | What he saw |
+|---|---|---|---|
+| moves 2510-2838 (83.7-94.6 s) | squad TASK (a one-crew squad selected = whole squad, `rts_controls._is_task`), `drills: false` | element move; goal = the swarm / coil slot, **~5 m off his click** (2700: (-55.8, 78.1) v click (-55.9, 73.1); 2754: (-47.1, 68.9) v (-50.4, 72.7)); after arrival the order completes and the idle brain's ENGAGE drifts it ~5 m | short moves "never arrived": a 15 m/s scout reversing + the slot offset (stretch) |
+| STOP 2873 (95.8 s) | DIRECT, source player (element disbanded) | TankBrain latches the stop's goal where the crew was when the order was READ (-42.6, 58.0); at 15 m/s it coasts ~7 m past, then the MOVE option drives loops trying to get back to that point: (-43.3, 47.0) at 2910, 11 m off, still `driving` | "after his STOP it was still driving" |
+| STOP 2923 (97.4 s) | DIRECT | stop completes at 2926 -> order empty -> **idle brain picks ENGAGE** (post (-45.2, 47.0) is only a leash): 6 m toward the enemy by 2977 with NO order | the crew creeping on its own |
+| HOLD 2977 (99.2 s) | squad TASK (element re-formed, task `hold`, drills on) | `Drills.select` -> **react_to_contact** ("return fire, take cover, report") -> `ElementPlan._engage`: `attack_move` 15 m toward the contact (out of reach) alternating with `move` to a firing spot, re-issued every update: **z 41.2 -> 12.0 by 3078, 30 m into the gap** | "drew itself into an engagement I was explicitly trying to avoid" |
+| move 3078 (102.6 s) | squad task, drills false | element move to EXACTLY his click (-47.1, 31.1); the crew was already at (-59.8, 12.0), **22 m past it, carried there by the hold drill**; then blocked on terrain coming back | "ended 25 m past his click" |
+
+Ruled out: the element take-back (`_adopt`) never acted (a direct order removes the crew from its element / disbands a one-crew
+element); the drive's arrival (the last move's goal was his click); ElementCommander's rejoin (CPU only). The suspicion in the brief
+("a hold finishes at once and the element takes it back") is killed: hold never completes; it was the task path's drill.
+
+**Decision (two readings of "keep it out of combat"):** a held crew under fire either stands and fires or backs out of reach. Built:
+**stands and fires** (what he ordered; the brief's recommendation). A crew he wants out of combat he moves out; it then stays there.
+
+**Requests / messages:** orchestrator messaged 2026-10-29 with the cause and a GRANT REQUEST: E2's stop and post rules live in
+`game/ai/tank_brain.gd` (+ an additive `player` key in `game/ai/order_feed.gd` normalize), because `order_executor.gd` (my grant) is
+inert since TankBrain declares EXECUTES_ORDERS. Proceeding on the most reversible reading (switched, minimal, reuses the `hold` verb so
+the C++ decide twin needs no new verb). Relay asked: orders (a squad of one goes down the task path), manoeuvre (the drive's arrival
+is NOT the cause; the one-crew slot ~5 m off the click is a formation question).
+
