@@ -22,6 +22,11 @@ CEIL_S = 3.0
 CEIL_MEDIAN_S = 1.0
 GUARD_LATER_S = 1.0
 GUARD_CONTACT_TICKS = 15
+# Round 45 (Bar B3): guard pose 2 (the Crossing crawl whose REAR SQUADMATES sit on the container at (8, 64)) is not a no-room pose: its
+# rig has 2 m of navmesh and no hull behind, so a back-up is possible and legitimate there; it is judged by the corpus' cost ceiling
+# (ON <= OFF + CEIL_S) instead of the no-room line. Poses 0 / 1 (the wall 0.7 m behind), 3 / 4 (water) and 5 (inside a block) keep it.
+GUARD_CEILING_POSES = {2}
+# Round 45 (Bar B3): NAMED poses (rows with "named": true, from NOSED_NAMED=on: B2's seed 11187 as a fixed cell) read the ceiling line.
 
 
 def main():
@@ -31,7 +36,7 @@ def main():
         for line in open(path):
             if line.startswith("NOSED_ROW "):
                 r = json.loads(line[len("NOSED_ROW "):])
-                key = (str(r.get("seed", "")), int(r["pose"]), bool(r.get("guard", False)))
+                key = (str(r.get("seed", "")) + ("n" if r.get("named") else ""), int(r["pose"]), bool(r.get("guard", False)))
                 rows.setdefault(key, {})[r["arm"]] = r
     stuck, open_, guard_bad, guard_n = [], [], [], 0
     for key in sorted(rows):
@@ -41,15 +46,16 @@ def main():
         b = pair["off"]["clear_tick"] if pair["off"]["clear_tick"] > 0 else WATCH_TICKS
         a = pair["on"]["clear_tick"] if pair["on"]["clear_tick"] > 0 else WATCH_TICKS
         d = (a - b) / 30.0
-        if key[2]:
+        if key[2] or pair["off"].get("named"):
             guard_n += 1
             cb, ca = int(pair["off"].get("contact_ticks", 0)), int(pair["on"].get("contact_ticks", 0))
-            ok = d <= GUARD_LATER_S and ca <= cb + GUARD_CONTACT_TICKS
+            ceiling = (not key[2]) or key[1] in GUARD_CEILING_POSES
+            ok = d <= CEIL_S if ceiling else (d <= GUARD_LATER_S and ca <= cb + GUARD_CONTACT_TICKS)
             if not ok:
                 guard_bad.append((key, d, cb, ca))
-            print("  %s GUARD pose %2d %-8s %-5s %+4.0f deg: clear t%d -> t%d (%+.1f s); wall ticks %d -> %d; looks %d stalls %d: %s" % (
-                key[0] or "dev", key[1], pair["off"]["arena"], pair["off"]["shape"], pair["off"]["angle"], b, a, d, cb, ca,
-                pair["on"]["looks"], pair["on"].get("stalls", 0), "ok" if ok else "WORSE"))
+            print("  %s %s pose %2d %-8s %-5s %+4.0f deg: clear t%d -> t%d (%+.1f s); wall ticks %d -> %d; looks %d stalls %d: %s%s" % (
+                key[0] or "dev", "NAMED" if pair["off"].get("named") else "GUARD", key[1], pair["off"]["arena"], pair["off"]["shape"], pair["off"]["angle"], b, a, d, cb, ca,
+                pair["on"]["looks"], pair["on"].get("stalls", 0), "ok" if ok else "WORSE", " (ceiling line)" if ceiling else ""))
             continue
         # R44.12: base-stuck = the base has not cleared within STUCK_TICKS AND its rig had no yield / blocked-by-friend seconds in
         # its first 6 s (both read from the BASE row: a squadmate pinning the rig is not the box).
@@ -73,8 +79,8 @@ def main():
         len(open_), worst, CEIL_S, omed, CEIL_MEDIAN_S, "PASS" if c_ok else "FAIL"))
     g_ok = not guard_bad
     if guard_n:
-        print("G (guard poses, no back-up possible): %d poses, ON later than OFF + %.1f s or %d more wall ticks in %d: %s" % (
-            guard_n, GUARD_LATER_S, GUARD_CONTACT_TICKS, len(guard_bad), "PASS" if g_ok else "FAIL"))
+        print("G (guard + named poses): %d poses; no-room poses later than OFF + %.1f s or %d more wall ticks, room / named poses over OFF + %.1f s: %d: %s" % (
+            guard_n, GUARD_LATER_S, GUARD_CONTACT_TICKS, CEIL_S, len(guard_bad), "PASS" if g_ok else "FAIL"))
     verdict = "PASS" if d_ok and c_ok and g_ok else ("NOT JUDGED (under the floor of %d base-stuck poses)" % STUCK_FLOOR if len(stuck) < STUCK_FLOOR else "FAIL")
     print("VERDICT: %s" % verdict)
 

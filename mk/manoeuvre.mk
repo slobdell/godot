@@ -523,3 +523,6 @@ export NOSED_SETUP_ONLY
 # Round 45 (R45.4): NOSED_GUARD=on runs the six guard poses (round 44's mis-staged stagings kept: no back-up possible, ON no worse).
 NOSED_GUARD ?=
 export NOSED_GUARD
+# Round 45 (Bar B3): NOSED_NAMED=on adds the named poses (B2's 11187 at its jitter) as fixed cells beside the block.
+NOSED_NAMED ?=
+export NOSED_NAMED

@@ -5673,6 +5673,12 @@ func _backout_look(here: Vector3, forward: Vector3, to: Vector3) -> Vector3:
 	var map := ctl.tank.get_world_3d().navigation_map
 	if _free_run(map, here + forward * float(frame[1]), forward, float(frame[2])) >= BACKOUT_NOSED_M:
 		return Vector3.INF
+	# Round 45 (M2, Bar B2's D3): NO ROOM BEHIND ON THE NAVMESH = no look at all. B2's guard poses (a rig with the arena wall 0.7 m
+	# behind its tail, or boxed in) read ON later / pressing harder on 4 of 24: the look fired, every plan was refused "blocked behind
+	# (navmesh)" at the planner, and the look's call and withdrawal still moved the squad's tick cadence off today's. With BACKOUT_ROOM_M
+	# of navmesh run behind the tail required here, a rig that cannot back up never looks and drives exactly as today.
+	if _free_run(map, here - forward * float(frame[1]), -forward, float(frame[2])) < BACKOUT_ROOM_M:
+		return Vector3.INF
 	if not _backout_run_clear(here, forward):
 		return Vector3.INF
 	return departure

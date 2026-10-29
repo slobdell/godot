@@ -51,6 +51,10 @@ const GUARD_POSES := [
 	["crossing", Vector2(30.0, 4.0), 357.0, 1.22, -1, "crawl", -30.0],  # in the far water channel
 	["crossing", Vector2(24.0, 11.0), 355.0, 1.22, 1, "alone", 55.0],   # inside the city block at (34, 33)
 ]
+## Round 45 (Bar B3): NAMED poses (NOSED_NAMED=on; rows carry "named": true): a pose at a FIXED jitter, run in both arms beside the block.
+## B2's seed 11187 (pose 10 at its jitter) was the one pose of 48 that broke B2's cost ceiling (a departure look that planned nothing
+## where today's planner had a plan, +6.3 s); it rides every later bar as a named cell under the ceiling line.
+const NAMED_POSES := [[10, [-1.4, -0.5, 4.7, 3.0]]]
 ## The crawl shape's squadmates in the rig's frame (x: right, z: behind) and their hulls: his deploy around Guns_2 (Guns_1 / Guns_3 War
 ## Rigs beside it, Guns_4 a Gun Truck and Guns_5 a Resupply Tanker 15 m behind). Round 45 (M1): round 44 staged all four as War Rigs,
 ## which put a 14 m hull's nose 1.0 m off the lead rig's tail (his real gap behind was 4.7-6.3 m): every crawl pose's back-up stalled
@@ -107,12 +111,12 @@ static func jitter_of(pose_id: int, seed_value: int) -> Array:
 var _native_drive_was := BrainSwitches.native_drive
 
 
-func _run(pose_id: int, pose: Array, arm: String, seed_value := 0, guard := false) -> Dictionary:
+func _run(pose_id: int, pose: Array, arm: String, seed_value := 0, guard := false, fixed_jitter: Array = []) -> Dictionary:
 	Traffic.set_off("backout", arm == "off")
 	if OS.get_environment("NOSED_GDSCRIPT") == "on":
 		BrainSwitches.native_drive = false  # a dev read of a GDScript change before native's twin follows it
 	_lab = TacticsLab.create(self, 7, String(pose[0]))
-	var jitter := jitter_of(pose_id, seed_value)
+	var jitter := jitter_of(pose_id, seed_value) if fixed_jitter.is_empty() else fixed_jitter
 	var rp := rig_pose(pose, jitter)
 	var spot: Vector3 = rp[0]
 	var yaw: float = rp[1]
@@ -218,7 +222,7 @@ func _run(pose_id: int, pose: Array, arm: String, seed_value := 0, guard := fals
 			"yield_ticks_6s": yield_ticks, "blocked_friend_ticks_6s": blocked_friend_ticks,
 			"kturns": int(Movement.route_arms().get("kturns", 0)), "stalls": int(Movement.route_arms().get("backout_stalls", 0)),
 			"fallbacks": int(Movement.route_arms().get("backout_fallbacks", 0)),
-			"contact_ticks": contact_ticks, "guard": guard,
+			"contact_ticks": contact_ticks, "guard": guard, "named": not fixed_jitter.is_empty(),
 			"nose_room_m": snappedf(nose_room, 0.1), "depart_deg": snappedf(depart_deg, 1.0), "native_drive": BrainSwitches.native_drive}
 	print("NOSED_ROW " + JSON.stringify(row))
 	_lab.dispose()
@@ -254,4 +258,10 @@ func test_the_staged_nose_on_corpus_runs_both_arms() -> void:
 			var row := await _run(int(cell[0]), table[int(cell[0])], arm, int(cell[1]), guard)
 			rows += 1
 			assert_true(int(row["clear_tick"]) != 0, "pose %d seed %d %s produced a row" % [cell[0], cell[1], arm])
-	assert_eq(rows, cells.size() * arms.size(), "every pose ran in both arms")
+	var named_cells := NAMED_POSES.size() if OS.get_environment("NOSED_NAMED") == "on" and not guard else 0
+	for i in named_cells:
+		for arm in arms:
+			var named_row := await _run(int(NAMED_POSES[i][0]), POSES[int(NAMED_POSES[i][0])], arm, 0, false, NAMED_POSES[i][1])
+			rows += 1
+			assert_true(int(named_row["clear_tick"]) != 0, "named pose %d %s produced a row" % [NAMED_POSES[i][0], arm])
+	assert_eq(rows, (cells.size() + named_cells) * arms.size(), "every pose ran in both arms")
