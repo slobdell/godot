@@ -267,6 +267,14 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   unchanged and 11187's pose as a named guard; a pass ships backout ON (lesson 339 / memory "ship his fix ON": the backout has failed
   two bars, each on the margin, with his own case passing both times). If another guard fails too, it stays OFF and he is told in
   player terms.
+- **R45.12 (~14:20) B2's further legs; the plan narrowed.** Same-machine read (builder2 heavy, frozen 0493977ed): C++ v GDScript drive
+  96 / 96 corpus rows identical (11187 ON t355 both): the laptop's t273 was the machine (lesson 334), the twin is sound. Engage's line
+  (his Gorge 107 s, base v bo) IDENTICAL, PASS. Workload guards (builder2 light, 72 paired cells 11149-11172): yield+blocked PASS all;
+  k-turn s crossing -0.5 se, locks +1.8 se PASS, **terminus +2.6 se FAIL** (+1.79 s a run; line +2 se); wedged, never-arrived, seated,
+  b1_judge's unneeded-back-up guards PASS; nose-on crews' 8 m clear 248 -> 264 ticks (reported). **B2 has two misses.** Ruling: B2b goes
+  ahead only if manoeuvre shows, by removal on DEV seeds, that the Terminus k-turn excess is the same shape the 11187 fallback removes
+  (a look pre-empting a plan the planner had); otherwise backout stays OFF this round and he is told in player terms. B2b, if filed,
+  carries every B2 line unchanged (the Terminus k-turn guard included) on 11601-11648.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
