@@ -189,6 +189,12 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   GDScript rule is what it proves; native's `test_native_drive_backout_stall` proves the twin, C45.4): heavy folder, library present,
   **3 / 0** (his start OFF t46 / t144, ON t4 / t98; the stage placed t3, stalled t33, 1 stall). **Native re-twins on dab58b334.**
 
+- **Native's v2 twin EQUAL (relayed ~13:20): `pair/native-backout-b2v2` 04ce3abe9** = dab58b334 + the twin (builder2: his start 1191
+  drives / 0 mismatches t4 / t98; the stall twin on a FIXED parked rig 1189 / 0, 1 stall at 30 ticks; default orders probe base v
+  backout on the C++ drive 60 / 60 byte-identical; the pair's own tests 4 / 0). **Freeze re-cut: `wip/manoeuvre-b2-freeze` 0493977ed**
+  = stream/manoeuvre ce52cba1c + 04ce3abe9; its full check runs on builder2 (`check_b2/check-0493977ed.log`); the series waits for
+  its exit line.
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
