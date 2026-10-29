@@ -121,8 +121,15 @@ _(worker keeps this current: report at the top, every number with commit, machin
   never-in 4/6: rear seats need a dry footprint of half the widest squad, a wet rank steps back 4 m at a time up to 40 m; the
   front stays his click); the four-squad rows against Gorge's edge had no seat for the rear squads (a rank behind the front
   centres in its clear width, half a slot off the line, on a 60 m scan).
-- **Earlier freeze candidate a8adba232** (the frozen worktree `../godot-orders-g2`, detached there; its full check launched on builder2
-  from that folder, `~/orders-r45/freeze/`, now a baseline only; `make quick-remote` on a8adba232, builder0: 336 passed / 0 failed, lint 99, smoke,
+- **Baseline check of a8adba232 on builder2 (13:18-15:00, `~/orders-r45/freeze/check-a8adba232-builder2.log`): RED, 3451 passed /
+  1 failed, `>> check: 23 passed, 3 FAILED, 0 NOT RUN, 2 NOT JUDGED`, `>> remote: make check exited 2`.** The three: `test`
+  (test_native_gate::test_the_gate_rule_drives_as_the_gdscript: its fresh child printed no report, exit 124 at the 1500 s timeout;
+  builder2 ran at load 20-60 with my dev read and native's runs, "54 other godot"), `web-smoke` (the browser match smoke on
+  builder2), `remote-guard-test` (the shell tests of the merged tools/remote.sh / slot.sh / builder_checks; "everything else
+  matched the baseline 55,0; the refused verdict ..."). None touches game/control; all three re-read on the final freeze
+  check with builder2 otherwise idle, and the orchestrator's builder0 ALL JUDGED check decides the merge. NOT JUDGED: perf-judge
+  (builder2 is no judging machine), ai-scenarios' CPU budget (loaded, ref 6.89x).
+- **Earlier freeze candidate a8adba232** (the frozen worktree `../godot-orders-g2`, detached there; `make quick-remote` on a8adba232, builder0: 336 passed / 0 failed, lint 99, smoke,
   `>> remote: make quick exited 0`). Dev read 3 (154815c86, the tree
   before the within-rank swap / rank-step / least-total deal) running on builder2; dev read 4 on a8adba232 follows it, then the
   series from the frozen tree. Native: the untangle twin re-proves on a8adba232 (the note below).
