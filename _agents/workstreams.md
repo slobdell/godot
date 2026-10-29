@@ -179,8 +179,9 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   m behind: gaps 4.7-6.3 m, where round 44 staged four War Rigs with a nose 1.0 m off the lead rig's tail); every rig of a pose is
   asserted within 0.5 m of the navmesh. (2) **The six old stagings are KEPT VERBATIM as GUARD POSES** (`NOSED_GUARD=on`; no back-up is
   possible on any of them). (3) The rule: the look's "2 m clear behind" and the plan's hull test see ORIENTED BOXES (the centre disc
-  could not see a 14 m hull straight behind); a departure leg that does not move its way for 0.5 s ends as `stalled` instead of
-  standing to its timeout. Both behind the switch; OFF byte for byte (the default orders probe 60/60 proves it, below).
+  could not see a 14 m hull straight behind); a departure leg whose centre makes less than 1.0 m of net progress over 1 s while the plant
+  is asked to roll ends as `stalled` instead of standing to its timeout (amended before any number, R45.x: the first cut judged the
+  tick's velocity, which the contact bounce resets). Both behind the switch; OFF byte for byte (the default orders probe 60/60 proves it, below).
   **What it could break (named first):** a crew reversing into the friend behind it (wedged s, friendly contacts); a back-up where none
   was needed (reversing ticks and seats among the crews NOT nose-on); a rig that backs out and then no longer finds its station
   (never-arrived, seated by 15 s); the group column (C45.3: byte-identical); on the guard poses, a rig made later or pressed harder
