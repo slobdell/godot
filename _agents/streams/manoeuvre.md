@@ -72,8 +72,8 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   passes. **M1 + M2 done** (the corpus re-staged, two rule defects fixed, the look follows the squad's route, the stalled leg); **M3
   done** (native's twin `pair/native-backout-b2v2` 04ce3abe9 EQUAL); **M4 Bar B2 FILED** (R45.4 / R45.8 amendments), frozen at
   `wip/manoeuvre-b2-freeze` **0493977ed** (= stream ce52cba1c + the pair) in `../godot-manoeuvre-b2` and `../godot-manoeuvre-b2x`;
-  its full check runs on builder2 (`~/overnight-manoeuvre/r45/check_b2/check-0493977ed.log`; the first attempt died with builder2's
-  12:51 preemption, no number seen). **M5 Bar S v4 FILED** (the bound + seat-order, 11401-11448), **M6 Bar A6 v4 FILED** (holdway,
+  its full check on builder2 is GREEN (3448 / 0, exited 0, 4 perf / load lines NOT JUDGED; the first attempt died with builder2's 12:51
+  preemption, no number seen) and **the series is running since 13:34 PDT**. **M5 Bar S v4 FILED** (the bound + seat-order, 11401-11448), **M6 Bar A6 v4 FILED** (holdway,
   one-sided guard, 11449-11496): both ride B2's frozen tree, queued behind B2's series. Drivers: `~/overnight-manoeuvre/r45/bars_b2_a.sh`
   (builder0 light legs, from b2x), `bars_b2_b.sh` (builder2 legs, from b2), `bars_b2_judge.sh`, `bars_s4.sh`, `bars_a6v4.sh`.
 - **Checks:** dab58b334's lab tests 3 / 0 (builder2 heavy folder, library present); 57e02fed5 quick-remote 37 / 1 (the 1 = the stage on
@@ -221,6 +221,13 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   (`gcloud compute instances start`, the gcp-start recipe); the check re-queued. The B2 series is split into two drivers so it runs on
   both builders at once (`bars_b2_a.sh`: builder0 light legs from a second frozen checkout `../godot-manoeuvre-b2x` at 0493977ed;
   `bars_b2_b.sh`: builder2 legs from `../godot-manoeuvre-b2`; `bars_b2_judge.sh` after both), their copy-backs in separate worktrees.
+
+- **GATE GREEN (~13:30 PDT): 0493977ed on builder2, `>> remote: make check exited 0`, 3448 passed / 0 failed, 24 targets passed, 4 NOT
+  JUDGED** (perf-judge: not a judging machine; ai-scenarios perf loaded 4.75x; remote-guard-test and web-smoke under load 42-55 on 16
+  cores). Perf is judged on builder0 before ON, as filed. **Bar B2's series LAUNCHED 13:34 PDT**: driver A (builder0 light, from
+  `../godot-manoeuvre-b2x`): corpus, guard poses, fights, G1 probe; driver B (builder2, from `../godot-manoeuvre-b2`): his start, his
+  Gorge replay, workload, group guards. Evidence `~/overnight-manoeuvre/r45/bars_b2/` (meta.txt has each leg's clock); judges by
+  `bars_b2_judge.sh` once `A.done` and `B.done` exist.
 
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
