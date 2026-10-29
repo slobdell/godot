@@ -112,6 +112,18 @@ _(each stream files its bar here BEFORE any number on its block; the orchestrato
   stated in B2's filing with `stage_check.py`). The impossible poses are NOT dropped: the wall-behind poses (5/6 as B1 had them) and
   the pinned ones stay in B2 as GUARD poses (no back-up is possible: ON must be no worse than OFF there, and never touch the wall),
   so B2 cannot pass by removing the hard cases.
+  Manoeuvre's answer: the six round-44 stagings stay verbatim as GUARD_POSES; `nosed_judge.py` judges them apart (ON clears no later
+  than OFF + 1.0 s, wall contact <= OFF + 15 ticks, else FAIL; re-run on B1's corpus.log still FAIL 15/21).
+- **R45.5 (~11:00) Orders O1 cause (his Gorge click reproduced to the decimetre, builder0, 8d59b2bdf, `--order-trace`).** The default
+  `SelectionSquads.ranks -> row`: three squads fit one rank (3 <= MAX_ABREAST, 160 m <= 200 m), laid abreast 58 m apart across a
+  DIAGONAL approach (army middle (0, 93) -> click (-43, 53)). Hunters 58 m NW (level with the click along the approach, so
+  never_behind sees nothing), Wrenches 58 m SE through the west neck (land, ~60 m drive v 58 m straight: the ground cap passes it).
+  The ground at his click fits ONE abreast (the neck's far wall ~16 m out). G2 = fit first (<= fit_abreast, cap 2, the rest in ranks
+  behind) + a guard on every place (across water / a pit / through a neck, off the click line by more than the body's frontage,
+  behind the last rank, > 10 m behind its own start -> the body re-laid on seats the click reaches). ON, `--group-guard=off`;
+  squads.size() >= 2; the CPU never lays a group click (C45.5 by construction). G2 changes only the anchors handed to
+  `untangle_whole`, not its body (R45.3's twin unaffected). **Orchestrator's added line:** the fallback "too few seats = today's
+  places" is counted and REPORTED per cell in Bar G2 (how often his old scatter can still happen), and his Gorge cell must not use it.
 
 ## Round 44: three streams (prepared 2026-10-28; CLOSED 2026-10-28; briefs in `streams/archive/round44/`)
 
