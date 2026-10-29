@@ -291,6 +291,13 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   manoeuvre the rule exists to make; judge the squad's time to clear its start instead. The fallback 0a80c3685 stays on the branch, OFF.
   The B2b twin request to native is withdrawn. In his terms: with backout ON his rigs back out of their boxes at once and the squad flows
   out sooner, but the tanker at the back does an extra three-point turn; with it OFF (his game) the rig noses in first, as he reported.
+- **R45.15 (~14:50) Bar B2 FINAL: FAILS as filed on three lines; backout OFF.** Frozen 0493977ed (builder2 check exited 0, 3448/0), C++
+  drive both arms (EQUAL to GDScript 96/96); evidence `references/round45/manoeuvre/barsb2-builder0+builder2-0493977ed/` (stream/manoeuvre
+  d91d4b96c). D1 his start PASS (t4 v t44; past the box t97 v t140); D2 deciding PASS (11/11 sooner, median -3.03 s); D2 ceiling FAIL
+  (+6.3 s on 11187); **D3 guard poses FAIL (4 of 24 worse: 11155 wall ticks 14 -> 102 though 1.7 s sooner; 11163 +0.3 s / +19 wall
+  ticks; 11168 +3.5 s; 11171 +32 wall ticks)**; workload k-turn terminus +2.6 se FAIL; every other guard PASS (yield+blocked, wedged,
+  seated, never-arrived, unneeded back-ups, group G5-G7 identical, G1 corridor 180/180, Gorge identical, fights G1-G4). Round 46: the
+  fallback (0a80c3685), the wall-contact on no-room poses (D3), and the k-turn guard redesign (R45.14).
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
