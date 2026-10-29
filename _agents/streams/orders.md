@@ -108,7 +108,8 @@ _(worker keeps this current: report at the top, every number with commit, machin
   "across water / a pit / through a neck from the click, off the click line by more than the body's frontage, farther than its last
   rank, behind its own start" and, on any failure, re-lays the body on those seats. Built as G2 (O2 below).
 
-- **FREEZE CANDIDATE: 7a0c62c3c** (dev read 4 on it running on builder2; quick-remote on builder0). Not merging main (the
+- **FREEZE CANDIDATE: 7a0c62c3c** (dev read 4 on it running on builder2; `make quick-remote` on 7a0c62c3c, builder0: 336 passed /
+  0 failed, lint 99, smoke, `>> remote: make quick exited 0`). Not merging main (the
   orchestrator: main eec905e52 carries native's N2 twin, EQUAL on a8adba232 per R45.3; the bar freezes off this branch; at ship
   the column_lay conflict resolves as pair/native-g2 cfa4a0eb2 and native re-proves on the final freeze). R45.13: D5 = reach +
   one rank step + 6 m accepted; **the lines do not move again after the freeze**.
