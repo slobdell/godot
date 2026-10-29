@@ -52,6 +52,10 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pathing_is_ready", "node"), &TankNative::pathing_is_ready);
 	ClassDB::bind_method(D_METHOD("pathing_query", "node", "from", "to"), &TankNative::pathing_query);
 	ClassDB::bind_method(D_METHOD("pathing_find_path", "node", "from", "to"), &TankNative::pathing_find_path);
+	ClassDB::bind_method(D_METHOD("gate_width_edge", "node", "click", "across", "scan", "past_posts", "decks", "clamp", "step",
+			"detour"), &TankNative::gate_width_edge);
+	ClassDB::bind_method(D_METHOD("untangle_whole", "starts", "anchors", "by_lead", "leads", "arcs", "misplaced", "slack"),
+			&TankNative::untangle_whole);
 	ClassDB::bind_method(D_METHOD("perception_configure", "config"), &TankNative::perception_configure);
 	ClassDB::bind_method(D_METHOD("perception_sight", "viewers", "enemies"), &TankNative::perception_sight);
 	ClassDB::bind_method(D_METHOD("perception_gun_ready", "viewers", "enemies"), &TankNative::perception_gun_ready);

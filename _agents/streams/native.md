@@ -81,11 +81,11 @@ retried, `>> remote: import hung on staged-hang.ttf`, wrapper exit 75. A warm im
 search); `RtsControls.gate_width` **10.5-11.4 ms (36 %)**: 1 call, 100 steps, ~200 `Pathing.find_path` = 5.6 ms + Callables and
 the near_deck sampling; setup to `ranks` 3.9 ms; the rest < 1.5 ms. gate_width at ~0 still leaves ~150: hence N2b (R45.3).
 
-**N2a gate_width C++ (in progress):** `native/src/gate_native.cpp` (one navmesh query a step serves crosses_on and drive_on: the
+**N2a gate_width C++ (in progress):** `native/src/gate_width_native.cpp` (one navmesh query a step serves crosses_on and drive_on: the
 same `find_path(ground, click, p)`; the deck test a loop over `SlotGround.deck_boxes()`; `Orders.clamp_to_arena` called back once a
 step). Seam `RtsControls.gate_width_edge_on` (new, beside gate_width; the GDScript gate_width untouched as the fallback) at the
 ONE call site the group click uses (rts_controls.gd column_lay's width_at, a one-line edit; told orders). Switch
-`BrainSwitches.native_gate` (ON). Equality: `tests/test_native_gate.gd` (4 arenas x 90 clicks, each deciding branch counted).
+`BrainSwitches.native_gate_width` (ON). Equality: `tests/test_native_gate_width.gd` (4 arenas x 90 clicks, each deciding branch counted).
 
 ### Requests to other streams
 - **orders:** rts_controls.gd: one line in `_order_squads`' column_lay call (`RtsControls.gate_width` -> `gate_width_edge_on`,
