@@ -101,6 +101,17 @@ _(each stream files its bar here BEFORE any number on its block; the orchestrato
   the function (GDScript body kept as the fallback), output-identical first (`tests/test_untangle_whole_memo.gd` + the G1 orders
   probe byte-identical, native on v off). **Orders keeps the file** and its G2 work wins any conflict; if G2 changes what
   untangle_whole decides, orders tells the orchestrator and the twin follows (native re-proves EQUAL on orders' tree).
+- **R45.4 (~10:55) Manoeuvre M1: B1's corpus was mis-staged; two rule defects fixed; the corpus rule for B2.** Laptop, GDScript drive,
+  8d59b2bdf + uncommitted tests. 10 of B1's 21 base-stuck poses could not be won by any back-up: pose 13 stood inside the Crossing's
+  city block (11.2 m off the navmesh), 11/12 in the water channel, 5/6 with the Locks hexagon wall 0.7 m behind the tail, 7's rear
+  squadmates on the container; the crawl shape staged every squadmate as a 14 m War Rig (his deploy: Gun Truck + Tanker, 4.7-6.3 m
+  gaps), so pose 10 backed 0.5 m into a nose and stood 5 s. Fixed behind `--traffic-on=backout` (OFF byte-identical): (a) the look's
+  hull test uses oriented boxes, not `_hull_hit`'s centre disc; (b) a departure leg that stalls (< 0.1 m/s for 0.5 s) ends instead of
+  waiting its timeout. (b) touches `kturn_leg` and adds exec field `_backout_stall_ticks`: native twins it (M3, C45.4).
+  **Ruling on the corpus:** re-staging off-mesh poses onto the mesh and his real squadmate hulls is allowed (geometry, not seeds;
+  stated in B2's filing with `stage_check.py`). The impossible poses are NOT dropped: the wall-behind poses (5/6 as B1 had them) and
+  the pinned ones stay in B2 as GUARD poses (no back-up is possible: ON must be no worse than OFF there, and never touch the wall),
+  so B2 cannot pass by removing the hard cases.
 
 ## Round 44: three streams (prepared 2026-10-28; CLOSED 2026-10-28; briefs in `streams/archive/round44/`)
 
