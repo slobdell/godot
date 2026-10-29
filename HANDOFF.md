@@ -35,6 +35,13 @@ only `godot` + `godot-native-score*` (77 %, 24 G free, load 0.02). Worktrees cre
 JUDGED) and INHERITS its check. Bars recorded before numbers: B2, G2 (+ R45.6 D6), A6 v4, S v4, E1. Repo pack repaired (lesson 340; bad pack copy in ~/git-bad-pack-2026-10-29/, 645 MB, his to delete). Rulings R45.1-R45.7. Native's N3 twin for B2
 (pair/native-backout-b2 b2b129f9f) and N2 (gate_width + untangle_whole C++, 69b95f56e) in proof.
 
+**SERIES (13:40 PDT):** Bar B2 RUNNING since ~13:35 on frozen 0493977ed (= manoeuvre ce52cba1c + native twin 04ce3abe9; builder2
+check `exited 0` 3448/0, perf NOT JUDGED there; quiet builder0 perf before ON), two drivers (builder0 light ../godot-manoeuvre-b2x,
+builder2 ../godot-manoeuvre-b2), evidence ~/overnight-manoeuvre/r45/bars_b2/, ETA ~3-4 h. Bar E1 re-frozen 60262534f (R45.10), check
+queued builder0, the bar chains on green. Bar G2 freeze candidate a8adba232 (R45.9), check on builder2; native re-proves its
+untangle_whole twin on it before G2 ships ON. Native N2 (gate_width + untangle C++ + native-fresh builds + replay mismatch fails)
+check queued builder0.
+
 **Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*). Record G2 / E1 / B2 in *Bars (round 45)*
 the minute each is filed. Merge native's N1 watchdog alone on green. **C45.2:** G2 and E2 ship ON the minute their bars pass; if
 either fails, take it to him in player terms the same hour. Relay engage's E1 cause to orders (a squad of one) and manoeuvre (the
