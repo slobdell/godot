@@ -101,10 +101,15 @@ Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for
   `--traffic-on=backout` (M2), `--traffic-on=parkedpass` (M3), `--seat-order=on` (S v4's half). Bar S v3 FAILED as filed on its new
   wedged guard (R44.7: the bound's press, +9 crew-seconds a run on Locks); Bar A6 v3 FAILED on the head-on hold guard by 0.26 se
   (R44.19); both perf lines NOT JUDGED (the gate withdrawn).
-- **Bar B1 (backout alone) is FILED (eafbd3a80, R44.12 / R44.16) and NOT RUN: the freeze waits on native's twin matching cf6eabc22's
-  look and its `_backout_leg`-only station-PID gate, proven EQUAL and 60/60 on the default probe on the C++ drive (R44.8's addendum).
-  Then: merge the pair, `git worktree add ../godot-manoeuvre-b1 <hash>` + its local.mk / override.cfg (offset 7 is free again),
-  `make remote T=check` from it, `WT=... bars_b1.sh`.** Until then backout ON runs the GDScript drive (traffic.gd's gate, 8172913e1).
+- **Bar B1 (backout alone) is FILED (eafbd3a80, R44.12 / R44.16) and FROZEN at 9111520bf** (~17:45 PDT) = the merge of native's
+  pair/native-backout-r3 30e37f336 (cut on df31afba8: the C++ twin's station-PID gate on `_backout_leg` only, the long-hull term,
+  backout out of traffic.gd's GDScript-drive list; native's builder2 verdicts: native-proof EQUAL with backout,parkedpass, 233 / 0,
+  AND the default orders probe base v bo 60 / 60 byte-identical on the C++ drive); code-identical to 30e37f336 (the delta is this
+  doc). Worktree `../godot-manoeuvre-b1` (detached, offset 7; `~/overnight-manoeuvre/r44/freeze_b1.sh`). Its full check runs on
+  builder2 (`~/overnight-manoeuvre/r44/check_b1/check.log`, queued behind native's check of 30e37f336 by the builder's lock); the
+  series `WT=../godot-manoeuvre-b1 bars_b1.sh` starts on its green line (the orchestrator: as written, the corpus / G1 probe / fights
+  on builder0 light; if B1 passes, shipping ON needs a quiet builder0 full check with perf-judge and scenario_perf JUDGED, after the
+  series). **In both arms backout ON now runs the C++ drive.**
 - **His ask is answered on his own recordings (M5):** on native's exact replay both his boxed War Rigs back out the second he clicks and
   are round the box 2-3 s before main's has moved (the table below); main reproduces his matches (the 5 s stand in the second one).
 - **CP44.0 is merged** (main 875ee5dd0's `group` key); the scoping's byte-identity proof stands (60/60 at proof5; parkedpass 60/60 at
