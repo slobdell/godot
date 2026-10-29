@@ -53,6 +53,10 @@ const PLAYER_YIELDS := ["far_ambush"]
 ## Round 21 (P2): the contact drills a pursuit outranks (ElementPlan.pursues: an attack on a named target that runs).
 ## Near ambush, assault through and break contact still interrupt it.
 const PURSUIT_YIELDS := ["react_to_contact", "far_ambush"]
+## Round 45 (engage E2): his direct order to a crew wins until he gives another: his hold runs no drill (select), his stop
+## halts where the crew comes to rest, and a crew whose stop or move of his is done holds there (TankBrain).
+## `--player-authority=off` is the escape (the round-44 game).
+static var PLAYER_AUTHORITY := not OS.get_cmdline_user_args().has("--player-authority=off")
 ## Tasks whose element moves, and so may run a drill that moves it (a flank, a ring, a bait run).
 const MANOEUVRE_TASKS := ["move", "attack"]
 ## An ambush is sprung by a visible enemy this close to the kill zone's point (meters)...
@@ -117,6 +121,11 @@ static func select(situation: Dictionary, state: Dictionary, table: DoctrineTabl
 		current = ""
 	# A plain move (the player's right-click, X4): the player said where, not how to fight. No drill at all.
 	if not ElementTask.runs_drills(state.get("task", {})):
+		return {"drill": "", "why": "", "point": null, "target": ""}
+	# Round 45 (engage E2, his Gorge playtest): HIS hold is a hold. Under it react_to_contact's plan attack-moved his last
+	# scout 15 m at the enemy every update, 30 m into the gap he was keeping it out of. No drill: the element halts where
+	# it was told and its crews stand, turn and fire (the brain's HOLD). The CPU's holds keep their drills.
+	if PLAYER_AUTHORITY and obeyed and String(task.get("verb", "")) == "hold":
 		return {"drill": "", "why": "", "point": null, "target": ""}
 
 	# 0b. A base-of-fire TASK is the drill. The commander has said where the element fights from; contact must not turn

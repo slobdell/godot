@@ -55,7 +55,7 @@ engage-bar2: import ## engage Bar E2: engage-probe v2off/v2on on ENGAGE_SEEDS (b
 	$(PYTHON) tests/engage/attack_shot_table.py --pair $(BUILD_DIR)/engage/probe/v2off $(BUILD_DIR)/engage/probe/v2on --deciding=suppress
 
 # A quick parse check of the stream's own scripts.
-ENGAGE_PARSE ?= game/tactics/firing_position.gd game/tactics/element_situation.gd game/tactics/element_plan.gd game/ai/tank_brain.gd \
+ENGAGE_PARSE ?= tests/engage/authority_probe.gd tests/engage/authority_trace.gd tests/test_authority_hold.gd game/tactics/drills.gd game/tactics/firing_position.gd game/tactics/element_situation.gd game/tactics/element_plan.gd game/ai/tank_brain.gd \
 	game/control/rts_controls.gd tests/tactics/test_engage_shot.gd tests/engage/replay_probe.gd tests/engage/attack_shot_probe.gd \
 	tests/engage/test_engage_hud_words.gd tests/tactics/test_engage_flank_side.gd tests/engage/far_ambush_trace.gd
 .PHONY: engage-parse
@@ -165,3 +165,62 @@ engage-bar-a7: import ## engage Bar A7: engage-water off / on and named_off / na
 	@$(MAKE) --no-print-directory engage-water ENGAGE_WATER_TAG=named_on ENGAGE_FLAGS="$(ENGAGE_WATER_COMMON) --named=on"
 	@echo "##### the attack-move pair"; $(PYTHON) tests/engage/water_table.py --pair $(BUILD_DIR)/engage/water/off $(BUILD_DIR)/engage/water/on
 	@echo "##### the named-attack pair (guard 8)"; $(PYTHON) tests/engage/water_table.py --pair $(BUILD_DIR)/engage/water/named_off $(BUILD_DIR)/engage/water/named_on
+
+# ---- engage (round 45): his order to a crew wins ------------------------------------------------------------------------
+# E1: his Gorge replay (faithful 20/20 for 107 s, builder0 8d59b2bdf) with one AUTHORITY row per sample for the crew he
+# steered alone: its order and source, its element's task / drill / detached, the brain's option, the mover's goal.
+# AUTH_FLAGS removes a layer (an A/B arm); AUTH_TAG names the log. -> build/engage/authority_<tag>.log
+AUTH_RECORDING ?= references/round44/playtest/2026-10-29T09-35-51-gorge.jsonl
+AUTH_SECONDS ?= 107
+AUTH_UNITS ?= Green_Hunters_5
+AUTH_FROM ?= 2500
+AUTH_EVERY ?= 3
+AUTH_FLAGS ?=
+AUTH_TAG ?= base
+AUTH_PROBE_FLAGS ?=
+AUTH_PROBE_TAG ?= $(AUTH_ARM)
+.PHONY: engage-authority-trace
+engage-authority-trace: native-fresh import ## engage E1: his Gorge replay with AUTHORITY rows for AUTH_UNITS (AUTH_FLAGS an arm, AUTH_TAG) -> build/engage/authority_<tag>.log
+	@mkdir -p $(BUILD_DIR)/engage/authority_$(AUTH_TAG)
+	@echo ">> engage-authority-trace on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | flags '$(AUTH_FLAGS)'"
+	@$(GODOT) --headless --fixed-fps 30 --path . --script res://tests/engage/authority_trace.gd -- \
+		--orders=$(CURDIR)/$(AUTH_RECORDING) --seconds=$$(( $(AUTH_SECONDS) + 1 )) --record-dir=$(BUILD_DIR)/engage/authority_$(AUTH_TAG) \
+		--authority-units=$(AUTH_UNITS) --authority-from=$(AUTH_FROM) --authority-every=$(AUTH_EVERY) $(AUTH_FLAGS) \
+		> $(BUILD_DIR)/engage/authority_$(AUTH_TAG).log 2>&1 || true
+	@grep -E "^REPLAY_(SETUP|DONE|NATIVE)|SCRIPT ERROR|Parse Error" $(BUILD_DIR)/engage/authority_$(AUTH_TAG).log || true
+	@echo "AUTHORITY rows: $$(grep -c '^AUTHORITY ' $(BUILD_DIR)/engage/authority_$(AUTH_TAG).log || true)"
+
+# E3 (Bar E1's workload): the authority probe over AUTH_SEEDS, one AUTHORITY_PROBE line per seed; AUTH_ARM=on|off is
+# --player-authority. Bar E1's seeds: 11301-11348 (filed in workstreams.md *Bars (round 45)* before any number on them).
+AUTH_SEEDS ?= 7001 7002 7003 7004 7005 7006 7007 7008
+AUTH_ARM ?= on
+AUTH_JOBS ?= 4
+.PHONY: engage-authority-probe
+engage-authority-probe: native-fresh import ## engage E3: the authority probe over AUTH_SEEDS (AUTH_ARM=on|off, AUTH_JOBS) -> build/engage/authority/<arm>/<seed>.log + the table
+	@mkdir -p $(BUILD_DIR)/engage/authority/$(AUTH_PROBE_TAG)
+	@echo ">> engage-authority-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arm $(AUTH_ARM) | seeds $(firstword $(AUTH_SEEDS))+ ($(words $(AUTH_SEEDS))) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(AUTH_SEEDS); do echo $$seed; done | xargs -r -P $(AUTH_JOBS) -I{} sh -c \
+		'timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/authority_probe.gd -- \
+		--seed={} --player-authority=$(AUTH_ARM) $(AUTH_PROBE_FLAGS) > $(BUILD_DIR)/engage/authority/$(AUTH_PROBE_TAG)/{}.log 2>&1 || true; \
+		grep -q "^AUTHORITY_PROBE " $(BUILD_DIR)/engage/authority/$(AUTH_PROBE_TAG)/{}.log || echo "  MISSING AUTHORITY_PROBE seed {}"'
+	$(PYTHON) tests/engage/authority_table.py $(BUILD_DIR)/engage/authority/$(AUTH_PROBE_TAG)
+
+.PHONY: engage-authority-bar
+engage-authority-bar: import ## engage E3: the authority probe in both arms on AUTH_SEEDS, then the paired table (Bar E1's lines)
+	@$(MAKE) --no-print-directory engage-authority-probe AUTH_ARM=off
+	@$(MAKE) --no-print-directory engage-authority-probe AUTH_ARM=on
+	$(PYTHON) tests/engage/authority_table.py --pair $(BUILD_DIR)/engage/authority/off $(BUILD_DIR)/engage/authority/on
+
+# E4: his Gorge replay in a window, the camera on AUTH_UNITS, a PNG at each of AUTH_SHOTS (needs a display) ->
+# build/engage/shots/<AUTH_TAG>-t<tick>.png. Before = AUTH_TAG=base; after = AUTH_TAG=e4 AUTH_FLAGS="--player-authority=off
+# --authority-on-at=2500" (his match as played, the rule ON from just before his scout sequence).
+AUTH_SHOTS ?= 2880,2925,2990,3030,3075,3110,3150
+.PHONY: engage-authority-shots
+engage-authority-shots: native-fresh import ## engage E4: his Gorge replay in a window, AUTH_UNITS followed, PNGs at AUTH_SHOTS (AUTH_TAG, AUTH_FLAGS) -> build/engage/shots/
+	@mkdir -p $(BUILD_DIR)/engage/shots
+	@timeout 1200 $(GODOT) --fixed-fps 30 --resolution 1920x1080 --path . --script res://tests/engage/authority_trace.gd -- \
+		--orders=$(CURDIR)/$(AUTH_RECORDING) --seconds=$$(( $(AUTH_SECONDS) + 1 )) --record-dir=$(BUILD_DIR)/engage/shots/rec_$(AUTH_TAG) \
+		--authority-units=$(AUTH_UNITS) --authority-from=$(AUTH_FROM) --authority-every=$(AUTH_EVERY) --mute \
+		--shots=$(AUTH_SHOTS) --shot-out=$(CURDIR)/$(BUILD_DIR)/engage/shots --shot-name=$(AUTH_TAG) $(AUTH_FLAGS) \
+		> $(BUILD_DIR)/engage/shots/$(AUTH_TAG).log 2>&1 || true
+	@grep -E "^SHOT_SAVED|^REPLAY_DONE|AUTHORITY_SWITCH|SCRIPT ERROR" $(BUILD_DIR)/engage/shots/$(AUTH_TAG).log | cut -c1-200
