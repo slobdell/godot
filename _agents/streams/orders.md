@@ -294,6 +294,9 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   commit (exact text from native): rts_controls.gd ~1192 `guard_sides = RtsControls.gate_width_edge_on(ground, click,
   guard_across_f, drive_f, crosses_f, SelectionSquads.GROUP_SCAN_M)`; ~1225 `return RtsControls.gate_width_edge_on(ground, p,
   across, drive_x, crosses_edge_x, SelectionSquads.GUARD_RANK_SCAN_M)` (after the merge that brings `gate_width_edge_on`).
+  **By stage (native, builder2, native ON, 30 units / 6 squads, on top of N2):** the fit 9.5 ms, guard_lay 6.6, untangle 0.8,
+  ground_cap 1.2, given 1.1 (~20.5 ms); main without G2 3.68 ms on builder0 (ratio 89.8 v 104, not judged: box busy). Native
+  ports the dominant stages after the final freeze (R45.16).
 - **Known issues:** (1) the shared repository had a corrupt packed object (the blob of
   assets/audio/layered/crowd_murmur_1.wav in pack-315912d8a6…): `git worktree add` for the frozen tree failed on it (~18:50);
   repaired reversibly with a hand-written loose copy of the same SHA from this worktree's intact file; the orchestrator is
