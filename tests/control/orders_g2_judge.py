@@ -12,9 +12,9 @@ Part A, per cell (map x starts x reach, a fixed click its own cell) over the ARM
   D3 reach: every MOVED place within the fitted body's own reach from the click (the arm's `guard.reach_m`, the farthest seat of
      the ranks the guard lays) + REACH_SLACK_M, every arm run (his Hunters, 58 m off the line);
   D4 (R45.5) the fallback `guard.unlaid` (too few seats: today's places stand) = 0 on every GORGE run; reported per cell;
-  D5 (R45.9) on every Gorge run every HELD squad (its place within HOLD_M = 2 m of where it stood: the stay rule fired) stands
-     within the body's reach + REACH_SLACK_M of the click: a squad that holds is already part of the group at his click; one held
-     farther away fails; `held` reported per cell;
+  D5 (R45.9, re-shaped after dev read 3 before any 11201 number) on every Gorge run every HELD squad (its place within HOLD_M =
+     2 m of where it stood: the stay rule fired) stands within the body's reach + one rank step (`guard.step_m`) + REACH_SLACK_M
+     of the click: a holder is the next rank behind the stack, not a straggler; one held farther away fails; `held` per cell;
   D5b (R45.9) the FIXED cell with his exact Gorge click and his three squads at their recorded starts (starts `recorded`):
      held = 0 every run, plus D1-D4 and D6 there;
   D6 (R45.6) on the Gorge `spawn` cell (his own click): no place behind its own squad's start along the approach by more than
@@ -74,6 +74,7 @@ def part_a(out, base, new, lines):
             read["farthest_moved_m"] = max((geo.flat(a, click) for a in moved), default=0.0)
             guard = g.get("guard", {})
             read["guard_reach_m"] = float(guard.get("reach_m", 0.0))
+            read["guard_step_m"] = float(guard.get("step_m", 0.0))
             read["unlaid"] = int(guard.get("unlaid", 0))
             read["relaid"] = int(guard.get("relaid", 0))
             read["restored"] = int(guard.get("restored", 0))
@@ -98,7 +99,7 @@ def part_a(out, base, new, lines):
         c2 = all(r["backward"] == 0 for r in n)
         c3 = all(r["farthest_moved_m"] <= r["guard_reach_m"] + REACH_SLACK_M for r in n)
         c4 = (not gorge) or all(r["unlaid"] == 0 for r in n)
-        c5 = (not gorge) or all(r["held"] == 0 or r["held_farthest_m"] <= r["guard_reach_m"] + REACH_SLACK_M for r in n)
+        c5 = (not gorge) or all(r["held"] == 0 or r["held_farthest_m"] <= r["guard_reach_m"] + r["guard_step_m"] + REACH_SLACK_M for r in n)
         his = gorge and cell[1] in ("spawn", "recorded")
         recorded = gorge and cell[1] == "recorded"
         c5b = (not recorded) or (all(r["held"] == 0 for r in n) and c1 and c2 and c3 and c4)
@@ -127,7 +128,7 @@ def part_a(out, base, new, lines):
     lines.append("%s deciding D2: places > %.0f m behind their own start along the approach = 0, every arm run" % ("PASS" if d2 else "FAIL", geo.BACK_M))
     lines.append("%s deciding D3: every moved place within the fitted body's reach + %.0f m of the click, every arm run" % ("PASS" if d3 else "FAIL", REACH_SLACK_M))
     lines.append("%s deciding D4 (R45.5): the fallback (too few seats, today's places) never taken on a Gorge run" % ("PASS" if d4 else "FAIL"))
-    lines.append("%s deciding D5 (R45.9): on every Gorge run every held squad stands within the body's reach + %.0f m of the click" % ("PASS" if d5 else "FAIL", REACH_SLACK_M))
+    lines.append("%s deciding D5 (R45.9): on every Gorge run every held squad stands within the body's reach + one rank step + %.0f m of the click" % ("PASS" if d5 else "FAIL", REACH_SLACK_M))
     lines.append("%s deciding D5b (R45.9): his exact click with his three squads at their recorded starts: held = 0 every run, D1-D4 there" % ("PASS" if d5b else "FAIL"))
     lines.append("%s deciding D6 (R45.6): on his own Gorge click no place more than %.0f m behind its squad's start along the approach" % ("PASS" if d6 else "FAIL", BEHIND_M))
     bc = sum(r.get("friend_contacts", 0) for r in runs_by_arm[base])

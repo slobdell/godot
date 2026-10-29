@@ -1324,6 +1324,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if ground != null and not v10_column:
 			anchors = SelectionSquads.ground_cap(anchors, click, SelectionSquads.drive_on(ground), SelectionSquads.crosses_on(ground),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+			# G2: a squad holding its spot stays on it (dev read 3: the cap pulled holders 9-71 m toward the click).
+			if not guard_laid.is_empty():
+				for i in mini(anchors.size(), (guard_laid["holding"] as Array).size()):
+					if bool((guard_laid["holding"] as Array)[i]):
+						anchors[i] = (guard_laid["places"] as Array)[i]
 			_trace_stage("ground_cap", squads, anchors)
 		# Round 34 (planner's O5, the Terminus 3-squad route): an anchor laid ON an obstacle (O3's narrower body put squad
 		# 3's at (32.7, 67.4), inside a block) can never be arrived at: every seat was pushed 11-19 m off it, the leader

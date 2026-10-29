@@ -96,8 +96,9 @@ func _check_body(laid: Dictionary, click: Vector3, label: String) -> void:
 		var at: Vector3 = laid[squad]
 		assert_true(not (SlotGround.over_water(at)), "%s %s: dry and off any deck (%.1f, %.1f)" % [label, squad, at.x, at.z])
 		assert_true(at.z > 7.0, "%s %s: on the north bank, the click's side (z %.1f)" % [label, squad, at.z])
-		assert_true(Vector2(at.x - click.x, at.z - click.z).length() <= 70.0, "%s %s: within one body of the click (%.0f m)" % [
-				label, squad, Vector2(at.x - click.x, at.z - click.z).length()])
+		assert_true(Vector2(at.x - click.x, at.z - click.z).length() <= SelectionSquads.guard_last_reach_m + 6.0,
+				"%s %s: within the body's reach %.0f m of the click (%.0f m)" % [label, squad, SelectionSquads.guard_last_reach_m,
+				Vector2(at.x - click.x, at.z - click.z).length()])
 	var apart: float = (laid["Green_Hunters"] as Vector3).distance_to(laid["Green_Spears"]) if laid["Green_Hunters"] != null and laid["Green_Spears"] != null else 0.0
 	assert_true(apart >= 20.0, "%s: the two squads stand apart (%.0f m)" % [label, apart])
 

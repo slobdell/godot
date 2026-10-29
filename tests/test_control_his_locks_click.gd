@@ -366,11 +366,12 @@ func test_guard_lays_his_locks_clicks_as_one_body() -> void:
 			if p.distance_to(start) > 2.0:  # a squad holding its spot (its seat would be farther than it stands) is not a place he reads
 				assert_true(dist <= SelectionSquads.guard_last_reach_m + 6.0, "tick %d %s: within the body's reach %.0f m (%.0f m)" % [
 						tick, squad, SelectionSquads.guard_last_reach_m, dist])
-			north = minf(north, p.z)
-			south = maxf(south, p.z)
-		print("HIS_CLICK guard tick %d: places span %.0f m north to south (today: ~100 m); relaid +%d fit %d reach %.0f m" % [
+			if p.distance_to(start) > 2.0:  # the front he reads is the squads that move; a holder stands where it stood
+				north = minf(north, p.z)
+				south = maxf(south, p.z)
+		print("HIS_CLICK guard tick %d: moved places span %.0f m north to south (today: ~100 m); relaid +%d fit %d reach %.0f m" % [
 				tick, south - north, SelectionSquads.guard_relaid - relaid_before, SelectionSquads.guard_last_fit, SelectionSquads.guard_last_reach_m])
-		assert_true(south - north < 70.0, "tick %d: no 100 m north-south front (%.0f m)" % [tick, south - north])
+		assert_true(south - north < 70.0 or north == INF, "tick %d: no 100 m north-south front (%.0f m)" % [tick, south - north])
 		_lab.dispose()
 		_lab = null
 		_controls.queue_free()

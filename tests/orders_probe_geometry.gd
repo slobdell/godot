@@ -76,7 +76,8 @@ func _after_order(units: Array) -> void:
 			"across_gap": across_gap, "guard": {"on": SelectionSquads.GROUP_GUARD, "relaid": SelectionSquads.guard_relaid,
 			"held": SelectionSquads.guard_held, "unlaid": SelectionSquads.guard_unlaid, "fit_capped": SelectionSquads.guard_fit_capped,
 			"restored": SelectionSquads.guard_restored,
-			"fit": SelectionSquads.guard_last_fit, "reach_m": snappedf(SelectionSquads.guard_last_reach_m, 0.1)}}))
+			"fit": SelectionSquads.guard_last_fit, "reach_m": snappedf(SelectionSquads.guard_last_reach_m, 0.1),
+			"step_m": snappedf(SelectionSquads.guard_last_step_m, 0.1)}}))
 
 
 func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
