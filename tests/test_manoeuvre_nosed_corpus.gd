@@ -13,26 +13,50 @@ const RIG_HALF_M := 7.0
 const CLEAR_M := 8.0
 const WATCH_S := 12
 const ORDER_M := 80.0
+const ON_MESH_M := 0.5  # round 45 (M1): a staged rig's centre is on the navmesh (the old pose 13 was 11.2 m off it, inside a building)
 ## [arena, container centre, container rotation deg, box half depth, which side of the box the rig stands on (+1 = its local +z
 ## side), the shape, the order's angle off the nose (deg, positive = left)]
 const POSES := [
+	# Round 45 (M1): six of round 44's fourteen poses were MIS-STAGED (found by the setup print below, `NOSED_TRACE=on`, and the on-mesh
+	# assertion in _run): 5 / 6 stood with the rig's tail 0.7 m from the Locks' hexagon wall (nothing could back up; pose 6's squadmates
+	# were outside the arena); 7's rear squadmates sat on the container_40 at (8, 64); 11 / 12 stood in the Crossing's far water channel
+	# (11 m off the navmesh); 13 stood inside the 40 m city block at (34, 33) (11 m off the navmesh, pinned by a building, so the look
+	# never fired). Bar B1's losses on 13, 6 and 10 were those poses, not the rule: 10 of its 21 "base-stuck" poses had no room to back
+	# into or no ground to stand on. Re-staged on containers with open ground (tests/manoeuvre/stage_check.py, then the on-mesh
+	# assertion); the four kept poses and his are unchanged.
 	["locks", Vector2(-42.0, 80.0), 5.0, 1.22, 1, "crawl", -45.0],    # his
 	["locks", Vector2(-42.0, 80.0), 5.0, 1.22, 1, "alone", -25.0],
 	["locks", Vector2(-42.0, 80.0), 5.0, 1.22, 1, "alone", 45.0],
 	["locks", Vector2(-30.0, 66.0), 357.0, 1.22, 1, "alone", -30.0],
 	["locks", Vector2(-30.0, 66.0), 357.0, 1.22, 1, "alone", 60.0],
-	["locks", Vector2(-120.0, 16.0), 2.0, 1.22, 1, "alone", -40.0],
-	["locks", Vector2(-120.0, 16.0), 2.0, 1.22, 1, "crawl", 60.0],
-	["crossing", Vector2(0.0, 40.0), 3.0, 1.22, 1, "crawl", 45.0],
+	["locks", Vector2(24.0, 80.0), 355.5, 1.22, 1, "alone", -40.0],    # was (-120, 16): the hexagon wall 0.7 m behind the tail
+	["locks", Vector2(24.0, 80.0), 355.5, 1.22, 1, "crawl", 60.0],     # was (-120, 16): the squadmates outside the arena
+	["crossing", Vector2(42.0, 80.0), 3.1, 1.22, 1, "crawl", 45.0],    # was (0, 40): the rear squadmates on the container at (8, 64)
 	["crossing", Vector2(0.0, 40.0), 3.0, 1.22, 1, "alone", -20.0],
 	["crossing", Vector2(-69.0, 36.0), 357.0, 1.22, 1, "alone", -35.0],
 	["crossing", Vector2(-69.0, 36.0), 357.0, 1.22, 1, "crawl", 50.0],
-	["crossing", Vector2(30.0, 4.0), 357.0, 1.22, -1, "alone", -45.0],
-	["crossing", Vector2(30.0, 4.0), 357.0, 1.22, -1, "crawl", -30.0],
-	["crossing", Vector2(24.0, 11.0), 355.0, 1.22, 1, "alone", 55.0],
+	["crossing", Vector2(58.0, 60.0), 2.8, 1.22, 1, "alone", -45.0],   # was (30, 4) side -1: in the far water channel
+	["crossing", Vector2(58.0, 60.0), 2.8, 1.22, 1, "crawl", -30.0],   # was (30, 4) side -1: in the far water channel
+	["crossing", Vector2(92.0, 50.0), 95.3, 1.22, 1, "alone", 35.0],   # was (24, 11): inside the city block at (34, 33); +55 deg put the order in the far water channel
 ]
-## The crawl shape's squadmates in the rig's frame (x: right, z: behind), his deploy around Guns_2.
-const CRAWL_MATES := [Vector2(-8.0, 1.0), Vector2(5.0, 1.0), Vector2(-5.0, 15.0), Vector2(1.5, 15.0)]
+## Round 45 (M1, R45.4): round 44's six mis-staged poses KEPT AS THEY WERE, as GUARD poses (NOSED_GUARD=on; rows carry "guard": true;
+## tests/manoeuvre/nosed_judge.py judges them apart): no back-up is possible on any of them (a wall 0.7 m behind the tail, a rig in
+## the water, a rig inside a building, squadmates on a container), so ON must be no later and touch walls no more than OFF. The bar
+## cannot pass by dropping the hard cases. The on-mesh assertion is not applied to them (they are off the mesh by construction).
+const GUARD_POSES := [
+	["locks", Vector2(-120.0, 16.0), 2.0, 1.22, 1, "alone", -40.0],   # the hexagon wall 0.7 m behind the tail
+	["locks", Vector2(-120.0, 16.0), 2.0, 1.22, 1, "crawl", 60.0],    # as above; the squadmates outside the arena
+	["crossing", Vector2(0.0, 40.0), 3.0, 1.22, 1, "crawl", 45.0],    # the rear squadmates on the container at (8, 64)
+	["crossing", Vector2(30.0, 4.0), 357.0, 1.22, -1, "alone", -45.0],  # in the far water channel
+	["crossing", Vector2(30.0, 4.0), 357.0, 1.22, -1, "crawl", -30.0],  # in the far water channel
+	["crossing", Vector2(24.0, 11.0), 355.0, 1.22, 1, "alone", 55.0],   # inside the city block at (34, 33)
+]
+## The crawl shape's squadmates in the rig's frame (x: right, z: behind) and their hulls: his deploy around Guns_2 (Guns_1 / Guns_3 War
+## Rigs beside it, Guns_4 a Gun Truck and Guns_5 a Resupply Tanker 15 m behind). Round 45 (M1): round 44 staged all four as War Rigs,
+## which put a 14 m hull's nose 1.0 m off the lead rig's tail (his real gap behind was 4.7-6.3 m): every crawl pose's back-up stalled
+## on it within half a metre (pose 10 ON: 0.5 m back, then still for the leg's timeout), which is the "second k-turn" B1 read on 10 / 6.
+const CRAWL_MATES := [[Vector2(-8.0, 1.0), "gang_tank"], [Vector2(5.0, 1.0), "gang_tank"], [Vector2(-5.0, 15.0), "gang_ifv"],
+		[Vector2(1.5, 15.0), "gang_support"]]
 ## Bar B1's FRESH poses (NOSED_SEEDS=a-b in the environment: one pose a seed): the pose jittered from its seed, the same in both arms: the spot
 ## +/- JITTER_ALONG_M along the box face, the nose gap NOSE_GAP_M +/- JITTER_GAP_M, the nose JITTER_YAW_DEG either way off square, the
 ## order's angle +/- JITTER_ANGLE_DEG. Unset: the 14 dev poses as listed (read already; never a bar).
@@ -47,6 +71,7 @@ var _lab: TacticsLab
 func teardown() -> void:
 	Traffic.set_off("backout", Traffic.DEFAULT_OFF.has("backout"))
 	BrainSwitches.native_drive = _native_drive_was
+	ManoeuvreCensus.trace_unit = ""
 	if _lab != null:
 		_lab.dispose()
 		_lab = null
@@ -82,7 +107,7 @@ static func jitter_of(pose_id: int, seed_value: int) -> Array:
 var _native_drive_was := BrainSwitches.native_drive
 
 
-func _run(pose_id: int, pose: Array, arm: String, seed_value := 0) -> Dictionary:
+func _run(pose_id: int, pose: Array, arm: String, seed_value := 0, guard := false) -> Dictionary:
 	Traffic.set_off("backout", arm == "off")
 	if OS.get_environment("NOSED_GDSCRIPT") == "on":
 		BrainSwitches.native_drive = false  # a dev read of a GDScript change before native's twin follows it
@@ -97,23 +122,56 @@ func _run(pose_id: int, pose: Array, arm: String, seed_value := 0) -> Dictionary
 	var names := ["Green_Guns_1"]
 	if String(pose[5]) == "crawl":
 		for i in CRAWL_MATES.size():
-			var o: Vector2 = CRAWL_MATES[i]
+			var o: Vector2 = CRAWL_MATES[i][0]
 			var at := Vector2(spot.x, spot.z) + right * o.x - forward * o.y
-			_lab.unit(Match.Team.GREEN, "Green_Guns_%d" % (i + 2), Vector3(at.x, 0.0, at.y), yaw, "gang_tank")
+			_lab.unit(Match.Team.GREEN, "Green_Guns_%d" % (i + 2), Vector3(at.x, 0.0, at.y), yaw, String(CRAWL_MATES[i][1]))
 			names.append("Green_Guns_%d" % (i + 2))
 	await _lab.start()
+	# Round 45 (M1): a pose is a rig on DRIVABLE GROUND nose-on to a box. The old pose 13 stood inside a city block (11.2 m off the mesh);
+	# nothing else in the row said so. Every rig of the pose stands within ON_MESH_M of the navmesh (the box's 2 m erosion allows a
+	# nose over the edge, never the centre).
+	var nav_map := rig.get_world_3d().navigation_map
+	for unit_name in (names if not guard else []):
+		var at := _lab.tank_of(unit_name).global_position
+		var nearest := Pathing.closest_point(nav_map, at)
+		assert_true(Vector2(nearest.x - at.x, nearest.z - at.z).length() < ON_MESH_M,
+				"pose %d seed %d: %s stands on the navmesh (%.2f m off at (%.1f, %.1f))" % [pose_id, seed_value, unit_name,
+				Vector2(nearest.x - at.x, nearest.z - at.z).length(), at.x, at.z])
 	Movement.reset_route_arms()
-	DoctrineTable.clear_cache()
-	var gangs: DoctrineTable = DoctrineTable.load_table("gangs").get("table")
-	var element := _lab.elements.form(names, "Guns", gangs)
 	var angle := deg_to_rad(float(pose[6]) + float(jitter[3]))
 	var dir := forward.rotated(-angle)  # positive = left of the nose (yaw's sense)
 	var to := Vector2(spot.x, spot.z) + dir * ORDER_M
 	to = Vector2(clampf(to.x, -125.0, 125.0), clampf(to.y, -125.0, 125.0))
+	# Round 45 (M1, dev only): NOSED_TRACE=on traces the rig (the k-turn planner's look / plan lines, `--turn-trace`'s rows) and
+	# prints the pose's setup (the spot and nose against the navmesh, the route's first points) and a NOSED_TICK row a tick for 3 s;
+	# NOSED_SETUP_ONLY=on prints the setup and the on-mesh check of every pose without driving (the corpus' geometry in two minutes).
+	var dev_trace := OS.get_environment("NOSED_TRACE") == "on"
+	var setup_only := OS.get_environment("NOSED_SETUP_ONLY") == "on"
+	if dev_trace or setup_only:
+		if dev_trace:
+			ManoeuvreCensus.trace_unit = "Green_Guns_1"
+		var nose_pt: Vector3 = rig.global_position - rig.global_basis.z * RIG_HALF_M
+		var route := Pathing.find_path(rig, rig.global_position, Vector3(to.x, 0.0, to.y))
+		var pts: Array = []
+		for k in mini(4, route.size()):
+			pts.append([snappedf(route[k].x, 0.1), snappedf(route[k].z, 0.1)])
+		print("NOSED_SETUP pose %d %s spot (%.1f, %.1f) yaw %.0f nose (%.1f, %.1f) to (%.1f, %.1f) | spot->mesh %.2f m nose->mesh %.2f m | route %d pts %s" % [
+				pose_id, arm, spot.x, spot.z, rad_to_deg(yaw), nose_pt.x, nose_pt.z, to.x, to.y,
+				Vector2(spot.x, spot.z).distance_to(Vector2(Pathing.closest_point(nav_map, spot).x, Pathing.closest_point(nav_map, spot).z)),
+				Vector2(nose_pt.x, nose_pt.z).distance_to(Vector2(Pathing.closest_point(nav_map, nose_pt).x, Pathing.closest_point(nav_map, nose_pt).z)),
+				route.size(), str(pts)])
+	if setup_only:
+		_lab.dispose()
+		_lab = null
+		return {"pose": pose_id, "arm": arm, "clear_tick": -2}
+	DoctrineTable.clear_cache()
+	var gangs: DoctrineTable = DoctrineTable.load_table("gangs").get("table")
+	var element := _lab.elements.form(names, "Guns", gangs)
 	element.assign({"verb": "move", "to": [to.x, to.y], "drills": false})
 	var first_reverse := -1
 	var cleared := -1
 	var crept := 0.0
+	var contact_ticks := 0  # round 45 (R45.4): the rig's wall-contact ticks in the watch (the guard poses' line)
 	var yield_ticks := 0  # R44.12: the rig's yielding ticks and blocked-by-a-friend ticks in its first 6 s (the base row's stuck test)
 	var blocked_friend_ticks := 0
 	var nose0 := -rig.global_basis.z
@@ -131,8 +189,19 @@ func _run(pose_id: int, pose: Array, arm: String, seed_value := 0) -> Dictionary
 	for i in WATCH_S * SimClock.TICK_RATE:
 		await _lab.step()
 		var along := rig.real_velocity.dot(-rig.global_basis.z)
+		if dev_trace and (i < 3 * SimClock.TICK_RATE or i % 30 == 0):
+			var brain := mover.ctl as TankBrain
+			var goal_txt := "?"
+			if brain != null and not brain.order.is_empty() and brain.order.get("goal") is Vector3:
+				goal_txt = "(%.1f, %.1f)" % [brain.order["goal"].x, brain.order["goal"].z]
+			print("NOSED_TICK %d at (%.2f, %.2f) along %.2f v %.2f phase %s steer %s goal %s mgoal (%.1f, %.1f) kturn %s/%.1f bo_leg %s looks %d touch %s" % [
+					i + 1, rig.global_position.x, rig.global_position.z, along, rig.speed(), mover.phase, str(mover.steer_to), goal_txt,
+					mover._goal.x, mover._goal.z, mover._kturn_plan_kind, mover._kturn_left_m, str(mover._backout_leg),
+					int(Movement.route_arms().get("backout_looks", 0)), str(mover.contact.touching)])
 		if first_reverse < 0 and along < -0.5:
 			first_reverse = i + 1
+		if mover.contact.touching:
+			contact_ticks += 1
 		if first_reverse < 0:
 			crept = maxf(crept, (rig.global_position - spot).dot(nose0))
 		if i < 6 * SimClock.TICK_RATE:
@@ -147,7 +216,8 @@ func _run(pose_id: int, pose: Array, arm: String, seed_value := 0) -> Dictionary
 			"seed": seed_value, "jitter": [snappedf(jitter[0], 0.1), snappedf(jitter[1], 0.1), snappedf(jitter[2], 0.1), snappedf(jitter[3], 0.1)],
 			"first_reverse": first_reverse, "crept_m": snappedf(crept, 0.01), "looks": int(Movement.route_arms().get("backout_looks", 0)),
 			"yield_ticks_6s": yield_ticks, "blocked_friend_ticks_6s": blocked_friend_ticks,
-			"kturns": int(Movement.route_arms().get("kturns", 0)),
+			"kturns": int(Movement.route_arms().get("kturns", 0)), "stalls": int(Movement.route_arms().get("backout_stalls", 0)),
+			"contact_ticks": contact_ticks, "guard": guard,
 			"nose_room_m": snappedf(nose_room, 0.1), "depart_deg": snappedf(depart_deg, 1.0), "native_drive": BrainSwitches.native_drive}
 	print("NOSED_ROW " + JSON.stringify(row))
 	_lab.dispose()
@@ -161,18 +231,24 @@ func test_the_staged_nose_on_corpus_runs_both_arms() -> void:
 		return
 	# NOSED_SEEDS=a-b (Bar B1's fresh poses): seed s runs pose (s - a) mod POSES.size(), jittered by s; unset: the 14 dev poses.
 	var cells: Array = []
+	var guard := OS.get_environment("NOSED_GUARD") == "on"  # round 45 (R45.4): the guard poses instead of the deciding ones
+	var table: Array = GUARD_POSES if guard else POSES
 	var seeds_text := OS.get_environment("NOSED_SEEDS")
 	if seeds_text != "":
 		var parts := seeds_text.split("-")
 		for s in range(int(parts[0]), int(parts[parts.size() - 1]) + 1):
-			cells.append([(s - int(parts[0])) % POSES.size(), s])
+			cells.append([(s - int(parts[0])) % table.size(), s])
+	elif OS.get_environment("NOSED_POSES") != "":
+		for part in OS.get_environment("NOSED_POSES").split(","):  # round 45 (M1): one or a few dev poses, e.g. NOSED_POSES=13
+			cells.append([int(part), 0])
 	else:
-		for i in POSES.size():
+		for i in table.size():
 			cells.append([i, 0])
 	var rows := 0
+	var arms := ["off"] if OS.get_environment("NOSED_SETUP_ONLY") == "on" else ["off", "on"]
 	for cell in cells:
-		for arm in ["off", "on"]:
-			var row := await _run(int(cell[0]), POSES[int(cell[0])], arm, int(cell[1]))
+		for arm in arms:
+			var row := await _run(int(cell[0]), table[int(cell[0])], arm, int(cell[1]), guard)
 			rows += 1
 			assert_true(int(row["clear_tick"]) != 0, "pose %d seed %d %s produced a row" % [cell[0], cell[1], arm])
-	assert_eq(rows, cells.size() * 2, "every pose ran in both arms")
+	assert_eq(rows, cells.size() * arms.size(), "every pose ran in both arms")

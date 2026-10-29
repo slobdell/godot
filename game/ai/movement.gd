@@ -398,7 +398,7 @@ static func route_arms() -> Dictionary:
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
-			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks, "parkedpass_refusals": parkedpass_refusals,
+			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks, "backout_stalls": backout_stalls, "parkedpass_refusals": parkedpass_refusals,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_settled_passes": chain_settled_passes, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
@@ -416,6 +416,7 @@ static func reset_route_arms() -> void:
 	kturn_goal_moved = 0
 	parkaside_moved = 0
 	backout_looks = 0
+	backout_stalls = 0
 	parkedpass_refusals = 0
 	behind_asked = 0
 	behind_reverses = 0
@@ -5507,7 +5508,17 @@ const BACKOUT_MOVED_M := 1.0
 const BACKOUT_RUN_STEP_M := 1.0
 const BACKOUT_ROOM_M := 2.0
 const BACKOUT_NOSED_M := 4.0
+## Round 45 (manoeuvre M2): a departure look's leg that is not moving its way (real motion along the nose in the leg's gear under
+## BACKOUT_STALL_MPS while the plant is asked for KTURN_ROLLING_SPEED or more) for BACKOUT_STALL_TICKS ends as "stalled" instead of
+## standing until its timeout (1.5 s a metre + 1 s: pose 10 of the staged corpus stood 5 s against the squadmate behind it).
+## Round 45 (M2): the air a departure look keeps between footprints (its oriented-box hull test). Manoeuvre.HULL_MARGIN_M (1.0) was
+## the centre disc's allowance; between boxes it refused every back-up on lock with a squadmate 1.7 m beside (the tail's swing at 1.5
+## m back is 0.85 m: the staged corpus' crawl poses, his own deploy's Guns_3 at 4.8 m).
+const BACKOUT_HULL_GAP_M := 0.5
+const BACKOUT_STALL_MPS := 0.1
+const BACKOUT_STALL_TICKS := SimClock.TICK_RATE / 2
 static var backout_looks := 0  # k-turn decisions made against the departure point (measurement)
+static var backout_stalls := 0  # departure legs ended as stalled (measurement)
 var _backout_goal := Vector3.INF   # the final goal the window was opened for
 var _backout_tick := 0
 var _backout_point := Vector3.INF  # the departure point, read from _backout_from
@@ -5515,14 +5526,72 @@ var _backout_from := Vector3.INF
 
 
 var _backout_leg := false  # a k-turn planned from a departure look is under way (it runs to its end whatever steering says)
+var _backout_stall_ticks := 0  # round 45 (M2): ticks the departure leg has been asked to move without moving (exec_fields)
 ## The other hulls a departure look's back-up search stops at, set and read within one _planned_reverse call (a static scratch,
-## not per-crew state: nothing for exec_fields.h; empty = today's search).
+## not per-crew state: nothing for exec_fields.h; empty = today's search). Round 45 (M2): rows of `_backout_hulls` (oriented boxes).
 static var _departure_hulls: Array = []
 
 
-## Round 44 (M2): on a departure look, would the hull centred at `at` come too near another hull (Manoeuvre._hull_hit's disc)?
-func _departure_hull_hit(at: Vector3, frame: Array, from: Vector3) -> bool:
-	return not _departure_hulls.is_empty() and Manoeuvre._hull_hit(at, frame, _departure_hulls, from) != ""
+## Round 44 (M2): on a departure look, would the hull at (`at`, `heading`) come too near another hull? Round 45 (M2): the other hulls
+## as ORIENTED BOXES, not Manoeuvre._hull_hit's centre disc. The disc (half this hull's length beyond the two half-widths) sees a
+## hull beside; it cannot see a 14 m hull straight behind until the centres are ~7 m apart, so a War Rig with a squadmate's nose 1 m
+## off its tail read "2 m of clear run behind" and planned a 5.5 m back-up into it (the staged corpus' crawl poses, round 44 B1's
+## 10 / 6 losses). A hit = the boxes come within Manoeuvre.HULL_MARGIN_M of each other AND nearer than the start pose was (as the
+## disc's rule: a squadmate parked beside the start is not in the way of a leg that keeps its distance).
+func _departure_hull_hit(at: Vector3, heading: Vector3, frame: Array) -> bool:
+	for row: Array in _departure_hulls:
+		var gap := _box_gap(at, heading, float(frame[0]), float(frame[1]), Vector3(float(row[0]), 0.0, float(row[1])),
+				Vector3(float(row[4]), 0.0, float(row[5])), float(row[2]), float(row[3]))
+		if gap < BACKOUT_HULL_GAP_M and gap < float(row[6]) - 0.25:
+			return true
+	return false
+
+
+## The other live hulls as rows [x, z, half width, half length, forward x, forward z, gap from this hull's start pose] for a
+## departure look (see _departure_hull_hit).
+func _backout_hulls(here: Vector3, forward: Vector3) -> Array:
+	var out: Array = []
+	if ctl.tanks_root == null:
+		return out
+	var frame := _kturn_frame(ctl.tank)
+	for node: Node in ctl.tanks_root.get_children():
+		var other := node as Tank
+		if other == null or other == ctl.tank or not other.is_alive():
+			continue
+		var theirs: Array = hull_box(other.unit_id)
+		var their_forward := Vector3(-other.global_basis.z.x, 0.0, -other.global_basis.z.z).normalized()
+		var row := [other.global_position.x, other.global_position.z, float(theirs[0]) * 0.5, float(theirs[2]) * 0.5,
+				their_forward.x, their_forward.z, 0.0]
+		row[6] = _box_gap(here, forward, float(frame[0]), float(frame[1]), other.global_position, their_forward, float(row[2]), float(row[3]))
+		out.append(row)
+	return out
+
+
+## The separation of two flat oriented boxes (centre, forward, half width, half length): the largest gap along the four edge normals
+## (a lower bound on their distance; negative = they overlap on every axis, i.e. they overlap).
+static func _box_gap(a_at: Vector3, a_fwd: Vector3, a_hw: float, a_hl: float, b_at: Vector3, b_fwd: Vector3, b_hw: float, b_hl: float) -> float:
+	var a_right := Vector2(a_fwd.z, -a_fwd.x)
+	var b_right := Vector2(b_fwd.z, -b_fwd.x)
+	var a_corners := _box_corners(Vector2(a_at.x, a_at.z), Vector2(a_fwd.x, a_fwd.z), a_right, a_hw, a_hl)
+	var b_corners := _box_corners(Vector2(b_at.x, b_at.z), Vector2(b_fwd.x, b_fwd.z), b_right, b_hw, b_hl)
+	var best := -INF
+	for axis: Vector2 in [Vector2(a_fwd.x, a_fwd.z), a_right, Vector2(b_fwd.x, b_fwd.z), b_right]:
+		var a_min := INF
+		var a_max := -INF
+		var b_min := INF
+		var b_max := -INF
+		for c: Vector2 in a_corners:
+			a_min = minf(a_min, c.dot(axis))
+			a_max = maxf(a_max, c.dot(axis))
+		for c: Vector2 in b_corners:
+			b_min = minf(b_min, c.dot(axis))
+			b_max = maxf(b_max, c.dot(axis))
+		best = maxf(best, maxf(b_min - a_max, a_min - b_max))
+	return best
+
+
+static func _box_corners(at: Vector2, fwd: Vector2, right: Vector2, hw: float, hl: float) -> Array:
+	return [at + fwd * hl + right * hw, at + fwd * hl - right * hw, at - fwd * hl + right * hw, at - fwd * hl - right * hw]
 
 
 
@@ -5583,12 +5652,14 @@ func _backout_look(here: Vector3, forward: Vector3, to: Vector3) -> Vector3:
 ## for the rest (`departure_look` in _planned_reverse): the risk the look must not take is a crew reversing into the squadmate behind it.
 func _backout_run_clear(here: Vector3, forward: Vector3) -> bool:
 	var frame := _kturn_frame(ctl.tank)
-	var others := Manoeuvre._others(self)
+	_departure_hulls = _backout_hulls(here, forward)  # round 45 (M2): the oriented boxes (a hull straight behind is seen)
 	var backed := BACKOUT_RUN_STEP_M
 	while backed <= BACKOUT_ROOM_M:
-		if Manoeuvre._hull_hit(here - forward * backed, frame, others, here) != "":
+		if _departure_hull_hit(here - forward * backed, forward, frame):
+			_departure_hulls = []
 			return false
 		backed += BACKOUT_RUN_STEP_M
+	_departure_hulls = []
 	return true
 
 
@@ -5601,8 +5672,13 @@ func _backout_near_m() -> float:
 ## mover's own goal.
 func _backout_final_goal() -> Variant:
 	var brain := ctl as TankBrain
-	if brain != null and not brain.order.is_empty() and brain.order.get("goal") is Vector3:
-		return brain.order["goal"]
+	if brain != null:
+		# Round 45 (M2): a brain crew with no order has nothing to depart for. Before this the mover's own `_goal` stood in, and on the
+		# tick before an element's first order reached its crews the look planned a 2.5 m back-and-fill toward a stale goal (the
+		# staged corpus, pose 7: +3.4 s), which the real order then had to live with (`_backout_leg` runs a leg to its end).
+		if not brain.order.is_empty() and brain.order.get("goal") is Vector3:
+			return brain.order["goal"]
+		return null
 	return _goal if _goal != Vector3.INF else null
 
 
@@ -5627,11 +5703,50 @@ func _backout_departure(here: Vector3) -> Variant:
 			return null
 		_backout_from = here
 		_backout_point = Vector3((final as Vector3).x, 0.0, (final as Vector3).z)
+		# Round 45 (M2): a crew whose squad travels as a formation drives where its STATION goes, which rides the element's transit
+		# route, not the crew's own path to its final seat. Round 44 read the crew's own path: on the staged crawl poses 0 and 7 that
+		# left the box round one end while the squad's route left round the other, so the rig backed out, swung the wrong way and
+		# k-turned again (+1.6 / +3.4 s): the "second k-turn" B1 read. The departure point is the first point of the squad's route
+		# ahead of the anchor at least a hull's length from the crew; a crew with no transit (alone, or the squad already arrived)
+		# reads its own path as before.
+		var squad_route: Array = _backout_squad_route()
+		if not squad_route.is_empty():
+			_backout_point = Vector3((squad_route[-1] as Vector3).x, 0.0, (squad_route[-1] as Vector3).z)
+			for point: Vector3 in squad_route:
+				if _flat_distance(here, point) >= reach:
+					_backout_point = Vector3(point.x, 0.0, point.z)
+					break
+			return _backout_point
 		for point in Pathing.find_path(ctl.tank, here, final as Vector3):
 			if _flat_distance(here, point) >= reach:
 				_backout_point = Vector3(point.x, 0.0, point.z)
 				break
 	return _backout_point
+
+
+## Round 45 (M2): the points of this crew's element's transit route from the anchor's progress on (`Element.transit`: "route", "s"),
+## [] when the crew has no element in transit.
+func _backout_squad_route() -> Array:
+	var brain := ctl as TankBrain
+	if brain == null or brain.game_match == null:
+		return []
+	var elements: Variant = Elements.of_match(brain.game_match)
+	var mine: Variant = elements.of(String(ctl.tank.name)) if elements != null else null
+	if mine == null or not mine.in_transit():
+		return []
+	var transit: Dictionary = mine.transit
+	var route: Array = transit.get("route", [])
+	if route.size() < 2:
+		return []
+	var s := float(transit.get("s", 0.0))
+	var out: Array = []
+	var along := 0.0
+	for i in route.size():
+		if i > 0:
+			along += _flat_distance(route[i - 1], route[i])
+		if along >= s or i == route.size() - 1:
+			out.append(route[i])
+	return out
 
 
 static func kturn_goal_on() -> bool:
@@ -5718,6 +5833,18 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		# leg's opposite throttle brakes the hull to rest AT the planned end rather than ~2 m past it (N1/N3: a rig's
 		# forward leg at 5.7 m/s ended 0.25 m from the clear reach and the reverse leg began with the nose going in).
 		var reached := backed + _kturn_stopping() >= _kturn_left_m
+		# Round 45 (manoeuvre M2, `backout`): a departure look's leg pressed against something its look could not see (a hull that
+		# arrived behind it) ends as "stalled" after BACKOUT_STALL_TICKS without moving its way, instead of standing until the leg's
+		# timeout; the next look (within the order's window) then reads the hull. Only backout's own legs (OFF and every other leg:
+		# today's, byte for byte).
+		var stalled := false
+		if _backout_leg:
+			var nose_motion := tank.real_velocity.dot(Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()) * float(_kturn_gear)
+			if tank.speed() * _kturn_gear > KTURN_ROLLING_SPEED and nose_motion < BACKOUT_STALL_MPS:
+				_backout_stall_ticks += ctl._step
+			else:
+				_backout_stall_ticks = 0
+			stalled = _backout_stall_ticks >= BACKOUT_STALL_TICKS
 		if ManoeuvreCensus.trace_unit == String(tank.name):
 			# Measurement only (`--turn-trace=<unit>`): round 30's scratch leg print, kept (the arc v the chord, per tick).
 			print("MANOEUVRE_TRACE leg f %d gear %d rolling %s backed %.2f chord %.2f stop %.2f left %.1f v %.2f real %.2f reached %s" % [
@@ -5739,9 +5866,13 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		if reached and not _kturn_legs.is_empty():
 			_kturn_end("next")
 			_kturn_start_leg(_kturn_legs.pop_front())  # the next leg of a back-and-fill, from where this one ended
-		elif reached or _kturn_timeout <= 0.0 or lead_hit:
-			_kturn_end("done" if reached else ("lead_hit" if lead_hit else "timeout"))
+		elif reached or _kturn_timeout <= 0.0 or lead_hit or stalled:
+			_kturn_end("done" if reached else ("lead_hit" if lead_hit else ("stalled" if stalled else "timeout")))
 			_kturn_check = 0
+			if stalled:
+				backout_stalls += 1
+				if ManoeuvreCensus.trace_unit == String(tank.name):
+					print("MANOEUVRE_TRACE backout leg f %d STALLED after %.2f m (left %.1f)" % [Engine.get_physics_frames(), backed, _kturn_left_m])
 			if not reached:
 				kturn_aborted += 1
 				_kturn_check = KTURN_RETRY_TICKS
@@ -5807,7 +5938,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		print("MANOEUVRE_TRACE planner look f %d v %.2f inside %s err %.0f" % [Engine.get_physics_frames(), tank.speed(),
 				_inside_circle(here, forward, waypoint), rad_to_deg(error)])
 	# Round 44 (M2): a departure look's back-up (the circle plan's or the single's) stops at any other hull (`_departure_hulls`).
-	_departure_hulls = Manoeuvre._others(self) if departure_look else []
+	_departure_hulls = _backout_hulls(here, forward) if departure_look else []  # round 45 (M2): oriented boxes
 	if circle_plan_on() and _away_here() and absf(tank.speed()) < KTURN_CIRCLE_SPEED and _inside_circle(here, forward, waypoint):
 		# Round 31 (planner CP-P1, R31.2): the lattice planner's seam, where the circle plan would be made (`--nav-off=planner`).
 		# Round 44 (M2): not for a departure look: the seam holds the hull while it searches and refuses the route's vertex as
@@ -5881,10 +6012,10 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 		heading = TankMotion.turn_heading(heading, KTURN_BACK_STEP_M * turn / radius)
 		at -= heading * KTURN_BACK_STEP_M
 		backed += KTURN_BACK_STEP_M
-		if not _outline_ok(map, frame, at, heading, start) or _departure_hull_hit(at, frame, here):
+		if not _outline_ok(map, frame, at, heading, start) or _departure_hull_hit(at, heading, frame):
 			blocked_at = backed
 			if ManoeuvreCensus.trace_unit == String(tank.name):
-				print("MANOEUVRE_TRACE single search blocked at %.1f m back (%s)" % [backed, "hull" if _departure_hull_hit(at, frame, here) else "navmesh"])
+				print("MANOEUVRE_TRACE single search blocked at %.1f m back (%s)" % [backed, "hull" if _departure_hull_hit(at, heading, frame) else "navmesh"])
 			break  # the hull would hit what is behind (or swing its nose into what is beside): no further back
 		if _arc_hit(map, frame, at, heading, turn, waypoint, start) == INF:
 			_kturn_turn = turn
@@ -6016,9 +6147,10 @@ func _plan_circle(cmd: TankCommand, map: RID, frame: Array, here: Vector3, forwa
 	var backed := 0.0
 	while backed < KTURN_BACK_MAX_M:
 		var next := _fill_step(at, heading, -1, turn, radius, KTURN_BACK_STEP_M)
-		if not _outline_ok(map, frame, next[0], next[1], start) or _departure_hull_hit(next[0], frame, here):
+		if not _outline_ok(map, frame, next[0], next[1], start) or _departure_hull_hit(next[0], next[1], frame):
 			if ManoeuvreCensus.trace_unit == String(ctl.tank.name):
-				print("MANOEUVRE_TRACE circle plan refused: blocked behind at %.1f m" % (backed + KTURN_BACK_STEP_M))
+				print("MANOEUVRE_TRACE circle plan refused: blocked behind at %.1f m (%s)" % [backed + KTURN_BACK_STEP_M,
+						"hull" if _departure_hull_hit(next[0], next[1], frame) else "navmesh"])
 			return false  # a wall behind before the point leaves the circle: the reactive rules, as before
 		at = next[0]
 		heading = next[1]
@@ -6197,6 +6329,7 @@ static func fill_on() -> bool:
 ## Start driving one leg, Vector2(gear, metres), from where the hull is now.
 func _kturn_start_leg(leg: Vector2) -> void:
 	native_stale |= STALE_ALL  # round 27 (native E5b): a door into the owned state (the planner, or a test that sets up a leg)
+	_backout_stall_ticks = 0  # round 45 (M2): read only on a departure look's leg
 	_kturn_gear = int(leg.x)
 	_kturn_left_m = leg.y
 	_kturn_from = ctl.tank.global_position
@@ -6258,7 +6391,10 @@ func _plan_fill(map: RID, frame: Array, here: Vector3, forward: Vector3, turn: f
 		while travelled < KTURN_FILL_LEG_MAX_M:
 			var next := _fill_step(at if poses.is_empty() else poses[-1][0], heading if poses.is_empty() else poses[-1][1],
 					gear, turn, radius, KTURN_BACK_STEP_M)
-			if not _outline_ok(map, frame, next[0], next[1], start):
+			# Round 45 (M2): on a departure look the fill's legs stop at any other hull too (`_departure_hulls`; empty otherwise, so
+			# today's fill is untouched): the single search had refused a 1.5 m back-up for the squadmate beside, and the fill then
+			# planned 2.5 m of it (pose 7).
+			if not _outline_ok(map, frame, next[0], next[1], start) or _departure_hull_hit(next[0], next[1], frame):
 				break
 			poses.append(next)
 			travelled += KTURN_BACK_STEP_M

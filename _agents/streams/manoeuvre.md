@@ -61,3 +61,79 @@ Nothing at launch.
 ## Status
 
 _(the worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Session start 2026-10-29 ~09:50 PDT (Fable, `godot-manoeuvre-68`). Starting commit 8d59b2bdf = main at launch (code a93271a66 GREEN
+builder0 3446/0; no baseline check re-run, per the contract). Orchestrator session: `godot-b8`. builder0 has NO godot-manoeuvre folder
+(a cold import on the first remote run: watched); builder2 (up at launch) has `godot-manoeuvre` + `-light` warm.**
+
+### Plan (smallest foundation first; the brief's order kept)
+
+1. **M1** pose 13: trace the look's gates on the dev pose (local GDScript drive, `NOSED_POSES=13 NOSED_TRACE=on`, new dev-only env
+   switches in the corpus test); fix on the dev pose; audit every dev pose's staging the same way.
+2. **M2** the crossing crawl (poses 10 / 6): trace the second k-turn ON; back out against the vertex the drive then takes.
+3. **M3** native twin request to the orchestrator (C45.4) the hour M1 + M2 are committed; EQUAL + the default orders probe 60/60.
+4. **M4** Bar B2 FILED before any number on 11149-11196 (B1's shape; orders' G2 places and engage's authority probe as guards, C45.3);
+   gate check on the frozen tree; series on builder2.
+5. **M5** S v4 (11401-11448): S v3's wedged guard traced by removal first. **M6** A6 v4 (reserve). Stretch: backout on grouped squads.
+
+### M1 (2026-10-29 ~10:40 PDT): pose 13 never looked because it stood INSIDE A BUILDING; six of the 14 poses were mis-staged
+
+- **Cause (laptop, GDScript drive, 8d59b2bdf + the test's new `NOSED_POSES=13 NOSED_TRACE=on` dev switches):** pose 13's rig spot
+  (24.9, 21.2) lies inside the Crossing's 40 m city block at (34, 33) (x 14-54, z 13-53): 11.18 m off the navmesh, nose 6.13 m off,
+  the route's first point 15.8 m away (the look's "steering point within a hull's length" gate refuses), pinned by the building
+  (`touch true` from tick 3, `speed()` climbing to 11.9 m/s while it stood). Not a container pose at all.
+- **The audit of all 14 dev poses** (`NOSED_SETUP` rows: the spot's and nose's distance to the mesh, the route's first points; then
+  `tests/manoeuvre/stage_check.py`, a hexagon / water / prop-overlap checker): **5 / 6** (Locks (-120, 16)): the hexagon wall 0.7 m
+  behind the tail ("circle plan refused: blocked behind at 0.5 m" in every look; pose 6's squadmates outside the arena); **7**
+  (Crossing (0, 40) crawl): the rear squadmates on the container at (8, 64); **11 / 12** (Crossing (30, 4) side -1): in the far water
+  channel, 11.08 m off the mesh; **13** as above. So **10 of Bar B1's 21 "base-stuck" poses (13 x3, 5 x4, 6 x3) could not be won by any
+  back-up**, and B1's 71 % was read on a corpus where a third of the deciding poses were impossible.
+- **The crawl shape overstated his deploy:** all four squadmates were staged as 14 m War Rigs, which puts a squadmate's nose 1.0 m off
+  the lead rig's tail; his deploy had Guns_4 (Gun Truck, 3.44 m) and Guns_5 (Tanker, 6.58 m) there, gaps 6.3 / 4.7 m. Pose 10 ON
+  (crawl +50): the look fired at tick 1, the circle plan said back 5.5 m, the rig backed 0.5 m onto the squadmate and stood until
+  the leg's timeout (~5 s; `MANOEUVRE_TRACE leg ... backed 0.51 ... real 0.00` from f 3850 to f 3980+): that is B1's "back-up then a
+  second k-turn" on 10 / 6 (+1.7 to +5.3 s).
+- **Two rule defects under it, fixed behind `--traffic-on=backout` (OFF byte for byte):** (a) the look's "2 m clear behind" and the
+  plan's hull test used `Manoeuvre._hull_hit`'s centre disc (half this hull's length beyond the half-widths): it sees a hull beside,
+  never a 14 m hull straight behind until the centres are ~7 m apart, so a nose 1 m off the tail read clear. Now
+  `Movement._departure_hull_hit` tests ORIENTED BOXES (`_box_gap`, the separating-axis gap, hit when within HULL_MARGIN_M and
+  nearer than the start pose). (b) a departure leg that does not move its way (real motion < 0.1 m/s while asked for >= 0.3 m/s)
+  for 0.5 s ends as `stalled` (counter `backout_stalls`, new per-crew `_backout_stall_ticks`: an exec field for native's twin)
+  instead of standing to its timeout. (b) touches the leg driver native runs in C++: M3.
+- **The corpus re-staged (test only):** poses 5 -> Locks (24, 80) alone -40; 6 -> Locks (24, 80) crawl +60; 7 -> Crossing (42, 80)
+  crawl +45; 11 / 12 -> Crossing (58, 60) alone -45 / crawl -30; 13 -> Crossing (92, 50) alone +35 (+55 put the order in the water);
+  the crawl squadmates' hulls = his deploy; `ON_MESH_M` assertion (every rig of a pose within 0.5 m of the mesh) in `_run`;
+  `NOSED_SETUP_ONLY=on` prints the geometry of all 14 in 75 s (laptop). All 14: spot 0.00 m off the mesh, nose 0.28-0.56 m
+  into the box's clearance band. **Bar B2 names this corpus change in its filing (C45.1: the deciding workload changed before any
+  B2 number; B1's floor / lines unchanged).**
+- Stretch note from engage via the orchestrator (R45.2): a one-crew squad's swarm / coil slot sits ~5 m off his click
+  (`tactics_formation.offsets_at`); after M4, not before.
+
+### Dev reads of the re-staged corpus with the fixes (builder2 light, `godot-manoeuvre-light`, GDScript drive, `NOSED_TRACE=on`; never a bar)
+
+- **Dev read 1 (uncommitted tree = 8d59b2bdf + the fixes, box margin 1.0 m, ~17:25 builder2 clock):** `make remote` (REMOTE_HOST
+  builder2, light) `test FILTER=test_manoeuvre_ NOSED_CORPUS=on NOSED_GDSCRIPT=on NATIVE=off`: **78 passed / 0 failed**, no SCRIPT
+  ERROR (every test_manoeuvre_* file + the corpus). His start (the lab stage, GDScript drive): OFF forward t12 / reverse t46 / crept
+  0.62 m / past the box t144; **ON reverse t4 / crept 0.0 / past the box t97** (round 44: t99-102). The 14 dev poses (unjittered):
+  base-stuck 3 (poses 5, 8, 10), ON sooner in 3 / 3 (-3.0, -3.9, -3.9 s; pose 10 = the crossing crawl B1 lost: clear t360 -> t243,
+  reverse t49 -> t4, no stall); the other 11: median +0.03 s, worst **+3.4 s on pose 7** (FAILS the +3 s ceiling). Read of pose 7 ON:
+  (i) the look fired on TICK 1, before the element's order had reached the crew, against the mover's stale `_goal` (0, -90) (the lab's
+  standing default), planned a 2.5 m back + 1 m forward fill toward it, and the leg ran to its end under the real order; (ii) the
+  single search had refused 1.5 m back for the squadmate 1.7 m beside (the 1.0 m box margin: the tail swings 0.85 m at 1.5 m back),
+  and the back-and-fill fallback then planned 2.5 m of it (the fill's steps did not test the departure hulls). Poses 0 / 10 / 12 also
+  read "blocked behind at 1.5 m (hull)" from the squadmate beside. **Changed (dev read 2 running):** `_backout_final_goal` reads a
+  brain's order only (no `_goal` stand-in); the fill's steps test `_departure_hull_hit`; the box margin is `BACKOUT_HULL_GAP_M` 0.5 m
+  (half a metre of air between footprints; 1.0 was the disc's allowance).
+
+- **Dev read 2 (the three refinements; builder2 light ~17:55):** 78 / 0 again; his start ON reverse t4 / past the box **t93** (OFF t144).
+  Pose 10 (the crossing crawl B1 lost): **clear t360 -> t95 (-8.8 s)**, no stall needed (the box test saw the squadmate, the circle
+  plan backed 1.5 m, away 2.5 m). Base-stuck 3 / 3 sooner (median -3.9 s). Cost ceiling still FAILS on **pose 7 (+3.4 s)**, pose 0
+  +1.6 s: the trace shows the brief's M2 hypothesis exactly: the look aligned the rig toward its OWN route's first vertex (east round
+  the box, err -38) while the squad's STATION then rode the element's transit route round the box's WEST end (steer (29, 74), err
+  +52), so a second k-turn followed. **Changed (dev read 3 running):** `_backout_departure` reads the element's transit route
+  (`Element.transit["route"]` from the anchor's `s` on; the first point a hull's length from the crew) when the squad is in transit;
+  a crew without one (alone, or arrived) reads its own path as before. GDScript only (the look is a callback from the C++ drive).
+
+Decisions so far: dev reads run on the laptop's GDScript drive under `flock /tmp/tank-squad-laptop-godot.lock` (one pose pair ~1 min;
+nothing of the lead's runs while he is away); every judged number comes from a builder.
+

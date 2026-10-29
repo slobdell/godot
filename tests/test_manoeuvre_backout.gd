@@ -22,8 +22,12 @@ const WATCH_S := 8
 var _lab: TacticsLab
 
 
+var _native_drive_was := BrainSwitches.native_drive
+
+
 func teardown() -> void:
 	Traffic.set_off("backout", Traffic.DEFAULT_OFF.has("backout"))
+	BrainSwitches.native_drive = _native_drive_was
 	ManoeuvreCensus.trace_unit = ""
 	if _lab != null:
 		_lab.dispose()
@@ -33,6 +37,8 @@ func teardown() -> void:
 
 func _run(arm: String) -> Dictionary:
 	Traffic.set_off("backout", arm == "off")
+	if OS.get_environment("NOSED_GDSCRIPT") == "on":
+		BrainSwitches.native_drive = false  # round 45: a dev read of a GDScript change before native's twin follows it
 	_lab = TacticsLab.create(self, 56416, "locks")
 	var rig: Tank = null
 	for unit_name: String in SQUAD:

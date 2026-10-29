@@ -7,6 +7,9 @@ pinning it is not the box); both read from the base row. A pose over 6 s WITH su
 window counts as the window's end. Deciding (on the base-stuck poses, floor STUCK_FLOOR): ON clears sooner in >= WIN_SHARE of them
 and the median gain is MEDIAN_S or better. The cost ceiling (on the other poses): every pose ON <= OFF + CEIL_S, and the median
 <= CEIL_MEDIAN_S. Reported per pose: the first reversing tick, the metres crept before it, the pose's nose room and route angle.
+Round 45 (M1, R45.4): GUARD poses (rows with "guard": true, from NOSED_GUARD=on: round 44's six mis-staged poses kept as they were,
+where no back-up is possible) are judged apart: ON clears no later than OFF + GUARD_LATER_S and touches walls no more than OFF +
+GUARD_CONTACT_TICKS ticks in its watch, every pose (a bar cannot pass by dropping the hard cases).
     python3 tests/manoeuvre/nosed_judge.py <test log(s)...>"""
 import json, sys, statistics
 
@@ -17,6 +20,8 @@ WIN_SHARE = 0.8
 MEDIAN_S = -1.0
 CEIL_S = 3.0
 CEIL_MEDIAN_S = 1.0
+GUARD_LATER_S = 1.0
+GUARD_CONTACT_TICKS = 15
 
 
 def main():
@@ -26,9 +31,9 @@ def main():
         for line in open(path):
             if line.startswith("NOSED_ROW "):
                 r = json.loads(line[len("NOSED_ROW "):])
-                key = (str(r.get("seed", "")), int(r["pose"]))
+                key = (str(r.get("seed", "")), int(r["pose"]), bool(r.get("guard", False)))
                 rows.setdefault(key, {})[r["arm"]] = r
-    stuck, open_ = [], []
+    stuck, open_, guard_bad, guard_n = [], [], [], 0
     for key in sorted(rows):
         pair = rows[key]
         if "off" not in pair or "on" not in pair:
@@ -36,15 +41,26 @@ def main():
         b = pair["off"]["clear_tick"] if pair["off"]["clear_tick"] > 0 else WATCH_TICKS
         a = pair["on"]["clear_tick"] if pair["on"]["clear_tick"] > 0 else WATCH_TICKS
         d = (a - b) / 30.0
+        if key[2]:
+            guard_n += 1
+            cb, ca = int(pair["off"].get("contact_ticks", 0)), int(pair["on"].get("contact_ticks", 0))
+            ok = d <= GUARD_LATER_S and ca <= cb + GUARD_CONTACT_TICKS
+            if not ok:
+                guard_bad.append((key, d, cb, ca))
+            print("  %s GUARD pose %2d %-8s %-5s %+4.0f deg: clear t%d -> t%d (%+.1f s); wall ticks %d -> %d; looks %d stalls %d: %s" % (
+                key[0] or "dev", key[1], pair["off"]["arena"], pair["off"]["shape"], pair["off"]["angle"], b, a, d, cb, ca,
+                pair["on"]["looks"], pair["on"].get("stalls", 0), "ok" if ok else "WORSE"))
+            continue
         # R44.12: base-stuck = the base has not cleared within STUCK_TICKS AND its rig had no yield / blocked-by-friend seconds in
         # its first 6 s (both read from the BASE row: a squadmate pinning the rig is not the box).
         pinned = int(pair["off"].get("yield_ticks_6s", 0)) + int(pair["off"].get("blocked_friend_ticks_6s", 0)) > 0
         kind = "STUCK" if (b > STUCK_TICKS and not pinned) else ("pinned" if b > STUCK_TICKS else "open")
         (stuck if kind == "STUCK" else open_).append(d)
-        print("  %s pose %2d %-8s %-5s %+4.0f deg (route %+4.0f, nose %4.1f m) %s: clear t%d -> t%d (%+.1f s); first reverse t%d -> t%d; crept %.2f -> %.2f m; looks %d kturns %d; native_drive %s" % (
+        print("  %s pose %2d %-8s %-5s %+4.0f deg (route %+4.0f, nose %4.1f m) %s: clear t%d -> t%d (%+.1f s); first reverse t%d -> t%d; crept %.2f -> %.2f m; looks %d kturns %d stalls %d; native_drive %s" % (
             key[0] or "dev", key[1], pair["off"]["arena"], pair["off"]["shape"], pair["off"]["angle"], pair["off"].get("depart_deg", 0.0),
             pair["off"].get("nose_room_m", -1.0), kind, b, a, d, pair["off"]["first_reverse"], pair["on"]["first_reverse"],
-            pair["off"]["crept_m"], pair["on"]["crept_m"], pair["on"]["looks"], pair["on"].get("kturns", 0), pair["on"]["native_drive"]))
+            pair["off"]["crept_m"], pair["on"]["crept_m"], pair["on"]["looks"], pair["on"].get("kturns", 0), pair["on"].get("stalls", 0),
+            pair["on"]["native_drive"]))
     wins = sum(1 for d in stuck if d < 0)
     med = statistics.median(stuck) if stuck else 0.0
     d_ok = len(stuck) >= STUCK_FLOOR and wins >= WIN_SHARE * len(stuck) and med <= MEDIAN_S
@@ -55,7 +71,12 @@ def main():
     c_ok = worst <= CEIL_S and omed <= CEIL_MEDIAN_S
     print("C (the other poses' cost ceiling): %d poses, worst %+.1f s (line <= +%.1f), median %+.2f s (line <= +%.1f): %s" % (
         len(open_), worst, CEIL_S, omed, CEIL_MEDIAN_S, "PASS" if c_ok else "FAIL"))
-    print("VERDICT: %s" % ("PASS" if d_ok and c_ok else ("NOT JUDGED (under the floor of %d base-stuck poses)" % STUCK_FLOOR if len(stuck) < STUCK_FLOOR else "FAIL")))
+    g_ok = not guard_bad
+    if guard_n:
+        print("G (guard poses, no back-up possible): %d poses, ON later than OFF + %.1f s or %d more wall ticks in %d: %s" % (
+            guard_n, GUARD_LATER_S, GUARD_CONTACT_TICKS, len(guard_bad), "PASS" if g_ok else "FAIL"))
+    verdict = "PASS" if d_ok and c_ok and g_ok else ("NOT JUDGED (under the floor of %d base-stuck poses)" % STUCK_FLOOR if len(stuck) < STUCK_FLOOR else "FAIL")
+    print("VERDICT: %s" % verdict)
 
 
 if __name__ == "__main__":
