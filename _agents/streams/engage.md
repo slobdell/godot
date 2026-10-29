@@ -75,7 +75,59 @@ write both in player terms with one recommendation in Status and build the recom
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-29, in progress)
+### Report (2026-10-29, round 45) — read this first
+
+**Shipped ON (main 8ef4f584d = engage 69bf864d2; the merge hash 60262534f GREEN builder0, 28 targets ALL JUDGED, 3451/0):** his
+order to a crew wins (`--player-authority`, ON; `=off` the escape). In player terms: a crew he holds stands and shoots from where it
+is; a crew he stops brakes and stays; a crew he moves (alone, or a squad of one) goes to his click and stays there; none of them is
+sent anywhere by its squad until he gives it or its squad another order; his squad's hold no longer sends crews at the enemy.
+
+| Item | State |
+|---|---|
+| E1 which layer moved the scout | DONE: the hold ran the squad's contact drill (30 m into the gap); the stop drove back to a point behind a 15 m/s scout, then the idle brain crept on; the last move was right, the drill had carried the scout past it (table below) |
+| E2 the rule, ON | DONE, merged (R45.19). Code in drills.gd, element_plan.gd (`_hold_in_place`), element.gd (`_his_lone_order`), tank_brain.gd + order_feed.gd (granted R45.2) |
+| E3 Bar E1 | **FAIL as filed** (D1 5.5 m v 3.0; D3 1 move off, the drive's in both arms; G3 35/38, a probe artifact: below); D2 798 -> 0 and every fight guard PASS; shipped ON by the orchestrator under C45.2 (R45.19) |
+| E4 his acceptance read | DONE: his Gorge replay, rule ON from 83.3 s: hold holds, stop stays, moves land at his click, **scout alive at 108 s v killed at 105.3 s**; before / after shots below, looked at |
+| Stretch: short moves / one-crew slot | READ: the one-crew slot sat ~5 m off his click; E2's squad-of-one path removes it; the 2-3 s a 15 m/s scout takes to reverse is the drive (manoeuvre's) |
+
+**Before / after (his Gorge replay, builder0, 60262534f, native ON; both windowed runs checked against his census):**
+`~/overnight-engage/r45/bar/shots/before-t*.png` (`--player-authority=off`, his game: 20/20 crews within 3 m for 105 s) v
+`e4-t*.png` (rule ON from tick 2500: 19/20 within 3 m for 107 s, the one over the bar is the scout from 89 s, the rule acting).
+Looked at, t3030 (101 s): BEFORE, his log "Rat Rod: hold position" while the card reads "Orders: Attack-moving – Arrives in 3 s"
+and an ATTACK-MOVE marker sits 12 m into the gap ("react to contact – return fire, take cover"); AFTER, card "Orders: Holding", log
+"stop -> hold position", the scout on his side of the gap, gun on the enemy across it. (The chain's `base-t*.png` were the rule ON
+from the start, NOT his game: ignore them.)
+
+**What to playtest:** `make skirmish ARENA=gorge` — give one crew (or a squad of one) a hold, a stop and a move near the enemy; it
+should do exactly that until you order again. The old game: `make skirmish ARENA=gorge SKIRMISH_FLAGS="--player-authority=off"`
+
+**Decisions:** a held crew under fire STANDS AND FIRES (the brief's recommendation), it does not back out; a crew he wants out of
+combat he moves out, and it then stays. His squad-wide hold also holds every crew on its own spot (round 6's "a task does what its
+name says"); the CPU's holds keep their drills (C45.5).
+
+**Questions for the lead:** none blocking. Feel check for his next playtest: after his move, a crew now waits where it arrived
+(turning and shooting) instead of fighting around the spot; if he wants crews to chase a little after a move, that is a new rule.
+
+**Known issues:** D1: a held / stopped scout can still shuffle 3-5 m after first resting (11315 3.1 m, 11330 4.0 m while its stop
+completed, 11344 artillery 5.5 m identical OFF); not isolated. D3: one IFV move ends 11 m short in both arms (the drive). The probe's
+take-back metric fix (R45.19) is below.
+
+**Merge notes (shared files):** `game/ai/tank_brain.gd` (switch-gated: `_his_order` / `_his_post`, the stop brake in MOVE, the
+hold-at-rest in `_update_order_progress`) and `game/ai/order_feed.gd` normalize (additive `player`, `here`), both R45.2;
+`tests/test_manoeuvre_turn_hull.gd` one-crew stage pins `--player-authority` off (R45.10).
+
+**R45.19's take-back fix (the probe's, after the merge, its own commit):** take-back = a NEW order (a new order id) reached the crew
+within 1 s of his squad task (it was "the goal is within 20 m of the probe's point", which an off-arena point grounded by Orders
+fails). Re-read on 11301-11348, builder0, 60262534f's game code, n = 48/arm: **every other field on every seed byte-identical** to
+the frozen bar's logs (0 differences either arm); take-back **OFF 40/40, ON 37/38** (was 38/40, 35/38): 11326 and 11345 now read
+taken. The one ON miss, **11321**, traced: his move (id 2) still stands (the tank stuck 9 m short of its goal: the drive), and the
+squad's take-back point (118.5, -86.6), off the arena, grounds to exactly that move's goal (92.4, -72.3), so Orders deduplicates it
+("Already doing that"): no new id, but the crew is already on the squad's newest word. Not a missed order; he cannot click off the
+map. No test was written for a probe metric; the byte-identical re-read is the proof R45.19 named.
+
+**Next steps:** merge main once the orchestrator's main check of 8ef4f584d is green; nothing else open in the backlog.
+
+#### Working notes (chronological)
 
 **BAR E1 VERDICT (2026-10-29 ~15:10 PDT): FAIL as filed (D1, D3, G3); D2 and every fight guard PASS.** Frozen tree **60262534f
 GREEN builder0** (`make check exited 0`, 28 targets ALL JUDGED, 3451 passed / 0 failed). Bar seeds 11301-11348, n = 48 per arm,

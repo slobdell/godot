@@ -222,15 +222,16 @@ func _run() -> void:
 		for tick in SimClock.TICK_RATE:
 			await lab.step()
 			# Newest word wins: the crew is on the squad's new order (an element's, or for a squad of one his order itself,
-			# which the element hands the crew as his) whose goal is his new point or the crew's slot round it.
+			# which the element hands the crew as his).
 			var now := orders.current(ordered)
 			var goal: Variant = orders.goal_position(ordered)
 			if _flag("trace", "off") == "on" and tick % 5 == 0:
 				print("AUTHORITY_TAKEBACK t=%d back=(%.1f, %.1f) order=%s/%s id=%s (was %d) goal=%s limit=%.1f" % [game_match.tick,
 						back.x, back.z, now.get("verb", "-"), now.get("source", "-"), now.get("id", -1), last_id, goal,
 						Match.DRIVABLE_LIMIT])
-			if not now.is_empty() and int(now.get("id", -1)) != int(last_id) and goal is Vector3 \
-					and (goal as Vector3).distance_to(back) <= 20.0:
+			# R45.19 (11326): by the order's id alone. A take-back point off the arena is grounded by Orders (29 m inland at
+			# 11326) and the element insets it differently, so "the goal is near the point" read a new order as not taken.
+			if not now.is_empty() and int(now.get("id", -1)) != int(last_id):
 				taken = true
 				break
 		out["taken_back"] = taken
