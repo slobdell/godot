@@ -108,6 +108,10 @@ _(worker keeps this current: report at the top, every number with commit, machin
   "across water / a pit / through a neck from the click, off the click line by more than the body's frontage, farther than its last
   rank, behind its own start" and, on any failure, re-lays the body on those seats. Built as G2 (O2 below).
 
+- **Green so far:** `make quick-remote` on **2a622e5bd** (builder0): 336 passed / 0 failed over the 45 control / tactics files the
+  diff touches, lint 97 scripts, the smoke; `>> remote: make quick exited 0`. Full check of 2a622e5bd launched on builder0
+  (the freeze candidate for Bar G2; `~/orders-r45/check-2a622e5bd.log`). Earlier: 5225a024b quick-remote 327/9 (two_squads x 8,
+  halt_price x 1: the fixture's off-mesh click and a drawn facing; both fixed in 2a622e5bd).
 - **O2 G2 BUILT (this tree; ON by default, `--group-guard=off` / `GROUP_GUARD=off` the escape).** `SelectionSquads` *G2 (round
   45)*: (1) FIT FIRST: `ranks` takes a cap = `guard_fit` (fit_abreast at the click across the approach, at most two) read on the
   gate scan CUT at the first sample across a gap from the click (`guard_trim_sides`: the scan threads a neck, his Gorge click read
