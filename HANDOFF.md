@@ -35,6 +35,11 @@ only `godot` + `godot-native-score*` (77 %, 24 G free, load 0.02). Worktrees cre
 JUDGED) and INHERITS its check. Bars recorded before numbers: B2, G2 (+ R45.6 D6), A6 v4, S v4, E1. Repo pack repaired (lesson 340; bad pack copy in ~/git-bad-pack-2026-10-29/, 645 MB, his to delete). Rulings R45.1-R45.7. Native's N3 twin for B2
 (pair/native-backout-b2 b2b129f9f) and N2 (gate_width + untangle_whole C++, 69b95f56e) in proof.
 
+**MAIN NOW (~14:30 PDT): eec905e52** = + native dc182916f (N2: gate_width + untangle_whole's search in C++, ON; native-fresh builds a
+fresh folder's library; replay-match fails on the wrong native path; builder2 preemption re-queue; lines_r44) — builder0 GREEN 3448/0,
+28 targets ALL JUDGED, sim-baseline unmoved; main INHERITS it. control-timing quiet read on builder0 pending. G2 conflicts in
+rts_controls.gd column_lay: resolution = pair/native-g2 cfa4a0eb2 (EQUAL with G2, R45.3 re-proof).
+
 **SERIES (13:40 PDT):** Bar B2 RUNNING since ~13:35 on frozen 0493977ed (= manoeuvre ce52cba1c + native twin 04ce3abe9; builder2
 check `exited 0` 3448/0, perf NOT JUDGED there; quiet builder0 perf before ON), two drivers (builder0 light ../godot-manoeuvre-b2x,
 builder2 ../godot-manoeuvre-b2), evidence ~/overnight-manoeuvre/r45/bars_b2/, ETA ~3-4 h. Bar E1 re-frozen 60262534f (R45.10), check
