@@ -56,3 +56,41 @@ Nothing.
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Report (2026-10-29, in progress).**
+
+**Plan (order kept from the backlog; reasons):** N1 watchdog -> N2a gate_width C++ -> N2b untangle_whole C++ (GRANTED R45.3,
+because gate_width alone cannot reach the budget, below) -> N3 twins as manoeuvre/orders/engage ship -> N4 lines_r45 + judging ->
+N5 replay to 107 s -> stretch requeue.
+
+**N1 the cold-import watchdog: BUILT, check running (9b6ffb0a6, builder0).** `tools/import_watchdog.sh` runs inside the slot
+`tools/slot.sh` grants when `tools/remote.sh` exports `TANK_SQUAD_IMPORT_WATCH` (both builders; `REMOTE_IMPORT_WATCH=0` is the
+escape; `IMPORT_WATCH_STALL` the limit). Progress = the last Godot progress line CHANGING: B1's hang printed the same
+`[   0% ] reimport | Oswald-Latin.ttf` 14,369 times over 4 h (1/s), so "no output" would never have fired. Stall limit **600 s**:
+in 20 builder logs of rounds 40-44 no honest progress line repeated more than 6 times (~6 s), and a whole cold import of the
+project on builder0 took **15 s** (godot-native-light after .godot/ was cleared, 9b6ffb0a6), so 600 s is ~40x a whole cold
+import and a double hang costs 20 min, not the slot's 4 h. On a stall: kill, `rm -rf .godot`, import once more; a second stall
+ends the run with `>> remote: import hung on <file>` as the wrapper's LAST line and exit **75** (make alone said 2).
+Proof: `tools/test_import_watchdog.sh` (in shell-tools-test) 21/0 on the laptop: fake hang twice (exit 75, the line, .godot/
+cleared, command never runs, no orphan), hang-then-clean retry, silent hang, slow-but-moving left alone, TERM kills the import,
+slot.sh seam on/off/nested. Staged on builder0 end to end (light folder, `IMPORT_WATCH_CMD=` a fake hang, stall 15 s): killed,
+retried, `>> remote: import hung on staged-hang.ttf`, wrapper exit 75. A warm import costs ~3 s extra per run (laptop 9 s).
+
+**N2 profile (laptop, native OFF, 0b62c4900 + temporary timers not committed; test_control_scale 30 units / 6 squads, mean of
+10 orders):** order 29-31 ms (ratio ~234 v budget 104). `SelectionSquads.untangle_whole` **13.8 ms (44 %)** (the 720-permutation
+search); `RtsControls.gate_width` **10.5-11.4 ms (36 %)**: 1 call, 100 steps, ~200 `Pathing.find_path` = 5.6 ms + Callables and
+the near_deck sampling; setup to `ranks` 3.9 ms; the rest < 1.5 ms. gate_width at ~0 still leaves ~150: hence N2b (R45.3).
+
+**N2a gate_width C++ (in progress):** `native/src/gate_native.cpp` (one navmesh query a step serves crosses_on and drive_on: the
+same `find_path(ground, click, p)`; the deck test a loop over `SlotGround.deck_boxes()`; `Orders.clamp_to_arena` called back once a
+step). Seam `RtsControls.gate_width_edge_on` (new, beside gate_width; the GDScript gate_width untouched as the fallback) at the
+ONE call site the group click uses (rts_controls.gd column_lay's width_at, a one-line edit; told orders). Switch
+`BrainSwitches.native_gate` (ON). Equality: `tests/test_native_gate.gd` (4 arenas x 90 clicks, each deciding branch counted).
+
+### Requests to other streams
+- **orders:** rts_controls.gd: one line in `_order_squads`' column_lay call (`RtsControls.gate_width` -> `gate_width_edge_on`,
+  same Callables) and the new `gate_width_edge_on` above `POST_SPAN_M`. N2b: one guarded seam line at the top of
+  `SelectionSquads.untangle_whole` (R45.3).
+
+### Questions for the lead
+- None.
