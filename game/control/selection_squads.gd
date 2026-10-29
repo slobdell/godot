@@ -1887,10 +1887,15 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 					behind, centre_r.x, centre_r.z, fit, laid, size, army_back])
 		if laid == 0 and behind > 0.0:
 			break  # the ground behind the click ran out
-		var step := maxf(rank_step(size, fit, slot_width, slot_depth, nest, clearance), min_step(blocks))
-		behind += halt_clear_step(step, size, fit, slot_width, blocks)
-		if behind > army_back + slot_depth + GAP_M:
-			break  # no rank behind the whole army: those squads hold instead
+		# The step to the next rank is priced for that rank's own size (a last squad centred behind a pair nests differently
+		# from a pair behind a pair): as many as fit of the squads still unseated.
+		var next_size := mini(fit, n - seats.size())
+		if next_size <= 0:
+			break
+		var step := maxf(rank_step(size, next_size, slot_width, slot_depth, nest, clearance), min_step(blocks))
+		behind += halt_clear_step(step, size, next_size, slot_width, blocks)
+		if behind > army_back + n * (slot_depth + GAP_M):
+			break  # far behind the whole army: the ground ran out of sense (the hold rule keeps a squad off a seat behind it)
 	# Nearest in front over the seats laid; the squads past them hold.
 	var order: Array = []
 	for i in n:
@@ -1901,7 +1906,10 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 	for k in mini(seats.size(), n):
 		seated.append(int(order[k][1]))
 		seated_centers.append(centers[int(order[k][1])])
-	var given := assign_by_distance(seated_centers, seats, flat_click, heading)
+	# A single file is dealt nearest in front (his round-37 words); a body two abreast by the least total straight driving (round
+	# 21's deal: an assignment whose two paths cross can always be uncrossed for less, so the outer squads of a wide row do not
+	# converge behind the middle ones and overlap at departure; the nearest squads take its front rank anyway).
+	var given := assign_by_distance(seated_centers, seats, flat_click, heading) if fit_at_click <= 1 else _assign(seated_centers, seats)
 	var places: Array[Vector3] = []
 	places.resize(n)
 	var holding: Array[bool] = []
@@ -1913,7 +1921,9 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 		var behind_start := (centers[i] - flat_click).dot(came) - (seat - flat_click).dot(came)
 		holding[i] = seat.distance_to(flat_click) > centers[i].distance_to(flat_click) + COLUMN_AWAY_M or behind_start > GUARD_HOLD_BEHIND_M
 		places[i] = seat
-	# A seat under a holding squad is taken: its squad holds too, until nothing changes.
+	# A seat under a holding squad is taken (closer than the widest squad: their crews would mix): its squad holds too, until
+	# nothing changes.
+	var taken := maxf(GUARD_SEAT_TAKEN_M, slot_width)
 	var changed := true
 	while changed:
 		changed = false
@@ -1921,7 +1931,7 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 			if holding[i]:
 				continue
 			for j in n:
-				if j != i and holding[j] and places[i].distance_to(centers[j]) < GUARD_SEAT_TAKEN_M:
+				if j != i and holding[j] and places[i].distance_to(centers[j]) < taken:
 					holding[i] = true
 					changed = true
 					break

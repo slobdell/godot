@@ -252,6 +252,12 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   click, Spears 33 m, Wrenches 66 m behind); his tick-1512 Locks click: Hunters to the click, the other three HOLD (their seats
   would be farther than they stand: his answer 3, a short click); tick 1808: two abreast at the click + two behind.
   Dev read 2 on builder2 running on this tree.
+- **For native (R45.3, the untangle_whole twin):** G2 does not touch `untangle_whole`'s search body. It changes the INPUTS: the
+  anchors handed in (the guard's lay) and the `misplaced(i, place)` callable (G1 v6's existing parameter, called inside the
+  permutation loop at the filter `if misplaced.is_valid() ...`): a holding squad is pinned to its own spot and nobody else may
+  take it; a seated squad may only trade seats within its own rank and never for a seat more than 2 m behind its start. A C++
+  twin of the search must honour `misplaced` exactly where the GDScript does (inside the loop), or it diverges on every guarded
+  click; the bar runs with the twin absent (main has no seam yet), native re-proves on the freeze hash.
 - **Known issues:** (1) the shared repository had a corrupt packed object (the blob of
   assets/audio/layered/crowd_murmur_1.wav in pack-315912d8a6…): `git worktree add` for the frozen tree failed on it (~18:50);
   repaired reversibly with a hand-written loose copy of the same SHA from this worktree's intact file; the orchestrator is
@@ -259,7 +265,10 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   (shift-click route) lays as before: the guard is for his plain click only this round. (4) The frozen series tree is
   `../godot-orders-g2` (detached at dc1995fd0, local.mk copied, .tools symlinked); builder2's folder for it is fresh (the
   watchdog from main 47a15f434 covers its cold import).
-- **Questions for the lead (feel, for after he plays it; not changed now, R45.6):** the gangs' squads halt in a coil (a ring
+- **Questions for the lead (feel, for after he plays it): (a) five squads side by side on a wide yard** (200 m of them): today's body
+  stands them 3 + 2 roughly where they are; the guard's two-abreast cap (R44.11) stands them 2 + 2 + 1, the outer squads
+  converging ~80 m inward behind the middle (tests/test_control_two_squads.gd's five-squad case keeps today's body for that
+  reason). Does he want more than two abreast where the ground is that wide? **(b) the stack's spacing (not changed now, R45.6):** the gangs' squads halt in a coil (a ring
   36 m across), so a rank in file is 33-50 m deep and three squads stacked behind his click run 66-100 m back. When he sees the
   stack, does he want it tighter (the squads halting in their travel wedge, nested ~26 m a rank: manoeuvre's formation and the
   deploy step), or is a long file along his approach fine?

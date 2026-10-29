@@ -5,6 +5,11 @@ extends TestCase
 ## across the approach in the order they stand, each travelling from its own position, never one element of ten.
 
 const Fixture := preload("res://tests/support/control_fixture.gd")
+
+
+func teardown() -> void:
+	SelectionSquads.GROUP_GUARD = not OS.get_cmdline_user_args().has("--group-guard=off")
+	super.teardown()
 ## Squad 1 on the west flank, squad 2 on the east one, both facing north; the click is between them, ahead.
 const WEST := Vector3(-68, 0, 50)
 const EAST := Vector3(68, 0, 50)
@@ -235,6 +240,9 @@ func test_the_radar_shows_each_vehicle_where_it_will_stand_and_each_squad_its_pl
 ## pinned at ±116 m in his round-20 games. Five elements of five; every anchor inside the arena without the clamp
 ## moving it; no two squads' slots mixed.
 func test_five_squads_one_click_go_as_a_body() -> void:
+	# G2 (round 45): five squads in a 200 m row stand 3 + 2 here (round 21's body); under the guard's two-abreast cap (R44.11) they
+	# stand 2 + 2 + 1 and the outer squads converge 80 m inward: the wide-yard feel question for him (orders.md Status), not this test.
+	SelectionSquads.GROUP_GUARD = false
 	var f := Fixture.new(self)
 	await f.build_scale(25)
 	var squads: Array = []

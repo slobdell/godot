@@ -1433,11 +1433,17 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			var misplaced := Callable()
 			# G2: a squad holding its spot keeps it and nobody else takes it (dev read 2: the swap sent a squad into a standing one,
 			# never in); the seated squads may still swap seats to uncross their drives.
+			# ...and a seated squad keeps its RANK (nearest in front): the swap may only trade seats within one rank, left for
+			# right (collinear drives along a file read as crossings and the swap sent his nearest squad to the tail, R44.23).
 			if not guard_laid.is_empty() and (guard_laid["holding"] as Array).size() >= squads.size():
 				var holding_g: Array = guard_laid["holding"]
 				var centre_g: Array = []
+				var rank_g: Array = []
+				var click_g := Vector3(click.x, 0.0, click.z)
+				var rank_of := func(p: Vector3) -> float: return snappedf(-(Vector3(p.x, 0.0, p.z) - click_g).dot(guard_heading), 0.5)
 				for i in squads.size():
 					centre_g.append(Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z))
+					rank_g.append(rank_of.call((guard_laid["places"] as Array)[i]))
 				misplaced = func(i: int, p: Vector3) -> bool:
 					var flat_p := Vector3(p.x, 0.0, p.z)
 					if bool(holding_g[i]):
@@ -1445,7 +1451,10 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					for j in holding_g.size():
 						if bool(holding_g[j]) and flat_p.distance_to(centre_g[j]) < 0.5:
 							return true
-					return false
+					if absf(float(rank_of.call(flat_p)) - float(rank_g[i])) > 0.5:
+						return true
+					# ...and never a seat behind where it stands (R45.6), as the lay's own hold rule.
+					return (centre_g[i] - click_g).dot(guard_approach) - (flat_p - click_g).dot(guard_approach) > SelectionSquads.GUARD_HOLD_BEHIND_M
 			elif column and SelectionSquads.SIDES_BOTH and SelectionSquads.columns_two_sided > two_sided_before:
 				var click_s := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 				var far_of := {}

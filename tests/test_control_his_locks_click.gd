@@ -336,10 +336,14 @@ func test_guard_lays_his_locks_clicks_as_one_body() -> void:
 		var click: Vector3 = INFERRED[tick]
 		var laid := _click(click)
 		_print_stages()
+		# The approach as the layout reads it: from the squads' centres' mean (one vote a squad, as the blocks) to the click.
 		var middle := Vector3.ZERO
 		var at: Dictionary = CASES[tick][0]
-		for unit_name: String in at:
-			middle += at[unit_name][1] / at.size()
+		for squad: String in SQUADS:
+			var centre := Vector3.ZERO
+			for unit_name: String in SQUADS[squad]:
+				centre += at[unit_name][1] / (SQUADS[squad] as Array).size()
+			middle += centre / SQUADS.size()
 		var ahead := Vector3(click.x - middle.x, 0.0, click.z - middle.z).normalized()
 		var north := INF
 		var south := -INF
