@@ -354,6 +354,13 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   crew's tick clearing 8 m from its spot, ARM <= BASE + 2 se). Read on B2's workload rows (frozen 0493977ed): crossing +14.6 ticks a run
   (+0.6 se), locks +15.2 (+1.5 se), terminus -25.6 (-1.0 se): all PASS where the k-turn-seconds guard failed Terminus at +2.6 se.
 
+- **D3 fix's dev read (builder0 light, `godot-manoeuvre-light`, GDScript, `~/overnight-manoeuvre/r45/d3/dev1/`):** lab 3 / 0 (his start
+  t4 / t98, the stall stage t33); the 14 dev poses unchanged (3 / 3 sooner, ceiling worst +1.5 s, median 0.00); 11187 ON t207 v OFF t166;
+  the 24 guard poses: 11168 (the wall) FIXED (t232 -> identical to OFF), 11155 / 11171 fixed; two seeds of guard pose 2 over the strict
+  line (11157 +1.4 s, 11163 +0.3 s / +19 wall ticks) — pose 2's rig has room behind (its squadmates sit on a container), so a back-up is
+  legitimate there and B3 judges that pose by the cost ceiling (+3 s), said in the filing. **Bar B3 FILED** (workstreams.md *Bars
+  (round 45)*, 11701-11748, before any number) and the code committed; native's EQUAL + default probe on this hash next, then the
+  freeze.
 - **Queued after B3, before S v5 (engage's E5 relay via the orchestrator):** his short move to the lone scout (Gorge 83.7 s / 85.2 s): the
   click ~56 deg off the nose at 10.7 m, inside a wheeled scout's turning circle, so the mover starts a three-point turn and backs 3 m AWAY
   from his click for ~0.9 s before his next click replaces the order. A player's short move whose goal is ahead-ish (< 90 deg) but inside
