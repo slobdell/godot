@@ -29,6 +29,8 @@ four are FRESH sessions.
 folders removed (57 %, 42 G free); `godot-orders`, `godot-manoeuvre*`, `godot-native` kept warm (a cold import hung B1). builder0 has
 only `godot` + `godot-native-score*` (77 %, 24 G free, load 0.02). Worktrees created after the docs commit.
 
+**RUNNING (2026-10-29 ~10:10 PDT): all four streams started (godot-orders-70, godot-engage-b0, godot-manoeuvre-68, godot-native-de); the orchestrator loop is godot-b8 in the main checkout.**
+
 **Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*). Record G2 / E1 / B2 in *Bars (round 45)*
 the minute each is filed. Merge native's N1 watchdog alone on green. **C45.2:** G2 and E2 ship ON the minute their bars pass; if
 either fails, take it to him in player terms the same hour. Relay engage's E1 cause to orders (a squad of one) and manoeuvre (the
