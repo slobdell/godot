@@ -130,7 +130,20 @@ func _run() -> void:
 		quit(0)
 		return
 	var at_order := _flat(crew.global_position)
-	var click := at_order + Vector3(-away.z, 0.0, away.x) * 18.0 + away * 10.0  # aside and back, out of the fight
+	# Aside and back, out of the fight, on ground a hull stands on (a click inside a block is repaired by the mover and is
+	# no test of whose order wins): this side, the other, then shorter.
+	var map := CoverMap.of(game_match)
+	var click := Vector3.INF
+	for try_at: Vector3 in [Vector3(-away.z, 0.0, away.x) * 18.0 + away * 10.0, Vector3(away.z, 0.0, -away.x) * 18.0 + away * 10.0,
+			Vector3(-away.z, 0.0, away.x) * 10.0 + away * 6.0, Vector3(away.z, 0.0, -away.x) * 10.0 + away * 6.0, away * 12.0]:
+		var p := at_order + try_at
+		var limit := Match.DRIVABLE_LIMIT - 8.0
+		if absf(p.x) <= limit and absf(p.z) <= limit and not map.inside_any(Vector2(p.x, p.z), 5.0):
+			click = p
+			break
+	out["click_standable"] = click != Vector3.INF
+	if click == Vector3.INF:
+		click = at_order + away * 12.0
 	if verb == "hold" and (count == 1 or squad_hold):
 		out["path"] = "task"
 		element.assign({"verb": "hold"})
