@@ -166,6 +166,9 @@ func _run() -> void:
 	shots["open"] = true
 	var rest: Variant = null
 	var moved := 0.0
+	# Round 45 (E6, Bar E2b): where his STOP ends: the farthest from rest until the stop order completes.
+	var stop_moved := 0.0
+	var stopping := verb == "stop"
 	var pushed := 0
 	var window := int(WINDOW_S * SimClock.TICK_RATE)
 	for tick in window:
@@ -177,6 +180,9 @@ func _run() -> void:
 			rest = here
 		if rest is Vector3:
 			moved = maxf(moved, here.distance_to(rest))
+			if stopping:
+				stop_moved = maxf(stop_moved, here.distance_to(rest))
+		stopping = stopping and not orders.current(ordered).is_empty()
 		if _flag("trace", "off") == "on" and tick < 60 and tick % 3 == 0:
 			var mv := Movement.of(crew)
 			var brain_e6 := game_match.brains.get_node_or_null("Brain_" + ordered) as TankBrain
@@ -209,6 +215,8 @@ func _run() -> void:
 	var alive := crew.is_alive()
 	var end := _flat(crew.global_position)
 	out["moved_m"] = _r(moved) if verb != "move" else null
+	out["stop_moved_m"] = _r(stop_moved) if verb == "stop" else null
+	out["fixed_wheeled"] = crew.mount == "fixed" and Movement.of(crew) != null and Movement.of(crew).wheel_radius() > 0.0
 	out["rested"] = rest != null
 	out["pushed_rows"] = pushed
 	out["toward_m"] = _r(at_order.distance_to(_flat(stage["gun"])) - end.distance_to(_flat(stage["gun"])))
