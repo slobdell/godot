@@ -81,6 +81,41 @@ builder that aren't ours. builder0 at prep: load 0.02, 77 %, 24 G free; builder2
 
 _(each stream files its bar here BEFORE any number on its block; the orchestrator records it.)_
 
+- **Bar E1 HIS ORDER TO A CREW WINS (engage; filed in streams/engage.md ~11:40 PDT, recorded here by the orchestrator BEFORE any number on 11301-11348).**
+
+  **Workload:** `make engage-authority-bar AUTH_SEEDS="11301 ... 11348"` (`tests/engage/authority_probe.gd`, table
+  `tests/engage/authority_table.py --pair`): per seed a drawn arena (gorge / locks / terminus / crossing by seed), crew hull (8 kinds),
+  enemy gun (4 kinds), a lone crew (squad of one) or a squad of three, driving at a gun that shoots back from just outside the crew's
+  range; 2.5 s in, ONE order of his (hold / stop / move, by the RtsControls path: task for a squad of one's hold and move, direct
+  otherwise), standing 15 s; then his squad task (take-back). Arms OFF = `--player-authority=off`, ON = default, paired by seed, one
+  frozen tree (named when frozen), builder0 light lane, native ON. **His case** = runs where the crew is ordered alone (a squad of one,
+  or one crew of a squad given a direct order).
+
+  **Deciding (ON arm, his case):**
+  - D1 hold / stop: every rested run's farthest distance from where the crew first came to rest <= **3.0 m** (HOLD_TOLERANCE, the
+    hold's own slack before it drives back; the brief's 2 m is under that existing slack, which this rule does not change).
+  - D2 element rows that send his crew somewhere else (attack, attack_move, or a move whose goal is over 3 m from the crew / from his
+    click for his move) while his order stands: **0** in total.
+  - D3 his move: every run not dead and not ending `blocked` ends within the crew's own arrival radius
+    (max(ORDER_ARRIVE 3.5, settle radius)) of his click; blocked ends are listed (the drive: manoeuvre's).
+
+  **Guards:**
+  - G1 fights: crew deaths ON <= OFF + max(1, 1.645 sqrt(OFF)); enemy hp left mean ON within OFF +/- 1.645 se of the paired
+    difference (does his crew still hurt the gun).
+  - G2 a held crew shoots back: over held runs in range at the order, shots mean ON >= OFF - 1.645 se (if none is in range, UNREAD and
+    said).
+  - G3 take-back: his squad task after his crew order reaches the crew within 1 s: **100 %** of living runs ON.
+  - G4 a squad's hold sends no crew at the enemy: squad pushed rows ON = 0.
+  - G5 C45.4: the ON arm native-on v `--brains-off=native` EQUAL on every seed (every probe field but the native flag).
+  - G6 C45.3: orders' multi-squad probe (`make orders-probe`, main v `pa_off:--player-authority=off`, ORDERS_PROBE_SEEDS 11301) rows
+    identical (squad orders are element-sourced: the rule should not touch them); manoeuvre's player plain move (`make
+    manoeuvre-behind`, both arms): arrival rows identical (post-arrival hold is after its measure).
+  - G7 `make check` GREEN on the frozen tree (sim-baseline unmoved = the CPU untouched, C45.5).
+
+  **What it could BREAK (named before the numbers):** a crew he left holding no longer drifts into a fight to help (G1, G2); a
+  squad of one's move now ignores the squad's formation (one crew, no formation to keep); a crew he stopped then forgot stands until
+  told (that is the rule, said to him in player terms).
+
 - **Bar S v4 (recorded by the orchestrator ~11:15 PDT from stream/manoeuvre, before any number on 11401-11448), his first squad settles where he clicks (manoeuvre M5; R44.7 / R45.7's removal; FILED before any number on
   11401-11448; C45.1, C45.3, C45.4, C45.5).** ONE arm, **s4** = `--seat-bound=on --seat-order=on` (the seat bound: a squad on its own
   order seats within TacticsFormation.seat_bound of its click; seat-order: seats dealt in the crews' own left-to-right order so they do
