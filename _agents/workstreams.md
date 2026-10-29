@@ -236,6 +236,21 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   30 (1 s) while asked to roll (speed x gear > 0.3); members `_backout_stall_ticks`, `_backout_stall_from` (INF at a leg's start).
   GDScript stage: placed t3, stalled t33; his start unchanged (t4 / t98). Native re-twins; B2's freeze re-cuts on the new pair; the
   filing's sentence on the stall is updated before any 11149 number.
+- **R45.9 (~13:10) Bar G2's D5 / held guard v R45.6 on a short click by the edge (orders' dev read 2, builder2, 4f7525afa, 7001-7006;
+  dev only, no 11201 number seen).** Dev read 2: D1, D2, D4, D6 PASS, contacts 8429 -> 5545; D5, the held guard, D3, never-in FAIL. Cause 1
+  (a bug, fixed): `untangle_whole` swapped the guard's places after the lay, so a holding squad's spot became another's goal; the
+  guard's body is now dealt once, nearest in front, never swapped. Cause 2 (a real conflict): the probe's Gorge cells put his FOUR-squad
+  row 45-60 m from the click; the strip holds two 50 m coil ranks, the second seat lands 7 m behind the Hunters' start, so by R45.6 they
+  hold, and the two with no seat hold too (held 3 of 4); the same on across-20 cells. His real click (three squads) holds nobody.
+  **Ruling (his round-44 answer: "a short click holds" the squads already in place; lesson 335: a deciding line must not be the
+  rule's own definition, so "held only when the rule says hold" is refused):**
+  - **D5 becomes an outcome line:** on every Gorge run, every held squad stands within the body's reach + 6 m of the click (D3's
+    `guard.reach_m`): a squad that holds is already part of the group at his click; a squad held farther away FAILS. `guard.held`
+    reported per cell with why (behind its start / no seat).
+  - **D5b (new, deciding):** a FIXED cell with his exact Gorge click and his three squads at their recorded starts
+    (`gorge:his3:-43.2/53.2`, fresh seeds 11201-11224 for the drive): held = 0 in every run, plus D1-D4, D6 as filed.
+  - **The held guard** (median <= base's unmoved + 1) applies to reach-80 cells only (R44.5's shape); reach-20 cells REPORT it.
+  - D1-D4, D6, every other guard, seeds and n unchanged. Orders writes these into its filing before any 11201 number.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
