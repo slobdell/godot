@@ -275,6 +275,14 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   ahead only if manoeuvre shows, by removal on DEV seeds, that the Terminus k-turn excess is the same shape the 11187 fallback removes
   (a look pre-empting a plan the planner had); otherwise backout stays OFF this round and he is told in player terms. B2b, if filed,
   carries every B2 line unchanged (the Terminus k-turn guard included) on 11601-11648.
+- **R45.13 (~14:25) Bar G2's D5, second and LAST amendment before any 11201 number.** Orders' dev read 3 (builder2, 154815c86,
+  7001-7006): D1, D2, D4, **D5b (his three squads at their recorded starts: held 0, Hunters on his click, every run)**, D6, contacts PASS;
+  D5 (R45.9), D3, the reach-80 held guard, never-in on four cells FAIL. On the probe's four-squad Gorge cells the squads with no seat
+  on the map hold 55-156 m from the click (reach 0-58 m). **Accepted:** D5 = every held squad stands within the body's reach + one rank
+  step (`guard.step_m`, printed) + 6 m of the click; code: rear ranks may centre in their clear width (a half-slot shift, G1 v4's rule;
+  the front stays on his click, 60 m scan), holders exempt from the ground cap, rear seats need a dry footprint (half the widest
+  squad). The freeze moves to that commit. **No further amendment of G2's lines:** the next failing line on 11201-11248 is a failure,
+  taken to him in player terms (C45.2).
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
