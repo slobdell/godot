@@ -142,7 +142,13 @@ Orders' new `misplaced` is pure (captured arrays only), so asking it every (squa
 **G2's cost on the 30-unit click (R45.16 prep; timers uncommitted; 30 units / 6 squads, mean of 10):** builder2 native ON 20.5 ms
 (reference 0.193 ms: builder2's e2 cores are SLOWER per core than the laptop's): setup + the fit read 9.5, guard_lay 6.6,
 untangle_whole 0.8 (native), ground_cap 1.2, given 1.1. Laptop native OFF 17.1 ms (reference ~0.115): fit 7.6, guard_lay 2.6,
-untangle 5.7. Next (after G2's final freeze): split the fit stage and guard_lay finer; port what dominates behind a switch.
+untangle 5.7. **Finer (builder2 native, 14.2 ms run, reference 0.114):** the fit's gate_width 4.9 ms (already native: ~60
+navmesh path queries, engine A*; only fewer queries help = orders' design call), guard_lay 4.7 (seat fixes 1.3 in 6 calls;
+**~3.4 ms its own GDScript: the R45.16 port**), setup 1.3, ground_cap 0.8, given 0.7, untangle 0.6. Next, after G2's final freeze:
+twin `SelectionSquads.guard_lay`'s body in C++ (callbacks kept), EQUAL guard on and off, the click's ms.
+- **control-timing on main eec905e52 (builder0 --quiet): order 3.68 ms ratio 89.8 v 104, click_to_order 90.5, per-frame 21.03 v 26;
+  tests 5/0 + 8/0 under TANK_SQUAD_JUDGE_TIMING=1; but `QUIET WINDOW: NOT USABLE` (engage, manoeuvre-b2-light, orders live): NOT
+  JUDGED.** The orchestrator calls the judged re-run at the round's close (R45, HANDOFF).
 
 ### Requests to other streams
 - **orders:** rts_controls.gd: one line in `_order_squads`' column_lay call (`RtsControls.gate_width` -> `gate_width_edge_on`,
