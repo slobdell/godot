@@ -4016,3 +4016,9 @@ instrument that cannot lie about load — removal within one run — and let eve
    game showed the same scatter ("precisely the behavior I had asked to fix"). When a fix has failed its bar twice, the next round's
    first question is the SMALLEST change that removes exactly what he saw (a hard guard on his case, ON), filed with its own bar;
    the fuller fix keeps going behind its switch. A round where nothing he asked for ships ON is a round he cannot feel.
+340. **A laptop pack can go bad silently; a fresh worktree is the first thing that reads every blob.** (Round 45.) Orders' `git worktree
+   add` for G2's frozen tree failed: one blob (`assets/audio/layered/crowd_murmur_1.wav`) in the 645 MB pack had a bad CRC; `git fsck
+   --connectivity-only` never reads contents, so nothing had noticed. Repair: write the blob as a loose object from a good working
+   copy (its hash matched), `git fsck --full` to list every bad entry (only that one), copy the bad pack aside, `git repack -a -d`,
+   `git verify-pack` the new pack. When a worktree add or checkout reports a corrupt object, do this before anything else; never
+   delete a pack before the repack's new pack verifies.
