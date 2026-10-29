@@ -160,6 +160,21 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   costs D1 alone; converge and parkaside are neutral here. The bound is the only rule that delivers his settle (D1). S v4's shape:
   the bound WITHOUT kturngoal, with the press fix (round 44's `--seat-order=on`, seats dealt in arrival order) read next.
 
+- **Removal read 2** (`removal2/`, the bound with the press fix / latch / converge; same cells, 488a10f8d = 0af772a85's code):
+  | arm | D1 seated by 15 s | k-turn s a run | never-arrived (pooled) | **wedged s a run** |
+  |---|---|---|---|---|
+  | bound | 53 -> 83 (+4.4 se) | -5.4 | 13 -> 17 | +5.6 (se 2.4) |
+  | bound + seat-order | 53 -> 83 (+3.5 se) | -3.7 | 13 -> 16 | **+3.5 (se 2.0, +1.7 se)** |
+  | bound + seat-order + latch | 53 -> 83 (+4.2 se) | -3.4 | 13 -> 20 | +3.1 (se 2.1) |
+  | bound + latch | 53 -> 82 (+3.8 se) | -5.1 | 13 -> 14 | +6.5 (se 2.4) |
+  | bound + converge | **53 -> 91 (+5.1 se)** | -4.9 | 13 -> 13 | +5.2 (se 2.1) |
+  | bound + seat-order + converge | 53 -> 78 (+3.4 se) | -2.2 | 13 -> 19 | +6.7 (se 2.7) |
+  **Read:** seat-order takes ~2 s a run off the bound's press but does not remove it (+3.5 s, +1.7 se on 12 dev runs: a fresh 24-seed
+  block could read either side of the +2 se guard); the latch and converge add nothing the bar needs. **Decision for S v4:** ONE
+  arm = `--seat-bound=on --seat-order=on` (latch off, no kturngoal, no converge, no parkaside), filed with the wedged guard as S v3's
+  (ARM <= BASE + 2 se per arena) and the risk named; if it fails, the press needs the second shape (a squadmate's give-way deferred
+  until the seat ahead is taken), not another switch mix. Filed after B2's freeze (same tree).
+
 Decisions so far: dev reads run on the laptop's GDScript drive under `flock /tmp/tank-squad-laptop-godot.lock` (one pose pair ~1 min;
 nothing of the lead's runs while he is away); every judged number comes from a builder.
 
