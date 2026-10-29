@@ -66,31 +66,48 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 builder0 3446/0; no baseline check re-run, per the contract). Orchestrator session: `godot-b8`. builder0 has NO godot-manoeuvre folder
 (a cold import on the first remote run: watched); builder2 (up at launch) has `godot-manoeuvre` + `-light` warm.**
 
-### WHERE IT STANDS (2026-10-29 ~13:00 PDT; updated as the bars land)
+### WHERE IT STANDS (2026-10-29 ~16:05 PDT): the round's report
 
-- **Tip: stream/manoeuvre bdcfb6dcc** (code **dab58b334**; docs after). **Nothing ships ON yet**: backout stays `DEFAULT_OFF`; **Bar B2 FAILS AS FILED** (D1 PASS, D2's deciding line PASS 11 / 11,
-  its cost ceiling broken by ONE pose of 48: seed 11187 +6.3 s; the Terminus k-turn guard +2.6 se); the 11187 fix is on the branch
-  (0a80c3685, OFF code) but the Terminus excess is not its shape, so **B2b is not filed this round (R45.12)**. **M1 + M2 done** (the corpus re-staged, two rule defects fixed, the look follows the squad's route, the stalled leg); **M3
-  done** (native's twin `pair/native-backout-b2v2` 04ce3abe9 EQUAL); **M4 Bar B2 FILED** (R45.4 / R45.8 amendments), frozen at
-  `wip/manoeuvre-b2-freeze` **0493977ed** (= stream ce52cba1c + the pair) in `../godot-manoeuvre-b2` and `../godot-manoeuvre-b2x`;
-  its full check on builder2 is GREEN (3448 / 0, exited 0, 4 perf / load lines NOT JUDGED; the first attempt died with builder2's 12:51
-  preemption, no number seen) and **the series is running since 13:34 PDT**. **M5 Bar S v4 FILED** (the bound + seat-order, 11401-11448), **M6 Bar A6 v4 FILED** (holdway,
-  one-sided guard, 11449-11496): both ride B2's frozen tree, queued behind B2's series. Drivers: `~/overnight-manoeuvre/r45/bars_b2_a.sh`
-  (builder0 light legs, from b2x), `bars_b2_b.sh` (builder2 legs, from b2), `bars_b2_judge.sh`, `bars_s4.sh`, `bars_a6v4.sh`.
-- **Checks:** dab58b334's lab tests 3 / 0 (builder2 heavy folder, library present); 57e02fed5 quick-remote 37 / 1 (the 1 = the stage on
-  the folder's OLD library, fixed by dab58b334); 0af772a85 alone builder0 3445 / 1 (native's exec-field table wants the twin: by design,
-  the OFF code ships with the twin); 27f00d3f0 (the v1 freeze) builder2 3446 / 1 (native's v1 stage, superseded).
-- **What he would notice if B2 passes and backout ships ON:** a War Rig nose-on to a container backs out first and swings the way its
-  squad is going (his start: reversing at tick 4, past the box at tick 98 v 144 today); a rig whose back-up is pressed on a squadmate
-  gives up within a second instead of standing 4-5 s. **To playtest (after the merge):** `make skirmish` Locks seed 56416 as the
-  Gangs, click west from the start; the shots pair `make manoeuvre-start-shots SS_FLAGS=--traffic-on=backout` v none.
-- **Merge notes (shared files):** `Makefile` LIGHT_GOALS += `gcp-remote gcp-status gcp-start gcp-stop` (one line; round 45: `make
-  gcp-remote` took a laptop heavy slot and queued 20+ min behind two other streams' local lints while `make remote` is light; the
-  gcp goals are ssh / gcloud calls, no CPU). Nothing else outside the stream's paths.
-- **Questions for the lead:** none blocking. **Requests to other streams:** native (done: the twin); orders / engage: none.
-- **Known issues / next:** S v4's wedged guard is the likely miss (+1.7 se on dev; the squad's LAST crew carries the press: the next
-  shape is that crew's seat); the one-crew swarm / coil slot ~5 m off his click (engage's relay, R45.2) is a stretch after M4; a
-  tick-1 look against a stale `_goal` is closed (brain-order-only final goal).
+- **Nothing ships ON from this stream in round 45.** Three bars were filed and read on fresh seeds; all three FAIL as filed, each with
+  the line he would feel passing and a guard missing: **B2** (backout, his container ask): his own start PASSES (Guns_2 reverses at tick 4
+  and is round the box at tick 97, today at 44 / 140) and the deciding corpus PASSES (11 base-stuck poses, ON sooner in 11 / 11, median
+  -3.0 s), but one pose of 48 was 6.3 s slower (fixed on the branch), Terminus k-turn seconds +2.6 se (the rule's own back-ups and the
+  tanker behind the rigs turning to make way), and 4 of 24 impossible-staging guard poses leaned harder on their wall. **S v4** (the
+  seat bound, his round-43 settle): seated within the bound by 15 s 219 -> 362 (+8.6 se), but Locks wedged +6.4 s a run (+4.4 se: the
+  squad's last two crews pressing into a filled bound) and the fight kill share moved 0.049. **A6 v4** (holdway, the street jam): the
+  side-street jam 397 -> 48 crew-seconds (-5.6 se) but the released crews brush the passer at the mouth +2.5 contacts a run (line +2.3).
+  **Merge candidate (OFF code): stream/manoeuvre 5d4b3fa82** = my code + main e6e926160 + native's `pair/native-backout-skip`; its full
+  check runs on builder2 (`~/overnight-manoeuvre/r45/check_tip/check-5d4b3fa82.log`; the hash and exit line go to the orchestrator the
+  minute it lands); the default path is byte-identical to main (the default orders probe 60 / 60, builder2).
+- **In his terms, what each would have changed:** (B2) a War Rig nose-on to a container backs out at once and swings the way its squad
+  is going, round the box 3 s sooner, on his own start and on every pose where today's rig sits stuck; the costs he would also see are
+  one crawl pose in 48 taking 6 s longer (fixed), a Terminus tanker doing an extra three-point turn behind the rigs, and a rig pinned
+  against a wall pressing on it harder. (S v4) his first squad settles within 37 m of his click instead of 58, two seconds sooner on
+  average, but the last tanker and gun truck in grind against the four already parked for 6 s on Locks. (A6 v4) the squad jammed in the
+  side street for 30 s rolls through, at the price of a couple more friendly brushes at the mouth in a head-on meeting.
+- **What was built and stands on the branch (all OFF, `=off` escapes where ON exists):** the staged nose-on corpus re-staged (six of
+  round 44's fourteen poses stood inside a building, in water or against the arena wall; the squadmates are his deploy's hulls; an
+  on-mesh assertion; the six old stagings as guard poses; `tests/manoeuvre/stage_check.py`); backout v2 (oriented-box hull test, the
+  look follows the squad's transit route, a brain-order-only final goal, the stalled leg on net progress, the 11187 fallback that hands
+  an empty look back to today's planner and keeps its cadence) with native's twin EQUAL on the whole B2 block (96 / 96) and the two
+  stall fields + skip field in exec_fields; `--seat-last=open` (S v5's candidate: the open deep seat is the rear crew's); the
+  `s_judge --cells` per-run wedged rows; `nosed_judge` guard poses; `NOSED_ONLY` / `NOSED_SETUP_ONLY` / `NOSED_GUARD` dev switches;
+  the Makefile's gcp goals made light.
+- **Round 46 starting points (numbers in this Status):** (1) B2b on 11601-11648 with 11187's pose as a named guard, after a filing
+  redesign: judge the squad's time to clear its start, not k-turn seconds (a back-up IS a k-turn), and the rear crew's reaction to a rig
+  backing toward it (Terminus +8 s on the tanker); the guard poses' wall ticks (11155 14 -> 102). (2) S v5: the open rear seat cures
+  Locks (wedged -0.5 s a run, D1 +7.7 se, never-arrived 13 -> 3 on dev) and costs Terminus (+8.0 s a run): open it only where the bound
+  shrinks the shape past the rear crew's reach, then a bar on fresh seeds (tactics-level GDScript, no twin). (3) A6 v5: the head-on
+  release's brush at the mouth (seed 11466 0 -> 32 first). (4) The two-squad press (design note below). (5) The one-crew swarm / coil
+  slot ~5 m off his click (engage's relay; `group_offsets` returns the anchor for a one-crew squad, so the offset is elsewhere).
+- **To playtest (after the merge, with the escape switches):** `make skirmish` on Locks seed 56416 as the Gangs with `--traffic-on=backout`,
+  click west from the start and watch Guns_2; `--seat-bound=on --seat-order=on` on the same start for the settle.
+- **Cleanup for the close:** worktrees `../godot-manoeuvre-b2` (wip/manoeuvre-b2-freeze 0493977ed), `../godot-manoeuvre-b2x` (detached
+  0493977ed), `../godot-manoeuvre-mainref` (detached main) and their builder folders (`godot-manoeuvre-b2` on builder2; `-b2x-light`
+  on builder0; `-b2-light` on builder2; `godot-manoeuvre-mainref` on builder2); `~/overnight-manoeuvre/r45/` holds every series.
+- **Questions for the lead:** none. **Requests to other streams:** native's two pairs are merged into this branch; nothing open.
+- **Merge notes (shared files):** `Makefile` LIGHT_GOALS += `gcp-remote gcp-status gcp-start gcp-stop` (one line: `make gcp-remote` took
+  a laptop heavy slot behind two other streams' lints; the gcp goals are ssh / gcloud calls). `native/**` only through native's pairs.
 
 ### Plan (smallest foundation first; the brief's order kept)
 
