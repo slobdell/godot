@@ -108,7 +108,8 @@ _(worker keeps this current: report at the top, every number with commit, machin
   "across water / a pit / through a neck from the click, off the click line by more than the body's frontage, farther than its last
   rank, behind its own start" and, on any failure, re-lays the body on those seats. Built as G2 (O2 below).
 
-- **Green so far:** `make quick-remote` on **2a622e5bd** (builder0): 336 passed / 0 failed over the 45 control / tactics files the
+- **Green so far:** `make quick-remote` on **1d379cf68** (code 4f7525afa, the ground-laid body; builder0): 336 passed / 0 failed,
+  lint 97, smoke, `>> remote: make quick exited 0`. Earlier: `make quick-remote` on **2a622e5bd** (builder0): 336 passed / 0 failed over the 45 control / tactics files the
   diff touches, lint 97 scripts, the smoke; `>> remote: make quick exited 0`. Full check of 2a622e5bd launched on builder0
   (`~/orders-r45/check-2a622e5bd.log`). **Freeze candidate: dc1995fd0** = 2a622e5bd + main 47a15f434's checkpoint merge (the
   cold-import watchdog, tools/ only); it inherits 2a622e5bd's check by the orchestrator's N1 precedent (said to the orchestrator).
