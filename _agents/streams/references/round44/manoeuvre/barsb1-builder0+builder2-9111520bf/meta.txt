@@ -1,0 +1,17 @@
+bar b1 hash 9111520bf dirty '' start Wed Oct 28 06:17:04 PM PDT 2026
+his done Wed Oct 28 06:19:15 PM PDT 2026
+corpus done Wed Oct 28 06:21:37 PM PDT 2026
+workload done Wed Oct 28 10:23:17 PM PDT 2026
+group done Wed Oct 28 10:28:49 PM PDT 2026
+workload rerun start Wed Oct 28 10:29:16 PM PDT 2026 hash 9111520bf
+workload rerun done Wed Oct 28 10:29:23 PM PDT 2026
+workload judges done Wed Oct 28 10:29:23 PM PDT 2026
+builder2 legs rerun start Wed Oct 28 10:31:37 PM PDT 2026 hash 9111520bf load load average: 0.81, 0.22, 0.07
+machines: his start = builder2 (non-light, frozen folder); corpus = builder0 light; group + workload = builder2 light (rerun via bars_b1_builder2.sh after the 22:28 preemption; the first attempts produced no rows); fights + G1 probe = builder0 light (series driver). A third builder2 preemption moves group + workload to builder0 light (bars_b1_builder0.sh, pre-approved by the orchestrator).
+wedge base done Wed Oct 28 10:37:20 PM PDT 2026
+wedge bo done Wed Oct 28 10:45:59 PM PDT 2026
+group rerun done Wed Oct 28 10:46:08 PM PDT 2026
+workload rerun done Wed Oct 28 10:52:43 PM PDT 2026
+builder2 legs judges done Wed Oct 28 10:52:44 PM PDT 2026
+orders done Wed Oct 28 10:52:50 PM PDT 2026
+end Wed Oct 28 10:52:51 PM PDT 2026

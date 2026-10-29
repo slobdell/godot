@@ -1,0 +1,26 @@
+case                      arm       | offset worst/med m | deck far | all-in s | closest foreign m | shuffle worst m | drive/plan worst | toward min m
+crossing 5 click          base      |  169.9 /   86.0   |    0   0 |     11.6 |               3.4 |            55.4 | 3.21 | -2.9
+crossing 5 click          bo        |  169.9 /   86.0   |    0   0 |     11.6 |               3.4 |            55.4 | 3.21 | -2.9
+locks 5 click             base      |   56.3 /   39.8   |    3   0 |     41.8 |               3.8 |            64.0 | 2.16 | 15.3
+locks 5 click             bo        |   56.3 /   39.8   |    3   0 |     41.8 |               3.8 |            64.0 | 2.16 | 15.3
+terminus 5 click          base      |   59.7 /   39.4   |    0   0 |     36.8 |               6.2 |            50.7 | 3.58 | 5.8
+terminus 5 click          bo        |   59.7 /   39.4   |    0   0 |     36.8 |               6.2 |            50.7 | 3.58 | 5.8
+
+case                      arm       | deploy last s | place worst m | twitch worst m | end foreign min m | end far max m
+crossing 5 click          base      |          21.6 |          29.7 |           42.7 |               4.0 |         185.8
+crossing 5 click          bo        |          21.6 |          29.7 |           42.7 |               4.0 |         185.8
+locks 5 click             base      |          55.2 |          34.7 |           44.3 |               5.4 |          81.1
+locks 5 click             bo        |          55.2 |          34.7 |           44.3 |               5.4 |          81.1
+terminus 5 click          base      |          41.1 |          45.0 |           38.7 |               6.1 |          82.6
+terminus 5 click          bo        |          41.1 |          45.0 |           38.7 |               6.1 |          82.6
+
+MEDIANS over seeds [11125, 11126, 11127, 11128, 11129, 11130, 11131, 11132, 11133, 11134, 11135, 11136] (n 12 a cell; all-in 'inf' = a seed never all in)
+case                      arm         | n | all-in med s | never | shuffle med m | twitch med m | end far med m | end foreign min m | deck far | drive/plan med
+crossing 5 click          base        | 12 |          9.8 |     0 |          28.5 |         12.1 |         163.8 |               4.0 |    0   0 | 1.69
+crossing 5 click          bo          | 12 |          9.8 |     0 |          28.5 |         12.1 |         163.8 |               4.0 |    0   0 | 1.69
+locks 5 click             base        | 12 |         18.4 |     0 |          36.0 |         16.2 |          77.0 |               5.4 |    3   0 | 1.56
+locks 5 click             bo          | 12 |         18.4 |     0 |          36.0 |         16.2 |          77.0 |               5.4 |    3   0 | 1.56
+terminus 5 click          base        | 12 |         10.8 |     0 |          44.2 |         19.6 |          76.5 |               6.1 |    0   0 | 2.19
+terminus 5 click          bo          | 12 |         10.8 |     0 |          44.2 |         19.6 |          76.5 |               6.1 |    0   0 | 2.19
+
+EQUALITY click cells: 36 identical across arms, 0 differ

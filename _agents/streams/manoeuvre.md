@@ -18,6 +18,13 @@ have been obvious to the tank that they should have backed up first to create cl
 didn't seem to have the same problem."
 
 "Units must look smart" (memory): a tank that drives its nose into a box it could see is the opposite.
+- **B1's two losing patterns (the corpus at 9111520bf, the C++ twin):** (a) pose 13 (crossing, the rig alone, +55 deg to the face,
+  nose 0.0 m, its route 13-60 deg off) never looks (`looks 0`, both arms identical, base-stuck 7 s): the look's gates (the steering point
+  within a hull's length, |speed| < circle speed, the window) are what to trace first with `--turn-trace`; (b) the crossing crawl poses
+  10 and 6 (+50 / +60 deg, a squadmate's station crawling ahead) lose 1.7-5.3 s: the back-up lands and then a second k-turn follows
+  (`kturns 3`), so the departure vertex it backs out against is not the vertex the drive then wants. A re-file would be Bar B2 on fresh
+  seeds (11149-11196 are free) after both are fixed on the dev poses; the floor was met (21 base-stuck of 48), the guards were all
+  green, so the shape of the bar can stand.
 
 ## Where things stand (main at launch: dbf0bf637, see HANDOFF)
 
@@ -87,7 +94,7 @@ builder0, 3420/0; no baseline check re-run, per the contract). Orchestrator sess
 
 Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for testing only (the brief's option), never committed here.
 
-### WHERE IT STANDS (2026-10-28 ~16:45 PDT): Bars S v3 and A6 v3 FAILED as filed; Bar B1 filed, waiting on native's twin; M1-M5 done
+### WHERE IT STANDS (2026-10-28 ~23:15 PDT): Bars S v3, A6 v3 and B1 all FAILED as filed; nothing ships ON; M1-M5 done
 
 - **Tip: stream/manoeuvre 6b319c75f** (= main 0691e6aad, orders closed, G1 v10c OFF + native's m2m3-r2 pair + this stream; the
   merge of 9b72f5339 is f56bb7c5f, one conflict in workstreams.md's B1 entry: the stream's R44.16 guard text kept, the orchestrator's
@@ -100,25 +107,20 @@ Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for
 - **Shipped ON this round: nothing.** Every rule is OFF behind its switch: round 43's four (scoped to a squad's own order, M1),
   `--traffic-on=backout` (M2), `--traffic-on=parkedpass` (M3), `--seat-order=on` (S v4's half). Bar S v3 FAILED as filed on its new
   wedged guard (R44.7: the bound's press, +9 crew-seconds a run on Locks); Bar A6 v3 FAILED on the head-on hold guard by 0.26 se
-  (R44.19); both perf lines NOT JUDGED (the gate withdrawn).
-- **Bar B1 (backout alone) is FILED (eafbd3a80, R44.12 / R44.16) and FROZEN at 9111520bf** (~17:45 PDT) = the merge of native's
-  pair/native-backout-r3 30e37f336 (cut on df31afba8: the C++ twin's station-PID gate on `_backout_leg` only, the long-hull term,
-  backout out of traffic.gd's GDScript-drive list; native's builder2 verdicts: native-proof EQUAL with backout,parkedpass, 233 / 0,
-  AND the default orders probe base v bo 60 / 60 byte-identical on the C++ drive); code-identical to 30e37f336 (the delta is this
-  doc). Worktree `../godot-manoeuvre-b1` (detached, offset 7; `~/overnight-manoeuvre/r44/freeze_b1.sh`). **Its full check is GREEN: 9111520bf on
-  builder2, `>> remote: make check exited 0`, 3446 passed / 0 failed, 26 passed + 2 NOT JUDGED (perf-judge and scenario_perf: builder2
-  cannot judge perf; `~/overnight-manoeuvre/r44/check_b1/check.log`; native's check of the identical code 30e37f336 read the same).
-  The series `WT=../godot-manoeuvre-b1 bars_b1.sh` STARTED 18:17 PDT** (as filed and as the orchestrator approved: his start on
-  builder2, the corpus / fights / G1 probe on builder0 light, the workload and group guards on builder2 light, in sequence; driver log
-  `~/overnight-manoeuvre/r44/bars_b1-driver.log`, evidence `bars_b1/`, timeline `bars_b1/meta.txt`). If B1 passes, shipping ON needs
-  a quiet builder0 full check with perf-judge and scenario_perf JUDGED, after the series (the orchestrator's condition). **Hiccup
-  (22:30):** his start and the corpus (96 rows, 1 / 0) ran; the workload leg never ran a cell: builder2's fresh `godot-manoeuvre-b1-light`
-  hung on its first cold import (Oswald-Latin.ttf at 0 %) until the 14400 s slot killed it (exit 124, `deciding-wrapper.hung.log`);
-  the group leg's import on the same folder then completed and its cells run. Then builder2 was Spot-preempted at ~22:28:
-  the group leg died mid-run with no copy-back and the armed workload rerun fired into the dead box. `make gcp-start` brought it back;
-  **`bars_b1_builder2.sh` reruns both builder2 legs verbatim** (group then workload, the driver's lines, then their judges; dead logs
-  kept as `*.hung.log` / `*.preempted.log`). No number reached this side from any dead run, so reruns, not amendments (the orchestrator
-  agreed; HANDOFF records it). A third preemption: ask the orchestrator about moving both legs to builder0 light. **In both arms backout ON now runs the C++ drive.**
+  (R44.19); both perf lines NOT JUDGED (the gate withdrawn). Bar B1 FAILED as filed on D2's 80 % share (71 %), every guard green.
+- **Bar B1 (backout alone) FAILED as filed** (filed eafbd3a80, R44.12 / R44.16; frozen 9111520bf = main 0691e6aad + native's
+  pair/native-backout-r3 30e37f336 + this stream, the C++ twin in both arms; the frozen tree's check builder2 3446 / 0, exited 0;
+  seeds 11101-11148; judges filed under `references/round44/manoeuvre/barsb1-builder0+builder2-9111520bf/`, README has the table).
+  **D1 his start PASS** (Guns_2 reverses t4 v t44, past the box t93 v t140). **D2 the corpus FAIL:** 21 base-stuck poses (floor 8 met),
+  ON sooner in 15 = **71 % (line 80 %)**, median -1.73 s (passes its -1 s line); the cost ceiling on the other 27 passes (worst +1.9 s,
+  median -0.57 s). **Every guard PASS:** workload per arena yield+blocked -3.3 / -1.4 / -5.4 se, k-turn -1.3 / +1.3 / -4.8 se, seated
+  by 15 s -0.3 se, never-arrived -0.83 a run, wedged -2.6 s a run; b1_judge's unneeded-back-up guards within +2.2 se, nose-on crews
+  clear 8 m -3.7 se; group guards identical; G1 v9 rows **180 / 180 byte-identical**, g1v8 lines identical; fights G1-G4 pass. Perf
+  NOT JUDGED on builder2 (moot). **No re-file (C44.1); backout stays OFF.** The six poses ON did not win: pose 13 x 3 (crossing, alone,
+  +55 deg, nose 0.0 m: `looks 0`, the look never fired, arms identical) and the crossing crawl poses 10 / 6 x 3 (+1.7, +2.0, +5.3 s:
+  the back-up then a second k-turn). The series lost an evening to builder2: a cold-import hang (Oswald-Latin.ttf at 0 % for the
+  14400 s slot) then a Spot preemption; both builder2 legs rerun verbatim (no rows had reached this side; the orchestrator agreed).
+  In both arms backout ON ran the C++ drive (native's twin EQUAL + the probe 60 / 60, builder2).
 - **His ask is answered on his own recordings (M5):** on native's exact replay both his boxed War Rigs back out the second he clicks and
   are round the box 2-3 s before main's has moved (the table below); main reproduces his matches (the 5 s stand in the second one).
 - **CP44.0 is merged** (main 875ee5dd0's `group` key); the scoping's byte-identity proof stands (60/60 at proof5; parkedpass 60/60 at
