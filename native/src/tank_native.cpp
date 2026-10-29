@@ -740,6 +740,9 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.kturn_goal_ready = c.KTURN_GOAL_MOVED_M >= 0.0 && c.KTURN_GOAL_AHEAD_DEG >= 0.0 && c.manoeuvre_script != nullptr &&
 			c.traffic_script != nullptr;
 	c.backout_ready = (double)config.get("BACKOUT_MIN_ERROR_DEG", -1.0) >= 0.0 && c.traffic_script != nullptr;
+	c.BACKOUT_STALL_MPS = config.get("BACKOUT_STALL_MPS", -1.0);
+	c.BACKOUT_STALL_TICKS = config.get("BACKOUT_STALL_TICKS", -1);
+	c.backout_stall_ready = c.backout_ready && c.BACKOUT_STALL_MPS >= 0.0 && c.BACKOUT_STALL_TICKS >= 0;
 	c.parkedpass_ready = (bool)config.get("parkedpass", false) && c.traffic_script != nullptr;
 	// N4: _around_fire's constants and scripts; a missing one leaves the callback in place (fire_ready false).
 	c.fire_ready = false;

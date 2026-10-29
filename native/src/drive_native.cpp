@@ -809,6 +809,10 @@ struct Drive {
 		static const StringName name("backout_looks");
 		return name;
 	}
+	static const StringName &k_backout_stalls() {
+		static const StringName name("backout_stalls");
+		return name;
+	}
 	// Movement.backout_on(): Traffic.off("backout") read live; false on a tree without M2 (backout_ready).
 	bool backout_on() {
 		static const String backout("backout");
@@ -932,6 +936,9 @@ struct Drive {
 		v.set__kturn_left_m((double)leg.y);
 		v.set__kturn_from(here);
 		v.set__kturn_arc_m(0.0); // a leg must not inherit the last leg's arc (round 30's review)
+		if (c.backout_stall_ready) {
+			v.set__backout_stall_ticks(0); // round 45 (M2 b): read only on a departure look's leg
+		}
 		double timeout = (double)leg.y * c.KTURN_SECONDS_PER_M + 1.0;
 		const double speed = tank->get(k._speed);
 		const bool rolling = !kturn_brake_on() || speed * (double)leg.x > -c.KTURN_ROLLING_SPEED;
@@ -965,6 +972,21 @@ struct Drive {
 		const double backed = arc_here() ? (double)v._kturn_arc_m() : flat_distance(here, v._kturn_from());
 		const double left = v._kturn_left_m();
 		const bool reached = backed + kturn_stopping() >= left;
+		// Round 45 (native N3, manoeuvre M2 b, `backout`): a departure look's leg asked to move (speed in its gear past
+		// KTURN_ROLLING_SPEED) whose real motion along the nose in its gear stays under BACKOUT_STALL_MPS for BACKOUT_STALL_TICKS
+		// ends as "stalled" instead of standing until its timeout. Only backout's own legs.
+		bool stalled = false;
+		if (c.backout_stall_ready && (bool)v._backout_leg()) {
+			const Vector3 nose_motion_dir = Vector3((real_t)(-basis_z.x), 0.0f, (real_t)(-basis_z.z)).normalized();
+			const Vector3 real_velocity_now = tank->get(k.real_velocity);
+			const double nose_motion = (double)real_velocity_now.dot(nose_motion_dir) * (double)gear;
+			if ((double)tank->get(k._speed) * (double)gear > c.KTURN_ROLLING_SPEED && nose_motion < c.BACKOUT_STALL_MPS) {
+				v.set__backout_stall_ticks((int64_t)v._backout_stall_ticks() + step);
+			} else {
+				v.set__backout_stall_ticks(0);
+			}
+			stalled = (int64_t)v._backout_stall_ticks() >= c.BACKOUT_STALL_TICKS;
+		}
 		const double timeout = (double)v._kturn_timeout() - delta;
 		v.set__kturn_timeout(timeout);
 		const Vector2 nose(-basis_z.x, -basis_z.z);
@@ -984,9 +1006,12 @@ struct Drive {
 			kturn_end();
 			const Vector2 next = legs.pop_front();
 			kturn_start_leg(next);
-		} else if (reached || timeout <= 0.0 || lead_hit) {
+		} else if (reached || timeout <= 0.0 || lead_hit || stalled) {
 			kturn_end();
 			v.set__kturn_check(0);
+			if (stalled) {
+				sadd(k_backout_stalls(), 1);
+			}
 			if (!reached) {
 				sadd(k.kturn_aborted, 1);
 				v.set__kturn_check(c.KTURN_RETRY_TICKS);
