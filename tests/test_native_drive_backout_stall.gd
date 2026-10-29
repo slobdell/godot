@@ -1,8 +1,10 @@
 extends DriveTwinCase
 ## Round 45 (native N3, manoeuvre M2 (b), C45.4): a departure leg pressed against something its look cannot see ends as "stalled"
 ## (Movement._backout_stall_ticks, BACKOUT_STALL_MPS / _TICKS) on the C++ drive exactly as on the GDScript. His 08-15 start
-## (tests/test_native_drive_backout.gd's stage); the moment Green_Guns_2's first departure leg starts reversing, a static box (not
-## a tank, so the look's hull test never sees it) is dropped just behind its tail. Every frame every driving crew is driven both
+## (tests/test_native_drive_backout.gd's stage); the moment Green_Guns_2's first departure leg starts reversing, a parked War Rig
+## (spawned 10 m east of the squad, outside it) is moved to 1 m behind its tail, so the look that planned the leg never saw it there.
+## A HULL, not a static box: a static collider is a WallContact and ends the leg by today's lead_hit rule before a stall tick counts
+## (first cut b2b129f9f: 0 stalls; manoeuvre's read via the orchestrator). Every frame every driving crew is driven both
 ## ways from one snapshot (DriveTwinCase._compare_tick: the command and every Movement member and static, `backout_stalls` and
 ## `_backout_stall_ticks` included). The proven arm: the leg must actually stall in the fight (backout_stalls >= 1).
 
@@ -16,6 +18,9 @@ const BOX_NORTH_Z := 81.3
 const WATCH_FRAMES := 8 * 30
 
 var _lab: TacticsLab
+var _parked: Tank
+## Where the parked rig waits until the leg starts: 10 m east of Guns_5, outside the squad.
+const PARKED_AT := Vector3(-30.625, 0.0, 105.0)
 
 
 func teardown() -> void:
@@ -26,8 +31,8 @@ func teardown() -> void:
 	super.teardown()
 
 
-func test_a_departure_leg_into_an_unseen_box_stalls_the_same_on_the_cpp_drive() -> void:
-	if FreshStage.parent(self, "test_a_departure_leg_into_an_unseen_box_stalls_the_same_on_the_cpp_drive"):  # its own process
+func test_a_departure_leg_into_an_unseen_hull_stalls_the_same_on_the_cpp_drive() -> void:
+	if FreshStage.parent(self, "test_a_departure_leg_into_an_unseen_hull_stalls_the_same_on_the_cpp_drive"):  # its own process
 		return
 	if NativeExpect.absent(self):
 		print("native: absent, the backout equality is not exercised in this run")
@@ -42,6 +47,7 @@ func test_a_departure_leg_into_an_unseen_box_stalls_the_same_on_the_cpp_drive() 
 		var tank := _lab.unit(Match.Team.GREEN, unit_name, SQUAD[unit_name][0], 0.0, String(SQUAD[unit_name][1]))
 		if unit_name == "Green_Guns_2":
 			rig = tank
+	_parked = _lab.unit(Match.Team.GREEN, "Green_Parked_1", PARKED_AT, 0.0, "gang_tank")
 	await _lab.start()
 	Movement.reset_route_arms()
 	DoctrineTable.clear_cache()
@@ -71,7 +77,7 @@ func test_a_departure_leg_into_an_unseen_box_stalls_the_same_on_the_cpp_drive() 
 		BrainSwitches.native_drive = true  # the fight's own drive: the C++ one
 		if dropped < 0 and rig_mover._backout_leg and rig_mover._kturn_left_m > 0.0 and rig_mover._kturn_gear < 0:
 			dropped = frame
-			_drop_box_behind(rig)
+			_park_behind(rig)
 		await _lab.step()
 		stall_ticks_max = maxi(stall_ticks_max, rig_mover._backout_stall_ticks)
 		var result := _compare_tick(movers, controllers, frame)
@@ -86,25 +92,18 @@ func test_a_departure_leg_into_an_unseen_box_stalls_the_same_on_the_cpp_drive() 
 			cleared = frame + 1
 	var looks := int(Movement.route_arms().get("backout_looks", 0))
 	var stalls := int(Movement.route_arms().get("backout_stalls", 0))
-	print("native drive backout stall: %d drives, %d mismatches, %d departure looks, box dropped t%d, %d stalls (max %d stall ticks), Guns_2 reverse t%d"
+	print("native drive backout stall: %d drives, %d mismatches, %d departure looks, rig parked behind t%d, %d stalls (max %d stall ticks), Guns_2 reverse t%d"
 			% [drives, mismatches, looks, dropped, stalls, stall_ticks_max, first_reverse])
 	assert_eq(mismatches, 0, "the C++ drive is the live GDScript drive through a stalled departure leg: %s" % first)
 	assert_true(drives >= 600, "his five crews drove (%d)" % drives)
 	assert_true(dropped >= 0, "Guns_2's departure leg started reversing (t%d)" % dropped)
-	assert_true(stalls >= 1, "and stalled against the unseen box in the C++ drive's fight (%d stalls)" % stalls)
+	assert_true(stalls >= 1, "and stalled against the hull parked behind it in the C++ drive's fight (%d stalls)" % stalls)
 
 
-## A box the departure look cannot see (a StaticBody3D, not a Tank) just behind `rig`'s tail: 7 m wide, 3 m high, 1 m deep.
-func _drop_box_behind(rig: Tank) -> void:
+## The parked rig, 1 m behind `rig`'s tail and facing as it does (the look that planned the leg read it 10 m east of the squad).
+func _park_behind(rig: Tank) -> void:
 	var back := Vector3(rig.global_basis.z.x, 0.0, rig.global_basis.z.z).normalized()
-	var half_length := float(Movement.hull_box(rig.unit_id)[2]) * 0.5
-	var body := StaticBody3D.new()
-	body.name = "UnseenBox"
-	var shape := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = Vector3(7.0, 3.0, 1.0)
-	shape.shape = box
-	body.add_child(shape)
-	_lab.arena.add_child(body)
-	body.global_position = rig.global_position + back * (half_length + 0.4 + 0.5) + Vector3(0.0, 1.5, 0.0)
-	body.look_at(body.global_position + back, Vector3.UP)
+	var gap := float(Movement.hull_box(rig.unit_id)[2]) * 0.5 + 1.0 + float(Movement.hull_box(_parked.unit_id)[2]) * 0.5
+	var at := rig.global_position + back * gap
+	_parked.global_transform = Transform3D(rig.global_basis, Vector3(at.x, _parked.global_position.y, at.z))
+	_parked.velocity = Vector3.ZERO
