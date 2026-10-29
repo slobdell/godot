@@ -109,7 +109,8 @@ _(worker keeps this current: report at the top, every number with commit, machin
   rank, behind its own start" and, on any failure, re-lays the body on those seats. Built as G2 (O2 below).
 
 - **FREEZE CANDIDATE: a8adba232** (the frozen worktree `../godot-orders-g2`, detached there; its full check launched on builder2
-  from that folder, `~/orders-r45/freeze/`; `make quick-remote` on it running on builder0). Dev read 3 (154815c86, the tree
+  from that folder, `~/orders-r45/freeze/`; `make quick-remote` on a8adba232, builder0: 336 passed / 0 failed, lint 99, smoke,
+  `>> remote: make quick exited 0`). Dev read 3 (154815c86, the tree
   before the within-rank swap / rank-step / least-total deal) running on builder2; dev read 4 on a8adba232 follows it, then the
   series from the frozen tree. Native: the untangle twin re-proves on a8adba232 (the note below).
 - **Green so far:** `make quick-remote` on **1d379cf68** (code 4f7525afa, the ground-laid body; builder0): 336 passed / 0 failed,
