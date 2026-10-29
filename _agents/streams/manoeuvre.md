@@ -69,7 +69,8 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
 ### WHERE IT STANDS (2026-10-29 ~13:00 PDT; updated as the bars land)
 
 - **Tip: stream/manoeuvre bdcfb6dcc** (code **dab58b334**; docs after). **Nothing ships ON yet**: backout stays `DEFAULT_OFF`; **Bar B2 FAILS AS FILED** (D1 PASS, D2's deciding line PASS 11 / 11,
-  its cost ceiling broken by ONE pose of 48: seed 11187 +6.3 s v the +3 s every-pose line); the orchestrator decides with him. **M1 + M2 done** (the corpus re-staged, two rule defects fixed, the look follows the squad's route, the stalled leg); **M3
+  its cost ceiling broken by ONE pose of 48: seed 11187 +6.3 s; the Terminus k-turn guard +2.6 se); the 11187 fix is on the branch
+  (0a80c3685, OFF code) but the Terminus excess is not its shape, so **B2b is not filed this round (R45.12)**. **M1 + M2 done** (the corpus re-staged, two rule defects fixed, the look follows the squad's route, the stalled leg); **M3
   done** (native's twin `pair/native-backout-b2v2` 04ce3abe9 EQUAL); **M4 Bar B2 FILED** (R45.4 / R45.8 amendments), frozen at
   `wip/manoeuvre-b2-freeze` **0493977ed** (= stream ce52cba1c + the pair) in `../godot-manoeuvre-b2` and `../godot-manoeuvre-b2x`;
   its full check on builder2 is GREEN (3448 / 0, exited 0, 4 perf / load lines NOT JUDGED; the first attempt died with builder2's 12:51
@@ -269,6 +270,14 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
     11187 shape: the rear crew k-turns because the rigs ahead back out toward it. R45.12's removal read (Terminus dev 7001-7012, base v
     frozen bo v bo+fallback, GDScript drive, builder2) decides whether B2b is filed at all (`~/overnight-manoeuvre/r45/terminus/`).
   - **The fix committed: stream/manoeuvre 0a80c3685** (code dab58b334 + the fallback / cadence / skip; one new exec field).
+
+  - **R45.12's three-arm Terminus read (dev 7001-7012, GDScript drive, builder2, `~/overnight-manoeuvre/r45/terminus/`): the fallback
+    changes NOTHING on Terminus.** k-turn s a run: base 384.6 pooled -> frozen bo +4.45 (+4.1 se) -> bo+fallback +4.45 (identical rows
+    but one crew on 7009). The excess is the rule's own back-ups (the rigs +2 s each) and the Tanker behind them turning to make way
+    (+8 s on its deploy shape), not a look pre-empting a plan. The same cells: yield+blocked -4.9 s a run (-1.9 se), never-arrived -0.75
+    a run, wedged -0.8 / -1.3 s a run: the squad flows out sooner while its rear crew turns. **B2b is not filed (R45.12); backout stays
+    OFF this round; the orchestrator tells him in player terms.** Round 46: the k-turn guard counts the manoeuvre the rule exists to
+    make (a filing-design point), and the rear crew's reaction to a rig backing toward it is the next thing to look at.
 
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
