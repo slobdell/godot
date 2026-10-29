@@ -81,6 +81,46 @@ builder that aren't ours. builder0 at prep: load 0.02, 77 %, 24 G free; builder2
 
 _(each stream files its bar here BEFORE any number on its block; the orchestrator records it.)_
 
+- **Bar B3 (recorded by the orchestrator ~16:55 PDT from stream/manoeuvre 26b1425e7, before any number on 11701-11748), his War Rig backs out of the box first, on every pose (manoeuvre; R45.21 after R45.14 / R45.15; FILED before any
+  number on 11701-11748; C45.1, C45.3, C45.4, C45.5).** B2's shape and lines stand with ONE guard replaced and ONE pose added, said here
+  first: ONE arm, **bo** = `--traffic-on=backout` v `base` (today), on a FROZEN tree named at the series' launch = stream/manoeuvre at
+  the hash whose check is green + native's twin of round 45's changes (EQUAL + the default orders probe 60 / 60, C45.4), **native ON in
+  every log, the C++ drive in both arms.** **What changed since B2 (C45.1):** (1) a departure look that plans nothing is withdrawn and,
+  on a tick today's drive would have planned, today's planner runs on the station the same tick; on a look-only tick nothing more and
+  today's cadence is kept (B2's seed 11187, the one pose that broke the ceiling); (2) **no room behind on the navmesh = no look**: the
+  look requires 2 m of navmesh run behind the tail (B2's D3: 4 of 24 no-room poses read later / pressing harder because a look that
+  fired and was refused still moved the squad off today's path); (3) **the Terminus k-turn-seconds guard is REPLACED by the squad's
+  time to clear its start** (per arena, paired per cell, the traced squad's last crew clearing 8 m from its spot, ARM <= BASE + 2 se;
+  `tests/manoeuvre/b1_judge.py`): B2 failed k-turn seconds on Terminus at +2.6 se because a back-up IS a k-turn (the rule's own back-ups
+  +2 s a War Rig, the Tanker behind them turning to make way +8 s) while the same cells read yield+blocked -3.4 se and never-arrived
+  -0.5 a run: that guard counted the manoeuvre the rule exists to make. The replacement was chosen for that reason (R45.14) before it was
+  read; read afterwards on B2's own rows as DEV evidence (not a verdict) it passes where k-turn seconds failed (crossing +0.6 se, locks
+  +1.5 se, terminus -1.0 se); 11701-11748 decides. k-turn s stays REPORTED per arena (s_judge) and is named here as a risk, not a line. (4) **11187's pose is a named guard**: pose 10 at B2's jitter [-1.4, -0.5, +4.7, +3.0] runs as a fixed extra cell in both
+  arms (`NOSED_NAMED=on`), ON <= OFF + 3 s. **What it could break (named first):** as B2 (a crew reversing into the friend behind it;
+  a back-up where none was needed; a rig that backs out and no longer finds its station; the group column; a no-room rig leaning on
+  its wall), plus: the squad's start slower on Terminus where the Tanker turns to make way (the replacement guard's line).
+  **Deciding (B2's, R44.12):** D1 his start (`manoeuvre-start-trace` on his 08-15 recording, Locks 56416, native ON: Guns_2 reversing
+  before tick 15 and past the box's west end before tick 110; base must not do both); D2 the staged corpus on **11701-11748** (48
+  jittered poses of the re-staged table; base-stuck floor 8; ON sooner in >= 80 % AND median gain >= 1 s; the cost ceiling on the other
+  poses: every pose ON <= OFF + 3 s, median <= +1 s); D3 the guard poses on **11701-11724** (24 jittered of the six round-44 stagings): the five
+  NO-ROOM stagings (0 / 1 the wall 0.7 m behind, 3 / 4 water, 5 inside a block) every pose ON <= OFF + 1.0 s and <= +15 wall ticks; guard
+  pose 2 (the Crossing crawl whose rear squadmates sit on the container at (8, 64)) is NOT a no-room pose (its rig has 2 m of navmesh
+  and no hull behind, a back-up is legitimate) and reads the corpus' cost ceiling instead (every seed ON <= OFF + 3 s; B2's D3 read it at
+  the strict line, where its two misses were +1.4 s and +0.3 s / +19 wall ticks: said here before any number). **Guards (paired, as B2):** the first-order workload (`manoeuvre-bar-s` locks /
+  terminus / crossing x **11701-11724**, 72 paired cells): per arena yield+blocked s and wedged s ARM <= BASE + 2 se; per arena **the
+  squad's time to clear its start ARM <= BASE + 2 se** (replacing k-turn s); pooled never-arrived ARM <= BASE + 2 se; D1-seated-by-15 s
+  ARM >= BASE - 2 se; `b1_judge`'s unneeded-back-up guards (other crews' reversing ticks <= +2 se, seated >= -2 se per arena); group
+  guards (`q3_judge` G5 / G6 / G7) and the G1 corridor (ORDERS_PROBE_SQUAD rows byte-identical 60 / 60; `orders_judge g1v8` lines) on
+  **11725-11736**; engage's line (his Gorge replay 107 s base v bo, the per-crew tables identical); fights (`manoeuvre-wedge-trace` locks /
+  terminus / sumps x **11737-11742**, G1-G4); perf: the frozen tree's builder0 check perf-judge PASS before ON; no SCRIPT ERROR.
+  **Ships ON (`backout` out of DEFAULT_OFF, `--traffic-off=backout` the escape) only if D1, D2, D3 and every guard pass; no re-file.**
+  C45.5: the rule reads a crew's own order whoever gave it; grouped crews excepted (C44.3). **Machine:** `~/overnight-manoeuvre/r45/
+  bars_b3_a.sh` (builder0 light: corpus, guard poses, named pose, fights, G1 probe) and `bars_b3_b.sh` (builder2 after orders' G2
+  series, else builder0: his start, Gorge, workload, group guards) from two frozen checkouts of the same hash; evidence
+  `~/overnight-manoeuvre/r45/bars_b3/`, filed under `references/round45/manoeuvre/barsb3-<machines>-<hash>/`. **Dev history (never a
+  bar):** B2 (R45.15) and its reads in streams/manoeuvre.md Status: the fallback's 11187 read (ON t207 v OFF t166 on the GDScript drive,
+  laptop), the room-behind gate's guard re-read (builder0 light), the 14 dev poses (3 / 3 sooner, ceiling worst +1.5 s).
+
 - **Bar E2b HIS STOP STOPS (engage; filed in streams/engage.md at frozen 2fe2092cd ~16:40 PDT, recorded here by the orchestrator BEFORE any number on 11349-11396). E6 caps his STOP only (his hold keeps E1's slack: the hold cap killed a lone law_scout on dev 7003).**
 
   **Arms:** base = `--turn-in-cap=off` (E2 as shipped), new = default; both `--player-authority` ON; one frozen tree (named at
