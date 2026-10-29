@@ -229,6 +229,13 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   (+2.1 se), D1 -2.2 se; the latch alone D1 -2.9 se; converge and parkaside neutral. S v3's +9.2 s wedged = the bound's press +
   kturngoal, near additive. S v4 = the bound without kturngoal + the press fix (round 44's `--seat-order=on`), filed on 11401-11448
   after a second removal read.
+- **R45.8 (~12:50) Backout rule (b) re-cut before any B2 number.** Native's per-frame trace (builder2, pair efff89c7b, his Locks start,
+  a parked gang_tank 1 m behind Guns_2's tail): reversing into a hull first SHOVES it (its velocity = Guns_2's), then pinned, the nose
+  velocity flips +2.7 / -2.8 m/s every tick (contact bounce), so "< 0.1 m/s on 15 consecutive ticks" never counted (max 2). Manoeuvre's
+  re-cut (stream/manoeuvre 57e02fed5): stalled = less than BACKOUT_STALL_PROGRESS_M 1.0 m net from an anchor over BACKOUT_STALL_TICKS
+  30 (1 s) while asked to roll (speed x gear > 0.3); members `_backout_stall_ticks`, `_backout_stall_from` (INF at a leg's start).
+  GDScript stage: placed t3, stalled t33; his start unchanged (t4 / t98). Native re-twins; B2's freeze re-cuts on the new pair; the
+  filing's sentence on the stall is updated before any 11149 number.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
