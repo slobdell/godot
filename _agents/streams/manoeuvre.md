@@ -298,6 +298,15 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   stays OFF. Evidence `references/round45/manoeuvre/barsa6v4-builder0-0493977ed/README.md`. Round 46: the head-on release's brush with
   the passer at the mouth (v3 read the same line at +1.0 se).
 
+### The round's merge candidate (R45.20; 2026-10-29 ~15:25 PDT)
+
+- **stream/manoeuvre df74319af** = my code (all OFF: backout v2 + the 11187 fallback, `--seat-order=on`, `--seat-last=open`, the corpus /
+  judge tools, the Makefile light-goal line) + main e6e926160 (E2 ON) + native's `pair/native-backout-b2v2` 04ce3abe9. Its full check
+  runs on builder0 (`~/overnight-manoeuvre/r45/check_tip/check-df74319af.log`); **expected red on one test**: `test_native_exec_state`
+  wants `_backout_skip_until` in `native/src/exec_fields.h` (the pair predates the fallback; native adds the one line). The default
+  path's identity to main: the default orders probe (no flags, 60 rows) on my tip v a detached checkout of main, builder2 heavy,
+  `~/overnight-manoeuvre/r45/identity/`.
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
