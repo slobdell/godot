@@ -1,3 +1,5 @@
+> **ARCHIVED (round 44 closed 2026-10-28).** Final state of this brief; round 44's results are in `workstreams.md` *Bars (round 44)* and *Rulings (round 44)*.
+
 # Stream: native (a playtest report he can paste; twins for what ships; the replay of his group click)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/workstreams.md` **Round 44** (C44.1, C44.2, C44.4), your round-43

@@ -1,3 +1,5 @@
+> **ARCHIVED (round 44 closed 2026-10-28).** Final state of this brief; round 44's results are in `workstreams.md` *Bars (round 44)* and *Rulings (round 44)*.
+
 # Stream: manoeuvre (a War Rig nose-on to a container backs out first; his one-squad order lands at his click)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 44** (C44.1, CP44.0,

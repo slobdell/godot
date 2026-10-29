@@ -1,3 +1,5 @@
+> **ARCHIVED (round 44 closed 2026-10-28).** Final state of this brief; round 44's results are in `workstreams.md` *Bars (round 44)* and *Rulings (round 44)*.
+
 # Stream: orders (his all-squads click: every squad the same way, a column of wedges at his click)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/judging.md`, `_agents/workstreams.md` **Round 44** (C44.1-C44.5,
