@@ -226,6 +226,12 @@ export TANK_SQUAD_SLOTS=$slots
 export TANK_SQUAD_QUIET=$quiet
 export TANK_SQUAD_LIGHT=$light
 export QUIET_MAX_LOAD=${QUIET_MAX_LOAD:-4.0}
+# Round 45 (native N1): slot.sh runs tools/import_watchdog.sh inside the granted slot. B1 lost 4 h on builder2 to a first import
+# hung on Oswald-Latin.ttf; now no progress for IMPORT_WATCH_STALL s (600) kills it, clears .godot/, retries once, and a second
+# hang ends the run with '>> remote: import hung on <file>' (exit 75). REMOTE_IMPORT_WATCH=0 turns it off. (No backticks in
+# this heredoc: they run.)
+if [ "${REMOTE_IMPORT_WATCH:-1}" != 0 ]; then export TANK_SQUAD_IMPORT_WATCH=1; else unset TANK_SQUAD_IMPORT_WATCH; fi
+export IMPORT_WATCH_STALL=${IMPORT_WATCH_STALL:-600}
 # Hand the marker from "a launch claimed this directory" to "this pid is the run". From here the claim's TTL
 # stops mattering, because /proc can speak for the run itself -- including the forty minutes it may spend
 # QUEUED inside slot.sh, which has already cd-ed in. A signalled run releases it at once; a normal exit leaves
@@ -371,6 +377,12 @@ fi
 # The copy-back is done, so the directory is genuinely free now.
 run_guard release >/dev/null 2>&1 || true
 echo ">> remote: make $* exited $status (${light:+light lane, }build/${light:+light/build/} $([ "${REMOTE_NO_COPYBACK:-0}" = 1 ] && echo "NOT copied back" || echo "copied back")$([ "$copy_status" -ne 0 ] && echo ": FAILED"))" >&2
+# Round 45 (native N1): a double import hang is the run's last word, and its exit (75), not make's generic 2 or a slot timeout.
+# The watchdog writes the line to build/import-watch.verdict (and deletes it at its start, so a stale one never speaks).
+if [ "$status" -ne 0 ] && [ "$copy_status" -eq 0 ] && [ -s "${copy_dest}import-watch.verdict" ]; then
+	cat "${copy_dest}import-watch.verdict" >&2
+	exit 75
+fi
 # A failed copy-back fails the command. The run may well have passed on builder0, but everything local that would
 # prove it is from an earlier run, and a warning in a long log is exactly what nobody reads (the orchestrator called
 # main green off the wrong line of a log the same afternoon). A real make failure still wins: it is the bigger news.
