@@ -304,8 +304,10 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   judge tools, the Makefile light-goal line) + main e6e926160 (E2 ON) + native's `pair/native-backout-b2v2` 04ce3abe9. Its full check
   runs on builder0 (`~/overnight-manoeuvre/r45/check_tip/check-df74319af.log`); **expected red on one test**: `test_native_exec_state`
   wants `_backout_skip_until` in `native/src/exec_fields.h` (the pair predates the fallback; native adds the one line). The default
-  path's identity to main: the default orders probe (no flags, 60 rows) on my tip v a detached checkout of main, builder2 heavy,
-  `~/overnight-manoeuvre/r45/identity/`.
+  path's identity to main: the default orders probe (no flags, 60 rows) on my tip v a detached checkout of main e6e926160, builder2
+  heavy, same machine, native ON: **60 / 60 ORDERS_PROBE_SQUAD rows byte-identical** (`~/overnight-manoeuvre/r45/identity/`). The
+  builder0 check was stopped before it started (the orchestrator's main check held the lock; a known-red check); the full check runs
+  once on native's exec_fields pair + this tip.
 
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
