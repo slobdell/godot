@@ -19,7 +19,12 @@ INSIDE = {"native_cb": "drive", "native_fire": "drive", "native_avoid": "drive",
 # silently skipped): the black box records only skirmishes (MatchRecorder.start), not the profile's headless match.
 ELSEWHERE = {"native_recorder": "tests/test_native_recorder.gd (the tick profile does not record)",
              # Round 31 (C31.5): the planner plans only behind --nav-off=planner (CP-P1), never in the profile's match.
-             "native_planner": "tests/test_native_planner.gd (the planner's twin test; nothing in the profile plans)"}
+             "native_planner": "tests/test_native_planner.gd (the planner's twin test; nothing in the profile plans)",
+             # Round 45 (native N2): both run only inside RtsControls._order_squads, a PLAYER's group click (the profile's
+             # match is CPU elements, which never lay a group click through RtsControls); held by their twins and the
+             # 30-unit click test (test_control_scale), which takes both.
+             "native_gate_width": "tests/test_native_gate_width.gd (RtsControls' group click only; none in the profile)",
+             "native_untangle": "tests/test_native_untangle.gd (RtsControls' group click only; none in the profile)"}
 
 
 def main(path: str) -> int:
