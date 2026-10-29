@@ -325,6 +325,12 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   taken: the archived "second shape"), not a wider switch mix. The orchestrator's watch item (a D1 pass with a wedged miss) is the
   likely failure shape; the per-run rows are in the judge's `--cells` output for the bar.
 
+- **Bar S v4, deciding leg (frozen 0493977ed, builder2 light, 72 paired cells 11401-11424, C++ drive, 14:29 PDT):** **D1 seated within the
+  bound by 15 s 219 -> 362 pooled (+1.99 a run, +8.6 se) PASS**; D2 (guard) yield+blocked -2.3 s a run (-1.6 se) PASS; per-arena
+  yield+blocked +1.9 / +0.2 / -5.7 se PASS, k-turn -3.2 / -1.9 / -10.0 se PASS; **wedged s: crossing -0.1 se, terminus -0.2 se PASS,
+  Locks +6.44 s a run (se 1.48, +4.4 se) FAIL**; never-arrived 243 -> 198 (-0.63 a run; Locks alone +0.9). Who carries Locks' wedged
+  (sum over 24 seeds, by crew slot): 5: +88.5 s, 4: +54.2, 2: +23.7, 3: -12.0, 1: +0.1 — the squad's last two crews. **S v4 FAILS as
+  filed on the Locks wedged guard** (the watch item); the other legs run for the record (`~/overnight-manoeuvre/r45/bars_s4/`).
 - **Design note for the press (if S v4 misses its wedged guard; for round 46 or an S v5 after B2):** the dev rows say the bound's
   wedged seconds sit on the squad's LAST crew (the 6.6 m Tanker, Guns_5: 7 s a run on 4 of 12 Locks seeds; the Battery's rear crews
   7-10 s): the crew arriving last converges on a bound (1.5 hull lengths of the longest hull, `SEAT_BOUND_HULLS`, floor 18 m) the four
