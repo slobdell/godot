@@ -331,6 +331,25 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   Locks +6.44 s a run (se 1.48, +4.4 se) FAIL**; never-arrived 243 -> 198 (-0.63 a run; Locks alone +0.9). Who carries Locks' wedged
   (sum over 24 seeds, by crew slot): 5: +88.5 s, 4: +54.2, 2: +23.7, 3: -12.0, 1: +0.1 — the squad's last two crews. **S v4 FAILS as
   filed on the Locks wedged guard** (the watch item); the other legs run for the record (`~/overnight-manoeuvre/r45/bars_s4/`).
+- **S v5 dev read 1 (R45.17; `--seat-last=open` = the bound's deepest seat at its nominal depth; 2d88cff75's code; Locks 7001-7012,
+  builder2 heavy, 12 paired cells an arm, `~/overnight-manoeuvre/r45/s5/dev1/`):**
+  | arm | D1 seated by 15 s | yield+blocked s a run | k-turn s a run | never-arrived (pooled) | wedged s a run |
+  |---|---|---|---|---|---|
+  | s4 (bound + order) | 53 -> 83 (+3.5 se) | +0.0 | -3.7 | 13 -> 16 | +3.5 (se 2.0) |
+  | s5 (s4 + seat-last) | 53 -> 80 (+4.6 se) | +1.5 | -2.1 | 13 -> 23 | +3.6 (se 1.8) |
+  **Read (per cell):** on the Guns' seeds the press is GONE (7001 / 7002 / 7004 / 7010 wedged 15.8 -> 3.8, 15.4 -> 4.5, 11.1 -> 4.3, 11.1
+  -> 4.6: the Tanker's 7 s vanished), but on 7007 / 7008 / 7012 it MOVED (3.9 -> 16.2, 6.0 -> 15.6, 4.5 -> 17.2: Guns_2, a War Rig, 6 s
+  each plus the Hunters around it): the deep nominal seat went to whichever crew the seating's cost picked, and a War Rig driving
+  to the far seat crossed the second squad. Pooled it is a wash; never-arrived worse. **Next (dev read 2):** bind the open seat to the
+  REAR-MOST crew at the order (a depth-rank term in `seat()`), so the Tanker, not a War Rig, takes it.
+- **S v5 dev read 2 (52493b473's code: the open deep seat is the REAR-MOST crew's alone; Locks 7001-7012, builder2 heavy, 12 paired cells,
+  `~/overnight-manoeuvre/r45/s5/dev2/`):**
+  | arm | D1 seated by 15 s | yield+blocked s a run | k-turn s a run | never-arrived (pooled) | wedged s a run |
+  |---|---|---|---|---|---|
+  | s4 (bound + order) | 53 -> 83 (+3.5 se) | +0.0 | -3.7 (-2.9 se) | 13 -> 16 | +3.5 (se 2.0) |
+  | **s5 (s4 + seat-last, rear crew)** | **53 -> 89 (+7.7 se)** | -1.7 (-0.9 se) | **-5.5 (-3.1 se)** | **13 -> 3** | **-0.5 (se 1.3)** |
+  **The press is gone on Locks dev**: per cell the Guns seeds read 5-8 s wedged (base 4-8), three cells read 2.3 (base 7.9), one cell
+  (7009, the Guns2 squad) 14.6 -> 25.1. Round 46's S v5 starts from these numbers (a bar on fresh seeds; the three-arena read next).
 - **Design note for the press (if S v4 misses its wedged guard; for round 46 or an S v5 after B2):** the dev rows say the bound's
   wedged seconds sit on the squad's LAST crew (the 6.6 m Tanker, Guns_5: 7 s a run on 4 of 12 Locks seeds; the Battery's rear crews
   7-10 s): the crew arriving last converges on a bound (1.5 hull lengths of the longest hull, `SEAT_BOUND_HULLS`, floor 18 m) the four
