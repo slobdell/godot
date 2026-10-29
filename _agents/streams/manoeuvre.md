@@ -269,6 +269,23 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   taken: the archived "second shape"), not a wider switch mix. The orchestrator's watch item (a D1 pass with a wedged miss) is the
   likely failure shape; the per-run rows are in the judge's `--cells` output for the bar.
 
+- **Design note for the press (if S v4 misses its wedged guard; for round 46 or an S v5 after B2):** the dev rows say the bound's
+  wedged seconds sit on the squad's LAST crew (the 6.6 m Tanker, Guns_5: 7 s a run on 4 of 12 Locks seeds; the Battery's rear crews
+  7-10 s): the crew arriving last converges on a bound (1.5 hull lengths of the longest hull, `SEAT_BOUND_HULLS`, floor 18 m) the four
+  others already fill, and wedges between them and the box/wall of the yard. Two shapes, in order of least machinery: (a) **the last
+  seat is dealt outside the filled bound**: `TacticsFormation.place` / `seat()` keeps the bound for the first `count - 1` seats and
+  lets the last-arriving crew (by `transit_starts` order, or the longest route) take today's unbounded seat (its own slot of the
+  nominal shape): the squad still reads as settled (four of five within the bound) and the tanker parks at the back, where he would
+  put it; (b) **a squadmate's give-way deferred until the seat ahead is taken** (`Movement.ask()`: a crew converging on its seat does
+  not back for a squadmate whose seat is still empty; the asker waits its turn): more code, touches the yield rules (traffic.gd,
+  mine). Dev read first on Locks 7001-7012 with `s_judge --cells` (the per-crew wedged rows name the carrier), then a Bar S v5 on the
+  reserve block. Neither is built this round unless S v4 fails before the series window closes.
+- **Design note, the two-squad press (stretch, carried from round 44):** the second squad driving into the first's compact zone
+  (Locks: the Hunters through the Guns' bound; `parkedpass` was built for it, OFF, S v3's parkedpass arm never read alone). With the
+  bound ON the first squad's zone is 37 m instead of 58, so the second squad's path through it is the new cost; the read to do first:
+  `manoeuvre-bar-s` Locks with `--seat-bound=on --seat-order=on` v the same + `--traffic-on=parkedpass`, per-squad yield / wedged
+  (the archived Status's per-squad table), before any rule.
+
 Decisions so far: dev reads run on the laptop's GDScript drive under `flock /tmp/tank-squad-laptop-godot.lock` (one pose pair ~1 min;
 nothing of the lead's runs while he is away); every judged number comes from a builder.
 
