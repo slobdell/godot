@@ -417,6 +417,13 @@ static func _plan_movement(plan: Dictionary, situation: Dictionary, state: Dicti
 	if verb == "screen" and Drills.on_screen_line(situation, state):
 		_plan_screen(plan, situation, state, table, destination)
 		return
+	if verb == "hold" and destination == null and Drills.PLAYER_AUTHORITY and Drills.obeys_player(state):
+		# Round 45 (engage E2): HIS hold is hold position: every crew stands where it is, turned to the nearest contact (the
+		# brain's HOLD fires at will). The halt below re-seats crews into a halt shape, which drove his lone scout 5 m on
+		# toward the enemy and a squad's crews up to 30 m (tests/test_authority_hold.gd).
+		plan["arrived"] = true
+		_hold_in_place(plan, members_of(situation), situation)
+		return
 	if verb == "hold" and destination == null:
 		# Hold here: where the element stood when told, kept from update to update (the centre of a halted
 		# element wanders as its crews face their sectors, and a halt that follows it creeps).
@@ -3448,6 +3455,25 @@ static func _hold(plan: Dictionary, members: Array, situation: Dictionary, facin
 		else:
 			# X5: "guns toward `facing`" was the docstring and nothing in the order said it. Now it does.
 			_order(plan, name, "hold", null, "", facing)
+		plan["slots"][name] = position
+
+
+## Round 45 (engage E2): his hold position. Each crew holds its own spot (no point: the brain holds where it stands when
+## the order arrives), its guns toward the nearest visible contact, else the element's heading. No crew is sent at anyone.
+static func _hold_in_place(plan: Dictionary, members: Array, situation: Dictionary) -> void:
+	var contact := Drills.nearest_visible(situation)
+	var center: Vector3 = situation["center"]
+	if not contact.is_empty() and (contact["position"] as Vector3).distance_to(center) > 1.0:
+		plan["heading"] = TacticsFormation.flat((contact["position"] as Vector3) - center)
+	plan["anchor"] = clamp_to_arena(center)
+	plan["why"] = "holding as ordered: every gun on what comes"
+	for member: Dictionary in members:
+		var name := String(member["name"])
+		var position: Vector3 = member["position"]
+		var facing: Vector3 = plan["heading"]
+		if not contact.is_empty() and (contact["position"] as Vector3).distance_to(position) > 1.0:
+			facing = TacticsFormation.flat((contact["position"] as Vector3) - position)
+		_order(plan, name, "hold", null, "", facing)
 		plan["slots"][name] = position
 
 

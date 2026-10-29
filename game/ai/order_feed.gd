@@ -116,7 +116,11 @@ static func normalize(raw: Variant) -> Dictionary:
 	return {"verb": verb, "goal": goal, "target": String(order.get("target", "")),
 			"issued_tick": int(order.get("issued_tick", -1)),
 			"speed": clampf(float(order.get("speed", 1.0)), 0.2, 1.0), "identity": identity,
-			"facing": heading(order.get("facing"))}
+			"facing": heading(order.get("facing")),
+			# Round 45 (engage E2): the player gave this order himself (K1 `source`): his stop and post rules (TankBrain).
+			"player": String(order.get("source", "")) == "player",
+			# Round 45 (E2): a hold or stop given no point (Orders fills `goal` with where the crew stood when it was issued).
+			"here": (verb == "hold" or verb == "stop") and order.get("to") == null}
 
 
 ## Identity of an order, to notice a new one even without the signal: its id, verb, ticks, target, and destination as

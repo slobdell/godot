@@ -107,3 +107,52 @@ inert since TankBrain declares EXECUTES_ORDERS. Proceeding on the most reversibl
 the C++ decide twin needs no new verb). Relay asked: orders (a squad of one goes down the task path), manoeuvre (the drive's arrival
 is NOT the cause; the one-crew slot ~5 m off the click is a formation question).
 
+**GRANTED (R45.2, orchestrator, main 6064df074):** `game/ai/tank_brain.gd` for the `--player-authority` switch only + the
+additive keys in `game/ai/order_feed.gd` normalize. C45.4: native-on v native-off EQUAL on the authority probe before freezing.
+
+**E2 (built, `--player-authority=on|off`, ON by default; `Drills.PLAYER_AUTHORITY`):**
+- (a) `drills.gd`: his hold task runs no drill; `element_plan.gd` `_hold_in_place`: under his hold every crew holds its own spot
+  facing the nearest contact (the halt re-seated a lone crew 5 m forward and a squad's crews up to 30 m).
+- (b) `element.gd` `_his_lone_order` (C45.3): his move / hold task to a squad of ONE goes to the crew as his order (`source: player`,
+  his exact click), and the crew stays detached (`HIS`) until his next task (`_retake`). Shift-queued tasks keep the element path.
+- (c) `tank_brain.gd`: his stop brakes where the crew comes to rest (no drive back to where it was read); a hold he gave no point
+  holds where the crew comes to REST (Orders fills the goal with the spot at issue, behind a 15 m/s scout); when his stop / move
+  is done the crew holds where it finished (verb `hold`, the existing option: native decide needs no new verb) until its next order.
+- `order_feed.gd` normalize: `player` (source == player) and `here` (a hold / stop with no point).
+- The CPU: every rule reads `player` / the player's team; the CPU gives no player orders (C45.5). Proof: sim-baseline (CPU v CPU) in
+  `make check` unmoved.
+
+### Bar E1 (FILED 2026-10-29 ~11:40 PDT, before any number on 11301-11348)
+
+**Workload:** `make engage-authority-bar AUTH_SEEDS="11301 ... 11348"` (`tests/engage/authority_probe.gd`, table
+`tests/engage/authority_table.py --pair`): per seed a drawn arena (gorge / locks / terminus / crossing by seed), crew hull (8 kinds),
+enemy gun (4 kinds), a lone crew (squad of one) or a squad of three, driving at a gun that shoots back from just outside the crew's
+range; 2.5 s in, ONE order of his (hold / stop / move, by the RtsControls path: task for a squad of one's hold and move, direct
+otherwise), standing 15 s; then his squad task (take-back). Arms OFF = `--player-authority=off`, ON = default, paired by seed, one
+frozen tree (named when frozen), builder0 light lane, native ON. **His case** = runs where the crew is ordered alone (a squad of one,
+or one crew of a squad given a direct order).
+
+**Deciding (ON arm, his case):**
+- D1 hold / stop: every rested run's farthest distance from where the crew first came to rest <= **3.0 m** (HOLD_TOLERANCE, the
+  hold's own slack before it drives back; the brief's 2 m is under that existing slack, which this rule does not change).
+- D2 element rows that send his crew somewhere else (attack, attack_move, or a move whose goal is over 3 m from the crew / from his
+  click for his move) while his order stands: **0** in total.
+- D3 his move: every run not dead and not ending `blocked` ends within the crew's own arrival radius
+  (max(ORDER_ARRIVE 3.5, settle radius)) of his click; blocked ends are listed (the drive: manoeuvre's).
+
+**Guards:**
+- G1 fights: crew deaths ON <= OFF + max(1, 1.645 sqrt(OFF)); enemy hp left mean ON within OFF +/- 1.645 se of the paired
+  difference (does his crew still hurt the gun).
+- G2 a held crew shoots back: over held runs in range at the order, shots mean ON >= OFF - 1.645 se (if none is in range, UNREAD and
+  said).
+- G3 take-back: his squad task after his crew order reaches the crew within 1 s: **100 %** of living runs ON.
+- G4 a squad's hold sends no crew at the enemy: squad pushed rows ON = 0.
+- G5 C45.4: the ON arm native-on v `--brains-off=native` EQUAL on every seed (every probe field but the native flag).
+- G6 C45.3: orders' multi-squad probe (`make orders-probe`, main v `pa_off:--player-authority=off`, ORDERS_PROBE_SEEDS 11301) rows
+  identical (squad orders are element-sourced: the rule should not touch them); manoeuvre's player plain move (`make
+  manoeuvre-behind`, both arms): arrival rows identical (post-arrival hold is after its measure).
+- G7 `make check` GREEN on the frozen tree (sim-baseline unmoved = the CPU untouched, C45.5).
+
+**What it could BREAK (named before the numbers):** a crew he left holding no longer drifts into a fight to help (G1, G2); a
+squad of one's move now ignores the squad's formation (one crew, no formation to keep); a crew he stopped then forgot stands until
+told (that is the rule, said to him in player terms).

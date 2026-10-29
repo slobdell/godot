@@ -7,6 +7,8 @@ extends "res://tests/replay_orders.gd"
 ##            detached from it
 ##   brain    the TankBrain's chosen option and the order it is acting on
 ##   mover    the mover's phase and goal
+## `--authority-on-at=TICK` (E4, his acceptance read): replay his match as he played it (give `--player-authority=off`) and
+## switch the rule ON at TICK, so his later clicks still meet the match they were made in.
 ## `--authority-units=A,B` names the crews (default Green_Hunters_5); `--authority-from=TICK` / `--authority-every=N`.
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/engage/authority_trace.gd -- --orders=<his jsonl> \
 ##         --seconds=107 [--authority-from=2500 --authority-every=3] [any game switch]
@@ -18,6 +20,10 @@ func _trace() -> void:
 	super._trace()
 	if _match == null:
 		return
+	var on_at := int(_flag("authority-on-at", "-1"))
+	if on_at >= 0 and _match.tick >= on_at and not Drills.PLAYER_AUTHORITY:
+		Drills.PLAYER_AUTHORITY = true
+		print("AUTHORITY_SWITCH on at tick %d" % _match.tick)
 	var from := int(_flag("authority-from", "2500"))
 	var every := maxi(int(_flag("authority-every", "3")), 1)
 	if _match.tick < from:

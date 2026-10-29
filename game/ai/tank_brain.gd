@@ -634,6 +634,14 @@ var _order_dirty := false
 ## The key of the order this brain reported complete (so it reports it once).
 var _finished_key := ""
 var _order_home: Variant = null
+## Round 45 (engage E2, Drills.PLAYER_AUTHORITY): the order being carried out is one the PLAYER gave this crew directly, and
+## the last one finished was (his stop or move is done): the crew then holds at `_order_home` until its next order, instead
+## of fighting round it as an idle unit (his Gorge scout's ENGAGE crept 6 m toward the enemy after his stop).
+var _his_order := false
+var _his_post := false
+## ...where it holds: where the crew stood when his order was done (a move completes inside its arrival radius, wider than
+## HOLD's tolerance, so holding the CLICK drove it back and forth: his replay, 2761-2832).
+var _his_post_at := Vector3.ZERO
 ## Where a player left this unit (null = no player commands this side, or it has never been ordered): the centre of the
 ## circle it keeps to while it has no order of its own.
 var _player_post: Variant = null
@@ -918,6 +926,11 @@ func _poll_order(think_tick: bool) -> bool:
 		return false
 	var finished := _order_key != "" and _order_key == _finished_key
 	_order_key = now_key
+	# Round 45 (E2): a new order replaces his post; an order cleared before it was done leaves none.
+	_his_post = finished and _his_order and now.is_empty() and ["stop", "move", "attack_move"].has(String(order.get("verb", "")))
+	if _his_post:
+		_his_post_at = _flat(tank.global_position)
+	_his_order = bool(now.get("player", false))
 	if now.is_empty() and not finished:
 		_order_home = _flat(tank.global_position)  # cleared before it was done: stay where it stopped
 	order = now
@@ -927,6 +940,7 @@ func _poll_order(think_tick: bool) -> bool:
 		_order_home = _flat(tank.global_position)
 	if order["goal"] == null and ["hold", "move", "attack_move", "stop"].has(order["verb"]):
 		order["goal"] = _flat(tank.global_position)  # hold or stop here (a move with nowhere to go holds too)
+		order["here"] = true
 		if order["verb"] == "move" or order["verb"] == "attack_move":
 			order["verb"] = "hold"
 	return true
@@ -1042,6 +1056,14 @@ func _update_order_progress() -> void:
 							arrive, repaired, mover._repair_to if mover != null else "-", _flat(mover._repair_to).distance_to(goal)
 							if mover != null and mover._repair_to != Vector3.INF else 0.0, order.get("facing"), to_station])
 				_finish_order(goal)
+		"hold":
+			# Round 45 (engage E2): a hold with no point, given to one of HIS crews, holds where the crew comes to REST: the
+			# spot read while it drove at 15 m/s was behind it, and HOLD's return drove it back and forth (authority probe,
+			# 7003: 6.8 m). The CPU's holds are unchanged (C45.5).
+			if bool(order.get("here", false)) and not bool(order.get("rested", false)) and Drills.PLAYER_AUTHORITY \
+					and tank.team == OrderFeed.player_team(game_match):
+				order["goal"] = _flat(here)
+				order["rested"] = tank.estimated_velocity.length() < STOPPED_SPEED
 		"stop":
 			# Stopped, and stopped for a moment (a unit that had barely started moving would finish at once).
 			if tank.estimated_velocity.length() < STOPPED_SPEED and game_match.tick - int(order["issued_tick"]) >= STOP_SETTLE_TICKS:
@@ -1083,11 +1105,15 @@ func _order_context() -> Variant:
 	if _order_home == null:
 		return null
 	if order.is_empty():
+		# Round 45 (E2): his stop or move is done; the crew holds where it left him (stand, turn, fire) until he says more.
+		if _his_post and Drills.PLAYER_AUTHORITY:
+			return {"verb": "hold", "goal": _his_post_at, "target": "", "speed": 1.0, "player": true,
+					"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
 		var post: Variant = OrderFeed.station(_order_source, String(tank.name))
 		return {"verb": "idle", "goal": post if post != null else _order_home, "target": "", "speed": 1.0,
 				"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
 	var context := {"verb": order["verb"], "goal": order["goal"], "target": order["target"], "speed": order["speed"],
-			"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
+			"player": bool(order.get("player", false)), "target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
 	# Live values: a follow's station moves with the friend, and a group's pace changes as it closes up.
 	if _order_source != null:
 		if order["verb"] == "follow":
@@ -2641,7 +2667,12 @@ func _act(s: Dictionary) -> void:
 			var o: Dictionary = s["order"]
 			var goal: Vector3 = o["goal"]
 			why = TankBrain._join(why, "attack-move" if o["verb"] == "attack_move" else "ordered")
-			if bool(o.get("transit_wait", false)):
+			if o["verb"] == "stop" and bool(o.get("player", false)) and Drills.PLAYER_AUTHORITY:
+				# Round 45 (E2): his stop halts where the crew comes to rest. Driving back to where it was when the order was
+				# read sent his 15 m/s scout looping 11 m on toward the enemy (Gorge, 95.8 s).
+				why = TankBrain._join(why, "stopping")
+				_order_move({"type": "stop"})
+			elif bool(o.get("transit_wait", false)):
 				# Round 12: ahead of my place in the travelling formation; it is coming to me.
 				why = TankBrain._join(why, "waiting for the formation")
 				_order_move({"type": "stop"})

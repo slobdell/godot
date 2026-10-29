@@ -55,7 +55,7 @@ engage-bar2: import ## engage Bar E2: engage-probe v2off/v2on on ENGAGE_SEEDS (b
 	$(PYTHON) tests/engage/attack_shot_table.py --pair $(BUILD_DIR)/engage/probe/v2off $(BUILD_DIR)/engage/probe/v2on --deciding=suppress
 
 # A quick parse check of the stream's own scripts.
-ENGAGE_PARSE ?= game/tactics/firing_position.gd game/tactics/element_situation.gd game/tactics/element_plan.gd game/ai/tank_brain.gd \
+ENGAGE_PARSE ?= tests/engage/authority_probe.gd tests/engage/authority_trace.gd tests/test_authority_hold.gd game/tactics/drills.gd game/tactics/firing_position.gd game/tactics/element_situation.gd game/tactics/element_plan.gd game/ai/tank_brain.gd \
 	game/control/rts_controls.gd tests/tactics/test_engage_shot.gd tests/engage/replay_probe.gd tests/engage/attack_shot_probe.gd \
 	tests/engage/test_engage_hud_words.gd tests/tactics/test_engage_flank_side.gd tests/engage/far_ambush_trace.gd
 .PHONY: engage-parse
@@ -177,6 +177,8 @@ AUTH_FROM ?= 2500
 AUTH_EVERY ?= 3
 AUTH_FLAGS ?=
 AUTH_TAG ?= base
+AUTH_PROBE_FLAGS ?=
+AUTH_PROBE_TAG ?= $(AUTH_ARM)
 .PHONY: engage-authority-trace
 engage-authority-trace: native-fresh import ## engage E1: his Gorge replay with AUTHORITY rows for AUTH_UNITS (AUTH_FLAGS an arm, AUTH_TAG) -> build/engage/authority_<tag>.log
 	@mkdir -p $(BUILD_DIR)/engage/authority_$(AUTH_TAG)
@@ -187,3 +189,24 @@ engage-authority-trace: native-fresh import ## engage E1: his Gorge replay with 
 		> $(BUILD_DIR)/engage/authority_$(AUTH_TAG).log 2>&1 || true
 	@grep -E "^REPLAY_(SETUP|DONE|NATIVE)|SCRIPT ERROR|Parse Error" $(BUILD_DIR)/engage/authority_$(AUTH_TAG).log || true
 	@echo "AUTHORITY rows: $$(grep -c '^AUTHORITY ' $(BUILD_DIR)/engage/authority_$(AUTH_TAG).log || true)"
+
+# E3 (Bar E1's workload): the authority probe over AUTH_SEEDS, one AUTHORITY_PROBE line per seed; AUTH_ARM=on|off is
+# --player-authority. Bar E1's seeds: 11301-11348 (filed in workstreams.md *Bars (round 45)* before any number on them).
+AUTH_SEEDS ?= 7001 7002 7003 7004 7005 7006 7007 7008
+AUTH_ARM ?= on
+AUTH_JOBS ?= 4
+.PHONY: engage-authority-probe
+engage-authority-probe: native-fresh import ## engage E3: the authority probe over AUTH_SEEDS (AUTH_ARM=on|off, AUTH_JOBS) -> build/engage/authority/<arm>/<seed>.log + the table
+	@mkdir -p $(BUILD_DIR)/engage/authority/$(AUTH_PROBE_TAG)
+	@echo ">> engage-authority-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | arm $(AUTH_ARM) | seeds $(firstword $(AUTH_SEEDS))+ ($(words $(AUTH_SEEDS))) | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(AUTH_SEEDS); do echo $$seed; done | xargs -r -P $(AUTH_JOBS) -I{} sh -c \
+		'timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/authority_probe.gd -- \
+		--seed={} --player-authority=$(AUTH_ARM) $(AUTH_PROBE_FLAGS) > $(BUILD_DIR)/engage/authority/$(AUTH_PROBE_TAG)/{}.log 2>&1 || true; \
+		grep -q "^AUTHORITY_PROBE " $(BUILD_DIR)/engage/authority/$(AUTH_PROBE_TAG)/{}.log || echo "  MISSING AUTHORITY_PROBE seed {}"'
+	$(PYTHON) tests/engage/authority_table.py $(BUILD_DIR)/engage/authority/$(AUTH_PROBE_TAG)
+
+.PHONY: engage-authority-bar
+engage-authority-bar: import ## engage E3: the authority probe in both arms on AUTH_SEEDS, then the paired table (Bar E1's lines)
+	@$(MAKE) --no-print-directory engage-authority-probe AUTH_ARM=off
+	@$(MAKE) --no-print-directory engage-authority-probe AUTH_ARM=on
+	$(PYTHON) tests/engage/authority_table.py --pair $(BUILD_DIR)/engage/authority/off $(BUILD_DIR)/engage/authority/on
