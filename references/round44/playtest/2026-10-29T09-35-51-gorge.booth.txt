@@ -1,0 +1,27 @@
+0:00.0  PA       pa.welcome.06             Good evening. Before we begin, the Syndicate would like to thank the district of Low Harbor for tonight's participants.
+0:06.8  CALLER   caller.intro.21           Alright, folks, settle in. Engines are hot, the floor is clear, and we are about to find out.
+0:12.2  CALLER   caller.drill.05           They didn't even have to talk about it! They just went!
+0:15.2  VETERAN  color.teach.arty01        Artillery doesn't kill you. It moves you somewhere that does.
+0:20.0  CALLER   caller.kill.107           An even exchange! And the pace does not slow down one bit!
+0:24.6  CALLER   caller.kill.01            The Wreckers take out the Lancer!
+0:26.7  CALLER   caller.kill.168           Still nothing coming back! They're running this floor!
+0:29.9  PA       pa.kill.25                That's right, Joseph. Crews wishing to dispute that result may do so in writing, in person, at the stewards' office, before the end of the match.
+0:33.9  CALLER   caller.interrupt.01       Oh, wait, wait!
+0:35.3  CALLER   caller.kill.170           They own this floor right now! Nobody can touch them!
+0:38.7  CALLER   caller.kill.19            Nobody saw that coming! The tank wins that one!
+0:42.0  CALLER   caller.kill.89            What a shot! What a shot! That is a kill!
+0:45.1  CALLER   caller.kill.23            Textbook! The IFV eats it alive!
+0:48.2  CALLER   caller.control.15         They've settled onto the point. Now they have to hold it.
+0:51.2  CALLER   caller.kill.177           Nobody can get a shot off against them right now!
+0:54.1  VETERAN  color.trail.01            You want your heavy on the outside of the turn, because if he's on the inside then the whole... Yeah. It's a thing you learn.
+1:02.8  CALLER   caller.kill.104           Toe to toe! They are standing in the pocket and letting it fly!
+1:07.4  CALLER   caller.kill.24            The tank round lands, and the IFV just comes apart!
+1:10.9  CALLER   caller.kill.119           They're not stopping! That's another one!
+1:14.2  CALLER   caller.kill.93            That's lights out for that crew!
+1:16.1  VETERAN  color.faction.06          No shields, so they don't wait. Get in close and hit first. It's the only way they know.
+1:23.2  CALLER   caller.kill.98            Smoke pouring out, and that one is done for the night!
+1:26.3  VETERAN  color.kill.23             He stopped to aim. You can't stop to aim in here.
+1:30.3  VETERAN  color.technique.trav.01   Just traveling. No overwatch, no bounding. They're getting somewhere and hoping.
+1:36.2  VETERAN  color.teach.bunching.01   Bunched up like that, only the front two can shoot. Seven seconds before that pack hurt anybody.
+1:43.2  CALLER   caller.drill.27           They've been hit, and they're turning into it! No hesitation!
+1:46.3  CALLER   caller.kill.189           Talk about punching above your weight! What a hit!

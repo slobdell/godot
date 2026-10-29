@@ -4587,3 +4587,33 @@ says that units should be able to stack generally behind each other. 3, I will a
 by the map edge or a wall off its place), they land side by side, centred on his click. Where it does not, they fold into ranks behind
 the front, nearest in front, rather than slide or spread. The dispersal cost him the match: the army arriving apart is the failure,
 whatever the shape. On a short click the squads already in place hold (answer 3).
+
+## His playtest after round 44 (2026-10-29 ~09:36, Gorge, verbatim)
+
+Recording `references/round44/playtest/2026-10-29T09-35-51-gorge.jsonl` (seed 91711, 107 s, gangs v condemned, laptop, native on;
+report `...gorge.report.txt`; `make playtest-report` replay PASS 20/20 crews within 3 m for 30 s).
+
+> "1. I selected 3 squads and had them all go to a target waypoint that was south of the bridge. What waypoint selection algorithm
+> chose a far away waypoint that was north of the bridge for one of the squads. This was precisely the behavior I had asked to fix.
+> Then during gameplay, especially toward the end, I had a single scout I was trying to control (to not get it killed), and it
+> routinely kept going off and doing its own thing. I was trying to keep it out of combat, but it drew itself into an engagement I
+> was explicitly trying to avoid."
+
+**What the recording shows (orchestrator's read, 2026-10-29, laptop; facts from the order/task/census rows):**
+
+1. **The group click, t 0 (paused).** Hunters + Spears + Wrenches, one click at (-43.2, 53.2): just on his side (z > 50) of Gorge's
+   west gap in the drop (pits at z 38-50: west drop x -92..-48, middle -32..32; the gap x -48..-32 is "the bridge"). The order rows
+   (`group: 3`) send Spears to the click, **Hunters to (-76.0, 101.0)** (behind his own start line z 90: sent BACK) and **Wrenches to
+   (-10.4, 5.4)** (across the drop, 65 m past the click, toward the enemy: "north of the bridge"). Three spots on one straight line
+   through the click, 58 m apart, laid across his approach: the same `ranks` lay R44.2 found (three abreast across the click).
+   This is the DEFAULT path: G1 v10c's fix is on main behind `--group-column=always`, OFF, because Bar G1 v10c failed (R44.23). **He
+   asked for this fix in rounds 41, 43 and 44 and has still never played it.** He then stopped everyone at 10.2 s.
+2. **The lone scout (Green_Hunters_5, gang_scout, last of the Hunters from 69 s; killed 105.3 s by Rust_Guns_2).** From 83.7 s he gave
+   it 9 moves, 3 stops and a hold in 20 s. (a) **His HOLD at 99.2 s was overridden within a second:** the element's task became `hold`
+   "contact: return fire, take cover, report" (tick 2978), but the census shows the crew under `move` (src element) at 100 s and
+   `attack_move` (src element) at 101 s, driving from (-45, 47) to (-47, 33) INTO the gap toward the enemy. (b) **After his STOP at
+   95.8 s** it was still driving at 97 s (z 55.5 -> 47, toward the enemy). (c) **His last move (102.6 s) to (-47.1, 31.1)**: at 103 s
+   the crew is at (-59, 8), 25 m past his click, then blocked on terrain, dead 2 s later. (d) Several short moves 1-11 m away
+   "never arrived" (83.7, 85.2, 87.0, 91.8 s). The element's formation for a one-crew squad was `swarm` ("spread out and all over
+   them") / `coil`: **whether a one-crew squad's slot sits off his click is NOT yet measured** (round 45 finds it by removing it).
+   In his words: the squad AI's contact drill and formation outrank his direct orders to a single unit.

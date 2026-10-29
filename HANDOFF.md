@@ -4,7 +4,34 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-28 ~23:30 PDT (laptop clock) — **ROUND 44 IS CLOSED (box below).** Earlier: 2026-10-28 ~09:20 PDT — round 44 prepared.
+_Last updated: 2026-10-29 ~10:00 PDT (laptop clock) — **ROUND 44 IS CLOSED; his playtest after it is in (box below). NEXT: prepare round 45 from it.** Every session was closed; the next orchestrator starts fresh.
+
+## ▶ NEXT: ROUND 45 — his playtest after round 44 (2026-10-29 ~09:36, Gorge) — read this first
+
+His words verbatim + the orchestrator's read of the recording: `game_design.md` *His playtest after round 44*. Recording, perf, booth
+and report: `references/round44/playtest/2026-10-29T09-35-51-gorge.*`. **Both complaints are about control: his order must win.**
+
+1. **The group click, AGAIN (his #1; asked in rounds 41, 43, 44).** Three squads, one click just on his side of Gorge's west gap:
+   Spears to the click, Hunters 48 m BACK behind his own start line, Wrenches 65 m FORWARD across the drop. That is today's default
+   `ranks` lay (three abreast, 58 m apart, across his approach; R44.2). The fix (G1 v10c, fit first, two abreast, the rest stacked
+   behind) is on main behind `--group-column=always` OFF because its bar failed (R44.23: short clicks held squads; on the Crossing the
+   column left the street). **He has never played any fix for this.** Round 45 must ship something ON for it: start from G1 v10c's
+   code + R44.23's two causes (a short click is not a column: squads near the click take near seats in place; the column keeps to
+   the click line, not the road), and add **a hard guard that no squad's spot is ever across a drop/water from the click or behind
+   its own start** (that is exactly what he saw). Consider whether the simplest thing (every squad's spot within N m of the click,
+   on the click's side of any gap, packed by fit) passes before more machinery. Fable-worthy (lingering problem).
+2. **A lone scout he is steering does its own thing (new).** Green_Hunters_5, last of its squad: his HOLD at 99.2 s was replaced
+   within 1 s by the squad's contact drill ("return fire, take cover"): the census shows `move` then `attack_move` from the
+   element, driving into the gap toward the enemy; after his STOP at 95.8 s it kept driving; his last move ended 25 m past his
+   click; dead at 105.3 s. Find which layer issues those rows (element contact drill / formation slot of a one-crew squad /
+   drive) by removing each; then **his direct order (stop, hold, move) to a unit outranks every squad drill until he gives another.**
+   Owner: engage or orders (the contact drill lives in game/tactics). Measure on this recording first: `make replay-match
+   RECORDING=references/round44/playtest/2026-10-29T09-35-51-gorge.jsonl` reproduces his match (PASS 20/20 for 30 s).
+3. Then the round-45 notes in the CLOSED box below (backout poses 13 / 10 / 6 + Bar B2, gate_width C++, cold-import watchdog,
+   holdway one-sided guard, S v4).
+
+**Machines at close:** builder0 only `godot` + `godot-native-score*` (24 G free). builder2 was down (Spot); remove its
+`godot-native-backout*` folders when it is next up. main is unpushed (he pushes).
 
 ## 🏁 ROUND 44 IS CLOSED (2026-10-28 ~23:30 PDT) — read this first
 

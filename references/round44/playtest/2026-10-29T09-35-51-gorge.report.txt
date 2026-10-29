@@ -1,0 +1,288 @@
+PLAYTEST 2026-10-29T09-35-51-gorge.jsonl
+match: gorge, seed 91711, 107 s, gangs v condemned (20 v 20 units), squad cap 4, laptop, native on
+fight: 176 hits, 23 deaths (his 11, CPU 12)
+his clicks (23; time, verb, squad:crews, spots, arrived in the window to the next order, worst best-distance):
+     0.0 s  move         Hunters:5 Spears:5 Wrenches:5  click (-43, 53)  3 spots 116 m apart  arrived 15/15  worst Wrenches_5 83 m  AWAY Hunters_5 46 m
+    10.2 s  stop         Hunters:15
+    14.9 s  move         Spears:3  click (-31, 63)  to (-31, 63)  arrived 2/3  worst Spears_5 34 m never
+    24.3 s  stop         Hunters:1
+    34.4 s  attack       Hunters:5  -> Guns_4
+    42.6 s  move         Hunters:4  click (-48, 68)  to (-48, 68)  arrived 3/4  worst Hunters_4 18 m  AWAY Hunters_3 43 m
+    50.9 s  attack       Hunters:4  -> Guns2_4
+    51.8 s  attack       Hunters:4  -> Guns2_4
+    52.4 s  attack       Spears:2  -> Guns2_4
+    65.5 s  move         Hunters:2  click (-45, 74)  to (-45, 74)  arrived 0/2  worst Hunters_5 46 m never
+    66.2 s  move         Hunters:2  click (-45, 66)  to (-45, 66)  arrived 1/2  worst Hunters_4 37 m never
+    73.5 s  stop         Hunters:1
+    77.9 s  stop         Hunters:1
+    83.7 s  move         Hunters:1  click (-40, 48)  to (-40, 48)  arrived 0/1  worst Hunters_5 11 m never
+    85.2 s  move         Hunters:1  click (-44, 52)  to (-44, 52)  arrived 0/1  worst Hunters_5 6 m never
+    87.0 s  move         Hunters:1  click (-51, 56)  to (-51, 56)  arrived 0/1  worst Hunters_5 1 m never
+    88.8 s  move         Hunters:1  click (-56, 73)  to (-56, 73)  arrived 1/1  worst Hunters_5 3 m
+    91.8 s  move         Hunters:1  click (-50, 73)  to (-50, 73)  arrived 0/1  worst Hunters_5 5 m never
+    94.6 s  move         Hunters:1  click (-35, 43)  to (-35, 43)  arrived 1/1  worst Hunters_5 9 m
+    95.8 s  stop         Hunters:1
+    97.4 s  stop         Hunters:1
+    99.2 s  hold         Hunters:1
+   102.6 s  move         Hunters:1  click (-47, 31)  to (-47, 31)  arrived 0/1  worst Hunters_5 22 m never
+camera: 0 of 199 hits/deaths off screen (0 on his units, 0 deaths); estimate: fov 35, 16:9
+replay: PASS, his match: 20 of 20 crews within 3.0m for 30 s
+full report: build/playtest-report/2026-10-29T09-35-51-gorge.txt (page build/playtest-report/2026-10-29T09-35-51-gorge.html)
+
+====================================================================================================
+
+(a) THE MATCH
+  build/recordings/2026-10-29T09-35-51-gorge.jsonl
+  arena gorge, seed 91711, 107 s, Green 20 units v Rust 20
+  factions {'green': 'gangs', 'rust': 'condemned'}, squad cap 4, preset laptop, native True
+  switches: --announcer=voice --arena=gorge --camera-readout=on --enemy=cpu --enemy-faction=condemned --music=on --no-pick-faction --player-faction=gangs --seed=91711 --skirmish
+  25 orders, 176 hits, 23 deaths (Green 11, Rust 12)
+
+  arrivals per order (tools/recording_arrivals.py):
+   t    0 move        to ( -76.0, 101.0) window 42 s: Hunters_1:best10m/arr12s/AWAY37m Hunters_2:best50m/arr6s/AWAY40m Hunters_3:best46m/arr7s Hunters_4:best6m/arr7s/AWAY44m Hunters_5:best2m/arr6s/AWAY46m
+   t    0 move        to ( -43.2,  53.2) window 14 s: Spears_1:best2m/arr5s Spears_2:best16m/arr11s Spears_3:best25m/arr7s Spears_4:best7m/arr11s Spears_5:best10m/arr7s
+   t    0 move        to ( -10.4,   5.4) window 107 s: Wrenches_1:best62m/arr11s Wrenches_2:best68m/arr11s Wrenches_3:best65m/arr11s Wrenches_4:best81m/arr11s Wrenches_5:best83m/arr11s
+   t  447 move        to ( -31.2,  62.6) window 92 s: Spears_1:best1m/arr3s Spears_4:best8m/arr5s Spears_5:best34m/no-arr
+   t 1277 move        to ( -48.2,  68.5) window 22 s: Hunters_1:best14m/arr1s Hunters_3:best7m/no-arr/AWAY43m Hunters_4:best18m/arr5s/AWAY31m Hunters_5:best16m/arr5s/AWAY30m
+   t 1965 move        to ( -45.1,  73.6) window 0 s: Hunters_4:best46m/no-arr Hunters_5:best46m/no-arr
+   t 1987 move        to ( -45.2,  65.7) window 17 s: Hunters_4:best37m/no-arr Hunters_5:best3m/arr8s
+   t 2510 move        to ( -39.7,  47.5) window 1 s: Hunters_5:best11m/no-arr
+   t 2555 move        to ( -44.0,  51.6) window 1 s: Hunters_5:best6m/no-arr
+   t 2610 move        to ( -50.8,  56.1) window 1 s: Hunters_5:best1m/no-arr
+   t 2663 move        to ( -55.9,  73.1) window 3 s: Hunters_5:best3m/arr2s
+   t 2753 move        to ( -50.4,  72.7) window 2 s: Hunters_5:best5m/no-arr
+   t 2837 move        to ( -35.2,  43.2) window 8 s: Hunters_5:best9m/arr1s
+   t 3078 move        to ( -47.1,  31.1) window 4 s: Hunters_5:best22m/no-arr
+
+(b) THE CAMERA AT EACH HIT AND DEATH (his screen's compass: the way the view looks; OFF = the victim off screen, estimated with fov 35 on 16:9)
+    13.7 s  hit   Green_Spears_5 rear                                   look N     9.0  at ( -25.0,   71.8)  aim-hold (cam row 13.0 s)  on
+    14.2 s  hit   Green_Spears_5 rear                                   look N     9.0  at ( -27.5,   68.3)  danger (cam row 14.0 s)  on
+    14.7 s  hit   Green_Spears_5 rear                                   look N     9.0  at ( -27.5,   68.3)  danger (cam row 14.0 s)  on
+    15.2 s  death Green_Spears_5 (by Rust_Lances_1)                     look N     9.0  at ( -30.7,   59.1)  danger (cam row 15.0 s)  on
+    15.2 s  hit   Green_Spears_5 rear KILL                              look N     9.0  at ( -30.7,   59.1)  danger (cam row 15.0 s)  on
+    17.2 s  hit   Rust_Hunters_1 side                                   look N     9.0  at ( -30.1,   40.7)  danger (cam row 17.0 s)  on
+    17.4 s  hit   Rust_Hunters_1 side                                   look N     9.0  at ( -30.1,   40.7)  danger (cam row 17.0 s)  on
+    17.9 s  hit   Rust_Hunters_1 side                                   look N     9.0  at ( -30.1,   40.7)  danger (cam row 17.0 s)  on
+    19.1 s  death Rust_Hunters_1 (by Green_Battery_3)                   look N     9.0  at ( -30.0,   51.1)  danger (cam row 19.0 s)  on
+    19.1 s  hit   Rust_Hunters_1 side KILL                              look N     9.0  at ( -30.0,   51.1)  danger (cam row 19.0 s)  on
+    19.1 s  hit   Rust_Lances_1 side                                    look N     9.0  at ( -30.0,   51.1)  danger (cam row 19.0 s)  on
+    22.5 s  death Rust_Lances_1 (by Green_Battery_4)                    look N     9.0  at ( -34.1,   57.8)  aim-hold (cam row 22.0 s)  on
+    22.5 s  hit   Rust_Lances_4 side KILL                               look N     9.0  at ( -34.1,   57.8)  aim-hold (cam row 22.0 s)  on
+    22.5 s  hit   Rust_Lances_4 side                                    look N     9.0  at ( -34.1,   57.8)  aim-hold (cam row 22.0 s)  on
+    23.7 s  hit   Rust_Hunters_2 side                                   look N     9.0  at ( -35.5,   58.9)  aim-hold (cam row 23.0 s)  on
+    23.9 s  hit   Rust_Lances_4 side                                    look N     9.0  at ( -35.5,   58.9)  aim-hold (cam row 23.0 s)  on
+    25.1 s  death Rust_Lances_4 (by Green_Battery_3)                    look N     9.0  at ( -39.2,   62.0)  danger (cam row 25.0 s)  on
+    25.1 s  hit   Rust_Hunters_2 side KILL                              look N     9.0  at ( -39.2,   62.0)  danger (cam row 25.0 s)  on
+    25.1 s  hit   Rust_Hunters_2 side                                   look N     9.0  at ( -39.2,   62.0)  danger (cam row 25.0 s)  on
+    29.4 s  hit   Rust_Guns_4 side                                      look N     9.0  at ( -40.3,   62.3)  aim-hold (cam row 29.0 s)  on
+    29.5 s  hit   Rust_Guns_4 side                                      look N     9.0  at ( -40.3,   62.3)  aim-hold (cam row 29.0 s)  on
+    30.6 s  hit   Green_Spears_4 front                                  look N     9.0  at ( -41.6,   62.4)  manual (cam row 30.0 s)  on
+    31.0 s  hit   Green_Wrenches_1 front                                look N     9.0  at ( -41.6,   62.4)  manual (cam row 30.0 s)  on
+    31.0 s  hit   Green_Spears_4 front                                  look N     8.7  at ( -33.8,   70.6)  manual (cam row 31.0 s)  on
+    33.0 s  hit   Rust_Guns_4 side                                      look N     6.9  at ( -44.8,   73.6)  danger (cam row 32.0 s)  on
+    33.1 s  hit   Rust_Hunters_2 side                                   look N     6.7  at ( -56.0,   76.1)  danger (cam row 33.0 s)  on
+    33.3 s  hit   Green_Wrenches_1 side                                 look N     6.7  at ( -56.0,   76.1)  danger (cam row 33.0 s)  on
+    33.4 s  hit   Green_Spears_4 front                                  look N     6.7  at ( -56.0,   76.1)  danger (cam row 33.0 s)  on
+    33.8 s  death Rust_Hunters_2 (by Green_Battery_2)                   look N     6.7  at ( -56.0,   76.1)  danger (cam row 33.0 s)  on
+    33.8 s  hit   Rust_Hunters_2 side KILL                              look N     6.7  at ( -56.0,   76.1)  danger (cam row 33.0 s)  on
+    35.1 s  hit   Green_Spears_4 front                                  look N    -0.7  at ( -57.2,   76.3)  danger (cam row 35.0 s)  on
+    35.2 s  hit   Rust_Guns2_4 side                                     look N    -0.7  at ( -57.2,   76.3)  danger (cam row 35.0 s)  on
+    35.4 s  death Green_Wrenches_5 (by Rust_Guns_4)                     look N    -0.7  at ( -57.2,   76.3)  danger (cam row 35.0 s)  on
+    35.4 s  hit   Green_Wrenches_5 side KILL                            look N    -0.7  at ( -57.2,   76.3)  danger (cam row 35.0 s)  on
+    37.2 s  hit   Green_Spears_4 front                                  look N   -15.5  at ( -57.8,   76.8)  danger (cam row 37.0 s)  on
+    38.2 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -57.9,   76.8)  danger (cam row 38.0 s)  on
+    38.3 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -57.9,   76.8)  danger (cam row 38.0 s)  on
+    38.7 s  hit   Rust_Guns_4 front                                     look N   -15.6  at ( -57.9,   76.8)  danger (cam row 38.0 s)  on
+    38.8 s  hit   Rust_Guns_4 front                                     look N   -15.6  at ( -57.9,   76.8)  danger (cam row 38.0 s)  on
+    38.8 s  hit   Rust_Guns_4 front                                     look N   -15.6  at ( -57.9,   76.8)  danger (cam row 38.0 s)  on
+    38.9 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -57.9,   76.8)  danger (cam row 38.0 s)  on
+    39.1 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -56.9,   71.7)  danger (cam row 39.0 s)  on
+    39.1 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -56.9,   71.7)  danger (cam row 39.0 s)  on
+    39.2 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -56.9,   71.7)  danger (cam row 39.0 s)  on
+    39.3 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -56.9,   71.7)  danger (cam row 39.0 s)  on
+    39.4 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -56.9,   71.7)  danger (cam row 39.0 s)  on
+    39.4 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -56.9,   71.7)  danger (cam row 39.0 s)  on
+    39.5 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -56.9,   71.7)  danger (cam row 39.0 s)  on
+    39.6 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -56.9,   71.7)  danger (cam row 39.0 s)  on
+    39.6 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -56.9,   71.7)  danger (cam row 39.0 s)  on
+    39.7 s  hit   Rust_Guns_4 side                                      look N   -15.6  at ( -56.9,   71.7)  danger (cam row 39.0 s)  on
+    40.1 s  hit   Green_Hunters_2 front                                 look N   -15.6  at ( -55.6,   64.6)  danger (cam row 40.0 s)  on
+    40.2 s  hit   Green_Hunters_2 front                                 look N   -15.7  at ( -55.6,   63.3)  danger (cam row 40.2 s)  on
+    40.3 s  hit   Rust_Guns_4 side                                      look N   -15.7  at ( -55.6,   63.3)  danger (cam row 40.2 s)  on
+    40.3 s  hit   Rust_Guns_4 side                                      look N   -15.7  at ( -55.6,   63.3)  danger (cam row 40.2 s)  on
+    40.4 s  hit   Rust_Guns_4 side                                      look N   -15.7  at ( -55.6,   63.3)  danger (cam row 40.2 s)  on
+    40.4 s  hit   Green_Hunters_2 front                                 look N   -15.7  at ( -55.6,   63.3)  danger (cam row 40.2 s)  on
+    40.5 s  hit   Rust_Guns_4 side                                      look N   -15.7  at ( -55.6,   63.3)  danger (cam row 40.2 s)  on
+    40.5 s  hit   Rust_Guns_4 side                                      look N   -15.7  at ( -55.6,   63.3)  danger (cam row 40.2 s)  on
+    40.6 s  death Rust_Guns_4 (by Green_Battery_5)                      look N   -15.7  at ( -55.6,   63.3)  danger (cam row 40.2 s)  on
+    40.6 s  hit   Rust_Guns_4 side KILL                                 look N   -15.7  at ( -55.6,   63.3)  danger (cam row 40.2 s)  on
+    41.7 s  hit   Rust_Hunters_4 side                                   look N   -17.1  at ( -55.0,   56.5)  danger (cam row 41.0 s)  on
+    41.8 s  hit   Rust_Hunters_4 side                                   look N   -17.1  at ( -55.0,   56.5)  danger (cam row 41.0 s)  on
+    42.0 s  hit   Green_Hunters_2 front                                 look N   -17.5  at ( -54.0,   53.2)  danger (cam row 41.8 s)  on
+    42.2 s  death Green_Hunters_2 (by Rust_Guns_5)                      look N   -17.2  at ( -53.8,   52.8)  danger (cam row 42.0 s)  on
+    42.2 s  hit   Green_Hunters_2 front KILL                            look N   -17.2  at ( -53.8,   52.8)  danger (cam row 42.0 s)  on
+    43.8 s  hit   Green_Spears_4 side                                   look N   -14.3  at ( -55.6,   52.4)  danger (cam row 43.0 s)  on
+    43.9 s  death Green_Spears_4 (by Rust_Hunters_4)                    look N   -14.3  at ( -55.6,   52.4)  danger (cam row 43.0 s)  on
+    43.9 s  hit   Green_Spears_4 side KILL                              look N   -14.3  at ( -55.6,   52.4)  danger (cam row 43.0 s)  on
+    44.0 s  hit   Rust_Guns2_4 side                                     look N   -14.3  at ( -55.6,   52.4)  danger (cam row 43.0 s)  on
+    44.0 s  hit   Rust_Guns2_4 side                                     look N   -13.4  at ( -56.6,   52.3)  danger (cam row 44.0 s)  on
+    44.1 s  hit   Green_Hunters_3 side                                  look N   -13.4  at ( -56.6,   52.3)  danger (cam row 44.0 s)  on
+    44.2 s  hit   Green_Hunters_4 side                                  look N   -13.4  at ( -56.6,   52.3)  danger (cam row 44.0 s)  on
+    44.8 s  hit   Rust_Hunters_4 side                                   look N   -13.4  at ( -56.6,   52.3)  danger (cam row 44.0 s)  on
+    45.1 s  hit   Rust_Hunters_4 side                                   look N   -13.3  at ( -54.9,   51.7)  danger (cam row 45.0 s)  on
+    46.1 s  hit   Rust_Guns_5 side                                      look N   -13.3  at ( -54.3,   51.6)  aim-hold (cam row 46.0 s)  on
+    46.3 s  hit   Rust_Hunters_4 side                                   look N   -13.3  at ( -54.3,   51.6)  aim-hold (cam row 46.0 s)  on
+    48.1 s  hit   Green_Hunters_4 side                                  look N   -13.3  at ( -53.4,   52.1)  aim-hold (cam row 48.0 s)  on
+    48.2 s  hit   Green_Hunters_4 side                                  look N   -13.3  at ( -53.4,   52.1)  aim-hold (cam row 48.0 s)  on
+    48.6 s  hit   Green_Spears_1 rear                                   look N   -13.3  at ( -53.4,   52.1)  aim-hold (cam row 48.0 s)  on
+    49.0 s  hit   Rust_Guns2_4 side                                     look N   -13.2  at ( -51.3,   57.7)  aim-hold (cam row 49.0 s)  on
+    49.1 s  hit   Green_Spears_1 rear                                   look N   -13.2  at ( -51.3,   57.7)  aim-hold (cam row 49.0 s)  on
+    49.6 s  hit   Green_Hunters_4 side                                  look N   -13.2  at ( -51.3,   57.7)  aim-hold (cam row 49.0 s)  on
+    49.7 s  hit   Green_Spears_1 rear                                   look N   -13.2  at ( -51.3,   57.7)  aim-hold (cam row 49.0 s)  on
+    49.7 s  hit   Green_Hunters_4 side                                  look N   -13.2  at ( -51.3,   57.7)  aim-hold (cam row 49.0 s)  on
+    49.8 s  death Green_Spears_1 (by Rust_Lances_2)                     look N   -13.2  at ( -51.3,   57.7)  aim-hold (cam row 49.0 s)  on
+    49.8 s  hit   Green_Spears_1 rear KILL                              look N   -13.2  at ( -51.3,   57.7)  aim-hold (cam row 49.0 s)  on
+    50.5 s  hit   Rust_Guns_1 side                                      look N   -13.2  at ( -50.3,   62.1)  aim-hold (cam row 50.0 s)  on
+    50.7 s  hit   Rust_Hunters_4 side                                   look N   -13.2  at ( -50.3,   62.1)  aim-hold (cam row 50.0 s)  on
+    51.0 s  hit   Rust_Guns2_4 side                                     look N   -13.2  at ( -50.3,   62.3)  danger (cam row 51.0 s)  on
+    51.8 s  death Rust_Hunters_4 (by Green_Battery_5)                   look N   -13.2  at ( -50.3,   62.3)  danger (cam row 51.0 s)  on
+    51.8 s  hit   Rust_Guns_1 side KILL                                 look N   -13.2  at ( -50.3,   62.3)  danger (cam row 51.0 s)  on
+    53.3 s  death Rust_Lances_3 (by Rust_Guns_3)                        look N   -13.2  at ( -56.4,   62.8)  danger (cam row 53.0 s)  on
+    53.3 s  hit   Rust_Lances_3 rear KILL                               look N   -13.2  at ( -56.4,   62.8)  danger (cam row 53.0 s)  on
+    54.6 s  hit   Green_Spears_2 front                                  look N   -13.2  at ( -57.1,   61.9)  aim-hold (cam row 54.0 s)  on
+    54.7 s  hit   Rust_Guns2_4 side                                     look N   -13.2  at ( -57.1,   61.9)  aim-hold (cam row 54.0 s)  on
+    54.7 s  death Green_Spears_2 (by Green_Battery_1)                   look N   -13.2  at ( -57.1,   61.9)  aim-hold (cam row 54.0 s)  on
+    54.7 s  hit   Green_Spears_2 side KILL                              look N   -13.2  at ( -57.1,   61.9)  aim-hold (cam row 54.0 s)  on
+    55.2 s  hit   Green_Hunters_1 front                                 look N   -13.2  at ( -59.7,   58.7)  danger (cam row 55.0 s)  on
+    56.1 s  hit   Rust_Guns2_4 side                                     look N   -13.2  at ( -60.6,   54.7)  danger (cam row 56.0 s)  on
+    56.3 s  hit   Green_Hunters_1 front                                 look N   -13.2  at ( -60.6,   54.7)  danger (cam row 56.0 s)  on
+    56.8 s  hit   Green_Hunters_1 front                                 look N   -13.2  at ( -60.6,   54.7)  danger (cam row 56.0 s)  on
+    57.3 s  death Rust_Guns2_4 (by Green_Battery_3)                     look N   -13.2  at ( -48.7,   50.7)  danger (cam row 57.0 s)  on
+    57.3 s  hit   Rust_Guns2_4 side KILL                                look N   -13.2  at ( -48.7,   50.7)  danger (cam row 57.0 s)  on
+    57.3 s  hit   Rust_Lances_5 side                                    look N   -13.2  at ( -48.7,   50.7)  danger (cam row 57.0 s)  on
+    57.6 s  death Green_Hunters_1 (by Rust_Guns2_2)                     look N   -13.2  at ( -48.7,   50.7)  danger (cam row 57.0 s)  on
+    57.6 s  hit   Green_Hunters_1 side KILL                             look N   -13.2  at ( -48.7,   50.7)  danger (cam row 57.0 s)  on
+    58.7 s  hit   Green_Spears_3 front                                  look N   -13.2  at ( -45.0,   41.6)  danger (cam row 58.0 s)  on
+    58.8 s  hit   Green_Spears_3 front                                  look N   -13.2  at ( -45.0,   41.6)  danger (cam row 58.0 s)  on
+    58.9 s  hit   Rust_Hunters_3 front                                  look N   -13.2  at ( -45.0,   41.6)  danger (cam row 58.0 s)  on
+    58.9 s  hit   Green_Spears_3 front                                  look N   -13.2  at ( -45.0,   41.6)  danger (cam row 58.0 s)  on
+    59.1 s  hit   Green_Spears_3 front                                  look N   -13.2  at ( -47.2,   32.1)  aim-hold (cam row 59.0 s)  on
+    59.2 s  death Green_Spears_3 (by Rust_Lances_2)                     look N   -13.2  at ( -47.2,   32.1)  aim-hold (cam row 59.0 s)  on
+    59.2 s  hit   Green_Spears_3 front KILL                             look N   -13.2  at ( -47.2,   32.1)  aim-hold (cam row 59.0 s)  on
+    60.7 s  hit   Green_Hunters_3 front                                 look N   -13.2  at ( -46.6,   41.6)  danger (cam row 60.0 s)  on
+    61.2 s  hit   Green_Hunters_3 side                                  look N   -13.2  at ( -45.7,   53.4)  danger (cam row 61.0 s)  on
+    61.6 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -45.7,   53.4)  danger (cam row 61.0 s)  on
+    61.7 s  hit   Green_Hunters_3 front                                 look N   -13.2  at ( -45.7,   53.4)  danger (cam row 61.0 s)  on
+    61.8 s  hit   Rust_Lances_2 side                                    look N   -13.2  at ( -45.7,   53.4)  danger (cam row 61.0 s)  on
+    61.8 s  death Rust_Hunters_3 (by Green_Battery_4)                   look N   -13.2  at ( -45.7,   53.4)  danger (cam row 61.0 s)  on
+    61.8 s  hit   Rust_Lances_2 side KILL                               look N   -13.2  at ( -45.7,   53.4)  danger (cam row 61.0 s)  on
+    62.0 s  death Rust_Lances_2 (by Green_Battery_2)                    look N   -13.2  at ( -45.7,   53.4)  danger (cam row 61.0 s)  on
+    62.0 s  hit   Rust_Lances_5 side KILL                               look N   -13.2  at ( -45.7,   53.4)  danger (cam row 61.0 s)  on
+    63.1 s  hit   Rust_Guns2_5 side                                     look N   -13.2  at ( -44.1,   75.2)  danger (cam row 63.0 s)  on
+    63.1 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -44.1,   75.2)  danger (cam row 63.0 s)  on
+    63.6 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -44.1,   75.2)  danger (cam row 63.0 s)  on
+    63.6 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -44.1,   75.2)  danger (cam row 63.0 s)  on
+    63.7 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -44.1,   75.2)  danger (cam row 63.0 s)  on
+    63.8 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -44.1,   75.2)  danger (cam row 63.0 s)  on
+    63.8 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -44.1,   75.2)  danger (cam row 63.0 s)  on
+    63.9 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -44.1,   75.2)  danger (cam row 63.0 s)  on
+    64.0 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -44.1,   75.2)  danger (cam row 63.0 s)  on
+    64.0 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    64.1 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    64.2 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    64.2 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    64.3 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    64.4 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    64.4 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    64.5 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    64.6 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    64.6 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    64.9 s  death Green_Hunters_3 (by Rust_Guns_3)                      look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    64.9 s  hit   Green_Hunters_3 front KILL                            look N   -13.2  at ( -43.5,   83.2)  danger (cam row 64.0 s)  on
+    65.0 s  hit   Rust_Guns_1 side                                      look N   -13.2  at ( -43.1,   88.0)  aim-hold (cam row 65.0 s)  on
+    65.6 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.1,   88.0)  aim-hold (cam row 65.0 s)  on
+    65.6 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.1,   88.0)  aim-hold (cam row 65.0 s)  on
+    65.7 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.1,   88.0)  aim-hold (cam row 65.0 s)  on
+    65.8 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.1,   88.0)  aim-hold (cam row 65.0 s)  on
+    65.8 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.1,   88.0)  aim-hold (cam row 65.0 s)  on
+    65.9 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.1,   88.0)  aim-hold (cam row 65.0 s)  on
+    66.0 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.1,   88.0)  aim-hold (cam row 65.0 s)  on
+    66.0 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.0,   79.8)  danger (cam row 66.0 s)  on
+    66.1 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.0,   79.8)  danger (cam row 66.0 s)  on
+    66.2 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.0,   79.8)  danger (cam row 66.0 s)  on
+    66.2 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.0,   79.8)  danger (cam row 66.0 s)  on
+    66.3 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.0,   79.8)  danger (cam row 66.0 s)  on
+    66.4 s  hit   Rust_Guns2_2 front                                    look N   -13.2  at ( -43.0,   79.8)  danger (cam row 66.0 s)  on
+    68.6 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -43.4,   47.0)  danger (cam row 68.0 s)  on
+    68.6 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -43.4,   47.0)  danger (cam row 68.0 s)  on
+    68.7 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -43.4,   47.0)  danger (cam row 68.0 s)  on
+    68.8 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -44.2,   39.3)  danger (cam row 68.8 s)  on
+    68.8 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -44.2,   39.3)  danger (cam row 68.8 s)  on
+    68.9 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -44.2,   39.3)  danger (cam row 68.8 s)  on
+    69.0 s  hit   Rust_Guns2_2 side                                     look N   -13.2  at ( -44.2,   39.3)  danger (cam row 68.8 s)  on
+    69.0 s  death Green_Hunters_4 (by Rust_Guns2_2)                     look N   -13.2  at ( -44.2,   39.3)  danger (cam row 68.8 s)  on
+    69.0 s  hit   Green_Hunters_4 rear KILL                             look N   -13.2  at ( -44.2,   39.3)  danger (cam row 68.8 s)  on
+    70.9 s  hit   Rust_Guns2_2 side                                     look N   -13.0  at ( -44.3,   38.7)  aim-hold (cam row 70.0 s)  on
+    71.0 s  hit   Rust_Guns2_2 side                                     look N    -2.4  at ( -43.5,   43.1)  aim-hold (cam row 71.0 s)  on
+    71.0 s  death Rust_Guns2_2 (by Green_Battery_4)                     look N    -2.4  at ( -43.5,   43.1)  aim-hold (cam row 71.0 s)  on
+    71.0 s  hit   Rust_Guns2_2 side KILL                                look N    -2.4  at ( -43.5,   43.1)  aim-hold (cam row 71.0 s)  on
+    82.5 s  hit   Rust_Guns_5 side                                      look N     6.9  at ( -43.0,   41.6)  aim-hold (cam row 82.0 s)  on
+    82.5 s  hit   Rust_Guns_1 side                                      look N     6.9  at ( -43.0,   41.6)  aim-hold (cam row 82.0 s)  on
+    82.5 s  hit   Rust_Guns_1 side                                      look N     6.9  at ( -43.0,   41.6)  aim-hold (cam row 82.0 s)  on
+    82.6 s  hit   Rust_Guns_1 side                                      look N     6.9  at ( -43.0,   41.6)  aim-hold (cam row 82.0 s)  on
+    82.6 s  death Rust_Guns_1 (by Green_Battery_2)                      look N     6.9  at ( -43.0,   41.6)  aim-hold (cam row 82.0 s)  on
+    82.6 s  hit   Rust_Guns_1 side KILL                                 look N     6.9  at ( -43.0,   41.6)  aim-hold (cam row 82.0 s)  on
+    88.2 s  hit   Rust_Guns2_3 side                                     look NW   23.9  at ( -46.4,   45.3)  danger (cam row 88.0 s)  on
+    88.2 s  hit   Rust_Guns2_5 side                                     look NW   23.9  at ( -46.4,   45.3)  danger (cam row 88.0 s)  on
+    88.3 s  hit   Rust_Guns_2 side                                      look NW   23.9  at ( -46.4,   45.3)  danger (cam row 88.0 s)  on
+    88.3 s  hit   Rust_Guns2_3 side                                     look NW   23.9  at ( -46.4,   45.3)  danger (cam row 88.0 s)  on
+    93.6 s  hit   Rust_Hunters_5 side                                   look N     2.0  at ( -57.7,   77.6)  danger (cam row 93.0 s)  on
+    93.7 s  hit   Rust_Guns2_3 side                                     look N     2.0  at ( -57.7,   77.6)  danger (cam row 93.0 s)  on
+    93.7 s  hit   Rust_Guns2_1 side                                     look N     2.0  at ( -57.7,   77.6)  danger (cam row 93.0 s)  on
+    93.7 s  hit   Rust_Guns2_5 side                                     look N     2.0  at ( -57.7,   77.6)  danger (cam row 93.0 s)  on
+    93.8 s  hit   Rust_Guns2_1 side                                     look N     2.0  at ( -57.7,   77.6)  danger (cam row 93.0 s)  on
+    93.9 s  hit   Rust_Guns2_3 side                                     look N     2.0  at ( -57.7,   77.6)  danger (cam row 93.0 s)  on
+    99.1 s  hit   Rust_Guns2_5 side                                     look N     8.6  at ( -43.6,   52.2)  danger (cam row 99.0 s)  on
+    99.2 s  hit   Rust_Guns2_5 side                                     look N     8.6  at ( -43.6,   52.2)  danger (cam row 99.0 s)  on
+    99.2 s  hit   Rust_Guns2_1 side                                     look N     8.6  at ( -43.6,   52.2)  danger (cam row 99.0 s)  on
+    99.2 s  hit   Rust_Guns2_1 side                                     look N     8.6  at ( -43.6,   52.2)  danger (cam row 99.0 s)  on
+    99.3 s  hit   Rust_Lances_5 side                                    look N     8.6  at ( -43.6,   52.2)  danger (cam row 99.0 s)  on
+   104.6 s  hit   Rust_Guns2_1 side                                     look N    15.7  at ( -59.6,    8.5)  danger (cam row 104.3 s)  on
+   104.7 s  hit   Rust_Guns2_1 side                                     look N    15.7  at ( -59.6,    8.5)  danger (cam row 104.3 s)  on
+   104.7 s  hit   Rust_Guns2_1 side                                     look N    17.1  at ( -59.6,    7.9)  danger (cam row 104.7 s)  on
+   104.8 s  hit   Rust_Guns2_5 side                                     look N    17.4  at ( -59.5,    7.8)  danger (cam row 104.8 s)  on
+   104.9 s  hit   Rust_Guns2_5 side                                     look N    17.4  at ( -59.5,    7.8)  danger (cam row 104.8 s)  on
+   105.3 s  death Green_Hunters_5 (by Rust_Guns_2)                      look N    17.7  at ( -59.0,    7.7)  danger (cam row 105.0 s)  on
+   105.3 s  hit   Green_Hunters_5 side KILL                             look N    17.7  at ( -59.0,    7.7)  danger (cam row 105.0 s)  on
+
+(c) THE REPLAY (make replay-match, first 30 s, every crew; native library and trig shim through make)
+  REPLAY_CLICKS_MERGED 25 rows -> 23 orders
+  REPLAY_REEXEC --skirmish --enemy=cpu --seed=91711 --arena=gorge --no-pick-faction --hints=off --player-faction=gangs --enemy-faction=condemned --squad-cap=4 --render-preset=laptop
+  REPLAY_CLICKS_MERGED 25 rows -> 23 orders
+  REPLAY_SETUP {"arena":"gorge","layout":"gorge","objectives":["the valley","the valley (far)"],"orders":23,"seed":91711.0,"tick":0,"units":40}
+  REPLAY_SPAWN {"placed":0,"recorded":40}
+  NATIVE_EXEC 18526 native, 1473 handed back (dead 0, reflexes 0, yielding 0, face 1028, drive 0, other 0), 357 stale pulls, 1508 part pulls, 0 verified, 0 verify mismatches 
+  REPLAY_DONE {"tick":930}
+  crew                    0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26   27   28   29   30   max
+  Hunters_1             0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Hunters_2             0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Hunters_3             0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Hunters_4             0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Hunters_5             0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Battery_1             0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Battery_2             0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Battery_3             0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Battery_4             0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Battery_5             0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Spears_1              0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Spears_2              0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Spears_3              0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Spears_4              0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Spears_5              0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    0.0
+  Wrenches_1            0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Wrenches_2            0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Wrenches_3            0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Wrenches_4            0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  Wrenches_5            0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0    0.0
+  DIVERGENCE crews=20 within=20 bar=3.0m seconds=30 ticks=31 first_over=- verdict=PASS
+  -> the replay IS his match for these 30 s
