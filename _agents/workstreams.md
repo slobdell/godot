@@ -298,6 +298,12 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   ticks; 11168 +3.5 s; 11171 +32 wall ticks)**; workload k-turn terminus +2.6 se FAIL; every other guard PASS (yield+blocked, wedged,
   seated, never-arrived, unneeded back-ups, group G5-G7 identical, G1 corridor 180/180, Gorge identical, fights G1-G4). Round 46: the
   fallback (0a80c3685), the wall-contact on no-room poses (D3), and the k-turn guard redesign (R45.14).
+- **R45.16 (~15:00) G2's click cost; native's profiling grant.** pair/native-g2 c7444d484 (builder2): the gate_width_edge_on swap at
+  rts_controls.gd ~1192 / ~1225 is EQUAL (68/0; probe 192/192 guard on and off; 768 rows = cfa4a0eb2's) but saves ~1 ms:
+  test_control_scale 30 units / 6 squads 20.53 -> 19.59 ms v N2 without G2 10.16 ms. ~9 ms is G2's own GDScript (guard_lay, guard_fit /
+  trim, standable, reached_from). Orders takes the two lines on its ship commit. The cost does not block G2 ON (a known cost in Status);
+  native profiles G2's click by stage after the final freeze and ports what dominates (one guarded seam line per function in orders'
+  file, output-identical first).
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
