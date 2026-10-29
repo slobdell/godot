@@ -134,6 +134,18 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   (`Element.transit["route"]` from the anchor's `s` on; the first point a hull's length from the crew) when the squad is in transit;
   a crew without one (alone, or arrived) reads its own path as before. GDScript only (the look is a callback from the C++ drive).
 
+- **Dev read 3 (builder2 light ~18:20; = commit 0af772a85):** 78 / 0; his start ON reverse t4 / past the box **t98** (OFF t144). The
+  14 dev poses: base-stuck 3 (5, 8, 10), **ON sooner in 3 / 3 (-3.0, -3.9, -8.8 s)**; the other 11: **worst +1.5 s (pose 11), median
+  -0.07 s: the cost ceiling PASSES**; pose 7 -0.1 s (the look now reads the squad's route west, err +66, the single search is blocked
+  by the squadmate beside at 2.0 m, no plan: the base's own drive, t99 v t101); pose 0 +0.2 s; stalls 0 everywhere (the box test
+  refuses before a leg can stall). Unjittered dev poses, GDScript drive: a read, not a number; Bar B2 decides on 11149-11196.
+- **Committed: 0af772a85** (code, tests, the B2 filing). `make quick-remote` (REMOTE_HOST builder2, QUICK_BASE 8d59b2bdf) running; the
+  native twin tests in it read against builder2's round-44 library (UNEQUAL expected until M3). Twin spec sent to the orchestrator.
+
+- **Guard poses dev read (0af772a85, builder2 light ~18:40, `NOSED_GUARD=on`, GDScript drive):** the six round-44 stagings kept verbatim:
+  every pose ok (ON v OFF clear +0.0 / +0.3 / -0.6 / +0.0 / +0.0 / +0.0 s; wall ticks +1 / -36 / +11 / 0 / +4 / 0; looks fire on four
+  of them, no plan survives the hull / navmesh tests, stalls 0): **G PASS 6 / 6** on the dev poses (D3's line: <= +1.0 s, <= +15 ticks).
+
 Decisions so far: dev reads run on the laptop's GDScript drive under `flock /tmp/tank-squad-laptop-godot.lock` (one pose pair ~1 min;
 nothing of the lead's runs while he is away); every judged number comes from a builder.
 
