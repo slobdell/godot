@@ -1,0 +1,2 @@
+on v off: 192 v 192 rows; keys 192 v 192; identical 192, differ 0
+colon v coloff: 192 v 192 rows; keys 192 v 192; identical 192, differ 0
