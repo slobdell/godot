@@ -1,6 +1,7 @@
 extends DriveTwinCase
-## Round 45 (native N3, manoeuvre M2 (b), C45.4): a departure leg pressed against something its look cannot see ends as "stalled"
-## (Movement._backout_stall_ticks, BACKOUT_STALL_MPS / _TICKS) on the C++ drive exactly as on the GDScript. His 08-15 start
+## Round 45 (native N3, manoeuvre M2 (b) v2 57e02fed5, C45.4): a departure leg pressed against something its look cannot see ends as
+## "stalled" (no BACKOUT_STALL_PROGRESS_M of progress in BACKOUT_STALL_TICKS)
+## (Movement._backout_stall_ticks / _backout_stall_from) on the C++ drive exactly as on the GDScript. His 08-15 start
 ## (tests/test_native_drive_backout.gd's stage); the moment Green_Guns_2's first departure leg starts reversing, a parked War Rig
 ## (spawned 10 m east of the squad, outside it) is moved to 1 m behind its tail, so the look that planned the leg never saw it there.
 ## A HULL, not a static box: a static collider is a WallContact and ends the leg by today's lead_hit rule before a stall tick counts

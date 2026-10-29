@@ -201,7 +201,8 @@
 	F(Vector3, VECTOR3, _backout_point) \
 	F(Vector3, VECTOR3, _backout_from) \
 	F(bool, BOOL, _backout_leg) \
-	F(int64_t, INT, _backout_stall_ticks)
+	F(int64_t, INT, _backout_stall_ticks) \
+	F(Vector3, VECTOR3, _backout_stall_from)
 
 #define EXEC_GUNNERY_FIELDS(F) \
 	F(Variant, OBJECT, ctl) \

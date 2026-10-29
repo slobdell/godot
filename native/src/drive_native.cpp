@@ -938,6 +938,7 @@ struct Drive {
 		v.set__kturn_arc_m(0.0); // a leg must not inherit the last leg's arc (round 30's review)
 		if (c.backout_stall_ready) {
 			v.set__backout_stall_ticks(0); // round 45 (M2 b): read only on a departure look's leg
+			v.set__backout_stall_from(Vector3(INFINITY, INFINITY, INFINITY));
 		}
 		double timeout = (double)leg.y * c.KTURN_SECONDS_PER_M + 1.0;
 		const double speed = tank->get(k._speed);
@@ -972,18 +973,19 @@ struct Drive {
 		const double backed = arc_here() ? (double)v._kturn_arc_m() : flat_distance(here, v._kturn_from());
 		const double left = v._kturn_left_m();
 		const bool reached = backed + kturn_stopping() >= left;
-		// Round 45 (native N3, manoeuvre M2 b, `backout`): a departure look's leg asked to move (speed in its gear past
-		// KTURN_ROLLING_SPEED) whose real motion along the nose in its gear stays under BACKOUT_STALL_MPS for BACKOUT_STALL_TICKS
-		// ends as "stalled" instead of standing until its timeout. Only backout's own legs.
+		// Round 45 (native N3, manoeuvre M2 b v2 57e02fed5, `backout`): a departure look's leg asked to move (speed in its gear past
+		// KTURN_ROLLING_SPEED) whose centre makes no BACKOUT_STALL_PROGRESS_M of flat progress from where the window opened for
+		// BACKOUT_STALL_TICKS ends as "stalled" (v1 read the tick's velocity: pressed on a hull it flips sign every tick). Only
+		// backout's own legs.
 		bool stalled = false;
 		if (c.backout_stall_ready && (bool)v._backout_leg()) {
-			const Vector3 nose_motion_dir = Vector3((real_t)(-basis_z.x), 0.0f, (real_t)(-basis_z.z)).normalized();
-			const Vector3 real_velocity_now = tank->get(k.real_velocity);
-			const double nose_motion = (double)real_velocity_now.dot(nose_motion_dir) * (double)gear;
-			if ((double)tank->get(k._speed) * (double)gear > c.KTURN_ROLLING_SPEED && nose_motion < c.BACKOUT_STALL_MPS) {
-				v.set__backout_stall_ticks((int64_t)v._backout_stall_ticks() + step);
-			} else {
+			const Vector3 from = v._backout_stall_from();
+			if (from == Vector3(INFINITY, INFINITY, INFINITY) || flat_distance(here, from) >= c.BACKOUT_STALL_PROGRESS_M ||
+					(double)tank->get(k._speed) * (double)gear <= c.KTURN_ROLLING_SPEED) {
+				v.set__backout_stall_from(here); // progress made, or not asked to move: the window opens here
 				v.set__backout_stall_ticks(0);
+			} else {
+				v.set__backout_stall_ticks((int64_t)v._backout_stall_ticks() + step);
 			}
 			stalled = (int64_t)v._backout_stall_ticks() >= c.BACKOUT_STALL_TICKS;
 		}
