@@ -226,6 +226,11 @@ export TANK_SQUAD_SLOTS=$slots
 export TANK_SQUAD_QUIET=$quiet
 export TANK_SQUAD_LIGHT=$light
 export QUIET_MAX_LOAD=${QUIET_MAX_LOAD:-4.0}
+# Round 45 (native N1): slot.sh runs tools/import_watchdog.sh inside the granted slot. B1 lost 4 h on builder2 to a first import
+# hung on Oswald-Latin.ttf; now no progress for IMPORT_WATCH_STALL s (600) kills it, clears .godot/, retries once, and a second
+# hang ends the run with `>> remote: import hung on <file>` (exit 75). REMOTE_IMPORT_WATCH=0 turns it off.
+if [ "${REMOTE_IMPORT_WATCH:-1}" != 0 ]; then export TANK_SQUAD_IMPORT_WATCH=1; else unset TANK_SQUAD_IMPORT_WATCH; fi
+export IMPORT_WATCH_STALL=${IMPORT_WATCH_STALL:-600}
 # Hand the marker from "a launch claimed this directory" to "this pid is the run". From here the claim's TTL
 # stops mattering, because /proc can speak for the run itself -- including the forty minutes it may spend
 # QUEUED inside slot.sh, which has already cd-ed in. A signalled run releases it at once; a normal exit leaves

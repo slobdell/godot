@@ -175,6 +175,13 @@ rm -f "$TANK_SQUAD_PINNED_SELF"
 slots=${TANK_SQUAD_SLOTS:-$(default_slots)}
 limit=${TANK_SQUAD_SLOT_TIMEOUT:-5400}
 dir=${TANK_SQUAD_SLOT_DIR:-/tmp/tank_squad_slots}   # overridable so the queue can be tested in isolation
+# Round 45 (native N1): the run's import is watched inside the slot it is granted (tools/import_watchdog.sh: an import with no
+# progress for 10 min is killed, .godot/ cleared, retried once; a second hang ends the run with `>> remote: import hung on
+# <file>`, never a silent slot timeout). tools/remote.sh sets TANK_SQUAD_IMPORT_WATCH on the builders; unset, nothing changes.
+watch=()
+if [ -n "${TANK_SQUAD_IMPORT_WATCH:-}" ] && [ -f tools/import_watchdog.sh ]; then
+	watch=(bash tools/import_watchdog.sh --then)
+fi
 mkdir -p "$dir"
 
 # ---- TANK_SQUAD_LIGHT=1: the light lane (ship, round 17) -----------------------------------------------------
@@ -294,7 +301,7 @@ while true; do
 				# Entitled to the whole machine, because nobody else is on it: `--jobs` divides its memory
 				# budget by the live slot count, and the live slot count for this run is one.
 				export TANK_SQUAD_SLOTS=1
-				eval timeout --kill-after=30 "$limit" '"$@"' "$redir" &
+				eval timeout --kill-after=30 "$limit" '${watch[@]+"${watch[@]}"}' '"$@"' "$redir" &
 				child=$!
 				trap 'kill_tree $child; release_exclusive; exit 130' INT
 				trap 'kill_tree $child; release_exclusive; exit 143' TERM
@@ -323,7 +330,7 @@ while true; do
 				[ -n "$light" ] && export TANK_SQUAD_LIGHT_SLOT=$i
 				# The child must not inherit the lock fd: a stray background server would otherwise
 				# hold the slot forever.
-				timeout --kill-after=30 "$limit" "$@" {fd}>&- &
+				timeout --kill-after=30 "$limit" ${watch[@]+"${watch[@]}"} "$@" {fd}>&- &
 				child=$!
 				trap 'kill_tree $child; rm -f "$dir/slot'"$i"'.owner"; exit 130' INT
 				trap 'kill_tree $child; rm -f "$dir/slot'"$i"'.owner"; exit 143' TERM
