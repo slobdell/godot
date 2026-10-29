@@ -285,6 +285,15 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   (~2.75x) a ~55 ms hitch on a big right click. Native is proving a two-line swap to `RtsControls.gate_width_edge_on(ground, ...)`
   (pair/native-g2 c7444d484, the probe on v off byte-identical): output-identical by construction, so G2 is NOT re-frozen for
   it; the two lines go on the ship commit after the bar with that proof. Perf stays REPORTED in the bar (as filed).
+  **Native's swap read (relayed): EQUAL, ~1 ms.** pair/native-g2 c7444d484 (= a8adba232 + stream/native + the swap), builder2:
+  68/0 tests; the probe native on v off 192/192 guard on and 192/192 off; all 768 rows equal the unswapped cfa4a0eb2's.
+  **Known cost (ms, builder2): the 30-unit / 6-squad right click (`test_control_scale`) 20.53 ms with G2 -> 19.59 ms with the
+  swap, v 10.16 ms with N2 and no G2**: ~9 ms of G2's cost is its own GDScript (guard_lay, the fit and trim, standable,
+  reached_from); native profiles the click by stage after the final freeze and ports what dominates (R45.16). On his laptop
+  (~2.75x) a 6-squad click would hitch ~25 ms more than today; his 3-squad click costs far less. The two lines for the ship
+  commit (exact text from native): rts_controls.gd ~1192 `guard_sides = RtsControls.gate_width_edge_on(ground, click,
+  guard_across_f, drive_f, crosses_f, SelectionSquads.GROUP_SCAN_M)`; ~1225 `return RtsControls.gate_width_edge_on(ground, p,
+  across, drive_x, crosses_edge_x, SelectionSquads.GUARD_RANK_SCAN_M)` (after the merge that brings `gate_width_edge_on`).
 - **Known issues:** (1) the shared repository had a corrupt packed object (the blob of
   assets/audio/layered/crowd_murmur_1.wav in pack-315912d8a6…): `git worktree add` for the frozen tree failed on it (~18:50);
   repaired reversibly with a hand-written loose copy of the same SHA from this worktree's intact file; the orchestrator is
