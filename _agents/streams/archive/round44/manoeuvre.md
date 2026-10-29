@@ -124,9 +124,9 @@ Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for
 - **The stretch items:** A6 v3 read (above); the bridge drill crew's own case is GONE on main at 918498713 (18/18, rim crews 0): closed.
 - **Round 45 notes** below (the two-squad press, holdway's one-sided head-on guard, backout on grouped squads after G1 v10, the corpus
   lesson). **Evidence:** `~/overnight-manoeuvre/r44/` (m1 proofs, m2 traces / shots / tests, m3 dev series, m5 replays, s5 removal,
-  bars_v3, bars_a6v3), judges filed under `references/round44/manoeuvre/`. Side worktrees: `../godot-manoeuvre-b1` (frozen 9111520bf, detached, offset 7:
-  keep until the round closes, then `git worktree remove`; its builder folders `godot-manoeuvre-b1` + `-light` on builder2 and
-  `godot-manoeuvre-b1-light` on builder0); v3's were removed.
+  bars_v3, bars_a6v3), judges filed under `references/round44/manoeuvre/`. Side worktrees: none (`../godot-manoeuvre-b1` and its builder folders on
+  builder0 and builder2 removed at the round's close, R44.25; v3's earlier). **Round 44 closed for this stream (R44.25, main
+  a93271a66 merges 45484c71e; the close check on builder0 gives native's r3 twin its perf judgement).**
 - **B1's two losing patterns (the corpus at 9111520bf, the C++ twin):** (a) pose 13 (crossing, the rig alone, +55 deg to the face,
   nose 0.0 m, its route 13-60 deg off) never looks (`looks 0`, both arms identical, base-stuck 7 s): the look's gates (the steering point
   within a hull's length, |speed| < circle speed, the window) are what to trace first with `--turn-trace`; (b) the crossing crawl poses
