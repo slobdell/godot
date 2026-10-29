@@ -195,6 +195,11 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   = stream/manoeuvre ce52cba1c + 04ce3abe9; its full check runs on builder2 (`check_b2/check-0493977ed.log`); the series waits for
   its exit line.
 
+- **builder2 preempted ~12:51 PDT** (Spot; "No route to host") during the sync of 0493977ed's check: the check never started. Restarted
+  (`gcloud compute instances start`, the gcp-start recipe); the check re-queued. The B2 series is split into two drivers so it runs on
+  both builders at once (`bars_b2_a.sh`: builder0 light legs from a second frozen checkout `../godot-manoeuvre-b2x` at 0493977ed;
+  `bars_b2_b.sh`: builder2 legs from `../godot-manoeuvre-b2`; `bars_b2_judge.sh` after both), their copy-backs in separate worktrees.
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
