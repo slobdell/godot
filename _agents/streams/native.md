@@ -64,8 +64,8 @@ _(worker keeps this current: report at the top, every number with commit, machin
     `_backout_leg` only, the long-hull pre-filter, traffic.gd's gate lifted. builder2: native-proof EQUAL with
     `--traffic-on=backout,parkedpass` (4a04ea921011cd9a), **233 passed / 0 failed, `exited 0`**; laptop staged twin 1191 drives / 0
     mismatches (C++ t4 / t93 = the GDScript stage's); parkedpass twin 420 / 0. Default orders probe (builder2 light, `exited 0`, locks / crossing / terminus x 5 squads x click x
-    7001-7004, base `--shape-latch=off` v bo `+ --traffic-on=backout`, C++ drive): **60/60 byte-identical**. Full check of 30e37f336:
-    builder2, running. Manoeuvre merges 30e37f336 WITH its traffic.gd line and freezes Bar B1 on that tree.
+    7001-7004, base `--shape-latch=off` v bo `+ --traffic-on=backout`, C++ drive): **60/60 byte-identical**. **Full check of 30e37f336: builder2
+    `>> remote: make check exited 0`, 3446 / 0, 26 passed + 2 NOT JUDGED (perf on builder2).** Merged into stream/manoeuvre; B1 frozen at 9111520bf. Manoeuvre merges 30e37f336 WITH its traffic.gd line and freezes Bar B1 on that tree.
   - Twin lessons: a GDScript look with side effects (a memo, a route read) is decided by the GDScript: the C++ pre-filters on the
     side-effect-free terms only; a per-look scratch the GDScript writes (`_departure_hulls`, member or static) must be written by the
     cheap path too (29 mismatches without it); mutants caught for both rules.
