@@ -263,6 +263,16 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   take it; a seated squad may only trade seats within its own rank and never for a seat more than 2 m behind its start. A C++
   twin of the search must honour `misplaced` exactly where the GDScript does (inside the loop), or it diverges on every guarded
   click; the bar runs with the twin absent (main has no seam yet), native re-proves on the freeze hash.
+- **Native's re-proof (R45.3, relayed by the orchestrator): EQUAL** on pair/native-g2 cfa4a0eb2 = a8adba232 + native dc182916f
+  (builder2, native ON: tests 68/0, untangle 1200 knots / 0, gate_width 360 / 0; the orders probe 3 maps x 3/5 squads x click/route
+  x 7001-7004: guard ON native v off 192/192 byte-identical, `--group-guard=off` 192/192; guard on v off differs 192/192). Native
+  asks `misplaced` for every (squad, anchor) pair before its search: the callable stays PURE (it reads arrays captured at the
+  click, nothing else). **Cost, corrected (my "no new scan" claim was wrong):** `test_control_scale` (30 units / 6 squads) with G2
+  reads ratio 177.0 (20.53 ms, builder2) v 89.2 (10.16 ms) with N2 without G2: the fit's gate_width at the click (rts_controls.gd
+  ~1192) is only memoized for the column, and a rank behind a one-abreast front reads its own 52 m scan (~1225); on his laptop
+  (~2.75x) a ~55 ms hitch on a big right click. Native is proving a two-line swap to `RtsControls.gate_width_edge_on(ground, ...)`
+  (pair/native-g2 c7444d484, the probe on v off byte-identical): output-identical by construction, so G2 is NOT re-frozen for
+  it; the two lines go on the ship commit after the bar with that proof. Perf stays REPORTED in the bar (as filed).
 - **Known issues:** (1) the shared repository had a corrupt packed object (the blob of
   assets/audio/layered/crowd_murmur_1.wav in pack-315912d8a6…): `git worktree add` for the frozen tree failed on it (~18:50);
   repaired reversibly with a hand-written loose copy of the same SHA from this worktree's intact file; the orchestrator is
