@@ -7,8 +7,17 @@
 # GDScript called avoidance_gather with an argument the old library lacked, every tank every tick, and the game went
 # choppy; builder0's checks always rebuild, so no check could see it). Only when native is ON (the .gdextension is there)
 # and a toolchain exists; a fresh library costs one `find`.
+# Round 45 (native, engage's report): a folder that has NEVER built the library (no .so and no .gdextension: a fresh builder
+# folder) builds it too. Before, it stayed on the GDScript path in silence, and engage's replay-match of his native match ran
+# GDScript (REPLAY_NATIVE_MISMATCH) on a fresh builder0 folder. Switched off on purpose (native-off: the .gdextension removed, the
+# .so kept) or NATIVE=off stays off; no toolchain says so in one line. Never under `make -n` (a recipe line naming $(MAKE) runs
+# even in a dry run, and tools read targets' command lines with -n: round 40's faction-matrix lesson).
 native-fresh:
-	@if [ -e $(NATIVE_GDEXT) ] && [ "$(NATIVE_TOOLCHAIN)" = yes ] && \
+	@if [ -z "$(findstring n,$(firstword -$(MAKEFLAGS)))" ] && [ "$(NATIVE)" != off ] && [ ! -e $(NATIVE_GDEXT) ] && [ ! -e $(NATIVE_SO) ]; then \
+		if [ "$(NATIVE_TOOLCHAIN)" = yes ]; then echo ">> native: no library in this folder yet; building it (NATIVE=off runs the GDScript)"; \
+			$(MAKE) --no-print-directory native; \
+		else echo ">> native: OFF: no library here and no cmake + c++ on $$(hostname): this run is the GDScript path"; fi; \
+	elif [ -e $(NATIVE_GDEXT) ] && [ "$(NATIVE_TOOLCHAIN)" = yes ] && \
 		[ -n "$$(find $(NATIVE_DIR)/src $(NATIVE_DIR)/CMakeLists.txt $(NATIVE_DIR)/build.sh -newer $(NATIVE_SO) -print -quit 2>/dev/null)" -o ! -e $(NATIVE_SO) ]; then \
 		echo ">> native: the library is older than native/src; rebuilding it before play"; $(MAKE) --no-print-directory native; fi
 
