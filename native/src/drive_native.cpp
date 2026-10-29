@@ -830,8 +830,9 @@ struct Drive {
 		if ((bool)v._backout_leg()) {
 			return backout_on();
 		}
+		const double length = hull_length(tank->get(k.unit_id));
 		if (drive_vector != Vector2() || std::fabs((double)tank->get(k._speed)) >= c.KTURN_CIRCLE_SPEED ||
-				flat_distance(here, goal) >= hull_length(tank->get(k.unit_id))) {
+				flat_distance(here, goal) >= length || length < c.KTURN_BRAKE_HULL_M) {
 			return false;
 		}
 		static const StringName due("_backout_due");
@@ -841,8 +842,10 @@ struct Drive {
 	// not _grouped_crew()`): when it may swap the steering point, the GDScript runs the look (its _backout_departure memo and
 	// route read are state), so the cheap look must not answer.
 	bool backout_look_due(const Vector3 &to) {
-		return c.backout_ready && std::fabs((double)tank->get(k._speed)) < c.KTURN_CIRCLE_SPEED &&
-				(double)to.length() < hull_length(tank->get(k.unit_id)) && backout_on() && !grouped_crew();
+		// c9ea1a6b4: then `hull_box(unit)[2] < KTURN_BRAKE_HULL_M: return INF` (long hulls only), still before any side effect.
+		const double length = hull_length(tank->get(k.unit_id));
+		return c.backout_ready && std::fabs((double)tank->get(k._speed)) < c.KTURN_CIRCLE_SPEED && (double)to.length() < length &&
+				length >= c.KTURN_BRAKE_HULL_M && backout_on() && !grouped_crew();
 	}
 
 	// Movement._kturn_goal_moved_out(waypoint), line by line.
@@ -3888,7 +3891,6 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 		waypoint = guard_steer(waypoint);
 	}
 	Vector2 drive_vector;
-	bool planned_leg = false; // round 44 (M2): the GDScript's `planned_leg`, for the station gate below
 	const Vector3 forward = -basis_z;
 	const double speed = tank->get(k._speed);
 	if (radius > 0.0) {
@@ -3941,7 +3943,6 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 					// `_backout_leg = _backout_leg or backout_looks > looked` on a planned leg, else false.
 					v.set__backout_leg(planned && ((bool)v._backout_leg() || (int64_t)sget(k_backout_looks()) > looked));
 				}
-				planned_leg = planned;
 			} else if ((double)v._kturn_left_m() > 0.0) {
 				// Movement._kturn_end("cancelled"): its looks cleared; the rest writes the diagnosis record, empty in the
 				// native drive's configuration (no kturn_log / reverse_log) (round 28, N5).
@@ -3999,7 +4000,7 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 	v.set_stationed_now(false);
 	if ((bool)sget(k.station_on) && !direct && !reverse && pace >= 0.99 && waypoint == goal &&
 			remaining <= c.STATION_RANGE && (double)((Vector2)v._goal_velocity()).length() >= c.STATION_MIN_SPEED &&
-			!(c.backout_ready && ((double)v._kturn_left_m() > 0.0 || planned_leg) && backout_on())) {
+			!(c.backout_ready && (bool)v._backout_leg())) {  // round 44 (R44.16, cf6eabc22): `and not _backout_leg`
 		{
 			Timed t("keep_station");
 			const double cap = (bool)order.get(k.paced, false) ? speed_factor : 1.0;
