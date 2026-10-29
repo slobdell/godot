@@ -528,6 +528,8 @@ func update(game_match: Match, orders: Object) -> bool:
 	if preempt:
 		_retake()
 		preempted_tick = game_match.tick
+		if _his_lone_order(game_match, orders):
+			return _note_changes(before)
 	else:
 		_adopt(orders)
 	var commanded := _commanded_members()
@@ -1509,6 +1511,10 @@ func _adopt(orders: Object) -> void:
 	for unit_name in roster:
 		var current: Dictionary = orders.call("current", unit_name)
 		if current.is_empty():
+			# Round 45 (E2): a crew carrying his own order stays his when it is done (it holds there, TankBrain): only his
+			# next task takes it back (_retake).
+			if str(_detached.get(unit_name, "")) == HIS:
+				continue
 			if _detached.erase(unit_name):
 				_log("%s back under command" % unit_name)
 				revision += 1
@@ -1519,6 +1525,42 @@ func _adopt(orders: Object) -> void:
 				_detached[unit_name] = true
 				_log("%s taken by its commander" % unit_name)
 				revision += 1
+
+
+## Round 45 (engage E2, C45.3): his move or hold to a squad of ONE is his order to that crew. A one-crew element ran it as a
+## squad task: its hold ran the contact drill (his Gorge scout, 30 m into the gap) and its move went to a formation slot
+## ~5 m off his click. The crew gets exactly his order (`source: player`: his stop / post rules in TankBrain apply) and stays
+## detached (`_detached[...] = HIS`) until his next task (R2's _retake). Queued tasks keep the element (his drawn route).
+const HIS := "his"
+const LONE_VERBS := {"move": "move", "hold": "hold"}
+
+
+func _his_lone_order(game_match: Match, orders: Object) -> bool:
+	if not Drills.PLAYER_AUTHORITY or orders == null or team != OrderFeed.player_team(game_match) or not queued_tasks.is_empty():
+		return false
+	if roster.size() != 1 or not LONE_VERBS.has(String(task.get("verb", ""))):
+		return false
+	var unit_name := String(roster[0])
+	var verb := String(LONE_VERBS[String(task["verb"])])
+	if verb == "move" and ElementTask.runs_drills(task):
+		verb = "attack_move"
+	var command := {"units": [unit_name], "verb": verb, "source": "player"}
+	var to: Variant = task.get("to")
+	if to is Array and (to as Array).size() == 2:
+		command["to"] = to
+	elif verb != "hold":
+		return false
+	if task.has("facing"):
+		command["facing"] = task["facing"]
+	var refused := String(orders.call("issue", command))
+	if refused != "":
+		_log("%s: his order refused (%s)" % [unit_name, refused])
+		return false
+	_issued.erase(unit_name)
+	_detached[unit_name] = HIS
+	_log("%s carries his order alone" % unit_name)
+	revision += 1
+	return true
 
 
 ## R2: a new player task takes back every crew the player had sent off on its own.

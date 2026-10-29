@@ -77,7 +77,7 @@ builder that aren't ours. builder0 at prep: load 0.02, 77 %, 24 G free; builder2
 
 **Seed registry (round 45):** 11201-11248 orders (Bar G2 deciding + guards); 11249-11296 orders reserve; 11301-11348 engage (Bar E1);
 11349-11396 engage reserve; 11149-11196 manoeuvre Bar B2; 11401-11448 manoeuvre Bar S v4; 11449-11496 manoeuvre reserve (A6 v4);
-11501-11524 native (twin pairs, lines_r45). Dev seeds: anything at or below 11148 already read, or 7001-7012.
+11501-11524 native (twin pairs, lines_r45); 11601-11648 manoeuvre B2b (unused, R45.14); 11651-11698 manoeuvre S v5 (R45.18). Dev seeds: anything at or below 11148 already read, or 7001-7012.
 
 _(each stream files its bar here BEFORE any number on its block; the orchestrator records it.)_
 
@@ -298,6 +298,43 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   ticks; 11168 +3.5 s; 11171 +32 wall ticks)**; workload k-turn terminus +2.6 se FAIL; every other guard PASS (yield+blocked, wedged,
   seated, never-arrived, unneeded back-ups, group G5-G7 identical, G1 corridor 180/180, Gorge identical, fights G1-G4). Round 46: the
   fallback (0a80c3685), the wall-contact on no-room poses (D3), and the k-turn guard redesign (R45.14).
+- **R45.16 (~15:00) G2's click cost; native's profiling grant.** pair/native-g2 c7444d484 (builder2): the gate_width_edge_on swap at
+  rts_controls.gd ~1192 / ~1225 is EQUAL (68/0; probe 192/192 guard on and off; 768 rows = cfa4a0eb2's) but saves ~1 ms:
+  test_control_scale 30 units / 6 squads 20.53 -> 19.59 ms v N2 without G2 10.16 ms. ~9 ms is G2's own GDScript (guard_lay, guard_fit /
+  trim, standable, reached_from). Orders takes the two lines on its ship commit. The cost does not block G2 ON (a known cost in Status);
+  native profiles G2's click by stage after the final freeze and ports what dominates (one guarded seam line per function in orders'
+  file, output-identical first).
+- **R45.17 (~15:10) Bar S v4 FAILS as filed (the wedged guard on Locks); seat bound stays OFF.** Frozen 0493977ed, builder2 light,
+  72 paired cells 11401-11424, C++ drive: D1 seated within the bound by 15 s 219 -> 362 pooled (+1.99 a run, +8.6 se) PASS; D2
+  yield+blocked -2.3 s a run PASS; k-turn and yield per arena PASS; never-arrived pooled 243 -> 198 PASS (Locks alone +0.9 a run);
+  **wedged Locks +6.44 s a run (+4.4 se) FAIL** (crossing, terminus pass). Carried by the squad's LAST two crews (slot 5 +88.5 s, slot 4
+  +54.2 s summed over 24 seeds: the Resupply Tanker and Gun Truck, Battery_4/5) converging on a bound the first three already fill.
+  Round 46: S v5, the last-arriving crew's seat dealt outside the filled bound. In his terms: with it ON his first order seats far more
+  crews at his click within 15 s, but on Locks the squad's last two vehicles wedge into the first three for ~6 s.
+- **R45.18 (~15:20) S v5 may be filed this round, on conditions.** Manoeuvre's S v5 (stream/manoeuvre 52493b473, OFF, `--seat-last=open`:
+  the bound's deepest seat is the rear-most crew's alone), DEV Locks 7001-7012, builder2, 12 paired cells: D1 53 -> 89 (+7.7 se; s4 83);
+  k-turn -5.5 s a run; never-arrived 13 -> 3; wedged -0.5 s a run (s4 +3.5); one cell (7009 Guns2) 14.6 -> 25.1. If the three-arena dev
+  read shows no arena's wedged or never-arrived worse than base (7009 explained), Bar S v5 is filed on NEW fresh seeds 11651-11698 before
+  any number, S v4's lines unchanged; G2's series has builder2 priority; C45.4 stated (twin if the C++ drive reads it); own freeze + check.
+- **R45.19 (~15:30) Bar E1 FAILS as filed; ships ON under C45.2 (the orchestrator's call, the lead away; told in player terms).**
+  Tree 60262534f GREEN builder0 (exited 0, 28 ALL JUDGED, 3451/0); 11301-11348, n 48 an arm, native ON (3 seeds lost the crew before his
+  order in both arms). PASS: **D2 element rows sending his crew elsewhere 798 -> 0** (his complaint); G1 deaths 7 v 6, enemy hp within
+  se; G2 held crews in range shoot 34.1 v 28.1; G4 squad hold sends nobody at the enemy 0 v 278; G5 native EQUAL 48/48; G7 green.
+  FAIL: D1 held max 5.5 m v 3.0 (OFF 42.6 m): 11315 3.1 m (OFF 6.3), 11330 4.0 m (OFF 5.4), 11344 5.5 m (OFF identical); D3 one move
+  11.2 m short (11337, OFF identical: the drive); G3 take-back 35/38 (OFF 38/40): 11321 / 11345 fail in BOTH arms, **11326 (a lone
+  artillery hold, then a squad move) taken OFF, not ON: the one run the rule makes worse.** Ruling: every failing run but 11326 is
+  the same as or better than OFF, and D2 (what he reported) passes outright, so E2 ships ON at 60262534f once G6 (orders-probe,
+  manoeuvre-behind identity) passes and 11326's cause is written; a fix for 11326 lands separately with its own test and the
+  authority probe byte-identical elsewhere. Lesson 339 applies.
+- **R45.20 (~15:40) Bar A6 v4 (holdway) FAILS as filed on guard 4; stays OFF. S v5 not filed (dev read not clean).** A6 v4 (frozen
+  0493977ed, builder0 light, 24 + 24 seeds; evidence `references/round45/manoeuvre/barsa6v4-builder0-0493977ed/`): deciding side jam_s
+  397 -> 48 pooled, -29.1 s a run, z -5.6 PASS; guards 1, 2a, 2b (one-sided), 3, 5, 6 (engage's lines identical), 8 PASS; **guard 4
+  contacts_far 9 -> 70 pooled, +2.54 a run (z 1.81) v the filed +2.32: FAIL by 0.22 a run**, all on head-on stages (11450 0 -> 9, 11458
+  3 -> 9, 11460 6 -> 15, 11464 0 -> 5, 11466 0 -> 32). In his terms: the side-street squad that sits jammed 30 s today would roll through,
+  but on a head-on meeting the released crews brush the passer at the mouth a couple more times a match. Not overridden: C45.2 covers G2
+  and E2 only, and brushing friends is its own "doesn't look smart". Round 46: the head-on release (seed 11466's 0 -> 32 first).
+  S v5's three-arena dev read: Locks wedged -0.5 s a run, Terminus +8.0 s (+1.7 se), Crossing +2.4 s; never-arrived 115 -> 109: no bar
+  (R45.18's condition). C45.4: seat / bounded are GDScript only; no twin needed.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =

@@ -40,6 +40,17 @@ fresh folder's library; replay-match fails on the wrong native path; builder2 pr
 28 targets ALL JUDGED, sim-baseline unmoved; main INHERITS it. control-timing quiet read on builder0 pending. G2 conflicts in
 rts_controls.gd column_lay: resolution = pair/native-g2 cfa4a0eb2 (EQUAL with G2, R45.3 re-proof).
 
+**MAIN NOW (~15:45 PDT): 8ef4f584d** = + engage 69bf864d2 (code = 60262534f, builder0 GREEN 3451/0 ALL JUDGED): **E2 ON — his
+order to a crew wins** (`--player-authority=off` the escape; R45.19: Bar E1 failed as filed on D1/D3/G3, shipped under C45.2). Main moved
+since engage's freeze (native N2), so a full builder0 check of 8ef4f584d is RUNNING (~/orch-r45/main-check-8ef4f584d.log). Verdicts:
+B2 FAIL (R45.15), S v4 FAIL (R45.17), A6 v4 FAIL (R45.20), S v5 not filed: all OFF. G2 still in dev reads before its freeze.
+
+**control-timing on main eec905e52 (builder0, NOT JUDGED: quiet window refused, 2/2 samples busy):** 30-unit / 6-squad right click
+3.68 ms, ratio 89.8 v budget 104 (round 43's quiet read 10.38 ms / 236); click_to_order ratio 90.5; per-frame control ratio 21.03 v 26.
+Re-run judged in the first quiet builder0 window (the round's close). G2 on top costs ~20.5 ms on builder2 (fit 9.5, guard_lay 6.6,
+untangle 0.8, ground_cap 1.2, given 1.1): native's R45.16 target. **Ships so far this round: nothing behaviour-visible; backout (B2,
+R45.15) and seat bound (S v4, R45.17) FAILED and stay OFF.**
+
 **SERIES (13:40 PDT):** Bar B2 RUNNING since ~13:35 on frozen 0493977ed (= manoeuvre ce52cba1c + native twin 04ce3abe9; builder2
 check `exited 0` 3448/0, perf NOT JUDGED there; quiet builder0 perf before ON), two drivers (builder0 light ../godot-manoeuvre-b2x,
 builder2 ../godot-manoeuvre-b2), evidence ~/overnight-manoeuvre/r45/bars_b2/, ETA ~3-4 h. Bar E1 re-frozen 60262534f (R45.10), check

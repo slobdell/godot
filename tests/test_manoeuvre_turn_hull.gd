@@ -102,9 +102,13 @@ func _contact_stage(on: bool, element_task := true) -> Dictionary:
 	var drawn := Vector3(1, 0, 0)
 	var elements := Elements.install(s.game_match, s.orders())
 	await s.start()
+	var authority_was := Drills.PLAYER_AUTHORITY
 	if element_task:
 		# The player's right-drag is an element TASK with a facing (the F1 case); its crew settles on it and keeps it for
 		# as long as the task stands.
+		# Round 45 (engage E2, C45.3; R45.10): a squad of ONE now takes his task as his own direct order (Element._his_lone_order),
+		# so this one-crew stage measures the element path only with that rule off; squads of two or more keep it.
+		Drills.PLAYER_AUTHORITY = false
 		var task := {"verb": "move", "to": [-100.0, 40.0], "facing": [drawn.x, drawn.z], "drills": false}
 		assert_eq(ElementTask.validate(task), "", "setup: a move task may name a facing")
 		elements.form(["Green_A_1"], "Alpha").assign(task)
@@ -132,6 +136,7 @@ func _contact_stage(on: bool, element_task := true) -> Dictionary:
 			"shots": s.shots_by(me)}
 	s.dispose()
 	Movement._off = was_off
+	Drills.PLAYER_AUTHORITY = authority_was
 	return result
 
 
