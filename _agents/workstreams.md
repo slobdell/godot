@@ -130,6 +130,28 @@ _(each stream files its bar here BEFORE any number on its block; the orchestrato
   never a bar):** round 44's B1 (R44.25) and the M1 audit (streams/manoeuvre.md Status); the dev corpus read on the re-staged table
   with the two fixes (laptop / builder2, GDScript drive) is recorded in Status before the freeze.
 
+- **FILED Bar A6 v4, the street hold decided on the side stage's jam, re-filed with a ONE-SIDED head-on guard (manoeuvre M6; R44.19's
+  round-45 candidate; FILED before any number on 11449-11496).** ONE arm, **ARM-W** = `--traffic-on=holdway` (engage's ordered-way
+  read, unchanged on main since 13fbe1a5d: a crew of the waiting squad is held only when its ORDERED way, not its momentary nose,
+  runs through the street) v BASE (today), on Bar B2's frozen tree (its gate check is B2's), native ON in every log. **Workload:**
+  `make engage-hold` (tests/engage/hold_probe.gd) as A6 v2 / v3 (odd seeds the side-street planting, even the three head-on stages),
+  **11449-11472**, n 24 paired by seed = 12 side + 12 head-on, 75 s, builder2 light J10; Bar E1's lines on **11473-11496**.
+  **Deciding (as A6 v3):** jam_s on the side 12 ARM < BASE by >= 2 se (paired) AND pooled ARM < BASE (v3 read 348 -> 43, -5.7 se).
+  **Exercised floor:** 8 of 12 side seeds with a verdict in BASE, else INCONCLUSIVE. **Guards (v3's, with 2b one-sided):** 1
+  off_arrive_s (side 12) ARM <= BASE + 2 se; 2a verdicts (head-on 12) within BASE +/- 2 se; **2b held_on_s (head-on 12) ARM <= BASE +
+  2 se (one-sided: v3 FAILED this line at -2.26 se, i.e. the head-on crews were held LESS and arrived 13 s sooner, which is not a
+  harm; the harm this guard is for is a crew held longer by the way read)**; 3 contacts_mouth (24) ARM <= BASE + 1.645 se; 4
+  contacts_far (24) ARM <= BASE + max(1.645 se, 2); 5 last_a_s (24) ARM <= BASE + 1.645 se; 6 Bar E1's lines (`make engage-probe`,
+  today's attack-shot ON in both arms, ARM = `ENGAGE_FLAGS=--traffic-on=holdway` v BASE, builder2 light): stuck crew-seconds, first
+  hit, deaths each within BASE +/- 1.645 se; 7 the frozen tree's check perf-judge (B2's gate); 8 no SCRIPT ERROR. **What it could
+  break (named first):** a crew held by the way read that today's nose read released (2b, one-sided); a crew released that then
+  meets the passer at the mouth (contacts_far, 4; contacts_mouth, 3); the far crew's own arrival (off_arrive_s, 1). **Ships ON**
+  (`holdway` out of DEFAULT_OFF, `--traffic-off=holdway` the escape) only if the deciding line and every guard pass; no re-file.
+  C45.5: the hold reads any squad's ordered way (the CPU's too). **Machine:** `~/overnight-manoeuvre/r45/bars_a6v4.sh` from the B2
+  frozen worktree, queued behind B2's series on builder2 light; evidence `~/overnight-manoeuvre/r45/bars_a6v4/`, filed under
+  `references/round45/manoeuvre/barsa6v4-builder2-<hash>/`. **Dev history:** A6 v2 (10601-10624) and A6 v3 (R44.19, 10949-10996):
+  the deciding line and guards 1, 2a, 3-6 passed in both; 2b's two-sided form failed v3 on the reduction side only.
+
 ## Rulings (round 45)
 
 - **R45.1 (prep) Gorge's geometry, for every stream.** The drop's pits run z 38-50: west drop x -92..-48, middle -32..32; the gap

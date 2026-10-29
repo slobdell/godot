@@ -146,6 +146,20 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   every pose ok (ON v OFF clear +0.0 / +0.3 / -0.6 / +0.0 / +0.0 / +0.0 s; wall ticks +1 / -36 / +11 / 0 / +4 / 0; looks fire on four
   of them, no plan survives the hull / navmesh tests, stalls 0): **G PASS 6 / 6** on the dev poses (D3's line: <= +1.0 s, <= +15 ticks).
 
+### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
+
+- **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
+  | arm | D1 seated within the bound by 15 s | yield+blocked s a run | k-turn s a run | **wedged s a run** |
+  |---|---|---|---|---|
+  | latch (`--shape-latch=on`) | 53 -> 40 (-2.9 se) | +0.2 (+0.5 se) | +0.0 | -0.3 (se 0.55) |
+  | bound (`--seat-bound=on`) | **53 -> 83 (+4.4 se)** | +1.6 (+0.6 se) | **-5.4 (-2.8 se)** | **+5.6 (se 2.38, +2.4 se)** |
+  | converge (`--converge-on-crew=on`) | 53 -> 52 | +0.1 | +0.1 | +0.5 (se 0.41) |
+  | kturngoal (`--traffic-on=kturngoal`) | 53 -> 45 (-2.2 se) | +3.5 (+1.8 se) | +0.3 | **+4.3 (se 1.99, +2.1 se)** |
+  | parkaside (`--traffic-on=parkaside`) | 53 -> 54 | -0.5 | +0.2 | +0.9 (se 0.70) |
+  **Read:** the wedging S v3 failed on (Locks +9.2 s a run) is the BOUND's press (+5.6) plus KTURNGOAL (+4.3), near-additive; the latch
+  costs D1 alone; converge and parkaside are neutral here. The bound is the only rule that delivers his settle (D1). S v4's shape:
+  the bound WITHOUT kturngoal, with the press fix (round 44's `--seat-order=on`, seats dealt in arrival order) read next.
+
 Decisions so far: dev reads run on the laptop's GDScript drive under `flock /tmp/tank-squad-laptop-godot.lock` (one pose pair ~1 min;
 nothing of the lead's runs while he is away); every judged number comes from a builder.
 
