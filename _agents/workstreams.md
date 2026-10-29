@@ -403,6 +403,11 @@ already read, or 7001-7012.
   (chained after control-timing) decides it: ALL JUDGED green and CP44.0 60/60 off -> merge it OFF (the probe and judge serve round
   45); otherwise it stays on the branch. Round 45: a short click is not a column (squads already near the click take the near seats
   in place); the column on bending streets keeps to the click line, not the road.
+- **R44.24 (~17:30) C44.4 met for backout: native's twin r3 pair/native-backout-r3 30e37f336 (cut on manoeuvre df31afba8: the
+  `_backout_leg`-only station gate, the long-hull term) is native-proof EQUAL with --traffic-on=backout,parkedpass (builder2, 233/0
+  subset) and the default orders probe base v backout 60/60 byte-identical on the C++ drive (builder2 light). Supersedes 39b063c7c.
+  Its full check (builder2) is pending; manoeuvre merges it and freezes Bar B1 on that tree. Main ba5e9a49f = + manoeuvre 6b319c75f
+  (all OFF; builder0 3446/0 ALL JUDGED; inherits).
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
