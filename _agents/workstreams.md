@@ -283,6 +283,14 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   the front stays on his click, 60 m scan), holders exempt from the ground cap, rear seats need a dry footprint (half the widest
   squad). The freeze moves to that commit. **No further amendment of G2's lines:** the next failing line on 11201-11248 is a failure,
   taken to him in player terms (C45.2).
+- **R45.14 (~14:40) Backout stays OFF this round (R45.12's rule).** Manoeuvre's three-arm read (Terminus dev 7001-7012, 12 paired
+  cells, GDScript drive every arm, builder2): k-turn s a run base 384.6 -> bo 438.0 (+4.45, +4.1 se) -> bo + fallback (27a84420b = 0a80c3685's
+  code) 438.0, identical: the Terminus excess is NOT the 11187 shape, so B2b is not filed. What it is: the back-ups are k-turns (War Rigs
+  +2 s each) and the Resupply Tanker straight behind turns to make way (+8 s on those deploys); on the same cells ON cuts yield+blocked
+  -4.9 s a run (-1.9 se), never-arrived -0.75 a run, wedged -0.8 to -1.3 s. **Round 46 filing-design note:** a k-turn guard counts the
+  manoeuvre the rule exists to make; judge the squad's time to clear its start instead. The fallback 0a80c3685 stays on the branch, OFF.
+  The B2b twin request to native is withdrawn. In his terms: with backout ON his rigs back out of their boxes at once and the squad flows
+  out sooner, but the tanker at the back does an extra three-point turn; with it OFF (his game) the rig noses in first, as he reported.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
