@@ -311,6 +311,10 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   +54.2 s summed over 24 seeds: the Resupply Tanker and Gun Truck, Battery_4/5) converging on a bound the first three already fill.
   Round 46: S v5, the last-arriving crew's seat dealt outside the filled bound. In his terms: with it ON his first order seats far more
   crews at his click within 15 s, but on Locks the squad's last two vehicles wedge into the first three for ~6 s.
+  **Final (all legs, stream/manoeuvre 2ba3703f3, evidence `references/round45/manoeuvre/barss4-builder2-0493977ed/`):** also **fights G4
+  FAIL** (kill share Green 0.634 -> 0.585, worst move 0.049 v 0.03; deaths 797 -> 800); group guards identical, G1 corridor 180/180.
+  Two lines fail. C45.4 note: native found the 11187 fallback's cadence rule diverging in the C++ drive (frame 31 on df74319af) and
+  mirrored it (pair/native-backout-skip 5ed7788ef); "GDScript only" was wrong.
 - **R45.18 (~15:20) S v5 may be filed this round, on conditions.** Manoeuvre's S v5 (stream/manoeuvre 52493b473, OFF, `--seat-last=open`:
   the bound's deepest seat is the rear-most crew's alone), DEV Locks 7001-7012, builder2, 12 paired cells: D1 53 -> 89 (+7.7 se; s4 83);
   k-turn -5.5 s a run; never-arrived 13 -> 3; wedged -0.5 s a run (s4 +3.5); one cell (7009 Guns2) 14.6 -> 25.1. If the three-arena dev
