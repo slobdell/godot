@@ -111,7 +111,11 @@ Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for
   The series `WT=../godot-manoeuvre-b1 bars_b1.sh` STARTED 18:17 PDT** (as filed and as the orchestrator approved: his start on
   builder2, the corpus / fights / G1 probe on builder0 light, the workload and group guards on builder2 light, in sequence; driver log
   `~/overnight-manoeuvre/r44/bars_b1-driver.log`, evidence `bars_b1/`, timeline `bars_b1/meta.txt`). If B1 passes, shipping ON needs
-  a quiet builder0 full check with perf-judge and scenario_perf JUDGED, after the series (the orchestrator's condition). **In both arms backout ON now runs the C++ drive.**
+  a quiet builder0 full check with perf-judge and scenario_perf JUDGED, after the series (the orchestrator's condition). **Hiccup
+  (22:30):** his start and the corpus (96 rows, 1 / 0) ran; the workload leg never ran a cell: builder2's fresh `godot-manoeuvre-b1-light`
+  hung on its first cold import (Oswald-Latin.ttf at 0 %) until the 14400 s slot killed it (exit 124, `deciding-wrapper.hung.log`);
+  the group leg's import on the same folder then completed and its cells run. The workload leg reruns verbatim
+  (`bars_b1_workload.sh`, armed on "group done"; no number existed, so not an amendment: the orchestrator agreed, HANDOFF records it). **In both arms backout ON now runs the C++ drive.**
 - **His ask is answered on his own recordings (M5):** on native's exact replay both his boxed War Rigs back out the second he clicks and
   are round the box 2-3 s before main's has moved (the table below); main reproduces his matches (the 5 s stand in the second one).
 - **CP44.0 is merged** (main 875ee5dd0's `group` key); the scoping's byte-identity proof stands (60/60 at proof5; parkedpass 60/60 at
