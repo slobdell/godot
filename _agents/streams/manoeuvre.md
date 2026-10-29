@@ -354,6 +354,12 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   crew's tick clearing 8 m from its spot, ARM <= BASE + 2 se). Read on B2's workload rows (frozen 0493977ed): crossing +14.6 ticks a run
   (+0.6 se), locks +15.2 (+1.5 se), terminus -25.6 (-1.0 se): all PASS where the k-turn-seconds guard failed Terminus at +2.6 se.
 
+- **Queued after B3, before S v5 (engage's E5 relay via the orchestrator):** his short move to the lone scout (Gorge 83.7 s / 85.2 s): the
+  click ~56 deg off the nose at 10.7 m, inside a wheeled scout's turning circle, so the mover starts a three-point turn and backs 3 m AWAY
+  from his click for ~0.9 s before his next click replaces the order. A player's short move whose goal is ahead-ish (< 90 deg) but inside
+  the circle should drive forward on the tightest arc (or stop and pivot) rather than reverse away. Dev read first; `movement.gd` + a
+  native twin.
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
