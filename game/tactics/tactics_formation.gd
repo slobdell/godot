@@ -902,6 +902,30 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 		for j in offsets.size():
 			slot_laterals.append(Vector3(world[j].x - anchor.x, 0.0, world[j].z - anchor.z).dot(right))
 		slot_rank = _strict_rank(slot_laterals)
+	# Round 45 (S v5, SEAT_LAST_OPEN): the deepest seat (the one `bounded` left at its nominal depth) is the REAR-MOST crew's at the
+	# order, and nobody else's: dev read 1 (Locks 7001-7012) let the least-driving matching hand it to a War Rig, which then drove
+	# through the second squad to reach it (wedged 4.5 -> 17.2 s on three seeds) while the Tanker's press vanished on the others.
+	var last_open := SEAT_LAST_OPEN and SEAT_BOUND and nearest and not halted and bool(opts.get("seat_bound", not halted)) \
+			and offsets.size() >= 3 and count >= 3
+	var deep_slot := -1
+	var rear_member := -1
+	if last_open:
+		var fwd_l := flat(heading)
+		for j in offsets.size():
+			if deep_slot < 0 or offsets[j].y > offsets[deep_slot].y:
+				deep_slot = j
+		var least_ahead := INF
+		for i in count:
+			var m: Dictionary = members[i]
+			if not m.has("position"):
+				continue
+			var at_m: Vector3 = m["position"]
+			var ahead := Vector3(at_m.x - anchor.x, 0.0, at_m.z - anchor.z).dot(fwd_l)
+			if ahead < least_ahead:
+				least_ahead = ahead
+				rear_member = i
+		if offsets[deep_slot].y <= 0.0 or rear_member < 0:
+			last_open = false
 	# Square cost matrix: members (padded with empty seats) by slots (padded with nowhere).
 	var cost: Array = []
 	for i in slot_count:
@@ -956,6 +980,8 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 				value += tier_weight * float(member_tier[i]) * float(deepest - int(slot_tier[j]))
 			if ordered:
 				value += SEAT_ORDER_PER_RANK * maxf(spacing, 1.0) * float(absi(int(member_rank[i]) - int(slot_rank[j])))
+			if last_open and ((j == deep_slot) != (i == rear_member)):
+				value += SEAT_ORDER_PER_RANK * maxf(spacing, 1.0) * 3.0  # round 45 (S v5): the open deep seat is the rear crew's alone
 			if pin:
 				var is_leader := String(member.get("name", "")) == leader
 				if is_leader != (j == 0):
