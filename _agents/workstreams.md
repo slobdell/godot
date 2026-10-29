@@ -251,6 +251,12 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
     (`gorge:his3:-43.2/53.2`, fresh seeds 11201-11224 for the drive): held = 0 in every run, plus D1-D4, D6 as filed.
   - **The held guard** (median <= base's unmoved + 1) applies to reach-80 cells only (R44.5's shape); reach-20 cells REPORT it.
   - D1-D4, D6, every other guard, seeds and n unchanged. Orders writes these into its filing before any 11201 number.
+- **R45.10 (~13:40) E1's freeze check RED on a manoeuvre test; test-only grant to engage.** builder0, f853d2a92: 3450 passed / 1 failed,
+  `make check exited 2`: `test_manoeuvre_turn_hull.gd::test_a_declined_contact_face_keeps_the_hull_on_his_drawn_heading`, OFF arm
+  (expected 0, got 2). The stage gives a ONE-crew element his move task with a drawn facing; E2 hands a squad of one's move to the crew
+  as his direct move, so the order's told facing turns the hull for 2 ticks (the sister test allows this for a direct move). Bar not
+  started. GRANT: engage pins `Drills.PLAYER_AUTHORITY = false` around that element_task stage (test-only, restored after), carried
+  on stream/engage; re-freeze, re-check, then the bar.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
