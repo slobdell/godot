@@ -134,6 +134,11 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   round to drive back a few metres is what he reported ("sent BACK"). Such a squad holds where it stands instead (D5's held
   counts it on Gorge only if it is NOT already within its rank's depth of its seat; the orders worker states the exact test in
   its Status before the numbers).
+  **Orders' answer (before any number):** D6 = per run on gorge:spawn, max over squads of (start - click).approach - (place -
+  click).approach <= 2.0 m; the guard now holds a squad whose seat would be > 2 m behind its start (GUARD_HOLD_BEHIND_M); D5 `held`
+  = place within 2 m of its start. The orchestrator's (5, 98) estimate was wrong: the lab's file runs back along the DIAGONAL
+  approach (-0.824, -0.566) toward the army's middle, so the Wrenches go (43.9, 93.6) -> (10.8, 90.3), 33 m west along his start
+  row, 29 m AHEAD of their start along the approach; Hunters (-14.6, 92.6) -> his click; Spears (14.6, 92.6) -> (-16.2, 71.7).
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
