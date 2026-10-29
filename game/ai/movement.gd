@@ -398,7 +398,7 @@ static func route_arms() -> Dictionary:
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
-			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks, "backout_stalls": backout_stalls, "parkedpass_refusals": parkedpass_refusals,
+			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks, "backout_stalls": backout_stalls, "backout_fallbacks": backout_fallbacks, "parkedpass_refusals": parkedpass_refusals,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_settled_passes": chain_settled_passes, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
@@ -417,6 +417,7 @@ static func reset_route_arms() -> void:
 	parkaside_moved = 0
 	backout_looks = 0
 	backout_stalls = 0
+	backout_fallbacks = 0
 	parkedpass_refusals = 0
 	behind_asked = 0
 	behind_reverses = 0
@@ -1240,12 +1241,21 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 				if _kturn_left_m <= 0.0 and circle_fit_on() and (drive_vector.x < 0.0 or _circle_away != 0.0):
 					drive_vector = _circle_gate(waypoint, radius, drive_vector)
 				var looked := backout_looks
+				# Round 45 (M2, Bar B2's 11187): a call today's drive would NOT have made (steering had nothing to do; only the departure
+				# look brought the planner here) leaves today's cadence untouched when the look plans nothing: no fallback pass (today
+				# would not have planned this tick either) and `_kturn_check` as it was, so the next look of today's planner falls on
+				# today's tick. The ON arm then differs from OFF only where a departure look DECIDES.
+				_backout_only = not looks_today
+				var check_was := _kturn_check
 				if _planned_reverse(leg, waypoint, delta):
 					drive_vector = Vector2(leg.throttle, leg.turn)
 					planned_leg = true
 					_backout_leg = _backout_leg or backout_looks > looked
 				else:
 					_backout_leg = false
+					if _backout_only:
+						_kturn_check = check_was
+				_backout_only = false
 			elif _kturn_left_m > 0.0:
 				_kturn_end("cancelled")
 				_kturn_left_m = 0.0
@@ -5524,6 +5534,13 @@ const BACKOUT_STALL_PROGRESS_M := 1.0
 const BACKOUT_STALL_TICKS := SimClock.TICK_RATE
 static var backout_looks := 0  # k-turn decisions made against the departure point (measurement)
 static var backout_stalls := 0  # departure legs ended as stalled (measurement)
+static var backout_fallbacks := 0  # departure looks that could not plan and handed the tick to today's planner (measurement)
+## Round 45 (M2, B2's 11187): set while a departure look that planned nothing re-runs the planner on the original steering point
+## (a static scratch within one _planned_reverse call, like _departure_hulls: nothing for exec_fields.h).
+static var _backout_fallback := false
+## Round 45 (M2, B2's 11187): set by the drive while the planner runs on a tick today's drive would not have called it (the look alone
+## brought it): a look that plans nothing then hands the tick back without a fallback pass (a static scratch, like _departure_hulls).
+static var _backout_only := false
 var _backout_goal := Vector3.INF   # the final goal the window was opened for
 var _backout_tick := 0
 var _backout_point := Vector3.INF  # the departure point, read from _backout_from
@@ -5533,6 +5550,9 @@ var _backout_from := Vector3.INF
 var _backout_leg := false  # a k-turn planned from a departure look is under way (it runs to its end whatever steering says)
 var _backout_stall_ticks := 0  # round 45 (M2): ticks the departure leg has been asked to move without progress (exec_fields)
 var _backout_stall_from := Vector3.INF  # round 45 (M2): where the stall window opened (exec_fields)
+## Round 45 (M2, B2's 11187): no look-only planner call before this tick (a look that planned nothing on a tick today's drive would not
+## have planned waits KTURN_CHECK_TICKS before asking again: 19 looks in 19 ticks cost ~200 navmesh queries each) (exec_fields).
+var _backout_skip_until := 0
 ## The other hulls a departure look's back-up search stops at, set and read within one _planned_reverse call (a static scratch,
 ## not per-crew state: nothing for exec_fields.h; empty = today's search). Round 45 (M2): rows of `_backout_hulls` (oriented boxes).
 static var _departure_hulls: Array = []
@@ -5614,6 +5634,8 @@ func _backout_due(direct: bool, drive_vector: Vector2, goal: Vector3) -> bool:
 		return true
 	if drive_vector != Vector2.ZERO:
 		return false
+	if Engine.get_physics_frames() < _backout_skip_until:
+		return false  # round 45 (B2's 11187): the last look-only call planned nothing; today's drive is not asking either
 	var tank := ctl.tank
 	var here := tank.global_position
 	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
@@ -5624,6 +5646,8 @@ func _backout_due(direct: bool, drive_vector: Vector2, goal: Vector3) -> bool:
 ## its own length, not a grouped squad's crew, within the order's window, its route to its final goal leaving BACKOUT_MIN_ERROR_DEG
 ## or more off the nose, and BACKOUT_ROOM_M of straight run behind it clear of other hulls. Memoised per final goal (the path).
 func _backout_look(here: Vector3, forward: Vector3, to: Vector3) -> Vector3:
+	if _backout_fallback:
+		return Vector3.INF  # round 45 (B2's 11187): the fallback pass runs today's planner on the station
 	# The steering point within a hull's length: the station crawl is what pins a boxed rig (with a far steering point the drive turns
 	# away at its own lock and clears: the staged corpus, `~/overnight-manoeuvre/r44/m2/test/corpus3`: alone poses crept 6 m and cleared
 	# in 2 s where a back-up cost +2.6 s; Locks dev 7007's "far seat" crew was a Gun Truck, out of scope below).
@@ -5918,6 +5942,7 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 	# not after a second's creep into the gap (his Guns_2, Locks 56416, 2026-10-28). Everything below is unchanged: the circle
 	# plan, the arc sweep and the reverse search simply run on that departure point.
 	var far: Vector3 = _backout_look(here, forward, to)
+	var station_waypoint := waypoint  # round 45 (B2's 11187): what today's planner would have looked at
 	if far != Vector3.INF:
 		var to_departure := far - here
 		if ManoeuvreCensus.trace_unit == String(tank.name):
@@ -6084,6 +6109,27 @@ func _planned_reverse(cmd: TankCommand, waypoint: Vector3, delta: float) -> bool
 			cmd.turn = turn
 			kturn_ticks += ctl._step
 			return true
+	if departure_look and not _backout_fallback:
+		# Round 45 (manoeuvre M2, Bar B2's seed 11187): a departure look that plans NOTHING (its route vertex outside the circle, the single
+		# back-up and the fill blocked by the squadmate beside) must not take the tick from today's planner, which had a plan: the crawl
+		# pose's station stood behind the rig and today's circle plan (back 5 m, away 2 m) cleared the box at t166 while the look's empty
+		# decision left the reactive rules to it (t355, +6.3 s, the one pose of 48 that failed B2's cost ceiling). The look is withdrawn
+		# (it did not decide: `backout_looks` and `_backout_leg` as if it never fired). On a tick today's drive would have called the
+		# planner, it runs once more on the station; on a look-only tick (`_backout_only`) nothing more: today would not have planned.
+		backout_looks -= 1
+		backout_fallbacks += 1
+		if _backout_only:
+			_backout_skip_until = Engine.get_physics_frames() + BrainLevers.kturn_check_ticks(tank.team, String(tank.name))
+			if ManoeuvreCensus.trace_unit == String(tank.name):
+				print("MANOEUVRE_TRACE backout look f %d planned nothing on a look-only tick: today's cadence kept" % Engine.get_physics_frames())
+			return false
+		if ManoeuvreCensus.trace_unit == String(tank.name):
+			print("MANOEUVRE_TRACE backout look f %d planned nothing: today's planner on the station %s" % [Engine.get_physics_frames(), str(_flat_xz(station_waypoint))])
+		_backout_fallback = true
+		_kturn_check = 0
+		var planned := _planned_reverse(cmd, station_waypoint, delta)
+		_backout_fallback = false
+		return planned
 	kturn_none += 1
 	if kturn_log:
 		kturn_none_log.append(_kturn_diagnose(map, frame, here, forward, turn, waypoint, start, blocked_at))

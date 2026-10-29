@@ -246,6 +246,23 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
     48 breaks the every-pose line; no amendment (C45.1). The other legs run on for the record; the orchestrator decides with him
     (lesson 339 / C45.2). The cause of 11187 is being traced (laptop, GDScript drive, the frozen worktree).
 
+  - **Engage's line (rerun, builder2, 13:46): PASS** — his Gorge replay 107 s base v bo, DIVERGENCE 20 / 20 within 3 m both arms, the
+    per-crew tables IDENTICAL.
+  - **The red flag (C++ t355 v laptop GDScript t273 on 11187): RESOLVED as the machine, not the twin.** The whole block both ways on
+    builder2's heavy folder (`~/overnight-manoeuvre/r45/b2_equal/`, 0493977ed): C++ drive v GDScript drive **96 / 96 rows identical**
+    (clear tick and first reverse; 11187 ON t355 on both).
+  - **Workload guards (builder2 light, 72 paired cells 11149-11172, 0 SCRIPT ERROR; `judge-workload.txt` once judged):** yield+blocked
+    crossing -0.9 se / locks -0.1 / terminus -3.4 PASS; k-turn s crossing -0.5 se PASS, locks +1.8 se PASS, **terminus +2.6 se (+1.79 s a
+    run) FAIL** (line +2 se); wedged -0.35 s a run PASS; never-arrived -0.5 a run; seated-by-15 -0.6 se PASS. `b1_judge`: other crews'
+    reversing ticks -4.0 / +0.5 / -3.3 se PASS, seated +0.2 / -1.4 / +1.9 se PASS; nose-on crews' clear 8 m 248 -> 264 ticks (+1.0 se,
+    reported). **B2 as filed: two misses (the 11187 ceiling, the Terminus k-turn guard).** The driver's leg ended "WRAPPER_DONE 127"
+    (a shell quirk after the copy; all 144 runs present with START_RUN).
+  - **The 11187 fix (uncommitted at this line; GDScript, laptop):** a look that plans nothing is withdrawn; on a tick today's drive
+    would have planned it re-runs today's planner on the station (11187: both arms plan the same circle at tick 29 now; ON t207 v OFF
+    t166, the rest is the squadmates' own ON drives); on a look-only tick nothing more and `_kturn_check` restored (today's cadence);
+    a look-only call that planned nothing waits KTURN_CHECK_TICKS (`_backout_skip_until`, a new exec field). 14 dev poses unchanged
+    (3 / 3 sooner, ceiling worst +1.5 s, median 0.00), lab 3 / 0.
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):

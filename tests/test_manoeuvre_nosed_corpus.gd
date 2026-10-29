@@ -217,6 +217,7 @@ func _run(pose_id: int, pose: Array, arm: String, seed_value := 0, guard := fals
 			"first_reverse": first_reverse, "crept_m": snappedf(crept, 0.01), "looks": int(Movement.route_arms().get("backout_looks", 0)),
 			"yield_ticks_6s": yield_ticks, "blocked_friend_ticks_6s": blocked_friend_ticks,
 			"kturns": int(Movement.route_arms().get("kturns", 0)), "stalls": int(Movement.route_arms().get("backout_stalls", 0)),
+			"fallbacks": int(Movement.route_arms().get("backout_fallbacks", 0)),
 			"contact_ticks": contact_ticks, "guard": guard,
 			"nose_room_m": snappedf(nose_room, 0.1), "depart_deg": snappedf(depart_deg, 1.0), "native_drive": BrainSwitches.native_drive}
 	print("NOSED_ROW " + JSON.stringify(row))
@@ -236,8 +237,10 @@ func test_the_staged_nose_on_corpus_runs_both_arms() -> void:
 	var seeds_text := OS.get_environment("NOSED_SEEDS")
 	if seeds_text != "":
 		var parts := seeds_text.split("-")
+		var only := OS.get_environment("NOSED_ONLY")  # round 45 (dev): one seed of a bar's block, with the block's own pose mapping
 		for s in range(int(parts[0]), int(parts[parts.size() - 1]) + 1):
-			cells.append([(s - int(parts[0])) % table.size(), s])
+			if only == "" or int(only) == s:
+				cells.append([(s - int(parts[0])) % table.size(), s])
 	elif OS.get_environment("NOSED_POSES") != "":
 		for part in OS.get_environment("NOSED_POSES").split(","):  # round 45 (M1): one or a few dev poses, e.g. NOSED_POSES=13
 			cells.append([int(part), 0])
