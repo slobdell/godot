@@ -87,30 +87,51 @@ builder0, 3420/0; no baseline check re-run, per the contract). Orchestrator sess
 
 Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for testing only (the brief's option), never committed here.
 
-### WHERE IT STANDS (2026-10-28 ~12:45 PDT): Bars S v3 and A6 v3 FAILED as filed; Bar B1 filed, waiting on native's twin; M1-M5 done
+### WHERE IT STANDS (2026-10-28 ~23:15 PDT): Bars S v3, A6 v3 and B1 all FAILED as filed; nothing ships ON; M1-M5 done
 
-- **Tip: stream/manoeuvre 34ec935c9** (= main 7975d1455 + native's m2m3-r2 pair + this stream). Tests of the stream's files on it
-  (builder0 light, 8172913e1's code): 17 / 0 (`manoeuvre_backout` ON: reverse t4, past the box t93 v 144; `manoeuvre_parkedpass`;
-  `native_exec_state`; `formation_group_scope`; `formation_seat_order`; the corpus test skipped without NOSED_CORPUS). **No full
-  check of the tip yet**: its gate is B1's (below). The last green full check that covers this stream's code: none this round (Bar
-  S v3's gate for 9215b8ab9 was withdrawn after both bars failed; main's batch check of 7975d1455 holds builder0's lock).
+- **Tip: stream/manoeuvre 6b319c75f** (= main 0691e6aad, orders closed, G1 v10c OFF + native's m2m3-r2 pair + this stream; the
+  merge of 9b72f5339 is f56bb7c5f, one conflict in workstreams.md's B1 entry: the stream's R44.16 guard text kept, the orchestrator's
+  "recorded" note appended). Tests of the stream's files (builder0 light, 8172913e1's code): 17 / 0 (`manoeuvre_backout` ON: reverse
+  t4, past the box t93 v 144; `manoeuvre_parkedpass`; `native_exec_state`; `formation_group_scope`; `formation_seat_order`; the
+  corpus test skipped without NOSED_CORPUS). **This commit is green: 6b319c75f on builder0, `>> remote: make check exited 0`, 28 targets,
+  all passed, ALL JUDGED, 3446 passed / 0 failed (`~/overnight-manoeuvre/r44/check_tip0/check.log`; the commits after it are Status
+  only). A builder2 check of 74416a85d had died at 18/27 to a Spot preemption (`check_tip/check.log`).** Main 9b72f5339 is green on
+  builder0 (the orchestrator: 28 targets ALL JUDGED, 3433 / 0); this stream's code differs from it only behind OFF switches.
 - **Shipped ON this round: nothing.** Every rule is OFF behind its switch: round 43's four (scoped to a squad's own order, M1),
   `--traffic-on=backout` (M2), `--traffic-on=parkedpass` (M3), `--seat-order=on` (S v4's half). Bar S v3 FAILED as filed on its new
   wedged guard (R44.7: the bound's press, +9 crew-seconds a run on Locks); Bar A6 v3 FAILED on the head-on hold guard by 0.26 se
-  (R44.19); both perf lines NOT JUDGED (the gate withdrawn).
-- **Bar B1 (backout alone) is FILED (eafbd3a80, R44.12 / R44.16) and NOT RUN: the freeze waits on native's twin matching cf6eabc22's
-  look and its `_backout_leg`-only station-PID gate, proven EQUAL and 60/60 on the default probe on the C++ drive (R44.8's addendum).
-  Then: merge the pair, `git worktree add ../godot-manoeuvre-b1 <hash>` + its local.mk / override.cfg (offset 7 is free again),
-  `make remote T=check` from it, `WT=... bars_b1.sh`.** Until then backout ON runs the GDScript drive (traffic.gd's gate, 8172913e1).
+  (R44.19); both perf lines NOT JUDGED (the gate withdrawn). Bar B1 FAILED as filed on D2's 80 % share (71 %), every guard green.
+- **Bar B1 (backout alone) FAILED as filed** (filed eafbd3a80, R44.12 / R44.16; frozen 9111520bf = main 0691e6aad + native's
+  pair/native-backout-r3 30e37f336 + this stream, the C++ twin in both arms; the frozen tree's check builder2 3446 / 0, exited 0;
+  seeds 11101-11148; judges filed under `references/round44/manoeuvre/barsb1-builder0+builder2-9111520bf/`, README has the table).
+  **D1 his start PASS** (Guns_2 reverses t4 v t44, past the box t93 v t140). **D2 the corpus FAIL:** 21 base-stuck poses (floor 8 met),
+  ON sooner in 15 = **71 % (line 80 %)**, median -1.73 s (passes its -1 s line); the cost ceiling on the other 27 passes (worst +1.9 s,
+  median -0.57 s). **Every guard PASS:** workload per arena yield+blocked -3.3 / -1.4 / -5.4 se, k-turn -1.3 / +1.3 / -4.8 se, seated
+  by 15 s -0.3 se, never-arrived -0.83 a run, wedged -2.6 s a run; b1_judge's unneeded-back-up guards within +2.2 se, nose-on crews
+  clear 8 m -3.7 se; group guards identical; G1 v9 rows **180 / 180 byte-identical**, g1v8 lines identical; fights G1-G4 pass. Perf
+  NOT JUDGED on builder2 (moot). **No re-file (C44.1); backout stays OFF.** The six poses ON did not win: pose 13 x 3 (crossing, alone,
+  +55 deg, nose 0.0 m: `looks 0`, the look never fired, arms identical) and the crossing crawl poses 10 / 6 x 3 (+1.7, +2.0, +5.3 s:
+  the back-up then a second k-turn). The series lost an evening to builder2: a cold-import hang (Oswald-Latin.ttf at 0 % for the
+  14400 s slot) then a Spot preemption; both builder2 legs rerun verbatim (no rows had reached this side; the orchestrator agreed).
+  In both arms backout ON ran the C++ drive (native's twin EQUAL + the probe 60 / 60, builder2).
 - **His ask is answered on his own recordings (M5):** on native's exact replay both his boxed War Rigs back out the second he clicks and
   are round the box 2-3 s before main's has moved (the table below); main reproduces his matches (the 5 s stand in the second one).
 - **CP44.0 is merged** (main 875ee5dd0's `group` key); the scoping's byte-identity proof stands (60/60 at proof5; parkedpass 60/60 at
-  proof6; backout 60/60 at proof7 on the GDScript drive).
+  proof6; backout 60/60 at proof7 on the GDScript drive; **proof8 = the same probe on the merged tip df31afba8 after main's G1 v10c
+  column landed OFF: 60 / 60 byte-identical, builder2 light, GDScript drive, `~/overnight-manoeuvre/r44/m1/proof8/`**).
 - **The stretch items:** A6 v3 read (above); the bridge drill crew's own case is GONE on main at 918498713 (18/18, rim crews 0): closed.
 - **Round 45 notes** below (the two-squad press, holdway's one-sided head-on guard, backout on grouped squads after G1 v10, the corpus
   lesson). **Evidence:** `~/overnight-manoeuvre/r44/` (m1 proofs, m2 traces / shots / tests, m3 dev series, m5 replays, s5 removal,
-  bars_v3, bars_a6v3), judges filed under `references/round44/manoeuvre/`. Side worktrees: none left (v3 removed; builder folders
-  `godot-manoeuvre-v3*` removed on both builders).
+  bars_v3, bars_a6v3), judges filed under `references/round44/manoeuvre/`. Side worktrees: `../godot-manoeuvre-b1` (frozen 9111520bf, detached, offset 7:
+  keep until the round closes, then `git worktree remove`; its builder folders `godot-manoeuvre-b1` + `-light` on builder2 and
+  `godot-manoeuvre-b1-light` on builder0); v3's were removed.
+- **B1's two losing patterns (the corpus at 9111520bf, the C++ twin):** (a) pose 13 (crossing, the rig alone, +55 deg to the face,
+  nose 0.0 m, its route 13-60 deg off) never looks (`looks 0`, both arms identical, base-stuck 7 s): the look's gates (the steering point
+  within a hull's length, |speed| < circle speed, the window) are what to trace first with `--turn-trace`; (b) the crossing crawl poses
+  10 and 6 (+50 / +60 deg, a squadmate's station crawling ahead) lose 1.7-5.3 s: the back-up lands and then a second k-turn follows
+  (`kturns 3`), so the departure vertex it backs out against is not the vertex the drive then wants. A re-file would be Bar B2 on fresh
+  seeds (11149-11196 are free) after both are fixed on the dev poses; the floor was met (21 base-stuck of 48), the guards were all
+  green, so the shape of the bar can stand.
 
 ### M1: the scoping rebased (2026-10-28 ~09:30 PDT)
 
