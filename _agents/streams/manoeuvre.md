@@ -298,7 +298,20 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   stays OFF. Evidence `references/round45/manoeuvre/barsa6v4-builder0-0493977ed/README.md`. Round 46: the head-on release's brush with
   the passer at the mouth (v3 read the same line at +1.0 se).
 
-### The round's merge candidate (R45.20; 2026-10-29 ~15:25 PDT)
+### M5 (S v4): COMPLETE, FAIL as filed on two lines (15:51 PDT)
+
+- Besides the Locks wedged guard (+4.4 se): group guards G5-G7 identical; the G1 corridor 180 / 180 byte-identical, g1v8 lines identical;
+  fights G1-G3 PASS (deaths in give-ways 60 -> 53, stuck deaths 120 -> 150 under the +36.6 line, contacts -15 %), **G4 kill share Green
+  0.634 -> 0.585, worst move 0.049 v 0.03: FAIL**. Evidence `references/round45/manoeuvre/barss4-builder2-0493977ed/README.md`. The seat
+  bound stays OFF (R45.17).
+
+### The round's merge candidate (R45.20; 2026-10-29 ~16:00 PDT)
+
+- **stream/manoeuvre 5d4b3fa82** = the candidate below + native's `pair/native-backout-skip` 5ed7788ef (the exec field `_backout_skip_until`
+  AND a C++ mirror of the fallback's cadence rule: native's stall twin found `_kturn_check` 6 v 30 at frame 31 on df74319af, so my
+  "GDScript only" was wrong and their mirror closes it). Its full check runs on builder2 (`check_tip/check-5d4b3fa82.log`). Two earlier
+  check launches were stopped before producing a number (df74319af, known red on the exec table; e4d9b95ac, launched by mistake on a
+  tip without the field) and a stray `pkill -f` / pattern kill cost me two of my own shells today: kill by PID only.
 
 - **stream/manoeuvre df74319af** = my code (all OFF: backout v2 + the 11187 fallback, `--seat-order=on`, `--seat-last=open`, the corpus /
   judge tools, the Makefile light-goal line) + main e6e926160 (E2 ON) + native's `pair/native-backout-b2v2` 04ce3abe9. Its full check
