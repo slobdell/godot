@@ -18,6 +18,8 @@
 #include "tank_drive_native.h"
 #include "combat_native.h"
 #include "pathing_native.h"
+#include "gate_width_native.h"
+#include "untangle_native.h"
 #include "perception_native.h"
 #include "incoming_native.h"
 #include "shell_native.h"
@@ -175,6 +177,20 @@ public:
 	}
 	PackedVector3Array pathing_find_path(Object *node, const Vector3 &from, const Vector3 &to) const {
 		return ::godot::pathing_find_path(pathing_config, node, from, to);
+	}
+	// Round 45 (N2): RtsControls.gate_width for the column lay's crosses_or_edge(crosses_on) / drive_on (gate_width_native.cpp), on
+	// Pathing's configured wrappers.
+	Array gate_width_edge(Object *node, const Vector3 &click, const Vector3 &across, double scan, double past_posts,
+			const Array &decks, const Callable &clamp, double step, double detour) const {
+		GateConsts consts;
+		consts.step = step;
+		consts.detour = detour;
+		return ::godot::gate_width_edge(pathing_config, consts, node, click, across, scan, past_posts, decks, clamp);
+	}
+	// Round 45 (N2b, R45.3): SelectionSquads.untangle_whole's search (untangle_native.cpp); the Callables read in GDScript.
+	Dictionary untangle_whole(const Array &starts, const Array &anchors, bool by_lead, const PackedFloat64Array &leads,
+			const PackedFloat64Array &arcs, const PackedByteArray &misplaced, double slack) const {
+		return ::godot::untangle_whole(starts, anchors, by_lead, leads, arcs, misplaced, slack);
 	}
 	// Round 28 (N6.3): perception's batched pass (perception_native.cpp); the rays it cast, for SimProfile.
 	bool perception_configure(const Dictionary &config);

@@ -264,6 +264,8 @@ static func _untangle_once(squads: Array, anchors: Array[Vector3], position: Cal
 ## the squad), counted before everything else.
 static func untangle_whole(squads: Array, anchors: Array[Vector3], position: Callable, leads: Array = [],
 		arc := Callable(), misplaced := Callable()) -> int:
+	if anchors.size() >= squads.size() and NativeUntangle.usable():  # round 45 (native N2b, R45.3): the same search in C++
+		return NativeUntangle.untangle_whole(squads, anchors, position, leads, arc, misplaced)
 	var by_lead := leads.size() == squads.size() and arc.is_valid()
 	var starts := {}
 	for i in squads.size():

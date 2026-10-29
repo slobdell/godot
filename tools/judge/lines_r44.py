@@ -4,8 +4,8 @@
 The same fields, helpers and noise kinds as `lines_r31_34.py` (read its docstring). Lines are added as each bar's VERDICT lands
 in *Rulings (round 44)* in `_agents/workstreams.md` or the bar's judge output under `_agents/streams/references/round44/`; nothing
 is re-measured. Round 44's bars by the seed registry: orders G1 v10c (10801-10848), manoeuvre S v3 (10901-10924 deciding) and A6 v3
-(10949-10972 + E1 10973-10996), manoeuvre B1 (11101-11148, backout alone: filed, waiting on native's twin; no line until it reads);
-native none. Read: G1 v10c (R44.23), S v3 (R44.7), A6 v3 (R44.19).
+(10949-10972 + E1 10973-10996), manoeuvre B1 (11101-11148, backout alone); native none. Read: G1 v10c (R44.23), S v3 (R44.7), A6 v3 (R44.19), B1 (R44.25;
+its lines filed in round 45, native N4).
 """
 from lines_r31_34 import DET, L, gain, up  # noqa: F401
 
@@ -91,4 +91,45 @@ LINES += [
       arm="every side guard PASS; E1 byte-identical", verdict="PASS", noise=DET, **A),
     L(line="reported (head-on): last arrival, mouth touches", form="reported", rule="-", base="-",
       arm="last arrival 13 s sooner; +19 touches a run at the mouth (+1.0 se, inside its line)", verdict="REPORTED", noise=NONE, **A),
+]
+
+# --------------------------------------- Bar B1, his War Rig backs out of the box first (manoeuvre; READ R44.25: FAILS D2) ---
+b = (src44 + " Rulings R44.25 (FAILS as filed; backout stays OFF) and " + REF +
+     "manoeuvre/barsb1-builder0+builder2-9111520bf/ (README.md, judge-*.txt)")
+B = {"round": 44, "stream": "manoeuvre", "item": "B1 --traffic-on=backout (backout alone, twin r3 in both arms)",
+     "commit": "9111520bf", "machine": "builder0 light + builder2 (per leg: meta.txt)",
+     "n": "11101-11148: his start 1 run; corpus 48 jittered poses; workload / group / fights per the bar", "source": b}
+POSES = {"kind": "none", "note": "per-pose verdicts on a deterministic staged corpus: a share of poses, not a sample mean"}
+LINES += [
+    L(line="D1 his start (Locks 56416, Green_Guns_2): reverses before tick 15 and past the box before tick 110; base must not do both",
+      form="reported", rule="< 15 and < 110", base="reverse t44, past t140", arm="reverse t4, past t93", verdict="PASS",
+      noise=DET, **B),
+    L(line="D2 corpus, base-stuck poses (floor 8): ON clears sooner in >= 80 % and median <= -1.0 s", form="share",
+      rule=">= 80 %, median <= -1.0 s", base="21 base-stuck poses", arm="15 of 21 = 71 %, median -1.73 s (losing: pose 13 x3, the "
+      "look never fires; crossing crawl poses 10 / 6, +1.7 to +5.3 s)", verdict="FAIL", noise=POSES, **B),
+    L(line="D2 corpus, cost ceiling on the other poses: worst <= +3.0 s, median <= +1.0 s", form="reported",
+      rule="<= +3.0 / <= +1.0 s", base="27 poses", arm="worst +1.9 s, median -0.57 s", verdict="PASS", noise=POSES, **B),
+    L(line="G workload yield+blocked s per arena: ARM - BASE <= +2 se", form="mean", rule="<= +2 se", base="crossing 446.8, locks "
+      "416.0, terminus 674.6", arm="crossing -3.3 se, locks -1.4 se, terminus -5.4 se", verdict="PASS", noise=NONE, **B),
+    L(line="G workload k-turn s per arena: ARM - BASE <= +2 se", form="mean", rule="<= +2 se", base="crossing 555.3, locks 201.6, "
+      "terminus 799.3", arm="crossing -1.3 se, locks +1.3 se, terminus -4.8 se", verdict="PASS", noise=NONE, **B),
+    L(line="G workload seated by 15 s: ARM - BASE >= -2 se", form="mean", rule=">= -2 se", base="218", arm="215 (paired -0.042, "
+      "se 0.129, -0.3 se)", verdict="PASS", noise=up(0.129, -0.042, k=2.0), **B),
+    L(line="G never-arrived and wedged s (workload)", form="mean", rule="no worse by 2 se", base="-", arm="never-arrived -0.83 a "
+      "run (se 0.18); wedged -2.58 s a run (se 1.01)", verdict="PASS", noise=NONE, **B),
+    L(line="G other crews' reversing ticks (15 s) per arena: <= +2 se; their seated-by-15 s >= -2 se", form="mean",
+      rule="<= +2 se / >= -2 se", base="-", arm="crossing -1.3 / -1.4, locks -1.6 / +0.0, terminus -0.6 / +2.2 se",
+      verdict="PASS", noise=NONE, **B),
+    L(line="G nose-on crews' time to clear 8 m: ARM < BASE by >= 2 se", form="mean", rule="<= -2 se",
+      base="271.1 ticks a crew", arm="209.1 (paired -61.98, se 16.56, -3.7 se)", verdict="PASS", noise=gain(16.56, 61.98, k=2.0),
+      **B),
+    L(line="G group G5 / G6 / G7 (11125-11136): every-squad-in, never-in, friendly contacts", form="reported", rule="no worse",
+      base="71.2 s / 0.79 / 640504", arm="71.2 s / 0.79 / 640504 (identical arms)", verdict="PASS", noise=DET, **B),
+    L(line="G G1 v9 corridor (C44.3): ORDERS_PROBE_SQUAD rows byte-identical", form="count-runs", rule="all identical",
+      base="180 rows", arm="180 / 180 identical; friend contacts 1659 = 1659", verdict="PASS", noise=DET, **B),
+    L(line="G fights G1-G4 (11137-11142): give-way deaths, stuck deaths, contacts, kill share", form="reported",
+      rule="each inside its line", base="54 / 151 / 366752 / 0.498-0.502", arm="50 / 159 / 371073 / moved 0.003",
+      verdict="PASS", noise=NONE, **B),
+    L(line="read (not a guard): fights' moving-stuck seconds", form="reported", rule="-", base="189.3 s",
+      arm="248.2 s (+3.27 s a fight, se 3.07, 1.1 se)", verdict="NOT JUDGED", noise=NONE, **B),
 ]
