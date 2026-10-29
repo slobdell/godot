@@ -56,3 +56,71 @@ Nothing.
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Report (2026-10-29 ~12:30 PDT, in progress).** N1 DONE and on main (47a15f434 = 9b6ffb0a6, GREEN builder0). N2 built and
+proven EQUAL on builder2 (69b95f56e); its full check is running on builder0, then control-timing quiet. N3 twin v2 for manoeuvre's
+B2 (pair/native-backout-b2v2 5ad8f5d39) proving on builder2. N4: B1's lines filed (1b7301e4a).
+
+**Plan (order kept from the backlog; reasons):** N1 watchdog -> N2a gate_width C++ -> N2b untangle_whole C++ (GRANTED R45.3,
+because gate_width alone cannot reach the budget, below) -> N3 twins as manoeuvre/orders/engage ship -> N4 lines_r45 + judging ->
+N5 replay to 107 s -> stretch requeue.
+
+**N1 the cold-import watchdog: DONE. GREEN 9b6ffb0a6 builder0, `>> remote: make check exited 0`, 3446 passed / 0 failed, 28
+targets ALL JUDGED; merged alone as main 47a15f434.** It ran for real on builder2 the same day (`import exited 0 in 20 s`). `tools/import_watchdog.sh` runs inside the slot
+`tools/slot.sh` grants when `tools/remote.sh` exports `TANK_SQUAD_IMPORT_WATCH` (both builders; `REMOTE_IMPORT_WATCH=0` is the
+escape; `IMPORT_WATCH_STALL` the limit). Progress = the last Godot progress line CHANGING: B1's hang printed the same
+`[   0% ] reimport | Oswald-Latin.ttf` 14,369 times over 4 h (1/s), so "no output" would never have fired. Stall limit **600 s**:
+in 20 builder logs of rounds 40-44 no honest progress line repeated more than 6 times (~6 s), and a whole cold import of the
+project on builder0 took **15 s** (godot-native-light after .godot/ was cleared, 9b6ffb0a6), so 600 s is ~40x a whole cold
+import and a double hang costs 20 min, not the slot's 4 h. On a stall: kill, `rm -rf .godot`, import once more; a second stall
+ends the run with `>> remote: import hung on <file>` as the wrapper's LAST line and exit **75** (make alone said 2).
+Proof: `tools/test_import_watchdog.sh` (in shell-tools-test) 21/0 on the laptop: fake hang twice (exit 75, the line, .godot/
+cleared, command never runs, no orphan), hang-then-clean retry, silent hang, slow-but-moving left alone, TERM kills the import,
+slot.sh seam on/off/nested. Staged on builder0 end to end (light folder, `IMPORT_WATCH_CMD=` a fake hang, stall 15 s): killed,
+retried, `>> remote: import hung on staged-hang.ttf`, wrapper exit 75. A warm import costs ~3 s extra per run (laptop 9 s).
+
+**N2 profile (laptop, native OFF, 0b62c4900 + temporary timers not committed; test_control_scale 30 units / 6 squads, mean of
+10 orders):** order 29-31 ms (ratio ~234 v budget 104). `SelectionSquads.untangle_whole` **13.8 ms (44 %)** (the 720-permutation
+search); `RtsControls.gate_width` **10.5-11.4 ms (36 %)**: 1 call, 100 steps, ~200 `Pathing.find_path` = 5.6 ms + Callables and
+the near_deck sampling; setup to `ranks` 3.9 ms; the rest < 1.5 ms. gate_width at ~0 still leaves ~150: hence N2b (R45.3).
+
+**N2 = N2a gate_width + N2b untangle_whole in C++ (69b95f56e; R45.3 granted N2b): EQUAL on builder2; full check running.**
+- builder2 dev run (`native test`, the twins + the control tests): **48 passed / 0 failed, `exited 0`**.
+  `test_native_gate_width`: 360 clicks (crossing, gorge, locks, terminus), **0 mismatches**, every deciding branch taken (deck 11,
+  edge 508, detour 50, read past posts 80, click on a deck 20, full scan 151). `test_native_untangle`: 1200 knots (2-7 squads,
+  leads/arc, misplaced, loose anchor, empty squad), **0 mismatches**, 1022 re-dealt. `test_untangle_whole_memo` (native v the
+  round-43 reference) passes.
+- **The orders probe on v off (C45.4), builder2, 69b95f56e, native on, dev seeds 7001-7004, 3 maps x 3/5 squads x click/route:
+  today's default 192/192 rows byte-identical; `--group-column=always` 192/192** (evidence
+  `references/round45/native/n2-orders-probe-builder2-69b95f56e/`).
+- test_control_scale, 30 units / 6 squads: **ratio 89.2 (10.16 ms) v budget 104 on builder2** (not a judging machine). Laptop
+  before, native off: ~234. The judged read is `make control-timing` on builder0 quiet, after the check.
+- Names: `NativeGateWidth` / `BrainSwitches.native_gate_width` / `gate_width_native.cpp` ("gate" is already the drive's gate rule
+  and its twin, tests/test_native_gate.gd: my first cut overwrote that test by name; restored before any commit).
+
+**N2a gate_width C++ (design):** `native/src/gate_width_native.cpp` (one navmesh query a step serves crosses_on and drive_on: the
+same `find_path(ground, click, p)`; the deck test a loop over `SlotGround.deck_boxes()`; `Orders.clamp_to_arena` called back once a
+step). Seam `RtsControls.gate_width_edge_on` (new, beside gate_width; the GDScript gate_width untouched as the fallback) at the
+ONE call site the group click uses (rts_controls.gd column_lay's width_at, a one-line edit; told orders). Switch
+`BrainSwitches.native_gate_width` (ON). Equality: `tests/test_native_gate_width.gd` (4 arenas x 90 clicks, each deciding branch counted).
+
+**N3 manoeuvre's M2 (b) stalled departure leg (R45.4): twin v2 on 57e02fed5.** Pair folder `godot-native-backout` (offset 8).
+- v1 pair/native-backout-b2 (on 0af772a85): b2b129f9f the twin; native-proof with `--traffic-on=backout` **EQUAL** on builder2
+  (4a04ea921011cd9a, on = off = ab). Its stage, `tests/test_native_drive_backout_stall.gd`, went through three cuts: a static box
+  is a WallContact (lead_hit ends the leg first: 0 stalls, manoeuvre's 27f00d3f0 check 3446/1); a live parked rig is shoved, and
+  against it real velocity flips sign every tick, so v1's velocity rule never counted past 1 tick (trace sent to manoeuvre, who
+  then changed the rule); `process_mode` off alone takes the body out of the space (drove through). **Stage now: a FIXED parked
+  rig, process off + `DISABLE_MODE_KEEP_ACTIVE`**: v1 stalled at t33, 1189 drives / 0 mismatches.
+- **v2 pair/native-backout-b2v2 5ad8f5d39** (= 57e02fed5 + the twin, re-cut): `_backout_stall_from` (Vector3, INF) beside
+  `_backout_stall_ticks`, window reopened on 1 m of progress (`BACKOUT_STALL_PROGRESS_M`), 30 ticks. Proving on builder2: the twins
+  + manoeuvre's stage, then the default orders probe (5 squads, click, 7001-7004, base v bo).
+
+### Requests to other streams
+- **orders:** rts_controls.gd: one line in `_order_squads`' column_lay call (`RtsControls.gate_width` -> `gate_width_edge_on`,
+  same Callables) and the new `gate_width_edge_on` above `POST_SPAN_M`. N2b: one guarded seam line at the top of
+  `SelectionSquads.untangle_whole` (R45.3).
+
+- **orchestrator / manoeuvre:** after G2 merges, I re-prove N2b EQUAL on orders' tree (R45.5).
+
+### Questions for the lead
+- None.

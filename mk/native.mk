@@ -485,7 +485,10 @@ replay-match: native-fresh import ## Replay a match recording headless (RECORDIN
 	[ $$s -eq 0 ] || { echo "replay: godot exited $$s (log $(REPLAY_MATCH_DIR)/replay.log)"; exit $$s; }; \
 	out=$$(ls $(REPLAY_MATCH_DIR)/out/*.jsonl | head -1); \
 	test -n "$$out" || { echo "replay: no recording written (log $(REPLAY_MATCH_DIR)/replay.log)"; exit 1; }; \
-	$(PYTHON) tests/replay/divergence.py $(REPLAY_MATCH_DIR)/his.jsonl $$out --seconds=$(or $(REPLAY_SECONDS),20) --crews=$(or $(CREWS),first2)
+	d=0; $(PYTHON) tests/replay/divergence.py $(REPLAY_MATCH_DIR)/his.jsonl $$out --seconds=$(or $(REPLAY_SECONDS),20) --crews=$(or $(CREWS),first2) \
+		|| d=$$?; if grep -q '^REPLAY_NATIVE_MISMATCH' $(REPLAY_MATCH_DIR)/replay.log && [ "$(NATIVE)" != off ]; then \
+		echo "replay-match: FAILED: the replay's native path is not his match's ($$(grep -m1 '^REPLAY_NATIVE_MISMATCH' $(REPLAY_MATCH_DIR)/replay.log | cut -d: -f1)); a table read on the wrong path is not his match. make native, or NATIVE=off to replay the GDScript on purpose"; exit 3; fi; \
+	exit $$d
 
 # Round 43 (native N5): his playtest in one command: (a) the match and recording_arrivals per order, (b) the camera at each hit
 # and death (the `cam` rows; older recordings say they have none), (c) a 30 s replay-match of every crew with its divergence table

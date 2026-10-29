@@ -91,6 +91,58 @@ fi
 ssh_opts=(-o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=30)
 
 [ $# -gt 0 ] || { echo "usage: tools/remote.sh <make target> [VAR=value ...] | --status" >&2; exit 2; }
+orig_args=("$@")   # round 45: a preempted run is re-run with exactly these (requeue_if_preempted, below)
+
+# ---- Round 45 (native stretch): a Spot preemption of the GCP builder re-queues the run ONCE --------------------------
+# builder2 is a Spot VM: on 10-28 it was preempted twice under a series (B1's legs reran by hand, hours later), and on 10-29 it
+# vanished during a replay's copy-back (rsync 255, "No route to host"). The signal: ssh or rsync exits 255 AND gcloud says the VM
+# is no longer RUNNING (TERMINATED / STOPPED / STOPPING / SUSPENDED). A slow box or a network blip on a RUNNING VM is not a
+# preemption and is never re-run (the run may still be live there). Then: start the VM (as `make gcp-start`), and
+#   - if the builder's own verdict line had arrived (`>> builder: make ... exited N`), copy build/ back only (the persistent disk
+#     survived) and exit with that N: the run is not repeated;
+#   - else re-run the command verbatim, once (REMOTE_REQUEUED=1 stops a second re-queue; REMOTE_REQUEUE=0 turns it off).
+# GCP_PROJECT / GCP_ZONE / GCP_VM default to mk/gcp.mk's. Known answers: tools/test_remote_requeue.sh (fake ssh/rsync/gcloud).
+is_gcp_host() { case "$host" in *builder2*|*10.115.229.9) return 0 ;; esac; return 1; }
+gcp_state() {
+	"${GCLOUD:-gcloud}" compute instances --project="${GCP_PROJECT:-leddrones}" describe "${GCP_VM:-balsa-worker-gcp}" \
+		--zone="${GCP_ZONE:-us-west4-a}" --format='value(status)' 2>/dev/null
+}
+gcp_restart() {
+	"${GCLOUD:-gcloud}" compute instances --project="${GCP_PROJECT:-leddrones}" start "${GCP_VM:-balsa-worker-gcp}" \
+		--zone="${GCP_ZONE:-us-west4-a}" >&2 || return 1
+	local i
+	for i in $(seq 1 "${REMOTE_REQUEUE_SSH_TRIES:-30}"); do
+		ssh "${ssh_opts[@]}" "$host" true 2>/dev/null && return 0
+		sleep "${REMOTE_REQUEUE_SSH_SLEEP:-5}"
+	done
+	return 1
+}
+run_out=""   # the run's own output (stdout and stderr), read for the builder's verdict line
+requeue_if_preempted() {   # $1 = the stage that lost the box; returns only when this is not a preemption
+	is_gcp_host || return 0
+	[ "${REMOTE_REQUEUE:-1}" != 0 ] || return 0
+	local state verdict
+	state=$(gcp_state)
+	case "$state" in TERMINATED|STOPPED|STOPPING|SUSPENDED|SUSPENDING) ;; *) return 0 ;; esac
+	if [ "${REMOTE_REQUEUED:-0}" = 1 ]; then
+		echo ">> remote: $host was PREEMPTED again ($state, during the $1); not re-queued twice: start it (make gcp-start) and re-run by hand" >&2
+		return 0
+	fi
+	verdict=""
+	[ -n "$run_out" ] && [ -f "$run_out" ] && verdict=$(grep -aoE '^>> builder: make .* exited [0-9]+' "$run_out" | tail -1 | grep -oE '[0-9]+$')
+	echo ">> remote: $host was PREEMPTED ($state) during the $1: starting it again" >&2
+	if ! gcp_restart; then
+		echo ">> remote: $host did not come back (gcloud start / ssh); nothing re-queued: make gcp-status" >&2
+		exit 3
+	fi
+	rm -f "$run_out"
+	if [ -n "$verdict" ]; then
+		echo ">> remote: the run had finished there (builder verdict: exited $verdict): copying build/ back only, not re-running it" >&2
+		TANK_SQUAD_PINNED_SELF= REMOTE_REQUEUED=1 REMOTE_COPYBACK_ONLY=1 REMOTE_COPYBACK_STATUS=$verdict exec bash "$repo_root/tools/remote.sh" "${orig_args[@]}"
+	fi
+	echo ">> remote: re-running verbatim, once: make ${orig_args[*]}" >&2
+	TANK_SQUAD_PINNED_SELF= REMOTE_REQUEUED=1 exec bash "$repo_root/tools/remote.sh" "${orig_args[@]}"
+}
 
 # ---- Do not rsync --delete over a run of our own that is still going (trip-up 66) --------------
 # The sync below replaces this worktree's files ON BUILDER0. Doing that under a running check swaps the tree
@@ -159,6 +211,11 @@ if [ -n "$light" ]; then
 	mkdir -p "$copy_dest"
 fi
 
+if [ "${REMOTE_COPYBACK_ONLY:-0}" = 1 ]; then
+	# Round 45: a preempted run whose verdict had arrived: nothing is synced or run, its build/ is fetched (requeue_if_preempted).
+	status=${REMOTE_COPYBACK_STATUS:-1}
+	echo ">> remote: copy-back only (the run finished before $host was preempted; its verdict: exited $status)" >&2
+else
 if [ -r "$guard_script" ]; then
 	run_guard check "make $*${quiet:+ (quiet window)}"
 	guard_status=$?
@@ -181,7 +238,7 @@ echo ">> remote: syncing $name to $host:~/$remote_dir" >&2
 commit=$(git -C "$repo_root" rev-parse --short HEAD 2>/dev/null || echo unknown)
 dirty=$([ -n "$(git -C "$repo_root" status --porcelain 2>/dev/null)" ] && echo 1 || echo 0)
 
-ssh "${ssh_opts[@]}" "$host" "mkdir -p ~/$remote_dir ~/$root/.tools" || { echo ">> remote: cannot reach $host" >&2; exit 3; }
+ssh "${ssh_opts[@]}" "$host" "mkdir -p ~/$remote_dir ~/$root/.tools" || { requeue_if_preempted sync; echo ">> remote: cannot reach $host" >&2; exit 3; }
 # Protect (P) what builder0 generates for itself from --delete; skip what it doesn't need. native/bin/ and
 # native/build/ (round 23: the GDExtension's per-machine .so and CMake tree) are builder0's own, like .godot/.
 rsync -az --delete -e "ssh ${ssh_opts[*]}" \
@@ -190,7 +247,7 @@ rsync -az --delete -e "ssh ${ssh_opts[*]}" \
 	--exclude='.git/' --exclude='.tools' --exclude='.godot/' --exclude='build/' --exclude='node_modules/' \
 	--exclude='assets/incoming/' --exclude='__pycache__/' \
 	--exclude='native/bin/' --exclude='native/build/' \
-	"$repo_root/" "$host:~/$remote_dir/" || { echo ">> remote: rsync failed" >&2; exit 3; }
+	"$repo_root/" "$host:~/$remote_dir/" || { requeue_if_preempted sync; echo ">> remote: rsync failed" >&2; exit 3; }
 
 # The remote script: shared toolchain, Node on PATH, the desktop display for rendering targets, then make.
 read -r -d '' script <<EOF
@@ -304,8 +361,14 @@ exit \$make_status
 EOF
 
 echo ">> remote: make $* on $host" >&2
-ssh "${ssh_opts[@]}" "$host" "bash -s -- $(printf '%q ' "$@")" <<<"$script"
+# Round 45: the run's output is also kept here, for the builder's verdict line if the box is preempted (requeue_if_preempted).
+# Both streams stay where they were (stdout to stdout, stderr to stderr); ssh's own status is read, never a pipe's.
+run_out=$(mktemp -t remote-run.XXXXXX)
+ssh "${ssh_opts[@]}" "$host" "bash -s -- $(printf '%q ' "$@")" <<<"$script" > >(tee -a "$run_out") 2> >(tee -a "$run_out" >&2)
 status=$?
+sleep 0.2   # the tees drain
+[ "$status" -eq 255 ] && requeue_if_preempted run
+fi
 
 mkdir -p "$repo_root/build"
 # --delete, so the local build/ MIRRORS the run that just finished. Without it build/ accumulated artefacts
@@ -344,6 +407,7 @@ copy_log=$(rsync -az --delete --filter='P *.log' --filter='P /light/' "${protect
 	"$host:~/$remote_dir/build/" "$copy_dest" 2>&1)
 copy_status=$?
 fi
+[ "$copy_status" -eq 255 ] && requeue_if_preempted copy-back
 if [ $copy_status -ne 0 ]; then
 	# Silently swallowed, this leaves stale local results wearing a fresh timestamp's name: a full local disk once
 	# left build/audio/pass.* three hours old while the run that wrote them had just passed (audio, 2026-09-17).
@@ -375,6 +439,7 @@ if [ "${REMOTE_NO_COPYBACK:-0}" != 1 ] && [ "$copy_status" -eq 0 ] && [ -x "$rep
 fi
 
 # The copy-back is done, so the directory is genuinely free now.
+[ -n "$run_out" ] && rm -f "$run_out"
 run_guard release >/dev/null 2>&1 || true
 echo ">> remote: make $* exited $status (${light:+light lane, }build/${light:+light/build/} $([ "${REMOTE_NO_COPYBACK:-0}" = 1 ] && echo "NOT copied back" || echo "copied back")$([ "$copy_status" -ne 0 ] && echo ": FAILED"))" >&2
 # Round 45 (native N1): a double import hang is the run's last word, and its exit (75), not make's generic 2 or a slot timeout.
