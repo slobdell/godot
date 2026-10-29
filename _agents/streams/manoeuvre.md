@@ -285,6 +285,9 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
     line identical, fights G1-G4. **Evidence filed: `references/round45/manoeuvre/barsb2-builder0+builder2-0493977ed/README.md`.**
     Backout stays OFF (R45.14); the 11187 fix (0a80c3685) stays on the branch as OFF code for round 46.
 
+- **main 78ef25caf merged (275aceb2e; R45.15, native N2, remote.sh's preemption re-queue; the workstreams.md conflict resolved to main's
+  recorded copies again).** S v4's series (builder2 light, from 14:17) and A6 v4's (builder0 light, from 14:24) run on the frozen tree.
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
