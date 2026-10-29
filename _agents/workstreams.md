@@ -77,7 +77,7 @@ builder that aren't ours. builder0 at prep: load 0.02, 77 %, 24 G free; builder2
 
 **Seed registry (round 45):** 11201-11248 orders (Bar G2 deciding + guards); 11249-11296 orders reserve; 11301-11348 engage (Bar E1);
 11349-11396 engage reserve; 11149-11196 manoeuvre Bar B2; 11401-11448 manoeuvre Bar S v4; 11449-11496 manoeuvre reserve (A6 v4);
-11501-11524 native (twin pairs, lines_r45); 11601-11648 manoeuvre B2b (unused, R45.14); 11651-11698 manoeuvre S v5 (R45.18). Dev seeds: anything at or below 11148 already read, or 7001-7012.
+11501-11524 native (twin pairs, lines_r45); 11601-11648 manoeuvre B2b (unused, R45.14); 11651-11698 manoeuvre S v5 (R45.18, unused); 11701-11748 manoeuvre B3; 11751-11798 manoeuvre S v5 (R45.21). Dev seeds: anything at or below 11148 already read, or 7001-7012.
 
 _(each stream files its bar here BEFORE any number on its block; the orchestrator records it.)_
 
@@ -339,6 +339,20 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   and E2 only, and brushing friends is its own "doesn't look smart". Round 46: the head-on release (seed 11466's 0 -> 32 first).
   S v5's three-arena dev read: Locks wedged -0.5 s a run, Terminus +8.0 s (+1.7 se), Crossing +2.4 s; never-arrived 115 -> 109: no bar
   (R45.18's condition). C45.4: seat / bounded are GDScript only; no twin needed.
+- **R45.21 (~16:05) The lead: "why is manoeuvre waiting for the next round entirely? Why not just continue work as-is?"** Manoeuvre
+  continues this round instead of parking: (1) the OFF-code merge (native pair 5ed7788ef + its tip); (2) backout first (his ask): fix
+  the D3 wall contact on dev seeds with the 11187 fallback in, then **Bar B3 on fresh 11701-11748**, B2's lines unchanged except the
+  Terminus k-turn guard is replaced by the squad's time to clear its start (R45.14's note; k-turn s reported), native twin before the
+  freeze; (3) S v5 on dev seeds, a bar on 11751-11798 if clean; (4) holdway's head-on release. G2's series has builder2 priority.
+- **R45.22 (~16:35) Engage E5 / E6 causes; the stop ruling.** (traces at c0fae2ee2, builder0, game code = main). **E5:** his short
+  Gorge moves are not swallowed by an arrival radius (87.0 / 91.8 s land 3.1 / 3.4 m); 83.7 / 85.2 s are replaced 1.5-1.8 s later
+  because the DRIVE first backs ~1 s and 3 m AWAY: a click ~56 deg off the nose at 10.7 m is inside a wheeled scout's turning circle,
+  so movement.gd plans a k-turn (reverse leg). Manoeuvre's (with the native twin), queued after B3. **E6:** under his stop,
+  `order_controller._stop_turn_in` (C33.9) drives a hull-fixed WHEELED crew ~4 m to bring its gun onto a live enemy (throttle 0.87
+  for 21 ticks); under his hold the face branch's wheeled creep (3.1 m). **Ruling (b):** a crew he stops or holds swings as far as
+  it can within 2.5 m of where it first came to rest, then stops, and fires when the enemy is in its arc (measured from rest: a
+  15 m/s scout brakes ~5 m). GRANT to engage: a cap in `order_controller.gd`'s `_stop_turn_in` and the face branch's turn-in /
+  creep for his stop / hold only, behind `--player-authority`; `Manoeuvre.turn_in` untouched. Dev seeds first, bar on 11349-11396.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
