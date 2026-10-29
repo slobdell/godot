@@ -257,6 +257,16 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   as his direct move, so the order's told facing turns the hull for 2 ticks (the sister test allows this for a direct move). Bar not
   started. GRANT: engage pins `Drills.PLAYER_AUTHORITY = false` around that element_task stage (test-only, restored after), carried
   on stream/engage; re-freeze, re-check, then the bar.
+- **R45.11 (~14:00) Bar B2 partial read (frozen 0493977ed, C++ drive both arms; no amendment).** D1 his start PASS (builder2: Guns_2
+  reverses t4, past the box t97; base t44 / t140). D2 deciding PASS: 11 base-stuck poses (floor 8), ON sooner 11 / 11 (line 80 %),
+  median -3.03 s. D2 cost ceiling FAIL: 37 other poses, median -0.13 s (pass) but worst +6.3 s v the +3.0 s every-pose line: seed 11187,
+  pose 10 (crossing crawl +50, route +48, nose 0.5 m), base clear t166, ON t355; both arms reverse at t28 and creep 0.26 m; ON looks 2,
+  k-turns 2, 0 stalls. **B2 fails as filed** (one pose of 48). The other legs run to the end for the record. **Orchestrator's plan
+  (decided when every leg is in, not before):** manoeuvre traces 11187 by removal; if every other line passes, the smallest change that
+  removes the 11187 shape (e.g. no second look on one order) is read on FRESH seeds 11601-11648 (new block, B2b) with B2's lines
+  unchanged and 11187's pose as a named guard; a pass ships backout ON (lesson 339 / memory "ship his fix ON": the backout has failed
+  two bars, each on the margin, with his own case passing both times). If another guard fails too, it stays OFF and he is told in
+  player terms.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
