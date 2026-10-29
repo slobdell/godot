@@ -809,6 +809,10 @@ struct Drive {
 		static const StringName name("backout_looks");
 		return name;
 	}
+	static const StringName &k_backout_only() {
+		static const StringName name("_backout_only");
+		return name;
+	}
 	static const StringName &k_backout_stalls() {
 		static const StringName name("backout_stalls");
 		return name;
@@ -3933,6 +3937,15 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				Object *leg = leg_ref;
 				bool planned = false;
 				const int64_t looked = c.backout_ready ? (int64_t)sget(k_backout_looks()) : 0; // `var looked := backout_looks`
+				// Round 45 (manoeuvre 0a80c3685, B2's 11187 fallback): `_backout_only = not looks_today; var check_was := _kturn_check`;
+				// a call only the departure look brought here that plans nothing restores today's cadence below. A tree without the
+				// static (`_backout_only` absent) is today's: nothing set, nothing restored.
+				const bool fallback_tree = c.backout_ready && sget(k_backout_only()).get_type() == Variant::BOOL;
+				const bool looks_today = !direct && drive_vector != Vector2() && pathing_ready();
+				const int64_t check_was = v._kturn_check();
+				if (fallback_tree) {
+					sset(k_backout_only(), !looks_today);
+				}
 				const int64_t check_left = (int64_t)v._kturn_check() - step;
 				if (seam_live()) {
 					// Round 31 (planner CP-P1): PlannerSeam.hold() opens _planned_reverse for a crew the seam holds.
@@ -3969,6 +3982,13 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				if (c.backout_ready) {
 					// `_backout_leg = _backout_leg or backout_looks > looked` on a planned leg, else false.
 					v.set__backout_leg(planned && ((bool)v._backout_leg() || (int64_t)sget(k_backout_looks()) > looked));
+				}
+				if (fallback_tree) {
+					// `else: ... if _backout_only: _kturn_check = check_was`, then `_backout_only = false`
+					if (!planned && !looks_today) {
+						v.set__kturn_check(check_was);
+					}
+					sset(k_backout_only(), false);
 				}
 			} else if ((double)v._kturn_left_m() > 0.0) {
 				// Movement._kturn_end("cancelled"): its looks cleared; the rest writes the diagnosis record, empty in the
