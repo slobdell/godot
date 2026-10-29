@@ -94,6 +94,13 @@ _(each stream files its bar here BEFORE any number on its block; the orchestrato
   stop / move the crew holds its post until his next order), and an additive `player` key in `game/ai/order_feed.gd`'s normalize.
   `order_executor.gd`'s grant stands but is inert. **C45.4 applies:** `native/src/decide_native.cpp` reads TankBrain's decide; engage
   proves the switch native on v off EQUAL on its authority probe, or asks native for the twin before E1's bar is frozen.
+- **R45.3 (~10:45) Native's N2 needs untangle_whole too; GRANTED as a C++ seam.** Laptop, native OFF, 0b62c4900 + temporary timers,
+  `test_control_scale` (30 units / 6 squads), mean of 10 orders: 29-31 ms (ratio ~234 v budget 104): `SelectionSquads.untangle_whole`
+  13.8 ms (44 %, the 720-permutation search), `RtsControls.gate_width` 10.5-11.4 ms (36 %), setup to `ranks` 3.9 ms. gate_width alone
+  leaves ~150. **GRANT to native:** a C++ twin of `untangle_whole`'s permutation search, the seam one guarded call at the top of
+  the function (GDScript body kept as the fallback), output-identical first (`tests/test_untangle_whole_memo.gd` + the G1 orders
+  probe byte-identical, native on v off). **Orders keeps the file** and its G2 work wins any conflict; if G2 changes what
+  untangle_whole decides, orders tells the orchestrator and the twin follows (native re-proves EQUAL on orders' tree).
 
 ## Round 44: three streams (prepared 2026-10-28; CLOSED 2026-10-28; briefs in `streams/archive/round44/`)
 
