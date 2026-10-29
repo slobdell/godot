@@ -110,7 +110,10 @@ _(worker keeps this current: report at the top, every number with commit, machin
 
 - **Green so far:** `make quick-remote` on **2a622e5bd** (builder0): 336 passed / 0 failed over the 45 control / tactics files the
   diff touches, lint 97 scripts, the smoke; `>> remote: make quick exited 0`. Full check of 2a622e5bd launched on builder0
-  (the freeze candidate for Bar G2; `~/orders-r45/check-2a622e5bd.log`). Earlier: 5225a024b quick-remote 327/9 (two_squads x 8,
+  (`~/orders-r45/check-2a622e5bd.log`). **Freeze candidate: dc1995fd0** = 2a622e5bd + main 47a15f434's checkpoint merge (the
+  cold-import watchdog, tools/ only); it inherits 2a622e5bd's check by the orchestrator's N1 precedent (said to the orchestrator).
+  His Gorge replay on the laptop with the guard ON (GDScript drive, 2a622e5bd, `~/orders-r45/o4/`): the lab's places on his real
+  match (Hunters on his click, Spears 33 m behind, Wrenches 66 m behind, every place on his side). Earlier: 5225a024b quick-remote 327/9 (two_squads x 8,
   halt_price x 1: the fixture's off-mesh click and a drawn facing; both fixed in 2a622e5bd).
 - **O2 G2 BUILT (this tree; ON by default, `--group-guard=off` / `GROUP_GUARD=off` the escape).** `SelectionSquads` *G2 (round
   45)*: (1) FIT FIRST: `ranks` takes a cap = `guard_fit` (fit_abreast at the click across the approach, at most two) read on the
@@ -204,6 +207,13 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
 - **Ships ON** the minute every line passes (`--group-guard=off` the escape); if a deciding line fails, what he would see with it
   ON v OFF goes to the orchestrator in player terms the same hour (C45.2).
 
+- **Known issues:** (1) the shared repository had a corrupt packed object (the blob of
+  assets/audio/layered/crowd_murmur_1.wav in pack-315912d8a6…): `git worktree add` for the frozen tree failed on it (~18:50);
+  repaired reversibly with a hand-written loose copy of the same SHA from this worktree's intact file; the orchestrator is
+  verifying the packs. (2) With `--pack=on` (D3, OFF) the guard reads the packed body but never re-lays it. (3) A shifted leg
+  (shift-click route) lays as before: the guard is for his plain click only this round. (4) The frozen series tree is
+  `../godot-orders-g2` (detached at dc1995fd0, local.mk copied, .tools symlinked); builder2's folder for it is fresh (the
+  watchdog from main 47a15f434 covers its cold import).
 - **Questions for the lead (feel, for after he plays it; not changed now, R45.6):** the gangs' squads halt in a coil (a ring
   36 m across), so a rank in file is 33-50 m deep and three squads stacked behind his click run 66-100 m back. When he sees the
   stack, does he want it tighter (the squads halting in their travel wedge, nested ~26 m a rank: manoeuvre's formation and the
