@@ -571,10 +571,9 @@ static func wheel_hold_on() -> bool:
 ## shuffle, alive under every HOLD between SPOTs: its leftover reverse spilled into the next face, builder2 9456b4f3).
 ## Under the turn-in switch a swing at a LIVE enemy (Manoeuvre.live_enemy_near, R33.38 and round 34's M0) goes through
 ## the turn-in, or the hull holds still; never the creep. Any other swing keeps gunnery's turn.
-## Round 45 (engage E6, R45.22): a crew carrying his stop or hold (TankBrain.his_anchor) does not roll more than
-## TankBrain.TURN_IN_CAP_M from where it came to rest to swing a hull-fixed gun round (the turn-in under a stop, the wheeled
-## face creep): his stopped scout drove 4 m doing it (authority probe 11330). Only under a stop or a face; a move he gives
-## drives as before. `--player-authority=off` removes it with the rest of the rule.
+## Round 45 (engage E6, R45.22): a crew carrying his stop (TankBrain.his_anchor) does not roll more than
+## TankBrain.TURN_IN_CAP_M from where it came to rest to swing a hull-fixed gun round (the stop's turn-in, C33.9): his
+## stopped scout drove 4 m doing it (authority probe 11330). Only under his stop; a hold or a move drives as before. `--player-authority=off` removes it with the rest of the rule.
 static var his_caps := 0
 ## `--turn-in-cap=off`: the cap alone off (Bar E2b's base arm: E2 as it shipped in 60262534f).
 static var TURN_IN_CAP := not OS.get_cmdline_user_args().has("--turn-in-cap=off")
@@ -583,8 +582,9 @@ static var TURN_IN_CAP := not OS.get_cmdline_user_args().has("--turn-in-cap=off"
 func _his_cap(cmd: TankCommand) -> void:
 	if not TURN_IN_CAP or (cmd.throttle == 0.0 and cmd.turn == 0.0):
 		return
-	var kind := String(move_order.get("type", ""))
-	if kind != "stop" and kind != "face":
+	# His STOP only (R45.22's 11330): capping the hold's face creep too broke a wheeled hull's multi-point swing into a
+	# drift that shot less (dev, 7003: 4.8 m and dead v 2.9 m), so a held crew keeps the creep as shipped.
+	if String(move_order.get("type", "")) != "stop":
 		return
 	var brain := self as TankBrain
 	if brain == null:
