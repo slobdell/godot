@@ -12,7 +12,10 @@ Part A, per cell (map x starts x reach, a fixed click its own cell) over the ARM
   D3 reach: every MOVED place within the fitted body's own reach from the click (the arm's `guard.reach_m`, the farthest seat of
      the ranks the guard lays) + REACH_SLACK_M, every arm run (his Hunters, 58 m off the line);
   D4 (R45.5) the fallback `guard.unlaid` (too few seats: today's places stand) = 0 on every GORGE run; reported per cell;
-  D5 held (a squad that keeps its spot, HOLD_M): 0 on every Gorge run (a squad that sits still did not land at his click).
+  D5 held (a squad whose place is within HOLD_M = 2 m of where it stood: the stay rule fired): 0 on every Gorge run (a squad
+     that sits still did not land at his click);
+  D6 (R45.6) on the Gorge `spawn` cell (his own click): no place behind its own squad's start along the approach by more than
+     BEHIND_M = 2 m, every arm run (a squad turning round to drive back a few metres is "sent BACK").
 Guards (what the guard could break): per cell all-in median <= base x 1.2 + 3 s and never-in <= base; held median <= base's
 unmoved + HELD_SLACK; friend_contacts pooled <= base x 1.1 + 5; part B's verdict (places outside the corridor <= base + 2,
 sent away <= base + 2, re-dealt 0; yard_open reported); part C's fight guards. Never amended after a number is seen.
@@ -30,6 +33,7 @@ import orders_judge as oj  # noqa: E402
 
 REACH_SLACK_M = 6.0
 HELD_SLACK = 1
+BEHIND_M = 2.0
 GORGE = "gorge"
 
 
@@ -58,6 +62,9 @@ def part_a(out, base, new, lines):
             click = g["click"]
             moved = [r["anchor"] for r in by_key[key] if r.get("anchor") and geo.flat(r["anchor"], r["start"]) > geo.HOLD_M]
             read["across_gap"] = sum(1 for f in g.get("across_gap", []) if f)
+            d = g["approach"]
+            along = lambda p: (p[0] - click[0]) * d[0] + (p[1] - click[1]) * d[1]
+            read["backward_m"] = max((along(r["start"]) - along(r["anchor"]) for r in by_key[key] if r.get("anchor")), default=0.0)
             read["farthest_moved_m"] = max((geo.flat(a, click) for a in moved), default=0.0)
             guard = g.get("guard", {})
             read["guard_reach_m"] = float(guard.get("reach_m", 0.0))
@@ -72,7 +79,7 @@ def part_a(out, base, new, lines):
         lines.append("FAIL part A: no geometry cells read")
         return False
     ok = True
-    d1 = d2 = d3 = d4 = d5 = True
+    d1 = d2 = d3 = d4 = d5 = d6 = True
     for cell in sorted(reads):
         b, n = reads[cell][base], reads[cell][new]
         if not b or not n:
@@ -85,7 +92,9 @@ def part_a(out, base, new, lines):
         c3 = all(r["farthest_moved_m"] <= r["guard_reach_m"] + REACH_SLACK_M for r in n)
         c4 = (not gorge) or all(r["unlaid"] == 0 for r in n)
         c5 = (not gorge) or all(r["held"] == 0 for r in n)
-        d1, d2, d3, d4, d5 = d1 and c1, d2 and c2, d3 and c3, d4 and c4, d5 and c5
+        his = gorge and cell[1] == "spawn"
+        c6 = (not his) or all(r["backward_m"] <= BEHIND_M for r in n)
+        d1, d2, d3, d4, d5, d6 = d1 and c1, d2 and c2, d3 and c3, d4 and c4, d5 and c5, d6 and c6
         held_b = geo.med([r["squads"] - r["moved"] for r in b])
         held_n = geo.med([r["held"] for r in n])
         g_held = held_n <= held_b + HELD_SLACK
@@ -99,7 +108,7 @@ def part_a(out, base, new, lines):
             sum(r["backward"] for r in n), sum(r["backward"] for r in b), "" if c2 else " D2-FAIL",
             max(r["farthest_moved_m"] for r in n), geo.med([r["guard_reach_m"] for r in n]), REACH_SLACK_M, "" if c3 else " D3-FAIL",
             sum(r["unlaid"] for r in n), sum(r["relaid"] for r in n), "" if c4 else " D4-FAIL",
-            held_n, held_b, "" if c5 else " D5-FAIL", "" if g_held else " HELD-GUARD-FAIL",
+            held_n, held_b, "" if c5 else " D5-FAIL", ("" if c6 else " D6-FAIL") + (" | backward max %.1f m (base %.1f)" % (max(r["backward_m"] for r in n), max(r["backward_m"] for r in b)) if his else "") + ("" if g_held else " HELD-GUARD-FAIL"),
             sorted(set(r["fit"] for r in n)), geo.med([r["spread_m"] for r in n]), geo.med([r["spread_m"] for r in b]),
             geo.med([r["across_m"] for r in n]), geo.med([r["across_m"] for r in b]),
             ("%.1f" % geo.med(n_in)) if n_in else "-", ("%.1f" % geo.med(b_in)) if b_in else "-", "" if g_all else " ALL-IN-FAIL",
@@ -109,12 +118,13 @@ def part_a(out, base, new, lines):
     lines.append("%s deciding D3: every moved place within the fitted body's reach + %.0f m of the click, every arm run" % ("PASS" if d3 else "FAIL", REACH_SLACK_M))
     lines.append("%s deciding D4 (R45.5): the fallback (too few seats, today's places) never taken on a Gorge run" % ("PASS" if d4 else "FAIL"))
     lines.append("%s deciding D5: no squad holds its spot on a Gorge run" % ("PASS" if d5 else "FAIL"))
+    lines.append("%s deciding D6 (R45.6): on his own Gorge click no place more than %.0f m behind its squad's start along the approach" % ("PASS" if d6 else "FAIL", BEHIND_M))
     bc = sum(r.get("friend_contacts", 0) for r in runs_by_arm[base])
     nc = sum(r.get("friend_contacts", 0) for r in runs_by_arm[new])
     g_contacts = nc <= bc * 1.1 + 5
     lines.append("%s guard friend_contacts (part A, pooled) %d -> %d (<= %.1f)" % ("PASS" if g_contacts else "FAIL", bc, nc, bc * 1.1 + 5))
     lines.append("%s guard part A all-in / never-in / held per cell" % ("PASS" if ok else "FAIL"))
-    return d1 and d2 and d3 and d4 and d5 and ok and g_contacts
+    return d1 and d2 and d3 and d4 and d5 and d6 and ok and g_contacts
 
 
 def part_b(out, base, new, lines):

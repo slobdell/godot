@@ -160,7 +160,26 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   4. **D4 (R45.5) the fallback (`guard.unlaid`, too few seats: today's places stand) = 0 on every Gorge run**; reported per cell
      everywhere (how often his old scatter can still happen with the guard ON).
   5. **D5 held = 0 on every Gorge run** (a squad that keeps its spot did not land at his click); `held` reported per cell.
+     Exact test: `held` = the squads whose place is within HOLD_M = 2 m of where they stood (the probe's row, as the geometry
+     table reads it): the stay rule fired (the seat was > 10 m farther from the click than the squad stands, or > 2 m behind its
+     start along the approach, so its place = its own centre). A squad that moves 4 m to a seat counts as moved, not held; a
+     squad already within its rank's depth of its seat still MOVES to it (there is no "close enough" hold: a seat is a seat).
+  6. **D6 (R45.6) on the Gorge `spawn` cell (his own click): no place more than 2 m behind its squad's start along the approach,
+     every arm run.** Exact test: per run, max over squads of (start - click).approach - (place - click).approach <= 2.0 m
+     (`backward_m` in the judge, from the probe's row `start` / `anchor` and the geometry row's `approach`). The guard itself
+     holds a squad whose seat would be > 2 m behind its start along the approach (`GUARD_HOLD_BEHIND_M`; on the un-relaid lay
+     never_behind already pulls such a place to the start's level, 0 m).
   Reported: spread, across, fit per cell, relaid per cell.
+  **The lab's per-squad read of his click (builder0, 5225a024b, NATIVE=off; approach (-0.824, -0.566), 59 m from the army's
+  middle to his click):**
+  | squad | start | place (guard ON) | moved | direction | behind its start along the approach |
+  |---|---|---|---|---|---|
+  | Hunters | (-14.6, 92.6) | (-43.2, 53.2) = his click | 48.6 m | south-west, straight at his click | -45.9 m (ahead) |
+  | Spears | (14.6, 92.6) | (-16.2, 71.7) | 37.2 m | west-south-west, onto the file 33 m behind the click | -37.2 m (ahead) |
+  | Wrenches | (43.9, 93.6) | (10.8, 90.3) | 33.3 m | west along his start row, onto the file 66 m behind the click | -29.1 m (ahead) |
+  Nobody turns round: the file runs straight back along the diagonal approach, so its tail seat is 29 m AHEAD of the Wrenches'
+  start along the approach (it sits 3 m north of their start in z, 33 m west of it). Today: Spears on the click, Hunters 58 m
+  north-west, Wrenches 58 m south-east through the neck.
 - **Guards (what it could break), filed now:** part A per cell: all-in median <= base x 1.2 + 3 s, never-in <= base, held median <=
   base's unmoved + 1; friendly contacts pooled <= base x 1.1 + 5. **Part B, G1 v9's street lines:** `orders-probe` locks / crossing /
   terminus / yard_open x 3 / 5 squads x click / route + his terminus click, seeds 11225-11236, n 12 a cell, `orders_judge.py g1v8`
@@ -181,7 +200,10 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
 - **Ships ON** the minute every line passes (`--group-guard=off` the escape); if a deciding line fails, what he would see with it
   ON v OFF goes to the orchestrator in player terms the same hour (C45.2).
 
-- **Questions for the lead:** none yet.
+- **Questions for the lead (feel, for after he plays it; not changed now, R45.6):** the gangs' squads halt in a coil (a ring
+  36 m across), so a rank in file is 33-50 m deep and three squads stacked behind his click run 66-100 m back. When he sees the
+  stack, does he want it tighter (the squads halting in their travel wedge, nested ~26 m a rank: manoeuvre's formation and the
+  deploy step), or is a long file along his approach fine?
 - **Requests to other streams:** none. Relays taken: engage's E1 (a one-crew order never enters the group path: `squads.size() >= 2`,
   as before and as G2 is gated); native's R45.3 seam at the top of `untangle_whole` (G2 does not touch that function's body;
   it changes only the anchors handed to it, as any lay does).

@@ -1813,9 +1813,12 @@ static func guard_failures(anchors: Array[Vector3], blocks: Array, click: Vector
 ## reach, refuses water, the map's edge and ground the click does not reach) and a seat across a gap from the click
 ## (`guard_across_gap`) is skipped for the next one behind (GUARD_SPARE_SEATS spares); nearest squad in front (the least total
 ## straight driving, as `ranks`); a squad the seat would send more than COLUMN_AWAY_M farther from the click than it stands keeps
-## its spot (its block's centre). Returns [] when fewer seats than blocks are found (the caller keeps today's places).
+## its spot (its block's centre), and so does one whose seat lies more than GUARD_HOLD_BEHIND_M behind where it stands along the
+## approach (R45.6: a squad turning round to drive back a few metres to wait is what he called "sent BACK").
+## Returns [] when fewer seats than blocks are found (the caller keeps today's places).
 const GUARD_STEP_M := 4.0
 const GUARD_FRONT_BACK_M := 40.0
+const GUARD_HOLD_BEHIND_M := 2.0
 
 
 static func guard_relay(blocks: Array, click: Vector3, facing: Variant, fallback_heading: Vector3, cap: int,
@@ -1851,7 +1854,8 @@ static func guard_relay(blocks: Array, click: Vector3, facing: Variant, fallback
 	var result: Array[Vector3] = []
 	for i in blocks.size():
 		var seat := seats[given[i]]
-		if seat.distance_to(flat_click) > centers[i].distance_to(flat_click) + COLUMN_AWAY_M:
+		var behind := (centers[i] - flat_click).dot(heading) - (seat - flat_click).dot(heading)
+		if seat.distance_to(flat_click) > centers[i].distance_to(flat_click) + COLUMN_AWAY_M or behind > GUARD_HOLD_BEHIND_M:
 			guard_held += 1
 			seat = centers[i]
 		result.append(seat)
