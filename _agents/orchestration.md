@@ -4011,3 +4011,8 @@ instrument that cannot lie about load — removal within one run — and let eve
    of our sentence): `--seed` did not parse, the armies rolled from the clock and the recording said seed -1; a day of "his seed"
    reads were on a different match. Put every command he runs in backticks or a code block, nothing after it; `make skirmish` now
    keeps digits only (native fff546ef6).
+339. **A bar that keeps failing must not keep his fix off forever.** (Round 44.) He asked for the group click in rounds 41, 43 and
+   44; each round's fix failed a fresh-seed bar on cases he never played, so the default path never changed and his 2026-10-29 Gorge
+   game showed the same scatter ("precisely the behavior I had asked to fix"). When a fix has failed its bar twice, the next round's
+   first question is the SMALLEST change that removes exactly what he saw (a hard guard on his case, ON), filed with its own bar;
+   the fuller fix keeps going behind its switch. A round where nothing he asked for ships ON is a round he cannot feel.
