@@ -81,6 +81,28 @@ builder that aren't ours. builder0 at prep: load 0.02, 77 %, 24 G free; builder2
 
 _(each stream files its bar here BEFORE any number on its block; the orchestrator records it.)_
 
+- **Bar A6 v4 (recorded by the orchestrator ~11:00 PDT from stream/manoeuvre, before any number on 11449-11496), the street hold decided on the side stage's jam, re-filed with a ONE-SIDED head-on guard (manoeuvre M6; R44.19's
+  round-45 candidate; FILED before any number on 11449-11496).** ONE arm, **ARM-W** = `--traffic-on=holdway` (engage's ordered-way
+  read, unchanged on main since 13fbe1a5d: a crew of the waiting squad is held only when its ORDERED way, not its momentary nose,
+  runs through the street) v BASE (today), on Bar B2's frozen tree (its gate check is B2's), native ON in every log. **Workload:**
+  `make engage-hold` (tests/engage/hold_probe.gd) as A6 v2 / v3 (odd seeds the side-street planting, even the three head-on stages),
+  **11449-11472**, n 24 paired by seed = 12 side + 12 head-on, 75 s, builder2 light J10; Bar E1's lines on **11473-11496**.
+  **Deciding (as A6 v3):** jam_s on the side 12 ARM < BASE by >= 2 se (paired) AND pooled ARM < BASE (v3 read 348 -> 43, -5.7 se).
+  **Exercised floor:** 8 of 12 side seeds with a verdict in BASE, else INCONCLUSIVE. **Guards (v3's, with 2b one-sided):** 1
+  off_arrive_s (side 12) ARM <= BASE + 2 se; 2a verdicts (head-on 12) within BASE +/- 2 se; **2b held_on_s (head-on 12) ARM <= BASE +
+  2 se (one-sided: v3 FAILED this line at -2.26 se, i.e. the head-on crews were held LESS and arrived 13 s sooner, which is not a
+  harm; the harm this guard is for is a crew held longer by the way read)**; 3 contacts_mouth (24) ARM <= BASE + 1.645 se; 4
+  contacts_far (24) ARM <= BASE + max(1.645 se, 2); 5 last_a_s (24) ARM <= BASE + 1.645 se; 6 Bar E1's lines (`make engage-probe`,
+  today's attack-shot ON in both arms, ARM = `ENGAGE_FLAGS=--traffic-on=holdway` v BASE, builder2 light): stuck crew-seconds, first
+  hit, deaths each within BASE +/- 1.645 se; 7 the frozen tree's check perf-judge (B2's gate); 8 no SCRIPT ERROR. **What it could
+  break (named first):** a crew held by the way read that today's nose read released (2b, one-sided); a crew released that then
+  meets the passer at the mouth (contacts_far, 4; contacts_mouth, 3); the far crew's own arrival (off_arrive_s, 1). **Ships ON**
+  (`holdway` out of DEFAULT_OFF, `--traffic-off=holdway` the escape) only if the deciding line and every guard pass; no re-file.
+  C45.5: the hold reads any squad's ordered way (the CPU's too). **Machine:** `~/overnight-manoeuvre/r45/bars_a6v4.sh` from the B2
+  frozen worktree, queued behind B2's series on builder2 light; evidence `~/overnight-manoeuvre/r45/bars_a6v4/`, filed under
+  `references/round45/manoeuvre/barsa6v4-builder2-<hash>/`. **Dev history:** A6 v2 (10601-10624) and A6 v3 (R44.19, 10949-10996):
+  the deciding line and guards 1, 2a, 3-6 passed in both; 2b's two-sided form failed v3 on the reduction side only.
+
 - **Bar G2 THE GROUP GUARD (orders; filed in streams/orders.md at stream/orders 5225a024b, recorded here by the orchestrator ~11:20 PDT BEFORE any number on 11201-11248; dev reads on 7001-7006 only).**
 
 **What he would see:** he selects two or more squads and clicks once. Every squad lands at his click or in a short stack behind
@@ -139,6 +161,11 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   = place within 2 m of its start. The orchestrator's (5, 98) estimate was wrong: the lab's file runs back along the DIAGONAL
   approach (-0.824, -0.566) toward the army's middle, so the Wrenches go (43.9, 93.6) -> (10.8, 90.3), 33 m west along his start
   row, 29 m AHEAD of their start along the approach; Hunters (-14.6, 92.6) -> his click; Spears (14.6, 92.6) -> (-16.2, 71.7).
+- **R45.7 (~11:00) S v3's wedged guard traced by removal (manoeuvre; dev, Locks 7001-7012, builder2, 0af772a85, 12 paired runs an
+  arm; never a bar).** Seat bound alone: D1 seated 53 -> 83 (+4.4 se) but wedged +5.6 s a run (+2.4 se); kturngoal alone wedged +4.3 s
+  (+2.1 se), D1 -2.2 se; the latch alone D1 -2.9 se; converge and parkaside neutral. S v3's +9.2 s wedged = the bound's press +
+  kturngoal, near additive. S v4 = the bound without kturngoal + the press fix (round 44's `--seat-order=on`), filed on 11401-11448
+  after a second removal read.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
