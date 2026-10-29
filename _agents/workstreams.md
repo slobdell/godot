@@ -77,7 +77,7 @@ builder that aren't ours. builder0 at prep: load 0.02, 77 %, 24 G free; builder2
 
 **Seed registry (round 45):** 11201-11248 orders (Bar G2 deciding + guards); 11249-11296 orders reserve; 11301-11348 engage (Bar E1);
 11349-11396 engage reserve; 11149-11196 manoeuvre Bar B2; 11401-11448 manoeuvre Bar S v4; 11449-11496 manoeuvre reserve (A6 v4);
-11501-11524 native (twin pairs, lines_r45). Dev seeds: anything at or below 11148 already read, or 7001-7012.
+11501-11524 native (twin pairs, lines_r45); 11601-11648 manoeuvre B2b (unused, R45.14); 11651-11698 manoeuvre S v5 (R45.18). Dev seeds: anything at or below 11148 already read, or 7001-7012.
 
 _(each stream files its bar here BEFORE any number on its block; the orchestrator records it.)_
 
@@ -311,6 +311,11 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   +54.2 s summed over 24 seeds: the Resupply Tanker and Gun Truck, Battery_4/5) converging on a bound the first three already fill.
   Round 46: S v5, the last-arriving crew's seat dealt outside the filled bound. In his terms: with it ON his first order seats far more
   crews at his click within 15 s, but on Locks the squad's last two vehicles wedge into the first three for ~6 s.
+- **R45.18 (~15:20) S v5 may be filed this round, on conditions.** Manoeuvre's S v5 (stream/manoeuvre 52493b473, OFF, `--seat-last=open`:
+  the bound's deepest seat is the rear-most crew's alone), DEV Locks 7001-7012, builder2, 12 paired cells: D1 53 -> 89 (+7.7 se; s4 83);
+  k-turn -5.5 s a run; never-arrived 13 -> 3; wedged -0.5 s a run (s4 +3.5); one cell (7009 Guns2) 14.6 -> 25.1. If the three-arena dev
+  read shows no arena's wedged or never-arrived worse than base (7009 explained), Bar S v5 is filed on NEW fresh seeds 11651-11698 before
+  any number, S v4's lines unchanged; G2's series has builder2 priority; C45.4 stated (twin if the C++ drive reads it); own freeze + check.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
