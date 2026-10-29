@@ -1,9 +1,92 @@
 # Workstreams: the current round
 
-> **ROUND 44 PREPARED 2026-10-28 (three streams: orders + manoeuvre on Fable, native on Opus; main code = dbf0bf637 GREEN builder0, 28 targets
-> ALL JUDGED, 3420/0).** Round 43 (CLOSED, A7 shipped ON) follows round 44's section; briefs in `streams/archive/round43/`, branches `round43/<s>`.
+> **ROUND 45 PREPARED 2026-10-29 (four streams: orders + manoeuvre on Fable, engage + native on Opus; main code = a93271a66 GREEN builder0,
+> 28 targets ALL JUDGED, 3446/0).** Round 44 (CLOSED, nothing shipped ON) follows round 45's section; briefs in `streams/archive/round44/`.
 
-## Round 44: three streams (prepared 2026-10-28; briefs in `streams/`)
+## Round 45: four streams (prepared 2026-10-29; briefs in `streams/`)
+
+**Goal: his order wins. One click for three squads never sends a squad back behind its own start or across a drop from his click
+(the guard ships ON this round, lesson 339); a lone crew he stops, holds or moves does exactly that until he gives it another order;
+a War Rig nose-on to a container backs out first on every pose.** His words: `game_design.md` *His playtest after round 44*; recording
+`references/round44/playtest/2026-10-29T09-35-51-gorge.jsonl` (Gorge, seed 91711, 107 s; `make replay-match` PASS 20/20 for 30 s).
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **orders** | `godot-orders` (6) | **Fable** | [streams/orders.md](streams/orders.md) | his 3-squad click on Gorge: all three land on his side of the gap, at his click, nobody sent back | O1 his Gorge click on the replay, the guard's cut |
+| **engage** | `godot-engage` (5) | Opus | [streams/engage.md](streams/engage.md) | the lone scout he holds stays held; stopped stays stopped; moved goes to his click | E1 which layer moved the scout, by removal |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | a War Rig nose-on to a container backs out first, on the poses B1 lost | M1 pose 13's look that never fires |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | a 30-unit right click no longer hitches (gate_width in C++); builder runs no longer hang on a cold import | N1 the cold-import watchdog |
+
+**Not this round: camera** (no new corner moment), **balance** (waits). **Two Fable sessions:** orders (the group click, asked in rounds
+37, 41, 43, 44) and manoeuvre (the backout, three rounds of bars missed). Engage's scout is new: Opus.
+
+**Machines (C45.1 = C44.1):** builder0 = every stream's light lane (J<=4) and checks; builder2 (`make gcp-start`; STARTED at prep
+2026-10-29 ~09:45, idle-stops after 20 min; Spot: read the verdict line, re-queue on preemption) = any series over 24 fights. ONE full
+check + ONE judged series per builder at a time (`tools/builder_checks.sh --wait-below 1`; the full-check lock). Perf-judge on builder0
+only, quiet window. One laptop Godot run at a time (`flock /tmp/tank-squad-laptop-godot.lock`). Never touch processes or files on a
+builder that aren't ours. builder0 at prep: load 0.02, 77 %, 24 G free; builder2 57 %, 42 G free (round 44's backout folders removed;
+`godot-orders`, `godot-manoeuvre*`, `godot-native` kept warm: a fresh folder's cold import is what hung B1 for 4 h).
+
+**Ownership (round 45):** each brief's *You own* line is the contract; in short:
+- **orders:** `game/control/**` (incl. `selection_squads.gd`, `group_formation.gd`, `rts_controls.gd`) EXCEPT engage's grant in
+  `order_executor.gd`; `tests/test_control*.gd`, `tests/control/**`, `tests/orders_probe*.gd`, `mk/command.mk`; GRANT
+  `game/ai/planner/**` for a group order's departure order and route spread only (as C41.3).
+- **engage:** `game/tactics/drills.gd`, `game/tactics/element.gd`'s player-authority code (`_detached`, the take-back, the `source ==
+  "player"` skip, `preempting`), `game/tactics/element_plan.gd`'s engagement functions (`_engage`, `_hold`'s in-range tests, the
+  contact drill's moves), `game/tactics/element_situation.gd` (additive), `game/tactics/firing_position.gd`, GRANT
+  `game/control/order_executor.gd`'s `stop` / `hold` / `move` / `attack_move` branches for a crew's own order, `game/ai/order_controller.gd`
+  (trace lines; behaviour on the orchestrator's ruling), `tests/tactics/test_engage*.gd`, `tests/engage/**`, `tests/test_authority*.gd`,
+  `mk/engage.mk`.
+- **manoeuvre:** movement's drive / unstick / side-step / avoidance / yield / backout (`game/ai/movement.gd` but the planner seam),
+  `game/ai/traffic.gd`, `game/tactics/tactics_formation.gd`'s `pitch` / `hull_floor` / `offsets_at` / `fit_to_corridor` / seat bound /
+  shape latch, `game/tactics/element_plan.gd`'s `grouped()` and converge, `tests/manoeuvre/**`, `tests/traffic/**`,
+  `tests/test_manoeuvre*.gd`, `tests/test_traffic*.gd`, `tests/test_formation*.gd`, `mk/manoeuvre.mk`. NOT `element.gd` this round
+  (engage's; a request goes through the orchestrator), NOT `game/control/**`.
+- **native:** `native/**`, `mk/native.mk`, `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**`, `tools/perf_judge.sh`,
+  `tools/loaded.sh`, `tools/slot.sh`, `tools/remote.sh`, `tools/full_check_lock.sh`, `tools/copyback_verify.sh`, `tools/builder_checks.sh`,
+  `tests/ai_scenarios/guard_line.gd`, `mk/play.mk`'s skirmish recipe, `mk/gcp.mk`, `_agents/judging.md`, `tests/replay_orders.gd`,
+  `tools/recording_arrivals.py`, `tools/playtest_report*`, `tests/replay/**`; GRANT `game/control/rts_controls.gd`'s `gate_width`
+  for the C++ seam only (C45.4, the GDScript body stays as the fallback).
+- **Nobody:** the planner (but orders' grant; trace lines only), `game/camera/**`, `game/ui/**`, `game/units/**`, `game/audio/**`,
+  `game/announcer/**`, `game/match/**`, `game/tank/**`, element_plan's settle functions, `arenas/**`, `tests/baselines/**` (the
+  orchestrator adopts).
+
+**Contracts (round 45):**
+- **C45.1 Fresh start; two builders; bars before numbers on FRESH seeds (C37.1-C44.1 stand).** Registry below; a guard is never
+  amended after its numbers are seen; a bar names what the change could BREAK before its numbers. His seeds (56416, 91711) and dev
+  blocks are never a bar. His Gorge recording is the acceptance READ, not a bar.
+- **C45.2 Lesson 339: what he saw ships ON this round.** Orders' guard (Bar G2) and engage's authority rule (Bar E1) are each the
+  SMALLEST change that removes exactly what he saw, filed with a narrow bar whose deciding lines are his case's failure and whose
+  guards are what it could break. They do not wait on the fuller fix (G1 v10c's column stays behind `--group-column=always`, OFF,
+  and keeps going). If a narrow bar fails, the stream says in player terms what he would see and the orchestrator decides with him
+  the same day; it does not slide to round 46 silently.
+- **C45.3 His order to a crew is engage's; his order to squads is orders'; a squad's own drive is manoeuvre's.** A crew he orders
+  alone (one unit selected, or a squad of one) is detached from its element by engage's rule; a group click lays places by orders'
+  code; neither changes how a crew drives to its place (manoeuvre's). Each bar names the other two streams' lines as guards (the G1
+  group probe, the B1 corpus' never-arrived, engage's authority probe), on a tree frozen at filing.
+- **C45.4 = C44.4:** a rule that touches the drive is twinned in C++ by native before it ships ON (or ships with `native_drive` forced
+  off for that rule, said in the bar). `gate_width` in C++ is output-identical first (the control probe and the orders probe
+  byte-identical), and judged by `control-timing` on builder0 quiet.
+- **C45.5 Symmetric (memory: smart AI on both sides).** Every rule reaches the CPU's crews and the CPU's group orders too where the
+  CPU has the same case (a CPU has no player order: engage's authority rule is the player's by construction, said in its bar); ships
+  behind a switch with an `=off` escape; approved behaviour ships ON once its bar passes.
+- **C45.6 Seeds:** B2 takes 11149-11196 (R44.25); S v4 moves to 11401-11448 (the round-44 registry had both on one block; R44.25 is the
+  later word).
+
+## Bars (round 45)
+
+**Seed registry (round 45):** 11201-11248 orders (Bar G2 deciding + guards); 11249-11296 orders reserve; 11301-11348 engage (Bar E1);
+11349-11396 engage reserve; 11149-11196 manoeuvre Bar B2; 11401-11448 manoeuvre Bar S v4; 11449-11496 manoeuvre reserve (A6 v4);
+11501-11524 native (twin pairs, lines_r45). Dev seeds: anything at or below 11148 already read, or 7001-7012.
+
+_(each stream files its bar here BEFORE any number on its block; the orchestrator records it.)_
+
+## Rulings (round 45)
+
+- **R45.1 (prep) Gorge's geometry, for every stream.** The drop's pits run z 38-50: west drop x -92..-48, middle -32..32; the gap
+  x -48..-32 is "the bridge" he named. His click (-43.2, 53.2) is on his side (z > 50). His start line is z ~90.
+
+## Round 44: three streams (prepared 2026-10-28; CLOSED 2026-10-28; briefs in `streams/archive/round44/`)
 
 **Goal: one click for his whole army sends every squad the same way, packed one behind another near his click (never four
 destinations 100 m apart, never a squad sent back to its own edge); a War Rig that starts nose-on to a container backs out first

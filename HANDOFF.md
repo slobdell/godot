@@ -4,9 +4,37 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-29 ~10:00 PDT (laptop clock) — **ROUND 44 IS CLOSED; his playtest after it is in (box below). NEXT: prepare round 45 from it.** Every session was closed; the next orchestrator starts fresh.
+_Last updated: 2026-10-29 ~10:00 PDT (laptop clock) — **ROUND 45 PREPARED (box below; launch = the lead starts four CLIs: orders + manoeuvre on Fable, engage + native on Opus).** Earlier the same morning: round 44 closed, his Gorge playtest recorded._
 
-## ▶ NEXT: ROUND 45 — his playtest after round 44 (2026-10-29 ~09:36, Gorge) — read this first
+## ▶ ROUND 45 AS PREPARED (2026-10-29 ~10:00 PDT) — read this first
+
+**Goal: his order wins. One click for three squads never sends a squad back behind its own start or across a drop from his click
+(a guard ships ON this round, lesson 339 / C45.2); a lone crew he stops, holds or moves does exactly that until he gives another
+order; a War Rig nose-on to a container backs out first on the poses Bar B1 lost.** From his playtest after round 44 (box below;
+`game_design.md` *His playtest after round 44*). Split, ownership, contracts C45.1-C45.6, the seed registry and R45.1 in
+`workstreams.md` *Round 45*; briefs in `_agents/streams/`. **Main at launch: 972e4bb57 inherits a93271a66's check**
+(`tools/merge_check_needed.sh a93271a66`: INHERIT; GREEN builder0, 28 targets ALL JUDGED, 3446/0). Workers start without a baseline check.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **orders** | `godot-orders` (6) | **Fable** | his 3-squad click on Gorge: all land on his side of the gap at his click, nobody sent back (G2 ON) | O1 his Gorge click cut down |
+| **engage** | `godot-engage` (5) | Opus | the lone scout he holds stays held, stopped stays stopped, moved lands at his click (E2 ON) | E1 which layer moved it, by removal |
+| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | a War Rig nose-on to a container backs out first (Bar B2) | M1 pose 13's look |
+| **native** | `godot-native` (4) | Opus | builder runs never hang on a cold import; the 30-unit right click under budget (gate_width C++) | N1 the watchdog |
+
+**Not this round:** camera, balance. Kickoff: the same one line for every stream, `_agents/orchestration.md` *The kickoff prompt*. All
+four are FRESH sessions.
+
+**Done at preparation:** builder2 STARTED ~09:45 (`make gcp-start`; idle-stops after 20 min); its round-44 `godot-native-backout*`
+folders removed (57 %, 42 G free); `godot-orders`, `godot-manoeuvre*`, `godot-native` kept warm (a cold import hung B1). builder0 has
+only `godot` + `godot-native-score*` (77 %, 24 G free, load 0.02). Worktrees created after the docs commit.
+
+**Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*). Record G2 / E1 / B2 in *Bars (round 45)*
+the minute each is filed. Merge native's N1 watchdog alone on green. **C45.2:** G2 and E2 ship ON the minute their bars pass; if
+either fails, take it to him in player terms the same hour. Relay engage's E1 cause to orders (a squad of one) and manoeuvre (the
+drive's arrival) the hour it lands.
+
+## (DONE: prepared above) NEXT: ROUND 45 — his playtest after round 44 (2026-10-29 ~09:36, Gorge) — read this first
 
 His words verbatim + the orchestrator's read of the recording: `game_design.md` *His playtest after round 44*. Recording, perf, booth
 and report: `references/round44/playtest/2026-10-29T09-35-51-gorge.*`. **Both complaints are about control: his order must win.**
