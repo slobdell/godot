@@ -99,6 +99,10 @@ def main():
     # The unneeded-back-up guards (R44, the orchestrator): among crews NOT nose-on, per arena, paired per cell: reversing ticks in the
     # first 15 s ARM <= BASE + 2 se, and crews seated within the bound by 15 s ARM >= BASE - 2 se.
     other_rev, other_seated = {}, {}
+    # Round 45 (Bar B3, R45.21): the SQUAD'S TIME TO CLEAR ITS START, per arena, paired per cell: the last traced crew's tick clearing
+    # CLEAR_M from its spot, ARM <= BASE + 2 se. Replaces B2's per-arena k-turn-seconds guard for backout (a back-up IS a k-turn: that
+    # guard counted the manoeuvre the rule exists to make; k-turn s stays REPORTED by s_judge).
+    squad_clear = {}
     for bf in sorted(glob.glob(os.path.join(d, "*-%s-s*.log" % base))):
         m = re.match(r"(\w+)-%s-s(\d+)\.log" % base, os.path.basename(bf))
         if not m:
@@ -150,6 +154,11 @@ def main():
         sa = sum(seated_a.get(n, 0) for n in bp if n not in nosed and n in ap)
         other_rev.setdefault(arena, []).append(ra - rb)
         other_seated.setdefault(arena, []).append(sa - sb)
+        common = [n for n in bp if n in ap]
+        if common:
+            cb = max(clear_tick(br.get(n, []), bp[n], last) for n in common)
+            ca = max(clear_tick(ar.get(n, []), ap[n], last) for n in common)
+            squad_clear.setdefault(arena, []).append(ca - cb)
     print("Bar B1 judge: %s v %s, nose-on crews %d (floor %d), files with SCRIPT ERROR %d" % (base, arm, named, FLOOR, errors))
     guards_ok = True
     for arena in sorted(other_rev):
@@ -161,6 +170,11 @@ def main():
         ok = z >= -2.0
         guards_ok &= ok
         print("G %-9s other crews seated by 15 s: paired mean %+.2f a run, se %.2f (%+.1f se); line >= -2 se: %s" % (arena, mean, se, z, "PASS" if ok else "FAIL"))
+    for arena in sorted(squad_clear):
+        n, mean, se, z = paired(squad_clear[arena])
+        ok = z <= 2.0
+        guards_ok &= ok
+        print("G %-9s squad's time to clear its start (last crew %.0f m, ticks): paired mean %+.1f a run, se %.1f (%+.1f se); line <= +2 se: %s" % (arena, CLEAR_M, mean, se, z, "PASS" if ok else "FAIL"))
     if named < FLOOR:
         print("VERDICT: INCONCLUSIVE (under the floor)")
         return

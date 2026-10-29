@@ -339,6 +339,21 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   builder0 check was stopped before it started (the orchestrator's main check held the lock; a known-red check); the full check runs
   once on native's exec_fields pair + this tip.
 
+### Round 45 continues (R45.21, the lead: "why not just continue work as-is?"): B3 first
+
+- **D3's cause (guard pose 11168, locks crawl +60, the hexagon wall 0.7 m behind; GDScript trace):** OFF and ON run identical planner calls
+  through the first 4 s (the look fires at tick 2, every plan "blocked behind at 1.0 m (navmesh)", the fallback re-runs today's planner
+  with the same refusal), yet the rig's position differs by 0.11 m at tick 45 while pressed on the box, and ON then takes a circle plan
+  OFF never needed (t232 v t128). A look that fires and is withdrawn still moves the squad off today's tick-by-tick path (the mates
+  beside it look too). **Fix (uncommitted, dev read running): no room behind on the NAVMESH = no look at all**: `_backout_look` requires
+  BACKOUT_ROOM_M (2 m) of navmesh run behind the tail (`_free_run`, the same instrument as the nose test) before anything else; a rig
+  that cannot back up drives exactly as today. The guard re-read on the pre-fix code (laptop, 24 poses) had 3 worse (11157 +1.4 s,
+  11163 +26 wall ticks, 11168 +3.5 s); the fix's re-read runs on builder0 light (`~/overnight-manoeuvre/r45/d3/dev1/`: lab, guards,
+  the 14 dev poses, 11187).
+- **B3's replacement guard built (`b1_judge.py`): the squad's time to clear its start** (per arena, paired per cell, the last traced
+  crew's tick clearing 8 m from its spot, ARM <= BASE + 2 se). Read on B2's workload rows (frozen 0493977ed): crossing +14.6 ticks a run
+  (+0.6 se), locks +15.2 (+1.5 se), terminus -25.6 (-1.0 se): all PASS where the k-turn-seconds guard failed Terminus at +2.6 se.
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
