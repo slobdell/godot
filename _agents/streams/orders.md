@@ -113,6 +113,18 @@ _(worker keeps this current: report at the top, every number with commit, machin
   orchestrator: main eec905e52 carries native's N2 twin, EQUAL on a8adba232 per R45.3; the bar freezes off this branch; at ship
   the column_lay conflict resolves as pair/native-g2 cfa4a0eb2 and native re-proves on the final freeze). R45.13: D5 = reach +
   one rank step + 6 m accepted; **the lines do not move again after the freeze**.
+- **Dev read 4 (builder2, 7a0c62c3c, 7001-7006, `~/orders-r45/dev4/`):** PASS D1, D2, D4, D5b, D6, contacts 8639 -> 3995; FAIL D3,
+  D5, the reach-80 held guard, never-in (gorge 40/58 6/6, locks across-80 2), all-in (gorge 40/58). Causes read from the rows
+  and local traces: (a) `ground_anchors` snapped a HOLDING squad's centre 19 m when that centre sat in a prop (locks his cells,
+  D3): holders now stay exactly where they stand; (b) a seat within 44 m of any holder counted as taken, so on the locks his
+  click the lone tank at the click was "under" a holding wedge 24 m away and all four held: taken is now the holder's own
+  half-width (+ a hull); (c) a seat a holder refused (behind its start by R45.6) went unused while the next squads had none
+  (gorge spawn: the Hunters refused rank 2, the Spears held with nothing): vacated seats are re-offered to the squads beyond
+  by distance; (d) gorge 40/58 never-in 6/6: the front seat at the east neck's mouth was dry at its centre but the squad's halt
+  (a coil, radius 18) hung over the drop: two crews were pulled 37 m over it and the squad's centre never settled: the front
+  now stands where its halt ring (the widest squad's half-width) is dry, walking back up to 60 m along the approach (his
+  Gorge click stands as he put it: the ring's samples clear the pits; a click ON the Locks swing bridge now stands the front
+  squad 45 m up the near bank where its halt clears the canal). Laptop labs 74/0 on the result.
 - **Dev read 3 (builder2, 154815c86, 7001-7006, `~/orders-r45/dev3/`):** rows byte-identical to dev read 2's on every geometry cell
   (the untangle fix changed nothing there); **D5b PASS** (his exact click, his three squads at their recorded starts: held 0,
   Hunters on his click, every run); D1, D2, D4, D6, contacts PASS; D3 / D5 / never-in / the reach-80 held guard FAIL. Causes and

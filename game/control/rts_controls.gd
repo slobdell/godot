@@ -1339,6 +1339,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			anchors = SelectionSquads.ground_anchors(anchors, blocks,
 					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p),
 					func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance, from))
+			# G2: a squad holding its spot stays exactly on it (dev read 4: a holder whose centre sat in a prop was snapped 19 m).
+			if not guard_laid.is_empty():
+				for i in mini(anchors.size(), (guard_laid["holding"] as Array).size()):
+					if bool((guard_laid["holding"] as Array)[i]):
+						anchors[i] = (guard_laid["places"] as Array)[i]
 			_trace_stage("ground_anchors", squads, anchors)
 		# Round 35 (D3, C35.4): with the deploy step on, an AUTO body's halts are packed now by their seats (hull clearance,
 		# his correction 1) on the approach; the ranks above stand when the pack does not apply or finds no fit.

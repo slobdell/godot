@@ -1827,7 +1827,7 @@ static func guard_failures(anchors: Array[Vector3], blocks: Array, click: Vector
 ## GUARD_SEAT_TAKEN_M of its centre) holds too, until the holds are stable. Returns {} when no front is found (today's lay).
 ## {"places": one per block in `blocks`' order, "reach": the farthest seat from the click, "held": squads holding, "seats": laid}.
 const GUARD_STEP_M := 4.0
-const GUARD_FRONT_BACK_M := 40.0
+const GUARD_FRONT_BACK_M := 60.0
 const GUARD_HOLD_BEHIND_M := 2.0
 ## A seat this close to a holding squad's centre is taken by it (a vee's half-width and a crew's room).
 const GUARD_SEAT_TAKEN_M := 26.0
@@ -1837,6 +1837,19 @@ const GUARD_RANK_SCAN_M := 60.0
 static var guard_last_step_m := 0.0
 
 
+## Whether a squad halting round `point` would hang over water: the point itself over water or a deck's mouth, within `radius`
+## of a deck, or any of eight samples on the ring at `radius` (the halt's reach: a coil's radius) over water. Pure.
+static func halt_wet(point: Vector3, radius: float, data: Dictionary = Arena.active) -> bool:
+	var flat := Vector3(point.x, 0.0, point.z)
+	if SlotGround.over_water(flat, data) or SlotGround.near_deck(flat, radius):
+		return true
+	for k in 8:
+		var a := TAU * k / 8.0
+		if SlotGround.over_water(flat + Vector3(cos(a), 0.0, sin(a)) * radius, data):
+			return true
+	return false
+
+
 static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_heading: Vector3, fit_at_click: int,
 		fix: Callable, width_at: Callable, data: Dictionary = Arena.active) -> Dictionary:
 	var n := blocks.size()
@@ -1844,25 +1857,33 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 	var heading := _heading(blocks, flat_click, facing, fallback_heading)
 	var came := _heading(blocks, flat_click, null, fallback_heading)  # the way the squads come, never his drawn facing
 	var across := Vector3(-heading.z, 0.0, heading.x)
-	# The front: his click, unless the ground refuses it as a place to stand at all (water, a deck's mouth, off the map).
-	var front := flat_click
-	var back := GUARD_STEP_M
-	while (SlotGround.over_water(front, data) or Orders.clamp_to_arena(front).distance_to(front) > 1.0) and back <= GUARD_FRONT_BACK_M + 0.001:
-		front = flat_click - came * back
-		back += GUARD_STEP_M
-	if SlotGround.over_water(front, data) or Orders.clamp_to_arena(front).distance_to(front) > 1.0:
-		guard_unlaid += 1
-		return {}
 	var slot_width := 0.0
 	var slot_depth := 0.0
 	var army_back := 0.0
 	var centers: Array[Vector3] = []
+	var widths: Array[float] = []
 	for block: Dictionary in blocks:
 		slot_width = maxf(slot_width, float(block["width"]))
 		slot_depth = maxf(slot_depth, float(block.get("depth", 0.0)))
+		widths.append(float(block["width"]))
 		var c := Vector3((block["center"] as Vector3).x, 0.0, (block["center"] as Vector3).z)
 		centers.append(c)
 		army_back = maxf(army_back, -(c - flat_click).dot(came))
+	# The front: his click, unless the ground refuses it as a place to stand (water, a deck's mouth, off the map) or the squad's
+	# halt would hang over water (`wet_or_deck` at the widest squad's width: its ring of samples at the half-width, the coil's
+	# radius): a click at a neck's mouth stands the front squad where its halt is dry (dev read 4: a coil at the east neck's
+	# mouth had two crews pulled 37 m over the drop and never settled); his Gorge click, 3 m from the pit's edge, stands as he
+	# put it (the neck below it is land).
+	var front := flat_click
+	var back := GUARD_STEP_M
+	var refused := func(p: Vector3) -> bool:
+		return Orders.clamp_to_arena(p).distance_to(p) > 1.0 or halt_wet(p, slot_width * 0.5, data)
+	while bool(refused.call(front)) and back <= GUARD_FRONT_BACK_M + 0.001:
+		front = flat_click - came * back
+		back += GUARD_STEP_M
+	if bool(refused.call(front)):
+		guard_unlaid += 1
+		return {}
 	var nest := nested_offsets(blocks)
 	var clearance := _nest_clearance(blocks)
 	var seats: Array[Vector3] = []
@@ -1947,15 +1968,21 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 	var holding: Array[bool] = []
 	holding.resize(n)
 	holding.fill(true)
+	var seat_of: Array[int] = []  # squad -> its seat's index, -1 = none
+	seat_of.resize(n)
+	seat_of.fill(-1)
+	# A seat sends a squad only forward: not farther from the click than it stands (COLUMN_AWAY_M), not behind its start (R45.6).
+	var keeps_forward := func(i: int, seat: Vector3) -> bool:
+		var behind_start := (centers[i] - flat_click).dot(came) - (seat - flat_click).dot(came)
+		return seat.distance_to(flat_click) <= centers[i].distance_to(flat_click) + COLUMN_AWAY_M and behind_start <= GUARD_HOLD_BEHIND_M
 	for k in seated.size():
 		var i := seated[k]
-		var seat := seats[given[k]]
-		var behind_start := (centers[i] - flat_click).dot(came) - (seat - flat_click).dot(came)
-		holding[i] = seat.distance_to(flat_click) > centers[i].distance_to(flat_click) + COLUMN_AWAY_M or behind_start > GUARD_HOLD_BEHIND_M
-		places[i] = seat
-	# A seat under a holding squad is taken (closer than the widest squad: their crews would mix): its squad holds too, until
-	# nothing changes.
-	var taken := maxf(GUARD_SEAT_TAKEN_M, slot_width)
+		if bool(keeps_forward.call(i, seats[given[k]])):
+			holding[i] = false
+			seat_of[i] = given[k]
+			places[i] = seats[given[k]]
+	# A seat under a holding squad's own footprint (within its half-width) is taken: its squad holds too; a seat a holder left
+	# goes to the next squad by distance that it sends forward; until nothing changes.
 	var changed := true
 	while changed:
 		changed = false
@@ -1963,10 +1990,30 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 			if holding[i]:
 				continue
 			for j in n:
-				if j != i and holding[j] and places[i].distance_to(centers[j]) < taken:
+				if j != i and holding[j] and places[i].distance_to(centers[j]) < widths[j] * 0.5 + GUARD_SEAT_TAKEN_M * 0.25:
 					holding[i] = true
+					seat_of[i] = -1
 					changed = true
 					break
+		for entry: Array in order:
+			var i := int(entry[1])
+			if not holding[i]:
+				continue
+			for si in seats.size():
+				if seat_of.has(si):
+					continue
+				var under := false
+				for j in n:
+					if j != i and holding[j] and seats[si].distance_to(centers[j]) < widths[j] * 0.5 + GUARD_SEAT_TAKEN_M * 0.25:
+						under = true
+						break
+				if under or not bool(keeps_forward.call(i, seats[si])):
+					continue
+				holding[i] = false
+				seat_of[i] = si
+				places[i] = seats[si]
+				changed = true
+				break
 	var held := 0
 	var reach := 0.0
 	for i in n:
