@@ -1174,21 +1174,29 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		# ground across the approach at his click holds (SelectionSquads.guard_fit; two at most), the rest in ranks behind.
 		# The clear-ground read (one gate_width scan) is kept for the column below, which reads the same point.
 		var guard_on := SelectionSquads.GROUP_GUARD and ground != null and squads.size() >= 2 and blocks.size() >= 2 and not queue_leg
+		# The fit is read only at a click the ground takes: off the navmesh (a click on a prop, the fixture's foundry centre) the
+		# scan's drives snap to the mesh and read 0 m one side and a detour the other; such a click lays as today (the guard
+		# still reads the places).
+		var guard_fit_on := guard_on and SlotGround.is_standable(ground, Vector3(click.x, 0.0, click.z))
 		var guard_cap := SelectionSquads.MAX_ABREAST
-		var guard_heading := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"], drawn)
+		var guard_heading := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"], drawn)  # the lay's
+		var guard_approach := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"])  # the way they come
 		var guard_widest := 0.0
 		var guard_sides: Array = []
 		for block: Dictionary in blocks:
 			guard_widest = maxf(guard_widest, float(block["width"]))
-		if guard_on:
+		if guard_fit_on:
 			var drive_f := SelectionSquads.drive_on(ground)
 			var crosses_f := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
 			var guard_across_f := Vector3(-guard_heading.z, 0.0, guard_heading.x)
 			guard_sides = RtsControls.gate_width(click, guard_across_f, drive_f, crosses_f, SelectionSquads.GROUP_SCAN_M)
 			# The fit reads the sides cut at the first point across a gap from his click (the scan threads a neck); the column
 			# below keeps the scan as it read it (G1 v9 unchanged).
-			guard_cap = SelectionSquads.guard_fit(guard_widest,
-					SelectionSquads.guard_trim_sides(click, guard_across_f, guard_sides, guard_heading, GATE_STEP_M))
+			var guard_cut := SelectionSquads.guard_trim_sides(click, guard_across_f, guard_sides, guard_approach, GATE_STEP_M)
+			guard_cap = SelectionSquads.guard_fit(guard_widest, guard_cut)
+			if ORDER_TRACE or order_trace_keep:
+				print("ORDER_TRACE fit at (%.1f, %.1f): clear [%.0f, %.0f] cut at a gap [%.0f, %.0f] widest %.1f -> %d abreast" % [click.x, click.z,
+						guard_sides[0], guard_sides[1], guard_cut[0], guard_cut[1], guard_widest, guard_cap])
 			if guard_cap < SelectionSquads.MAX_ABREAST and blocks.size() > guard_cap:
 				SelectionSquads.guard_fit_capped += 1
 		anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"], guard_cap, guard_on),
@@ -1348,7 +1356,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				reach = maxf(reach, Vector2(seat.x - click.x, seat.z - click.z).length())
 			SelectionSquads.guard_last_fit = guard_cap
 			SelectionSquads.guard_last_reach_m = reach
-			var failed := SelectionSquads.guard_failures(anchors, blocks, click, guard_heading, guard_cap, guard_widest, depth)
+			var failed := SelectionSquads.guard_failures(anchors, blocks, click, guard_heading, guard_cap, guard_widest, depth, guard_approach)
 			if not failed.is_empty():
 				var drive_v := SelectionSquads.drive_on(ground)
 				var crosses_v := SelectionSquads.crosses_on(ground)

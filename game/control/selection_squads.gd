@@ -1783,15 +1783,18 @@ static func beyond_neck(click: Vector3, at: Vector3, data: Dictionary = Arena.ac
 	return false
 
 
-## The places that fail the guard (indices into `anchors`), read against the body's frame: `heading` the lay's heading, `cap`
-## the abreast fit, `widest` the widest block, `depth` the body's last rank's distance behind the click (`rank_slots_for`).
-## `blocks[i]["center"]` is squad i's start. A place behind the click along the approach (on the way the squads came) is read
-## for its frontage and depth only: a neck or water BEHIND the click is the squads' own side. Pure in the arena's terrain.
+## The places that fail the guard (indices into `anchors`), read against the body's frame: `heading` the lay's heading (his
+## drawn facing when he drew one), `cap` the abreast fit, `widest` the widest block, `depth` the body's last rank's distance
+## behind the click (`rank_slots_for`); `approach` the way the squads come (the army's middle to the click, never the drawn
+## facing): "behind its own start" and "behind the click" are read along it. `blocks[i]["center"]` is squad i's start. A place
+## behind the click along the approach is read for its frontage and depth only: a neck or water BEHIND the click is the squads'
+## own side. Pure in the arena's terrain.
 static func guard_failures(anchors: Array[Vector3], blocks: Array, click: Vector3, heading: Vector3, cap: int, widest: float,
-		depth: float, data: Dictionary = Arena.active) -> Array[int]:
+		depth: float, approach: Vector3, data: Dictionary = Arena.active) -> Array[int]:
 	var flat_click := Vector3(click.x, 0.0, click.z)
 	var ahead := Vector3(heading.x, 0.0, heading.z).normalized()
 	var across := Vector3(-ahead.z, 0.0, ahead.x)
+	var came := Vector3(approach.x, 0.0, approach.z).normalized()
 	var frontage := (maxi(cap, 1) - 1) * (widest + GAP_M) * 0.5 + widest * 0.5 + GUARD_SLACK_M
 	var failed: Array[int] = []
 	for i in mini(anchors.size(), blocks.size()):
@@ -1799,9 +1802,9 @@ static func guard_failures(anchors: Array[Vector3], blocks: Array, click: Vector
 		var rel := at - flat_click
 		var along := rel.dot(ahead)
 		var centre := Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z)
-		var behind_start := (centre - flat_click).dot(ahead) - along
+		var behind_start := (centre - flat_click).dot(came) - rel.dot(came)
 		var off := absf(rel.dot(across)) > frontage or -along > depth + GUARD_SLACK_M or behind_start > GUARD_BEHIND_M \
-				or guard_across_gap(flat_click, at, ahead, data)
+				or guard_across_gap(flat_click, at, came, data)
 		if off:
 			failed.append(i)
 	return failed
@@ -1825,10 +1828,11 @@ static func guard_relay(blocks: Array, click: Vector3, facing: Variant, fallback
 		fix: Callable) -> Array[Vector3]:
 	var flat_click := Vector3(click.x, 0.0, click.z)
 	var heading := _heading(blocks, flat_click, facing, fallback_heading)
+	var came := _heading(blocks, flat_click, null, fallback_heading)  # the way the squads come, never his drawn facing
 	var front: Variant = fix.call(flat_click)
 	var back := GUARD_STEP_M
 	while front == null and back <= GUARD_FRONT_BACK_M + 0.001:
-		front = fix.call(flat_click - heading * back)
+		front = fix.call(flat_click - came * back)
 		back += GUARD_STEP_M
 	if front == null:
 		guard_unlaid += 1
@@ -1837,7 +1841,7 @@ static func guard_relay(blocks: Array, click: Vector3, facing: Variant, fallback
 	for seat: Vector3 in rank_slots_for(blocks, front as Vector3, facing, fallback_heading, cap, blocks.size() + GUARD_SPARE_SEATS):
 		if seats.size() >= blocks.size():
 			break
-		if guard_across_gap(flat_click, seat, heading):
+		if guard_across_gap(flat_click, seat, came):
 			continue
 		var fixed: Variant = fix.call(seat)
 		if fixed == null:
@@ -1854,7 +1858,7 @@ static func guard_relay(blocks: Array, click: Vector3, facing: Variant, fallback
 	var result: Array[Vector3] = []
 	for i in blocks.size():
 		var seat := seats[given[i]]
-		var behind := (centers[i] - flat_click).dot(heading) - (seat - flat_click).dot(heading)
+		var behind := (centers[i] - flat_click).dot(came) - (seat - flat_click).dot(came)
 		if seat.distance_to(flat_click) > centers[i].distance_to(flat_click) + COLUMN_AWAY_M or behind > GUARD_HOLD_BEHIND_M:
 			guard_held += 1
 			seat = centers[i]
