@@ -639,6 +639,26 @@ var _order_home: Variant = null
 ## of fighting round it as an idle unit (his Gorge scout's ENGAGE crept 6 m toward the enemy after his stop).
 var _his_order := false
 var _his_post := false
+## Round 45 (engage E6): a crew carrying his stop or hold (or his post after one) rolls no further than this from where it
+## came to rest to bring a hull-fixed gun round (OrderController._his_cap): the turn-in under his stop drove a scout 4 m.
+const TURN_IN_CAP_M := 2.5
+## ...and an away leg is cut above this speed (m/s) or once its braking distance at TURN_IN_BRAKE (m/s^2, measured: a
+## scout off the throttle lost 2.2 m/s in 0.1 s) would cross the cap.
+const TURN_IN_CAP_SPEED := 3.0
+const TURN_IN_BRAKE := 15.0
+
+
+## Round 45 (E6): the spot his stop / hold / post keeps this crew to, or null when it carries no such order of his.
+func his_anchor() -> Variant:
+	if not Drills.PLAYER_AUTHORITY or tank == null or tank.team != OrderFeed.player_team(game_match):
+		return null
+	if order.is_empty():
+		return _his_post_at if _his_post else null
+	if bool(order.get("player", false)) and (order["verb"] == "stop" or order["verb"] == "hold") and order.get("goal") is Vector3:
+		return order["goal"]
+	return null
+
+
 ## ...where it holds: where the crew stood when his order was done (a move completes inside its arrival radius, wider than
 ## HOLD's tolerance, so holding the CLICK drove it back and forth: his replay, 2761-2832).
 var _his_post_at := Vector3.ZERO
@@ -929,7 +949,10 @@ func _poll_order(think_tick: bool) -> bool:
 	# Round 45 (E2): a new order replaces his post; an order cleared before it was done leaves none.
 	_his_post = finished and _his_order and now.is_empty() and ["stop", "move", "attack_move"].has(String(order.get("verb", "")))
 	if _his_post:
-		_his_post_at = _flat(tank.global_position)
+		# A move of his holds where it finished; his stop keeps the spot it came to rest on (its goal, latched at rest): a
+		# post re-taken where the turn-in left it let the next face creep start another 2.5 m from there (E6's cap test).
+		var held: Variant = order.get("goal") if String(order.get("verb", "")) == "stop" and OrderController.TURN_IN_CAP else null
+		_his_post_at = held if held is Vector3 else _flat(tank.global_position)
 	_his_order = bool(now.get("player", false))
 	if now.is_empty() and not finished:
 		_order_home = _flat(tank.global_position)  # cleared before it was done: stay where it stopped
@@ -1065,6 +1088,11 @@ func _update_order_progress() -> void:
 				order["goal"] = _flat(here)
 				order["rested"] = tank.estimated_velocity.length() < STOPPED_SPEED
 		"stop":
+			# Round 45 (engage E6): his stop's anchor is where the crew comes to REST (TURN_IN_CAP_M reads it), as his hold's.
+			if bool(order.get("here", false)) and not bool(order.get("rested", false)) and Drills.PLAYER_AUTHORITY \
+					and tank.team == OrderFeed.player_team(game_match):
+				order["goal"] = _flat(here)
+				order["rested"] = tank.estimated_velocity.length() < STOPPED_SPEED
 			# Stopped, and stopped for a moment (a unit that had barely started moving would finish at once).
 			if tank.estimated_velocity.length() < STOPPED_SPEED and game_match.tick - int(order["issued_tick"]) >= STOP_SETTLE_TICKS:
 				_finish_order(here)
