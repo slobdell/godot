@@ -78,6 +78,16 @@ func _row(tank: Tank) -> Dictionary:
 			row["post"] = [snappedf((post as Vector3).x, 0.1), snappedf((post as Vector3).z, 0.1)]
 	var mover := Movement.state(tank)
 	row["phase"] = String(mover.get("phase", ""))
+	# Round 45 (E5): which way the hull points (deg, 0 = -Z, positive = left) and whether it is backing up, and the mover's
+	# last replan reason: a short move given while the crew drives the other way.
+	var fwd := -tank.global_basis.z
+	row["yaw"] = snappedf(rad_to_deg(atan2(-fwd.x, -fwd.z)), 1.0)
+	row["rev"] = tank.command.throttle < -0.05
+	row["thr"] = snappedf(tank.command.throttle, 0.01)
+	var mv := Movement.of(tank)
+	if mv != null:
+		row["behind"] = String(mv._behind_plan)
+		row["kturn_m"] = snappedf(mv._kturn_left_m, 0.1)
 	var goal: Variant = mover.get("goal")
 	if goal is Vector3:
 		row["m_goal"] = [snappedf((goal as Vector3).x, 0.1), snappedf((goal as Vector3).z, 0.1)]
