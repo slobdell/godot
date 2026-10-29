@@ -279,6 +279,12 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
     OFF this round; the orchestrator tells him in player terms.** Round 46: the k-turn guard counts the manoeuvre the rule exists to
     make (a filing-design point), and the rear crew's reaction to a rig backing toward it is the next thing to look at.
 
+  - **B2 COMPLETE (14:24 PDT): FAIL as filed on three lines** (the 11187 ceiling; Terminus k-turn +2.6 se; **D3 guard poses 4 of 24
+    worse**: 11155 wall ticks 14 -> 102, 11163 +0.3 s / +19 ticks, 11168 +3.5 s, 11171 +32 ticks). Everything else PASS: D1, D2's
+    deciding 11 / 11, the other workload lines, b1_judge, group G5-G7 identical, G1 corridor 180 / 180 byte-identical, engage's Gorge
+    line identical, fights G1-G4. **Evidence filed: `references/round45/manoeuvre/barsb2-builder0+builder2-0493977ed/README.md`.**
+    Backout stays OFF (R45.14); the 11187 fix (0a80c3685) stays on the branch as OFF code for round 46.
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
