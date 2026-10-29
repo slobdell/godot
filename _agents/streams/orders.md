@@ -297,6 +297,12 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   **By stage (native, builder2, native ON, 30 units / 6 squads, on top of N2):** the fit 9.5 ms, guard_lay 6.6, untangle 0.8,
   ground_cap 1.2, given 1.1 (~20.5 ms); main without G2 3.68 ms on builder0 (ratio 89.8 v 104, not judged: box busy). Native
   ports the dominant stages after the final freeze (R45.16).
+- **Next steps (round 46, not changed now):** (a) the fit's gate_width at his click costs 4.9 ms on builder2 (native): ~60 engine
+  A* path queries (GROUP_SCAN_M each side at 2 m steps), which C++ cannot speed up; fewer queries (a coarser step, a bisection
+  to the first blocked sample, or reusing the column's own scan: the memo already serves the column from the guard's read)
+  would change what the guard reads, so it is a design call with its own dev read; (b) a rank behind a one-abreast front reads a
+  60 m scan each (guard_lay 6.6 ms on the 6-squad click): the same question; (c) the wide-yard and stack-spacing feel questions
+  above once he has played G2.
 - **Known issues:** (1) the shared repository had a corrupt packed object (the blob of
   assets/audio/layered/crowd_murmur_1.wav in pack-315912d8a6…): `git worktree add` for the frozen tree failed on it (~18:50);
   repaired reversibly with a hand-written loose copy of the same SHA from this worktree's intact file; the orchestrator is
