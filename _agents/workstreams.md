@@ -81,6 +81,60 @@ builder that aren't ours. builder0 at prep: load 0.02, 77 %, 24 G free; builder2
 
 _(each stream files its bar here BEFORE any number on its block; the orchestrator records it.)_
 
+- **Bar G2 THE GROUP GUARD (orders; filed in streams/orders.md at stream/orders 5225a024b, recorded here by the orchestrator ~11:20 PDT BEFORE any number on 11201-11248; dev reads on 7001-7006 only).**
+
+**What he would see:** he selects two or more squads and clicks once. Every squad lands at his click or in a short stack behind
+it on HIS side of any drop, water or neck: nobody is sent across the gap toward the enemy, nobody is sent back behind where it
+stands, nobody is strung 58 m off to one side. Where the ground at his click holds two squads side by side they stand side by
+side; where it does not (a neck, a bank, a street) they stand in file along the way they came, nearest in front. On his Gorge
+click (the lab, builder0, this tree): the Hunters (his nearest squad, 49 m off) ON the click, the Spears 33 m behind them, the
+Wrenches 66 m behind, one file along his approach on the open strip between the drop and his base; today: Spears on the click,
+Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
+- **Arms:** base `base:--group-guard=off` (today's lay) v `g2:` (the tree's default: the guard ON). Everything else as main.
+- **Tree:** a frozen detached worktree at the commit named green here (`make remote T=check` on builder0, ALL JUDGED), or a docs-only
+  descendant.
+- **Part A, his geometry (DECIDING): `tests/control/orders_g2_bar.sh b2 g2: "11201 ... 11224" ...`** = `make orders-geometry` on
+  builder2 (native on): gorge / locks / crossing / terminus / yard_open x his / along / across x reach 20 / 80, plus fixed clicks
+  `locks:his:-62/50` (his round-43 target) and FIVE Gorge clicks: his own (`gorge:spawn:-43.2/53.2`, his rows at their spawn) and a
+  click either side of each neck with his row side by side (`gorge:across:-40/58`, `-40/30`, `40/58`, `40/30`: near = his side,
+  far = the valley through the neck). FRESH seeds 11201-11224, n 24 a cell. Judge `tests/control/orders_g2_judge.py`, over the
+  ARM's runs, base reported beside, per cell (a fixed click its own cell) and per run:
+  1. **D1 across_gap = 0 in every arm run** (the probe's per-squad flag as the guard reads it: a place on water / a pit / a deck's
+     mouth, a wet straight leg from the click, or through a neck and out the far side; a place behind the click along the approach
+     never counts): his Wrenches.
+  2. **D2 backward = 0 in every arm run** (a place > 10 m behind its own start along the approach).
+  3. **D3 every MOVED place within the fitted body's reach + 6 m of the click, every arm run** (reach = the farthest seat of the ranks
+     the guard lays for that run, `guard.reach_m`; a moved place = one > 2 m from its squad's start): his Hunters, 58 m off.
+  4. **D4 (R45.5) the fallback (`guard.unlaid`, too few seats: today's places stand) = 0 on every Gorge run**; reported per cell
+     everywhere (how often his old scatter can still happen with the guard ON).
+  5. **D5 held = 0 on every Gorge run** (a squad that keeps its spot did not land at his click); `held` reported per cell.
+  Reported: spread, across, fit per cell, relaid per cell.
+- **Guards (what it could break), filed now:** part A per cell: all-in median <= base x 1.2 + 3 s, never-in <= base, held median <=
+  base's unmoved + 1; friendly contacts pooled <= base x 1.1 + 5. **Part B, G1 v9's street lines:** `orders-probe` locks / crossing /
+  terminus / yard_open x 3 / 5 squads x click / route + his terminus click, seeds 11225-11236, n 12 a cell, `orders_judge.py g1v8`
+  unamended (places outside the corridor <= base + 2, sent away <= base + 2, re-dealt 0; yard_open REPORTED: the guard changes a
+  three-abreast body there on purpose). **Part C, fights:** `--probe-fight=on --probe-budget=3000`, terminus / locks, 5 squads,
+  click, seeds 11237-11248, n 12 a cell: his kills, his losses, the CPU's losses within base +/- 1.645 se. **C45.3:** a one-squad
+  order never enters this code (`squads.size() >= 2`): engage's authority probe and manoeuvre's one-squad arrival are unchanged by
+  construction (stated, not measured; the frozen tree carries whichever of their probes main holds at the freeze and they run in
+  its full check). **C45.5:** the CPU never lays a group click (its elements are ordered one by one): no CPU case. **Perf:**
+  no new scan on a group click (the guard's gate_width read is the one the column already made); `control-timing` on the
+  frozen tree's builder0 check REPORTED (the 30-unit click already reads over budget on main, R43.41: native's item).
+- **Known risks, said before the numbers:** (a) a 3+-squad click on open ground now stands 2 + 1 (or 2 + 2 + 1) instead of three
+  abreast: all-in may lengthen where the third squad drives to the rank behind (the guard above decides); (b) a click past a neck
+  (the far Gorge cells) stacks the ranks back THROUGH the neck, on the squads' own side: that is the column he asked for, but the
+  never-in guard may bite if a rear rank stands in the neck's lane; (c) the stay rule can hold a squad on a short click (reach 20)
+  when its seat is farther than its spot: D5 only decides it on Gorge; (d) a seat on a bending street is laid on the straight
+  approach, not the road (part B decides).
+- **Ships ON** the minute every line passes (`--group-guard=off` the escape); if a deciding line fails, what he would see with it
+  ON v OFF goes to the orchestrator in player terms the same hour (C45.2).
+- **Orchestrator's added line (R45.6, before any number):** **D6** on the Gorge `spawn` cell (his own click): no squad's place is
+  behind its own start along the approach by more than 2 m (D2's 10 m slack does not apply to his click): with his army ~59 m from
+  the click and coil ranks 33 m deep, the lab's rear rank (66 m behind the click) sits about at his start line, and a squad turning
+  round to drive back a few metres is what he reported ("sent BACK"). Such a squad holds where it stands instead (D5's held
+  counts it on Gorge only if it is NOT already within its rank's depth of its seat; the orders worker states the exact test in
+  its Status before the numbers).
+
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
   `--traffic-on=backout` v `base` (today), on a FROZEN tree named at the series' launch = stream/manoeuvre at the hash whose check is
