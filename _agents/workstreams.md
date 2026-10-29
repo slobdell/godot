@@ -304,6 +304,13 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   trim, standable, reached_from). Orders takes the two lines on its ship commit. The cost does not block G2 ON (a known cost in Status);
   native profiles G2's click by stage after the final freeze and ports what dominates (one guarded seam line per function in orders'
   file, output-identical first).
+- **R45.17 (~15:10) Bar S v4 FAILS as filed (the wedged guard on Locks); seat bound stays OFF.** Frozen 0493977ed, builder2 light,
+  72 paired cells 11401-11424, C++ drive: D1 seated within the bound by 15 s 219 -> 362 pooled (+1.99 a run, +8.6 se) PASS; D2
+  yield+blocked -2.3 s a run PASS; k-turn and yield per arena PASS; never-arrived pooled 243 -> 198 PASS (Locks alone +0.9 a run);
+  **wedged Locks +6.44 s a run (+4.4 se) FAIL** (crossing, terminus pass). Carried by the squad's LAST two crews (slot 5 +88.5 s, slot 4
+  +54.2 s summed over 24 seeds: the Resupply Tanker and Gun Truck, Battery_4/5) converging on a bound the first three already fill.
+  Round 46: S v5, the last-arriving crew's seat dealt outside the filled bound. In his terms: with it ON his first order seats far more
+  crews at his click within 15 s, but on Locks the squad's last two vehicles wedge into the first three for ~6 s.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
