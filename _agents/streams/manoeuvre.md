@@ -66,6 +66,28 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 builder0 3446/0; no baseline check re-run, per the contract). Orchestrator session: `godot-b8`. builder0 has NO godot-manoeuvre folder
 (a cold import on the first remote run: watched); builder2 (up at launch) has `godot-manoeuvre` + `-light` warm.**
 
+### WHERE IT STANDS (2026-10-29 ~13:00 PDT; updated as the bars land)
+
+- **Tip: stream/manoeuvre bdcfb6dcc** (code **dab58b334**; docs after). **Nothing ships ON yet**: backout stays `DEFAULT_OFF` until Bar B2
+  passes. **M1 + M2 done** (the corpus re-staged, two rule defects fixed, the look follows the squad's route, the stalled leg); **M3
+  done** (native's twin `pair/native-backout-b2v2` 04ce3abe9 EQUAL); **M4 Bar B2 FILED** (R45.4 / R45.8 amendments), frozen at
+  `wip/manoeuvre-b2-freeze` **0493977ed** (= stream ce52cba1c + the pair) in `../godot-manoeuvre-b2` and `../godot-manoeuvre-b2x`;
+  its full check runs on builder2 (`~/overnight-manoeuvre/r45/check_b2/check-0493977ed.log`; the first attempt died with builder2's
+  12:51 preemption, no number seen). **M5 Bar S v4 FILED** (the bound + seat-order, 11401-11448), **M6 Bar A6 v4 FILED** (holdway,
+  one-sided guard, 11449-11496): both ride B2's frozen tree, queued behind B2's series. Drivers: `~/overnight-manoeuvre/r45/bars_b2_a.sh`
+  (builder0 light legs, from b2x), `bars_b2_b.sh` (builder2 legs, from b2), `bars_b2_judge.sh`, `bars_s4.sh`, `bars_a6v4.sh`.
+- **Checks:** dab58b334's lab tests 3 / 0 (builder2 heavy folder, library present); 57e02fed5 quick-remote 37 / 1 (the 1 = the stage on
+  the folder's OLD library, fixed by dab58b334); 0af772a85 alone builder0 3445 / 1 (native's exec-field table wants the twin: by design,
+  the OFF code ships with the twin); 27f00d3f0 (the v1 freeze) builder2 3446 / 1 (native's v1 stage, superseded).
+- **What he would notice if B2 passes and backout ships ON:** a War Rig nose-on to a container backs out first and swings the way its
+  squad is going (his start: reversing at tick 4, past the box at tick 98 v 144 today); a rig whose back-up is pressed on a squadmate
+  gives up within a second instead of standing 4-5 s. **To playtest (after the merge):** `make skirmish` Locks seed 56416 as the
+  Gangs, click west from the start; the shots pair `make manoeuvre-start-shots SS_FLAGS=--traffic-on=backout` v none.
+- **Questions for the lead:** none blocking. **Requests to other streams:** native (done: the twin); orders / engage: none.
+- **Known issues / next:** S v4's wedged guard is the likely miss (+1.7 se on dev; the squad's LAST crew carries the press: the next
+  shape is that crew's seat); the one-crew swarm / coil slot ~5 m off his click (engage's relay, R45.2) is a stretch after M4; a
+  tick-1 look against a stale `_goal` is closed (brain-order-only final goal).
+
 ### Plan (smallest foundation first; the brief's order kept)
 
 1. **M1** pose 13: trace the look's gates on the dev pose (local GDScript drive, `NOSED_POSES=13 NOSED_TRACE=on`, new dev-only env
