@@ -106,8 +106,9 @@ func test_a_war_rig_nose_on_to_the_container_backs_out_first() -> void:
 ## BACKOUT_STALL_TICKS + a second of the parked rig's arrival (no 4 s stand).
 func test_a_departure_leg_pressed_on_a_hull_that_arrived_behind_it_ends_stalled() -> void:
 	Traffic.set_off("backout", false)
-	if OS.get_environment("NOSED_GDSCRIPT") == "on":
-		BrainSwitches.native_drive = false
+	# The GDScript rule is what this stage proves; the C++ drive's twin of it is native's own stage (tests/test_native_drive_backout_stall.gd,
+	# C45.4), so a tree whose library predates the twin still reads this test true for what it says.
+	BrainSwitches.native_drive = false
 	_lab = TacticsLab.create(self, 56416, "locks")
 	var rig: Tank = null
 	for unit_name: String in SQUAD:
