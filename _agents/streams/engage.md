@@ -77,6 +77,48 @@ _(worker keeps this current: report at the top, every number with commit, machin
 
 ### Report (2026-10-29, in progress)
 
+**BAR E1 VERDICT (2026-10-29 ~15:10 PDT): FAIL as filed (D1, D3, G3); D2 and every fight guard PASS.** Frozen tree **60262534f
+GREEN builder0** (`make check exited 0`, 28 targets ALL JUDGED, 3451 passed / 0 failed). Bar seeds 11301-11348, n = 48 per arm,
+builder0 light lane, native ON (decide native 45/45 ON-arm runs). 3 seeds lost the crew before his order in both arms (11307, 11314,
+11339): no row. Table: `~/overnight-engage/r45/bar/judge/table.txt` (the 48 bar logs only; the folder also held dev-seed logs).
+
+| Line | Filed | OFF | ON | Verdict |
+|---|---|---|---|---|
+| D1 hold / stop moved after rest | every run <= 3.0 m | max 42.6 m (9 runs > 2 m) | max 5.5 m (3 runs > 3 m) | **FAIL** |
+| D2 element rows sending his crew elsewhere | 0 | 798 | **0** | PASS |
+| D3 his move ends within the crew's arrival radius | every unblocked run | 3 outside | 1 outside | **FAIL** |
+| G1 deaths | ON <= OFF + max(1, 1.645 sqrt OFF) = 10.0 | 6 | 7 | PASS |
+| G1 enemy hp left (mean, se) | within 1.645 se | 184.3 (12.8) | 185.2 (12.1) | PASS |
+| G2 held crews in range: shots | ON >= OFF - 1.645 se | 28.1 (n 21) | 34.1 (n 18) | PASS |
+| G3 take-back within 1 s | 100 % | 38/40 | 35/38 | **FAIL** |
+| G4 a squad's hold sends crews at the enemy | 0 | 278 rows | 0 | PASS |
+| G5 native-on v --brains-off=native | EQUAL | - | 48/48 EQUAL | PASS |
+| G6 orders-probe main v pa_off; manoeuvre-behind on v off | identical | - | 48/48 rows identical; 3 hulls x 181 rows identical | PASS |
+| G7 make check | green | - | 60262534f green | PASS |
+
+The failing runs (ON v OFF): D1 11315 lone law_scout hold 3.1 v 6.3 m; 11330 lone scout stop 4.0 v 5.4; 11344 artillery in a squad,
+direct hold 5.5 v 5.5 (identical). D3 11337 lone IFV move 11.2 v 11.2 m from his click (identical: the drive). G3 11321 lone tank and
+11345 artillery in a squad: not taken back in BOTH arms; **11326 lone law_artillery hold then a squad move: taken OFF, not ON (the
+one run the rule makes worse).** Taken to the orchestrator the same hour (C45.2). **R45.19 (orchestrator): E1 FAILS as filed; E2 SHIPS ON at 60262534f** on
+G6 passing (it did) and 11326's cause written here.
+
+**11326's cause (traced, builder0, 60262534f + the take-back trace line, `--trace=on`):** the crew DID take his squad's new order on
+the first tick (order id 2 -> 3, `move`, source player: E2's squad-of-one path). The probe's take-back point (-119.6, 85.3) lies
+3.6 m OUTSIDE the drivable limit (116 m: the artillery stands 159 m from its target, near the edge, and the point is 30 m further
+back); `Orders` puts an off-arena point back on ground 29 m inland ((-94.5, 70.8)), so the probe's "goal within 20 m of the point"
+read it as not taken. OFF, the element's own inset landed within 20 m. Not a missed order, and not a case he can reach (his click is
+always on the map). 11321 and 11345 fail the same test in BOTH arms (likely the same artifact; not traced). The fix is the probe's
+(take-back = his new order reached the crew, by order id), after the merge, its own commit.
+**11330 (stop, 4.0 m):** the scout read v < 0.5 m/s for a moment while braking (the probe's "rest"), then moved ~4 m in the next
+second while the stop completed, under the stop's brake, no element row and no re-order. Not isolated further (time-box).
+
+**E4, his Gorge replay (builder0, 60262534f, native ON, 107 s; rule OFF to tick 2500 = his game, then ON):** every move of his
+reaches the scout as his order to his exact click and it holds there; his stop at 95.8 s brakes in ~5 m and holds; his hold at
+99.2 s holds (0.3 m in 3 s; the card reads "Orders: Holding", the log "hold position"); his last move lands within 1-2 m of his
+click; **the scout is alive at 108 s (killed at 105.3 s in his game).** Shots: `~/overnight-engage/r45/bar/shots/e4-t*.png` (LOOKED
+AT: e4-t3030 shows the Rat Rod holding on his side of the gap, gun on the enemy across it). The `base-t*.png` set is NOT usable: the
+camera did not follow the scout in that run (the frame barely moves from t3030 to t3075). Retaking the before set is the next item.
+
 **NOW (2026-10-29 ~12:30 PDT):** Bar E1 FROZEN at **f853d2a92** (= main 47a15f434+ merged, E2 code 03217e0e4 + the probe's standable
 click). Chain on builder0 (`~/overnight-engage/r45/bar/run.sh`): full check -> only if `make check exited 0`: Bar E1 on 11301-11348
 (both arms + the native-off arm), orders-probe main v pa_off (seed 11301), manoeuvre-behind both arms, his Gorge replay base v E4.

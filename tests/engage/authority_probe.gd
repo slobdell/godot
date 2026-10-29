@@ -225,6 +225,10 @@ func _run() -> void:
 			# which the element hands the crew as his) whose goal is his new point or the crew's slot round it.
 			var now := orders.current(ordered)
 			var goal: Variant = orders.goal_position(ordered)
+			if _flag("trace", "off") == "on" and tick % 5 == 0:
+				print("AUTHORITY_TAKEBACK t=%d back=(%.1f, %.1f) order=%s/%s id=%s (was %d) goal=%s limit=%.1f" % [game_match.tick,
+						back.x, back.z, now.get("verb", "-"), now.get("source", "-"), now.get("id", -1), last_id, goal,
+						Match.DRIVABLE_LIMIT])
 			if not now.is_empty() and int(now.get("id", -1)) != int(last_id) and goal is Vector3 \
 					and (goal as Vector3).distance_to(back) <= 20.0:
 				taken = true
