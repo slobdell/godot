@@ -31,6 +31,10 @@ only `godot` + `godot-native-score*` (77 %, 24 G free, load 0.02). Worktrees cre
 
 **RUNNING (2026-10-29 ~10:10 PDT): all four streams started (godot-orders-70, godot-engage-b0, godot-manoeuvre-68, godot-native-de); the orchestrator loop is godot-b8 in the main checkout.**
 
+**MAIN NOW (~11:05 PDT): 47a15f434** = + native N1 9b6ffb0a6 (the cold-import watchdog; builder0 GREEN 3446/0, 28 targets ALL
+JUDGED) and INHERITS its check. Bars recorded before numbers: B2, G2 (+ R45.6 D6), A6 v4. Rulings R45.1-R45.7. Native's N3 twin for B2
+(pair/native-backout-b2 b2b129f9f) and N2 (gate_width + untangle_whole C++, 69b95f56e) in proof.
+
 **Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*). Record G2 / E1 / B2 in *Bars (round 45)*
 the minute each is filed. Merge native's N1 watchdog alone on green. **C45.2:** G2 and E2 ship ON the minute their bars pass; if
 either fails, take it to him in player terms the same hour. Relay engage's E1 cause to orders (a squad of one) and manoeuvre (the
