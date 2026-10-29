@@ -316,6 +316,16 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   k-turn -5.5 s a run; never-arrived 13 -> 3; wedged -0.5 s a run (s4 +3.5); one cell (7009 Guns2) 14.6 -> 25.1. If the three-arena dev
   read shows no arena's wedged or never-arrived worse than base (7009 explained), Bar S v5 is filed on NEW fresh seeds 11651-11698 before
   any number, S v4's lines unchanged; G2's series has builder2 priority; C45.4 stated (twin if the C++ drive reads it); own freeze + check.
+- **R45.19 (~15:30) Bar E1 FAILS as filed; ships ON under C45.2 (the orchestrator's call, the lead away; told in player terms).**
+  Tree 60262534f GREEN builder0 (exited 0, 28 ALL JUDGED, 3451/0); 11301-11348, n 48 an arm, native ON (3 seeds lost the crew before his
+  order in both arms). PASS: **D2 element rows sending his crew elsewhere 798 -> 0** (his complaint); G1 deaths 7 v 6, enemy hp within
+  se; G2 held crews in range shoot 34.1 v 28.1; G4 squad hold sends nobody at the enemy 0 v 278; G5 native EQUAL 48/48; G7 green.
+  FAIL: D1 held max 5.5 m v 3.0 (OFF 42.6 m): 11315 3.1 m (OFF 6.3), 11330 4.0 m (OFF 5.4), 11344 5.5 m (OFF identical); D3 one move
+  11.2 m short (11337, OFF identical: the drive); G3 take-back 35/38 (OFF 38/40): 11321 / 11345 fail in BOTH arms, **11326 (a lone
+  artillery hold, then a squad move) taken OFF, not ON: the one run the rule makes worse.** Ruling: every failing run but 11326 is
+  the same as or better than OFF, and D2 (what he reported) passes outright, so E2 ships ON at 60262534f once G6 (orders-probe,
+  manoeuvre-behind identity) passes and 11326's cause is written; a fix for 11326 lands separately with its own test and the
+  authority probe byte-identical elsewhere. Lesson 339 applies.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
