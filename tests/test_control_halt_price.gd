@@ -10,6 +10,7 @@ const Fixture := preload("res://tests/support/control_fixture.gd")
 func teardown() -> void:
 	SelectionSquads.HALT_PRICE = true
 	SelectionSquads.halt_terrain = ""
+	SelectionSquads.GROUP_GUARD = not OS.get_cmdline_user_args().has("--group-guard=off")
 	super.teardown()
 
 
@@ -54,6 +55,7 @@ func _anchors(f: Fixture, squads: Array) -> Array[Vector3]:
 
 ## Three AUTO squads of five, one click: abreast, centre to centre one halt's width plus the gap, not a line's.
 func test_three_auto_squads_stand_a_halts_width_apart() -> void:
+	SelectionSquads.GROUP_GUARD = false  # G2 (round 45): three squads stand two and one under the guard; this prices a row of three
 	var f := Fixture.new(self)
 	await f.build_scale(15)
 	var squads := _three_in_the_open(f)

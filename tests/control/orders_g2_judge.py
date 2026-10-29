@@ -70,6 +70,7 @@ def part_a(out, base, new, lines):
             read["guard_reach_m"] = float(guard.get("reach_m", 0.0))
             read["unlaid"] = int(guard.get("unlaid", 0))
             read["relaid"] = int(guard.get("relaid", 0))
+            read["restored"] = int(guard.get("restored", 0))
             read["fit"] = int(guard.get("fit", 0))
             read["seed"] = g["seed"]
             reads[cell_of(g)][g["arm"]].append(read)
@@ -103,11 +104,11 @@ def part_a(out, base, new, lines):
         g_all = (not b_in) or geo.med(n_in) <= geo.med(b_in) * 1.2 + 3.0
         g_never = sum(1 for r in n if r["all_in_s"] < 0) <= sum(1 for r in b if r["all_in_s"] < 0)
         ok = ok and g_all and g_never and g_held
-        lines.append("  %s %-7s %-14s n %d/%d: across_gap %d (base %d)%s | backward %d (base %d)%s | farthest moved max %.0f v reach %.0f + %.0f%s | unlaid %d relaid %d%s | held med %.1f (base unmoved %.1f)%s%s | fit %s | spread med %.0f (base %.0f) across med %.0f (base %.0f) | all-in %s v %s%s never %d v %d%s" % (
+        lines.append("  %s %-7s %-14s n %d/%d: across_gap %d (base %d)%s | backward %d (base %d)%s | farthest moved max %.0f v reach %.0f + %.0f%s | unlaid %d laid %d restored %d%s | held med %.1f (base unmoved %.1f)%s%s | fit %s | spread med %.0f (base %.0f) across med %.0f (base %.0f) | all-in %s v %s%s never %d v %d%s" % (
             cell[0], cell[1], cell[2], len(b), len(n), sum(r["across_gap"] for r in n), sum(r["across_gap"] for r in b), "" if c1 else " D1-FAIL",
             sum(r["backward"] for r in n), sum(r["backward"] for r in b), "" if c2 else " D2-FAIL",
             max(r["farthest_moved_m"] for r in n), geo.med([r["guard_reach_m"] for r in n]), REACH_SLACK_M, "" if c3 else " D3-FAIL",
-            sum(r["unlaid"] for r in n), sum(r["relaid"] for r in n), "" if c4 else " D4-FAIL",
+            sum(r["unlaid"] for r in n), sum(r["relaid"] for r in n), sum(r["restored"] for r in n), "" if c4 else " D4-FAIL",
             held_n, held_b, "" if c5 else " D5-FAIL", ("" if c6 else " D6-FAIL") + (" | backward max %.1f m (base %.1f)" % (max(r["backward_m"] for r in n), max(r["backward_m"] for r in b)) if his else "") + ("" if g_held else " HELD-GUARD-FAIL"),
             sorted(set(r["fit"] for r in n)), geo.med([r["spread_m"] for r in n]), geo.med([r["spread_m"] for r in b]),
             geo.med([r["across_m"] for r in n]), geo.med([r["across_m"] for r in b]),

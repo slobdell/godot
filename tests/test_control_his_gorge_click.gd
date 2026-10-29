@@ -207,9 +207,9 @@ func test_guard_keeps_every_squad_on_his_side() -> void:
 	assert_true(farthest <= SelectionSquads.guard_last_reach_m + 6.0, "the farthest place is within the body's reach of his click (%.0f m v reach %.0f m)" % [
 			farthest, SelectionSquads.guard_last_reach_m])
 	# The body in his terms: Spears on the click, Hunters next behind, Wrenches last, one line along his approach.
-	# Fit first did it: the body was laid in file (capped under three abreast by the fit); every place passed the guard, no relay.
+	# Fit first did it: the body was laid in file (capped under three abreast by the fit), one body laid by the guard.
 	assert_eq(SelectionSquads.guard_fit_capped - capped_before, 1, "the lay was capped by the fit at his click")
-	assert_eq(SelectionSquads.guard_relaid - redealt_before, 0, "no place failed the guard once the body was fitted")
+	assert_eq(SelectionSquads.guard_relaid - redealt_before, 1, "the guard laid his body once")
 
 
 ## The guard's "through a neck" read, pure: his Wrenches' leg threads the west neck (x -48..-32 between two pits) and comes out
