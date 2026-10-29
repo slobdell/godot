@@ -108,8 +108,20 @@ _(worker keeps this current: report at the top, every number with commit, machin
   "across water / a pit / through a neck from the click, off the click line by more than the body's frontage, farther than its last
   rank, behind its own start" and, on any failure, re-lays the body on those seats. Built as G2 (O2 below).
 
-- **FREEZE CANDIDATE: a8adba232** (the frozen worktree `../godot-orders-g2`, detached there; its full check launched on builder2
-  from that folder, `~/orders-r45/freeze/`; `make quick-remote` on a8adba232, builder0: 336 passed / 0 failed, lint 99, smoke,
+- **FREEZE CANDIDATE: 7a0c62c3c** (dev read 4 on it running on builder2; quick-remote on builder0). Not merging main (the
+  orchestrator: main eec905e52 carries native's N2 twin, EQUAL on a8adba232 per R45.3; the bar freezes off this branch; at ship
+  the column_lay conflict resolves as pair/native-g2 cfa4a0eb2 and native re-proves on the final freeze). R45.13: D5 = reach +
+  one rank step + 6 m accepted; **the lines do not move again after the freeze**.
+- **Dev read 3 (builder2, 154815c86, 7001-7006, `~/orders-r45/dev3/`):** rows byte-identical to dev read 2's on every geometry cell
+  (the untangle fix changed nothing there); **D5b PASS** (his exact click, his three squads at their recorded starts: held 0,
+  Hunters on his click, every run); D1, D2, D4, D6, contacts PASS; D3 / D5 / never-in / the reach-80 held guard FAIL. Causes and
+  the fixes in 7a0c62c3c: the ground cap pulled HOLDING squads toward the click (locks / terminus his cells, 9-71 m; holders
+  exempt now); a rank-2 seat at Gorge's east neck mouth was dry at its centre but the wedge hung over the pits (gorge his-20
+  never-in 4/6: rear seats need a dry footprint of half the widest squad, a wet rank steps back 4 m at a time up to 40 m; the
+  front stays his click); the four-squad rows against Gorge's edge had no seat for the rear squads (a rank behind the front
+  centres in its clear width, half a slot off the line, on a 60 m scan).
+- **Earlier freeze candidate a8adba232** (the frozen worktree `../godot-orders-g2`, detached there; its full check launched on builder2
+  from that folder, `~/orders-r45/freeze/`, now a baseline only; `make quick-remote` on a8adba232, builder0: 336 passed / 0 failed, lint 99, smoke,
   `>> remote: make quick exited 0`). Dev read 3 (154815c86, the tree
   before the within-rank swap / rank-step / least-total deal) running on builder2; dev read 4 on a8adba232 follows it, then the
   series from the frozen tree. Native: the untangle twin re-proves on a8adba232 (the note below).
