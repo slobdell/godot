@@ -208,6 +208,17 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
 - **Ships ON** the minute every line passes (`--group-guard=off` the escape); if a deciding line fails, what he would see with it
   ON v OFF goes to the orchestrator in player terms the same hour (C45.2).
 
+- **O4 ACCEPTANCE READ, his Gorge replay (builder0, native ON, code 4f7525afa / tip 02f3b20d7; `make replay-match` 30 s, every
+  crew; `~/orders-r45/o4/`; the guard OFF arm replays his match exactly: DIVERGENCE 20/20 crews within 3 m for 30 s, PASS).** What
+  he would see, per squad (his click (-43.2, 53.2); "arrived" = the crews' `recording_arrivals` within the order's window; in his
+  match he stopped everyone at 10.2 s):
+  | squad (start) | guard OFF = his match | guard ON (this tree) |
+  |---|---|---|
+  | Hunters (-14.6, 92.6) | sent to (-76.0, 101.0): 58 m north-west of his click, behind his start line | ON his click: crews arrive 4-12 s |
+  | Spears (14.6, 92.6) | on his click (arrive 5-11 s) | 33 m behind the click on his approach (-16.2, 71.7): arrive 3-9 s |
+  | Wrenches (43.9, 93.6) | sent to (-10.4, 5.4): through the neck, across the drop, 65 m past his click toward the enemy (crews still 62-83 m short at his stop) | 66 m behind the click (10.8, 90.3), on his side, in file: arrive 5-11 s |
+  One body, one file along his approach, every place on his side of the drop; the farthest crew 66 m from his click (today: 58 m
+  north-west and 65 m across the drop). The lab (`test_control_his_gorge_click.gd`) holds the same places to the decimetre.
 - **Dev read 1 (builder2, 5225a024b, 7001-7006, base `--group-guard=off` v g2, `~/orders-r45/dev1/`, judge
   `orders_g2_judge.py`):** D1 PASS every cell (base 0 too: the probe's 4-squad army does not reproduce his 3-squad diagonal; the
   lab does); D6 PASS on his click (backward max 0.1 m v base -15.3); D2 FAIL (crossing along-20 4, locks along-20 3, terminus
