@@ -68,8 +68,8 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
 
 ### WHERE IT STANDS (2026-10-29 ~13:00 PDT; updated as the bars land)
 
-- **Tip: stream/manoeuvre bdcfb6dcc** (code **dab58b334**; docs after). **Nothing ships ON yet**: backout stays `DEFAULT_OFF` until Bar B2
-  passes. **M1 + M2 done** (the corpus re-staged, two rule defects fixed, the look follows the squad's route, the stalled leg); **M3
+- **Tip: stream/manoeuvre bdcfb6dcc** (code **dab58b334**; docs after). **Nothing ships ON yet**: backout stays `DEFAULT_OFF`; **Bar B2 FAILS AS FILED** (D1 PASS, D2's deciding line PASS 11 / 11,
+  its cost ceiling broken by ONE pose of 48: seed 11187 +6.3 s v the +3 s every-pose line); the orchestrator decides with him. **M1 + M2 done** (the corpus re-staged, two rule defects fixed, the look follows the squad's route, the stalled leg); **M3
   done** (native's twin `pair/native-backout-b2v2` 04ce3abe9 EQUAL); **M4 Bar B2 FILED** (R45.4 / R45.8 amendments), frozen at
   `wip/manoeuvre-b2-freeze` **0493977ed** (= stream ce52cba1c + the pair) in `../godot-manoeuvre-b2` and `../godot-manoeuvre-b2x`;
   its full check on builder2 is GREEN (3448 / 0, exited 0, 4 perf / load lines NOT JUDGED; the first attempt died with builder2's 12:51
@@ -238,6 +238,13 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   - Engage's line (his Gorge replay): the first run of both arms FAILED TO START (my driver's recording path `_agents/streams/
     references/...` does not exist; the file is `references/round44/playtest/...`): no rows, rerun queued verbatim with the path fixed
     (`bars_b2_gorge.sh`, after driver B's gorge legs; the bad-path logs kept as `gorge-*.badpath.log`).
+
+  - **D2 the corpus (builder0 light, `godot-manoeuvre-b2x-light`, 13:39; 96 rows, native_drive True): deciding PASS, cost ceiling FAIL
+    -> Bar B2 FAILS AS FILED.** Base-stuck poses 11 (floor 8): ON sooner in **11 / 11** (line 80 %), median **-3.03 s** (line -1 s); the
+    37 other poses: median -0.13 s (line +1) PASS, **worst +6.3 s (line +3.0) FAIL: seed 11187, pose 10 (crossing crawl +50, route +48,
+    nose 0.5 m), base clear t166 -> ON t355; both arms first reverse t28, crept 0.26 m; ON looks 2, k-turns 2, 0 stalls.** One pose of
+    48 breaks the every-pose line; no amendment (C45.1). The other legs run on for the record; the orchestrator decides with him
+    (lesson 339 / C45.2). The cause of 11187 is being traced (laptop, GDScript drive, the frozen worktree).
 
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
