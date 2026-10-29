@@ -180,6 +180,10 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   centre moves); B2's wedged and friendly-contact guards read that. Native re-twins on this hash (two exec fields now:
   `_backout_stall_ticks`, `_backout_stall_from`).
 
+- **Corpus + guard re-read on 57e02fed5 (builder2 light, GDScript drive, ~12:50):** identical rows to dev read 3 (base-stuck 3 / 3 sooner,
+  ceiling worst +1.5 s / median -0.07 s PASS, guard poses 6 / 6 ok, 0 stalls anywhere: the rule only acts where a leg is pressed).
+  B2's filing sentence on rule (3) amended to the net-progress wording (no number seen on 11149-11196).
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
