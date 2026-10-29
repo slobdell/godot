@@ -232,6 +232,13 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   Gorge replay, workload, group guards. Evidence `~/overnight-manoeuvre/r45/bars_b2/` (meta.txt has each leg's clock); judges by
   `bars_b2_judge.sh` once `A.done` and `B.done` exist.
 
+- **Bar B2, legs as they land (frozen 0493977ed; every number builder2 / builder0 as named; the C++ drive in both arms):**
+  - **D1 his start (builder2, 13:37): PASS.** Green_Guns_2 reversing t4 (line < 15), past the box's west end t97 (line < 110); base t44 /
+    t140 (does not do both). From the per-tick START_ROW rows of `b2_his_base.log` / `b2_his_bo.log` (600 rows each).
+  - Engage's line (his Gorge replay): the first run of both arms FAILED TO START (my driver's recording path `_agents/streams/
+    references/...` does not exist; the file is `references/round44/playtest/...`): no rows, rerun queued verbatim with the path fixed
+    (`bars_b2_gorge.sh`, after driver B's gorge legs; the bad-path logs kept as `gorge-*.badpath.log`).
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
