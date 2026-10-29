@@ -408,6 +408,14 @@ already read, or 7001-7012.
   subset) and the default orders probe base v backout 60/60 byte-identical on the C++ drive (builder2 light). Supersedes 39b063c7c.
   Its full check (builder2) is pending; manoeuvre merges it and freezes Bar B1 on that tree. Main ba5e9a49f = + manoeuvre 6b319c75f
   (all OFF; builder0 3446/0 ALL JUDGED; inherits).
+- **R44.25 (22:55) Bar B1 FAILS as filed; backout stays OFF.** Frozen 9111520bf (twin r3 in both arms), 11101-11148, every leg
+  complete (two builder2 legs on verbatim reruns after a cold-import hang and a Spot preemption, no rows seen from the dead runs;
+  machines per leg in meta.txt). D1 his start PASS (Guns_2 reverses t4 v t44, past the box t93 v t140). D2 corpus FAIL: 21
+  base-stuck poses (floor 8 met), ON sooner in 15 = 71 % v the 80 % line (median gain -1.73 s and the cost ceiling pass). Every
+  guard PASS (workload, seated, never-arrived, wedged, unneeded back-up, group identity 180/180, fights G1-G4). Losing poses: 13
+  (crossing, the look never fires: arms identical) and the crossing crawl poses 10 / 6 (back-up then a second k-turn, +1.7 to
+  +5.3 s). Round 45: fix both on dev poses, Bar B2 on 11149-11196. Evidence
+  `_agents/streams/references/round44/manoeuvre/barsb1-builder0+builder2-9111520bf/`. Nothing from manoeuvre ships ON this round.
 
 ## Round 43: four streams (prepared 2026-10-27 evening; CLOSED 2026-10-28; briefs in `streams/archive/round43/`)
 
