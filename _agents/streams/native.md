@@ -49,6 +49,35 @@ Nothing.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**FINAL REPORT (native, round 44, 2026-10-28 ~17:20 PDT).** Every backlog item done or handed over; nothing waits on the lead.
+- **N1 DONE, on main:** the one-screen `make playtest-report` (<= 40 lines printed, the full report to `build/playtest-report/
+  <recording>.txt` + `.html`) + `make skirmish` keeps SEED's digits = **fff546ef6**, builder0 `>> remote: make check exited 0`, 3420 / 0,
+  28 targets ALL JUDGED, perf-judge JUDGED PASS attempt 1 of 3 = main c3a6e6a38.
+- **N2 DONE, on main:** his round-43 matches replay exactly (army seed recovered from his roster: 891 / 542; his seed text and laptop
+  preset passed; `--click=TICK:X,Z`; C44.2 click rows merge at the click) = **7e9c199ae**, builder0 `exited 0`, 3425 / 0, 28 ALL
+  JUDGED, sim-baseline unmoved = main 7975d1455. His group click: R44.2 / R44.4 (the six trial clicks, the z = 117.24 edge).
+- **N3 twins (manoeuvre's; each proved on builder2, hashes sent to manoeuvre + orchestrator):**
+  - backout v1 `pair/native-backout` edbb120a5 (on e0a746667): superseded when 67998860d changed the rule.
+  - backout v2 + parkedpass `pair/native-m2m3-r2` 39b063c7c (on 6c45ef6f0): EQUAL, 232 / 0; merged into stream/manoeuvre; its
+    station-PID gate was the OLD rule (R44.8 addendum: the orders probe 37/60 on the C++ drive). parkedpass parked (S v3 failed).
+  - **backout r3 `pair/native-backout-r3` 30e37f336** (on manoeuvre df31afba8 = cf6eabc22 + c9ea1a6b4): station PID off
+    `_backout_leg` only, the long-hull pre-filter, traffic.gd's gate lifted. builder2: native-proof EQUAL with
+    `--traffic-on=backout,parkedpass` (4a04ea921011cd9a), **233 passed / 0 failed, `exited 0`**; laptop staged twin 1191 drives / 0
+    mismatches (C++ t4 / t93 = the GDScript stage's); parkedpass twin 420 / 0. Default orders probe (builder2 light, `exited 0`, locks / crossing / terminus x 5 squads x click x
+    7001-7004, base `--shape-latch=off` v bo `+ --traffic-on=backout`, C++ drive): **60/60 byte-identical**. **Full check of 30e37f336: builder2
+    `>> remote: make check exited 0`, 3446 / 0, 26 passed + 2 NOT JUDGED (perf on builder2).** Merged into stream/manoeuvre; B1 frozen at 9111520bf. Manoeuvre merges 30e37f336 WITH its traffic.gd line and freezes Bar B1 on that tree.
+  - Twin lessons: a GDScript look with side effects (a memo, a route read) is decided by the GDScript: the C++ pre-filters on the
+    side-effect-free terms only; a per-look scratch the GDScript writes (`_departure_hulls`, member or static) must be written by the
+    cheap path too (29 mismatches without it); mutants caught for both rules.
+- **N4:** `tools/judge/lines_r44.py` 8e3bff0a1, 24 lines (G1 v10c 10, S v3 10, A6 v3 4), quoted from R44.7 / R44.19 / R44.23 and
+  their judge files; judge tests 86/86 (laptop). B1 has no line until it reads. No round-44 pair's rows are on main as probe rows
+  (no table change). Quiet perf reads: main's checks carried perf-judge PASS each time; no separate quiet read was run (builder0 was
+  never quiet while the bars ran).
+- **Stretch:** the control-per-frame quiet read was done by orders (main 887059084: the watch item closed); `gate_width` in C++ is
+  round 45 (HANDOFF 6211aa124; orders' code this round).
+- **Questions for the lead:** none. **Known issues:** a replay of a recording made before A7 (his round-42) parts at 15 s on today's
+  main (`--engage-water=off` makes it exact): behaviour changed, expected. Builder folders `godot-native-backout*` on builder2 can go.
+
 **Plan (in order):** N1 the one-screen report -> N2 replay his group click -> N3 twins (manoeuvre's `--traffic-on=backout`,
 requested 2026-10-28 by the orchestrator; orders' if any) -> N4 lines_r44 + quiet perf reads -> stretch (gate_width in C++,
 control-per-frame quiet read).
@@ -92,5 +121,26 @@ behaviour change, expected). test_replay_setup 13/0 (laptop).
 layout). z = 117.24 recurs as a hard edge and his Wrenches landed at (-25.49, 117.24): the squad "sent back to the north edge" looks
 like a slot past the map clamped to the edge. Handed to orders via the orchestrator (the command + this).
 C44.2: rows sharing a `click` merge into one order AT the click (a one-squad row keeps its recorded point).
+
+**N1 MERGED:** fff546ef6 GREEN builder0 (`>> remote: make check exited 0`, 3420 passed / 0 failed, 28 targets ALL JUDGED, perf-judge
+JUDGED PASS attempt 1 of 3) = main c3a6e6a38. N2's check: main merged in (7e9c199ae), full check running on builder0.
+
+**N3 twins (manoeuvre's M2 backout + M3 parkedpass, C44.4).** First cut pair/native-backout edbb120a5 (off e0a746667: builder2
+native-proof EQUAL with --traffic-on=backout, 209/0) went STALE when manoeuvre's 67998860d rewrote the look (nose-on, 40 deg, the
+hull-stopped back-up): 100 mismatches on their merged tree. **Re-cut: pair/native-m2m3-r2 39b063c7c on manoeuvre 6c45ef6f0:**
+- backout: C++ backout_due pre-filters the side-effect-free terms and calls back Movement._backout_due (its look reads the route
+  and memo); the cheap look defers on the pre-departure terms and writes the static scratch `_departure_hulls = []` as every
+  GDScript look past 0.5 m does; `_backout_leg` bookkeeping; the station PID kept off a planned leg; kturngoal's end skipped while
+  `_backout_leg`. Members _backout_goal/_tick/_point/_from/_leg as LATE rows in exec_fields.h.
+- parkedpass: C++ ask(): under way natively, `_parked_for_pass` called back (read only), pass_lane natively, the refusal + offer.
+- traffic.gd: neither switch forces the GDScript drive / yield any more.
+- Laptop, 39b063c7c: test_native_drive_backout (his 08-15 start, every crew both ways every frame, 8 s) 1191 drives / 0 mismatches,
+  the C++ fight backs at t11 and clears the box at t102; test_native_drive_parkedpass (manoeuvre's yard_open stage, C++ yield) 420 /
+  0, 6 refusals, the rig never moves; + exec_state + manoeuvre's two tests 11/0. Mutants caught: no `_departure_hulls` reset 29
+  mismatches; no native refusal 1 mismatch (rig moves 9 m); first cut's no cheap-look deferral 6 mismatches.
+- builder2 proof (native-proof + test files, both switches ON): running, log `~/native-r44/m2m3-proof-39b063c7c.log`.
+
+**Stretch:** gate_width in C++: DEFERRED. It is orders' `game/control/rts_controls.gd`, which orders is rewriting this round (G1).
+Control-per-frame quiet re-read: waiting for a quiet builder0 (load 13 at 10:43).
 
 **Questions for the lead:** none. **Requests:** orchestrator: send SEED= without a trailing full stop (done by fff546ef6 anyway).
