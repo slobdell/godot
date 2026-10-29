@@ -207,6 +207,20 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
 - **Ships ON** the minute every line passes (`--group-guard=off` the escape); if a deciding line fails, what he would see with it
   ON v OFF goes to the orchestrator in player terms the same hour (C45.2).
 
+- **Dev read 1 (builder2, 5225a024b, 7001-7006, base `--group-guard=off` v g2, `~/orders-r45/dev1/`, judge
+  `orders_g2_judge.py`):** D1 PASS every cell (base 0 too: the probe's 4-squad army does not reproduce his 3-squad diagonal; the
+  lab does); D6 PASS on his click (backward max 0.1 m v base -15.3); D2 FAIL (crossing along-20 4, locks along-20 3, terminus
+  across-80 3), D3 FAIL (4 cells), **D4 FAIL: every Gorge click took the fallback** (4 squads in file at 50 m a rank = 150 m do not
+  fit behind a click 45-60 m ahead of the row: the capped ranks laid in the air were slid onto the map; the relay found too few
+  seats), D5 FAIL (gorge -40/58 and his click held 1), all-in FAIL on 9 cells, never-in FAIL on 5. Contacts 8429 -> 6176 PASS.
+  **Cause and the rebuild (this tree):** the body under the guard is now LAID ON THE GROUND (`guard_lay`), rank by rank from his
+  click: each rank as wide as the clear ground there (two at most; a rank behind reads its own 52 m scan), every seat dry / on
+  the map / standable within 12 m / reached from the click, ranks only while the ground holds them and never behind the whole
+  army; nearest in front; squads with no seat hold, as do those whose seat is farther than they stand (COLUMN_AWAY_M), behind
+  their start (R45.6) or under a holding squad. Lab (laptop NATIVE=off, 7 files 61/0): his Gorge click unchanged (Hunters on the
+  click, Spears 33 m, Wrenches 66 m behind); his tick-1512 Locks click: Hunters to the click, the other three HOLD (their seats
+  would be farther than they stand: his answer 3, a short click); tick 1808: two abreast at the click + two behind.
+  Dev read 2 on builder2 running on this tree.
 - **Known issues:** (1) the shared repository had a corrupt packed object (the blob of
   assets/audio/layered/crowd_murmur_1.wav in pack-315912d8a6…): `git worktree add` for the frozen tree failed on it (~18:50);
   repaired reversibly with a hand-written loose copy of the same SHA from this worktree's intact file; the orchestrator is
