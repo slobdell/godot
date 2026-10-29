@@ -80,6 +80,12 @@ func test_a_departure_leg_into_an_unseen_hull_stalls_the_same_on_the_cpp_drive()
 			_park_behind(rig)
 		await _lab.step()
 		stall_ticks_max = maxi(stall_ticks_max, rig_mover._backout_stall_ticks)
+		if frame < 90 and OS.get_environment("STALL_TRACE") != "":
+			var nose := Vector3(-rig.global_basis.z.x, 0.0, -rig.global_basis.z.z).normalized()
+			print("STALL_TRACE t%d leg %s gear %d left %.2f speed %.2f nose_v %.2f stall %d timeout %.2f gap %.2f parked_v %.2f looks %d" % [frame + 1,
+					str(rig_mover._backout_leg), rig_mover._kturn_gear, rig_mover._kturn_left_m, rig.speed(), rig.real_velocity.dot(nose),
+					rig_mover._backout_stall_ticks, rig_mover._kturn_timeout, rig.global_position.distance_to(_parked.global_position),
+					_parked.real_velocity.length(), int(Movement.route_arms().get("backout_looks", 0))])
 		var result := _compare_tick(movers, controllers, frame)
 		drives += int(result[0])
 		mismatches += int(result[1])
@@ -107,3 +113,7 @@ func _park_behind(rig: Tank) -> void:
 	var at := rig.global_position + back * gap
 	_parked.global_transform = Transform3D(rig.global_basis, Vector3(at.x, _parked.global_position.y, at.z))
 	_parked.velocity = Vector3.ZERO
+	# Fixed in place (its process off: it neither drives, yields nor is moved by its own body's physics step); still a Tank's
+	# CharacterBody3D in the space, so a hull, not a WallContact. A live parked rig was shoved and bounced (trace on efff89c7b).
+	_parked.disable_mode = CollisionObject3D.DISABLE_MODE_KEEP_ACTIVE  # (the default REMOVE takes it out of the space: drove through)
+	_parked.process_mode = Node.PROCESS_MODE_DISABLED
