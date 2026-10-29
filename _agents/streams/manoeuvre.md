@@ -93,9 +93,9 @@ Decisions so far: the CP44.0 lines (orders') are applied locally UNCOMMITTED for
   merge of 9b72f5339 is f56bb7c5f, one conflict in workstreams.md's B1 entry: the stream's R44.16 guard text kept, the orchestrator's
   "recorded" note appended). Tests of the stream's files (builder0 light, 8172913e1's code): 17 / 0 (`manoeuvre_backout` ON: reverse
   t4, past the box t93 v 144; `manoeuvre_parkedpass`; `native_exec_state`; `formation_group_scope`; `formation_seat_order`; the
-  corpus test skipped without NOSED_CORPUS). **Full check of the tip: a builder2 check of 74416a85d died at 18/27 (16 min in, no
-  failure; builder2 then unreachable = a Spot preemption, `~/overnight-manoeuvre/r44/check_tip/check.log`); the check of 6b319c75f
-  is running on builder0 (`~/overnight-manoeuvre/r44/check_tip0/check.log`); its verdict goes here.** Main 9b72f5339 is green on
+  corpus test skipped without NOSED_CORPUS). **This commit is green: 6b319c75f on builder0, `>> remote: make check exited 0`, 28 targets,
+  all passed, ALL JUDGED, 3446 passed / 0 failed (`~/overnight-manoeuvre/r44/check_tip0/check.log`; the commits after it are Status
+  only). A builder2 check of 74416a85d had died at 18/27 to a Spot preemption (`check_tip/check.log`).** Main 9b72f5339 is green on
   builder0 (the orchestrator: 28 targets ALL JUDGED, 3433 / 0); this stream's code differs from it only behind OFF switches.
 - **Shipped ON this round: nothing.** Every rule is OFF behind its switch: round 43's four (scoped to a squad's own order, M1),
   `--traffic-on=backout` (M2), `--traffic-on=parkedpass` (M3), `--seat-order=on` (S v4's half). Bar S v3 FAILED as filed on its new
