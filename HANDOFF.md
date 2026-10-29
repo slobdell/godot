@@ -41,8 +41,7 @@ fresh folder's library; replay-match fails on the wrong native path; builder2 pr
 rts_controls.gd column_lay: resolution = pair/native-g2 cfa4a0eb2 (EQUAL with G2, R45.3 re-proof).
 
 **MAIN NOW (~15:45 PDT): 8ef4f584d** = + engage 69bf864d2 (code = 60262534f, builder0 GREEN 3451/0 ALL JUDGED): **E2 ON — his
-order to a crew wins** (`--player-authority=off` the escape; R45.19: Bar E1 failed as filed on D1/D3/G3, shipped under C45.2). Main moved
-since engage's freeze (native N2), so a full builder0 check of 8ef4f584d is RUNNING (~/orch-r45/main-check-8ef4f584d.log). Verdicts:
+order to a crew wins** (`--player-authority=off` the escape; R45.19: Bar E1 failed as filed on D1/D3/G3, shipped under C45.2). **8ef4f584d GREEN builder0: 3453 passed / 0 failed, 28 targets ALL JUDGED, `>> remote: make check exited 0`** (~/orch-r45/main-check-8ef4f584d.log). Verdicts:
 B2 FAIL (R45.15), S v4 FAIL (R45.17), A6 v4 FAIL (R45.20), S v5 not filed: all OFF. G2 still in dev reads before its freeze.
 
 **control-timing on main eec905e52 (builder0, NOT JUDGED: quiet window refused, 2/2 samples busy):** 30-unit / 6-squad right click
