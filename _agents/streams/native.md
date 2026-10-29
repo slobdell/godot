@@ -57,9 +57,13 @@ Nothing.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-29 ~12:30 PDT, in progress).** N1 DONE and on main (47a15f434 = 9b6ffb0a6, GREEN builder0). N2 built and
-proven EQUAL on builder2 (69b95f56e); its full check is running on builder0, then control-timing quiet. N3 twin v2 for manoeuvre's
-B2 (pair/native-backout-b2v2 5ad8f5d39) proving on builder2. N4: B1's lines filed (1b7301e4a).
+**Report (2026-10-29 ~14:35 PDT).** **N1 DONE** (main 47a15f434 = 9b6ffb0a6). **N2 DONE** (main eec905e52 = dc182916f, GREEN
+builder0 3448/0 ALL JUDGED); its judged `control-timing` read on builder0 quiet is WAITING for the window (engage's check holds the
+last slot). **N3:** the B2 twin delivered (pair/native-backout-b2v2 04ce3abe9, EQUAL; merged into manoeuvre's freeze); B2b withdrawn
+(R45.14, backout OFF this round). **N4:** B1's lines (lines_r44), B2's lines (lines_r45); G2 / E1 / S v4 / A6 v4 land with their
+verdicts. **N5 DONE:** his Gorge match replays exactly to 107 s. **Stretch DONE:** the preemption re-queue. Also: engage's
+native-fresh hole fixed; R45.3's untangle re-proof on orders' G2 candidate EQUAL; R45.16 (port G2's own cost) granted after G2's
+final freeze.
 
 **Plan (order kept from the backlog; reasons):** N1 watchdog -> N2a gate_width C++ -> N2b untangle_whole C++ (GRANTED R45.3,
 because gate_width alone cannot reach the budget, below) -> N3 twins as manoeuvre/orders/engage ship -> N4 lines_r45 + judging ->
@@ -114,6 +118,31 @@ ONE call site the group click uses (rts_controls.gd column_lay's width_at, a one
 - **v2 pair/native-backout-b2v2 5ad8f5d39** (= 57e02fed5 + the twin, re-cut): `_backout_stall_from` (Vector3, INF) beside
   `_backout_stall_ticks`, window reopened on 1 m of progress (`BACKOUT_STALL_PROGRESS_M`), 30 ticks. Proving on builder2: the twins
   + manoeuvre's stage, then the default orders probe (5 squads, click, 7001-7004, base v bo).
+
+**N5 (his Gorge match to the end): DONE, nothing diverges.** `make replay-match RECORDING=references/round44/playtest/
+2026-10-29T09-35-51-gorge.jsonl REPLAY_SECONDS=107 CREWS=all`, builder2, 0e645dd5e, native ON: `DIVERGENCE crews=20 within=20
+bar=3.0m seconds=107 first_over=- verdict=PASS`; Green_Hunters_5 0.0 m every second to 105 s, dead at 106 (his 105.3 s). The
+native and GDScript replays (NATIVE=off, a fresh light folder) are **bit-identical**: 3042 crew-seconds of census, 489 / 489 rows
+after the header, and both equal his recording (census grain 0.1 m, 1 Hz). Evidence `references/round45/native/n5-replay107-*`.
+
+**Engage's report (a fresh folder ran GDScript in silence): FIXED, dc182916f.** `native-fresh` builds the library where none was
+ever built (NATIVE != off + a toolchain; never under `make -n`; native-off folders stay off); builder2 fresh light folder: "no
+library in this folder yet; building it" -> native ON, exited 0. `replay-match` exits 3 on REPLAY_NATIVE_MISMATCH unless NATIVE=off.
+
+**Stretch (Spot preemption re-queue): DONE, dc182916f.** `tools/remote.sh`: ssh / rsync 255 while gcloud says the VM is not
+RUNNING = preempted: start it, re-run verbatim ONCE, or (the builder's verdict line had arrived) copy build/ back only and exit with
+that verdict; one line says why. `tools/test_remote_requeue.sh` 9/0 (fake ssh / rsync / gcloud).
+
+**R45.3 re-proof on orders' G2 candidate (pair/native-g2 cfa4a0eb2 = a8adba232 + stream/native), builder2:** 68 / 0 tests;
+orders probe native on v off **192/192 guard ON, 192/192 `--group-guard=off`** (guard on v off differ 192/192: the guard ran).
+Orders' new `misplaced` is pure (captured arrays only), so asking it every (squad, anchor) before the search is equivalent.
+**G2's two gate_width reads through gate_width_edge_on** (c7444d484): EQUAL (768 rows = the unswapped tree's), ~1 ms (20.53 ->
+19.59 ms, builder2): sent to orders for its ship commit.
+
+**G2's cost on the 30-unit click (R45.16 prep; timers uncommitted; 30 units / 6 squads, mean of 10):** builder2 native ON 20.5 ms
+(reference 0.193 ms: builder2's e2 cores are SLOWER per core than the laptop's): setup + the fit read 9.5, guard_lay 6.6,
+untangle_whole 0.8 (native), ground_cap 1.2, given 1.1. Laptop native OFF 17.1 ms (reference ~0.115): fit 7.6, guard_lay 2.6,
+untangle 5.7. Next (after G2's final freeze): split the fit stage and guard_lay finer; port what dominates behind a switch.
 
 ### Requests to other streams
 - **orders:** rts_controls.gd: one line in `_order_squads`' column_lay call (`RtsControls.gate_width` -> `gate_width_edge_on`,
