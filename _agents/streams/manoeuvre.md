@@ -263,6 +263,13 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
     a look-only call that planned nothing waits KTURN_CHECK_TICKS (`_backout_skip_until`, a new exec field). 14 dev poses unchanged
     (3 / 3 sooner, ceiling worst +1.5 s, median 0.00), lab 3 / 0.
 
+  - **Who carries the Terminus k-turn excess (the workload's per-crew rows):** on 7 of 24 seeds (11149 / 11151 / 11157 / 11160 / 11163 /
+    11168 / 11171, one deploy shape) **Guns_5, the Resupply Tanker (6.6 m, never looks), 2.5 -> 10.3-11.8 s** (+8 s), the War Rigs
+    Guns_2 / Guns_3 +2 s each (their back-ups are k-turns), the Hunters -2 to -5 s; the other 17 seeds within +-1 s a run. Not the
+    11187 shape: the rear crew k-turns because the rigs ahead back out toward it. R45.12's removal read (Terminus dev 7001-7012, base v
+    frozen bo v bo+fallback, GDScript drive, builder2) decides whether B2b is filed at all (`~/overnight-manoeuvre/r45/terminus/`).
+  - **The fix committed: stream/manoeuvre 0a80c3685** (code dab58b334 + the fallback / cadence / skip; one new exec field).
+
 ### M5 (S v4): S v3's wedged guard traced by removal (builder2 heavy folder, 0af772a85, round-44 library, Locks 7001-7012, 12 paired runs an arm)
 
 - **Removal read 1** (`~/overnight-manoeuvre/r45/s4/removal1/`, `make manoeuvre-bar-s`, each round-43 rule ALONE v base `--shape-latch=off`):
