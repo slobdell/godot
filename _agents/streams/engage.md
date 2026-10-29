@@ -77,12 +77,33 @@ _(worker keeps this current: report at the top, every number with commit, machin
 
 ### Report (2026-10-29, in progress)
 
+**NOW (2026-10-29 ~12:30 PDT):** Bar E1 FROZEN at **f853d2a92** (= main 47a15f434+ merged, E2 code 03217e0e4 + the probe's standable
+click). Chain on builder0 (`~/overnight-engage/r45/bar/run.sh`): full check -> only if `make check exited 0`: Bar E1 on 11301-11348
+(both arms + the native-off arm), orders-probe main v pa_off (seed 11301), manoeuvre-behind both arms, his Gorge replay base v E4.
+Dev read on the frozen tree (dev seeds 7001-7012, n = 12/arm, builder0, native decide 12/12, NOT the bar): held max 8.3 -> 2.9 m,
+his-case pushed rows 221 -> 0, moves outside arrival 2 -> 0, a squad's hold sent at the enemy 149 -> 0, take-back 12/12 both,
+deaths 0 / 0; native-on v --brains-off=native EQUAL 12/12 (on the 03217e0e4 code, dev5).
+
+**E4 dev read (his Gorge replay, his match as played to tick 2500, rule ON from there; builder0, native ON, 03217e0e4 code):** every
+move of his reaches the scout as his order to his exact click and it holds there; his stop at 95.8 s: brakes from 14 m/s in ~5 m and
+holds (no loops); his hold at 99.2 s: 0.3 m in 3 s, no element rows; his last move lands within 1-2 m of his click; **the scout is
+alive at 108 s (dead at 105.3 s in his game).** Final read + shots on the frozen tree when the chain lands.
+
+**Stretch, read from E1/E4:** (1) the short moves that "never arrived" (83.7-91.8 s): on his replay as played, each went to the
+one-crew swarm / coil slot ~5 m off his click, and a 15 m/s scout reversing took 2-3 s to turn before the next click replaced the
+order; with E2 a squad of one's move goes to his exact click (the slot is gone for a lone crew) and lands (E4: 2632 within 2.7 m,
+2713 within 3 m, 3149 within 2.6 m). The reversal time is the drive (manoeuvre's), not authority. (2) the one-crew slot: measured
+~5 m off (2700, 2754); removed for a lone crew by (b), so no formation change is asked of manoeuvre.
+
 **Plan (order):** E1 cause by removal-trace (DONE) -> E2 rule behind `--player-authority` ON, tests first -> E3 Bar E1 filed before
 numbers -> E4 his replay read -> stretch (short moves, the one-crew slot).
 
 **E1 DONE: which layer moved the scout.** Workload: his Gorge replay, `make replay-match ... REPLAY_SECONDS=107 CREWS=all` =
 **faithful, builder0 8d59b2bdf, 20/20 crews within 3 m every second for all 107 s** (`DIVERGENCE ... verdict=PASS`; ignore its
-`REPLAY_NATIVE_MISMATCH replay=false` line, the 0.0 m table is his match). Probe: `make engage-authority-trace` (new,
+`REPLAY_NATIVE_MISMATCH replay=false` line, the 0.0 m table is his match). That run was the GDScript path (a fresh builder0
+folder had no native library). Native (builder2, dc182916f) confirmed it a true read: native v GDScript replays of THIS match are
+bit-identical (3042 crew-seconds, worst 0.0000 m), both equal to his census 3025/3025 s; not general (his round-43 Locks left
+native at tick ~300). Since native's N2, `native-fresh` builds the library in a new folder and replay-match fails on a mismatch. Probe: `make engage-authority-trace` (new,
 `tests/engage/authority_trace.gd`: per tick, the crew's K1 order + source, its element's task / drill / detached, the brain's option,
 the mover's goal). Rows from builder0 8d59b2bdf, n = 1 replay (deterministic):
 

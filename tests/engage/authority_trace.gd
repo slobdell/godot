@@ -14,6 +14,11 @@ extends "res://tests/replay_orders.gd"
 ##         --seconds=107 [--authority-from=2500 --authority-every=3] [any game switch]
 
 var _last := {}
+## `--shots=T1,T2,... --shot-out=DIR --shot-name=NAME` (needs a window): the RTS camera on the first traced crew, a PNG at
+## each tick, so his replay before / after is looked at with the same eyes (E4).
+var _shot_ticks := {}
+var _shots_read := false
+var _framed := false
 
 
 func _trace() -> void:
@@ -24,6 +29,7 @@ func _trace() -> void:
 	if on_at >= 0 and _match.tick >= on_at and not Drills.PLAYER_AUTHORITY:
 		Drills.PLAYER_AUTHORITY = true
 		print("AUTHORITY_SWITCH on at tick %d" % _match.tick)
+	_shoot()
 	var from := int(_flag("authority-from", "2500"))
 	var every := maxi(int(_flag("authority-every", "3")), 1)
 	if _match.tick < from:
@@ -76,3 +82,27 @@ func _row(tank: Tank) -> Dictionary:
 	if goal is Vector3:
 		row["m_goal"] = [snappedf((goal as Vector3).x, 0.1), snappedf((goal as Vector3).z, 0.1)]
 	return row
+
+
+func _shoot() -> void:
+	if not _shots_read:
+		_shots_read = true
+		for part in _flag("shots", "").split(",", false):
+			_shot_ticks[int(part)] = true
+	if _shot_ticks.is_empty():
+		return
+	var rig := current_scene.find_child("RtsCamera", true, false) as RtsCamera
+	var crew := _match.tanks.get_node_or_null(NodePath(_flag("authority-units", "Green_Hunters_5").split(",")[0])) as Tank
+	if rig != null and crew != null and crew.is_alive():
+		rig.focus_on(crew.global_position)
+		if not _framed:
+			rig.zoom = minf(rig.zoom, 0.35)
+			_framed = true
+	if not _shot_ticks.has(_match.tick):
+		return
+	_shot_ticks.erase(_match.tick)
+	var tick := _match.tick
+	await RenderingServer.frame_post_draw
+	var file := "%s/%s-t%d.png" % [_flag("shot-out", "build/engage/shots"), _flag("shot-name", "shot"), tick]
+	var err := root.get_viewport().get_texture().get_image().save_png(file)
+	print("SHOT_SAVED %d %s%s" % [tick, file, "" if err == OK else " FAILED " + error_string(err)])
