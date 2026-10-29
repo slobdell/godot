@@ -1,0 +1,20 @@
+PASS counter: columns_laid 12 (bodies kept 24)
+FAIL deciding: places outside the corridor (click cells) 9 -> 9 (<= 2.2)
+FAIL deciding: metres driven outside the corridor after being in it (click cells) 334 -> 337 (<= 167)
+PASS deciding: squads with crews re-dealt (arm, click cells) 0 (base 0)
+  reported: metres outside incl. the drive in (route_out_m) 2141 -> 2144
+  reported (round 39's read): places outside (click cells) 20 -> 20; route_left_m 805 -> 929
+    crossing 5 click base: outside new 9 / old 11, route_left new 334 / old 638
+    crossing 5 click v3: outside new 9 / old 11, route_left new 337 / old 760
+    locks 5 click base: outside new 0 / old 9, route_left new 0 / old 167
+    locks 5 click v3: outside new 0 / old 9, route_left new 0 / old 169
+    terminus 5 click base: outside new 0 / old 0, route_left new 0 / old 0
+    terminus 5 click v3: outside new 0 / old 0, route_left new 0 / old 0
+  reported: main v main, new v old read, cells where the read changed: crossing 5 click, locks 5 click
+PASS guard friend_contacts 1537 -> 1621 (<= 1695.7)
+  FAIL guard twitch       crossing 5 click: 5.8 v 14.7
+FAIL probe guards (3 cells)
+PASS guard places sent away from the click (> 10 m) 0 -> 0 (<= 2)
+  reported: parked_redeals, duck-excluded (a crew parked >= 2 s sent > 6 m off its seat, not an UnansweredFire duck) 112 -> 104
+  reported: parked duck moves (UnansweredFire, out to or back from its point; not re-deals) 0 -> 0
+VERDICT g1v8: FAIL

@@ -238,8 +238,10 @@ already read, or 7001-7012.
   ARM <= BASE + 2 se; D1-seated-by-15 s ARM >= BASE - 2 se; **the unneeded-back-up guards (`tests/manoeuvre/b1_judge.py`): among
   crews NOT nose-on (the START_RUN row's nose_room_m >= 4 m or hull_m < 10), per arena, reversing ticks in the first 15 s ARM <=
   BASE + 2 se and seated by 15 s ARM >= BASE - 2 se; the nose-on crews' own time to clear 8 m reported.** Group-order guards
-  (`q3_judge.py`, G5 / G6 / G7) and the G1 v9 corridor (ORDERS_PROBE_SQUAD rows base v bo **byte-identical**; `orders_judge.py
-  g1v8`'s lines each ARM <= BASE) on **11125-11136**; fights (`manoeuvre-wedge-trace` locks / terminus / sumps x **11137-11142**,
+  (`q3_judge.py`, G5 / G6 / G7) and the G1 v9 corridor (R44.16, which replaces R44.15: the default probe is CPU-free in effect, so
+  the ORDERS_PROBE_SQUAD rows base v bo must be **byte-identical, 60 / 60** (the dev proof at 8172913e1 on the GDScript drive: 60 / 60;
+  Bar S v3's 1 % was backout's station-PID gate reaching grouped crews' k-turns, fixed at cf6eabc22), AND `orders_judge.py g1v8`'s
+  lines each ARM <= BASE + 2 paired se with friend contacts <= the judge's line) on **11125-11136**; fights (`manoeuvre-wedge-trace` locks / terminus / sumps x **11137-11142**,
   G1-G4); perf: the frozen tree's check perf-judge PASS (the C++ drive carries the rule); no SCRIPT ERROR in any log.
   **Ships ON (`backout` out of DEFAULT_OFF, `--traffic-off=backout` the escape) only if D1, D2 and every guard pass; no re-file.**
   **Machine:** `~/overnight-manoeuvre/r44/bars_b1.sh` from the frozen worktree `../godot-manoeuvre-b1`: the corpus and the G1 probe +
@@ -249,6 +251,7 @@ already read, or 7001-7012.
   poses 6 (under the floor), sooner in 2 (-0.9, -3.9 s), three of the rest pinned by the staged squad; the alone poses gain 1.2 /
   1.3 / 2.1 s; his start past the box ~91 v 142 (bo11); Locks dev11 backout alone: D1 +1.0 se, yield+blocked -0.1 se, k-turn +1.6
   se, the two guards +1.0 se.
+
   _(Recorded on main by the orchestrator as filed at eafbd3a80 on stream/manoeuvre, 11:51 PDT.)_
 
 ## Rulings (round 44)

@@ -488,3 +488,28 @@ manoeuvre-bar-s: import ## manoeuvre Bar S (round 43): his first-order shape on 
 			--probe-arm=$$name $$flags > $(BS_DIR)/$$0-$$name-s$$1.log 2>&1 || true'
 	@grep -L '^START_RUN' $(BS_DIR)/*.log | sed 's/^/MISSING (no START_RUN line): /' || true
 	$(PYTHON) tests/manoeuvre/s_judge.py $(BS_DIR) --base=base --arm=both --cells || true
+
+# ---- round 44 (M2): his recorded start replayed IN A WINDOW and photographed (needs a display: make remote T=...) -----------------
+# tests/manoeuvre/start_shot.gd: the faithful replay's setup with the RTS camera following SS_FOLLOW; a PNG per tick of SS_TICKS.
+# SS_FLAGS = the arm, SS_NAME the file prefix -> build/manoeuvre/shots/<SS_NAME>-t<tick>.png (+ the run's log).
+SS_RECORDING ?= _agents/streams/references/round43/playtest/2026-10-28T08-15-42-locks.jsonl
+SS_TICKS ?= 30,60,90,120
+SS_FOLLOW ?= Green_Guns_2
+SS_FLAGS ?=
+SS_NAME ?= base
+SS_DIR ?= $(BUILD_DIR)/manoeuvre/shots
+.PHONY: manoeuvre-start-shots
+manoeuvre-start-shots: import ## manoeuvre M2: SS_RECORDING's start replayed in a window, the camera on SS_FOLLOW, a PNG at each tick of SS_TICKS (SS_FLAGS = the arm, SS_NAME) -> build/manoeuvre/shots/ (needs a display)
+	@mkdir -p $(SS_DIR)
+	@timeout 900 $(GODOT) --fixed-fps $(SIM_HZ) --resolution 1920x1080 --path . --script res://tests/manoeuvre/start_shot.gd -- \
+		--orders=$(CURDIR)/$(SS_RECORDING) --shots=$(SS_TICKS) --follow=$(SS_FOLLOW) --out=$(CURDIR)/$(SS_DIR) --name=$(SS_NAME) --mute \
+		$(SS_FLAGS) > $(SS_DIR)/$(SS_NAME).log 2>&1 || true
+	@grep -E '^SHOT_' $(SS_DIR)/$(SS_NAME).log | cut -c1-200
+
+# Round 44 (Bar B1): the staged nose-on corpus test runs only with NOSED_CORPUS=on (make test FILTER=nosed_corpus NOSED_CORPUS=on).
+NOSED_CORPUS ?=
+export NOSED_CORPUS
+NOSED_GDSCRIPT ?=
+export NOSED_GDSCRIPT
+NOSED_SEEDS ?=
+export NOSED_SEEDS

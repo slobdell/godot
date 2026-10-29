@@ -1149,7 +1149,7 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 			shape = String(_doctrine().select({"task": "move", "threat": String(situation["threat"]),
 					"terrain": String(situation["terrain"]), "composition": String(situation["composition"])})["formation"])
 		var half_depth := ElementPlan.transit_start_m(shape, situation.get("members", []),
-				_doctrine().spacing(String(situation["terrain"])))
+				_doctrine().spacing(String(situation["terrain"])), not ElementPlan.grouped(task))  # R43.34: a grouped squad as today
 		var start := minf(half_depth, maxf(ElementPlan.route_length(found) - ElementPlan.TRANSIT_HANDOFF_M, 0.0))
 		var first := ElementPlan.route_pose(found, start)
 		# Round 20 (M1): where each crew stands now, in the route's frame: its station starts there (ElementPlan.converge).
@@ -1159,7 +1159,8 @@ func _advance_transit(game_match: Match, situation: Dictionary) -> void:
 				"pace": 1.0, "anchor": first["point"], "heading": first["tangent"],
 				"velocity": Vector2.ZERO, "final_heading": final_heading, "arrived": false,
 				"starts": starts["starts"], "converge_m": starts["converge_m"],
-				"worlds": starts.get("worlds", {}),  # round 43 (R43.14): each crew's own point, for a station that starts ON it
+				# round 43 (R43.14): each crew's own point, for a station that starts ON it; R43.34: not a grouped squad's (today's rebuild)
+				"worlds": starts.get("worlds", {}) if not ElementPlan.grouped(task) else {},
 				# Round 25 (brains F2): the corridor along the route (where the shape must funnel) and the widest hull.
 				"profile": SlotGround.route_profile(ground, found) if ElementPlan.FUNNEL_ENABLED and ground != null else [],
 				"hull_w": TacticsFormation.hull_extent(situation.get("members", [])).x}

@@ -120,6 +120,15 @@ static func hull_floor(members: Array, rule := "") -> Vector2:
 # a caller may say `"seat_bound": false`, and a group bigger than a platoon (rows) is not a squad. `--seat-bound=on` /
 # env SEAT_BOUND=on: OFF until Bar S (round 43) reads it.
 static var SEAT_BOUND := OS.get_cmdline_user_args().has("--seat-bound=on") or OS.get_environment("SEAT_BOUND") == "on"
+## Round 44 (manoeuvre, Bar S v4's candidate, R44.7's converging press): SEATS DEALT IN LATERAL ORDER. Bar S v3's Locks cells: with
+## the bound the first squad's five crews in their two-row deploy block were dealt a 35 m shape by least total driving, and the
+## eastern crew took the westmost seat, crossing its squadmates on the way in (10901 v3: Battery_3 (-47, 94) -> (-74, 67) past
+## Battery_1 (-51, 92) -> (-64, 67); the deploy-row jam, wedged +9 s a run). With this on, a plain move's seating (a squad on its own
+## order, not a halt) adds SEAT_ORDER_PER_RANK x the doctrine spacing for every rank a crew's seat is out of the crews' own
+## left-to-right order across the heading (seat(): `opts["seat_order"]`), so a crew never takes a seat across a squadmate's path to
+## save a few metres. `--seat-order=on` / env SEAT_ORDER=on: OFF until Bar S v4 reads it.
+static var SEAT_ORDER := OS.get_cmdline_user_args().has("--seat-order=on") or OS.get_environment("SEAT_ORDER") == "on"
+const SEAT_ORDER_PER_RANK := 3.0  # strong: the order is the point, a few metres saved by crossing never buy it
 ## The bound in hull lengths of the longest hull, plus the hull floor along the heading (one more hull's room).
 const SEAT_BOUND_HULLS := 1.5
 ## ...and never under this (metres): the biggest doctrine spacing ("open" 18 m), so a squad of small hulls keeps its dispersion.
@@ -861,6 +870,22 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 	var world: Array[Vector3] = []
 	for j in offsets.size():
 		world.append(placed_at[j] if j < placed_at.size() and placed_at[j] is Vector3 else to_world(anchor, heading, offsets[j]))
+	# Round 44 (SEAT_ORDER): each crew's and each seat's rank across the heading (left to right), for the order term below.
+	var ordered := SEAT_ORDER and nearest and not halted and bool(opts.get("seat_order", false))
+	var member_rank: Array = []
+	var slot_rank: Array = []
+	if ordered:
+		var fwd := flat(heading)
+		var right := Vector3(-fwd.z, 0.0, fwd.x)
+		var laterals: Array = []
+		for member: Dictionary in members:
+			var at: Vector3 = member.get("position", anchor)
+			laterals.append(Vector3(at.x - anchor.x, 0.0, at.z - anchor.z).dot(right))
+		member_rank = _strict_rank(laterals)
+		var slot_laterals: Array = []
+		for j in offsets.size():
+			slot_laterals.append(Vector3(world[j].x - anchor.x, 0.0, world[j].z - anchor.z).dot(right))
+		slot_rank = _strict_rank(slot_laterals)
 	# Square cost matrix: members (padded with empty seats) by slots (padded with nowhere).
 	var cost: Array = []
 	for i in slot_count:
@@ -913,6 +938,8 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 			# Halted ("halted" with "exposure", the plain move's halt re-seat) the tiers are strict.
 			if policy != "travel":
 				value += tier_weight * float(member_tier[i]) * float(deepest - int(slot_tier[j]))
+			if ordered:
+				value += SEAT_ORDER_PER_RANK * maxf(spacing, 1.0) * float(absi(int(member_rank[i]) - int(slot_rank[j])))
 			if pin:
 				var is_leader := String(member.get("name", "")) == leader
 				if is_leader != (j == 0):
@@ -974,6 +1001,21 @@ static func _valid_seating(previous: Dictionary, members: Array, slot_count: int
 			return false
 		taken[index] = true
 	return true
+
+
+## Round 44 (SEAT_ORDER): each value's place in ascending order, 0 first, ties by index (no tiers: two crews a hand apart still have
+## an order, and the term is what keeps it).
+static func _strict_rank(values: Array) -> Array:
+	var order: Array = range(values.size())
+	order.sort_custom(func(a: int, b: int) -> bool:
+		if absf(float(values[a]) - float(values[b])) > 1e-9:
+			return float(values[a]) < float(values[b])
+		return a < b)
+	var ranks: Array = []
+	ranks.resize(values.size())
+	for k in order.size():
+		ranks[order[k]] = k
+	return ranks
 
 
 ## Dense tiers of `values`: equal (within TIER_TOLERANCE) values share a tier; tier 0 is the highest value when

@@ -222,7 +222,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdway", "holdroute", "kturngoal", "parkaside"]  # round 43: holdfar / holdway / holdroute (engage A6, until judged), kturngoal (manoeuvre S3) + parkaside (manoeuvre Bar S v2), all OFF after Bar S / S v2 (R43.42); round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane; round 39-40 givewaychain / chainrelease / chainside / reroute / rerouteany / follow (manoeuvre, until judged)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdway", "holdroute", "kturngoal", "parkaside", "backout", "parkedpass"]  # round 44: backout (manoeuvre M2) + parkedpass (M3), until Bar S v3; round 43: holdfar / holdway / holdroute (engage A6, until judged), kturngoal (manoeuvre S3) + parkaside (manoeuvre Bar S v2), all OFF after Bar S / S v2 (R43.42); round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane; round 39-40 givewaychain / chainrelease / chainside / reroute / rerouteany / follow (manoeuvre, until judged)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -286,13 +286,20 @@ static func _chain_native() -> void:
 	# pair/native-kturngoal: drive_native.cpp kturn_goal_moved_out, test_native_drive_kturn_goal), so ON keeps the C++ drive.
 	# Round 43 (Bar S v2, `parkaside`): the goal taken beside a parked friend is decided in _manoeuvre's first line; twinned
 	# (native N3, pair/native-parkaside: drive_native.cpp park_aside, test_native_drive_parkaside), so ON keeps the C++ drive.
-	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush"):
+	# Round 44 (M2, `backout`): the departure look (_backout_due, the cheap look's deferral, `_backout_leg`, the station gate) is
+	# twinned (native N3, pair/native-backout: drive_native.cpp backout_due / backout_look_due), so ON keeps the C++ drive.
+	# Round 44 (R44.16, cf6eabc22): backout's station-PID gate is now `_backout_leg` only; native's merged twin (m2m3-r2) still gates
+	# every planned leg while ON, which reached grouped crews' k-turns (the G1 probe: 37 of 60 rows moved on the C++ drive, 60/60
+	# identical for parkedpass). Until the twin matches cf6eabc22, ON runs the GDScript drive again.
+	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush") or not _off.has("backout"):
 		if _reroute_saved_native_drive == null:
 			_reroute_saved_native_drive = BrainSwitches.native_drive
 		BrainSwitches.native_drive = false
 	elif _reroute_saved_native_drive != null:
 		BrainSwitches.native_drive = bool(_reroute_saved_native_drive)
 		_reroute_saved_native_drive = null
+	# Round 44 (M3, `parkedpass`): the refusal with a lane in ask() is twinned (native N3, pair/native-m2m3: drive_native.cpp
+	# ask), so ON keeps the C++ yield.
 	if not _off.has("chainside") or not _off.has("holdlane") or not _off.has("chainarriving"):
 		if _chain_saved_native_yield == null:
 			_chain_saved_native_yield = BrainSwitches.native_yield

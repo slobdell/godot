@@ -246,6 +246,23 @@ func test_a_changed_only_push_writes_exactly_the_changed_fields() -> void:
 
 ## CP42.0: a late member is skipped while the script lacks it and checked like any other once declared. The declared case
 ## runs on a Movement subclass that adds the late members (or on Movement itself once its owner has landed them).
+## A late member's value of its type: 0 its declared default, 1 the value set before the pull, 2 the value pushed. Round 44: the
+## backout members (manoeuvre M2) are the first late Vector3, bool and Array ones.
+static func _late_value(type: int, which: int) -> Variant:
+	match type:
+		TYPE_STRING:
+			return ["", "q5-friend", "pushed"][which]
+		TYPE_BOOL:
+			return [false, true, false][which]
+		TYPE_FLOAT:
+			return [-1.0, 42.5, 7.5][which]
+		TYPE_VECTOR3:
+			return [Vector3.ZERO, Vector3(4, 2, 4.5), Vector3(7, -1, 0.25)][which]
+		TYPE_ARRAY:
+			return [[], ["q5-friend"], [7]][which]
+	return [-1, 4242, 7][which]
+
+
 func test_a_late_member_is_skipped_until_declared_then_mirrored() -> void:
 	if NativeExpect.absent(self):
 		return
@@ -263,23 +280,23 @@ func test_a_late_member_is_skipped_until_declared_then_mirrored() -> void:
 		native.exec_forget(plain)
 	var source := "extends Movement\n"
 	for row: Array in absent:
-		source += "var %s := %s\n" % [row[1], "\"\"" if int(row[2]) == TYPE_STRING else "-1"]
+		source += "var %s := %s\n" % [row[1], var_to_str(_late_value(int(row[2]), 0))]
 	var script := GDScript.new()
 	script.source_code = source
 	assert_eq(script.reload(), OK, "the declaring subclass compiles")
 	var mover: Movement = script.new()
 	for row: Array in late:
-		mover.set(row[1], "q5-friend" if int(row[2]) == TYPE_STRING else 4242)
+		mover.set(row[1], _late_value(int(row[2]), 1))
 	assert_eq(int(native.exec_pull(mover)), 0, "declared: the pull reads the late members with their types")
 	var row: Dictionary = native.exec_row(mover)
 	for field: Array in late:
 		assert_eq(row["m:" + String(field[1])], mover.get(field[1]), "declared: %s pulled" % field[1])
 	assert_eq(int(native.exec_push(mover, true)), mover_fields, "declared: a forced push writes every field")
 	for field: Array in late:
-		assert_true(native.exec_set(mover, "m:" + String(field[1]), "pushed" if int(field[2]) == TYPE_STRING else 7),
+		assert_true(native.exec_set(mover, "m:" + String(field[1]), _late_value(int(field[2]), 2)),
 				"set %s" % field[1])
 	assert_eq(int(native.exec_push(mover, false)), late.size(), "declared: a changed-only push writes the late members")
 	for field: Array in late:
-		assert_eq(mover.get(field[1]), "pushed" if int(field[2]) == TYPE_STRING else 7, "declared: %s pushed" % field[1])
+		assert_eq(mover.get(field[1]), _late_value(int(field[2]), 2), "declared: %s pushed" % field[1])
 	native.exec_forget(mover)
 	native.exec_clear()
