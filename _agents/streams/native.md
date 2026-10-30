@@ -59,6 +59,17 @@ _(worker keeps this current: report at the top, every number with commit, machin
 **Report (2026-10-30, start).** Started from main 7189e3ff3 (code = cb1014bed; the orchestrator's launch check runs it on builder3; no
 baseline check of mine).
 
+**L2 twin (engage, C46.4): EQUAL.** C++ on stream/native ee607ade6 (decide_native.cpp reads TankBrain.LANE_CLEAR live, as
+ENGAGE_WATER; absent on main = unchanged: test_native_decide 7536 / 0). pair/native-l2 165bea71f = engage 9446e1903 + it, engage's
+GDScript-routing guard removed + test_native_decide's lane mutations: 7536 decisions / 0 mismatches, 78 lane-only CLEAR_LANE (laptop;
+a broken attack edge reads 29 mismatches); builder3 light engage's set + the twin 78 / 0; his Gorge 426/426 and Terminus 2071/2071
+replay rows byte-identical engage v pair (`references/round46/native/l2-twin-proof-builder3-165bea71f/`). Engage merges the pair onto
+894f561dd and freezes; native re-proves on the frozen hash.
+
+**R46.6 the sel row: GREEN 1843eb6df builder3** (3472 / 0, 28 targets ALL JUDGED, `exited 0`): his Gorge 490/490 and Terminus
+2141/2141 replay rows byte-identical with v without it (`references/round46/native/sel-row-proof-builder3-274177400/`); format sent
+to camera. **a734c2296 GREEN builder3** (3470 / 0, ALL JUDGED): merged alone as main 200b7b920.
+
 **Today's big click (the orchestrator's ask): main 7189e3ff3 (code cb1014bed), builder3 quiet (load 1.9), `make native-fresh
 control-timing`, test_control_scale 30 units / 6 squads, mean of 10: order 2.03 ms, ratio 56.3 v budget 104; click-to-order 2.13
 ms, 59.3; per-frame 0.62 ms, 17.7 v 26. 5/0 + 8/0.** (builder3 is not the box the budget was set on: builder0's round-45 read was

@@ -44,7 +44,7 @@ struct DN {
 			PROFILES{ "PROFILES" }, SCOUT_FIGHT_BACK{ "SCOUT_FIGHT_BACK" }, SCOUT_FIGHT_HIT_TICKS{ "SCOUT_FIGHT_HIT_TICKS" },
 			SCOUT_FIGHT_REACH_S{ "SCOUT_FIGHT_REACH_S" }, SCOUT_FIGHT_SPOT{ "SCOUT_FIGHT_SPOT" }, since_hit{ "since_hit" }, velocity{ "velocity" },
 			effective_range{ "effective_range" }, role{ "role" }, good_vs{ "good_vs" }, armor{ "armor" }, penetration{ "penetration" },
-			burst_count{ "burst_count" };
+			burst_count{ "burst_count" }, lane_target{ "lane_target" }, lane_step{ "lane_step" };
 	String RETREAT{ "RETREAT" }, RESUPPLY{ "RESUPPLY" }, TAKE_COVER{ "TAKE_COVER" }, RECHARGE{ "RECHARGE" }, ENGAGE{ "ENGAGE" },
 			COVER_FIRE{ "COVER_FIRE" }, FLANK{ "FLANK" }, SUPPRESS{ "SUPPRESS" }, ORBIT{ "ORBIT" }, CLEAR_LANE{ "CLEAR_LANE" },
 			BOMBARD{ "BOMBARD" }, SHADOW{ "SHADOW" }, SPOT{ "SPOT" }, INVESTIGATE{ "INVESTIGATE" }, REGROUP{ "REGROUP" },
@@ -234,11 +234,27 @@ bool rounds_barely_mark(const DecideConsts &c, const DN &k, const Dictionary &pr
 	return thickness > 0.0 && penetration_multiplier((double)weapon[k.penetration], thickness) <= c.SUPPRESS_PENETRATION;
 }
 
+// Round 46 (engage L2): TankBrain.LANE_CLEAR, read live each call (tests and `--lane-clear=off` set it); a tree without L2
+// has no such member: Nil, off, and this file decides exactly as before.
+bool lane_clear(const DecideConsts &c) {
+	static const StringName LANE_CLEAR("LANE_CLEAR");
+	return c.brain_script != nullptr && (bool)c.brain_script->get(LANE_CLEAR);
+}
+
 // TankBrain._obey
 Array obey(const DecideConsts &c, const DN &k, const Array &candidates, const Dictionary &o, const Dictionary &s, bool critical,
 		bool out_of_ammo) {
 	const String verb = o[k.verb];
-	const Array allowed = c.ORDER_OPTIONS.get(verb, Array());
+	Array allowed = c.ORDER_OPTIONS.get(verb, Array());
+	// Round 46 (engage L2, R46.7): his post after a move may take a lane step (`lane_step`); his explicit hold or stop never does.
+	// ...and CLEAR_LANE keeps its edge over the committed fight AFTER the order's base is added (flat arm: the commit bonus).
+	const bool lane = lane_clear(c);
+	if (lane && (bool)o.get(k.lane_step, false)) {
+		allowed = allowed.duplicate();
+		allowed.push_back(k.CLEAR_LANE);
+	}
+	const double lane_edge = lane ? (double)((Dictionary)s.get(k.features, Dictionary())).get(k.commit_bonus, c.COMMIT_BONUS) * c.CLEAR_LANE_EDGE
+			: 1.0;
 	const String target = o.get(k.target, String());
 	const Array contacts = s[k.contacts];
 	bool target_fresh = false;
@@ -296,12 +312,15 @@ Array obey(const DecideConsts &c, const DN &k, const Array &candidates, const Di
 			continue;
 		}
 		if (verb == k.hold) {
-			cand[k.score] = 1.0;
+			cand[k.score] = lane && option == k.CLEAR_LANE ? lane_edge : 1.0;
 		} else if (verb == k.attack) {
 			if (cand[k.target] != Variant(target)) {
 				continue;
 			}
 			cand[k.score] = 1.0 + (double)cand[k.score];
+			if (lane && option == k.CLEAR_LANE) {
+				cand[k.score] = (double)cand[k.score] * lane_edge;
+			}
 		} else if (verb == k.attack_move) {
 			if (option == k.RETREAT) {
 				if (!critical) {
@@ -312,6 +331,9 @@ Array obey(const DecideConsts &c, const DN &k, const Array &candidates, const Di
 				continue;
 			} else if (in_reach.has(cand[k.target])) {
 				cand[k.score] = c.ATTACK_MOVE_FIGHT + (double)cand[k.score];
+				if (lane && option == k.CLEAR_LANE) {
+					cand[k.score] = (double)cand[k.score] * lane_edge;
+				}
 			}
 		} else if (verb == k.idle) {
 			if ((option == k.SPOT && !anything_visible) || (option == k.RESUPPLY && !out_of_ammo)) {
@@ -746,7 +768,23 @@ Dictionary TankNative::decide(const Dictionary &s, const Dictionary &current) co
 		candidates.push_back(candidate(k.ORBIT, pair.name, pair.score));
 	}
 	// CLEAR_LANE (the flat arm: SwitchingCost.cost_arm() is off in this path)
-	if ((bool)features.get(k.hold_for_friends, true) && (int64_t)me.get(k.lane_blocked_ticks, 0) >= c.LANE_BLOCKED_TICKS &&
+	// Round 46 (engage L2, C46.4): under TankBrain.LANE_CLEAR (read live, as ENGAGE_WATER; absent: off) a crew with no fight of
+	// its own (holding his post) serves the target its gun is held on, `self.lane_target`.
+	if (lane_clear(c)) {
+		String lane_target = current.get(k.target, k.empty);
+		if (lane_target == k.empty) {
+			lane_target = me.get(k.lane_target, k.empty);
+		}
+		if ((bool)features.get(k.hold_for_friends, true) && (int64_t)me.get(k.lane_blocked_ticks, 0) >= c.LANE_BLOCKED_TICKS &&
+				lane_target != k.empty) {
+			const double served = (double)features.get(k.commit_bonus, c.COMMIT_BONUS);
+			for (const ScorePair &pair : engages) {
+				if (pair.name == Variant(lane_target)) {
+					candidates.push_back(candidate(k.CLEAR_LANE, pair.name, MAX(pair.score * fight_scale, 0.3) * served * c.CLEAR_LANE_EDGE));
+				}
+			}
+		}
+	} else if ((bool)features.get(k.hold_for_friends, true) && (int64_t)me.get(k.lane_blocked_ticks, 0) >= c.LANE_BLOCKED_TICKS &&
 			current_target != Variant(k.empty)) {
 		const double served = (double)features.get(k.commit_bonus, c.COMMIT_BONUS);
 		for (const ScorePair &pair : engages) {
