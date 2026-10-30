@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-30 morning — **ROUND 46 RUNNING (box below): five streams, ALL Opus (Fable quota low, his call at launch); all five sessions started.** Main code = 96f199c45 GREEN builder3 (3470/0); later commits docs + `tools/judge/lines_r45.py` + two .uid. **Default build box: builder3.** Main is unpushed (he pushes)._
+_Last updated: 2026-10-30 morning — **ROUND 46 RUNNING (box below): five streams, ALL Opus (Fable quota low, his call at launch); all five sessions started.** Main code = cb1014bed GREEN builder3 (launch check, 3470/0 ALL JUDGED); later commits docs + `tools/judge/lines_r45.py` + two .uid. **Default build box: builder3.** Main is unpushed (he pushes)._
 
 ## ▶ ROUND 46 AS PREPARED (2026-10-30 morning) — read this first
 
@@ -23,7 +23,7 @@ Split, ownership, contracts C46.1-C46.8, rulings R46.1-R46.4 and the seed regist
 
 **Not this round:** balance. Kickoff: the same one line for every stream, `_agents/orchestration.md` *The kickoff prompt*. All five are
 FRESH sessions. **Launch check:** `make remote T=check` on builder3 of cb1014bed's code (log `~/orch-r46/launch-check-cb1014bed.log`);
-see the line below for its verdict. Laptop disk 83 % at prep (20 G free): five worktrees ~6 G.
+**GREEN: `>> remote: make check exited 0`, 3470 passed / 0 failed, 28 targets ALL JUDGED, 676 s, sim-baseline unmoved (builder3, cb1014bed's code = 96f199c45 + lines_r45).** Laptop disk 83 % at prep (20 G free): five worktrees ~6 G.
 
 **Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*), `df -h ~` every tick (lesson 341). Relay
 engage's L1 cause to manoeuvre if it asks for an idle blocker to step aside (manoeuvre's item 6); relay orders' V1 seam to native (N1).
