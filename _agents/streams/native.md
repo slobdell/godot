@@ -55,3 +55,20 @@ Nothing.
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Report (2026-10-30, start).** Started from main 7189e3ff3 (code = cb1014bed; the orchestrator's launch check runs it on builder3; no
+baseline check of mine).
+
+**Plan (order kept; reasons):**
+1. **N1a the seam with orders, agreed through the orchestrator BEFORE code** (sent 2026-10-30). Fact: "the fit's ~60 path queries"
+   are `gate_width_edge`'s per-step `Pathing.find_path`, already C++ since round 45 (NativeGateWidth); the cost is the engine's A*
+   (~80 us a query, builder2), so a C++ port alone saves ~nothing. G2's `guard_failures` / `guard_across_gap` make no path query (pure
+   terrain: over_water, leg_wet, beyond_neck). Proposed: (A) orders' `SelectionSquads.veto_failures(anchors, blocks, click, approach,
+   ground, data) -> Array[int]`, twinned as one native call; any ground-path test goes through one `route_length(ground, from, to)`
+   helper served from gate_width_native's proven pathing + path_length. (B) the speed-up that changes no output: a per-click memo of
+   `find_path(click, p)` shared by every gate_width_edge scan and the veto in one click.
+2. **N2 twins as bars are filed** (V1 first: it outranks N1's speed, the orchestrator 2026-10-30).
+3. N1b the memo + `control-timing`; N3 camera's ray batch if asked; N4 lines_r46; N5 builders; stretch: Terminus sim profile.
+
+**Questions for the lead:** none.
+**Requests to other streams:** orders, the V1 seam above (through the orchestrator).
