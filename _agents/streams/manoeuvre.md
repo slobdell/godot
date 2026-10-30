@@ -64,3 +64,23 @@ Nothing at launch. A bar that fails twice on the same fix: write in player terms
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Session start 2026-10-30 (Opus, `godot-manoeuvre`). Starting commit 7189e3ff3 (code 96f199c45 GREEN builder3 3470/0, the launch
+check; not re-run).** Persistent evidence in `~/overnight-manoeuvre/r46/` on the laptop (never in a worktree's `build/`).
+
+**Plan (in order):** M1 S v6 dev read -> M2 Bar S v6 (file before numbers) -> M3 holdway A6 v5 -> M4 backout pose 10 + Terminus
+k-turn by removal -> M5 shortfwd. Item 6 (engage's relay) jumps the queue if it arrives.
+
+### M1 S v6 (in progress)
+
+- **Cause found (laptop, crossing 11751 S v5 arm, a temporary seat() trace, 6-12 s):** S v5's order term ranked the seats by their
+  STATIONS (`at`, laid along the route). Battery's route bends east round the block; two stations swap sides as they slide (slot 3
+  jumped x -23.9 -> -30.7 at a vertex), so the term re-dealt Battery_1 and Battery_4 back and forth tick to tick, the
+  squadmate-yields R45.28 read. (The rank shift from the pinned deep seat was real too, but did not change this cell's deal.)
+- **S v6 (659c9ab9b, OFF; `--seat-bound=on --seat-order=on --seat-last=open`):** under the open last seat the seats are ranked
+  by the shape's own left-to-right offsets, and the deep seat + its rear crew are left out of the ranks. Test
+  `test_seat_last_open_keeps_the_rest_of_the_squad_in_its_lateral_order` (11751's real positions and route): FAILS on S v5 (crossed
+  order + a re-deal at s 24.2), PASSES on S v6; formation / seat / settle / element_plan tests 195/0 (laptop, 659c9ab9b). Laptop trace:
+  the Battery's seating now holds for the whole first order.
+- **Dev read** base v s6, crossing / locks / terminus x 7001-7012, builder3 light (`native-fresh` first, per the orchestrator's relay):
+  running.
