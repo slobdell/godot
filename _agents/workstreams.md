@@ -292,6 +292,14 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.21 (2026-10-30 ~04:15) The weave guard (engage fa9c6ff3a, L1's new freeze candidate).** Two causes traced (builder3): (a) ENGAGE's
+  cached motion plan replayed a hop planned before the lane step (the step now drops it); (b) a weave hop grazing the canal corner by the
+  bridge deck after drift between thinks. `TankBrain.dry_hop` checks every direct hop, fresh or cached, from where the crew stands now
+  plus two side legs 2.5 m out; any wet leg -> the crew faces the target instead. **Unswitched** (both arms of Bar L1): accepted as a
+  standalone safety fix like A7 (a crew never reverses into water); if L1 fails, dry_hop alone may still merge on its own green check.
+  Tests `tests/test_fire_lanes_weave.gd`; builder3 light 20/0 (the bridge test 4 wet hops -> 2 with (a) -> 0). C46.4: the hop is
+  decided in GDScript (native confirming).
+
 - **R46.20 (2026-10-30 ~04:05) Bar C1 FAILS as filed on ONE of 38 lines (G7, the rear-ambush turn); OFF; C1 v2 on the reserve.** Run
   3bf76e839 GREEN, builder3 J8, 0 runs lost (stream/camera 0f04dba1d; `references/round46/camera/barc1-verdict-builder3-3bf76e839.txt`).
   Deciding PASS: D1 driving with half+ of his shown squad hidden by a building 1011 -> 504 s; D2 none of his selection on screen 31.6 ->
