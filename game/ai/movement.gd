@@ -5565,9 +5565,11 @@ static var _backout_only := false
 var _backout_goal := Vector3.INF   # the final goal the window was opened for
 var _backout_tick := 0
 var _backout_point := Vector3.INF  # the departure point, read from _backout_from
-## Round 46 (A6 v5): the crew's own path to its squad's destination for squad_way() on a drill move, and the order it was found for.
-var _squad_way_key := ""
-var _squad_way_path: Array = []
+## Round 46 (A6 v5): the crew's own path to its squad's destination for squad_way() on a drill move, and the order it was found for:
+## {mover instance id: [key, path]}. Static scratch read only by Traffic's GDScript refresh, never by the drive, so nothing for
+## exec_fields.h (as _departure_hulls); cleared past SQUAD_WAY_KEEP entries (dead crews of past matches).
+static var _squad_ways := {}
+const SQUAD_WAY_KEEP := 512
 var _backout_from := Vector3.INF
 
 
@@ -5855,13 +5857,17 @@ func squad_way() -> Vector2:
 	if not (destination is Vector3):
 		return Vector2.ZERO
 	var key := "%d:%s" % [int(mine.task_seq), destination]
-	if key != _squad_way_key:
+	var held: Array = _squad_ways.get(get_instance_id(), [])
+	if held.is_empty() or held[0] != key:
 		if not (Pathing.enabled and Pathing.is_ready(ctl.tank)):
 			return Vector2.ZERO
-		_squad_way_key = key
-		_squad_way_path = [here]
-		_squad_way_path.append_array(Pathing.find_path(ctl.tank, here, destination as Vector3))
-	return Movement.route_way(_squad_way_path, here)
+		if _squad_ways.size() >= SQUAD_WAY_KEEP:
+			_squad_ways.clear()
+		var path: Array = [here]
+		path.append_array(Pathing.find_path(ctl.tank, here, destination as Vector3))
+		held = [key, path]
+		_squad_ways[get_instance_id()] = held
+	return Movement.route_way(held[1], here)
 
 
 ## The direction (flat, unit) of the segment of `route` nearest `here`; ZERO for a route with no length.
