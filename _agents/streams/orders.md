@@ -81,7 +81,27 @@ the orchestrator the same hour (C46.2): it goes to him the same day.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-30 ~07:00 PDT): BAR V1 PASSES; merge 12bd0c68f; V2 next
+### NOW (2026-10-30 ~09:30 PDT): V1 SHIPPED ON (main R46.33); V4 STAYS OFF (no series: the dev reads say packing arrives later)
+
+- **V1 shipped ON** (merged 12bd0c68f to main, R46.33; Bar V1 PASS below).
+- **V4 / Bar V2: no series. The tighter file goes to him as a feel question, OFF** (orchestrator's ruling, before any bar number).
+  Dev reads (builder0, base = main's default with the veto ON, dev seeds, n 1 a cell, Bar V2's corpus 53 runs an arm):
+  | pack | depth behind his click (median) | all-in (paired mean) | friendly contacts a run | never-in | wedged crew-s a run |
+  |---|---|---|---|---|---|
+  | today (base) | 50.0 m | 19.3 s | 41.9 | 2 | 60.1 |
+  | 0.5, front step full (a87b07cba, 7001/7002) | 50.0 m (3 + 1 / 2 + 2 bodies never packed) | 20.0 v 19.6 | 37.9 v 36.5 | 3 v 3 | 67.2 v 62.3 |
+  | **0.5, front step at the halt radius (dc452f797, 7003/7004)** | **25.1 m** | **20.8 s** | **59.6** | 3 | **94.5** |
+  | 0.75 (0edb74316, 7003/7004) | 37.5 m | 19.6 s | 82.6 | 5 | 70.5 |
+  His Gorge click: 0.5 packed file 39.8 m, all in 13.1 s v 8.2 s unpacked (laptop). **In his terms:** packing the squads closer
+  does shorten the line behind his click, but they then queue and shove where they stop, so the last squad is in 1-2 s LATER,
+  not sooner, with about half again as many bumps. **Recommendation: keep today's spacing** (to see it: `make skirmish
+  SKIRMISH_FLAGS="--group-pack=on"`). a87b07cba (V1 + main + V4 OFF) GREEN builder3 `make check exited 0`, 3512 / 0.
+- **Bar-instrument fault in my Bar V2 filing (recorded):** L1 "file length" = the farthest place from the click reads the FLANK of a
+  3-abreast front on open ground (44 + 14 = 58 m both arms), not the file. Approved amendment 1 (depth behind the click along the
+  approach) is moot: no series.
+- **Next:** V5 (the street lay behind `--group-guard=on`), dev reads only; stretch (the departure order).
+
+### EARLIER (2026-10-30 ~07:00 PDT): BAR V1 PASSES; merge 12bd0c68f; V2 next
 
 - **VERDICT Bar V1: PASS** (builder3, frozen **12bd0c68f** = GREEN builder3 `make check exited 0`, 3483 passed / 0 failed; 11801-11848;
   every part try 1, 3672 runs). D1 across 0 (base 303); D2 sent back 0 (base 126); D5b his exact Gorge click 24/24; I1 the OFF
