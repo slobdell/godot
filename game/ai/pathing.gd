@@ -136,3 +136,24 @@ static func closest_point(map: RID, point: Vector3, site := "") -> Vector3:
 		OrderController.add_part("nav.closest", Time.get_ticks_usec() - started)
 		OrderController.add_part("nav.closest@" + site, 0)  # who asks (round 16 A6): a count
 	return closest
+
+
+## Round 47 (route R0, C47.3): **the one door through which anyone asks for a new route for a crew.** Manoeuvre's
+## no-progress watchdog calls it when a crew has made no progress (it never plans itself); route owns what comes back.
+## Today it forces the crew's next drive to re-plan its navmesh route from where it stands (the same route a fresh
+## order would get), on the GDScript and the native-owned execute alike. True when there was a mover to re-plan.
+## `reason` is counted by name (`reroutes`), so a census can say who asked and how often.
+static var reroutes := {}
+
+
+static func reroute(crew: Node, reason: StringName) -> bool:
+	var mover := Movement.of(crew)
+	if mover == null or not (crew is Tank) or not (crew as Tank).alive:
+		return false
+	# The route is re-planned on an EVENT (`Movement._next_waypoint`: the goal moved, off the route, a stall); a goal it
+	# was never planned for is that event on the next tick, here and in the C++ (drive_native.cpp reads `_path_goal`).
+	mover._path_goal = Vector3.INF
+	mover._repath_left = 0.0
+	mover.native_stale |= Movement.STALE_ALL  # a write from outside the native execute (as OrderController's forwarders)
+	reroutes[reason] = int(reroutes.get(reason, 0)) + 1
+	return true
