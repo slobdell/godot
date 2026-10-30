@@ -473,6 +473,14 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   (wip/manoeuvre-backout-on 466d96191: `backout` out of Traffic.DEFAULT_OFF + the default test flipped; `--traffic-off=backout` the
   escape). **Owed before it counts as shipped:** the sim baseline re-recorded (CPU v CPU changes: the CPU's War Rigs back out too,
   C45.5) twice on builder0 and adopted, then ONE builder0 main check (perf JUDGED), batched with engage's R45.24 fix.
+- **R45.28 (~21:30) Bar S v5 FAILS as filed on three guards; seat rules stay OFF.** Frozen fc639d7e0, builder0 light, 72 paired cells,
+  0 SCRIPT ERROR: D1 seated within the bound by 15 s 220 -> 329 (+8.4 se) PASS; Terminus clean (k-turn -9.2 se), never-arrived -0.33 a
+  run, seat moves -20 a run; **FAIL: Crossing yield+blocked +9.85 s a run (+4.1 se, the named risk), Crossing k-turn +2.1 se, Locks
+  wedged +3.37 s a run (+3.2 se; S v4's +6.4 halved).** Cause (Crossing 11751): under the open last seat the Battery squad yields to
+  ITSELF in its start zone (two squadmate pairs in mutual yield ~45 crew-ticks each; base none): the rear-crew term deals the two-row
+  layout seats whose paths cross. Not overridden (C45.2 covers G2 / E2; units yielding to their own squad is not smart). Evidence
+  `references/round45/manoeuvre/barss5-builder0-fc639d7e0/`; stream/manoeuvre ac58f0b6a (OFF code). Round 46: deal seats so paths do
+  not cross (the README's note).
 - **R45.27 (~20:20) Native's G2 three-seam re-proof on the freeze 03d1ddbc5 + main ceb1386e8: EQUAL guard on and off.** builder2,
   pair/native-g2-final 89733bdc9: 83/0 (assign 3000/0, gate_width 360/0, untangle 1200/0); orders probe native on v off 192/192 guard ON
   and 192/192 off. 6562c6beb (+ the gate_width_edge_on swap): 83/0, 192/192 x2, all 768 rows = unswapped. **R45.16 corrected:** the swap
