@@ -317,6 +317,16 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.24 (2026-10-30 ~05:00) Bar L1 FAILS as filed on G1 only (friendly fire); L1b on the free 11949-11996.** Frozen fa9c6ff3a,
+  builder0 light, native on, 11901-11948, 48 paired, 0 errors. D1 held for a friend 20.79 -> 16.94 s (-3.0 se) PASS; D2 sooner or identical
+  35/40 (12 strictly) PASS; **G1 friendly-fire hits 1 -> 6 (line 2.6) FAIL**, kills 0 -> 0; G2 deaths 0/0, G3 enemy hp 0.79 -> 0.72, G4 post
+  max 4.6 m PASS; G5/G6 not run. Reported: shots 11.3 -> 18.5 a run; 44 feed lines in 25 runs. Cause (11922 traced, builder3): 5 of 6
+  hits one run: a 4-round burst whose trigger checks the lane on round 1; ENGAGE starts the hull mid-burst, the moving spread widens and
+  rounds 2-4 go out with Guns_2 in the line; the lane spot was clear by the STANDING spread + 0.3 m only. **L1b (a new filing, same lines):**
+  lane spots tested against the MOVING spread; and the orchestrator asks engage (owner of gunnery.gd) to make the burst re-check the lane
+  each round under `--lane-clear` (a friend entering the line ends the burst). Never fire into a friend is the ship bar. Seeds 11949-11996
+  (E6's, unused).
+
 - **R46.23 (2026-10-30 ~04:20) C1 v2 is a trade-off, not a fix: no v2 bar; the planner ON v OFF goes to him.** (Bar C1's verdict commit is
   93971782f, not 0f04dba1d.) Cause of G7, traced frame by frame (builder3, dev): today's camera turns toward KNOWN enemies before they
   fire; the planner's wide frame counted contacts behind his squad as on screen at the bottom edge, waited for the shot, then needed ~4 s
