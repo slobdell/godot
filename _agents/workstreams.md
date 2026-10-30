@@ -419,6 +419,14 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   it does today", which he cannot see as worse; the 80 % line's tie-as-loss is a filing-design note for later bars, not an amendment.
   Also: his Gorge replay now FAILS against his recording in BOTH arms (within 4 / 20 from Hunters_1 at 40 s): main's E2 changes his
   match; engage confirms which of his orders diverges.
+- **R45.24 (~19:50) E2 leaks onto his squads' OWN holds (on main since 8ef4f584d); fix queued.** Engage (builder0, 60262534f, his Gorge
+  replay): rule ON from the start diverges at Green_Hunters_1 @ 40 s (4/20 within 3 m); `--player-authority=off` PASS 20/20 for 105 s.
+  Cause: tank_brain `_update_order_progress`'s hold/stop re-latch ("holds where it comes to rest") tests `here` + his TEAM but not that
+  the order is HIS (`player`), so an element's pointless `hold` (ElementPlan._hold) on his team is re-latched too (Hunters_2 diverges
+  under his squad's attack task at 35 s, not under any crew order of his). Unintended. Fix: `order.player` in both branches, its own
+  commit, a test failing without it, his replay with the rule ON re-read (should match until his first direct crew order). Bar E1's
+  numbers unaffected (the probe's holds are `player`). After E2b's chain (it re-syncs the worktree). Replays of his pre-E2 matches:
+  `REPLAY_FLAGS="--player-authority=off"` (native notes it in replay-match's docs).
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
