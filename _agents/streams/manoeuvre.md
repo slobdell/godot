@@ -68,8 +68,8 @@ _(worker keeps this current: report at the top, every number with commit, machin
 ### ROUND 46 FINAL REPORT (in progress; hashes completed as checks read)
 
 **What he will notice (if the ships merge):** (1) **shortfwd ON (R46.25):** a short click right beside his scout (his 83.7 s Gorge click)
-no longer sends it ~2 m backwards first when there is room to turn; near an edge or wall it backs up as today; (2) **holdway ON (R46.27,
-NOT in the ship hash: a web-build freeze to fix first, see below):** a side-street squad that today sits jammed ~30 s rolls through, and on a head-on meeting
+no longer sends it ~2 m backwards first when there is room to turn; near an edge or wall it backs up as today; (2) **holdway ON (R46.27 / R46.35: ON
+for the native / desktop game, OFF in the web export; candidate 21a40f83c below):** a side-street squad that today sits jammed ~30 s rolls through, and on a head-on meeting
 the passing squad brushes the waiting one far less. **Not shipped:** the seat bound S v6 (four lines failed; R46.17; round-47 start
 point written below).
 
@@ -95,7 +95,14 @@ every later commit on the branch is Status / docs only); its OFF code proven 96 
 probe). **SHIP HASH (shortfwd ON alone): `wip/manoeuvre-ship46-sf` 105e2e118 GREEN builder3** (`make check exited 0`, 3504 passed / 0
 failed, web-smoke passed, sim-baseline UNMOVED on all 13 arenas against main b7942f378) = main b7942f378 + native's pair/native-holdway
 f176bee98 + the shortfwd flip + the pair's drive-gate line + SHORT_POSES + this stream's OFF code; the holdway flip reverted in it.
-Named to the orchestrator 08:05.
+Named to the orchestrator 08:05; **merged to main** (shortfwd ON, R46.35).
+**HOLDWAY SHIP CANDIDATE (R46.35): `wip/manoeuvre-holdway-on` 21a40f83c** on main 67e56e258: `holdway` out of `DEFAULT_OFF`, new
+`Traffic.WEB_OFF := ["holdway"]` applied when `OS.has_feature("web")` (the `--traffic-on/off=holdway` overrides still win), test
+`test_on_by_default_off_on_the_web`. builder3 check `exited 2` with **sim-baseline the ONLY failure**: test 3517 / 0, WEB SMOKE PASSED
+(match smoke included); moved on all 13 arenas, the new hashes byte-identical to 8165af868's independent read (two agreeing reads):
+foundry 25db5790150d3812, yard b2d1a9648c56df29, pit 773a2b636222b772, terminus 898e95bea00c76b8, crossing f32f14d56be0554b, sumps
+dea34fb3690c5dad, locks ecc6005f1cea5f2e, parade 65994a7ab0e8a871, gorge a872bf1dd189875f, archipelago 37818f0e001518d4, cut
+6fbfa14551d78bbb, docks ca7477c3bdc41123, yard_open fead8afadc3ce66c. Named to the orchestrator 08:42 (it adopts the baseline).
 **Holdway ON (R46.27) waits:** the combined candidate 8165af868 read `exited 2`: tests 3505 / 0, sim-baseline moved on all 13 maps
 (expected), and **web-match-smoke red** (a harness screenshot timeout). Same-box web-smoke A/B (builder3): holdway ON failed 4 of 5,
 shortfwd only passed 4 of 4, main passed. Cost read (builder3 light, sim-profile gangs v law yard 60 s seed 7, 787a4bf79): native
