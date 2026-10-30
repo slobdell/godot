@@ -15,7 +15,9 @@
 # processes, is the disagreement worth seeing.
 set -uo pipefail
 
-host=${REMOTE_HOST:-slobdell@builder0}
+# Round 45 (native): every build box, one block each. builder3 (devia@builder3, Ryzen 9 9950X, 2026-10-29) joined builder0;
+# REMOTE_HOST names one box only, TANK_SQUAD_BUILDERS the list. builder2 (Spot, usually stopped) is asked only when named.
+hosts=${REMOTE_HOST:-${TANK_SQUAD_BUILDERS:-slobdell@builder0 devia@builder3}}
 root=${REMOTE_ROOT:-tank_squad}
 guard_dir=${TANK_SQUAD_SLOT_DIR:-/tmp/tank_squad_slots}
 ssh_opts=(-o BatchMode=yes -o ConnectTimeout=10)
@@ -162,50 +164,57 @@ done | sort | awk '{n[$1]++; if (s[$1] == "" || $2 < s[$1]) s[$1] = $2} END {for
 REMOTE
 }
 
-echo ""
-if [ -n "$remote_file" ]; then
-	block=$(cat "$remote_file"); rc=0
-elif [ "$mode" = --no-remote ]; then
-	echo "== $host == (skipped: --no-remote)"
-	block=""; rc=0
-else
-	block=$(remote_script | sed -e "s|GUARD_DIR|$guard_dir|g" -e "s|ROOT|$root|g" \
-		| ssh "${ssh_opts[@]}" "$host" "bash -s" 2>/dev/null); rc=$?
-fi
-
-if [ "$mode" != --no-remote ]; then
-	if [ "$rc" -ne 0 ] || [ -z "$block" ]; then
-		# Never print an empty box as a quiet one.
-		echo "== $host == UNREACHABLE (ssh exit $rc). Nothing below is known about the box."
+box() {   # box <host>: one build box's block
+	local host=$1 block rc
+	echo ""
+	if [ -n "$remote_file" ]; then
+		block=$(cat "$remote_file"); rc=0
+	elif [ "$mode" = --no-remote ]; then
+		echo "== $host == (skipped: --no-remote)"
+		block=""; rc=0
 	else
-		load=$(awk '/^LOAD /{print $2" "$3" "$4}' <<<"$block")
-		cores=$(awk '/^CORES /{print $2}' <<<"$block")
-		mem=$(awk '/^MEMAVAIL_MB /{print $2}' <<<"$block")
-		printf '== %s ==  load %s on %s cores, %s MB available\n' "$host" "$load" "$cores" "$mem"
-		owners=$(grep '^OWNER ' <<<"$block" | sed 's/^OWNER /  slot /')
-		if [ -n "$owners" ]; then echo "$owners"; else echo "  no slot is held"; fi
-		procs=$(grep '^PROCS ' <<<"$block")
-		if [ -n "$procs" ]; then
-			echo "  live processes by folder (from /proc, the authority):"
-			awk '{printf "    %-18s %s\n", $2, $3" processes"}' <<<"$procs"
-			# Work in a folder that holds no slot is NOT automatically an orphan: a run that is QUEUED has
-			# already cd-ed in and is waiting for a slot, which is the normal, healthy case. The first
-			# version of this said "has work but holds NO SLOT" for exactly that and read as an accusation.
-			# A queued run holds a slot.sh TICKET, so the three states are distinguishable -- and the one
-			# with neither is the one worth a look, named as the uncertainty it is.
-			while read -r _ folder _; do
-				if grep -q "^OWNER .*$folder:" <<<"$block"; then continue; fi
-				if grep -qx "TICKET $folder" <<<"$block"; then
-					echo "    ~ $folder is QUEUED (holds a ticket, waiting for a slot)"
-				else
-					echo "    ? $folder has work, no slot and no ticket: an orphan, or a command run outside the slots"
-				fi
-			done <<<"$procs"
+		block=$(remote_script | sed -e "s|GUARD_DIR|$guard_dir|g" -e "s|ROOT|$root|g" \
+			| ssh "${ssh_opts[@]}" "$host" "bash -s" 2>/dev/null); rc=$?
+	fi
+
+	if [ "$mode" != --no-remote ]; then
+		if [ "$rc" -ne 0 ] || [ -z "$block" ]; then
+			# Never print an empty box as a quiet one.
+			echo "== $host == UNREACHABLE (ssh exit $rc). Nothing below is known about the box."
 		else
-			echo "  no processes in any $root folder"
+			load=$(awk '/^LOAD /{print $2" "$3" "$4}' <<<"$block")
+			cores=$(awk '/^CORES /{print $2}' <<<"$block")
+			mem=$(awk '/^MEMAVAIL_MB /{print $2}' <<<"$block")
+			printf '== %s ==  load %s on %s cores, %s MB available\n' "$host" "$load" "$cores" "$mem"
+			owners=$(grep '^OWNER ' <<<"$block" | sed 's/^OWNER /  slot /')
+			if [ -n "$owners" ]; then echo "$owners"; else echo "  no slot is held"; fi
+			procs=$(grep '^PROCS ' <<<"$block")
+			if [ -n "$procs" ]; then
+				echo "  live processes by folder (from /proc, the authority):"
+				awk '{printf "    %-18s %s\n", $2, $3" processes"}' <<<"$procs"
+				# Work in a folder that holds no slot is NOT automatically an orphan: a run that is QUEUED has
+				# already cd-ed in and is waiting for a slot, which is the normal, healthy case. The first
+				# version of this said "has work but holds NO SLOT" for exactly that and read as an accusation.
+				# A queued run holds a slot.sh TICKET, so the three states are distinguishable -- and the one
+				# with neither is the one worth a look, named as the uncertainty it is.
+				while read -r _ folder _; do
+					if grep -q "^OWNER .*$folder:" <<<"$block"; then continue; fi
+					if grep -qx "TICKET $folder" <<<"$block"; then
+						echo "    ~ $folder is QUEUED (holds a ticket, waiting for a slot)"
+					else
+						echo "    ? $folder has work, no slot and no ticket: an orphan, or a command run outside the slots"
+					fi
+				done <<<"$procs"
+			else
+				echo "  no processes in any $root folder"
+			fi
 		fi
 	fi
-fi
+}
+for h in $hosts; do
+	box "$h"
+	[ -n "$remote_file" ] && break   # a captured block is one box
+done
 
 # ---- baselines in force ------------------------------------------------------------------------
 echo ""
