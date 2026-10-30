@@ -7,7 +7,7 @@ The same fields, helpers and noise kinds as `lines_r31_34.py` (read its docstrin
 Read: B2 (R45.15 final: FAILS on three lines, backout OFF), S v4 (R45.17: FAILS the wedged guard on Locks, seat bound OFF), E1
 (R45.19: FAILS as filed, ships ON under C45.2), A6 v4 (R45.20: FAILS guard 4, OFF), B3 (R45.26: FAILS D2's share on exact ties
 only, every other line PASSES, backout SHIPS ON per R45.23), S v5 (R45.28: FAILS three guards, OFF), E2b (R45.29: FAILS G5, the
-stop cap OFF). G2: its lines land with its verdict (~01:15). An se is derived only where the ruling printed both the paired
+stop cap OFF), G2 (R45.31: FAILS parts A's guard and B, --group-guard OFF). An se is derived only where the ruling printed both the paired
 difference and its z (se = d / z); a line given as z alone, or as counts, carries `none` with a note, or `fisher` for a share.
 """
 from lines_r31_34 import DET, L, gain, se_line, up  # noqa: F401
@@ -191,4 +191,29 @@ LINES += [
     L(line="G5 native ON v --brains-off=native EQUAL on (S) new", form="count-runs", rule="48 / 48", base="48",
       arm="46 / 48 (11352, 11362: law_artillery in a squad of three; native runs a stop itself except a fixed gun on wheels)",
       verdict="FAIL", noise=DET, **E2),
+]
+
+# ------------------------------------- Bar G2, his group click lays the squads safely (orders; READ R45.31: FAILS as filed, guard OFF) ---
+g2 = (src45 + " Rulings R45.31 (FAILS as filed: A False, B False, C True; --group-guard stays OFF), R45.25 (the ship rule) and "
+      "~/orders-r45/bar3/ (orders files it under references/round45/orders/)")
+G2 = {"round": 45, "stream": "orders", "item": "G2 --group-guard (the group click's guard, frozen on orders' option a)",
+      "commit": "03d1ddbc5 (frozen; native's three seams EQUAL on it, R45.27)", "machine": "builder3",
+      "n": "11201-11248", "source": g2}
+LINES += [
+    L(line="deciding D1-D6 and D5b", form="reported", rule="each as filed", base="-", arm="each PASS", verdict="PASS",
+      noise={"kind": "none", "note": "per-line margins not quoted in the ruling"}, **G2),
+    L(line="part A contacts", form="total", rule="fewer", base="32293", arm="23190", verdict="PASS",
+      noise={"kind": "none", "note": "se not quoted"}, **G2),
+    L(line="part A guards: all-in / never-in / held per cell", form="reported", rule="each cell as filed", base="-",
+      arm="FAIL on some cells", verdict="FAIL", noise={"kind": "none", "note": "the cells and margins not quoted"}, **G2),
+    L(line="part B: places outside the corridor", form="total", rule="<= 1.8", base="7", arm="33", verdict="FAIL", noise=DET, **G2),
+    L(line="part B: metres outside the corridor", form="total", rule="<= 215", base="430", arm="1934", verdict="FAIL", noise=DET,
+      **G2),
+    L(line="part B: contacts", form="total", rule="<= 12381.1", base="11251", arm="17804", verdict="FAIL", noise=DET, **G2),
+    L(line="part B: Terminus 5-click all-in s", form="mean", rule="no worse", base="11.7 s", arm="47.4 s", verdict="FAIL",
+      noise={"kind": "none", "note": "se not quoted; 4x the base"}, **G2),
+    L(line="part B: twitch / end-foreign (Locks, Terminus)", form="reported", rule="as filed", base="-", arm="FAIL on Locks and Terminus",
+      verdict="FAIL", noise={"kind": "none", "note": "margins not quoted"}, **G2),
+    L(line="part C fights: CPU losses ARM <= BASE + k se", form="mean", rule="no worse beyond the filed se", base="9.42",
+      arm="10.08 (se 0.83)", verdict="PASS", noise=up(0.83, 10.08 - 9.42), **G2),
 ]
