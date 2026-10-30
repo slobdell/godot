@@ -440,6 +440,11 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   (wip/manoeuvre-backout-on 466d96191: `backout` out of Traffic.DEFAULT_OFF + the default test flipped; `--traffic-off=backout` the
   escape). **Owed before it counts as shipped:** the sim baseline re-recorded (CPU v CPU changes: the CPU's War Rigs back out too,
   C45.5) twice on builder0 and adopted, then ONE builder0 main check (perf JUDGED), batched with engage's R45.24 fix.
+- **R45.27 (~20:20) Native's G2 three-seam re-proof on the freeze 03d1ddbc5 + main ceb1386e8: EQUAL guard on and off.** builder2,
+  pair/native-g2-final 89733bdc9: 83/0 (assign 3000/0, gate_width 360/0, untangle 1200/0); orders probe native on v off 192/192 guard ON
+  and 192/192 off. 6562c6beb (+ the gate_width_edge_on swap): 83/0, 192/192 x2, all 768 rows = unswapped. **R45.16 corrected:** the swap
+  saves ~4 ms, not ~1: the 30-unit / 6-squad click 10.20 ms (ratio 129.1, over 104) v 6.21 ms (77.6) with it, same box and reference
+  (builder2, not judged). G2's ship commit carries the swap (6562c6beb is the proven candidate).
 - **R45.25 (~20:05) G2 freezes on 03d1ddbc5 (orders' option a); the ship rule stated BEFORE any 11201 number.** Dev read 7 (builder2,
   03d1ddbc5, 7001-7006, the squeeze): every deciding line (D1-D6, D5b), contacts and the reach-80 held guard PASS. Left, by construction:
   (1) never-in 1 run of 6 on four no-room cells (crossing his-80, locks across-20 / along-80, yard_open across-20): the rear squad of a
