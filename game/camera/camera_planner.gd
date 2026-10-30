@@ -22,6 +22,9 @@ extends RefCounted
 ##                         audience", now a cost instead of the danger look's pull toward the middle)
 ##               W_LIFT    a boom that ends inside a building (the clearance must tilt it up over the roof: dev seeds
 ##                         spent more seconds with the camera inside a block while it turned)
+##               W_WAR     the view turned away from where the fight is (the known enemies' centre, else the arena's
+##                         middle), past what his lens shows: with nothing near, the view faces the war, not the way it
+##                         happened to point (dev 7001-7006: without it enemies were on screen 47 % of play v 62 % today)
 ##               W_TURN    the turn from the current wanted yaw; W_DIST the zoom past his 49 m
 ##   stability   the current yaw is always a candidate, and a challenger must beat it by SWITCH_MARGIN: equal costs never
 ##               flip-flop and a small gain never swings the view back (round 43's corner swing failed exactly there).
@@ -46,6 +49,12 @@ const W_TURN := 1.5
 const W_DIST := 0.5
 const W_ARENA := 1.5
 const W_LIFT := 1.0
+const W_WAR := 1.5
+## The war term starts past this bearing (his lens shows ~+-29 deg) and is spent in full this far past it.
+const WAR_FREE_DEG := 25.0
+const WAR_FULL_DEG := 90.0
+## Standing on the war's point every way is toward it: no war term within this distance (as the danger look's).
+const WAR_NEAR_M := 20.0
 ## The lift at which W_LIFT is spent in full (degrees the building clearance must tilt the boom up to clear a roof).
 const LIFT_FULL_DEG := 15.0
 ## The weights in force: the constants above, unless a dev run overrides some (`--camera-planner-w=action:5,turn:2`;
@@ -59,6 +68,7 @@ static var w_turn := W_TURN
 static var w_dist := W_DIST
 static var w_arena := W_ARENA
 static var w_lift := W_LIFT
+static var w_war := W_WAR
 static var action_range_m := ACTION_RANGE_M
 static var hold_margin := HOLD_MARGIN
 
@@ -80,6 +90,7 @@ static func override_weights(text: String) -> void:
 			"dist": w_dist = v
 			"arena": w_arena = v
 			"lift": w_lift = v
+			"war": w_war = v
 			"range": action_range_m = v
 			"hold": hold_margin = v
 
@@ -276,6 +287,13 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 			var hit: Variant = plane.intersects_ray(eye, (pose.basis * Vector3(u * half_y * aspect, v * half_y, -1.0)).normalized())
 			if hit == null or not CameraPlanner.inside_arena(hit as Vector3):
 				outside += 1
+	var war_cost := 0.0
+	if w.get("war") is Vector3 and not own.is_empty():
+		var middle := RtsCamera._middle(own, own.size())
+		var to_war := Vector3((w["war"] as Vector3).x - middle.x, 0.0, (w["war"] as Vector3).z - middle.z)
+		if to_war.length() > WAR_NEAR_M:
+			var war_off := rad_to_deg(absf(angle_difference(yaw, RtsCamera.yaw_facing(to_war))))
+			war_cost = w_war * clampf((war_off - WAR_FREE_DEG) / (WAR_FULL_DEG - WAR_FREE_DEG), 0.0, 1.0)
 	var sel_w := w_sel * (FRESH_X if bool(w.get("fresh", false)) else 1.0)
 	var terms := {
 		"sel": sel_w * float(off) / float(maxi(own.size(), 1)),
@@ -283,6 +301,7 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 		"action": w_action * (action_off / action_w if action_w > 0.0 else 0.0),
 		"sight": w_sight_crew * float(blocked) / float(maxi(tested, 1)) + w_sight_path * float(path_blocked) / float(maxi(path.size(), 1)),
 		"arena": w_arena * float(outside) / 6.0,
+		"war": war_cost,
 		"lift": w_lift * clampf(float(clear["lifted_deg"]) / LIFT_FULL_DEG, 0.0, 1.0),
 		"turn": w_turn * absf(angle_difference(current_yaw, yaw)) / PI,
 		"dist": w_dist * clampf((distance - PREFERRED_M) / maxf(RtsCamera.AUTO_FRAME_MAX_M - PREFERRED_M, 1.0), 0.0, 1.0),
@@ -413,3 +432,15 @@ static func inside_arena(point: Vector3) -> bool:
 		return Geometry2D.is_point_in_polygon(Vector2(point.x, point.z), RtsCamera.perimeter_poly)
 	var half := RtsCamera.perimeter_half()
 	return absf(point.x) <= half and absf(point.z) <= half
+
+
+## Where the fight is, from a DangerFeed reading: the known enemies' centre, else the arena's middle (as the danger look's
+## war pull read it). Pure.
+static func war_of(state: Dictionary) -> Vector3:
+	var known: Array = state.get("enemies", [])
+	if known.is_empty():
+		return state.get("middle", Vector3.ZERO)
+	var sum := Vector3.ZERO
+	for enemy: Dictionary in known:
+		sum += enemy["at"] as Vector3
+	return sum / float(known.size())

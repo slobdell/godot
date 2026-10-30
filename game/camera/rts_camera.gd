@@ -2031,6 +2031,7 @@ func _update_planner(points: Array, destination: Variant) -> void:
 	var path := CameraPlanner.path_ahead(middle, _plan_travel)
 	var world := {"own": own, "pad": float(_vision_state.get("pad_m", 0.0)), "path": path,
 			"lean": path.back() if not path.is_empty() else destination, "action": CameraPlanner.action_of(state),
+			"war": CameraPlanner.war_of(state) if state.get("from") is Vector3 else null,
 			"fresh": _clock < _fresh_until, "aspect": _aspect(), "pitch": pitch, "inset": vision_inset, "bottom": frame_bottom(),
 			"floor_level": _track_floor_zoom, "cap_level": minf(vision_zoom, RtsCamera.level_for(auto_frame_max_m)),
 			"data": RtsCamera.seen()}
