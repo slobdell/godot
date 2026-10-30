@@ -6,7 +6,7 @@
 > `game/camera/rts_camera.gd`'s header (his pose: pitch 21, 49 m, FOV 35, settled from play; do NOT change the default pose or lens
 > without asking him). **You own:** `game/camera/**`, `game/theme/fx/camera_shake.gd`, `game/ui/camera_readout.gd`, `tests/test_camera*.gd`,
 > `tests/camera/**`, `mk/camera.mk`; GRANT read-only feed lines in `game/modes/skirmish_mode.gd` for what the planner reads (selection,
-> its orders' paths, contacts). **Model:** Fable. **Machine:** builder3 (checks, series); the laptop for the per-frame budget and clips
+> its orders' paths, contacts). **Model:** Opus (Fable quota low, 2026-10-30). **Machine:** builder3 (checks, series); the laptop for the per-frame budget and clips
 > (one Godot run under `flock /tmp/tank-squad-laptop-godot.lock`). **Seeds:** 12201-12248 (Bar C1), 12249-12296 (reserve). Dev
 > 7001-7012 (never a bar).
 

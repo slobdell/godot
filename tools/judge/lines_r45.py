@@ -200,8 +200,17 @@ G2 = {"round": 45, "stream": "orders", "item": "G2 --group-guard (the group clic
       "commit": "03d1ddbc5 (frozen; native's three seams EQUAL on it, R45.27)", "machine": "builder3",
       "n": "11201-11248", "source": g2}
 LINES += [
-    L(line="deciding D1-D6 and D5b", form="reported", rule="each as filed", base="-", arm="each PASS", verdict="PASS",
+    L(line="deciding D2-D6", form="reported", rule="each as filed", base="-", arm="each PASS", verdict="PASS",
       noise={"kind": "none", "note": "per-line margins not quoted in the ruling"}, **G2),
+    # Round 46 (orders' finding, relayed 2026-10-30): two round-45 instrument faults void these two lines as evidence.
+    L(line="D1 nobody across a gap from the click", form="reported", rule="0", base="-", arm="0 in 1728 runs (as printed)",
+      verdict="VOID (instrument: orders_probe_geometry printed ORDERS_GEOMETRY on the order's tick BEFORE reading the anchors, "
+      "so per-squad across_gap was always false)",
+      noise={"kind": "none", "note": "not evidence: the counter could not read 1"}, **G2),
+    L(line="D5b his exact Gorge click", form="reported", rule="0 every run", base="-", arm="0 every run (as printed)",
+      verdict="VOID (instrument: the his3 cell passed --probe-stand to nothing, so the squads stood at the army's centre, "
+      "not his recorded starts)",
+      noise={"kind": "none", "note": "not evidence: not his starts"}, **G2),
     L(line="part A contacts", form="total", rule="fewer", base="32293", arm="23190", verdict="PASS",
       noise={"kind": "none", "note": "se not quoted"}, **G2),
     L(line="part A guards: all-in / never-in / held per cell", form="reported", rule="each cell as filed", base="-",

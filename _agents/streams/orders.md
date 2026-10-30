@@ -6,7 +6,7 @@
 > `game_design.md` *His answers at round 46's prep*. **You own:** `game/control/**` (incl. `selection_squads.gd`, `group_formation.gd`,
 > `rts_controls.gd`) EXCEPT engage's grant in `order_executor.gd` (crew orders) and native's C++ seams (the GDScript bodies stay yours);
 > `tests/test_control*.gd`, `tests/control/**`, `tests/orders_probe*.gd`, `mk/command.mk`; GRANT `game/ai/planner/**` for a group
-> order's departure order and route spread only. **Model:** Fable. **Machine:** builder3 (checks, series; never builder2 for a bar).
+> order's departure order and route spread only. **Model:** Opus (Fable quota low, 2026-10-30). **Machine:** builder3 (checks, series; never builder2 for a bar).
 > **Seeds:** 11801-11848 (Bar V1), 11849-11896 (Bar V2 / reserve). Dev 7001-7006 (never a bar).
 
 ## The lead's direction

@@ -4051,3 +4051,8 @@ instrument that cannot lie about load — removal within one run — and let eve
    on his case passed and the street lines it never meant to touch failed (places outside the street 7 -> 33). A guard for his case
    should change only the clicks where today's lay is wrong (a squad across a gap or behind its start) and leave every other click
    byte-identical to today, so the existing street lines are guards it passes by construction.
+349. **A full-check lock already queues; waiting for an idle builder starves.** (Round 46.) Engage's freeze check waited in
+   `tools/builder_checks.sh --wait-below 1` while builder3 showed "3 checks": one running and two queued on `.full-check.lock`, each
+   submitted after engage began waiting. The count never reached 0 and his IFV's bar sat idle. `builder_checks.sh` counts queued
+   checks as running. Submit a check straight into the lock (`make remote T=check`), and use `--wait-below` only for a series
+   that must not share the box with a check.
