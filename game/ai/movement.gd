@@ -5831,6 +5831,39 @@ func _backout_squad_route() -> Array:
 	return out
 
 
+## Round 46 (A6 v5, `holdway`): the way this crew's SQUAD is going where the crew stands: the direction of the element's transit
+## route's segment nearest the crew (`Element.transit`, the route backout's look follows), ZERO when the crew has no element in
+## transit. Round 45's ordered way was the crew's next station, which at an order's first ticks points sideways for a crew driving
+## to a seat beside it (Bar A6 v4's verdict flips and the waiting squad's tilted spot line, R45.20).
+func squad_way() -> Vector2:
+	var brain := ctl as TankBrain
+	if brain == null or brain.game_match == null:
+		return Vector2.ZERO
+	var elements: Variant = Elements.of_match(brain.game_match)
+	var mine: Variant = elements.of(String(ctl.tank.name)) if elements != null else null
+	if mine == null or not mine.in_transit():
+		return Vector2.ZERO
+	return Movement.route_way((mine.transit as Dictionary).get("route", []), ctl.tank.global_position)
+
+
+## The direction (flat, unit) of the segment of `route` nearest `here`; ZERO for a route with no length.
+static func route_way(route: Array, here: Vector3) -> Vector2:
+	var best := INF
+	var way := Vector2.ZERO
+	var p := Vector2(here.x, here.z)
+	for i in range(1, route.size()):
+		var a := Vector2((route[i - 1] as Vector3).x, (route[i - 1] as Vector3).z)
+		var b := Vector2((route[i] as Vector3).x, (route[i] as Vector3).z)
+		var ab := b - a
+		if ab.length_squared() < 0.0001:
+			continue
+		var t := clampf((p - a).dot(ab) / ab.length_squared(), 0.0, 1.0)
+		var d := p.distance_squared_to(a + ab * t)
+		if d < best - 1e-6:
+			best = d
+			way = ab.normalized()
+	return way
+
 static func kturn_goal_on() -> bool:
 	return not Traffic.off("kturngoal")
 

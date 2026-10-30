@@ -1150,7 +1150,10 @@ static func refresh(tanks_root: Node) -> void:
 		# A crew yielding sideways or pushed off its line keeps its ordered way; a crew with no goal has none (ZERO).
 		var ordered := Vector2.ZERO
 		if mover != null and mover._goal != Vector3.INF and not off("holdway"):
-			ordered = mover._travel_direction(mover._goal, false)
+			# Round 46 (A6 v5): the squad's route direction at the crew first; a crew outside a travelling squad keeps its own way.
+			ordered = mover.squad_way()
+			if ordered == Vector2.ZERO:
+				ordered = mover._travel_direction(mover._goal, false)
 		rows.append([String(tank.name), tank.team, tank.global_position.x, tank.global_position.z, velocity.x, velocity.z,
 				-basis_z.x, -basis_z.z, Avoidance.radius_of(tank.unit_id),
 				mover != null and mover.is_under_way() and mover.yield_to == "" and not mover.in_kturn(),
