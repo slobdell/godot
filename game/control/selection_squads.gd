@@ -2105,13 +2105,13 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 # ---- V1 (round 46, orders; R46.1, his pick): THE VETO-ONLY GROUP GUARD ----------------------------------------------------
 #
 # Lesson 348: the smallest ON change is a veto, not a new layout. Today's lay stands; only a place that would put its squad
-# ACROSS A GAP from his click (water, a pit, a deck's mouth, through a neck: `guard_across_gap`, G2's test) or SENT BACK (more
-# than GUARD_BEHIND_M behind its own start along the approach AND farther from his click than it stands: a squad already past his
-# click and called back to it is not "sent back") is re-dealt, to the free seat of G2's fitted body (`guard_lay`) nearest his
+# ACROSS A GAP from his click (water, a pit, a deck's mouth, through a neck: `guard_across_gap`, G2's test) or SENT BACK (farther
+# from his click than it stands AND behind its own start: > GUARD_BEHIND_M along the approach, or > VETO_BACK_FORWARD_M toward its
+# own base edge on a click toward the enemy; a squad already past his click and called back to it is not "sent back") is re-dealt, to the free seat of G2's fitted body (`guard_lay`) nearest his
 # click that passes the same test; with no such seat the squad holds where it stands. Every passing place is byte-identical to
 # today's, and a click with no failing place is byte-identical as a whole (the seats are read only when a place fails). His
-# Gorge click (2026-10-29): the Hunters (sent back 11 m past their start) and the Wrenches (through the neck) re-dealt, the Spears
-# on his click as today. ON; `--group-veto=off` / `GROUP_VETO=off` is today's lay. Symmetric (C46.6): every group order with a
+# Gorge click (2026-10-29): the Hunters (61 m aside, 8 m behind their start) and the Wrenches (through the neck) re-dealt, the
+# Spears on his click as today. ON; `--group-veto=off` / `GROUP_VETO=off` is today's lay. Symmetric (C46.6): every group order with a
 # point goes through it; the CPU orders its elements one at a time (C45.5), so it has no group click to veto.
 static var GROUP_VETO := not OS.get_cmdline_user_args().has("--group-veto=off") and OS.get_environment("GROUP_VETO") != "off"
 ## Measurements (a probe reads them): clicks with a failing place; places re-dealt to a seat; squads held where they stand.
@@ -2128,14 +2128,14 @@ static func veto_default() -> bool:
 ## (`guard_across_gap` from `veto_front`, read along `approach`, the way the squads come), or more than GUARD_BEHIND_M behind its own squad's start
 ## (`blocks[i]["center"]`) along `approach` while farther from the click than that start. Empty = today's places stand exactly.
 ## Pure in the arena's terrain: no path query (native twins it as one call, C46.4).
-static func veto_failures(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3,
+static func veto_failures(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, forward: Vector3,
 		data: Dictionary = Arena.active) -> Array[int]:
 	var came := Vector3(approach.x, 0.0, approach.z).normalized()
 	var flat_click := veto_front(click, came, data)
 	var failed: Array[int] = []
 	for i in mini(anchors.size(), blocks.size()):
 		var centre := Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z)
-		if veto_refuses(Vector3(anchors[i].x, 0.0, anchors[i].z), centre, flat_click, came, data):
+		if veto_refuses(Vector3(anchors[i].x, 0.0, anchors[i].z), centre, flat_click, came, forward, data):
 			failed.append(i)
 	return failed
 
@@ -2153,12 +2153,23 @@ static func veto_front(click: Vector3, came: Vector3, data: Dictionary = Arena.a
 	return front
 
 
-## One place `at` for a squad standing at `centre` (all flat): across a gap from `flat_click` (the veto's front), or sent back.
-## Pure.
-static func veto_refuses(at: Vector3, centre: Vector3, flat_click: Vector3, came: Vector3, data: Dictionary = Arena.active) -> bool:
-	var behind_start := (centre - flat_click).dot(came) - (at - flat_click).dot(came)
-	if behind_start > GUARD_BEHIND_M and at.distance_to(flat_click) > centre.distance_to(flat_click):
-		return true
+## One place `at` for a squad standing at `centre` (all flat): across a gap from `flat_click` (the veto's front), or SENT BACK:
+## farther from his click than the squad stands AND either more than GUARD_BEHIND_M behind its start along the approach `came`,
+## or (a click ahead of the squad toward the enemy, `forward` the team's) more than VETO_BACK_FORWARD_M behind its start toward its
+## own base edge. His Gorge Hunters: 61 m west and 8.4 m north of where they stood, 9.3 m farther from his click, level with it
+## along the diagonal approach: behind where they started in his words ("ONLY ... behind where it started"). `forward` ZERO
+## reads the approach only. Pure.
+const VETO_BACK_FORWARD_M := 5.0
+
+
+static func veto_refuses(at: Vector3, centre: Vector3, flat_click: Vector3, came: Vector3, forward: Vector3,
+		data: Dictionary = Arena.active) -> bool:
+	if at.distance_to(flat_click) > centre.distance_to(flat_click):
+		if (centre - flat_click).dot(came) - (at - flat_click).dot(came) > GUARD_BEHIND_M:
+			return true
+		var ahead := Vector3(forward.x, 0.0, forward.z).normalized()
+		if ahead != Vector3.ZERO and (flat_click - centre).dot(ahead) > 0.0 and (centre - at).dot(ahead) > VETO_BACK_FORWARD_M:
+			return true
 	return guard_across_gap(flat_click, at, came, data)
 
 
@@ -2166,7 +2177,7 @@ static func veto_refuses(at: Vector3, centre: Vector3, flat_click: Vector3, came
 ## passes for its own squad and that no other place stands on (within that place's half-width + a quarter of GUARD_SEAT_TAKEN_M,
 ## as G2's holders take a seat); a squad with
 ## no such seat holds at its start. Every other place is returned exactly as given. Pure.
-static func veto_redeal(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, failed: Array[int],
+static func veto_redeal(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, forward: Vector3, failed: Array[int],
 		seats: Array, data: Dictionary = Arena.active) -> Array[Vector3]:
 	var came := Vector3(approach.x, 0.0, approach.z).normalized()
 	var flat_click := veto_front(click, came, data)
@@ -2189,7 +2200,7 @@ static func veto_redeal(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 		for seat: Vector3 in seats:
 			var flat_seat := Vector3(seat.x, 0.0, seat.z)
 			var d := flat_seat.distance_to(flat_click)
-			if d >= best_d or veto_refuses(flat_seat, centre, flat_click, came, data):
+			if d >= best_d or veto_refuses(flat_seat, centre, flat_click, came, forward, data):
 				continue
 			var taken := false
 			for other: Array in standing:

@@ -1751,7 +1751,7 @@ func _veto(squads: Array, anchors: Array[Vector3], click: Vector3, drawn: Varian
 		starts.append({"center": _middle_of(squad["units"])})
 	var forward: Vector3 = Match.team_frame(team)["forward"]
 	var approach := SelectionSquads.approach_of(starts, click, forward)  # the way they come, never his drawn facing
-	var failed := SelectionSquads.veto_failures(anchors, starts, click, approach)
+	var failed := SelectionSquads.veto_failures(anchors, starts, click, approach, forward)
 	if failed.is_empty():
 		return anchors
 	SelectionSquads.veto_clicks += 1
@@ -1791,7 +1791,7 @@ func _veto(squads: Array, anchors: Array[Vector3], click: Vector3, drawn: Varian
 	SelectionSquads.guard_unlaid = counters[2]
 	SelectionSquads.guard_last_step_m = counters[3]
 	var seats: Array = laid.get("seat_points", [])
-	var out := SelectionSquads.veto_redeal(anchors, blocks, click, approach, failed, seats)
+	var out := SelectionSquads.veto_redeal(anchors, blocks, click, approach, forward, failed, seats)
 	for i in failed:
 		if out[i] != anchors[i]:
 			packed_shapes.erase(anchors[i])

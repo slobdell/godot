@@ -233,11 +233,9 @@ func test_beyond_neck_reads_his_legs() -> void:
 				and absf((west[0][0] as Vector3).z - 44.0) < 0.01, "the west neck runs x -48..-32 at z 44: %s" % [west[0]])
 
 
-## V1 (round 46, R46.1, the default): today's lay, vetoed. The Wrenches' place (through the neck, across the drop) fails and is
-## re-dealt to a seat of the fitted body on his side behind the Spears; the Spears' (on his click) and the Hunters' pass and stand
-## EXACTLY as today. The Hunters' place is 58 m aside of his click but level with it along the approach (46 m AHEAD of their
-## start that way, 8 m north of their centre): not "behind its start" as the brief's test reads it (the off-the-line test is G2's,
-## which failed the streets).
+## V1 (round 46, R46.1, the default): today's lay, vetoed. The Wrenches' place (through the neck, across the drop) and the
+## Hunters' (61 m west and 8.4 m north of where they stood, 9.3 m farther from his click: behind where they started) fail and are
+## re-dealt to seats of the fitted body on his side behind the Spears; the Spears' (on his click) stands EXACTLY as today.
 func test_veto_keeps_his_spears_and_redeals_the_rest() -> void:
 	await _build()
 	SelectionSquads.GROUP_GUARD = false
@@ -249,9 +247,8 @@ func test_veto_keeps_his_spears_and_redeals_the_rest() -> void:
 	print("HIS_GORGE veto: %s (clicks +%d redealt +%d held +%d)" % [laid, SelectionSquads.veto_clicks - clicks_before,
 			SelectionSquads.veto_redealt - redealt_before, SelectionSquads.veto_held - held_before])
 	assert_eq(SelectionSquads.veto_clicks - clicks_before, 1, "his click had a failing place")
-	for kept: String in ["Green_Spears", "Green_Hunters"]:
-		assert_true(laid[kept] != null and (laid[kept] as Vector3).distance_to(TO_0[kept]) < 0.01,
-				"the %s' place is today's exactly: %s" % [kept, laid[kept]])
+	assert_true(laid["Green_Spears"] != null and (laid["Green_Spears"] as Vector3).distance_to(TO_0["Green_Spears"]) < 0.01,
+			"the Spears' place is today's exactly: %s" % [laid["Green_Spears"]])
 	var forward: Vector3 = Match.team_frame(Match.Team.GREEN)["forward"]
 	for squad: String in SQUADS:
 		assert_true(laid[squad] != null, "%s got a place" % squad)
@@ -266,16 +263,18 @@ func test_veto_keeps_his_spears_and_redeals_the_rest() -> void:
 		assert_true(not SelectionSquads.beyond_neck(CLICK, at), "%s: not through the neck" % squad)
 		var approach := SelectionSquads.approach_of([{"center": _start_of("Green_Hunters")}, {"center": _start_of("Green_Spears")},
 				{"center": _start_of("Green_Wrenches")}], CLICK, forward)
-		assert_true((start - CLICK).dot(approach) - (at - CLICK).dot(approach) <= SelectionSquads.GUARD_BEHIND_M,
-				"%s: not sent back along the approach" % squad)
+		assert_true(not SelectionSquads.veto_refuses(at, start, CLICK, approach, forward), "%s: passes the veto" % squad)
 	assert_true((laid["Green_Wrenches"] as Vector3).distance_to(TO_0["Green_Wrenches"]) > 1.0, "the Wrenches were re-dealt")
-	assert_eq(SelectionSquads.veto_redealt - redealt_before, 1, "one place re-dealt")
+	assert_eq(SelectionSquads.veto_redealt - redealt_before, 2, "two places re-dealt")
 	assert_eq(SelectionSquads.veto_held - held_before, 0, "nobody held")
-	assert_true((laid["Green_Wrenches"] as Vector3).distance_to(CLICK) < (laid["Green_Wrenches"] as Vector3).distance_to(_start_of("Green_Wrenches")),
-			"the Wrenches' seat is nearer his click than where they stand")
+	for moved: String in ["Green_Wrenches", "Green_Hunters"]:
+		assert_true((laid[moved] as Vector3).distance_to(TO_0[moved]) > 1.0, "the %s were re-dealt" % moved)
+		assert_true((laid[moved] as Vector3).distance_to(CLICK) < _start_of(moved).distance_to(CLICK),
+				"the %s' seat is nearer his click than where they stand" % moved)
 
 
-## V1 pure: the veto reads his three recorded places: the Wrenches' (through the neck) fails; the Spears' and the Hunters' pass.
+## V1 pure: the veto reads his three recorded places: the Wrenches' (through the neck) and the Hunters' (behind their start toward
+## his base, farther from his click) fail; the Spears' passes.
 ## A place 30 m behind the Spears' start along the approach fails (sent back); the same place for a squad standing beyond it
 ## (called back toward his click) passes.
 func test_veto_failures_reads_his_places() -> void:
@@ -285,14 +284,17 @@ func test_veto_failures_reads_his_places() -> void:
 	for squad: String in SQUADS:
 		blocks.append({"center": _start_of(squad), "width": 30.0})
 		anchors.append(TO_0[squad])
-	var approach := SelectionSquads.approach_of(blocks, CLICK, Match.team_frame(Match.Team.GREEN)["forward"])
-	var failed := SelectionSquads.veto_failures(anchors, blocks, CLICK, approach)
+	var forward: Vector3 = Match.team_frame(Match.Team.GREEN)["forward"]
+	var approach := SelectionSquads.approach_of(blocks, CLICK, forward)
+	var failed := SelectionSquads.veto_failures(anchors, blocks, CLICK, approach, forward)
 	print("HIS_GORGE veto_failures approach (%.3f, %.3f): %s (order %s)" % [approach.x, approach.z, failed, SQUADS.keys()])
-	assert_eq(failed, [2] as Array[int], "the Wrenches fail, the Spears and the Hunters pass")
+	assert_eq(failed, [0, 2] as Array[int], "the Hunters and the Wrenches fail, the Spears pass")
+	assert_true(not SelectionSquads.veto_refuses(TO_0["Green_Hunters"], _start_of("Green_Hunters"), CLICK, approach, Vector3.ZERO),
+			"without the team's forward the Hunters' place passes (level with his click along the approach)")
 	var flat_click := Vector3(CLICK.x, 0.0, CLICK.z)
 	var spears := _start_of("Green_Spears")
 	var back := spears + approach * -30.0
-	assert_true(SelectionSquads.veto_refuses(back, spears, flat_click, approach), "30 m behind the Spears' start: sent back")
-	assert_true(not SelectionSquads.veto_refuses(back, back + approach * -40.0, flat_click, approach),
+	assert_true(SelectionSquads.veto_refuses(back, spears, flat_click, approach, forward), "30 m behind the Spears' start: sent back")
+	assert_true(not SelectionSquads.veto_refuses(back, back + approach * -40.0, flat_click, approach, forward),
 			"the same place for a squad 40 m beyond it: called toward his click, passes")
-	assert_true(not SelectionSquads.veto_refuses(spears + approach * -8.0, spears, flat_click, approach), "8 m back: under the 10 m slack")
+	assert_true(not SelectionSquads.veto_refuses(spears + approach * -8.0, spears, flat_click, approach, Vector3.ZERO), "8 m back: under the 10 m slack")

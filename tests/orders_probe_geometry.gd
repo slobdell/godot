@@ -63,33 +63,14 @@ func _after_order(units: Array) -> void:
 	for squad: Dictionary in _squads:
 		widest = maxf(widest, _controls._squad_width(squad))
 	# G2 (round 45): per squad, whether its place is across a gap from the click as the guard reads it (water, a pit, a deck's
-	# mouth, a wet straight leg, through a neck); the guard's counters (this run's one order: the process's totals) and its
+	# mouth, a wet straight leg, through a neck). NOTE (round 46): this line prints on the order's tick, BEFORE the probe reads each
+	# squad's anchor, so `across_gap` is always false here; the squad rows' `veto_across` / `veto_back` / `veto_fail` are the read.
+	# The guard's counters (this run's one order: the process's totals) and its
 	# last lay's fit and reach (the farthest seat of the fitted body from the click), for Bar G2's lines.
 	var across_gap: Array = []
 	for squad: Dictionary in _squads:
 		var anchor: Variant = squad.get("anchor")
 		across_gap.append(SelectionSquads.guard_across_gap(click, anchor, d) if anchor is Vector3 else false)
-	# V1 (round 46): per squad, whether its place fails the veto's own test (across a gap from the veto's front, or sent back
-	# > GUARD_BEHIND_M behind its start along the approach), in either arm; the veto's counters (the process's totals).
-	# Split for Bar V1's D1 / D2: across a gap from the veto's front; sent back (> GUARD_BEHIND_M behind its start along the
-	# approach while farther from the click than its start).
-	var veto_fail: Array = []
-	var veto_across: Array = []
-	var veto_back: Array = []
-	var front := SelectionSquads.veto_front(click, d)
-	for squad: Dictionary in _squads:
-		var anchor_v: Variant = squad.get("anchor")
-		var start_v: Vector3 = squad["start"]
-		if not anchor_v is Vector3:
-			veto_fail.append(false)
-			veto_across.append(false)
-			veto_back.append(false)
-			continue
-		var at_v := Vector3((anchor_v as Vector3).x, 0.0, (anchor_v as Vector3).z)
-		var from_v := Vector3(start_v.x, 0.0, start_v.z)
-		veto_fail.append(SelectionSquads.veto_refuses(at_v, from_v, front, d))
-		veto_across.append(SelectionSquads.guard_across_gap(front, at_v, d))
-		veto_back.append(not bool(veto_across[-1]) and bool(veto_fail[-1]))
 	print("ORDERS_GEOMETRY " + JSON.stringify({"map": map, "seed": int(_flag("seed", "34")), "arm": _flag("probe-arm", ""),
 			"starts": _starts_mode, "reach": _reach, "click": _xz(click), "approach": [snappedf(d.x, 0.001), snappedf(d.z, 0.001)],
 			"clear": [snappedf(float(clear[0]), 0.1), snappedf(float(clear[1]), 0.1)], "widest": snappedf(widest, 0.1), "road": road,
@@ -99,7 +80,7 @@ func _after_order(units: Array) -> void:
 			"restored": SelectionSquads.guard_restored,
 			"fit": SelectionSquads.guard_last_fit, "reach_m": snappedf(SelectionSquads.guard_last_reach_m, 0.1),
 			"step_m": snappedf(SelectionSquads.guard_last_step_m, 0.1)},
-			"veto_fail": veto_fail, "veto_across": veto_across, "veto_back": veto_back, "veto": {"on": SelectionSquads.GROUP_VETO, "clicks": SelectionSquads.veto_clicks,
+			"veto": {"on": SelectionSquads.GROUP_VETO, "clicks": SelectionSquads.veto_clicks,
 			"redealt": SelectionSquads.veto_redealt, "held": SelectionSquads.veto_held}}))
 
 
@@ -124,6 +105,8 @@ func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
 			# The army spawns at its edge, so a row along the approach runs from the army's centre TOWARD the click (the rear
 			# squad where the army stands, the front squad (n - 1) x ROW_M on); `--probe-reach` then puts the click past the front.
 			match _starts_mode:
+				"recorded":
+					continue  # stood unit by unit below
 				"across":
 					spot = army + across * ((i - (n - 1) * 0.5) * ROW_M)
 				"along":
@@ -134,6 +117,19 @@ func _pick_click(map: String, army: Vector3, forward: Vector3) -> Vector3:
 					else:
 						spot = army + d * ((n - 2 - i) * ROW_M)
 			_stand(_squads[i], spot, d, across, ground)
+	# Round 46 (orders, Bar V1 D5b): `--probe-starts=recorded --probe-stand=PATH` stands every unit exactly where a recording had it
+	# ({"units": {name: [x, z, yaw]}}); round 45's his3 cell passed the flag to nothing and stood his squads at the army's centre.
+	if _starts_mode == "recorded":
+		var stand := JSON.parse_string(FileAccess.get_file_as_string(_flag("probe-stand", ""))) as Dictionary
+		var at_of: Dictionary = stand.get("units", {}) if stand != null else {}
+		for squad: Dictionary in _squads:
+			for unit_name: String in squad["units"]:
+				var t := _tank(unit_name)
+				if t != null and at_of.has(unit_name):
+					var xz: Array = at_of[unit_name]
+					t.place(Vector3(float(xz[0]), t.global_position.y, float(xz[1])), float(xz[2]) if xz.size() > 2 else t.rotation.y)
+				elif t != null:
+					print("ORDERS_PROBE_STAND missing %s" % unit_name)
 	var front := -INF
 	for squad: Dictionary in _squads:
 		squad["start"] = _centre(squad["units"])

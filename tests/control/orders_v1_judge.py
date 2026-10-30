@@ -8,9 +8,9 @@ frozen tree; <out>/main-geometry/<cell>/ and <out>/main-streets/ hold the arm `m
 A run is (part, cell, map, squads, route, seed); a squad's place is its row's `anchor` (0.1 m, the probe's print).
 
 DECIDING (the veto arm; base printed beside):
-  D1 places across a gap from the click (geometry `veto_across`) = 0 over every geometry run.
-  D2 places sent back (geometry `veto_back`: > 10 m behind the squad's start along the approach while farther from the click
-     than the start) = 0 over every geometry run.
+  D1 places across a gap from the click (the squad row's `veto_across`) = 0 over every geometry run.
+  D2 places sent back (`veto_fail` and not `veto_across`: > 10 m behind the squad's start along the approach while farther from
+     the click than the start) = 0 over every geometry run.
   D5b his exact Gorge click (cell recorded-rfixed-gorge--43.2_53.2, his three squads at their recorded starts): every run has
      every place on his side of the drop (z > 50) and no place failing the veto; every seed present.
 GUARDS:
@@ -105,12 +105,12 @@ def main(argv):
     d2 = {"base": 0, "veto": 0}
     for name, arm in (("base", base), ("veto", veto)):
         for key, e in arm.items():
-            g = e.get("geo")
-            if key[0] != "geometry" or g is None:
+            if key[0] != "geometry":
                 continue
-            d1[name] += sum(1 for x in g.get("veto_across", []) if x)
-            d2[name] += sum(1 for x in g.get("veto_back", []) if x)
-    geo_runs = sum(1 for k, e in veto.items() if k[0] == "geometry" and e.get("geo"))
+            for r in e.get("rows", {}).values():
+                d1[name] += 1 if r.get("veto_across") else 0
+                d2[name] += 1 if r.get("veto_fail") and not r.get("veto_across") else 0
+    geo_runs = sum(1 for k, e in veto.items() if k[0] == "geometry" and e.get("rows"))
     lines.append("%s deciding D1: places across a gap from the click = 0 over %d veto runs (veto %d, base %d)" % (
         "PASS" if d1["veto"] == 0 and geo_runs else "FAIL", geo_runs, d1["veto"], d1["base"]))
     lines.append("%s deciding D2: places sent back > 10 m = 0 over %d veto runs (veto %d, base %d)" % (

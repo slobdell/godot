@@ -122,18 +122,19 @@ func _compare(at: Vector3, label: String) -> Array:
 	var vetoed := _click(at, true, label)
 	var again := _click(at, false, label + "-again")
 	assert_eq(str(again), str(today), "%s: today's lay is deterministic (two OFF clicks agree)" % label)
-	var approach := SelectionSquads.approach_of(_starts(), at, Match.team_frame(Match.Team.GREEN)["forward"])
+	var forward: Vector3 = Match.team_frame(Match.Team.GREEN)["forward"]
+	var approach := SelectionSquads.approach_of(_starts(), at, forward)
 	var flat := SelectionSquads.veto_front(at, approach.normalized())  # his click, or the bank behind a deck he clicked
 	var failing: Array = []
 	for squad: String in _squads:
 		if today[squad] == null:
 			continue
-		if SelectionSquads.veto_refuses(today[squad], _start(squad), flat, approach):
+		if SelectionSquads.veto_refuses(today[squad], _start(squad), flat, approach, forward):
 			failing.append(squad)
 		else:
 			assert_eq(vetoed[squad], today[squad], "%s %s: a passing place is byte-identical" % [label, squad])
 		if vetoed[squad] != null:
-			assert_true(not SelectionSquads.veto_refuses(vetoed[squad], _start(squad), flat, approach),
+			assert_true(not SelectionSquads.veto_refuses(vetoed[squad], _start(squad), flat, approach, forward),
 					"%s %s: the vetoed place passes (%s)" % [label, squad, vetoed[squad]])
 	assert_eq(SelectionSquads.veto_clicks - clicks_before, 1 if not failing.is_empty() else 0,
 			"%s: the veto counted the click only when a place failed (%s)" % [label, failing])
