@@ -29,15 +29,17 @@ extends RefCounted
 ## Pure over a `world` Dictionary the rig fills (`plan`), so every term has a test. Motion stays the glide's (springs,
 ## caps, the building clearance's easing); his hand still wins for the hand-back time (the rig never asks the planner then).
 
-## How often the rig re-plans (seconds of UI clock). Between plans the glide carries the view to the last plan.
+## How often the rig starts a plan (seconds of UI clock) at most. Between plans the glide carries the view to the last one.
 const PLAN_S := 0.2
+## Headings scored per frame (`step`) off the laptop preset; the laptop scores one (C3).
+const HEADINGS_PER_FRAME := 3
 ## The candidate headings: every 360 / YAW_STEPS degrees, plus the current wanted yaw.
 const YAW_STEPS := 12
 ## THE weights (one table; see the header).
 const W_SEL := 10.0
 const FRESH_X := 3.0
 const W_PATH := 2.0
-const W_ACTION := 3.0
+const W_ACTION := 6.0
 const W_SIGHT_CREW := 4.0
 const W_SIGHT_PATH := 2.0
 const W_TURN := 1.5
@@ -114,6 +116,8 @@ const WALL_MARGIN_M := 4.0
 var last := {}
 var _mean := {}  # heading (whole degrees) -> [mean cost, when]
 var _switched_at := -1e9
+var _queue: Array = []  # headings left to score in this cycle (step)
+var _cycle := {}
 
 
 ## The headings to try: `current` first, then every 360 / steps degrees (skipping any within 5 deg of `current`). Pure.
@@ -297,20 +301,42 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 ## `current_yaw` is the wanted yaw now. Returns {yaw, focus, level, wide (framed with the contacts), cost, terms, switched, candidates} or {} with nothing
 ## to frame. The current yaw wins unless a challenger is SWITCH_MARGIN cheaper. Records itself in `last`.
 func plan(w: Dictionary, current_yaw: float, now := 0.0) -> Dictionary:
+	_queue.clear()
+	return step(w, current_yaw, now, 1 << 20)
+
+
+## Whether a cycle is under way (the rig keeps stepping it).
+func planning() -> bool:
+	return not _queue.is_empty()
+
+
+## Drop the cycle under way (a new selection: plan it from scratch).
+func restart() -> void:
+	_queue.clear()
+
+
+## C3 (the laptop budget, C46.7): the same plan spread over frames. Each call scores up to `n` headings of the current
+## cycle (the current yaw first) on that frame's world, and returns the decision once the cycle's last heading is scored
+## ({} before then). A cycle restarts when the yaw it plans from changes (his hand). `n` is the hardware preset's knob
+## (the rig: 1 heading a frame on the laptop preset, HEADINGS_PER_FRAME elsewhere): the same decision, later.
+func step(w: Dictionary, current_yaw: float, now: float, n: int) -> Dictionary:
 	var own: Array = w.get("own", [])
 	if own.is_empty():
 		last = {}
+		_queue.clear()
 		return {}
+	if _queue.is_empty() or float(_cycle.get("current_yaw", NAN)) != current_yaw:
+		_queue = CameraPlanner.candidate_yaws(current_yaw)
+		var reach := RtsCamera.distance_for(maxf(float(w.get("cap_level", 1.0)), float(w.get("floor_level", 0.0)))) + 10.0
+		_cycle = {"best": {}, "current": {}, "count": 0, "current_yaw": current_yaw,
+				"solids": CameraPlanner.near_solids(w.get("data", {}), own + (w.get("path", []) as Array), reach)}
 	var wide: Array = []
 	for contact: Array in w.get("action", []):
 		wide.append(RtsCamera.inside_wall(contact[0] as Vector3, WALL_MARGIN_M))
 	var lean: Variant = w.get("lean")
-	var reach := RtsCamera.distance_for(maxf(float(w.get("cap_level", 1.0)), float(w.get("floor_level", 0.0)))) + 10.0
-	var solids := CameraPlanner.near_solids(w.get("data", {}), own + (w.get("path", []) as Array), reach)
-	var best := {}
-	var current := {}
-	var count := 0
-	for yaw: float in CameraPlanner.candidate_yaws(current_yaw):
+	var solids: Dictionary = _cycle["solids"]
+	for k in mini(n, _queue.size()):
+		var yaw: float = _queue.pop_front()
 		var variants: Array = [CameraPlanner.fit(own, lean, yaw, w)]
 		if not wide.is_empty():
 			variants.append(CameraPlanner.fit(own + wide, null, yaw, w))
@@ -322,24 +348,27 @@ func plan(w: Dictionary, current_yaw: float, now := 0.0) -> Dictionary:
 			scored["yaw"] = yaw
 			scored["focus"] = v[0]
 			scored["level"] = float(v[1])
-			count += 1
+			_cycle["count"] = int(_cycle["count"]) + 1
 			if pick.is_empty() or float(scored["cost"]) < float(pick["cost"]):
 				pick = scored
 		pick["raw"] = float(pick["cost"])
 		pick["cost"] = _averaged(yaw, float(pick["cost"]), now)
 		if yaw == current_yaw:
-			current = pick
-		if best.is_empty() or float(pick["cost"]) < float(best["cost"]):
-			best = pick
-	var out := current
+			_cycle["current"] = pick
+		if (_cycle["best"] as Dictionary).is_empty() or float(pick["cost"]) < float(_cycle["best"]["cost"]):
+			_cycle["best"] = pick
+	if not _queue.is_empty():
+		return {}
+	var best: Dictionary = _cycle["best"]
+	var out: Dictionary = _cycle["current"]
 	out["switched"] = false
 	var margin := SWITCH_MARGIN + hold_margin * exp(-(now - _switched_at) / HOLD_S)
-	if float(best["cost"]) < float(current["cost"]) - margin:
+	if float(best["cost"]) < float(out["cost"]) - margin:
 		out = best
 		out["switched"] = absf(angle_difference(current_yaw, float(best["yaw"]))) > 0.001
 		if bool(out["switched"]):
 			_switched_at = now
-	out["candidates"] = count
+	out["candidates"] = int(_cycle["count"])
 	last = out
 	return out
 

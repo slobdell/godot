@@ -306,6 +306,9 @@ var planner_urgent := false
 var _urgency := 0.0
 var _plan_at := -1e9
 var _frame_dt := 1.0 / 60.0
+## C3: headings the planner scores per frame: 1 on the laptop preset (C46.7: the same plan, spread over more frames), else
+## CameraPlanner.HEADINGS_PER_FRAME; `--camera-planner-rate=N` overrides (dev).
+var plan_headings := CameraPlanner.HEADINGS_PER_FRAME
 ## With --camera-trace, each switch prints a CAMERA_PLAN line (when, from/to yaw, the winner's terms, the current's cost).
 var _plan_log := false
 ## Round 46 (C3): with --camera-trace, what the rig's frame and the planner's plans cost (usec; CameraPlaytest prints it).
@@ -463,6 +466,7 @@ func _ready() -> void:
 	planner_on = flags.text("camera-planner", "off") == "on"  # round 46 (C2): OFF until Bar C1 passes
 	_plan_log = flags.has("camera-trace")
 	CameraPlanner.override_weights(flags.text("camera-planner-w", ""))  # dev only: a bar runs at the constants
+	plan_headings = flags.integer("camera-planner-rate", 1 if RenderLevers.preset() == "laptop" else CameraPlanner.HEADINGS_PER_FRAME)
 	solid_escape = flags.text("camera-solid-escape", "off") == "on"  # round 43 stretch: dev only
 	danger_lean_m = float(flags.text("camera-danger-lean", str(DANGER_LEAN_M)))
 	solid_in_omega = float(flags.text("camera-solid-in", str(SOLID_IN_OMEGA)))
@@ -2014,6 +2018,7 @@ func _update_planner(points: Array, destination: Variant) -> void:
 			_fresh_until = _clock + CameraPlanner.FRESH_S
 		_plan_names = names
 		_plan_at = -1e9
+		planner.restart()
 		_plan_middle = null
 		_plan_travel = Vector3.ZERO
 	var dt := _frame_dt
@@ -2029,13 +2034,14 @@ func _update_planner(points: Array, destination: Variant) -> void:
 			"fresh": _clock < _fresh_until, "aspect": _aspect(), "pitch": pitch, "inset": vision_inset, "bottom": frame_bottom(),
 			"floor_level": _track_floor_zoom, "cap_level": minf(vision_zoom, RtsCamera.level_for(auto_frame_max_m)),
 			"data": RtsCamera.seen()}
-	if _clock - _plan_at >= CameraPlanner.PLAN_S:
-		_plan_at = _clock
+	if planner.planning() or _clock - _plan_at >= CameraPlanner.PLAN_S:
+		if not planner.planning():
+			_plan_at = _clock
 		var _hp := HudClock.begin()
 		if not _plan_yaw is float or wrote["yaw"] != "planner":
 			_plan_yaw = yaw  # his hand (or anything else) moved the yaw since: plan from where it is
 		var p0 := Time.get_ticks_usec() if _plan_log else 0
-		var out := planner.plan(world, float(_plan_yaw), _clock)
+		var out := planner.step(world, float(_plan_yaw), _clock, plan_headings)
 		if _plan_log:
 			var spent := Time.get_ticks_usec() - p0
 			cost["plans"] += 1

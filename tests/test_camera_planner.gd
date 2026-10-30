@@ -174,3 +174,17 @@ func test_near_the_wall_the_view_looks_into_the_arena_not_at_the_stands() -> voi
 	var in_view := _score(w, 0.0, 0.0)  # looking north, into the arena
 	assert_true(float(out_view["terms"]["arena"]) > float(in_view["terms"]["arena"]),
 			"the stands cost more than the floor (%s v %s)" % [out_view["terms"], in_view["terms"]])
+
+
+func test_the_plan_spread_over_frames_decides_as_the_whole_plan_does() -> void:
+	RtsCamera.fov = RtsCamera.FOV_DEG
+	var w := _world(_squad(Vector3(0, 0, 20)), _street(), NORTH * 6.0)
+	var whole := CameraPlanner.new().plan(w, deg_to_rad(-127.0))
+	var spread := CameraPlanner.new()
+	var out := {}
+	var calls := 0
+	while out.is_empty() and calls < 40:
+		out = spread.step(w, deg_to_rad(-127.0), 0.0, 1)
+		calls += 1
+	assert_eq(calls, CameraPlanner.candidate_yaws(deg_to_rad(-127.0)).size(), "one heading a call: the cycle is one call per heading")
+	assert_near(float(out["yaw"]), float(whole["yaw"]), 1e-6, "and it picks the same yaw")
