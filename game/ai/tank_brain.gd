@@ -1560,9 +1560,9 @@ static func label(option: Dictionary) -> String:
 static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	# Round 24 (native N3d): this function as one native call (native/src/decide_native.cpp) in the default arm (flat
 	# commitment, no switch probe); held to the GDScript below on every check (tests/test_native_decide.gd).
-	# Round 46 (L2, C46.4): until native twins the lane rule, a situation it can change (a lane held long enough to call
-	# CLEAR_LANE) is decided here; every other one stays native.
-	if not (LANE_CLEAR and TankBrain.lane_case(s)) and NativeDecide.usable():
+	# Round 46 (L2, C46.4): the lane rule is twinned natively (decide_native.cpp reads LANE_CLEAR live; native's
+	# pair/native-l2, tests/test_native_decide.gd's lane mutations).
+	if NativeDecide.usable():
 		return NativeBridge.impl.decide(s, current)
 	var me: Dictionary = s["self"]
 	var d: Dictionary = s["directives"]
