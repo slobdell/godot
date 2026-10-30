@@ -161,8 +161,8 @@ _(worker keeps this current: report at the top, every number with commit, machin
 - **Requests to other streams:** native: twin of `veto_failures` optional (not a V1 gate; R46.9).
 - **Questions for the lead (stretch, not blocking; player terms, one recommendation):**
   1. *Wide open ground, four or five squads, one click:* today they form up three side by side with the rest in a second row
-     behind (about 130 m wide for three of your gang squads). Would you rather they spread four or five side by side when the
-     ground is wide enough? **Recommended: keep three side by side.** Four abreast is ~175 m wide: on a phone or the laptop the
+     behind (about 160 m wide for three of your 44 m gang squads). Would you rather they spread four or five side by side when the
+     ground is wide enough? **Recommended: keep three side by side.** Four abreast is ~220 m wide: on a phone or the laptop the
      ends of the line leave the screen, and the outer squads reach the click last because they drive the long way round.
 
 ### Bar V2 THE TIGHTER FILE (orders, round 46; filed here BEFORE any number on 11849-11896; dev reads on 7001-7006 only)
