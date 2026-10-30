@@ -1189,7 +1189,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			var drive_f := SelectionSquads.drive_on(ground)
 			var crosses_f := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
 			var guard_across_f := Vector3(-guard_heading.z, 0.0, guard_heading.x)
-			guard_sides = RtsControls.gate_width(click, guard_across_f, drive_f, crosses_f, SelectionSquads.GROUP_SCAN_M)
+			guard_sides = RtsControls.gate_width_edge_on(ground, click, guard_across_f, drive_f, crosses_f, SelectionSquads.GROUP_SCAN_M)
 			# The fit reads the sides cut at the first point across a gap from his click (the scan threads a neck); the column
 			# below keeps the scan as it read it (G1 v9 unchanged).
 			var guard_cut := SelectionSquads.guard_trim_sides(click, guard_across_f, guard_sides, guard_approach, GATE_STEP_M)
@@ -1224,7 +1224,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					return null
 				return at
 			guard_width_at = func(p: Vector3, across: Vector3) -> Array:
-				return RtsControls.gate_width(p, across, drive_x, crosses_edge_x, SelectionSquads.GUARD_RANK_SCAN_M)
+				return RtsControls.gate_width_edge_on(ground, p, across, drive_x, crosses_edge_x, SelectionSquads.GUARD_RANK_SCAN_M)
 			guard_laid = SelectionSquads.guard_lay(blocks, click, drawn, Match.team_frame(team)["forward"],
 					guard_cap if guard_fit_on else SelectionSquads.COLUMN_ABREAST, guard_fix, guard_width_at)
 		if not guard_laid.is_empty():
