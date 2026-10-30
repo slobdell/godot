@@ -222,8 +222,8 @@ func _run() -> void:
 				"anchor_element": squad.get("anchor_element", ""),
 				"anchor_offset_m": snappedf(_flat_d(anchor, _click), 0.1) if anchor is Vector3 else -1.0,
 				# How much nearer the click its anchor is than its start (negative: the squad is sent AWAY from the click).
-				"veto_fail": SelectionSquads.veto_refuses(_flat(anchor), _flat(squad["start"]), veto_from, came, team_forward) if anchor is Vector3 else false,
-				"veto_across": SelectionSquads.guard_across_gap(veto_from, _flat(anchor), came) if anchor is Vector3 else false,
+				"veto_fail": SelectionSquads.veto_refuses(_veto_xz(anchor), _veto_xz(squad["start"]), veto_from, came, team_forward) if anchor is Vector3 else false,
+				"veto_across": SelectionSquads.guard_across_gap(veto_from, _veto_xz(anchor), came) if anchor is Vector3 else false,
 				"toward_m": snappedf(_flat_d(squad["start"], _click) - _flat_d(anchor, _click), 0.1) if anchor is Vector3 else 0.0,
 				"plan_drive_m": snappedf(float(squad["path_len"]), 0.1), "driven_m": snappedf(float(squad["driven"]), 0.1),
 				"plan_deck": squad["plan_deck"], "deck": squad["deck"], "deck_at": squad.get("deck_at"),
@@ -1199,5 +1199,5 @@ static func _xz(p: Vector3) -> Array:
 
 
 ## Round 46 (V1): a point on the ground plane.
-static func _flat(p: Vector3) -> Vector3:
+static func _veto_xz(p: Vector3) -> Vector3:
 	return Vector3(p.x, 0.0, p.z)
