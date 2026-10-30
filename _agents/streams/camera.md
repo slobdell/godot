@@ -135,6 +135,7 @@ bisect: the margin alone costs ~9 points of D1, the behind rule ~13; the clamp n
 points between camera variants (the autoplay's fights change with the view), so no further tuning was trusted. Knobs (dev):
 `--camera-planner-w=gun:6,margin:0.1,behind:1,clamp:1` = v2; defaults = v1.
 
+**Branch tip 314c8005f GREEN** builder3 (`make check exited 0`, 3485 passed / 0 failed, 28 targets ALL JUDGED; code = 569064eb9 + docs).
 **After the candidate:** 569064eb9 no edge pan headless (a replay's mouse at 0,0 dragged the camera into "manual"; Bar C1 untouched:
 its 192 runs moved 0 px by player/jump/follow, CameraPlaytest turns edge pan off). Not in the candidate; harmless to merge after it.
 
