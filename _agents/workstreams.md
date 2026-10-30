@@ -102,6 +102,36 @@ aren't ours; stop only by a PID you started (lesson 336).
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar L1 HIS IFV BEHIND HIS OWN SQUADS FINDS A LANE (engage; filed 2026-10-30 ~02:20 PDT in streams/engage.md and here, BEFORE any number on 11901-11948).**
+
+  **Workload:** `make engage-lane-bar LANE_SEEDS="11901 ... 11948"` (`tests/engage/lane_probe.gd`, table `tests/engage/lane_table.py
+  --pair`): per seed a drawn arena (gorge / locks / terminus / crossing), crew hull (4 IFVs, 2 tanks, 2 scouts), enemy gun (5 kinds,
+  shoots back) 18-32 m off with a clear line, one squadmate in the lane (35-65 % of the way, within 1.5 m of the line) and one or two
+  beside it (3-8 m off the line), on a third of the seeds the one in the lane driving ACROSS it; the friends hold their fire. Who
+  commands the crew, by seed: his ATTACK on the gun, his MOVE done (E2's post), or the CPU's own brain (no player; C46.6). 30 s
+  window. Arms OFF = `--lane-clear=off`, ON = default, paired by seed, one frozen tree (named when frozen), builder3, native ON.
+  **The rule's case** = attack and cpu runs blocked in OFF (held for a friend at least once); post runs are R46.7's 4 m bound, where
+  a step rarely clears a friend in the lane (dev: held ~29 s in both arms), so they are guards, not deciding.
+  **Native (C46.4):** ships with decide's GDScript path for lane-blocked situations (`TankBrain.lane_case`) unless native's twin has
+  landed EQUAL by the freeze (then the twin's tree is frozen instead and `test_native_decide` equality is a guard).
+
+  **Deciding (the rule's case):**
+  - D1 seconds held for a friend while the gun has a target (`held_s`): paired mean ON - OFF < 0 by at least 1.645 se (one-sided).
+  - D2 first round after the first block (`first_shot_s`): ON sooner or identical in >= 60 % of runs (strictly sooner reported).
+
+  **Guards (all 48 unless named):**
+  - G1 friendly fire by the crew: hits ON <= OFF + max(1, 1.645 sqrt(OFF)); kills ON <= OFF.
+  - G2 crew deaths ON <= OFF + max(1, 1.645 sqrt(OFF)).
+  - G3 enemy hp left: paired mean ON - OFF <= +1.645 se (the crew does not hurt the gun less).
+  - G4 post runs (R46.7): every ON run's farthest from his post <= 5.5 m (4 m + the hull's settle); held_s ON - OFF <= +1.645 se.
+  - G5 his order to a crew (C46.3): E2's authority probe (`make engage-authority-probe`, seeds 11901-11924, AUTH_ARM=on) under
+    `--lane-clear=off` v default: Bar E1's D1 (hold / stop moved <= 3.0 m), D2 (pushed rows 0) and D3 (move ends) unchanged.
+  - G6 orders' default probe (`make orders-probe`, its default cells) rows identical ON v OFF where no lane is ever held (the rule
+    acts only through CLEAR_LANE, which a move / stop / hold verb never allows).
+
+  **Reported:** held_s by mode; moved_m; shots; feed lines (ON: post and attack runs; OFF: 0). A pass ships ON (it is ON by default
+  already on stream/engage; a FAIL turns the default OFF before merging and goes to him in player terms the same hour).
+
 - **Bar V1 FILED (orders, 2026-10-30 ~02:40 PDT, stream/orders 94c737a14, before any number on 11801-11848; recorded verbatim by the
   orchestrator).** The veto-only group guard (R46.1, R46.9, R46.10). Verbatim from the brief:
 
