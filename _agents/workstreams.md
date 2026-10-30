@@ -473,6 +473,13 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   (wip/manoeuvre-backout-on 466d96191: `backout` out of Traffic.DEFAULT_OFF + the default test flipped; `--traffic-off=backout` the
   escape). **Owed before it counts as shipped:** the sim baseline re-recorded (CPU v CPU changes: the CPU's War Rigs back out too,
   C45.5) twice on builder0 and adopted, then ONE builder0 main check (perf JUDGED), batched with engage's R45.24 fix.
+- **R45.29 (~22:50) Bar E2b FAILS as filed on G5 (native EQUAL 46/48); the stop cap stays OFF (opt-in).** fea4cfbec builder0 green;
+  11349-11396, n 48 an arm, native ON; base no flag v `--turn-in-cap=on`. D1 max 1.1 m both arms (VACUOUS: base never drifted on these
+  seeds), D1b 0 worse, G1 E1's lines identical, G2 deaths 9 v 9, G3 shots 44.2 v 43.9, G4 take-back 35/35 PASS; **G5 FAIL 46/48** (11352,
+  11362: law_artillery in a squad of three): native's execute runs a `stop` itself except a fixed gun on wheels (the only case it hands
+  back to `_stop_turn_in`), while `_his_cap` tested only "his stop". The cap changed 6 runs, all fixed-gun wheeled scouts, no gain on its
+  own line, mixed side effects (11363 ended 6 m nearer the enemy; 11371 half the damage). Round 46: the one-condition fix + a workload
+  that stages the case + fresh seeds. fea4cfbec (player fix, cap OFF) is unaffected and already on main.
 - **R45.28 (~21:30) Bar S v5 FAILS as filed on three guards; seat rules stay OFF.** Frozen fc639d7e0, builder0 light, 72 paired cells,
   0 SCRIPT ERROR: D1 seated within the bound by 15 s 220 -> 329 (+8.4 se) PASS; Terminus clean (k-turn -9.2 se), never-arrived -0.33 a
   run, seat moves -20 a run; **FAIL: Crossing yield+blocked +9.85 s a run (+4.1 se, the named risk), Crossing k-turn +2.1 se, Locks
