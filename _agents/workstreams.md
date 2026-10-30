@@ -106,6 +106,15 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.7 (2026-10-30 ~01:50) Engage L1 (builder3, 7189e3ff3 + trace rows, his Terminus replay, n 1): three causes, every blocker PARKED
+  (no yield ask to manoeuvre).** Shots 19 at 116.5 s, still 19 at 139.1 s. (1) 118-123 s at his post: CLEAR_LANE needs a fight target, HOLD
+  has none, and held_may_move would refuse the move; (2) 123-134 s under his attack: the order's +1.0 base is added before the commit
+  bonus, so ENGAGE (1+e) x 1.15 v CLEAR_LANE 1 + e x 1.3225: CLEAR_LANE wins only at e > 0.87; (3) 134-139 s: `_lane_spot` tests a 2 m
+  disc with no spread while the trigger tests the hull box + spread, so its "clear" spots stayed blocked by parked Wrenches_3, re-picked
+  every 2 s. Ruled: (2), (3) fixed under `--lane-clear` (ON at its bar); native: GDScript decide only for lane-blocked crews with the
+  switch ON until the twin lands (a C46.4 form, said in Bar L1). (1): his explicit HOLD never moves for a lane (he holds; the feed line
+  names the blocker); a post from his MOVE allows one lane step <= ~4 m that returns to the post; E2's authority probe is a guard.
+
 - **R46.6 (2026-10-30 ~01:40) Camera C1 read (stream/camera adb5c1b13, laptop, his Terminus recording, n 144 s with a selection); a `sel`
   row for the recorder -> native.** (a) none of his selection on screen 2 s, under half 26 s (74-90 s: Guns strung 110 m, the 100 m frame
   cap + the danger yaw turned S); (b) every ORDERED new selection on screen within 1 s; the code cause of his complaint: the glide's aim
