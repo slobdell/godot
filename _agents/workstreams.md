@@ -292,6 +292,17 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.20 (2026-10-30 ~04:05) Bar C1 FAILS as filed on ONE of 38 lines (G7, the rear-ambush turn); OFF; C1 v2 on the reserve.** Run
+  3bf76e839 GREEN, builder3 J8, 0 runs lost (stream/camera 0f04dba1d; `references/round46/camera/barc1-verdict-builder3-3bf76e839.txt`).
+  Deciding PASS: D1 driving with half+ of his shown squad hidden by a building 1011 -> 504 s; D2 none of his selection on screen 31.6 ->
+  10.9 s; D3 new selection to on screen 0.14 -> 0.06 s; D4 hits off screen 1.9 -> 2.0 % (within +1). G3 enemies on screen 57.3 -> 51.1
+  PASS (the named risk); inside a building 0.64 -> 0.19 s a run; laptop 0.36 ms/frame. **FAIL G7:** ambush REAR lane, shot to shooter on
+  screen 4.72 -> 9.17 s mean (never = 20): 9 of 28 never v 4 of 37, p50 3.5 v 1.8 s; left / right faster than today (3.0 v 5.4 s, 0.7 v
+  1.4 s). Cause (code read): a 180-degree turn must overcome the turn cost, the switch margin, the post-switch margin and the 0.6 s cost
+  mean, and one shooter behind is only a share of the contacts term. **C1 v2:** a contact firing at his selection costed in full
+  (W_ACTION), and the switch hold not applied against a pose that puts an off-screen shooter on screen; dev seeds first, then Bar C1 v2
+  on 12249-12296 with C1's 38 lines unchanged. If v2 fails, it is his call (lesson 339). Told him the same hour.
+
 - **R46.19 (2026-10-30 ~03:50) L1's freeze efe4d8ba9 RED; a latent water gap in ENGAGE's weave; GRANT engage one guard.** builder3: 3481 / 1
   failed (test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too: rust 4 wet hops, expected 0); sim-baseline moved on pit,
   terminus, docks, yard_open (expected: the rule acts on the CPU's crews; the orchestrator adopts after the bar). By removal:
