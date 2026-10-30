@@ -1886,6 +1886,12 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 		return {}
 	var nest := nested_offsets(blocks)
 	var clearance := _nest_clearance(blocks)
+	# A rank behind the front needs its HALT dry: `wet_or_deck` samples a ring at half its reach, so the reach is the deepest
+	# halt (a coil 36 m across: samples at its 18 m radius; dev read 5: the travel wedge's half-width refused every rank on
+	# the Locks' 42 m quay) or, with no halt priced, the widest squad's width.
+	var halt_reach := min_step(blocks)
+	if halt_reach <= 0.0:
+		halt_reach = slot_width
 	var seats: Array[Vector3] = []
 	var behind := 0.0
 	var fit := maxi(1, mini(fit_at_click, COLUMN_ABREAST))
@@ -1914,7 +1920,7 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 			while wet_steps < WET_STEPS_MAX:
 				var wet := false
 				for k in size:
-					if wet_or_deck(centre_r + across * ((float(k) - (size - 1) * 0.5) * (slot_width + GAP_M)), slot_width):
+					if wet_or_deck(centre_r + across * ((float(k) - (size - 1) * 0.5) * (slot_width + GAP_M)), halt_reach):
 						wet = true
 						break
 				if not wet:
@@ -1928,9 +1934,12 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 			var seat := centre_r + across * aside
 			if guard_across_gap(flat_click, seat, came, data):
 				continue
-			if behind > 0.0 and wet_or_deck(seat, slot_width):
+			if behind > 0.0 and wet_or_deck(seat, halt_reach):
 				continue
-			var fixed: Variant = fix.call(seat)
+			# `fix(seat, behind)`: a seat behind the click along the approach is on the squads' own side, where "reached from the
+			# click without a long way round" does not apply (dev read 5: a rank on a gorge's near rim, two necks from a click
+			# beyond the far drop, was refused and its squad held 156 m out).
+			var fixed: Variant = fix.call(seat, behind > GUARD_BEHIND_M)
 			if fixed == null:
 				continue
 			seats.append(fixed as Vector3)
@@ -2020,6 +2029,11 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 		if holding[i]:
 			places[i] = centers[i]
 			held += 1
+			# A holder standing on a seat of the body (a seat within its own footprint: it refused a 7 m shuffle back, R45.6) is
+			# part of the body: the seat counts toward its reach, as the seat it fills.
+			for si in seats.size():
+				if seats[si].distance_to(centers[i]) < widths[i] * 0.5 + GUARD_SEAT_TAKEN_M * 0.25:
+					reach = maxf(reach, seats[si].distance_to(flat_click))
 		else:
 			reach = maxf(reach, places[i].distance_to(flat_click))
 	guard_held += held

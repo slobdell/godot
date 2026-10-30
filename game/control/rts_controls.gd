@@ -1211,14 +1211,16 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			var crosses_x := SelectionSquads.crosses_on(ground)
 			var crosses_edge_x := SelectionSquads.crosses_or_edge(crosses_x)
 			var flat_click_x := Vector3(click.x, 0.0, click.z)
-			guard_fix = func(seat: Vector3) -> Variant:
+			guard_fix = func(seat: Vector3, behind: bool) -> Variant:
 				var at := SlotGround.standable(ground, seat)
 				at = Vector3(at.x, 0.0, at.z)
 				if at.distance_to(Vector3(seat.x, 0.0, seat.z)) > GUARD_SEAT_SNAP_M:
 					return null
 				if Orders.clamp_to_arena(at).distance_to(at) > 1.0 or SlotGround.over_water(at):
 					return null
-				if not SelectionSquads.reached_from(flat_click_x, at, drive_x, crosses_x):
+				# A seat beside the click must be reached from it without a long way round (no place across a gap); a seat
+				# behind the click, on the squads' own side, is reached from where they stand.
+				if not behind and not SelectionSquads.reached_from(flat_click_x, at, drive_x, crosses_x):
 					return null
 				return at
 			guard_width_at = func(p: Vector3, across: Vector3) -> Array:

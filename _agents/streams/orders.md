@@ -113,6 +113,15 @@ _(worker keeps this current: report at the top, every number with commit, machin
   orchestrator: main eec905e52 carries native's N2 twin, EQUAL on a8adba232 per R45.3; the bar freezes off this branch; at ship
   the column_lay conflict resolves as pair/native-g2 cfa4a0eb2 and native re-proves on the final freeze). R45.13: D5 = reach +
   one rank step + 6 m accepted; **the lines do not move again after the freeze**.
+- **Dev read 5 (builder2, 84ec3b689, 7001-7006, `~/orders-r45/dev5/`):** PASS D1, D2, D3, D4, D5b, D6, never-in every cell,
+  contacts 8639 -> 4125; FAIL D5 on two Gorge cells and the reach-80 held guard on four quay / street cells. Causes and fixes
+  (this tree): (a) a squad standing 7 m ahead of its own seat (the Hunters on the probe's spawn cell) held by R45.6 and its
+  seat was left out of the body's reach, so the squads holding behind it read as stragglers: a holder on its own seat now
+  counts that seat toward the reach; (b) rear ranks on the Locks' 42 m quay were refused because their footprint was read at
+  the travel wedge's half-width (22 m): now at the halt's radius (the deepest halt, a coil's 18 m); (c) gorge his-80 seed
+  7003: the probe's click lay beyond the ENEMY's drop band and a rear seat on the near band's rim was refused by "reached from
+  the click without a long way round" (two necks away): a seat behind the click is on the squads' own side and skips that
+  test (still dry, on the map, standable). Laptop labs 74/0.
 - **Dev read 4 (builder2, 7a0c62c3c, 7001-7006, `~/orders-r45/dev4/`):** PASS D1, D2, D4, D5b, D6, contacts 8639 -> 3995; FAIL D3,
   D5, the reach-80 held guard, never-in (gorge 40/58 6/6, locks across-80 2), all-in (gorge 40/58). Causes read from the rows
   and local traces: (a) `ground_anchors` snapped a HOLDING squad's centre 19 m when that centre sat in a prop (locks his cells,
