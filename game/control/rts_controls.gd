@@ -1742,9 +1742,9 @@ static var legs_cut_short := 0
 
 
 ## V1 (round 46, R46.1): the veto on a plain group click's final places (`anchors[i]` is `squads[i]`'s, each squad's start where
-## its vehicles stand now). No failing place: `anchors` returned untouched (no scan, no path query). Else G2's fitted body
-## (`SelectionSquads.guard_lay`, its fit read at the click as G2 reads it) is laid for its SEATS only, and each failing place is
-## re-dealt to the nearest free one (SelectionSquads.veto_redeal); a packed halt (D3) moved off its place is dropped.
+## its vehicles stand now). No failing place: `anchors` returned untouched (no scan, no path query). Else today's ranks for the
+## body (`rank_slots_for`, two abreast at most, from the veto's front) are the SEATS, and each failing place is re-dealt to the
+## nearest free one the ground takes (SelectionSquads.veto_redeal); a packed halt (D3) moved off its place is dropped.
 ## The spare seats the veto asks G2's body for beyond one a squad (the places that stand take some of the body's own).
 const VETO_SPARE_SEATS := 4
 
@@ -1765,16 +1765,11 @@ func _veto(squads: Array, anchors: Array[Vector3], click: Vector3, drawn: Varian
 	var flat_click := Vector3(click.x, 0.0, click.z)
 	var drive := SelectionSquads.drive_on(ground)
 	var crosses := SelectionSquads.crosses_on(ground)
-	var crosses_edge := SelectionSquads.crosses_or_edge(crosses)
-	var heading := SelectionSquads.approach_of(blocks, click, forward, drawn)
-	var cap := SelectionSquads.COLUMN_ABREAST
-	if SlotGround.is_standable(ground, flat_click):
-		var widest := 0.0
-		for block: Dictionary in blocks:
-			widest = maxf(widest, float(block["width"]))
-		var across := Vector3(-heading.z, 0.0, heading.x)
-		var sides := RtsControls.gate_width_edge_on(ground, click, across, drive, crosses_edge, SelectionSquads.GROUP_SCAN_M)
-		cap = SelectionSquads.guard_fit(widest, SelectionSquads.guard_trim_sides(click, across, sides, approach, GATE_STEP_M))
+	var came := Vector3(approach.x, 0.0, approach.z).normalized()
+	var front := SelectionSquads.veto_front(click, came)
+	# A seat must be standable within GUARD_SEAT_SNAP_M, dry, on the map and clear of water / a deck's mouth for the squad's halt;
+	# a seat beside his click (not behind it along the approach) is also reached from it by ground without a long way round.
+	var halt_reach := SelectionSquads.min_step(blocks)
 	var fix := func(seat: Vector3, behind: bool) -> Variant:
 		var at := SlotGround.standable(ground, seat)
 		at = Vector3(at.x, 0.0, at.z)
@@ -1782,21 +1777,22 @@ func _veto(squads: Array, anchors: Array[Vector3], click: Vector3, drawn: Varian
 			return null
 		if Orders.clamp_to_arena(at).distance_to(at) > 1.0 or SlotGround.over_water(at):
 			return null
+		if halt_reach > 0.0 and SelectionSquads.wet_or_deck(at, halt_reach * 0.5):
+			return null
 		if not behind and not SelectionSquads.reached_from(flat_click, at, drive, crosses):
 			return null
 		return at
-	var width_at := func(p: Vector3, across: Vector3) -> Array:
-		return RtsControls.gate_width_edge_on(ground, p, across, drive, crosses_edge, SelectionSquads.GUARD_RANK_SCAN_M)
-	# guard_lay's own counters are G2's measurements: the veto reads its seats without counting a G2 lay.
-	var counters := [SelectionSquads.guard_relaid, SelectionSquads.guard_held, SelectionSquads.guard_unlaid, SelectionSquads.guard_last_step_m]
-	var laid := SelectionSquads.guard_lay(blocks, click, drawn, forward, cap, fix, width_at, Arena.active, VETO_SPARE_SEATS)
-	SelectionSquads.guard_relaid = counters[0]
-	SelectionSquads.guard_held = counters[1]
-	SelectionSquads.guard_unlaid = counters[2]
-	SelectionSquads.guard_last_step_m = counters[3]
-	var seats: Array = laid.get("seat_points", [])
+	# The seats: today's own ranks for this body, at most COLUMN_ABREAST abreast, laid back from the front along the approach,
+	# with VETO_SPARE_SEATS spares (pure geometry; each is checked on the ground only when the re-deal reaches it, nearest his
+	# click first). Round 46 dev: G2's guard_lay as the seat source scanned the ground at every rank, 45-66 ms on the laptop
+	# for his Gorge click (native on; 10 ms with the veto off).
+	var seats: Array = SelectionSquads.rank_slots_for(blocks, front, drawn, forward, SelectionSquads.COLUMN_ABREAST,
+			blocks.size() + VETO_SPARE_SEATS)
+	seats.sort_custom(func(a: Vector3, b: Vector3) -> bool: return a.distance_to(flat_click) < b.distance_to(flat_click))
+	var seat_ground := func(p: Vector3) -> Variant:
+		return fix.call(p, (front - Vector3(p.x, 0.0, p.z)).dot(came) > SelectionSquads.GUARD_BEHIND_M)
 	var stand := func(p: Vector3) -> Variant: return fix.call(p, true)  # standable, dry, on the map (the squad's own side)
-	var out := SelectionSquads.veto_redeal(anchors, blocks, click, approach, forward, failed, seats, Arena.active, stand)
+	var out := SelectionSquads.veto_redeal(anchors, blocks, click, approach, forward, failed, seats, Arena.active, stand, seat_ground)
 	for i in failed:
 		if out[i] != anchors[i]:
 			packed_shapes.erase(anchors[i])
