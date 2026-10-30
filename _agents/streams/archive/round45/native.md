@@ -59,6 +59,10 @@ Nothing.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**CLOSED (2026-10-30 ~01:00 PDT):** close step 5b GREEN b3f39ba77 (lines_r45: 60 lines incl. G2 R45.31; planner-pytest builder3
+light 18 + 86 OK; table unchanged); G2 stays OFF so 6562c6beb is not merged; ../godot-native-g2 and every godot-native* builder folder
+(builder0, builder2, builder3) removed, branches kept. Idle.
+
 **FINAL REPORT, round 45 (2026-10-29 ~23:40 PDT). Backlog done; idle.** In his terms:
 
 - **Big right clicks answer faster.** Three pieces of the group click now run in C++ (where a squad lines up at a
