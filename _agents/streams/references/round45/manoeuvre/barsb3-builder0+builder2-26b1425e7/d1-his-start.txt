@@ -1,0 +1,2 @@
+b3_his_base.log: Guns_2 rows 600, first reverse (speed < -0.1) t19, past the box (x < -45, z < 82) t140
+b3_his_bo.log: Guns_2 rows 600, first reverse (speed < -0.1) t2, past the box (x < -45, z < 82) t97

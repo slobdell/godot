@@ -1,0 +1,8 @@
+bar b3 frozen 26b1425e7; check builder2 exited 0, 25 passed 3 NOT JUDGED (perf), sim-baseline unmoved; native EQUAL 4a04ea921011cd9a, twins 34/0, default probe 60/60; Thu Oct 29 06:51:24 PM PDT 2026
+B start Thu Oct 29 06:51:24 PM PDT 2026 hash 26b1425e7 dirty '' builder2
+A start Thu Oct 29 06:51:24 PM PDT 2026 hash 26b1425e7 dirty '' builder0 light
+his done Thu Oct 29 06:53:20 PM PDT 2026
+corpus done Thu Oct 29 06:56:16 PM PDT 2026
+gorge done Thu Oct 29 06:57:15 PM PDT 2026
+guard done Thu Oct 29 06:58:52 PM PDT 2026
+workload done Thu Oct 29 07:05:49 PM PDT 2026

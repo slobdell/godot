@@ -1,0 +1,28 @@
+  11701 GUARD pose  0 locks    alone  -40 deg: clear t217 -> t217 (+0.0 s); wall ticks 18 -> 18; looks 0 stalls 0: ok
+  11702 GUARD pose  1 locks    crawl  +60 deg: clear t250 -> t250 (+0.0 s); wall ticks 132 -> 132; looks 1 stalls 0: ok
+  11703 GUARD pose  2 crossing crawl  +45 deg: clear t196 -> t198 (+0.1 s); wall ticks 0 -> 0; looks 1 stalls 0: ok (ceiling line)
+  11704 GUARD pose  3 crossing alone  -45 deg: clear t51 -> t51 (+0.0 s); wall ticks 13 -> 13; looks 0 stalls 0: ok
+  11705 GUARD pose  4 crossing crawl  -30 deg: clear t360 -> t360 (+0.0 s); wall ticks 202 -> 202; looks 0 stalls 0: ok
+  11706 GUARD pose  5 crossing alone  +55 deg: clear t308 -> t308 (+0.0 s); wall ticks 103 -> 103; looks 0 stalls 0: ok
+  11707 GUARD pose  0 locks    alone  -40 deg: clear t221 -> t221 (+0.0 s); wall ticks 97 -> 97; looks 0 stalls 0: ok
+  11708 GUARD pose  1 locks    crawl  +60 deg: clear t342 -> t360 (+0.6 s); wall ticks 99 -> 90; looks 1 stalls 0: ok
+  11709 GUARD pose  2 crossing crawl  +45 deg: clear t305 -> t303 (-0.1 s); wall ticks 11 -> 11; looks 1 stalls 0: ok (ceiling line)
+  11710 GUARD pose  3 crossing alone  -45 deg: clear t81 -> t81 (+0.0 s); wall ticks 30 -> 30; looks 0 stalls 0: ok
+  11711 GUARD pose  4 crossing crawl  -30 deg: clear t208 -> t208 (+0.0 s); wall ticks 55 -> 55; looks 0 stalls 0: ok
+  11712 GUARD pose  5 crossing alone  +55 deg: clear t71 -> t71 (+0.0 s); wall ticks 70 -> 70; looks 0 stalls 0: ok
+  11713 GUARD pose  0 locks    alone  -40 deg: clear t215 -> t215 (+0.0 s); wall ticks 130 -> 130; looks 0 stalls 0: ok
+  11714 GUARD pose  1 locks    crawl  +60 deg: clear t181 -> t181 (+0.0 s); wall ticks 33 -> 33; looks 2 stalls 0: ok
+  11715 GUARD pose  2 crossing crawl  +45 deg: clear t360 -> t360 (+0.0 s); wall ticks 1 -> 1; looks 1 stalls 0: ok (ceiling line)
+  11716 GUARD pose  3 crossing alone  -45 deg: clear t75 -> t75 (+0.0 s); wall ticks 27 -> 27; looks 0 stalls 0: ok
+  11717 GUARD pose  4 crossing crawl  -30 deg: clear t228 -> t228 (+0.0 s); wall ticks 55 -> 55; looks 0 stalls 0: ok
+  11718 GUARD pose  5 crossing alone  +55 deg: clear t76 -> t76 (+0.0 s); wall ticks 75 -> 75; looks 0 stalls 0: ok
+  11719 GUARD pose  0 locks    alone  -40 deg: clear t242 -> t242 (+0.0 s); wall ticks 118 -> 118; looks 0 stalls 0: ok
+  11720 GUARD pose  1 locks    crawl  +60 deg: clear t360 -> t360 (+0.0 s); wall ticks 144 -> 144; looks 0 stalls 0: ok
+  11721 GUARD pose  2 crossing crawl  +45 deg: clear t186 -> t186 (+0.0 s); wall ticks 0 -> 0; looks 1 stalls 0: ok (ceiling line)
+  11722 GUARD pose  3 crossing alone  -45 deg: clear t51 -> t51 (+0.0 s); wall ticks 14 -> 14; looks 0 stalls 0: ok
+  11723 GUARD pose  4 crossing crawl  -30 deg: clear t240 -> t240 (+0.0 s); wall ticks 125 -> 125; looks 0 stalls 0: ok
+  11724 GUARD pose  5 crossing alone  +55 deg: clear t178 -> t178 (+0.0 s); wall ticks 177 -> 177; looks 0 stalls 0: ok
+D (base-stuck poses, floor 8): 0 poses, ON sooner in 0 (line >= 80 %), median +0.00 s (line <= -1.0): INCONCLUSIVE
+C (the other poses' cost ceiling): 0 poses, worst +0.0 s (line <= +3.0), median +0.00 s (line <= +1.0): PASS
+G (guard + named poses): 24 poses; no-room poses later than OFF + 1.0 s or 15 more wall ticks, room / named poses over OFF + 3.0 s: 0: PASS
+VERDICT: NOT JUDGED (under the floor of 8 base-stuck poses)
