@@ -1,0 +1,80 @@
+{
+ "note": "his Gorge match's spawn (the recording's match row), x / z / yaw per unit",
+ "units": {
+  "Green_Hunters_1": [
+   -21.125,
+   90.0,
+   0.0
+  ],
+  "Green_Hunters_2": [
+   -14.625,
+   90.0,
+   0.0
+  ],
+  "Green_Hunters_3": [
+   -8.125,
+   90.0,
+   0.0
+  ],
+  "Green_Hunters_4": [
+   -17.875,
+   96.5,
+   0.0
+  ],
+  "Green_Hunters_5": [
+   -11.375,
+   96.5,
+   0.0
+  ],
+  "Green_Spears_1": [
+   8.125,
+   90.0,
+   0.0
+  ],
+  "Green_Spears_2": [
+   11.375,
+   96.5,
+   0.0
+  ],
+  "Green_Spears_3": [
+   17.875,
+   96.5,
+   0.0
+  ],
+  "Green_Spears_4": [
+   14.625,
+   90.0,
+   0.0
+  ],
+  "Green_Spears_5": [
+   21.125,
+   90.0,
+   0.0
+  ],
+  "Green_Wrenches_1": [
+   37.375,
+   90.0,
+   0.0
+  ],
+  "Green_Wrenches_2": [
+   50.375,
+   90.0,
+   0.0
+  ],
+  "Green_Wrenches_3": [
+   43.875,
+   90.0,
+   0.0
+  ],
+  "Green_Wrenches_4": [
+   47.125,
+   98.89,
+   0.0
+  ],
+  "Green_Wrenches_5": [
+   40.625,
+   98.89,
+   0.0
+  ]
+ }
+}

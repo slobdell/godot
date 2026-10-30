@@ -93,6 +93,12 @@ func _run() -> void:
 	for i in 40:  # the scene, the arena's navmesh and the controls (built after the mode starts)
 		await physics_frame
 	_controls = current_scene.find_child("TacticalMap", true, false) as RtsControls
+	# Round 45 (orders O4): in a window on the laptop the first frames are slow (shaders warm up) and 40 were not enough.
+	for i in 300:
+		if _controls != null:
+			break
+		await physics_frame
+		_controls = current_scene.find_child("TacticalMap", true, false) as RtsControls
 	if _controls == null:
 		print("ORDERS_PROBE {\"error\": \"no RtsControls (TacticalMap)\"}")
 		quit(2)

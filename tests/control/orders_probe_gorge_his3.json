@@ -1,0 +1,81 @@
+{
+ "name": "Orders probe, his Gorge army: 3 squads as he fielded them (2026-10-29T09-35-51)",
+ "note": "Round 45 (orders, Bar G2 D5b / R45.9): his three squads at his Gorge click, Gangs: four IFVs and a scout, five scouts, three support trucks and two artillery. Stood at their recorded spawn with --probe-starts=recorded --probe-stand=res://tests/control/orders_probe_gorge_his3_starts.json.",
+ "squads": [
+  {
+   "name": "Hunters",
+   "formation": "wedge",
+   "verb": "hold",
+   "directive": {
+    "role": "assault"
+   },
+   "units": [
+    {
+     "unit": "gang_ifv"
+    },
+    {
+     "unit": "gang_ifv"
+    },
+    {
+     "unit": "gang_ifv"
+    },
+    {
+     "unit": "gang_ifv"
+    },
+    {
+     "unit": "gang_scout"
+    }
+   ]
+  },
+  {
+   "name": "Spears",
+   "formation": "wedge",
+   "verb": "hold",
+   "directive": {
+    "role": "scout"
+   },
+   "units": [
+    {
+     "unit": "gang_scout"
+    },
+    {
+     "unit": "gang_scout"
+    },
+    {
+     "unit": "gang_scout"
+    },
+    {
+     "unit": "gang_scout"
+    },
+    {
+     "unit": "gang_scout"
+    }
+   ]
+  },
+  {
+   "name": "Wrenches",
+   "formation": "wedge",
+   "verb": "hold",
+   "directive": {
+    "role": "assault"
+   },
+   "units": [
+    {
+     "unit": "gang_support"
+    },
+    {
+     "unit": "gang_support"
+    },
+    {
+     "unit": "gang_support"
+    },
+    {
+     "unit": "gang_artillery"
+    },
+    {
+     "unit": "gang_artillery"
+    }
+   ]
+  }
+ ]
+}
