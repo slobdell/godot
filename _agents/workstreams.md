@@ -344,6 +344,14 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.27 (2026-10-30 ~05:05) Bar A6 v5 (holdway) FAILS as filed on guard 2b alone; SHIPPED ON by the orchestrator under C46.2 /
+  lesson 339 (its fourth bar).** 258ce00f0 GREEN builder0 (3475/0), 12049-12096, n 24, native ON, 0 SCRIPT ERROR (stream/manoeuvre
+  95f44597f; `references/round46/manoeuvre/barsa6v5-builder0-258ce00f0/`). PASS: deciding side-street jam 397 -> 34 s (-30 s a run, z
+  -5.5); off_arrive -1.5; head-on verdicts 12 = 12; mouth contacts 720 -> 580; far contacts 47 -> 10 (A6 v4's miss); last crew in +0.5 s
+  (noise); E1 lines identical. **FAIL 2b** head-on held_on 498 -> 868 crew-s (+30.8 a run, z +2.50 v +2). Ruled ON: 2b is a mechanism
+  line (crews held), the outcome lines it protects (arrival, last crew in, contacts) all hold or improve; what he sees is a side street
+  that no longer jams ~30 s and fewer brushes at a head-on meeting. Twin-free (R46.14). `--traffic-off=holdway` the escape.
+
 - **R46.26 (2026-10-30 ~05:20) GRANT engage `game/tank/tank.gd`'s burst branch (L1b part 2).** A started burst's later rounds fire from
   Tank._physics with no trigger (X2, ~:444); Gunnery.apply is C++ (gun_native) and gates only the first round. Under TankBrain.LANE_CLEAR
   (OFF = today): before each later round, if the controller holds for friends and FireLanes.for_shot names a friend, the burst ends
