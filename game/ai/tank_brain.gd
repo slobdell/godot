@@ -97,6 +97,32 @@ const COVER_FIRE_KEEP := 12.0
 const LANE_BLOCKED_TICKS := SimClock.TICK_RATE / 3
 ## How far CLEAR_LANE looks for a new firing spot (meters).
 const LANE_SEARCH := 10.0
+## Round 46 (engage L2, `--lane-clear`, ON; `=off` is the round-45 game): his IFV sat 20 s behind his own parked squads
+## (Terminus 116-140 s) because CLEAR_LANE (1) lost to a committed ENGAGE under his attack (the order's +1.0 base dilutes
+## the edge), (2) never served a crew holding his post (no fight target; the post refused the move), and (3) picked spots
+## its own 2 m test called clear that the trigger's hull-and-spread test did not. With the switch on: the edge survives
+## the base, a crew at a post he left it at by a move steps at most LANE_POST_STEP and returns when the fight is done,
+## and spots are tested with a hull's reach and the spread, against friends 1 and 2 s ahead, out to a third ring.
+static var LANE_CLEAR := not OS.get_cmdline_user_args().has("--lane-clear=off")
+## R46.7 (orchestrator): at a post he left by a MOVE, the lane step stays within this of the post (meters); under his
+## explicit hold or stop the crew never moves for a lane.
+const LANE_POST_STEP := 4.0
+## The rings of lane spots, nearest first (a small step beats a drive: a wheeled IFV needs seconds to relocate 16 m).
+const LANE_RINGS: Array[float] = [3.0, 6.0, 10.0, 16.0]
+const LANE_SEARCH_FAR := 16.0
+## A spot's lane must miss a friend's hull by this much beyond its reach (meters), so the trigger's own test agrees.
+const LANE_SPOT_MARGIN := 0.3
+## Friends are checked where they are and where they will be this many seconds ahead (their current velocity).
+const LANE_LOOKAHEAD_S: Array[float] = [1.0, 2.0]
+## Arrived at a lane spot and still held: search again after this many ticks (not the 2 s staleness).
+const LANE_REPICK_TICKS := SimClock.TICK_RATE / 2
+## ...and a spot the mover reads as arrived short of (its nose stop, a step it can't make) is dropped this many ticks after
+## it was given (the mover's phase reads the new goal within a tick or two).
+const LANE_MOVER_SETTLE_TICKS := 3
+## A wheeled hull (the IFV: 7.5 m long, a 7 m circle) can't make a sideways step inside its turning circle (the mover
+## stops it short: staged crowd, builder3): its spots lie along headings it can drive, ahead or astern of the hull, straight
+## or bent by these angles (degrees). Tracks and hovers pivot and take the 8 compass points.
+const LANE_WHEEL_BENDS: Array[float] = [0.0, 25.0, -25.0, 50.0, -50.0]
 ## A6 squad tactics: how much more a brain wants the squad's focus, an enemy shooting a retreating squad-mate
 ## it was asked to cover, and an enemy near the team's artillery or Lancers.
 const FOCUS_BONUS := 1.25
@@ -590,6 +616,14 @@ var _bursting := false
 ## CLEAR_LANE's chosen spot and when it was chosen (kept until reached or stale, so the tank settles to fire).
 var _lane_goal: Variant = null
 var _lane_goal_tick := 0
+## Round 46 (L2): the tick the crew reached its lane spot still held (-1 = not there), and whether it stepped off his post
+## for a lane (HOLD drives it back once nothing is in sight).
+var _lane_arrived_tick := -1
+var _lane_stepped := false
+## Lane spots the mover gave up on this CLEAR_LANE (it read them as arrived short of them): not chosen again.
+var _lane_failed: Array = []
+## Round 46 (L2): the verb of his order whose completion left the post (`_his_post`): only a move's post allows a lane step.
+var _his_post_verb := ""
 ## Round 46 (engage L1): the last `_lane_spot` read, for traces only: {"tick", "spots": [[x, z, why]...], "chose", "fallback"}.
 ## `why` is "ok", "edge", "obstacle", "no_sight" or "friend:<name>". Filled only when LANE_READ is on (a trace).
 var lane_read := {}
@@ -952,6 +986,8 @@ func _poll_order(think_tick: bool) -> bool:
 	_order_key = now_key
 	# Round 45 (E2): a new order replaces his post; an order cleared before it was done leaves none.
 	_his_post = finished and _his_order and now.is_empty() and ["stop", "move", "attack_move"].has(String(order.get("verb", "")))
+	_his_post_verb = String(order.get("verb", "")) if _his_post else ""
+	_lane_stepped = false
 	if _his_post:
 		_his_post_at = _flat(tank.global_position)
 	_his_order = bool(now.get("player", false))
@@ -1137,8 +1173,11 @@ func _order_context() -> Variant:
 	if order.is_empty():
 		# Round 45 (E2): his stop or move is done; the crew holds where it left him (stand, turn, fire) until he says more.
 		if _his_post and Drills.PLAYER_AUTHORITY:
-			return {"verb": "hold", "goal": _his_post_at, "target": "", "speed": 1.0, "player": true,
+			var held := {"verb": "hold", "goal": _his_post_at, "target": "", "speed": 1.0, "player": true,
 					"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
+			if _lane_step_allowed():
+				held["lane_step"] = true  # R46.7: his post after a MOVE may take one short lane step
+			return held
 		var post: Variant = OrderFeed.station(_order_source, String(tank.name))
 		return {"verb": "idle", "goal": post if post != null else _order_home, "target": "", "speed": 1.0,
 				"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
@@ -1521,7 +1560,9 @@ static func label(option: Dictionary) -> String:
 static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	# Round 24 (native N3d): this function as one native call (native/src/decide_native.cpp) in the default arm (flat
 	# commitment, no switch probe); held to the GDScript below on every check (tests/test_native_decide.gd).
-	if NativeDecide.usable():
+	# Round 46 (L2, C46.4): until native twins the lane rule, a situation it can change (a lane held long enough to call
+	# CLEAR_LANE) is decided here; every other one stays native.
+	if not (LANE_CLEAR and TankBrain.lane_case(s)) and NativeDecide.usable():
 		return NativeBridge.impl.decide(s, current)
 	var me: Dictionary = s["self"]
 	var d: Dictionary = s["directives"]
@@ -1796,11 +1837,15 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 	# its edge. Getting this wrong is not subtle: with the flat arm restored and only the edge applied, CLEAR_LANE's
 	# NET advantage over a committed ENGAGE is exactly 1.0 and the manoeuvre never happens
 	# (`test_a_tank_blocked_by_a_parked_friend_moves_to_clear_the_lane`: 0 shots, first shot at tick -1).
+	# Round 46 (L2): a crew with no fight of its own (holding a post) serves the target its gun is held on.
+	var lane_target := String(current.get("target", ""))
+	if LANE_CLEAR and lane_target == "":
+		lane_target = String(me.get("lane_target", ""))
 	if features.get("hold_for_friends", true) and int(me.get("lane_blocked_ticks", 0)) >= LANE_BLOCKED_TICKS \
-			and current.get("target", "") != "":
+			and lane_target != "":
 		var served := 1.0 if SwitchingCost.cost_arm() else float(features.get("commit_bonus", COMMIT_BONUS))
 		for pair in engages:
-			if pair[0] == current["target"]:
+			if pair[0] == lane_target:
 				candidates.append({"option": "CLEAR_LANE", "target": pair[0],
 						"score": float(maxf(float(pair[1]) * fight_scale, 0.3) * served * CLEAR_LANE_EDGE)})
 	if is_artillery:
@@ -2009,6 +2054,13 @@ static func decide(s: Dictionary, current: Dictionary) -> Dictionary:
 static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: bool, out_of_ammo: bool) -> Array:
 	var verb: String = o["verb"]
 	var allowed: Array = ORDER_OPTIONS.get(verb, [])
+	# Round 46 (L2, R46.7): his post after a move may take a lane step; his explicit hold or stop never does.
+	if bool(o.get("lane_step", false)) and LANE_CLEAR:
+		allowed = allowed + ["CLEAR_LANE"]
+	# ...and CLEAR_LANE keeps its edge over the committed fight AFTER the order's base is added (the base used to
+	# dilute it: under his attack it won only when the fight scored above 0.87).
+	var lane_edge := (1.0 if SwitchingCost.cost_arm() else float(s.get("features", {}).get("commit_bonus", COMMIT_BONUS))) \
+			* CLEAR_LANE_EDGE
 	var target: String = o.get("target", "")
 	var contacts: Array = s["contacts"]
 	var target_fresh := contacts.any(func(c: Dictionary) -> bool:
@@ -2032,10 +2084,14 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 		match verb:
 			"hold":
 				candidate["score"] = 1.0
+				if LANE_CLEAR and option == "CLEAR_LANE":
+					candidate["score"] = lane_edge
 			"attack":
 				if candidate["target"] != target:
 					continue
 				candidate["score"] = 1.0 + float(candidate["score"])
+				if LANE_CLEAR and option == "CLEAR_LANE":
+					candidate["score"] = float(candidate["score"]) * lane_edge
 			"attack_move":
 				if option == "RETREAT":
 					if not critical:
@@ -2048,6 +2104,8 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 					continue
 				elif candidate["target"] in in_reach:
 					candidate["score"] = ATTACK_MOVE_FIGHT + float(candidate["score"])  # met on the way: fight it
+					if LANE_CLEAR and option == "CLEAR_LANE":
+						candidate["score"] = float(candidate["score"]) * lane_edge
 			"idle":
 				if (option == "SPOT" and not anything_visible) or (option == "RESUPPLY" and not out_of_ammo):
 					continue
@@ -2375,7 +2433,8 @@ func build_situation() -> Dictionary:
 				"health": tank.health, "max_health": tank.max_health, "weapon": tank.weapon,
 				"ammo": tank.ammo, "max_ammo": tank.max_ammo, "heat": tank.sync_heat,
 				"shield": tank.shield, "max_shield": tank.max_shield, "reload": tank.sync_reload,
-				"lane_blocked_ticks": lane_blocked_ticks, "unit": tank.unit_id, "velocity": tank.estimated_velocity,
+				"lane_blocked_ticks": lane_blocked_ticks, "lane_target": engaged_target if lane_blocker != "" else "",
+				"unit": tank.unit_id, "velocity": tank.estimated_velocity,
 				"class": Units.PROFILES.get(tank.unit_id, {}).get("role", "tank"), "sight_radius": tank.sight_radius,
 				"in_resupply_zone": Match.in_resupply_zone(team, my_position),
 				# L2 (X3): my own crew's suppression, and whether it is bad enough that my fire is wasted.
@@ -2687,6 +2746,8 @@ func _act(s: Dictionary) -> void:
 	_held_under_fire = tank.ticks_since_hit < HELD_UNDER_FIRE_TICKS or not (s.get("incoming", []) as Array).is_empty()
 	if choice["option"] != "CLEAR_LANE":
 		_lane_goal = null
+		_lane_arrived_tick = -1
+		_lane_failed.clear()
 	var me: Dictionary = s["self"]
 	var my_position: Vector3 = me["position"]
 	var weapon: Dictionary = me["weapon"]
@@ -2910,14 +2971,31 @@ func _act(s: Dictionary) -> void:
 				_order_move(_move_to(point, false, 1.0, 2.0))
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
 		"CLEAR_LANE":
-			if _lane_goal == null or game_match.tick - _lane_goal_tick > SimClock.TICK_RATE * 2:
+			# Round 46 (L2): there and still held for half a second: look again now, not after the 2 s staleness.
+			var repick := LANE_CLEAR and _lane_arrived_tick >= 0 and game_match.tick - _lane_arrived_tick >= LANE_REPICK_TICKS
+			# ...or the mover stopped short of it (a step a wheeled hull can't make): drop that spot, look again.
+			if LANE_CLEAR and _lane_goal != null and game_match.tick - _lane_goal_tick > LANE_MOVER_SETTLE_TICKS \
+					and my_position.distance_to(_lane_goal) > SPOT_ARRIVE + 0.5 and String(Movement.state(tank).get("phase", "")) == "arrived":
+				_lane_failed.append(_lane_goal)
+				repick = true
+			var stale := game_match.tick - _lane_goal_tick > SimClock.TICK_RATE * 2
+			# Round 46 (L2): a stale goal that is still clear is kept (a fresh search from a new place zig-zagged the drive).
+			if LANE_CLEAR and stale and not repick and _lane_goal != null and _lane_goal_clear(_lane_goal, contact):
+				stale = false
+				_lane_goal_tick = game_match.tick
+			if _lane_goal == null or repick or stale:
 				_lane_goal = _lane_spot(s, contact)
 				_lane_goal_tick = game_match.tick
+				_lane_arrived_tick = -1
 			var spot: Vector3 = _lane_goal
 			why = TankBrain._join(why, "%s in the line of fire" % lane_blocker if lane_blocker != "" else "friend in the line of fire")
 			if my_position.distance_to(spot) > SPOT_ARRIVE + 0.5:
+				if _lane_step_allowed():
+					_lane_stepped = true
 				_order_move(_move_to(spot, false, 1.0, SPOT_ARRIVE))
 			else:
+				if _lane_arrived_tick < 0:
+					_lane_arrived_tick = game_match.tick
 				_order_move({"type": "face", "x": contact["position"].x, "z": contact["position"].z})
 			_order_weapon({"type": "target", "name": contact["name"], "fallback": true})
 		"COVER_FIRE":
@@ -3168,7 +3246,13 @@ func _act(s: Dictionary) -> void:
 			# default, which beats standing still. (An element's sector already came first above; a unit the player
 			# ordered directly is detached from its element and has no sector.)
 			var told: Variant = intended_facing()
-			if watch != null:
+			# Round 46 (L2, R46.7): a lane step off his post goes back to it once there is nothing left in sight.
+			if _lane_stepped and my_position.distance_to(_his_post_at) <= SPOT_ARRIVE + 0.5:
+				_lane_stepped = false
+			if _lane_stepped and nearest_visible == null and _his_post and my_position.distance_to(_his_post_at) > SPOT_ARRIVE + 0.5:
+				why = TankBrain._join(why, "back to its post")
+				_order_move(_move_to(_his_post_at, false, 1.0, SPOT_ARRIVE))
+			elif watch != null:
 				_order_move({"type": "face", "x": watch.x, "z": watch.z, "from": _sector_source(sector) if sector_watch else "contact"})
 			elif told != null:
 				_order_move(_face_intended_or({"type": "stop"}))
@@ -3639,6 +3723,8 @@ func _contact(s: Dictionary, contact_name: String) -> Dictionary:
 ## CLEAR_LANE's destination: the nearest of 16 nearby spots (two rings) that stands clear of obstacles, sees the
 ## target, and has no friend in the new line of fire; otherwise a sidestep away from the blocking friend.
 func _lane_spot(s: Dictionary, contact: Dictionary) -> Vector3:
+	if LANE_CLEAR:
+		return _lane_spot_v2(s, contact)
 	var me: Vector3 = s["self"]["position"]
 	var target: Vector3 = contact["position"]
 	var map := CoverMap.of(tank)
@@ -3685,6 +3771,128 @@ func _lane_spot(s: Dictionary, contact: Dictionary) -> Vector3:
 		var step := me + side * 6.0
 		lane_read = {"tick": game_match.tick, "spots": spots, "chose": [snappedf(step.x, 0.1), snappedf(step.z, 0.1)], "fallback": true}
 	return me + side * 6.0
+
+
+## Round 46 (L2): CLEAR_LANE's spot with the trigger's eyes. LANE_RINGS of spots (8 compass points, or a wheeled hull's
+## drivable headings, LANE_WHEEL_BENDS), nearest ring first; a spot counts only if its lane misses every living friend's HULL (its reach plus
+## LANE_SPOT_MARGIN plus the gun's spread at that distance) where the friend is now and LANE_LOOKAHEAD_S ahead, the
+## target stays in range and in sight, and the ground is drivable. At his post (R46.7) only spots within LANE_POST_STEP
+## of it. Within a ring, the one that keeps the range best. Nothing clear: stay put (face and hold), never a blind
+## sidestep, so a crew with no lane does not wander.
+func _lane_spot_v2(s: Dictionary, contact: Dictionary) -> Vector3:
+	var me: Vector3 = s["self"]["position"]
+	var target: Vector3 = contact["position"]
+	var map := CoverMap.of(tank)
+	var weapon: Dictionary = tank.weapon
+	var reach := float(weapon.get("range", 0.0))
+	var spread := _lane_spread()
+	var friends := _lane_friends(me)
+	var post: Variant = _his_post_at if _lane_step_allowed() and _player_post != null else null
+	var rings: Array = [LANE_POST_STEP * 0.6, LANE_POST_STEP] if post != null else LANE_RINGS
+	var centre: Vector3 = post if post != null else me
+	var envelope := SlotGround.envelope_of(tank.unit_id)
+	var spots: Array = []
+	var best: Variant = null
+	var bearings: Array = []
+	if String(Units.stat(tank.unit_id, "locomotion", "tracks")) == "wheels":
+		var axis := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+		for way: float in [1.0, -1.0]:
+			for bend: float in LANE_WHEEL_BENDS:
+				bearings.append((axis * way).rotated(Vector3.UP, deg_to_rad(bend)))
+	else:
+		for i in 8:
+			bearings.append(Vector3(cos(TAU * i / 8.0), 0.0, sin(TAU * i / 8.0)))
+	for ring: float in rings:
+		for bearing: Vector3 in bearings:
+			var spot := centre + bearing * ring
+			var why_not := ""
+			if absf(spot.x) > ARENA_LIMIT or absf(spot.z) > ARENA_LIMIT:
+				why_not = "edge"
+			elif _lane_failed.any(func(failed: Vector3) -> bool: return failed.distance_to(spot) < 1.0):
+				why_not = "failed"
+			elif map.inside_any(Vector2(spot.x, spot.z), 2.4):
+				why_not = "obstacle"
+			elif _flat(SlotGround.standable_for(tank, spot, envelope)).distance_to(_flat(spot)) > 1.0:
+				why_not = "ground"  # the hull doesn't fit there (its own clearance): the mover would stop short of it
+			elif spot.distance_to(target) > reach:
+				why_not = "range"
+			elif not map.clear_line(spot, target):
+				why_not = "no_sight"
+			else:
+				var in_way := TankBrain._lane_friend(spot, target, friends, spread, reach)
+				if in_way != "":
+					why_not = "friend:" + in_way
+			if LANE_READ:
+				spots.append([snappedf(spot.x, 0.1), snappedf(spot.z, 0.1), "ok" if why_not == "" else why_not])
+			if why_not != "":
+				continue
+			var range_change := absf(spot.distance_to(target) - me.distance_to(target))
+			if best == null or range_change < absf((best as Vector3).distance_to(target) - me.distance_to(target)) - 0.01:
+				best = spot
+		if best != null:
+			break
+	var chose: Vector3 = best if best != null else me
+	if LANE_READ:
+		lane_read = {"tick": game_match.tick, "spots": spots, "chose": [snappedf(chose.x, 0.1), snappedf(chose.z, 0.1)],
+				"fallback": best == null}
+	return chose
+
+
+## Round 46 (L2): whether a lane spot chosen earlier still has the target in range, in sight and clear of friends.
+func _lane_goal_clear(spot: Vector3, contact: Dictionary) -> bool:
+	var target: Vector3 = contact["position"]
+	var reach := float(tank.weapon.get("range", 0.0))
+	return spot.distance_to(target) <= reach and CoverMap.of(tank).clear_line(spot, target) \
+			and TankBrain._lane_friend(spot, target, _lane_friends(spot), _lane_spread(), reach) == ""
+
+
+## The spread the trigger will use from a standing start (it fires once there), with this crew's suppression.
+func _lane_spread() -> float:
+	return tan(Match.shot_spread(tank.weapon, 0.0, tank.suppression) * Match.LINE_OF_FIRE_SIGMAS)
+
+
+## Living friends near `me` for the lane test: name, hull, heading, and where they are now and LANE_LOOKAHEAD_S ahead.
+func _lane_friends(me: Vector3) -> Array:
+	var reach := float(tank.weapon.get("range", 0.0))
+	var friends: Array = []
+	for node in AiTickCache.team_tanks(game_match, tank.team):
+		var friend := node as Tank
+		if friend == null or friend == tank or not friend.is_alive():
+			continue
+		if friend.global_position.distance_to(me) > LANE_SEARCH_FAR + reach + Match.LINE_OF_FIRE_OVERSHOOT:
+			continue
+		var at: Array = [friend.global_position]
+		var velocity := friend.estimated_velocity
+		if velocity.length_squared() > 0.25:
+			for ahead: float in LANE_LOOKAHEAD_S:
+				at.append(friend.global_position + velocity * ahead)
+		friends.append({"name": String(friend.name), "at": at, "size": Units.stat(friend.unit_id, "hull_size"),
+				"forward": -friend.global_basis.z})
+	return friends
+
+
+## The first friend (name) a shot from `spot` at `target` would endanger, now or LANE_LOOKAHEAD_S ahead; "" if none. The
+## trigger's own geometry (Match.friendlies_in_line_of_fire, direct fire): out to LINE_OF_FIRE_OVERSHOOT past the target,
+## the hull's box against the line, the spread at that distance, plus LANE_SPOT_MARGIN.
+static func _lane_friend(spot: Vector3, target: Vector3, friends: Array, spread: float, weapon_range: float) -> String:
+	var line := Vector3(target.x - spot.x, 0.0, target.z - spot.z)
+	var length := line.length()
+	if length < 0.01:
+		return ""
+	var direction := line / length
+	var reach := minf(length + Match.LINE_OF_FIRE_OVERSHOOT, weapon_range + Shell.RANGE_MARGIN)
+	var origin := Vector3(spot.x, 0.0, spot.z)
+	for friend: Dictionary in friends:
+		var size: Array = friend["size"]
+		var forward: Vector3 = friend["forward"]
+		for at: Vector3 in friend["at"]:
+			var along := Vector3(at.x - spot.x, 0.0, at.z - spot.z).dot(direction)
+			var hull := Units.hull_reach_along(size, forward, direction, "lof")
+			if along <= 0.0 or along > reach + hull:
+				continue
+			if Units.hull_distance_to_line(size, forward, at, origin, direction, "lof") <= spread * maxf(along, 0.0) + LANE_SPOT_MARGIN:
+				return String(friend["name"])
+	return ""
 
 
 ## Where a tank breaking contact heads next: straight away from the nearest recently seen enemy that could
@@ -3744,6 +3952,17 @@ func _arrive_facing(order: Dictionary) -> Dictionary:
 ## Whether a unit holding a player's post may start moving for `option`: back to its post (REGROUP/HOLD), with its
 ## element (KEEP_SLOT), or — under fire — into cover or away (TAKE_COVER, COVER_FIRE, RETREAT, RECHARGE, RESUPPLY, and any
 ## escape the brain marks `to_safety`). Never for a fight of its own choosing.
+## Round 46 (L2, C46.4): a situation the lane rule can change: the gun held for a friend long enough to call CLEAR_LANE.
+static func lane_case(s: Dictionary) -> bool:
+	return bool(s.get("features", {}).get("hold_for_friends", true)) \
+			and int((s["self"] as Dictionary).get("lane_blocked_ticks", 0)) >= LANE_BLOCKED_TICKS
+
+
+## R46.7: his post after his MOVE (or attack-move) may take one short lane step; after his stop it may not.
+func _lane_step_allowed() -> bool:
+	return LANE_CLEAR and _his_post and Drills.PLAYER_AUTHORITY and ["move", "attack_move"].has(_his_post_verb)
+
+
 static func held_may_move(option: String, under_fire: bool, to_safety: bool) -> bool:
 	if HELD_RETURNS.has(option):
 		return true
@@ -3827,11 +4046,14 @@ func _order_move(order: Dictionary) -> void:
 	# moving on its own judgement (a flank, an advance, a circle). Until round 6 nothing enforced this: a held unit sat
 	# still only because a range heuristic in _combat_move happened to return "stop", and when CP4 changed the ranges it
 	# held 21 s and then flanked (lesson 47). This is the rule, stated where every move order passes.
-	if _player_post != null and String(order.get("type", "")) == "move_to" and not held_may_move(
+	var lane_step := String(choice.get("option", "")) == "CLEAR_LANE" and _lane_step_allowed()
+	if _player_post != null and String(order.get("type", "")) == "move_to" and not lane_step and not held_may_move(
 			String(choice.get("option", "")), _held_under_fire, bool(order.get("to_safety", false))):
 		held_moves_refused += 1
 		order = _held_face
-	if PARKED_HOLD and _player_post != null:
+	# Round 46 (L2, R46.7): the lane step off his post and its stay there while the fight lasts are not "parked" drift;
+	# HOLD brings it back once nothing is in sight.
+	if PARKED_HOLD and _player_post != null and not lane_step and not _lane_stepped:
 		order = _parked_move(order)
 
 	# Round 8 (the lead: "the semi trucks are yawing in place (should be impossible, they're not a tracker vehicle)"): a
