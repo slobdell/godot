@@ -70,6 +70,14 @@ orchestrator); (b) `brain/situation` 1.51 ms (build_situation, GDScript; s.conta
 sub-profile next, then port whichever single function is >= 1 ms with its GDScript kept as the fallback. JSON:
 `references/round46/native/terminus-sim-profile-builder3/sim-profile.json`.
 
+**Elements sub-profile (R46.14 probe, branch probe/native-elements 9145cc82a, NOT merged; builder3 light, his Terminus 149 s,
+native ON, n=1, this run's tick 12.24 ms):** elements segment 2.67 ms = Element.update 2.62 (2.32 calls a tick): **ElementPlan.build
+1.06 (0.46 ms a call)**, ElementSituation.build 0.55, ground (apply_swap / ground / ground_stations) 0.32, post (_take .. _issue) 0.32,
+pre-plan (corridor, transit, crossing, stall) 0.25. **Proposal (round 47, owners' code, so not this round):** ElementPlan.build is
+the round's single biggest GDScript function on his match (~1.1 ms a tick here; the laptop reads ~2.75x builder0); next is the
+brain's build_situation (1.51 ms, contacts 0.55). Either port needs its owner (manoeuvre / engage) to agree and a twin proof like
+decide's. JSON beside the first profile.
+
 **His Terminus replay is bit-exact to the end of his match (3888ff416).** The "17/20 at 151 s" was post-match: his match ended at
 tick 4471 (149.0 s, elimination); the census rows after it are his results screen v a headless replay running on. Through 149 s
 every crew 0.0 m, and the replay's end row equals his (tick 4471, state_hash 4682461502ba5500). divergence.py now judges to his
