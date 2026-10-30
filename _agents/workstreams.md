@@ -209,6 +209,15 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.11 (2026-10-30 ~03:20) L2's twin EQUAL; engage freezes on the pair; pre-L2 replays need `--lane-clear=off`.** Native: engage's
+  9446e1903 (GDScript lane cases) v pair/native-l2 165bea71f (all native): his Gorge 426/426 and Terminus 2071/2071 replay rows
+  byte-identical (`references/round46/native/l2-twin-proof-builder3-165bea71f/`, stream/native 33edf6eaf); unit sample 7536 decisions / 0
+  mismatches (mutation: 29). Engage merged the pair: stream/engage efe4d8ba9 = Bar L1's frozen tree if its check is green
+  (test_native_decide equality a guard; native re-proves on it; `--turn-in-cap` stays OFF there). **With L2 ON his recordings leave his
+  match from ~22 s (Terminus, Green_Guns_1) and ~50 s (Gorge): the rule acts on every crew.** Native makes replay-match / playtest-report
+  apply `--lane-clear=off` to pre-L2 recordings automatically (as R45.24); until then `REPLAY_FLAGS=--lane-clear=off`. Main a9c702bb7 =
+  + native 1843eb6df (the sel row; INHERIT its builder3 green 3472/0 ALL JUDGED).
+
 - **R46.10 (2026-10-30 ~02:30) V1 gains `forward`; two round-45 instrument faults (orders, 47cae3725).** `veto_failures(..., approach,
   forward, data)`: "sent back" = farther from his click than it stands AND (> 10 m behind along the approach OR > 5 m behind toward its own
   base edge on a click toward the enemy); on the approach-only test his Gorge Hunters PASSED ((-76, 101): level with his click along the
