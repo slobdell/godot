@@ -192,6 +192,30 @@ func test_symmetric_for_the_cpus_squads() -> void:
 	assert_eq(Traffic.report()["tr_verdicts"], 0, "a team-1 squad ordered along the ring road is not held either")
 
 
+## Round 45 (manoeuvre, Bar A6 v4's head-on guard; seed 11466 of the hold probe): under holdway a crew ordered to a station
+## BESIDE it (A1, a seat to its west at the order's first ticks) had a way across the street's; its time to the middle projected
+## on that way read ~0 s for a crew 30 m from it, it became A's lead, and A, the squad in the open that should wait, was told to
+## come on (B waited, A rolled into it: 32 contacts at the mouth). The time to the middle is along the SQUAD'S way; A waits.
+func test_under_holdway_a_crew_ordered_to_a_seat_beside_it_does_not_make_its_squad_first_to_the_middle() -> void:
+	_fresh(true)
+	var rows := [
+		["A1", 0, -70.0, 40.0, -2.0, 0.0, -1.0, 0.0, R, true, "e:A", true, -1.0, 0.0],   # driving west to its seat beside
+		["A2", 0, -66.0, 42.0, 0.0, -4.0, 0.0, -1.0, R, true, "e:A", true, 0.0, -1.0],
+		["A3", 0, -74.0, 42.0, 0.0, -4.0, 0.0, -1.0, R, true, "e:A", true, 0.0, -1.0],
+		["A4", 0, -70.0, 52.0, 0.0, -4.0, 0.0, -1.0, R, true, "e:A", true, 0.0, -1.0],
+		["B1", 0, -70.0, -21.0, 0.0, 8.0, 0.0, 1.0, R, true, "e:B", true, 0.0, 1.0],
+		["B2", 0, -67.0, -30.0, 0.0, 8.0, 0.0, 1.0, R, true, "e:B", true, 0.0, 1.0],
+		["B3", 0, -73.0, -30.0, 0.0, 8.0, 0.0, 1.0, R, true, "e:B", true, 0.0, 1.0],
+	]
+	Traffic.destinations = {"e:A": [Vector2(-70.0, -55.0), 8.0], "e:B": [Vector2(-70.0, 75.0), 8.0]}
+	Traffic.load_rows(rows, 0, true)
+	Traffic.hold_of("A2")
+	Traffic.hold_of("B1")
+	assert_eq(Traffic.report()["tr_verdicts"], 1, "a head-on verdict between A (south) and B (north)")
+	assert_true(not Traffic.hold_of("A2").is_empty(), "A, both leads in the open and B the sooner to the middle (3.9 s v 7.6 s), waits")
+	assert_true(Traffic.hold_of("B1").is_empty(), "B comes through")
+
+
 func test_the_switches_are_off_by_default_until_bar_a6() -> void:
 	assert_true(Traffic.DEFAULT_OFF.has("holdway") or not Traffic.off("holdway"), "either listed OFF (before the bar) or ON")
 	assert_true(Traffic.DEFAULT_OFF.has("holdroute") or not Traffic.off("holdroute"), "either listed OFF (before the bar) or ON")

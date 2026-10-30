@@ -738,15 +738,27 @@ static func _first_to(x: Vector2, group: String, cols: Dictionary) -> Array:
 	var speeds: PackedFloat64Array = cols["speed"]
 	var radii: PackedFloat64Array = cols["radius"]
 	var best: Array = []
+	# Round 45 (manoeuvre, `holdway`; Bar A6 v4's head-on guard, seed 11466): under holdway a crew's direction is its ORDERED
+	# way, and a crew ordered to a station BESIDE it (a seat to its west at the order's first ticks) has a way across the
+	# street's: its "time to the middle" projected on that way read 1.2 s for a crew 60 m from it, it became its squad's lead,
+	# and the squad that should have waited was told to come on (A rolled into B; 32 contacts at the mouth). The time is
+	# along the SQUAD'S way (the table's mean of its crews' ways), which is what "coming down the street" means; the lead's
+	# direction for the street test is that way too. OFF: today's exactly (the crew's own direction).
+	var way := Vector2.ZERO
+	if not off("holdway"):
+		way = (cols["gdir"] as Dictionary).get(group, Vector2.ZERO) as Vector2
+	var by_way := way.length_squared() > 0.25
 	for k in groups.size():
 		if groups[k] != group or moving[k] == 0:
 			continue
-		var along := (x.x - xs[k]) * dxs[k] + (x.y - zs[k]) * dzs[k]
+		var dx := way.x if by_way else dxs[k]
+		var dz := way.y if by_way else dzs[k]
+		var along := (x.x - xs[k]) * dx + (x.y - zs[k]) * dz
 		if along < -radii[k]:
 			continue
 		var seconds := maxf(along, 0.0) / maxf(speeds[k], MIN_SPEED_MPS)
 		if best.is_empty() or seconds < float(best[0]):
-			best = [seconds, Vector2(xs[k], zs[k]), Vector2(dxs[k], dzs[k]), k]
+			best = [seconds, Vector2(xs[k], zs[k]), Vector2(dx, dz), k]
 	return best
 
 
