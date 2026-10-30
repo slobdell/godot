@@ -95,8 +95,9 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   refused back-up beside a squadmate (pose 10) -- a shorter first leg or a lateral look; (5) the k-turn-seconds cost on Terminus.
 - **Merge for round 46 (the OFF code since 5d4b3fa82):** stream/manoeuvre **cccc2684f** = main e9862553f merged + the S v5 seat fixes +
   holdway's verdict fix + judges + the `assert_false` test fix (main's aed598359). Its builder0 check and the default orders probe v main
-  run after S v5's tail legs (`~/overnight-manoeuvre/r45/merge46/`, driver `merge46.sh`); the hash is named for main only when both read
-  green and 60 / 60. Every switch of this stream's new code is DEFAULT_OFF; backout's ON came from main.
+  run NOW on **builder3** (devia@builder3, Ryzen 9 9950X, the orchestrator's new builder, 22:10 PDT; perf NOT JUDGED and web-smoke red
+  there are machine gaps until native's nominal and Chrome land) from the frozen `../godot-manoeuvre-m46` and `../godot-manoeuvre-mainref2`
+  (`~/overnight-manoeuvre/r45/merge46/`, driver `merge46b.sh`); the hash is named for main only when both read green and 60 / 60. Every switch of this stream's new code is DEFAULT_OFF; backout's ON came from main.
 - **Cleanup at the close:** worktrees `../godot-manoeuvre-s5` (remove when the series ends), `-m46` and `-mainref2` (remove after
   merge46 reads), their builder0 folders `~/tank_squad/godot-manoeuvre-{s5,m46,mainref2}`; branches wip/manoeuvre-* kept.
 
