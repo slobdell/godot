@@ -427,6 +427,10 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   commit, a test failing without it, his replay with the rule ON re-read (should match until his first direct crew order). Bar E1's
   numbers unaffected (the probe's holds are `player`). After E2b's chain (it re-syncs the worktree). Replays of his pre-E2 matches:
   `REPLAY_FLAGS="--player-authority=off"` (native notes it in replay-match's docs).
+  **Fix landed (engage 12c9e673d):** the re-latch requires `order.player`; test_authority_element_hold fails without it (an element's
+  pointless hold dragged 3.8 m). **Bar E2b re-frozen at fea4cfbec before any number** (2fe2092cd's check was red only on the census
+  lint: the probe read `Manoeuvre.turn_in_stops`; fixed). E6's cap is now OPT-IN (`--turn-in-cap=on`) until E2b passes, so the arms
+  read base = no flag, new = `--turn-in-cap=on` (same comparison, no line changed). fea4cfbec carries the R45.24 fix; merged alone on green.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
