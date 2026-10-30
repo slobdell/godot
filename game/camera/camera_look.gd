@@ -27,6 +27,10 @@ extends Node
 ##   sel_latencies  per new selection (the commanded units' names change), seconds until half or more are on screen
 ##                  (null = never, by the end or the next selection)
 ##   hits / hits_off  rounds that struck ANY of his units, and of those, on a unit not on screen
+## Round 47 (camera K4, Bar K's deciding lines: his Parade note, "the squad I was controlling off in the distance"):
+##   sel_far_s      seconds the view's look point (the shown ground point) is more than FAR_M from the commanded units' middle
+##   sel_frames     per new selection whose middle was more than FRAMED_M from the look point when picked: seconds until it
+##                  is within FRAMED_M (null = never, by the end or the next selection), with the gap it started from
 ## CameraTrace attaches it with the trace; the playtest gives it the feed once the controls exist.
 
 ## "Firing at us" = a round at the commanded units within this many seconds.
@@ -37,6 +41,9 @@ const WALL_FROM_M := 30.0
 const REVERSAL_DEG := 5.0
 ## On screen = inside this margin of the viewport and above the HUD's top (CameraPlaytest._aimable's rule).
 const SCREEN_MARGIN_PX := 60.0
+## Round 47 (Bar K): "far" and "framed", metres from the look point to his selection's middle.
+const FAR_M := 30.0
+const FRAMED_M := 20.0
 
 var rig: RtsCamera
 var feed: DangerFeed
@@ -68,6 +75,9 @@ var sel_episodes: Array = []
 var _hits := 0
 var _hits_off := 0
 var _hooked := false
+var _sel_far_s := 0.0
+var _frame_open: Variant = null
+var frame_episodes: Array = []
 
 
 func _ready() -> void:
@@ -95,7 +105,7 @@ func _process(delta: float) -> void:
 	var own_shown := own.filter(func(at: Vector3) -> bool: return on_screen(at) and not wall_hides(at))
 	if not own.is_empty():
 		_own_shown_s += delta * float(own_shown.size()) / float(own.size())
-		_selection_lines(own, own_shown, float(state.get("speed", 0.0)), delta)
+		_selection_lines(own, own_shown, float(state.get("speed", 0.0)), delta, state["from"])
 	var any_on_screen := false
 	var firing: Array = []
 	var centroid := Vector3.ZERO
@@ -152,7 +162,10 @@ func _process(delta: float) -> void:
 
 
 ## Round 46 (Bar C1): the census's lines, live.
-func _selection_lines(own: Array, shown: Array, speed: float, delta: float) -> void:
+func _selection_lines(own: Array, shown: Array, speed: float, delta: float, from: Vector3) -> void:
+	var gap := Vector2(rig._shown_focus.x - from.x, rig._shown_focus.z - from.z).length()
+	if gap > FAR_M:
+		_sel_far_s += delta
 	if shown.is_empty():
 		_sel_none_s += delta
 	elif speed > MOVING_MPS:
@@ -168,7 +181,16 @@ func _selection_lines(own: Array, shown: Array, speed: float, delta: float) -> v
 			if _sel_open != null:
 				sel_episodes.append(_sel_open)  # replaced before it came on screen: latency stays null
 			_sel_open = {"t": snappedf(_clock, 0.01), "latency_s": null, "units": names.size()}
+			if _frame_open != null:
+				frame_episodes.append(_frame_open)
+				_frame_open = null
+			if gap > FRAMED_M:
+				_frame_open = {"t": snappedf(_clock, 0.01), "latency_s": null, "gap_m": snappedf(gap, 0.1)}
 		_sel_names = names
+	if _frame_open != null and gap <= FRAMED_M:
+		(_frame_open as Dictionary)["latency_s"] = snappedf(_clock - float((_frame_open as Dictionary)["t"]), 0.01)
+		frame_episodes.append(_frame_open)
+		_frame_open = null
 	if _sel_open != null and shown.size() * 2 >= own.size():
 		(_sel_open as Dictionary)["latency_s"] = snappedf(_clock - float((_sel_open as Dictionary)["t"]), 0.01)
 		sel_episodes.append(_sel_open)
@@ -280,7 +302,8 @@ func summary() -> Dictionary:
 			"mean_abs_bearing": means, "yaw_reversals": _reversals, "minutes": snappedf(_clock / 60.0, 0.001),
 			"sel_none_s": snappedf(_sel_none_s, 0.01), "sel_hidden_s": snappedf(_sel_hidden_s, 0.01),
 			"sel_latencies": sel_episodes.map(func(e: Dictionary) -> Variant: return e["latency_s"]) + ([null] if _sel_open != null else []),
-			"hits": _hits, "hits_off": _hits_off}
+			"hits": _hits, "hits_off": _hits_off, "sel_far_s": snappedf(_sel_far_s, 0.01),
+			"sel_frames": frame_episodes + ([_frame_open] if _frame_open != null else [])}
 
 
 ## The signed angle (degrees, positive = to the LEFT, as positive yaw turns: trip-up 2) from the view's direction at

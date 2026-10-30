@@ -22,6 +22,11 @@ extends Node
 ##   retreat  his scout squad (the group with the most scouts) drives north at a CPU squad held RETREAT_ENEMY_M ahead; once
 ##            it is under fire (or RETREAT_CONTACT_S passes) and has fought RETREAT_FIGHT_S, it is ordered back to his own
 ##            edge behind his lines (the lead: "the camera pointed out completely to the audience").
+## Round 47 (camera K4, Bar K):
+##   split    his Crossing case ("I sent half my army west and half my army east"): each group is ordered SPLIT_M out to
+##            its side (the first half of his groups left, the rest right) and SPLIT_AHEAD_M forward; then, every 1-3 s,
+##            the hand picks ANOTHER group by its key, and aims and clicks as round 41's hand does (an enemy on screen is
+##            attacked, else a move up-screen). CameraLook's sel_far_s / sel_frames read how the view keeps up.
 
 const AIM_S := 0.5
 ## How long his hand takes to carry the cursor to what he aims at (a Fitts-law reach across a 1080p screen is ~0.25-0.4 s).
@@ -43,6 +48,9 @@ const LANES := ["right", "left", "rear"]
 ## K5.2's corner: the lanes per side a seed picks from (the nearest to group 1), and his column's spacing at the start.
 const CORNER_LANES := 3
 const CORNER_COLUMN_M := 9.0
+## K4's split: how far out to each side, and forward, his two halves are sent.
+const SPLIT_M := 70.0
+const SPLIT_AHEAD_M := 40.0
 
 var trace: CameraTrace
 var look: CameraLook
@@ -93,7 +101,7 @@ func _ready() -> void:
 			ambush_m = float(arg.trim_prefix("--camera-ambush-m="))
 	if lane == "":
 		lane = LANES[posmod(_seed, LANES.size())]
-	if scenario != "" and not ["ambush", "retreat", "corner"].has(scenario):
+	if scenario != "" and not ["ambush", "retreat", "corner", "split"].has(scenario):
 		push_error("CameraPlaytest: unknown --camera-scenario=%s" % scenario)  # a probe flag that fails must stop the run
 		print("CAMERA_TRACE_DONE ok=false reason=unknown_scenario")
 		get_tree().quit(1)
@@ -185,6 +193,8 @@ func _run() -> void:
 		await _retreat()
 	elif scenario == "corner":
 		await _corner()
+	elif scenario == "split":
+		await _split()
 	while scenario == "" and _clock < _seconds and not _ended:
 		await _select()
 		await _wait(_rng.randf_range(0.3, 0.8))
@@ -435,6 +445,39 @@ func _ambush() -> void:
 	while _clock < _seconds and not _ended:
 		if not await _attack():
 			await _wait(0.5)
+		await _wait(_rng.randf_range(1.0, 3.0))
+
+
+## Round 47 (K4): half his groups west, half east, then the hand switches between them (see the header).
+func _split() -> void:
+	var numbers: Array = controls.groups.numbers()
+	if numbers.size() < 2:
+		_staged = {"ok": false, "why": "fewer than two groups"}
+		return
+	var north: Vector3 = Match.team_frame(controls.team)["forward"]
+	var right := north.cross(Vector3.UP).normalized()
+	var sent := 0
+	for i in numbers.size():
+		await _key(KEY_0 + int(numbers[i]) as Key)
+		var from: Variant = _centre(controls.selection.units)
+		if from == null:
+			continue
+		var side := -right if i * 2 < numbers.size() else right
+		controls.order_selection("move", {"to": _pair(ElementPlan.clamp_to_arena((from as Vector3) + side * SPLIT_M + north * SPLIT_AHEAD_M))})
+		sent += 1
+		await _wait(0.2)
+	_staged = {"ok": sent >= 2, "groups": numbers.size(), "sent": sent}
+	var current := int(numbers[numbers.size() - 1])
+	while _clock < _seconds and not _ended:
+		var living: Array = controls.groups.numbers().filter(func(n: int) -> bool:
+			return _centre(controls.groups.members(n)) != null and n != current)
+		if living.is_empty():
+			break
+		current = int(living[_rng.randi_range(0, living.size() - 1)])
+		await _key(KEY_0 + current as Key)
+		await _wait(_rng.randf_range(0.3, 0.8))
+		if not await _attack():
+			await _move()
 		await _wait(_rng.randf_range(1.0, 3.0))
 
 
