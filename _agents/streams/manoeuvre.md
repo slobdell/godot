@@ -65,13 +65,29 @@ Nothing at launch. A bar that fails twice on the same fix: write in player terms
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### REPORT (2026-10-30 ~03:15 PDT) — Bar S v6 FAILS as filed on three guards (deciding leg read; other legs still running for the record)
+
+**Bar S v6** (frozen 4e72c5470 GREEN builder3; 12001-12024, 72 paired cells, native ON, 0 SCRIPT ERROR;
+`~/overnight-manoeuvre/r46/bars_s6/judge-workload-early.txt`): **D1 seated within the bound by 15 s 249 -> 352 (+1.43 a run, +7.9 se)
+PASS.** Wedged per arena crossing -2.24 (-1.0 se), locks +2.58 (+1.8 se), terminus +0.35 (+0.2 se): **PASS (S v4 / S v5's miss is
+gone)**. Never-arrived 194 -> 149 PASS. Terminus every line better (yield+blocked -5.2 se, k-turn -6.6 se). **FAIL:** crossing
+yield+blocked +5.95 s a run (+2.1 se; S v5 +4.1 se), crossing k-turn +2.48 (+2.6 se), locks yield+blocked +2.84 (+2.2 se).
+**Cause read (START_YIELD rows, Green crews):** the squad no longer gives way to ITSELF (same-squad rows crossing 80 -> 60, locks 52 ->
+24: fewer than today); what rises is squads giving way to EACH OTHER (Guns <-> Hunters crossing 46 -> 77, locks 35 -> 59): squads that
+now settle compactly at their clicks sit in the neighbouring squad's way out of the start zone.
+**In his terms (lesson 339: the seat bound's second failed bar):** with it ON, the squad he orders settles at his click (about 1.4 more
+crews a run seated within 15 s), no crew gives way to its own squadmates any more and nothing wedges; but on Crossing and Locks, while
+squads leave the start, one squad stops to let the next squad's crews by a little more often: about 3-6 s more waiting a run, and on
+Crossing about 2.5 s more three-point turning. On Terminus everything is better. **Stays OFF**; the ON/OFF call is his (sent to the
+orchestrator).
+
 **Session start 2026-10-30 (Opus, `godot-manoeuvre`). Starting commit 7189e3ff3 (code 96f199c45 GREEN builder3 3470/0, the launch
 check; not re-run).** Persistent evidence in `~/overnight-manoeuvre/r46/` on the laptop (never in a worktree's `build/`).
 
 **Plan (in order):** M1 S v6 dev read -> M2 Bar S v6 (file before numbers) -> M3 holdway A6 v5 -> M4 backout pose 10 + Terminus
 k-turn by removal -> M5 shortfwd. Item 6 (engage's relay) jumps the queue if it arrives.
 
-### M1 S v6 (in progress)
+### M1 S v6 (DONE)
 
 - **Cause found (laptop, crossing 11751 S v5 arm, a temporary seat() trace, 6-12 s):** S v5's order term ranked the seats by their
   STATIONS (`at`, laid along the route). Battery's route bends east round the block; two stations swap sides as they slide (slot 3
