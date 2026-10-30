@@ -1,3 +1,5 @@
+> **ARCHIVED (round 46 closed 2026-10-30).** Final state of this brief; results in `workstreams.md` *Bars/Rulings (round 46)*. The veto shipped ON (R46.33); the tighter file is on main OFF (R46.36); V5's road lay (dev only) lives on branch `round46/orders` (c5c11da3a), not merged.
+
 # Stream: orders (his group click: the veto ships ON, nobody across the drop or sent back, every other click unchanged; then a tighter file)
 
 > Read `_agents/orchestration.md` (the worker contract; **lessons 339, 345, 348**), `_agents/judging.md`, `_agents/workstreams.md`
@@ -80,6 +82,47 @@ the orchestrator the same hour (C46.2): it goes to him the same day.
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### FINAL REPORT (2026-10-30 ~10:30 PDT, Fable, worktree `godot-orders`, branch `stream/orders`)
+
+- **Shipped ON: V1, the veto-only group guard** (Bar V1 PASS, builder3, frozen 12bd0c68f, 11801-11848; merged to main R46.33).
+  His group click keeps today's places except a place across a drop / water / neck from his click or one that sends a squad
+  back; those squads fall in, in file, on his side. His Gorge click: Spears on his click (today's), Hunters 33 m and Wrenches 66 m
+  behind, all in 8.2 s v 26.1 s today; nobody across, nobody back; every street click byte-identical (Terminus untouched). Escape
+  `--group-veto=off`. His click's cost 8.8-9.2 ms ON v 10.4 ms OFF (laptop, native on).
+- **Merged OFF:** 134e3bad5 (main): V4's tighter file (`--group-pack=on`, `--group-pack-factor` dev knob), Bar V2's runner and judge,
+  the probe's `wedged_s`, G2's code (`--group-guard=on`, merged at V1), evidence in `references/round46/orders/`.
+- **Not shipped: V4 the tighter file (R46.2)**: no series (R46.36). The dev reads say packing arrives LATER and bumps more (table in
+  *NOW* below); the question is with him in player terms, recommendation: keep today's spacing.
+- **V5 (dev reads only; on stream/orders, NOT merged; adff15708 GREEN builder3 `make check exited 0`, 3512 / 0): `--group-guard-road=on`** lays G2's ranks behind the
+  front along the road back to the army (the column's `_walk_back`). Dev read (builder0, c5c11da3a, `make orders-probe` locks /
+  crossing / terminus x 3 / 5 squads x click, 7001-7003, n 6 a map; `~/orders-r46/v5dev1/`): arms base (main's default: the veto)
+  / g2 / g2road:
+  | map | all-in median s | friendly contacts a run | places outside the corridor a run | metres driven outside |
+  |---|---|---|---|---|
+  | Locks | 19.1 / 25.6 / 27.1 | 54 / 120 / 210 | 0 / 0 / 0 | 0 / 0 / 0 |
+  | Crossing | 9.8 / 10.8 / 11.1 | 14 / 28 / 35 | 0.33 / 0.17 / 0.83 | 5 / 46 / 123 |
+  | Terminus | 17.0 / 31.4 / 23.2 | 40 / 245 / 279 | 0 / 0 / 0 | 0 / 0 / 0 |
+  The road lay recovers some of G2's Terminus all-in (31.4 -> 23.2 s) but today's default (with the veto) is better on every map
+  and line: the street lay as built is NOT worth a bar.
+- **Instrument findings (round 45's Bar G2, recorded R46.10):** the geometry line printed before the anchors were read (G2's
+  `across_gap` always false); `--probe-stand` was read by no code (his3 stood at the army's centre). Both fixed; my Bar V2 L1
+  read the 3-abreast flank, not the file (moot, no series).
+- **Round 47 starting points (orders):**
+  1. **The street lay:** the fitted body's rear ranks along the road (V5) still lose to today's column on streets; the column itself
+     (G1 v9/v10) is what streets want. A street fix should start from the column, not G2.
+  2. **The route-waypoint re-deal:** on Crossing 3-squad routes the veto re-deals the FIRST waypoint in 22 of 24 runs (paired no
+     harm: outside 1.23 v 1.23, all-in 17.1 v 18.6 s). Worth a look at whether the first leg's places should be judged by the
+     route's end rather than the waypoint.
+  3. **The packing trade:** a shorter file costs arrival time (squads queue at the click). If he wants it anyway, the lever is the
+     halt shapes (a smaller settle footprint), not the rank step; that is manoeuvre's settle code.
+  4. **Wide yard:** the three-abreast feel question (Questions below), recommendation keep three.
+- **Not started (stretch):** the departure order (nearest leaves first): `--group-depart=queue` (round 41) exists OFF; no new
+  work this round.
+- **What to playtest (him):** his default game, any map: select two or more squads, click once beyond a drop or water (Gorge's
+  west neck at about (-43, 53), Locks' swing bridge): nobody crosses, nobody turns back; on Terminus streets the same as before.
+  To compare: `make skirmish SKIRMISH_FLAGS="--group-veto=off"` (the old lay), `--group-pack=on` (the tighter file).
+- **Cleanup:** side worktrees and their builder folders removed; rows on the laptop in `~/orders-r46/` (bar-v1, dev reads, v5dev1).
 
 ### NOW (2026-10-30 ~09:30 PDT): V1 SHIPPED ON (main R46.33); V4 STAYS OFF (no series: the dev reads say packing arrives later)
 

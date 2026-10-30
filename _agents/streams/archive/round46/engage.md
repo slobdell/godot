@@ -1,3 +1,5 @@
+> **ARCHIVED (round 46 closed 2026-10-30).** Final state of this brief; results in `workstreams.md` *Bars/Rulings (round 46)*.
+
 # Stream: engage (his IFV behind his own squads finds a lane and fires; when it can't, the feed says who is in the way)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 339, 344, 345), `_agents/judging.md`, `_agents/workstreams.md` **Round 46**

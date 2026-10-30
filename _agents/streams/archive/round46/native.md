@@ -1,3 +1,5 @@
+> **ARCHIVED (round 46 closed 2026-10-30).** Final state of this brief; results in `workstreams.md` *Bars/Rulings (round 46)*.
+
 # Stream: native (big group clicks answer instantly; every rule that ships ON has its C++ twin; the judging table and the builders)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 336, 341-343, 346), `_agents/judging.md`, `_agents/remote_builds.md`,

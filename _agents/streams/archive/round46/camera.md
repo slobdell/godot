@@ -1,3 +1,5 @@
+> **ARCHIVED (round 46 closed 2026-10-30).** Final state of this brief; results in `workstreams.md` *Bars/Rulings (round 46)*. **The planner is on main OFF (21fb16fc1); the ON ship candidate 796ecfc31 (GREEN builder3) lives on branch `round46/camera` and merges only on his yes (R46.23).**
+
 # Stream: camera (ONE planner decides where the camera is at all times: his selection, where it is going and its fight on screen; no building in the way)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 339, 344, 345, 348), `_agents/workstreams.md` **Round 46** (C46.1-C46.8),
@@ -93,16 +95,67 @@ Nothing at launch. If the bar fails, write in player terms what he would see ON 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-30, top = newest).** C1 DONE (adb5c1b13). C2 the planner BUILT behind `--camera-planner=on` (OFF):
-`game/camera/camera_planner.gd` + the rig's `_update_planner`; tests `tests/test_camera_planner.gd` (10, laptop 56/0 camera tests
-at 53de53ea4). Dev reads only on 7001-7006 (never a bar). In progress: tuning on dev seeds, then C3 (laptop budget) and Bar C1.
+**Report (2026-10-30 ~05:00, top = newest).** Planner built and judged; it stays **OFF** (`--camera-planner=on`): **Bar C1 FAILED
+37 of 38 lines** (only G7, the ambush REAR lane). **C1 v2 tried on dev seeds and parked as dev knobs (time-boxed)**; the choice
+between the two is now his (lesson 339; the orchestrator has the player-terms read). Branch tip 21fb16fc1: `--camera-planner=on` is
+byte-for-byte the planner Bar C1 read (re-run of bar seed 12201: summary, clicks, look identical); full check of 21fb16fc1 running.
 
-**Bar C1 SERIES RUNNING** on 3bf76e839 = GREEN builder3 (`make check exited 0`, 3483 passed / 0 failed, 28 targets ALL JUDGED;
-log ~/camera-r46/check-3bf76e839.log), started ~04:00 via ~/camera-r46/barc1.sh (builder3 J8; progress ~/camera-r46/barc1/run.log).
-**Bar C1 FILED** (workstreams.md *Bars (round 46)*, text there; candidate 3bf76e839, before any number on 12201-12248).
-C3 DONE: laptop budget (UHD 620, laptop preset, Terminus, windowed, under the lock, 1f3e6f111): planner 0.353 / 0.358 ms a frame
-mean (seeds 7001 / 7002, 60 s), step p99 0.88 / 0.93 ms, max 5.0 / 1.6 ms; the rig without it 0.57-0.65 ms mean, max 2.8-7.4 ms.
-One pose a frame on the laptop preset (`--camera-planner-rate=N` dev); native's C++ batch offered and declined (not needed).
+| Item | State | Evidence |
+|---|---|---|
+| C1 census | DONE | table below; `make camera-census`; reads native's `sel` rows when present |
+| C2 planner | DONE, OFF | `game/camera/camera_planner.gd` (one cost, weights in one table), rig `_update_planner`; 11 tests in `tests/test_camera_planner.gd` |
+| C3 budget | DONE | laptop UHD 620 laptop preset, 1f3e6f111, 2 x 60 s: 0.35 ms/frame mean, step p99 0.9 ms (target 0.5 / 1.5) |
+| C4 Bar C1 | FAILED 37/38 | 3bf76e839 GREEN builder3 3483/0; verdict `references/round46/camera/barc1-verdict-builder3-3bf76e839.txt` |
+| C1 v2 | dev only, parked | see *C1 v2* below |
+| C5 acceptance read | DONE (with a caveat) | clips: `~/camera-r46/clips/rear_ambush_7001.mp4` (22 s; today's shows the guns after 0.9/2.7/1.8 s, the planner 3.5 s then one never: the trade, plainly) and `corridor_selection_7002.mp4` (50 s); stills looked at, `references/round46/camera/clip_*.jpg`. **His Terminus replayed** (`make replay-match ... REPLAY_SECONDS=150 REPLAY_FLAGS="--camera-planner=off|on --camera-screen=1920x1080"`, builder3, 569064eb9; censused, n = 144 s with a selection, his 18 `sel` rows): off -> on: none of his selection on screen 3 -> 1 s; under half 9 -> 1 s; driving with half+ hidden by a building 14 -> 11 s; drive > 45 deg off the view 66 -> 62 s; hits on his units off screen 9.4 -> 11.7 %. **The replay IS his match** (`CREWS=all`: `DIVERGENCE crews=20 within=20 bar=3.0m seconds=150 first_over=- verdict=PASS`, builder3, 569064eb9; an earlier note here said it left his match after ~20 s: wrong, inferred from the census without checking). What it lacks is his HAND on the camera (his recording has manual rows at 1-8, 18-20, 48-53, 82-83, 96-102 s and aim holds), so at 70-74 s the replayed camera comes in at another yaw (-24 deg) than his did (-60 -> -127): the two cameras on his match without his hand, not his exact screen |
+| Ship candidate | **796ecfc31 GREEN** builder3 (`make check exited 0`, 3485 passed / 0 failed, 28 ALL JUDGED) | default ON (v1 exactly, v2 knobs OFF) + bf4b0c7a5 (his frame dial scales the card's bound in the planner; default byte-identical on bar seed 12201) + R46.29 in orders' `tests/test_control_dials.gd` (`planner_on = false` there: the dial's plumbing judged on the vision frame; the planner's dial has its own test). Merges only on his yes (R46.23). OFF tip 21fb16fc1 GREEN 3484/0 is on main (830787b38) |
+
+**Bar C1 in his terms (as read, 48 attack runs an arm + 24 ambush + 24 retreat, builder3):** with the planner his squads and the
+street they drive stay on screen; a building hides half or more of his driving squad **half as long** (1011 -> 504 s); none of his
+selection on screen 31.6 -> 10.9 s; a new selection on screen as fast as today; the camera sits inside a building a third as long;
+fewer yaw reversals everywhere; no snaps; enemies on screen 57 -> 51 %. **The miss:** when an ambush opens fire from BEHIND the view,
+the gun comes on screen later (mean 4.7 -> 9.2 s counting never as 20 s; never in 9 of 28 shots v 4 of 37). From the sides it is
+faster than today.
+
+**D4 hits off screen 1.9 -> 2.0 % v his recording's 27 % (the orchestrator's question):** a different workload, same measure in
+spirit. The bar's autoplay selects the army or a group and never pans away by hand; its selection is the force in the fight, so hits
+land on what the camera frames. In his match he had zoomed in by hand to 36 m (100-103 s) and had his lone scout selected while the
+rest of the army fought elsewhere (104-143 s): 27 % of hits on his units were on units he had NOT selected and was not framing. The
+census counts every hit on any of his units; the bar's CameraLook counts the same (any of his units, on screen with a 60 px margin
+above the HUD), so the gap is the play, not the meter.
+
+### C1 v2 (dev 7001-7036 ambush 12 a lane, 7001-7006 attack; never a bar; builder3)
+Cause of the G7 miss, traced on dev 7025/7001 (frames): today's camera starts turning toward KNOWN enemies before they fire (bearing
+-80..-140 at the first shot); the planner's WIDE frame zoomed out to ~96 m and counted contacts behind his squad as "on screen" on the
+bottom edge under the card, so it did not turn until a shot, then a 180 deg turn takes ~4 s at the glide's 45 deg/s cap (the snap
+guard's limit). v2's parts, each a cost term (no rule): a gun firing at him costs W_GUN 6 off screen, judged as the danger camera
+judges it (within 25 deg of the view from his squad), not averaged, not held by a recent switch; contacts behind his squad never
+count as shown; a 10 % click margin; the planner scores the clamped focus. **Result: the rear lane comes back to about today's
+(mean 4.3 v 3.4 s, never 5 v 3) BUT the building win goes (hidden while driving 33.8 % v base 36 %, v1 16 %): being honest about
+the enemies behind turns the view back to them, across the blocks.** Lighter quiet contacts (action 3) did not restore it (36 %);
+bisect: the margin alone costs ~9 points of D1, the behind rule ~13; the clamp nothing. Dev reads at n = 6-12 move by +-1 s / +-10
+points between camera variants (the autoplay's fights change with the view), so no further tuning was trusted. Knobs (dev):
+`--camera-planner-w=gun:6,margin:0.1,behind:1,clamp:1` = v2; defaults = v1.
+
+**Branch tip 314c8005f GREEN** builder3 (`make check exited 0`, 3485 passed / 0 failed, 28 targets ALL JUDGED; code = 569064eb9 + docs).
+**After the candidate:** 569064eb9 no edge pan headless (a replay's mouse at 0,0 dragged the camera into "manual"; Bar C1 untouched:
+its 192 runs moved 0 px by player/jump/follow, CameraPlaytest turns edge pan off). Not in the candidate; harmless to merge after it.
+
+**Merge notes (shared files):** `game/modes/skirmish_mode.gd` +1 read-only feed line (`rig.selection`, C42.3 grant);
+`tests/test_control_dials.gd` (orders', R46.29 grant, one line + comment); `_agents/workstreams.md` Bar C1 block. No other stream's
+paths touched.
+
+**Next steps (round 47 if he says yes):** retire the old look rules' decision code (danger look, corner, yaw follow) once the planner
+has been ON for a playtest (brief's stretch: NOT this round); C1 v2's honest-contacts variant re-filed on fresh seeds only if he
+asks for the rear-ambush turn back (it costs the building win); the orchestrator's weapon-range contacts variant (dev only).
+**What to playtest:** `make skirmish` (planner ON at 796ecfc31 once merged) on Terminus: drive a squad down a street; select a squad
+off screen by its group key; let an ambush fire from behind. `--camera-planner=off` for today's camera.
+
+**Questions for the lead (via the orchestrator; player terms):** the planner as read (v1) keeps his squads and their street in view
+and buildings out of the way half as often, but turns to an ambush firing from behind his camera about two seconds later than
+today; or today's camera. Recommended: v1 ON, `--camera-planner=off` the escape, because his three complaints are all about his own
+squads and the street, and the rear ambush is the danger look's case that v2 shows cannot be had without giving his squads back to
+the buildings.
 
 ### Plan (ordered; smallest foundation first)
 1. C1 census tool + table (below) — DONE. 2. C2 `CameraPlanner` (pure cost + candidate set, tests first), wired behind

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Round 45 (orders): Bar G2, THE GROUP GUARD, read to a verdict as filed in streams/orders.md before any number on 11201-11248.
+"""Round 45 (orders): Bar G2, THE GROUP GUARD, read to a verdict as filed in _agents/streams/archive/round45/orders.md before any number on 11201-11248.
 
     python3 tests/control/orders_g2_judge.py <out> BASE_ARM NEW_ARM
 

@@ -4,7 +4,7 @@
 usage: short_judge.py DECIDING_LOG GUARD_LOG
 
 Each log holds SHORT_ROW {"pose", "seed", "arm": off|on, "row": {...}} lines, both arms per seed (the corpus runs both itself).
-Lines as filed in streams/manoeuvre.md (Bar shortfwd): D1 metres away from his click, paired ARM - BASE <= -2 se AND pooled ARM < BASE
+Lines as filed in _agents/streams/archive/round46/manoeuvre.md (Bar shortfwd): D1 metres away from his click, paired ARM - BASE <= -2 se AND pooled ARM < BASE
 (identical cells count as identical); floor: OFF reverses in >= 4 of 12; G1 arrival sooner or identical in >= 10 of 12, none > 30 ticks
 later, never-arrived ARM <= BASE; G2 off-navmesh ARM <= BASE + 0.25 m every cell; G3 (guard block) arrival <= BASE + 30 ticks and away
 <= BASE + 0.5 m every cell, G2 there too; native drive in every row.

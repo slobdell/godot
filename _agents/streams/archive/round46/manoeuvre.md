@@ -1,3 +1,5 @@
+> **ARCHIVED (round 46 closed 2026-10-30).** Final state of this brief; results in `workstreams.md` *Bars/Rulings (round 46)*.
+
 # Stream: manoeuvre (his squad settles where he clicks; squads at a street mouth wait for the right one; a short move inside the turning circle)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 339, 344, 345), `_agents/judging.md`, `_agents/workstreams.md` **Round 46**

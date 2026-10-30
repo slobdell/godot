@@ -4056,3 +4056,13 @@ instrument that cannot lie about load — removal within one run — and let eve
    submitted after engage began waiting. The count never reached 0 and his IFV's bar sat idle. `builder_checks.sh` counts queued
    checks as running. Submit a check straight into the lock (`make remote T=check`), and use `--wait-below` only for a series
    that must not share the box with a check.
+350. **An instrument that prints before it reads makes a deciding line vacuous.** (Round 46, R46.10.) G2's D1 "0 across a gap in 1728
+   runs" was printed on the order's tick, before the probe read the squads' places, so `across_gap` was always false; its D5b stood the
+   squads at the army's centre because `--probe-stand` reached no code. Before a bar's first number, make each deciding line FAIL once on
+   a staged case it must catch (a mutation check for the instrument, not just the rule).
+351. **A twin "gap" can be the harness.** (Round 46, R46.30/R46.32.) Holdway ON read "GDScript drive != C++ drive" in two twin tests; the
+   harness restored Movement's statics between arms but not Traffic's once-a-frame memo. Before ruling a twin gap, diff every member AND
+   every static after both arms; a cache the harness does not reset must be listed as a cache.
+352. **What he picked a change FOR is its deciding line, not the change itself.** (Round 46, R46.36.) He picked "squads pack closer: the
+   whole group is at your click sooner"; packing halved the file but made the last squad 1-2 s LATER. A dev read of the reason he gave
+   (arrival) caught it before a series was spent; a bar written on "file length" alone would have shipped the opposite of his ask.

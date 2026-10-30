@@ -1,8 +1,8 @@
 # Workstreams: the current round
 
-> **ROUND 46 RUNNING 2026-10-30 (five streams, ALL Opus: Fable quota low, his call at launch).** Section below; round 45 CLOSED (its section follows).
+> **ROUND 46 CLOSED 2026-10-30 (five streams, all Opus; main 7eec72b37 GREEN builder3 3517/0 ALL JUDGED).** Shipped ON: the veto (V1), the lane move (L1c), shortfwd, holdway (native ON / web OFF). OFF or his call: the camera planner (R46.23), S v6, the tighter file (R46.36). Round 47 is prepared from HANDOFF's NEXT box.
 
-## Round 46: five streams (prepared 2026-10-30; briefs in `streams/`)
+## Round 46: five streams (prepared 2026-10-30; CLOSED 2026-10-30; briefs in `streams/archive/round46/`)
 
 **Goal: what he saw on his last two playtests changes in his default game.** The camera keeps his selection and its fight on screen
 and looks down the street his squad drives, from ONE planner with no special cases; his IFV behind his own squads finds a lane and

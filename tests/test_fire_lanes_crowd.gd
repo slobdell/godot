@@ -1,5 +1,5 @@
 extends TestCase
-## Round 46 (engage L2, `--lane-clear`): his IFV behind his own parked squads (Terminus 116-140 s, `_agents/streams/engage.md`
+## Round 46 (engage L2, `--lane-clear`): his IFV behind his own parked squads (Terminus 116-140 s, `_agents/streams/archive/round46/engage.md`
 ## L1) held fire ~20 s. Staged here: his IFV, an enemy 25 m off, his own crews PARKED in and beside its lane (the near
 ## sidesteps blocked as on his replay). Each case runs both arms (TankBrain.LANE_CLEAR off = the round-45 game, on).
 
