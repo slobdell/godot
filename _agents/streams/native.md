@@ -70,6 +70,15 @@ orchestrator); (b) `brain/situation` 1.51 ms (build_situation, GDScript; s.conta
 sub-profile next, then port whichever single function is >= 1 ms with its GDScript kept as the fallback. JSON:
 `references/round46/native/terminus-sim-profile-builder3/sim-profile.json`.
 
+**shortfwd twin (manoeuvre M5, C46.4): EQUAL.** stream/native 7e3874bab: drive_native.cpp shortfwd_on / his_short_move natively, the
+forward arc's test called back (_kturn_frame / _outline_offs / _arc_hit, his short move only); tests/test_native_drive_shortfwd.gd
+2360 drives / 0 mismatches, 166 forward-arc ticks (laptop; a flipped turn sign reads 155 mismatches); every drive twin on builder3
+light 14 / 0. pair/native-shortfwd 4ac0236bd = manoeuvre 8796e94f4 + it + traffic.gd's gate line for shortfwd dropped: manoeuvre's
+corpus (SHORT_CORPUS=on SHORT_SEEDS=7001-7007, builder3 light) native v GDScript 14 / 14 SHORT_ROW rows byte-identical.
+**R46.11 + the divergence end rule: GREEN a06d450df builder3** (3472 / 0, ALL JUDGED). **N3 closed:** camera sliced its planner to
+one pose a frame (camera 1f3e6f111; laptop 0.35 ms mean, p99 0.9) and dropped the ray batch. **R46.13 stands:** orders cut his
+failing Gorge click's veto from 45-66 ms to 10.5 ms in GDScript (f6bb52518; laptop, native ON).
+
 **Elements sub-profile (R46.14 probe, branch probe/native-elements 9145cc82a, NOT merged; builder3 light, his Terminus 149 s,
 native ON, n=1, this run's tick 12.24 ms):** elements segment 2.67 ms = Element.update 2.62 (2.32 calls a tick): **ElementPlan.build
 1.06 (0.46 ms a call)**, ElementSituation.build 0.55, ground (apply_swap / ground / ground_stations) 0.32, post (_take .. _issue) 0.32,
