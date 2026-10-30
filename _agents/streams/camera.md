@@ -64,3 +64,40 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Report (2026-10-30 evening, in progress).** Cause of both his notes found (K1 below); K2/K3 built behind `--camera-select-pan`
+(ON; `=off` = round 46's planner as on main); Bar K's instrument and workload written; numbers pending.
+
+### Plan (ordered; smallest foundation first)
+1. K1 tools: `tests/camera/replay_camera.gd` (his match replayed WITH his `sel` rows and a hand model), `tests/camera/k1_gap.py`
+   (the look-to-selection gap), `make camera-replay` (arms per recording). Then K1's table, ON v OFF, his three recordings (+ Locks).
+2. K2+K3 as ONE rule (they have one cause): `RtsCamera._pan_urgent`. Tests first: `tests/test_camera_select_pan.gd`.
+3. K4 Bar K: CameraLook `sel_far_s` / `sel_frames`, CameraPlaytest `--camera-scenario=split`, `tests/camera/bar_k.py`; dev read
+   (7001-7004) to make each deciding line fire on BASE (lesson 350), then file, then the series on 12801-12848.
+4. K5 his three recordings before/after with the K1 tools. 5. K6 C1 v2 only if time is left.
+
+### K1: the cause (read from his Parade recording, main e306ce27f, laptop; my measure, `k1_gap.py` on his `cam` rows)
+His recordings, 1 Hz `cam` rows v his `sel` rows' centre at the last census row (gap = look point to selection centre):
+
+| Recording | n rows | median gap | > 30 m | median distance | far selections (> 20 m when picked) | framed (< 20 m) after | never |
+|---|---|---|---|---|---|---|---|
+| Parade | 131 | 21.8 m | 42.0 % | 68.9 m | 18 | median 1.0 s, max 2.0 | **11** |
+| Crossing | 127 | 8.5 m | 12.6 % | 97.5 m | 5 | median 3.0 s, max 5.2 | 0 |
+| Sumps | 132 | 8.2 m | 16.7 % | 78.2 m | 13 | median 1.0 s, max 6.0 | 1 |
+| Locks | 81 | 11.1 m | 23.5 % | 87.7 m | 6 | median 0.4 s | 4 |
+
+**Why (Parade tick 2900-3181, rows read one by one):** he selects Bravo 152 m north of the look point; the view is pitched 21 deg
+at ~50 m, so a squad 150 m straight ahead sits at the TOP EDGE of his screen, which round 46's rule counts as "on screen". The
+urgent pan only ran while a crew was OFF screen, so it never started: the look crept 4 m in the first second (the glide's
+normal pace x the hand-moving pace 0.25 = ~4.7 m/s at 50 m) and stopped whenever his hand rested (`aim-hold`). Mode alternated
+`planner`/`aim-hold` for 10 s, 141-152 m off, until he gave up and panned by hand. The Crossing delay is the same rule: a squad
+partly on screen = no urgent pan, and his hand on the mouse holds or slows the rest. The planner's wanted point was on Bravo
+(its fit centres the selection); the glide never got there. (Replay ON v OFF table: pending, `make camera-replay`.)
+
+### K2/K3: one rule (`RtsCamera._pan_urgent`, `select_pan`, ON)
+The planner's own rule is now the gap between where the view looks and where the planner wants it: a new selection (or a
+re-pick: `take_vision`) pans at once until the look is within 3 m (PAN_ARRIVE_M) of the planner's point; a look that falls 20 m
+(PAN_START_M) behind with no hand on the camera since the selection is caught up the same way (K3: "didn't correct"); while it
+pans neither the aim hold nor the hand's pace applies. The pan is a critically damped spring (omega 7.5, from rest, no step in
+speed) capped at 260 m/s: 150 m within 20 m in ~0.4-0.6 s (tests). His own pan stays his until he selects (no swing back).
+
