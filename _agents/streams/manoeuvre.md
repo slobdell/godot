@@ -294,6 +294,9 @@ too). **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_a6v5.sh` from
   start-zone exit, and at what tick; (2) candidate: deal the bound's seats so the squad's line of advance from its deploy block is
   kept clear of a neighbouring squad's block (a seat-side rule, not a drive rule: no twin); (3) the fights G4 kill share (0.040) on a
   bigger fight sample before reading it as real (18 fights an arm; S v5 read 0.029 on the same kind of sample).
+- **Engage's relay (Bar L1c seed 12328, Locks, a gang_tank at his post):** the MOVER'S YIELD drove a crew holding his post ~10 m toward the
+  enemy, and HOLD's reverse then stopped 6 m short (arrival radius 6), in both lane arms. Round 47: a yield must not move a crew under
+  his hold toward the enemy, or must return it fully.
 - **The no-crossing invariants, by switch (laptop, GDScript, a21b97e8b; `make test FILTER='formation_slots|tactics_seat_order|tactics_settle'`
   with the env switches):** bound alone 13 / 0; bound + order (S v4) 12 / 1 (`test_tactics_settle::test_a_sideways_plain_move_seats_every_crew_
   without_crossing_paths`); bound + order + open last seat (S v6) 10 / 3 (+ `test_formation_slots::test_paths_never_cross`,
