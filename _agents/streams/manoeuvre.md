@@ -66,7 +66,22 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 builder0 3446/0; no baseline check re-run, per the contract). Orchestrator session: `godot-b8`. builder0 has NO godot-manoeuvre folder
 (a cold import on the first remote run: watched); builder2 (up at launch) has `godot-manoeuvre` + `-light` warm.**
 
-### WHERE IT STANDS (2026-10-29 ~16:05 PDT): the round's report
+### WHERE IT STANDS (2026-10-29 ~18:40 PDT; the round continues per R45.21)
+
+- **main carries the stream's OFF code: 5d4b3fa82 merged as main 9203851ec** (its builder0 main check owed by the orchestrator, perf
+  judged there). Proof: builder2 check exited 0 / 3456 / 0 / sim-baseline unmoved; the default orders probe on a clean checkout of exactly
+  5d4b3fa82 v main e6e926160, same machine: 60 / 60 byte-identical.
+- **Bar B3 (backout, his ask) frozen at 26b1425e7** = `pair/native-backout-b3` (native's proof branch IS this hash: no C++ change for the
+  room-behind gate); native-proof `--traffic-on=backout` EQUAL (4a04ea921011cd9a, builder2, before the crash); the twin tests and the
+  default probe re-run on builder2 (builder2 restarted). Its full check runs on builder2 (`check_b3/check-26b1425e7.log`). **GO (the
+  orchestrator, no further word needed): the series launches when native's lines land EQUAL + 60 / 60 AND the check reads exited 0**;
+  drivers `bars_b3_a.sh` (builder0 light, from `../godot-manoeuvre-b3x`) + `bars_b3_b.sh` (builder2, from `../godot-manoeuvre-b3`),
+  then `bars_b3_judge.sh`.
+- **Then:** S v5's Terminus dev read (the +8 s), its bar on 11751-11798 only on a clean three-arena read; holdway's head-on release
+  last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars, each failing as filed with his
+  line passing) follows unchanged.
+
+### The round's report as of ~16:05 PDT (B2 / S v4 / A6 v4 failed as filed)
 
 - **Nothing ships ON from this stream in round 45.** Three bars were filed and read on fresh seeds; all three FAIL as filed, each with
   the line he would feel passing and a guard missing: **B2** (backout, his container ask): his own start PASSES (Guns_2 reverses at tick 4
