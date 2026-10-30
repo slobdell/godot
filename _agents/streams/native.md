@@ -65,6 +65,17 @@ lines_r44 (B1), lines_r45 (B2 final, S v4); G2 / E1 / A6 v4 land with their verd
 **G2 three-seam re-proof on the FREEZE 03d1ddbc5 + main ceb1386e8: EQUAL guard on and off** (builder2; below). **Open:**
 control-timing judged at the round's close (orchestrator); E1 / G2 / A6 v4 lines with their verdicts.
 
+**builder0 light-lane memory guard (after builder0's OOM, 19:52): 70b8baeea** (slot.sh: a light job waits while a full check holds
+the builder and MemAvailable < 6144 MB; slot-light 16/0). Its builder0 full check is queued behind orders' and engage's.
+
+**builder3 (the orchestrator's ask, 2026-10-29 ~22:00): GREEN 7087cffce on builder3, `>> remote: make check exited 0`, 3449
+passed / 0 failed, 28 targets ALL JUDGED, 736 s; merge head dde6d654e (+ docs).** db02580a9: remote.sh 6 slots for builder3,
+round_status one block a box, builder_checks --all. 87a6c7fcc: test_net_own_line clears MAKEFLAGS (make 4.3's jobserver warning,
+builder3's only real red). 7087cffce: devia's nominal ref_ms 0.682 (idle, 0.681 / 0.683; ai_usec_per_tick 8603 / 8599).
+Ratio (remote_builds.md, builder3 section): ~1.13x a free builder0 P-core, against builder0's standing 0.774 (9d618587); a
+same-commit builder0 read waits on builder0's idle window. **Open, the orchestrator's call:** 6 slots make a lone check 3 wide
+(slot.sh divides memory by slots): 736 s v 525 s at 6 wide.
+
 **Plan (order kept from the backlog; reasons):** N1 watchdog -> N2a gate_width C++ -> N2b untangle_whole C++ (GRANTED R45.3,
 because gate_width alone cannot reach the budget, below) -> N3 twins as manoeuvre/orders/engage ship -> N4 lines_r45 + judging ->
 N5 replay to 107 s -> stretch requeue.
