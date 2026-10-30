@@ -78,9 +78,10 @@ func _run(arm: String) -> Dictionary:
 	return out
 
 
-func test_off_by_default() -> void:
-	assert_true(Traffic.DEFAULT_OFF.has("backout"), "M2 is opt-in until Bar S v3")
-	assert_true(Traffic.off("backout") or OS.get_cmdline_user_args().has("--traffic-on=backout"), "off unless asked")
+func test_on_by_default() -> void:
+	# Round 45 (R45.23, Bar B3): backout ships ON; `--traffic-off=backout` is the escape.
+	assert_false(Traffic.DEFAULT_OFF.has("backout"), "backout is ON by default since Bar B3 (R45.23)")
+	assert_true(not Traffic.off("backout") or OS.get_cmdline_user_args().has("--traffic-off=backout"), "on unless the escape is on the command line")
 
 
 func test_a_war_rig_nose_on_to_the_container_backs_out_first() -> void:
