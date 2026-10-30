@@ -75,6 +75,20 @@ write both in player terms with one recommendation in Status and build the recom
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### The garage map pick (his ask, 2026-10-29: "make garage lets you select everything except for the map") — DONE
+
+- **Part 1** (on main): `make garage ARENA=<name|random>` builds that map; the skirmish after FIGHT runs on it (it was always
+  foundry: the arena builds from the command line before the garage opens).
+- **Part 2: merge hash 0eae0721c, GREEN builder3** (`make check exited 0`, 28 targets all passed, ALL JUDGED, 3464 passed / 0
+  failed; = dc12df673 + trace tooling and docs). A **MAP** button beside VS: RANDOM, then each arena of the rotation; remembered like
+  his last army (GarageSettings `[armies] arena`); `make garage` with no ARENA builds a random map and opens on his last pick. RANDOM
+  fights on the map built; a named pick that isn't it relaunches once straight into the fight on it (GARAGE_MAP relaunch, then
+  GARAGE_FIGHT ... arena=<it>). REMATCH and ARMY now relaunch through GameLauncher on the map just played (a plain reload went back to
+  the command line's arena). Tests `tests/garage/test_garage_map.gd`; garage-smoke runs the relaunch (exactly once, onto pit);
+  army-loop-smoke unchanged. Shots looked at: `build/screenshots/garage-desktop.png`, `garage-phone.png`, `garage-phone-map.png`
+  (the longest title, "MAP CONTAINER YARD", fits the phone's top bar; the credits meter gives up the width).
+- **For him:** `make garage` (opens on his last map), or `make garage ARENA=gorge`; tap MAP in the garage to change it.
+
 ### His Terminus playtest (2026-10-29 22:57): "an individual IFV ... wasn't shooting at anything the whole time" — NOT E2
 
 Recording `references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl` (played with E2 ON). His crew Green_Hunters_1 (his
