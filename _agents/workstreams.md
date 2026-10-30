@@ -182,7 +182,7 @@ _(filed here BEFORE any number; newest first)_
   > - **Ship rule:** ON (`GROUP_PACK` default flipped, `--group-pack=off` the escape) if every line passes; any FAIL -> what he would see
   >   ON v OFF in player terms to the orchestrator the same hour (C46.2).
 
-- **FILED. Bar C1, ONE planner places the camera (camera; FILED in stream/camera Status 2026-10-30 ~03:30, before any number on 12201-12248; candidate commit 3bf76e839, its full check on builder3 running at filing).**
+- **FAILED (37 of 38 lines: G7 ambush REAR lane latency only; read 2026-10-30 03:42). Bar C1, ONE planner places the camera (camera; FILED in stream/camera Status 2026-10-30 ~03:30, before any number on 12201-12248; candidate commit 3bf76e839, its full check on builder3 running at filing).**
   Switch `--camera-planner` (OFF; ON on a pass; `=off` = today's camera: vision frame + danger look). CameraPlanner (one cost over
   13 headings x {tight, wide} frames: his selection, its path ahead, the contacts that matter, sight rays to his crews and path
   past the drawn solids, the arena's floor, the war's direction, the clearance lift, the turn, the distance; a per-pose cost
@@ -215,6 +215,15 @@ _(filed here BEFORE any number; newest first)_
   ~/camera-r46/barc1 --budget-ms <mean> <p99>` (every line above, PASS/FAIL, VERDICT). Series: `~/camera-r46/barc1.sh` (both arms
   from the worktree frozen at the candidate; docs and the judge only after it).
   **If it fails** (C46.2): in player terms, what he would see ON v OFF, to the orchestrator the same hour.
+  **READ (as filed, 3bf76e839 GREEN builder3 3483/0; series 03:25-03:42 builder3 J8, 0 runs lost; judge
+  `tests/camera/bar_c1.py`, verdict in `references/round46/camera/barc1-verdict-builder3-3bf76e839.txt`):** D1 hidden while driving
+  1011.1 -> 503.8 s PASS; D2 none on screen 31.6 -> 10.9 s PASS; D3 latency mean 0.14 -> 0.06 s, p90 0.00 PASS; D4 hits off screen
+  1.9 -> 2.0 % PASS; G1 jerks 0.48 -> 0.34/min, snaps 0, worst source planner 0.94/min PASS; G2 clicks 80.4 -> 77.7 %, slip p95 29.5 ->
+  28.6 px, held 16.3 -> 15.7 % PASS; **G3 action share 57.3 -> 51.1 % PASS** (the dev read's risk did not hold); G4 reversals and G5
+  own on screen better on every workload; G6 inside a solid 0.64 -> 0.19 s/run PASS; G8 laptop 0.358 ms / p99 0.93 PASS; G9 PASS.
+  **G7 FAIL: AMBUSH REAR lane first shot -> shooter on screen mean 4.72 -> 9.17 s (never = 20; BASE 37 episodes 4 never p50 1.8 s;
+  ARM 28 episodes 9 never p50 3.5 s)**; rear blind % of fire 14.8 -> 11.6 PASS; retreat latency 8.33 -> 8.05, blind 6.6 -> 6.8, wall
+  0.0 -> 0.1 PASS. (Side lanes, reported: left 5.35 -> 3.03 s, right 1.43 -> 0.68 s.)
 
 - **Bar shortfwd FILED (manoeuvre, 2026-10-30 ~03:10 PDT, stream/manoeuvre 34ed9ac66, before any number on 12121-12144; frozen
   wip/manoeuvre-shortfwd-bar cec4e499f = native pair 4ac0236bd + SHORT_POSES; recorded verbatim by the orchestrator).** Verbatim:
