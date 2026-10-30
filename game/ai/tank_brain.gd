@@ -1079,15 +1079,16 @@ func _update_order_progress() -> void:
 		"hold":
 			# Round 45 (engage E2): a hold with no point, given to one of HIS crews, holds where the crew comes to REST: the
 			# spot read while it drove at 15 m/s was behind it, and HOLD's return drove it back and forth (authority probe,
-			# 7003: 6.8 m). The CPU's holds are unchanged (C45.5).
-			if bool(order.get("here", false)) and not bool(order.get("rested", false)) and Drills.PLAYER_AUTHORITY \
-					and tank.team == OrderFeed.player_team(game_match):
+			# 7003: 6.8 m). HIS order only (`player`, R45.24): an element's pointless hold keeps the spot Orders gave it, as the
+			# CPU's do (C45.5); testing his TEAM re-latched his squads' own holds (tests/test_authority_element_hold.gd).
+			if bool(order.get("here", false)) and bool(order.get("player", false)) and not bool(order.get("rested", false)) \
+					and Drills.PLAYER_AUTHORITY and tank.team == OrderFeed.player_team(game_match):
 				order["goal"] = _flat(here)
 				order["rested"] = tank.estimated_velocity.length() < STOPPED_SPEED
 		"stop":
 			# Round 45 (engage E6): his stop's anchor is where the crew comes to REST (TURN_IN_CAP_M reads it), as his hold's.
-			if bool(order.get("here", false)) and not bool(order.get("rested", false)) and Drills.PLAYER_AUTHORITY \
-					and tank.team == OrderFeed.player_team(game_match):
+			if bool(order.get("here", false)) and bool(order.get("player", false)) and not bool(order.get("rested", false)) \
+					and Drills.PLAYER_AUTHORITY and tank.team == OrderFeed.player_team(game_match):
 				order["goal"] = _flat(here)
 				order["rested"] = tank.estimated_velocity.length() < STOPPED_SPEED
 			# Stopped, and stopped for a moment (a unit that had barely started moving would finish at once).
