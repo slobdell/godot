@@ -289,6 +289,50 @@ var _order_at := -1e9
 ## most of the way to the open side (a north drive, the war north, the side east: atan(4 / 1.6) ~ 68 deg east).
 const CORNER_W := 4.0
 
+## Round 46 (camera C2): ONE planner decides the pose (CameraPlanner: one cost over candidate poses, no special cases).
+## With it on, the vision frame's placement, the yaw follow, the danger look and the corner swing stop DECIDING: the planner
+## picks the yaw every CameraPlanner.PLAN_S and the frame at that yaw every frame; the glide still moves the view, his hand
+## still wins for the hand-back time. A NEW selection off his screen is not held by the aim hold (he cannot be aiming at
+## what he cannot see). `--camera-planner=on` (OFF until Bar C1 passes).
+var planner_on := false
+var planner := CameraPlanner.new()
+## () -> Array[String]: the commanded units' names (RtsControls.commanded_units; skirmish_mode wires it, C42.3), so a new
+## selection is seen at once.
+var selection: Callable = Callable()
+## Whether a new selection is still off his screen this frame (the hold and the hand's pace step aside).
+var planner_urgent := false
+## How much of the urgent pan is in force (0..1): eased at PACE_OMEGA both ways, so the pan's top speed never steps (a
+## cap that dropped in one frame when the squad came on screen was a jerk: dev seed 7002, 1455 px/s).
+var _urgency := 0.0
+var _plan_at := -1e9
+var _frame_dt := 1.0 / 60.0
+## C3: headings the planner scores per frame: 1 on the laptop preset (C46.7: the same plan, spread over more frames), else
+## CameraPlanner.HEADINGS_PER_FRAME; `--camera-planner-rate=N` overrides (dev).
+var plan_headings := CameraPlanner.HEADINGS_PER_FRAME
+## With --camera-trace, each switch prints a CAMERA_PLAN line (when, from/to yaw, the winner's terms, the current's cost).
+var _plan_log := false
+## Round 46 (C3): with --camera-trace, what the rig's frame and the planner's plans cost (usec; CameraPlaytest prints it).
+var cost_steps := PackedInt32Array()  # every planner step's usec (the p99 the bar's budget line reads)
+var cost := {"frames": 0, "usec": 0, "max_usec": 0, "plans": 0, "plan_usec": 0, "plan_max_usec": 0}
+var _plan_wide := false
+## The plan's yaw (what it decided); the wanted yaw walks to it at YAW_FOLLOW_DEG_PER_S, so the frame fitted at the wanted
+## yaw moves with it instead of jumping to the end of the turn (dev seeds 7001-7006: 10 planner jerks, 3 snaps).
+var _plan_yaw: Variant = null
+## How much of the wide frame (his crews and the contacts) is in the goal (0..1), eased at PLAN_WIDE_OMEGA.
+var _wide_mix := 0.0
+const PLAN_WIDE_OMEGA := 2.0
+var _plan_names: Array = []
+var _fresh_until := -1e9
+var _plan_middle: Variant = null
+var _plan_travel := Vector3.ZERO
+## How quickly the selection's drive (m/s, for the path ahead) follows its middle's motion (1/s).
+const PLAN_TRAVEL_OMEGA := 3.0
+## While a new selection is off his screen the pan to it is quicker: this many view-heights a second at most, on a spring
+## this many times the glide's (still no jump in speed: it starts from rest). 1.3 keeps a frame's move under CameraTrace's
+## SNAP_PX (24 px at 60 fps: 1.33 heights/s); 4.0 reached any squad within ~1 s but every pan was 5-10 snaps.
+const URGENT_SCREENS_PER_S := 1.3
+const URGENT_OMEGA_X := 2.5
+
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
 var _shown_zoom := 0.7
@@ -420,6 +464,14 @@ func _ready() -> void:
 	focus_omega = float(flags.text("camera-glide-omega", str(GLIDE_FOCUS_OMEGA)))
 	danger_on = flags.text("camera-danger", "on") != "off"  # K4.3: ON (Bar K4 v2 passed, 9737-9772); =off = round 41
 	corner_on = flags.text("camera-corner", "off") == "on"  # K5.3: OFF until Bar K5 passes
+	planner_on = flags.text("camera-planner", "off") == "on"  # round 46 (C2): OFF until Bar C1 passes
+	_plan_log = flags.has("camera-trace")
+	CameraPlanner.override_weights(flags.text("camera-planner-w", ""))  # dev only: a bar runs at the constants
+	# Round 46 (C5): a headless replay frames at his screen's shape (`--camera-screen=1920x1080`; headless roots are 64x64).
+	var screen := flags.text("camera-screen", "")
+	if screen.contains("x") and DisplayServer.get_name() == "headless" and is_inside_tree():
+		get_tree().root.size = Vector2i(int(screen.get_slice("x", 0)), int(screen.get_slice("x", 1)))
+	plan_headings = flags.integer("camera-planner-rate", 1 if RenderLevers.preset() == "laptop" else CameraPlanner.HEADINGS_PER_FRAME)
 	solid_escape = flags.text("camera-solid-escape", "off") == "on"  # round 43 stretch: dev only
 	danger_lean_m = float(flags.text("camera-danger-lean", str(DANGER_LEAN_M)))
 	solid_in_omega = float(flags.text("camera-solid-in", str(SOLID_IN_OMEGA)))
@@ -443,12 +495,19 @@ func snap() -> void:
 
 func _process(delta: float) -> void:
 	var started := HudClock.begin()
+	var t0 := Time.get_ticks_usec() if _plan_log else 0
 	_process_timed(delta)
+	if _plan_log:
+		var spent := Time.get_ticks_usec() - t0
+		cost["frames"] += 1
+		cost["usec"] += spent
+		cost["max_usec"] = maxi(int(cost["max_usec"]), spent)
 	HudClock.end(&"rts_camera.process", started)
 
 
 func _process_timed(delta: float) -> void:
 	_clock += delta
+	_frame_dt = delta
 	frame_short = false  # set again below only while the vision frame is what the camera is doing
 	var _hc1 := HudClock.begin()
 	_update_vision()
@@ -484,7 +543,9 @@ func _process_timed(delta: float) -> void:
 	_update_tracking()
 	HudClock.end(&"cam.tracking", _hc3)
 	if glide:
-		holding = aiming_now()
+		planner_urgent = planner_on and _track == Track.VISION and _clock < _fresh_until and not _selection_shown()
+		holding = aiming_now() and not planner_urgent
+		_urgency = (1.0 if planner_urgent else 0.0) + (_urgency - (1.0 if planner_urgent else 0.0)) * exp(-PACE_OMEGA * delta)
 		_glide(delta)
 	else:
 		_move_shown(delta)
@@ -520,7 +581,7 @@ func _move_shown(delta: float) -> void:
 ## speed-limited, and while he aims it coasts to a stop (its goal goes on being worked out; the view waits for him).
 func _glide(delta: float) -> void:
 	var weight := 1.0 - exp(-SMOOTHING * delta)
-	var pace_goal := hand_pace if _clock - _mouse_moved_at < HAND_MOVING_S else 1.0
+	var pace_goal := lerpf(hand_pace, 1.0, _urgency) if _clock - _mouse_moved_at < HAND_MOVING_S else 1.0
 	_pace = pace_goal + (_pace - pace_goal) * exp(-PACE_OMEGA * delta)
 	var before_focus := _shown_focus
 	if RtsCamera.hand_set(wrote["focus"]):
@@ -530,7 +591,7 @@ func _glide(delta: float) -> void:
 		_focus_velocity *= exp(-GLIDE_STOP_OMEGA * delta)
 		_shown_focus += _focus_velocity * delta
 	else:
-		var next := RtsCamera.spring(_shown_focus, _focus_velocity, focus, focus_omega, delta)
+		var next := RtsCamera.spring(_shown_focus, _focus_velocity, focus, focus_omega * lerpf(1.0, URGENT_OMEGA_X, _urgency), delta)
 		_focus_velocity = (next[1] as Vector3).limit_length(glide_top_speed())
 		_shown_focus = next[0] if (next[1] as Vector3).length() == _focus_velocity.length() else before_focus + _focus_velocity * delta
 	var before_zoom := _shown_zoom
@@ -623,7 +684,8 @@ func aiming_now() -> bool:
 ## zoom, under round 40's TRACK_SPEED, times the hand's pace.
 func glide_top_speed() -> float:
 	var height := 2.0 * RtsCamera.distance_for(_shown_zoom) * tan(deg_to_rad(fov) / 2.0)
-	return minf(screens_per_s * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom)) * _pace
+	var normal := minf(screens_per_s * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom)) * _pace
+	return lerpf(normal, URGENT_SCREENS_PER_S * height, _urgency)  # round 46: a new selection off screen, in about a second
 
 
 ## The ground under the cursor, or null (no cursor seen yet, or sky): CameraShake's pivot while gliding.
@@ -1332,6 +1394,9 @@ func set_auto_frame(on: bool) -> void:
 ## Round 7 (A): turn the yaw toward the selection's facing (see `yaw_follow`). Round 42 (K4.2): with `danger_on`, toward
 ## where the danger is instead (`danger_look`), with its own deadband and hold.
 func _update_yaw_follow(delta: float) -> void:
+	if planner_on:
+		_yaw_turning = false  # round 46: the planner decides the yaw (with the frame), not a rule of its own
+		return
 	if not yaw_follow or not facing.is_valid() or _before_overview != null or _clock - _manual_at < handback_seconds:
 		_yaw_turning = false
 		return
@@ -1561,7 +1626,7 @@ func yaw_mode() -> String:
 	if holding:
 		return "aim-hold"
 	match String(wrote["yaw"]):
-		"danger", "corner":
+		"danger", "corner", "planner":
 			return String(wrote["yaw"])
 	return "follow"
 
@@ -1905,6 +1970,9 @@ func _update_vision_tracking() -> void:
 		stop_tracking("arrived")
 		return
 	var destination: Variant = _vision_state.get("destination")
+	if planner_on:
+		_update_planner(points, destination)
+		return
 	if danger_on:
 		# K4.2: the frame was made for a view along the heading: each contact framed with its mirror about his units (so
 		# they stay centred), leaning toward where he is going. Looking at the danger instead, the mirrors and that lean
@@ -1939,6 +2007,97 @@ func _update_vision_tracking() -> void:
 	# Only our own vehicles (the first `own` points; the rest are contacts and their mirrors, framed only if they fit).
 	var own := points.slice(0, int(_vision_state.get("own", points.size())))
 	frame_short = RtsCamera.cuts_off(own, focus, yaw, zoom, _aspect(), pitch)
+
+
+## Round 46 (C2): the planner's frame. Every PLAN_S (and at once on a new selection) it scores the candidate poses and
+## keeps or replaces the yaw; every frame it re-fits the frame at that yaw, so the view follows the squad between plans.
+func _update_planner(points: Array, destination: Variant) -> void:
+	var own: Array = points.slice(0, int(_vision_state.get("own", points.size())))
+	if own.is_empty():
+		stop_tracking("arrived")
+		return
+	var names: Array = selection.call() if selection.is_valid() else []
+	var middle := RtsCamera._middle(own, own.size())
+	if names != _plan_names:
+		if not _plan_names.is_empty() or _clock > 1.0:
+			_fresh_until = _clock + CameraPlanner.FRESH_S
+		_plan_names = names
+		_plan_at = -1e9
+		planner.restart()
+		_plan_middle = null
+		_plan_travel = Vector3.ZERO
+	var dt := _frame_dt
+	if _plan_middle is Vector3 and dt > 0.0:
+		var step := (middle - (_plan_middle as Vector3)) / dt
+		step.y = 0.0
+		_plan_travel = step.limit_length(40.0) + (_plan_travel - step.limit_length(40.0)) * exp(-PLAN_TRAVEL_OMEGA * dt)
+	_plan_middle = middle
+	var state: Dictionary = danger.call() if danger.is_valid() else {}
+	var path := CameraPlanner.path_ahead(middle, _plan_travel)
+	var world := {"own": own, "pad": float(_vision_state.get("pad_m", 0.0)), "path": path,
+			"lean": path.back() if not path.is_empty() else destination, "action": CameraPlanner.action_of(state), "guns": CameraPlanner.guns_of(state), "clamp": look_clamp,
+			"war": CameraPlanner.war_of(state) if state.get("from") is Vector3 else null,
+			"fresh": _clock < _fresh_until, "aspect": _aspect(), "pitch": pitch, "inset": vision_inset, "bottom": frame_bottom(),
+			"floor_level": _track_floor_zoom, "cap_level": minf(vision_zoom, RtsCamera.level_for(auto_frame_max_m)),
+			"data": RtsCamera.seen()}
+	if planner.planning() or _clock - _plan_at >= CameraPlanner.PLAN_S:
+		if not planner.planning():
+			_plan_at = _clock
+		var _hp := HudClock.begin()
+		if not _plan_yaw is float or wrote["yaw"] != "planner":
+			_plan_yaw = yaw  # his hand (or anything else) moved the yaw since: plan from where it is
+		var p0 := Time.get_ticks_usec() if _plan_log else 0
+		var out := planner.step(world, float(_plan_yaw), _clock, plan_headings)
+		if _plan_log:
+			var spent := Time.get_ticks_usec() - p0
+			cost["plans"] += 1
+			cost["plan_usec"] += spent
+			cost["plan_max_usec"] = maxi(int(cost["plan_max_usec"]), spent)
+			cost_steps.append(spent)
+		HudClock.end(&"cam.planner", _hp)
+		if not out.is_empty():
+			if bool(out["switched"]):
+				if _plan_log:
+					print("CAMERA_PLAN t=%.2f yaw %.0f -> %.0f cost %.2f fresh=%s terms=%s" % [_clock, rad_to_deg(float(_plan_yaw)),
+							rad_to_deg(float(out["yaw"])), float(out["cost"]), str(world["fresh"]), JSON.stringify(out["terms"])])
+				turns += 1  # an automatic turn starts (the recorder writes a `cam` row on it)
+				turn_mode = "planner"
+			_plan_yaw = float(out["yaw"])
+			wrote["yaw"] = "planner"
+			_plan_wide = bool(out["wide"])
+	if _plan_yaw is float and wrote["yaw"] == "planner":
+		var gap := angle_difference(yaw, float(_plan_yaw))
+		var turn := deg_to_rad(YAW_FOLLOW_DEG_PER_S) * dt
+		yaw = wrapf(yaw + clampf(gap, -turn, turn), -PI, PI)
+	var contacts: Array = world["action"]
+	_wide_mix = (1.0 if _plan_wide and not contacts.is_empty() else 0.0) \
+			+ (_wide_mix - (1.0 if _plan_wide and not contacts.is_empty() else 0.0)) * exp(-PLAN_WIDE_OMEGA * dt)
+	var goal := CameraPlanner.fit(own, world["lean"], yaw, world)
+	if _wide_mix > 0.01 and not contacts.is_empty():
+		var framed := own.duplicate()
+		for contact: Array in contacts:
+			framed.append(RtsCamera.inside_wall(contact[0] as Vector3, CameraPlanner.WALL_MARGIN_M))
+		var wide := CameraPlanner.fit(framed, null, yaw, world)
+		goal = [(goal[0] as Vector3).lerp(wide[0], _wide_mix), lerpf(float(goal[1]), float(wide[1]), _wide_mix)]
+	zoom = float(goal[1])
+	focus = look_clamp(goal[0])
+	wrote["focus"] = "select" if planner_urgent else "planner"
+	wrote["zoom"] = "planner"
+	if glide:
+		_on_leash()
+	frame_short = RtsCamera.cuts_off(own, focus, yaw, zoom, _aspect(), pitch)
+
+
+## Round 46 (C2): whether every crew of his selection is on the SHOWN screen (above the command card).
+func _selection_shown() -> bool:
+	if camera == null or not camera.is_inside_tree():
+		return true
+	var own: Array = (_vision_state.get("frame", []) as Array).slice(0, int(_vision_state.get("own", 0)))
+	var view := camera.global_transform.affine_inverse()
+	for at: Vector3 in own:
+		if not CameraPlanner.on_screen(CameraPlanner.screen_of(view, at + Vector3(0, 1, 0), _aspect()), frame_bottom()):
+			return false
+	return true
 
 
 func _vision_goal(points: Array, destination: Variant) -> Array:

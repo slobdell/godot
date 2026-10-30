@@ -17,8 +17,10 @@ extends Node
 ## than SNAP_PX; a REVERSAL is a source's velocity turning back on itself (jitter). The player's own input is counted
 ## under "player" and is not a defect. `--camera-trace=DIR` turns it on in any skirmish (CameraPlaytest drives one).
 
+## Round 46: "planner" (CameraPlanner's pose) and "select" (its pan to a NEW selection that was off his screen: the move his
+## selection asked for, reported apart so a fast pan he ordered is not read as the camera jerking by itself).
 const SOURCES := ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "danger", "corner", "cap", "frame", "solid", "hull",
-		"shake"]
+		"shake", "planner", "select"]
 ## Screen acceleration of one source that counts as a jerk (px/s^2 at 1080 rows; scaled by the window's height). A
 ## critically damped move of 300 px peaks near 300 * omega^2 = 4,800 px/s^2 at omega 4/s; a lerp from rest at the rig's
 ## SMOOTHING 12 changes velocity by 12 * gap in ONE frame (60 fps: 216,000 px/s^2 for the same 300 px).
