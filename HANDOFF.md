@@ -49,6 +49,11 @@ fresh folder's library; replay-match fails on the wrong native path; builder2 pr
 28 targets ALL JUDGED, sim-baseline unmoved; main INHERITS it. control-timing quiet read on builder0 pending. G2 conflicts in
 rts_controls.gd column_lay: resolution = pair/native-g2 cfa4a0eb2 (EQUAL with G2, R45.3 re-proof).
 
+**G2 SERIES RUNNING (~21:20 PDT):** frozen 03d1ddbc5 builder0 check GREEN (3452/0, 28 ALL JUDGED, perf judged, sim-baseline unmoved,
+`exited 0`, ~/orders-r45/freeze/check-03d1ddbc5-builder0.log); series on builder2 (parts A 11201-11224, A2, B 11225-11236, C
+11237-11248; several hours). Ship rule R45.25 (strict kind 2); ship = merge native's 6562c6beb (freeze + main + the gate_width swap,
+EQUAL). S v5 series on builder0 light; E2b chain and native's 70b8baeea check queued on builder0.
+
 **MAIN NOW (~20:00 PDT): a5508847c** = + **War Rig backout ON** (R45.26: Bar B3 failed only D2's share on exact ties). Sim baseline
 re-read twice on builder0 (glibc-2.43): **all 13 maps unmoved** (`make sim-baseline-adopt`: nothing written). OWED: ONE builder0 main check (perf judged), batched with
 engage's R45.24 player fix (fea4cfbec, check queued).
