@@ -5565,6 +5565,9 @@ static var _backout_only := false
 var _backout_goal := Vector3.INF   # the final goal the window was opened for
 var _backout_tick := 0
 var _backout_point := Vector3.INF  # the departure point, read from _backout_from
+## Round 46 (A6 v5): the crew's own path to its squad's destination for squad_way() on a drill move, and the order it was found for.
+var _squad_way_key := ""
+var _squad_way_path: Array = []
 var _backout_from := Vector3.INF
 
 
@@ -5832,18 +5835,33 @@ func _backout_squad_route() -> Array:
 
 
 ## Round 46 (A6 v5, `holdway`): the way this crew's SQUAD is going where the crew stands: the direction of the element's transit
-## route's segment nearest the crew (`Element.transit`, the route backout's look follows), ZERO when the crew has no element in
-## transit. Round 45's ordered way was the crew's next station, which at an order's first ticks points sideways for a crew driving
-## to a seat beside it (Bar A6 v4's verdict flips and the waiting squad's tilted spot line, R45.20).
+## route's segment nearest the crew (`Element.transit`, the route backout's look follows); a squad on a drill move has no transit,
+## so its crew reads its own navmesh path to the SQUAD's destination (not to its station), found once per order. ZERO when the
+## crew has no element or no destination. Round 45's ordered way was the crew's next station, which at an order's first ticks
+## points sideways for a crew driving to a seat beside it (Bar A6 v4's verdict flips and the waiting squad's tilted spot line,
+## R45.20).
 func squad_way() -> Vector2:
 	var brain := ctl as TankBrain
 	if brain == null or brain.game_match == null:
 		return Vector2.ZERO
 	var elements: Variant = Elements.of_match(brain.game_match)
 	var mine: Variant = elements.of(String(ctl.tank.name)) if elements != null else null
-	if mine == null or not mine.in_transit():
+	if mine == null:
 		return Vector2.ZERO
-	return Movement.route_way((mine.transit as Dictionary).get("route", []), ctl.tank.global_position)
+	var here := ctl.tank.global_position
+	if mine.in_transit():
+		return Movement.route_way((mine.transit as Dictionary).get("route", []), here)
+	var destination: Variant = ElementTask.destination(mine.task)
+	if not (destination is Vector3):
+		return Vector2.ZERO
+	var key := "%d:%s" % [int(mine.task_seq), destination]
+	if key != _squad_way_key:
+		if not (Pathing.enabled and Pathing.is_ready(ctl.tank)):
+			return Vector2.ZERO
+		_squad_way_key = key
+		_squad_way_path = [here]
+		_squad_way_path.append_array(Pathing.find_path(ctl.tank, here, destination as Vector3))
+	return Movement.route_way(_squad_way_path, here)
 
 
 ## The direction (flat, unit) of the segment of `route` nearest `here`; ZERO for a route with no length.
