@@ -292,6 +292,15 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.19 (2026-10-30 ~03:50) L1's freeze efe4d8ba9 RED; a latent water gap in ENGAGE's weave; GRANT engage one guard.** builder3: 3481 / 1
+  failed (test_tactics_bridge::test_the_cpus_squad_keeps_out_of_the_river_too: rust 4 wet hops, expected 0); sim-baseline moved on pit,
+  terminus, docks, yard_open (expected: the rule acts on the CPU's crews; the orchestrator adopts after the bar). By removal:
+  `--lane-clear=off` 0 wet hops (2/2), on 4. Traced: not the lane move but ENGAGE's weave ("react to contact, weaving, front armor on
+  it"), a `direct` reverse move_to 25 m across the canal (Rust_S_1, ticks 236-239), which never checks water (attack-move's ENGAGE_WATER
+  does). GRANT `tank_brain.gd`'s ENGAGE weave: a leg crossing water (`TankBrain._across_water`) is not sent as a hop; the crew faces
+  instead. Symmetric; a code change before the freeze (Bar L1's lines unchanged); C46.4: native says whether the weave runs in its
+  decide / execute and twins the guard if so.
+
 - **R46.18 (2026-10-30 ~03:35) S v6 with its defaults ON is RED.** wip/manoeuvre-seat-on e8051bbde, builder3: `make check exited 2`, 3459
   passed / 15 failed + tactics-drills red. Most of the 15 encode today's OFF seat geometry, but three are no-crossing invariants the ON
   default breaks (test_formation_slots::test_paths_never_cross, test_tactics_seat_order::test_sum_first_paths_never_cross,
