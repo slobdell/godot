@@ -65,6 +65,34 @@ Nothing at launch. A bar that fails twice on the same fix: write in player terms
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### ROUND 46 FINAL REPORT (in progress; hashes completed as checks read)
+
+**What he will notice (if the ships merge):** (1) **shortfwd ON (R46.25):** a short click right beside his scout (his 83.7 s Gorge click)
+no longer sends it ~2 m backwards first when there is room to turn; near an edge or wall it backs up as today; (2) **holdway ON (R46.27,
+pending native's harness fix + one check):** a side-street squad that today sits jammed ~30 s rolls through, and on a head-on meeting
+the passing squad brushes the waiting one far less. **Not shipped:** the seat bound S v6 (four lines failed; R46.17; round-47 start
+point written below).
+
+| Item | Outcome | Evidence |
+|---|---|---|
+| M1 S v6 dev read | cause found (station ranks on a bending route), S v6 built (659c9ab9b); dev condition met | Status M1 |
+| M2 Bar S v6 | FAILED on 4 lines (crossing/locks yield+blocked, crossing k-turn, fights G4); OFF | `references/round46/manoeuvre/barss6-builder3-4e72c5470/` |
+| M3 Bar A6 v5 (holdway) | FAILED on 2b alone; ruled ON (R46.27) | `references/round46/manoeuvre/barsa6v5-builder0-258ce00f0/` |
+| M4 backout pose 10 + Terminus k-turn | read, no bar: pose 10 needs a per-leg turn (twin change); k-turn +4.45 s a run carried by the crews behind | Status M4 |
+| M5 Bar shortfwd | FAILED on D1 alone (-1.6 se, never worse); ruled ON (R46.25) | `references/round46/manoeuvre/barssf-builder0-adeb71696/` |
+| 6 engage relay | never asked | — |
+
+**Decisions (one line each):** tie rule dropped (exact ties identical in both arms; lesson 348); the holdway cache is static scratch,
+not a Movement member (exec_fields); the S v6 ON candidate not pursued (red: no-crossing tests); smoke shots of shortfwd not usable
+(replays diverge), the staged corpus is the evidence.
+
+**What to playtest (exact commands, after the merge):** `make skirmish ARENA=gorge` -> select one scout, click 8-12 m beside its nose:
+it turns toward the click instead of reversing (escape `--traffic-off=shortfwd`); `make skirmish ARENA=terminus` -> send two squads into
+the same street from opposite ends / one from a side street (escape `--traffic-off=holdway`).
+
+**Known issues:** the S v6 ON flip breaks three no-crossing tests (round 47); backout pose 10 ties (per-leg turn); a new Movement member
+must be added to native's `exec_fields.h` (my 258ce00f0 lesson: a filtered test run missed it, the full check caught it).
+
 ### REPORT — Bar A6 v5 FINAL (04:38 PDT): FAILS as filed on guard 2b alone; every other line PASSES; recommended ON (his call)
 
 Frozen 258ce00f0 (check builder0 exited 0, 3475 / 0), builder0 light, 12049-12096; evidence
