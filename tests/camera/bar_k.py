@@ -93,6 +93,11 @@ def main():
     print(f"  (reported) the selection pan ('select'): jerks/min {tb['rows'].get('select', {}).get('per_min', 0.0):.2f} v "
           f"{ta['rows'].get('select', {}).get('per_min', 0.0):.2f}; snaps {tb['rows'].get('select', {}).get('snaps', 0)} v "
           f"{ta['rows'].get('select', {}).get('snaps', 0)}")
+    peak = lambda rs: max((l.get("pan_peak_hps", 0.0) for l in looks(rs)), default=0.0)
+    cut = lambda rs: sum(l.get("pan_cut_s", 0.0) for l in looks(rs))
+    judge("G4c a pan, not a cut: the view's own fastest move, heights/s (ARM peak <= 4.5) and seconds over 4.5 (ARM <= BASE + 1)",
+          "%.2f / %.1f s" % (peak(b_dec), cut(b_dec)), "%.2f / %.1f s" % (peak(a_dec), cut(a_dec)),
+          peak(a_dec) <= 4.5 and cut(a_dec) <= cut(b_dec) + 1.0)
     judge("G4b snaps from any automatic source but 'select', ARM = 0", 0, snaps_other, snaps_other == 0, "%d")
     hit_pct = lambda t: 100.0 * t["slip"]["hit"] / max(t["slip"]["attacks"], 1)
     judge("G5a clicks on the aimed unit % (ARM >= 70 and ARM >= BASE - 3)", hit_pct(tb), hit_pct(ta),

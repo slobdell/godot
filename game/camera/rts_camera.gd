@@ -344,9 +344,12 @@ const URGENT_OMEGA_X := 2.5
 const PAN_START_M := 20.0
 const PAN_ARRIVE_M := 3.0
 ## The pan's spring (1/s; critically damped from rest: 90 % of the way in 3.9/omega s, no step in speed) and its top
-## speed (m/s; the spring alone peaks at gap * omega / e: 150 m at 7.5 -> 414 m/s, so this cap is what a long pan runs at).
+## speed in heights of the ground in view per second (the spring alone peaks at gap * omega / e: 150 m at 7.5 -> 414 m/s,
+## ~13 heights/s at 50 m, a jump cut, not a pan; at 4 heights/s a frame moves 1/15 of the screen at 60 fps, 1/7.5 on his
+## laptop's ~30 fps: the eye still follows the ground, so it reads as a fast pan). `--camera-pan-screens=` (dev).
 const PAN_OMEGA := 7.5
-const PAN_MAX_MPS := 260.0
+const PAN_SCREENS_PER_S := 4.0
+var pan_screens := PAN_SCREENS_PER_S
 var select_pan := true
 var _select_at := -1e9
 
@@ -483,6 +486,7 @@ func _ready() -> void:
 	corner_on = flags.text("camera-corner", "off") == "on"  # K5.3: OFF until Bar K5 passes
 	planner_on = flags.text("camera-planner", "on") != "off"  # round 46 (R46.23): ON for his answer; =off = round 45's camera
 	select_pan = flags.text("camera-select-pan", "on") != "off"  # round 47 (K2/K3): ON; =off = round 46's urgent pan
+	pan_screens = float(flags.text("camera-pan-screens", str(PAN_SCREENS_PER_S)))  # dev only: a bar runs at the constant
 	_plan_log = flags.has("camera-trace")
 	CameraPlanner.override_weights(flags.text("camera-planner-w", ""))  # dev only: a bar runs at the constants
 	# Round 46 (C5): a headless replay frames at his screen's shape (`--camera-screen=1920x1080`; headless roots are 64x64).
@@ -707,7 +711,7 @@ func glide_top_speed() -> float:
 	var height := 2.0 * RtsCamera.distance_for(_shown_zoom) * tan(deg_to_rad(fov) / 2.0)
 	var normal := minf(screens_per_s * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom)) * _pace
 	if select_pan:
-		return lerpf(normal, PAN_MAX_MPS, _urgency)  # round 47 (K2): a selection pans at once, 150 m in ~0.6 s
+		return lerpf(normal, pan_screens * height, _urgency)  # round 47 (K2): a selection pans at once, as fast as still reads as a pan
 	return lerpf(normal, URGENT_SCREENS_PER_S * height, _urgency)  # round 46: a new selection off screen, in about a second
 
 
