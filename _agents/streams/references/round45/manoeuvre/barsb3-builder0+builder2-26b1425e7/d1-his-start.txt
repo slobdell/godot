@@ -1,0 +1,2 @@
+b3_his_base.log: Guns_2 rows 600, first planned reverse (kt=1, speed < -0.5; one-tick contact bounces at kt=0 ignored) t44, past the box (x < -45, z < 82) t140
+b3_his_bo.log: Guns_2 rows 600, first planned reverse (kt=1, speed < -0.5; one-tick contact bounces at kt=0 ignored) t4, past the box (x < -45, z < 82) t97

@@ -222,7 +222,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdway", "holdroute", "kturngoal", "parkaside", "parkedpass"]  # round 45 (R45.23, Bar B3): backout ON by default, `--traffic-off=backout` the escape; round 44: parkedpass (M3), until Bar S v3; round 43: holdfar / holdway / holdroute (engage A6, until judged), kturngoal (manoeuvre S3) + parkaside (manoeuvre Bar S v2), all OFF after Bar S / S v2 (R43.42); round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane; round 39-40 givewaychain / chainrelease / chainside / reroute / rerouteany / follow (manoeuvre, until judged)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdway", "holdroute", "kturngoal", "parkaside", "parkedpass", "shortfwd"]  # round 45: shortfwd (manoeuvre, engage's E5 relay: his short move to a wheeled crew inside its turning circle drives forward, not back), until its bar; round 45 (R45.23, Bar B3): backout ON by default, `--traffic-off=backout` the escape; round 44: parkedpass (M3), until Bar S v3; round 43: holdfar / holdway / holdroute (engage A6, until judged), kturngoal (manoeuvre S3) + parkaside (manoeuvre Bar S v2), all OFF after Bar S / S v2 (R43.42); round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane; round 39-40 givewaychain / chainrelease / chainside / reroute / rerouteany / follow (manoeuvre, until judged)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -290,7 +290,8 @@ static func _chain_native() -> void:
 	# twinned (native N3, pair/native-backout: drive_native.cpp backout_due / backout_look_due), so ON keeps the C++ drive.
 	# Round 44 (R44.16): the twin matches cf6eabc22 (native N3, pair/native-backout-r3: the station-PID gate on `_backout_leg` only,
 	# the long-hull term), so backout ON keeps the C++ drive.
-	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush"):
+	# Round 45 (manoeuvre, `shortfwd`): the forward arc on his short move is inside the drive's mirror: ON runs the GDScript drive until twinned.
+	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush") or not _off.has("shortfwd"):
 		if _reroute_saved_native_drive == null:
 			_reroute_saved_native_drive = BrainSwitches.native_drive
 		BrainSwitches.native_drive = false
@@ -737,15 +738,27 @@ static func _first_to(x: Vector2, group: String, cols: Dictionary) -> Array:
 	var speeds: PackedFloat64Array = cols["speed"]
 	var radii: PackedFloat64Array = cols["radius"]
 	var best: Array = []
+	# Round 45 (manoeuvre, `holdway`; Bar A6 v4's head-on guard, seed 11466): under holdway a crew's direction is its ORDERED
+	# way, and a crew ordered to a station BESIDE it (a seat to its west at the order's first ticks) has a way across the
+	# street's: its "time to the middle" projected on that way read 1.2 s for a crew 60 m from it, it became its squad's lead,
+	# and the squad that should have waited was told to come on (A rolled into B; 32 contacts at the mouth). The time is
+	# along the SQUAD'S way (the table's mean of its crews' ways), which is what "coming down the street" means; the lead's
+	# direction for the street test is that way too. OFF: today's exactly (the crew's own direction).
+	var way := Vector2.ZERO
+	if not off("holdway"):
+		way = (cols["gdir"] as Dictionary).get(group, Vector2.ZERO) as Vector2
+	var by_way := way.length_squared() > 0.25
 	for k in groups.size():
 		if groups[k] != group or moving[k] == 0:
 			continue
-		var along := (x.x - xs[k]) * dxs[k] + (x.y - zs[k]) * dzs[k]
+		var dx := way.x if by_way else dxs[k]
+		var dz := way.y if by_way else dzs[k]
+		var along := (x.x - xs[k]) * dx + (x.y - zs[k]) * dz
 		if along < -radii[k]:
 			continue
 		var seconds := maxf(along, 0.0) / maxf(speeds[k], MIN_SPEED_MPS)
 		if best.is_empty() or seconds < float(best[0]):
-			best = [seconds, Vector2(xs[k], zs[k]), Vector2(dxs[k], dzs[k]), k]
+			best = [seconds, Vector2(xs[k], zs[k]), Vector2(dx, dz), k]
 	return best
 
 

@@ -630,6 +630,39 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   bar):** B2 (R45.15) and its reads in streams/manoeuvre.md Status: the fallback's 11187 read (ON t207 v OFF t166 on the GDScript drive,
   laptop), the room-behind gate's guard re-read (builder0 light), the 14 dev poses (3 / 3 sooner, ceiling worst +1.5 s).
 
+- **FILED Bar S v5, his first squad settles where he clicks, the last crew parks behind it (manoeuvre M5 after S v4 FAILED R45.11;
+  FILED before any number on 11751-11798; C45.1, C45.3, C45.4, C45.5).** S v4's shape and lines stand with ONE flag added to the arm,
+  said here first: ONE arm, **s5** = `--seat-bound=on --seat-order=on --seat-last=open` v **base** = `--shape-latch=off` (today), both
+  with the latch OFF, on a FROZEN tree named at the series' launch = stream/manoeuvre at the hash whose check is green (the rules are
+  planner-side GDScript in tactics_formation.gd; the drive is twinned and unchanged: native ON in every log). **What changed since S v4
+  (C45.1):** S v4 FAILED on Locks wedged +6.4 s a run (+4.4 se): the squad's last two crews pressing into a filled bound. Under
+  `--seat-last=open` (TacticsFormation.SEAT_LAST_OPEN) the bound's DEEPEST seat keeps its nominal depth behind the click and is the REAR
+  crew's at the order and nobody else's; the rear crew is the laterally nearest of the crews within SEAT_LAST_REAR_TIE_M (4 m) of the
+  rear-most (the start layouts' rear pair stands abreast: a float tie sent the far crew across its squadmate, dev read 4), and the
+  holder keeps that seat while the order stands (dev read 4: the seat changed hands at t44 as the crews moved and both lingered).
+  **What it could break (named first):** yield + blocked s UP on Crossing (dev read 6: +6.3 s a run, +1.7 se) and Locks (+2.0 s a run,
+  +1.4 se): the open seat sits where the squad's own rear files through; never-arrived UP (dev read 4, before the two fixes: +1.4 a run
+  on Terminus; dev read 6: +0.0); the G1 group column (C45.3: byte-identical, the rules are scoped to a squad on its own order,
+  R43.34). **Workload (deciding), `make manoeuvre-bar-s`, exactly Bar S v4's:** locks / terminus / crossing x **11751-11774** = 72
+  paired cells an arm, 20 s, squads 1-2 traced; `tests/manoeuvre/s_judge.py` paired per cell. **D1** crews seated within the bound 15 s
+  after their order ARM > BASE by >= 2 se AND pooled; **D2** start-zone yield + blocked s is a GUARD (as S v4 filed it): per arena ARM <=
+  BASE + 2 se, with D1 carrying the bar. **Per-arena guards (paired over 24 seeds each):** yield + blocked s ARM <= BASE + 2 se; k-turn
+  s ARM <= BASE + 2 se; **wedged s ARM <= BASE + 2 se** (S v4's miss; dev read 6: Locks +0.9 s a run, +0.6 se); never-arrived pooled
+  ARM <= BASE + 2 se. **Group-order guards (`q3_judge.py`), 11775-11786 x crossing / locks / sumps / terminus x crew:** G5 all-in mean
+  ARM <= BASE + 1.645 se, G6 never-in ARM <= BASE + 1.645 se, G7 friendly contact ticks ARM <= 1.05 x BASE. **G1 v9 corridor
+  (C45.3), 11775-11786:** `make orders-probe` locks / crossing / terminus x 5 squads x click: the ORDERS_PROBE_SQUAD rows base v s5
+  **byte-identical**; and `orders_judge.py g1v8`'s lines each ARM <= BASE + 2 se. **Fight guards (`manoeuvre-wedge-trace` locks /
+  terminus / sumps x 11787-11792, G1-G4 as Bar S; S v4's miss was G4's kill share 0.049 v 0.03: the named risk).** **Perf:** the frozen
+  tree's check perf-judge PASS before ON (a quiet builder0 read of the merge if builder2 checked it). **Ships ON** (`SEAT_BOUND`,
+  `SEAT_ORDER` and `SEAT_LAST_OPEN` default on, `--seat-bound=off` / `--seat-order=off` / `--seat-last=bound` the escapes) only if D1 and
+  every guard pass; no re-file. C45.5: the bound seats any squad on its own order (the CPU's too). **Machine:**
+  `~/overnight-manoeuvre/r45/bars_s5.sh` (builder0 light for the one-process legs, builder2 for the workload) from a frozen checkout of
+  the hash; evidence `~/overnight-manoeuvre/r45/bars_s5/`, filed under `references/round45/manoeuvre/barss5-<machines>-<hash>/`. **Dev
+  history (never a bar; streams/manoeuvre.md Status):** dev reads 1-6 on 7001-7012 (12 paired runs an arm an arena): dev 2 Locks D1
+  53 -> 89 (+7.7 se), wedged -0.5 s a run; dev 4 Terminus wedged +8.0 s a run (the two causes); dev 6 (both fixes, three arenas) D1
+  +5.8 se, wedged Locks +0.6 se / Terminus -0.2 se / Crossing -3.4 se, yield + blocked Crossing +1.7 se / Locks +1.4 se / Terminus
+  -1.7 se, k-turn s all three better, never-arrived +0.0.
+
 ## Rulings (round 45)
 
 - **R45.1 (prep) Gorge's geometry, for every stream.** The drop's pits run z 38-50: west drop x -92..-48, middle -32..32; the gap

@@ -398,7 +398,7 @@ static func route_arms() -> Dictionary:
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
-			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks, "backout_stalls": backout_stalls, "backout_fallbacks": backout_fallbacks, "parkedpass_refusals": parkedpass_refusals,
+			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks, "backout_stalls": backout_stalls, "backout_fallbacks": backout_fallbacks, "shortfwd_ticks": shortfwd_ticks, "parkedpass_refusals": parkedpass_refusals,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_settled_passes": chain_settled_passes, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
@@ -418,6 +418,7 @@ static func reset_route_arms() -> void:
 	backout_looks = 0
 	backout_stalls = 0
 	backout_fallbacks = 0
+	shortfwd_ticks = 0
 	parkedpass_refusals = 0
 	behind_asked = 0
 	behind_reverses = 0
@@ -1231,8 +1232,28 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			drive_vector = Steering.reverse_toward_wheels(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
 		else:
 			drive_vector = Steering.drive_toward_wheels(tank.global_position, -tank.global_basis.z, waypoint, arrive, radius, tank.speed(), remaining)
+			# Round 45 (manoeuvre, `--traffic-on=shortfwd`; engage's E5 relay, R45.21): HIS SHORT MOVE TO A WHEELED CREW DRIVES FORWARD. His
+			# Gorge scout (83.7 s): a click 10.7 m away, 56 deg off the nose, inside a Rat Rod's 4.5 m turning circle: Steering's circle rule
+			# backed it at full lock and the planner laid a 2 m reverse leg, so it drove 3 m AWAY from his click for ~0.9 s before his next
+			# click replaced the order (the staged yard: reverse at tick 3 for 21 ticks, 1.9 m away). A player's direct move whose goal is
+			# within SHORTFWD_RADII turning circles and ahead-ish (within SHORTFWD_DEG of the nose) takes the tightest FORWARD arc toward the
+			# point's side instead, and no k-turn is planned for it; the pursuit law catches the point as the arc comes round. OFF: today.
+			var short_forward: bool = shortfwd_on() and not direct and not bool(order.get("reverse", false)) and _his_short_move(goal, radius)
+			if short_forward:
+				var here_s := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+				var fwd_s := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+				var side_s := 1.0 if fwd_s.signed_angle_to(Vector3(goal.x, 0.0, goal.z) - here_s, Vector3.UP) >= 0.0 else -1.0
+				# The forward arc must be CLEAR within the planner's reach (his Gorge scout stood at the drop's edge: the planner's 2 m
+				# back-up there was the right move, and today's planner keeps the tick when the arc meets anything within reach).
+				var map_s := tank.get_world_3d().navigation_map
+				var frame_s := _kturn_frame(tank)
+				if _arc_hit(map_s, frame_s, here_s, fwd_s, -side_s, goal, _outline_offs(map_s, frame_s, here_s, fwd_s), KTURN_HIT_WITHIN_M + 0.5) <= KTURN_HIT_WITHIN_M:
+					short_forward = false
+				elif drive_vector.x < 0.0:
+					drive_vector = Vector2(SHORTFWD_THROTTLE, -side_s)  # Steering's sign: a point to the LEFT (positive error) needs turn < 0
+					shortfwd_ticks += ctl._step
 			# Round 11 (R1): a forward arc that would hit a wall is preceded by a planned reverse leg (see _planned_reverse).
-			var looks_today := not direct and kturn_on() and drive_vector != Vector2.ZERO and Pathing.enabled and Pathing.is_ready(tank)
+			var looks_today := not direct and not short_forward and kturn_on() and drive_vector != Vector2.ZERO and Pathing.enabled and Pathing.is_ready(tank)
 			# Round 44 (manoeuvre M2, `backout`): the departure look at an order's start runs while the hull still sits "arrived" on
 			# the transit's converging station (steering has nothing to do yet), and a leg it planned runs to its end.
 			if looks_today or _backout_due(direct, drive_vector, goal):
@@ -5623,6 +5644,31 @@ static func _box_corners(at: Vector2, fwd: Vector2, right: Vector2, hw: float, h
 
 static func backout_on() -> bool:
 	return not Traffic.off("backout")
+
+
+## Round 45 (manoeuvre, `shortfwd`): his short move to a wheeled crew drives forward (see drive()).
+const SHORTFWD_RADII := 3.0   # the goal within this many turning circles of the hull
+const SHORTFWD_DEG := 100.0   # ...and this far off the nose at most (ahead-ish; his click was 56 deg off)
+const SHORTFWD_THROTTLE := 0.6
+static var shortfwd_ticks := 0  # ticks the forward arc replaced the circle rule's reverse (measurement)
+
+
+static func shortfwd_on() -> bool:
+	return not Traffic.off("shortfwd")
+
+
+## Is `goal` a player's short move for this wheeled crew: his direct order (TankBrain._his_order), within SHORTFWD_RADII turning
+## circles, within SHORTFWD_DEG of the nose?
+func _his_short_move(goal: Vector3, radius: float) -> bool:
+	var brain := ctl as TankBrain
+	if brain == null or not brain._his_order or radius <= 0.0:
+		return false
+	var tank := ctl.tank
+	var to := Vector3(goal.x - tank.global_position.x, 0.0, goal.z - tank.global_position.z)
+	if to.length() > SHORTFWD_RADII * radius or to.length() < 0.5:
+		return false
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
+	return absf(forward.signed_angle_to(to, Vector3.UP)) <= deg_to_rad(SHORTFWD_DEG)
 
 
 ## Does the drive call the k-turn planner this tick although steering has nothing to do: a backout leg under way, or a departure

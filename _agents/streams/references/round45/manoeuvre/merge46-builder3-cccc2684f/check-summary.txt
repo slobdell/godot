@@ -1,0 +1,6 @@
+>> check: 25 passed, 1 FAILED, 0 NOT RUN, 2 NOT JUDGED  [test x13, lint -P16, 6 at once, devia]
+   NOT JUDGED perf-judge: NOT JUDGED -- refused 3 times (ratios: ratio=0.00x ratio=0.00x ratio=0.00x ratio=0.00x ratio=0.00x ratio=0.00x ) in 29s: the box was truly busy
+   NOT JUDGED ai-scenarios-check: scenario_perf::test_the_brains_stay_inside_the_cpu_budget (reason=no_nominal machine=devia) (13.4s)
+   FAIL     remote-guard-test
+>> builder: make check exited 2 (log /home/devia/tank_squad/remote-logs/godot-manoeuvre-m46-check-20261029-221039-361483.log)
+>> remote: make check exited 2 (build/ copied back)

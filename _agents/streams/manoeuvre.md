@@ -66,9 +66,139 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 builder0 3446/0; no baseline check re-run, per the contract). Orchestrator session: `godot-b8`. builder0 has NO godot-manoeuvre folder
 (a cold import on the first remote run: watched); builder2 (up at launch) has `godot-manoeuvre` + `-light` warm.**
 
-### WHERE IT STANDS (2026-10-29 ~16:05 PDT): the round's report
+### ROUND 45 FINAL REPORT, in his terms (2026-10-29 ~21:50 PDT; R45.28)
 
-- **Nothing ships ON from this stream in round 45.** Three bars were filed and read on fresh seeds; all three FAIL as filed, each with
+- **What he will see: his War Rig backs out of the box.** Nose-on to a container, a crew now reverses at once and swings the way its
+  squad is going instead of pushing at the wall: on his own Locks start Guns_2 is reversing at tick 4 (was 44) and round the box at
+  tick 97 (was 140); across 48 fresh staged poses the stuck rig gets clear 2.8 s sooner on the median, no pose more than 1.3 s later,
+  the squad's start no slower, fights and the group column unchanged. **Shipped ON as main a5508847c (R45.26; `--traffic-off=backout`
+  the escape).** The one line it missed: on 9 of 12 base-stuck poses (75 %, line 80 %), the other three exact ties on one crawl pose where
+  a squadmate sits 1.7 m beside the rig and the back-up is refused. The cost he might notice: on Terminus the back-ups themselves and
+  the Tanker turning to make way add ~3 s of k-turning a run (reported, not a line).
+- **What he will NOT see yet: his squad settling where he clicks (the seat bound).** S v4 and S v5 both FAILED as filed. The settle
+  itself is real and wide (crews seated within the bound by 15 s: 220 -> 329 on fresh seeds, +8.4 se) but each version broke a guard he
+  would also feel: S v4 the last two crews pressing into a filled bound on Locks (+6.4 s wedged a run); S v5 (the last crew parks behind)
+  halved that (+3.4 s, still over) and on Crossing made a squad yield to ITSELF in its start zone (+9.9 s a run): the open seat and the
+  rear-crew term deal the two-row layouts seats whose paths cross. OFF; the round-46 starting point is written in
+  `references/round45/manoeuvre/barss5-builder0-fc639d7e0/README.md` (the rear-crew term must respect the squad's lateral order, or
+  the open seat goes on the squad's line of advance).
+- **What he will NOT see yet: the street hold reading where crews are GOING (holdway).** A6 v4 FAILED on far-crew brushes at the mouth.
+  Cause read: the "ordered way" is the crew's next STATION, which at the order's first ticks points sideways for crews driving to seats
+  beside them; that flipped who waits on a near-tie and tilted the waiting squad's spot line into the passer's path. One real bug fixed
+  (fc639d7e0: the verdict's time to the middle runs along the squad's way; OFF path unchanged); the definition change (the squad's route
+  direction, as backout's look uses) and a tie rule are round 46. OFF.
+- **Parked (OFF, code on the branch):** shortfwd (engage's E5 relay: his short move inside a wheeled crew's turning circle drives forward,
+  not back) -- staged and built, waits for his Gorge geometry / replay before a bar; native twin later.
+- **Round-46 starting points:** (1) S v6: the rear-crew term keeps S v4's lateral order for the rest of the squad, dev-read on Crossing's
+  Battery layout first (11751 is the cell); (2) holdway: ordered way = Element.transit route tangent at the crew; tie rule = the squad
+  whose lead is nearer the street's inside waits; fresh seeds; (3) shortfwd's bar after his Gorge recording; (4) backout's 75 %: the
+  refused back-up beside a squadmate (pose 10) -- a shorter first leg or a lateral look; (5) the k-turn-seconds cost on Terminus.
+- **Merge for round 46 (the OFF code since 5d4b3fa82):** stream/manoeuvre **cccc2684f** = main e9862553f merged + the S v5 seat fixes +
+  holdway's verdict fix + judges + the `assert_false` test fix (main's aed598359). Its builder0 check and the default orders probe v main
+  run NOW on **builder3** (devia@builder3, Ryzen 9 9950X, the orchestrator's new builder, 22:10 PDT; perf NOT JUDGED and web-smoke red
+  there are machine gaps until native's nominal and Chrome land) from the frozen `../godot-manoeuvre-m46` and `../godot-manoeuvre-mainref2`
+  (`~/overnight-manoeuvre/r45/merge46/`, driver `merge46b.sh`). **READ 22:35 PDT: check `exited 2` = 25 passed, 1 FAILED, 2 NOT JUDGED,
+  sim-baseline unmoved; the one FAIL is tools/test_net_own_line.sh's exact stdout match broken by GNU Make 4.3's "jobserver unavailable"
+  warning on builder3 (native's 87a6c7fcc fixes it; the orchestrator accepts the check as green with that named red); default orders
+  probe candidate v main e9862553f: 60 / 60 byte-identical.** cccc2684f named to the orchestrator for main after main's batched check
+  (R45.28). Evidence `references/round45/manoeuvre/merge46-builder3-cccc2684f/`. Every switch of this stream's new code is DEFAULT_OFF; backout's ON came from main.
+- **Cleanup at the close (done 22:55):** every extra worktree removed (-s5 last; branches wip/manoeuvre-* kept); builder0 `~/tank_squad/godot-manoeuvre-s5*` removed; left (ours, small): builder3 `/home/devia/tank_squad/godot-manoeuvre-{m46,m46-light,mainref2-light}` (ours, small);
+  branches wip/manoeuvre-* kept.
+
+### WHERE IT STANDS (2026-10-29 ~21:30 PDT; backout shipped ON (R45.26); Bar S v5 FAILED as filed; holdway parked with its cause)
+
+- **main carries the stream's OFF code: 5d4b3fa82 merged as main 9203851ec** (its builder0 main check owed by the orchestrator, perf
+  judged there). Proof: builder2 check exited 0 / 3456 / 0 / sim-baseline unmoved; the default orders probe on a clean checkout of exactly
+  5d4b3fa82 v main e6e926160, same machine: 60 / 60 byte-identical.
+- **Bar B3 (backout, his ask) frozen at 26b1425e7** = `pair/native-backout-b3` (native's proof branch IS this hash: no C++ change for the
+  room-behind gate); native-proof `--traffic-on=backout` EQUAL (4a04ea921011cd9a, builder2, before the crash); the twin tests and the
+  default probe re-run on builder2 (builder2 restarted). Its full check runs on builder2 (`check_b3/check-26b1425e7.log`). **GO (the
+  orchestrator, no further word needed): the series launches when native's lines land EQUAL + 60 / 60 AND the check reads exited 0**;
+  drivers `bars_b3_a.sh` (builder0 light, from `../godot-manoeuvre-b3x`) + `bars_b3_b.sh` (builder2, from `../godot-manoeuvre-b3`),
+  then `bars_b3_judge.sh`. **LAUNCHED ~19:20 PDT**: the check read `exited 0`, 25 passed, 3 NOT JUDGED (perf), sim-baseline unmoved;
+  native EQUAL (4a04ea921011cd9a), twins 34 / 0, default probe 60 / 60 on 26b1425e7. Evidence `~/overnight-manoeuvre/r45/bars_b3/`.
+- **Bar B3, legs as they land (19:00 PDT):** **D1 PASS** (t4 / t97 v t44 / t140). **D2 (builder0 light, 98 rows): deciding FAILS AS FILED,
+  12 base-stuck poses, ON sooner in 9 (75 % v 80 %)**, median -2.78 s PASS, ceiling worst +1.3 s / median -0.52 PASS, the named 11187
+  cell +0.8 s PASS. The three not won are one shape, pose 10 (crossing crawl +50), seeds 11711 / 11725 / 11739, **exact ties** (t360 ->
+  t360, t360 -> t360, t187 -> t187): the look's back-up is blocked at 2 m by the squadmate 1.7 m beside, it withdraws, today's planner
+  runs to the same plan; B2 had read those cells a little sooner by the pre-fallback look's accident. The 80 % line counts a tie as a
+  loss. **Engage's line PASS** (the Gorge tables identical base v bo; the replay itself reads FAIL v his recording in both arms since
+  main's E2 — engage's). Guard poses, workload, group, fights, G1 probe still running.
+- **D3 guard poses (builder0 light, 24): PASS, 0 worse** (the no-room line and pose 2's ceiling line). **R45.23:** B3 FAILS AS FILED on D2's
+  share; if EVERY remaining line passes, backout ships ON after a quiet builder0 perf read of the merge; if any fails it stays OFF. The
+  ship candidate is prepared: `wip/manoeuvre-backout-on` **466d96191** in `../godot-manoeuvre-on` = 26b1425e7 + `backout` out of
+  `Traffic.DEFAULT_OFF` + `test_manoeuvre_backout`'s default test flipped (2 files, 5 / 4 lines; nothing else); its check waits on the legs.
+- **Workload guards (builder2 light, 72 paired cells, 0 SCRIPT ERROR): every B3 line PASSES.** Per arena (crossing / locks / terminus):
+  yield+blocked -0.0 / +1.7 / -2.8 se; wedged +1.1 / -0.2 / -1.3 se; **the squad's time to clear its start +0.7 / +1.1 / -1.5 se** (the
+  replacement guard); other crews' reversing ticks -4.7 / +1.8 / -3.2 se; other crews seated +2.0 / +1.0 / +1.3 se; pooled never-arrived
+  -0.375 a run (-3.3 se); D1-seated-by-15 s +1.3 se. **REPORTED (not a line, the named risk):** k-turn s -0.1 / +1.5 / **+3.7 se** (Terminus
+  +3.3 s a run, the same shape B2 read at +2.6 se). s_judge's own D1 / D2 and b1_judge's D2 are Bar S / B1 deciding lines, not B3's.
+  **Group guards (builder2 light, 48 paired): PASS, identical arms** (G5 / G6 / G7, 0 se). **Fights G1-G4 (builder0 light, 18 fights an arm): PASS** (give-way deaths 49 -> 47, stuck deaths 120 -> 116, contacts -2.0 %, kill share moved 0.004). **G1 corridor (builder0 light): PASS** (ORDERS_PROBE_SQUAD 180 / 180 byte-identical, g1v8 lines identical both arms). No SCRIPT
+  ERROR in any leg. **B3 COMPLETE 19:45 PDT: FAIL as filed on D2's share alone; every other line PASSES -> per R45.23 backout ships ON
+  after the orchestrator's quiet builder0 perf read of the candidate `wip/manoeuvre-backout-on` 466d96191** (table + candidate sent to
+  the orchestrator 19:50). Full table: `references/round45/manoeuvre/barsb3-builder0+builder2-26b1425e7/README.md`.
+- **R45.26: backout SHIPPED ON, main a5508847c** (the orchestrator merged 466d96191; sim-baseline re-record + builder0 main check theirs).
+  His round-43 ask. Worktrees -b2/-b2x/-mc/-mainref/-on/-b3/-b3x removed (branches kept; laptop disk 95 -> 89 pct).
+- **S v5, the Terminus dev read 4 (builder0 heavy, bad080397, dev seeds 7001-7012, base v s4 v s5): s5 wedged +8.0 s a run (s4 -3.8),
+  never-arrived +1.4 a run (s4 -0.75), D1 +0.6 se (s4 +2.2 se): NOT clean.** Two causes read in the logs, both in the rear-crew term:
+  (1) **the two rear crews of every start layout stand ABREAST** (0.0-0.2 m apart in depth on Locks, Terminus and Crossing alike), so
+  "the rear-most crew" was a float tie; on Terminus 7001 / 7002 / 7004 / 7010 it fell to the WEST crew while the deep seat sits 20 m
+  east -> it crossed its squadmate's path, the squadmate was sent to the far west seat across its own, and the squad jammed in its start
+  zone (wedged 17 -> 44 s; Locks' tie happened to fall the right way on all 12 seeds); (2) **the holder changed as the crews moved**
+  (7007 / 7008 / 7012: at t44 the holder had driven 4 m ahead of its abreast squadmate, the deep seat passed to the squadmate, its
+  station swung 25 m east across the old holder's, both lingered; wedged 23 -> 42 s). Fixes (tests 11 / 11, laptop): **0a0b822ae** the
+  rear crew is the laterally nearest of the rear crews within `SEAT_LAST_REAR_TIE_M` 4 m (abreast = a tie, a column = a column);
+  **ca8e71aba** the deep seat's holder keeps it while the order stands (`previous`), a fresh order reads anew. **Dev read 5 running**
+  (builder0 heavy, `s5/dev5.sh`, three arenas 7001-7012, base v s4 v s5 at 0a0b822ae = the tie fix alone); dev read 6 with both follows.
+  A bar only on a clean three-arena read. **Dev read 5 (tie fix alone, 0a0b822ae, builder0 heavy):** Terminus wedged +8.0 -> +0.1 s a
+  run, but yield + blocked Crossing +10.7 (+2.2 se) / Locks +2.3 (+2.1 se): NOT clean. **Dev read 6 (both fixes, 1a9d053e8, builder0
+  heavy, 36 paired runs an arm): CLEAN on every S line** -- D1 +5.8 se (s4 +4.4); wedged Locks +0.9 s a run (+0.6 se; s4 +3.5 / +1.7 se),
+  Terminus -1.2 (-0.2 se), Crossing -6.6 (-3.4 se); yield + blocked Crossing +6.3 (+1.7 se), Locks +2.0 (+1.4 se), Terminus -7.1
+  (-1.7 se); k-turn s better on all three; never-arrived +0.0. The two risks (Crossing / Locks yield + blocked) named in the filing.
+  **Bar S v5 FILED (workstreams.md) on 11751-11798. Frozen tree fc639d7e0** (= the code tip: both seat fixes + holdway's verdict fix):
+  its check on builder2 `>> remote: make check exited 0`, 27 targets, 26 passed, 2 NOT JUDGED (perf lines: not a judging machine),
+  sim-baseline unmoved (`check_tip2/check-fc639d7e0.log`). **Series LAUNCHED 21:05 PDT** from `../godot-manoeuvre-s5`, every leg on
+  builder0 light at J=4 (R45: builder2 is orders' G2 series; builder0 holds one series after its 19:52 OOM), driver `bars_s5.sh`,
+  evidence `~/overnight-manoeuvre/r45/bars_s5/`. **Ship candidate prepared** (used only if D1 and every guard pass): `wip/manoeuvre-s5-on`
+  **6ec15dff0** in `../godot-manoeuvre-s5on` = fc639d7e0 + SEAT_BOUND / SEAT_ORDER / SEAT_LAST_OPEN default ON (`--seat-bound=off`,
+  `--seat-order=off`, `--seat-last=bound` the escapes) + the three default tests flipped + two bound-geometry tests pinning the open
+  seat off (3 files, 12 / 8 lines; seat tests 13 / 13 laptop). **MOOT: Bar S v5 FAILS AS FILED (workload landed 21:18 PDT, 72 paired
+  cells, 0 SCRIPT ERROR):** D1 PASS wide (220 -> 329, **+8.4 se**); guards: Crossing yield + blocked **+9.85 s a run (+4.1 se)** FAIL,
+  Crossing k-turn +2.1 se FAIL, **Locks wedged +3.37 s a run (+3.2 se)** FAIL (S v4's +6.4 halved, not cleared); Locks yield + blocked
+  +2.0 se (at the line), Terminus clean (k-turn -9.2 se), never-arrived -0.33 a run. Cause read on Crossing 11751: the Battery yields to
+  ITSELF in its start zone (Battery_3 <-> Battery_1, Battery_4 <-> Battery_5 mutual yields, ~45 crew-ticks a pair; base: none): the
+  open last seat and the rear-crew term deal the two-row layout seats whose paths cross. **The seat rules stay OFF; the candidate
+  worktree removed (branch kept).** The remaining legs finished 22:51 PDT for the record, all PASS: group identical arms; fights G1-G4 (kill share 0.029 v 0.03); G1 corridor 180 / 180 byte-identical; 0 SCRIPT ERROR in any leg. builder0 is free of this stream. Evidence
+  `references/round45/manoeuvre/barss5-builder0-fc639d7e0/README.md`. Round 46 (named there): the rear-crew term must respect the
+  lateral order of the rest of the squad, or the open seat goes on the squad's line of advance, not the shape's deepest slot.
+- **holdway (A6 v4 FAILED on contacts_far): the cause read on seed 11466 (laptop, trace):** under holdway the street verdict's "time to the
+  middle" ran along each crew's ORDERED way; a crew of A ordered to a seat BESIDE it (west, at the order's first ticks) read 1.2 s to a
+  middle 60 m away, became A's lead, and A (the squad in the open) was told to come on; B waited 85 s while A's far crews came through
+  (32 contacts at the mouth). Across A6 v4's 12 head-on seeds the verdict flipped to B on 4 (11450 / 11462 / 11466 / 11472) and the
+  three locks_lock seeds where B waits in both arms read more far contacts too. **Fix fc639d7e0** (tests 10 / 10, 158 traffic + engage
+  tests green, laptop; the new test fails without it): under holdway the time to the middle, and the lead's direction for the street
+  test, run along the SQUAD'S way; OFF unchanged. **Re-read of 11466 with the fix: a genuine near-tie** (B 6.6 s v A 6.7 s to the
+  middle, both leads reading "open"), decided by the group-id tie-break -> B still waits on this seed. The sideways-way bug was real; the
+  remaining flips are the verdict's coin toss between two squads 32 m from the middle at the first tick, which no holdway code decides.
+  **holdway dev read 1 (builder0 light, fc639d7e0, A6 v4's 24 seeds both arms; `a6v5/dev1/table.txt`): contacts_far 9 -> 60, +2.12 a run
+  (se 1.38, z 1.54; A6 v4 read +2.54 / z 1.81 on the same seeds)**: the fix mends two of the four verdict flips (11450, 11462: A waits
+  again, 0 far contacts), 11472 still flips (0 far contacts), 11466 still flips by the near-tie (32); and the three locks_lock seeds
+  where B waits in BOTH arms read more far contacts under holdway (11458 3 -> 8, 11460 6 -> 15, 11464 0 -> 5): an excess the verdict
+  does not explain. **Read on 11460 (laptop, trace; terminus_west, B waits in both arms, far contacts 3 -> 19):** the wait's spots are
+  laid across the waiter's squad WAY at the mouth, and under holdway that way is the mean of the crews' ORDERED ways, which at the
+  order's first ticks includes crews driving to stations beside them: the way tilts 7 deg ((-0.03, 1.0) -> (-0.12, 0.99)), the spot
+  line tilts with it and the spots are dealt to other crews (three of five east of the street's line instead of two, one at x -45.9),
+  and A's far crews, coming down the street 10-25 s later, brush more of B's held crews. Same mechanism as the verdict flip: a crew's
+  "ordered way" is its STATION's direction, not its squad's route. Everything the rule is for still passes wide (side jam -8.5 s a run,
+  off_arrive -6.1 s, held_on -30.8 s, far_arrive -6.3 s). **holdway stays OFF; round 46 (named here):** define the ordered way as the
+  squad's route direction at the crew (Element.transit route tangent, as backout's look follows it), not the crew's next station;
+  a tie rule for the coin-toss verdicts (the squad whose lead is nearer the street's inside waits); then a bar on fresh seeds.
+- **Then:** holdway's head-on release last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars,
+  each failing as filed with his line passing) follows unchanged.
+
+### The round's report as of ~16:05 PDT (B2 / S v4 / A6 v4 failed as filed) -- SUPERSEDED above: B3 read 19:45, backout SHIPPED ON (R45.26); S v5 read 21:18, FAILED as filed; holdway parked with its cause
+
+- **(As of 16:05:) Nothing ships ON from this stream in round 45.** Three bars were filed and read on fresh seeds; all three FAIL as filed, each with
   the line he would feel passing and a guard missing: **B2** (backout, his container ask): his own start PASSES (Guns_2 reverses at tick 4
   and is round the box at tick 97, today at 44 / 140) and the deciding corpus PASSES (11 base-stuck poses, ON sooner in 11 / 11, median
   -3.0 s), but one pose of 48 was 6.3 s slower (fixed on the branch), Terminus k-turn seconds +2.6 se (the rule's own back-ups and the
@@ -354,6 +484,24 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   crew's tick clearing 8 m from its spot, ARM <= BASE + 2 se). Read on B2's workload rows (frozen 0493977ed): crossing +14.6 ticks a run
   (+0.6 se), locks +15.2 (+1.5 se), terminus -25.6 (-1.0 se): all PASS where the k-turn-seconds guard failed Terminus at +2.6 se.
 
+- **D3 fix's dev read (builder0 light, `godot-manoeuvre-light`, GDScript, `~/overnight-manoeuvre/r45/d3/dev1/`):** lab 3 / 0 (his start
+  t4 / t98, the stall stage t33); the 14 dev poses unchanged (3 / 3 sooner, ceiling worst +1.5 s, median 0.00); 11187 ON t207 v OFF t166;
+  the 24 guard poses: 11168 (the wall) FIXED (t232 -> identical to OFF), 11155 / 11171 fixed; two seeds of guard pose 2 over the strict
+  line (11157 +1.4 s, 11163 +0.3 s / +19 wall ticks) — pose 2's rig has room behind (its squadmates sit on a container), so a back-up is
+  legitimate there and B3 judges that pose by the cost ceiling (+3 s), said in the filing. **Bar B3 FILED** (workstreams.md *Bars
+  (round 45)*, 11701-11748, before any number) and the code committed; native's EQUAL + default probe on this hash next, then the
+  freeze.
+- **The laptop crashed ~17:00 PDT and restarted (builder2 rebooted too); session `godot-manoeuvre-bf` resumes at ~18:15.** Lost with it:
+  the clean identity probe's copy-back (its rows recovered from builder2's `godot-manoeuvre-mc/build/identity3/`), the queued S v5
+  Terminus dev read (dev4, never started), every local waiter. Merge candidate 5d4b3fa82's check (green, builder2) and B3's filing
+  (26b1425e7) were committed before the crash; the shortfwd edits (below) were uncommitted and are picked up here.
+- **The scout's short move, staged and first-read (laptop, GDScript; `tests/test_manoeuvre_short_move.gd`, `--traffic-on=shortfwd` OFF):**
+  a lone Rat Rod (turning circle 4.5 m) on the open yard, his side's one-crew element sent 5 m to a point 56 deg off its nose: **OFF
+  reverses at tick 3 for 21 ticks (0.7 s) and ends 1.9 m farther from the click** before coming round; **ON (the forward arc for a
+  player's short move ahead-ish inside the circle, no k-turn plan) never reverses** but a point that deep inside the circle (2.8 m from
+  the circle's centre) is orbited at ~1.7 m. His real Gorge case (engage's trace) was the k-turn PLANNER's 2 m back-up — an arc hit at the
+  drop's edge — so the rule must keep today's planner when the forward arc meets an edge within reach, and the lab needs his geometry
+  (the gap's edge) or the Gorge replay to decide. Parked behind B3 as OFF code; the ON lines are a dev read (`SHORTFWD_DEV=on`).
 - **Queued after B3, before S v5 (engage's E5 relay via the orchestrator):** his short move to the lone scout (Gorge 83.7 s / 85.2 s): the
   click ~56 deg off the nose at 10.7 m, inside a wheeled scout's turning circle, so the mover starts a three-point turn and backs 3 m AWAY
   from his click for ~0.9 s before his next click replaces the order. A player's short move whose goal is ahead-ish (< 90 deg) but inside
