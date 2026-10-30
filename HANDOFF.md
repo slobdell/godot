@@ -4,9 +4,53 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-30 morning — **ROUND 46 RUNNING (box below): five streams, ALL Opus (Fable quota low, his call at launch); all five sessions started.** Main code = cb1014bed GREEN builder3 (launch check, 3470/0 ALL JUDGED); later commits docs + `tools/judge/lines_r45.py` + two .uid. **Default build box: builder3.** Main is unpushed (he pushes)._
+_Last updated: 2026-10-30 ~09:45 PDT — **ROUND 46 IS CLOSED. NEXT: ask him the three questions in the ▶ NEXT box, then prepare round 47 (all round-46 sessions are done; start fresh).** Main = 7eec72b37 GREEN builder3 (3517/0, 28 ALL JUDGED). **Default build box: builder3.** Worktrees: main only. Main is unpushed (he pushes)._
 
-## ▶ ROUND 46 AS PREPARED (2026-10-30 morning) — read this first
+## ▶ NEXT: ROUND 47 — prepare it from here (written at round 46's close, 2026-10-30 ~09:45 PDT; read this first)
+
+**Every round-46 session is done; start FRESH sessions.** **Three questions for him first (player terms, one recommendation each; R46.23,
+R46.17/18, R46.36):**
+1. **The new camera (planner), ON or today's?** ON: his squads and their street stay in view, buildings hide his driving squad half as long
+   (1011 -> 504 s on Bar C1), a new selection is on screen at once; the cost: an ambush firing from BEHIND turns into view ~2 s later than
+   today (never in 9 of 28 v 4 of 37). Clips: `~/camera-r46/clips/rear_ambush_7001.mp4` (the trade) and `corridor_selection_7002.mp4`.
+   **Recommended ON.** Ship = merge `round46/camera` at **796ecfc31** (GREEN builder3 3485/0 ALL JUDGED); `--camera-planner=off` the escape.
+2. **Settle-at-click (S v6): keep OFF (recommended).** Four lines failed (start-zone give-way on Crossing/Locks, kill share 53 -> 49 %) and
+   ON breaks three no-crossing tests (R46.18).
+3. **The tighter group file he picked: keep today's spacing (recommended).** Packing halves the line but the last squad gets in 1-2 s LATER
+   with ~half again as many bumps (his Gorge click 13.1 v 8.2 s). `make skirmish SKIRMISH_FLAGS="--group-pack=on"` to see it.
+
+**Then his playtest of what shipped** (below), and round 47 from his words. **Round-47 starting points** (each stream's archived FINAL
+REPORT has the detail): orders — the street lay from the column (not G2), the route-waypoint re-deal, packing in the halt shapes, the
+wide-yard feel question; manoeuvre — S v6's start-zone give-way, holdway's web freeze trace (t ~11 s), the mover's yield pushing a held crew
+toward the enemy (12328), backout pose 10, holdway's head-on re-verdict; engage — the touch map's feed line; camera — C1 v2 (rear ambush
+without losing the building win) if he keeps the planner; native — ElementPlan.build then build_situation to C++ (R46.16). **Builds:**
+builder3 default; builder0 reference; builder2 burst only. Seeds start at 12401.
+
+## 🏁 ROUND 46 IS CLOSED (2026-10-30, morning) — read this first
+
+**Main: 7eec72b37 GREEN builder3** (`make check exited 0`, 3517 passed / 0 failed, 28 targets ALL JUDGED, sim-baseline holds). Rulings
+R46.1-R46.36 in `workstreams.md`; briefs in `streams/archive/round46/`; branches `round46/<s>` (engage, manoeuvre, native ancestors of main;
+camera holds the ON candidate, orders holds V5's dev-only road lay); lessons 349-352. Worktrees: main only. Builder folders: `godot` only on
+builder0 / builder3. Laptop 81 %. Main is unpushed (he pushes).
+
+| His ask | Outcome | What he gets (default game) |
+|---|---|---|
+| Group click (Gorge; rounds 37-45) | **V1 veto SHIPPED ON** (Bar V1 PASS, R46.33) | a squad today's lay would send across the drop or back behind its start takes the nearest free spot on his side; every other click (all streets) byte-identical. His Gorge click all-in 6.1 v 25.8 s. `--group-veto=off` |
+| His lone IFV held fire ~36 s | **L1c SHIPPED ON** (third bar, R46.31/32) | a crew blocked by a squadmate steps to a clear lane and fires (held 15.5 -> 10.7 s); a burst never walks into a squadmate (friendly hits 9 -> 4); feed "Hunters 1 holding fire: Guns 4 in the way"; his HOLD never moves it. `--lane-clear=off` |
+| (found on the way) | **dry_hop SHIPPED ON** (R46.21) | a crew weaving under fire never reverses into water (both sides) |
+| His scout's short moves (Gorge) | **shortfwd SHIPPED ON** (R46.25, ruled under C46.2) | a short click inside a wheeled crew's turning circle drives toward it instead of backing away first; never worse on any cell. `--traffic-off=shortfwd` |
+| Street mouths (rounds 43-45) | **holdway SHIPPED ON for the native game, OFF on web** (R46.27/35) | a side-street squad no longer sits jammed ~30 s; head-on brushes 47 -> 10. `--traffic-off=holdway` |
+| Camera: one planner, no special cases | **Built, judged, OFF; his call** (Bar C1 37/38, R46.20/23) | today's camera until he says yes (question 1 above) |
+| Tighter group file (his pick) | **OFF; back to him** (R46.36) | today's spacing (question 3) |
+| Settle where he clicks | **S v6 FAILED, OFF** (R46.17) | today's |
+
+**Also on main:** native's `sel` row in every recording, the `rules` stamp (pre-L2 recordings replay with `--lane-clear=off` by themselves),
+replays judged to his match's end (his Terminus 20/20), the native-fresh guard for light folders, C++ twins of the lane rule and shortfwd.
+**What he can playtest:** `make skirmish ARENA=gorge` (select 3 squads, click just south of the west gap: nobody crosses or goes back);
+`make skirmish ARENA=terminus` (an IFV behind parked squads with an enemy in range: it side-steps and fires, or the feed says who's in the
+way); try the new camera with `SKIRMISH_FLAGS="--camera-planner=on"`.
+
+## (DONE) ▶ ROUND 46 AS PREPARED (2026-10-30 morning) — read this first
 
 **Goal: what he saw on his last two playtests changes in his default game.** His two answers at prep (`game_design.md` *His answers at
 round 46's prep*): **the veto-only group guard ships ON (R46.1)** and **the group's file packs tighter, ~half today's length (R46.2)**.
