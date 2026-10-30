@@ -66,7 +66,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 builder0 3446/0; no baseline check re-run, per the contract). Orchestrator session: `godot-b8`. builder0 has NO godot-manoeuvre folder
 (a cold import on the first remote run: watched); builder2 (up at launch) has `godot-manoeuvre` + `-light` warm.**
 
-### WHERE IT STANDS (2026-10-29 ~21:00 PDT; the round continues per R45.21; backout shipped ON (R45.26); Bar S v5 filed; holdway's cause read)
+### WHERE IT STANDS (2026-10-29 ~21:30 PDT; backout shipped ON (R45.26); Bar S v5 FAILED as filed; holdway parked with its cause)
 
 - **main carries the stream's OFF code: 5d4b3fa82 merged as main 9203851ec** (its builder0 main check owed by the orchestrator, perf
   judged there). Proof: builder2 check exited 0 / 3456 / 0 / sim-baseline unmoved; the default orders probe on a clean checkout of exactly
@@ -123,7 +123,15 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   evidence `~/overnight-manoeuvre/r45/bars_s5/`. **Ship candidate prepared** (used only if D1 and every guard pass): `wip/manoeuvre-s5-on`
   **6ec15dff0** in `../godot-manoeuvre-s5on` = fc639d7e0 + SEAT_BOUND / SEAT_ORDER / SEAT_LAST_OPEN default ON (`--seat-bound=off`,
   `--seat-order=off`, `--seat-last=bound` the escapes) + the three default tests flipped + two bound-geometry tests pinning the open
-  seat off (3 files, 12 / 8 lines; seat tests 13 / 13 laptop; the wider tactics / element / orders families running locally).
+  seat off (3 files, 12 / 8 lines; seat tests 13 / 13 laptop). **MOOT: Bar S v5 FAILS AS FILED (workload landed 21:18 PDT, 72 paired
+  cells, 0 SCRIPT ERROR):** D1 PASS wide (220 -> 329, **+8.4 se**); guards: Crossing yield + blocked **+9.85 s a run (+4.1 se)** FAIL,
+  Crossing k-turn +2.1 se FAIL, **Locks wedged +3.37 s a run (+3.2 se)** FAIL (S v4's +6.4 halved, not cleared); Locks yield + blocked
+  +2.0 se (at the line), Terminus clean (k-turn -9.2 se), never-arrived -0.33 a run. Cause read on Crossing 11751: the Battery yields to
+  ITSELF in its start zone (Battery_3 <-> Battery_1, Battery_4 <-> Battery_5 mutual yields, ~45 crew-ticks a pair; base: none): the
+  open last seat and the rear-crew term deal the two-row layout seats whose paths cross. **The seat rules stay OFF; the candidate
+  worktree removed (branch kept).** The remaining legs (group, fights, G1 probe) finish on builder0 light for the record. Evidence
+  `references/round45/manoeuvre/barss5-builder0-fc639d7e0/README.md`. Round 46 (named there): the rear-crew term must respect the
+  lateral order of the rest of the squad, or the open seat goes on the squad's line of advance, not the shape's deepest slot.
 - **holdway (A6 v4 FAILED on contacts_far): the cause read on seed 11466 (laptop, trace):** under holdway the street verdict's "time to the
   middle" ran along each crew's ORDERED way; a crew of A ordered to a seat BESIDE it (west, at the order's first ticks) read 1.2 s to a
   middle 60 m away, became A's lead, and A (the squad in the open) was told to come on; B waited 85 s while A's far crews came through

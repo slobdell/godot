@@ -1,0 +1,6 @@
+3298:sim-baseline: 53 passed, 0 failed
+11638:check passed: 27 targets
+11640:>> check: hashes on builder2 (glibc-2.43) | sim-baseline foundry=d5dab678440561db(unmoved) yard=7941fc795ec17a39(unmoved) pit=1d1ec8dc64658f41(unmoved) terminus=9d417197dd4af882(unmoved) crossing=0586c5bbbcc51fa3(unmoved) sumps=85e0e27e3a4d6ccf(unmoved) locks=b16a0b93c56a35f2(unmoved) parade=cc61e579baaa0ac7(unmoved) gorge=1aed9c1d6aeb382e(unmoved) archipelago=c29e260718796be6(unmoved) cut=c4bfbc2d4ac9eebc(unmoved) docks=9a9523fa29e2a534(unmoved) yard_open=77f56889f866c56e(unmoved) | determinism bcbc93318e48e011
+11641:>> check: 26 passed, 2 NOT JUDGED  [test x11, lint -P16, 5 at once, builder2]
+11646:>> builder: make check exited 0 (log /home/slobdell/tank_squad/remote-logs/godot-manoeuvre-check-20261030-032703-414618.log)
+11648:>> remote: make check exited 0 (build/ copied back)
