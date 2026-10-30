@@ -339,3 +339,18 @@ evidence filed under `references/round46/manoeuvre/barssf-builder3-cec4e499f/`. 
   is dead at t1322, before his 83.7 s click); the windowed replay on builder0 (native) diverged too (the OFF arm ended in DEFEAT by t2528)
   and the camera never framed the scout. The evidence is the staged corpus (his poses from the native replay's trace) and its rows, not
   a picture. A faithful windowed replay of his Gorge game is a native/orders tooling question (round 47), not this stream's.
+
+### Combined candidate RED (05:40 PDT): holdway ON breaks six native tests; shortfwd ships alone first
+
+- **39b6c7aa5 builder3 check exited 2: 3473 passed / 6 failed + sim-baseline MOVED on all 13 maps** (expected with holdway ON for the
+  CPU). The six, all from holdway ON (the same six on 11ff6586c, shortfwd only: 26 / 0, builder3 light):
+  `test_native_drive_backout::test_his_container_start_backs_out_the_same_on_the_cpp_drive` and
+  `test_native_drive_backout_stall::test_a_departure_leg_into_an_unseen_hull_stalls_the_same_on_the_cpp_drive` (the live GDScript drive
+  and the C++ drive DIFFER under holdway ON: a twin gap), `test_native_gate_foundry` x2 and `test_native_yield` x2 (their staged scenes
+  no longer reach the case: holdway changes the holds there).
+- **Read (to be confirmed by native):** `Traffic.refresh` builds each crew's ordered way from Movement members (`_goal`, `_path` via
+  `_travel_direction`, and `squad_way`) that the C++ drive owns, so under the C++ drive the hold reads stale values. Native's C46.4 read
+  covered Traffic's own state, not those reads. Bar A6 v5 ran native ON in both arms (its numbers stand); the twin gap only shows when
+  the two drives are compared.
+- **Next:** shortfwd alone, `wip/manoeuvre-shortfwd-on` 11ff6586c, check requeued on builder3. Holdway ON waits for native's look; then the
+  four scene tests are re-staged (they are native's files: through the orchestrator).
