@@ -1,0 +1,105 @@
+  crossing across  r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 38 v reach 31 + 6 | unlaid 0 laid 24 restored 24 | held med 2.0 (base unmoved 0.0) | fit [1] | spread med 79 (base 124) across med 0 (base 124) | all-in 5.7 v 71.3 never 0 v 23
+  crossing across  r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 96 v reach 96 + 6 | unlaid 0 laid 24 restored 20 | held med 1.0 (base unmoved 1.0) | fit [1] | spread med 100 (base 108) across med 17 (base 4) | all-in 8.9 v 16.2 never 0 v 0
+  crossing along   r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 24) | farthest moved max 108 v reach 108 + 6 | unlaid 0 laid 24 restored 0 | held med 2.0 (base unmoved 2.0) | fit [1] | spread med 99 (base 108) across med 12 (base 8) | all-in 3.6 v 4.5 never 0 v 0
+  crossing along   r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 112 v reach 112 + 6 | unlaid 0 laid 24 restored 24 | held med 1.0 (base unmoved 0.0) | fit [1] | spread med 84 (base 131) across med 42 (base 82) | all-in 10.6 v 7.6 never 0 v 8
+  crossing his     r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 100 v reach 91 + 6 | unlaid 0 laid 24 restored 5 | held med 1.0 (base unmoved 2.0) | fit [1] | spread med 75 (base 100) across med 31 (base 9) | all-in 3.7 v 3.2 never 0 v 0
+  crossing his     r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 108 v reach 108 + 6 | unlaid 0 laid 24 restored 16 | held med 1.0 (base unmoved 0.0) | fit [1] | spread med 72 (base 134) across med 38 (base 81) | all-in 3.7 v 48.8 never 2 v 0 NEVER-FAIL
+  gorge across  click -40/30   n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 76 v reach 76 + 6 | unlaid 0 laid 24 restored 24 | held med 0.0 (base unmoved 0.0) held farthest 0 | fit [1] | spread med 68 (base 116) across med 58 (base 106) | all-in 9.1 v 13.4 never 0 v 0
+  gorge across  click -40/58   n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 28 v reach 78 + 6 | unlaid 0 laid 24 restored 24 | held med 3.0 (base unmoved 0.0) held farthest 80 | fit [1] | spread med 58 (base 116) across med 0 (base 116) | all-in 5.2 v 13.6 never 0 v 0
+  gorge across  click 40/30    n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 81 v reach 81 + 6 | unlaid 0 laid 24 restored 24 | held med 0.0 (base unmoved 0.0) held farthest 0 | fit [1] | spread med 74 (base 116) across med 57 (base 111) | all-in 10.9 v 19.8 never 0 v 0
+  gorge across  click 40/58    n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 61 v reach 62 + 6 | unlaid 0 laid 24 restored 24 | held med 2.0 (base unmoved 0.0) held farthest 67 | fit [1] | spread med 80 (base 116) across med 1 (base 116) | all-in 11.3 v 12.8 never 0 v 0
+  gorge across  r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 43 v reach 43 + 6 | unlaid 0 laid 24 restored 1 | held med 0.0 (base unmoved 0.0) held farthest 49 | fit [1, 2] | spread med 65 (base 116) across med 58 (base 116) | all-in 5.6 v 5.0 never 0 v 0
+  gorge across  r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 68 v reach 65 + 6 | unlaid 0 laid 24 restored 0 | held med 0.0 (base unmoved 0.0) held farthest 0 | fit [2] | spread med 82 (base 116) across med 59 (base 76) | all-in 30.2 v 16.0 ALL-IN-FAIL never 0 v 0
+  gorge along   r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 95 v reach 91 + 6 | unlaid 0 laid 24 restored 1 | held med 0.0 (base unmoved 0.0) held farthest 0 | fit [1, 2] | spread med 100 (base 116) across med 55 (base 109) | all-in 9.4 v 31.3 never 0 v 0
+  gorge along   r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 69 v reach 65 + 6 | unlaid 0 laid 24 restored 0 | held med 0.0 (base unmoved 0.0) held farthest 0 | fit [2] | spread med 82 (base 116) across med 75 (base 86) | all-in 40.0 v 40.9 never 0 v 0
+  gorge his     r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 72 v reach 68 + 6 | unlaid 0 laid 24 restored 0 | held med 0.0 (base unmoved 0.0) held farthest 0 | fit [2] | spread med 85 (base 116) across med 50 (base 96) | all-in 5.2 v 21.6 never 0 v 2
+  gorge his     r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 124 v reach 58 + 6 | unlaid 0 laid 24 restored 6 | held med 0.0 (base unmoved 0.0) held farthest 0 | fit [1, 2] | spread med 77 (base 116) across med 10 (base 30) | all-in 32.4 v 36.8 never 2 v 5
+  gorge recorded click -43/53   n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 66 v reach 66 + 6 | unlaid 0 laid 24 restored 0 | held med 0.0 (base unmoved 0.0) held farthest 0 | backward max -2.6 m (base -67.5) | fit [1] | spread med 66 (base 116) across med 0 (base 116) | all-in 11.7 v 22.4 never 0 v 0
+  gorge spawn   click -43/53   n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 75 v reach 75 + 6 | unlaid 0 laid 24 restored 0 | held med 0.0 (base unmoved 0.0) held farthest 0 | backward max -9.5 m (base -15.3) | fit [1] | spread med 75 (base 116) across med 0 (base 116) | all-in 7.0 v 36.1 never 0 v 0
+  locks across  r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 42 v reach 43 + 6 | unlaid 0 laid 24 restored 0 | held med 0.0 (base unmoved 0.0) | fit [2] | spread med 65 (base 116) across med 58 (base 116) | all-in 4.9 v 6.0 never 0 v 0
+  locks across  r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 80 v reach 80 + 6 | unlaid 0 laid 24 restored 10 | held med 0.0 (base unmoved 0.0) | fit [1, 2] | spread med 66 (base 116) across med 58 (base 116) | all-in 5.4 v 17.6 never 0 v 0
+  locks along   r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 19) | farthest moved max 107 v reach 80 + 6 | unlaid 0 laid 24 restored 21 | held med 2.0 (base unmoved 0.0) | fit [1, 2] | spread med 100 (base 115) across med 58 (base 115) | all-in 4.0 v 14.3 never 0 v 5
+  locks along   r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 63 v reach 122 + 6 | unlaid 0 laid 24 restored 0 | held med 0.0 (base unmoved 0.0) | fit [2] | spread med 70 (base 116) across med 57 (base 113) | all-in 31.2 v 43.4 never 7 v 1 NEVER-FAIL
+  locks his     click -62/50   n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 56 v reach 56 + 6 | unlaid 0 laid 24 restored 24 | held med 1.0 (base unmoved 2.0) | fit [1] | spread med 58 (base 89) across med 52 (base 2) | all-in 27.2 v 5.8 ALL-IN-FAIL never 0 v 0
+  locks his     r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 3) | farthest moved max 75 v reach 74 + 6 | unlaid 0 laid 24 restored 24 | held med 2.0 (base unmoved 0.0) | fit [1] | spread med 74 (base 116) across med 28 (base 116) | all-in 5.2 v 16.0 never 0 v 18
+  locks his     r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 56 v reach 155 + 6 | unlaid 0 laid 24 restored 0 | held med 1.0 (base unmoved 0.0) | fit [1, 2] | spread med 88 (base 119) across med 6 (base 119) | all-in 16.4 v 33.0 never 1 v 1
+  terminus across  r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 43 v reach 43 + 6 | unlaid 0 laid 24 restored 24 | held med 1.0 (base unmoved 0.0) | fit [1] | spread med 75 (base 116) across med 58 (base 116) | all-in 7.4 v 7.0 never 0 v 0
+  terminus across  r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 92 v reach 75 + 6 | unlaid 0 laid 24 restored 10 | held med 0.0 (base unmoved 0.0) | fit [1, 2] | spread med 80 (base 133) across med 58 (base 133) | all-in 21.1 v 21.4 never 1 v 0 NEVER-FAIL
+  terminus along   r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 100 v reach 58 + 6 | unlaid 0 laid 24 restored 8 | held med 0.0 (base unmoved 0.0) | fit [1, 2] | spread med 81 (base 118) across med 58 (base 118) | all-in 16.0 v 37.5 never 0 v 0
+  terminus along   r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 100 v reach 58 + 6 | unlaid 0 laid 24 restored 7 | held med 0.0 (base unmoved 0.0) | fit [1, 2] | spread med 82 (base 116) across med 58 (base 105) | all-in 30.0 v 51.6 never 1 v 0 NEVER-FAIL
+  terminus his     r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 92 v reach 92 + 6 | unlaid 0 laid 24 restored 22 | held med 1.0 (base unmoved 0.0) | fit [1, 2] | spread med 92 (base 116) across med 27 (base 97) | all-in 6.5 v 17.6 never 0 v 0
+  terminus his     r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 150 v reach 150 + 6 | unlaid 0 laid 24 restored 4 | held med 0.0 (base unmoved 0.0) | fit [1, 2] | spread med 150 (base 122) across med 6 (base 116) | all-in 19.9 v 33.6 never 0 v 1
+  yard_open across  r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 41 v reach 43 + 6 | unlaid 0 laid 24 restored 0 | held med 0.0 (base unmoved 0.0) | fit [2] | spread med 65 (base 116) across med 58 (base 115) | all-in 4.5 v 4.8 never 0 v 0
+  yard_open across  r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 88 v reach 88 + 6 | unlaid 0 laid 24 restored 18 | held med 0.0 (base unmoved 0.0) | fit [1, 2] | spread med 88 (base 116) across med 58 (base 115) | all-in 14.3 v 11.9 never 0 v 0
+  yard_open along   r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 100 v reach 58 + 6 | unlaid 0 laid 24 restored 6 | held med 0.0 (base unmoved 0.0) | fit [1, 2] | spread med 77 (base 116) across med 58 (base 116) | all-in 10.4 v 26.6 never 0 v 0
+  yard_open along   r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 100 v reach 58 + 6 | unlaid 0 laid 24 restored 4 | held med 0.0 (base unmoved 0.0) | fit [1, 2] | spread med 77 (base 116) across med 58 (base 116) | all-in 17.8 v 33.6 never 0 v 0
+  yard_open his     r20            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 60 v reach 58 + 6 | unlaid 0 laid 24 restored 7 | held med 0.0 (base unmoved 0.0) | fit [1, 2] | spread med 77 (base 116) across med 58 (base 116) | all-in 6.4 v 19.1 never 0 v 0
+  yard_open his     r80            n 24/24: across_gap 0 (base 0) | backward 0 (base 0) | farthest moved max 59 v reach 58 + 6 | unlaid 0 laid 24 restored 0 | held med 0.0 (base unmoved 0.0) | fit [2] | spread med 77 (base 116) across med 58 (base 116) | all-in 18.9 v 25.4 never 0 v 0
+PASS deciding D1: places across a gap from the click (water / pit / through a neck) = 0, every arm run
+PASS deciding D2: places > 10 m behind their own start along the approach = 0, every arm run
+PASS deciding D3: every moved place within the fitted body's reach + 6 m of the click, every arm run
+PASS deciding D4 (R45.5): the fallback (too few seats, today's places) never taken on a Gorge run
+PASS deciding D5 (R45.9): on every Gorge run every held squad stands within the body's reach + one rank step + 6 m of the click
+PASS deciding D5b (R45.9): his exact click with his three squads at their recorded starts: held = 0 every run, D1-D4 there
+PASS deciding D6 (R45.6): on his own Gorge click no place more than 2 m behind its squad's start along the approach
+PASS guard friend_contacts (part A, pooled) 32293 -> 23190 (<= 35527.3)
+FAIL guard part A all-in / never-in per cell, held (reach-80 cells)
+  B PASS counter: columns_laid 1 (bodies kept 167)
+  B FAIL deciding: places outside the corridor (click cells) 7 -> 33 (<= 1.8)
+  B FAIL deciding: metres driven outside the corridor after being in it (click cells) 430 -> 1934 (<= 215)
+  B PASS deciding: squads with crews re-dealt (arm, click cells) 0 (base 0)
+  B   reported: metres outside incl. the drive in (route_out_m) 23188 -> 21920
+  B   reported (round 39's read): places outside (click cells) 18 -> 42; route_left_m 1765 -> 3357
+  B     crossing 3 click base: outside new 0 / old 0, route_left new 97 / old 97
+  B     crossing 3 click g2: outside new 1 / old 1, route_left new 272 / old 272
+  B     crossing 3 route base: outside new 13 / old 13, route_left new 889 / old 889
+  B     crossing 3 route g2: outside new 13 / old 13, route_left new 2162 / old 2162
+  B     crossing 5 click base: outside new 7 / old 8, route_left new 332 / old 504
+  B     crossing 5 click g2: outside new 8 / old 8, route_left new 492 / old 646
+  B     crossing 5 route base: outside new 24 / old 25, route_left new 7062 / old 7928
+  B     crossing 5 route g2: outside new 24 / old 25, route_left new 4640 / old 5555
+  B     locks 3 click base: outside new 0 / old 4, route_left new 0 / old 599
+  B     locks 3 click g2: outside new 0 / old 4, route_left new 0 / old 57
+  B     locks 3 route base: outside new 0 / old 4, route_left new 0 / old 549
+  B     locks 3 route g2: outside new 0 / old 4, route_left new 0 / old 980
+  B     locks 5 click base: outside new 0 / old 6, route_left new 0 / old 256
+  B     locks 5 click g2: outside new 0 / old 5, route_left new 0 / old 129
+  B     locks 5 route base: outside new 0 / old 6, route_left new 0 / old 61
+  B     locks 5 route g2: outside new 0 / old 6, route_left new 0 / old 437
+  B     terminus 3 click base: outside new 0 / old 0, route_left new 0 / old 0
+  B     terminus 3 click g2: outside new 0 / old 0, route_left new 0 / old 0
+  B     terminus 3 route base: outside new 0 / old 0, route_left new 0 / old 0
+  B     terminus 3 route g2: outside new 0 / old 0, route_left new 0 / old 0
+  B     terminus 5 click base: outside new 0 / old 0, route_left new 0 / old 0
+  B     terminus 5 click g2: outside new 0 / old 0, route_left new 0 / old 5
+  B     terminus 5 route base: outside new 0 / old 0, route_left new 0 / old 42
+  B     terminus 5 route g2: outside new 0 / old 0, route_left new 0 / old 341
+  B     terminus_his 3 click base: outside new 0 / old 0, route_left new 0 / old 0
+  B     terminus_his 3 click g2: outside new 12 / old 12, route_left new 414 / old 923
+  B     terminus_his 5 click base: outside new 0 / old 0, route_left new 0 / old 308
+  B     terminus_his 5 click g2: outside new 12 / old 12, route_left new 756 / old 1326
+  B   reported: main v main, new v old read, cells where the read changed: crossing 5 click, crossing 5 route, locks 3 click, locks 3 route, locks 5 click, locks 5 route, terminus 5 route, terminus_his 5 click
+  B FAIL guard friend_contacts 11251 -> 17804 (<= 12381.1)
+  B   FAIL guard never-in     crossing 5 route: 0 v 1
+  B   FAIL guard twitch       locks 5 click: 22.9 v 28.1
+  B   FAIL guard end foreign  locks 5 click: 11.8 v 5.8
+  B   FAIL guard all-in       locks 5 route: 21.2 v 32.3
+  B   FAIL guard twitch       locks 5 route: 3.5 v 20.1
+  B   FAIL guard all-in       terminus 5 click: 11.7 v 47.4
+  B   FAIL guard never-in     terminus 5 click: 1 v 2
+  B   FAIL guard twitch       terminus 5 click: 24.2 v 31.2
+  B   FAIL guard all-in       terminus_his 3 click: 0.1 v 4.6
+  B   FAIL guard twitch       terminus_his 3 click: 0.0 v 15.9
+  B   FAIL guard all-in       terminus_his 5 click: 2.0 v 20.8
+  B FAIL probe guards (14 cells)
+  B PASS guard places sent away from the click (> 10 m) 0 -> 0 (<= 2)
+  B   reported: parked_redeals, duck-excluded (a crew parked >= 2 s sent > 6 m off its seat, not an UnansweredFire duck) 407 -> 445
+  B   reported: parked duck moves (UnansweredFire, out to or back from its point; not re-deals) 0 -> 0
+  B VERDICT g1v8: FAIL
+  reported: yard_open (the guard changes a three-abreast body on purpose): 192 base / 192 arm squad rows
+FAIL part B: G1 v9's own street lines (orders_judge g1v8, yard_open reported)
+  PASS guard his kills   base 10.00 arm 9.25 a fight (se 0.83, n 24/24)
+  PASS guard his losses  base 14.04 arm 15.08 a fight (se 0.95, n 24/24)
+  PASS guard CPU losses  base 10.08 arm 9.42 a fight (se 0.83, n 24/24)
+PASS fight guards
+VERDICT Bar G2: FAIL (A False, B False, C True)
