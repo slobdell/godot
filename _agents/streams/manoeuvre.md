@@ -97,9 +97,14 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   holdway's verdict fix + judges + the `assert_false` test fix (main's aed598359). Its builder0 check and the default orders probe v main
   run NOW on **builder3** (devia@builder3, Ryzen 9 9950X, the orchestrator's new builder, 22:10 PDT; perf NOT JUDGED and web-smoke red
   there are machine gaps until native's nominal and Chrome land) from the frozen `../godot-manoeuvre-m46` and `../godot-manoeuvre-mainref2`
-  (`~/overnight-manoeuvre/r45/merge46/`, driver `merge46b.sh`); the hash is named for main only when both read green and 60 / 60. Every switch of this stream's new code is DEFAULT_OFF; backout's ON came from main.
-- **Cleanup at the close:** worktrees `../godot-manoeuvre-s5` (remove when the series ends), `-m46` and `-mainref2` (remove after
-  merge46 reads), their builder0 folders `~/tank_squad/godot-manoeuvre-{s5,m46,mainref2}`; branches wip/manoeuvre-* kept.
+  (`~/overnight-manoeuvre/r45/merge46/`, driver `merge46b.sh`). **READ 22:35 PDT: check `exited 2` = 25 passed, 1 FAILED, 2 NOT JUDGED,
+  sim-baseline unmoved; the one FAIL is tools/test_net_own_line.sh's exact stdout match broken by GNU Make 4.3's "jobserver unavailable"
+  warning on builder3 (native's 87a6c7fcc fixes it; the orchestrator accepts the check as green with that named red); default orders
+  probe candidate v main e9862553f: 60 / 60 byte-identical.** cccc2684f named to the orchestrator for main after main's batched check
+  (R45.28). Evidence `references/round45/manoeuvre/merge46-builder3-cccc2684f/`. Every switch of this stream's new code is DEFAULT_OFF; backout's ON came from main.
+- **Cleanup at the close:** worktree `../godot-manoeuvre-s5` (remove when the series ends; -m46 / -mainref2 removed 22:40), builder folders
+  builder0 `~/tank_squad/godot-manoeuvre-s5*`, builder3 `/home/devia/tank_squad/godot-manoeuvre-{m46,m46-light,mainref2-light}` (ours, small);
+  branches wip/manoeuvre-* kept.
 
 ### WHERE IT STANDS (2026-10-29 ~21:30 PDT; backout shipped ON (R45.26); Bar S v5 FAILED as filed; holdway parked with its cause)
 
