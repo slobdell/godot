@@ -381,6 +381,14 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.30 (2026-10-30 ~05:45) Holdway ON has a twin gap; shortfwd ships alone first.** Manoeuvre's combined candidate 39b6c7aa5
+  (shortfwd + holdway ON) RED builder3: 3473 / 6 + sim-baseline moved on all 13 arenas; all six from holdway ON (shortfwd-only 11ff6586c:
+  26/0). Two are twin tests (test_native_drive_backout, test_native_drive_backout_stall: GDScript drive != C++ drive under holdway ON,
+  "expected 0, got 14/21"): Traffic.refresh reads Movement members (_goal, _path, via _travel_direction / squad_way) that the C++ drive may
+  own or leave stale; R46.14's no-twin read covered Traffic's state only. Four are staged scenes holdway changes (re-stage). Shortfwd ships
+  alone (11ff6586c, check running); holdway ON waits for native's twin + the re-staged tests. Native says whether Bar A6 v5 (native ON)
+  measured the drive he plays.
+
 - **R46.29 (2026-10-30 ~05:30) Camera's planner merged OFF; the ON candidate needs one line in orders' test.** stream/camera 21fb16fc1
   (planner OFF, GREEN builder3 3484/0 ALL JUDGED) merged into main 830787b38 (Bar C1's verdict block carried in 1a275c550); one main check
   of the batch on builder3 (`merge_check_needed` CHECK: main had moved). The ON candidate ee291bcc4 is RED on builder3 (3483/1,
