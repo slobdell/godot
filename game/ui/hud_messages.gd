@@ -28,7 +28,7 @@ const CONTROL_WARN_POINTS := 15
 ## often the selection is read, and how soon the same crew may say it again.
 const LANE_HOLD_SECONDS := 2.0
 const LANE_POLL_SECONDS := 0.5
-const LANE_REPEAT_SECONDS := 8.0
+const LANE_REPEAT_SECONDS := 15.0
 ## MatchAnnouncer lines this node replaces (see relay()).
 const REPLACED_PATTERNS := ["^\\S+ lost \\S+", "^Enemy tank destroyed"]
 
@@ -45,8 +45,8 @@ var _pending := {}
 var _destroyed_squads := {}
 var _control_warned := [false, false]
 var _replaced: Array[RegEx] = []
-## Round 46 (L3): where his selection is read (anything with `selection_state() -> {"units": [...]}`; found as the
-## sibling "TacticalMap" when unset), the next poll time, and per crew: its held ticks at the last poll and when it last
+## Round 46 (L3): where his selection is read (anything with `selection_state() -> {"units": [...]}`; found as
+## "TacticalMap" under this node's parent when unset: RtsControls under the HUD; the touch map has none, so no line there), the next poll time, and per crew: its held ticks at the last poll and when it last
 ## said so.
 var selection_source: Object
 var _lane_next := 0.0
@@ -108,9 +108,10 @@ func _lane_rows() -> Array:
 	var rows: Array = []
 	if game_match == null or game_match.brains == null:
 		return rows
+	if selection_source == null and get_parent() != null:
+		# The skirmish puts RtsControls (named "TacticalMap") under the HUD; found once.
+		selection_source = get_parent().find_child("TacticalMap", true, false)
 	var source := selection_source
-	if source == null and get_parent() != null:
-		source = get_parent().get_node_or_null("TacticalMap")
 	if source == null or not source.has_method("selection_state"):
 		return rows
 	for unit: String in (source.call("selection_state") as Dictionary).get("units", []):

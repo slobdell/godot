@@ -72,6 +72,67 @@ Nothing at launch. If Bar L1 fails, write in player terms what he would see ON v
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### Report so far (2026-10-30 ~02:00, round 46) — read this first
+
+| Item | State |
+|---|---|
+| L1 why CLEAR_LANE finds no lane | DONE (below): three causes, every blocker parked; R46.7 ruled on the post case |
+| L2 the lane move, `--lane-clear` ON | code + tests DONE 9446e1903 (not yet a full check); native twin spec sent (decide guard until then, C46.4) |
+| L3 the feed line | code + tests DONE 320fbcd11; screenshots owed |
+| L4 Bar L1 | workload built (`make engage-lane-bar`); dev read on 7001-7012 running; filing next, before any number on 11901-11948 |
+| L5 his replay | dev read (below); the acceptance read waits for the shipped tree |
+| E6 | not started |
+
+**L2 (`game/ai/tank_brain.gd`, `--lane-clear=off` = round 45 exactly):** (1) under his attack / attack-move, CLEAR_LANE is
+multiplied by its edge AFTER the order's base, so it beats the committed ENGAGE; (2) a crew holding his post after his MOVE (E2's
+post, `lane_step`) serves the gun's held target and may step <= LANE_POST_STEP 4 m (R46.7), the parked-hold rule stands aside for that
+step, HOLD drives it back once nothing is in sight; never under his hold or stop (the hold verb allows HOLD only); (3) `_lane_spot_v2`
+tests spots with the trigger's own geometry (`Units.hull_distance_to_line`, `Match.shot_spread`, LINE_OF_FIRE_OVERSHOOT 15 m) plus
+LANE_SPOT_MARGIN 0.3 m, friends now and 1 / 2 s ahead, rings 3 / 6 / 10 / 16 m; a wheeled hull takes drivable headings (fore / aft,
+0 / +-25 / +-50 deg: the IFV is 7.5 m long with a 7 m circle and the mover stops a sideways step short); a spot the mover reads as
+arrived short of is dropped and the next taken; a stale goal still clear is kept; nothing clear = stay and face (no blind sidestep).
+**Staged crowd** (`tests/test_fire_lanes_crowd.gd`, builder3, 9446e1903, native on, n = 1 each): his case (IFV, enemy 19 m, a
+squadmate parked 10 m out in the lane): OFF never fires in 12 s, ON first round 4.0 s, 0 friends hit; a wall of 3 parked: never v
+4.7 s; boxed in by 8 (no lane): ON drives 24 m v OFF 30 m; his hold: 0.0 m; his post: <= 4 m.
+**His Terminus replay, rule ON from tick 3090 (`--lane-clear=off --lane-clear-on-at=3090`, builder3, 320fbcd11's code, n = 1, a
+DEV read):** Green_Hunters_1 fired 10 rounds 104-120 s v 3 rounds 104-139 s as he played it; at his post (118.6 s) no 4 m step was
+clear (it held, no wander) until the lane cleared at 119.5 s, then 7 rounds; from ~125 s the two games differ (no enemy in range).
+**L3 (`game/ui/hud_messages.gd`, C46.5):** "Hunters 1 holding fire: Guns 4 in the way" for a crew in his selection held > 2 s and
+still being held, once per crew per 15 s (8 s read chatty on the dev probe: 4 lines in a 30 s hold), through HudMessages' duplicate / rate rules; none with `--lane-clear=off`. Tests
+`tests/engage/test_engage_lane_line.gd` + the staged case (one line, naming the friend).
+
+### Bar L1 (FILED 2026-10-30 ~02:20, before any number on 11901-11948; also in workstreams.md *Bars (round 46)*)
+
+- **Bar L1 HIS IFV BEHIND HIS OWN SQUADS FINDS A LANE (engage; filed 2026-10-30 ~02:20 PDT in streams/engage.md and here, BEFORE any number on 11901-11948).**
+
+  **Workload:** `make engage-lane-bar LANE_SEEDS="11901 ... 11948"` (`tests/engage/lane_probe.gd`, table `tests/engage/lane_table.py
+  --pair`): per seed a drawn arena (gorge / locks / terminus / crossing), crew hull (4 IFVs, 2 tanks, 2 scouts), enemy gun (5 kinds,
+  shoots back) 18-32 m off with a clear line, one squadmate in the lane (35-65 % of the way, within 1.5 m of the line) and one or two
+  beside it (3-8 m off the line), on a third of the seeds the one in the lane driving ACROSS it; the friends hold their fire. Who
+  commands the crew, by seed: his ATTACK on the gun, his MOVE done (E2's post), or the CPU's own brain (no player; C46.6). 30 s
+  window. Arms OFF = `--lane-clear=off`, ON = default, paired by seed, one frozen tree (named when frozen), builder3, native ON.
+  **The rule's case** = attack and cpu runs blocked in OFF (held for a friend at least once); post runs are R46.7's 4 m bound, where
+  a step rarely clears a friend in the lane (dev: held ~29 s in both arms), so they are guards, not deciding.
+  **Native (C46.4):** ships with decide's GDScript path for lane-blocked situations (`TankBrain.lane_case`) unless native's twin has
+  landed EQUAL by the freeze (then the twin's tree is frozen instead and `test_native_decide` equality is a guard).
+
+  **Deciding (the rule's case):**
+  - D1 seconds held for a friend while the gun has a target (`held_s`): paired mean ON - OFF < 0 by at least 1.645 se (one-sided).
+  - D2 first round after the first block (`first_shot_s`): ON sooner or identical in >= 60 % of runs (strictly sooner reported).
+
+  **Guards (all 48 unless named):**
+  - G1 friendly fire by the crew: hits ON <= OFF + max(1, 1.645 sqrt(OFF)); kills ON <= OFF.
+  - G2 crew deaths ON <= OFF + max(1, 1.645 sqrt(OFF)).
+  - G3 enemy hp left: paired mean ON - OFF <= +1.645 se (the crew does not hurt the gun less).
+  - G4 post runs (R46.7): every ON run's farthest from his post <= 5.5 m (4 m + the hull's settle); held_s ON - OFF <= +1.645 se.
+  - G5 his order to a crew (C46.3): E2's authority probe (`make engage-authority-probe`, seeds 11901-11924, AUTH_ARM=on) under
+    `--lane-clear=off` v default: Bar E1's D1 (hold / stop moved <= 3.0 m), D2 (pushed rows 0) and D3 (move ends) unchanged.
+  - G6 orders' default probe (`make orders-probe`, its default cells) rows identical ON v OFF where no lane is ever held (the rule
+    acts only through CLEAR_LANE, which a move / stop / hold verb never allows).
+
+  **Reported:** held_s by mode; moved_m; shots; feed lines (ON: post and attack runs; OFF: 0). A pass ships ON (it is ON by default
+  already on stream/engage; a FAIL turns the default OFF before merging and goes to him in player terms the same hour).
+
 ### L1 DONE: why his IFV found no lane (his Terminus replay, builder3, 7189e3ff3 + trace rows, native on, n = 1 replay, 3090-4380)
 
 Command: `make remote T="engage-authority-trace AUTH_RECORDING=references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl

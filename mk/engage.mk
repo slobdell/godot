@@ -216,14 +216,16 @@ engage-authority-bar: import ## engage E3: the authority probe in both arms on A
 # --authority-on-at=2500" (his match as played, the rule ON from just before his scout sequence).
 AUTH_SHOTS ?= 2880,2925,2990,3030,3075,3110,3150
 .PHONY: engage-authority-shots
-engage-authority-shots: native-fresh import ## engage E4: his Gorge replay in a window, AUTH_UNITS followed, PNGs at AUTH_SHOTS (AUTH_TAG, AUTH_FLAGS) -> build/engage/shots/
+## Round 46 (L3): AUTH_RES the window (his desktop 1920x1080; the phone's aspect 1200x540).
+AUTH_RES ?= 1920x1080
+engage-authority-shots: native-fresh import ## engage E4: his Gorge replay in a window, AUTH_UNITS followed, PNGs at AUTH_SHOTS (AUTH_TAG, AUTH_FLAGS, AUTH_RES) -> build/engage/shots/
 	@mkdir -p $(BUILD_DIR)/engage/shots
-	@timeout 1200 $(GODOT) --fixed-fps 30 --resolution 1920x1080 --path . --script res://tests/engage/authority_trace.gd -- \
+	@timeout 1200 $(GODOT) --fixed-fps 30 --resolution $(AUTH_RES) --path . --script res://tests/engage/authority_trace.gd -- \
 		--orders=$(CURDIR)/$(AUTH_RECORDING) --seconds=$$(( $(AUTH_SECONDS) + 1 )) --record-dir=$(BUILD_DIR)/engage/shots/rec_$(AUTH_TAG) \
 		--authority-units=$(AUTH_UNITS) --authority-from=$(AUTH_FROM) --authority-every=$(AUTH_EVERY) --mute \
 		--shots=$(AUTH_SHOTS) --shot-out=$(CURDIR)/$(BUILD_DIR)/engage/shots --shot-name=$(AUTH_TAG) $(AUTH_FLAGS) \
 		> $(BUILD_DIR)/engage/shots/$(AUTH_TAG).log 2>&1 || true
-	@grep -E "^SHOT_SAVED|^REPLAY_DONE|AUTHORITY_SWITCH|SCRIPT ERROR" $(BUILD_DIR)/engage/shots/$(AUTH_TAG).log | cut -c1-200
+	@grep -E "^SHOT_SAVED|^REPLAY_DONE|AUTHORITY_SWITCH|LANE_SWITCH|holding fire|SCRIPT ERROR" $(BUILD_DIR)/engage/shots/$(AUTH_TAG).log | cut -c1-200
 
 # ---- engage (round 46): his IFV behind his own squads (L4, Bar L1) -------------------------------------------------
 # Workload: tests/engage/lane_probe.gd (a crew, an enemy gun in range, squadmates parked in / beside the lane; his attack, his
