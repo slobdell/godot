@@ -105,8 +105,8 @@ byte-for-byte the planner Bar C1 read (re-run of bar seed 12201: summary, clicks
 | C3 budget | DONE | laptop UHD 620 laptop preset, 1f3e6f111, 2 x 60 s: 0.35 ms/frame mean, step p99 0.9 ms (target 0.5 / 1.5) |
 | C4 Bar C1 | FAILED 37/38 | 3bf76e839 GREEN builder3 3483/0; verdict `references/round46/camera/barc1-verdict-builder3-3bf76e839.txt` |
 | C1 v2 | dev only, parked | see *C1 v2* below |
-| C5 acceptance read | clips DONE; replay census next | laptop clips (left `--camera-planner=off`, right on): `~/camera-r46/clips/rear_ambush_7001.mp4` (22 s, his rear ambush: today's shows the gun after 0.9/2.7/1.8 s, the planner 3.5 s then one never), `~/camera-r46/clips/corridor_selection_7002.mp4` (50 s, corridor drives + selection changes); stills `references/round46/camera/clip_*.jpg` (looked at) |
-| Ship candidate | check running | 13a5ea5d7 = ee291bcc4 (default ON, v1 exactly, v2 knobs OFF) + R46.29's one line in `tests/test_control_dials.gd` (the cap must not bind; ee291bcc4 failed it 3/3 on builder3 at 0.59 v 0.59 = the 100 m cap). OFF tip 21fb16fc1 GREEN builder3 3484/0, merged to main 830787b38 |
+| C5 acceptance read | DONE (with a caveat) | clips: `~/camera-r46/clips/rear_ambush_7001.mp4` (22 s; today's shows the guns after 0.9/2.7/1.8 s, the planner 3.5 s then one never: the trade, plainly) and `corridor_selection_7002.mp4` (50 s); stills looked at, `references/round46/camera/clip_*.jpg`. **His Terminus replayed** (`make replay-match ... REPLAY_SECONDS=150 REPLAY_FLAGS="--camera-planner=off|on --camera-screen=1920x1080"`, builder3, 569064eb9; censused, n = 144 s with a selection, his 18 `sel` rows): off -> on: none of his selection on screen 3 -> 1 s; under half 9 -> 1 s; driving with half+ hidden by a building 14 -> 11 s; drive > 45 deg off the view 66 -> 62 s; hits on his units off screen 9.4 -> 11.7 %. **Caveat:** the replay leaves his match after ~20 s (at 70-74 s today's camera shows no hidden squad in the replay, where his recording had 3-5 of 5 hidden), so this is the two cameras on his orders, not his three moments |
+| Ship candidate | **796ecfc31 GREEN** builder3 (`make check exited 0`, 3485 passed / 0 failed, 28 ALL JUDGED) | default ON (v1 exactly, v2 knobs OFF) + bf4b0c7a5 (his frame dial scales the card's bound in the planner; default byte-identical on bar seed 12201) + R46.29 in orders' `tests/test_control_dials.gd` (`planner_on = false` there: the dial's plumbing judged on the vision frame; the planner's dial has its own test). Merges only on his yes (R46.23). OFF tip 21fb16fc1 GREEN 3484/0 is on main (830787b38) |
 
 **Bar C1 in his terms (as read, 48 attack runs an arm + 24 ambush + 24 retreat, builder3):** with the planner his squads and the
 street they drive stay on screen; a building hides half or more of his driving squad **half as long** (1011 -> 504 s); none of his
@@ -134,6 +134,19 @@ the enemies behind turns the view back to them, across the blocks.** Lighter qui
 bisect: the margin alone costs ~9 points of D1, the behind rule ~13; the clamp nothing. Dev reads at n = 6-12 move by +-1 s / +-10
 points between camera variants (the autoplay's fights change with the view), so no further tuning was trusted. Knobs (dev):
 `--camera-planner-w=gun:6,margin:0.1,behind:1,clamp:1` = v2; defaults = v1.
+
+**After the candidate:** 569064eb9 no edge pan headless (a replay's mouse at 0,0 dragged the camera into "manual"; Bar C1 untouched:
+its 192 runs moved 0 px by player/jump/follow, CameraPlaytest turns edge pan off). Not in the candidate; harmless to merge after it.
+
+**Merge notes (shared files):** `game/modes/skirmish_mode.gd` +1 read-only feed line (`rig.selection`, C42.3 grant);
+`tests/test_control_dials.gd` (orders', R46.29 grant, one line + comment); `_agents/workstreams.md` Bar C1 block. No other stream's
+paths touched.
+
+**Next steps (round 47 if he says yes):** retire the old look rules' decision code (danger look, corner, yaw follow) once the planner
+has been ON for a playtest (brief's stretch: NOT this round); C1 v2's honest-contacts variant re-filed on fresh seeds only if he
+asks for the rear-ambush turn back (it costs the building win); the orchestrator's weapon-range contacts variant (dev only).
+**What to playtest:** `make skirmish` (planner ON at 796ecfc31 once merged) on Terminus: drive a squad down a street; select a squad
+off screen by its group key; let an ambush fire from behind. `--camera-planner=off` for today's camera.
 
 **Questions for the lead (via the orchestrator; player terms):** the planner as read (v1) keeps his squads and their street in view
 and buildings out of the way half as often, but turns to an ambush firing from behind his camera about two seconds later than
