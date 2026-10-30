@@ -76,7 +76,8 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   default probe re-run on builder2 (builder2 restarted). Its full check runs on builder2 (`check_b3/check-26b1425e7.log`). **GO (the
   orchestrator, no further word needed): the series launches when native's lines land EQUAL + 60 / 60 AND the check reads exited 0**;
   drivers `bars_b3_a.sh` (builder0 light, from `../godot-manoeuvre-b3x`) + `bars_b3_b.sh` (builder2, from `../godot-manoeuvre-b3`),
-  then `bars_b3_judge.sh`.
+  then `bars_b3_judge.sh`. **LAUNCHED ~19:20 PDT**: the check read `exited 0`, 25 passed, 3 NOT JUDGED (perf), sim-baseline unmoved;
+  native EQUAL (4a04ea921011cd9a), twins 34 / 0, default probe 60 / 60 on 26b1425e7. Evidence `~/overnight-manoeuvre/r45/bars_b3/`.
 - **Then:** S v5's Terminus dev read (the +8 s), its bar on 11751-11798 only on a clean three-arena read; holdway's head-on release
   last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars, each failing as filed with his
   line passing) follows unchanged.
