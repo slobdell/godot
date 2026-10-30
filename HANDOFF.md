@@ -32,6 +32,24 @@ check; `_agents/remote_builds.md`); builder0 is the reference box for budgets se
 
 **Before launch:** `df -h ~` (the laptop froze at 96 %, lesson 341); builder3 idle; seeds start at 11801.
 
+## 🏁 ROUND 45 IS CLOSED (2026-10-30, overnight) — read this first
+
+**Main: 96f199c45 GREEN builder3** (3470/0, 28 targets ALL JUDGED, sim-baseline unmoved; later commits are docs and, if G2 shipped,
+its merge + check, see the G2 line). Rulings R45.1-R45.30 in `workstreams.md`; briefs in `streams/archive/round45/`; branches
+`round45/<s>` (ancestors of main); lessons 341-347.
+
+| His ask | Outcome | What he gets (default game) |
+|---|---|---|
+| His order to a crew wins (Gorge scout) | **E2 SHIPPED ON** (R45.19; Bar E1 failed on side lines, D2 798 -> 0) + R45.24 fix | a lone crew he holds, stops or moves does exactly that until his next order; still fires from where it stands. `--player-authority=off` escape |
+| War Rig backs out of the box (round 43) | **backout SHIPPED ON** (R45.26; Bar B3 failed only on exact ties) | his rig reverses at t4, round the box at t97 (v t44 / t140). `--traffic-off=backout` |
+| Group click (rounds 37-44) | **G2: see the G2 line below** | |
+| Big right click hitch | native C++ gate_width / untangle / _assign, ON | 30-unit right click 10.4 -> 3.7 ms (builder0, not judged) |
+| Garage map | `make garage ARENA=` + a MAP pick beside VS, remembered | |
+| Builds | builder3 the default (~10 min a full check) | |
+
+**Not shipped (OFF, causes in rulings):** seat bound S v4/S v5 (R45.17, R45.28: Crossing self-yield), holdway A6 v4 (R45.20), the stop
+cap E6 (R45.29), shortfwd (parked). **G2:** _pending at writing; filled in below when the series lands._
+
 ## ⚠ THE LAPTOP FROZE (~17:00-18:00 PDT, 2026-10-29): every session restarted mid-round
 
 Workers restart FRESH with the same kickoff line; each reads its brief's **Status** (top) for where it stood. Any `make remote` /

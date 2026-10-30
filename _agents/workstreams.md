@@ -1,9 +1,8 @@
 # Workstreams: the current round
 
-> **ROUND 45 PREPARED 2026-10-29 (four streams: orders + manoeuvre on Fable, engage + native on Opus; main code = a93271a66 GREEN builder0,
-> 28 targets ALL JUDGED, 3446/0).** Round 44 (CLOSED, nothing shipped ON) follows round 45's section; briefs in `streams/archive/round44/`.
+> **ROUND 45 CLOSED 2026-10-30 (four streams; main 96f199c45 GREEN builder3 ALL JUDGED). E2 and backout shipped ON; G2 per R45.25 (HANDOFF).** Round 46 is prepared from HANDOFF's NEXT box.
 
-## Round 45: four streams (prepared 2026-10-29; briefs in `streams/`)
+## Round 45: four streams (prepared 2026-10-29; CLOSED 2026-10-30; briefs in `streams/archive/round45/`)
 
 **Goal: his order wins. One click for three squads never sends a squad back behind its own start or across a drop from his click
 (the guard ships ON this round, lesson 339); a lone crew he stops, holds or moves does exactly that until he gives it another order;
