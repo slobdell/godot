@@ -290,3 +290,14 @@ evidence filed under `references/round46/manoeuvre/barssf-builder3-cec4e499f/`. 
   builder0 continue on their own. Series-only drivers ready, each gated on its check's `exited 0`: `~/overnight-manoeuvre/r46/bars_sf_series.sh`
   (shortfwd first: his Gorge click), then `bars_a6v5.sh` (set `REMOTE_HOST` to the assigned builder). Launch when the orchestrator names
   the builder.
+
+### Re-freeze (2026-10-30 03:40 PDT): both bars move to a green-able hash (no line changes)
+
+- **A6 v5's frozen check 97403a089 (builder0) exited 2: 3473 passed / 1 failed**: `test_native_exec_state::test_the_table_is_the_scripts_members`
+  (my holdway cache `_squad_way_key` / `_squad_way_path` were new Movement members, absent from native's `exec_fields.h`). **Fix
+  258ce00f0:** the cache is static scratch keyed by the mover (read only by Traffic's GDScript refresh, never the drive; as
+  `_departure_hulls`), same logic; builder3 light `native test FILTER=native_exec_state|holdway|engage_hold|test_traffic` 138 / 0.
+- **A6 v5 re-frozen at 258ce00f0** (`../godot-manoeuvre-a6`), its check on builder0 (03:38). **Shortfwd re-frozen at adeb71696** = cec4e499f +
+  the fix cherry-picked (cec4e499f's queued check stopped before it ran: red by construction), its check on builder3 (03:38). The filings
+  name "the hash whose check reads exited 0, named at launch": no amendment. The drive code in adeb71696 is native's proven pair
+  unchanged (the fix touches only the Traffic-side cache). Series still HELD for the orchestrator's builder slots.
