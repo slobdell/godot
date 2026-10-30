@@ -381,6 +381,14 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.33 (2026-10-30 ~06:50) Bar V1 PASSES; the veto-only group guard SHIPPED ON (main = + orders 12bd0c68f).** builder3, BAR_DONE 06:45,
+  every part try 1 (1632 + 48 + 768 + main 816 + 24 + 384 runs): D1 across 0 (base 303); D2 sent back 0 (base 126); D5b his exact Gorge
+  click 24/24; I1 OFF path == main 1224/1224; I2 0 differ (914 untouched, 310 changed); G1 PASS on 13 touched cells; B- no street run
+  failing (Terminus never touched). 12bd0c68f's check builder3 3483/0. Reported (ruled before the verdict, not a line): on Crossing
+  routes the veto re-deals at the route's FIRST waypoint (3-squad 22/24 runs, 5-squad 2/24); paired read there: outside the corridor 1.23
+  v 1.23, metres outside 67.2 v 75.8, all-in 17.1 v 18.6 s, contacts 31.9 v 32.9, never-in 0 v 0. `--group-veto=off` the escape; G2 OFF
+  (`--group-guard=on`). Evidence `references/round46/orders/bar-v1-builder3-12bd0c68f/`, V3 shots `references/round46/orders/v3-gorge-shots/`.
+
 - **R46.32 (2026-10-30 ~06:30) L1c SHIPPED ON: main 0471b8e14 = + engage 1dd227534.** G5 PASS (E2's authority probe 12301-12324, 24/24 seeds
   identical on every field, pushed rows 0, stop max 5.1 m both arms); G6 PASS (orders' default probe 48/48 rows byte-identical). Sim-baseline
   adoption (docks, gorge, locks, parade, pit, terminus, yard_open) by the orchestrator next. **R46.30 corrected (native):** holdway ON has NO
