@@ -1745,6 +1745,10 @@ static var legs_cut_short := 0
 ## its vehicles stand now). No failing place: `anchors` returned untouched (no scan, no path query). Else G2's fitted body
 ## (`SelectionSquads.guard_lay`, its fit read at the click as G2 reads it) is laid for its SEATS only, and each failing place is
 ## re-dealt to the nearest free one (SelectionSquads.veto_redeal); a packed halt (D3) moved off its place is dropped.
+## The spare seats the veto asks G2's body for beyond one a squad (the places that stand take some of the body's own).
+const VETO_SPARE_SEATS := 4
+
+
 func _veto(squads: Array, anchors: Array[Vector3], click: Vector3, drawn: Variant, ground: Node3D, packed_shapes: Dictionary) -> Array[Vector3]:
 	var starts: Array = []
 	for squad: Dictionary in squads:
@@ -1785,13 +1789,14 @@ func _veto(squads: Array, anchors: Array[Vector3], click: Vector3, drawn: Varian
 		return RtsControls.gate_width_edge_on(ground, p, across, drive, crosses_edge, SelectionSquads.GUARD_RANK_SCAN_M)
 	# guard_lay's own counters are G2's measurements: the veto reads its seats without counting a G2 lay.
 	var counters := [SelectionSquads.guard_relaid, SelectionSquads.guard_held, SelectionSquads.guard_unlaid, SelectionSquads.guard_last_step_m]
-	var laid := SelectionSquads.guard_lay(blocks, click, drawn, forward, cap, fix, width_at)
+	var laid := SelectionSquads.guard_lay(blocks, click, drawn, forward, cap, fix, width_at, Arena.active, VETO_SPARE_SEATS)
 	SelectionSquads.guard_relaid = counters[0]
 	SelectionSquads.guard_held = counters[1]
 	SelectionSquads.guard_unlaid = counters[2]
 	SelectionSquads.guard_last_step_m = counters[3]
 	var seats: Array = laid.get("seat_points", [])
-	var out := SelectionSquads.veto_redeal(anchors, blocks, click, approach, forward, failed, seats)
+	var stand := func(p: Vector3) -> Variant: return fix.call(p, true)  # standable, dry, on the map (the squad's own side)
+	var out := SelectionSquads.veto_redeal(anchors, blocks, click, approach, forward, failed, seats, Arena.active, stand)
 	for i in failed:
 		if out[i] != anchors[i]:
 			packed_shapes.erase(anchors[i])

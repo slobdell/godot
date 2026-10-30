@@ -279,7 +279,7 @@ func _run() -> void:
 			"arm": _flag("probe-arm", ""), "seed": int(_flag("seed", "34")),
 			# V1 (round 46): the clicks the veto re-dealt a place on (0 = every place today's), its re-deals and holds
 			"veto_clicks": _static_or(SelectionSquads, "veto_clicks"), "veto_redealt": _static_or(SelectionSquads, "veto_redealt"),
-			"veto_held": _static_or(SelectionSquads, "veto_held"),
+			"veto_held": _static_or(SelectionSquads, "veto_held"), "veto_lined": _static_or(SelectionSquads, "veto_lined"),
 			"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off",
 			"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "capped": SelectionSquads.ground_capped,
 			# O4 (main 471cdcd5e): a shifted route on a squad is its element's move; its gate counters, when the tree has them

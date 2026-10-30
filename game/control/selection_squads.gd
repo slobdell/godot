@@ -1848,7 +1848,9 @@ static func _guard_attempt(ctx: Dictionary, squeeze: float) -> Dictionary:
 	var behind := 0.0
 	var fit := maxi(1, mini(fit_at_click, COLUMN_ABREAST))
 	var step := 0.0
-	while seats.size() < n:
+	# V1 (round 46): the veto asks for spare seats behind the body (`seats_wanted`); G2's own lay asks for n.
+	var wanted: int = ctx.get("seats_wanted", n)
+	while seats.size() < wanted:
 		var centre_r := front - heading * behind
 		if behind > 0.0 and fit_at_click < COLUMN_ABREAST and width_at.is_valid():
 			# A rank behind the front reads its own ground and may CENTRE IN ITS CLEAR WIDTH, at most half a slot off the line
@@ -1856,14 +1858,14 @@ static func _guard_attempt(ctx: Dictionary, squeeze: float) -> Dictionary:
 			var sides := guard_trim_sides(centre_r, across, width_at.call(centre_r, across), came, 2.0, data)
 			fit = guard_fit(slot_width, sides)
 			var pair := 2.0 * slot_width + GAP_M
-			if fit < COLUMN_ABREAST and n - seats.size() >= 2 and float(sides[0]) + float(sides[1]) >= pair:
+			if fit < COLUMN_ABREAST and wanted - seats.size() >= 2 and float(sides[0]) + float(sides[1]) >= pair:
 				var half := (slot_width + GAP_M) * 0.5
 				var shift := clampf((float(sides[1]) - float(sides[0])) * 0.5, half - float(sides[0]), float(sides[1]) - half)
 				shift = clampf(shift, -half, half)
 				if half - float(sides[0]) <= shift and shift <= float(sides[1]) - half:
 					fit = COLUMN_ABREAST
 					centre_r += across * shift
-		var size := mini(fit, n - seats.size())
+		var size := mini(fit, wanted - seats.size())
 		# A rank behind the front needs a dry footprint (half the widest squad: a wedge hanging over a pit never forms up, dev
 		# read 3's never-in at the neck's mouth): a rank whose seats touch water steps back WET_STEP_M at a time (as the column's
 		# ranks do), up to WET_STEPS_MAX; the front seat is his click as he put it.
@@ -1903,7 +1905,7 @@ static func _guard_attempt(ctx: Dictionary, squeeze: float) -> Dictionary:
 			break  # the ground behind the click ran out
 		# The step to the next rank is priced for that rank's own size (a last squad centred behind a pair nests differently
 		# from a pair behind a pair): as many as fit of the squads still unseated.
-		var next_size := mini(fit, n - seats.size())
+		var next_size := mini(fit, wanted - seats.size())
 		if next_size <= 0:
 			break
 		step = halt_clear_step(maxf(rank_step(size, next_size, slot_width, slot_depth, nest, clearance), min_step(blocks)), size, next_size, slot_width, blocks) * squeeze
@@ -2021,7 +2023,7 @@ static func halt_wet(point: Vector3, radius: float, data: Dictionary = Arena.act
 
 
 static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_heading: Vector3, fit_at_click: int,
-		fix: Callable, width_at: Callable, data: Dictionary = Arena.active) -> Dictionary:
+		fix: Callable, width_at: Callable, data: Dictionary = Arena.active, spares := 0) -> Dictionary:
 	var n := blocks.size()
 	var flat_click := Vector3(click.x, 0.0, click.z)
 	var heading := _heading(blocks, flat_click, facing, fallback_heading)
@@ -2062,7 +2064,7 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 	var halt_reach := min_step(blocks)
 	if halt_reach <= 0.0:
 		halt_reach = slot_width
-	var ctx := {"n": n, "flat_click": flat_click, "front": front, "heading": heading, "came": came, "across": across,
+	var ctx := {"n": n, "seats_wanted": n + spares, "flat_click": flat_click, "front": front, "heading": heading, "came": came, "across": across,
 			"fit_at_click": fit_at_click, "width_at": width_at, "fix": fix, "data": data, "slot_width": slot_width, "slot_depth": slot_depth,
 			"halt_reach": halt_reach, "nest": nest, "clearance": clearance, "blocks": blocks, "army_back": army_back, "centers": centers,
 			"widths": widths}
@@ -2114,10 +2116,14 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 # Spears on his click as today. ON; `--group-veto=off` / `GROUP_VETO=off` is today's lay. Symmetric (C46.6): every group order with a
 # point goes through it; the CPU orders its elements one at a time (C45.5), so it has no group click to veto.
 static var GROUP_VETO := not OS.get_cmdline_user_args().has("--group-veto=off") and OS.get_environment("GROUP_VETO") != "off"
-## Measurements (a probe reads them): clicks with a failing place; places re-dealt to a seat; squads held where they stand.
+## Measurements (a probe reads them): clicks with a failing place; places re-dealt to a seat; squads held where they stand;
+## squads placed on their own line to his click (no seat; `veto_lined`, counted inside `veto_redealt` too).
 static var veto_clicks := 0
 static var veto_redealt := 0
 static var veto_held := 0
+static var veto_lined := 0
+## The points the veto tries along a squad's line to his click when the body has no seat for it.
+const VETO_LINE_STEPS := 10
 
 
 static func veto_default() -> bool:
@@ -2154,7 +2160,7 @@ static func veto_front(click: Vector3, came: Vector3, data: Dictionary = Arena.a
 
 
 ## One place `at` for a squad standing at `centre` (all flat): across a gap from `flat_click` (the veto's front), or SENT BACK:
-## farther from his click than the squad stands AND either more than GUARD_BEHIND_M behind its start along the approach `came`,
+## a squad coming toward his click (behind it along `came`) given a place farther from his click than it stands AND either more than GUARD_BEHIND_M behind its start along the approach `came`,
 ## or (a click ahead of the squad toward the enemy, `forward` the team's) more than VETO_BACK_FORWARD_M behind its start toward its
 ## own base edge. His Gorge Hunters: 61 m west and 8.4 m north of where they stood, 9.3 m farther from his click, level with it
 ## along the diagonal approach: behind where they started in his words ("ONLY ... behind where it started"). `forward` ZERO
@@ -2164,7 +2170,10 @@ const VETO_BACK_FORWARD_M := 5.0
 
 static func veto_refuses(at: Vector3, centre: Vector3, flat_click: Vector3, came: Vector3, forward: Vector3,
 		data: Dictionary = Arena.active) -> bool:
-	if at.distance_to(flat_click) > centre.distance_to(flat_click):
+	# A squad already past his click along the approach (on the far side of it) is called BACK to it by his order: only a squad
+	# coming toward his click can be sent back (dev read 94c737a14, locks along-r20: a squad on the lock, 24 m past the click, had
+	# every seat behind the click read as "sent back" and held on the deck).
+	if at.distance_to(flat_click) > centre.distance_to(flat_click) and (centre - flat_click).dot(came) < 0.0:
 		if (centre - flat_click).dot(came) - (at - flat_click).dot(came) > GUARD_BEHIND_M:
 			return true
 		var ahead := Vector3(forward.x, 0.0, forward.z).normalized()
@@ -2176,9 +2185,10 @@ static func veto_refuses(at: Vector3, centre: Vector3, flat_click: Vector3, came
 ## The re-deal: each failing place (nearest squad to the click first) takes the seat in `seats` nearest the click that the veto
 ## passes for its own squad and that no other place stands on (within that place's half-width + a quarter of GUARD_SEAT_TAKEN_M,
 ## as G2's holders take a seat); a squad with
-## no such seat holds at its start. Every other place is returned exactly as given. Pure.
+## no such seat falls in along its own line to the click (`stand`, when given) or holds at its start. Every other place is
+## returned exactly as given. Pure but for `stand`.
 static func veto_redeal(anchors: Array[Vector3], blocks: Array, click: Vector3, approach: Vector3, forward: Vector3, failed: Array[int],
-		seats: Array, data: Dictionary = Arena.active) -> Array[Vector3]:
+		seats: Array, data: Dictionary = Arena.active, stand := Callable()) -> Array[Vector3]:
 	var came := Vector3(approach.x, 0.0, approach.z).normalized()
 	var flat_click := veto_front(click, came, data)
 	var out: Array[Vector3] = anchors.duplicate()
@@ -2210,6 +2220,27 @@ static func veto_redeal(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 			if not taken:
 				best = flat_seat
 				best_d = d
+		if best == null and stand.is_valid():
+			# No seat of the body: the squad falls in as near his click as it can along its own line to the front, the first
+			# point (from the front back to where it stands, VETO_LINE_STEPS of them) that is free, passes the veto and that
+			# `stand(point) -> Vector3 or null` takes (dev read 94c737a14, gorge across -40/58: the body's file ran back up to
+			# the base, every free seat sent the squad 39 m back and it held 80 m from his click).
+			for k in range(VETO_LINE_STEPS, 0, -1):
+				var on_line: Variant = stand.call(centre.lerp(flat_click, float(k) / float(VETO_LINE_STEPS)))
+				if on_line == null:
+					continue
+				var p := Vector3((on_line as Vector3).x, 0.0, (on_line as Vector3).z)
+				if veto_refuses(p, centre, flat_click, came, forward, data):
+					continue
+				var taken_l := false
+				for other: Array in standing:
+					if p.distance_to(other[0]) < float(other[1]) + GUARD_SEAT_TAKEN_M * 0.25:
+						taken_l = true
+						break
+				if not taken_l:
+					best = p
+					veto_lined += 1
+					break
 		if best == null:
 			out[i] = Vector3(centre.x, anchors[i].y, centre.z)
 			veto_held += 1
