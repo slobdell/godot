@@ -260,10 +260,16 @@ func _finish() -> void:
 				rows.store_line(JSON.stringify(row))
 			rows.close()
 	var c: Dictionary = rig.cost  # round 46 (C3): the rig's frame and the planner's plans, on this machine
-	print("CAMERA_COST seed=%d planner=%s frames=%d rig_ms_mean=%.3f rig_ms_max=%.2f plans=%d plan_ms_mean=%.3f plan_ms_max=%.2f plan_ms_per_frame=%.3f" % [
+	var steps := rig.cost_steps.duplicate()
+	steps.sort()
+	var p99 := float(steps[mini(steps.size() - 1, int(steps.size() * 0.99))]) / 1000.0 if not steps.is_empty() else 0.0
+	var over2 := 0
+	for us in steps:
+		over2 += 1 if us > 2000 else 0
+	print("CAMERA_COST seed=%d planner=%s frames=%d rig_ms_mean=%.3f rig_ms_max=%.2f plans=%d plan_ms_mean=%.3f plan_ms_max=%.2f plan_ms_per_frame=%.3f plan_ms_p99=%.2f steps_over_2ms=%d" % [
 			_seed, rig.planner_on, c["frames"], float(c["usec"]) / maxf(float(c["frames"]), 1.0) / 1000.0, float(c["max_usec"]) / 1000.0,
 			c["plans"], float(c["plan_usec"]) / maxf(float(c["plans"]), 1.0) / 1000.0, float(c["plan_max_usec"]) / 1000.0,
-			float(c["plan_usec"]) / maxf(float(c["frames"]), 1.0) / 1000.0])
+			float(c["plan_usec"]) / maxf(float(c["frames"]), 1.0) / 1000.0, p99, over2])
 	print("CAMERA_TRACE_DONE ok=true seed=%d seconds=%.1f frames=%d" % [_seed, summary["seconds"], summary["frames"]])
 
 

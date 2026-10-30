@@ -312,6 +312,7 @@ var plan_headings := CameraPlanner.HEADINGS_PER_FRAME
 ## With --camera-trace, each switch prints a CAMERA_PLAN line (when, from/to yaw, the winner's terms, the current's cost).
 var _plan_log := false
 ## Round 46 (C3): with --camera-trace, what the rig's frame and the planner's plans cost (usec; CameraPlaytest prints it).
+var cost_steps := PackedInt32Array()  # every planner step's usec (the p99 the bar's budget line reads)
 var cost := {"frames": 0, "usec": 0, "max_usec": 0, "plans": 0, "plan_usec": 0, "plan_max_usec": 0}
 var _plan_wide := false
 ## The plan's yaw (what it decided); the wanted yaw walks to it at YAW_FOLLOW_DEG_PER_S, so the frame fitted at the wanted
@@ -2048,6 +2049,7 @@ func _update_planner(points: Array, destination: Variant) -> void:
 			cost["plans"] += 1
 			cost["plan_usec"] += spent
 			cost["plan_max_usec"] = maxi(int(cost["plan_max_usec"]), spent)
+			cost_steps.append(spent)
 		HudClock.end(&"cam.planner", _hp)
 		if not out.is_empty():
 			if bool(out["switched"]):
