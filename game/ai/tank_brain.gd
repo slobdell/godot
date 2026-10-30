@@ -3873,11 +3873,12 @@ func _lane_goal_clear(spot: Vector3, contact: Dictionary) -> bool:
 			and TankBrain._lane_friend(spot, target, _lane_friends(spot), _lane_spread(), reach) == ""
 
 
-## The spread to keep a lane spot clear by: the trigger's spread at FULL motion, with this crew's suppression. Bar L1
-## (R46, G1 1 -> 6 friendly hits, 5 in one run): a burst gun checks the lane on its first round only; from a spot clear by the
-## STANDING spread, ENGAGE pulled the hull away mid-burst and the moving spread put the later rounds into a squadmate.
+## The spread to keep a lane spot clear by: the trigger's from a standing start (it fires once there), with this crew's
+## suppression. Bar L1b kept spots clear by the FULL-motion spread instead and lost the whole gain (held 17.5 -> 18.3 s: in a
+## crowd almost no spot qualifies); L1's friendly fire (a burst walked into a squadmate as the hull pulled away) is the burst
+## re-check's to stop (Tank._burst_into_friend, R46.26), round by round, whatever spot was picked (L1c, R46.28).
 func _lane_spread() -> float:
-	return tan(Match.shot_spread(tank.weapon, 1.0, tank.suppression) * Match.LINE_OF_FIRE_SIGMAS)
+	return tan(Match.shot_spread(tank.weapon, 0.0, tank.suppression) * Match.LINE_OF_FIRE_SIGMAS)
 
 
 ## Living friends near `me` for the lane test: name, hull, heading, and where they are now and LANE_LOOKAHEAD_S ahead.
