@@ -65,6 +65,15 @@ Nothing at launch. A bar that fails twice on the same fix: write in player terms
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### REPORT — Bar shortfwd FINAL (04:31 PDT): FAILS as filed on D1 alone (-1.6 se); every guard PASSES; recommended ON (his call)
+
+Frozen adeb71696 (check builder3 exited 0, 3478 / 0; native twin EQUAL), builder0 light; evidence
+`references/round46/manoeuvre/barssf-builder0-adeb71696/`. D1 metres away from his click pooled 5.7 -> 2.4, paired -0.27 m (se 0.17):
+3 cells better (2.2 -> 0.6 m, 2.3 -> 0.9 m, 0.9 -> 0.6 m; up to 0.5 s sooner), 9 identical, 0 worse; floor met. Guards: arrival 12 / 12
+sooner or identical; the drop +0.00 m; his other clicks 12 / 12 identical; orders probe 96 / 96; engage's authority probe identical;
+0 SCRIPT ERROR. **In his terms:** a short click beside his scout no longer sends it ~2 m backwards first when there is open ground to
+turn in; near an edge or wall it backs up as today; nothing else changes. Taken to the orchestrator with the ON recommendation (C46.2).
+
 ### REPORT — Bar S v6 FINAL (02:49 PDT): FAILS as filed on FOUR lines; stays OFF; the ON recommendation WITHDRAWN
 
 All legs read (evidence `references/round46/manoeuvre/barss6-builder3-4e72c5470/`): group G5-G7 identical PASS; G1 corridor 180 / 180
