@@ -5,20 +5,22 @@
 
 GARAGE_SHOTS := $(BUILD_DIR)/screenshots
 
-garage: import ## Build an army of fixed unit types on a budget (tap/drag), then FIGHT a skirmish with it (ENEMY=cpu|cpu:<archetype from Army.ARCHETYPES>)
-	$(GODOT) --path . -- --garage $(if $(filter command line,$(origin ENEMY)),--enemy=$(ENEMY))
+garage: import ## Build an army of fixed unit types on a budget (tap/drag), then FIGHT a skirmish with it (ENEMY=cpu|cpu:<archetype from Army.ARCHETYPES>, ARENA=random|yard|pit|terminus|crossing|sumps|locks|parade|gorge|archipelago|cut|docks|yard_open)
+	$(GODOT) --path . -- --garage $(if $(filter command line,$(origin ENEMY)),--enemy=$(ENEMY)) $(if $(filter command line,$(origin ARENA)),--arena=$(ARENA))
 
 garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must start with the saved army and log no errors
 	mkdir -p $(BUILD_DIR)
 	@# The game's exit code is read (round 18, ship; lent): a run that prints every marker and then aborts is red.
-	s=0; timeout 600 $(GODOT) --headless --path . --quit-after 180 -- --garage --garage-scratch --garage-autofight --enemy=cpu:siege --seed=4 \
+	@# Round 45 (the lead: "make garage lets you select everything except for the map"): the arena he picks is the one the
+	@# skirmish loads (GARAGE_FIGHT's arena= is Arena.active after the handover).
+	s=0; timeout 600 $(GODOT) --headless --path . --quit-after 180 -- --garage --garage-scratch --garage-autofight --enemy=cpu:siege --seed=4 --arena=gorge \
 		> $(BUILD_DIR)/garage-smoke.log 2>&1 || s=$$?; \
 	grep -E 'TANK_SQUAD_READY|GARAGE_FIGHT' $(BUILD_DIR)/garage-smoke.log || true; \
 	tools/exit_gate.sh garage-smoke $$s $(BUILD_DIR)/garage-smoke.log
 	grep -q 'TANK_SQUAD_READY role=GARAGE' $(BUILD_DIR)/garage-smoke.log
 	@# Round 19 (G1): the CPU's army is bought by the garage (a file) at its faction. Round 20 (R1): 1 credit = 1.75 points;
 	@# round 22 (A1): 2000 credits = 3,500 points.
-	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/[a-z_]+\.json enemy=cpu:siege enemy_path=user://army_fight/garage_enemy\.json seed=4 budget=3500 green=[1-9][0-9]* rust=[1-9][0-9]* faction=condemned enemy_faction=(gangs|law|syndicate)' $(BUILD_DIR)/garage-smoke.log
+	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/[a-z_]+\.json enemy=cpu:siege enemy_path=user://army_fight/garage_enemy\.json seed=4 budget=3500 green=[1-9][0-9]* rust=[1-9][0-9]* faction=condemned enemy_faction=(gangs|law|syndicate) .* arena=gorge' $(BUILD_DIR)/garage-smoke.log
 	grep -q 'HUD_MESSAGE \[info\] Your squads hold' $(BUILD_DIR)/garage-smoke.log
 	! grep -E 'ERROR' $(BUILD_DIR)/garage-smoke.log
 	@# Round 22 (A3; A4's cap): the most vehicles there can be -- a full army of Rat Rods, 25 in five squads (the code
