@@ -231,6 +231,13 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.16 (2026-10-30 ~05:15) Round-47 native proposals from the elements sub-profile.** Probe branch probe/native-elements 9145cc82a
+  (not merged), builder3 light, his Terminus 149 s, native ON, n 1, tick 12.24 ms: elements 2.67 ms, Element.update 2.62 (2.32 calls a
+  tick): ElementPlan.build 1.06 (0.46 ms a call), ElementSituation.build 0.55, grounding 0.32, take/issue 0.32, corridor/transit/crossing
+  0.25. **Round 47:** port ElementPlan.build to C++ (~1.1 ms a tick builder3, ~3 ms on his laptop), then build_situation (1.51 ms,
+  contacts 0.55); each with its owner's agreement and a decide-style twin proof. Nothing this round. Evidence
+  `references/round46/native/terminus-sim-profile-builder3/`.
+
 - **R46.15 (2026-10-30 ~05:00) Bar S v6 FAILS as filed on three guards; the seat bound's third failed bar -> his call (lesson 339);
   OFF until he answers.** Frozen 4e72c5470 GREEN builder3, 12001-12024, 72 paired cells, 0 SCRIPT ERROR (stream/manoeuvre abe28a13a):
   D1 seated within 15 s 249 -> 352 (+7.9 se) PASS; wedged PASS on all three arenas; never-arrived 194 -> 149; Terminus better on every
