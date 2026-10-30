@@ -4711,3 +4711,18 @@ lost 0-20 in 112 s, elimination). He is still collecting feedback; more may foll
 4. **Camera delay on squad change.** At each selection the cam row goes to mode `aim-hold` and stays put: sel Spears tick 838 -> cam
    (-73, 60) unchanged at 840 and 863, first moves at 870 (~1 s); sel Guns tick 663 -> `aim-hold` at 690, crossing by 720-750.
    `aim-hold` on a selection change is the delay he feels.
+
+## His second match (2026-10-30 ~15:49, Locks, condemned v syndicate, verbatim)
+
+Recording: `build/recordings/2026-10-30T15-49-20-locks.jsonl` (in progress when read; census through tick 300 = 10 s). Copy to
+`references/round46/playtest/` once the match ends.
+
+> "ok I also just started another games. I had all my squads go directly west and then north to cross a bridge (2 squads of fire
+> trucks). At least one them just drove straight forward into a building and got stuck, which makes no sense, and it makes our units
+> look dumb"
+
+**The orchestrator's read (ticks 30 Hz):** two Burner squads (Burners, Burners2), one click (-81.6, 45.7) then a queued click
+(-94.4, -46.8). **Green_Burners2_4** left (-8, 90), reached (-21, 66) by tick 150 and stays at (-21..-19, 66..73) through tick 300
+(5+ s, phase `driving`, `blocked` empty) while its squad drove on — the unit he saw stuck. Green_Burners_2 also stalled at (-81, 80)
+for ticks 210-240. The group order again split to far-apart spots: first click -> (-91.2, 58.9) and (-68.3, 31.2), **36 m apart**;
+the queued bridge click -> (-115.5, -34.5) and (-76.5, -55.1), **44 m apart**.
