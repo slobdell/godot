@@ -565,6 +565,7 @@ func _start_desktop_controls(field: VisibilityField, rig: RtsCamera, messages: H
 	controls.movement.provider = MovementReadout.from_movement(game_match)  # X5: silent until nav's N1 is on main
 	controls.element_log.attach(controls.elements, game_match)  # X7: "why did my element do that"
 	rig.facing = controls.selection_facing  # round 7 (A): the camera's yaw follows the selection's facing
+	rig.selection = controls.commanded_units  # round 46 (camera C2, C42.3 read-only): the planner sees a new selection at once
 	rig.aiming = controls.is_aiming  # round 41 (C41.4, R41.1): the camera holds the ground still while he aims
 	# Round 43 (K5 v2, R43.27, C42.3 read-only): the commanded units' current order, so the corner look rides a quiet move.
 	rig.order_now = func() -> Dictionary:
