@@ -65,6 +65,15 @@ Nothing at launch. A bar that fails twice on the same fix: write in player terms
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### REPORT — Bar A6 v5 FINAL (04:38 PDT): FAILS as filed on guard 2b alone; every other line PASSES; recommended ON (his call)
+
+Frozen 258ce00f0 (check builder0 exited 0, 3475 / 0), builder0 light, 12049-12096; evidence
+`references/round46/manoeuvre/barsa6v5-builder0-258ce00f0/`. Deciding side jam 397 -> 34 s (z -5.5) PASS; far contacts 47 -> 10 (A6 v4's
+miss) PASS; verdicts, mouth contacts, last crew in, E1 lines PASS; **2b head-on held_on 498 -> 868 crew-s (+30.8 a run, z +2.50) FAIL.**
+**In his terms:** a side-street squad that today sits jammed ~30 s rolls through; on a head-on meeting the waiting squad holds its
+crews back a little longer (~30 crew-seconds a meeting), its last vehicle gets through no later, and the passer brushes it far less.
+Holdway's fourth bar (lesson 339): taken to the orchestrator with the ON recommendation. Frozen tree removed.
+
 ### REPORT — Bar shortfwd FINAL (04:31 PDT): FAILS as filed on D1 alone (-1.6 se); every guard PASSES; recommended ON (his call)
 
 Frozen adeb71696 (check builder3 exited 0, 3478 / 0; native twin EQUAL), builder0 light; evidence
