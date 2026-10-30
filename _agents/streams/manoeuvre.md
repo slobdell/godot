@@ -82,5 +82,37 @@ k-turn by removal -> M5 shortfwd. Item 6 (engage's relay) jumps the queue if it 
   `test_seat_last_open_keeps_the_rest_of_the_squad_in_its_lateral_order` (11751's real positions and route): FAILS on S v5 (crossed
   order + a re-deal at s 24.2), PASSES on S v6; formation / seat / settle / element_plan tests 195/0 (laptop, 659c9ab9b). Laptop trace:
   the Battery's seating now holds for the whole first order.
-- **Dev read** base v s6, crossing / locks / terminus x 7001-7012, builder3 light (`native-fresh` first, per the orchestrator's relay):
-  running.
+- **Dev read (DONE; 659c9ab9b, builder3 light, `native-fresh` first, `manoeuvre-bar-s` 20 s, crossing / locks / terminus x 7001-7012 =
+  36 paired runs, 0 SCRIPT ERROR; `~/overnight-manoeuvre/r46/dev_s6/judge.txt`):** D1 seated within the bound by 15 s 141 -> 187 (+1.28
+  a run, +4.9 se). Per arena (paired a run, se): yield+blocked crossing +3.75 (+0.8 se), locks +0.97 (+0.5), terminus -4.90 (-2.4);
+  k-turn crossing +1.98 (+1.2), locks -1.98 (-1.7), terminus -10.2 (-4.0); **wedged crossing -4.13 (-1.0 se), locks +1.00 (+0.5 se)**,
+  terminus -3.41 (-1.7). Never-arrived 99 -> 74 (-0.69 a run, se 0.30); seat moves 1652 -> 810. **A squad giving way to ITSELF
+  (START_YIELD rows, asker and yielder in one Green squad): crossing 43 -> 29, locks 22 -> 11, terminus 47 -> 58.** For comparison
+  S v5's dev read (R45.20, older commit): crossing yield+blocked +1.7 se, Locks wedged -0.5 s a run, Terminus wedged +8.0 s.
+  **M1 condition met: no added self-yield on Crossing, Locks wedged within noise.** -> M2: Bar S v6 filed below BEFORE any 12001 number.
+
+### M2 Bar S v6 — FILED (2026-10-30 ~01:40 PDT, before any number on 12001-12048; stream/manoeuvre, this commit)
+
+**Bar S v6, his first squad settles where he clicks (manoeuvre M2; R45.28's round-46 starting point; C46.1, C46.3, C46.4, C46.6).**
+Bar S v5's shape and lines stand unchanged; only the code under the same arm flags changed. ONE arm, **s6** = `--shape-latch=off
+--seat-bound=on --seat-order=on --seat-last=open` v **base** = `--shape-latch=off` (today), on a FROZEN tree = stream/manoeuvre at
+the hash whose `make remote T=check` reads exited 0 (named at launch), native ON in every log (`native-fresh` first). **What changed since
+S v5 (C46.1):** under `--seat-last=open` the order term ranks the seats by the SHAPE's own left-to-right offsets, not by their route
+stations, and leaves the deep seat and its rear crew out of the ranks (659c9ab9b; R45.28's cause, found as station rank flips on a
+bending route). **C46.4:** the change is planner-side GDScript (`TacticsFormation.seat`); the drive is unchanged and twinned, so no new
+twin is needed (as R45.20 ruled for S v5); the default orders probe 60/60 byte-identical v main proves OFF unchanged. **What it could
+break (named first):** Crossing yield + blocked (S v5's miss; dev +0.8 se) and Crossing k-turn (S v5 +2.1 se; dev +1.2 se); Locks wedged
+(S v4 / S v5's miss; dev +0.5 se); a squad yielding to itself on Terminus (dev rows 47 -> 58, its yield+blocked -2.4 se); the G1 group
+column (byte-identical by scope, R43.34). **Workload (deciding), `make manoeuvre-bar-s`:** locks / terminus / crossing x **12001-12024**
+= 72 paired cells, 20 s; `tests/manoeuvre/s_judge.py` paired per cell. **D1** crews seated within the bound 15 s after their order ARM >
+BASE by >= 2 se AND pooled. **Guards, per arena (24 seeds each), each ARM <= BASE + 2 se:** start-zone yield + blocked s; k-turn s;
+wedged s; and never-arrived pooled ARM <= BASE + 2 se. **Group guards (`q3_judge.py`), 12025-12036 x crossing / locks / sumps / terminus x
+crew:** G5 all-in ARM <= BASE + 1.645 se, G6 never-in ARM <= BASE + 1.645 se, G7 friendly contact ticks ARM <= 1.05 x BASE. **G1 v9
+corridor, 12025-12036:** `orders-probe` locks / crossing / terminus x 5 squads x click: ORDERS_PROBE_SQUAD rows byte-identical base v s6,
+`orders_judge.py g1v8` lines each ARM <= BASE + 2 se. **Fights (`manoeuvre-wedge-trace` locks / terminus / sumps x 12037-12042), G1-G4
+as Bar S** (G4 kill share worst move <= 0.03: S v4's miss, S v5 at 0.029). **No SCRIPT ERROR** in any leg. **Perf:** the frozen tree's
+check (builder3: perf NOT JUDGED there; a builder0 perf read of the merge before ON). **Ships ON** (`SEAT_BOUND`, `SEAT_ORDER`,
+`SEAT_LAST_OPEN` default on; `--seat-bound=off` / `--seat-order=off` / `--seat-last=bound` the escapes) only if D1 and every guard pass.
+C46.6: the bound seats any squad on its own order (the CPU's too). **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_s6.sh`
+from a frozen worktree of the hash; evidence filed under `references/round46/manoeuvre/barss6-builder3-<hash>/`. **Dev history (never a
+bar):** the M1 dev read above (7001-7012).
