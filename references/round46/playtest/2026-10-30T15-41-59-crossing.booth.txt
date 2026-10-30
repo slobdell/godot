@@ -1,0 +1,32 @@
+0:00.0  PA       pa.welcome.21             Here we are again at the Crossing. The stands filled early tonight, which usually means the district offices closed early too.
+0:07.7  CALLER   caller.intro.03           Folks, I have been waiting all week for this one. Let's go to work.
+0:11.3  VETERAN  color.intro.12            It is loud down there. You stop hearing the crowd about a minute in.
+0:11.9  CALLER   caller.contact.09         Artillery opens the night! The Syndicate are shelling from long range!
+0:16.0  CALLER   caller.kill.13            First blood goes to the Syndicate!
+0:18.9  VETERAN  color.formation.trail.01  The reason you pick a swarm there is the sightlines, and the way the... Hm. It's situational.
+0:20.8  CALLER   caller.control.02         The Wreckers are on the point, and the clock is ticking for the Syndicate!
+0:25.5  VETERAN  color.momentum.19         Slight edge. Slight. One good shot turns it around.
+0:30.3  CALLER   caller.kill.03            That's it for the scout! It is not moving!
+0:33.0  CALLER   caller.kill.182           Every time somebody shows a nose, it gets taken off!
+0:36.5  CALLER   caller.stat.01            The Syndicate have taken out three in a row without losing one.
+0:41.2  CALLER   caller.hit.flank.03       Right in the side panel! Nobody was watching that flank!
+0:42.1  CALLER   caller.kill.187           Oh, that was not supposed to go that way!
+0:44.8  CALLER   caller.kill.147           The whole floor just lit up! We'll count them later, folks!
+0:48.1  CALLER   caller.kill.132           They are dominating this stretch! Absolutely dominating!
+0:52.1  CALLER   caller.kill.42            Another one for the Syndicate! This is a clinic!
+0:55.1  CALLER   caller.kill.163           Don't look away, folks! They just got another!
+0:58.3  VETERAN  color.technique.trav.01   Just traveling. No overwatch, no bounding. They're getting somewhere and hoping.
+0:59.0  CALLER   caller.kill.59            Remember when the Syndicate were finished? Nobody told the Syndicate!
+1:06.6  CALLER   caller.ff.03              Oh, that's their own! They just shot their own IFV!
+1:09.7  PA       pa.ff.07                  The two crews involved share a district, and in one case a surname, and officials are aware of the situation.
+1:12.0  CALLER   caller.interrupt.11       Stop, stop, look at this!
+1:13.8  CALLER   caller.kill.159           One more on the pile! They are hunting now!
+1:16.8  CALLER   caller.control.15         They've settled onto the point. Now they have to hold it.
+1:20.3  CALLER   caller.hit.03             Ohh, that rocked the tank!
+1:22.2  CALLER   caller.kill.58            The Syndicate have fought all the way back! What a comeback this is turning into!
+1:27.4  VETERAN  color.teach.cover02       Hard cover stops a shell. Soft cover just stops them seeing you. Knowing which is which is most of it.
+1:35.3  CALLER   caller.kill.131           The Syndicate are rolling! I don't know who stops this!
+1:40.1  VETERAN  color.formation.04        That's a wedge, and it's the right call for this ground. Probably.
+1:45.0  CALLER   caller.kill.177           Nobody can get a shot off against them right now!
+1:48.0  VETERAN  color.kill.15             The Syndicate didn't panic. That's the whole comeback right there. Nobody panicked.
+1:53.3  CALLER   caller.kill.186           That's the final vehicle, and this one is over!

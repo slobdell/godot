@@ -4673,3 +4673,41 @@ the way").
 Taken as yes to R46.23's question (the trade stated: his squads and their street in view, buildings in the way half as often; an ambush
 from behind shown ~2 s later). Shipped: `round46/camera` merged at 856358b49 (= 314c8005f GREEN builder3 + docs), main e306ce27f;
 `--camera-planner=off` is round 45's camera (R46.37).
+
+## His playtest after round 46's ships (2026-10-30 ~15:42, Crossing, gangs v syndicate, verbatim)
+
+Recording: `references/round46/playtest/2026-10-30T15-41-59-crossing.jsonl` (main e306ce27f, laptop preset, native, seed 101;
+lost 0-20 in 112 s, elimination). He is still collecting feedback; more may follow.
+
+> "ok I'm playing the game and I'll collect some feedback for you. I haven't finished this game yet but presumably you can review the
+> recording. I selected squads 3 and 4, grouped them into a single squad 4, then I picked a single target waypoint. The waypoint
+> planner or whatever once again counterintuitively picked to points that were far apart. I played as the gang, and when I had my
+> tanks engage some target, it looks like they took forever to actually pick their target and get a shot off - this makes me wonder
+> first if something is broken with our targetting to begin with, but second if vehicles should just go ahead and take pot shots even
+> if they can't get a good targetting fix. Then third, I had a squad of 4 IFVs traverse the bridge and they all got picked off one by
+> one - I still feel like there's inefficient navigation going on with vehicles getting stuck behind containers and so forth; in this
+> case the vehicle obstructions would have been gone for the rear vehicles because the ones in front of them already got destroyed.
+> Also on the camera work, when I change squads, the camera does pan to the target squad but there seems be a delay between selecting
+> a squad and the camera starting to move toward the other selected squad (I sent half my army west and half my army east)"
+
+**The orchestrator's read of the recording** (ticks are 30 Hz; `t:"order"`, `t:"census"`, `t:"cam"`, `t:"end"` rows):
+
+1. **Two far-apart points.** Spears + Wrenches (selection `squads:["Spears",""]` — the merge is still two elements) ordered to one
+   click twice: click (80.9, 49.5) -> Spears (55.7, 22.6), Wrenches (95.5, 69.0), **61 m apart**; click (96.4, -17.5) -> (65.6,
+   -29.5) and (114.6, 1.5), **58 m apart**. Repeat ask: he picked "Tighter" at round 46's prep (R46.2) and V2/V4 did not ship (R46.36).
+   Per *ship his fix ON* this reaches his default game next round.
+2. **Targeting.** Green fired **6 shots in 112 s** (rust 358); hits 3 v 277; damage 196 v 4901; kills 0 v 20; green
+   `gun_ready_samples` 37 all idle. Engagements ran at a median 79 m (syndicate laser 90 m, railgun 110 m; gang twin_mg ~35 m,
+   scrap_cannon 50 m, gang_tank sight 60 m) — so much of it is outranging. **But not all:** after his attack order on Rust_Hunters_2
+   (tick 2092) Green_Guns_3 sat **16-26 m** from its target for ticks 2160-2457 (~10 s), inside scrap_cannon range 50, phase
+   `driving`/`arrived`, and the side's shot total stayed at 6. That looks broken, not range. First suspect to rule out by removal:
+   round 46's lane rule (`rules.lane_clear: true` in this recording) — `make replay-match` on this recording with `--lane-clear=off`.
+   Also on the table (his second question): fire without a good fix (pot shots).
+   Also: army_cost green 2490 v rust 5000 — the gangs fielded half the syndicate's cost. Check it is intended.
+3. **IFVs over the bridge.** Hunters (gang_ifv) ordered at tick 3034 to (-68.7, -57.9): Hunters_3 sat at (-80, 78) "driving" without
+   moving for ticks 3060-3150 (3 s), Hunters_4 at (-60, 64) likewise; after Hunters_1/5 died (3151, 3192) Hunters_3 dithered around
+   (-77, 48) for ticks 3240-3360 (4 s) "driving" with no progress. All four killed by Rust_Lances (laser 90 m) while twin_mg reach is
+   ~35 m.
+4. **Camera delay on squad change.** At each selection the cam row goes to mode `aim-hold` and stays put: sel Spears tick 838 -> cam
+   (-73, 60) unchanged at 840 and 863, first moves at 870 (~1 s); sel Guns tick 663 -> `aim-hold` at 690, crossing by 720-750.
+   `aim-hold` on a selection change is the delay he feels.
