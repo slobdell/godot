@@ -85,21 +85,6 @@ func _run() -> void:
 	var verb: String = _flag("verb", VERBS[rng.randi_range(0, VERBS.size() - 1)])
 	var count := int(_flag("crews", str([1, 1, 3][rng.randi_range(0, 2)])))
 	var squad_hold := count > 1 and verb == "hold" and rng.randf() < 0.5
-	# Round 46 (E6, R46.4): `--e6-stage=on` stages the stop cap's case: a lone fixed gun on wheels (a scout), his STOP, the
-	# enemy gun off to its side or behind (100-150 deg off its nose, inside its reach), so the stop's turn-in has to swing
-	# the hull. The draws above are made as always, so the rest of the seed's stage is its own.
-	var e6 := _flag("e6-stage", "off") == "on"
-	var e6_rng := RandomNumberGenerator.new()
-	e6_rng.seed = seed_value * 7919 + 46  # its own draws: the default probe's sequence is untouched
-	var e6_side := e6_rng.randf_range(100.0, 150.0) * (1.0 if e6_rng.randf() < 0.5 else -1.0)
-	if e6:
-		hull = ["scout", "gang_scout", "law_scout"][seed_value % 3]
-		verb = "stop"
-		count = 1
-		squad_hold = false
-	var lab := TacticsLab.create(case, seed_value, arena)
-	var game_match := lab.game_match
-	game_match.set_meta("player_team", Match.Team.GREEN)
 	var reach := float(Weapons.profile(String(Units.stat(hull, "weapon"))).get("range", 60.0))
 	var stage := _stage(CoverMap.of(game_match), rng, count, reach)
 	var out := {"seed": seed_value, "arena": arena, "hull": hull, "enemy": enemy_unit, "verb": verb, "crews": count,
@@ -112,24 +97,6 @@ func _run() -> void:
 	var away: Vector3 = stage["away"]
 	var yaw := atan2(away.x, away.z)  # facing the gun (forward is -Z)
 	var drive_to: Vector3 = _flat(stage["gun"]) + away * 20.0
-	if e6:
-		# The squad still drives the way it was going; the gun now sits off its nose (E6's case), where it stands.
-		var map_e6 := CoverMap.of(game_match)
-		var start_e6: Vector3 = stage["spots"][0]
-		var placed := false
-		for scale: float in [0.7, 0.55, 0.85, 0.4]:
-			var at: Vector3 = start_e6 + (-away).rotated(Vector3.UP, deg_to_rad(e6_side)) * reach * scale
-			var limit := Match.DRIVABLE_LIMIT - 10.0
-			if absf(at.x) <= limit and absf(at.z) <= limit and not map_e6.inside_any(Vector2(at.x, at.z), 4.0):
-				stage["gun"] = at
-				placed = true
-				break
-		out["e6_side_deg"] = snappedf(e6_side, 1.0)
-		if not placed:
-			out["error"] = "no e6 stage stands"
-			print("AUTHORITY_PROBE " + JSON.stringify(out))
-			quit(0)
-			return
 	var names: Array = []
 	for i in count:
 		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), stage["spots"][i], yaw, hull).name))
