@@ -1,0 +1,74 @@
+== OFF /home/slobdell/overnight-manoeuvre/r46/bars_sf/auth-base: 24 runs (0 errors)
+  seed arena     hull       kind                         moved   push  toward    end shots  hit  died   back
+ 12121 locks     tank       hold/task/alone                0.0      0     1.7   None     0    0 False   True
+ 12122 terminus  law_artillery hold/task/alone                0.0      0     2.9   None     0    0 False   True
+ 12123 crossing  law_artillery stop/direct/alone              0.0      0     0.0   None     0    0 False   True
+ 12124 gorge     syn_scout  stop/direct/alone              0.3      0    -0.4   None     0    0 False   True
+ 12125 locks     ifv        stop/direct/alone              0.0      0     0.3   None     0    0 False   True
+ 12126 terminus  law_scout  hold/task/alone                0.0      0     3.7   None     0    0 False   True
+ 12127 crossing  syn_scout  stop/direct/alone              0.0      0     4.8   None    85   62 False   True
+ 12128 gorge     scout      move/task/alone               None      0   -10.7    4.5     2    1 False   True
+ 12129 locks     law_scout  hold/task/alone                1.2      0     0.0   None   147  136 False   True
+ 12130 terminus  syn_scout  hold/task/alone                0.1      0     0.3   None    64   32  True   None
+ 12131 crossing  law_scout  hold/task/alone                0.5      0    -0.5   None     0    0 False   True
+ 12132 gorge     ifv        stop/direct/alone              0.0      0     4.1   None     0    0 False   True
+ 12133 locks     ifv        hold/task/alone                0.0      0     0.0   None     0    0 False   True
+ 12134 terminus  ifv        stop/direct/alone              0.0      0     2.8   None     0    0 False   True
+ 12135 crossing  tank       hold/direct/alone              3.9      0     2.9   None     0    0 False   True
+ 12136 gorge     tank       move/direct/alone             None      0    -1.8   15.5     0    0 False   True
+ 12137 locks     syn_scout  stop/direct/alone              0.0      0     6.5   None    84   65 False   True
+ 12138 terminus  gang_scout move/direct/alone             None      0     3.7    2.3     0    0 False   True
+ 12139 crossing  law_scout  move/direct/alone             None      0   -10.0    2.1     0    0 False   True
+ 12140 gorge     tank       hold/task/alone                0.0      0     1.4   None     0    0 False   True
+ 12141 locks     law_artillery stop/direct/alone              0.0      0     3.0   None     0    0 False   True
+ 12142 terminus  law_scout  hold/task/alone                0.0      0     0.9   None     0    0 False   True
+ 12143 crossing  law_artillery hold/task/alone                0.0      0     0.2   None     0    0 False   True
+ 12144 gorge     ifv        stop/direct/alone              0.0      0     4.1   None     0    0 False   True
+== ON /home/slobdell/overnight-manoeuvre/r46/bars_sf/auth-sf: 24 runs (0 errors)
+  seed arena     hull       kind                         moved   push  toward    end shots  hit  died   back
+ 12121 locks     tank       hold/task/alone                0.0      0     1.7   None     0    0 False   True
+ 12122 terminus  law_artillery hold/task/alone                0.0      0     2.9   None     0    0 False   True
+ 12123 crossing  law_artillery stop/direct/alone              0.0      0     0.0   None     0    0 False   True
+ 12124 gorge     syn_scout  stop/direct/alone              0.3      0    -0.4   None     0    0 False   True
+ 12125 locks     ifv        stop/direct/alone              0.0      0     0.3   None     0    0 False   True
+ 12126 terminus  law_scout  hold/task/alone                0.0      0     3.7   None     0    0 False   True
+ 12127 crossing  syn_scout  stop/direct/alone              0.0      0     4.8   None    85   62 False   True
+ 12128 gorge     scout      move/task/alone               None      0   -10.7    4.5     2    1 False   True
+ 12129 locks     law_scout  hold/task/alone                1.2      0     0.0   None   147  136 False   True
+ 12130 terminus  syn_scout  hold/task/alone                0.1      0     0.3   None    64   32  True   None
+ 12131 crossing  law_scout  hold/task/alone                0.5      0    -0.5   None     0    0 False   True
+ 12132 gorge     ifv        stop/direct/alone              0.0      0     4.1   None     0    0 False   True
+ 12133 locks     ifv        hold/task/alone                0.0      0     0.0   None     0    0 False   True
+ 12134 terminus  ifv        stop/direct/alone              0.0      0     2.8   None     0    0 False   True
+ 12135 crossing  tank       hold/direct/alone              3.9      0     2.9   None     0    0 False   True
+ 12136 gorge     tank       move/direct/alone             None      0    -1.8   15.5     0    0 False   True
+ 12137 locks     syn_scout  stop/direct/alone              0.0      0     6.5   None    84   65 False   True
+ 12138 terminus  gang_scout move/direct/alone             None      0     3.7    2.3     0    0 False   True
+ 12139 crossing  law_scout  move/direct/alone             None      0   -10.0    2.1     0    0 False   True
+ 12140 gorge     tank       hold/task/alone                0.0      0     1.4   None     0    0 False   True
+ 12141 locks     law_artillery stop/direct/alone              0.0      0     3.0   None     0    0 False   True
+ 12142 terminus  law_scout  hold/task/alone                0.0      0     0.9   None     0    0 False   True
+ 12143 crossing  law_artillery hold/task/alone                0.0      0     0.2   None     0    0 False   True
+ 12144 gorge     ifv        stop/direct/alone              0.0      0     4.1   None     0    0 False   True
+== paired seeds: 24
+  his_runs                   off 24                           on 24
+  stop_n                     off 9                            on 9
+  stop_end_max_m             off 0.3                          on 0.3
+  stop_end_over_3m           off 0                            on 0
+  stop_fixed_wheeled_n       off 0                            on 0
+  native_decide_runs         off 24/24                        on 24/24
+  held_moved_max_m           off 3.9                          on 3.9
+  held_over_2m               off 1                            on 1
+  held_n                     off 20                           on 20
+  pushed_rows_his            off 0                            on 0
+  move_n                     off 3                            on 3
+  move_outside_arrival       off 1                            on 1
+  move_blocked               off 1                            on 1
+  squad_hold_sent_at_enemy   off 0                            on 0
+  shots_held_mean_se         off (19.0, 9.285812607923644)    on (19.0, 9.285812607923644)
+  held_in_range_n            off 10                           on 10
+  shots_held_in_range_mean_se off (38.0, 16.847683652195172)   on (38.0, 16.847683652195172)
+  deaths                     off 1                            on 1
+  enemy_hp_mean_se           off (190.75, 14.595543542614227) on (190.75, 14.595543542614227)
+  hits_mean_se               off (12.333333333333334, 6.585465624230583) on (12.333333333333334, 6.585465624230583)
+  taken_back                 off 23/23                        on 23/23
