@@ -50,6 +50,10 @@ const W_DIST := 0.5
 const W_ARENA := 1.5
 const W_LIFT := 1.0
 const W_WAR := 1.5
+## C1 v2 (Bar C1's one miss, G7: a gun firing from BEHIND the view was a share of all the contacts, and the turn to it waited out
+## the switch hold and the cost mean): each enemy that fired at his selection within RtsCamera.DANGER_RECENT_S costs W_GUN off
+## screen, as a share of those guns only, and is not averaged; a pose that shows more of them is not held back by a recent switch.
+const W_GUN := 6.0
 ## The war term starts past this bearing (his lens shows ~+-29 deg) and is spent in full this far past it.
 const WAR_FREE_DEG := 25.0
 const WAR_FULL_DEG := 90.0
@@ -69,6 +73,7 @@ static var w_dist := W_DIST
 static var w_arena := W_ARENA
 static var w_lift := W_LIFT
 static var w_war := W_WAR
+static var w_gun := W_GUN
 static var action_range_m := ACTION_RANGE_M
 static var hold_margin := HOLD_MARGIN
 
@@ -91,6 +96,7 @@ static func override_weights(text: String) -> void:
 			"arena": w_arena = v
 			"lift": w_lift = v
 			"war": w_war = v
+			"gun": w_gun = v
 			"range": action_range_m = v
 			"hold": hold_margin = v
 
@@ -294,6 +300,11 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 		if to_war.length() > WAR_NEAR_M:
 			var war_off := rad_to_deg(absf(angle_difference(yaw, RtsCamera.yaw_facing(to_war))))
 			war_cost = w_war * clampf((war_off - WAR_FREE_DEG) / (WAR_FULL_DEG - WAR_FREE_DEG), 0.0, 1.0)
+	var guns: Array = w.get("guns", [])
+	var guns_off := 0
+	for at: Vector3 in guns:
+		if not on_screen(screen_of(view, at + Vector3(0, 1, 0), aspect), bottom):
+			guns_off += 1
 	var sel_w := w_sel * (FRESH_X if bool(w.get("fresh", false)) else 1.0)
 	var terms := {
 		"sel": sel_w * float(off) / float(maxi(own.size(), 1)),
@@ -302,6 +313,7 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 		"sight": w_sight_crew * float(blocked) / float(maxi(tested, 1)) + w_sight_path * float(path_blocked) / float(maxi(path.size(), 1)),
 		"arena": w_arena * float(outside) / 6.0,
 		"war": war_cost,
+		"gun": w_gun * float(guns_off) / float(maxi(guns.size(), 1)),
 		"lift": w_lift * clampf(float(clear["lifted_deg"]) / LIFT_FULL_DEG, 0.0, 1.0),
 		"turn": w_turn * absf(angle_difference(current_yaw, yaw)) / PI,
 		"dist": w_dist * clampf((distance - PREFERRED_M) / maxf(RtsCamera.AUTO_FRAME_MAX_M - PREFERRED_M, 1.0), 0.0, 1.0),
@@ -371,7 +383,8 @@ func step(w: Dictionary, current_yaw: float, now: float, n: int) -> Dictionary:
 		pick["focus"] = v[0]
 		pick["level"] = float(v[1])
 		pick["raw"] = float(pick["cost"])
-		pick["cost"] = _averaged("%d:%d" % [roundi(rad_to_deg(yaw)), vi], float(pick["cost"]), now)
+		var gun := float(pick["terms"].get("gun", 0.0))  # C1 v2: a gun firing at him counts now, not averaged in
+		pick["cost"] = _averaged("%d:%d" % [roundi(rad_to_deg(yaw)), vi], float(pick["cost"]) - gun, now) + gun
 		scored_n += 1
 		_cycle["count"] = int(_cycle["count"]) + 1
 		if yaw == current_yaw and ((_cycle["current"] as Dictionary).is_empty() or float(pick["cost"]) < float(_cycle["current"]["cost"])):
@@ -384,6 +397,8 @@ func step(w: Dictionary, current_yaw: float, now: float, n: int) -> Dictionary:
 	var out: Dictionary = _cycle["current"]
 	out["switched"] = false
 	var margin := SWITCH_MARGIN + hold_margin * exp(-(now - _switched_at) / HOLD_S)
+	if float(best["terms"].get("gun", 0.0)) < float(out["terms"].get("gun", 0.0)):
+		margin = SWITCH_MARGIN  # C1 v2: showing a gun he cannot see now is not held back by the last switch
 	if float(best["cost"]) < float(out["cost"]) - margin:
 		out = best
 		out["switched"] = absf(angle_difference(current_yaw, float(best["yaw"]))) > 0.001
@@ -445,3 +460,13 @@ static func war_of(state: Dictionary) -> Vector3:
 	for enemy: Dictionary in known:
 		sum += enemy["at"] as Vector3
 	return sum / float(known.size())
+
+
+## C1 v2: the enemies that fired at his selection within RtsCamera.DANGER_RECENT_S (known to his team), from a DangerFeed
+## reading. Pure.
+static func guns_of(state: Dictionary) -> Array:
+	var out: Array = []
+	for enemy: Dictionary in state.get("enemies", []):
+		if float(enemy.get("fired_s", DangerFeed.NEVER)) <= RtsCamera.DANGER_RECENT_S:
+			out.append(enemy["at"])
+	return out

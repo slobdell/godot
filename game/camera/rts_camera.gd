@@ -467,6 +467,10 @@ func _ready() -> void:
 	planner_on = flags.text("camera-planner", "off") == "on"  # round 46 (C2): OFF until Bar C1 passes
 	_plan_log = flags.has("camera-trace")
 	CameraPlanner.override_weights(flags.text("camera-planner-w", ""))  # dev only: a bar runs at the constants
+	# Round 46 (C5): a headless replay frames at his screen's shape (`--camera-screen=1920x1080`; headless roots are 64x64).
+	var screen := flags.text("camera-screen", "")
+	if screen.contains("x") and DisplayServer.get_name() == "headless" and is_inside_tree():
+		get_tree().root.size = Vector2i(int(screen.get_slice("x", 0)), int(screen.get_slice("x", 1)))
 	plan_headings = flags.integer("camera-planner-rate", 1 if RenderLevers.preset() == "laptop" else CameraPlanner.HEADINGS_PER_FRAME)
 	solid_escape = flags.text("camera-solid-escape", "off") == "on"  # round 43 stretch: dev only
 	danger_lean_m = float(flags.text("camera-danger-lean", str(DANGER_LEAN_M)))
@@ -2031,7 +2035,7 @@ func _update_planner(points: Array, destination: Variant) -> void:
 	var state: Dictionary = danger.call() if danger.is_valid() else {}
 	var path := CameraPlanner.path_ahead(middle, _plan_travel)
 	var world := {"own": own, "pad": float(_vision_state.get("pad_m", 0.0)), "path": path,
-			"lean": path.back() if not path.is_empty() else destination, "action": CameraPlanner.action_of(state),
+			"lean": path.back() if not path.is_empty() else destination, "action": CameraPlanner.action_of(state), "guns": CameraPlanner.guns_of(state),
 			"war": CameraPlanner.war_of(state) if state.get("from") is Vector3 else null,
 			"fresh": _clock < _fresh_until, "aspect": _aspect(), "pitch": pitch, "inset": vision_inset, "bottom": frame_bottom(),
 			"floor_level": _track_floor_zoom, "cap_level": minf(vision_zoom, RtsCamera.level_for(auto_frame_max_m)),
