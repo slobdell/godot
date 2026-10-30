@@ -99,8 +99,10 @@ _(worker keeps this current: report at the top, every number with commit, machin
     his side).
 - **Dev read 2 (builder0, f77e16230, 7002 / 7004, n 1 a cell): every deciding line PASS** (D1 0 v base 13, D2 0 v base 6, D5b),
   I1 51/51, I2; G1 / B- misses on single runs (Locks -35/97 contacts 16 v 6; the Crossing column-tail case, fixed in 40d4b9dec).
-- **V4 (OFF, `--group-pack=on`):** at his neck the tighter file crowds the front squad's halt (Spears never in, 7001): to fix
-  before Bar V2 (keep the first rank's step, pack the rest: a 3-squad file ~50 m, 4 ~66 m, the brief's targets).
+- **V4 (OFF, `--group-pack=on`):** the front rank keeps today's step (at his neck a packed second rank stood in the front
+  squad's halt), the ranks behind it halve, floored at GAP_M. His Gorge file 65.5 -> 49.1 m (laptop lab). **Named risk (Bar V2
+  L1b, his click <= 50 m): 49.1 m is on the edge; not amended after numbers.** At 7001 the Spears' crews still string into the
+  neck in one packed run (never-in guard's risk).
 
 ### REPORT (2026-10-30 ~02:30 PDT, Fable, worktree `godot-orders`, branch `stream/orders`)
 

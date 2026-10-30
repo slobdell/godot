@@ -2107,8 +2107,7 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 #
 # "Squads pack closer (roughly half the length): the whole group is at your click sooner and fights together, at the cost of a bit
 # more bumping in tight spots." The step between one rank of a group's file and the next (today: the deepest halt + GAP_M, 33-50
-# m, so a 3-4 squad file is 66-150 m) is PACK_FACTOR of today's behind the second rank, never under the squads' own pitch
-# (`_nest_clearance`: a rank never nearer than a squad's own vehicles). The step from the FRONT rank keeps today's room: at a neck
+# m, so a 3-4 squad file is 66-150 m) is PACK_FACTOR of today's behind the second rank, never under GAP_M (the lay's own gap). The step from the FRONT rank keeps today's room: at a neck
 # (his Gorge click) a packed second rank stood inside the front squad's halt and the front squad never settled (laptop, 7001). The same layout, shorter: today's `ranks` (rank_slots_for), the column (column_lay) and the
 # fitted body's seats (guard_lay: the veto's seats). `--group-pack=on` / GROUP_PACK=on; OFF until Bar V2 passes.
 static var GROUP_PACK := pack_default()
@@ -2119,11 +2118,12 @@ static func pack_default() -> bool:
 	return OS.get_cmdline_user_args().has("--group-pack=on") or OS.get_environment("GROUP_PACK") == "on"
 
 
-## A rank step under the tighter file: `step` x PACK_FACTOR, floored at the blocks' own pitch; `step` itself when it is OFF.
+## A rank step under the tighter file: `step` x PACK_FACTOR, floored at GAP_M (the lay's own gap between squads; the squads' pitch,
+## ~17.8 m for his gangs, held his Gorge file at 50.8 m); `step` itself when it is OFF. `blocks` kept for the callers' shape.
 static func pack_step(step: float, blocks: Array) -> float:
 	if not GROUP_PACK:
 		return step
-	return maxf(step * PACK_FACTOR, minf(step, _nest_clearance(blocks)))
+	return maxf(step * PACK_FACTOR, minf(step, GAP_M))
 
 
 # ---- V1 (round 46, orders; R46.1, his pick): THE VETO-ONLY GROUP GUARD ----------------------------------------------------
