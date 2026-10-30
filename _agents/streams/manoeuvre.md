@@ -102,8 +102,7 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   warning on builder3 (native's 87a6c7fcc fixes it; the orchestrator accepts the check as green with that named red); default orders
   probe candidate v main e9862553f: 60 / 60 byte-identical.** cccc2684f named to the orchestrator for main after main's batched check
   (R45.28). Evidence `references/round45/manoeuvre/merge46-builder3-cccc2684f/`. Every switch of this stream's new code is DEFAULT_OFF; backout's ON came from main.
-- **Cleanup at the close:** worktree `../godot-manoeuvre-s5` (remove when the series ends; -m46 / -mainref2 removed 22:40), builder folders
-  builder0 `~/tank_squad/godot-manoeuvre-s5*`, builder3 `/home/devia/tank_squad/godot-manoeuvre-{m46,m46-light,mainref2-light}` (ours, small);
+- **Cleanup at the close (done 22:55):** every extra worktree removed (-s5 last; branches wip/manoeuvre-* kept); builder0 `~/tank_squad/godot-manoeuvre-s5*` removed; left (ours, small): builder3 `/home/devia/tank_squad/godot-manoeuvre-{m46,m46-light,mainref2-light}` (ours, small);
   branches wip/manoeuvre-* kept.
 
 ### WHERE IT STANDS (2026-10-29 ~21:30 PDT; backout shipped ON (R45.26); Bar S v5 FAILED as filed; holdway parked with its cause)
@@ -169,7 +168,7 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   +2.0 se (at the line), Terminus clean (k-turn -9.2 se), never-arrived -0.33 a run. Cause read on Crossing 11751: the Battery yields to
   ITSELF in its start zone (Battery_3 <-> Battery_1, Battery_4 <-> Battery_5 mutual yields, ~45 crew-ticks a pair; base: none): the
   open last seat and the rear-crew term deal the two-row layout seats whose paths cross. **The seat rules stay OFF; the candidate
-  worktree removed (branch kept).** The remaining legs (group, fights, G1 probe) finish on builder0 light for the record. Evidence
+  worktree removed (branch kept).** The remaining legs finished 22:51 PDT for the record, all PASS: group identical arms; fights G1-G4 (kill share 0.029 v 0.03); G1 corridor 180 / 180 byte-identical; 0 SCRIPT ERROR in any leg. builder0 is free of this stream. Evidence
   `references/round45/manoeuvre/barss5-builder0-fc639d7e0/README.md`. Round 46 (named there): the rear-crew term must respect the
   lateral order of the rest of the squad, or the open seat goes on the squad's line of advance, not the shape's deepest slot.
 - **holdway (A6 v4 FAILED on contacts_far): the cause read on seed 11466 (laptop, trace):** under holdway the street verdict's "time to the

@@ -17,9 +17,9 @@ unchanged). Seeds 11751-11798 as filed (workstreams.md *Bars (round 45)*, FILED 
 | Guard: never-arrived pooled (<= +2 se) | 225 -> 201; -0.33 a run (se 0.20, better) | PASS |
 | Reported | seat moves 3238 -> 1784 (-20 a run); mean arrival -0.42 s a run; k-turn s pooled -3.0 s a run | — |
 | Group guards G5 / G6 / G7 (11775-11786; 48 paired, for the record) | identical arms: every-squad-in 73.5 = 73.5 s, never-in 1.00 = 1.00, friendly contact ticks 657438 = 657438 (0 se) | PASS |
-| G1 v9 corridor: ORDERS_PROBE_SQUAD byte-identical, g1v8 lines (11775-11786) | run for the record (`judge-g1v9.txt`) | — |
+| G1 v9 corridor: ORDERS_PROBE_SQUAD byte-identical, g1v8 lines (11775-11786; for the record) | 180 / 180 byte-identical; every g1v8 line the same in both arms (friend contacts 1649 = 1649) | PASS |
 | Fights G1-G4 (11787-11792; 18 fights an arm, for the record) | give-way deaths 49 -> 47 (line +25.9), stuck deaths 138 -> 141 (+30.7), friendly contact ticks -0.2 % (line +10 %), **kill share worst move 0.029 (line 0.03)**, deaths 829 -> 802 (line +/- 41) | PASS (G4 at the line) |
-| No SCRIPT ERROR | 0 files in the workload | PASS |
+| No SCRIPT ERROR | 0 files across every leg (series ended 22:51 PDT) | PASS |
 
 **Verdict: FAIL as filed on three guards; the seat rules stay OFF.** The deciding line is wide (+8.4 se: his squad settles where he
 clicks) and Locks' wedged miss halved from S v4 (+6.4 -> +3.4 s a run) but did not clear; Crossing's yield + blocked is the filing's
