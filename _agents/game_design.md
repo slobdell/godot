@@ -4654,3 +4654,14 @@ is identical through his moves. Not ammo, heat, reload or sight. **Cause: his ow
 chose CLEAR_LANE. In his terms: the IFV sat behind his own squads, held fire rather than shoot through them, and its move to a clear
 lane found none for ~20 s. **Round 46:** a lane-clearing move that works in a crowd, and saying it on screen ("holding fire: Guns 4 in
 the way").
+
+## His answers at round 46's prep (2026-10-30 morning, verbatim picks from the orchestrator's two questions)
+
+1. Asked (player terms): *"On Gorge you clicked 3 squads just south of the bridge and one went north across the drop, one went back
+   behind your start. Round 45's fix stopped that but made city streets worse ... Should round 46 ship a narrow guard that ONLY
+   re-places a squad when it would land across a drop/water or behind where it started — every other click, all streets included,
+   stays exactly as today?"* **His pick: "Yes, ship it ON (Recommended)".** -> orders' V1 (R46.1): the veto-only guard, ON.
+2. Asked: *"When you send 3-4 squads to one spot, they arrive in a single file that today stretches 66-150 m from front to back (each
+   squad's block is 33-50 m deep). How should that feel?"* **His pick: "Tighter (Recommended)"** — "Squads pack closer (roughly half
+   the length): the whole group is at your click sooner and fights together, at the cost of a bit more bumping in tight spots."
+   -> orders' V2 (R46.2): the group's halt file about half today's length (target: a 3-squad file <= ~50 m, a 4-squad <= ~75 m).

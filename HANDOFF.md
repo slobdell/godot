@@ -4,9 +4,32 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-30 ~00:45 PDT — **ROUND 45 IS CLOSED. NEXT: prepare round 46 from the ▶ NEXT box below (do not reuse any round-45 session; all were cleared).** Main = the tip of `main`; its code = 96f199c45 GREEN builder3 (3470/0, 28 targets ALL JUDGED); later commits are docs, references, `tools/judge/lines_r45.py` (planner-pytest green on builder3 and the laptop) and two .uid files. **Default build box: builder3** (`devia@builder3`). Worktrees: main only. Builder folders: `godot` only on builder0 / builder2 / builder3. Main is unpushed (he pushes)._
+_Last updated: 2026-10-30 morning — **ROUND 46 PREPARED (box below): five streams, camera + orders on Fable, engage / manoeuvre / native on Opus.** Main code = 96f199c45 GREEN builder3 (3470/0); later commits docs + `tools/judge/lines_r45.py` + two .uid. **Default build box: builder3.** Main is unpushed (he pushes)._
 
-## ▶ NEXT: ROUND 46 — prepare it from here (written at round 45's close, 2026-10-30 ~00:00 PDT; read this first)
+## ▶ ROUND 46 AS PREPARED (2026-10-30 morning) — read this first
+
+**Goal: what he saw on his last two playtests changes in his default game.** His two answers at prep (`game_design.md` *His answers at
+round 46's prep*): **the veto-only group guard ships ON (R46.1)** and **the group's file packs tighter, ~half today's length (R46.2)**.
+Split, ownership, contracts C46.1-C46.8, rulings R46.1-R46.4 and the seed registry in `workstreams.md` *Round 46*; briefs in
+`_agents/streams/`.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **camera** | `godot-camera` (3) | **Fable** | his selection never leaves the screen; a new selection pans at once; down a Terminus corridor the view looks along the street | C1 the census on his Terminus recording |
+| **orders** | `godot-orders` (6) | **Fable** | his Gorge click: nobody across the drop or sent back, street clicks unchanged (ON); the group's file half as long | V1 the veto-only guard |
+| **engage** | `godot-engage` (5) | Opus | his IFV behind his own squads steps to a clear lane and fires; else the feed says who is in the way | L1 why CLEAR_LANE finds no lane |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | his squad settles where he clicks (S v6); street-mouth waits right (A6 v5) | M1 S v6 on Crossing's Battery |
+| **native** | `godot-native` (4) | Opus | big group clicks instant (fit's path queries in C++); twins for every rule shipped | N1 the fit's path queries |
+
+**Not this round:** balance. Kickoff: the same one line for every stream, `_agents/orchestration.md` *The kickoff prompt*. All five are
+FRESH sessions. **Launch check:** `make remote T=check` on builder3 of cb1014bed's code (log `~/orch-r46/launch-check-cb1014bed.log`);
+see the line below for its verdict. Laptop disk 83 % at prep (20 G free): five worktrees ~6 G.
+
+**Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*), `df -h ~` every tick (lesson 341). Relay
+engage's L1 cause to manoeuvre if it asks for an idle blocker to step aside (manoeuvre's item 6); relay orders' V1 seam to native (N1).
+
+
+## (DONE: prepared above) NEXT: ROUND 46 — prepare it from here (written at round 45's close, 2026-10-30 ~00:00 PDT)
 
 **Every round-45 session was cleared.** A fresh orchestrator prepares round 46 from this box, `game_design.md` *His playtest after
 round 45's ships* (verbatim, Terminus 2026-10-29 ~23:00, recording `references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl`)

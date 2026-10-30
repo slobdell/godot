@@ -207,7 +207,7 @@ The kickoff prompt is one line; this section is the rest.
 > answer except at lead gates; record questions in your brief's Status and keep working. Read CLAUDE.md, HANDOFF.md,
 > `_agents/orchestration.md` (the worker contract), `_agents/orientation.md`, `_agents/game_design.md`,
 > `_agents/workstreams.md`, then `_agents/streams/<stream>.md`. Work through its backlog in order, then its stretch
-> items: test first, build, verify with `make remote T=check` (builds run on builder0), smoke test like a player and
+> items: test first, build, verify with `make remote T=check` (builds run on builder3), smoke test like a player and
 > look at your screenshots, commit every green step, and keep the brief's Status current. Done when every backlog item
 > is complete, waiting on a lead gate, or written up as blocked; `make check` passes on your last commit; and the
 > Status holds your report.

@@ -1,6 +1,110 @@
 # Workstreams: the current round
 
-> **ROUND 45 CLOSED 2026-10-30 (four streams; main 96f199c45 GREEN builder3 ALL JUDGED). E2 and backout shipped ON; G2 FAILED on the streets and stays OFF (R45.31).** Round 46 is prepared from HANDOFF's NEXT box.
+> **ROUND 46 PREPARED 2026-10-30 (five streams: camera and orders on Fable; engage, manoeuvre, native on Opus).** Section below; round 45 CLOSED (its section follows).
+
+## Round 46: five streams (prepared 2026-10-30; briefs in `streams/`)
+
+**Goal: what he saw on his last two playtests changes in his default game.** The camera keeps his selection and its fight on screen
+and looks down the street his squad drives, from ONE planner with no special cases; his IFV behind his own squads finds a lane and
+fires (and says why when it can't); his Gorge-type group click never sends a squad across the drop or back (the veto, ON: his pick,
+R46.1) and the group's file is about half as long (his pick, R46.2). His words: `game_design.md` *His playtest after round 45's ships*
+and *His answers at round 46's prep*; recordings `references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl` (Terminus, seed
+39851, 151 s) and `references/round44/playtest/2026-10-29T09-35-51-gorge.jsonl` (Gorge, seed 91711).
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **camera** | `godot-camera` (3) | **Fable** | [streams/camera.md](streams/camera.md) | his selected squad never leaves the screen; a new selection pans at once; down a Terminus corridor the view looks along the street, no building in the way | C1 the planner's cost terms read on his Terminus recording |
+| **orders** | `godot-orders` (6) | **Fable** | [streams/orders.md](streams/orders.md) | his Gorge click: every squad on his side, nobody back, every street click unchanged; the group's file half as long | V1 the veto-only guard (ON) |
+| **engage** | `godot-engage` (5) | Opus | [streams/engage.md](streams/engage.md) | his IFV behind his own squads steps to a clear lane and fires within seconds; when it can't, the feed says who is in the way | L1 the lane move in a crowd, on his recording |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | his squad settles where he clicks (seat bound S v6); squads at a street mouth wait for the right one (holdway) | M1 S v6 on Crossing's Battery layout |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | big group clicks answer instantly (the fit's path queries in C++); every rule that ships has its twin | N1 the fit's path queries (4.9 ms at his click) |
+
+**Two Fable sessions (memory: at most two):** camera (lingering since round 39; his design rule is a rewrite, not a tweak) and orders
+(the group click, asked in rounds 37, 41, 43, 44, 45). Engage, manoeuvre, native: Opus. **Not this round:** balance (waits).
+
+**Machines (C46.1):** builder3 (`devia@builder3`, ~10 min a full check, 6 slots) = the default for every stream's checks and series;
+builder0 = the reference box for budgets set on it (perf-judge lines set there stay judged there, quiet window) and a second light
+lane; builder2 (Spot) burst only, never a deciding series (lesson 343). ONE full check + ONE judged series per builder at a time
+(`tools/builder_checks.sh --wait-below 1`; the full-check lock). One laptop Godot run at a time (`flock
+/tmp/tank-squad-laptop-godot.lock`). **Laptop disk: `df -h ~` before any side worktree; above 90 % remove an idle one first; a
+frozen bar tree is removed the hour its series ends (lesson 341). 83 % at prep.** Never touch processes or files on a builder that
+aren't ours; stop only by a PID you started (lesson 336).
+
+**Ownership (round 46):** each brief's *You own* line is the contract; in short:
+- **camera:** `game/camera/**`, `game/theme/fx/camera_shake.gd`, `game/ui/camera_readout.gd`, `tests/test_camera*.gd`, `tests/camera/**`,
+  `mk/camera.mk`; GRANT read-only feed lines in `game/modes/skirmish_mode.gd` (as C42.3) for what the planner reads (selection, its
+  orders' paths, contacts).
+- **orders:** `game/control/**` (incl. `selection_squads.gd`, `group_formation.gd`, `rts_controls.gd`) EXCEPT engage's grant in
+  `order_executor.gd` and native's C++ seams; `tests/test_control*.gd`, `tests/control/**`, `tests/orders_probe*.gd`, `mk/command.mk`;
+  GRANT `game/ai/planner/**` for a group order's departure order and route spread only (as C41.3).
+- **engage:** `game/ai/gunnery.gd`, `game/ai/fire_lanes.gd`, `game/ai/tank_brain.gd`'s CLEAR_LANE option and its constants,
+  `game/ai/native/native_decide.gd`'s constant table (additive), `game/tactics/drills.gd`, `game/tactics/element.gd`'s player-authority
+  code, `game/tactics/element_plan.gd`'s engagement functions, `game/tactics/firing_position.gd`, `game/ai/order_controller.gd` (trace
+  lines), GRANT `game/control/order_executor.gd`'s `stop` / `hold` / `move` / `attack_move` crew branches, GRANT `game/ui/hud_messages.gd`
+  (one additive "holding fire" line kind, C46.5), `tests/tactics/test_engage*.gd`, `tests/engage/**`, `tests/test_authority*.gd`,
+  `tests/test_gunnery*.gd`, `tests/test_fire_lanes*.gd`, `mk/engage.mk`, `game/garage/**` + `mk/garage.mk` (kept from R45.30).
+- **manoeuvre:** movement's drive / unstick / side-step / avoidance / yield / backout (`game/ai/movement.gd` but the planner seam),
+  `game/ai/traffic.gd`, `game/tactics/tactics_formation.gd`'s `pitch` / `hull_floor` / `offsets_at` / `fit_to_corridor` / seat bound /
+  shape latch, `game/tactics/element_plan.gd`'s `grouped()` and converge, `tests/manoeuvre/**`, `tests/traffic/**`,
+  `tests/test_manoeuvre*.gd`, `tests/test_traffic*.gd`, `tests/test_formation*.gd`, `mk/manoeuvre.mk`. NOT `element.gd` (engage's),
+  NOT `game/control/**` (orders').
+- **native:** `native/**`, `mk/native.mk`, `tools/scoreboard/**`, `references/scoreboard/**`, `tools/judge/**`, `tools/perf_judge.sh`,
+  `tools/loaded.sh`, `tools/slot.sh`, `tools/remote.sh`, `tools/full_check_lock.sh`, `tools/copyback_verify.sh`, `tools/builder_checks.sh`,
+  `tests/ai_scenarios/guard_line.gd`, `mk/play.mk`'s skirmish recipe, `mk/gcp.mk`, `_agents/judging.md`, `tests/replay_orders.gd`,
+  `tools/recording_arrivals.py`, `tools/playtest_report*`, `tests/replay/**`; GRANT the C++ seams in `game/control/**` (the fit's path
+  queries, `gate_width`, untangle, `_assign`) and `game/ai/tank_brain.gd`'s native call site, each with the GDScript body kept as the
+  fallback.
+- **Nobody:** the planner (but orders' grant; trace lines only), `game/ui/**` (but the two grants), `game/units/**`, `game/audio/**`,
+  `game/announcer/**`, `game/match/**`, `game/tank/**`, element_plan's settle functions, `arenas/**`, `tests/baselines/**` (the
+  orchestrator adopts).
+
+**Contracts (round 46):**
+- **C46.1 Fresh start; bars before numbers on FRESH seeds (C37.1-C45.1 stand).** A bar is filed in *Bars (round 46)* before any
+  number, names what the change could BREAK as guards, and is amended at most twice, before numbers, never to fit a dev read (lesson
+  345). His seeds (39851, 91711, 56416) and dev blocks 7001-7012 are never a bar; his recordings are the acceptance READ. Share lines
+  are written "sooner or identical" (lesson 344). After pasting a filing, `python3 tools/census_lint.py .` (lesson 347).
+- **C46.2 Lesson 339/348: what he saw ships ON this round, as the smallest change.** Orders' veto (Bar V1) changes ONLY the clicks
+  where today's lay puts a squad across a gap/water/neck or behind its start; every other click is byte-identical to today, so the
+  street lines are guards it passes by construction. Engage's lane fix (Bar L1) changes only crews whose shot is held by a friend in
+  the lane. The camera planner (Bar C1) replaces the camera's automatic rules as one system behind `--camera-planner` and ships ON
+  when its bar passes; if a narrow bar fails, the stream says in player terms what he would see ON v OFF and the orchestrator takes
+  it to him the same day.
+- **C46.3 His order to a crew is engage's; his order to squads is orders'; a squad's own drive is manoeuvre's; where the camera looks
+  is camera's.** Each bar names the other streams' probes as guards on a tree frozen at filing (the group probe, the B1 corpus'
+  never-arrived, engage's authority probe).
+- **C46.4 = C45.4, extended to the brain:** a rule that touches the drive OR the brain's option scoring (CLEAR_LANE runs in native's
+  decide) is twinned in C++ by native before it ships ON (or ships with the native path forced off for that rule, said in the bar).
+  Output-identical first, then judged.
+- **C46.5 One new on-screen line, no buttons, no "cheating" visuals (memory: slug-fest answers).** Engage's "holding fire: <unit> in
+  the way" is a feed line through `HudMessages` (rate-limited by its existing rules), shown only for crews in his selection; nothing
+  else new on screen this round. The camera adds no UI.
+- **C46.6 Symmetric (memory: smart AI on both sides).** The veto, the tighter file and the lane fix reach the CPU's orders and crews
+  too; each ships behind a switch with an `=off` escape; approved behaviour ships ON once its bar passes (memory: approved content ships
+  ON). The camera is the player's by construction.
+- **C46.7 The laptop is the test bed (memory).** The camera planner's per-frame cost is budgeted on the laptop (Intel UHD 620): it
+  states its budget in its bar, measured on the laptop under the lock, and any expensive term ships as a hardware-preset knob, never a
+  cut to the look on better GPUs.
+- **C46.8 Seeds:** orders 11801-11848 (V1), 11849-11896 (V2 / reserve); engage 11901-11948 (L1), 11949-11996 (E6 / reserve); manoeuvre
+  12001-12048 (S v6), 12049-12096 (holdway A6 v5), 12097-12144 (backout / shortfwd / reserve); camera 12201-12248 (C1), 12249-12296
+  (reserve). Native twins run on the owner's seeds.
+
+**Rulings at prep:**
+- **R46.1 (2026-10-30, his pick) The veto-only group guard ships ON this round.** Orders' V1; the full G2 lay stays behind
+  `--group-guard=on` (code on `round45/orders`, 2b95f6f27, merges with the default OFF if orders wants it as V3's base).
+- **R46.2 (2026-10-30, his pick) The group's halt file packs tighter, about half today's length.** Orders' V2 after V1, its own bar;
+  guards include friendly contacts and all-in time (the "bit more bumping" he accepted is bounded, not free).
+- **R46.3 The lone IFV is an engage item, not E2.** Engage traced it (R45 Status): `Gunnery._clear_to_fire` holds the shot for a friend
+  in the lane and CLEAR_LANE found no lane in the crowd for ~20 s. Round 46: the lane move that works in a crowd + the feed line.
+- **R46.4 Engage's stop cap (E6): one try.** The one-condition fix (fixed mount + wheels, R45.29) with a staged workload on 11949-11996;
+  if it does not pass, it is dropped and the code removed.
+
+## Bars (round 46)
+
+_(filed here BEFORE any number; newest first)_
+
+## Rulings (round 46)
+
+_(newest first)_
 
 ## Round 45: four streams (prepared 2026-10-29; CLOSED 2026-10-30; briefs in `streams/archive/round45/`)
 
