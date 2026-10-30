@@ -4624,3 +4624,23 @@ report `...gorge.report.txt`; `make playtest-report` replay PASS 20/20 crews wit
 
 Given to engage (idle, R45.30): `make garage ARENA=` pass-through first, then a MAP choice in the garage screen beside the opponent
 pick, remembered like the last army.
+
+## His playtest after round 45's ships (2026-10-29 ~23:00, Terminus, verbatim)
+
+Recording `references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl` (seed 39851, 151 s, gangs v condemned, laptop, native on;
+main ~a4e35b13a: E2 his-order-wins ON, backout ON, G2 NOT yet; `make playtest-report` replay PASS 20/20 for 30 s).
+
+> "I was controlling an individual IVF and it seemed like it wasn't shooting at anything the whole time. I'm not sure if it finally
+> got shots off toward the end. Then with our camera, it's clearly better, but I had cases in the last match where the camera no
+> longer had any of our selected squads in view, and when I selected a new squad, the camera didn't pan to it until there was some
+> combat action. Also still, there seems to be this problem in Terminus where I clearly wish the camera was oriented down a corridor,
+> but it was not and had a building blocking the view. This was most apparent when I was having a squad move through a corridor, but
+> the camera was still at an angle with a building blocking it. To review the camera logic, we generally don't want special cases and
+> we ideally want an abstract algorithm that's planning camera position at all times"
+
+**Orchestrator's first read (laptop, the recording's census rows):** his lone crew is Green_Hunters_1 (alone from ~103.8 s): moves at
+103.8 / 106.7 / 109.0 / 112.6 s, attack -> Eyes_3 at 122.8 s. At 120 s its census reads `order '' phase arrived src ''` (his move
+finished, NO order): E2's "holds its post until his next order" should read `hold`. Suspect: E2 (shipped ON today) leaves a crew he
+moved with no order and no fire after arrival, or under his direct move. The recording carries no per-unit shots: the replay must
+answer it. Camera: 371 of 1696 hits/deaths off screen (358 on his units). His design rule for the camera: ONE abstract planner of
+camera position at all times, no special cases (round 46's camera stream).

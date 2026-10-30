@@ -1,0 +1,47 @@
+0:00.0  PA       pa.welcome.15             We are live. Tonight's crews have been weighed, their vehicles inspected, and their next of kin notified of the start time.
+0:07.3  CALLER   caller.intro.15           Good evening, fight fans. Two armies, and only one of them drives out of here.
+0:11.3  VETERAN  color.intro.01            Look how slow they're rolling out. Nobody wants to be first.
+0:12.9  CALLER   caller.contact.20         The waiting is over! We have a fight!
+0:15.9  VETERAN  color.drill.ambush.02     That's the drill nobody wants. You're already inside the killzone, so the only way out is through whoever put you there.
+0:24.7  VETERAN  color.drill.18            Somebody gave that order half a second before I'd have given it. That's a good leader.
+0:30.3  CALLER   caller.kill.86            Good night! That one is going home on a truck!
+0:33.0  PA       pa.kill.20                That vehicle passed its inspection this morning, the crew compartment excepted, and we wish its replacement the same result.
+0:34.6  CALLER   caller.kill.09            Put it away! The Wreckers put it away!
+0:37.1  PA       pa.correct.01             That's right, Joseph. I'll note that the same maneuver performed outside the arena would carry an immediate Article fifty-seven dash eight C, for the driver and for all of his blood relatives.
+0:44.7  CALLER   caller.interrupt.11       Stop, stop, look at this!
+0:46.5  CALLER   caller.kill.100           Oh, you do not come back from that!
+0:48.7  PA       pa.kill.30                Our floor stewards will wait for a pause before attending, a policy introduced last season, and the match continues.
+0:52.9  CALLER   caller.kill.129           Somebody has to answer this! They're taking everything!
+0:55.9  CALLER   caller.kill.21            Upset! Upset on the floor! The tank gets it done!
+0:59.4  CALLER   caller.kill.169           Another one, and still not a scratch on their side!
+1:02.8  CALLER   caller.stat.07            Nothing has gone the other way for a while now. Every exchange is landing on one side.
+1:03.5  CALLER   caller.kill.180           They have found their rhythm, and the other side is just hanging on!
+1:07.8  CALLER   caller.kill.166           Same side, same story! Another vehicle is finished!
+1:11.9  CALLER   caller.hit.17             What a hit! That shook the whole floor!
+1:14.1  VETERAN  color.flat.08             A hit like that doesn't kill the driver. The next one does. He knows that better than we do.
+1:14.7  CALLER   caller.drill.03           They're running the play! Everybody moving together!
+1:17.9  VETERAN  color.flat.04             The floor gets cleared between sessions. It takes about eleven minutes.
+1:18.6  CALLER   caller.control.07         The point is up for grabs again!
+1:20.7  PA       pa.correct.06             Quite so, Joseph. Holding ground is permitted here and nowhere else in the district.
+1:26.0  CALLER   caller.kill.12            Oh, they blew that IFV wide open!
+1:28.5  VETERAN  color.kill.09             The Condemned were in the open for too long. You saw it coming from here.
+1:29.4  CALLER   caller.interrupt.10       Hey, hey, look down there!
+1:31.2  VETERAN  color.drill.13            Good drills look boring. That one looks boring.
+1:35.3  CALLER   caller.hit.06             The scout is smoking, and they smell blood!
+1:35.8  CALLER   caller.kill.80            And that vehicle is not getting back up!
+1:39.1  CALLER   caller.kill.67            The Wreckers are cleaning house! Two down, just like that!
+1:44.8  VETERAN  color.technique.over.01   Traveling overwatch. Moving, but with somebody always looking the wrong way on purpose.
+1:45.9  CALLER   caller.interrupt.05       Whoa, whoa, whoa!
+1:47.6  CALLER   caller.kill.171           Kill after kill, and the other side has no reply!
+1:51.2  VETERAN  color.kill.31             That kill was set up by somebody we didn't even see. That's teamwork.
+1:56.7  CALLER   caller.drill.31           Ambush! And they drive right back into it!
+1:59.9  CALLER   caller.ff.09              That's their own! They just hit their own!
+2:02.2  VETERAN  color.ff.06               That's not the first time tonight. The Wreckers need to fix it now.
+2:02.9  CALLER   caller.kill.97            They finished it! They absolutely finished it!
+2:06.4  CALLER   caller.kill.05            Scratch one scout! The Wreckers strike!
+2:09.5  CALLER   caller.ff.10              Friendly fire! Friendly fire on the floor!
+2:12.8  CALLER   caller.kill.103           Oh, they're exchanging! Both sides just lost one!
+2:16.7  CALLER   caller.drill.16           Oh, here we go! They're going by the book!
+2:19.9  CALLER   caller.ff.01              Whoa, whoa! They just hit their own IFV!
+2:22.6  CALLER   caller.kill.06            And the scout goes up in flames!
+2:25.1  VETERAN  color.teach.circling.01   Circling looks aggressive. It deals about a third of the damage, because nobody driving a circle is aiming.
