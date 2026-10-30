@@ -80,7 +80,8 @@ _(worker keeps this current: report at the top, every number with commit, machin
 | L2 the lane move, `--lane-clear` ON | code + tests DONE 9446e1903 (not yet a full check); native twin spec sent (decide guard until then, C46.4) |
 | L3 the feed line | DONE: code + tests 320fbcd11 / aeb32f603; LOOKED AT in his own Terminus replay (laptop window, rule on at 103 s, 9446e1903-era tree): "Hunters 1 holding fire: Wrenches 3 in the way" in the left info feed, the crew selected through RtsControls (`~/overnight-engage/r46/shots/line-1920x1080-t36*.png`); as history it truncates like every older line ("Hunters 1 holding fi..."). Phone: the touch map has no `selection_state`, so no line there (R46.26: round 47); the laptop would not size the window to a phone aspect (`--resolution` ignored by the replay script's window) |
 | L4 Bar L1 | **FAILED on G1** (fa9c6ff3a: friendly hits 1 -> 6, a burst walked into a squadmate; D1 / D2 PASS); not shipped (R46.24) |
-| L4b Bar L1b | FILED before numbers (11949-11996); code 56dded6a5 (moving-spread spots + the burst re-check, R46.26); freeze check of c0affabe0 running |
+| L4b Bar L1b | **FAILED on D1** (no gain: moving-spread spots rarely exist); G1 PASS (friendly hits 4 -> 1) |
+| L4c Bar L1c | FILED before numbers (12301-12348, R46.28): L1's spots + the burst re-check; freeze check next |
 | L5 his replay | dev read (below); the acceptance read waits for the shipped tree |
 | E6 | **DROPPED (R46.22)**: the staged case shows no drift (dev 7001-7012, n 9: <= 3.2 m, capped arm identical); code removed after L1b's series |
 
@@ -102,7 +103,37 @@ clear (it held, no wander) until the lane cleared at 119.5 s, then 7 rounds; fro
 still being held, once per crew per 15 s (8 s read chatty on the dev probe: 4 lines in a 30 s hold), through HudMessages' duplicate / rate rules; none with `--lane-clear=off`. Tests
 `tests/engage/test_engage_lane_line.gd` + the staged case (one line, naming the friend).
 
+### Bar L1c (FILED 2026-10-30 ~06:05) and L1b
+
 ### Bar L1b (FILED 2026-10-30 ~05:40, before any number on 11949-11996)
+
+- **Bar L1c HIS IFV FINDS A LANE; A BURST NEVER WALKS INTO A SQUADMATE (engage; filed 2026-10-30 ~06:05 PDT in streams/engage.md and here, BEFORE any number on 12301-12348; R46.28).**
+
+  **The rule:** L1's lane move (CLEAR_LANE's edge after the order's base; the post step <= 4 m, R46.7; spots tested with the trigger's
+  geometry at the STANDING spread, rings 3 / 6 / 10 / 16 m, a wheeled hull's headings) + L1b's burst re-check (`Tank._burst_into_friend`,
+  R46.26: each later round of a burst checks the line; a friend in it ends the burst), all under `--lane-clear`. Both arms carry R46.19's
+  `dry_hop`. **Workload, arms, machine, the rule's case:** Bar L1b's exactly, seeds **12301-12348**; the frozen tree named when frozen
+  after its full check; builder0 light; native ON.
+
+  **Deciding (the rule's case):** D1 `held_s` paired mean ON - OFF < 0 by at least 1.645 se (one-sided); D2 `first_shot_s` ON sooner
+  or identical in >= 60 % of runs (strictly sooner reported).
+
+  **Guards:** G1 friendly fire by the crew: hits ON <= OFF + max(1, 1.645 sqrt(OFF)); kills ON <= OFF. G2 crew deaths ON <= OFF +
+  max(1, 1.645 sqrt(OFF)). G3 enemy hp left: paired mean ON - OFF <= +1.645 se. G4 post runs: every ON run's farthest from his post <= 5.5
+  m; held_s ON - OFF <= +1.645 se. G5 E2's authority probe (seeds 12301-12324, AUTH_ARM=on) `--lane-clear=off` v default: Bar E1's D1
+  (hold / stop moved <= 3.0 m), D2 (pushed rows 0), D3 (move ends) unchanged. G6 orders' default probe rows identical ON v OFF. G7
+  native's `test_native_decide` equality on the frozen tree.
+
+  **Reported:** held_s by mode; moved_m; shots; feed lines; bursts ended by a friend. A pass ships ON; a fail goes to him in player
+  terms the same hour (the orchestrator may ship the feed line and the burst re-check alone: separable, `hud_messages.gd` + its test,
+  `tank.gd`'s burst branch + `tests/test_fire_lanes_burst.gd`).
+
+- **Bar L1b VERDICT (2026-10-30 ~05:50 PDT): FAILS as filed on D1** (c0affabe0's code, series tree dcabca4dc = + a brief-only docs
+  commit, builder0 light, native on, 11949-11996, 48 paired, 0 errors). **D1 FAIL** (rule's case n 38: held 17.54 -> 18.28 s, +0.74,
+  se 1.02); D2 PASS (31/38 sooner or identical, 8 strictly); G1 PASS (friendly hits 4 -> 1, kills 0 / 0); G2 1 / 1; G3 hp 0.72 ->
+  0.74; G4 post max 5.3 m. G5 / G6 not run. Cause: spots kept clear by the MOVING spread rarely exist in a crowd (no step); the burst
+  re-check is what removed L1's friendly fire. Proposed L1c: L1's spot test + L1b's burst re-check, fresh seeds (the orchestrator's
+  ruling). Evidence `~/overnight-engage/r46/barl1b/` (laptop).
 
 - **Bar L1b HIS IFV FINDS A LANE AND NEVER FIRES INTO A SQUADMATE (engage; filed 2026-10-30 ~05:40 PDT in streams/engage.md and here, BEFORE any number on 11949-11996; R46.24: a new filing, not an amendment of L1).**
 
