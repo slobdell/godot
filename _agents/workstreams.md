@@ -1,6 +1,108 @@
 # Workstreams: the current round
 
-> **ROUND 46 CLOSED 2026-10-30 (five streams, all Opus; main 7eec72b37 GREEN builder3 3517/0 ALL JUDGED).** Shipped ON: the veto (V1), the lane move (L1c), shortfwd, holdway (native ON / web OFF). Then (his call, R46.37) the camera planner ON. OFF: S v6, the tighter file (R46.36). Round 47 is prepared from HANDOFF's NEXT box.
+> **ROUND 47 PREPARED 2026-10-30 evening (seven streams, all Opus: his call).** Round 46 CLOSED 2026-10-30 (main 7eec72b37 GREEN builder3 3517/0; shipped ON: V1 veto, L1c lane move, shortfwd, holdway native-only, then the camera planner R46.37).
+
+## Round 47: seven streams (prepared 2026-10-30 evening; briefs in `streams/`)
+
+**Goal: his units look smart in his default game.** A crew that makes no progress notices and re-routes; a route takes the short way
+and his direct order takes at once; his side fires when it is close enough to hit; one group click puts squads together; the camera
+stays on his selection and pans at once; an order reaches the squad he meant; and the map kit (blast doors first) starts. His words:
+`game_design.md` *His playtest after round 46's ships* through *His fifth note* and *His answers at round 47's prep*; recordings
+`references/round46/playtest/` (crossing 15:41, locks 15:49, sumps 15:53, parade 16:03; all main e306ce27f, laptop preset, native).
+
+| Stream | Folder (offset) | Model | Brief | What he will notice | First item |
+|---|---|---|---|---|---|
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | no crew sits against a building or container; the rear IFV on a bridge drives on when the front ones die | M1 the no-progress trace on Locks Burners2_4 and Crossing Hunters_3/4 |
+| **route** | `godot-route` (1) | Opus | [streams/route.md](streams/route.md) | a crew takes the short way to his target, not 230 m around for a 93 m gap | R1 why Hunters_4's route went round (Locks) |
+| **engage** | `godot-engage` (5) | Opus | [streams/engage.md](streams/engage.md) | his gang tank 16-26 m from its target fires | E1 the silent Guns_3 on Crossing, `--lane-clear=off` replay first |
+| **orders** | `godot-orders` (6) | Opus | [streams/orders.md](streams/orders.md) | one click puts his squads together; his attack click takes at once; the order goes to the squad he meant | O1 the group click's spread (Crossing 58-61 m) |
+| **camera** | `godot-camera` (3) | Opus | [streams/camera.md](streams/camera.md) | a new selection pans at once; his squad stays near the middle of the screen | K1 Parade planner ON v `--camera-planner=off` |
+| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | the game stays fast as rules ship; every ON rule has its C++ twin | N1 twins as bars arrive; then ElementPlan.build in C++ |
+| **mapkit** | `godot-mapkit` (7) | Opus | [streams/mapkit.md](streams/mapkit.md) | blast doors the announcer calls; then sight screens, overpass, tank traps | K-page the tap-to-approve looks page (2-3 directions a piece) |
+
+**His calls at prep (2026-10-30 evening):** seven streams at once, map kit included (R47.1); all Opus (R47.2); S v6 stays OFF (R47.3).
+
+**Machines (C47.1 = C46.1's machine rules):** builder3 default for every check and series; builder0 the reference box for budgets set
+there and a second light lane; builder2 burst only, never a deciding series. ONE full check + ONE judged series per builder at a time
+(`tools/builder_checks.sh --wait-below 1`; the full-check lock). One laptop Godot run at a time (`flock /tmp/tank-squad-laptop-godot.lock`).
+**Seven sessions on a 7 GB laptop (~3 GB free at prep): no local Godot runs but the lock-held laptop budget reads; no side worktrees
+without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
+
+**Ownership (round 47):** each brief's *You own* line is the contract; in short:
+- **manoeuvre:** movement's drive / unstick / side-step / avoidance / yield / backout and the NEW no-progress watchdog (`game/ai/movement.gd`
+  but the planner seam), `game/ai/traffic.gd`, `game/ai/wall_contact.gd`, `game/ai/avoidance.gd`, `game/tactics/tactics_formation.gd`'s
+  manoeuvre functions (as R46), `game/tactics/element_plan.gd`'s `grouped()` and converge, `tests/manoeuvre/**`, `tests/traffic/**`,
+  `tests/test_manoeuvre*.gd`, `tests/test_traffic*.gd`, `tests/test_formation*.gd`, `mk/manoeuvre.mk`.
+- **route:** `game/ai/pathing.gd`, `game/ai/planner/**` (orders has NO planner grant this round; a group-spread need goes through C47.6),
+  `game/ai/tactical_query.gd`'s path-cost terms, `game/tactics/element_plan.gd`'s corridor / transit / crossing choice functions
+  (named in route's first Status entry), `tests/route/**`, `tests/test_pathing*.gd`, `tests/test_planner*.gd`, `mk/route.mk` (new).
+- **engage:** as round 46 (gunnery, fire_lanes, tank_brain's CLEAR_LANE and target choice, native_decide's constant table additive,
+  drills, element.gd's player-authority code, element_plan's engagement functions, firing_position, order_controller trace lines, GRANT
+  order_executor's crew branches, GRANT hud_messages additive), `game/ai/perception.gd`'s target-fix / sight timing ONLY (mapkit's
+  `sight` cover class edits the eye ray through C47.7), `tests/engage/**` etc., `mk/engage.mk`, `game/garage/**`.
+- **orders:** `game/control/**` (incl. `selection_squads.gd`, `group_formation.gd`, `rts_controls.gd`) EXCEPT engage's crew branches and
+  native's C++ seams; GRANT `game/ui/selection_markers.gd`, `game/ui/selection_panel.gd`, `game/ui/squad_chip.gd`, `game/ui/group_bar.gd`
+  for the recipient cue (C47.5); a new recording row kind `inp` (C47.4); `tests/test_control*.gd`, `tests/control/**`,
+  `tests/orders_probe*.gd`, `mk/command.mk`.
+- **camera:** `game/camera/**`, `game/theme/fx/camera_shake.gd`, `game/ui/camera_readout.gd`, `tests/test_camera*.gd`, `tests/camera/**`,
+  `mk/camera.mk`; read-only feed lines in `game/modes/skirmish_mode.gd` (as C42.3).
+- **native:** as round 46 (`native/**`, `mk/native.mk`, scoreboard, judge, perf/remote/slot/lock tools, `tests/replay_orders.gd`,
+  `tools/playtest_report*`, `tools/recording_arrivals.py`, `tests/replay/**`, `_agents/judging.md`, `mk/play.mk`'s skirmish recipe,
+  `mk/gcp.mk`); GRANT the C++ seams in `game/control/**`, `game/ai/tank_brain.gd`'s native call site, and (R46.16) the native call site
+  of `ElementPlan.build` / `ElementSituation.build`, each GDScript body kept as the fallback; the reader of orders' `inp` rows in
+  `tools/playtest_report*`.
+- **mapkit:** `arenas/**`, `game/arena/**`, `game/theme/` props it adds (new files only), `assets/props/**` it adds, a NEW
+  `game/match/blast_doors.gd` (+ its test), `game/announcer/` line SLOTS for blast doors (text only; audio is his paid gate),
+  `tests/arena/**`, `tests/test_arena*.gd`, `tests/mapkit/**`, `mk/mapkit.mk` (new); GRANT perception's eye ray for the `sight` class
+  (C47.7); the navmesh rebake/link for doors through C47.8.
+- **Nobody:** `game/units/**`, `game/audio/**`, `game/tank/**` (but a grant), the rest of `game/ui/**` and `game/match/**`, element_plan's
+  settle functions, `tests/baselines/**` (the orchestrator adopts).
+
+**Contracts (round 47):**
+- **C47.1 Fresh start; bars before numbers on FRESH seeds (C37.1-C46.1 stand).** A bar is filed in *Bars (round 47)* before any number,
+  names what the change could BREAK as guards, is amended at most twice, before numbers, never to fit a dev read (lesson 345). His four
+  recordings are the acceptance READ, never a bar. Share lines "sooner or identical" (lesson 344); `python3 tools/census_lint.py .`
+  after a filing (lesson 347). **The deciding line is what he asked FOR (lesson 352):** units that look smart, a group at his click
+  sooner, a shot from a crew in range.
+- **C47.2 Ship his fix ON, smallest change (lessons 339, 348; memory *ship his fix ON*).** Each stream's first item ships ON this round as
+  the narrowest guard that removes what he saw; every other case byte-identical where that is possible. His direct order to a unit wins.
+- **C47.3 Who owns the moment (= C46.3, plus route):** his order to a crew is engage's; his order to squads (and which squad receives it)
+  is orders'; which way a crew goes is route's; how it drives that way (and noticing it is not moving) is manoeuvre's; where the camera
+  looks is camera's. The no-progress watchdog (manoeuvre) ASKS route for a new route through one call `Pathing.reroute(crew, reason)`
+  (route writes it first, a stub that today re-plans the same path is fine); it never plans itself.
+- **C47.4 The `inp` recording row (orders writes, native reads):** `{"t":"inp","f":<frame>,"k":<key|mouse button>,"act":<action
+  name>,"sel_before":[...],"sel_after":[...]}` for every input that changes the selection or issues an order. Additive; old recordings
+  replay unchanged.
+- **C47.5 One cue for the order's recipient, no buttons, no cheating visuals (memory: slug-fest answers).** Orders may make the squad
+  that receives an order obvious with the existing selection markers / chip (a flash or pulse on the receiver). Nothing else new on
+  screen but engage's existing feed line kinds and mapkit's doors.
+- **C47.6 Twins (= C46.4):** a rule touching the drive, the brain's scoring or the route cost is twinned by native before it ships ON, or
+  ships with the native path forced off for that rule (said in the bar). Output-identical first, then judged.
+- **C47.7 The `sight` cover class (mapkit, after its look is approved):** blocks the eye ray and the cover map's sight term only, not
+  hulls or shells; perception's eye ray is touched by mapkit in ONE function behind a kit flag; engage is told the hour it lands.
+- **C47.8 Blast doors and the route:** a door is a collider + a navigation link the route reads as open/shut by tick
+  (`BlastDoors.is_open(id, tick)`, deterministic from the match seed); route makes the planner respect it; until route's side lands,
+  doors ship only on a dev arena. The announcer's lines for doors are text on the review page first; audio is his paid gate.
+- **C47.9 Symmetric (memory: smart AI on both sides).** Every movement, route, fire and group change reaches the CPU's crews too, behind a
+  switch with an `=off` escape. The camera and the recipient cue are the player's by construction.
+- **C47.10 The laptop is the test bed (memory).** Mapkit's pieces and camera's planner state their laptop cost (UHD 620, under the lock);
+  an expensive look ships as a hardware-preset knob.
+- **C47.11 Seeds:** manoeuvre 12401-12496, route 12501-12596, engage 12601-12696, orders 12701-12796, camera 12801-12896, mapkit
+  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). Next free at the close: 13001.
+
+**Rulings at prep:**
+- **R47.1 (2026-10-30 evening, his pick) Seven streams this round, the map kit included.** He picked it knowing the laptop's RAM is short
+  (~3 GB free); hence C47.1's no-local-runs rule. If the laptop thrashes, the orchestrator pauses mapkit first and tells him.
+- **R47.2 (his pick) All Opus.** No Fable this round.
+- **R47.3 (his pick) S v6 settle-at-click stays OFF.** Not in any backlog.
+- **R47.4 The group click's deciding line is the spread between squads' spots for ONE click (Crossing 58-61 m, Locks 36-44 m) AND all-in
+  sooner-or-same (R46.36: packing the file made the group LATER; lesson 352).** `--group-pack` is not the fix by default; orders finds the
+  smallest change that brings the squads' spots together without slowing the arrival. A merged selection (his "grouped them into a single
+  squad 4"; the selection row still `["Spears",""]`) is ONE squad to his eye: orders reads whether the merge should lay as one.
+
+## Bars (round 47)
+
+_(filed here BEFORE any number; newest first)_
 
 ## Round 46: five streams (prepared 2026-10-30; CLOSED 2026-10-30; briefs in `streams/archive/round46/`)
 

@@ -4,9 +4,33 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-30 ~16:15 PDT — **ROUND 46 IS CLOSED; he has PLAYTESTED it (four matches). NEXT: a fresh orchestrator prepares round 47 from the ▶ NEXT box below.** Main = 594d0addf (game code = e306ce27f, GREEN builder3 3518/0, 28 ALL JUDGED; everything after it is docs and recordings). **Default build box: builder3.** Worktrees: main only. Main is unpushed (he pushes)._
+_Last updated: 2026-10-30 evening — **ROUND 47 IS PREPARED (seven streams, all Opus); the lead launches the workers.** Main = the round-47 docs commit (game code = e306ce27f, GREEN builder3 3518/0, 28 ALL JUDGED; main inherits it: `tools/merge_check_needed.sh e306ce27f` INHERIT, docs only, so NO launch check is needed). **Default build box: builder3.** Worktrees: main + seven `godot-<stream>`. Main is unpushed (he pushes)._
 
-## ▶ NEXT: ROUND 47 — prepare it from his 2026-10-30 afternoon playtest (written ~16:15 PDT; read this first)
+## ▶ ROUND 47 AS PREPARED (2026-10-30 evening) — read this first
+
+**Goal: his units look smart in his default game.** Split, ownership, contracts C47.1-C47.11, rulings R47.1-R47.4 and seeds in
+`workstreams.md` *Round 47*; briefs in `_agents/streams/`. His prep answers (`game_design.md` *His answers at round 47's prep*): **seven
+streams, map kit included (R47.1)**, **all Opus (R47.2)**, **S v6 stays OFF (R47.3)**.
+
+| Stream | Folder (offset) | Model | What he will notice | First item |
+|---|---|---|---|---|
+| **route** | `godot-route` (1) | Opus | a crew takes the short way (no 230 m detour for 93 m) | R0 the `Pathing.reroute` seam (checkpoint for manoeuvre), R1 Hunters_4's trace |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | no crew sits against a building/container; the rear IFV drives on | M1 trace Burners2_4 / Hunters_3-4 |
+| **camera** | `godot-camera` (3) | Opus | a new selection pans at once; his squad stays framed | K1 Parade planner ON v off |
+| **native** | `godot-native` (4) | Opus | twins for every ON rule; ElementPlan.build in C++ | N1 twins as bars arrive |
+| **engage** | `godot-engage` (5) | Opus | his gang tank 16-26 m from its target fires | E1 Guns_3 trace, `--lane-clear=off` replay |
+| **orders** | `godot-orders` (6) | Opus | one click puts squads together; his click takes at once; the right squad gets it | O1 the spread (R47.4) |
+| **mapkit** | `godot-mapkit` (7) | Opus | blast doors the announcer calls; sight screens, overpass, tank traps | P1 the looks page (his gate) |
+
+**Kickoff:** the same one line for every stream, `_agents/orchestration.md` *The kickoff prompt*. All seven FRESH sessions.
+**Launch check:** none needed: main inherits e306ce27f's GREEN (builder3 3518/0, 28 ALL JUDGED). **Laptop at prep:** 81 % disk (22 G
+free), 7 GB RAM with ~3 GB available: seven sessions is tight (C47.1: no local Godot runs). If it thrashes, pause mapkit first (R47.1).
+
+**Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*), `df -h ~` and `free -g` every tick.
+Merge route's R0 seam (`Pathing.reroute`) early as a checkpoint and tell manoeuvre to `git merge main`. Relay orders' `inp` row (C47.4)
+to native; mapkit's `sight` class (C47.7) to engage; mapkit's door API (C47.8) to route. Mapkit's looks page URL goes to him.
+
+## (DONE: prepared above) NEXT: ROUND 47 — prepare it from his 2026-10-30 afternoon playtest (written ~16:15 PDT; read this first)
 
 **Every round-46 session is done; start FRESH sessions.** His words, verbatim, and the orchestrator's read of each recording (ticks,
 positions, numbers) are in `game_design.md` from *His playtest after round 46's ships* through *His fifth note* (five sections), and

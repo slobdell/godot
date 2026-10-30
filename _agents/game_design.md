@@ -4790,3 +4790,11 @@ Sumps match (e.g. ticks 3036-3121, 71-78 m off for 3 s; ticks 3541-3601, 21-24 m
 Suspects for the camera stream: `aim-hold` freezing the look on every selection (his 15:42 note too), a slow pan rate over long
 distances, and the planner's cost preferring a far framing over his squad. Compare on this recording with `--camera-planner=off`
 (round 45's camera) before changing anything: if the old camera keeps his squad closer, the planner ON (his ask, R46.37) is the cause.
+
+## His answers at round 47's prep (2026-10-30 evening, verbatim picks from the orchestrator's three questions)
+
+1. Asked (player terms): the map kit needs its own agent; the laptop has room for ~6 and six are needed for his playtest's fixes:
+   start it this round or once those land? **His pick: "This round, 7 agents"** ("Run all seven. The laptop is short on RAM (about
+   3 GB free), so it could freeze, as it did on 10-29."). -> R47.1: seven streams, mapkit included.
+2. Asked: Fable for the group click and the stuck crews? **His pick: "All Opus"** ("Keep Fable quota for later."). -> R47.2.
+3. Asked: settle-exactly-where-you-click (S v6, four failed versions): leave it off? **His pick: "Keep it off (Recommended)".** -> R47.3.
