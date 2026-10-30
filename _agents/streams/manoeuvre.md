@@ -179,3 +179,19 @@ too). **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_a6v5.sh` from
   hold has no C++ copy; both drives call back into the GDScript `Traffic.refresh` / `hold_of`, so no twin. Recorded on main 3098180d3.
 - Disk (lesson 341): ~/overnight-manoeuvre r39-r45 rows deleted (2.3 G freed; judge/table/driver files kept in
   `~/overnight-manoeuvre/summaries-r39-r45.tar.gz`); each frozen tree is removed the hour its series ends.
+
+### M4 backout follow-ups (read; no bar: the pose-10 fix is not a small change)
+
+- **Pose 10 (Bar B3's three ties), traced at 335d6160d, builder3 light, C++ drive (`NOSED_SEEDS=11701-11748 NOSED_ONLY=11711
+  NOSED_TRACE=on`; `~/overnight-manoeuvre/r46/m4/trace2-wrapper.log`):** both arms never clear in 12 s (clear -1, contacts 106, first
+  reverse t40 in both). ON: the look fires (departure 43 deg off), the forward arc hits the box at 1.0 m, and the reverse search is
+  "blocked at 2.0 m back (hull)": the search reverses on FULL LOCK, so the tail swings into the squadmate 1.7 m beside it; with no room
+  for the back-up the look plans nothing and hands back (fallbacks 3) -> exactly today's drive (the tie). **The fix it needs:** a
+  straight (or opposite-lock) first reverse leg, then the arc. A planned leg is driven on the plan's one lock (`cmd.turn =
+  _kturn_turn` for every leg), so this is a per-leg turn in the drive's state: a C++ twin change (C46.4) for three tied cells of 48. Not
+  built this round; a round-47 candidate (native's per-leg `turn` field first).
+- **Terminus k-turn seconds by removal (335d6160d, builder3 light, terminus x 7001-7012, today v `--traffic-off=backout`, 12 paired;
+  `~/overnight-manoeuvre/r46/m4/kturn/judge.txt`):** backout costs **+4.45 s of k-turning a run (+4.1 se)** and saves yield+blocked
+  -4.9 s a run (-1.8 se); wedged -1.3, never-arrived -0.58 a run. **It is not the backing rigs:** rows with a k-turn live per crew
+  (summed over 12 seeds) Guns_5 (the Resupply Tanker) 125 -> 471, Guns_4 (the Gun Truck) 313 -> 454, while the rigs Guns_1 / _2 / _3 move
+  474 -> 464, 398 -> 428, 359 -> 320. The crews BEHIND the rigs turn to make way for them. Reported (as B3 did), not a line.
