@@ -105,7 +105,8 @@ byte-for-byte the planner Bar C1 read (re-run of bar seed 12201: summary, clicks
 | C3 budget | DONE | laptop UHD 620 laptop preset, 1f3e6f111, 2 x 60 s: 0.35 ms/frame mean, step p99 0.9 ms (target 0.5 / 1.5) |
 | C4 Bar C1 | FAILED 37/38 | 3bf76e839 GREEN builder3 3483/0; verdict `references/round46/camera/barc1-verdict-builder3-3bf76e839.txt` |
 | C1 v2 | dev only, parked | see *C1 v2* below |
-| C5 acceptance read | in progress | his Terminus replay both arms + census; laptop clips |
+| C5 acceptance read | clips DONE; replay census next | laptop clips (left `--camera-planner=off`, right on): `~/camera-r46/clips/rear_ambush_7001.mp4` (22 s, his rear ambush: today's shows the gun after 0.9/2.7/1.8 s, the planner 3.5 s then one never), `~/camera-r46/clips/corridor_selection_7002.mp4` (50 s, corridor drives + selection changes); stills `references/round46/camera/clip_*.jpg` (looked at) |
+| Ship candidate | check running | 13a5ea5d7 = ee291bcc4 (default ON, v1 exactly, v2 knobs OFF) + R46.29's one line in `tests/test_control_dials.gd` (the cap must not bind; ee291bcc4 failed it 3/3 on builder3 at 0.59 v 0.59 = the 100 m cap). OFF tip 21fb16fc1 GREEN builder3 3484/0, merged to main 830787b38 |
 
 **Bar C1 in his terms (as read, 48 attack runs an arm + 24 ambush + 24 retreat, builder3):** with the planner his squads and the
 street they drive stay on screen; a building hides half or more of his driving squad **half as long** (1011 -> 504 s); none of his
