@@ -49,6 +49,10 @@ fresh folder's library; replay-match fails on the wrong native path; builder2 pr
 28 targets ALL JUDGED, sim-baseline unmoved; main INHERITS it. control-timing quiet read on builder0 pending. G2 conflicts in
 rts_controls.gd column_lay: resolution = pair/native-g2 cfa4a0eb2 (EQUAL with G2, R45.3 re-proof).
 
+**MAIN NOW (~20:00 PDT): a5508847c** = + **War Rig backout ON** (R45.26: Bar B3 failed only D2's share on exact ties). OWED: sim
+baseline re-record x2 on builder0 + adopt (the CPU's rigs back out too), then ONE builder0 main check (perf judged), batched with
+engage's R45.24 player fix (fea4cfbec, check queued).
+
 **MAIN NOW (~19:55 PDT): ceb1386e8** = + native f4f2dd6ed (_assign C++ 1921e09eb GREEN builder0 3449/0 ALL JUDGED; replay-match
 authority default for pre-E2 recordings). Main check OWED (merge_check_needed CHECK: manoeuvre's OFF code + native together); it runs
 as ONE builder0 check after engage's R45.24 player fix (fea4cfbec, its check queued on builder0) merges.

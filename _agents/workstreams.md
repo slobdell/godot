@@ -431,6 +431,15 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   pointless hold dragged 3.8 m). **Bar E2b re-frozen at fea4cfbec before any number** (2fe2092cd's check was red only on the census
   lint: the probe read `Manoeuvre.turn_in_stops`; fixed). E6's cap is now OPT-IN (`--turn-in-cap=on`) until E2b passes, so the arms
   read base = no flag, new = `--turn-in-cap=on` (same comparison, no line changed). fea4cfbec carries the R45.24 fix; merged alone on green.
+- **R45.26 (~20:00) Bar B3 FINAL: fails as filed on D2's share only (9/12, the 3 non-wins exact ties); EVERY other line PASSES ->
+  backout SHIPS ON per R45.23.** Frozen 26b1425e7 (C++ drive both arms, EQUAL, probe 60/60): D1 his start PASS (t4 / t97 v t44 / t140);
+  D2 median -2.78 s, ceiling worst +1.3 s, named 11187 +0.8 s PASS; D3 guard poses 0 / 24 worse PASS; workload yield+blocked, wedged,
+  squad's time to clear its start, never-arrived, seated, other crews' reversing PASS; k-turn s REPORTED (terminus +3.7 se, the named
+  risk); group G5-G7 identical; G1 corridor 180/180; Gorge tables identical; fights G1-G4 PASS; 0 SCRIPT ERROR. Evidence
+  `references/round45/manoeuvre/barsb3-builder0+builder2-26b1425e7/` (stream/manoeuvre 813e9b377). Merged as main a5508847c
+  (wip/manoeuvre-backout-on 466d96191: `backout` out of Traffic.DEFAULT_OFF + the default test flipped; `--traffic-off=backout` the
+  escape). **Owed before it counts as shipped:** the sim baseline re-recorded (CPU v CPU changes: the CPU's War Rigs back out too,
+  C45.5) twice on builder0 and adopted, then ONE builder0 main check (perf JUDGED), batched with engage's R45.24 fix.
 - **R45.25 (~20:05) G2 freezes on 03d1ddbc5 (orders' option a); the ship rule stated BEFORE any 11201 number.** Dev read 7 (builder2,
   03d1ddbc5, 7001-7006, the squeeze): every deciding line (D1-D6, D5b), contacts and the reach-80 held guard PASS. Left, by construction:
   (1) never-in 1 run of 6 on four no-room cells (crossing his-80, locks across-20 / along-80, yard_open across-20): the rear squad of a
