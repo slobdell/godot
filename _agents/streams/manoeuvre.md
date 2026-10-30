@@ -66,7 +66,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 builder0 3446/0; no baseline check re-run, per the contract). Orchestrator session: `godot-b8`. builder0 has NO godot-manoeuvre folder
 (a cold import on the first remote run: watched); builder2 (up at launch) has `godot-manoeuvre` + `-light` warm.**
 
-### WHERE IT STANDS (2026-10-29 ~20:20 PDT; the round continues per R45.21; backout shipped ON (R45.26); S v5 under dev reads)
+### WHERE IT STANDS (2026-10-29 ~21:00 PDT; the round continues per R45.21; backout shipped ON (R45.26); Bar S v5 filed; holdway's cause read)
 
 - **main carries the stream's OFF code: 5d4b3fa82 merged as main 9203851ec** (its builder0 main check owed by the orchestrator, perf
   judged there). Proof: builder2 check exited 0 / 3456 / 0 / sim-baseline unmoved; the default orders probe on a clean checkout of exactly
@@ -111,7 +111,24 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   rear crew is the laterally nearest of the rear crews within `SEAT_LAST_REAR_TIE_M` 4 m (abreast = a tie, a column = a column);
   **ca8e71aba** the deep seat's holder keeps it while the order stands (`previous`), a fresh order reads anew. **Dev read 5 running**
   (builder0 heavy, `s5/dev5.sh`, three arenas 7001-7012, base v s4 v s5 at 0a0b822ae = the tie fix alone); dev read 6 with both follows.
-  A bar only on a clean three-arena read.
+  A bar only on a clean three-arena read. **Dev read 5 (tie fix alone, 0a0b822ae, builder0 heavy):** Terminus wedged +8.0 -> +0.1 s a
+  run, but yield + blocked Crossing +10.7 (+2.2 se) / Locks +2.3 (+2.1 se): NOT clean. **Dev read 6 (both fixes, 1a9d053e8, builder0
+  heavy, 36 paired runs an arm): CLEAN on every S line** -- D1 +5.8 se (s4 +4.4); wedged Locks +0.9 s a run (+0.6 se; s4 +3.5 / +1.7 se),
+  Terminus -1.2 (-0.2 se), Crossing -6.6 (-3.4 se); yield + blocked Crossing +6.3 (+1.7 se), Locks +2.0 (+1.4 se), Terminus -7.1
+  (-1.7 se); k-turn s better on all three; never-arrived +0.0. The two risks (Crossing / Locks yield + blocked) named in the filing.
+  **Bar S v5 FILED (workstreams.md) on 11751-11798**, launching when the tip's check is green (builder2, `check_tip2/`).
+- **holdway (A6 v4 FAILED on contacts_far): the cause read on seed 11466 (laptop, trace):** under holdway the street verdict's "time to the
+  middle" ran along each crew's ORDERED way; a crew of A ordered to a seat BESIDE it (west, at the order's first ticks) read 1.2 s to a
+  middle 60 m away, became A's lead, and A (the squad in the open) was told to come on; B waited 85 s while A's far crews came through
+  (32 contacts at the mouth). Across A6 v4's 12 head-on seeds the verdict flipped to B on 4 (11450 / 11462 / 11466 / 11472) and the
+  three locks_lock seeds where B waits in both arms read more far contacts too. **Fix fc639d7e0** (tests 10 / 10, 158 traffic + engage
+  tests green, laptop; the new test fails without it): under holdway the time to the middle, and the lead's direction for the street
+  test, run along the SQUAD'S way; OFF unchanged. **Re-read of 11466 with the fix: a genuine near-tie** (B 6.6 s v A 6.7 s to the
+  middle, both leads reading "open"), decided by the group-id tie-break -> B still waits on this seed. The sideways-way bug was real; the
+  remaining flips are the verdict's coin toss between two squads 32 m from the middle at the first tick, which no holdway code decides.
+  **holdway dev read 1 running** (builder0 light, `a6v5/dev1.sh`: A6 v4's 24 seeds both arms, comparable to its table); holdway stays
+  OFF unless it reads clean on contacts_far, and a new bar would need fresh seeds AND a tie rule (the squad whose lead is nearer the
+  street's inside waits) -- round 46 work, named here.
 - **Then:** holdway's head-on release last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars,
   each failing as filed with his line passing) follows unchanged.
 
