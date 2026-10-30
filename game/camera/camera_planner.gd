@@ -398,10 +398,8 @@ func step(w: Dictionary, current_yaw: float, now: float, n: int) -> Dictionary:
 		pick["focus"] = v[0]
 		pick["level"] = float(v[1])
 		pick["raw"] = float(pick["cost"])
-		# C1 v2: the contacts (guns firing at him, the action) count NOW: only the terms that flicker as crews pass corners
-		# (rays, path, floor, lift) are averaged.
-		var live := float(pick["terms"].get("gun", 0.0)) + float(pick["terms"].get("action", 0.0))
-		pick["cost"] = _averaged("%d:%d" % [roundi(rad_to_deg(yaw)), vi], float(pick["cost"]) - live, now) + live
+		var gun := float(pick["terms"].get("gun", 0.0))  # C1 v2: a gun firing at him counts now, not averaged in
+		pick["cost"] = _averaged("%d:%d" % [roundi(rad_to_deg(yaw)), vi], float(pick["cost"]) - gun, now) + gun
 		scored_n += 1
 		_cycle["count"] = int(_cycle["count"]) + 1
 		if yaw == current_yaw and ((_cycle["current"] as Dictionary).is_empty() or float(pick["cost"]) < float(_cycle["current"]["cost"])):
@@ -414,9 +412,8 @@ func step(w: Dictionary, current_yaw: float, now: float, n: int) -> Dictionary:
 	var out: Dictionary = _cycle["current"]
 	out["switched"] = false
 	var margin := SWITCH_MARGIN + hold_margin * exp(-(now - _switched_at) / HOLD_S)
-	var contacts_now := float(out["terms"].get("gun", 0.0)) + float(out["terms"].get("action", 0.0))
-	if float(best["terms"].get("gun", 0.0)) + float(best["terms"].get("action", 0.0)) < contacts_now - SWITCH_MARGIN:
-		margin = SWITCH_MARGIN  # C1 v2: showing contacts he cannot see now is not held back by the last switch
+	if float(best["terms"].get("gun", 0.0)) < float(out["terms"].get("gun", 0.0)):
+		margin = SWITCH_MARGIN  # C1 v2: showing a gun he cannot see now is not held back by the last switch
 	if float(best["cost"]) < float(out["cost"]) - margin:
 		out = best
 		out["switched"] = absf(angle_difference(current_yaw, float(best["yaw"]))) > 0.001
