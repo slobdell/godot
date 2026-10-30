@@ -102,6 +102,33 @@ aren't ours; stop only by a PID you started (lesson 336).
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar L1b HIS IFV FINDS A LANE AND NEVER FIRES INTO A SQUADMATE (engage; filed 2026-10-30 ~05:40 PDT in streams/engage.md and here, BEFORE any number on 11949-11996; R46.24: a new filing, not an amendment of L1).**
+
+  **What changed since L1:** (1) lane spots are kept clear by the MOVING spread (`TankBrain._lane_spread`); (2) under `--lane-clear`,
+  each later round of a burst re-checks the line and a friend in it ends the burst (`Tank._burst_into_friend`, R46.26). Both arms
+  carry R46.19's `dry_hop` (unswitched). **Workload, arms, machine:** Bar L1's exactly (`make engage-lane-bar`, `tests/engage/lane_probe.gd`,
+  `lane_table.py --pair`), seeds **11949-11996**, OFF = `--lane-clear=off`, ON = default, one frozen tree (named when frozen, after its
+  full check), builder0 light (or builder3 light), native ON. **The rule's case** = attack and cpu runs blocked in OFF.
+
+  **Deciding (the rule's case):** D1 `held_s` paired mean ON - OFF < 0 by at least 1.645 se (one-sided); D2 `first_shot_s` ON sooner
+  or identical in >= 60 % of runs (strictly sooner reported).
+
+  **Guards (all 48 unless named):** G1 friendly fire by the crew: hits ON <= OFF + max(1, 1.645 sqrt(OFF)); kills ON <= OFF. G2 crew
+  deaths ON <= OFF + max(1, 1.645 sqrt(OFF)). G3 enemy hp left: paired mean ON - OFF <= +1.645 se. G4 post runs: every ON run's farthest
+  from his post <= 5.5 m; held_s ON - OFF <= +1.645 se. G5 his order to a crew (C46.3): E2's authority probe (`make engage-authority-probe`,
+  seeds 11949-11972, AUTH_ARM=on) with `--lane-clear=off` v default: Bar E1's D1 (hold / stop moved <= 3.0 m), D2 (pushed rows 0), D3
+  (move ends) unchanged. G6 orders' default probe (`make orders-probe`, default cells) rows identical ON v OFF. G7 C46.4: native's
+  `test_native_decide` equality on the frozen tree (native re-proves).
+
+  **Reported:** held_s by mode; moved_m; shots; feed lines; `Tank.burst_friend_stops`. A pass ships ON; a fail goes to him in player
+  terms the same hour and the default turns OFF before any merge.
+
+- **Bar L1 VERDICT (2026-10-30 ~04:50 PDT): FAILS as filed on G1** (frozen fa9c6ff3a, builder0 light, native on, 11901-11948, 48
+  paired, 0 errors). D1 PASS (rule's case n 40: held 20.79 -> 16.94 s, -3.84, se 1.27); D2 PASS (35/40 sooner or identical, 12
+  strictly); **G1 FAIL: friendly-fire hits 1 -> 6** (bar 2.6; kills 0 -> 0; 5 in seed 11922: a law_ifv's 4-round burst checked on its
+  first round only, the hull pulled away mid-burst from a spot clear by the standing spread); G2 0 / 0; G3 hp 0.79 -> 0.72; G4 post max
+  4.6 m. G5 / G6 not run. Not shipped (R46.24); L1b below. Evidence `~/overnight-engage/r46/barl1/` (laptop).
+
 - **Bar V2 FILED (orders, stream/orders 0989a4504, before any number on 11849-11896; the tighter file, R46.2; recorded verbatim by the
   orchestrator).** Verbatim from the brief:
 
