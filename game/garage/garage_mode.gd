@@ -24,7 +24,8 @@ extends GameMode
 ## Music (round 13): the garage holds the director on its own `garage` bed ([method music_state]); FIGHT releases it to
 ## the match mood, which before the first shot is the opening, `pre_match` (MusicDirector.release).
 ## Prints GARAGE_FIGHT player=<path> enemy=<opponent> enemy_path=<doctrine> seed=<n> budget=<points> green=<tanks>
-## rust=<tanks> faction=<his> enemy_faction=<the CPU's> when the skirmish starts.
+## rust=<tanks> faction=<his> enemy_faction=<the CPU's> ... arena=<the layout the skirmish loaded> when the skirmish starts.
+##   --arena=NAME|random   the map (Arena reads it as it builds; the skirmish fights on the same scene). `make garage ARENA=gorge`
 
 const SCRATCH_DIR := "user://garage_scratch/"
 ## Where a challenge's fixed armies are written for the skirmish to load (ArmyFormat.to_game_doctrine), outside the
@@ -204,10 +205,10 @@ func fight(player_path: String, enemy: String) -> void:
 	main.hud.set_status(status_first + ("\n%s" % arena_title if arena_title != "" else ""))
 	# Round 22 (A3): his squads on the field (ten in, ten out: C22.1) and the status line's first line, for the smokes.
 	print(("GARAGE_FIGHT player=%s enemy=%s enemy_path=%s seed=%d budget=%d green=%d rust=%d faction=%s enemy_faction=%s"
-			+ " green_squads=%d rust_squads=%d status=\"%s\"") % [player_path, enemy, enemy_path, seed_value, budget,
+			+ " green_squads=%d rust_squads=%d status=\"%s\" arena=%s") % [player_path, enemy, enemy_path, seed_value, budget,
 			main.game_match.team_tanks(Match.Team.GREEN).size(), main.game_match.team_tanks(Match.Team.RUST).size(),
 			player_faction, enemy_faction, main.game_match.team_squads(Match.Team.GREEN).size(),
-			main.game_match.team_squads(Match.Team.RUST).size(), status_first])
+			main.game_match.team_squads(Match.Team.RUST).size(), status_first, String(Arena.active.get("name", ""))])
 
 
 ## The faction the CPU fights as: `choice` when it names one, else RANDOM rolled from the seed the way the skirmish's
