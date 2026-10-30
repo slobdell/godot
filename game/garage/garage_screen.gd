@@ -6,7 +6,7 @@ extends Control
 ## simplicity. In the UI in the garage we also want chamfered borders"* (2026-10-05). Built from the kit
 ## (`_agents/ui_kit.md`).
 ##
-##   TOP       GARAGE · the credits left (always visible) · VS <the CPU's faction> · FIGHT (green)
+##   TOP       GARAGE · the credits left (always visible) · VS <the CPU's faction> · MAP <the arena> · FIGHT (green)
 ##   1 FACTION four cards; a tap switches roster (each faction keeps its own army while he looks around)
 ##   2 VEHICLES one card per vehicle: name, job, price. TAP BUYS one into the selected squad (a full squad spills into
 ##             the next with room, then a new squad); drag a card onto a squad to buy it there
@@ -42,6 +42,9 @@ var store_dir := ArmyStore.DIR
 var enemy := "cpu"
 ## The CPU's faction: RANDOM or a Units.FACTIONS name.
 var enemy_faction := RANDOM
+## Round 45 (the lead: "make garage lets you select everything except for the map"): the map he fights on: RANDOM (rolled
+## from the fight's seed) or an arena of the rotation (GameLauncher.arena_choices). GarageMode opens it on his last pick.
+var arena := RANDOM
 ## The player's faction (the roster on show).
 var faction := Units.DEFAULT_FACTION
 ## Tips and the last army (tests use GarageSettings.new(""), in memory).
@@ -61,6 +64,7 @@ var _status: Label
 var _status_is_error := false
 var _fight: Button
 var _vs: Button
+var _map: Button
 var _faction_row: HBoxContainer
 var _vehicles: GridContainer
 var _squads: GridContainer
@@ -190,6 +194,11 @@ func _build_top_bar() -> Control:
 	_vs.custom_minimum_size.x = 260 * s
 	_vs.pressed.connect(cycle_enemy_faction)
 	bar.add_child(_vs)
+	_map = CyberKit.button("", s, CyberStyle.CYAN)
+	_map.name = "Map"
+	_map.custom_minimum_size.x = 260 * s
+	_map.pressed.connect(cycle_arena)
+	bar.add_child(_map)
 	_fight = CyberKit.button("FIGHT", s, CyberStyle.GREEN, CyberKit.HEADING)
 	_fight.name = "Fight"
 	_fight.custom_minimum_size.x = 200 * s
@@ -345,6 +354,7 @@ func _refresh() -> void:
 	_meter.step = 100 if catalog.budget >= 500 else 0
 	_vs.text = "VS %s" % ("RANDOM" if not Units.FACTIONS.has(enemy_faction) else
 			String(Units.FACTION_NAMES.get(enemy_faction, enemy_faction)).to_upper().trim_prefix("THE "))
+	_map.text = "MAP %s" % ("RANDOM" if arena == RANDOM else GarageScreen.arena_title(arena).to_upper().trim_prefix("THE "))
 	for card: CyberCard in _faction_row.get_children():
 		card.selected = card.name == "Faction_" + faction
 	_refresh_vehicles()
@@ -738,6 +748,27 @@ func cycle_enemy_faction() -> void:
 	_say("You fight %s." % ("a random faction (never your own)" if enemy_faction == RANDOM
 			else Units.FACTION_NAMES.get(enemy_faction, enemy_faction)), false)
 	_refresh()
+
+
+## Round 45: the MAP button: random, then each arena of the rotation, then random again.
+func cycle_arena() -> void:
+	var choices: Array = [RANDOM] + GarageScreen.arena_names()
+	arena = String(choices[(choices.find(arena) + 1) % choices.size()])
+	_say("You fight on %s." % ("a random map" if arena == RANDOM else GarageScreen.arena_title(arena)), false)
+	_refresh()
+
+
+## The arenas he can pick, in the rotation's order.
+static func arena_names() -> Array:
+	return GameLauncher.arena_choices().map(func(choice: Dictionary) -> String: return String(choice["name"]))
+
+
+## An arena's title as its layout names it ("The Gorge"), else its name capitalized.
+static func arena_title(arena_name: String) -> String:
+	for choice: Dictionary in GameLauncher.arena_choices():
+		if String(choice["name"]) == arena_name:
+			return String(choice["title"])
+	return arena_name.capitalize()
 
 
 ## Drop squads left empty, except the selected one (where the next buy goes), keeping the selection on its squad.

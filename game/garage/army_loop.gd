@@ -20,6 +20,8 @@ const RESULTS_DELAY := 3.0
 const CARRIED_FLAGS := ["garage-scratch", "garage-settings", "profile", "mute", "no-shake", "fx-quality", "perf", "theme"]
 
 var main: Main
+## Round 45: his MAP pick (GarageScreen.arena), carried by REMATCH and ARMY so the garage and the rematch keep his map.
+var map_pick := ""
 var progression: Progression
 ## The army builder's catalog at the fight's tier (names and matchups for the results screen).
 var catalog: ArmyCatalog
@@ -142,7 +144,7 @@ func rematch() -> void:
 		restart({"garage": "", "challenge": challenge, "tier": str(tier)})
 		return
 	restart({"garage": "", "garage-rematch": "", "garage-army": army_path, "enemy": enemy, "seed": str(seed_value),
-			"tier": str(tier), "enemy-faction": enemy_faction})
+			"tier": str(tier), "enemy-faction": enemy_faction, "garage-map-landed": ""})
 
 
 func back_to_army() -> void:
@@ -154,10 +156,16 @@ func back_to_army() -> void:
 
 
 ## Restart the game with `values` plus the carried flags (and what's left of --army-loop-auto).
+## Round 45: on the map just played (the arena reads the command line as it builds, so a plain reload went back to it):
+## through GameLauncher, which sets the layout on the new scene; his MAP pick rides along as --garage-map.
 func restart(values: Dictionary) -> void:
-	Main.next_flags = ArmyLoop.restart_flags(main.flags, values)
+	var with_map := values.duplicate()
+	if not with_map.has("challenge"):
+		with_map["arena"] = String(Arena.active.get("name", ""))
+		if map_pick != "":
+			with_map["garage-map"] = map_pick
 	get_tree().paused = false
-	get_tree().reload_current_scene()
+	GameLauncher.start(get_tree(), ArmyLoop.restart_flags(main.flags, with_map))
 
 
 ## The flags a restart runs with: `values`, --garage-keep, the CARRIED_FLAGS and loop timing from `current`,

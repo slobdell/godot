@@ -14,6 +14,9 @@ extends "res://tests/replay_orders.gd"
 ##         --seconds=107 [--authority-from=2500 --authority-every=3] [any game switch]
 
 var _last := {}
+## Round 45 (his Terminus playtest, "it wasn't shooting at anything"): rounds fired per traced crew (weapon_fired).
+var _shots := {}
+var _shots_hooked := false
 ## `--shots=T1,T2,... --shot-out=DIR --shot-name=NAME` (needs a window): the RTS camera on the first traced crew, a PNG at
 ## each tick, so his replay before / after is looked at with the same eyes (E4).
 var _shot_ticks := {}
@@ -25,11 +28,20 @@ func _trace() -> void:
 	super._trace()
 	if _match == null:
 		return
+	var off_at := int(_flag("authority-off-at", "-1"))
+	if off_at >= 0 and _match.tick >= off_at and Drills.PLAYER_AUTHORITY:
+		Drills.PLAYER_AUTHORITY = false
+		print("AUTHORITY_SWITCH off at tick %d" % _match.tick)
 	var on_at := int(_flag("authority-on-at", "-1"))
 	if on_at >= 0 and _match.tick >= on_at and not Drills.PLAYER_AUTHORITY:
 		Drills.PLAYER_AUTHORITY = true
 		print("AUTHORITY_SWITCH on at tick %d" % _match.tick)
 	_shoot()
+	if not _shots_hooked and _match != null:
+		_shots_hooked = true
+		_match.weapon_fired.connect(func(event: Dictionary) -> void:
+			var who := String(event.get("shooter", ""))
+			_shots[who] = int(_shots.get(who, 0)) + 1)
 	var from := int(_flag("authority-from", "2500"))
 	var every := maxi(int(_flag("authority-every", "3")), 1)
 	if _match.tick < from:
@@ -70,7 +82,38 @@ func _row(tank: Tank) -> Dictionary:
 		row["detached"] = element.is_detached(unit_name)
 		row["issued"] = String(element.issued_to(unit_name).get("verb", ""))
 	var brain := _match.brains.get_node_or_null("Brain_" + unit_name) as TankBrain
+	row["shots"] = int(_shots.get(unit_name, 0))
+	var reach := float(tank.weapon.get("range", 0.0))
+	var seen := 0
+	for enemy: Tank in Perception.enemies_of(tank, _match.tanks):
+		if tank.global_position.distance_to(enemy.global_position) <= reach and _match.is_visible_to(tank.team, enemy):
+			seen += 1
+	row["in_range_seen"] = seen
+	# ...and of those, how many this crew itself has a line to (Perception: its own sight ray, not the team's picture).
+	var own := 0
+	for enemy: Tank in Perception.enemies_of(tank, _match.tanks):
+		if tank.global_position.distance_to(enemy.global_position) <= reach and Perception.has_line_of_sight(tank, enemy):
+			own += 1
+	row["in_range_own_los"] = own
+	row["ammo"] = tank.ammo
+	row["heat"] = snappedf(tank.heat, 0.1)
+	row["heat_cap"] = tank.heat_capacity
+	row["reload"] = tank._reload_ticks
 	if brain != null:
+		row["weapon"] = String(brain.weapon_order.get("type", ""))
+		row["trigger"] = tank.command.fire
+		var gun: Gunnery = brain.gunnery
+		row["lane_blocker"] = gun.lane_blocker
+		row["lane_ticks"] = gun.lane_blocked_ticks
+		row["held_s"] = snappedf(gun.engagement_lay.held_s if "held_s" in gun.engagement_lay else -1.0, 0.1)
+	if brain != null and brain.engaged_target != "":
+		var target := _match.tanks.get_node_or_null(NodePath(brain.engaged_target)) as Tank
+		if target != null:
+			row["eng_m"] = snappedf(tank.global_position.distance_to(target.global_position), 0.1)
+			row["eng_los"] = Perception.has_line_of_sight(tank, target)
+	if brain != null:
+		row["engaged"] = brain.engaged_target
+		row["ctx"] = String((brain._order_context() as Dictionary).get("verb", "")) if brain._order_context() != null else ""
 		row["option"] = String(brain.choice.get("option", ""))
 		row["b_order"] = String(brain.order.get("verb", ""))
 		var post: Variant = brain._player_post

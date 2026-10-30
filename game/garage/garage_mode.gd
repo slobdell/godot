@@ -26,6 +26,9 @@ extends GameMode
 ## Prints GARAGE_FIGHT player=<path> enemy=<opponent> enemy_path=<doctrine> seed=<n> budget=<points> green=<tanks>
 ## rust=<tanks> faction=<his> enemy_faction=<the CPU's> ... arena=<the layout the skirmish loaded> when the skirmish starts.
 ##   --arena=NAME|random   the map (Arena reads it as it builds; the skirmish fights on the same scene). `make garage ARENA=gorge`
+##                         opens the garage's MAP pick on it; else his last pick (GarageSettings), else RANDOM
+##   --garage-map=PICK     a relaunch's carried MAP pick (RANDOM stays RANDOM after its roll was built)
+##   --garage-map-landed   this launch IS the relaunch onto his map: FIGHT never relaunches again
 
 const SCRATCH_DIR := "user://garage_scratch/"
 ## Where a challenge's fixed armies are written for the skirmish to load (ArmyFormat.to_game_doctrine), outside the
@@ -145,6 +148,7 @@ func start() -> void:
 			screen.army_path = ""
 		else:
 			screen.report.call_deferred(String(opened["error"]))
+	screen.arena = GarageMode.opening_arena(flags, screen.settings if screen.settings != null else GarageSettings.new())
 	_layer.add_child(screen)
 	main.add_child(_layer)
 	screen.fight_requested.connect(fight)
@@ -179,8 +183,43 @@ func _autofight_delay() -> float:
 ## Round 19 (G1): both sides fight at the catalog's money (1000 credits = 1,750 points since R20) under the same rules: the CPU's
 ## army is bought here by GarageOpponent (a faction, at most five squads of five) and handed to the skirmish as a file,
 ## so the skirmish's own faction buyer (45 vehicles a side) never sizes the garage's opponent.
+## Round 45: the MAP pick the garage opens on: a relaunch's carried pick, else the command line's --arena (`make garage
+## ARENA=`), else his last pick, else RANDOM; a name that is no arena of the rotation is RANDOM.
+## `--garage-map-remembered` (`make garage` without ARENA, which builds a random map): the command line's arena is only the
+## backdrop, his last pick decides.
+static func opening_arena(p_flags: LaunchFlags, settings: GarageSettings) -> String:
+	var remembered := settings.last_arena if settings != null else ""
+	var asked := remembered if p_flags.has("garage-map-remembered") else p_flags.text("arena", remembered)
+	var pick := p_flags.text("garage-map", asked)
+	return pick if GarageScreen.arena_names().has(pick) else GarageScreen.RANDOM
+
+
+## Round 45: the launch that builds `arena_name` and fights at once with the army he just saved (REMATCH's flags, plus
+## the arena, his pick carried, and the landed mark so FIGHT does not relaunch again).
+static func relaunch_flags(current: LaunchFlags, army_path: String, enemy: String, enemy_faction: String, seed_value: int,
+		arena_name: String, pick: String) -> LaunchFlags:
+	var next := ArmyLoop.restart_flags(current, {"garage": "", "garage-rematch": "", "garage-army": army_path, "enemy": enemy,
+			"seed": str(seed_value), "enemy-faction": enemy_faction, "arena": arena_name, "garage-map": pick,
+			"garage-map-landed": ""})
+	# Not a step of an automated match loop: the steps it has left are all still to come.
+	if current.has("army-loop-auto"):
+		next.values["army-loop-auto"] = current.values["army-loop-auto"]
+	return next
+
+
 func fight(player_path: String, enemy: String) -> void:
 	var seed_value := flags.integer("seed", randi() % 100000)
+	# Round 45 (the lead: "make garage lets you select everything except for the map"): the map he picked. The arena built
+	# before the garage opened (`make garage` builds a random one); RANDOM fights on it, a named pick that is another arena
+	# relaunches straight into this fight on it (once).
+	if screen.settings != null:
+		screen.settings.remember_arena(screen.arena)
+	var wanted := String(Arena.active.get("name", "")) if screen.arena == GarageScreen.RANDOM else screen.arena
+	if wanted != String(Arena.active.get("name", "")) and not flags.has("garage-map-landed"):
+		print("GARAGE_MAP relaunch arena=%s pick=%s built=%s seed=%d" % [wanted, screen.arena, Arena.active.get("name", ""), seed_value])
+		GameLauncher.start(main.get_tree(), GarageMode.relaunch_flags(main.flags, player_path, enemy, screen.enemy_faction,
+				seed_value, wanted, screen.arena))
+		return
 	var catalog := screen.draft.catalog
 	var budget := catalog.budget_points()
 	var player_faction := catalog.faction if catalog.faction != "" else Units.DEFAULT_FACTION
@@ -198,6 +237,7 @@ func fight(player_path: String, enemy: String) -> void:
 	loop.army_path = player_path
 	loop.enemy = enemy
 	loop.enemy_faction = enemy_faction
+	loop.map_pick = screen.arena
 	# The skirmish names its opponent by the --enemy it was given, here the garage's file ("Skirmish vs
 	# user://army_fight/garage_enemy.json"): name the faction he fights instead, and the arena.
 	var arena_title := String(Arena.active.get("title", String(Arena.active.get("name", "")).capitalize()))
