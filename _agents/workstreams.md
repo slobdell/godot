@@ -317,6 +317,15 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.25 (2026-10-30 ~05:10) Bar shortfwd FAILS as filed on D1 alone (diluted); SHIPPED ON by the orchestrator under C46.2.** Frozen
+  adeb71696 GREEN, builder0 04:08-04:31 (its last leg overlapped L1's start by ~6 min: light orders-probe runs; noted). D1 metres away
+  from his click pooled 5.7 -> 2.4 m, paired -0.27 m (se 0.17) = -1.6 se v the -2 se line; 3 of 12 cells better, 9 identical, 0 worse;
+  floor met (OFF reverses in 6). Every guard PASS: arrival sooner or identical 12/12, off-navmesh at the drop +0.00, his other five
+  clicks 12/12 identical, orders probe 96/96 byte-identical, engage's authority probe identical row for row, 0 SCRIPT ERROR. Ruled ON
+  because no cell is worse on any line and every guard holds (the statistic is diluted by cells where neither arm backs away); his
+  Gorge scout's short moves (lesson 339). Native's C++ twin (7e3874bab) is already on main (9d1580b77). Evidence
+  `references/round46/manoeuvre/barssf-builder0-adeb71696/`.
+
 - **R46.24 (2026-10-30 ~05:00) Bar L1 FAILS as filed on G1 only (friendly fire); L1b on the free 11949-11996.** Frozen fa9c6ff3a,
   builder0 light, native on, 11901-11948, 48 paired, 0 errors. D1 held for a friend 20.79 -> 16.94 s (-3.0 se) PASS; D2 sooner or identical
   35/40 (12 strictly) PASS; **G1 friendly-fire hits 1 -> 6 (line 2.6) FAIL**, kills 0 -> 0; G2 deaths 0/0, G3 enemy hp 0.79 -> 0.72, G4 post
