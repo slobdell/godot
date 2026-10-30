@@ -1,3 +1,5 @@
+> **ARCHIVED (round 45 closed 2026-10-30).** Final state of this brief; round 45's results are in `workstreams.md` *Bars (round 45)* and *Rulings (round 45)*.
+
 # Stream: engage (his order to a crew wins: a lone scout he holds, stops or moves does exactly that until he gives another)
 
 > Read `_agents/orchestration.md` (the worker contract; lesson 339), `_agents/judging.md`, `_agents/workstreams.md` **Round 45**

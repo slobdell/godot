@@ -82,6 +82,11 @@ check is RUNNING on BOTH builders** (~/orch-r45/main-check-2e3bc4620-builder0.lo
 ~/tank_squad; full check 525 s (v ~55 min builder0), sim-baseline hashes IDENTICAL to builder0's. Gaps: no Chrome (web-smoke red until
 the lead installs it), no perf nominal yet (native records it). Becomes the default REMOTE_HOST after tonight's frozen series.
 
+**MAIN NOW (2026-10-30 ~00:10 PDT): 96f199c45 GREEN builder3** (the default box): 3470 passed / 0 failed, 28 targets ALL JUDGED,
+sim-baseline unmoved, `>> remote: make check exited 0` (~/orch-r45/main-check-96f199c45-builder3.log). It carries every round-45 merge
+except G2 (still in its series): backout ON, E2 + R45.24, native N1/N2/_assign/builder3/watchdog/memory guard, garage ARENA= + the MAP pick,
+manoeuvre's round-46 OFF code, builder3 as default.
+
 **MAIN NOW (~23:45 PDT): 82fe84e83.** main 52db910b9 GREEN builder3 (3460/0, 28 targets ALL JUDGED, `exited 0`,
 ~/orch-r45/main-check-52db910b9-builder3.log) covers backout ON, E2 + R45.24 fix, native N2/_assign/builder3/watchdog/memory guard,
 garage ARENA= (part 1). Since: + manoeuvre's round-46 OFF code (cccc2684f, 60/60 default probe), native 9b8918fb4 (CHECK_JOBS=6) and docs.
