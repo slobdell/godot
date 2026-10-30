@@ -66,7 +66,7 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 builder0 3446/0; no baseline check re-run, per the contract). Orchestrator session: `godot-b8`. builder0 has NO godot-manoeuvre folder
 (a cold import on the first remote run: watched); builder2 (up at launch) has `godot-manoeuvre` + `-light` warm.**
 
-### WHERE IT STANDS (2026-10-29 ~19:50 PDT; the round continues per R45.21; B3 complete, candidate with the orchestrator)
+### WHERE IT STANDS (2026-10-29 ~20:20 PDT; the round continues per R45.21; backout shipped ON (R45.26); S v5 under dev reads)
 
 - **main carries the stream's OFF code: 5d4b3fa82 merged as main 9203851ec** (its builder0 main check owed by the orchestrator, perf
   judged there). Proof: builder2 check exited 0 / 3456 / 0 / sim-baseline unmoved; the default orders probe on a clean checkout of exactly
@@ -98,9 +98,22 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   ERROR in any leg. **B3 COMPLETE 19:45 PDT: FAIL as filed on D2's share alone; every other line PASSES -> per R45.23 backout ships ON
   after the orchestrator's quiet builder0 perf read of the candidate `wip/manoeuvre-backout-on` 466d96191** (table + candidate sent to
   the orchestrator 19:50). Full table: `references/round45/manoeuvre/barsb3-builder0+builder2-26b1425e7/README.md`.
-- **Then:** S v5's Terminus dev read (the +8 s), its bar on 11751-11798 only on a clean three-arena read; holdway's head-on release
-  last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars, each failing as filed with his
-  line passing) follows unchanged.
+- **R45.26: backout SHIPPED ON, main a5508847c** (the orchestrator merged 466d96191; sim-baseline re-record + builder0 main check theirs).
+  His round-43 ask. Worktrees -b2/-b2x/-mc/-mainref/-on/-b3/-b3x removed (branches kept; laptop disk 95 -> 89 pct).
+- **S v5, the Terminus dev read 4 (builder0 heavy, bad080397, dev seeds 7001-7012, base v s4 v s5): s5 wedged +8.0 s a run (s4 -3.8),
+  never-arrived +1.4 a run (s4 -0.75), D1 +0.6 se (s4 +2.2 se): NOT clean.** Two causes read in the logs, both in the rear-crew term:
+  (1) **the two rear crews of every start layout stand ABREAST** (0.0-0.2 m apart in depth on Locks, Terminus and Crossing alike), so
+  "the rear-most crew" was a float tie; on Terminus 7001 / 7002 / 7004 / 7010 it fell to the WEST crew while the deep seat sits 20 m
+  east -> it crossed its squadmate's path, the squadmate was sent to the far west seat across its own, and the squad jammed in its start
+  zone (wedged 17 -> 44 s; Locks' tie happened to fall the right way on all 12 seeds); (2) **the holder changed as the crews moved**
+  (7007 / 7008 / 7012: at t44 the holder had driven 4 m ahead of its abreast squadmate, the deep seat passed to the squadmate, its
+  station swung 25 m east across the old holder's, both lingered; wedged 23 -> 42 s). Fixes (tests 11 / 11, laptop): **0a0b822ae** the
+  rear crew is the laterally nearest of the rear crews within `SEAT_LAST_REAR_TIE_M` 4 m (abreast = a tie, a column = a column);
+  **ca8e71aba** the deep seat's holder keeps it while the order stands (`previous`), a fresh order reads anew. **Dev read 5 running**
+  (builder0 heavy, `s5/dev5.sh`, three arenas 7001-7012, base v s4 v s5 at 0a0b822ae = the tie fix alone); dev read 6 with both follows.
+  A bar only on a clean three-arena read.
+- **Then:** holdway's head-on release last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars,
+  each failing as filed with his line passing) follows unchanged.
 
 ### The round's report as of ~16:05 PDT (B2 / S v4 / A6 v4 failed as filed)
 
