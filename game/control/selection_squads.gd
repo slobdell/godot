@@ -2189,6 +2189,8 @@ static func veto_front(click: Vector3, came: Vector3, data: Dictionary = Arena.a
 
 ## How near a place standing with half-width `half` a seat may be before it is taken: G2's (the half-width + a quarter of
 ## GUARD_SEAT_TAKEN_M), scaled with the file under the tighter file (V4: the seats themselves stand PACK_FACTOR as far apart).
+## The caller passes the larger of the two squads' half-widths (dev read 6acba040e, locks -35/97: a 44 m squad was dealt his
+## click 21 m from a small squad's place, read free by the small squad's own half-width; contacts 16 v 6 every seed).
 static func veto_taken_m(half: float) -> float:
 	return (half + GUARD_SEAT_TAKEN_M * 0.25) * (PACK_FACTOR if GROUP_PACK else 1.0)
 
@@ -2264,7 +2266,7 @@ static func veto_redeal(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 				continue
 			var taken := false
 			for other: Array in standing:
-				if flat_seat.distance_to(other[0]) < veto_taken_m(float(other[1])):
+				if flat_seat.distance_to(other[0]) < veto_taken_m(maxf(half, float(other[1]))):
 					taken = true
 					break
 			if not taken:
@@ -2284,7 +2286,7 @@ static func veto_redeal(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 					continue
 				var taken_l := false
 				for other: Array in standing:
-					if p.distance_to(other[0]) < veto_taken_m(float(other[1])):
+					if p.distance_to(other[0]) < veto_taken_m(maxf(half, float(other[1]))):
 						taken_l = true
 						break
 				if not taken_l:
