@@ -8,12 +8,9 @@ _Last updated: 2026-10-30 ~09:45 PDT — **ROUND 46 IS CLOSED. NEXT: ask him the
 
 ## ▶ NEXT: ROUND 47 — prepare it from here (written at round 46's close, 2026-10-30 ~09:45 PDT; read this first)
 
-**Every round-46 session is done; start FRESH sessions.** **Three questions for him first (player terms, one recommendation each; R46.23,
+**Every round-46 session is done; start FRESH sessions.** **Two questions left for him first (the camera was answered ON, R46.37) (player terms, one recommendation each; R46.23,
 R46.17/18, R46.36):**
-1. **The new camera (planner), ON or today's?** ON: his squads and their street stay in view, buildings hide his driving squad half as long
-   (1011 -> 504 s on Bar C1), a new selection is on screen at once; the cost: an ambush firing from BEHIND turns into view ~2 s later than
-   today (never in 9 of 28 v 4 of 37). Clips: `~/camera-r46/clips/rear_ambush_7001.mp4` (the trade) and `corridor_selection_7002.mp4`.
-   **Recommended ON.** Ship = merge `round46/camera` at **796ecfc31** (GREEN builder3 3485/0 ALL JUDGED); `--camera-planner=off` the escape.
+1. ~~The new camera~~ **ANSWERED: ON** ("can't you just turn on the new camera planner by default?", R46.37): main e306ce27f merged round46/camera; `--camera-planner=off` the escape. Round 47 camera: C1 v2 (rear ambush) from his next playtest.
 2. **Settle-at-click (S v6): keep OFF (recommended).** Four lines failed (start-zone give-way on Crossing/Locks, kill share 53 -> 49 %) and
    ON breaks three no-crossing tests (R46.18).
 3. **The tighter group file he picked: keep today's spacing (recommended).** Packing halves the line but the last squad gets in 1-2 s LATER
@@ -40,7 +37,7 @@ builder0 / builder3. Laptop 81 %. Main is unpushed (he pushes).
 | (found on the way) | **dry_hop SHIPPED ON** (R46.21) | a crew weaving under fire never reverses into water (both sides) |
 | His scout's short moves (Gorge) | **shortfwd SHIPPED ON** (R46.25, ruled under C46.2) | a short click inside a wheeled crew's turning circle drives toward it instead of backing away first; never worse on any cell. `--traffic-off=shortfwd` |
 | Street mouths (rounds 43-45) | **holdway SHIPPED ON for the native game, OFF on web** (R46.27/35) | a side-street squad no longer sits jammed ~30 s; head-on brushes 47 -> 10. `--traffic-off=holdway` |
-| Camera: one planner, no special cases | **Built, judged, OFF; his call** (Bar C1 37/38, R46.20/23) | today's camera until he says yes (question 1 above) |
+| Camera: one planner, no special cases | **SHIPPED ON on his word** (Bar C1 37/38, R46.20/23/37) | his squads and their street stay in view, buildings in the way half as often; a rear ambush turns into view ~2 s later. `--camera-planner=off` |
 | Tighter group file (his pick) | **OFF; back to him** (R46.36) | today's spacing (question 3) |
 | Settle where he clicks | **S v6 FAILED, OFF** (R46.17) | today's |
 

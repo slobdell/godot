@@ -1,6 +1,6 @@
 # Workstreams: the current round
 
-> **ROUND 46 CLOSED 2026-10-30 (five streams, all Opus; main 7eec72b37 GREEN builder3 3517/0 ALL JUDGED).** Shipped ON: the veto (V1), the lane move (L1c), shortfwd, holdway (native ON / web OFF). OFF or his call: the camera planner (R46.23), S v6, the tighter file (R46.36). Round 47 is prepared from HANDOFF's NEXT box.
+> **ROUND 46 CLOSED 2026-10-30 (five streams, all Opus; main 7eec72b37 GREEN builder3 3517/0 ALL JUDGED).** Shipped ON: the veto (V1), the lane move (L1c), shortfwd, holdway (native ON / web OFF). Then (his call, R46.37) the camera planner ON. OFF: S v6, the tighter file (R46.36). Round 47 is prepared from HANDOFF's NEXT box.
 
 ## Round 46: five streams (prepared 2026-10-30; CLOSED 2026-10-30; briefs in `streams/archive/round46/`)
 
@@ -387,6 +387,11 @@ _(filed here BEFORE any number; newest first)_
 ## Rulings (round 46)
 
 _(newest first)_
+
+- **R46.37 (2026-10-30 ~09:50, after the close) His answer: the camera planner ships ON.** His words in `game_design.md` *His answer on the
+  camera planner*. Merged `round46/camera` 856358b49 (code = 314c8005f, GREEN builder3 3485/0 ALL JUDGED: 796ecfc31's flip + the dial
+  scaling bf4b0c7a5 + R46.29's test line + 569064eb9 no edge pan headless) into main e306ce27f; main's check on builder3. C1 v2 (the rear
+  ambush without losing the building win) is round 47's camera starting point.
 
 - **R46.36 (2026-10-30 ~09:00) The tighter file (V4 / Bar V2) stays OFF: it makes the group arrive LATER; back to him.** Dev only (builder0,
   n 1 a cell, base = main with the veto ON): factor 0.5 (dc452f797): depth behind the click 50.0 -> 25.1 m (his Gorge 65.5 -> 39.8 m), all-in

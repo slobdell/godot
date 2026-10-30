@@ -4665,3 +4665,11 @@ the way").
    squad's block is 33-50 m deep). How should that feel?"* **His pick: "Tighter (Recommended)"** — "Squads pack closer (roughly half
    the length): the whole group is at your click sooner and fights together, at the cost of a bit more bumping in tight spots."
    -> orders' V2 (R46.2): the group's halt file about half today's length (target: a 3-squad file <= ~50 m, a 4-squad <= ~75 m).
+
+## His answer on the camera planner (2026-10-30 ~09:50, after round 46's close, verbatim)
+
+> "can't you just turn on the new camera planner by default?"
+
+Taken as yes to R46.23's question (the trade stated: his squads and their street in view, buildings in the way half as often; an ambush
+from behind shown ~2 s later). Shipped: `round46/camera` merged at 856358b49 (= 314c8005f GREEN builder3 + docs), main e306ce27f;
+`--camera-planner=off` is round 45's camera (R46.37).
