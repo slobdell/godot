@@ -1,0 +1,3 @@
+3475 passed, 0 failed
+>> builder: make check exited 0 (log /home/slobdell/tank_squad/remote-logs/godot-manoeuvre-a6-check-20261030-033845-2025317.log)
+>> remote: make check exited 0 (build/ copied back)
