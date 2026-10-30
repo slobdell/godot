@@ -327,3 +327,15 @@ evidence filed under `references/round46/manoeuvre/barssf-builder3-cec4e499f/`. 
   `test_on_by_default`). Laptop `make test FILTER='short_move|test_traffic'` 130 / 0. Its full check runs on builder3
   (`~/overnight-manoeuvre/r46/check_sfon/`). The rule reads only HIS direct order, so the CPU-v-CPU sim baseline should not move.
 - **A6 v5:** frozen 258ce00f0 GREEN builder0 (exited 0, 3475 / 0, sim-baseline unmoved); series launched 04:33 on builder0 light (L1 ended).
+
+### Combined ship candidate (R46.25 shortfwd + R46.27 holdway), 05:05 PDT
+
+- `wip/manoeuvre-shortfwd-on` **39b6c7aa5** = 11ff6586c + `holdway` out of `Traffic.DEFAULT_OFF` (`--traffic-off=holdway` the escape) +
+  `test_traffic_holdway_squad_way::test_on_by_default` (engage's `test_engage_hold_way` default test already accepts ON: no edit in engage's
+  paths). Laptop holdway + hold + traffic + short_move tests 141 / 0. 11ff6586c's check never started (stopped while queued). 39b6c7aa5's
+  full check waits on builder3's lock (`~/overnight-manoeuvre/r46/check_ship/`). Holdway reads the CPU's squads too (C46.6): the sim
+  baseline may move; the orchestrator adopts.
+- **Smoke shots (player's eye) of shortfwd: attempted, nothing usable.** The laptop's GDScript replay of his Gorge match diverges (the scout
+  is dead at t1322, before his 83.7 s click); the windowed replay on builder0 (native) diverged too (the OFF arm ended in DEFEAT by t2528)
+  and the camera never framed the scout. The evidence is the staged corpus (his poses from the native replay's trace) and its rows, not
+  a picture. A faithful windowed replay of his Gorge game is a native/orders tooling question (round 47), not this stream's.
