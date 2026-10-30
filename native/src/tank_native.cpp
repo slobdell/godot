@@ -56,6 +56,7 @@ void TankNative::_bind_methods() {
 			"detour"), &TankNative::gate_width_edge);
 	ClassDB::bind_method(D_METHOD("untangle_whole", "starts", "anchors", "by_lead", "leads", "arcs", "misplaced", "slack"),
 			&TankNative::untangle_whole);
+	ClassDB::bind_method(D_METHOD("assign_least_total", "centers", "slots"), &TankNative::assign_least_total);
 	ClassDB::bind_method(D_METHOD("perception_configure", "config"), &TankNative::perception_configure);
 	ClassDB::bind_method(D_METHOD("perception_sight", "viewers", "enemies"), &TankNative::perception_sight);
 	ClassDB::bind_method(D_METHOD("perception_gun_ready", "viewers", "enemies"), &TankNative::perception_gun_ready);
