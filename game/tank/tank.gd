@@ -445,9 +445,12 @@ func _tick(delta: float) -> void:
 			# X2: a started burst is committed; its rounds follow burst_interval_s apart whatever the trigger does.
 			_burst_ticks -= 1
 			if _burst_ticks <= 0 and ammo != 0:
-				_burst_rounds_left -= 1
-				_burst_ticks = _ticks_of(float(weapon.get("burst_interval_s", 0.0)))
-				_fire_round()
+				if _burst_into_friend():
+					_burst_rounds_left = 0  # R46.26: a friend in the line ends the burst; the reload stands
+				else:
+					_burst_rounds_left -= 1
+					_burst_ticks = _ticks_of(float(weapon.get("burst_interval_s", 0.0)))
+					_fire_round()
 		elif cmd.fire and _reload_ticks <= 0 and ammo != 0 and _heat_allows_shot(heat) and is_deployed():
 			_reload_ticks = _ticks_of(reload_seconds)
 			_burst_rounds_left = maxi(1, int(weapon.get("burst_count", 1))) - 1
@@ -458,6 +461,29 @@ func _tick(delta: float) -> void:
 	_publish_state()
 	if publish_started > 0:
 		SimProfile.add("tank/publish_state", publish_started)
+
+
+## Round 46 (engage L1b, R46.26 granted, `--lane-clear`): the trigger checks the line of fire on a burst's FIRST round only
+## (Gunnery._clear_to_fire), so a hull pulling away mid-burst walked the later rounds into a squadmate (Bar L1, seed 11922:
+## 5 hits). With the lane rule on, each later round checks again, for a crew whose controller holds fire for friends.
+static var burst_friend_stops := 0
+
+
+func _burst_into_friend() -> bool:
+	if not TankBrain.LANE_CLEAR:
+		return false
+	var game_match := get_parent().get_parent() as Match if get_parent() != null else null
+	if game_match == null or game_match.brains == null:
+		return false
+	var controller := game_match.brains.get_node_or_null("Brain_" + String(name)) as OrderController
+	if controller == null:
+		controller = game_match.brains.get_node_or_null("Orders_" + String(name)) as OrderController
+	if controller == null or not controller.hold_for_friends:
+		return false
+	if FireLanes.for_shot(get_parent(), self, command.aim_point).is_empty():
+		return false
+	burst_friend_stops += 1
+	return true
 
 
 ## One round leaves the gun (a shell, a beam pulse, a burst round, a lobbed round).

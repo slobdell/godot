@@ -587,6 +587,10 @@ func _his_cap(cmd: TankCommand) -> void:
 	# drift that shot less (dev, 7003: 4.8 m and dead v 2.9 m), so a held crew keeps the creep as shipped.
 	if String(move_order.get("type", "")) != "stop":
 		return
+	# Round 46 (E6, R46.4): only the stop native hands back to GDScript, a fixed gun on wheels (`_stop_turn_in`'s case);
+	# native runs every other stop itself, so capping those here made the two paths differ (Bar E2b's G5, R45.29).
+	if tank.mount != "fixed" or movement.wheel_radius() <= 0.0:
+		return
 	var brain := self as TankBrain
 	if brain == null:
 		return

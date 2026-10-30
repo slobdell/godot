@@ -102,6 +102,61 @@ aren't ours; stop only by a PID you started (lesson 336).
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar L1c HIS IFV FINDS A LANE; A BURST NEVER WALKS INTO A SQUADMATE (engage; filed 2026-10-30 ~06:05 PDT in streams/engage.md and here, BEFORE any number on 12301-12348; R46.28).**
+
+  **The rule:** L1's lane move (CLEAR_LANE's edge after the order's base; the post step <= 4 m, R46.7; spots tested with the trigger's
+  geometry at the STANDING spread, rings 3 / 6 / 10 / 16 m, a wheeled hull's headings) + L1b's burst re-check (`Tank._burst_into_friend`,
+  R46.26: each later round of a burst checks the line; a friend in it ends the burst), all under `--lane-clear`. Both arms carry R46.19's
+  `dry_hop`. **Workload, arms, machine, the rule's case:** Bar L1b's exactly, seeds **12301-12348**; the frozen tree named when frozen
+  after its full check; builder0 light; native ON.
+
+  **Deciding (the rule's case):** D1 `held_s` paired mean ON - OFF < 0 by at least 1.645 se (one-sided); D2 `first_shot_s` ON sooner
+  or identical in >= 60 % of runs (strictly sooner reported).
+
+  **Guards:** G1 friendly fire by the crew: hits ON <= OFF + max(1, 1.645 sqrt(OFF)); kills ON <= OFF. G2 crew deaths ON <= OFF +
+  max(1, 1.645 sqrt(OFF)). G3 enemy hp left: paired mean ON - OFF <= +1.645 se. G4 post runs: every ON run's farthest from his post <= 5.5
+  m; held_s ON - OFF <= +1.645 se. G5 E2's authority probe (seeds 12301-12324, AUTH_ARM=on) `--lane-clear=off` v default: Bar E1's D1
+  (hold / stop moved <= 3.0 m), D2 (pushed rows 0), D3 (move ends) unchanged. G6 orders' default probe rows identical ON v OFF. G7
+  native's `test_native_decide` equality on the frozen tree.
+
+  **Reported:** held_s by mode; moved_m; shots; feed lines; bursts ended by a friend. A pass ships ON; a fail goes to him in player
+  terms the same hour (the orchestrator may ship the feed line and the burst re-check alone: separable, `hud_messages.gd` + its test,
+  `tank.gd`'s burst branch + `tests/test_fire_lanes_burst.gd`).
+
+- **Bar L1b VERDICT (2026-10-30 ~05:50 PDT): FAILS as filed on D1** (c0affabe0's code, series tree dcabca4dc = + a brief-only docs
+  commit, builder0 light, native on, 11949-11996, 48 paired, 0 errors). **D1 FAIL** (rule's case n 38: held 17.54 -> 18.28 s, +0.74,
+  se 1.02); D2 PASS (31/38 sooner or identical, 8 strictly); G1 PASS (friendly hits 4 -> 1, kills 0 / 0); G2 1 / 1; G3 hp 0.72 ->
+  0.74; G4 post max 5.3 m. G5 / G6 not run. Cause: spots kept clear by the MOVING spread rarely exist in a crowd (no step); the burst
+  re-check is what removed L1's friendly fire. Proposed L1c: L1's spot test + L1b's burst re-check, fresh seeds (the orchestrator's
+  ruling). Evidence `~/overnight-engage/r46/barl1b/` (laptop).
+
+- **Bar L1b HIS IFV FINDS A LANE AND NEVER FIRES INTO A SQUADMATE (engage; filed 2026-10-30 ~05:40 PDT in streams/engage.md and here, BEFORE any number on 11949-11996; R46.24: a new filing, not an amendment of L1).**
+
+  **What changed since L1:** (1) lane spots are kept clear by the MOVING spread (`TankBrain._lane_spread`); (2) under `--lane-clear`,
+  each later round of a burst re-checks the line and a friend in it ends the burst (`Tank._burst_into_friend`, R46.26). Both arms
+  carry R46.19's `dry_hop` (unswitched). **Workload, arms, machine:** Bar L1's exactly (`make engage-lane-bar`, `tests/engage/lane_probe.gd`,
+  `lane_table.py --pair`), seeds **11949-11996**, OFF = `--lane-clear=off`, ON = default, one frozen tree (named when frozen, after its
+  full check), builder0 light (or builder3 light), native ON. **The rule's case** = attack and cpu runs blocked in OFF.
+
+  **Deciding (the rule's case):** D1 `held_s` paired mean ON - OFF < 0 by at least 1.645 se (one-sided); D2 `first_shot_s` ON sooner
+  or identical in >= 60 % of runs (strictly sooner reported).
+
+  **Guards (all 48 unless named):** G1 friendly fire by the crew: hits ON <= OFF + max(1, 1.645 sqrt(OFF)); kills ON <= OFF. G2 crew
+  deaths ON <= OFF + max(1, 1.645 sqrt(OFF)). G3 enemy hp left: paired mean ON - OFF <= +1.645 se. G4 post runs: every ON run's farthest
+  from his post <= 5.5 m; held_s ON - OFF <= +1.645 se. G5 his order to a crew (C46.3): E2's authority probe (`make engage-authority-probe`,
+  seeds 11949-11972, AUTH_ARM=on) with `--lane-clear=off` v default: Bar E1's D1 (hold / stop moved <= 3.0 m), D2 (pushed rows 0), D3
+  (move ends) unchanged. G6 orders' default probe (`make orders-probe`, default cells) rows identical ON v OFF. G7 C46.4: native's
+  `test_native_decide` equality on the frozen tree (native re-proves).
+
+  **Reported:** held_s by mode; moved_m; shots; feed lines; `Tank.burst_friend_stops`. A pass ships ON; a fail goes to him in player
+  terms the same hour and the default turns OFF before any merge.
+
+- **Bar L1 VERDICT (2026-10-30 ~04:50 PDT): FAILS as filed on G1** (frozen fa9c6ff3a, builder0 light, native on, 11901-11948, 48
+  paired, 0 errors). D1 PASS (rule's case n 40: held 20.79 -> 16.94 s, -3.84, se 1.27); D2 PASS (35/40 sooner or identical, 12
+  strictly); **G1 FAIL: friendly-fire hits 1 -> 6** (bar 2.6; kills 0 -> 0; 5 in seed 11922: a law_ifv's 4-round burst checked on its
+  first round only, the hull pulled away mid-burst from a spot clear by the standing spread); G2 0 / 0; G3 hp 0.79 -> 0.72; G4 post max
+  4.6 m. G5 / G6 not run. Not shipped (R46.24); L1b below. Evidence `~/overnight-engage/r46/barl1/` (laptop).
+
 - **Bar V2 FILED (orders, stream/orders 0989a4504, before any number on 11849-11896; the tighter file, R46.2; recorded verbatim by the
   orchestrator).** Verbatim from the brief:
 
@@ -127,7 +182,7 @@ _(filed here BEFORE any number; newest first)_
   > - **Ship rule:** ON (`GROUP_PACK` default flipped, `--group-pack=off` the escape) if every line passes; any FAIL -> what he would see
   >   ON v OFF in player terms to the orchestrator the same hour (C46.2).
 
-- **FILED. Bar C1, ONE planner places the camera (camera; FILED in stream/camera Status 2026-10-30 ~03:30, before any number on 12201-12248; candidate commit 3bf76e839, its full check on builder3 running at filing).**
+- **FAILED (37 of 38 lines: G7 ambush REAR lane latency only; read 2026-10-30 03:42). Bar C1, ONE planner places the camera (camera; FILED in stream/camera Status 2026-10-30 ~03:30, before any number on 12201-12248; candidate commit 3bf76e839, its full check on builder3 running at filing).**
   Switch `--camera-planner` (OFF; ON on a pass; `=off` = today's camera: vision frame + danger look). CameraPlanner (one cost over
   13 headings x {tight, wide} frames: his selection, its path ahead, the contacts that matter, sight rays to his crews and path
   past the drawn solids, the arena's floor, the war's direction, the clearance lift, the turn, the distance; a per-pose cost
@@ -160,6 +215,15 @@ _(filed here BEFORE any number; newest first)_
   ~/camera-r46/barc1 --budget-ms <mean> <p99>` (every line above, PASS/FAIL, VERDICT). Series: `~/camera-r46/barc1.sh` (both arms
   from the worktree frozen at the candidate; docs and the judge only after it).
   **If it fails** (C46.2): in player terms, what he would see ON v OFF, to the orchestrator the same hour.
+  **READ (as filed, 3bf76e839 GREEN builder3 3483/0; series 03:25-03:42 builder3 J8, 0 runs lost; judge
+  `tests/camera/bar_c1.py`, verdict in `references/round46/camera/barc1-verdict-builder3-3bf76e839.txt`):** D1 hidden while driving
+  1011.1 -> 503.8 s PASS; D2 none on screen 31.6 -> 10.9 s PASS; D3 latency mean 0.14 -> 0.06 s, p90 0.00 PASS; D4 hits off screen
+  1.9 -> 2.0 % PASS; G1 jerks 0.48 -> 0.34/min, snaps 0, worst source planner 0.94/min PASS; G2 clicks 80.4 -> 77.7 %, slip p95 29.5 ->
+  28.6 px, held 16.3 -> 15.7 % PASS; **G3 action share 57.3 -> 51.1 % PASS** (the dev read's risk did not hold); G4 reversals and G5
+  own on screen better on every workload; G6 inside a solid 0.64 -> 0.19 s/run PASS; G8 laptop 0.358 ms / p99 0.93 PASS; G9 PASS.
+  **G7 FAIL: AMBUSH REAR lane first shot -> shooter on screen mean 4.72 -> 9.17 s (never = 20; BASE 37 episodes 4 never p50 1.8 s;
+  ARM 28 episodes 9 never p50 3.5 s)**; rear blind % of fire 14.8 -> 11.6 PASS; retreat latency 8.33 -> 8.05, blind 6.6 -> 6.8, wall
+  0.0 -> 0.1 PASS. (Side lanes, reported: left 5.35 -> 3.03 s, right 1.43 -> 0.68 s.)
 
 - **Bar shortfwd FILED (manoeuvre, 2026-10-30 ~03:10 PDT, stream/manoeuvre 34ed9ac66, before any number on 12121-12144; frozen
   wip/manoeuvre-shortfwd-bar cec4e499f = native pair 4ac0236bd + SHORT_POSES; recorded verbatim by the orchestrator).** Verbatim:
@@ -316,6 +380,55 @@ _(filed here BEFORE any number; newest first)_
 ## Rulings (round 46)
 
 _(newest first)_
+
+- **R46.32 (2026-10-30 ~06:30) L1c SHIPPED ON: main 0471b8e14 = + engage 1dd227534.** G5 PASS (E2's authority probe 12301-12324, 24/24 seeds
+  identical on every field, pushed rows 0, stop max 5.1 m both arms); G6 PASS (orders' default probe 48/48 rows byte-identical). Sim-baseline
+  adoption (docks, gorge, locks, parade, pit, terminus, yard_open) by the orchestrator next. **R46.30 corrected (native):** holdway ON has NO
+  twin gap: both twin reds were the harness (the static `_squad_ways` memo not restored between arms); with it treated as a cache, backout
+  1191 / 0 and backout_stall 1189 / 0 drives on 39b6c7aa5; Bar A6 v5 measured the drive he plays. Native re-stages the four scene tests on
+  pair/native-holdway for manoeuvre's holdway ship candidate.
+
+- **R46.31 (2026-10-30 ~06:20) Bar L1c PASSES (G4 ruled on an exact tie, as R45.23); ships ON when G5/G6 read.** Frozen 1dd227534,
+  builder0 light, native on, 12301-12348, 48 paired, 0 errors. D1 held for a friend 15.53 -> 10.65 s (-4.2 se; attack 14.0 -> 6.6, cpu
+  7.7 -> 5.1, post 18.1 -> 15.6); D2 31/41 sooner or identical (11 strictly); G1 friendly hits 9 -> 4, kills 0/0; G2 deaths 2 -> 1; G3 enemy
+  hp 0.62 -> 0.53; G7 native EQUAL. **G4's literal "every ON run <= 5.5 m from his post" reads 10.1 m on ONE run (12328, Locks, gang_tank,
+  post) that is byte-identical in BOTH arms (no lane step; held 0.3 s both)**: not the rule's move, so ruled a tie, not a loss (lesson
+  344); every move the rule caused is <= 5.4 m; G4's held line -2.52 (se 1.34) PASS. **Filed for round 47 (engage):** why a crew at his
+  post drifts 10.1 m with no lane step (12328) — an E2 post-hold gap the bar exposed. Ship = 1dd227534 (code 40d0234f5) when G5 (E2's
+  authority probe) and G6 (orders' default probe) pass; the orchestrator adopts the sim-baseline (docks, gorge, locks, parade, pit,
+  terminus, yard_open) after the merge. Shots 10.8 -> 22.3 a run; 34 feed lines in 23 runs.
+
+- **R46.30 (2026-10-30 ~05:45) Holdway ON has a twin gap; shortfwd ships alone first.** Manoeuvre's combined candidate 39b6c7aa5
+  (shortfwd + holdway ON) RED builder3: 3473 / 6 + sim-baseline moved on all 13 arenas; all six from holdway ON (shortfwd-only 11ff6586c:
+  26/0). Two are twin tests (test_native_drive_backout, test_native_drive_backout_stall: GDScript drive != C++ drive under holdway ON,
+  "expected 0, got 14/21"): Traffic.refresh reads Movement members (_goal, _path, via _travel_direction / squad_way) that the C++ drive may
+  own or leave stale; R46.14's no-twin read covered Traffic's state only. Four are staged scenes holdway changes (re-stage). Shortfwd ships
+  alone (11ff6586c, check running); holdway ON waits for native's twin + the re-staged tests. Native says whether Bar A6 v5 (native ON)
+  measured the drive he plays.
+
+- **R46.29 (2026-10-30 ~05:30) Camera's planner merged OFF; the ON candidate needs one line in orders' test.** stream/camera 21fb16fc1
+  (planner OFF, GREEN builder3 3484/0 ALL JUDGED) merged into main 830787b38 (Bar C1's verdict block carried in 1a275c550); one main check
+  of the batch on builder3 (`merge_check_needed` CHECK: main had moved). The ON candidate ee291bcc4 is RED on builder3 (3483/1,
+  deterministic): test_control_dials::test_the_rig_frames_with_its_inset reads 0.59 v 0.59 because with the planner group 1's frame needs
+  > 100 m at both insets (the auto frame's cap; the planner keeps his crews above the command card); passes on the laptop (no native build,
+  spawn differs). GRANT camera one line in orders' tests/test_control_dials.gd (`f.rig.auto_frame_max_m = RtsCamera.MAX_DISTANCE` before
+  the first recall). The ON flip merges only on his yes (R46.23).
+
+- **R46.28 (2026-10-30 ~05:50) Bar L1b FAILS as filed on D1 (no gain); L1c on 12301-12348.** c0affabe0's code (series tree dcabca4dc =
+  + docs), builder0 light, native on, 11949-11996, 48 paired, 0 errors: D1 held for a friend 17.54 -> 18.28 s (+0.74, se 1.02) FAIL; D2
+  31/38 sooner or identical PASS; G1 friendly hits 4 -> 1 PASS; G2 1/1; G3 0.72 -> 0.74; G4 post max 5.3 m. Cause: spots clear by the MOVING
+  spread are so few in a crowd that the crew steps aside about as rarely as today; the burst re-check is what stops rounds into a friend.
+  **L1c:** L1's spot test (standing spread, which won D1 at -3.0 se) + L1b's per-round burst re-check (which removes L1's G1 cause); same
+  lines as L1b incl. G5/G6/G7; seeds 12301-12348 (new block; 11801-12296 are spoken for). One more try this round; if it fails, the feed
+  line and the burst re-check are considered on their own.
+
+- **R46.27 (2026-10-30 ~05:05) Bar A6 v5 (holdway) FAILS as filed on guard 2b alone; SHIPPED ON by the orchestrator under C46.2 /
+  lesson 339 (its fourth bar).** 258ce00f0 GREEN builder0 (3475/0), 12049-12096, n 24, native ON, 0 SCRIPT ERROR (stream/manoeuvre
+  95f44597f; `references/round46/manoeuvre/barsa6v5-builder0-258ce00f0/`). PASS: deciding side-street jam 397 -> 34 s (-30 s a run, z
+  -5.5); off_arrive -1.5; head-on verdicts 12 = 12; mouth contacts 720 -> 580; far contacts 47 -> 10 (A6 v4's miss); last crew in +0.5 s
+  (noise); E1 lines identical. **FAIL 2b** head-on held_on 498 -> 868 crew-s (+30.8 a run, z +2.50 v +2). Ruled ON: 2b is a mechanism
+  line (crews held), the outcome lines it protects (arrival, last crew in, contacts) all hold or improve; what he sees is a side street
+  that no longer jams ~30 s and fewer brushes at a head-on meeting. Twin-free (R46.14). `--traffic-off=holdway` the escape.
 
 - **R46.26 (2026-10-30 ~05:20) GRANT engage `game/tank/tank.gd`'s burst branch (L1b part 2).** A started burst's later rounds fire from
   Tank._physics with no trigger (X2, ~:444); Gunnery.apply is C++ (gun_native) and gates only the first round. Under TankBrain.LANE_CLEAR
