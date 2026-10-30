@@ -381,6 +381,13 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.32 (2026-10-30 ~06:30) L1c SHIPPED ON: main 0471b8e14 = + engage 1dd227534.** G5 PASS (E2's authority probe 12301-12324, 24/24 seeds
+  identical on every field, pushed rows 0, stop max 5.1 m both arms); G6 PASS (orders' default probe 48/48 rows byte-identical). Sim-baseline
+  adoption (docks, gorge, locks, parade, pit, terminus, yard_open) by the orchestrator next. **R46.30 corrected (native):** holdway ON has NO
+  twin gap: both twin reds were the harness (the static `_squad_ways` memo not restored between arms); with it treated as a cache, backout
+  1191 / 0 and backout_stall 1189 / 0 drives on 39b6c7aa5; Bar A6 v5 measured the drive he plays. Native re-stages the four scene tests on
+  pair/native-holdway for manoeuvre's holdway ship candidate.
+
 - **R46.31 (2026-10-30 ~06:20) Bar L1c PASSES (G4 ruled on an exact tie, as R45.23); ships ON when G5/G6 read.** Frozen 1dd227534,
   builder0 light, native on, 12301-12348, 48 paired, 0 errors. D1 held for a friend 15.53 -> 10.65 s (-4.2 se; attack 14.0 -> 6.6, cpu
   7.7 -> 5.1, post 18.1 -> 15.6); D2 31/41 sooner or identical (11 strictly); G1 friendly hits 9 -> 4, kills 0/0; G2 deaths 2 -> 1; G3 enemy
