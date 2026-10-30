@@ -57,6 +57,21 @@ var _lane_hold_left := 0
 ## Seconds of game time the current apply() covers (one tick, or a whole controller stride).
 var _seconds := 0.0
 
+## Round 47 (engage E1), MEASUREMENT ONLY: `--gun-trace=<name substring|all>` prints one GUN_TRACE line per run of the
+## gun for the named crews (on every change of its gates, and every GUN_TRACE_EVERY ticks): the weapon order, the pick,
+## each gate (seen, line of sight, range, aim, lay, discipline, loaded, lane) and the trigger. Reads only; default off.
+static var GUN_TRACE := _gun_trace_flag()
+const GUN_TRACE_EVERY := 15
+var _gun_trace_key := ""
+var _gun_trace_tick := -1000
+
+
+static func _gun_trace_flag() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if String(arg).begins_with("--gun-trace="):
+			return String(arg).trim_prefix("--gun-trace=")
+	return ""
+
 ## The four things read from the composer, by name, so the rules below read as they always did.
 var tank: Tank:
 	get:
@@ -117,6 +132,8 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	if tank.weapon["kind"] == Weapons.Kind.ARC:
 		_apply_indirect(cmd)
 		return
+	if GUN_TRACE != "" and String(weapon_order["type"]) in ["aim", "suppress"]:
+		_gun_trace_pick(null)
 	match weapon_order["type"]:
 		"aim":
 			_cover(Vector3(weapon_order["x"], 0.0, weapon_order["z"]), cmd)
@@ -135,6 +152,8 @@ func _apply_weapon(cmd: TankCommand) -> void:
 				elif weapon_order.get("fallback", false):
 					target = _scanned_shootable()
 	lap = OrderController._lap("weapon.scan", lap)
+	if GUN_TRACE != "":
+		_gun_trace_pick(target)
 	if target == null:
 		# N5: nothing to lay on — the gunner's lay on the last contact bleeds off (it is not wiped, so a target that
 		# ducks behind a crate for a moment is re-acquired from where he left it).
@@ -182,7 +201,80 @@ func _apply_weapon(cmd: TankCommand) -> void:
 			tank.global_position.distance_to(target.global_position), _seconds_step(),
 			bool(weapon_order.get("long_shot", false)))
 	cmd.fire = _clear_to_fire(envelope and in_range and aimed and tank.ready_to_fire(), aim)
+	if GUN_TRACE != "":
+		_gun_trace_gates(target, distance, in_range, muzzle, aim, envelope, cmd.fire)
 	OrderController._lap("weapon.lanes", lap)
+
+
+## Round 47 (engage E1), MEASUREMENT ONLY: the pick and why the order's target was not it (see GUN_TRACE).
+var _gun_trace_row := {}
+
+
+func _gun_trace_on() -> bool:
+	return GUN_TRACE == "all" or String(tank.name).contains(GUN_TRACE)
+
+
+func _gun_trace_pick(target: Tank) -> void:
+	_gun_trace_row = {}
+	if not _gun_trace_on():
+		return
+	var row := {"n": String(tank.name), "wo": String(weapon_order.get("type", "")), "wo_name": String(weapon_order.get("name", "")),
+			"fallback": bool(weapon_order.get("fallback", false)), "long_shot": bool(weapon_order.get("long_shot", false)),
+			"pick": String(target.name) if target != null else ""}
+	var named_name := String(weapon_order.get("name", ""))
+	if named_name != "" and tanks_root != null:
+		var named := _named_tank(named_name)
+		if named == null or not named.is_alive():
+			row["named"] = "dead"
+		else:
+			var d := tank.global_position.distance_to(named.global_position)
+			row["named"] = {"d": snappedf(d, 0.1), "range": float(tank.weapon["range"]),
+					"seen": Engagement.is_seen(tank, named, spotter), "los": Perception.has_line_of_sight(tank, named)}
+	# The nearest living enemy, whatever the gates say: what a player would call "the one right there".
+	var nearest: Tank = null
+	var nearest_d := INF
+	for enemy: Tank in _enemies():
+		var d := tank.global_position.distance_to(enemy.global_position)
+		if d < nearest_d:
+			nearest_d = d
+			nearest = enemy
+	if nearest != null:
+		row["nearest"] = {"n": String(nearest.name), "d": snappedf(nearest_d, 0.1), "seen": Engagement.is_seen(tank, nearest, spotter),
+				"los": Perception.has_line_of_sight(tank, nearest)}
+	row["ready"] = tank.ready_to_fire()
+	_gun_trace_row = row
+	if target == null:
+		_gun_trace_print("")
+
+
+func _gun_trace_gates(target: Tank, distance: float, in_range: bool, muzzle: Vector3, aim: Vector3, envelope: bool, fired: bool) -> void:
+	if _gun_trace_row.is_empty():
+		return
+	var row := _gun_trace_row
+	row["d"] = snappedf(distance, 0.1)
+	row["in_range"] = in_range
+	row["aim_err"] = snappedf(rad_to_deg(Ballistics.aim_error(muzzle, tank.turret_forward(), aim)), 0.1)
+	row["aim_tol"] = float(tank.weapon["aim_tolerance_deg"])
+	row["lay"] = snappedf(engagement_lay.progress, 0.01)
+	row["lay_need"] = snappedf(Engagement.acquire_seconds(tank, target, tank.global_position.distance_to(target.global_position)), 0.01)
+	row["envelope"] = envelope
+	row["supp"] = snappedf(tank.suppression, 0.01)
+	row["lane"] = lane_blocker if lane_blocked_ticks > 0 else ""
+	row["fire"] = fired
+	_gun_trace_print("fire" if fired else "")
+
+
+func _gun_trace_print(extra: String) -> void:
+	var brain := ctl as TankBrain
+	var tick: int = brain.game_match.tick if brain != null and brain.game_match != null else -1
+	var row := _gun_trace_row
+	var key := JSON.stringify(row.duplicate().merged({"aim_err": null, "lay": null, "d": null, "named": null, "nearest": null, "supp": null}, true))
+	if extra == "" and key == _gun_trace_key and tick - _gun_trace_tick < GUN_TRACE_EVERY:
+		return
+	_gun_trace_key = key
+	_gun_trace_tick = tick
+	row["t"] = tick
+	print("GUN_TRACE ", JSON.stringify(row))
 
 
 ## L2 (X3): fire at a piece of ground. No target, no lead, no line-of-sight-to-an-enemy check — just the gun on the
