@@ -292,6 +292,17 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.23 (2026-10-30 ~04:20) C1 v2 is a trade-off, not a fix: no v2 bar; the planner ON v OFF goes to him.** (Bar C1's verdict commit is
+  93971782f, not 0f04dba1d.) Cause of G7, traced frame by frame (builder3, dev): today's camera turns toward KNOWN enemies before they
+  fire; the planner's wide frame counted contacts behind his squad as on screen at the bottom edge, waited for the shot, then needed ~4 s
+  for a 180-degree turn at the glide's 45 deg/s. The honest fix (guns judged as the danger camera judges them; contacts behind never
+  "shown") brings the rear lane to about today's (4.3 v 3.4 s mean, dev 7001-7036) but gives back the building win (hidden while driving
+  34 % v today's 36 %; v1 16 %): facing the enemies behind turns the view across the blocks. Lighter contacts and a bisect found no
+  middle. v2 parked as dev knobs, OFF; stream/camera 21fb16fc1's `--camera-planner=on` byte-identical to what Bar C1 read (seed 12201
+  re-run, identical trace), its check running. **His question (recommended first): keep the new camera ON (squads and street in view,
+  buildings in the way half as often; a rear ambush shown ~2 s later than today; `--camera-planner=off` the escape), or keep today's.**
+  D4's 2 % v his 27 %: same measure, different play (he had zoomed in by hand with a lone scout selected while the army fought elsewhere).
+
 - **R46.22 (2026-10-30 ~04:25) E6 (the stop cap) DROPPED under R46.4: no case to fix.** Engage built the one-condition fix (fixed gun on
   wheels only; 894f561dd, opt-in) and a stage (`--e6-stage=on`: a lone fixed-gun scout, his STOP, the enemy 100-150 deg off its nose in
   reach). Dev read builder0 light, efe4d8ba9's code, 7001-7012, n 9 standing stages: cap OFF farthest roll after his stop <= 3.2 m (7 of 9
