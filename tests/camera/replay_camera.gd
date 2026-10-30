@@ -11,7 +11,7 @@ extends "res://tests/replay_orders.gd"
 ##     (under the rig's HOVER_HOLD_S, so the aim hold applies as it did for him), every cycle; each order is a click (it
 ##     spends the aim). `--camera-hand=off`: no mouse at all (round 46's replay: no aim hold, no hand pace).
 ## Every SAMPLE_TICKS it prints
-##   CAMK {"tick", "sel": [names], "centre": [x, z], "look": [x, z], "gap", "dist", "mode", "holding", "urgent"}
+##   CAMK {"tick", "sel": [names], "centre": [x, z], "look": [x, z] (shown), "goal": [x, z] (wanted), "goal_gap", "gap", "dist", "mode", "holding", "urgent"}
 ## and CAMK_SEL {"tick", "units", "gap"} at each selection change; tests/camera/k1_gap.py adds them up.
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/camera/replay_camera.gd -- --orders=<his.jsonl>
 ##         --seconds=N --record-dir=DIR --camera-screen=1920x1080 [--camera-hand=model|off] [any switch]
@@ -107,5 +107,6 @@ func _sample() -> void:
 		_last_names = names
 		print("CAMK_SEL " + JSON.stringify({"tick": _match.tick, "units": names, "gap": snappedf(gap, 0.1)}))
 	print("CAMK " + JSON.stringify({"tick": _match.tick, "sel": names, "centre": [snappedf(centre.x, 0.1), snappedf(centre.z, 0.1)],
-			"look": row["target"], "gap": snappedf(gap, 0.1), "dist": row["dist"], "mode": row["mode"], "holding": rig.holding,
+			"look": row["target"], "goal": [snappedf(rig.focus.x, 0.1), snappedf(rig.focus.z, 0.1)],
+			"goal_gap": snappedf(Vector2(rig.focus.x, rig.focus.z).distance_to(Vector2(centre.x, centre.z)), 0.1), "gap": snappedf(gap, 0.1), "dist": row["dist"], "mode": row["mode"], "holding": rig.holding,
 			"urgent": rig.planner_urgent}))
