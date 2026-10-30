@@ -813,3 +813,20 @@ seeds could go either way. E1's G3 take-back FAIL (35/38 v 38/40) is a count, **
 changes take-back at all (R45.19 traced the one run it does make worse, 11326). S v5's Locks wedged FAIL (-1.20 se) and G2's part C fights PASS (+0.85 se) are also within
 1.645 se; clear of it: S v5's Crossing yield + blocked FAIL (-2.10 se) and A6 v4's deciding PASS (+3.60). `probes.py` gains nothing:
 no round-45 pair's rows are probe rows on main.
+
+## Round 46's lines (2026-10-30, native, close step 5b)
+
+`tools/judge/lines_r46.py`: 64 lines, every number quoted from *Bars (round 46)* and *Rulings (round 46)* (nothing re-measured):
+Bar S v6 (10; FAILS four lines, OFF, R46.15 / R46.17), Bar C1 (8; FAILS G7 rear lane only, OFF, R46.20), E6 (1 dev read; dropped,
+R46.22), Bar V1 (8; PASSES, the veto-only group guard SHIPPED ON 12bd0c68f, R46.33; Crossing's first-waypoint re-deal reported),
+V2 (1 dev read; not run, `--group-pack` stays OFF, back to him, R46.36), Bar L1 (6; FAILS G1 friendly fire, R46.24), Bar L1b (6; FAILS
+D1, R46.28), Bar L1c (10; PASSES with G4 on an exact tie, G5 / G6 / G7 PASS, SHIPPED ON 1dd227534, R46.31 / R46.32), Bar shortfwd (6;
+FAILS D1 alone, diluted, SHIPPED ON under C46.2, R46.25) and Bar A6 v5 (8; FAILS guard 2b alone, SHIPPED ON, R46.27; web export OFF,
+R46.35). An se is derived only where a ruling printed the paired difference AND its z (se = d / z). `inventory.py` ->
+`references/round46/sizing/inventory.{csv,md}` (845 lines, 343 with a noise estimate); `table.py` -> `table.csv` there, **no table
+change** (no round-46 pair's rows are probe rows on main). Ten of the round's lines carry noise and **none is inside it**. Within 1.645
+se of going the other way: **S v6's Crossing yield + blocked FAIL (-0.10 se)**, the round's closest line, then S v6's Locks yield +
+blocked FAIL (-0.20), **shortfwd's D1 FAIL (-0.41 se: -1.6 se v the -2 se line; 9 of 12 cells identical in both arms)**, A6 v5's guard
+2b FAIL (-0.50) and L1's D1 PASS (+1.35). So two of the three rules shipped ON under C46.2 (shortfwd, holdway) failed on lines that
+another seed set could pass. Clear of the noise: L1b's D1 FAIL (-2.37), L1c's D1 PASS (+2.56) and held line (+3.53), A6 v5's deciding
+PASS (+3.50), S v6's D1 PASS (+5.90). `probes.py` gains nothing.
