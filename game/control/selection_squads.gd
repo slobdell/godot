@@ -2107,9 +2107,11 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 #
 # "Squads pack closer (roughly half the length): the whole group is at your click sooner and fights together, at the cost of a bit
 # more bumping in tight spots." The step between one rank of a group's file and the next (today: the deepest halt + GAP_M, 33-50
-# m, so a 3-4 squad file is 66-150 m) is PACK_FACTOR of today's behind the second rank, never under GAP_M (the lay's own gap). The step from the FRONT rank keeps today's room: at a neck
-# (his Gorge click) a packed second rank stood inside the front squad's halt and the front squad never settled (laptop, 7001). The same layout, shorter: today's `ranks` (rank_slots_for), the column (column_lay) and the
-# fitted body's seats (guard_lay: the veto's seats). `--group-pack=on` / GROUP_PACK=on; OFF until Bar V2 passes.
+# m, so a 3-4 squad file is 66-150 m) is PACK_FACTOR of today's, never under GAP_M (the lay's own gap); the step from the FRONT
+# rank never stands inside the front squad's halt (`pack_front_step`). The same layout, shorter: today's `ranks` (rank_slots_for),
+# the column (column_lay), the fitted body's seats (guard_lay) and the veto's seats. `--group-pack=on` / GROUP_PACK=on; OFF until
+# Bar V2 passes. Dev reads (builder0, dc452f797, 7003 / 7004): the depth halves (50 -> 25 m) but the group arrives later and bumps
+# more (all-in 20.8 v 19.3 s, contacts 59.6 v 41.9 a run, wedged 94.5 v 60.1 crew-s): see the brief's Status.
 static var GROUP_PACK := pack_default()
 ## (dev knob) `--group-pack-factor=F` reads another factor (Bar V2's dev reads only).
 static var PACK_FACTOR := _pack_factor()
