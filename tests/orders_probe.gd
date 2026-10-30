@@ -223,6 +223,7 @@ func _run() -> void:
 				"anchor_offset_m": snappedf(_flat_d(anchor, _click), 0.1) if anchor is Vector3 else -1.0,
 				# How much nearer the click its anchor is than its start (negative: the squad is sent AWAY from the click).
 				"veto_fail": SelectionSquads.veto_refuses(_veto_xz(anchor), _veto_xz(squad["start"]), veto_from, came, team_forward) if anchor is Vector3 else false,
+				"wedged_s": snappedf(int(squad.get("wedged_ticks", 0)) / float(SimClock.TICK_RATE), 0.1),
 				"veto_across": SelectionSquads.guard_across_gap(veto_from, _veto_xz(anchor), came) if anchor is Vector3 else false,
 				"toward_m": snappedf(_flat_d(squad["start"], _click) - _flat_d(anchor, _click), 0.1) if anchor is Vector3 else 0.0,
 				"plan_drive_m": snappedf(float(squad["path_len"]), 0.1), "driven_m": snappedf(float(squad["driven"]), 0.1),
@@ -409,6 +410,10 @@ func _watch() -> void:
 		_last_centre[squad["number"]] = centre
 		for n: String in alive:
 			var at := _tank(n).global_position
+			# V4 (round 46, Bar V2's guard): crew-ticks wedged (Movement.wedged) after the order, per squad.
+			var mover := Movement.of(_tank(n))
+			if mover != null and mover.wedged:
+				squad["wedged_ticks"] = int(squad.get("wedged_ticks", 0)) + 1
 			if not bool(squad["deck"]) and SlotGround.near_deck(at, 0.0):
 				squad["deck"] = true
 				squad["deck_at"] = [_xz(at), snappedf((_match.tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)]
