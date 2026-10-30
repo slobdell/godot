@@ -102,6 +102,40 @@ aren't ours; stop only by a PID you started (lesson 336).
 
 _(filed here BEFORE any number; newest first)_
 
+- **FILED. Bar C1, ONE planner places the camera (camera; FILED in stream/camera Status 2026-10-30 ~03:30, before any number on 12201-12248; candidate commit 3bf76e839, its full check on builder3 running at filing).**
+  Switch `--camera-planner` (OFF; ON on a pass; `=off` = today's camera: vision frame + danger look). CameraPlanner (one cost over
+  13 headings x {tight, wide} frames: his selection, its path ahead, the contacts that matter, sight rays to his crews and path
+  past the drawn solids, the arena's floor, the war's direction, the clearance lift, the turn, the distance; a per-pose cost
+  mean (0.6 s), a switch margin raised after each switch; one pose a frame on the laptop preset, four elsewhere) + a new
+  selection off his screen skips the aim hold and pans at <= 1.3 view-heights/s. Weights at the constants (no dev knob).
+  **Arms:** BASE default v ARM `--camera-planner=on`, ONE commit (the one whose full check greens), builder3, headless 1920x1080
+  @60, `make camera-trace` (CameraPlaytest). **Workloads:** ATTACK (round 41's autoplay: selections, moves up-screen, attack
+  clicks; 150 s) on 12201-12212 Terminus, 12213-12224 Locks, 12225-12236 Crossing, 12237-12248 Gorge (48 an arm); AMBUSH (55 m,
+  lanes by seed % 3) and RETREAT on Terminus 12201-12224 (24 an arm each; K4 v2's lines).
+  **Deciding (his three complaints, ATTACK pooled):** D1 seconds driving with half or more of his shown selection hidden by a
+  building (CameraLook sel_hidden_s): ARM <= 0.6 x BASE. D2 seconds with none of his selection on screen: ARM <= BASE (a tie
+  passes). D3 new selection -> half of it on screen (never = 10 s): ARM mean <= BASE mean + 0.5 s AND ARM p90 <= 1.5 s. D4 hits on
+  his units off screen, as a share of hits: ARM <= BASE + 1 point.
+  **Guards (what it could break):** G1 smoothness on ATTACK: jerks ("all") <= BASE + 1/min, snaps ("all") 0 per run, no
+  automatic source over 1.5 jerks/min but "select" (his selection's pan, reported); G2 K3 v2's click lines: clicks on the aimed
+  unit >= 70 %, slip p95 <= 40 px, held <= 25 %; G3 action share (an aimable enemy on screen) >= BASE - 10 points; G4 yaw
+  reversals <= BASE + 1/min per workload; G5 own on screen >= BASE - 5 points per workload; G6 camera inside a solid <= BASE + 1 s
+  per run (pooled); G7 K4 v2's D2 on AMBUSH rear lane alone and RETREAT alone: latency mean <= BASE + 1 s and blind % of fire <=
+  BASE + 2 points; facing the wall on RETREAT <= BASE + 5 points; G8 the frame budget (C46.7): the planner's ms per frame on the
+  laptop (UHD 620, laptop preset, Terminus, the autoplay's army, windowed, under the lock, 2 runs) mean <= 0.5 ms and step p99
+  <= 1.5 ms (the max is reported: today's rig alone peaks at 2.8-7.4 ms on that box); G9 every run ok, no
+  SCRIPT ERROR, every scenario staged ok; other streams' probes are not touched (the camera writes no sim state: sim-baseline and
+  determinism in the full check are the proof).
+  **Dev reads (7001-7006, never a bar):** BASE v ARM, 7001-7006 Terminus ATTACK 90 s, builder3, 795869b03 (= the
+  candidate's weights): D1 145.7 v 80.3 s; D2 1.8 v 0.8 s; D3 mean 0.17 v 0.01 s; D4 0.6 v 0.0 %; jerks 0.88 v 0.24/min, snaps 0
+  v 0; clicks on the aimed unit 91.8 v 84.7 %; slip p95 23.1 v 23.8 px; held 17.1 v 16.1 %; **G3 action share 62.0 v 49.9 % (the
+  line most at risk: it FAILS on the dev read; tried and dropped: war weight 3, no distance cost, a lighter turn: 45-50 % each)**;
+  inside a solid 0.33 v 0.25 s/run; reversals 5.48 v 2.90/min; own on screen 96.5 v 99.0 %. Laptop (1f3e6f111, the candidate's
+  planner code): 0.353 / 0.358 ms a frame, p99 0.88 / 0.93 ms, max 5.0 / 1.6 ms. Judge: `python3 tests/camera/bar_c1.py
+  ~/camera-r46/barc1 --budget-ms <mean> <p99>` (every line above, PASS/FAIL, VERDICT). Series: `~/camera-r46/barc1.sh` (both arms
+  from the worktree frozen at the candidate; docs and the judge only after it).
+  **If it fails** (C46.2): in player terms, what he would see ON v OFF, to the orchestrator the same hour.
+
 - **Bar L1 HIS IFV BEHIND HIS OWN SQUADS FINDS A LANE (engage; filed 2026-10-30 ~02:20 PDT in streams/engage.md and here, BEFORE any number on 11901-11948).**
 
   **Workload:** `make engage-lane-bar LANE_SEEDS="11901 ... 11948"` (`tests/engage/lane_probe.gd`, table `tests/engage/lane_table.py

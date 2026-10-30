@@ -97,6 +97,11 @@ _(worker keeps this current: report at the top, every number with commit, machin
 `game/camera/camera_planner.gd` + the rig's `_update_planner`; tests `tests/test_camera_planner.gd` (10, laptop 56/0 camera tests
 at 53de53ea4). Dev reads only on 7001-7006 (never a bar). In progress: tuning on dev seeds, then C3 (laptop budget) and Bar C1.
 
+**Bar C1 FILED** (workstreams.md *Bars (round 46)*, text there; candidate 3bf76e839, before any number on 12201-12248).
+C3 DONE: laptop budget (UHD 620, laptop preset, Terminus, windowed, under the lock, 1f3e6f111): planner 0.353 / 0.358 ms a frame
+mean (seeds 7001 / 7002, 60 s), step p99 0.88 / 0.93 ms, max 5.0 / 1.6 ms; the rig without it 0.57-0.65 ms mean, max 2.8-7.4 ms.
+One pose a frame on the laptop preset (`--camera-planner-rate=N` dev); native's C++ batch offered and declined (not needed).
+
 ### Plan (ordered; smallest foundation first)
 1. C1 census tool + table (below) — DONE. 2. C2 `CameraPlanner` (pure cost + candidate set, tests first), wired behind
 `--camera-planner=on`. 3. C3 laptop budget. 4. C4 Bar C1 filed, then the series on builder3. 5. C5 his acceptance read.
