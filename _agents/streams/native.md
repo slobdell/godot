@@ -59,6 +59,17 @@ _(worker keeps this current: report at the top, every number with commit, machin
 **Report (2026-10-30, start).** Started from main 7189e3ff3 (code = cb1014bed; the orchestrator's launch check runs it on builder3; no
 baseline check of mine).
 
+**Stretch: where his Terminus tick goes (proposal, numbers before code).** `make replay-match RECORDING=<his Terminus>
+REPLAY_SECONDS=149 CREWS=all REPLAY_FLAGS=--sim-profile` (tests/replay_orders.gd now honours `--sim-profile`; profiling only: the
+replay stays 20/20 within 3 m), stream/native a06d450df+, builder3 light, native ON, 4500 ticks, n=1:
+**tick 14.18 ms**; controllers 9.12 (brain/think 4.90: situation 1.51, t.poll 0.89, decide 0.64 already C++, act 0.64;
+brain/execute 3.67); **elements 3.06 ms (one segment, no sub-sections)**; tanks 1.02 (drive 0.61); visfield 0.38; match 0.34.
+Candidates: (a) `segment:elements` 3.06 ms: Element.update for the replanning elements, GDScript, nothing native; needs a sub-profile
+first (element.gd is engage's / element_plan manoeuvre's: profile sections are additive lines in their paths, so asked through the
+orchestrator); (b) `brain/situation` 1.51 ms (build_situation, GDScript; s.contacts 0.55 the largest part). Recommendation: (a)'s
+sub-profile next, then port whichever single function is >= 1 ms with its GDScript kept as the fallback. JSON:
+`references/round46/native/terminus-sim-profile-builder3/sim-profile.json`.
+
 **His Terminus replay is bit-exact to the end of his match (3888ff416).** The "17/20 at 151 s" was post-match: his match ended at
 tick 4471 (149.0 s, elimination); the census rows after it are his results screen v a headless replay running on. Through 149 s
 every crew 0.0 m, and the replay's end row equals his (tick 4471, state_hash 4682461502ba5500). divergence.py now judges to his
@@ -107,5 +118,7 @@ A remote run now runs `native-fresh` first (not for check / native* / NATIVE=off
 2. **N2 twins as bars are filed** (V1 first: it outranks N1's speed, the orchestrator 2026-10-30).
 3. N1b the memo + `control-timing`; N3 camera's ray batch if asked; N4 lines_r46; N5 builders; stretch: Terminus sim profile.
 
-**Questions for the lead:** none.
+**Questions for the lead:** none. (Laptop housekeeping: rounds 36-40's raw native folders `~/projects/godot-native-guard-raw`,
+`-score-raw` and five `.out` files, whose judged results are in `references/`, are packed in `~/projects/godot-native-old-raw-r36-r40.tar.gz`
+(21 MB, verified, 5307 files; ~360 MB freed). Delete the tarball whenever you like.)
 **Requests to other streams:** orders, the V1 seam above (through the orchestrator).

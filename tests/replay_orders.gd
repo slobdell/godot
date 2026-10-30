@@ -154,6 +154,10 @@ func _run() -> void:
 	if _flag("spawn", "on") != "off":
 		placed = ReplaySetup.place(_match, _spawn)
 	print("REPLAY_SPAWN " + JSON.stringify({"placed": placed, "recorded": _spawn.size()}))
+	# Round 46 (native stretch): `--sim-profile` profiles HIS match by section, as the match runner's (SimProfile; profiling
+	# only: nothing it reads feeds a decision). SIM_PROFILE <json> is printed before REPLAY_DONE.
+	if _flag("sim-profile", "") != "" or OS.get_cmdline_user_args().has("--sim-profile"):
+		SimProfile.install(_match)
 	_issue()  # the orders of the planning pause, before the CPU's first plan
 	if paused:
 		_controls.set_paused(false, "")
@@ -167,6 +171,8 @@ func _step() -> void:
 	_issue()
 	_trace()
 	if _match.tick >= _until:
+		if SimProfile.enabled:
+			print("SIM_PROFILE " + JSON.stringify(SimProfile.report()))
 		print("REPLAY_DONE " + JSON.stringify({"tick": _match.tick}))
 		quit(0)
 
