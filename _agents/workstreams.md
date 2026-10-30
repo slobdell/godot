@@ -209,6 +209,10 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.13 (2026-10-30 ~04:00) No veto_failures twin.** Native, orders' f77e16230, builder3 light, test_control_scale 30 units / 6 squads,
+  mean of 10, n 2 a side: order 2.31 / 2.32 ms veto ON v 2.22 / 2.23 off (ratio ~61 v ~58 of 104); click-to-order 2.55 v 2.36 ms. ~0.1 ms
+  of geometry; C46.4 does not require it. Orders times his failing Gorge click in V3; native ports the re-deal only if that is over a few ms.
+
 - **R46.12 (2026-10-30 ~03:45) The replay stamp merges before L2 ON.** Native 882c62d7c: the match row stamps `rules: {lane_clear}`;
   replay-match / playtest-report add `--lane-clear=off` for a recording with no stamp or one played with L2 off (REPLAY_FLAGS or the
   match's own flags win). On efe4d8ba9 + 882c62d7c his Gorge replays 20/20 within 3 m to 107 s again (11/20 from 50 s without it);
