@@ -575,8 +575,9 @@ static func wheel_hold_on() -> bool:
 ## TankBrain.TURN_IN_CAP_M from where it came to rest to swing a hull-fixed gun round (the stop's turn-in, C33.9): his
 ## stopped scout drove 4 m doing it (authority probe 11330). Only under his stop; a hold or a move drives as before. `--player-authority=off` removes it with the rest of the rule.
 static var his_caps := 0
-## `--turn-in-cap=off`: the cap alone off (Bar E2b's base arm: E2 as it shipped in 60262534f).
-static var TURN_IN_CAP := not OS.get_cmdline_user_args().has("--turn-in-cap=off")
+## OPT-IN until Bar E2b passes (`--turn-in-cap=on`; R45.24: the tree it rides on carries the `player` fix, which merges
+## alone). Bar E2b's arms: base = without it (E2 as shipped), new = `--turn-in-cap=on`.
+static var TURN_IN_CAP := OS.get_cmdline_user_args().has("--turn-in-cap=on")
 
 
 func _his_cap(cmd: TankCommand) -> void:

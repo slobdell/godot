@@ -141,7 +141,7 @@ new one at once. (Trace: `make engage-authority-trace AUTH_TAG=e5 AUTH_FLAGS="--
 
 **E6 cause:** under his stop the brain's move is `stop` from the first tick, but `OrderController._stop_turn_in` (C33.9,
 `Manoeuvre.turn_in`) drives a hull-FIXED WHEELED crew round to bring its gun onto a live enemy (11330: throttle 0.87 for 21 ticks,
-`Manoeuvre.turn_in_stops` +1 every tick, 4 m). Under his hold the same idea is the face branch's wheeled creep (11315, throttle 0.35).
+the turn-in counter (Manoeuvre.turn_in_stops) +1 every tick, 4 m). Under his hold the same idea is the face branch's wheeled creep (11315, throttle 0.35).
 **Ruling R45.22: (b)**, measured from where the crew first comes to rest; grant: the cap in `_stop_turn_in` and the face branch.
 **Built (7babd0390+):** `OrderController._his_cap` (`--turn-in-cap=off` the base arm): under HIS STOP no turn-in leg above 3 m/s, none
 away from the rest spot past `TankBrain.TURN_IN_CAP_M` 2.5 m (braking distance counted), and the turn goes with the throttle (wheels
@@ -152,7 +152,8 @@ shots 29 v 34 (builder0). Dev seeds 7001-7012: probe byte-identical base v cap (
 
 ### Bar E2b (FILED 2026-10-29 ~16:40 PDT, before any number on 11349-11396)
 
-**Arms:** base = `--turn-in-cap=off` (E2 as shipped), new = default; both `--player-authority` ON; one frozen tree (named at
+**Arms:** base = without the cap (E2 as shipped), new = with it; since R45.24 the cap is OPT-IN until this bar passes, so
+base = no flag and new = `--turn-in-cap=on` (the same comparison, spelled the other way: no line changes); both `--player-authority` ON; one frozen tree (named at
 freeze), builder0, native ON, paired by seed. **Workloads:** (S) the authority probe with `--verb=stop` on 11349-11396 (his stop,
 every crew kind drawn, alone or one crew of a squad); (M) the authority probe as drawn (Bar E1's mix) on the same seeds.
 

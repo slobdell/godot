@@ -6,7 +6,9 @@ extends TestCase
 
 func _stage(authority: bool) -> Dictionary:
 	var was := Drills.PLAYER_AUTHORITY
+	var cap_was := OrderController.TURN_IN_CAP
 	Drills.PLAYER_AUTHORITY = authority
+	OrderController.TURN_IN_CAP = true  # opt-in until Bar E2b (R45.24): the test measures the cap itself
 	var s := AiScenario.create(self, 4)
 	s.game_match.set_meta("player_team", Match.Team.GREEN)
 	# The scout faces -Z; the enemy stands off its right side, out of a fixed gun's arc: it must turn to shoot.
@@ -32,6 +34,7 @@ func _stage(authority: bool) -> Dictionary:
 	var result := {"farthest": farthest, "shots": s.shots_by(me), "rested": rest != null}
 	s.dispose()
 	Drills.PLAYER_AUTHORITY = was
+	OrderController.TURN_IN_CAP = cap_was
 	return result
 
 
