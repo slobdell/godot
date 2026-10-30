@@ -81,22 +81,26 @@ the orchestrator the same hour (C46.2): it goes to him the same day.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-30 ~03:30 PDT)
+### NOW (2026-10-30 ~05:00 PDT)
 
-- **Freeze candidate f77e16230** (frozen detached tree `../godot-orders-v1`): its `make remote T=check` running on builder3
-  (`~/orders-r46/check-v1-f77e16230.log`); the second dev read on it running on builder0 (7002 / 7004, `~/orders-r46/dev3/`).
-  The series starts on builder3 when both are clean. Main tree for I1: `../godot-orders-main` (7189e3ff3 + instruments only),
-  removed the hour the series is read.
-- **Dev read 1 (builder0, 94c737a14, 7001 geometry / 7003 streets, n 1 a cell; `~/orders-r46/dev2/`): the pipeline works**
-  (every part complete; I1 PASS: base == main in 51 of 51 runs; I2 PASS). Touched: Terminus 0 of 4 street + 0 of 6 geometry cells;
-  streets 1 of 16 (Crossing 5-squad click); geometry 12 of 34. It showed holds that read as ignoring his click, fixed BEFORE any
-  freeze (lines unchanged, amendment 0; told to the orchestrator): a squad PAST his click is never "sent back"; 4 spare seats; with
-  no seat, fall in along its own line to his click (each point passes the veto) before holding (f77e16230).
-- **V4 built OFF** (b8c283948, `--group-pack=on`): his Gorge file 65.5 -> 44.0 m (laptop lab); Bar V2 to be filed after V1's series
-  starts (wedged seconds from manoeuvre's settle probe).
-- **V3 shots, looked at** (laptop, 47cae3725, his exact Gorge click with his recorded starts, top-down at arrival): OFF one squad's
-  crews stand beyond the pit row toward the enemy; ON every crew on his side below the pits, a file back from his click at the
-  west neck (`build/v3-shots/`; filed in references at V3).
+- **Freeze candidate 6acba040e** (frozen detached tree `../godot-orders-v1`): its check on builder3
+  (`~/orders-r46/check-v1-6acba040e.log`) and dev read 3 on builder0 (7003 / 7005, `~/orders-r46/dev6/`) running; the series on
+  11801-11848 (builder3) starts when both are clean. Main tree for I1: `../godot-orders-main` (7189e3ff3 + instruments only).
+- **Earlier candidate f77e16230 GREEN builder3: `make check exited 0`, 3481 passed / 0 failed.** Since then, code only (lines
+  unchanged, amendment 0, each told to the orchestrator):
+  - 40d4b9dec: the base-edge "sent back" also needs the place > 5 m farther from his click (dev read 2, Crossing 5-squad click:
+    two column-tail holds 1.8 m farther were re-dealt, one outside the street corridor).
+  - f6bb52518: the seats are today's ranks (`rank_slots_for`, pure geometry) asked of the ground lazily, not G2's guard_lay:
+    **his failing click cost 45-66 ms on the laptop (native on) v 10 ms with the veto off; now 8.8-9.2 ms v 10.4 ms** (native's
+    ask, R46.13: no port).
+  - 6acba040e: the seats in FILE (one abreast): two abreast put the Hunters inside the Spears' halt at the neck and the Spears
+    never settled (laptop, his exact click, 7001). Now: Spears on his click (today's), Hunters (-16.2, 71.7), Wrenches (10.8,
+    90.3); **all in 8.2 s v today's 26.1 s**; top-down shot looked at (one group behind his click on open ground, every crew on
+    his side).
+- **Dev read 2 (builder0, f77e16230, 7002 / 7004, n 1 a cell): every deciding line PASS** (D1 0 v base 13, D2 0 v base 6, D5b),
+  I1 51/51, I2; G1 / B- misses on single runs (Locks -35/97 contacts 16 v 6; the Crossing column-tail case, fixed in 40d4b9dec).
+- **V4 (OFF, `--group-pack=on`):** at his neck the tighter file crowds the front squad's halt (Spears never in, 7001): to fix
+  before Bar V2 (keep the first rank's step, pack the rest: a 3-squad file ~50 m, 4 ~66 m, the brief's targets).
 
 ### REPORT (2026-10-30 ~02:30 PDT, Fable, worktree `godot-orders`, branch `stream/orders`)
 
