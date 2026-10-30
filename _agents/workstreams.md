@@ -441,6 +441,11 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   kinds (never-in on cells where the file has no room, <= 1 squad per failing run; all-in on cells where base's squads did not move).
   Any other guard failure (part B street lines, part C fights, contacts, all-in where base moved its squads) keeps it OFF and goes to
   him in player terms the same hour (C45.2). Round 46: tighter travel halts (the feel question).
+  **Clarified (~20:15, before any number): kind (2) is STRICT — base moved 0 squads in that cell.** Orders' dev-read-7 columns: the four
+  never-in cells read base moved 4 of 4, arm never-in max 1 a run (kind 1); his Locks click -62/50 reads base moved 2.0 of 4, so it is
+  NOT exempt. Not widened after seeing dev numbers: if that cell fails all-in on 11201-11248 (dev 6/6 says it will), G2 fails as filed
+  and goes to him the same hour, in his terms: "on your round-43 Locks click all four squads now pack into one file at your click, but
+  the last one arrives ~27 s after the order instead of ~6 s (today two of them stay where they stand)".
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
