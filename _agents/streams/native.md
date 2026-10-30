@@ -59,6 +59,23 @@ _(worker keeps this current: report at the top, every number with commit, machin
 **Report (2026-10-30, start).** Started from main 7189e3ff3 (code = cb1014bed; the orchestrator's launch check runs it on builder3; no
 baseline check of mine).
 
+**His Terminus replay is bit-exact to the end of his match (3888ff416).** The "17/20 at 151 s" was post-match: his match ended at
+tick 4471 (149.0 s, elimination); the census rows after it are his results screen v a headless replay running on. Through 149 s
+every crew 0.0 m, and the replay's end row equals his (tick 4471, state_hash 4682461502ba5500). divergence.py now judges to his
+`end` row and prints `END his= replay= state_hash=same|differs` (a differing end fails): Terminus 20/20 PASS, Gorge 20/20.
+
+**R46.13 no veto_failures twin:** the veto costs ~0.1 ms (orders f77e16230, builder3 light, test_control_scale 30 units / 6 squads,
+mean of 10, n 2 a side: 2.31 / 2.32 v 2.22 / 2.23 ms, ratio ~61 v ~58 of 104). **A6 v5 (C46.4) confirmed:** the street hold has no
+C++ copy; the native drive calls back NativeTraffic.avoid_hold (Traffic.refresh / hold_of in GDScript) and only reads `_live`;
+holdway (manoeuvre 97403a089) touches nothing the C++ reads.
+
+**L2 twin RE-PROVED on engage's frozen efe4d8ba9: EQUAL** (builder3 light): efe4d8ba9's `test_native_decide|fire_lanes_crowd|
+engage_lane_line` 13 / 0 (decide 7536 / 0, 78 lane-only CLEAR_LANE); his replays with v without engage's routing guard byte-identical
+(Gorge 426/426, Terminus 2071/2071). **R46.11 (replays turn off rules his build lacked): 882c62d7c** — the match row's `rules`
+stamp (`lane_clear`), tests/replay/rules.py in replay-match (and so playtest-report): on efe4d8ba9 + it, his Gorge replays 20/20 to
+107 s again (was 11/20 from 50 s with L2 ON) and Terminus reads main's 17/20 at 151 s. Laptop: recorder tests 6/0, rules 3/0.
+Evidence `references/round46/native/l2-reproof-r4611-builder3-efe4d8ba9/`. **33edf6eaf GREEN builder3** (3472 / 0, ALL JUDGED).
+
 **L2 twin (engage, C46.4): EQUAL.** C++ on stream/native ee607ade6 (decide_native.cpp reads TankBrain.LANE_CLEAR live, as
 ENGAGE_WATER; absent on main = unchanged: test_native_decide 7536 / 0). pair/native-l2 165bea71f = engage 9446e1903 + it, engage's
 GDScript-routing guard removed + test_native_decide's lane mutations: 7536 decisions / 0 mismatches, 78 lane-only CLEAR_LANE (laptop;
