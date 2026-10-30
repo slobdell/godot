@@ -226,3 +226,17 @@ too). **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_a6v5.sh` from
   (`--seat-bound=off` / `--seat-order=off` / `--seat-last=bound` the escapes), the two default tests flipped. Its builder3 check is queued
   behind orders' (`~/overnight-manoeuvre/r46/check_on/`). The sim baseline WILL move (CPU squads seat too, C46.6): the orchestrator
   re-records it if he says yes.
+
+### Round-47 starting point: the start-zone give-way between squads under the seat bound (R46.17)
+
+- **What failed S v6 (12001-12024, builder3):** squads give way to EACH OTHER more as they leave the start (Green inter-squad
+  START_YIELD rows: crossing 67 -> 98, locks 61 -> 112), mostly Guns <-> Hunters. **Which crew gives way (its phase at the row,
+  `START_ROW ph=`):** still DRIVING in most (crossing 32 -> 41, locks 36 -> 72); already parked at its seat in few (crossing 13 -> 15, locks
+  19 -> 24); `blocked` new (0 -> 13, 0 -> 11). So the cost is **crossing paths on the way out**, not mainly a settled squad parked in
+  the neighbour's exit (the orchestrator's first reading): the bound pulls each squad's seats in toward its click, so where his
+  synthesized first order sends two squads to neighbouring clicks, their crews' routes out of the two-row deploy cross where today's
+  wider shapes kept them apart.
+- **Next (round 47):** (1) per seed, the crossing pairs' routes on Locks (the largest rise): which squads' seat blocks overlap the other's
+  start-zone exit, and at what tick; (2) candidate: deal the bound's seats so the squad's line of advance from its deploy block is
+  kept clear of a neighbouring squad's block (a seat-side rule, not a drive rule: no twin); (3) the fights G4 kill share (0.040) on a
+  bigger fight sample before reading it as real (18 fights an arm; S v5 read 0.029 on the same kind of sample).
