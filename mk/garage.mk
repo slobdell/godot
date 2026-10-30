@@ -6,7 +6,7 @@
 GARAGE_SHOTS := $(BUILD_DIR)/screenshots
 
 garage: import ## Build an army of fixed unit types on a budget (tap/drag), then FIGHT a skirmish with it (ENEMY=cpu|cpu:<archetype from Army.ARCHETYPES>, ARENA=random|yard|pit|terminus|crossing|sumps|locks|parade|gorge|archipelago|cut|docks|yard_open)
-	$(GODOT) --path . -- --garage $(if $(filter command line,$(origin ENEMY)),--enemy=$(ENEMY)) $(if $(filter command line,$(origin ARENA)),--arena=$(ARENA))
+	$(GODOT) --path . -- --garage $(if $(filter command line,$(origin ENEMY)),--enemy=$(ENEMY)) $(if $(filter command line,$(origin ARENA)),--arena=$(ARENA),--arena=random --garage-map-remembered)
 
 garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must start with the saved army and log no errors
 	mkdir -p $(BUILD_DIR)
@@ -23,6 +23,16 @@ garage-smoke: import ## Headless: open the garage, tap FIGHT; the skirmish must 
 	grep -Eq 'GARAGE_FIGHT player=user://garage_scratch/[a-z_]+\.json enemy=cpu:siege enemy_path=user://army_fight/garage_enemy\.json seed=4 budget=3500 green=[1-9][0-9]* rust=[1-9][0-9]* faction=condemned enemy_faction=(gangs|law|syndicate) .* arena=gorge' $(BUILD_DIR)/garage-smoke.log
 	grep -q 'HUD_MESSAGE \[info\] Your squads hold' $(BUILD_DIR)/garage-smoke.log
 	! grep -E 'ERROR' $(BUILD_DIR)/garage-smoke.log
+	@# Round 45: his MAP pick (here carried as --garage-map=pit) is not the arena built before the garage opened (foundry):
+	@# FIGHT relaunches once onto it and the skirmish loads pit. (A RANDOM pick fights on the arena already built.)
+	s=0; timeout 600 $(GODOT) --headless --path . --quit-after 600 -- --garage --garage-scratch --garage-autofight --enemy=cpu:siege --seed=4 \
+		--garage-map=pit > $(BUILD_DIR)/garage-map-smoke.log 2>&1 || s=$$?; \
+	grep -E 'GARAGE_MAP|GARAGE_FIGHT' $(BUILD_DIR)/garage-map-smoke.log | cut -c1-120 || true; \
+	tools/exit_gate.sh garage-smoke/map $$s $(BUILD_DIR)/garage-map-smoke.log
+	grep -q 'GARAGE_MAP relaunch arena=pit pick=pit built=foundry seed=4' $(BUILD_DIR)/garage-map-smoke.log
+	grep -Eq 'GARAGE_FIGHT .* seed=4 .* arena=pit$$' $(BUILD_DIR)/garage-map-smoke.log
+	[ $$(grep -c 'GARAGE_MAP relaunch' $(BUILD_DIR)/garage-map-smoke.log) -eq 1 ]
+	! grep -E 'ERROR' $(BUILD_DIR)/garage-map-smoke.log
 	@# Round 22 (A3; A4's cap): the most vehicles there can be -- a full army of Rat Rods, 25 in five squads (the code
 	@# below) -- against the Road Gangs' CPU at 2000 credits: every squad reaches the field, the status line names it.
 	s=0; timeout 600 $(GODOT) --headless --path . --quit-after 240 -- --garage --garage-scratch --garage-autofight --enemy-faction=gangs --seed=4 \
@@ -43,6 +53,8 @@ garage-shots: import ## Garage screenshots at desktop 1920x1080 and a 20:9 phone
 	mkdir -p $(GARAGE_SHOTS)
 	$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-desktop.png --screenshot-delay=2
 	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --ui-touch --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-phone.png --screenshot-delay=2
+	@# Round 45: the MAP pick with the longest arena title on the phone's top bar.
+	$(GODOT) --path . --resolution 1800x810 -- --garage --garage-scratch --ui-touch --garage-map=yard --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-phone-map.png --screenshot-delay=2
 	for f in gangs law syndicate; do \
 		$(GODOT) --path . --resolution 1920x1080 -- --garage --garage-scratch --faction=$$f --screenshot=$(CURDIR)/$(GARAGE_SHOTS)/garage-$$f.png --screenshot-delay=2; \
 	done

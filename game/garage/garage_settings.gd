@@ -26,6 +26,9 @@ var match_tips_shown := false
 var centre_tip_shown := false
 ## Path of the army the player last fought with ("" = none).
 var last_army := ""
+## Round 45 (the lead: "make garage lets you select everything except for the map"): the map he last picked in the garage
+## (an arena name or GarageScreen.RANDOM; "" = never picked).
+var last_arena := ""
 
 
 func _init(p_path := DEFAULT_PATH) -> void:
@@ -36,6 +39,7 @@ func _init(p_path := DEFAULT_PATH) -> void:
 		match_tips_shown = bool(config.get_value("tutorial", "match_tips_shown", false))
 		centre_tip_shown = bool(config.get_value("tutorial", "centre_tip_shown", false))
 		last_army = String(config.get_value("armies", "last", ""))
+		last_arena = String(config.get_value("armies", "arena", ""))
 
 
 ## The current garage tip, or "" when done.
@@ -77,6 +81,11 @@ func take_centre_tip() -> bool:
 	return true
 
 
+func remember_arena(arena_name: String) -> void:
+	last_arena = arena_name
+	_save()
+
+
 func remember_army(army_path: String) -> void:
 	last_army = army_path
 	_save()
@@ -91,4 +100,5 @@ func _save() -> void:
 	config.set_value("tutorial", "match_tips_shown", match_tips_shown)
 	config.set_value("tutorial", "centre_tip_shown", centre_tip_shown)
 	config.set_value("armies", "last", last_army)
+	config.set_value("armies", "arena", last_arena)
 	config.save(path)
