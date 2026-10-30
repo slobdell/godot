@@ -106,6 +106,13 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.9 (2026-10-30 ~02:10) V1's seam final (orders, stream/orders a9fb6c0ef):** `SelectionSquads.veto_failures(anchors: Array[Vector3],
+  blocks: Array, click: Vector3, approach: Vector3, data := Arena.active) -> Array[int]` (no `ground`: V1 makes no path query; empty = click
+  untouched), from `veto_front` and `veto_refuses` (behind start > 10 m along the approach AND farther from the click than the start, OR
+  `guard_across_gap`); the re-deal only on a failing click, from G2's guard_lay seats. Twin NOT a V1 gate (optional, after the sel row).
+  G2's code came in with `--group-guard` default OFF: Bar V1's byte-identity guard covers the whole default path (every empty-veto click
+  equal to main cb1014bed, the 60-click default orders probe + his Locks clicks).
+
 - **R46.8 (2026-10-30 ~02:00) The big click is under budget; a light-folder timing trap.** Native, 7189e3ff3 (code cb1014bed), builder3
   quiet, `make native-fresh control-timing`, 30 units / 6 squads, mean of 10: order 2.03 ms (ratio 56.3 v budget 104), click-to-order
   2.13 ms (59.3), per-frame 0.62 ms (17.7 v 26); not judged (builder0 is the budget's box). N1's memo (B) drops to stretch. **Trap:** a
