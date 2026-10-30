@@ -71,3 +71,13 @@ camera-clip: native-fresh import ## Round 41/42 (camera): the autoplay filmed CA
 	ffmpeg -loglevel error -y -ss $(CAMERA_CLIP_FROM) -i $$out/off.avi -ss $(CAMERA_CLIP_FROM) -i $$out/on.avi \
 		-filter_complex "[0:v][1:v]hstack=inputs=2,scale=1920:-2[v]" -map "[v]" -c:v libx264 -preset slow -crf 22 \
 		-pix_fmt yuv420p -movflags +faststart "$(CAMERA_CLIP_MOVIE)" && echo "CAMERA_CLIP_MOVIE $(CAMERA_CLIP_MOVIE)"
+
+# Round 46 (camera C1): what his camera showed, per second, from a match recording's `cam` rows rebuilt on its arena
+# (tests/camera/census.gd): his selection (his last order's units) in frame and above the HUD, hidden by a building,
+# its drive direction v the look, contacts and hits on screen; CENSUS_SELECT per new selection; CENSUS_TOTALS.
+#   make camera-census RECORDING=references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl [CENSUS_FLAGS="--from=60 --to=90"]
+.PHONY: camera-census
+camera-census: import ## Round 46 (camera C1): per-second census of a recording's camera (RECORDING=file[.gz], CENSUS_FLAGS=--from=S --to=S --aspect=A)
+	@test -n "$(RECORDING)" || { echo 'usage: make camera-census RECORDING=build/recordings/X.jsonl[.gz]'; exit 2; }
+	$(GODOT) --headless --path . --script res://tests/camera/census.gd -- --recording=$(CURDIR)/$(RECORDING) $(CENSUS_FLAGS) \
+		| grep -E 'CENSUS_|SCRIPT ERROR'
