@@ -1,6 +1,6 @@
 # Workstreams: the current round
 
-> **ROUND 46 PREPARED 2026-10-30 (five streams: camera and orders on Fable; engage, manoeuvre, native on Opus).** Section below; round 45 CLOSED (its section follows).
+> **ROUND 46 RUNNING 2026-10-30 (five streams, ALL Opus: Fable quota low, his call at launch).** Section below; round 45 CLOSED (its section follows).
 
 ## Round 46: five streams (prepared 2026-10-30; briefs in `streams/`)
 
@@ -13,13 +13,13 @@ and *His answers at round 46's prep*; recordings `references/round45/playtest/20
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **camera** | `godot-camera` (3) | **Fable** | [streams/camera.md](streams/camera.md) | his selected squad never leaves the screen; a new selection pans at once; down a Terminus corridor the view looks along the street, no building in the way | C1 the planner's cost terms read on his Terminus recording |
-| **orders** | `godot-orders` (6) | **Fable** | [streams/orders.md](streams/orders.md) | his Gorge click: every squad on his side, nobody back, every street click unchanged; the group's file half as long | V1 the veto-only guard (ON) |
+| **camera** | `godot-camera` (3) | Opus | [streams/camera.md](streams/camera.md) | his selected squad never leaves the screen; a new selection pans at once; down a Terminus corridor the view looks along the street, no building in the way | C1 the planner's cost terms read on his Terminus recording |
+| **orders** | `godot-orders` (6) | Opus | [streams/orders.md](streams/orders.md) | his Gorge click: every squad on his side, nobody back, every street click unchanged; the group's file half as long | V1 the veto-only guard (ON) |
 | **engage** | `godot-engage` (5) | Opus | [streams/engage.md](streams/engage.md) | his IFV behind his own squads steps to a clear lane and fires within seconds; when it can't, the feed says who is in the way | L1 the lane move in a crowd, on his recording |
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | his squad settles where he clicks (seat bound S v6); squads at a street mouth wait for the right one (holdway) | M1 S v6 on Crossing's Battery layout |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | big group clicks answer instantly (the fit's path queries in C++); every rule that ships has its twin | N1 the fit's path queries (4.9 ms at his click) |
 
-**Two Fable sessions (memory: at most two):** camera (lingering since round 39; his design rule is a rewrite, not a tweak) and orders
+**All Opus (his call at launch, 2026-10-30: Fable quota low). Planned Fable for** camera (lingering since round 39; his design rule is a rewrite, not a tweak) and orders
 (the group click, asked in rounds 37, 41, 43, 44, 45). Engage, manoeuvre, native: Opus. **Not this round:** balance (waits).
 
 **Machines (C46.1):** builder3 (`devia@builder3`, ~10 min a full check, 6 slots) = the default for every stream's checks and series;
@@ -102,9 +102,170 @@ aren't ours; stop only by a PID you started (lesson 336).
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar L1 HIS IFV BEHIND HIS OWN SQUADS FINDS A LANE (engage; filed 2026-10-30 ~02:20 PDT in streams/engage.md and here, BEFORE any number on 11901-11948).**
+
+  **Workload:** `make engage-lane-bar LANE_SEEDS="11901 ... 11948"` (`tests/engage/lane_probe.gd`, table `tests/engage/lane_table.py
+  --pair`): per seed a drawn arena (gorge / locks / terminus / crossing), crew hull (4 IFVs, 2 tanks, 2 scouts), enemy gun (5 kinds,
+  shoots back) 18-32 m off with a clear line, one squadmate in the lane (35-65 % of the way, within 1.5 m of the line) and one or two
+  beside it (3-8 m off the line), on a third of the seeds the one in the lane driving ACROSS it; the friends hold their fire. Who
+  commands the crew, by seed: his ATTACK on the gun, his MOVE done (E2's post), or the CPU's own brain (no player; C46.6). 30 s
+  window. Arms OFF = `--lane-clear=off`, ON = default, paired by seed, one frozen tree (named when frozen), builder3, native ON.
+  **The rule's case** = attack and cpu runs blocked in OFF (held for a friend at least once); post runs are R46.7's 4 m bound, where
+  a step rarely clears a friend in the lane (dev: held ~29 s in both arms), so they are guards, not deciding.
+  **Native (C46.4):** ships with decide's GDScript path for lane-blocked situations (`TankBrain.lane_case`) unless native's twin has
+  landed EQUAL by the freeze (then the twin's tree is frozen instead and `test_native_decide` equality is a guard).
+
+  **Deciding (the rule's case):**
+  - D1 seconds held for a friend while the gun has a target (`held_s`): paired mean ON - OFF < 0 by at least 1.645 se (one-sided).
+  - D2 first round after the first block (`first_shot_s`): ON sooner or identical in >= 60 % of runs (strictly sooner reported).
+
+  **Guards (all 48 unless named):**
+  - G1 friendly fire by the crew: hits ON <= OFF + max(1, 1.645 sqrt(OFF)); kills ON <= OFF.
+  - G2 crew deaths ON <= OFF + max(1, 1.645 sqrt(OFF)).
+  - G3 enemy hp left: paired mean ON - OFF <= +1.645 se (the crew does not hurt the gun less).
+  - G4 post runs (R46.7): every ON run's farthest from his post <= 5.5 m (4 m + the hull's settle); held_s ON - OFF <= +1.645 se.
+  - G5 his order to a crew (C46.3): E2's authority probe (`make engage-authority-probe`, seeds 11901-11924, AUTH_ARM=on) under
+    `--lane-clear=off` v default: Bar E1's D1 (hold / stop moved <= 3.0 m), D2 (pushed rows 0) and D3 (move ends) unchanged.
+  - G6 orders' default probe (`make orders-probe`, its default cells) rows identical ON v OFF where no lane is ever held (the rule
+    acts only through CLEAR_LANE, which a move / stop / hold verb never allows).
+
+  **Reported:** held_s by mode; moved_m; shots; feed lines (ON: post and attack runs; OFF: 0). A pass ships ON (it is ON by default
+  already on stream/engage; a FAIL turns the default OFF before merging and goes to him in player terms the same hour).
+
+- **Bar V1 FILED (orders, 2026-10-30 ~02:40 PDT, stream/orders 94c737a14, before any number on 11801-11848; recorded verbatim by the
+  orchestrator).** The veto-only group guard (R46.1, R46.9, R46.10). Verbatim from the brief:
+
+  > **What he would see:** he selects two or more squads and clicks once. Every squad goes where today's game sends it, EXCEPT a squad
+  > today's game would send across a drop, water or a neck from his click, or back behind where it started: that squad takes the free
+  > spot nearest his click in a file on his side (or holds where it stands if the ground has none). His Gorge click: Spears on the click
+  > as today, Hunters 33 m behind it, Wrenches 66 m behind, nobody across the drop, nobody sent north of his spawn row. On streets and
+  > every other click: exactly today's places.
+  > - **Arms:** `base:--group-veto=off` (today's lay) v `veto:` (the tree's default, the veto ON) on the frozen tree; `main:` on main's
+  >   tree (7189e3ff3, code cb1014bed; instruments only: mk/command.mk's fixed-click folders, the his3 army / starts JSON and the
+  >   recorded-starts patch to the geometry probe, no game file) for I1.
+  > - **Tree:** a frozen detached worktree at the commit named green here (`make remote T=check`, builder3), or a docs-only descendant.
+  > - **Runner:** `tests/control/orders_v1_bar.sh <frozen tree> <main tree> "11801 ... 11824" "11825 ... 11848" <out> 8`, builder3 (no
+  >   Spot); judge `tests/control/orders_v1_judge.py <out>` (its docstring is the lines below, verbatim in code).
+  > - **Part A, geometry (DECIDING), seeds 11801-11824, n 24 a cell:** `make orders-geometry` gorge / locks / crossing / terminus x his /
+  >   along / across x reach 20 / 80 (24 cells), plus 10 fixed clicks: his Gorge click from his spawn rows (`gorge:spawn:-43.2/53.2`) and
+  >   a click either side of each neck (`gorge:across:-40/58`, `-40/30`, `40/58`, `40/30`); Locks `his:-62/50` (round 44), his round-43
+  >   clicks `his:-35/97` and `his:-61/59`, beside the lock `his:-22/13`, on the west swing bridge's deck `his:-92/0`; plus his EXACT
+  >   Gorge click with his three squads at their recorded tick-0 starts (`gorge:recorded:-43.2/53.2`, his3 army, `--probe-stand`).
+  > - **Part B, streets (GUARD), seeds 11825-11848, n 24 a cell:** `make orders-probe` locks / crossing / terminus / yard_open x 3 / 5
+  >   squads x click / route (16 cells).
+  > - **Deciding lines (veto arm, every geometry run; base printed beside):**
+  >   - **D1** places across a gap from the click (row `veto_across`) = 0.
+  >   - **D2** places sent back (row `veto_fail` and not `veto_across`) = 0.
+  >   - **D5b** his exact Gorge click: every place on his side of the drop (z > 50) and passing the veto in 24 of 24 runs.
+  > - **Guards:**
+  >   - **I1 the default OFF path is main's:** every squad's place in `base` equals `main`'s (0.1 m, the probe's print) in every run of
+  >     both parts, and both arms hold the same runs. (G2's merged code, OFF, never leaks into the default path; R46.9.)
+  >   - **I2 byte-identity:** in `veto`, every squad whose `base` place passes the veto has exactly its base place, every run of both
+  >     parts (the streets by construction: any difference is a bug).
+  >   - **G1 on the touched cells** (a geometry cell, or a streets map x squads x route, where some base run has a failing place), each:
+  >     all-in median (runs where every squad arrived) <= base x 1.2 + 3 s; never-in runs <= base x 1.2 + 1; friendly contacts a run
+  >     (mean) <= base x 1.2 + 5.
+  >   - **B- (R46.10 b) part B's street lines on the TOUCHED street runs** (base has a failing place), paired run by run: places outside
+  >     the click's corridor a run (`anchor_outside`), metres driven outside it a run (`route_left_m`), all-in (runs where both arms got
+  >     every squad in): veto mean <= base mean + 2 se of the paired differences (n < 2: veto <= base).
+  >   - **Reported (R46.10 a):** per part and arena (the streets per map x squads x route: Terminus / Crossing / Locks separately), base
+  >     runs with a failing place / veto runs the veto re-dealt on / runs. If Terminus 5-squad clicks fail en masse in the dev read, the
+  >     orchestrator hears it before the freeze.
+  >   - **C46.3, by construction (said, not run):** the veto reads only group clicks of >= 2 squads (engage's crew orders and authority
+  >     probe untouched; manoeuvre's one-squad arrival never enters it); its re-deal changes a place, never the drive.
+  > - **C46.4:** the veto touches neither the drive nor the brain and adds no C++ seam: no native twin required to ship (R46.9); native's
+  >   optional twin of `veto_failures` is output-identical only.
+  > - **Ship rule:** ON (it is the default in the frozen tree) if D1, D2, D5b, I1, I2, G1 and the three B- lines all pass; any FAIL -> the stream writes
+  >   what he would see ON v OFF in player terms and messages the orchestrator the same hour (C46.2).
+
+- **Bar S v6 FILED (manoeuvre, 2026-10-30 ~01:40 PDT, stream/manoeuvre 4e72c5470, before any number on 12001-12048; recorded verbatim by
+  the orchestrator ~02:20).** Verbatim from the brief:
+
+  > **Bar S v6, his first squad settles where he clicks (manoeuvre M2; R45.28's round-46 starting point; C46.1, C46.3, C46.4, C46.6).**
+  > Bar S v5's shape and lines stand unchanged; only the code under the same arm flags changed. ONE arm, **s6** = `--shape-latch=off
+  > --seat-bound=on --seat-order=on --seat-last=open` v **base** = `--shape-latch=off` (today), on a FROZEN tree = stream/manoeuvre at
+  > the hash whose `make remote T=check` reads exited 0 (named at launch), native ON in every log (`native-fresh` first). **What changed since
+  > S v5 (C46.1):** under `--seat-last=open` the order term ranks the seats by the SHAPE's own left-to-right offsets, not by their route
+  > stations, and leaves the deep seat and its rear crew out of the ranks (659c9ab9b; R45.28's cause, found as station rank flips on a
+  > bending route). **C46.4:** the change is planner-side GDScript (`TacticsFormation.seat`); the drive is unchanged and twinned, so no new
+  > twin is needed (as R45.20 ruled for S v5); the default orders probe 60/60 byte-identical v main proves OFF unchanged. **What it could
+  > break (named first):** Crossing yield + blocked (S v5's miss; dev +0.8 se) and Crossing k-turn (S v5 +2.1 se; dev +1.2 se); Locks wedged
+  > (S v4 / S v5's miss; dev +0.5 se); a squad yielding to itself on Terminus (dev rows 47 -> 58, its yield+blocked -2.4 se); the G1 group
+  > column (byte-identical by scope, R43.34). **Workload (deciding), `make manoeuvre-bar-s`:** locks / terminus / crossing x **12001-12024**
+  > = 72 paired cells, 20 s; `tests/manoeuvre/s_judge.py` paired per cell. **D1** crews seated within the bound 15 s after their order ARM >
+  > BASE by >= 2 se AND pooled. **Guards, per arena (24 seeds each), each ARM <= BASE + 2 se:** start-zone yield + blocked s; k-turn s;
+  > wedged s; and never-arrived pooled ARM <= BASE + 2 se. **Group guards (`q3_judge.py`), 12025-12036 x crossing / locks / sumps / terminus x
+  > crew:** G5 all-in ARM <= BASE + 1.645 se, G6 never-in ARM <= BASE + 1.645 se, G7 friendly contact ticks ARM <= 1.05 x BASE. **G1 v9
+  > corridor, 12025-12036:** `orders-probe` locks / crossing / terminus x 5 squads x click: ORDERS_PROBE_SQUAD rows byte-identical base v s6,
+  > `orders_judge.py g1v8` lines each ARM <= BASE + 2 se. **Fights (`manoeuvre-wedge-trace` locks / terminus / sumps x 12037-12042), G1-G4
+  > as Bar S** (G4 kill share worst move <= 0.03: S v4's miss, S v5 at 0.029). **No SCRIPT ERROR** in any leg. **Perf:** the frozen tree's
+  > check (builder3: perf NOT JUDGED there; a builder0 perf read of the merge before ON). **Ships ON** (`SEAT_BOUND`, `SEAT_ORDER`,
+  > `SEAT_LAST_OPEN` default on; `--seat-bound=off` / `--seat-order=off` / `--seat-last=bound` the escapes) only if D1 and every guard pass.
+  > C46.6: the bound seats any squad on its own order (the CPU's too). **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_s6.sh`
+  > from a frozen worktree of the hash; evidence filed under `references/round46/manoeuvre/barss6-builder3-<hash>/`. **Dev history (never a
+  > bar):** the M1 dev read above (7001-7012).
+
 ## Rulings (round 46)
 
 _(newest first)_
+
+- **R46.11 (2026-10-30 ~03:20) L2's twin EQUAL; engage freezes on the pair; pre-L2 replays need `--lane-clear=off`.** Native: engage's
+  9446e1903 (GDScript lane cases) v pair/native-l2 165bea71f (all native): his Gorge 426/426 and Terminus 2071/2071 replay rows
+  byte-identical (`references/round46/native/l2-twin-proof-builder3-165bea71f/`, stream/native 33edf6eaf); unit sample 7536 decisions / 0
+  mismatches (mutation: 29). Engage merged the pair: stream/engage efe4d8ba9 = Bar L1's frozen tree if its check is green
+  (test_native_decide equality a guard; native re-proves on it; `--turn-in-cap` stays OFF there). **With L2 ON his recordings leave his
+  match from ~22 s (Terminus, Green_Guns_1) and ~50 s (Gorge): the rule acts on every crew.** Native makes replay-match / playtest-report
+  apply `--lane-clear=off` to pre-L2 recordings automatically (as R45.24); until then `REPLAY_FLAGS=--lane-clear=off`. Main a9c702bb7 =
+  + native 1843eb6df (the sel row; INHERIT its builder3 green 3472/0 ALL JUDGED).
+
+- **R46.10 (2026-10-30 ~02:30) V1 gains `forward`; two round-45 instrument faults (orders, 47cae3725).** `veto_failures(..., approach,
+  forward, data)`: "sent back" = farther from his click than it stands AND (> 10 m behind along the approach OR > 5 m behind toward its own
+  base edge on a click toward the enemy); on the approach-only test his Gorge Hunters PASSED ((-76, 101): level with his click along the
+  diagonal approach, 61 m W and 8.4 m N of their start). Laptop lab, his click: Spears on it, Hunters 33 m behind, Wrenches 66 m behind, one
+  file on his side. Because more clicks can fail, Bar V1 reports per arena how many clicks the veto touches and guards part B's street
+  lines on the touched street clicks (ARM <= BASE + 2 se). **Faults (correct R45.31's record):** (1) `orders_probe_geometry` printed
+  ORDERS_GEOMETRY before reading the anchors, so per-squad `across_gap` was always false: **G2's D1 "0 across a gap" was vacuous**; (2) G2's
+  his3 cell passed `--probe-stand` to nothing (starts mode "recorded" had no case): **D5b's squads stood at the army's centre, not his
+  recorded starts.** Both fixed on stream/orders; native marks them not-evidence in the judging table.
+
+- **R46.9 (2026-10-30 ~02:10) V1's seam final (orders, stream/orders a9fb6c0ef):** `SelectionSquads.veto_failures(anchors: Array[Vector3],
+  blocks: Array, click: Vector3, approach: Vector3, data := Arena.active) -> Array[int]` (no `ground`: V1 makes no path query; empty = click
+  untouched), from `veto_front` and `veto_refuses` (behind start > 10 m along the approach AND farther from the click than the start, OR
+  `guard_across_gap`); the re-deal only on a failing click, from G2's guard_lay seats. Twin NOT a V1 gate (optional, after the sel row).
+  G2's code came in with `--group-guard` default OFF: Bar V1's byte-identity guard covers the whole default path (every empty-veto click
+  equal to main cb1014bed, the 60-click default orders probe + his Locks clicks).
+
+- **R46.8 (2026-10-30 ~02:00) The big click is under budget; a light-folder timing trap.** Native, 7189e3ff3 (code cb1014bed), builder3
+  quiet, `make native-fresh control-timing`, 30 units / 6 squads, mean of 10: order 2.03 ms (ratio 56.3 v budget 104), click-to-order
+  2.13 ms (59.3), per-frame 0.62 ms (17.7 v 26); not judged (builder0 is the budget's box). N1's memo (B) drops to stretch. **Trap:** a
+  fresh light folder has no C++ library and control-timing does not build one, so a read there times the GDScript fallbacks silently
+  (6.86 ms, ratio 180.6). Fix on stream/native a734c2296 (`tools/remote.sh` runs native-fresh first), merged early alone when green;
+  relayed to every stream (re-check any light-folder read).
+
+- **R46.7 (2026-10-30 ~01:50) Engage L1 (builder3, 7189e3ff3 + trace rows, his Terminus replay, n 1): three causes, every blocker PARKED
+  (no yield ask to manoeuvre).** Shots 19 at 116.5 s, still 19 at 139.1 s. (1) 118-123 s at his post: CLEAR_LANE needs a fight target, HOLD
+  has none, and held_may_move would refuse the move; (2) 123-134 s under his attack: the order's +1.0 base is added before the commit
+  bonus, so ENGAGE (1+e) x 1.15 v CLEAR_LANE 1 + e x 1.3225: CLEAR_LANE wins only at e > 0.87; (3) 134-139 s: `_lane_spot` tests a 2 m
+  disc with no spread while the trigger tests the hull box + spread, so its "clear" spots stayed blocked by parked Wrenches_3, re-picked
+  every 2 s. Ruled: (2), (3) fixed under `--lane-clear` (ON at its bar); native: GDScript decide only for lane-blocked crews with the
+  switch ON until the twin lands (a C46.4 form, said in Bar L1). (1): his explicit HOLD never moves for a lane (he holds; the feed line
+  names the blocker); a post from his MOVE allows one lane step <= ~4 m that returns to the post; E2's authority probe is a guard.
+
+- **R46.6 (2026-10-30 ~01:40) Camera C1 read (stream/camera adb5c1b13, laptop, his Terminus recording, n 144 s with a selection); a `sel`
+  row for the recorder -> native.** (a) none of his selection on screen 2 s, under half 26 s (74-90 s: Guns strung 110 m, the 100 m frame
+  cap + the danger yaw turned S); (b) every ORDERED new selection on screen within 1 s; the code cause of his complaint: the glide's aim
+  hold (take_vision() starts the frame, but while his hand is on the mouse the automatic move coasts to a stop: it pans only after 1.5 s
+  at rest or a hit); (c) moving 116 s: view > 45 deg off his drive 64 s, buildings hide half+ of his shown selection 18 s (worst 70-74 s,
+  Wrenches N up the x -70 street, danger look SE, 136 deg off); hits on his units off screen 328/1214 (27 %). GRANT native:
+  `game/match/match_recorder.gd`, an additive `sel` row on each selection change (replays byte-identical), so selection without an order
+  shows in his next recording.
+
+- **R46.5 (2026-10-30 ~01:30) The V1/N1 seam (native's proposal, relayed to orders).** Facts (native): the fit's ~60 queries are
+  gate_width_edge's per-step `Pathing.find_path`, already C++ (NativeGateWidth); the cost is the engine's A* (~80 us a query, builder2);
+  G2's guard tests make no path query (pure terrain geometry). Seam: orders' `SelectionSquads.veto_failures(anchors, blocks, click,
+  approach, ground, data) -> Array[int]` (empty = byte-identical click), any path-length test through one `SelectionSquads.route_length`;
+  native twins it as one call (GDScript the source of truth). N1 = a per-click find_path memo (byte-identical); fewer queries is orders'
+  design call. A V1 with no path query ships on GDScript alone; Bar V1 says whether its twin is a gate. Signature final on orders' word.
 
 ## Round 45: four streams (prepared 2026-10-29; CLOSED 2026-10-30; briefs in `streams/archive/round45/`)
 
@@ -115,9 +276,9 @@ a War Rig nose-on to a container backs out first on every pose.** His words: `ga
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **orders** | `godot-orders` (6) | **Fable** | [streams/orders.md](streams/orders.md) | his 3-squad click on Gorge: all three land on his side of the gap, at his click, nobody sent back | O1 his Gorge click on the replay, the guard's cut |
+| **orders** | `godot-orders` (6) | Opus | [streams/orders.md](streams/orders.md) | his 3-squad click on Gorge: all three land on his side of the gap, at his click, nobody sent back | O1 his Gorge click on the replay, the guard's cut |
 | **engage** | `godot-engage` (5) | Opus | [streams/engage.md](streams/engage.md) | the lone scout he holds stays held; stopped stays stopped; moved goes to his click | E1 which layer moved the scout, by removal |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | a War Rig nose-on to a container backs out first, on the poses B1 lost | M1 pose 13's look that never fires |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a War Rig nose-on to a container backs out first, on the poses B1 lost | M1 pose 13's look that never fires |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | a 30-unit right click no longer hitches (gate_width in C++); builder runs no longer hang on a cold import | N1 the cold-import watchdog |
 
 **Not this round: camera** (no new corner moment), **balance** (waits). **Two Fable sessions:** orders (the group click, asked in rounds
@@ -827,8 +988,8 @@ round 43*; recordings `references/round43/playtest/2026-10-28T08-15-42-locks.jso
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **orders** | `godot-orders` (6) | **Fable** | [streams/orders.md](streams/orders.md) | his all-squads click: every squad heads the same way and lands in a column of wedges at his click | O1 record the click, then trace tick 1512 |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/manoeuvre.md) | a War Rig nose-on to a container backs out first; his one-squad order lands at his click | M1 rebase the R43.34 scoping onto main |
+| **orders** | `godot-orders` (6) | Opus | [streams/orders.md](streams/orders.md) | his all-squads click: every squad heads the same way and lands in a column of wedges at his click | O1 record the click, then trace tick 1512 |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | a War Rig nose-on to a container backs out first; his one-squad order lands at his click | M1 rebase the R43.34 scoping onto main |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | `make playtest-report` fits on one screen; the replay of his group click | N1 the one-screen report |
 
 **Not this round: camera** ("Camera seemed ok"; the corner swing waits for a recorded corner moment), **engage** (the street hold's
@@ -1241,8 +1402,8 @@ deliverable in engage and native is the cause shown on his seed, not a rule.
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **engage** | `godot-engage` (5) | **Fable** | [streams/archive/round43/engage.md](streams/archive/round43/engage.md) | a crew under attack-move keeps going for the far quay; no 20 s drive back to his own edge | A1 the turnaround traced on his seed |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/archive/round43/manoeuvre.md](streams/archive/round43/manoeuvre.md) | his first order on Locks: all five crews at his click within seconds, nobody parked 20 s in the start zone, the lead War Rig not 29 m off | S1 the arrival census of his first order |
+| **engage** | `godot-engage` (5) | Opus | [streams/archive/round43/engage.md](streams/archive/round43/engage.md) | a crew under attack-move keeps going for the far quay; no 20 s drive back to his own edge | A1 the turnaround traced on his seed |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/archive/round43/manoeuvre.md](streams/archive/round43/manoeuvre.md) | his first order on Locks: all five crews at his click within seconds, nobody parked 20 s in the start zone, the lead War Rig not 29 m off | S1 the arrival census of his first order |
 | **camera** | `godot-camera` (3) | Opus | [streams/archive/round43/camera.md](streams/archive/round43/camera.md) | rounding a building's corner, the view swings to the side the wall was hiding | K5.1 the camera in the recording |
 | **native** | `godot-native` (4) | Opus | [streams/archive/round43/native.md](streams/archive/round43/native.md) | nothing alone: the replay of his match reproduces it (CP43.0), quiet reads, lines_r43 | N1 the quiet reads (builder0 idle at launch) |
 
@@ -1709,9 +1870,9 @@ and Gangs, Law and Syndicate have none that does.
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **engage** | `godot-engage` (5) | **Fable** | [streams/archive/round42/engage.md](streams/archive/round42/engage.md) | a crew he tells to attack goes round the container and fires; no NOT FIRING banner | E1 replay his recording |
+| **engage** | `godot-engage` (5) | Opus | [streams/archive/round42/engage.md](streams/archive/round42/engage.md) | a crew he tells to attack goes round the container and fires; no NOT FIRING banner | E1 replay his recording |
 | **camera** | `godot-camera` (3) | Opus | [streams/archive/round42/camera.md](streams/archive/round42/camera.md) | an ambush from the side is on screen; a retreat to the edge looks back at the fight | K4.1 the look census |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/archive/round42/manoeuvre.md](streams/archive/round42/manoeuvre.md) | fewer shoves in his big order; the bridge crossing clean under the stat change | Q5.1 Bar Q5 (after CP42.0) |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/archive/round42/manoeuvre.md](streams/archive/round42/manoeuvre.md) | fewer shoves in his big order; the bridge crossing clean under the stat change | Q5.1 Bar Q5 (after CP42.0) |
 | **balance** | `godot-balance` (1) | Opus | [streams/archive/round42/balance.md](streams/archive/round42/balance.md) | the CPU meets his tank rush with artillery; Law / Syndicate artillery hurts tanks | B7 the CPU counter-lineup |
 | **native** | `godot-native` (4) | Opus | [streams/archive/round42/native.md](streams/archive/round42/native.md) | nothing alone: Q5's fields (CP42.0), twins, the judged lines and table | N1 CP42.0 exec_fields |
 
@@ -2150,8 +2311,8 @@ autocannon does 5 % on a tank's front, 50 % on its side, 100 % on its rear).
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/archive/round43/manoeuvre.md](streams/archive/round43/manoeuvre.md) | a crew waits for a turning friend instead of driving round it; the bridge crossing is clean | Q1 the jam census |
-| **balance** | `godot-balance` (1) | **Fable** | [streams/archive/round41/balance.md](streams/archive/round41/balance.md) | an all-tank army stops being the easy win; no faction a free win | B5 his levers (turret, hull) |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/archive/round43/manoeuvre.md](streams/archive/round43/manoeuvre.md) | a crew waits for a turning friend instead of driving round it; the bridge crossing is clean | Q1 the jam census |
+| **balance** | `godot-balance` (1) | Opus | [streams/archive/round41/balance.md](streams/archive/round41/balance.md) | an all-tank army stops being the easy win; no faction a free win | B5 his levers (turret, hull) |
 | **camera** | `godot-camera` (3) | Opus | [streams/archive/round43/camera.md](streams/archive/round43/camera.md) | the camera glides; what he is about to click stays still | K1 find every jerk |
 | **native** | `godot-native` (4) | Opus | [streams/archive/round43/native.md](streams/archive/round43/native.md) | nothing alone: C++ twins for manoeuvre's rules; tools | N1 remote.sh's literal-~ path |
 | **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | his many-squad order sets off in one direction, nobody nose-to-nose | O1 the group-order start census |
@@ -2394,9 +2555,9 @@ matchups (any blob v a gangs CPU 72 %, v a syndicate CPU 12 %).
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **balance** | `godot-balance` (1) | **Fable** | [streams/archive/round40/balance.md](streams/archive/round40/balance.md) | a gangs army isn't a free win, a syndicate army isn't a wall | B1 the per-unit tally |
+| **balance** | `godot-balance` (1) | Opus | [streams/archive/round40/balance.md](streams/archive/round40/balance.md) | a gangs army isn't a free win, a syndicate army isn't a wall | B1 the per-unit tally |
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/archive/round43/manoeuvre.md](streams/archive/round43/manoeuvre.md) | a crew steps aside for a friend without wedging the squads behind | M1 v2 on the 5 G5 runs |
-| **settle** | `godot-settle` (3) | **Fable** | [streams/settle.md](streams/settle.md) | a squad that stops doesn't sit 10 s and reshuffle; never parks on a friend's road | T1 the deploy trigger |
+| **settle** | `godot-settle` (3) | Opus | [streams/settle.md](streams/settle.md) | a squad that stops doesn't sit 10 s and reshuffle; never parks on a friend's road | T1 the deploy trigger |
 | **native** | `godot-native` (4) | Opus | [streams/archive/round43/native.md](streams/archive/round43/native.md) | nothing alone: per-unit counts for balance; the balance runner | N1 per-unit GUARD_RESULT (CP40.0) |
 | **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/orders.md) | his group click puts every squad in, the far one first | O1 trace locks 5 |
 
@@ -2735,8 +2896,8 @@ iterating to ensure that tactics and strategy win". The blob still wins ~47 % (n
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **settle** | `godot-settle` (3) | **Fable** | [archive/round39/settle.md](streams/archive/round39/settle.md) | a squad that stops never parks in the street the next squad is driving | S1 route-clear halt seats |
-| **doctrine** | `godot-doctrine` (1) | **Fable** | [archive/round39/doctrine.md](streams/archive/round39/doctrine.md) | a charging blob loses to a CPU that holds with some and strikes with the rest | D1 the rules-ON base read |
+| **settle** | `godot-settle` (3) | Opus | [archive/round39/settle.md](streams/archive/round39/settle.md) | a squad that stops never parks in the street the next squad is driving | S1 route-clear halt seats |
+| **doctrine** | `godot-doctrine` (1) | Opus | [archive/round39/doctrine.md](streams/archive/round39/doctrine.md) | a charging blob loses to a CPU that holds with some and strikes with the rest | D1 the rules-ON base read |
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | [archive/round39/manoeuvre.md](streams/archive/round39/manoeuvre.md) | a parked crew steps aside once for a friend and goes back, not shoved down the street | M1 chain-aware give-way |
 | **orders** | `godot-orders` (5) | Opus | [archive/round39/orders.md](streams/archive/round39/orders.md) | his group click puts every squad in, the far one first, on his route at corners | G1 who takes the far place |
 | **feedback** | `godot-feedback` (6) | Opus | [archive/round39/feedback.md](streams/archive/round39/feedback.md) | the new rules show on screen; the phone map frees its top | F1 the rules he can see |
@@ -2939,8 +3100,8 @@ wrong first shape (R37.42), O2's parked re-deals (R37.28). Plus: the match end i
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **orders** | `godot-orders` (5) | **Fable** | [streams/archive/round38/orders.md](streams/archive/round38/orders.md) | a group click lands his squads stacked down the street he clicked, nearest in front, each whole | G1 O7 v2 (open ground; route legs) |
-| **doctrine** | `godot-doctrine` (1) | **Fable** | [streams/archive/round38/doctrine.md](streams/archive/round38/doctrine.md) | the CPU's defenders stop and shoot from cover; a blob charging them loses | D1 measure who halts to fire |
+| **orders** | `godot-orders` (5) | Opus | [streams/archive/round38/orders.md](streams/archive/round38/orders.md) | a group click lands his squads stacked down the street he clicked, nearest in front, each whole | G1 O7 v2 (open ground; route legs) |
+| **doctrine** | `godot-doctrine` (1) | Opus | [streams/archive/round38/doctrine.md](streams/archive/round38/doctrine.md) | the CPU's defenders stop and shoot from cover; a blob charging them loses | D1 measure who halts to fire |
 | **settle** | `godot-settle` (3) | Opus | [streams/archive/round38/settle.md](streams/archive/round38/settle.md) | a parked squad keeps its shape and spots; no tank drives across its squad after stopping | S1 the deploy deal crossing |
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/archive/round38/manoeuvre.md](streams/archive/round38/manoeuvre.md) | parked crews step aside and back for friends; CPU screens out of the way | M1 M5 v2 |
 | **feedback** | `godot-feedback` (6) | Opus | [streams/archive/round38/feedback.md](streams/archive/round38/feedback.md) | he can't miss the match ending | F1 the end of a match |
@@ -3673,7 +3834,7 @@ are smart and under their control".
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/archive/round37/manoeuvre.md) | a crew no longer steps aside again and again into the same friend | M1 Eyes_3's stand rule |
 | **feedback** | `godot-feedback` (3) | Opus | [streams/feedback.md](streams/archive/round37/feedback.md) | a rear hit looks and sounds different; a pinned crew shows it; the Tanker's repair and the Emitter's cone are visible | F1 the directions page |
 | **native** | `godot-native` (4) | Opus | [archive/round39/native.md](streams/archive/round39/native.md) | nothing alone: the two guard lines every rule is judged on; the C++ twins | CP37.1 the blob and turtle lines |
-| **orders** | `godot-orders` (5) | **Fable** | [streams/orders.md](streams/archive/round37/orders.md) | a squad's order stops flickering; a parked squad stays put and shoots; squads arrive whole | O1 the halt-shape flicker |
+| **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/archive/round37/orders.md) | a squad's order stops flickering; a parked squad stays put and shoots; squads arrive whole | O1 the halt-shape flicker |
 | **cover** | `godot-cover` (6) | Opus | [streams/cover.md](streams/archive/round37/cover.md) | a tank parked tight behind rubble or a low wall is hard to hit from the front | K1 count each map's low cover |
 
 **Machines (C37.1):** builder0 (12 cores) = **orders', manoeuvre's and feedback's lane**; builder2 (e2-highcpu-32 Spot, us-west4,
@@ -4401,7 +4562,7 @@ S2. Brains' paths have no stream this round (C36.6).
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
 | **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/archive/round36/traffic.md) | a crew being shot while waiting its turn in a street mouth drives on instead of sitting there | T8's pair and series on builder2, after CP36.1 |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/archive/round36/manoeuvre.md) | a crew wedged between two friends backs out within a few seconds; fewer crews left sitting behind their squad | S1 stallnet (net-motion stall clock) |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/archive/round36/manoeuvre.md) | a crew wedged between two friends backs out within a few seconds; fewer crews left sitting behind their squad | S1 stallnet (net-motion stall clock) |
 | **orders** | `godot-orders` (5) | Opus | [streams/orders.md](streams/archive/round36/orders.md) | a squad that has just set up doesn't block the next squad's street; less shuffling as squads deploy; seats he can drive straight to | O1 the herringbone-across-a-lane lab stage |
 | **native** | `godot-native` (4) | Opus | [streams/native.md](streams/archive/round36/native.md) | nothing alone: the scoreboard row for every main, the mirrors, cleaner tests | N1 hand over round 35's scoreboard + copy-back fix |
 
@@ -5551,8 +5712,8 @@ ONE machine. Before a run, `make gcp-status` says whether builder2 is up; if not
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **traffic** | `godot-traffic` (1) | **Fable** | [streams/traffic.md](streams/traffic.md) | a crew stuck behind a parked crew of another squad gets by, and the parked crew goes back to its post (parkedroom v4); the yard's last hull stops circling (T4) | the stuck-death census |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/manoeuvre.md](streams/archive/round37/manoeuvre.md) | his circled scout turns and fights instead of shuffling (C33.9, done right); a War Rig or other wheeled turret vehicle told to face a direction ends facing it and sits still (CP-F 4) | C33.9 |
+| **traffic** | `godot-traffic` (1) | Opus | [streams/traffic.md](streams/traffic.md) | a crew stuck behind a parked crew of another squad gets by, and the parked crew goes back to its post (parkedroom v4); the yard's last hull stops circling (T4) | the stuck-death census |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/archive/round37/manoeuvre.md) | his circled scout turns and fights instead of shuffling (C33.9, done right); a War Rig or other wheeled turret vehicle told to face a direction ends facing it and sits still (CP-F 4) | C33.9 |
 | **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | a scout stands and trades when it can win, and leaves when it can't; a pushed-off War Rig returns facing his way (B11b, after CP-F) | scout try 2 |
 | **native** | `godot-native` (4) | Opus | [archive/round39/native.md](streams/archive/round39/native.md) | nothing alone: every pair; a network match that never logs a shell hitting a dropped player | pairs, then the relay-smoke bug |
 | **planner** | `godot-planner` (6) | Opus | [streams/planner.md](streams/planner.md) | a rematch without restarting plays out the same (replays and the network depend on it) | the rematch diagnosis |
@@ -7450,7 +7611,7 @@ bridge and the SBF line re-judged with their round-30 findings; the C++ port of 
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/archive/round37/manoeuvre.md) | a wedged IFV or truck backs out of a wall or a squadmate instead of sitting at full throttle, and a War Rig pinned on a friend asks, then backs straight; wheeled turret vehicles turn their whole hull to his drawn facing | **CP-H** (the honest-reading A/B, manoeuvre runs it); M1b(2) |
 | **brains** | `godot-brains` (3) | Opus | [streams/brains.md](streams/brains.md) | the yard's last crew in every time with the 180° arrival and a scout's chase intact; his bridge 108/108; support by fire lines up on his drawn facing | **CP-G** B5c-v5 pair; B3b; B6 |
 | **native** | `godot-native` (4) | Opus | [archive/round39/native.md](streams/archive/round39/native.md) | nothing in play: every pair; the planner's C++ reviewed and built; `test_native_traffic_hold` split | each pair; **CP-P0** with planner |
-| **planner** | `godot-planner` (6) | **Fable** | [streams/planner.md](streams/planner.md) | a long truck in a Terminus street turns in two or three deliberate legs, backs out of a wedge, never grinds a wall (behind `--nav-off=planner` until its bar passes, then ON as a pair) | **CP-P0** C++ port equal to the GDScript planner; **CP-P1** the seam judged |
+| **planner** | `godot-planner` (6) | Opus | [streams/planner.md](streams/planner.md) | a long truck in a Terminus street turns in two or three deliberate legs, backs out of a wedge, never grinds a wall (behind `--nav-off=planner` until its bar passes, then ON as a pair) | **CP-P0** C++ port equal to the GDScript planner; **CP-P1** the seam judged |
 
 **Ownership (round 30's, restated, plus the planner's grants):** in `movement.gd`: traffic the give-way block
 (`right_of_way` through `_blocker`), `_avoid`, `_around_friends`, `_ask_behind`, `_hull_within`; manoeuvre the `drive()`
@@ -8208,11 +8369,11 @@ other's tail clears; the C++ core continuing.**
 | Stream | Folder (offset) | Model | Brief | What he will notice | Checkpoint |
 |---|---|---|---|---|---|
 | **traffic** | `godot-traffic` (1) | Opus | [streams/archive/round30/traffic.md](streams/archive/round30/traffic.md) | two of his squads crossing at an angle: the yielding squad no longer crawls as a whole for 30–45 s; a set-up mortar truck stays set up while it is still ordered to fire | T3b DECLARED; T1c-b DECLARED; I3's proof |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | [streams/archive/round30/manoeuvre.md](streams/archive/round30/manoeuvre.md) | a long truck wedged against a wall backs out instead of sitting at full throttle; a drawn facing lands nose-on for wheeled turret vehicles; the creep re-judged on an honest base | **CP-M4b** (+ native's pair), M1b, M2b, M5 |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/archive/round30/manoeuvre.md](streams/archive/round30/manoeuvre.md) | a long truck wedged against a wall backs out instead of sitting at full throttle; a drawn facing lands nose-on for wheeled turret vehicles; the creep re-judged on an honest base | **CP-M4b** (+ native's pair), M1b, M2b, M5 |
 | **brains** | `godot-brains` (3) | Opus | [streams/archive/round30/brains.md](streams/archive/round30/brains.md) | the yard's last crew in every time AND a car that arrives facing the way it came; gang trucks' screen slots filled; his bridge 108/108 | **CP-G** B5c-v4 (+ native's pair), B3b |
 | **native** | `godot-native` (4, continuing) | Opus | [archive/round39/native.md](streams/archive/round39/native.md) | nothing in play (equal answer): the B5c and M4b pairs; N7.5 element_feed | each pair |
-| **sizing** | `godot-sizing` (5) | **Fable** | [streams/archive/round30/sizing.md](streams/archive/round30/sizing.md) | nothing in play: every bar this round is sized by its probe's measured noise; fewer builder0 runs that decide the same thing | **CP-N** the per-probe n table, early |
-| **planner** | `godot-planner` (6) | **Fable** | [streams/archive/round30/planner.md](streams/archive/round30/planner.md) | nothing in play this round: a local motion planner for long wheeled hulls in streets, designed, tested offline and shown in a lab scene; manoeuvre integrates it next round | P2 offline tests; P3 the lab clip |
+| **sizing** | `godot-sizing` (5) | Opus | [streams/archive/round30/sizing.md](streams/archive/round30/sizing.md) | nothing in play: every bar this round is sized by its probe's measured noise; fewer builder0 runs that decide the same thing | **CP-N** the per-probe n table, early |
+| **planner** | `godot-planner` (6) | Opus | [streams/archive/round30/planner.md](streams/archive/round30/planner.md) | nothing in play this round: a local motion planner for long wheeled hulls in streets, designed, tested offline and shown in a lab scene; manoeuvre integrates it next round | P2 offline tests; P3 the lab clip |
 
 **Ownership (round 29's, restated, plus the two new isolated streams):** each brief's header lists its paths. In
 `movement.gd`: traffic the give-way block (`right_of_way` through `_blocker`), `_avoid`, `_around_friends`, `_ask_behind`,
