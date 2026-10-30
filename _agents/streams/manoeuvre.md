@@ -130,9 +130,15 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   (se 1.38, z 1.54; A6 v4 read +2.54 / z 1.81 on the same seeds)**: the fix mends two of the four verdict flips (11450, 11462: A waits
   again, 0 far contacts), 11472 still flips (0 far contacts), 11466 still flips by the near-tie (32); and the three locks_lock seeds
   where B waits in BOTH arms read more far contacts under holdway (11458 3 -> 8, 11460 6 -> 15, 11464 0 -> 5): an excess the verdict
-  does not explain, being read on 11460 (laptop, trace). Everything the rule is for still passes wide (side jam -8.5 s a run, off_arrive
-  -6.1 s, held_on -30.8 s, far_arrive -6.3 s). **holdway stays OFF**: a new bar needs fresh seeds, this locks_lock excess understood,
-  and a tie rule for the coin-toss verdicts -- round 46 work unless the 11460 read is quick.
+  does not explain. **Read on 11460 (laptop, trace; terminus_west, B waits in both arms, far contacts 3 -> 19):** the wait's spots are
+  laid across the waiter's squad WAY at the mouth, and under holdway that way is the mean of the crews' ORDERED ways, which at the
+  order's first ticks includes crews driving to stations beside them: the way tilts 7 deg ((-0.03, 1.0) -> (-0.12, 0.99)), the spot
+  line tilts with it and the spots are dealt to other crews (three of five east of the street's line instead of two, one at x -45.9),
+  and A's far crews, coming down the street 10-25 s later, brush more of B's held crews. Same mechanism as the verdict flip: a crew's
+  "ordered way" is its STATION's direction, not its squad's route. Everything the rule is for still passes wide (side jam -8.5 s a run,
+  off_arrive -6.1 s, held_on -30.8 s, far_arrive -6.3 s). **holdway stays OFF; round 46 (named here):** define the ordered way as the
+  squad's route direction at the crew (Element.transit route tangent, as backout's look follows it), not the crew's next station;
+  a tie rule for the coin-toss verdicts (the squad whose lead is nearer the street's inside waits); then a bar on fresh seeds.
 - **Then:** holdway's head-on release last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars,
   each failing as filed with his line passing) follows unchanged.
 
