@@ -106,6 +106,13 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.5 (2026-10-30 ~01:30) The V1/N1 seam (native's proposal, relayed to orders).** Facts (native): the fit's ~60 queries are
+  gate_width_edge's per-step `Pathing.find_path`, already C++ (NativeGateWidth); the cost is the engine's A* (~80 us a query, builder2);
+  G2's guard tests make no path query (pure terrain geometry). Seam: orders' `SelectionSquads.veto_failures(anchors, blocks, click,
+  approach, ground, data) -> Array[int]` (empty = byte-identical click), any path-length test through one `SelectionSquads.route_length`;
+  native twins it as one call (GDScript the source of truth). N1 = a per-click find_path memo (byte-identical); fewer queries is orders'
+  design call. A V1 with no path query ships on GDScript alone; Bar V1 says whether its twin is a gate. Signature final on orders' word.
+
 ## Round 45: four streams (prepared 2026-10-29; CLOSED 2026-10-30; briefs in `streams/archive/round45/`)
 
 **Goal: his order wins. One click for three squads never sends a squad back behind its own start or across a drop from his click
