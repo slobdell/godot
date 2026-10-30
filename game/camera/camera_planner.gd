@@ -53,7 +53,8 @@ const W_WAR := 1.5
 ## C1 v2 (Bar C1's one miss, G7: a gun firing from BEHIND the view was a share of all the contacts, and the turn to it waited out
 ## the switch hold and the cost mean): each enemy that fired at his selection within RtsCamera.DANGER_RECENT_S costs W_GUN off
 ## screen, as a share of those guns only, and is not averaged; a pose that shows more of them is not held back by a recent switch.
-const W_GUN := 6.0
+## 0 = OFF (v1, as Bar C1 read it); the v2 dev value is 6.
+const W_GUN := 0.0
 ## The war term starts past this bearing (his lens shows ~+-29 deg) and is spent in full this far past it.
 const WAR_FREE_DEG := 25.0
 const WAR_FULL_DEG := 90.0
@@ -97,6 +98,9 @@ static func override_weights(text: String) -> void:
 			"lift": w_lift = v
 			"war": w_war = v
 			"gun": w_gun = v
+			"margin": screen_margin = v
+			"clamp": use_clamp = v > 0.5
+			"behind": behind_rule = v > 0.5
 			"range": action_range_m = v
 			"hold": hold_margin = v
 
@@ -243,11 +247,18 @@ static func screen_of(view: Transform3D, point: Vector3, aspect: float) -> Varia
 ## C1 v2: "on screen" keeps this margin (of the half-width / half-height) from the edges and the card, where he can click it
 ## (CameraLook's 60 px at 1080 rows). Without it a wide frame parked contacts behind his squad on the screen's bottom edge and
 ## called them shown (Bar C1's G7 miss, dev 7001: today's camera was already turning to them).
-const SCREEN_MARGIN := 0.1
+const SCREEN_MARGIN := 0.0
+static var screen_margin := SCREEN_MARGIN
+static var use_clamp := false
+static var behind_rule := false
+## C1 v2's four parts, OFF (= the planner Bar C1 read at 3bf76e839): `--camera-planner-w=gun:6,margin:0.1,behind:1,clamp:1`
+## is v2 (dev only). Dev 7001-7036 (Status *C1 v2*): v2 brings the ambush rear-lane turn back to about today's (4.3 v 3.4 s
+## mean) but faces known enemies as today's camera does, and the "no building in the way" gain goes (hidden while driving
+## 34 % v 36 % today, v1 16 %). His call.
 ## Whether a screen point is in his view: inside the frame and above the command card (`bottom` of the half-height). Pure.
 static func on_screen(ndc: Variant, bottom: float) -> bool:
-	return ndc is Vector2 and absf((ndc as Vector2).x) <= 1.0 - SCREEN_MARGIN and (ndc as Vector2).y <= 1.0 - SCREEN_MARGIN \
-			and (ndc as Vector2).y >= -bottom + SCREEN_MARGIN
+	return ndc is Vector2 and absf((ndc as Vector2).x) <= 1.0 - screen_margin and (ndc as Vector2).y <= 1.0 - screen_margin \
+			and (ndc as Vector2).y >= -bottom + screen_margin
 
 
 ## The cost of the pose that looks along `yaw` at `focus` from zoom `level`, and its terms. `current_yaw` is the wanted
@@ -290,7 +301,7 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 		action_w += float(contact[1])
 		# Behind his squad (more than 90 deg off the view from it) is not shown, whatever the projection says: a wide frame
 		# parks such contacts on the screen's bottom edge, under the card (the danger camera's danger_ahead rule; dev 7025).
-		if RtsCamera.behind_view(yaw, squad, contact[0] as Vector3) \
+		if (behind_rule and RtsCamera.behind_view(yaw, squad, contact[0] as Vector3)) \
 				or not on_screen(screen_of(view, (contact[0] as Vector3) + Vector3(0, 1, 0), aspect), bottom):
 			action_off += float(contact[1])
 	var outside := 0
@@ -390,7 +401,7 @@ func step(w: Dictionary, current_yaw: float, now: float, n: int) -> Dictionary:
 			continue  # no contacts this frame: no wide frame to score (costs nothing)
 		var v: Array = CameraPlanner.fit(own, w.get("lean"), yaw, w) if vi == 0 else CameraPlanner.fit(own + wide, null, yaw, w)
 		var clamp: Callable = w.get("clamp", Callable())
-		if clamp.is_valid():
+		if clamp.is_valid() and use_clamp:
 			v[0] = clamp.call(v[0])  # C1 v2: score the pose the rig will SHOW (it clamps the focus to ground his force sees)
 		var pick := CameraPlanner.score(yaw, v[0], float(v[1]), current_yaw, w, solids)
 		pick["wide"] = vi == 1

@@ -194,11 +194,13 @@ func test_the_plan_spread_over_frames_decides_as_the_whole_plan_does() -> void:
 
 func test_a_gun_firing_from_behind_the_view_wins_the_next_plan_even_just_after_a_switch() -> void:
 	RtsCamera.fov = RtsCamera.FOV_DEG
+	CameraPlanner.override_weights("gun:6")  # C1 v2 (dev, OFF by default): the gun term
 	var w := _world(_squad(Vector3(0, 0, 0)), {"obstacles": []}, null,
 			[[Vector3(-20, 0, -60), 1.0], [Vector3(20, 0, -60), 1.0], [Vector3(0, 0, -70), 1.0], [Vector3(0, 0, 70), 5.0]])
 	w["guns"] = [Vector3(0, 0, 70)]  # three quiet contacts ahead (north), the gun firing at him behind (south)
 	var planner := CameraPlanner.new()
 	planner._switched_at = 0.0  # it has just switched: the hold is at its highest
 	var out := planner.plan(w, 0.0, 0.1)
+	CameraPlanner.override_weights("gun:%f" % CameraPlanner.W_GUN)
 	assert_true(absf(angle_difference(float(out["yaw"]), PI)) <= deg_to_rad(60.0),
 			"the view turns toward the gun behind (yaw %.0f, %s)" % [rad_to_deg(float(out["yaw"])), out["terms"]])
