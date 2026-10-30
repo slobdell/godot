@@ -51,13 +51,19 @@ const PASS_CASES := ["live", "timeout", "done"]
 func test_the_give_way_under_fire() -> void:
 	if FreshStage.parent(self, "test_the_give_way_under_fire"):  # its own process (tests/native/fresh_stage.gd)
 		return
+	var holdway_was := Traffic.off("holdway")
+	Traffic.set_off("holdway", true)  # Round 46 (R46.30): holdway ON changes who waits at a street mouth, so this staging no longer reaches its case; the gate / yield twins are staged on the traffic they were built for (holdway's own drive equality: test_native_drive, test_native_drive_backout*).
 	await _stage("yard_open", false, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, UNDERFIRE_FLOORS, 0, 60)
+	Traffic.set_off("holdway", holdway_was)
 
 
 func test_the_give_way_under_fire_owned() -> void:
 	if FreshStage.parent(self, "test_the_give_way_under_fire_owned"):  # its own process (tests/native/fresh_stage.gd)
 		return
+	var holdway_was := Traffic.off("holdway")
+	Traffic.set_off("holdway", true)  # Round 46 (R46.30): holdway ON changes who waits at a street mouth, so this staging no longer reaches its case; the gate / yield twins are staged on the traffic they were built for (holdway's own drive equality: test_native_drive, test_native_drive_backout*).
 	await _stage("yard_open", true, Vector3(0.0, 0.0, 15.0), 9.0, 24.0, UNDERFIRE_FLOORS, 0, 60)
+	Traffic.set_off("holdway", holdway_was)
 
 
 ## Round 35 (traffic T7): the pass, end to end (traffic's open-ground staging, test_traffic_underfire). Two law tanks on

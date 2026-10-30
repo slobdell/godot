@@ -99,6 +99,7 @@ func _run() -> void:
 		return
 	var away: Vector3 = stage["away"]
 	var yaw := atan2(away.x, away.z)  # facing the gun (forward is -Z)
+	var drive_to: Vector3 = _flat(stage["gun"]) + away * 20.0
 	var names: Array = []
 	for i in count:
 		names.append(String(lab.unit(Match.Team.GREEN, "Green_A_%d" % (i + 1), stage["spots"][i], yaw, hull).name))
@@ -119,8 +120,7 @@ func _run() -> void:
 	# Driving at the enemy: his squad's move task toward the gun, drills on (an attack-move), as a squad closes before he
 	# takes one crew in hand.
 	var element := lab.elements.form(names, "Alpha")
-	var toward_gun: Vector3 = _flat(stage["gun"]) + away * 20.0
-	element.assign({"verb": "move", "to": [toward_gun.x, toward_gun.z]})
+	element.assign({"verb": "move", "to": [drive_to.x, drive_to.z]})
 	for i in int(ORDER_AT_S * SimClock.TICK_RATE):
 		await lab.step()
 	var crew := lab.tank_of(ordered)

@@ -1,0 +1,13 @@
+A: 18 paired fights (unpaired: none)
+FAIL D moving-stuck seconds: 256.9 -> 277.3 s (+7.9 %; line <= 205.5); paired mean +1.13 s a fight, se 4.35 (0.3 se; line <= -2 se)
+PASS G1 deaths in give-ways: 54 -> 45 (line +18.9 = max(2 paired se x n, 3))
+PASS G2 stuck deaths: 119 -> 125 (line +30.1)
+PASS G3 friendly contact ticks: 470701 -> 455691 (line <= 517771)
+FAIL G4 fights: kill share {'Green': 0.529, 'Rust': 0.471} -> {'Green': 0.489, 'Rust': 0.511} (worst move 0.040, line 0.03); deaths 809 -> 826 (line +/- 40)
+B: 0 paired runs (off 0, on 48)
+PASS G5 never-in runs: 0 -> 0 (no more)
+PASS G6 all-in time: paired median +0.0 s over 0 runs (line +2.0)
+PASS G7 last squad in: paired mean +0.0 s over 0 runs (line +2.0); 0 runs > 10 s later v 0 > 10 s earlier (line: later <= earlier + 3)
+reported OFF long episodes 41, 325 s (moving 37, 257 s); longest moving terminus s12042 Rust_Battery3_4 gang_artillery 21.0 s, sumps s12041 Rust_Burners3_1 burner 20.5 s, locks s12042 Rust_Battery_5 gang_artillery 19.2 s
+reported ON  long episodes 36, 277 s (moving 36, 277 s); longest moving locks s12038 Green_Hunters_6 syn_ifv 42.0 s, locks s12040 Green_Hunters II_7 ifv 17.9 s, terminus s12042 Rust_Battery_1 gang_artillery 15.5 s
+VERDICT FAIL (G8 bridge-pooled: bridge_verdict.py's line)

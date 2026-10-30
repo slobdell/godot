@@ -59,9 +59,22 @@ func _mutate(s: Dictionary, current: Dictionary, n: int, rng: RandomNumberGenera
 		5:
 			m["control"] = {"center": here + Vector3(5.0, 0.0, 5.0), "radius": 20.0, "owner": rng.randi_range(-1, 1)}
 		6:
-			m["self"]["lane_blocked_ticks"] = 30
+			m["self"]["lane_blocked_ticks"] = 30 if rng.randf() < 0.85 else rng.randi_range(0, 2 * TankBrain.LANE_BLOCKED_TICKS)
 			if first_name != "":
-				cur = {"option": "ENGAGE", "target": first_name}
+				cur = {"option": "ENGAGE", "target": first_name} if rng.randf() < 0.5 else {"option": "HOLD", "target": ""}
+			# Round 46 (engage L2): the gun's held target (a crew with no fight of its own serves it), and his post's
+			# lane step under each verb the rule scores.
+			var lane_names: Array = [first_name, "", "Nobody_1"]
+			for c: Dictionary in contacts:
+				lane_names.append(String(c["name"]))
+			m["self"]["lane_target"] = String(lane_names[rng.randi_range(0, lane_names.size() - 1)])
+			if rng.randf() < 0.7:
+				var verb: String = ["hold", "attack", "attack_move", "move", "idle"][rng.randi_range(0, 4)]
+				m["order"] = {"verb": verb, "target": first_name if verb == "attack" or rng.randf() < 0.3 else "",
+						"goal": here + Vector3(6.0, 0.0, 3.0) if verb != "attack" else null, "target_alive": true,
+						"speed": 1.0}
+				if rng.randf() < 0.6:
+					m["order"]["lane_step"] = true
 		7:
 			for c: Dictionary in contacts:
 				c["pinned"] = rng.randf() < 0.5
@@ -102,6 +115,9 @@ func test_decide_is_the_gdscript() -> void:
 	var scout_fights := 0
 	var scout_cut_by_forecast := 0
 	var flag_saved := TankBrain.SCOUT_FIGHT_BACK
+	# Round 46 (engage L2): one case in five with the lane rule off; CLEAR_LANE counted where only L2 can choose it.
+	var lane_saved := TankBrain.LANE_CLEAR
+	var lane_only := 0
 	for frame in 600:
 		await wait_physics_frames(1)
 		if frame % 5 != 4:
@@ -150,6 +166,7 @@ func test_decide_is_the_gdscript() -> void:
 			for ci in cases.size():
 				var pair: Array = cases[ci]
 				TankBrain.SCOUT_FIGHT_BACK = flag_saved and ci != flag_off
+				TankBrain.LANE_CLEAR = lane_saved and (asked + ci) % 5 != 0
 				BrainSwitches.native_decide = false
 				var t0 := Time.get_ticks_usec()
 				var live := TankBrain.decide(pair[0], pair[1])
@@ -161,6 +178,10 @@ func test_decide_is_the_gdscript() -> void:
 				asked += 1
 				var option := String(live["choice"]["option"])
 				options[option] = int(options.get(option, 0)) + 1
+				var o_lane: Dictionary = (pair[0] as Dictionary).get("order", {}) if (pair[0] as Dictionary).get("order") is Dictionary else {}
+				if option == "CLEAR_LANE" and TankBrain.LANE_CLEAR and (String((pair[1] as Dictionary).get("target", "")) == "" \
+						or bool(o_lane.get("lane_step", false))):
+					lane_only += 1
 				if live != native:
 					mismatches += 1
 					if first == "":
@@ -168,6 +189,8 @@ func test_decide_is_the_gdscript() -> void:
 								var_to_str(native).left(500)]
 	BrainSwitches.native_decide = saved
 	TankBrain.SCOUT_FIGHT_BACK = flag_saved
+	TankBrain.LANE_CLEAR = lane_saved
+	print("native decide: %d CLEAR_LANE choices only the lane rule makes (no fight of its own, or his post's lane step)" % lane_only)
 	print("native decide: %d scout cases under fire, %d where the scout fights back, %d it would fight standing still" % [
 			scout_cases, scout_fights, scout_cut_by_forecast])
 	print("native decide: %.1f usec a decide live, %.1f native" % [float(live_usec) / maxi(asked, 1), float(native_usec) / maxi(asked, 1)])
@@ -177,4 +200,5 @@ func test_decide_is_the_gdscript() -> void:
 	# against a vacuous run, not targets.
 	assert_true(scout_fights >= 13, "the scout's fight-back branch was reached (%d of %d)" % [scout_fights, scout_cases])
 	assert_true(scout_cut_by_forecast >= 3, "the reach forecast cut some fights (%d of %d)" % [scout_cut_by_forecast, scout_cases])
+	assert_true(lane_only >= 5, "the lane rule's own branches were reached (%d)" % lane_only)
 	assert_true(asked >= 1500 and options.size() >= 10, "a real sample (%d decisions, %d options chosen)" % [asked, options.size()])

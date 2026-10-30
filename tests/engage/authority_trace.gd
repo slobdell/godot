@@ -9,6 +9,7 @@ extends "res://tests/replay_orders.gd"
 ##   mover    the mover's phase and goal
 ## `--authority-on-at=TICK` (E4, his acceptance read): replay his match as he played it (give `--player-authority=off`) and
 ## switch the rule ON at TICK, so his later clicks still meet the match they were made in.
+## `--lane-clear-on-at=TICK` (round 46, L5): the same for the lane rule (give `--lane-clear=off`).
 ## `--authority-units=A,B` names the crews (default Green_Hunters_5); `--authority-from=TICK` / `--authority-every=N`.
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/engage/authority_trace.gd -- --orders=<his jsonl> \
 ##         --seconds=107 [--authority-from=2500 --authority-every=3] [any game switch]
@@ -22,6 +23,8 @@ var _shots_hooked := false
 var _shot_ticks := {}
 var _shots_read := false
 var _framed := false
+## Round 46 (engage L1): the last CLEAR_LANE read printed per crew (its tick), so each `_lane_spot` call prints once.
+var _lane_printed := {}
 
 
 func _trace() -> void:
@@ -36,6 +39,12 @@ func _trace() -> void:
 	if on_at >= 0 and _match.tick >= on_at and not Drills.PLAYER_AUTHORITY:
 		Drills.PLAYER_AUTHORITY = true
 		print("AUTHORITY_SWITCH on at tick %d" % _match.tick)
+	TankBrain.LANE_READ = true
+	# Round 46 (L5): his game as played (`--lane-clear=off`), the lane rule switched ON at TICK.
+	var lane_at := int(_flag("lane-clear-on-at", "-1"))
+	if lane_at >= 0 and _match.tick >= lane_at and not TankBrain.LANE_CLEAR:
+		TankBrain.LANE_CLEAR = true
+		print("LANE_SWITCH on at tick %d" % _match.tick)
 	_shoot()
 	if not _shots_hooked and _match != null:
 		_shots_hooked = true
@@ -57,6 +66,7 @@ func _trace() -> void:
 			continue
 		_last[unit_name] = key
 		print("AUTHORITY " + JSON.stringify(row))
+		_print_lane(tank)
 
 
 func _row(tank: Tank) -> Dictionary:
@@ -105,6 +115,26 @@ func _row(tank: Tank) -> Dictionary:
 		var gun: Gunnery = brain.gunnery
 		row["lane_blocker"] = gun.lane_blocker
 		row["lane_ticks"] = gun.lane_blocked_ticks
+		row["refused"] = brain.held_moves_refused
+		var lane_goal: Variant = brain._lane_goal
+		if lane_goal is Vector3:
+			row["lane_goal"] = [snappedf((lane_goal as Vector3).x, 0.1), snappedf((lane_goal as Vector3).z, 0.1)]
+			row["lane_goal_m"] = snappedf(tank.global_position.distance_to(lane_goal), 0.1)
+		row["move"] = String(brain.move_order.get("type", ""))
+		if brain.move_order.has("x"):
+			row["move_to"] = [snappedf(float(brain.move_order["x"]), 0.1), snappedf(float(brain.move_order["z"]), 0.1)]
+		# Round 46 (L1): the blocker: moving or parked, and under what order.
+		if gun.lane_blocker != "":
+			var blocker := _match.tanks.get_node_or_null(NodePath(gun.lane_blocker)) as Tank
+			if blocker != null:
+				row["blk_v"] = snappedf(blocker.estimated_velocity.length(), 0.1)
+				row["blk_m"] = snappedf(tank.global_position.distance_to(blocker.global_position), 0.1)
+				var blk_order: Dictionary = orders.current(gun.lane_blocker) if orders != null else {}
+				row["blk_order"] = String(blk_order.get("verb", ""))
+				row["blk_phase"] = String(Movement.state(blocker).get("phase", ""))
+				var blk_brain := _match.brains.get_node_or_null("Brain_" + gun.lane_blocker) as TankBrain
+				if blk_brain != null:
+					row["blk_option"] = String(blk_brain.choice.get("option", ""))
 		row["held_s"] = snappedf(gun.engagement_lay.held_s if "held_s" in gun.engagement_lay else -1.0, 0.1)
 	if brain != null and brain.engaged_target != "":
 		var target := _match.tanks.get_node_or_null(NodePath(brain.engaged_target)) as Tank
@@ -159,3 +189,16 @@ func _shoot() -> void:
 	var file := "%s/%s-t%d.png" % [_flag("shot-out", "build/engage/shots"), _flag("shot-name", "shot"), tick]
 	var err := root.get_viewport().get_texture().get_image().save_png(file)
 	print("SHOT_SAVED %d %s%s" % [tick, file, "" if err == OK else " FAILED " + error_string(err)])
+
+
+## Round 46 (engage L1): each CLEAR_LANE spot search once: the 16 candidates and why each was rejected, the one chosen.
+func _print_lane(tank: Tank) -> void:
+	var brain := _match.brains.get_node_or_null("Brain_" + String(tank.name)) as TankBrain
+	if brain == null or brain.lane_read.is_empty():
+		return
+	var tick := int(brain.lane_read.get("tick", -1))
+	if int(_lane_printed.get(String(tank.name), -2)) == tick:
+		return
+	_lane_printed[String(tank.name)] = tick
+	print("LANE_READ " + JSON.stringify({"n": String(tank.name), "pos": [snappedf(tank.global_position.x, 0.1),
+			snappedf(tank.global_position.z, 0.1)]}.merged(brain.lane_read)))

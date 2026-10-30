@@ -93,6 +93,12 @@ func _run() -> void:
 	for i in 40:  # the scene, the arena's navmesh and the controls (built after the mode starts)
 		await physics_frame
 	_controls = current_scene.find_child("TacticalMap", true, false) as RtsControls
+	# Round 45 (orders O4): in a window on the laptop the first frames are slow (shaders warm up) and 40 were not enough.
+	for i in 300:
+		if _controls != null:
+			break
+		await physics_frame
+		_controls = current_scene.find_child("TacticalMap", true, false) as RtsControls
 	if _controls == null:
 		print("ORDERS_PROBE {\"error\": \"no RtsControls (TacticalMap)\"}")
 		quit(2)
@@ -198,6 +204,13 @@ func _run() -> void:
 	if all_in_tick < 0:
 		await _shots("window_end")
 	var rows: Array = []
+	# V1 (round 46): the veto's own test on each squad's place, read from the run's (last) click along the army's approach to it.
+	var army := Vector3.ZERO
+	for squad: Dictionary in _squads:
+		army += (squad["start"] as Vector3) / maxi(1, _squads.size())
+	var came := Vector3(_click.x - army.x, 0.0, _click.z - army.z).normalized()
+	var veto_from := SelectionSquads.veto_front(_click, came)
+	var team_forward: Vector3 = Match.team_frame(Match.Team.GREEN)["forward"]
 	for squad: Dictionary in _squads:
 		var anchor: Variant = squad["anchor"]
 		var row := {"map": map, "squads": _squads.size(), "route": _flag("probe-route", "click"), "arm": _flag("probe-arm", ""),
@@ -209,6 +222,9 @@ func _run() -> void:
 				"anchor_element": squad.get("anchor_element", ""),
 				"anchor_offset_m": snappedf(_flat_d(anchor, _click), 0.1) if anchor is Vector3 else -1.0,
 				# How much nearer the click its anchor is than its start (negative: the squad is sent AWAY from the click).
+				"veto_fail": SelectionSquads.veto_refuses(_veto_xz(anchor), _veto_xz(squad["start"]), veto_from, came, team_forward) if anchor is Vector3 else false,
+				"wedged_s": snappedf(int(squad.get("wedged_ticks", 0)) / float(SimClock.TICK_RATE), 0.1),
+				"veto_across": SelectionSquads.guard_across_gap(veto_from, _veto_xz(anchor), came) if anchor is Vector3 else false,
 				"toward_m": snappedf(_flat_d(squad["start"], _click) - _flat_d(anchor, _click), 0.1) if anchor is Vector3 else 0.0,
 				"plan_drive_m": snappedf(float(squad["path_len"]), 0.1), "driven_m": snappedf(float(squad["driven"]), 0.1),
 				"plan_deck": squad["plan_deck"], "deck": squad["deck"], "deck_at": squad.get("deck_at"),
@@ -261,7 +277,10 @@ func _run() -> void:
 		rows.append(row)
 		print("ORDERS_PROBE_SQUAD " + JSON.stringify(row))
 	print("ORDERS_PROBE " + JSON.stringify({"map": map, "squads": _squads.size(), "route": _flag("probe-route", "click"),
-			"arm": _flag("probe-arm", ""),
+			"arm": _flag("probe-arm", ""), "seed": int(_flag("seed", "34")),
+			# V1 (round 46): the clicks the veto re-dealt a place on (0 = every place today's), its re-deals and holds
+			"veto_clicks": _static_or(SelectionSquads, "veto_clicks"), "veto_redealt": _static_or(SelectionSquads, "veto_redealt"),
+			"veto_held": _static_or(SelectionSquads, "veto_held"), "veto_lined": _static_or(SelectionSquads, "veto_lined"),
 			"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off",
 			"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "capped": SelectionSquads.ground_capped,
 			# O4 (main 471cdcd5e): a shifted route on a squad is its element's move; its gate counters, when the tree has them
@@ -391,6 +410,10 @@ func _watch() -> void:
 		_last_centre[squad["number"]] = centre
 		for n: String in alive:
 			var at := _tank(n).global_position
+			# V4 (round 46, Bar V2's guard): crew-ticks wedged (Movement.wedged) after the order, per squad.
+			var mover := Movement.of(_tank(n))
+			if mover != null and mover.wedged:
+				squad["wedged_ticks"] = int(squad.get("wedged_ticks", 0)) + 1
 			if not bool(squad["deck"]) and SlotGround.near_deck(at, 0.0):
 				squad["deck"] = true
 				squad["deck_at"] = [_xz(at), snappedf((_match.tick - _order_tick) / float(SimClock.TICK_RATE), 0.1)]
@@ -1178,3 +1201,8 @@ static func _flat_d(a: Variant, b: Variant) -> float:
 
 static func _xz(p: Vector3) -> Array:
 	return [snappedf(p.x, 0.1), snappedf(p.z, 0.1)]
+
+
+## Round 46 (V1): a point on the ground plane.
+static func _veto_xz(p: Vector3) -> Vector3:
+	return Vector3(p.x, 0.0, p.z)

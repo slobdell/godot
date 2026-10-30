@@ -889,22 +889,6 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 	var world: Array[Vector3] = []
 	for j in offsets.size():
 		world.append(placed_at[j] if j < placed_at.size() and placed_at[j] is Vector3 else to_world(anchor, heading, offsets[j]))
-	# Round 44 (SEAT_ORDER): each crew's and each seat's rank across the heading (left to right), for the order term below.
-	var ordered := SEAT_ORDER and nearest and not halted and bool(opts.get("seat_order", false))
-	var member_rank: Array = []
-	var slot_rank: Array = []
-	if ordered:
-		var fwd := flat(heading)
-		var right := Vector3(-fwd.z, 0.0, fwd.x)
-		var laterals: Array = []
-		for member: Dictionary in members:
-			var at: Vector3 = member.get("position", anchor)
-			laterals.append(Vector3(at.x - anchor.x, 0.0, at.z - anchor.z).dot(right))
-		member_rank = _strict_rank(laterals)
-		var slot_laterals: Array = []
-		for j in offsets.size():
-			slot_laterals.append(Vector3(world[j].x - anchor.x, 0.0, world[j].z - anchor.z).dot(right))
-		slot_rank = _strict_rank(slot_laterals)
 	# Round 45 (S v5, SEAT_LAST_OPEN): the deepest seat (the one `bounded` left at its nominal depth) is the REAR-MOST crew's at the
 	# order, and nobody else's: dev read 1 (Locks 7001-7012) let the least-driving matching hand it to a War Rig, which then drove
 	# through the second squad to reach it (wedged 4.5 -> 17.2 s on three seeds) while the Tanker's press vanished on the others.
@@ -954,6 +938,31 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 					rear_member = i
 		if offsets[deep_slot].y <= 0.0 or rear_member < 0:
 			last_open = false
+	# Round 44 (SEAT_ORDER): each crew's and each seat's rank across the heading (left to right), for the order term below.
+	# Round 46 (S v6, R45.28): under the open last seat the seats are ranked by the SHAPE's own left-to-right offsets, and the
+	# deep seat and its rear crew (dealt by their own term) are left out of the ranks. S v5 ranked the seats by their stations
+	# (`at`), laid along a route that bends: on Crossing 11751 two of the Battery's stations swapped sides as they slid round
+	# the bend (one jumped 7 m west at a vertex), the order term re-dealt Battery_1 and Battery_4 back and forth, and pairs of
+	# squadmates gave way to each other in the start zone (yield + blocked +9.85 s a run; base none). The shape's order does
+	# not move while the stations slide, so the seating holds and every other crew keeps its left-to-right order.
+	var ordered := SEAT_ORDER and nearest and not halted and bool(opts.get("seat_order", false))
+	var member_rank: Array = []
+	var slot_rank: Array = []
+	if ordered:
+		var fwd := flat(heading)
+		var right := Vector3(-fwd.z, 0.0, fwd.x)
+		var laterals: Array = []
+		for i in count:
+			var at: Vector3 = members[i].get("position", anchor)
+			laterals.append(INF if last_open and i == rear_member else Vector3(at.x - anchor.x, 0.0, at.z - anchor.z).dot(right))
+		member_rank = _strict_rank(laterals)
+		var slot_laterals: Array = []
+		for j in offsets.size():
+			if last_open:
+				slot_laterals.append(INF if j == deep_slot else offsets[j].x)  # S v6: the shape's own left-to-right order
+			else:
+				slot_laterals.append(Vector3(world[j].x - anchor.x, 0.0, world[j].z - anchor.z).dot(right))
+		slot_rank = _strict_rank(slot_laterals)
 	# Square cost matrix: members (padded with empty seats) by slots (padded with nowhere).
 	var cost: Array = []
 	for i in slot_count:
