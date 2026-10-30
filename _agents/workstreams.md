@@ -317,6 +317,14 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.26 (2026-10-30 ~05:20) GRANT engage `game/tank/tank.gd`'s burst branch (L1b part 2).** A started burst's later rounds fire from
+  Tank._physics with no trigger (X2, ~:444); Gunnery.apply is C++ (gun_native) and gates only the first round. Under TankBrain.LANE_CLEAR
+  (OFF = today): before each later round, if the controller holds for friends and FireLanes.for_shot names a friend, the burst ends
+  (reload stands). Symmetric; one line-of-fire query a burst round. Native confirms no twin (it reads only _reload_ticks there). Part 1
+  (spots v the moving spread) built: 11922's geometry 5 -> 0 friendly hits (a cause check on an L1 seed, not L1b evidence). The feed line
+  shows on his Terminus replay ("Hunters 1 holding fire: Wrenches 3 in the way", laptop); the touch map has no selection_state, so no line
+  on the phone layout: round 47 known issue.
+
 - **R46.25 (2026-10-30 ~05:10) Bar shortfwd FAILS as filed on D1 alone (diluted); SHIPPED ON by the orchestrator under C46.2.** Frozen
   adeb71696 GREEN, builder0 04:08-04:31 (its last leg overlapped L1's start by ~6 min: light orders-probe runs; noted). D1 metres away
   from his click pooled 5.7 -> 2.4 m, paired -0.27 m (se 0.17) = -1.6 se v the -2 se line; 3 of 12 cells better, 9 identical, 0 worse;
