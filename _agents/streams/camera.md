@@ -97,6 +97,8 @@ _(worker keeps this current: report at the top, every number with commit, machin
 `game/camera/camera_planner.gd` + the rig's `_update_planner`; tests `tests/test_camera_planner.gd` (10, laptop 56/0 camera tests
 at 53de53ea4). Dev reads only on 7001-7006 (never a bar). In progress: tuning on dev seeds, then C3 (laptop budget) and Bar C1.
 
+**Bar C1 SERIES RUNNING** on 3bf76e839 = GREEN builder3 (`make check exited 0`, 3483 passed / 0 failed, 28 targets ALL JUDGED;
+log ~/camera-r46/check-3bf76e839.log), started ~04:00 via ~/camera-r46/barc1.sh (builder3 J8; progress ~/camera-r46/barc1/run.log).
 **Bar C1 FILED** (workstreams.md *Bars (round 46)*, text there; candidate 3bf76e839, before any number on 12201-12248).
 C3 DONE: laptop budget (UHD 620, laptop preset, Terminus, windowed, under the lock, 1f3e6f111): planner 0.353 / 0.358 ms a frame
 mean (seeds 7001 / 7002, 60 s), step p99 0.88 / 0.93 ms, max 5.0 / 1.6 ms; the rig without it 0.57-0.65 ms mean, max 2.8-7.4 ms.
