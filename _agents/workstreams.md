@@ -292,6 +292,12 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.18 (2026-10-30 ~03:35) S v6 with its defaults ON is RED.** wip/manoeuvre-seat-on e8051bbde, builder3: `make check exited 2`, 3459
+  passed / 15 failed + tactics-drills red. Most of the 15 encode today's OFF seat geometry, but three are no-crossing invariants the ON
+  default breaks (test_formation_slots::test_paths_never_cross, test_tactics_seat_order::test_sum_first_paths_never_cross,
+  test_tactics_settle::test_a_sideways_plain_move_seats_every_crew_without_crossing_paths). An overrule of R46.17 is therefore NOT a
+  same-hour flip: it needs a test-by-test read. Strengthens the keep-OFF recommendation (stream/manoeuvre a21b97e8b).
+
 - **R46.17 (2026-10-30 ~05:40) Bar S v6 FINAL: FAILS on four lines; the ON recommendation is WITHDRAWN (R46.15's condition).** The fourth:
   fights G4 kill share worst move 0.040 v the 0.03 line (Green 0.529 -> 0.489 over 18 fights; deaths 809 -> 826, within +/-40): S v4's old
   miss (0.049; S v5 0.029). PASS: group G5/G6/G7 identical arms; G1 corridor 180/180 rows byte-identical; fights G1-G3 (give-way deaths
