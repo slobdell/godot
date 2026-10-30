@@ -14,6 +14,8 @@ It WRITES the full report to --out (default build/playtest-report/<recording>.tx
   (b) the camera at each hit and death: the last `cam` row at or before the event (tests/camera/camera_recording.py's
       compass words, his screen's terms) and whether the victim was on screen; a recording from before round 43 has none
   (c) the replay: `make replay-match`'s divergence table for the first 30 s (every crew), when --replay is given
+  (d) his selection (round 47 N3): every `sel` row with the `inp` row that made it (C47.4: key, action) or "no input (the
+      game)"; the summary counts selection changes no input made (Sumps: squad 2 became squad 3 17 frames later)
 """
 import argparse
 import contextlib
@@ -167,6 +169,64 @@ def click_line(tick, verb, orders, arrivals_by_row, rate):
     return "  " + "  ".join(words)
 
 
+# ---- his selection: every change and the input that made it (round 47 N3; orders' `inp` rows, C47.4) ---------------------
+
+NO_INPUT = "no input (the game)"
+NO_ROWS = "?"  # a recording from before round 47 (no inp rows); the section says so once
+SEL_WINDOW_FRAMES = 2  # an inp row this many frames before a sel row (or after: the row order within a frame) made it
+
+
+def has_inp(rows):
+    return any(r.get("t") == "inp" for r in rows)
+
+
+def squad_words(units):
+    counts = {}
+    for u in units:
+        counts[squad_of(u)] = counts.get(squad_of(u), 0) + 1
+    return " ".join("%s:%d" % kv for kv in counts.items()) or "(none)"
+
+
+def order_inputs(rows):
+    """The inp rows that issued an order without changing the selection."""
+    return [r for r in rows if r.get("t") == "inp" and list(r.get("sel_before", [])) == list(r.get("sel_after", []))]
+
+
+def selection_changes(rows):
+    """[{frame, tick, units, before, squads_words, by}] per sel row; `by` = "<key> <action>" of the inp row whose sel_after is
+    this selection within SEL_WINDOW_FRAMES, else NO_INPUT (or NO_ROWS for a recording without inp rows)."""
+    inps = [r for r in rows if r.get("t") == "inp" and list(r.get("sel_before", [])) != list(r.get("sel_after", []))]
+    rowed = has_inp(rows)
+    out, before, used = [], [], set()
+    for r in (r for r in rows if r.get("t") == "sel"):
+        units = list(r.get("units", []))
+        by = NO_INPUT if rowed else NO_ROWS
+        for i, x in enumerate(inps):
+            if i not in used and abs(int(x.get("f", -10**9)) - int(r.get("frame", 0))) <= SEL_WINDOW_FRAMES \
+                    and list(x.get("sel_after", [])) == units:
+                by = "%s %s" % (x.get("k", "?"), x.get("act", "?"))
+                used.add(i)
+                break
+        out.append({"frame": r.get("frame", 0), "tick": r.get("tick", 0), "units": units, "before": before,
+                    "squads_words": squad_words(units), "by": by})
+        before = units
+    return out
+
+
+def section_selection(rows):
+    rate = rate_of(rows)
+    out = ["(d) HIS SELECTION: every change and what changed it (orders' inp rows, C47.4; game = no key or click did it)"]
+    if not has_inp(rows):
+        out.append("  no inp rows: a recording from before round 47, so what changed each selection is not recorded")
+    for c in selection_changes(rows):
+        out.append("  %6.1f s  frame %-6d  %-28s <- %-28s  selection changed by: %s" % (
+            c["tick"] / rate, c["frame"], c["squads_words"][:28], squad_words(c["before"])[:28] if c["before"] else "-", c["by"]))
+    orders = order_inputs(rows)
+    if orders:
+        out.append("  order inputs (selection unchanged): %d; %s" % (len(orders), ", ".join(sorted({str(r.get("act")) for r in orders}))))
+    return out
+
+
 # ---- the summary (printed) --------------------------------------------------------------------------------------------
 
 def summary(rows, path, replay_lines, full_path, html_path=""):
@@ -199,6 +259,11 @@ def summary(rows, path, replay_lines, full_path, html_path=""):
         his = sum(1 for e in off if (e.get("target") or e.get("unit") or "").startswith("Green_"))
         tail.append("camera: %d of %d hits/deaths off screen (%d on his units, %d deaths); estimate: fov %.0f, 16:9" % (
             len(off), len(judged), his, sum(1 for e in off if e["t"] == "dead"), FOV_DEG))
+    if has_inp(rows):
+        changes = selection_changes(rows)
+        game = [c for c in changes if c["by"] == NO_INPUT]
+        tail.append("selection: %d changes, %d by no key or click%s" % (len(changes), len(game), (" (first at %.1f s: %s)" % (
+            game[0]["tick"] / rate, game[0]["squads_words"])) if game else ""))
     tail.append("replay: " + replay_verdict(replay_lines))
     tail.append("full report: %s%s" % (full_path, " (page %s)" % html_path if html_path else ""))
     room = min(CLICK_LINES, SUMMARY_MAX - len(out) - len(tail))  # never past one screen, whatever the match
@@ -343,7 +408,7 @@ def main(argv):
     html_path = args.html or os.path.splitext(full_path)[0] + ".html"
     head = summary(rows, args.recording, replay_lines, full_path, html_path)
     full = head + ["", "=" * 100, ""] + section_match(rows, args.recording) + [""] + section_camera(rows) + [""] + \
-        section_replay(replay_lines, args.replay)
+        section_replay(replay_lines, args.replay) + [""] + section_selection(rows)
     for target, body in ((full_path, "\n".join(full) + "\n"), (html_path, page("\n".join(full)))):
         os.makedirs(os.path.dirname(os.path.abspath(target)), exist_ok=True)
         with open(target, "w") as handle:

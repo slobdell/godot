@@ -513,3 +513,11 @@ playtest-report: ## His playtest on one screen (the full report to build/playtes
 	@name=$$(basename "$(RECORDING)" .gz); name=$${name%.jsonl}; \
 	$(PYTHON) tests/replay/playtest_report.py "$(RECORDING)" --replay $(PLAYTEST_REPORT_DIR)/replay.txt \
 		--out $(PLAYTEST_REPORT_DIR)/$$name.txt $(if $(HTML),--html $(HTML))
+
+# Round 47 (N3): the replay tools' own Python tests (tests/replay/test_*.py: rules, divergence, playtest_report's selection
+# section that reads orders' `inp` rows, C47.4). Laptop-safe: no Godot.
+.PHONY: replay-pytest
+replay-pytest: ## native: tests/replay's Python tests (rules, divergence, the playtest report's selection section)
+	@out=$$($(PYTHON) -m unittest discover -s tests/replay -p 'test_*.py' 2>&1); echo "$$out" | tail -3; \
+	echo "$$out" | grep -qE '^Ran [1-9][0-9]* test' || { echo "replay-pytest FAILED: no tests ran"; exit 1; }; \
+	echo "$$out" | tail -1 | grep -qE '^OK' || { echo "$$out"; exit 1; }
