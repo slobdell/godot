@@ -590,7 +590,7 @@ static func _lay_side(blocks: Array, flat_click: Vector3, ahead: Vector3, at_cli
 	# to half the step; at that the rest stand abreast in the last rank (dev read 4e25c1eab: two squads given one place).
 	# The same when it would reach more than one rank behind where its rearmost squad stands (dev read f215b1772: a route's
 	# first waypoint 17 m ahead of the army stacked ranks 100 m back into the base; squads drove back, then on).
-	var step := pack_step(deepest + GAP_M, blocks)
+	var step := deepest + GAP_M
 	var rearmost := float(by_along[by_along.size() - 1][0])
 	# G2 v2: on a leg the room behind is read along the road (his route round its corner), not the straight line on past
 	# the click (terminus 5 east: the straight line ran east past the corner, so the rear ranks merged two abreast ~20 m
@@ -817,7 +817,7 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 			var aside := (float(k) - (abreast - 1) * 0.5) * (widest + GAP_M)
 			result[int(rank_members[k][1])] = clamp.call(centre + rank_across * aside)
 		start += abreast
-		behind += step
+		behind += step if start == 0 else pack_step(step, blocks)  # V4: the front rank's halt keeps today's room
 	return result
 
 
@@ -1472,7 +1472,8 @@ static func rank_slots_for(blocks: Array, click: Vector3, facing: Variant, fallb
 			slots.append(flat_click + across * aside - heading * behind)
 		if r + 1 < sizes.size():
 			var step := maxf(rank_step(size, sizes[r + 1], slot_width, slot_depth, nest, _nest_clearance(blocks)), min_step(blocks))
-			behind += pack_step(halt_clear_step(step, size, sizes[r + 1], slot_width, blocks), blocks)
+			var full := halt_clear_step(step, size, sizes[r + 1], slot_width, blocks)
+			behind += full if r == 0 else pack_step(full, blocks)  # V4: the front rank's halt keeps today's room
 	return slots
 
 
@@ -1906,7 +1907,8 @@ static func _guard_attempt(ctx: Dictionary, squeeze: float) -> Dictionary:
 		var next_size := mini(fit, n - seats.size())
 		if next_size <= 0:
 			break
-		step = pack_step(halt_clear_step(maxf(rank_step(size, next_size, slot_width, slot_depth, nest, clearance), min_step(blocks)), size, next_size, slot_width, blocks), blocks) * squeeze
+		var full := halt_clear_step(maxf(rank_step(size, next_size, slot_width, slot_depth, nest, clearance), min_step(blocks)), size, next_size, slot_width, blocks)
+		step = (full if behind <= 0.0 else pack_step(full, blocks)) * squeeze  # V4: the front rank's halt keeps today's room
 		behind += step
 		if behind > army_back + n * (slot_depth + GAP_M):
 			break  # far behind the whole army: the ground ran out of sense (the hold rule keeps a squad off a seat behind it)
@@ -2105,8 +2107,9 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 #
 # "Squads pack closer (roughly half the length): the whole group is at your click sooner and fights together, at the cost of a bit
 # more bumping in tight spots." The step between one rank of a group's file and the next (today: the deepest halt + GAP_M, 33-50
-# m, so a 3-4 squad file is 66-150 m) is PACK_FACTOR of today's, never under the squads' own pitch (`_nest_clearance`: a rank never
-# nearer than a squad's own vehicles). The same layout, shorter: today's `ranks` (rank_slots_for), the column (column_lay) and the
+# m, so a 3-4 squad file is 66-150 m) is PACK_FACTOR of today's behind the second rank, never under the squads' own pitch
+# (`_nest_clearance`: a rank never nearer than a squad's own vehicles). The step from the FRONT rank keeps today's room: at a neck
+# (his Gorge click) a packed second rank stood inside the front squad's halt and the front squad never settled (laptop, 7001). The same layout, shorter: today's `ranks` (rank_slots_for), the column (column_lay) and the
 # fitted body's seats (guard_lay: the veto's seats). `--group-pack=on` / GROUP_PACK=on; OFF until Bar V2 passes.
 static var GROUP_PACK := pack_default()
 const PACK_FACTOR := 0.5
