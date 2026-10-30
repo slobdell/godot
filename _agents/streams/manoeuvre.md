@@ -348,9 +348,12 @@ evidence filed under `references/round46/manoeuvre/barssf-builder3-cec4e499f/`. 
   `test_native_drive_backout_stall::test_a_departure_leg_into_an_unseen_hull_stalls_the_same_on_the_cpp_drive` (the live GDScript drive
   and the C++ drive DIFFER under holdway ON: a twin gap), `test_native_gate_foundry` x2 and `test_native_yield` x2 (their staged scenes
   no longer reach the case: holdway changes the holds there).
-- **Read (to be confirmed by native):** `Traffic.refresh` builds each crew's ordered way from Movement members (`_goal`, `_path` via
-  `_travel_direction`, and `squad_way`) that the C++ drive owns, so under the C++ drive the hold reads stale values. Native's C46.4 read
-  covered Traffic's own state, not those reads. Bar A6 v5 ran native ON in both arms (its numbers stand); the twin gap only shows when
-  the two drives are compared.
+- **CORRECTED (native, 06:00): NOT a drive gap.** My first read (refresh reading stale C++-owned members) was wrong: native's harness
+  compares every GDScript-visible member after each arm and finds them identical. The diff in both twins is my static `_squad_ways`
+  memo: the harness restores Movement's statics between its GDScript and C++ arms but not Traffic's once-per-TABLE_TICKS refresh, so arm
+  2's refresh is a no-op and the memo reads `{}`. Native's fix is in its harness (`tests/native/mover_state.gd`: `_squad_ways` in
+  SKIP_STATICS), proved on pair/native-holdway (39b6c7aa5 + it): backout 1191 drives / 0 mismatches, backout_stall 1189 / 0. Bar A6 v5's
+  native-ON numbers measured the drive he plays. My exec-free variant (wip/manoeuvre-holdway-twin e37c85463) did not change the two twins
+  (166 / 2) and is NOT used. Native re-stages the four scene tests on the same pair and sends the hash for the holdway ship candidate.
 - **Next:** shortfwd alone, `wip/manoeuvre-shortfwd-on` 11ff6586c, check requeued on builder3. Holdway ON waits for native's look; then the
   four scene tests are re-staged (they are native's files: through the orchestrator).
