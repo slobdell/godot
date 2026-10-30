@@ -54,7 +54,17 @@ func _stage(crowd: Array[Vector3], target_at: Vector3, unit: String) -> Tank:
 
 ## {"first_s": seconds to the first round (-1 none), "shots", "through" (rounds fired with a friend in the lane),
 ## "moved": metres from where it started, "path": metres driven}.
-func _run(arm: bool, crowd: Array[Vector3], order: Dictionary, seconds: float, target_at := TARGET_AT, unit := "ifv") -> Dictionary:
+## Round 46 (L3): his selection, as RtsControls reports it to HudMessages.
+class SelectionStub:
+	extends RefCounted
+	var units: Array[String] = []
+
+	func selection_state() -> Dictionary:
+		return {"units": units.duplicate()}
+
+
+func _run(arm: bool, crowd: Array[Vector3], order: Dictionary, seconds: float, target_at := TARGET_AT, unit := "ifv",
+		lines: Array = []) -> Dictionary:
 	var saved := TankBrain.LANE_CLEAR
 	TankBrain.LANE_CLEAR = arm
 	var me := await _stage(crowd, target_at, unit)
@@ -67,6 +77,14 @@ func _run(arm: bool, crowd: Array[Vector3], order: Dictionary, seconds: float, t
 	var start_tick := _match.tick
 	if not order.is_empty():
 		assert_eq(_orders.issue(order), "", "setup: his order is taken")
+	# His selection is this crew; the feed's lines are collected (L3).
+	var selected := SelectionStub.new()
+	selected.units = ["Green_Hunters_1"]
+	var messages := HudMessages.new()
+	messages.game_match = _match
+	messages.selection_source = selected
+	messages.posted.connect(func(text: String, _severity: int) -> void: lines.append(text))
+	_match.add_child(messages)
 	var path := 0.0
 	var last := me.global_position
 	var options := {}
@@ -140,6 +158,19 @@ func test_an_ifv_at_his_post_with_no_step_it_can_make_stays_put() -> void:
 			after["shots"], after["through"]])
 	assert_true(float(after["path"]) <= TankBrain.LANE_POST_STEP + 1.0, "no shuffle (%.1f m driven)" % after["path"])
 	assert_eq(int(after["through"]), 0, "never through the friend")
+
+
+func test_the_feed_says_who_is_in_the_way_when_it_cannot_step() -> void:
+	# His post after a move, an IFV with no step it can make (the case above): the feed names the friend, once.
+	var order := {"units": ["Green_Hunters_1"], "verb": "move", "to": [SHOOTER_AT.x, SHOOTER_AT.z + 0.5], "source": "player"}
+	var lines: Array = []
+	await _run(true, [Vector3(-100, 0, 36)], order, 8.0, TARGET_AT, "ifv", lines)
+	var off_lines: Array = []
+	await _run(false, [Vector3(-100, 0, 36)], order, 8.0, TARGET_AT, "ifv", off_lines)
+	var held := lines.filter(func(text: String) -> bool: return text.contains("holding fire"))
+	print("MEASURE lane_line on %s | off %d lines" % [held, off_lines.filter(func(text: String) -> bool: return text.contains("holding fire")).size()])
+	assert_eq(held, ["Hunters 1 holding fire: Guns 1 in the way"], "one line, naming the friend (%s)" % [held])
+	assert_eq(off_lines.filter(func(text: String) -> bool: return text.contains("holding fire")).size(), 0, "none with the switch off")
 
 
 func test_under_his_explicit_hold_it_never_moves_for_a_lane() -> void:

@@ -224,3 +224,28 @@ engage-authority-shots: native-fresh import ## engage E4: his Gorge replay in a 
 		--shots=$(AUTH_SHOTS) --shot-out=$(CURDIR)/$(BUILD_DIR)/engage/shots --shot-name=$(AUTH_TAG) $(AUTH_FLAGS) \
 		> $(BUILD_DIR)/engage/shots/$(AUTH_TAG).log 2>&1 || true
 	@grep -E "^SHOT_SAVED|^REPLAY_DONE|AUTHORITY_SWITCH|SCRIPT ERROR" $(BUILD_DIR)/engage/shots/$(AUTH_TAG).log | cut -c1-200
+
+# ---- engage (round 46): his IFV behind his own squads (L4, Bar L1) -------------------------------------------------
+# Workload: tests/engage/lane_probe.gd (a crew, an enemy gun in range, squadmates parked in / beside the lane; his attack, his
+# move's post, or the CPU's own crew, by seed). LANE_ARM=on|off is --lane-clear; LANE_SEEDS (Bar L1: 11901-11948, filed in
+# workstreams.md *Bars (round 46)* before any number). The table: tests/engage/lane_table.py (--pair for the bar).
+LANE_SEEDS ?= 7001 7002 7003 7004 7005 7006
+LANE_ARM ?= on
+LANE_TAG ?= $(LANE_ARM)
+LANE_SECONDS ?= 30
+LANE_JOBS ?= 6
+.PHONY: engage-lane-probe engage-lane-bar
+engage-lane-probe: native-fresh import ## engage L4: the lane probe over LANE_SEEDS (LANE_ARM=on|off, LANE_TAG, LANE_FLAGS) -> build/engage/lane/<tag>/<seed>.log + the table
+	@mkdir -p $(BUILD_DIR)/engage/lane/$(LANE_TAG)
+	@rm -f $(BUILD_DIR)/engage/lane/$(LANE_TAG)/*.log
+	@echo ">> engage-lane-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | arm $(LANE_ARM) | seeds $(firstword $(LANE_SEEDS))+ | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(LANE_SEEDS); do echo $$seed; done | xargs -r -P $(LANE_JOBS) -I{} sh -c \
+		'timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/lane_probe.gd -- \
+		--seed={} --seconds=$(LANE_SECONDS) --lane-clear=$(LANE_ARM) $(LANE_FLAGS) > $(BUILD_DIR)/engage/lane/$(LANE_TAG)/{}.log 2>&1 || true; \
+		grep -q "^LANE_PROBE " $(BUILD_DIR)/engage/lane/$(LANE_TAG)/{}.log || echo "  MISSING LANE_PROBE seed {}"'
+	$(PYTHON) tests/engage/lane_table.py $(BUILD_DIR)/engage/lane/$(LANE_TAG)
+
+engage-lane-bar: native-fresh import ## engage Bar L1: engage-lane-probe in both arms on LANE_SEEDS, then the paired table
+	@$(MAKE) --no-print-directory engage-lane-probe LANE_ARM=off
+	@$(MAKE) --no-print-directory engage-lane-probe LANE_ARM=on
+	$(PYTHON) tests/engage/lane_table.py --pair $(BUILD_DIR)/engage/lane/off $(BUILD_DIR)/engage/lane/on

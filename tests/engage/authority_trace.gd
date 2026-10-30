@@ -9,6 +9,7 @@ extends "res://tests/replay_orders.gd"
 ##   mover    the mover's phase and goal
 ## `--authority-on-at=TICK` (E4, his acceptance read): replay his match as he played it (give `--player-authority=off`) and
 ## switch the rule ON at TICK, so his later clicks still meet the match they were made in.
+## `--lane-clear-on-at=TICK` (round 46, L5): the same for the lane rule (give `--lane-clear=off`).
 ## `--authority-units=A,B` names the crews (default Green_Hunters_5); `--authority-from=TICK` / `--authority-every=N`.
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/engage/authority_trace.gd -- --orders=<his jsonl> \
 ##         --seconds=107 [--authority-from=2500 --authority-every=3] [any game switch]
@@ -39,6 +40,11 @@ func _trace() -> void:
 		Drills.PLAYER_AUTHORITY = true
 		print("AUTHORITY_SWITCH on at tick %d" % _match.tick)
 	TankBrain.LANE_READ = true
+	# Round 46 (L5): his game as played (`--lane-clear=off`), the lane rule switched ON at TICK.
+	var lane_at := int(_flag("lane-clear-on-at", "-1"))
+	if lane_at >= 0 and _match.tick >= lane_at and not TankBrain.LANE_CLEAR:
+		TankBrain.LANE_CLEAR = true
+		print("LANE_SWITCH on at tick %d" % _match.tick)
 	_shoot()
 	if not _shots_hooked and _match != null:
 		_shots_hooked = true
