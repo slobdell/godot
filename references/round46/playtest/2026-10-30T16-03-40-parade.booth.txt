@@ -1,0 +1,28 @@
+0:00.0  PA       pa.welcome.22             Welcome in. The crews are staged, the gates are down, and we are told the count will begin once the last of the paperwork clears.
+0:08.0  CALLER   caller.contact.23         First shot fired. The quiet part is over.
+0:10.4  VETERAN  color.contact.14          Now watch who moves and who stops. The ones who stop are the ones who planned.
+0:16.0  CALLER   caller.kill.15            There it is! The first kill of the night belongs to the Syndicate!
+0:20.0  CALLER   caller.control.15         They've settled onto the point. Now they have to hold it.
+0:23.6  CALLER   caller.kill.143           Smoke from one end of the floor to the other! Nobody saw all of that!
+0:27.7  VETERAN  color.kill.23             He stopped to aim. You can't stop to aim in here.
+0:31.7  CALLER   caller.kill.93            That's lights out for that crew!
+0:33.6  PA       pa.syndicate.02           The Syndicate congratulates its engineering team on another successful field test.
+0:43.1  CALLER   caller.kill.25            One shot! One shot from the big gun and it's over for that artillery!
+0:47.5  CALLER   caller.kill.154           Every corner of this building just went up at once!
+0:51.0  CALLER   caller.kill.146           That's a pile-up! Wreck on top of wreck!
+0:53.6  CALLER   caller.kill.164           Two in quick succession! This crowd is losing its mind!
+0:57.6  CALLER   caller.hit.30             That machine is leaking smoke, and they know it!
+1:00.7  CALLER   caller.kill.64            What an exchange, and the Condemned win it!
+1:03.9  CALLER   caller.kill.77            Down it goes! That one is finished!
+1:05.8  VETERAN  color.kill.30             You lose one, you tighten up. Watch whether they tighten up.
+1:07.0  CALLER   caller.kill.76            They put a hole in the Syndicate's pretty paint job!
+1:10.0  VETERAN  color.faction.05          They'll build another one. They always build another one.
+1:18.9  CALLER   caller.hit.14             That scout's machine gun is just hosing the scout!
+1:22.1  CALLER   caller.kill.90            It's burning! That one is burning, and it's out!
+1:25.0  PA       pa.kill.28                That crew was due on again on Thursday, and the Thursday card will run as printed, with a substitute, at the usual time.
+1:37.0  CALLER   caller.hit.06             The tank is smoking, and they smell blood!
+1:40.2  CALLER   caller.kill.75            The Syndicate machine takes it clean. That was surgical.
+1:44.3  CALLER   caller.kill.68            Did everybody see that? Two vehicles gone in the blink of an eye!
+1:48.2  CALLER   caller.kill.51            That leaves the Syndicate with one. One!
+1:52.7  CALLER   caller.kill.63            The Condemned finish it! The last scout is gone!
+1:55.6  CALLER   caller.result.24          Unbelievable finish! What a way to end it!

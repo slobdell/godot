@@ -12,3 +12,19 @@
 0:46.8  VETERAN  color.hit.10              Good shot. Patient. He waited for the side to turn.
 0:47.3  CALLER   caller.kill.171           Kill after kill, and the other side has no reply!
 0:50.8  VETERAN  color.kill.38             Artillery kill. The crew never saw who did it. That's the worst way, I think.
+0:56.1  CALLER   caller.kill.40            That's seven in a row for the Condemned! They cannot miss!
+1:00.0  CALLER   caller.stat.08            Look at the board. One side keeps scoring, and the other hasn't put a mark on it in a while.
+1:06.8  VETERAN  color.hit.16              That's going to slow the turret down. Hydraulics don't like that.
+1:11.5  CALLER   caller.kill.74            The Law takes out the artillery, and the boos are raining down!
+1:15.3  PA       pa.kill.18                Well called, Joseph. That crew's apartment in the eastern blocks is now available, and applications open tomorrow morning at the housing office.
+1:25.1  VETERAN  color.hit.21              He's hurt now. Watch him. Hurt crews do one of two things, and neither one is good.
+1:25.7  CALLER   caller.kill.188           The little guy wins one! Can you believe it?
+1:29.4  CALLER   caller.kill.41            The Condemned are on a tear! That's three straight!
+1:32.4  VETERAN  color.kill.16             The Law keep feeding them one at a time. Regroup. Please regroup.
+1:39.1  CALLER   caller.hit.34             A heavy hit, and they absorb it. For now.
+1:42.0  CALLER   caller.pinned_slow.03     Still pushing, but look at them, they're barely rolling under that weight of fire!
+1:46.6  VETERAN  color.kill.04             Matchups are a suggestion. That crew didn't take it.
+1:50.4  CALLER   caller.kill.50            It's all on the last Law vehicle now!
+1:52.8  CALLER   caller.kill.156           Make it two! They are not letting up!
+1:55.1  CALLER   caller.result.13          That is the match! The Condemned take it!
+1:57.2  VETERAN  color.teach.arty01        Artillery doesn't kill you. It moves you somewhere that does.

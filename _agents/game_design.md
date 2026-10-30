@@ -4742,7 +4742,7 @@ along y ~ 90 to (-7, 84), then south down x ~ -7 over the middle crossing to (-5
 
 ## His fourth note (2026-10-30 ~15:58, Sumps, condemned garage army v law, verbatim)
 
-Recording: `references/round46/playtest/2026-10-30T15-53-39-sumps.jsonl` (copied mid-match, census to tick 990; re-copy at the end).
+Recording: `references/round46/playtest/2026-10-30T15-53-39-sumps.jsonl` (full match re-copied at 16:05).
 Squads: Alpha tanks, Bravo tanks, Charlie artillery (mortar), Delta scouts.
 
 > "ok I'm not playing another game. I had clearly directed squad 2 of tanks to set up a screen north of the artillery, but they are
@@ -4773,3 +4773,20 @@ cranes, cooling towers, pylons, raised ground, timed blast doors). His reply:
 
 Captured as `arenas.md` *The cheap-piece map kit backlog* (with the roadmap's idea backlog pointing to it). The blast doors are
 WANTED (his words above); the rest are backlog he can strike.
+
+## His fifth note: the camera in his last game (2026-10-30 ~16:08, Parade, condemned v syndicate, verbatim)
+
+Recording: `references/round46/playtest/2026-10-30T16-03-40-parade.jsonl` (main e306ce27f: the camera planner ON, R46.37).
+
+> "ok also in my last game, the camera didn't seem to be tracking the squads I was using very well, the camera position was far away
+> with the squad I was controlling off in the distance at the edge of the peripheral, and the camera position didn't seem to correct"
+
+**Read** (each `cam` row against the census centre of his current selection; 130 rows): median gap from the camera's look point to
+his selected squad's centre **18 m**; **38 % of rows over 30 m**; median camera distance 69 m (up to 100). Worst stretch: he selects
+Bravo at about tick 2941 while the look point is at (30, 78) and Bravo at (51, -73) — **152 m off**; 2 s later still 147 m, 5 s later
+107 m, 8 s later 111 m (mode alternating `planner` / `aim-hold`), i.e. it never caught up before he switched to Delta, which then sat
+77-92 m off while he panned by hand (`manual`). Earlier, sel Alpha at tick ~480: 56 m off in `aim-hold`. Same pattern, milder, in the
+Sumps match (e.g. ticks 3036-3121, 71-78 m off for 3 s; ticks 3541-3601, 21-24 m off at a 99 m distance, not correcting).
+Suspects for the camera stream: `aim-hold` freezing the look on every selection (his 15:42 note too), a slow pan rate over long
+distances, and the planner's cost preferring a far framing over his squad. Compare on this recording with `--camera-planner=off`
+(round 45's camera) before changing anything: if the old camera keeps his squad closer, the planner ON (his ask, R46.37) is the cause.
