@@ -137,7 +137,8 @@ AMD Ryzen 9 9950X (16 cores / 32 threads, no P/E split: no `/sys/devices/cpu_cor
   use and ~10 GB free. Don't raise the slots. The light lane's memory guard (6144 MB) is right as it stands.
   **The slot count also sets a check's own width**: `slot.sh --jobs` divides MemAvailable by the slots
   (28343 MB / 6 × ¾ / 1000 MB per target = **3 at once**). The first check at 3 slots ran 6 at once in 525 s; at 6
-  slots a lone check runs 3 at once in **736 s** (7087cffce, idle box). `CHECK_JOBS=6` restores the width for one run.
+  slots a lone check ran 3 at once in **736 s** (7087cffce, idle box). So remote.sh sends builder3's runs `CHECK_JOBS=6`
+  (since 2d0a000b2: **655 s**, 6 at once, idle; `REMOTE_CHECK_JOBS` overrides; never on the light lane).
 - **Main's full check: 525 s** there v ~55 min on builder0 (the orchestrator, aed598359). The sim baseline matches
   builder0 on all 13 maps (the same glibc-2.43 trig), with the same determinism hash.
 - **Make 4.3 warns where 4.4.1 is silent**: a nested `make` that inherits the parent's jobserver fds prints
