@@ -56,6 +56,25 @@ Nothing.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**FINAL REPORT (2026-10-30 ~10:00 PDT). Merge for main: the stream/native tip that carries this report (= `git merge main` of
+main 01f31c4f4 + judge, docs and evidence only).** Last full check green: **9d1580b77 builder3 (3473 / 0, 28 ALL JUDGED, `exited 0`)**,
+already on main. Since then nothing any check target reads has changed: `git diff main` touches `tools/judge/lines_r46.py`,
+`_agents/judging.md`, this brief and files under `references/round46/` / `_agents/streams/references/round46/` only. Its evidence is
+the laptop's judge tests (`make planner-pytest`, 86 tests, OK).
+- **N4 DONE (close step 5b):** `lines_r46.py` holds 64 lines (S v6 10, C1 8, E6 1 dev, V1 8 (R46.33), V2 1 dev read, not run
+  (R46.36), L1 6 (R46.24), L1b 6 (R46.28), L1c 10 (R46.31 / R46.32), shortfwd 6 (R46.25), A6 v5 8 (R46.27)). Re-rendered into
+  `_agents/streams/references/round46/sizing/`: an inventory of 845 lines (343 with noise) and the probe table, **which did not change**.
+  The new round-46 section in `judging.md` names the closest calls: S v6's Crossing FAIL (-0.10 se), shortfwd's D1 FAIL (-0.41) and
+  A6 v5's 2b FAIL (-0.50). So both rules shipped under C46.2 failed on lines that another set of seeds could pass.
+- **N2 DONE:** the L2 twin (the lane fix in C++) and the shortfwd twin both match GDScript exactly. Each was re-checked on every freeze
+  that moved: L2 on efe4d8ba9, c0affabe0 and 1dd227534 (the one that shipped), shortfwd on cec4e499f and adeb71696. Holdway ON has
+  no twin gap: the R46.30 reds came from the test harness, and pair/native-holdway f176bee98 passes 43 / 0. V1, A6 v5, R46.19 and
+  R46.26 need no twin.
+- **N1, N3, N5, Stretch:** as in the 03:50 report below. **Builders:** I removed builder3's `godot-native-light` (909 MB) and kept
+  `godot-native`, the stream's check folder (1.3 GB; builder3 is at 26 % disk). Builder0 holds no native folder.
+- **Round 47 (proposed, not built):** a twin for ElementPlan.build (~1.06 ms a tick on his Terminus); round 47 also owns the cause
+  of holdway's web freeze (R46.35). If holdway's GDScript changes there, native re-proves the drive twins.
+
 **REPORT (2026-10-30 ~03:50 PDT). GREEN: 9d1580b77 builder3 (3473 / 0, 28 targets ALL JUDGED, `exited 0`); merge here: 9d1580b77
 (later commits are this Status only). On main already: a734c2296, 1843eb6df, 33edf6eaf, a06d450df.** In his terms:
 - **Big group clicks are already instant:** his 30-unit right click on main is 2.03 ms (ratio 56 v the 104 budget, builder3). The veto
@@ -71,7 +90,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
   (my first big-click read was the GDScript fallback, 6.86 ms).
 **Backlog:** N1 DONE (seam agreed; the speed-up not needed at 2.03 ms; the memo (B) left as stretch, R46.13/orchestrator). N2 DONE so
 far: L2, shortfwd twins EQUAL; V1 / A6 v5 / R46.19 need none (read, recorded). N3 CLOSED (camera sliced, 0.35 ms on the laptop). N4
-OPEN: `lines_r46.py` holds S v6 (R46.15 + R46.17, 10 lines), C1 (R46.20, 8) and E6 (R46.22, 1 dev line); the rest land as ruled. 3ca18daa1 (tools/judge only) is batched with the next code change or the close (the orchestrator: planner-pytest OK, 86 tests, is its evidence; no separate full check); G2's D1 / D5b marked VOID in lines_r45.
+DONE at the close (FINAL REPORT above; 64 lines). 3ca18daa1 (tools/judge only) is batched with the next code change or the close (the orchestrator: planner-pytest OK, 86 tests, is its evidence; no separate full check); G2's D1 / D5b marked VOID in lines_r45.
 N5 DONE (builder3 27 % disk; laptop ~360 MB freed into a tarball). Stretch DONE as a proposal (round 47: ElementPlan.build ~1.1 ms a
 tick, then build_situation 1.51 ms; R46.16).
 **What to playtest:** nothing new on screen from native. To re-read his games: `make replay-match RECORDING=references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl REPLAY_SECONDS=150 CREWS=all`
