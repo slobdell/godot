@@ -204,6 +204,12 @@ func _run() -> void:
 	if all_in_tick < 0:
 		await _shots("window_end")
 	var rows: Array = []
+	# V1 (round 46): the veto's own test on each squad's place, read from the run's (last) click along the army's approach to it.
+	var army := Vector3.ZERO
+	for squad: Dictionary in _squads:
+		army += (squad["start"] as Vector3) / maxi(1, _squads.size())
+	var came := Vector3(_click.x - army.x, 0.0, _click.z - army.z).normalized()
+	var veto_from := SelectionSquads.veto_front(_click, came)
 	for squad: Dictionary in _squads:
 		var anchor: Variant = squad["anchor"]
 		var row := {"map": map, "squads": _squads.size(), "route": _flag("probe-route", "click"), "arm": _flag("probe-arm", ""),
@@ -215,6 +221,8 @@ func _run() -> void:
 				"anchor_element": squad.get("anchor_element", ""),
 				"anchor_offset_m": snappedf(_flat_d(anchor, _click), 0.1) if anchor is Vector3 else -1.0,
 				# How much nearer the click its anchor is than its start (negative: the squad is sent AWAY from the click).
+				"veto_fail": SelectionSquads.veto_refuses(Vector3((anchor as Vector3).x, 0.0, (anchor as Vector3).z),
+						Vector3((squad["start"] as Vector3).x, 0.0, (squad["start"] as Vector3).z), veto_from, came) if anchor is Vector3 else false,
 				"toward_m": snappedf(_flat_d(squad["start"], _click) - _flat_d(anchor, _click), 0.1) if anchor is Vector3 else 0.0,
 				"plan_drive_m": snappedf(float(squad["path_len"]), 0.1), "driven_m": snappedf(float(squad["driven"]), 0.1),
 				"plan_deck": squad["plan_deck"], "deck": squad["deck"], "deck_at": squad.get("deck_at"),
@@ -267,7 +275,10 @@ func _run() -> void:
 		rows.append(row)
 		print("ORDERS_PROBE_SQUAD " + JSON.stringify(row))
 	print("ORDERS_PROBE " + JSON.stringify({"map": map, "squads": _squads.size(), "route": _flag("probe-route", "click"),
-			"arm": _flag("probe-arm", ""),
+			"arm": _flag("probe-arm", ""), "seed": int(_flag("seed", "34")),
+			# V1 (round 46): the clicks the veto re-dealt a place on (0 = every place today's), its re-deals and holds
+			"veto_clicks": _static_or(SelectionSquads, "veto_clicks"), "veto_redealt": _static_or(SelectionSquads, "veto_redealt"),
+			"veto_held": _static_or(SelectionSquads, "veto_held"),
 			"ground_cap": "on" if SelectionSquads.GROUND_CAP else "off",
 			"halt_price": "on" if SelectionSquads.HALT_PRICE else "off", "capped": SelectionSquads.ground_capped,
 			# O4 (main 471cdcd5e): a shifted route on a squad is its element's move; its gate counters, when the tree has them

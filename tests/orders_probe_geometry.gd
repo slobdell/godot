@@ -71,13 +71,25 @@ func _after_order(units: Array) -> void:
 		across_gap.append(SelectionSquads.guard_across_gap(click, anchor, d) if anchor is Vector3 else false)
 	# V1 (round 46): per squad, whether its place fails the veto's own test (across a gap from the veto's front, or sent back
 	# > GUARD_BEHIND_M behind its start along the approach), in either arm; the veto's counters (the process's totals).
+	# Split for Bar V1's D1 / D2: across a gap from the veto's front; sent back (> GUARD_BEHIND_M behind its start along the
+	# approach while farther from the click than its start).
 	var veto_fail: Array = []
+	var veto_across: Array = []
+	var veto_back: Array = []
 	var front := SelectionSquads.veto_front(click, d)
 	for squad: Dictionary in _squads:
 		var anchor_v: Variant = squad.get("anchor")
 		var start_v: Vector3 = squad["start"]
-		veto_fail.append(SelectionSquads.veto_refuses(Vector3((anchor_v as Vector3).x, 0.0, (anchor_v as Vector3).z),
-				Vector3(start_v.x, 0.0, start_v.z), front, d) if anchor_v is Vector3 else false)
+		if not anchor_v is Vector3:
+			veto_fail.append(false)
+			veto_across.append(false)
+			veto_back.append(false)
+			continue
+		var at_v := Vector3((anchor_v as Vector3).x, 0.0, (anchor_v as Vector3).z)
+		var from_v := Vector3(start_v.x, 0.0, start_v.z)
+		veto_fail.append(SelectionSquads.veto_refuses(at_v, from_v, front, d))
+		veto_across.append(SelectionSquads.guard_across_gap(front, at_v, d))
+		veto_back.append(not bool(veto_across[-1]) and bool(veto_fail[-1]))
 	print("ORDERS_GEOMETRY " + JSON.stringify({"map": map, "seed": int(_flag("seed", "34")), "arm": _flag("probe-arm", ""),
 			"starts": _starts_mode, "reach": _reach, "click": _xz(click), "approach": [snappedf(d.x, 0.001), snappedf(d.z, 0.001)],
 			"clear": [snappedf(float(clear[0]), 0.1), snappedf(float(clear[1]), 0.1)], "widest": snappedf(widest, 0.1), "road": road,
@@ -87,7 +99,7 @@ func _after_order(units: Array) -> void:
 			"restored": SelectionSquads.guard_restored,
 			"fit": SelectionSquads.guard_last_fit, "reach_m": snappedf(SelectionSquads.guard_last_reach_m, 0.1),
 			"step_m": snappedf(SelectionSquads.guard_last_step_m, 0.1)},
-			"veto_fail": veto_fail, "veto": {"on": SelectionSquads.GROUP_VETO, "clicks": SelectionSquads.veto_clicks,
+			"veto_fail": veto_fail, "veto_across": veto_across, "veto_back": veto_back, "veto": {"on": SelectionSquads.GROUP_VETO, "clicks": SelectionSquads.veto_clicks,
 			"redealt": SelectionSquads.veto_redealt, "held": SelectionSquads.veto_held}}))
 
 
