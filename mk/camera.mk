@@ -81,3 +81,32 @@ camera-census: import ## Round 46 (camera C1): per-second census of a recording'
 	@test -n "$(RECORDING)" || { echo 'usage: make camera-census RECORDING=build/recordings/X.jsonl[.gz]'; exit 2; }
 	$(GODOT) --headless --path . --script res://tests/camera/census.gd -- --recording=$(CURDIR)/$(RECORDING) $(CENSUS_FLAGS) \
 		| grep -E 'CENSUS_|SCRIPT ERROR'
+
+# Round 47 (camera K1/K5): his matches replayed with his SELECTIONS and a model of his hand (tests/camera/replay_camera.gd),
+# once per arm, and the gap from the camera's look point to his selection added up (tests/camera/k1_gap.py; K1_GAP lines;
+# his own recording's line first, `cam` rows once a second). Arms are game switches separated by `;` ("-" = none). Each
+# recording's flags (authority, rules) are worked out as replay-match does.
+#   make camera-replay CAMK_RECORDINGS="references/round46/playtest/X.jsonl ..." CAMK_ARMS="--camera-planner=on;--camera-planner=off"
+CAMK_DIR := $(BUILD_DIR)/camera-replay
+CAMK_RECORDINGS ?= references/round46/playtest/2026-10-30T16-03-40-parade.jsonl
+CAMK_ARMS ?= --camera-planner=on;--camera-planner=off
+CAMK_HAND ?= model
+.PHONY: camera-replay
+camera-replay: native-fresh import ## Round 47 (camera K1): his recordings replayed with his selections + a hand model, per arm; the look-to-selection gap (CAMK_RECORDINGS, CAMK_ARMS="a;b", CAMK_HAND=model|off)
+	@rm -rf $(CAMK_DIR) && mkdir -p $(CAMK_DIR); echo ">> camera-replay on $$(hostname) commit $$(git rev-parse --short HEAD) hand=$(CAMK_HAND)"; \
+	for rec in $(CAMK_RECORDINGS); do name=$$(basename $$rec .jsonl); \
+		$(PYTHON) tests/camera/k1_gap.py $$rec --label="$$name his"; \
+		secs=$$($(PYTHON) -c "import json,sys;print(int([json.loads(l) for l in open(sys.argv[1]) if '\"end\"' in l][-1]['result']['duration_seconds'])+1)" $$rec); \
+		authority=$$($(PYTHON) tests/replay/authority.py $$rec auto); \
+		echo '$(CAMK_ARMS)' | tr ';' '\n' | while read -r arm; do [ "$$arm" = "-" ] && arm=""; \
+			tag=$$(echo "$$name $$arm" | tr -c 'A-Za-z0-9=.-' '_'); flags="$$arm"; \
+			if [ "$$authority" = off ]; then flags="$$flags --player-authority=off"; fi; \
+			flags="$$flags $$($(PYTHON) tests/replay/rules.py $$rec "$$flags")"; \
+			mkdir -p $(CAMK_DIR)/$$tag; \
+			timeout 1800 $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/camera/replay_camera.gd -- \
+				--orders=$(CURDIR)/$$rec --seconds=$$secs --record-dir=$(CAMK_DIR)/$$tag --camera-screen=1920x1080 \
+				--camera-hand=$(CAMK_HAND) $$flags > $(CAMK_DIR)/$$tag.log 2>&1 || echo "camera-replay: $$tag exited $$?"; \
+			grep -E '^REPLAY_(ROSTER|NATIVE)_MISMATCH|SCRIPT ERROR' $(CAMK_DIR)/$$tag.log | head -3 || true; \
+			$(PYTHON) tests/camera/k1_gap.py $(CAMK_DIR)/$$tag.log --label="$$name $$arm"; \
+		done; \
+	done
