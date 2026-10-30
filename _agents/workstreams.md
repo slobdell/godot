@@ -292,6 +292,13 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.22 (2026-10-30 ~04:25) E6 (the stop cap) DROPPED under R46.4: no case to fix.** Engage built the one-condition fix (fixed gun on
+  wheels only; 894f561dd, opt-in) and a stage (`--e6-stage=on`: a lone fixed-gun scout, his STOP, the enemy 100-150 deg off its nose in
+  reach). Dev read builder0 light, efe4d8ba9's code, 7001-7012, n 9 standing stages: cap OFF farthest roll after his stop <= 3.2 m (7 of 9
+  at 0.0-1.0 m); `--turn-in-cap=on` identical (the 3.2 m is seed 7011 in both arms). The 4 m drift of round 45's Gorge scout does not occur
+  on today's drive even staged; a bar would be vacuous (as R45.29's D1). Engage removes `_his_cap` / TURN_IN_CAP and the e6 stage AFTER
+  Bar L1's series (the frozen tree is untouched); 11949-11996 stay unused.
+
 - **R46.21 (2026-10-30 ~04:15) The weave guard (engage fa9c6ff3a, L1's new freeze candidate).** Two causes traced (builder3): (a) ENGAGE's
   cached motion plan replayed a hop planned before the lane step (the step now drops it); (b) a weave hop grazing the canal corner by the
   bridge deck after drift between thinks. `TankBrain.dry_hop` checks every direct hop, fresh or cached, from where the crew stands now
