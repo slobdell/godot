@@ -166,6 +166,52 @@ mean new >= base - 1.645 se, and **how many fewer** is reported (a fixed gun tha
 arc: R45.22's trade); G4 take-back (by order id) unchanged; G5 native-on v `--brains-off=native` EQUAL on (S) new; G6 `make check`
 green on the frozen tree; the CPU untouched (sim-baseline).
 
+### R45.24: the `player` fix (a bug on main since 8ef4f584d) — merge hash fea4cfbec
+
+**fea4cfbec GREEN builder0** (`make check exited 0`, 28 targets ALL JUDGED, 3459 passed / 0 failed; the re-run after builder0's
+19:52 OOM killed three test shards, exit 137, and the run before that was stopped by the laptop crash). Carries 12c9e673d: E2's
+hold / stop re-latch ("holds where it comes to rest") now requires `order.player`; it had tested only the player's TEAM, so an
+element's pointless hold on his team (ElementPlan._hold) had its spot dragged after issue (3.8 m in `test_authority_element_hold`,
+which fails without the fix). E6's stop cap rides along OFF (`--turn-in-cap=on` until Bar E2b). Main 672067dc4 merged.
+
+**His Gorge replay on fea4cfbec (builder0, native ON, 107 s):** `--player-authority=off` **PASS 20/20 within 3 m**; rule ON (the
+default) **FAIL 4/20, first over Green_Hunters_1 @40 s** (unchanged by the fix). **Replays of his matches recorded before E2 need
+`REPLAY_FLAGS="--player-authority=off"`** (`make replay-match RECORDING=... REPLAY_FLAGS="--player-authority=off"`), the same as any
+switch that changed after the recording. The rule-ON parting is under his squad's attack task at 34.4 s (Hunters_2 0.0 m off his census
+until 35 s); leading suspect, NOT yet proven: his first order of the match (10.2 s, stop, 15 crews incl. the Hunters) now leaves them
+HOLDING (HOLD turns hulls to the nearest contact) where his game left them idle, so the attack starts from other headings. Trace owed
+once builder0 is free.
+
+**Bar E1's G6 on fea4cfbec (builder0):** orders-probe main v `pa_off` 48/48 rows IDENTICAL; manoeuvre-behind ON v off IDENTICAL for
+tank, scout, gang_tank (181 rows each). PASS.
+
+### BAR E2b VERDICT (2026-10-29 ~23:00 PDT): FAIL as filed (G5); E6 stays OFF (opt-in) — recommendation
+
+Tree **fea4cfbec GREEN builder0** (3459/0, ALL JUDGED). Seeds 11349-11396, n = 48 per arm (4 lost the crew before his order in
+every arm), builder0, native ON; arms base = no flag, new = `--turn-in-cap=on`. Logs `~/overnight-engage/r45/fix/{s,m}_*`.
+
+| Line | base | new | Verdict |
+|---|---|---|---|
+| D1 where his stop ends, max (S) | 1.1 m | 1.1 m (<= 3.0) | PASS, **vacuous**: base never showed the drift |
+| D1b no run worse than base + 0.5 m | - | 0 | PASS |
+| G1 Bar E1's lines (M): pushed rows, held max, moves off | 0 / 6.5 m / 1 | identical | PASS |
+| G2 deaths, enemy hp left (S) | 9, 195.9 | 9, 197.8 (se 14) | PASS |
+| G3 held in range: shots (S) | 44.2 | 43.9 (-0.3, se 12.6) | PASS |
+| G4 take-back | 35/35 | 35/35 | PASS |
+| **G5 native-on v --brains-off=native (S new)** | - | **46/48 EQUAL** | **FAIL** |
+| G6 make check | - | fea4cfbec green | PASS |
+
+**G5's cause (mine):** native's execute step runs a `stop` itself unless the crew is a fixed gun on wheels (execute_native.cpp hands
+only that case back to the GDScript, `_stop_turn_in`'s home). `_his_cap` tests only "his stop", so on the GDScript path it also
+stopped other hulls' stop motion (11352 / 11362: a wheeled law_artillery's swing) that native never hands back; base native v base
+GDScript on those two seeds is EQUAL (checked). The fix is one condition (`mount == "fixed"` and wheels: exactly the hand-back case),
+which changes the frozen tree.
+
+**Why not re-bar now:** on 48 fresh seeds the cap changed 6 runs, all fixed-gun wheeled scouts, with **no gain on its own deciding
+line** (the 4 m drift never appeared in base) and mixed side effects (11363 ended 6 m nearer the enemy, 11371 did half the damage).
+Recommendation: **E6 stays OFF (opt-in `--turn-in-cap=on`)**. Re-bar only with (1) the one-condition fix, (2) a workload that stages
+the case (`--verb=stop`, fixed-gun wheeled scouts, the enemy outside the gun's arc), (3) fresh seeds from the orchestrator.
+
 #### Working notes (chronological)
 
 **BAR E1 VERDICT (2026-10-29 ~15:10 PDT): FAIL as filed (D1, D3, G3); D2 and every fight guard PASS.** Frozen tree **60262534f
