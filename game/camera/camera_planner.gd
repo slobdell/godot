@@ -18,6 +18,8 @@ extends RefCounted
 ##               W_SIGHT   rays from the candidate's camera (after the building clearance) to his crews and to the path
 ##                         ahead that a DRAWN solid blocks: a boom down the street the squad drives has clear rays, which
 ##                         is how "look down the corridor" emerges without a corridor rule
+##               W_ARENA   the view's ground beyond the arena's wall (the stands: round 42's "pointed out completely to the
+##                         audience", now a cost instead of the danger look's pull toward the middle)
 ##               W_TURN    the turn from the current wanted yaw; W_DIST the zoom past his 49 m
 ##   stability   the current yaw is always a candidate, and a challenger must beat it by SWITCH_MARGIN: equal costs never
 ##               flip-flop and a small gain never swings the view back (round 43's corner swing failed exactly there).
@@ -38,8 +40,48 @@ const W_SIGHT_CREW := 4.0
 const W_SIGHT_PATH := 2.0
 const W_TURN := 1.5
 const W_DIST := 0.5
+const W_ARENA := 1.5
+## The weights in force: the constants above, unless a dev run overrides some (`--camera-planner-w=action:5,turn:2`;
+## a bar runs at the constants). Read by `score` / `plan`.
+static var w_sel := W_SEL
+static var w_path := W_PATH
+static var w_action := W_ACTION
+static var w_sight_crew := W_SIGHT_CREW
+static var w_sight_path := W_SIGHT_PATH
+static var w_turn := W_TURN
+static var w_dist := W_DIST
+static var w_arena := W_ARENA
+static var hold_margin := HOLD_MARGIN
+
+
+## Apply a dev override string "key:value,key:value" (keys: sel path action sight_crew sight_path turn dist arena hold).
+static func override_weights(text: String) -> void:
+	for pair in text.split(",", false):
+		var kv := pair.split(":")
+		if kv.size() != 2:
+			continue
+		var v := float(kv[1])
+		match kv[0]:
+			"sel": w_sel = v
+			"path": w_path = v
+			"action": w_action = v
+			"sight_crew": w_sight_crew = v
+			"sight_path": w_sight_path = v
+			"turn": w_turn = v
+			"dist": w_dist = v
+			"arena": w_arena = v
+			"hold": hold_margin = v
+
+
 ## A challenger replaces the current pose only when it is cheaper by this much.
 const SWITCH_MARGIN := 0.25
+## Changing its mind costs more just after it did: the switch margin is raised by HOLD_MARGIN, fading over HOLD_S since
+## the last switch (dev seeds 7001-7002: without it the plan went -120 -> -60 -> -120 inside 0.4 s as a crew passed a block).
+const HOLD_MARGIN := 1.5
+const HOLD_S := 2.0
+## Each heading's cost is averaged over about this long (an exponential mean, by heading): a ray that flickers as a crew
+## passes a corner moves the mean, not the view.
+const COST_TAU_S := 0.6
 ## A new selection: how long its selection term weighs FRESH_X.
 const FRESH_S := 2.0
 ## His distance (the settled pose, rts_camera.gd): the zoom past it costs W_DIST, scaled to the auto frame's cap.
@@ -61,6 +103,8 @@ const WALL_MARGIN_M := 4.0
 
 ## The last plan's result (the trace and the readout read it): {yaw, focus, level, cost, terms, candidates, switched}.
 var last := {}
+var _mean := {}  # heading (whole degrees) -> [mean cost, when]
+var _switched_at := -1e9
 
 
 ## The headings to try: `current` first, then every 360 / steps degrees (skipping any within 5 deg of `current`). Pure.
@@ -211,14 +255,23 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 		action_w += float(contact[1])
 		if not on_screen(screen_of(view, (contact[0] as Vector3) + Vector3(0, 1, 0), aspect), bottom):
 			action_off += float(contact[1])
-	var sel_w := W_SEL * (FRESH_X if bool(w.get("fresh", false)) else 1.0)
+	var outside := 0
+	var plane := Plane(Vector3.UP, 0.0)
+	var half_y := tan(deg_to_rad(RtsCamera.fov) / 2.0)
+	for u: float in [-0.6, 0.0, 0.6]:
+		for v: float in [0.2, 0.7]:
+			var hit: Variant = plane.intersects_ray(eye, (pose.basis * Vector3(u * half_y * aspect, v * half_y, -1.0)).normalized())
+			if hit == null or not CameraPlanner.inside_arena(hit as Vector3):
+				outside += 1
+	var sel_w := w_sel * (FRESH_X if bool(w.get("fresh", false)) else 1.0)
 	var terms := {
 		"sel": sel_w * float(off) / float(maxi(own.size(), 1)),
-		"path": W_PATH * float(path_off) / float(maxi(path.size(), 1)),
-		"action": W_ACTION * (action_off / action_w if action_w > 0.0 else 0.0),
-		"sight": W_SIGHT_CREW * float(blocked) / float(maxi(tested, 1)) + W_SIGHT_PATH * float(path_blocked) / float(maxi(path.size(), 1)),
-		"turn": W_TURN * absf(angle_difference(current_yaw, yaw)) / PI,
-		"dist": W_DIST * clampf((distance - PREFERRED_M) / maxf(RtsCamera.AUTO_FRAME_MAX_M - PREFERRED_M, 1.0), 0.0, 1.0),
+		"path": w_path * float(path_off) / float(maxi(path.size(), 1)),
+		"action": w_action * (action_off / action_w if action_w > 0.0 else 0.0),
+		"sight": w_sight_crew * float(blocked) / float(maxi(tested, 1)) + w_sight_path * float(path_blocked) / float(maxi(path.size(), 1)),
+		"arena": w_arena * float(outside) / 6.0,
+		"turn": w_turn * absf(angle_difference(current_yaw, yaw)) / PI,
+		"dist": w_dist * clampf((distance - PREFERRED_M) / maxf(RtsCamera.AUTO_FRAME_MAX_M - PREFERRED_M, 1.0), 0.0, 1.0),
 	}
 	var cost := 0.0
 	for key: String in terms:
@@ -233,7 +286,7 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 ##   aspect, pitch, inset, bottom, floor_level, cap_level                  data: the drawn layout (RtsCamera.seen)
 ## `current_yaw` is the wanted yaw now. Returns {yaw, focus, level, wide (framed with the contacts), cost, terms, switched, candidates} or {} with nothing
 ## to frame. The current yaw wins unless a challenger is SWITCH_MARGIN cheaper. Records itself in `last`.
-func plan(w: Dictionary, current_yaw: float) -> Dictionary:
+func plan(w: Dictionary, current_yaw: float, now := 0.0) -> Dictionary:
 	var own: Array = w.get("own", [])
 	if own.is_empty():
 		last = {}
@@ -251,6 +304,7 @@ func plan(w: Dictionary, current_yaw: float) -> Dictionary:
 		var variants: Array = [CameraPlanner.fit(own, lean, yaw, w)]
 		if not wide.is_empty():
 			variants.append(CameraPlanner.fit(own + wide, null, yaw, w))
+		var pick := {}
 		for vi in variants.size():
 			var v: Array = variants[vi]
 			var scored := CameraPlanner.score(yaw, v[0], float(v[1]), current_yaw, w, solids)
@@ -259,15 +313,22 @@ func plan(w: Dictionary, current_yaw: float) -> Dictionary:
 			scored["focus"] = v[0]
 			scored["level"] = float(v[1])
 			count += 1
-			if yaw == current_yaw and (current.is_empty() or float(scored["cost"]) < float(current["cost"])):
-				current = scored
-			if best.is_empty() or float(scored["cost"]) < float(best["cost"]):
-				best = scored
+			if pick.is_empty() or float(scored["cost"]) < float(pick["cost"]):
+				pick = scored
+		pick["raw"] = float(pick["cost"])
+		pick["cost"] = _averaged(yaw, float(pick["cost"]), now)
+		if yaw == current_yaw:
+			current = pick
+		if best.is_empty() or float(pick["cost"]) < float(best["cost"]):
+			best = pick
 	var out := current
 	out["switched"] = false
-	if float(best["cost"]) < float(current["cost"]) - SWITCH_MARGIN:
+	var margin := SWITCH_MARGIN + hold_margin * exp(-(now - _switched_at) / HOLD_S)
+	if float(best["cost"]) < float(current["cost"]) - margin:
 		out = best
 		out["switched"] = absf(angle_difference(current_yaw, float(best["yaw"]))) > 0.001
+		if bool(out["switched"]):
+			_switched_at = now
 	out["candidates"] = count
 	last = out
 	return out
@@ -294,3 +355,22 @@ static func action_of(state: Dictionary) -> Array:
 		if near * fade * threat > 0.0:
 			out.append([at, near * fade * threat])
 	return out
+
+
+## The mean cost of the heading `yaw` with `cost` now. A heading not scored for over 3 COST_TAU_S starts again from `cost`.
+func _averaged(yaw: float, cost: float, now: float) -> float:
+	var key := roundi(rad_to_deg(yaw))
+	var held: Variant = _mean.get(key)
+	var mean := cost
+	if held is Array and now - float(held[1]) <= 3.0 * COST_TAU_S:
+		mean = cost + (float(held[0]) - cost) * exp(-maxf(now - float(held[1]), 0.0) / COST_TAU_S)
+	_mean[key] = [mean, now]
+	return mean
+
+
+## Whether a ground point is inside the arena's wall (the perimeter polygon RtsCamera loaded, else the square). Pure.
+static func inside_arena(point: Vector3) -> bool:
+	if RtsCamera.perimeter_poly.size() >= 3:
+		return Geometry2D.is_point_in_polygon(Vector2(point.x, point.z), RtsCamera.perimeter_poly)
+	var half := RtsCamera.perimeter_half()
+	return absf(point.x) <= half and absf(point.z) <= half

@@ -151,7 +151,8 @@ func test_a_new_selection_off_screen_is_on_screen_within_a_second_while_his_hand
 		if rig._selection_shown():
 			break
 	assert_true(rig._selection_shown(), "the new squad comes on screen")
-	assert_true(frames <= 75, "within ~1.25 s of the selection (%d frames at 60 fps)" % frames)
+	# 170 m off at his 49 m: ~1.4 s at URGENT_SCREENS_PER_S 1.3 (the snap-free cap; 4.0 took 0.8 s and snapped).
+	assert_true(frames <= 90, "within 1.5 s of the selection (%d frames at 60 fps)" % frames)
 
 
 func test_his_hand_still_wins_over_the_planner() -> void:
@@ -163,3 +164,13 @@ func test_his_hand_still_wins_over_the_planner() -> void:
 	for i in 60:  # one second: inside the hand-back time
 		rig._process(1.0 / 60.0)
 	assert_near(rig.yaw, his, 1e-4, "the yaw he turned to stays his for the hand-back time")
+
+
+func test_near_the_wall_the_view_looks_into_the_arena_not_at_the_stands() -> void:
+	RtsCamera.fov = RtsCamera.FOV_DEG
+	var edge := RtsCamera.perimeter_half() - 15.0
+	var w := _world(_squad(Vector3(0, 0, edge)), {"obstacles": []})  # parked by his own (south) wall
+	var out_view := _score(w, 180.0, 0.0)  # looking south, over the wall
+	var in_view := _score(w, 0.0, 0.0)  # looking north, into the arena
+	assert_true(float(out_view["terms"]["arena"]) > float(in_view["terms"]["arena"]),
+			"the stands cost more than the floor (%s v %s)" % [out_view["terms"], in_view["terms"]])
