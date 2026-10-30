@@ -54,3 +54,20 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Plan (2026-10-30 evening, start; from main c789b55a6, code e306ce27f GREEN builder3 3518/0: no baseline check of mine).**
+1. N1 twins: none filed yet (*Bars (round 47)* empty at start); each one jumps the queue when it arrives.
+2. N2 ElementPlan.build: profile INSIDE it first (probe branch probe/native-plan47, wrappers on ~40 functions, not merged), so
+   the port is the hot leaf functions with the GDScript kept as the fallback, not a 4000-line rewrite of code three streams edit
+   this round. Reason: element_plan.gd is manoeuvre's / route's / engage's by function and all three change it in round 47; a
+   whole-body twin would go stale with every merge.
+3. N3 the `inp` reader: written ahead against C47.4's format (synthetic rows); the Sumps 601-618 re-read waits for a recording
+   with real rows.
+4. N4 build_situation: same method as N2, after it.
+5. N5 lines_r47 as verdicts land; N6 builders every hour.
+
+**N3 reader DONE ahead of orders (1702fbd2c, laptop: `make replay-pytest` 12/0).** `make playtest-report` gains section (d): every
+`sel` row with the `inp` row that made it (key + action, matched by sel_after within 2 frames) or "no input (the game)", and the
+summary line "selection: N changes, M by no key or click (first at ...)". A recording without inp rows says so. NEW target
+`replay-pytest` (tests/replay's Python tests; rules + divergence + this); **request to the orchestrator: add it to `make check`'s
+list in mk/core.mk** (those tests ran nowhere before).
