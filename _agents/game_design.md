@@ -4714,8 +4714,7 @@ lost 0-20 in 112 s, elimination). He is still collecting feedback; more may foll
 
 ## His second match (2026-10-30 ~15:49, Locks, condemned v syndicate, verbatim)
 
-Recording: `build/recordings/2026-10-30T15-49-20-locks.jsonl` (in progress when read; census through tick 300 = 10 s). Copy to
-`references/round46/playtest/` once the match ends.
+Recording: `references/round46/playtest/2026-10-30T15-49-20-locks.jsonl` (first read in progress, through tick 300; match ended tick ~2340, all green dead).
 
 > "ok I also just started another games. I had all my squads go directly west and then north to cross a bridge (2 squads of fire
 > trucks). At least one them just drove straight forward into a building and got stuck, which makes no sense, and it makes our units
@@ -4726,3 +4725,17 @@ Recording: `build/recordings/2026-10-30T15-49-20-locks.jsonl` (in progress when 
 (5+ s, phase `driving`, `blocked` empty) while its squad drove on — the unit he saw stuck. Green_Burners_2 also stalled at (-81, 80)
 for ticks 210-240. The group order again split to far-apart spots: first click -> (-91.2, 58.9) and (-68.3, 31.2), **36 m apart**;
 the queued bridge click -> (-115.5, -34.5) and (-76.5, -55.1), **44 m apart**.
+
+**His third note, same Locks match (~15:55, verbatim):**
+
+> "ok in the game I'm playing now, I'm down to my last IFV, it was part of a squad where I told everyone to attack a target directly
+> in front of it. This lone IFV has travelled in the opposite direction south - for some reason it took the counter-intuitive path of
+> going south and all around a building to then cross a bridge in the middle of the map. I'm not sure how this makes any sense to
+> begin with, because that seems like we're not using shortest path algorithms"
+
+**Read:** attack order on Rust_Lances_3 at tick 1461 (Hunters_1/4/5). Lances_3 at about (-26, -20); **Green_Hunters_4** at (-83, 57),
+straight-line 93 m. Census still shows it on its earlier `attack_move` until tick 1680 (~7 s after his attack click; the new order
+did not take), and in that time it drives **away**: north to (-84, 95), distance 93 -> 133 m. From tick 1710 on `attack` it goes east
+along y ~ 90 to (-7, 84), then south down x ~ -7 over the middle crossing to (-5, 17) by tick 2220 — about 230 m of driving for a
+93 m gap; killed at tick 2232 by Lances_3. Two questions for the owner: (a) why the attack order did not replace the attack_move for
+~7 s; (b) why the route went around (path cost, a closed or "dangerous" west crossing, or a stale route) rather than the short way.

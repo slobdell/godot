@@ -1,0 +1,24 @@
+0:00.0  PA       pa.welcome.19             So glad you could join us. The forecast is clear all evening, which the ground crew tells me is good news for visibility and bad news for the crews.
+0:09.2  CALLER   caller.intro.11           And the control point is live tonight, so nobody gets to sit back and wait!
+0:09.7  CALLER   caller.contact.15         First rounds are away! Here comes the fight!
+0:12.2  VETERAN  color.contact.17          Shooting at range in here is mostly noise. The real fight comes when they close.
+0:13.3  CALLER   caller.kill.18            Are you kidding me? The artillery takes it out!
+0:16.7  CALLER   caller.kill.119           They're not stopping! That's another one!
+0:19.9  CALLER   caller.kill.70            Both sides lose one! Neither army is backing down!
+0:23.6  CALLER   caller.kill.141           Three, four at a time! This crowd doesn't know where to look!
+0:27.2  CALLER   caller.kill.121           Oh, and another! They smell blood out there!
+0:29.8  CALLER   caller.kill.160           And that's the follow-up! Beautiful!
+0:32.8  CALLER   caller.kill.108           Both armies bleeding! Both armies still coming forward!
+0:36.9  CALLER   caller.kill.110           One for one! Nobody out there is willing to blink!
+0:40.5  CALLER   caller.kill.101           That one saw it coming and could not get out of the way!
+0:43.8  CALLER   caller.kill.104           Toe to toe! They are standing in the pocket and letting it fly!
+0:48.4  CALLER   caller.kill.149           The replay crew is going to need a week for that one!
+0:51.2  CALLER   caller.kill.183           Still unanswered! This is turning into a rout!
+0:53.9  CALLER   caller.kill.19            Nobody saw that coming! The Lancer wins that one!
+0:56.6  CALLER   caller.kill.158           Again! They went right back to work!
+0:58.7  CALLER   caller.kill.161           Oh, they're not done! Another one goes up!
+1:02.0  VETERAN  color.drill.12            They're running it clean. Whether it's the right drill is a separate question.
+1:06.6  CALLER   caller.kill.22            That's the matchup! The Lancer does exactly what it was built to do!
+1:11.0  VETERAN  color.teach.mg01          A machine gun won't open armor. It'll keep a crew's heads down while something else does.
+1:14.5  CALLER   caller.interrupt.01       Oh, wait, wait!
+1:15.8  VETERAN  color.kill.11             That crew stopped moving. You stop moving in here, you stop.
