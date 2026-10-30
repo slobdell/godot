@@ -126,9 +126,13 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   test, run along the SQUAD'S way; OFF unchanged. **Re-read of 11466 with the fix: a genuine near-tie** (B 6.6 s v A 6.7 s to the
   middle, both leads reading "open"), decided by the group-id tie-break -> B still waits on this seed. The sideways-way bug was real; the
   remaining flips are the verdict's coin toss between two squads 32 m from the middle at the first tick, which no holdway code decides.
-  **holdway dev read 1 running** (builder0 light, `a6v5/dev1.sh`: A6 v4's 24 seeds both arms, comparable to its table); holdway stays
-  OFF unless it reads clean on contacts_far, and a new bar would need fresh seeds AND a tie rule (the squad whose lead is nearer the
-  street's inside waits) -- round 46 work, named here.
+  **holdway dev read 1 (builder0 light, fc639d7e0, A6 v4's 24 seeds both arms; `a6v5/dev1/table.txt`): contacts_far 9 -> 60, +2.12 a run
+  (se 1.38, z 1.54; A6 v4 read +2.54 / z 1.81 on the same seeds)**: the fix mends two of the four verdict flips (11450, 11462: A waits
+  again, 0 far contacts), 11472 still flips (0 far contacts), 11466 still flips by the near-tie (32); and the three locks_lock seeds
+  where B waits in BOTH arms read more far contacts under holdway (11458 3 -> 8, 11460 6 -> 15, 11464 0 -> 5): an excess the verdict
+  does not explain, being read on 11460 (laptop, trace). Everything the rule is for still passes wide (side jam -8.5 s a run, off_arrive
+  -6.1 s, held_on -30.8 s, far_arrive -6.3 s). **holdway stays OFF**: a new bar needs fresh seeds, this locks_lock excess understood,
+  and a tie rule for the coin-toss verdicts -- round 46 work unless the 11460 read is quick.
 - **Then:** holdway's head-on release last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars,
   each failing as filed with his line passing) follows unchanged.
 
