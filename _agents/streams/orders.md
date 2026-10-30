@@ -81,11 +81,32 @@ the orchestrator the same hour (C46.2): it goes to him the same day.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-30 ~05:00 PDT)
+### V3 HIS ACCEPTANCE READ (the shipped candidate 12bd0c68f's places; laptop flightdeck, native on)
 
-- **Freeze candidate 6acba040e** (frozen detached tree `../godot-orders-v1`): its check on builder3
-  (`~/orders-r46/check-v1-6acba040e.log`) and dev read 3 on builder0 (7003 / 7005, `~/orders-r46/dev6/`) running; the series on
-  11801-11848 (builder3) starts when both are clean. Main tree for I1: `../godot-orders-main` (7189e3ff3 + instruments only).
+**His Gorge click** (recording `references/round44/playtest/2026-10-29T09-35-51-gorge.jsonl`, seed 91711, one click at
+(-43.2, 53.2) for Hunters + Spears + Wrenches):
+
+| | Hunters (start -14.6, 92.6) | Spears (14.6, 92.6) | Wrenches (43.9, 93.6) | all in (probe, 7001) |
+|---|---|---|---|---|
+| today / `--group-veto=off` = his match | (-76.0, 101.0): 61 m west, north of their spawn row | his click | (-10.4, 5.4): through the neck, across the drop | 26.1 s |
+| **veto ON (default)** | (-16.2, 71.7): 33 m behind his click | his click (today's) | (10.8, 90.3): 66 m behind | **8.2 s** |
+
+- `make replay-match` of his match, 30 s, every crew (laptop): veto OFF = his match exactly (DIVERGENCE 20/20 crews within 3 m,
+  PASS); veto ON: his order row at tick 0 carries exactly the table's places (it diverges from his match from tick 1, as meant).
+- **Top-down shots, looked at** (`references/round46/orders/v3-gorge-shots/`): OFF one squad's crews beyond the pit row toward the
+  enemy; ON every crew on his side below the pits, one group back from his click at the west neck, on open ground.
+- **His click's own cost:** 8.8-9.2 ms ON v 10.4 ms OFF (laptop, native on, n 1 each; R46.13: no port).
+- **His Locks clicks** (round 43, `tests/test_control_his_locks_click.gd`'s inferred clicks (-35, 97) and (-61, 59)): in the geometry
+  probe with his north-edge row (`his` starts), (-61, 59) has no failing place (today's exactly); (-35, 97) had one squad sent back
+  22 m south; the veto re-deals it to (-27.1, 96.2) beside his click (laptop, 7003: all-in 4.6 v 5.3 s, contacts 7 v 6). Both
+  are Bar V1 cells (fixed clicks), read on 24 fresh seeds in the series.
+
+### NOW (2026-10-30 ~04:45 PDT)
+
+- **FROZEN 12bd0c68f GREEN builder3: `make check exited 0`, 3483 passed / 0 failed** (`~/orders-r46/check-v1-12bd0c68f.log`).
+  **Bar V1's series RUNNING on builder3 since 04:35** (`~/orders-r46/bar-v1/run.log`, BAR_DONE ends it; verdict in
+  `verdict.txt`). Dev read 4 on 12bd0c68f (builder0, 7004 / 7006, n 1 a cell): VERDICT PASS on every line. 12bd0c68f = 6acba040e +
+  a seat is taken within the LARGER of the two squads' half-widths (dev reads 1-3: Locks -35/97 contacts 16 v 6 every seed).
 - **Earlier candidate f77e16230 GREEN builder3: `make check exited 0`, 3481 passed / 0 failed.** Since then, code only (lines
   unchanged, amendment 0, each told to the orchestrator):
   - 40d4b9dec: the base-edge "sent back" also needs the place > 5 m farther from his click (dev read 2, Crossing 5-squad click:
