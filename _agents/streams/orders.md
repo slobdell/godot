@@ -81,11 +81,65 @@ the orchestrator the same hour (C46.2): it goes to him the same day.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-30 ~05:00 PDT)
+### NOW (2026-10-30 ~09:30 PDT): V1 SHIPPED ON (main R46.33); V4 STAYS OFF (no series: the dev reads say packing arrives later)
 
-- **Freeze candidate 6acba040e** (frozen detached tree `../godot-orders-v1`): its check on builder3
-  (`~/orders-r46/check-v1-6acba040e.log`) and dev read 3 on builder0 (7003 / 7005, `~/orders-r46/dev6/`) running; the series on
-  11801-11848 (builder3) starts when both are clean. Main tree for I1: `../godot-orders-main` (7189e3ff3 + instruments only).
+- **V1 shipped ON** (merged 12bd0c68f to main, R46.33; Bar V1 PASS below).
+- **V4 / Bar V2: no series. The tighter file goes to him as a feel question, OFF** (orchestrator's ruling, before any bar number).
+  Dev reads (builder0, base = main's default with the veto ON, dev seeds, n 1 a cell, Bar V2's corpus 53 runs an arm):
+  | pack | depth behind his click (median) | all-in (paired mean) | friendly contacts a run | never-in | wedged crew-s a run |
+  |---|---|---|---|---|---|
+  | today (base) | 50.0 m | 19.3 s | 41.9 | 2 | 60.1 |
+  | 0.5, front step full (a87b07cba, 7001/7002) | 50.0 m (3 + 1 / 2 + 2 bodies never packed) | 20.0 v 19.6 | 37.9 v 36.5 | 3 v 3 | 67.2 v 62.3 |
+  | **0.5, front step at the halt radius (dc452f797, 7003/7004)** | **25.1 m** | **20.8 s** | **59.6** | 3 | **94.5** |
+  | 0.75 (0edb74316, 7003/7004) | 37.5 m | 19.6 s | 82.6 | 5 | 70.5 |
+  His Gorge click: 0.5 packed file 39.8 m, all in 13.1 s v 8.2 s unpacked (laptop). **In his terms:** packing the squads closer
+  does shorten the line behind his click, but they then queue and shove where they stop, so the last squad is in 1-2 s LATER,
+  not sooner, with about half again as many bumps. **Recommendation: keep today's spacing** (to see it: `make skirmish
+  SKIRMISH_FLAGS="--group-pack=on"`). a87b07cba (V1 + main + V4 OFF) GREEN builder3 `make check exited 0`, 3512 / 0.
+- **Bar-instrument fault in my Bar V2 filing (recorded):** L1 "file length" = the farthest place from the click reads the FLANK of a
+  3-abreast front on open ground (44 + 14 = 58 m both arms), not the file. Approved amendment 1 (depth behind the click along the
+  approach) is moot: no series.
+- **Next:** V5 (the street lay behind `--group-guard=on`), dev reads only; stretch (the departure order).
+
+### EARLIER (2026-10-30 ~07:00 PDT): BAR V1 PASSES; merge 12bd0c68f; V2 next
+
+- **VERDICT Bar V1: PASS** (builder3, frozen **12bd0c68f** = GREEN builder3 `make check exited 0`, 3483 passed / 0 failed; 11801-11848;
+  every part try 1, 3672 runs). D1 across 0 (base 303); D2 sent back 0 (base 126); D5b his exact Gorge click 24/24; I1 the OFF
+  path == main 1224/1224; I2 0 differ (914 untouched, 310 changed); G1 PASS on 13 touched cells; B- no street run failing. Terminus
+  untouched (0 of 144 geometry runs, 0 street runs). Evidence: `references/round46/orders/bar-v1-builder3-12bd0c68f/`.
+- **Merge = 12bd0c68f alone** (told to the orchestrator; the veto ON by default, `--group-veto=off` the escape; G2 OFF behind
+  `--group-guard=on`). Reported, not a line (the orchestrator's ruling before the verdict): Crossing route first-waypoint re-deals
+  (22 of 24 3-squad routes), paired no harm (outside 1.23 v 1.23, metres outside 67.2 v 75.8, all-in 17.1 v 18.6 s).
+- **Next: V2 (the tighter file).** Bar V2 filed (below, recorded on main 0af02e7ff). Its freeze is built on main AFTER V1's merge
+  (main has engage's L1c, which changes fights: part C). Named risk: L1b his click 49.1 m v <= 50 m.
+- Side trees removed (godot-orders-main, godot-orders-v1; laptop + builder3 + builder0 folders).
+
+### V3 HIS ACCEPTANCE READ (the shipped candidate 12bd0c68f's places; laptop flightdeck, native on)
+
+**His Gorge click** (recording `references/round44/playtest/2026-10-29T09-35-51-gorge.jsonl`, seed 91711, one click at
+(-43.2, 53.2) for Hunters + Spears + Wrenches):
+
+| | Hunters (start -14.6, 92.6) | Spears (14.6, 92.6) | Wrenches (43.9, 93.6) | all in (probe, 7001) |
+|---|---|---|---|---|
+| today / `--group-veto=off` = his match | (-76.0, 101.0): 61 m west, north of their spawn row | his click | (-10.4, 5.4): through the neck, across the drop | 26.1 s |
+| **veto ON (default)** | (-16.2, 71.7): 33 m behind his click | his click (today's) | (10.8, 90.3): 66 m behind | **8.2 s** |
+
+- `make replay-match` of his match, 30 s, every crew (laptop): veto OFF = his match exactly (DIVERGENCE 20/20 crews within 3 m,
+  PASS); veto ON: his order row at tick 0 carries exactly the table's places (it diverges from his match from tick 1, as meant).
+- **Top-down shots, looked at** (`references/round46/orders/v3-gorge-shots/`): OFF one squad's crews beyond the pit row toward the
+  enemy; ON every crew on his side below the pits, one group back from his click at the west neck, on open ground.
+- **His click's own cost:** 8.8-9.2 ms ON v 10.4 ms OFF (laptop, native on, n 1 each; R46.13: no port).
+- **His Locks clicks** (round 43, `tests/test_control_his_locks_click.gd`'s inferred clicks (-35, 97) and (-61, 59)): in the geometry
+  probe with his north-edge row (`his` starts), (-61, 59) has no failing place (today's exactly); (-35, 97) had one squad sent back
+  22 m south; the veto re-deals it to (-27.1, 96.2) beside his click (laptop, 7003: all-in 4.6 v 5.3 s, contacts 7 v 6). Both
+  are Bar V1 cells (fixed clicks), read on 24 fresh seeds in the series.
+
+### EARLIER (2026-10-30 ~04:45 PDT)
+
+- **FROZEN 12bd0c68f GREEN builder3: `make check exited 0`, 3483 passed / 0 failed** (`~/orders-r46/check-v1-12bd0c68f.log`).
+  **Bar V1's series RUNNING on builder3 since 04:35** (`~/orders-r46/bar-v1/run.log`, BAR_DONE ends it; verdict in
+  `verdict.txt`). Dev read 4 on 12bd0c68f (builder0, 7004 / 7006, n 1 a cell): VERDICT PASS on every line. 12bd0c68f = 6acba040e +
+  a seat is taken within the LARGER of the two squads' half-widths (dev reads 1-3: Locks -35/97 contacts 16 v 6 every seed).
 - **Earlier candidate f77e16230 GREEN builder3: `make check exited 0`, 3481 passed / 0 failed.** Since then, code only (lines
   unchanged, amendment 0, each told to the orchestrator):
   - 40d4b9dec: the base-edge "sent back" also needs the place > 5 m farther from his click (dev read 2, Crossing 5-squad click:
@@ -99,8 +153,10 @@ _(worker keeps this current: report at the top, every number with commit, machin
     his side).
 - **Dev read 2 (builder0, f77e16230, 7002 / 7004, n 1 a cell): every deciding line PASS** (D1 0 v base 13, D2 0 v base 6, D5b),
   I1 51/51, I2; G1 / B- misses on single runs (Locks -35/97 contacts 16 v 6; the Crossing column-tail case, fixed in 40d4b9dec).
-- **V4 (OFF, `--group-pack=on`):** at his neck the tighter file crowds the front squad's halt (Spears never in, 7001): to fix
-  before Bar V2 (keep the first rank's step, pack the rest: a 3-squad file ~50 m, 4 ~66 m, the brief's targets).
+- **V4 (OFF, `--group-pack=on`):** the front rank keeps today's step (at his neck a packed second rank stood in the front
+  squad's halt), the ranks behind it halve, floored at GAP_M. His Gorge file 65.5 -> 49.1 m (laptop lab). **Named risk (Bar V2
+  L1b, his click <= 50 m): 49.1 m is on the edge; not amended after numbers.** At 7001 the Spears' crews still string into the
+  neck in one packed run (never-in guard's risk).
 
 ### REPORT (2026-10-30 ~02:30 PDT, Fable, worktree `godot-orders`, branch `stream/orders`)
 
@@ -136,7 +192,35 @@ _(worker keeps this current: report at the top, every number with commit, machin
   code and starts mode `recorded` matched no case: D5b's squads stood at the army's centre. Implemented: dev read 7001 (laptop,
   47cae3725, n 1) base = his recorded places exactly; veto: Wrenches on his side, all-in 26.1 -> 17.6 s (a dev read, not the bar).
 - **Requests to other streams:** native: twin of `veto_failures` optional (not a V1 gate; R46.9).
-- **Questions for the lead:** none yet.
+- **Questions for the lead (stretch, not blocking; player terms, one recommendation):**
+  1. *Wide open ground, four or five squads, one click:* today they form up three side by side with the rest in a second row
+     behind (about 160 m wide for three of your 44 m gang squads). Would you rather they spread four or five side by side when the
+     ground is wide enough? **Recommended: keep three side by side.** Four abreast is ~220 m wide: on a phone or the laptop the
+     ends of the line leave the screen, and the outer squads reach the click last because they drive the long way round.
+
+### Bar V2 THE TIGHTER FILE (orders, round 46; filed here BEFORE any number on 11849-11896; dev reads on 7001-7006 only)
+
+**What he would see:** with two or more squads selected and one click, the squads behind the first stand closer: the group's file
+is about half as long behind the front squad (his Gorge click: 65.5 -> 50.8 m), so the whole group is at his click sooner and
+fights together; a bit more bumping in tight spots. The front squad keeps today's room at his click (at a neck a packed second
+rank stood in its halt). Nothing else changes: same places across, same order, the veto as shipped.
+- **Arms:** `base:` (the frozen tree's default: V1's veto ON, today's file) v `pack:--group-pack=on`, on a frozen tree whose check
+  is green (`make remote T=check`), V1 merged.
+- **Runner:** `tests/control/orders_v2_bar.sh <frozen tree> "11849 ... 11872" "11873 ... 11896" "11873 ... 11884" <out> 8`;
+  judge `tests/control/orders_v2_judge.py <out>` (its docstring is the lines below, verbatim in code). Parts: A geometry (Bar V1's
+  corpus: 24 cells + the 10 fixed clicks + his exact Gorge click), seeds 11849-11872; B streets (locks / crossing / terminus /
+  yard_open x 3 / 5 x click / route), seeds 11873-11896; C fight (terminus / locks, 5 squads, click, `--probe-fight=on
+  --probe-budget=3000`), seeds 11873-11884.
+- **Deciding:** **L1** 4-squad file length (the farthest place from his click among the squads it moves) pooled median over part
+  A's cells <= 75 m AND <= 0.7 x base's; **L1b** his exact Gorge click median <= 50 m; **L2** all-in sooner or identical: over A + B
+  runs where both arms got every squad in, paired, pack mean <= base mean (strictly sooner reported).
+- **Guards:** friendly contacts a run (A + B pooled) <= base x 1.25 + 5 (the "bit more bumping" he accepted, bounded); never-in
+  runs <= base x 1.2 + 1; wedged crew-seconds a run (the probe's `wedged_s`, Movement.wedged), paired, <= base + 2 se; part B's
+  street lines (places outside the corridor, metres driven outside it, all-in), paired, <= base + 2 se; the fight (part C): green
+  lost <= base + 2 se, green kills >= base - 2 se; V1 under the pack: places across a gap 0 and sent back 0.
+- **C46.4:** the pack changes the lay's step only (no drive, no brain, no new C++ seam): no native twin required.
+- **Ship rule:** ON (`GROUP_PACK` default flipped, `--group-pack=off` the escape) if every line passes; any FAIL -> what he would see
+  ON v OFF in player terms to the orchestrator the same hour (C46.2).
 
 ### Bar V1 THE VETO-ONLY GROUP GUARD (orders, round 46; filed here BEFORE any number on 11801-11848; dev reads on 7001-7006 only)
 

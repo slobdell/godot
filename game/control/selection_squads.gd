@@ -817,7 +817,7 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 			var aside := (float(k) - (abreast - 1) * 0.5) * (widest + GAP_M)
 			result[int(rank_members[k][1])] = clamp.call(centre + rank_across * aside)
 		start += abreast
-		behind += step if start == 0 else pack_step(step, blocks)  # V4: the front rank's halt keeps today's room
+		behind += pack_front_step(step, blocks) if start == 0 else pack_step(step, blocks)  # V4
 	return result
 
 
@@ -1473,7 +1473,7 @@ static func rank_slots_for(blocks: Array, click: Vector3, facing: Variant, fallb
 		if r + 1 < sizes.size():
 			var step := maxf(rank_step(size, sizes[r + 1], slot_width, slot_depth, nest, _nest_clearance(blocks)), min_step(blocks))
 			var full := halt_clear_step(step, size, sizes[r + 1], slot_width, blocks)
-			behind += full if r == 0 else pack_step(full, blocks)  # V4: the front rank's halt keeps today's room
+			behind += pack_front_step(full, blocks) if r == 0 else pack_step(full, blocks)  # V4
 	return slots
 
 
@@ -1908,7 +1908,7 @@ static func _guard_attempt(ctx: Dictionary, squeeze: float) -> Dictionary:
 		if next_size <= 0:
 			break
 		var full := halt_clear_step(maxf(rank_step(size, next_size, slot_width, slot_depth, nest, clearance), min_step(blocks)), size, next_size, slot_width, blocks)
-		step = (full if behind <= 0.0 else pack_step(full, blocks)) * squeeze  # V4: the front rank's halt keeps today's room
+		step = (pack_front_step(full, blocks) if behind <= 0.0 else pack_step(full, blocks)) * squeeze  # V4
 		behind += step
 		if behind > army_back + n * (slot_depth + GAP_M):
 			break  # far behind the whole army: the ground ran out of sense (the hold rule keeps a squad off a seat behind it)
@@ -2107,23 +2107,42 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 #
 # "Squads pack closer (roughly half the length): the whole group is at your click sooner and fights together, at the cost of a bit
 # more bumping in tight spots." The step between one rank of a group's file and the next (today: the deepest halt + GAP_M, 33-50
-# m, so a 3-4 squad file is 66-150 m) is PACK_FACTOR of today's behind the second rank, never under the squads' own pitch
-# (`_nest_clearance`: a rank never nearer than a squad's own vehicles). The step from the FRONT rank keeps today's room: at a neck
-# (his Gorge click) a packed second rank stood inside the front squad's halt and the front squad never settled (laptop, 7001). The same layout, shorter: today's `ranks` (rank_slots_for), the column (column_lay) and the
-# fitted body's seats (guard_lay: the veto's seats). `--group-pack=on` / GROUP_PACK=on; OFF until Bar V2 passes.
+# m, so a 3-4 squad file is 66-150 m) is PACK_FACTOR of today's, never under GAP_M (the lay's own gap); the step from the FRONT
+# rank never stands inside the front squad's halt (`pack_front_step`). The same layout, shorter: today's `ranks` (rank_slots_for),
+# the column (column_lay), the fitted body's seats (guard_lay) and the veto's seats. `--group-pack=on` / GROUP_PACK=on; OFF until
+# Bar V2 passes. Dev reads (builder0, dc452f797, 7003 / 7004): the depth halves (50 -> 25 m) but the group arrives later and bumps
+# more (all-in 20.8 v 19.3 s, contacts 59.6 v 41.9 a run, wedged 94.5 v 60.1 crew-s): see the brief's Status.
 static var GROUP_PACK := pack_default()
-const PACK_FACTOR := 0.5
+## (dev knob) `--group-pack-factor=F` reads another factor (Bar V2's dev reads only).
+static var PACK_FACTOR := _pack_factor()
+
+
+static func _pack_factor() -> float:
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with("--group-pack-factor="):
+			return float(arg.get_slice("=", 1))
+	return 0.5
 
 
 static func pack_default() -> bool:
 	return OS.get_cmdline_user_args().has("--group-pack=on") or OS.get_environment("GROUP_PACK") == "on"
 
 
-## A rank step under the tighter file: `step` x PACK_FACTOR, floored at the blocks' own pitch; `step` itself when it is OFF.
+## A rank step under the tighter file: `step` x PACK_FACTOR, floored at GAP_M (the lay's own gap between squads; the squads' pitch,
+## ~17.8 m for his gangs, held his Gorge file at 50.8 m); `step` itself when it is OFF. `blocks` kept for the callers' shape.
 static func pack_step(step: float, blocks: Array) -> float:
 	if not GROUP_PACK:
 		return step
-	return maxf(step * PACK_FACTOR, minf(step, _nest_clearance(blocks)))
+	return maxf(step * PACK_FACTOR, minf(step, GAP_M))
+
+
+## The step from the FRONT rank under the tighter file: as `pack_step`, but never inside the front squad's halt: at least its halt's
+## radius (half the deepest halt, `min_step`) + half GAP_M (his Gorge click: a second rank 16 m behind the Spears at the neck stood in
+## their coil and they never settled; at today's full step a 3 + 1 body never packed at all, dev read a87b07cba).
+static func pack_front_step(step: float, blocks: Array) -> float:
+	if not GROUP_PACK:
+		return step
+	return minf(step, maxf(pack_step(step, blocks), min_step(blocks) * 0.5 + GAP_M * 0.5))
 
 
 # ---- V1 (round 46, orders; R46.1, his pick): THE VETO-ONLY GROUP GUARD ----------------------------------------------------

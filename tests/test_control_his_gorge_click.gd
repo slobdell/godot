@@ -306,7 +306,7 @@ func test_veto_failures_reads_his_places() -> void:
 
 
 ## V4 (round 46, R46.2, `--group-pack=on`): the same vetoed click in the tighter file: the Spears on his click as today, the file
-## behind it shorter (the brief's target: a 3-squad file within ~50 m of his click; today 65.5 m, packed 50.8 m: the front rank
+## behind it shorter (the brief's target: a 3-squad file within ~50 m of his click; today 65.5 m, packed 49.1 m: the front rank
 ## keeps today's step so the front squad's halt is clear at the neck, the ranks behind it halve), every place passing the veto.
 func test_tighter_file_halves_his_file() -> void:
 	await _build()
@@ -331,12 +331,12 @@ func test_tighter_file_halves_his_file() -> void:
 	assert_true(far_packed < far_loose - 10.0, "a shorter file (%.1f v %.1f m; the step floors at the squads' own pitch)" % [far_packed, far_loose])
 
 
-## V4 pure: the step halves, never under the squads' own pitch, and is today's with the switch OFF.
+## V4 pure: the step halves, never under GAP_M (14 m), and is today's with the switch OFF.
 func test_pack_step() -> void:
-	var blocks := [{"pitch_v": Vector2(14.0, 14.0)}]
+	var blocks := [{"pitch_v": Vector2(18.0, 18.0)}]
 	SelectionSquads.GROUP_PACK = false
 	assert_eq(SelectionSquads.pack_step(50.0, blocks), 50.0, "OFF: today's step")
 	SelectionSquads.GROUP_PACK = true
 	assert_eq(SelectionSquads.pack_step(50.0, blocks), 25.0, "ON: half")
-	assert_eq(SelectionSquads.pack_step(20.0, blocks), 14.0, "ON: never under the squads' pitch")
+	assert_eq(SelectionSquads.pack_step(20.0, blocks), 14.0, "ON: never under GAP_M")
 	assert_eq(SelectionSquads.pack_step(10.0, blocks), 10.0, "ON: a step already under the pitch stays")

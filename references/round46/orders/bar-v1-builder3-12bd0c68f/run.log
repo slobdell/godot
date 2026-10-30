@@ -1,0 +1,52 @@
+PART geometry OK: 1632 of 1632 runs (try 1)
+PART his3 OK: 48 of 48 runs (try 1)
+PART streets OK: 768 of 768 runs (try 1)
+PART main-geometry OK: 816 of 816 runs (try 1)
+PART main-his3 OK: 24 of 24 runs (try 1)
+PART main-streets OK: 384 of 384 runs (try 1)
+runs: base 1224 veto 1224 main 1224
+PASS deciding D1: places across a gap from the click = 0 over 840 veto runs (veto 0, base 303)
+PASS deciding D2: places sent back > 10 m = 0 over 840 veto runs (veto 0, base 126)
+PASS deciding D5b: his Gorge click, every place on his side and passing the veto in 24 of 24 runs (base: 24 runs with a failing place)
+PASS guard I1: the OFF path is main's: 0 of 1224 runs differ (or missing)
+PASS guard I2: every passing base place byte-identical under the veto: 0 differ; 914 runs with no failing place, 310 runs changed
+PASS guard G1: all-in / never-in / contacts on the 13 touched cells
+  ok   touched geometry/across-r20: n 96/96 all-in 6.3 v base 6.2, never-in 0 v 24, contacts a run 17.9 v 37.1
+  ok   touched geometry/across-rfixed-gorge--40_30: n 24/24 all-in 13.4 v base 13.4, never-in 0 v 0, contacts a run 33.0 v 26.0
+  ok   touched geometry/across-rfixed-gorge--40_58: n 24/24 all-in 6.3 v base 13.6, never-in 0 v 0, contacts a run 15.0 v 11.0
+  ok   touched geometry/across-rfixed-gorge-40_30: n 24/24 all-in 11.8 v base 17.4, never-in 0 v 0, contacts a run 24.0 v 27.0
+  ok   touched geometry/across-rfixed-gorge-40_58: n 24/24 all-in 7.3 v base 16.3, never-in 0 v 0, contacts a run 21.0 v 17.0
+  ok   touched geometry/along-r20: n 96/96 all-in 29.5 v base 28.9, never-in 5 v 6, contacts a run 27.4 v 28.7
+  ok   touched geometry/along-r80: n 96/96 all-in 43.8 v base 46.1, never-in 2 v 7, contacts a run 61.1 v 70.0
+  ok   touched geometry/his-r80: n 96/96 all-in 31.9 v base 37.1, never-in 7 v 7, contacts a run 68.2 v 86.4
+  ok   touched geometry/his-rfixed-locks--22_13: n 24/24 all-in 22.5 v base 26.7, never-in 0 v 0, contacts a run 21.0 v 59.0
+  ok   touched geometry/his-rfixed-locks--35_97: n 24/24 all-in 4.6 v base 5.3, never-in 0 v 0, contacts a run 7.0 v 6.0
+  ok   touched geometry/his-rfixed-locks--92_0: n 24/24 all-in 17.2 v base 35.5, never-in 0 v 0, contacts a run 27.0 v 38.0
+  ok   touched geometry/recorded-rfixed-gorge--43.2_53.2: n 24/24 all-in 8.2 v base 26.1, never-in 0 v 0, contacts a run 6.0 v 37.0
+  ok   touched geometry/spawn-rfixed-gorge--43.2_53.2: n 24/24 all-in 6.1 v base 25.8, never-in 0 v 0, contacts a run 4.0 v 15.0
+  reported (R46.10 a): clicks the veto touches, base runs with a failing place / veto runs re-dealt / runs:
+    geometry crossing                          93 /   93 /  144
+    geometry gorge                            144 /  144 /  288
+    geometry locks                             73 /   73 /  264
+    geometry terminus                           0 /    0 /  144
+    streets crossing 3 click                    0 /    0 /   24
+    streets crossing 3 route                    0 /   22 /   24
+    streets crossing 5 click                    0 /    0 /   24
+    streets crossing 5 route                    0 /    2 /   24
+    streets locks 3 click                       0 /    0 /   24
+    streets locks 3 route                       0 /    0 /   24
+    streets locks 5 click                       0 /    0 /   24
+    streets locks 5 route                       0 /    0 /   24
+    streets terminus 3 click                    0 /    0 /   24
+    streets terminus 3 route                    0 /    0 /   24
+    streets terminus 5 click                    0 /    0 /   24
+    streets terminus 5 route                    0 /    0 /   24
+    streets yard_open 3 click                   0 /    0 /   24
+    streets yard_open 3 route                   0 /    0 /   24
+    streets yard_open 5 click                   0 /    0 /   24
+    streets yard_open 5 route                   0 /    0 /   24
+PASS guard B-outside (places outside the corridor a run): no touched street run
+PASS guard B-metres (driven outside the corridor a run): no touched street run
+PASS guard B-all-in (s, runs where both arms got every squad in): no touched street run
+VERDICT Bar V1: PASS
+BAR_DONE
