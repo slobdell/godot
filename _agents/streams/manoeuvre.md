@@ -78,6 +78,13 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   drivers `bars_b3_a.sh` (builder0 light, from `../godot-manoeuvre-b3x`) + `bars_b3_b.sh` (builder2, from `../godot-manoeuvre-b3`),
   then `bars_b3_judge.sh`. **LAUNCHED ~19:20 PDT**: the check read `exited 0`, 25 passed, 3 NOT JUDGED (perf), sim-baseline unmoved;
   native EQUAL (4a04ea921011cd9a), twins 34 / 0, default probe 60 / 60 on 26b1425e7. Evidence `~/overnight-manoeuvre/r45/bars_b3/`.
+- **Bar B3, legs as they land (19:00 PDT):** **D1 PASS** (t4 / t97 v t44 / t140). **D2 (builder0 light, 98 rows): deciding FAILS AS FILED,
+  12 base-stuck poses, ON sooner in 9 (75 % v 80 %)**, median -2.78 s PASS, ceiling worst +1.3 s / median -0.52 PASS, the named 11187
+  cell +0.8 s PASS. The three not won are one shape, pose 10 (crossing crawl +50), seeds 11711 / 11725 / 11739, **exact ties** (t360 ->
+  t360, t360 -> t360, t187 -> t187): the look's back-up is blocked at 2 m by the squadmate 1.7 m beside, it withdraws, today's planner
+  runs to the same plan; B2 had read those cells a little sooner by the pre-fallback look's accident. The 80 % line counts a tie as a
+  loss. **Engage's line PASS** (the Gorge tables identical base v bo; the replay itself reads FAIL v his recording in both arms since
+  main's E2 — engage's). Guard poses, workload, group, fights, G1 probe still running.
 - **Then:** S v5's Terminus dev read (the +8 s), its bar on 11751-11798 only on a clean three-arena read; holdway's head-on release
   last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars, each failing as filed with his
   line passing) follows unchanged.
