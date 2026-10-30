@@ -21,6 +21,13 @@
       "recorded": "2026-10-17 22:33",
       "load": "0.32, 2 other godot (idle)",
       "note": "the GCP burst builder (balsa-worker-gcp, AMD EPYC 9B45, 32 threads; _agents/gcp_builder.md): make gcp-remote T=ai-perf-nominal, 39 samples, ai_usec_per_tick 5508 alone."
+    },
+    "devia": {
+      "ref_ms": 0.682,
+      "commit": "87a6c7fcc",
+      "recorded": "2026-10-29 22:47",
+      "load": "idle (99.7% idle at the start; the 1-min load was the run's own import), 0 other godot",
+      "note": "builder3 (devia@builder3, AMD Ryzen 9 9950X, 16 cores / 32 threads, 30 GB): REMOTE_HOST=devia@builder3 tools/remote.sh ai-perf-nominal, twice back to back: ref_ms 0.681 / 0.683 (39 samples each), ai_usec_per_tick 8603 / 8599 alone. No P/E split (no /sys/devices/cpu_core), so perf_judge pins nothing there."
     }
   }
 }
