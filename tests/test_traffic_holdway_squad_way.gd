@@ -24,3 +24,10 @@ func test_a_crew_behind_the_route_start_reads_the_first_leg() -> void:
 func test_no_route_is_no_way() -> void:
 	assert_eq(Movement.route_way([], Vector3.ZERO), Vector2.ZERO, "no route")
 	assert_eq(Movement.route_way([Vector3(1, 0, 1), Vector3(1, 0, 1)], Vector3.ZERO), Vector2.ZERO, "a route with no length")
+
+
+func test_on_by_default_off_on_the_web() -> void:
+	assert_true(not Traffic.DEFAULT_OFF.has("holdway"), "round 46 (R46.27): holdway is not listed OFF by default")
+	assert_true(Traffic.WEB_OFF.has("holdway"), "round 46 (R46.35): ...but OFF in the web export (a round-47 freeze)")
+	if not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--traffic-off=holdway"):
+		assert_true(not Traffic.off("holdway"), "the native / desktop game runs it ON; --traffic-off=holdway the escape")
