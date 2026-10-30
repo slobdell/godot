@@ -348,6 +348,7 @@ func compute_command(delta: float) -> TankCommand:
 	else:
 		gunnery.apply(cmd, _seconds_step())  # after the movement half, in seconds (combat's seam)
 	_stop_turn_in(cmd, delta)
+	_his_cap(cmd)
 	movement.note_decision(cmd, move_order)
 	if profiling:
 		add_part("weapon", Time.get_ticks_usec() - clock)
@@ -570,6 +571,46 @@ static func wheel_hold_on() -> bool:
 ## shuffle, alive under every HOLD between SPOTs: its leftover reverse spilled into the next face, builder2 9456b4f3).
 ## Under the turn-in switch a swing at a LIVE enemy (Manoeuvre.live_enemy_near, R33.38 and round 34's M0) goes through
 ## the turn-in, or the hull holds still; never the creep. Any other swing keeps gunnery's turn.
+## Round 45 (engage E6, R45.22): a crew carrying his stop (TankBrain.his_anchor) does not roll more than
+## TankBrain.TURN_IN_CAP_M from where it came to rest to swing a hull-fixed gun round (the stop's turn-in, C33.9): his
+## stopped scout drove 4 m doing it (authority probe 11330). Only under his stop; a hold or a move drives as before. `--player-authority=off` removes it with the rest of the rule.
+static var his_caps := 0
+## OPT-IN until Bar E2b passes (`--turn-in-cap=on`; R45.24: the tree it rides on carries the `player` fix, which merges
+## alone). Bar E2b's arms: base = without it (E2 as shipped), new = `--turn-in-cap=on`.
+static var TURN_IN_CAP := OS.get_cmdline_user_args().has("--turn-in-cap=on")
+
+
+func _his_cap(cmd: TankCommand) -> void:
+	if not TURN_IN_CAP or (cmd.throttle == 0.0 and cmd.turn == 0.0):
+		return
+	# His STOP only (R45.22's 11330): capping the hold's face creep too broke a wheeled hull's multi-point swing into a
+	# drift that shot less (dev, 7003: 4.8 m and dead v 2.9 m), so a held crew keeps the creep as shipped.
+	if String(move_order.get("type", "")) != "stop":
+		return
+	var brain := self as TankBrain
+	if brain == null:
+		return
+	var anchor: Variant = brain.his_anchor()
+	if not (anchor is Vector3):
+		return
+	var here := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
+	# Only a leg that carries the hull AWAY from its anchor is cut (the legs back keep a wheeled hull's multi-point turn
+	# working in place, so a fixed gun still comes round); and an away leg is cut early enough that the hull does not coast
+	# past the cap (a turn-in leg reached 7.4 m/s and coasted 2.4 m on: the cap test's first read).
+	var speed := tank.estimated_velocity.length()
+	var forward := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z)
+	var out := here - (anchor as Vector3)
+	var away := (forward * signf(cmd.throttle)).dot(out) > 0.0
+	# A swing in place is slow legs: never above TURN_IN_CAP_SPEED either way; a leg away stops short of the cap.
+	if speed <= TankBrain.TURN_IN_CAP_SPEED \
+			and (not away or out.length() + speed * speed / (2.0 * TankBrain.TURN_IN_BRAKE) < TankBrain.TURN_IN_CAP_M):
+		return
+	# Wheels roll along the arc on a pure turn command (TankMotion), so the turn goes too.
+	cmd.throttle = 0.0
+	cmd.turn = 0.0
+	his_caps += 1
+
+
 func _stop_turn_in(cmd: TankCommand, delta: float) -> void:
 	if String(move_order.get("type", "")) != "stop" or not Manoeuvre.turn_in_on() or tank.mount != "fixed" \
 			or movement.wheel_radius() <= 0.0 or cmd.throttle != 0.0 or cmd.turn == 0.0 \

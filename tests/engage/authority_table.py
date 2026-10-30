@@ -64,6 +64,10 @@ def lines(runs):
     back = [r for r in ok if r["taken_back"] is not None]
     return {
         "his_runs": len(his),
+        "stop_n": len([r for r in his if r["verb"] == "stop" and r["rested"]]),
+        "stop_end_max_m": max([r.get("stop_moved_m") or 0.0 for r in his if r["verb"] == "stop" and r["rested"]], default=float("nan")),
+        "stop_end_over_3m": sum(1 for r in his if r["verb"] == "stop" and r["rested"] and (r.get("stop_moved_m") or 0.0) > 3.0),
+        "stop_fixed_wheeled_n": len([r for r in his if r["verb"] == "stop" and r.get("fixed_wheeled")]),
         "native_decide_runs": "%d/%d" % (sum(1 for r in ok if r.get("native_decide")), len(ok)),
         "held_moved_max_m": max([r["moved_m"] for r in held], default=float("nan")),
         "held_over_2m": sum(1 for r in held if r["moved_m"] > 2.0),

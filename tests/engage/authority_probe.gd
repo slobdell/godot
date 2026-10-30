@@ -166,6 +166,9 @@ func _run() -> void:
 	shots["open"] = true
 	var rest: Variant = null
 	var moved := 0.0
+	# Round 45 (E6, Bar E2b): where his STOP ends: the farthest from rest until the stop order completes.
+	var stop_moved := 0.0
+	var stopping := verb == "stop"
 	var pushed := 0
 	var window := int(WINDOW_S * SimClock.TICK_RATE)
 	for tick in window:
@@ -177,6 +180,21 @@ func _run() -> void:
 			rest = here
 		if rest is Vector3:
 			moved = maxf(moved, here.distance_to(rest))
+			if stopping:
+				stop_moved = maxf(stop_moved, here.distance_to(rest))
+		stopping = stopping and not orders.current(ordered).is_empty()
+		if _flag("trace", "off") == "on" and tick < 60 and tick % 3 == 0:
+			var mv := Movement.of(crew)
+			var brain_e6 := game_match.brains.get_node_or_null("Brain_" + ordered) as TankBrain
+			print("AUTHORITY_E6 t=%d pos=(%.1f, %.1f) v=%.2f thr=%.2f kturn=%.1f phase=%s order=%s option=%s move=%s yield=%s unstick=%.2f stuck=%.2f reflexes=%d stride=%d last_run=%d mount=%s wheel_r=%.1f" % [game_match.tick,
+					here.x, here.z, crew.estimated_velocity.length(), crew.command.throttle, mv._kturn_left_m if mv != null else -1.0,
+					String(Movement.state(crew).get("phase", "")), orders.current(ordered).get("verb", "-"),
+					brain_e6.choice.get("option", "") if brain_e6 != null else "-",
+					String(brain_e6.move_order.get("type", "")) if brain_e6 != null else "-",
+					mv.yield_to if mv != null else "-", mv._unstick_left if mv != null else -1.0, mv._stuck_time if mv != null else -1.0,
+					brain_e6.reflexes.size() if brain_e6 != null else -1, brain_e6._stride if brain_e6 != null else -1,
+					brain_e6._last_run_tick if brain_e6 != null else -1, crew.mount,
+					mv.wheel_radius() if mv != null else -1.0])
 		if _flag("trace", "off") == "on" and tick % 30 == 0:
 			var brain := game_match.brains.get_node_or_null("Brain_" + ordered) as TankBrain
 			print("AUTHORITY_TRACE t=%d pos=(%.1f, %.1f) v=%.1f order=%s/%s option=%s engaged=%s gun_visible=%s gap=%.1f" % [
@@ -197,6 +215,8 @@ func _run() -> void:
 	var alive := crew.is_alive()
 	var end := _flat(crew.global_position)
 	out["moved_m"] = _r(moved) if verb != "move" else null
+	out["stop_moved_m"] = _r(stop_moved) if verb == "stop" else null
+	out["fixed_wheeled"] = crew.mount == "fixed" and Movement.of(crew) != null and Movement.of(crew).wheel_radius() > 0.0
 	out["rested"] = rest != null
 	out["pushed_rows"] = pushed
 	out["toward_m"] = _r(at_order.distance_to(_flat(stage["gun"])) - end.distance_to(_flat(stage["gun"])))

@@ -125,7 +125,46 @@ squad's take-back point (118.5, -86.6), off the arena, grounds to exactly that m
 ("Already doing that"): no new id, but the crew is already on the squad's newest word. Not a missed order; he cannot click off the
 map. No test was written for a probe metric; the byte-identical re-read is the proof R45.19 named.
 
-**Next steps:** merge main once the orchestrator's main check of 8ef4f584d is green; nothing else open in the backlog.
+**Closed (2026-10-29 ~16:00 PDT):** main 8ef4f584d GREEN builder0 (3453/0, 28 targets ALL JUDGED, `make check exited 0`, the
+orchestrator's check) carries E2 ON; the probe fix 4b359f635 merged on top (tests/engage only). stream/engage fast-forwarded to main
+6c4a3592a. Backlog done; idle until the orchestrator sends something.
+
+### E5 / E6 (stretch, sent 2026-10-29 ~16:00 by the orchestrator)
+
+**E5 cause (no fix of mine: manoeuvre's, relayed R45.22):** his short moves on Gorge were not swallowed by any arrival radius (with
+E2: 87.0 and 91.8 s land at 3.1 / 3.4 m, inside the brain's 3.5). 83.7 and 85.2 s were replaced by his next click 1.5-1.8 s later
+because the DRIVE backed away first: the scout was reversing at 7.4 m/s (the idle fight's stand-off) and his click lay ~56 deg off its
+nose, 10.7 m, inside a wheeled scout's turning circle: the mover planned a three-point turn (`_kturn_left_m` 2.0 -> 0, throttle -0.7
+for ~0.9 s, 3 m away from his click). The brain sends `reverse: false`; `Movement.reset()` clears the old k-turn and the drive plans a
+new one at once. (Trace: `make engage-authority-trace AUTH_TAG=e5 AUTH_FLAGS="--player-authority=off --authority-on-at=2500"`, rows
+`yaw`, `thr`, `kturn_m`, `behind`.)
+
+**E6 cause:** under his stop the brain's move is `stop` from the first tick, but `OrderController._stop_turn_in` (C33.9,
+`Manoeuvre.turn_in`) drives a hull-FIXED WHEELED crew round to bring its gun onto a live enemy (11330: throttle 0.87 for 21 ticks,
+the turn-in counter (Manoeuvre.turn_in_stops) +1 every tick, 4 m). Under his hold the same idea is the face branch's wheeled creep (11315, throttle 0.35).
+**Ruling R45.22: (b)**, measured from where the crew first comes to rest; grant: the cap in `_stop_turn_in` and the face branch.
+**Built (7babd0390+):** `OrderController._his_cap` (`--turn-in-cap=off` the base arm): under HIS STOP no turn-in leg above 3 m/s, none
+away from the rest spot past `TankBrain.TURN_IN_CAP_M` 2.5 m (braking distance counted), and the turn goes with the throttle (wheels
+roll on a pure turn). **Decided against capping the hold's face creep too** (built and measured, dev 7003, builder0: a lone law_scout
+he held moved 4.8 m instead of 2.9, fired 54 shots instead of 131 and died: the cap broke the wheeled multi-point swing into a drift),
+so his holds keep E1's 3 m slack as shipped. Test `tests/test_authority_stop_cap.gd`: his stop ends 2.5 m from rest ON v 7.0 m OFF,
+shots 29 v 34 (builder0). Dev seeds 7001-7012: probe byte-identical base v cap (no dev seed stages the case).
+
+### Bar E2b (FILED 2026-10-29 ~16:40 PDT, before any number on 11349-11396)
+
+**Arms:** base = without the cap (E2 as shipped), new = with it; since R45.24 the cap is OPT-IN until this bar passes, so
+base = no flag and new = `--turn-in-cap=on` (the same comparison, spelled the other way: no line changes); both `--player-authority` ON; one frozen tree (named at
+freeze), builder0, native ON, paired by seed. **Workloads:** (S) the authority probe with `--verb=stop` on 11349-11396 (his stop,
+every crew kind drawn, alone or one crew of a squad); (M) the authority probe as drawn (Bar E1's mix) on the same seeds.
+
+**Deciding (S, his case = alone):** D1 where his stop ENDS (`stop_moved_m`, from rest until the stop completes): max over rested runs
+<= **3.0 m** (the 2.5 m cap + 0.5 m: a leg cut at the cap's braking estimate still settles); D1b no run ends farther than base + 0.5 m.
+
+**Guards:** G1 (M) Bar E1's D2 (pushed rows 0), hold max moved (base +/- 0.5 m: holds are not changed), D3 move ends; G2 fights (S
+and M): deaths new <= base + max(1, 1.645 sqrt(base)), enemy hp left within 1.645 se; G3 a stopped crew still shoots back (S): shots
+mean new >= base - 1.645 se, and **how many fewer** is reported (a fixed gun that may not swing round fires when the enemy enters its
+arc: R45.22's trade); G4 take-back (by order id) unchanged; G5 native-on v `--brains-off=native` EQUAL on (S) new; G6 `make check`
+green on the frozen tree; the CPU untouched (sim-baseline).
 
 #### Working notes (chronological)
 
