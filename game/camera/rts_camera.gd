@@ -308,6 +308,8 @@ var _plan_at := -1e9
 var _frame_dt := 1.0 / 60.0
 ## With --camera-trace, each switch prints a CAMERA_PLAN line (when, from/to yaw, the winner's terms, the current's cost).
 var _plan_log := false
+## Round 46 (C3): with --camera-trace, what the rig's frame and the planner's plans cost (usec; CameraPlaytest prints it).
+var cost := {"frames": 0, "usec": 0, "max_usec": 0, "plans": 0, "plan_usec": 0, "plan_max_usec": 0}
 var _plan_wide := false
 ## The plan's yaw (what it decided); the wanted yaw walks to it at YAW_FOLLOW_DEG_PER_S, so the frame fitted at the wanted
 ## yaw moves with it instead of jumping to the end of the turn (dev seeds 7001-7006: 10 planner jerks, 3 snaps).
@@ -484,7 +486,13 @@ func snap() -> void:
 
 func _process(delta: float) -> void:
 	var started := HudClock.begin()
+	var t0 := Time.get_ticks_usec() if _plan_log else 0
 	_process_timed(delta)
+	if _plan_log:
+		var spent := Time.get_ticks_usec() - t0
+		cost["frames"] += 1
+		cost["usec"] += spent
+		cost["max_usec"] = maxi(int(cost["max_usec"]), spent)
 	HudClock.end(&"rts_camera.process", started)
 
 
@@ -2026,7 +2034,13 @@ func _update_planner(points: Array, destination: Variant) -> void:
 		var _hp := HudClock.begin()
 		if not _plan_yaw is float or wrote["yaw"] != "planner":
 			_plan_yaw = yaw  # his hand (or anything else) moved the yaw since: plan from where it is
+		var p0 := Time.get_ticks_usec() if _plan_log else 0
 		var out := planner.plan(world, float(_plan_yaw), _clock)
+		if _plan_log:
+			var spent := Time.get_ticks_usec() - p0
+			cost["plans"] += 1
+			cost["plan_usec"] += spent
+			cost["plan_max_usec"] = maxi(int(cost["plan_max_usec"]), spent)
 		HudClock.end(&"cam.planner", _hp)
 		if not out.is_empty():
 			if bool(out["switched"]):

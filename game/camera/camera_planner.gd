@@ -20,6 +20,8 @@ extends RefCounted
 ##                         is how "look down the corridor" emerges without a corridor rule
 ##               W_ARENA   the view's ground beyond the arena's wall (the stands: round 42's "pointed out completely to the
 ##                         audience", now a cost instead of the danger look's pull toward the middle)
+##               W_LIFT    a boom that ends inside a building (the clearance must tilt it up over the roof: dev seeds
+##                         spent more seconds with the camera inside a block while it turned)
 ##               W_TURN    the turn from the current wanted yaw; W_DIST the zoom past his 49 m
 ##   stability   the current yaw is always a candidate, and a challenger must beat it by SWITCH_MARGIN: equal costs never
 ##               flip-flop and a small gain never swings the view back (round 43's corner swing failed exactly there).
@@ -41,6 +43,9 @@ const W_SIGHT_PATH := 2.0
 const W_TURN := 1.5
 const W_DIST := 0.5
 const W_ARENA := 1.5
+const W_LIFT := 1.0
+## The lift at which W_LIFT is spent in full (degrees the building clearance must tilt the boom up to clear a roof).
+const LIFT_FULL_DEG := 15.0
 ## The weights in force: the constants above, unless a dev run overrides some (`--camera-planner-w=action:5,turn:2`;
 ## a bar runs at the constants). Read by `score` / `plan`.
 static var w_sel := W_SEL
@@ -51,6 +56,8 @@ static var w_sight_path := W_SIGHT_PATH
 static var w_turn := W_TURN
 static var w_dist := W_DIST
 static var w_arena := W_ARENA
+static var w_lift := W_LIFT
+static var action_range_m := ACTION_RANGE_M
 static var hold_margin := HOLD_MARGIN
 
 
@@ -70,6 +77,8 @@ static func override_weights(text: String) -> void:
 			"turn": w_turn = v
 			"dist": w_dist = v
 			"arena": w_arena = v
+			"lift": w_lift = v
+			"range": action_range_m = v
 			"hold": hold_margin = v
 
 
@@ -270,6 +279,7 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 		"action": w_action * (action_off / action_w if action_w > 0.0 else 0.0),
 		"sight": w_sight_crew * float(blocked) / float(maxi(tested, 1)) + w_sight_path * float(path_blocked) / float(maxi(path.size(), 1)),
 		"arena": w_arena * float(outside) / 6.0,
+		"lift": w_lift * clampf(float(clear["lifted_deg"]) / LIFT_FULL_DEG, 0.0, 1.0),
 		"turn": w_turn * absf(angle_difference(current_yaw, yaw)) / PI,
 		"dist": w_dist * clampf((distance - PREFERRED_M) / maxf(RtsCamera.AUTO_FRAME_MAX_M - PREFERRED_M, 1.0), 0.0, 1.0),
 	}
@@ -346,7 +356,7 @@ static func action_of(state: Dictionary) -> Array:
 	for enemy: Dictionary in state.get("enemies", []):
 		var at: Vector3 = enemy["at"]
 		var away := Vector3(at.x - from.x, 0.0, at.z - from.z).length()
-		if away > ACTION_RANGE_M:
+		if away > action_range_m:
 			continue
 		var near := clampf(RtsCamera.DANGER_NEAR_M / maxf(away, 0.5), RtsCamera.DANGER_FAR_FLOOR, RtsCamera.DANGER_NEAR_CAP)
 		var fade := 1.0 if bool(enemy.get("seen", true)) else clampf(1.0 - float(enemy.get("age_s", 0.0)) / DangerFeed.MEMORY_S, 0.0, 1.0)

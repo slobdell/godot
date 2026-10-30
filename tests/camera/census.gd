@@ -3,8 +3,8 @@ extends SceneTree
 ##
 ## For each `cam` row (once a second, and at each automatic turn) it rebuilds his camera from the recorded SHOWN pose
 ## (RtsCamera.pose_at: yaw, pitch, distance, ground point; his 35 deg lens; ASPECT) on the recording's arena and asks, of
-## his SELECTION (the units of his last order: the recording has no selection rows, and every order is given to what
-## is selected), at the nearest `census` row:
+## his SELECTION (the recording's `sel` rows when it has them, round 46 R46.6; older recordings have none, and then the
+## units of his last order stand in for it: every order is given to what is selected), at the nearest `census` row:
 ##   on      selected crews inside the frame and above the HUD's card (HUD_TOP of the half-height below centre)
 ##   hid     of those, how many a building hides (RtsCamera.sight_blockers on the drawn layout, rays camera -> the hull's
 ##           middle AND its top both blocked)
@@ -97,6 +97,7 @@ func _run() -> void:
 	var census: Array = []
 	var orders: Array = []
 	var hits: Array = []
+	var sels: Array = []
 	for r: Dictionary in rows:
 		match String(r.get("t", "")):
 			"match":
@@ -114,6 +115,8 @@ func _run() -> void:
 				orders.append(r)
 			"hit":
 				hits.append(r)
+			"sel":
+				sels.append(r)
 	if arena == "" or cams.is_empty():
 		print("CENSUS_DONE ok=false reason=%s" % ("no arena" if arena == "" else "no cam rows"))
 		quit(1)
@@ -121,6 +124,9 @@ func _run() -> void:
 	Arena.active = Arena.load_layout(arena).get("layout", {})
 	RtsCamera.load_perimeter()
 	var seen := RtsCamera.seen(Arena.active)
+	# With `sel` rows, they ARE the selection changes (an order's units no longer stand in for it).
+	var changes: Array = sels if not sels.is_empty() else orders
+	print("CENSUS_SOURCE %s rows=%d" % ["sel" if not sels.is_empty() else "orders (no sel rows)", changes.size()])
 	var order_i := 0
 	var census_i := 0
 	var hit_i := 0
@@ -134,11 +140,12 @@ func _run() -> void:
 	for cam: Dictionary in cams:
 		var tick := int(cam["tick"])
 		var s := tick / rate
-		while order_i < orders.size() and int(orders[order_i]["tick"]) <= tick:
-			var units: Array = orders[order_i]["units"]
+		while order_i < changes.size() and int(changes[order_i]["tick"]) <= tick:
+			var units: Array = changes[order_i]["units"]
 			if units != selection and not units.is_empty():
 				selection = units
-				pending.append({"at_s": int(orders[order_i]["tick"]) / rate, "units": units, "verb": orders[order_i]["verb"]})
+				pending.append({"at_s": int(changes[order_i]["tick"]) / rate, "units": units,
+						"verb": changes[order_i].get("verb", "select")})
 			order_i += 1
 		while census_i + 1 < census.size() and int(census[census_i + 1]["tick"]) <= tick:
 			census_i += 1
