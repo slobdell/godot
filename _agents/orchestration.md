@@ -4022,3 +4022,27 @@ instrument that cannot lie about load — removal within one run — and let eve
    copy (its hash matched), `git fsck --full` to list every bad entry (only that one), copy the bad pack aside, `git repack -a -d`,
    `git verify-pack` the new pack. When a worktree add or checkout reports a corrupt object, do this before anything else; never
    delete a pack before the repack's new pack verifies.
+341. **The laptop's disk is a round's single point of failure.** (Round 45.) Side worktrees (frozen bar trees, pair trees, identity
+   checkouts: ~0.8-1.2 GB each) took the laptop to 96 % and the machine froze mid-round; every session restarted and every remote run
+   whose laptop wrapper died lost its verdict. Rule: before creating a worktree, `df -h ~`; above 90 %, remove an idle one first; a
+   worker removes its frozen tree the hour its series ends. A run whose wrapper died is rerun verbatim (no numbers were read).
+342. **Two series and a full check exhaust builder0's 14 GB.** (Round 45, 19:52.) The kernel OOM-killed Godot shards; the check read
+   "3 of 6 shards reported" (exit 2) — the machine's verdict, not the code's. Native's guard (`tools/slot.sh`: a light job WAITS while
+   a full check holds the box and MemAvailable < 6144 MB) is the fix; the rule stays: one full check + one series per builder.
+343. **A Spot builder must never host the round's deciding series.** (Round 45.) builder2 was preempted at ~22:56 under Bar G2's first
+   leg (0 of 1728 rows) and its retry restarted from zero; moved to builder3 before any number (a machine change before numbers is
+   not an amendment). The lead's own box (builder3) is now the default; builder2 is burst only.
+344. **A tie is not a loss, and a filing must say so before the numbers.** (Round 45, Bar B3.) The cadence-preserving fallback made the
+   three poses the rule cannot help EXACT ties with today, and "ON sooner in >= 80 %" counted them as losses (75 %). The fix was ruled
+   before the remaining legs landed (R45.23) and the rule shipped ON. Write share lines as "sooner or identical", with "strictly
+   sooner" reported.
+345. **Amend a bar's lines at most twice, before the numbers, and never to fit a dev read.** (Round 45, Bar G2.) R45.9 and R45.13 reshaped
+   D5 on dev evidence (each still an outcome line, not the rule's own definition); R45.25's exemption was then kept STRICT when the
+   worker's dev columns showed his own Locks click outside it. The second amendment closes the lines.
+346. **A test-only fix can land red on main.** (Round 45.) The backout-ON candidate's test used `assert_false()`, which the harness lacks;
+   main stayed red until a full check ran, because the check that would have caught it was the one the OOM killed. Merging a
+   candidate whose own check never ran (it was proven by bar legs and a twin) needs at least `make test FILTER=<its files>` on the
+   laptop before the merge commit.
+347. **A doc can turn the census lint red.** (Round 45.) Recording a bar verbatim copied a counter name in backticks into workstreams.md;
+   `tools/census_lint.py` requires every counter named in `_agents/` to be printed by a series. Run `python3 tools/census_lint.py .` after
+   pasting a filing.
