@@ -23,7 +23,7 @@ cat > "$tmp/bin/ssh" <<'EOF'
 #!/usr/bin/env bash
 S=$FAKE_STATE
 case "$*" in *"bash -s -- "*) ;; *) exit 0 ;; esac   # mkdir, `true`: the box answers
-cat > /dev/null
+cat > "$S/script"
 n=$(( $(cat "$S/runs" 2>/dev/null || echo 0) + 1 )); echo "$n" > "$S/runs"
 step=$(sed -n "${n}p" "$S/run_plan"); [ -n "$step" ] || step=$(tail -1 "$S/run_plan")
 case "$step" in
@@ -95,6 +95,16 @@ run slobdell@builder2 "preempt ok" "ok" REMOTE_REQUEUE=0
 run slobdell@builder2 "ok" "ok"
 [ "$st" = 0 ] && [ "$runs" = 1 ] && grep -q '>> builder: make fake exited 0' <<<"$out" && grep -q '>> remote: make fake exited 0' <<<"$out" \
 	&& ok "a green run: one run, its builder line and the wrapper's verdict line both printed" || bad "a green run is untouched" "exit $st; $out"
+
+# ---- 7. builder3's check runs 6 wide (CHECK_JOBS=6, the script sent to the box); builder0 and the light lane are never widened ----
+run devia@builder3 "ok" "ok"; grep -q 'then export CHECK_JOBS=6; fi' "$tmp/state/script" && grep -q '\[ -n "6" \] && \[ -z "" \]' "$tmp/state/script" \
+	&& ok "builder3: the run exports CHECK_JOBS=6" || bad "builder3: CHECK_JOBS=6" "$(grep -n CHECK_JOBS "$tmp/state/script")"
+run slobdell@builder0 "ok" "ok"; grep -q '\[ -n "" \] &&' "$tmp/state/script" && ok "builder0: no CHECK_JOBS (slot.sh's memory answer)" \
+	|| bad "builder0: no CHECK_JOBS" "$(grep -n CHECK_JOBS "$tmp/state/script")"
+rm -rf "$tmp/state"; mkdir -p "$tmp/state"; echo RUNNING > "$tmp/state/vm"; echo ok > "$tmp/state/run_plan"
+(cd "$repo" && env PATH="$tmp/bin:$PATH" FAKE_STATE="$tmp/state" REMOTE_HOST=devia@builder3 REMOTE_VERIFY=0 timeout 60 bash tools/remote.sh --light fake >/dev/null 2>&1)
+grep -q '\[ -z "1" \]' "$tmp/state/script" && ok "builder3 --light: CHECK_JOBS stays unset (the light lane is 1 wide)" \
+	|| bad "builder3 --light: no CHECK_JOBS" "$(grep -n CHECK_JOBS "$tmp/state/script")"
 
 echo "remote-requeue: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]
