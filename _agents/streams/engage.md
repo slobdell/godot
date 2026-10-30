@@ -75,7 +75,21 @@ write both in player terms with one recommendation in Status and build the recom
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report (2026-10-29, round 45) — read this first
+### FINAL REPORT (round 45, 2026-10-29 ~23:30 PDT) — read this first
+
+- **Shipped ON:** E2, his order to a crew wins (main 8ef4f584d, R45.19), and its bug fix R45.24 (`player`-only re-latch: fea4cfbec
+  GREEN builder0 3459/0, on main as 2e3bc4620). What he notices: a crew he holds stands and shoots; one he stops brakes and stays; one
+  he moves (alone or a squad of one) goes to his click and stays; his squad's hold sends nobody at the enemy.
+- **Bars:** E1 FAIL as filed (D1 5.5 m, D3 one move, G3 a probe artifact), shipped ON by the orchestrator under C45.2; E2b FAIL as
+  filed (G5: the cap reached GDScript-executed stops native runs itself), so **E6's stop cap stays OFF** (`--turn-in-cap=on`).
+- **Causes found:** E1 (the hold ran the contact drill; the stop drove back to a point behind the scout); E5 (his short moves: the
+  drive's three-point turn backs away ~1 s, manoeuvre's); E6 (a fixed-gun scout's turn-in under his stop); the replay parting above.
+- **Replays of his pre-E2 matches** need `REPLAY_FLAGS="--player-authority=off"`.
+- **Round 46:** E6's cap with the one-condition fix (fixed mount + wheels = native's hand-back case), a workload that stages a fixed-gun
+  scout stopped with the enemy outside its arc, fresh seeds; E5 is manoeuvre's (a k-turn on a short move inside the turning circle).
+- **Machines:** one check lost to the laptop crash, one to a builder0 OOM at 19:52 (exit 137 shards, several series beside a check).
+
+### Report (2026-10-29, round 45)
 
 **Shipped ON (main 8ef4f584d = engage 69bf864d2; the merge hash 60262534f GREEN builder0, 28 targets ALL JUDGED, 3451/0):** his
 order to a crew wins (`--player-authority`, ON; `=off` the escape). In player terms: a crew he holds stands and shoots from where it
@@ -177,10 +191,14 @@ which fails without the fix). E6's stop cap rides along OFF (`--turn-in-cap=on` 
 **His Gorge replay on fea4cfbec (builder0, native ON, 107 s):** `--player-authority=off` **PASS 20/20 within 3 m**; rule ON (the
 default) **FAIL 4/20, first over Green_Hunters_1 @40 s** (unchanged by the fix). **Replays of his matches recorded before E2 need
 `REPLAY_FLAGS="--player-authority=off"`** (`make replay-match RECORDING=... REPLAY_FLAGS="--player-authority=off"`), the same as any
-switch that changed after the recording. The rule-ON parting is under his squad's attack task at 34.4 s (Hunters_2 0.0 m off his census
-until 35 s); leading suspect, NOT yet proven: his first order of the match (10.2 s, stop, 15 crews incl. the Hunters) now leaves them
-HOLDING (HOLD turns hulls to the nearest contact) where his game left them idle, so the attack starts from other headings. Trace owed
-once builder0 is free.
+switch that changed after the recording. **Why the rule-ON replay parts (traced, builder0, the
+fixed tree; `make engage-authority-trace AUTH_UNITS=Green_Hunters_1,Green_Hunters_2 AUTH_FROM=300` ON v
+`AUTH_FLAGS=--player-authority=off`):** the heading suspect is KILLED (yaw identical in both arms to 34 s). The first difference is
+**Green_Hunters_2 at 28 s: option HOLD (rule ON) v ENGAGE (off)**, same spot and heading. It is the crew he stopped DIRECTLY at
+24.3 s: in his game the finished stop left it idle and it engaged an enemy in reach; under E2 it holds where he stopped it (the rule
+as designed). At his squad's attack task (34.4 s) the off-arm crew already had a target and its attack-move kept fighting (`attack`
+by 38 s); the ON crew had none and drove (14 m further by 38 s); the squad's plan then differs and Hunters_1 parts at ~38 s. **A
+genuine order of his that the rule changes, not a leak.**
 
 **Bar E1's G6 on fea4cfbec (builder0):** orders-probe main v `pa_off` 48/48 rows IDENTICAL; manoeuvre-behind ON v off IDENTICAL for
 tank, scout, gang_tank (181 rows each). PASS.
