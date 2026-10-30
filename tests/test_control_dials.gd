@@ -40,6 +40,7 @@ func test_the_rig_frames_with_its_inset() -> void:
 	var f := Fixture.new(self)
 	await f.build(false)
 	f.rig.vision = f.controls.vision_state
+	f.rig.auto_frame_max_m = RtsCamera.MAX_DISTANCE  # R46.29 (camera's grant): the cap must not bind, so the inset alone decides
 	f.controls.recall_group(1)
 	await _settled(f.rig)
 	var default_zoom := f.rig.zoom
