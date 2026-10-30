@@ -89,6 +89,12 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   share; if EVERY remaining line passes, backout ships ON after a quiet builder0 perf read of the merge; if any fails it stays OFF. The
   ship candidate is prepared: `wip/manoeuvre-backout-on` **466d96191** in `../godot-manoeuvre-on` = 26b1425e7 + `backout` out of
   `Traffic.DEFAULT_OFF` + `test_manoeuvre_backout`'s default test flipped (2 files, 5 / 4 lines; nothing else); its check waits on the legs.
+- **Workload guards (builder2 light, 72 paired cells, 0 SCRIPT ERROR): every B3 line PASSES.** Per arena (crossing / locks / terminus):
+  yield+blocked -0.0 / +1.7 / -2.8 se; wedged +1.1 / -0.2 / -1.3 se; **the squad's time to clear its start +0.7 / +1.1 / -1.5 se** (the
+  replacement guard); other crews' reversing ticks -4.7 / +1.8 / -3.2 se; other crews seated +2.0 / +1.0 / +1.3 se; pooled never-arrived
+  -0.375 a run (-3.3 se); D1-seated-by-15 s +1.3 se. **REPORTED (not a line, the named risk):** k-turn s -0.1 / +1.5 / **+3.7 se** (Terminus
+  +3.3 s a run, the same shape B2 read at +2.6 se). s_judge's own D1 / D2 and b1_judge's D2 are Bar S / B1 deciding lines, not B3's.
+  Still running: group guards (builder2 light), fights + the G1 probe (builder0 light).
 - **Then:** S v5's Terminus dev read (the +8 s), its bar on 11751-11798 only on a clean three-arena read; holdway's head-on release
   last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars, each failing as filed with his
   line passing) follows unchanged.
