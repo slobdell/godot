@@ -195,3 +195,27 @@ too). **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_a6v5.sh` from
   -4.9 s a run (-1.8 se); wedged -1.3, never-arrived -0.58 a run. **It is not the backing rigs:** rows with a k-turn live per crew
   (summed over 12 seeds) Guns_5 (the Resupply Tanker) 125 -> 471, Guns_4 (the Gun Truck) 313 -> 454, while the rigs Guns_1 / _2 / _3 move
   474 -> 464, 398 -> 428, 359 -> 320. The crews BEHIND the rigs turn to make way for them. Reported (as B3 did), not a line.
+
+### M5 shortfwd (corpus built; waiting on native's twin before the bar)
+
+- **His geometry:** `make replay-match RECORDING=references/round44/playtest/2026-10-29T09-35-51-gorge.jsonl REPLAY_SECONDS=105
+  "REPLAY_FLAGS=--trace=2505-3080"` (builder3) posed the lone scout (Green_Hunters_5) at each of his seven move clicks (83.7-102.6 s):
+  10.7-29.5 m, 21-158 deg off the nose; two are inside the rule's reach (83.7 s: 11.5 m / 91 deg; 87.0 s: 12.4 m / 32 deg).
+- **Corpus (51e9eacc4):** `make test FILTER=short_move SHORT_CORPUS=on SHORT_SEEDS=a-b [SHORT_ONLY=s]` stages each pose at rest on Gorge,
+  jittered by seed, both arms; SHORT_ROW rows (reversing ticks, metres away from his click, arrival tick, metres off the navmesh,
+  shortfwd ticks). **Dev 7001-7007 (builder3 light, one cell a pose):** pose 0 OFF reverse 28 ticks / 2.3 m away / arrived t62 v ON 17
+  / 0.8 m / t49; poses 1-6 identical in both arms; off-navmesh identical. **ON runs the GDScript drive** (`native_drive: false`: the rule
+  is untwinned), so a fair bar needs native's twin first (C46.4). **Requested from native directly (02:40).**
+- **Bar plan (to file once the twin is EQUAL, before any number):** 12121-12144; pose mapping concentrated on the two in-reach poses for
+  the deciding block, the other five as guards (identical or no worse).
+
+### Requests to other streams
+
+- **native:** the C++ twin of `shortfwd` (M5); sent 02:40.
+
+### Ship candidate for S v6 (his call; the orchestrator takes it to him, R46.15)
+
+- `wip/manoeuvre-seat-on` **e8051bbde** = stream/manoeuvre e3a3133e7 + one commit: SEAT_BOUND / SEAT_ORDER / SEAT_LAST_OPEN default ON
+  (`--seat-bound=off` / `--seat-order=off` / `--seat-last=bound` the escapes), the two default tests flipped. Its builder3 check is queued
+  behind orders' (`~/overnight-manoeuvre/r46/check_on/`). The sim baseline WILL move (CPU squads seat too, C46.6): the orchestrator
+  re-records it if he says yes.
