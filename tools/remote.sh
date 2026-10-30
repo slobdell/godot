@@ -71,6 +71,11 @@ root=${REMOTE_ROOT:-tank_squad}
 # full check 525 s there v ~55 min on builder0 (the orchestrator, aed598359).
 case "$host" in *builder2*|*10.115.229.9) default_slots=4 ;; *builder3*) default_slots=6 ;; *) default_slots=3 ;; esac
 slots=${REMOTE_SLOTS:-$default_slots}
+# The slot count also sets a check's width (slot.sh --jobs divides MemAvailable by it): builder3 at 6 slots read 3 at once, a lone
+# check 736 s v 525 s at 6 (7087cffce). CPU binds there, not memory, and full checks are serialized by the lock, so builder3's
+# check runs 6 wide by default (the orchestrator, 2026-10-29). REMOTE_CHECK_JOBS overrides; never on the light lane (1 there).
+case "$host" in *builder3*) default_check_jobs=6 ;; *) default_check_jobs="" ;; esac
+check_jobs=${REMOTE_CHECK_JOBS:-$default_check_jobs}
 node_version=v22.14.0
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"
 name="$(basename "$repo_root")"
@@ -285,6 +290,7 @@ export TANK_SQUAD_SLOTS=$slots
 export TANK_SQUAD_QUIET=$quiet
 export TANK_SQUAD_LIGHT=$light
 export QUIET_MAX_LOAD=${QUIET_MAX_LOAD:-4.0}
+if [ -n "$check_jobs" ] && [ -z "$light" ]; then export CHECK_JOBS=$check_jobs; fi
 # Round 45 (native N1): slot.sh runs tools/import_watchdog.sh inside the granted slot. B1 lost 4 h on builder2 to a first import
 # hung on Oswald-Latin.ttf; now no progress for IMPORT_WATCH_STALL s (600) kills it, clears .godot/, retries once, and a second
 # hang ends the run with '>> remote: import hung on <file>' (exit 75). REMOTE_IMPORT_WATCH=0 turns it off. (No backticks in
