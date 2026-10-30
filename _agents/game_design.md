@@ -4617,3 +4617,10 @@ report `...gorge.report.txt`; `make playtest-report` replay PASS 20/20 crews wit
    "never arrived" (83.7, 85.2, 87.0, 91.8 s). The element's formation for a one-crew squad was `swarm` ("spread out and all over
    them") / `coil`: **whether a one-crew squad's slot sits off his click is NOT yet measured** (round 45 finds it by removing it).
    In his words: the squad AI's contact drill and formation outrank his direct orders to a single unit.
+
+## His ask, 2026-10-29 ~22:50 (before his next playtest, verbatim)
+
+> "make garage lets you select everything except for the map - can we make that workflow select the map as well?"
+
+Given to engage (idle, R45.30): `make garage ARENA=` pass-through first, then a MAP choice in the garage screen beside the opponent
+pick, remembered like the last army.
