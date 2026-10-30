@@ -57,10 +57,11 @@ streets() {  # streets <tree> <prefix> <arms...>
 		"ORDERS_PROBE_SQUADS=3 5" "ORDERS_PROBE_ROUTES=click route" "ORDERS_PROBE_ARMS=$*" "ORDERS_PROBE_SEEDS=$bseeds" \
 		"ORDERS_PROBE_JOBS=$jobs"
 }
-geometry "$frozen" "" "base:" "pack:--group-pack=on" || { echo "BAR NOT RUN: geometry"; exit 1; }
-streets "$frozen" "" "base:" "pack:--group-pack=on" || { echo "BAR NOT RUN: streets"; exit 1; }
+pack_arm=${V2_PACK_ARM:-pack:--group-pack=on}  # (dev reads) another pack arm, e.g. pack:--group-pack=on,--group-pack-factor=0.75
+geometry "$frozen" "" "base:" "$pack_arm" || { echo "BAR NOT RUN: geometry"; exit 1; }
+streets "$frozen" "" "base:" "$pack_arm" || { echo "BAR NOT RUN: streets"; exit 1; }
 part "$frozen" fight orders-probe ORDERS_PROBE_DIR $((2 * 2 * nc)) "ORDERS_PROBE_MAPS=terminus locks" "ORDERS_PROBE_SQUADS=5" \
-	"ORDERS_PROBE_ROUTES=click" "ORDERS_PROBE_ARMS=base:--probe-fight=on,--probe-budget=3000 pack:--group-pack=on,--probe-fight=on,--probe-budget=3000" \
+	"ORDERS_PROBE_ROUTES=click" "ORDERS_PROBE_ARMS=base:--probe-fight=on,--probe-budget=3000 ${pack_arm},--probe-fight=on,--probe-budget=3000" \
 	"ORDERS_PROBE_SEEDS=$cseeds" "ORDERS_PROBE_JOBS=$jobs" || { echo "BAR NOT RUN: fight"; exit 1; }
 python3 "$(dirname "$0")/orders_v2_judge.py" "$out" | tee "$out/verdict.txt"
 echo "BAR_DONE"

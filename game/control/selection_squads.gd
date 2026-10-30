@@ -2111,7 +2111,15 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 # (his Gorge click) a packed second rank stood inside the front squad's halt and the front squad never settled (laptop, 7001). The same layout, shorter: today's `ranks` (rank_slots_for), the column (column_lay) and the
 # fitted body's seats (guard_lay: the veto's seats). `--group-pack=on` / GROUP_PACK=on; OFF until Bar V2 passes.
 static var GROUP_PACK := pack_default()
-const PACK_FACTOR := 0.5
+## (dev knob) `--group-pack-factor=F` reads another factor (Bar V2's dev reads only).
+static var PACK_FACTOR := _pack_factor()
+
+
+static func _pack_factor() -> float:
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with("--group-pack-factor="):
+			return float(arg.get_slice("=", 1))
+	return 0.5
 
 
 static func pack_default() -> bool:
