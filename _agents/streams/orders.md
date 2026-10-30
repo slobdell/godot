@@ -81,6 +81,19 @@ the orchestrator the same hour (C46.2): it goes to him the same day.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### NOW (2026-10-30 ~07:00 PDT): BAR V1 PASSES; merge 12bd0c68f; V2 next
+
+- **VERDICT Bar V1: PASS** (builder3, frozen **12bd0c68f** = GREEN builder3 `make check exited 0`, 3483 passed / 0 failed; 11801-11848;
+  every part try 1, 3672 runs). D1 across 0 (base 303); D2 sent back 0 (base 126); D5b his exact Gorge click 24/24; I1 the OFF
+  path == main 1224/1224; I2 0 differ (914 untouched, 310 changed); G1 PASS on 13 touched cells; B- no street run failing. Terminus
+  untouched (0 of 144 geometry runs, 0 street runs). Evidence: `references/round46/orders/bar-v1-builder3-12bd0c68f/`.
+- **Merge = 12bd0c68f alone** (told to the orchestrator; the veto ON by default, `--group-veto=off` the escape; G2 OFF behind
+  `--group-guard=on`). Reported, not a line (the orchestrator's ruling before the verdict): Crossing route first-waypoint re-deals
+  (22 of 24 3-squad routes), paired no harm (outside 1.23 v 1.23, metres outside 67.2 v 75.8, all-in 17.1 v 18.6 s).
+- **Next: V2 (the tighter file).** Bar V2 filed (below, recorded on main 0af02e7ff). Its freeze is built on main AFTER V1's merge
+  (main has engage's L1c, which changes fights: part C). Named risk: L1b his click 49.1 m v <= 50 m.
+- Side trees removed (godot-orders-main, godot-orders-v1; laptop + builder3 + builder0 folders).
+
 ### V3 HIS ACCEPTANCE READ (the shipped candidate 12bd0c68f's places; laptop flightdeck, native on)
 
 **His Gorge click** (recording `references/round44/playtest/2026-10-29T09-35-51-gorge.jsonl`, seed 91711, one click at
@@ -101,7 +114,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
   22 m south; the veto re-deals it to (-27.1, 96.2) beside his click (laptop, 7003: all-in 4.6 v 5.3 s, contacts 7 v 6). Both
   are Bar V1 cells (fixed clicks), read on 24 fresh seeds in the series.
 
-### NOW (2026-10-30 ~04:45 PDT)
+### EARLIER (2026-10-30 ~04:45 PDT)
 
 - **FROZEN 12bd0c68f GREEN builder3: `make check exited 0`, 3483 passed / 0 failed** (`~/orders-r46/check-v1-12bd0c68f.log`).
   **Bar V1's series RUNNING on builder3 since 04:35** (`~/orders-r46/bar-v1/run.log`, BAR_DONE ends it; verdict in
