@@ -49,6 +49,10 @@ fresh folder's library; replay-match fails on the wrong native path; builder2 pr
 28 targets ALL JUDGED, sim-baseline unmoved; main INHERITS it. control-timing quiet read on builder0 pending. G2 conflicts in
 rts_controls.gd column_lay: resolution = pair/native-g2 cfa4a0eb2 (EQUAL with G2, R45.3 re-proof).
 
+**MAIN NOW (~19:55 PDT): ceb1386e8** = + native f4f2dd6ed (_assign C++ 1921e09eb GREEN builder0 3449/0 ALL JUDGED; replay-match
+authority default for pre-E2 recordings). Main check OWED (merge_check_needed CHECK: manoeuvre's OFF code + native together); it runs
+as ONE builder0 check after engage's R45.24 player fix (fea4cfbec, its check queued on builder0) merges.
+
 **MAIN NOW (~18:30 PDT): 9203851ec** = + manoeuvre 5d4b3fa82 (round-45 OFF code; builder2 3456/0, sim-baseline unmoved, default
 orders probe 60/60 byte-identical on a clean checkout v main e6e926160) + engage's probe-only 4b359f635. merge_check_needed: CHECK
 (tests/engage/authority_probe.gd only); perf of 5d4b3fa82 NOT JUDGED (builder2). **ONE builder0 main check is owed** — batched with
