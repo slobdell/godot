@@ -240,10 +240,14 @@ static func screen_of(view: Transform3D, point: Vector3, aspect: float) -> Varia
 	return Vector2(c.x / -c.z / (half * aspect), c.y / -c.z / half)
 
 
+## C1 v2: "on screen" keeps this margin (of the half-width / half-height) from the edges and the card, where he can click it
+## (CameraLook's 60 px at 1080 rows). Without it a wide frame parked contacts behind his squad on the screen's bottom edge and
+## called them shown (Bar C1's G7 miss, dev 7001: today's camera was already turning to them).
+const SCREEN_MARGIN := 0.1
 ## Whether a screen point is in his view: inside the frame and above the command card (`bottom` of the half-height). Pure.
 static func on_screen(ndc: Variant, bottom: float) -> bool:
-	return ndc is Vector2 and absf((ndc as Vector2).x) <= 1.0 and absf((ndc as Vector2).y) <= 1.0 \
-			and (ndc as Vector2).y >= -bottom
+	return ndc is Vector2 and absf((ndc as Vector2).x) <= 1.0 - SCREEN_MARGIN and (ndc as Vector2).y <= 1.0 - SCREEN_MARGIN \
+			and (ndc as Vector2).y >= -bottom + SCREEN_MARGIN
 
 
 ## The cost of the pose that looks along `yaw` at `focus` from zoom `level`, and its terms. `current_yaw` is the wanted

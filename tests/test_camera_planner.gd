@@ -151,8 +151,9 @@ func test_a_new_selection_off_screen_is_on_screen_within_a_second_while_his_hand
 		if rig._selection_shown():
 			break
 	assert_true(rig._selection_shown(), "the new squad comes on screen")
-	# 170 m off at his 49 m: ~1.4 s at URGENT_SCREENS_PER_S 1.3 (the snap-free cap; 4.0 took 0.8 s and snapped).
-	assert_true(frames <= 90, "within 1.5 s of the selection (%d frames at 60 fps)" % frames)
+	# 170 m off at his 49 m, EVERY crew inside the click margin (CameraPlanner.SCREEN_MARGIN): ~2 s at URGENT_SCREENS_PER_S 1.3
+	# (the snap-free cap; 4.0 took 0.8 s and snapped). Bar C1's D3 reads HALF of them on screen, which comes sooner.
+	assert_true(frames <= 125, "within ~2 s of the selection (%d frames at 60 fps)" % frames)
 
 
 func test_his_hand_still_wins_over_the_planner() -> void:
