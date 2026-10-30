@@ -240,3 +240,9 @@ too). **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_a6v5.sh` from
   start-zone exit, and at what tick; (2) candidate: deal the bound's seats so the squad's line of advance from its deploy block is
   kept clear of a neighbouring squad's block (a seat-side rule, not a drive rule: no twin); (3) the fights G4 kill share (0.040) on a
   bigger fight sample before reading it as real (18 fights an arm; S v5 read 0.029 on the same kind of sample).
+
+### Merge proof for the OFF code (2026-10-30 02:55 PDT)
+
+- Default `make orders-probe` (native on, builder3 light): stream/manoeuvre **2e97e8539** v the launch base **7189e3ff3**: **96 / 96 rows
+  byte-identical** (`~/overnight-manoeuvre/r46/identity/verdict.txt`). Every new switch of this stream's code is OFF (S v6 under the
+  seat flags, holdway A6 v5 under `--traffic-on=holdway`, the shortfwd corpus is test-only). A full check on the final merge hash follows.
