@@ -4756,3 +4756,20 @@ screen at (-1, 59), where Charlie_3 has taken 90 damage. So the order reached th
 key or a UI fault the recording cannot say (no key rows). Round 47 items: (a) record the key/click that changes the selection, so this
 is answerable; (b) a screen order to artillery should probably not march the mortars to the front (make the order fit the unit, or
 show it is going to the artillery); (c) make the order's recipient obvious at the moment he gives it.
+
+## His ask on cheap map pieces (2026-10-30 ~16:05, verbatim)
+
+> "gotcha ok. Next, here's a question I have about the maps. We started something great by using cheap inexpensive buildings with
+> lights on them to further creating these cyberpunk gladiator arena effect without bloating our assets.  Do you have other ideas for
+> reproducible polygons that could be added to our maps that are cheap in terms of rendering but fit with the theme and enable more
+> interestin maps?"
+
+The orchestrator proposed nine (sight screens as a new eyes-only cover class, overpass colonnade, tank traps, pipe racks, gantry
+cranes, cooling towers, pylons, raised ground, timed blast doors). His reply:
+
+> "ok can we capture all of these ideas as backlog items to see about adding to our maps? If we don't like them we can just remove
+> them, but presuambly this is a way to add details to our game that won't result in asset creep. I also do like your blast doors idea
+> coupled with announcer feedback and what not. This is something that can make the game generally more interest"
+
+Captured as `arenas.md` *The cheap-piece map kit backlog* (with the roadmap's idea backlog pointing to it). The blast doors are
+WANTED (his words above); the rest are backlog he can strike.

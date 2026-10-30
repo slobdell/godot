@@ -787,6 +787,32 @@ range work lands: syndicate vs condemned on boulevard vs yard; gangs vs law on t
 swarm).
 
 
+## The cheap-piece map kit backlog (his ask, 2026-10-30; not scheduled — pick deliberately, remove freely)
+
+His words (`game_design.md` *His ask on cheap map pieces*): add detail and variety to the maps **without asset creep**, the way
+the lit city blocks did. Any item he doesn't like comes out. **The recipe every item follows:** boxes and low-sided cylinders on
+one shared trim-sheet material, glow painted as emission (no real lights; `fx_tricks.md`), repeated pieces drawn as one MultiMesh,
+few translucent surfaces (overdraw is what costs the laptop's UHD 620, `project-laptop-is-the-test-bed`). Each piece also gets a
+**cover class the AI reads** (`arena_kit.gd` PROPS): `hard` blocks everything, `low` stops hulls only, and item 1 adds a third.
+New looks go to the tap-to-approve page with 2-3 directions per piece before any 3D. A kit type lands in the SAME commit as its
+`prop.<type>` slot and scene (see the PROPS comment), so one stream owns art and kit for a piece.
+
+| # | Piece | What it does in a fight | Cost to build | Status |
+|---|---|---|---|---|
+| 1 | **Sight screens** — holo-ad curtains, tarp-hung chain-link, vent steam | NEW cover class `sight`: blocks eyes, not hulls or shells. Short-range factions can close on long-range ones (his Crossing match: gangs 6 shots v syndicate 358 at a 79 m median) | New class touches perception's eye ray and the cover map; art is flat panels. Keep translucency low | **Recommended first** (with 2, 3) |
+| 2 | **Elevated rail / highway overpass** — pillar rows under a lit slab | Drive-under colonnade: pillars break sightlines every few metres; a flank lane | Boxes repeated; the deck sits above the tallest hull (6.18 m) so only pillars collide | Recommended first |
+| 3 | **Tank traps / dragon's teeth** — steel hedgehogs, concrete teeth | `low` cover fields: stop hulls, not fire; build chokepoints and funnels | One MultiMesh per field; the navmesh bake must see each tooth (or a field box) | Recommended first |
+| 4 | **Pipe racks / pipelines** at hull height with gaps | `low` lines with crossing points, no walls; industrial maps (Sumps, Locks) | Cylinders + glow joints | Backlog |
+| 5 | **Container-port gantry cranes** over container stacks | Legs are `hard` posts; a "dockyard" map from pieces we already have; landmarks | Two legs + beam + warning lights; containers exist | Backlog |
+| 6 | **Cooling towers / smokestacks** | Landmarks for bearings; `hard` cluster at the base | Low-sided cylinders, glowing rim, one billboard plume | Backlog |
+| 7 | **Power pylons with arcing cables** | Skyline only (`collides: false`) | Thin frames + line cables; near free | Backlog |
+| 8 | **Raised plazas, ramps, sunken roads** | High ground to hold, hull-down lanes; the unused `overlook` region kind | **Not cheap in code:** the world is flat and the eye ray, cover map, navmesh bake and shells assume it (see *What I'd build next* item 6). A round of its own | Backlog, needs his go |
+| 9 | **Arena blast doors on a timer, called by the announcer** (he likes this one: "can make the game generally more interesting") | Gates between sections open and close mid-match; the caller hypes each one like a gladiator event; changes routes and fights on a schedule both sides can read | Cheap to draw; real rules work: doors that collide when shut, a navmesh that changes (or per-door links), the AI reading open/shut and the schedule, new announcer lines (his paid voice generation, his approval), and determinism for replays. Extends the roadmap's "crushing gates" | **Wanted** — schedule as its own stream once the movement fixes from his 2026-10-30 playtest land |
+
+How to judge any of them: `make arena-report` on the map before and after (sightlines, flank use, hidden time), the paired series
+against the map's twin without the pieces (*How we test that a map delivers*), and his eye on the laptop for the look and the fps.
+
+
 ## Streets are lanes (R4, round 10): what every declared lane must keep
 
 **The lead, playing the Terminus (2026-09-20):** *"there streets are blocked with these shipping containers so

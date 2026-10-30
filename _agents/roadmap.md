@@ -1254,6 +1254,8 @@ win rate, ElevenLabs sound effects, music stems, and the offline tactics-discove
 - **Replays, kill-cams, shareable replays** (recording already works over the relay).
 - **Challenge missions:** fixed armies against scripted opponents that teach one counter each; a daily seeded challenge.
 - **Arena hazards and spectacle:** crushing gates, fire pits, mines, a crowd "hype" meter.
+- **Cheap-piece map kit and announcer-called blast doors** (his ask 2026-10-30): nine pieces with a cover class each, in
+  [arenas.md](arenas.md) *The cheap-piece map kit backlog*. He wants the blast doors; sight screens, overpass and tank traps first.
 - **The arena announcer** (stretch, [game_design.md](game_design.md) *The arena announcer*): two original ElevenLabs
   voices; a big tagged clip library stitched at runtime by a banter graph so commentary differs every match; text
   transcripts reviewed by the lead before audio is generated. **A round-3 stream candidate that can run in isolation**
