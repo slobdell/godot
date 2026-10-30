@@ -310,3 +310,11 @@ evidence filed under `references/round46/manoeuvre/barssf-builder3-cec4e499f/`. 
   the fix cherry-picked (cec4e499f's queued check stopped before it ran: red by construction), its check on builder3 (03:38). The filings
   name "the hash whose check reads exited 0, named at launch": no amendment. The drive code in adeb71696 is native's proven pair
   unchanged (the fix touches only the Traffic-side cache). Series still HELD for the orchestrator's builder slots.
+
+### Shortfwd SHIP candidate (R46.25, 04:40 PDT)
+
+- `wip/manoeuvre-shortfwd-on` **11ff6586c** = stream/manoeuvre a222cebfd + main ec6a728a6 merged + the pair's drive-gate line (4ac0236bd,
+  cherry-picked: ON keeps the C++ drive) + SHORT_POSES (cec4e499f) + the flip (`shortfwd` out of `Traffic.DEFAULT_OFF`;
+  `test_on_by_default`). Laptop `make test FILTER='short_move|test_traffic'` 130 / 0. Its full check runs on builder3
+  (`~/overnight-manoeuvre/r46/check_sfon/`). The rule reads only HIS direct order, so the CPU-v-CPU sim baseline should not move.
+- **A6 v5:** frozen 258ce00f0 GREEN builder0 (exited 0, 3475 / 0, sim-baseline unmoved); series launched 04:33 on builder0 light (L1 ended).
