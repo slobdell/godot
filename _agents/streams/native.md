@@ -71,7 +71,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
   (my first big-click read was the GDScript fallback, 6.86 ms).
 **Backlog:** N1 DONE (seam agreed; the speed-up not needed at 2.03 ms; the memo (B) left as stretch, R46.13/orchestrator). N2 DONE so
 far: L2, shortfwd twins EQUAL; V1 / A6 v5 / R46.19 need none (read, recorded). N3 CLOSED (camera sliced, 0.35 ms on the laptop). N4
-OPEN: `lines_r46.py` holds S v6 (R46.15 + R46.17, 10 lines), C1 (R46.20, 8) and E6 (R46.22, 1 dev line); the rest land as ruled; G2's D1 / D5b marked VOID in lines_r45.
+OPEN: `lines_r46.py` holds S v6 (R46.15 + R46.17, 10 lines), C1 (R46.20, 8) and E6 (R46.22, 1 dev line); the rest land as ruled. 3ca18daa1 (tools/judge only) is batched with the next code change or the close (the orchestrator: planner-pytest OK, 86 tests, is its evidence; no separate full check); G2's D1 / D5b marked VOID in lines_r45.
 N5 DONE (builder3 27 % disk; laptop ~360 MB freed into a tarball). Stretch DONE as a proposal (round 47: ElementPlan.build ~1.1 ms a
 tick, then build_situation 1.51 ms; R46.16).
 **What to playtest:** nothing new on screen from native. To re-read his games: `make replay-match RECORDING=references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl REPLAY_SECONDS=150 CREWS=all`
