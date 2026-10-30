@@ -1,0 +1,4 @@
+frozen-2026-10-29T22-57-47-terminus.log:DIVERGENCE crews=20 within=1 bar=3.0m seconds=151 ticks=152 first_over=Green_Guns_1@22 verdict=FAIL
+guard-2026-10-29T22-57-47-terminus.log:DIVERGENCE crews=20 within=1 bar=3.0m seconds=151 ticks=152 first_over=Green_Guns_1@22 verdict=FAIL
+guard-2026-10-29T09-35-51-gorge.log:DIVERGENCE crews=20 within=6 bar=3.0m seconds=107 ticks=108 first_over=Green_Hunters_1@43 verdict=FAIL
+frozen-2026-10-29T09-35-51-gorge.log:DIVERGENCE crews=20 within=6 bar=3.0m seconds=107 ticks=108 first_over=Green_Hunters_1@43 verdict=FAIL

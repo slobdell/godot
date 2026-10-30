@@ -56,6 +56,48 @@ Nothing.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**FINAL REPORT (2026-10-30 ~10:00 PDT). Merge for main: the stream/native tip that carries this report (= `git merge main` of
+main 01f31c4f4 + judge, docs and evidence only).** Last full check green: **9d1580b77 builder3 (3473 / 0, 28 ALL JUDGED, `exited 0`)**,
+already on main. Since then nothing any check target reads has changed: `git diff main` touches `tools/judge/lines_r46.py`,
+`_agents/judging.md`, this brief and files under `references/round46/` / `_agents/streams/references/round46/` only. Its evidence is
+the laptop's judge tests (`make planner-pytest`, 86 tests, OK).
+- **N4 DONE (close step 5b):** `lines_r46.py` holds 64 lines (S v6 10, C1 8, E6 1 dev, V1 8 (R46.33), V2 1 dev read, not run
+  (R46.36), L1 6 (R46.24), L1b 6 (R46.28), L1c 10 (R46.31 / R46.32), shortfwd 6 (R46.25), A6 v5 8 (R46.27)). Re-rendered into
+  `_agents/streams/references/round46/sizing/`: an inventory of 845 lines (343 with noise) and the probe table, **which did not change**.
+  The new round-46 section in `judging.md` names the closest calls: S v6's Crossing FAIL (-0.10 se), shortfwd's D1 FAIL (-0.41) and
+  A6 v5's 2b FAIL (-0.50). So both rules shipped under C46.2 failed on lines that another set of seeds could pass.
+- **N2 DONE:** the L2 twin (the lane fix in C++) and the shortfwd twin both match GDScript exactly. Each was re-checked on every freeze
+  that moved: L2 on efe4d8ba9, c0affabe0 and 1dd227534 (the one that shipped), shortfwd on cec4e499f and adeb71696. Holdway ON has
+  no twin gap: the R46.30 reds came from the test harness, and pair/native-holdway f176bee98 passes 43 / 0. V1, A6 v5, R46.19 and
+  R46.26 need no twin.
+- **N1, N3, N5, Stretch:** as in the 03:50 report below. **Builders:** I removed builder3's `godot-native-light` (909 MB) and kept
+  `godot-native`, the stream's check folder (1.3 GB; builder3 is at 26 % disk). Builder0 holds no native folder.
+- **Round 47 (proposed, not built):** a twin for ElementPlan.build (~1.06 ms a tick on his Terminus); round 47 also owns the cause
+  of holdway's web freeze (R46.35). If holdway's GDScript changes there, native re-proves the drive twins.
+
+**REPORT (2026-10-30 ~03:50 PDT). GREEN: 9d1580b77 builder3 (3473 / 0, 28 targets ALL JUDGED, `exited 0`); merge here: 9d1580b77
+(later commits are this Status only). On main already: a734c2296, 1843eb6df, 33edf6eaf, a06d450df.** In his terms:
+- **Big group clicks are already instant:** his 30-unit right click on main is 2.03 ms (ratio 56 v the 104 budget, builder3). The veto
+  adds ~0.1 ms (R46.13, no twin); orders cut his failing Gorge click from 45-66 ms to 10.5 ms in GDScript.
+- **His IFV's lane fix runs in C++ too, bit for bit (L2 twin):** proved on engage's freeze efe4d8ba9 (7536 decisions / 0; his Gorge and
+  Terminus replays byte-identical with v without the GDScript route).
+- **His short move to a wheeled crew drives forward in C++ too (shortfwd twin):** proved on manoeuvre's freeze adeb71696 (2360 drives
+  / 0; manoeuvre's corpus 14 / 14).
+- **His games replay as he played them, to the end:** a recording now stamps the rules its build ran (`rules`), replay-match turns
+  off a rule his build lacked (L2's `--lane-clear=off` for every older game), and the "drift" at Terminus' last second was his results
+  screen: his match replays bit-exact to its final hash. Recordings also log every selection change (`sel`, for camera).
+- **Builder reads can't silently time GDScript any more:** a fresh builder folder now builds the C++ library before any timing run
+  (my first big-click read was the GDScript fallback, 6.86 ms).
+**Backlog:** N1 DONE (seam agreed; the speed-up not needed at 2.03 ms; the memo (B) left as stretch, R46.13/orchestrator). N2 DONE so
+far: L2, shortfwd twins EQUAL; V1 / A6 v5 / R46.19 need none (read, recorded). N3 CLOSED (camera sliced, 0.35 ms on the laptop). N4
+DONE at the close (FINAL REPORT above; 64 lines). 3ca18daa1 (tools/judge only) is batched with the next code change or the close (the orchestrator: planner-pytest OK, 86 tests, is its evidence; no separate full check); G2's D1 / D5b marked VOID in lines_r45.
+N5 DONE (builder3 27 % disk; laptop ~360 MB freed into a tarball). Stretch DONE as a proposal (round 47: ElementPlan.build ~1.1 ms a
+tick, then build_situation 1.51 ms; R46.16).
+**What to playtest:** nothing new on screen from native. To re-read his games: `make replay-match RECORDING=references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl REPLAY_SECONDS=150 CREWS=all`
+**Next:** re-prove any twin on a freeze that moves (engage's L1, manoeuvre's shortfwd); lines_r46 as verdicts land; re-render the table
+at the close. **Merge notes:** pair/native-l2 (in engage's freeze) and pair/native-shortfwd (in manoeuvre's) carry stream/native
+commits; traffic.gd's shortfwd gate line and tank_brain.gd's decide guard are removed only on those pairs.
+
 **Report (2026-10-30, start).** Started from main 7189e3ff3 (code = cb1014bed; the orchestrator's launch check runs it on builder3; no
 baseline check of mine).
 
@@ -74,7 +116,16 @@ sub-profile next, then port whichever single function is >= 1 ms with its GDScri
 forward arc's test called back (_kturn_frame / _outline_offs / _arc_hit, his short move only); tests/test_native_drive_shortfwd.gd
 2360 drives / 0 mismatches, 166 forward-arc ticks (laptop; a flipped turn sign reads 155 mismatches); every drive twin on builder3
 light 14 / 0. pair/native-shortfwd 4ac0236bd = manoeuvre 8796e94f4 + it + traffic.gd's gate line for shortfwd dropped: manoeuvre's
-corpus (SHORT_CORPUS=on SHORT_SEEDS=7001-7007, builder3 light) native v GDScript 14 / 14 SHORT_ROW rows byte-identical.
+corpus (SHORT_CORPUS=on SHORT_SEEDS=7001-7007, builder3 light) native v GDScript 14 / 14 SHORT_ROW rows byte-identical. **Bar shortfwd's freeze cec4e499f** = 4ac0236bd + 6 test/make lines (mk/manoeuvre.mk, tests/test_manoeuvre_short_move.gd; `git diff --stat`): the proof holds on it; its merge (it carries stream/native 7e3874bab) goes through the orchestrator. **Re-proved on the moved freeze adeb71696** (= cec4e499f + manoeuvre's 258ce00f0, holdway's cache as static scratch, which the C++ drive never reads): builder3 light test_native_drive* + movement + controller + exec_state 19 / 0; corpus native v GDScript 14 / 14 byte-identical. **R46.30 holdway ON "twin gap": none; the harness (pair/native-holdway f176bee98 = manoeuvre 39b6c7aa5 + 3 test files).** The two red
+twins (backout 14, backout_stall 21 mismatches) differed in ONE static, `_squad_ways` (squad_way's per-order path memo): the harness
+restores Movement's statics between its arms but not Traffic.refresh's once-a-frame memo, so the C++ arm never refilled it. Every
+GDScript-visible member (`_goal`, `_path`, `_path_index`) was identical after either drive, so refresh reads the same rows on both: Bar
+A6 v5's native-ON numbers measured his drive. Fix: MoverState.SKIP_STATICS + `_squad_ways` (a cache); gate_foundry x2 and yield's
+give-way-under-fire x2 pin holdway OFF for their stagings (under holdway ON they no longer reach a latched gate / a parked refusal; 0
+mismatches there regardless). builder3 light, holdway ON: test_native_drive|gate|yield|exec_state|movement 43 / 0. Merged by manoeuvre
+into its ship candidate wip/manoeuvre-ship46 8165af868 (its full check = the green hash).
+
+**L2 twin RE-PROVED on engage's Bar L1c freeze 1dd227534 (the one that may ship): EQUAL** (builder3 light): twins + lane tests 31 / 0 (decide 7536 / 0, 85 lane-only CLEAR_LANE); his replays `--lane-clear=on` native v the GDScript route Gorge 405/405, Terminus 1742/1742 byte-identical (`references/round46/native/l1c-reproof-builder3-1dd227534/`). **L2 twin RE-PROVED on engage's Bar L1b freeze c0affabe0: EQUAL** (builder3 light): twins + lane tests 31 / 0 (decide 7536 / 0, 73 lane-only CLEAR_LANE; every drive twin 0); his replays `--lane-clear=on`, native v the GDScript route, Gorge 405/405, Terminus 1811/1811 byte-identical (`references/round46/native/l1b-reproof-builder3-c0affabe0/`). **R46.26 (engage L1b part 2, the burst stops for a friend in the line, 56dded6a5): no twin** — nothing in native/src touches `_burst_rounds_left` / `_burst_ticks` / `_fire_round`; Tank's only native call in its tick is `_drive` (motion). **R46.19 (engage's weave water guard): no twin** — ENGAGE's combat move (`_act`) is GDScript on both paths (the native controller calls `think` back; the brain's native call sites are decide, situation_core, matchups).
 **R46.11 + the divergence end rule: GREEN a06d450df builder3** (3472 / 0, ALL JUDGED). **N3 closed:** camera sliced its planner to
 one pose a frame (camera 1f3e6f111; laptop 0.35 ms mean, p99 0.9) and dropped the ray batch. **R46.13 stands:** orders cut his
 failing Gorge click's veto from 45-66 ms to 10.5 ms in GDScript (f6bb52518; laptop, native ON).
