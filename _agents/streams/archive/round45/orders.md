@@ -1,3 +1,5 @@
+> **ARCHIVED (round 45 closed 2026-10-30).** Final state of this brief; round 45's results are in `workstreams.md` *Bars (round 45)* and *Rulings (round 45)*. **G2's code is NOT on main:** it lives on branch `round45/orders` (2b95f6f27, G2 ON by default there; merge it with the default flipped OFF if round 46 wants it).
+
 # Stream: orders (his group click: every squad lands at his click, on his side of the gap, nobody sent back; ON this round)
 
 > Read `_agents/orchestration.md` (the worker contract; lesson 339), `_agents/judging.md`, `_agents/workstreams.md` **Round 45**
