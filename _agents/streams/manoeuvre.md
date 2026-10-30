@@ -65,54 +65,66 @@ Nothing at launch. A bar that fails twice on the same fix: write in player terms
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### ROUND 46 FINAL REPORT (in progress; hashes completed as checks read)
+### ROUND 46 FINAL REPORT (2026-10-30 ~08:55 PDT; round essentially done)
 
-**What he will notice (if the ships merge):** (1) **shortfwd ON (R46.25):** a short click right beside his scout (his 83.7 s Gorge click)
-no longer sends it ~2 m backwards first when there is room to turn; near an edge or wall it backs up as today; (2) **holdway ON (R46.27 / R46.35: ON
-for the native / desktop game, OFF in the web export; candidate 21a40f83c below):** a side-street squad that today sits jammed ~30 s rolls through, and on a head-on meeting
-the passing squad brushes the waiting one far less. **Not shipped:** the seat bound S v6 (four lines failed; R46.17; round-47 start
-point written below).
+**What he gets in his default game (both on main 33e1ca812):**
+1. **His short click beside his scout drives toward it (shortfwd ON, R46.25; `--traffic-off=shortfwd` the escape).** His 83.7 s Gorge
+   click: today the scout sometimes backs up and drives ~2 m away first; now, when there is open ground to turn in, it turns toward his
+   click (~1.5 m less backing away, up to 0.5 s sooner). Near an edge or a wall it backs up exactly as before; nothing else he does changes.
+   Ship hash 105e2e118 (builder3 3504 / 0, sim-baseline unmoved).
+2. **Squads meeting in a street wait for the right one (holdway ON, R46.27 / R46.35; native / desktop only, OFF in the web export;
+   `--traffic-off=holdway` the escape).** A side-street squad that today sits jammed ~30 s rolls through (jam 397 -> 34 s); on a head-on
+   meeting the waiting squad holds its crews a little longer, its last vehicle still arrives on time, and the passing squad brushes it far
+   less (47 -> 10). The CPU's squads do the same (C46.6). Ship hash 21a40f83c (builder3 3517 / 0, web smoke green; the 13 arenas'
+   baseline moved and was adopted on main 33e1ca812, two agreeing reads).
+
+**Not in his game:** the seat bound S v6 (his squad settling at the click: +7.9 se on the settle, but four guards failed; R46.17).
 
 | Item | Outcome | Evidence |
 |---|---|---|
-| M1 S v6 dev read | cause found (station ranks on a bending route), S v6 built (659c9ab9b); dev condition met | Status M1 |
-| M2 Bar S v6 | FAILED on 4 lines (crossing/locks yield+blocked, crossing k-turn, fights G4); OFF | `references/round46/manoeuvre/barss6-builder3-4e72c5470/` |
-| M3 Bar A6 v5 (holdway) | FAILED on 2b alone; ruled ON (R46.27) | `references/round46/manoeuvre/barsa6v5-builder0-258ce00f0/` |
-| M4 backout pose 10 + Terminus k-turn | read, no bar: pose 10 needs a per-leg turn (twin change); k-turn +4.45 s a run carried by the crews behind | Status M4 |
-| M5 Bar shortfwd | FAILED on D1 alone (-1.6 se, never worse); ruled ON (R46.25) | `references/round46/manoeuvre/barssf-builder0-adeb71696/` |
-| 6 engage relay | never asked | — |
+| M1 S v6 dev read | cause found (seats ranked by stations on a bending route), S v6 built (659c9ab9b); dev condition met | Status M1 |
+| M2 Bar S v6 | FAILED on 4 lines (crossing / locks yield+blocked, crossing k-turn, fights G4); OFF | `references/round46/manoeuvre/barss6-builder3-4e72c5470/` |
+| M3 Bar A6 v5 (holdway) | FAILED on 2b alone; ruled ON (R46.27), web OFF (R46.35); SHIPPED 21a40f83c | `references/round46/manoeuvre/barsa6v5-builder0-258ce00f0/` |
+| M4 backout pose 10 + Terminus k-turn | read, no bar (pose 10 needs a per-leg turn: a twin change); k-turn +4.45 s a run is the crews behind making way | Status M4 |
+| M5 Bar shortfwd | FAILED on D1 alone (-1.6 se, never worse); ruled ON (R46.25); SHIPPED 105e2e118 | `references/round46/manoeuvre/barssf-builder0-adeb71696/` |
+| 6 engage relay (idle blocker) | never asked | — |
 
-**Decisions (one line each):** tie rule dropped (exact ties identical in both arms; lesson 348); the holdway cache is static scratch,
-not a Movement member (exec_fields); the S v6 ON candidate not pursued (red: no-crossing tests); smoke shots of shortfwd not usable
-(replays diverge), the staged corpus is the evidence.
+**Decisions:** holdway's tie rule dropped (Locks' head-on ties are exact in both arms, decided alike; lesson 348); the drill-move
+squad-way cache is static scratch, not a Movement member (exec_fields.h); the S v6 ON candidate not pursued (red on three no-crossing
+tests); the shortfwd smoke shots were not usable (every replay of his Gorge game diverged), so the staged corpus is the evidence.
 
-**What to playtest (exact commands, after the merge):** `make skirmish ARENA=gorge` -> select one scout, click 8-12 m beside its nose:
-it turns toward the click instead of reversing (escape `--traffic-off=shortfwd`); `make skirmish ARENA=terminus` -> send two squads into
-the same street from opposite ends / one from a side street (escape `--traffic-off=holdway`).
+**Green hashes / merge notes:** stream/manoeuvre code **39777e1cc GREEN builder0** (3475 / 0); everything after it on the branch is
+Status and filed evidence only (`git diff main...stream/manoeuvre`: `_agents/streams/manoeuvre.md` + the A6 v5 evidence folder), so a
+docs-only merge of the tip is safe. **No OFF code is left to merge**: S v6, shortfwd and holdway code all reached main through 105e2e118
+/ 21a40f83c (S v6 stays behind its switches). Side branches kept for the record: `wip/manoeuvre-seat-on` (e8051bbde, red),
+`wip/manoeuvre-shortfwd-on`, `wip/manoeuvre-ship46` (8165af868, red on web), `wip/manoeuvre-holdway-twin` (e37c85463, not used).
 
-**Green hashes:** stream/manoeuvre **39777e1cc GREEN builder0** (`make check exited 0`, 3475 passed / 0 failed, sim-baseline unmoved;
-every later commit on the branch is Status / docs only); its OFF code proven 96 / 96 byte-identical v the launch base (default orders
-probe). **SHIP HASH (shortfwd ON alone): `wip/manoeuvre-ship46-sf` 105e2e118 GREEN builder3** (`make check exited 0`, 3504 passed / 0
-failed, web-smoke passed, sim-baseline UNMOVED on all 13 arenas against main b7942f378) = main b7942f378 + native's pair/native-holdway
-f176bee98 + the shortfwd flip + the pair's drive-gate line + SHORT_POSES + this stream's OFF code; the holdway flip reverted in it.
-Named to the orchestrator 08:05; **merged to main** (shortfwd ON, R46.35).
-**HOLDWAY SHIP CANDIDATE (R46.35): `wip/manoeuvre-holdway-on` 21a40f83c** on main 67e56e258: `holdway` out of `DEFAULT_OFF`, new
-`Traffic.WEB_OFF := ["holdway"]` applied when `OS.has_feature("web")` (the `--traffic-on/off=holdway` overrides still win), test
-`test_on_by_default_off_on_the_web`. builder3 check `exited 2` with **sim-baseline the ONLY failure**: test 3517 / 0, WEB SMOKE PASSED
-(match smoke included); moved on all 13 arenas, the new hashes byte-identical to 8165af868's independent read (two agreeing reads):
-foundry 25db5790150d3812, yard b2d1a9648c56df29, pit 773a2b636222b772, terminus 898e95bea00c76b8, crossing f32f14d56be0554b, sumps
-dea34fb3690c5dad, locks ecc6005f1cea5f2e, parade 65994a7ab0e8a871, gorge a872bf1dd189875f, archipelago 37818f0e001518d4, cut
-6fbfa14551d78bbb, docks ca7477c3bdc41123, yard_open fead8afadc3ce66c. Named to the orchestrator 08:42 (it adopts the baseline).
-**Holdway ON (R46.27) waits:** the combined candidate 8165af868 read `exited 2`: tests 3505 / 0, sim-baseline moved on all 13 maps
-(expected), and **web-match-smoke red** (a harness screenshot timeout). Same-box web-smoke A/B (builder3): holdway ON failed 4 of 5,
-shortfwd only passed 4 of 4, main passed. Cost read (builder3 light, sim-profile gangs v law yard 60 s seed 7, 787a4bf79): native
-Traffic refresh 0.129 -> 0.138 ms/tick, nothing else > +0.03; GDScript desktop +0.01; the laptop's headless scripted skirmish advances
-at the same rate in both arms. **The web build alone freezes once after game t ~11 s with holdway ON** (both arms crawl at ~0.2x
-real time under SwiftShader); not a per-tick cost, hot spot not found in the time box. Round 47: trace Traffic.refresh / _begin_wait in
-the web build at t 10-12 s, then one candidate + one check.
+**What to playtest (main):** `make skirmish ARENA=gorge`: select one scout, click 8-12 m beside its nose, it turns toward the click instead
+of reversing first; `make skirmish ARENA=terminus`: send two squads into one street from opposite ends, and one squad down a side street
+while another passes.
 
-**Known issues:** the S v6 ON flip breaks three no-crossing tests (round 47); backout pose 10 ties (per-leg turn); a new Movement member
-must be added to native's `exec_fields.h` (my 258ce00f0 lesson: a filtered test run missed it, the full check caught it).
+**Round-47 starting points (each written in full further down):**
+1. **The seat bound's start-zone give-way (S v6).** Squads now give way to EACH OTHER leaving the start (Guns <-> Hunters; inter-squad
+   yield rows crossing 67 -> 98, locks 61 -> 112), mostly crews both still DRIVING whose paths cross, not a parked squad in the exit. The
+   cheap exact form of the bar's guards: three no-crossing tests (`test_formation_slots::test_paths_never_cross`,
+   `test_tactics_seat_order::test_sum_first_paths_never_cross`, `test_tactics_settle::test_a_sideways_plain_move_seats_every_crew_without_
+   crossing_paths`) pass with the bound alone, the order term breaks one, the open last seat two more: start from the bound alone plus a
+   no-crossing check on the deal. Re-read fights G4 (0.040) on a bigger sample before treating it as real.
+2. **Holdway's web freeze.** With holdway ON the web export freezes once after ~11 s of game (web-match-smoke's screenshot times out;
+   39b6c7aa5 failed 4 of 5, shortfwd-only passed 4 of 4); native / desktop cost nothing measurable (Traffic refresh 0.129 -> 0.138
+   ms/tick native, +0.01 GDScript). Trace in the web build: a console print around `Traffic.refresh` / `_begin_wait` / `_mouth` at game
+   t 10-12 s of `?skirmish&scripted&player-faction=gangs&enemy-faction=law&seed=7&arena=yard`; then drop `holdway` from `WEB_OFF`.
+3. **A yield moves a held crew toward the enemy (engage's relay, Bar L1c seed 12328, Locks, a gang_tank at his post).** The mover's yield
+   drove it ~10 m toward the enemy and HOLD's reverse stopped 6 m short (arrival radius 6), in both lane arms: a yield must not move a crew
+   under his hold toward the enemy, or must return it fully.
+4. **Backout pose 10** (B3's three ties): a straight or opposite-lock first reverse leg, which needs a per-leg turn in the drive's state
+   (native twins first). **Terminus k-turn** (+4.45 s a run with backout): the Tanker / Gun Truck behind the rigs turning to make way.
+5. **Holdway's head-on hold** (A6 v5's 2b: +30.8 crew-s a meeting held): a re-verdict after a wait ends (11458 f1770) is where the extra
+   hold comes from.
+
+**Known issues / lessons:** a new Movement member must be declared in native's `exec_fields.h` (my 258ce00f0: a filtered test run missed
+it, the full check caught it); a static memo that Traffic's once-a-frame refresh fills must be listed in native's MoverState
+SKIP_STATICS (native's f176bee98); my own `pgrep -f <pattern>` matched my shell twice (kill by PIDs read from `ps` with a cwd check).
 
 ### REPORT — Bar A6 v5 FINAL (04:38 PDT): FAILS as filed on guard 2b alone; every other line PASSES; recommended ON (his call)
 
