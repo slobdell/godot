@@ -78,10 +78,11 @@ _(worker keeps this current: report at the top, every number with commit, machin
 |---|---|
 | L1 why CLEAR_LANE finds no lane | DONE (below): three causes, every blocker parked; R46.7 ruled on the post case |
 | L2 the lane move, `--lane-clear` ON | code + tests DONE 9446e1903 (not yet a full check); native twin spec sent (decide guard until then, C46.4) |
-| L3 the feed line | code + tests DONE 320fbcd11; screenshots owed |
-| L4 Bar L1 | FILED (below; accepted, amendment 0); dev read 7001-7012 below; full check on 894f561dd (the freeze candidate) running |
+| L3 the feed line | DONE: code + tests 320fbcd11 / aeb32f603; LOOKED AT in his own Terminus replay (laptop window, rule on at 103 s, 9446e1903-era tree): "Hunters 1 holding fire: Wrenches 3 in the way" in the left info feed, the crew selected through RtsControls (`~/overnight-engage/r46/shots/line-1920x1080-t36*.png`); as history it truncates like every older line ("Hunters 1 holding fi..."). Phone: the touch map has no `selection_state`, so no line there (R46.26: round 47); the laptop would not size the window to a phone aspect (`--resolution` ignored by the replay script's window) |
+| L4 Bar L1 | **FAILED on G1** (fa9c6ff3a: friendly hits 1 -> 6, a burst walked into a squadmate; D1 / D2 PASS); not shipped (R46.24) |
+| L4b Bar L1b | FILED before numbers (11949-11996); code 56dded6a5 (moving-spread spots + the burst re-check, R46.26); freeze check of c0affabe0 running |
 | L5 his replay | dev read (below); the acceptance read waits for the shipped tree |
-| E6 | code 894f561dd (cap only on a fixed gun on wheels, opt-in); `--e6-stage=on` in the authority probe; dev read then Bar E6 after Bar L1's series |
+| E6 | **DROPPED (R46.22)**: the staged case shows no drift (dev 7001-7012, n 9: <= 3.2 m, capped arm identical); code removed after L1b's series |
 
 **L2 (`game/ai/tank_brain.gd`, `--lane-clear=off` = round 45 exactly):** (1) under his attack / attack-move, CLEAR_LANE is
 multiplied by its edge AFTER the order's base, so it beats the committed ENGAGE; (2) a crew holding his post after his MOVE (E2's
