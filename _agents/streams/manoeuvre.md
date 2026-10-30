@@ -99,6 +99,10 @@ docs-only merge of the tip is safe. **No OFF code is left to merge**: S v6, shor
 / 21a40f83c (S v6 stays behind its switches). Side branches kept for the record: `wip/manoeuvre-seat-on` (e8051bbde, red),
 `wip/manoeuvre-shortfwd-on`, `wip/manoeuvre-ship46` (8165af868, red on web), `wip/manoeuvre-holdway-twin` (e37c85463, not used).
 
+**Cleanup (08:58):** builder folders removed: builder3 `godot-manoeuvre-{mainref-light,s6,s6-light,sf}` (~4.6 G), builder0
+`godot-manoeuvre-{a6,a6-light,sf-light}` (~3.1 G); kept on each: `godot-manoeuvre` + `-light` (this stream's lanes). Laptop: no side
+worktrees left; `~/overnight-manoeuvre/r46/` holds this round's rows (judged evidence is filed under `references/round46/manoeuvre/`).
+
 **What to playtest (main):** `make skirmish ARENA=gorge`: select one scout, click 8-12 m beside its nose, it turns toward the click instead
 of reversing first; `make skirmish ARENA=terminus`: send two squads into one street from opposite ends, and one squad down a side street
 while another passes.
