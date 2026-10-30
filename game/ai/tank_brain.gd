@@ -2984,6 +2984,8 @@ func _act(s: Dictionary) -> void:
 				stale = false
 				_lane_goal_tick = game_match.tick
 			if _lane_goal == null or repick or stale:
+				if LANE_CLEAR:
+					_motion_cache = {}  # ENGAGE's plan was made where the crew stood before the step: replan from the spot
 				_lane_goal = _lane_spot(s, contact)
 				_lane_goal_tick = game_match.tick
 				_lane_arrived_tick = -1
@@ -3509,7 +3511,7 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	if _hold_motion_plan(motion_key, tick, my_position, contact):
 		_redecide_skips += 1
 		why = _motion_cache["why"]
-		return _motion_cache["order"]
+		return TankBrain.dry_hop(_motion_cache["order"], my_position, contact["position"])
 	_redecides += 1
 	var cover_map := CoverMap.of(tank)
 	var request := {"position": my_position, "forward": me["forward"], "speed": tank.max_forward_speed,
@@ -3629,7 +3631,32 @@ func _combat_move(s: Dictionary, contact: Dictionary) -> Dictionary:
 	_motion_cache = {"tick": tick, "key": motion_key, "why": why,
 			"order": _move_to(hop, result["reverse"], speed, 1.0, true),
 			"at": my_position, "target_at": contact["position"]}
-	return _motion_cache["order"]
+	return TankBrain.dry_hop(_motion_cache["order"], my_position, contact["position"])
+
+
+## R46.19 (round 46, granted to engage): the last word on ENGAGE's direct hop. A cached plan is driven from wherever the crew
+## is now, and a hop whose straight leg from HERE crosses water (A7's helper) is not driven: the crew faces the target
+## (it is in gun range in this branch). His Locks bridge, efe4d8ba9: the CPU's squad drove 4 ticks of a reverse weave
+## over the canal. A pathed move is the mover's, which routes round water.
+static var dry_hops_faced := 0
+
+
+## The leg is read three times, down the middle and DRY_HOP_SIDE_M to either side: a weaving hull drifts off the line it was
+## planned on between thinks, and a leg that only grazes the canal's corner beside a deck from where it was planned clips
+## it from where the hull then is (the same crew, 2 ticks, with only the middle read).
+const DRY_HOP_SIDE_M := 2.5
+
+
+static func dry_hop(order: Dictionary, from: Vector3, target: Vector3) -> Dictionary:
+	if not bool(order.get("direct", false)) or String(order.get("type", "")) != "move_to":
+		return order
+	var a := Vector3(from.x, 0.0, from.z)
+	var b := Vector3(float(order["x"]), 0.0, float(order["z"]))
+	var side := Vector3(-(b - a).z, 0.0, (b - a).x).normalized() * DRY_HOP_SIDE_M
+	if not (TankBrain._across_water(a, b) or TankBrain._across_water(a + side, b + side) or TankBrain._across_water(a - side, b - side)):
+		return order
+	dry_hops_faced += 1
+	return {"type": "face", "x": target.x, "z": target.z}
 
 
 ## Turn the hull toward the nearest visible enemy (front armor, and a fixed gun's aim), else `fallback`.
