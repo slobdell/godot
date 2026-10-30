@@ -93,6 +93,10 @@ Nothing at launch. If the bar fails, write in player terms what he would see ON 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**Report (2026-10-30, top = newest).** C1 DONE (adb5c1b13). C2 the planner BUILT behind `--camera-planner=on` (OFF):
+`game/camera/camera_planner.gd` + the rig's `_update_planner`; tests `tests/test_camera_planner.gd` (10, laptop 56/0 camera tests
+at 53de53ea4). Dev reads only on 7001-7006 (never a bar). In progress: tuning on dev seeds, then C3 (laptop budget) and Bar C1.
+
 ### Plan (ordered; smallest foundation first)
 1. C1 census tool + table (below) — DONE. 2. C2 `CameraPlanner` (pure cost + candidate set, tests first), wired behind
 `--camera-planner=on`. 3. C3 laptop budget. 4. C4 Bar C1 filed, then the series on builder3. 5. C5 his acceptance read.
