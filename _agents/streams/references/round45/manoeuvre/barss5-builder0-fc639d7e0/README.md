@@ -18,7 +18,7 @@ unchanged). Seeds 11751-11798 as filed (workstreams.md *Bars (round 45)*, FILED 
 | Reported | seat moves 3238 -> 1784 (-20 a run); mean arrival -0.42 s a run; k-turn s pooled -3.0 s a run | — |
 | Group guards G5 / G6 / G7 (11775-11786; 48 paired, for the record) | identical arms: every-squad-in 73.5 = 73.5 s, never-in 1.00 = 1.00, friendly contact ticks 657438 = 657438 (0 se) | PASS |
 | G1 v9 corridor: ORDERS_PROBE_SQUAD byte-identical, g1v8 lines (11775-11786) | run for the record (`judge-g1v9.txt`) | — |
-| Fights G1-G4 (11787-11792) | run for the record (`judge-fights.txt`) | — |
+| Fights G1-G4 (11787-11792; 18 fights an arm, for the record) | give-way deaths 49 -> 47 (line +25.9), stuck deaths 138 -> 141 (+30.7), friendly contact ticks -0.2 % (line +10 %), **kill share worst move 0.029 (line 0.03)**, deaths 829 -> 802 (line +/- 41) | PASS (G4 at the line) |
 | No SCRIPT ERROR | 0 files in the workload | PASS |
 
 **Verdict: FAIL as filed on three guards; the seat rules stay OFF.** The deciding line is wide (+8.4 se: his squad settles where he
