@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-30 morning — **ROUND 46 PREPARED (box below): five streams, camera + orders on Fable, engage / manoeuvre / native on Opus.** Main code = 96f199c45 GREEN builder3 (3470/0); later commits docs + `tools/judge/lines_r45.py` + two .uid. **Default build box: builder3.** Main is unpushed (he pushes)._
+_Last updated: 2026-10-30 morning — **ROUND 46 RUNNING (box below): five streams, ALL Opus (Fable quota low, his call at launch); all five sessions started.** Main code = cb1014bed GREEN builder3 (launch check, 3470/0 ALL JUDGED); later commits docs + `tools/judge/lines_r45.py` + two .uid. **Default build box: builder3.** Main is unpushed (he pushes)._
 
 ## ▶ ROUND 46 AS PREPARED (2026-10-30 morning) — read this first
 
@@ -15,15 +15,19 @@ Split, ownership, contracts C46.1-C46.8, rulings R46.1-R46.4 and the seed regist
 
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
-| **camera** | `godot-camera` (3) | **Fable** | his selection never leaves the screen; a new selection pans at once; down a Terminus corridor the view looks along the street | C1 the census on his Terminus recording |
-| **orders** | `godot-orders` (6) | **Fable** | his Gorge click: nobody across the drop or sent back, street clicks unchanged (ON); the group's file half as long | V1 the veto-only guard |
+| **camera** | `godot-camera` (3) | Opus | his selection never leaves the screen; a new selection pans at once; down a Terminus corridor the view looks along the street | C1 the census on his Terminus recording |
+| **orders** | `godot-orders` (6) | Opus | his Gorge click: nobody across the drop or sent back, street clicks unchanged (ON); the group's file half as long | V1 the veto-only guard |
 | **engage** | `godot-engage` (5) | Opus | his IFV behind his own squads steps to a clear lane and fires; else the feed says who is in the way | L1 why CLEAR_LANE finds no lane |
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | his squad settles where he clicks (S v6); street-mouth waits right (A6 v5) | M1 S v6 on Crossing's Battery |
 | **native** | `godot-native` (4) | Opus | big group clicks instant (fit's path queries in C++); twins for every rule shipped | N1 the fit's path queries |
 
 **Not this round:** balance. Kickoff: the same one line for every stream, `_agents/orchestration.md` *The kickoff prompt*. All five are
 FRESH sessions. **Launch check:** `make remote T=check` on builder3 of cb1014bed's code (log `~/orch-r46/launch-check-cb1014bed.log`);
-see the line below for its verdict. Laptop disk 83 % at prep (20 G free): five worktrees ~6 G.
+**GREEN: `>> remote: make check exited 0`, 3470 passed / 0 failed, 28 targets ALL JUDGED, 676 s, sim-baseline unmoved (builder3, cb1014bed's code = 96f199c45 + lines_r45).** Laptop disk 83 % at prep (20 G free): five worktrees ~6 G.
+
+**RUNNING (2026-10-30 ~06:40):** main 9ad1ab19a. **1a275c550 GREEN builder3 (3485/0, 28 ALL JUDGED, sim-baseline unmoved)** = launch + native a734c2296 / 1843eb6df / 33edf6eaf / a06d450df / 9d1580b77 + camera 21fb16fc1 (planner OFF). Then + **engage 1dd227534 (Bar L1c PASS, the lane move ON, R46.31/R46.32)**: its sim-baseline (docks, gorge, locks, parade, pit, terminus, yard_open) being re-recorded twice on builder3 (`~/orch-r46/simrec*-9ad1ab19a*`), then adopted + one main check. Bars: S v6 FAIL (OFF); C1 FAIL G7 only (OFF, his call R46.23); shortfwd ON by ruling R46.25 + holdway ON by R46.27 -> ONE manoeuvre ship candidate on new main (+ native's re-staged tests, R46.30 corrected in R46.32); V1 series on builder3 (verdict ~07:00); V2 filed; E6 dropped.
+
+**OPEN QUESTIONS FOR HIM (2026-10-30 ~04:20):** (1) the camera planner ON (R46.23; recommended ON) or today's camera; (2) S v6 settle-at-click: keep OFF (R46.17/R46.18; recommended) or overrule.
 
 **Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*), `df -h ~` every tick (lesson 341). Relay
 engage's L1 cause to manoeuvre if it asks for an idle blocker to step aside (manoeuvre's item 6); relay orders' V1 seam to native (N1).
@@ -109,9 +113,9 @@ order; a War Rig nose-on to a container backs out first on the poses Bar B1 lost
 
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
-| **orders** | `godot-orders` (6) | **Fable** | his 3-squad click on Gorge: all land on his side of the gap at his click, nobody sent back (G2 ON) | O1 his Gorge click cut down |
+| **orders** | `godot-orders` (6) | Opus | his 3-squad click on Gorge: all land on his side of the gap at his click, nobody sent back (G2 ON) | O1 his Gorge click cut down |
 | **engage** | `godot-engage` (5) | Opus | the lone scout he holds stays held, stopped stays stopped, moved lands at his click (E2 ON) | E1 which layer moved it, by removal |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | a War Rig nose-on to a container backs out first (Bar B2) | M1 pose 13's look |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | a War Rig nose-on to a container backs out first (Bar B2) | M1 pose 13's look |
 | **native** | `godot-native` (4) | Opus | builder runs never hang on a cold import; the 30-unit right click under budget (gate_width C++) | N1 the watchdog |
 
 **Not this round:** camera, balance. Kickoff: the same one line for every stream, `_agents/orchestration.md` *The kickoff prompt*. All
@@ -255,8 +259,8 @@ ownership, contracts C44.1-C44.5 / CP44.0 and the seed registry in `workstreams.
 
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
-| **orders** | `godot-orders` (6) | **Fable** | his all-squads click: one direction, a column of wedges at his click | O0 CP44.0 the `group` key, O1 record the click |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | a War Rig behind a container backs out first; his one-squad order lands at his click | M1 rebase the R43.34 scoping |
+| **orders** | `godot-orders` (6) | Opus | his all-squads click: one direction, a column of wedges at his click | O0 CP44.0 the `group` key, O1 record the click |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | a War Rig behind a container backs out first; his one-squad order lands at his click | M1 rebase the R43.34 scoping |
 | **native** | `godot-native` (4) | Opus | `make playtest-report` prints one screen | N1 the one-screen report |
 
 **Not this round:** camera ("Camera seemed ok"), engage, balance (reasons in `workstreams.md`). Kickoff: the same one line for every
@@ -363,8 +367,8 @@ Workers start without a baseline check.
 
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
-| **engage** | `godot-engage` (5) | **Fable** | a crew under attack-move keeps going for the far quay | A1 the turnaround traced on his seed |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | his first order: all five crews at his click in seconds | S1 the arrival census |
+| **engage** | `godot-engage` (5) | Opus | a crew under attack-move keeps going for the far quay | A1 the turnaround traced on his seed |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | his first order: all five crews at his click in seconds | S1 the arrival census |
 | **camera** | `godot-camera` (3) | Opus | rounding a corner, the view swings to the hidden side | K5.1 the camera's yaw in the recording |
 | **native** | `godot-native` (4) | Opus | nothing alone: the replay reproduces his match (CP43.0) | N1 quiet reads (builder0 idle at launch) |
 
@@ -407,9 +411,9 @@ comments only, so 21b20bdce's check stands). Workers start from it without a bas
 
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
-| **engage** | `godot-engage` (5) | **Fable** | a crew he tells to attack goes round the container and fires | E1 replay his recording |
+| **engage** | `godot-engage` (5) | Opus | a crew he tells to attack goes round the container and fires | E1 replay his recording |
 | **camera** | `godot-camera` (3) | Opus | an ambush from the side is on screen; a retreat looks back at the fight | K4.1 the look census |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | fewer shoves in his big order; a clean bridge under the stat change | Q5.1 Bar Q5 (after CP42.0) |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | fewer shoves in his big order; a clean bridge under the stat change | Q5.1 Bar Q5 (after CP42.0) |
 | **balance** | `godot-balance` (1) | Opus | the CPU meets his tank rush with artillery; Law / Syndicate artillery hurts tanks | B7 the counter-lineup |
 | **native** | `godot-native` (4) | Opus | nothing alone: Q5's fields (CP42.0), twins, the judged lines and table | N1 CP42.0 |
 
@@ -641,8 +645,8 @@ builder0, 27 ALL JUDGED** (`make check exited 0`, 3243 passed / 0 failed; sim-ba
 
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | a crew waits for a turning friend instead of driving round it; clean bridge | Q1 the jam census |
-| **balance** | `godot-balance` (1) | **Fable** | an all-tank army stops being the easy win (his levers: slower tank turret / hull) | B5 dev screen |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | a crew waits for a turning friend instead of driving round it; clean bridge | Q1 the jam census |
+| **balance** | `godot-balance` (1) | Opus | an all-tank army stops being the easy win (his levers: slower tank turret / hull) | B5 dev screen |
 | **camera** | `godot-camera` (3) | Opus | the camera glides; what he's about to click stays put | K1 find every jerk |
 | **native** | `godot-native` (4) | Opus | nothing alone: C++ twins for manoeuvre; remote.sh fix | N1 remote.sh literal-~ |
 | **orders** | `godot-orders` (5) | Opus | his many-squad order sets off in one direction | O1 group-order census |
@@ -702,9 +706,9 @@ faction.** Split, ownership, contracts C40.1-C40.5 / CP40.0-CP40.1 and the seed 
 
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
-| **balance** | `godot-balance` (1) | **Fable** | a gangs army isn't a free win, a syndicate army isn't a wall | B1 the per-unit tally |
+| **balance** | `godot-balance` (1) | Opus | a gangs army isn't a free win, a syndicate army isn't a wall | B1 the per-unit tally |
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | a crew steps aside for a friend without wedging the squads behind | M1 v2 on the 5 G5 runs |
-| **settle** | `godot-settle` (3) | **Fable** | a squad that stops doesn't sit 10 s and reshuffle; never parks on a friend's road | T1 the deploy trigger |
+| **settle** | `godot-settle` (3) | Opus | a squad that stops doesn't sit 10 s and reshuffle; never parks on a friend's road | T1 the deploy trigger |
 | **native** | `godot-native` (4) | Opus | nothing alone: per-unit counts for balance (CP40.0); the balance runner | N1 per-unit GUARD_RESULT |
 | **orders** | `godot-orders` (5) | Opus | his group click puts every squad in, the far one first | O1 trace locks 5 |
 
@@ -887,8 +891,8 @@ contracts C39.0-C39.6 and the seed registry in `workstreams.md` *Round 39*; brie
 
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
-| **settle** | `godot-settle` (3) | **Fable** | a squad that stops never parks in the street the next squad is driving | S1 route-clear halt seats |
-| **doctrine** | `godot-doctrine` (1) | **Fable** | a charging blob loses to a CPU that holds with some and strikes with the rest | D1 the rules-ON base read |
+| **settle** | `godot-settle` (3) | Opus | a squad that stops never parks in the street the next squad is driving | S1 route-clear halt seats |
+| **doctrine** | `godot-doctrine` (1) | Opus | a charging blob loses to a CPU that holds with some and strikes with the rest | D1 the rules-ON base read |
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | a parked crew steps aside once for a friend and goes back | M1 chain-aware give-way |
 | **orders** | `godot-orders` (5) | Opus | his group click puts every squad in, the far one first, on his route at corners | G1 who takes the far place |
 | **feedback** | `godot-feedback` (6) | Opus | the new rules show on screen; the phone map frees its top | F1 the rules he can see |
@@ -937,8 +941,8 @@ Workers start from it without a baseline check.
 
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
-| **orders** | `godot-orders` (5) | **Fable** | a group click lands squads stacked down the street he clicked, whole | O7 v2 |
-| **doctrine** | `godot-doctrine` (1) | **Fable** | the CPU's defenders stop and shoot from cover; a blob loses | D1 who halts to fire |
+| **orders** | `godot-orders` (5) | Opus | a group click lands squads stacked down the street he clicked, whole | O7 v2 |
+| **doctrine** | `godot-doctrine` (1) | Opus | the CPU's defenders stop and shoot from cover; a blob loses | D1 who halts to fire |
 | **settle** | `godot-settle` (3) | Opus | a parked squad keeps its shape and spots; no tank crosses its squad | S1 the deploy deal |
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | parked crews step aside and back; CPU screens out of the way | M5 v2 |
 | **feedback** | `godot-feedback` (6) | Opus | he can't miss the match ending | F1 the end of a match |
@@ -1019,7 +1023,7 @@ briefs in `_agents/streams/`; round 36's briefs in `streams/archive/round36/`; r
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | no repeated side step into the same friend | M1 Eyes_3's stand rule |
 | **feedback** | `godot-feedback` (3) | Opus | rear hits look/sound different; pinned crews show it; Tanker/Emitter visible | F1 directions page (his pick) |
 | **native** | `godot-native` (4) | Opus | nothing alone: the blob/turtle guard lines; the C++ twins | CP37.1 the guard lines |
-| **orders** | `godot-orders` (5) | **Fable** | no flickering order; parked squads stay put; squads arrive whole | O1 the halt-shape flicker |
+| **orders** | `godot-orders` (5) | Opus | no flickering order; parked squads stay put; squads arrive whole | O1 the halt-shape flicker |
 | **cover** | `godot-cover` (6) | Opus | a tank tight behind rubble is hard to hit from the front | K1 count maps' low cover |
 
 **Machines:** builder0 = orders, manoeuvre, feedback; builder2 (GCP Spot, `make gcp-start`) = native, rules, cover series.
@@ -1083,7 +1087,7 @@ briefs in `_agents/streams/`; round 35's briefs in `streams/archive/round35/`; r
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
 | **traffic** | `godot-traffic` (1) | Opus | a crew being shot while waiting its turn drives on | T8 (after CP36.1), builder2 |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | a crew wedged between friends backs out; fewer left behind | S3 drop W1b, S1 stallnet |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | a crew wedged between friends backs out; fewer left behind | S3 drop W1b, S1 stallnet |
 | **native** | `godot-native` (4) | Opus | nothing alone: the scoreboard row per main, mirrors, test hygiene | hand over round 35's scoreboard |
 | **orders** | `godot-orders` (5) | Opus | an arrived squad doesn't block the next one's street; no deploy shuffle | the herringbone lab stage |
 
@@ -1368,8 +1372,8 @@ worktree (24 of them, all clean; one 5-line diff rescued into references) and ev
 
 | Stream | Folder (offset) | Model | What he will notice | First item |
 |---|---|---|---|---|
-| **traffic** | `godot-traffic` (1) | **Fable** | a crew stuck behind a parked crew of another squad gets by, and the parked crew goes back to its post; fewer crews die stuck in jams | the stuck-death census, then parkedroom v4 |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | his circled scout turns and fights instead of shuffling; a War Rig told to face a direction ends facing it and sits still | C33.9 done right, then the hull-rest ruler, the flicker, CP-F 4 |
+| **traffic** | `godot-traffic` (1) | Opus | a crew stuck behind a parked crew of another squad gets by, and the parked crew goes back to its post; fewer crews die stuck in jams | the stuck-death census, then parkedroom v4 |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | his circled scout turns and fights instead of shuffling; a War Rig told to face a direction ends facing it and sits still | C33.9 done right, then the hull-rest ruler, the flicker, CP-F 4 |
 | **brains** | `godot-brains` (3) | Opus | a scout stands and trades when it can win and leaves when it can't; a pushed-off War Rig returns facing his way (after CP-F) | scout try 2 |
 | **native** | `godot-native` (4) | Opus | nothing alone: every pair; a network match never logs a shell hitting a dropped player | pairs, then relay-smoke's shell RPC |
 | **planner** | `godot-planner` (6) | Opus | a rematch without restarting plays out the same (replays and the network) | the rematch diagnosis |
@@ -1947,7 +1951,7 @@ branches, file bars before numbers, merge green hashes, one check per tree).
 | **manoeuvre** | `godot-manoeuvre` (2) | Opus | a wedged IFV or truck backs out instead of sitting at full throttle; a War Rig pinned on a friend asks then backs straight; wheeled turret vehicles turn their whole hull to his facing | **CP-H** (the honest reading's A/B — manoeuvre runs it); M1b(2) |
 | **brains** | `godot-brains` (3) | Opus | the yard's last crew in every time with the 180° arrival AND a scout's chase intact; his bridge 108/108; support by fire on his drawn facing | B5c-v5 pair; B3b-2; B6; B8 into CP-H |
 | **native** | `godot-native` (4) | Opus | nothing in play: every pair; the planner's C++ reviewed and built; `test_native_traffic_hold` split | each pair; CP-P0 with planner |
-| **planner** | `godot-planner` (6) | **Fable** | a long truck in a Terminus street turns in deliberate legs and never grinds a wall (OFF until its bar passes, then ON as a pair) | **CP-P0** the C++ port equal; **CP-P1** the seam judged |
+| **planner** | `godot-planner` (6) | Opus | a long truck in a Terminus street turns in deliberate legs and never grinds a wall (OFF until its bar passes, then ON as a pair) | **CP-P0** the C++ port equal; **CP-P1** the seam judged |
 
 **The round's method (lesson 307, C31.1):** every candidate's `make check` with its switch ON on the PAIR tree (owner's
 GDScript + native's mirror) BEFORE its judged series — round 30 lost three passing candidates to stages the series never
@@ -2023,11 +2027,11 @@ in briefs and merges through the same gate; he sets `/model fable` in those thre
 | Stream | Folder (offset) | Model | What he will notice | Checkpoint |
 |---|---|---|---|---|
 | **traffic** | `godot-traffic` (1) | Opus | crossing squads: the yielding squad goes once the other's tail is past, no 30–45 s crawl; a set-up mortar truck still ordered to fire stays set up; builder0: I3's cache proof, `make quick` timed | T3b, T1c-b DECLARED |
-| **manoeuvre** | `godot-manoeuvre` (2) | **Fable** | a truck wedged into a wall backs out instead of sitting at full throttle (M4b); `face_slot` as a bug fix then turn-hull with a noise-sized guard (M1b); the creep on an honest base (M2b); the Terminus terrain escape (M5) | **CP-M4b** + native's pair |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | a truck wedged into a wall backs out instead of sitting at full throttle (M4b); `face_slot` as a bug fix then turn-hull with a noise-sized guard (M1b); the creep on an honest base (M2b); the Terminus terrain escape (M5) | **CP-M4b** + native's pair |
 | **brains** | `godot-brains` (3) | Opus | the yard's last crew in every time AND a 180° arrival that still turns round (B5c-v4; B4 rides); `test_tactics_scenarios` split (B7); his bridge 108/108 (B3b); SBF wheeled line traced (B6) | **CP-G** + native's pair |
 | **native** | `godot-native` (4, continuing) | Opus | nothing in play: the M4b and B5c pairs; N7.5 element_feed; the held N5 ports only when manoeuvre/traffic settle | each pair |
-| **sizing** | `godot-sizing` (5) | **Fable** | nothing in play: every bar sized by its probe's measured noise (`_agents/judging.md`, `tools/judge/`), early-stop judging designed on rounds 27–29's rows; NO builder0 series | **CP-N** the n table, early |
-| **planner** | `godot-planner` (6) | **Fable** | nothing in play this round: a local motion planner for long wheeled hulls (problem → design → offline tests → lab clip → hand-over to manoeuvre); isolated in `game/ai/planner/**` | P2 tests; P3 clip |
+| **sizing** | `godot-sizing` (5) | Opus | nothing in play: every bar sized by its probe's measured noise (`_agents/judging.md`, `tools/judge/`), early-stop judging designed on rounds 27–29's rows; NO builder0 series | **CP-N** the n table, early |
+| **planner** | `godot-planner` (6) | Opus | nothing in play this round: a local motion planner for long wheeled hulls (problem → design → offline tests → lab clip → hand-over to manoeuvre); isolated in `game/ai/planner/**` | P2 tests; P3 clip |
 
 **Merged: sizing `9730193f`** (= stream/sizing e8c82e1a + Status: builder0 `make check exited 0`, 2585/0, 26 ALL JUDGED;
 main's code = that tree, no re-check): `_agents/judging.md` (CP-N: 55 probe × metric rows; the line forms; early stop:

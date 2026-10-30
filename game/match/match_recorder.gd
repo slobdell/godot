@@ -22,6 +22,9 @@ extends Node
 ##   {"t":"end",    tick, result}
 ##   {"t":"cam",    tick, yaw, want, pitch, dist, target:[x,z], mode, turn}  every CENSUS_S and at each automatic turn's start
 ##                  (round 43, camera K5.1, C43.2: the camera's own row, RtsCamera.record_row; none without a camera)
+##   {"t":"sel",    tick, frame, units, squads, inspected}  every change of HIS selection (round 46, R46.6): a selection
+##                  without an order was invisible (camera's planner reads what he looks after); squads = the element
+##                  names of the selected units, in selection order, each once ("" for a unit in none)
 ##
 ## `hit` is the row that answers the unkillable-IFV class of report on its own: it separates SHIELD damage from HULL
 ## damage, so "everyone is shooting it and its health bar never moves" is visibly either shots that never land, or
@@ -48,6 +51,8 @@ var _next_census := 0.0
 var _seen_tasks := {}
 var _next_cam := 0.0
 var _cam_turns := 0
+## R46.6: the Selection whose `changed` the `sel` row listens to (a mode may swap controls.selection after start).
+var _sel_watching: Object = null
 
 
 static func start(p_match: Match, p_orders: Object, p_controls: Object, p_elements: Object,
@@ -97,6 +102,7 @@ func _ready() -> void:
 	# `order` row with verb "formation" (an added verb; no `to`, so tools/recording_arrivals.py skips it).
 	if controls != null and controls.has_signal("formation_changed"):
 		controls.formation_changed.connect(_on_formation)
+	_watch_selection()
 	print("MATCH_RECORDING %s" % path)
 
 
@@ -109,6 +115,9 @@ func _ready() -> void:
 ##   flags      the match's launch switches (`--attack-shot=off`, ...), as Main read them
 ##   spawn      {name: [x, z, yaw]} at full precision, where the army layout put every unit
 ##   frame      the physics frame the match started on (an order row's `frame` is counted from the same clock)
+##   rules      (round 46, R46.11) the rule switches a replay must match, as this build had them: {"lane_clear": bool}
+##              (engage L2; false on a build without it). tests/replay/rules.py turns a rule this match ran without, or a
+##              recording older than this key, into its `=off` flag, so his older games replay as he played them.
 static func replay_keys(p_match: Match, flags: LaunchFlags) -> Dictionary:
 	var faction := {"green": "", "rust": ""}
 	var spawn := {}
@@ -123,7 +132,12 @@ static func replay_keys(p_match: Match, flags: LaunchFlags) -> Dictionary:
 			spawn[String(tank.name)] = [tank.global_position.x, tank.global_position.z, tank.rotation.y]
 	return {"squad_cap": SkirmishMode.squad_cap_for(flags), "factions": faction, "preset": RenderLevers.preset(),
 			"native": BrainSwitches.native, "flags": flags.values.duplicate(), "spawn": spawn,
-			"frame": Engine.get_physics_frames()}
+			"frame": Engine.get_physics_frames(), "rules": rules()}
+
+
+## R46.11: the replay-relevant rule switches of THIS build, read by name (a build without a rule reads false).
+static func rules() -> Dictionary:
+	return {"lane_clear": (TankBrain as Object).get("LANE_CLEAR") == true}
 
 
 ## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the
@@ -208,6 +222,7 @@ func _on_destroyed(event: Dictionary) -> void:
 
 func _physics_process(_delta: float) -> void:
 	_record_camera()
+	_watch_selection()
 	if NativeRecorder.usable():  # round 28 (native N7.6): the task scan, the census and their rows natively
 		NativeBridge.impl.recorder_tick(self)
 		return
@@ -285,6 +300,47 @@ func _record_tasks() -> void:
 			_write({"t": "task", "tick": game_match.tick, "element": String(element.get("element_name")),
 					"team": team, "task": task, "formation": String(element.get("formation")),
 					"why": String(element.get("reason"))})
+
+
+## R46.6 (round 46, native): (re)connect the `sel` row to the controller's current Selection. Read-only: nothing the
+## simulation reads is touched (Elements.of is NOT used: it prunes its cache).
+func _watch_selection() -> void:
+	var now: Object = controls.get("selection") if controls != null else null
+	if now == _sel_watching:
+		return
+	if _sel_watching != null and is_instance_valid(_sel_watching) and _sel_watching.has_signal("changed") \
+			and _sel_watching.is_connected("changed", _on_selection):
+		_sel_watching.disconnect("changed", _on_selection)
+	_sel_watching = now
+	if now != null and now.has_signal("changed"):
+		now.connect("changed", _on_selection)
+		if not (now.get("units") as Array).is_empty() or String(now.get("inspected")) != "":
+			_on_selection()  # what he already had selected when the recording (or this Selection) started
+
+
+func _on_selection() -> void:
+	if _file == null or game_match == null or _sel_watching == null:
+		return
+	_write(selection_row(_sel_watching, elements, game_match.tick, Engine.get_physics_frames()))
+
+
+## The `sel` row for `selection` (units sorted as Selection keeps them). Pure: reads element rosters only.
+static func selection_row(selection: Object, p_elements: Object, tick: int, frame: int) -> Dictionary:
+	var units: Array = []
+	for unit_name: String in selection.get("units"):
+		units.append(unit_name)
+	var squads: Array = []
+	var all: Array = p_elements.call("all") if p_elements != null and p_elements.has_method("all") else []
+	for unit_name: String in units:
+		var squad := ""
+		for element: Variant in all:
+			if element != null and (element as Object).call("has", unit_name):
+				squad = String(element.get("element_name"))
+				break
+		if not squads.has(squad):
+			squads.append(squad)
+	return {"t": "sel", "tick": tick, "frame": frame, "units": units, "squads": squads,
+			"inspected": String(selection.get("inspected"))}
 
 
 ## Flushed on EVERY row, deliberately. A black box that loses its contents when the process dies is worse than no

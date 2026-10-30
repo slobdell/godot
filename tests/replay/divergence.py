@@ -5,6 +5,10 @@ Prints one row per crew (its distance in m at each census second, then its max) 
     DIVERGENCE crews=N within=K bar=3.0m seconds=20 first_over=<crew>@<s> verdict=PASS|FAIL
 `first2` (the default, the bar CP43.0 filed) = every unit named in the first two `order` rows that carry units.
 A crew missing from either side counts as over the bar (its row says `missing`).
+Round 46 (native): census rows after his match's `end` row (the results screen on his laptop, a headless replay running on) are
+not his match and are not judged; and when both recordings have an `end` row, their tick and `state_hash` are compared:
+    END his=<tick> replay=<tick> state_hash=same|differs|absent
+A differing end tick or hash fails the verdict (his Terminus match: 4471 both, the same hash: bit-exact to its end).
 """
 import gzip, json, math, sys
 
@@ -21,6 +25,10 @@ def census(rows):
         if r.get("t") == "census":
             out[int(r["tick"])] = {u["n"]: u["pos"] for u in r["units"]}
     return out
+
+
+def end_row(rows):
+    return next((r for r in rows if r.get("t") == "end"), None)
 
 
 def crews_of(rows, which):
@@ -55,7 +63,9 @@ def main(argv):
     for r in his_rows:
         if r.get("t") == "match":
             rate = int(r.get("tick_rate", 30))
-    ticks = sorted(t for t in his if t <= seconds * rate and t in rep)
+    his_end, rep_end = end_row(his_rows), end_row(rep_rows)
+    last = seconds * rate if his_end is None else min(seconds * rate, int(his_end["tick"]))
+    ticks = sorted(t for t in his if t <= last and t in rep)
     crews = crews_of(his_rows, opts.get("crews", "first2"))
     print("crew                 " + " ".join("%4d" % (t // rate) for t in ticks) + "   max")
     within, first_over = 0, None
@@ -78,7 +88,13 @@ def main(argv):
             cells.append("%4.0f" % d if d >= 10 else "%4.1f" % d)
         within += worst <= bar
         print("%-20s " % n.replace("Green_", "")[:20] + " ".join(cells) + "  %5s" % ("miss" if worst == math.inf else "%.1f" % worst))
-    verdict = "PASS" if within == len(crews) and crews and ticks else "FAIL"
+    end_ok = True
+    if his_end is not None and rep_end is not None:
+        a, b = his_end.get("result", {}).get("state_hash"), rep_end.get("result", {}).get("state_hash")
+        same = "absent" if a is None or b is None else ("same" if a == b else "differs")
+        end_ok = int(his_end["tick"]) == int(rep_end["tick"]) and same != "differs"
+        print("END his=%d replay=%d state_hash=%s" % (int(his_end["tick"]), int(rep_end["tick"]), same))
+    verdict = "PASS" if within == len(crews) and crews and ticks and end_ok else "FAIL"
     print("DIVERGENCE crews=%d within=%d bar=%.1fm seconds=%g ticks=%d first_over=%s verdict=%s"
             % (len(crews), within, bar, seconds, len(ticks), first_over or "-", verdict))
     return 0 if verdict == "PASS" else 1

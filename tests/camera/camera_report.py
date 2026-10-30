@@ -10,7 +10,7 @@ import json
 import os
 import sys
 
-SOURCES = ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "danger", "corner", "cap", "frame", "solid", "hull", "shake",
+SOURCES = ["player", "jump", "follow", "order_track", "auto_frame", "yaw_follow", "danger", "corner", "cap", "frame", "solid", "hull", "shake", "planner", "select",
            "all"]
 
 
@@ -80,6 +80,10 @@ def mean_se(values):
     return m, (var / len(values)) ** 0.5
 
 
+# A new selection never shown counts this long in the mean (Bar C1).
+SEL_NEVER_S = 10.0
+
+
 def look_table(runs):
     groups = {}
     for r in runs:
@@ -112,7 +116,13 @@ def look_table(runs):
                      "episodes": len(lat), "never": sum(l["never"] for l in looks),
                      "p50": quantile(lat, 0.5), "p90": quantile(lat, 0.9),
                      "capped": mean_se([min(x, NEVER_S) for x in lat]),
-                     "reversals_per_min": sum(l["yaw_reversals"] for l in looks) / minutes, "bearing": bearing})
+                     "reversals_per_min": sum(l["yaw_reversals"] for l in looks) / minutes, "bearing": bearing,
+                     # Round 46 (Bar C1): the census's lines
+                     "c1": "sel_none_s" in looks[0],
+                     "sel_none_s": sum(l.get("sel_none_s", 0.0) for l in looks),
+                     "sel_hidden_s": sum(l.get("sel_hidden_s", 0.0) for l in looks),
+                     "sel_lat": [x if x is not None else float("inf") for l in looks for x in l.get("sel_latencies", [])],
+                     "hits": sum(l.get("hits", 0) for l in looks), "hits_off": sum(l.get("hits_off", 0) for l in looks)})
     return rows
 
 
@@ -130,6 +140,22 @@ def show_look(rows):
               f"{fmt_s(r['p50'])} / {fmt_s(r['p90'])} | {r['capped'][0]:.1f} +- {r['capped'][1]:.1f} | {r['reversals_per_min']:.2f} | "
               f"{b['shooter']:.0f} / {b['centroid']:.0f} / {b['middle']:.0f} | {r['inside_s']:.2f} |")
     print()
+    c1 = [r for r in rows if r.get("c1")]
+    if c1:
+        print("Bar C1 lines (round 46): his selection none on screen; driving with half+ of it hidden by a building; new selection ->"
+              " half on screen (never = %.0f s); hits on his units off screen" % SEL_NEVER_S)
+        print("| scenario | lane | play s | none on screen s (%) | hidden while driving s (%) | selections | latency p50 / p90 s | never "
+              "| mean latency +- se | hits | off screen (%) |")
+        print("|---|---|---|---|---|---|---|---|---|---|---|")
+        for r in c1:
+            lat = r["sel_lat"]
+            m = mean_se([min(x, SEL_NEVER_S) for x in lat]) if lat else (0.0, 0.0)
+            print(f"| {r['scenario']} | {r['lane']} | {r['play_s']:.0f} | {r['sel_none_s']:.1f} ({100 * r['sel_none_s'] / r['play_s']:.1f}) | "
+                  f"{r['sel_hidden_s']:.1f} ({100 * r['sel_hidden_s'] / r['play_s']:.1f}) | {len(lat)} | "
+                  f"{fmt_s(quantile(lat, 0.5)) if lat else '-'} / {fmt_s(quantile(lat, 0.9)) if lat else '-'} | "
+                  f"{sum(1 for x in lat if x == float('inf'))} | {m[0]:.2f} +- {m[1]:.2f} | {r['hits']} | "
+                  f"{r['hits_off']} ({100 * r['hits_off'] / max(r['hits'], 1):.1f}) |")
+        print()
 
 
 def corner_table(runs):

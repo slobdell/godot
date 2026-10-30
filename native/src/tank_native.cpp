@@ -748,6 +748,12 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.BACKOUT_STALL_PROGRESS_M = config.get("BACKOUT_STALL_PROGRESS_M", -1.0);
 	c.BACKOUT_STALL_TICKS = config.get("BACKOUT_STALL_TICKS", -1);
 	c.backout_stall_ready = c.backout_ready && c.BACKOUT_STALL_PROGRESS_M >= 0.0 && c.BACKOUT_STALL_TICKS >= 0;
+	c.SHORTFWD_RADII = config.get("SHORTFWD_RADII", -1.0);
+	c.SHORTFWD_DEG = config.get("SHORTFWD_DEG", -1.0);
+	c.SHORTFWD_THROTTLE = config.get("SHORTFWD_THROTTLE", -1.0);
+	c.KTURN_HIT_WITHIN_M = config.get("KTURN_HIT_WITHIN_M", -1.0);
+	c.shortfwd_ready = c.SHORTFWD_RADII >= 0.0 && c.SHORTFWD_DEG >= 0.0 && c.SHORTFWD_THROTTLE >= 0.0 && c.KTURN_HIT_WITHIN_M >= 0.0 &&
+			c.traffic_script != nullptr;
 	c.parkedpass_ready = (bool)config.get("parkedpass", false) && c.traffic_script != nullptr;
 	// N4: _around_fire's constants and scripts; a missing one leaves the callback in place (fire_ready false).
 	c.fire_ready = false;
