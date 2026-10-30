@@ -474,18 +474,26 @@ physics-share: import native-for-check ## Stretch (round 39): the physics engine
 #   make replay-match RECORDING=_agents/streams/references/round42/playtest/2026-10-27T20-00-48-locks.jsonl.gz [REPLAY_SECONDS=49 CREWS=all]
 REPLAY_MATCH_DIR := $(BUILD_DIR)/replay-match
 .PHONY: replay-match
-replay-match: native-fresh import ## Replay a match recording headless (RECORDING=file[.gz], REPLAY_SECONDS=20, CREWS=first2|all, REPLAY_FLAGS=...) and print the divergence table v his census
-	@test -n "$(RECORDING)" || { echo 'usage: make replay-match RECORDING=build/recordings/X.jsonl[.gz] [REPLAY_SECONDS=20] [CREWS=first2|all] [REPLAY_FLAGS="--attack-shot=off"]'; exit 2; }
+# R45.24: a match he recorded before engage's E2 reached main (2026-10-29 15:11) replays with --player-authority=off, read from the
+# recording's name stamp (tests/replay/authority.py; the line REPLAY_AUTHORITY says which and why). REPLAY_AUTHORITY=on|off overrides;
+# a --player-authority flag in REPLAY_FLAGS is left alone.
+replay-match: native-fresh import ## Replay a match recording headless (RECORDING=file[.gz], REPLAY_SECONDS=20, CREWS=first2|all, REPLAY_FLAGS=..., REPLAY_AUTHORITY=auto|on|off) and print the divergence table v his census
+	@test -n "$(RECORDING)" || { echo 'usage: make replay-match RECORDING=build/recordings/X.jsonl[.gz] [REPLAY_SECONDS=20] [CREWS=first2|all] [REPLAY_FLAGS="--attack-shot=off"] [REPLAY_AUTHORITY=auto|on|off]'; exit 2; }
 	@rm -rf $(REPLAY_MATCH_DIR) && mkdir -p $(REPLAY_MATCH_DIR)/out
 	@case "$(RECORDING)" in *.gz) gzip -dc "$(RECORDING)" > $(REPLAY_MATCH_DIR)/his.jsonl;; *) cp "$(RECORDING)" $(REPLAY_MATCH_DIR)/his.jsonl;; esac
-	@s=0; $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- \
+	@authority=$$($(PYTHON) tests/replay/authority.py $(REPLAY_MATCH_DIR)/his.jsonl $(or $(REPLAY_AUTHORITY),auto)); flags='$(REPLAY_FLAGS)'; \
+	case "$$flags" in *--player-authority*) ;; *) if [ "$$authority" = off ]; then flags="$$flags --player-authority=off"; fi;; esac; \
+	s=0; $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- \
 		--orders=$(CURDIR)/$(REPLAY_MATCH_DIR)/his.jsonl --seconds=$$(( $(or $(REPLAY_SECONDS),20) + 1 )) --record-dir=$(REPLAY_MATCH_DIR)/out \
-		$(REPLAY_FLAGS) > $(REPLAY_MATCH_DIR)/replay.log 2>&1 || s=$$?; \
+		$$flags > $(REPLAY_MATCH_DIR)/replay.log 2>&1 || s=$$?; \
 	grep -E '^REPLAY_(REEXEC|SETUP|SPAWN|ROSTER|NATIVE|SEED|CLICKS|FORMATIONS|DONE)|^NATIVE_EXEC' $(REPLAY_MATCH_DIR)/replay.log; \
 	[ $$s -eq 0 ] || { echo "replay: godot exited $$s (log $(REPLAY_MATCH_DIR)/replay.log)"; exit $$s; }; \
 	out=$$(ls $(REPLAY_MATCH_DIR)/out/*.jsonl | head -1); \
 	test -n "$$out" || { echo "replay: no recording written (log $(REPLAY_MATCH_DIR)/replay.log)"; exit 1; }; \
-	$(PYTHON) tests/replay/divergence.py $(REPLAY_MATCH_DIR)/his.jsonl $$out --seconds=$(or $(REPLAY_SECONDS),20) --crews=$(or $(CREWS),first2)
+	d=0; $(PYTHON) tests/replay/divergence.py $(REPLAY_MATCH_DIR)/his.jsonl $$out --seconds=$(or $(REPLAY_SECONDS),20) --crews=$(or $(CREWS),first2) \
+		|| d=$$?; if grep -q '^REPLAY_NATIVE_MISMATCH' $(REPLAY_MATCH_DIR)/replay.log && [ "$(NATIVE)" != off ]; then \
+		echo "replay-match: FAILED: the replay's native path is not his match's ($$(grep -m1 '^REPLAY_NATIVE_MISMATCH' $(REPLAY_MATCH_DIR)/replay.log | cut -d: -f1)); a table read on the wrong path is not his match. make native, or NATIVE=off to replay the GDScript on purpose"; exit 3; fi; \
+	exit $$d
 
 # Round 43 (native N5): his playtest in one command: (a) the match and recording_arrivals per order, (b) the camera at each hit
 # and death (the `cam` rows; older recordings say they have none), (c) a 30 s replay-match of every crew with its divergence table

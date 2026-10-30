@@ -52,6 +52,11 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pathing_is_ready", "node"), &TankNative::pathing_is_ready);
 	ClassDB::bind_method(D_METHOD("pathing_query", "node", "from", "to"), &TankNative::pathing_query);
 	ClassDB::bind_method(D_METHOD("pathing_find_path", "node", "from", "to"), &TankNative::pathing_find_path);
+	ClassDB::bind_method(D_METHOD("gate_width_edge", "node", "click", "across", "scan", "past_posts", "decks", "clamp", "step",
+			"detour"), &TankNative::gate_width_edge);
+	ClassDB::bind_method(D_METHOD("untangle_whole", "starts", "anchors", "by_lead", "leads", "arcs", "misplaced", "slack"),
+			&TankNative::untangle_whole);
+	ClassDB::bind_method(D_METHOD("assign_least_total", "centers", "slots"), &TankNative::assign_least_total);
 	ClassDB::bind_method(D_METHOD("perception_configure", "config"), &TankNative::perception_configure);
 	ClassDB::bind_method(D_METHOD("perception_sight", "viewers", "enemies"), &TankNative::perception_sight);
 	ClassDB::bind_method(D_METHOD("perception_gun_ready", "viewers", "enemies"), &TankNative::perception_gun_ready);
@@ -740,6 +745,9 @@ bool TankNative::drive_configure(const Dictionary &config) {
 	c.kturn_goal_ready = c.KTURN_GOAL_MOVED_M >= 0.0 && c.KTURN_GOAL_AHEAD_DEG >= 0.0 && c.manoeuvre_script != nullptr &&
 			c.traffic_script != nullptr;
 	c.backout_ready = (double)config.get("BACKOUT_MIN_ERROR_DEG", -1.0) >= 0.0 && c.traffic_script != nullptr;
+	c.BACKOUT_STALL_PROGRESS_M = config.get("BACKOUT_STALL_PROGRESS_M", -1.0);
+	c.BACKOUT_STALL_TICKS = config.get("BACKOUT_STALL_TICKS", -1);
+	c.backout_stall_ready = c.backout_ready && c.BACKOUT_STALL_PROGRESS_M >= 0.0 && c.BACKOUT_STALL_TICKS >= 0;
 	c.parkedpass_ready = (bool)config.get("parkedpass", false) && c.traffic_script != nullptr;
 	// N4: _around_fire's constants and scripts; a missing one leaves the callback in place (fire_ready false).
 	c.fire_ready = false;

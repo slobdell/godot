@@ -11,10 +11,12 @@ const HEADING := Vector3(-0.5, 0.0, -0.87)
 const SPACING := 14.0
 
 var _was := TacticsFormation.SEAT_BOUND  # the default as the command line set it
+var _last_was := TacticsFormation.SEAT_LAST_OPEN
 
 
 func teardown() -> void:
 	TacticsFormation.SEAT_BOUND = _was  # the harness runs teardown() only (no after_each)
+	TacticsFormation.SEAT_LAST_OPEN = _last_was
 	super.teardown()
 
 
@@ -178,3 +180,33 @@ func test_the_travelling_stations_keep_the_bound() -> void:
 		assert_true((tight_stations[unit_name] as Vector3).distance_to(open_stations[unit_name]) > 0.1
 				or Vector2((open_stations[unit_name] as Vector3).x - anchor.x, (open_stations[unit_name] as Vector3).z - anchor.z).length() <= 37.5,
 				"ON changes the stations that were past the bound")
+
+
+## Round 45 (S v5 candidate, R45.17): with `--seat-last=open` the bound's DEEPEST seat keeps its nominal depth (the rear crew parks behind
+## the settled squad instead of pressing into the filled bound: Bar S v4's Locks wedged miss sat on the squad's last two crews), every
+## other seat stays within the bound, the floor holds, nobody is re-seated.
+func test_seat_last_open_keeps_the_deepest_seat_at_its_nominal_depth() -> void:
+	TacticsFormation.SEAT_BOUND = true
+	TacticsFormation.SEAT_LAST_OPEN = false
+	var bounded_all := TacticsFormation.place(his_guns(), "swarm", CLICK, HEADING, SPACING)
+	TacticsFormation.SEAT_LAST_OPEN = true
+	var placed := TacticsFormation.place(his_guns(), "swarm", CLICK, HEADING, SPACING)
+	TacticsFormation.SEAT_BOUND = false
+	TacticsFormation.SEAT_LAST_OPEN = false
+	var open := TacticsFormation.place(his_guns(), "swarm", CLICK, HEADING, SPACING)
+	var deepest := 0
+	for i in open.size():
+		if (open[i]["offset"] as Vector2).y > (open[deepest]["offset"] as Vector2).y:
+			deepest = i
+	assert_true((open[deepest]["offset"] as Vector2).y > (bounded_all[deepest]["offset"] as Vector2).y + 1.0,
+			"the swarm's deepest seat is pulled in by the bound (%.1f -> %.1f m behind)" % [(open[deepest]["offset"] as Vector2).y, (bounded_all[deepest]["offset"] as Vector2).y])
+	assert_near((placed[deepest]["offset"] as Vector2).y, (open[deepest]["offset"] as Vector2).y, 0.05,
+			"last open: the deepest seat keeps its nominal depth behind the anchor")
+	for i in placed.size():
+		if i == deepest:
+			continue
+		assert_true((placed[i]["offset"] as Vector2).length() <= 37.0 + 0.05, "every other seat stays within the 37 m bound (seat %d)" % i)
+		assert_near((placed[i]["offset"] as Vector2).x, (bounded_all[i]["offset"] as Vector2).x, 0.05, "...and where the bound put it (seat %d)" % i)
+	assert_true(clear_by_floor(placed, TacticsFormation.hull_floor(his_guns())), "no two seats closer than the hull floor")
+	for i in placed.size():
+		assert_eq(String(placed[i]["unit"]), String(open[i]["unit"]), "nobody is re-seated by the open last seat")

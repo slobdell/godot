@@ -6,6 +6,15 @@
 
 _Last updated: 2026-10-29 ~10:00 PDT (laptop clock) — **ROUND 45 PREPARED (box below; launch = the lead starts four CLIs: orders + manoeuvre on Fable, engage + native on Opus).** Earlier the same morning: round 44 closed, his Gorge playtest recorded._
 
+## ⚠ THE LAPTOP FROZE (~17:00-18:00 PDT, 2026-10-29): every session restarted mid-round
+
+Workers restart FRESH with the same kickoff line; each reads its brief's **Status** (top) for where it stood. Any `make remote` /
+series whose laptop wrapper died: its copy-back never happened, so treat the run as lost and re-run it verbatim (no numbers were read
+from it = a rerun, not an amendment). Uncommitted work at the freeze: orders (3 files), manoeuvre (4 files: the B3 room-behind gate is
+committed at 26b1425e7). Where each stood: orders G2 dev read 5 on 84ec3b689 (freeze only if every line passes); engage Bar E2b frozen
+2fe2092cd, its check then the bar; manoeuvre merge candidate 5d4b3fa82 (needs a clean-checkout 60/60 default-probe line) and Bar B3
+recorded (needs native's EQUAL on 26b1425e7); native's 1921e09eb (_assign in C++) check, then B3's EQUAL, then G2's three-seam re-proof.
+
 ## ▶ ROUND 45 AS PREPARED (2026-10-29 ~10:00 PDT) — read this first
 
 **Goal: his order wins. One click for three squads never sends a squad back behind its own start or across a drop from his click
@@ -32,8 +41,35 @@ only `godot` + `godot-native-score*` (77 %, 24 G free, load 0.02). Worktrees cre
 **RUNNING (2026-10-29 ~10:10 PDT): all four streams started (godot-orders-70, godot-engage-b0, godot-manoeuvre-68, godot-native-de); the orchestrator loop is godot-b8 in the main checkout.**
 
 **MAIN NOW (~11:05 PDT): 47a15f434** = + native N1 9b6ffb0a6 (the cold-import watchdog; builder0 GREEN 3446/0, 28 targets ALL
-JUDGED) and INHERITS its check. Bars recorded before numbers: B2, G2 (+ R45.6 D6), A6 v4. Rulings R45.1-R45.7. Native's N3 twin for B2
+JUDGED) and INHERITS its check. Bars recorded before numbers: B2, G2 (+ R45.6 D6), A6 v4, S v4, E1. Repo pack repaired (lesson 340; bad pack copy in ~/git-bad-pack-2026-10-29/, 645 MB, his to delete). Rulings R45.1-R45.7. Native's N3 twin for B2
 (pair/native-backout-b2 b2b129f9f) and N2 (gate_width + untangle_whole C++, 69b95f56e) in proof.
+
+**MAIN NOW (~14:30 PDT): eec905e52** = + native dc182916f (N2: gate_width + untangle_whole's search in C++, ON; native-fresh builds a
+fresh folder's library; replay-match fails on the wrong native path; builder2 preemption re-queue; lines_r44) — builder0 GREEN 3448/0,
+28 targets ALL JUDGED, sim-baseline unmoved; main INHERITS it. control-timing quiet read on builder0 pending. G2 conflicts in
+rts_controls.gd column_lay: resolution = pair/native-g2 cfa4a0eb2 (EQUAL with G2, R45.3 re-proof).
+
+**MAIN NOW (~18:30 PDT): 9203851ec** = + manoeuvre 5d4b3fa82 (round-45 OFF code; builder2 3456/0, sim-baseline unmoved, default
+orders probe 60/60 byte-identical on a clean checkout v main e6e926160) + engage's probe-only 4b359f635. merge_check_needed: CHECK
+(tests/engage/authority_probe.gd only); perf of 5d4b3fa82 NOT JUDGED (builder2). **ONE builder0 main check is owed** — batched with
+the next merges (engage E2b, native _assign) once builder0's queue (engage's and native's checks) clears.
+
+**MAIN NOW (~15:45 PDT): 8ef4f584d** = + engage 69bf864d2 (code = 60262534f, builder0 GREEN 3451/0 ALL JUDGED): **E2 ON — his
+order to a crew wins** (`--player-authority=off` the escape; R45.19: Bar E1 failed as filed on D1/D3/G3, shipped under C45.2). **8ef4f584d GREEN builder0: 3453 passed / 0 failed, 28 targets ALL JUDGED, `>> remote: make check exited 0`** (~/orch-r45/main-check-8ef4f584d.log). Verdicts:
+B2 FAIL (R45.15), S v4 FAIL (R45.17), A6 v4 FAIL (R45.20), S v5 not filed: all OFF. G2 still in dev reads before its freeze.
+
+**control-timing on main eec905e52 (builder0, NOT JUDGED: quiet window refused, 2/2 samples busy):** 30-unit / 6-squad right click
+3.68 ms, ratio 89.8 v budget 104 (round 43's quiet read 10.38 ms / 236); click_to_order ratio 90.5; per-frame control ratio 21.03 v 26.
+Re-run judged in the first quiet builder0 window (the round's close). G2 on top costs ~20.5 ms on builder2 (fit 9.5, guard_lay 6.6,
+untangle 0.8, ground_cap 1.2, given 1.1): native's R45.16 target. **Ships so far this round: nothing behaviour-visible; backout (B2,
+R45.15) and seat bound (S v4, R45.17) FAILED and stay OFF.**
+
+**SERIES (13:40 PDT):** Bar B2 RUNNING since ~13:35 on frozen 0493977ed (= manoeuvre ce52cba1c + native twin 04ce3abe9; builder2
+check `exited 0` 3448/0, perf NOT JUDGED there; quiet builder0 perf before ON), two drivers (builder0 light ../godot-manoeuvre-b2x,
+builder2 ../godot-manoeuvre-b2), evidence ~/overnight-manoeuvre/r45/bars_b2/, ETA ~3-4 h. Bar E1 re-frozen 60262534f (R45.10), check
+queued builder0, the bar chains on green. Bar G2 freeze candidate a8adba232 (R45.9), check on builder2; native re-proves its
+untangle_whole twin on it before G2 ships ON. Native N2 (gate_width + untangle C++ + native-fresh builds + replay mismatch fails)
+check queued builder0.
 
 **Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*). Record G2 / E1 / B2 in *Bars (round 45)*
 the minute each is filed. Merge native's N1 watchdog alone on green. **C45.2:** G2 and E2 ship ON the minute their bars pass; if

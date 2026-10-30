@@ -1274,7 +1274,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				# G2: the guard's read at the click, once (the same point, the same scan).
 				if not guard_sides.is_empty() and p.distance_to(Vector3(click.x, 0.0, click.z)) < 0.01 and across.distance_to(guard_across) < 1e-4:
 					return guard_sides
-				return RtsControls.gate_width(p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M)
+				return RtsControls.gate_width_edge_on(ground, p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M)
 			var laid := SelectionSquads.column_lay(lay_blocks, click, approach, width_at,
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors, path_back, reached, false, queue_leg, blocked)
 			_trace_stage("column_lay", squads, laid)
@@ -2275,6 +2275,17 @@ static func gate_width(click: Vector3, across: Vector3, drive: Callable, crosses
 			k += 1
 		out.append(reach)
 	return out
+
+
+## Round 45 (native N2, C45.4): gate_width for a caller whose `drive` is SelectionSquads.drive_on(ground) and `crosses`
+## SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground)) (the group click's column lay): natively when
+## NativeGateWidth.usable() (one navmesh query a step, the deck test in C++; output-identical, tests/test_native_gate_width.gd), else
+## gate_width with the caller's own Callables.
+static func gate_width_edge_on(ground: Node3D, click: Vector3, across: Vector3, drive: Callable, crosses: Callable,
+		scan := GATE_SCAN_M, past_posts := 0.0) -> Array[float]:
+	if ground != null and NativeGateWidth.usable():
+		return NativeGateWidth.gate_width_edge(ground, click, across, scan, past_posts)
+	return gate_width(click, across, drive, crosses, scan, past_posts)
 
 
 ## O1 (round 40): the widest obstacle the orders probe's corridor reads past (a floodlight's or a sign's hole in the navmesh

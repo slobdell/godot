@@ -513,3 +513,13 @@ NOSED_GDSCRIPT ?=
 export NOSED_GDSCRIPT
 NOSED_SEEDS ?=
 export NOSED_SEEDS
+# Round 45 (M1, dev only): NOSED_POSES=13 (a comma list of dev poses) and NOSED_TRACE=on (the rig traced, NOSED_SETUP / NOSED_TICK rows).
+NOSED_POSES ?=
+export NOSED_POSES
+NOSED_TRACE ?=
+export NOSED_TRACE
+NOSED_SETUP_ONLY ?=
+export NOSED_SETUP_ONLY
+# Round 45 (R45.4): NOSED_GUARD=on runs the six guard poses (round 44's mis-staged stagings kept: no back-up possible, ON no worse).
+NOSED_GUARD ?=
+export NOSED_GUARD
