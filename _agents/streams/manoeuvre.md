@@ -361,6 +361,17 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   legitimate there and B3 judges that pose by the cost ceiling (+3 s), said in the filing. **Bar B3 FILED** (workstreams.md *Bars
   (round 45)*, 11701-11748, before any number) and the code committed; native's EQUAL + default probe on this hash next, then the
   freeze.
+- **The laptop crashed ~17:00 PDT and restarted (builder2 rebooted too); session `godot-manoeuvre-bf` resumes at ~18:15.** Lost with it:
+  the clean identity probe's copy-back (its rows recovered from builder2's `godot-manoeuvre-mc/build/identity3/`), the queued S v5
+  Terminus dev read (dev4, never started), every local waiter. Merge candidate 5d4b3fa82's check (green, builder2) and B3's filing
+  (26b1425e7) were committed before the crash; the shortfwd edits (below) were uncommitted and are picked up here.
+- **The scout's short move, staged and first-read (laptop, GDScript; `tests/test_manoeuvre_short_move.gd`, `--traffic-on=shortfwd` OFF):**
+  a lone Rat Rod (turning circle 4.5 m) on the open yard, his side's one-crew element sent 5 m to a point 56 deg off its nose: **OFF
+  reverses at tick 3 for 21 ticks (0.7 s) and ends 1.9 m farther from the click** before coming round; **ON (the forward arc for a
+  player's short move ahead-ish inside the circle, no k-turn plan) never reverses** but a point that deep inside the circle (2.8 m from
+  the circle's centre) is orbited at ~1.7 m. His real Gorge case (engage's trace) was the k-turn PLANNER's 2 m back-up — an arc hit at the
+  drop's edge — so the rule must keep today's planner when the forward arc meets an edge within reach, and the lab needs his geometry
+  (the gap's edge) or the Gorge replay to decide. Parked behind B3 as OFF code; the ON lines are a dev read (`SHORTFWD_DEV=on`).
 - **Queued after B3, before S v5 (engage's E5 relay via the orchestrator):** his short move to the lone scout (Gorge 83.7 s / 85.2 s): the
   click ~56 deg off the nose at 10.7 m, inside a wheeled scout's turning circle, so the mover starts a three-point turn and backs 3 m AWAY
   from his click for ~0.9 s before his next click replaces the order. A player's short move whose goal is ahead-ish (< 90 deg) but inside
