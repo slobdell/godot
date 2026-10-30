@@ -75,6 +75,26 @@ write both in player terms with one recommendation in Status and build the recom
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### His Terminus playtest (2026-10-29 22:57): "an individual IFV ... wasn't shooting at anything the whole time" — NOT E2
+
+Recording `references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl` (played with E2 ON). His crew Green_Hunters_1 (his
+direct moves 103.8 / 106.7 / 109.0 / 112.6 s, attack Rust_Eyes_3 at 122.8 s). Trace: `make engage-authority-trace
+AUTH_RECORDING=<that> AUTH_UNITS=Green_Hunters_1 AUTH_FROM=3090 AUTH_SECONDS=145` (builder3, branch tip; rows now carry shots,
+in-range enemies seen by the team and by the crew's own ray, the engaged target's range and line, ammo, heat, reload, trigger, and
+the gunnery's lane blocker).
+- **Reproduced:** 3 shots from 104 to 140 s with an engaged target 10-30 m away, its own line of sight clear, 3-5 enemies in range;
+  then 30 rounds in 3 s at 140 s (his "finally got shots off toward the end").
+- **Not E2 (by removal):** his game replayed with the rule switched OFF at tick 3100 (`--authority-off-at`, new) is identical through
+  his moves and fires the same 19 rounds by 122 s; during his attack neither arm fires until ~140 s.
+- **Not ammo / heat / reload / line of sight:** ammo -1 (never runs out), heat capacity 0, reload 0, the ray to the target clear.
+- **Cause: his own vehicles in its line of fire.** `Gunnery._clear_to_fire` (FireLanes) holds a shot whose lane crosses a friendly;
+  the blocker changed all along (Green_Guns_4 116 s, Green_Guns_2 120-122 s, Green_Hunters_2 124-128 s, Green_Hunters_3 130 s,
+  Green_Wrenches_3 132-136 s, Guns_4 138 s), the lane blocked up to 198 ticks running while the brain chose CLEAR_LANE; at 140 s
+  the lane cleared and it fired.
+- **In his terms:** "your IFV was behind your own squads; it holds fire rather than shoot through them, and moving it to a clear lane
+  did not get it one for 20 s". Round 46 candidates (not engage's code: gunnery / CLEAR_LANE): a lane-clearing move that works in a
+  crowd, and saying it on screen ("holding fire: Guns 4 in the way").
+
 ### FINAL REPORT (round 45, 2026-10-29 ~23:30 PDT) — read this first
 
 - **Shipped ON:** E2, his order to a crew wins (main 8ef4f584d, R45.19), and its bug fix R45.24 (`player`-only re-latch: fea4cfbec
