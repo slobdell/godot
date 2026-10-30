@@ -115,6 +115,9 @@ func _ready() -> void:
 ##   flags      the match's launch switches (`--attack-shot=off`, ...), as Main read them
 ##   spawn      {name: [x, z, yaw]} at full precision, where the army layout put every unit
 ##   frame      the physics frame the match started on (an order row's `frame` is counted from the same clock)
+##   rules      (round 46, R46.11) the rule switches a replay must match, as this build had them: {"lane_clear": bool}
+##              (engage L2; false on a build without it). tests/replay/rules.py turns a rule this match ran without, or a
+##              recording older than this key, into its `=off` flag, so his older games replay as he played them.
 static func replay_keys(p_match: Match, flags: LaunchFlags) -> Dictionary:
 	var faction := {"green": "", "rust": ""}
 	var spawn := {}
@@ -129,7 +132,12 @@ static func replay_keys(p_match: Match, flags: LaunchFlags) -> Dictionary:
 			spawn[String(tank.name)] = [tank.global_position.x, tank.global_position.z, tank.rotation.y]
 	return {"squad_cap": SkirmishMode.squad_cap_for(flags), "factions": faction, "preset": RenderLevers.preset(),
 			"native": BrainSwitches.native, "flags": flags.values.duplicate(), "spawn": spawn,
-			"frame": Engine.get_physics_frames()}
+			"frame": Engine.get_physics_frames(), "rules": rules()}
+
+
+## R46.11: the replay-relevant rule switches of THIS build, read by name (a build without a rule reads false).
+static func rules() -> Dictionary:
+	return {"lane_clear": (TankBrain as Object).get("LANE_CLEAR") == true}
 
 
 ## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the

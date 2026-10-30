@@ -21,6 +21,9 @@ func test_the_replay_keys_hold_the_cap_the_factions_and_every_spawn_at_full_prec
 	assert_eq(keys["native"], BrainSwitches.native, "whether the C++ library ran the crews")
 	assert_true(keys["preset"] is String and String(keys["preset"]) != "", "the render preset")
 	assert_true(keys["frame"] is int, "the start frame")
+	# R46.11: the build's replay-relevant rules (a build without L2 reads lane_clear false).
+	assert_eq((keys["rules"] as Dictionary).keys(), ["lane_clear"], "the rules stamp")
+	assert_eq(keys["rules"]["lane_clear"], (TankBrain as Object).get("LANE_CLEAR") == true, "as this build has it")
 	var tanks := m.sorted_team_tanks(0) + m.sorted_team_tanks(1)
 	assert_eq((keys["spawn"] as Dictionary).size(), tanks.size(), "every unit's spawn")
 	for tank: Tank in tanks:
@@ -47,7 +50,7 @@ func test_an_order_row_keeps_its_keys_and_gains_frame_and_paused() -> void:
 	var header: Dictionary = rows[0]
 	for key in ["t", "path", "arena", "seed", "tick_rate", "tuning", "units"]:
 		assert_true(header.has(key), "the match row still has %s" % key)
-	for key in ["squad_cap", "factions", "preset", "native", "flags", "spawn", "frame"]:
+	for key in ["squad_cap", "factions", "preset", "native", "flags", "spawn", "frame", "rules"]:
 		assert_true(header.has(key), "the match row gains %s" % key)
 	var order: Dictionary = rows.filter(func(r: Dictionary) -> bool: return r["t"] == "order")[0]
 	assert_eq([order["verb"], order["units"], order["source"], order["to"], order["queue"]],
