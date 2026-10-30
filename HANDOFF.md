@@ -49,6 +49,11 @@ fresh folder's library; replay-match fails on the wrong native path; builder2 pr
 28 targets ALL JUDGED, sim-baseline unmoved; main INHERITS it. control-timing quiet read on builder0 pending. G2 conflicts in
 rts_controls.gd column_lay: resolution = pair/native-g2 cfa4a0eb2 (EQUAL with G2, R45.3 re-proof).
 
+**MAIN NOW (~18:30 PDT): 9203851ec** = + manoeuvre 5d4b3fa82 (round-45 OFF code; builder2 3456/0, sim-baseline unmoved, default
+orders probe 60/60 byte-identical on a clean checkout v main e6e926160) + engage's probe-only 4b359f635. merge_check_needed: CHECK
+(tests/engage/authority_probe.gd only); perf of 5d4b3fa82 NOT JUDGED (builder2). **ONE builder0 main check is owed** — batched with
+the next merges (engage E2b, native _assign) once builder0's queue (engage's and native's checks) clears.
+
 **MAIN NOW (~15:45 PDT): 8ef4f584d** = + engage 69bf864d2 (code = 60262534f, builder0 GREEN 3451/0 ALL JUDGED): **E2 ON — his
 order to a crew wins** (`--player-authority=off` the escape; R45.19: Bar E1 failed as filed on D1/D3/G3, shipped under C45.2). **8ef4f584d GREEN builder0: 3453 passed / 0 failed, 28 targets ALL JUDGED, `>> remote: make check exited 0`** (~/orch-r45/main-check-8ef4f584d.log). Verdicts:
 B2 FAIL (R45.15), S v4 FAIL (R45.17), A6 v4 FAIL (R45.20), S v5 not filed: all OFF. G2 still in dev reads before its freeze.
