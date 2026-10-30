@@ -1,3 +1,5 @@
+> **ARCHIVED (round 45 closed 2026-10-30).** Final state of this brief; round 45's results are in `workstreams.md` *Bars (round 45)* and *Rulings (round 45)*.
+
 # Stream: native (builder runs that never hang on a cold import; gate_width in C++; twins for what ships; the round's lines)
 
 > Read `_agents/orchestration.md` (the worker contract), `_agents/workstreams.md` **Round 45** (C45.1, C45.4). Your last brief:

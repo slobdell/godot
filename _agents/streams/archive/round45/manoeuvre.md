@@ -1,3 +1,5 @@
+> **ARCHIVED (round 45 closed 2026-10-30).** Final state of this brief; round 45's results are in `workstreams.md` *Bars (round 45)* and *Rulings (round 45)*.
+
 # Stream: manoeuvre (a War Rig nose-on to a container backs out first, on the poses Bar B1 lost; then S v4 and holdway)
 
 > Read `_agents/orchestration.md` (the worker contract; lesson 339), `_agents/judging.md`, `_agents/workstreams.md` **Round 45**
