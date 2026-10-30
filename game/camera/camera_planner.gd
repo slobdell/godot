@@ -34,8 +34,8 @@ extends RefCounted
 
 ## How often the rig starts a plan (seconds of UI clock) at most. Between plans the glide carries the view to the last one.
 const PLAN_S := 0.2
-## Headings scored per frame (`step`) off the laptop preset; the laptop scores one (C3).
-const HEADINGS_PER_FRAME := 3
+## Poses scored per frame (`step`) off the laptop preset; the laptop scores one (C3).
+const HEADINGS_PER_FRAME := 4
 ## The candidate headings: every 360 / YAW_STEPS degrees, plus the current wanted yaw.
 const YAW_STEPS := 12
 ## THE weights (one table; see the header).
@@ -119,13 +119,13 @@ const PATH_AIM_M := 1.0
 ## Solids shorter than this hide wheels, not vehicles.
 const SIGHT_MIN_HEIGHT_M := 3.0
 ## At most this many crews are ray-tested (evenly picked): the term is a fraction, and the laptop pays per ray.
-const MAX_SIGHT_CREWS := 6
+const MAX_SIGHT_CREWS := 4
 ## How far inside the wall the frame's focus stays (as the danger camera kept it).
 const WALL_MARGIN_M := 4.0
 
 ## The last plan's result (the trace and the readout read it): {yaw, focus, level, cost, terms, candidates, switched}.
 var last := {}
-var _mean := {}  # heading (whole degrees) -> [mean cost, when]
+var _mean := {}  # "heading:variant" -> [mean cost, when]
 var _switched_at := -1e9
 var _queue: Array = []  # headings left to score in this cycle (step)
 var _cycle := {}
@@ -337,7 +337,8 @@ func restart() -> void:
 ## C3 (the laptop budget, C46.7): the same plan spread over frames. Each call scores up to `n` headings of the current
 ## cycle (the current yaw first) on that frame's world, and returns the decision once the cycle's last heading is scored
 ## ({} before then). A cycle restarts when the yaw it plans from changes (his hand). `n` is the hardware preset's knob
-## (the rig: 1 heading a frame on the laptop preset, HEADINGS_PER_FRAME elsewhere): the same decision, later.
+## (the rig: 1 pose a frame on the laptop preset, HEADINGS_PER_FRAME poses elsewhere): the same decision, later. A pose is
+## one heading's tight or wide frame; the wide one is skipped (free) with no contacts.
 func step(w: Dictionary, current_yaw: float, now: float, n: int) -> Dictionary:
 	var own: Array = w.get("own", [])
 	if own.is_empty():
@@ -345,34 +346,35 @@ func step(w: Dictionary, current_yaw: float, now: float, n: int) -> Dictionary:
 		_queue.clear()
 		return {}
 	if _queue.is_empty() or float(_cycle.get("current_yaw", NAN)) != current_yaw:
-		_queue = CameraPlanner.candidate_yaws(current_yaw)
+		_queue.clear()
+		for yaw: float in CameraPlanner.candidate_yaws(current_yaw):
+			_queue.append([yaw, 0])
+			_queue.append([yaw, 1])
 		var reach := RtsCamera.distance_for(maxf(float(w.get("cap_level", 1.0)), float(w.get("floor_level", 0.0)))) + 10.0
 		_cycle = {"best": {}, "current": {}, "count": 0, "current_yaw": current_yaw,
 				"solids": CameraPlanner.near_solids(w.get("data", {}), own + (w.get("path", []) as Array), reach)}
 	var wide: Array = []
 	for contact: Array in w.get("action", []):
 		wide.append(RtsCamera.inside_wall(contact[0] as Vector3, WALL_MARGIN_M))
-	var lean: Variant = w.get("lean")
 	var solids: Dictionary = _cycle["solids"]
-	for k in mini(n, _queue.size()):
-		var yaw: float = _queue.pop_front()
-		var variants: Array = [CameraPlanner.fit(own, lean, yaw, w)]
-		if not wide.is_empty():
-			variants.append(CameraPlanner.fit(own + wide, null, yaw, w))
-		var pick := {}
-		for vi in variants.size():
-			var v: Array = variants[vi]
-			var scored := CameraPlanner.score(yaw, v[0], float(v[1]), current_yaw, w, solids)
-			scored["wide"] = vi == 1
-			scored["yaw"] = yaw
-			scored["focus"] = v[0]
-			scored["level"] = float(v[1])
-			_cycle["count"] = int(_cycle["count"]) + 1
-			if pick.is_empty() or float(scored["cost"]) < float(pick["cost"]):
-				pick = scored
+	var scored_n := 0
+	while scored_n < n and not _queue.is_empty():
+		var unit: Array = _queue.pop_front()
+		var yaw: float = unit[0]
+		var vi: int = unit[1]
+		if vi == 1 and wide.is_empty():
+			continue  # no contacts this frame: no wide frame to score (costs nothing)
+		var v: Array = CameraPlanner.fit(own, w.get("lean"), yaw, w) if vi == 0 else CameraPlanner.fit(own + wide, null, yaw, w)
+		var pick := CameraPlanner.score(yaw, v[0], float(v[1]), current_yaw, w, solids)
+		pick["wide"] = vi == 1
+		pick["yaw"] = yaw
+		pick["focus"] = v[0]
+		pick["level"] = float(v[1])
 		pick["raw"] = float(pick["cost"])
-		pick["cost"] = _averaged(yaw, float(pick["cost"]), now)
-		if yaw == current_yaw:
+		pick["cost"] = _averaged("%d:%d" % [roundi(rad_to_deg(yaw)), vi], float(pick["cost"]), now)
+		scored_n += 1
+		_cycle["count"] = int(_cycle["count"]) + 1
+		if yaw == current_yaw and ((_cycle["current"] as Dictionary).is_empty() or float(pick["cost"]) < float(_cycle["current"]["cost"])):
 			_cycle["current"] = pick
 		if (_cycle["best"] as Dictionary).is_empty() or float(pick["cost"]) < float(_cycle["best"]["cost"]):
 			_cycle["best"] = pick
@@ -415,9 +417,8 @@ static func action_of(state: Dictionary) -> Array:
 	return out
 
 
-## The mean cost of the heading `yaw` with `cost` now. A heading not scored for over 3 COST_TAU_S starts again from `cost`.
-func _averaged(yaw: float, cost: float, now: float) -> float:
-	var key := roundi(rad_to_deg(yaw))
+## The mean cost of the pose `key` (heading in whole degrees : frame variant) with `cost` now. A heading not scored for over 3 COST_TAU_S starts again from `cost`.
+func _averaged(key: String, cost: float, now: float) -> float:
 	var held: Variant = _mean.get(key)
 	var mean := cost
 	if held is Array and now - float(held[1]) <= 3.0 * COST_TAU_S:
