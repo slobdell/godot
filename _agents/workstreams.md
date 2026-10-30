@@ -381,6 +381,14 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.29 (2026-10-30 ~05:30) Camera's planner merged OFF; the ON candidate needs one line in orders' test.** stream/camera 21fb16fc1
+  (planner OFF, GREEN builder3 3484/0 ALL JUDGED) merged into main 830787b38 (Bar C1's verdict block carried in 1a275c550); one main check
+  of the batch on builder3 (`merge_check_needed` CHECK: main had moved). The ON candidate ee291bcc4 is RED on builder3 (3483/1,
+  deterministic): test_control_dials::test_the_rig_frames_with_its_inset reads 0.59 v 0.59 because with the planner group 1's frame needs
+  > 100 m at both insets (the auto frame's cap; the planner keeps his crews above the command card); passes on the laptop (no native build,
+  spawn differs). GRANT camera one line in orders' tests/test_control_dials.gd (`f.rig.auto_frame_max_m = RtsCamera.MAX_DISTANCE` before
+  the first recall). The ON flip merges only on his yes (R46.23).
+
 - **R46.28 (2026-10-30 ~05:50) Bar L1b FAILS as filed on D1 (no gain); L1c on 12301-12348.** c0affabe0's code (series tree dcabca4dc =
   + docs), builder0 light, native on, 11949-11996, 48 paired, 0 errors: D1 held for a friend 17.54 -> 18.28 s (+0.74, se 1.02) FAIL; D2
   31/38 sooner or identical PASS; G1 friendly hits 4 -> 1 PASS; G2 1/1; G3 0.72 -> 0.74; G4 post max 5.3 m. Cause: spots clear by the MOVING
