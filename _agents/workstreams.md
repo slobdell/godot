@@ -388,6 +388,15 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.35 (2026-10-30 ~08:30) Shortfwd SHIPPED ON (main = + 105e2e118); holdway ON for the native game, OFF on the web export.**
+  105e2e118: builder3 `make check exited 0`, 3504 / 0, web-smoke PASS, sim-baseline unmoved on all 13 arenas (the rule reads only his direct
+  order). Holdway's cost (manoeuvre, builder3 light, stream tip 787a4bf79, sim-profile gangs v law, yard, 60 s, seed 7): native Traffic
+  refresh 0.129 -> 0.138 ms/tick; desktop GDScript (`--brains-off=native`) +0.01 ms/tick; the web build alone freezes once at game t ~11 s
+  (39b6c7aa5 4 of 5 web runs failed; shortfwd only 4 of 4 passed); hot spot not found in the time box (not per-tick). Ruled (memory: native
+  over browser): holdway's default ON except on the web export (`OS.has_feature("web")`), the switches still override; the web freeze is a
+  round-47 trace. Engage's 12328 cause (the mover's yield drove a crew holding his post ~10 m toward the enemy; HOLD's reverse stopped 6 m
+  short) relayed to manoeuvre for round 47.
+
 - **R46.34 (2026-10-30 ~08:00) Holdway ON slows the web build ~5x: shortfwd ships alone; holdway waits for a cost fix.** manoeuvre's
   8165af868 (shortfwd + holdway ON + native's re-staged tests + main b7942f378): `make check exited 2`, test 3505 / 0; FAILED sim-baseline
   (all 13 arenas moved: expected) and **web-smoke** ("Page.captureScreenshot timed out", 0 console errors; the web game ~5x slower than
