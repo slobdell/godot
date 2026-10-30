@@ -136,7 +136,10 @@ static var SEAT_ORDER := OS.get_cmdline_user_args().has("--seat-order=on") or OS
 ## rear crew parks behind the settled squad where a player would put it, and the bound still holds for every other seat.
 ## `--seat-last=open` / env SEAT_LAST=open: OFF until a bar (S v5) reads it; dev seeds only in round 45.
 static var SEAT_LAST_OPEN := OS.get_cmdline_user_args().has("--seat-last=open") or OS.get_environment("SEAT_LAST") == "open"
-const SEAT_ORDER_PER_RANK := 3.0  # strong: the order is the point, a few metres saved by crossing never buy it
+const SEAT_ORDER_PER_RANK := 3.0
+## Round 45 (S v5): crews this close in depth to the rear-most are rear too (abreast: the spawn layouts differ by 0.0-0.2 m, a
+## column by a hull length and more); half a hull length keeps a jittered abreast pair a tie and a column a column.
+const SEAT_LAST_REAR_TIE_M := 4.0  # strong: the order is the point, a few metres saved by crossing never buy it
 ## The bound in hull lengths of the longest hull, plus the hull floor along the heading (one more hull's room).
 const SEAT_BOUND_HULLS := 1.5
 ## ...and never under this (metres): the biggest doctrine spacing ("open" 18 m), so a squad of small hulls keeps its dispersion.
@@ -915,14 +918,30 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 			if deep_slot < 0 or offsets[j].y > offsets[deep_slot].y:
 				deep_slot = j
 		var least_ahead := INF
+		var aheads: Array = []
 		for i in count:
 			var m: Dictionary = members[i]
 			if not m.has("position"):
+				aheads.append(INF)
 				continue
 			var at_m: Vector3 = m["position"]
 			var ahead := Vector3(at_m.x - anchor.x, 0.0, at_m.z - anchor.z).dot(fwd_l)
-			if ahead < least_ahead:
-				least_ahead = ahead
+			aheads.append(ahead)
+			least_ahead = minf(least_ahead, ahead)
+		# S v5 dev read 4 (Terminus 7001-7012): the two rear crews stand ABREAST on every start layout (0.0-0.2 m apart in depth),
+		# so "the rear-most" was a float tie, and when it fell to the crew on the far side the deep seat (20 m to one side) sent
+		# it across its squadmate's path: a crossing cascade (wedged 17 -> 44 s on three seeds). Crews within a tie of the rear
+		# are all rear; the deep seat goes to the one laterally nearest it.
+		var right_l := Vector3(-fwd_l.z, 0.0, fwd_l.x)
+		var deep_lateral := Vector3(world[deep_slot].x - anchor.x, 0.0, world[deep_slot].z - anchor.z).dot(right_l)
+		var nearest_side := INF
+		for i in count:
+			if float(aheads[i]) > least_ahead + SEAT_LAST_REAR_TIE_M:
+				continue
+			var at_r: Vector3 = members[i]["position"]
+			var side := absf(Vector3(at_r.x - anchor.x, 0.0, at_r.z - anchor.z).dot(right_l) - deep_lateral)
+			if side < nearest_side:
+				nearest_side = side
 				rear_member = i
 		if offsets[deep_slot].y <= 0.0 or rear_member < 0:
 			last_open = false

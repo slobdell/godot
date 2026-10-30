@@ -210,3 +210,59 @@ func test_seat_last_open_keeps_the_deepest_seat_at_its_nominal_depth() -> void:
 	assert_true(clear_by_floor(placed, TacticsFormation.hull_floor(his_guns())), "no two seats closer than the hull floor")
 	for i in placed.size():
 		assert_eq(String(placed[i]["unit"]), String(open[i]["unit"]), "nobody is re-seated by the open last seat")
+
+
+## S v5 dev read 4 (Terminus 7001-7012): the two rear crews of every start layout stand abreast (0.0-0.2 m apart in depth), so "the
+## rear-most crew" was a float tie; when it fell to the crew on the far side, the deep seat (18 m to one side) sent it across its
+## squadmate's path (wedged 17 -> 44 s on three seeds). Rear crews within a tie (SEAT_LAST_REAR_TIE_M) are all rear: the deep seat goes
+## to the one laterally nearest it, whichever order the members come in; a crew clearly behind (a column) still takes it from the far
+## side. Through the plain move's own path (policy "travel", the route seats as `at`, the bound and the order on): place()'s default
+## policy seats by armour tiers, where no rear term can speak.
+func test_seat_last_open_breaks_the_rear_tie_toward_the_deep_seat() -> void:
+	TacticsFormation.SEAT_BOUND = true
+	var anchor := Vector3(-52.0, 0.0, 59.0)
+	var route: Array = [Vector3(-52.0, 0.0, 100.0), anchor]  # straight south onto the click
+	var pose := ElementPlan.route_pose(route, 41.0)
+	var transit := {"route": route, "s": 41.0, "anchor": pose["point"], "heading": pose["tangent"]}
+	var heading: Vector3 = pose["tangent"]
+	var right := Vector3(-heading.z, 0.0, heading.x)
+	var open := TacticsFormation.place(his_guns(), "swarm", anchor, heading, SPACING)
+	var deepest := 0
+	for i in open.size():
+		if (open[i]["offset"] as Vector2).y > (open[deepest]["offset"] as Vector2).y:
+			deepest = i
+	var side := signf((open[deepest]["offset"] as Vector2).x)  # which side of the line of advance the deep seat sits
+	assert_true(absf((open[deepest]["offset"] as Vector2).x) > 10.0, "the swarm's deep seat sits well to one side (%.1f m)" % (open[deepest]["offset"] as Vector2).x)
+	var deep_index: int = open[deepest]["index"]
+	var seats := func(members: Array) -> Dictionary:
+		TacticsFormation.SEAT_LAST_OPEN = true
+		var at: Array = ElementPlan.route_seats(members, "swarm", SPACING, transit)
+		var placed := TacticsFormation.place(members, "swarm", anchor, heading, SPACING, {"policy": "travel", "seat_bound": true, "seat_order": true, "at": at})
+		TacticsFormation.SEAT_LAST_OPEN = false
+		return TacticsFormation.seating_of(placed)
+	var holder := func(seating: Dictionary) -> String:
+		for unit_name: String in seating:
+			if int(seating[unit_name]) == deep_index:
+				return unit_name
+		return ""
+	for near_first in [true, false]:
+		var members := his_guns()
+		# Three crews ahead near the line of advance, two rear crews abreast 35 m behind the click, 10 m either side of the line.
+		members[0]["position"] = anchor - heading * 20.0 - right * 6.0
+		members[1]["position"] = anchor - heading * 20.0 + right * 6.0
+		members[2]["position"] = anchor - heading * 26.0
+		var near := anchor - heading * 35.0 + right * (side * 10.0)
+		var far := anchor - heading * 35.1 - right * (side * 10.0)  # 0.1 m MORE rear: the old rule's "rear-most"
+		members[3]["position"] = near if near_first else far
+		members[4]["position"] = far if near_first else near
+		var near_name := "Guns_4" if near_first else "Guns_5"
+		assert_eq(holder.call(seats.call(members)), near_name,
+				"abreast rear crews: the one on the deep seat's side takes it (near listed %s)" % ("first" if near_first else "last"))
+	# A column: the far-side crew is a hull length and more behind -> it is the rear crew and takes the deep seat.
+	var column := his_guns()
+	column[0]["position"] = anchor - heading * 20.0 - right * 6.0
+	column[1]["position"] = anchor - heading * 20.0 + right * 6.0
+	column[2]["position"] = anchor - heading * 26.0
+	column[3]["position"] = anchor - heading * 35.0 + right * (side * 10.0)
+	column[4]["position"] = anchor - heading * 45.0 - right * (side * 10.0)
+	assert_eq(holder.call(seats.call(column)), "Guns_5", "a crew 10 m behind the others is the rear crew and takes the deep seat from the far side")
