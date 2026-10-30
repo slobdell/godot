@@ -381,6 +381,16 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.31 (2026-10-30 ~06:20) Bar L1c PASSES (G4 ruled on an exact tie, as R45.23); ships ON when G5/G6 read.** Frozen 1dd227534,
+  builder0 light, native on, 12301-12348, 48 paired, 0 errors. D1 held for a friend 15.53 -> 10.65 s (-4.2 se; attack 14.0 -> 6.6, cpu
+  7.7 -> 5.1, post 18.1 -> 15.6); D2 31/41 sooner or identical (11 strictly); G1 friendly hits 9 -> 4, kills 0/0; G2 deaths 2 -> 1; G3 enemy
+  hp 0.62 -> 0.53; G7 native EQUAL. **G4's literal "every ON run <= 5.5 m from his post" reads 10.1 m on ONE run (12328, Locks, gang_tank,
+  post) that is byte-identical in BOTH arms (no lane step; held 0.3 s both)**: not the rule's move, so ruled a tie, not a loss (lesson
+  344); every move the rule caused is <= 5.4 m; G4's held line -2.52 (se 1.34) PASS. **Filed for round 47 (engage):** why a crew at his
+  post drifts 10.1 m with no lane step (12328) — an E2 post-hold gap the bar exposed. Ship = 1dd227534 (code 40d0234f5) when G5 (E2's
+  authority probe) and G6 (orders' default probe) pass; the orchestrator adopts the sim-baseline (docks, gorge, locks, parade, pit,
+  terminus, yard_open) after the merge. Shots 10.8 -> 22.3 a run; 34 feed lines in 23 runs.
+
 - **R46.30 (2026-10-30 ~05:45) Holdway ON has a twin gap; shortfwd ships alone first.** Manoeuvre's combined candidate 39b6c7aa5
   (shortfwd + holdway ON) RED builder3: 3473 / 6 + sim-baseline moved on all 13 arenas; all six from holdway ON (shortfwd-only 11ff6586c:
   26/0). Two are twin tests (test_native_drive_backout, test_native_drive_backout_stall: GDScript drive != C++ drive under holdway ON,
