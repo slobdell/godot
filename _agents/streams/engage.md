@@ -81,7 +81,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
 | L3 the feed line | DONE: code + tests 320fbcd11 / aeb32f603; LOOKED AT in his own Terminus replay (laptop window, rule on at 103 s, 9446e1903-era tree): "Hunters 1 holding fire: Wrenches 3 in the way" in the left info feed, the crew selected through RtsControls (`~/overnight-engage/r46/shots/line-1920x1080-t36*.png`); as history it truncates like every older line ("Hunters 1 holding fi..."). Phone: the touch map has no `selection_state`, so no line there (R46.26: round 47); the laptop would not size the window to a phone aspect (`--resolution` ignored by the replay script's window) |
 | L4 Bar L1 | **FAILED on G1** (fa9c6ff3a: friendly hits 1 -> 6, a burst walked into a squadmate; D1 / D2 PASS); not shipped (R46.24) |
 | L4b Bar L1b | **FAILED on D1** (no gain: moving-spread spots rarely exist); G1 PASS (friendly hits 4 -> 1) |
-| L4c Bar L1c | FILED before numbers (12301-12348, R46.28): L1's spots + the burst re-check; freeze check next |
+| L4c Bar L1c | **PASSED** (R46.31); **ships ON at 1dd227534** |
 | L5 his replay | dev read (below); the acceptance read waits for the shipped tree |
 | E6 | **DROPPED (R46.22)**: the staged case shows no drift (dev 7001-7012, n 9: <= 3.2 m, capped arm identical); code removed after L1b's series |
 
@@ -106,6 +106,13 @@ still being held, once per crew per 15 s (8 s read chatty on the dev probe: 4 li
 ### Bar L1c (FILED 2026-10-30 ~06:05) and L1b
 
 ### Bar L1b (FILED 2026-10-30 ~05:40, before any number on 11949-11996)
+
+- **Bar L1c VERDICT (2026-10-30 ~06:50 PDT): PASSES (R46.31 on G4's tie); ships ON at 1dd227534** (builder3 check 3486/0, only
+  sim-baseline moved). builder0 light, native on, 12301-12348, 48 paired, 0 errors. D1 PASS (rule's case n 41: held 15.53 -> 10.65 s,
+  -4.88, se 1.17); D2 PASS (31/41 sooner or identical, 11 strictly); G1 PASS (friendly hits 9 -> 4, kills 0 / 0); G2 2 -> 1; G3 hp
+  0.62 -> 0.53; G4 max 10.1 m in BOTH arms on 12328 (an exact tie, no lane step: R46.31), every rule-caused post move <= 5.4 m,
+  held_s post -2.52 (se 1.34); G5 PASS (E2's probe 24/24 seeds identical); G6 PASS (orders' default probe 48/48 rows identical); G7
+  PASS (native EQUAL on 1dd227534). Evidence `~/overnight-engage/r46/barl1c/` (laptop).
 
 - **Bar L1c HIS IFV FINDS A LANE; A BURST NEVER WALKS INTO A SQUADMATE (engage; filed 2026-10-30 ~06:05 PDT in streams/engage.md and here, BEFORE any number on 12301-12348; R46.28).**
 
