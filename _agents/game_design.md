@@ -4739,3 +4739,20 @@ did not take), and in that time it drives **away**: north to (-84, 95), distance
 along y ~ 90 to (-7, 84), then south down x ~ -7 over the middle crossing to (-5, 17) by tick 2220 — about 230 m of driving for a
 93 m gap; killed at tick 2232 by Lances_3. Two questions for the owner: (a) why the attack order did not replace the attack_move for
 ~7 s; (b) why the route went around (path cost, a closed or "dangerous" west crossing, or a stale route) rather than the short way.
+
+## His fourth note (2026-10-30 ~15:58, Sumps, condemned garage army v law, verbatim)
+
+Recording: `references/round46/playtest/2026-10-30T15-53-39-sumps.jsonl` (copied mid-match, census to tick 990; re-copy at the end).
+Squads: Alpha tanks, Bravo tanks, Charlie artillery (mortar), Delta scouts.
+
+> "ok I'm not playing another game. I had clearly directed squad 2 of tanks to set up a screen north of the artillery, but they are
+> simply not moving from their original default formation. CHeck me if I did something wrong here, I'm not giving them new orders
+> while this behavior exists"
+
+**Read:** Bravo (squad 2, tanks) never received an order: no `order` row and no `task` row for Bravo in the whole recording; all five
+sit at their spawn spots, `arrived`. The selection rows: Bravo selected at frame 601, **Charlie selected at frame 618 (17 frames,
+~0.3 s later)**, and the screen click at frame 763 went to **Charlie, the artillery** — which obeyed and drove its mortars north to
+screen at (-1, 59), where Charlie_3 has taken 90 damage. So the order reached the wrong squad; whether the switch to squad 3 was his
+key or a UI fault the recording cannot say (no key rows). Round 47 items: (a) record the key/click that changes the selection, so this
+is answerable; (b) a screen order to artillery should probably not march the mortars to the front (make the order fit the unit, or
+show it is going to the artillery); (c) make the order's recipient obvious at the moment he gives it.

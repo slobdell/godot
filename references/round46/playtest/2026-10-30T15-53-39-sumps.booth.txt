@@ -1,0 +1,14 @@
+0:00.0  PA       pa.welcome.13             Hello, and welcome to tonight's coverage from the Sumps. We have a full card, a full house, and a full medical wing on standby.
+0:07.7  VETERAN  color.teach.bunching.01   Bunched up like that, only the front two can shoot. Seven seconds before that pack hurt anybody.
+0:14.9  CALLER   caller.kill.73            The Law loses one, and this building absolutely loves it!
+0:21.4  CALLER   caller.hit.10             The tank round lands! You felt that one in the seats!
+0:22.5  CALLER   caller.kill.20            That is not supposed to happen! The Law's IFV just took that down!
+0:27.5  CALLER   caller.kill.45            Back to back! The Law take out the tank too!
+0:30.2  CALLER   caller.kill.01            The Law take out the scout!
+0:32.1  CALLER   caller.kill.109           It's a firefight, folks! Everybody is getting tagged!
+0:35.9  CALLER   caller.kill.66            It is chaos down there! I can't even keep up!
+0:39.6  CALLER   caller.kill.54            And just like that, we're even! Twelve a side!
+0:43.5  CALLER   caller.kill.144           Look at that floor! It's a scrapyard already!
+0:46.8  VETERAN  color.hit.10              Good shot. Patient. He waited for the side to turn.
+0:47.3  CALLER   caller.kill.171           Kill after kill, and the other side has no reply!
+0:50.8  VETERAN  color.kill.38             Artillery kill. The crew never saw who did it. That's the worst way, I think.
