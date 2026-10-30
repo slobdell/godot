@@ -93,16 +93,52 @@ Nothing at launch. If the bar fails, write in player terms what he would see ON 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-30, top = newest).** C1 DONE (adb5c1b13). C2 the planner BUILT behind `--camera-planner=on` (OFF):
-`game/camera/camera_planner.gd` + the rig's `_update_planner`; tests `tests/test_camera_planner.gd` (10, laptop 56/0 camera tests
-at 53de53ea4). Dev reads only on 7001-7006 (never a bar). In progress: tuning on dev seeds, then C3 (laptop budget) and Bar C1.
+**Report (2026-10-30 ~05:00, top = newest).** Planner built and judged; it stays **OFF** (`--camera-planner=on`): **Bar C1 FAILED
+37 of 38 lines** (only G7, the ambush REAR lane). **C1 v2 tried on dev seeds and parked as dev knobs (time-boxed)**; the choice
+between the two is now his (lesson 339; the orchestrator has the player-terms read). Branch tip 21fb16fc1: `--camera-planner=on` is
+byte-for-byte the planner Bar C1 read (re-run of bar seed 12201: summary, clicks, look identical); full check of 21fb16fc1 running.
 
-**Bar C1 SERIES RUNNING** on 3bf76e839 = GREEN builder3 (`make check exited 0`, 3483 passed / 0 failed, 28 targets ALL JUDGED;
-log ~/camera-r46/check-3bf76e839.log), started ~04:00 via ~/camera-r46/barc1.sh (builder3 J8; progress ~/camera-r46/barc1/run.log).
-**Bar C1 FILED** (workstreams.md *Bars (round 46)*, text there; candidate 3bf76e839, before any number on 12201-12248).
-C3 DONE: laptop budget (UHD 620, laptop preset, Terminus, windowed, under the lock, 1f3e6f111): planner 0.353 / 0.358 ms a frame
-mean (seeds 7001 / 7002, 60 s), step p99 0.88 / 0.93 ms, max 5.0 / 1.6 ms; the rig without it 0.57-0.65 ms mean, max 2.8-7.4 ms.
-One pose a frame on the laptop preset (`--camera-planner-rate=N` dev); native's C++ batch offered and declined (not needed).
+| Item | State | Evidence |
+|---|---|---|
+| C1 census | DONE | table below; `make camera-census`; reads native's `sel` rows when present |
+| C2 planner | DONE, OFF | `game/camera/camera_planner.gd` (one cost, weights in one table), rig `_update_planner`; 11 tests in `tests/test_camera_planner.gd` |
+| C3 budget | DONE | laptop UHD 620 laptop preset, 1f3e6f111, 2 x 60 s: 0.35 ms/frame mean, step p99 0.9 ms (target 0.5 / 1.5) |
+| C4 Bar C1 | FAILED 37/38 | 3bf76e839 GREEN builder3 3483/0; verdict `references/round46/camera/barc1-verdict-builder3-3bf76e839.txt` |
+| C1 v2 | dev only, parked | see *C1 v2* below |
+| C5 acceptance read | in progress | his Terminus replay both arms + census; laptop clips |
+
+**Bar C1 in his terms (as read, 48 attack runs an arm + 24 ambush + 24 retreat, builder3):** with the planner his squads and the
+street they drive stay on screen; a building hides half or more of his driving squad **half as long** (1011 -> 504 s); none of his
+selection on screen 31.6 -> 10.9 s; a new selection on screen as fast as today; the camera sits inside a building a third as long;
+fewer yaw reversals everywhere; no snaps; enemies on screen 57 -> 51 %. **The miss:** when an ambush opens fire from BEHIND the view,
+the gun comes on screen later (mean 4.7 -> 9.2 s counting never as 20 s; never in 9 of 28 shots v 4 of 37). From the sides it is
+faster than today.
+
+**D4 hits off screen 1.9 -> 2.0 % v his recording's 27 % (the orchestrator's question):** a different workload, same measure in
+spirit. The bar's autoplay selects the army or a group and never pans away by hand; its selection is the force in the fight, so hits
+land on what the camera frames. In his match he had zoomed in by hand to 36 m (100-103 s) and had his lone scout selected while the
+rest of the army fought elsewhere (104-143 s): 27 % of hits on his units were on units he had NOT selected and was not framing. The
+census counts every hit on any of his units; the bar's CameraLook counts the same (any of his units, on screen with a 60 px margin
+above the HUD), so the gap is the play, not the meter.
+
+### C1 v2 (dev 7001-7036 ambush 12 a lane, 7001-7006 attack; never a bar; builder3)
+Cause of the G7 miss, traced on dev 7025/7001 (frames): today's camera starts turning toward KNOWN enemies before they fire (bearing
+-80..-140 at the first shot); the planner's WIDE frame zoomed out to ~96 m and counted contacts behind his squad as "on screen" on the
+bottom edge under the card, so it did not turn until a shot, then a 180 deg turn takes ~4 s at the glide's 45 deg/s cap (the snap
+guard's limit). v2's parts, each a cost term (no rule): a gun firing at him costs W_GUN 6 off screen, judged as the danger camera
+judges it (within 25 deg of the view from his squad), not averaged, not held by a recent switch; contacts behind his squad never
+count as shown; a 10 % click margin; the planner scores the clamped focus. **Result: the rear lane comes back to about today's
+(mean 4.3 v 3.4 s, never 5 v 3) BUT the building win goes (hidden while driving 33.8 % v base 36 %, v1 16 %): being honest about
+the enemies behind turns the view back to them, across the blocks.** Lighter quiet contacts (action 3) did not restore it (36 %);
+bisect: the margin alone costs ~9 points of D1, the behind rule ~13; the clamp nothing. Dev reads at n = 6-12 move by +-1 s / +-10
+points between camera variants (the autoplay's fights change with the view), so no further tuning was trusted. Knobs (dev):
+`--camera-planner-w=gun:6,margin:0.1,behind:1,clamp:1` = v2; defaults = v1.
+
+**Questions for the lead (via the orchestrator; player terms):** the planner as read (v1) keeps his squads and their street in view
+and buildings out of the way half as often, but turns to an ambush firing from behind his camera about two seconds later than
+today; or today's camera. Recommended: v1 ON, `--camera-planner=off` the escape, because his three complaints are all about his own
+squads and the street, and the rear ambush is the danger look's case that v2 shows cannot be had without giving his squads back to
+the buildings.
 
 ### Plan (ordered; smallest foundation first)
 1. C1 census tool + table (below) — DONE. 2. C2 `CameraPlanner` (pure cost + candidate set, tests first), wired behind
