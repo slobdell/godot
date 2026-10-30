@@ -120,7 +120,10 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   its check on builder2 `>> remote: make check exited 0`, 27 targets, 26 passed, 2 NOT JUDGED (perf lines: not a judging machine),
   sim-baseline unmoved (`check_tip2/check-fc639d7e0.log`). **Series LAUNCHED 21:05 PDT** from `../godot-manoeuvre-s5`, every leg on
   builder0 light at J=4 (R45: builder2 is orders' G2 series; builder0 holds one series after its 19:52 OOM), driver `bars_s5.sh`,
-  evidence `~/overnight-manoeuvre/r45/bars_s5/`.
+  evidence `~/overnight-manoeuvre/r45/bars_s5/`. **Ship candidate prepared** (used only if D1 and every guard pass): `wip/manoeuvre-s5-on`
+  **6ec15dff0** in `../godot-manoeuvre-s5on` = fc639d7e0 + SEAT_BOUND / SEAT_ORDER / SEAT_LAST_OPEN default ON (`--seat-bound=off`,
+  `--seat-order=off`, `--seat-last=bound` the escapes) + the three default tests flipped + two bound-geometry tests pinning the open
+  seat off (3 files, 12 / 8 lines; seat tests 13 / 13 laptop; the wider tactics / element / orders families running locally).
 - **holdway (A6 v4 FAILED on contacts_far): the cause read on seed 11466 (laptop, trace):** under holdway the street verdict's "time to the
   middle" ran along each crew's ORDERED way; a crew of A ordered to a seat BESIDE it (west, at the order's first ticks) read 1.2 s to a
   middle 60 m away, became A's lead, and A (the squad in the open) was told to come on; B waited 85 s while A's far crews came through
