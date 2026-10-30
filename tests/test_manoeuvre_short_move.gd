@@ -133,6 +133,10 @@ func test_his_gorge_short_moves_corpus() -> void:
 		if only != "" and int(only) != s:
 			continue
 		var pose_i := (s - int(parts[0])) % GORGE_POSES.size()
+		var cycle := OS.get_environment("SHORT_POSES")  # round 46 (Bar shortfwd): a comma list of poses the block cycles through
+		if cycle != "":
+			var listed := cycle.split(",")
+			pose_i = int(listed[(s - int(parts[0])) % listed.size()])
 		var pose: Array = GORGE_POSES[pose_i]
 		var rng := RandomNumberGenerator.new()
 		rng.seed = s
