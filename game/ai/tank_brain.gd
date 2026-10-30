@@ -590,6 +590,10 @@ var _bursting := false
 ## CLEAR_LANE's chosen spot and when it was chosen (kept until reached or stale, so the tank settles to fire).
 var _lane_goal: Variant = null
 var _lane_goal_tick := 0
+## Round 46 (engage L1): the last `_lane_spot` read, for traces only: {"tick", "spots": [[x, z, why]...], "chose", "fallback"}.
+## `why` is "ok", "edge", "obstacle", "no_sight" or "friend:<name>". Filled only when LANE_READ is on (a trace).
+var lane_read := {}
+static var LANE_READ := false
 ## The last COVER_FIRE query: {"tick", "target" (name), "target_position", "result" ({hide, peek, target} or {})}.
 var _cover_fire_cache := {}
 ## N5: the tick the current real peek began (-1 = not peeking); a peek is held until the gun fires (PEEK_COMMIT_TICKS).
@@ -3641,19 +3645,33 @@ func _lane_spot(s: Dictionary, contact: Dictionary) -> Vector3:
 	var friends: Array = (s["allies"] as Array).map(func(ally: Dictionary) -> Dictionary:
 			return {"name": ally["name"], "position": ally["position"]})
 	var best: Variant = null
+	var spots: Array = []
 	for ring: float in [LANE_SEARCH * 0.6, LANE_SEARCH]:
 		for i in 8:
 			var angle := TAU * i / 8.0
 			var spot := me + Vector3(cos(angle), 0.0, sin(angle)) * ring
 			if absf(spot.x) > ARENA_LIMIT or absf(spot.z) > ARENA_LIMIT or map.inside_any(Vector2(spot.x, spot.z), 2.4):
+				if LANE_READ:
+					spots.append([snappedf(spot.x, 0.1), snappedf(spot.z, 0.1), "edge" if absf(spot.x) > ARENA_LIMIT or absf(spot.z) > ARENA_LIMIT else "obstacle"])
 				continue
-			if not map.clear_line(spot, target) or not FireLanes.in_line(spot, target, friends).is_empty():
+			if not map.clear_line(spot, target):
+				if LANE_READ:
+					spots.append([snappedf(spot.x, 0.1), snappedf(spot.z, 0.1), "no_sight"])
 				continue
+			var in_way := FireLanes.in_line(spot, target, friends)
+			if not in_way.is_empty():
+				if LANE_READ:
+					spots.append([snappedf(spot.x, 0.1), snappedf(spot.z, 0.1), "friend:" + String(in_way[0])])
+				continue
+			if LANE_READ:
+				spots.append([snappedf(spot.x, 0.1), snappedf(spot.z, 0.1), "ok"])
 			# Keep the range: the spot whose distance to the target changes least.
 			var range_change := absf(spot.distance_to(target) - me.distance_to(target))
 			if best == null or range_change < absf((best as Vector3).distance_to(target) - me.distance_to(target)) - 0.01:
 				best = spot
 		if best != null:
+			if LANE_READ:
+				lane_read = {"tick": game_match.tick, "spots": spots, "chose": [snappedf(best.x, 0.1), snappedf(best.z, 0.1)], "fallback": false}
 			return best
 	var blocker: Vector3 = me
 	for ally: Dictionary in s["allies"]:
@@ -3663,6 +3681,9 @@ func _lane_spot(s: Dictionary, contact: Dictionary) -> Vector3:
 	var side := Vector3(-lane.z, 0.0, lane.x)
 	if side.dot(blocker - me) > 0.0:
 		side = -side
+	if LANE_READ:
+		var step := me + side * 6.0
+		lane_read = {"tick": game_match.tick, "spots": spots, "chose": [snappedf(step.x, 0.1), snappedf(step.z, 0.1)], "fallback": true}
 	return me + side * 6.0
 
 
