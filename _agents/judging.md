@@ -809,5 +809,6 @@ inventory.{csv,md}` (770 lines, 332 with a noise estimate); `table.py` -> `table
 rows are on main as probe rows). Five of the round's lines carry noise and **none is inside it**. Within 1.645 se of going the other
 way: **A6 v4's guard 4 FAIL (-0.16 se: +2.54 a run v the filed +2.32, se 1.40)**, the round's closest line, so a re-read on fresh
 seeds could go either way. E1's G3 take-back FAIL (35/38 v 38/40) is a count, **Fisher one-sided p 0.48**: no evidence the rule
-changes take-back at all (R45.19 traced the one run it does make worse, 11326). Clear of the noise: S v5's Crossing yield + blocked
-(-2.10 se) and Locks wedged (-1.20 se, within 1.645) FAILs, A6 v4's deciding PASS (+3.60).
+changes take-back at all (R45.19 traced the one run it does make worse, 11326). S v5's Locks wedged FAIL (-1.20 se) is also within
+1.645 se; clear of it: S v5's Crossing yield + blocked FAIL (-2.10 se) and A6 v4's deciding PASS (+3.60). `probes.py` gains nothing:
+no round-45 pair's rows are probe rows on main.
