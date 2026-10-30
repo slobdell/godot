@@ -16,7 +16,9 @@ probe:
 	bash -c 'sleep \$(DELAY); exec > $log 2>&1; echo "TANK_SQUAD_ROOM code=FRESH2"; sleep \$(LIVE)' & host=\$\$!; \\
 	\$(call wait_own_line,host,$log,TANK_SQUAD_ROOM code=\\K\\w+,25); echo "found=\$\$found"; wait
 EOF
-run() { (cd "$root" && timeout 20 make --no-print-directory -s -f "$tmp/t.mk" probe "$@" 2>&1 | cat); }
+# Its own make, not the check's: an inherited MAKEFLAGS names the parent's jobserver fds, closed in here, and make[4] warns
+# "jobserver unavailable" into the output compared below (builder3's first check, round 45). MAKEFLAGS cleared.
+run() { (cd "$root" && timeout 20 env -u MAKEFLAGS -u MFLAGS -u MAKELEVEL make --no-print-directory -s -f "$tmp/t.mk" probe "$@" 2>&1 | cat); }
 out=$(run DELAY=0.5 LIVE=1)
 [ "$out" = "found=FRESH2" ] && ok "a late redirect beside a stale log: this host's room (FRESH2), not the stale one" || bad "late redirect" "$out"
 out=$(run DELAY=0.3 LIVE=0)
