@@ -344,6 +344,14 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.28 (2026-10-30 ~05:50) Bar L1b FAILS as filed on D1 (no gain); L1c on 12301-12348.** c0affabe0's code (series tree dcabca4dc =
+  + docs), builder0 light, native on, 11949-11996, 48 paired, 0 errors: D1 held for a friend 17.54 -> 18.28 s (+0.74, se 1.02) FAIL; D2
+  31/38 sooner or identical PASS; G1 friendly hits 4 -> 1 PASS; G2 1/1; G3 0.72 -> 0.74; G4 post max 5.3 m. Cause: spots clear by the MOVING
+  spread are so few in a crowd that the crew steps aside about as rarely as today; the burst re-check is what stops rounds into a friend.
+  **L1c:** L1's spot test (standing spread, which won D1 at -3.0 se) + L1b's per-round burst re-check (which removes L1's G1 cause); same
+  lines as L1b incl. G5/G6/G7; seeds 12301-12348 (new block; 11801-12296 are spoken for). One more try this round; if it fails, the feed
+  line and the burst re-check are considered on their own.
+
 - **R46.27 (2026-10-30 ~05:05) Bar A6 v5 (holdway) FAILS as filed on guard 2b alone; SHIPPED ON by the orchestrator under C46.2 /
   lesson 339 (its fourth bar).** 258ce00f0 GREEN builder0 (3475/0), 12049-12096, n 24, native ON, 0 SCRIPT ERROR (stream/manoeuvre
   95f44597f; `references/round46/manoeuvre/barsa6v5-builder0-258ce00f0/`). PASS: deciding side-street jam 397 -> 34 s (-30 s a run, z
