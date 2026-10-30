@@ -27,7 +27,7 @@ FRESH sessions. **Launch check:** `make remote T=check` on builder3 of cb1014bed
 
 **RUNNING (2026-10-30 ~07:00):** main 6e543adb9. **b7942f378 GREEN builder3 (3499/0, 28 ALL JUDGED, sim-baseline holds)** = launch + native a734c2296 / 1843eb6df / 33edf6eaf / a06d450df / 9d1580b77 + camera 21fb16fc1 (planner OFF) + **engage 1dd227534 (L1c: the lane move ON, R46.31/R46.32)** + its sim-baseline (7 arenas, adopted twice-agreeing). Then + **orders 12bd0c68f (Bar V1 PASS: the veto ON, R46.33)**: unchecked as a whole; batched with manoeuvre's ship candidate 8165af868 (shortfwd ON R46.25 + holdway ON R46.27, check queued) into ONE main check. Running: orders' V2 freeze a87b07cba (check, then series builder3); camera's ON candidate 796ecfc31 (merges only on his yes). Failed/OFF: S v6 (R46.17), C1 v1 G7 (his call R46.23), E6 dropped.
 
-**OPEN QUESTIONS FOR HIM (2026-10-30 ~04:20):** (1) the camera planner ON (R46.23; recommended ON) or today's camera; (2) S v6 settle-at-click: keep OFF (R46.17/R46.18; recommended) or overrule.
+**OPEN QUESTIONS FOR HIM (2026-10-30 ~04:20):** (1) the camera planner ON (R46.23; recommended ON) or today's camera; (2) S v6 settle-at-click: keep OFF (R46.17/R46.18; recommended) or overrule; (3) the tighter group file he picked (R46.2) makes the group arrive 1-2 s LATER with more bumping (R46.36): keep today's spacing (recommended) or pack anyway (`--group-pack=on` to try).
 
 **Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*), `df -h ~` every tick (lesson 341). Relay
 engage's L1 cause to manoeuvre if it asks for an idle blocker to step aside (manoeuvre's item 6); relay orders' V1 seam to native (N1).

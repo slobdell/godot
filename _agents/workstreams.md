@@ -388,6 +388,14 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.36 (2026-10-30 ~09:00) The tighter file (V4 / Bar V2) stays OFF: it makes the group arrive LATER; back to him.** Dev only (builder0,
+  n 1 a cell, base = main with the veto ON): factor 0.5 (dc452f797): depth behind the click 50.0 -> 25.1 m (his Gorge 65.5 -> 39.8 m), all-in
+  20.8 v 19.3 s (14 sooner / 10 same / 24 later of 48), contacts 59.6 v 41.9 a run, wedged 94.5 v 60.1 crew-s, his own click all-in 13.1 v
+  8.2 s; factor 0.75 (0edb74316): depth 37.5 m, all-in 19.6 v 19.3 s (14 / 13 / 19 of 46), contacts 82.6 v 41.9, never-in 5 v 2. Neither
+  gets the group in sooner-or-same (what he picked R46.2 FOR); no series spent. Bar V2's L1 was an instrument fault (the farthest place =
+  a 3-abreast front's flank, 58 m both arms). `--group-pack=on` stays in the code for him to try. **His question (recommended first):
+  keep today's spacing, or pack anyway for a shorter line at the cost of a slower, bumpier arrival.**
+
 - **R46.35 (2026-10-30 ~08:30) Shortfwd SHIPPED ON (main = + 105e2e118); holdway ON for the native game, OFF on the web export.**
   105e2e118: builder3 `make check exited 0`, 3504 / 0, web-smoke PASS, sim-baseline unmoved on all 13 arenas (the rule reads only his direct
   order). Holdway's cost (manoeuvre, builder3 light, stream tip 787a4bf79, sim-profile gangs v law, yard, 60 s, seed 7): native Traffic
