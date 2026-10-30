@@ -72,7 +72,45 @@ Nothing at launch. If Bar L1 fails, write in player terms what he would see ON v
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report so far (2026-10-30 ~02:00, round 46) — read this first
+### FINAL REPORT (round 46, 2026-10-30 ~07:40 PDT) — read this first
+
+**Shipped ON: his IFV behind his own squads steps to a clear lane and fires; when it can't, the feed says who is in the way.**
+Bar L1c PASSED (R46.31) and merged at **1dd227534** (main 0471b8e14). `--lane-clear=off` turns all of it off. In his terms: a crew
+(his or the CPU's) held by a squadmate in its line of fire steps aside and fires, ~5 s less held per blocked fight (L1c: 15.5 ->
+10.7 s, -4.2 se); a burst never walks into a squadmate (friendly hits 9 -> 4, fewer than today); "Hunters 1 holding fire: Guns 4 in
+the way" in the feed when it can't get a lane (crews in his selection, desktop controls); his hold / stop never moves it; at the post
+his move left it, one step <= ~4 m (R46.7).
+
+| Item | Outcome |
+|---|---|
+| L1 cause | DONE: three causes (post: no candidate + post refusal; attack: the order's +1.0 dilutes CLEAR_LANE's edge; spots tested weaker than the trigger) |
+| L2 lane move | SHIPPED (in L1c) |
+| L3 feed line | SHIPPED; looked at in his own replay (desktop); touch map has none (round 47) |
+| L4 bars | L1 FAIL G1 (a burst walked into a squadmate), L1b FAIL D1 (moving-spread spots: no gain), **L1c PASS** (R46.31 on G4's exact tie) |
+| L5 his read | DONE (below) |
+| E6 | DROPPED (R46.22), code removed (6f9dba2c5 + 749a8cf22) |
+| R46.19 dry_hop | SHIPPED in both arms: ENGAGE's direct hop never crosses water (his Locks bridge, the CPU side) |
+
+**L5, his acceptance read** (his Terminus replay as played, `--lane-clear=off`, v the shipped rule switched on at 103 s where his lone
+IFV starts, `--lane-clear-on-at=3090`; builder3, 63325f533's code = main + engage, native on, n = 1 replay): Green_Hunters_1's rounds
+104-120 s: **10 v 0** (as played, 3 rounds 104-139 s; 16 -> 26 by 120 s v 16 -> 19). After ~125 s the two games differ (the rule
+acts on every crew; no enemy is in its range in the ON game), so later seconds are not comparable. Logs `~/overnight-engage/r46/authority_l5*.log`.
+
+**What to playtest:** `make garage` (any map) or a skirmish on Terminus: put an IFV behind your own parked squads with an enemy in
+range; it should side-step and fire within a few seconds; select it when boxed in and read the feed. `--lane-clear=off` for today's game.
+
+**Round 47 notes (no code this round):** (1) 12328 (Locks, gang_tank at his post): the MOVER'S YIELD (phase `yielding`, manoeuvre's)
+drove a crew holding his post ~10 m toward the enemy to give way to a squadmate, then HOLD reversed it and the 6 m arrival radius
+parked it 6 m short: his post is moved by traffic (both arms identical; manoeuvre + engage's post rule). (2) The touch map has no
+`selection_state`, so no feed line on the phone layout. (3) A burst gun's later rounds were never re-checked before L1c (now under
+`--lane-clear`); the trigger checks the first round only. (4) The authority probe's stop max 5.1 m under his stop is pre-existing
+(both lane arms, 12301-12324).
+
+**Machines / numbers:** every series builder0 light, every check builder3, native on; evidence `~/overnight-engage/r46/` (laptop).
+**Merge notes:** granted shared edits this round: `game/tank/tank.gd` burst branch (R46.26), `tank_brain.gd` ENGAGE `dry_hop` (R46.19),
+`hud_messages.gd` (C46.5); native's twin (pair/native-l2) merged into this branch.
+
+### Report so far (2026-10-30 ~02:00, round 46) — superseded by the final report
 
 | Item | State |
 |---|---|
@@ -81,7 +119,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
 | L3 the feed line | DONE: code + tests 320fbcd11 / aeb32f603; LOOKED AT in his own Terminus replay (laptop window, rule on at 103 s, 9446e1903-era tree): "Hunters 1 holding fire: Wrenches 3 in the way" in the left info feed, the crew selected through RtsControls (`~/overnight-engage/r46/shots/line-1920x1080-t36*.png`); as history it truncates like every older line ("Hunters 1 holding fi..."). Phone: the touch map has no `selection_state`, so no line there (R46.26: round 47); the laptop would not size the window to a phone aspect (`--resolution` ignored by the replay script's window) |
 | L4 Bar L1 | **FAILED on G1** (fa9c6ff3a: friendly hits 1 -> 6, a burst walked into a squadmate; D1 / D2 PASS); not shipped (R46.24) |
 | L4b Bar L1b | **FAILED on D1** (no gain: moving-spread spots rarely exist); G1 PASS (friendly hits 4 -> 1) |
-| L4c Bar L1c | FILED before numbers (12301-12348, R46.28): L1's spots + the burst re-check; freeze check next |
+| L4c Bar L1c | **PASSED** (R46.31); **ships ON at 1dd227534** |
 | L5 his replay | dev read (below); the acceptance read waits for the shipped tree |
 | E6 | **DROPPED (R46.22)**: the staged case shows no drift (dev 7001-7012, n 9: <= 3.2 m, capped arm identical); code removed after L1b's series |
 
@@ -106,6 +144,13 @@ still being held, once per crew per 15 s (8 s read chatty on the dev probe: 4 li
 ### Bar L1c (FILED 2026-10-30 ~06:05) and L1b
 
 ### Bar L1b (FILED 2026-10-30 ~05:40, before any number on 11949-11996)
+
+- **Bar L1c VERDICT (2026-10-30 ~06:50 PDT): PASSES (R46.31 on G4's tie); ships ON at 1dd227534** (builder3 check 3486/0, only
+  sim-baseline moved). builder0 light, native on, 12301-12348, 48 paired, 0 errors. D1 PASS (rule's case n 41: held 15.53 -> 10.65 s,
+  -4.88, se 1.17); D2 PASS (31/41 sooner or identical, 11 strictly); G1 PASS (friendly hits 9 -> 4, kills 0 / 0); G2 2 -> 1; G3 hp
+  0.62 -> 0.53; G4 max 10.1 m in BOTH arms on 12328 (an exact tie, no lane step: R46.31), every rule-caused post move <= 5.4 m,
+  held_s post -2.52 (se 1.34); G5 PASS (E2's probe 24/24 seeds identical); G6 PASS (orders' default probe 48/48 rows identical); G7
+  PASS (native EQUAL on 1dd227534). Evidence `~/overnight-engage/r46/barl1c/` (laptop).
 
 - **Bar L1c HIS IFV FINDS A LANE; A BURST NEVER WALKS INTO A SQUADMATE (engage; filed 2026-10-30 ~06:05 PDT in streams/engage.md and here, BEFORE any number on 12301-12348; R46.28).**
 

@@ -102,6 +102,13 @@ aren't ours; stop only by a PID you started (lesson 336).
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar L1c VERDICT (2026-10-30 ~06:50 PDT): PASSES (R46.31 on G4's tie); ships ON at 1dd227534** (builder3 check 3486/0, only
+  sim-baseline moved). builder0 light, native on, 12301-12348, 48 paired, 0 errors. D1 PASS (rule's case n 41: held 15.53 -> 10.65 s,
+  -4.88, se 1.17); D2 PASS (31/41 sooner or identical, 11 strictly); G1 PASS (friendly hits 9 -> 4, kills 0 / 0); G2 2 -> 1; G3 hp
+  0.62 -> 0.53; G4 max 10.1 m in BOTH arms on 12328 (an exact tie, no lane step: R46.31), every rule-caused post move <= 5.4 m,
+  held_s post -2.52 (se 1.34); G5 PASS (E2's probe 24/24 seeds identical); G6 PASS (orders' default probe 48/48 rows identical); G7
+  PASS (native EQUAL on 1dd227534). Evidence `~/overnight-engage/r46/barl1c/` (laptop).
+
 - **Bar L1c HIS IFV FINDS A LANE; A BURST NEVER WALKS INTO A SQUADMATE (engage; filed 2026-10-30 ~06:05 PDT in streams/engage.md and here, BEFORE any number on 12301-12348; R46.28).**
 
   **The rule:** L1's lane move (CLEAR_LANE's edge after the order's base; the post step <= 4 m, R46.7; spots tested with the trigger's

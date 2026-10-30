@@ -208,6 +208,11 @@ func _run() -> void:
 		last_count = count
 		var here := _flat(crew.global_position)
 		moved = maxf(moved, here.distance_to(start))
+		if _flag("trace", "off") == "on" and tick % 15 == 0:
+			var cur: Dictionary = (orders.call("current", crew_name) as Dictionary)
+			print("LANE_STATE t=%d at=%s v=%.1f option=%s why=%s move=%s order=%s phase=%s hp=%d since_hit=%d" % [game_match.tick, here,
+					crew.estimated_velocity.length(), brain.choice.get("option", ""), brain.why, JSON.stringify(brain.move_order),
+					String(cur.get("verb", "")), String(Movement.state(crew).get("phase", "")), crew.health, crew.ticks_since_hit])
 		if mode == "post":
 			post_m = maxf(post_m, here.distance_to(start))
 		if crossing and lane_friend.is_alive() and going < 2 \
