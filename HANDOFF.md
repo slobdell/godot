@@ -4,13 +4,13 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-29 ~10:00 PDT (laptop clock) — **ROUND 45 PREPARED (box below; launch = the lead starts four CLIs: orders + manoeuvre on Fable, engage + native on Opus).** Earlier the same morning: round 44 closed, his Gorge playtest recorded._
+_Last updated: 2026-10-30 ~00:45 PDT — **ROUND 45 IS CLOSED. NEXT: prepare round 46 from the ▶ NEXT box below (do not reuse any round-45 session; all were cleared).** Main = the tip of `main`; its code = 96f199c45 GREEN builder3 (3470/0, 28 targets ALL JUDGED); later commits are docs, references, `tools/judge/lines_r45.py` (planner-pytest green on builder3 and the laptop) and two .uid files. **Default build box: builder3** (`devia@builder3`). Worktrees: main only. Builder folders: `godot` only on builder0 / builder2 / builder3. Main is unpushed (he pushes)._
 
 ## ▶ NEXT: ROUND 46 — prepare it from here (written at round 45's close, 2026-10-30 ~00:00 PDT; read this first)
 
 **Every round-45 session was cleared.** A fresh orchestrator prepares round 46 from this box, `game_design.md` *His playtest after
 round 45's ships* (verbatim, Terminus 2026-10-29 ~23:00, recording `references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl`)
-and the round-45 rulings R45.1-R45.30 in `workstreams.md`. **Builds: builder3 is the default** (`devia@builder3`, ~9-11 min a full
+and the round-45 rulings R45.1-R45.30 in `workstreams.md`. **First question for him (player terms, one recommendation): the group click — ship a VETO-only guard so a click like his Gorge one never sends a squad across the drop or back past its start, while every other click (all streets) stays exactly as today? Recommended: yes, as round 46's first orders item (R45.31, lesson 348).** **Builds: builder3 is the default** (`devia@builder3`, ~9-11 min a full
 check; `_agents/remote_builds.md`); builder0 is the reference box for budgets set on it; builder2 burst only.
 
 **His asks, in order (recommended split, Fable for the lingering ones per memory):**
