@@ -106,6 +106,15 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.6 (2026-10-30 ~01:40) Camera C1 read (stream/camera adb5c1b13, laptop, his Terminus recording, n 144 s with a selection); a `sel`
+  row for the recorder -> native.** (a) none of his selection on screen 2 s, under half 26 s (74-90 s: Guns strung 110 m, the 100 m frame
+  cap + the danger yaw turned S); (b) every ORDERED new selection on screen within 1 s; the code cause of his complaint: the glide's aim
+  hold (take_vision() starts the frame, but while his hand is on the mouse the automatic move coasts to a stop: it pans only after 1.5 s
+  at rest or a hit); (c) moving 116 s: view > 45 deg off his drive 64 s, buildings hide half+ of his shown selection 18 s (worst 70-74 s,
+  Wrenches N up the x -70 street, danger look SE, 136 deg off); hits on his units off screen 328/1214 (27 %). GRANT native:
+  `game/match/match_recorder.gd`, an additive `sel` row on each selection change (replays byte-identical), so selection without an order
+  shows in his next recording.
+
 - **R46.5 (2026-10-30 ~01:30) The V1/N1 seam (native's proposal, relayed to orders).** Facts (native): the fit's ~60 queries are
   gate_width_edge's per-step `Pathing.find_path`, already C++ (NativeGateWidth); the cost is the engine's A* (~80 us a query, builder2);
   G2's guard tests make no path query (pure terrain geometry). Seam: orders' `SelectionSquads.veto_failures(anchors, blocks, click,
