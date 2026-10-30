@@ -1106,6 +1106,8 @@ func order_selection(verb: String, extra: Dictionary = {}) -> String:
 ## laid abreast across the line of approach in the left-to-right order they stand in now (SelectionSquads.row), each
 ## squad's element travelling from ITS OWN position. Units in no squad of the selection move as a group of their own
 ## (today's direct path among themselves), standing beside the squads. Returns "" or the first refusal.
+## G2 (round 45): how far a guard seat may snap to standable ground before it is refused.
+const GUARD_SEAT_SNAP_M := 12.0
 ## Round 44 (orders O2): `--order-trace` prints each stage of a group order's layout (ORDER_TRACE <stage> squad:(x, z) ...);
 ## `order_trace_keep` (tests) keeps the same rows in `order_trace` for the last order. Diagnostic only: no decision reads it.
 static var ORDER_TRACE := OS.get_cmdline_user_args().has("--order-trace")
@@ -1168,9 +1170,72 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				var tank := game_match.tanks.get_node_or_null(NodePath(unit_name)) as Node3D if game_match != null else null
 				if ground == null and tank != null and tank.is_inside_tree():
 					ground = tank
-		anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"]),
-				func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
-		_trace_stage("ranks", squads, anchors)
+		# G2 (round 45): FIT FIRST. His plain click on two or more squads lays the body at most as many abreast as the clear
+		# ground across the approach at his click holds (SelectionSquads.guard_fit; two at most), the rest in ranks behind.
+		# The clear-ground read (one gate_width scan) is kept for the column below, which reads the same point.
+		var guard_on := SelectionSquads.GROUP_GUARD and ground != null and squads.size() >= 2 and blocks.size() >= 2 and not queue_leg
+		# The fit is read only at a click the ground takes: off the navmesh (a click on a prop, the fixture's foundry centre) the
+		# scan's drives snap to the mesh and read 0 m one side and a detour the other; such a click lays as today (the guard
+		# still reads the places).
+		var guard_fit_on := guard_on and SlotGround.is_standable(ground, Vector3(click.x, 0.0, click.z))
+		var guard_cap := SelectionSquads.MAX_ABREAST
+		var guard_heading := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"], drawn)  # the lay's
+		var guard_approach := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"])  # the way they come
+		var guard_widest := 0.0
+		var guard_sides: Array = []
+		for block: Dictionary in blocks:
+			guard_widest = maxf(guard_widest, float(block["width"]))
+		if guard_fit_on:
+			var drive_f := SelectionSquads.drive_on(ground)
+			var crosses_f := SelectionSquads.crosses_or_edge(SelectionSquads.crosses_on(ground))
+			var guard_across_f := Vector3(-guard_heading.z, 0.0, guard_heading.x)
+			guard_sides = RtsControls.gate_width_edge_on(ground, click, guard_across_f, drive_f, crosses_f, SelectionSquads.GROUP_SCAN_M)
+			# The fit reads the sides cut at the first point across a gap from his click (the scan threads a neck); the column
+			# below keeps the scan as it read it (G1 v9 unchanged).
+			var guard_cut := SelectionSquads.guard_trim_sides(click, guard_across_f, guard_sides, guard_approach, GATE_STEP_M)
+			guard_cap = SelectionSquads.guard_fit(guard_widest, guard_cut)
+			if ORDER_TRACE or order_trace_keep:
+				print("ORDER_TRACE fit at (%.1f, %.1f): clear [%.0f, %.0f] cut at a gap [%.0f, %.0f] widest %.1f -> %d abreast" % [click.x, click.z,
+						guard_sides[0], guard_sides[1], guard_cut[0], guard_cut[1], guard_widest, guard_cap])
+			if guard_cap < SelectionSquads.MAX_ABREAST and blocks.size() > guard_cap:
+				SelectionSquads.guard_fit_capped += 1
+		# G2: under the guard the body is laid on the ground it stands on (SelectionSquads.guard_lay): rank by rank from his click,
+		# each rank as wide as the clear ground there (two at most), every seat dry, on the map, standable within GUARD_SEAT_SNAP_M
+		# and reached from the click by ground; the squads the ground has no seat for hold where they stand. Today's ranks when
+		# no front is found.
+		var guard_fix := Callable()
+		var guard_width_at := Callable()
+		var guard_laid := {}
+		if guard_on:
+			var drive_x := SelectionSquads.drive_on(ground)
+			var crosses_x := SelectionSquads.crosses_on(ground)
+			var crosses_edge_x := SelectionSquads.crosses_or_edge(crosses_x)
+			var flat_click_x := Vector3(click.x, 0.0, click.z)
+			guard_fix = func(seat: Vector3, behind: bool) -> Variant:
+				var at := SlotGround.standable(ground, seat)
+				at = Vector3(at.x, 0.0, at.z)
+				if at.distance_to(Vector3(seat.x, 0.0, seat.z)) > GUARD_SEAT_SNAP_M:
+					return null
+				if Orders.clamp_to_arena(at).distance_to(at) > 1.0 or SlotGround.over_water(at):
+					return null
+				# A seat beside the click must be reached from it without a long way round (no place across a gap); a seat
+				# behind the click, on the squads' own side, is reached from where they stand.
+				if not behind and not SelectionSquads.reached_from(flat_click_x, at, drive_x, crosses_x):
+					return null
+				return at
+			guard_width_at = func(p: Vector3, across: Vector3) -> Array:
+				return RtsControls.gate_width_edge_on(ground, p, across, drive_x, crosses_edge_x, SelectionSquads.GUARD_RANK_SCAN_M)
+			guard_laid = SelectionSquads.guard_lay(blocks, click, drawn, Match.team_frame(team)["forward"],
+					guard_cap if guard_fit_on else SelectionSquads.COLUMN_ABREAST, guard_fix, guard_width_at)
+		if not guard_laid.is_empty():
+			anchors = guard_laid["places"]
+			SelectionSquads.guard_last_fit = guard_cap
+			SelectionSquads.guard_last_reach_m = float(guard_laid["reach"])
+			_trace_stage("guard_lay", squads, anchors)
+		else:
+			anchors = SelectionSquads.fit_inside(SelectionSquads.ranks(blocks, click, drawn, Match.team_frame(team)["forward"], guard_cap, guard_on),
+					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+			_trace_stage("ranks", squads, anchors)
 		# Round 37 (orders, R37.29): his group click on narrow ground lays a column of wedges along the approach.
 		# Round 38 (G1): only when one of today's places stands off the clear ground; and a shifted leg too (his route
 		# through a street), each squad's block where its previous leg ends (`queue_starts`), approached from there.
@@ -1204,8 +1269,13 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			var blocked := Callable()
 			if SelectionSquads.COLUMN_ALWAYS and not queue_leg:
 				blocked = func(p: Vector3, r: float) -> bool: return SelectionSquads.wet_or_deck(p, r) or not SlotGround.is_standable(ground, p)
-			var laid := SelectionSquads.column_lay(lay_blocks, click, approach,
-					func(p: Vector3, across: Vector3) -> Array: return RtsControls.gate_width_edge_on(ground, p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M),
+			var guard_across := Vector3(-guard_heading.z, 0.0, guard_heading.x)
+			var width_at := func(p: Vector3, across: Vector3) -> Array:
+				# G2: the guard's read at the click, once (the same point, the same scan).
+				if not guard_sides.is_empty() and p.distance_to(Vector3(click.x, 0.0, click.z)) < 0.01 and across.distance_to(guard_across) < 1e-4:
+					return guard_sides
+				return RtsControls.gate_width_edge_on(ground, p, across, drive_g, crosses_g, SelectionSquads.GROUP_SCAN_M)
+			var laid := SelectionSquads.column_lay(lay_blocks, click, approach, width_at,
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), anchors, path_back, reached, false, queue_leg, blocked)
 			_trace_stage("column_lay", squads, laid)
 			if not laid.is_empty() and SelectionSquads.COLUMN_TOWARD and SelectionSquads.column_sends_away(laid, lay_blocks, click):
@@ -1256,6 +1326,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if ground != null and not v10_column:
 			anchors = SelectionSquads.ground_cap(anchors, click, SelectionSquads.drive_on(ground), SelectionSquads.crosses_on(ground),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p))
+			# G2: a squad holding its spot stays on it (dev read 3: the cap pulled holders 9-71 m toward the click).
+			if not guard_laid.is_empty():
+				for i in mini(anchors.size(), (guard_laid["holding"] as Array).size()):
+					if bool((guard_laid["holding"] as Array)[i]):
+						anchors[i] = (guard_laid["places"] as Array)[i]
 			_trace_stage("ground_cap", squads, anchors)
 		# Round 34 (planner's O5, the Terminus 3-squad route): an anchor laid ON an obstacle (O3's narrower body put squad
 		# 3's at (32.7, 67.4), inside a block) can never be arrived at: every seat was pushed 11-19 m off it, the leader
@@ -1266,6 +1341,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 			anchors = SelectionSquads.ground_anchors(anchors, blocks,
 					func(p: Vector3) -> bool: return SlotGround.is_standable(ground, p),
 					func(p: Vector3, from: Vector3) -> Vector3: return SlotGround.standable_from(ground, p, clearance, from))
+			# G2: a squad holding its spot stays exactly on it (dev read 4: a holder whose centre sat in a prop was snapped 19 m).
+			if not guard_laid.is_empty():
+				for i in mini(anchors.size(), (guard_laid["holding"] as Array).size()):
+					if bool((guard_laid["holding"] as Array)[i]):
+						anchors[i] = (guard_laid["places"] as Array)[i]
 			_trace_stage("ground_anchors", squads, anchors)
 		# Round 35 (D3, C35.4): with the deploy step on, an AUTO body's halts are packed now by their seats (hull clearance,
 		# his correction 1) on the approach; the ranks above stand when the pack does not apply or finds no fit.
@@ -1306,6 +1386,28 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 							else (func(p: Vector3, r: float) -> bool: return SlotGround.near_deck(p, r)),
 					func(p: Vector3) -> Vector3: return Orders.clamp_to_arena(p), not v10_column)
 			_trace_stage("deck_clear", squads, anchors)
+		# G2 (round 45, orders O2): THE GROUP GUARD, the last word on where the body stands before the squads are dealt to it:
+		# a place across water or a pit from his click, through a neck, off the click line by more than the body's frontage,
+		# farther behind the click than its last rank, or behind its own squad's start, puts the fitted body's seats back
+		# (SelectionSquads.guard_failures; the seats of guard_lay above; his Gorge click, R45.1).
+		# A packed body (D3, `--pack=on`: compacted from the fitted ranks by hull clearance, each place with its packed halt) is
+		# read but never re-laid: the relay would drop the packed halts.
+		if guard_on and not guard_laid.is_empty() and anchors.size() >= blocks.size() and packed_shapes.is_empty():
+			var depth := 0.0
+			for i in blocks.size():
+				depth = maxf(depth, -(anchors[i] - Vector3(click.x, 0.0, click.z)).dot(guard_heading))
+			var failed := SelectionSquads.guard_failures(anchors, blocks, click, guard_heading, guard_cap, guard_widest, depth, guard_approach)
+			if not failed.is_empty():
+				# A later pass (the ground cap, standable ground, the deck clear) moved a seat off the body: the seats stand.
+				var relaid: Array[Vector3] = guard_laid["places"]
+				for i in mini(relaid.size(), anchors.size()):
+					if anchors[i] != relaid[i]:
+						packed_shapes.erase(anchors[i])  # D3: a packed shape belongs to the place it was packed on
+					anchors[i] = relaid[i]
+				column = false  # a re-laid body is the fitted body, not a column
+				column_ahead = Vector3.ZERO
+				SelectionSquads.guard_restored += 1
+				_trace_stage("group_guard", squads, anchors)
 		# Round 22 (O1b): squads whose vehicles would drive through each other to reach their places (his two
 		# interleaved threes on the Sumps) are dealt to the places by where the vehicles stand. Any verb with a point,
 		# a row or the body's ranks; the control groups are not rewritten.
@@ -1341,7 +1443,31 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				arc = func(p: Vector3) -> float: return float(drive_l.call(to, p))
 			# G1 v6: a squad keeps to its own side of the click (column_lay laid the far side's places past it).
 			var misplaced := Callable()
-			if column and SelectionSquads.SIDES_BOTH and SelectionSquads.columns_two_sided > two_sided_before:
+			# G2: a squad holding its spot keeps it and nobody else takes it (dev read 2: the swap sent a squad into a standing one,
+			# never in); the seated squads may still swap seats to uncross their drives.
+			# ...and a seated squad keeps its RANK (nearest in front): the swap may only trade seats within one rank, left for
+			# right (collinear drives along a file read as crossings and the swap sent his nearest squad to the tail, R44.23).
+			if not guard_laid.is_empty() and (guard_laid["holding"] as Array).size() >= squads.size():
+				var holding_g: Array = guard_laid["holding"]
+				var centre_g: Array = []
+				var rank_g: Array = []
+				var click_g := Vector3(click.x, 0.0, click.z)
+				var rank_of := func(p: Vector3) -> float: return snappedf(-(Vector3(p.x, 0.0, p.z) - click_g).dot(guard_heading), 0.5)
+				for i in squads.size():
+					centre_g.append(Vector3((blocks[i]["center"] as Vector3).x, 0.0, (blocks[i]["center"] as Vector3).z))
+					rank_g.append(rank_of.call((guard_laid["places"] as Array)[i]))
+				misplaced = func(i: int, p: Vector3) -> bool:
+					var flat_p := Vector3(p.x, 0.0, p.z)
+					if bool(holding_g[i]):
+						return flat_p.distance_to(centre_g[i]) > 0.5
+					for j in holding_g.size():
+						if bool(holding_g[j]) and flat_p.distance_to(centre_g[j]) < 0.5:
+							return true
+					if absf(float(rank_of.call(flat_p)) - float(rank_g[i])) > 0.5:
+						return true
+					# ...and never a seat behind where it stands (R45.6), as the lay's own hold rule.
+					return (centre_g[i] - click_g).dot(guard_approach) - (flat_p - click_g).dot(guard_approach) > SelectionSquads.GUARD_HOLD_BEHIND_M
+			elif column and SelectionSquads.SIDES_BOTH and SelectionSquads.columns_two_sided > two_sided_before:
 				var click_s := Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1]))
 				var far_of := {}
 				for i in squads.size():
@@ -1388,6 +1514,11 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 					stayed_f.append(p_f)
 				anchors = stayed_f
 				_trace_stage("column_stay_final", squads, anchors)
+		# V1 (round 46, R46.1): THE VETO, the last word on his plain group click's places. Today's places stand unless one would
+		# put its squad across a gap from his click or send it back (SelectionSquads.veto_failures); only those are re-dealt.
+		if SelectionSquads.GROUP_VETO and not SelectionSquads.GROUP_GUARD and ground != null and not queue_leg \
+				and squads.size() >= 2 and anchors.size() >= squads.size():
+			anchors = _veto(squads, anchors, click, drawn, ground, packed_shapes)
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
 		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
 				column and column_moved, today_places)
@@ -1608,6 +1739,65 @@ static var cleared_legs_back := 0
 ## Measurement: legs cut short so.
 const SHORT_LEG_M := 5.0
 static var legs_cut_short := 0
+
+
+## V1 (round 46, R46.1): the veto on a plain group click's final places (`anchors[i]` is `squads[i]`'s, each squad's start where
+## its vehicles stand now). No failing place: `anchors` returned untouched (no scan, no path query). Else today's ranks for the
+## body in file (`rank_slots_for`, one abreast, from the veto's front) are the SEATS, and each failing place is re-dealt to the
+## nearest free one the ground takes (SelectionSquads.veto_redeal); a packed halt (D3) moved off its place is dropped.
+## The spare seats the veto asks G2's body for beyond one a squad (the places that stand take some of the body's own).
+const VETO_SPARE_SEATS := 4
+
+
+func _veto(squads: Array, anchors: Array[Vector3], click: Vector3, drawn: Variant, ground: Node3D, packed_shapes: Dictionary) -> Array[Vector3]:
+	var starts: Array = []
+	for squad: Dictionary in squads:
+		starts.append({"center": _middle_of(squad["units"])})
+	var forward: Vector3 = Match.team_frame(team)["forward"]
+	var approach := SelectionSquads.approach_of(starts, click, forward)  # the way they come, never his drawn facing
+	var failed := SelectionSquads.veto_failures(anchors, starts, click, approach, forward)
+	if failed.is_empty():
+		return anchors
+	SelectionSquads.veto_clicks += 1
+	var blocks: Array = []
+	for squad: Dictionary in squads:
+		blocks.append(_squad_block(squad))
+	var flat_click := Vector3(click.x, 0.0, click.z)
+	var drive := SelectionSquads.drive_on(ground)
+	var crosses := SelectionSquads.crosses_on(ground)
+	var came := Vector3(approach.x, 0.0, approach.z).normalized()
+	var front := SelectionSquads.veto_front(click, came)
+	# A seat must be standable within GUARD_SEAT_SNAP_M, dry, on the map and clear of water / a deck's mouth for the squad's halt;
+	# a seat beside his click (not behind it along the approach) is also reached from it by ground without a long way round.
+	var halt_reach := SelectionSquads.min_step(blocks)
+	var fix := func(seat: Vector3, behind: bool) -> Variant:
+		var at := SlotGround.standable(ground, seat)
+		at = Vector3(at.x, 0.0, at.z)
+		if at.distance_to(Vector3(seat.x, 0.0, seat.z)) > GUARD_SEAT_SNAP_M:
+			return null
+		if Orders.clamp_to_arena(at).distance_to(at) > 1.0 or SlotGround.over_water(at):
+			return null
+		if halt_reach > 0.0 and SelectionSquads.wet_or_deck(at, halt_reach * 0.5):
+			return null
+		if not behind and not SelectionSquads.reached_from(flat_click, at, drive, crosses):
+			return null
+		return at
+	# The seats: today's own ranks for this body IN FILE (one abreast: his "in file, nearest in front"; dev read f6bb52518, his
+	# Gorge click: two abreast put the Hunters' seat 29 m off his click at the neck, inside the Spears' halt, and the Spears never
+	# settled), laid back from the front along the approach, with VETO_SPARE_SEATS spares (pure geometry; each is checked on the ground only when the re-deal reaches it, nearest his
+	# click first). Round 46 dev: G2's guard_lay as the seat source scanned the ground at every rank, 45-66 ms on the laptop
+	# for his Gorge click (native on; 10 ms with the veto off).
+	var seats: Array = SelectionSquads.rank_slots_for(blocks, front, drawn, forward, 1, blocks.size() + VETO_SPARE_SEATS)
+	seats.sort_custom(func(a: Vector3, b: Vector3) -> bool: return a.distance_to(flat_click) < b.distance_to(flat_click))
+	var seat_ground := func(p: Vector3) -> Variant:
+		return fix.call(p, (front - Vector3(p.x, 0.0, p.z)).dot(came) > SelectionSquads.GUARD_BEHIND_M)
+	var stand := func(p: Vector3) -> Variant: return fix.call(p, true)  # standable, dry, on the map (the squad's own side)
+	var out := SelectionSquads.veto_redeal(anchors, blocks, click, approach, forward, failed, seats, Arena.active, stand, seat_ground)
+	for i in failed:
+		if out[i] != anchors[i]:
+			packed_shapes.erase(anchors[i])
+	_trace_stage("group_veto", squads, out)
+	return out
 
 
 func _route_key(squads: Array) -> Array:
