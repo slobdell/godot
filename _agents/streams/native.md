@@ -56,6 +56,29 @@ Nothing.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-30 ~03:50 PDT). GREEN: 9d1580b77 builder3 (3473 / 0, 28 targets ALL JUDGED, `exited 0`); merge here: 9d1580b77
+(later commits are this Status only). On main already: a734c2296, 1843eb6df, 33edf6eaf, a06d450df.** In his terms:
+- **Big group clicks are already instant:** his 30-unit right click on main is 2.03 ms (ratio 56 v the 104 budget, builder3). The veto
+  adds ~0.1 ms (R46.13, no twin); orders cut his failing Gorge click from 45-66 ms to 10.5 ms in GDScript.
+- **His IFV's lane fix runs in C++ too, bit for bit (L2 twin):** proved on engage's freeze efe4d8ba9 (7536 decisions / 0; his Gorge and
+  Terminus replays byte-identical with v without the GDScript route).
+- **His short move to a wheeled crew drives forward in C++ too (shortfwd twin):** proved on manoeuvre's freeze adeb71696 (2360 drives
+  / 0; manoeuvre's corpus 14 / 14).
+- **His games replay as he played them, to the end:** a recording now stamps the rules its build ran (`rules`), replay-match turns
+  off a rule his build lacked (L2's `--lane-clear=off` for every older game), and the "drift" at Terminus' last second was his results
+  screen: his match replays bit-exact to its final hash. Recordings also log every selection change (`sel`, for camera).
+- **Builder reads can't silently time GDScript any more:** a fresh builder folder now builds the C++ library before any timing run
+  (my first big-click read was the GDScript fallback, 6.86 ms).
+**Backlog:** N1 DONE (seam agreed; the speed-up not needed at 2.03 ms; the memo (B) left as stretch, R46.13/orchestrator). N2 DONE so
+far: L2, shortfwd twins EQUAL; V1 / A6 v5 / R46.19 need none (read, recorded). N3 CLOSED (camera sliced, 0.35 ms on the laptop). N4
+OPEN: `lines_r46.py` scaffolded; lines land as the round's verdicts are ruled (none ruled yet); G2's D1 / D5b marked VOID in lines_r45.
+N5 DONE (builder3 27 % disk; laptop ~360 MB freed into a tarball). Stretch DONE as a proposal (round 47: ElementPlan.build ~1.1 ms a
+tick, then build_situation 1.51 ms; R46.16).
+**What to playtest:** nothing new on screen from native. To re-read his games: `make replay-match RECORDING=references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl REPLAY_SECONDS=150 CREWS=all`
+**Next:** re-prove any twin on a freeze that moves (engage's L1, manoeuvre's shortfwd); lines_r46 as verdicts land; re-render the table
+at the close. **Merge notes:** pair/native-l2 (in engage's freeze) and pair/native-shortfwd (in manoeuvre's) carry stream/native
+commits; traffic.gd's shortfwd gate line and tank_brain.gd's decide guard are removed only on those pairs.
+
 **Report (2026-10-30, start).** Started from main 7189e3ff3 (code = cb1014bed; the orchestrator's launch check runs it on builder3; no
 baseline check of mine).
 
