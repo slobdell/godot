@@ -133,6 +133,16 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.10 (2026-10-30 ~02:30) V1 gains `forward`; two round-45 instrument faults (orders, 47cae3725).** `veto_failures(..., approach,
+  forward, data)`: "sent back" = farther from his click than it stands AND (> 10 m behind along the approach OR > 5 m behind toward its own
+  base edge on a click toward the enemy); on the approach-only test his Gorge Hunters PASSED ((-76, 101): level with his click along the
+  diagonal approach, 61 m W and 8.4 m N of their start). Laptop lab, his click: Spears on it, Hunters 33 m behind, Wrenches 66 m behind, one
+  file on his side. Because more clicks can fail, Bar V1 reports per arena how many clicks the veto touches and guards part B's street
+  lines on the touched street clicks (ARM <= BASE + 2 se). **Faults (correct R45.31's record):** (1) `orders_probe_geometry` printed
+  ORDERS_GEOMETRY before reading the anchors, so per-squad `across_gap` was always false: **G2's D1 "0 across a gap" was vacuous**; (2) G2's
+  his3 cell passed `--probe-stand` to nothing (starts mode "recorded" had no case): **D5b's squads stood at the army's centre, not his
+  recorded starts.** Both fixed on stream/orders; native marks them not-evidence in the judging table.
+
 - **R46.9 (2026-10-30 ~02:10) V1's seam final (orders, stream/orders a9fb6c0ef):** `SelectionSquads.veto_failures(anchors: Array[Vector3],
   blocks: Array, click: Vector3, approach: Vector3, data := Arena.active) -> Array[int]` (no `ground`: V1 makes no path query; empty = click
   untouched), from `veto_front` and `veto_refuses` (behind start > 10 m along the approach AND farther from the click than the start, OR
