@@ -102,6 +102,33 @@ aren't ours; stop only by a PID you started (lesson 336).
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar shortfwd FILED (manoeuvre, 2026-10-30 ~03:10 PDT, stream/manoeuvre 34ed9ac66, before any number on 12121-12144; frozen
+  wip/manoeuvre-shortfwd-bar cec4e499f = native pair 4ac0236bd + SHORT_POSES; recorded verbatim by the orchestrator).** Verbatim:
+
+  > **Bar shortfwd, his short move to a wheeled crew drives toward his click, not away (manoeuvre M5; engage's E5 relay R45.21; C46.1, C46.3,
+  > C46.4).** ONE arm, **sf** = `--traffic-on=shortfwd` v **base** (today, no flag), on a FROZEN tree = `wip/manoeuvre-shortfwd-bar`
+  > **cec4e499f** (= native's pair/native-shortfwd 4ac0236bd, the C++ twin EQUAL: 2360 drives / 0 mismatches, my corpus 14 / 14 rows
+  > byte-identical native v GDScript; + one test-only commit, `SHORT_POSES`), at the hash whose `make remote T=check` reads exited 0. Native
+  > ON and the C++ drive in BOTH arms (`native_drive: true` in every row: the line that failed the dev read's fairness). **The rule (C46.1):**
+  > a player's direct move (brain._his_order) to a wheeled crew whose goal is within 3 turning circles and within 100 deg of the nose, when
+  > Steering asks to reverse and the forward arc to the goal's side is clear within the planner's reach, takes that forward arc (no k-turn
+  > plan); an arc hit within reach keeps today's planner (the drop's edge). **Workload:** `make test FILTER=short_move SHORT_CORPUS=on`, his
+  > Gorge recording's seven scout poses (posed by `replay-match --trace`, staged at rest, jittered by seed). **Deciding block 12121-12132,
+  > `SHORT_POSES=0,2`** (his two clicks inside the rule's reach: 83.7 s and 87.0 s), 12 paired cells. **D1** metres driven away from his
+  > click (away_max_m): paired mean ARM - BASE <= -2 se AND pooled ARM < BASE; identical cells count as identical, not losses (lesson 344).
+  > **Exercised floor:** OFF reverses (reverse_ticks > 0) in >= 4 of the 12 cells, else INCONCLUSIVE. **Guards, deciding block:** G1 arrival
+  > tick ARM sooner or identical in >= 10 of 12 (strictly sooner reported), no cell more than 30 ticks (1 s) later, never-arrived ARM <= BASE;
+  > G2 metres off the navmesh (the drop) ARM <= BASE + 0.25 m in every cell. **Guard block 12133-12144, `SHORT_POSES=1,3,4,5,6`** (his other
+  > five clicks, outside the reach): G3 every cell arrival ARM <= BASE + 30 ticks and away ARM <= BASE + 0.5 m, G2 as above. **Other
+  > streams' probes (C46.3):** G4 the default `make orders-probe` byte-identical base tree v frozen tree (the rule is OFF by default); G5
+  > engage's authority probe on 12121-12144 (`engage-authority-probe AUTH_ARM=on`, `AUTH_PROBE_FLAGS` "" v `--traffic-on=shortfwd`):
+  > `authority_table.py --pair` lines each within BASE +/- 1.645 se. G6 the frozen tree's check exited 0; G7 no SCRIPT ERROR. **What it could
+  > break (named first):** a scout that circles its point instead of arriving (the yard lab's orbit at 5 m / 56 deg: G1); a forward arc
+  > over the drop's edge (G2); his other clicks (G3). **C46.6:** the rule reads only his direct order (a CPU crew never has `_his_order`), so
+  > it is the player's by construction, like E2. **Ships ON** (`shortfwd` out of `Traffic.DEFAULT_OFF`, `--traffic-off=shortfwd` the escape)
+  > only if D1 and every guard pass. **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_sf.sh` from `../godot-manoeuvre-sf`;
+  > evidence filed under `references/round46/manoeuvre/barssf-builder3-cec4e499f/`. **Dev history (never a bar):** 7001-7007 (Status above).
+
 - **Bar A6 v5 FILED (manoeuvre, 2026-10-30 ~02:35 PDT, stream/manoeuvre 97403a089, before any number on 12049-12096; recorded verbatim
   by the orchestrator).** Verbatim from the brief:
 
