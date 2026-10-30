@@ -1,6 +1,6 @@
 # Workstreams: the current round
 
-> **ROUND 45 CLOSED 2026-10-30 (four streams; main 96f199c45 GREEN builder3 ALL JUDGED). E2 and backout shipped ON; G2 per R45.25 (HANDOFF).** Round 46 is prepared from HANDOFF's NEXT box.
+> **ROUND 45 CLOSED 2026-10-30 (four streams; main 96f199c45 GREEN builder3 ALL JUDGED). E2 and backout shipped ON; G2 FAILED on the streets and stays OFF (R45.31).** Round 46 is prepared from HANDOFF's NEXT box.
 
 ## Round 45: four streams (prepared 2026-10-29; CLOSED 2026-10-30; briefs in `streams/archive/round45/`)
 
@@ -472,6 +472,13 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   (wip/manoeuvre-backout-on 466d96191: `backout` out of Traffic.DEFAULT_OFF + the default test flipped; `--traffic-off=backout` the
   escape). **Owed before it counts as shipped:** the sim baseline re-recorded (CPU v CPU changes: the CPU's War Rigs back out too,
   C45.5) twice on builder0 and adopted, then ONE builder0 main check (perf JUDGED), batched with engage's R45.24 fix.
+- **R45.31 (2026-10-30 00:30) Bar G2 FAILS as filed; `--group-guard` stays OFF (R45.25: a part-B street failure is not an exempt
+  kind).** builder3, frozen 03d1ddbc5, 11201-11248, BAR_DONE 00:26, `VERDICT Bar G2: FAIL (A False, B False, C True)`. Every deciding
+  line PASS (D1-D6, D5b); part A contacts 32293 -> 23190 PASS; part A all-in / never-in / held guard FAIL on some cells; part B FAIL:
+  places outside the corridor 7 -> 33, metres outside 430 -> 1934, contacts 11251 -> 17804, Terminus 5-click all-in 11.7 -> 47.4 s,
+  twitch / end-foreign on Locks and Terminus; part C fights PASS. Cause (R45.5's named risk d): the guard lays the file straight back
+  from the click, not along the street. Round 46: a veto-only guard first (re-lay only the clicks today's lay sends across a gap or
+  behind a start), the street lay after. Taken to him in HANDOFF (he is asleep).
 - **R45.30 (~22:55) The lead's garage map pick -> engage.** GRANT: `game/garage/**`, `mk/garage.mk` and the garage's tests (unowned
   this round). (1) `make garage ARENA=` pass-through, its own green commit, merged alone; (2) a MAP choice in the garage screen beside
   the opponent pick, remembered in GarageSettings. His words in `game_design.md`.

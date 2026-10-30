@@ -22,7 +22,7 @@ check; `_agents/remote_builds.md`); builder0 is the reference box for budgets se
 2. **His lone IFV held fire for ~36 s (engage's trace, game_design.md): his own vehicles in its line of fire.** `Gunnery._clear_to_fire`
    holds a shot whose lane crosses a friendly; CLEAR_LANE found no lane in the crowd for ~20 s. Round 46: a lane-clearing move that
    works in a crowd + say it on screen ("holding fire: Guns 4 in the way"). Owner: an engage stream (gunnery / brain's CLEAR_LANE).
-3. **The group click (G2):** see the G2 line in the CLOSED box below (shipped ON, or the trade waiting on him). Either way: the
+3. **The group click (G2): FAILED on the streets, OFF (CLOSED box below, R45.31).** Ask him first thing (one question, player terms): ship the veto-only guard (recommended) so Gorge-type clicks are fixed now while the street lay is redone. Either way: the
    travel/halt spacing (coil ranks 33-50 m deep make a 3-4 squad file 66-150 m long) is a FEEL QUESTION for him in player terms, and
    the fit's ~60 path queries at his click (4.9 ms) are orders' design item.
 4. **Manoeuvre's starting points (all OFF code on main):** seat bound S v5 (Crossing self-yield: deal seats whose paths do not cross;
@@ -51,7 +51,20 @@ its merge + check, see the G2 line). Rulings R45.1-R45.30 in `workstreams.md`; b
 | Builds | builder3 the default (~10 min a full check) | |
 
 **Not shipped (OFF, causes in rulings):** seat bound S v4/S v5 (R45.17, R45.28: Crossing self-yield), holdway A6 v4 (R45.20), the stop
-cap E6 (R45.29), shortfwd (parked). **G2:** _pending at writing; filled in below when the series lands._
+cap E6 (R45.29), shortfwd (parked). **G2 (the group-click guard): FAILED as filed; stays OFF (R45.31); his call in the morning.** Frozen 03d1ddbc5, builder3 (moved from
+builder2 after its preemption, before any row), 11201-11248, BAR_DONE 00:26: `VERDICT Bar G2: FAIL (A False, B False, C True)`
+(`~/orders-r45/bar3/run.log` on the laptop). **Every deciding line PASSED** (D1 nobody across a gap, D2 nobody sent back, D3, D4, D5,
+D5b his exact Gorge click held 0 every run, D6), part A friendly contacts 32293 -> 23190, part C fights PASS. **What failed is the
+streets (part B, G1 v9's corridor lines), outside R45.25's two exempt kinds:** places outside the street he clicked 7 -> 33, metres
+driven outside it 430 -> 1934, street friendly contacts 11251 -> 17804, and on Terminus 5-squad clicks the last squad all-in 11.7 ->
+47.4 s; part A's all-in / never-in / held guard also failed on some cells. **In his terms:** with it ON, on open ground and at a gap
+(his Gorge case) every squad lands on his side, in one file at his click, nobody sent back; but in a city street the file is laid
+straight back from his click instead of along the street, so squads park on the next street over and the last one takes ~4x longer
+to arrive. **Recommendation for round 46's first orders item (smallest ON change, lesson 339): a VETO-only guard** — keep today's lay
+unless it would put a squad across a gap/water/neck or behind its own start (exactly what he saw on Gorge), and re-lay only those
+clicks; a narrow bar (D1/D2/D6 + his Gorge click, guards = part B's street lines unchanged v base). The full G2 lay stays behind
+`--group-guard=on` for the streets fix (lay ranks along the street corridor, G1 v9's logic). His exemption reading (R45.25 strict)
+was not what failed it: the street lines were.
 
 ## ⚠ THE LAPTOP FROZE (~17:00-18:00 PDT, 2026-10-29): every session restarted mid-round
 
