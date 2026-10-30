@@ -28,6 +28,9 @@ check; `_agents/remote_builds.md`); builder0 is the reference box for budgets se
 4. **Manoeuvre's starting points (all OFF code on main):** seat bound S v5 (Crossing self-yield: deal seats whose paths do not cross;
    R45.28), holdway (the squad's way, not the crew's station; R45.20), shortfwd (his short move inside the turning circle reverses
    away first; edge case at the drop; parked), backout follow-ups (k-turn guard reported, not judged).
+4b. **Judging table (native, 7270eccfc): A6 v4's guard-4 FAIL was the round's closest line (-0.16 se: +2.54 a run v +2.32)** — with
+   holdway's squad-way fix (R45.20) a fresh-seed re-read is cheap and could pass; E1's G3 take-back FAIL had no evidence of any effect
+   (Fisher p 0.48); S v5's Locks wedged within 1.2 se.
 5. **Engage's stop cap E6 (R45.29):** the one-condition fix (fixed mount + wheels) + a staged workload + fresh seeds, or drop it.
 
 **Before launch:** `df -h ~` (the laptop froze at 96 %, lesson 341); builder3 idle; seeds start at 11801.
@@ -100,7 +103,7 @@ check is RUNNING on BOTH builders** (~/orch-r45/main-check-2e3bc4620-builder0.lo
 ~/tank_squad; full check 525 s (v ~55 min builder0), sim-baseline hashes IDENTICAL to builder0's. Gaps: no Chrome (web-smoke red until
 the lead installs it), no perf nominal yet (native records it). Becomes the default REMOTE_HOST after tonight's frozen series.
 
-**MAIN NOW (2026-10-30 ~00:10 PDT): 96f199c45 GREEN builder3** (the default box): 3470 passed / 0 failed, 28 targets ALL JUDGED,
+**MAIN 7270eccfc inherits 96f199c45's check + native's planner-pytest green on builder3 (the only check-read file that differs is tools/judge/lines_r45.py).** **MAIN NOW (2026-10-30 ~00:10 PDT): 96f199c45 GREEN builder3** (the default box): 3470 passed / 0 failed, 28 targets ALL JUDGED,
 sim-baseline unmoved, `>> remote: make check exited 0` (~/orch-r45/main-check-96f199c45-builder3.log). It carries every round-45 merge
 except G2 (still in its series): backout ON, E2 + R45.24, native N1/N2/_assign/builder3/watchdog/memory guard, garage ARENA= + the MAP pick,
 manoeuvre's round-46 OFF code, builder3 as default.
