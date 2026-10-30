@@ -62,7 +62,8 @@ _(worker keeps this current: report at the top, every number with commit, machin
 check). **R45.24 DONE** f4f2dd6ed (replay-match's authority default; proven on main + it). **N3:** B2 twin 04ce3abe9; manoeuvre's
 skip pair 5ed7788ef (34/0, + the cadence mirror); **B3's freeze 26b1425e7 EQUAL** (native-proof, 34/0, probe 60/60). **N4:**
 lines_r44 (B1), lines_r45 (B2 final, S v4); G2 / E1 / A6 v4 land with their verdicts. **N5 DONE.** **Stretch DONE.**
-**Open:** the G2 three-seam re-proof at orders' final freeze; control-timing judged at the round's close (orchestrator).
+**G2 three-seam re-proof on the FREEZE 03d1ddbc5 + main ceb1386e8: EQUAL guard on and off** (builder2; below). **Open:**
+control-timing judged at the round's close (orchestrator); E1 / G2 / A6 v4 lines with their verdicts.
 
 **Plan (order kept from the backlog; reasons):** N1 watchdog -> N2a gate_width C++ -> N2b untangle_whole C++ (GRANTED R45.3,
 because gate_width alone cannot reach the budget, below) -> N3 twins as manoeuvre/orders/engage ship -> N4 lines_r45 + judging ->
@@ -171,7 +172,16 @@ assign_native.cpp; `BrainSwitches.native_assign` (ON). builder2: test_native_ass
 builder2 restarted under B3's chain after its native-proof had finished (its verdict read from the builder's own log); the scratchpad
 in /tmp was wiped (probe_pairs.py restored from `references/round45/native/n2-orders-probe-*`).
 
+**G2 final re-proof (builder2, native ON):** pair/native-g2-final **89733bdc9** (03d1ddbc5 + ceb1386e8): 83 / 0; twins assign 3000 / 0,
+gate_width 360 / 0, untangle 1200 / 0; orders probe native on v off **192/192 guard ON, 192/192 `--group-guard=off`** (on v off guard
+differ 192/192). **6562c6beb** (+ G2's two gate_width reads through gate_width_edge_on, for orders' ship commit): the same, and its
+768 rows = the unswapped tree's. **30-unit click, same box and reference (0.079 / 0.080 ms): 10.20 ms ratio 129.1 without the swap,
+6.21 ms ratio 77.6 with it.** CORRECTION: the earlier "~1 ms" for the swap (20.53 v 19.59 ms) compared two runs whose reference
+moved 0.116 -> 0.185 ms; the honest saving is ~4 ms, the difference between over and under budget.
+
 ### Requests to other streams
+- **orders (G2 ship commit):** take the two lines at rts_controls.gd ~1192 / ~1227 (gate_width -> gate_width_edge_on(ground, ...)),
+  proven EQUAL on 6562c6beb (above).
 - **orders:** rts_controls.gd: one line in `_order_squads`' column_lay call (`RtsControls.gate_width` -> `gate_width_edge_on`,
   same Callables) and the new `gate_width_edge_on` above `POST_SPAN_M`. N2b: one guarded seam line at the top of
   `SelectionSquads.untangle_whole` (R45.3).
