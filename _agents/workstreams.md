@@ -209,6 +209,14 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.12 (2026-10-30 ~03:45) The replay stamp merges before L2 ON.** Native 882c62d7c: the match row stamps `rules: {lane_clear}`;
+  replay-match / playtest-report add `--lane-clear=off` for a recording with no stamp or one played with L2 off (REPLAY_FLAGS or the
+  match's own flags win). On efe4d8ba9 + 882c62d7c his Gorge replays 20/20 within 3 m to 107 s again (11/20 from 50 s without it);
+  Terminus 17/20 at 151 s as main. **Order: 882c62d7c green and on main BEFORE engage's L1 merge**, or a stamp-less recording on an L2-ON
+  build would replay with lane-clear off. L2 twin re-proved EQUAL on efe4d8ba9 (13/0, decide 7536/0, his replays 426/426 + 2071/2071).
+  Main d31de4694 = + native 33edf6eaf (L2's C++, no-op until `--lane-clear` lands; lines_r45 G2 D1/D5b VOID; INHERIT its builder3 green
+  3472/0 ALL JUDGED).
+
 - **R46.11 (2026-10-30 ~03:20) L2's twin EQUAL; engage freezes on the pair; pre-L2 replays need `--lane-clear=off`.** Native: engage's
   9446e1903 (GDScript lane cases) v pair/native-l2 165bea71f (all native): his Gorge 426/426 and Terminus 2071/2071 replay rows
   byte-identical (`references/round46/native/l2-twin-proof-builder3-165bea71f/`, stream/native 33edf6eaf); unit sample 7536 decisions / 0

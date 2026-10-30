@@ -25,7 +25,7 @@ Split, ownership, contracts C46.1-C46.8, rulings R46.1-R46.4 and the seed regist
 FRESH sessions. **Launch check:** `make remote T=check` on builder3 of cb1014bed's code (log `~/orch-r46/launch-check-cb1014bed.log`);
 **GREEN: `>> remote: make check exited 0`, 3470 passed / 0 failed, 28 targets ALL JUDGED, 676 s, sim-baseline unmoved (builder3, cb1014bed's code = 96f199c45 + lines_r45).** Laptop disk 83 % at prep (20 G free): five worktrees ~6 G.
 
-**RUNNING (2026-10-30 ~03:20):** main a9c702bb7 = launch + native a734c2296 (remote.sh native-fresh guard) + native 1843eb6df (the sel row R46.6; INHERIT its builder3 green 3472/0 ALL JUDGED). Bars filed: S v6 (manoeuvre), V1 (orders), L1 (engage; frozen tree efe4d8ba9 = L2 + native's twin, check queued). Rulings R46.5-R46.10. Laptop disk 90 %: manoeuvre asked to prune ~/overnight-manoeuvre r39-r45 (2.4 G).
+**RUNNING (2026-10-30 ~03:45):** main d31de4694 = launch + native a734c2296 (native-fresh guard) + 1843eb6df (sel row R46.6) + 33edf6eaf (L2's C++ twin, no-op on main); each INHERITs its builder3 green (3472/0 ALL JUDGED). **Merge order: native 882c62d7c (replay stamp, R46.12) BEFORE engage's L1.** Bars filed: S v6 (manoeuvre), V1 (orders), L1 (engage; frozen tree efe4d8ba9 = L2 + native's twin, check queued). Rulings R46.5-R46.10. Laptop disk 90 %: manoeuvre asked to prune ~/overnight-manoeuvre r39-r45 (2.4 G).
 
 **Orchestrator, after launch:** the round loop (`orchestration.md` *The orchestrator's loop*), `df -h ~` every tick (lesson 341). Relay
 engage's L1 cause to manoeuvre if it asks for an idle blocker to step aside (manoeuvre's item 6); relay orders' V1 seam to native (N1).
