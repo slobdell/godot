@@ -70,7 +70,11 @@ _(worker keeps this current: report at the top, every number with commit, machin
 All legs read (evidence `references/round46/manoeuvre/barss6-builder3-4e72c5470/`): group G5-G7 identical PASS; G1 corridor 180 / 180
 byte-identical PASS; fights G1-G3 PASS; **fights G4 kill share worst move 0.040 (line 0.03) FAIL** (Green 0.529 -> 0.489, 18 fights; S
 v4's old miss); 0 SCRIPT ERROR. The orchestrator's condition (R46.15: ON only if the last legs pass) withdraws the recommendation.
-Ship candidate `wip/manoeuvre-seat-on` e8051bbde stays ready if he says yes anyway. Frozen tree removed (lesson 341).
+Ship candidate `wip/manoeuvre-seat-on` e8051bbde is **NOT green: its builder3 check exited 2 (3459 passed / 15 failed + tactics-drills)**.
+The 15 tests encode today's OFF seat geometry; three are NO-CROSSING invariants the ON default breaks (`test_formation_slots::
+test_paths_never_cross`, `test_tactics_seat_order::test_sum_first_paths_never_cross`, `test_tactics_settle::
+test_a_sideways_plain_move_seats_every_crew_without_crossing_paths`), so even on his yes it needs a test-by-test read (some a real
+regression on staged moves), not a one-commit flip. Not pursued (R46.17) unless he overrules. Frozen tree removed (lesson 341).
 
 #### The deciding leg (read 02:35, before the other legs)
 
