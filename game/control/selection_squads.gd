@@ -817,7 +817,7 @@ static func _lay_ranks(blocks: Array, by_along: Array, flat_click: Vector3, ahea
 			var aside := (float(k) - (abreast - 1) * 0.5) * (widest + GAP_M)
 			result[int(rank_members[k][1])] = clamp.call(centre + rank_across * aside)
 		start += abreast
-		behind += step if start == 0 else pack_step(step, blocks)  # V4: the front rank's halt keeps today's room
+		behind += pack_front_step(step, blocks) if start == 0 else pack_step(step, blocks)  # V4
 	return result
 
 
@@ -1473,7 +1473,7 @@ static func rank_slots_for(blocks: Array, click: Vector3, facing: Variant, fallb
 		if r + 1 < sizes.size():
 			var step := maxf(rank_step(size, sizes[r + 1], slot_width, slot_depth, nest, _nest_clearance(blocks)), min_step(blocks))
 			var full := halt_clear_step(step, size, sizes[r + 1], slot_width, blocks)
-			behind += full if r == 0 else pack_step(full, blocks)  # V4: the front rank's halt keeps today's room
+			behind += pack_front_step(full, blocks) if r == 0 else pack_step(full, blocks)  # V4
 	return slots
 
 
@@ -1908,7 +1908,7 @@ static func _guard_attempt(ctx: Dictionary, squeeze: float) -> Dictionary:
 		if next_size <= 0:
 			break
 		var full := halt_clear_step(maxf(rank_step(size, next_size, slot_width, slot_depth, nest, clearance), min_step(blocks)), size, next_size, slot_width, blocks)
-		step = (full if behind <= 0.0 else pack_step(full, blocks)) * squeeze  # V4: the front rank's halt keeps today's room
+		step = (pack_front_step(full, blocks) if behind <= 0.0 else pack_step(full, blocks)) * squeeze  # V4
 		behind += step
 		if behind > army_back + n * (slot_depth + GAP_M):
 			break  # far behind the whole army: the ground ran out of sense (the hold rule keeps a squad off a seat behind it)
@@ -2124,6 +2124,15 @@ static func pack_step(step: float, blocks: Array) -> float:
 	if not GROUP_PACK:
 		return step
 	return maxf(step * PACK_FACTOR, minf(step, GAP_M))
+
+
+## The step from the FRONT rank under the tighter file: as `pack_step`, but never inside the front squad's halt: at least its halt's
+## radius (half the deepest halt, `min_step`) + half GAP_M (his Gorge click: a second rank 16 m behind the Spears at the neck stood in
+## their coil and they never settled; at today's full step a 3 + 1 body never packed at all, dev read a87b07cba).
+static func pack_front_step(step: float, blocks: Array) -> float:
+	if not GROUP_PACK:
+		return step
+	return minf(step, maxf(pack_step(step, blocks), min_step(blocks) * 0.5 + GAP_M * 0.5))
 
 
 # ---- V1 (round 46, orders; R46.1, his pick): THE VETO-ONLY GROUP GUARD ----------------------------------------------------
