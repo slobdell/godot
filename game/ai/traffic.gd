@@ -290,8 +290,9 @@ static func _chain_native() -> void:
 	# twinned (native N3, pair/native-backout: drive_native.cpp backout_due / backout_look_due), so ON keeps the C++ drive.
 	# Round 44 (R44.16): the twin matches cf6eabc22 (native N3, pair/native-backout-r3: the station-PID gate on `_backout_leg` only,
 	# the long-hull term), so backout ON keeps the C++ drive.
-	# Round 45 (manoeuvre, `shortfwd`): the forward arc on his short move is inside the drive's mirror: ON runs the GDScript drive until twinned.
-	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush") or not _off.has("shortfwd"):
+	# Round 45 (manoeuvre, `shortfwd`): the forward arc on his short move is twinned (round 46, native N2: drive_native.cpp
+	# shortfwd_on / his_short_move / shortfwd_hit, test_native_drive_shortfwd), so ON keeps the C++ drive.
+	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush"):
 		if _reroute_saved_native_drive == null:
 			_reroute_saved_native_drive = BrainSwitches.native_drive
 		BrainSwitches.native_drive = false
