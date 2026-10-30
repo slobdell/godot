@@ -126,13 +126,23 @@ func _run() -> void:
 	game_match.weapon_fired.connect(func(event: Dictionary) -> void:
 		if String(event.get("shooter", "")) == crew_name:
 			shots[0] += 1
-			shot_ticks.append(game_match.tick))
+			shot_ticks.append(game_match.tick)
+			if _flag("trace", "off") == "on":
+				print("LANE_SHOT t=%d crew_at=%s v=%.1f in_line_now=%s" % [game_match.tick, _flat(crew.global_position),
+						crew.estimated_velocity.length(), FireLanes.for_shot(game_match.tanks, crew, target.global_position)]))
 	var ff := [0, 0]
-	game_match.friendly_fire.connect(func(_victim: Tank, shooter: String, _hull: int, killed: bool) -> void:
+	var trace := _flag("trace", "off") == "on"
+	game_match.friendly_fire.connect(func(victim: Tank, shooter: String, _hull: int, killed: bool) -> void:
 		if shooter == crew_name:
 			ff[0] += 1
 			if killed:
-				ff[1] += 1)
+				ff[1] += 1
+			if trace:
+				var b := game_match.brains.get_node_or_null("Brain_" + crew_name) as TankBrain
+				print("LANE_FF t=%d victim=%s at=%s crew_at=%s crew_v=%.1f option=%s blocker=%s held=%d target_at=%s" % [game_match.tick,
+						victim.name, _flat(victim.global_position), _flat(crew.global_position), crew.estimated_velocity.length(),
+						b.choice.get("option", "") if b != null else "-", b.lane_blocker if b != null else "-",
+						b.lane_blocked_ticks if b != null else -1, _flat(target.global_position)]))
 	await lab.start()
 	var ground_node := game_match.tanks.get_child(0) as Node3D
 	for tank: Tank in [crew, target] + friends:
@@ -142,6 +152,11 @@ func _run() -> void:
 	for i in 3:
 		await lab.step()
 	var start := _flat(crew.global_position)
+	var crew_pose := [_r(start.x), _r(start.z), snappedf(crew.rotation.y, 0.001)]
+	var target_pose := [_r(target.global_position.x), _r(target.global_position.z), snappedf(target.rotation.y, 0.001)]
+	var friend_starts: Array = []
+	for friend: Tank in friends:
+		friend_starts.append([_r(friend.global_position.x), _r(friend.global_position.z), snappedf(friend.rotation.y, 0.001), String(friend.name)])
 	var orders: Object = lab.orders
 	if mode == "attack":
 		orders.call("issue", {"units": [crew_name], "verb": "attack", "target": String(target.name), "source": "player"})
@@ -215,7 +230,9 @@ func _run() -> void:
 			"held_s": _r(float(held_ticks) / SimClock.TICK_RATE), "blocked": first_block >= 0, "first_shot_s": _r(first_shot_s),
 			"shots": shots[0], "ff_hits": ff[0], "ff_kills": ff[1], "died": died,
 			"enemy_hp": _r(float(target.health) / maxf(float(target.max_health), 1.0)) if target.is_alive() else 0.0,
-			"moved_m": _r(moved), "post_m": _r(post_m), "lines": lines.size()}
+			"moved_m": _r(moved), "post_m": _r(post_m), "lines": lines.size(),
+			# The stage as placed (after grounding), so a run can be rebuilt as a test: [x, z, yaw] per hull.
+			"stage": {"crew": crew_pose, "gun": target_pose, "friends": friend_starts}}
 	print("LANE_PROBE %s" % JSON.stringify(result))
 	quit(0)
 
