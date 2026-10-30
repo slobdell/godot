@@ -108,8 +108,10 @@ _(worker keeps this current: report at the top, every number with commit, machin
   "across water / a pit / through a neck from the click, off the click line by more than the body's frontage, farther than its last
   rank, behind its own start" and, on any failure, re-lays the body on those seats. Built as G2 (O2 below).
 
-- **FREEZE CANDIDATE: 1f1f07740** (dev read 6 and quick-remote running on it; the laptop crashed at ~16:20 and restarted at
-  ~18:10: the runs were relaunched on the same code, a stale index.lock removed). Before it: 84ec3b689 (dev read 5 below;
+- **FREEZE CANDIDATE: 1f1f07740** (dev read 6 running on it on builder2; `make quick-remote` on its code, builder0: 336 passed / 0
+  failed, lint 99, smoke, `>> remote: make quick exited 0`; the run's banner says 151bb45f2 because it synced the working tree
+  before the crash's stale index.lock was cleared and the commit landed: the code is byte-identical. The laptop crashed at
+  ~16:20 and restarted at ~18:10; the runs were relaunched on the same code). Before it: 84ec3b689 (dev read 5 below;
   quick-remote builder0 336/0), 7a0c62c3c (dev read 4; 336/0). Not merging main (the
   orchestrator: main eec905e52 carries native's N2 twin, EQUAL on a8adba232 per R45.3; the bar freezes off this branch; at ship
   the column_lay conflict resolves as pair/native-g2 cfa4a0eb2 and native re-proves on the final freeze). R45.13: D5 = reach +
