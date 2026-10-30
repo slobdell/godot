@@ -80,3 +80,84 @@ the orchestrator the same hour (C46.2): it goes to him the same day.
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### REPORT (2026-10-30 ~02:30 PDT, Fable, worktree `godot-orders`, branch `stream/orders`)
+
+- **Plan (in order):** V1 the veto (built, 47cae3725) -> Bar V1 filed (below) -> a dev read of the bar's runner on 7001-7002 (the
+  pipeline, not a number for the bar) -> freeze on a green check -> the series on 11801-11848 (builder3) -> ship ON / message the
+  orchestrator -> V3 his acceptance read (his Gorge replay, his two round-43 Locks clicks, top-down shots) -> V4 the tighter file
+  (`--group-pack`) and Bar V2 -> V5 the street lay (dev reads only) -> stretch.
+- **V1 BUILT, ON by default (`--group-veto=off` / `GROUP_VETO=off` the escape).** `SelectionSquads.veto_failures(anchors, blocks,
+  click, approach, forward, data)` -> failing indices; `veto_refuses(at, centre, front, came, forward)`; `veto_front(click, came)`;
+  `veto_redeal(...)`; `RtsControls._veto` the last pass on a plain group click (>= 2 squads, not a shifted leg, guard OFF). A place
+  fails when (a) across a gap from his click (G2's `guard_across_gap`: water / pit / deck mouth / wet leg / through a neck), read from
+  the first dry, non-deck point back along the approach when he clicked on water or a deck; or (b) SENT BACK: farther from his click
+  than the squad stands AND > 10 m behind its start along the approach OR > 5 m behind it toward its own base edge (a click toward
+  the enemy). Only failing places are re-dealt, nearest squad first, to the free seat of G2's fitted body (`guard_lay`, its fit read
+  at the click) nearest his click that passes the same test; none -> the squad holds where it stands. No failing place -> no scan,
+  no path query, the anchors returned as they came.
+- **Decision (mine): (b)'s "toward its own base edge" reading.** On the brief's literal test (> 10 m behind along the approach) his
+  Gorge Hunters PASS: their place (-76.0, 101.0) is level with his click along the diagonal approach, 61 m west and 8.4 m north of
+  their start (-14.6, 92.6), 9.3 m farther from his click. He picked "ONLY re-places a squad when it would land across a drop/water or
+  behind where it started": north of their spawn row is behind where they started. Threshold 5 m (about half a squad's depth), only
+  on a click toward the enemy and only when the place is farther from his click (a squad past his click called back is not "sent back").
+- **His Gorge click (laptop lab, 47cae3725, his squads at his recorded tick-0 starts, real Gorge navmesh):** today Spears on the click,
+  Hunters (-76.0, 101.0), Wrenches (-10.4, 5.4) across the drop; veto ON: Spears (-43.2, 53.2) exactly today's, Hunters (-16.2, 71.7)
+  33 m behind, Wrenches (10.8, 90.3) 66 m behind: one file along his approach, every place on his side.
+- **Tests (laptop, 47cae3725): 10 passed / 0 failed** over `test_control_group_veto` (Terminus his round-37 click and an east-street
+  click byte-identical ON v OFF; Locks beside the lock identical; on the swing bridge's deck today sends the Spears to the south bank
+  (-71.5, -20.5) and the veto keeps them north (-60.9, 31.1)), `test_control_his_gorge_click` (5), `test_control_guard_locks` (2).
+  `make quick-remote` on a9fb6c0ef (builder3): 34 passed / 0 failed, lint, smoke, `quick passed`.
+- **G2's code is merged OFF** (pair/native-g2-final: G2's freeze + native's gate_width_edge_on swap); `--group-guard=on` lays it.
+- **Two instrument findings (round 45's Bar G2, told to the orchestrator):** (1) `orders_probe_geometry.gd`'s ORDERS_GEOMETRY line
+  prints on the order's tick BEFORE the probe reads the anchors, so its per-squad `across_gap` was always false (G2's D1 "0 across"
+  read nothing); V1's reads are on the squad rows (`veto_fail`, `veto_across`). (2) G2's his3 cell's `--probe-stand` was read by no
+  code and starts mode `recorded` matched no case: D5b's squads stood at the army's centre. Implemented: dev read 7001 (laptop,
+  47cae3725, n 1) base = his recorded places exactly; veto: Wrenches on his side, all-in 26.1 -> 17.6 s (a dev read, not the bar).
+- **Requests to other streams:** native: twin of `veto_failures` optional (not a V1 gate; R46.9).
+- **Questions for the lead:** none yet.
+
+### Bar V1 THE VETO-ONLY GROUP GUARD (orders, round 46; filed here BEFORE any number on 11801-11848; dev reads on 7001-7006 only)
+
+**What he would see:** he selects two or more squads and clicks once. Every squad goes where today's game sends it, EXCEPT a squad
+today's game would send across a drop, water or a neck from his click, or back behind where it started: that squad takes the free
+spot nearest his click in a file on his side (or holds where it stands if the ground has none). His Gorge click: Spears on the click
+as today, Hunters 33 m behind it, Wrenches 66 m behind, nobody across the drop, nobody sent north of his spawn row. On streets and
+every other click: exactly today's places.
+- **Arms:** `base:--group-veto=off` (today's lay) v `veto:` (the tree's default, the veto ON) on the frozen tree; `main:` on main's
+  tree (7189e3ff3, code cb1014bed; instruments only: mk/command.mk's fixed-click folders, the his3 army / starts JSON and the
+  recorded-starts patch to the geometry probe, no game file) for I1.
+- **Tree:** a frozen detached worktree at the commit named green here (`make remote T=check`, builder3), or a docs-only descendant.
+- **Runner:** `tests/control/orders_v1_bar.sh <frozen tree> <main tree> "11801 ... 11824" "11825 ... 11848" <out> 8`, builder3 (no
+  Spot); judge `tests/control/orders_v1_judge.py <out>` (its docstring is the lines below, verbatim in code).
+- **Part A, geometry (DECIDING), seeds 11801-11824, n 24 a cell:** `make orders-geometry` gorge / locks / crossing / terminus x his /
+  along / across x reach 20 / 80 (24 cells), plus 10 fixed clicks: his Gorge click from his spawn rows (`gorge:spawn:-43.2/53.2`) and
+  a click either side of each neck (`gorge:across:-40/58`, `-40/30`, `40/58`, `40/30`); Locks `his:-62/50` (round 44), his round-43
+  clicks `his:-35/97` and `his:-61/59`, beside the lock `his:-22/13`, on the west swing bridge's deck `his:-92/0`; plus his EXACT
+  Gorge click with his three squads at their recorded tick-0 starts (`gorge:recorded:-43.2/53.2`, his3 army, `--probe-stand`).
+- **Part B, streets (GUARD), seeds 11825-11848, n 24 a cell:** `make orders-probe` locks / crossing / terminus / yard_open x 3 / 5
+  squads x click / route (16 cells).
+- **Deciding lines (veto arm, every geometry run; base printed beside):**
+  - **D1** places across a gap from the click (row `veto_across`) = 0.
+  - **D2** places sent back (row `veto_fail` and not `veto_across`) = 0.
+  - **D5b** his exact Gorge click: every place on his side of the drop (z > 50) and passing the veto in 24 of 24 runs.
+- **Guards:**
+  - **I1 the default OFF path is main's:** every squad's place in `base` equals `main`'s (0.1 m, the probe's print) in every run of
+    both parts, and both arms hold the same runs. (G2's merged code, OFF, never leaks into the default path; R46.9.)
+  - **I2 byte-identity:** in `veto`, every squad whose `base` place passes the veto has exactly its base place, every run of both
+    parts (the streets by construction: any difference is a bug).
+  - **G1 on the touched cells** (a geometry cell, or a streets map x squads x route, where some base run has a failing place), each:
+    all-in median (runs where every squad arrived) <= base x 1.2 + 3 s; never-in runs <= base x 1.2 + 1; friendly contacts a run
+    (mean) <= base x 1.2 + 5.
+  - **B- (R46.10 b) part B's street lines on the TOUCHED street runs** (base has a failing place), paired run by run: places outside
+    the click's corridor a run (`anchor_outside`), metres driven outside it a run (`route_left_m`), all-in (runs where both arms got
+    every squad in): veto mean <= base mean + 2 se of the paired differences (n < 2: veto <= base).
+  - **Reported (R46.10 a):** per part and arena (the streets per map x squads x route: Terminus / Crossing / Locks separately), base
+    runs with a failing place / veto runs the veto re-dealt on / runs. If Terminus 5-squad clicks fail en masse in the dev read, the
+    orchestrator hears it before the freeze.
+  - **C46.3, by construction (said, not run):** the veto reads only group clicks of >= 2 squads (engage's crew orders and authority
+    probe untouched; manoeuvre's one-squad arrival never enters it); its re-deal changes a place, never the drive.
+- **C46.4:** the veto touches neither the drive nor the brain and adds no C++ seam: no native twin required to ship (R46.9); native's
+  optional twin of `veto_failures` is output-identical only.
+- **Ship rule:** ON (it is the default in the frozen tree) if D1, D2, D5b, I1, I2, G1 and the three B- lines all pass; any FAIL -> the stream writes
+  what he would see ON v OFF in player terms and messages the orchestrator the same hour (C46.2).

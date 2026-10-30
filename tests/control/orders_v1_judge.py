@@ -21,7 +21,12 @@ GUARDS:
   G1 on the TOUCHED cells (a geometry cell, or a streets map x squads x route, where some base run has a failing place), per cell:
      all-in median (runs where every squad arrived) <= base x 1.2 + 3 s; never-in runs <= base x 1.2 + 1; friendly contacts a run
      (mean) <= base x 1.2 + 5.
-VERDICT Bar V1: PASS iff D1, D2, D5b, I1, I2 and G1 all pass.
+  B- (R46.10 b) on the TOUCHED street runs (part B, base has a failing place), paired run by run: places outside the click's
+     corridor a run, metres driven outside it a run, all-in (runs where both arms got every squad in): veto mean <= base mean + 2 se
+     of the paired differences (n < 2: veto <= base).
+REPORTED (R46.10 a): per part and arena (the streets per map x squads x route), base runs with a failing place / veto runs the
+  veto re-dealt on / runs.
+VERDICT Bar V1: PASS iff D1, D2, D5b, I1, I2, G1 and the three B- lines all pass.
 """
 import json
 import os
@@ -182,6 +187,41 @@ def main(argv):
             "ok  " if ok_a and ok_n and ok_c else "FAIL", "/".join(str(x) for x in c), len(v), len(b), av, ab,
             "" if ok_a else " ALL-IN-FAIL", nv, nb, "" if ok_n else " NEVER-FAIL", cv, cb, "" if ok_c else " CONTACTS-FAIL"))
     lines.insert(len(lines) - len(cells), "%s guard G1: all-in / never-in / contacts on the %d touched cells" % ("PASS" if g1 else "FAIL", len(cells)))
+    # R46.10 (a): how many clicks the veto touches, per part and arena (the streets' Terminus / Crossing / Locks separately).
+    counts = defaultdict(lambda: [0, 0, 0])  # [base runs with a failing place, veto runs the veto re-dealt on, runs]
+    for k, b in base.items():
+        c = counts[(k[0], k[2]) if k[0] == "geometry" else (k[0], k[2], k[3], k[4])]
+        c[2] += 1
+        c[0] += 1 if failing(b) else 0
+        v = veto.get(k, {})
+        c[1] += 1 if int(v.get("run", {}).get("veto_clicks", 0) or 0) > 0 else 0
+    lines.append("  reported (R46.10 a): clicks the veto touches, base runs with a failing place / veto runs re-dealt / runs:")
+    for c in sorted(counts):
+        lines.append("    %-40s %4d / %4d / %4d" % (" ".join(str(x) for x in c), counts[c][0], counts[c][1], counts[c][2]))
+    # R46.10 (b): on the TOUCHED street runs (base has a failing place), part B's street lines paired run by run, each
+    # ARM mean <= BASE mean + 2 se of the paired differences (n < 2: ARM <= BASE).
+    pairs = [(base[k], veto[k]) for k in base if k[0] == "streets" and failing(base[k]) and k in veto]
+    def street_line(name, fn):
+        diffs = []
+        for b, v in pairs:
+            xb, xv = fn(b), fn(v)
+            if xb is None or xv is None:
+                continue
+            diffs.append((xb, xv))
+        if not diffs:
+            return "PASS guard B-%s: no touched street run" % name
+        mb = sum(x for x, _ in diffs) / len(diffs)
+        mv = sum(y for _, y in diffs) / len(diffs)
+        d = [y - x for x, y in diffs]
+        se = (st.stdev(d) / len(d) ** 0.5) if len(d) >= 2 else 0.0
+        ok = mv <= mb + 2.0 * se + 1e-9
+        return "%s guard B-%s on %d touched street runs: veto %.2f v base %.2f (+2 se %.2f)" % ("PASS" if ok else "FAIL", name, len(d), mv, mb, 2.0 * se)
+    lines.append(street_line("outside (places outside the corridor a run)",
+                             lambda e: sum(1 for r in e.get("rows", {}).values() if r.get("anchor_outside"))))
+    lines.append(street_line("metres (driven outside the corridor a run)",
+                             lambda e: sum(float(r.get("route_left_m", 0.0) or 0.0) for r in e.get("rows", {}).values())))
+    lines.append(street_line("all-in (s, runs where both arms got every squad in)",
+                             lambda e: e["run"]["all_in_s"] if e.get("run") and e["run"]["all_in_s"] >= 0 else None))
     verdict = all(l.startswith("PASS") for l in lines if l[:4] in ("PASS", "FAIL"))
     for l in lines:
         print(l)
