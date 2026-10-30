@@ -462,7 +462,7 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   `REPLAY_FLAGS="--player-authority=off"` (native notes it in replay-match's docs).
   **Fix landed (engage 12c9e673d):** the re-latch requires `order.player`; test_authority_element_hold fails without it (an element's
   pointless hold dragged 3.8 m). **Bar E2b re-frozen at fea4cfbec before any number** (2fe2092cd's check was red only on the census
-  lint: the probe read `Manoeuvre.turn_in_stops`; fixed). E6's cap is now OPT-IN (`--turn-in-cap=on`) until E2b passes, so the arms
+  lint: the probe read a Manoeuvre turn-in counter; fixed). E6's cap is now OPT-IN (`--turn-in-cap=on`) until E2b passes, so the arms
   read base = no flag, new = `--turn-in-cap=on` (same comparison, no line changed). fea4cfbec carries the R45.24 fix; merged alone on green.
 - **R45.26 (~20:00) Bar B3 FINAL: fails as filed on D2's share only (9/12, the 3 non-wins exact ties); EVERY other line PASSES ->
   backout SHIPS ON per R45.23.** Frozen 26b1425e7 (C++ drive both arms, EQUAL, probe 60/60): D1 his start PASS (t4 / t97 v t44 / t140);
