@@ -1,4 +1,4 @@
-# Bar B3 (round 45, manoeuvre): his War Rig backs out of the box first, on every pose — read on 11701-11748
+# Bar B3 (round 45, manoeuvre): his War Rig backs out of the box first, on every pose — D2's share FAILS as filed, every other line PASSES; ships ON per R45.23
 
 Frozen tree **26b1425e7** = `pair/native-backout-b3` (stream/manoeuvre's backout v2 with the 11187 fallback and the room-behind gate +
 native's twins `pair/native-backout-b2v2` 04ce3abe9 and `pair/native-backout-skip` 5ed7788ef, main 9203851ec); its check: builder2,
@@ -26,6 +26,17 @@ light, from `../godot-manoeuvre-b3x`: corpus, guard poses, named pose, fights, G
 | REPORTED (not a line): k-turn s per arena | crossing -0.1 se, locks +1.5 se, **terminus +3.7 se (+3.3 s a run)**: the rule's own back-ups, the same shape B2 read at +2.6 se | — |
 | Engage's line: his Gorge replay 107 s base v bo | per-crew divergence tables identical (both arms read the same FAIL v his recording: main's E2 moved the replay, engage's) | PASS |
 | Group guards G5 / G6 / G7 (11725-11736; builder2 light, 48 paired) | identical arms: every-squad-in 73.2 = 73.2 s, never-in 1.00 = 1.00, friendly contact ticks 663820 = 663820 (0 se) | PASS |
-| G1 v9 corridor: ORDERS_PROBE_SQUAD rows byte-identical, g1v8 lines | PENDING (builder0 light) | — |
+| G1 v9 corridor: ORDERS_PROBE_SQUAD rows byte-identical, g1v8 lines (11725-11736; builder0 light) | 180 / 180 byte-identical; every g1v8 line reads the same in both arms (friend contacts 2021 = 2021; orders' own deciding lines fail identically in both arms against their absolute line, not B3's) | PASS |
 | Fights G1-G4 (11737-11742; builder0 light, 18 fights an arm) | deaths in give-ways 49 -> 47 (line +7.1), stuck deaths 120 -> 116 (line +6.2), friendly contact ticks -2.0 % (line +10 %), kill share worst move 0.004 (line 0.03); moving-stuck -0.54 s a fight (follow's deciding line, reported) | PASS |
-| Perf | NOT JUDGED on builder2; a quiet builder0 perf read of the merge is owed before ON (R45.23) | — |
+| No SCRIPT ERROR | 0 files across every leg (the one grep hit is s_judge's own "0 files with SCRIPT ERROR" line) | PASS |
+| Perf | NOT JUDGED on builder2 (not a judging machine); a quiet builder0 perf read of the merge candidate is owed before ON (R45.23) | owed |
+
+**Verdict: FAIL as filed on ONE line, D2's share (9 / 12 = 75 % v 80 %); every other line PASSES.** The three poses not won are exact
+ties on pose 10 (the Crossing crawl +50): the look's back-up is blocked at 2 m by the squadmate 1.7 m beside the rig, the look is withdrawn
+and today's planner runs to the same plan it had, so ON = OFF to the tick; B2 had read those cells sooner by the pre-fallback look's
+accident (the 11187 fix took that away). The 80 % line counts a tie as a loss. **R45.23 (the orchestrator, before the legs landed): if
+every remaining line passed as filed, backout ships ON after a quiet builder0 perf read of the merge; they did.** The merge candidate is
+`wip/manoeuvre-backout-on` **466d96191** = 26b1425e7 + `backout` out of `Traffic.DEFAULT_OFF` + `test_manoeuvre_backout`'s default test
+flipped to `test_on_by_default` (2 files, 5 / 4 lines; nothing else); `--traffic-off=backout` is the escape. The named risk for his play:
+Terminus k-turn seconds +3.3 s a run (+3.7 se) = the rule's own back-ups and the Tanker behind the rigs turning to make way, while the
+same cells read yield+blocked -5.4 s a run, never-arrived -0.375 a run and the squad's start no slower (-47 ticks).
