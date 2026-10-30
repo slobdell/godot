@@ -272,3 +272,11 @@ over the drop's edge (G2); his other clicks (G3). **C46.6:** the rule reads only
 it is the player's by construction, like E2. **Ships ON** (`shortfwd` out of `Traffic.DEFAULT_OFF`, `--traffic-off=shortfwd` the escape)
 only if D1 and every guard pass. **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_sf.sh` from `../godot-manoeuvre-sf`;
 evidence filed under `references/round46/manoeuvre/barssf-builder3-cec4e499f/`. **Dev history (never a bar):** 7001-7007 (Status above).
+
+### Builders (2026-10-30 03:30 PDT; the orchestrator's allocation, C46.1)
+
+- Camera's Bar C1 holds builder3's series slot (~2-3 h); builder0's goes to engage's L1 then orders' V1. **My two series are HELD**
+  (their drivers' automatic launch stopped; nothing ran): shortfwd's check (cec4e499f) on builder3 and A6 v5's check (97403a089) on
+  builder0 continue on their own. Series-only drivers ready, each gated on its check's `exited 0`: `~/overnight-manoeuvre/r46/bars_sf_series.sh`
+  (shortfwd first: his Gorge click), then `bars_a6v5.sh` (set `REMOTE_HOST` to the assigned builder). Launch when the orchestrator names
+  the builder.
