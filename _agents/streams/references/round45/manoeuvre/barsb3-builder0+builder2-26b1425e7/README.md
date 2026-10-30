@@ -27,5 +27,5 @@ light, from `../godot-manoeuvre-b3x`: corpus, guard poses, named pose, fights, G
 | Engage's line: his Gorge replay 107 s base v bo | per-crew divergence tables identical (both arms read the same FAIL v his recording: main's E2 moved the replay, engage's) | PASS |
 | Group guards G5 / G6 / G7 (11725-11736; builder2 light, 48 paired) | identical arms: every-squad-in 73.2 = 73.2 s, never-in 1.00 = 1.00, friendly contact ticks 663820 = 663820 (0 se) | PASS |
 | G1 v9 corridor: ORDERS_PROBE_SQUAD rows byte-identical, g1v8 lines | PENDING (builder0 light) | — |
-| Fights G1-G4 (11737-11742) | PENDING (builder0 light) | — |
+| Fights G1-G4 (11737-11742; builder0 light, 18 fights an arm) | deaths in give-ways 49 -> 47 (line +7.1), stuck deaths 120 -> 116 (line +6.2), friendly contact ticks -2.0 % (line +10 %), kill share worst move 0.004 (line 0.03); moving-stuck -0.54 s a fight (follow's deciding line, reported) | PASS |
 | Perf | NOT JUDGED on builder2; a quiet builder0 perf read of the merge is owed before ON (R45.23) | — |

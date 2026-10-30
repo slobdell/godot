@@ -94,7 +94,7 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   replacement guard); other crews' reversing ticks -4.7 / +1.8 / -3.2 se; other crews seated +2.0 / +1.0 / +1.3 se; pooled never-arrived
   -0.375 a run (-3.3 se); D1-seated-by-15 s +1.3 se. **REPORTED (not a line, the named risk):** k-turn s -0.1 / +1.5 / **+3.7 se** (Terminus
   +3.3 s a run, the same shape B2 read at +2.6 se). s_judge's own D1 / D2 and b1_judge's D2 are Bar S / B1 deciding lines, not B3's.
-  **Group guards (builder2 light, 48 paired): PASS, identical arms** (G5 / G6 / G7, 0 se). Still running: fights + the G1 probe (builder0 light).
+  **Group guards (builder2 light, 48 paired): PASS, identical arms** (G5 / G6 / G7, 0 se). **Fights G1-G4 (builder0 light, 18 fights an arm): PASS** (give-way deaths 49 -> 47, stuck deaths 120 -> 116, contacts -2.0 %, kill share moved 0.004). Still running: the G1 probe (builder0 light), the last leg.
 - **Then:** S v5's Terminus dev read (the +8 s), its bar on 11751-11798 only on a clean three-arena read; holdway's head-on release
   last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars, each failing as filed with his
   line passing) follows unchanged.
