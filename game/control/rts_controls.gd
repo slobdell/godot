@@ -1743,7 +1743,7 @@ static var legs_cut_short := 0
 
 ## V1 (round 46, R46.1): the veto on a plain group click's final places (`anchors[i]` is `squads[i]`'s, each squad's start where
 ## its vehicles stand now). No failing place: `anchors` returned untouched (no scan, no path query). Else today's ranks for the
-## body (`rank_slots_for`, two abreast at most, from the veto's front) are the SEATS, and each failing place is re-dealt to the
+## body in file (`rank_slots_for`, one abreast, from the veto's front) are the SEATS, and each failing place is re-dealt to the
 ## nearest free one the ground takes (SelectionSquads.veto_redeal); a packed halt (D3) moved off its place is dropped.
 ## The spare seats the veto asks G2's body for beyond one a squad (the places that stand take some of the body's own).
 const VETO_SPARE_SEATS := 4
@@ -1782,12 +1782,12 @@ func _veto(squads: Array, anchors: Array[Vector3], click: Vector3, drawn: Varian
 		if not behind and not SelectionSquads.reached_from(flat_click, at, drive, crosses):
 			return null
 		return at
-	# The seats: today's own ranks for this body, at most COLUMN_ABREAST abreast, laid back from the front along the approach,
-	# with VETO_SPARE_SEATS spares (pure geometry; each is checked on the ground only when the re-deal reaches it, nearest his
+	# The seats: today's own ranks for this body IN FILE (one abreast: his "in file, nearest in front"; dev read f6bb52518, his
+	# Gorge click: two abreast put the Hunters' seat 29 m off his click at the neck, inside the Spears' halt, and the Spears never
+	# settled), laid back from the front along the approach, with VETO_SPARE_SEATS spares (pure geometry; each is checked on the ground only when the re-deal reaches it, nearest his
 	# click first). Round 46 dev: G2's guard_lay as the seat source scanned the ground at every rank, 45-66 ms on the laptop
 	# for his Gorge click (native on; 10 ms with the veto off).
-	var seats: Array = SelectionSquads.rank_slots_for(blocks, front, drawn, forward, SelectionSquads.COLUMN_ABREAST,
-			blocks.size() + VETO_SPARE_SEATS)
+	var seats: Array = SelectionSquads.rank_slots_for(blocks, front, drawn, forward, 1, blocks.size() + VETO_SPARE_SEATS)
 	seats.sort_custom(func(a: Vector3, b: Vector3) -> bool: return a.distance_to(flat_click) < b.distance_to(flat_click))
 	var seat_ground := func(p: Vector3) -> Variant:
 		return fix.call(p, (front - Vector3(p.x, 0.0, p.z)).dot(came) > SelectionSquads.GUARD_BEHIND_M)

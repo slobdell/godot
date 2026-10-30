@@ -2129,8 +2129,8 @@ static func pack_step(step: float, blocks: Array) -> float:
 # ACROSS A GAP from his click (water, a pit, a deck's mouth, through a neck: `guard_across_gap`, G2's test) or SENT BACK (farther
 # from his click than it stands AND behind its own start: > GUARD_BEHIND_M along the approach, or > VETO_BACK_FORWARD_M toward its
 # own base edge on a click toward the enemy, and more than as much farther from his click; a squad already past his click and
-# called back to it is not "sent back") is re-dealt: to the free seat of today's own ranks for the body (`rank_slots_for`, two
-# abreast at most, from the veto's front) nearest his click that the ground takes and that passes the same test; with none, to the
+# called back to it is not "sent back") is re-dealt: to the free seat of today's own ranks for the body in file
+# (`rank_slots_for`, one abreast, from the veto's front) nearest his click that the ground takes and that passes the same test; with none, to the
 # first free passing point on its own line to his click; with none, it holds where it stands. Every passing place is
 # byte-identical to today's, and a click with no failing place is byte-identical as a whole (no seat is read unless a place
 # fails; the re-deal asks the ground only for the seats it reaches, nearest first: his Gorge click 10.5 ms ON v 10.3 ms OFF on
