@@ -90,6 +90,10 @@ not a Movement member (exec_fields); the S v6 ON candidate not pursued (red: no-
 it turns toward the click instead of reversing (escape `--traffic-off=shortfwd`); `make skirmish ARENA=terminus` -> send two squads into
 the same street from opposite ends / one from a side street (escape `--traffic-off=holdway`).
 
+**Green hashes:** stream/manoeuvre **39777e1cc GREEN builder0** (`make check exited 0`, 3475 passed / 0 failed, sim-baseline unmoved;
+every later commit on the branch is Status / docs only); its OFF code proven 96 / 96 byte-identical v the launch base (default orders
+probe). Ship candidate `wip/manoeuvre-ship46` 8165af868: check queued on builder3 (below).
+
 **Known issues:** the S v6 ON flip breaks three no-crossing tests (round 47); backout pose 10 ties (per-leg turn); a new Movement member
 must be added to native's `exec_fields.h` (my 258ce00f0 lesson: a filtered test run missed it, the full check caught it).
 
