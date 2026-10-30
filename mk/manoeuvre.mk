@@ -526,3 +526,11 @@ export NOSED_GUARD
 # Round 45 (Bar B3): NOSED_NAMED=on adds the named poses (B2's 11187 at its jitter) as fixed cells beside the block.
 NOSED_NAMED ?=
 export NOSED_NAMED
+
+# Round 46 (M5): his Gorge short moves as a staged corpus (make test FILTER=short_move SHORT_CORPUS=on SHORT_SEEDS=a-b [SHORT_ONLY=s]).
+SHORT_CORPUS ?=
+export SHORT_CORPUS
+SHORT_SEEDS ?=
+export SHORT_SEEDS
+SHORT_ONLY ?=
+export SHORT_ONLY
