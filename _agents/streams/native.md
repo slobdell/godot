@@ -57,6 +57,28 @@ Nothing.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**FINAL REPORT, round 45 (2026-10-29 ~23:40 PDT). Backlog done; idle.** In his terms:
+
+- **Big right clicks answer faster.** Three pieces of the group click now run in C++ (where a squad lines up at a
+  gate, how squads untangle crossed paths, who goes to which spot). Each one gives the same orders as the GDScript
+  it replaces, bit for bit (360 / 1200 / 3000 cases; the orders probe 192/192 identical, native on v off). On main:
+  eec905e52, ceb1386e8. Ordering 30 units on orders' G2 tree: 10.20 → 6.21 ms with orders' swap (builder2, ratio 77.6
+  v the 104 budget). The judged control-timing read is the orchestrator's, at the round's close.
+- **Replays reproduce his matches.** His 107 s Gorge match replays 20/20 within 3 m to the end, native and GDScript
+  bit-identical (489/489 rows). A match recorded before the authority change replays with no flags (R45.24, f4f2dd6ed).
+  A replay whose native and GDScript runs disagree now fails loudly (exit 3) instead of passing quietly.
+- **A stuck first import no longer eats hours.** The watchdog kills an import that shows no progress for 10 min,
+  clears the cache, retries once, and then names the file it hung on (main 47a15f434). A preempted builder2 run is
+  re-queued once by itself. A light job now waits while a full check holds a builder and memory is low (builder0's
+  OOM at 19:52).
+- **builder3 is ready.** It runs 6 slots and its check runs 6 wide: a full check takes 655 s there v ~55 min on
+  builder0 (GREEN 2d0a000b2, 3449/0, ALL JUDGED). Its perf nominal is recorded, so it judges perf too. round_status
+  and builder_checks show both boxes. The ratio is in remote_builds.md: builder3 is faster on the reference workload
+  and slower on the brains, so a budget is judged on the machine its line was set on.
+- **Twins for what ships:** manoeuvre's B2 / B3 and the skip pair are EQUAL, and G2's three seams are EQUAL on orders'
+  freeze. **Still open:** G2's lines, plus E1's and A6 v4's, land when their verdicts do. If orders' G2 ship tree
+  differs from the freeze, it gets the three-seam re-proof again. `../godot-native-g2` is removed only after G2 ships.
+
 **Report (2026-10-29 ~19:30 PDT, after the laptop crash ~18:10).** **N1 DONE** (main 47a15f434). **N2 DONE** (main eec905e52).
 **R45.16's _assign twin GREEN: 1921e09eb** (builder0 3449/0, 28 targets ALL JUDGED; named to the orchestrator for its batched main
 check). **R45.24 DONE** f4f2dd6ed (replay-match's authority default; proven on main + it). **N3:** B2 twin 04ce3abe9; manoeuvre's
