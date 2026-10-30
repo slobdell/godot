@@ -2188,9 +2188,10 @@ static func veto_taken_m(half: float) -> float:
 
 
 ## One place `at` for a squad standing at `centre` (all flat): across a gap from `flat_click` (the veto's front), or SENT BACK:
-## a squad coming toward his click (behind it along `came`) given a place farther from his click than it stands AND either more than GUARD_BEHIND_M behind its start along the approach `came`,
-## or (a click ahead of the squad toward the enemy, `forward` the team's) more than VETO_BACK_FORWARD_M behind its start toward its
-## own base edge. His Gorge Hunters: 61 m west and 8.4 m north of where they stood, 9.3 m farther from his click, level with it
+## a squad coming toward his click (behind it along `came`) given a place farther from his click than it stands AND either more
+## than GUARD_BEHIND_M behind its start along the approach `came`, or (a click ahead of the squad toward the enemy, `forward` the
+## team's) more than VETO_BACK_FORWARD_M behind its start toward its own base edge AND more than VETO_BACK_FORWARD_M farther from
+## his click. His Gorge Hunters: 61 m west and 8.4 m north of where they stood, 9.3 m farther from his click, level with it
 ## along the diagonal approach: behind where they started in his words ("ONLY ... behind where it started"). `forward` ZERO
 ## reads the approach only. Pure.
 const VETO_BACK_FORWARD_M := 5.0
@@ -2205,7 +2206,10 @@ static func veto_refuses(at: Vector3, centre: Vector3, flat_click: Vector3, came
 		if (centre - flat_click).dot(came) - (at - flat_click).dot(came) > GUARD_BEHIND_M:
 			return true
 		var ahead := Vector3(forward.x, 0.0, forward.z).normalized()
-		if ahead != Vector3.ZERO and (flat_click - centre).dot(ahead) > 0.0 and (centre - at).dot(ahead) > VETO_BACK_FORWARD_M:
+		# ...and away from his click by more than the same margin: a squad at the tail of a long column whose place is a hold
+		# a few metres back (dev read f77e16230, crossing 5-squad click: two squads 1.8 m farther, 6 and 16 m north) is not sent back.
+		if ahead != Vector3.ZERO and (flat_click - centre).dot(ahead) > 0.0 and (centre - at).dot(ahead) > VETO_BACK_FORWARD_M \
+				and at.distance_to(flat_click) - centre.distance_to(flat_click) > VETO_BACK_FORWARD_M:
 			return true
 	return guard_across_gap(flat_click, at, came, data)
 
