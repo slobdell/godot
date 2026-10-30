@@ -116,6 +116,14 @@ _(worker keeps this current: report at the top, every number with commit, machin
   orchestrator: main eec905e52 carries native's N2 twin, EQUAL on a8adba232 per R45.3; the bar freezes off this branch; at ship
   the column_lay conflict resolves as pair/native-g2 cfa4a0eb2 and native re-proves on the final freeze). R45.13: D5 = reach +
   one rank step + 6 m accepted; **the lines do not move again after the freeze**.
+- **Dev read 6 (builder2, 1f1f07740, 7001-7006, `~/orders-r45/dev6/`): EVERY DECIDING LINE PASSES (D1, D2, D3, D4, D5, D5b, D6),
+  contacts 8639 -> 4877, never-in passes but one cell.** Still failing: the reach-80 held guard on locks across / along and
+  terminus across (held median 2-2.5 v base unmoved 0 + 1) and never-in on locks along-80 (1 v 0). Cause: a far click up a
+  one-wide quay or street with four squads: the file at full rank steps (50 m, the coil clearance) is 150 m long and the
+  squads stand 80 m from the click, so the last two seats land behind their own starts and those squads hold (R45.6) while
+  today's lay moves all four: R44.23's "half my army ignored me". Fix (this tree): when squads would hold, the ranks SQUEEZE
+  (COLUMN_SQUEEZES steps down to half the clearance, as the column's ranks do) until every squad has a seat ahead of it; the
+  lay with the fewest holders stands; the army arriving together outranks tidy halts (his round-44 words).
 - **Dev read 5 (builder2, 84ec3b689, 7001-7006, `~/orders-r45/dev5/`):** PASS D1, D2, D3, D4, D5b, D6, never-in every cell,
   contacts 8639 -> 4125; FAIL D5 on two Gorge cells and the reach-80 held guard on four quay / street cells. Causes and fixes
   (this tree): (a) a squad standing 7 m ahead of its own seat (the Hunters on the probe's spawn cell) held by R45.6 and its

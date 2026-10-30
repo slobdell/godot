@@ -1812,6 +1812,167 @@ static func guard_failures(anchors: Array[Vector3], blocks: Array, click: Vector
 	return failed
 
 
+## One lay of the body at `squeeze` x the rank step (1.0 = the halt clearance; down to 0.5, as the column's ranks squeeze when
+## the ground behind the click is short of them): the seats, the deal, the holds. {"seats", "places", "holding", "seat_of",
+## "step", "held"}.
+static func _guard_attempt(ctx: Dictionary, squeeze: float) -> Dictionary:
+	var n: int = ctx["n"]
+	var flat_click: Vector3 = ctx["flat_click"]
+	var front: Vector3 = ctx["front"]
+	var heading: Vector3 = ctx["heading"]
+	var came: Vector3 = ctx["came"]
+	var across: Vector3 = ctx["across"]
+	var fit_at_click: int = ctx["fit_at_click"]
+	var width_at: Callable = ctx["width_at"]
+	var fix: Callable = ctx["fix"]
+	var data: Dictionary = ctx["data"]
+	var slot_width: float = ctx["slot_width"]
+	var slot_depth: float = ctx["slot_depth"]
+	var halt_reach: float = ctx["halt_reach"]
+	var nest: Array = ctx["nest"]
+	var clearance: float = ctx["clearance"]
+	var blocks: Array = ctx["blocks"]
+	var army_back: float = ctx["army_back"]
+	var centers: Array[Vector3] = ctx["centers"]
+	var widths: Array[float] = ctx["widths"]
+	var seats: Array[Vector3] = []
+	var behind := 0.0
+	var fit := maxi(1, mini(fit_at_click, COLUMN_ABREAST))
+	var step := 0.0
+	while seats.size() < n:
+		var centre_r := front - heading * behind
+		if behind > 0.0 and fit_at_click < COLUMN_ABREAST and width_at.is_valid():
+			# A rank behind the front reads its own ground and may CENTRE IN ITS CLEAR WIDTH, at most half a slot off the line
+			# (G1 v4's rank shift): his click stays where he put it, the ranks behind take the room the ground gives.
+			var sides := guard_trim_sides(centre_r, across, width_at.call(centre_r, across), came, 2.0, data)
+			fit = guard_fit(slot_width, sides)
+			var pair := 2.0 * slot_width + GAP_M
+			if fit < COLUMN_ABREAST and n - seats.size() >= 2 and float(sides[0]) + float(sides[1]) >= pair:
+				var half := (slot_width + GAP_M) * 0.5
+				var shift := clampf((float(sides[1]) - float(sides[0])) * 0.5, half - float(sides[0]), float(sides[1]) - half)
+				shift = clampf(shift, -half, half)
+				if half - float(sides[0]) <= shift and shift <= float(sides[1]) - half:
+					fit = COLUMN_ABREAST
+					centre_r += across * shift
+		var size := mini(fit, n - seats.size())
+		# A rank behind the front needs a dry footprint (half the widest squad: a wedge hanging over a pit never forms up, dev
+		# read 3's never-in at the neck's mouth): a rank whose seats touch water steps back WET_STEP_M at a time (as the column's
+		# ranks do), up to WET_STEPS_MAX; the front seat is his click as he put it.
+		if behind > 0.0:
+			var wet_steps := 0
+			while wet_steps < WET_STEPS_MAX:
+				var wet := false
+				for k in size:
+					if wet_or_deck(centre_r + across * ((float(k) - (size - 1) * 0.5) * (slot_width + GAP_M)), halt_reach):
+						wet = true
+						break
+				if not wet:
+					break
+				centre_r -= heading * WET_STEP_M
+				behind += WET_STEP_M
+				wet_steps += 1
+		var laid := 0
+		for k in size:
+			var aside := (float(k) - (size - 1) * 0.5) * (slot_width + GAP_M)
+			var seat := centre_r + across * aside
+			if guard_across_gap(flat_click, seat, came, data):
+				continue
+			if behind > 0.0 and wet_or_deck(seat, halt_reach):
+				continue
+			# `fix(seat, behind)`: a seat behind the click along the approach is on the squads' own side, where "reached from the
+			# click without a long way round" does not apply (dev read 5: a rank on a gorge's near rim, two necks from a click
+			# beyond the far drop, was refused and its squad held 156 m out).
+			var fixed: Variant = fix.call(seat, behind > GUARD_BEHIND_M)
+			if fixed == null:
+				continue
+			seats.append(fixed as Vector3)
+			laid += 1
+		if RtsControls.ORDER_TRACE:
+			print("ORDER_TRACE guard rank at %.0f m behind the front (%.1f, %.1f): fit %d, %d of %d seats laid, army %.0f m back" % [
+					behind, centre_r.x, centre_r.z, fit, laid, size, army_back])
+		if laid == 0 and behind > 0.0:
+			break  # the ground behind the click ran out
+		# The step to the next rank is priced for that rank's own size (a last squad centred behind a pair nests differently
+		# from a pair behind a pair): as many as fit of the squads still unseated.
+		var next_size := mini(fit, n - seats.size())
+		if next_size <= 0:
+			break
+		step = halt_clear_step(maxf(rank_step(size, next_size, slot_width, slot_depth, nest, clearance), min_step(blocks)), size, next_size, slot_width, blocks) * squeeze
+		behind += step
+		if behind > army_back + n * (slot_depth + GAP_M):
+			break  # far behind the whole army: the ground ran out of sense (the hold rule keeps a squad off a seat behind it)
+	# Nearest in front over the seats laid; the squads past them hold.
+	var order: Array = []
+	for i in n:
+		order.append([centers[i].distance_to(flat_click), i])
+	order.sort()
+	var seated: Array[int] = []
+	var seated_centers: Array[Vector3] = []
+	for k in mini(seats.size(), n):
+		seated.append(int(order[k][1]))
+		seated_centers.append(centers[int(order[k][1])])
+	# A single file is dealt nearest in front (his round-37 words); a body two abreast by the least total straight driving (round
+	# 21's deal: an assignment whose two paths cross can always be uncrossed for less, so the outer squads of a wide row do not
+	# converge behind the middle ones and overlap at departure; the nearest squads take its front rank anyway).
+	var given := assign_by_distance(seated_centers, seats, flat_click, heading) if fit_at_click <= 1 else _assign(seated_centers, seats)
+	var places: Array[Vector3] = []
+	places.resize(n)
+	var holding: Array[bool] = []
+	holding.resize(n)
+	holding.fill(true)
+	var seat_of: Array[int] = []  # squad -> its seat's index, -1 = none
+	seat_of.resize(n)
+	seat_of.fill(-1)
+	# A seat sends a squad only forward: not farther from the click than it stands (COLUMN_AWAY_M), not behind its start (R45.6).
+	var keeps_forward := func(i: int, seat: Vector3) -> bool:
+		var behind_start := (centers[i] - flat_click).dot(came) - (seat - flat_click).dot(came)
+		return seat.distance_to(flat_click) <= centers[i].distance_to(flat_click) + COLUMN_AWAY_M and behind_start <= GUARD_HOLD_BEHIND_M
+	for k in seated.size():
+		var i := seated[k]
+		if bool(keeps_forward.call(i, seats[given[k]])):
+			holding[i] = false
+			seat_of[i] = given[k]
+			places[i] = seats[given[k]]
+	# A seat under a holding squad's own footprint (within its half-width) is taken: its squad holds too; a seat a holder left
+	# goes to the next squad by distance that it sends forward; until nothing changes.
+	var changed := true
+	while changed:
+		changed = false
+		for i in n:
+			if holding[i]:
+				continue
+			for j in n:
+				if j != i and holding[j] and places[i].distance_to(centers[j]) < widths[j] * 0.5 + GUARD_SEAT_TAKEN_M * 0.25:
+					holding[i] = true
+					seat_of[i] = -1
+					changed = true
+					break
+		for entry: Array in order:
+			var i := int(entry[1])
+			if not holding[i]:
+				continue
+			for si in seats.size():
+				if seat_of.has(si):
+					continue
+				var under := false
+				for j in n:
+					if j != i and holding[j] and seats[si].distance_to(centers[j]) < widths[j] * 0.5 + GUARD_SEAT_TAKEN_M * 0.25:
+						under = true
+						break
+				if under or not bool(keeps_forward.call(i, seats[si])):
+					continue
+				holding[i] = false
+				seat_of[i] = si
+				places[i] = seats[si]
+				changed = true
+				break
+	var held := 0
+	for i in n:
+		if holding[i]:
+			held += 1
+	return {"seats": seats, "places": places, "holding": holding, "seat_of": seat_of, "step": step, "held": held}
+
+
 ## G2: THE FITTED BODY, the lay under the guard (dev read 1, builder2 7001-7006: four squads in file at 50 m a rank do not fit
 ## behind a click near Gorge's drop; laid in the air and slid onto the map they fell back and arrived late). Rank by rank from the
 ## front: the front rank on the click (or, a click on a deck / in water / off the map, on the first point back along the way the
@@ -1892,137 +2053,26 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 	var halt_reach := min_step(blocks)
 	if halt_reach <= 0.0:
 		halt_reach = slot_width
-	var seats: Array[Vector3] = []
-	var behind := 0.0
-	var fit := maxi(1, mini(fit_at_click, COLUMN_ABREAST))
-	var step := 0.0
-	while seats.size() < n:
-		var centre_r := front - heading * behind
-		if behind > 0.0 and fit_at_click < COLUMN_ABREAST and width_at.is_valid():
-			# A rank behind the front reads its own ground and may CENTRE IN ITS CLEAR WIDTH, at most half a slot off the line
-			# (G1 v4's rank shift): his click stays where he put it, the ranks behind take the room the ground gives.
-			var sides := guard_trim_sides(centre_r, across, width_at.call(centre_r, across), came, 2.0, data)
-			fit = guard_fit(slot_width, sides)
-			var pair := 2.0 * slot_width + GAP_M
-			if fit < COLUMN_ABREAST and n - seats.size() >= 2 and float(sides[0]) + float(sides[1]) >= pair:
-				var half := (slot_width + GAP_M) * 0.5
-				var shift := clampf((float(sides[1]) - float(sides[0])) * 0.5, half - float(sides[0]), float(sides[1]) - half)
-				shift = clampf(shift, -half, half)
-				if half - float(sides[0]) <= shift and shift <= float(sides[1]) - half:
-					fit = COLUMN_ABREAST
-					centre_r += across * shift
-		var size := mini(fit, n - seats.size())
-		# A rank behind the front needs a dry footprint (half the widest squad: a wedge hanging over a pit never forms up, dev
-		# read 3's never-in at the neck's mouth): a rank whose seats touch water steps back WET_STEP_M at a time (as the column's
-		# ranks do), up to WET_STEPS_MAX; the front seat is his click as he put it.
-		if behind > 0.0:
-			var wet_steps := 0
-			while wet_steps < WET_STEPS_MAX:
-				var wet := false
-				for k in size:
-					if wet_or_deck(centre_r + across * ((float(k) - (size - 1) * 0.5) * (slot_width + GAP_M)), halt_reach):
-						wet = true
-						break
-				if not wet:
-					break
-				centre_r -= heading * WET_STEP_M
-				behind += WET_STEP_M
-				wet_steps += 1
-		var laid := 0
-		for k in size:
-			var aside := (float(k) - (size - 1) * 0.5) * (slot_width + GAP_M)
-			var seat := centre_r + across * aside
-			if guard_across_gap(flat_click, seat, came, data):
-				continue
-			if behind > 0.0 and wet_or_deck(seat, halt_reach):
-				continue
-			# `fix(seat, behind)`: a seat behind the click along the approach is on the squads' own side, where "reached from the
-			# click without a long way round" does not apply (dev read 5: a rank on a gorge's near rim, two necks from a click
-			# beyond the far drop, was refused and its squad held 156 m out).
-			var fixed: Variant = fix.call(seat, behind > GUARD_BEHIND_M)
-			if fixed == null:
-				continue
-			seats.append(fixed as Vector3)
-			laid += 1
-		if RtsControls.ORDER_TRACE:
-			print("ORDER_TRACE guard rank at %.0f m behind the front (%.1f, %.1f): fit %d, %d of %d seats laid, army %.0f m back" % [
-					behind, centre_r.x, centre_r.z, fit, laid, size, army_back])
-		if laid == 0 and behind > 0.0:
-			break  # the ground behind the click ran out
-		# The step to the next rank is priced for that rank's own size (a last squad centred behind a pair nests differently
-		# from a pair behind a pair): as many as fit of the squads still unseated.
-		var next_size := mini(fit, n - seats.size())
-		if next_size <= 0:
+	var ctx := {"n": n, "flat_click": flat_click, "front": front, "heading": heading, "came": came, "across": across,
+			"fit_at_click": fit_at_click, "width_at": width_at, "fix": fix, "data": data, "slot_width": slot_width, "slot_depth": slot_depth,
+			"halt_reach": halt_reach, "nest": nest, "clearance": clearance, "blocks": blocks, "army_back": army_back, "centers": centers,
+			"widths": widths}
+	# The file at full rank steps first; when squads would hold because their seats land behind them (the ground between the
+	# squads and his click is shorter than the file: a far click up a one-wide quay with four squads, dev read 6), the ranks
+	# squeeze (COLUMN_SQUEEZES steps down to half, as the column's ranks do) until every squad has a seat ahead of it; the lay
+	# with the fewest holders stands, the least squeezed on a tie. The army arriving together outranks tidy halts (his words).
+	var best := {}
+	for attempt in COLUMN_SQUEEZES + 1:
+		var squeeze := 1.0 - 0.5 * float(attempt) / float(COLUMN_SQUEEZES)
+		var tried := _guard_attempt(ctx, squeeze)
+		if best.is_empty() or int(tried["held"]) < int(best["held"]):
+			best = tried
+		if int(best["held"]) == 0:
 			break
-		step = halt_clear_step(maxf(rank_step(size, next_size, slot_width, slot_depth, nest, clearance), min_step(blocks)), size, next_size, slot_width, blocks)
-		behind += step
-		if behind > army_back + n * (slot_depth + GAP_M):
-			break  # far behind the whole army: the ground ran out of sense (the hold rule keeps a squad off a seat behind it)
-	# Nearest in front over the seats laid; the squads past them hold.
-	var order: Array = []
-	for i in n:
-		order.append([centers[i].distance_to(flat_click), i])
-	order.sort()
-	var seated: Array[int] = []
-	var seated_centers: Array[Vector3] = []
-	for k in mini(seats.size(), n):
-		seated.append(int(order[k][1]))
-		seated_centers.append(centers[int(order[k][1])])
-	# A single file is dealt nearest in front (his round-37 words); a body two abreast by the least total straight driving (round
-	# 21's deal: an assignment whose two paths cross can always be uncrossed for less, so the outer squads of a wide row do not
-	# converge behind the middle ones and overlap at departure; the nearest squads take its front rank anyway).
-	var given := assign_by_distance(seated_centers, seats, flat_click, heading) if fit_at_click <= 1 else _assign(seated_centers, seats)
-	var places: Array[Vector3] = []
-	places.resize(n)
-	var holding: Array[bool] = []
-	holding.resize(n)
-	holding.fill(true)
-	var seat_of: Array[int] = []  # squad -> its seat's index, -1 = none
-	seat_of.resize(n)
-	seat_of.fill(-1)
-	# A seat sends a squad only forward: not farther from the click than it stands (COLUMN_AWAY_M), not behind its start (R45.6).
-	var keeps_forward := func(i: int, seat: Vector3) -> bool:
-		var behind_start := (centers[i] - flat_click).dot(came) - (seat - flat_click).dot(came)
-		return seat.distance_to(flat_click) <= centers[i].distance_to(flat_click) + COLUMN_AWAY_M and behind_start <= GUARD_HOLD_BEHIND_M
-	for k in seated.size():
-		var i := seated[k]
-		if bool(keeps_forward.call(i, seats[given[k]])):
-			holding[i] = false
-			seat_of[i] = given[k]
-			places[i] = seats[given[k]]
-	# A seat under a holding squad's own footprint (within its half-width) is taken: its squad holds too; a seat a holder left
-	# goes to the next squad by distance that it sends forward; until nothing changes.
-	var changed := true
-	while changed:
-		changed = false
-		for i in n:
-			if holding[i]:
-				continue
-			for j in n:
-				if j != i and holding[j] and places[i].distance_to(centers[j]) < widths[j] * 0.5 + GUARD_SEAT_TAKEN_M * 0.25:
-					holding[i] = true
-					seat_of[i] = -1
-					changed = true
-					break
-		for entry: Array in order:
-			var i := int(entry[1])
-			if not holding[i]:
-				continue
-			for si in seats.size():
-				if seat_of.has(si):
-					continue
-				var under := false
-				for j in n:
-					if j != i and holding[j] and seats[si].distance_to(centers[j]) < widths[j] * 0.5 + GUARD_SEAT_TAKEN_M * 0.25:
-						under = true
-						break
-				if under or not bool(keeps_forward.call(i, seats[si])):
-					continue
-				holding[i] = false
-				seat_of[i] = si
-				places[i] = seats[si]
-				changed = true
-				break
+	var seats: Array[Vector3] = best["seats"]
+	var places: Array[Vector3] = best["places"]
+	var holding: Array[bool] = best["holding"]
+	var step: float = best["step"]
 	var held := 0
 	var reach := 0.0
 	for i in n:
