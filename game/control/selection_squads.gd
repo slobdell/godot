@@ -590,7 +590,7 @@ static func _lay_side(blocks: Array, flat_click: Vector3, ahead: Vector3, at_cli
 	# to half the step; at that the rest stand abreast in the last rank (dev read 4e25c1eab: two squads given one place).
 	# The same when it would reach more than one rank behind where its rearmost squad stands (dev read f215b1772: a route's
 	# first waypoint 17 m ahead of the army stacked ranks 100 m back into the base; squads drove back, then on).
-	var step := deepest + GAP_M
+	var step := pack_step(deepest + GAP_M, blocks)
 	var rearmost := float(by_along[by_along.size() - 1][0])
 	# G2 v2: on a leg the room behind is read along the road (his route round its corner), not the straight line on past
 	# the click (terminus 5 east: the straight line ran east past the corner, so the rear ranks merged two abreast ~20 m
@@ -1472,7 +1472,7 @@ static func rank_slots_for(blocks: Array, click: Vector3, facing: Variant, fallb
 			slots.append(flat_click + across * aside - heading * behind)
 		if r + 1 < sizes.size():
 			var step := maxf(rank_step(size, sizes[r + 1], slot_width, slot_depth, nest, _nest_clearance(blocks)), min_step(blocks))
-			behind += halt_clear_step(step, size, sizes[r + 1], slot_width, blocks)
+			behind += pack_step(halt_clear_step(step, size, sizes[r + 1], slot_width, blocks), blocks)
 	return slots
 
 
@@ -1908,7 +1908,7 @@ static func _guard_attempt(ctx: Dictionary, squeeze: float) -> Dictionary:
 		var next_size := mini(fit, wanted - seats.size())
 		if next_size <= 0:
 			break
-		step = halt_clear_step(maxf(rank_step(size, next_size, slot_width, slot_depth, nest, clearance), min_step(blocks)), size, next_size, slot_width, blocks) * squeeze
+		step = pack_step(halt_clear_step(maxf(rank_step(size, next_size, slot_width, slot_depth, nest, clearance), min_step(blocks)), size, next_size, slot_width, blocks), blocks) * squeeze
 		behind += step
 		if behind > army_back + n * (slot_depth + GAP_M):
 			break  # far behind the whole army: the ground ran out of sense (the hold rule keeps a squad off a seat behind it)
@@ -2104,6 +2104,28 @@ static func guard_lay(blocks: Array, click: Vector3, facing: Variant, fallback_h
 			"seat_points": seats}
 
 
+# ---- V4 (round 46, orders; R46.2, his pick): THE TIGHTER FILE ---------------------------------------------------------------
+#
+# "Squads pack closer (roughly half the length): the whole group is at your click sooner and fights together, at the cost of a bit
+# more bumping in tight spots." The step between one rank of a group's file and the next (today: the deepest halt + GAP_M, 33-50
+# m, so a 3-4 squad file is 66-150 m) is PACK_FACTOR of today's, never under the squads' own pitch (`_nest_clearance`: a rank never
+# nearer than a squad's own vehicles). The same layout, shorter: today's `ranks` (rank_slots_for), the column (column_lay) and the
+# fitted body's seats (guard_lay: the veto's seats). `--group-pack=on` / GROUP_PACK=on; OFF until Bar V2 passes.
+static var GROUP_PACK := pack_default()
+const PACK_FACTOR := 0.5
+
+
+static func pack_default() -> bool:
+	return OS.get_cmdline_user_args().has("--group-pack=on") or OS.get_environment("GROUP_PACK") == "on"
+
+
+## A rank step under the tighter file: `step` x PACK_FACTOR, floored at the blocks' own pitch; `step` itself when it is OFF.
+static func pack_step(step: float, blocks: Array) -> float:
+	if not GROUP_PACK:
+		return step
+	return maxf(step * PACK_FACTOR, minf(step, _nest_clearance(blocks)))
+
+
 # ---- V1 (round 46, orders; R46.1, his pick): THE VETO-ONLY GROUP GUARD ----------------------------------------------------
 #
 # Lesson 348: the smallest ON change is a veto, not a new layout. Today's lay stands; only a place that would put its squad
@@ -2157,6 +2179,12 @@ static func veto_front(click: Vector3, came: Vector3, data: Dictionary = Arena.a
 		front = flat_click - came * back
 		back += GUARD_STEP_M
 	return front
+
+
+## How near a place standing with half-width `half` a seat may be before it is taken: G2's (the half-width + a quarter of
+## GUARD_SEAT_TAKEN_M), scaled with the file under the tighter file (V4: the seats themselves stand PACK_FACTOR as far apart).
+static func veto_taken_m(half: float) -> float:
+	return (half + GUARD_SEAT_TAKEN_M * 0.25) * (PACK_FACTOR if GROUP_PACK else 1.0)
 
 
 ## One place `at` for a squad standing at `centre` (all flat): across a gap from `flat_click` (the veto's front), or SENT BACK:
@@ -2214,7 +2242,7 @@ static func veto_redeal(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 				continue
 			var taken := false
 			for other: Array in standing:
-				if flat_seat.distance_to(other[0]) < float(other[1]) + GUARD_SEAT_TAKEN_M * 0.25:
+				if flat_seat.distance_to(other[0]) < veto_taken_m(float(other[1])):
 					taken = true
 					break
 			if not taken:
@@ -2234,7 +2262,7 @@ static func veto_redeal(anchors: Array[Vector3], blocks: Array, click: Vector3, 
 					continue
 				var taken_l := false
 				for other: Array in standing:
-					if p.distance_to(other[0]) < float(other[1]) + GUARD_SEAT_TAKEN_M * 0.25:
+					if p.distance_to(other[0]) < veto_taken_m(float(other[1])):
 						taken_l = true
 						break
 				if not taken_l:

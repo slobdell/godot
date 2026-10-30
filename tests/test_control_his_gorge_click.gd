@@ -50,6 +50,7 @@ func teardown() -> void:
 	RtsControls.order_trace_keep = false
 	SelectionSquads.GROUP_GUARD = SelectionSquads.guard_default()
 	SelectionSquads.GROUP_VETO = SelectionSquads.veto_default()
+	SelectionSquads.GROUP_PACK = SelectionSquads.pack_default()
 	SelectionSquads.reset_g1()
 	if _controls != null and is_instance_valid(_controls):
 		_controls.queue_free()
@@ -298,3 +299,40 @@ func test_veto_failures_reads_his_places() -> void:
 	assert_true(not SelectionSquads.veto_refuses(back, back + approach * -40.0, flat_click, approach, forward),
 			"the same place for a squad 40 m beyond it: called toward his click, passes")
 	assert_true(not SelectionSquads.veto_refuses(spears + approach * -8.0, spears, flat_click, approach, Vector3.ZERO), "8 m back: under the 10 m slack")
+
+
+## V4 (round 46, R46.2, `--group-pack=on`): the same vetoed click in the tighter file: the Spears on his click as today, the file
+## behind it shorter (the brief's target: a 3-squad file within ~50 m of his click; today 65.5 m, packed 44.0 m: the step halves
+## but floors at the squads' own pitch), every place passing the veto.
+func test_tighter_file_halves_his_file() -> void:
+	await _build()
+	SelectionSquads.GROUP_GUARD = false
+	SelectionSquads.GROUP_VETO = true
+	SelectionSquads.GROUP_PACK = false
+	var loose := _click(CLICK)
+	SelectionSquads.GROUP_PACK = true
+	var packed := _click(CLICK)
+	var far_loose := 0.0
+	var far_packed := 0.0
+	var forward: Vector3 = Match.team_frame(Match.Team.GREEN)["forward"]
+	var approach := SelectionSquads.approach_of([{"center": _start_of("Green_Hunters")}, {"center": _start_of("Green_Spears")},
+			{"center": _start_of("Green_Wrenches")}], CLICK, forward)
+	for squad: String in SQUADS:
+		far_loose = maxf(far_loose, (loose[squad] as Vector3).distance_to(CLICK))
+		far_packed = maxf(far_packed, (packed[squad] as Vector3).distance_to(CLICK))
+		assert_true(not SelectionSquads.veto_refuses(packed[squad], _start_of(squad), CLICK, approach, forward), "%s: passes the veto packed" % squad)
+	print("HIS_GORGE pack: file %.1f m -> %.1f m: %s" % [far_loose, far_packed, packed])
+	assert_true((packed["Green_Spears"] as Vector3).distance_to(TO_0["Green_Spears"]) < 0.01, "the Spears' place is today's exactly")
+	assert_true(far_packed <= 50.0, "his three squads within 50 m of his click (%.1f m)" % far_packed)
+	assert_true(far_packed < far_loose - 10.0, "a shorter file (%.1f v %.1f m; the step floors at the squads' own pitch)" % [far_packed, far_loose])
+
+
+## V4 pure: the step halves, never under the squads' own pitch, and is today's with the switch OFF.
+func test_pack_step() -> void:
+	var blocks := [{"pitch_v": Vector2(14.0, 14.0)}]
+	SelectionSquads.GROUP_PACK = false
+	assert_eq(SelectionSquads.pack_step(50.0, blocks), 50.0, "OFF: today's step")
+	SelectionSquads.GROUP_PACK = true
+	assert_eq(SelectionSquads.pack_step(50.0, blocks), 25.0, "ON: half")
+	assert_eq(SelectionSquads.pack_step(20.0, blocks), 14.0, "ON: never under the squads' pitch")
+	assert_eq(SelectionSquads.pack_step(10.0, blocks), 10.0, "ON: a step already under the pitch stays")
