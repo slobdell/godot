@@ -943,6 +943,15 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 			if side < nearest_side:
 				nearest_side = side
 				rear_member = i
+		# S v5 dev read 4 (Terminus 7007 / 7008 / 7012): the rear crew is the rear crew AT THE ORDER. Re-read every re-seat as the
+		# crews moved at their own paces, the deep seat changed hands at t44 (the holder had driven 4 m ahead of its abreast
+		# squadmate), the new holder's station swung 25 m east across the old one's, and both lingered in the start zone (wedged
+		# 23 -> 42 s). While the order stands, the previous seating's holder of the deep seat keeps it.
+		var held: Dictionary = opts.get("previous", {})
+		if _valid_seating(held, members, offsets.size()):
+			for i in count:
+				if int(held[String(members[i]["name"])]) == deep_slot and members[i].has("position"):
+					rear_member = i
 		if offsets[deep_slot].y <= 0.0 or rear_member < 0:
 			last_open = false
 	# Square cost matrix: members (padded with empty seats) by slots (padded with nowhere).

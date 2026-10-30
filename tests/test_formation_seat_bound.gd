@@ -266,3 +266,52 @@ func test_seat_last_open_breaks_the_rear_tie_toward_the_deep_seat() -> void:
 	column[3]["position"] = anchor - heading * 35.0 + right * (side * 10.0)
 	column[4]["position"] = anchor - heading * 45.0 - right * (side * 10.0)
 	assert_eq(holder.call(seats.call(column)), "Guns_5", "a crew 10 m behind the others is the rear crew and takes the deep seat from the far side")
+
+
+## S v5 dev read 4 (Terminus 7007 / 7008 / 7012): the rear crew is the rear crew AT THE ORDER. Re-read every re-seat as the crews
+## moved at their own paces, the deep seat changed hands at t44 (the holder had driven 4 m ahead of its abreast squadmate), the new
+## holder's station swung 25 m east across the old one's and both lingered in the start zone (wedged 23 -> 42 s). While the order
+## stands (`previous` carries the last seating) the holder keeps the deep seat; a fresh order (no previous) reads the rear crew anew.
+func test_seat_last_open_keeps_the_deep_seat_with_its_holder_while_the_order_stands() -> void:
+	TacticsFormation.SEAT_BOUND = true
+	var anchor := Vector3(-52.0, 0.0, 59.0)
+	var route: Array = [Vector3(-52.0, 0.0, 100.0), anchor]
+	var pose := ElementPlan.route_pose(route, 41.0)
+	var transit := {"route": route, "s": 41.0, "anchor": pose["point"], "heading": pose["tangent"]}
+	var heading: Vector3 = pose["tangent"]
+	var right := Vector3(-heading.z, 0.0, heading.x)
+	var open := TacticsFormation.place(his_guns(), "swarm", anchor, heading, SPACING)
+	var deepest := 0
+	for i in open.size():
+		if (open[i]["offset"] as Vector2).y > (open[deepest]["offset"] as Vector2).y:
+			deepest = i
+	var side := signf((open[deepest]["offset"] as Vector2).x)
+	var deep_index: int = open[deepest]["index"]
+	var seats := func(members: Array, previous: Dictionary) -> Dictionary:
+		TacticsFormation.SEAT_LAST_OPEN = true
+		var at: Array = ElementPlan.route_seats(members, "swarm", SPACING, transit)
+		var placed := TacticsFormation.place(members, "swarm", anchor, heading, SPACING,
+				{"policy": "travel", "seat_bound": true, "seat_order": true, "at": at, "previous": previous})
+		TacticsFormation.SEAT_LAST_OPEN = false
+		return TacticsFormation.seating_of(placed)
+	var holder := func(seating: Dictionary) -> String:
+		for unit_name: String in seating:
+			if int(seating[unit_name]) == deep_index:
+				return unit_name
+		return ""
+	var members := his_guns()
+	members[0]["position"] = anchor - heading * 20.0 - right * 6.0
+	members[1]["position"] = anchor - heading * 20.0 + right * 6.0
+	members[2]["position"] = anchor - heading * 26.0
+	members[3]["position"] = anchor - heading * 35.0 + right * (side * 10.0)  # Guns_4: abreast, on the deep seat's side
+	members[4]["position"] = anchor - heading * 35.1 - right * (side * 10.0)  # Guns_5: abreast, the far side
+	var first: Dictionary = seats.call(members, {})
+	assert_eq(holder.call(first), "Guns_4", "at the order the deep seat is the near rear crew's")
+	# The holder drives 6 m ahead (past the tie) while its squadmate lingers: the order stands, the seat stays with its holder.
+	members[3]["position"] = anchor - heading * 29.0 + right * (side * 10.0)
+	var kept: Dictionary = seats.call(members, first)
+	assert_eq(holder.call(kept), "Guns_4", "while the order stands the deep seat stays with its holder")
+	assert_eq(kept, first, "...and nobody else is re-seated by it")
+	# A fresh order (no previous seating) reads the rear crew anew: the lingering squadmate is now clearly behind and takes it.
+	var fresh: Dictionary = seats.call(members, {})
+	assert_eq(holder.call(fresh), "Guns_5", "a fresh order seats the crew now clearly behind on the deep seat")
