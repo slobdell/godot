@@ -1,0 +1,4 @@
+crossing  wedged s a run -0.09 (se 1.69, -0.1 se, n 24): PASS
+locks     wedged s a run +6.44 (se 1.48, +4.4 se, n 24): FAIL
+terminus  wedged s a run -0.27 (se 1.54, -0.2 se, n 24): PASS
+Locks wedged delta by crew slot, summed over 24 seeds: {'1': 0.1, '2': 23.7, '3': -12.0, '4': 54.2, '5': 88.5}

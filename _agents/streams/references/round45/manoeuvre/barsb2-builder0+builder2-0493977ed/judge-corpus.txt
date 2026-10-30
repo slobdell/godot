@@ -1,0 +1,76 @@
+  11149 pose  0 locks    crawl  -45 deg (route  -74, nose  1.0 m) open: clear t134 -> t128 (-0.2 s); first reverse t50 -> t4; crept 1.54 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11149 GUARD pose  0 locks    alone  -40 deg: clear t249 -> t249 (+0.0 s); wall ticks 138 -> 137; looks 2 stalls 0: ok
+  11150 pose  1 locks    alone  -25 deg (route  -68, nose  0.5 m) open: clear t57 -> t93 (+1.2 s); first reverse t-1 -> t4; crept 5.85 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11150 GUARD pose  1 locks    crawl  +60 deg: clear t202 -> t177 (-0.8 s); wall ticks 28 -> 28; looks 5 stalls 0: ok
+  11151 pose  2 locks    alone  +45 deg (route  +41, nose  1.0 m) open: clear t88 -> t92 (+0.1 s); first reverse t-1 -> t4; crept 6.67 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11151 GUARD pose  2 crossing crawl  +45 deg: clear t212 -> t212 (+0.0 s); wall ticks 0 -> 0; looks 2 stalls 0: ok
+  11152 pose  3 locks    alone  -30 deg (route  -66, nose  1.0 m) STUCK: clear t229 -> t116 (-3.8 s); first reverse t11 -> t4; crept 0.00 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11152 GUARD pose  3 crossing alone  -45 deg: clear t79 -> t79 (+0.0 s); wall ticks 29 -> 29; looks 0 stalls 0: ok
+  11153 pose  4 locks    alone  +60 deg (route  +61, nose  0.5 m) STUCK: clear t188 -> t97 (-3.0 s); first reverse t11 -> t4; crept 0.00 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11153 GUARD pose  4 crossing crawl  -30 deg: clear t251 -> t251 (+0.0 s); wall ticks 115 -> 115; looks 0 stalls 0: ok
+  11154 pose  5 locks    alone  -40 deg (route  -76, nose  1.0 m) open: clear t165 -> t96 (-2.3 s); first reverse t58 -> t5; crept 1.77 -> 0.01 m; looks 1 kturns 1 stalls 0; native_drive True
+  11154 GUARD pose  5 crossing alone  +55 deg: clear t151 -> t151 (+0.0 s); wall ticks 132 -> 132; looks 0 stalls 0: ok
+  11155 GUARD pose  0 locks    alone  -40 deg: clear t241 -> t191 (-1.7 s); wall ticks 14 -> 102; looks 2 stalls 0: WORSE
+  11155 pose  6 locks    crawl  +60 deg (route  +70, nose  1.0 m) open: clear t148 -> t137 (-0.4 s); first reverse t50 -> t50; crept 1.73 -> 1.73 m; looks 2 kturns 3 stalls 0; native_drive True
+  11156 GUARD pose  1 locks    crawl  +60 deg: clear t291 -> t280 (-0.4 s); wall ticks 120 -> 108; looks 6 stalls 0: ok
+  11156 pose  7 crossing crawl  +45 deg (route  +60, nose  1.0 m) open: clear t126 -> t125 (-0.0 s); first reverse t72 -> t72; crept 1.88 -> 1.88 m; looks 1 kturns 1 stalls 0; native_drive True
+  11157 GUARD pose  2 crossing crawl  +45 deg: clear t124 -> t121 (-0.1 s); wall ticks 7 -> 0; looks 2 stalls 0: ok
+  11157 pose  8 crossing alone  -20 deg (route -109, nose  1.5 m) open: clear t137 -> t155 (+0.6 s); first reverse t11 -> t4; crept 0.00 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11158 GUARD pose  3 crossing alone  -45 deg: clear t49 -> t49 (+0.0 s); wall ticks 9 -> 9; looks 0 stalls 0: ok
+  11158 pose  9 crossing alone  -35 deg (route  +43, nose  1.5 m) open: clear t172 -> t131 (-1.4 s); first reverse t17 -> t3; crept 0.00 -> 0.00 m; looks 1 kturns 2 stalls 0; native_drive True
+  11159 GUARD pose  4 crossing crawl  -30 deg: clear t284 -> t284 (+0.0 s); wall ticks 150 -> 150; looks 0 stalls 0: ok
+  11159 pose 10 crossing crawl  +50 deg (route  +72, nose  1.5 m) STUCK: clear t360 -> t278 (-2.7 s); first reverse t37 -> t37; crept 1.43 -> 1.43 m; looks 3 kturns 3 stalls 0; native_drive True
+  11160 GUARD pose  5 crossing alone  +55 deg: clear t85 -> t85 (+0.0 s); wall ticks 79 -> 79; looks 0 stalls 0: ok
+  11160 pose 11 crossing alone  -45 deg (route  -67, nose  1.5 m) open: clear t59 -> t97 (+1.3 s); first reverse t-1 -> t3; crept 5.13 -> 0.00 m; looks 1 kturns 2 stalls 0; native_drive True
+  11161 GUARD pose  0 locks    alone  -40 deg: clear t243 -> t238 (-0.2 s); wall ticks 132 -> 125; looks 2 stalls 0: ok
+  11161 pose 12 crossing crawl  -30 deg (route  -49, nose  0.5 m) open: clear t117 -> t117 (+0.0 s); first reverse t73 -> t3; crept 1.46 -> 0.00 m; looks 2 kturns 3 stalls 0; native_drive True
+  11162 GUARD pose  1 locks    crawl  +60 deg: clear t234 -> t237 (+0.1 s); wall ticks 150 -> 159; looks 5 stalls 0: ok
+  11162 pose 13 crossing alone  +35 deg (route  +60, nose  1.5 m) open: clear t91 -> t91 (+0.0 s); first reverse t-1 -> t3; crept 6.52 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11163 pose  0 locks    crawl  -45 deg (route  -66, nose  1.5 m) open: clear t60 -> t85 (+0.8 s); first reverse t-1 -> t4; crept 7.45 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11163 GUARD pose  2 crossing crawl  +45 deg: clear t351 -> t360 (+0.3 s); wall ticks 18 -> 37; looks 1 stalls 0: WORSE
+  11164 pose  1 locks    alone  -25 deg (route  -70, nose  0.5 m) open: clear t57 -> t94 (+1.2 s); first reverse t-1 -> t4; crept 5.91 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11164 GUARD pose  3 crossing alone  -45 deg: clear t49 -> t49 (+0.0 s); wall ticks 15 -> 15; looks 0 stalls 0: ok
+  11165 pose  2 locks    alone  +45 deg (route  +45, nose  0.5 m) open: clear t95 -> t78 (-0.6 s); first reverse t24 -> t4; crept 0.26 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11165 GUARD pose  4 crossing crawl  -30 deg: clear t344 -> t344 (+0.0 s); wall ticks 144 -> 144; looks 0 stalls 0: ok
+  11166 pose  3 locks    alone  -30 deg (route  -62, nose  0.5 m) STUCK: clear t315 -> t103 (-7.1 s); first reverse t3 -> t3; crept 0.00 -> 0.00 m; looks 1 kturns 2 stalls 0; native_drive True
+  11166 GUARD pose  5 crossing alone  +55 deg: clear t187 -> t187 (+0.0 s); wall ticks 182 -> 182; looks 0 stalls 0: ok
+  11167 GUARD pose  0 locks    alone  -40 deg: clear t257 -> t255 (-0.1 s); wall ticks 10 -> 0; looks 2 stalls 0: ok
+  11167 pose  4 locks    alone  +60 deg (route  +60, nose  1.0 m) STUCK: clear t187 -> t98 (-3.0 s); first reverse t56 -> t4; crept 1.87 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11168 GUARD pose  1 locks    crawl  +60 deg: clear t128 -> t232 (+3.5 s); wall ticks 75 -> 80; looks 4 stalls 0: WORSE
+  11168 pose  5 locks    alone  -40 deg (route  -82, nose  2.5 m) open: clear t180 -> t102 (-2.6 s); first reverse t39 -> t4; crept 1.64 -> 0.01 m; looks 1 kturns 1 stalls 0; native_drive True
+  11169 GUARD pose  2 crossing crawl  +45 deg: clear t313 -> t246 (-2.2 s); wall ticks 0 -> 0; looks 2 stalls 0: ok
+  11169 pose  6 locks    crawl  +60 deg (route  +69, nose  1.5 m) open: clear t139 -> t104 (-1.2 s); first reverse t50 -> t50; crept 1.75 -> 1.75 m; looks 3 kturns 2 stalls 0; native_drive True
+  11170 GUARD pose  3 crossing alone  -45 deg: clear t62 -> t62 (+0.0 s); wall ticks 27 -> 27; looks 0 stalls 0: ok
+  11170 pose  7 crossing crawl  +45 deg (route  +63, nose  0.5 m) open: clear t84 -> t80 (-0.1 s); first reverse t53 -> t5; crept 1.40 -> 0.01 m; looks 2 kturns 2 stalls 0; native_drive True
+  11171 GUARD pose  4 crossing crawl  -30 deg: clear t299 -> t306 (+0.2 s); wall ticks 164 -> 196; looks 1 stalls 0: WORSE
+  11171 pose  8 crossing alone  -20 deg (route  -92, nose  1.0 m) STUCK: clear t334 -> t323 (-0.4 s); first reverse t11 -> t4; crept 0.00 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11172 GUARD pose  5 crossing alone  +55 deg: clear t86 -> t86 (+0.0 s); wall ticks 82 -> 82; looks 0 stalls 0: ok
+  11172 pose  9 crossing alone  -35 deg (route  +84, nose  1.0 m) open: clear t144 -> t142 (-0.1 s); first reverse t29 -> t3; crept 0.26 -> 0.00 m; looks 1 kturns 2 stalls 0; native_drive True
+  11173 pose 10 crossing crawl  +50 deg (route  +81, nose  0.5 m) STUCK: clear t360 -> t343 (-0.6 s); first reverse t30 -> t30; crept 1.40 -> 1.41 m; looks 3 kturns 1 stalls 0; native_drive True
+  11174 pose 11 crossing alone  -45 deg (route  -61, nose  1.5 m) open: clear t57 -> t93 (+1.2 s); first reverse t-1 -> t5; crept 6.40 -> 0.01 m; looks 1 kturns 1 stalls 0; native_drive True
+  11175 pose 12 crossing crawl  -30 deg (route  -49, nose  1.0 m) open: clear t143 -> t126 (-0.6 s); first reverse t11 -> t3; crept 0.00 -> 0.00 m; looks 4 kturns 4 stalls 0; native_drive True
+  11176 pose 13 crossing alone  +35 deg (route  +49, nose  0.5 m) open: clear t139 -> t84 (-1.8 s); first reverse t58 -> t3; crept 1.11 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11177 pose  0 locks    crawl  -45 deg (route  -72, nose  0.5 m) open: clear t180 -> t85 (-3.2 s); first reverse t60 -> t52; crept 2.06 -> 1.97 m; looks 2 kturns 1 stalls 0; native_drive True
+  11178 pose  1 locks    alone  -25 deg (route  -67, nose  1.0 m) open: clear t64 -> t88 (+0.8 s); first reverse t-1 -> t4; crept 6.65 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11179 pose  2 locks    alone  +45 deg (route  +43, nose  1.5 m) open: clear t115 -> t85 (-1.0 s); first reverse t56 -> t4; crept 1.31 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11180 pose  3 locks    alone  -30 deg (route  -65, nose  1.0 m) STUCK: clear t248 -> t110 (-4.6 s); first reverse t79 -> t4; crept 2.03 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11181 pose  4 locks    alone  +60 deg (route  +63, nose  1.5 m) open: clear t153 -> t95 (-1.9 s); first reverse t65 -> t3; crept 2.47 -> 0.00 m; looks 1 kturns 2 stalls 0; native_drive True
+  11182 pose  5 locks    alone  -40 deg (route  -82, nose  1.5 m) open: clear t137 -> t109 (-0.9 s); first reverse t39 -> t5; crept 1.64 -> 0.01 m; looks 1 kturns 1 stalls 0; native_drive True
+  11183 pose  6 locks    crawl  +60 deg (route  +70, nose  1.5 m) open: clear t71 -> t79 (+0.3 s); first reverse t-1 -> t5; crept 7.32 -> 0.01 m; looks 2 kturns 3 stalls 0; native_drive True
+  11184 pose  7 crossing crawl  +45 deg (route  +64, nose  1.5 m) open: clear t177 -> t154 (-0.8 s); first reverse t67 -> t56; crept 2.60 -> 2.55 m; looks 2 kturns 2 stalls 0; native_drive True
+  11185 pose  8 crossing alone  -20 deg (route -103, nose  1.5 m) STUCK: clear t272 -> t145 (-4.2 s); first reverse t11 -> t4; crept 0.00 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11186 pose  9 crossing alone  -35 deg (route  +79, nose  1.0 m) STUCK: clear t253 -> t142 (-3.7 s); first reverse t44 -> t3; crept 1.49 -> 0.00 m; looks 1 kturns 2 stalls 0; native_drive True
+  11187 pose 10 crossing crawl  +50 deg (route  +48, nose  0.5 m) open: clear t166 -> t355 (+6.3 s); first reverse t28 -> t28; crept 0.26 -> 0.26 m; looks 2 kturns 2 stalls 0; native_drive True
+  11188 pose 11 crossing alone  -45 deg (route  -64, nose  1.0 m) open: clear t58 -> t106 (+1.6 s); first reverse t-1 -> t5; crept 5.35 -> 0.01 m; looks 1 kturns 1 stalls 0; native_drive True
+  11189 pose 12 crossing crawl  -30 deg (route  -54, nose  0.5 m) STUCK: clear t181 -> t123 (-1.9 s); first reverse t62 -> t3; crept 1.50 -> 0.00 m; looks 2 kturns 4 stalls 0; native_drive True
+  11190 pose 13 crossing alone  +35 deg (route  +62, nose  1.5 m) open: clear t80 -> t97 (+0.6 s); first reverse t-1 -> t3; crept 5.80 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11191 pose  0 locks    crawl  -45 deg (route  -75, nose  0.5 m) open: clear t143 -> t128 (-0.5 s); first reverse t33 -> t33; crept 1.04 -> 1.05 m; looks 2 kturns 1 stalls 0; native_drive True
+  11192 pose  1 locks    alone  -25 deg (route  -71, nose  1.5 m) open: clear t58 -> t94 (+1.2 s); first reverse t-1 -> t4; crept 5.87 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11193 pose  2 locks    alone  +45 deg (route  +47, nose  1.0 m) open: clear t61 -> t72 (+0.4 s); first reverse t34 -> t4; crept 1.85 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11194 pose  3 locks    alone  -30 deg (route  -63, nose  0.5 m) open: clear t160 -> t115 (-1.5 s); first reverse t11 -> t4; crept 0.00 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11195 pose  4 locks    alone  +60 deg (route  +57, nose  1.0 m) open: clear t127 -> t98 (-1.0 s); first reverse t84 -> t4; crept 2.52 -> 0.00 m; looks 1 kturns 1 stalls 0; native_drive True
+  11196 pose  5 locks    alone  -40 deg (route  -76, nose  1.5 m) open: clear t157 -> t101 (-1.9 s); first reverse t58 -> t5; crept 2.09 -> 0.01 m; looks 1 kturns 1 stalls 0; native_drive True
+D (base-stuck poses, floor 8): 11 poses, ON sooner in 11 (line >= 80 %), median -3.03 s (line <= -1.0): PASS
+C (the other poses' cost ceiling): 37 poses, worst +6.3 s (line <= +3.0), median -0.13 s (line <= +1.0): FAIL
+G (guard poses, no back-up possible): 24 poses, ON later than OFF + 1.0 s or 15 more wall ticks in 4: FAIL
+VERDICT: FAIL

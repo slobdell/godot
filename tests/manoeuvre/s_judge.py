@@ -85,10 +85,14 @@ def main():
         m, se, b, a = paired(base, arm, keys, f)
         print("  reported %-28s pooled %8.1f -> %8.1f; paired mean %+.3f (se %.3f)" % (label, b, a, m, se))
     if "--cells" in sys.argv:
-        print("  per cell (arena seed): seated base->arm | yield+blocked base->arm | never base->arm")
+        # Round 45 (S v4, the orchestrator's watch item): wedged s per run too, with the crews that carry it (a few or all).
+        print("  per cell (arena seed): seated base->arm | yield+blocked base->arm | never base->arm | wedged base->arm [arm crews over 1 s]")
         for k in keys:
-            print("   %-10s %6d: %2d -> %2d | %5.1f -> %5.1f | %d -> %d" % (k[0], k[1], base[k]["seated_in_bound_15s"], arm[k]["seated_in_bound_15s"],
-                  base[k]["yield_blocked_s"], arm[k]["yield_blocked_s"], base[k]["never_arrived"], arm[k]["never_arrived"]))
+            wb = sum(c["wedged_s"] for c in base[k]["per_crew"])
+            wa = sum(c["wedged_s"] for c in arm[k]["per_crew"])
+            heavy = ["%s %.0f" % (c.get("crew", c.get("name", "?")), c["wedged_s"]) for c in arm[k]["per_crew"] if c["wedged_s"] > 1.0]
+            print("   %-10s %6d: %2d -> %2d | %5.1f -> %5.1f | %d -> %d | %5.1f -> %5.1f [%s]" % (k[0], k[1], base[k]["seated_in_bound_15s"], arm[k]["seated_in_bound_15s"],
+                  base[k]["yield_blocked_s"], arm[k]["yield_blocked_s"], base[k]["never_arrived"], arm[k]["never_arrived"], wb, wa, ", ".join(heavy)))
     print("VERDICT: %s" % ("PASS" if verdict else "FAIL"))
     return 0 if verdict else 1
 

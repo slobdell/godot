@@ -1,0 +1,17 @@
+bar b2 frozen 0493977ed; check builder2 exited 0, 3448/0, 24 passed 4 NOT JUDGED (perf: not a judging machine; loaded) Thu Oct 29 01:34:22 PM PDT 2026
+B start Thu Oct 29 01:34:22 PM PDT 2026 hash 0493977ed dirty '' builder2
+A start Thu Oct 29 01:34:22 PM PDT 2026 hash 0493977ed dirty '' builder0 light
+his done Thu Oct 29 01:37:34 PM PDT 2026
+corpus done Thu Oct 29 01:39:06 PM PDT 2026
+gorge done Thu Oct 29 01:39:15 PM PDT 2026
+gorge rerun start Thu Oct 29 01:39:28 PM PDT 2026 (path fix)
+guard done Thu Oct 29 01:41:42 PM PDT 2026
+gorge rerun done Thu Oct 29 01:46:23 PM PDT 2026
+workload done Thu Oct 29 01:54:24 PM PDT 2026
+wedge base done Thu Oct 29 01:57:38 PM PDT 2026
+wedge bo done Thu Oct 29 02:08:00 PM PDT 2026
+group done Thu Oct 29 02:17:08 PM PDT 2026
+B end Thu Oct 29 02:17:08 PM PDT 2026
+orders done Thu Oct 29 02:23:57 PM PDT 2026
+A end Thu Oct 29 02:23:57 PM PDT 2026
+judges done Thu Oct 29 02:23:58 PM PDT 2026

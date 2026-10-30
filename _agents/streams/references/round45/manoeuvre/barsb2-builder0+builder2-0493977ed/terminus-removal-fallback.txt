@@ -1,0 +1,24 @@
+Bar S judge: base v bofb, 12 paired runs (base 12, arm 12), 0 files with SCRIPT ERROR
+D1 seated within the bound by 15 s: pooled 36 -> 34; paired mean -0.167 a run, se 0.458 (-0.4 se); line >= +2 se and ARM > BASE: FAIL
+D2 start-zone yield + blocked s: pooled 386.7 -> 327.9; paired mean -4.900 s a run, se 2.676 (-1.8 se); line <= -2 se and ARM < BASE: FAIL
+G terminus  yield+blocked s  pooled   386.7 ->   327.9; paired mean -4.900 a run, se 2.676 (-1.8 se); line <= +2 se: PASS
+G terminus  k-turn s         pooled   384.6 ->   438.0; paired mean +4.450 a run, se 1.078 (+4.1 se); line <= +2 se: FAIL
+  reported never-arrived crews          pooled     56.0 ->     49.0; paired mean -0.583 (se 0.358)
+  reported mean arrival s (never = 15)  pooled    161.0 ->    159.6; paired mean -0.112 (se 0.178)
+  reported k-turn s                     pooled    384.6 ->    438.0; paired mean +4.450 (se 1.078)
+  reported wedged s                     pooled    296.0 ->    280.1; paired mean -1.325 (se 2.434)
+  reported seat moves                   pooled    543.0 ->    590.0; paired mean +3.917 (se 7.743)
+  per cell (arena seed): seated base->arm | yield+blocked base->arm | never base->arm | wedged base->arm [arm crews over 1 s]
+   terminus     7001:  1 ->  3 |  29.3 ->  30.7 | 4 -> 5 |  16.5 ->  23.1 [Guns_1 2, Guns_2 4, Guns_3 5, Guns_4 2, Hunters_2 2, Hunters_4 2, Hunters_5 5]
+   terminus     7002:  3 ->  5 |  31.1 ->  38.8 | 4 -> 5 |  17.2 ->  21.2 [Guns_1 3, Guns_2 4, Guns_3 5, Hunters_2 2, Hunters_4 1, Hunters_5 5]
+   terminus     7003:  0 ->  0 |  19.4 ->  19.4 | 5 -> 5 |  39.4 ->  39.4 [Battery_2 9, Battery_3 9, Battery_4 3, Battery_5 13, Hunters_1 2, Hunters_2 2, Hunters_4 2]
+   terminus     7004:  2 ->  4 |  34.3 ->  30.6 | 5 -> 4 |  15.5 ->  23.0 [Guns_1 1, Guns_2 4, Guns_3 5, Guns_4 2, Hunters_2 3, Hunters_4 1, Hunters_5 5]
+   terminus     7005:  3 ->  3 |  41.4 ->  20.2 | 4 -> 2 |  19.8 ->  16.5 [Guns_1 3, Guns_2 4, Guns_5 6, Hunters_2 1]
+   terminus     7006:  2 ->  2 |   7.6 ->   7.6 | 4 -> 4 |  24.7 ->  24.7 [Battery_2 7, Battery_3 3, Battery_4 3, Battery_5 8, Hunters_2 2, Hunters_4 2]
+   terminus     7007:  4 ->  3 |  42.7 ->  28.0 | 5 -> 3 |  33.6 ->  19.7 [Guns_1 2, Guns_2 1, Guns_3 6, Guns_4 4, Hunters_1 2, Hunters_2 1, Hunters_4 2, Hunters_5 2]
+   terminus     7008:  4 ->  3 |  42.7 ->  28.0 | 3 -> 2 |  33.6 ->  19.7 [Guns_1 2, Guns_2 1, Guns_3 6, Guns_4 4, Hunters_1 2, Hunters_2 1, Hunters_4 2, Hunters_5 2]
+   terminus     7009:  5 ->  3 |  29.9 ->  34.3 | 9 -> 7 |  19.3 ->  22.0 [Guns2_1 3, Guns2_2 3, Guns_3 6, Guns_5 9]
+   terminus     7010:  3 ->  3 |  31.6 ->  34.2 | 3 -> 3 |  14.7 ->  23.0 [Guns_1 1, Guns_2 4, Guns_3 5, Hunters_2 2, Hunters_4 1, Hunters_5 7]
+   terminus     7011:  5 ->  2 |  34.0 ->  28.1 | 5 -> 6 |  27.4 ->  28.1 [Guns2_1 2, Guns2_2 3, Guns2_3 4, Guns_2 4, Guns_3 6, Guns_5 9]
+   terminus     7012:  4 ->  3 |  42.7 ->  28.0 | 5 -> 3 |  34.3 ->  19.7 [Guns_1 2, Guns_2 1, Guns_3 6, Guns_4 4, Hunters_1 2, Hunters_2 1, Hunters_4 2, Hunters_5 2]
+VERDICT: FAIL
