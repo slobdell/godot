@@ -90,7 +90,11 @@ func _build() -> void:
 func _click(at: Vector3) -> Dictionary:
 	_controls.selection.set_units(_all())
 	RtsControls.order_trace_keep = true
+	var started := Time.get_ticks_usec()
 	var said := _controls.order_selection("move", {"to": [at.x, at.z]})
+	# V3 (round 46, native's ask): his click's own cost, the veto's re-deal (guard_lay) included when it runs.
+	print("HIS_GORGE_MS click (%.1f, %.1f) veto %s pack %s: %.2f ms" % [at.x, at.z, SelectionSquads.GROUP_VETO, SelectionSquads.GROUP_PACK,
+			(Time.get_ticks_usec() - started) / 1000.0])
 	var out := {}
 	for squad: String in SQUADS:
 		var element: Element = _controls.elements.of(SQUADS[squad][0])
