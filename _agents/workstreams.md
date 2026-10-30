@@ -231,6 +231,15 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.14 (2026-10-30 ~04:30) Native's profile of his Terminus match; a side-branch grant; the Terminus "drift" was post-match.**
+  (1) Holdway has no C++ copy (the native drive calls back NativeTraffic.avoid_hold -> Traffic.refresh / hold_of): A6 v5 needs no twin.
+  (2) His Terminus match ENDED at tick 4471 (149.0 s); the 150-151 s rows were post-match; the replay's end row equals his (state_hash
+  4682461502ba5500): bit-exact; `tests/replay/divergence.py` now judges to his `end` row (3888ff416), Terminus 20/20. (3) Profile
+  (stream/native 78529a97b `--sim-profile` via replay-match, builder3 light, native ON, 4500 ticks, n 1): tick 14.18 ms; controllers 9.12
+  (think 4.90: situation 1.51, poll 0.89; decide 0.64 C++; act 0.64; execute 3.67); elements 3.06 (one segment); tanks 1.02; visfield
+  0.38. GRANT: ~5 additive SimProfile lines in element.gd / element_plan.gd on a side branch, one read, not merged. A C++ port of element
+  code is round 47 unless tiny and its owner agrees.
+
 - **R46.13 (2026-10-30 ~04:00) No veto_failures twin.** Native, orders' f77e16230, builder3 light, test_control_scale 30 units / 6 squads,
   mean of 10, n 2 a side: order 2.31 / 2.32 ms veto ON v 2.22 / 2.23 off (ratio ~61 v ~58 of 104); click-to-order 2.55 v 2.36 ms. ~0.1 ms
   of geometry; C46.4 does not require it. Orders times his failing Gorge click in V3; native ports the re-deal only if that is over a few ms.
