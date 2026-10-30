@@ -408,6 +408,17 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   it can within 2.5 m of where it first came to rest, then stops, and fires when the enemy is in its arc (measured from rest: a
   15 m/s scout brakes ~5 m). GRANT to engage: a cap in `order_controller.gd`'s `_stop_turn_in` and the face branch's turn-in /
   creep for his stop / hold only, behind `--player-authority`; `Manoeuvre.turn_in` untouched. Dev seeds first, bar on 11349-11396.
+- **R45.23 (~19:40) Bar B3 partial: D2 deciding misses on EXACT TIES; the decision rule stated before the remaining legs land.**
+  Frozen 26b1425e7, C++ drive: D1 his start PASS (t4 / t97 v t44 / t140). D2 (builder0 light, 11701-11748 + named 11187, 98 rows): 12
+  base-stuck poses, ON sooner 9 = 75 % v 80 %; median -2.78 s PASS; ceiling PASS (worst +1.3 s, median -0.52 s); named 11187 +0.8 s PASS.
+  The 3 non-wins are ONE pose (10, the Crossing crawl with a squadmate's nose 1.7 m beside), all EXACT TIES (t360 = t360, t360 = t360,
+  t187 = t187; traced 11711: the look fires, its back-up is blocked at 2.0 m, it withdraws, today's planner runs the same plan to the
+  tick). B3 FAILS AS FILED on D2. **Ruling, stated now, before guard poses / workload / group / fights / G1 land:** lesson 339 (third
+  bar; his start passes every time; no pose slower than today by > 1.3 s) — if EVERY remaining line passes as filed, backout ships ON
+  (`--traffic-off=backout` the escape) after a quiet builder0 perf read; if any remaining line fails, it stays OFF. A tie is "does what
+  it does today", which he cannot see as worse; the 80 % line's tie-as-loss is a filing-design note for later bars, not an amendment.
+  Also: his Gorge replay now FAILS against his recording in BOTH arms (within 4 / 20 from Hunters_1 at 40 s): main's E2 changes his
+  match; engage confirms which of his orders diverges.
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
