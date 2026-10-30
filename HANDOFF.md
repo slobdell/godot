@@ -56,6 +56,12 @@ check is RUNNING on BOTH builders** (~/orch-r45/main-check-2e3bc4620-builder0.lo
 ~/tank_squad; full check 525 s (v ~55 min builder0), sim-baseline hashes IDENTICAL to builder0's. Gaps: no Chrome (web-smoke red until
 the lead installs it), no perf nominal yet (native records it). Becomes the default REMOTE_HOST after tonight's frozen series.
 
+**MAIN NOW (~23:45 PDT): 82fe84e83.** main 52db910b9 GREEN builder3 (3460/0, 28 targets ALL JUDGED, `exited 0`,
+~/orch-r45/main-check-52db910b9-builder3.log) covers backout ON, E2 + R45.24 fix, native N2/_assign/builder3/watchdog/memory guard,
+garage ARENA= (part 1). Since: + manoeuvre's round-46 OFF code (cccc2684f, 60/60 default probe), native 9b8918fb4 (CHECK_JOBS=6) and docs.
+One builder3 main check owed after engage's garage part 2 (dc12df673) merges. **G2 series moved to builder3 23:16 (builder2 preempted
+~22:56 before any row); ETA BAR_DONE ~01:00-01:15.**
+
 **G2 SERIES RUNNING (~21:20 PDT):** frozen 03d1ddbc5 builder0 check GREEN (3452/0, 28 ALL JUDGED, perf judged, sim-baseline unmoved,
 `exited 0`, ~/orders-r45/freeze/check-03d1ddbc5-builder0.log); series on builder2 (parts A 11201-11224, A2, B 11225-11236, C
 11237-11248; several hours). Ship rule R45.25 (strict kind 2); ship = merge native's 6562c6beb (freeze + main + the gate_width swap,
