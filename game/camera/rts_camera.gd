@@ -515,7 +515,9 @@ func _process_timed(delta: float) -> void:
 	HudClock.end(&"cam.vision", _hc1)
 	var keys := Vector2(float(Input.is_key_pressed(KEY_RIGHT)) - float(Input.is_key_pressed(KEY_LEFT)),
 			float(Input.is_key_pressed(KEY_DOWN)) - float(Input.is_key_pressed(KEY_UP)))
-	if edge_pan and DisplayServer.window_is_focused() and camera.get_viewport() != null:
+	# Round 46 (C5): no edge pan without a window. Headless, the mouse reads (0, 0), the screen's corner, and a replay of his match
+	# (tests/replay_orders.gd) was dragged up-left every frame and held in "manual", so it never reached the automatic frame.
+	if edge_pan and DisplayServer.get_name() != "headless" and DisplayServer.window_is_focused() and camera.get_viewport() != null:
 		var viewport := camera.get_viewport()
 		var mouse := viewport.get_mouse_position()
 		var size := viewport.get_visible_rect().size
