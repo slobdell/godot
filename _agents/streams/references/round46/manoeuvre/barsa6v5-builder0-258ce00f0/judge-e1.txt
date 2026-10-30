@@ -1,0 +1,15 @@
+paired seeds: 24 (off 24, on 24)
+line                    OFF         ON  mean diff       se        z | reading
+stuck                  65.6       65.6       0.00     0.00     0.00 | DECIDING: ON <= 0.25 x OFF (False) and mean < 0 by >= 2 se (False) -> FAIL
+stuck_suppress          8.1        8.1       0.00     0.00     0.00 | REPORTED (R42.6): SUPPRESS share of ON's stuck = 12 %
+no_shot               195.3      195.3       0.00     0.00     0.00 | reported
+first_hit              3.34       3.34       0.00     0.00     0.00 | DECIDING: ON < OFF by >= 2 se -> FAIL
+never_hit               3.0        3.0       0.00     0.00     0.00 | reported
+deaths_moving           0.0        0.0       0.00     0.00     0.00 | GUARD: ON <= OFF + 1.645 se (totals; se of the total 0.00) -> PASS
+deaths                 37.0       37.0       0.00     0.00     0.00 | reported
+never_reached           4.0        4.0       0.00     0.00     0.00 | reported
+dither                 0.02       0.02       0.00     0.00     0.00 | REPORTED, cap 2.0 a crew an order -> within
+line_flips             1.59       1.59       0.00     0.00     0.00 | reported
+hits                 3547.0     3547.0       0.00     0.00     0.00 | reported
+target_dead           31.47      31.47       0.00     0.00     0.00 | reported
+lines_per_plan_tick       2.82       2.82       0.00     0.00     0.00 | reported
