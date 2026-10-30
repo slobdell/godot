@@ -25,7 +25,7 @@ light, from `../godot-manoeuvre-b3x`: corpus, guard poses, named pose, fights, G
 | b1_judge: other crews' reversing ticks / seated (per arena) | -4.7/+2.0, +1.8/+1.0, -3.2/+1.3 se; nose-on crews clear 8 m 260 -> 280 ticks (+1.3 se, reported) | PASS |
 | REPORTED (not a line): k-turn s per arena | crossing -0.1 se, locks +1.5 se, **terminus +3.7 se (+3.3 s a run)**: the rule's own back-ups, the same shape B2 read at +2.6 se | — |
 | Engage's line: his Gorge replay 107 s base v bo | per-crew divergence tables identical (both arms read the same FAIL v his recording: main's E2 moved the replay, engage's) | PASS |
-| Group guards G5 / G6 / G7 (11725-11736) | PENDING (builder2 light) | — |
+| Group guards G5 / G6 / G7 (11725-11736; builder2 light, 48 paired) | identical arms: every-squad-in 73.2 = 73.2 s, never-in 1.00 = 1.00, friendly contact ticks 663820 = 663820 (0 se) | PASS |
 | G1 v9 corridor: ORDERS_PROBE_SQUAD rows byte-identical, g1v8 lines | PENDING (builder0 light) | — |
 | Fights G1-G4 (11737-11742) | PENDING (builder0 light) | — |
 | Perf | NOT JUDGED on builder2; a quiet builder0 perf read of the merge is owed before ON (R45.23) | — |
