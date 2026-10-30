@@ -293,7 +293,8 @@ const CORNER_W := 4.0
 ## With it on, the vision frame's placement, the yaw follow, the danger look and the corner swing stop DECIDING: the planner
 ## picks the yaw every CameraPlanner.PLAN_S and the frame at that yaw every frame; the glide still moves the view, his hand
 ## still wins for the hand-back time. A NEW selection off his screen is not held by the aim hold (he cannot be aiming at
-## what he cannot see). `--camera-planner=on` (OFF until Bar C1 passes).
+## what he cannot see). ON as the ship candidate for his answer (R46.23: Bar C1 failed only on the ambush rear lane); `--camera-planner=off` is round 45's
+## camera (the vision frame + the danger look).
 var planner_on := false
 var planner := CameraPlanner.new()
 ## () -> Array[String]: the commanded units' names (RtsControls.commanded_units; skirmish_mode wires it, C42.3), so a new
@@ -464,7 +465,7 @@ func _ready() -> void:
 	focus_omega = float(flags.text("camera-glide-omega", str(GLIDE_FOCUS_OMEGA)))
 	danger_on = flags.text("camera-danger", "on") != "off"  # K4.3: ON (Bar K4 v2 passed, 9737-9772); =off = round 41
 	corner_on = flags.text("camera-corner", "off") == "on"  # K5.3: OFF until Bar K5 passes
-	planner_on = flags.text("camera-planner", "off") == "on"  # round 46 (C2): OFF until Bar C1 passes
+	planner_on = flags.text("camera-planner", "on") != "off"  # round 46 (R46.23): ON for his answer; =off = round 45's camera
 	_plan_log = flags.has("camera-trace")
 	CameraPlanner.override_weights(flags.text("camera-planner-w", ""))  # dev only: a bar runs at the constants
 	# Round 46 (C5): a headless replay frames at his screen's shape (`--camera-screen=1920x1080`; headless roots are 64x64).
@@ -1394,7 +1395,7 @@ func set_auto_frame(on: bool) -> void:
 ## Round 7 (A): turn the yaw toward the selection's facing (see `yaw_follow`). Round 42 (K4.2): with `danger_on`, toward
 ## where the danger is instead (`danger_look`), with its own deadband and hold.
 func _update_yaw_follow(delta: float) -> void:
-	if planner_on:
+	if planner_on and _track == Track.VISION:
 		_yaw_turning = false  # round 46: the planner decides the yaw (with the frame), not a rule of its own
 		return
 	if not yaw_follow or not facing.is_valid() or _before_overview != null or _clock - _manual_at < handback_seconds:
