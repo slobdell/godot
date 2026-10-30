@@ -10,7 +10,7 @@ _Last updated: 2026-10-30 ~09:45 PDT — **ROUND 46 IS CLOSED. NEXT: ask him the
 
 **Every round-46 session is done; start FRESH sessions.** **Two questions left for him first (the camera was answered ON, R46.37) (player terms, one recommendation each; R46.23,
 R46.17/18, R46.36):**
-1. ~~The new camera~~ **ANSWERED: ON** ("can't you just turn on the new camera planner by default?", R46.37): main e306ce27f merged round46/camera; `--camera-planner=off` the escape. Round 47 camera: C1 v2 (rear ambush) from his next playtest.
+1. ~~The new camera~~ **ANSWERED: ON** ("can't you just turn on the new camera planner by default?", R46.37): main e306ce27f merged round46/camera (GREEN builder3, 28 ALL JUDGED); `--camera-planner=off` the escape. Round 47 camera: C1 v2 (rear ambush) from his next playtest.
 2. **Settle-at-click (S v6): keep OFF (recommended).** Four lines failed (start-zone give-way on Crossing/Locks, kill share 53 -> 49 %) and
    ON breaks three no-crossing tests (R46.18).
 3. **The tighter group file he picked: keep today's spacing (recommended).** Packing halves the line but the last squad gets in 1-2 s LATER
