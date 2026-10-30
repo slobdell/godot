@@ -822,6 +822,39 @@ struct Drive {
 		static const String backout("backout");
 		return c.backout_ready && !traffic_off(backout);
 	}
+	// ---- Round 46 (native N2, manoeuvre M5 `--traffic-on=shortfwd`, C46.4) ----
+	// Movement.shortfwd_on(): Traffic.off("shortfwd") read live; false on a tree without M5 (shortfwd_ready).
+	bool shortfwd_on() {
+		static const String shortfwd("shortfwd");
+		return c.shortfwd_ready && !traffic_off(shortfwd);
+	}
+	// Movement._his_short_move(goal, radius), line by line: his direct order (TankBrain._his_order; any other controller has
+	// none), the goal within SHORTFWD_RADII turning circles (and not on top of the hull), within SHORTFWD_DEG of the nose.
+	bool his_short_move(const Vector3 &goal, double radius) {
+		static const StringName his_order("_his_order");
+		const Variant his = ctl->get(his_order); // Nil on a plain OrderController: `ctl as TankBrain` is null there
+		if (his.get_type() != Variant::BOOL || !(bool)his || radius <= 0.0) {
+			return false;
+		}
+		const Vector3 to((real_t)((double)goal.x - (double)here.x), 0.0f, (real_t)((double)goal.z - (double)here.z));
+		const double length = to.length();
+		if (length > c.SHORTFWD_RADII * radius || length < 0.5) {
+			return false;
+		}
+		const Vector3 forward = Vector3(-basis_z.x, 0.0f, -basis_z.z).normalized();
+		return std::fabs((double)forward.signed_angle_to(to, Vector3(0, 1, 0))) <= Math::deg_to_rad(c.SHORTFWD_DEG);
+	}
+	// The forward arc toward the goal's side must be clear within the planner's reach: `_arc_hit(map, _kturn_frame(tank), here,
+	// fwd, -side, goal, _outline_offs(map, frame, here, fwd), KTURN_HIT_WITHIN_M + 0.5) <= KTURN_HIT_WITHIN_M` is a hit. Called
+	// back (his short move only): the mover's own frame, outline and sweep (itself NavNative's arc_hit), so the bits are its.
+	bool shortfwd_hit(const Vector3 &here_s, const Vector3 &fwd_s, double side_s, const Vector3 &goal) {
+		static const StringName kturn_frame("_kturn_frame"), outline_offs("_outline_offs"), arc_hit("_arc_hit");
+		const RID map = tank->get_world_3d()->get_navigation_map();
+		const Variant frame = m->call(kturn_frame, tank);
+		const Variant offs = m->call(outline_offs, map, frame, here_s, fwd_s);
+		const double hit = m->call(arc_hit, map, frame, here_s, fwd_s, -side_s, goal, offs, c.KTURN_HIT_WITHIN_M + 0.5);
+		return hit <= c.KTURN_HIT_WITHIN_M;
+	}
 	// Movement._grouped_crew() (a squad under one group click, C44.3): the GDScript, read only, asked last.
 	bool grouped_crew() {
 		static const StringName grouped("_grouped_crew");
@@ -3929,8 +3962,23 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 			drive_vector = wheels(c, here, forward, waypoint, arrive, radius, speed, remaining, -1.0);
 		} else {
 			drive_vector = wheels(c, here, forward, waypoint, arrive, radius, speed, remaining, 1.0);
+			// Round 46 (native N2, manoeuvre M5 `shortfwd`): his short move drives the tightest FORWARD arc toward the point's side
+			// where steering's circle rule would back away, unless that arc is blocked within reach; no k-turn is planned for it.
+			bool short_forward = shortfwd_on() && !direct && !reverse && his_short_move(goal, radius);
+			if (short_forward) {
+				const Vector3 here_s(here.x, 0.0f, here.z);
+				const Vector3 fwd_s = Vector3(-basis_z.x, 0.0f, -basis_z.z).normalized();
+				const double side_s = fwd_s.signed_angle_to(Vector3(goal.x, 0.0f, goal.z) - here_s, Vector3(0, 1, 0)) >= 0.0 ? 1.0 : -1.0;
+				if (shortfwd_hit(here_s, fwd_s, side_s, goal)) {
+					short_forward = false;
+				} else if (drive_vector.x < 0.0) {
+					drive_vector = Vector2((real_t)c.SHORTFWD_THROTTLE, (real_t)-side_s);
+					static const StringName shortfwd_ticks("shortfwd_ticks");
+					sset(shortfwd_ticks, (int64_t)sget(shortfwd_ticks) + step);
+				}
+			}
 			// Round 44 (M2, backout): or the departure look / its leg (Movement._backout_due) where today's look is not due.
-			if ((!direct && drive_vector != Vector2() && pathing_ready()) || backout_due(direct, drive_vector, goal)) {
+			if ((!direct && !short_forward && drive_vector != Vector2() && pathing_ready()) || backout_due(direct, drive_vector, goal)) {
 				// kturn_on() (default) and circle_fit_on() (opt-in, off): the planned reverse.
 				// TankCommand.new(): the Variant holds the only reference (a RefCounted), so it lives as long as `leg`.
 				const Variant leg_ref = c.tank_command->call(k.new_);
@@ -3941,7 +3989,7 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				// a call only the departure look brought here that plans nothing restores today's cadence below. A tree without the
 				// static (`_backout_only` absent) is today's: nothing set, nothing restored.
 				const bool fallback_tree = c.backout_ready && sget(k_backout_only()).get_type() == Variant::BOOL;
-				const bool looks_today = !direct && drive_vector != Vector2() && pathing_ready();
+				const bool looks_today = !direct && !short_forward && drive_vector != Vector2() && pathing_ready();
 				const int64_t check_was = v._kturn_check();
 				if (fallback_tree) {
 					sset(k_backout_only(), !looks_today);

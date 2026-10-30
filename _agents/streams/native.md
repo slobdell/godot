@@ -59,6 +59,34 @@ _(worker keeps this current: report at the top, every number with commit, machin
 **Report (2026-10-30, start).** Started from main 7189e3ff3 (code = cb1014bed; the orchestrator's launch check runs it on builder3; no
 baseline check of mine).
 
+**Stretch: where his Terminus tick goes (proposal, numbers before code).** `make replay-match RECORDING=<his Terminus>
+REPLAY_SECONDS=149 CREWS=all REPLAY_FLAGS=--sim-profile` (tests/replay_orders.gd now honours `--sim-profile`; profiling only: the
+replay stays 20/20 within 3 m), stream/native a06d450df+, builder3 light, native ON, 4500 ticks, n=1:
+**tick 14.18 ms**; controllers 9.12 (brain/think 4.90: situation 1.51, t.poll 0.89, decide 0.64 already C++, act 0.64;
+brain/execute 3.67); **elements 3.06 ms (one segment, no sub-sections)**; tanks 1.02 (drive 0.61); visfield 0.38; match 0.34.
+Candidates: (a) `segment:elements` 3.06 ms: Element.update for the replanning elements, GDScript, nothing native; needs a sub-profile
+first (element.gd is engage's / element_plan manoeuvre's: profile sections are additive lines in their paths, so asked through the
+orchestrator); (b) `brain/situation` 1.51 ms (build_situation, GDScript; s.contacts 0.55 the largest part). Recommendation: (a)'s
+sub-profile next, then port whichever single function is >= 1 ms with its GDScript kept as the fallback. JSON:
+`references/round46/native/terminus-sim-profile-builder3/sim-profile.json`.
+
+**shortfwd twin (manoeuvre M5, C46.4): EQUAL.** stream/native 7e3874bab: drive_native.cpp shortfwd_on / his_short_move natively, the
+forward arc's test called back (_kturn_frame / _outline_offs / _arc_hit, his short move only); tests/test_native_drive_shortfwd.gd
+2360 drives / 0 mismatches, 166 forward-arc ticks (laptop; a flipped turn sign reads 155 mismatches); every drive twin on builder3
+light 14 / 0. pair/native-shortfwd 4ac0236bd = manoeuvre 8796e94f4 + it + traffic.gd's gate line for shortfwd dropped: manoeuvre's
+corpus (SHORT_CORPUS=on SHORT_SEEDS=7001-7007, builder3 light) native v GDScript 14 / 14 SHORT_ROW rows byte-identical.
+**R46.11 + the divergence end rule: GREEN a06d450df builder3** (3472 / 0, ALL JUDGED). **N3 closed:** camera sliced its planner to
+one pose a frame (camera 1f3e6f111; laptop 0.35 ms mean, p99 0.9) and dropped the ray batch. **R46.13 stands:** orders cut his
+failing Gorge click's veto from 45-66 ms to 10.5 ms in GDScript (f6bb52518; laptop, native ON).
+
+**Elements sub-profile (R46.14 probe, branch probe/native-elements 9145cc82a, NOT merged; builder3 light, his Terminus 149 s,
+native ON, n=1, this run's tick 12.24 ms):** elements segment 2.67 ms = Element.update 2.62 (2.32 calls a tick): **ElementPlan.build
+1.06 (0.46 ms a call)**, ElementSituation.build 0.55, ground (apply_swap / ground / ground_stations) 0.32, post (_take .. _issue) 0.32,
+pre-plan (corridor, transit, crossing, stall) 0.25. **Proposal (round 47, owners' code, so not this round):** ElementPlan.build is
+the round's single biggest GDScript function on his match (~1.1 ms a tick here; the laptop reads ~2.75x builder0); next is the
+brain's build_situation (1.51 ms, contacts 0.55). Either port needs its owner (manoeuvre / engage) to agree and a twin proof like
+decide's. JSON beside the first profile.
+
 **His Terminus replay is bit-exact to the end of his match (3888ff416).** The "17/20 at 151 s" was post-match: his match ended at
 tick 4471 (149.0 s, elimination); the census rows after it are his results screen v a headless replay running on. Through 149 s
 every crew 0.0 m, and the replay's end row equals his (tick 4471, state_hash 4682461502ba5500). divergence.py now judges to his
@@ -107,5 +135,7 @@ A remote run now runs `native-fresh` first (not for check / native* / NATIVE=off
 2. **N2 twins as bars are filed** (V1 first: it outranks N1's speed, the orchestrator 2026-10-30).
 3. N1b the memo + `control-timing`; N3 camera's ray batch if asked; N4 lines_r46; N5 builders; stretch: Terminus sim profile.
 
-**Questions for the lead:** none.
+**Questions for the lead:** none. (Laptop housekeeping: rounds 36-40's raw native folders `~/projects/godot-native-guard-raw`,
+`-score-raw` and five `.out` files, whose judged results are in `references/`, are packed in `~/projects/godot-native-old-raw-r36-r40.tar.gz`
+(21 MB, verified, 5307 files; ~360 MB freed). Delete the tarball whenever you like.)
 **Requests to other streams:** orders, the V1 seam above (through the orchestrator).
