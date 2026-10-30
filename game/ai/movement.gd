@@ -1239,12 +1239,19 @@ func drive(cmd: TankCommand, order: Dictionary, delta: float) -> void:
 			# within SHORTFWD_RADII turning circles and ahead-ish (within SHORTFWD_DEG of the nose) takes the tightest FORWARD arc toward the
 			# point's side instead, and no k-turn is planned for it; the pursuit law catches the point as the arc comes round. OFF: today.
 			var short_forward: bool = shortfwd_on() and not direct and not bool(order.get("reverse", false)) and _his_short_move(goal, radius)
-			if short_forward and drive_vector.x < 0.0:
+			if short_forward:
 				var here_s := Vector3(tank.global_position.x, 0.0, tank.global_position.z)
 				var fwd_s := Vector3(-tank.global_basis.z.x, 0.0, -tank.global_basis.z.z).normalized()
 				var side_s := 1.0 if fwd_s.signed_angle_to(Vector3(goal.x, 0.0, goal.z) - here_s, Vector3.UP) >= 0.0 else -1.0
-				drive_vector = Vector2(SHORTFWD_THROTTLE, -side_s)  # Steering's sign: a point to the LEFT (positive error) needs turn < 0
-				shortfwd_ticks += ctl._step
+				# The forward arc must be CLEAR within the planner's reach (his Gorge scout stood at the drop's edge: the planner's 2 m
+				# back-up there was the right move, and today's planner keeps the tick when the arc meets anything within reach).
+				var map_s := tank.get_world_3d().navigation_map
+				var frame_s := _kturn_frame(tank)
+				if _arc_hit(map_s, frame_s, here_s, fwd_s, -side_s, goal, _outline_offs(map_s, frame_s, here_s, fwd_s), KTURN_HIT_WITHIN_M + 0.5) <= KTURN_HIT_WITHIN_M:
+					short_forward = false
+				elif drive_vector.x < 0.0:
+					drive_vector = Vector2(SHORTFWD_THROTTLE, -side_s)  # Steering's sign: a point to the LEFT (positive error) needs turn < 0
+					shortfwd_ticks += ctl._step
 			# Round 11 (R1): a forward arc that would hit a wall is preceded by a planned reverse leg (see _planned_reverse).
 			var looks_today := not direct and not short_forward and kturn_on() and drive_vector != Vector2.ZERO and Pathing.enabled and Pathing.is_ready(tank)
 			# Round 44 (manoeuvre M2, `backout`): the departure look at an order's start runs while the hull still sits "arrived" on

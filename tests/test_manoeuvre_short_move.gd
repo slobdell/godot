@@ -25,21 +25,21 @@ func teardown() -> void:
 var _native_drive_was := BrainSwitches.native_drive
 
 
-func _run(arm: String, angle_deg: float, distance_m: float) -> Dictionary:
+func _run(arm: String, angle_deg: float, distance_m: float, arena := "yard_open", spot := SPOT, yaw := 0.0) -> Dictionary:
 	Traffic.set_off("shortfwd", arm == "off")
 	if OS.get_environment("NOSED_GDSCRIPT") == "on":
 		BrainSwitches.native_drive = false
-	_lab = TacticsLab.create(self, 11, "yard_open")
+	_lab = TacticsLab.create(self, 11, arena)
 	_lab.game_match.set_meta("player_team", Match.Team.GREEN)  # his side: the one-crew element's move is HIS direct order (E2)
-	var scout := _lab.unit(Match.Team.GREEN, "Green_Hunters_5", SPOT, 0.0, "gang_scout")
+	var scout := _lab.unit(Match.Team.GREEN, "Green_Hunters_5", spot, yaw, "gang_scout")
 	await _lab.start()
 	Movement.reset_route_arms()
 	DoctrineTable.clear_cache()
 	var gangs: DoctrineTable = DoctrineTable.load_table("gangs").get("table")
 	var element := _lab.elements.form(["Green_Hunters_5"], "Hunters", gangs)
-	var forward := Vector2(0.0, -1.0)
+	var forward := Vector2(-sin(yaw), -cos(yaw))  # yaw 0 faces -z; positive turns left
 	var dir := forward.rotated(-deg_to_rad(angle_deg))  # positive = left of the nose
-	var to := Vector2(SPOT.x, SPOT.z) + dir * distance_m
+	var to := Vector2(spot.x, spot.z) + dir * distance_m
 	element.assign({"verb": "move", "to": [to.x, to.y], "drills": false})
 	var reverse_ticks := 0
 	var first_reverse := -1
@@ -82,3 +82,16 @@ func test_a_short_move_inside_the_circle_drives_forward_with_the_switch() -> voi
 		return
 	assert_eq(int(on["reverse_ticks"]), 0, "ON: no reversing on a short move ahead-ish of the nose (%d ticks)" % on["reverse_ticks"])
 	assert_true(int(on["arrived"]) > 0, "ON: it arrives within %d s (t%d)" % [WATCH_S, on["arrived"]])
+
+
+## Near an edge today's planner still decides: a Rat Rod nose-on to Locks' container at (-42, 80), 3 m off its face, told to move 5 m to a
+## point 56 deg off its nose: the forward arc meets the box within the planner's reach, so with the switch ON the scout still backs away
+## first exactly as today (the Gorge case: the planner's 2 m back-up at the drop's edge was the right move).
+func test_near_a_box_the_planner_still_decides_with_the_switch() -> void:
+	var at := Vector3(-42.0, 0.0, 80.0 + 1.22 + 3.0 + 1.5)  # the box's north face + 3 m + half the scout's length
+	var off := await _run("off", 56.0, 5.0, "locks", at, 0.0)
+	var on := await _run("on", 56.0, 5.0, "locks", at, 0.0)
+	assert_true(int(on["reverse_ticks"]) > 0 and int(on["first_reverse"]) <= SimClock.TICK_RATE / 2,
+			"ON: beside the box the planner's back-up still comes first (OFF %d reversing ticks, ON %d, first t%d)" % [off["reverse_ticks"], on["reverse_ticks"], on["first_reverse"]])
+	# Measured (laptop, GDScript): OFF 22 reversing ticks, arrived t43, 2.1 m away at most; ON 12, t29, 0.6 m: the forward arc takes the
+	# tick only once the arc is clear, after the back-up the box asks for.
