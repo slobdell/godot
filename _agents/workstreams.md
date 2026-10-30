@@ -381,6 +381,14 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.34 (2026-10-30 ~08:00) Holdway ON slows the web build ~5x: shortfwd ships alone; holdway waits for a cost fix.** manoeuvre's
+  8165af868 (shortfwd + holdway ON + native's re-staged tests + main b7942f378): `make check exited 2`, test 3505 / 0; FAILED sim-baseline
+  (all 13 arenas moved: expected) and **web-smoke** ("Page.captureScreenshot timed out", 0 console errors; the web game ~5x slower than
+  real time). Same-box A/B on builder3, web-smoke alone: 8165af868 FAIL x3 (loads 13-26); 39b6c7aa5 (both rules) FAIL (load 7); 11ff6586c
+  (shortfwd only) PASS (load 42); main b7942f378 PASS. Not squad_way's path queries (~200 in 82 s). Shortfwd ships alone (revert of the
+  holdway flip); holdway ON (R46.27 stands) after manoeuvre finds the GDScript hot spot and reports its native-build ms/tick on his Terminus
+  replay; the web build is low priority (memory) but the cost is a laptop risk.
+
 - **R46.33 (2026-10-30 ~06:50) Bar V1 PASSES; the veto-only group guard SHIPPED ON (main = + orders 12bd0c68f).** builder3, BAR_DONE 06:45,
   every part try 1 (1632 + 48 + 768 + main 816 + 24 + 384 runs): D1 across 0 (base 303); D2 sent back 0 (base 126); D5b his exact Gorge
   click 24/24; I1 OFF path == main 1224/1224; I2 0 differ (914 untouched, 310 changed); G1 PASS on 13 touched cells; B- no street run
