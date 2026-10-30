@@ -66,6 +66,40 @@ _(the worker keeps this current: report at the top, every number with commit, ma
 builder0 3446/0; no baseline check re-run, per the contract). Orchestrator session: `godot-b8`. builder0 has NO godot-manoeuvre folder
 (a cold import on the first remote run: watched); builder2 (up at launch) has `godot-manoeuvre` + `-light` warm.**
 
+### ROUND 45 FINAL REPORT, in his terms (2026-10-29 ~21:50 PDT; R45.28)
+
+- **What he will see: his War Rig backs out of the box.** Nose-on to a container, a crew now reverses at once and swings the way its
+  squad is going instead of pushing at the wall: on his own Locks start Guns_2 is reversing at tick 4 (was 44) and round the box at
+  tick 97 (was 140); across 48 fresh staged poses the stuck rig gets clear 2.8 s sooner on the median, no pose more than 1.3 s later,
+  the squad's start no slower, fights and the group column unchanged. **Shipped ON as main a5508847c (R45.26; `--traffic-off=backout`
+  the escape).** The one line it missed: on 9 of 12 base-stuck poses (75 %, line 80 %), the other three exact ties on one crawl pose where
+  a squadmate sits 1.7 m beside the rig and the back-up is refused. The cost he might notice: on Terminus the back-ups themselves and
+  the Tanker turning to make way add ~3 s of k-turning a run (reported, not a line).
+- **What he will NOT see yet: his squad settling where he clicks (the seat bound).** S v4 and S v5 both FAILED as filed. The settle
+  itself is real and wide (crews seated within the bound by 15 s: 220 -> 329 on fresh seeds, +8.4 se) but each version broke a guard he
+  would also feel: S v4 the last two crews pressing into a filled bound on Locks (+6.4 s wedged a run); S v5 (the last crew parks behind)
+  halved that (+3.4 s, still over) and on Crossing made a squad yield to ITSELF in its start zone (+9.9 s a run): the open seat and the
+  rear-crew term deal the two-row layouts seats whose paths cross. OFF; the round-46 starting point is written in
+  `references/round45/manoeuvre/barss5-builder0-fc639d7e0/README.md` (the rear-crew term must respect the squad's lateral order, or
+  the open seat goes on the squad's line of advance).
+- **What he will NOT see yet: the street hold reading where crews are GOING (holdway).** A6 v4 FAILED on far-crew brushes at the mouth.
+  Cause read: the "ordered way" is the crew's next STATION, which at the order's first ticks points sideways for crews driving to seats
+  beside them; that flipped who waits on a near-tie and tilted the waiting squad's spot line into the passer's path. One real bug fixed
+  (fc639d7e0: the verdict's time to the middle runs along the squad's way; OFF path unchanged); the definition change (the squad's route
+  direction, as backout's look uses) and a tie rule are round 46. OFF.
+- **Parked (OFF, code on the branch):** shortfwd (engage's E5 relay: his short move inside a wheeled crew's turning circle drives forward,
+  not back) -- staged and built, waits for his Gorge geometry / replay before a bar; native twin later.
+- **Round-46 starting points:** (1) S v6: the rear-crew term keeps S v4's lateral order for the rest of the squad, dev-read on Crossing's
+  Battery layout first (11751 is the cell); (2) holdway: ordered way = Element.transit route tangent at the crew; tie rule = the squad
+  whose lead is nearer the street's inside waits; fresh seeds; (3) shortfwd's bar after his Gorge recording; (4) backout's 75 %: the
+  refused back-up beside a squadmate (pose 10) -- a shorter first leg or a lateral look; (5) the k-turn-seconds cost on Terminus.
+- **Merge for round 46 (the OFF code since 5d4b3fa82):** stream/manoeuvre **cccc2684f** = main e9862553f merged + the S v5 seat fixes +
+  holdway's verdict fix + judges + the `assert_false` test fix (main's aed598359). Its builder0 check and the default orders probe v main
+  run after S v5's tail legs (`~/overnight-manoeuvre/r45/merge46/`, driver `merge46.sh`); the hash is named for main only when both read
+  green and 60 / 60. Every switch of this stream's new code is DEFAULT_OFF; backout's ON came from main.
+- **Cleanup at the close:** worktrees `../godot-manoeuvre-s5` (remove when the series ends), `-m46` and `-mainref2` (remove after
+  merge46 reads), their builder0 folders `~/tank_squad/godot-manoeuvre-{s5,m46,mainref2}`; branches wip/manoeuvre-* kept.
+
 ### WHERE IT STANDS (2026-10-29 ~21:30 PDT; backout shipped ON (R45.26); Bar S v5 FAILED as filed; holdway parked with its cause)
 
 - **main carries the stream's OFF code: 5d4b3fa82 merged as main 9203851ec** (its builder0 main check owed by the orchestrator, perf
