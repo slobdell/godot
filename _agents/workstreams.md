@@ -231,6 +231,13 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.17 (2026-10-30 ~05:40) Bar S v6 FINAL: FAILS on four lines; the ON recommendation is WITHDRAWN (R46.15's condition).** The fourth:
+  fights G4 kill share worst move 0.040 v the 0.03 line (Green 0.529 -> 0.489 over 18 fights; deaths 809 -> 826, within +/-40): S v4's old
+  miss (0.049; S v5 0.029). PASS: group G5/G6/G7 identical arms; G1 corridor 180/180 rows byte-identical; fights G1-G3 (give-way deaths
+  54 -> 45, stuck deaths 119 -> 125, contacts -3 %); 0 SCRIPT ERROR. Evidence `references/round46/manoeuvre/barss6-builder3-4e72c5470/`
+  (stream/manoeuvre 637d500d2). Stays OFF; still his to overrule (ship candidate wip/manoeuvre-seat-on e8051bbde, SEAT_* ON, check queued).
+  Orchestrator's recommendation now: keep OFF; round 47 reworks the start-zone give-way (compact squads parked in the neighbour's exit).
+
 - **R46.16 (2026-10-30 ~05:15) Round-47 native proposals from the elements sub-profile.** Probe branch probe/native-elements 9145cc82a
   (not merged), builder3 light, his Terminus 149 s, native ON, n 1, tick 12.24 ms: elements 2.67 ms, Element.update 2.62 (2.32 calls a
   tick): ElementPlan.build 1.06 (0.46 ms a call), ElementSituation.build 0.55, grounding 0.32, take/issue 0.32, corridor/transit/crossing
