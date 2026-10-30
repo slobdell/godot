@@ -796,3 +796,19 @@ lines carry an se and **none is inside its own noise**. The verdicts within 1.64
 se 1.72) and its D2 PASS (+0.40)**, so S v2 failed on the round's closest line and a re-read on fresh seeds could go either way; Bar
 A7's off_order_m PASS (+0.52, A7 shipped ON), A6's 2a (+0.61) and line 1 (+0.85), A6 v2 ARM-W's line 1 (-0.77) and 2b (+1.19), A6
 v2 ARM-WR's line 1 (-1.10), A6's 2b FAIL (-1.07), Bar A's G3 (+0.84) and G2 (+1.52). Judge tests 86/86 (laptop).
+
+## Round 45's lines (2026-10-30, native, close step 5b)
+
+`tools/judge/lines_r45.py`: 51 lines, every number quoted from *Bars (round 45)* and *Rulings (round 45)* (nothing re-measured):
+Bar B2 (10; FAILS on three lines, R45.15), Bar S v4 (5; FAILS Locks wedged, R45.17), Bar E1 (9; FAILS D1 / D3 / G3 as filed, ships ON
+under C45.2, R45.19), Bar A6 v4 (3; FAILS guard 4, R45.20), Bar B3 (10; FAILS D2's share on three exact ties only, every other line
+PASSES, backout SHIPS ON per R45.23 / R45.26), Bar S v5 (6; FAILS three guards, R45.28) and Bar E2b (7; FAILS G5, native 46/48, R45.29).
+**G2's lines are added when its verdict lands.** An se is derived only where a ruling printed the paired difference AND its z
+(se = d / z); a line filed as z alone or with no se carries `none` with a note. `inventory.py` -> `references/round45/sizing/
+inventory.{csv,md}` (770 lines, 332 with a noise estimate); `table.py` -> `table.csv` there, **no table change** (no round-45 pair's
+rows are on main as probe rows). Five of the round's lines carry noise and **none is inside it**. Within 1.645 se of going the other
+way: **A6 v4's guard 4 FAIL (-0.16 se: +2.54 a run v the filed +2.32, se 1.40)**, the round's closest line, so a re-read on fresh
+seeds could go either way. E1's G3 take-back FAIL (35/38 v 38/40) is a count, **Fisher one-sided p 0.48**: no evidence the rule
+changes take-back at all (R45.19 traced the one run it does make worse, 11326). S v5's Locks wedged FAIL (-1.20 se) is also within
+1.645 se; clear of it: S v5's Crossing yield + blocked FAIL (-2.10 se) and A6 v4's deciding PASS (+3.60). `probes.py` gains nothing:
+no round-45 pair's rows are probe rows on main.
