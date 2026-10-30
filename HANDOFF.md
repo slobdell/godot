@@ -4,24 +4,47 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-30 ~09:45 PDT — **ROUND 46 IS CLOSED. NEXT: ask him the three questions in the ▶ NEXT box, then prepare round 47 (all round-46 sessions are done; start fresh).** Main = 7eec72b37 GREEN builder3 (3517/0, 28 ALL JUDGED). **Default build box: builder3.** Worktrees: main only. Main is unpushed (he pushes)._
+_Last updated: 2026-10-30 ~16:15 PDT — **ROUND 46 IS CLOSED; he has PLAYTESTED it (four matches). NEXT: a fresh orchestrator prepares round 47 from the ▶ NEXT box below.** Main = 594d0addf (game code = e306ce27f, GREEN builder3 3518/0, 28 ALL JUDGED; everything after it is docs and recordings). **Default build box: builder3.** Worktrees: main only. Main is unpushed (he pushes)._
 
-## ▶ NEXT: ROUND 47 — prepare it from here (written at round 46's close, 2026-10-30 ~09:45 PDT; read this first)
+## ▶ NEXT: ROUND 47 — prepare it from his 2026-10-30 afternoon playtest (written ~16:15 PDT; read this first)
 
-**Every round-46 session is done; start FRESH sessions.** **Two questions left for him first (the camera was answered ON, R46.37) (player terms, one recommendation each; R46.23,
-R46.17/18, R46.36):**
-1. ~~The new camera~~ **ANSWERED: ON** ("can't you just turn on the new camera planner by default?", R46.37): main e306ce27f merged round46/camera (GREEN builder3, 28 ALL JUDGED); `--camera-planner=off` the escape. Round 47 camera: C1 v2 (rear ambush) from his next playtest.
-2. **Settle-at-click (S v6): keep OFF (recommended).** Four lines failed (start-zone give-way on Crossing/Locks, kill share 53 -> 49 %) and
-   ON breaks three no-crossing tests (R46.18).
-3. **The tighter group file he picked: keep today's spacing (recommended).** Packing halves the line but the last squad gets in 1-2 s LATER
-   with ~half again as many bumps (his Gorge click 13.1 v 8.2 s). `make skirmish SKIRMISH_FLAGS="--group-pack=on"` to see it.
+**Every round-46 session is done; start FRESH sessions.** His words, verbatim, and the orchestrator's read of each recording (ticks,
+positions, numbers) are in `game_design.md` from *His playtest after round 46's ships* through *His fifth note* (five sections), and
+the recordings are in `references/round46/playtest/` (crossing 15:41, locks 15:49, sumps 15:53, parade 16:03; all main e306ce27f,
+laptop preset, native). Replay any of them with `make replay-match RECORDING=...` / `make playtest-report RECORDING=...`.
+**Do not re-ask him what is already answered below.** Split these into streams (his priority is *units must look smart*):
 
-**Then his playtest of what shipped** (below), and round 47 from his words. **Round-47 starting points** (each stream's archived FINAL
-REPORT has the detail): orders — the street lay from the column (not G2), the route-waypoint re-deal, packing in the halt shapes, the
-wide-yard feel question; manoeuvre — S v6's start-zone give-way, holdway's web freeze trace (t ~11 s), the mover's yield pushing a held crew
-toward the enemy (12328), backout pose 10, holdway's head-on re-verdict; engage — the touch map's feed line; camera — C1 v2 (rear ambush
-without losing the building win) if he keeps the planner; native — ElementPlan.build then build_situation to C++ (R46.16). **Builds:**
-builder3 default; builder0 reference; builder2 burst only. Seeds start at 12401.
+1. **Stuck on buildings/containers (Locks: Burners2_4 sat 5+ s against a building, phase `driving`, `blocked` empty; Crossing: IFVs
+   stalled 3-4 s at the bridge, the rear one dithering after the front ones died).** "makes our units look dumb". A crew that makes no
+   progress must notice and re-route. Manoeuvre/traffic territory.
+2. **Detours and orders that don't take (Locks: his attack click on Lances_3 did not replace the IFV's attack_move for ~7 s; it drove
+   away, then ~230 m around via the middle bridge for a 93 m gap).** "seems like we're not using shortest path algorithms". Find why the
+   route cost the short way out (closed/danger-costed crossing, stale route) and why the order lagged; his direct order wins at once.
+3. **His side barely fires (Crossing: green 6 shots v 358 in 112 s; a gang tank 16-26 m from its attack target for ~10 s, never
+   firing).** Part is outranging (syndicate 90-110 m v gang 35-50 m, gang tank sight 60 m), but the close-range silence looks broken.
+   First suspect by removal: round 46's lane rule (`--lane-clear=off` replay). His second question, still open as a design option:
+   "take pot shots even if they can't get a good targeting fix". Also check army_cost 2490 v 5000 in that match is intended. Engage.
+4. **Group click splits squads far apart (Crossing 58-61 m, Locks 36-44 m between two squads' spots for one click). REPEAT ASK.**
+   He picked "Tighter" at round 46's prep (R46.2); it did not ship (R46.36). The old question 3 ("keep today's spacing?") is
+   **superseded by this repeat** — under *ship his fix ON* (memory; lesson 339) the closer group reaches his default game this round,
+   smallest ON change. Orders.
+5. **Camera (planner ON since R46.37): (a) a ~1 s `aim-hold` before panning on every selection change; (b) not tracking: Parade
+   median 18 m off his selection, 38 % of samples >30 m, 152 m off after a selection and still >100 m 8 s later.** Compare on the
+   Parade recording against `--camera-planner=off` first; if round 45's camera tracks better, the planner is the cause. Camera.
+6. **Order went to the wrong squad (Sumps): he selected squad 2 (tanks), the selection became squad 3 (artillery) 17 frames later,
+   and the screen order marched the mortars to the front.** Cause unknown (no key rows). Record the input that changes a selection;
+   make the order's recipient obvious; a screen order should not march artillery to the front line. Orders/UI.
+7. **Map kit backlog (his ask):** `arenas.md` *The cheap-piece map kit backlog* — nine pieces; **blast doors called by the announcer
+   are WANTED** ("can make the game generally more interesting"); sight screens, overpass, tank traps recommended first. Looks go
+   to the tap-to-approve page (2-3 directions) before 3D; announcer lines are paid generation, his approval. A stream when the
+   movement fixes above are under way; he decides how many streams this round runs.
+
+**Still open with him (ask once, player terms):** S v6 settle-at-click — keep OFF (recommended; four lines failed, R46.17/18).
+**Round-46 leftovers** (archived FINAL REPORTs in `streams/archive/round46/`): manoeuvre — S v6 start-zone give-way, holdway web freeze
+(t ~11 s), the yield pushing a held crew toward the enemy (12328), backout pose 10, holdway head-on; engage — touch map's feed line;
+camera — C1 v2 rear ambush; native — ElementPlan.build then build_situation to C++ (R46.16). Items 1-2 likely absorb some of
+manoeuvre's. **Models:** Fable quota was low on 2026-10-30 (round 46 ran all-Opus); ask him before using Fable. **Builds:** builder3
+default; builder0 reference; builder2 burst only. Seeds start at 12401.
 
 ## 🏁 ROUND 46 IS CLOSED (2026-10-30, morning) — read this first
 
