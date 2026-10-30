@@ -231,6 +231,15 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.15 (2026-10-30 ~05:00) Bar S v6 FAILS as filed on three guards; the seat bound's third failed bar -> his call (lesson 339);
+  OFF until he answers.** Frozen 4e72c5470 GREEN builder3, 12001-12024, 72 paired cells, 0 SCRIPT ERROR (stream/manoeuvre abe28a13a):
+  D1 seated within 15 s 249 -> 352 (+7.9 se) PASS; wedged PASS on all three arenas; never-arrived 194 -> 149; Terminus better on every
+  line. FAIL: Crossing yield+blocked +5.95 s a run (+2.1 se), Crossing k-turn +2.6 se, Locks yield+blocked +2.84 s a run (+2.2 se). Cause:
+  self-yield fixed (same-squad rows Crossing 80 -> 60, Locks 52 -> 24); squads yielding to EACH OTHER rise (Guns <-> Hunters Crossing
+  46 -> 77, Locks 35 -> 59): compact squads settle in the neighbour's way out of the start. Orchestrator's recommendation to him: ship
+  ON (his ask passes at +7.9 se; the cost is a few seconds of squads letting each other out at the start) PROVIDED the group, fights and
+  G1 legs still running pass; if any of those fails, the recommendation is withdrawn.
+
 - **R46.14 (2026-10-30 ~04:30) Native's profile of his Terminus match; a side-branch grant; the Terminus "drift" was post-match.**
   (1) Holdway has no C++ copy (the native drive calls back NativeTraffic.avoid_hold -> Traffic.refresh / hold_of): A6 v5 needs no twin.
   (2) His Terminus match ENDED at tick 4471 (149.0 s); the 150-151 s rows were post-match; the replay's end row equals his (state_hash
