@@ -102,6 +102,31 @@ aren't ours; stop only by a PID you started (lesson 336).
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar V2 FILED (orders, stream/orders 0989a4504, before any number on 11849-11896; the tighter file, R46.2; recorded verbatim by the
+  orchestrator).** Verbatim from the brief:
+
+  > **What he would see:** with two or more squads selected and one click, the squads behind the first stand closer: the group's file
+  > is about half as long behind the front squad (his Gorge click: 65.5 -> 50.8 m), so the whole group is at his click sooner and
+  > fights together; a bit more bumping in tight spots. The front squad keeps today's room at his click (at a neck a packed second
+  > rank stood in its halt). Nothing else changes: same places across, same order, the veto as shipped.
+  > - **Arms:** `base:` (the frozen tree's default: V1's veto ON, today's file) v `pack:--group-pack=on`, on a frozen tree whose check
+  >   is green (`make remote T=check`), V1 merged.
+  > - **Runner:** `tests/control/orders_v2_bar.sh <frozen tree> "11849 ... 11872" "11873 ... 11896" "11873 ... 11884" <out> 8`;
+  >   judge `tests/control/orders_v2_judge.py <out>` (its docstring is the lines below, verbatim in code). Parts: A geometry (Bar V1's
+  >   corpus: 24 cells + the 10 fixed clicks + his exact Gorge click), seeds 11849-11872; B streets (locks / crossing / terminus /
+  >   yard_open x 3 / 5 x click / route), seeds 11873-11896; C fight (terminus / locks, 5 squads, click, `--probe-fight=on
+  >   --probe-budget=3000`), seeds 11873-11884.
+  > - **Deciding:** **L1** 4-squad file length (the farthest place from his click among the squads it moves) pooled median over part
+  >   A's cells <= 75 m AND <= 0.7 x base's; **L1b** his exact Gorge click median <= 50 m; **L2** all-in sooner or identical: over A + B
+  >   runs where both arms got every squad in, paired, pack mean <= base mean (strictly sooner reported).
+  > - **Guards:** friendly contacts a run (A + B pooled) <= base x 1.25 + 5 (the "bit more bumping" he accepted, bounded); never-in
+  >   runs <= base x 1.2 + 1; wedged crew-seconds a run (the probe's `wedged_s`, Movement.wedged), paired, <= base + 2 se; part B's
+  >   street lines (places outside the corridor, metres driven outside it, all-in), paired, <= base + 2 se; the fight (part C): green
+  >   lost <= base + 2 se, green kills >= base - 2 se; V1 under the pack: places across a gap 0 and sent back 0.
+  > - **C46.4:** the pack changes the lay's step only (no drive, no brain, no new C++ seam): no native twin required.
+  > - **Ship rule:** ON (`GROUP_PACK` default flipped, `--group-pack=off` the escape) if every line passes; any FAIL -> what he would see
+  >   ON v OFF in player terms to the orchestrator the same hour (C46.2).
+
 - **FILED. Bar C1, ONE planner places the camera (camera; FILED in stream/camera Status 2026-10-30 ~03:30, before any number on 12201-12248; candidate commit 3bf76e839, its full check on builder3 running at filing).**
   Switch `--camera-planner` (OFF; ON on a pass; `=off` = today's camera: vision frame + danger look). CameraPlanner (one cost over
   13 headings x {tight, wide} frames: his selection, its path ahead, the contacts that matter, sight rays to his crews and path
