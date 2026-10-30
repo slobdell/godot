@@ -17,7 +17,7 @@ set -uo pipefail
 
 # Round 45 (native): every build box, one block each. builder3 (devia@builder3, Ryzen 9 9950X, 2026-10-29) joined builder0;
 # REMOTE_HOST names one box only, TANK_SQUAD_BUILDERS the list. builder2 (Spot, usually stopped) is asked only when named.
-hosts=${REMOTE_HOST:-${TANK_SQUAD_BUILDERS:-slobdell@builder0 devia@builder3}}
+hosts=${REMOTE_HOST:-${TANK_SQUAD_BUILDERS:-devia@builder3 slobdell@builder0}}
 root=${REMOTE_ROOT:-tank_squad}
 guard_dir=${TANK_SQUAD_SLOT_DIR:-/tmp/tank_squad_slots}
 ssh_opts=(-o BatchMode=yes -o ConnectTimeout=10)

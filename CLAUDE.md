@@ -8,7 +8,7 @@ pattern and it is how every round of this project runs.
 
 1. Read `HANDOFF.md`, then `_agents/orientation.md`, before doing anything.
 2. Every workflow is a Makefile target (`make help`). If `.tools/` is missing, run `make bootstrap`. Heavy
-   targets run on builder0: `make remote T=check` (`_agents/remote_builds.md`). **Read its result from the
+   targets run on builder3 (the default since 2026-10-29; builder0 is the perf reference box): `make remote T=check` (`_agents/remote_builds.md`). **Read its result from the
    wrapper's own `>> remote: make check exited <N>` line and the runner's `N passed, M failed` — never a
    shell exit code through a pipe.**
 3. Don't call a task done without the relevant checks in `_agents/verification.md`, and look at the

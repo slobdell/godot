@@ -1,4 +1,10 @@
-# Remote builds on builder0
+# Remote builds (builder3 by default since 2026-10-29; builder0 the reference box)
+
+> **2026-10-29 (round 45 close): `make remote` / `tools/remote.sh` default to `devia@builder3`** (Ryzen 9 9950X, 32 threads, 30 GB;
+> its section below). A full check there is ~9-11 min v ~38-57 min on builder0 and ~29-85 min on builder2 (same day). builder0
+> (`REMOTE_HOST=slobdell@builder0`) stays the machine a budget set on builder0 is judged on (perf lines are per machine: builder3's
+> brains run 1.16x slower per tick, its reference 1.13x faster); builder2 is burst only. Older text below that says "builder0" for
+> "the build box" predates the switch.
 
 > Added 2026-09-15. The lead: *"our machine is horrifically slow at building. Therefore we need to be able to offload
 > our builds to a remote build machine … in reality we just need to be able to offload builds to builder0 (i.e. I

@@ -15,7 +15,7 @@
 #   3. run `make <args>` there, through builder0's own heavy-run slots (tools/slot.sh, REMOTE_SLOTS at once)
 #   4. copy build/ back (logs, screenshots, reports; not the big exports) and exit with make's status
 #
-# Knobs (environment or local.mk): REMOTE_HOST (default slobdell@builder0), REMOTE_ROOT (default tank_squad),
+# Knobs (environment or local.mk): REMOTE_HOST (default devia@builder3 since 2026-10-29; slobdell@builder0 the reference box), REMOTE_ROOT (default tank_squad),
 # REMOTE_SLOTS, REMOTE_FORCE (launch on top of a live run of your own), REMOTE_CLAIM_TTL, QUIET_MAX_LOAD,
 # REMOTE_VERIFY=0 (skip the sha256 check on the files copied back).
 # Rendering targets use builder0's logged-in desktop session (DISPLAY :0).
@@ -64,7 +64,7 @@ if [ -z "${TANK_SQUAD_PINNED_SELF:-}" ]; then
 fi
 rm -f "$TANK_SQUAD_PINNED_SELF"
 
-host=${REMOTE_HOST:-slobdell@builder0}
+host=${REMOTE_HOST:-devia@builder3}
 root=${REMOTE_ROOT:-tank_squad}
 # builder2 (the GCP burst box: 32 threads, 121 GB; _agents/gcp_builder.md) takes 4 heavy runs at once, builder0 3 (6 drove load to ~70 on 32 threads, 2026-10-18).
 # builder3 (devia@builder3: Ryzen 9 9950X, 16 cores / 32 threads, 30 GB, 2026-10-29) takes 6: load ~20 at 6 at once, main's

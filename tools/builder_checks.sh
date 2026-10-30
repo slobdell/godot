@@ -3,7 +3,7 @@
 # worktree (cwd), whatever form they run in: `make check`, `make native check`, and the slot wrapper's
 # `make --no-print-directory [native] check` (make variables may follow). Prints the count, then one cwd a line.
 #
-#   tools/builder_checks.sh                    ask builder0 (REMOTE_HOST, default slobdell@builder0)
+#   tools/builder_checks.sh                    ask builder3 (REMOTE_HOST, default devia@builder3)
 #   tools/builder_checks.sh --wait-below N     wait (60 s polls) until fewer than N run, then print the count (C35.1: two)
 #   tools/builder_checks.sh --all              every build box (TANK_SQUAD_BUILDERS, default builder0 and builder3): "<host> <count>"
 #                                              a line, or "<host> UNREACHABLE"; exits 3 when any box could not be asked
@@ -15,7 +15,7 @@
 # full check) is a row too, so the count sees a claimed check even before its make shows in the process list. The gate is
 # advisory now: the claim itself is the lock, and a check that loses the race waits for it on the builder.
 set -euo pipefail
-host=${REMOTE_HOST:-slobdell@builder0}
+host=${REMOTE_HOST:-devia@builder3}
 
 count() { # stdin: cwd<TAB>args rows -> the count, then the cwds
 	awk -F'\t' '$2 ~ /(^|[ \/])make( --no-print-directory)?( native)? check( |$)/ { seen[$1] = 1 }
@@ -53,7 +53,7 @@ case "${1:-}" in
 	done ;;
 --all)
 	unreached=0
-	for host in ${TANK_SQUAD_BUILDERS:-slobdell@builder0 devia@builder3}; do
+	for host in ${TANK_SQUAD_BUILDERS:-devia@builder3 slobdell@builder0}; do
 		if got=$(rows); then echo "$host $(count <<<"$got" | head -1)"; else echo "$host UNREACHABLE"; unreached=1; fi
 	done
 	[ "$unreached" = 0 ] || exit 3 ;;
