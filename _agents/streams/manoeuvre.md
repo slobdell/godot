@@ -85,6 +85,10 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   runs to the same plan; B2 had read those cells a little sooner by the pre-fallback look's accident. The 80 % line counts a tie as a
   loss. **Engage's line PASS** (the Gorge tables identical base v bo; the replay itself reads FAIL v his recording in both arms since
   main's E2 — engage's). Guard poses, workload, group, fights, G1 probe still running.
+- **D3 guard poses (builder0 light, 24): PASS, 0 worse** (the no-room line and pose 2's ceiling line). **R45.23:** B3 FAILS AS FILED on D2's
+  share; if EVERY remaining line passes, backout ships ON after a quiet builder0 perf read of the merge; if any fails it stays OFF. The
+  ship candidate is prepared: `wip/manoeuvre-backout-on` **466d96191** in `../godot-manoeuvre-on` = 26b1425e7 + `backout` out of
+  `Traffic.DEFAULT_OFF` + `test_manoeuvre_backout`'s default test flipped (2 files, 5 / 4 lines; nothing else); its check waits on the legs.
 - **Then:** S v5's Terminus dev read (the +8 s), its bar on 11751-11798 only on a clean three-arena read; holdway's head-on release
   last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars, each failing as filed with his
   line passing) follows unchanged.
