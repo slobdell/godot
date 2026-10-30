@@ -285,9 +285,13 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 			path_blocked += 1
 	var action_w := 0.0
 	var action_off := 0.0
+	var squad := RtsCamera._middle(own, own.size())
 	for contact: Array in w.get("action", []):
 		action_w += float(contact[1])
-		if not on_screen(screen_of(view, (contact[0] as Vector3) + Vector3(0, 1, 0), aspect), bottom):
+		# Behind his squad (more than 90 deg off the view from it) is not shown, whatever the projection says: a wide frame
+		# parks such contacts on the screen's bottom edge, under the card (the danger camera's danger_ahead rule; dev 7025).
+		if RtsCamera.behind_view(yaw, squad, contact[0] as Vector3) \
+				or not on_screen(screen_of(view, (contact[0] as Vector3) + Vector3(0, 1, 0), aspect), bottom):
 			action_off += float(contact[1])
 	var outside := 0
 	var plane := Plane(Vector3.UP, 0.0)
@@ -304,10 +308,13 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 		if to_war.length() > WAR_NEAR_M:
 			var war_off := rad_to_deg(absf(angle_difference(yaw, RtsCamera.yaw_facing(to_war))))
 			war_cost = w_war * clampf((war_off - WAR_FREE_DEG) / (WAR_FULL_DEG - WAR_FREE_DEG), 0.0, 1.0)
+	# A gun counts as shown only within RtsCamera.DANGER_VIEW_DEG of the view's direction from his squad (the danger camera's
+	# own test, gun_off_view): a wide frame that parks a gun behind him on the screen's bottom edge does not show it (dev 7025).
 	var guns: Array = w.get("guns", [])
 	var guns_off := 0
 	for at: Vector3 in guns:
-		if not on_screen(screen_of(view, at + Vector3(0, 1, 0), aspect), bottom):
+		var flat := Vector3(at.x - squad.x, 0.0, at.z - squad.z)
+		if flat.length() > 0.5 and absf(angle_difference(yaw, RtsCamera.yaw_facing(flat))) > deg_to_rad(RtsCamera.DANGER_VIEW_DEG):
 			guns_off += 1
 	var sel_w := w_sel * (FRESH_X if bool(w.get("fresh", false)) else 1.0)
 	var terms := {
@@ -333,6 +340,7 @@ static func score(yaw: float, focus: Vector3, level: float, current_yaw: float, 
 ##   path: Array[Vector3]  the path ahead (path_ahead)                     lean: Vector3 or null  where the frame leans
 ##   action: Array of [Vector3, weight]  the contacts that matter          fresh: bool  a new selection (FRESH_S)
 ##   aspect, pitch, inset, bottom, floor_level, cap_level                  data: the drawn layout (RtsCamera.seen)
+##   guns: Array[Vector3]  enemies firing at his selection (guns_of)       clamp: Callable(Vector3) -> Vector3, the rig's look_clamp
 ## `current_yaw` is the wanted yaw now. Returns {yaw, focus, level, wide (framed with the contacts), cost, terms, switched, candidates} or {} with nothing
 ## to frame. The current yaw wins unless a challenger is SWITCH_MARGIN cheaper. Records itself in `last`.
 func plan(w: Dictionary, current_yaw: float, now := 0.0) -> Dictionary:
@@ -381,6 +389,9 @@ func step(w: Dictionary, current_yaw: float, now: float, n: int) -> Dictionary:
 		if vi == 1 and wide.is_empty():
 			continue  # no contacts this frame: no wide frame to score (costs nothing)
 		var v: Array = CameraPlanner.fit(own, w.get("lean"), yaw, w) if vi == 0 else CameraPlanner.fit(own + wide, null, yaw, w)
+		var clamp: Callable = w.get("clamp", Callable())
+		if clamp.is_valid():
+			v[0] = clamp.call(v[0])  # C1 v2: score the pose the rig will SHOW (it clamps the focus to ground his force sees)
 		var pick := CameraPlanner.score(yaw, v[0], float(v[1]), current_yaw, w, solids)
 		pick["wide"] = vi == 1
 		pick["yaw"] = yaw
