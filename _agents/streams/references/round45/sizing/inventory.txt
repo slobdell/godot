@@ -1,1 +1,1 @@
-INVENTORY 770 lines, 332 with a noise estimate, 80 pass lines inside the noise -> _agents/streams/references/round45/sizing/inventory.csv, _agents/streams/references/round45/sizing/inventory.md
+INVENTORY 779 lines, 333 with a noise estimate, 80 pass lines inside the noise -> _agents/streams/references/round45/sizing/inventory.csv, _agents/streams/references/round45/sizing/inventory.md
