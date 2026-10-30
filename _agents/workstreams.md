@@ -106,6 +106,13 @@ _(filed here BEFORE any number; newest first)_
 
 _(newest first)_
 
+- **R46.8 (2026-10-30 ~02:00) The big click is under budget; a light-folder timing trap.** Native, 7189e3ff3 (code cb1014bed), builder3
+  quiet, `make native-fresh control-timing`, 30 units / 6 squads, mean of 10: order 2.03 ms (ratio 56.3 v budget 104), click-to-order
+  2.13 ms (59.3), per-frame 0.62 ms (17.7 v 26); not judged (builder0 is the budget's box). N1's memo (B) drops to stretch. **Trap:** a
+  fresh light folder has no C++ library and control-timing does not build one, so a read there times the GDScript fallbacks silently
+  (6.86 ms, ratio 180.6). Fix on stream/native a734c2296 (`tools/remote.sh` runs native-fresh first), merged early alone when green;
+  relayed to every stream (re-check any light-folder read).
+
 - **R46.7 (2026-10-30 ~01:50) Engage L1 (builder3, 7189e3ff3 + trace rows, his Terminus replay, n 1): three causes, every blocker PARKED
   (no yield ask to manoeuvre).** Shots 19 at 116.5 s, still 19 at 139.1 s. (1) 118-123 s at his post: CLEAR_LANE needs a fight target, HOLD
   has none, and held_may_move would refuse the move; (2) 123-134 s under his attack: the order's +1.0 base is added before the commit
