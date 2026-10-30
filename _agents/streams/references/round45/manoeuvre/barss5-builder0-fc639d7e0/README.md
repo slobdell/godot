@@ -16,7 +16,7 @@ unchanged). Seeds 11751-11798 as filed (workstreams.md *Bars (round 45)*, FILED 
 | Guard: wedged s per arena (<= +2 se; S v4's miss) | crossing -8.44 (-5.9 se); **locks +3.37 (+3.2 se)**; terminus +3.40 (+1.2 se) | **FAIL (locks)** |
 | Guard: never-arrived pooled (<= +2 se) | 225 -> 201; -0.33 a run (se 0.20, better) | PASS |
 | Reported | seat moves 3238 -> 1784 (-20 a run); mean arrival -0.42 s a run; k-turn s pooled -3.0 s a run | — |
-| Group guards G5 / G6 / G7 (11775-11786) | run for the record after the verdict (`judge-group.txt`) | — |
+| Group guards G5 / G6 / G7 (11775-11786; 48 paired, for the record) | identical arms: every-squad-in 73.5 = 73.5 s, never-in 1.00 = 1.00, friendly contact ticks 657438 = 657438 (0 se) | PASS |
 | G1 v9 corridor: ORDERS_PROBE_SQUAD byte-identical, g1v8 lines (11775-11786) | run for the record (`judge-g1v9.txt`) | — |
 | Fights G1-G4 (11787-11792) | run for the record (`judge-fights.txt`) | — |
 | No SCRIPT ERROR | 0 files in the workload | PASS |
