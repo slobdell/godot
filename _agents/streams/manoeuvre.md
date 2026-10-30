@@ -69,7 +69,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
 
 **What he will notice (if the ships merge):** (1) **shortfwd ON (R46.25):** a short click right beside his scout (his 83.7 s Gorge click)
 no longer sends it ~2 m backwards first when there is room to turn; near an edge or wall it backs up as today; (2) **holdway ON (R46.27,
-pending native's harness fix + one check):** a side-street squad that today sits jammed ~30 s rolls through, and on a head-on meeting
+NOT in the ship hash: a web-build freeze to fix first, see below):** a side-street squad that today sits jammed ~30 s rolls through, and on a head-on meeting
 the passing squad brushes the waiting one far less. **Not shipped:** the seat bound S v6 (four lines failed; R46.17; round-47 start
 point written below).
 
@@ -92,7 +92,17 @@ the same street from opposite ends / one from a side street (escape `--traffic-o
 
 **Green hashes:** stream/manoeuvre **39777e1cc GREEN builder0** (`make check exited 0`, 3475 passed / 0 failed, sim-baseline unmoved;
 every later commit on the branch is Status / docs only); its OFF code proven 96 / 96 byte-identical v the launch base (default orders
-probe). Ship candidate `wip/manoeuvre-ship46` 8165af868: check queued on builder3 (below).
+probe). **SHIP HASH (shortfwd ON alone): `wip/manoeuvre-ship46-sf` 105e2e118 GREEN builder3** (`make check exited 0`, 3504 passed / 0
+failed, web-smoke passed, sim-baseline UNMOVED on all 13 arenas against main b7942f378) = main b7942f378 + native's pair/native-holdway
+f176bee98 + the shortfwd flip + the pair's drive-gate line + SHORT_POSES + this stream's OFF code; the holdway flip reverted in it.
+Named to the orchestrator 08:05.
+**Holdway ON (R46.27) waits:** the combined candidate 8165af868 read `exited 2`: tests 3505 / 0, sim-baseline moved on all 13 maps
+(expected), and **web-match-smoke red** (a harness screenshot timeout). Same-box web-smoke A/B (builder3): holdway ON failed 4 of 5,
+shortfwd only passed 4 of 4, main passed. Cost read (builder3 light, sim-profile gangs v law yard 60 s seed 7, 787a4bf79): native
+Traffic refresh 0.129 -> 0.138 ms/tick, nothing else > +0.03; GDScript desktop +0.01; the laptop's headless scripted skirmish advances
+at the same rate in both arms. **The web build alone freezes once after game t ~11 s with holdway ON** (both arms crawl at ~0.2x
+real time under SwiftShader); not a per-tick cost, hot spot not found in the time box. Round 47: trace Traffic.refresh / _begin_wait in
+the web build at t 10-12 s, then one candidate + one check.
 
 **Known issues:** the S v6 ON flip breaks three no-crossing tests (round 47); backout pose 10 ties (per-leg turn); a new Movement member
 must be added to native's `exec_fields.h` (my 258ce00f0 lesson: a filtered test run missed it, the full check caught it).
