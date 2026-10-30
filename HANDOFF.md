@@ -6,6 +6,15 @@
 
 _Last updated: 2026-10-29 ~10:00 PDT (laptop clock) — **ROUND 45 PREPARED (box below; launch = the lead starts four CLIs: orders + manoeuvre on Fable, engage + native on Opus).** Earlier the same morning: round 44 closed, his Gorge playtest recorded._
 
+## ⚠ THE LAPTOP FROZE (~17:00-18:00 PDT, 2026-10-29): every session restarted mid-round
+
+Workers restart FRESH with the same kickoff line; each reads its brief's **Status** (top) for where it stood. Any `make remote` /
+series whose laptop wrapper died: its copy-back never happened, so treat the run as lost and re-run it verbatim (no numbers were read
+from it = a rerun, not an amendment). Uncommitted work at the freeze: orders (3 files), manoeuvre (4 files: the B3 room-behind gate is
+committed at 26b1425e7). Where each stood: orders G2 dev read 5 on 84ec3b689 (freeze only if every line passes); engage Bar E2b frozen
+2fe2092cd, its check then the bar; manoeuvre merge candidate 5d4b3fa82 (needs a clean-checkout 60/60 default-probe line) and Bar B3
+recorded (needs native's EQUAL on 26b1425e7); native's 1921e09eb (_assign in C++) check, then B3's EQUAL, then G2's three-seam re-proof.
+
 ## ▶ ROUND 45 AS PREPARED (2026-10-29 ~10:00 PDT) — read this first
 
 **Goal: his order wins. One click for three squads never sends a squad back behind its own start or across a drop from his click
