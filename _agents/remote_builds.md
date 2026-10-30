@@ -155,13 +155,19 @@ perf-judge divides by), recorded idle with `make ai-perf-nominal`:
 | machine | ref_ms | ai_usec_per_tick (60 brains, alone) | commit, when |
 |---|---|---|---|
 | builder3 (devia) | **0.682** (0.681 / 0.683, two reads) | 8603 / 8599 | 87a6c7fcc, 2026-10-29 22:47, idle |
-| builder0 | 0.774 (P-core, idle) | 9575 | 9d618587, 2026-09-28 (the standing nominal) |
+| builder0 | **0.771** (0.773 / 0.768, two reads) | 7413 / 7407 | 9b8918fb4 (the same game/tests/native as 87a6c7fcc), 2026-10-29 ~23:25, idle |
 
-**A single thread on builder3 is ~1.13× faster than a free builder0 P-core** (0.774 / 0.682), and ~2× faster than a
-builder0 E-core. That puts a builder3 ms at ≈ 1.13 builder0 P-core ms. Most of the 6× on a full check is the core
-count, not the core speed. The builder0 row is the standing nominal from another commit; a same-commit idle builder0
-read replaces it when builder0 next has an idle window. Until then, compare in-run ratios (`ratio=`, `ai_usec_per_ref_ms`)
-across machines, never milliseconds.
+**The answer depends on the workload, so a builder3 number is not a builder0 number times a constant:**
+
+- **The reference workload: builder3 is ~1.13× faster** (0.771 / 0.682). Work that takes 1 ms on builder3 takes ~1.13 ms on a free builder0 P-core
+  and ~2 builder0 E-core ms.
+- **The brains (scenario_perf's 60 brains, alone): builder3 is ~1.16× SLOWER** (8601 v 7410 µs a tick). So
+  `ai_usec_per_ref_ms` reads ~1.3× higher on builder3 than on builder0 for the same tree: 12,600 v 9,600. That's still
+  under the 25,840 relative line, but it is not machine-free across these two.
+- **A full check: ~5×** (655 s v ~55 min), and nearly all of that is the core count: 32 threads v 12, 6 at once v 3.
+
+So judge a budget on the machine its nominal and its line were set on. Compare in-run ratios across machines only
+with that ~1.3× caveat for brain-heavy work, and never compare raw milliseconds.
 
 ### The light lane: `make remote LIGHT=1 T=…` (ship, round 17)
 

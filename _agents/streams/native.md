@@ -75,8 +75,9 @@ builder3's only real red). 7087cffce: devia's nominal ref_ms 0.682 (idle, 0.681 
 Ratio (remote_builds.md, builder3 section): ~1.13x a free builder0 P-core, against builder0's standing 0.774 (9d618587); a
 same-commit builder0 read waits on builder0's idle window. The orchestrator's call: slots stay 6 and builder3's check runs 6
 wide by default: **GREEN 2d0a000b2 on builder3** (remote.sh CHECK_JOBS=6, never on the light lane; remote-requeue 12/0): 3449 / 0,
-28 targets ALL JUDGED, "up to 6 at once", 655 s v 736 s at 3 wide (idle box both). Next: the same-commit builder0 ratio read when
-builder0 idles.
+28 targets ALL JUDGED, "up to 6 at once", 655 s v 736 s at 3 wide (idle box both). **Ratio, same code, both idle (2026-10-29):** reference ref_ms builder0 0.771 v builder3 0.682 (builder3 ~1.13x faster); brains
+ai_usec_per_tick 7410 v 8601 (builder3 ~1.16x SLOWER); a full check ~5x (cores). remote_builds.md's builder3 section. The stale
+70b8baeea builder0 check was stopped by its process groups (the orchestrator: covered by the builder3 check of dde6d654e).
 
 **Plan (order kept from the backlog; reasons):** N1 watchdog -> N2a gate_width C++ -> N2b untangle_whole C++ (GRANTED R45.3,
 because gate_width alone cannot reach the budget, below) -> N3 twins as manoeuvre/orders/engage ship -> N4 lines_r45 + judging ->
