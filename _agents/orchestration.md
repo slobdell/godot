@@ -4046,3 +4046,8 @@ instrument that cannot lie about load — removal within one run — and let eve
 347. **A doc can turn the census lint red.** (Round 45.) Recording a bar verbatim copied a counter name in backticks into workstreams.md;
    `tools/census_lint.py` requires every counter named in `_agents/` to be printed by a series. Run `python3 tools/census_lint.py .` after
    pasting a filing.
+348. **"The smallest ON change" means a veto, not a new layout.** (Round 45, Bar G2.) Lesson 339 asked for the smallest change that removes
+   exactly what he saw; G2 instead re-laid every group click (fit first, ranks straight back from the click), so every deciding line
+   on his case passed and the street lines it never meant to touch failed (places outside the street 7 -> 33). A guard for his case
+   should change only the clicks where today's lay is wrong (a squad across a gap or behind its start) and leave every other click
+   byte-identical to today, so the existing street lines are guards it passes by construction.
