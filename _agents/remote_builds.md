@@ -125,6 +125,43 @@ refusals, and it applies to every timing anyone takes on builder0:
   120 s) for those CPUs to be ≥60 % idle, up to 3 attempts, one judgement on the box at a time (a `flock`). It still
   refuses on a truly busy box, and the verdict line names it (`verification.md`, *Reading the summary line*).
 
+## builder3 (`devia@builder3`, joined 2026-10-29, round 45)
+
+AMD Ryzen 9 9950X (16 cores / 32 threads, no P/E split: no `/sys/devices/cpu_core`, so perf-judge pins nothing),
+30 GB RAM + 8 GB swap, Ubuntu 24.04, **GNU make 4.3** (builder0 runs 4.4.1). Its hostname is `devia`, which is how
+`perf_nominal.json` and every `machine=` line name it. Drive it with `REMOTE_HOST=devia@builder3 tools/remote.sh …`.
+`tools/round_status.sh` and `tools/builder_checks.sh --all` ask builder0 and builder3 both (`TANK_SQUAD_BUILDERS`).
+
+- **Slots: 6** (remote.sh's default for `*builder3*`). **Cores, not memory, bind here**, the opposite of builder0: at 6
+  heavy runs at once (a full check plus a queued one) the lead watched it CPU-bound at load ~20 with 19-20 GB of 30 in
+  use and ~10 GB free. Don't raise the slots. The light lane's memory guard (6144 MB) is right as it stands.
+  **The slot count also sets a check's own width**: `slot.sh --jobs` divides MemAvailable by the slots
+  (28343 MB / 6 × ¾ / 1000 MB per target = **3 at once**). The first check at 3 slots ran 6 at once in 525 s; at 6
+  slots a lone check runs 3 at once in **736 s** (7087cffce, idle box). `CHECK_JOBS=6` restores the width for one run.
+- **Main's full check: 525 s** there v ~55 min on builder0 (the orchestrator, aed598359). The sim baseline matches
+  builder0 on all 13 maps (the same glibc-2.43 trig), with the same determinism hash.
+- **Make 4.3 warns where 4.4.1 is silent**: a nested `make` that inherits the parent's jobserver fds prints
+  `jobserver unavailable: using -j1` into its output. A test that compares a nested make's output runs it with
+  `env -u MAKEFLAGS -u MFLAGS -u MAKELEVEL`, as `tools/test_net_own_line.sh` does since 87a6c7fcc.
+- **A timing read is valid only on an IDLE builder3**, never beside a full check. Check with top that the box is idle,
+  not with `pgrep -c -f Godot_v`: it counts its own shell, so "2 other godot" shows up on an empty box.
+
+### The timing ratio: builder0 v builder3
+
+The fixed workload is scenario_perf's reference sample (20 × `ControlFixture.reference_work`, the yardstick
+perf-judge divides by), recorded idle with `make ai-perf-nominal`:
+
+| machine | ref_ms | ai_usec_per_tick (60 brains, alone) | commit, when |
+|---|---|---|---|
+| builder3 (devia) | **0.682** (0.681 / 0.683, two reads) | 8603 / 8599 | 87a6c7fcc, 2026-10-29 22:47, idle |
+| builder0 | 0.774 (P-core, idle) | 9575 | 9d618587, 2026-09-28 (the standing nominal) |
+
+**A single thread on builder3 is ~1.13× faster than a free builder0 P-core** (0.774 / 0.682), and ~2× faster than a
+builder0 E-core. That puts a builder3 ms at ≈ 1.13 builder0 P-core ms. Most of the 6× on a full check is the core
+count, not the core speed. The builder0 row is the standing nominal from another commit; a same-commit idle builder0
+read replaces it when builder0 next has an idle window. Until then, compare in-run ratios (`ratio=`, `ai_usec_per_ref_ms`)
+across machines, never milliseconds.
+
 ### The light lane: `make remote LIGHT=1 T=…` (ship, round 17)
 
 A slot is sized for a check (six to eight processes, ~2.5 GB). On 2026-10-03 at 12:41 builder0 sat at load 0.78 with
