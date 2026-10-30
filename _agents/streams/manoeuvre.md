@@ -65,7 +65,14 @@ Nothing at launch. A bar that fails twice on the same fix: write in player terms
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### REPORT (2026-10-30 ~03:15 PDT) — Bar S v6 FAILS as filed on three guards (deciding leg read; other legs still running for the record)
+### REPORT — Bar S v6 FINAL (02:49 PDT): FAILS as filed on FOUR lines; stays OFF; the ON recommendation WITHDRAWN
+
+All legs read (evidence `references/round46/manoeuvre/barss6-builder3-4e72c5470/`): group G5-G7 identical PASS; G1 corridor 180 / 180
+byte-identical PASS; fights G1-G3 PASS; **fights G4 kill share worst move 0.040 (line 0.03) FAIL** (Green 0.529 -> 0.489, 18 fights; S
+v4's old miss); 0 SCRIPT ERROR. The orchestrator's condition (R46.15: ON only if the last legs pass) withdraws the recommendation.
+Ship candidate `wip/manoeuvre-seat-on` e8051bbde stays ready if he says yes anyway. Frozen tree removed (lesson 341).
+
+#### The deciding leg (read 02:35, before the other legs)
 
 **Bar S v6** (frozen 4e72c5470 GREEN builder3; 12001-12024, 72 paired cells, native ON, 0 SCRIPT ERROR;
 `~/overnight-manoeuvre/r46/bars_s6/judge-workload-early.txt`): **D1 seated within the bound by 15 s 249 -> 352 (+1.43 a run, +7.9 se)
