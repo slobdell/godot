@@ -40,6 +40,10 @@ func test_the_rig_frames_with_its_inset() -> void:
 	var f := Fixture.new(self)
 	await f.build(false)
 	f.rig.vision = f.controls.vision_state
+	# R46.29 (camera's grant): the dial's plumbing into the vision frame, judged at a fixed yaw. The planner (ON) picks its own
+	# yaw after a re-selection, so this comparison cannot isolate the dial there; tests/test_camera_planner.gd judges the dial
+	# in the planner's fit (test_his_frame_dial_widens_the_planners_frame).
+	f.rig.planner_on = false
 	f.controls.recall_group(1)
 	await _settled(f.rig)
 	var default_zoom := f.rig.zoom
