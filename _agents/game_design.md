@@ -4644,3 +4644,13 @@ finished, NO order): E2's "holds its post until his next order" should read `hol
 moved with no order and no fire after arrival, or under his direct move. The recording carries no per-unit shots: the replay must
 answer it. Camera: 371 of 1696 hits/deaths off screen (358 on his units). His design rule for the camera: ONE abstract planner of
 camera position at all times, no special cases (round 46's camera stream).
+
+**The lone IFV, traced (engage, builder3, his recording replayed with E2 ON as played; 2026-10-29 ~23:20): NOT an E2 regression.**
+Green_Hunters_1 fired 3 rounds from 104 s to 140 s with an engaged target 10-30 m away, clear sight, 3-5 enemies in range; then 30
+rounds in 3 s at 140 s ("finally got shots off toward the end"). The same game with the rule OFF from tick 3100 (`--authority-off-at`)
+is identical through his moves. Not ammo, heat, reload or sight. **Cause: his own vehicles in its line of fire** —
+`Gunnery._clear_to_fire` (FireLanes) holds any shot whose lane crosses a friendly; the blocker changed throughout (Guns_4 116 s, Guns_2
+120-122 s, Hunters_2 124-128 s, Hunters_3 130 s, Wrenches_3 132-136 s, Guns_4 138 s), blocked up to 198 ticks running while the brain
+chose CLEAR_LANE. In his terms: the IFV sat behind his own squads, held fire rather than shoot through them, and its move to a clear
+lane found none for ~20 s. **Round 46:** a lane-clearing move that works in a crowd, and saying it on screen ("holding fire: Guns 4 in
+the way").
