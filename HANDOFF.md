@@ -49,6 +49,13 @@ fresh folder's library; replay-match fails on the wrong native path; builder2 pr
 28 targets ALL JUDGED, sim-baseline unmoved; main INHERITS it. control-timing quiet read on builder0 pending. G2 conflicts in
 rts_controls.gd column_lay: resolution = pair/native-g2 cfa4a0eb2 (EQUAL with G2, R45.3 re-proof).
 
+**MAIN NOW (~22:20 PDT): 2e3bc4620** = + engage fea4cfbec (R45.24 player fix; E6 stop cap OFF; builder0 GREEN 3459/0) on top of backout
+ON (a5508847c), native _assign, manoeuvre OFF code, the test fix aed598359 and the census-lint docs fix 19cbfa135. **The batched main
+check is RUNNING on BOTH builders** (~/orch-r45/main-check-2e3bc4620-builder0.log = the judged one, perf; -builder3.log = fast read).
+**builder3 (NEW, 2026-10-29): devia@builder3**, Ryzen 9 9950X 32 threads, 30 GB, Ubuntu 24.04 (glibc 2.39); bootstrapped under
+~/tank_squad; full check 525 s (v ~55 min builder0), sim-baseline hashes IDENTICAL to builder0's. Gaps: no Chrome (web-smoke red until
+the lead installs it), no perf nominal yet (native records it). Becomes the default REMOTE_HOST after tonight's frozen series.
+
 **G2 SERIES RUNNING (~21:20 PDT):** frozen 03d1ddbc5 builder0 check GREEN (3452/0, 28 ALL JUDGED, perf judged, sim-baseline unmoved,
 `exited 0`, ~/orders-r45/freeze/check-03d1ddbc5-builder0.log); series on builder2 (parts A 11201-11224, A2, B 11225-11236, C
 11237-11248; several hours). Ship rule R45.25 (strict kind 2); ship = merge native's 6562c6beb (freeze + main + the gate_width swap,
