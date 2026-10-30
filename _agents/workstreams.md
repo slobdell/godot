@@ -77,9 +77,97 @@ builder that aren't ours. builder0 at prep: load 0.02, 77 %, 24 G free; builder2
 
 **Seed registry (round 45):** 11201-11248 orders (Bar G2 deciding + guards); 11249-11296 orders reserve; 11301-11348 engage (Bar E1);
 11349-11396 engage reserve; 11149-11196 manoeuvre Bar B2; 11401-11448 manoeuvre Bar S v4; 11449-11496 manoeuvre reserve (A6 v4);
-11501-11524 native (twin pairs, lines_r45); 11601-11648 manoeuvre B2b (unused, R45.14); 11651-11698 manoeuvre S v5 (R45.18). Dev seeds: anything at or below 11148 already read, or 7001-7012.
+11501-11524 native (twin pairs, lines_r45); 11601-11648 manoeuvre B2b (unused, R45.14); 11651-11698 manoeuvre S v5 (R45.18, unused); 11701-11748 manoeuvre B3; 11751-11798 manoeuvre S v5 (R45.21). Dev seeds: anything at or below 11148 already read, or 7001-7012.
 
 _(each stream files its bar here BEFORE any number on its block; the orchestrator records it.)_
+
+- **Bar S v5 (recorded by the orchestrator ~21:20 PDT from stream/manoeuvre, before any number on 11751-11798), his first squad settles where he clicks, the last crew parks behind it (manoeuvre M5 after S v4 FAILED R45.11;
+  FILED before any number on 11751-11798; C45.1, C45.3, C45.4, C45.5).** S v4's shape and lines stand with ONE flag added to the arm,
+  said here first: ONE arm, **s5** = `--seat-bound=on --seat-order=on --seat-last=open` v **base** = `--shape-latch=off` (today), both
+  with the latch OFF, on a FROZEN tree named at the series' launch = stream/manoeuvre at the hash whose check is green (the rules are
+  planner-side GDScript in tactics_formation.gd; the drive is twinned and unchanged: native ON in every log). **What changed since S v4
+  (C45.1):** S v4 FAILED on Locks wedged +6.4 s a run (+4.4 se): the squad's last two crews pressing into a filled bound. Under
+  `--seat-last=open` (TacticsFormation.SEAT_LAST_OPEN) the bound's DEEPEST seat keeps its nominal depth behind the click and is the REAR
+  crew's at the order and nobody else's; the rear crew is the laterally nearest of the crews within SEAT_LAST_REAR_TIE_M (4 m) of the
+  rear-most (the start layouts' rear pair stands abreast: a float tie sent the far crew across its squadmate, dev read 4), and the
+  holder keeps that seat while the order stands (dev read 4: the seat changed hands at t44 as the crews moved and both lingered).
+  **What it could break (named first):** yield + blocked s UP on Crossing (dev read 6: +6.3 s a run, +1.7 se) and Locks (+2.0 s a run,
+  +1.4 se): the open seat sits where the squad's own rear files through; never-arrived UP (dev read 4, before the two fixes: +1.4 a run
+  on Terminus; dev read 6: +0.0); the G1 group column (C45.3: byte-identical, the rules are scoped to a squad on its own order,
+  R43.34). **Workload (deciding), `make manoeuvre-bar-s`, exactly Bar S v4's:** locks / terminus / crossing x **11751-11774** = 72
+  paired cells an arm, 20 s, squads 1-2 traced; `tests/manoeuvre/s_judge.py` paired per cell. **D1** crews seated within the bound 15 s
+  after their order ARM > BASE by >= 2 se AND pooled; **D2** start-zone yield + blocked s is a GUARD (as S v4 filed it): per arena ARM <=
+  BASE + 2 se, with D1 carrying the bar. **Per-arena guards (paired over 24 seeds each):** yield + blocked s ARM <= BASE + 2 se; k-turn
+  s ARM <= BASE + 2 se; **wedged s ARM <= BASE + 2 se** (S v4's miss; dev read 6: Locks +0.9 s a run, +0.6 se); never-arrived pooled
+  ARM <= BASE + 2 se. **Group-order guards (`q3_judge.py`), 11775-11786 x crossing / locks / sumps / terminus x crew:** G5 all-in mean
+  ARM <= BASE + 1.645 se, G6 never-in ARM <= BASE + 1.645 se, G7 friendly contact ticks ARM <= 1.05 x BASE. **G1 v9 corridor
+  (C45.3), 11775-11786:** `make orders-probe` locks / crossing / terminus x 5 squads x click: the ORDERS_PROBE_SQUAD rows base v s5
+  **byte-identical**; and `orders_judge.py g1v8`'s lines each ARM <= BASE + 2 se. **Fight guards (`manoeuvre-wedge-trace` locks /
+  terminus / sumps x 11787-11792, G1-G4 as Bar S; S v4's miss was G4's kill share 0.049 v 0.03: the named risk).** **Perf:** the frozen
+  tree's check perf-judge PASS before ON (a quiet builder0 read of the merge if builder2 checked it). **Ships ON** (`SEAT_BOUND`,
+  `SEAT_ORDER` and `SEAT_LAST_OPEN` default on, `--seat-bound=off` / `--seat-order=off` / `--seat-last=bound` the escapes) only if D1 and
+  every guard pass; no re-file. C45.5: the bound seats any squad on its own order (the CPU's too). **Machine:**
+  `~/overnight-manoeuvre/r45/bars_s5.sh` (builder0 light for the one-process legs, builder2 for the workload) from a frozen checkout of
+  the hash; evidence `~/overnight-manoeuvre/r45/bars_s5/`, filed under `references/round45/manoeuvre/barss5-<machines>-<hash>/`. **Dev
+  history (never a bar; streams/manoeuvre.md Status):** dev reads 1-6 on 7001-7012 (12 paired runs an arm an arena): dev 2 Locks D1
+  53 -> 89 (+7.7 se), wedged -0.5 s a run; dev 4 Terminus wedged +8.0 s a run (the two causes); dev 6 (both fixes, three arenas) D1
+  +5.8 se, wedged Locks +0.6 se / Terminus -0.2 se / Crossing -3.4 se, yield + blocked Crossing +1.7 se / Locks +1.4 se / Terminus
+  -1.7 se, k-turn s all three better, never-arrived +0.0.
+
+- **Bar B3 (recorded by the orchestrator ~16:55 PDT from stream/manoeuvre 26b1425e7, before any number on 11701-11748), his War Rig backs out of the box first, on every pose (manoeuvre; R45.21 after R45.14 / R45.15; FILED before any
+  number on 11701-11748; C45.1, C45.3, C45.4, C45.5).** B2's shape and lines stand with ONE guard replaced and ONE pose added, said here
+  first: ONE arm, **bo** = `--traffic-on=backout` v `base` (today), on a FROZEN tree named at the series' launch = stream/manoeuvre at
+  the hash whose check is green + native's twin of round 45's changes (EQUAL + the default orders probe 60 / 60, C45.4), **native ON in
+  every log, the C++ drive in both arms.** **What changed since B2 (C45.1):** (1) a departure look that plans nothing is withdrawn and,
+  on a tick today's drive would have planned, today's planner runs on the station the same tick; on a look-only tick nothing more and
+  today's cadence is kept (B2's seed 11187, the one pose that broke the ceiling); (2) **no room behind on the navmesh = no look**: the
+  look requires 2 m of navmesh run behind the tail (B2's D3: 4 of 24 no-room poses read later / pressing harder because a look that
+  fired and was refused still moved the squad off today's path); (3) **the Terminus k-turn-seconds guard is REPLACED by the squad's
+  time to clear its start** (per arena, paired per cell, the traced squad's last crew clearing 8 m from its spot, ARM <= BASE + 2 se;
+  `tests/manoeuvre/b1_judge.py`): B2 failed k-turn seconds on Terminus at +2.6 se because a back-up IS a k-turn (the rule's own back-ups
+  +2 s a War Rig, the Tanker behind them turning to make way +8 s) while the same cells read yield+blocked -3.4 se and never-arrived
+  -0.5 a run: that guard counted the manoeuvre the rule exists to make. The replacement was chosen for that reason (R45.14) before it was
+  read; read afterwards on B2's own rows as DEV evidence (not a verdict) it passes where k-turn seconds failed (crossing +0.6 se, locks
+  +1.5 se, terminus -1.0 se); 11701-11748 decides. k-turn s stays REPORTED per arena (s_judge) and is named here as a risk, not a line. (4) **11187's pose is a named guard**: pose 10 at B2's jitter [-1.4, -0.5, +4.7, +3.0] runs as a fixed extra cell in both
+  arms (`NOSED_NAMED=on`), ON <= OFF + 3 s. **What it could break (named first):** as B2 (a crew reversing into the friend behind it;
+  a back-up where none was needed; a rig that backs out and no longer finds its station; the group column; a no-room rig leaning on
+  its wall), plus: the squad's start slower on Terminus where the Tanker turns to make way (the replacement guard's line).
+  **Deciding (B2's, R44.12):** D1 his start (`manoeuvre-start-trace` on his 08-15 recording, Locks 56416, native ON: Guns_2 reversing
+  before tick 15 and past the box's west end before tick 110; base must not do both); D2 the staged corpus on **11701-11748** (48
+  jittered poses of the re-staged table; base-stuck floor 8; ON sooner in >= 80 % AND median gain >= 1 s; the cost ceiling on the other
+  poses: every pose ON <= OFF + 3 s, median <= +1 s); D3 the guard poses on **11701-11724** (24 jittered of the six round-44 stagings): the five
+  NO-ROOM stagings (0 / 1 the wall 0.7 m behind, 3 / 4 water, 5 inside a block) every pose ON <= OFF + 1.0 s and <= +15 wall ticks; guard
+  pose 2 (the Crossing crawl whose rear squadmates sit on the container at (8, 64)) is NOT a no-room pose (its rig has 2 m of navmesh
+  and no hull behind, a back-up is legitimate) and reads the corpus' cost ceiling instead (every seed ON <= OFF + 3 s; B2's D3 read it at
+  the strict line, where its two misses were +1.4 s and +0.3 s / +19 wall ticks: said here before any number). **Guards (paired, as B2):** the first-order workload (`manoeuvre-bar-s` locks /
+  terminus / crossing x **11701-11724**, 72 paired cells): per arena yield+blocked s and wedged s ARM <= BASE + 2 se; per arena **the
+  squad's time to clear its start ARM <= BASE + 2 se** (replacing k-turn s); pooled never-arrived ARM <= BASE + 2 se; D1-seated-by-15 s
+  ARM >= BASE - 2 se; `b1_judge`'s unneeded-back-up guards (other crews' reversing ticks <= +2 se, seated >= -2 se per arena); group
+  guards (`q3_judge` G5 / G6 / G7) and the G1 corridor (ORDERS_PROBE_SQUAD rows byte-identical 60 / 60; `orders_judge g1v8` lines) on
+  **11725-11736**; engage's line (his Gorge replay 107 s base v bo, the per-crew tables identical); fights (`manoeuvre-wedge-trace` locks /
+  terminus / sumps x **11737-11742**, G1-G4); perf: the frozen tree's builder0 check perf-judge PASS before ON; no SCRIPT ERROR.
+  **Ships ON (`backout` out of DEFAULT_OFF, `--traffic-off=backout` the escape) only if D1, D2, D3 and every guard pass; no re-file.**
+  C45.5: the rule reads a crew's own order whoever gave it; grouped crews excepted (C44.3). **Machine:** `~/overnight-manoeuvre/r45/
+  bars_b3_a.sh` (builder0 light: corpus, guard poses, named pose, fights, G1 probe) and `bars_b3_b.sh` (builder2 after orders' G2
+  series, else builder0: his start, Gorge, workload, group guards) from two frozen checkouts of the same hash; evidence
+  `~/overnight-manoeuvre/r45/bars_b3/`, filed under `references/round45/manoeuvre/barsb3-<machines>-<hash>/`. **Dev history (never a
+  bar):** B2 (R45.15) and its reads in streams/manoeuvre.md Status: the fallback's 11187 read (ON t207 v OFF t166 on the GDScript drive,
+  laptop), the room-behind gate's guard re-read (builder0 light), the 14 dev poses (3 / 3 sooner, ceiling worst +1.5 s).
+
+- **Bar E2b HIS STOP STOPS (engage; filed in streams/engage.md at frozen 2fe2092cd ~16:40 PDT, recorded here by the orchestrator BEFORE any number on 11349-11396). E6 caps his STOP only (his hold keeps E1's slack: the hold cap killed a lone law_scout on dev 7003).**
+
+  **Arms:** base = `--turn-in-cap=off` (E2 as shipped), new = default; both `--player-authority` ON; one frozen tree (named at
+  freeze), builder0, native ON, paired by seed. **Workloads:** (S) the authority probe with `--verb=stop` on 11349-11396 (his stop,
+  every crew kind drawn, alone or one crew of a squad); (M) the authority probe as drawn (Bar E1's mix) on the same seeds.
+
+  **Deciding (S, his case = alone):** D1 where his stop ENDS (`stop_moved_m`, from rest until the stop completes): max over rested runs
+  <= **3.0 m** (the 2.5 m cap + 0.5 m: a leg cut at the cap's braking estimate still settles); D1b no run ends farther than base + 0.5 m.
+
+  **Guards:** G1 (M) Bar E1's D2 (pushed rows 0), hold max moved (base +/- 0.5 m: holds are not changed), D3 move ends; G2 fights (S
+  and M): deaths new <= base + max(1, 1.645 sqrt(base)), enemy hp left within 1.645 se; G3 a stopped crew still shoots back (S): shots
+  mean new >= base - 1.645 se, and **how many fewer** is reported (a fixed gun that may not swing round fires when the enemy enters its
+  arc: R45.22's trade); G4 take-back (by order id) unchanged; G5 native-on v `--brains-off=native` EQUAL on (S) new; G6 `make check`
+  green on the frozen tree; the CPU untouched (sim-baseline).
 
 - **Bar E1 HIS ORDER TO A CREW WINS (engage; filed in streams/engage.md ~11:40 PDT, recorded here by the orchestrator BEFORE any number on 11301-11348).**
 
@@ -311,6 +399,10 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   +54.2 s summed over 24 seeds: the Resupply Tanker and Gun Truck, Battery_4/5) converging on a bound the first three already fill.
   Round 46: S v5, the last-arriving crew's seat dealt outside the filled bound. In his terms: with it ON his first order seats far more
   crews at his click within 15 s, but on Locks the squad's last two vehicles wedge into the first three for ~6 s.
+  **Final (all legs, stream/manoeuvre 2ba3703f3, evidence `references/round45/manoeuvre/barss4-builder2-0493977ed/`):** also **fights G4
+  FAIL** (kill share Green 0.634 -> 0.585, worst move 0.049 v 0.03; deaths 797 -> 800); group guards identical, G1 corridor 180/180.
+  Two lines fail. C45.4 note: native found the 11187 fallback's cadence rule diverging in the C++ drive (frame 31 on df74319af) and
+  mirrored it (pair/native-backout-skip 5ed7788ef); "GDScript only" was wrong.
 - **R45.18 (~15:20) S v5 may be filed this round, on conditions.** Manoeuvre's S v5 (stream/manoeuvre 52493b473, OFF, `--seat-last=open`:
   the bound's deepest seat is the rear-most crew's alone), DEV Locks 7001-7012, builder2, 12 paired cells: D1 53 -> 89 (+7.7 se; s4 83);
   k-turn -5.5 s a run; never-arrived 13 -> 3; wedged -0.5 s a run (s4 +3.5); one cell (7009 Guns2) 14.6 -> 25.1. If the three-arena dev
@@ -335,6 +427,80 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   and E2 only, and brushing friends is its own "doesn't look smart". Round 46: the head-on release (seed 11466's 0 -> 32 first).
   S v5's three-arena dev read: Locks wedged -0.5 s a run, Terminus +8.0 s (+1.7 se), Crossing +2.4 s; never-arrived 115 -> 109: no bar
   (R45.18's condition). C45.4: seat / bounded are GDScript only; no twin needed.
+- **R45.21 (~16:05) The lead: "why is manoeuvre waiting for the next round entirely? Why not just continue work as-is?"** Manoeuvre
+  continues this round instead of parking: (1) the OFF-code merge (native pair 5ed7788ef + its tip); (2) backout first (his ask): fix
+  the D3 wall contact on dev seeds with the 11187 fallback in, then **Bar B3 on fresh 11701-11748**, B2's lines unchanged except the
+  Terminus k-turn guard is replaced by the squad's time to clear its start (R45.14's note; k-turn s reported), native twin before the
+  freeze; (3) S v5 on dev seeds, a bar on 11751-11798 if clean; (4) holdway's head-on release. G2's series has builder2 priority.
+- **R45.22 (~16:35) Engage E5 / E6 causes; the stop ruling.** (traces at c0fae2ee2, builder0, game code = main). **E5:** his short
+  Gorge moves are not swallowed by an arrival radius (87.0 / 91.8 s land 3.1 / 3.4 m); 83.7 / 85.2 s are replaced 1.5-1.8 s later
+  because the DRIVE first backs ~1 s and 3 m AWAY: a click ~56 deg off the nose at 10.7 m is inside a wheeled scout's turning circle,
+  so movement.gd plans a k-turn (reverse leg). Manoeuvre's (with the native twin), queued after B3. **E6:** under his stop,
+  `order_controller._stop_turn_in` (C33.9) drives a hull-fixed WHEELED crew ~4 m to bring its gun onto a live enemy (throttle 0.87
+  for 21 ticks); under his hold the face branch's wheeled creep (3.1 m). **Ruling (b):** a crew he stops or holds swings as far as
+  it can within 2.5 m of where it first came to rest, then stops, and fires when the enemy is in its arc (measured from rest: a
+  15 m/s scout brakes ~5 m). GRANT to engage: a cap in `order_controller.gd`'s `_stop_turn_in` and the face branch's turn-in /
+  creep for his stop / hold only, behind `--player-authority`; `Manoeuvre.turn_in` untouched. Dev seeds first, bar on 11349-11396.
+- **R45.23 (~19:40) Bar B3 partial: D2 deciding misses on EXACT TIES; the decision rule stated before the remaining legs land.**
+  Frozen 26b1425e7, C++ drive: D1 his start PASS (t4 / t97 v t44 / t140). D2 (builder0 light, 11701-11748 + named 11187, 98 rows): 12
+  base-stuck poses, ON sooner 9 = 75 % v 80 %; median -2.78 s PASS; ceiling PASS (worst +1.3 s, median -0.52 s); named 11187 +0.8 s PASS.
+  The 3 non-wins are ONE pose (10, the Crossing crawl with a squadmate's nose 1.7 m beside), all EXACT TIES (t360 = t360, t360 = t360,
+  t187 = t187; traced 11711: the look fires, its back-up is blocked at 2.0 m, it withdraws, today's planner runs the same plan to the
+  tick). B3 FAILS AS FILED on D2. **Ruling, stated now, before guard poses / workload / group / fights / G1 land:** lesson 339 (third
+  bar; his start passes every time; no pose slower than today by > 1.3 s) — if EVERY remaining line passes as filed, backout ships ON
+  (`--traffic-off=backout` the escape) after a quiet builder0 perf read; if any remaining line fails, it stays OFF. A tie is "does what
+  it does today", which he cannot see as worse; the 80 % line's tie-as-loss is a filing-design note for later bars, not an amendment.
+  Also: his Gorge replay now FAILS against his recording in BOTH arms (within 4 / 20 from Hunters_1 at 40 s): main's E2 changes his
+  match; engage confirms which of his orders diverges.
+- **R45.24 (~19:50) E2 leaks onto his squads' OWN holds (on main since 8ef4f584d); fix queued.** Engage (builder0, 60262534f, his Gorge
+  replay): rule ON from the start diverges at Green_Hunters_1 @ 40 s (4/20 within 3 m); `--player-authority=off` PASS 20/20 for 105 s.
+  Cause: tank_brain `_update_order_progress`'s hold/stop re-latch ("holds where it comes to rest") tests `here` + his TEAM but not that
+  the order is HIS (`player`), so an element's pointless `hold` (ElementPlan._hold) on his team is re-latched too (Hunters_2 diverges
+  under his squad's attack task at 35 s, not under any crew order of his). Unintended. Fix: `order.player` in both branches, its own
+  commit, a test failing without it, his replay with the rule ON re-read (should match until his first direct crew order). Bar E1's
+  numbers unaffected (the probe's holds are `player`). After E2b's chain (it re-syncs the worktree). Replays of his pre-E2 matches:
+  `REPLAY_FLAGS="--player-authority=off"` (native notes it in replay-match's docs).
+  **Fix landed (engage 12c9e673d):** the re-latch requires `order.player`; test_authority_element_hold fails without it (an element's
+  pointless hold dragged 3.8 m). **Bar E2b re-frozen at fea4cfbec before any number** (2fe2092cd's check was red only on the census
+  lint: the probe read `Manoeuvre.turn_in_stops`; fixed). E6's cap is now OPT-IN (`--turn-in-cap=on`) until E2b passes, so the arms
+  read base = no flag, new = `--turn-in-cap=on` (same comparison, no line changed). fea4cfbec carries the R45.24 fix; merged alone on green.
+- **R45.26 (~20:00) Bar B3 FINAL: fails as filed on D2's share only (9/12, the 3 non-wins exact ties); EVERY other line PASSES ->
+  backout SHIPS ON per R45.23.** Frozen 26b1425e7 (C++ drive both arms, EQUAL, probe 60/60): D1 his start PASS (t4 / t97 v t44 / t140);
+  D2 median -2.78 s, ceiling worst +1.3 s, named 11187 +0.8 s PASS; D3 guard poses 0 / 24 worse PASS; workload yield+blocked, wedged,
+  squad's time to clear its start, never-arrived, seated, other crews' reversing PASS; k-turn s REPORTED (terminus +3.7 se, the named
+  risk); group G5-G7 identical; G1 corridor 180/180; Gorge tables identical; fights G1-G4 PASS; 0 SCRIPT ERROR. Evidence
+  `references/round45/manoeuvre/barsb3-builder0+builder2-26b1425e7/` (stream/manoeuvre 813e9b377). Merged as main a5508847c
+  (wip/manoeuvre-backout-on 466d96191: `backout` out of Traffic.DEFAULT_OFF + the default test flipped; `--traffic-off=backout` the
+  escape). **Owed before it counts as shipped:** the sim baseline re-recorded (CPU v CPU changes: the CPU's War Rigs back out too,
+  C45.5) twice on builder0 and adopted, then ONE builder0 main check (perf JUDGED), batched with engage's R45.24 fix.
+- **R45.28 (~21:30) Bar S v5 FAILS as filed on three guards; seat rules stay OFF.** Frozen fc639d7e0, builder0 light, 72 paired cells,
+  0 SCRIPT ERROR: D1 seated within the bound by 15 s 220 -> 329 (+8.4 se) PASS; Terminus clean (k-turn -9.2 se), never-arrived -0.33 a
+  run, seat moves -20 a run; **FAIL: Crossing yield+blocked +9.85 s a run (+4.1 se, the named risk), Crossing k-turn +2.1 se, Locks
+  wedged +3.37 s a run (+3.2 se; S v4's +6.4 halved).** Cause (Crossing 11751): under the open last seat the Battery squad yields to
+  ITSELF in its start zone (two squadmate pairs in mutual yield ~45 crew-ticks each; base none): the rear-crew term deals the two-row
+  layout seats whose paths cross. Not overridden (C45.2 covers G2 / E2; units yielding to their own squad is not smart). Evidence
+  `references/round45/manoeuvre/barss5-builder0-fc639d7e0/`; stream/manoeuvre ac58f0b6a (OFF code). Round 46: deal seats so paths do
+  not cross (the README's note).
+- **R45.27 (~20:20) Native's G2 three-seam re-proof on the freeze 03d1ddbc5 + main ceb1386e8: EQUAL guard on and off.** builder2,
+  pair/native-g2-final 89733bdc9: 83/0 (assign 3000/0, gate_width 360/0, untangle 1200/0); orders probe native on v off 192/192 guard ON
+  and 192/192 off. 6562c6beb (+ the gate_width_edge_on swap): 83/0, 192/192 x2, all 768 rows = unswapped. **R45.16 corrected:** the swap
+  saves ~4 ms, not ~1: the 30-unit / 6-squad click 10.20 ms (ratio 129.1, over 104) v 6.21 ms (77.6) with it, same box and reference
+  (builder2, not judged). G2's ship commit carries the swap (6562c6beb is the proven candidate).
+- **R45.25 (~20:05) G2 freezes on 03d1ddbc5 (orders' option a); the ship rule stated BEFORE any 11201 number.** Dev read 7 (builder2,
+  03d1ddbc5, 7001-7006, the squeeze): every deciding line (D1-D6, D5b), contacts and the reach-80 held guard PASS. Left, by construction:
+  (1) never-in 1 run of 6 on four no-room cells (crossing his-80, locks across-20 / along-80, yard_open across-20): the rear squad of a
+  squeezed file ends 16-24 m from its seat (coil halts 36 m overlap at a 25-31 m step); (2) all-in on the fixed Locks cell (-62/50):
+  27.2 s v base 5.8 s, because base's places are where the squads already stand (they never move) and G2 forms the file at his click.
+  Holding the rear squads (1f1f07740) passes these and fails the held guard; moving everyone fails these. **Ruling:** the series runs
+  on 03d1ddbc5 as filed (no line moves). G2 ships ON if every DECIDING line passes AND the only guard failures are of exactly these two
+  kinds (never-in on cells where the file has no room, <= 1 squad per failing run; all-in on cells where base's squads did not move).
+  Any other guard failure (part B street lines, part C fights, contacts, all-in where base moved its squads) keeps it OFF and goes to
+  him in player terms the same hour (C45.2). Round 46: tighter travel halts (the feel question).
+  **Clarified (~20:15, before any number): kind (2) is STRICT — base moved 0 squads in that cell.** Orders' dev-read-7 columns: the four
+  never-in cells read base moved 4 of 4, arm never-in max 1 a run (kind 1); his Locks click -62/50 reads base moved 2.0 of 4, so it is
+  NOT exempt. Not widened after seeing dev numbers: if that cell fails all-in on 11201-11248 (dev 6/6 says it will), G2 fails as filed
+  and goes to him the same hour, in his terms: "on your round-43 Locks click all four squads now pack into one file at your click, but
+  the last one arrives ~27 s after the order instead of ~6 s (today two of them stay where they stand)".
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =

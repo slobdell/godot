@@ -6,6 +6,15 @@
 
 _Last updated: 2026-10-29 ~10:00 PDT (laptop clock) — **ROUND 45 PREPARED (box below; launch = the lead starts four CLIs: orders + manoeuvre on Fable, engage + native on Opus).** Earlier the same morning: round 44 closed, his Gorge playtest recorded._
 
+## ⚠ THE LAPTOP FROZE (~17:00-18:00 PDT, 2026-10-29): every session restarted mid-round
+
+Workers restart FRESH with the same kickoff line; each reads its brief's **Status** (top) for where it stood. Any `make remote` /
+series whose laptop wrapper died: its copy-back never happened, so treat the run as lost and re-run it verbatim (no numbers were read
+from it = a rerun, not an amendment). Uncommitted work at the freeze: orders (3 files), manoeuvre (4 files: the B3 room-behind gate is
+committed at 26b1425e7). Where each stood: orders G2 dev read 5 on 84ec3b689 (freeze only if every line passes); engage Bar E2b frozen
+2fe2092cd, its check then the bar; manoeuvre merge candidate 5d4b3fa82 (needs a clean-checkout 60/60 default-probe line) and Bar B3
+recorded (needs native's EQUAL on 26b1425e7); native's 1921e09eb (_assign in C++) check, then B3's EQUAL, then G2's three-seam re-proof.
+
 ## ▶ ROUND 45 AS PREPARED (2026-10-29 ~10:00 PDT) — read this first
 
 **Goal: his order wins. One click for three squads never sends a squad back behind its own start or across a drop from his click
@@ -40,9 +49,26 @@ fresh folder's library; replay-match fails on the wrong native path; builder2 pr
 28 targets ALL JUDGED, sim-baseline unmoved; main INHERITS it. control-timing quiet read on builder0 pending. G2 conflicts in
 rts_controls.gd column_lay: resolution = pair/native-g2 cfa4a0eb2 (EQUAL with G2, R45.3 re-proof).
 
+**G2 SERIES RUNNING (~21:20 PDT):** frozen 03d1ddbc5 builder0 check GREEN (3452/0, 28 ALL JUDGED, perf judged, sim-baseline unmoved,
+`exited 0`, ~/orders-r45/freeze/check-03d1ddbc5-builder0.log); series on builder2 (parts A 11201-11224, A2, B 11225-11236, C
+11237-11248; several hours). Ship rule R45.25 (strict kind 2); ship = merge native's 6562c6beb (freeze + main + the gate_width swap,
+EQUAL). S v5 series on builder0 light; E2b chain and native's 70b8baeea check queued on builder0.
+
+**MAIN NOW (~20:00 PDT): a5508847c** = + **War Rig backout ON** (R45.26: Bar B3 failed only D2's share on exact ties). Sim baseline
+re-read twice on builder0 (glibc-2.43): **all 13 maps unmoved** (`make sim-baseline-adopt`: nothing written). OWED: ONE builder0 main check (perf judged), batched with
+engage's R45.24 player fix (fea4cfbec, check queued).
+
+**MAIN NOW (~19:55 PDT): ceb1386e8** = + native f4f2dd6ed (_assign C++ 1921e09eb GREEN builder0 3449/0 ALL JUDGED; replay-match
+authority default for pre-E2 recordings). Main check OWED (merge_check_needed CHECK: manoeuvre's OFF code + native together); it runs
+as ONE builder0 check after engage's R45.24 player fix (fea4cfbec, its check queued on builder0) merges.
+
+**MAIN NOW (~18:30 PDT): 9203851ec** = + manoeuvre 5d4b3fa82 (round-45 OFF code; builder2 3456/0, sim-baseline unmoved, default
+orders probe 60/60 byte-identical on a clean checkout v main e6e926160) + engage's probe-only 4b359f635. merge_check_needed: CHECK
+(tests/engage/authority_probe.gd only); perf of 5d4b3fa82 NOT JUDGED (builder2). **ONE builder0 main check is owed** — batched with
+the next merges (engage E2b, native _assign) once builder0's queue (engage's and native's checks) clears.
+
 **MAIN NOW (~15:45 PDT): 8ef4f584d** = + engage 69bf864d2 (code = 60262534f, builder0 GREEN 3451/0 ALL JUDGED): **E2 ON — his
-order to a crew wins** (`--player-authority=off` the escape; R45.19: Bar E1 failed as filed on D1/D3/G3, shipped under C45.2). Main moved
-since engage's freeze (native N2), so a full builder0 check of 8ef4f584d is RUNNING (~/orch-r45/main-check-8ef4f584d.log). Verdicts:
+order to a crew wins** (`--player-authority=off` the escape; R45.19: Bar E1 failed as filed on D1/D3/G3, shipped under C45.2). **8ef4f584d GREEN builder0: 3453 passed / 0 failed, 28 targets ALL JUDGED, `>> remote: make check exited 0`** (~/orch-r45/main-check-8ef4f584d.log). Verdicts:
 B2 FAIL (R45.15), S v4 FAIL (R45.17), A6 v4 FAIL (R45.20), S v5 not filed: all OFF. G2 still in dev reads before its freeze.
 
 **control-timing on main eec905e52 (builder0, NOT JUDGED: quiet window refused, 2/2 samples busy):** 30-unit / 6-squad right click
