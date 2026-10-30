@@ -352,6 +352,11 @@ fi
 # ~/$root/.full-check.lock, dropped when the holder dies). A second full check WAITS here, before any slot, and says so;
 # builder_checks.sh's gate reads the same lock. Light runs never take it; REMOTE_FULL_CHECK_LOCK=0 skips it. The ssh
 # session (this script's parent) is watched: a wrapper killed on the laptop takes its check on the builder down with it.
+# Round 46 (native): a fresh folder has no native library and most targets do not build one, so a light control-timing read
+# timed the GDScript fallbacks in silence (tools/remote_native_first.sh). native-fresh first; REMOTE_NATIVE_FRESH=0 skips it.
+if [ -f tools/remote_native_first.sh ] && [ "\$(REMOTE_NATIVE_FRESH=${REMOTE_NATIVE_FRESH:-1} bash tools/remote_native_first.sh "\$@")" = yes ]; then
+	make --no-print-directory native-fresh || exit \$?
+fi
 if [ -z "$light" ] && [ "${REMOTE_FULL_CHECK_LOCK:-1}" != 0 ] && [ -f tools/full_check_lock.sh ] \
 	&& bash tools/full_check_lock.sh is-full-check "\$@"; then
 	FULL_CHECK_LOCK_SESSION=\$PPID bash tools/full_check_lock.sh run ~/$root/.full-check.lock make "\$@"
