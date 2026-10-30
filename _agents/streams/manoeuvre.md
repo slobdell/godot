@@ -116,7 +116,11 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
   heavy, 36 paired runs an arm): CLEAN on every S line** -- D1 +5.8 se (s4 +4.4); wedged Locks +0.9 s a run (+0.6 se; s4 +3.5 / +1.7 se),
   Terminus -1.2 (-0.2 se), Crossing -6.6 (-3.4 se); yield + blocked Crossing +6.3 (+1.7 se), Locks +2.0 (+1.4 se), Terminus -7.1
   (-1.7 se); k-turn s better on all three; never-arrived +0.0. The two risks (Crossing / Locks yield + blocked) named in the filing.
-  **Bar S v5 FILED (workstreams.md) on 11751-11798**, launching when the tip's check is green (builder2, `check_tip2/`).
+  **Bar S v5 FILED (workstreams.md) on 11751-11798. Frozen tree fc639d7e0** (= the code tip: both seat fixes + holdway's verdict fix):
+  its check on builder2 `>> remote: make check exited 0`, 27 targets, 26 passed, 2 NOT JUDGED (perf lines: not a judging machine),
+  sim-baseline unmoved (`check_tip2/check-fc639d7e0.log`). **Series LAUNCHED 21:05 PDT** from `../godot-manoeuvre-s5`, every leg on
+  builder0 light at J=4 (R45: builder2 is orders' G2 series; builder0 holds one series after its 19:52 OOM), driver `bars_s5.sh`,
+  evidence `~/overnight-manoeuvre/r45/bars_s5/`.
 - **holdway (A6 v4 FAILED on contacts_far): the cause read on seed 11466 (laptop, trace):** under holdway the street verdict's "time to the
   middle" ran along each crew's ORDERED way; a crew of A ordered to a seat BESIDE it (west, at the order's first ticks) read 1.2 s to a
   middle 60 m away, became A's lead, and A (the squad in the open) was told to come on; B waited 85 s while A's far crews came through
