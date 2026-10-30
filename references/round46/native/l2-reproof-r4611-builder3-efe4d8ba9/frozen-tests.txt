@@ -1,0 +1,3 @@
+native decide: 78 CLEAR_LANE choices only the lane rule makes (no fight of its own, or his post's lane step)
+native decide: 7536 decisions, 0 mismatches, chosen { "ADVANCE": 622, "HOLD": 403, "KEEP_SLOT": 419, "RESUPPLY": 198, "SPOT": 1589, "PURSUE": 90, "SHADOW": 254, "MOVE": 351, "FOLLOW": 39, "TAKE_COVER": 60, "ENGAGE": 1497, "RETREAT": 292, "BOMBARD": 914, "CLEAR_LANE": 136, "REGROUP": 42, "FLANK": 45, "SUPPRESS": 144, "ORBIT": 8, "COVER_FIRE": 146, "INVESTIGATE": 270, "CONTEST": 17 }
+13 passed, 0 failed

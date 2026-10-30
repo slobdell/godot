@@ -180,6 +180,11 @@ struct DriveConfig {
 	bool backout_stall_ready = false;
 	double BACKOUT_STALL_PROGRESS_M = -1.0;
 	int64_t BACKOUT_STALL_TICKS = -1;
+	// Round 46 (native N2, manoeuvre M5 `shortfwd`): his short move to a wheeled crew inside its turning circle drives FORWARD
+	// (Movement._his_short_move natively; the forward arc's test called back: _kturn_frame / _outline_offs / _arc_hit). False on
+	// a tree without it (its constants absent): the switch does not exist there.
+	bool shortfwd_ready = false;
+	double SHORTFWD_RADII = -1.0, SHORTFWD_DEG = -1.0, SHORTFWD_THROTTLE = -1.0, KTURN_HIT_WITHIN_M = -1.0;
 	// Round 44 (native N3, manoeuvre M3 `parkedpass`): the parked crew's pass offer in ask(). False on a tree without M3.
 	bool parkedpass_ready = false;
 	// Round 28 (N5): Movement._repair natively (SlotGround.for_unit called; repair_ready false: the callback).

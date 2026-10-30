@@ -6,7 +6,7 @@
 > `game/camera/rts_camera.gd`'s header (his pose: pitch 21, 49 m, FOV 35, settled from play; do NOT change the default pose or lens
 > without asking him). **You own:** `game/camera/**`, `game/theme/fx/camera_shake.gd`, `game/ui/camera_readout.gd`, `tests/test_camera*.gd`,
 > `tests/camera/**`, `mk/camera.mk`; GRANT read-only feed lines in `game/modes/skirmish_mode.gd` for what the planner reads (selection,
-> its orders' paths, contacts). **Model:** Fable. **Machine:** builder3 (checks, series); the laptop for the per-frame budget and clips
+> its orders' paths, contacts). **Model:** Opus (Fable quota low, 2026-10-30). **Machine:** builder3 (checks, series); the laptop for the per-frame budget and clips
 > (one Godot run under `flock /tmp/tank-squad-laptop-godot.lock`). **Seeds:** 12201-12248 (Bar C1), 12249-12296 (reserve). Dev
 > 7001-7012 (never a bar).
 
@@ -92,3 +92,59 @@ Nothing at launch. If the bar fails, write in player terms what he would see ON 
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Report (2026-10-30, top = newest).** C1 DONE (adb5c1b13). C2 the planner BUILT behind `--camera-planner=on` (OFF):
+`game/camera/camera_planner.gd` + the rig's `_update_planner`; tests `tests/test_camera_planner.gd` (10, laptop 56/0 camera tests
+at 53de53ea4). Dev reads only on 7001-7006 (never a bar). In progress: tuning on dev seeds, then C3 (laptop budget) and Bar C1.
+
+**Bar C1 SERIES RUNNING** on 3bf76e839 = GREEN builder3 (`make check exited 0`, 3483 passed / 0 failed, 28 targets ALL JUDGED;
+log ~/camera-r46/check-3bf76e839.log), started ~04:00 via ~/camera-r46/barc1.sh (builder3 J8; progress ~/camera-r46/barc1/run.log).
+**Bar C1 FILED** (workstreams.md *Bars (round 46)*, text there; candidate 3bf76e839, before any number on 12201-12248).
+C3 DONE: laptop budget (UHD 620, laptop preset, Terminus, windowed, under the lock, 1f3e6f111): planner 0.353 / 0.358 ms a frame
+mean (seeds 7001 / 7002, 60 s), step p99 0.88 / 0.93 ms, max 5.0 / 1.6 ms; the rig without it 0.57-0.65 ms mean, max 2.8-7.4 ms.
+One pose a frame on the laptop preset (`--camera-planner-rate=N` dev); native's C++ batch offered and declined (not needed).
+
+### Plan (ordered; smallest foundation first)
+1. C1 census tool + table (below) — DONE. 2. C2 `CameraPlanner` (pure cost + candidate set, tests first), wired behind
+`--camera-planner=on`. 3. C3 laptop budget. 4. C4 Bar C1 filed, then the series on builder3. 5. C5 his acceptance read.
+
+### C1: the census on his Terminus recording (laptop, tests/camera/census.gd at the C1 commit; recording seed 39851, 151 s, n = 144 seconds with a selection)
+
+**Method.** `make camera-census RECORDING=references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl`. Each `cam` row's
+SHOWN pose (yaw, pitch, distance, ground point; his 35 deg lens, 16:9) is rebuilt with `RtsCamera.pose_at` on Terminus; at the
+nearest `census` row it projects his crews and rays camera -> hull middle AND hull top against the DRAWN layout
+(`RtsCamera.seen`, solids >= 3 m). **His selection = his last order's units** (the recording has no selection rows; every order
+goes to what is selected), so a selection changed WITHOUT an order is invisible to it (said, not hidden). "On screen" = inside
+the frame and above the command card (0.44 of the half-height below centre).
+
+| His complaint | What the census finds (seconds, of 144 with a selection) | When |
+|---|---|---|
+| (a) no selected squad in view | **none on screen: 2 s** (0 s, 132 s); **under half on screen: 26 s**; some selected crew off: 63 s | 74-90 s (Guns, strung 110 m from z -3 to -112: the auto frame's 100 m cap shows 1-2 of 5 while the danger look turns S); 100-103 s (4 crews, 1 on, while he had zoomed in by hand to 36 m); 10-13 s |
+| (b) new selection did not pan until combat | every ORDERED new selection was on screen at the next cam row (<= 1 s; n = 22) — he orders what he sees, so the proxy cannot see it. **The code shows the cause:** `take_vision()` starts the frame at once, but the glide's **aim hold** (`aiming_now`: his hand moved within 1.5 s and stopped, or the cursor on a unit, or an order armed) coasts the automatic move to a STOP; a selection made by clicking leaves his hand on the mouse, so the pan waits until his hand rests >= 1.5 s, or until a hit swings the danger yaw | aim-hold is the mode on 33 of 209 cam rows |
+| (c) a building blocks his squad driving a corridor | **moving 116 s; a building hides >= half of his shown selection 18 s; the view looks > 45 deg off his drive 64 s (55 %)**; both together 13 s | **70-74 s: Wrenches driving N up the x -70 street, the danger look swung the view to SE (yaw -127, 136 deg off the drive): 3-5 of 5 hidden by the blocks.** 10-13 s (2 of 2 hidden, 34-50 deg off); 63-65 s; 104-115 s (his lone scout hidden 7 s) |
+| hits on his units off screen | **328 of 1214 (27 %)** | 93-103 s (his group's fight at the x -55 street, 14/37, 26/40, 39/39 off: he had zoomed in by hand), 108-117 s (his scout selected, the army fighting elsewhere) |
+
+**What it says about today's camera:** the danger look turns the yaw toward the enemy (one direction sum), the frame fits his
+crews at that yaw, and nothing asks whether a building is between the boom and the crews or whether the view runs along the
+street they drive. Three rules (frame, yaw, aim hold) each decide one part of the pose and none sees the others' result.
+
+### C2: the planner's cost (ONE function, weights in one table; written before code)
+
+Every PLAN_S (0.2 s) the planner scores candidate poses and hands the winner to the glide (the springs, the solid clearance and
+the manual hand-back stay: they are motion, not decisions). A candidate = a yaw from a fixed set (the current wanted yaw +
+12 headings every 30 deg); its ground point and distance come from framing his selection (+ the lean toward its path ahead)
+at that yaw under today's caps (16-100 m; pitch and FOV his). Cost, lower wins:
+
+| Term | What | Weight |
+|---|---|---|
+| selection | fraction of his selected crews outside the inset frame | W_SEL 10 (x3 for NEW_S 2 s after a new selection) |
+| path | fraction of his selection's path-ahead points (route, next 40 m, every 10 m) off screen | W_PATH 2 |
+| action | contacts that fired at / hit his selection (fading 3 s) + known enemies within 120 m, weighted as the danger feed weighs them, off screen | W_ACTION 3 |
+| sight | rays from the candidate's camera to his selected crews (hull top) blocked by a drawn solid; and to the path points | W_SIGHT 4 (crews), 2 (path) |
+| stability | the yaw turn from the current wanted yaw (0..1 over 180 deg) | W_TURN 1.5 |
+| distance | the zoom-out beyond his 49 m (0..1 to the 100 m cap) | W_DIST 0.5 |
+
+A challenger replaces the current pose only if it is better by SWITCH_MARGIN (0.25): equal costs never flip-flop, and a
+small gain never swings the view back (K5's failure). His hand (wheel, keys, drag, rotate) wins for the hand-back time as
+today. A NEW selection off screen bypasses the aim hold (he cannot be aiming at what is not on his screen) and triples the
+selection term, so the view pans at once. "Look down the corridor" is not a rule: a boom along the street has clear rays.

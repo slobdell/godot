@@ -20,6 +20,13 @@ extends Node
 ##                 turn must not lose his own squad)
 ##   inside_s      seconds the camera itself sat inside a solid (the building clearance easing in too slowly)
 ##   yaw_reversals the view's turn changing direction after at least REVERSAL_DEG each way (a swinging camera)
+## Round 46 (camera C4, Bar C1's deciding lines, as the census reads his recording):
+##   sel_none_s     seconds none of the commanded units is on screen
+##   sel_hidden_s   seconds they drive (mean speed > MOVING_MPS) with at least half of those on screen hidden by a building
+##                  (rays camera -> hull top against the DRAWN solids >= 3 m: the census's rule)
+##   sel_latencies  per new selection (the commanded units' names change), seconds until half or more are on screen
+##                  (null = never, by the end or the next selection)
+##   hits / hits_off  rounds that struck ANY of his units, and of those, on a unit not on screen
 ## CameraTrace attaches it with the trace; the playtest gives it the feed once the controls exist.
 
 ## "Firing at us" = a round at the commanded units within this many seconds.
@@ -50,6 +57,17 @@ var _reversals := 0
 var _turn_anchor := NAN
 var _turn_sign := 0
 var _last_fired := {}
+const MOVING_MPS := 1.5
+const HIDE_MIN_HEIGHT_M := 3.0
+const HULL_TOP_M := 2.0
+var _sel_none_s := 0.0
+var _sel_hidden_s := 0.0
+var _sel_names: Array = []
+var _sel_open: Variant = null  # the open new-selection episode
+var sel_episodes: Array = []
+var _hits := 0
+var _hits_off := 0
+var _hooked := false
 
 
 func _ready() -> void:
@@ -65,6 +83,9 @@ func _process(delta: float) -> void:
 	_count_reversal(rad_to_deg(rig._shown_yaw))
 	if not RtsCamera.solid_at(rig.camera.global_position).is_empty():
 		_inside_s += delta  # the building clearance's job: never sit inside a solid
+	if not _hooked and feed.game_match != null:
+		_hooked = true
+		feed.game_match.projectile_impact.connect(_on_impact)
 	if state["from"] == null:
 		return
 	_play_s += delta
@@ -74,6 +95,7 @@ func _process(delta: float) -> void:
 	var own_shown := own.filter(func(at: Vector3) -> bool: return on_screen(at) and not wall_hides(at))
 	if not own.is_empty():
 		_own_shown_s += delta * float(own_shown.size()) / float(own.size())
+		_selection_lines(own, own_shown, float(state.get("speed", 0.0)), delta)
 	var any_on_screen := false
 	var firing: Array = []
 	var centroid := Vector3.ZERO
@@ -127,6 +149,45 @@ func _process(delta: float) -> void:
 		row["blocked"] = own.filter(func(at: Vector3) -> bool:
 			return RtsCamera.sight_blocked(eye, at + Vector3.UP, RtsCamera.seen(), 0.0)).size()
 		frames.append(row)
+
+
+## Round 46 (Bar C1): the census's lines, live.
+func _selection_lines(own: Array, shown: Array, speed: float, delta: float) -> void:
+	if shown.is_empty():
+		_sel_none_s += delta
+	elif speed > MOVING_MPS:
+		var eye := rig.camera.global_position
+		var hidden := shown.filter(func(at: Vector3) -> bool:
+			return not RtsCamera.sight_blockers(eye, at + Vector3(0, HULL_TOP_M, 0), RtsCamera.seen(), HIDE_MIN_HEIGHT_M, true).is_empty())
+		if hidden.size() * 2 >= shown.size():
+			_sel_hidden_s += delta
+	var names: Array = feed.units.call() if feed.units.is_valid() else []
+	names.sort()
+	if names != _sel_names:
+		if not _sel_names.is_empty():
+			if _sel_open != null:
+				sel_episodes.append(_sel_open)  # replaced before it came on screen: latency stays null
+			_sel_open = {"t": snappedf(_clock, 0.01), "latency_s": null, "units": names.size()}
+		_sel_names = names
+	if _sel_open != null and shown.size() * 2 >= own.size():
+		(_sel_open as Dictionary)["latency_s"] = snappedf(_clock - float((_sel_open as Dictionary)["t"]), 0.01)
+		sel_episodes.append(_sel_open)
+		_sel_open = null
+
+
+func _on_impact(event: Dictionary) -> void:
+	if rig == null or rig.camera == null or feed == null or feed.game_match == null:
+		return
+	var victims: Array = [str(event.get("target", ""))]
+	for victim: Dictionary in event.get("victims", []):
+		victims.append(str(victim.get("target", "")))
+	for victim: String in victims:
+		var tank := feed.game_match.tanks.get_node_or_null(NodePath(victim)) as Tank if victim != "" else null
+		if tank == null or tank.team != feed.team:
+			continue
+		_hits += 1
+		if not on_screen(Shown.ground(tank)):
+			_hits_off += 1
 
 
 ## A shooter firing at the commanded units from off screen opens an episode; it closes the first frame it is on screen.
@@ -216,7 +277,10 @@ func summary() -> Dictionary:
 		means[key] = snappedf(values.reduce(func(s: float, v: float) -> float: return s + v, 0.0) / maxf(values.size(), 1), 0.1)
 	return {"play_s": snappedf(_play_s, 0.01), "under_fire_s": snappedf(_under_fire_s, 0.01), "blind_s": snappedf(_blind_s, 0.01),
 			"wall_s": snappedf(_wall_s, 0.01), "own_shown_s": snappedf(_own_shown_s, 0.01), "inside_s": snappedf(_inside_s, 0.01), "episodes": episodes.size(), "never": never, "latencies": latencies,
-			"mean_abs_bearing": means, "yaw_reversals": _reversals, "minutes": snappedf(_clock / 60.0, 0.001)}
+			"mean_abs_bearing": means, "yaw_reversals": _reversals, "minutes": snappedf(_clock / 60.0, 0.001),
+			"sel_none_s": snappedf(_sel_none_s, 0.01), "sel_hidden_s": snappedf(_sel_hidden_s, 0.01),
+			"sel_latencies": sel_episodes.map(func(e: Dictionary) -> Variant: return e["latency_s"]) + ([null] if _sel_open != null else []),
+			"hits": _hits, "hits_off": _hits_off}
 
 
 ## The signed angle (degrees, positive = to the LEFT, as positive yaw turns: trip-up 2) from the view's direction at

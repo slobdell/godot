@@ -100,6 +100,11 @@ static func configure() -> bool:
 		# Round 45 (native N3, manoeuvre M2 b): the stalled departure leg; -1 on a tree without it.
 		"BACKOUT_STALL_PROGRESS_M": float((Movement as Script).get_script_constant_map().get("BACKOUT_STALL_PROGRESS_M", -1.0)),
 		"BACKOUT_STALL_TICKS": int((Movement as Script).get_script_constant_map().get("BACKOUT_STALL_TICKS", -1)),
+		# Round 46 (native N2, manoeuvre M5 `shortfwd`): his short move drives forward; -1 on a tree without it.
+		"SHORTFWD_RADII": float((Movement as Script).get_script_constant_map().get("SHORTFWD_RADII", -1.0)),
+		"SHORTFWD_DEG": float((Movement as Script).get_script_constant_map().get("SHORTFWD_DEG", -1.0)),
+		"SHORTFWD_THROTTLE": float((Movement as Script).get_script_constant_map().get("SHORTFWD_THROTTLE", -1.0)),
+		"KTURN_HIT_WITHIN_M": float((Movement as Script).get_script_constant_map().get("KTURN_HIT_WITHIN_M", -1.0)),
 		# Round 44 (manoeuvre M3, parkedpass): the parked crew's pass offer in ask(); false on a tree without it.
 		"parkedpass": Movement.new().has_method("_parked_for_pass"),
 		# Round 28 (N5): Movement._repair

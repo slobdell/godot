@@ -477,12 +477,15 @@ REPLAY_MATCH_DIR := $(BUILD_DIR)/replay-match
 # R45.24: a match he recorded before engage's E2 reached main (2026-10-29 15:11) replays with --player-authority=off, read from the
 # recording's name stamp (tests/replay/authority.py; the line REPLAY_AUTHORITY says which and why). REPLAY_AUTHORITY=on|off overrides;
 # a --player-authority flag in REPLAY_FLAGS is left alone.
+# Round 46 (R46.11): and every rule his build ran without, by the recording's `rules` stamp (tests/replay/rules.py: L2's
+# --lane-clear=off for every recording made before the stamp); a switch in REPLAY_FLAGS or in his match's own flags is left alone.
 replay-match: native-fresh import ## Replay a match recording headless (RECORDING=file[.gz], REPLAY_SECONDS=20, CREWS=first2|all, REPLAY_FLAGS=..., REPLAY_AUTHORITY=auto|on|off) and print the divergence table v his census
 	@test -n "$(RECORDING)" || { echo 'usage: make replay-match RECORDING=build/recordings/X.jsonl[.gz] [REPLAY_SECONDS=20] [CREWS=first2|all] [REPLAY_FLAGS="--attack-shot=off"] [REPLAY_AUTHORITY=auto|on|off]'; exit 2; }
 	@rm -rf $(REPLAY_MATCH_DIR) && mkdir -p $(REPLAY_MATCH_DIR)/out
 	@case "$(RECORDING)" in *.gz) gzip -dc "$(RECORDING)" > $(REPLAY_MATCH_DIR)/his.jsonl;; *) cp "$(RECORDING)" $(REPLAY_MATCH_DIR)/his.jsonl;; esac
 	@authority=$$($(PYTHON) tests/replay/authority.py $(REPLAY_MATCH_DIR)/his.jsonl $(or $(REPLAY_AUTHORITY),auto)); flags='$(REPLAY_FLAGS)'; \
 	case "$$flags" in *--player-authority*) ;; *) if [ "$$authority" = off ]; then flags="$$flags --player-authority=off"; fi;; esac; \
+	rules=$$($(PYTHON) tests/replay/rules.py $(REPLAY_MATCH_DIR)/his.jsonl "$$flags"); flags="$$flags $$rules"; \
 	s=0; $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- \
 		--orders=$(CURDIR)/$(REPLAY_MATCH_DIR)/his.jsonl --seconds=$$(( $(or $(REPLAY_SECONDS),20) + 1 )) --record-dir=$(REPLAY_MATCH_DIR)/out \
 		$$flags > $(REPLAY_MATCH_DIR)/replay.log 2>&1 || s=$$?; \

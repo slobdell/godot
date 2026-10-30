@@ -1,0 +1,4 @@
+DIVERGENCE crews=20 within=1 bar=3.0m seconds=151 ticks=152 first_over=Green_Guns_1@22 verdict=FAIL
+DIVERGENCE crews=20 within=1 bar=3.0m seconds=151 ticks=152 first_over=Green_Guns_1@22 verdict=FAIL
+DIVERGENCE crews=20 within=11 bar=3.0m seconds=107 ticks=108 first_over=Green_Hunters_1@50 verdict=FAIL
+DIVERGENCE crews=20 within=11 bar=3.0m seconds=107 ticks=108 first_over=Green_Hunters_1@50 verdict=FAIL
