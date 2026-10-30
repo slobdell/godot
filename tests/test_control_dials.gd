@@ -40,15 +40,18 @@ func test_the_rig_frames_with_its_inset() -> void:
 	var f := Fixture.new(self)
 	await f.build(false)
 	f.rig.vision = f.controls.vision_state
-	f.rig.auto_frame_max_m = RtsCamera.MAX_DISTANCE  # R46.29 (camera's grant): the cap must not bind, so the inset alone decides
+	# R46.29 (camera's grant): the dial's plumbing into the vision frame, judged at a fixed yaw. The planner (ON) picks its own
+	# yaw after a re-selection, so this comparison cannot isolate the dial there; tests/test_camera_planner.gd judges the dial
+	# in the planner's fit (test_his_frame_dial_widens_the_planners_frame).
+	f.rig.planner_on = false
 	f.controls.recall_group(1)
 	await _settled(f.rig)
 	var default_zoom := f.rig.zoom
-	f.rig.vision_inset = SkirmishMode.CAMERA_FRAMES["close"]  # R46.29: the planner's default frame can sit at the force's sight cap
+	f.rig.vision_inset = 0.55
 	f.controls.recall_group(2)
 	f.controls.recall_group(1)
 	await _settled(f.rig)
-	assert_true(f.rig.zoom < default_zoom - 0.01, "a closer inset brings the camera in (%.2f vs %.2f)" % [f.rig.zoom, default_zoom])
+	assert_true(f.rig.zoom > default_zoom + 0.01, "a wider inset pulls the camera back (%.2f vs %.2f)" % [f.rig.zoom, default_zoom])
 
 
 ## Round 33 overnight (native, item 1): wait for the camera to settle, not a count of frames. 40 frames was a time only
