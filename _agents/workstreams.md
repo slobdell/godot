@@ -431,6 +431,16 @@ Hunters 58 m north-west, Wrenches 58 m south-east through the neck.
   pointless hold dragged 3.8 m). **Bar E2b re-frozen at fea4cfbec before any number** (2fe2092cd's check was red only on the census
   lint: the probe read `Manoeuvre.turn_in_stops`; fixed). E6's cap is now OPT-IN (`--turn-in-cap=on`) until E2b passes, so the arms
   read base = no flag, new = `--turn-in-cap=on` (same comparison, no line changed). fea4cfbec carries the R45.24 fix; merged alone on green.
+- **R45.25 (~20:05) G2 freezes on 03d1ddbc5 (orders' option a); the ship rule stated BEFORE any 11201 number.** Dev read 7 (builder2,
+  03d1ddbc5, 7001-7006, the squeeze): every deciding line (D1-D6, D5b), contacts and the reach-80 held guard PASS. Left, by construction:
+  (1) never-in 1 run of 6 on four no-room cells (crossing his-80, locks across-20 / along-80, yard_open across-20): the rear squad of a
+  squeezed file ends 16-24 m from its seat (coil halts 36 m overlap at a 25-31 m step); (2) all-in on the fixed Locks cell (-62/50):
+  27.2 s v base 5.8 s, because base's places are where the squads already stand (they never move) and G2 forms the file at his click.
+  Holding the rear squads (1f1f07740) passes these and fails the held guard; moving everyone fails these. **Ruling:** the series runs
+  on 03d1ddbc5 as filed (no line moves). G2 ships ON if every DECIDING line passes AND the only guard failures are of exactly these two
+  kinds (never-in on cells where the file has no room, <= 1 squad per failing run; all-in on cells where base's squads did not move).
+  Any other guard failure (part B street lines, part C fights, contacts, all-in where base moved its squads) keeps it OFF and goes to
+  him in player terms the same hour (C45.2). Round 46: tighter travel halts (the feel question).
 
 - **Bar B2 (recorded by the orchestrator ~11:10 PDT from stream/manoeuvre, before any number on 11149-11196; freezes on 0af772a85 + native's twin), his War Rig backs out of the box first, on every pose (manoeuvre; R44.25, R45.4; FILED before any number on
   11149-11196; C45.1, C45.3, C45.4, C45.5).** B1's shape stands (its floor was met and every guard passed): ONE arm, **bo** =
