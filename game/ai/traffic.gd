@@ -222,7 +222,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdway", "holdroute", "kturngoal", "parkaside", "parkedpass", "shortfwd"]  # round 45: shortfwd (manoeuvre, engage's E5 relay: his short move to a wheeled crew inside its turning circle drives forward, not back), until its bar; round 45 (R45.23, Bar B3): backout ON by default, `--traffic-off=backout` the escape; round 44: parkedpass (M3), until Bar S v3; round 43: holdfar / holdway / holdroute (engage A6, until judged), kturngoal (manoeuvre S3) + parkaside (manoeuvre Bar S v2), all OFF after Bar S / S v2 (R43.42); round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane; round 39-40 givewaychain / chainrelease / chainside / reroute / rerouteany / follow (manoeuvre, until judged)
+const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdway", "holdroute", "kturngoal", "parkaside", "parkedpass"]  # round 46 (R46.25, Bar shortfwd): shortfwd ON by default (his short move to a wheeled crew drives toward his click, not back), `--traffic-off=shortfwd` the escape; round 45 (R45.23, Bar B3): backout ON by default, `--traffic-off=backout` the escape; round 44: parkedpass (M3), until Bar S v3; round 43: holdfar / holdway / holdroute (engage A6, until judged), kturngoal (manoeuvre S3) + parkaside (manoeuvre Bar S v2), all OFF after Bar S / S v2 (R43.42); round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane; round 39-40 givewaychain / chainrelease / chainside / reroute / rerouteany / follow (manoeuvre, until judged)
 
 
 ## Is the behaviour `name` switched off for this run (`--traffic-off=name,...`; OPT_IN and DEFAULT_OFF names are off
@@ -290,8 +290,9 @@ static func _chain_native() -> void:
 	# twinned (native N3, pair/native-backout: drive_native.cpp backout_due / backout_look_due), so ON keeps the C++ drive.
 	# Round 44 (R44.16): the twin matches cf6eabc22 (native N3, pair/native-backout-r3: the station-PID gate on `_backout_leg` only,
 	# the long-hull term), so backout ON keeps the C++ drive.
-	# Round 45 (manoeuvre, `shortfwd`): the forward arc on his short move is inside the drive's mirror: ON runs the GDScript drive until twinned.
-	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush") or not _off.has("shortfwd"):
+	# Round 45 (manoeuvre, `shortfwd`): the forward arc on his short move is twinned (round 46, native N2: drive_native.cpp
+	# shortfwd_on / his_short_move / shortfwd_hit, test_native_drive_shortfwd), so ON keeps the C++ drive.
+	if not _off.has("reroute") or not _off.has("follow") or not _off.has("wait") or not _off.has("holdlane") or not _off.has("deckwait") or not _off.has("nopush"):
 		if _reroute_saved_native_drive == null:
 			_reroute_saved_native_drive = BrainSwitches.native_drive
 		BrainSwitches.native_drive = false
@@ -1150,7 +1151,10 @@ static func refresh(tanks_root: Node) -> void:
 		# A crew yielding sideways or pushed off its line keeps its ordered way; a crew with no goal has none (ZERO).
 		var ordered := Vector2.ZERO
 		if mover != null and mover._goal != Vector3.INF and not off("holdway"):
-			ordered = mover._travel_direction(mover._goal, false)
+			# Round 46 (A6 v5): the squad's route direction at the crew first; a crew outside a travelling squad keeps its own way.
+			ordered = mover.squad_way()
+			if ordered == Vector2.ZERO:
+				ordered = mover._travel_direction(mover._goal, false)
 		rows.append([String(tank.name), tank.team, tank.global_position.x, tank.global_position.z, velocity.x, velocity.z,
 				-basis_z.x, -basis_z.z, Avoidance.radius_of(tank.unit_id),
 				mover != null and mover.is_under_way() and mover.yield_to == "" and not mover.in_kturn(),

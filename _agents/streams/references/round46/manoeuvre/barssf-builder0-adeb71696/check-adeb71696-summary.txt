@@ -1,0 +1,2 @@
+>> builder: make check exited 0 (log /home/devia/tank_squad/remote-logs/godot-manoeuvre-sf-check-20261030-033844-1743313.log)
+>> remote: make check exited 0 (build/ copied back)

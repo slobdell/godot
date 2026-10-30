@@ -1,0 +1,34 @@
+native drive in every row: True (48 / 48)
+deciding block: 12 paired cells; guard block: 12
+floor: OFF reverses in 6 of 12 (>= 4): MET
+D1 metres away from his click: pooled 5.7 -> 2.4; paired mean -0.27 se 0.17 (-1.6 se); identical 9: FAIL
+G1 arrival: sooner or identical 12 of 12 (strictly sooner 3); worst later 0 ticks; never-arrived 0 -> 0: PASS
+G2 off the navmesh (deciding): worst ARM - BASE +0.00 m (<= 0.25): PASS
+G2 off the navmesh (guard): worst ARM - BASE +0.00 m (<= 0.25): PASS
+G3 his other clicks: 12 of 12 within the lines: PASS
+per cell (pose seed): reverse ticks OFF -> ON | away m | arrival tick | shortfwd ticks ON
+  0 12121: 73 -> 73 | 0.3 -> 0.3 | 70 -> 70 | 0
+  0 12123: 31 -> 17 | 2.2 -> 0.6 | 67 -> 52 | 3
+  0 12125: 61 -> 61 | 0.0 -> 0.0 | 58 -> 58 | 0
+  0 12127: 70 -> 70 | 0.0 -> 0.0 | 66 -> 66 | 0
+  0 12129: 22 -> 19 | 0.9 -> 0.6 | 55 -> 53 | 0
+  0 12131: 33 -> 20 | 2.3 -> 0.9 | 67 -> 52 | 2
+  2 12122: 0 -> 0 | 0.0 -> 0.0 | 33 -> 33 | 0
+  2 12124: 0 -> 0 | 0.0 -> 0.0 | 33 -> 33 | 0
+  2 12126: 0 -> 0 | 0.0 -> 0.0 | 32 -> 32 | 0
+  2 12128: 0 -> 0 | 0.0 -> 0.0 | 33 -> 33 | 0
+  2 12130: 0 -> 0 | 0.0 -> 0.0 | 29 -> 29 | 0
+  2 12132: 0 -> 0 | 0.0 -> 0.0 | 38 -> 38 | 0
+  1 12133: 0 -> 0 | 0.0 -> 0.0 | 38 -> 38 | 0
+  1 12138: 0 -> 0 | 0.0 -> 0.0 | 39 -> 39 | 0
+  1 12143: 0 -> 0 | 0.0 -> 0.0 | 39 -> 39 | 0
+  3 12134: 18 -> 18 | 0.0 -> 0.0 | 44 -> 44 | 0
+  3 12139: 70 -> 70 | 0.0 -> 0.0 | 65 -> 65 | 0
+  3 12144: 60 -> 60 | 0.0 -> 0.0 | 56 -> 56 | 0
+  4 12135: 51 -> 51 | 0.0 -> 0.0 | 47 -> 47 | 0
+  4 12140: 56 -> 56 | 0.0 -> 0.0 | 51 -> 51 | 0
+  5 12136: 0 -> 0 | 0.0 -> 0.0 | 62 -> 62 | 0
+  5 12141: 0 -> 0 | 0.0 -> 0.0 | 63 -> 63 | 0
+  6 12137: 92 -> 92 | 0.0 -> 0.0 | 88 -> 88 | 0
+  6 12142: 92 -> 92 | 0.0 -> 0.0 | 88 -> 88 | 0
+VERDICT (corpus lines; G4-G7 read apart): FAIL

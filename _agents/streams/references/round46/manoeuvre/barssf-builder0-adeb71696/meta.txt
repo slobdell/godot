@@ -1,0 +1,13 @@
+bar sf hash cec4e499f dirty '' start Fri Oct 30 03:06:34 AM PDT 2026
+series NOT auto-launched: held for the orchestrator's builder allocation Fri Oct 30 03:27:35 AM PDT 2026
+check cec4e499f stopped before it ran (red by construction: exec_fields test, fixed in 258ce00f0) Fri Oct 30 03:38:35 AM PDT 2026
+check adeb71696 start Fri Oct 30 03:38:42 AM PDT 2026 devia@builder3
+check adeb71696 end Fri Oct 30 04:08:15 AM PDT 2026: make check exited 0
+series start adeb71696 Fri Oct 30 04:08:40 AM PDT 2026 host slobdell@builder0
+deciding done Fri Oct 30 04:13:59 AM PDT 2026
+guard done Fri Oct 30 04:17:31 AM PDT 2026
+authority done Fri Oct 30 04:19:37 AM PDT 2026
+base tree ac4b0f19e
+orders done Fri Oct 30 04:30:58 AM PDT 2026
+end Fri Oct 30 04:30:58 AM PDT 2026
+ENDMARK

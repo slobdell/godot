@@ -25,7 +25,7 @@ func teardown() -> void:
 var _native_drive_was := BrainSwitches.native_drive
 
 
-func _run(arm: String, angle_deg: float, distance_m: float, arena := "yard_open", spot := SPOT, yaw := 0.0) -> Dictionary:
+func _run(arm: String, angle_deg: float, distance_m: float, arena := "yard_open", spot := SPOT, yaw := 0.0, goal := Vector2.INF) -> Dictionary:
 	Traffic.set_off("shortfwd", arm == "off")
 	if OS.get_environment("NOSED_GDSCRIPT") == "on":
 		BrainSwitches.native_drive = false
@@ -40,6 +40,12 @@ func _run(arm: String, angle_deg: float, distance_m: float, arena := "yard_open"
 	var forward := Vector2(-sin(yaw), -cos(yaw))  # yaw 0 faces -z; positive turns left
 	var dir := forward.rotated(-deg_to_rad(angle_deg))  # positive = left of the nose
 	var to := Vector2(spot.x, spot.z) + dir * distance_m
+	if goal != Vector2.INF:  # round 46 (M5): his recorded click, absolute
+		to = goal
+		distance_m = to.distance_to(Vector2(spot.x, spot.z))
+		angle_deg = rad_to_deg(forward.angle_to(to - Vector2(spot.x, spot.z))) * -1.0
+	var map: RID = scout.get_world_3d().navigation_map
+	var off_mesh_max := 0.0
 	element.assign({"verb": "move", "to": [to.x, to.y], "drills": false})
 	var reverse_ticks := 0
 	var first_reverse := -1
@@ -55,19 +61,23 @@ func _run(arm: String, angle_deg: float, distance_m: float, arena := "yard_open"
 				first_reverse = i + 1
 		var d := Vector2(scout.global_position.x - to.x, scout.global_position.z - to.y).length()
 		away_max = maxf(away_max, d - distance_m)
+		var flat_at := Vector3(scout.global_position.x, 0.0, scout.global_position.z)
+		var on_mesh := NavigationServer3D.map_get_closest_point(map, flat_at)
+		off_mesh_max = maxf(off_mesh_max, Vector2(on_mesh.x - flat_at.x, on_mesh.z - flat_at.z).length())
 		if arrived < 0 and d <= 3.5:  # the order's own arrival radius, not a tighter one: a car settles within a share of its circle
 			arrived = i + 1
 	var out := {"arm": arm, "angle": angle_deg, "distance": distance_m, "first_reverse": first_reverse, "reverse_ticks": reverse_ticks,
 			"arrived": arrived, "away_max_m": snappedf(away_max, 0.1), "kturns": int(Movement.route_arms().get("kturns", 0)),
-			"his_order": (mover.ctl as TankBrain)._his_order, "native_drive": BrainSwitches.native_drive}
+			"his_order": (mover.ctl as TankBrain)._his_order, "native_drive": BrainSwitches.native_drive,
+			"off_mesh_max_m": snappedf(off_mesh_max, 0.01), "shortfwd_ticks": Movement.shortfwd_ticks}
 	print("SHORT_MOVE " + JSON.stringify(out))
 	_lab.dispose()
 	_lab = null
 	return out
 
 
-func test_off_by_default() -> void:
-	assert_true(Traffic.DEFAULT_OFF.has("shortfwd"), "shortfwd is opt-in until its bar")
+func test_on_by_default() -> void:
+	assert_true(not Traffic.DEFAULT_OFF.has("shortfwd"), "round 46 (R46.25): shortfwd is ON by default; --traffic-off=shortfwd the escape")
 
 
 ## Dev read only until the rule is settled (SHORTFWD_DEV=on): OFF reverses first (21 ticks on the yard); ON takes the forward arc, no
@@ -95,3 +105,46 @@ func test_near_a_box_the_planner_still_decides_with_the_switch() -> void:
 			"ON: beside the box the planner's back-up still comes first (OFF %d reversing ticks, ON %d, first t%d)" % [off["reverse_ticks"], on["reverse_ticks"], on["first_reverse"]])
 	# Measured (laptop, GDScript): OFF 22 reversing ticks, arrived t43, 2.1 m away at most; ON 12, t29, 0.6 m: the forward arc takes the
 	# tick only once the arc is clear, after the back-up the box asks for.
+
+
+## Round 46 (M5): HIS GORGE SHORT MOVES AS A STAGED CORPUS (Bar shortfwd's workload; opt-in: SHORT_CORPUS=on, SHORT_SEEDS=a-b). The lone
+## scout's seven move orders in his Gorge game (2026-10-29, seed 91711), posed from `make replay-match ... REPLAY_FLAGS=--trace=2505-3080`
+## (builder3, round 46): where the scout stood, its yaw and his click. The lab stages each at REST (the trace's speeds were 0-15 m/s).
+## Seed s runs pose (s - a) mod 7, jittered by s (+/- 1 m, +/- 20 deg of yaw, the click +/- 1.5 m), both arms; one SHORT_MOVE row a run
+## with "pose" and "seed" (read by tests/manoeuvre/short_judge.py). Poses 0 and 2 are inside the rule's reach (3 circles, 100 deg).
+const GORGE_POSES := [
+	[Vector3(-45.4, 0.0, 37.5), 119.0, Vector2(-39.7, 47.5)],   # 83.7 s: 11.5 m, 91 deg left (engage's E5 case)
+	[Vector3(-46.2, 0.0, 35.0), -152.0, Vector2(-44.0, 51.6)],  # 85.2 s: 16.7 m, 21 deg right
+	[Vector3(-43.8, 0.0, 45.9), 178.0, Vector2(-50.8, 56.1)],   # 87.0 s: 12.4 m, 32 deg right
+	[Vector3(-56.1, 0.0, 59.3), 80.0, Vector2(-55.9, 73.1)],    # 88.8 s: 13.8 m, 101 deg left
+	[Vector3(-57.5, 0.0, 80.7), 161.0, Vector2(-50.4, 72.7)],   # 91.8 s: 10.7 m, 158 deg left
+	[Vector3(-47.6, 0.0, 70.0), 6.0, Vector2(-35.2, 43.2)],     # 94.6 s: 29.5 m, 31 deg right
+	[Vector3(-59.8, 0.0, 12.0), -4.0, Vector2(-47.1, 31.1)],    # 102.6 s: 22.9 m, 143 deg right
+]
+
+
+func test_his_gorge_short_moves_corpus() -> void:
+	if OS.get_environment("SHORT_CORPUS") != "on":
+		print("SHORT_CORPUS: skipped (SHORT_CORPUS=on SHORT_SEEDS=a-b runs his Gorge poses in both arms)")
+		return
+	var parts := OS.get_environment("SHORT_SEEDS").split("-")
+	var only := OS.get_environment("SHORT_ONLY")
+	for s in range(int(parts[0]), int(parts[parts.size() - 1]) + 1):
+		if only != "" and int(only) != s:
+			continue
+		var pose_i := (s - int(parts[0])) % GORGE_POSES.size()
+		var cycle := OS.get_environment("SHORT_POSES")  # round 46 (Bar shortfwd): a comma list of poses the block cycles through
+		if cycle != "":
+			var listed := cycle.split(",")
+			pose_i = int(listed[(s - int(parts[0])) % listed.size()])
+		var pose: Array = GORGE_POSES[pose_i]
+		var rng := RandomNumberGenerator.new()
+		rng.seed = s
+		var spot: Vector3 = pose[0] + Vector3(rng.randf_range(-1.0, 1.0), 0.0, rng.randf_range(-1.0, 1.0))
+		var yaw := deg_to_rad(float(pose[1]) + rng.randf_range(-20.0, 20.0))
+		var goal: Vector2 = pose[2] + Vector2(rng.randf_range(-1.5, 1.5), rng.randf_range(-1.5, 1.5))
+		for arm in ["off", "on"]:
+			Movement.shortfwd_ticks = 0
+			var row := await _run(arm, 0.0, 0.0, "gorge", spot, yaw, goal)
+			print("SHORT_ROW " + JSON.stringify({"pose": pose_i, "seed": s, "arm": arm, "row": row}))
+			assert_true(int(row["arrived"]) != 0, "pose %d seed %d %s produced a row" % [pose_i, s, arm])

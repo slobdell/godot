@@ -9,7 +9,11 @@ extends RefCounted
 const SOURCE := "res://game/ai/movement.gd"
 ## Statics that are configuration or caches, not state a drive changes (and the registry, which holds objects).
 const SKIP_STATICS: Array[String] = ["_registry", "_off", "_off_parsed", "avoidance_on", "station_on", "yield_log",
-		"kturn_log", "leg_print", "reverse_log", "_bake_radius"]
+		"kturn_log", "leg_print", "reverse_log", "_bake_radius",
+		# Round 46 (R46.30, holdway ON): squad_way()'s memo of a crew's path per order, filled by Traffic's GDScript refresh. The
+		# refresh runs once a frame (Traffic's own memo, not restored here), so the harness's second arm never refills what the
+		# restore emptied; the game fills it once a frame on either drive.
+		"_squad_ways"]
 ## Round 27 (E5b): the native execute's own bookkeeping (the stale bits): not drive state.
 const NATIVE_MEMBERS: Array[String] = ["native_stale"]
 ## Members that hold objects (compared by identity, never deep-copied).

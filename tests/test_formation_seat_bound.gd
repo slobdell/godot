@@ -315,3 +315,62 @@ func test_seat_last_open_keeps_the_deep_seat_with_its_holder_while_the_order_sta
 	# A fresh order (no previous seating) reads the rear crew anew: the lingering squadmate is now clearly behind and takes it.
 	var fresh: Dictionary = seats.call(members, {})
 	assert_eq(holder.call(fresh), "Guns_5", "a fresh order seats the crew now clearly behind on the deep seat")
+
+
+
+## Round 46 (S v6, R45.28): Bar S v5's Crossing cell 11751. The Battery's two-row deploy (front row Battery_1 / _4 / _2 at z 90, back
+## row Battery_3 / _5 at z 98.9) ordered north onto (-15.5, 62.7) along its real route (it bends east round the block). S v5 ranked the
+## seats by their STATIONS, laid along that bend: two stations swap sides as they slide (slot 3 jumped 7 m west at a vertex), the order
+## term re-dealt Battery_1 and Battery_4 back and forth, and pairs of squadmates gave way to each other in the start zone (yield +
+## blocked +9.85 s a run; base none). S v6 ranks the seats by the shape's own left-to-right offsets, without the deep seat and its rear
+## crew: the seating holds while the order stands, and every other crew's seat keeps its left-to-right order.
+func test_seat_last_open_keeps_the_rest_of_the_squad_in_its_lateral_order() -> void:
+	TacticsFormation.SEAT_BOUND = true
+	var order_was := TacticsFormation.SEAT_ORDER
+	TacticsFormation.SEAT_ORDER = true
+	var route: Array = [Vector3(-43.9, 0.0, 93.6), Vector3(-23.3, 0.0, 86.5), Vector3(-20.5, 0.0, 85.5), Vector3(-17.5, 0.0, 84.5),
+			Vector3(-15.5, 0.0, 82.5), Vector3(-15.5, 0.0, 80.5), Vector3(-15.5, 0.0, 63.5), Vector3(-15.5, 0.0, 62.7)]
+	var click: Vector3 = route[-1]
+	var members: Array = []
+	for i in 5:
+		members.append({"name": "Battery_%d" % (i + 1), "unit": "gang_artillery"})
+	members[0]["position"] = Vector3(-50.4, 0.0, 90.0)
+	members[1]["position"] = Vector3(-37.4, 0.0, 90.0)
+	members[2]["position"] = Vector3(-47.1, 0.0, 98.9)
+	members[3]["position"] = Vector3(-43.9, 0.0, 90.0)
+	members[4]["position"] = Vector3(-40.6, 0.0, 98.9)
+	var first := {}
+	var previous := {}
+	var s := 15.2  # the transit's station at the order (the log's transit_s)
+	while s < 45.0:
+		var pose := ElementPlan.route_pose(route, s)
+		var transit := {"route": route, "s": s, "anchor": pose["point"], "heading": pose["tangent"]}
+		TacticsFormation.SEAT_LAST_OPEN = true
+		var at: Array = ElementPlan.route_seats(members, "swarm", 14.0, transit)
+		var placed := TacticsFormation.place(members, "swarm", click, Vector3(0.0, 0.0, -1.0), 14.0,
+				{"policy": "travel", "seat_bound": true, "seat_order": true, "at": at, "previous": previous})
+		TacticsFormation.SEAT_LAST_OPEN = false
+		var seating := TacticsFormation.seating_of(placed)
+		if first.is_empty():
+			first = seating
+			var deepest := 0
+			for k in placed.size():
+				if (placed[k]["offset"] as Vector2).y > (placed[deepest]["offset"] as Vector2).y:
+					deepest = k
+			var deep_name := String(placed[deepest]["unit"])
+			var seat_x := {}
+			for entry in placed:
+				seat_x[String(entry["unit"])] = (entry["offset"] as Vector2).x
+			for a in members.size():
+				for b in members.size():
+					var na := String(members[a]["name"])
+					var nb := String(members[b]["name"])
+					if na == deep_name or nb == deep_name:
+						continue
+					if (members[a]["position"] as Vector3).x > (members[b]["position"] as Vector3).x + 0.5:
+						assert_true(float(seat_x[na]) > float(seat_x[nb]), "%s stands east of %s and so does its seat (%.1f v %.1f)" % [na, nb, seat_x[na], seat_x[nb]])
+		else:
+			assert_eq(seating, first, "s %.1f: nobody is re-dealt while the stations slide round the bend" % s)
+		previous = seating
+		s += 1.0
+	TacticsFormation.SEAT_ORDER = order_was
