@@ -157,9 +157,9 @@ builder0 3446/0; no baseline check re-run, per the contract). Orchestrator sessi
 - **Then:** holdway's head-on release last; shortfwd parked (OFF) with the edge note. The earlier report block (the three round-45 bars,
   each failing as filed with his line passing) follows unchanged.
 
-### The round's report as of ~16:05 PDT (B2 / S v4 / A6 v4 failed as filed)
+### The round's report as of ~16:05 PDT (B2 / S v4 / A6 v4 failed as filed) -- SUPERSEDED above: B3 read 19:45, backout SHIPPED ON (R45.26); S v5 read 21:18, FAILED as filed; holdway parked with its cause
 
-- **Nothing ships ON from this stream in round 45.** Three bars were filed and read on fresh seeds; all three FAIL as filed, each with
+- **(As of 16:05:) Nothing ships ON from this stream in round 45.** Three bars were filed and read on fresh seeds; all three FAIL as filed, each with
   the line he would feel passing and a guard missing: **B2** (backout, his container ask): his own start PASSES (Guns_2 reverses at tick 4
   and is round the box at tick 97, today at 44 / 140) and the deciding corpus PASSES (11 base-stuck poses, ON sooner in 11 / 11, median
   -3.0 s), but one pose of 48 was 6.3 s slower (fixed on the branch), Terminus k-turn seconds +2.6 se (the rule's own back-ups and the
