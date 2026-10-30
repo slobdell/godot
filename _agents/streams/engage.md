@@ -79,9 +79,9 @@ _(worker keeps this current: report at the top, every number with commit, machin
 | L1 why CLEAR_LANE finds no lane | DONE (below): three causes, every blocker parked; R46.7 ruled on the post case |
 | L2 the lane move, `--lane-clear` ON | code + tests DONE 9446e1903 (not yet a full check); native twin spec sent (decide guard until then, C46.4) |
 | L3 the feed line | code + tests DONE 320fbcd11; screenshots owed |
-| L4 Bar L1 | workload built (`make engage-lane-bar`); dev read on 7001-7012 running; filing next, before any number on 11901-11948 |
+| L4 Bar L1 | FILED (below; accepted, amendment 0); dev read 7001-7012 below; full check on 894f561dd (the freeze candidate) running |
 | L5 his replay | dev read (below); the acceptance read waits for the shipped tree |
-| E6 | not started |
+| E6 | code 894f561dd (cap only on a fixed gun on wheels, opt-in); `--e6-stage=on` in the authority probe; dev read then Bar E6 after Bar L1's series |
 
 **L2 (`game/ai/tank_brain.gd`, `--lane-clear=off` = round 45 exactly):** (1) under his attack / attack-move, CLEAR_LANE is
 multiplied by its edge AFTER the order's base, so it beats the committed ENGAGE; (2) a crew holding his post after his MOVE (E2's
