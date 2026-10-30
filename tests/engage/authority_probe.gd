@@ -85,6 +85,9 @@ func _run() -> void:
 	var verb: String = _flag("verb", VERBS[rng.randi_range(0, VERBS.size() - 1)])
 	var count := int(_flag("crews", str([1, 1, 3][rng.randi_range(0, 2)])))
 	var squad_hold := count > 1 and verb == "hold" and rng.randf() < 0.5
+	var lab := TacticsLab.create(case, seed_value, arena)
+	var game_match := lab.game_match
+	game_match.set_meta("player_team", Match.Team.GREEN)
 	var reach := float(Weapons.profile(String(Units.stat(hull, "weapon"))).get("range", 60.0))
 	var stage := _stage(CoverMap.of(game_match), rng, count, reach)
 	var out := {"seed": seed_value, "arena": arena, "hull": hull, "enemy": enemy_unit, "verb": verb, "crews": count,
