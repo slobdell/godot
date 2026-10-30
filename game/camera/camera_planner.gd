@@ -174,7 +174,9 @@ static func fit(points: Array, lean: Variant, yaw: float, w: Dictionary) -> Arra
 	var aspect := float(w.get("aspect", 16.0 / 9.0))
 	var pitch := float(w.get("pitch", RtsCamera.DEFAULT_PITCH_DEG))
 	var inset := float(w.get("inset", RtsCamera.VISION_FRAME_INSET))
-	var bottom := float(w.get("bottom", RtsCamera.VISION_FRAME_BOTTOM))
+	# His frame dial (`--camera-frame`, the inset) scales the command card's bound too: at the default inset it is the card's line
+	# itself (as Bar C1 read it); a smaller inset keeps his crews proportionally further from the card, as from the other edges.
+	var bottom := float(w.get("bottom", RtsCamera.VISION_FRAME_BOTTOM)) * inset / RtsCamera.VISION_FRAME_INSET
 	var floor_level := float(w.get("floor_level", RtsCamera.VISION_MIN_ZOOM))
 	var cap_level := maxf(float(w.get("cap_level", 1.0)), floor_level)
 	var bounds := AABB(Vector3(points[0].x, 0.0, points[0].z), Vector3.ZERO)

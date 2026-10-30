@@ -204,3 +204,13 @@ func test_a_gun_firing_from_behind_the_view_wins_the_next_plan_even_just_after_a
 	CameraPlanner.override_weights("gun:%f" % CameraPlanner.W_GUN)
 	assert_true(absf(angle_difference(float(out["yaw"]), PI)) <= deg_to_rad(60.0),
 			"the view turns toward the gun behind (yaw %.0f, %s)" % [rad_to_deg(float(out["yaw"])), out["terms"]])
+
+
+func test_his_frame_dial_widens_the_planners_frame() -> void:
+	RtsCamera.fov = RtsCamera.FOV_DEG
+	var w := _world([Vector3(-10, 0, 0), Vector3(10, 0, 0), Vector3(0, 0, 15)], {"obstacles": []})
+	w["cap_level"] = 1.0
+	var tight := CameraPlanner.fit(w["own"], null, 0.0, w)
+	w["inset"] = 0.55  # SkirmishMode.CAMERA_FRAMES' wider setting: the crews fill less of the screen
+	var wide := CameraPlanner.fit(w["own"], null, 0.0, w)
+	assert_true(float(wide[1]) > float(tight[1]) + 0.01, "a smaller inset pulls the frame back (%.3f v %.3f)" % [wide[1], tight[1]])
