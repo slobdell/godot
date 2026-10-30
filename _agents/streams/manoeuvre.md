@@ -116,3 +116,39 @@ check (builder3: perf NOT JUDGED there; a builder0 perf read of the merge before
 C46.6: the bound seats any squad on its own order (the CPU's too). **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_s6.sh`
 from a frozen worktree of the hash; evidence filed under `references/round46/manoeuvre/barss6-builder3-<hash>/`. **Dev history (never a
 bar):** the M1 dev read above (7001-7012).
+
+### M3 holdway A6 v5 — dev reads, then FILED (2026-10-30 ~02:35 PDT, before any number on 12049-12096)
+
+- **Dev read 1 (f6a91735f, builder3 light, A6 v4's spent seeds 11449-11472, n 24): byte-identical to round 45's dev read.** Cause: the
+  hold probe's squads run DRILL moves, which have no transit anchor, so the squad way fell back to the station way every tick.
+- **f91c6cf84:** a squad with no transit reads the crew's own navmesh path to the SQUAD's destination (found once per order, read at
+  its nearest segment). Laptop 11466 (A6 v4's worst head-on cell): far contacts 0 -> 0 (A6 v4 0 -> 32).
+- **Dev read 2 (f91c6cf84, builder3 light, native, 11449-11472, n 24; `~/overnight-manoeuvre/r46/a6v5_dev2/table.txt`) against A6 v4's
+  lines:** deciding side jam_s 397 -> 78 (-26.6 a run, z -5.4) PASS; 1 off_arrive_s (side) -11.8 a run PASS; 2a head-on verdicts +0.25 a
+  run (se 0.13, z 1.91; line +/- 2 se) PASS at the edge; 2b held_on_s -2.2 a run PASS; 3 contacts_mouth -1.83 a run (z -0.38) PASS;
+  **4 contacts_far 9 -> 24, +0.62 a run (se 0.47; line max(1.645 se, 2) = +2) PASS** (A6 v4 +2.54, FAIL); 5 last_a_s -1.9 PASS. Left:
+  11464 (locks_lock) 0 -> 11 and 11458 3 -> 6, each with a second verdict.
+- **The tie rule: DROPPED (decided, reversible).** The verdict trace on builder3 (a temporary print, removed) shows Locks' head-on
+  first verdicts are EXACT ties in BOTH arms (11458 6.94 v 6.94 s base, 6.84 v 6.81 s holdway), decided the same way (the id rule);
+  the extra far contacts come from a later re-verdict (11458 f1770), not from a tie decided differently. A tie rule would change
+  today's ties too, which is not holdway's change (lesson 348: the smallest change). Round-47 note if guard 2a fails: the re-verdict
+  after a wait ends.
+
+**Bar A6 v5, the street hold decided on where the SQUAD is going (manoeuvre M3; R45.20's round-46 starting point; C46.1, C46.3, C46.4,
+C46.6).** Bar A6 v4's shape and lines UNCHANGED (workstreams.md *Bars (round 45)*): ONE arm, **ARM-W** = `--traffic-on=holdway` v BASE
+(today), on a FROZEN tree = stream/manoeuvre at the hash whose `make remote T=check` reads exited 0 (named at launch), native ON in every
+log (`native-fresh` first). **What changed since A6 v4 (C46.1):** a crew's ordered way is its SQUAD's way where it stands: the nearest
+segment of `Element.transit`'s route, or for a squad with no transit (a drill move) the crew's own path to the squad's destination,
+found once per order (f6a91735f + f91c6cf84); A6 v4 read the crew's next station. No tie rule (above). **C46.4:** the street hold is
+Traffic's GDScript, read by both drives (no C++ copy exists; A6 v4 ran the same way); native confirms before the freeze or the bar says
+"native path unchanged". **Workload:** `make engage-hold` (odd seeds side-street, even the three head-on stages), **12049-12072**, n 24
+paired, 75 s, builder3 light; Bar E1's lines (`make engage-probe`, ARM `ENGAGE_FLAGS=--traffic-on=holdway`) on **12073-12096**.
+**Deciding:** jam_s on the side 12 ARM < BASE by >= 2 se (paired) AND pooled ARM < BASE. **Exercised floor:** 8 of 12 side seeds with a
+verdict in BASE, else INCONCLUSIVE. **Guards (A6 v4's):** 1 off_arrive_s (side 12) ARM <= BASE + 2 se; 2a verdicts (head-on 12) within
+BASE +/- 2 se (**the named risk: dev z 1.91**); 2b held_on_s (head-on 12) ARM <= BASE + 2 se (one-sided); 3 contacts_mouth (24) ARM <=
+BASE + 1.645 se; 4 contacts_far (24) ARM <= BASE + max(1.645 se, 2) (A6 v4's miss; dev +0.62); 5 last_a_s (24) ARM <= BASE + 1.645 se;
+6 Bar E1's lines (stuck crew-seconds, first hit, deaths each within BASE +/- 1.645 se); 7 the frozen tree's check (perf NOT JUDGED on
+builder3: a builder0 read of the merge before ON); 8 no SCRIPT ERROR. **Ships ON** (`holdway` out of `Traffic.DEFAULT_OFF`,
+`--traffic-off=holdway` the escape) only if the deciding line and every guard pass. C46.6: the hold reads any squad's way (the CPU's
+too). **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_a6v5.sh` from a frozen worktree; evidence filed under
+`references/round46/manoeuvre/barsa6v5-builder3-<hash>/`. **Dev history (never a bar):** dev reads 1-2 above (11449-11472, spent).
