@@ -59,6 +59,15 @@ _(worker keeps this current: report at the top, every number with commit, machin
 **Report (2026-10-30, start).** Started from main 7189e3ff3 (code = cb1014bed; the orchestrator's launch check runs it on builder3; no
 baseline check of mine).
 
+**Today's big click (the orchestrator's ask): main 7189e3ff3 (code cb1014bed), builder3 quiet (load 1.9), `make native-fresh
+control-timing`, test_control_scale 30 units / 6 squads, mean of 10: order 2.03 ms, ratio 56.3 v budget 104; click-to-order 2.13
+ms, 59.3; per-frame 0.62 ms, 17.7 v 26. 5/0 + 8/0.** (builder3 is not the box the budget was set on: builder0's round-45 read was
+3.68 ms / 89.8 on eec905e52, not judged.) So today's default click is already well under budget; N1's speed matters only for what
+V1 / V4 add on top. **Found and fixed on the way (tools/remote.sh, 47d0ff61c+):** a fresh light folder has no C++ library and
+control-timing does not build one, so my first two reads timed the GDScript fallbacks in silence (6.86 ms, ratio 180.6, "2 failed").
+A remote run now runs `native-fresh` first (not for check / native* / NATIVE=off; `REMOTE_NATIVE_FRESH=0` skips;
+`tools/remote_native_first.sh`, its test 12/0). Proven on builder3: native/bin removed, control-timing built it and read 2.02 ms / 56.0.
+
 **Plan (order kept; reasons):**
 1. **N1a the seam with orders, agreed through the orchestrator BEFORE code** (sent 2026-10-30). Fact: "the fit's ~60 path queries"
    are `gate_width_edge`'s per-step `Pathing.find_path`, already C++ since round 45 (NativeGateWidth); the cost is the engine's A*
