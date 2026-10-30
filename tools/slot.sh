@@ -201,6 +201,21 @@ if [ -n "$light" ]; then
 	slots=${TANK_SQUAD_LIGHT_SLOTS:-2}
 fi
 quiet_window_open() { [ -n "$light" ] && grep -qs "EXCLUSIVE (quiet window)" "$heavy_dir"/slot*.owner; }
+# Round 45 (native; builder0 ran out of memory at 19:52 PDT 2026-10-29 and the kernel killed Godot processes; lesson 330): a light job
+# WAITS while a full check holds this builder (tools/remote.sh exports its lock, TANK_SQUAD_FULL_CHECK_LOCK) and MemAvailable is under
+# TANK_SQUAD_LIGHT_MEM_MB (6144). A wait, not a refusal: a refused leg of a series is a lost leg; this one starts by itself when the
+# memory comes back or the check ends, and its heartbeat says why it waits. Unset lock (the laptop, a hand run): no guard.
+light_mem_mb() { awk '/^MemAvailable:/ { print int($2 / 1024) }' "${TANK_SQUAD_MEMINFO:-/proc/meminfo}" 2>/dev/null; }
+light_mem_low() {
+	[ -n "$light" ] && [ -n "${TANK_SQUAD_FULL_CHECK_LOCK:-}" ] && [ -e "$TANK_SQUAD_FULL_CHECK_LOCK" ] || return 1
+	flock -n "$TANK_SQUAD_FULL_CHECK_LOCK" true 2>/dev/null && return 1   # no full check holds it
+	local mb
+	mb=$(light_mem_mb)
+	[ -n "$mb" ] && [ "$mb" -lt "${TANK_SQUAD_LIGHT_MEM_MB:-6144}" ]
+}
+light_mem_note() {
+	light_mem_low && echo ", or a full check holds this builder with only $(light_mem_mb) MB available (light jobs wait under ${TANK_SQUAD_LIGHT_MEM_MB:-6144} MB: the OOM of 2026-10-29 19:52)"
+}
 
 # Ticket name sorts by arrival: a fixed-width nanosecond stamp, then the pid to break ties.
 ticket="$dir/wait.$(date +%s%N).$$"
@@ -275,7 +290,7 @@ last_beat=$started
 while true; do
 	# Wait our turn: only the oldest live ticket may try for a lock.
 	mapfile -t queue < <(live_tickets)
-	if { [ "${#queue[@]}" -eq 0 ] || [ "${queue[0]}" = "$ticket" ]; } && ! quiet_window_open; then
+	if { [ "${#queue[@]}" -eq 0 ] || [ "${queue[0]}" = "$ticket" ]; } && ! quiet_window_open && ! light_mem_low; then
 		if [ -n "$exclusive" ]; then
 			for i in $(seq 1 "$ceiling"); do
 				case " ${held_slots[*]-} " in *" $i "*) continue ;; esac
@@ -347,7 +362,7 @@ while true; do
 
 	now=$(date +%s)
 	if [ "$announced" -eq 0 ]; then
-		echo ">> waiting for a $([ -n "$light" ] && echo light || echo heavy)-run slot ($slots in use by other worktrees$(quiet_window_open && echo ', or a quiet window is open')):" >&2
+		echo ">> waiting for a $([ -n "$light" ] && echo light || echo heavy)-run slot ($slots in use by other worktrees$(quiet_window_open && echo ', or a quiet window is open')$(light_mem_note)):" >&2
 		holders
 		announced=1
 		last_beat=$now
@@ -362,7 +377,7 @@ while true; do
 		if [ -n "$exclusive" ]; then
 			echo ">> quiet window: holding ${#held_slots[@]} of $ceiling slots, waiting $(((now - started) / 60)) min for the rest; holders:" >&2
 		else
-			echo ">> still waiting for a $([ -n "$light" ] && echo light || echo heavy)-run slot: $(((now - started) / 60)) min, position $pos of ${#queue[@]}; holders:" >&2
+			echo ">> still waiting for a $([ -n "$light" ] && echo light || echo heavy)-run slot: $(((now - started) / 60)) min, position $pos of ${#queue[@]}$(light_mem_note); holders:" >&2
 		fi
 		holders
 		last_beat=$now

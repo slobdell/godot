@@ -5,6 +5,8 @@
 #
 #   tools/builder_checks.sh                    ask builder0 (REMOTE_HOST, default slobdell@builder0)
 #   tools/builder_checks.sh --wait-below N     wait (60 s polls) until fewer than N run, then print the count (C35.1: two)
+#   tools/builder_checks.sh --all              every build box (TANK_SQUAD_BUILDERS, default builder0 and builder3): "<host> <count>"
+#                                              a line, or "<host> UNREACHABLE"; exits 3 when any box could not be asked
 #   tools/builder_checks.sh --rows             read "cwd<TAB>args" rows on stdin instead (tools/test_builder_checks.sh)
 # Round 38 (R38.15): an ssh that fails (255: builder2 off ZeroTier for under a minute at 18:40) is never "0 running". Plain mode
 # exits 3 with no count; --wait-below asks again each poll, up to BUILDER_CHECKS_TRIES (30) failed asks in a row, then exits 3.
@@ -49,7 +51,13 @@ case "${1:-}" in
 		fi
 		sleep "$poll"
 	done ;;
+--all)
+	unreached=0
+	for host in ${TANK_SQUAD_BUILDERS:-slobdell@builder0 devia@builder3}; do
+		if got=$(rows); then echo "$host $(count <<<"$got" | head -1)"; else echo "$host UNREACHABLE"; unreached=1; fi
+	done
+	[ "$unreached" = 0 ] || exit 3 ;;
 "") got=$(rows) || { echo "builder_checks: cannot ask $host (ssh failed): no count" >&2; exit 3; }
 	count <<<"$got" ;;
-*) echo "builder_checks.sh [--wait-below N | --rows]" >&2; exit 2 ;;
+*) echo "builder_checks.sh [--wait-below N | --all | --rows]" >&2; exit 2 ;;
 esac

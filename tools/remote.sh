@@ -67,7 +67,9 @@ rm -f "$TANK_SQUAD_PINNED_SELF"
 host=${REMOTE_HOST:-slobdell@builder0}
 root=${REMOTE_ROOT:-tank_squad}
 # builder2 (the GCP burst box: 32 threads, 121 GB; _agents/gcp_builder.md) takes 4 heavy runs at once, builder0 3 (6 drove load to ~70 on 32 threads, 2026-10-18).
-case "$host" in *builder2*|*10.115.229.9) default_slots=4 ;; *) default_slots=3 ;; esac
+# builder3 (devia@builder3: Ryzen 9 9950X, 16 cores / 32 threads, 30 GB, 2026-10-29) takes 6: load ~20 at 6 at once, main's
+# full check 525 s there v ~55 min on builder0 (the orchestrator, aed598359).
+case "$host" in *builder2*|*10.115.229.9) default_slots=4 ;; *builder3*) default_slots=6 ;; *) default_slots=3 ;; esac
 slots=${REMOTE_SLOTS:-$default_slots}
 node_version=v22.14.0
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"
@@ -289,6 +291,8 @@ export QUIET_MAX_LOAD=${QUIET_MAX_LOAD:-4.0}
 # this heredoc: they run.)
 if [ "${REMOTE_IMPORT_WATCH:-1}" != 0 ]; then export TANK_SQUAD_IMPORT_WATCH=1; else unset TANK_SQUAD_IMPORT_WATCH; fi
 export IMPORT_WATCH_STALL=${IMPORT_WATCH_STALL:-600}
+# Round 45 (native, after builder0's OOM of 2026-10-29 19:52): slot.sh holds a light job while a full check holds this lock and memory is low.
+export TANK_SQUAD_FULL_CHECK_LOCK=~/$root/.full-check.lock
 # Hand the marker from "a launch claimed this directory" to "this pid is the run". From here the claim's TTL
 # stops mattering, because /proc can speak for the run itself -- including the forty minutes it may spend
 # QUEUED inside slot.sh, which has already cd-ed in. A signalled run releases it at once; a normal exit leaves

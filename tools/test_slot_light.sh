@@ -117,6 +117,32 @@ fresh
 TANK_SQUAD_SLOT_DIR="$G" TANK_SQUAD_LIGHT=1 TANK_SQUAD_EXCLUSIVE=1 bash "$slot" true >/dev/null 2>&1; rc=$?
 [ "$rc" = 2 ] && ok "light: LIGHT + EXCLUSIVE exits 2" || bad "light: LIGHT + EXCLUSIVE exits 2" "exit $rc"
 
+# ---- 7. round 45: a light job waits while a full check holds the builder AND memory is low (builder0's OOM, 2026-10-29) ----
+fresh
+lock="$tmp/full-check.lock"; mem="$tmp/meminfo"
+printf 'MemTotal:       15000000 kB\nMemAvailable:    3000000 kB\n' > "$mem"   # ~2929 MB
+( exec 9>"$lock"; flock 9; sleep 20 ) & kids+=($!)                        # a full check holds the lock
+wait_for "! flock -n '$lock' true 2>/dev/null" || bad "mem: (setup) the full-check lock is held"
+light_env="TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 TANK_SQUAD_LIGHT=1 TANK_SQUAD_FULL_CHECK_LOCK='$lock' TANK_SQUAD_MEMINFO='$mem'"
+timeout 3 bash -c "$light_env bash '$slot' touch '$tmp/flag.mem'" > "$tmp/mem.out" 2>&1
+[ ! -e "$tmp/flag.mem" ] && grep -q "a full check holds this builder with only 2929 MB available" "$tmp/mem.out" \
+	&& ok "mem: a light job WAITS while a full check holds the builder at 2929 MB (< 6144), and says why" \
+	|| bad "mem: a light job waits under a full check with low memory" "$(cat "$tmp/mem.out")"
+timeout 4 bash -c "TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 TANK_SQUAD_FULL_CHECK_LOCK='$lock' TANK_SQUAD_MEMINFO='$mem' bash '$slot' touch '$tmp/flag.memheavy'" >/dev/null 2>&1
+[ -e "$tmp/flag.memheavy" ] && ok "mem: a heavy job is not held by the light lane's memory guard" || bad "mem: a heavy job is not held by the guard"
+printf 'MemTotal:       15000000 kB\nMemAvailable:    9000000 kB\n' > "$mem"
+timeout 4 bash -c "$light_env bash '$slot' touch '$tmp/flag.memok'" >/dev/null 2>&1
+[ -e "$tmp/flag.memok" ] && ok "mem: with 8789 MB available it starts under the full check" || bad "mem: with plenty of memory it starts"
+printf 'MemTotal:       15000000 kB\nMemAvailable:    3000000 kB\n' > "$mem"
+( bash -c "$light_env bash '$slot' touch '$tmp/flag.memlater'" >/dev/null 2>&1 ) & kids+=($!)
+sleep 1.5
+printf 'MemTotal:       15000000 kB\nMemAvailable:    9000000 kB\n' > "$mem"
+wait_for "[ -e '$tmp/flag.memlater' ]" 150 && ok "mem: a waiting light job starts by itself when the memory comes back" \
+	|| bad "mem: a waiting light job starts when the memory comes back"
+printf 'MemTotal:       15000000 kB\nMemAvailable:    3000000 kB\n' > "$mem"
+timeout 4 bash -c "TANK_SQUAD_SLOT_DIR='$G' TANK_SQUAD_SLOTS=3 TANK_SQUAD_LIGHT=1 TANK_SQUAD_FULL_CHECK_LOCK='$tmp/no-check.lock' TANK_SQUAD_MEMINFO='$mem' bash '$slot' touch '$tmp/flag.nocheck'" >/dev/null 2>&1
+[ -e "$tmp/flag.nocheck" ] && ok "mem: low memory alone (no full check) does not hold a light job" || bad "mem: low memory alone does not hold it"
+
 echo
 echo "slot-light: $pass passed, $fail failed$([ "$notjudged" -gt 0 ] && echo ", $notjudged NOT JUDGED")"
 [ "$fail" -eq 0 ]

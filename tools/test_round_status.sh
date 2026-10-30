@@ -64,6 +64,9 @@ grep -q 'no processes in any' <<<"$out" && ok "and says no folder has work" || b
 
 out=$(bash "$rs" --no-remote 2>&1)
 grep -q 'skipped: --no-remote' <<<"$out" && ok "--no-remote says it skipped rather than printing nothing" || bad "--no-remote says it skipped"
+out2=$(TANK_SQUAD_BUILDERS="u@b0 u@b3" bash "$rs" --no-remote 2>&1)
+grep -q '^== u@b0 == (skipped' <<<"$out2" && grep -q '^== u@b3 == (skipped' <<<"$out2" \
+	&& ok "every box in TANK_SQUAD_BUILDERS gets its own block (round 45: builder3)" || bad "one block a box" "$out2"
 grep -q '^== worktrees' <<<"$out" && ok "--no-remote still lists the worktrees" || bad "--no-remote still lists the worktrees"
 grep -q '^== baselines' <<<"$out" && ok "--no-remote still lists the baselines" || bad "--no-remote still lists the baselines"
 grep -qE '^  sim-baseline    glibc-' <<<"$out" && ok "renders the sim baseline line" || bad "renders the sim baseline line" "$out"
