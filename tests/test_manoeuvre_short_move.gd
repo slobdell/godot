@@ -76,8 +76,8 @@ func _run(arm: String, angle_deg: float, distance_m: float, arena := "yard_open"
 	return out
 
 
-func test_off_by_default() -> void:
-	assert_true(Traffic.DEFAULT_OFF.has("shortfwd"), "shortfwd is opt-in until its bar")
+func test_on_by_default() -> void:
+	assert_true(not Traffic.DEFAULT_OFF.has("shortfwd"), "round 46 (R46.25): shortfwd is ON by default; --traffic-off=shortfwd the escape")
 
 
 ## Dev read only until the rule is settled (SHORTFWD_DEV=on): OFF reverses first (21 ticks on the yard); ON takes the forward arc, no
