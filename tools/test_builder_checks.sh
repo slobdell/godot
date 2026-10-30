@@ -45,5 +45,11 @@ out=$(fake 2 bash "$bc" --wait-below 1 2>"$tmp/err"); status=$?
 out=$(fake 99 env BUILDER_CHECKS_TRIES=3 bash "$bc" --wait-below 1 2>"$tmp/err"); status=$?
 [ "$status" -ne 0 ] && [ -z "$out" ] && [ "$(cat "$tmp/calls")" = 3 ] && ok "--wait-below gives up after BUILDER_CHECKS_TRIES failed asks (exit $status)" \
 	|| bad "wait give-up" "status $status, out '$out', calls $(cat "$tmp/calls")"
+# Round 45 (native): --all asks every box in TANK_SQUAD_BUILDERS, one line each; a box that fails is named UNREACHABLE, never 0.
+out=$(fake 1 env TANK_SQUAD_BUILDERS="u@b0 u@b3" bash "$bc" --all 2>"$tmp/err"); status=$?
+[ "$status" = 3 ] && grep -qx "u@b0 UNREACHABLE" <<<"$out" && grep -qx "u@b3 0" <<<"$out" \
+	&& ok "--all: one line a box, a failed ask UNREACHABLE (exit 3), the next box still counted" || bad "--all" "status $status, out '$out'"
+out=$(fake 0 env TANK_SQUAD_BUILDERS="u@b0 u@b3" bash "$bc" --all 2>"$tmp/err"); status=$?
+[ "$status" = 0 ] && [ "$(wc -l <<<"$out")" = 2 ] && ok "--all: both boxes answer, exit 0" || bad "--all both" "status $status, out '$out'"
 printf '\nbuilder-checks: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

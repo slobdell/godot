@@ -57,13 +57,13 @@ Nothing.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-29 ~14:35 PDT).** **N1 DONE** (main 47a15f434 = 9b6ffb0a6). **N2 DONE** (main eec905e52 = dc182916f, GREEN
-builder0 3448/0 ALL JUDGED); its judged `control-timing` read on builder0 quiet is WAITING for the window (engage's check holds the
-last slot). **N3:** the B2 twin delivered (pair/native-backout-b2v2 04ce3abe9, EQUAL; merged into manoeuvre's freeze); B2b withdrawn
-(R45.14, backout OFF this round). **N4:** B1's lines (lines_r44), B2's lines (lines_r45); G2 / E1 / S v4 / A6 v4 land with their
-verdicts. **N5 DONE:** his Gorge match replays exactly to 107 s. **Stretch DONE:** the preemption re-queue. Also: engage's
-native-fresh hole fixed; R45.3's untangle re-proof on orders' G2 candidate EQUAL; R45.16 (port G2's own cost) granted after G2's
-final freeze.
+**Report (2026-10-29 ~19:30 PDT, after the laptop crash ~18:10).** **N1 DONE** (main 47a15f434). **N2 DONE** (main eec905e52).
+**R45.16's _assign twin GREEN: 1921e09eb** (builder0 3449/0, 28 targets ALL JUDGED; named to the orchestrator for its batched main
+check). **R45.24 DONE** f4f2dd6ed (replay-match's authority default; proven on main + it). **N3:** B2 twin 04ce3abe9; manoeuvre's
+skip pair 5ed7788ef (34/0, + the cadence mirror); **B3's freeze 26b1425e7 EQUAL** (native-proof, 34/0, probe 60/60). **N4:**
+lines_r44 (B1), lines_r45 (B2 final, S v4); G2 / E1 / A6 v4 land with their verdicts. **N5 DONE.** **Stretch DONE.**
+**G2 three-seam re-proof on the FREEZE 03d1ddbc5 + main ceb1386e8: EQUAL guard on and off** (builder2; below). **Open:**
+control-timing judged at the round's close (orchestrator); E1 / G2 / A6 v4 lines with their verdicts.
 
 **Plan (order kept from the backlog; reasons):** N1 watchdog -> N2a gate_width C++ -> N2b untangle_whole C++ (GRANTED R45.3,
 because gate_width alone cannot reach the budget, below) -> N3 twins as manoeuvre/orders/engage ship -> N4 lines_r45 + judging ->
@@ -150,7 +150,38 @@ twin `SelectionSquads.guard_lay`'s body in C++ (callbacks kept), EQUAL guard on 
   tests 5/0 + 8/0 under TANK_SQUAD_JUDGE_TIMING=1; but `QUIET WINDOW: NOT USABLE` (engage, manoeuvre-b2-light, orders live): NOT
   JUDGED.** The orchestrator calls the judged re-run at the round's close (R45, HANDOFF).
 
+**R45.16 the _assign twin (stream/native 1921e09eb): GREEN builder0, `make check exited 0`, 3449 / 0, 28 targets ALL JUDGED.**
+A helper-level profile inside guard_lay (builder2, native) put 2.44 ms of its 4.7 in `SelectionSquads._assign` (rank_step 0.55,
+the rest < 0.2), the exhaustive least-total seat assignment `ranks()` uses too. One seam line (n <= SEARCH_LIMIT); NativeAssign ->
+assign_native.cpp; `BrainSwitches.native_assign` (ON). builder2: test_native_assign 3000 sets / 0 mismatches; orders probe on v off
+192/192 x2 (default, column). **G2's click with all three seams (pair/native-g2 144c19163, builder2): 10.85 ms, ratio 92.8 v 104**
+(was 12.73 ms / 111.7 at the same reference); main + _assign alone ratio 73.6. Not judged (builder2).
+
+**N3 after the B2 twin:** manoeuvre's skip pair (pair/native-backout-skip 5ed7788ef on df74319af): the exec row
+`_backout_skip_until`, and 0a80c3685's cadence rule mirrored in the C++ drive (`_backout_only` set before the planner,
+`_kturn_check` restored on a non-planning look-only tick; found by the stall twin, frame 31: 6 v 30); 34 / 0. **B3 freeze
+26b1425e7 (already carries both): native-proof `--traffic-on=backout` EQUAL 4a04ea921011cd9a; twins 34 / 0; default orders probe
+60/60** (builder2; the proof before the crash, the rest after builder2 restarted).
+
+**R45.24 (f4f2dd6ed):** `replay-match` adds `--player-authority=off` to a match recorded before E2 reached main (2026-10-29 15:11,
+8ef4f584d), read from the recording's name stamp (`tests/replay/authority.py`; one REPLAY_AUTHORITY line says which and why;
+`REPLAY_AUTHORITY=on|off` overrides). Proof: main 672067dc4 + it, builder2, his Gorge with no flags: 20/20 for 105 s, PASS (engage:
+4/20 from 40 s without). Limit: a match played after the merge on a laptop that had not pulled main reads `on`.
+
+**The crash (~18:10 PDT):** the builder0 check of 1921e09eb stopped itself (the full-check lock saw the session go) and was re-run;
+builder2 restarted under B3's chain after its native-proof had finished (its verdict read from the builder's own log); the scratchpad
+in /tmp was wiped (probe_pairs.py restored from `references/round45/native/n2-orders-probe-*`).
+
+**G2 final re-proof (builder2, native ON):** pair/native-g2-final **89733bdc9** (03d1ddbc5 + ceb1386e8): 83 / 0; twins assign 3000 / 0,
+gate_width 360 / 0, untangle 1200 / 0; orders probe native on v off **192/192 guard ON, 192/192 `--group-guard=off`** (on v off guard
+differ 192/192). **6562c6beb** (+ G2's two gate_width reads through gate_width_edge_on, for orders' ship commit): the same, and its
+768 rows = the unswapped tree's. **30-unit click, same box and reference (0.079 / 0.080 ms): 10.20 ms ratio 129.1 without the swap,
+6.21 ms ratio 77.6 with it.** CORRECTION: the earlier "~1 ms" for the swap (20.53 v 19.59 ms) compared two runs whose reference
+moved 0.116 -> 0.185 ms; the honest saving is ~4 ms, the difference between over and under budget.
+
 ### Requests to other streams
+- **orders (G2 ship commit):** take the two lines at rts_controls.gd ~1192 / ~1227 (gate_width -> gate_width_edge_on(ground, ...)),
+  proven EQUAL on 6562c6beb (above).
 - **orders:** rts_controls.gd: one line in `_order_squads`' column_lay call (`RtsControls.gate_width` -> `gate_width_edge_on`,
   same Callables) and the new `gate_width_edge_on` above `POST_SPAN_M`. N2b: one guarded seam line at the top of
   `SelectionSquads.untangle_whole` (R45.3).
