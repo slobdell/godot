@@ -72,7 +72,45 @@ Nothing at launch. If Bar L1 fails, write in player terms what he would see ON v
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### Report so far (2026-10-30 ~02:00, round 46) — read this first
+### FINAL REPORT (round 46, 2026-10-30 ~07:40 PDT) — read this first
+
+**Shipped ON: his IFV behind his own squads steps to a clear lane and fires; when it can't, the feed says who is in the way.**
+Bar L1c PASSED (R46.31) and merged at **1dd227534** (main 0471b8e14). `--lane-clear=off` turns all of it off. In his terms: a crew
+(his or the CPU's) held by a squadmate in its line of fire steps aside and fires, ~5 s less held per blocked fight (L1c: 15.5 ->
+10.7 s, -4.2 se); a burst never walks into a squadmate (friendly hits 9 -> 4, fewer than today); "Hunters 1 holding fire: Guns 4 in
+the way" in the feed when it can't get a lane (crews in his selection, desktop controls); his hold / stop never moves it; at the post
+his move left it, one step <= ~4 m (R46.7).
+
+| Item | Outcome |
+|---|---|
+| L1 cause | DONE: three causes (post: no candidate + post refusal; attack: the order's +1.0 dilutes CLEAR_LANE's edge; spots tested weaker than the trigger) |
+| L2 lane move | SHIPPED (in L1c) |
+| L3 feed line | SHIPPED; looked at in his own replay (desktop); touch map has none (round 47) |
+| L4 bars | L1 FAIL G1 (a burst walked into a squadmate), L1b FAIL D1 (moving-spread spots: no gain), **L1c PASS** (R46.31 on G4's exact tie) |
+| L5 his read | DONE (below) |
+| E6 | DROPPED (R46.22), code removed (6f9dba2c5 + 749a8cf22) |
+| R46.19 dry_hop | SHIPPED in both arms: ENGAGE's direct hop never crosses water (his Locks bridge, the CPU side) |
+
+**L5, his acceptance read** (his Terminus replay as played, `--lane-clear=off`, v the shipped rule switched on at 103 s where his lone
+IFV starts, `--lane-clear-on-at=3090`; builder3, 63325f533's code = main + engage, native on, n = 1 replay): Green_Hunters_1's rounds
+104-120 s: **10 v 0** (as played, 3 rounds 104-139 s; 16 -> 26 by 120 s v 16 -> 19). After ~125 s the two games differ (the rule
+acts on every crew; no enemy is in its range in the ON game), so later seconds are not comparable. Logs `~/overnight-engage/r46/authority_l5*.log`.
+
+**What to playtest:** `make garage` (any map) or a skirmish on Terminus: put an IFV behind your own parked squads with an enemy in
+range; it should side-step and fire within a few seconds; select it when boxed in and read the feed. `--lane-clear=off` for today's game.
+
+**Round 47 notes (no code this round):** (1) 12328 (Locks, gang_tank at his post): the MOVER'S YIELD (phase `yielding`, manoeuvre's)
+drove a crew holding his post ~10 m toward the enemy to give way to a squadmate, then HOLD reversed it and the 6 m arrival radius
+parked it 6 m short: his post is moved by traffic (both arms identical; manoeuvre + engage's post rule). (2) The touch map has no
+`selection_state`, so no feed line on the phone layout. (3) A burst gun's later rounds were never re-checked before L1c (now under
+`--lane-clear`); the trigger checks the first round only. (4) The authority probe's stop max 5.1 m under his stop is pre-existing
+(both lane arms, 12301-12324).
+
+**Machines / numbers:** every series builder0 light, every check builder3, native on; evidence `~/overnight-engage/r46/` (laptop).
+**Merge notes:** granted shared edits this round: `game/tank/tank.gd` burst branch (R46.26), `tank_brain.gd` ENGAGE `dry_hop` (R46.19),
+`hud_messages.gd` (C46.5); native's twin (pair/native-l2) merged into this branch.
+
+### Report so far (2026-10-30 ~02:00, round 46) — superseded by the final report
 
 | Item | State |
 |---|---|
