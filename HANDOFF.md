@@ -6,6 +6,32 @@
 
 _Last updated: 2026-10-29 ~10:00 PDT (laptop clock) — **ROUND 45 PREPARED (box below; launch = the lead starts four CLIs: orders + manoeuvre on Fable, engage + native on Opus).** Earlier the same morning: round 44 closed, his Gorge playtest recorded._
 
+## ▶ NEXT: ROUND 46 — prepare it from here (written at round 45's close, 2026-10-30 ~00:00 PDT; read this first)
+
+**Every round-45 session was cleared.** A fresh orchestrator prepares round 46 from this box, `game_design.md` *His playtest after
+round 45's ships* (verbatim, Terminus 2026-10-29 ~23:00, recording `references/round45/playtest/2026-10-29T22-57-47-terminus.jsonl`)
+and the round-45 rulings R45.1-R45.30 in `workstreams.md`. **Builds: builder3 is the default** (`devia@builder3`, ~9-11 min a full
+check; `_agents/remote_builds.md`); builder0 is the reference box for budgets set on it; builder2 burst only.
+
+**His asks, in order (recommended split, Fable for the lingering ones per memory):**
+1. **Camera: ONE abstract planner of camera position at all times, no special cases (his words).** What he saw: the camera lost every
+   selected squad; selecting a new squad did not pan to it until combat; on Terminus it stayed at an angle with a building blocking a
+   corridor his squad was driving down. His recording: 371 of 1696 hits/deaths off screen (358 on his units). A **camera** stream
+   (`game/camera/**`; lingering since round 39 -> Fable): design the planner (visibility of his selection + its path + the action,
+   occlusion by buildings, corridor axis) as one cost function, read on his Terminus recording (`cam` rows; `tests/camera/camera_recording.py`).
+2. **His lone IFV held fire for ~36 s (engage's trace, game_design.md): his own vehicles in its line of fire.** `Gunnery._clear_to_fire`
+   holds a shot whose lane crosses a friendly; CLEAR_LANE found no lane in the crowd for ~20 s. Round 46: a lane-clearing move that
+   works in a crowd + say it on screen ("holding fire: Guns 4 in the way"). Owner: an engage stream (gunnery / brain's CLEAR_LANE).
+3. **The group click (G2):** see the G2 line in the CLOSED box below (shipped ON, or the trade waiting on him). Either way: the
+   travel/halt spacing (coil ranks 33-50 m deep make a 3-4 squad file 66-150 m long) is a FEEL QUESTION for him in player terms, and
+   the fit's ~60 path queries at his click (4.9 ms) are orders' design item.
+4. **Manoeuvre's starting points (all OFF code on main):** seat bound S v5 (Crossing self-yield: deal seats whose paths do not cross;
+   R45.28), holdway (the squad's way, not the crew's station; R45.20), shortfwd (his short move inside the turning circle reverses
+   away first; edge case at the drop; parked), backout follow-ups (k-turn guard reported, not judged).
+5. **Engage's stop cap E6 (R45.29):** the one-condition fix (fixed mount + wheels) + a staged workload + fresh seeds, or drop it.
+
+**Before launch:** `df -h ~` (the laptop froze at 96 %, lesson 341); builder3 idle; seeds start at 11801.
+
 ## ⚠ THE LAPTOP FROZE (~17:00-18:00 PDT, 2026-10-29): every session restarted mid-round
 
 Workers restart FRESH with the same kickoff line; each reads its brief's **Status** (top) for where it stood. Any `make remote` /
