@@ -152,3 +152,14 @@ builder3: a builder0 read of the merge before ON); 8 no SCRIPT ERROR. **Ships ON
 `--traffic-off=holdway` the escape) only if the deciding line and every guard pass. C46.6: the hold reads any squad's way (the CPU's
 too). **Machine:** builder3 light, `~/overnight-manoeuvre/r46/bars_a6v5.sh` from a frozen worktree; evidence filed under
 `references/round46/manoeuvre/barsa6v5-builder3-<hash>/`. **Dev history (never a bar):** dev reads 1-2 above (11449-11472, spent).
+
+### Series running (2026-10-30 ~02:40 PDT)
+
+- **Bar S v6: frozen 4e72c5470 GREEN builder3** (`>> remote: make check exited 0`, 3474 passed / 0 failed, sim-baseline unmoved, perf
+  NOT JUDGED on builder3; `~/overnight-manoeuvre/r46/check/check-4e72c5470.log`). Series launched 02:25 on builder3 light from
+  `../godot-manoeuvre-s6` (`bars_s6.sh`; evidence `~/overnight-manoeuvre/r46/bars_s6/`). Recorded on main 6ae7775a6.
+- **Bar A6 v5: frozen 97403a089** in `../godot-manoeuvre-a6`; its full check runs on **builder0** (builder3 holds S v6; the orchestrator's
+  go), then the series on builder0 light (`check_a6.sh` -> `bars_a6v5.sh`). Native confirmed (C46.4, code read of 97403a089): the street
+  hold has no C++ copy; both drives call back into the GDScript `Traffic.refresh` / `hold_of`, so no twin. Recorded on main 3098180d3.
+- Disk (lesson 341): ~/overnight-manoeuvre r39-r45 rows deleted (2.3 G freed; judge/table/driver files kept in
+  `~/overnight-manoeuvre/summaries-r39-r45.tar.gz`); each frozen tree is removed the hour its series ends.
