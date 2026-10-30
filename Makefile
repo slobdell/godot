@@ -89,7 +89,7 @@ help: ## Show this help
 # the two slots for an hour and made every other agent's lint queue (2026-09-16).
 # metrics-* are pure Python and take milliseconds: a 0.15 s known-answer suite queueing behind a 40-minute Godot
 # run is the waste this list exists to prevent (metrics, round 9; the tool has no Godot in it at all).
-LIGHT_GOALS := help doctor bootstrap remote backup backup-status backup-install broker broker-bootstrap broker-test broker-smoke worktree worktrees worktree-remove clean distclean \
+LIGHT_GOALS := help doctor bootstrap remote gcp-remote gcp-status gcp-start gcp-stop backup backup-status backup-install broker broker-bootstrap broker-test broker-smoke worktree worktrees worktree-remove clean distclean \
                metrics metrics-pytest metrics-fixtures metrics-check \
                remote-status remote-guard-test shell-tools-test remote-quiet sim-baseline-adopt round-status \
                editor run skirmish garage demo play play-relay replay-watch serve-web server client watch-match agent-% \

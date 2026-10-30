@@ -128,6 +128,14 @@ static var SEAT_BOUND := OS.get_cmdline_user_args().has("--seat-bound=on") or OS
 ## left-to-right order across the heading (seat(): `opts["seat_order"]`), so a crew never takes a seat across a squadmate's path to
 ## save a few metres. `--seat-order=on` / env SEAT_ORDER=on: OFF until Bar S v4 reads it.
 static var SEAT_ORDER := OS.get_cmdline_user_args().has("--seat-order=on") or OS.get_environment("SEAT_ORDER") == "on"
+## Round 45 (manoeuvre, Bar S v4's miss, R45.17; the S v5 candidate): THE LAST SEAT IS DEALT OUTSIDE THE FILLED BOUND. Bar S v4 (the
+## bound + seat-order, 11401-11448) settled his squad (seated within the bound by 15 s 219 -> 362, +8.6 se) and failed its Locks wedged
+## guard (+6.4 s a run, +4.4 se), and the per-crew rows put the wedging on the squad's LAST two crews (slot 5 +88 s and slot 4 +54 s over
+## 24 seeds; slot 3 -12): the crews arriving last converge on a bound the first three already fill. With this on, `bounded` keeps the
+## DEEPEST slot of the shape at its nominal depth (the unscaled offset along the heading, its lateral place scaled like the rest), so the
+## rear crew parks behind the settled squad where a player would put it, and the bound still holds for every other seat.
+## `--seat-last=open` / env SEAT_LAST=open: OFF until a bar (S v5) reads it; dev seeds only in round 45.
+static var SEAT_LAST_OPEN := OS.get_cmdline_user_args().has("--seat-last=open") or OS.get_environment("SEAT_LAST") == "open"
 const SEAT_ORDER_PER_RANK := 3.0  # strong: the order is the point, a few metres saved by crossing never buy it
 ## The bound in hull lengths of the longest hull, plus the hull floor along the heading (one more hull's room).
 const SEAT_BOUND_HULLS := 1.5
@@ -183,6 +191,14 @@ static func bounded(shape: Array[Vector2], bound: float, floor_v: Vector2) -> Ar
 	var result: Array[Vector2] = []
 	for slot in shape:
 		result.append(slot * scale)
+	if SEAT_LAST_OPEN and shape.size() >= 3:
+		# Round 45 (S v5): the deepest slot keeps its nominal depth (y: behind), its lateral place scaled with the rest.
+		var deepest := 0
+		for i in shape.size():
+			if shape[i].y > shape[deepest].y:
+				deepest = i
+		if shape[deepest].y > 0.0:
+			result[deepest] = Vector2(shape[deepest].x * scale, shape[deepest].y)
 	return result
 
 
@@ -886,6 +902,30 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 		for j in offsets.size():
 			slot_laterals.append(Vector3(world[j].x - anchor.x, 0.0, world[j].z - anchor.z).dot(right))
 		slot_rank = _strict_rank(slot_laterals)
+	# Round 45 (S v5, SEAT_LAST_OPEN): the deepest seat (the one `bounded` left at its nominal depth) is the REAR-MOST crew's at the
+	# order, and nobody else's: dev read 1 (Locks 7001-7012) let the least-driving matching hand it to a War Rig, which then drove
+	# through the second squad to reach it (wedged 4.5 -> 17.2 s on three seeds) while the Tanker's press vanished on the others.
+	var last_open := SEAT_LAST_OPEN and SEAT_BOUND and nearest and not halted and bool(opts.get("seat_bound", not halted)) \
+			and offsets.size() >= 3 and count >= 3
+	var deep_slot := -1
+	var rear_member := -1
+	if last_open:
+		var fwd_l := flat(heading)
+		for j in offsets.size():
+			if deep_slot < 0 or offsets[j].y > offsets[deep_slot].y:
+				deep_slot = j
+		var least_ahead := INF
+		for i in count:
+			var m: Dictionary = members[i]
+			if not m.has("position"):
+				continue
+			var at_m: Vector3 = m["position"]
+			var ahead := Vector3(at_m.x - anchor.x, 0.0, at_m.z - anchor.z).dot(fwd_l)
+			if ahead < least_ahead:
+				least_ahead = ahead
+				rear_member = i
+		if offsets[deep_slot].y <= 0.0 or rear_member < 0:
+			last_open = false
 	# Square cost matrix: members (padded with empty seats) by slots (padded with nowhere).
 	var cost: Array = []
 	for i in slot_count:
@@ -940,6 +980,8 @@ static func seat(members: Array, offsets: Array[Vector2], anchor := Vector3.ZERO
 				value += tier_weight * float(member_tier[i]) * float(deepest - int(slot_tier[j]))
 			if ordered:
 				value += SEAT_ORDER_PER_RANK * maxf(spacing, 1.0) * float(absi(int(member_rank[i]) - int(slot_rank[j])))
+			if last_open and ((j == deep_slot) != (i == rear_member)):
+				value += SEAT_ORDER_PER_RANK * maxf(spacing, 1.0) * 3.0  # round 45 (S v5): the open deep seat is the rear crew's alone
 			if pin:
 				var is_leader := String(member.get("name", "")) == leader
 				if is_leader != (j == 0):

@@ -809,6 +809,14 @@ struct Drive {
 		static const StringName name("backout_looks");
 		return name;
 	}
+	static const StringName &k_backout_only() {
+		static const StringName name("_backout_only");
+		return name;
+	}
+	static const StringName &k_backout_stalls() {
+		static const StringName name("backout_stalls");
+		return name;
+	}
 	// Movement.backout_on(): Traffic.off("backout") read live; false on a tree without M2 (backout_ready).
 	bool backout_on() {
 		static const String backout("backout");
@@ -932,6 +940,10 @@ struct Drive {
 		v.set__kturn_left_m((double)leg.y);
 		v.set__kturn_from(here);
 		v.set__kturn_arc_m(0.0); // a leg must not inherit the last leg's arc (round 30's review)
+		if (c.backout_stall_ready) {
+			v.set__backout_stall_ticks(0); // round 45 (M2 b): read only on a departure look's leg
+			v.set__backout_stall_from(Vector3(INFINITY, INFINITY, INFINITY));
+		}
 		double timeout = (double)leg.y * c.KTURN_SECONDS_PER_M + 1.0;
 		const double speed = tank->get(k._speed);
 		const bool rolling = !kturn_brake_on() || speed * (double)leg.x > -c.KTURN_ROLLING_SPEED;
@@ -965,6 +977,22 @@ struct Drive {
 		const double backed = arc_here() ? (double)v._kturn_arc_m() : flat_distance(here, v._kturn_from());
 		const double left = v._kturn_left_m();
 		const bool reached = backed + kturn_stopping() >= left;
+		// Round 45 (native N3, manoeuvre M2 b v2 57e02fed5, `backout`): a departure look's leg asked to move (speed in its gear past
+		// KTURN_ROLLING_SPEED) whose centre makes no BACKOUT_STALL_PROGRESS_M of flat progress from where the window opened for
+		// BACKOUT_STALL_TICKS ends as "stalled" (v1 read the tick's velocity: pressed on a hull it flips sign every tick). Only
+		// backout's own legs.
+		bool stalled = false;
+		if (c.backout_stall_ready && (bool)v._backout_leg()) {
+			const Vector3 from = v._backout_stall_from();
+			if (from == Vector3(INFINITY, INFINITY, INFINITY) || flat_distance(here, from) >= c.BACKOUT_STALL_PROGRESS_M ||
+					(double)tank->get(k._speed) * (double)gear <= c.KTURN_ROLLING_SPEED) {
+				v.set__backout_stall_from(here); // progress made, or not asked to move: the window opens here
+				v.set__backout_stall_ticks(0);
+			} else {
+				v.set__backout_stall_ticks((int64_t)v._backout_stall_ticks() + step);
+			}
+			stalled = (int64_t)v._backout_stall_ticks() >= c.BACKOUT_STALL_TICKS;
+		}
 		const double timeout = (double)v._kturn_timeout() - delta;
 		v.set__kturn_timeout(timeout);
 		const Vector2 nose(-basis_z.x, -basis_z.z);
@@ -984,9 +1012,12 @@ struct Drive {
 			kturn_end();
 			const Vector2 next = legs.pop_front();
 			kturn_start_leg(next);
-		} else if (reached || timeout <= 0.0 || lead_hit) {
+		} else if (reached || timeout <= 0.0 || lead_hit || stalled) {
 			kturn_end();
 			v.set__kturn_check(0);
+			if (stalled) {
+				sadd(k_backout_stalls(), 1);
+			}
 			if (!reached) {
 				sadd(k.kturn_aborted, 1);
 				v.set__kturn_check(c.KTURN_RETRY_TICKS);
@@ -3906,6 +3937,15 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				Object *leg = leg_ref;
 				bool planned = false;
 				const int64_t looked = c.backout_ready ? (int64_t)sget(k_backout_looks()) : 0; // `var looked := backout_looks`
+				// Round 45 (manoeuvre 0a80c3685, B2's 11187 fallback): `_backout_only = not looks_today; var check_was := _kturn_check`;
+				// a call only the departure look brought here that plans nothing restores today's cadence below. A tree without the
+				// static (`_backout_only` absent) is today's: nothing set, nothing restored.
+				const bool fallback_tree = c.backout_ready && sget(k_backout_only()).get_type() == Variant::BOOL;
+				const bool looks_today = !direct && drive_vector != Vector2() && pathing_ready();
+				const int64_t check_was = v._kturn_check();
+				if (fallback_tree) {
+					sset(k_backout_only(), !looks_today);
+				}
 				const int64_t check_left = (int64_t)v._kturn_check() - step;
 				if (seam_live()) {
 					// Round 31 (planner CP-P1): PlannerSeam.hold() opens _planned_reverse for a crew the seam holds.
@@ -3942,6 +3982,13 @@ bool Drive<V>::run(Object *cmd, const Dictionary &order_in, double delta) {
 				if (c.backout_ready) {
 					// `_backout_leg = _backout_leg or backout_looks > looked` on a planned leg, else false.
 					v.set__backout_leg(planned && ((bool)v._backout_leg() || (int64_t)sget(k_backout_looks()) > looked));
+				}
+				if (fallback_tree) {
+					// `else: ... if _backout_only: _kturn_check = check_was`, then `_backout_only = false`
+					if (!planned && !looks_today) {
+						v.set__kturn_check(check_was);
+					}
+					sset(k_backout_only(), false);
 				}
 			} else if ((double)v._kturn_left_m() > 0.0) {
 				// Movement._kturn_end("cancelled"): its looks cleared; the rest writes the diagnosis record, empty in the
