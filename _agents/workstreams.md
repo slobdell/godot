@@ -387,6 +387,15 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   map; the twins stay candidates for his eye. Next for mapkit: the blast doors in a REAL arena candidate (the native door mask is on main),
   then a screens workload staged from his Crossing positions.
 
+- **R47.46 Main 9e45fd0db GREEN builder3 (`make check exited 0`, 3612 / 0).** Since then merged: manoeuvre ead694538 (holdyield ON, GREEN
+  3609/0), native e5fa1f1be (flake fix, lines_r47; GREEN 3608/0), orders d27c3a4f6 (group click ON, `merged_mode` default "all", GREEN
+  3609/0) = de3176388. **Engage's E3 ship 96a3110b0: `exited 2`, 3610/1** — (1) the sim-baseline moved on all 13 maps (E3 + R47.44's
+  bounded halt variant `short_halt_unfired`, which changes OFF games too): the orchestrator adopts it twice after the merge; (2)
+  test_control_dials::test_the_rig_frames_with_its_inset red in 2 of engage's 3 checks, green on main: orders asked to harden it;
+  (3) native-verify-scenarios red on scenario_cp2's engine-deck coin flip (OFF 1/6, ON 2/6 offsets): **GRANT engage scenario_cp2.gd** to
+  judge it over 6 FRESH offsets (x -3..+3 step 0.5), summed hits >= 120 and deck share >= 0.5, filed in the commit before the run. Also:
+  GRANT spotter one additive Makefile line (LIGHT_GOALS += spotter targets).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
@@ -535,6 +544,32 @@ _(filed here BEFORE any number; newest first)_
   grounding sliding along a wall). His corner is PINNED, so the > 4 m trigger now also needs the grounded point to have moved <= 1 m
   while the station moved >= 3 m in >= 1 s. His staged case unchanged (0.0 s); Crossing guard identical. Frozen tree = 1aa41aeaf once
   green. G3 (contact) named the line at risk.
+
+### Bar O2 (orders O2, R47.21 / R47.37; filed 2026-10-30 ~21:00 PDT, before any number on 12749-12778)
+
+**The change (his picks: "columns only at the end", "ship it, bumping OK"):** O1 v3. A group click on 2-3 whole AUTO squads
+(arm `on` = `--group-merged=on`: his merged control group; arm `all` = `--group-merged=all`: any 2-3 squad plain click, R47.15)
+lays the squads' spots side by side across his click, one pitch apart; each squad travels in its own shape and files only for the
+last 60 m (`ElementPlan.MERGED_ARRIVE_FILE`, the D3b hook, manoeuvre agreed), halting as a file; the whole double file steps back
+up to 40 m along his approach to dry, standable seats, else today's lay. No drive, scoring or route cost changes; no twin owed
+(C47.6). Bar O's first series (R47.4) failed D1 and is closed; this is a fresh bar. **Tree:** the first commit on stream/orders after
+this filing whose `make remote T=check` exits 0 (named in the brief before the series). **Runner** `tests/control/orders_o_bar.sh
+"12749..12760" "12761..12772" "12773..12778" <dir>` (builder3; every arm `--noprogress-census`; a part counts only runs with a map,
+lesson 350); **judge** `orders_o_judge.py <dir> off on` and `--all <dir> off all` (`--self-test` stages D1, D1c, D2, D2b, G4).
+**Staged before the series (lesson 350):** the judge's self-test (each deciding line fails on a staged case); G6's census read on a
+real staged pair (yard_open 2 squads, dev 7001, builder3: noprog_s -11.5 crew-s, contact_s 0.0, n 1); D1 / G1 on dev reads.
+**Parts:** merged (5 maps x 2/3 squads x click x 12 seeds x off/on, a REAL 2-squad army `tests/control/orders_probe_2.json`), all
+(the same cells unmerged, off/all), his_x / his_l (his Crossing / Locks clicks, 2 squads, merged; READ), his_l_all (his Locks click
+as a box-select; READ), identity (locks / crossing / terminus x 2/3 x click/route x 6 seeds, unmerged, off/on).
+**Deciding (each arm on its own corpus):** D1 the spread between the squads' spots for one click, paired mean ON - OFF <= -10 m;
+D1c no click's squads further apart ON than OFF by > 2 m; D1b of the clicks laid as files, >= 90 % have spread <= 20 m (2 squads) /
+40 m (3); D2 all-in sooner or same: paired mean ON - OFF <= +0.5 s (a tie is not a loss); D2b never all in ON <= OFF.
+**Guards:** G1 friendly contacts a run ON <= OFF x 2.5 + 5 (his "bumping OK", R47.37, said up front); G2 wedged crew-s ON <= OFF x
+1.25 + 5; G3 the V1 veto's lines (places across a gap / sent back, squads over a deck) ON <= OFF; G4 (`on` arm) every unmerged
+click byte-identical (0 places differ); G5 farthest spot from his click median ON <= OFF; G6 manoeuvre's census (barm_judge.read:
+noprog_s, contact_s) paired mean ON - OFF <= +1.645 se; G7 `test_manoeuvre_noprogress` green on the tree (its sliver case "same as
+main": manoeuvre's M2b is on its branch); the street lines are terminus's cells inside D2 / G1 / G2 / G6. **Ships ON**: the arm(s)
+that pass become the default (`--group-merged` default on, or `=all`); a FAIL goes to him in player terms the same hour.
 
 ### Bar O (orders O2, R47.4; filed 2026-10-30 ~17:05 PDT, before any number on its seeds)
 

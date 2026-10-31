@@ -81,6 +81,7 @@ func teardown() -> void:
 	SelectionSquads.GROUP_VETO = SelectionSquads.veto_default()
 	SelectionSquads.GROUP_PACK = SelectionSquads.pack_default()
 	SelectionSquads.GROUP_MERGED = SelectionSquads.merged_default()
+	SelectionSquads.GROUP_MERGED_ALL = SelectionSquads.merged_mode() == "all"
 	SelectionSquads.reset_g1()
 	if _controls != null and is_instance_valid(_controls):
 		_controls.queue_free()
@@ -247,7 +248,7 @@ func test_locks_merged_stands_one_double_file() -> void:
 
 
 ## Byte-identity: the same two squads selected WITHOUT the merge (each recalled, not one group of ten) lay as today with the
-## switch ON (Locks: group 1 = Burners alone, Burners2 picked up by its element).
+## switch at `on` (Locks: group 1 = Burners alone, Burners2 picked up by its element; `all`, the default, files them by design).
 func test_two_squads_not_merged_lay_as_today() -> void:
 	await _build("locks", true)
 	_case = (CASES["locks"] as Dictionary).duplicate(true)
@@ -256,9 +257,19 @@ func test_two_squads_not_merged_lay_as_today() -> void:
 	SelectionSquads.GROUP_MERGED = false
 	var off := _click("locks unmerged off")
 	SelectionSquads.GROUP_MERGED = true
+	SelectionSquads.GROUP_MERGED_ALL = false
 	var on := _click("locks unmerged on")
 	for squad: String in off:
 		assert_eq(on[squad], off[squad], "%s: the same place with the switch ON" % squad)
+
+
+## R47.41 (his "Ship it ON"): with no flag the game lays both arms (`all`); `--group-merged=off` is the escape.
+func test_the_default_is_all() -> void:
+	if Array(OS.get_cmdline_user_args()).any(func(a: String) -> bool: return a.begins_with("--group-merged=")) \
+			or OS.get_environment("GROUP_MERGED") != "":
+		return
+	assert_eq(SelectionSquads.merged_mode(), "all", "the default reads all")
+	assert_true(SelectionSquads.merged_default(), "the merged lay is ON")
 
 
 ## Pure: the heads stand across the heading, a gap apart, left to right as the blocks stand; a file's seats run back.

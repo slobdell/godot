@@ -15,6 +15,7 @@ var _off := false
 
 func teardown() -> void:
 	SelectionSquads.PACK = _was_pack
+	SelectionSquads.GROUP_MERGED_ALL = SelectionSquads.merged_mode() == "all"
 	super.teardown()
 
 
@@ -263,6 +264,7 @@ func test_the_controls_hand_each_squad_its_packed_halt() -> void:
 
 func test_pack_off_gives_the_ranks() -> void:
 	SelectionSquads.PACK = false
+	SelectionSquads.GROUP_MERGED_ALL = false  # R47.41: `all` (the default) files whole squads; --pack=off's ranks are round 46's
 	var f := Fixture.new(self)
 	await f.build_scale(15)
 	var all: Array[String] = []
