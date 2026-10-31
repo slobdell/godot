@@ -107,6 +107,22 @@ static var LANE_CLEAR := not OS.get_cmdline_user_args().has("--lane-clear=off")
 ## R46.7 (orchestrator): at a post he left by a MOVE, the lane step stays within this of the post (meters); under his
 ## explicit hold or stop the crew never moves for a lane.
 const LANE_POST_STEP := 4.0
+## Round 47 (engage E7, R47.6): HIS ATTACK BEATS RETREAT. Route's R1 trace (his Locks, Hunters_4): a crew at 7 % hull with
+## threats in sight, on the attack_move its element dealt it under his attack, took RETREAT (0.99 when critical) and drove
+## away from his target again and again. With the switch on, an attack_move naming a target from an element whose task is
+## `attack` (his, or a CPU commander's attack: C47.9) leaves RETREAT off the menu; every other order keeps the survival rule.
+## `--press-on=on|off`; OFF until native's twin of `_obey` (decide_native.cpp) carries it (C47.6).
+const PRESS_ON_DEFAULT := false
+static var PRESS_ON := _press_on_flag()
+
+
+static func _press_on_flag() -> bool:
+	for arg in OS.get_cmdline_user_args():
+		if String(arg) == "--press-on=on":
+			return true
+		if String(arg) == "--press-on=off":
+			return false
+	return PRESS_ON_DEFAULT
 ## The rings of lane spots, nearest first (a small step beats a drive: a wheeled IFV needs seconds to relocate 16 m).
 const LANE_RINGS: Array[float] = [3.0, 6.0, 10.0, 16.0]
 const LANE_SEARCH_FAR := 16.0
@@ -2056,6 +2072,10 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 			if ENGAGE_WATER and TankBrain._across_water(my_position, c["position"]):
 				continue
 			in_reach.append(c["name"])
+	# E7 (PRESS_ON): an attack-move on a named target under an ATTACK task (his, or a commander's) is pressed home.
+	var element_context: Variant = s.get("element")
+	var pressed := PRESS_ON and verb == "attack_move" and target != "" and element_context is Dictionary \
+			and String((element_context as Dictionary).get("task", "")) == "attack"
 	var result: Array = []
 	for candidate: Dictionary in candidates:
 		var option: String = candidate["option"]
@@ -2074,7 +2094,7 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 					candidate["score"] = float(candidate["score"]) * lane_edge
 			"attack_move":
 				if option == "RETREAT":
-					if not critical:
+					if not critical or pressed:
 						continue
 					candidate["score"] = 0.99
 				elif target != "" and candidate["target"] != "" and candidate["target"] != target:
