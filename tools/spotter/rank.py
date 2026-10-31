@@ -106,6 +106,9 @@ def _moment(group):
         "start_s": start, "end_s": end, "length_s": length, "peak_s": int(peak["s"]),
         "peak_tick": int(peak["tick"]), "at": [float(peak["x"]), float(peak["z"])],
         "score": round(peak["_score"] + 0.5 * math.log2(max(length, 1)), 2), "reasons": reasons[:4],
+        # Every signal's peak value and rarity over the moment: S6's feature vector (the reasons above are only the top four).
+        "signals_max": {k: round(v[1], 2) for k, v in best.items()},
+        "surprise_max": {k: round(v[0], 3) for k, v in best.items()},
         "context": {k: peak.get(k, "") for k in ("order", "move", "phase", "intent", "choice", "blocked", "touch_what")},
         "clip": _clip(first, start, end, int(peak["s"])),
     }
