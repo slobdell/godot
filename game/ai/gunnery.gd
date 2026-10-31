@@ -62,12 +62,32 @@ var _seconds := 0.0
 ## range; the War Rig sees 60 m, so a target at 40 m costs it ~1.2 s of lay. With the switch on, a crew whose ONLY held gate is
 ## the fix, laid at least POT_SHOT_AFTER_S, its target inside the weapon's effective band, fires anyway with its aim off by up
 ## to POT_SHOT_WANDER_M at the target (the deterministic wander pattern), shrinking to nothing as the fix completes: the round
-## flies where the barrel points. `--pot-shot=on|off`; OFF (his call; the gun's C++ twin would carry it before any ON).
-static var POT_SHOT := OS.get_cmdline_user_args().has("--pot-shot=on")
+## flies where the barrel points. `--pot-shot=on|off`; ON since R47.37 (his "Ship it ON": Bar E3's D2 and every guard passed,
+## D1 missed by 0.006 s; native's NativeGun / NativeExec twin EQUAL). `--pot-shot=off` is today's gate.
+const POT_SHOT_DEFAULT := true
+static var POT_SHOT := _pot_shot_flag()
+
+
+static func _pot_shot_flag() -> bool:
+	for arg in OS.get_cmdline_user_args():
+		if String(arg) == "--pot-shot=on":
+			return true
+		if String(arg) == "--pot-shot=off":
+			return false
+	return POT_SHOT_DEFAULT
 const POT_SHOT_AFTER_S := 0.4
 const POT_SHOT_WANDER_M := 2.5
 ## Measurement only: pot shots taken since the process started.
 static var pot_shots := 0
+
+
+## E3 and R2 (the check's find at d4cf542c7): true while the plant brakes this hull for a round (Tank._short_halt) and the
+## hull is still rolling, so a pot shot keeps its trigger then even with the barrel off its wandering aim. The plant holds
+## the round until the hull is steady either way; what a dropped trigger did was read to the plant as "the shot is gone",
+## cancel the halt and start its cooldown, and the next round (test_rules_spread: the fixed one) left at 98 m on 11 m/s.
+## Native's NativeGun calls this.
+static func pot_shot_holds(tank: Tank) -> bool:
+	return tank.short_halting() and absf(tank.speed()) >= Tank.SHORT_HALT_STILL * maxf(tank.max_forward_speed, 0.1)
 
 ## Round 47 (engage E1), MEASUREMENT ONLY: `--gun-trace=<name substring|all>` prints one GUN_TRACE line per run of the
 ## gun for the named crews (on every change of its gates, and every GUN_TRACE_EVERY ticks): the weapon order, the pick,
@@ -218,7 +238,8 @@ func _apply_weapon(cmd: TankCommand) -> void:
 			var off_aim := aim + Difficulty.aim_offset(POT_SHOT_WANDER_M * (1.0 - laid / needed),
 					brain.game_match.tick if brain != null and brain.game_match != null else 0, tank.slot)
 			_cover(off_aim, cmd)
-			if Ballistics.aim_error(muzzle, tank.turret_forward(), off_aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"])):
+			if Ballistics.aim_error(muzzle, tank.turret_forward(), off_aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"])) \
+					or pot_shot_holds(tank):
 				cmd.fire = _clear_to_fire(true, off_aim)
 				if cmd.fire:
 					pot_shots += 1
@@ -247,11 +268,12 @@ func trace_after(cmd: TankCommand) -> void:
 				"aim_err": snappedf(rad_to_deg(Ballistics.aim_error(muzzle, tank.turret_forward(), enemy.global_position)), 0.1),
 				"need": snappedf(Engagement.acquire_seconds(tank, enemy, d), 0.01)}
 		if not los:
-			# What the eye ray hits (Perception's own ray, re-cast), and whether a ray from the muzzle would clear it.
+			# What the eye ray hits (Perception's own ray, re-cast), and whether a ray from the muzzle would clear it (a shell's
+			# path: WORLD_MASK, sight screens do not stop rounds).
 			var space := tank.get_world_3d().direct_space_state
 			var from := tank.global_position + Vector3.UP * Perception.EYE_HEIGHT
 			var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(from,
-					enemy.global_position + Vector3.UP * Perception.EYE_HEIGHT, Perception.WORLD_MASK))
+					enemy.global_position + Vector3.UP * Perception.EYE_HEIGHT, Perception.eye_mask()))  # C47.7: the eye's mask
 			if not hit.is_empty():
 				var collider: Object = hit.get("collider")
 				var at: Vector3 = hit["position"]

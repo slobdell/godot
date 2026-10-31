@@ -59,7 +59,7 @@ mapkit-doors-watch: import ## Mapkit: CPU fights on terminus_doors, each one's d
 HIS_CROSSING := references/round46/playtest/2026-10-30T15-41-59-crossing.jsonl
 .PHONY: mapkit-screens-replay
 mapkit-screens-replay: ## Mapkit: his Crossing replayed on crossing v crossing_screens -> MAPKIT_REPLAY lines (shots/hits/damage/kills per side)
-	@for rec in $(HIS_CROSSING) tests/mapkit/fixtures/his_crossing_on_screens.jsonl; do \
+	@mkdir -p $(BUILD_DIR); for rec in $(HIS_CROSSING) tests/mapkit/fixtures/his_crossing_on_screens.jsonl; do \
 		$(MAKE) --no-print-directory replay-match RECORDING=$$rec REPLAY_SECONDS=112 CREWS=all > $(BUILD_DIR)/mapkit-replay.log 2>&1 || true; \
 		out=$$(ls -t $(REPLAY_MATCH_DIR)/out/*.jsonl 2>/dev/null | head -1); \
 		$(PYTHON) -c "import json,sys; rows=[json.loads(l) for l in open(sys.argv[1])]; h=rows[0]; e=[r for r in rows if r.get('t')=='end']; \

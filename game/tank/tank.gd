@@ -1233,6 +1233,8 @@ const SHORT_HALT_COOLDOWN_S := 4.0
 ## Seconds left of the current short halt (0 = none) and before the next may start.
 var short_halt_seconds := 0.0
 var short_halt_cooldown := 0.0
+## R47.44 (engage, the E3 ship): the cooldown running follows a halt that ended with no round fired (the shot dropped).
+var short_halt_unfired := false
 
 
 ## R2: the chance a round from this crew at `distance` (m) hits a hull-sized target, moving at `moving` (0..1).
@@ -1261,6 +1263,7 @@ func _short_halt(cmd: TankCommand, drive_cmd: TankCommand, delta: float) -> void
 		if not cmd.fire or drive_cmd.throttle < 0.0:
 			short_halt_seconds = 0.0  # the shot is gone (target lost, lane closed) or the crew is backing out
 			short_halt_cooldown = SHORT_HALT_COOLDOWN_S
+			short_halt_unfired = true
 			return
 		drive_cmd.throttle = 0.0
 		if moving >= SHORT_HALT_STILL and short_halt_seconds > 0.0:
@@ -1268,12 +1271,18 @@ func _short_halt(cmd: TankCommand, drive_cmd: TankCommand, delta: float) -> void
 		else:
 			short_halt_seconds = 0.0  # steady (or out of time): this tick's round goes, and the crew drives on
 			short_halt_cooldown = SHORT_HALT_COOLDOWN_S
+			short_halt_unfired = false
 		return
-	if not cmd.fire or short_halt_cooldown > 0.0 or drive_cmd.throttle < 0.0 or _reload_ticks > 1 \
-			or _burst_rounds_left > 0 or not is_deployed():
+	if not cmd.fire or drive_cmd.throttle < 0.0 or _reload_ticks > 1 or _burst_rounds_left > 0 or not is_deployed():
 		return
 	var muzzle := global_position
 	var distance := Vector2(cmd.aim_point.x - muzzle.x, cmd.aim_point.z - muzzle.z).length()
+	if short_halt_cooldown > 0.0:
+		# R47.44: the cooldown lets an ordered move drive on. After a halt that fired, rounds may go rolling. After one whose
+		# shot dropped (nothing fired), a round worth the halt waits for the next one instead of leaving on the move.
+		if short_halt_unfired and short_halt_worth(distance, moving) and not ShortHalt.plain_player_move(self):
+			cmd.fire = false
+		return
 	if short_halt_worth(distance, moving) and not ShortHalt.plain_player_move(self):  # R37.2 (b): he said drive
 		short_halt_seconds = SHORT_HALT_MAX_S
 		drive_cmd.throttle = 0.0
