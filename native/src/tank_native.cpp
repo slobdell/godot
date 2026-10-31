@@ -57,6 +57,10 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("untangle_whole", "starts", "anchors", "by_lead", "leads", "arcs", "misplaced", "slack"),
 			&TankNative::untangle_whole);
 	ClassDB::bind_method(D_METHOD("assign_least_total", "centers", "slots"), &TankNative::assign_least_total);
+	ClassDB::bind_method(D_METHOD("esit_entries", "game_match", "team", "member_names", "heading", "was_known", "roles", "consts"),
+			&TankNative::esit_entries);
+	ClassDB::bind_method(D_METHOD("formation_place", "members", "formation", "anchor", "heading", "spacing", "opts", "extent", "tough",
+			"roles", "flags", "lateral_floor"), &TankNative::formation_place);
 	ClassDB::bind_method(D_METHOD("perception_configure", "config"), &TankNative::perception_configure);
 	ClassDB::bind_method(D_METHOD("perception_sight", "viewers", "enemies"), &TankNative::perception_sight);
 	ClassDB::bind_method(D_METHOD("perception_gun_ready", "viewers", "enemies"), &TankNative::perception_gun_ready);
@@ -134,6 +138,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drive_profile", "reset"), &TankNative::drive_profile);
 	ClassDB::bind_method(D_METHOD("drive_around_fire", "mover", "waypoint", "goal", "order"), &TankNative::drive_around_fire);
 	ClassDB::bind_method(D_METHOD("drive_pass_lane", "mover", "passer", "from", "direction"), &TankNative::drive_pass_lane);
+	ClassDB::bind_method(D_METHOD("drive_holdyield_veto", "mover", "point"), &TankNative::drive_holdyield_veto);
 	ClassDB::bind_method(D_METHOD("drive_fire_ready"), &TankNative::drive_fire_ready);
 	ClassDB::bind_method(D_METHOD("situation_core", "brain", "my_position", "my_name", "squad_name", "all_allies", "intel",
 			"names", "prototypes", "choice_target", "order_target", "tick", "flank_reach", "cover_map", "constants", "ai_cache",

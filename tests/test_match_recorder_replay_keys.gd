@@ -22,7 +22,9 @@ func test_the_replay_keys_hold_the_cap_the_factions_and_every_spawn_at_full_prec
 	assert_true(keys["preset"] is String and String(keys["preset"]) != "", "the render preset")
 	assert_true(keys["frame"] is int, "the start frame")
 	# R46.11: the build's replay-relevant rules (a build without L2 reads lane_clear false).
-	assert_eq((keys["rules"] as Dictionary).keys(), ["lane_clear"], "the rules stamp")
+	# Round 47 (N0): with the group veto, shortfwd and holdway (tests/replay/rules.py RULES).
+	assert_eq((keys["rules"] as Dictionary).keys(), ["lane_clear", "group_veto", "shortfwd", "holdway"], "the rules stamp")
+	assert_eq(keys["rules"]["shortfwd"], not Traffic.off("shortfwd"), "as this build has it")
 	assert_eq(keys["rules"]["lane_clear"], (TankBrain as Object).get("LANE_CLEAR") == true, "as this build has it")
 	var tanks := m.sorted_team_tanks(0) + m.sorted_team_tanks(1)
 	assert_eq((keys["spawn"] as Dictionary).size(), tanks.size(), "every unit's spawn")

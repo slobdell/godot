@@ -137,6 +137,45 @@ static func _roster(rows: Array) -> Array:
 ## and signals each), all on one tick with the same verb, point, target and queue. Replayed one squad at a time it is a
 ## different order (the group click lays the squads out together, an attack shares its target among them), so rows a
 ## hand could only have given in one click are merged back into one order over the union of their units. Pure.
+## Round 47 (N0): an army his match loaded from HIS user:// (a garage army, the garage's generated enemy: his Sumps and Parade),
+## rebuilt from the header's roster: one squad per name in order of first appearance ("Green_Alpha_3" -> squad "Alpha"), its units'
+## ids in their number order. What the file held beyond that (a squad's formation or directive) the header does not record.
+static func army_from_header(header: Dictionary, team: int) -> Dictionary:
+	var squads: Array = []
+	var by_name := {}
+	for unit: Dictionary in header.get("units", []):
+		if int(unit.get("team", -1)) != team:
+			continue
+		var parts := String(unit.get("name", "")).split("_")
+		if parts.size() < 3:
+			continue
+		var squad_name := "_".join(parts.slice(1, parts.size() - 1))
+		if not by_name.has(squad_name):
+			by_name[squad_name] = {"name": squad_name, "units": []}
+			squads.append(by_name[squad_name])
+		(by_name[squad_name]["units"] as Array).append({"unit": String(unit.get("id", "")), "n": int(parts[parts.size() - 1])})
+	for squad: Dictionary in squads:
+		var units: Array = squad["units"]
+		units.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["n"]) < int(b["n"]))
+		squad["units"] = units.map(func(u: Dictionary) -> Dictionary: return {"unit": u["unit"]})
+	return {"name": "his army (rebuilt from the recording)", "squads": squads}
+
+
+## The launch switches naming an army file of his that this machine does not have: switch -> team (player / garage-army: 0,
+## enemy: 1), for the replay to point at army_from_header's rebuild.
+const ARMY_SWITCHES := {"player": 0, "garage-army": 0, "enemy": 1}
+
+
+static func missing_armies(header: Dictionary) -> Dictionary:
+	var out := {}
+	var flags: Dictionary = header.get("flags", {})
+	for key: String in ARMY_SWITCHES:
+		var value := String(flags.get(key, ""))
+		if value.begins_with("user://") and not FileAccess.file_exists(value):
+			out[key] = ARMY_SWITCHES[key]
+	return out
+
+
 static func merge_clicks(orders: Array) -> Array:
 	var out: Array = []
 	for row: Dictionary in orders:
@@ -148,6 +187,18 @@ static func merge_clicks(orders: Array) -> Array:
 					units.append(unit_name)
 			last["units"] = units
 			last["merged"] = int(last.get("merged", 1)) + 1
+			# Round 47 (N0, R47.8): a row of one group click that went out as a DIRECT order (source "player": the controls'
+			# _direct, which a squad's share of a group click takes only for units in no squad) names crews that were loose
+			# in his match: his Crossing ctrl+4 over Spears + Wrenches (a control-group save, which writes no row) left the
+			# Wrenches in no squad, and the replay, still holding them as a squad, laid the click differently (Spears 3.2 m
+			# off his spot, the replay out of his match at 1 s). The replay takes these crews out of their groups first.
+			var loose: Array = (last.get("loose", []) as Array).duplicate()
+			for source_row: Dictionary in [last, row] if not last.has("loose") else [row]:
+				if String(source_row.get("source", "")) == "player":
+					for unit_name in source_row.get("units", []):
+						if not loose.has(unit_name):
+							loose.append(unit_name)
+			last["loose"] = loose
 			if last.has("click") and last.has("to"):
 				last["to"] = last["click"]  # C44.2: the point under his cursor; the replay's group layout spreads it again
 			continue
@@ -199,7 +250,8 @@ static func reexec_args(engine_args: PackedStringArray, user_args: PackedStringA
 	var args := PackedStringArray()
 	if headless and not engine_args.has("--headless"):
 		args.append("--headless")
-	if not engine_args.has("--fixed-fps"):
+	# Round 47 (N0): `--replay-free-fps` (REPLAY_FREE_FPS=1) lets frames run at the display's own rate, as his game did.
+	if not engine_args.has("--fixed-fps") and not user_args.has("--replay-free-fps"):
 		args.append_array(["--fixed-fps", "30"])
 	if not engine_args.has("--path"):
 		args.append_array(["--path", project])

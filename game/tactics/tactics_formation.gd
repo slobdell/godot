@@ -1211,6 +1211,8 @@ static func slots(element: Variant, anchor: Vector3, heading: Vector3, count := 
 ## (default true: the anchor is the shape's middle; false: the anchor is the leader's slot).
 static func place(members: Array, formation: String, anchor: Vector3, heading: Vector3, spacing := DEFAULT_SPACING,
 		opts := {}) -> Array[Dictionary]:
+	if NativePlace.usable():  # round 47 (native N2): in C++ (NativePlace, place_native.cpp); this body is the reference
+		return NativePlace.place(members, formation, anchor, heading, spacing, opts)
 	var result: Array[Dictionary] = []
 	if members.is_empty():
 		return result
