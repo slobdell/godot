@@ -407,11 +407,12 @@ static func route_arms() -> Dictionary:
 			"turns": ManoeuvreCensus.report(), "behind_asked": behind_asked, "behind_reverses": behind_reverses,
 			"behind": Manoeuvre.report(), "post_faces_kept": post_faces_kept, "face_plans": Manoeuvre.face_plans,
 			"face_plan_legs": Manoeuvre.face_plan_legs, "face_none": Manoeuvre.face_none, "kturn_away": kturn_away,
-			"kturn_circle": kturn_circle, "buried_swaps": buried_swaps, "noprogress": NoProgressWatch.report()}
+			"kturn_circle": kturn_circle, "buried_swaps": buried_swaps, "noprogress": NoProgressWatch.report(), "holdyield_vetoes": holdyield_vetoes}
 
 
 static func reset_route_arms() -> void:
 	buried_swaps = 0
+	holdyield_vetoes = 0
 	NoProgressWatch.reset()
 	ManoeuvreCensus.reset()
 	Manoeuvre.reset()
@@ -2572,6 +2573,8 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 				continue
 			if _chain_far(chain, point):
 				continue
+			if _holdyield_veto(point):
+				continue
 			if not _free_spot(point, String(tank.name), other):
 				continue
 			if not _yield_fits(point):
@@ -2600,6 +2603,8 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 		if _flat_distance(point, from) < _flat_distance(here, from):
 			continue
 		if _chain_far(chain, point):
+			continue
+		if _holdyield_veto(point):
 			continue
 		if not _free_spot(point, String(tank.name), other):
 			continue
@@ -2632,6 +2637,44 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 		return true
 	if not chain.is_empty():
 		chain_refusals += 1
+	return false
+
+
+## Round 47 (manoeuvre M5, `--traffic-on=holdyield` until judged; engage's Bar L1c seed 12328, Locks): A CREW ON HIS POST NEVER GIVES WAY
+## TOWARD THE ENEMY. His gang tank held the post his move left it at; a squadmate crossing its lane asked it to give way, the yield took
+## a spot 10 m south, straight at the enemy gun 12 m off, and HOLD's return (arrival radius 6) parked it 6 m short of his post. With
+## the rule a crew holding his post (TankBrain._his_post) skips any spot more than HOLDYIELD_SLACK_M closer to an enemy hull within HOLDYIELD_RANGE_M than
+## where it stands, and any spot more than HOLDYIELD_POST_M from his post; with no spot left it gives way in place (the existing hold). Any other crew, and OFF: today's spots. The yield is
+## twinned in C++ (native_yield), so ON runs the GDScript yield (Traffic._chain_native) until native twins it.
+const HOLDYIELD_SWITCH := "holdyield"
+const HOLDYIELD_SLACK_M := 0.5
+const HOLDYIELD_RANGE_M := 60.0
+const HOLDYIELD_POST_M := 8.0
+static var holdyield_vetoes := 0
+
+
+func _holdyield_veto(point: Vector3) -> bool:
+	if Traffic.off(HOLDYIELD_SWITCH):
+		return false
+	var brain := ctl as TankBrain
+	if brain == null or not brain._his_post or ctl.tanks_root == null:
+		return false
+	# Never far off his post either (12328 tick 96: with the near spots refused, the yield took `spot(24,0)`, 24 m on, and its drive
+	# there ran south past the gun): a crew on his post gives way within HOLDYIELD_POST_M of it, or in place.
+	if _flat_distance(point, brain._his_post_at) > HOLDYIELD_POST_M:
+		holdyield_vetoes += 1
+		return true
+	var here := ctl.tank.global_position
+	# Every live enemy hull within HOLDYIELD_RANGE_M (the gun's target alone flickers between shots: the first build stepped toward
+	# the gun again the moment its target read empty, 12328 tick 95). Which way to step aside only, never a target or a sight line.
+	for other in ctl.tanks_root.get_children():
+		var enemy := other as Tank
+		if enemy == null or not enemy.is_alive() or enemy.team == ctl.tank.team \
+				or _flat_distance(enemy.global_position, here) > HOLDYIELD_RANGE_M:
+			continue
+		if _flat_distance(point, enemy.global_position) < _flat_distance(here, enemy.global_position) - HOLDYIELD_SLACK_M:
+			holdyield_vetoes += 1
+			return true
 	return false
 
 
