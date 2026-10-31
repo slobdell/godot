@@ -182,7 +182,7 @@ Vector2 offset(const String &formation, int i, int count, double spacing) {
 		return Vector2((real_t)((double)i * s * DIAGONAL_SIDE), (real_t)((double)i * s));
 	}
 	if (formation == "echelon_left") {
-		return Vector2((real_t)(-(double)i * s * DIAGONAL_SIDE), (real_t)((double)i * s));
+		return Vector2((real_t)((double)(-i) * s * DIAGONAL_SIDE), (real_t)((double)i * s)); // -i an int (GDScript): slot 0 is +0.0, never -0.0
 	}
 	if (formation == "herringbone") {
 		return Vector2((real_t)(side * s * HERRINGBONE_SIDE), (real_t)((double)i * s * 0.8));

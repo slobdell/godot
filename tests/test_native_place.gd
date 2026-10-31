@@ -84,6 +84,31 @@ func _opts(rng: RandomNumberGenerator, members: Array, anchor: Vector3) -> Dicti
 	return o
 
 
+static func _exact(v: Variant) -> String:
+	if v is Vector3:
+		return "(%.9f, %.9f, %.9f)" % [v.x, v.y, v.z]
+	if v is Vector2:
+		return "(%.9f, %.9f)" % [v.x, v.y]
+	if v is float:
+		return "%.17f" % v
+	return "%s<%d>" % [v, typeof(v)]
+
+
+## The first entry and key whose bytes differ, at full precision (the printed arrays round to 6 digits).
+static func _first_difference(live: Array, native: Array) -> String:
+	if live.size() != native.size():
+		return "sizes %d v %d" % [live.size(), native.size()]
+	for i in live.size():
+		var a: Dictionary = live[i]
+		var b: Dictionary = native[i]
+		if a.keys() != b.keys():
+			return "entry %d keys %s v %s" % [i, a.keys(), b.keys()]
+		for key in a:
+			if var_to_bytes(a[key]) != var_to_bytes(b[key]):
+				return "entry %d %s: live %s native %s" % [i, key, _exact(a[key]), _exact(b[key])]
+	return "no field differs (order of keys?)"
+
+
 func test_native_place_is_the_live_gdscript() -> void:
 	if NativeExpect.absent(self):
 		print("native: absent, the place equality is not exercised in this run")
@@ -132,7 +157,8 @@ func test_native_place_is_the_live_gdscript() -> void:
 		if var_to_bytes(live) != var_to_bytes(native):
 			mismatches += 1
 			if first == "":
-				first = "trial %d %s n %d opts %s: live %s native %s" % [trial, formation, n, opts, live, native]
+				first = "trial %d %s n %d opts %s heading %s spacing %s: %s" % [trial, formation, n, opts, heading, spacing,
+						_first_difference(live, native)]
 	BrainSwitches.native_place = saved[0]
 	TacticsFormation.SEAT_BOUND = saved[1]
 	TacticsFormation.SEAT_ORDER = saved[2]
