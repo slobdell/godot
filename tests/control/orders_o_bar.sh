@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Round 47 (orders O2, Bar O, R47.4): his merged group click, OFF (`--group-merged=off`) v ON, on builder3, read to a verdict.
+# Round 47 (orders O2, Bars O and O2, R47.4 / R47.15 / R47.21): his group click, OFF (`--group-merged=off`) v the merged arm
+# (`--group-merged=on`) and the all arm (`--group-merged=all`), on builder3, read to a verdict.
 #   tests/control/orders_o_bar.sh "<merged seeds>" "<his seeds>" "<identity seeds>" <out dir outside build/> [jobs]
 # Parts (every one `--probe-merge=on` but identity):
 #   merged    locks crossing terminus yard_open sumps x 2 / 3 squads x click            (deciding D1 D2, guards G1-G3, G5)
@@ -17,7 +18,8 @@ part() {  # part <name> <maps> <squads> <routes> <arms> <seeds> <expected runs>
 		tools/remote.sh native orders-probe "ORDERS_PROBE_MAPS=$maps" "ORDERS_PROBE_SQUADS=$squads" "ORDERS_PROBE_ROUTES=$routes" \
 			"ORDERS_PROBE_ARMS=$arms" "ORDERS_PROBE_SEEDS=$seeds" "ORDERS_PROBE_DIR=$src" "ORDERS_PROBE_JOBS=$jobs" \
 			"TANK_SQUAD_SLOT_TIMEOUT=14400" > "$out/$name.log" 2>&1
-		local got=$(wc -l < "$src/runs.jsonl" 2>/dev/null || echo 0)
+		# Bar O's first series: an errored run ("no RtsControls") is a row too; only a run with its map counts (Bar O2).
+		local got=$(grep -c '"map"' "$src/runs.jsonl" 2>/dev/null || echo 0)
 		if grep -aq ">> remote: make native orders-probe.*exited 0" "$out/$name.log" && [ "$got" -eq "$want" ] \
 				&& ! grep -aq "^MISSING" "$out/$name.log"; then
 			rm -rf "$out/$name" && cp -r "$src" "$out/$name"

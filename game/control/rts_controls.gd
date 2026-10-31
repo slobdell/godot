@@ -1655,7 +1655,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				anchors = filed["heads"]
 				column = false
 				for at: Vector3 in anchors:
-					packed_shapes[at] = {"shape": "column", "heading": filed["heading"], "travel": true}
+					packed_shapes[at] = {"shape": "column", "heading": filed["heading"], "travel": SelectionSquads.MERGED_TRAVEL_FILE}
 				_trace_stage("merged", squads, anchors)
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
 		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
@@ -3632,7 +3632,12 @@ func _arrival_in_shape(element: Element, unit_name: String, to: Vector3) -> Vect
 		heading = element.transit.get("final_heading")
 	if not heading is Vector3 or (heading as Vector3).length() < 1e-6:
 		heading = element.heading
-	var offsets := TacticsFormation.offsets_at(element.formation, count, element.pitch)
+	# R47.21: a merged squad halts as a file (its task's halt_shape) though it travels in its own shape: show where it STANDS.
+	var shape := element.formation
+	if String(element.task.get("halt_shape", "")) == "column":
+		shape = "column"
+		index = members.find(unit_name)
+	var offsets := TacticsFormation.offsets_at(shape, count, element.pitch)
 	if index < 0 or index >= offsets.size():
 		return to
 	return TacticsFormation.to_world(to, heading, offsets[index])
