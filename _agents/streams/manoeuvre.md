@@ -69,6 +69,45 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### FINAL REPORT (round 47, 2026-10-31 ~01:00): the stream's close
+
+**Shipped ON (both merged to main):**
+- **`buried`** (M2a, Bar M passed on every line). A squad's travelling station buried in a building follows the squad's own track.
+  His Locks fire truck (Burners2_4) goes from 1.5 s slow / still to 0.3 s in his own replay. Ship bbd8c1ba6 GREEN builder3 3537 / 0.
+- **`holdyield`** (M5a, Bar H passed). A crew holding his post never gives way toward the enemy or > 8 m off it. Seed 12328 post
+  drift 10.1 -> 0.0 m. Native twin merged. Ship **ead694538 GREEN builder3 3609 / 0, sim-baseline unmoved**; merged by the
+  orchestrator.
+
+**Built, OFF (named for merge once the tip is green):**
+- **`noprogress` watchdog** (M2b, Bar W FAILED D2: +24.6 crew-s a touched cell, z +0.81). Stays OFF. Crossing 12449 trace: the trips
+  are crews on the mesh whose SEAT is unreachable, re-planned every second (see REPORT below). Pathing.reroute's off-island body
+  (R47.25) is inert without it.
+- **`overstay`** (mapkit's request + R47.43). A crew parked in a closing blast doorway gives way off the slab. His post moves with
+  it, it keeps holding, and the door seals. One TankBrain line. Staged test 3 / 0 on doors_dev. OFF until doors reach a dealt arena.
+
+**Backlog state:**
+- M1 done.
+- M2 done: buried ON; the watchdog judged and failed.
+- M3 done: Bars M, W, H filed before their numbers and judged as filed.
+- M4 done: his Locks acceptance read.
+- M5: 12328 shipped (holdyield). The other M5 leftovers are not reached: holdway head-on, backout pose 10, the holdway web freeze.
+- Crossing Hunters under fire (M1): open, not reproduced without enemy fire.
+
+**Next round, in order (manoeuvre):**
+1. **Sumps Alpha_5 (his direct move blocked 10 s by his unordered, set-up battery Charlie_1; no go-round).** A new class, the
+   orchestrator's first item. Stage: Charlie_1 set up on a fire post at its tick-3060 pose (1.6 + 6.6 m, his census), Alpha_5 on his
+   move past it. Test: his crew is round the battery within N s. Read Movement.ask's `setup` refusal and why the asker's CP1a2 /
+   ORCA go-round did not happen.
+2. **Sumps Charlie_5 (terrain stall ~17 s on the screen march).** Stage Charlie at its tick-990 poses with the `screen` task, census
+   `noprog_s` per crew with buried ON, and read whether its seat was buried (Bar M's class) or off-island (Bar W's).
+3. **Watchdog v2.** Trip only when the CREW is off-island, never when the goal is unreachable from a crew on the mesh, plus a
+   per-crew trip cap. Re-judge on fresh seeds. Report unreachable seats to orders / brains instead.
+4. **The M5 leftovers:** holdway head-on, backout pose 10, the holdway web freeze. Also his HOLD verb's own goal in a doorway (FYI to
+   engage, which owns the hold order).
+5. Tooling: barm_w2_judge.py counts buried swaps, not watchdog trips. Give it `--touched=watch` like barm_judge.
+
+**Last commit:** see the tip check below. The FINAL REPORT itself is a docs-only commit on top of it.
+
 ### REPORT (2026-10-30 ~23:55): Bars W and H read; holdyield ships ON; the watchdog stays OFF; overstay built (OFF)
 
 **Frozen tree 5a55ccf71** (code = 1cced49dc; everything after it is docs): builder3 check **exited 0**, 29 targets all passed,
