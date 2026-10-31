@@ -164,6 +164,13 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   of his far-apart clicks were a real multi-squad lay and which this squadless case. Cause 2 (crews part 0.1-1 m at ticks 330-360 as the
   first laser shots land) open, time-boxed.
 
+- **R47.15 (2026-10-30 evening) Orders' O1: a merged control group lays as ONE body (ff65a5481); Bar O decides BOTH arms.** Orders'
+  read: Crossing x2 = the ctrl+4 squadless case (Wrenches as direct crew orders); Locks x2 = real two-squad lays (merged or box-select:
+  no key rows then). Lab, staged at his tick-0 starts: Crossing 61 -> 18 m, Locks (if merged) 36 -> 14 m. The `inp` row now covers
+  group save / add / recall (3046343c1). **Ruling:** the merged arm ships ON when it passes; `--group-merged=all` (the double file on every
+  2-3 squad click) is a DECIDING arm too, shipped ON if it passes the same lines (spread down AND all-in sooner-or-same; V1 veto and
+  street lines as guards), because his ask is per click, not per selection method. A fail on all-in alone goes to him in player terms.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
