@@ -92,6 +92,24 @@ orchestrator); N6 waits on his `inp` recording; stretch the laptop fps read at t
   stamp entry: his replays teleport every crew to his recorded spawn (R47.18), and his interactive starts already laid checked
   (the sync had landed); it changes headless / same-frame starts only. The sim-baseline may move (headless matches laid
   unchecked before): the full check says; the orchestrator adopts.
+- **N2 hypothesis (30 min, the orchestrator's): refuted.** Laptop, lock held, 4c01aa748: build 22.0 v 15.5 ms over 402 tables (C++
+  -29 %); READING the tables (duplicate + seven fields, x20, as brains do) 107.7 v 105.4 ms: equal. Not a reader / marshalling cost.
+  The in-run A/B gap stays unexplained; native_contacts OFF, written up.
+- **N4 the laptop fog's ~2 ms: CLOSED, not the picture.** R48.7's in-run layer `no_visdraw` (VisibilityField.draw_picture; perf_scene)
+  on his laptop (UHD 620, lock held, Crossing seed 101, gangs v syndicate, laptop preset, 3 x 8 s; load 1.1-2.9, 0.85-1.2 GB free,
+  five sessions): frame +5.68 / +7.88 / -6.08 ms over three runs (fogC/D/E): frame noise of about ±7 ms. The direct read
+  (--native-tick-profile 8-40 s, 39->32 crews, 2.91 ticks a frame): visfield 0.466 ms a tick = rays 0.376 + mark 0.039 + join
+  0.014 + finish (the picture: blits + upload) 0.009 + dispatch 0.008. The picture is ~0.03 ms a frame; the rays are ~1.1 ms a
+  frame. Evidence: references/round48/native/fogread-laptop/.
+- **R48.8 the fog's ray fan in C++: ON (f9dcfac8d).** visfield_native.cpp, seam NativeVisfield, `VisibilityField._rays` the
+  reference (look_from's loop moved verbatim). test_native_visfield (laptop, lock held): 1200 fans, 245017 rays, 191515 hits, 0
+  mismatches; GDScript 493.5 v C++ 443.3 ms (2.01 v 1.81 us a ray, -10 %): the engine's raycast and its hit Dictionary dominate, so
+  the saving is ~0.04 ms a tick at the cost cap, ~0.1 ms a frame on his laptop (not something he will feel). ON by R48.8's rule
+  (EQUAL and faster). The live guard lists it as held elsewhere (no fog field in the profile's match).
+- **Stretch, the laptop fps at the cost cap (gangs v syndicate, Crossing, laptop preset):** 76.5 ms a frame at ~26 crews alive
+  (fogC), 122.8 ms at 39->32 (fogE window): ~8-13 fps, 2.3-2.9 ticks a frame; game speed 0.95. Before / after this round's native
+  work: no feelable change (N2 OFF; R48.8 ~0.1 ms; the picture was never the cost). The lever left is the tick's scripts (25 ms of
+  the frame at 2.3 ticks): brains and the drive, not the fog.
 - **N1:** orders' O1 (27cda7b28, follow station by heading of travel) needs NO twin: the follow goal is `Orders.goal_of` /
   `goal_position`, GDScript on every path (decide_native only proposes FOLLOW; no C++ reads a follow's slot). Its stamp entry
   `follow_travel` is in its commit (lesson 354). Manoeuvre's Bar B and engage's Bar E11: nothing filed yet.
