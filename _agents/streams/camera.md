@@ -65,8 +65,44 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-30 evening, in progress).** Cause of both his notes found (K1 below); K2/K3 built behind `--camera-select-pan`
-(ON; `=off` = round 46's planner as on main); Bar K's instrument and workload written; numbers pending.
+**Report (2026-10-30 ~19:40, top = newest).** **Bar K READ: FAIL 29 of 33 (every deciding line passes; G2, G3, G4b, G8 fail).**
+Candidate e4a614eab GREEN builder3 (`make check exited 0`, 3525 passed / 0 failed, 28 ALL JUDGED; the checked tree was b1f08cc2d =
+e4a614eab + docs, with the two `.uid` files on disk, committed after in 2c60ccd93). Series 19:03-19:27 builder3, 72 deciding + 48
+guard runs an arm, 0 lost; verdict `references/round47/camera/bark-verdict-builder3-e4a614eab.txt`. Laptop (R47.24 G10): planner
+0.329 ms a frame, p99 0.80; whole rig BASE 0.852 v ARM 0.839 ms (UHD 620, laptop preset, NATIVE=off, lock-held, split 12801/12802,
+60 s each). **The fix stays ON on the branch as the default; whether it reaches main is the orchestrator's (lesson 339 / C47.2).**
+
+| Line | BASE (main) | ARM (fix) | |
+|---|---|---|---|
+| D1 selection > 30 m from the look, % of play | 11.9 | **6.9** (ratio 0.58) | PASS |
+| D2 a far pick framed (< 20 m), mean / p90 s | 4.92 / 10.0 | **0.73 / 0.95** | PASS |
+| D3 far picks never framed | 244 | **21** | PASS |
+| G1 hidden by a building while driving, s | 1085.9 | 845.7 | PASS |
+| **G2 none of his selection on screen, s** | 61.1 | 143.2 | **FAIL** |
+| **G3 hits on his units off screen, %** | 5.3 | 12.6 | **FAIL** |
+| G4a/c jerks; a pan not a cut (peak heights/s) | 2.56; 1.31 | 2.66; 4.02 | PASS |
+| **G4b snaps from a source but the pan** | 0 | 7 ('planner', in 72 runs) | **FAIL** |
+| G5 clicks on the aimed unit / slip p95 / held | 83.4 % / 29.5 px / 37.3 % | 77.9 % / 34.8 px / 27.8 % | PASS |
+| G6 action share / G7 inside a solid | 46.5 % / 0.11 s | 48.1 % / 0.15 s | PASS |
+| **G8 rear ambush first shot -> on screen (never = 20)** | 7.08 s (14 episodes, 4 never) | 8.56 s (11, 4 never) | **FAIL** |
+| G8 all lanes; retreat | 6.73; 6.33 s | 5.91; 6.04 s | PASS |
+
+**In his terms.** ON: when he picks a squad by its key, the camera sets off for it at once and is on it in under a second (main:
+5 s on average, and a quarter of far picks never reached). The cost is the squad he LEAVES: G2 and G3 come entirely from the split
+workload, the one built to flip between squads 140 m apart (ATTACK: none on screen 8.9 -> 7.1 s, hits off screen ~1.3 -> 1.6 %).
+On main the view never really left the old squad, so its fight stayed in view and the new one sat at the top edge ("on screen");
+ON, the old squad's fight is off screen once he has moved to the new one (that is what he asked for), and for ~0.15 s of each far
+pick neither squad is in view mid-pan. G8 is the same turn: the rear-lane latencies are the same in both arms with the same 4
+"never"; ARM had 3 fewer episodes, so the four 20 s nevers weigh more in the mean. G4b: 7 one-frame snaps tagged 'planner' in 72
+runs (BASE 0), the pan's tail as it hands over. **Clicks (the orchestrator's watch item):** 83.4 -> 77.9 % on the aimed unit; 60
+clicks of ARM's were aimed while a pan ran (BASE 6), slip p95 on those 464 px; so yes: if he clicks while the view is still
+sweeping to the squad he just picked, he misclicks more; a click after the view has arrived lands as on main (slip p95 34.8 v
+29.5 px overall).
+
+**Recommendation (lesson 339):** ship ON. What he asked for (pans at once, his squad stays framed) passes by 4-7x; the failed guards
+are the price of the camera following the squad he picks (G2/G3), a counting artefact (G8), and 7 snaps. `--camera-select-pan=off`
+is main's camera. Ship hash for the orchestrator: **2c60ccd93** (= e4a614eab's code, the green check's tree + the two .uid files)
+or e4a614eab itself.
 
 ### Plan (ordered; smallest foundation first)
 1. K1 tools: `tests/camera/replay_camera.gd` (his match replayed WITH his `sel` rows and a hand model), `tests/camera/k1_gap.py`
