@@ -1,0 +1,30 @@
+DECIDING runs (SPLIT + ATTACK): BASE 72 v ARM 72
+  new selections > 20 m off when picked: BASE 673 v ARM 862; hits on his units BASE 7610 v ARM 7085
+PASS  D1 his selection > 30 m from the look point, % of play (ARM <= BASE and ARM <= 10; the ratio reported): BASE 13.7 v ARM 7.1
+  (reported) D1 ratio ARM / BASE 0.52
+PASS  D2a a far new selection -> within 20 m, mean s (never = 10; ARM <= 1.0 and ARM <= BASE): BASE 5.06 v ARM 0.76
+PASS  D2b the same, ARM p90 <= 1.5 s: BASE 10.00 v ARM 1.07
+PASS  D3 far new selections never framed (ARM <= BASE): BASE 288 v ARM 24
+  (reported) split-terminus: far % 19.2 v 9.1; frame mean 5.62 v 0.77 s (n 139 v 177); never 67 v 6
+  (reported) split-locks: far % 13.0 v 6.4; frame mean 5.60 v 0.43 s (n 134 v 151); never 62 v 0
+  (reported) split-crossing: far % 19.7 v 12.8; frame mean 5.40 v 0.89 s (n 160 v 241); never 74 v 6
+  (reported) split-gorge: far % 36.8 v 8.8; frame mean 7.11 v 0.71 s (n 117 v 158); never 77 v 5
+PASS  G1 driving with half+ of his selection hidden by a building, s (ARM <= 1.1 x BASE + 5): BASE 1128.1 v ARM 1064.6
+PASS  G4a no automatic source but 'select' over BASE's worst + 0.5 jerks/min: BASE planner 2.63 v ARM planner 2.88
+  (reported) the selection pan ('select'): jerks/min 1.89 v 7.81; snaps 13 v 9927
+PASS  G4c a pan, not a cut: the view's own fastest move, heights/s (ARM peak <= 4.5) and seconds over 4.5 (ARM <= BASE + 1): BASE 1.31 / 0.0 s v ARM 4.02 / 0.0 s
+FAIL  G4b snaps from any automatic source but 'select', ARM = 0: BASE 0 v ARM 1
+PASS  G5a clicks on the aimed unit % (ARM >= 70: Bar C1's G2a): BASE 78.4 v ARM 72.8
+FAIL  G5b slip p95 px (ARM <= 40): BASE 29.4 v ARM 49.3
+PASS  G5c held % (ARM <= BASE + 2): BASE 36.3 v ARM 27.2
+  (reported) clicks aimed while the selection's pan ran: BASE 6 v ARM 96; their slip p95 69.4 v 424.4 px
+PASS  G6 action share % (ARM >= BASE - 5): BASE 46.9 v ARM 46.8
+PASS  G7 camera inside a solid, s per run (ARM <= BASE + 1): BASE 0.09 v ARM 0.16
+PASS  G9 split-terminus runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 split-locks runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 split-crossing runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 split-gorge runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 attack-terminus runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 attack-crossing runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 no SCRIPT ERROR in any run log: BASE - v ARM 0 logs
+VERDICT Bar K: FAIL (18 of 27 lines)

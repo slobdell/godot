@@ -407,10 +407,13 @@ static func route_arms() -> Dictionary:
 			"turns": ManoeuvreCensus.report(), "behind_asked": behind_asked, "behind_reverses": behind_reverses,
 			"behind": Manoeuvre.report(), "post_faces_kept": post_faces_kept, "face_plans": Manoeuvre.face_plans,
 			"face_plan_legs": Manoeuvre.face_plan_legs, "face_none": Manoeuvre.face_none, "kturn_away": kturn_away,
-			"kturn_circle": kturn_circle}
+			"kturn_circle": kturn_circle, "buried_swaps": buried_swaps, "noprogress": NoProgressWatch.report(), "holdyield_vetoes": holdyield_vetoes}
 
 
 static func reset_route_arms() -> void:
+	buried_swaps = 0
+	holdyield_vetoes = 0
+	NoProgressWatch.reset()
 	ManoeuvreCensus.reset()
 	Manoeuvre.reset()
 	kturn_goal_moved = 0
@@ -650,6 +653,9 @@ var _fire_checked_tick := -1000
 
 func _init(controller: OrderController = null) -> void:
 	ctl = controller
+	if NoProgressCensus.on:
+		NoProgressCensus.install()  # round 47 (Bar M's instrument, measurement only): it samples every mover from the physics frame
+	NoProgressWatch.install()  # round 47 (manoeuvre M2): the no-progress watchdog's sampler (returns at once while `noprogress` is off)
 
 
 # ---- Round 10 (item 1): the wall-contact instrument (game/ai/wall_contact.gd) -------------------------------------
@@ -2567,6 +2573,8 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 				continue
 			if _chain_far(chain, point):
 				continue
+			if _holdyield_veto(point):
+				continue
 			if not _free_spot(point, String(tank.name), other):
 				continue
 			if not _yield_fits(point):
@@ -2595,6 +2603,8 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 		if _flat_distance(point, from) < _flat_distance(here, from):
 			continue
 		if _chain_far(chain, point):
+			continue
+		if _holdyield_veto(point):
 			continue
 		if not _free_spot(point, String(tank.name), other):
 			continue
@@ -2627,6 +2637,44 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 		return true
 	if not chain.is_empty():
 		chain_refusals += 1
+	return false
+
+
+## Round 47 (manoeuvre M5, `--traffic-on=holdyield` until judged; engage's Bar L1c seed 12328, Locks): A CREW ON HIS POST NEVER GIVES WAY
+## TOWARD THE ENEMY. His gang tank held the post his move left it at; a squadmate crossing its lane asked it to give way, the yield took
+## a spot 10 m south, straight at the enemy gun 12 m off, and HOLD's return (arrival radius 6) parked it 6 m short of his post. With
+## the rule a crew holding his post (TankBrain._his_post) skips any spot more than HOLDYIELD_SLACK_M closer to an enemy hull within HOLDYIELD_RANGE_M than
+## where it stands, and any spot more than HOLDYIELD_POST_M from his post; with no spot left it gives way in place (the existing hold). Any other crew, and OFF: today's spots. The yield is
+## twinned in C++ (native_yield), so ON runs the GDScript yield (Traffic._chain_native) until native twins it.
+const HOLDYIELD_SWITCH := "holdyield"
+const HOLDYIELD_SLACK_M := 0.5
+const HOLDYIELD_RANGE_M := 60.0
+const HOLDYIELD_POST_M := 8.0
+static var holdyield_vetoes := 0
+
+
+func _holdyield_veto(point: Vector3) -> bool:
+	if Traffic.off(HOLDYIELD_SWITCH):
+		return false
+	var brain := ctl as TankBrain
+	if brain == null or not brain._his_post or ctl.tanks_root == null:
+		return false
+	# Never far off his post either (12328 tick 96: with the near spots refused, the yield took `spot(24,0)`, 24 m on, and its drive
+	# there ran south past the gun): a crew on his post gives way within HOLDYIELD_POST_M of it, or in place.
+	if _flat_distance(point, brain._his_post_at) > HOLDYIELD_POST_M:
+		holdyield_vetoes += 1
+		return true
+	var here := ctl.tank.global_position
+	# Every live enemy hull within HOLDYIELD_RANGE_M (the gun's target alone flickers between shots: the first build stepped toward
+	# the gun again the moment its target read empty, 12328 tick 95). Which way to step aside only, never a target or a sight line.
+	for other in ctl.tanks_root.get_children():
+		var enemy := other as Tank
+		if enemy == null or not enemy.is_alive() or enemy.team == ctl.tank.team \
+				or _flat_distance(enemy.global_position, here) > HOLDYIELD_RANGE_M:
+			continue
+		if _flat_distance(point, enemy.global_position) < _flat_distance(here, enemy.global_position) - HOLDYIELD_SLACK_M:
+			holdyield_vetoes += 1
+			return true
 	return false
 
 
@@ -5660,6 +5708,173 @@ static var shortfwd_ticks := 0  # ticks the forward arc replaced the circle rule
 
 static func shortfwd_on() -> bool:
 	return not Traffic.off("shortfwd")
+
+
+## Round 47 (manoeuvre M2, R47.11; Bar M amendment 1; Bar M PASSED: ON by default, `--traffic-off=buried` the escape): A STATION PINNED IN A BUILDING FOLLOWS THE SQUAD'S TRACK. His
+## Locks fire truck (Burners2_4, 2026-10-30 15:49): its squad's travelling station slid into the 2.8 m gap between the city block at
+## (-30, 42) and the container_40 at (-30, 66), then into the block; the brain grounds a station to the NEAREST standable point, which
+## stayed pinned at the container's east end up to 9.9 m from the station, so the crew drove its nose into the block and stood
+## "arrived" there while its squad drove on, then reversed out for 2.5 s (M1's trace). A station the grounding moves more than
+## BURIED_M while the grounded point stays PINNED (see the pin test in buried_station) is instead taken on the squad's own route (its transit, the anchor's track: navmesh by construction) at the point nearest
+## the station, no further back than BURIED_BACK_M behind the anchor's progress, grounded for this hull: the crew follows its squad
+## through the narrow place, as a column does. Any other station (and OFF, and a crew with no squad in transit): `grounded`, today's.
+## Called from TankBrain's transit block (the one granted line, R47.11); GDScript on every path (native's feed passes the raw station).
+const BURIED_SWITCH := "buried"
+const BURIED_M := 4.0
+const BURIED_BACK_M := 15.0
+## ...or when it pulls the station back along the squad's way by more than this (metres) INTO a big obstacle: the point BURIED_AHEAD_M
+## further along the way more than BURIED_DEEP_M off the navmesh (itself eroded 2 m from every wall).
+const BURIED_LAG_M := 1.0
+const BURIED_AHEAD_M := 6.0
+const BURIED_DEEP_M := 1.5
+## The track point is taken this far on along the route from the point nearest the station (metres).
+const BURIED_LEAD_M := 8.0
+## A crew stays on the track while its station keeps grounding within this of where it was pinned (the corner did not move).
+const BURIED_HELD_M := 1.5
+static var buried_swaps := 0  # brain thinks a buried station was taken on the squad's track (measurement)
+## Where each crew's station was last grounded while buried (Tank instance id -> Vector3; never a name: names repeat in a rematch,
+## C34.6). Scratch, not a Movement member (exec_fields.h); cleared when it reaches BURIED_KEEP, pruned when the crew's squad stops.
+static var _buried_at := {}
+## Per crew (instance id): [grounded, station, tick] a snapshot about a second old (the pin test). Scratch like _buried_at.
+static var _buried_snap := {}
+const BURIED_KEEP := 256
+const BURIED_PIN_TICKS := SimClock.TICK_RATE
+const BURIED_PIN_M := 1.0
+const BURIED_TRAVEL_M := 3.0
+## Measurement only: BURIED_TRACE=on in the environment prints a BURIED line per swap (the crew, why, the gap and the lag).
+static var buried_trace := OS.get_environment("BURIED_TRACE") == "on"
+
+
+## Metres along `route` (a polyline of Vector3) to the point nearest `here`.
+static func _route_s(route: Array, here: Vector3) -> float:
+	var best := INF
+	var best_s := 0.0
+	var along := 0.0
+	var p := Vector2(here.x, here.z)
+	for i in range(1, route.size()):
+		var a := Vector2((route[i - 1] as Vector3).x, (route[i - 1] as Vector3).z)
+		var ab := Vector2((route[i] as Vector3).x, (route[i] as Vector3).z) - a
+		var length := ab.length()
+		if length < 0.001:
+			continue
+		var t := clampf((p - a).dot(ab) / (length * length), 0.0, 1.0)
+		var d := p.distance_squared_to(a + ab * t)
+		if d < best - 1e-6:
+			best = d
+			best_s = along + length * t
+		along += length
+	return best_s
+
+
+static func _deep(tank: Tank, point: Vector3) -> bool:
+	var near := Pathing.closest_point(tank.get_world_3d().navigation_map, point, "buried")
+	return Vector2(near.x - point.x, near.z - point.z).length() > BURIED_DEEP_M
+
+
+## The point `s` metres along `route` (its end beyond it).
+static func _along(route: Array, s: float) -> Vector3:
+	var along := 0.0
+	for i in range(1, route.size()):
+		var a: Vector3 = route[i - 1]
+		var b: Vector3 = route[i]
+		var length := _flat_distance(a, b)
+		if along + length >= s and length > 0.001:
+			var at := a.lerp(b, clampf((s - along) / length, 0.0, 1.0))
+			return Vector3(at.x, 0.0, at.z)
+		along += length
+	var end: Vector3 = route[route.size() - 1]
+	return Vector3(end.x, 0.0, end.z)
+
+
+static func buried_on() -> bool:
+	return not Traffic.off(BURIED_SWITCH)
+
+
+static func buried_station(tank: Tank, station: Vector3, grounded: Vector3) -> Vector3:
+	if not buried_on():
+		return grounded
+	var key := tank.get_instance_id()
+	var pinned: Variant = _buried_at.get(key)
+	# Amendment 1 (Bar M, before numbers): a deep grounding alone is routine in a big group click (a station in a building on a narrow
+	# street slides along the wall and the crew keeps up: the dev cell's 609 swaps, median 6 m); his corner is PINNED: the grounded
+	# point stays put while the station travels on. So the distance trigger also needs the grounding to have moved <= BURIED_PIN_M
+	# while the station moved >= BURIED_TRAVEL_M since a snapshot at least BURIED_PIN_TICKS old.
+	var now := Engine.get_physics_frames()
+	var snap: Array = _buried_snap.get(key, [])
+	var stuck := not snap.is_empty() and now - int(snap[2]) >= BURIED_PIN_TICKS \
+			and _flat_distance(grounded, snap[0]) <= BURIED_PIN_M and _flat_distance(station, snap[1]) >= BURIED_TRAVEL_M
+	if snap.is_empty() or now - int(snap[2]) >= 2 * BURIED_PIN_TICKS:
+		if _buried_snap.size() >= BURIED_KEEP:
+			_buried_snap.clear()
+		_buried_snap[key] = [grounded, station, now]
+	var buried := _flat_distance(station, grounded) > BURIED_M and stuck
+	# Sticky: the element can publish the pinned corner itself as the station (Locks tick 180: its converge rebuilt the crew's
+	# place there), which grounds to itself. A station grounded back within BURIED_M of where this crew was pinned is still buried.
+	var held := pinned is Vector3 and _flat_distance(grounded, pinned as Vector3) <= BURIED_HELD_M
+	if not held:
+		_buried_at.erase(key)
+		pinned = null
+	if not buried and not held and _flat_distance(station, grounded) <= BURIED_LAG_M:
+		return grounded
+	var mover := of(tank)
+	var brain := mover.ctl as TankBrain if mover != null else null
+	var elements: Variant = Elements.of_match(brain.game_match) if brain != null and brain.game_match != null else null
+	var mine: Variant = elements.of(String(tank.name)) if elements != null else null
+	if mine == null or not mine.in_transit():
+		_buried_at.erase(key)
+		return grounded
+	var route: Array = (mine.transit as Dictionary).get("route", [])
+	if not buried and not (pinned is Vector3):
+		# The early sign (Locks tick 120, 2.4 m): the grounding pulls the station BACK along the squad's way, not aside (a station
+		# grounded round the container_20 beside his spawn row was pulled aside, lag ~0, and must stay today's).
+		# Narrowed (lesson 348): and only INTO a big obstacle: a point BURIED_AHEAD_M further along the squad's way lies deeper than
+		# BURIED_DEEP_M off the navmesh (the station itself still on a box's edge at Locks tick 113, already heading into the gap). A thin piece the station only clips (the Crossing bridge mouth's
+		# barricade, gap 1.4 m: the swap there sent a gang IFV 5 m aside into a 3 s k-turn, the staged lab) stays today's.
+		var way := route_way(route, station)
+		buried = Vector2(station.x - grounded.x, station.z - grounded.z).dot(way) > BURIED_LAG_M \
+				and _deep(tank, station + Vector3(way.x, 0.0, way.y) * BURIED_AHEAD_M)
+		if not buried:
+			return grounded
+	if buried:
+		if _buried_at.size() >= BURIED_KEEP:
+			_buried_at.clear()
+		_buried_at[key] = grounded
+	# Never behind the crew's own progress along the track (a point behind it is a reverse, the start-row read) nor more than
+	# BURIED_BACK_M behind the anchor's.
+	var from_s := maxf(float((mine.transit as Dictionary).get("s", 0.0)) - BURIED_BACK_M, _route_s(route, tank.global_position))
+	var best := INF
+	var on_track := Vector3.INF
+	var along := 0.0
+	var p := Vector2(station.x, station.z)
+	for i in range(1, route.size()):
+		var a3: Vector3 = route[i - 1]
+		var b3: Vector3 = route[i]
+		var a := Vector2(a3.x, a3.z)
+		var ab := Vector2(b3.x, b3.z) - a
+		var length := ab.length()
+		if length < 0.001 or along + length < from_s:
+			along += length
+			continue
+		var t := clampf((p - a).dot(ab) / (length * length), clampf((from_s - along) / length, 0.0, 1.0), 1.0)
+		var q := a + ab * t
+		var d := p.distance_squared_to(q)
+		if d < best - 1e-6:
+			best = d
+			on_track = Vector3(q.x, 0.0, q.y)
+		along += length
+	if on_track == Vector3.INF:
+		return grounded
+	# Led BURIED_LEAD_M on along the track: the point beside a buried station is abeam a crew already turning into the gap (Locks
+	# tick 107: a full-lock reverse to come round onto it); a point further on is nearer the nose.
+	var lead_s := _route_s(route, on_track) + BURIED_LEAD_M
+	on_track = _along(route, lead_s)
+	buried_swaps += 1
+	if buried_trace:
+		print("BURIED %d %s at (%.1f, %.1f) station (%.1f, %.1f) grounded (%.1f, %.1f) gap %.2f lag %.2f held %s track (%.1f, %.1f)" % [
+				Engine.get_physics_frames(), tank.name, tank.global_position.x, tank.global_position.z, station.x, station.z, grounded.x,
+				grounded.z, _flat_distance(station, grounded), Vector2(station.x - grounded.x, station.z - grounded.z).dot(route_way(route, station)),
+				str(pinned is Vector3), on_track.x, on_track.z])
+	return SlotGround.standable_for(tank, on_track, SlotGround.envelope_of(tank.unit_id))
 
 
 ## Is `goal` a player's short move for this wheeled crew: his direct order (TankBrain._his_order), within SHORTFWD_RADII turning

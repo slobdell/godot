@@ -88,7 +88,7 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 - **C47.10 The laptop is the test bed (memory).** Mapkit's pieces and camera's planner state their laptop cost (UHD 620, under the lock);
   an expensive look ships as a hardware-preset knob.
 - **C47.11 Seeds:** manoeuvre 12401-12496, route 12501-12596, engage 12601-12696, orders 12701-12796, camera 12801-12896, mapkit
-  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). Next free at the close: 13001.
+  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). **Extra blocks:** manoeuvre 13001-13024 (Bar H, R47.30); engage 13025-13120 (E9, R47.37). Next free: 13121.
 
 **Rulings at prep:**
 - **R47.1 (2026-10-30 evening, his pick) Seven streams this round, the map kit included.** He picked it knowing the laptop's RAM is short
@@ -99,6 +99,243 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   sooner-or-same (R46.36: packing the file made the group LATER; lesson 352).** `--group-pack` is not the fix by default; orders finds the
   smallest change that brings the squads' spots together without slowing the arrival. A merged selection (his "grouped them into a single
   squad 4"; the selection row still `["Spears",""]`) is ONE squad to his eye: orders reads whether the merge should lay as one.
+
+- **R47.5 (2026-10-30 evening) Route's R0 seam merged: main 277b353ad = + ba53581f7 (GREEN builder3 3520/0, 28 ALL JUDGED); main
+  INHERITS its check.** `Pathing.reroute(crew: Node, reason: StringName) -> bool`. Manoeuvre merges main for M2.
+- **R47.6 Locks' detour is the brain's RETREAT under his order, not the route (route's R1, builder3, staged from his census at tick
+  1170).** Hunters_4 at 7 % hull (15/220) under CRITICAL_HP with threats seen: RETREAT scores 0.99 and beats his attack; `withdraw_point`
+  hands it a move_to ~20 m from the threats, north, again and again. Its element slot was right all along. The route itself was at most
+  1.036x the navmesh shortest in 298 re-plans; the lock-v-west-bridge choice was a near-tie (176.6 v 181.4 m) chosen while Lances_3 sat at
+  x ~ -10, which then drove 35 m west. Orders' O3: his click took at tick 1462 (a multi-crew element runs attacks as attack_move).
+  **Ruling: his direct order to a crew beats RETREAT (memory: his direct order wins).** Engage's item E7 (ahead of E3), ON with an `=off`
+  escape, symmetric only for orders the CPU's commander gives as "direct"; a crew pressing on hurt may say so through the existing feed
+  (one additive line kind, C47.5). Which way a retreat goes stays engage's (`withdraw_point`).
+- **R47.7 Route's R2 becomes: guard tests (his Locks geometry takes the west bridge; Crossing / Gorge crossing choice; Terminus
+  unchanged) + re-plan a committed route when its goal (a moving target) has moved enough that the route is no longer near-shortest.**
+  Small, ON, `=off`; then R5 doors.
+- **R47.8 Replays leave his match within seconds (engage, builder3, 8edebac1e, n 1 a arm): `REPLAY_SPAWN {"placed":0,"recorded":37}`,
+  divergence FAIL, every crew > 3 m by 19 s on Crossing; same with `--lane-clear` on/off and the gun twin off.** Native's N0, ahead of
+  every other native item: every stream's acceptance read depends on it. Until fixed, acceptance reads are STAGED from his census
+  (route's `make route-trace` STAGE_TICK, engage's `make engage-e1-stage`) and say so.
+- **R47.9 Native's N2 seam = `TacticsFormation.place` (C++ twin behind `BrainSwitches.native_place`, one call site at the top of
+  place(), GDScript the reference), approved if manoeuvre does not change place / seat this round; else after its freeze.** Profile:
+  native probe 128f9b2a9, builder3 light, his Crossing 112 s, native ON, n 1: ElementPlan.build 1.05 ms a tick, no hot body but place
+  (0.39 ms, 3.8 calls a tick). Proof: randomized + every place() call captured from his recordings, EQUAL, the twin test in check.
+- **R47.10 Mapkit's looks page is up for him (P1, his gate):** https://claude.ai/artifact/WSBf2Wmmar3BSocBqqrRpm (picks in its `db`:
+  `picks/<piece>`, `lines/<id>`). An overpass needs a deck cutaway (camera's code, later). builder3 runs Xorg on :1: render targets
+  need `DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority` until native's remote.sh detects it.
+
+- **R47.11 (2026-10-30 evening) GRANT manoeuvre ONE line in `game/ai/tank_brain.gd`'s transit block (~:1210, the
+  `context["goal"] = SlotGround.standable_for(...)` call site), additive, behind `--traffic-off=buried`.** Manoeuvre's M1 (2e0599cbe):
+  Locks Burners2_4's travelling station slid into the 2.8 m gap between the block (-30, 42) and container_40 (-30, 66); grounding moved
+  it up to 9.9 m to the container's east end, so the crew drove nose-in and sat while its squad drove on. Fix: a station the grounding
+  moves > ~4 m (buried) is replaced by the squad's own route at that point; the helper lives in manoeuvre's files. Engage owns the rest
+  of tank_brain (CLEAR_LANE, target choice, E7's RETREAT): told. If native's decide grounds stations in C++, the twin rule (C47.6) applies.
+  Manoeuvre does NOT change place / seat this round, so native's R47.9 twin goes ahead now.
+
+- **R47.12 (2026-10-30 evening) Route's R2b DROPPED (lesson 352: it would change nothing he saw); R3 moot; R4 waits on engage's E7;
+  R5 doors next, then R6 a detour census.** R2a done (`tests/test_pathing_crossings.gd` 7/0 builder3: his Locks click 135.2 m west
+  bridge v lock 144.6; Crossing / Gorge short crossing; Terminus 86.0 m straight). R2b's measure (his census ticks 1710-2220, builder3):
+  the lock was the shortest at every tick but 1800-1830 (177.0 v 181.2, while RETREAT parked it); movement already re-plans a sliding
+  goal (GOAL_TUBE_SHARE). **C47.8's shape (route + mapkit agree):** each door = a NavigationLink3D on its OWN navigation layer bit;
+  `Pathing` builds the mask = layer 1 | doors open now AND at the crew's estimated arrival (`BlastDoors.is_open(id, tick)`); native
+  pathing passes the same mask before doors ship ON in a real arena (C47.6) — until then a path that bypasses Pathing never uses a door.
+  **R6:** route/shortest ratio for every crew's route over fresh full fights (both sides), so any real detour class is found by
+  measure, not by his eye.
+
+- **R47.13 (2026-10-30 evening) Engage's E1: his side's silence is mostly the aiming fix, and 40 % of that is a fix RESTARTED on a
+  target swap; GRANT engage `game/combat/engagement.gd`'s `Lay` (the carry-over) for E2a.** STAGED from his census, builder3, 8e51344cc
+  (= e306ce27f's code + traces), native on, six 14 s windows over his four matches, n 1 a window. Loaded crews holding fire with an
+  enemy in their own range: his side 330 s = fix 145 (44 %), friend in lane 74 (23 %), no own line 59 (18 %), other 41, unseen 11; CPU
+  367 s = no line 136 (37 %), fix 75 (20 %), lane 73 (20 %), other 79. His 23 of 58 crews in range > 2 s never fired in the window (40 %)
+  v the CPU's 12 of 62 (19 %). Fix time by design scales with distance over the crew's own sight (gang War Rig 60 m: median 1.69 v
+  1.10 s CPU); **the fault: 58 of his 145 s is a fix restarted from zero when the gun swaps targets (`Lay.engage` resets on any new
+  name, even a squadmate of the old target on the same bearing).** Order: **E2a** the lay carries over on a swap to a target on nearly
+  the same bearing (own switch, own Bar E line; the fix belongs in `Lay`, hence the grant, not a wrapper in gunnery); **E2b** under his
+  attack, "no line" goes to a nearby spot WITH a line; then **E7** (R47.6). The gun runs in C++ (NativeExec / NativeGun), so E2a needs
+  native's twin before ON (C47.6). Gang sight/range v syndicate is balance (waits; not this round).
+
+- **R47.14 (2026-10-30 evening) Native merged: main 3f9180d2f = + dfb6a2567 (GREEN builder3 3518/0, 29 ALL JUDGED: remote.sh seeds a
+  fresh builder folder from the box's main, `replay-pytest` in make check, playtest-report reads `inp` rows). Main CHECK needed (route's
+  seam + native together): batched with route's R2a+R5 merge.** N0 cause 1 (native, Crossing, builder3 light, candidate unchecked): his
+  "single squad 4" was **ctrl+4, a control-group save that writes no recording row**; it left the Wrenches squadless, so his click sent
+  Spears as a squad task and the Wrenches as direct crew orders (source "player") while the replay sent both as squads. With the fix every
+  crew is exact to tick 330. **Relayed to orders:** C47.4's `inp` must cover control-group save / recall; and before O1 is sized, which
+  of his far-apart clicks were a real multi-squad lay and which this squadless case. Cause 2 (crews part 0.1-1 m at ticks 330-360 as the
+  first laser shots land) open, time-boxed.
+
+- **R47.15 (2026-10-30 evening) Orders' O1: a merged control group lays as ONE body (ff65a5481); Bar O decides BOTH arms.** Orders'
+  read: Crossing x2 = the ctrl+4 squadless case (Wrenches as direct crew orders); Locks x2 = real two-squad lays (merged or box-select:
+  no key rows then). Lab, staged at his tick-0 starts: Crossing 61 -> 18 m, Locks (if merged) 36 -> 14 m. The `inp` row now covers
+  group save / add / recall (3046343c1). **Ruling:** the merged arm ships ON when it passes; `--group-merged=all` (the double file on every
+  2-3 squad click) is a DECIDING arm too, shipped ON if it passes the same lines (spread down AND all-in sooner-or-same; V1 veto and
+  street lines as guards), because his ask is per click, not per selection method. A fail on all-in alone goes to him in player terms.
+
+- **R47.16 (2026-10-30 evening) The replay limit: his round-46 matches replay EXACT (0.0 m) through ~11 s; past it a replay is a
+  STAGED read, not his match.** Native N0 (stream/native 91f0d9900; builder3): cause 1 (ctrl+4 squadless) fixed, every Crossing crew
+  exact to tick 330; cause 2 open: crews part between ticks 330-360 on Crossing and Locks as the syndicate's first lasers land (13 s worst
+  crew 8.5 m, 15 s 20 m). Ruled out on builder3: headless v windowed v free frame rate, compiler / libm (gcc 13.3 / glibc 2.39 both),
+  wall-clock reads, frame-keyed caches. Untested: his laptop (ONE lock-held laptop replay allowed) and the laser / shield path across CPUs.
+  Next: the `rules` stamp carries every ON rule (Terminus parts at 12 s because only lane_clear is stamped). `native_place` defaults ON
+  only after its proof is EQUAL on every captured place() call.
+
+- **R47.17 (2026-10-30 evening) Engage's E2a (lay carry) and E2b (attack line): no measurable effect -> DROPPED, code removed (as
+  R46.22); native's E2a twin stops. E7 now, then E3 (pot shots) behind a switch, with a player-terms question to him.** Dev only,
+  builder3, gun C++ paths off in every arm: attack-shot probe 7001-7012 n 12 paired, held_line_s 23.41 today v 23.29 carry (-0.12, se
+  0.12) v 23.32 line; first hit 3.51 s all arms; six staged windows within noise. Why: only 18 of his 62 in-progress swaps had the new
+  target within 10 deg of the barrel (median swing 21 deg); 87 of his 145 s acquiring are FIRST fixes, by design (distance over the
+  crew's own sight; War Rig 60 m). Fire discipline 7 %, aim 5 % of his held time. **So the measured core of "took forever to pick a
+  target" is acquisition time itself:** E3's dial (a quicker, less accurate first shot while laying) is his call, asked with numbers.
+  (R47.13's "58 of 145 s a restart" counted restarts of any kind; the carry only helps near-bearing ones.)
+
+- **R47.18 (2026-10-30 evening) The army layout at match start depends on WHEN the first navigation sync lands (CP43.0 in
+  `tests/replay_orders.gd`: an interactive start and a headless one reach the bake at different moments; ARMY_LAYOUT_UNCHECKED), so a
+  live start is wall-clock dependent; the replay teleports crews to his recorded spawn to cover it.** His four round-46 recordings all
+  replay at placed 0, so it is not where R47.16's cause 2 enters. No change this round (it moves every spawn: sim-baseline). **Next round
+  (netplay / determinism):** `ArmyLayout.deploy`'s standable queries in `game/tactics/army_layout.gd` made timing-independent (always
+  unchecked, or always after the first sync), with the sim-baseline adopted twice.
+
+- **R47.19 (2026-10-30 evening) Native's N4 approved: ElementSituation.build's member loop + intel-contact loop + centre / heading /
+  strength sums as ONE C++ call behind `BrainSwitches.native_esit`** (GDScript the reference; shots_into, terrain, the lambdas and the
+  return stay GDScript). Profile: his Crossing 112 s, builder3 light (loaded, tick 11.3 ms), probe c22464f11, n 1: build 0.54 ms a tick
+  (0.26 a call), ~0.3 ms its own body. Proof as place (VERIFY on his four + native-verify-scenarios + random); ON if faster or neutral.
+  From its merge those loops are frozen-by-twin: engage / manoeuvre change them through native (told).
+
+- **R47.20 (his pick) Snap shots ship ON once their bar passes.** Engage's `--pot-shot` (after 0.4 s of the fix, inside the weapon's
+  effective band, aim off up to 2.5 m shrinking as the fix completes; no hit roll): native's NativeGun / NativeExec twin first (C47.6),
+  then Bar E3 filed before numbers on engage's seeds, ON when it passes. Symmetric (the CPU snaps too).
+- **R47.21 (his pick) The group click: "columns only at the end".** Orders' Bar O FAILED as filed (0b1caafa2, 120 three-squad pairs:
+  median spread 71.3 v 71.3 m; the lay refused on every street / bridge map; the 2-squad cells errored: no probe army, lesson 350); O1 v2
+  (step-back + real 2-squad army, dev 7001-7002) brought squads together (2 squads 14 v 33-41 m) but friendly contacts rose 5-20x. **His
+  pick: squads travel as today and form side by side only for the last stretch.** Built by ORDERS (manoeuvre is on Bar M): GRANT orders
+  `game/tactics/element_plan.gd`'s arrive-file functions (ARRIVE_FILE / D3b, OFF since R35.41) for this, manoeuvre's probes as guards;
+  Bar O2 on 12749-12796, filed fresh before numbers (deciding: spread for one click AND all-in sooner-or-same; guard: contacts within
+  x1.25 + 5). O1 stays OFF on stream/orders (d9151bad5) so O4 / O5 / O6 can merge.
+- **R47.22 (his words) A skirmish army is capped by COST, not by vehicle count: `make skirmish` assumes the garage's default credits
+  (1000) for both sides.** Engage's E6 read: the laptop preset's 20-vehicle cap (C25.6) cut a gang army to 2490 of 5000 points while the
+  syndicate's 17 vehicles fit whole. Built by ORDERS: GRANT `game/modes/skirmish_mode.gd`'s lineup / cap code and the Army trim it calls.
+  The laptop preset's fps with a full cheap-swarm army (~40 vehicles) is read under the lock (C47.10); if it is too heavy for the UHD 620
+  the fallback goes back to him in player terms, never a silent cut.
+- **R47.23 (his yes) Render targets may use builder3's logged-in Xorg desktop (:1) for ~1 min at a time** while builder0 is down
+  (orders' O5 screenshots; mapkit's gallery). One window at a time; close it after.
+- **R47.24 Camera's Bar K amendment 1 (G10 = Bar C1's G8 as it said it copied: planner <= 0.5 ms a frame, p99 <= 1.5; plus whole rig ARM
+  <= BASE + 0.05 ms) ACCEPTED.** A copying slip, fixed to the line the filing named; the laptop reads that prompted it are reported
+  beside the verdict (rig 0.858 / 0.845 v 0.812 / 0.866 ms; planner 0.339 / 0.314 v 0.316 / 0.342, p99 0.76 / 0.77 v 0.69 / 0.80).
+- **R47.25 Route's session ended (FINAL REPORT on main 71991404b); GRANT manoeuvre `Pathing.reroute`'s body** for the CPU's ambush
+  squad on a disconnected navmesh sliver (his Crossing, Rust_Hunters at (-30, -8), 24+ s; stream/manoeuvre 4ab917680's staged test RED):
+  a reroute whose path ends far short of a goal reachable nearby plans from the nearest point of the goal's (or the squad's) connected
+  region. Main = + route d847b77fd (GREEN 3534/0) + its tip (tests/docs): one main check batched with native's candidate.
+
+- **R47.26 (his pick) The cost cap ships on the laptop too ("Full cost cap now"); orders' NEXT item is the HUD / controls cost with
+  big squads.** Orders' read (laptop UHD 620, lock, his Crossing seed 101, laptop preset, ABBA n 2, 2a1e36a22 + O1 v3 OFF): count cap
+  gangs 20 (2490) v syndicate 17 (5000), frame 52-57 ms (~18 fps), speed 0.95-0.97; cost cap gangs 27 (3435) v 12 (3430), frame 86-123
+  ms (~8-12 fps), p95 110-196, speed 0.79-0.93; HUD / controls 10.7-13.9 v 5.7-6.3 ms (squads of ~7), ticks a frame 2.5-2.9 v 1.6-1.9
+  (compounding), GPU ~equal. The controls' per-frame cost with squads past five goes ahead of O1 v3 / Bar O2; native may help (C++).
+
+- **R47.27 Native: the big-army sim cost is native's as much as orders' HUD.** Native's sim-profile (gangs v syndicate 3500 a side, 34 v
+  12 at start, Crossing 90 s, seed 3, builder3 light, place ON, native ON, n 1): tick 7.43 ms with ~46 crews; brain/think 3.16 ms
+  (situation 1.00, contacts 0.39; t.poll 0.40 + rate_progress 0.26 + incoming 0.18), brain/execute 2.57 (native exec already), tank 0.76
+  (drive 0.49), wall_contact 0.31. On his laptop (~2.4x, estimated) ~18 ms of sim a tick, ~45-52 ms a frame at 2.5-2.9 ticks: the sim
+  alone caps him near 10 fps. **GO, after bar-blocking twins:** (a) re-price native_matchups / native_scan at ~46 crews (ON if faster or
+  neutral, with proof); (b) t.poll's order-progress pieces into the native controller (twin proof on his four); (c) report-only read of
+  the ticks-a-frame cap.
+  **(c) read (native, report only):** `common/max_physics_steps_per_frame=3`, 30 ticks/s. **Laptop = ~3.0x builder3 MEASURED** (his
+  Crossing .perf, laptop preset, e306ce27f: tick 17.0 ms mean v builder3's replay 5.5-5.9, n 3). Frame model F = R / (1 - T/33.3): at
+  the cost cap T ~22 ms, R ~27 ms -> F ~79 ms (12.6 fps, ~2.4 ticks a frame), matching orders' read. A cap of 2 gives ~14 fps for a 0.94
+  clock: **no cap change (ruled).** Each ms off T saves ~2.4 ms a frame, each ms off R ~3 ms.
+
+- **R47.28 (his ask, 2026-10-30 evening) Mapkit tests Material Maker for the kit's shared trim sheet and presents it to him on a
+  looks page.** The orchestrator's read of the repo (github.com/RodZill4/material-maker, 7d6daae 2026-10-24, MIT, Godot 4.7 like ours):
+  426 nodes (bricks, scratches, dirt, bevel, runes, glyphs, noises); a command-line export (`--export -t "Godot/Godot 4 Standard" -o <dir>
+  <file.ptex>`) writes albedo / ORM / emission / normal PNGs + a .tres; it renders on the GPU (a real display: builder3's Xorg :1 under
+  R47.23, or the laptop under the lock). Our city blocks are texture-free world-space shaders; this is for the NEW kit pieces only.
+  **Item P1b:** pin Material Maker at a commit OUTSIDE the repo (`~/tools/material-maker`, its own folder; read its export path before
+  running it); a recipe (.ptex) committed under `assets/props/trim/` with a make target that regenerates the sheet; ONE trim sheet
+  (metal plate, hazard stripes, grime, glowing joints; <= 1024 px, laptop cost stated) on his picked pieces (traps a, overpass c, pipes b,
+  crane a); the looks page shows each piece **plain (flat colour + painted glow) v Material Maker sheet** side by side at his camera, with
+  the laptop fps of each, and his pick in its `db`. No paid generation.
+
+- **R47.29 (his pick) Camera select-pan SHIPPED ON: main = + camera 2c60ccd93 (code e4a614eab GREEN builder3 3525/0, 28 ALL JUDGED).**
+  Bar K (series 19:03-19:27 builder3, 72 deciding + 48 guard runs an arm, 0 lost; verdict
+  `references/round47/camera/bark-verdict-builder3-e4a614eab.txt` on stream/camera 67d48c984): D1 11.9 -> 6.9 % (ratio 0.58), D2 mean
+  4.92 -> 0.73 s (p90 0.95), D3 244 -> 21, G10 planner 0.329 ms / p99 0.80, rig 0.852 v 0.839. FAILED: G2 none on screen 61 -> 143 s and
+  G3 hits off screen 5.3 -> 12.6 % (all from SPLIT's 140 m flips: the camera now leaves the squad he left; ATTACK equal or better), G8
+  rear-ambush 7.08 -> 8.56 s (same latencies, fewer episodes weighting four 20 s nevers), G4b 7 one-frame snaps at the pan's hand-over.
+  Clicks 83.4 -> 77.9 % (60 aimed mid-pan, slip p95 464 px). Lesson 339: taken to him the same hour; his yes. Follow-up for camera: the
+  one-frame snaps at the hand-over, and K5 (his four recordings, three hand models).
+
+- **R47.30 Manoeuvre's M5a holdyield (round 46's 12328 leftover; df26c0d5f, OFF, `--traffic-on=holdyield`): seeds 13001-13024 for Bar
+  H; native twins `Movement._holdyield_veto` (two vetoes inside `_begin_yield`'s spot loops, mirrored in C++) before it ships ON.** A crew
+  holding his post never takes a yield spot > 0.5 m closer to an enemy hull within 60 m, nor > 8 m from his post. Light lane, builder3,
+  engage's lane probe: 12328 post drift 10.1 -> 0.0 m, gun killed from the post; dev 7001-7012 identical in every line. FYI to engage:
+  HOLD's return to his post arrives at 6.0 m, so other displacements still park his crew up to 6 m short.
+
+- **R47.31 The laptop's big-army UI cost is the fog-of-war field, not orders' controls: GRANT native `game/match/visibility_field.gd`
+  for its cost (C++ or a laptop-preset refresh rate, output-identical or said).** Orders (laptop UHD 620, lock, 67d09e882, his Crossing
+  seed 101, laptop preset): headless HUD 3.24-3.36 v 2.90-2.94 ms a frame (controls flat: +0.06 / +0.08 / +0.07 / +0.09 ms); windowed
+  layers (n 1 an arm, noisy; arms fight different-sized battles): cost cap, 37 alive, frame 81 ms, VisibilityField off saves 10.6 ms of
+  frame; count cap, 25 alive, 3.4 ms. Orders returns to O1 v3.
+
+- **R47.32 Bar E7 FAILS on G1 alone; SHIPPED ON by the orchestrator under C47.2 (ship his fix ON; precedent R46.25 / R46.27): main =
+  + engage 04dd39092 (code d4a88c4a5 GREEN builder3 3526/0, 28 ALL JUDGED, sim-baseline unmoved; + docs).** native ON, 12601-12648, 48
+  paired, 0 errors. D1 PASS: metres away from his target 94.2 -> 30.4 a run (z -3.93); D2 PASS first hit sooner-or-identical 41/48; **G1
+  FAIL friendly hits 1 -> 6 (limit 2.6): 6 grazes of 1-4 hp in 3 of 48 fights, no kills** (seeds 12612 / 12621 / 12642; hurt crews that
+  used to retreat stay in the fight: 4 under ENGAGE "assault through, circling", 1 CLEAR_LANE, 1 SUPPRESS); G2 PASS crews lost 102 -> 93;
+  G3 PASS target dies 44.1 -> 37.0 s; G4 PASS authority 24/24; G6 PASS CPU side 48/48 identical (narrowed to his side, amendment 1).
+  Ruling: his direct-order rule outweighs trivial grazes with fewer losses; `--press-on=off` the escape; told to him. **Follow-up for
+  engage (its own bar):** the friendly-fire holes the trace found (SUPPRESS's lane check; the circling MG burst re-check).
+  **CORRECTION (engage, after the merge): main b96e12e43 still had `PRESS_ON_DEFAULT := false` (tank_brain.gd:116); the bar's arms
+  passed `--press-on` explicitly and the default flip was never committed. E7 is NOT in his default game until engage's E3 freeze tree
+  (which flips it; its full check proves it) merges.** Lesson 353.
+
+- **R47.33 Bar M PASSES on every line (G5 vacuous: the rule touched all 96 W1 cells); ships ON with bbd8c1ba6 (`buried` out of
+  Traffic.DEFAULT_OFF; `--traffic-off=buried`) once its check is green; M2b and M5a ride in it OFF.** builder3, frozen 1aa41aeaf's code,
+  W1 12401-12424 (96 paired cells): D1 0.0 s; D2 touched noprog_s -24.9 crew-s a cell, 54 % sooner-or-identical; D3 z -0.87; G1 all_in
+  -0.7 s; G2 never_in 25 -> 23; G3 contact 6589 -> 6249 s (z -0.77); G4 blocked z -0.77, yielding -0.43; G6, G8 (6/6), G9 PASS. W2 (G7,
+  CPU v CPU 12425-12448, 24 paired) identical in every line with **0 swaps** (asked: whether the CPU's squads never meet the case or the
+  rule does not reach them, C47.9). Evidence `streams/references/round47/manoeuvre/barm-builder3-1aa41aeaf/README.md` (stream/manoeuvre).
+  The sim-baseline may move with buried ON: the orchestrator adopts it twice if so.
+
+- **R47.34 The fog's laptop cost is the per-frame GDScript READERS of the field, not the field, its upload or its shader; GRANT native
+  `game/ui/radar.gd`, `game/ui/edge_markers.gd` and camera's vision reader in `game/camera/**` (camera's session has ended) for their
+  per-frame field reads; hold the C++ ray walk.** Native's laptop read (lock, UHD 620, his Crossing seed 101, cost-cap code pair/native-fogread
+  a854eb0ac, measurement-only `--sim-off=visfield_draw`, in-run layer cycling 2 x 4 s, n 2 a layer, ~34 vehicles, frame 79-83 ms, 2.3-2.6
+  ticks a frame): no field saves 9.29 ms a frame, but directly only 2.11 ms of UI / process a frame + 0.17 ms a tick (the rest is the
+  ~3.5x amplifier); hiding the fog sheet and its shader saves nothing (+0.11 ms). Candidates (orders' laptop HUD profile): radar.* ~0.5
+  ms, cam.vision + vision_call ~0.46, vis.* ~0.19, edge_markers ~0.10, ctl.fog 0.035 (orders'). Method: longer windows (8 s x 3 cycles),
+  then each reader cached / batched / in C++, output-identical; ctl.fog goes to orders if it matters.
+  **AMENDED (native's correction):** none of the three granted readers reads the field per frame (radar draws its texture only when
+  `drawn` changes; the vision callable is RtsControls' and reads intel, not the field; edge markers have no reference). The ~2.1 ms is the
+  field's own picture work as the frame sees it (texture.update's GL upload on UHD 620, FogViewers.apply) or n 2 noise. **Dropped for this
+  round** (~2.5 ms a frame attributable): native goes to R47.27 (b).
+
+- **R47.35 Native's T lever is the brain's build_situation, not the order prologue.** Cost-cap profile (gangs v syndicate 3500, Crossing,
+  seed 3, builder3 light, n 1; `references/round47/native/costcap-profile-builder3`): the prologue is flat (t.poll 0.399 ms a tick over 29.3
+  polls; rate_progress 0.258; incoming 0.183): a C++ port saves <= 0.2 ms a tick. build_situation 0.995 ms a tick (5.6 calls): s.contacts
+  0.388, s.tactics 0.124, cover_fire 0.089, incoming 0.086, squad 0.083, cover_spots 0.070. **GO:** s.contacts' remaining fields + s.tactics
+  into situation_native (~0.4-0.5 ms a tick, ~3 ms a frame on his laptop), VERIFY on his four, ABBA at the cost cap, ON if faster or
+  neutral. Engage told those two are twin-frozen from the merge.
+  **WITHDRAWN as filed (native's correction):** the "s.contacts" lap brackets the call that is ALREADY native (situation_core), and
+  s.tactics / squad / cover / incoming are thin calls into shared code already native or memoized: no lump left. One time-boxed (1 h)
+  sub-profile of situation_core's GDScript callbacks (AiTickCache.faced_by, CoverMap.clear_line_coarse) decides; else (b) parks for the
+  round as a next-round note. The twin freeze told to engage does not apply.
+
+- **R47.36 Merged to main: orders d9151bad5 (inp rows, the recipient cue, battery screen ON, merged lay OFF; GREEN 3536/0; the cue's
+  shots 778c7d397 looked at by the orchestrator: white rings read clearly, not loud) and mapkit 39c7dba53 (blast doors with route's
+  nav-layer contract, the `sight` class with `Perception.eye_mask()` behind ArenaKit.sight_on, door calls 133 clips, traps / monorail /
+  door looks, candidate arenas parade_rail / parade_traps; GREEN 3548/0).** Relays: engage (C47.7: C++ LOS, match.gd `_clear_view` and
+  visibility_field still ray WORLD_MASK), native (doors' C++ mask; eye_mask in C++ LOS; GRANT the two match.gd / visibility_field ray
+  call sites for the mask change), manoeuvre (the doors' `overstay` event). Main check of the batch pending.
+
+- **R47.37 Merged: engage d3b3fe918 (E7 ON, `PRESS_ON_DEFAULT := true` grep-confirmed on main) and manoeuvre bbd8c1ba6 (buried ON,
+  grep-confirmed). His picks: snap shots SHIP ON after Bar E3's D1 missed by 0.006 s (z -1.637 v 1.645; per crew first round 1.55 -> 0.80
+  s, 79 / 11 / 8; accuracy 79 -> 73 %; G1 6 -> 2, G2 5 -> 7, G3 22.7 -> 26.2, G4 pass): engage's ship commit = POT_SHOT default true +
+  `--pot-shot=off`, its own full check. Group click O1 v3 SHIPS (his "bumping OK"): Bar O2 on 12749-12796 with the contact guard x2.5 + 5.
+  Engage E9 (friendly fire on the move): option (b), a stricter pre-check in fire_lanes.gd (moving spread + friends led by flight time),
+  match.gd untouched; seeds 13025-13072 (bar) + 13073-13120 (reserve). Mapkit's map-twin bar filed below; its series after Bars W/H/O2.**
+- **R47.38 (his picks) Trim sheet on all four kit pieces; a minimal monorail TRAIN asset ("the people's monorail ... far from Syndicate
+  quality").** Mapkit: 2-3 directions on a tap-to-approve page first (built from kit primitives + the trim sheet if that can carry it;
+  a Meshy concept only if needed, logged), then the 3D, laptop cost stated.
 
 ## Bars (round 47)
 
@@ -116,6 +353,47 @@ _(filed here BEFORE any number; newest first)_
   (83 %) -> 283/412 (69 %), friendly 0 -> 1 (CPU). **Why D1's run mean is noisy:** a crew that never fires counts as the whole window,
   and the window ends when the target dies, so it differs by arm (12692: OFF 16.9 s window, ON 60 s with one crew never firing =
   +21.35 s; 12665: -14.97 s the other way). As filed, the fail stands (lesson 345). Evidence `~/overnight-engage/r47/barE3/`.
+
+- **Bar P THE MAP-KIT TWINS CHANGE THE FIGHT (mapkit; proposed 2026-10-30 ~21:00, filed here by the orchestrator BEFORE any number).**
+  Pairs parade v parade_traps, parade v parade_rail, crossing v crossing_screens; arena-series style, fresh seeds 12901-12932 (16 a pair),
+  counterbalanced (swap bases, both army orders), native ON, judged at each map's end. **Deciding:** the twin changes the fight's shape:
+  engagement-range distribution or flank / route use differs from the base beyond the seed spread; for crossing_screens, the short-range
+  side's shots fired rise v crossing (his 6 v 358). **Guards:** (1) fairness: swap-bases margin within noise of 50 %; (2) units look smart:
+  no-progress / stall events a crew-minute no worse than the base (new things to get stuck on); (3) match length within the base's spread,
+  no stalemates; (4) laptop: no piece above the empty floor's GPU spread (trim monorail re-measured). Runs after Bars W / H / O2 on builder3.
+
+- **Bar K A NEW SELECTION PANS AT ONCE; HIS SQUAD STAYS FRAMED (camera; FILED 2026-10-30 ~18:30 in streams/camera.md, stream/camera
+  b1f08cc2d, BEFORE any number on 12801-12848; recorded here by the orchestrator; full text in the brief).** Switch
+  `--camera-select-pan` (ON at e4a614eab; `=off` = main's planner byte-identical). The pick's pan starts at once when the planner's
+  point is > 20 m from the look point, moves the look point only, a spring capped at 4 view-heights/s, ends at <= 12 m or 1.5 s. K3's
+  20 m bound PARKED OFF (it clipped the rear-ambush frame, 1.4 -> 6.3 s in dev). Frozen e4a614eab, builder3, headless 1920x1080 @60,
+  150 s. Workloads SPLIT (his Crossing case; 12801-12848 over Terminus / Locks / Crossing / Gorge), ATTACK, AMBUSH, RETREAT; the eye
+  waits up to 1.5 s for the pan before aiming (a workload choice after dev reads; clicks aimed mid-pan reported). **D1** % of play his
+  selection > 30 m off: ARM <= BASE and <= 10 % (**a 0.6x ratio was drafted and dropped after a dev read showed 0.74x at n 8; the
+  orchestrator notes it as dev-shaped, so the ratio is REPORTED and read beside D1**); **D2** far selection framed: ARM mean <= 1.0 s,
+  <= BASE, p90 <= 1.5 s; **D3** never framed ARM <= BASE. Guards: G1 occlusion, G2 none on screen, G3 hits off screen, G4a/b jerks and
+  snaps, **G4c a pan not a cut** (peak <= 4.5 view-heights/s), G5a-c clicks >= 70 %, slip p95 <= 40 px, held, G6 action share, G7 inside
+  a solid, G8 rear-ambush and retreat turns, G9 clean runs, **G10 laptop** rig mean <= 0.5 ms, planner p99 <= 1.5 ms (UHD 620, lock).
+  Also reported: his four recordings under three hand models (model / rest / busy). Last dev read (63429985c, n 8): framed 3.82 ->
+  0.68 s, never 16 -> 2, > 30 m 7.0 -> 5.2 %, slip p95 28 -> 31 px, clicks 86 -> 81 %.
+
+- **Bar M BURIED STATIONS (manoeuvre; FILED 2026-10-30 ~18:55 in streams/manoeuvre.md, stream/manoeuvre c85f828cf, BEFORE any number;
+  recorded here by the orchestrator).** The change: `--traffic-on=buried` (Movement.buried_station + R47.11's one line): a travelling
+  station the grounding moves > 4 m, or pulls back > 1 m along the squad's way while 6 m on is > 1.5 m off the navmesh, is taken on the
+  squad's own route 8 m on (never behind the crew), sticky while pinned. **Native:** no twin claimed (the goal is GDScript on every path;
+  native's feed passes the raw station) — native confirms. Machine builder3, native ON both arms, frozen tree = the first green commit
+  after 482f5e2b3. Census: noprog_s (crew > 15 m from its seat by route, no 1 m closer in the last second). Instrument checked on his
+  Locks replay (BASE Burners2_4 4.0 s). **W1 deciding:** orders' group-order probe, terminus / crossing / locks / sumps, 12401-12424.
+  **W2:** route-census CPU v CPU on 12425-12448 once on main, else dropped and said. **D1** his staged Locks case <= 1.0 s (BASE 3.47);
+  **D2** touched cells noprog_s paired mean < 0 AND sooner-or-identical >= 50 %; D3 all cells <= +1.645 se; **G1** all_in_s, **G2**
+  never_in, **G3** contact_s, **G4** blocked_s / yielding_s (each <= +1.645 se; G2 total <= BASE); **G5** untouched cells identical;
+  **G6** staged Crossing Hunters < 2.5 s each; **G7** W2 both teams' noprog_s; **G8** engage's authority probe 12443-12448 rows identical;
+  **G9** frozen tree's check exited 0, no SCRIPT ERROR. Full table in the brief.
+  **AMENDMENT 1 (of 2; 2026-10-30 ~19:30, 1aa41aeaf, before any bar number; lines unchanged, the trigger corrected):** a dev 7001
+  dry run showed the rule acting in every cell (764 swaps on Locks, 609 on the plain > 4 m trigger, median gap 6 m: a routine
+  grounding sliding along a wall). His corner is PINNED, so the > 4 m trigger now also needs the grounded point to have moved <= 1 m
+  while the station moved >= 3 m in >= 1 s. His staged case unchanged (0.0 s); Crossing guard identical. Frozen tree = 1aa41aeaf once
+  green. G3 (contact) named the line at risk.
 
 - **Bar E3 SNAP SHOTS (engage; filed 2026-10-30 ~20:00 PDT in streams/engage.md and here, BEFORE any number on 12649-12696;
   his YES, R47.20).**
@@ -187,6 +465,40 @@ _(filed here BEFORE any number; newest first)_
   native twin re-proves on the narrowed rule before the freeze. **Added guard G6, the CPU side untouched:** the same probe with
   `--his-side=off` (no player team: every crew is the CPU's), seeds 12601-12648, `--press-on` off v on: 48/48 ENGAGE_PROBE rows
   identical. Deciding lines, workload and the other guards as filed. (Amendment 1 of at most 2.)
+
+### Bar O (orders O2, R47.4; filed 2026-10-30 ~17:05 PDT, before any number on its seeds)
+
+**The change:** `--group-merged` (ON; `=off` is round 46's lay): his MERGED group (the selection is exactly one control group of
+more vehicles than a squad holds, 2-3 squads, a plain move / attack-move, no drawn facing, not a shifted leg) halts as files side
+by side across his click, one pitch apart, heads on the click line (`halt_at` / `halt_shape` "column" / `lay` on each task); any
+wet, deck, unstandable or vetoed seat keeps today's places; `split` keeps a partly-taken group's remainder as a squad. No drive,
+brain-scoring or route-cost code moves (the halt shape key and its deploy are round 35's), so no twin is owed (C47.6).
+**Runner:** `tests/control/orders_o_bar.sh "12701..12712" "12713..12724" "12725..12730" <dir>` (builder3, `native orders-probe`,
+`--probe-merge=on` saves every probe squad under one more group number); **judge** `tests/control/orders_o_judge.py <dir> off on`
+(`--self-test`: each deciding line fails on a staged case, lesson 350). Arms paired by (map, squads, route, seed).
+**Parts:** merged = locks / crossing / terminus / yard_open / sumps x 2 / 3 squads x click x 12 seeds x 2 arms (240 runs); his_x /
+his_l = his Crossing (80.9, 49.5) and Locks (-81.6, 45.7) clicks, 2 squads x 12 seeds x 2 arms (READ only); identity = locks /
+crossing / terminus x 2 / 3 squads x click / route x 6 seeds, NOT merged, `--group-merged=off` v ON (144 runs).
+**Deciding (what he asked FOR, lesson 352):**
+- D1 the spread between the squads' spots for one merged click: median ON <= 0.6 x median OFF.
+- D1b of the clicks the files were laid on, >= 90 % have a spread <= 25 m.
+- D2 all-in sooner or same: paired mean (ON - OFF) <= +0.5 s over pairs where both arrive (a tie is not a loss, lesson 344).
+- D2b never all in: ON <= OFF.
+**Guards (what it could break):** G1 friendly contacts a run ON <= OFF x 1.25 + 5 (two files a pitch apart may brush); G2 wedged
+crew-s a run ON <= OFF x 1.25 + 5; G3 the V1 veto's lines (places across a gap / sent back, squads over a deck) ON <= OFF; G4 every
+unmerged click byte-identical (0 places differ; streets and his V1 clicks by construction); G5 the farthest spot from his click
+median ON <= OFF. **Ships ON** when every line passes; a FAIL goes to him in player terms the same hour (C47.2).
+**Amendment 1 (2026-10-30 ~17:25 PDT, before any number; native's N0 relay):** his Crossing clicks were the ctrl+4 merge (the
+Wrenches went as loose crews), but whether his Locks click was a merge cannot be told (no key rows then). Added part `all`, a READ
+and not a line: `--group-merged=all` (OFF by default) lays the double file on every 2-3 squad plain click, on the merged part's
+corpus unmerged (240 runs), reported with D1 / D2 / G1 / G2's numbers. Widening O1 to it is his call in player terms; the verdict
+above is unchanged.
+**Amendment 2 (2026-10-30 ~17:35 PDT, before any number; R47.15, the orchestrator):** part `all` is DECIDING, not a read: his ask
+is one click puts his squads together however he selected them. `--group-merged=all` ships ON if it passes D1, D1b, D2, D2b, G1,
+G2, G3 and G5 on its own corpus (G4 cannot apply: it changes unmerged clicks by design; Terminus's streets are in its corpus);
+plus part `his_l_all` (his Locks click as a box-select, 2 squads x 12 seeds, READ beside D1). Judge: `orders_o_judge.py --all <dir>
+off all`. If it fails only on all-in, the player-terms note ("together, but the last squad in N s later") goes to the orchestrator
+the same hour. The merged arm's verdict stands on its own.
 
 ## Round 46: five streams (prepared 2026-10-30; CLOSED 2026-10-30; briefs in `streams/archive/round46/`)
 

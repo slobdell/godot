@@ -104,6 +104,12 @@
    "break_contact": "break contact",
    "herringbone": "a herringbone",
    "bait": "a bait"
+  },
+  "gate": {
+   "north": "the north gate",
+   "south": "the south gate",
+   "east": "the east gate",
+   "west": "the west gate"
   }
  },
  "oddity_categories": {
@@ -14632,6 +14638,216 @@
    ],
    "intensity": 2,
    "text": "Still pushing, but look at them, they're barely rolling under that weight of fire!"
+  },
+  {
+   "id": "caller.door.open.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_open"
+   ],
+   "intensity": 3,
+   "text": "There go the gates! {gate} is open, and here they come!"
+  },
+  {
+   "id": "caller.door.open.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_open"
+   ],
+   "intensity": 3,
+   "text": "Listen to this crowd! {gate} is up and the whole fight just changed!"
+  },
+  {
+   "id": "caller.door.open.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_open"
+   ],
+   "intensity": 2,
+   "text": "Doors are open! Brand new road, brand new fight!"
+  },
+  {
+   "id": "caller.door.open.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_open"
+   ],
+   "intensity": 2,
+   "text": "{gate} is open! Somebody is going to make them pay for that!"
+  },
+  {
+   "id": "caller.door.shut.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_shut"
+   ],
+   "intensity": 3,
+   "text": "{gate} is coming down! Get through or get shut out!"
+  },
+  {
+   "id": "caller.door.shut.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_shut"
+   ],
+   "intensity": 3,
+   "text": "It's closing, it's closing! Who makes it through?"
+  },
+  {
+   "id": "caller.door.shut.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_shut"
+   ],
+   "intensity": 2,
+   "text": "And it slams shut! That road is gone!"
+  },
+  {
+   "id": "caller.door.shut.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_shut"
+   ],
+   "intensity": 2,
+   "text": "{gate} is sealed! Now they have to find another way around!"
+  },
+  {
+   "id": "caller.door.caught.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_caught"
+   ],
+   "intensity": 3,
+   "text": "The {unit} is shut out! That door came down right in front of it!"
+  },
+  {
+   "id": "caller.door.caught.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_caught"
+   ],
+   "intensity": 3,
+   "text": "Oh, the {unit} got caught on the wrong side! Cut off from the rest of {faction}!"
+  },
+  {
+   "id": "caller.door.caught.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_caught"
+   ],
+   "intensity": 2,
+   "text": "They're split up! Half of {faction} on one side of that door, half on the other!"
+  },
+  {
+   "id": "caller.door.caught.04",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_caught"
+   ],
+   "intensity": 2,
+   "text": "The {unit} waited too long, and now it's on its own out there!"
+  },
+  {
+   "id": "caller.door.held.01",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_held"
+   ],
+   "intensity": 3,
+   "text": "{gate} can't close! The {unit} is sitting right in the doorway!"
+  },
+  {
+   "id": "caller.door.held.02",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_held"
+   ],
+   "intensity": 2,
+   "text": "The {unit} is parked in the door, and that gate is not coming down until it moves!"
+  },
+  {
+   "id": "caller.door.held.03",
+   "speaker": "caller",
+   "act": "call",
+   "tags": [
+    "door_held"
+   ],
+   "intensity": 3,
+   "text": "Look at this! The {unit} is holding {gate} open all by itself!"
+  },
+  {
+   "id": "pa.door.closing.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "door_closing"
+   ],
+   "intensity": 1,
+   "text": "{gate} will close in five seconds. Please keep vehicles clear of the doorway."
+  },
+  {
+   "id": "pa.door.open.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "door_open"
+   ],
+   "intensity": 1,
+   "text": "{gate} is now opening. The arena thanks you for your patience."
+  },
+  {
+   "id": "pa.door.closing.02",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "door_closing"
+   ],
+   "intensity": 1,
+   "text": "Door times are posted at every gate. The schedule is final."
+  },
+  {
+   "id": "pa.door.shut.01",
+   "speaker": "pa",
+   "act": "notice",
+   "tags": [
+    "door_shut"
+   ],
+   "intensity": 1,
+   "text": "Crews on the far side of {gate} will be collected at the end of the match."
+  },
+  {
+   "id": "color.door.01",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "door_shut"
+   ],
+   "intensity": 1,
+   "text": "You learn the doors. Learn them, or they teach you."
+  },
+  {
+   "id": "color.door.02",
+   "speaker": "color",
+   "act": "analysis",
+   "tags": [
+    "door_shut"
+   ],
+   "intensity": 1,
+   "text": "Smart crews count the clock. The rest find out where the door is."
   }
  ]
 }

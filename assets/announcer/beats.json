@@ -1422,6 +1422,133 @@
      ]
     }
    ]
+  },
+  "door_closing": {
+   "priority": 40,
+   "stale_s": 4,
+   "intensity": 1,
+   "beats": [
+    {
+     "name": "the PA's door warning",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "pa",
+       "act": "notice"
+      }
+     ]
+    }
+   ]
+  },
+  "door_shut": {
+   "priority": 55,
+   "stale_s": 4,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "the door comes down",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.35
+      }
+     ]
+    },
+    {
+     "name": "the PA on a shut door",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "pa",
+       "act": "notice",
+       "chance": 0.6
+      }
+     ]
+    }
+   ]
+  },
+  "door_open": {
+   "priority": 55,
+   "stale_s": 4,
+   "intensity": 2,
+   "beats": [
+    {
+     "name": "the gates go up",
+     "weight": 3,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      }
+     ]
+    },
+    {
+     "name": "the PA opens a gate",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "pa",
+       "act": "notice"
+      },
+      {
+       "speaker": "caller",
+       "act": "call",
+       "chance": 0.7
+      }
+     ]
+    }
+   ]
+  },
+  "door_held": {
+   "priority": 60,
+   "stale_s": 3,
+   "cooldown_s": 20,
+   "intensity": 3,
+   "beats": [
+    {
+     "name": "a crew holds the door",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      }
+     ]
+    }
+   ]
+  },
+  "door_caught": {
+   "priority": 65,
+   "stale_s": 3,
+   "cooldown_s": 20,
+   "intensity": 3,
+   "beats": [
+    {
+     "name": "shut out",
+     "weight": 1,
+     "steps": [
+      {
+       "speaker": "caller",
+       "act": "call"
+      },
+      {
+       "speaker": "color",
+       "act": "analysis",
+       "chance": 0.3
+      }
+     ]
+    }
+   ]
   }
  }
 }
