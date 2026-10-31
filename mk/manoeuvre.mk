@@ -536,3 +536,27 @@ SHORT_ONLY ?=
 export SHORT_ONLY
 SHORT_POSES ?=
 export SHORT_POSES
+
+# ---- round 47 (M1): the no-progress trace on his playtest ---------------------------------------------------------
+# His recording replayed as he played it (replay-match's setup: authority + rules stamps, native), with one STALL_TRACE line a
+# tick for each crew in STALL_CREWS inside STALL_WINDOW (ticks): tests/manoeuvre/stall_trace.gd. Measurement only.
+#   make remote T="manoeuvre-stall-trace RECORDING=references/round46/playtest/2026-10-30T15-49-20-locks.jsonl STALL_CREWS=Green_Burners2_4 STALL_WINDOW=120-320"
+STALL_DIR := $(BUILD_DIR)/manoeuvre/stall-trace
+.PHONY: manoeuvre-stall-trace
+manoeuvre-stall-trace: native-fresh import ## manoeuvre M1: STALL_TRACE per tick for STALL_CREWS in STALL_WINDOW of RECORDING (replayed as he played; REPLAY_FLAGS for an arm; STALL_TAG names the log)
+	@test -n "$(RECORDING)" -a -n "$(STALL_CREWS)" || { echo 'usage: make manoeuvre-stall-trace RECORDING=... STALL_CREWS=a,b STALL_WINDOW=from-to [REPLAY_FLAGS=...] [STALL_TAG=x]'; exit 2; }
+	@mkdir -p $(STALL_DIR)
+	@case "$(RECORDING)" in *.gz) gzip -dc "$(RECORDING)" > $(STALL_DIR)/his.jsonl;; *) cp "$(RECORDING)" $(STALL_DIR)/his.jsonl;; esac
+	@authority=$$($(PYTHON) tests/replay/authority.py $(STALL_DIR)/his.jsonl auto); flags='$(REPLAY_FLAGS)'; \
+	case "$$flags" in *--player-authority*) ;; *) if [ "$$authority" = off ]; then flags="$$flags --player-authority=off"; fi;; esac; \
+	rules=$$($(PYTHON) tests/replay/rules.py $(STALL_DIR)/his.jsonl "$$flags"); flags="$$flags $$rules"; \
+	window='$(or $(STALL_WINDOW),0-999999)'; until=$$(( $${window##*-} / 30 + 2 )); \
+	log=$(STALL_DIR)/$(or $(STALL_TAG),trace).log; \
+	$(GODOT) --headless --fixed-fps 30 --path . --script res://tests/manoeuvre/stall_trace.gd -- \
+		--orders=$(CURDIR)/$(STALL_DIR)/his.jsonl --seconds=$$until --record-dir=$(STALL_DIR)/out-$(or $(STALL_TAG),trace) \
+		--stall-trace=$(STALL_CREWS) --stall-window=$$window $$flags > $$log 2>&1 || echo "stall-trace: godot exited $$?"; \
+	grep -E '^REPLAY_(REEXEC|SETUP|SPAWN|ROSTER|NATIVE|DONE)' $$log; echo "STALL_TRACE rows: $$(grep -c '^STALL_TRACE' $$log) -> $$log"
+
+# Round 47 (M1/M2): NOPROGRESS_TRACE=on prints test_manoeuvre_noprogress's NOPROGRESS_TICK rows (a dev read).
+NOPROGRESS_TRACE ?=
+export NOPROGRESS_TRACE
