@@ -1,4 +1,5 @@
 #include "gun_native.h"
+#include "eye_mask.h"
 
 #include "exec_view.h"
 #include "execute_native.h"
@@ -278,7 +279,7 @@ struct Gun {
 		PhysicsDirectSpaceState3D *space = viewer->get_world_3d()->get_direct_space_state();
 		const Vector3 up = Vector3(0, 1, 0) * (real_t)g.EYE_HEIGHT;
 		Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(viewer->get_global_position() + up,
-				target->get_global_position() + up, (uint32_t)g.WORLD_MASK);
+				target->get_global_position() + up, eye_mask_live((uint32_t)g.WORLD_MASK)); // Perception.eye_mask() (R47.36)
 		return space->intersect_ray(query).is_empty();
 	}
 

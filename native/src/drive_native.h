@@ -249,6 +249,8 @@ Dictionary drive_profile(bool reset);
 // Movement._around_fire(waypoint, goal, order) natively on this mover (the proof asks it beside the live GDScript).
 // Round 35 (R35.8): Movement._pass_lane(passer, from, direction) natively on this mover (the twin asks it beside the live one).
 double drive_pass_lane(const DriveConfig &config, Object *mover, const String &passer, const Vector3 &from, const Vector2 &direction);
+int64_t drive_holdyield_veto(const DriveConfig &config, Object *mover, const Vector3 &point);
+Dictionary drive_path_query(const DriveConfig &config, Object *mover, const Vector3 &from, const Vector3 &to);
 Vector3 drive_around_fire(const DriveConfig &config, Object *mover, const Vector3 &waypoint, const Vector3 &goal,
 		const Dictionary &order);
 

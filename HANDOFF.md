@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-30 evening — **ROUND 47 IS PREPARED (seven streams, all Opus); the lead launches the workers.** Main = the round-47 docs commit (game code = e306ce27f, GREEN builder3 3518/0, 28 ALL JUDGED; main inherits it: `tools/merge_check_needed.sh e306ce27f` INHERIT, docs only, so NO launch check is needed). **Default build box: builder3.** Worktrees: main + seven `godot-<stream>`. Main is unpushed (he pushes)._
+_Last updated: 2026-10-30 ~21:35 PDT — **ROUND 47 RUNNING (seven streams launched; route and camera have finished and closed their sessions).** **Main 09780edb9 GREEN builder3** (`make check exited 0`, 3569 passed / 0 failed). Since then main = + engage d3b3fe918 (E7 ON) + manoeuvre bbd8c1ba6 (buried ON) + native 6f19722ae (place / esit / matchups C++ ON) + mapkit 39c7dba53 (doors, sight class, traps, monorail) + orders 1c2fc5838 (the money cap ON; the orchestrator's rules.py integration) = 79cea77e5, its check queued (log `~/orch-r47/main-check-79cea77e5.log`). Rulings R47.1-R47.38 in `workstreams.md`. builder0 DOWN since ~17:35. Main is unpushed (he pushes)._
 
 ## ▶ ROUND 47 AS PREPARED (2026-10-30 evening) — read this first
 

@@ -88,7 +88,7 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 - **C47.10 The laptop is the test bed (memory).** Mapkit's pieces and camera's planner state their laptop cost (UHD 620, under the lock);
   an expensive look ships as a hardware-preset knob.
 - **C47.11 Seeds:** manoeuvre 12401-12496, route 12501-12596, engage 12601-12696, orders 12701-12796, camera 12801-12896, mapkit
-  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). **Extra blocks:** manoeuvre 13001-13024 (Bar H, R47.30); engage 13025-13120 (E9, R47.37). Next free: 13121.
+  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). **Extra blocks:** manoeuvre 13001-13024 (Bar H, R47.30); engage 13025-13120 (E9, R47.37); spotter 13121-13216 (R47.40). Next free: 13217.
 
 **Rulings at prep:**
 - **R47.1 (2026-10-30 evening, his pick) Seven streams this round, the map kit included.** He picked it knowing the laptop's RAM is short
@@ -337,6 +337,39 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   quality").** Mapkit: 2-3 directions on a tap-to-approve page first (built from kit primitives + the trim sheet if that can carry it;
   a Meshy concept only if needed, logged), then the 3D, laptop cost stated.
 
+- **R47.39 (his words) The monorail train is a ONE-OFF MESHY model, "run down and rickety", made like the round-11 airship** (text-to-image
+  concepts -> 2-3 directions on a tap-to-approve page -> image-to-3D of his pick; every request in `assets/meshy_ledger.md`; production
+  quality: memory *production quality over credits*; one asset, so the scope is his). The kit-built directions (A Night Line, B Cattle car,
+  C Bucket pods) are dropped. The model rides the monorail beam as one prop; its laptop cost is read before it ships (C47.10).
+
+- **R47.40 (his ask, 2026-10-30 ~22:50) A NEW stream mid-round: spotter (finds the moments units look dumb; dev tooling only).** His words
+  and the plan: `game_design.md` *His ML question*; brief `streams/spotter.md`. Folder `godot-spotter` (offset 8), Opus. Owns
+  `tools/spotter/**`, `tests/spotter/**`, `mk/spotter.mk`, `references/spotter/**`; read-only on every census / recording; no game code.
+  builder3's light lane for fights, its GPU (RTX 5060 Ti 16 GB) for clips and later training; seeds 13121-13216. CPU opponents by ML:
+  not now (the standing ruling; the bottleneck is the CPU sim and missing behaviours we can write).
+
+- **R47.41 (his pick) O1 v3 (columns only at the end) SHIPS ON after Bar O2 FAILED on G2 (wedged 57.2 v 39.0, cap 53.8) and G6 contact_s
+  (+0.50, se 0.25, cap +0.41); every deciding line passed** (4536ccb0f, builder3, 12749-12778: D1 paired -14.2 m, median 35.1 v 52.4,
+  D1b 51/51, D2 +0.44 s; his Crossing 14.0 v 39.4 m; Locks unchanged; the wedging only on the 51 laid clicks, Sumps and the yard). Orders'
+  ship commit: `--group-merged` default ON (both arms), `=off` the escape; the Sumps / yard stall is its follow-up. **Main integration:**
+  79cea77e5 RED 3604/2 (route's two shut-door tests: mapkit's BlastDoors shadowed the stub) -> fixed 94646bf63 (RouteDoors.is_open reads a
+  test's stub first; 92/0); native 27ea82fa5 (doors' native mask, eye_mask in C++ LOS) merged as 8d37b9796, its check queued. Mapkit's
+  Meshy train (pick A, 15 credits) in; the monorail falls back to plain on the LAPTOP PRESET only (+1.4 ms), per his standing preset rule.
+
+- **R47.42 Bar H (holdyield) PASSES -> ships ON; Bar W (the no-progress watchdog + off-island reroute) FAILS its deciding line -> stays
+  OFF.** Frozen 5a55ccf71 (code 1cced49dc), builder3, check exited 0 (29 targets). H: 12328 post drift 10.1 -> 0.0 m, gun killed; fresh
+  post cells identical (no case on fresh seeds, as filed); group probe 24/24 and authority 6/6 identical. W: touched cells (54) noprog_s
+  +24.6 crew-s a cell (se 30.3, z +0.81), 65 % sooner-or-identical: mean > 0 = FAIL; contact_s +3.4 (z +0.93); slow_s -20 (z -3.16);
+  Crossing worst (+58.5). The CPU sliver case passes staged but the workload does not. `noprogress` stays in DEFAULT_OFF; R47.25's
+  reroute body is inert without it. Next round: why the watchdog's reroutes cost more no-progress than they save on Crossing.
+
+- **R47.43 Doors and his hold: GRANT manoeuvre one line in TankBrain** — when the overstay give-way (09d1a3376 + 6c815959d,
+  `--traffic-on=overstay`, OFF) moves his HELD crew off a door slab, `_his_post_at` moves to the nearest standable point just off the slab
+  (same side, <= ~5 m): his "hold there" kept at the closest spot that exists once the door is a wall. Engage told (its authority code).
+  Bar W's trace (Crossing 12449, ead694538, builder3 light, reproduces the cell 1516.5 crew-s / 151 trips): every trip `blocked: no_path,
+  reachable false`, 145 of them two crews whose SEAT is unreachable (not the sliver); the watchdog re-plans every 1 s for 150 s. Next round:
+  trip only off-island, never on an unreachable goal, with a per-crew cap.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
@@ -465,6 +498,39 @@ _(filed here BEFORE any number; newest first)_
   native twin re-proves on the narrowed rule before the freeze. **Added guard G6, the CPU side untouched:** the same probe with
   `--his-side=off` (no player team: every crew is the CPU's), seeds 12601-12648, `--press-on` off v on: 48/48 ENGAGE_PROBE rows
   identical. Deciding lines, workload and the other guards as filed. (Amendment 1 of at most 2.)
+
+- **Bar K A NEW SELECTION PANS AT ONCE; HIS SQUAD STAYS FRAMED (camera; FILED 2026-10-30 ~18:30 in streams/camera.md, stream/camera
+  b1f08cc2d, BEFORE any number on 12801-12848; recorded here by the orchestrator; full text in the brief).** Switch
+  `--camera-select-pan` (ON at e4a614eab; `=off` = main's planner byte-identical). The pick's pan starts at once when the planner's
+  point is > 20 m from the look point, moves the look point only, a spring capped at 4 view-heights/s, ends at <= 12 m or 1.5 s. K3's
+  20 m bound PARKED OFF (it clipped the rear-ambush frame, 1.4 -> 6.3 s in dev). Frozen e4a614eab, builder3, headless 1920x1080 @60,
+  150 s. Workloads SPLIT (his Crossing case; 12801-12848 over Terminus / Locks / Crossing / Gorge), ATTACK, AMBUSH, RETREAT; the eye
+  waits up to 1.5 s for the pan before aiming (a workload choice after dev reads; clicks aimed mid-pan reported). **D1** % of play his
+  selection > 30 m off: ARM <= BASE and <= 10 % (**a 0.6x ratio was drafted and dropped after a dev read showed 0.74x at n 8; the
+  orchestrator notes it as dev-shaped, so the ratio is REPORTED and read beside D1**); **D2** far selection framed: ARM mean <= 1.0 s,
+  <= BASE, p90 <= 1.5 s; **D3** never framed ARM <= BASE. Guards: G1 occlusion, G2 none on screen, G3 hits off screen, G4a/b jerks and
+  snaps, **G4c a pan not a cut** (peak <= 4.5 view-heights/s), G5a-c clicks >= 70 %, slip p95 <= 40 px, held, G6 action share, G7 inside
+  a solid, G8 rear-ambush and retreat turns, G9 clean runs, **G10 laptop** rig mean <= 0.5 ms, planner p99 <= 1.5 ms (UHD 620, lock).
+  Also reported: his four recordings under three hand models (model / rest / busy). Last dev read (63429985c, n 8): framed 3.82 ->
+  0.68 s, never 16 -> 2, > 30 m 7.0 -> 5.2 %, slip p95 28 -> 31 px, clicks 86 -> 81 %.
+
+- **Bar M BURIED STATIONS (manoeuvre; FILED 2026-10-30 ~18:55 in streams/manoeuvre.md, stream/manoeuvre c85f828cf, BEFORE any number;
+  recorded here by the orchestrator).** The change: `--traffic-on=buried` (Movement.buried_station + R47.11's one line): a travelling
+  station the grounding moves > 4 m, or pulls back > 1 m along the squad's way while 6 m on is > 1.5 m off the navmesh, is taken on the
+  squad's own route 8 m on (never behind the crew), sticky while pinned. **Native:** no twin claimed (the goal is GDScript on every path;
+  native's feed passes the raw station) — native confirms. Machine builder3, native ON both arms, frozen tree = the first green commit
+  after 482f5e2b3. Census: noprog_s (crew > 15 m from its seat by route, no 1 m closer in the last second). Instrument checked on his
+  Locks replay (BASE Burners2_4 4.0 s). **W1 deciding:** orders' group-order probe, terminus / crossing / locks / sumps, 12401-12424.
+  **W2:** route-census CPU v CPU on 12425-12448 once on main, else dropped and said. **D1** his staged Locks case <= 1.0 s (BASE 3.47);
+  **D2** touched cells noprog_s paired mean < 0 AND sooner-or-identical >= 50 %; D3 all cells <= +1.645 se; **G1** all_in_s, **G2**
+  never_in, **G3** contact_s, **G4** blocked_s / yielding_s (each <= +1.645 se; G2 total <= BASE); **G5** untouched cells identical;
+  **G6** staged Crossing Hunters < 2.5 s each; **G7** W2 both teams' noprog_s; **G8** engage's authority probe 12443-12448 rows identical;
+  **G9** frozen tree's check exited 0, no SCRIPT ERROR. Full table in the brief.
+  **AMENDMENT 1 (of 2; 2026-10-30 ~19:30, 1aa41aeaf, before any bar number; lines unchanged, the trigger corrected):** a dev 7001
+  dry run showed the rule acting in every cell (764 swaps on Locks, 609 on the plain > 4 m trigger, median gap 6 m: a routine
+  grounding sliding along a wall). His corner is PINNED, so the > 4 m trigger now also needs the grounded point to have moved <= 1 m
+  while the station moved >= 3 m in >= 1 s. His staged case unchanged (0.0 s); Crossing guard identical. Frozen tree = 1aa41aeaf once
+  green. G3 (contact) named the line at risk.
 
 ### Bar O (orders O2, R47.4; filed 2026-10-30 ~17:05 PDT, before any number on its seeds)
 

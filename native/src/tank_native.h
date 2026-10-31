@@ -21,6 +21,8 @@
 #include "gate_width_native.h"
 #include "untangle_native.h"
 #include "assign_native.h"
+#include "place_native.h"
+#include "esit_native.h"
 #include "perception_native.h"
 #include "incoming_native.h"
 #include "shell_native.h"
@@ -197,6 +199,22 @@ public:
 	PackedInt32Array assign_least_total(const PackedVector3Array &centers, const PackedVector3Array &slots) const {
 		return ::godot::assign_least_total(centers, slots);
 	}
+	// Round 47 (N4): ElementSituation._entries (esit_native.cpp); the consts as NativeEsit reads them live.
+	Dictionary esit_entries(Object *game_match, int64_t team, const PackedStringArray &member_names, const Vector3 &heading,
+			const Dictionary &was_known, const Dictionary &roles, const Dictionary &consts) const {
+		EsitConsts c;
+		c.FIRE_TICKS = consts.get("FIRE_TICKS", c.FIRE_TICKS);
+		c.HOLD_THROTTLE = consts.get("HOLD_THROTTLE", c.HOLD_THROTTLE);
+		c.HOLD_SPEED_MPS = consts.get("HOLD_SPEED_MPS", c.HOLD_SPEED_MPS);
+		c.KNOWN_M = consts.get("KNOWN_M", c.KNOWN_M);
+		return ::godot::esit_entries(game_match, team, member_names, heading, was_known, roles, c);
+	}
+	// Round 47 (N2): TacticsFormation.place (place_native.cpp); NativePlace marshals the catalogue's part and the switches.
+	Array formation_place(const Array &members, const String &formation, const Vector3 &anchor, const Vector3 &heading, double spacing,
+			const Dictionary &opts, const Vector2 &extent, const PackedFloat64Array &tough, const PackedStringArray &roles,
+			const PackedInt32Array &flags, const String &lateral_floor) const {
+		return ::godot::formation_place(members, formation, anchor, heading, spacing, opts, extent, tough, roles, flags, lateral_floor);
+	}
 	// Round 28 (N6.3): perception's batched pass (perception_native.cpp); the rays it cast, for SimProfile.
 	bool perception_configure(const Dictionary &config);
 	PackedInt32Array perception_sight(const Array &viewers, const Array &enemies) {
@@ -254,6 +272,12 @@ public:
 	Dictionary drive_profile(bool reset) const;
 	Vector3 drive_around_fire(Object *mover, const Vector3 &waypoint, const Vector3 &goal, const Dictionary &order) const;
 	double drive_pass_lane(Object *mover, const String &passer, const Vector3 &from, const Vector2 &direction) const;
+	Dictionary drive_path_query(Object *mover, const Vector3 &from, const Vector3 &to) const {
+		return ::godot::drive_path_query(drive_config, mover, from, to);
+	}
+	int64_t drive_holdyield_veto(Object *mover, const Vector3 &point) const {
+		return ::godot::drive_holdyield_veto(drive_config, mover, point);
+	}
 	bool drive_fire_ready() const;
 
 	// N3d: build_situation's allies, contact selection and contact entries as one call (situation_native.cpp).
