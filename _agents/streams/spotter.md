@@ -93,6 +93,8 @@ S4's labels.
 _(updated 2026-10-31 ~04:20 PDT by the spotter worker; every number names its commit, machine, workload and n)_
 
 ### Report (top)
+- **Branch tip GREEN: a414cdba1** (builder3, `make check exited 0`, 3608 passed / 0 failed, 29 targets ALL JUDGED, 2026-10-31 ~04:20;
+  covers the LOS / follow probe fixes, batch 2 tooling, the batch 2 page, the classes doc). Merge here.
 - **Merged to main** by the orchestrator: stream/spotter 213f5d070 (check GREEN at **9858da23f**: builder3, `make check exited 0`,
   3608 passed / 0 failed, 29 targets ALL JUDGED). Later commits on the branch are spotter paths only (Python, the probe, the pages,
   docs). The newest probe change (LOS + follow goal, tests/spotter/feature_probe.gd) has run in batch 2's 24 fights with no engine
