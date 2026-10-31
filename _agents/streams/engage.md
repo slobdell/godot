@@ -87,7 +87,8 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
 | E2 dev reads | **no measurable effect from either switch** (below) -> **E2a + E2b DROPPED (R47.17), code removed** (game files byte-identical to e306ce27f; native's twin reverted) |
 | E7 his order beats RETREAT | code + tests GREEN at **14ccc9b91** (builder3 `native test` press_on / native_decide / combat_envelope / native_gun / native_exec_state: 45 passed, 0 failed). `--press-on`, **OFF** until native's `_obey` twin (spec + hash sent). Dev read on route's Locks case (staged 1440) running |
 | E7 Bar E7 | **FILED** + **Amendment 1** (his side only; G6 the CPU side untouched), both before any number on 12601-12648. GDScript green at 43ed628f1 for my tests (press_on 6/6); waiting on native's re-twin (his_side), then the full check on the frozen pair hash, then the series |
-| E3 pot shots | in progress: switch (default OFF) + the dev read that gives the orchestrator his question in player terms (R47.17) |
+| E3 pot shots | **code behind `--pot-shot` (default OFF, his call)**; test green at 087d1732a (first round 12 v 28 ticks); dev reads below; **his question sent to the orchestrator** (recommended: yes) |
+| (E3, old row) | in progress: switch (default OFF) + the dev read that gives the orchestrator his question in player terms (R47.17) |
 
 **His "is something broken with our targeting?" — the honest answer (staged, E1 + the gates split):** no. A gang crew is SLOW to its
 first aim at range by design: the fix time grows with the target's distance over the crew's OWN sight (`Engagement.acquire_seconds`:
@@ -128,6 +129,18 @@ his 145 acquiring seconds were first fixes. Nothing in the gate is broken; the g
   native twin re-proves on the narrowed rule before the freeze. **Added guard G6, the CPU side untouched:** the same probe with
   `--his-side=off` (no player team: every crew is the CPU's), seeds 12601-12648, `--press-on` off v on: 48/48 ENGAGE_PROBE rows
   identical. Deciding lines, workload and the other guards as filed. (Amendment 1 of at most 2.)
+
+**E3 pot shots, dev reads (never a bar; the gun's C++ paths off in both arms):**
+- *War Rigs only* (`--hull=gang_tank`, attack-shot probe, dev seeds 7001-7012, builder3, 102a18395, n = 12 paired): first round
+  after a target appears median **1.45 -> 0.90 s** (n 28 / 29); accuracy 76 % -> 79 % (+4 pts, se 14); hits a minute 29 -> 38 (+9, se
+  10.5); friendly hits 0.08 -> 0.08 a run; mean first shot 9.3 -> 4.0 s (se 3.6).
+- *His six staged fights* (889aa86b0-era tree + E3, n = 1 a window): his hits a minute 24 -> 27, accuracy 20 % -> 19 %, friendly 0 -> 0;
+  the CPU (it snaps too, C47.9): hits 362 -> 283, accuracy 83 % -> 69 %, friendly 0 -> 1.
+- *All crews, attack-shot probe 7001-7012* (mostly scouts, which already acquire at 0.55x): first shot 3.32 -> 3.14 s, accuracy 78 ->
+  77 %, hits a minute 590 -> 529 (se 85): nothing beyond noise.
+- **His question (sent, player terms):** "your War Rigs fire their first shot about half a second sooner at about the same accuracy;
+  the CPU snaps too and its long guns get less accurate. Turn snap shots on? Recommended: yes." A yes needs the gun's C++ twin
+  and its own bar before ON.
 
 **E2 dev reads (2026-10-30 ~18:30, builder3, the gun's C++ paths off in EVERY arm (`--brains-off=native_exec,native_gun`: the carry
 has no twin yet), never a bar):**
