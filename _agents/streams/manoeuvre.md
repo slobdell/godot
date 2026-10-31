@@ -106,7 +106,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
    engage, which owns the hold order).
 5. Tooling: barm_w2_judge.py counts buried swaps, not watchdog trips. Give it `--touched=watch` like barm_judge.
 
-**Last commit:** see the tip check below. The FINAL REPORT itself is a docs-only commit on top of it.
+**Last commit:** adcd31450 GREEN (builder3 full check, make check exited 0, 3612 passed, 0 failed). The FINAL REPORT is docs-only on top of it (2e271ce89 and this line).
 
 ### REPORT (2026-10-30 ~23:55): Bars W and H read; holdyield ships ON; the watchdog stays OFF; overstay built (OFF)
 
