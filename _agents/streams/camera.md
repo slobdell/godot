@@ -74,7 +74,14 @@ pans longer: clicks aimed mid-pan 60 -> 96, slip p95 49.3 px (line 40), so he wo
 smoothness at a long pan's end; verdict `references/round47/camera/bark2-verdict-builder3-cbb074e10.txt`. The branch's code is
 main's (the revert), plus the judge's R47.24 G10. **Overpass deck cutaway: blocked** on mapkit's P4 (no overpass piece exists until
 his looks-page picks; BlockCutaway hides blocks by sight test and will need the deck's drawn slab as a new cut type when it lands).
-**Green hash:** see the last line of this report (the tip's full check).
+**Green hash:** the shipped code is **e4a614eab** (GREEN builder3, 3525/0, 28 ALL JUDGED; on main as 2c60ccd93). The tip
+**5c101ff07** = main b96e12e43 + docs + `tests/camera/bar_k.py` (the series judge; no check target reads it:
+`tools/merge_check_needed.sh b96e12e43` names only that file), so its full check was cancelled at the orchestrator's ask (builder3's
+queue) and the docs merge inherits. **Cutaway request (for the round that lands the overpass):** mapkit's overpass deck needs a
+cut type in `game/camera/block_cutaway.gd` (today it hides only solids >= MIN_HEIGHT_M by its sight test, through the slot's
+visibility; a deck is a slab OVER the street, so the test must be "the deck lies between the camera and his crews below it",
+and the cut hides the deck slab's VisualSlot only, never its pillars or collider), with its test in `tests/test_camera_*.gd`;
+mapkit to say the deck's obstacle `type` and its drawn height/thickness in `arenas/**` (C47.7-style) when the piece exists.
 
 **What to playtest (exact):** `make skirmish` (main), any map: split the army (half west, half east), then pick each squad by its
 key: the camera should set off at once and be on it in under a second, even with his hand on the mouse; `--camera-select-pan=off`
