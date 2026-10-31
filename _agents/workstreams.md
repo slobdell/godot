@@ -309,6 +309,13 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   field's own picture work as the frame sees it (texture.update's GL upload on UHD 620, FogViewers.apply) or n 2 noise. **Dropped for this
   round** (~2.5 ms a frame attributable): native goes to R47.27 (b).
 
+- **R47.35 Native's T lever is the brain's build_situation, not the order prologue.** Cost-cap profile (gangs v syndicate 3500, Crossing,
+  seed 3, builder3 light, n 1; `references/round47/native/costcap-profile-builder3`): the prologue is flat (t.poll 0.399 ms a tick over 29.3
+  polls; rate_progress 0.258; incoming 0.183): a C++ port saves <= 0.2 ms a tick. build_situation 0.995 ms a tick (5.6 calls): s.contacts
+  0.388, s.tactics 0.124, cover_fire 0.089, incoming 0.086, squad 0.083, cover_spots 0.070. **GO:** s.contacts' remaining fields + s.tactics
+  into situation_native (~0.4-0.5 ms a tick, ~3 ms a frame on his laptop), VERIFY on his four, ABBA at the cost cap, ON if faster or
+  neutral. Engage told those two are twin-frozen from the merge.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
