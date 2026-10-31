@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/theme/arena_kit/mapkit/mapkit_prop.gd" id="1_prop"]
+
+[node name="PropMonorailDeck" type="Node3D"]
+script = ExtResource("1_prop")
+kind = "monorail_deck"

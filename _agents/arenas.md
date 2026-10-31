@@ -813,14 +813,23 @@ New looks go to the tap-to-approve page with 2-3 directions per piece before any
 doors A (vault slabs), sight screens C (vent steam), overpass C (monorail), tank traps A (hedgehogs), pipes B (ground
 pipeline), crane A (yard gantry); all 21 door lines kept and voiced. What exists (`game/arena/arena_kit.gd` PROPS, looks in
 `game/theme/arena_kit/mapkit/`, one MultiMesh per kind in `MapkitYard`):
-- `tank_trap` (`low`, box 0.9 m under the muzzles, the hog drawn 1.2 m); `monorail` (a 1.4 x 9 m pillar, `hard`, carrying 10 m of
-  beam at 9 m: only the pillar collides; look key `car`); `sight_screen` (the `sight` class: layer 5, never an obstacle, read by
+- `tank_trap` (`low`, box 0.9 m under the muzzles, the hog drawn 1.2 m); the overpass is TWO types: `monorail` (a 1.4 x 9 m pillar,
+  `hard`) and **`monorail_deck`** (the beam: decoration, its own prop and VisualSlot; `ArenaKit.PROPS["monorail_deck"]`: `size` =
+  [width 2.4, THICKNESS 1.4, default span 10] m, **`deck_y` = 9.0 m, the drawn underside**, `ArenaKit.deck_y(type)`; look keys `span`
+  (metres of beam along its local z) and `car`). **For camera's deck cutaway:** hide the deck prop's VisualSlot only (never a pillar,
+  never a collider); a hidden kit prop leaves its MultiMesh (`mapkit_prop.gd` NOTIFICATION_VISIBILITY_CHANGED), shown again it returns; `sight_screen` (the `sight` class: layer 5, never an obstacle, read by
   `Perception.eye_mask()` and CoverTables while `ArenaKit.sight_on`, `--kit-sight=off`; placeholder strip look until steam is built).
 - Blast doors: `game/match/blast_doors.gd` (the schedule, `BlastDoors.is_open(id, tick)`), `game/arena/arena_doors.gd` (slab,
   carved doorway, one NavigationLink3D on route's bit, the hold); layout key `doors` [{name, group, position, rotation_deg, call}].
   On `doors_dev` only until native passes route's mask (C47.8).
 - Twins (CANDIDATES, `tests/mapkit/make_kit_twins.py`): `parade_traps` (two hedgehog breakwaters a side in front of each base).
   Static read (laptop, arena_report): views unchanged (mean 83.6 -> 82.8 m, centre sees 0.82 -> 0.81), every lane/corner passes.
+  `parade_rail` (a monorail over the parade ground, 20 m spans): centre sees 0.82 -> 0.78, mean view 83.6 -> 81.6 m, lanes pass.
+  `crossing_screens` (a sight screen across each bridge and two along each near bank): mean view 65.8 -> 62.1 m, views over 120 m
+  0.16 -> 0.14, bridges 13.00 m physical (as bare). Its route exposures READ HIGHER (direct 0.052 -> 0.073, covered 0.022 -> 0.036,
+  idle) partly because the report seats a watcher behind every eye-height box, screens included: the paired series decides.
+  `arena_report.py` counts a `sight` box for every VIEW measure and for none of the DRIVE measures (occupancy, routes, corridors,
+  the lane bar) since round 47; before that a screened map read as walled.
 
 How to judge any of them: `make arena-report` on the map before and after (sightlines, flank use, hidden time), the paired series
 against the map's twin without the pieces (*How we test that a map delivers*), and his eye on the laptop for the look and the fps.
