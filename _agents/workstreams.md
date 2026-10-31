@@ -126,6 +126,11 @@ crossing / terminus x 2 / 3 squads x click / route x 6 seeds, NOT merged, `--gro
 crew-s a run ON <= OFF x 1.25 + 5; G3 the V1 veto's lines (places across a gap / sent back, squads over a deck) ON <= OFF; G4 every
 unmerged click byte-identical (0 places differ; streets and his V1 clicks by construction); G5 the farthest spot from his click
 median ON <= OFF. **Ships ON** when every line passes; a FAIL goes to him in player terms the same hour (C47.2).
+**Amendment 1 (2026-10-30 ~17:25 PDT, before any number; native's N0 relay):** his Crossing clicks were the ctrl+4 merge (the
+Wrenches went as loose crews), but whether his Locks click was a merge cannot be told (no key rows then). Added part `all`, a READ
+and not a line: `--group-merged=all` (OFF by default) lays the double file on every 2-3 squad plain click, on the merged part's
+corpus unmerged (240 runs), reported with D1 / D2 / G1 / G2's numbers. Widening O1 to it is his call in player terms; the verdict
+above is unchanged.
 
 ## Round 46: five streams (prepared 2026-10-30; CLOSED 2026-10-30; briefs in `streams/archive/round46/`)
 

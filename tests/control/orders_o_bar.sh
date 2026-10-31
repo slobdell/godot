@@ -39,5 +39,9 @@ part his_l locks 2 click "$OFF,--probe-click=-81.6/45.7 $ON,--probe-click=-81.6/
 	|| { echo "BAR NOT RUN: his_l"; exit 1; }
 part identity "locks crossing terminus" "2 3" "click route" "off:--group-merged=off on:" "$id_seeds" $((3 * 2 * 2 * 2 * $(n "$id_seeds"))) \
 	|| { echo "BAR NOT RUN: identity"; exit 1; }
+# Amendment 1 (filed before any number): READ only, not a line: the double file on every 2-3 squad click (`--group-merged=all`).
+part all "locks crossing terminus yard_open sumps" "2 3" click "off:--group-merged=off all:--group-merged=all" "$merged_seeds" \
+	$((5 * 2 * 2 * $(n "$merged_seeds"))) || echo "PART all NOT COMPLETE (a read only; the verdict stands without it)"
 python3 tests/control/orders_o_judge.py "$out" off on | tee "$out/verdict.txt"
+python3 tests/control/orders_o_judge.py --read-all "$out" off all | tee "$out/read_all.txt"
 echo "BAR_DONE"

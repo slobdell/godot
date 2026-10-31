@@ -1649,7 +1649,7 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		# seat the ground refuses keeps the places above.
 		if SelectionSquads.GROUP_MERGED and ground != null and not queue_leg and drawn == null and loose.is_empty() \
 				and (verb == "move" or verb == "attack_move") and squads.size() >= 2 and squads.size() <= SelectionSquads.MERGED_FILES_MAX \
-				and blocks.size() == squads.size() and merged_group() > 0:
+				and blocks.size() == squads.size() and (merged_group() > 0 or SelectionSquads.GROUP_MERGED_ALL):
 			var filed := _merged_files(squads, blocks, click, ground)
 			if not filed.is_empty():
 				anchors = filed["heads"]

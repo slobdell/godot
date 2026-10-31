@@ -140,7 +140,30 @@ def self_test():
     return not failures
 
 
+def read_all(bar, off, arm):
+    """Amendment 1's READ: the double file on unmerged clicks (`--group-merged=all`); the same numbers as D1, D2, G1, G2."""
+    runs, rows = load("%s/all/runs.jsonl" % bar), load("%s/all/rows.jsonl" % bar)
+    pairs = paired(runs, off, arm)
+    if not pairs:
+        print("READ all: no runs")
+        return
+    both = [(a["all_in_s"], b["all_in_s"]) for a, b in pairs if a["all_in_s"] >= 0 and b["all_in_s"] >= 0]
+    w_off, w_on = wedged(rows, off), wedged(rows, arm)
+    ks = [k for k in w_off if k in w_on]
+    print("READ all (not a line): spread median %.1f v %.1f m; all-in paired mean %+.2f s (n %d); never in %d v %d; "
+          "contacts %.1f v %.1f; wedged crew-s %.1f v %.1f; laid as files %d of %d" % (
+              med([b["spread_m"] for _, b in pairs]), med([a["spread_m"] for a, _ in pairs]),
+              statistics.mean([b - a for a, b in both]) if both else float("nan"), len(both),
+              sum(1 for _, b in pairs if b["all_in_s"] < 0), sum(1 for a, _ in pairs if a["all_in_s"] < 0),
+              statistics.mean([b.get("friend_contacts", 0) for _, b in pairs]), statistics.mean([a.get("friend_contacts", 0) for a, _ in pairs]),
+              statistics.mean([w_on[k] for k in ks]) if ks else 0.0, statistics.mean([w_off[k] for k in ks]) if ks else 0.0,
+              sum(1 for _, b in pairs if b.get("merged_laid", 0) > 0), len(pairs)))
+
+
 if __name__ == "__main__":
+    if sys.argv[1] == "--read-all":
+        read_all(sys.argv[2], sys.argv[3], sys.argv[4])
+        sys.exit(0)
     if sys.argv[1:] == ["--self-test"]:
         sys.exit(0 if self_test() else 1)
     sys.exit(0 if judge(read(sys.argv[1]), sys.argv[2], sys.argv[3]) else 1)

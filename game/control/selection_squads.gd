@@ -2201,6 +2201,9 @@ const VETO_LINE_STEPS := 10
 ## ordered loose, without a squad, because his group 4 also held the Spears' group 3). `--group-merged=off` / `GROUP_MERGED=off`
 ## is round 46's lay. Symmetric (C47.9): the CPU orders its elements one at a time (C45.5) and has no group click to merge.
 static var GROUP_MERGED := merged_default()
+## `--group-merged=all` (OFF; Bar O's READ arm, amendment 1): every plain click on 2-3 whole squads lays as the double file, merged
+## or not (his Locks click may have been two squads he box-selected; no key rows said).
+static var GROUP_MERGED_ALL := OS.get_cmdline_user_args().has("--group-merged=all")
 ## At most this many files abreast (a merged group of up to fifteen); a bigger merge lays as today.
 const MERGED_FILES_MAX := 3
 ## Measurements (a probe reads them): merged clicks laid as files; merged clicks whose files the ground refused (today's lay).
