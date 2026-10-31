@@ -342,7 +342,7 @@ const URGENT_OMEGA_X := 2.5
 ## PAN_ARRIVE_M of the planner's point, as does a look that has fallen PAN_START_M behind it with no hand on the camera
 ## since the selection; while it pans nothing holds it and his hand does not slow it. `--camera-select-pan=off` = round 46.
 const PAN_START_M := 20.0
-## Ends: once his selection's middle is this close to the shown look point (the glide, with his aim hold, finishes the
+## Ends: once the planner's point is this close to the shown look point (the glide, with his aim hold, finishes the
 ## last metres), or PAN_MAX_S after it began. Dev 7001-7004 (ebfc3b162): ending on the planner's point within 3 m kept the
 ## pan running through his aims (that point moves with every yaw step): clicks on the aimed unit 82 -> 60 %, slip p95 33 -> 173 px.
 const PAN_ARRIVE_M := 12.0
@@ -2151,22 +2151,17 @@ func _update_planner(points: Array, destination: Variant) -> void:
 
 ## Whether the view pans to the planner's point now, ignoring his aim and his hand's pace (the hold and the pace step aside).
 ## Round 46: a new selection (FRESH_S) with a crew off the shown screen. Round 47 (K2/K3, `select_pan`): the gap between
-## the shown look point and his selection's middle: a new selection (FRESH_S) more than PAN_START_M away, or a selection whose
-## middle has drifted PAN_DRIFT_M away with no hand on the camera since he picked it (his own pan is his until he selects
+## the shown look point and the planner's point (which frames his selection): a new selection (FRESH_S) more than PAN_START_M
+## away, or a selection whose frame has drifted PAN_DRIFT_M away with no hand on the camera since he picked it (his own pan is his until he selects
 ## again), pans until that gap is PAN_ARRIVE_M or PAN_MAX_S has passed; the glide (and his aim hold) does the rest.
 func _pan_urgent() -> bool:
 	if not planner_on or _track != Track.VISION:
 		return false
 	if not select_pan:
 		return _clock < _fresh_until and not _selection_shown()
-	var own: Array = (_vision_state.get("frame", []) as Array).slice(0, int(_vision_state.get("own", 0)))
-	if own.is_empty():
-		return false
-	var mean := Vector3.ZERO
-	for at: Vector3 in own:
-		mean += at
-	mean /= float(own.size())
-	var gap := Vector2(mean.x - _shown_focus.x, mean.z - _shown_focus.z).length()
+	# The gap to the PLANNER'S point (it frames the squad's bounds: a spread army's mean sits far from a right look, and a
+	# gap to the mean re-fired the pan every PAN_MAX_S: dev 7001-7004 at db75ab282, slip p95 33 -> 254 px).
+	var gap := Vector2(focus.x - _shown_focus.x, focus.z - _shown_focus.z).length()
 	# Arrived: near his selection AND slowed to the glide's own pace (ending at full speed left the glide to brake or coast
 	# ~12 m: dev 7001-7004 at 0927ea3e0, 'planner' jerks 1.7 -> 7.3/min).
 	if gap <= PAN_ARRIVE_M and (not planner_urgent or _focus_velocity.length() <= _normal_top_speed()):
