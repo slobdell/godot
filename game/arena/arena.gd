@@ -119,7 +119,7 @@ const SYMMETRY_TOLERANCE := 0.01
 ## channel/patch data (round 9): additive, optional, and preserved across `make arenas` by
 ## `tools/make_arenas.PRESERVED_KEYS`.
 const LAYOUT_KEYS := ["name", "note", "title", "schema", "half_size", "shape", "fixture", "obstacles", "props",
-		"terrain", "hazards", "lanes", "regions", "objectives", "spawns", "spawn_zones", "control_point", "show"]
+		"terrain", "hazards", "lanes", "regions", "objectives", "spawns", "spawn_zones", "control_point", "show", "doors"]
 ## A spawn point must be this far from every obstacle's footprint: the widest spawn jitter plus half a hull.
 ## Round 9 (scale): the margin is a named constant so `tools/make_arenas.py` can READ both halves of this sum
 ## instead of carrying "6.0" in a default argument, which is what it did -- a mirror of a derived value, which
@@ -162,6 +162,7 @@ func _ready() -> void:
 	_build_perimeter()
 	_build_terrain()
 	_build_obstacles()
+	_build_doors(flags.integer("seed", 0))
 	_build_decor()
 	_build_hazards()
 	var dressing := get_node_or_null("Dressing") as VisualSlot
@@ -288,6 +289,20 @@ func _build_obstacles() -> void:
 		body.add_child(_prop_visual(obstacle, size))
 		obstacles_root.add_child(body)
 		(body.get_node("Visual") as VisualSlot).invoke("setup", [obstacle])
+
+
+## Mapkit P2 (round 47): the layout's blast doors (`doors`), built OUTSIDE the Obstacles node so the navmesh bakes
+## every doorway open; the route reads the schedule (BlastDoors.is_open). Seeded from the match's --seed.
+var doors: ArenaDoors
+
+
+func _build_doors(match_seed: int) -> void:
+	if not layout.has("doors") or (layout["doors"] as Array).is_empty():
+		return
+	doors = ArenaDoors.new()
+	doors.name = "Doors"
+	add_child(doors)
+	doors.setup(layout, match_seed)
 
 
 ## A box wider than this on BOTH horizontal axes is built as a hollow perimeter instead of one solid box.
@@ -858,6 +873,10 @@ static func _validate_v2(data: Dictionary) -> String:
 		for obstacle: Dictionary in data["obstacles"]:
 			if not ArenaShape.contains(shape_kind, bound, Vector2(obstacle["position"][0], obstacle["position"][1])):
 				return "obstacle %s at %s is outside the %s" % [obstacle["type"], obstacle["position"], shape_kind]
+	if data.has("doors"):
+		var door_problem := BlastDoors.validate_doors(data["doors"], SYMMETRY_TOLERANCE)
+		if door_problem != "":
+			return door_problem
 	var terrain: Variant = data.get("terrain", [])
 	if typeof(terrain) != TYPE_ARRAY:
 		return "'terrain' must be a list"
