@@ -2209,6 +2209,9 @@ const MERGED_FILES_MAX := 3
 static var merged_laid := 0
 static var merged_refused := 0
 static var merged_stepped := 0  # O1 v2: laid after stepping back from the click
+## O1 v2's files the whole way (`--group-merged-travel=file`, dev only: 5-20x the contacts); R47.21's default is his "columns
+## only at the end" (ElementPlan.MERGED_ARRIVE_FILE: own shape on the way, a file for the last stretch).
+static var MERGED_TRAVEL_FILE := OS.get_cmdline_user_args().has("--group-merged-travel=file")
 ## O1 v2: how far the double file may step back along his approach to find dry, standable seats.
 const MERGED_BACK_STEP_M := 4.0
 const MERGED_BACK_STEPS := 10

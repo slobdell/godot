@@ -89,7 +89,7 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
 | E2b a line under his attack | code in; `--attack-line`, **OFF** until Bar E. Its hand-built one-crew stage does NOT reach the rule (the element's contact drill hands the lone rig a slot with a line: both arms fire at 6.6 s); a dev read on the six staged windows decides whether the rule fires at all before a new test |
 | E2 dev reads | **no measurable effect from either switch** (below) -> **E2a + E2b DROPPED (R47.17), code removed** (game files byte-identical to e306ce27f; native's twin reverted) |
 | E7 his order beats RETREAT | code + tests GREEN at **14ccc9b91** (builder3 `native test` press_on / native_decide / combat_envelope / native_gun / native_exec_state: 45 passed, 0 failed). `--press-on`, **OFF** until native's `_obey` twin (spec + hash sent). Dev read on route's Locks case (staged 1440) running |
-| E7 Bar E7 | **FILED** + **Amendment 1** (his side only; G6 the CPU side untouched), both before any number on 12601-12648. native's re-twin EQUAL (pair/native-e7 aa339ab80, merged). **FROZEN at d4a88c4a5** (+ the touch-map feed line); full check then the series (D, G4 authority, G6 no player team) running on builder3 |
+| E7 Bar E7 | **FAILED on G1** (friendly hits 1 -> 6, 1-4 hp each, no kills); D1 / D2 / G2-G6 PASS (verdict below); the orchestrator rules. Was: **FILED** + **Amendment 1** (his side only; G6 the CPU side untouched), both before any number on 12601-12648. native's re-twin EQUAL (pair/native-e7 aa339ab80, merged). **FROZEN at d4a88c4a5** (+ the touch-map feed line); full check then the series (D, G4 authority, G6 no player team) running on builder3 |
 | Leftover: touch map feed line | **DONE**: `HudMessages.selected_units` reads the touch map's `selected()` squad; test green (builder3 `native test` lane_line / hud_messages: 13 passed, 0 failed) |
 | E6 army_cost read | **DONE (report only)**: the laptop preset's 20-vehicle cap halves a swarm faction's skirmish army (below); he answered (cap by vehicle cost, skirmish = 1000 credits): orders builds it (R47.22) |
 | E3 pot shots | **HIS YES (R47.20).** Bar E3 **FILED** before any number on 12649-12696; native twin spec sent; then freeze, check, series. Code behind `--pot-shot` (default OFF until the bar); test green at 087d1732a (first round 12 v 28 ticks); dev reads below; **his question sent to the orchestrator** (recommended: yes) |
@@ -134,6 +134,20 @@ branch runs while it is off), no native code and no make target reads or sets it
   first round median 1.45 -> 0.90 s, accuracy 76 -> 79 %, hits a minute 29 -> 38, friendly hits 0.08 -> 0.08 a run.
 
 ### Bar E7 (FILED 2026-10-30 ~19:10, before any number on 12601-12648) — the text is in workstreams.md *Bars (round 47)*
+
+- **Bar E7 VERDICT (2026-10-30 ~20:05 PDT): FAILS on G1 (friendly hits 1 -> 6, limit 2.6); every other line passes.** Code
+  frozen at **d4a88c4a5**, its full check GREEN (builder3 `make check exited 0`, 3526 passed / 0 failed, 28 ALL JUDGED,
+  sim-baseline unmoved); the runs stamped 04dd39092 (= d4a88c4a5 + `_agents/` docs only, `git diff --stat`). builder3, native ON,
+  12601-12648, 48 paired, 0 errors. The OFF deciding arm was refused once (a check helper still live in the folder; nothing ran,
+  no number read) and rerun verbatim. `--pot-shot` inert on that tree (default OFF, one branch, first conjunct; no native / mk
+  reader). D1 PASS: metres driven away from his target 94.2 -> 30.4 a run (-63.9, se 16.3, z -3.93). D2 PASS: first hit sooner or
+  identical 41/48 = 85 % (30 strictly). **G1 FAIL: friendly hits 1 -> 6** (limit 2.6). G2 PASS: crew deaths 102 -> 93. G3 PASS: the
+  target dies sooner, 44.1 -> 37.0 s (-7.1, se 2.5). G4 PASS: authority probe 24/24 identical. G6 PASS: the CPU side 48/48
+  identical. Reported: first hit 23.6 -> 13.0 s (se 2.4), hits a minute 308 -> 419, never-hit 1.23 -> 0.73 crews a run, accuracy 73 %
+  both. **The 6 (traced, `--trace=on`, seeds 12612 / 12621 / 12642, 4 on 12642's five gang IFVs on Locks):** 1-4 hp each, no kill;
+  the hurt crews that today retreat stay in the fight circling and assaulting through by the target, and machine-gun rounds
+  graze a squadmate (4 under ENGAGE "assault through ... circling", 1 under CLEAR_LANE "E_3 in the line of fire", 1 under SUPPRESS).
+  Evidence `~/overnight-engage/r47/barE7/`, `~/overnight-engage/r47/ff_on/` (laptop).
 
 **Bar E7 HIS ATTACK BEATS RETREAT (engage; filed 2026-10-30 ~19:10 PDT in streams/engage.md and here, BEFORE any number on
   12601-12648; R47.6).**

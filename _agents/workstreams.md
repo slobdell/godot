@@ -88,7 +88,7 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 - **C47.10 The laptop is the test bed (memory).** Mapkit's pieces and camera's planner state their laptop cost (UHD 620, under the lock);
   an expensive look ships as a hardware-preset knob.
 - **C47.11 Seeds:** manoeuvre 12401-12496, route 12501-12596, engage 12601-12696, orders 12701-12796, camera 12801-12896, mapkit
-  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). **Extra blocks (R47.30):** manoeuvre 13001-13024 (Bar H). Next free: 13025.
+  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). **Extra blocks:** manoeuvre 13001-13024 (Bar H, R47.30); engage 13025-13120 (E9, R47.37). Next free: 13121.
 
 **Rulings at prep:**
 - **R47.1 (2026-10-30 evening, his pick) Seven streams this round, the map kit included.** He picked it knowing the laptop's RAM is short
@@ -327,9 +327,27 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   visibility_field still ray WORLD_MASK), native (doors' C++ mask; eye_mask in C++ LOS; GRANT the two match.gd / visibility_field ray
   call sites for the mask change), manoeuvre (the doors' `overstay` event). Main check of the batch pending.
 
+- **R47.37 Merged: engage d3b3fe918 (E7 ON, `PRESS_ON_DEFAULT := true` grep-confirmed on main) and manoeuvre bbd8c1ba6 (buried ON,
+  grep-confirmed). His picks: snap shots SHIP ON after Bar E3's D1 missed by 0.006 s (z -1.637 v 1.645; per crew first round 1.55 -> 0.80
+  s, 79 / 11 / 8; accuracy 79 -> 73 %; G1 6 -> 2, G2 5 -> 7, G3 22.7 -> 26.2, G4 pass): engage's ship commit = POT_SHOT default true +
+  `--pot-shot=off`, its own full check. Group click O1 v3 SHIPS (his "bumping OK"): Bar O2 on 12749-12796 with the contact guard x2.5 + 5.
+  Engage E9 (friendly fire on the move): option (b), a stricter pre-check in fire_lanes.gd (moving spread + friends led by flight time),
+  match.gd untouched; seeds 13025-13072 (bar) + 13073-13120 (reserve). Mapkit's map-twin bar filed below; its series after Bars W/H/O2.**
+- **R47.38 (his picks) Trim sheet on all four kit pieces; a minimal monorail TRAIN asset ("the people's monorail ... far from Syndicate
+  quality").** Mapkit: 2-3 directions on a tap-to-approve page first (built from kit primitives + the trim sheet if that can carry it;
+  a Meshy concept only if needed, logged), then the 3D, laptop cost stated.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
+
+- **Bar P THE MAP-KIT TWINS CHANGE THE FIGHT (mapkit; proposed 2026-10-30 ~21:00, filed here by the orchestrator BEFORE any number).**
+  Pairs parade v parade_traps, parade v parade_rail, crossing v crossing_screens; arena-series style, fresh seeds 12901-12932 (16 a pair),
+  counterbalanced (swap bases, both army orders), native ON, judged at each map's end. **Deciding:** the twin changes the fight's shape:
+  engagement-range distribution or flank / route use differs from the base beyond the seed spread; for crossing_screens, the short-range
+  side's shots fired rise v crossing (his 6 v 358). **Guards:** (1) fairness: swap-bases margin within noise of 50 %; (2) units look smart:
+  no-progress / stall events a crew-minute no worse than the base (new things to get stuck on); (3) match length within the base's spread,
+  no stalemates; (4) laptop: no piece above the empty floor's GPU spread (trim monorail re-measured). Runs after Bars W / H / O2 on builder3.
 
 - **Bar K A NEW SELECTION PANS AT ONCE; HIS SQUAD STAYS FRAMED (camera; FILED 2026-10-30 ~18:30 in streams/camera.md, stream/camera
   b1f08cc2d, BEFORE any number on 12801-12848; recorded here by the orchestrator; full text in the brief).** Switch
@@ -389,6 +407,20 @@ _(filed here BEFORE any number; newest first)_
   fights on the frozen tree (dev: 83 % -> 69 %). **Dev reads (never a bar):** War Rigs, 7001-7012 (102a18395, gun C++ off, n = 12):
   first round median 1.45 -> 0.90 s, accuracy 76 -> 79 %, hits a minute 29 -> 38, friendly hits 0.08 -> 0.08 a run.
 
+- **Bar E7 VERDICT (2026-10-30 ~20:05 PDT): FAILS on G1 (friendly hits 1 -> 6, limit 2.6); every other line passes.** Code
+  frozen at **d4a88c4a5**, its full check GREEN (builder3 `make check exited 0`, 3526 passed / 0 failed, 28 ALL JUDGED,
+  sim-baseline unmoved); the runs stamped 04dd39092 (= d4a88c4a5 + `_agents/` docs only, `git diff --stat`). builder3, native ON,
+  12601-12648, 48 paired, 0 errors. The OFF deciding arm was refused once (a check helper still live in the folder; nothing ran,
+  no number read) and rerun verbatim. `--pot-shot` inert on that tree (default OFF, one branch, first conjunct; no native / mk
+  reader). D1 PASS: metres driven away from his target 94.2 -> 30.4 a run (-63.9, se 16.3, z -3.93). D2 PASS: first hit sooner or
+  identical 41/48 = 85 % (30 strictly). **G1 FAIL: friendly hits 1 -> 6** (limit 2.6). G2 PASS: crew deaths 102 -> 93. G3 PASS: the
+  target dies sooner, 44.1 -> 37.0 s (-7.1, se 2.5). G4 PASS: authority probe 24/24 identical. G6 PASS: the CPU side 48/48
+  identical. Reported: first hit 23.6 -> 13.0 s (se 2.4), hits a minute 308 -> 419, never-hit 1.23 -> 0.73 crews a run, accuracy 73 %
+  both. **The 6 (traced, `--trace=on`, seeds 12612 / 12621 / 12642, 4 on 12642's five gang IFVs on Locks):** 1-4 hp each, no kill;
+  the hurt crews that today retreat stay in the fight circling and assaulting through by the target, and machine-gun rounds
+  graze a squadmate (4 under ENGAGE "assault through ... circling", 1 under CLEAR_LANE "E_3 in the line of fire", 1 under SUPPRESS).
+  Evidence `~/overnight-engage/r47/barE7/`, `~/overnight-engage/r47/ff_on/` (laptop).
+
 - **Bar E7 HIS ATTACK BEATS RETREAT (engage; filed 2026-10-30 ~19:10 PDT in streams/engage.md and here, BEFORE any number on
   12601-12648; R47.6).**
 
@@ -420,6 +452,39 @@ _(filed here BEFORE any number; newest first)_
   native twin re-proves on the narrowed rule before the freeze. **Added guard G6, the CPU side untouched:** the same probe with
   `--his-side=off` (no player team: every crew is the CPU's), seeds 12601-12648, `--press-on` off v on: 48/48 ENGAGE_PROBE rows
   identical. Deciding lines, workload and the other guards as filed. (Amendment 1 of at most 2.)
+
+- **Bar K A NEW SELECTION PANS AT ONCE; HIS SQUAD STAYS FRAMED (camera; FILED 2026-10-30 ~18:30 in streams/camera.md, stream/camera
+  b1f08cc2d, BEFORE any number on 12801-12848; recorded here by the orchestrator; full text in the brief).** Switch
+  `--camera-select-pan` (ON at e4a614eab; `=off` = main's planner byte-identical). The pick's pan starts at once when the planner's
+  point is > 20 m from the look point, moves the look point only, a spring capped at 4 view-heights/s, ends at <= 12 m or 1.5 s. K3's
+  20 m bound PARKED OFF (it clipped the rear-ambush frame, 1.4 -> 6.3 s in dev). Frozen e4a614eab, builder3, headless 1920x1080 @60,
+  150 s. Workloads SPLIT (his Crossing case; 12801-12848 over Terminus / Locks / Crossing / Gorge), ATTACK, AMBUSH, RETREAT; the eye
+  waits up to 1.5 s for the pan before aiming (a workload choice after dev reads; clicks aimed mid-pan reported). **D1** % of play his
+  selection > 30 m off: ARM <= BASE and <= 10 % (**a 0.6x ratio was drafted and dropped after a dev read showed 0.74x at n 8; the
+  orchestrator notes it as dev-shaped, so the ratio is REPORTED and read beside D1**); **D2** far selection framed: ARM mean <= 1.0 s,
+  <= BASE, p90 <= 1.5 s; **D3** never framed ARM <= BASE. Guards: G1 occlusion, G2 none on screen, G3 hits off screen, G4a/b jerks and
+  snaps, **G4c a pan not a cut** (peak <= 4.5 view-heights/s), G5a-c clicks >= 70 %, slip p95 <= 40 px, held, G6 action share, G7 inside
+  a solid, G8 rear-ambush and retreat turns, G9 clean runs, **G10 laptop** rig mean <= 0.5 ms, planner p99 <= 1.5 ms (UHD 620, lock).
+  Also reported: his four recordings under three hand models (model / rest / busy). Last dev read (63429985c, n 8): framed 3.82 ->
+  0.68 s, never 16 -> 2, > 30 m 7.0 -> 5.2 %, slip p95 28 -> 31 px, clicks 86 -> 81 %.
+
+- **Bar M BURIED STATIONS (manoeuvre; FILED 2026-10-30 ~18:55 in streams/manoeuvre.md, stream/manoeuvre c85f828cf, BEFORE any number;
+  recorded here by the orchestrator).** The change: `--traffic-on=buried` (Movement.buried_station + R47.11's one line): a travelling
+  station the grounding moves > 4 m, or pulls back > 1 m along the squad's way while 6 m on is > 1.5 m off the navmesh, is taken on the
+  squad's own route 8 m on (never behind the crew), sticky while pinned. **Native:** no twin claimed (the goal is GDScript on every path;
+  native's feed passes the raw station) — native confirms. Machine builder3, native ON both arms, frozen tree = the first green commit
+  after 482f5e2b3. Census: noprog_s (crew > 15 m from its seat by route, no 1 m closer in the last second). Instrument checked on his
+  Locks replay (BASE Burners2_4 4.0 s). **W1 deciding:** orders' group-order probe, terminus / crossing / locks / sumps, 12401-12424.
+  **W2:** route-census CPU v CPU on 12425-12448 once on main, else dropped and said. **D1** his staged Locks case <= 1.0 s (BASE 3.47);
+  **D2** touched cells noprog_s paired mean < 0 AND sooner-or-identical >= 50 %; D3 all cells <= +1.645 se; **G1** all_in_s, **G2**
+  never_in, **G3** contact_s, **G4** blocked_s / yielding_s (each <= +1.645 se; G2 total <= BASE); **G5** untouched cells identical;
+  **G6** staged Crossing Hunters < 2.5 s each; **G7** W2 both teams' noprog_s; **G8** engage's authority probe 12443-12448 rows identical;
+  **G9** frozen tree's check exited 0, no SCRIPT ERROR. Full table in the brief.
+  **AMENDMENT 1 (of 2; 2026-10-30 ~19:30, 1aa41aeaf, before any bar number; lines unchanged, the trigger corrected):** a dev 7001
+  dry run showed the rule acting in every cell (764 swaps on Locks, 609 on the plain > 4 m trigger, median gap 6 m: a routine
+  grounding sliding along a wall). His corner is PINNED, so the > 4 m trigger now also needs the grounded point to have moved <= 1 m
+  while the station moved >= 3 m in >= 1 s. His staged case unchanged (0.0 s); Crossing guard identical. Frozen tree = 1aa41aeaf once
+  green. G3 (contact) named the line at risk.
 
 ### Bar O (orders O2, R47.4; filed 2026-10-30 ~17:05 PDT, before any number on its seeds)
 

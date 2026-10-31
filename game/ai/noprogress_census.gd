@@ -105,6 +105,7 @@ static func observe(mover: Movement, now: int) -> void:
 		_last_print = now
 		var row := report()
 		row["swaps"] = Movement.buried_swaps  # the buried rule's swaps so far (0 in an arm without it: the cells it touched)
+		row["watch"] = NoProgressWatch.trips  # the no-progress watchdog's reroutes so far
 		print("NOPROGRESS " + JSON.stringify(row))
 
 

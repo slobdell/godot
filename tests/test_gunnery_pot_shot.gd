@@ -1,29 +1,19 @@
 extends TestCase
 ## Round 47 (engage E3, R47.17): POT SHOTS behind `--pot-shot` (default OFF, his call). A crew whose only held gate is the
 ## acquisition fix, laid at least POT_SHOT_AFTER_S, its target inside the band, snaps a round off with its aim off by what
-## is left of the fix. Staged in the open: a gun on standing orders (fire at will) and a still target 30 m off (inside the band), both on the
-## GDScript execute path (the C++ step has no pot shot: off for this test only).
+## is left of the fix. Staged in the open: a gun on standing orders (fire at will) and a still target 30 m off (inside the band), on
+## whichever execute path the build runs (native's NativeGun / NativeExec twin carries the pot shot, pair/native-e3).
 
 const SHOOTER_AT := Vector3(-100.0, 0.0, 40.0)
 const TARGET_AT := Vector3(-100.0, 0.0, 10.0)  # 30 m: inside the scrap cannon's 36 m band
 
-var _native_exec := true
-var _armed := false
-
-
 func teardown() -> void:
-	if _armed:
-		BrainSwitches.native_exec = _native_exec
 	Gunnery.POT_SHOT = false
 	super.teardown()
 
 
 ## The tick (from the start) of the shooter's first round, or -1 within `seconds`.
 func _first_shot(pot: bool, seconds := 4.0) -> int:
-	if not _armed:
-		_armed = true
-		_native_exec = BrainSwitches.native_exec
-	BrainSwitches.native_exec = false
 	Gunnery.POT_SHOT = pot
 	var lab := TacticsLab.create(self, 7, "")
 	var shooter := lab.gun(Match.Team.GREEN, "Green_Rig", SHOOTER_AT, 0.0, "gang_tank")  # facing -z, at the target

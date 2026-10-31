@@ -150,6 +150,11 @@ static func reroute(crew: Node, reason: StringName) -> bool:
 	var mover := Movement.of(crew)
 	if mover == null or not (crew is Tank) or not (crew as Tank).alive:
 		return false
+	# Round 47 (manoeuvre, R47.25's grant): a crew whose route ENDS far short of a goal that is reachable from nearby (it stands on a
+	# sliver of navmesh cut off from the goal's region) is given the route from the nearest point of the goal's region instead.
+	if _off_island(mover):
+		reroutes[reason] = int(reroutes.get(reason, 0)) + 1
+		return true
 	# The route is re-planned on an EVENT (`Movement._next_waypoint`: the goal moved, off the route, a stall); a goal it
 	# was never planned for is that event on the next tick, here and in the C++ (drive_native.cpp reads `_path_goal`).
 	mover._path_goal = Vector3.INF
@@ -157,3 +162,76 @@ static func reroute(crew: Node, reason: StringName) -> bool:
 	mover.native_stale |= Movement.STALE_ALL  # a write from outside the native execute (as OrderController's forwarders)
 	reroutes[reason] = int(reroutes.get(reason, 0)) + 1
 	return true
+
+
+## Round 47 (manoeuvre, R47.25; the CPU's Rust_Hunters on his Crossing recording, staged in tests/test_manoeuvre_noprogress.gd): two
+## crews on a sliver of navmesh between the city block (-34, -33) and a container sat `blocked: no_path` 15 s, their route ending
+## 2.9 m away, while a squadmate 2 m off drove to the same seats. Re-planning from where they stand returns the same short route.
+## So, for a crew whose current route is unreachable: the nearest point (rings of OFF_ISLAND_RINGS metres, OFF_ISLAND_DIRS
+## directions, the nearest ring first and the shortest route within it) from which the goal IS reachable becomes the route's first
+## station, and the route from it is the rest; the crew drives the short hop off the sliver and on. False (today's re-plan) when the
+## route was reachable, nothing is in hand, or no point near reaches the goal. Pathing.query / closest_point carry native's queries.
+const OFF_ISLAND_RINGS: Array[float] = [2.5, 4.0, 6.0, 8.0]
+const OFF_ISLAND_DIRS := 12
+## A ring point counts only where the navmesh is (within this of its closest point).
+const OFF_ISLAND_ON_MESH_M := 1.0
+static var off_island_routes := 0
+## ...and nowhere another live hull stands within this (the staged case: the nearest point off the sliver was a squadmate's spot, and
+## the two held each other: one blocked by it, the other yielding to it in place).
+const OFF_ISLAND_CLEAR_M := 3.5
+
+
+static func _hull_near(tank: Tank, point: Vector3) -> bool:
+	for other in tank.get_parent().get_children():
+		var hull := other as Tank
+		if hull != null and hull != tank and hull.is_alive() \
+				and Vector2(hull.global_position.x - point.x, hull.global_position.z - point.z).length() < OFF_ISLAND_CLEAR_M:
+			return true
+	return false
+
+
+static func _off_island(mover: Movement) -> bool:
+	if mover._reachable or not enabled:
+		return false
+	var tank := mover.ctl.tank
+	var goal := mover._path_goal if mover._path_goal != Vector3.INF else mover._goal
+	if goal == Vector3.INF or not is_ready(tank):
+		return false
+	var map := tank.get_world_3d().navigation_map
+	var here := tank.global_position
+	for radius: float in OFF_ISLAND_RINGS:
+		var best: Dictionary = {}
+		var best_m := INF
+		for k in OFF_ISLAND_DIRS:
+			var angle := TAU * float(k) / float(OFF_ISLAND_DIRS)
+			var probe := here + Vector3(cos(angle), 0.0, sin(angle)) * radius
+			var start := closest_point(map, probe, "off_island")
+			if Vector2(start.x - probe.x, start.z - probe.z).length() > OFF_ISLAND_ON_MESH_M or _hull_near(tank, start):
+				continue
+			var route := query(tank, start, goal)
+			if not bool(route["reachable"]) or float(route["goal_gap_m"]) > Movement.NO_PATH_MARGIN:
+				continue
+			var points: PackedVector3Array = route["points"]
+			var metres := 0.0
+			for i in range(1, points.size()):
+				metres += Vector2(points[i].x - points[i - 1].x, points[i].z - points[i - 1].z).length()
+			if metres < best_m:
+				best_m = metres
+				best = {"start": start, "route": route}
+		if best.is_empty():
+			continue
+		var path := PackedVector3Array([here, best["start"]])
+		for point: Vector3 in (best["route"]["points"] as PackedVector3Array):
+			if Vector2(point.x - (best["start"] as Vector3).x, point.z - (best["start"] as Vector3).z).length() > 0.1:
+				path.append(point)
+		mover._path = path
+		mover._path_index = 1
+		mover._path_goal = goal
+		mover._reachable = true
+		mover._route_reading = best["route"]
+		mover._repath_left = Movement.REPATH_SECONDS
+		mover.native_stale |= Movement.STALE_ALL  # a write from outside the native execute (as reroute's stub)
+		off_island_routes += 1
+		return true
+	return false
+
