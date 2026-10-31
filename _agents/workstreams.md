@@ -91,6 +91,13 @@ shift keeps 13121-13216 as its fixed before / after set). Dev 7001-7012 (never a
   preset) must be output-identical on screen apart from timing, and a laptop-preset cut ships as a hardware preset (memory). N2
   (contacts in C++) stays OFF: the in-run A/B reads the C++ arm slower in 11 of 12 blocks though the call is 27 % faster.
 
+- **R48.8 N4 read and the next native item.** Laptop UHD 620, lock held, his Crossing seed 101, laptop preset, stream/native 4c01aa748,
+  `--native-tick-profile` 8-40 s (329 frames, 2.91 ticks a frame, 39 -> 32 crews): the fog PICTURE (blits + texture.update) is 0.23 ms a
+  refresh, ~0.03 ms a frame — not the ~2 ms; no dirty-rect fix. The field's RAYS are 0.376 of its 0.466 ms a tick (~1.1 ms a frame on
+  his laptop, the biggest piece). In-run frame A/B noise ~±7 ms on the loaded laptop: frame reads cannot resolve < ~5 ms there; price
+  with the tick profile. **GRANT native the ray function of `game/match/visibility_field.gd` as a C++ seam** (GDScript body kept as the
+  fallback), output-identical with a VERIFY in check, priced with the same tick profile; ON when EQUAL and faster (memory: core in C++).
+
 ### Bars (round 48)
 _(filed by each stream before any number)_
 
