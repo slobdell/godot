@@ -59,7 +59,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
 replay-pytest in check, the remote.sh seed, N3's reader) = main 3f9180d2f. Since: N0 candidate 2, the Xorg DISPLAY line, the place
 twin (WIP), the replay A/B switches; full check of dce3e6a23 running.
 
-**N0 (R47.8, his replays leave his match): cause 1 FIXED (candidate 2, 9b0a7..: tests/replay), cause 2 OPEN, written up (time-box).**
+**N0 (R47.8, his replays leave his match): cause 1 FIXED (candidate 2, 91f0d9900: tests/replay), cause 2 OPEN, written up (time-box).**
 - Cause 1: his Crossing ctrl+4 over Spears + Wrenches is a control-group save, which writes no row. It left the Wrenches in no
   squad, so his click sent Spears as a squad task and the Wrenches DIRECT (their row: `source: player`). The replay sent both as
   squads and laid Spears 3.2 m off his spot (57.7, 25.1 v his 55.7, 22.6); the Wrenches parted at 1 s. Fix: ReplaySetup.merge_clicks
