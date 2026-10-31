@@ -179,6 +179,15 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   Next: the `rules` stamp carries every ON rule (Terminus parts at 12 s because only lane_clear is stamped). `native_place` defaults ON
   only after its proof is EQUAL on every captured place() call.
 
+- **R47.17 (2026-10-30 evening) Engage's E2a (lay carry) and E2b (attack line): no measurable effect -> DROPPED, code removed (as
+  R46.22); native's E2a twin stops. E7 now, then E3 (pot shots) behind a switch, with a player-terms question to him.** Dev only,
+  builder3, gun C++ paths off in every arm: attack-shot probe 7001-7012 n 12 paired, held_line_s 23.41 today v 23.29 carry (-0.12, se
+  0.12) v 23.32 line; first hit 3.51 s all arms; six staged windows within noise. Why: only 18 of his 62 in-progress swaps had the new
+  target within 10 deg of the barrel (median swing 21 deg); 87 of his 145 s acquiring are FIRST fixes, by design (distance over the
+  crew's own sight; War Rig 60 m). Fire discipline 7 %, aim 5 % of his held time. **So the measured core of "took forever to pick a
+  target" is acquisition time itself:** E3's dial (a quicker, less accurate first shot while laying) is his call, asked with numbers.
+  (R47.13's "58 of 145 s a restart" counted restarts of any kind; the carry only helps near-bearing ones.)
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
