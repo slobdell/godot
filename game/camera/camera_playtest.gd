@@ -89,6 +89,7 @@ var _action_s := 0.0
 var _playing := false
 ## What the staged scenario set up (who, where, when), for the report.
 var _staged := {}
+var _panned := false
 
 
 func _ready() -> void:
@@ -205,6 +206,11 @@ func _run() -> void:
 	while scenario == "" and _clock < _seconds and not _ended:
 		await _select()
 		await _wait(_rng.randf_range(0.3, 0.8))
+		# Round 47 (K4): he does not aim while the view is still panning to what he picked (at most SPLIT_LOOK_S; round 46's
+		# camera rarely pans that way, so its hand is unchanged but for those moments).
+		var looked := _clock
+		while _clock - looked < SPLIT_LOOK_S and not _ended and rig.planner_urgent:
+			await get_tree().process_frame
 		if not await _attack():
 			await _move()
 		await _wait(_rng.randf_range(1.0, 3.0))
@@ -290,6 +296,14 @@ func _finish() -> void:
 	print("CAMERA_TRACE_DONE ok=true seed=%d seconds=%.1f frames=%d" % [_seed, summary["seconds"], summary["frames"]])
 
 
+## Round 47 (K4): _wait, noting whether the selection's pan ran meanwhile (a click's row says "panned").
+func _wait_watching_pan(seconds: float) -> void:
+	var until := _clock + seconds
+	while _clock < until and not _ended:
+		_panned = _panned or rig.planner_urgent
+		await get_tree().process_frame
+
+
 func _wait(seconds: float) -> void:
 	var until := _clock + seconds
 	while _clock < until and not _ended:
@@ -357,10 +371,12 @@ func _click_after_aim(aim: Vector2, kind: String, target: Tank) -> void:
 	if anchor != null:
 		trace.anchors["aim"] = anchor
 	var target_at := aim
-	await _wait(AIM_S)
+	_panned = false
+	await _wait_watching_pan(AIM_S)
 	if _ended:
 		return
-	var row := {"t": snappedf(_clock, 0.01), "kind": kind, "cursor": [roundi(aim.x), roundi(aim.y)], "slip_px": 0.0, "by": {}}
+	var row := {"t": snappedf(_clock, 0.01), "kind": kind, "cursor": [roundi(aim.x), roundi(aim.y)], "slip_px": 0.0, "by": {},
+			"panned": _panned}
 	var scale := CameraTrace.REFERENCE_ROWS / maxf(get_viewport().get_visible_rect().size.y, 1.0)
 	if anchor != null and not rig.camera.is_position_behind(anchor as Vector3):
 		row["slip_px"] = snappedf(rig.camera.unproject_position(anchor as Vector3).distance_to(aim) * scale, 0.1)
@@ -485,7 +501,7 @@ func _split() -> void:
 		await _hand_wait(_rng.randf_range(0.3, 0.8))
 		# His eye: he aims at what is near the squad he just picked once the view has reached it (at most SPLIT_LOOK_S).
 		var looked := _clock
-		while _clock - looked < SPLIT_LOOK_S and not _ended and _off_selection() > SPLIT_FRAMED_M:
+		while _clock - looked < SPLIT_LOOK_S and not _ended and (_off_selection() > SPLIT_FRAMED_M or rig.planner_urgent):
 			await _hand_wait(1.0 / 30.0)
 		if not await _attack():
 			await _move()

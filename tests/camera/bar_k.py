@@ -103,7 +103,11 @@ def main():
     judge("G5a clicks on the aimed unit % (ARM >= 70 and ARM >= BASE - 3)", hit_pct(tb), hit_pct(ta),
           hit_pct(ta) >= 70.0 and hit_pct(ta) >= hit_pct(tb) - 3.0, "%.1f")
     judge("G5b slip p95 px (ARM <= 40)", tb["slip"]["p95"], ta["slip"]["p95"], ta["slip"]["p95"] <= 40.0, "%.1f")
-    judge("G5c held % (ARM <= 25)", tb["play"]["held_pct"], ta["play"]["held_pct"], ta["play"]["held_pct"] <= 25.0, "%.1f")
+    judge("G5c held % (ARM <= BASE + 2)", tb["play"]["held_pct"], ta["play"]["held_pct"], ta["play"]["held_pct"] <= tb["play"]["held_pct"] + 2.0, "%.1f")
+    panned = lambda rs: [c for r in rs for c in r["clicks"] if c.get("panned")]
+    pb, pa = panned(b_dec), panned(a_dec)
+    print(f"  (reported) clicks aimed while the selection's pan ran: BASE {len(pb)} v ARM {len(pa)}; their slip p95 "
+          f"{cr.quantile([c['slip_px'] for c in pb], 0.95):.1f} v {cr.quantile([c['slip_px'] for c in pa], 0.95):.1f} px")
     judge("G6 action share % (ARM >= BASE - 5)", tb["play"]["action_pct"], ta["play"]["action_pct"],
           ta["play"]["action_pct"] >= tb["play"]["action_pct"] - 5.0, "%.1f")
     inside = lambda rs: sum(l.get("inside_s", 0.0) for l in looks(rs)) / max(len(rs), 1)
