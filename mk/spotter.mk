@@ -35,9 +35,11 @@ spotter-rank: ## spotter S2: the feature table + ranked moments of SPOT_DIR (SPO
 	$(PYTHON) tools/spotter/rank.py $(SPOT_DIR) --top $(SPOT_TOP)
 
 .PHONY: spotter-batch
-spotter-batch: ## spotter: spotter-fights then spotter-rank (the night shift's batch)
+SPOT_BATCH_CLIPS ?= 0
+spotter-batch: ## spotter: spotter-fights, spotter-rank, then (SPOT_BATCH_CLIPS > 0) that many clips: the night shift's batch
 	@$(MAKE) --no-print-directory spotter-fights
 	@$(MAKE) --no-print-directory spotter-rank
+	@if [ "$(SPOT_BATCH_CLIPS)" -gt 0 ]; then $(MAKE) --no-print-directory spotter-clips SPOT_CLIPS=$(SPOT_BATCH_CLIPS); fi
 
 .PHONY: spotter-test
 spotter-test: ## spotter: the Python tests (tests/spotter/test_*.py) and the night shift's frame (tests/spotter/test_night.sh)
@@ -87,3 +89,12 @@ spotter-night-pull: ## spotter S0: NIGHT_DAY's SUMMARY.md + moments (no fights) 
 	rsync -az --include='*/' --include='SUMMARY.md' --include='moments.*' --include='yields.txt' --include='run.txt' --exclude='*' \
 		$(SPOT_HOST):spotter-night/$(NIGHT_DAY)/ $(HOME)/spotter-work/night/$(NIGHT_DAY)/
 	@cat $(HOME)/spotter-work/night/$(NIGHT_DAY)/SUMMARY.md 2>/dev/null | head -40
+
+# ---- S3: clips (offscreen: its own Xvfb on builder3, Mesa llvmpipe = his gl_compatibility renderer; the GPU encodes) ------------
+SPOT_CLIPS ?= 30
+.PHONY: spotter-clips spotter-clip
+spotter-clips: native-fresh import ## spotter S3: the top SPOT_CLIPS moments of SPOT_DIR as 3-6 s clips -> SPOT_DIR/clips/*.mp4 + clips.json (one Godot at a time; LIGHT=1 is fine)
+	$(PYTHON) tools/spotter/clips.py $(SPOT_DIR) --top $(SPOT_CLIPS) --godot $(GODOT)
+
+spotter-clip: native-fresh import ## spotter S3: one clip from a moment's reproduction line (SPOT_SEED SPOT_ARENA SPOT_CREW SPOT_FROM SPOT_TO) -> SPOT_DIR/clips/
+	$(PYTHON) tools/spotter/clips.py $(SPOT_DIR) --godot $(GODOT) --one $(SPOT_SEED) $(SPOT_ARENA) "$(SPOT_CREW)" $(SPOT_FROM) $(SPOT_TO)

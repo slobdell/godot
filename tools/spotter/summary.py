@@ -62,6 +62,12 @@ def main():
             out.append(f"| {i} | {m['score']:.2f} | {m['fight']} | {m['crew']} ({m['unit']}, {m['team']}) | "
                        f"{m['start_s']}-{m['end_s']} | {R.reason_line(m)} |")
         out += ["", "Reproduce one: the row's fight is `<arena>-<seed>`; " + "`" + R.repro(data["top"][0]) + "`" if data["top"] else ""]
+        cpath = os.path.join(cdir, "clips.json")
+        if os.path.exists(cpath):
+            clips = json.load(open(cpath))["clips"]
+            good = sum(1 for c in clips if c.get("reproduced"))
+            out += ["", f"Clips: {good} of {len(clips)} reproduced their moment, in `{os.path.join(cdir, 'clips')}/` "
+                        "(tools/spotter/clips.py; a clip that did not reproduce is a bug, never evidence)."]
         ypath = os.path.join(os.path.dirname(cdir), "yields.txt")
         if os.path.exists(ypath):
             out += ["", "Yields (it stopped for):", ""] + [f"- {l.strip()}" for l in open(ypath) if l.strip()][-10:]

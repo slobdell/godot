@@ -1,0 +1,183 @@
+<title>Spotter Judging Booth</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Layout: one column of clip cards, each a video with its reasons and three big taps; a sticky tally bar on top. */
+:root {
+  --bg: #eef0ec; --panel: #ffffff; --ink: #1d2320; --muted: #5d6a63; --line: #d3d9d4;
+  --accent: #c2410c; --dumb: #b42318; --fine: #1f7a4d; --unsure: #6b6f76; --chip: #e4e8e3;
+  --display: "Chakra Petch", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --panel: #1b201d; --ink: #e8ece9; --muted: #9aa69f; --line: #2c342f;
+  --accent: #fb923c; --dumb: #f87171; --fine: #4ade80; --unsure: #a1a1aa; --chip: #242b27; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --panel: #1b201d; --ink: #e8ece9; --muted: #9aa69f; --line: #2c342f;
+  --accent: #fb923c; --dumb: #f87171; --fine: #4ade80; --unsure: #a1a1aa; --chip: #242b27; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45 }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel) }
+.wrap { max-width: 760px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px }
+header.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line) }
+header.bar .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding-block: 10px }
+h1 { font-family: var(--display); font-size: 20px; letter-spacing: .02em; margin: 0; text-wrap: balance }
+.tally { font-family: var(--mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums }
+.tally b { color: var(--ink); font-weight: 400 }
+.filters { margin-left: auto; display: flex; gap: 6px }
+.filters button { font: 500 13px var(--body); border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 999px; padding: 4px 10px; cursor: pointer }
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink) }
+.intro { color: var(--muted); max-width: 62ch; margin: 18px 0 8px }
+.list { display: grid; gap: 22px; margin-top: 14px }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden }
+.card video { display: block; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; background: #000 }
+.meta { padding: 12px 14px 4px; display: grid; gap: 6px; min-width: 0 }
+.who { font-family: var(--display); font-weight: 700; font-size: 17px }
+.who small { font-family: var(--mono); font-weight: 400; font-size: 12px; color: var(--muted); margin-left: 6px }
+.reasons { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none }
+.reasons li { background: var(--chip); border-radius: 6px; padding: 2px 8px; font-size: 13px }
+.repro { font-family: var(--mono); font-size: 11.5px; color: var(--muted); overflow-x: auto; white-space: nowrap; padding-bottom: 2px }
+.verdicts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 14px 6px }
+.verdicts button { font: 700 15px var(--display); letter-spacing: .02em; padding: 12px 6px; border-radius: 8px; border: 2px solid var(--line); background: transparent; color: var(--ink); cursor: pointer }
+.verdicts button:focus-visible, .filters button:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px }
+.verdicts button[data-v="dumb"][aria-pressed="true"] { background: var(--dumb); border-color: var(--dumb); color: #fff }
+.verdicts button[data-v="fine"][aria-pressed="true"] { background: var(--fine); border-color: var(--fine); color: #fff }
+.verdicts button[data-v="unsure"][aria-pressed="true"] { background: var(--unsure); border-color: var(--unsure); color: #fff }
+.note { padding: 4px 14px 14px; display: grid; gap: 4px }
+.note textarea { font: 14px var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; min-height: 2.6em; resize: vertical; width: 100%; box-sizing: border-box }
+.note .saved { font-size: 12px; color: var(--muted); min-height: 1em }
+.empty { border: 1px dashed var(--line); border-radius: 10px; padding: 28px 18px; color: var(--muted); text-align: center }
+.state { font-size: 13px; color: var(--muted); margin-top: 8px }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+
+<header class="bar"><div class="wrap">
+  <h1>Spotter Judging Booth</h1>
+  <span class="tally" id="tally">loading…</span>
+  <div class="filters" role="group" aria-label="Show">
+    <button id="f-todo" aria-pressed="true">To judge</button>
+    <button id="f-all" aria-pressed="false">All</button>
+  </div>
+</div></header>
+
+<main class="wrap">
+  <p class="intro">Each clip is a moment from a computer-v-computer fight that the spotter flagged as unusual, with a yellow marker over the crew it means. Watch it like a player and tap what you think: <b>looks dumb</b>, <b>fine</b>, or <b>can't tell</b>. A note helps when it's dumb for a reason the tags don't say. Your taps train the ranker; they never change the game.</p>
+  <p class="state" id="state" hidden></p>
+  <div class="list" id="list">
+    <div class="empty" id="empty">The clips appear here once a batch is loaded. Nothing to judge yet.</div>
+  </div>
+</main>
+
+<script>
+(() => {
+  const list = document.getElementById("list");
+  const empty = document.getElementById("empty");
+  const tally = document.getElementById("tally");
+  const stateLine = document.getElementById("state");
+  const VERDICTS = [["dumb", "Looks dumb"], ["fine", "Fine"], ["unsure", "Can't tell"]];
+  let clips = [], labels = {}, filter = "todo", db = null, me = null, canWrite = true;
+  const cards = new Map();
+
+  function setFilter(f) {
+    filter = f;
+    document.getElementById("f-todo").setAttribute("aria-pressed", f === "todo");
+    document.getElementById("f-all").setAttribute("aria-pressed", f === "all");
+    render();
+  }
+  document.getElementById("f-todo").addEventListener("click", () => setFilter("todo"));
+  document.getElementById("f-all").addEventListener("click", () => setFilter("all"));
+
+  function note(text) { stateLine.textContent = text; stateLine.hidden = !text; }
+
+  function buildCard(c) {
+    const card = document.createElement("article");
+    card.className = "card";
+    const video = document.createElement("video");
+    video.src = c.video_url; video.controls = true; video.muted = true; video.loop = true;
+    video.playsInline = true; video.preload = "metadata";
+    const meta = document.createElement("div"); meta.className = "meta";
+    const who = document.createElement("div"); who.className = "who";
+    who.textContent = c.crew;
+    const small = document.createElement("small");
+    small.textContent = `${c.unit} · ${c.team === 0 ? "green" : "rust"} · ${c.arena} seed ${c.seed} · ${c.seconds}`;
+    who.appendChild(small);
+    const reasons = document.createElement("ul"); reasons.className = "reasons";
+    for (const r of c.reasons || []) { const li = document.createElement("li"); li.textContent = r; reasons.appendChild(li); }
+    const repro = document.createElement("div"); repro.className = "repro"; repro.textContent = c.repro;
+    meta.append(who, reasons, repro);
+    const row = document.createElement("div"); row.className = "verdicts";
+    const buttons = {};
+    for (const [v, text] of VERDICTS) {
+      const b = document.createElement("button");
+      b.dataset.v = v; b.textContent = text; b.setAttribute("aria-pressed", "false"); b.id = `v-${c.id}-${v}`;
+      b.addEventListener("click", () => judge(c.id, v));
+      buttons[v] = b; row.appendChild(b);
+    }
+    const noteBox = document.createElement("div"); noteBox.className = "note";
+    const ta = document.createElement("textarea"); ta.id = `n-${c.id}`; ta.placeholder = "Note (optional): what made it look dumb?";
+    ta.setAttribute("aria-label", `Note on ${c.crew}`);
+    const saved = document.createElement("div"); saved.className = "saved";
+    ta.addEventListener("change", () => saveNote(c.id, ta.value, saved));
+    noteBox.append(ta, saved);
+    card.append(video, meta, row, noteBox);
+    // Play only what is on screen: dozens of looping videos at once would stall a phone.
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) video.play().catch(() => {}); else video.pause(); }, { threshold: 0.5 });
+    io.observe(video);
+    return { card, buttons, ta, saved };
+  }
+
+  function render() {
+    const done = clips.filter(c => labels[c.id]?.verdict).length;
+    const dumb = clips.filter(c => labels[c.id]?.verdict === "dumb").length;
+    tally.innerHTML = "";
+    tally.append(`judged `, Object.assign(document.createElement("b"), { textContent: `${done}/${clips.length}` }),
+      ` · looks dumb `, Object.assign(document.createElement("b"), { textContent: String(dumb) }));
+    empty.hidden = clips.length > 0;
+    for (const c of clips) {
+      let entry = cards.get(c.id);
+      if (!entry) { entry = buildCard(c); cards.set(c.id, entry); list.appendChild(entry.card); }
+      const label = labels[c.id] || {};
+      for (const [v] of VERDICTS) entry.buttons[v].setAttribute("aria-pressed", String(label.verdict === v));
+      if (document.activeElement !== entry.ta && (label.note || "") !== entry.ta.value) entry.ta.value = label.note || "";
+      for (const b of Object.values(entry.buttons)) b.disabled = !canWrite;
+      entry.ta.disabled = !canWrite;
+      entry.card.hidden = filter === "todo" && !!label.verdict;
+    }
+    if (clips.length && filter === "todo" && done === clips.length) note("Every clip is judged. Thank you: the spotter reads these in the morning.");
+  }
+
+  async function write(id, patch) {
+    if (!db) return false;
+    const body = Object.assign({}, labels[id] || {}, patch, { clip: id, at: new Date().toISOString() });
+    if (me) body.by = me;
+    labels[id] = body; render();
+    try { await db.doc(`labels/${id}`).set(body); return true; }
+    catch (e) {
+      if (e && e.code === "invalid_argument") { canWrite = false; note("This page is read-only for you: only people with edit or contribute access can judge."); render(); }
+      else note("Couldn't save just now. Tap again in a moment.");
+      return false;
+    }
+  }
+  function judge(id, v) { write(id, { verdict: v }); }
+  async function saveNote(id, text, saved) { if (await write(id, { note: text.slice(0, 2000) })) saved.textContent = "Note saved."; }
+
+  (async () => {
+    if (!window.claude?.use) { tally.textContent = "open on claude.ai to judge"; return; }
+    db = await claude.use("db");
+    if (!db) { tally.textContent = "sign in to see the clips"; return; }
+    const user = await claude.use("user");
+    if (user) { try { me = await user.id(); } catch (_) {} ; const w = await user.can?.("data.write"); if (w === false) canWrite = false; }
+    const timer = setTimeout(() => note("The clips can't be reached yet; they'll appear when the connection answers."), 10000);
+    db.collection("clips").orderBy("order").onSnapshot(snap => {
+      if (!snap.metadata.fromCache) { clearTimeout(timer); note(""); }
+      clips = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      render();
+    }, () => { clearTimeout(timer); note("The clips couldn't load. Reload the page to try again."); });
+    db.collection("labels").onSnapshot(snap => {
+      labels = {}; for (const d of snap.docs) labels[d.id] = d.data();
+      render();
+    }, () => {});
+  })();
+})();
+</script>

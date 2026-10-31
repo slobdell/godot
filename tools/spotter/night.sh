@@ -18,7 +18,8 @@
 # SHA=<green hash>`; else origin/main as GitHub has it), checked out clean into ~/tank_squad/spotter-night, with the spotter kit
 # (tools/spotter, tests/spotter, mk/spotter.mk, installed by `make spotter-night-install`) laid over it. The game code is the named
 # commit's; the kit is dev tooling. Each batch: NIGHT_MAPS x the next NIGHT_SEEDS_PER_BATCH seeds of 13121-13216 (R47.40), then
-# the rank over every fight of that commit -> ~/spotter-night/<date>/<commit>/, and SUMMARY.md rewritten (the checkpoint).
+# the rank over every fight of that commit, the top NIGHT_CLIPS (30) as clips (tools/spotter/clips.py; ones already rendered are
+# kept) -> ~/spotter-night/<date>/<commit>/, and SUMMARY.md rewritten (the checkpoint).
 #
 # DISK: ~/spotter-night is kept under NIGHT_CAP_GB (20 GB; builder3 had 154 GB free on 2026-10-30): the oldest date folders go
 # first, never today's. The fights' jsonl are gzipped once ranked.
@@ -37,6 +38,7 @@ JOBS=${NIGHT_JOBS:-10}
 MAPS=${NIGHT_MAPS:-terminus crossing locks sumps gorge parade}
 SECONDS_PER_FIGHT=${NIGHT_FIGHT_S:-240}
 PER_BATCH=${NIGHT_SEEDS_PER_BATCH:-2}
+CLIPS=${NIGHT_CLIPS:-30}
 SEED_FIRST=${NIGHT_SEED_FIRST:-13121}
 SEED_LAST=${NIGHT_SEED_LAST:-13216}
 export PATH=/usr/local/bin:/usr/bin:/bin:$PATH
@@ -128,7 +130,7 @@ run_batch() { # $1 = commit dir, $2.. = seeds; returns 0 done, 10 yielded, other
 		# TANK_SQUAD_SLOT=night: past the Makefile's slot gate, so a night batch never takes (or queues for) a check's slot.
 		exec setsid nice -n 19 ionice -c3 env TANK_SQUAD_SLOT=night TANK_SQUAD_COMMIT="$(cut -d: -f1 "$TREE/.spotter-commit" | cut -c1-9)" \
 			make --no-print-directory spotter-batch SPOT_DIR="$cdir/fights" SPOT_SEEDS="$seeds" SPOT_MAPS="$MAPS" \
-			SPOT_SECONDS="$SECONDS_PER_FIGHT" SPOT_JOBS="$JOBS" >>"$cdir/batch.log" 2>&1
+			SPOT_SECONDS="$SECONDS_PER_FIGHT" SPOT_JOBS="$JOBS" SPOT_BATCH_CLIPS="$CLIPS" >>"$cdir/batch.log" 2>&1
 	) &
 	pgid=$!
 	echo "$pgid" >"$STATE/batch.pid"

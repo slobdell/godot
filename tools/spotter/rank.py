@@ -23,6 +23,7 @@ import features as F  # noqa: E402
 
 LEAD_S = 2   # a clip starts this long before the moment
 TAIL_S = 2   # and runs this long after it
+CLIP_MAX_S = 10  # a longer moment is clipped to the CLIP_MAX_S around its peak (a judge watches dozens)
 
 
 class Tail:
@@ -106,9 +107,16 @@ def _moment(group):
         "peak_tick": int(peak["tick"]), "at": [float(peak["x"]), float(peak["z"])],
         "score": round(peak["_score"] + 0.5 * math.log2(max(length, 1)), 2), "reasons": reasons[:4],
         "context": {k: peak.get(k, "") for k in ("order", "move", "phase", "intent", "choice", "blocked", "touch_what")},
-        "clip": {"seed": int(first["seed"]), "arena": first["arena"], "crew": first["crew"],
-                 "from_s": max(0, start - LEAD_S), "to_s": end + TAIL_S},
+        "clip": _clip(first, start, end, int(peak["s"])),
     }
+
+
+def _clip(first, start, end, peak_s):
+    from_s, to_s = max(0, start - LEAD_S), end + TAIL_S
+    if to_s - from_s > CLIP_MAX_S:
+        from_s = max(from_s, min(peak_s - CLIP_MAX_S // 2, to_s - CLIP_MAX_S))
+        to_s = from_s + CLIP_MAX_S
+    return {"seed": int(first["seed"]), "arena": first["arena"], "crew": first["crew"], "from_s": from_s, "to_s": to_s}
 
 
 def pick(found, top, per_fight=8, per_crew=1):
