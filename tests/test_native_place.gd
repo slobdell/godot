@@ -112,6 +112,8 @@ func test_native_place_is_the_live_gdscript() -> void:
 		var n := trial % 9 if trial % 17 != 3 else 12
 		var members := _members(rng, n, units, anchor)
 		var formation: String = SHAPES[rng.randi_range(0, SHAPES.size() - 1)]
+		if formation == "single" and n > 1:
+			formation = "wedge"  # "single" lays one slot: the game asks it of one vehicle only (the GDScript indexes past it)
 		var heading := Vector3(rng.randf_range(-1.0, 1.0), rng.randf_range(-0.2, 0.2), rng.randf_range(-1.0, 1.0))
 		if trial % 13 == 5:
 			heading = Vector3.ZERO
