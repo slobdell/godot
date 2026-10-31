@@ -33,7 +33,7 @@ struct GN {
 			ammo_fraction{ "ammo_fraction" }, ready_to_fire{ "ready_to_fire" }, sight_radius{ "sight_radius" },
 			suppression{ "suppression" }, designated_seconds{ "designated_seconds" }, unit_id{ "unit_id" },
 			effective_range{ "effective_range" }, acquisition_enabled{ "acquisition_enabled" },
-			crossing_enabled{ "crossing_enabled" }, held_by_acquisition{ "held_by_acquisition" },
+			crossing_enabled{ "crossing_enabled" }, lay_carry{ "lay_carry" }, held_by_acquisition{ "held_by_acquisition" },
 			held_by_discipline{ "held_by_discipline" }, held_for_friends{ "held_for_friends" }, for_shot{ "for_shot" },
 			for_team{ "for_team" }, aim_wander_m{ "aim_wander_m" }, enemy_columns{ "enemy_columns" }, enemies{ "enemies" },
 			tanks_by_name{ "tanks_by_name" }, tanks{ "tanks" }, _apply_indirect{ "_apply_indirect" },
@@ -484,12 +484,29 @@ struct Gun {
 		return seconds;
 	}
 
+	// Engagement.under_the_barrel(tank, contact) (round 47, E2a): within LAY_CARRY_DEG (10) of the gun's flat bearing
+	bool under_the_barrel(Node3D *contact) const {
+		if (contact == nullptr) {
+			return false;
+		}
+		Vector3 toward = contact->get_global_position() - muzzle();
+		toward.y = 0.0;
+		if ((double)toward.length_squared() < 0.25) {
+			return false;
+		}
+		return (double)turret_forward().dot(toward.normalized()) >= std::cos(10.0 * (3.1415926535897932384626433833 / 180.0));
+	}
+
 	// Engagement.Lay.engage(tank, contact, distance, seconds, ordered) on the crew's lay
 	bool engage(Node3D *contact, double distance, double seconds, bool ordered) {
 		const String target_name = contact != nullptr ? String(contact->get_name()) : String();
 		if (target_name != v.l_target()) {
+			// Round 47 (engage E2a, Engagement.lay_carry; absent on a build without it = false): a new name already under the
+			// barrel keeps the lay.
+			if (!((bool)g.engagement->get(k.lay_carry) && v.l_target() != String() && under_the_barrel(contact))) {
+				v.set_l_progress(0.0);
+			}
 			v.set_l_target(target_name);
-			v.set_l_progress(0.0);
 			v.set_l_firing(false);
 		}
 		if (!(bool)g.engagement->get(k.acquisition_enabled)) {
