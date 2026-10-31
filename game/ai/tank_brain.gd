@@ -118,6 +118,10 @@ const LANE_POST_STEP := 4.0
 static var ATTACK_LINE := OS.get_cmdline_user_args().has("--attack-line=on")
 ## A found spot is searched again no sooner than this (ticks), and kept while FiringPosition's hysteresis holds.
 const ATTACK_LINE_EVERY := SimClock.TICK_RATE / 2
+## Measurement only (never read by decisions): E2b's searches asked / spots found / thinks sent to a spot, since the process.
+static var attack_line_asked := 0
+static var attack_line_found := 0
+static var attack_line_sent := 0
 ## The rings of lane spots, nearest first (a small step beats a drive: a wheeled IFV needs seconds to relocate 16 m).
 const LANE_RINGS: Array[float] = [3.0, 6.0, 10.0, 16.0]
 const LANE_SEARCH_FAR := 16.0
@@ -2849,6 +2853,7 @@ func _act(s: Dictionary) -> void:
 				var spot: Variant = _attack_line_spot(s, ordered, contact, my_position, distance) \
 						if ATTACK_LINE and not own_line else null
 				if spot is Vector3:
+					attack_line_sent += 1
 					why = TankBrain._join(why, "no line of fire: to a spot with one")
 					_order_move(_move_to(spot, false, 1.0, OrderController.ARRIVE_RADIUS))
 				else:
@@ -3288,11 +3293,14 @@ func _attack_line_spot(s: Dictionary, ordered: Variant, contact: Dictionary, her
 	if _line_spot is Vector3 and _line_spot_for == target and game_match.tick - _line_spot_tick < ATTACK_LINE_EVERY:
 		return _line_spot
 	var friends: Array = (s.get("allies", []) as Array).map(func(ally: Dictionary) -> Vector3: return ally["position"])
+	attack_line_asked += 1
 	var found := FiringPosition.find(map, here, contact["position"], Engagement.effective_range(tank.weapon),
 			float(tank.weapon.get("preferred_min", 0.0)), friends, _line_spot if _line_spot_for == target else null)
 	_line_spot_tick = game_match.tick
 	_line_spot_for = target
 	_line_spot = found.get("point") if not found.is_empty() else null
+	if _line_spot != null:
+		attack_line_found += 1
 	return _line_spot
 
 

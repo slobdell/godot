@@ -299,13 +299,15 @@ engage-e1-stage: native-fresh import ## engage E1b: his Crossing window rebuilt 
 # tests/engage/gun_trace_table.py per side. Logs build/engage/e1w/<stem>_<tick>.log. Every number from it is STAGED.
 E1W ?= 2026-10-30T15-41-59-crossing:600 2026-10-30T15-41-59-crossing:2070 2026-10-30T15-49-20-locks:390 2026-10-30T15-53-39-sumps:450 2026-10-30T16-03-40-parade:330 2026-10-30T16-03-40-parade:2820
 E1W_SECONDS ?= 14
+## The result folder under build/engage/e1w/ (an arm's name: ENGAGE_FLAGS carries the arm's switches).
+E1W_TAG ?= today
 .PHONY: engage-e1-windows
 engage-e1-windows: native-fresh import ## engage E1c: held-fire seconds by gate (no line / lay / reload / lane) over the E1W staged windows, both sides -> build/engage/e1w/
-	@rm -rf $(BUILD_DIR)/engage/e1w && mkdir -p $(BUILD_DIR)/engage/e1w
+	@rm -rf $(BUILD_DIR)/engage/e1w/$(E1W_TAG) && mkdir -p $(BUILD_DIR)/engage/e1w/$(E1W_TAG)
 	@echo ">> engage-e1-windows on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | STAGED"
 	@for w in $(E1W); do echo $$w; done | xargs -r -P $(ENGAGE_JOBS) -I{} sh -c 'stem=$${1%%:*}; tick=$${1##*:}; \
 		timeout 900 $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/engage/turnaround_probe.gd -- \
 		--recording=$(CURDIR)/references/round46/playtest/$$stem.jsonl --from=$$tick --seconds=$(E1W_SECONDS) --every=30 --crew=auto \
-		--point=0,0 --gun-trace=all $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/e1w/$${stem}_$$tick.log 2>&1 || echo "  $$1: godot exited $$?"' _ {}
-	@for f in $(BUILD_DIR)/engage/e1w/*.log; do echo "== $$(basename $$f .log) (STAGED)"; grep -E "ENGAGE_TA_DONE|SCRIPT ERROR" $$f | head -2; \
+		--point=0,0 --gun-trace=all $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/e1w/$(E1W_TAG)/$${stem}_$$tick.log 2>&1 || echo "  $$1: godot exited $$?"' _ {}
+	@for f in $(BUILD_DIR)/engage/e1w/$(E1W_TAG)/*.log; do echo "== $$(basename $$f .log) (STAGED, $(E1W_TAG))"; grep -E "ENGAGE_TA_DONE|ENGAGE_TA_COUNTERS|SCRIPT ERROR" $$f | head -3; \
 		for side in Green_ Rust_; do echo "-- $$side"; $(PYTHON) tests/engage/gun_trace_table.py $$f --crews=$$side --end=$$(( $(E1W_SECONDS) * 30 )) | tail -2; done; done

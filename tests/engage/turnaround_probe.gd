@@ -266,6 +266,11 @@ func _run() -> void:
 			"start": _xz(start_pos), "end": _xz(last_pos), "moved_m": _r(moved_m), "nearest_m": _r(nearest), "end_dist": _r(last_pos.distance_to(order_point)),
 			"away_m": _r(away_m), "away_began": away_from, "far_ne": _xz(far_ne), "on_bridge_tick": bridge_tick,
 			"planner": PlannerSeam.report(), "rows": rows, "attack_shot": ElementPlan.ATTACK_SHOT}))
+	# Round 47 (engage E2): the rules' measurement counters for this window.
+	print("ENGAGE_TA_COUNTERS %s" % JSON.stringify({"attack_line_asked": TankBrain.attack_line_asked,
+			"attack_line_found": TankBrain.attack_line_found, "attack_line_sent": TankBrain.attack_line_sent,
+			"attack_line": TankBrain.ATTACK_LINE, "lay_carry": Engagement.lay_carry,
+			"held_by_acquisition": Engagement.held_by_acquisition}))
 	print("ENGAGE_TA_DONE")
 	lab.dispose()
 	quit(0)
