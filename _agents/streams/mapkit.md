@@ -88,6 +88,23 @@ sight screen's member initializer made a strip node the steam branch never used)
 on traps/monorail/pipes/crane (his P1b pick, R47.38; `--kit-look=plain` escapes) + the train concepts; quick 116/0 builder3; full
 check queued on builder3 (name it here). f10081d90 (gallery only) on top.
 
+**2026-10-31 ~02:00: 8dc9697b4 RED, 3613/1.** The one red is test_manoeuvre_noprogress::test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle (manoeuvre's paths, not mine; Rust_Hunters_2/4 never seated within 10 s). After merging main (**f69c81a0f**) a whole-suite `make remote T=test` went 3616/0 on builder3 with that test passing. The orchestrator is treating it as a main problem (native is looking). f69c81a0f's full check is queued on builder3; if its only red is that test, I name the hash anyway with that note.
+
+**2026-10-31 ~02:00: SCREENS WORKLOAD from his Crossing recording (the orchestrator's last item; illustrative, n=1, NOT a bar).**
+`make mapkit-screens-replay` (builder3, f69c81a0f's tree in the render copy) replays his round-46 Crossing match
+(15:41:59, gangs v syndicate CPU, seed 101, his 13 orders) once on crossing and once on crossing_screens
+(`tests/mapkit/fixtures/his_crossing_on_screens.jsonl` = his file with only the arena changed). **Caveat:** the replay
+does not reproduce his match even on crossing (`replay-match` DIVERGENCE FAIL from tick 3, Green_Guns_1; his real end
+was shots 6/358, damage 196/4901), so read this as "his orders on each map", not "his match".
+| map | ended | his hits / dmg (gangs) | CPU hits / dmg (syndicate) | his losses | CPU losses |
+|---|---|---|---|---|---|
+| crossing | elimination at 97.5 s | 0 / 0 | 184 / 5021 | 20 | 0 |
+| crossing_screens, at 97.5 s | still fighting | 3 / 220 | 226 / 4034 | 15 | 0 |
+| crossing_screens, at 113 s (cap) | still fighting | 4 / 428 | 250 / 4548 | 17 | 0 |
+In player terms: on this replay the screens make his army last longer (two-thirds of it lost at 97.5 s instead of all of it) and he
+lands a few hits he didn't before, but it's still a rout. The screens slow the syndicate's long shots and don't change who wins.
+Crossing's row comes from the replay's end stats; the screens rows are counted from its hit/dead rows at each time cut.
+
 **2026-10-31 ~01:00: BLAST DOORS IN A REAL ARENA (the orchestrator's next item, after Bar P).** Main merged first (eecdd7c0e:
 native's door mask + eye mask on main). `terminus_doors` (candidate twin): his vault-slab doors across the Terminus's west and east
 streets at z = 0, one schedule (both sides), 16 m slabs in the 20 m street (no hull fits beside a shut slab), each beside a side's
