@@ -192,6 +192,21 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar K A NEW SELECTION PANS AT ONCE; HIS SQUAD STAYS FRAMED (camera; FILED 2026-10-30 ~18:30 in streams/camera.md, stream/camera
+  b1f08cc2d, BEFORE any number on 12801-12848; recorded here by the orchestrator; full text in the brief).** Switch
+  `--camera-select-pan` (ON at e4a614eab; `=off` = main's planner byte-identical). The pick's pan starts at once when the planner's
+  point is > 20 m from the look point, moves the look point only, a spring capped at 4 view-heights/s, ends at <= 12 m or 1.5 s. K3's
+  20 m bound PARKED OFF (it clipped the rear-ambush frame, 1.4 -> 6.3 s in dev). Frozen e4a614eab, builder3, headless 1920x1080 @60,
+  150 s. Workloads SPLIT (his Crossing case; 12801-12848 over Terminus / Locks / Crossing / Gorge), ATTACK, AMBUSH, RETREAT; the eye
+  waits up to 1.5 s for the pan before aiming (a workload choice after dev reads; clicks aimed mid-pan reported). **D1** % of play his
+  selection > 30 m off: ARM <= BASE and <= 10 % (**a 0.6x ratio was drafted and dropped after a dev read showed 0.74x at n 8; the
+  orchestrator notes it as dev-shaped, so the ratio is REPORTED and read beside D1**); **D2** far selection framed: ARM mean <= 1.0 s,
+  <= BASE, p90 <= 1.5 s; **D3** never framed ARM <= BASE. Guards: G1 occlusion, G2 none on screen, G3 hits off screen, G4a/b jerks and
+  snaps, **G4c a pan not a cut** (peak <= 4.5 view-heights/s), G5a-c clicks >= 70 %, slip p95 <= 40 px, held, G6 action share, G7 inside
+  a solid, G8 rear-ambush and retreat turns, G9 clean runs, **G10 laptop** rig mean <= 0.5 ms, planner p99 <= 1.5 ms (UHD 620, lock).
+  Also reported: his four recordings under three hand models (model / rest / busy). Last dev read (63429985c, n 8): framed 3.82 ->
+  0.68 s, never 16 -> 2, > 30 m 7.0 -> 5.2 %, slip p95 28 -> 31 px, clicks 86 -> 81 %.
+
 - **Bar M BURIED STATIONS (manoeuvre; FILED 2026-10-30 ~18:55 in streams/manoeuvre.md, stream/manoeuvre c85f828cf, BEFORE any number;
   recorded here by the orchestrator).** The change: `--traffic-on=buried` (Movement.buried_station + R47.11's one line): a travelling
   station the grounding moves > 4 m, or pulls back > 1 m along the squad's way while 6 m on is > 1.5 m off the navmesh, is taken on the
