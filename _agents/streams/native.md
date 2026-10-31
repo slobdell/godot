@@ -55,6 +55,16 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-31 ~03:40 PDT) — the replay stamp, E9, the tip.**
+- **His round-46 Crossing replay parted at 2-3 s again (mapkit's note): FIXED (ce3a691eb + 44c5e7832).** replay-match did apply
+  rules.py (--army-cap=count); the cause was round 47's other ON sim rules with no stamp entry. RULES + MatchRecorder.rules() gain
+  press_on (b96e12e43), battery_screen (09780edb9), buried (06ba81b45), holdyield (c41ae23bb), group_merged (de3176388), pot_shot
+  (8d51777cc), each dated at its merge (lesson 354: an ON sim rule needs its stamp entry in the same merge). Builder3 light, main
+  8294fbbdd: first_over Green_Guns_1@3 -> Green_Guns_2@13 (R47.16's ~11-12 s limit). Engage's `--halt-cancel=old` (tank.gd), if
+  it lands, is the next entry.
+- **E9 twin DROPPED** (39635013a reverted in c397a3b85): engage's trace refutes the barrel theory; no pot_shot_lane will come.
+- 3be2025e6 (pot_shot_holds) reached main with engage's E3 pair; the merge keeps one copy.
+
 **REPORT (2026-10-31 ~02:30 PDT) — the yield-cycle flake (the orchestrator's ask; GRANT tests/test_manoeuvre_noprogress.gd).**
 test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle red in mapkit's check of 8dc9697b4 (shard 4/7), green elsewhere. **Not load,
 not wall time, not native: the lab is deterministic per PROCESS HISTORY, and this case sits on a knife edge.** All builder3 light,
@@ -88,7 +98,7 @@ date with every round-47 verdict filed; N6 DONE (seed, .remote-synced, Xorg DISP
 Plus: N0 (R47.8) cause 1 fixed, the limit stated (R47.16); C47.8 doors and R47.36 the eye mask in C++; R47.27 (a) matchups ON / scan
 OFF, (b) parked with a next-round note; R47.31 / 34 the fog split, dropped; the measured laptop ratio ~3.0x builder3.
 **Next round:** contact_prototypes in C++; R47.18 the layout's bake timing; cause 2 of the replay parting with inp rows; E9's twin
-(engage's fire-lane pre-check) when it files.
+(engage's fire-lane pre-check): none needed (R47 E9 refuted).
 
 **REPORT (2026-10-30 ~22:00 PDT) — the round so far, in one place.**
 **Green / merge:** 6f19722ae GREEN builder3 (`make check exited 0`, 3523 / 0, 29 ALL JUDGED, sim-baseline unmoved on all 13 maps;
