@@ -1,0 +1,260 @@
+{
+ "parade_traps": {
+  "base": "parade",
+  "twin": "parade_traps",
+  "n_base": 32,
+  "n_twin": 32,
+  "range_median_m": {
+   "mean": 1.1812500000000006,
+   "se": 0.9456547217788214,
+   "n": 32
+  },
+  "range_median_m_base": [
+   28.475,
+   6.961970429272485
+  ],
+  "range_p90_m": {
+   "mean": -2.9312499999999995,
+   "se": 2.229577736944968,
+   "n": 32
+  },
+  "range_p90_m_base": [
+   72.546875,
+   18.6198122781674
+  ],
+  "flank_share": {
+   "mean": 0.025437500000000002,
+   "se": 0.013291166838446479,
+   "n": 32
+  },
+  "flank_share_base": [
+   0.1789375,
+   0.05367821538065151
+  ],
+  "hidden_share": {
+   "mean": 0.01987499999999999,
+   "se": 0.012486020408647476,
+   "n": 32
+  },
+  "hidden_share_base": [
+   0.5019375,
+   0.06633684204801452
+  ],
+  "crossed_share": {
+   "mean": 0.010249999999999995,
+   "se": 0.02078145691747581,
+   "n": 32
+  },
+  "crossed_share_base": [
+   0.31128125,
+   0.10944235023149654
+  ],
+  "stall_share": {
+   "mean": -0.000390625,
+   "se": 0.0013307571166551115,
+   "n": 32
+  },
+  "stall_share_base": [
+   0.013965625,
+   0.006069044106856346
+  ],
+  "sim_seconds": {
+   "mean": -1.912500000000001,
+   "se": 3.8780262636569267,
+   "n": 32
+  },
+  "sim_seconds_base": [
+   122.340625,
+   25.71570198592744
+  ],
+  "fairness_twin": {
+   "south_advantage": -0.06,
+   "south_advantage_se": 0.046,
+   "pairs": 16,
+   "winner_flips": 1
+  },
+  "fairness_base": {
+   "south_advantage": 0.087,
+   "south_advantage_se": 0.048,
+   "pairs": 16,
+   "winner_flips": 4
+  },
+  "stalemates_twin": 0,
+  "stalemates_base": 0
+ },
+ "parade_rail": {
+  "base": "parade",
+  "twin": "parade_rail",
+  "n_base": 32,
+  "n_twin": 32,
+  "range_median_m": {
+   "mean": 1.6218750000000002,
+   "se": 1.462630848675074,
+   "n": 32
+  },
+  "range_median_m_base": [
+   28.475,
+   6.961970429272485
+  ],
+  "range_p90_m": {
+   "mean": -1.6031250000000004,
+   "se": 2.1304081294163013,
+   "n": 32
+  },
+  "range_p90_m_base": [
+   72.546875,
+   18.6198122781674
+  ],
+  "flank_share": {
+   "mean": -0.004843749999999997,
+   "se": 0.01106069302492083,
+   "n": 32
+  },
+  "flank_share_base": [
+   0.1789375,
+   0.05367821538065151
+  ],
+  "hidden_share": {
+   "mean": 0.020218749999999994,
+   "se": 0.009108965626694748,
+   "n": 32
+  },
+  "hidden_share_base": [
+   0.5019375,
+   0.06633684204801452
+  ],
+  "crossed_share": {
+   "mean": 0.006812499999999994,
+   "se": 0.01490469978244576,
+   "n": 32
+  },
+  "crossed_share_base": [
+   0.31128125,
+   0.10944235023149654
+  ],
+  "stall_share": {
+   "mean": 0.0003687499999999997,
+   "se": 0.001134177952093995,
+   "n": 32
+  },
+  "stall_share_base": [
+   0.013965625,
+   0.006069044106856346
+  ],
+  "sim_seconds": {
+   "mean": -3.1624999999999988,
+   "se": 4.956072663914442,
+   "n": 32
+  },
+  "sim_seconds_base": [
+   122.340625,
+   25.71570198592744
+  ],
+  "fairness_twin": {
+   "south_advantage": -0.04,
+   "south_advantage_se": 0.045,
+   "pairs": 16,
+   "winner_flips": 1
+  },
+  "fairness_base": {
+   "south_advantage": 0.087,
+   "south_advantage_se": 0.048,
+   "pairs": 16,
+   "winner_flips": 4
+  },
+  "stalemates_twin": 0,
+  "stalemates_base": 0
+ },
+ "crossing_screens": {
+  "base": "crossing",
+  "twin": "crossing_screens",
+  "n_base": 64,
+  "n_twin": 64,
+  "range_median_m": {
+   "mean": 2.0265625,
+   "se": 1.0645725402199593,
+   "n": 64
+  },
+  "range_median_m_base": [
+   35.1703125,
+   10.526469730168738
+  ],
+  "range_p90_m": {
+   "mean": 0.8031250000000008,
+   "se": 0.8042390442077373,
+   "n": 64
+  },
+  "range_p90_m_base": [
+   78.121875,
+   21.55362061250816
+  ],
+  "flank_share": {
+   "mean": 0.00043749999999999605,
+   "se": 0.004061400950235205,
+   "n": 64
+  },
+  "flank_share_base": [
+   0.646515625,
+   0.12692980089466277
+  ],
+  "hidden_share": {
+   "mean": 0.0012656250000000011,
+   "se": 0.005266048891373806,
+   "n": 64
+  },
+  "hidden_share_base": [
+   0.638140625,
+   0.09083140971095496
+  ],
+  "crossed_share": {
+   "mean": -0.010171875000000002,
+   "se": 0.006861641230835693,
+   "n": 64
+  },
+  "crossed_share_base": [
+   0.361,
+   0.16356562684657888
+  ],
+  "stall_share": {
+   "mean": -0.0005453125000000002,
+   "se": 0.00040821141090075294,
+   "n": 64
+  },
+  "stall_share_base": [
+   0.026162499999999998,
+   0.007128402835427231
+  ],
+  "sim_seconds": {
+   "mean": -3.484374999999999,
+   "se": 1.9012686589855925,
+   "n": 64
+  },
+  "sim_seconds_base": [
+   138.553125,
+   31.598899763596854
+  ],
+  "gangs_shots": {
+   "mean": -13.1875,
+   "se": 9.753557424882278,
+   "n": 64
+  },
+  "gangs_shots_base": [
+   185.96875,
+   144.49363898230678
+  ],
+  "fairness_twin": {
+   "south_advantage": 0.034,
+   "south_advantage_se": 0.137,
+   "pairs": 16,
+   "winner_flips": 6
+  },
+  "fairness_base": {
+   "south_advantage": -0.009,
+   "south_advantage_se": 0.101,
+   "pairs": 16,
+   "winner_flips": 5
+  },
+  "stalemates_twin": 0,
+  "stalemates_base": 0
+ }
+}
