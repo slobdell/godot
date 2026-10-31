@@ -93,5 +93,18 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
   --crews=all --seconds=84` FAIL: Wrenches_1 4.3 m off at 1 s, every crew over 3 m by 19 s; Guns_3 dies before tick 1800 in the
   replay (his: 2457). Identical in both lane arms (the same 6 hits on Rust at the same ticks) and with `--brains-off=native_gun`.
   `REPLAY_SPAWN {"placed":0,"recorded":37}`. Reported to the orchestrator (native's harness); not engage's code.
+- **E1b read (STAGED from his Crossing census at tick 2070; builder3, 0e3575b1c = e306ce27f's code + traces, native on, n = 1 an
+  arm): the lane rule is NOT the cause** (ON and `--lane-clear=off` identical; 0.0 s held by a lane). The staged Guns_3 tracks his
+  (-67.3, -10.0 v his -68.4, -10.1) but dies at 2330 (his 2457). The four War Rigs had 29.5 crew-seconds with an enemy inside
+  their 50 m range: **16.5 s (56 %) no own line** (real cover, the muzzle's line blocked too: Block_1 between Guns_4 and
+  Rust_Hunters_2 at 26-46 m for ~5.5 s; Container20_21 in front of Guns_3 ~2 s), **8.5 s (29 %) the acquisition lay** (~1.4-2 s
+  each, reset to 0 on every pick swap; ~3 s under suppression 0.8), **4.0 s (13 %) reload** (4 s). Guns_3 fired once (2208; his hit
+  on Hunters_2 at 2212). **Why no line lasts (`--crew-trace`):** under his attack, ENGAGE's "no line of fire: going round" and
+  "it is running: after it" both drive to the TARGET'S OWN SPOT, straight into the cover between: Guns_4 `wedged` on Block_1 and
+  k-turning in reverse ~2.5 s, Guns_1 circling / k-turning 48-58 m out. E2 per the orchestrator (2026-10-30): two separate
+  switches, each with its own Bar E line: **E2a the lay** (no reset on a swap to a target on nearly the same bearing / carry part
+  of it) and **E2b a line under his attack** (go round to a nearby spot WITH a line, `firing_position.gd`, not the target's spot);
+  E3 reads what is left. Before sizing: the same split over more staged windows (`make engage-e1-windows`: Crossing 600 (CPU side)
+  and 2070, Locks 390, Sumps 450, Parade 330 and 2820, both sides).
 - **Hence E1b:** `make engage-e1-stage` stands every living unit at the census of tick 2070, forms the elements with their tasks,
   plays his attack task (Guns on Rust_Hunters_2, tick 2093) and the CPU's later tasks at their ticks, both lane arms.
