@@ -55,6 +55,21 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-30 ~20:45 PDT). Merge candidate: 6f19722ae (full check queued on builder3). 46c3b2f3b was RED (two tests of
+mine: the rules stamp's expected keys; test_native_place asking 'single' of two vehicles) and found a real place bug, fixed: the C++
+laid echelon_left's slot 0 at -0.0 where GDScript lays +0.0 (test_native_place 4000 / 0 since; its message now names the field).**
+- **holdyield twin EQUAL (R47.30, Bar H):** pair/native-holdyield 0d1bc6690 = manoeuvre df26c0d5f + cbc49c2d5 + the _chain_native
+  gate without holdyield: builder3 light 40 / 0; MEASURE native_holdyield 6000 compared, 2918 vetoed, 0 mismatches.
+- **E3 pot-shot twin EQUAL (R47.20):** pair/native-e3 3c4a3b576: 41 / 0, 8223 applies, 4 pot shots, 0 mismatches.
+- **R47.27 (a) DONE:** native_matchups ON (neutral, ABBA n 4 at ~46 crews); native_scan stays OFF (+0.5 ms a tick, both pairs).
+  (b) the think prologue port: not started (after the readers, R47.34).
+- **R47.31 / R47.34 the fog field:** sim side small (builder3 0.18 ms a tick, rays 0.155; laptop in-run 0.17 ms a tick); the
+  laptop read (UHD 620, lock, his Crossing 101, orders' cost-cap code, n 2 a layer): no_visfield -9.29 ms a frame = -2.11 ms of UI
+  + -0.17 ms a tick, x the amplifier; the fog sheet + shader hidden: nothing (+0.11). The C++ ray walk is HELD; the lever is the
+  GDScript readers of the field (radar ~0.5, camera vision ~0.46, edge markers ~0.1 a frame), GRANTED to native (R47.34) after
+  6f19722ae merges: an 8 s x 3 read per reader, then each cached / batched / C++, output-identical. Measurement-only switch
+  `--sim-off=visfield_draw` (1591bb222).
+
 **REPORT (2026-10-30 ~20:00 PDT). Merge candidate: 46c3b2f3b (full check queued on builder3, synced; a79fc79cb is VOID: it
 carried two parse errors of my tests, its check cancelled).** After it: 7571efb20 (native_esit ON) rides on the next check.
 - **N4 ElementSituation.build DONE, ON (7571efb20):** the member + intel-contact loops in C++ (esit_native.cpp, NativeEsit; the
