@@ -27,7 +27,7 @@ func _options(result: Array) -> Array:
 
 
 func _attack_move() -> Dictionary:
-	return {"verb": "attack_move", "target": "Rust_Lances_3", "goal": Vector3(30.0, 0.0, 0.0)}
+	return {"verb": "attack_move", "target": "Rust_Lances_3", "goal": Vector3(30.0, 0.0, 0.0), "his_side": true}
 
 
 func test_today_a_critical_crew_under_his_attack_retreats() -> void:
@@ -58,6 +58,15 @@ func test_an_attack_move_with_no_target_under_his_attack_is_still_pressed() -> v
 	order["target"] = ""
 	var result := TankBrain._obey(_candidates(), order, _s("attack"), true, false)
 	assert_true(not _options(result).has("RETREAT"), "his attack task, no named target: still no RETREAT (%s)" % [_options(result)])
+
+
+func test_a_cpu_crew_under_its_commanders_attack_keeps_the_survival_rule() -> void:
+	# Bar E7's amendment: the CPU commander's attack tasks are its routine, not a direct order (R47.6).
+	TankBrain.PRESS_ON = true
+	var order := _attack_move()
+	order["his_side"] = false
+	var result := TankBrain._obey(_candidates(), order, _s("attack"), true, false)
+	assert_true(_options(result).has("RETREAT"), "a CPU crew about to die may still save itself (%s)" % [_options(result)])
 
 
 func test_not_critical_is_unchanged() -> void:
