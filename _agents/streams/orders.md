@@ -138,6 +138,12 @@ the receivers; nothing else new on screen; the ring layer is empty between order
 in his terms, "tell the mortars to screen a line and they stay back where they can shell it, instead of driving onto it". Tank,
 IFV and mixed squads screen as before. ON, `--battery-screen=off`.
 
+**Merge notes (shared files):** `tests/replay/rules.py` (native's): my 2a1e36a22 adds `RULES["army_money"] = ("army-cap",
+"count")`. When native's 46c3b2f3b lands on main (RULES entries become (switch, off value, shipped stamp)), my merge of main
+writes it as `("army-cap", "count", "<R47.22's merge stamp>")`; test_rules: ALL_OFF gains "--army-cap=count" and
+test_his_round46_recordings_ran_every_rule_on expects ["--army-cap=count"]. `game/match/match_recorder.gd`: the inp row and
+the army_money stamp (additive). `game/tactics/element_plan.gd`: one condition at the D3b hook (R47.21, manoeuvre agreed).
+
 **Questions for the lead:** none yet (O1 ships ON on Bar O's verdict; if it fails, the player-terms note goes to the orchestrator).
 **Requests to other streams:** none. **Builders:** a fresh builder3 folder is seeded from `~/tank_squad/godot` server-side first
 (rsync over the laptop uplink ran ~1-2 MB/min tonight); told the orchestrator.
