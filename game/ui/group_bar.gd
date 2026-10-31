@@ -139,6 +139,7 @@ func chip_rects() -> Dictionary:
 func chip_pressed(number: int) -> void:
 	if controls != null:
 		controls.recall_group(number)
+		controls.note_input("chip:%d" % number)  # C47.4: his inp row names the chip, not the key
 
 
 func _scale() -> float:

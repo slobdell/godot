@@ -31,6 +31,11 @@ signal pose_copied(pose: String)
 signal notice(text: String, warning: bool)
 ## Round 19 (orders): a formation was picked for the selected squads (the button and the panel redraw).
 signal formation_changed(id: String)
+## Round 47 (orders O4, C47.4): one key press or mouse click of his that changed the selection or issued an order:
+## {"t": "inp", "f": frame, "k": key or mouse button, "act": what the controls did with it, "sel_before", "sel_after"}.
+## The recorder writes it as the `inp` row; a selection change with no row beside it was not his input (his Sumps game:
+## Bravo selected, Charlie 17 frames later, and no way to tell which key, chip or marker did it).
+signal input_recorded(row: Dictionary)
 
 ## A left press that moves farther than this (pixels) draws a box instead of clicking.
 const DRAG_THRESHOLD_PX := 6.0
@@ -173,6 +178,10 @@ var _acks: Array = []
 var _clock := 0.0
 var _last_group := 0
 var _last_group_at := -10.0
+## C47.4: the input being handled now ({} between inputs), what the controls did with it, and orders issued so far.
+var _inp: Dictionary = {}
+var _inp_act := ""
+var _orders_given := 0
 ## The pause banner's text ("" = none), shown while the tree is paused.
 var _pause_text := ""
 var _hover_at := Vector2(-1, -1)
@@ -197,6 +206,15 @@ func _ready() -> void:
 	add_child(_overlay)
 	_overlay.draw.connect(_draw_overlay)
 	awareness.groups = groups
+	command_issued.connect(_count_order)
+
+
+## C47.4: every order the controls give (a squad's task, a crew's command, a formation pick), for the open input's row.
+func _count_order(command: Dictionary, error: String) -> void:
+	if error != "" or String(command.get("verb", "")) == "":
+		return
+	_orders_given += 1
+	note_input("order:%s" % String(command["verb"]))
 
 
 func _process(delta: float) -> void:
@@ -442,6 +460,58 @@ func _element_destination(element: Array[String], frame: Array) -> Variant:
 
 # ---- Mouse ------------------------------------------------------------------------------------------------
 
+## C47.4: every key press and mouse button event opens an input window; the window closes at the next input or at the end
+## of the frame, and writes a row when the selection or the orders changed inside it. The panel, the group bar and the
+## edge markers act inside the same window (Godot hands one event to _input, then the GUI, then _unhandled_key_input).
+func _input(event: InputEvent) -> void:
+	var k := input_key(event)
+	if k == "":
+		return
+	_flush_input()
+	_inp = {"f": Engine.get_physics_frames(), "k": k, "sel_before": Array(selection.units).duplicate(), "orders": _orders_given}
+	_inp_act = ""
+	_flush_input.call_deferred()
+
+
+## The name of a key press or mouse button event ("" for anything else: motion, a key release, a key repeat).
+static func input_key(event: InputEvent) -> String:
+	if event is InputEventKey:
+		var key := event as InputEventKey
+		if not key.pressed or key.echo:
+			return ""
+		return OS.get_keycode_string(key.get_keycode_with_modifiers())
+	if event is InputEventMouseButton:
+		var button := event as InputEventMouseButton
+		var names := {MOUSE_BUTTON_LEFT: "mouse_left", MOUSE_BUTTON_RIGHT: "mouse_right", MOUSE_BUTTON_MIDDLE: "mouse_middle"}
+		if not names.has(button.button_index):
+			return ""
+		var mods := ""
+		if button.shift_pressed:
+			mods += "shift+"
+		if button.ctrl_pressed or button.meta_pressed:
+			mods += "ctrl+"
+		return "%s%s%s%s" % [mods, names[button.button_index], "" if button.pressed else "_up", "_double" if button.double_click else ""]
+	return ""
+
+
+## C47.4: name what the open input did (the last name wins: a recall then its order is the order). No window: nothing.
+func note_input(act: String) -> void:
+	if not _inp.is_empty():
+		_inp_act = act
+
+
+func _flush_input() -> void:
+	if _inp.is_empty():
+		return
+	var row := _inp
+	_inp = {}
+	var after := Array(selection.units).duplicate()
+	if after == row["sel_before"] and _orders_given == int(row["orders"]):
+		return
+	input_recorded.emit({"t": "inp", "f": int(row["f"]), "k": String(row["k"]), "act": _inp_act if _inp_act != "" else "?",
+			"sel_before": row["sel_before"], "sel_after": after})
+
+
 func _gui_input(event: InputEvent) -> void:
 	if rig != null and rig.handle_mouse(event):
 		accept_event()
@@ -497,6 +567,7 @@ func _left_button(button: InputEventMouseButton) -> void:
 		# X2: an edge marker is a button, not ground: it takes priority over selecting and box dragging.
 		if markers != null and markers.marker_at(button.position) > 0:
 			recall_group(markers.marker_at(button.position), true)
+			note_input("edge_marker:%d" % markers.marker_at(button.position))
 			return
 		if mode != "":
 			_armed_press(button)
@@ -536,6 +607,7 @@ func click_select(at: Vector2, shift := false, ctrl := false, double := false) -
 		if not shift or selection.units.is_empty():
 			selection.inspect(unit_name)
 		return
+	note_input("click_select:%s" % unit_name)
 	if ctrl or double:
 		var same := visible_of_type(tank.unit_id)
 		if shift:
@@ -554,6 +626,7 @@ func box_select(rect: Rect2, shift := false) -> void:
 	var inside := units_in_box(rect)
 	if inside.is_empty():
 		return
+	note_input("box_select")
 	if shift:
 		selection.add(inside)
 	else:
@@ -854,6 +927,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	# X4: ctrl+A takes the whole army. It sits with the other ctrl keys, before the ctrl guard below.
 	if key.keycode == KEY_A and (key.ctrl_pressed or key.meta_pressed):
+		note_input("select_army")
 		select_army()
 		get_viewport().set_input_as_handled()
 		return
@@ -862,6 +936,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		if key.ctrl_pressed or key.meta_pressed:
 			if not selection.units.is_empty():
 				groups.save(number, selection.units)
+				note_input("group_save:%d" % number)
 		elif key.shift_pressed:
 			if not selection.units.is_empty():
 				groups.add(number, selection.units)
@@ -880,6 +955,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	match key.keycode:
 		KEY_ESCAPE:
+			note_input("escape")
 			if not _attack_press.is_empty() and not bool(_attack_press["armed"]):
 				_clear_attack_press()  # a right drag on an enemy, cancelled; the selection stays
 			elif mode != "":
@@ -896,6 +972,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			var next := groups.next_after(_last_group)
 			if next > 0:
 				recall_group(next, true)
+				note_input("next_group:%d" % next)
 		KEY_C:
 			center_on(selection.units)
 		KEY_O:
@@ -929,11 +1006,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_G:
 			cycle_formation(key.shift_pressed)
 		KEY_F1:
+			note_input("select_idle")
 			select_idle()
 		KEY_F2:
-			next_idle_element()
+			note_input("next_idle:%d" % next_idle_element())
 		KEY_Q:
-			jump_to_alert()
+			note_input("jump_to_alert:%s" % jump_to_alert())
 		KEY_SPACE:
 			set_paused(not get_tree().paused)
 		_:
@@ -954,6 +1032,7 @@ func recall_group(number: int, center := false) -> void:
 	var members := groups.members(number)
 	if members.is_empty():
 		return
+	note_input("recall_group:%d" % number)
 	var double := number == _last_group and _clock - _last_group_at <= DOUBLE_TAP_SECONDS
 	selection.set_units(members)
 	disarm()
