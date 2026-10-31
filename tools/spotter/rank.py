@@ -137,6 +137,38 @@ def pick(found, top, per_fight=8, per_crew=1):
     return chosen
 
 
+def controls(table, found, n, seed=7, length=8):
+    """n random windows of ordinary driving the ranker did NOT flag (no hot second, no moment overlapping): the judging page's
+    hidden controls, so his labels say the base rate as well as the ranker's precision. Same shape as a moment, `control: true`."""
+    import random
+    rng = random.Random(seed)
+    busy = {}
+    for m in found:
+        busy.setdefault((m["fight"], m["crew"]), []).append((m["start_s"] - 3, m["end_s"] + 3))
+    by_crew = {}
+    for row in table:
+        by_crew.setdefault((row["fight"], row["crew"]), []).append(row)
+    keys = sorted(by_crew)
+    rng.shuffle(keys)
+    out = []
+    for key in keys:
+        seq = sorted(by_crew[key], key=lambda r: int(r["s"]))
+        if len(seq) < length + 10:
+            continue
+        i = rng.randrange(5, len(seq) - length)
+        window = seq[i:i + length]
+        a, b = int(window[0]["s"]), int(window[-1]["s"])
+        if any(lo <= b and a <= hi for lo, hi in busy.get(key, [])) or max(r["_score"] for r in window) >= 1.0:
+            continue
+        m = _moment(window)
+        m.update({"control": True, "start_s": a, "end_s": b, "length_s": b - a + 1})
+        m["clip"].update({"from_s": a, "to_s": b + 1})
+        out.append(m)
+        if len(out) >= n:
+            break
+    return out
+
+
 def reason_line(m):
     return "; ".join(f"{r['words']} ({r['value']:g} {r['unit']}, rarer than {r['rarer_than']:g} %)" for r in m["reasons"])
 
@@ -164,6 +196,7 @@ def main():
     ap.add_argument("fight_dir", nargs="?", default="build/spotter/fights")
     ap.add_argument("--top", type=int, default=50)
     ap.add_argument("--hot", type=float, default=2.0)
+    ap.add_argument("--controls", type=int, default=0, help="also pick N hidden random controls (unflagged windows)")
     args = ap.parse_args()
     table = F.load_dir(args.fight_dir)
     if not table:
@@ -174,7 +207,8 @@ def main():
     chosen = pick(found, args.top)
     stamp = _stamp(args.fight_dir)
     with open(os.path.join(args.fight_dir, "moments.json"), "w") as out:
-        json.dump({"stamp": stamp, "crew_seconds": len(table), "moments_scored": len(found), "top": chosen}, out, indent=1)
+        json.dump({"stamp": stamp, "crew_seconds": len(table), "moments_scored": len(found), "top": chosen,
+                   "controls": controls(table, found, args.controls)}, out, indent=1)
     write_md(chosen, found, table, os.path.join(args.fight_dir, "moments.md"), stamp)
     print(f"rank: {len(table)} crew-seconds, {len(found)} moments, top {len(chosen)} -> {args.fight_dir}/moments.md")
     for i, m in enumerate(chosen[:10], 1):

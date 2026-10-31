@@ -116,6 +116,7 @@ def main():
     ap.add_argument("--godot", default="")
     ap.add_argument("--timeout", type=int, default=900)
     ap.add_argument("--only", type=int, default=0, help="render just this rank (1-based)")
+    ap.add_argument("--ranks", default="", help="render ranks A-B (1-based) instead of the top N, plus moments.json's controls")
     ap.add_argument("--one", nargs=5, metavar=("SEED", "ARENA", "CREW", "FROM_S", "TO_S"),
                     help="one clip from its reproduction line (no moments.json, no drift check)")
     args = ap.parse_args()
@@ -129,6 +130,10 @@ def main():
     else:
         data = json.load(open(os.path.join(args.fight_dir, "moments.json")))
     moments = data["top"][: args.top]
+    first = 1
+    if args.ranks:
+        a, b = (int(x) for x in args.ranks.split("-"))
+        moments, first = data["top"][a - 1:b] + data.get("controls", []), a
     if args.only:
         moments = [data["top"][args.only - 1]]
     clip_dir = os.path.join(args.fight_dir, "clips")
@@ -138,7 +143,7 @@ def main():
     xvfb, display = start_xvfb(xvfb_path)
     clips = []
     try:
-        for i, m in enumerate(moments, args.only or 1):
+        for i, m in enumerate(moments, args.only or first):
             clip = render(m, args.godot or find_godot(), display, work, clip_dir, i, args.timeout)
             clips.append(clip)
             print(f"clip {i:2d}: {clip['file'] or 'FAILED'} drift {clip['drift_m']} m, {clip['frames']} frames, "

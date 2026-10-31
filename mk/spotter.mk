@@ -31,8 +31,9 @@ spotter-fights: native-fresh import ## spotter S1: SPOT_MAPS x SPOT_SEEDS CPU-v-
 	@echo "spotter-fights: $$(find $(SPOT_DIR) -maxdepth 1 \( -name '*.jsonl' -o -name '*.jsonl.gz' \) | wc -l) fights in $(SPOT_DIR)"
 
 .PHONY: spotter-rank
-spotter-rank: ## spotter S2: the feature table + ranked moments of SPOT_DIR (SPOT_TOP of them) -> SPOT_DIR/moments.md
-	$(PYTHON) tools/spotter/rank.py $(SPOT_DIR) --top $(SPOT_TOP)
+SPOT_CONTROLS ?= 0
+spotter-rank: ## spotter S2: the feature table + ranked moments of SPOT_DIR (SPOT_TOP of them, + SPOT_CONTROLS hidden random controls) -> SPOT_DIR/moments.md
+	$(PYTHON) tools/spotter/rank.py $(SPOT_DIR) --top $(SPOT_TOP) --controls $(SPOT_CONTROLS)
 
 .PHONY: spotter-batch
 SPOT_BATCH_CLIPS ?= 0
@@ -93,8 +94,9 @@ spotter-night-pull: ## spotter S0: NIGHT_DAY's SUMMARY.md + moments (no fights) 
 # ---- S3: clips (offscreen: its own Xvfb on builder3, Mesa llvmpipe = his gl_compatibility renderer; the GPU encodes) ------------
 SPOT_CLIPS ?= 30
 .PHONY: spotter-clips spotter-clip
-spotter-clips: native-fresh import ## spotter S3: the top SPOT_CLIPS moments of SPOT_DIR as 3-6 s clips -> SPOT_DIR/clips/*.mp4 + clips.json (one Godot at a time; LIGHT=1 is fine)
-	$(PYTHON) tools/spotter/clips.py $(SPOT_DIR) --top $(SPOT_CLIPS) --godot $(GODOT)
+SPOT_RANKS ?=
+spotter-clips: native-fresh import ## spotter S3: the top SPOT_CLIPS moments of SPOT_DIR (or SPOT_RANKS=31-100 + the controls) as clips -> SPOT_DIR/clips/*.mp4 + clips.json (one Godot at a time; LIGHT=1 is fine)
+	$(PYTHON) tools/spotter/clips.py $(SPOT_DIR) --top $(SPOT_CLIPS) --godot $(GODOT) $(if $(SPOT_RANKS),--ranks $(SPOT_RANKS))
 
 spotter-clip: native-fresh import ## spotter S3: one clip from a moment's reproduction line (SPOT_SEED SPOT_ARENA SPOT_CREW SPOT_FROM SPOT_TO) -> SPOT_DIR/clips/
 	$(PYTHON) tools/spotter/clips.py $(SPOT_DIR) --godot $(GODOT) --one $(SPOT_SEED) $(SPOT_ARENA) "$(SPOT_CREW)" $(SPOT_FROM) $(SPOT_TO)
