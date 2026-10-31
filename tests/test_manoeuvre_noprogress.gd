@@ -114,3 +114,53 @@ func test_crossing_hunters_all_leave_for_the_bridge() -> void:
 	var stalls := await _watch(names, element, 12.0)
 	for n: String in names:
 		assert_true(float(stalls[n]) < 2.5, "%s makes progress toward its seat (no-progress %.1f s)" % [n, float(stalls[n])])
+
+
+## Crossing, THE CPU's SIDE (C47.9): the Rust Hunters (syndicate) on their ambush task (his recording, task row at tick 91: from
+## (-13.4, -9.5) toward (-50.5, 15.6)) sat in a 6 m patch north of the city block at (-34, -33) for 24+ s (ticks 2400-3120):
+## Hunters_2 yielding to Hunters_3 while Hunters_3 was blocked by Hunters_2, Hunters_4 blocked `no_path`, Hunters_1 yielding to
+## Hunters_4. Staged where they stood at tick 2760 (headings from their last moves), the same task: no crew may sit yielding or
+## blocked for long while it is still away from its seat.
+func test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle() -> void:
+	_arm()
+	_lab = TacticsLab.create(self, 101, "crossing")
+	var pose := {"Rust_Hunters_1": [Vector2(-26.7, -7.3), -76.0, "syn_ifv"], "Rust_Hunters_2": [Vector2(-31.5, -6.9), 163.0, "syn_ifv"],
+			"Rust_Hunters_3": [Vector2(-32.5, -9.7), -59.0, "syn_ifv"], "Rust_Hunters_4": [Vector2(-28.8, -9.6), -180.0, "syn_scout"]}
+	var names := pose.keys()
+	names.sort()
+	for n: String in names:
+		var at: Vector2 = pose[n][0]
+		_lab.unit(Match.Team.RUST, n, Vector3(at.x, 0.0, at.y), deg_to_rad(float(pose[n][1])), String(pose[n][2]))
+	DoctrineTable.clear_cache()
+	var table: DoctrineTable = DoctrineTable.load_table("syndicate").get("table")
+	var element := _lab.elements.form(names, "Hunters", table)
+	await _lab.start()
+	element.assign({"verb": "ambush", "from": [-13.4375, -9.5], "to": [-50.467, 15.627]})
+	var stuck := {}
+	for n: String in names:
+		stuck[n] = 0
+	var trace := OS.get_environment("NOPROGRESS_TRACE") == "on"
+	for i in 15 * SimClock.TICK_RATE:
+		await _lab.step()
+		for n: String in names:
+			var tank := _lab.tank_of(n)
+			var mover := Movement.of(tank)
+			if mover == null or not (element.slots.get(n) is Vector3):
+				continue
+			var seat: Vector3 = element.slots[n]
+			var away := Vector2(seat.x - tank.global_position.x, seat.z - tank.global_position.z).length()
+			if away > 4.0 and (mover.phase == "yielding" or mover.phase == "blocked"):
+				stuck[n] = int(stuck[n]) + 1
+			if trace and i % 30 == 0:
+				var near := Pathing.closest_point(tank.get_world_3d().navigation_map, tank.global_position)
+				print("CYCLE_TICK %d %s at (%.1f, %.1f) seat (%.1f, %.1f) away %.1f phase %s by %s yield_to %s v %.1f rv %.2f thr %.2f order %s goal %s steer %s path %d reach %s off_mesh %.2f touch %s/%s stuck_t %.2f esc %d stalled %d" % [i, n,
+						tank.global_position.x, tank.global_position.z, seat.x, seat.z, away, mover.phase, mover.blocked_by, mover.yield_to,
+						tank.speed(), tank.real_velocity.length(), tank.command.throttle, String(mover.ctl.move_order.get("type", "")), str(mover._goal),
+						str(mover.steer_to), mover._path.size(), str(mover._reachable), Vector2(near.x - tank.global_position.x, near.z - tank.global_position.z).length(),
+						str(mover.contact.touching), mover.contact.collider, mover._stuck_time, mover._esc_stage, mover.stalled_ticks])
+	var out := {}
+	for n: String in names:
+		out[n] = float(stuck[n]) / SimClock.TICK_RATE
+	print("CYCLE_ROW " + JSON.stringify(out))
+	for n: String in names:
+		assert_true(float(out[n]) < 4.0, "%s is not held yielding / blocked away from its seat (%.1f s)" % [n, float(out[n])])
