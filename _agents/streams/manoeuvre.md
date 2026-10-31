@@ -87,7 +87,16 @@ _(worker keeps this current: report at the top, every number with commit, machin
   from the watchdog: they live in the native execute and fire on their own triggers; the watchdog's job is what they cannot see.
   Known: with the sliver fixed, Hunters_2 then waits 4.3 m from its seat behind an arrived squadmate (a settle contention: reported,
   not asserted). Its own bar follows Bar M.
-- **Requests to other streams:** none open (route's sliver request answered by the grant). **Questions for the lead:** none.
+- **M5a `holdyield` built (df26c0d5f, OFF):** a crew holding his post (TankBrain._his_post) never takes a yield spot > 0.5 m closer
+  to an enemy hull within 60 m, nor one > 8 m from his post; otherwise it gives way in place. Engage's lane probe, light lane,
+  builder3: **12328 post drift 10.1 -> 0.0 m, and from its post the crew kills the gun (gun hp 0.5 -> 0.0)**; dev 7001-7012 identical
+  in every line, both arms. Two steps of the build, said: the controller's `visible_enemy_names` is empty for a brain crew and the
+  gun's target flickers between shots (both read in the trace), so the veto reads enemy hulls in range; with the near spots refused
+  the yield took `spot(24,0)`, 24 m on, hence the 8 m bound. Native: _begin_yield is mirrored in C++, so ON runs the GDScript yield
+  (native_yield off) until native twins `_holdyield_veto`. Bar H waits on seeds.
+- **Requests to other streams (19:35, via the orchestrator):** seeds for Bar H (13001+); native: twin `Movement._holdyield_veto`;
+  engage (FYI): HOLD's return to his post uses arrive 6.0, so any other displacement still parks him up to 6 m short.
+  **Questions for the lead:** none.
 
 ### BAR W (FILED 2026-10-30 ~19:15, before any number; the watchdog `noprogress` + Pathing.reroute off a sliver)
 
