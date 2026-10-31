@@ -396,6 +396,13 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   judge it over 6 FRESH offsets (x -3..+3 step 0.5), summed hits >= 120 and deck share >= 0.5, filed in the commit before the run. Also:
   GRANT spotter one additive Makefile line (LIGHT_GOALS += spotter targets).
 
+- **R47.47 The CPU sliver test is a knife edge, not a flake: PENDING until next round's manoeuvre bar.** Native (builder3 light, 155a8fc0e
+  on main c9e6520b3): alone 10/10 identical, native on and off; after test_manoeuvre_face_settle in the same process, red 3/3, matching
+  mapkit's failure to the digit; fresh processes with starts jittered <= 1 cm / 0.1 deg: 19/20 green. Cause: same-process physics carry-over
+  (roadmap UNOWNED "a same-process rematch is not deterministic", round 33) and a case that sits on the sliver's edge. The test arms the
+  watchdog (OFF in his game). Next round: manoeuvre's bar = 20/20 jitter seeds (`make native-repeat ... REPEAT_JITTER=on`). Spotter merged
+  (213f5d070; 9858da23f GREEN 3608/0); remote_builds.md: a queued check can survive its wrapper's TERM.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
