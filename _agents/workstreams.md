@@ -284,6 +284,9 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   G3 PASS target dies 44.1 -> 37.0 s; G4 PASS authority 24/24; G6 PASS CPU side 48/48 identical (narrowed to his side, amendment 1).
   Ruling: his direct-order rule outweighs trivial grazes with fewer losses; `--press-on=off` the escape; told to him. **Follow-up for
   engage (its own bar):** the friendly-fire holes the trace found (SUPPRESS's lane check; the circling MG burst re-check).
+  **CORRECTION (engage, after the merge): main b96e12e43 still had `PRESS_ON_DEFAULT := false` (tank_brain.gd:116); the bar's arms
+  passed `--press-on` explicitly and the default flip was never committed. E7 is NOT in his default game until engage's E3 freeze tree
+  (which flips it; its full check proves it) merges.** Lesson 353.
 
 ## Bars (round 47)
 
