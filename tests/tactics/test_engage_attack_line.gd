@@ -8,11 +8,12 @@ extends TestCase
 ## `--attack-line` OFF is today's (pinned as the control: it does not fire inside the window); ON it drives to a spot with
 ## a line and fires.
 
-const RIG_AT := Vector3(-66.0, 0.0, -22.0)
-const TARGET_AT := Vector3(-41.0, 0.0, -9.0)
+## From the staged trace (tick 2216): Guns_4's place, and Hunters_2's from the blocked ray's hit on Block_1 at 28.8 m.
+const RIG_AT := Vector3(-63.0, 0.0, -21.3)
+const TARGET_AT := Vector3(-37.4, 0.0, -8.2)
 const SECONDS := 12.0
-## A squadmate of his that sees the target (in his match Guns_3 and the team's intel did): it holds its fire.
-const SPOTTER_AT := Vector3(-41.0, 0.0, -34.0)
+## A squadmate of his that sees the target: Guns_3's place when it had its line and fired (staged, tick ~2216).
+const SPOTTER_AT := Vector3(-64.0, 0.0, -11.0)
 
 
 func teardown() -> void:
@@ -30,7 +31,10 @@ func _run(attack_line: bool) -> Array:
 	await lab.start()
 	(lab.game_match.brains.get_node("Orders_Rust_Hunters_2") as OrderController).set_orders({"type": "stop"}, {"type": "hold_fire"})
 	(lab.game_match.brains.get_node("Orders_Green_Eyes_1") as OrderController).set_orders({"type": "stop"}, {"type": "hold_fire"})
-	var blocked_at_start := not Perception.has_line_of_sight(rig, target) and Perception.has_line_of_sight(spotter, target)
+	var rig_line := Perception.has_line_of_sight(rig, target)
+	var spotter_line := Perception.has_line_of_sight(spotter, target)
+	print("ATTACK_LINE stage: rig line %s (want false), spotter line %s (want true)" % [rig_line, spotter_line])
+	var blocked_at_start := not rig_line and spotter_line
 	var element := lab.element(["Green_Guns_4"], "Guns")
 	element.assign({"verb": "attack", "target": "Rust_Hunters_2"})
 	var shots: Array = []
