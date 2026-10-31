@@ -1,4 +1,5 @@
 #include "tank_native.h"
+#include "eye_mask.h"
 
 #include "nav_native.h"
 
@@ -139,6 +140,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drive_around_fire", "mover", "waypoint", "goal", "order"), &TankNative::drive_around_fire);
 	ClassDB::bind_method(D_METHOD("drive_pass_lane", "mover", "passer", "from", "direction"), &TankNative::drive_pass_lane);
 	ClassDB::bind_method(D_METHOD("drive_holdyield_veto", "mover", "point"), &TankNative::drive_holdyield_veto);
+	ClassDB::bind_method(D_METHOD("drive_path_query", "mover", "from", "to"), &TankNative::drive_path_query);
 	ClassDB::bind_method(D_METHOD("drive_fire_ready"), &TankNative::drive_fire_ready);
 	ClassDB::bind_method(D_METHOD("situation_core", "brain", "my_position", "my_name", "squad_name", "all_allies", "intel",
 			"names", "prototypes", "choice_target", "order_target", "tick", "flank_reach", "cover_map", "constants", "ai_cache",
@@ -429,7 +431,7 @@ bool TankNative::line_of_sight(const RID &space, const Vector3 &from, const Vect
 		return true;
 	}
 	const Vector3 up = Vector3(0, 1, 0) * EYE_HEIGHT;
-	Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(from + up, to + up, 1);
+	Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(from + up, to + up, eye_mask_live(1)); // Perception.eye_mask() (R47.36)
 	return state->intersect_ray(query).is_empty();
 }
 

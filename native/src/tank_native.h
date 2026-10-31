@@ -272,6 +272,9 @@ public:
 	Dictionary drive_profile(bool reset) const;
 	Vector3 drive_around_fire(Object *mover, const Vector3 &waypoint, const Vector3 &goal, const Dictionary &order) const;
 	double drive_pass_lane(Object *mover, const String &passer, const Vector3 &from, const Vector2 &direction) const;
+	Dictionary drive_path_query(Object *mover, const Vector3 &from, const Vector3 &to) const {
+		return ::godot::drive_path_query(drive_config, mover, from, to);
+	}
 	int64_t drive_holdyield_veto(Object *mover, const Vector3 &point) const {
 		return ::godot::drive_holdyield_veto(drive_config, mover, point);
 	}

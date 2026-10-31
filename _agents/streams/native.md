@@ -55,6 +55,42 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-30 ~21:00 PDT). Merge candidate: 6f19722ae (still queued on builder3). Since (merged main 5eee3a06d: route's
+RouteDoors, mapkit's doors / sight class):**
+- **C47.8 doors in the native route queries DONE (11fb972a0):** Pathing's own find_path / query already step aside from native while
+  RouteDoors.any(); the gap was the native drive's re-plan (drive_native path_query): with a door registered it hands the query
+  to Pathing.query (RouteDoors.mask), no doors = the native query, byte-identical. test_native_doors (route's stand-in link on Locks,
+  5 crossings x no door / open / shut / off) 20 / 0, 10 through the door; drive + pathing twins 19 / 0 (builder3 light). A static
+  Ref<Script> there segfaulted every drive twin at exit (139): scripts are looked up by ObjectID now.
+- **R47.36 the eye mask DONE (171aa75be):** eye_mask.h (Perception.eye_mask(), ArenaKit.sight_on read live) in perception_native's
+  sight + gun-ready passes, the gun's line of sight, TankNative.line_of_sight; Match._clear_view and VisibilityField's rays ask
+  Perception.eye_mask() (granted). test_native_eye_mask on mapkit's screen fixture 400 / 0, 139 blinded; 18 / 0 with perception,
+  gun, scan, visibility, sight_screens. No shipped map has a screen.
+
+**REPORT (2026-10-30 ~20:45 PDT). Merge candidate: 6f19722ae (full check queued on builder3). 46c3b2f3b was RED (two tests of
+mine: the rules stamp's expected keys; test_native_place asking 'single' of two vehicles) and found a real place bug, fixed: the C++
+laid echelon_left's slot 0 at -0.0 where GDScript lays +0.0 (test_native_place 4000 / 0 since; its message now names the field).**
+- **holdyield twin EQUAL (R47.30, Bar H):** pair/native-holdyield 0d1bc6690 = manoeuvre df26c0d5f + cbc49c2d5 + the _chain_native
+  gate without holdyield: builder3 light 40 / 0; MEASURE native_holdyield 6000 compared, 2918 vetoed, 0 mismatches.
+- **E3 pot-shot twin EQUAL (R47.20):** pair/native-e3 3c4a3b576: 41 / 0, 8223 applies, 4 pot shots, 0 mismatches.
+- **R47.27 (b) PARKED (the orchestrator's rule: callbacks < 0.2 ms a tick). NEXT-ROUND NOTE: no lump left in the brain's tick;
+  the time is shared memos + GDScript glue.** Cost cap (gangs v syndicate 3500, Crossing, seed 3, builder3 light, n 1; probe
+  probe/native-sitcb47, not merged): the think prologue is flat (t.poll 0.40 = squad 0.14 + order 0.11 + element 0.08 + station
+  0.07, 29 polls a tick at 1-5 us; rate_progress 0.26; incoming 0.18): a C++ prologue would call the same GDScript back.
+  build_situation 1.0-1.2 ms a tick at 5.6 calls: its s.contacts lap is ALREADY native (situation_core); its callbacks
+  (AiTickCache.faced_by / _faces_someone_else) never fire here and CoverMap.clear_line_coarse is ~0.001 ms; the lap's GDScript
+  prep is AiTickCache.contact_prototypes 0.156 ms (both teams' tables rebuilt each intel refresh), allies 0.086, intel_names 0.012;
+  s.tactics / s.squad / s.cover_* / s.incoming are thin calls into shared code (SquadTactics, native_tq, native_incoming). The
+  candidate for a next round: contact_prototypes' rebuild in C++ (~0.1 ms a tick builder3, ~0.7 ms a frame on his laptop).
+- **R47.27 (a) DONE:** native_matchups ON (neutral, ABBA n 4 at ~46 crews); native_scan stays OFF (+0.5 ms a tick, both pairs).
+  (b) the think prologue port: not started (after the readers, R47.34).
+- **R47.31 / R47.34 the fog field:** sim side small (builder3 0.18 ms a tick, rays 0.155; laptop in-run 0.17 ms a tick); the
+  laptop read (UHD 620, lock, his Crossing 101, orders' cost-cap code, n 2 a layer): no_visfield -9.29 ms a frame = -2.11 ms of UI
+  + -0.17 ms a tick, x the amplifier; the fog sheet + shader hidden: nothing (+0.11). The C++ ray walk is HELD; the lever is the
+  GDScript readers of the field (radar ~0.5, camera vision ~0.46, edge markers ~0.1 a frame), GRANTED to native (R47.34) after
+  6f19722ae merges: an 8 s x 3 read per reader, then each cached / batched / C++, output-identical. Measurement-only switch
+  `--sim-off=visfield_draw` (1591bb222).
+
 **REPORT (2026-10-30 ~20:00 PDT). Merge candidate: 46c3b2f3b (full check queued on builder3, synced; a79fc79cb is VOID: it
 carried two parse errors of my tests, its check cancelled).** After it: 7571efb20 (native_esit ON) rides on the next check.
 - **N4 ElementSituation.build DONE, ON (7571efb20):** the member + intel-contact loops in C++ (esit_native.cpp, NativeEsit; the
