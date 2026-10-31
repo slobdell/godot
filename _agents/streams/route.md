@@ -64,3 +64,45 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### 2026-10-30 ~17:30 — R0 GREEN (merge: ba53581f7), R1 DONE: the cause is the brain's RETREAT, not the route
+
+- **R0 GREEN: ba53581f7**, builder3, `make check exited 0`, 3520 passed / 0 failed, 28 targets ALL JUDGED. Orchestrator told.
+- **R1 cause (his Locks, Hunters_4), builder3, code ba53581f7 + the trace tooling, staged from his census:**
+  1. **The 40 m drive north and the ~5 s dither at (-75,95) are `TankBrain` RETREAT**, not a route: hull 15/220 (7 %) under the
+     under-orders critical line with threats in sight, so RETREAT 0.99 beats his attack; `withdraw_point` hands the crew a move_to
+     ~20 m from the threats, over and over (north, away from his target). The element's slot for it stayed right (south, by
+     Lances_3) the whole time. Alone, "after it alone: straight at it" took for ~1 s, then RETREAT took it back (staged tick 668).
+     Brain scoring = engage's (C47.3); sent to the orchestrator as a request.
+  2. **The route takes the short way:** over 298 re-plans in three runs, the driven route was at most **1.036x** the navmesh shortest
+     to its goal. From his click spot (-82.7,62.3), shortest to Lances_3 = **135 m via the WEST bridge** (lock 145 m). From
+     (-77,95), where the retreat left it, west 176.6 v lock 181.4 (a near tie); it took the lock because Lances_3 stood at x ~ -10
+     then, and Lances_3 then drove 35 m west. (`tests/route/test_route_locks_probe.gd`, ROUTE_PROBE lines.)
+  - **Why staged:** the plain replay leaves his match at ~12 s (divergence.py FAIL, first crew over 3 m at s 20), so
+    `make route-trace ... STAGE_TICK=T` places every crew from his census row at T (hull, shield; missing = destroyed), re-issues
+    his standing orders and shifts later ones. What it shows is what the code does from his positions, not his match.
+- **R2 as written already holds** (route <= 1.3x shortest on every re-plan); proposed to the orchestrator: R2 = guard tests only
+  (his Locks geometry, Crossing/Gorge crossing choice, Terminus unchanged), then R5. Waiting on its ruling for whether a retreat's
+  direction under his order is route's or engage's.
+
+### 2026-10-30 ~17:00 — R0 done (check pending), R1 tracing
+
+**Plan (backlog order):** R0 seam -> R1 trace (`make route-trace`, new) -> R2 fix ON + `=off` -> R3 Bar R (filed before numbers,
+seeds 12501-12548) -> R4 his Locks read -> R5 doors (stub `BlastDoors.is_open` until mapkit's lands).
+
+**element_plan.gd functions route claims (C47 ownership line):** `_route_step` (the covered-route waypoint choice) and, through it,
+`game/tactics/covered_route.gd`'s `CoveredRoute.choose` (nobody else's brief names it; claimed here, orchestrator told). Anything in
+element.gd's transit route (`Element` ~1087-1304, nobody's) goes to the orchestrator as a request first.
+
+- **R0 DONE:** `Pathing.reroute(crew: Node, reason: StringName) -> bool` at **ba53581f7** (`game/ai/pathing.gd`): clears the mover's
+  `_path_goal` (the next `_next_waypoint` sees a goal it was never planned for = an event re-plan, GDScript and drive_native.cpp
+  alike), `_repath_left = 0`, `native_stale |= STALE_ALL`; counts `Pathing.reroutes[reason]`; false with no live mover.
+  `tests/test_pathing_reroute.gd` 2/0 (builder3, ba53581f7, `native test`, native built). Full check on ba53581f7: running.
+- **R1 tooling:** `make route-trace RECORDING= ROUTE_CREWS= [REPLAY_SECONDS=]` (`mk/route.mk`, `tests/route/route_replay.gd`, a subclass
+  of `tests/replay_orders.gd`, unchanged): ROUTE_TRACE rows on every change of a crew's order / drive goal / navmesh route / element
+  route, with the shortest drivable length to the same goal and to the target.
+- **Infrastructure note:** a fresh builder3 folder over the laptop's uplink crawled (219 of 804 MB in 22 min with seven streams
+  syncing). Seeded server-side from `~/tank_squad/godot` (7 s); then rsync sends only the diff.
+
+**Questions for the lead:** none yet. **Requests to other streams:** none yet.
+
