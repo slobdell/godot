@@ -315,6 +315,10 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   0.388, s.tactics 0.124, cover_fire 0.089, incoming 0.086, squad 0.083, cover_spots 0.070. **GO:** s.contacts' remaining fields + s.tactics
   into situation_native (~0.4-0.5 ms a tick, ~3 ms a frame on his laptop), VERIFY on his four, ABBA at the cost cap, ON if faster or
   neutral. Engage told those two are twin-frozen from the merge.
+  **WITHDRAWN as filed (native's correction):** the "s.contacts" lap brackets the call that is ALREADY native (situation_core), and
+  s.tactics / squad / cover / incoming are thin calls into shared code already native or memoized: no lump left. One time-boxed (1 h)
+  sub-profile of situation_core's GDScript callbacks (AiTickCache.faced_by, CoverMap.clear_line_coarse) decides; else (b) parks for the
+  round as a next-round note. The twin freeze told to engage does not apply.
 
 ## Bars (round 47)
 
