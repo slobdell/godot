@@ -9,12 +9,16 @@ extends SceneTree
 ## the like drive what the fight asks, and are reported apart).
 ##
 ##   ROUTE_LEG {"arena","seed","n","team","unit","option","order","start","end","driven_m","shortest_m","tick0","tick1",
-##              "goal_moved_m" (the farthest its drive goal got from the leg's first goal), "replans"}
+##              "goal_moved_m" (the farthest its drive goal got from the leg's first goal), "replans",
+##              "planned_m" (its first route's length) v "shortest_goal_m" (the navmesh's shortest to that goal, asked then):
+##              the ROUTE's ratio; "arrived" (within ARRIVED_M of it), "reverse_m", "held_s" (yielding or blocked): the DRIVE's}
 ##   ROUTE_CENSUS {"arena","seed","green","rust","legs","ended_s"}
 ##
 ##   godot --headless --fixed-fps 30 --path . --script res://tests/route/route_census.gd -- --arena=locks --seed=12501
 ##         --green=law --rust=gangs --credits=1000 --seconds=150
 
+## A leg arrived when the crew came this close to the goal its drive was first given (metres).
+const ARRIVED_M := 8.0
 ## Legs shorter than this (navmesh metres start to end) are turning, not routing: not printed.
 const MIN_SHORTEST_M := 15.0
 
@@ -39,6 +43,15 @@ static func _order_key(order: Dictionary) -> String:
 	return "%s|%s" % [String(order.get("type", "")), String(order.get("target", ""))]
 
 
+static func _route_m(from: Vector3, points: PackedVector3Array) -> float:
+	var total := 0.0
+	var prev := from
+	for p in points:
+		total += Vector2(p.x - prev.x, p.z - prev.z).length()
+		prev = p
+	return total
+
+
 func _close(t: Tank, leg: Dictionary, tick: int) -> void:
 	var start: Vector3 = leg["start"]
 	var here := Vector3(t.global_position.x, 0.0, t.global_position.z)
@@ -55,7 +68,9 @@ func _close(t: Tank, leg: Dictionary, tick: int) -> void:
 			"start": [snappedf(start.x, 0.1), snappedf(start.z, 0.1)], "end": [snappedf(here.x, 0.1), snappedf(here.z, 0.1)],
 			"driven_m": snappedf(float(leg["driven"]), 0.1), "shortest_m": snappedf(shortest, 0.1),
 			"tick0": leg["tick"], "tick1": tick, "goal_moved_m": snappedf(float(leg.get("goal_moved", 0.0)), 0.1),
-			"replans": int(leg.get("replans", 0))}))
+			"replans": int(leg.get("replans", 0)), "planned_m": snappedf(float(leg.get("planned", -1.0)), 0.1),
+			"shortest_goal_m": snappedf(float(leg.get("shortest_goal", -1.0)), 0.1), "arrived": bool(leg.get("arrived", false)),
+			"reverse_m": snappedf(float(leg.get("reverse", 0.0)), 0.1), "held_s": snappedf(int(leg.get("held_ticks", 0)) / float(SimClock.TICK_RATE), 0.1)}))
 
 
 func _run() -> void:
@@ -120,13 +135,23 @@ func _run() -> void:
 				legs[name] = leg
 			if mover._path_goal != Vector3.INF:
 				var goal := mover._path_goal
-				if not leg.has("goal0"):
+				if not leg.has("goal0") and mover._path.size() >= 2:
 					leg["goal0"] = goal
+					leg["planned"] = _route_m(here, mover._path.slice(mover._path_index))
+					leg["shortest_goal"] = _route_m(here, Pathing.query(t, here, goal)["points"])
+				if leg.has("goal0") and Vector2(here.x - goal.x, here.z - goal.z).length() <= ARRIVED_M:
+					leg["arrived"] = true
 				var goal0: Vector3 = leg["goal0"]
 				leg["goal_moved"] = maxf(float(leg.get("goal_moved", 0.0)), Vector2(goal.x - goal0.x, goal.z - goal0.z).length())
 			if mover.last_replan != &"":
 				leg["replans"] = int(leg.get("replans", 0)) + 1
 			var last: Vector3 = leg["last"]
+			var step := Vector2(here.x - last.x, here.z - last.z)
+			var forward := -t.global_basis.z
+			if step.length() > 0.001 and step.dot(Vector2(forward.x, forward.z)) < 0.0:
+				leg["reverse"] = float(leg.get("reverse", 0.0)) + step.length()
+			if mover.phase in ["yielding", "blocked"]:
+				leg["held_ticks"] = int(leg.get("held_ticks", 0)) + 1
 			leg["driven"] = float(leg["driven"]) + Vector2(here.x - last.x, here.z - last.z).length()
 			leg["last"] = here
 		if alive[0] == 0 or alive[1] == 0:
