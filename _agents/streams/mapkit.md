@@ -77,6 +77,31 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**FINAL REPORT (round 47, 2026-10-31 ~02:50).** Last green full check: **f69c81a0f** (main merged; builder3 `make check
+exited 0`, 3616/0, 29 targets ALL JUDGED, sim-baseline unmoved; MERGED to main by the orchestrator). On top of it, **552cf5a12**
+(Status + `mkdir -p build` in mapkit-screens-replay) passed quick-remote on builder3 in 43 s (lint + combat-smoke; no test touched),
+and the commit carrying this report is docs only.
+- **Shipped ON (his picks):** the Material Maker trim sheet on traps, monorail, pipes and crane (`--kit-look=plain` turns it
+  off; on the laptop preset the monorail and deck stay plain, since trim cost +1.4 ms there); steam sight screens (screen C) on
+  desktop high, strips elsewhere; pipes B and crane A; the monorail deck slot with his Meshy one-off train (no measurable laptop
+  cost); blast doors (door A) on a seeded schedule that can't crush or trap crews, booth-called through his kept door lines
+  (21 lines voiced); the `sight` cover class (screens block eyes, not wheels; `--kit-sight=off`).
+- **Candidates for his eye, not in rotation:** `terminus_doors` (on main to try: `make skirmish ARENA=terminus_doors`),
+  `parade_traps`, `parade_rail`, `crossing_screens`.
+- **Bar P, honestly:** FAIL on the deciding line on all three twins; every guard passes (R47.45). The pieces as placed are safe
+  but don't change CPU v CPU fights enough to count. The doors watch (12 fights on terminus_doors): doors cycle and get called
+  every fight, nobody crossed a sealed door, holds ≤ 9 s. The screens replay of his Crossing orders (n=1, illustrative, and
+  the replay diverges from his real match) shows his army lasting longer behind screens but still routed.
+- **Next round, what might make the pieces change fights:** put them where fights actually happen (on the lane chokes the
+  probe reports, not in front of bases); doors that gate the shortest route for the attacker's timing, so a closing door
+  splits an army; screens across the long sightlines the syndicate wins from, paired with a hard-cover step behind them so a
+  screened approach ends somewhere safe; then re-run Bar P on placements built from the heat maps instead of hand-placed twins.
+  The CPU also has to read doors and screens (wait for the open, route behind the screen), which is the planner/perception
+  streams' work, not this stream's.
+- **Left open:** `~/tank_squad/mapkit-render` on builder3 stays until the orchestrator closes the round. The 8dc9697b4 red
+  (test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle) was traced by native to physics state carried over in-process (R47.47);
+  main marks it pending.
+
 **REPORT (2026-10-30 ~21:00; newest first).**
 
 **Green hashes:** 6282f0fbf (P2 v1; builder3 3532/0, ALL JUDGED); **39c7dba53** (P2 contract + P3 + P5 + P4 traps/monorail/door
