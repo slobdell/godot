@@ -48,3 +48,8 @@ mapkit-trim-adopt: ## P1b: copy the rendered trim sheet PNGs from build/mapkit-t
 .PHONY: mapkit-bar-p
 mapkit-bar-p: import ## Mapkit Bar P: parade v parade_traps / parade_rail, crossing v crossing_screens (gangs v syndicate both orders) -> build/bar-p.json [BAR_P_JOBS=10]
 	$(PYTHON) tests/mapkit/bar_p_series.py --godot $(GODOT) --jobs $(or $(BAR_P_JOBS),10) --raw $(BUILD_DIR)/bar-p-raw.json --json $(BUILD_DIR)/bar-p.json
+
+# Blast doors on a real arena (round 47): 12 CPU fights on terminus_doors watched by the probe's door report (not a bar).
+.PHONY: mapkit-doors-watch
+mapkit-doors-watch: import ## Mapkit: CPU fights on terminus_doors, each one's door events, booth calls, crossings by side and state, holds -> build/doors-watch.json
+	$(PYTHON) tests/mapkit/doors_watch.py --godot $(GODOT) --json $(BUILD_DIR)/doors-watch.json
