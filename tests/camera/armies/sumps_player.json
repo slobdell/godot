@@ -1,0 +1,108 @@
+{
+  "name": "The Condemned Army",
+  "squads": [
+    {
+      "directive": {
+        "role": "assault",
+        "cohesion": 0.7
+      },
+      "units": [
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "tank"
+        }
+      ],
+      "name": "Alpha",
+      "formation": "wedge",
+      "verb": "hold"
+    },
+    {
+      "name": "Bravo",
+      "formation": "wedge",
+      "directive": {
+        "role": "assault"
+      },
+      "units": [
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "tank"
+        },
+        {
+          "unit": "tank"
+        }
+      ],
+      "verb": "hold"
+    },
+    {
+      "name": "Charlie",
+      "formation": "wedge",
+      "directive": {
+        "role": "assault"
+      },
+      "units": [
+        {
+          "unit": "artillery"
+        },
+        {
+          "unit": "artillery"
+        },
+        {
+          "unit": "artillery"
+        },
+        {
+          "unit": "artillery"
+        },
+        {
+          "unit": "artillery"
+        }
+      ],
+      "verb": "hold"
+    },
+    {
+      "name": "Delta",
+      "formation": "wedge",
+      "directive": {
+        "role": "assault"
+      },
+      "units": [
+        {
+          "unit": "scout"
+        },
+        {
+          "unit": "scout"
+        },
+        {
+          "unit": "scout"
+        }
+      ],
+      "verb": "hold"
+    }
+  ],
+  "garage": {
+    "schema": 2,
+    "budget": 2000,
+    "cost": 1969,
+    "tier": 0,
+    "points_per_credit": 1.75,
+    "faction": "condemned"
+  }
+}

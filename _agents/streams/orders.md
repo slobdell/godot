@@ -74,3 +74,86 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### NOW (2026-10-30 ~17:10 PDT, Opus, `godot-orders` / `stream/orders`, from c789b55a6 = code e306ce27f GREEN builder3 3518/0)
+
+| Item | State |
+|---|---|
+| O1 the spread | **Bar O FAILED (D1), O1 now OFF** (`--group-merged=on` opts in); v2 dev read: together but 5-20x the bumping; ruling asked of the orchestrator (below) |
+| O2 Bar O | **filed** (`workstreams.md` *Bars (round 47)*, 960edbd67) before any number; amendment 1 (69d6813e6) and 2 (0eb12f551, R47.15: the `all` arm deciding) both before any number; runs on the green freeze |
+| O3 the order lag | **closed: no lag** (below; relayed to route as R1 by the orchestrator) |
+| O4 the `inp` row | **built** (7d41d5061; + group saves 3046343c1; + arm / formation / escape 87eb68b1c); native gets the hash when a check covering 87eb68b1c is green |
+| O5 the recipient cue | built (uncommitted until its tests pass): rings pulse + chip flash |
+| O6 artillery screen | built (uncommitted until its tests pass): a battery's screen = support by fire, ON, `--battery-screen=off` |
+| O7 his acceptance read | after Bar O |
+
+**Bar O, first series (builder3, 0b1caafa2's code, seeds 12701-12712, ~/orders-r47/bar-o-0b1caafa2/; stopped after merged, his_x
+and his_l):** VERDICT FAIL. D1 median spread ON 71.3 v OFF 71.3 m (n 60 three-squad pairs); D1b files laid on 12 of 60, all
+yard_open (28 m); D2 -0.83 s PASS; D2b, G1 (35.5 v 34.2), G2 (42.0 v 36.4), G3 (0 v 0), G5 PASS. **Instrument fault (mine; lesson
+350):** no 2-squad probe army existed (`tests/control/orders_probe_2.json`), so every 2-squad cell (his case) errored, and the part
+check counted the error lines as runs. Fixed: the army is added; a Bar O2 runner must count only rows with `map`.
+**O1 v2 dev read** (builder3, 0b1caafa2 + the step-back (the double file steps back 4 m at a time up to 40 m to dry, standable
+seats) + the 2-squad army; dev seeds 7001-7002, 5 maps x 2 / 3 squads, n 1 a cell, ~/orders-r47/dev-v2/): laid on 7 of 20 cells;
+there 2 squads 14 v 33-41 m, 3 squads 28 v 54-73 m, all-in mostly sooner (yard 6.8 v 9.5 s, locks 4.3 v 28.0 s), but **friendly
+contacts 5-20x** (yard 42 v 6, sumps 60 v 22 / 58 v 5 / 122 v 6): two columns a pitch apart accordion and brush the whole way.
+Crossing and terminus: still refused (rear seats in buildings or off the arena). **In his terms:** "your merged squads end up side
+by side at your click, usually sooner, but rub hulls all the way in; at bridges and in streets nothing changes yet." Not worth a
+series. Options sent to the orchestrator (recommended first): (a) today's abreast lay pulled in by halt clearance instead of GAP_M
+(each squad's own halt; Crossing ~61 -> ~45 m, Locks ~36 -> ~30 m); (b) the files only for the last stretch (element_plan's
+ARRIVE_FILE, D3b: not my code); (c) the bumping to him as a feel question.
+
+**O1 (R47.4) what and why.** Both of his far-apart clicks were a control group he had MERGED: Crossing group 4 = Spears + Wrenches,
+Locks group 2 = Burners + Burners2, 10 vehicles each. A squad holds 5, so the selection is two squads, and `row` laid them ABREAST
+across his approach, each its halt footprint wide plus GAP_M 14 apart (Crossing: two gang coils, 44 m wide; Locks: two
+herringbones, 25 m). Two non-overlapping halts of five cannot stand much nearer than one halt's width, so a tighter gap or file
+cannot reach "together" (R46.36 showed packing makes them later). **The change:** his merged group (the selection is exactly one
+group of > 5 living, 2-3 squads, plain move / attack-move, no drawn facing, not a shifted leg) halts as FILES side by side across
+his click, one pitch apart, heads on the click line, crews behind toward where they came from (a double file of ten); the task
+carries `halt_at` / `halt_shape: column` / `lay` (round 35's D3 plumbing: no new element code). Any wet / deck / unstandable seat
+or a head the veto refuses keeps today's places. And `split`: a group partly taken by a smaller one in the selection keeps its
+remainder as a squad (Crossing's Wrenches were ordered LOOSE, `source: player`, no squad, because group 4 also held group 3).
+**Dev read** (builder3, ff65a5481's tree, `tests/test_control_his_spread_clicks.gd`, his tick-0 starts, n 1 each; OFF reproduces
+his recording to < 3 m): Crossing spread **61.2 -> 18.0 m**, Locks **35.9 -> 14.0 m**; the same two squads NOT merged lay
+identically ON and OFF; his Gorge veto tests unchanged (19/19 in the filtered run).
+
+**O3 closed (Locks recording, no Godot run):** his attack click on Lances_3 at tick 1461 reached Hunters' element at tick 1462 (its
+task row). The census reads `attack_move` until ~1707 because an element of several crews runs every attack as attack_move crew
+orders; at 1707 Hunters_4 was alone and took his order as a lone crew (`Element._his_lone_order`). The drive north and the 230 m
+detour are the element's route to the target, already north under his earlier attack on Lances_4 (task tick 883): route's R1.
+
+**O4 the inp row (C47.4):** `RtsControls.input_recorded` -> `MatchRecorder` writes `{"t":"inp","f","k","act","sel_before",
+"sel_after"}` for every key press / mouse button that changed the selection or gave an order, after the sel / order rows it caused,
+same frame. `act`: recall_group:N, chip:N, edge_marker:N, portrait:<unit>, command_card:<id>, group_save:N, next_group:N,
+next_idle:N, jump_to_alert:<text>, select_army, select_idle, click_select:<unit>, box_select, escape, order:<verb>, or "?".
+**Sumps 601-618 re-read (what COULD switch Bravo to Charlie with no key row):** the 3 key, the group bar's chip 3, Tab (next group
+after 2), an edge marker for group 3, F2 (next idle element), Q (jump to an alert). The likeliest is his own hand: his screen key
+**E sits directly under 3** on a QWERTY keyboard; "2, then reaching for E" lands on 3 first. No UI fault found in the chip,
+marker or panel paths (each acts on its own click only). The next recording will say which; O5 makes it visible as it happens.
+
+**O5 the recipient cue (C47.5):** the moment he gives an order, each vehicle that receives it wears a white ring that grows out of
+its own ring and fades, twice (0.45 s each, real time, so it plays while paused); its group-bar chip flashes white with it. Only
+the receivers; nothing else new on screen; the ring layer is empty between orders (no draw call).
+
+**O6 (proposal = what is built):** a SCREEN order to a squad that is all artillery is taken as SUPPORT BY FIRE on the same point:
+in his terms, "tell the mortars to screen a line and they stay back where they can shell it, instead of driving onto it". Tank,
+IFV and mixed squads screen as before. ON, `--battery-screen=off`.
+
+**Questions for the lead:** none yet (O1 ships ON on Bar O's verdict; if it fails, the player-terms note goes to the orchestrator).
+**Requests to other streams:** none. **Builders:** a fresh builder3 folder is seeded from `~/tank_squad/godot` server-side first
+(rsync over the laptop uplink ran ~1-2 MB/min tonight); told the orchestrator.
+
+**Plan (backlog order; smallest foundation first):**
+1. O1 dev read: `tests/test_control_his_spread_clicks.gd` lays his Crossing (Spears + Wrenches, group 4) and Locks (Burners +
+   Burners2, group 2) clicks on the real navmesh and prints every stage's places, block widths and the spread; then the change
+   behind `--group-merged` (ON when Bar O passes), every other click byte-identical.
+2. O2 Bar O filed in `workstreams.md` *Bars (round 47)* before any number on 12701-12748.
+3. O3 the order lag (trace Hunters_4 ticks 1461-1710, Locks).
+4. O4 the `inp` row (C47.4). **Relay from the orchestrator: the hour it lands, message native (`godot-native-6f`) with the hash;
+   native's reader is on stream/native 1702fbd2c (playtest-report section (d)).** Then re-read Sumps frames 601-618.
+5. O5 the recipient cue; O6 a screen order to artillery; O7 his acceptance read.
+
+**First read of the recordings (no Godot run):** both of his far-apart clicks are a control group he had MERGED (Crossing group 4
+= Spears + Wrenches, 10 vehicles; Locks group 2 = Burners + Burners2, 10). `SelectionSquads.split` cannot make one squad of 10
+(MAX_MEMBERS 5), so the selection becomes two squads, which `row` lays ABREAST across his approach, each its halt footprint wide
+plus GAP_M 14 apart: Crossing 61 m (the line between the two places is the across vector of his approach, (0.65, 0.76)), Locks 36 m.
+

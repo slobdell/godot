@@ -31,6 +31,11 @@ signal pose_copied(pose: String)
 signal notice(text: String, warning: bool)
 ## Round 19 (orders): a formation was picked for the selected squads (the button and the panel redraw).
 signal formation_changed(id: String)
+## Round 47 (orders O4, C47.4): one key press or mouse click of his that changed the selection or issued an order:
+## {"t": "inp", "f": frame, "k": key or mouse button, "act": what the controls did with it, "sel_before", "sel_after"}.
+## The recorder writes it as the `inp` row; a selection change with no row beside it was not his input (his Sumps game:
+## Bravo selected, Charlie 17 frames later, and no way to tell which key, chip or marker did it).
+signal input_recorded(row: Dictionary)
 
 ## A left press that moves farther than this (pixels) draws a box instead of clicking.
 const DRAG_THRESHOLD_PX := 6.0
@@ -173,6 +178,10 @@ var _acks: Array = []
 var _clock := 0.0
 var _last_group := 0
 var _last_group_at := -10.0
+## C47.4: the input being handled now ({} between inputs), what the controls did with it, and orders issued so far.
+var _inp: Dictionary = {}
+var _inp_act := ""
+var _orders_given := 0
 ## The pause banner's text ("" = none), shown while the tree is paused.
 var _pause_text := ""
 var _hover_at := Vector2(-1, -1)
@@ -197,6 +206,52 @@ func _ready() -> void:
 	add_child(_overlay)
 	_overlay.draw.connect(_draw_overlay)
 	awareness.groups = groups
+	command_issued.connect(_count_order)
+
+
+## C47.4: every order the controls give (a squad's task, a crew's command, a formation pick), for the open input's row.
+## C47.5: and the cue on the vehicles that receive it.
+func _count_order(command: Dictionary, error: String) -> void:
+	if error != "" or String(command.get("verb", "")) == "":
+		return
+	_orders_given += 1
+	note_input("order:%s" % String(command["verb"]))
+	var now := Time.get_ticks_msec()
+	for unit_name: Variant in command.get("units", []):
+		_cued[String(unit_name)] = now
+
+
+## Round 47 (orders O5, C47.5): THE ORDER'S RECIPIENT, made obvious the moment he gives it (his Sumps game: the screen order
+## meant for his tanks went to his artillery and nothing on screen said so). The vehicles that receive an order pulse:
+## SelectionMarkers draws CUE_PULSES rings growing out of each one's own ring, and the GroupBar chip of their group flashes,
+## over CUE_PULSES x CUE_PULSE_S of real time (it plays while paused, when he gives most of his orders). Nothing else on screen.
+const CUE_PULSE_S := 0.45
+const CUE_PULSES := 2
+static var _cued := {}  # unit name -> Time.get_ticks_msec() of the last order it received from these controls
+
+
+## How far into its current pulse `unit_name`'s cue is (0..1), or -1 when it has none. `now_ms` for tests.
+static func order_cue(unit_name: String, now_ms := -1) -> float:
+	if not _cued.has(unit_name):
+		return -1.0
+	var elapsed := float((Time.get_ticks_msec() if now_ms < 0 else now_ms) - int(_cued[unit_name])) / 1000.0
+	if elapsed < 0.0 or elapsed >= CUE_PULSE_S * CUE_PULSES:
+		return -1.0
+	return fmod(elapsed, CUE_PULSE_S) / CUE_PULSE_S
+
+
+## The strongest cue among `names` (0..1 progress of the freshest pulse), or -1.
+static func group_cue(names: Array, now_ms := -1) -> float:
+	var best := -1.0
+	for unit_name: Variant in names:
+		var cue := order_cue(String(unit_name), now_ms)
+		if cue >= 0.0 and (best < 0.0 or cue < best):
+			best = cue
+	return best
+
+
+static func clear_cues() -> void:
+	_cued.clear()
 
 
 func _process(delta: float) -> void:
@@ -442,6 +497,62 @@ func _element_destination(element: Array[String], frame: Array) -> Variant:
 
 # ---- Mouse ------------------------------------------------------------------------------------------------
 
+## C47.4: every key press and mouse button event opens an input window; the window closes at the next input or at the end
+## of the frame, and writes a row when the selection or the orders changed inside it. The panel, the group bar and the
+## edge markers act inside the same window (Godot hands one event to _input, then the GUI, then _unhandled_key_input).
+func _input(event: InputEvent) -> void:
+	var k := input_key(event)
+	if k == "":
+		return
+	_flush_input()
+	_inp = {"f": Engine.get_physics_frames(), "k": k, "sel_before": Array(selection.units).duplicate(), "orders": _orders_given}
+	_inp_act = ""
+	_flush_input.call_deferred()
+
+
+## The name of a key press or mouse button event ("" for anything else: motion, a key release, a key repeat).
+static func input_key(event: InputEvent) -> String:
+	if event is InputEventKey:
+		var key := event as InputEventKey
+		if not key.pressed or key.echo:
+			return ""
+		return OS.get_keycode_string(key.get_keycode_with_modifiers())
+	if event is InputEventMouseButton:
+		var button := event as InputEventMouseButton
+		var names := {MOUSE_BUTTON_LEFT: "mouse_left", MOUSE_BUTTON_RIGHT: "mouse_right", MOUSE_BUTTON_MIDDLE: "mouse_middle"}
+		if not names.has(button.button_index):
+			return ""
+		var mods := ""
+		if button.shift_pressed:
+			mods += "shift+"
+		if button.ctrl_pressed or button.meta_pressed:
+			mods += "ctrl+"
+		return "%s%s%s%s" % [mods, names[button.button_index], "" if button.pressed else "_up", "_double" if button.double_click else ""]
+	return ""
+
+
+## C47.4: name what the open input did (the last name wins: a recall then its order is the order). No window: nothing.
+## `always`: the input writes its row even though neither the selection nor the orders changed (a control-group save: his
+## Crossing ctrl+4 over Spears + Wrenches left the Wrenches in no squad and wrote nothing).
+func note_input(act: String, always := false) -> void:
+	if not _inp.is_empty():
+		_inp_act = act
+		if always:
+			_inp["always"] = true
+
+
+func _flush_input() -> void:
+	if _inp.is_empty():
+		return
+	var row := _inp
+	_inp = {}
+	var after := Array(selection.units).duplicate()
+	if after == row["sel_before"] and _orders_given == int(row["orders"]) and not bool(row.get("always", false)):
+		return
+	input_recorded.emit({"t": "inp", "f": int(row["f"]), "k": String(row["k"]), "act": _inp_act if _inp_act != "" else "?",
+			"sel_before": row["sel_before"], "sel_after": after})
+
+
 func _gui_input(event: InputEvent) -> void:
 	if rig != null and rig.handle_mouse(event):
 		accept_event()
@@ -497,6 +608,7 @@ func _left_button(button: InputEventMouseButton) -> void:
 		# X2: an edge marker is a button, not ground: it takes priority over selecting and box dragging.
 		if markers != null and markers.marker_at(button.position) > 0:
 			recall_group(markers.marker_at(button.position), true)
+			note_input("edge_marker:%d" % markers.marker_at(button.position))
 			return
 		if mode != "":
 			_armed_press(button)
@@ -536,6 +648,7 @@ func click_select(at: Vector2, shift := false, ctrl := false, double := false) -
 		if not shift or selection.units.is_empty():
 			selection.inspect(unit_name)
 		return
+	note_input("click_select:%s" % unit_name)
 	if ctrl or double:
 		var same := visible_of_type(tank.unit_id)
 		if shift:
@@ -554,6 +667,7 @@ func box_select(rect: Rect2, shift := false) -> void:
 	var inside := units_in_box(rect)
 	if inside.is_empty():
 		return
+	note_input("box_select")
 	if shift:
 		selection.add(inside)
 	else:
@@ -722,10 +836,15 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 		return _refuse("a move task needs somewhere to go")
 	if verb == "move":
 		task["drills"] = false  # a plain move: formed up to the spot, no contact drills (squad X4)
+	var fitted: bool = task["verb"] == "screen" and BATTERY_SCREEN and all_artillery(selection.units)
+	if fitted:
+		task["verb"] = "support_by_fire"  # O6: as in _task_squad
 	var error := element.assign(task)
 	_squads_changed()
 	var command := UnitCommand.make(selection.units, verb, extra)
 	command["task"] = true  # OrderFeedback confirms a squad's task at its anchor (its crews' orders are the leader's)
+	if fitted:
+		command["as"] = "support_by_fire"
 	command_issued.emit(command, error)
 	if error == "":
 		_acknowledge(command)
@@ -854,6 +973,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	# X4: ctrl+A takes the whole army. It sits with the other ctrl keys, before the ctrl guard below.
 	if key.keycode == KEY_A and (key.ctrl_pressed or key.meta_pressed):
+		note_input("select_army")
 		select_army()
 		get_viewport().set_input_as_handled()
 		return
@@ -862,9 +982,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		if key.ctrl_pressed or key.meta_pressed:
 			if not selection.units.is_empty():
 				groups.save(number, selection.units)
+				note_input("group_save:%d" % number, true)
 		elif key.shift_pressed:
 			if not selection.units.is_empty():
 				groups.add(number, selection.units)
+				note_input("group_add:%d" % number, true)
 				# Round 21 (orders, stretch c): Shift+N ADDS (StarCraft's meaning), which is how "1, then Shift+2" put
 				# two squads in group 2 in round 19. Said once a session, the first time he does it.
 				if not _told_shift_adds:
@@ -880,6 +1002,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	match key.keycode:
 		KEY_ESCAPE:
+			note_input("escape", true)
 			if not _attack_press.is_empty() and not bool(_attack_press["armed"]):
 				_clear_attack_press()  # a right drag on an enemy, cancelled; the selection stays
 			elif mode != "":
@@ -896,6 +1019,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			var next := groups.next_after(_last_group)
 			if next > 0:
 				recall_group(next, true)
+				note_input("next_group:%d" % next)
 		KEY_C:
 			center_on(selection.units)
 		KEY_O:
@@ -929,11 +1053,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_G:
 			cycle_formation(key.shift_pressed)
 		KEY_F1:
+			note_input("select_idle")
 			select_idle()
 		KEY_F2:
-			next_idle_element()
+			note_input("next_idle:%d" % next_idle_element())
 		KEY_Q:
-			jump_to_alert()
+			note_input("jump_to_alert:%s" % jump_to_alert())
 		KEY_SPACE:
 			set_paused(not get_tree().paused)
 		_:
@@ -954,6 +1079,7 @@ func recall_group(number: int, center := false) -> void:
 	var members := groups.members(number)
 	if members.is_empty():
 		return
+	note_input("recall_group:%d" % number)
 	var double := number == _last_group and _clock - _last_group_at <= DOUBLE_TAP_SECONDS
 	selection.set_units(members)
 	disarm()
@@ -1519,6 +1645,18 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if SelectionSquads.GROUP_VETO and not SelectionSquads.GROUP_GUARD and ground != null and not queue_leg \
 				and squads.size() >= 2 and anchors.size() >= squads.size():
 			anchors = _veto(squads, anchors, click, drawn, ground, packed_shapes)
+		# R47.4 (round 47, orders O1): his MERGED group stands as one double file at his click (SelectionSquads.merged_heads); any
+		# seat the ground refuses keeps the places above.
+		if SelectionSquads.GROUP_MERGED and ground != null and not queue_leg and drawn == null and loose.is_empty() \
+				and (verb == "move" or verb == "attack_move") and squads.size() >= 2 and squads.size() <= SelectionSquads.MERGED_FILES_MAX \
+				and blocks.size() == squads.size() and (merged_group() > 0 or SelectionSquads.GROUP_MERGED_ALL):
+			var filed := _merged_files(squads, blocks, click, ground) if squads.all(func(q: Dictionary) -> bool: return squad_formation(q) == UnitCommand.AUTO) else {}
+			if not filed.is_empty():
+				anchors = filed["heads"]
+				column = false
+				for at: Vector3 in anchors:
+					packed_shapes[at] = {"shape": "column", "heading": filed["heading"], "travel": true}
+				_trace_stage("merged", squads, anchors)
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
 		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
 				column and column_moved, today_places)
@@ -1618,6 +1756,8 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				given["halt_shape"] = String(packed_shapes[anchors[i]]["shape"])
 				var lay: Vector3 = packed_shapes[anchors[i]]["heading"]
 				given["lay"] = [lay.x, lay.z]
+				if bool(packed_shapes[anchors[i]].get("travel", false)):
+					given["travel_shape"] = String(packed_shapes[anchors[i]]["shape"])  # R47.4: the merged files drive in as files
 			# B8 (R34.14): the heading each squad lays its halt on when it deploys, fixed now (the approach).
 			elif ElementPlan.DEPLOY_STEP and verb == "move" and not given.has("facing"):
 				var approach := SelectionSquads.approach_of(blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])),
@@ -1800,6 +1940,58 @@ func _veto(squads: Array, anchors: Array[Vector3], click: Vector3, drawn: Varian
 	return out
 
 
+## R47.4: the control group the selection exactly is when that group is a MERGE (more vehicles than one squad holds), or 0.
+func merged_group() -> int:
+	var number := selected_group()
+	if number <= 0 or _living(groups.members(number)).size() <= Formations.MAX_MEMBERS:
+		return 0
+	return number
+
+
+## R47.4: the merged group's files at his click: {"heads": [Vector3] in squad order, "heading"} or {} when no lay is found. O1 v2
+## (Bar O's first series: one wet / deck seat refused 48 of 60 probe clicks short of a bridge): the whole double file steps back
+## along his approach, SelectionSquads.MERGED_BACK_STEP_M at a time up to MERGED_BACK_STEPS, to the first place where every seat
+## of every file is dry, off a deck, on the arena, standable for a hull, and the veto passes every head.
+func _merged_files(squads: Array, blocks: Array, click: Vector3, ground: Node3D) -> Dictionary:
+	var heading := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"])
+	var pitch := SelectionSquads.merged_pitch(blocks)
+	var clearance := SlotGround.envelope_of((ground as Tank).unit_id) if ground is Tank else 0.0
+	var flat_heading := Vector3(heading.x, 0.0, heading.z).normalized()
+	var why := ""
+	for k in SelectionSquads.MERGED_BACK_STEPS + 1:
+		var at := Vector3(click.x, 0.0, click.z) - flat_heading * (k * SelectionSquads.MERGED_BACK_STEP_M)
+		var heads := SelectionSquads.merged_heads(blocks, at, heading, pitch.x)
+		why = _merged_refusal(squads, heads, heading, pitch, clearance, ground)
+		if why == "" and not SelectionSquads.veto_failures(heads, blocks, click, heading, Match.team_frame(team)["forward"]).is_empty():
+			why = "veto"
+		if why == "":
+			SelectionSquads.merged_laid += 1
+			if k > 0:
+				SelectionSquads.merged_stepped += 1
+			if ORDER_TRACE or order_trace_keep:
+				print("ORDER_TRACE merged files laid %.0f m back from the click" % (k * SelectionSquads.MERGED_BACK_STEP_M))
+			return {"heads": heads, "heading": heading}
+	SelectionSquads.merged_refused += 1
+	if ORDER_TRACE or order_trace_keep:
+		print("ORDER_TRACE merged files refused (last try: %s)" % why)
+	return {}
+
+
+## Why the files headed at `heads` cannot stand ("" = they can): the first seat that is wet / a deck, off the arena, or not
+## standable for a hull.
+func _merged_refusal(squads: Array, heads: Array[Vector3], heading: Vector3, pitch: Vector2, clearance: float, ground: Node3D) -> String:
+	for i in heads.size():
+		for seat: Vector3 in SelectionSquads.merged_file_seats(heads[i], heading, (squads[i]["units"] as Array).size(), pitch.y):
+			if SelectionSquads.wet_or_deck(seat, SelectionSquads.HULL_REACH_M):
+				return "wet or deck at (%.0f, %.0f)" % [seat.x, seat.z]
+			if Orders.clamp_to_arena(seat).distance_to(seat) > 0.5:
+				return "off the arena at (%.0f, %.0f)" % [seat.x, seat.z]
+			var stand := SlotGround.standable_for(ground, seat, clearance)
+			if Vector2(stand.x - seat.x, stand.z - seat.z).length() > SelectionSquads.PACK_GROUND_SLACK_M:
+				return "not standable at (%.0f, %.0f)" % [seat.x, seat.z]
+	return ""
+
+
 func _route_key(squads: Array) -> Array:
 	var key: Array = []
 	for squad: Dictionary in squads:
@@ -1937,18 +2129,47 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary, acknowledge
 	_copy_pack(extra, task)
 	if shape != UnitCommand.AUTO:
 		task["formation"] = shape
+	elif extra.has("travel_shape"):
+		# R47.4: a merged group's file travels as a file (an AUTO squad's wedge, ~50 m wide, would sweep across the file 14 m
+		# beside it on the way in and only then re-seat).
+		task["formation"] = String(extra["travel_shape"])
 	if task["verb"] == "move" and not task.has("to"):
 		return _refuse("a move task needs somewhere to go")
 	if verb == "move":
 		task["drills"] = false
+	var fitted: bool = task["verb"] == "screen" and BATTERY_SCREEN and all_artillery(units)
+	if fitted:
+		task["verb"] = "support_by_fire"  # O6: his screen, as a battery screens: from its firing position, not on the line
 	var error := element.assign(task)
 	_squads_changed()
 	var command := UnitCommand.make(units, verb, extra)
 	command["task"] = true  # OrderFeedback confirms a squad's task at its anchor (its crews' orders are the leader's)
+	if fitted:
+		command["as"] = "support_by_fire"  # the recorder's order row keeps his verb and says how it was taken
 	command_issued.emit(command, error)
 	if error == "" and acknowledge:
 		_acknowledge(command)
 	return error
+
+
+## Round 47 (orders O6; his Sumps game: his screen order reached his artillery, which "obeyed and drove its mortars north to
+## screen", into the front line): a SCREEN task to a squad that is all artillery is taken as SUPPORT BY FIRE on the same point:
+## the battery takes its firing position covering that line (its standoff, ElementPlan's battery rule) and shells what comes
+## to it, rather than standing on the line with its mortars. Every other squad's screen is as before. `--battery-screen=off`.
+static var BATTERY_SCREEN := not OS.get_cmdline_user_args().has("--battery-screen=off")
+
+
+## Whether every living vehicle of `units` is artillery (Units.role_of); false for none.
+func all_artillery(units: Array) -> bool:
+	var any := false
+	for unit_name: Variant in units:
+		var tank := game_match.tanks.get_node_or_null(NodePath(String(unit_name))) as Tank if game_match != null else null
+		if tank == null or not tank.is_alive():
+			continue
+		if Units.role_of(tank.unit_id) != "artillery":
+			return false
+		any = true
+	return any
 
 
 ## Round 41 (O2): the first living Tank of `units` (null when none).
@@ -2714,6 +2935,7 @@ func set_formation(id: String) -> String:
 	for squad: Dictionary in found["squads"]:
 		_give_formation(squad, id)
 	_squads_changed()  # some picks only reach a group's record, which signals nothing
+	note_input("formation:%s" % id, true)  # C47.4 (native's N0): G, Shift+G and the picker re-task squads without a command
 	formation_changed.emit(id)
 	return ""
 
@@ -3284,6 +3506,7 @@ func arm(p_mode: String) -> void:
 	mode = p_mode
 	_press_at = null
 	_boxing = false
+	note_input("arm:%s" % p_mode, true)  # C47.4: the order mode he armed (his Sumps screen: was E pressed, and when?)
 
 
 func disarm() -> void:

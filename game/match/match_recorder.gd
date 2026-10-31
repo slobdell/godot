@@ -25,6 +25,12 @@ extends Node
 ##   {"t":"sel",    tick, frame, units, squads, inspected}  every change of HIS selection (round 46, R46.6): a selection
 ##                  without an order was invisible (camera's planner reads what he looks after); squads = the element
 ##                  names of the selected units, in selection order, each once ("" for a unit in none)
+##   {"t":"inp",    f, k, act, sel_before, sel_after}  (round 47, C47.4, orders) every key press / mouse button of his that
+##                  (or a control-group save / add, an order mode armed, a formation pick, Escape: act group_save:N /
+##                  group_add:N / arm:<mode> / formation:<id> / escape, written even with nothing else changed)
+##                  changed the selection or issued an order: k = the key ("2", "Ctrl+4", "mouse_left_up"), act = what the
+##                  controls did ("recall_group:2", "chip:3", "edge_marker:3", "portrait:<unit>", "order:move", "?");
+##                  written at the end of the frame, after the `sel` / `order` rows it caused (same frame f)
 ##
 ## `hit` is the row that answers the unkillable-IFV class of report on its own: it separates SHIELD damage from HULL
 ## damage, so "everyone is shooting it and its health bar never moves" is visibly either shots that never land, or
@@ -102,6 +108,9 @@ func _ready() -> void:
 	# `order` row with verb "formation" (an added verb; no `to`, so tools/recording_arrivals.py skips it).
 	if controls != null and controls.has_signal("formation_changed"):
 		controls.formation_changed.connect(_on_formation)
+	# C47.4 (round 47, orders O4): his key or click that changed the selection or gave an order (RtsControls.input_recorded).
+	if controls != null and controls.has_signal("input_recorded"):
+		controls.input_recorded.connect(_write)
 	_watch_selection()
 	print("MATCH_RECORDING %s" % path)
 

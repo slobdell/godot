@@ -46,8 +46,9 @@ var _destroyed_squads := {}
 var _control_warned := [false, false]
 var _replaced: Array[RegEx] = []
 ## Round 46 (L3): where his selection is read (anything with `selection_state() -> {"units": [...]}`; found as
-## "TacticalMap" under this node's parent when unset: RtsControls under the HUD; the touch map has none, so no line there), the next poll time, and per crew: its held ticks at the last poll and when it last
-## said so.
+## "TacticalMap" under this node's parent when unset: RtsControls under the HUD, or the touch map, read through its
+## `selected() -> Squad` (round 47: selected_units)), the next poll time, and per crew: its held ticks at the last poll and
+## when it last said so.
 var selection_source: Object
 var _lane_next := 0.0
 var _lane_seen := {}
@@ -111,15 +112,26 @@ func _lane_rows() -> Array:
 	if selection_source == null and get_parent() != null:
 		# The skirmish puts RtsControls (named "TacticalMap") under the HUD; found once.
 		selection_source = get_parent().find_child("TacticalMap", true, false)
-	var source := selection_source
-	if source == null or not source.has_method("selection_state"):
-		return rows
-	for unit: String in (source.call("selection_state") as Dictionary).get("units", []):
+	for unit: String in selected_units(selection_source):
 		var brain := game_match.brains.get_node_or_null("Brain_" + unit) as TankBrain
 		if brain == null or brain.tank == null or not brain.tank.is_alive() or brain.tank.team != team:
 			continue
 		rows.append({"unit": unit, "blocked_ticks": brain.lane_blocked_ticks, "blocker": brain.lane_blocker})
 	return rows
+
+
+## Round 47 (engage, round 46's leftover): the crews in his selection, from the desktop controls (`selection_state()`) or
+## the touch map (`selected() -> Squad`: its roster), [] from anything else. The phone layout's feed says it too.
+static func selected_units(source: Object) -> Array:
+	if source == null:
+		return []
+	if source.has_method("selection_state"):
+		return Array((source.call("selection_state") as Dictionary).get("units", []))
+	if source.has_method("selected"):
+		var squad: Variant = source.call("selected")
+		if squad is Squad:
+			return Array((squad as Squad).roster)
+	return []
 
 
 ## Messages from MatchAnnouncer.announced.

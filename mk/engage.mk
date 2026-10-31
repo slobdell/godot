@@ -251,3 +251,65 @@ engage-lane-bar: native-fresh import ## engage Bar L1: engage-lane-probe in both
 	@$(MAKE) --no-print-directory engage-lane-probe LANE_ARM=off
 	@$(MAKE) --no-print-directory engage-lane-probe LANE_ARM=on
 	$(PYTHON) tests/engage/lane_table.py --pair $(BUILD_DIR)/engage/lane/off $(BUILD_DIR)/engage/lane/on
+
+# ---- engage (round 47): his side barely fires (Crossing 15:41, seed 101) -----------------------------------------------
+# E1: his match replayed (native's tests/replay_orders.gd) with every Green_Guns crew's gun gates traced (--gun-trace, GUN_TRACE
+# lines) and Guns_3's brain (--crew-trace), in both lane arms: ON = as he played it (rules stamp lane_clear true), OFF =
+# --lane-clear=off. Logs build/engage/e1/<arm>.log, the replay's own recording build/engage/e1/rec_<arm>/. The trace reads the gun's
+# state after it runs (GDScript or C++ twin), so the replay stays his match's native path.
+E1_RECORDING ?= references/round46/playtest/2026-10-30T15-41-59-crossing.jsonl
+E1_SECONDS ?= 84
+E1_GUNS ?= Green_
+E1_CREW ?= Green_Guns_3
+.PHONY: engage-e1
+engage-e1: native-fresh import ## engage E1: his Crossing replay, gun gates traced, lane rule ON v --lane-clear=off -> build/engage/e1/<arm>.log
+	@test -f "$(E1_RECORDING)" || { echo "engage-e1: no recording $(E1_RECORDING)"; exit 2; }
+	@mkdir -p $(BUILD_DIR)/engage/e1
+	@for arm in on off; do flags=""; [ $$arm = off ] && flags="--lane-clear=off"; rm -rf $(BUILD_DIR)/engage/e1/rec_$$arm; mkdir -p $(BUILD_DIR)/engage/e1/rec_$$arm; \
+		echo ">> engage-e1 arm $$arm on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"; \
+		timeout 1200 $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- --orders=$(CURDIR)/$(E1_RECORDING) \
+		--seconds=$(E1_SECONDS) --record-dir=$(BUILD_DIR)/engage/e1/rec_$$arm --gun-trace=$(E1_GUNS) --crew-trace=$(E1_CREW) $$flags $(ENGAGE_FLAGS) \
+		> $(BUILD_DIR)/engage/e1/$$arm.log 2>&1 || echo "  arm $$arm: godot exited $$?"; \
+		grep -E '^REPLAY_(SETUP|NATIVE|DONE)|SCRIPT ERROR' $(BUILD_DIR)/engage/e1/$$arm.log | cut -c1-300; \
+		echo "  GUN_TRACE lines: $$(grep -c '^GUN_TRACE' $(BUILD_DIR)/engage/e1/$$arm.log), fires: $$(grep '^GUN_TRACE' $(BUILD_DIR)/engage/e1/$$arm.log | grep -c '"fire":true')"; \
+	done
+
+# E1b: the replay leaves his match within seconds (tests/replay/divergence.py: every crew over 3 m by 19 s, Wrenches by 1 s), so
+# his window is rebuilt instead: tests/engage/turnaround_probe.gd stands every living unit at the census of E1S_FROM, forms the
+# elements with the tasks they held and plays every later task row (his attack on Rust_Hunters_2 at 2093) at its tick; every
+# Green_Guns gun traced. Both lane arms. Logs build/engage/e1s/<arm>.log.
+E1S_FROM ?= 2070
+E1S_SECONDS ?= 14
+E1S_ARMS ?= on off
+## The point the summary measures the crew's distance to (his target's spot).
+E1S_POINT ?= -45.0,-10.0
+.PHONY: engage-e1-stage
+engage-e1-stage: native-fresh import ## engage E1b: his Crossing window rebuilt from the census at E1S_FROM, guns traced, lane rule ON v off -> build/engage/e1s/<arm>.log
+	@test -f "$(E1_RECORDING)" || { echo "engage-e1-stage: no recording $(E1_RECORDING)"; exit 2; }
+	@mkdir -p $(BUILD_DIR)/engage/e1s
+	@for arm in $(E1S_ARMS); do flags="--lane-clear=on"; [ $$arm = off ] && flags="--lane-clear=off"; \
+		echo ">> engage-e1-stage arm $$arm from $(E1S_FROM) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"; \
+		timeout 900 $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/engage/turnaround_probe.gd -- --recording=$(CURDIR)/$(E1_RECORDING) \
+		--from=$(E1S_FROM) --seconds=$(E1S_SECONDS) --every=15 --crew=$(E1_CREW) --point=$(E1S_POINT) --gun-trace=Green_Guns $$flags $(ENGAGE_FLAGS) \
+		> $(BUILD_DIR)/engage/e1s/$$arm.log 2>&1 || echo "  arm $$arm: godot exited $$?"; \
+		grep -E '^ENGAGE_TA_(SETUP|SUMMARY|DONE)|SCRIPT ERROR' $(BUILD_DIR)/engage/e1s/$$arm.log | cut -c1-300; \
+		echo "  GUN_TRACE lines: $$(grep -c '^GUN_TRACE' $(BUILD_DIR)/engage/e1s/$$arm.log), fires: $$(grep '^GUN_TRACE' $(BUILD_DIR)/engage/e1s/$$arm.log | grep -c '"fire":true')"; \
+	done
+
+# E1c (orchestrator, 2026-10-30): the same held-fire split over more staged windows, both sides, his default game (lane rule
+# ON): each E1W entry "<recording stem>:<census tick>" staged for E1W_SECONDS with every gun traced, then
+# tests/engage/gun_trace_table.py per side. Logs build/engage/e1w/<stem>_<tick>.log. Every number from it is STAGED.
+E1W ?= 2026-10-30T15-41-59-crossing:600 2026-10-30T15-41-59-crossing:2070 2026-10-30T15-49-20-locks:390 2026-10-30T15-53-39-sumps:450 2026-10-30T16-03-40-parade:330 2026-10-30T16-03-40-parade:2820
+E1W_SECONDS ?= 14
+## The result folder under build/engage/e1w/ (an arm's name: ENGAGE_FLAGS carries the arm's switches).
+E1W_TAG ?= today
+.PHONY: engage-e1-windows
+engage-e1-windows: native-fresh import ## engage E1c: held-fire seconds by gate (no line / lay / reload / lane) over the E1W staged windows, both sides -> build/engage/e1w/
+	@rm -rf $(BUILD_DIR)/engage/e1w/$(E1W_TAG) && mkdir -p $(BUILD_DIR)/engage/e1w/$(E1W_TAG)
+	@echo ">> engage-e1-windows on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | STAGED"
+	@for w in $(E1W); do echo $$w; done | xargs -r -P $(ENGAGE_JOBS) -I{} sh -c 'stem=$${1%%:*}; tick=$${1##*:}; \
+		timeout 900 $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/engage/turnaround_probe.gd -- \
+		--recording=$(CURDIR)/references/round46/playtest/$$stem.jsonl --from=$$tick --seconds=$(E1W_SECONDS) --every=30 --crew=auto \
+		--point=0,0 --gun-trace=all $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/e1w/$(E1W_TAG)/$${stem}_$$tick.log 2>&1 || echo "  $$1: godot exited $$?"' _ {}
+	@for f in $(BUILD_DIR)/engage/e1w/$(E1W_TAG)/*.log; do echo "== $$(basename $$f .log) (STAGED, $(E1W_TAG))"; grep -E "ENGAGE_TA_DONE|ENGAGE_TA_COUNTERS|ENGAGE_TA_FIRE|SCRIPT ERROR" $$f | cut -c1-400 | head -4; \
+		for side in Green_ Rust_; do echo "-- $$side"; $(PYTHON) tests/engage/gun_trace_table.py $$f --crews=$$side --end=$$(( $(E1W_SECONDS) * 30 )) | tail -2; done; done

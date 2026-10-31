@@ -536,3 +536,46 @@ SHORT_ONLY ?=
 export SHORT_ONLY
 SHORT_POSES ?=
 export SHORT_POSES
+
+# ---- round 47 (M1): the no-progress trace on his playtest ---------------------------------------------------------
+# His recording replayed as he played it (replay-match's setup: authority + rules stamps, native), with one STALL_TRACE line a
+# tick for each crew in STALL_CREWS inside STALL_WINDOW (ticks): tests/manoeuvre/stall_trace.gd. Measurement only.
+#   make remote T="manoeuvre-stall-trace RECORDING=references/round46/playtest/2026-10-30T15-49-20-locks.jsonl STALL_CREWS=Green_Burners2_4 STALL_WINDOW=120-320"
+STALL_DIR := $(BUILD_DIR)/manoeuvre/stall-trace
+.PHONY: manoeuvre-stall-trace
+manoeuvre-stall-trace: native-fresh import ## manoeuvre M1: STALL_TRACE per tick for STALL_CREWS in STALL_WINDOW of RECORDING (replayed as he played; REPLAY_FLAGS for an arm; STALL_TAG names the log)
+	@test -n "$(RECORDING)" -a -n "$(STALL_CREWS)" || { echo 'usage: make manoeuvre-stall-trace RECORDING=... STALL_CREWS=a,b STALL_WINDOW=from-to [REPLAY_FLAGS=...] [STALL_TAG=x]'; exit 2; }
+	@mkdir -p $(STALL_DIR)
+	@case "$(RECORDING)" in *.gz) gzip -dc "$(RECORDING)" > $(STALL_DIR)/his.jsonl;; *) cp "$(RECORDING)" $(STALL_DIR)/his.jsonl;; esac
+	@authority=$$($(PYTHON) tests/replay/authority.py $(STALL_DIR)/his.jsonl auto); flags='$(REPLAY_FLAGS)'; \
+	case "$$flags" in *--player-authority*) ;; *) if [ "$$authority" = off ]; then flags="$$flags --player-authority=off"; fi;; esac; \
+	rules=$$($(PYTHON) tests/replay/rules.py $(STALL_DIR)/his.jsonl "$$flags"); flags="$$flags $$rules"; \
+	window='$(or $(STALL_WINDOW),0-999999)'; until=$$(( $${window##*-} / 30 + 2 )); \
+	log=$(STALL_DIR)/$(or $(STALL_TAG),trace).log; \
+	$(GODOT) --headless --fixed-fps 30 --path . --script res://tests/manoeuvre/stall_trace.gd -- \
+		--orders=$(CURDIR)/$(STALL_DIR)/his.jsonl --seconds=$$until --record-dir=$(STALL_DIR)/out-$(or $(STALL_TAG),trace) \
+		--stall-trace=$(STALL_CREWS) --stall-window=$$window $$flags > $$log 2>&1 || echo "stall-trace: godot exited $$?"; \
+	grep -E '^REPLAY_(REEXEC|SETUP|SPAWN|ROSTER|NATIVE|DONE)' $$log; echo "STALL_TRACE rows: $$(grep -c '^STALL_TRACE' $$log) -> $$log"
+
+# Round 47 (M1/M2): NOPROGRESS_TRACE=on prints test_manoeuvre_noprogress's NOPROGRESS_TICK rows (a dev read).
+NOPROGRESS_TRACE ?=
+export NOPROGRESS_TRACE
+NOPROGRESS_ARM ?=
+export NOPROGRESS_ARM
+BURIED_TRACE ?=
+export BURIED_TRACE
+
+# ---- round 47 (M3): Bar M -- his group order (orders' O1 probe: five squads, one click across the map) in two arms --------------
+# BASE v BURIED (`--traffic-on=buried`), both with the no-progress census (game/ai/noprogress_census.gd), on BARM_MAPS x BARM_SEEDS x
+# BARM_HEADINGS; then tests/manoeuvre/barm_judge.py pairs the cells (each line's own statistic printed, lesson 331).
+BARM_MAPS ?= terminus crossing locks sumps
+BARM_SEEDS ?= 7001 7002
+BARM_HEADINGS ?= crew formed
+BARM_ARMS ?= base:--noprogress-census buried:--traffic-on=buried,--noprogress-census
+BARM_DIR ?= $(BUILD_DIR)/manoeuvre/bar-m
+BARM_JOBS ?= 6
+.PHONY: manoeuvre-bar-m
+manoeuvre-bar-m: import ## manoeuvre Bar M (round 47): orders-group in BARM_ARMS on BARM_MAPS x BARM_SEEDS x BARM_HEADINGS (+ the census), then the paired judge -> $(BARM_DIR)/
+	@$(MAKE) --no-print-directory orders-group ORDERS_GROUP_MAPS="$(BARM_MAPS)" ORDERS_GROUP_SEEDS="$(BARM_SEEDS)" \
+		ORDERS_GROUP_HEADINGS="$(BARM_HEADINGS)" ORDERS_GROUP_ARMS="$(BARM_ARMS)" ORDERS_GROUP_DIR=$(BARM_DIR) ORDERS_GROUP_JOBS=$(BARM_JOBS)
+	$(PYTHON) tests/manoeuvre/barm_judge.py $(BARM_DIR)/logs | tee $(BARM_DIR)/judge.txt

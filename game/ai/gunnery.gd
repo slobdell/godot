@@ -57,6 +57,34 @@ var _lane_hold_left := 0
 ## Seconds of game time the current apply() covers (one tick, or a whole controller stride).
 var _seconds := 0.0
 
+## Round 47 (engage E3, R47.17): POT SHOTS (his question: "should vehicles just go ahead and take pot shots even if they can't
+## get a good targeting fix"). E1 (staged): acquiring the fix was 44 % of the time his loaded crews held fire with an enemy in
+## range; the War Rig sees 60 m, so a target at 40 m costs it ~1.2 s of lay. With the switch on, a crew whose ONLY held gate is
+## the fix, laid at least POT_SHOT_AFTER_S, its target inside the weapon's effective band, fires anyway with its aim off by up
+## to POT_SHOT_WANDER_M at the target (the deterministic wander pattern), shrinking to nothing as the fix completes: the round
+## flies where the barrel points. `--pot-shot=on|off`; OFF (his call; the gun's C++ twin would carry it before any ON).
+static var POT_SHOT := OS.get_cmdline_user_args().has("--pot-shot=on")
+const POT_SHOT_AFTER_S := 0.4
+const POT_SHOT_WANDER_M := 2.5
+## Measurement only: pot shots taken since the process started.
+static var pot_shots := 0
+
+## Round 47 (engage E1), MEASUREMENT ONLY: `--gun-trace=<name substring|all>` prints one GUN_TRACE line per run of the
+## gun for the named crews (on every change of its gates, and every GUN_TRACE_EVERY ticks): the weapon order, the pick,
+## each gate (seen, line of sight, range, aim, lay, discipline, loaded, lane) and the trigger. Reads only; default off.
+static var GUN_TRACE := _gun_trace_flag()
+const GUN_TRACE_EVERY := 15
+## The trace's last key and tick per crew name (static: a Gunnery member would be one more field native's execute state
+## must mirror, tests/test_native_exec_state.gd).
+static var _gun_trace_last := {}
+
+
+static func _gun_trace_flag() -> String:
+	for arg in OS.get_cmdline_user_args():
+		if String(arg).begins_with("--gun-trace="):
+			return String(arg).trim_prefix("--gun-trace=")
+	return ""
+
 ## The four things read from the composer, by name, so the rules below read as they always did.
 var tank: Tank:
 	get:
@@ -181,9 +209,83 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	var envelope := engagement_lay.engage(tank, target,
 			tank.global_position.distance_to(target.global_position), _seconds_step(),
 			bool(weapon_order.get("long_shot", false)))
+	if POT_SHOT and not envelope and in_range and tank.ready_to_fire():
+		var needed := Engagement.acquire_seconds(tank, target, tank.global_position.distance_to(target.global_position))
+		var laid := engagement_lay.progress
+		if engagement_lay.target == String(target.name) and laid >= POT_SHOT_AFTER_S and laid < needed \
+				and tank.global_position.distance_to(target.global_position) <= Engagement.effective_range(weapon):
+			# E3: a snap shot before the fix: the aim off by what is left of the lay; the trigger once the barrel is on it.
+			var off_aim := aim + Difficulty.aim_offset(POT_SHOT_WANDER_M * (1.0 - laid / needed),
+					brain.game_match.tick if brain != null and brain.game_match != null else 0, tank.slot)
+			_cover(off_aim, cmd)
+			if Ballistics.aim_error(muzzle, tank.turret_forward(), off_aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"])):
+				cmd.fire = _clear_to_fire(true, off_aim)
+				if cmd.fire:
+					pot_shots += 1
+				OrderController._lap("weapon.lanes", lap)
+				return
 	cmd.fire = _clear_to_fire(envelope and in_range and aimed and tank.ready_to_fire(), aim)
 	OrderController._lap("weapon.lanes", lap)
 
+
+## Round 47 (engage E1), MEASUREMENT ONLY: one GUN_TRACE line after this run of the gun, whichever path ran it
+## (GDScript or its C++ twin): reads only. The gates are re-read from the state the run left, never re-run.
+func trace_after(cmd: TankCommand) -> void:
+	if GUN_TRACE != "all" and not String(tank.name).contains(GUN_TRACE):
+		return
+	var brain := ctl as TankBrain
+	var tick: int = brain.game_match.tick if brain != null and brain.game_match != null else -1
+	var row := {"n": String(tank.name), "wo": String(weapon_order.get("type", "")), "wo_name": String(weapon_order.get("name", "")),
+			"long_shot": bool(weapon_order.get("long_shot", false)), "pick": engaged_target, "ready": tank.ready_to_fire(),
+			"fire": cmd.fire, "lane": lane_blocker if lane_blocked_ticks > 0 else "", "lay_on": engagement_lay.target,
+			"lay": snappedf(engagement_lay.progress, 0.01), "firing": engagement_lay.firing, "supp": snappedf(tank.suppression, 0.01)}
+	var muzzle := tank.turret.global_position
+	var probe := func(enemy: Tank) -> Dictionary:
+		var d := tank.global_position.distance_to(enemy.global_position)
+		var los := Perception.has_line_of_sight(tank, enemy)
+		var out := {"n": String(enemy.name), "d": snappedf(d, 0.1), "seen": Engagement.is_seen(tank, enemy, spotter), "los": los,
+				"aim_err": snappedf(rad_to_deg(Ballistics.aim_error(muzzle, tank.turret_forward(), enemy.global_position)), 0.1),
+				"need": snappedf(Engagement.acquire_seconds(tank, enemy, d), 0.01)}
+		if not los:
+			# What the eye ray hits (Perception's own ray, re-cast), and whether a ray from the muzzle would clear it.
+			var space := tank.get_world_3d().direct_space_state
+			var from := tank.global_position + Vector3.UP * Perception.EYE_HEIGHT
+			var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(from,
+					enemy.global_position + Vector3.UP * Perception.EYE_HEIGHT, Perception.WORLD_MASK))
+			if not hit.is_empty():
+				var collider: Object = hit.get("collider")
+				var at: Vector3 = hit["position"]
+				out["hit"] = [String((collider as Node).name) if collider is Node else "?", snappedf(at.x, 0.1), snappedf(at.y, 0.01),
+						snappedf(at.z, 0.1), snappedf(from.distance_to(at), 0.1)]
+			var high := space.intersect_ray(PhysicsRayQueryParameters3D.create(muzzle, enemy.global_position + Vector3.UP * Perception.EYE_HEIGHT,
+					Perception.WORLD_MASK))
+			out["muzzle_clear"] = high.is_empty()
+			out["muzzle_y"] = snappedf(muzzle.y, 0.01)
+			out["y"] = [snappedf(tank.global_position.y, 0.01), snappedf(enemy.global_position.y, 0.01)]
+		return out
+	var named_name := String(weapon_order.get("name", ""))
+	if named_name != "" and tanks_root != null:
+		var named := _named_tank(named_name)
+		row["named"] = probe.call(named) if named != null and named.is_alive() else "dead"
+	var nearest: Tank = null
+	var nearest_d := INF
+	for enemy: Tank in _enemies():
+		var d := tank.global_position.distance_to(enemy.global_position)
+		if d < nearest_d:
+			nearest_d = d
+			nearest = enemy
+	if nearest != null and nearest_d <= float(tank.weapon["range"]) + 10.0:
+		row["nearest"] = probe.call(nearest)
+	var key := "%s|%s|%s|%s|%s|%s|%s" % [row["wo"], row["wo_name"], row["pick"], row["ready"], row["lane"], row["firing"], row.has("nearest")]
+	var last: Array = _gun_trace_last.get(String(tank.name), ["", -1000])
+	if not cmd.fire and key == String(last[0]) and tick - int(last[1]) < GUN_TRACE_EVERY:
+		return
+	_gun_trace_last[String(tank.name)] = [key, tick]
+	row["t"] = tick
+	row["range"] = float(tank.weapon["range"])
+	row["eff"] = Engagement.effective_range(tank.weapon)
+	row["aim_tol"] = float(tank.weapon.get("aim_tolerance_deg", 0.0))
+	print("GUN_TRACE ", JSON.stringify(row))
 
 ## L2 (X3): fire at a piece of ground. No target, no lead, no line-of-sight-to-an-enemy check — just the gun on the
 ## spot and rounds going down it while it is in range and the lane is clear of friendlies. A fixed mount swings the
