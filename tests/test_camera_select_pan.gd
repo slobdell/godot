@@ -151,3 +151,15 @@ func test_his_own_pan_stays_his_until_he_selects_then_the_view_comes_back_at_onc
 	rig.take_vision()  # he selects (the same squad): the camera is handed back
 	var took := _frames_until(rig, 20.0, 2.0)
 	assert_true(took >= 0.0 and took <= 1.5, "back on his squad in %.2f s" % took)
+
+
+func test_the_planners_point_stays_within_the_bound_of_his_selection() -> void:
+	var crews := _squad(Vector3(0, 0, 0))
+	var far := RtsCamera.bound_to(Vector3(0, 0, -50), crews, RtsCamera.SEL_BOUND_M)
+	var mean := _middle(crews)
+	assert_near(Vector2(far.x - mean.x, far.z - mean.z).length(), RtsCamera.SEL_BOUND_M, 0.01, "a 50 m lean is held to the bound")
+	var near := Vector3(5, 0, -5)
+	assert_true(RtsCamera.bound_to(near, crews, RtsCamera.SEL_BOUND_M) == near, "inside the bound: untouched")
+	var strung := [Vector3(0, 0, 0), Vector3(0, 0, -10), Vector3(0, 0, -120)]  # one crew far ahead: the frame's centre is 50 m off the mean
+	var centre := Vector3(0, 0, -60)
+	assert_true(RtsCamera.bound_to(centre, strung, RtsCamera.SEL_BOUND_M).distance_to(centre) < 0.01, "a strung-out squad keeps its frame")

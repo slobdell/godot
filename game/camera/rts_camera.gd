@@ -350,6 +350,10 @@ const PAN_ARRIVE_M := 3.0
 const PAN_OMEGA := 7.5
 const PAN_SCREENS_PER_S := 4.0
 var pan_screens := PAN_SCREENS_PER_S
+## K3's hard bound: the planner's point stays within this of his selection's middle (or of the frame's own centre when
+## the squad is spread wider than that): the lean toward its path and the wide frame of contacts may not carry the look
+## further (Crossing tick 690: 35 m off at 100 m, his squad at the edge). Part of `select_pan`.
+const SEL_BOUND_M := 20.0
 var select_pan := true
 var _select_at := -1e9
 
@@ -2108,6 +2112,8 @@ func _update_planner(points: Array, destination: Variant) -> void:
 			framed.append(RtsCamera.inside_wall(contact[0] as Vector3, CameraPlanner.WALL_MARGIN_M))
 		var wide := CameraPlanner.fit(framed, null, yaw, world)
 		goal = [(goal[0] as Vector3).lerp(wide[0], _wide_mix), lerpf(float(goal[1]), float(wide[1]), _wide_mix)]
+	if select_pan:
+		goal[0] = RtsCamera.bound_to(goal[0], own, SEL_BOUND_M)
 	zoom = float(goal[1])
 	focus = look_clamp(goal[0])
 	wrote["focus"] = "select" if planner_urgent else "planner"
@@ -2131,6 +2137,23 @@ func _pan_urgent() -> bool:
 	if remaining <= PAN_ARRIVE_M:
 		return false
 	return planner_urgent or _clock < _fresh_until or (remaining > PAN_START_M and _manual_at <= _select_at)
+
+
+## Round 47 (K3): `point` kept within `bound` m of the crews' mean, or of their bounds' centre if that is further (a spread
+## selection keeps its whole frame). Pure, for tests.
+static func bound_to(point: Vector3, crews: Array, bound: float) -> Vector3:
+	if crews.is_empty():
+		return point
+	var mean := Vector3.ZERO
+	var box := AABB(Vector3(crews[0].x, 0.0, crews[0].z), Vector3.ZERO)
+	for at: Vector3 in crews:
+		mean += Vector3(at.x, 0.0, at.z)
+		box = box.expand(Vector3(at.x, 0.0, at.z))
+	mean /= float(crews.size())
+	var centre := box.get_center()
+	var reach := maxf(bound, Vector2(centre.x - mean.x, centre.z - mean.z).length())
+	var away := Vector3(point.x - mean.x, 0.0, point.z - mean.z)
+	return point if away.length() <= reach else mean + away.normalized() * reach
 
 
 ## Round 46 (C2): whether every crew of his selection is on the SHOWN screen (above the command card).
