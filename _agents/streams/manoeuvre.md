@@ -69,23 +69,25 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-30 18:40) — where this stream is
+### NOW (2026-10-30 ~19:50) — where this stream is
 
-- **M1 done** (report below). **M2a built** (`buried`, 1aa41aeaf; Bar M filed + amendment 1, recorded by the orchestrator). Bar M's
-  frozen tree 1aa41aeaf is in builder3's full-check queue (five checks ahead of / beside it); the series (`make manoeuvre-bar-m-series`,
-  one sync) starts the moment it is green. 482f5e2b3's check: 3522 / 0 but `remote-guard-test` red on the census lint (buried_swaps
-  not on a series line, fixed in c85f828cf): not a tree I name.
-- **M2b, the watchdog, built (WIP, `--traffic-on=noprogress`, game/ai/noprogress_watch.gd):** a GDScript sampler outside the drive
-  (the native execute owns drive + unstick), asking route `Pathing.reroute(crew, &"noprogress")` when a driving / blocked crew makes no
-  progress for 3 s (never a yielding, street-held, planner-held, k-turning, escaping or short-halted crew; a crew he HOLDs has no move
-  order). **Decision:** the brief's "first unstick / backout" is not called from it: those live in the native execute and already fire
-  on their own triggers; the watchdog's job is the case they cannot see (a creep below the press threshold, a path that ends short).
-  Its first staged case, the CPU's Rust_Hunters on his Crossing recording (`test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle`,
-  RED): two crews on a navmesh sliver between the block (-34, -33) and Container40_9 whose path ends 2.9 m away, `blocked: no_path`
-  15 s. The watchdog trips 7 times and asks; route's stub re-plans from the sliver and gets the same path. **Request to route (via the
-  orchestrator, 18:25):** a `noprogress` reroute plans from the nearest point of the goal's connected region. The test goes green when
-  that lands.
-- **Requests to other streams:** route (above). **Questions for the lead:** none.
+- **M1 done** (report below). **M2a `buried` built; Bar M's frozen tree 1aa41aeaf GREEN builder3 (3522 / 0, check exited 0).** From
+  that check: **D1 PASS** (his staged Locks case, Burners2_4 0.0 s <= 1.0) and **G6 PASS** (Crossing guard 1.0 / 0 / 1.97 / 0 s < 2.5).
+  The series is running on builder3 as ONE run from 4ab917680 (1aa41aeaf + the series make target + a staged test; no game code):
+  W1 (12401-12424) then G8; then W2 (route-census 12425-12448, both sides) from a W2 tree = 4ab917680 + main (5f96c2d45; movement.gd
+  and tank_brain.gd byte-identical to 1aa41aeaf; side worktree ../godot-manoeuvre-w2, removed when W2 ends). Raw rows:
+  `~/overnight-manoeuvre/r47/barm/`.
+- **M2b, the watchdog, committed (5cacac0af, OFF: `--traffic-on=noprogress`; merged with main 0e0837a76):** game/ai/noprogress_watch.gd,
+  a GDScript sampler outside the drive. A crew driving or blocked by TERRAIN (never a hull jam: a dev read showed re-planning squad
+  jams every 3 s made them worse, 618 -> 737 crew-s) with no progress for 3 s (1 s when `blocked: no_path`) asks route
+  `Pathing.reroute(crew, &"noprogress")`. **Pathing.reroute (R47.25's grant, route ended):** a crew whose route is unreachable is
+  routed from the nearest point (rings 2.5-8 m, clear of hulls) the goal is reachable from. The CPU's staged sliver case is GREEN with
+  it (Hunters_4 / Hunters_2 within 8 m of their seats by ticks 124 / 205; today Hunters_2 never); his Locks case and the Crossing guard
+  unchanged; route's + native's pathing tests 21 / 0 (light lane). **Decision:** the brief's "first unstick / backout" is not called
+  from the watchdog: they live in the native execute and fire on their own triggers; the watchdog's job is what they cannot see.
+  Known: with the sliver fixed, Hunters_2 then waits 4.3 m from its seat behind an arrived squadmate (a settle contention: reported,
+  not asserted). Its own bar follows Bar M.
+- **Requests to other streams:** none open (route's sliver request answered by the grant). **Questions for the lead:** none.
 
 ### BAR M (FILED 2026-10-30 ~18:55, before any number; frozen tree = the first commit after 482f5e2b3 whose check is named green)
 
