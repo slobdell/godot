@@ -335,8 +335,7 @@ func _run() -> void:
 		stuck_s[unit_name] = _r(float(stuck_ticks[unit_name]) / SimClock.TICK_RATE)
 		no_shot_s[unit_name] = _r(float(in_range_no_shot_ticks[unit_name]) / SimClock.TICK_RATE)
 	print("ENGAGE_PROBE %s" % JSON.stringify({"seed": seed_value, "arena": arena, "arm": "on" if ElementPlan.ATTACK_SHOT else "off",
-			"crews": crews_n, "held_line_s": held_line_s, "lay_carry": Engagement.lay_carry,
-			"attack_line": TankBrain.ATTACK_LINE, "hull": hull, "target_unit": target_unit, "feature": String(feature.get("type", "")),
+			"crews": crews_n, "held_line_s": held_line_s, "hull": hull, "target_unit": target_unit, "feature": String(feature.get("type", "")),
 			"feature_at": [_r(center.x), _r(center.z)], "target_at": [_r(target_at.x), _r(target_at.z)],
 			"crew_at": placed, "target_placed": [_r(target.global_position.x), _r(target.global_position.z)],
 			"start_m": start_m, "stage_ok": stage_ok, "ground_moved": ground_moved, "line_flips": line_flips,

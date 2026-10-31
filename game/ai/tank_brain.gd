@@ -107,21 +107,6 @@ static var LANE_CLEAR := not OS.get_cmdline_user_args().has("--lane-clear=off")
 ## R46.7 (orchestrator): at a post he left by a MOVE, the lane step stays within this of the post (meters); under his
 ## explicit hold or stop the crew never moves for a lane.
 const LANE_POST_STEP := 4.0
-## Round 47 (engage E2b, R47.13): A LINE UNDER HIS ATTACK. His War Rigs on Crossing (staged from his census at 2070): under
-## his attack on Rust_Hunters_2, a rig 26-46 m from it with Block_1 between had no line for ~5.5 s; ENGAGE's "no line of
-## fire: going round" drove it at the TARGET'S OWN SPOT, into the building (wedged, k-turning). The element's firing-
-## position read (ElementPlan._engage) only starts once the element's centre is inside its band, so a lead crew in its own
-## reach got none. With the switch on, a crew ordered to attack THIS contact (his click, or a CPU commander's attack
-## order: C47.9), with the contact inside its gun's reach and no line of its own, drives to the nearest firing position
-## with a line (FiringPosition.find on the cover map: in its band, toward the enemy, off its friends) instead of the
-## target's spot. No such spot: today's move. `--attack-line=on|off`; OFF until Bar E.
-static var ATTACK_LINE := OS.get_cmdline_user_args().has("--attack-line=on")
-## A found spot is searched again no sooner than this (ticks), and kept while FiringPosition's hysteresis holds.
-const ATTACK_LINE_EVERY := SimClock.TICK_RATE / 2
-## Measurement only (never read by decisions): E2b's searches asked / spots found / thinks sent to a spot, since the process.
-static var attack_line_asked := 0
-static var attack_line_found := 0
-static var attack_line_sent := 0
 ## The rings of lane spots, nearest first (a small step beats a drive: a wheeled IFV needs seconds to relocate 16 m).
 const LANE_RINGS: Array[float] = [3.0, 6.0, 10.0, 16.0]
 const LANE_SEARCH_FAR := 16.0
@@ -630,10 +615,6 @@ var _overwatch := {}
 var _bursting := false
 ## CLEAR_LANE's chosen spot and when it was chosen (kept until reached or stale, so the tank settles to fire).
 var _lane_goal: Variant = null
-## E2b: the firing position this crew was last sent to under his attack, the target it was for, and when it was searched.
-var _line_spot: Variant = null
-var _line_spot_for := ""
-var _line_spot_tick := -1000
 var _lane_goal_tick := 0
 ## Round 46 (L2): the tick the crew reached its lane spot still held (-1 = not there), and whether it stepped off his post
 ## for a lane (HOLD drives it back once nothing is in sight).
@@ -2850,16 +2831,9 @@ func _act(s: Dictionary) -> void:
 				_lap("act.combat_move", combat_clock)
 				_order_move(combat)
 			elif not contact["visible"] or not own_line or distance > float(weapon["preferred_max"]):
-				var spot: Variant = _attack_line_spot(s, ordered, contact, my_position, distance) \
-						if ATTACK_LINE and not own_line else null
-				if spot is Vector3:
-					attack_line_sent += 1
-					why = TankBrain._join(why, "no line of fire: to a spot with one")
-					_order_move(_move_to(spot, false, 1.0, OrderController.ARRIVE_RADIUS))
-				else:
-					if not own_line:
-						why = TankBrain._join(why, "no line of fire: going round")
-					_order_move(_move_to(contact["position"]))
+				if not own_line:
+					why = TankBrain._join(why, "no line of fire: going round")
+				_order_move(_move_to(contact["position"]))
 			elif distance < float(weapon["preferred_min"]):
 				var away: Vector3 = my_position + (my_position - contact["position"]).normalized() * 8.0
 				_order_move(_move_to(away, true))
@@ -3278,32 +3252,6 @@ func _act(s: Dictionary) -> void:
 ## SUPPRESS_REAIM_TICKS.
 ## Round 42 (engage): whether this crew's own line of fire to `point` is clear by the cover map (memoized, the plan's read);
 ## no map = clear. `line_of_fire` (tests) answers instead when set.
-## E2b (see ATTACK_LINE): the firing position for this crew on `contact` under an attack order that names it, or null (not
-## that order, out of the gun's reach, no cover map, or no spot with a line within FiringPosition's bounded search).
-func _attack_line_spot(s: Dictionary, ordered: Variant, contact: Dictionary, here: Vector3, distance: float) -> Variant:
-	if not (ordered is Dictionary) or String((ordered as Dictionary).get("verb", "")) != "attack" \
-			or String((ordered as Dictionary).get("target", "")) != String(contact["name"]):
-		return null
-	if distance > float(tank.weapon["range"]):
-		return null
-	var map := CoverMap.of(tank)
-	if map == null:
-		return null
-	var target := String(contact["name"])
-	if _line_spot is Vector3 and _line_spot_for == target and game_match.tick - _line_spot_tick < ATTACK_LINE_EVERY:
-		return _line_spot
-	var friends: Array = (s.get("allies", []) as Array).map(func(ally: Dictionary) -> Vector3: return ally["position"])
-	attack_line_asked += 1
-	var found := FiringPosition.find(map, here, contact["position"], Engagement.effective_range(tank.weapon),
-			float(tank.weapon.get("preferred_min", 0.0)), friends, _line_spot if _line_spot_for == target else null)
-	_line_spot_tick = game_match.tick
-	_line_spot_for = target
-	_line_spot = found.get("point") if not found.is_empty() else null
-	if _line_spot != null:
-		attack_line_found += 1
-	return _line_spot
-
-
 func _own_line_to(from: Vector3, point: Vector3) -> bool:
 	if line_of_fire.is_valid():
 		return bool(line_of_fire.call(point))
