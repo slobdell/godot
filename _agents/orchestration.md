@@ -4073,3 +4073,8 @@ instrument that cannot lie about load — removal within one run — and let eve
      tree being merged, and ask the worker which line flips it. (Lesson 18's "a flag the default path never passes has not shipped",
      applied at the merge.)
 
+354. **A sim rule that ships ON needs its entry in the recorder's `rules` stamp and in `tests/replay/rules.py` in the SAME merge.** (Round
+     47.) Five rules shipped ON overnight (press_on, battery_screen, buried, holdyield, group_merged) with no stamp entry; his Crossing
+     replay went from exact to ~11 s to diverging at tick 3, and mapkit's "replay from his orders" read was mostly the new rules. Native
+     dated each by its merge (ce3a691eb). At every ON merge, ask the owner: "is it in MatchRecorder.rules() and RULES?"
+

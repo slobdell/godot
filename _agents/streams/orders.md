@@ -75,17 +75,77 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-30 ~17:10 PDT, Opus, `godot-orders` / `stream/orders`, from c789b55a6 = code e306ce27f GREEN builder3 3518/0)
+### FINAL REPORT (2026-10-31, Opus, `godot-orders` / `stream/orders`; last code d27c3a4f6 GREEN builder3 3609/0, 29 ALL JUDGED, merged to main)
+
+**Shipped (all ON, each with an escape):**
+- **The group click (O1, R47.41, his "Ship it ON" after Bar O2):** two or three squads sent to one spot park as short files
+  side by side at his click. `--group-merged` defaults to `all` (SelectionSquads.merged_mode(): his merged group AND any 2-3
+  whole squads); `=on` merged group only; `=off` round 46's abreast lay. Bar O2 (4536ccb0f, builder3, 12749-12778): D1 -14.2 m
+  paired (median 35.1 v 52.4 m, n 120), all in +0.44 s; his Crossing click 14.0 v 39.4 m; failed G2 wedged 57.2 v 39.0 crew-s and
+  G6 contact_s +0.50 (se 0.25), both only on laid clicks, Sumps and the open yard. Ship commit d27c3a4f6.
+- **The `inp` row (O4, C47.4):** every key / button that changed the selection or gave an order is recorded with what it did
+  (7d41d5061, 3046343c1, 87eb68b1c; hashes sent to native).
+- **The recipient cue (O5, C47.5):** the vehicles that take an order pulse a white ring twice, and their chip flashes
+  (729c8ec90; shots 778c7d397, desktop + phone, looked at).
+- **A battery's screen is support by fire (O6):** mortars told to screen a line stay back and cover it (729c8ec90;
+  `--battery-screen=off`).
+- **The money cap (R47.22 / R47.26):** a faction skirmish is fought with the garage's 2000 CR (3,500 pts) a side, every preset
+  (99ffb918a, 2a1e36a22; green 1c2fc5838 = main 79cea77e5); `--army-cap=count` is round 46's army; old recordings replay so.
+- Control playtest's stale queued-route check fixed (7624b3290; main had it red too).
+
+**Findings:**
+- **O3, the order lag:** none. His attack took at its tick (relayed to route as R1).
+- **The squadless group / wrong squad:** Crossing's Wrenches were ordered loose because his Ctrl+4 group also held group 3's
+  Spears (fixed with O1's split: the remainder keeps its squad). The Sumps Charlie-for-Bravo order has no UI fault; the
+  likeliest cause is his hand (E sits under 3). The next recording's `inp` rows will say.
+- **The HUD cost at the money cap** is the fog-of-war field (visibility_field.gd: 10.6 ms frame / 3.0 ms UI v 3.4 / 0.8 at
+  the count cap, windowed, laptop UHD 620, n 1); the controls' widgets are flat. Went to native (R47.31). His laptop at the money
+  cap: 86-123 ms a frame v 52-57 at the count cap (Crossing seed 101, n 2 an arm).
+
+**Next round:**
+- **The Sumps / yard stall (manoeuvre's, handed to the orchestrator):** trace (builder3, d27c3a4f6, sumps 3 squads, seed
+  12749, n 1; references/round47/orders/stall-sumps-12749/): the two file HEADS (Alpha_1, Bravo_1: each leads its column and
+  owns the far seat) meet near (-27, 38) at t=10 and give way to each other ~8 s while their followers drive past to the rear
+  seats. All in 22.7 v 8.4 s OFF, contact ticks 1636 v 51. The yard is unread (wedging only, no lateness).
+- **Crossing and Terminus never lay files:** the ground refuses the rear seats (buildings, off the arena), so his Crossing
+  merged click files but a box-selected one may not; his Locks click lays as today (39.4 v 39.4 m).
+- **O7, his acceptance read:** not done. It reads the shipped tree: his Crossing / Locks clicks and Hunters_4's order time,
+  from his order rows plus the census at the click tick (R47.8: replays diverge).
+
+### NOW (2026-10-30 22:51 PDT, Opus, `godot-orders` / `stream/orders`; Bar O2 run on 4536ccb0f; main ba23e011e merged)
 
 | Item | State |
 |---|---|
-| O1 the spread | **Bar O FAILED (D1), O1 now OFF** (`--group-merged=on` opts in); v2 dev read: together but 5-20x the bumping; ruling asked of the orchestrator (below) |
-| O2 Bar O | **filed** (`workstreams.md` *Bars (round 47)*, 960edbd67) before any number; amendment 1 (69d6813e6) and 2 (0eb12f551, R47.15: the `all` arm deciding) both before any number; runs on the green freeze |
+| O1 the spread | **Bar O2 FAILED on two guards (G2 wedged, G6 contact_s), every deciding line passes; ruling asked** (below). O1 stays OFF (`--group-merged=on` / `=all` opt in) until he rules |
+| O2 Bar O | Bar O failed (D1, below); **Bar O2** filed 4536ccb0f (R47.21 / R47.37) before any number, run on 4536ccb0f, verdict below |
 | O3 the order lag | **closed: no lag** (below; relayed to route as R1 by the orchestrator) |
-| O4 the `inp` row | **built** (7d41d5061; + group saves 3046343c1; + arm / formation / escape 87eb68b1c); native gets the hash when a check covering 87eb68b1c is green |
-| O5 the recipient cue | built (uncommitted until its tests pass): rings pulse + chip flash |
-| O6 artillery screen | built (uncommitted until its tests pass): a battery's screen = support by fire, ON, `--battery-screen=off` |
-| O7 his acceptance read | after Bar O |
+| O4 the `inp` row | **done** (7d41d5061, 3046343c1, 87eb68b1c); hashes sent to native via the orchestrator |
+| O5 the recipient cue | **done** ON: rings pulse + chip flash; shots 778c7d397 (builder3 :1, desktop + phone) |
+| O6 artillery screen | **done** ON: a battery's screen = support by fire, `--battery-screen=off` |
+| O7 his acceptance read | waits on the O1 ruling (reads the shipped tree) |
+
+Green hashes: 0b1caafa2 (3536/0), d9151bad5 (merged as 09780edb9), 1c2fc5838 (3555/0, 29 ALL JUDGED; merged as 79cea77e5).
+4536ccb0f (the freeze): check 3554/1, the one red = test_match_shell_dropped_peer, re-run alone 1/0 on 4536ccb0f (R36.12,
+the orchestrator's ruling: launch without a re-check).
+
+**Bar O2 (builder3, tree 4536ccb0f, 10 jobs; merged / all 12749-12760, his clicks 12761-12772, identity 12773-12778; every part
+complete first try: 240 / 24 / 24 / 144 / 240 / 24 runs; G7 test_manoeuvre_noprogress 2/0; ~/orders-r47/bar-o2-4536ccb0f/):
+VERDICT FAIL, both arms.** Merged arm: D1 paired ON-OFF -14.2 m (median 35.1 v 52.4 m, n 120) PASS; D1c 0 wider PASS; D1b 51
+of 51 laid within 20/40 m PASS (laid on 51 of 120); D2 +0.44 s PASS; D2b 0 v 0 PASS; G1 contacts 46.8 v 33.3 (cap 88.3) PASS;
+G3 0 v 0, decks 1 v 1 PASS; G4 0 of 180 places differ PASS; G5 farthest spot 21.2 v 36.9 m PASS; G6 noprog_s +3.07 se 1.96 PASS;
+**G2 wedged crew-s 57.2 v 39.0 (cap 53.8) FAIL; G6 contact_s +0.50 se 0.25 (cap +0.41) FAIL.** His Crossing click 14.0 v 39.4 m
+apart, all in 13.8 v 16.1 s; his Locks click unchanged (39.4 v 39.4: the ground refuses the files). The `all` arm reads the same
+and fails the same two. **Where the wedging is:** only the 51 clicks laid as files (12.5 -> 55.5 crew-s a run); the 69 not laid
+are identical to OFF. By map, ON-OFF a click: sumps +61 / +82 (2 / 3 squads), yard_open +22 / +18, locks / crossing / terminus
+~0. **In his terms (sent 22:50):** "two or three squads sent to one spot now park side by side in short lines ~15 m closer
+(your Crossing click: 14 m apart instead of 39), just as fast; on Sumps and the open yard the back tanks in each line sit
+stuck behind the one in front a few seconds each before they settle; Locks, Crossing and Terminus look the same." My
+recommendation: ship ON with the =off escape (second failed bar on his repeated ask; deciding lines all pass; the cost is
+two maps), else keep OFF and take the Sumps / yard stall as a follow-up.
+
+**O1 v3 (files only at the end, R47.21: element_plan's MERGED_ARRIVE_FILE) dev reads** (builder3, dev 7001-7002, laid cells):
+contacts all / near 60 m / after in / on the way ON 286 / 178 / 99 / 9 v OFF 152 / 123 / 21 / 8: the bumping is at the halt.
+Wider gap (`--group-merged-gap`, fd0a69c05): 1x 31.8 v 16.9, 1.5x 29.3 v 6.1, 2x 34.5 v 18.4 contacts: no help, left at 1x.
 
 **Bar O, first series (builder3, 0b1caafa2's code, seeds 12701-12712, ~/orders-r47/bar-o-0b1caafa2/; stopped after merged, his_x
 and his_l):** VERDICT FAIL. D1 median spread ON 71.3 v OFF 71.3 m (n 60 three-squad pairs); D1b files laid on 12 of 60, all
@@ -157,6 +217,13 @@ IFV and mixed squads screen as before. ON, `--battery-screen=off`.
 writes it as `("army-cap", "count", "<R47.22's merge stamp>")`; test_rules: ALL_OFF gains "--army-cap=count" and
 test_his_round46_recordings_ran_every_rule_on expects ["--army-cap=count"]. `game/match/match_recorder.gd`: the inp row and
 the army_money stamp (additive). `game/tactics/element_plan.gd`: one condition at the D3b hook (R47.21, manoeuvre agreed).
+
+**The control playtest's stale check (fixed, R47 orchestrator's ask):** `queued_route_has_three_stops` read the crew-order queue
+and `waypoints()`, but a squad's shift-clicks queue its ELEMENT's tasks (round 35's D6, REQUEUE), so it failed on main too:
+`make control-playtest` (headless) on main 6ef3681f7, builder3 light folder: `CONTROL_PLAYTEST_DONE ok=false`,
+queued_route_has_three_stops false (not in make check, so nothing went red). Now a squad's route is its element's task + queued
+tasks (loose crews keep the old read); stream/orders: `ok=true`, exit 0. The windowed recording of the same step
+(2026-10-30T20-19-30) shows the three clicks as three `queue: true` order rows taken as Bravo's element tasks.
 
 **Questions for the lead:** none yet (O1 ships ON on Bar O's verdict; if it fails, the player-terms note goes to the orchestrator).
 **Requests to other streams:** none. **Builders:** a fresh builder3 folder is seeded from `~/tank_squad/godot` server-side first

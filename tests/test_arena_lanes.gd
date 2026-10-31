@@ -157,8 +157,25 @@ func test_no_candidate_map_has_a_tooth_on_a_lane() -> void:
 	for name: String in Arena.CANDIDATES:
 		var data: Dictionary = Arena.load_layout(name)["layout"]
 		var found := ArenaLanes.teeth(data)
+		# Round 47 (mapkit): a TWIN of a dealt map (`<map>_<pieces>`, tests/mapkit/make_kit_twins.py) inherits its map's
+		# teeth, which a dealt map reports and does not assert (the Terminus has four at its plaza crossings); the twin may
+		# add none of its own.
+		var base := _twin_base(name)
+		if base != "":
+			var inherited := ArenaLanes.teeth(Arena.load_layout(base)["layout"]).map(func(t: Dictionary) -> String:
+					return "%s@%.1f,%.1f" % [t["lane"], t["at"].x, t["at"].y])
+			found = found.filter(func(t: Dictionary) -> bool:
+					return not inherited.has("%s@%.1f,%.1f" % [t["lane"], t["at"].x, t["at"].y]))
 		assert_eq(found.size(), 0, "%s: %s" % [name, "; ".join(found.map(func(t: Dictionary) -> String:
 				return "%s at (%.1f, %.1f) %.2f m" % [t["lane"], t["at"].x, t["at"].y, t["depth_m"]]))])
 	for name: String in Arena.ROTATION:
 		var count := ArenaLanes.teeth(Arena.load_layout(name)["layout"]).size()
 		print("TOOTH_COUNT %s %d (dealt: reported, not asserted)" % [name, count])
+
+
+## The dealt map a candidate twin is built on (`terminus_doors` -> `terminus`), or "" for a candidate of its own.
+static func _twin_base(name: String) -> String:
+	for map: String in Arena.ROTATION:
+		if name.begins_with(map + "_") and not Arena.ROTATION.has(name):
+			return map
+	return ""

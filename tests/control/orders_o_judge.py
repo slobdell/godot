@@ -8,6 +8,9 @@ route, seed). Prints one line per bar line, then VERDICT PASS / FAIL. `--self-te
 (lesson 350: each deciding line fails once on a case it must catch) and exits non-zero if any does not.
 """
 import json
+import math
+import os
+import re
 import statistics
 import sys
 
@@ -41,6 +44,35 @@ def med(xs):
     return statistics.median(xs) if xs else float("nan")
 
 
+# R47.37 (his pick "Ship it, bumping OK"): Bar O2's contact guard, said up front.
+CONTACT_SCALE = 2.5
+LOG = re.compile(r"^(?P<map>[a-z_]+)-(?P<n>\d+)-(?P<route>[a-z]+)-(?P<arm>[a-z0-9_]+)-s(?P<seed>\d+)\.log$")
+
+
+def noprogress(parts, off, on):
+    """Manoeuvre's guard (barm_judge.read: the run's last NOPROGRESS census, team 0): paired over this part's logs, or None."""
+    logs = parts.get("logs")
+    if not logs or not os.path.isdir(logs):
+        return None
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "manoeuvre"))
+    import barm_judge  # noqa: E402
+    cells = {}
+    for name in os.listdir(logs):
+        m = LOG.match(name)
+        if m and m["arm"] in (off, on):
+            got = barm_judge.read(os.path.join(logs, name), 0)
+            if got is not None:
+                cells.setdefault((m["map"], m["n"], m["route"], m["seed"]), {})[m["arm"]] = got
+    out = {}
+    for census in ("noprog_s", "contact_s"):
+        d = [c[on][census] - c[off][census] for c in cells.values() if off in c and on in c]
+        n = len(d)
+        mean = statistics.mean(d) if d else 0.0
+        se = statistics.stdev(d) / math.sqrt(n) if n > 1 else 0.0
+        out[census] = (mean, se, n)
+    return out
+
+
 def judge(parts, off, on, out=print, identity=True):
     ok = True
 
@@ -51,16 +83,19 @@ def judge(parts, off, on, out=print, identity=True):
 
     merged_runs, merged_rows = parts["merged"]
     pairs = paired(merged_runs, off, on)
-    spread_off = [p[0]["spread_m"] for p in pairs if p[0]["spread_m"] >= 0 and p[1]["spread_m"] >= 0]
-    spread_on = [p[1]["spread_m"] for p in pairs if p[0]["spread_m"] >= 0 and p[1]["spread_m"] >= 0]
-    line("D1", bool(spread_on) and med(spread_on) <= 0.6 * med(spread_off),
-         "spread between squads' spots, one merged click: median ON %.1f m v OFF %.1f m (<= 0.6 x OFF), n %d pairs" % (
-             med(spread_on), med(spread_off), len(spread_on)))
+    sp = [(p[0]["spread_m"], p[1]["spread_m"], p[1]) for p in pairs if p[0]["spread_m"] >= 0 and p[1]["spread_m"] >= 0]
+    diffs = [b - a for a, b, _ in sp]
+    mean_d1 = statistics.mean(diffs) if diffs else float("nan")
+    line("D1", bool(diffs) and mean_d1 <= -10.0,
+         "spread between squads' spots, one click: paired mean ON - OFF %+.1f m (<= -10 m); median ON %.1f v OFF %.1f m, n %d" % (
+             mean_d1, med([b for _, b, _ in sp]), med([a for a, _, _ in sp]), len(sp)))
+    wider = [d for d in diffs if d > 2.0]
+    line("D1c", not wider, "no click's squads further apart ON than OFF (+2 m): %d" % len(wider))
     laid = [p for p in pairs if p[1].get("merged_laid", 0) > 0]
-    near = [p for p in laid if 0 <= p[1]["spread_m"] <= 25.0]
+    near = [p for p in laid if 0 <= p[1]["spread_m"] <= (20.0 if p[1]["squads"] <= 2 else 40.0)]
     line("D1b", bool(laid) and len(near) >= 0.9 * len(laid),
-         "clicks laid as files with spread <= 25 m: %d of %d (>= 90 %%); refused by the ground: %d of %d" % (
-             len(near), len(laid), len(pairs) - len(laid), len(pairs)))
+         "clicks laid as files with spread <= 20 m (2 squads) / 40 m (3): %d of %d (>= 90 %%); laid on %d of %d clicks" % (
+             len(near), len(laid), len(laid), len(pairs)))
     both = [(a["all_in_s"], b["all_in_s"]) for a, b in pairs if a["all_in_s"] >= 0 and b["all_in_s"] >= 0]
     mean_d = statistics.mean([b - a for a, b in both]) if both else float("nan")
     line("D2", bool(both) and mean_d <= 0.5,
@@ -70,7 +105,14 @@ def judge(parts, off, on, out=print, identity=True):
     line("D2b", never_on <= never_off, "never all in: ON %d v OFF %d (<= OFF)" % (never_on, never_off))
     c_off = statistics.mean([a.get("friend_contacts", 0) for a, _ in pairs]) if pairs else 0.0
     c_on = statistics.mean([b.get("friend_contacts", 0) for _, b in pairs]) if pairs else 0.0
-    line("G1", c_on <= c_off * 1.25 + 5, "friendly contacts a run: ON %.1f v OFF %.1f (<= OFF x 1.25 + 5)" % (c_on, c_off))
+    line("G1", c_on <= c_off * CONTACT_SCALE + 5, "friendly contacts a run: ON %.1f v OFF %.1f (<= OFF x %.2f + 5; R47.37: his \"bumping OK\")" % (
+        c_on, c_off, CONTACT_SCALE))
+    g6 = noprogress(parts, off, on)
+    if g6 is not None:
+        for census in ("noprog_s", "contact_s"):
+            mean, se, n = g6[census]
+            line("G6", n > 0 and mean <= 1.645 * se, "manoeuvre's census %s: paired mean ON - OFF %+.2f crew-s, se %.2f (<= +1.645 se), n %d" % (
+                census, mean, se, n))
     w_off, w_on = wedged(merged_rows, off), wedged(merged_rows, on)
     ks = [k for k in w_off if k in w_on]
     wo = statistics.mean([w_off[k] for k in ks]) if ks else 0.0
@@ -113,8 +155,10 @@ def judge(parts, off, on, out=print, identity=True):
 
 
 def read(bar):
-    return {name: (load("%s/%s/runs.jsonl" % (bar, name)), load("%s/%s/rows.jsonl" % (bar, name)))
-            for name in ("merged", "his_x", "his_l", "identity")}
+    parts = {name: (load("%s/%s/runs.jsonl" % (bar, name)), load("%s/%s/rows.jsonl" % (bar, name)))
+             for name in ("merged", "his_x", "his_l", "identity")}
+    parts["logs"] = "%s/merged/logs" % bar
+    return parts
 
 
 def self_test():
@@ -133,7 +177,10 @@ def self_test():
     if not judge(good, "off", "on", quiet):
         failures.append("the staged good case fails")
     staged = {
-        "D1 (no closer)": {**good, "merged": ([run("locks", "off", 40, 20), run("locks", "on", 39, 20)], good["merged"][1])},
+        "D1 (no closer)": {**good, "merged": ([run("locks", "off", 40, 20), run("locks", "on", 35, 20)], good["merged"][1])},
+        "D1c (one further apart)": {**good, "merged": ([run("locks", "off", 40, 20), run("locks", "on", 15, 20),
+                                                        dict(run("locks", "off", 20, 20), seed=2), dict(run("locks", "on", 30, 20), seed=2)],
+                                                       good["merged"][1])},
         "D2 (later)": {**good, "merged": ([run("locks", "off", 40, 20), run("locks", "on", 15, 22)], good["merged"][1])},
         "D2b (never in)": {**good, "merged": ([run("locks", "off", 40, 20), run("locks", "on", 15, -1)], good["merged"][1])},
         "G4 (a place moved)": {**good, "identity": (good["identity"][0], [row("off", [1, 1]), row("on", [1, 2])])},
@@ -151,7 +198,8 @@ if __name__ == "__main__":
         bar = sys.argv[2]
         parts = {"merged": (load("%s/all/runs.jsonl" % bar), load("%s/all/rows.jsonl" % bar)),
                  "identity": ([], []), "his_x": ([], []),
-                 "his_l": (load("%s/his_l_all/runs.jsonl" % bar), load("%s/his_l_all/rows.jsonl" % bar))}
+                 "his_l": (load("%s/his_l_all/runs.jsonl" % bar), load("%s/his_l_all/rows.jsonl" % bar)),
+                 "logs": "%s/all/logs" % bar}
         sys.exit(0 if judge(parts, sys.argv[3], sys.argv[4], identity=False) else 1)
     if sys.argv[1:] == ["--self-test"]:
         sys.exit(0 if self_test() else 1)

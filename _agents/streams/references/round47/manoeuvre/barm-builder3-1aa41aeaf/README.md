@@ -31,3 +31,9 @@ before any number.
 **In his terms:** his fire truck that drove nose-first into the building beside a container and sat there while its squad left now
 swings round the container with its squad; across 96 of his group clicks crews spend a little less time not getting closer to their
 spot (terminus clearest), brush walls a little less, and the group is in no later. The CPU's own fights never met the case (0 swaps).
+
+**Symmetry (C47.9), asked at R47.33:** the call site (TankBrain's transit block) has no team condition. Proven on a staged CPU copy of his
+case (`test_locks_burner_case_on_the_cpu_side`: the same five fire trucks, spawn spots and click as a RUST squad; builder3 light,
+3493a115c): 30 swaps, Rust_Burners2_4 no-progress 0.0 s, every crew's number equal to his side's. W2's 0 swaps mean the CPU's own
+orders met no pinned station in those 24 fights (its squads travel the map's lanes on objective moves, not long group clicks across
+blocks), not that the rule misses them.

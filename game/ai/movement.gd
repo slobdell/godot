@@ -407,13 +407,14 @@ static func route_arms() -> Dictionary:
 			"turns": ManoeuvreCensus.report(), "behind_asked": behind_asked, "behind_reverses": behind_reverses,
 			"behind": Manoeuvre.report(), "post_faces_kept": post_faces_kept, "face_plans": Manoeuvre.face_plans,
 			"face_plan_legs": Manoeuvre.face_plan_legs, "face_none": Manoeuvre.face_none, "kturn_away": kturn_away,
-			"kturn_circle": kturn_circle, "buried_swaps": buried_swaps, "noprogress": NoProgressWatch.report(), "holdyield_vetoes": holdyield_vetoes}
+			"kturn_circle": kturn_circle, "buried_swaps": buried_swaps, "noprogress": NoProgressWatch.report(), "holdyield_vetoes": holdyield_vetoes, "overstay_moves": DoorOverstay.moves}
 
 
 static func reset_route_arms() -> void:
 	buried_swaps = 0
 	holdyield_vetoes = 0
 	NoProgressWatch.reset()
+	DoorOverstay.reset()
 	ManoeuvreCensus.reset()
 	Manoeuvre.reset()
 	kturn_goal_moved = 0
@@ -655,6 +656,7 @@ func _init(controller: OrderController = null) -> void:
 	ctl = controller
 	if NoProgressCensus.on:
 		NoProgressCensus.install()  # round 47 (Bar M's instrument, measurement only): it samples every mover from the physics frame
+	DoorOverstay.install()  # round 47 (mapkit's request): a crew parked in a closing doorway gives way to the door (returns at once while `overstay` is off)
 	NoProgressWatch.install()  # round 47 (manoeuvre M2): the no-progress watchdog's sampler (returns at once while `noprogress` is off)
 
 
@@ -2640,7 +2642,7 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 	return false
 
 
-## Round 47 (manoeuvre M5, `--traffic-on=holdyield` until judged; engage's Bar L1c seed 12328, Locks): A CREW ON HIS POST NEVER GIVES WAY
+## Round 47 (manoeuvre M5, ON since R47.42 (Bar H), `--traffic-off=holdyield` the escape; engage's Bar L1c seed 12328, Locks): A CREW ON HIS POST NEVER GIVES WAY
 ## TOWARD THE ENEMY. His gang tank held the post his move left it at; a squadmate crossing its lane asked it to give way, the yield took
 ## a spot 10 m south, straight at the enemy gun 12 m off, and HOLD's return (arrival radius 6) parked it 6 m short of his post. With
 ## the rule a crew holding his post (TankBrain._his_post) skips any spot more than HOLDYIELD_SLACK_M closer to an enemy hull within HOLDYIELD_RANGE_M than

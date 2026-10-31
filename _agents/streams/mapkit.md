@@ -77,7 +77,157 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**REPORT (2026-10-30 ~18:20; newest first).**
+**FINAL REPORT (round 47, 2026-10-31 ~02:50).** Last green full check: **f69c81a0f** (main merged; builder3 `make check
+exited 0`, 3616/0, 29 targets ALL JUDGED, sim-baseline unmoved; MERGED to main by the orchestrator). On top of it, **552cf5a12**
+(Status + `mkdir -p build` in mapkit-screens-replay) passed quick-remote on builder3 in 43 s (lint + combat-smoke; no test touched),
+and the commit carrying this report is docs only.
+- **Shipped ON (his picks):** the Material Maker trim sheet on traps, monorail, pipes and crane (`--kit-look=plain` turns it
+  off; on the laptop preset the monorail and deck stay plain, since trim cost +1.4 ms there); steam sight screens (screen C) on
+  desktop high, strips elsewhere; pipes B and crane A; the monorail deck slot with his Meshy one-off train (no measurable laptop
+  cost); blast doors (door A) on a seeded schedule that can't crush or trap crews, booth-called through his kept door lines
+  (21 lines voiced); the `sight` cover class (screens block eyes, not wheels; `--kit-sight=off`).
+- **Candidates for his eye, not in rotation:** `terminus_doors` (on main to try: `make skirmish ARENA=terminus_doors`),
+  `parade_traps`, `parade_rail`, `crossing_screens`.
+- **Bar P, honestly:** FAIL on the deciding line on all three twins; every guard passes (R47.45). The pieces as placed are safe
+  but don't change CPU v CPU fights enough to count. The doors watch (12 fights on terminus_doors): doors cycle and get called
+  every fight, nobody crossed a sealed door, holds ≤ 9 s. The screens replay of his Crossing orders (n=1, illustrative, and
+  the replay diverges from his real match) shows his army lasting longer behind screens but still routed.
+- **Next round, what might make the pieces change fights:** put them where fights actually happen (on the lane chokes the
+  probe reports, not in front of bases); doors that gate the shortest route for the attacker's timing, so a closing door
+  splits an army; screens across the long sightlines the syndicate wins from, paired with a hard-cover step behind them so a
+  screened approach ends somewhere safe; then re-run Bar P on placements built from the heat maps instead of hand-placed twins.
+  The CPU also has to read doors and screens (wait for the open, route behind the screen), which is the planner/perception
+  streams' work, not this stream's.
+- **Left open:** `~/tank_squad/mapkit-render` on builder3 stays until the orchestrator closes the round. The 8dc9697b4 red
+  (test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle) was traced by native to physics state carried over in-process (R47.47);
+  main marks it pending.
+
+**REPORT (2026-10-30 ~21:00; newest first).**
+
+**Green hashes:** 6282f0fbf (P2 v1; builder3 3532/0, ALL JUDGED); **39c7dba53** (P2 contract + P3 + P5 + P4 traps/monorail/door
+look; builder3 `make check exited 0`, 3548/0, 28 targets ALL JUDGED, 20:23; MERGED to main by the orchestrator). 2bf534df2 was red
+(test_render_multimesh_interpolation: the strip curtain bypassed FxMultiMesh; fixed in 39c7dba53). **c2ff150a2** (470301cc7 + a .uid):
+steam screens, pipes B, crane A, the monorail deck split, P1b's trim sheet, mapkit-gpu -- quick 310/0 builder3; full check queued
+on builder3 since ~20:55 -> **RED** (3551/0 but the engine-log gate: "ObjectDB instance was leaked at exit" x3 shards; the
+sight screen's member initializer made a strip node the steam branch never used). **04adca907** = the fix + **the trim sheet ON**
+on traps/monorail/pipes/crane (his P1b pick, R47.38; `--kit-look=plain` escapes) + the train concepts; quick 116/0 builder3; full
+check queued on builder3 (name it here). f10081d90 (gallery only) on top.
+
+**2026-10-31 ~02:00: 8dc9697b4 RED, 3613/1.** The one red is test_manoeuvre_noprogress::test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle (manoeuvre's paths, not mine; Rust_Hunters_2/4 never seated within 10 s). After merging main (**f69c81a0f**) a whole-suite `make remote T=test` went 3616/0 on builder3 with that test passing. The orchestrator is treating it as a main problem (native is looking). f69c81a0f's full check is queued on builder3; if its only red is that test, I name the hash anyway with that note.
+
+**2026-10-31 ~02:00: SCREENS WORKLOAD from his Crossing recording (the orchestrator's last item; illustrative, n=1, NOT a bar).**
+`make mapkit-screens-replay` (builder3, f69c81a0f's tree in the render copy) replays his round-46 Crossing match
+(15:41:59, gangs v syndicate CPU, seed 101, his 13 orders) once on crossing and once on crossing_screens
+(`tests/mapkit/fixtures/his_crossing_on_screens.jsonl` = his file with only the arena changed). **Caveat:** the replay
+does not reproduce his match even on crossing (`replay-match` DIVERGENCE FAIL from tick 3, Green_Guns_1; his real end
+was shots 6/358, damage 196/4901), so read this as "his orders on each map", not "his match".
+| map | ended | his hits / dmg (gangs) | CPU hits / dmg (syndicate) | his losses | CPU losses |
+|---|---|---|---|---|---|
+| crossing | elimination at 97.5 s | 0 / 0 | 184 / 5021 | 20 | 0 |
+| crossing_screens, at 97.5 s | still fighting | 3 / 220 | 226 / 4034 | 15 | 0 |
+| crossing_screens, at 113 s (cap) | still fighting | 4 / 428 | 250 / 4548 | 17 | 0 |
+In player terms: on this replay the screens make his army last longer (two-thirds of it lost at 97.5 s instead of all of it) and he
+lands a few hits he didn't before, but it's still a rout. The screens slow the syndicate's long shots and don't change who wins.
+Crossing's row comes from the replay's end stats; the screens rows are counted from its hit/dead rows at each time cut.
+
+**2026-10-31 ~01:00: BLAST DOORS IN A REAL ARENA (the orchestrator's next item, after Bar P).** Main merged first (eecdd7c0e:
+native's door mask + eye mask on main). `terminus_doors` (candidate twin): his vault-slab doors across the Terminus's west and east
+streets at z = 0, one schedule (both sides), 16 m slabs in the 20 m street (no hull fits beside a shut slab), each beside a side's
+ring objective. test_terminus_doors: through the door only with its navigation bit; RouteDoors' mask has the bit only while open
+now and at arrival (a crew 120 m off when it shuts in 3 ticks: out). **Watched, 12 CPU fights** (12949-12954 x both base orders,
+native ON, builder3, 9bd2873cc, not a bar; `_agents/streams/references/round47/mapkit/doors-watch.json`): doors opened and shut and
+the booth called every one (its `door` calls = the door events, + a "caught" call in 11/12); green crossed in 12/12 fights, rust in
+7/12, while open / in the warning / held; **crossings through a SEALED door 0/12**; a closing door waited for a crew in its
+doorway in 6 fights, longest 9.0 s, every one sealed once clear (0 left open); `overstay` fired twice. **Without manoeuvre's yield
+(OFF):** a crew parked in a closing doorway keeps that door open until it drives on (it only ever errs open; never sealed on a
+hull); the booth calls it ("held"). Stall share 0.014-0.028 (Bar P's base maps: 0.014 / 0.026). Check of 8dc9697b4 queued.
+
+**His playtest note (player terms):** `make skirmish ARENA=terminus_doors`. The two side streets of the Terminus now have armoured
+gates halfway along. About a minute in, the PA warns ("the west gate will close in five seconds"), the amber beacons flash and the
+gates slide shut with the caller hyping it; they reopen after ~25 s and cycle on a fixed clock both sides share. While a gate is
+shut your crews and the CPU's route round by the ring roads or the avenue; a crew caught in the doorway holds the gate open (the
+caller says so) rather than being crushed. Watch: do the gates make the side streets feel like a timed gamble worth the noise?
+Do your crews look smart around them (not queuing at a shut gate)? (Both sides get the same gates on the same clock; in the
+watch, how often a side used them followed that army's own plan, not which half it started in: rust's two no-crossing seeds were
+no-crossing from both bases, and in other seeds rust used them more than green.)
+
+**2026-10-30 23:57: Bar P = FAIL on the deciding line (all three twins), every guard PASSES.** 2ce6fa68b (b9f13f946's game
+code), builder3, 224 matches, native ON, 0 failed; raw and table in `_agents/streams/references/round47/mapkit/bar-p-*-2ce6fa68b*`.
+Paired twin - base (same seed, base order, factions), mean +- se, n:
+- parade_traps (n 32): range median +1.18 +- 0.95 m, p90 -2.93 +- 2.23, flank +0.025 +- 0.013 (1.9 se), hidden +0.020 +- 0.012,
+  crossed +0.010 +- 0.021. No deciding metric beyond 2 se.
+- parade_rail (n 32): range median +1.62 +- 1.46, p90 -1.60 +- 2.13, flank -0.005 +- 0.011, crossed +0.007 +- 0.015; hidden
+  +0.020 +- 0.009 (2.2 se, NOT a deciding metric).
+- crossing_screens (n 64, gangs v syndicate both orders): range median +2.03 +- 1.06 (1.9 se), p90 +0.80 +- 0.80, flank 0.000 +-
+  0.004, crossed -0.010 +- 0.007; gangs' shots -13.2 +- 9.8 (the line wanted a RISE).
+Guards: stall share (base 0.014 parade / 0.026 crossing) twin - base -0.000 +- 0.001 / +0.000 +- 0.001 / -0.001 +- 0.000;
+fairness south advantage base 0.087 +- 0.048 / twins -0.060 +- 0.046, -0.040 +- 0.045; crossing -0.009 +- 0.101 v 0.034 +- 0.137;
+length -1.9 +- 3.9 / -3.2 +- 5.0 / -3.5 +- 1.9 s; 0 stalemates anywhere; laptop read separately (pass).
+**In player terms:** the pieces as placed are safe (nobody gets stuck more, nothing unfair, no stalemates) but the CPU v CPU fight
+plays the same; on the Crossing the screens did NOT get the gangs firing more. Note: CPU v CPU crossings fight at a 35 m median
+(his recorded match: 79 m), so the gangs' long-range problem he saw is not what these seeds reproduce. **Not shipped to any dealt
+map**; the twins stay candidates for his eye. Next (if wanted): denser placements, or a workload from his recording.
+
+**2026-10-31 ~00:00: Bar P series RAN on builder3** (the orchestrator's slot): `make remote T="mapkit-bar-p BAR_P_JOBS=10"`
+at 2ce6fa68b (b9f13f946's game code + the probe's stall share / shots / native fields + tests/mapkit/bar_p_series.py). 224
+matches native ON to each map's end (420 s cap): parade v parade_traps / parade_rail (condemned v condemned, 12901-12916, both base
+orders), crossing v crossing_screens (gangs v syndicate both faction orders x both base orders, 12917-12932). Paired by (seed,
+base order, factions). Guard 4 (laptop) already read: the trim monorail knob, the car at the floor. Verdict here when it lands.
+
+**2026-10-30 ~23:00: R47.39 his Meshy monorail car.** He rejected the kit train directions (wanted "a meshy asset ... as a
+one-off like we did for the blimp ... run down and rickety"). Three nano-banana-pro image-to-image concepts from ONE side-on shape
+reference (a car on our beam, `assets/review/images/train_r47/train_side_ref.png`; the airship/bus lesson), 27 credits; page
+https://claude.ai/artifact/8fMQFqbbEFecRG2PsVBUfE; he picked A (salvaged metro car). Image-to-3D smart topology 15 credits. Slot
+`prop.monorail_car` (asset_contracts.gd), normalized `--forward=+x` (the model's long axis is x), fitted 8.98 m, roof under 16 m,
+5534 tris, textures 1024 / 512 under the web policy; a deck's `car` look key carries it (one instance, one draw), underside at the
+beam's base so its own bogie block sinks into our beam. **Meshy spend this round: 42 credits** (balance 2153).
+Laptop (UHD 620, laptop preset, under the lock, 120 frames): the car costs nothing measurable (rail 9.50/9.90 v rail + car
+8.80/9.85, interleaved, n=2). **C47.10 knob:** the TRIM monorail read +1.4/+1.5 ms over the floor twice, so under the laptop preset
+the monorail + deck alone are plain (9.15 v floor 9.00); desktop keeps trim; traps/pipes/crane keep trim everywhere (asked the lead
+via the orchestrator in player terms). Stopped my own stale queued check of 04adca907 (4 commits behind). **b9f13f946 GREEN**
+(builder3, `make check exited 0`, 3552 passed / 0 failed, 28 targets ALL JUDGED, 23:41); named to the orchestrator, who merges it
+into main's next batch check. The laptop-preset monorail fallback is accepted (his standing rule: perf cuts ship as presets).
+
+**His picks so far:** looks (P1, db `picks/*`): door A, screen C, overpass C, traps A, pipes B, crane A; 21 lines kept.
+Trim trial (P1b, db `trim/*`): TRIM on all four. Train (R47.38): page https://claude.ai/artifact/9PNjR9rWKNXQXBWQ9sNsLC,
+db `train/pick`, waiting. **Bar P** (the twin series) filed by the orchestrator; runs after manoeuvre's W/H and orders' O2.
+**Render copy:** builder3 `~/tank_squad/mapkit-render` (a copy of this stream's folder for gallery renders while a check is queued in
+`godot-mapkit`; delete it at the round's close).
+
+**Done, by backlog item:**
+- P1 looks page (his picks: door A, screen C, overpass C, traps A, pipes B, crane A; 21 lines kept). P1b trim-sheet page
+  https://claude.ai/artifact/Ko8xyeccqTwz9AcYKoNNVA (waiting on his picks: `trim/<piece>` db).
+- P2 blast doors: rules + colliders + route's contract (C47.8 as built), hold/overstay, doors_dev. On doors_dev ONLY until native
+  passes RouteDoors' mask in C++ route queries (C47.6) -- blocked on native, request sent.
+- P3 sight class: done (C47.7); engage/native told (merge notes on 39c7dba53).
+- P4: all six picks exist as kit types with their looks (tank_trap, monorail + monorail_deck, sight_screen steam/strips, pipeline,
+  gantry_leg, prop.blast_door). Twins (CANDIDATES): parade_traps, parade_rail. Static reads (laptop, arena_report): traps change no
+  view (mean 83.6 -> 82.8 m); the rail cuts views a little (centre sees 0.82 -> 0.78, mean 81.6 m); every lane and corner passes.
+  NOT done: the paired series v parade (C47.1: a bar first), screens/pipes/crane placed on a map, doors on a dealt map (native).
+- P5: the booth calls the doors with his 21 lines, 133 clips voiced (ledger below).
+
+**Laptop (C47.10), `make mapkit-gpu`, 470301cc7, Intel UHD 620 (WHL GT2), laptop preset, his pose 1920x1080, 120 frames, n=1 per row:**
+empty floor 9.47 / 9.50 / 8.80 ms GPU (the noise: about +-0.7 ms). Plain: traps 8.45/8.37, monorail 9.12/9.16, pipes 9.33/9.21,
+crane 8.90/8.31, door 7.78/8.50. Screen steam 8.84 v strips 9.34. Trim: traps 8.38, monorail **10.62** (+1.4 over plain, re-measure
+before it ships), pipes 9.40, crane 8.71. No piece reads above the floor's own spread except that one. (The gallery scene: render
+levers may not all apply outside a match; the read is each piece's cost relative to the same floor.)
+
+**What to playtest:** `make skirmish ARENA=parade_traps` (hedgehog breakwaters in front of each base), `make skirmish
+ARENA=parade_rail` (a monorail over the parade ground), `make skirmish ARENA=doors_dev` (two blast doors on a timer, the booth
+calling them; crews route round by the flank gaps until native passes the door mask). `--kit-sight=off` turns screens back into
+scenery. Steam shows on the high FX tier outside the laptop preset.
+
+**Next steps:** paired series parade v parade_traps / parade_rail (file a bar first); a screened twin (Crossing: gangs v syndicate's
+79 m median is the case screens were for); pipes on Sumps/Locks twins; doors on a dealt map once native passes the mask; the trim
+monorail GPU repeat; his trim picks -> MapkitYard.look default per piece.
+- **P1b Material Maker trial (R47.28), in progress 19:35:** Material Maker pinned at 7d6daae3c (2026-10-24, shallow clone) in
+  builder3's `~/tools/material-maker`, outside every repo. Export path read first (parse_args.gd): a local `.ptex` only; nothing is
+  fetched unless a `website:` argument is given. **Gotcha:** Godot 4 takes `--export` itself (the Godot 3 flag); use
+  `--export-material`. It renders on builder3's NVIDIA under Xorg :1 (Steam/SPIR-V errors on stdout are harmless: its optional
+  integrations). Recipe `assets/props/trim/trim_sheet.ptex` = ONE inline GLSL shader node -> Material (+ MM's normal_map node): a
+  1024 px sheet in four bands (plate 0-0.40, hazard 0.40-0.55, grime 0.55-0.85, glowing joints 0.85-1). `make mapkit-trim` renders
+  it (MM_COMMIT checked), `make mapkit-trim-adopt` copies the PNGs in. The kit's MapkitYard meshes carry UVs into those bands;
+  `MapkitYard.look = "trim"` (gallery `--kit-look=trim`) dresses them; "plain" is what ships.
 - **P4 in progress (uncommitted at 18:15, waiting on builder3's queue: 6 full checks deep):** his picks built as kit:
   `tank_trap` (hedgehogs, `low`, box 0.9 m under the muzzles, hog drawn 1.2 m), `monorail` (overpass C: 1.4 x 9 m pillar, `hard`,
   carrying 10 m of beam at 9 m; `car` look key), the door look `prop.blast_door` (vault slabs A, leaves glide 1.2 s, red/green

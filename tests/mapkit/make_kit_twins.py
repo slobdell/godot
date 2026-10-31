@@ -48,5 +48,74 @@ def parade_traps():
     return len(props) - len(base["props"])
 
 
+def parade_rail():
+    """parade_rail: the Parade Ground with a monorail across it at z = 0 (his overpass pick C): pillars every 20 m from
+    x = +-20 to +-100, each carrying 20 m of beam (`span`), so the floor lane (|x| < 15) runs under a 38 m gap and the
+    pillars stand as posts in the bays. A car parked on the span at x = +-40. Self-mirrored row (x -> -x at z = 0)."""
+    base = json.loads((ROOT / "arenas" / "parade.json").read_text())
+    rail = []
+    for x in (20.0, 40.0, 60.0, 80.0, 100.0):
+        for sign, rot in ((1.0, 90.0), (-1.0, 270.0)):
+            rail.append({"type": "monorail", "position": [sign * x, 0.0], "rotation_deg": rot})
+            rail.append({"type": "monorail_deck", "position": [sign * x, 0.0], "rotation_deg": rot, "span": 20.0,
+                         "car": x == 40.0})
+    twin = dict(base)
+    twin["name"] = "parade_rail"
+    twin["title"] = "The Parade Ground (monorail)"
+    twin["fixture"] = True
+    twin["note"] = ("Mapkit P4 twin of the Parade Ground (tests/mapkit/make_kit_twins.py): a monorail across the middle, "
+                    "pillars 20 m apart, the floor under a 38 m span. A candidate: judged against parade first. " + base.get("note", ""))
+    twin["props"] = list(base["props"]) + rail
+    twin.pop("show", None)
+    (ROOT / "arenas" / "parade_rail.json").write_text(json.dumps(twin, indent=1) + "\n")
+    return len(rail) // 2
+
+
+def crossing_screens():
+    """crossing_screens: the Crossing with sight screens (his pick C, steam; strips on the laptop): one across the middle of
+    each bridge (a crew on the deck is unseen from the landing until it is through) and two along each side's near bank
+    (cutting the long looks over the water, the 79 m median where the gangs fired 6 shots to the syndicate's 358). Screens are
+    not obstacles: every lane and the bridges' widths are untouched. South half authored, the north its mirror."""
+    base = json.loads((ROOT / "arenas" / "crossing.json").read_text())
+    half = [(-92.0, 14.0, 0.0), (-60.0, 30.0, 0.0), (-30.0, 30.0, 0.0)]
+    screens = [{"type": "sight_screen", "position": [x, z], "rotation_deg": r} for x, z, r in half]
+    screens += [{"type": "sight_screen", "position": [-x, -z], "rotation_deg": (r + 180.0) % 360.0} for x, z, r in half]
+    twin = dict(base)
+    twin["name"] = "crossing_screens"
+    twin["title"] = "The Crossing (sight screens)"
+    twin["fixture"] = True
+    twin["note"] = ("Mapkit P4 twin of the Crossing (tests/mapkit/make_kit_twins.py): sight screens across each bridge and along "
+                    "each near bank. A candidate: judged against crossing first. " + base.get("note", ""))
+    twin["props"] = list(base["props"]) + screens
+    twin.pop("show", None)
+    (ROOT / "arenas" / "crossing_screens.json").write_text(json.dumps(twin, indent=1) + "\n")
+    return len(screens)
+
+
+def terminus_doors():
+    """terminus_doors: the Terminus with his blast doors (vault slabs, called by the booth) across the west and east streets
+    at z = 0, between the blocks at x = +-40 and +-100 (faces at +-60 / +-80): one group, so both sides meet the same
+    schedule. 16 m slabs in the 20 m street leave 2 m at each kerb, narrower than any hull. When they shut, a crew goes
+    round by the ring roads (z = +-30), the plaza crossings or the avenue; each door stands beside a side's ring
+    objective, so the schedule decides how cheaply each side reaches its own."""
+    base = json.loads((ROOT / "arenas" / "terminus.json").read_text())
+    twin = dict(base)
+    twin["name"] = "terminus_doors"
+    twin["title"] = "The Terminus (blast doors)"
+    twin["fixture"] = True
+    twin["note"] = ("Mapkit twin of the Terminus (tests/mapkit/make_kit_twins.py): blast doors across the west and east streets, "
+                    "on a timer the booth calls. A candidate: judged against terminus first. " + base.get("note", ""))
+    twin["doors"] = [
+        {"name": "west_gate", "group": "street_gates", "position": [-70.0, 0.0], "rotation_deg": 0.0, "width": 16.0, "call": "west"},
+        {"name": "east_gate", "group": "street_gates", "position": [70.0, 0.0], "rotation_deg": 180.0, "width": 16.0, "call": "east"},
+    ]
+    twin.pop("show", None)
+    (ROOT / "arenas" / "terminus_doors.json").write_text(json.dumps(twin, indent=1) + "\n")
+    return len(twin["doors"])
+
+
 if __name__ == "__main__":
     print("wrote arenas/parade_traps.json: %d hogs" % parade_traps())
+    print("wrote arenas/parade_rail.json: %d pillars" % parade_rail())
+    print("wrote arenas/crossing_screens.json: %d screens" % crossing_screens())
+    print("wrote arenas/terminus_doors.json: %d doors" % terminus_doors())

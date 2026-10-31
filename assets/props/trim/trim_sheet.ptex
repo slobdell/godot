@@ -1,0 +1,134 @@
+{
+ "connections": [
+  {
+   "from": "trim",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 0
+  },
+  {
+   "from": "trim",
+   "from_port": 1,
+   "to": "Material",
+   "to_port": 1
+  },
+  {
+   "from": "trim",
+   "from_port": 2,
+   "to": "Material",
+   "to_port": 2
+  },
+  {
+   "from": "trim",
+   "from_port": 3,
+   "to": "Material",
+   "to_port": 3
+  },
+  {
+   "from": "trim",
+   "from_port": 4,
+   "to": "normal_map",
+   "to_port": 0
+  },
+  {
+   "from": "normal_map",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 4
+  }
+ ],
+ "label": "Graph",
+ "name": "trim_sheet",
+ "node_position": {
+  "x": 0,
+  "y": 0
+ },
+ "nodes": [
+  {
+   "name": "trim",
+   "node_position": {
+    "x": -400,
+    "y": -200
+   },
+   "parameters": {},
+   "type": "shader",
+   "shader_model": {
+    "name": "Tank Squad trim sheet",
+    "code": "",
+    "instance": "",
+    "global": "\nfloat mk_hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat mk_noise(vec2 p) {\n\tvec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);\n\treturn mix(mix(mk_hash(i), mk_hash(i + vec2(1.0, 0.0)), f.x), mix(mk_hash(i + vec2(0.0, 1.0)), mk_hash(i + vec2(1.0)), f.x), f.y);\n}\nfloat mk_fbm(vec2 p) { float s = 0.0; float a = 0.5; for (int k = 0; k < 5; k++) { s += a * mk_noise(p); p *= 2.03; a *= 0.5; } return s; }\n// The four bands of the sheet, top (v = 0) to bottom: plate 0-0.40, hazard 0.40-0.55, grime 0.55-0.85, joints 0.85-1.\nint mk_band(vec2 uv) { return uv.y < 0.40 ? 0 : (uv.y < 0.55 ? 1 : (uv.y < 0.85 ? 2 : 3)); }\n// Panel seams in a band of height h starting at y0: cols x rows panels; 1 on the seam.\nfloat mk_seam(vec2 uv, float y0, float h, float cols, float rows) {\n\tvec2 q = vec2(uv.x * cols, (uv.y - y0) / h * rows);\n\tvec2 d = min(fract(q), 1.0 - fract(q)) / vec2(cols, rows / h);\n\treturn 1.0 - smoothstep(0.0015, 0.004, min(d.x, d.y));\n}\nfloat mk_rivet(vec2 uv, float y0, float h, float cols, float rows) {\n\tvec2 q = vec2(uv.x * cols, (uv.y - y0) / h * rows);\n\tvec2 c = fract(q); vec2 e = min(c, 1.0 - c);\n\tvec2 m = vec2(cols, rows / h);\n\tvec2 r = (e - vec2(0.012) * m) / m;\n\treturn 1.0 - smoothstep(0.0025, 0.004, length(r));\n}\nvec4 mk_trim(vec2 uv) {\n\t// rgb albedo, a = height\n\tint b = mk_band(uv);\n\tfloat grit = mk_fbm(uv * vec2(64.0, 8.0));\n\tif (b == 0) {\n\t\tfloat brushed = mk_noise(uv * vec2(400.0, 6.0)) * 0.06;\n\t\tfloat seam = mk_seam(uv, 0.0, 0.40, 4.0, 2.0);\n\t\tfloat rivet = mk_rivet(uv, 0.0, 0.40, 4.0, 2.0);\n\t\tvec3 c = vec3(0.30, 0.31, 0.34) + brushed - grit * 0.05;\n\t\tc = mix(c, vec3(0.05), seam) + rivet * 0.12;\n\t\treturn vec4(c, 0.6 - seam * 0.5 + rivet * 0.3);\n\t}\n\tif (b == 1) {\n\t\tfloat s = step(0.5, fract((uv.x + uv.y) * 12.0));\n\t\tvec3 c = mix(vec3(0.04), vec3(0.95, 0.72, 0.06), s);\n\t\tfloat wear = smoothstep(0.55, 0.75, mk_fbm(uv * vec2(24.0, 24.0)));\n\t\tc = mix(c, vec3(0.28, 0.28, 0.30), wear * 0.8);\n\t\tfloat edge = smoothstep(0.0, 0.01, uv.y - 0.40) * smoothstep(0.0, 0.01, 0.55 - uv.y);\n\t\treturn vec4(c * edge, 0.5 * edge);\n\t}\n\tif (b == 2) {\n\t\tfloat seam = mk_seam(uv, 0.55, 0.30, 3.0, 1.0);\n\t\tfloat rust = smoothstep(0.45, 0.7, mk_fbm(uv * vec2(10.0, 10.0) + 3.0));\n\t\tfloat streak = mk_noise(vec2(uv.x * 90.0, uv.y * 3.0)) * smoothstep(0.55, 0.85, uv.y) * 0.4;\n\t\tvec3 c = mix(vec3(0.18, 0.18, 0.19), vec3(0.32, 0.15, 0.07), rust) - streak * 0.15 - grit * 0.06;\n\t\tc = mix(c, vec3(0.03), seam);\n\t\treturn vec4(c, 0.55 - seam * 0.45 - rust * 0.1);\n\t}\n\tfloat y = (uv.y - 0.85) / 0.15;\n\tfloat bar = smoothstep(0.38, 0.42, y) * (1.0 - smoothstep(0.58, 0.62, y));\n\tvec3 c = vec3(0.07, 0.075, 0.08) - grit * 0.02;\n\treturn vec4(mix(c, vec3(0.6, 0.95, 1.0), bar), 0.4 + bar * 0.2);\n}\nvec3 mk_emission(vec2 uv) {\n\tif (mk_band(uv) != 3) return vec3(0.0);\n\tfloat y = (uv.y - 0.85) / 0.15;\n\tfloat bar = smoothstep(0.38, 0.42, y) * (1.0 - smoothstep(0.58, 0.62, y));\n\tfloat stud = 1.0 - smoothstep(0.12, 0.16, length(vec2(fract(uv.x * 16.0) - 0.5, (y - 0.17) * 2.4)));\n\treturn vec3(0.0, 0.95, 1.0) * bar * 2.5 + vec3(1.0, 0.55, 0.1) * stud * 2.0;\n}\nfloat mk_metal(vec2 uv) { int b = mk_band(uv); return b == 0 ? 0.85 : (b == 1 ? 0.25 : (b == 2 ? 0.55 : 0.7)); }\nfloat mk_rough(vec2 uv) {\n\tint b = mk_band(uv);\n\tfloat g = mk_fbm(uv * vec2(40.0, 6.0));\n\treturn clamp((b == 0 ? 0.38 : (b == 1 ? 0.55 : (b == 2 ? 0.78 : 0.45))) + g * 0.15, 0.0, 1.0);\n}\n",
+    "inputs": [],
+    "parameters": [],
+    "outputs": [
+     {
+      "rgb": "mk_trim($uv).rgb",
+      "type": "rgb",
+      "shortdesc": "Albedo"
+     },
+     {
+      "f": "mk_metal($uv)",
+      "type": "f",
+      "shortdesc": "Metallic"
+     },
+     {
+      "f": "mk_rough($uv)",
+      "type": "f",
+      "shortdesc": "Roughness"
+     },
+     {
+      "rgb": "mk_emission($uv)",
+      "type": "rgb",
+      "shortdesc": "Emission"
+     },
+     {
+      "f": "mk_trim($uv).a",
+      "type": "f",
+      "shortdesc": "Height"
+     }
+    ]
+   }
+  },
+  {
+   "name": "normal_map",
+   "node_position": {
+    "x": -100,
+    "y": 100
+   },
+   "parameters": {
+    "param0": 10,
+    "param1": 0.6,
+    "param2": 0,
+    "param4": 1
+   },
+   "type": "normal_map"
+  },
+  {
+   "export_paths": {},
+   "name": "Material",
+   "node_position": {
+    "x": 200,
+    "y": -200
+   },
+   "parameters": {
+    "albedo_color": {
+     "a": 1,
+     "b": 1,
+     "g": 1,
+     "r": 1,
+     "type": "Color"
+    },
+    "ao": 1,
+    "depth_scale": 0,
+    "emission_energy": 1,
+    "metallic": 1,
+    "normal": 1,
+    "roughness": 1,
+    "size": 10,
+    "sss": 0
+   },
+   "type": "material"
+  }
+ ],
+ "parameters": {},
+ "type": "graph"
+}

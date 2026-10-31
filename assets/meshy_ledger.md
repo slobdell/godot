@@ -132,3 +132,7 @@
 | 2026-10-02 08:37 | text-to-image nano-banana-pro | `01a0fbc2-3540-70e0-911b-d52a246899f8` | 9 | meshy/law_ifv_r15_a | SUCCEEDED | 725 |
 | 2026-10-02 10:48 | image-to-3d meshy-t2 smart-topology | `01a0fc3a-5f39-700f-8120-410cefa2d0f8` | 15 | ifv_r15_a | SUCCEEDED | 695 |
 | 2026-10-02 10:48 | image-to-3d meshy-t2 smart-topology | `01a0fc3a-5f39-7010-a9ec-8232683cf029` | 15 | law_ifv_r15_a | SUCCEEDED | 695 |
+| 2026-10-31 05:20 | image-to-image nano-banana-pro | `01a19066-82a8-708d-b4cb-1d5efd2b62ee` | 9 | meshy/train_r47_a | SUCCEEDED | 2186 |
+| 2026-10-31 05:22 | image-to-image nano-banana-pro | `01a19067-81f5-7148-94cc-6b45353a7f9b` | 9 | meshy/train_r47_b | SUCCEEDED | 2177 |
+| 2026-10-31 05:22 | image-to-image nano-banana-pro | `01a19068-a828-71d3-8a56-2d71fa6cf916` | 9 | meshy/train_r47_c | SUCCEEDED | 2168 |
+| 2026-10-31 05:44 | image-to-3d meshy-t2 smart-topology | `01a1907b-f3a9-7666-b375-8d318afd022d` | 15 | train_r47_a | SUCCEEDED | 2153 |

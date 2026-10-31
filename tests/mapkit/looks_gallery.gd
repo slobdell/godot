@@ -51,6 +51,14 @@ const DIRECTIONS := {
 	"built_screen": ["screen", "_built_screen", false],
 	"built_door_shut": ["door", "_built_door", false],
 	"built_door_open": ["door", "_built_door", true],
+	"built_pipes": ["pipes", "_built_pipes", false],
+	"built_crane": ["crane", "_built_crane", false],
+	# R47.38: the people's monorail TRAIN (his note: "the people's monorail will be far from Syndicate quality").
+	"train_a": ["train", "_train_commuter", false],
+	"train_b": ["train", "_train_cattle", false],
+	"train_c": ["train", "_train_pods", false],
+	"built_train": ["train", "_built_train", false],
+	"built_rail_close": ["train", "_rail", false],  # the same rail without the car: the car's own GPU cost is the difference
 }
 
 var camera := Camera3D.new()
@@ -69,18 +77,26 @@ func _ready() -> void:
 	camera.current = true
 	camera.fov = FOV
 	camera.far = 600.0
-	_aim(float(_flags.text("yaw", "0")))
-	if _flags.has("shots-dir"):
+	_aim(float(_flags.text("yaw", "0")), float(_flags.text("pitch", str(PITCH_DEG))), float(_flags.text("distance", str(DISTANCE))),
+			Vector3(float(_flags.text("look-x", "0")), float(_flags.text("look-y", "0")), float(_flags.text("look-z", "0"))))
+	if _flags.has("kit-look"):
+		MapkitYard.look = _flags.text("kit-look")  # P1b: plain or the Material Maker trim sheet
+	if _flags.has("screen-look"):
+		SightScreenProp.look = _flags.text("screen-look")
+	if _flags.has("gpu-ms"):
+		_gpu_all()
+	elif _flags.has("shots-dir"):
 		_capture_all(_flags.text("shots-dir"))
 	else:
 		show_direction("door_a_shut")
 
 
-func _aim(yaw_deg: float) -> void:
-	var back := Vector3(0.0, sin(deg_to_rad(PITCH_DEG)), cos(deg_to_rad(PITCH_DEG))) * DISTANCE
+## His pose by default; --pitch/--distance/--look-* frame a reference shot (R47.39: the train side-on for Meshy's proportion).
+func _aim(yaw_deg: float, pitch_deg := PITCH_DEG, distance := DISTANCE, target := Vector3.ZERO) -> void:
+	var back := Vector3(0.0, sin(deg_to_rad(pitch_deg)), cos(deg_to_rad(pitch_deg))) * distance
 	back = back.rotated(Vector3.UP, deg_to_rad(yaw_deg))
-	camera.position = back
-	camera.look_at(Vector3.ZERO, Vector3.UP)
+	camera.position = target + back
+	camera.look_at(target, Vector3.UP)
 
 
 func show_direction(id: String) -> void:
@@ -104,7 +120,7 @@ func _capture_all(folder: String) -> void:
 		show_direction(id)
 		for i in 8:
 			await RenderingServer.frame_post_draw
-		var path := folder.path_join("looks-%s.png" % id)
+		var path := folder.path_join("looks-%s%s.png" % [id, _flags.text("suffix", "")])
 		var err := get_viewport().get_texture().get_image().save_png(path)
 		print("MAPKIT_LOOKS draws=%d primitives=%d id=%s" % [
 				RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
@@ -112,6 +128,31 @@ func _capture_all(folder: String) -> void:
 		print("screenshot saved: " if err == OK else "screenshot failed: ", path)
 		failed += int(err != OK)
 	get_tree().quit(failed)
+
+
+## C47.10's laptop read: per direction in --only, the viewport's measured GPU time (ms) averaged over 120 frames after
+## 30 to settle, beside an empty floor. MAPKIT_GPU lines; then quits. Run under the laptop lock (mk/mapkit.mk).
+func _gpu_all() -> void:
+	var rid := get_viewport().get_viewport_rid()
+	RenderingServer.viewport_set_measure_render_time(rid, true)
+	var ids: Array = Array(_flags.text("only", "built_traps").split(","))
+	await get_tree().create_timer(2.0).timeout
+	for id: String in ["empty"] + ids:
+		if id == "empty":
+			if _set != null:
+				_set.free()
+				_set = null
+		else:
+			show_direction(id)
+		for i in 30:
+			await RenderingServer.frame_post_draw
+		var total := 0.0
+		for i in 120:
+			await RenderingServer.frame_post_draw
+			total += RenderingServer.viewport_get_measured_render_time_gpu(rid)
+		print("MAPKIT_GPU id=%s screen=%s kit=%s preset=%s gpu_ms=%.3f frames=120 adapter=%s" % [id, SightScreenProp.look, MapkitYard.look,
+				RenderLevers.preset(), total / 120.0, RenderingServer.get_video_adapter_name()])
+	get_tree().quit()
 
 
 # --- shared helpers -------------------------------------------------------------------------------------------------
@@ -532,7 +573,8 @@ func _built_traps(root: Node3D, _open: bool) -> void:
 
 func _built_monorail(root: Node3D, _open: bool) -> void:
 	for i in 9:
-		_slot(root, "monorail", Vector3(-40.0 + 10.0 * i, 0.0, -4.0), 90.0, {"car": i == 3})
+		_slot(root, "monorail", Vector3(-40.0 + 10.0 * i, 0.0, -4.0), 90.0)
+		_slot(root, "monorail_deck", Vector3(-40.0 + 10.0 * i, 0.0, -4.0), 90.0, {"car": i == 3})
 	_dozer(root, Vector3(-5.0, 0, 6.0), 180.0)
 	_dozer(root, Vector3(5.0, 0, -12.0), 200.0)
 
@@ -553,3 +595,108 @@ func _built_door(root: Node3D, open: bool) -> void:
 	look.invoke("setup", [{"width": GATE_WIDTH, "height": GATE_HEIGHT, "depth": 1.6}])
 	look.invoke("set_state", ["closing" if open else "shut"])
 	_dozer(root, Vector3(-3.0, 0, 9.0), 160.0)
+
+
+func _built_pipes(root: Node3D, _open: bool) -> void:
+	# Two runs along x with a 14 m crossing between them (each prop is 10 m along its local z: turned 90 degrees).
+	for x in [-38.0, -28.0, -18.0, 18.0, 28.0, 38.0]:
+		_slot(root, "pipeline", Vector3(x, 0.0, 0.0), 90.0)
+	_dozer(root, Vector3(0.0, 0, 6.0), 180.0)
+
+
+func _built_crane(root: Node3D, _open: bool) -> void:
+	for corner: Vector3 in [Vector3(-11, 0, -14), Vector3(11, 0, -14), Vector3(-11, 0, -2), Vector3(11, 0, -2)]:
+		_slot(root, "gantry_leg", corner, 0.0, {"span": [22.0, 0.0]} if corner.x < 0.0 else {})
+	var stack := ["container_40", "container_40", "container_20"]
+	for i in stack.size():
+		_slot(root, String(stack[i]), Vector3(-5.0 + 7.0 * i, 0.0, -8.0), 90.0, {"stack": 2 - i % 2})
+	_dozer(root, Vector3(14.0, 0, 9.0), 200.0)
+
+
+# --- R47.38: the people's monorail train (concepts on the built rail, the trim sheet) ------------------------------
+
+## A box of `size` at `center` wearing the trim sheet's `band`, tinted (MapkitYard's UV mapping and material).
+func _trim_box(root: Node3D, size: Vector3, center: Vector3, band: Vector2, tint := Color.WHITE, yaw_deg := 0.0) -> MeshInstance3D:
+	var st := MapkitYard.surface()
+	MapkitYard.box(st, Transform3D.IDENTITY, size, band)
+	st.generate_normals()
+	st.generate_tangents()
+	st.set_material(MapkitYard.trim_material(tint))
+	var mesh := MeshInstance3D.new()
+	mesh.mesh = st.commit()
+	mesh.position = center
+	mesh.rotation.y = deg_to_rad(yaw_deg)
+	root.add_child(mesh)
+	return mesh
+
+
+## The built rail the trains ride: pillars every 10 m along x at z = -4, decks on top (trim look).
+func _rail(root: Node3D, _open := false) -> void:
+	MapkitYard.look = "trim"
+	for i in 9:
+		_slot(root, "monorail", Vector3(-40.0 + 10.0 * i, 0.0, RAIL_Z), 90.0)
+		_slot(root, "monorail_deck", Vector3(-40.0 + 10.0 * i, 0.0, RAIL_Z), 90.0)
+	_dozer(root, Vector3(-6.0, 0, 20.0), 180.0)
+
+
+const RAIL_TOP := 10.4  # MapkitYard.BEAM_Y + BEAM.y: where a car's bogies sit
+## The train rail runs closer than the other pieces' (z = 12): at his pitch a 9 m rail at z = -4 sits at the top edge of the frame.
+const RAIL_Z := 12.0
+
+
+## A: NIGHT LINE. Two tired commuter cars in rust-grime plate, mismatched patch panels, a dim flickering amber window strip,
+## one headlamp out. Public transit that has been run into the ground.
+func _train_commuter(root: Node3D, _open: bool) -> void:
+	_rail(root)
+	for car in 2:
+		var x := -9.0 + 14.5 * car
+		_trim_box(root, Vector3(13.5, 3.0, 3.2), Vector3(x, RAIL_TOP + 1.7, RAIL_Z), MapkitYard.GRIME, Color(0.9, 0.95, 1.0))
+		_trim_box(root, Vector3(13.5, 0.5, 2.6), Vector3(x, RAIL_TOP + 3.45, RAIL_Z), MapkitYard.PLATE, Color(0.7, 0.7, 0.72))
+		# Patch panels bolted on where the skin gave out: plate in another tint, a little proud of the side.
+		for patch in 3:
+			_trim_box(root, Vector3(1.6 + patch * 0.5, 1.2, 0.08), Vector3(x - 4.5 + patch * 4.0, RAIL_TOP + 1.2 + (patch % 2) * 0.6, RAIL_Z + 1.64),
+					MapkitYard.PLATE, [Color(0.55, 0.7, 0.6), Color(0.8, 0.55, 0.45), Color(0.6, 0.6, 0.75)][patch])
+		_box(root, Vector3(12.5, 0.55, 0.06), Vector3(x, RAIL_TOP + 2.3, RAIL_Z + 1.62), CyberMaterials.neon(Color(1.0, 0.62, 0.25), 1.4, 0.35))
+	_box(root, Vector3(0.1, 0.35, 0.5), Vector3(-15.8, RAIL_TOP + 1.4, RAIL_Z + 0.7), CyberMaterials.neon(Color(1.0, 0.95, 0.8), 2.5, 0.0))
+	_box(root, Vector3(0.1, 0.35, 0.5), Vector3(-15.8, RAIL_TOP + 1.4, RAIL_Z - 0.7), CyberMaterials.surface(Color(0.1, 0.1, 0.1), 0.6, 0.2))
+
+
+## B: CATTLE CAR. A converted freight wagon: an open cage on a hazard-striped frame, a tarp thrown over the roof, one caged
+## lamp. The cheapest way to move people; you see the rails through it.
+func _train_cattle(root: Node3D, _open: bool) -> void:
+	_rail(root)
+	for car in 2:
+		var x := -9.0 + 14.5 * car
+		_trim_box(root, Vector3(13.5, 0.6, 3.2), Vector3(x, RAIL_TOP + 0.5, RAIL_Z), MapkitYard.HAZARD)
+		for end in [-1.0, 1.0]:
+			_trim_box(root, Vector3(0.4, 2.6, 3.2), Vector3(x + end * 6.55, RAIL_TOP + 2.1, RAIL_Z), MapkitYard.HAZARD)
+		for bar in 12:
+			for side in [-1.0, 1.0]:
+				_trim_box(root, Vector3(0.12, 2.4, 0.12), Vector3(x - 6.0 + bar * 1.1, RAIL_TOP + 2.0, RAIL_Z + side * 1.5), MapkitYard.GRIME)
+		_trim_box(root, Vector3(13.0, 0.08, 1.6), Vector3(x, RAIL_TOP + 3.4, RAIL_Z), MapkitYard.PLATE, Color(0.35, 0.5, 0.4))
+		_box(root, Vector3(0.4, 0.4, 0.4), Vector3(x, RAIL_TOP + 3.1, RAIL_Z), CyberMaterials.neon(Color(1.0, 0.85, 0.5), 2.2, 0.25))
+
+
+## C: BUCKET PODS. Cheap gondolas hung from the beam on struts, each a battered box with a lit number: a ski-lift for a
+## slum. Their floors stay above the tallest hull (6.18 m); they swing nowhere (static, no _process).
+func _train_pods(root: Node3D, _open: bool) -> void:
+	_rail(root)
+	for pod in 4:
+		var x := -15.0 + 9.0 * pod
+		_trim_box(root, Vector3(0.2, 0.5, 0.2), Vector3(x, MapkitYard.BEAM_Y - 0.25, RAIL_Z), MapkitYard.PLATE)
+		_trim_box(root, Vector3(3.6, 2.0, 2.6), Vector3(x, MapkitYard.BEAM_Y - 1.5, RAIL_Z), MapkitYard.GRIME,
+				[Color(1.0, 0.75, 0.6), Color(0.7, 0.9, 0.8), Color(0.9, 0.9, 1.0), Color(0.8, 0.7, 0.9)][pod])
+		_box(root, Vector3(3.0, 0.5, 0.06), Vector3(x, MapkitYard.BEAM_Y - 1.2, RAIL_Z + 1.32), CyberMaterials.neon(Color(1.0, 0.62, 0.25), 1.2, 0.3))
+		_box(root, Vector3(0.6, 0.4, 0.06), Vector3(x + 1.2, MapkitYard.BEAM_Y - 2.15, RAIL_Z + 1.32), CyberMaterials.neon(CyberMaterials.CYAN, 2.5, 0.0))
+
+
+## R47.39: his Meshy car (train_r47_a) on the built rail, through its slot.
+func _built_train(root: Node3D, _open: bool) -> void:
+	_rail(root)
+	var body := Node3D.new()
+	body.position = Vector3(-4.0, MapkitYard.BEAM_Y, RAIL_Z)  # its own bogie block sinks into our beam
+	body.rotation.y = PI / 2.0
+	root.add_child(body)
+	var visual := VisualSlot.new()
+	visual.slot = "prop.monorail_car"
+	body.add_child(visual)
