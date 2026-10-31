@@ -55,6 +55,31 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-30 ~18:30 PDT).** Merged: **dfb6a2567 GREEN builder3** (`make check exited 0`, 3518 / 0, 29 targets ALL JUDGED;
+replay-pytest in check, the remote.sh seed, N3's reader) = main 3f9180d2f. Since: N0 candidate 2, the Xorg DISPLAY line, the place
+twin (WIP), the replay A/B switches; full check of dce3e6a23 running.
+
+**N0 (R47.8, his replays leave his match): cause 1 FIXED (candidate 2, 9b0a7..: tests/replay), cause 2 OPEN, written up (time-box).**
+- Cause 1: his Crossing ctrl+4 over Spears + Wrenches is a control-group save, which writes no row. It left the Wrenches in no
+  squad, so his click sent Spears as a squad task and the Wrenches DIRECT (their row: `source: player`). The replay sent both as
+  squads and laid Spears 3.2 m off his spot (57.7, 25.1 v his 55.7, 22.6); the Wrenches parted at 1 s. Fix: ReplaySetup.merge_clicks
+  marks a group click's direct rows `loose`, and the replay empties a control group whose WHOLE squad is loose before issuing (a
+  partial squad sent direct keeps its group). `--replay-loose=off` = before. builder3 light, Crossing 112 s: the Wrenches 0.0 m to
+  19 s (Wrenches_1-3 0.0 to 25 s), Spears' spot his, every crew exact to tick 330. **Orders: the `inp` row must cover ctrl+N / shift+N.**
+- Cause 2 (open): between tick 330 and 360 several crews part at once (0.1-1 m; the give-way pair Spears_1 / Spears_5 flips who
+  yields), as the syndicate's first lasers land (his first hit tick 382, the replay's 390); Rust's positions still equal at 360.
+  Locks parts at the same tick (manoeuvre: exact to 330). Ruled OUT on builder3: headless v windowed (OpenGL) v frames at the
+  display's rate (REPLAY_WINDOW=1, REPLAY_FREE_FPS=1: three byte-identical tables), the compiler and libm (gcc 13.3, glibc 2.39 on
+  both boxes), wall-clock reads and _process-frame caches in the sim (grep: none), lane-clear (engage: identical on/off).
+  Untested: his laptop itself (no local Godot this round, C47.1), the syndicate laser / shield path across CPUs.
+  **The limit, stated:** a replay of his round-46 matches is his match to 0.0 m through 11 s; by 13 s the worst crew is 8.5 m off,
+  by 15 s 20 m (Crossing, builder3 light, dce3e6a23's replay code). Reads past ~11 s are a staged read, not his match.
+- Terminus (round 45) now parts at 12 s too, but it is no control: it predates round 46's rules (shortfwd, holdway, veto, dry_hop)
+  and only lane_clear is stamped. **Request (mine, next):** stamp every ON rule in `rules`, so old recordings replay their build.
+
+**Queue (twins):** engage E2a lay_carry (gun_native engage(), waits on engage's green hash); route's door mask in pathing_native /
+drive_native path_query (after mapkit's doors reach an arena); manoeuvre's R47.11 transit grounding line if decide grounds natively.
+
 **Plan (2026-10-30 evening, start; from main c789b55a6, code e306ce27f GREEN builder3 3518/0: no baseline check of mine).**
 1. N1 twins: none filed yet (*Bars (round 47)* empty at start); each one jumps the queue when it arrives.
 2. N2 ElementPlan.build: profile INSIDE it first (probe branch probe/native-plan47, wrappers on ~40 functions, not merged), so
