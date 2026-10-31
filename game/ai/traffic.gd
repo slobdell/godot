@@ -309,9 +309,10 @@ static func _chain_native() -> void:
 	# Round 44 (M3, `parkedpass`): the refusal with a lane in ask() is twinned (native N3, pair/native-m2m3: drive_native.cpp
 	# ask), so ON keeps the C++ yield.
 	# Round 47 (manoeuvre M5, `holdyield`): the spot veto is twinned (native, R47.30: drive_native.cpp holdyield_veto, test_native_holdyield), so ON keeps the C++ yield.
-	# Round 48 (manoeuvre M2, `heldpost`, ON): the held refusal in ask() and the parked crew's refused in-place hold in _begin_yield have
-	# no C++ mirror yet (native's twin request), so while ON every ask runs the GDScript yield (native_yield off), as holdyield did.
-	if not _off.has("chainside") or not _off.has("holdlane") or not _off.has("chainarriving") or not _off.has("heldpost"):
+	# Round 48 (manoeuvre M2, `heldpost`, ON): the held refusal in ask() and the parked crew's refused in-place hold in _begin_yield are
+	# twinned (native, pair/native-heldpost: drive_native.cpp held_at_post / heldpost_on, test_native_drive_heldpost), so ON keeps the
+	# C++ yield.
+	if not _off.has("chainside") or not _off.has("holdlane") or not _off.has("chainarriving"):
 		if _chain_saved_native_yield == null:
 			_chain_saved_native_yield = BrainSwitches.native_yield
 		BrainSwitches.native_yield = false
