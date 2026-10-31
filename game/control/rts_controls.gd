@@ -1598,6 +1598,18 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if SelectionSquads.GROUP_VETO and not SelectionSquads.GROUP_GUARD and ground != null and not queue_leg \
 				and squads.size() >= 2 and anchors.size() >= squads.size():
 			anchors = _veto(squads, anchors, click, drawn, ground, packed_shapes)
+		# R47.4 (round 47, orders O1): his MERGED group stands as one double file at his click (SelectionSquads.merged_heads); any
+		# seat the ground refuses keeps the places above.
+		if SelectionSquads.GROUP_MERGED and ground != null and not queue_leg and drawn == null and loose.is_empty() \
+				and (verb == "move" or verb == "attack_move") and squads.size() >= 2 and squads.size() <= SelectionSquads.MERGED_FILES_MAX \
+				and blocks.size() == squads.size() and merged_group() > 0:
+			var filed := _merged_files(squads, blocks, click, ground)
+			if not filed.is_empty():
+				anchors = filed["heads"]
+				column = false
+				for at: Vector3 in anchors:
+					packed_shapes[at] = {"shape": "column", "heading": filed["heading"]}
+				_trace_stage("merged", squads, anchors)
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
 		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
 				column and column_moved, today_places)
@@ -1877,6 +1889,35 @@ func _veto(squads: Array, anchors: Array[Vector3], click: Vector3, drawn: Varian
 			packed_shapes.erase(anchors[i])
 	_trace_stage("group_veto", squads, out)
 	return out
+
+
+## R47.4: the control group the selection exactly is when that group is a MERGE (more vehicles than one squad holds), or 0.
+func merged_group() -> int:
+	var number := selected_group()
+	if number <= 0 or _living(groups.members(number)).size() <= Formations.MAX_MEMBERS:
+		return 0
+	return number
+
+
+## R47.4: the merged group's files at his click: {"heads": [Vector3] in squad order, "heading"} or {} when any seat of any file is
+## wet, a deck, not standable for a hull, or a head the veto refuses (across a gap from his click, or sending a squad back).
+func _merged_files(squads: Array, blocks: Array, click: Vector3, ground: Node3D) -> Dictionary:
+	var heading := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"])
+	var pitch := SelectionSquads.merged_pitch(blocks)
+	var heads := SelectionSquads.merged_heads(blocks, click, heading, pitch.x)
+	var clearance := SlotGround.envelope_of((ground as Tank).unit_id) if ground is Tank else 0.0
+	for i in heads.size():
+		for seat: Vector3 in SelectionSquads.merged_file_seats(heads[i], heading, (squads[i]["units"] as Array).size(), pitch.y):
+			var stand := SlotGround.standable_for(ground, seat, clearance)
+			if SelectionSquads.wet_or_deck(seat, SelectionSquads.HULL_REACH_M) or Orders.clamp_to_arena(seat).distance_to(seat) > 0.5 \
+					or Vector2(stand.x - seat.x, stand.z - seat.z).length() > SelectionSquads.PACK_GROUND_SLACK_M:
+				SelectionSquads.merged_refused += 1
+				return {}
+	if not SelectionSquads.veto_failures(heads, blocks, click, heading, Match.team_frame(team)["forward"]).is_empty():
+		SelectionSquads.merged_refused += 1
+		return {}
+	SelectionSquads.merged_laid += 1
+	return {"heads": heads, "heading": heading}
 
 
 func _route_key(squads: Array) -> Array:
