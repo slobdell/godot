@@ -88,7 +88,7 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 - **C47.10 The laptop is the test bed (memory).** Mapkit's pieces and camera's planner state their laptop cost (UHD 620, under the lock);
   an expensive look ships as a hardware-preset knob.
 - **C47.11 Seeds:** manoeuvre 12401-12496, route 12501-12596, engage 12601-12696, orders 12701-12796, camera 12801-12896, mapkit
-  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). **Extra blocks (R47.30):** manoeuvre 13001-13024 (Bar H). Next free: 13025.
+  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). **Extra blocks:** manoeuvre 13001-13024 (Bar H, R47.30); engage 13025-13120 (E9, R47.37). Next free: 13121.
 
 **Rulings at prep:**
 - **R47.1 (2026-10-30 evening, his pick) Seven streams this round, the map kit included.** He picked it knowing the laptop's RAM is short
@@ -327,9 +327,27 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   visibility_field still ray WORLD_MASK), native (doors' C++ mask; eye_mask in C++ LOS; GRANT the two match.gd / visibility_field ray
   call sites for the mask change), manoeuvre (the doors' `overstay` event). Main check of the batch pending.
 
+- **R47.37 Merged: engage d3b3fe918 (E7 ON, `PRESS_ON_DEFAULT := true` grep-confirmed on main) and manoeuvre bbd8c1ba6 (buried ON,
+  grep-confirmed). His picks: snap shots SHIP ON after Bar E3's D1 missed by 0.006 s (z -1.637 v 1.645; per crew first round 1.55 -> 0.80
+  s, 79 / 11 / 8; accuracy 79 -> 73 %; G1 6 -> 2, G2 5 -> 7, G3 22.7 -> 26.2, G4 pass): engage's ship commit = POT_SHOT default true +
+  `--pot-shot=off`, its own full check. Group click O1 v3 SHIPS (his "bumping OK"): Bar O2 on 12749-12796 with the contact guard x2.5 + 5.
+  Engage E9 (friendly fire on the move): option (b), a stricter pre-check in fire_lanes.gd (moving spread + friends led by flight time),
+  match.gd untouched; seeds 13025-13072 (bar) + 13073-13120 (reserve). Mapkit's map-twin bar filed below; its series after Bars W/H/O2.**
+- **R47.38 (his picks) Trim sheet on all four kit pieces; a minimal monorail TRAIN asset ("the people's monorail ... far from Syndicate
+  quality").** Mapkit: 2-3 directions on a tap-to-approve page first (built from kit primitives + the trim sheet if that can carry it;
+  a Meshy concept only if needed, logged), then the 3D, laptop cost stated.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
+
+- **Bar P THE MAP-KIT TWINS CHANGE THE FIGHT (mapkit; proposed 2026-10-30 ~21:00, filed here by the orchestrator BEFORE any number).**
+  Pairs parade v parade_traps, parade v parade_rail, crossing v crossing_screens; arena-series style, fresh seeds 12901-12932 (16 a pair),
+  counterbalanced (swap bases, both army orders), native ON, judged at each map's end. **Deciding:** the twin changes the fight's shape:
+  engagement-range distribution or flank / route use differs from the base beyond the seed spread; for crossing_screens, the short-range
+  side's shots fired rise v crossing (his 6 v 358). **Guards:** (1) fairness: swap-bases margin within noise of 50 %; (2) units look smart:
+  no-progress / stall events a crew-minute no worse than the base (new things to get stuck on); (3) match length within the base's spread,
+  no stalemates; (4) laptop: no piece above the empty floor's GPU spread (trim monorail re-measured). Runs after Bars W / H / O2 on builder3.
 
 - **Bar K A NEW SELECTION PANS AT ONCE; HIS SQUAD STAYS FRAMED (camera; FILED 2026-10-30 ~18:30 in streams/camera.md, stream/camera
   b1f08cc2d, BEFORE any number on 12801-12848; recorded here by the orchestrator; full text in the brief).** Switch

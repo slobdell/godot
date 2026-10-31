@@ -4827,3 +4827,14 @@ held_1-3, pa_1-4, vet_1-2): the text gate is passed, so their voice generation i
    squad framed 0.7 v 4.9 s; selection far off-centre 7 v 12 %; flipping between squads 140 m apart leaves the old squad's fight off screen,
    hits unseen 5 -> 13 % in that test, attacks no worse; clicks during the ~0.7 s sweep misclick more). **His pick: "Ship it ON
    (Recommended)".** -> R47.29.
+7. **Group click "columns only at the end" as built (O1 v3: together 14 / 28 m, usually sooner, ~2x the bumping in the last stretch; towns
+   and bridges unchanged):** **his pick: "Ship it, bumping OK (Recommended)"** — Bar O2's contact guard becomes x2.5 + 5, said up front. -> R47.37.
+8. **Snap shots after Bar E3 (D1 missed by 0.006 s; first round 0.8 v 1.6 s; accuracy 79 -> 73 %, corrected from the dev read's 76; the
+   CPU's long guns 83 -> 69 %):** **his pick: "Ship it ON (Recommended)".** -> R47.37.
+9. **Material Maker trial page (mapkit P1b), his picks: TRIM SHEET on all four (traps, monorail, pipes, crane).** His note on the
+   monorail, verbatim:
+   > "Note that we probably need to invest a minimal amount into creating an asset for the monorail train itself, somehow in keeping
+   > with the theme (I don't know what that looks like exactly because presumably a Monorail is for the people, meaning that the
+   > people's monorail will be far from Syndicate quality.)"
+   -> R47.38: a monorail TRAIN asset, minimal investment, a people's train (shabby, nothing like Syndicate polish); directions on the
+   tap-to-approve page first (memory: concept choices), then the 3D.
