@@ -18,7 +18,7 @@ import sys
 # The probe's raw keys (tests/spotter/feature_probe.gd) that the table keeps as they are.
 FIELDS = ["fight", "arena", "seed", "s", "tick", "crew", "team", "unit", "loco", "squad", "x", "z", "yaw", "speed", "vmax", "hp",
           "order", "move", "weap", "phase", "blocked", "touch", "touch_cause", "touch_what", "intent", "choice", "shots",
-          "range", "arc", "seen", "near_enemy", "since_fire", "lane_blocker", "to_go", "gain_2", "gain_5", "route_off",
+          "range", "arc", "seen", "near_enemy", "near_any", "since_fire", "lane_blocker", "to_go", "gain_2", "gain_5", "route_off",
           "squad_d", "squad_n", "hit_dmg", "fire_off", "fire_far"]
 
 # Derived signals, each with what a player would see (the moment's readable reason) and its unit.

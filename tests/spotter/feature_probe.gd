@@ -203,20 +203,29 @@ func _sample(game_match: Match, tick: int) -> void:
 			row["lane_blocked"] = ctl.lane_blocked_ticks
 			row["lane_blocker"] = ctl.lane_blocker
 			row["engaged"] = ctl.engaged_target
-			# The nearest enemy this crew can see, and how far.
+			# The nearest enemy this crew can SEE (within its sight radius, a clear line of sight: Perception's own pure
+			# physics ray, the same test OrderController._sense uses), and the nearest enemy at any distance.
+			# OrderController.visible_enemy_names is filled only for halt_on_contact reflexes, so batch 1 read none (-1).
 			var near := INF
 			var near_dir := Vector3.ZERO
-			for enemy_name in ctl.visible_enemy_names:
-				var enemy := game_match.tanks.get_node_or_null(String(enemy_name)) as Tank
-				if enemy == null or not enemy.is_alive():
+			var any := INF
+			var seen := 0
+			for child in game_match.tanks.get_children():
+				var enemy := child as Tank
+				if enemy == null or not enemy.is_alive() or enemy.team == tank.team:
 					continue
 				var d := _flat(enemy.global_position, tank.global_position)
+				any = minf(any, d)
+				if d > tank.sight_radius or not Perception.has_line_of_sight(tank, enemy):
+					continue
+				seen += 1
 				if d < near:
 					near = d
 					near_dir = enemy.global_position - tank.global_position
-			row["seen"] = ctl.visible_enemy_names.size()
+			row["seen"] = seen
 			row["near_enemy"] = snappedf(near, 0.1) if near < INF else -1.0
 			row["near_enemy_off"] = _off_nose(tank, near_dir) if near < INF else -1.0
+			row["near_any"] = snappedf(any, 0.1) if any < INF else -1.0
 		if mover != null:
 			row["phase"] = String(mover.phase)
 			row["blocked"] = String(mover.blocked_by) if mover.phase == "blocked" or mover.phase == "yielding" else ""
