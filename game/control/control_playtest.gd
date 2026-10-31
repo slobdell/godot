@@ -389,6 +389,9 @@ func _element_task() -> void:
 	var right := Vector3(-forward.z, 0.0, forward.x)
 	await _key(KEY_E)
 	await _click(radar.get_global_rect().position + radar.world_to_radar(_middle(controls.selection.units) + right * 25.0))
+	# Round 47 (O5, C47.5): the order's recipient mid-pulse (its rings grow white, its chip flashes).
+	await get_tree().create_timer(0.15).timeout
+	await _capture("7_order_cue")
 	var element := controls.selected_element()
 	_checks["screen_task_reaches_the_leader"] = element != null and String(element.task.get("verb", "")) == "screen"
 	if element != null:
