@@ -118,6 +118,18 @@ term that causes round 46's misses is the urgent pan's trigger ("a crew off scre
 edge), plus, at 100 m, the planner's lean/wide frame putting his squad 35 m off the look (Crossing tick 690: K3's bound).
 
 
+### Dev reads before Bar K (7001-7004 Terminus, 90 s, split + attack + ambush, builder3; never a bar; `tests/camera/bar_k.py`)
+Each read failed a guard and changed the rule or the workload BEFORE any 128xx number (BASE = `--camera-select-pan=off`):
+| Tree | What failed | Change |
+|---|---|---|
+| ebfc3b162 | clicks on the aimed unit 82 -> 60 %, slip p95 33 -> 173 px, hits off screen 1.2 -> 12 % | the pan ended within 3 m of a point that moves with every yaw step: it never ended. -> starts/ends on a gap, max 1.5 s |
+| 0927ea3e0 | 'planner' jerks 1.7 -> 7.3/min | the pan ended at full speed. -> ends once slowed |
+| 4f12af25e (+ `--camera-sel-bound=0`) | bound ON: rear ambush 1.4 -> 6.3 s, hits off screen 2.7 %; bound OFF: both = BASE | **K3's bound parked OFF** (dev knob): it clipped the planner's wide frame of the contacts |
+| db75ab282 | planner jerks 5/min, snaps 157 | the urgent pan lifted the hand's pace from the yaw: turns at 45 deg/s under his hand. -> the pan moves the look point only |
+| 8db2073c1 | slip p95 182 | the gap was to the selection's MEAN; a spread army's mean is far from a right look: re-fired every 1.5 s. -> gap to the planner's point |
+| fcc37974a | (workload) the autoplay's BASE was 3.3 % far v 26-42 % in his replays: its hand sat idle after a key | split's hand stays on the mouse (the K1 model); his eye waits up to 1.5 s for the view before aiming (both arms) |
+| b9e28935b | 20 of 29; 13 clicks aimed while a pan ran, slip p95 152 | the eye waits for the pan to end (both workloads, both arms); only the pick's own pan ignores his aim, a later start waits for him (63429985c) |
+
 ### K2/K3: one rule (`RtsCamera._pan_urgent`, `select_pan`, ON)
 The planner's own rule is now the gap between where the view looks and where the planner wants it: a new selection (or a
 re-pick: `take_vision`) pans at once until the look is within 3 m (PAN_ARRIVE_M) of the planner's point; a look that falls 20 m
@@ -126,6 +138,8 @@ pans neither the aim hold nor the hand's pace applies. The pan is a critically d
 speed) capped at **4 view-heights/s** (260 m/s was tried first: ~8-13 heights/s at his 50 m, a jump cut; at 4 a frame moves 1/15
 of the screen at 60 fps, 1/7.5 at his laptop's ~30: it reads as a fast pan). Replays: a far selection within 20 m in median
 0.3 s, max 0.73. His own pan stays his until he selects (no swing back). **K3's bound:** the planner's point is held within 20 m
-of his selection's middle (`RtsCamera.bound_to`; a strung-out squad keeps its whole frame). Tests: tests/test_camera_select_pan.gd
+of his selection's middle (`RtsCamera.bound_to`) -- **PARKED OFF** after the dev read (it hid the contacts); K3 ships as the drift
+correction alone: a selection whose frame falls 30 m behind, with no hand on the camera since he picked it, is caught up once he
+is not aiming. Tests: tests/test_camera_select_pan.gd
 (green at 92a0da143, builder3 `make quick` 258/0; K3's test added after).
 
