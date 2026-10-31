@@ -189,6 +189,16 @@ func _issue() -> void:
 		if names.is_empty():
 			print("REPLAY_ORDER " + JSON.stringify({"tick": _match.tick, "skipped": o}))
 			continue
+		if o.has("loose") and not (o["loose"] as Array).is_empty() and _flag("replay-loose", "on") != "off":
+			# Round 47 (N0, R47.8): a whole squad his click found in no squad (ReplaySetup.merge_clicks' `loose`) leaves its group;
+			# part of a squad sent direct (a partial selection: the controls' own "part of a squad" path) keeps it.
+			var freed := 0
+			for number in _controls.groups.numbers():
+				var whole := _controls.groups.members(number)
+				if whole.all(func(n: String) -> bool: return (o["loose"] as Array).has(n)):
+					freed += whole.size()
+					_controls.groups.save(number, [])
+			print("REPLAY_LOOSE " + JSON.stringify({"tick": _match.tick, "units": (o["loose"] as Array).size(), "freed": freed}))
 		_controls.selection.set_units(names)
 		if String(o["verb"]) == "formation":
 			var picked := _controls.set_formation(String(o["formation"]))

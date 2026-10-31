@@ -148,6 +148,18 @@ static func merge_clicks(orders: Array) -> Array:
 					units.append(unit_name)
 			last["units"] = units
 			last["merged"] = int(last.get("merged", 1)) + 1
+			# Round 47 (N0, R47.8): a row of one group click that went out as a DIRECT order (source "player": the controls'
+			# _direct, which a squad's share of a group click takes only for units in no squad) names crews that were loose
+			# in his match: his Crossing ctrl+4 over Spears + Wrenches (a control-group save, which writes no row) left the
+			# Wrenches in no squad, and the replay, still holding them as a squad, laid the click differently (Spears 3.2 m
+			# off his spot, the replay out of his match at 1 s). The replay takes these crews out of their groups first.
+			var loose: Array = (last.get("loose", []) as Array).duplicate()
+			for source_row: Dictionary in [last, row] if not last.has("loose") else [row]:
+				if String(source_row.get("source", "")) == "player":
+					for unit_name in source_row.get("units", []):
+						if not loose.has(unit_name):
+							loose.append(unit_name)
+			last["loose"] = loose
 			if last.has("click") and last.has("to"):
 				last["to"] = last["click"]  # C44.2: the point under his cursor; the replay's group layout spreads it again
 			continue

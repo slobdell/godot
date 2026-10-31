@@ -169,3 +169,17 @@ func test_a_click_given_by_hand_merges_an_old_recordings_group_click() -> void:
 	assert_eq(ReplaySetup.merge_clicks(given).size(), 3, "the 1512 rows merge into one order")
 	assert_eq(ReplaySetup.with_click(rows, ""), rows, "no --click: unchanged")
 	assert_eq(ReplaySetup.with_click(rows, "nonsense"), rows, "a malformed --click: unchanged")
+
+
+## Round 47 (N0, R47.8): the rows of one group click that went out direct (source "player") name the crews to free: his Crossing
+## ctrl+4 over Spears + Wrenches left the Wrenches in no squad (a control-group save writes no row).
+func test_a_group_clicks_direct_rows_name_his_loose_crews() -> void:
+	var rows := [
+		{"t": "order", "tick": 0, "verb": "move", "click": [80.9, 49.5], "to": [55.7, 22.6], "units": ["S_1", "S_2"], "source": ""},
+		{"t": "order", "tick": 0, "verb": "move", "click": [80.9, 49.5], "to": [95.5, 69.0], "units": ["W_1", "W_2"], "source": "player"},
+		{"t": "order", "tick": 9, "verb": "move", "click": [1.0, 2.0], "to": [1.0, 2.0], "units": ["S_1"], "source": "player"},
+	]
+	var merged := ReplaySetup.merge_clicks(rows)
+	assert_eq(merged[0]["loose"], ["W_1", "W_2"], "the direct rows' crews")
+	assert_eq(merged[0]["to"], [80.9, 49.5], "the click is re-laid from his cursor")
+	assert_false(merged[1].has("loose"), "a single row is no group click: nothing to free")
