@@ -62,7 +62,10 @@ func _mutate(s: Dictionary, current: Dictionary, n: int, rng: RandomNumberGenera
 					c["visible"] = true
 				m["order"] = {"verb": "attack_move", "target": first_name if rng.randf() < 0.85 else "",
 						"goal": here + Vector3(20.0, 0.0, -10.0), "target_alive": true}
-				m["element"] = {"task": "attack" if rng.randf() < 0.8 else "move"} if rng.randf() < 0.9 else "attack"
+				if rng.randf() < 0.9:
+					m["element"] = {"task": "attack" if rng.randf() < 0.8 else "move"}
+				else:
+					m.erase("element")
 		5:
 			m["control"] = {"center": here + Vector3(5.0, 0.0, 5.0), "radius": 20.0, "owner": rng.randi_range(-1, 1)}
 		6:
