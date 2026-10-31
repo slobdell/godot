@@ -14,6 +14,8 @@ extends SceneTree
 ##   deaths, deaths_moving  crews that died, and died while moving for a shot (moving, no line, under the order): exposure
 ##   spot_changes  per crew, the distinct goals (> 2 m apart) of moves naming the target under the order: the dither count
 ##   never_reached  spots a crew was sent to and never came within 3 m of before the goal changed or the order ended
+##   held_line_s   (round 47, Bar E) crew-seconds under the order with the target inside the gun's reach, a clear line
+##                (Perception's eye ray: the gun's own gate), the team seeing it and the gun LOADED: able to fire, not firing
 ##   lines         ElementSituation.shot_lines over the run (cover-map lines the plan asked for) and per plan tick
 
 const ARENAS := ["locks", "terminus", "crossing"]
@@ -236,7 +238,9 @@ func _run() -> void:
 	var flips := {}
 	var last_shot := {}
 	var stuck_suppress_ticks := {}
+	var held_line_ticks := {}
 	for unit_name: String in names:
+		held_line_ticks[unit_name] = 0
 		stuck_ticks[unit_name] = 0
 		in_range_no_shot_ticks[unit_name] = 0
 		spots[unit_name] = []
@@ -279,6 +283,10 @@ func _run() -> void:
 					var brain := game_match.brains.get_node_or_null("Brain_" + unit_name) as TankBrain
 					if brain != null and String(brain.choice.get("option", "")) == "SUPPRESS":
 						stuck_suppress_ticks[unit_name] = int(stuck_suppress_ticks.get(unit_name, 0)) + 1
+			# Round 47 (Bar E): loaded, in the gun's reach, a real line and the target seen: a crew that could fire this tick.
+			if tank.ready_to_fire() and pos.distance_to(target_pos) <= float(tank.weapon.get("range", 60.0)) \
+					and game_match.is_visible_to(tank.team, target) and Perception.has_line_of_sight(tank, target):
+				held_line_ticks[unit_name] = int(held_line_ticks[unit_name]) + 1
 			moving_for_shot[unit_name] = moving and not shot
 			if last_shot.has(unit_name) and bool(last_shot[unit_name]) != shot:
 				flips[unit_name] = int(flips.get(unit_name, 0)) + 1
@@ -320,12 +328,15 @@ func _run() -> void:
 	var stuck_s := {}
 	var no_shot_s := {}
 	var stuck_suppress_s := {}
+	var held_line_s := {}
 	for unit_name: String in names:
+		held_line_s[unit_name] = _r(float(held_line_ticks[unit_name]) / SimClock.TICK_RATE)
 		stuck_suppress_s[unit_name] = _r(float(stuck_suppress_ticks.get(unit_name, 0)) / SimClock.TICK_RATE)
 		stuck_s[unit_name] = _r(float(stuck_ticks[unit_name]) / SimClock.TICK_RATE)
 		no_shot_s[unit_name] = _r(float(in_range_no_shot_ticks[unit_name]) / SimClock.TICK_RATE)
 	print("ENGAGE_PROBE %s" % JSON.stringify({"seed": seed_value, "arena": arena, "arm": "on" if ElementPlan.ATTACK_SHOT else "off",
-			"crews": crews_n, "hull": hull, "target_unit": target_unit, "feature": String(feature.get("type", "")),
+			"crews": crews_n, "held_line_s": held_line_s, "lay_carry": Engagement.lay_carry,
+			"attack_line": TankBrain.ATTACK_LINE, "hull": hull, "target_unit": target_unit, "feature": String(feature.get("type", "")),
 			"feature_at": [_r(center.x), _r(center.z)], "target_at": [_r(target_at.x), _r(target_at.z)],
 			"crew_at": placed, "target_placed": [_r(target.global_position.x), _r(target.global_position.z)],
 			"start_m": start_m, "stage_ok": stage_ok, "ground_moved": ground_moved, "line_flips": line_flips,

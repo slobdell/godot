@@ -42,6 +42,7 @@ def metrics(d):
     first = [float(d["first_hit_s"][c]) if float(d["first_hit_s"][c]) >= 0 else window for c in crews]
     return {
         "stuck": sum(float(v) for v in d["stuck_s"].values()),
+        "held_line": sum(float(v) for v in d.get("held_line_s", {}).values()),
         "stuck_suppress": sum(float(v) for v in d.get("stuck_suppress_s", {}).values()),
         "no_shot": sum(float(v) for v in d["no_shot_s"].values()),
         "first_hit": sum(first) / len(first),
@@ -57,7 +58,7 @@ def metrics(d):
     }
 
 
-KEYS = ["stuck", "stuck_suppress", "no_shot", "first_hit", "never_hit", "deaths_moving", "deaths", "never_reached", "dither", "line_flips", "hits",
+KEYS = ["held_line", "stuck", "stuck_suppress", "no_shot", "first_hit", "never_hit", "deaths_moving", "deaths", "never_reached", "dither", "line_flips", "hits",
         "target_dead", "lines_per_plan_tick"]
 
 
