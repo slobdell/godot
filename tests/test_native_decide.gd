@@ -56,7 +56,7 @@ func _mutate(s: Dictionary, current: Dictionary, n: int, rng: RandomNumberGenera
 			m["self"]["max_ammo"] = 10
 			m["self"]["in_resupply_zone"] = rng.randf() < 0.5
 			m["self"]["health"] = int(float(m["self"]["max_health"]) * rng.randf_range(0.05, 0.5))
-			# Round 47 (engage E7): a critical crew on an attack-move under an ATTACK task (PRESS_ON presses it home).
+			# Round 47 (engage E7): a critical crew on an attack-move (named or not) under an ATTACK task (PRESS_ON presses it home).
 			if first_name != "" and rng.randf() < 0.6:
 				for c: Dictionary in contacts:
 					c["visible"] = true
