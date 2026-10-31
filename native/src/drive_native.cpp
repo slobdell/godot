@@ -16,6 +16,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/script.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/templates/local_vector.hpp>
 #include <godot_cpp/variant/packed_float32_array.hpp>
 #include <godot_cpp/core/math_defs.hpp>
@@ -1802,7 +1803,27 @@ struct Drive {
 	// once a drive: Pathing.enabled and is_ready(tank), the same expression query opens with), the path is the engine's
 	// own query, the closest point Pathing.closest_point's (native_nav: N2a's index). The result is the same Dictionary,
 	// keys in the same order: the mover keeps it as `_route_reading`. ----
+	// Round 47 (C47.8, route R5): RouteDoors.any() (game/ai/planner/route_doors.gd; absent on a tree without doors = false).
+	static bool route_doors_any() {
+		static Ref<Script> doors;
+		static bool tried = false;
+		if (!tried) {
+			tried = true;
+			static const String path("res://game/ai/planner/route_doors.gd");
+			if (ResourceLoader::get_singleton()->exists(path)) {
+				doors = ResourceLoader::get_singleton()->load(path);
+			}
+		}
+		static const StringName any("any");
+		return doors.is_valid() && (bool)doors->call(any);
+	}
+
 	Dictionary path_query(const Vector3 &from, const Vector3 &to) {
+		// Round 47 (C47.8): with a blast door registered the query is Pathing.query's own (its RouteDoors.mask(node, from) asks
+		// the doors' layers too; this one asks layer 1 only). No doors: the native query below, byte-identical.
+		if (route_doors_any()) {
+			return gd(c.pathing, k.query, tank, from, to);
+		}
 		Dictionary result;
 		result[k.points] = PackedVector3Array();
 		result[k.ready] = false;
@@ -4359,6 +4380,15 @@ double drive_pass_lane(const DriveConfig &config, Object *mover, const String &p
 		return -9.0; // not configured: the twin fails on it, never compares a stub
 	}
 	return d.pass_lane(passer, from, direction);
+}
+
+// Round 47 (C47.8): the native drive's own route query, for its twin test (tests/test_native_doors.gd); {} unconfigured.
+Dictionary drive_path_query(const DriveConfig &config, Object *mover, const Vector3 &from, const Vector3 &to) {
+	Drive<ObjectView> d(config, mover, ObjectView(mover));
+	if (!config.ready || !config.query_ready || mover == nullptr || !d.bind()) {
+		return Dictionary();
+	}
+	return d.path_query(from, to);
 }
 
 // Round 47 (R47.30): Movement._holdyield_veto(point) natively, for its twin test (tests/test_native_holdyield.gd); -9 unconfigured.
