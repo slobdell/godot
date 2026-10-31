@@ -579,3 +579,14 @@ manoeuvre-bar-m: import ## manoeuvre Bar M (round 47): orders-group in BARM_ARMS
 	@$(MAKE) --no-print-directory orders-group ORDERS_GROUP_MAPS="$(BARM_MAPS)" ORDERS_GROUP_SEEDS="$(BARM_SEEDS)" \
 		ORDERS_GROUP_HEADINGS="$(BARM_HEADINGS)" ORDERS_GROUP_ARMS="$(BARM_ARMS)" ORDERS_GROUP_DIR=$(BARM_DIR) ORDERS_GROUP_JOBS=$(BARM_JOBS)
 	$(PYTHON) tests/manoeuvre/barm_judge.py $(BARM_DIR)/logs | tee $(BARM_DIR)/judge.txt
+
+# Bar M's whole series in ONE remote run (one sync of the frozen tree): W1, then G8 (engage's authority probe) in both arms.
+BARM_AUTH_SEEDS ?= 12443 12444 12445 12446 12447 12448
+.PHONY: manoeuvre-bar-m-series
+manoeuvre-bar-m-series: native-fresh import ## manoeuvre Bar M: W1 (manoeuvre-bar-m) then G8 (engage-authority-probe base / buried on BARM_AUTH_SEEDS) in one run
+	@$(MAKE) --no-print-directory manoeuvre-bar-m
+	@$(MAKE) --no-print-directory engage-authority-probe AUTH_SEEDS="$(BARM_AUTH_SEEDS)" AUTH_ARM=on AUTH_JOBS=6 AUTH_PROBE_TAG=barm-base AUTH_PROBE_FLAGS=
+	@$(MAKE) --no-print-directory engage-authority-probe AUTH_SEEDS="$(BARM_AUTH_SEEDS)" AUTH_ARM=on AUTH_JOBS=6 AUTH_PROBE_TAG=barm-buried AUTH_PROBE_FLAGS=--traffic-on=buried
+	@for s in $(BARM_AUTH_SEEDS); do if cmp -s <(grep '^AUTHORITY_PROBE ' $(BUILD_DIR)/engage/authority/barm-base/$$s.log) <(grep '^AUTHORITY_PROBE ' $(BUILD_DIR)/engage/authority/barm-buried/$$s.log); then echo "G8 seed $$s identical"; else echo "G8 seed $$s DIFFERS"; fi; done
+NOPROGRESS_WATCH_TRACE ?=
+export NOPROGRESS_WATCH_TRACE
