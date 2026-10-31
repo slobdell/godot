@@ -57,6 +57,18 @@ var _lane_hold_left := 0
 ## Seconds of game time the current apply() covers (one tick, or a whole controller stride).
 var _seconds := 0.0
 
+## Round 47 (engage E3, R47.17): POT SHOTS (his question: "should vehicles just go ahead and take pot shots even if they can't
+## get a good targeting fix"). E1 (staged): acquiring the fix was 44 % of the time his loaded crews held fire with an enemy in
+## range; the War Rig sees 60 m, so a target at 40 m costs it ~1.2 s of lay. With the switch on, a crew whose ONLY held gate is
+## the fix, laid at least POT_SHOT_AFTER_S, its target inside the weapon's effective band, fires anyway with its aim off by up
+## to POT_SHOT_WANDER_M at the target (the deterministic wander pattern), shrinking to nothing as the fix completes: the round
+## flies where the barrel points. `--pot-shot=on|off`; OFF (his call; the gun's C++ twin would carry it before any ON).
+static var POT_SHOT := OS.get_cmdline_user_args().has("--pot-shot=on")
+const POT_SHOT_AFTER_S := 0.4
+const POT_SHOT_WANDER_M := 2.5
+## Measurement only: pot shots taken since the process started.
+static var pot_shots := 0
+
 ## Round 47 (engage E1), MEASUREMENT ONLY: `--gun-trace=<name substring|all>` prints one GUN_TRACE line per run of the
 ## gun for the named crews (on every change of its gates, and every GUN_TRACE_EVERY ticks): the weapon order, the pick,
 ## each gate (seen, line of sight, range, aim, lay, discipline, loaded, lane) and the trigger. Reads only; default off.
@@ -197,6 +209,21 @@ func _apply_weapon(cmd: TankCommand) -> void:
 	var envelope := engagement_lay.engage(tank, target,
 			tank.global_position.distance_to(target.global_position), _seconds_step(),
 			bool(weapon_order.get("long_shot", false)))
+	if POT_SHOT and not envelope and in_range and tank.ready_to_fire():
+		var needed := Engagement.acquire_seconds(tank, target, tank.global_position.distance_to(target.global_position))
+		var laid := engagement_lay.progress
+		if engagement_lay.target == String(target.name) and laid >= POT_SHOT_AFTER_S and laid < needed \
+				and tank.global_position.distance_to(target.global_position) <= Engagement.effective_range(weapon):
+			# E3: a snap shot before the fix: the aim off by what is left of the lay; the trigger once the barrel is on it.
+			var off_aim := aim + Difficulty.aim_offset(POT_SHOT_WANDER_M * (1.0 - laid / needed),
+					brain.game_match.tick if brain != null and brain.game_match != null else 0, tank.slot)
+			_cover(off_aim, cmd)
+			if Ballistics.aim_error(muzzle, tank.turret_forward(), off_aim) <= deg_to_rad(float(weapon["aim_tolerance_deg"])):
+				cmd.fire = _clear_to_fire(true, off_aim)
+				if cmd.fire:
+					pot_shots += 1
+				OrderController._lap("weapon.lanes", lap)
+				return
 	cmd.fire = _clear_to_fire(envelope and in_range and aimed and tank.ready_to_fire(), aim)
 	OrderController._lap("weapon.lanes", lap)
 

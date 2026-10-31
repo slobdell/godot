@@ -33,6 +33,10 @@ const REACH_M := 3.0
 var case: TestCase
 var _first_hit := {}
 var _hits := {}
+## Round 47 (engage E3): rounds each crew fired, its first round's tick, and its hits on its own side.
+var _shots := {}
+var _first_shot := {}
+var _friendly_hits := 0
 var _deaths := {}
 var _target_name := ""
 
@@ -182,12 +186,20 @@ func _run() -> void:
 	_target_name = String(target.name)
 	var shooters := {}
 	game_match.weapon_fired.connect(func(event: Dictionary) -> void:
-		shooters[int(event.get("projectile_id", -1))] = String(event.get("shooter", "")))
+		var by := String(event.get("shooter", ""))
+		shooters[int(event.get("projectile_id", -1))] = by
+		if names.has(by):
+			_shots[by] = int(_shots.get(by, 0)) + 1
+			if not _first_shot.has(by):
+				_first_shot[by] = int(event.get("tick", game_match.tick)))
 	game_match.projectile_impact.connect(func(event: Dictionary) -> void:
 		var shooter := String(shooters.get(int(event.get("projectile_id", -1)), event.get("shooter", "")))
 		var victims: Array = event.get("victims", [])
 		var on_target := String(event.get("target", "")) == _target_name \
 				or victims.any(func(v: Dictionary) -> bool: return String(v.get("target", "")) == _target_name)
+		if names.has(shooter) and float(event.get("damage", 0.0)) > 0.0 and (String(event.get("target", "")).begins_with("Green_") \
+				or victims.any(func(v: Dictionary) -> bool: return String(v.get("target", "")).begins_with("Green_"))):
+			_friendly_hits += 1
 		if on_target and float(event.get("damage", 0.0)) > 0.0 and names.has(shooter):
 			_hits[shooter] = int(_hits.get(shooter, 0)) + 1
 			if not _first_hit.has(shooter):
@@ -312,6 +324,9 @@ func _run() -> void:
 	for unit_name: String in names:
 		line_flips[unit_name] = int(flips.get(unit_name, 0))
 	var first_hit := {}
+	var first_shot := {}
+	for unit_name: String in names:
+		first_shot[unit_name] = _r(float(int(_first_shot[unit_name]) - order_tick) / SimClock.TICK_RATE) if _first_shot.has(unit_name) else -1.0
 	var never_reached := 0
 	var spot_changes := {}
 	for unit_name: String in names:
@@ -335,7 +350,8 @@ func _run() -> void:
 		stuck_s[unit_name] = _r(float(stuck_ticks[unit_name]) / SimClock.TICK_RATE)
 		no_shot_s[unit_name] = _r(float(in_range_no_shot_ticks[unit_name]) / SimClock.TICK_RATE)
 	print("ENGAGE_PROBE %s" % JSON.stringify({"seed": seed_value, "arena": arena, "arm": "on" if ElementPlan.ATTACK_SHOT else "off",
-			"crews": crews_n, "held_line_s": held_line_s, "hull": hull, "target_unit": target_unit, "feature": String(feature.get("type", "")),
+			"crews": crews_n, "held_line_s": held_line_s, "shots": _shots,
+			"first_shot_s": first_shot, "friendly_hits": _friendly_hits, "pot_shot": Gunnery.POT_SHOT, "hull": hull, "target_unit": target_unit, "feature": String(feature.get("type", "")),
 			"feature_at": [_r(center.x), _r(center.z)], "target_at": [_r(target_at.x), _r(target_at.z)],
 			"crew_at": placed, "target_placed": [_r(target.global_position.x), _r(target.global_position.z)],
 			"start_m": start_m, "stage_ok": stage_ok, "ground_moved": ground_moved, "line_flips": line_flips,
