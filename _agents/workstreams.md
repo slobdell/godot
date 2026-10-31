@@ -133,6 +133,16 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   of tank_brain (CLEAR_LANE, target choice, E7's RETREAT): told. If native's decide grounds stations in C++, the twin rule (C47.6) applies.
   Manoeuvre does NOT change place / seat this round, so native's R47.9 twin goes ahead now.
 
+- **R47.12 (2026-10-30 evening) Route's R2b DROPPED (lesson 352: it would change nothing he saw); R3 moot; R4 waits on engage's E7;
+  R5 doors next, then R6 a detour census.** R2a done (`tests/test_pathing_crossings.gd` 7/0 builder3: his Locks click 135.2 m west
+  bridge v lock 144.6; Crossing / Gorge short crossing; Terminus 86.0 m straight). R2b's measure (his census ticks 1710-2220, builder3):
+  the lock was the shortest at every tick but 1800-1830 (177.0 v 181.2, while RETREAT parked it); movement already re-plans a sliding
+  goal (GOAL_TUBE_SHARE). **C47.8's shape (route + mapkit agree):** each door = a NavigationLink3D on its OWN navigation layer bit;
+  `Pathing` builds the mask = layer 1 | doors open now AND at the crew's estimated arrival (`BlastDoors.is_open(id, tick)`); native
+  pathing passes the same mask before doors ship ON in a real arena (C47.6) — until then a path that bypasses Pathing never uses a door.
+  **R6:** route/shortest ratio for every crew's route over fresh full fights (both sides), so any real detour class is found by
+  measure, not by his eye.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
