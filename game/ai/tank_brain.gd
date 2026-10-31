@@ -3325,7 +3325,13 @@ func _outranged_act(s: Dictionary) -> void:
 	if distance < 0.5:
 		return
 	var element_attacks := s.get("element") != null and String((s["element"] as Dictionary).get("task", "")) == "attack"
-	if OUTRANGED_CLOSE_VERBS.has(verb) or element_attacks:
+	var closing := OUTRANGED_CLOSE_VERBS.has(verb) or element_attacks
+	# His side: only his attack closes; a hold, an ambush or a move of his stands (his order wins, as E7). A move order (any
+	# side) is already going somewhere: MOVE is replaced only where closing is the crew's call.
+	var his_side := o is Dictionary and bool((o as Dictionary).get("his_side", false))
+	if not closing and (his_side or String(choice.get("option", "")) == "MOVE"):
+		return
+	if closing:
 		var goal := my_position + to_gun / distance * maxf(distance - OUTRANGED_CLOSE_TO * reach, 0.0)
 		var by_cover := false
 		for spot: Vector3 in s.get("cover", []):
