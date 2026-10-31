@@ -5665,12 +5665,12 @@ static func shortfwd_on() -> bool:
 	return not Traffic.off("shortfwd")
 
 
-## Round 47 (manoeuvre M2, `--traffic-on=buried` until Bar M; R47.11): A STATION BURIED IN A BUILDING FOLLOWS THE SQUAD'S TRACK. His
+## Round 47 (manoeuvre M2, `--traffic-on=buried` until Bar M; R47.11; Bar M amendment 1): A STATION PINNED IN A BUILDING FOLLOWS THE SQUAD'S TRACK. His
 ## Locks fire truck (Burners2_4, 2026-10-30 15:49): its squad's travelling station slid into the 2.8 m gap between the city block at
 ## (-30, 42) and the container_40 at (-30, 66), then into the block; the brain grounds a station to the NEAREST standable point, which
 ## stayed pinned at the container's east end up to 9.9 m from the station, so the crew drove its nose into the block and stood
 ## "arrived" there while its squad drove on, then reversed out for 2.5 s (M1's trace). A station the grounding moves more than
-## BURIED_M is instead taken on the squad's own route (its transit, the anchor's track: navmesh by construction) at the point nearest
+## BURIED_M while the grounded point stays PINNED (see the pin test in buried_station) is instead taken on the squad's own route (its transit, the anchor's track: navmesh by construction) at the point nearest
 ## the station, no further back than BURIED_BACK_M behind the anchor's progress, grounded for this hull: the crew follows its squad
 ## through the narrow place, as a column does. Any other station (and OFF, and a crew with no squad in transit): `grounded`, today's.
 ## Called from TankBrain's transit block (the one granted line, R47.11); GDScript on every path (native's feed passes the raw station).
@@ -5690,7 +5690,12 @@ static var buried_swaps := 0  # brain thinks a buried station was taken on the s
 ## Where each crew's station was last grounded while buried (Tank instance id -> Vector3; never a name: names repeat in a rematch,
 ## C34.6). Scratch, not a Movement member (exec_fields.h); cleared when it reaches BURIED_KEEP, pruned when the crew's squad stops.
 static var _buried_at := {}
+## Per crew (instance id): [grounded, station, tick] a snapshot about a second old (the pin test). Scratch like _buried_at.
+static var _buried_snap := {}
 const BURIED_KEEP := 256
+const BURIED_PIN_TICKS := SimClock.TICK_RATE
+const BURIED_PIN_M := 1.0
+const BURIED_TRAVEL_M := 3.0
 ## Measurement only: BURIED_TRACE=on in the environment prints a BURIED line per swap (the crew, why, the gap and the lag).
 static var buried_trace := OS.get_environment("BURIED_TRACE") == "on"
 
@@ -5745,7 +5750,19 @@ static func buried_station(tank: Tank, station: Vector3, grounded: Vector3) -> V
 		return grounded
 	var key := tank.get_instance_id()
 	var pinned: Variant = _buried_at.get(key)
-	var buried := _flat_distance(station, grounded) > BURIED_M
+	# Amendment 1 (Bar M, before numbers): a deep grounding alone is routine in a big group click (a station in a building on a narrow
+	# street slides along the wall and the crew keeps up: the dev cell's 609 swaps, median 6 m); his corner is PINNED: the grounded
+	# point stays put while the station travels on. So the distance trigger also needs the grounding to have moved <= BURIED_PIN_M
+	# while the station moved >= BURIED_TRAVEL_M since a snapshot at least BURIED_PIN_TICKS old.
+	var now := Engine.get_physics_frames()
+	var snap: Array = _buried_snap.get(key, [])
+	var stuck := not snap.is_empty() and now - int(snap[2]) >= BURIED_PIN_TICKS \
+			and _flat_distance(grounded, snap[0]) <= BURIED_PIN_M and _flat_distance(station, snap[1]) >= BURIED_TRAVEL_M
+	if snap.is_empty() or now - int(snap[2]) >= 2 * BURIED_PIN_TICKS:
+		if _buried_snap.size() >= BURIED_KEEP:
+			_buried_snap.clear()
+		_buried_snap[key] = [grounded, station, now]
+	var buried := _flat_distance(station, grounded) > BURIED_M and stuck
 	# Sticky: the element can publish the pinned corner itself as the station (Locks tick 180: its converge rebuilt the crew's
 	# place there), which grounds to itself. A station grounded back within BURIED_M of where this crew was pinned is still buried.
 	var held := pinned is Vector3 and _flat_distance(grounded, pinned as Vector3) <= BURIED_HELD_M

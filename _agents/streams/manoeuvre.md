@@ -71,6 +71,15 @@ _(worker keeps this current: report at the top, every number with commit, machin
 
 ### BAR M (FILED 2026-10-30 ~18:55, before any number; frozen tree = the first commit after 482f5e2b3 whose check is named green)
 
+**AMENDMENT 1 (2026-10-30 ~19:40, before any bar number; the lines are unchanged, the rule's trigger is corrected):** a pipeline dry
+run on DEV seed 7001 (never a bar) showed the rule acting in every cell of his group click (764 swaps on Locks, 609 of them the
+plain > 4 m trigger, median gap 6 m): in a five-squad click a station in a building on a narrow street is routine and today's
+grounding slides it along the wall. His corner is PINNED (the grounded point stays put while the station travels on). So the > 4 m
+trigger now also needs the grounding to have moved <= 1 m while the station moved >= 3 m since a snapshot >= 1 s old. His staged case
+unchanged (Burners2_4 0.0 s, Crossing guard identical). Frozen tree = the commit carrying this amendment, once its check is green.
+The dev read itself, said so it is never read as evidence: 4 cells, no-progress 2274 -> 1921 crew-s, all-in 565 -> 435 s, wall
+contact 155 -> 196 s (G3 is the line at risk).
+
 **The change:** `--traffic-on=buried` (Movement.buried_station, the one call in TankBrain's transit block, R47.11): a squad's
 travelling station that the grounding moves > 4 m, or pulls back along the squad's way > 1 m while 6 m further on is > 1.5 m off the
 navmesh, is taken on the squad's own route 8 m on (never behind the crew), sticky while the grounding stays pinned. **Native:** no
