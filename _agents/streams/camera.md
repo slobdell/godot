@@ -118,6 +118,40 @@ term that causes round 46's misses is the urgent pan's trigger ("a crew off scre
 edge), plus, at 100 m, the planner's lean/wide frame putting his squad 35 m off the look (Crossing tick 690: K3's bound).
 
 
+### Bar K FILED (2026-10-30 ~18:30, stream/camera, before any number on 12801-12848; candidate e4a614eab, its full check on builder3 running at filing)
+
+**Bar K, a new selection pans at once and his squad stays framed (camera K2/K3; C47.1, C47.2, C47.10).** Switch
+`--camera-select-pan` (ON at e4a614eab; `=off` = main's camera, round 46's planner exactly: byte-identical BASE path). The rule
+(`RtsCamera._pan_urgent`): the pick's own pan starts at once if the planner's point is > 20 m from the shown look point (no aim
+hold, no hand pace), moves the LOOK POINT only (the turn and zoom keep his hand's pace and hold), a spring from rest capped at
+4 view-heights/s, and ends when that gap is <= 12 m and the pan has slowed to what his hand allows, or after 1.5 s; a later start
+(a second within FRESH_S, or a frame that has drifted 30 m with no hand on the camera since the pick) waits until he is not aiming.
+K3's 20 m bound is PARKED OFF (dev knob `--camera-sel-bound`). Constants as in the code; no dev knob in the series.
+**Arms:** BASE `--camera-select-pan=off` v ARM default, ONE commit (e4a614eab, frozen: no edits in the worktree while it runs),
+builder3, headless 1920x1080 @60, `make camera-trace` (CameraPlaytest), 150 s. Series: `~/camera-r47/bark.sh`.
+**Workloads:** SPLIT (`--camera-scenario=split`: his Crossing case, half his groups out 70 m left, half right, then the hand picks
+ANOTHER group by its key every 1-3 s, aims and clicks; his hand stays on the mouse, drifting 0.6 s of each second; his eye waits
+up to 1.5 s for the view to reach the squad and stop panning before he aims) on 12801-12812 Terminus, 12813-12824 Locks,
+12825-12836 Crossing, 12837-12848 Gorge (48 an arm); ATTACK (round 41's autoplay; the same eye wait) on 12801-12812 Terminus and
+12825-12836 Crossing (24); AMBUSH (lanes by seed % 3) and RETREAT on Terminus 12801-12824 (24 each). The eye wait is a WORKLOAD
+choice made after dev reads (a player does not click while the view sweeps); clicks aimed while a pan ran are REPORTED.
+**Deciding (his two notes, SPLIT + ATTACK pooled; CameraLook):** D1 seconds his selection's middle is > 30 m from the look point,
+% of play: ARM <= BASE and ARM <= 10 % (the ratio reported; a 0.6 x ratio was drafted and dropped after the dev read showed
+0.74 x at n = 8, said here so nobody reads it as a fresh line). D2 a new selection > 20 m off when picked -> within 20 m (never =
+10 s): ARM mean <= 1.0 s AND <= BASE; ARM p90 <= 1.5 s. D3 such selections never framed: ARM <= BASE.
+**Guards (what it could break; Bar C1's lines):** G1 driving with half+ of his selection hidden by a building: ARM <= 1.1 x BASE
++ 5 s. G2 none of his selection on screen: ARM <= BASE. G3 hits on his units off screen: ARM <= BASE + 1 point. G4a no automatic
+source but 'select' over BASE's worst + 0.5 jerks/min; G4b snaps from any automatic source but 'select' = 0 (the pan's own
+reported); **G4c a pan, not a cut** (the orchestrator's ask): the view's own fastest move <= 4.5 view-heights/s, and seconds
+over 4.5 <= BASE + 1. G5a clicks on the aimed unit >= 70 %; G5b slip p95 <= 40 px; G5c held <= BASE + 2 points. G6 action share
+>= BASE - 5. G7 inside a solid <= BASE + 1 s/run. G8 the rear-ambush turn: AMBUSH rear lane and all lanes, first shot -> on screen
+mean (never = 20) <= BASE + 1 s, blind % of fire <= BASE + 2; RETREAT the same + facing the wall <= BASE + 5. G9 every run ok and
+staged, no SCRIPT ERROR. **G10 the laptop (C47.10):** UHD 620, laptop preset, under the lock, the rig's ms per frame mean <= 0.5 and
+the planner step p99 <= 1.5 ms (Bar C1's G8; the rule adds one vector length a frame).
+**Judge:** `python3 tests/camera/bar_k.py ~/camera-r47/bark --budget-ms <mean> <p99>`. **Also reported (not lines):** his four
+recordings before/after under THREE hand models (K5: `make camera-replay CAMK_HAND=model|rest|busy`).
+**If it fails** (C47.2): in player terms, what he would see ON v OFF, to the orchestrator the same hour.
+
 ### Dev reads before Bar K (7001-7004 Terminus, 90 s, split + attack + ambush, builder3; never a bar; `tests/camera/bar_k.py`)
 Each read failed a guard and changed the rule or the workload BEFORE any 128xx number (BASE = `--camera-select-pan=off`):
 | Tree | What failed | Change |
