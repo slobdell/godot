@@ -35,6 +35,7 @@ RULES = {
     "buried": ("traffic-off", "buried", "2026-10-30T20-54-12"),   # manoeuvre, merge 06ba81b45 (R47.33)
     "holdyield": ("traffic-off", "holdyield", "2026-10-31T00-13-18"),  # manoeuvre, merge c41ae23bb (R47.42)
     "group_merged": ("group-merged", "off", "2026-10-31T00-41-40"),  # orders O1 v3, merge de3176388 (R47.41)
+    "pot_shot": ("pot-shot", "off", "2026-10-31T03-14-17"),       # engage E3, merge 8d51777cc (R47.37)
 }
 STAMP = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})")
 

@@ -155,7 +155,8 @@ static func rules() -> Dictionary:
 			"shortfwd": not Traffic.off("shortfwd"), "holdway": not Traffic.off("holdway"), "army_money": not SkirmishMode.COUNT_CAP,
 			# Round 47 (native): the other sim rules that shipped ON this round (tests/replay/rules.py RULES).
 			"press_on": TankBrain.PRESS_ON, "battery_screen": RtsControls.BATTERY_SCREEN, "buried": not Traffic.off("buried"),
-			"holdyield": not Traffic.off("holdyield"), "group_merged": SelectionSquads.merged_mode() == "all"}
+			"holdyield": not Traffic.off("holdyield"), "group_merged": SelectionSquads.merged_mode() == "all",
+			"pot_shot": Gunnery.POT_SHOT}
 
 
 ## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the
