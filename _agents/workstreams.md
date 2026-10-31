@@ -125,6 +125,14 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   `picks/<piece>`, `lines/<id>`). An overpass needs a deck cutaway (camera's code, later). builder3 runs Xorg on :1: render targets
   need `DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority` until native's remote.sh detects it.
 
+- **R47.11 (2026-10-30 evening) GRANT manoeuvre ONE line in `game/ai/tank_brain.gd`'s transit block (~:1210, the
+  `context["goal"] = SlotGround.standable_for(...)` call site), additive, behind `--traffic-off=buried`.** Manoeuvre's M1 (2e0599cbe):
+  Locks Burners2_4's travelling station slid into the 2.8 m gap between the block (-30, 42) and container_40 (-30, 66); grounding moved
+  it up to 9.9 m to the container's east end, so the crew drove nose-in and sat while its squad drove on. Fix: a station the grounding
+  moves > ~4 m (buried) is replaced by the squad's own route at that point; the helper lives in manoeuvre's files. Engage owns the rest
+  of tank_brain (CLEAR_LANE, target choice, E7's RETREAT): told. If native's decide grounds stations in C++, the twin rule (C47.6) applies.
+  Manoeuvre does NOT change place / seat this round, so native's R47.9 twin goes ahead now.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
