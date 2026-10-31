@@ -10,6 +10,12 @@ const WORLD_MASK := 1
 const EYE_HEIGHT := 1.3
 
 
+## What blocks an eye: the static world, plus the map kit's sight screens while ArenaKit.sight_on (mapkit, C47.7: the
+## one function the kit touches here). Never a hull's or a shell's mask: those stay WORLD_MASK / HIT_MASK.
+static func eye_mask() -> int:
+	return WORLD_MASK | (ArenaKit.SIGHT_LAYER if ArenaKit.sight_on else 0)
+
+
 ## True if no static world geometry blocks the line between the two tanks.
 ## Must be called during physics processing (or when physics isn't stepping).
 ## Round 16 (A2): with the detailed profile on (ai-perf DETAIL=1, or --sim-profile) every call is the part "los.ray"
@@ -19,7 +25,7 @@ static func has_line_of_sight(viewer: Node3D, target: Node3D) -> bool:
 	var space := viewer.get_world_3d().direct_space_state
 	var query := PhysicsRayQueryParameters3D.create(
 			viewer.global_position + Vector3.UP * EYE_HEIGHT,
-			target.global_position + Vector3.UP * EYE_HEIGHT, WORLD_MASK)
+			target.global_position + Vector3.UP * EYE_HEIGHT, eye_mask())
 	var clear := space.intersect_ray(query).is_empty()
 	if OrderController.profile_detail:
 		OrderController.add_part("los.ray", Time.get_ticks_usec() - started)
