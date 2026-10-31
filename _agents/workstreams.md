@@ -348,6 +348,14 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   builder3's light lane for fights, its GPU (RTX 5060 Ti 16 GB) for clips and later training; seeds 13121-13216. CPU opponents by ML:
   not now (the standing ruling; the bottleneck is the CPU sim and missing behaviours we can write).
 
+- **R47.41 (his pick) O1 v3 (columns only at the end) SHIPS ON after Bar O2 FAILED on G2 (wedged 57.2 v 39.0, cap 53.8) and G6 contact_s
+  (+0.50, se 0.25, cap +0.41); every deciding line passed** (4536ccb0f, builder3, 12749-12778: D1 paired -14.2 m, median 35.1 v 52.4,
+  D1b 51/51, D2 +0.44 s; his Crossing 14.0 v 39.4 m; Locks unchanged; the wedging only on the 51 laid clicks, Sumps and the yard). Orders'
+  ship commit: `--group-merged` default ON (both arms), `=off` the escape; the Sumps / yard stall is its follow-up. **Main integration:**
+  79cea77e5 RED 3604/2 (route's two shut-door tests: mapkit's BlastDoors shadowed the stub) -> fixed 94646bf63 (RouteDoors.is_open reads a
+  test's stub first; 92/0); native 27ea82fa5 (doors' native mask, eye_mask in C++ LOS) merged as 8d37b9796, its check queued. Mapkit's
+  Meshy train (pick A, 15 credits) in; the monorail falls back to plain on the LAPTOP PRESET only (+1.4 ms), per his standing preset rule.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_

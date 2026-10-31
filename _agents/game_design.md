@@ -4863,3 +4863,5 @@ oddest crew-seconds from many CPU-v-CPU fights by anomaly scoring over the censu
 facing away from fire, fire held in range); (2) render the top moments to short clips on builder3's GPU; (3) a tap-to-judge page for him
 ("looks dumb" / "fine"), his labels in its db; (4) once there are a few hundred labels, train a small classifier on builder3's GPU to rank
 new fights. His eye stays the judge; the model only finds candidates faster.
+12. **Group click after Bar O2 (every deciding line passed; G2 wedged 57.2 v 39.0 and G6 contact_s +0.50 failed, confined to Sumps and
+    the open yard: rear tanks wait a few seconds behind the front of their file):** **his pick: "Ship it ON (Recommended)".** -> R47.41.
