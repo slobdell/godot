@@ -115,7 +115,7 @@ func test_native_place_is_the_live_gdscript() -> void:
 		var heading := Vector3(rng.randf_range(-1.0, 1.0), rng.randf_range(-0.2, 0.2), rng.randf_range(-1.0, 1.0))
 		if trial % 13 == 5:
 			heading = Vector3.ZERO
-		var spacing := [8.0, 11.0, 14.0, 18.0, rng.randf_range(0.5, 25.0)][rng.randi_range(0, 4)]
+		var spacing: float = [8.0, 11.0, 14.0, 18.0, rng.randf_range(0.5, 25.0)][rng.randi_range(0, 4)]
 		var opts := _opts(rng, members, anchor)
 		BrainSwitches.native_place = false
 		var live := TacticsFormation.place(members, formation, anchor, heading, spacing, opts)
