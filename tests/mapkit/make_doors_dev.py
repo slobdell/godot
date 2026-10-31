@@ -36,8 +36,8 @@ layout = {
     "objectives": [{"name": "west yard", "position": [-70.0, 40.0], "radius": 14.0},
                    {"name": "east yard", "position": [70.0, -40.0], "radius": 14.0}],
     "doors": [
-        {"name": "west_gate", "group": "gates", "position": [-40.0, 0.0], "rotation_deg": 0.0},
-        {"name": "east_gate", "group": "gates", "position": [40.0, 0.0], "rotation_deg": 180.0},
+        {"name": "west_gate", "group": "gates", "position": [-40.0, 0.0], "rotation_deg": 0.0, "call": "west"},
+        {"name": "east_gate", "group": "gates", "position": [40.0, 0.0], "rotation_deg": 180.0, "call": "east"},
     ],
 }
 (root / "arenas" / "doors_dev.json").write_text(json.dumps(layout, indent=1) + "\n")

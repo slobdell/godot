@@ -32,20 +32,40 @@ func _vehicle(arena: Arena, at: Vector2, size := Vector3(3.0, 1.6, 6.0)) -> Stat
 	return body
 
 
-func test_a_layout_with_doors_builds_a_slab_per_door_outside_the_navmesh_sources() -> void:
-	var arena := await ArenaFixture.build_layout(self, _layout())
+func test_a_layout_with_doors_builds_a_slab_and_a_link_per_door_and_carves_the_doorway() -> void:
+	var arena := await ArenaFixture.build(self, "doors_dev")
 	assert_true(arena.doors != null, "the arena built its doors")
 	assert_eq(arena.doors.bodies.size(), 2, "one slab per door")
+	assert_eq(arena.doors.links.size(), 2, "one link per door")
+	assert_true(BlastDoors.active == arena.doors.doors, "the static query reads this arena's schedule")
 	for id: String in arena.doors.bodies:
 		var body: StaticBody3D = arena.doors.bodies[id]
-		assert_true(not arena.obstacles_root.is_ancestor_of(body), "%s is not under Obstacles (the bake source)" % id)
-		assert_true(not body.is_in_group("navigation_source"), "%s is not a navigation source" % id)
-	# The doorway is walkable navmesh: the closest navmesh point to the door's centre is the centre itself.
+		assert_true(not arena.obstacles_root.is_ancestor_of(body), "%s is not under Obstacles" % id)
+		var link: NavigationLink3D = arena.doors.links[id]
+		var layers := link.navigation_layers
+		assert_true(layers != 0 and layers & (layers - 1) == 0 and layers != 1, "%s's link is on ONE bit, never the navmesh's (%d)" % [id, layers])
+	assert_eq(arena.obstacles_root.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("DoorBake")).size(), 0,
+			"the bake-only slabs are gone after the bake")
 	var map := arena.get_world_3d().navigation_map
-	var centre := Vector3(DOOR_A[0], 0.0, DOOR_A[1])
-	var closest := NavigationServer3D.map_get_closest_point(map, centre)
-	assert_true(Vector2(closest.x, closest.z).distance_to(Vector2(centre.x, centre.z)) < 0.5,
-			"the navmesh covers the doorway (closest point %s)" % closest)
+	var centre := Vector3(-40.0, 0.0, 0.0)
+	var closest := NavigationServer3D.map_get_closest_point_to_segment(map, centre + Vector3.UP, centre + Vector3.DOWN)
+	assert_true(Vector2(closest.x, closest.z).distance_to(Vector2(centre.x, centre.z)) > 1.5,
+			"the doorway is carved from the navmesh (closest %s)" % closest)
+	await wait_physics_frames(3)
+	var north := Vector3(-40.0, 0.0, -12.0)
+	var south := Vector3(-40.0, 0.0, 12.0)
+	var around := _length(NavigationServer3D.map_get_path(map, north, south, true, 1))
+	var link_layers: int = (arena.doors.links["west_gate"] as NavigationLink3D).navigation_layers
+	var through := _length(NavigationServer3D.map_get_path(map, north, south, true, 1 | link_layers))
+	assert_true(around > 60.0, "the navmesh alone goes round by a flank gap (%.0f m)" % around)
+	assert_true(through < 35.0, "with the door's bit the route goes through the door (%.0f m)" % through)
+
+
+func _length(path: PackedVector3Array) -> float:
+	var total := 0.0
+	for i in range(1, path.size()):
+		total += path[i - 1].distance_to(path[i])
+	return total
 
 
 func test_the_collider_follows_the_schedule() -> void:
@@ -136,3 +156,43 @@ func test_the_dev_arena_loads_with_its_two_doors_and_is_a_fixture() -> void:
 	var path := NavigationServer3D.map_get_path(map, Vector3(-100.0, 0.0, 60.0), Vector3(-100.0, 0.0, -60.0), true)
 	assert_true(path.size() >= 2 and Vector2(path[path.size() - 1].x, path[path.size() - 1].z).distance_to(Vector2(-100.0, -60.0)) < 1.5,
 			"the west flank gap is open: %d points" % path.size())
+
+
+## One hold scenario (a hull parked in the west doorway through its shut tick, then leaving), events in order.
+func _hold_run() -> Array:
+	var arena := await ArenaFixture.build(self, "doors_dev")
+	var doors := arena.doors
+	var events: Array = []
+	doors.door_event.connect(func(e: Dictionary) -> void: events.append(e))
+	var tick := [0]
+	doors.tick_source = func() -> int: return tick[0]
+	var first := doors.doors.next_change("west_gate", 0)
+	tick[0] = first - 3
+	await wait_physics_frames(2)
+	var crew := _vehicle(arena, Vector2(-40.0, 1.5))
+	await wait_physics_frames(2)
+	for step in SimClock.ticks(ArenaDoors.HOLD_EVICT_S) + 4:
+		tick[0] += 1
+		await wait_physics_frames(1)
+	crew.position.z += 10.0
+	await wait_physics_frames(2)
+	tick[0] += 1
+	await wait_physics_frames(2)
+	free_owned()
+	return events
+
+
+func test_a_held_door_replays_to_the_tick_and_asks_an_overstaying_crew_to_move() -> void:
+	var a: Array = await _hold_run()
+	var b: Array = await _hold_run()
+	assert_eq(a, b, "the same parked hull holds the same door at the same ticks, twice")
+	var kinds := a.filter(func(e: Dictionary) -> bool: return e["door"] == "west_gate" and e["kind"] in ["held", "overstay", "sealed"]).map(
+			func(e: Dictionary) -> String: return e["kind"])
+	assert_true(a.any(func(e: Dictionary) -> bool: return e["kind"] == "shut" and e["door"] == "west_gate"),
+			"the schedule's own shut event still fires (the hold delays the collider, not the schedule)")
+	assert_eq(kinds, ["held", "overstay", "sealed"], "held, then asked to move on after %.0f s, then sealed once clear" % ArenaDoors.HOLD_EVICT_S)
+	var overstay: Array = a.filter(func(e: Dictionary) -> bool: return e["kind"] == "overstay")
+	var held: Array = a.filter(func(e: Dictionary) -> bool: return e["kind"] == "held")
+	if not overstay.is_empty() and not held.is_empty():
+		assert_eq(int(overstay[0]["tick"]) - int(held[0]["tick"]), SimClock.ticks(ArenaDoors.HOLD_EVICT_S), "overstay after HOLD_EVICT_S")
+		assert_eq(String(overstay[0]["crew"]), "Green_Test_1", "naming the crew")

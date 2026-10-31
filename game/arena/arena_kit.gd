@@ -9,6 +9,9 @@ extends RefCounted
 ## - "low" cover (barricades, 0.9 m) stops hulls but not eyes or guns: it shapes movement while leaving fire lanes open,
 ##   and only catches shells aimed low at a vehicle hugging it.
 ## - decoration (`collides: false`) has no gameplay at all, so it is exempt from point symmetry.
+## - "sight" cover (mapkit P3, round 47, C47.7: sight screens) blocks EYES only: a hull drives through it, a shell flies
+##   through it, the navmesh is baked as if it were not there. Arena builds it on its own physics layer (SIGHT_LAYER),
+##   never in `obstacles`; Perception's eye ray and CoverTables read it while `sight_on` (`--kit-sight=off`).
 
 ## type → size [x, height, z] for ONE level (meters, before rotation; long axis along x), cover, and optional
 ## max_stack (stackable), collides (default true), fallback (a visual slot to scale when the theme lacks prop.<type>;
@@ -36,7 +39,17 @@ const PROPS := {
 	# Round 7 (feel, agreed with arena): a city block, theme prop.block (CityBlock). One box of `size`; the art fills its
 	# footprint at ground level and steps in only above the shopfronts, so this box is what you see where it matters.
 	"block": {"size": [40.0, 24.0, 40.0], "cover": "hard"},
+	# Mapkit P3 (round 47): a sight screen, the `sight` class. 14 m along x (a street's span), above the tallest hull's
+	# eye and roof. Its look waits on the lead's pick (the looks page); prop.sight_screen is the strip-curtain direction
+	# until then. On no shipped map until he picks (P4).
+	"sight_screen": {"size": [14.0, 6.0, 0.6], "cover": "sight"},
 }
+## The physics layer a `sight` prop's body sits on (layer 5): not the world (1), not the vehicles (2), so nothing that
+## moves or flies tests it; only the eye ray adds it (Perception.eye_mask()).
+const SIGHT_LAYER := 16
+## The kit flag (C47.7): sight screens blind the eye ray and the cover tables. Off (`--kit-sight=off`, read by Arena):
+## they are scenery. A map with no screens is identical either way.
+static var sight_on := true
 ## **Adding a type here is not an additive change.** `test_every_kit_prop_type_has_a_visual_slot` requires a
 ## `prop.<type>` slot in the theme for every entry, with no stand-in — so a new kind must land in the SAME COMMIT
 ## as its slot and its scene, which means whoever owns the art adds both. Round 7: `block` (feel's cityscape kit,
@@ -70,6 +83,11 @@ static func size_of(prop: Dictionary) -> Vector3:
 
 static func cover_of(type: String) -> String:
 	return String(PROPS[type]["cover"])
+
+
+## A kit type of the `sight` class: blocks eyes only.
+static func is_sight(type: String) -> bool:
+	return PROPS.has(type) and String(PROPS[type]["cover"]) == "sight"
 
 
 ## Distance from `point` (x, z) to the rotated rectangle of an obstacle with ground `center`, `size` (x, _, z) and

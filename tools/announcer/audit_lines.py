@@ -38,7 +38,8 @@ SLOTS = {"team": "team", "other_team": "team", "team_s": "team_s", "other_team_s
          "units": "units", "other_units": "units", "arena": "arena",
          "count": "number", "other_count": "number", "streak": "number", "kills": "number",
          "count_over": "count_over", "other_count_over": "count_over",
-         "formation": "formation", "technique": "technique", "drill": "drill"}
+         "formation": "formation", "technique": "technique", "drill": "drill",
+         "gate": "gate"}  # mapkit P5 (round 47): a blast door by its compass word
 # Slots whose spoken value can start with a vowel sound ("IFV", "artillery"): never after "a".
 VOWEL_RISK = {"unit", "units"}
 # The Veteran carries the technical analysis now, and a thought that trails off needs room to trail (the lead's

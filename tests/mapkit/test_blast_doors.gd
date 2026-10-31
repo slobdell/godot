@@ -16,15 +16,15 @@ func test_a_door_opens_and_shuts_by_tick_on_its_cycle() -> void:
 	var first := doors.next_change("west_gate", 0)
 	assert_true(first >= SimClock.ticks(BlastDoors.FIRST_MIN_S) and first <= SimClock.ticks(BlastDoors.FIRST_MAX_S),
 			"the first change lands in the window: tick %d" % first)
-	assert_true(doors.is_open("west_gate", 0), "doors start open by default")
-	assert_true(doors.is_open("west_gate", first - 1), "open up to the change")
-	assert_true(not doors.is_open("west_gate", first), "shut at the change")
+	assert_true(doors.open_at("west_gate", 0), "doors start open by default")
+	assert_true(doors.open_at("west_gate", first - 1), "open up to the change")
+	assert_true(not doors.open_at("west_gate", first), "shut at the change")
 	var reopen := first + SimClock.ticks(25.0)
 	assert_eq(doors.next_change("west_gate", first), reopen, "shut lasts shut_s")
-	assert_true(not doors.is_open("west_gate", reopen - 1), "still shut the tick before")
-	assert_true(doors.is_open("west_gate", reopen), "open again after shut_s")
+	assert_true(not doors.open_at("west_gate", reopen - 1), "still shut the tick before")
+	assert_true(doors.open_at("west_gate", reopen), "open again after shut_s")
 	assert_eq(doors.next_change("west_gate", reopen), reopen + SimClock.ticks(40.0), "open lasts open_s")
-	assert_true(not doors.is_open("west_gate", reopen + SimClock.ticks(40.0)), "and shuts again: a fixed cycle")
+	assert_true(not doors.open_at("west_gate", reopen + SimClock.ticks(40.0)), "and shuts again: a fixed cycle")
 
 
 func test_the_warning_comes_before_every_change() -> void:
@@ -44,7 +44,7 @@ func test_a_replay_of_the_same_seed_is_the_same_schedule() -> void:
 	var other := BlastDoors.from_layout(_layout(), 12904)
 	var same := true
 	for tick in range(0, SimClock.ticks(300.0), 7):
-		same = same and a.is_open("west_gate", tick) == b.is_open("west_gate", tick)
+		same = same and a.open_at("west_gate", tick) == b.open_at("west_gate", tick)
 	assert_true(same, "two builds from one seed agree on every tick over 300 s")
 	assert_eq(a.events_between(0, SimClock.ticks(300.0)), b.events_between(0, SimClock.ticks(300.0)), "and on every event")
 	# Different seeds can draw the same first tick; over three seeds at least one must differ, or the seed is ignored.
@@ -57,7 +57,7 @@ func test_both_sides_meet_the_same_doors() -> void:
 	var doors := BlastDoors.from_layout(_layout(), 12906)
 	var same := true
 	for tick in range(0, SimClock.ticks(400.0), 5):
-		same = same and doors.is_open("west_gate", tick) == doors.is_open("east_gate", tick)
+		same = same and doors.open_at("west_gate", tick) == doors.open_at("east_gate", tick)
 	assert_true(same, "a door and its mirror (one group) share every tick")
 
 
@@ -72,9 +72,9 @@ func test_events_are_the_schedule_in_order() -> void:
 		var tick := int(e["tick"])
 		match String(e["kind"]):
 			"shut":
-				assert_true(not doors.is_open(e["door"], tick) and doors.is_open(e["door"], tick - 1), "shut event at the change")
+				assert_true(not doors.open_at(e["door"], tick) and doors.open_at(e["door"], tick - 1), "shut event at the change")
 			"open":
-				assert_true(doors.is_open(e["door"], tick) and not doors.is_open(e["door"], tick - 1), "open event at the change")
+				assert_true(doors.open_at(e["door"], tick) and not doors.open_at(e["door"], tick - 1), "open event at the change")
 	# Splitting the window anywhere gives the same events: polling every tick sees each exactly once.
 	var stitched: Array[Dictionary] = []
 	var last := 0
@@ -88,8 +88,8 @@ func test_events_are_the_schedule_in_order() -> void:
 func test_a_door_that_starts_shut() -> void:
 	var doors := BlastDoors.from_layout(_layout({"start": "shut"}), 12908)
 	var first := doors.next_change("west_gate", 0)
-	assert_true(not doors.is_open("west_gate", 0), "shut at kick-off")
-	assert_true(doors.is_open("west_gate", first), "opens at its first change")
+	assert_true(not doors.open_at("west_gate", 0), "shut at kick-off")
+	assert_true(doors.open_at("west_gate", first), "opens at its first change")
 
 
 func test_doorway_footprint() -> void:
@@ -116,3 +116,18 @@ func test_validation_refuses_unfair_or_impossible_doors() -> void:
 	var twice: Array = _layout()["doors"].duplicate(true)
 	twice[1]["name"] = "west_gate"
 	assert_true(BlastDoors.validate_doors(twice, tol).contains("twice"), "duplicate names are refused")
+
+
+func test_the_static_query_route_calls_reads_the_active_schedule() -> void:
+	var doors := BlastDoors.from_layout(_layout(), 12910)
+	var was := BlastDoors.active
+	BlastDoors.active = doors
+	var first := doors.next_change("west_gate", 0)
+	assert_true(BlastDoors.is_open(&"west_gate", first - 1), "open before the change, through the class (route's call)")
+	assert_true(not BlastDoors.is_open(&"west_gate", first), "shut at it")
+	assert_true(BlastDoors.is_open(&"no_such_door", first), "an unknown door never shuts a route out")
+	var script: Script = load("res://game/match/blast_doors.gd")
+	assert_eq(bool(script.call("is_open", &"west_gate", first)), false, "Script.call works the way RouteDoors calls it")
+	BlastDoors.active = null
+	assert_true(BlastDoors.is_open(&"west_gate", first), "no arena with doors: open")
+	BlastDoors.active = was

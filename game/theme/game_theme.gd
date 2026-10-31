@@ -45,6 +45,8 @@ const DEFAULT_SLOTS := {
 	"prop.block": "res://game/theme/arena_kit/city/prop_block.tscn",  # round 7: the city block (CityBlock)
 	"prop.floodlight": "res://game/theme/arena_kit/kit/prop_floodlight.tscn",
 	"prop.sign": "res://game/theme/arena_kit/kit/prop_sign.tscn",
+	# Mapkit P3 (round 47): the `sight` cover class's screen (placeholder look until the lead's pick).
+	"prop.sight_screen": "res://game/theme/arena_kit/mapkit/prop_sight_screen.tscn",
 	# Terrain (round 10): water, pits and bridge decks for `ArenaTerrain` (arena_kit/terrain, the terrain stream's).
 	"arena.terrain": "res://game/theme/arena_kit/terrain/terrain_visual.tscn",
 }

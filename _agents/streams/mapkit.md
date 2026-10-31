@@ -70,6 +70,39 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-30 ~18:20; newest first).**
+- **His picks (read by the orchestrator from the page db, main b8ec444aa):** door A vault slabs, sight screen C vent steam, overpass
+  C monorail, tank traps A hedgehogs, extras pipes B and crane A; all 21 door lines KEPT -> voice approved.
+- **P2 first version GREEN: 6282f0fbf** (builder3, `make check exited 0`, 3532 passed / 0 failed, 28 targets ALL JUDGED; waited
+  1781 s for the full-check lock). Contract version (route's R47.12 shape) + P3 + P5 follow in the next commit; its check is named
+  below when it lands.
+- **C47.8 as built with route:** static `BlastDoors.is_open(id: StringName, tick)` reads `BlastDoors.active` (the arena built last;
+  unknown door or no arena = open); the doorway is CARVED (bake-only slabs in Obstacles during the bake, freed after); one
+  NavigationLink3D per door on exactly `RouteDoors.register(&id, middle)`'s bit (UNUSED_LAYER, bit 32, while RouteDoors is not in
+  the project: no route uses a door). Hold: errs OPEN only; `overstay` event after HOLD_EVICT_S = 6 s held (the door never seals on
+  a hull; manoeuvre's yield can consume it -- request below). Replay-equal hold test.
+- **P3 sight class (C47.7):** ArenaKit `sight` cover + `sight_screen` type (14 x 6 x 0.6 m), body on physics layer 5
+  (SIGHT_LAYER 16), never in `obstacles`; `Perception.eye_mask()` = WORLD_MASK | SIGHT_LAYER while `ArenaKit.sight_on`
+  (`--kit-sight=off`); CoverTables marks screens; placeholder look = strip curtain until his pick (C, steam) is built in P4 (a
+  translucent look -> high tier, the strips the low/medium fallback, C47.10). No shipped map has a screen: byte-identical.
+- **P5 voice: 133 clips recorded** (132 + 1 re-record), ledger rows in `assets/announcer/ledger.md` and below. Door events reach the
+  booth as K5 `door` {door, gate, kind[, unit, team]}; moments door_open / door_shut / door_closing (PA warning) / door_held /
+  door_caught (nearest crew within 25 m driving at a door as it shuts). `{gate}` = 4 recorded compass names for every map (layout
+  door key `call`).
+
+**Paid ledger (mapkit):**
+| when | what | requests | characters | credits before -> after |
+|---|---|---|---|---|
+| 2026-10-30 ~18:05 | the 21 door lines x gate/unit/faction variants (lead kept all 21; orchestrator relayed approval) | 132 | 9,445 | 120,679 -> 112,354 |
+| 2026-10-30 ~18:15 | caller.door.open.04@south re-recorded once (speech-to-text heard a stray "But") | 1 | 68 | 112,354 -> 112,354 (unsettled read) |
+Speech-to-text still flags caller.door.open.04@north and @west for contractions only ("Somebody's gonna"): check by ear.
+
+**Requests to other streams:** (1) native: pass the route mask (RouteDoors) in C++ route queries, and EYE mask: native_perception
+configures C++ LOS with `Perception.WORLD_MASK`; screens need `Perception.eye_mask()` there (until then, a native crew sees through a
+sight screen). (2) manoeuvre (via orchestrator): an `overstay` door event names a crew parked in a closing doorway for 6 s; a yield
+that drives it clear. (3) engage / whoever owns `match.gd` `_clear_view` and `visibility_field.gd`: they ray with WORLD_MASK, so
+intel/visibility ignore screens; switch to `Perception.eye_mask()` (one word each).
+
 **2026-10-30 ~16:55 (start).** Base = main c789b55a6 (code e306ce27f GREEN builder3 3518/0, inherited; no launch check run).
 
 **Plan (in order; smallest foundation first):**

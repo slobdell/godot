@@ -1,19 +1,22 @@
 class_name ArenaDoors
 extends Node3D
-## The blast doors in the world (mapkit P2, round 47): one StaticBody3D slab per door of the layout's `doors`, its
-## collider live while BlastDoors' schedule says shut. The rules are BlastDoors (pure, seeded); this node only applies
-## them to physics, once per physics tick, from the Match's own tick (a replay re-sims the same ticks, so it shuts the
-## same doors at the same moments).
+## The blast doors in the world (mapkit P2, round 47): per door of the layout's `doors`, a StaticBody3D slab whose collider
+## is live while BlastDoors' schedule says shut, and ONE NavigationLink3D across it. The rules are BlastDoors (pure,
+## seeded); this node applies them to physics once per physics tick, from the Match's own tick (a replay re-sims the same
+## ticks, so it shuts the same doors at the same moments).
 ##
-## **A closing door never crushes or traps a crew.** At its shut tick a door whose slab footprint (plus HULL_MARGIN)
-## holds any vehicle stays passable -- HELD -- until the doorway is clear, then seals. A held door is a deviation in the
-## crew's favour that lasts only as long as a hull sits in a 1.6 m slot; the schedule (what the route plans on) does not
-## move. Events: `door_event(event)` with BlastDoors' {tick, door, group, kind} plus kind "held" (the door that waited,
-## with `crew`) and "sealed" (when a held door finally shuts).
+## **The route (C47.8 as built with route, R47.12).** The doorway is CARVED from the navmesh: a bake-only slab per door
+## sits in Obstacles while the arena bakes (`bake_blockers`) and is freed after (`after_bake`). The only way across is the
+## door's link, on exactly the navigation layer `RouteDoors.register(&id, middle)` returns; Pathing asks for that bit only
+## while `BlastDoors.is_open(id, tick)` holds now and at the crew's arrival. With no RouteDoors in the project the link sits
+## on UNUSED_LAYER, which no query asks for: no route ever uses a door, and every route is today's.
 ##
-## NOT a navigation source: the navmesh is baked with every doorway open (doors are not in `navigation_source`), and the
-## route reads `BlastDoors.is_open(id, tick)` to cost a shut door (C47.8, route's side). Until that lands, doors ship on
-## the dev arena only. The look is a placeholder slab until the lead picks one on the looks page.
+## **A closing door never crushes or traps a crew.** At its shut tick a door whose slab footprint (plus HULL_MARGIN) holds
+## a vehicle stays passable -- HELD -- until the doorway is clear, then seals. A hold only ever errs OPEN (later than the
+## schedule), never shut, so a route planned on the schedule is never wrong in the dangerous direction. A crew parked in
+## the doorway for HOLD_EVICT_S gets an `overstay` event naming it (for manoeuvre's yield to move it on, C47.3): the door
+## never seals onto a hull. Events: `door_event(event)` with BlastDoors' {tick, door, group, kind} plus "held" (with
+## `crew`), "overstay" (with `crew`) and "sealed". The hold is sim state read from physics: a replay reproduces it.
 
 signal door_event(event: Dictionary)
 
@@ -21,11 +24,23 @@ signal door_event(event: Dictionary)
 const VEHICLE_LAYER := 2
 ## How far outside the slab a hull still counts as "in the doorway" (m): a hull's half-width brushing the jamb.
 const HULL_MARGIN := 0.5
+## A held door asks the crew in it to move on after this long (s).
+const HOLD_EVICT_S := 6.0
+## The link's ends: this far either side of the slab's centre line (m), outside the carve (slab 0.8 + bake radius 2.0).
+const LINK_REACH := 4.0
+## A navigation layer no query asks for (bit 32): a link here is never used.
+const UNUSED_LAYER := 1 << 31
 
 var doors: BlastDoors
+## The doors of the arena built last (the booth's adapter listens to its door_event); null without doors.
+static var live: ArenaDoors = null
 ## id → StaticBody3D
 var bodies := {}
-var _held := {}  # id → true while a door is due shut but a crew is in it
+## id → NavigationLink3D
+var links := {}
+var _held := {}  # id → the tick its hold began
+var _evicted := {}  # id → true once its overstay was asked
+var _blockers: Array[Node] = []
 var _last_tick := -1
 var _match: Node
 var _match_tries := 0
@@ -36,16 +51,21 @@ var tick_source: Callable
 
 func setup(layout: Dictionary, match_seed: int) -> void:
 	doors = BlastDoors.from_layout(layout, match_seed)
+	BlastDoors.active = doors
+	live = self
+	var route := _route_doors()
+	if route != null:
+		route.call("clear")
 	for id in doors.ids():
 		var d := doors.door(id)
+		var center: Vector2 = d["center"]
+		var size := doors.slab_size(id)
 		var body := StaticBody3D.new()
 		body.name = "Door_%s" % id
 		body.collision_layer = 1
 		body.collision_mask = 0
-		var center: Vector2 = d["center"]
 		body.position = Vector3(center.x, 0.0, center.y)
 		body.rotation.y = deg_to_rad(float(d["rotation_deg"]))
-		var size := doors.slab_size(id)
 		var shape := CollisionShape3D.new()
 		var box := BoxShape3D.new()
 		box.size = size
@@ -62,7 +82,61 @@ func setup(layout: Dictionary, match_seed: int) -> void:
 		body.add_child(mesh)
 		add_child(body)
 		bodies[id] = body
+		var link := NavigationLink3D.new()
+		link.name = "Link_%s" % id
+		link.bidirectional = true
+		link.start_position = Vector3(0, 0, -LINK_REACH)
+		link.end_position = Vector3(0, 0, LINK_REACH)
+		var layer := int(route.call("register", StringName(id), body.position)) if route != null else 0
+		link.navigation_layers = layer if layer != 0 else UNUSED_LAYER
+		body.add_child(link)
+		links[id] = link
 	_apply(0, true)
+
+
+func _exit_tree() -> void:
+	if live == self:
+		live = null
+	if BlastDoors.active == doors:
+		BlastDoors.active = null
+		var route := _route_doors()
+		if route != null:
+			route.call("clear")
+
+
+## Route's RouteDoors when it is in the project (looked up by name, so this file parses without it).
+static func _route_doors() -> Script:
+	for entry: Dictionary in ProjectSettings.get_global_class_list():
+		if String(entry["class"]) == "RouteDoors":
+			return load(String(entry["path"])) as Script
+	return null
+
+
+## The bake-only slabs that carve every doorway out of the navmesh, parented under `obstacles_root` (a bake source)
+## until `after_bake`. Called by Arena before its bake.
+func bake_blockers(obstacles_root: Node3D) -> void:
+	for id in doors.ids():
+		var body := StaticBody3D.new()
+		body.name = "DoorBake_%s" % id
+		body.collision_layer = 1
+		body.collision_mask = 0
+		body.transform = (bodies[id] as StaticBody3D).transform
+		var shape := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		box.size = doors.slab_size(id)
+		shape.shape = box
+		shape.position = Vector3(0, box.size.y / 2.0, 0)
+		body.add_child(shape)
+		obstacles_root.add_child(body)
+		_blockers.append(body)
+
+
+func after_bake() -> void:
+	for body in _blockers:
+		if is_instance_valid(body):
+			body.get_parent().remove_child(body)
+			body.free()
+	_blockers.clear()
 
 
 func _physics_process(_delta: float) -> void:
@@ -92,23 +166,31 @@ func _apply(tick: int, quiet: bool) -> void:
 			door_event.emit(event)
 	_last_tick = tick
 	for id in doors.ids():
-		var want_shut := not doors.is_open(id, tick)
+		var want_shut := not doors.open_at(id, tick)
 		var shut := want_shut
 		if want_shut and not is_sealed(id):
 			var crew := _crew_in_doorway(id)
 			if crew != "":
 				shut = false
 				if not _held.has(id):
-					_held[id] = true
-					if not quiet:
-						door_event.emit({"tick": tick, "door": id, "group": doors.door(id)["group"], "kind": "held", "crew": crew})
+					_held[id] = tick
+					_emit(quiet, {"tick": tick, "door": id, "group": doors.door(id)["group"], "kind": "held", "crew": crew})
+				elif not _evicted.has(id) and tick - int(_held[id]) >= SimClock.ticks(HOLD_EVICT_S):
+					_evicted[id] = true
+					_emit(quiet, {"tick": tick, "door": id, "group": doors.door(id)["group"], "kind": "overstay", "crew": crew})
 		if shut and _held.has(id):
 			_held.erase(id)
-			if not quiet:
-				door_event.emit({"tick": tick, "door": id, "group": doors.door(id)["group"], "kind": "sealed"})
+			_evicted.erase(id)
+			_emit(quiet, {"tick": tick, "door": id, "group": doors.door(id)["group"], "kind": "sealed"})
 		if not want_shut:
 			_held.erase(id)
+			_evicted.erase(id)
 		_set_shut(id, shut)
+
+
+func _emit(quiet: bool, event: Dictionary) -> void:
+	if not quiet:
+		door_event.emit(event)
 
 
 ## Is door `id`'s collider live right now (shut and not held)?
@@ -124,11 +206,11 @@ func is_held(id: String) -> bool:
 func _set_shut(id: String, shut: bool) -> void:
 	var body := bodies[id] as StaticBody3D
 	(body.get_child(0) as CollisionShape3D).disabled = not shut
-	# Placeholder look: the slab drops into the floor when open (the drop-gate reading), stands when shut.
+	# Placeholder look until door A (vault slabs, his pick) is built: the slab stands when shut, hidden when open.
 	(body.get_node("Slab") as MeshInstance3D).visible = shut
 
 
-## The name of a vehicle whose body overlaps door `id`'s slab (plus HULL_MARGIN), or "".
+## The name of a vehicle whose body overlaps door `id`'s slab (plus HULL_MARGIN), or "" (the first by name: stable).
 func _crew_in_doorway(id: String) -> String:
 	var body := bodies[id] as StaticBody3D
 	if not body.is_inside_tree():

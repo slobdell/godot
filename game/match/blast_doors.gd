@@ -3,7 +3,7 @@ extends RefCounted
 ## Blast doors (mapkit P2, round 47; the lead WANTS them: "can make the game generally more interesting"): gates
 ## between sections of a map that open and shut on a schedule the announcer calls. THE RULES ONLY, as a pure function
 ## of the layout and the match seed -- no nodes, no physics -- so a replay reproduces every door, the route's planner
-## can ask about any future tick (C47.8: `is_open(id, tick)`), and both sides read the same schedule (C47.9).
+## can ask about any future tick (C47.8: `open_at(id, tick)`), and both sides read the same schedule (C47.9).
 ## The collider and the "never crush a crew" hold are the arena's (game/arena/arena_doors.gd); the look is his pick.
 ##
 ## A layout's `doors`: [{name, group, position [x, z], rotation_deg?, width?, start?, open_s?, shut_s?}]
@@ -12,6 +12,8 @@ extends RefCounted
 ##   width     the opening along the door's local x (m), at least MIN_WIDTH (a lane's widest-hull bar, with room).
 ##   start     "open" (default) or "shut" at tick 0.
 ##   open_s / shut_s   how long each state lasts once the cycle starts (default OPEN_S / SHUT_S).
+##   call      the compass word the booth names it by ("west": "the west gate"; CALLS). Four recorded names serve every
+##             map, so the voice never needs a new recording for a new door.
 ## The first change comes FIRST_MIN_S..FIRST_MAX_S into the match, drawn per group from the seed; after it the
 ## cycle is fixed, so a player who has seen one cycle can plan on the next.
 
@@ -29,6 +31,12 @@ const DEPTH := 1.6
 const HEIGHT := 7.5
 const STATES := ["open", "closing", "shut", "opening"]
 const EVENT_KINDS := ["warn_close", "shut", "warn_open", "open"]
+## The booth's gate names (assets/announcer/lines.json vocabulary `gate`).
+const CALLS := ["north", "south", "east", "west"]
+
+## The schedule of the arena built last (ArenaDoors sets it; null when the arena has no doors): what the static
+## `is_open` (route's C47.8 query) reads.
+static var active: BlastDoors = null
 
 ## id → {name, group, center Vector2, rotation_deg, width, start_open bool, first, open_ticks, shut_ticks}
 var _doors := {}
@@ -64,6 +72,7 @@ func _add(entry: Dictionary, group: String, first: int) -> void:
 		"center": Vector2(float(entry["position"][0]), float(entry["position"][1])),
 		"rotation_deg": float(entry.get("rotation_deg", 0.0)),
 		"width": float(entry.get("width", DEFAULT_WIDTH)),
+		"call": String(entry.get("call", "")),
 		"start_open": String(entry.get("start", "open")) != "shut",
 		"first": first,
 		"open_ticks": maxi(1, SimClock.ticks(float(entry.get("open_s", OPEN_S)))),
@@ -83,8 +92,17 @@ func door(id: String) -> Dictionary:
 	return _doors[id]
 
 
-## THE query (C47.8): is door `id` passable at `tick`? Pure; any tick, past or future.
-func is_open(id: String, tick: int) -> bool:
+## THE query (C47.8, the signature route calls through the class): is door `id` of the arena built last passable at
+## `tick`? Pure; any tick, past or future. An unknown door, or no arena with doors, is open (a route is never shut out by
+## a door that does not exist).
+static func is_open(id: StringName, tick: int) -> bool:
+	if active == null or not active.has(String(id)):
+		return true
+	return active.open_at(String(id), tick)
+
+
+## Is door `id` of THIS schedule passable at `tick`?
+func open_at(id: String, tick: int) -> bool:
 	var d: Dictionary = _doors[id]
 	var start_open: bool = d["start_open"]
 	if tick < int(d["first"]):
@@ -111,7 +129,7 @@ func next_change(id: String, tick: int) -> int:
 
 ## "open", "closing" (open, shutting within WARN_S), "shut", "opening" (shut, opening within WARN_S).
 func state(id: String, tick: int) -> String:
-	var open := is_open(id, tick)
+	var open := open_at(id, tick)
 	var soon := next_change(id, tick) - tick <= SimClock.ticks(WARN_S)
 	if open:
 		return "closing" if soon else "open"
@@ -126,7 +144,7 @@ func events_between(from_tick: int, to_tick: int) -> Array[Dictionary]:
 	for id in _ids:
 		var change := next_change(id, from_tick - warn)
 		while change - warn <= to_tick:
-			var opening := not is_open(id, change - 1)
+			var opening := not open_at(id, change - 1)
 			var warn_tick := change - warn
 			if warn_tick > from_tick and warn_tick <= to_tick and warn_tick > 0:
 				out.append({"tick": warn_tick, "door": id, "group": _doors[id]["group"], "kind": "warn_open" if opening else "warn_close"})
@@ -164,6 +182,8 @@ static func validate_doors(doors: Variant, tolerance: float) -> String:
 		names[name] = true
 		if float(entry.get("width", DEFAULT_WIDTH)) < MIN_WIDTH:
 			return "door %s is %.1f m wide; a door is a street and needs %.1f m" % [name, float(entry["width"]), MIN_WIDTH]
+		if entry.has("call") and not String(entry["call"]) in CALLS:
+			return "door %s: call must be one of %s (the booth's recorded gate names)" % [name, ", ".join(CALLS)]
 		if not String(entry.get("start", "open")) in ["open", "shut"]:
 			return "door %s: start must be open or shut" % name
 		for key in ["open_s", "shut_s"]:

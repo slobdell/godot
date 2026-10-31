@@ -583,7 +583,8 @@
     -40.0,
     0.0
    ],
-   "rotation_deg": 0.0
+   "rotation_deg": 0.0,
+   "call": "west"
   },
   {
    "name": "east_gate",
@@ -592,7 +593,8 @@
     40.0,
     0.0
    ],
-   "rotation_deg": 180.0
+   "rotation_deg": 180.0,
+   "call": "east"
   }
  ]
 }

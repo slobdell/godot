@@ -163,6 +163,8 @@ func _ready() -> void:
 	_build_terrain()
 	_build_obstacles()
 	_build_doors(flags.integer("seed", 0))
+	ArenaKit.sight_on = flags.text("kit-sight", "on") != "off"
+	_build_screens()
 	_build_decor()
 	_build_hazards()
 	var dressing := get_node_or_null("Dressing") as VisualSlot
@@ -170,6 +172,8 @@ func _ready() -> void:
 		dressing.invoke("setup", [layout])
 	cover = null  # A3: built on the first query, not here -- see `cover_tables()`
 	_bake()
+	if doors != null:
+		doors.after_bake()  # the doorways stay carved; only each door's link crosses them
 
 
 func _exit_tree() -> void:
@@ -291,8 +295,38 @@ func _build_obstacles() -> void:
 		(body.get_node("Visual") as VisualSlot).invoke("setup", [obstacle])
 
 
-## Mapkit P2 (round 47): the layout's blast doors (`doors`), built OUTSIDE the Obstacles node so the navmesh bakes
-## every doorway open; the route reads the schedule (BlastDoors.is_open). Seeded from the match's --seed.
+## Mapkit P3 (round 47, C47.7): every `sight` prop as a body on ArenaKit.SIGHT_LAYER under "Screens" -- outside
+## Obstacles (the bake source), so the navmesh runs under it and hulls (mask 3) and shells (HIT_MASK) never touch it;
+## only the eye ray (Perception.eye_mask) does. Dressed through its prop.<type> slot like any kit prop.
+func _build_screens() -> void:
+	var screens: Array = layout.get("props", []).filter(func(p: Dictionary) -> bool: return ArenaKit.is_sight(String(p["type"])))
+	if screens.is_empty():
+		return
+	var root := Node3D.new()
+	root.name = "Screens"
+	add_child(root)
+	for prop: Dictionary in screens:
+		var size := ArenaKit.size_of(prop)
+		var body := StaticBody3D.new()
+		body.name = "%s_%d" % [String(prop["type"]).capitalize().replace(" ", ""), root.get_child_count()]
+		body.collision_layer = ArenaKit.SIGHT_LAYER
+		body.collision_mask = 0
+		body.position = Vector3(prop["position"][0], 0.0, prop["position"][1])
+		body.rotation.y = deg_to_rad(float(prop.get("rotation_deg", 0.0)))
+		var shape := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		box.size = size
+		shape.shape = box
+		shape.position = Vector3(0, size.y / 2.0, 0)
+		body.add_child(shape)
+		body.add_child(_prop_visual(prop, size))
+		root.add_child(body)
+		(body.get_node("Visual") as VisualSlot).invoke("setup", [prop])
+
+
+## Mapkit P2 (round 47): the layout's blast doors (`doors`), built outside the Obstacles node; each doorway is carved
+## from the navmesh by a bake-only slab and crossed by one link the route opens per door (ArenaDoors, C47.8).
+## Seeded from the match's --seed.
 var doors: ArenaDoors
 
 
@@ -303,6 +337,7 @@ func _build_doors(match_seed: int) -> void:
 	doors.name = "Doors"
 	add_child(doors)
 	doors.setup(layout, match_seed)
+	doors.bake_blockers(obstacles_root)
 
 
 ## A box wider than this on BOTH horizontal axes is built as a hollow perimeter instead of one solid box.
@@ -654,8 +689,8 @@ static func normalize(data: Dictionary) -> Dictionary:
 	runtime["schema"] = int(data.get("schema", 1))
 	var obstacles: Array = runtime["obstacles"].filter(func(o: Dictionary) -> bool: return not o.has("kit"))
 	for prop: Dictionary in runtime.get("props", []):
-		if not ArenaKit.collides(prop["type"]):
-			continue
+		if not ArenaKit.collides(prop["type"]) or ArenaKit.is_sight(prop["type"]):
+			continue  # decoration, or a sight screen (mapkit P3: hulls drive through it; built by _build_screens)
 		var obstacle := prop.duplicate(true)
 		var size := ArenaKit.size_of(prop)
 		obstacle["size"] = [size.x, size.y, size.z]
@@ -825,8 +860,8 @@ static func _validate_v2(data: Dictionary) -> String:
 					or int(prop["stack"]) < 1 or int(prop["stack"]) > most:
 				return "prop %s: stack must be a whole number from 1 to %d" % [prop["type"], most]
 	for prop: Dictionary in props:
-		if not ArenaKit.collides(prop["type"]):
-			continue
+		if not ArenaKit.collides(prop["type"]) or ArenaKit.is_sight(prop["type"]):
+			continue  # decoration, or a sight screen (mapkit P3: hulls drive through it; built by _build_screens)
 		var twin: bool = props.any(func(other: Dictionary) -> bool:
 			return ArenaKit.collides(other["type"]) and int(other.get("stack", 1)) == int(prop.get("stack", 1)) \
 					and _mirrors(_as_obstacle(prop), _as_obstacle(other)))

@@ -86,6 +86,62 @@ func listen_for_elements() -> bool:
 	return false
 
 
+## Mapkit P5 (round 47): the arena's blast doors, when it has any. Returns whether it is now listening.
+func listen_for_doors() -> bool:
+	var doors := ArenaDoors.live
+	if doors == null or not is_instance_valid(doors):
+		return false
+	if not doors.door_event.is_connected(_on_door):
+		doors.door_event.connect(_on_door)
+	return true
+
+
+## A crew this close to a door's slab (m), driving at it, when it shuts, is "caught" by it.
+const DOOR_CAUGHT_M := 25.0
+## ArenaDoors' event kind -> the booth's (the rest -- warn_open, overstay, sealed -- the booth leaves alone).
+const DOOR_KINDS := {"warn_close": "closing", "shut": "shut", "open": "open", "held": "held"}
+
+
+func _on_door(event: Dictionary) -> void:
+	if not _started or _ended or not DOOR_KINDS.has(String(event["kind"])):
+		return
+	var id := String(event["door"])
+	var doors := ArenaDoors.live
+	var gate: String = String(doors.doors.door(id).get("call", "")) if doors != null and doors.doors.has(id) else ""
+	var fields := {"door": id, "gate": gate, "kind": DOOR_KINDS[String(event["kind"])]}
+	if event.has("crew") and _units.has(String(event["crew"])):
+		var crew: Dictionary = _units[String(event["crew"])]
+		fields["unit"] = crew["unit"]
+		fields["team"] = TEAM_KEYS[crew["team"]]
+	_emit("door", fields)
+	if fields["kind"] == "shut" and doors != null:
+		var caught := _caught_by(doors.doors, id)
+		if not caught.is_empty():
+			_emit("door", {"door": id, "gate": gate, "kind": "caught", "unit": caught["unit"], "team": TEAM_KEYS[caught["team"]]})
+
+
+## The nearest living crew within DOOR_CAUGHT_M of door `id`'s slab and driving toward it, or {}.
+func _caught_by(schedule: BlastDoors, id: String) -> Dictionary:
+	var centre: Vector2 = schedule.door(id)["center"]
+	var best := {}
+	var best_d := INF
+	for unit: Dictionary in _watched:
+		var tank: Tank = unit["tank"]
+		if not is_instance_valid(tank) or not tank.is_alive():
+			continue
+		var at := Vector2(tank.global_position.x, tank.global_position.z)
+		if not schedule.in_doorway(id, at, DOOR_CAUGHT_M):
+			continue
+		var velocity := Vector2(tank.velocity.x, tank.velocity.z)
+		if velocity.length() < 1.0 or velocity.dot(centre - at) <= 0.0:
+			continue
+		var d := at.distance_to(centre)
+		if d < best_d:
+			best_d = d
+			best = unit
+	return best
+
+
 ## Doctrine sends the decision with no clock on it; stamping it is ours, exactly as every other event here.
 func _on_element_reported(event: Dictionary) -> void:
 	var fields := event.duplicate()
@@ -106,6 +162,7 @@ func _init(watched: Match, arena_name: String = Arena.DEFAULT_LAYOUT) -> void:
 	game_match.weapon_fired.connect(_on_weapon_fired)
 	game_match.projectile_impact.connect(_on_impact)
 	listen_for_elements()
+	listen_for_doors()
 
 
 ## Match time: ticks at the rate the physics actually runs. A constant 60 here would put the booth, the match mood
@@ -167,6 +224,7 @@ func _try_start() -> void:
 	if game_match.team_tanks(0).is_empty() or game_match.team_tanks(1).is_empty():
 		return
 	_started = true
+	listen_for_doors()
 	_last_momentum_t = seconds()
 	var teams: Array = []
 	for team in [0, 1]:
