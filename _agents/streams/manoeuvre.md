@@ -82,8 +82,8 @@ ALL JUDGED. No SCRIPT ERROR in either series log. Raw: `~/overnight-manoeuvre/r4
 - G1 / G2: identical in every line outside 12328. G3: group probe identical in 24 / 24 cells. G4: authority rows identical in 6 / 6.
   G5: test_manoeuvre_noprogress green in the check. G6: check exited 0, no SCRIPT ERROR.
 - **Ship: ead694538** = main 8d37b9796 merged (native's four files taken from main: it carries the same twin as 54a7f91aa plus
-  route's drive_path_query) + `holdyield` out of DEFAULT_OFF (`--traffic-off=holdyield` the escape). Its check is queued on builder3
-  behind mapkit's full check (`~/overnight-manoeuvre/r47/ship-h.out`). Its green hash will be named here and to the orchestrator.
+  route's drive_path_query) + `holdyield` out of DEFAULT_OFF (`--traffic-off=holdyield` the escape). **GREEN: builder3, 3609 passed / 0 failed,
+  `make check exited 0`, 29 targets, sim-baseline unmoved on all 13 maps** (`~/overnight-manoeuvre/r47/ship-h.out`).
 
 **Bar W (no-progress watchdog + off-island reroute) FAILS D2 -> `noprogress` STAYS OFF.** W1' 96 cells 12449-12472, W2' 24 fights
 12473-12496, BASE v WATCH:
