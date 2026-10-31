@@ -69,7 +69,64 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-30 ~19:15) — where this stream is
+### REPORT (2026-10-30 ~23:55): Bars W and H read; holdyield ships ON; the watchdog stays OFF; overstay built (OFF)
+
+**Frozen tree 5a55ccf71** (code = 1cced49dc; everything after it is docs): builder3 check **exited 0**, 29 targets all passed,
+ALL JUDGED. No SCRIPT ERROR in either series log. Raw: `~/overnight-manoeuvre/r47/wh/` (laptop). Both series ran from that tree.
+
+**Bar H (holdyield) PASSES -> SHIPPED ON (R47.42).** Lane probe 13001-13024 + 12328, group probe 13001-13006 x 4 maps, authority
+13019-13024; BASE v HOLD, native yield in both arms (twin merged):
+- **D1 his case 12328:** post drift BASE 10.1 m -> HOLD **0.0 m** (<= 1.0). From its post the crew kills the gun (enemy hp 0.50 ->
+  0.00, shots 1 -> 2).
+- **D2:** every fresh post cell is identical in both arms. That is the filed "no case on fresh seeds" reading, said.
+- G1 / G2: identical in every line outside 12328. G3: group probe identical in 24 / 24 cells. G4: authority rows identical in 6 / 6.
+  G5: test_manoeuvre_noprogress green in the check. G6: check exited 0, no SCRIPT ERROR.
+- **Ship: ead694538** = main 8d37b9796 merged (native's four files taken from main: it carries the same twin as 54a7f91aa plus
+  route's drive_path_query) + `holdyield` out of DEFAULT_OFF (`--traffic-off=holdyield` the escape). Its check is queued on builder3
+  behind mapkit's full check (`~/overnight-manoeuvre/r47/ship-h.out`). Its green hash will be named here and to the orchestrator.
+
+**Bar W (no-progress watchdog + off-island reroute) FAILS D2 -> `noprogress` STAYS OFF.** W1' 96 cells 12449-12472, W2' 24 fights
+12473-12496, BASE v WATCH:
+- **D1** (the CPU's staged sliver) passes, but **D2** on 54 touched cells (watch > 0): noprog_s **+24.6 crew-s a cell** (se 30.3,
+  z +0.81), 65 % sooner-or-identical. Mean > 0 = **FAIL**.
+- D3 all 96: +13.9 a cell (z +0.82), within bound. contact_s +3.4 (z +0.93). slow_s -20.0 (z -3.16). never_in 28 -> 25.
+  Untouched 42 / 42 identical. Per map noprog_s: crossing +58.5 a cell (n 24), locks +5.9, sumps -8.3, terminus -0.7.
+- W2' judge counts buried swaps (0 touched), not watchdog trips, so W2' has no touched line. It reads team 0 +2.6 (z +0.84) and
+  team 1 +8.6 (z +1.16) a fight, both within bound.
+- Pathing.reroute's off-island body (R47.25) stays on main, inert without the watchdog (its only caller).
+
+**Next round: why the watchdog's reroutes cost no-progress on Crossing (one traced cell).** Crossing 12449, the worst cell (+743
+crew-s: 773.5 -> 1516.5, 151 trips). Re-run on 6c815959d's parent ead694538 (builder3 light, `NOPROGRESS_WATCH_TRACE=on`). It
+reproduces the series cell exactly: 1516.5 crew-s, 151 trips. Trace: `build/light/build/manoeuvre/wtrace/`.
+- **All 157 WATCH trips are `blocked: no_path` with `reachable false`.** 145 of them are two crews: Alpha_1 71, Delta_4 74. It is not
+  the sliver case: **the crew's SEAT is off its island, not the crew.** Delta_4's seat (17.7, 3.2) is unreachable from where it
+  stands, (27.7-29.9, 7.5-9.4), 10.9-13.6 m away. It trips about once a second (the no_path window and cooldown, 1 s) from tick 870
+  to the end. Each reroute rewrites its path, and it rocks forward and back (thr +0.6 / -0.6) in place for 150 s. Alpha_1 trips first
+  at 9 m/s on its approach (to_go 96 m, path 37, unreachable) and from tick 3630 sits at (-30.7, -7.5), 13.8 m from an unreachable
+  seat, re-asked 1 s at a time.
+- The census's worst crew in this cell, Charlie_3 (138.5 crew-s), never tripped. So part of the cost is indirect (the rocking crews
+  in the way), and reading it needs a per-crew BASE v WATCH census row, not taken.
+- **Fix to try next round (not built):** trip only when the CREW is off-island (its own position not on the goal's island, the
+  staged case), never when the GOAL is unreachable from a crew on the mesh. An unreachable seat is the element's or the grounding's
+  problem: report it to orders / brains, don't keep re-planning. Plus a per-crew trip cap.
+
+**Mapkit's overstay consumer built (OFF: `--traffic-on=overstay`), 09d1a3376 + 6c815959d.** game/ai/door_overstay.gd listens to
+`ArenaDoors.live.door_event` (connected from a physics-frame poll that Movement._init installs). On `overstay` it starts a give-way
+(`_start_yield`) for the named crew to a spot straight off the slab along the door's normal, on the side it already stands on, and
+falls back to the other side. It uses the give-way's wheels and free-of-hulls checks. Counter `overstay_moves` in route_arms. Two
+build steps, said:
+- The hull give-way's spot table (`_begin_yield`) picked the crew's own spot, because its spots are offsets from a hull's line.
+- The navmesh outline sweep (`_yield_fits`) refused both ways, because the doorway is carved from the navmesh (C47.8).
+
+tests/test_manoeuvre_overstay.gd on doors_dev: 3 / 0 (builder3 light). The crew stands in the west doorway on HIS hold when the
+door shuts. OFF reproduces today: crew in the doorway, door held. ON: one give-way, off the slab 4.7 m within 4 s, the door never
+sealed on it.
+**OPEN (question to the orchestrator):** once the give-way ends, the brain drives the crew back to HIS post, which is in the doorway
+(z 5.7 -> 3.5), so the door stays held. Element seats never land in a doorway (the grounding snaps them off the carve), so his hold
+is the realistic case. Sealing behind the crew needs his post moved off the slab with it. That is TankBrain state (`_his_post_at`):
+a grant, or a "his order wins: the door stays held" ruling.
+
+### NOW (2026-10-30 ~19:15) — where this stream is (superseded by the REPORT above)
 
 - **M1 done** (report below). **M2a `buried` built; Bar M's frozen tree 1aa41aeaf GREEN builder3 (3522 / 0, check exited 0).** From
   that check: **D1 PASS** (his staged Locks case, Burners2_4 0.0 s <= 1.0) and **G6 PASS** (Crossing guard 1.0 / 0 / 1.97 / 0 s < 2.5).
