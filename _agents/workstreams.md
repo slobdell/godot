@@ -77,6 +77,14 @@ shift keeps 13121-13216 as its fixed before / after set). Dev 7001-7012 (never a
   sim-baseline unmoved (a first match already starts on a fresh world), and a rematch test that is identical tick for tick to a first
   match. Ships ON when green; the orchestrator tells manoeuvre for M6.
 
+- **R48.6 Spotter S3 (stream/spotter 2f94f0409, `_agents/streams/references/round48/spotter/list-*.md`, main df9aacc1a, 576 fights):
+  a NEW class F, holds fire with an enemy in sight and in range (21 of batch 2's 70 flagged clips, 5-66 s; 1.64 moments a fight at
+  main; support / base of fire 0.79, spring ambush 0.16 on purpose) -> **engage owns F** (his Crossing "his side barely fires"), after
+  E2 / E3, before E4. Classes v4 = v3 + F last (A-E identical). **His batch-2 B clips are mostly moving squadmates jammed 8 s+** (9 of 11)
+  while B's rate is mostly short held-crew give-ways (11.63 of 17.00): heldpost (Bar B) runs as filed, then manoeuvre's M2b = the
+  moving-squadmates jam (4.55 / 29.5 a fight) ahead of M4 / M5. Candidate classes G (wanders off alone) and H (shot from behind, no turn)
+  go on his next ~15-clip page with the controls.
+
 ### Bars (round 48)
 _(filed by each stream before any number)_
 
