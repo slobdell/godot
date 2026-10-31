@@ -122,6 +122,11 @@ _(filed by each stream before any number)_
   spin s, contacts, noprog_s, the group click (orders-probe 13417-13420, ON v nose), authority tests green. Only number seen before
   filing: one dev read (7001, n 1 a map, builder3, 7787853ff) 7.5 v 10.3 s a fight. No twin needed (the station is GDScript); replay
   stamp `follow_travel` in the same commit.
+  **VERDICT (2026-10-31, b50b34aa2, builder3, 48 paired fights, all complete): FAIL D1** — follow reverse-or-spin s a fight ON - OFF
+  +0.40 (se 0.56), 4.15 v 3.75; every guard passes (to_go +1.0 se 2.0, squad +0.97 se 0.79, all reverse -1.3 se 8.0, spin -1.8 se 6.0,
+  contacts -2.0 se 2.4, noprog -4.6 se 8.6). Following is rare on these seeds (~18 follow crew-s a fight). Cause read: leaders crawl at
+  0-1.5 m/s while turning 40-70 deg/s, and v1's travel heading followed every crawl. O1 NOT merged; v2 97e70b68a (travel above 3 m/s only,
+  heading turn capped at 30 deg/s) goes to amendment 1 on fresh seeds.
 - **Bar E11 RETREAT DRIVES (engage E2; FILED 2026-10-31 ~14:10 before any number on 13313-13360; full text in stream/engage's
   workstreams.md).** `--retreat-drive` ON (`=off` = E10's game): a RETREAT move > 12 m drives forward and carries a facing, so
   `Manoeuvre.choose` routes it nose first; a shorter hop under fire still backs off; destinations E10's; scoring untouched. W1 hurt
