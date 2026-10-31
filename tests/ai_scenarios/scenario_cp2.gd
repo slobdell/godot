@@ -112,7 +112,7 @@ func test_a_scout_guns_down_a_lancer() -> void:
 ## Combat's request (b): a scout's machine gun barely scratches a tank's plates (×0.05 on the front) but gets through
 ## its engine deck (×1.13), so a scout hunting a tank works its way dead astern and bursts in while the cannon reloads.
 ## Orbiting is the matchup-aware brains' move (x4mw); without weak_spots (x3m), 19 of 46 hits landed on the deck.
-func _deck_run(variant: String) -> Dictionary:
+func _deck_run(variant: String, scout_dx := 0.0) -> Dictionary:
 	var s := AiScenario.create(self)
 	BrainVariants.use(Match.Team.GREEN, variant)
 	# Granted to combat 2026-09-20 (orchestrator): with DECK_PROBE=1 in the environment, print the three columns that
@@ -123,7 +123,7 @@ func _deck_run(variant: String) -> Dictionary:
 	Armor.deck_probe = OS.get_environment("DECK_PROBE") == "1"
 	var tank := s.shooter(Match.Team.RUST, "Rust_Tank_1", Vector3(-100, 0, -20), PI, {"type": "stop"}, {"type": "fire_at_will"})
 	AiScenario.make_durable(tank)
-	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", Vector3(-70, 0, 20), 0.0, {}, "scout")
+	var scout := s.brain_tank(Match.Team.GREEN, "Green_Scout_1", Vector3(-70.0 + scout_dx, 0, 20), 0.0, {}, "scout")
 	AiScenario.make_durable(scout)
 	await s.start()
 	# ORBIT_PROBE=1 (squad, round 10 item 6b): per 0.5 s, the scout's option, its attack-run flag, its range and
@@ -178,11 +178,22 @@ func _deck_run(variant: String) -> Dictionary:
 ## combat's X6 acquisition; what the behaviour claims is that most of the scout's hits land on the deck.
 ## The same round fixed the reason it had stopped working: circling a target is crossing its line of sight fast, the
 ## scout lost sight mid-orbit, and ORBIT required a visible target even to keep going (0 shots, 0 on the deck).
+## R47.46 (granted to engage, the E3 ship): one start was a coin flip (over 6 nudged starts the 20-hit bar fell 1 of 6
+## with pot shots off, 2 of 6 on), so the fight is judged summed over 6 scout starts x -2.5..+2.5 m: the same bar a start.
+const DECK_DX := [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5]
+
+
 func test_a_scout_works_onto_a_tanks_engine_deck() -> void:
-	var seeking := await _deck_run("x4mw")
+	var seeking := {"deck": 0, "hits": 0, "shots": 0}
+	var by_start := []
+	for dx in DECK_DX:
+		var run := await _deck_run("x4mw", dx)
+		by_start.append(run["hits"])
+		for key in seeking:
+			seeking[key] += int(run[key])
 	var blind := await _deck_run("x3m")  # the same fight without weak_spots, for the record
-	print("MEASURE ai_cp2_scout_engine_deck x4mw %s; x3m (no weak spots) %s" % [seeking, blind])
-	assert_true(int(seeking["hits"]) >= 20, "the scout fights the tank at all (%d hits)" % seeking["hits"])
+	print("MEASURE ai_cp2_scout_engine_deck x4mw %s (hits by start %s); x3m (no weak spots) %s" % [seeking, by_start, blind])
+	assert_true(int(seeking["hits"]) >= 20 * DECK_DX.size(), "the scout fights the tank at all (%d hits over %d starts)" % [seeking["hits"], DECK_DX.size()])
 	var share := float(seeking["deck"]) / maxf(float(seeking["hits"]), 1.0)
 	# The deck is a narrow arc astern: hits that were not sought land there a minority of the time (x3m, round 4: 19 of
 	# 46). Today's x3m scout does not take this fight at all (0 shots on the laptop, 2026-09-19), so it is printed, not
