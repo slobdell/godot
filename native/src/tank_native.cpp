@@ -1,4 +1,5 @@
 #include "tank_native.h"
+#include "eye_mask.h"
 
 #include "nav_native.h"
 
@@ -430,7 +431,7 @@ bool TankNative::line_of_sight(const RID &space, const Vector3 &from, const Vect
 		return true;
 	}
 	const Vector3 up = Vector3(0, 1, 0) * EYE_HEIGHT;
-	Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(from + up, to + up, 1);
+	Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(from + up, to + up, eye_mask_live(1)); // Perception.eye_mask() (R47.36)
 	return state->intersect_ray(query).is_empty();
 }
 

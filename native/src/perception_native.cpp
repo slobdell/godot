@@ -2,6 +2,7 @@
 // positions float32 (Vector3), distance_to a float32 widened to the double it is compared with, the eye points
 // `global_position + Vector3.UP * EYE_HEIGHT` in float32, the ray the engine's intersect_ray with
 // PhysicsRayQueryParameters3D.create's defaults (bodies, no areas, no exclusions).
+#include "eye_mask.h"
 #include "perception_native.h"
 
 #include <godot_cpp/classes/node3d.hpp>
@@ -48,11 +49,10 @@ LocalVector<Hull> hulls_of(const Array &tanks) {
 	return out;
 }
 
-// Perception.has_line_of_sight(viewer, target)
-bool clear_line(const PerceptionConfig &c, PhysicsDirectSpaceState3D *space, const Hull &viewer, const Hull &target) {
+// Perception.has_line_of_sight(viewer, target); `mask` = Perception.eye_mask() (eye_mask.h), read once a pass
+bool clear_line(const PerceptionConfig &c, PhysicsDirectSpaceState3D *space, const Hull &viewer, const Hull &target, uint32_t mask) {
 	const Vector3 up = Vector3(0, 1, 0) * (real_t)c.EYE_HEIGHT;
-	Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(viewer.position + up, target.position + up,
-			c.WORLD_MASK);
+	Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(viewer.position + up, target.position + up, mask);
 	return space->intersect_ray(query).is_empty();
 }
 
@@ -69,6 +69,7 @@ PhysicsDirectSpaceState3D *space_of(const LocalVector<Hull> &viewers) {
 } // namespace
 
 PackedInt32Array perception_sight(const PerceptionConfig &c, const Array &viewers_in, const Array &enemies_in, int64_t &rays) {
+	const uint32_t eye = eye_mask_live((uint32_t)c.WORLD_MASK); // Perception.eye_mask(), once a pass
 	const PeN &k = pen_();
 	PackedInt32Array out;
 	rays = 0;
@@ -95,7 +96,7 @@ PackedInt32Array perception_sight(const PerceptionConfig &c, const Array &viewer
 				continue;
 			}
 			rays++;
-			if (space == nullptr || !clear_line(c, space, viewers[v], enemies[e])) {
+			if (space == nullptr || !clear_line(c, space, viewers[v], enemies[e], eye)) {
 				continue;
 			}
 			seen_by = (int32_t)v;
@@ -107,6 +108,7 @@ PackedInt32Array perception_sight(const PerceptionConfig &c, const Array &viewer
 }
 
 PackedByteArray perception_gun_ready(const PerceptionConfig &c, const Array &viewers_in, const Array &enemies_in, int64_t &rays) {
+	const uint32_t eye = eye_mask_live((uint32_t)c.WORLD_MASK); // Perception.eye_mask(), once a pass
 	const PeN &k = pen_();
 	PackedByteArray out;
 	rays = 0;
@@ -125,7 +127,7 @@ PackedByteArray perception_gun_ready(const PerceptionConfig &c, const Array &vie
 				continue;
 			}
 			rays++;
-			if (space != nullptr && clear_line(c, space, viewers[v], enemies[e])) {
+			if (space != nullptr && clear_line(c, space, viewers[v], enemies[e], eye)) {
 				out.set(v, 1);
 				break;
 			}

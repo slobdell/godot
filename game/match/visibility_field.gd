@@ -177,7 +177,7 @@ func look_from(viewer: Tank, finishing := true) -> void:
 	reach.resize(ray_count)
 	var fan := PackedVector2Array([Vector2(eye.x, eye.z)])
 	var query := PhysicsRayQueryParameters3D.new()
-	query.collision_mask = Perception.WORLD_MASK
+	query.collision_mask = Perception.eye_mask()  # round 47 (R47.36, native's grant): a sight screen blocks the fog's eye too
 	query.from = eye
 	for r in ray_count:
 		var direction := directions[r]
