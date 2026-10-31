@@ -350,6 +350,8 @@ const PAN_MAX_S := 1.5
 ## Drift: a selection already picked whose middle falls this far from the look, with no hand on the camera since.
 const PAN_DRIFT_M := 30.0
 var _pan_until := -1e9
+var _aim_now := false
+var _turn_pace := 1.0
 ## The pan's spring (1/s; critically damped from rest: 90 % of the way in 3.9/omega s, no step in speed) and its top
 ## speed in heights of the ground in view per second (the spring alone peaks at gap * omega / e: 150 m at 7.5 -> 414 m/s,
 ## ~13 heights/s at 50 m, a jump cut, not a pan; at 4 heights/s a frame moves 1/15 of the screen at 60 fps, 1/7.5 on his
@@ -362,7 +364,9 @@ var pan_screens := PAN_SCREENS_PER_S
 ## further (Crossing tick 690: 35 m off at 100 m, his squad at the edge). Part of `select_pan`.
 const SEL_BOUND_M := 20.0
 var select_pan := true
-var sel_bound := SEL_BOUND_M  # `--camera-sel-bound=M` (dev; 0 = no bound)
+## OFF (dev 7001-7004 at 4f12af25e: bounding the planner's point clipped its wide frame of the contacts: the rear ambush on
+## screen 1.4 -> 6.3 s, hits on his units off screen 1.2 -> 2.7 %; with no bound both were BASE's). `--camera-sel-bound=M` (dev).
+var sel_bound := 0.0
 var _select_at := -1e9
 
 var _shown_focus := Vector3.ZERO
@@ -499,7 +503,7 @@ func _ready() -> void:
 	planner_on = flags.text("camera-planner", "on") != "off"  # round 46 (R46.23): ON for his answer; =off = round 45's camera
 	select_pan = flags.text("camera-select-pan", "on") != "off"  # round 47 (K2/K3): ON; =off = round 46's urgent pan
 	pan_screens = float(flags.text("camera-pan-screens", str(PAN_SCREENS_PER_S)))  # dev only: a bar runs at the constant
-	sel_bound = float(flags.text("camera-sel-bound", str(SEL_BOUND_M)))  # dev only
+	sel_bound = float(flags.text("camera-sel-bound", "0"))  # dev only
 	_plan_log = flags.has("camera-trace")
 	CameraPlanner.override_weights(flags.text("camera-planner-w", ""))  # dev only: a bar runs at the constants
 	# Round 46 (C5): a headless replay frames at his screen's shape (`--camera-screen=1920x1080`; headless roots are 64x64).
@@ -581,7 +585,8 @@ func _process_timed(delta: float) -> void:
 	HudClock.end(&"cam.tracking", _hc3)
 	if glide:
 		planner_urgent = _pan_urgent()
-		holding = aiming_now() and not planner_urgent
+		_aim_now = aiming_now()
+		holding = _aim_now and not planner_urgent
 		_urgency = (1.0 if planner_urgent else 0.0) + (_urgency - (1.0 if planner_urgent else 0.0)) * exp(-PACE_OMEGA * delta)
 		_glide(delta)
 	else:
@@ -620,6 +625,13 @@ func _glide(delta: float) -> void:
 	var weight := 1.0 - exp(-SMOOTHING * delta)
 	var pace_goal := lerpf(hand_pace, 1.0, _urgency) if _clock - _mouse_moved_at < HAND_MOVING_S else 1.0
 	_pace = pace_goal + (_pace - pace_goal) * exp(-PACE_OMEGA * delta)
+	# Round 47 (K2): the selection's pan is a move of the LOOK POINT; the turn and the zoom keep his hand's pace and his aim
+	# hold (dev 7001-7004 at 4f12af25e: lifting them too ran the planner's turns at 45 deg/s under his hand, ~25 px a frame:
+	# 'planner' jerks 1.7 -> 5.0/min, 157 snaps, clicks on the aimed unit 82 -> 69 %).
+	var turn_goal := hand_pace if _clock - _mouse_moved_at < HAND_MOVING_S else 1.0
+	_turn_pace = turn_goal + (_turn_pace - turn_goal) * exp(-PACE_OMEGA * delta)
+	var turn_pace := _turn_pace if select_pan else _pace
+	var turn_hold := (_aim_now if select_pan else holding)
 	var before_focus := _shown_focus
 	if RtsCamera.hand_set(wrote["focus"]):
 		_shown_focus = _shown_focus.lerp(focus, weight)
@@ -636,24 +648,24 @@ func _glide(delta: float) -> void:
 	if RtsCamera.hand_set(wrote["zoom"]):
 		_shown_zoom = lerpf(_shown_zoom, zoom, weight)
 		_zoom_velocity = (_shown_zoom - before_zoom) / delta
-	elif holding and _shown_zoom <= vision_zoom:
+	elif turn_hold and _shown_zoom <= vision_zoom:
 		_zoom_velocity *= exp(-GLIDE_STOP_OMEGA * delta)
 		_shown_zoom += _zoom_velocity * delta
 	else:
 		var next := RtsCamera.spring(_shown_zoom, _zoom_velocity, zoom, GLIDE_ZOOM_OMEGA, delta)
-		_zoom_velocity = clampf(float(next[1]), -TRACK_ZOOM_SPEED * _pace, TRACK_ZOOM_SPEED * _pace)
+		_zoom_velocity = clampf(float(next[1]), -TRACK_ZOOM_SPEED * turn_pace, TRACK_ZOOM_SPEED * turn_pace)
 		_shown_zoom = float(next[0]) if float(next[1]) == _zoom_velocity else before_zoom + _zoom_velocity * delta
 	var before_yaw := _shown_yaw
 	if RtsCamera.hand_set(wrote["yaw"]):
 		_shown_yaw = lerp_angle(_shown_yaw, yaw, weight)
 		_yaw_velocity = angle_difference(before_yaw, _shown_yaw) / delta
-	elif holding:
+	elif turn_hold:
 		_yaw_velocity *= exp(-GLIDE_STOP_OMEGA * delta)
 		_shown_yaw = wrapf(_shown_yaw + _yaw_velocity * delta, -PI, PI)
 	else:
 		var gap := angle_difference(yaw, _shown_yaw)  # shown - wanted, the short way round
 		var next := RtsCamera.spring(gap, _yaw_velocity, 0.0, GLIDE_YAW_OMEGA, delta)
-		var limit := deg_to_rad(yaw_deg_per_s) * _pace
+		var limit := deg_to_rad(yaw_deg_per_s) * turn_pace
 		_yaw_velocity = clampf(float(next[1]), -limit, limit)
 		_shown_yaw = wrapf(yaw + float(next[0]) if float(next[1]) == _yaw_velocity else before_yaw + _yaw_velocity * delta, -PI, PI)
 	var before_pitch := _shown_pitch
