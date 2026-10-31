@@ -75,6 +75,43 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### FINAL REPORT (2026-10-31, Opus, `godot-orders` / `stream/orders`; last code d27c3a4f6 GREEN builder3 3609/0, 29 ALL JUDGED, merged to main)
+
+**Shipped (all ON, each with an escape):**
+- **The group click (O1, R47.41, his "Ship it ON" after Bar O2):** two or three squads sent to one spot park as short files
+  side by side at his click. `--group-merged` defaults to `all` (SelectionSquads.merged_mode(): his merged group AND any 2-3
+  whole squads); `=on` merged group only; `=off` round 46's abreast lay. Bar O2 (4536ccb0f, builder3, 12749-12778): D1 -14.2 m
+  paired (median 35.1 v 52.4 m, n 120), all in +0.44 s; his Crossing click 14.0 v 39.4 m; failed G2 wedged 57.2 v 39.0 crew-s and
+  G6 contact_s +0.50 (se 0.25), both only on laid clicks, Sumps and the open yard. Ship commit d27c3a4f6.
+- **The `inp` row (O4, C47.4):** every key / button that changed the selection or gave an order is recorded with what it did
+  (7d41d5061, 3046343c1, 87eb68b1c; hashes sent to native).
+- **The recipient cue (O5, C47.5):** the vehicles that take an order pulse a white ring twice, and their chip flashes
+  (729c8ec90; shots 778c7d397, desktop + phone, looked at).
+- **A battery's screen is support by fire (O6):** mortars told to screen a line stay back and cover it (729c8ec90;
+  `--battery-screen=off`).
+- **The money cap (R47.22 / R47.26):** a faction skirmish is fought with the garage's 2000 CR (3,500 pts) a side, every preset
+  (99ffb918a, 2a1e36a22; green 1c2fc5838 = main 79cea77e5); `--army-cap=count` is round 46's army; old recordings replay so.
+- Control playtest's stale queued-route check fixed (7624b3290; main had it red too).
+
+**Findings:**
+- **O3, the order lag:** none. His attack took at its tick (relayed to route as R1).
+- **The squadless group / wrong squad:** Crossing's Wrenches were ordered loose because his Ctrl+4 group also held group 3's
+  Spears (fixed with O1's split: the remainder keeps its squad). The Sumps Charlie-for-Bravo order has no UI fault; the
+  likeliest cause is his hand (E sits under 3). The next recording's `inp` rows will say.
+- **The HUD cost at the money cap** is the fog-of-war field (visibility_field.gd: 10.6 ms frame / 3.0 ms UI v 3.4 / 0.8 at
+  the count cap, windowed, laptop UHD 620, n 1); the controls' widgets are flat. Went to native (R47.31). His laptop at the money
+  cap: 86-123 ms a frame v 52-57 at the count cap (Crossing seed 101, n 2 an arm).
+
+**Next round:**
+- **The Sumps / yard stall (manoeuvre's, handed to the orchestrator):** trace (builder3, d27c3a4f6, sumps 3 squads, seed
+  12749, n 1; references/round47/orders/stall-sumps-12749/): the two file HEADS (Alpha_1, Bravo_1: each leads its column and
+  owns the far seat) meet near (-27, 38) at t=10 and give way to each other ~8 s while their followers drive past to the rear
+  seats. All in 22.7 v 8.4 s OFF, contact ticks 1636 v 51. The yard is unread (wedging only, no lateness).
+- **Crossing and Terminus never lay files:** the ground refuses the rear seats (buildings, off the arena), so his Crossing
+  merged click files but a box-selected one may not; his Locks click lays as today (39.4 v 39.4 m).
+- **O7, his acceptance read:** not done. It reads the shipped tree: his Crossing / Locks clicks and Hunters_4's order time,
+  from his order rows plus the census at the click tick (R47.8: replays diverge).
+
 ### NOW (2026-10-30 22:51 PDT, Opus, `godot-orders` / `stream/orders`; Bar O2 run on 4536ccb0f; main ba23e011e merged)
 
 | Item | State |

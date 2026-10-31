@@ -39,7 +39,12 @@ func test_the_rig_frames_with_its_inset() -> void:
 	RuleSwitches.pin_slow_on = false
 	var f := Fixture.new(self)
 	await f.build(false)
-	f.rig.vision = f.controls.vision_state
+	# The horizon cap (vision_zoom, from the force's sight region) is held aside too: the blocks' fight moves it, and when it binds
+	# both reads stand at it (engage's builder3 checks d4cf542c7 / 96a3110b0: "0.56 vs 0.56"); the cap is judged in its own tests.
+	f.rig.vision = func() -> Dictionary:
+		var state := f.controls.vision_state()
+		state.erase("region")
+		return state
 	# R46.29 (camera's grant): the dial's plumbing into the vision frame, judged at a fixed yaw. The planner (ON) picks its own
 	# yaw after a re-selection, so this comparison cannot isolate the dial there; tests/test_camera_planner.gd judges the dial
 	# in the planner's fit (test_his_frame_dial_widens_the_planners_frame).
@@ -51,6 +56,7 @@ func test_the_rig_frames_with_its_inset() -> void:
 	f.controls.recall_group(2)
 	f.controls.recall_group(1)
 	await _settled(f.rig)
+	print("DIALS_INSET zoom %.3f v default %.3f (cap %.3f)" % [f.rig.zoom, default_zoom, f.rig.vision_zoom])
 	assert_true(f.rig.zoom > default_zoom + 0.01, "a wider inset pulls the camera back (%.2f vs %.2f)" % [f.rig.zoom, default_zoom])
 
 
