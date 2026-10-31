@@ -4838,3 +4838,10 @@ held_1-3, pa_1-4, vet_1-2): the text gate is passed, so their voice generation i
    > people's monorail will be far from Syndicate quality.)"
    -> R47.38: a monorail TRAIN asset, minimal investment, a people's train (shabby, nothing like Syndicate polish); directions on the
    tap-to-approve page first (memory: concept choices), then the 3D.
+10. **The monorail train (mapkit's kit-built directions page, https://claude.ai/artifact/9PNjR9rWKNXQXBWQ9sNsLC): his pick "none", his
+    note verbatim:**
+    > "You misunderstand me. I'm saying generate a meshy asset for the monoreal as a one-off like we did for the blimp.  I'm basically
+    > thinking something run down and rickity."
+    -> R47.39: a ONE-OFF Meshy model of the monorail train, run down and rickety, made the way the round-11 airship was (Meshy
+    text-to-image concepts, 2-3 directions on the tap-to-approve page, then image-to-3D of his pick; ledger rows in
+    `assets/meshy_ledger.md`; production quality, memory). The kit-built A / B / C directions are dropped.

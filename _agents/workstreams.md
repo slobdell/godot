@@ -337,6 +337,11 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   quality").** Mapkit: 2-3 directions on a tap-to-approve page first (built from kit primitives + the trim sheet if that can carry it;
   a Meshy concept only if needed, logged), then the 3D, laptop cost stated.
 
+- **R47.39 (his words) The monorail train is a ONE-OFF MESHY model, "run down and rickety", made like the round-11 airship** (text-to-image
+  concepts -> 2-3 directions on a tap-to-approve page -> image-to-3D of his pick; every request in `assets/meshy_ledger.md`; production
+  quality: memory *production quality over credits*; one asset, so the scope is his). The kit-built directions (A Night Line, B Cattle car,
+  C Bucket pods) are dropped. The model rides the monorail beam as one prop; its laptop cost is read before it ships (C47.10).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
