@@ -32,6 +32,8 @@ func test_native_contacts_is_the_live_gdscript() -> void:
 	var suppressed := 0
 	var first := ""
 	var last_bucket := -1
+	var gd_usec := 0
+	var native_usec := 0
 	for frame in 600:
 		await wait_physics_frames(1)
 		var bucket := game_match.tick / Match.INTEL_EVERY_TICKS
@@ -41,10 +43,14 @@ func test_native_contacts_is_the_live_gdscript() -> void:
 		var by_name := AiTickCache.tanks_by_name(game_match)
 		AiTickCache._seen_reset(game_match)
 		for side in 2:
+			var t0 := Time.get_ticks_usec()
 			var live := AiTickCache._contact_table(game_match, side)
+			gd_usec += Time.get_ticks_usec() - t0
 			var seen_live := var_to_bytes(AiTickCache._seen_suppression[side])
+			var t1 := Time.get_ticks_usec()
 			var native := NativeContacts.table(game_match, side, AiTickCache.intel_names(game_match, side), by_name,
 					AiTickCache._fired, AiTickCache._seen_suppression[side])
+			native_usec += Time.get_ticks_usec() - t1
 			compared += 1
 			var same := var_to_bytes(live) == var_to_bytes(native) and seen_live == var_to_bytes(AiTickCache._seen_suppression[side])
 			if not same:
@@ -58,7 +64,7 @@ func test_native_contacts_is_the_live_gdscript() -> void:
 				reloading += 1 if float(entry["gun_ready_in"]) > 0.0 else 0
 				suppressed += 1 if float(entry["suppression"]) > 0.0 else 0
 	BrainVariants.reset()
-	print("MEASURE native_contacts compared=%d mismatches=%d contacts=%d remembered=%d reloading=%d suppressed=%d" % [compared,
-			mismatches, contacts, remembered, reloading, suppressed])
+	print("MEASURE native_contacts compared=%d mismatches=%d contacts=%d remembered=%d reloading=%d suppressed=%d gd_usec=%d native_usec=%d" % [compared,
+			mismatches, contacts, remembered, reloading, suppressed, gd_usec, native_usec])
 	assert_eq(mismatches, 0, "native _contact_table = the GDScript (%d); first: %s" % [compared, first])
 	assert_true(compared >= 30 and contacts >= 100, "a real sample (%d tables, %d contacts)" % [compared, contacts])

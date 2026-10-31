@@ -15,6 +15,10 @@ func _run(names: Array) -> Array:
 	if reset.contains("world"):
 		# A fresh World3D: a new physics space (Jolt's bodies, broadphase, contact cache) and a new navigation map.
 		tree.root.world_3d = World3D.new()
+	elif reset.contains("own"):
+		# The same through Viewport.own_world_3d: toggled off and on, the viewport makes itself a new World3D.
+		tree.root.own_world_3d = false
+		tree.root.own_world_3d = true
 	var lab := TacticsLab.create(self, 101, "crossing")
 	for n: String in names:
 		var at: Vector2 = POSE[n][0]

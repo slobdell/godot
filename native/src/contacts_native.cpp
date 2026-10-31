@@ -16,11 +16,14 @@ namespace godot {
 
 namespace {
 
+// Keys held as Variants: a String key converts to a Variant through the extension interface on every insert (round 48's first
+// price read the native table ~50 us a tick SLOWER than the GDScript, builder3, f0900328a).
 struct CK {
-	String name{ "name" }, position{ "position" }, velocity{ "velocity" }, forward{ "forward" }, health{ "health" },
+	Variant name{ "name" }, position{ "position" }, velocity{ "velocity" }, forward{ "forward" }, health{ "health" },
 			shield{ "shield" }, weapon{ "weapon" }, unit{ "unit" }, turret_forward{ "turret_forward" }, visible{ "visible" },
 			seen_tick{ "seen_tick" }, gun_ready_in{ "gun_ready_in" }, weapon_range{ "weapon_range" }, suppression{ "suppression" },
 			age{ "age" }, reload{ "reload" }, empty{ "" };
+	Variant zero_i{ (int64_t)0 }, zero_f{ 0.0 };
 	StringName weapon_prop{ "weapon" }, suppression_prop{ "suppression" };
 };
 const CK &ck() {
@@ -32,13 +35,13 @@ const CK &ck() {
 double gd_max(double a, double b) { return a < b ? b : a; }
 double gd_clamp(double v, double lo, double hi) { return v < lo ? lo : (v > hi ? hi : v); }
 
-Object *tank_of(const ContactsInput &in, const String &contact_name) {
+Object *tank_of(const ContactsInput &in, const Variant &contact_name) {
 	const Variant v = in.by_name.get(contact_name, Variant());
 	return v.get_type() == Variant::OBJECT ? v.get_validated_object() : nullptr;
 }
 
 // AiTickCache._gun_ready_in + gun_ready_in.
-double gun_ready(const ContactsInput &in, const String &contact_name) {
+double gun_ready(const ContactsInput &in, const Variant &contact_name) {
 	const CK &k = ck();
 	Object *enemy = tank_of(in, contact_name);
 	if (enemy == nullptr) {
@@ -57,7 +60,7 @@ double gun_ready(const ContactsInput &in, const String &contact_name) {
 }
 
 // AiTickCache._suppression_seen (its match reset is the seam's).
-double suppression_seen(const ContactsInput &in, const String &contact_name, const Dictionary &known) {
+double suppression_seen(const ContactsInput &in, const Variant &contact_name, const Dictionary &known) {
 	const CK &k = ck();
 	if ((bool)known[k.visible]) {
 		double live = 0.0;
@@ -91,26 +94,26 @@ Dictionary contact_table(const ContactsInput &in) {
 	const CK &k = ck();
 	Dictionary table;
 	for (int64_t i = 0; i < in.names.size(); i++) {
-		const String contact_name = in.names[i];
+		const Variant contact_name = String(in.names[i]); // the GDScript's `contact_name: String`, converted once
 		const Dictionary known = in.intel[contact_name];
-		const String weapon_id = known[k.weapon];
+		const Variant weapon_id = String(known[k.weapon]);
 		Dictionary e;
 		e[k.name] = contact_name;
 		e[k.position] = known[k.position];
 		e[k.velocity] = known[k.velocity];
 		e[k.forward] = known[k.forward];
 		e[k.health] = known[k.health];
-		e[k.shield] = known.get(k.shield, 0);
+		e[k.shield] = known.get(k.shield, k.zero_i);
 		e[k.weapon] = weapon_id;
 		e[k.unit] = known.get(k.unit, k.empty);
 		e[k.turret_forward] = known[k.turret_forward];
 		e[k.visible] = known[k.visible];
 		e[k.seen_tick] = (int64_t)known[k.seen_tick];
-		e[k.gun_ready_in] = in.reload_windows ? gun_ready(in, contact_name) : 0.0;
+		e[k.gun_ready_in] = in.reload_windows ? Variant(gun_ready(in, contact_name)) : k.zero_f;
 		const Variant range = in.weapon_ranges.get(weapon_id, Variant());
 		e[k.weapon_range] = range.get_type() == Variant::NIL ? in.default_range : (double)range;
 		e[k.suppression] = suppression_seen(in, contact_name, known);
-		e[k.age] = (int64_t)0;
+		e[k.age] = k.zero_i;
 		table[contact_name] = e;
 	}
 	return table;
