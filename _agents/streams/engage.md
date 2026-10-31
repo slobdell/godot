@@ -62,6 +62,16 @@ Memory: smart AI on both sides; units must look smart and under his control.
    displaced from where he put it (manoeuvre's holdyield fixes the yield's push, 12328: 10.1 -> 0.0 m) still parks up to 6 m short.
    A tighter return for his own post (player-authority code, engage's), measured on E2's authority probe.
    - **R47.43 (manoeuvre, relayed 2026-10-30):** with `--traffic-on=overstay`, `_his_post_at = DoorOverstay.post_after(tank, _his_post_at)` moves his held crew's post off a closing door's slab. His HOLD order's own `order["goal"]` still drives it back into the doorway. In E8, have the hold goal follow the moved post (DoorOverstay.post_after on the goal, or read `_his_post_at`), behind the same switch.
+8b. **E10 OUTRANGED (R47.48, after E3 and E9; ON behind a bar on fresh seeds, ask the orchestrator for a block):** a crew
+   taking fire from beyond its own reach closes by a covered route if its order allows, else breaks line of sight; both sides.
+   Fold in spotter's class A (RETREAT: hurt crews at 2-10 % hp leave the squad 50-125 m, often REVERSING 8-19 s with no enemy in
+   sight, then sit alone): a retreat goes toward the squad, forward-facing, never a long reverse into nowhere. Staged cases
+   (spotter batch1-classes.md on stream/spotter 0f8d7e3b4, each with a repro line; orders' class D read):
+   - class E (as relayed: "law tank"): a tank on ENGAGE, "no line of fire: going round", 330 -> 56 hp in 10 s; a scout reversing while it
+     takes 775 damage; a scout on HOLD sitting 5 s under fire;
+   - orders' class D: Crossing support-by-fire #22 creeps at 4 of 10 m/s (transit pace) while it is shot 260 -> 58 hp by an
+     enemy it never sees.
+   If the night runs out, this is round 48's first item.
 
 ## Don't touch
 
