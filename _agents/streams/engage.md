@@ -84,7 +84,24 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
 | E1 the trace | **DONE (STAGED)**: cause named (E1 REPORT below); the full replay is not his match (native's N0) |
 | E2a the lay carry-over | code + tests GREEN at **a61b0f302** (builder3 `native test` combat_envelope / native_gun / native_exec_state, 42 passed; the 1 failure was E2b's stage test). `--lay-carry`, **OFF** until native's twin (spec + hash sent; native's N0 first). Dev read running |
 | E2b a line under his attack | code in; `--attack-line`, **OFF** until Bar E. Its hand-built one-crew stage does NOT reach the rule (the element's contact drill hands the lone rig a slot with a line: both arms fire at 6.6 s); a dev read on the six staged windows decides whether the rule fires at all before a new test |
-| E7 his order beats RETREAT | after E2 (R47.6) |
+| E2 dev reads | **no measurable effect from either switch** (below): neither earns a bar yet |
+| E7 his order beats RETREAT | NEXT (R47.6) |
+
+**E2 dev reads (2026-10-30 ~18:30, builder3, the gun's C++ paths off in EVERY arm (`--brains-off=native_exec,native_gun`: the carry
+has no twin yet), never a bar):**
+- *Six staged windows, four arms* (889aa86b0-era tree, n = 1 a window): his shots 2616 today / 2619 carry / 2685 line / 2599 both;
+  held while loaded 330 / 349 / 341 / 333 s; never-fired crews 23/58, 26/62, 21/56, 21/58. Each staged fight diverges between arms
+  within seconds: six 14 s windows cannot see a few-percent effect. Counters: `--attack-line` searched in 4 of 6 windows (31 on
+  Crossing 2070, 16 Sumps); the carry cut acquisition-held ticks ~8 % summed (9134 -> 8434).
+- *Round 42's attack-shot probe, dev seeds 7001-7012* (n = 12 paired; new deciding-shaped metric `held_line_s` = loaded, in reach,
+  a real line, the team seeing it, not firing): today 23.41 s a run, carry 23.29 (-0.12, se 0.12), line 23.32 (-0.08, se 0.08);
+  first hit 3.51 s in all three; deaths 10 / 10 / 11. The probe's clean one-box case rarely reaches either rule.
+- *Why the carry is small:* of his side's swaps with a lay in progress (staged gates windows), **only 18 of 62 had the new target
+  within 10 deg of the barrel** (median swing 20.7 deg, p75 56 deg; CPU 7 of 61, median 23.8 deg); and 87 of his 145 laying s are
+  FIRST fixes (`acquire_seconds` by design: distance over the crew's own sight, gang War Rig 60 m). A wider carry keeps a fix through a
+  real swing: that is the pot-shot dial (E3), his call.
+- *The rest of his held time, split (staged, 889aa86b0, native on):* no line 18 %, acquiring 44 %, **fire discipline 7 %** (past the
+  weapon's effective range, no long shot), aim 5 %, lane 23 %, unseen 3 %. Discipline is not the silence.
 
 **E1 REPORT (2026-10-30 ~17:45; every number STAGED from his census, builder3, 8e51344cc = e306ce27f's game code + measurement-only
 traces, native on, lane rule ON = his default game, n = 1 a window; `make engage-e1-windows`, tables `tests/engage/gun_trace_table.py`):**
