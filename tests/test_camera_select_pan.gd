@@ -125,7 +125,7 @@ func test_the_pan_starts_on_the_next_frames_even_while_he_aims_and_starts_from_r
 		assert_true(float(steps[i]) <= RtsCamera.PAN_SCREENS_PER_S * height / FPS + 0.05, "a pan, not a cut: under %.1f heights/s" % RtsCamera.PAN_SCREENS_PER_S)
 
 
-func test_a_squad_that_drove_off_while_he_aimed_is_caught_up() -> void:
+func test_a_squad_that_drove_off_while_he_aimed_is_caught_up_once_he_stops_aiming() -> void:
 	var rig := _rig(_squad(Vector3(0, 0, 40)), ["a"])
 	rig.aiming = func() -> bool: return true
 	_settle(rig, 3.0)  # the selection is old: no fresh pan left
@@ -134,8 +134,17 @@ func test_a_squad_that_drove_off_while_he_aimed_is_caught_up() -> void:
 		rig.set_meta("frame", _squad(Vector3(i * 1.0, 0, 40)))
 		rig._process(1.0 / FPS)
 	rig.set_meta("frame", _squad(Vector3(70, 0, 40)))
-	var took := _frames_until(rig, 20.0, 2.0)
-	assert_true(took >= 0.0 and took <= 1.5, "the view corrects within 1.5 s (%.2f)" % took)
+	for i in 30:  # still aiming: the correction waits for him (a pan under his aim slides his click)
+		rig._mouse_moved_at = rig._clock - 0.3
+		rig._process(1.0 / FPS)
+	assert_true(not rig.planner_urgent, "no correction starts under his aim")
+	var took := -1.0
+	for i in int(3.0 * FPS):  # he lets go of the mouse: the aim lapses after HOVER_HOLD_S, then the view catches up
+		rig._process(1.0 / FPS)
+		if _gap(rig) < 20.0:
+			took = (i + 1) / FPS
+			break
+	assert_true(took >= 0.0 and took <= RtsCamera.HOVER_HOLD_S + 1.0, "the view corrects once he stops aiming (%.2f s)" % took)
 
 
 func test_his_own_pan_stays_his_until_he_selects_then_the_view_comes_back_at_once() -> void:

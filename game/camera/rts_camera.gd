@@ -351,6 +351,7 @@ const PAN_MAX_S := 1.5
 const PAN_DRIFT_M := 30.0
 var _pan_until := -1e9
 var _aim_now := false
+var _panned_for := -2e9
 var _turn_pace := 1.0
 ## The pan's spring (1/s; critically damped from rest: 90 % of the way in 3.9/omega s, no step in speed) and its top
 ## speed in heights of the ground in view per second (the spring alone peaks at gap * omega / e: 150 m at 7.5 -> 414 m/s,
@@ -584,8 +585,8 @@ func _process_timed(delta: float) -> void:
 	_update_tracking()
 	HudClock.end(&"cam.tracking", _hc3)
 	if glide:
-		planner_urgent = _pan_urgent()
 		_aim_now = aiming_now()
+		planner_urgent = _pan_urgent()
 		holding = _aim_now and not planner_urgent
 		_urgency = (1.0 if planner_urgent else 0.0) + (_urgency - (1.0 if planner_urgent else 0.0)) * exp(-PACE_OMEGA * delta)
 		_glide(delta)
@@ -2171,9 +2172,12 @@ func _pan_urgent() -> bool:
 		return false
 	if planner_urgent:
 		return _clock < _pan_until
-	var fresh := _clock < _fresh_until and gap > PAN_START_M
-	var drift := gap > PAN_DRIFT_M and _manual_at <= _select_at
-	if fresh or drift:
+	# The pick's own pan ignores his aim (that hold WAS the delay he felt); any later start (a second within FRESH_S, a drift)
+	# waits until he is not aiming (dev 7001-7004 at b9e28935b: 13 clicks aimed while such a pan started, slip p95 305 px).
+	var first := _clock < _fresh_until and gap > PAN_START_M and _panned_for != _select_at
+	var later := not _aim_now and ((_clock < _fresh_until and gap > PAN_START_M) or (gap > PAN_DRIFT_M and _manual_at <= _select_at))
+	if first or later:
+		_panned_for = _select_at
 		_pan_until = _clock + PAN_MAX_S
 		return true
 	return false
