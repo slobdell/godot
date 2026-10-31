@@ -5710,7 +5710,7 @@ static func shortfwd_on() -> bool:
 	return not Traffic.off("shortfwd")
 
 
-## Round 47 (manoeuvre M2, `--traffic-on=buried` until Bar M; R47.11; Bar M amendment 1): A STATION PINNED IN A BUILDING FOLLOWS THE SQUAD'S TRACK. His
+## Round 47 (manoeuvre M2, R47.11; Bar M amendment 1; Bar M PASSED: ON by default, `--traffic-off=buried` the escape): A STATION PINNED IN A BUILDING FOLLOWS THE SQUAD'S TRACK. His
 ## Locks fire truck (Burners2_4, 2026-10-30 15:49): its squad's travelling station slid into the 2.8 m gap between the city block at
 ## (-30, 42) and the container_40 at (-30, 66), then into the block; the brain grounds a station to the NEAREST standable point, which
 ## stayed pinned at the container's east end up to 9.9 m from the station, so the crew drove its nose into the block and stood

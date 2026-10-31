@@ -98,7 +98,7 @@ _(worker keeps this current: report at the top, every number with commit, machin
   engage (FYI): HOLD's return to his post uses arrive 6.0, so any other displacement still parks him up to 6 m short.
   **Questions for the lead:** none.
 
-### REPORT — Bar M, W1 + G8 (2026-10-30 ~19:55): every line passes; W2 (G7) running
+### REPORT — Bar M FINAL (2026-10-30 ~20:20): PASSES on every line (G5 vacuous in W1, said); ship ON requested
 
 Frozen 1aa41aeaf (check builder3, exited 0, 3522 / 0); series tree 4ab917680 (its code + the series target and a staged test), builder3,
 native ON, seeds 12401-12424, orders' group-order probe (5 squads, crew headings, 180 s) on terminus / crossing / locks / sumps: 96 paired
@@ -118,7 +118,7 @@ cells, the wrapper `make manoeuvre-bar-m-series` exited 0, no SCRIPT ERROR in 19
 | G6 Crossing guard | 1.0 / 0 / 1.97 / 0 s | PASS |
 | G8 engage's authority probe | 6 of 6 identical | PASS |
 | G9 check / SCRIPT ERROR | exited 0 / none | PASS |
-| G7 W2 both sides | running | — |
+| G7 W2 both sides (route-census 12425-12448, 24 fights) | identical in every line, 0 swaps (the flag reached the arm) | PASS |
 
 By map (noprog_s): terminus z -2.04, locks -0.86, crossing -0.52, sumps +0.09; slow_s z -1.96.
 
