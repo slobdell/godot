@@ -57,9 +57,11 @@ Memory: smart AI on both sides; units must look smart and under his control.
    WORLD_MASK. Every decision already goes through `Perception.has_line_of_sight` / the cover map. After Bar E3's series (frozen).
 7b. **E9 friendly fire in a close fight (R47.32 follow-up, after Bar E3; its own bar on fresh seeds from 13025+, ask the
    orchestrator):** Bar E7's six grazes: SUPPRESS's lane check, and the circling machine-gun burst's re-check.
+   - **E9 repro from the E3 ship sweep:** scenario_elements::test_the_base_of_fire_keeps_firing_while_the_others_move, seed 14 (the scenario's own), all four Green crews' x shifted +3 m, `--pot-shot=on`, tree 63cc54821, builder3: "through a friend 1" (OFF on the same offset: 0). To reproduce, shift the four `Vector3(-112.0 + i * 10.0, ...)` by +3 in x. The tick is still to be traced with `--gun-trace=Green_B`.
 8. **E8 his post, tighter (R47.30, from manoeuvre; after E7 / E3):** HOLD's way back to HIS post uses arrive 6.0 m, so a crew
    displaced from where he put it (manoeuvre's holdyield fixes the yield's push, 12328: 10.1 -> 0.0 m) still parks up to 6 m short.
    A tighter return for his own post (player-authority code, engage's), measured on E2's authority probe.
+   - **R47.43 (manoeuvre, relayed 2026-10-30):** with `--traffic-on=overstay`, `_his_post_at = DoorOverstay.post_after(tank, _his_post_at)` moves his held crew's post off a closing door's slab. His HOLD order's own `order["goal"]` still drives it back into the doorway. In E8, have the hold goal follow the moved post (DoorOverstay.post_after on the goal, or read `_his_post_at`), behind the same switch.
 
 ## Don't touch
 
