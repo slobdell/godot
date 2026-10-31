@@ -98,6 +98,29 @@ _(worker keeps this current: report at the top, every number with commit, machin
   engage (FYI): HOLD's return to his post uses arrive 6.0, so any other displacement still parks him up to 6 m short.
   **Questions for the lead:** none.
 
+### BAR H (FILED 2026-10-30 ~19:40, before any number; `holdyield`, M5a)
+
+**The change:** `--traffic-on=holdyield` (Movement._holdyield_veto inside _begin_yield's two spot loops), as in df26c0d5f. **Frozen
+tree:** the first commit after 3635507bd whose check is green. **Native:** ON runs the GDScript yield (native_yield off for the rule,
+Traffic._chain_native) until native's twin lands (R47.30); BASE runs today's native yield, so the arms differ in the yield path too:
+said, and G6 is the line that catches a cost from it. **Machine:** builder3, after Bar M / Bar W's series. **Seeds:** 13001-13024
+(R47.30). **Arms:** BASE v HOLD (`--traffic-on=holdyield`).
+**Workloads:** engage's lane probe (`engage-lane-probe`, 30 s; its seed picks the mode: cpu / attack / post) on 13001-13024;
+orders' group-order probe (`manoeuvre-bar-m` with BARM_ARMS base / hold, `--noprogress-census`) on 13001-13006, four maps.
+
+| Line | Statistic | Passes when |
+|---|---|---|
+| **D1 his case** | lane probe seed 12328 (named cell, engage's) post_m | HOLD <= 1.0 m (BASE 10.1) |
+| **D2 deciding** | lane probe, post-mode cells: post_m (drift from his post) | HOLD <= BASE in every cell AND pooled HOLD < BASE, or all identical (then the bar reads "no case on fresh seeds", said) |
+| G1 | lane probe, every cell: first_shot_s, enemy_hp, died | each pooled within +1.645 se (or identical) |
+| G2 | lane probe, cpu / attack cells | identical in every line (the rule reads only his post) |
+| G3 | group probe: noprog_s, all_in_s, blocked_s, yielding_s, contact_s | each <= +1.645 se |
+| G4 | engage's authority probe (6 seeds 13019-13024) | rows identical |
+| G5 | test_manoeuvre_noprogress (his staged cases) | green |
+| G6 | check; SCRIPT ERROR | exited 0; none |
+
+At most two amendments, before numbers.
+
 ### BAR W (FILED 2026-10-30 ~19:15, before any number; the watchdog `noprogress` + Pathing.reroute off a sliver)
 
 **The change:** `--traffic-on=noprogress` (game/ai/noprogress_watch.gd) and Pathing.reroute's off-island route (R47.25), as committed
