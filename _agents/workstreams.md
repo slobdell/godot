@@ -201,6 +201,31 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   (0.26 a call), ~0.3 ms its own body. Proof as place (VERIFY on his four + native-verify-scenarios + random); ON if faster or neutral.
   From its merge those loops are frozen-by-twin: engage / manoeuvre change them through native (told).
 
+- **R47.20 (his pick) Snap shots ship ON once their bar passes.** Engage's `--pot-shot` (after 0.4 s of the fix, inside the weapon's
+  effective band, aim off up to 2.5 m shrinking as the fix completes; no hit roll): native's NativeGun / NativeExec twin first (C47.6),
+  then Bar E3 filed before numbers on engage's seeds, ON when it passes. Symmetric (the CPU snaps too).
+- **R47.21 (his pick) The group click: "columns only at the end".** Orders' Bar O FAILED as filed (0b1caafa2, 120 three-squad pairs:
+  median spread 71.3 v 71.3 m; the lay refused on every street / bridge map; the 2-squad cells errored: no probe army, lesson 350); O1 v2
+  (step-back + real 2-squad army, dev 7001-7002) brought squads together (2 squads 14 v 33-41 m) but friendly contacts rose 5-20x. **His
+  pick: squads travel as today and form side by side only for the last stretch.** Built by ORDERS (manoeuvre is on Bar M): GRANT orders
+  `game/tactics/element_plan.gd`'s arrive-file functions (ARRIVE_FILE / D3b, OFF since R35.41) for this, manoeuvre's probes as guards;
+  Bar O2 on 12749-12796, filed fresh before numbers (deciding: spread for one click AND all-in sooner-or-same; guard: contacts within
+  x1.25 + 5). O1 stays OFF on stream/orders (d9151bad5) so O4 / O5 / O6 can merge.
+- **R47.22 (his words) A skirmish army is capped by COST, not by vehicle count: `make skirmish` assumes the garage's default credits
+  (1000) for both sides.** Engage's E6 read: the laptop preset's 20-vehicle cap (C25.6) cut a gang army to 2490 of 5000 points while the
+  syndicate's 17 vehicles fit whole. Built by ORDERS: GRANT `game/modes/skirmish_mode.gd`'s lineup / cap code and the Army trim it calls.
+  The laptop preset's fps with a full cheap-swarm army (~40 vehicles) is read under the lock (C47.10); if it is too heavy for the UHD 620
+  the fallback goes back to him in player terms, never a silent cut.
+- **R47.23 (his yes) Render targets may use builder3's logged-in Xorg desktop (:1) for ~1 min at a time** while builder0 is down
+  (orders' O5 screenshots; mapkit's gallery). One window at a time; close it after.
+- **R47.24 Camera's Bar K amendment 1 (G10 = Bar C1's G8 as it said it copied: planner <= 0.5 ms a frame, p99 <= 1.5; plus whole rig ARM
+  <= BASE + 0.05 ms) ACCEPTED.** A copying slip, fixed to the line the filing named; the laptop reads that prompted it are reported
+  beside the verdict (rig 0.858 / 0.845 v 0.812 / 0.866 ms; planner 0.339 / 0.314 v 0.316 / 0.342, p99 0.76 / 0.77 v 0.69 / 0.80).
+- **R47.25 Route's session ended (FINAL REPORT on main 71991404b); GRANT manoeuvre `Pathing.reroute`'s body** for the CPU's ambush
+  squad on a disconnected navmesh sliver (his Crossing, Rust_Hunters at (-30, -8), 24+ s; stream/manoeuvre 4ab917680's staged test RED):
+  a reroute whose path ends far short of a goal reachable nearby plans from the nearest point of the goal's (or the squad's) connected
+  region. Main = + route d847b77fd (GREEN 3534/0) + its tip (tests/docs): one main check batched with native's candidate.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_

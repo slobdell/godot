@@ -4805,3 +4805,17 @@ Page: https://claude.ai/artifact/WSBf2Wmmar3BSocBqqrRpm (dump: `streams/referenc
 **a**, sight screen **c**, overpass **c**, tank traps **a**, and he also picked the two extras, pipe racks **b** and gantry crane **a**
 (so those come off the backlog into scope after the first four). **Announcer door lines: all 21 KEPT** (open_1-4, close_1-4, caught_1-4,
 held_1-3, pa_1-4, vet_1-2): the text gate is passed, so their voice generation is approved (production quality, memory). No notes.
+
+## His answers mid-round 47 (2026-10-30 evening, the question tool)
+
+1. **Snap shots (engage's E3):** asked with the dev numbers (War Rigs' first shot ~0.9 v 1.45 s after a target appears, accuracy 79 v
+   76 %, hits a minute 38 v 29 not beyond noise, friendly hits no higher; the CPU's long guns 83 -> 69 % in his matches; the round goes
+   where the barrel points). **His pick: "Yes, turn them on (Recommended)".** -> R47.20.
+2. **Group click after Bar O failed and O1 v2 bumped (14 m together but 5-20x hull contacts on the way in):** **his pick: "Columns only
+   at the end (Recommended)"** — squads travel as today and form up side by side only in the last stretch before his click. -> R47.21.
+3. **The laptop's skirmish army size (gangs 2490 v 5000 points under the 20-vehicle laptop cap), his words verbatim:**
+   > "ah I was actually wondering this - the units should be capped based on the actual vehicle costs we've established. make skirmish
+   > should assume 1000 credits or whatever the default was in the garage"
+   -> R47.22.
+4. **Screenshots on builder3's desktop:** "Yes, use builder3's desktop (Recommended)" — a game window on his logged-in Xorg :1 for ~1 min
+   for render targets while builder0 is down. -> R47.23.
