@@ -65,7 +65,28 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**Report (2026-10-30 ~19:40, top = newest).** **Bar K READ: FAIL 29 of 33 (every deciding line passes; G2, G3, G4b, G8 fail).**
+**FINAL REPORT (2026-10-30 ~20:20).** Backlog: **K1 DONE, K2 SHIPPED ON, K3 SHIPPED ON as the drift correction (its 20 m
+bound parked OFF, dev knob), K4 Bar K READ (FAIL 29/33, every deciding line passed; he said "Ship it ON": R47.29, 2c60ccd93 on
+main), K5 DONE (three hand models), K6 C1 v2 NOT STARTED** (time went to the orchestrator's item 1; C1 v2 still costs the building
+win per round 46, and Bar K's rear-ambush lane read the same latencies ON v OFF). **Bar K2 (the pan's hand-over) FAILED and is
+REVERTED**: on reserve seeds 12849-12896 (cbb074e10, builder3, 72 runs an arm) the landing cut non-pan snaps 7 -> 1 (not 0) but made
+pans longer: clicks aimed mid-pan 60 -> 96, slip p95 49.3 px (line 40), so he would misclick more right after a pick for a little
+smoothness at a long pan's end; verdict `references/round47/camera/bark2-verdict-builder3-cbb074e10.txt`. The branch's code is
+main's (the revert), plus the judge's R47.24 G10. **Overpass deck cutaway: blocked** on mapkit's P4 (no overpass piece exists until
+his looks-page picks; BlockCutaway hides blocks by sight test and will need the deck's drawn slab as a new cut type when it lands).
+**Green hash:** see the last line of this report (the tip's full check).
+
+**What to playtest (exact):** `make skirmish` (main), any map: split the army (half west, half east), then pick each squad by its
+key: the camera should set off at once and be on it in under a second, even with his hand on the mouse; `--camera-select-pan=off`
+is round 46's camera. **Known issues:** clicking while that pan is still sweeping misclicks more (Bar K G5 note); for ~0.15 s of a
+far pick neither squad is in view; the squad he leaves goes off screen (by design). **Questions for the lead:** none open.
+**Requests to other streams:** native: none (the camera has no twin; it writes no sim state). mapkit: tell camera when an
+overpass deck exists (its drawn slab) for the cutaway. **Next steps:** the hand-over smoothing needs a rule that does not lengthen
+the pan (e.g. end the pan earlier, before PAN_MAX_S, on a predicted stop); C1 v2 if he asks for the rear turn back.
+**Merge notes (shared files):** none touched this round beyond my paths (`skirmish_mode.gd` untouched); `references/round47/camera/`
+(verdicts), `tests/camera/armies/` (his garage armies as replay fixtures: copies of his user:// files).
+
+**Report (2026-10-30 ~19:40).** **Bar K READ: FAIL 29 of 33 (every deciding line passes; G2, G3, G4b, G8 fail).**
 Candidate e4a614eab GREEN builder3 (`make check exited 0`, 3525 passed / 0 failed, 28 ALL JUDGED; the checked tree was b1f08cc2d =
 e4a614eab + docs, with the two `.uid` files on disk, committed after in 2c60ccd93). Series 19:03-19:27 builder3, 72 deciding + 48
 guard runs an arm, 0 lost; verdict `references/round47/camera/bark-verdict-builder3-e4a614eab.txt`. Laptop (R47.24 G10): planner
