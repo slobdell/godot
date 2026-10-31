@@ -192,6 +192,19 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar M BURIED STATIONS (manoeuvre; FILED 2026-10-30 ~18:55 in streams/manoeuvre.md, stream/manoeuvre c85f828cf, BEFORE any number;
+  recorded here by the orchestrator).** The change: `--traffic-on=buried` (Movement.buried_station + R47.11's one line): a travelling
+  station the grounding moves > 4 m, or pulls back > 1 m along the squad's way while 6 m on is > 1.5 m off the navmesh, is taken on the
+  squad's own route 8 m on (never behind the crew), sticky while pinned. **Native:** no twin claimed (the goal is GDScript on every path;
+  native's feed passes the raw station) — native confirms. Machine builder3, native ON both arms, frozen tree = the first green commit
+  after 482f5e2b3. Census: noprog_s (crew > 15 m from its seat by route, no 1 m closer in the last second). Instrument checked on his
+  Locks replay (BASE Burners2_4 4.0 s). **W1 deciding:** orders' group-order probe, terminus / crossing / locks / sumps, 12401-12424.
+  **W2:** route-census CPU v CPU on 12425-12448 once on main, else dropped and said. **D1** his staged Locks case <= 1.0 s (BASE 3.47);
+  **D2** touched cells noprog_s paired mean < 0 AND sooner-or-identical >= 50 %; D3 all cells <= +1.645 se; **G1** all_in_s, **G2**
+  never_in, **G3** contact_s, **G4** blocked_s / yielding_s (each <= +1.645 se; G2 total <= BASE); **G5** untouched cells identical;
+  **G6** staged Crossing Hunters < 2.5 s each; **G7** W2 both teams' noprog_s; **G8** engage's authority probe 12443-12448 rows identical;
+  **G9** frozen tree's check exited 0, no SCRIPT ERROR. Full table in the brief.
+
 ## Round 46: five streams (prepared 2026-10-30; CLOSED 2026-10-30; briefs in `streams/archive/round46/`)
 
 **Goal: what he saw on his last two playtests changes in his default game.** The camera keeps his selection and its fight on screen
