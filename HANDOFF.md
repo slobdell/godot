@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-30 ~21:35 PDT — **ROUND 47 RUNNING (seven streams launched; route and camera have finished and closed their sessions).** **Main 09780edb9 GREEN builder3** (`make check exited 0`, 3569 passed / 0 failed). Since then main = + engage d3b3fe918 (E7 ON) + manoeuvre bbd8c1ba6 (buried ON) + native 6f19722ae (place / esit / matchups C++ ON) + mapkit 39c7dba53 (doors, sight class, traps, monorail) + orders 1c2fc5838 (the money cap ON; the orchestrator's rules.py integration) = 79cea77e5, its check queued (log `~/orch-r47/main-check-79cea77e5.log`). Rulings R47.1-R47.38 in `workstreams.md`. builder0 DOWN since ~17:35. Main is unpushed (he pushes)._
+_Last updated: 2026-10-31 ~00:15 PDT — **ROUND 47 RUNNING (route and camera finished; spotter added mid-round, R47.40).** **Main 8d37b9796 GREEN builder3** (`make check exited 0`, 3608 passed / 0 failed, 29 targets ALL JUDGED). Since: + mapkit b9f13f946 (GREEN 3552/0) = 9e45fd0db, its check queued (log `~/orch-r47/main-check-9e45fd0db.log`). ON in his game: camera select-pan, E7 press-on, buried stations, battery screen, the recipient cue, the money cap, native place / esit / matchups, the trim sheet. Pending ships: snap shots (engage, R47.44), group click (orders, R47.41), holdyield (manoeuvre, R47.42). Rulings R47.1-R47.45 in `workstreams.md`. builder0 DOWN since ~17:35. Spotter's night shift runs on builder3 (cron; `make spotter-night-stop`). Main is unpushed (he pushes)._
 
 ## ▶ ROUND 47 AS PREPARED (2026-10-30 evening) — read this first
 
