@@ -3,8 +3,10 @@
 units looking dumb, with FIXED thresholds (not the ranker's per-batch rarity), so a "before" and an "after" read the same rule.
 Stdlib only; runs on builder3's system python and on the laptop.
 
-    python3 tools/spotter/classes.py <fight_dir> [--out <dir>] [--label <commit>]
-        -> <out>/classes.json (rates), classes.md (a person), class_<X>.jsonl (every moment with its per-second rows)
+    python3 tools/spotter/classes.py <fight_dir> [<fight_dir> ...] [--out <dir>] [--label <commit>] [--before <classes.json>]
+        -> <out>/classes.json (rates + per fight), classes.md (a person), class_<X>.jsonl (every moment with its per-second rows)
+        --before: a "before" classes.json (the round's is tools/spotter/baselines/classes-df9aacc1a.json): classes.md gains the
+        PAIRED read, class by class, on the fights both have run (same arena-seed), after - before a fight with its standard error
 
 THE RULE, v2 (one crew-second; a "run" is the consecutive seconds a condition has held, a sample gap > 1.5 s breaks it; a second
 is flagged from the second its run reaches the threshold; the first class that matches, in the order A E STUCK C B D, wins):
@@ -278,15 +280,60 @@ def rates(moments, fights, maps):
     return out
 
 
+def per_fight(moments, fights):
+    out = {f: {c: [0, 0] for c in ORDER} for f in fights}
+    for m in moments:
+        if m["fight"] in out:
+            out[m["fight"]][m["cls"]][0] += 1
+            out[m["fight"]][m["cls"]][1] += m["crew_seconds"]
+    return out
+
+
+def compare(before, after):
+    """Paired by fight over the fights both have: per class, before / after moments a fight and the mean difference with its se."""
+    common = sorted(set(before.get("per_fight", {})) & set(after.get("per_fight", {})))
+    out = {"fights": len(common), "classes": {}}
+    for cls in ORDER:
+        rows = [(before["per_fight"][f].get(cls, [0, 0]), after["per_fight"][f].get(cls, [0, 0])) for f in common]
+        res = {}
+        for i, key in ((0, "moments"), (1, "crew_seconds")):
+            d = [a[i] - b[i] for b, a in rows]
+            n = len(d)
+            mean = sum(d) / n if n else 0.0
+            var = sum((x - mean) ** 2 for x in d) / (n - 1) if n > 1 else 0.0
+            res[key] = {"before": round(sum(b[i] for b, _ in rows) / max(n, 1), 3), "after": round(sum(a[i] for _, a in rows) / max(n, 1), 3),
+                        "diff": round(mean, 3), "se": round((var / n) ** 0.5, 3) if n else 0.0}
+        out["classes"][cls] = res
+    return out
+
+
+def compare_md(cmp, before_label, after_label):
+    lines = [f"\n## Paired v the before ({cmp['fights']} fights both ran; before = {before_label}, after = {after_label})\n",
+             "| Class | moments / fight before | after | diff (se) | crew-s / fight before | after | diff (se) |",
+             "|---|---|---|---|---|---|---|"]
+    for cls in ORDER:
+        m, c = cmp["classes"][cls]["moments"], cmp["classes"][cls]["crew_seconds"]
+        lines.append(f"| {cls} {NAMES[cls]} | {m['before']:.2f} | {m['after']:.2f} | {m['diff']:+.2f} ({m['se']:.2f}) | "
+                     f"{c['before']:.1f} | {c['after']:.1f} | {c['diff']:+.1f} ({c['se']:.1f}) |")
+    return "\n".join(lines) + "\n"
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("fight_dir")
+    ap.add_argument("fight_dir", nargs="+")
+    ap.add_argument("--before", default="", help="a before classes.json (with per_fight): add the paired read to classes.md")
     ap.add_argument("--out", default=None)
     ap.add_argument("--label", default="", help="the commit / machine stamp printed with every rate")
     args = ap.parse_args()
-    out = args.out or args.fight_dir
+    out = args.out or args.fight_dir[0]
     os.makedirs(out, exist_ok=True)
-    paths = sorted(glob.glob(os.path.join(args.fight_dir, "*.jsonl.gz")) + glob.glob(os.path.join(args.fight_dir, "*.jsonl")))
+    paths, seen = [], set()
+    for d in args.fight_dir:  # one commit's fights may lie in several date folders: each arena-seed once, the first found
+        for path in sorted(glob.glob(os.path.join(d, "*.jsonl.gz")) + glob.glob(os.path.join(d, "*.jsonl"))):
+            name = os.path.basename(path).split(".jsonl")[0]
+            if name not in seen:
+                seen.add(name)
+                paths.append(path)
     moments, fights, maps = [], [], defaultdict(int)
     for path in paths:
         header, rows = F.load_fight(path)
@@ -298,11 +345,11 @@ def main():
         maps[header.get("arena", "")] += 1
         moments.extend(classify_fight(header, rows, name))
     if not fights:
-        sys.exit(f"classes: no fights in {args.fight_dir}")
+        sys.exit(f"classes: no fights in {' '.join(args.fight_dir)}")
     seeds = sorted({int(f.rsplit("-", 1)[1]) for f in fights if f.rsplit("-", 1)[-1].isdigit()})
     result = rates(moments, fights, maps)
     result.update({"rule": RULE_VERSION, "label": args.label, "seeds": f"{seeds[0]}-{seeds[-1]} ({len(seeds)})" if seeds else "",
-                   "maps": sorted(maps)})
+                   "maps": sorted(maps), "per_fight": per_fight(moments, fights)})
     json.dump(result, open(os.path.join(out, "classes.json"), "w"), indent=1)
     for cls in ORDER:
         with open(os.path.join(out, f"class_{cls}.jsonl"), "w") as h:
@@ -330,6 +377,12 @@ def main():
         for arena, d in result["by_map"].items():
             h.write(f"| {arena} | {d['fights']} | " + " | ".join(
                 f"{d[c]['moments_per_fight']:.2f} / {d[c]['crew_seconds_per_fight']:.1f}" for c in ORDER) + " |\n")
+        if args.before and os.path.exists(args.before):
+            before = json.load(open(args.before))
+            cmp = compare(before, result)
+            result["paired"] = dict(cmp, before=before.get("label", ""))
+            json.dump(result, open(os.path.join(out, "classes.json"), "w"), indent=1)
+            h.write(compare_md(cmp, before.get("label", ""), args.label))
     print(open(os.path.join(out, "classes.md")).read())
 
 

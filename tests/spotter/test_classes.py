@@ -130,6 +130,15 @@ class ClassRuleTest(unittest.TestCase):
         self.assertIn("E", got)
         self.assertNotIn("F", got.get("E", {}).get("cls", ""))
 
+    def test_paired_compare(self):
+        before = {"per_fight": {"crossing-1": {"B": [4, 40]}, "crossing-2": {"B": [6, 60]}, "locks-9": {"B": [9, 9]}}}
+        after = {"per_fight": {"crossing-1": {"B": [1, 10]}, "crossing-2": {"B": [3, 20]}, "gorge-3": {"B": [0, 0]}}}
+        cmp = K.compare(before, after)
+        self.assertEqual(cmp["fights"], 2)  # only the fights both ran
+        b = cmp["classes"]["B"]["moments"]
+        self.assertEqual((b["before"], b["after"], b["diff"]), (5.0, 2.0, -3.0))
+        self.assertEqual(cmp["classes"]["A"]["moments"]["diff"], 0.0)
+
     def test_precedence_A_over_D(self):
         got = classes_of(staged(8, choice="RETREAT", squad_d=60.0, route_off=150.0))
         self.assertIn("A", got)
