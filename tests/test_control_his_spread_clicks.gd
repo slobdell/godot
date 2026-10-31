@@ -231,6 +231,7 @@ func _assert_merged(map: String, with_elements: bool) -> void:
 			continue
 		var task: Dictionary = _last_tasks[squad]
 		assert_eq(String(task.get("halt_shape", "")), "column", "%s halts as a file" % squad)
+		assert_eq(String(task.get("formation", "")), "column", "%s drives in as a file" % squad)
 		assert_true(task.has("halt_at") and task.has("lay"), "%s: its halt's spot and heading ride the task" % squad)
 		assert_true((laid[squad] as Vector3).distance_to(click) <= 12.0, "%s's spot within a pitch of his click (%.1f m)" % [
 				squad, (laid[squad] as Vector3).distance_to(click)])

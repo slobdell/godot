@@ -1650,12 +1650,12 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 		if SelectionSquads.GROUP_MERGED and ground != null and not queue_leg and drawn == null and loose.is_empty() \
 				and (verb == "move" or verb == "attack_move") and squads.size() >= 2 and squads.size() <= SelectionSquads.MERGED_FILES_MAX \
 				and blocks.size() == squads.size() and (merged_group() > 0 or SelectionSquads.GROUP_MERGED_ALL):
-			var filed := _merged_files(squads, blocks, click, ground)
+			var filed := _merged_files(squads, blocks, click, ground) if squads.all(func(q: Dictionary) -> bool: return squad_formation(q) == UnitCommand.AUTO) else {}
 			if not filed.is_empty():
 				anchors = filed["heads"]
 				column = false
 				for at: Vector3 in anchors:
-					packed_shapes[at] = {"shape": "column", "heading": filed["heading"]}
+					packed_shapes[at] = {"shape": "column", "heading": filed["heading"], "travel": true}
 				_trace_stage("merged", squads, anchors)
 	if extra.has("to") and squads.size() >= 2 and (verb == "move" or verb == "attack_move"):
 		_remember_route_click(squads, blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])), bool(extra.get("queue", false)),
@@ -1756,6 +1756,8 @@ func _order_squads(verb: String, extra: Dictionary, found: Dictionary) -> String
 				given["halt_shape"] = String(packed_shapes[anchors[i]]["shape"])
 				var lay: Vector3 = packed_shapes[anchors[i]]["heading"]
 				given["lay"] = [lay.x, lay.z]
+				if bool(packed_shapes[anchors[i]].get("travel", false)):
+					given["travel_shape"] = String(packed_shapes[anchors[i]]["shape"])  # R47.4: the merged files drive in as files
 			# B8 (R34.14): the heading each squad lays its halt on when it deploys, fixed now (the approach).
 			elif ElementPlan.DEPLOY_STEP and verb == "move" and not given.has("facing"):
 				var approach := SelectionSquads.approach_of(blocks, Vector3(float(extra["to"][0]), 0.0, float(extra["to"][1])),
@@ -2104,6 +2106,10 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary, acknowledge
 	_copy_pack(extra, task)
 	if shape != UnitCommand.AUTO:
 		task["formation"] = shape
+	elif extra.has("travel_shape"):
+		# R47.4: a merged group's file travels as a file (an AUTO squad's wedge, ~50 m wide, would sweep across the file 14 m
+		# beside it on the way in and only then re-seat).
+		task["formation"] = String(extra["travel_shape"])
 	if task["verb"] == "move" and not task.has("to"):
 		return _refuse("a move task needs somewhere to go")
 	if verb == "move":
