@@ -62,6 +62,15 @@ shift keeps 13121-13216 as its fixed before / after set). Dev 7001-7012 (never a
 - **R48.3 Spotter batch 2:** he tapped 34 (all flagged, all "dumb"); 31 of the rest are labelled dumb by assumption (C48.4); 15 stay on
   his page (the 10 controls + 5 flagged, blind).
 
+- **R48.4 The round's "before" (C48.2), spotter S2:** main df9aacc1a, builder3, the night's 576 fights (13121-13216 x terminus crossing
+  locks sumps gorge parade, 240 s showmatch, native), rule `tools/spotter/classes.py` "classes v3" (frozen this round; a rule change
+  re-reads df9aacc1a in the same commit). Per fight, moments / flagged crew-s: **A** 0.14 / 0.5; **E** 5.58 / 23.3 (no answer 4.41,
+  answering 1.17; 1526 of 2541 no-answer moments end on a plain MOVE); **C** 3.40 / 32.8; **B** 17.00 / 69.7 (held crew gives way 11.63 /
+  34.3, parked blocker 0.81 / 5.8, moving squadmates 4.55 / 29.5); **D** 5.14 / 11.6. Batch-1 agreement 19 / 30 (A 4/4, B 7/9, C 4/5, E
+  3/5, D 1/7: follow rows carried no goal). Engage's own E1 read (same tree, batch 1's 12 fights, default v `--outranged=off`): A 0 v 9,
+  E 4 v 16 — E10 already removes class A. Manoeuvre's M1: class B's causes = a parked crew giving way in place, and held crews leaving
+  their posts to give way (musical chairs); M2 `heldpost` built.
+
 ### Bars (round 48)
 _(filed by each stream before any number)_
 
