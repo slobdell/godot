@@ -379,6 +379,14 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   Changes OFF games too (both sides): the sim-baseline move is this line's as much as E3's. Condition: a test that a flickering shot never
   stalls an ordered move.
 
+- **R47.45 Bar P FAILS its deciding line on all three twins; every guard passes: the pieces are SAFE (no extra stalls, fair, normal
+  length) but CPU-v-CPU fights play the same on them.** 2ce6fa68b (b9f13f946's code), builder3, 224 matches native ON, 0 failed (table
+  `streams/references/round47/mapkit/`, stream/mapkit 18d4b2d36): parade_traps range +1.2 +/- 0.9 m, flank +0.025 +/- 0.013;
+  parade_rail range +1.6 +/- 1.5, hidden +0.020 +/- 0.009; crossing_screens (n 64) range +2.0 +/- 1.1, gangs' shots -13 +/- 10 (wanted a
+  rise). **Caveat: CPU crossings fight at a 35 m median v his 79 m: the workload does not reproduce his mismatch.** Nothing goes on a dealt
+  map; the twins stay candidates for his eye. Next for mapkit: the blast doors in a REAL arena candidate (the native door mask is on main),
+  then a screens workload staged from his Crossing positions.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
