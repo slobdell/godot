@@ -55,6 +55,22 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**FINAL REPORT (DRAFT, 2026-10-30 ~23:00 PDT; final once e5fa1f1be's check is named). On main: 6f19722ae (GREEN, 3523 / 0,
+29 ALL JUDGED, sim-baseline unmoved) and 27ea82fa5 (merged as 8d37b9796 with route_doors.gd's stub-order fix 94646bf63). Candidate:
+e5fa1f1be (full check queued, builder3): + test_match_shell_dropped_peer's flake fix, E3's pot_shot_halts line (02f308371, a no-op
+until engage's GDScript), test_native_gun's E3 floor, lines_r47 (25 lines: Bars K, E7, M), main 8d37b9796.**
+In his terms: his game plays the same bit for bit, with three more of its core pieces in C++ (formation seats, the squad's view
+of its crews and contacts, the matchups); every rule the other streams shipped ON this round that touches the brain, the gun or the
+drive runs the same in C++ (E7 his attack beats RETREAT, E3 snap shots, holdyield); blast doors and sight screens work on the C++
+path too; his own garage fights can be replayed again, and his replays know which rules his build ran.
+**Backlog:** N1 DONE as filed (E7 + Amendment 1, E3 + its halting guard, holdyield, E2a dropped by R47.17, Bar M none);
+N2 DONE (place ON); N3 DONE (reader; the Sumps re-read waits on a recording with inp rows); N4 DONE (esit ON); N5 lines_r47 up to
+date with every round-47 verdict filed; N6 DONE (seed, .remote-synced, Xorg DISPLAY, the queue watched).
+Plus: N0 (R47.8) cause 1 fixed, the limit stated (R47.16); C47.8 doors and R47.36 the eye mask in C++; R47.27 (a) matchups ON / scan
+OFF, (b) parked with a next-round note; R47.31 / 34 the fog split, dropped; the measured laptop ratio ~3.0x builder3.
+**Next round:** contact_prototypes in C++; R47.18 the layout's bake timing; cause 2 of the replay parting with inp rows; E9's twin
+(engage's fire-lane pre-check) when it files.
+
 **REPORT (2026-10-30 ~22:00 PDT) — the round so far, in one place.**
 **Green / merge:** 6f19722ae GREEN builder3 (`make check exited 0`, 3523 / 0, 29 ALL JUDGED, sim-baseline unmoved on all 13 maps;
 named for merge). Next candidate: **27ea82fa5** (= + C47.8 door mask + R47.36 eye mask + main 79cea77e5), its check queued on
