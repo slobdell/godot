@@ -61,6 +61,15 @@ laid echelon_left's slot 0 at -0.0 where GDScript lays +0.0 (test_native_place 4
 - **holdyield twin EQUAL (R47.30, Bar H):** pair/native-holdyield 0d1bc6690 = manoeuvre df26c0d5f + cbc49c2d5 + the _chain_native
   gate without holdyield: builder3 light 40 / 0; MEASURE native_holdyield 6000 compared, 2918 vetoed, 0 mismatches.
 - **E3 pot-shot twin EQUAL (R47.20):** pair/native-e3 3c4a3b576: 41 / 0, 8223 applies, 4 pot shots, 0 mismatches.
+- **R47.27 (b) PARKED (the orchestrator's rule: callbacks < 0.2 ms a tick). NEXT-ROUND NOTE: no lump left in the brain's tick;
+  the time is shared memos + GDScript glue.** Cost cap (gangs v syndicate 3500, Crossing, seed 3, builder3 light, n 1; probe
+  probe/native-sitcb47, not merged): the think prologue is flat (t.poll 0.40 = squad 0.14 + order 0.11 + element 0.08 + station
+  0.07, 29 polls a tick at 1-5 us; rate_progress 0.26; incoming 0.18): a C++ prologue would call the same GDScript back.
+  build_situation 1.0-1.2 ms a tick at 5.6 calls: its s.contacts lap is ALREADY native (situation_core); its callbacks
+  (AiTickCache.faced_by / _faces_someone_else) never fire here and CoverMap.clear_line_coarse is ~0.001 ms; the lap's GDScript
+  prep is AiTickCache.contact_prototypes 0.156 ms (both teams' tables rebuilt each intel refresh), allies 0.086, intel_names 0.012;
+  s.tactics / s.squad / s.cover_* / s.incoming are thin calls into shared code (SquadTactics, native_tq, native_incoming). The
+  candidate for a next round: contact_prototypes' rebuild in C++ (~0.1 ms a tick builder3, ~0.7 ms a frame on his laptop).
 - **R47.27 (a) DONE:** native_matchups ON (neutral, ABBA n 4 at ~46 crews); native_scan stays OFF (+0.5 ms a tick, both pairs).
   (b) the think prologue port: not started (after the readers, R47.34).
 - **R47.31 / R47.34 the fog field:** sim side small (builder3 0.18 ms a tick, rays 0.155; laptop in-run 0.17 ms a tick); the
