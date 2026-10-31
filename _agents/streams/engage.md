@@ -86,13 +86,40 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
 | E2b a line under his attack | code in; `--attack-line`, **OFF** until Bar E. Its hand-built one-crew stage does NOT reach the rule (the element's contact drill hands the lone rig a slot with a line: both arms fire at 6.6 s); a dev read on the six staged windows decides whether the rule fires at all before a new test |
 | E2 dev reads | **no measurable effect from either switch** (below) -> **E2a + E2b DROPPED (R47.17), code removed** (game files byte-identical to e306ce27f; native's twin reverted) |
 | E7 his order beats RETREAT | code + tests GREEN at **14ccc9b91** (builder3 `native test` press_on / native_decide / combat_envelope / native_gun / native_exec_state: 45 passed, 0 failed). `--press-on`, **OFF** until native's `_obey` twin (spec + hash sent). Dev read on route's Locks case (staged 1440) running |
-| E3 pot shots | next: switch (default OFF) + the dev read that gives the orchestrator his question in player terms (R47.17) |
+| E7 Bar E7 | **FILED** (here and workstreams.md *Bars (round 47)*) before any number on 12601-12648; next: full check on the frozen hash, then the series |
+| E3 pot shots | in progress: switch (default OFF) + the dev read that gives the orchestrator his question in player terms (R47.17) |
 
 **His "is something broken with our targeting?" — the honest answer (staged, E1 + the gates split):** no. A gang crew is SLOW to its
 first aim at range by design: the fix time grows with the target's distance over the crew's OWN sight (`Engagement.acquire_seconds`:
 0.3 s at the muzzle to 1.6 s at the edge of sight, x the crossing penalty), and the War Rig sees only 60 m, so a target at 40 m costs
 it ~1.2 s where a syndicate crew (sight 90-135 m, designators x0.25) pays a fraction. Median fix needed his 1.69 s v CPU 1.10 s; 87 of
 his 145 acquiring seconds were first fixes. Nothing in the gate is broken; the gap is sight and range (balance, which waits).
+
+### Bar E7 (FILED 2026-10-30 ~19:10, before any number on 12601-12648) — the text is in workstreams.md *Bars (round 47)*
+
+**Bar E7 HIS ATTACK BEATS RETREAT (engage; filed 2026-10-30 ~19:10 PDT in streams/engage.md and here, BEFORE any number on
+  12601-12648; R47.6).**
+
+  **The rule:** `--press-on` (TankBrain._obey): an attack-move from an element whose task is `attack` (his click, or a CPU
+  commander's attack: C47.9) leaves RETREAT off the menu even when the crew is critical; every other order keeps today's survival
+  rule. Native's `_obey` twin is merged (pair/native-e7 19a38a505, EQUAL: 7521 decisions, 0 mismatches), so the arms run native ON.
+  **Workload:** round 42's attack-shot probe (`tests/engage/attack_shot_probe.gd`: 2-5 crews ordered to attack a target behind a
+  piece of cover on locks / terminus / crossing by seed, the target shooting back) with `--hurt=0.07` (every crew starts below the
+  critical line for every doctrine, so RETREAT is on the table), `ENGAGE_ARM=on` (today's attack-shot default), seeds
+  **12601-12648** (48, paired by seed), builder3, native ON, the frozen tree named when frozen after its full check. Arms:
+  `--press-on=off` v `--press-on=on`.
+
+  **Deciding (what he asked for: his hurt crew keeps at the target he named):** D1 `away` (metres a run's crews drive AWAY from his
+  target under the order) paired mean ON - OFF < 0 by at least 1.645 se (one-sided). D2 `first_hit` (mean a run) ON sooner or
+  identical in >= 60 % of runs (strictly sooner reported).
+
+  **Guards (what it could break):** G1 friendly hits: total ON <= OFF + max(1, 1.645 sqrt(OFF)). G2 crew deaths (a crew thrown
+  away): total ON <= OFF + max(1, 1.645 sqrt(OFF)). G3 the target lives no longer: `target_dead` paired mean ON - OFF <= +1.645 se.
+  G4 his other orders untouched: E2's authority probe (move / hold / stop, seeds 12601-12624, AUTH_ARM=on) `--press-on` off v on:
+  24/24 rows identical. G5 native EQUAL on the frozen hash (native's `test_native_decide` with PRESS_ON both ways).
+
+  **Reported:** hits a minute, shots, accuracy, never_hit, no_shot. **Dev read (7001-7012, never a bar; 102a18395, n = 12):** away
+  63.9 -> 20.9 m, first hit 22.5 -> 17.6 s, deaths 30 -> 27, friendly hits 0 -> 0.08 a run.
 
 **E2 dev reads (2026-10-30 ~18:30, builder3, the gun's C++ paths off in EVERY arm (`--brains-off=native_exec,native_gun`: the carry
 has no twin yet), never a bar):**

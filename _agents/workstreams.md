@@ -104,6 +104,30 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar E7 HIS ATTACK BEATS RETREAT (engage; filed 2026-10-30 ~19:10 PDT in streams/engage.md and here, BEFORE any number on
+  12601-12648; R47.6).**
+
+  **The rule:** `--press-on` (TankBrain._obey): an attack-move from an element whose task is `attack` (his click, or a CPU
+  commander's attack: C47.9) leaves RETREAT off the menu even when the crew is critical; every other order keeps today's survival
+  rule. Native's `_obey` twin is merged (pair/native-e7 19a38a505, EQUAL: 7521 decisions, 0 mismatches), so the arms run native ON.
+  **Workload:** round 42's attack-shot probe (`tests/engage/attack_shot_probe.gd`: 2-5 crews ordered to attack a target behind a
+  piece of cover on locks / terminus / crossing by seed, the target shooting back) with `--hurt=0.07` (every crew starts below the
+  critical line for every doctrine, so RETREAT is on the table), `ENGAGE_ARM=on` (today's attack-shot default), seeds
+  **12601-12648** (48, paired by seed), builder3, native ON, the frozen tree named when frozen after its full check. Arms:
+  `--press-on=off` v `--press-on=on`.
+
+  **Deciding (what he asked for: his hurt crew keeps at the target he named):** D1 `away` (metres a run's crews drive AWAY from his
+  target under the order) paired mean ON - OFF < 0 by at least 1.645 se (one-sided). D2 `first_hit` (mean a run) ON sooner or
+  identical in >= 60 % of runs (strictly sooner reported).
+
+  **Guards (what it could break):** G1 friendly hits: total ON <= OFF + max(1, 1.645 sqrt(OFF)). G2 crew deaths (a crew thrown
+  away): total ON <= OFF + max(1, 1.645 sqrt(OFF)). G3 the target lives no longer: `target_dead` paired mean ON - OFF <= +1.645 se.
+  G4 his other orders untouched: E2's authority probe (move / hold / stop, seeds 12601-12624, AUTH_ARM=on) `--press-on` off v on:
+  24/24 rows identical. G5 native EQUAL on the frozen hash (native's `test_native_decide` with PRESS_ON both ways).
+
+  **Reported:** hits a minute, shots, accuracy, never_hit, no_shot. **Dev read (7001-7012, never a bar; 102a18395, n = 12):** away
+  63.9 -> 20.9 m, first hit 22.5 -> 17.6 s, deaths 30 -> 27, friendly hits 0 -> 0.08 a run.
+
 ## Round 46: five streams (prepared 2026-10-30; CLOSED 2026-10-30; briefs in `streams/archive/round46/`)
 
 **Goal: what he saw on his last two playtests changes in his default game.** The camera keeps his selection and its fight on screen
