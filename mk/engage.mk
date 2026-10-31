@@ -311,5 +311,5 @@ engage-e1-windows: native-fresh import ## engage E1c: held-fire seconds by gate 
 		timeout 900 $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/engage/turnaround_probe.gd -- \
 		--recording=$(CURDIR)/references/round46/playtest/$$stem.jsonl --from=$$tick --seconds=$(E1W_SECONDS) --every=30 --crew=auto \
 		--point=0,0 --gun-trace=all $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/e1w/$(E1W_TAG)/$${stem}_$$tick.log 2>&1 || echo "  $$1: godot exited $$?"' _ {}
-	@for f in $(BUILD_DIR)/engage/e1w/$(E1W_TAG)/*.log; do echo "== $$(basename $$f .log) (STAGED, $(E1W_TAG))"; grep -E "ENGAGE_TA_DONE|ENGAGE_TA_COUNTERS|SCRIPT ERROR" $$f | head -3; \
+	@for f in $(BUILD_DIR)/engage/e1w/$(E1W_TAG)/*.log; do echo "== $$(basename $$f .log) (STAGED, $(E1W_TAG))"; grep -E "ENGAGE_TA_DONE|ENGAGE_TA_COUNTERS|ENGAGE_TA_FIRE|SCRIPT ERROR" $$f | cut -c1-400 | head -4; \
 		for side in Green_ Rust_; do echo "-- $$side"; $(PYTHON) tests/engage/gun_trace_table.py $$f --crews=$$side --end=$$(( $(E1W_SECONDS) * 30 )) | tail -2; done; done

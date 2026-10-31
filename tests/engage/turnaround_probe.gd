@@ -130,7 +130,40 @@ func _run() -> void:
 		if not members.has(k):
 			members[k] = []
 		(members[k] as Array).append(n)
+	# Round 47 (engage E3): every round fired, per side and per hull, and what it hit (the enemy, or its own side).
+	var fire_shooters := {}
+	var fire := {"shots": [0, 0], "hits": [0, 0], "friendly_hits": [0, 0], "first_shot": {}, "by_unit": {}}
+	game_match.weapon_fired.connect(func(event: Dictionary) -> void:
+		var by := String(event.get("shooter", ""))
+		fire_shooters[int(event.get("projectile_id", -1))] = by
+		var side := 0 if by.begins_with("Green_") else 1
+		(fire["shots"] as Array)[side] = int((fire["shots"] as Array)[side]) + 1
+		var unit_id := String((roster.get(by, {}) as Dictionary).get("id", "?"))
+		var per: Dictionary = (fire["by_unit"] as Dictionary).get(unit_id, {"shots": 0, "hits": 0})
+		per["shots"] = int(per["shots"]) + 1
+		(fire["by_unit"] as Dictionary)[unit_id] = per
+		if not (fire["first_shot"] as Dictionary).has(by):
+			(fire["first_shot"] as Dictionary)[by] = game_match.tick)
+	game_match.projectile_impact.connect(func(event: Dictionary) -> void:
+		var by := String(fire_shooters.get(int(event.get("projectile_id", -1)), event.get("shooter", "")))
+		if by == "" or float(event.get("damage", 0.0)) <= 0.0:
+			return
+		var side := 0 if by.begins_with("Green_") else 1
+		var victims: Array = [String(event.get("target", ""))]
+		for v: Dictionary in event.get("victims", []):
+			victims.append(String(v.get("target", "")))
+		var own := "Green_" if side == 0 else "Rust_"
+		var enemy := "Rust_" if side == 0 else "Green_"
+		if victims.any(func(n: String) -> bool: return n.begins_with(enemy)):
+			(fire["hits"] as Array)[side] = int((fire["hits"] as Array)[side]) + 1
+			var unit_id := String((roster.get(by, {}) as Dictionary).get("id", "?"))
+			var per: Dictionary = (fire["by_unit"] as Dictionary).get(unit_id, {"shots": 0, "hits": 0})
+			per["hits"] = int(per["hits"]) + 1
+			(fire["by_unit"] as Dictionary)[unit_id] = per
+		if victims.any(func(n: String) -> bool: return n.begins_with(own) and n != by):
+			(fire["friendly_hits"] as Array)[side] = int((fire["friendly_hits"] as Array)[side]) + 1)
 	await lab.start()
+	var fire_start := game_match.tick
 	# Form the elements and give each the task it held at the stage tick (the latest task row at or before it).
 	var elements := {}
 	for k: String in members:
@@ -266,6 +299,12 @@ func _run() -> void:
 			"start": _xz(start_pos), "end": _xz(last_pos), "moved_m": _r(moved_m), "nearest_m": _r(nearest), "end_dist": _r(last_pos.distance_to(order_point)),
 			"away_m": _r(away_m), "away_began": away_from, "far_ne": _xz(far_ne), "on_bridge_tick": bridge_tick,
 			"planner": PlannerSeam.report(), "rows": rows, "attack_shot": ElementPlan.ATTACK_SHOT}))
+	var first_s := {}
+	for n: String in fire["first_shot"]:
+		first_s[n] = _r(float(int(fire["first_shot"][n]) - fire_start) / SimClock.TICK_RATE)
+	print("ENGAGE_TA_FIRE %s" % JSON.stringify({"shots": fire["shots"], "hits": fire["hits"], "friendly_hits": fire["friendly_hits"],
+			"first_shot_s": first_s, "by_unit": fire["by_unit"], "seconds": _r(float(game_match.tick - fire_start) / SimClock.TICK_RATE),
+			"pot_shot": Gunnery.POT_SHOT, "pot_shots": Gunnery.pot_shots}))
 	# Round 47 (engage E1): the acquisition gate's held ticks for this window.
 	print("ENGAGE_TA_COUNTERS %s" % JSON.stringify({"held_by_acquisition": Engagement.held_by_acquisition}))
 	print("ENGAGE_TA_DONE")
