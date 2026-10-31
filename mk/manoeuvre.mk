@@ -560,3 +560,7 @@ manoeuvre-stall-trace: native-fresh import ## manoeuvre M1: STALL_TRACE per tick
 # Round 47 (M1/M2): NOPROGRESS_TRACE=on prints test_manoeuvre_noprogress's NOPROGRESS_TICK rows (a dev read).
 NOPROGRESS_TRACE ?=
 export NOPROGRESS_TRACE
+NOPROGRESS_ARM ?=
+export NOPROGRESS_ARM
+BURIED_TRACE ?=
+export BURIED_TRACE
