@@ -281,6 +281,8 @@ engage-e1: native-fresh import ## engage E1: his Crossing replay, gun gates trac
 E1S_FROM ?= 2070
 E1S_SECONDS ?= 14
 E1S_ARMS ?= on off
+## The point the summary measures the crew's distance to (his target's spot).
+E1S_POINT ?= -45.0,-10.0
 .PHONY: engage-e1-stage
 engage-e1-stage: native-fresh import ## engage E1b: his Crossing window rebuilt from the census at E1S_FROM, guns traced, lane rule ON v off -> build/engage/e1s/<arm>.log
 	@test -f "$(E1_RECORDING)" || { echo "engage-e1-stage: no recording $(E1_RECORDING)"; exit 2; }
@@ -288,7 +290,7 @@ engage-e1-stage: native-fresh import ## engage E1b: his Crossing window rebuilt 
 	@for arm in $(E1S_ARMS); do flags="--lane-clear=on"; [ $$arm = off ] && flags="--lane-clear=off"; \
 		echo ">> engage-e1-stage arm $$arm from $(E1S_FROM) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"; \
 		timeout 900 $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/engage/turnaround_probe.gd -- --recording=$(CURDIR)/$(E1_RECORDING) \
-		--from=$(E1S_FROM) --seconds=$(E1S_SECONDS) --every=15 --crew=$(E1_CREW) --point=-45.0,-10.0 --gun-trace=Green_Guns $$flags $(ENGAGE_FLAGS) \
+		--from=$(E1S_FROM) --seconds=$(E1S_SECONDS) --every=15 --crew=$(E1_CREW) --point=$(E1S_POINT) --gun-trace=Green_Guns $$flags $(ENGAGE_FLAGS) \
 		> $(BUILD_DIR)/engage/e1s/$$arm.log 2>&1 || echo "  arm $$arm: godot exited $$?"; \
 		grep -E '^ENGAGE_TA_(SETUP|SUMMARY|DONE)|SCRIPT ERROR' $(BUILD_DIR)/engage/e1s/$$arm.log | cut -c1-300; \
 		echo "  GUN_TRACE lines: $$(grep -c '^GUN_TRACE' $(BUILD_DIR)/engage/e1s/$$arm.log), fires: $$(grep '^GUN_TRACE' $(BUILD_DIR)/engage/e1s/$$arm.log | grep -c '"fire":true')"; \
