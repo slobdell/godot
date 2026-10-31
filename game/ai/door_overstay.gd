@@ -13,12 +13,16 @@ extends RefCounted
 ## stale for the native execute), so it needs no twin of its own.
 
 const SWITCH := "overstay"
-## How far past the slab face the crew's nearer end stops (m): ArenaDoors.HULL_MARGIN and some.
-const CLEAR_M := 1.5
+## How far past the slab face the crew's nearer end is sent (m). A held crew settles up to TankBrain.SLOT_TOLERANCE (4 m) short
+## of its post (the staged case: 1.5 m short of a 1.5 m spot left it 0.04 m off the slab, inside HULL_MARGIN, door held), so
+## 5 m leaves it 1-5 m off the slab wherever it settles.
+const CLEAR_M := 5.0
 
 static var moves := 0
 static var asked := 0
 static var _listening: ArenaDoors = null
+## Tank instance id -> his post moved off a slab, picked up by TankBrain._order_context (R47.43).
+static var _posts := {}
 static var _installed := false
 ## Measurement only: OVERSTAY_TRACE=on prints each spot tried.
 static var trace := OS.get_environment("OVERSTAY_TRACE") == "on"
@@ -31,6 +35,18 @@ static func on() -> bool:
 static func reset() -> void:
 	moves = 0
 	asked = 0
+	_posts.clear()
+
+
+## R47.43 (the orchestrator's grant, one line in TankBrain._order_context): his HOLD post moved off the slab with the
+## give-way, else `post` unchanged. His order is "hold there"; a post that turns into a wall when the door shuts cannot be
+## held, so it moves to the nearest standable point just off the slab on the crew's own side (the give-way's spot).
+static func post_after(tank: Tank, post: Vector3) -> Vector3:
+	if _posts.is_empty() or not _posts.has(tank.get_instance_id()):
+		return post
+	var moved: Vector3 = _posts[tank.get_instance_id()]
+	_posts.erase(tank.get_instance_id())
+	return moved
 
 
 ## Movement._init calls this: once a physics frame it (re)connects to the arena's doors when a new arena built them.
@@ -99,5 +115,11 @@ static func move_on(mover: Movement, door: Dictionary, id: String) -> bool:
 		if not mover._free_spot(point, String(tank.name), other):
 			continue
 		mover._start_yield(other, point, normal * way, "door(%+d)" % int(way), "door")
+		# His held crew's post in the doorway moves with it (R47.43): never a post that is not on this slab.
+		var brain := mover.ctl as TankBrain
+		if brain != null and brain._his_post and ArenaKit.distance_to_footprint(Vector2(brain._his_post_at.x, brain._his_post_at.z),
+				centre, ArenaDoors.live.doors.slab_size(id), float(door["rotation_deg"])) \
+				<= float(Movement.hull_box(tank.unit_id)[2]) * 0.5 + ArenaDoors.HULL_MARGIN:
+			_posts[tank.get_instance_id()] = SlotGround.standable_for(tank, point, SlotGround.envelope_of(tank.unit_id))
 		return true
 	return false

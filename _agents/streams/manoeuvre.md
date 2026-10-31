@@ -121,10 +121,18 @@ build steps, said:
 tests/test_manoeuvre_overstay.gd on doors_dev: 3 / 0 (builder3 light). The crew stands in the west doorway on HIS hold when the
 door shuts. OFF reproduces today: crew in the doorway, door held. ON: one give-way, off the slab 4.7 m within 4 s, the door never
 sealed on it.
-**OPEN (question to the orchestrator):** once the give-way ends, the brain drives the crew back to HIS post, which is in the doorway
-(z 5.7 -> 3.5), so the door stays held. Element seats never land in a doorway (the grounding snaps them off the carve), so his hold
-is the realistic case. Sealing behind the crew needs his post moved off the slab with it. That is TankBrain state (`_his_post_at`):
-a grant, or a "his order wins: the door stays held" ruling.
+**R47.43 (the orchestrator's grant, ~00:05): his post moves with the crew.** One line in TankBrain._order_context
+(`_his_post_at = DoorOverstay.post_after(...)`). When the overstay give-way moves his held crew (`_his_post`, the post his
+finished stop or move leaves) off a door slab, his post becomes the give-way's spot, grounded (`SlotGround.standable_for`), on the
+crew's own side. Only a post on that slab moves. Behind `overstay` (OFF): with it off, `_posts` stays empty and the line returns
+the post unchanged.
+- The spot is CLEAR_M 5 m past the slab face. A held crew settles up to SLOT_TOLERANCE 4 m short (at 1.5 m it stopped 0.04 m off
+  the slab and the door stayed held), so it ends 1-5 m off, the grant's range.
+- **Test** (doors_dev, his stop in the west doorway): his crew ends **3.5 m off the slab, still holding** (post (-40, 10.65)), and
+  **the door seals**, never on it. OFF: in the doorway, door held. 3 / 0. The doors / authority / engage / noprogress /
+  native_holdyield / pathing_doors suites: 75 / 0 (builder3 light).
+- **Not covered, said:** his HOLD *verb* (a live order whose goal is in `order["goal"]`, not `_his_post_at`) still returns the crew
+  to the doorway. The grant names his post, and engage owns the hold order.
 
 ### NOW (2026-10-30 ~19:15) — where this stream is (superseded by the REPORT above)
 

@@ -2,7 +2,8 @@ extends TestCase
 ## Round 47 (manoeuvre, mapkit's request; `--traffic-on=overstay`): A CREW PARKED IN A CLOSING DOORWAY MOVES ON. On the doors
 ## dev arena (arenas/doors_dev.json: a wall along z = 0, the west door at (-40, 0)) a crew stands in the west doorway, nose
 ## through the slot, when the door's schedule shuts it. The door holds open (it never lands on a hull); after
-## ArenaDoors.HOLD_EVICT_S it emits `overstay` naming the crew. ON: the crew gives way off the slab (DoorOverstay). OFF
+## ArenaDoors.HOLD_EVICT_S it emits `overstay` naming the crew. ON: the crew gives way off the slab (DoorOverstay), his post
+## moves with it (R47.43), it holds there and the door seals. OFF
 ## (today): the crew stands in the doorway and the door stays held. The crew is on HIS hold (a lab brain with no order
 ## drives off, and an element seat is never in a doorway: the grounding snaps it off the carve), the realistic overstay.
 
@@ -39,8 +40,9 @@ func _run(on: bool) -> Dictionary:
 	doors.tick_source = func() -> int: return tick[0]
 	# Nose through the slot, straddling it (the hull's long axis across the wall).
 	var tank := _lab.unit(0, CREW, Vector3(DOOR.x, 0.0, DOOR.y + 1.0), 0.0)
-	# His hold: the crew stays where it stands (a lab brain with no order drives off on its own).
-	assert_eq(_lab.orders.issue({"units": [CREW], "verb": "hold", "source": "player"}, Match.Team.GREEN), "", "the hold is valid")
+	# His stop: done at once, it leaves his post where the crew stands (TankBrain._his_post, round 45 E2; a lab brain with no
+	# order drives off on its own).
+	assert_eq(_lab.orders.issue({"units": [CREW], "verb": "stop", "source": "player"}, Match.Team.GREEN), "", "the stop is valid")
 	await _lab.start()
 	var start_at := Vector2(tank.global_position.x, tank.global_position.z)
 	var overstay_at := -1
@@ -65,7 +67,11 @@ func _run(on: bool) -> Dictionary:
 		if overstay_at >= 0 and tick[0] - overstay_at >= SimClock.ticks(CLEAR_BY_S):
 			break
 	var flat := Vector2(tank.global_position.x, tank.global_position.z)
-	var out := {"overstay": overstay_at >= 0, "sealed": doors.is_sealed("west_gate"), "held": doors.is_held("west_gate"),
+	var slab := doors.doors.slab_size("west_gate")
+	var brain := Movement.of(tank).ctl as TankBrain
+	var off_slab := ArenaKit.distance_to_footprint(flat, DOOR, slab, 0.0) - float(Movement.hull_box(tank.unit_id)[2]) * 0.5
+	var out := {"overstay": overstay_at >= 0, "off_slab": off_slab, "holding": brain._his_post,
+			"post": Vector2(brain._his_post_at.x, brain._his_post_at.z), "sealed": doors.is_sealed("west_gate"), "held": doors.is_held("west_gate"),
 			"in_doorway": doors.doors.in_doorway("west_gate", flat, ArenaDoors.HULL_MARGIN), "sealed_on_crew": sealed_on_crew,
 			"moves": DoorOverstay.moves, "max_moved": max_moved, "at": flat, "start": start_at, "alive": tank.is_alive()}
 	print("OVERSTAY_ROW %s %s" % ["on" if on else "off", str(out)])
@@ -76,16 +82,18 @@ func test_overstay_is_off_by_default_until_doors_reach_a_real_arena() -> void:
 	assert_true(Traffic.DEFAULT_OFF.has(DoorOverstay.SWITCH), "opt-in until doors are on a dealt arena")
 
 
-func test_a_crew_parked_in_a_closing_doorway_moves_on() -> void:
+func test_his_held_crew_in_a_closing_doorway_moves_on_still_holding_and_the_door_seals() -> void:
 	var seen := await _run(true)
 	assert_true(seen["overstay"], "the door asked (overstay after %.0f s held)" % ArenaDoors.HOLD_EVICT_S)
 	assert_eq(int(seen["moves"]), 1, "the crew gave way to the door once")
 	assert_true(float(seen["max_moved"]) >= MOVED_M, "it drove off the slab (%.1f m in %.0f s)" % [float(seen["max_moved"]), MOVED_BY_S])
 	assert_eq(int(seen["sealed_on_crew"]), 0, "the door never sealed with the crew in it")
 	assert_true(seen["alive"], "alive")
-	# OPEN (Status, a question to the orchestrator): under HIS hold the brain drives the crew back to his post, in the
-	# doorway, once the give-way ends (this run: out to z 5.0, back to 3.5), so the door stays held. Sealing behind it needs
-	# his post moved off the slab: TankBrain state, not this stream's.
+	# R47.43: his post moved just off the slab with it, so it holds there and the door seals behind it.
+	assert_true(float(seen["off_slab"]) >= 1.0 and float(seen["off_slab"]) <= 5.0,
+			"it ends 1-5 m off the slab (its near end %.2f m; at %s)" % [float(seen["off_slab"]), str(seen["at"])])
+	assert_true(seen["holding"], "still on his hold (post %s)" % str(seen["post"]))
+	assert_true(seen["sealed"], "and the door sealed within %.0f s" % CLEAR_BY_S)
 
 
 func test_today_the_crew_stays_and_the_door_stays_held() -> void:

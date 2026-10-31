@@ -1171,6 +1171,7 @@ func _order_context() -> Variant:
 	if order.is_empty():
 		# Round 45 (E2): his stop or move is done; the crew holds where it left him (stand, turn, fire) until he says more.
 		if _his_post and Drills.PLAYER_AUTHORITY:
+			_his_post_at = DoorOverstay.post_after(tank, _his_post_at)  # R47.43 (manoeuvre, `overstay`): his post in a closing doorway moves just off the slab with the crew
 			var held := {"verb": "hold", "goal": _his_post_at, "target": "", "speed": 1.0, "player": true,
 					"target_alive": false, "target_position": null, "target_forward": null, "target_velocity": null}
 			if _lane_step_allowed():
