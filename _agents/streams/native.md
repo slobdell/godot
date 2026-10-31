@@ -54,14 +54,18 @@ Nothing at launch.
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**REPORT (2026-10-31 ~13:30 PDT) — N2 built and proven equal; N1 answered for orders' O1; N3 probe started.**
+**REPORT (2026-10-31 ~14:30 PDT) — N2 built, equal, held OFF (prices slower in-run); N3 found + fixed; N5 fixed on its own branch;
+heldpost's C++ mirror drafted; O1 / E2 need no twin.**
+**Branches:** stream/native = N2 (OFF) + N3 + the heldpost mirror (inert until manoeuvre's tree); **stream/native-n5** = cc3e962e9
+(N5 + its stamp entry, alone: the orchestrator adopts its sim-baseline for one cause; worktree godot-native-n5 to be removed after
+its merge). Hashes named below when their full checks are green.
 **Plan (order, one-line reasons):** N1 answered as bars arrive (interrupts); N2 contact_prototypes in C++ (smallest foundation, a
 pure table); N3 the rematch carry-over (a one-file probe first, so it no longer needs another test's history to reproduce); N4 the
 laptop fog read (lock-held laptop time, one read at a time); N5 the layout's bake timing (moves every spawn: sim-baseline for the
-orchestrator); N6 waits on his `inp` recording; stretch the laptop fps read at the cost cap last (it prices N2-N4 together).
+orchestrator); N6 waits on his `inp` recording; stretch the laptop fps read at the cost cap last.
 - **N2 contact_prototypes in C++ (4c037bebf, 771635051):** `native/src/contacts_native.cpp`, seam `NativeContacts`
   (`game/ai/native/native_contacts.gd`), the GDScript loop moved verbatim into `AiTickCache._contact_table` (the reference);
-  `BrainSwitches.native_contacts` OFF until priced. EQUAL: test_native_contacts 402 tables / 1837 contacts (518 remembered, 405
+  `BrainSwitches.native_contacts` **OFF (priced slower in-run, below)**. EQUAL: test_native_contacts 402 tables / 1837 contacts (518 remembered, 405
   reloading, 571 suppressed; green champion, rust a6 so both variant branches run) 0 mismatches (builder3, 4c037bebf); his four
   round-46 replays under TANK_NATIVE_CONTACTS_VERIFY=1 (builder3, 771635051): Crossing 2000+, Locks 1500+, Sumps 2000+, Parade 2000+
   tables, 0 mismatches. check's native-verify-scenarios verifies contacts from now on.
@@ -70,6 +74,10 @@ orchestrator); N6 waits on his `inp` recording; stretch the laptop fps read at t
   inside test_native_contacts (baed43f15 = keys as prebuilt Variants, builder3, 402 tables): GDScript 19.9 us a table, C++ 14.5 us
   (-27 %). Both tables a refresh = ~13 v ~10 us a tick builder3 (~3.5 us a tick saved; x3.0 laptop = ~10 us a tick, ~25 us a frame at
   2.5 ticks a frame): far below a frame read's noise. Round 47's "0.156 ms a tick" was the whole prologue bracket, not this table.
+  Re-priced at 9149ff538 (Variant keys; load 37-50): -0.6 / +0.2 / -0.7 / -1.0 %; at d271488a7 with 45-tick blocks (alignment
+  check): -3.3 / -1.2 / -1.2 %. 11 of 12 A/B blocks read the ON arm slower by 30-100 us a tick, more than the GDScript table's whole
+  cost: UNEXPLAINED (not the call itself). **Decision: native_contacts stays OFF** (R47's rule: ON only if faster or neutral); the
+  C++, its twin test and check's VERIFY stay live. Next: a laptop lock-held read before any flip; find what else the ON arm pays.
 - **N3 the same-process carry-over: FOUND and FIXED (R48.5).** test_native_rematch (the CPU sliver lab, 300 ticks, three runs in
   one process, builder3 f0900328a): runs 2 and 3 equal each other and part from run 1 at tick 2 (0.32 m worst, Rust_Hunters_3). The
   root Viewport's World3D (physics space + navigation map) outlives a scene / a freed match. A fresh World3D before each run: all
