@@ -4,7 +4,7 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-30 ~21:35 PDT — **ROUND 47 RUNNING (seven streams launched; route and camera have finished and closed their sessions).** **Main 09780edb9 GREEN builder3** (`make check exited 0`, 3569 passed / 0 failed). Since then main = + engage d3b3fe918 (E7 ON) + manoeuvre bbd8c1ba6 (buried ON) + native 6f19722ae (place / esit / matchups C++ ON) + mapkit 39c7dba53 (doors, sight class, traps, monorail) + orders 1c2fc5838 (the money cap ON; the orchestrator's rules.py integration) = 79cea77e5, its check queued (log `~/orch-r47/main-check-79cea77e5.log`). Rulings R47.1-R47.38 in `workstreams.md`. builder0 DOWN since ~17:35. Main is unpushed (he pushes)._
+_Last updated: 2026-10-31 ~02:20 PDT — **ROUND 47 RUNNING OVERNIGHT (the lead asleep: the orchestrator decides what it would recommend, memory *overnight autonomy*; its /loop runs).** **Main 2fc962aa6 GREEN builder3** (`make check exited 0`, 3614 / 0); since: + manoeuvre final (overstay OFF) + spotter (213f5d070) + docs. Live streams: engage (E3 snap-shot ship re-check, E9), orders (dial flake fix 383a66d62 checking), native (E9 twin, final report), mapkit (terminus_doors candidate, f69c81a0f checking), spotter (batch 1 = 30/30 dumb; clustering + batch 2). Finished and worktrees removed: route, camera, manoeuvre (FINAL REPORTs in their briefs on main). Spotter night shift points at 2fc962aa6. builder0 DOWN since ~17:35. Laptop disk 87 %. Main is unpushed (he pushes)._
 
 ## ▶ ROUND 47 AS PREPARED (2026-10-30 evening) — read this first
 

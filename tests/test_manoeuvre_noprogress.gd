@@ -181,3 +181,29 @@ func test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle() -> void:
 	for n: String in names:
 		assert_true(int(left_at[n]) >= 0 and int(left_at[n]) < LEAVE_BY_S * SimClock.TICK_RATE,
 				"%s comes within 8 m of its seat (off the sliver) within %.0f s (tick %d)" % [n, LEAVE_BY_S, int(left_at[n])])
+
+
+## C47.9 (smart AI on both sides): HIS LOCKS CASE ON THE CPU'S SIDE. The same five fire trucks, spawn spots and click, as a RUST squad:
+## the buried rule's call site (TankBrain's transit block) has no team condition; this proves it reaches a CPU crew. (Bar M's W2, 24
+## CPU v CPU fights, met no pinned station at all: 0 swaps.)
+func test_locks_burner_case_on_the_cpu_side() -> void:
+	_arm()
+	_lab = TacticsLab.create(self, 497, "locks")
+	var spawn := {"Rust_Burners2_1": Vector2(-21.125, 90.0), "Rust_Burners2_2": Vector2(-14.625, 90.0),
+			"Rust_Burners2_3": Vector2(-17.875, 99.54), "Rust_Burners2_4": Vector2(-8.125, 90.0),
+			"Rust_Burners2_5": Vector2(-11.375, 99.54)}
+	var names := spawn.keys()
+	names.sort()
+	for n: String in names:
+		_lab.unit(Match.Team.RUST, n, Vector3(spawn[n].x, 0.0, spawn[n].y), 0.0, "burner")
+	DoctrineTable.clear_cache()
+	var table: DoctrineTable = DoctrineTable.load_table("condemned").get("table")
+	var element := _lab.elements.form(names, "Burners2", table)
+	await _lab.start()
+	var swaps_before := Movement.buried_swaps
+	element.assign({"verb": "move", "to": [-68.317, 31.226], "drills": false})
+	var stalls := await _watch(names, element, 14.0)
+	var arm_on := OS.get_environment("NOPROGRESS_ARM") != "off"
+	if arm_on:
+		assert_true(Movement.buried_swaps > swaps_before, "the rule reached a CPU crew (swaps %d)" % (Movement.buried_swaps - swaps_before))
+		assert_true(float(stalls["Rust_Burners2_4"]) < 1.0, "Rust_Burners2_4 makes progress toward its seat (no-progress %.1f s)" % float(stalls["Rust_Burners2_4"]))

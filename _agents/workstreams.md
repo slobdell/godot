@@ -348,6 +348,74 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   builder3's light lane for fights, its GPU (RTX 5060 Ti 16 GB) for clips and later training; seeds 13121-13216. CPU opponents by ML:
   not now (the standing ruling; the bottleneck is the CPU sim and missing behaviours we can write).
 
+- **R47.41 (his pick) O1 v3 (columns only at the end) SHIPS ON after Bar O2 FAILED on G2 (wedged 57.2 v 39.0, cap 53.8) and G6 contact_s
+  (+0.50, se 0.25, cap +0.41); every deciding line passed** (4536ccb0f, builder3, 12749-12778: D1 paired -14.2 m, median 35.1 v 52.4,
+  D1b 51/51, D2 +0.44 s; his Crossing 14.0 v 39.4 m; Locks unchanged; the wedging only on the 51 laid clicks, Sumps and the yard). Orders'
+  ship commit: `--group-merged` default ON (both arms), `=off` the escape; the Sumps / yard stall is its follow-up. **Main integration:**
+  79cea77e5 RED 3604/2 (route's two shut-door tests: mapkit's BlastDoors shadowed the stub) -> fixed 94646bf63 (RouteDoors.is_open reads a
+  test's stub first; 92/0); native 27ea82fa5 (doors' native mask, eye_mask in C++ LOS) merged as 8d37b9796, its check queued. Mapkit's
+  Meshy train (pick A, 15 credits) in; the monorail falls back to plain on the LAPTOP PRESET only (+1.4 ms), per his standing preset rule.
+
+- **R47.42 Bar H (holdyield) PASSES -> ships ON; Bar W (the no-progress watchdog + off-island reroute) FAILS its deciding line -> stays
+  OFF.** Frozen 5a55ccf71 (code 1cced49dc), builder3, check exited 0 (29 targets). H: 12328 post drift 10.1 -> 0.0 m, gun killed; fresh
+  post cells identical (no case on fresh seeds, as filed); group probe 24/24 and authority 6/6 identical. W: touched cells (54) noprog_s
+  +24.6 crew-s a cell (se 30.3, z +0.81), 65 % sooner-or-identical: mean > 0 = FAIL; contact_s +3.4 (z +0.93); slow_s -20 (z -3.16);
+  Crossing worst (+58.5). The CPU sliver case passes staged but the workload does not. `noprogress` stays in DEFAULT_OFF; R47.25's
+  reroute body is inert without it. Next round: why the watchdog's reroutes cost more no-progress than they save on Crossing.
+
+- **R47.43 Doors and his hold: GRANT manoeuvre one line in TankBrain** — when the overstay give-way (09d1a3376 + 6c815959d,
+  `--traffic-on=overstay`, OFF) moves his HELD crew off a door slab, `_his_post_at` moves to the nearest standable point just off the slab
+  (same side, <= ~5 m): his "hold there" kept at the closest spot that exists once the door is a wall. Engage told (its authority code).
+  Bar W's trace (Crossing 12449, ead694538, builder3 light, reproduces the cell 1516.5 crew-s / 151 trips): every trip `blocked: no_path,
+  reachable false`, 145 of them two crews whose SEAT is unreachable (not the sliver); the watchdog re-plans every 1 s for 150 s. Next round:
+  trip only off-island, never on an unreachable goal, with a per-crew cap.
+
+- **R47.44 GRANT engage one line in `game/tank/tank.gd` (Tank._short_halt's cancel branch): a short halt that ends WITHOUT a round fired
+  does not arm the 4 s cooldown.** Engage's trace (builder3, d13fa2bc1 + main + native fa27d12d6, native on and off): E3's ship check
+  failed test_rules_spread because a halt for a 103 m round was cancelled when the shot dropped for a tick (pot-shot wander, or a one-tick
+  sight loss) and the cancel armed the cooldown, so the next fully laid REGULAR round left at 98-99 m on 11 m/s. Any regular shot can hit
+  it; gunnery-side gates broke scenario_cover. With the line: test_rules_spread 9/9 (round at 98 m from 1.1 m/s), pot-shot + native gun
+  12/12, scenario_cover / elements PASS; cp2's engine deck is the known coin flip (re-recorded in the ship commit). GDScript only (no twin).
+  Changes OFF games too (both sides): the sim-baseline move is this line's as much as E3's. Condition: a test that a flickering shot never
+  stalls an ordered move.
+
+- **R47.45 Bar P FAILS its deciding line on all three twins; every guard passes: the pieces are SAFE (no extra stalls, fair, normal
+  length) but CPU-v-CPU fights play the same on them.** 2ce6fa68b (b9f13f946's code), builder3, 224 matches native ON, 0 failed (table
+  `streams/references/round47/mapkit/`, stream/mapkit 18d4b2d36): parade_traps range +1.2 +/- 0.9 m, flank +0.025 +/- 0.013;
+  parade_rail range +1.6 +/- 1.5, hidden +0.020 +/- 0.009; crossing_screens (n 64) range +2.0 +/- 1.1, gangs' shots -13 +/- 10 (wanted a
+  rise). **Caveat: CPU crossings fight at a 35 m median v his 79 m: the workload does not reproduce his mismatch.** Nothing goes on a dealt
+  map; the twins stay candidates for his eye. Next for mapkit: the blast doors in a REAL arena candidate (the native door mask is on main),
+  then a screens workload staged from his Crossing positions.
+
+- **R47.46 Main 9e45fd0db GREEN builder3 (`make check exited 0`, 3612 / 0).** Since then merged: manoeuvre ead694538 (holdyield ON, GREEN
+  3609/0), native e5fa1f1be (flake fix, lines_r47; GREEN 3608/0), orders d27c3a4f6 (group click ON, `merged_mode` default "all", GREEN
+  3609/0) = de3176388. **Engage's E3 ship 96a3110b0: `exited 2`, 3610/1** — (1) the sim-baseline moved on all 13 maps (E3 + R47.44's
+  bounded halt variant `short_halt_unfired`, which changes OFF games too): the orchestrator adopts it twice after the merge; (2)
+  test_control_dials::test_the_rig_frames_with_its_inset red in 2 of engage's 3 checks, green on main: orders asked to harden it;
+  (3) native-verify-scenarios red on scenario_cp2's engine-deck coin flip (OFF 1/6, ON 2/6 offsets): **GRANT engage scenario_cp2.gd** to
+  judge it over 6 FRESH offsets (x -3..+3 step 0.5), summed hits >= 120 and deck share >= 0.5, filed in the commit before the run. Also:
+  GRANT spotter one additive Makefile line (LIGHT_GOALS += spotter targets).
+
+- **R47.47 The CPU sliver test is a knife edge, not a flake: PENDING until next round's manoeuvre bar.** Native (builder3 light, 155a8fc0e
+  on main c9e6520b3): alone 10/10 identical, native on and off; after test_manoeuvre_face_settle in the same process, red 3/3, matching
+  mapkit's failure to the digit; fresh processes with starts jittered <= 1 cm / 0.1 deg: 19/20 green. Cause: same-process physics carry-over
+  (roadmap UNOWNED "a same-process rematch is not deterministic", round 33) and a case that sits on the sliver's edge. The test arms the
+  watchdog (OFF in his game). Next round: manoeuvre's bar = 20/20 jitter seeds (`make native-repeat ... REPEAT_JITTER=on`). Spotter merged
+  (213f5d070; 9858da23f GREEN 3608/0); remote_builds.md: a queued check can survive its wrapper's TERM.
+
+- **R47.48 Spotter's batch 1 (his 30/30 "dumb") sorted into five classes** (`streams/references/round47/spotter/batch1-classes.md`, stream/
+  spotter 0f8d7e3b4; each with crew, seconds, peak tick, clip, reproduction line): **A (4) engage, RETREAT** — hurt crews (2-10 % hp)
+  leave the squad 50-125 m, often reversing 8-19 s with no enemy in sight, then sit alone; **B (9) manoeuvre, give-way loops** — yielding
+  / blocked by a named squadmate 5-18 s, sometimes under fire; HOLD crews leave posts to give way; **C (5) manoeuvre + route, stuck on
+  terrain / no_path forever** (crossing Rust_Guns_1 224 s on a move to a spot with no path); **D (7) orders + route, driving away from the
+  goal** (FOLLOW goal distance growing 17 -> 76 m; law_suppressors on support-by-fire crawling / circling); **E (5) engage, shot from
+  beyond its range with no answer.** Batch 1's probe under-counted hold-fire (fixed for batch 2). **Ruling (overnight, what the
+  orchestrator would have recommended to him; his outranged question from 2026-10-30 evening was never answered):** the OUTRANGED
+  behaviour is engage's next item after E3 / E9 (E10: a crew taking fire from beyond its own reach closes by a covered route if its
+  order allows, else breaks line of sight; both sides; ON behind a bar), tonight if time allows, else round 48's first engage item.
+  Classes B / C are round 48's first manoeuvre items (with the two Sumps plans); D goes to orders now (support-by-fire is O6's).
+  Spotter batch 2 = ranks 31-100 + 10 hidden random controls (negatives for S6: ~100 / 100 labels is the floor).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_

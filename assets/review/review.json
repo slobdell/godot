@@ -2133,6 +2133,75 @@
       "decided": "2026-10-02",
       "model_task": "",
       "added": "2026-10-02"
+    },
+    {
+      "id": "train_r47_a",
+      "group": "Monorail train (R47.39)",
+      "target": "prop.monorail_train",
+      "title": "A: the salvaged metro car",
+      "prompt": "A run-down, rickety public monorail car: a decades-old salvaged subway carriage with dented corrugated steel skin streaked with rust, mismatched riveted patch plates, a hand-painted route number, cracked and boarded-up windows glowing dim warm amber inside, a sagging roof piled with makeshift cable bundles and a torn tarp, crude welded bogie clamps gripping the beam, dangling wires, one flickering cyan neon strip. Side view, matching the reference image's long low proportions: ONE passenger car riding on top of a single concrete straddle-beam monorail. Civilian public transit, no weapons. Night-time cyberpunk slum, grimy and overloaded. Stylized realistic game asset, PBR materials, the whole car visible, neutral dark grey background.",
+      "concept_task": "01a19066-82a8-708d-b4cb-1d5efd2b62ee",
+      "concept_type": "image-to-image",
+      "concept_credits": 9,
+      "references": [
+        "assets/review/images/train_r47/train_side_ref.png"
+      ],
+      "source_png": "assets/incoming/meshy/train_r47_a.concept.png",
+      "image": "assets/review/images/train_r47_a.jpg",
+      "est_3d_credits": 30,
+      "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
+      "notes": "A decades-old subway carriage pressed back into service on the beam.",
+      "status": "approved",
+      "lead_words": "picked A on the Meshy train page (db train/pick = a, no note), relayed by the orchestrator 2026-10-30 (R47.39)",
+      "decided": "2026-10-30",
+      "model_task": "01a1907b-f3a9-7666-b375-8d318afd022d",
+      "added": "2026-10-30"
+    },
+    {
+      "id": "train_r47_b",
+      "group": "Monorail train (R47.39)",
+      "target": "prop.monorail_train",
+      "title": "B: the bus on rails",
+      "prompt": "A run-down, rickety public monorail car made from a scrapped city bus: the faded, rust-eaten bus body with its wheels removed, bolted and chained onto a crude home-made steel monorail bogie frame that straddles the beam, sagging bumpers, cracked windows patched with plywood and tape, peeling destination sign reading OUT OF SERVICE, rooftop luggage rack piled with bundles, sparking pantograph wire, dim yellow interior light, one buzzing magenta neon tube. Side view, matching the reference image's long low proportions: ONE passenger car riding on top of a single concrete straddle-beam monorail. Civilian public transit, no weapons. Night-time cyberpunk slum, grimy and overloaded. Stylized realistic game asset, PBR materials, the whole car visible, neutral dark grey background.",
+      "concept_task": "01a19067-81f5-7148-94cc-6b45353a7f9b",
+      "concept_type": "image-to-image",
+      "concept_credits": 9,
+      "references": [
+        "assets/review/images/train_r47/train_side_ref.png"
+      ],
+      "source_png": "assets/incoming/meshy/train_r47_b.concept.png",
+      "image": "assets/review/images/train_r47_b.jpg",
+      "est_3d_credits": 30,
+      "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
+      "notes": "A scrapped city bus body bolted onto a home-made monorail frame.",
+      "status": "rejected",
+      "lead_words": "not picked (he chose A)",
+      "decided": "2026-10-30",
+      "model_task": "",
+      "added": "2026-10-30"
+    },
+    {
+      "id": "train_r47_c",
+      "group": "Monorail train (R47.39)",
+      "target": "prop.monorail_train",
+      "title": "C: the rickety tram pair",
+      "prompt": "A run-down, rickety public monorail car: two short boxy wooden-and-sheet-metal tram cars coupled with heavy chain, held together with scaffold-pipe bracing and ratchet straps, warped plank walls with tin patches, tarpaulin roofs, hanging paper lanterns and strings of bare bulbs, people's laundry flapping from the windows, a crooked hand-lettered sign, rusty wheels clamped onto the beam, dim warm interior light, one weak cyan neon. Side view, matching the reference image's long low proportions: ONE passenger car riding on top of a single concrete straddle-beam monorail. Civilian public transit, no weapons. Night-time cyberpunk slum, grimy and overloaded. Stylized realistic game asset, PBR materials, the whole car visible, neutral dark grey background.",
+      "concept_task": "01a19068-a828-71d3-8a56-2d71fa6cf916",
+      "concept_type": "image-to-image",
+      "concept_credits": 9,
+      "references": [
+        "assets/review/images/train_r47/train_side_ref.png"
+      ],
+      "source_png": "assets/incoming/meshy/train_r47_c.concept.png",
+      "image": "assets/review/images/train_r47_c.jpg",
+      "est_3d_credits": 30,
+      "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
+      "notes": "Two short tram cars chained together, held up by scaffolding.",
+      "status": "rejected",
+      "lead_words": "not picked (he chose A)",
+      "decided": "2026-10-30",
+      "model_task": "",
+      "added": "2026-10-30"
     }
   ]
 }

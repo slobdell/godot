@@ -4863,3 +4863,15 @@ oddest crew-seconds from many CPU-v-CPU fights by anomaly scoring over the censu
 facing away from fire, fire held in range); (2) render the top moments to short clips on builder3's GPU; (3) a tap-to-judge page for him
 ("looks dumb" / "fine"), his labels in its db; (4) once there are a few hundred labels, train a small classifier on builder3's GPU to rank
 new fights. His eye stays the judge; the model only finds candidates faster.
+12. **Group click after Bar O2 (every deciding line passed; G2 wedged 57.2 v 39.0 and G6 contact_s +0.50 failed, confined to Sumps and
+    the open yard: rear tanks wait a few seconds behind the front of their file):** **his pick: "Ship it ON (Recommended)".** -> R47.41.
+
+## His spotter labels and his overnight instruction (2026-10-31 ~02:10 PDT, verbatim)
+
+> "ok I am going to bed for the night, do not stop progress waiting on some decision from me that you could otherwise make yourself
+> based on what you'd recommend to me. COntinue managing the swarm toward progress. The initial machine learning stuff came back, all
+> cases it exposed looked like dumb behavior"
+
+Spotter's batch 1 (https://claude.ai/artifact/DXKpD67u2r49HQrk93ozJD; 30 clips from 12 CPU-v-CPU fights, 6 maps): **30 of 30 "dumb"**, no
+notes (dump `streams/references/round47/spotter/batch1-labels/`). The ranker's top 30 are all real: precision 1.0 at 30. Overnight the
+orchestrator decides whatever it would have recommended to him (memory: overnight autonomy).

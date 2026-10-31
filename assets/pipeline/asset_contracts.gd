@@ -98,6 +98,16 @@ const SLOTS := {
 		"guide": Vector3(14.8, 14.5, 38.0), "max": Vector3(100.0, 100.0, 38.0), "fit": "length",
 		"anchor": "center",
 		"tris": 30000, "methods": [], "elongated": "z", "file": "arena_airship",
+	},	# The people's monorail car (round 47 mapkit, the lead's train_r47_a: a salvaged metro car, run down and rickety). Its
+	# model carries its own bogie block under the body, so it is placed with its underside at the beam's BASE
+	# (MapkitYard.BEAM_Y, 9.0 m) and that block sinks into our beam. Fitted by LENGTH along z (the beam's axis) up to 12 m,
+	# but the model is 0.78 of its length tall, so the 7 m height cap decides: ~9 m long, its roof at ~16 m, under the
+	# 17.3 m line where his camera's frame cuts. Overhead decoration (no collider). 8000 triangles: one draw on the
+	# laptop's UHD 620, read under the lock before it ships (C47.10).
+	"prop.monorail_car": {
+		"guide": Vector3(3.6, 7.0, 9.0), "max": Vector3(4.0, 7.0, 12.0), "fit": "length",
+		"anchor": "ground_center",
+		"tris": 8000, "methods": [], "elongated": "z", "file": "prop_monorail_car",
 	},
 }
 
