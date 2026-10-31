@@ -1207,7 +1207,7 @@ func _order_context() -> Variant:
 				station += tangent * (minf(across, TRANSIT_LEAD_MAX_M) + (velocity as Vector3).length() * STATION_LEAD_S)
 			# Round 34 (C34.11): a station over the water stands on my final seat's bank (SlotGround.station_on_goal_side).
 			station = SlotGround.station_on_goal_side(station, order["goal"])
-			context["goal"] = SlotGround.standable_for(tank, station, SlotGround.envelope_of(tank.unit_id))
+			context["goal"] = Movement.buried_station(tank, station, SlotGround.standable_for(tank, station, SlotGround.envelope_of(tank.unit_id)))  # R47.11 (manoeuvre): a station buried in a building follows the squad's track
 			context["transit"] = true
 		if _order_source.has_method("pace_factor"):
 			context["speed"] = clampf(float(_order_source.call("pace_factor", String(tank.name))), 0.2, 1.0)
