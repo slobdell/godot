@@ -356,6 +356,13 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   test's stub first; 92/0); native 27ea82fa5 (doors' native mask, eye_mask in C++ LOS) merged as 8d37b9796, its check queued. Mapkit's
   Meshy train (pick A, 15 credits) in; the monorail falls back to plain on the LAPTOP PRESET only (+1.4 ms), per his standing preset rule.
 
+- **R47.42 Bar H (holdyield) PASSES -> ships ON; Bar W (the no-progress watchdog + off-island reroute) FAILS its deciding line -> stays
+  OFF.** Frozen 5a55ccf71 (code 1cced49dc), builder3, check exited 0 (29 targets). H: 12328 post drift 10.1 -> 0.0 m, gun killed; fresh
+  post cells identical (no case on fresh seeds, as filed); group probe 24/24 and authority 6/6 identical. W: touched cells (54) noprog_s
+  +24.6 crew-s a cell (se 30.3, z +0.81), 65 % sooner-or-identical: mean > 0 = FAIL; contact_s +3.4 (z +0.93); slow_s -20 (z -3.16);
+  Crossing worst (+58.5). The CPU sliver case passes staged but the workload does not. `noprogress` stays in DEFAULT_OFF; R47.25's
+  reroute body is inert without it. Next round: why the watchdog's reroutes cost more no-progress than they save on Crossing.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
