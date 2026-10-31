@@ -65,6 +65,40 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### 2026-10-30 ~17:50 — R2a DONE, R2b DROPPED (R47.12), R5 GDScript side DONE, R6 census running
+
+- **Rulings (orchestrator, R47.12, main 6ac03cd4b):** RETREAT beating his order = engage's E7 (and `withdraw_point` stays engage's);
+  R2b dropped (measured first, see below); R3 moot (nothing ships from route for his case); R4 waits on E7; R6 new (the census).
+- **R2a DONE** (`tests/test_pathing_crossings.gd`, 7/0 builder3): his Locks click 135.2 m over the west bridge (lock 144.6 forced);
+  Crossing west 152.3 / east 153.5 over their own bridges (other 365 m); Gorge west 74.4 / east 86.7 over the near neck; Terminus
+  south approach -> plaza 86.0 m = straight. A future cost term that sends a crew round the long way fails these first.
+- **R2b DROPPED, by measure:** along his attack (his census, ticks 1710-2220; `tests/route/test_route_locks_probe.gd`
+  ROUTE_ALONG, builder3) the lock was the shortest crossing at every tick but 1800-1830 (177.0 west v 181.2 lock, while the
+  retreat still had it parked on the north quay); from 1860 on the lock led by 4-125 m though Lances_3 drifted 35 m west.
+  Movement already re-plans a sliding goal at 10 % of the remaining route (GOAL_TUBE_SHARE).
+- **R5 (doors) GDScript side DONE at 5972e1369** (`game/ai/planner/route_doors.gd` RouteDoors, `Pathing.find_path`/`query`):
+  a door = ONE NavigationLink3D across its wall on its OWN nav layer bit, `RouteDoors.register(id, position)` returns it
+  (`1 << (8 + slot)`, 24 slots); Pathing asks with layer 1 | the doors open NOW and at the crew's estimated arrival (straight
+  metres to the door / (top speed x 0.85)); open/shut from mapkit's `BlastDoors.is_open(id, tick)` once that class exists (looked
+  up by name), else `RouteDoors.is_open_fn` (empty = open). `--route-off=doors`: every door reads open. No door registered: mask 1
+  (= the engine default), the native path as before (byte-identical). `tests/test_pathing_doors.gd` 5/0 (an unregistered link
+  is never used; open = through it, the short way; shut = round by a crossing; shuts before arrival = not taken; off = taken);
+  `FILTER=pathing` 16/0 with native built, builder3.
+  - **For mapkit:** put each door's link on exactly the layer `RouteDoors.register(&"<id>", <link middle>)` returns (no other bit);
+    `BlastDoors.is_open(id: StringName, tick: int) -> bool` static, the id as registered.
+- **R6 census:** `make route-census` (tests/route/route_census.gd + route_census_table.py): CPU v CPU fights, both sides, every
+  crew leg's driven metres v the navmesh's shortest start to end, by side / class / arena / brain option, with goal-moved and
+  re-plans per leg. Dev read (7001-7002, 60 s, builder3, 4d09268e8^): 105 travel legs >= 15 m, p50 1.077, excess 11-12 % of
+  metres. The 48-fight run on 12501-12548 (150 s, all six dealt maps): running.
+
+**Requests to other streams:**
+- **native (C47.6, for doors to work in his default game):** the native route queries ignore doors (they ask layer 1 only, so
+  they never route through a door, the safe default). Three sites need the mask: `pathing_native.cpp` `pathing_query` (line ~97)
+  and `pathing_find_path` (~117), and `drive_native.cpp` `path_query` (~1817, the native drive's own re-plan). Smallest change:
+  when `RouteDoors.doors` is non-empty, pass `navigation_layers = RouteDoors.mask(node, from)` (a GDScript call, only on door
+  arenas; else 1, today's). Then Pathing can drop its `not RouteDoors.any()` step-aside (pathing.gd lines 15 and 37). Twin:
+  `tests/test_pathing_doors.gd`'s five poses with native on must give the same routes.
+
 ### 2026-10-30 ~17:30 — R0 GREEN (merge: ba53581f7), R1 DONE: the cause is the brain's RETREAT, not the route
 
 - **R0 GREEN: ba53581f7**, builder3, `make check exited 0`, 3520 passed / 0 failed, 28 targets ALL JUDGED. Orchestrator told.
