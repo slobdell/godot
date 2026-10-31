@@ -104,7 +104,7 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 
 _(filed here BEFORE any number; newest first)_
 
-### Bar O (orders O2, R47.4; filed 2026-10-30 ~18:00 PDT, before any number on its seeds)
+### Bar O (orders O2, R47.4; filed 2026-10-30 ~17:05 PDT, before any number on its seeds)
 
 **The change:** `--group-merged` (ON; `=off` is round 46's lay): his MERGED group (the selection is exactly one control group of
 more vehicles than a squad holds, 2-3 squads, a plain move / attack-move, no drawn facing, not a shifted leg) halts as files side
