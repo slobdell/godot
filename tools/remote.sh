@@ -246,6 +246,19 @@ commit=$(git -C "$repo_root" rev-parse --short HEAD 2>/dev/null || echo unknown)
 dirty=$([ -n "$(git -C "$repo_root" status --porcelain 2>/dev/null)" ] && echo 1 || echo 0)
 
 ssh "${ssh_opts[@]}" "$host" "mkdir -p ~/$remote_dir ~/$root/.tools" || { requeue_if_preempted sync; echo ">> remote: cannot reach $host" >&2; exit 3; }
+# Round 47 (native N6, the orchestrator): SEED a folder that has never finished a sync from the box's own main checkout
+# (~/$root/godot), so the laptop's uplink (~1-2 MB/min with seven streams pushing at once, 2026-10-30) only carries the
+# delta. --ignore-existing: the seed never overwrites a file already there; the --delete sync below then makes the
+# folder exactly this checkout, so a seed can only save bytes, never change what runs. `.remote-synced` is written after
+# the first complete sync; REMOTE_SEED=0 skips the seed. Known answers: tools/test_remote_seed.sh.
+if [ "${REMOTE_SEED:-1}" = 1 ]; then
+	ssh "${ssh_opts[@]}" "$host" "if [ ! -e ~/$remote_dir/.remote-synced ] && [ -e ~/$root/godot/project.godot ] \
+		&& [ \"\$(cd ~/$root/godot && pwd -P)\" != \"\$(cd ~/$remote_dir && pwd -P)\" ]; then \
+		echo '>> remote: seeding $remote_dir from $host:~/$root/godot (first sync)' >&2; \
+		rsync -a --ignore-existing --exclude=build/ --exclude=.git/ --exclude=.godot/ --exclude=native/bin/ \
+		--exclude=native/build/ --exclude=.tools --exclude=node_modules/ --exclude=.remote-synced ~/$root/godot/ ~/$remote_dir/; fi" \
+		|| echo ">> remote: WARNING: the seed failed; syncing everything from here" >&2
+fi
 # Protect (P) what builder0 generates for itself from --delete; skip what it doesn't need. native/bin/ and
 # native/build/ (round 23: the GDExtension's per-machine .so and CMake tree) are builder0's own, like .godot/.
 rsync -az --delete -e "ssh ${ssh_opts[*]}" \
@@ -255,6 +268,7 @@ rsync -az --delete -e "ssh ${ssh_opts[*]}" \
 	--exclude='assets/incoming/' --exclude='__pycache__/' \
 	--exclude='native/bin/' --exclude='native/build/' \
 	"$repo_root/" "$host:~/$remote_dir/" || { requeue_if_preempted sync; echo ">> remote: rsync failed" >&2; exit 3; }
+ssh "${ssh_opts[@]}" "$host" "touch ~/$remote_dir/.remote-synced" || true
 
 # The remote script: shared toolchain, Node on PATH, the desktop display for rendering targets, then make.
 read -r -d '' script <<EOF

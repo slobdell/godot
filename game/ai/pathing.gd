@@ -12,12 +12,12 @@ const MESH_EPSILON := 0.05
 ## navigation map isn't ready yet (it syncs on the physics frame after baking).
 ## An unreachable `to` (say, inside a crate) yields a path to the closest reachable point.
 static func find_path(node: Node3D, from: Vector3, to: Vector3) -> PackedVector3Array:
-	if NativePathing.usable():  # round 28 (native N6.4): the same path natively
+	if NativePathing.usable() and not RouteDoors.any():  # round 28 (native N6.4): the same path natively; round 47 (R5): not while a door needs its mask
 		return NativeBridge.impl.pathing_find_path(node, from, to)
 	if not enabled or not is_ready(node):
 		return PackedVector3Array()
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
-	var path := NavigationServer3D.map_get_path(node.get_world_3d().navigation_map, from, to, true)
+	var path := NavigationServer3D.map_get_path(node.get_world_3d().navigation_map, from, to, true, RouteDoors.mask(node, from))
 	if OrderController.profile_detail:
 		OrderController.add_part("nav.path", Time.get_ticks_usec() - started)
 	return path
@@ -34,7 +34,7 @@ static func find_path(node: Node3D, from: Vector3, to: Vector3) -> PackedVector3
 ## as-possible; a goal across a destroyed bridge is on the mesh and unreachable. The gaps are reported, not compared
 ## against a caller's tolerance; the two booleans only absorb float noise (MESH_EPSILON).
 static func query(node: Node3D, from: Vector3, to: Vector3) -> Dictionary:
-	if NativePathing.usable():  # round 28 (native N6.4): the same reading natively
+	if NativePathing.usable() and not RouteDoors.any():  # round 28 (native N6.4): the same reading natively; round 47 (R5): as find_path
 		return NativeBridge.impl.pathing_query(node, from, to)
 	var result := {"points": PackedVector3Array(), "ready": false, "reachable": false, "goal_on_mesh": false,
 			"end_gap_m": INF, "goal_gap_m": INF}
@@ -42,7 +42,7 @@ static func query(node: Node3D, from: Vector3, to: Vector3) -> Dictionary:
 		return result
 	var map := node.get_world_3d().navigation_map
 	var started := Time.get_ticks_usec() if OrderController.profile_detail else 0
-	var points := NavigationServer3D.map_get_path(map, from, to, true)
+	var points := NavigationServer3D.map_get_path(map, from, to, true, RouteDoors.mask(node, from))
 	if OrderController.profile_detail:
 		OrderController.add_part("nav.path", Time.get_ticks_usec() - started)
 	var nearest := closest_point(map, to, "query")
