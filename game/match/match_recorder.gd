@@ -124,7 +124,8 @@ func _ready() -> void:
 ##   flags      the match's launch switches (`--attack-shot=off`, ...), as Main read them
 ##   spawn      {name: [x, z, yaw]} at full precision, where the army layout put every unit
 ##   frame      the physics frame the match started on (an order row's `frame` is counted from the same clock)
-##   rules      (round 46, R46.11) the rule switches a replay must match, as this build had them: {"lane_clear": bool}
+##   rules      (round 46, R46.11) the rule switches a replay must match, as this build had them: {"lane_clear": bool,
+##              "army_money": bool (round 47, R47.22)}
 ##              (engage L2; false on a build without it). tests/replay/rules.py turns a rule this match ran without, or a
 ##              recording older than this key, into its `=off` flag, so his older games replay as he played them.
 static func replay_keys(p_match: Match, flags: LaunchFlags) -> Dictionary:
@@ -146,7 +147,9 @@ static func replay_keys(p_match: Match, flags: LaunchFlags) -> Dictionary:
 
 ## R46.11: the replay-relevant rule switches of THIS build, read by name (a build without a rule reads false).
 static func rules() -> Dictionary:
-	return {"lane_clear": (TankBrain as Object).get("LANE_CLEAR") == true}
+	# R47.22 (round 47, orders): "army_money" = the money was the cap (no 20-a-side count trim on the laptop preset); an older
+	# recording has none and replays with `--army-cap=count` (tests/replay/rules.py), as he played it.
+	return {"lane_clear": (TankBrain as Object).get("LANE_CLEAR") == true, "army_money": not SkirmishMode.COUNT_CAP}
 
 
 ## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the

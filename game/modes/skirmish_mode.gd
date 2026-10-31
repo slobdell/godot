@@ -78,8 +78,10 @@ static func lineup_plan(player: String, enemy: String, player_faction: String, e
 ## Round 47 (orders, R47.22; his words: "the units should be capped based on the actual vehicle costs we've established. make
 ## skirmish should assume 1000 credits or whatever the default was in the garage"): a faction skirmish is fought with the
 ## garage's money, Credits.GAME_CREDITS (2000 CR = 3,500 points) a side, not BASELINE_BUDGET's 5,200; `--budget` still wins.
+## `--army-cap=count` (COUNT_CAP) is round 46's army whole: BASELINE_BUDGET and the laptop's count trim (his older recordings
+## replay with it, tests/replay/rules.py).
 static func faction_budget() -> int:
-	return Credits.to_points(Credits.GAME_CREDITS)
+	return Units.BASELINE_BUDGET if COUNT_CAP else Credits.to_points(Credits.GAME_CREDITS)
 
 
 ## C25.6: the planning pause's line, naming the squads' number keys (1-4 on the laptop preset, 1-5 elsewhere).
@@ -194,8 +196,8 @@ static func _room_for(out: Array, from: Dictionary) -> int:
 ## Round 47 (R47.22): the money is the cap, on every preset. His Crossing match (laptop preset) fielded a gang army of 2,490 of
 ## its 5,000 points because the count cap (20 a side) cut it while the syndicate's 17 fit whole. Now every side fields every
 ## vehicle its budget bought, laid out as the desktop always has: the player's folded onto his `squad_cap` number keys, the
-## CPU's as rolled (squads of at most five). `--army-cap=count` is C25.6's count trim (`capped`), the laptop knob (C47.10) if a
-## full army is more than his UHD 620 carries.
+## CPU's as rolled (squads of at most five). `--army-cap=count` is round 46's army (BASELINE_BUDGET and C25.6's count trim,
+## `capped`), the laptop knob (C47.10) if a full army is more than his UHD 620 carries.
 static var COUNT_CAP := OS.get_cmdline_user_args().has("--army-cap=count")
 
 

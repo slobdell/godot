@@ -33,6 +33,7 @@ func _init() -> void:
 
 func teardown() -> void:
 	_put_levers(_outer)
+	SkirmishMode.COUNT_CAP = OS.get_cmdline_user_args().has("--army-cap=count")  # R47.22: tests that pin the count trim set it
 	super.teardown()
 
 
@@ -165,6 +166,8 @@ static func _counts(doctrine: Dictionary) -> Dictionary:
 func test_a_laptop_cap_cpu_army_keeps_its_role_mix() -> void:
 	# The orchestrator's condition (C25.6): the CPU buys the same archetype order and stops at 20, so each role's share
 	# is the desktop army's share of 20, within one vehicle and a half (the purchase cycles through the order).
+	# R47.22: the count trim is `--army-cap=count`'s (the laptop knob); the money cap is test_the_laptop_fields_the_whole_army...
+	SkirmishMode.COUNT_CAP = true
 	for faction: String in [""] + Array(Units.FACTIONS):
 		for seed_value in [1, 7, 4242, 92721]:
 			var budget := Units.BASELINE_BUDGET if faction != "" else Units.DEFAULT_BUDGET
@@ -268,9 +271,13 @@ static func _fielded_sides(faction: String, seed_value: int, squad_cap: int) -> 
 ## bought; the player's army on his four number keys, the CPU's in squads of at most five.
 func test_the_laptop_fields_the_whole_army_its_money_bought() -> void:
 	SkirmishMode.COUNT_CAP = false
+	_laptop()
+	var gangs_most := 0
 	for faction: String in Units.FACTIONS:
-		for seed_value in [1, 7, 92721]:
+		for seed_value in [1, 7, 92721, 101]:
 			for side: Dictionary in _fielded_sides(faction, seed_value, 4):
+				if faction == "gangs":
+					gangs_most = maxi(gangs_most, _vehicles(side["rolled"]))
 				var label := "%s/%d %s" % [faction, seed_value, "player" if int(side["team"]) == Match.Team.GREEN else "cpu"]
 				assert_eq(String(side["error"]), "", "setup: %s rolls" % label)
 				var fielded: Dictionary = side["fielded"]
@@ -280,7 +287,10 @@ func test_the_laptop_fields_the_whole_army_its_money_bought() -> void:
 					assert_true(sizes.size() <= 4, "%s: on his four number keys (%s)" % [label, sizes])
 				else:
 					assert_true(sizes.max() <= Formations.MAX_MEMBERS, "%s: the CPU's squads at most five (%s)" % [label, sizes])
+	_restore()
 	SkirmishMode.COUNT_CAP = OS.get_cmdline_user_args().has("--army-cap=count")
+	# His Crossing gang army was cut to 20 (2,490 points) by the roll's count cap; the garage's 3,500 points buy more.
+	assert_true(gangs_most > 20, "a gang army on the laptop preset is past the old 20 (%d)" % gangs_most)
 
 
 ## `--army-cap=count` (C25.6's trim, the laptop knob): as round 26.

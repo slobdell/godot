@@ -15,7 +15,9 @@ import json
 import sys
 
 # rule key in `rules` -> (the launch switch, the value that turns it off)
-RULES = {"lane_clear": ("lane-clear", "off")}
+RULES = {"lane_clear": ("lane-clear", "off"),
+         # R47.22 (round 47, orders): the money is the army's cap; a match played before it had the laptop's count trim.
+         "army_money": ("army-cap", "count")}
 
 
 def decide(path, replay_flags=""):

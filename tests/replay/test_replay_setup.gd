@@ -134,11 +134,14 @@ func test_his_0821_army_seed_is_found_from_his_roster_on_his_preset() -> void:
 	var header := _header(HIS_0821)
 	assert_eq(int(header.get("seed", 0)), -1, "the recording lost the seed")
 	var setup := ReplaySetup.from_header(header)
+	# R47.22: his 08-21 match was rolled under the laptop's count trim; its replay runs `--army-cap=count` (tests/replay/rules.py).
+	SkirmishMode.COUNT_CAP = true
 	RenderLevers.apply_preset("laptop", "test")
 	var found := ReplaySetup.army_seed(header, setup, 0, ReplaySetup.clock_seeds(String(header["path"]), -420, 5))
 	var on_desktop := -2
 	RenderLevers.apply_preset("desktop", "test")
 	on_desktop = ReplaySetup.army_seed(header, setup, 0, [891])
+	SkirmishMode.COUNT_CAP = OS.get_cmdline_user_args().has("--army-cap=count")
 	assert_eq(found, 891, "the laptop's roll at 891 fields every one of his 40 units")
 	assert_eq(on_desktop, -1, "the desktop preset's roll at 891 does not (the laptop caps the roll at 20 vehicles)")
 
