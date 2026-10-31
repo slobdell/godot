@@ -1,0 +1,358 @@
+[
+ {
+  "seed": 12949,
+  "swap": false,
+  "native": true,
+  "reason": "elimination",
+  "sim_seconds": 121.5,
+  "stall_share": 0.0159,
+  "doors": {
+   "booth_calls": {
+    "closing": 2,
+    "open": 2,
+    "shut": 2
+   },
+   "crossings": {
+    "green/closing": 1,
+    "green/open": 17
+   },
+   "events": {
+    "open": 2,
+    "shut": 2,
+    "warn_close": 2,
+    "warn_open": 2
+   },
+   "longest_hold_s": 0.0,
+   "open_holds": 0
+  }
+ },
+ {
+  "seed": 12949,
+  "swap": true,
+  "native": true,
+  "reason": "elimination",
+  "sim_seconds": 95.9,
+  "stall_share": 0.021,
+  "doors": {
+   "booth_calls": {
+    "caught": 1,
+    "closing": 2,
+    "held": 1,
+    "open": 2,
+    "shut": 2
+   },
+   "crossings": {
+    "green/closing": 5,
+    "green/held": 4,
+    "green/open": 2
+   },
+   "events": {
+    "held": 1,
+    "open": 2,
+    "overstay": 1,
+    "sealed": 1,
+    "shut": 2,
+    "warn_close": 2,
+    "warn_open": 2
+   },
+   "longest_hold_s": 9.0,
+   "open_holds": 0
+  }
+ },
+ {
+  "seed": 12950,
+  "swap": false,
+  "native": true,
+  "reason": "control",
+  "sim_seconds": 130.4,
+  "stall_share": 0.0168,
+  "doors": {
+   "booth_calls": {
+    "closing": 4,
+    "open": 2,
+    "shut": 4
+   },
+   "crossings": {
+    "green/open": 2,
+    "rust/closing": 1,
+    "rust/open": 5
+   },
+   "events": {
+    "open": 2,
+    "shut": 4,
+    "warn_close": 4,
+    "warn_open": 2
+   },
+   "longest_hold_s": 0.0,
+   "open_holds": 0
+  }
+ },
+ {
+  "seed": 12950,
+  "swap": true,
+  "native": true,
+  "reason": "control",
+  "sim_seconds": 150.0,
+  "stall_share": 0.0169,
+  "doors": {
+   "booth_calls": {
+    "caught": 1,
+    "closing": 4,
+    "open": 4,
+    "shut": 4
+   },
+   "crossings": {
+    "green/open": 9,
+    "rust/open": 2
+   },
+   "events": {
+    "open": 4,
+    "shut": 4,
+    "warn_close": 4,
+    "warn_open": 4
+   },
+   "longest_hold_s": 0.0,
+   "open_holds": 0
+  }
+ },
+ {
+  "seed": 12951,
+  "swap": false,
+  "native": true,
+  "reason": "elimination",
+  "sim_seconds": 103.8,
+  "stall_share": 0.0185,
+  "doors": {
+   "booth_calls": {
+    "caught": 1,
+    "closing": 2,
+    "held": 1,
+    "open": 2,
+    "shut": 2
+   },
+   "crossings": {
+    "green/closing": 2,
+    "green/open": 2,
+    "rust/held": 1,
+    "rust/open": 10
+   },
+   "events": {
+    "held": 1,
+    "open": 2,
+    "sealed": 1,
+    "shut": 2,
+    "warn_close": 2,
+    "warn_open": 2
+   },
+   "longest_hold_s": 4.6,
+   "open_holds": 0
+  }
+ },
+ {
+  "seed": 12951,
+  "swap": true,
+  "native": true,
+  "reason": "elimination",
+  "sim_seconds": 105.4,
+  "stall_share": 0.0153,
+  "doors": {
+   "booth_calls": {
+    "caught": 2,
+    "closing": 2,
+    "open": 2,
+    "shut": 2
+   },
+   "crossings": {
+    "green/open": 5,
+    "rust/open": 4
+   },
+   "events": {
+    "open": 2,
+    "shut": 2,
+    "warn_close": 2,
+    "warn_open": 2
+   },
+   "longest_hold_s": 0.0,
+   "open_holds": 0
+  }
+ },
+ {
+  "seed": 12952,
+  "swap": false,
+  "native": true,
+  "reason": "elimination",
+  "sim_seconds": 94.0,
+  "stall_share": 0.0187,
+  "doors": {
+   "booth_calls": {
+    "caught": 1,
+    "closing": 2,
+    "held": 1,
+    "shut": 2
+   },
+   "crossings": {
+    "green/closing": 2,
+    "green/open": 12,
+    "rust/open": 11
+   },
+   "events": {
+    "held": 1,
+    "sealed": 1,
+    "shut": 2,
+    "warn_close": 2
+   },
+   "longest_hold_s": 0.3,
+   "open_holds": 0
+  }
+ },
+ {
+  "seed": 12952,
+  "swap": true,
+  "native": true,
+  "reason": "elimination",
+  "sim_seconds": 137.4,
+  "stall_share": 0.0141,
+  "doors": {
+   "booth_calls": {
+    "caught": 2,
+    "closing": 4,
+    "held": 1,
+    "open": 2,
+    "shut": 2
+   },
+   "crossings": {
+    "green/held": 1,
+    "green/open": 15,
+    "rust/open": 13
+   },
+   "events": {
+    "held": 1,
+    "open": 2,
+    "sealed": 1,
+    "shut": 2,
+    "warn_close": 4,
+    "warn_open": 2
+   },
+   "longest_hold_s": 3.3,
+   "open_holds": 0
+  }
+ },
+ {
+  "seed": 12953,
+  "swap": false,
+  "native": true,
+  "reason": "control",
+  "sim_seconds": 171.6,
+  "stall_share": 0.0275,
+  "doors": {
+   "booth_calls": {
+    "caught": 1,
+    "closing": 4,
+    "open": 4,
+    "shut": 4
+   },
+   "crossings": {
+    "green/closing": 5,
+    "green/open": 6,
+    "rust/open": 5
+   },
+   "events": {
+    "open": 4,
+    "shut": 4,
+    "warn_close": 4,
+    "warn_open": 4
+   },
+   "longest_hold_s": 0.0,
+   "open_holds": 0
+  }
+ },
+ {
+  "seed": 12953,
+  "swap": true,
+  "native": true,
+  "reason": "control",
+  "sim_seconds": 146.8,
+  "stall_share": 0.021,
+  "doors": {
+   "booth_calls": {
+    "caught": 1,
+    "closing": 4,
+    "open": 2,
+    "shut": 4
+   },
+   "crossings": {
+    "green/closing": 2,
+    "green/open": 7,
+    "rust/open": 14
+   },
+   "events": {
+    "open": 2,
+    "shut": 4,
+    "warn_close": 4,
+    "warn_open": 2
+   },
+   "longest_hold_s": 0.0,
+   "open_holds": 0
+  }
+ },
+ {
+  "seed": 12954,
+  "swap": false,
+  "native": true,
+  "reason": "elimination",
+  "sim_seconds": 99.7,
+  "stall_share": 0.0256,
+  "doors": {
+   "booth_calls": {
+    "caught": 1,
+    "closing": 2,
+    "open": 2,
+    "shut": 2
+   },
+   "crossings": {
+    "green/closing": 1,
+    "green/open": 5
+   },
+   "events": {
+    "open": 2,
+    "shut": 2,
+    "warn_close": 2,
+    "warn_open": 2
+   },
+   "longest_hold_s": 0.0,
+   "open_holds": 0
+  }
+ },
+ {
+  "seed": 12954,
+  "swap": true,
+  "native": true,
+  "reason": "elimination",
+  "sim_seconds": 114.6,
+  "stall_share": 0.0257,
+  "doors": {
+   "booth_calls": {
+    "caught": 2,
+    "closing": 4,
+    "held": 2,
+    "open": 2,
+    "shut": 4
+   },
+   "crossings": {
+    "green/closing": 3,
+    "green/open": 8
+   },
+   "events": {
+    "held": 2,
+    "open": 2,
+    "overstay": 1,
+    "sealed": 2,
+    "shut": 4,
+    "warn_close": 4,
+    "warn_open": 2
+   },
+   "longest_hold_s": 7.6,
+   "open_holds": 0
+  }
+ }
+]

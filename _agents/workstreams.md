@@ -396,6 +396,26 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   judge it over 6 FRESH offsets (x -3..+3 step 0.5), summed hits >= 120 and deck share >= 0.5, filed in the commit before the run. Also:
   GRANT spotter one additive Makefile line (LIGHT_GOALS += spotter targets).
 
+- **R47.47 The CPU sliver test is a knife edge, not a flake: PENDING until next round's manoeuvre bar.** Native (builder3 light, 155a8fc0e
+  on main c9e6520b3): alone 10/10 identical, native on and off; after test_manoeuvre_face_settle in the same process, red 3/3, matching
+  mapkit's failure to the digit; fresh processes with starts jittered <= 1 cm / 0.1 deg: 19/20 green. Cause: same-process physics carry-over
+  (roadmap UNOWNED "a same-process rematch is not deterministic", round 33) and a case that sits on the sliver's edge. The test arms the
+  watchdog (OFF in his game). Next round: manoeuvre's bar = 20/20 jitter seeds (`make native-repeat ... REPEAT_JITTER=on`). Spotter merged
+  (213f5d070; 9858da23f GREEN 3608/0); remote_builds.md: a queued check can survive its wrapper's TERM.
+
+- **R47.48 Spotter's batch 1 (his 30/30 "dumb") sorted into five classes** (`streams/references/round47/spotter/batch1-classes.md`, stream/
+  spotter 0f8d7e3b4; each with crew, seconds, peak tick, clip, reproduction line): **A (4) engage, RETREAT** — hurt crews (2-10 % hp)
+  leave the squad 50-125 m, often reversing 8-19 s with no enemy in sight, then sit alone; **B (9) manoeuvre, give-way loops** — yielding
+  / blocked by a named squadmate 5-18 s, sometimes under fire; HOLD crews leave posts to give way; **C (5) manoeuvre + route, stuck on
+  terrain / no_path forever** (crossing Rust_Guns_1 224 s on a move to a spot with no path); **D (7) orders + route, driving away from the
+  goal** (FOLLOW goal distance growing 17 -> 76 m; law_suppressors on support-by-fire crawling / circling); **E (5) engage, shot from
+  beyond its range with no answer.** Batch 1's probe under-counted hold-fire (fixed for batch 2). **Ruling (overnight, what the
+  orchestrator would have recommended to him; his outranged question from 2026-10-30 evening was never answered):** the OUTRANGED
+  behaviour is engage's next item after E3 / E9 (E10: a crew taking fire from beyond its own reach closes by a covered route if its
+  order allows, else breaks line of sight; both sides; ON behind a bar), tonight if time allows, else round 48's first engage item.
+  Classes B / C are round 48's first manoeuvre items (with the two Sumps plans); D goes to orders now (support-by-fire is O6's).
+  Spotter batch 2 = ranks 31-100 + 10 hidden random controls (negatives for S6: ~100 / 100 labels is the floor).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_

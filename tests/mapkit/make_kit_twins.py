@@ -92,7 +92,30 @@ def crossing_screens():
     return len(screens)
 
 
+def terminus_doors():
+    """terminus_doors: the Terminus with his blast doors (vault slabs, called by the booth) across the west and east streets
+    at z = 0, between the blocks at x = +-40 and +-100 (faces at +-60 / +-80): one group, so both sides meet the same
+    schedule. 16 m slabs in the 20 m street leave 2 m at each kerb, narrower than any hull. When they shut, a crew goes
+    round by the ring roads (z = +-30), the plaza crossings or the avenue; each door stands beside a side's ring
+    objective, so the schedule decides how cheaply each side reaches its own."""
+    base = json.loads((ROOT / "arenas" / "terminus.json").read_text())
+    twin = dict(base)
+    twin["name"] = "terminus_doors"
+    twin["title"] = "The Terminus (blast doors)"
+    twin["fixture"] = True
+    twin["note"] = ("Mapkit twin of the Terminus (tests/mapkit/make_kit_twins.py): blast doors across the west and east streets, "
+                    "on a timer the booth calls. A candidate: judged against terminus first. " + base.get("note", ""))
+    twin["doors"] = [
+        {"name": "west_gate", "group": "street_gates", "position": [-70.0, 0.0], "rotation_deg": 0.0, "width": 16.0, "call": "west"},
+        {"name": "east_gate", "group": "street_gates", "position": [70.0, 0.0], "rotation_deg": 180.0, "width": 16.0, "call": "east"},
+    ]
+    twin.pop("show", None)
+    (ROOT / "arenas" / "terminus_doors.json").write_text(json.dumps(twin, indent=1) + "\n")
+    return len(twin["doors"])
+
+
 if __name__ == "__main__":
     print("wrote arenas/parade_traps.json: %d hogs" % parade_traps())
     print("wrote arenas/parade_rail.json: %d pillars" % parade_rail())
     print("wrote arenas/crossing_screens.json: %d screens" % crossing_screens())
+    print("wrote arenas/terminus_doors.json: %d doors" % terminus_doors())

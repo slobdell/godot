@@ -95,6 +95,7 @@ LIGHT_GOALS := help doctor bootstrap remote gcp-remote gcp-status gcp-start gcp-
                editor run skirmish garage demo play play-relay replay-watch serve-web server client watch-match agent-% \
                assets-generate assets-mock art-concept art-review art-review-status art-decide art-review-page art-apply-decisions art-concept-batch \
                doctrine-page announcer-generate quick-remote test-times
+LIGHT_GOALS += spotter-night-% spotter-test spotter-rank  # round 47 (spotter, R47.46): ssh / Python only, no Godot
 _SLOT_GOALS := $(if $(TANK_SQUAD_SLOT),,$(filter-out $(LIGHT_GOALS),$(MAKECMDGOALS)))
 
 ifneq ($(_SLOT_GOALS),)

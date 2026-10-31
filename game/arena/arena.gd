@@ -87,8 +87,9 @@ const CUT := ["boulevard", "boneyard", "foundry", "furnace", "scrapyard"]
 ## 2026-10-05: round 18's six candidates were DEALT on his word ("just keep all of the maps"), their spoken names
 ## recorded in the same commit; nothing is waiting for a verdict.
 ## Round 47 (mapkit P4): parade_traps / parade_rail (the Parade Ground with his tank traps / monorail) and crossing_screens
-## (the Crossing with sight screens), tests/mapkit/make_kit_twins.py, judged against their maps before any shipped map changes.
-const CANDIDATES := ["parade_traps", "parade_rail", "crossing_screens"]
+## (the Crossing with sight screens), terminus_doors (the Terminus with his blast doors), tests/mapkit/make_kit_twins.py,
+## judged against their maps before any shipped map changes.
+const CANDIDATES := ["parade_traps", "parade_rail", "crossing_screens", "terminus_doors"]
 const LAYOUT_DIR := "res://arenas"
 ## Obstacle types with a built-in collision size [x, height, z] (meters, before rotation). Other types need "size".
 const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}

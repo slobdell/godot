@@ -828,6 +828,9 @@ pipeline), crane A (yard gantry); all 21 door lines kept and voiced. What exists
   `crossing_screens` (a sight screen across each bridge and two along each near bank): mean view 65.8 -> 62.1 m, views over 120 m
   0.16 -> 0.14, bridges 13.00 m physical (as bare). Its route exposures READ HIGHER (direct 0.052 -> 0.073, covered 0.022 -> 0.036,
   idle) partly because the report seats a watcher behind every eye-height box, screens included: the paired series decides.
+  **Bar P (round 47, 2ce6fa68b, builder3, 224 matches native ON): the twins break nothing (stall share, fairness, length, stalemates
+  all at the base) and change nothing measurable in CPU v CPU fights** (no range / flank / route metric beyond 2 se; crossing_screens
+  did not raise the gangs' shots, -13 +- 10). Raw: `_agents/streams/references/round47/mapkit/`. Not dealt; his eye decides the look.
   `arena_report.py` counts a `sight` box for every VIEW measure and for none of the DRIVE measures (occupancy, routes, corridors,
   the lane bar) since round 47; before that a screened map read as walled.
 

@@ -88,6 +88,50 @@ sight screen's member initializer made a strip node the steam branch never used)
 on traps/monorail/pipes/crane (his P1b pick, R47.38; `--kit-look=plain` escapes) + the train concepts; quick 116/0 builder3; full
 check queued on builder3 (name it here). f10081d90 (gallery only) on top.
 
+**2026-10-31 ~01:00: BLAST DOORS IN A REAL ARENA (the orchestrator's next item, after Bar P).** Main merged first (eecdd7c0e:
+native's door mask + eye mask on main). `terminus_doors` (candidate twin): his vault-slab doors across the Terminus's west and east
+streets at z = 0, one schedule (both sides), 16 m slabs in the 20 m street (no hull fits beside a shut slab), each beside a side's
+ring objective. test_terminus_doors: through the door only with its navigation bit; RouteDoors' mask has the bit only while open
+now and at arrival (a crew 120 m off when it shuts in 3 ticks: out). **Watched, 12 CPU fights** (12949-12954 x both base orders,
+native ON, builder3, 9bd2873cc, not a bar; `_agents/streams/references/round47/mapkit/doors-watch.json`): doors opened and shut and
+the booth called every one (its `door` calls = the door events, + a "caught" call in 11/12); green crossed in 12/12 fights, rust in
+7/12, while open / in the warning / held; **crossings through a SEALED door 0/12**; a closing door waited for a crew in its
+doorway in 6 fights, longest 9.0 s, every one sealed once clear (0 left open); `overstay` fired twice. **Without manoeuvre's yield
+(OFF):** a crew parked in a closing doorway keeps that door open until it drives on (it only ever errs open; never sealed on a
+hull); the booth calls it ("held"). Stall share 0.014-0.028 (Bar P's base maps: 0.014 / 0.026). Check of 8dc9697b4 queued.
+
+**His playtest note (player terms):** `make skirmish ARENA=terminus_doors`. The two side streets of the Terminus now have armoured
+gates halfway along. About a minute in, the PA warns ("the west gate will close in five seconds"), the amber beacons flash and the
+gates slide shut with the caller hyping it; they reopen after ~25 s and cycle on a fixed clock both sides share. While a gate is
+shut your crews and the CPU's route round by the ring roads or the avenue; a crew caught in the doorway holds the gate open (the
+caller says so) rather than being crushed. Watch: do the gates make the side streets feel like a timed gamble worth the noise?
+Do your crews look smart around them (not queuing at a shut gate)? (Both sides get the same gates on the same clock; in the
+watch, how often a side used them followed that army's own plan, not which half it started in: rust's two no-crossing seeds were
+no-crossing from both bases, and in other seeds rust used them more than green.)
+
+**2026-10-30 23:57: Bar P = FAIL on the deciding line (all three twins), every guard PASSES.** 2ce6fa68b (b9f13f946's game
+code), builder3, 224 matches, native ON, 0 failed; raw and table in `_agents/streams/references/round47/mapkit/bar-p-*-2ce6fa68b*`.
+Paired twin - base (same seed, base order, factions), mean +- se, n:
+- parade_traps (n 32): range median +1.18 +- 0.95 m, p90 -2.93 +- 2.23, flank +0.025 +- 0.013 (1.9 se), hidden +0.020 +- 0.012,
+  crossed +0.010 +- 0.021. No deciding metric beyond 2 se.
+- parade_rail (n 32): range median +1.62 +- 1.46, p90 -1.60 +- 2.13, flank -0.005 +- 0.011, crossed +0.007 +- 0.015; hidden
+  +0.020 +- 0.009 (2.2 se, NOT a deciding metric).
+- crossing_screens (n 64, gangs v syndicate both orders): range median +2.03 +- 1.06 (1.9 se), p90 +0.80 +- 0.80, flank 0.000 +-
+  0.004, crossed -0.010 +- 0.007; gangs' shots -13.2 +- 9.8 (the line wanted a RISE).
+Guards: stall share (base 0.014 parade / 0.026 crossing) twin - base -0.000 +- 0.001 / +0.000 +- 0.001 / -0.001 +- 0.000;
+fairness south advantage base 0.087 +- 0.048 / twins -0.060 +- 0.046, -0.040 +- 0.045; crossing -0.009 +- 0.101 v 0.034 +- 0.137;
+length -1.9 +- 3.9 / -3.2 +- 5.0 / -3.5 +- 1.9 s; 0 stalemates anywhere; laptop read separately (pass).
+**In player terms:** the pieces as placed are safe (nobody gets stuck more, nothing unfair, no stalemates) but the CPU v CPU fight
+plays the same; on the Crossing the screens did NOT get the gangs firing more. Note: CPU v CPU crossings fight at a 35 m median
+(his recorded match: 79 m), so the gangs' long-range problem he saw is not what these seeds reproduce. **Not shipped to any dealt
+map**; the twins stay candidates for his eye. Next (if wanted): denser placements, or a workload from his recording.
+
+**2026-10-31 ~00:00: Bar P series RAN on builder3** (the orchestrator's slot): `make remote T="mapkit-bar-p BAR_P_JOBS=10"`
+at 2ce6fa68b (b9f13f946's game code + the probe's stall share / shots / native fields + tests/mapkit/bar_p_series.py). 224
+matches native ON to each map's end (420 s cap): parade v parade_traps / parade_rail (condemned v condemned, 12901-12916, both base
+orders), crossing v crossing_screens (gangs v syndicate both faction orders x both base orders, 12917-12932). Paired by (seed,
+base order, factions). Guard 4 (laptop) already read: the trim monorail knob, the car at the floor. Verdict here when it lands.
+
 **2026-10-30 ~23:00: R47.39 his Meshy monorail car.** He rejected the kit train directions (wanted "a meshy asset ... as a
 one-off like we did for the blimp ... run down and rickety"). Three nano-banana-pro image-to-image concepts from ONE side-on shape
 reference (a car on our beam, `assets/review/images/train_r47/train_side_ref.png`; the airship/bus lesson), 27 credits; page
@@ -98,8 +142,9 @@ beam's base so its own bogie block sinks into our beam. **Meshy spend this round
 Laptop (UHD 620, laptop preset, under the lock, 120 frames): the car costs nothing measurable (rail 9.50/9.90 v rail + car
 8.80/9.85, interleaved, n=2). **C47.10 knob:** the TRIM monorail read +1.4/+1.5 ms over the floor twice, so under the laptop preset
 the monorail + deck alone are plain (9.15 v floor 9.00); desktop keeps trim; traps/pipes/crane keep trim everywhere (asked the lead
-via the orchestrator in player terms). Stopped my own stale queued check of 04adca907 (4 commits behind). **b9f13f946**: quick
-291/0 builder3, full check queued (name it here).
+via the orchestrator in player terms). Stopped my own stale queued check of 04adca907 (4 commits behind). **b9f13f946 GREEN**
+(builder3, `make check exited 0`, 3552 passed / 0 failed, 28 targets ALL JUDGED, 23:41); named to the orchestrator, who merges it
+into main's next batch check. The laptop-preset monorail fallback is accepted (his standing rule: perf cuts ship as presets).
 
 **His picks so far:** looks (P1, db `picks/*`): door A, screen C, overpass C, traps A, pipes B, crane A; 21 lines kept.
 Trim trial (P1b, db `trim/*`): TRIM on all four. Train (R47.38): page https://claude.ai/artifact/9PNjR9rWKNXQXBWQ9sNsLC,
