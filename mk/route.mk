@@ -22,3 +22,26 @@ route-trace: native-fresh import ## Replay a recording with a ROUTE_TRACE of nam
 	echo "route-trace: $$(grep -c '^ROUTE_TRACE ' $(ROUTE_TRACE_DIR)/replay.log) route changes, $$(grep -c '^ROUTE_POSE ' $(ROUTE_TRACE_DIR)/replay.log) poses -> $(ROUTE_TRACE_DIR)/route.jsonl"; \
 	[ $$s -eq 0 ] || { echo "route-trace: godot exited $$s (log $(ROUTE_TRACE_DIR)/replay.log)"; exit $$s; }; \
 	if grep -q '^REPLAY_NATIVE_MISMATCH' $(ROUTE_TRACE_DIR)/replay.log && [ "$(NATIVE)" != off ]; then echo "route-trace: FAILED: not his match's native path"; exit 3; fi
+
+# R6 (R47.12): the route census. CPU v CPU fights, both sides (tests/route/route_census.gd), every crew's legs: metres
+# driven v the navmesh's shortest start to end, by side / unit class / arena / brain option; the worst detours listed
+# (tests/route/route_census_table.py). Seeds go round the arenas (ROUTE_CENSUS_SEEDS: route's 12501-12548 by default).
+ROUTE_CENSUS_DIR := $(BUILD_DIR)/route-census
+ROUTE_CENSUS_ARENAS ?= yard pit terminus crossing sumps locks
+ROUTE_CENSUS_SEEDS ?= $(shell seq 12501 12548)
+ROUTE_CENSUS_SECONDS ?= 150
+ROUTE_CENSUS_JOBS ?= 8
+ROUTE_CENSUS_FACTIONS ?= law,gangs condemned,syndicate gangs,condemned syndicate,law
+.PHONY: route-census
+route-census: native-for-check import ## R6: route census, CPU v CPU fights (ROUTE_CENSUS_SEEDS round ROUTE_CENSUS_ARENAS, _SECONDS, _JOBS, ROUTE_CENSUS_FLAGS) -> build/route-census/ + table.txt
+	@rm -rf $(ROUTE_CENSUS_DIR) && mkdir -p $(ROUTE_CENSUS_DIR)
+	@echo ">> route-census on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) dirty $${TANK_SQUAD_DIRTY:-?} | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | load $$(cut -d' ' -f1-3 /proc/loadavg) | flags '$(ROUTE_CENSUS_FLAGS)'"
+	@set -- $(ROUTE_CENSUS_ARENAS); na=$$#; set -- $(ROUTE_CENSUS_FACTIONS); nf=$$#; for seed in $(ROUTE_CENSUS_SEEDS); do \
+		set -- $(ROUTE_CENSUS_ARENAS); i=$$(( seed % na + 1 )); eval map=\$${$$i}; \
+		set -- $(ROUTE_CENSUS_FACTIONS); j=$$(( seed / na % nf + 1 )); eval pair=\$${$$j}; echo "$$map $$seed $$pair"; done \
+		| xargs -P $(ROUTE_CENSUS_JOBS) -L 1 sh -c \
+		'g=$${2%%,*}; r=$${2#*,}; timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/route/route_census.gd -- \
+			--arena=$$0 --seed=$$1 --green=$$g --rust=$$r --credits=1000 --seconds=$(ROUTE_CENSUS_SECONDS) $(ROUTE_CENSUS_FLAGS) \
+			> $(ROUTE_CENSUS_DIR)/$$0-$$1.log 2>&1 || true; echo "  ran $$0 s$$1 $$g v $$r"'
+	@grep -L '^ROUTE_CENSUS ' $(ROUTE_CENSUS_DIR)/*.log | sed 's/^/MISSING (no ROUTE_CENSUS line): /' || true
+	@$(PYTHON) tests/route/route_census_table.py $(ROUTE_CENSUS_DIR)/*.log | tee $(ROUTE_CENSUS_DIR)/table.txt
