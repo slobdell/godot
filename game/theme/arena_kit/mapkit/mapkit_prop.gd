@@ -54,13 +54,29 @@ func _register() -> void:
 		# The deck: `span` (a number, metres; default MapkitYard.SPAN) of beam along its local z.
 		var length := float(_span_m) if _span_m > 0.0 else MapkitYard.SPAN
 		_ids.append(_yard.add("monorail_beam", base * Transform3D(Basis.from_scale(Vector3(1, 1, length)), Vector3.ZERO)))
-		if _car:
-			_ids.append(_yard.add("monorail_car", base))
+		_place_car()
 	if kind == "gantry_leg" and not _span.is_empty():
 		var reach := Vector3(float(_span[0]), 0.0, float(_span[1]))
 		var along := reach.normalized()
 		var basis := Basis(along * reach.length(), Vector3.UP, along.cross(Vector3.UP).normalized())
 		_ids.append(_yard.add("gantry_beam", Transform3D(basis, global_position)))
+
+
+## R47.39: a deck with the `car` look key carries the lead's Meshy car (prop.monorail_car, train_r47_a): one instance,
+## one draw, its underside at the beam's base so its own bogie block sinks into our beam. Hidden with the deck (a child).
+func _place_car() -> void:
+	var existing := get_node_or_null("Car")
+	if not _car:
+		if existing != null:
+			existing.queue_free()
+		return
+	if existing != null:
+		return
+	var car := VisualSlot.new()
+	car.name = "Car"
+	car.slot = "prop.monorail_car"
+	car.position = Vector3(0.0, MapkitYard.BEAM_Y, 0.0)
+	add_child(car)
 
 
 func _unregister() -> void:

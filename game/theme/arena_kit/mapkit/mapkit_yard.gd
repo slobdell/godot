@@ -6,12 +6,11 @@ extends Node3D
 ##   hedgehog      three crossed steel I-beams, hazard-yellow tips (tank traps, his pick A)
 ##   monorail      a round concrete pillar (overpass, his pick C)
 ##   monorail_beam the beam it carries at 9 m with cyan rails under it, 1 m long: the instance is scaled to its span
-##   monorail_car  a lit car parked on the beam
 ##   pipeline      10 m of fat pipe on concrete saddles, a cyan flow stripe on top (pipe runs, his pick B)
 ##   gantry_leg    a yellow crane leg (gantry crane, his pick A)
 ##   gantry_beam   the crane's beam, trolley and red warning lights, 1 m long: the instance is scaled to its span
 
-const KINDS := ["hedgehog", "monorail", "monorail_beam", "monorail_car", "pipeline", "gantry_leg", "gantry_beam"]
+const KINDS := ["hedgehog", "monorail", "monorail_beam", "pipeline", "gantry_leg", "gantry_beam"]
 ## What a hedgehog is drawn inside: ArenaKit's 1.6 m footprint; 1.2 m tall where the collision box is 0.9 m (its open
 ## arms are what a round flies between).
 const HOG := Vector3(1.6, 1.2, 1.6)
@@ -25,7 +24,6 @@ const BEAM := Vector2(2.4, 1.4)
 const SPAN := 10.0
 const STEEL := Color(0.16, 0.17, 0.19)
 const CONCRETE := Color(0.22, 0.22, 0.23)
-const CAR := Color(0.75, 0.76, 0.8)
 ## Pipeline: 10 m a prop, the pipe 0.8 m across (its top at 0.9 m: under the muzzles, ArenaKit `pipeline`).
 const PIPE_LEN := 10.0
 const PIPE_R := 0.4
@@ -144,8 +142,6 @@ static func _build(kind: String) -> ArrayMesh:
 			built = _monorail()
 		"monorail_beam":
 			built = _monorail_beam()
-		"monorail_car":
-			built = _car()
 		"pipeline":
 			built = _pipeline()
 		"gantry_leg":
@@ -231,14 +227,6 @@ static func _monorail_beam() -> ArrayMesh:
 	for side in [-1.0, 1.0]:
 		box(rails, Transform3D(Basis.IDENTITY, Vector3(side * (BEAM.x / 2.0 + 0.05), BEAM_Y + 0.1, 0)), Vector3(0.1, 0.1, 1.0))
 	return two_surfaces(concrete, CONCRETE, 0.8, 0.05, rails, CyberMaterials.CYAN)
-
-
-static func _car() -> ArrayMesh:
-	var shell := surface()
-	var windows := surface()
-	box(shell, Transform3D(Basis.IDENTITY, Vector3(0, BEAM_Y + BEAM.y + 1.6, 0)), Vector3(3.4, 3.2, 24.0))
-	box(windows, Transform3D(Basis.IDENTITY, Vector3(0, BEAM_Y + BEAM.y + 2.0, 0)), Vector3(3.5, 0.7, 22.0))
-	return two_surfaces(shell, CAR, 0.3, 0.5, windows, CyberMaterials.CYAN, Color(1.4, 1.4, 1.45))
 
 
 static func _pipeline() -> ArrayMesh:

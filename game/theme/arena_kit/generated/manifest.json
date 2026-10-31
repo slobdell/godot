@@ -251,6 +251,50 @@
       "source": "Meshy image-to-3D meshy-t2 task 01a0a206-8d80-72ac-b6e2-160cf3ae6fd3 from review item container_a (concept 01a0a1da-5283-7562-b013-51907be2be6f)",
       "tris": 3425.0
     },
+    "prop.monorail_car": {
+      "credit": "Meshy image-to-3D from concept train_r47_a",
+      "glb": "prop_monorail_car.glb",
+      "license": "Meshy (paid plan), generated for Tank Squad",
+      "notes": [
+        "texture albedo_texture 2048×2048 → 1024×1024",
+        "texture normal_texture 2048×2048 → 512×512",
+        "texture roughness_texture 2048×2048 → 512×512"
+      ],
+      "options": {
+        "emissive": {},
+        "exclude": [],
+        "fitted_offset": [
+          -0.0152,
+          3.5051,
+          0.0
+        ],
+        "fitted_scale": 8.98346900939941,
+        "forward": "+x",
+        "include": [],
+        "materials": {
+          "heat": [],
+          "shield": [],
+          "team_emissive": [],
+          "tint": []
+        },
+        "scale": 0.0,
+        "shift": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "texture_caps": {
+          "metallic_texture": 512,
+          "normal_texture": 512,
+          "roughness_texture": 512
+        },
+        "up": "+y"
+      },
+      "roof": 7.0,
+      "scene": "prop_monorail_car.tscn",
+      "source": "meshy:01a1907b-f3a9-7666-b375-8d318afd022d",
+      "tris": 5534
+    },
     "prop.wall": {
       "credit": "Generated with Meshy",
       "glb": "prop_wall.glb",

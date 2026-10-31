@@ -57,6 +57,7 @@ const DIRECTIONS := {
 	"train_a": ["train", "_train_commuter", false],
 	"train_b": ["train", "_train_cattle", false],
 	"train_c": ["train", "_train_pods", false],
+	"built_train": ["train", "_built_train", false],
 }
 
 var camera := Camera3D.new()
@@ -686,3 +687,15 @@ func _train_pods(root: Node3D, _open: bool) -> void:
 				[Color(1.0, 0.75, 0.6), Color(0.7, 0.9, 0.8), Color(0.9, 0.9, 1.0), Color(0.8, 0.7, 0.9)][pod])
 		_box(root, Vector3(3.0, 0.5, 0.06), Vector3(x, MapkitYard.BEAM_Y - 1.2, RAIL_Z + 1.32), CyberMaterials.neon(Color(1.0, 0.62, 0.25), 1.2, 0.3))
 		_box(root, Vector3(0.6, 0.4, 0.06), Vector3(x + 1.2, MapkitYard.BEAM_Y - 2.15, RAIL_Z + 1.32), CyberMaterials.neon(CyberMaterials.CYAN, 2.5, 0.0))
+
+
+## R47.39: his Meshy car (train_r47_a) on the built rail, through its slot.
+func _built_train(root: Node3D, _open: bool) -> void:
+	_rail(root)
+	var body := Node3D.new()
+	body.position = Vector3(-4.0, MapkitYard.BEAM_Y, RAIL_Z)  # its own bogie block sinks into our beam
+	body.rotation.y = PI / 2.0
+	root.add_child(body)
+	var visual := VisualSlot.new()
+	visual.slot = "prop.monorail_car"
+	body.add_child(visual)

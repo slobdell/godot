@@ -135,3 +135,4 @@
 | 2026-10-31 05:20 | image-to-image nano-banana-pro | `01a19066-82a8-708d-b4cb-1d5efd2b62ee` | 9 | meshy/train_r47_a | SUCCEEDED | 2186 |
 | 2026-10-31 05:22 | image-to-image nano-banana-pro | `01a19067-81f5-7148-94cc-6b45353a7f9b` | 9 | meshy/train_r47_b | SUCCEEDED | 2177 |
 | 2026-10-31 05:22 | image-to-image nano-banana-pro | `01a19068-a828-71d3-8a56-2d71fa6cf916` | 9 | meshy/train_r47_c | SUCCEEDED | 2168 |
+| 2026-10-31 05:44 | image-to-3d meshy-t2 smart-topology | `01a1907b-f3a9-7666-b375-8d318afd022d` | 15 | train_r47_a | SUCCEEDED | 2153 |

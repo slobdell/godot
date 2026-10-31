@@ -2151,10 +2151,10 @@
       "est_3d_credits": 30,
       "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
       "notes": "A decades-old subway carriage pressed back into service on the beam.",
-      "status": "waiting",
-      "lead_words": "",
-      "decided": "",
-      "model_task": "",
+      "status": "approved",
+      "lead_words": "picked A on the Meshy train page (db train/pick = a, no note), relayed by the orchestrator 2026-10-30 (R47.39)",
+      "decided": "2026-10-30",
+      "model_task": "01a1907b-f3a9-7666-b375-8d318afd022d",
       "added": "2026-10-30"
     },
     {
@@ -2174,9 +2174,9 @@
       "est_3d_credits": 30,
       "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
       "notes": "A scrapped city bus body bolted onto a home-made monorail frame.",
-      "status": "waiting",
-      "lead_words": "",
-      "decided": "",
+      "status": "rejected",
+      "lead_words": "not picked (he chose A)",
+      "decided": "2026-10-30",
       "model_task": "",
       "added": "2026-10-30"
     },
@@ -2197,9 +2197,9 @@
       "est_3d_credits": 30,
       "mode_3d": "image-to-3D meshy-t2 smart topology, PBR",
       "notes": "Two short tram cars chained together, held up by scaffolding.",
-      "status": "waiting",
-      "lead_words": "",
-      "decided": "",
+      "status": "rejected",
+      "lead_words": "not picked (he chose A)",
+      "decided": "2026-10-30",
       "model_task": "",
       "added": "2026-10-30"
     }
