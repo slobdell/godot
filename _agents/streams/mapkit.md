@@ -81,6 +81,12 @@ sight screen's member initializer made a strip node the steam branch never used)
 on traps/monorail/pipes/crane (his P1b pick, R47.38; `--kit-look=plain` escapes) + the train concepts; quick 116/0 builder3; full
 check queued on builder3 (name it here). f10081d90 (gallery only) on top.
 
+**2026-10-31 ~00:00: Bar P series RUNNING on builder3** (the orchestrator's slot): `make remote T="mapkit-bar-p BAR_P_JOBS=10"`
+at 2ce6fa68b (b9f13f946's game code + the probe's stall share / shots / native fields + tests/mapkit/bar_p_series.py). 224
+matches native ON to each map's end (420 s cap): parade v parade_traps / parade_rail (condemned v condemned, 12901-12916, both base
+orders), crossing v crossing_screens (gangs v syndicate both faction orders x both base orders, 12917-12932). Paired by (seed,
+base order, factions). Guard 4 (laptop) already read: the trim monorail knob, the car at the floor. Verdict here when it lands.
+
 **2026-10-30 ~23:00: R47.39 his Meshy monorail car.** He rejected the kit train directions (wanted "a meshy asset ... as a
 one-off like we did for the blimp ... run down and rickety"). Three nano-banana-pro image-to-image concepts from ONE side-on shape
 reference (a car on our beam, `assets/review/images/train_r47/train_side_ref.png`; the airship/bus lesson), 27 credits; page
