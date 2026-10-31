@@ -188,6 +188,13 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   target" is acquisition time itself:** E3's dial (a quicker, less accurate first shot while laying) is his call, asked with numbers.
   (R47.13's "58 of 145 s a restart" counted restarts of any kind; the carry only helps near-bearing ones.)
 
+- **R47.18 (2026-10-30 evening) The army layout at match start depends on WHEN the first navigation sync lands (CP43.0 in
+  `tests/replay_orders.gd`: an interactive start and a headless one reach the bake at different moments; ARMY_LAYOUT_UNCHECKED), so a
+  live start is wall-clock dependent; the replay teleports crews to his recorded spawn to cover it.** His four round-46 recordings all
+  replay at placed 0, so it is not where R47.16's cause 2 enters. No change this round (it moves every spawn: sim-baseline). **Next round
+  (netplay / determinism):** `ArmyLayout.deploy`'s standable queries in `game/tactics/army_layout.gd` made timing-independent (always
+  unchecked, or always after the first sync), with the sim-baseline adopted twice.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
