@@ -116,7 +116,7 @@ func test_the_pan_starts_on_the_next_frames_even_while_he_aims_and_starts_from_r
 		rig._process(1.0 / FPS)
 		steps.append(rig._shown_focus.distance_to(last))
 		last = rig._shown_focus
-	assert_false(rig.holding, "nothing holds the pan to his new selection")
+	assert_true(not (rig.holding), "nothing holds the pan to his new selection")
 	assert_true(rig._shown_focus.distance_to(before) > 5.0, "moving within half a second (%.1f m)" % rig._shown_focus.distance_to(before))
 	assert_true(float(steps[0]) < 1.5, "from rest: the first frame moves %.2f m" % float(steps[0]))
 	for i in range(1, steps.size()):
@@ -146,7 +146,7 @@ func test_his_own_pan_stays_his_until_he_selects_then_the_view_comes_back_at_onc
 	for i in int(5.0 * FPS):
 		rig._process(1.0 / FPS)
 		urgent = urgent or rig.planner_urgent
-	assert_false(urgent, "no fast swing back over his own pan")
+	assert_true(not (urgent), "no fast swing back over his own pan")
 	rig.pan_world(Vector2(80, 0))
 	rig.take_vision()  # he selects (the same squad): the camera is handed back
 	var took := _frames_until(rig, 20.0, 2.0)
