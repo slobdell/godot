@@ -11,7 +11,9 @@ is flagged from the second its run reaches the threshold; the first class that m
   A  hurt crew retreats by abandoning the squad   choice RETREAT and (squad centre >= A_SPREAD_M away, squad_n > 1, for A_FAR_S,
                                                   or reversing < -0.6 m/s on a move for A_REVERSE_S)
   E  shot from beyond its range, no answer        >= E_HITS of the last E_WINDOW_S seconds hit by a shooter > 1.05 x its own
-                                                  range (hits come in salvos; closing or breaking line of sight ends it)
+                                                  range (hits come in salvos), and NOT closing: the shooter's distance at the
+                                                  window's first outranged hit minus now < E_CLOSE_M (closing is E10's answer;
+                                                  breaking line of sight ends the hits)
   STUCK (by cause)                                on a move, > 15 m to go, < 1 m gained in 5 s, for STUCK_S: the second goes to
                                                   A if RETREAT, B if blocked / yielding to a CREW, C if blocked by terrain /
                                                   no_path or touching a prop, else D
@@ -22,6 +24,9 @@ is flagged from the second its run reaches the threshold; the first class that m
   D  drives away from where it is going           on a move, phase driving, > 15 m to go, not RETREAT: nose > 100 deg off its
                                                   route while driving forward for D_WRONGWAY_S; a FOLLOW crew reversing, or
                                                   turning on the spot > D_SPIN_DPS, for D_FOLLOW_S
+  F  holds fire, enemy in sight and in range      (v4, batch 2's new class; LAST in the order, so A-E read exactly as v3)
+                                                  a direct-fire crew on fire-at-will, the nearest enemy in its line of sight
+                                                  within 0.9 x its range, no shot this second and none for >= 3 s, for F_RUN_S
 A MOMENT is one crew's consecutive flagged seconds of one class (a 1 s hole merges). The rates: moments a fight and flagged
 crew-seconds a fight, per class, over every fight in the folder (and per map).
 """
@@ -30,27 +35,29 @@ import glob
 import json
 import os
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import features as F  # noqa: E402
 
-RULE_VERSION = "classes v2 (2026-10-31)"
-ORDER = ["A", "E", "C", "B", "D"]
+RULE_VERSION = "classes v4 (2026-10-31; v3 + F, A-E unchanged)"
+ORDER = ["A", "E", "C", "B", "D", "F"]
 NAMES = {
     "A": "hurt crews retreat by abandoning the squad",
     "B": "squadmates jam each other: give-way loops",
     "C": "stuck on terrain / no path, never gives up",
     "D": "drives away from where it is going",
     "E": "shot from beyond its range, no answer",
+    "F": "holds fire with an enemy in sight and in range",
 }
-OWNERS = {"A": "engage", "B": "manoeuvre", "C": "manoeuvre", "D": "orders", "E": "engage"}
+OWNERS = {"A": "engage", "B": "manoeuvre", "C": "manoeuvre", "D": "orders", "E": "engage", "F": "engage"}
 
 A_SPREAD_M = 40.0
 A_FAR_S = 3
 A_REVERSE_S = 5
 E_HITS = 5
 E_WINDOW_S = 8
+E_CLOSE_M = 10.0
 STUCK_S = 6
 C_RUN_S = 8
 B_RUN_S = 8
@@ -58,11 +65,12 @@ B_HOLD_S = 3
 D_WRONGWAY_S = 5
 D_FOLLOW_S = 3
 D_SPIN_DPS = 40.0
+F_RUN_S = 8
 
 SLOW = F.SLOW_MPS
 NOT_CREW = ("", "terrain", "no_path")
 KEEP = ("s", "tick", "x", "z", "yaw", "speed", "hp", "order", "choice", "intent", "move", "phase", "blocked", "touch_what", "to_go",
-        "gain_5", "route_off", "squad_d", "hit_dmg", "fire_far", "range", "shots", "near_enemy")
+        "gain_5", "route_off", "squad_d", "hit_dmg", "fire_far", "range", "shots", "near_enemy", "since_fire", "weap", "arc")
 
 
 def _f(r, k, d=0.0):
@@ -87,11 +95,14 @@ def _conditions(r, spin_dps):
         "b_hold": r.get("order") == "hold" and r.get("phase") == "yielding",
         "d_away": driving and speed > SLOW and _f(r, "route_off") > F.WRONGWAY_DEG,
         "d_follow": follow and (speed < -SLOW or (abs(speed) < SLOW and spin_dps > D_SPIN_DPS)),
+        "f_hold": (not r.get("arc")) and (r.get("weap") or "fire_at_will") == "fire_at_will"
+        and 0.0 <= _f(r, "near_enemy", -1.0) <= 0.9 * _f(r, "range") and int(r.get("shots", 0) or 0) == 0
+        and _f(r, "since_fire") >= F.HOLD_TICKS,
     }
 
 
 NEED = {"a_far": A_FAR_S, "a_rev": A_REVERSE_S, "stuck": STUCK_S, "c_ter": C_RUN_S, "c_wall": C_RUN_S, "b_crew": B_RUN_S,
-        "b_hold": B_HOLD_S, "d_away": D_WRONGWAY_S, "d_follow": D_FOLLOW_S}
+        "b_hold": B_HOLD_S, "d_away": D_WRONGWAY_S, "d_follow": D_FOLLOW_S, "f_hold": F_RUN_S}
 
 
 def _stuck_cause(r):
@@ -105,11 +116,17 @@ def _stuck_cause(r):
     return "D"
 
 
-def _class_of(runs, e_hits, r):
+def _e_flag(window):
+    """window: the last E_WINDOW_S seconds as fire_far of an outranged hit, else None."""
+    hits = [d for d in window if d is not None]
+    return len(hits) >= E_HITS and hits[0] - hits[-1] < E_CLOSE_M
+
+
+def _class_of(runs, e_flag, r):
     """(class, the seconds of history that made it) for this second, or ("", 0)."""
     if runs["a_far"] >= A_FAR_S or runs["a_rev"] >= A_REVERSE_S:
         return "A", A_FAR_S if runs["a_far"] >= A_FAR_S else A_REVERSE_S
-    if e_hits >= E_HITS:
+    if e_flag:
         return "E", E_WINDOW_S
     if runs["stuck"] >= STUCK_S:
         return _stuck_cause(r), STUCK_S
@@ -123,6 +140,8 @@ def _class_of(runs, e_hits, r):
         return "D", D_WRONGWAY_S
     if runs["d_follow"] >= D_FOLLOW_S:
         return "D", D_FOLLOW_S
+    if runs["f_hold"] >= F_RUN_S:
+        return "F", F_RUN_S
     return "", 0
 
 
@@ -135,7 +154,7 @@ def classify_fight(header, rows, fight=""):
     for crew, seq in by_crew.items():
         seq.sort(key=lambda r: r["tick"])
         runs = {k: 0 for k in NEED}
-        window = []  # the last E_WINDOW_S seconds' outranged hits (1 / 0)
+        window = []  # the last E_WINDOW_S seconds: the shooter's distance on an outranged hit, else None
         prev, cur = None, None
         for r in seq:
             if r.get("order") == "follow" and not r.get("follow_live"):
@@ -148,8 +167,9 @@ def classify_fight(header, rows, fight=""):
                 runs[k] = ((0 if gap else runs[k]) + 1) if held else 0
             if gap:
                 window = []
-            window = (window + [1 if _f(r, "hit_dmg") > 0.0 and _f(r, "fire_far") > 1.05 * _f(r, "range") else 0])[-E_WINDOW_S:]
-            cls, need = _class_of(runs, sum(window), r)
+            out = _f(r, "hit_dmg") > 0.0 and _f(r, "fire_far") > 1.05 * _f(r, "range")
+            window = (window + [_f(r, "fire_far") if out else None])[-E_WINDOW_S:]
+            cls, need = _class_of(runs, _e_flag(window), r)
             s = int(r["s"])
             if cur and ((cls and cls != cur["cls"]) or gap or s - cur["end_s"] > 2):
                 found.append(_close(cur, header, fight))
@@ -171,6 +191,31 @@ def classify_fight(header, rows, fight=""):
     return found
 
 
+F_CAUSES = ("support by fire", "ambush (holds fire on purpose)", "holding", "moving")
+
+
+def f_cause(rows):
+    """Class F by what the crew is doing (its intent / order, most seconds): a base of fire / support-by-fire crew whose job is
+    to shoot; a spring ambush (holds fire by design: read it apart); any other HOLD; on the move."""
+    def one(r):
+        intent = r.get("intent") or ""
+        if "support by fire" in intent:
+            return F_CAUSES[0]
+        if "ambush" in intent:
+            return F_CAUSES[1]
+        if r.get("order") == "hold" or r.get("choice") == "HOLD":
+            return F_CAUSES[2]
+        return F_CAUSES[3]
+    return Counter(one(r) for r in rows).most_common(1)[0][0]
+
+
+def e_cause(rows):
+    """Engage's split of class E: 'answering' when most seconds' intent carries E10's outranged answer (closing by cover /
+    breaking line of sight) and it still takes the hits; 'no answer' otherwise (holding, moving on, going round)."""
+    answering = sum(1 for r in rows if "outranged" in (r.get("intent") or ""))
+    return "answering" if answering * 2 > len(rows) else "no answer"
+
+
 def b_cause(rows):
     """Manoeuvre's split of class B (round 48, M1): who is in the way.
     'held crew gives way'     the crew itself is on HOLD and yields (leaves its post)
@@ -190,6 +235,10 @@ def _close(m, header, fight):
     to_s = min(m["end_s"] + 2, from_s + 12)
     if m["cls"] == "B":
         m["b_cause"] = b_cause(m["rows"])
+    if m["cls"] == "E":
+        m["e_cause"] = e_cause(m["rows"])
+    if m["cls"] == "F":
+        m["f_cause"] = f_cause(m["rows"])
     m.update({"fight": fight, "arena": arena, "seed": seed, "crew_seconds": len(m["rows"]),
               "length_s": m["end_s"] - m["run_start_s"] + 1,
               "repro": f"make spotter-clip SPOT_SEED={seed} SPOT_ARENA={arena} SPOT_CREW={m['crew']} SPOT_FROM={from_s} SPOT_TO={to_s}"})
@@ -209,6 +258,16 @@ def rates(moments, fights, maps):
                                            "crew_seconds_per_fight": round(sum(m["crew_seconds"] for m in bs if m.get("b_cause") == c)
                                                                            / max(len(fights), 1), 2)}
                                        for c in ("held crew gives way", "parked blocker", "moving squadmates")}
+    es = [m for m in moments if m["cls"] == "E"]
+    out["classes"]["E"]["by_cause"] = {c: {"moments_per_fight": round(sum(1 for m in es if m.get("e_cause") == c) / max(len(fights), 1), 3),
+                                           "crew_seconds_per_fight": round(sum(m["crew_seconds"] for m in es if m.get("e_cause") == c)
+                                                                           / max(len(fights), 1), 2)}
+                                       for c in ("no answer", "answering")}
+    fs = [m for m in moments if m["cls"] == "F"]
+    out["classes"]["F"]["by_cause"] = {c: {"moments_per_fight": round(sum(1 for m in fs if m.get("f_cause") == c) / max(len(fights), 1), 3),
+                                           "crew_seconds_per_fight": round(sum(m["crew_seconds"] for m in fs if m.get("f_cause") == c)
+                                                                           / max(len(fights), 1), 2)}
+                                       for c in F_CAUSES}
     for arena in sorted(maps):
         nf = maps[arena]
         out["by_map"][arena] = {"fights": nf}
@@ -260,6 +319,12 @@ def main():
         h.write("\nClass B by cause (moments / fight, crew-s / fight): " + "; ".join(
             f"{c} {v['moments_per_fight']:.2f} / {v['crew_seconds_per_fight']:.1f}"
             for c, v in result["classes"]["B"]["by_cause"].items()) + "\n")
+        h.write("Class E by cause: " + "; ".join(
+            f"{c} {v['moments_per_fight']:.2f} / {v['crew_seconds_per_fight']:.1f}"
+            for c, v in result["classes"]["E"]["by_cause"].items()) + "\n")
+        h.write("Class F by cause: " + "; ".join(
+            f"{c} {v['moments_per_fight']:.2f} / {v['crew_seconds_per_fight']:.1f}"
+            for c, v in result["classes"]["F"]["by_cause"].items()) + "\n")
         h.write("\n## By map (moments / fight, crew-s / fight)\n\n| map | fights | " + " | ".join(ORDER) + " |\n|---|---|"
                 + "---|" * len(ORDER) + "\n")
         for arena, d in result["by_map"].items():

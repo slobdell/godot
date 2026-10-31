@@ -59,6 +59,10 @@ class ClassRuleTest(unittest.TestCase):
         self.assertNotIn("E", classes_of(rows))  # 4 of 8
         rows = [row(s, **(hit if 10 <= s < 22 and s % 3 != 0 else {})) for s in range(1, 31)]
         self.assertIn("E", classes_of(rows))  # 5+ of 8
+        closing = [row(s, **(dict(hit_dmg=20.0, fire_far=120.0 - 4.0 * s) if 10 <= s < 20 else {})) for s in range(1, 31)]
+        self.assertNotIn("E", classes_of(closing))  # closing 4 m a second on its shooter: E10's answer
+        slow = [row(s, **(dict(hit_dmg=20.0, fire_far=120.0 - 1.0 * s) if 10 <= s < 20 else {})) for s in range(1, 31)]
+        self.assertIn("E", classes_of(slow))  # 1 m a second is not an answer
 
     def test_C_stuck_on_terrain(self):
         stuck = dict(phase="blocked", blocked="no_path", speed=0.0, gain_5=0.0)
@@ -102,6 +106,30 @@ class ClassRuleTest(unittest.TestCase):
                 for s in range(1, 31)]
         self.assertIn("D", classes_of(rows))
 
+    def test_F_holds_fire_in_range(self):
+        hold = dict(near_enemy=30.0, shots=0, since_fire=300, weap="fire_at_will")
+        self.assertIn("F", classes_of(staged(K.F_RUN_S, **hold)))
+        self.assertNotIn("F", classes_of(staged(K.F_RUN_S - 1, **hold)))
+        self.assertNotIn("F", classes_of(staged(12, **dict(hold, near_enemy=48.0))))  # beyond 0.9 x range
+        self.assertNotIn("F", classes_of(staged(12, **dict(hold, near_enemy=-1.0))))  # nobody in sight
+        self.assertNotIn("F", classes_of(staged(12, **dict(hold, weap="hold_fire"))))  # told to hold fire
+        self.assertNotIn("F", classes_of(staged(12, **dict(hold, arc=True))))  # artillery
+        self.assertNotIn("F", classes_of(staged(12, **dict(hold, since_fire=30))))  # it has just fired
+
+    def test_F_cause(self):
+        hold = dict(near_enemy=30.0, shots=0, since_fire=300)
+        self.assertEqual(classes_of(staged(10, **dict(hold, intent="HOLD - base of fire, support by fire")))["F"]["f_cause"],
+                         "support by fire")
+        self.assertEqual(classes_of(staged(10, **dict(hold, intent="HOLD - spring ambush")))["F"]["f_cause"],
+                         "ambush (holds fire on purpose)")
+        self.assertEqual(classes_of(staged(10, **hold))["F"]["f_cause"], "moving")
+
+    def test_F_is_last(self):
+        both = dict(near_enemy=30.0, since_fire=300, hit_dmg=20.0, fire_far=80.0)
+        got = classes_of(staged(12, **both))
+        self.assertIn("E", got)
+        self.assertNotIn("F", got.get("E", {}).get("cls", ""))
+
     def test_precedence_A_over_D(self):
         got = classes_of(staged(8, choice="RETREAT", squad_d=60.0, route_off=150.0))
         self.assertIn("A", got)
@@ -116,6 +144,12 @@ class ClassRuleTest(unittest.TestCase):
         self.assertIn("make spotter-clip SPOT_SEED=13121 SPOT_ARENA=crossing SPOT_CREW=Green_Guns_1", m["repro"])
         self.assertEqual(len(m["rows"]), 6 - K.A_FAR_S + 1)
         self.assertEqual((m["start_s"], m["run_start_s"], m["end_s"]), (10 + K.A_FAR_S - 1, 10, 15))
+
+    def test_E_cause(self):
+        hit = dict(hit_dmg=20.0, fire_far=80.0)
+        self.assertEqual(classes_of(staged(8, **hit))["E"]["e_cause"], "no answer")
+        ans = dict(hit, intent="HOLD - outranged: breaking line of sight")
+        self.assertEqual(classes_of(staged(8, **ans))["E"]["e_cause"], "answering")
 
     def test_B_cause_parked_blocker(self):
         jam = dict(phase="blocked", blocked="Green_Guns_2", speed=0.0)
