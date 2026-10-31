@@ -85,7 +85,8 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
 | E2a the lay carry-over | code + tests GREEN at **a61b0f302** (builder3 `native test` combat_envelope / native_gun / native_exec_state, 42 passed; the 1 failure was E2b's stage test). `--lay-carry`, **OFF** until native's twin (spec + hash sent; native's N0 first). Dev read running |
 | E2b a line under his attack | code in; `--attack-line`, **OFF** until Bar E. Its hand-built one-crew stage does NOT reach the rule (the element's contact drill hands the lone rig a slot with a line: both arms fire at 6.6 s); a dev read on the six staged windows decides whether the rule fires at all before a new test |
 | E2 dev reads | **no measurable effect from either switch** (below) -> **E2a + E2b DROPPED (R47.17), code removed** (game files byte-identical to e306ce27f; native's twin reverted) |
-| E7 his order beats RETREAT | NEXT (R47.6) |
+| E7 his order beats RETREAT | code + tests GREEN at **14ccc9b91** (builder3 `native test` press_on / native_decide / combat_envelope / native_gun / native_exec_state: 45 passed, 0 failed). `--press-on`, **OFF** until native's `_obey` twin (spec + hash sent). Dev read on route's Locks case (staged 1440) running |
+| E3 pot shots | next: switch (default OFF) + the dev read that gives the orchestrator his question in player terms (R47.17) |
 
 **His "is something broken with our targeting?" — the honest answer (staged, E1 + the gates split):** no. A gang crew is SLOW to its
 first aim at range by design: the fix time grows with the target's distance over the crew's OWN sight (`Engagement.acquire_seconds`:
