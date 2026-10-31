@@ -21,6 +21,7 @@
 #include "gate_width_native.h"
 #include "untangle_native.h"
 #include "assign_native.h"
+#include "place_native.h"
 #include "perception_native.h"
 #include "incoming_native.h"
 #include "shell_native.h"
@@ -196,6 +197,12 @@ public:
 	// Round 45 (R45.16): SelectionSquads._assign's exhaustive search (assign_native.cpp).
 	PackedInt32Array assign_least_total(const PackedVector3Array &centers, const PackedVector3Array &slots) const {
 		return ::godot::assign_least_total(centers, slots);
+	}
+	// Round 47 (N2): TacticsFormation.place (place_native.cpp); NativePlace marshals the catalogue's part and the switches.
+	Array formation_place(const Array &members, const String &formation, const Vector3 &anchor, const Vector3 &heading, double spacing,
+			const Dictionary &opts, const Vector2 &extent, const PackedFloat64Array &tough, const PackedStringArray &roles,
+			const PackedInt32Array &flags, const String &lateral_floor) const {
+		return ::godot::formation_place(members, formation, anchor, heading, spacing, opts, extent, tough, roles, flags, lateral_floor);
 	}
 	// Round 28 (N6.3): perception's batched pass (perception_native.cpp); the rays it cast, for SimProfile.
 	bool perception_configure(const Dictionary &config);
