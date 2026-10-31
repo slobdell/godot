@@ -75,6 +75,23 @@ def main(argv):
     still = [leg for leg in travel if leg.get("goal_moved_m", 0.0) <= 5.0]
     print(row("travel, goal still (<=5 m)", still, detour))
     print(row("travel, goal moved (>5 m)", [leg for leg in travel if leg.get("goal_moved_m", 0.0) > 5.0], detour))
+    planned = [leg for leg in travel if leg.get("shortest_goal_m", -1) >= 15.0 and leg.get("planned_m", -1) > 0]
+    if planned:
+        ratios = [leg["planned_m"] / leg["shortest_goal_m"] for leg in planned]
+        print("THE ROUTE (first route planned v the navmesh shortest to its goal, travel legs): n %d  p50 %.3f  p99 %.3f  max %.3f  >1.05x %d  >1.3x %d" % (
+            len(planned), quantile(ratios, 0.5), quantile(ratios, 0.99), max(ratios), sum(r > 1.05 for r in ratios), sum(r > 1.3 for r in ratios)))
+        arrived = [leg for leg in planned if leg.get("arrived") and leg.get("goal_moved_m", 0.0) <= 5.0]
+        if arrived:
+            ratios = [leg["driven_m"] / leg["planned_m"] for leg in arrived]
+            print("THE DRIVE (driven v planned, legs that arrived at a goal that stayed put): n %d  p50 %.3f  p90 %.3f  p99 %.3f  >1.3x %.1f%%  >1.5x %.1f%%  reversed %.1f%% of metres, held %.0f s" % (
+                len(arrived), quantile(ratios, 0.5), quantile(ratios, 0.9), quantile(ratios, 0.99), 100.0 * sum(r > 1.3 for r in ratios) / len(arrived),
+                100.0 * sum(r > 1.5 for r in ratios) / len(arrived), 100.0 * sum(l["reverse_m"] for l in arrived) / max(1.0, sum(l["driven_m"] for l in arrived)),
+                sum(l["held_s"] for l in arrived)))
+            print("  worst drives (arrived, goal still):")
+            for leg in sorted(arrived, key=lambda l: l["driven_m"] - l["planned_m"], reverse=True)[:10]:
+                print("    %-8s s%-6d %-22s %-14s ticks %5d-%5d  driven %6.1f  planned %6.1f  x%.2f  reversed %5.1f  held %5.1f s  replans %d" % (
+                    leg["arena"], leg["seed"], leg["n"], leg["unit"], leg["tick0"], leg["tick1"], leg["driven_m"], leg["planned_m"],
+                    leg["driven_m"] / leg["planned_m"], leg["reverse_m"], leg["held_s"], leg["replans"]))
     print("by option (all legs):")
     for option in sorted({leg["option"] for leg in legs}):
         print(row("  " + (option or "(no brain)"), [leg for leg in legs if leg["option"] == option], detour))
