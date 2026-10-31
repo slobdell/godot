@@ -91,8 +91,9 @@ beam's base so its own bogie block sinks into our beam. **Meshy spend this round
 Laptop (UHD 620, laptop preset, under the lock, 120 frames): the car costs nothing measurable (rail 9.50/9.90 v rail + car
 8.80/9.85, interleaved, n=2). **C47.10 knob:** the TRIM monorail read +1.4/+1.5 ms over the floor twice, so under the laptop preset
 the monorail + deck alone are plain (9.15 v floor 9.00); desktop keeps trim; traps/pipes/crane keep trim everywhere (asked the lead
-via the orchestrator in player terms). Stopped my own stale queued check of 04adca907 (4 commits behind). **b9f13f946**: quick
-291/0 builder3, full check queued (name it here).
+via the orchestrator in player terms). Stopped my own stale queued check of 04adca907 (4 commits behind). **b9f13f946 GREEN**
+(builder3, `make check exited 0`, 3552 passed / 0 failed, 28 targets ALL JUDGED, 23:41); named to the orchestrator, who merges it
+into main's next batch check. The laptop-preset monorail fallback is accepted (his standing rule: perf cuts ship as presets).
 
 **His picks so far:** looks (P1, db `picks/*`): door A, screen C, overpass C, traps A, pipes B, crane A; 21 lines kept.
 Trim trial (P1b, db `trim/*`): TRIM on all four. Train (R47.38): page https://claude.ai/artifact/9PNjR9rWKNXQXBWQ9sNsLC,
