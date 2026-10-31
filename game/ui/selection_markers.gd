@@ -41,7 +41,11 @@ var reveal_all := false
 var team := Match.Team.GREEN
 
 ## Round 5 (X4, CP1): one MultiMesh per ring kind, not a mesh per vehicle (render counted 61 separate draws at 30 a side).
-const KINDS := ["selected", "friendly", "enemy", "inspected", "commander", "focused"]
+const KINDS := ["selected", "friendly", "enemy", "inspected", "commander", "focused", "ordered"]
+## Round 47 (orders O5, C47.5): a vehicle that just received his order also wears an "ordered" ring that grows from its own ring
+## out to CUE_GROW_M wider and fades (RtsControls.order_cue); its layer is empty, so drawn by nobody, between orders.
+const CUE_GROW_M := 4.0
+const CUE_ALPHA := 0.95
 
 var _layers := {}  # kind → MultiMeshInstance3D
 var _rings := {}  # tank name → {"kind", "visible", "position"}
@@ -165,6 +169,12 @@ func refresh() -> void:
 		var ahead := -shown.basis.z
 		var basis := Basis(Vector3.UP, atan2(-ahead.x, -ahead.z)).scaled(Vector3(half.x + BAND_M, 1.0, half.y + BAND_M))
 		(placed.get_or_add(kind, []) as Array).append([Transform3D(basis, at), half])
+		if tank.team == team:
+			var cue := RtsControls.order_cue(tank_name)
+			if cue >= 0.0:
+				var grown := half + Vector2.ONE * (CUE_GROW_M * cue)
+				var cue_basis := Basis(Vector3.UP, atan2(-ahead.x, -ahead.z)).scaled(Vector3(grown.x + BAND_M, 1.0, grown.y + BAND_M))
+				(placed.get_or_add("ordered", []) as Array).append([Transform3D(cue_basis, at), grown, cue])
 	if _rings.size() != touched:
 		var seen := {}
 		for node in tanks:
@@ -189,7 +199,8 @@ func refresh() -> void:
 		multimesh.visible_instance_count = transforms.size()
 		for i in transforms.size():
 			var half: Vector2 = transforms[i][1]
-			multimesh.set_instance_custom_data(i, Color(half.x, half.y, BAND_M, 0.0))
+			# C47.5: w = how far the cue's pulse is (it fades as it grows); 0 for every other ring.
+			multimesh.set_instance_custom_data(i, Color(half.x, half.y, BAND_M, float(transforms[i][2]) if (transforms[i] as Array).size() > 2 else 0.0))
 			multimesh.set_instance_transform(i, transforms[i][0])
 
 
@@ -202,6 +213,8 @@ func _material(kind: String) -> ShaderMaterial:
 			color = Color(GameTheme.ui["commander"], SELECTED_ALPHA)
 		"focused":
 			color = Color(1, 1, 1, SELECTED_ALPHA)
+		"ordered":
+			color = Color(1, 1, 1, CUE_ALPHA)
 		"selected":
 			color = Color(GameTheme.ui["friendly"], SELECTED_ALPHA)
 		"friendly":
@@ -223,7 +236,7 @@ func _material(kind: String) -> ShaderMaterial:
 
 
 ## One unit quad in the XZ plane. Every marker is this mesh; its shape comes from the shader and its size from the
-## instance transform, so all six kinds still cost one draw call each however many vehicles are on screen.
+## instance transform, so all seven kinds still cost one draw call each (the cue's only while it plays) however many vehicles are on screen.
 static func _quad_mesh() -> ArrayMesh:
 	if _quad == null:
 		var v := PackedVector3Array([Vector3(-1, 0, -1), Vector3(1, 0, -1), Vector3(-1, 0, 1),
@@ -255,9 +268,11 @@ uniform float band_scale = 1.0;
 
 varying vec2 local_m;
 varying vec3 shape;
+varying float fade;
 
 void vertex() {
 	shape = INSTANCE_CUSTOM.xyz;                       // half-width, half-length, band (metres)
+	fade = 1.0 - INSTANCE_CUSTOM.w;                    // C47.5: the order cue fades as it grows (0 elsewhere: no fade)
 	local_m = VERTEX.xz * (shape.xy + vec2(shape.z));  // the quad is the shape plus its band
 }
 
@@ -277,7 +292,7 @@ void fragment() {
 		discard;
 	}
 	ALBEDO = ring_color.rgb;
-	ALPHA = ring_color.a * on;
+	ALPHA = ring_color.a * on * fade;
 }
 """
 	return _shader

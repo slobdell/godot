@@ -94,7 +94,7 @@ func summary() -> Array:
 		var included := selected == number or (chosen.size() > members.size() and _living_in(members, chosen))
 		result.append({"number": number, "key": ControlGroups.key_label(number), "roles": roles,
 				"health": health / roles.size(), "selected": selected == number, "included": included,
-				"state": String(states.get(number, "idle"))})
+				"state": String(states.get(number, "idle")), "cue": snappedf(RtsControls.group_cue(members), 0.05)})
 	return result
 
 
@@ -211,6 +211,11 @@ func _draw_timed() -> void:
 		var rect: Rect2 = _rects[group["number"]]
 		var lit: bool = group["selected"] or group["included"]
 		batch.fill(rect, Color(CyberStyle.CARD, 0.92))
+		# C47.5 (round 47): the chip of a group that just received his order flashes white, fading through each pulse.
+		var cue := float(group.get("cue", -1.0))
+		if cue >= 0.0:
+			batch.fill(rect, Color(1, 1, 1, 0.55 * (1.0 - cue)))
+			batch.outline(rect, Color(1, 1, 1, 1.0 - 0.5 * cue), 3.0 * s)
 		batch.outline(rect, Color(CyberStyle.CYAN, 0.95 if lit else 0.35), 2.0 if lit else 1.0)
 		batch.text(font, rect.position + Vector2(6.0 * s, rect.size.y * 0.62), String(group["key"]), roundi(16.0 * s),
 				CyberStyle.WHITE if lit else CyberStyle.TEXT)

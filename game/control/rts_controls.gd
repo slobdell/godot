@@ -210,11 +210,48 @@ func _ready() -> void:
 
 
 ## C47.4: every order the controls give (a squad's task, a crew's command, a formation pick), for the open input's row.
+## C47.5: and the cue on the vehicles that receive it.
 func _count_order(command: Dictionary, error: String) -> void:
 	if error != "" or String(command.get("verb", "")) == "":
 		return
 	_orders_given += 1
 	note_input("order:%s" % String(command["verb"]))
+	var now := Time.get_ticks_msec()
+	for unit_name: Variant in command.get("units", []):
+		_cued[String(unit_name)] = now
+
+
+## Round 47 (orders O5, C47.5): THE ORDER'S RECIPIENT, made obvious the moment he gives it (his Sumps game: the screen order
+## meant for his tanks went to his artillery and nothing on screen said so). The vehicles that receive an order pulse:
+## SelectionMarkers draws CUE_PULSES rings growing out of each one's own ring, and the GroupBar chip of their group flashes,
+## over CUE_PULSES x CUE_PULSE_S of real time (it plays while paused, when he gives most of his orders). Nothing else on screen.
+const CUE_PULSE_S := 0.45
+const CUE_PULSES := 2
+static var _cued := {}  # unit name -> Time.get_ticks_msec() of the last order it received from these controls
+
+
+## How far into its current pulse `unit_name`'s cue is (0..1), or -1 when it has none. `now_ms` for tests.
+static func order_cue(unit_name: String, now_ms := -1) -> float:
+	if not _cued.has(unit_name):
+		return -1.0
+	var elapsed := float((Time.get_ticks_msec() if now_ms < 0 else now_ms) - int(_cued[unit_name])) / 1000.0
+	if elapsed < 0.0 or elapsed >= CUE_PULSE_S * CUE_PULSES:
+		return -1.0
+	return fmod(elapsed, CUE_PULSE_S) / CUE_PULSE_S
+
+
+## The strongest cue among `names` (0..1 progress of the freshest pulse), or -1.
+static func group_cue(names: Array, now_ms := -1) -> float:
+	var best := -1.0
+	for unit_name: Variant in names:
+		var cue := order_cue(String(unit_name), now_ms)
+		if cue >= 0.0 and (best < 0.0 or cue < best):
+			best = cue
+	return best
+
+
+static func clear_cues() -> void:
+	_cued.clear()
 
 
 func _process(delta: float) -> void:
@@ -795,10 +832,15 @@ func assign_task(verb: String, extra: Dictionary) -> String:
 		return _refuse("a move task needs somewhere to go")
 	if verb == "move":
 		task["drills"] = false  # a plain move: formed up to the spot, no contact drills (squad X4)
+	var fitted: bool = task["verb"] == "screen" and BATTERY_SCREEN and all_artillery(selection.units)
+	if fitted:
+		task["verb"] = "support_by_fire"  # O6: as in _task_squad
 	var error := element.assign(task)
 	_squads_changed()
 	var command := UnitCommand.make(selection.units, verb, extra)
 	command["task"] = true  # OrderFeedback confirms a squad's task at its anchor (its crews' orders are the leader's)
+	if fitted:
+		command["as"] = "support_by_fire"
 	command_issued.emit(command, error)
 	if error == "":
 		_acknowledge(command)
@@ -2061,14 +2103,39 @@ func _task_squad(squad: Dictionary, verb: String, extra: Dictionary, acknowledge
 		return _refuse("a move task needs somewhere to go")
 	if verb == "move":
 		task["drills"] = false
+	var fitted: bool = task["verb"] == "screen" and BATTERY_SCREEN and all_artillery(units)
+	if fitted:
+		task["verb"] = "support_by_fire"  # O6: his screen, as a battery screens: from its firing position, not on the line
 	var error := element.assign(task)
 	_squads_changed()
 	var command := UnitCommand.make(units, verb, extra)
 	command["task"] = true  # OrderFeedback confirms a squad's task at its anchor (its crews' orders are the leader's)
+	if fitted:
+		command["as"] = "support_by_fire"  # the recorder's order row keeps his verb and says how it was taken
 	command_issued.emit(command, error)
 	if error == "" and acknowledge:
 		_acknowledge(command)
 	return error
+
+
+## Round 47 (orders O6; his Sumps game: his screen order reached his artillery, which "obeyed and drove its mortars north to
+## screen", into the front line): a SCREEN task to a squad that is all artillery is taken as SUPPORT BY FIRE on the same point:
+## the battery takes its firing position covering that line (its standoff, ElementPlan's battery rule) and shells what comes
+## to it, rather than standing on the line with its mortars. Every other squad's screen is as before. `--battery-screen=off`.
+static var BATTERY_SCREEN := not OS.get_cmdline_user_args().has("--battery-screen=off")
+
+
+## Whether every living vehicle of `units` is artillery (Units.role_of); false for none.
+func all_artillery(units: Array) -> bool:
+	var any := false
+	for unit_name: Variant in units:
+		var tank := game_match.tanks.get_node_or_null(NodePath(String(unit_name))) as Tank if game_match != null else null
+		if tank == null or not tank.is_alive():
+			continue
+		if Units.role_of(tank.unit_id) != "artillery":
+			return false
+		any = true
+	return any
 
 
 ## Round 41 (O2): the first living Tank of `units` (null when none).
