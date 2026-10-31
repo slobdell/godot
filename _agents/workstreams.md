@@ -239,6 +239,10 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   alone caps him near 10 fps. **GO, after bar-blocking twins:** (a) re-price native_matchups / native_scan at ~46 crews (ON if faster or
   neutral, with proof); (b) t.poll's order-progress pieces into the native controller (twin proof on his four); (c) report-only read of
   the ticks-a-frame cap.
+  **(c) read (native, report only):** `common/max_physics_steps_per_frame=3`, 30 ticks/s. **Laptop = ~3.0x builder3 MEASURED** (his
+  Crossing .perf, laptop preset, e306ce27f: tick 17.0 ms mean v builder3's replay 5.5-5.9, n 3). Frame model F = R / (1 - T/33.3): at
+  the cost cap T ~22 ms, R ~27 ms -> F ~79 ms (12.6 fps, ~2.4 ticks a frame), matching orders' read. A cap of 2 gives ~14 fps for a 0.94
+  clock: **no cap change (ruled).** Each ms off T saves ~2.4 ms a frame, each ms off R ~3 ms.
 
 - **R47.28 (his ask, 2026-10-30 evening) Mapkit tests Material Maker for the kit's shared trim sheet and presents it to him on a
   looks page.** The orchestrator's read of the repo (github.com/RodZill4/material-maker, 7d6daae 2026-10-24, MIT, Godot 4.7 like ours):
