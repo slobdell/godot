@@ -2325,6 +2325,23 @@ struct Drive {
 		return mover != nullptr && (int64_t)mover->get(k.stalled_ticks) >= c.CHAIN_RELEASE_TICKS;
 	}
 
+	// Round 48 (manoeuvre M2, `heldpost`): Movement.heldpost_on() / held_at_post(), line by line. Absent on a tree without the rule
+	// (no Movement.heldpost_refusals): off, so main's yield is byte-identical.
+	bool heldpost_on() {
+		static const StringName refusals("heldpost_refusals");
+		static const String heldpost("heldpost");
+		return script->get(refusals).get_type() != Variant::NIL && !traffic_off(heldpost);
+	}
+	// `ctl as TankBrain` with verb hold and no move of its own (HOLD's return to its post is a move_to).
+	bool held_at_post() {
+		static const StringName order("order"), move_order("move_order");
+		static const String verb("verb"), type("type"), hold("hold"), move_to("move_to"), none("");
+		const Variant o = ctl->get(order); // Nil on a plain OrderController: `ctl as TankBrain` is null there
+		if (o.get_type() != Variant::DICTIONARY || String(((Dictionary)o).get(verb, none)) != hold) {
+			return false;
+		}
+		return String(((Dictionary)ctl->get(move_order)).get(type, none)) != move_to;
+	}
 	// Round 47 (manoeuvre M5, R47.30, `--traffic-on=holdyield`): Movement._holdyield_veto(point), line by line. Absent on a tree
 	// without the rule (no Movement.holdyield_vetoes): never vetoes, so main's yield is byte-identical.
 	bool holdyield_veto(const Vector3 &point) {
@@ -3281,6 +3298,14 @@ bool Drive<V>::ask(const String &asker, const Vector3 &from, const Vector2 &dire
 		}
 		sadd(k.underfire_gives, 1);
 	}
+	// Round 48 (manoeuvre M2, `heldpost`): a crew on HOLD at its post refuses every ask but "behind" and offers the pass lane
+	// (0 when there is none), before parkedpass, as Movement.ask.
+	if (via != behind && heldpost_on() && held_at_post()) {
+		static const StringName refusals("heldpost_refusals");
+		sadd(refusals, 1);
+		v.set_pass_offer(pass_lane(asker, from, direction));
+		return false;
+	}
 	// Round 44 (native N3, manoeuvre M3 `--traffic-on=parkedpass`, C44.4): a parked crew asked by another squad's crew with a
 	// lane past it refuses with the offer. `parkedpass_on() and via != "behind" and _parked_for_pass(asker)`: under way is
 	// read natively (phase != "arrived"); the rest of _parked_for_pass (grouped, the asker's hull, the elements) is the
@@ -3448,6 +3473,12 @@ bool Drive<V>::begin_yield(const String &other, const Vector3 &from, const Vecto
 		if (chain && chain_release_on() && (int64_t)sget(k.chain_spots_skipped) > chain_skipped) {
 			sadd(k.chain_holds_refused, 1);
 			sadd(k.chain_refusals, 1);
+			return false;
+		}
+		// Round 48 (manoeuvre M2, `heldpost`): a PARKED crew (not under way) refuses instead of giving way in place.
+		if (heldpost_on() && String(v.phase()) == String("arrived")) {
+			static const StringName holds_refused("heldpost_holds_refused");
+			sadd(holds_refused, 1);
 			return false;
 		}
 		sadd(k.yield_holds, 1);

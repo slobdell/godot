@@ -65,6 +65,25 @@ orchestrator); N6 waits on his `inp` recording; stretch the laptop fps read at t
   reloading, 571 suppressed; green champion, rust a6 so both variant branches run) 0 mismatches (builder3, 4c037bebf); his four
   round-46 replays under TANK_NATIVE_CONTACTS_VERIFY=1 (builder3, 771635051): Crossing 2000+, Locks 1500+, Sumps 2000+, Parade 2000+
   tables, 0 mismatches. check's native-verify-scenarios verifies contacts from now on.
+- **N2 price:** in-run A/B (BRAINS_AB, 30-tick blocks, controller band cpu), cost cap = gangs v syndicate 3500 on Crossing seed 3, 150 s,
+  builder3, f0900328a, n 4, hashes equal: native -1.9 / -1.8 / -1.6 / -0.7 % (i.e. the C++ arm read SLOWER). Direct per-call timing
+  inside test_native_contacts (baed43f15 = keys as prebuilt Variants, builder3, 402 tables): GDScript 19.9 us a table, C++ 14.5 us
+  (-27 %). Both tables a refresh = ~13 v ~10 us a tick builder3 (~3.5 us a tick saved; x3.0 laptop = ~10 us a tick, ~25 us a frame at
+  2.5 ticks a frame): far below a frame read's noise. Round 47's "0.156 ms a tick" was the whole prologue bracket, not this table.
+- **N3 the same-process carry-over: FOUND and FIXED (R48.5).** test_native_rematch (the CPU sliver lab, 300 ticks, three runs in
+  one process, builder3 f0900328a): runs 2 and 3 equal each other and part from run 1 at tick 2 (0.32 m worst, Rust_Hunters_3). The
+  root Viewport's World3D (physics space + navigation map) outlives a scene / a freed match. A fresh World3D before each run: all
+  three identical tick for tick. `FreshWorld.apply` (game/ai/native/fresh_world.gd): a new World3D with the old one's environments,
+  the old one HELD through the swap (dropped first, the engine frees it inside the setter and prints "Parameter scenario is null"
+  per swap; the bare swap and an own_world_3d toggle both did). Called in Main._enter_tree (every REMATCH / ARMY / garage FIGHT) and
+  per test file in tests/run_tests.gd. 9149ff538 builder3: 3 runs identical, 0 engine errors. `--fresh-world=off` = round 47's.
+- **N5 (R47.18) the layout's bake timing: FIXED.** ArmyLayout.deploy calls NavigationServer3D.map_force_update when the map is
+  not ready (the arena's region joins by a queued server command; a "has regions" guard left all 20 same-frame slots unchecked).
+  test_native_layout_sync (9149ff538, builder3): an army laid in the bake's own frame and one laid 3 frames later stand on the same
+  spots on Crossing, Locks, Sumps, 0 unchecked either way (before: 20 unchecked in the same frame). `--layout-sync=off`. No replay
+  stamp entry: his replays teleport every crew to his recorded spawn (R47.18), and his interactive starts already laid checked
+  (the sync had landed); it changes headless / same-frame starts only. The sim-baseline may move (headless matches laid
+  unchecked before): the full check says; the orchestrator adopts.
 - **N1:** orders' O1 (27cda7b28, follow station by heading of travel) needs NO twin: the follow goal is `Orders.goal_of` /
   `goal_position`, GDScript on every path (decide_native only proposes FOLLOW; no C++ reads a follow's slot). Its stamp entry
   `follow_travel` is in its commit (lesson 354). Manoeuvre's Bar B and engage's Bar E11: nothing filed yet.

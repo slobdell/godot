@@ -3,7 +3,9 @@ extends TestCase
 ## Crossing under an ambush task) run REMATCH_RUNS times in ONE process, each from a freed world and an empty navigation map, and each
 ## run's per-tick hull poses compared with the first run's: a process's earlier matches must not move a later one (rematches, netplay,
 ## the sliver test R47.47). Prints REMATCH_ROW run k first_part_tick T worst_m M crew C (T = -1: identical for every tick).
-## REMATCH_PROBE=on runs it (measurement until the carry-over is fixed); REMATCH_RESET=<what> applies a candidate reset between runs.
+## Round 48 (N3, R48.5): each run starts with FreshWorld.apply (the game's Main._enter_tree path), as every match now does; the
+## control arm REMATCH_RESET=none (the old shared world) parts at tick 2 (0.32 m, builder3 f0900328a). Other arms: world (a bare
+## swap: an engine error per swap), own (own_world_3d toggled: an error per drop), held (= FreshWorld.apply).
 
 const TICKS := 300
 const POSE := {"Rust_Hunters_1": [Vector2(-26.7, -7.3), -76.0, "syn_ifv"], "Rust_Hunters_2": [Vector2(-31.5, -6.9), 163.0, "syn_ifv"],
@@ -12,7 +14,11 @@ const POSE := {"Rust_Hunters_1": [Vector2(-26.7, -7.3), -76.0, "syn_ifv"], "Rust
 
 func _run(names: Array) -> Array:
 	var reset := OS.get_environment("REMATCH_RESET")
-	if reset.contains("world"):
+	if reset == "":
+		reset = "held"
+	if reset.contains("none"):
+		pass
+	elif reset.contains("world"):
 		# A fresh World3D: a new physics space (Jolt's bodies, broadphase, contact cache) and a new navigation map.
 		tree.root.world_3d = World3D.new()
 	elif reset.contains("held"):
@@ -47,9 +53,6 @@ func _run(names: Array) -> Array:
 
 
 func test_a_rematch_in_one_process_is_the_first_match() -> void:
-	if OS.get_environment("REMATCH_PROBE") != "on":
-		print("PENDING test_a_rematch_in_one_process_is_the_first_match (native N3): REMATCH_PROBE=on runs it")
-		return
 	var names := POSE.keys()
 	names.sort()
 	var runs := maxi(2, int(OS.get_environment("REMATCH_RUNS")))
