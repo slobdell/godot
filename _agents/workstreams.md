@@ -420,6 +420,19 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar E3 VERDICT (2026-10-30 ~21:00 PDT): FAILS on D1 by 0.006 s (z -1.637 v the one-sided 1.645); D2 and every guard pass.**
+  Code frozen at **d3b3fe918**, its full check GREEN (builder3 `make check exited 0`, 3526 / 0, 28 ALL JUDGED, sim-baseline
+  unmoved); the runs stamped 87840fa1e (= d3b3fe918 + `_agents/` docs only). builder3, native ON, War Rigs, 12649-12696, 48 paired,
+  0 errors. **D1 FAIL:** first_shot (run mean, never = the window) 7.74 -> 6.43 s, diff -1.310104, se 0.800248, bound -1.316408.
+  **D2 PASS:** sooner or identical 36/48 = 75 % (33 strictly). G1 PASS friendly hits 6 -> 2. G2 PASS his crews' deaths 5 -> 7 (limit
+  8.7). G3 PASS hits a minute 22.7 -> 26.2. G4 PASS lane probe (12649-12672, n 24): friendly hits 0 -> 1 (limit 1.0), held_s
+  15.82 -> 14.36. **Reported:** accuracy 79 % -> 73 % (-7 pts, se 4); shots 3.96 -> 4.48 a run; first hit 9.73 -> 8.74 s; target
+  dies 14.21 -> 14.30 s; per CREW (98 that fired in both arms): first round median **1.55 -> 0.80 s**, 79 sooner / 11 same / 8
+  later; his six staged fights (frozen tree, native on, n = 1 each): his hits 32/159 (20 %) -> 33/171 (19 %), the CPU's 362/438
+  (83 %) -> 283/412 (69 %), friendly 0 -> 1 (CPU). **Why D1's run mean is noisy:** a crew that never fires counts as the whole window,
+  and the window ends when the target dies, so it differs by arm (12692: OFF 16.9 s window, ON 60 s with one crew never firing =
+  +21.35 s; 12665: -14.97 s the other way). As filed, the fail stands (lesson 345). Evidence `~/overnight-engage/r47/barE3/`.
+
 - **Bar P THE MAP-KIT TWINS CHANGE THE FIGHT (mapkit; proposed 2026-10-30 ~21:00, filed here by the orchestrator BEFORE any number).**
   Pairs parade v parade_traps, parade v parade_rail, crossing v crossing_screens; arena-series style, fresh seeds 12901-12932 (16 a pair),
   counterbalanced (swap bases, both army orders), native ON, judged at each map's end. **Deciding:** the twin changes the fight's shape:

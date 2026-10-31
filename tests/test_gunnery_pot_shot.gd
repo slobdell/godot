@@ -1,5 +1,5 @@
 extends TestCase
-## Round 47 (engage E3, R47.17): POT SHOTS behind `--pot-shot` (default OFF, his call). A crew whose only held gate is the
+## Round 47 (engage E3, R47.17 / R47.37): POT SHOTS behind `--pot-shot` (default ON since his "Ship it ON"; `=off` is today's). A crew whose only held gate is the
 ## acquisition fix, laid at least POT_SHOT_AFTER_S, its target inside the band, snaps a round off with its aim off by what
 ## is left of the fix. Staged in the open: a gun on standing orders (fire at will) and a still target 30 m off (inside the band), on
 ## whichever execute path the build runs (native's NativeGun / NativeExec twin carries the pot shot, pair/native-e3).
@@ -7,8 +7,12 @@ extends TestCase
 const SHOOTER_AT := Vector3(-100.0, 0.0, 40.0)
 const TARGET_AT := Vector3(-100.0, 0.0, 10.0)  # 30 m: inside the scrap cannon's 36 m band
 
+const ARENA := preload("res://game/arena/arena.tscn")
+const MATCH := preload("res://game/match/match.tscn")
+
+
 func teardown() -> void:
-	Gunnery.POT_SHOT = false
+	Gunnery.POT_SHOT = Gunnery.POT_SHOT_DEFAULT
 	super.teardown()
 
 
@@ -39,3 +43,21 @@ func test_a_pot_shot_goes_before_the_fix_completes() -> void:
 	assert_true(off > 0, "the stage: today's crew fires inside the window (%d)" % off)
 	assert_true(on > 0 and on < off, "on: the snap shot goes before today's (%d v %d ticks)" % [on, off])
 	assert_true(on >= int(Gunnery.POT_SHOT_AFTER_S * SimClock.TICK_RATE), "never before POT_SHOT_AFTER_S of lay (%d ticks)" % on)
+
+
+## The check's own find (d4cf542c7, test_rules_spread): a railgun crew braking for its long pot shot dropped the trigger the
+## tick the barrel lagged the wander, the plant read that as the shot gone and cancelled the halt, and its cooldown let the
+## next round leave at 98 m on 11 m/s. While the plant brakes and the hull rolls, a pot shot holds its trigger.
+func test_a_pot_shot_holds_its_trigger_while_the_hull_brakes() -> void:
+	var arena := add_to_tree(ARENA.instantiate())
+	var game_match: Match = MATCH.instantiate()
+	add_to_tree(game_match)
+	game_match.set_meta("arena", arena)
+	var crew := game_match.spawn_tank("Green_Rail_1", 0, Match.Team.GREEN, "syn_tank")
+	crew.place(Vector3(-110.0, 0.0, 90.0), 0.0)
+	crew._speed = 0.8 * crew.max_forward_speed
+	assert_true(not Gunnery.pot_shot_holds(crew), "rolling, no halt: the barrel decides, as before")
+	crew.short_halt_seconds = 1.0
+	assert_true(Gunnery.pot_shot_holds(crew), "rolling, braking for the round: the trigger holds")
+	crew._speed = 0.0
+	assert_true(not Gunnery.pot_shot_holds(crew), "steady: the round goes only with the barrel on it")
