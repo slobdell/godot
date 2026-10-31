@@ -19,7 +19,9 @@ const STRIPS := 22
 const TARP := Color(0.11, 0.12, 0.13)
 const AD_TARP := Color(0.32, 0.12, 0.22)
 
-var _strips := MultiMeshInstance3D.new()
+## The strip curtain's draw, made only when the strips are built (a member initializer would leak an orphan node on the
+## steam branch: 2bf534df2's successor c2ff150a2 went red on exactly that, "ObjectDB instance was leaked at exit").
+var _strips: MultiMeshInstance3D
 ## "" = by preset; "steam" or "strips" forces it (tests/mapkit/looks_gallery.gd's --screen-look).
 static var look := ""
 
@@ -110,6 +112,7 @@ func _build_strips() -> void:
 		var basis := Basis(Vector3.BACK, rng.randf_range(-0.03, 0.03)).scaled(Vector3(0.58, length, 0.05))
 		multimesh.set_instance_transform(i, Transform3D(basis, Vector3(x, SIZE.y - 0.5 - length / 2.0, rng.randf_range(-0.08, 0.08))))
 		multimesh.set_instance_color(i, AD_TARP if i % 5 == 2 else TARP)
+	_strips = MultiMeshInstance3D.new()
 	_strips.multimesh = multimesh
 	_strips.name = "Strips"
 	FxMultiMesh.never_interpolated(_strips)

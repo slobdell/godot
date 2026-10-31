@@ -35,10 +35,11 @@ const LEG := Vector3(1.2, 14.0, 1.2)
 const GANTRY_BEAM := Vector2(2.2, 2.0)
 const CRANE_YELLOW := Color(0.62, 0.48, 0.1)
 
-## P1b (R47.28, his Material Maker trial): "plain" (flat colour + painted glow, what ships) or "trim" (the shared trim
-## sheet, assets/props/trim/, rendered by Material Maker: `make mapkit-trim`). Read when a kind's mesh is first built;
-## `--kit-look=trim` (the gallery) sets it before anything is drawn.
-static var look := "plain"
+## P1b (R47.28, his Material Maker trial): "trim" (the shared trim sheet, assets/props/trim/, rendered by Material Maker:
+## `make mapkit-trim`) or "plain" (flat colour + painted glow). HE PICKED THE TRIM SHEET for all four pieces (traps,
+## monorail, pipes, crane; the trial page's db, R47.38), so it ships ON; `--kit-look=plain` is the escape. Read when a
+## kind's mesh is first built.
+static var look := "plain" if OS.get_cmdline_user_args().has("--kit-look=plain") else "trim"
 ## The trim sheet's bands (v ranges, top to bottom; assets/props/trim/trim_sheet.ptex): a box face or prism maps into one.
 const PLATE := Vector2(0.0, 0.40)
 const HAZARD := Vector2(0.40, 0.55)

@@ -53,6 +53,10 @@ const DIRECTIONS := {
 	"built_door_open": ["door", "_built_door", true],
 	"built_pipes": ["pipes", "_built_pipes", false],
 	"built_crane": ["crane", "_built_crane", false],
+	# R47.38: the people's monorail TRAIN (his note: "the people's monorail will be far from Syndicate quality").
+	"train_a": ["train", "_train_commuter", false],
+	"train_b": ["train", "_train_cattle", false],
+	"train_c": ["train", "_train_pods", false],
 }
 
 var camera := Camera3D.new()
@@ -603,3 +607,78 @@ func _built_crane(root: Node3D, _open: bool) -> void:
 	for i in stack.size():
 		_slot(root, String(stack[i]), Vector3(-5.0 + 7.0 * i, 0.0, -8.0), 90.0, {"stack": 2 - i % 2})
 	_dozer(root, Vector3(14.0, 0, 9.0), 200.0)
+
+
+# --- R47.38: the people's monorail train (concepts on the built rail, the trim sheet) ------------------------------
+
+## A box of `size` at `center` wearing the trim sheet's `band`, tinted (MapkitYard's UV mapping and material).
+func _trim_box(root: Node3D, size: Vector3, center: Vector3, band: Vector2, tint := Color.WHITE, yaw_deg := 0.0) -> MeshInstance3D:
+	var st := MapkitYard.surface()
+	MapkitYard.box(st, Transform3D.IDENTITY, size, band)
+	st.generate_normals()
+	st.generate_tangents()
+	st.set_material(MapkitYard.trim_material(tint))
+	var mesh := MeshInstance3D.new()
+	mesh.mesh = st.commit()
+	mesh.position = center
+	mesh.rotation.y = deg_to_rad(yaw_deg)
+	root.add_child(mesh)
+	return mesh
+
+
+## The built rail the trains ride: pillars every 10 m along x at z = -4, decks on top (trim look).
+func _rail(root: Node3D) -> void:
+	MapkitYard.look = "trim"
+	for i in 9:
+		_slot(root, "monorail", Vector3(-40.0 + 10.0 * i, 0.0, -4.0), 90.0)
+		_slot(root, "monorail_deck", Vector3(-40.0 + 10.0 * i, 0.0, -4.0), 90.0)
+	_dozer(root, Vector3(-6.0, 0, 8.0), 180.0)
+
+
+const RAIL_TOP := 10.4  # MapkitYard.BEAM_Y + BEAM.y: where a car's bogies sit
+
+
+## A: NIGHT LINE. Two tired commuter cars in rust-grime plate, mismatched patch panels, a dim flickering amber window strip,
+## one headlamp out. Public transit that has been run into the ground.
+func _train_commuter(root: Node3D, _open: bool) -> void:
+	_rail(root)
+	for car in 2:
+		var x := -9.0 + 14.5 * car
+		_trim_box(root, Vector3(13.5, 3.0, 3.2), Vector3(x, RAIL_TOP + 1.7, -4.0), MapkitYard.GRIME, Color(0.9, 0.95, 1.0))
+		_trim_box(root, Vector3(13.5, 0.5, 2.6), Vector3(x, RAIL_TOP + 3.45, -4.0), MapkitYard.PLATE, Color(0.7, 0.7, 0.72))
+		# Patch panels bolted on where the skin gave out: plate in another tint, a little proud of the side.
+		for patch in 3:
+			_trim_box(root, Vector3(1.6 + patch * 0.5, 1.2, 0.08), Vector3(x - 4.5 + patch * 4.0, RAIL_TOP + 1.2 + (patch % 2) * 0.6, -2.36),
+					MapkitYard.PLATE, [Color(0.55, 0.7, 0.6), Color(0.8, 0.55, 0.45), Color(0.6, 0.6, 0.75)][patch])
+		_box(root, Vector3(12.5, 0.55, 0.06), Vector3(x, RAIL_TOP + 2.3, -2.38), CyberMaterials.neon(Color(1.0, 0.62, 0.25), 1.4, 0.35))
+	_box(root, Vector3(0.1, 0.35, 0.5), Vector3(-15.8, RAIL_TOP + 1.4, -3.3), CyberMaterials.neon(Color(1.0, 0.95, 0.8), 2.5, 0.0))
+	_box(root, Vector3(0.1, 0.35, 0.5), Vector3(-15.8, RAIL_TOP + 1.4, -4.7), CyberMaterials.surface(Color(0.1, 0.1, 0.1), 0.6, 0.2))
+
+
+## B: CATTLE CAR. A converted freight wagon: an open cage on a hazard-striped frame, a tarp thrown over the roof, one caged
+## lamp. The cheapest way to move people; you see the rails through it.
+func _train_cattle(root: Node3D, _open: bool) -> void:
+	_rail(root)
+	for car in 2:
+		var x := -9.0 + 14.5 * car
+		_trim_box(root, Vector3(13.5, 0.6, 3.2), Vector3(x, RAIL_TOP + 0.5, -4.0), MapkitYard.HAZARD)
+		for end in [-1.0, 1.0]:
+			_trim_box(root, Vector3(0.4, 2.6, 3.2), Vector3(x + end * 6.55, RAIL_TOP + 2.1, -4.0), MapkitYard.HAZARD)
+		for bar in 12:
+			for side in [-1.0, 1.0]:
+				_trim_box(root, Vector3(0.12, 2.4, 0.12), Vector3(x - 6.0 + bar * 1.1, RAIL_TOP + 2.0, -4.0 + side * 1.5), MapkitYard.GRIME)
+		_trim_box(root, Vector3(13.0, 0.08, 1.6), Vector3(x, RAIL_TOP + 3.4, -4.0), MapkitYard.PLATE, Color(0.35, 0.5, 0.4))
+		_box(root, Vector3(0.4, 0.4, 0.4), Vector3(x, RAIL_TOP + 3.1, -4.0), CyberMaterials.neon(Color(1.0, 0.85, 0.5), 2.2, 0.25))
+
+
+## C: BUCKET PODS. Cheap gondolas hung from the beam on struts, each a battered box with a lit number: a ski-lift for a
+## slum. Their floors stay above the tallest hull (6.18 m); they swing nowhere (static, no _process).
+func _train_pods(root: Node3D, _open: bool) -> void:
+	_rail(root)
+	for pod in 4:
+		var x := -15.0 + 9.0 * pod
+		_trim_box(root, Vector3(0.2, 0.5, 0.2), Vector3(x, MapkitYard.BEAM_Y - 0.25, -4.0), MapkitYard.PLATE)
+		_trim_box(root, Vector3(3.6, 2.0, 2.6), Vector3(x, MapkitYard.BEAM_Y - 1.5, -4.0), MapkitYard.GRIME,
+				[Color(1.0, 0.75, 0.6), Color(0.7, 0.9, 0.8), Color(0.9, 0.9, 1.0), Color(0.8, 0.7, 0.9)][pod])
+		_box(root, Vector3(3.0, 0.5, 0.06), Vector3(x, MapkitYard.BEAM_Y - 1.2, -2.68), CyberMaterials.neon(Color(1.0, 0.62, 0.25), 1.2, 0.3))
+		_box(root, Vector3(0.6, 0.4, 0.06), Vector3(x + 1.2, MapkitYard.BEAM_Y - 2.15, -2.68), CyberMaterials.neon(CyberMaterials.CYAN, 2.5, 0.0))
