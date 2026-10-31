@@ -48,10 +48,20 @@ const PROPS := {
 	# steel arms are what a round flies between. Fields of them build funnels; 1.6 m is small enough that the bake
 	# carves each one, so hogs closer than a hull's width plus twice the bake radius read as a wall to the navmesh.
 	"tank_trap": {"size": [1.6, 0.9, 1.6], "cover": "low"},
-	# Mapkit P4 (round 47, the lead's pick C: the monorail): ONE pillar and the 10 m of beam it carries at 9 m (along z).
-	# Only the pillar collides (the beam is above the tallest hull, 6.18 m, and the drawn pillar is round inside this
-	# box); pillars 10 m apart make a continuous rail, a thin colonnade across a street. Look key `car`: a lit car on it.
+	# Mapkit P4 (round 47, the lead's pick C: the monorail): the overpass is TWO kit types. `monorail` is one pillar (hard,
+	# drawn round inside this box); `monorail_deck` is the beam it carries -- DECORATION (no collider: its underside,
+	# `deck_y`, is above the tallest hull, 6.18 m), its own prop and VisualSlot so camera's cutaway can hide the deck alone,
+	# never a pillar or a collider (BlockCutaway's deck cut, camera's). A deck's `size` is [width, THICKNESS, default span]
+	# with the drawn underside at `deck_y`; look keys `span` (metres of beam, along its local z) and `car` (a lit car).
+	# Pillars 10 m apart under 10 m decks make a continuous rail; over a street lane, pillars further apart under longer
+	# spans (a 10 m colonnade would split the lane).
 	"monorail": {"size": [1.4, 9.0, 1.4], "cover": "hard"},
+	"monorail_deck": {"size": [2.4, 1.4, 10.0], "cover": "none", "collides": false, "deck_y": 9.0},
+	# Mapkit (round 47, his extras): a pipe run (pick B, ground pipeline), 10 m along z, `low` (the pipe's top at 0.9 m,
+	# under the muzzles); runs with gaps make crossing points. And a gantry crane's leg (pick A): `hard` posts, four make a
+	# crane; look key `span` [dx, dz] on one leg draws the beam overhead to its partner (skyline, above every hull).
+	"pipeline": {"size": [1.0, 0.9, 10.0], "cover": "low"},
+	"gantry_leg": {"size": [1.2, 14.0, 1.2], "cover": "hard"},
 }
 ## The physics layer a `sight` prop's body sits on (layer 5): not the world (1), not the vehicles (2), so nothing that
 ## moves or flies tests it; only the eye ray adds it (Perception.eye_mask()).
@@ -67,7 +77,7 @@ static var sight_on := true
 ##
 ## Keys a prop may carry for its look (read by the visual's setup(prop)); they never affect gameplay or symmetry.
 const LOOK_KEYS := ["faction", "paint", "stencil", "rust", "doors", "channel", "sign", "color", "variant",
-		"tiers", "setback", "neon", "seed", "wall", "car"]  # the last four: a city block's look (CityBlock), never its footprint
+		"tiers", "setback", "neon", "seed", "wall", "car", "span"]  # the last four: a city block's look (CityBlock), never its footprint
 ## Region kinds the AI and the measurements understand (_agents/arenas.md defines each).
 const REGION_KINDS := ["centre", "open_ground", "cover_cluster", "chokepoint", "flank", "overlook"]
 
@@ -92,6 +102,11 @@ static func size_of(prop: Dictionary) -> Vector3:
 
 static func cover_of(type: String) -> String:
 	return String(PROPS[type]["cover"])
+
+
+## The drawn underside of an overhead deck kit type (m), or -1 for anything else (camera's cutaway reads it).
+static func deck_y(type: String) -> float:
+	return float(PROPS[type].get("deck_y", -1.0)) if PROPS.has(type) else -1.0
 
 
 ## A kit type of the `sight` class: blocks eyes only.

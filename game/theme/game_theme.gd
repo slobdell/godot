@@ -51,6 +51,11 @@ const DEFAULT_SLOTS := {
 	# overpass (the monorail: a pillar and its span).
 	"prop.tank_trap": "res://game/theme/arena_kit/mapkit/prop_tank_trap.tscn",
 	"prop.monorail": "res://game/theme/arena_kit/mapkit/prop_monorail.tscn",
+	"prop.monorail_deck": "res://game/theme/arena_kit/mapkit/prop_monorail_deck.tscn",
+	# R47.39: the people's monorail car (his train_r47_a, Meshy; one draw), riding a deck (look key `car`).
+	"prop.monorail_car": "res://game/theme/arena_kit/generated/prop_monorail_car.tscn",
+	"prop.pipeline": "res://game/theme/arena_kit/mapkit/prop_pipeline.tscn",
+	"prop.gantry_leg": "res://game/theme/arena_kit/mapkit/prop_gantry_leg.tscn",
 	# Mapkit P4: the blast door's look (his pick A, vault slabs); ArenaDoors drives it with set_state.
 	"prop.blast_door": "res://game/theme/arena_kit/mapkit/prop_blast_door.tscn",
 	# Terrain (round 10): water, pits and bridge decks for `ArenaTerrain` (arena_kit/terrain, the terrain stream's).

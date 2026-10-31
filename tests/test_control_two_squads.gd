@@ -9,6 +9,7 @@ const Fixture := preload("res://tests/support/control_fixture.gd")
 
 func teardown() -> void:
 	SelectionSquads.GROUP_GUARD = SelectionSquads.guard_default()
+	SelectionSquads.GROUP_MERGED_ALL = SelectionSquads.merged_mode() == "all"
 	super.teardown()
 ## Squad 1 on the west flank, squad 2 on the east one, both facing north; the click is between them, ahead.
 const WEST := Vector3(-68, 0, 50)
@@ -107,6 +108,7 @@ func test_through_a_real_right_click() -> void:
 
 
 func test_each_squad_travels_from_its_own_position() -> void:
+	SelectionSquads.GROUP_MERGED_ALL = false  # R47.41: `all` (the default) files whole squads; the squads' own flanks are the abreast lay's
 	var f: Fixture = await _setup()
 	f.controls.selection.set_units(_both(f))
 	f.controls.order_selection("move", {"to": [CLICK.x, CLICK.z]})
