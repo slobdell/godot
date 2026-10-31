@@ -97,7 +97,7 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
 | E7 SHIPPED ON | **R47.32: shipped ON** (main b96e12e43 merged the OFF-default code; the default flip `PRESS_ON_DEFAULT := true` is d3b3fe918, in E3's frozen tree; `--press-on=off` the escape). Bar E7 **FAILED on G1** (friendly hits 1 -> 6, 1-4 hp each, no kills); D1 / D2 / G2-G6 PASS (verdict below); the orchestrator rules. Was: **FILED** + **Amendment 1** (his side only; G6 the CPU side untouched), both before any number on 12601-12648. native's re-twin EQUAL (pair/native-e7 aa339ab80, merged). **FROZEN at d4a88c4a5** (+ the touch-map feed line); full check then the series (D, G4 authority, G6 no player team) running on builder3 |
 | Leftover: touch map feed line | **DONE**: `HudMessages.selected_units` reads the touch map's `selected()` squad; test green (builder3 `native test` lane_line / hud_messages: 13 passed, 0 failed) |
 | E6 army_cost read | **DONE (report only)**: the laptop preset's 20-vehicle cap halves a swarm faction's skirmish army (below); he answered (cap by vehicle cost, skirmish = 1000 credits): orders builds it (R47.22) |
-| E3 pot shots | **HIS YES (R47.20).** Bar E3 **FILED** before any number on 12649-12696; native twin EQUAL and merged (pair/native-e3); **FROZEN at d3b3fe918** (+ E7's ON flip); **its full check GREEN: builder3 `make check exited 0`, 3526 passed / 0 failed, 28 ALL JUDGED, sim-baseline unmoved -> named to the orchestrator (merge here: d3b3fe918, E7 ON)**; the series (deciding, G4 lane probe, the staged fights) running on builder3. Code behind `--pot-shot` (default OFF until the bar); test green at 087d1732a (first round 12 v 28 ticks); dev reads below; **his question sent to the orchestrator** (recommended: yes) |
+| E3 pot shots | **Bar E3 FAILED D1 by 0.006 s** (z -1.637); D2 + G1-G4 PASS; per crew first round 1.55 -> 0.80 s; accuracy 79 -> 73 %; the orchestrator rules (verdict below). Was: **HIS YES (R47.20).** Bar E3 **FILED** before any number on 12649-12696; native twin EQUAL and merged (pair/native-e3); **FROZEN at d3b3fe918** (+ E7's ON flip); **its full check GREEN: builder3 `make check exited 0`, 3526 passed / 0 failed, 28 ALL JUDGED, sim-baseline unmoved -> named to the orchestrator (merge here: d3b3fe918, E7 ON)**; the series (deciding, G4 lane probe, the staged fights) running on builder3. Code behind `--pot-shot` (default OFF until the bar); test green at 087d1732a (first round 12 v 28 ticks); dev reads below; **his question sent to the orchestrator** (recommended: yes) |
 | (E3, old row) | in progress: switch (default OFF) + the dev read that gives the orchestrator his question in player terms (R47.17) |
 
 **His "is something broken with our targeting?" — the honest answer (staged, E1 + the gates split):** no. A gang crew is SLOW to its
@@ -112,6 +112,19 @@ branch runs while it is off), no native code and no make target reads or sets it
 `--his-side` (`git grep POT_SHOT d4a88c4a5 -- game native mk`).
 
 ### Bar E3 (FILED 2026-10-30 ~20:00, before any number on 12649-12696) — the text is in workstreams.md *Bars (round 47)*
+
+- **Bar E3 VERDICT (2026-10-30 ~21:00 PDT): FAILS on D1 by 0.006 s (z -1.637 v the one-sided 1.645); D2 and every guard pass.**
+  Code frozen at **d3b3fe918**, its full check GREEN (builder3 `make check exited 0`, 3526 / 0, 28 ALL JUDGED, sim-baseline
+  unmoved); the runs stamped 87840fa1e (= d3b3fe918 + `_agents/` docs only). builder3, native ON, War Rigs, 12649-12696, 48 paired,
+  0 errors. **D1 FAIL:** first_shot (run mean, never = the window) 7.74 -> 6.43 s, diff -1.310104, se 0.800248, bound -1.316408.
+  **D2 PASS:** sooner or identical 36/48 = 75 % (33 strictly). G1 PASS friendly hits 6 -> 2. G2 PASS his crews' deaths 5 -> 7 (limit
+  8.7). G3 PASS hits a minute 22.7 -> 26.2. G4 PASS lane probe (12649-12672, n 24): friendly hits 0 -> 1 (limit 1.0), held_s
+  15.82 -> 14.36. **Reported:** accuracy 79 % -> 73 % (-7 pts, se 4); shots 3.96 -> 4.48 a run; first hit 9.73 -> 8.74 s; target
+  dies 14.21 -> 14.30 s; per CREW (98 that fired in both arms): first round median **1.55 -> 0.80 s**, 79 sooner / 11 same / 8
+  later; his six staged fights (frozen tree, native on, n = 1 each): his hits 32/159 (20 %) -> 33/171 (19 %), the CPU's 362/438
+  (83 %) -> 283/412 (69 %), friendly 0 -> 1 (CPU). **Why D1's run mean is noisy:** a crew that never fires counts as the whole window,
+  and the window ends when the target dies, so it differs by arm (12692: OFF 16.9 s window, ON 60 s with one crew never firing =
+  +21.35 s; 12665: -14.97 s the other way). As filed, the fail stands (lesson 345). Evidence `~/overnight-engage/r47/barE3/`.
 
 **Bar E3 SNAP SHOTS (engage; filed 2026-10-30 ~20:00 PDT in streams/engage.md and here, BEFORE any number on 12649-12696;
   his YES, R47.20).**
