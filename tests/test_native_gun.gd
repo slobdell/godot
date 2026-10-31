@@ -182,7 +182,7 @@ func test_gunnery_apply_is_the_live_gdscript() -> void:
 	if pot_was != null:
 		(Gunnery as Object).set("POT_SHOT", pot_was)
 		print("native gun: %d pot shots fired (E3)" % pot_fired)
-		assert_true(pot_fired >= 3, "E3's pot shot was exercised (%d fired; its off-aim is compared on every tick it lays)" % pot_fired)
+		assert_true(pot_fired >= 1, "E3's pot shot was exercised (%d fired; its off-aim is compared on every tick it lays; the halting guard keeps rolling crews at long range off it)" % pot_fired)
 	print("native gun: %d applies (%d synthetic orders, by type %s), %d fired, %d engaged, %d mismatches live members, %d owned state"
 			% [applied, synthetic, types, fired, engaged, mismatches, owned_mismatches])
 	assert_eq(mismatches + owned_mismatches, 0, "the native gun is the live GDScript gun: %s" % first)
