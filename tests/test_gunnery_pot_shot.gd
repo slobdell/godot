@@ -1,11 +1,11 @@
 extends TestCase
 ## Round 47 (engage E3, R47.17): POT SHOTS behind `--pot-shot` (default OFF, his call). A crew whose only held gate is the
 ## acquisition fix, laid at least POT_SHOT_AFTER_S, its target inside the band, snaps a round off with its aim off by what
-## is left of the fix. Staged in the open: a gun on standing orders (fire at will) and a still target 40 m off, both on the
+## is left of the fix. Staged in the open: a gun on standing orders (fire at will) and a still target 30 m off (inside the band), both on the
 ## GDScript execute path (the C++ step has no pot shot: off for this test only).
 
 const SHOOTER_AT := Vector3(-100.0, 0.0, 40.0)
-const TARGET_AT := Vector3(-100.0, 0.0, 0.0)
+const TARGET_AT := Vector3(-100.0, 0.0, 10.0)  # 30 m: inside the scrap cannon's 36 m band
 
 var _native_exec := true
 var _armed := false
