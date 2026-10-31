@@ -17,18 +17,26 @@ extends TestCase
 const PROGRESS_M := 1.0
 const WINDOW_S := 1.0
 const FAR_M := 15.0
+## The CPU's sliver case: a crew is off the sliver once it comes within NEAR_SEAT_M of its seat (today Hunters_2 / Hunters_4 never
+## get under 14.5 m), and must be by LEAVE_BY_S.
+const NEAR_SEAT_M := 8.0
+const LEAVE_BY_S := 10.0
 
 var _lab: TacticsLab
 var _buried_was := Traffic.off(Movement.BURIED_SWITCH)
+var _watch_was := Traffic.off(NoProgressWatch.SWITCH)
 
 
-## The arm under test: `buried` ON (NOPROGRESS_ARM=off reads today's for a dev comparison).
+## The arm under test: `buried` and `noprogress` ON (NOPROGRESS_ARM=off reads today's for a dev comparison).
 func _arm() -> void:
-	Traffic.set_off(Movement.BURIED_SWITCH, OS.get_environment("NOPROGRESS_ARM") == "off")
+	var off := OS.get_environment("NOPROGRESS_ARM") == "off"
+	Traffic.set_off(Movement.BURIED_SWITCH, off)
+	Traffic.set_off(NoProgressWatch.SWITCH, off)
 
 
 func teardown() -> void:
 	Traffic.set_off(Movement.BURIED_SWITCH, _buried_was)
+	Traffic.set_off(NoProgressWatch.SWITCH, _watch_was)
 	if _lab != null:
 		_lab.dispose()
 		_lab = null
@@ -114,3 +122,62 @@ func test_crossing_hunters_all_leave_for_the_bridge() -> void:
 	var stalls := await _watch(names, element, 12.0)
 	for n: String in names:
 		assert_true(float(stalls[n]) < 2.5, "%s makes progress toward its seat (no-progress %.1f s)" % [n, float(stalls[n])])
+
+
+## Crossing, THE CPU's SIDE (C47.9): the Rust Hunters (syndicate) on their ambush task (his recording, task row at tick 91: from
+## (-13.4, -9.5) toward (-50.5, 15.6)) sat in a 6 m patch north of the city block at (-34, -33) for 24+ s (ticks 2400-3120):
+## Hunters_2 yielding to Hunters_3 while Hunters_3 was blocked by Hunters_2, Hunters_4 blocked `no_path`, Hunters_1 yielding to
+## Hunters_4. Staged where they stood at tick 2760 (headings from their last moves), the same task: no crew may sit yielding or
+## blocked for long while it is still away from its seat.
+func test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle() -> void:
+	_arm()
+	_lab = TacticsLab.create(self, 101, "crossing")
+	var pose := {"Rust_Hunters_1": [Vector2(-26.7, -7.3), -76.0, "syn_ifv"], "Rust_Hunters_2": [Vector2(-31.5, -6.9), 163.0, "syn_ifv"],
+			"Rust_Hunters_3": [Vector2(-32.5, -9.7), -59.0, "syn_ifv"], "Rust_Hunters_4": [Vector2(-28.8, -9.6), -180.0, "syn_scout"]}
+	var names := pose.keys()
+	names.sort()
+	for n: String in names:
+		var at: Vector2 = pose[n][0]
+		_lab.unit(Match.Team.RUST, n, Vector3(at.x, 0.0, at.y), deg_to_rad(float(pose[n][1])), String(pose[n][2]))
+	DoctrineTable.clear_cache()
+	var table: DoctrineTable = DoctrineTable.load_table("syndicate").get("table")
+	var element := _lab.elements.form(names, "Hunters", table)
+	await _lab.start()
+	element.assign({"verb": "ambush", "from": [-13.4375, -9.5], "to": [-50.467, 15.627]})
+	var stuck := {}
+	var left_at := {}  # the tick each crew first came within NEAR_SEAT_M of its seat (off the sliver: today two never do)
+	for n: String in names:
+		stuck[n] = 0
+		left_at[n] = -1
+	var trace := OS.get_environment("NOPROGRESS_TRACE") == "on"
+	for i in 15 * SimClock.TICK_RATE:
+		await _lab.step()
+		for n: String in names:
+			var tank := _lab.tank_of(n)
+			var mover := Movement.of(tank)
+			if mover == null or not (element.slots.get(n) is Vector3):
+				continue
+			var seat: Vector3 = element.slots[n]
+			var away := Vector2(seat.x - tank.global_position.x, seat.z - tank.global_position.z).length()
+			if away > 4.0 and (mover.phase == "yielding" or mover.phase == "blocked"):
+				stuck[n] = int(stuck[n]) + 1
+			if int(left_at[n]) < 0 and away <= NEAR_SEAT_M:
+				left_at[n] = i
+			if trace and i % 30 == 0:
+				var near := Pathing.closest_point(tank.get_world_3d().navigation_map, tank.global_position)
+				print("CYCLE_TICK %d %s at (%.1f, %.1f) seat (%.1f, %.1f) away %.1f phase %s by %s yield_to %s v %.1f rv %.2f thr %.2f order %s goal %s steer %s path %d reach %s off_mesh %.2f touch %s/%s stuck_t %.2f esc %d stalled %d" % [i, n,
+						tank.global_position.x, tank.global_position.z, seat.x, seat.z, away, mover.phase, mover.blocked_by, mover.yield_to,
+						tank.speed(), tank.real_velocity.length(), tank.command.throttle, String(mover.ctl.move_order.get("type", "")), str(mover._goal),
+						str(mover.steer_to), mover._path.size(), str(mover._reachable), Vector2(near.x - tank.global_position.x, near.z - tank.global_position.z).length(),
+						str(mover.contact.touching), mover.contact.collider, mover._stuck_time, mover._esc_stage, mover.stalled_ticks])
+	var out := {}
+	for n: String in names:
+		out[n] = float(stuck[n]) / SimClock.TICK_RATE
+	print("CYCLE_ROW %s watch %s reroutes %s held_s %s left_tick %s" % [OS.get_environment("NOPROGRESS_ARM"), JSON.stringify(NoProgressWatch.report()),
+			JSON.stringify(Pathing.reroutes), JSON.stringify(out), JSON.stringify(left_at)])
+	# What this item fixes: nobody stays on the sliver. Today Hunters_2 and Hunters_4 never leave it in 15 s (his recording: 24+ s).
+	# `held_s` (yielding / blocked more than 4 m from the seat) is reported, not asserted: with the sliver fixed, Hunters_2 then
+	# waits 4.3 m from its seat behind Hunters_1 parked on its own (a settle contention at the destination, another item).
+	for n: String in names:
+		assert_true(int(left_at[n]) >= 0 and int(left_at[n]) < LEAVE_BY_S * SimClock.TICK_RATE,
+				"%s comes within 8 m of its seat (off the sliver) within %.0f s (tick %d)" % [n, LEAVE_BY_S, int(left_at[n])])

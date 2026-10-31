@@ -22,6 +22,13 @@ extends Node
 ##   retreat  his scout squad (the group with the most scouts) drives north at a CPU squad held RETREAT_ENEMY_M ahead; once
 ##            it is under fire (or RETREAT_CONTACT_S passes) and has fought RETREAT_FIGHT_S, it is ordered back to his own
 ##            edge behind his lines (the lead: "the camera pointed out completely to the audience").
+## Round 47 (camera K4, Bar K):
+##   split    his Crossing case ("I sent half my army west and half my army east"): each group is ordered SPLIT_M out to
+##            its side (the first half of his groups left, the rest right) and SPLIT_AHEAD_M forward; then, every 1-3 s,
+##            the hand picks ANOTHER group by its key, and aims and clicks as round 41's hand does (an enemy on screen is
+##            attacked, else a move up-screen). CameraLook's sel_far_s / sel_frames read how the view keeps up. His hand stays
+##            on the mouse while he waits (drifting 0.6 s of each second: the K1 replay's model), and after a pick his eye waits
+##            up to SPLIT_LOOK_S for the view to reach the squad before he aims (he clicks what he can see).
 
 const AIM_S := 0.5
 ## How long his hand takes to carry the cursor to what he aims at (a Fitts-law reach across a 1080p screen is ~0.25-0.4 s).
@@ -43,6 +50,14 @@ const LANES := ["right", "left", "rear"]
 ## K5.2's corner: the lanes per side a seed picks from (the nearest to group 1), and his column's spacing at the start.
 const CORNER_LANES := 3
 const CORNER_COLUMN_M := 9.0
+## K4's split: how far out to each side, and forward, his two halves are sent.
+const SPLIT_M := 70.0
+const SPLIT_AHEAD_M := 40.0
+## K4's hand and eye in the split (both arms alike): the hand drifts this much of each second; after a pick the eye waits up to
+## SPLIT_LOOK_S for the view to come within SPLIT_FRAMED_M of the squad before he aims.
+const SPLIT_HAND_MOVE_S := 0.6
+const SPLIT_LOOK_S := 1.5
+const SPLIT_FRAMED_M := 20.0
 
 var trace: CameraTrace
 var look: CameraLook
@@ -74,6 +89,7 @@ var _action_s := 0.0
 var _playing := false
 ## What the staged scenario set up (who, where, when), for the report.
 var _staged := {}
+var _panned := false
 
 
 func _ready() -> void:
@@ -93,7 +109,7 @@ func _ready() -> void:
 			ambush_m = float(arg.trim_prefix("--camera-ambush-m="))
 	if lane == "":
 		lane = LANES[posmod(_seed, LANES.size())]
-	if scenario != "" and not ["ambush", "retreat", "corner"].has(scenario):
+	if scenario != "" and not ["ambush", "retreat", "corner", "split"].has(scenario):
 		push_error("CameraPlaytest: unknown --camera-scenario=%s" % scenario)  # a probe flag that fails must stop the run
 		print("CAMERA_TRACE_DONE ok=false reason=unknown_scenario")
 		get_tree().quit(1)
@@ -185,9 +201,16 @@ func _run() -> void:
 		await _retreat()
 	elif scenario == "corner":
 		await _corner()
+	elif scenario == "split":
+		await _split()
 	while scenario == "" and _clock < _seconds and not _ended:
 		await _select()
 		await _wait(_rng.randf_range(0.3, 0.8))
+		# Round 47 (K4): he does not aim while the view is still panning to what he picked (at most SPLIT_LOOK_S; round 46's
+		# camera rarely pans that way, so its hand is unchanged but for those moments).
+		var looked := _clock
+		while _clock - looked < SPLIT_LOOK_S and not _ended and rig.planner_urgent:
+			await get_tree().process_frame
 		if not await _attack():
 			await _move()
 		await _wait(_rng.randf_range(1.0, 3.0))
@@ -273,6 +296,14 @@ func _finish() -> void:
 	print("CAMERA_TRACE_DONE ok=true seed=%d seconds=%.1f frames=%d" % [_seed, summary["seconds"], summary["frames"]])
 
 
+## Round 47 (K4): _wait, noting whether the selection's pan ran meanwhile (a click's row says "panned").
+func _wait_watching_pan(seconds: float) -> void:
+	var until := _clock + seconds
+	while _clock < until and not _ended:
+		_panned = _panned or rig.planner_urgent
+		await get_tree().process_frame
+
+
 func _wait(seconds: float) -> void:
 	var until := _clock + seconds
 	while _clock < until and not _ended:
@@ -340,10 +371,12 @@ func _click_after_aim(aim: Vector2, kind: String, target: Tank) -> void:
 	if anchor != null:
 		trace.anchors["aim"] = anchor
 	var target_at := aim
-	await _wait(AIM_S)
+	_panned = false
+	await _wait_watching_pan(AIM_S)
 	if _ended:
 		return
-	var row := {"t": snappedf(_clock, 0.01), "kind": kind, "cursor": [roundi(aim.x), roundi(aim.y)], "slip_px": 0.0, "by": {}}
+	var row := {"t": snappedf(_clock, 0.01), "kind": kind, "cursor": [roundi(aim.x), roundi(aim.y)], "slip_px": 0.0, "by": {},
+			"panned": _panned}
 	var scale := CameraTrace.REFERENCE_ROWS / maxf(get_viewport().get_visible_rect().size.y, 1.0)
 	if anchor != null and not rig.camera.is_position_behind(anchor as Vector3):
 		row["slip_px"] = snappedf(rig.camera.unproject_position(anchor as Vector3).distance_to(aim) * scale, 0.1)
@@ -436,6 +469,63 @@ func _ambush() -> void:
 		if not await _attack():
 			await _wait(0.5)
 		await _wait(_rng.randf_range(1.0, 3.0))
+
+
+## Round 47 (K4): half his groups west, half east, then the hand switches between them (see the header).
+func _split() -> void:
+	var numbers: Array = controls.groups.numbers()
+	if numbers.size() < 2:
+		_staged = {"ok": false, "why": "fewer than two groups"}
+		return
+	var north: Vector3 = Match.team_frame(controls.team)["forward"]
+	var right := north.cross(Vector3.UP).normalized()
+	var sent := 0
+	for i in numbers.size():
+		await _key(KEY_0 + int(numbers[i]) as Key)
+		var from: Variant = _centre(controls.selection.units)
+		if from == null:
+			continue
+		var side := -right if i * 2 < numbers.size() else right
+		controls.order_selection("move", {"to": _pair(ElementPlan.clamp_to_arena((from as Vector3) + side * SPLIT_M + north * SPLIT_AHEAD_M))})
+		sent += 1
+		await _wait(0.2)
+	_staged = {"ok": sent >= 2, "groups": numbers.size(), "sent": sent}
+	var current := int(numbers[numbers.size() - 1])
+	while _clock < _seconds and not _ended:
+		var living: Array = controls.groups.numbers().filter(func(n: int) -> bool:
+			return _centre(controls.groups.members(n)) != null and n != current)
+		if living.is_empty():
+			break
+		current = int(living[_rng.randi_range(0, living.size() - 1)])
+		await _key(KEY_0 + current as Key)
+		await _hand_wait(_rng.randf_range(0.3, 0.8))
+		# His eye: he aims at what is near the squad he just picked once the view has reached it (at most SPLIT_LOOK_S).
+		var looked := _clock
+		while _clock - looked < SPLIT_LOOK_S and not _ended and (_off_selection() > SPLIT_FRAMED_M or rig.planner_urgent):
+			await _hand_wait(1.0 / 30.0)
+		if not await _attack():
+			await _move()
+		await _hand_wait(_rng.randf_range(1.0, 3.0))
+
+
+## K4's hand on the mouse while he waits (tests/camera/replay_camera.gd's model): the cursor drifts for SPLIT_HAND_MOVE_S
+## of each second, then rests (under the rig's HOVER_HOLD_S: the aim hold applies, as it did for him).
+func _hand_wait(seconds: float) -> void:
+	var until := _clock + seconds
+	var size := get_viewport().get_visible_rect().size
+	while _clock < until and not _ended:
+		if fmod(_clock, 1.0) < SPLIT_HAND_MOVE_S:
+			var at := _cursor if _cursor.x >= 0.0 else size * 0.5
+			_motion((at + Vector2(_rng.randf_range(-6.0, 6.0), _rng.randf_range(-6.0, 6.0))).clamp(Vector2(80, 80), size - Vector2(80, 80)))
+		await get_tree().process_frame
+
+
+## Metres from the view's look point to the middle of his selection.
+func _off_selection() -> float:
+	var at: Variant = _centre(controls.selection.units)
+	if at == null:
+		return 0.0
+	return Vector2((at as Vector3).x - rig._shown_focus.x, (at as Vector3).z - rig._shown_focus.z).length()
 
 
 ## His scouts drive at a held CPU squad, take fire, and are ordered back to his own edge.

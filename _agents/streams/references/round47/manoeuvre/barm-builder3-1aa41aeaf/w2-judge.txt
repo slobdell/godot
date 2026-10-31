@@ -1,0 +1,5 @@
+W2 fights paired 24; touched (buried swaps > 0) 0
+  team 0 s         base 2034.8 -> buried 2034.8 | diff +0.000 a fight, se 0.000, z +0.00, n 24, sooner-or-identical 100 %
+  team 0 contact_s base 315.9 -> buried 315.9 | diff +0.000 a fight, se 0.000, z +0.00, n 24, sooner-or-identical 100 %
+  team 1 s         base 2285.5 -> buried 2285.5 | diff +0.000 a fight, se 0.000, z +0.00, n 24, sooner-or-identical 100 %
+  team 1 contact_s base 281.4 -> buried 281.4 | diff +0.000 a fight, se 0.000, z +0.00, n 24, sooner-or-identical 100 %

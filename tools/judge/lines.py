@@ -766,3 +766,8 @@ LINES += lines_r45.LINES
 import lines_r46  # noqa: E402  (the same fields)
 
 LINES += lines_r46.LINES
+
+# ---------------------------------------------------------------- round 47 (round 47 native N5, filled as verdicts land) ---
+import lines_r47  # noqa: E402  (the same fields)
+
+LINES += lines_r47.LINES

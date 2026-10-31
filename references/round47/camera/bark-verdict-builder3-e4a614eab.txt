@@ -1,0 +1,43 @@
+DECIDING runs (SPLIT + ATTACK): BASE 72 v ARM 72
+  new selections > 20 m off when picked: BASE 598 v ARM 840; hits on his units BASE 5104 v ARM 6043
+PASS  D1 his selection > 30 m from the look point, % of play (ARM <= BASE and ARM <= 10; the ratio reported): BASE 11.9 v ARM 6.9
+  (reported) D1 ratio ARM / BASE 0.58
+PASS  D2a a far new selection -> within 20 m, mean s (never = 10; ARM <= 1.0 and ARM <= BASE): BASE 4.92 v ARM 0.73
+PASS  D2b the same, ARM p90 <= 1.5 s: BASE 10.00 v ARM 0.95
+PASS  D3 far new selections never framed (ARM <= BASE): BASE 244 v ARM 21
+  (reported) split-terminus: far % 13.6 v 8.4; frame mean 5.27 v 0.57 s (n 125 v 174); never 55 v 1
+  (reported) split-locks: far % 9.7 v 7.5; frame mean 5.11 v 0.75 s (n 117 v 165); never 47 v 5
+  (reported) split-crossing: far % 16.1 v 11.7; frame mean 5.01 v 0.84 s (n 137 v 249); never 56 v 7
+  (reported) split-gorge: far % 31.6 v 8.6; frame mean 7.16 v 0.49 s (n 108 v 135); never 71 v 1
+PASS  G1 driving with half+ of his selection hidden by a building, s (ARM <= 1.1 x BASE + 5): BASE 1085.9 v ARM 845.7
+FAIL  G2 none of his selection on screen, s (ARM <= BASE): BASE 61.1 v ARM 143.2
+FAIL  G3 hits on his units off screen, % of hits (ARM <= BASE + 1): BASE 5.3 v ARM 12.6
+PASS  G4a no automatic source but 'select' over BASE's worst + 0.5 jerks/min: BASE planner 2.56 v ARM planner 2.66
+  (reported) the selection pan ('select'): jerks/min 1.83 v 7.73; snaps 0 v 9609
+PASS  G4c a pan, not a cut: the view's own fastest move, heights/s (ARM peak <= 4.5) and seconds over 4.5 (ARM <= BASE + 1): BASE 1.31 / 0.0 s v ARM 4.02 / 0.0 s
+FAIL  G4b snaps from any automatic source but 'select', ARM = 0: BASE 0 v ARM 6
+PASS  G5a clicks on the aimed unit % (ARM >= 70: Bar C1's G2a): BASE 83.4 v ARM 77.9
+PASS  G5b slip p95 px (ARM <= 40): BASE 29.5 v ARM 34.8
+PASS  G5c held % (ARM <= BASE + 2): BASE 37.3 v ARM 27.8
+  (reported) clicks aimed while the selection's pan ran: BASE 6 v ARM 60; their slip p95 359.9 v 464.0 px
+PASS  G6 action share % (ARM >= BASE - 5): BASE 46.5 v ARM 48.1
+PASS  G7 camera inside a solid, s per run (ARM <= BASE + 1): BASE 0.11 v ARM 0.15
+FAIL  G8 ambush rear first shot -> on screen mean s (never = 20; ARM <= BASE + 1): BASE 7.08 v ARM 8.56
+PASS  G8 ambush rear blind % of fire (ARM <= BASE + 2): BASE 21.2 v ARM 19.8
+PASS  G8 ambush all lanes first shot -> on screen mean s (never = 20; ARM <= BASE + 1): BASE 6.73 v ARM 5.91
+PASS  G8 ambush all lanes blind % of fire (ARM <= BASE + 2): BASE 9.5 v ARM 10.6
+PASS  G8 retreat all lanes first shot -> on screen mean s (never = 20; ARM <= BASE + 1): BASE 6.33 v ARM 6.04
+PASS  G8 retreat all lanes blind % of fire (ARM <= BASE + 2): BASE 3.5 v ARM 4.3
+PASS  G8 retreat facing the wall % (ARM <= BASE + 5): BASE 0.1 v ARM 0.1
+PASS  G9 split-terminus runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 split-locks runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 split-crossing runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 split-gorge runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 attack-terminus runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 attack-crossing runs ok + staged: BASE 12 v ARM 12 (12 staged)
+PASS  G9 ambush runs ok + staged: BASE 24 v ARM 24 (24 staged)
+PASS  G9 retreat runs ok + staged: BASE 24 v ARM 24 (24 staged)
+PASS  G10a laptop planner ms/frame mean <= 0.5 and step p99 <= 1.5 (Bar C1's G8): BASE - v ARM 0.329 / 0.80
+PASS  G10b laptop whole rig ms/frame mean (ARM <= BASE + 0.05): BASE 0.852 v ARM 0.839
+PASS  G9 no SCRIPT ERROR in any run log: BASE - v ARM 0 logs
+VERDICT Bar K: FAIL (29 of 33 lines)

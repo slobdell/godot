@@ -1,0 +1,567 @@
+{
+ "profile": {
+  "counters_per_tick": {
+   "intel/los_queries": 14.03
+  },
+  "objects": [
+   5120,
+   5117
+  ],
+  "sections": {
+   "brain/act": {
+    "calls_per_tick": 5.62,
+    "ms_per_tick": 0.553
+   },
+   "brain/act.BOMBARD": {
+    "calls_per_tick": 0.18,
+    "ms_per_tick": 0.007
+   },
+   "brain/act.CLEAR_LANE": {
+    "calls_per_tick": 0.09,
+    "ms_per_tick": 0.016
+   },
+   "brain/act.CONTEST": {
+    "calls_per_tick": 1.18,
+    "ms_per_tick": 0.045
+   },
+   "brain/act.COVER_FIRE": {
+    "calls_per_tick": 0.06,
+    "ms_per_tick": 0.003
+   },
+   "brain/act.ENGAGE": {
+    "calls_per_tick": 1.17,
+    "ms_per_tick": 0.362
+   },
+   "brain/act.FLANK": {
+    "calls_per_tick": 0.0,
+    "ms_per_tick": 0.0
+   },
+   "brain/act.HOLD": {
+    "calls_per_tick": 0.01,
+    "ms_per_tick": 0.0
+   },
+   "brain/act.INVESTIGATE": {
+    "calls_per_tick": 0.18,
+    "ms_per_tick": 0.008
+   },
+   "brain/act.RECHARGE": {
+    "calls_per_tick": 0.01,
+    "ms_per_tick": 0.0
+   },
+   "brain/act.REGROUP": {
+    "calls_per_tick": 0.21,
+    "ms_per_tick": 0.011
+   },
+   "brain/act.RETREAT": {
+    "calls_per_tick": 0.2,
+    "ms_per_tick": 0.014
+   },
+   "brain/act.SHADOW": {
+    "calls_per_tick": 0.04,
+    "ms_per_tick": 0.002
+   },
+   "brain/act.SPOT": {
+    "calls_per_tick": 2.05,
+    "ms_per_tick": 0.086
+   },
+   "brain/act.SUPPRESS": {
+    "calls_per_tick": 0.23,
+    "ms_per_tick": 0.01
+   },
+   "brain/act.TAKE_COVER": {
+    "calls_per_tick": 0.02,
+    "ms_per_tick": 0.001
+   },
+   "brain/act.combat_move": {
+    "calls_per_tick": 0.6,
+    "ms_per_tick": 0.173
+   },
+   "brain/act.prelude": {
+    "calls_per_tick": 5.62,
+    "ms_per_tick": 0.069
+   },
+   "brain/act.set_move": {
+    "calls_per_tick": 1.36,
+    "ms_per_tick": 0.021
+   },
+   "brain/act.set_weapon": {
+    "calls_per_tick": 0.13,
+    "ms_per_tick": 0.001
+   },
+   "brain/by.face.moving": {
+    "calls_per_tick": 2.98,
+    "ms_per_tick": 0.164
+   },
+   "brain/by.face.still": {
+    "calls_per_tick": 0.05,
+    "ms_per_tick": 0.002
+   },
+   "brain/by.stop.moving": {
+    "calls_per_tick": 0.11,
+    "ms_per_tick": 0.001
+   },
+   "brain/by.stop.still": {
+    "calls_per_tick": 0.14,
+    "ms_per_tick": 0.002
+   },
+   "brain/c.reflexes": {
+    "calls_per_tick": 3.27,
+    "ms_per_tick": 0.007
+   },
+   "brain/c.wall_contact": {
+    "calls_per_tick": 46.02,
+    "ms_per_tick": 0.311
+   },
+   "brain/decide": {
+    "calls_per_tick": 5.62,
+    "ms_per_tick": 0.401
+   },
+   "brain/execute": {
+    "calls_per_tick": 46.02,
+    "ms_per_tick": 2.57
+   },
+   "brain/k2.incoming": {
+    "calls_per_tick": 5.62,
+    "ms_per_tick": 0.044
+   },
+   "brain/los.cover": {
+    "calls_per_tick": 3.58,
+    "ms_per_tick": 0.01
+   },
+   "brain/los.cover_coarse": {
+    "calls_per_tick": 0.22,
+    "ms_per_tick": 0.001
+   },
+   "brain/los.cover_coarse_computed": {
+    "calls_per_tick": 0.19,
+    "ms_per_tick": 0.001
+   },
+   "brain/los.cover_computed": {
+    "calls_per_tick": 2.65,
+    "ms_per_tick": 0.013
+   },
+   "brain/los.ray": {
+    "calls_per_tick": 0.24,
+    "ms_per_tick": 0.001
+   },
+   "brain/motion": {
+    "calls_per_tick": 0.28,
+    "ms_per_tick": 0.048
+   },
+   "brain/move": {
+    "calls_per_tick": 3.27,
+    "ms_per_tick": 0.159
+   },
+   "brain/s.contacts": {
+    "calls_per_tick": 5.62,
+    "ms_per_tick": 0.388
+   },
+   "brain/s.cover_fire": {
+    "calls_per_tick": 5.62,
+    "ms_per_tick": 0.089
+   },
+   "brain/s.cover_spots": {
+    "calls_per_tick": 5.62,
+    "ms_per_tick": 0.07
+   },
+   "brain/s.incoming": {
+    "calls_per_tick": 5.62,
+    "ms_per_tick": 0.086
+   },
+   "brain/s.squad": {
+    "calls_per_tick": 5.62,
+    "ms_per_tick": 0.083
+   },
+   "brain/s.tactics": {
+    "calls_per_tick": 5.62,
+    "ms_per_tick": 0.124
+   },
+   "brain/situation": {
+    "calls_per_tick": 5.62,
+    "ms_per_tick": 0.995
+   },
+   "brain/sq.gather": {
+    "calls_per_tick": 0.62,
+    "ms_per_tick": 0.037
+   },
+   "brain/sq.plan": {
+    "calls_per_tick": 0.62,
+    "ms_per_tick": 0.03
+   },
+   "brain/sz.tr.look_gd": {
+    "calls_per_tick": 2.21,
+    "ms_per_tick": 0.022
+   },
+   "brain/sz.tr.refresh_gd": {
+    "calls_per_tick": 0.33,
+    "ms_per_tick": 0.125
+   },
+   "brain/sz.tr.shape_gd": {
+    "calls_per_tick": 14.72,
+    "ms_per_tick": 0.091
+   },
+   "brain/t.incoming": {
+    "calls_per_tick": 29.27,
+    "ms_per_tick": 0.183
+   },
+   "brain/t.poll": {
+    "calls_per_tick": 29.27,
+    "ms_per_tick": 0.399
+   },
+   "brain/t.poll.element": {
+    "calls_per_tick": 29.27,
+    "ms_per_tick": 0.083
+   },
+   "brain/t.poll.home": {
+    "calls_per_tick": 29.27,
+    "ms_per_tick": 0.033
+   },
+   "brain/t.poll.order": {
+    "calls_per_tick": 29.27,
+    "ms_per_tick": 0.11
+   },
+   "brain/t.poll.squad": {
+    "calls_per_tick": 29.27,
+    "ms_per_tick": 0.139
+   },
+   "brain/t.poll.station": {
+    "calls_per_tick": 29.27,
+    "ms_per_tick": 0.067
+   },
+   "brain/t.rate_progress": {
+    "calls_per_tick": 29.27,
+    "ms_per_tick": 0.258
+   },
+   "brain/think": {
+    "calls_per_tick": 46.02,
+    "ms_per_tick": 3.156
+   },
+   "brain/weapon": {
+    "calls_per_tick": 3.27,
+    "ms_per_tick": 0.12
+   },
+   "brain/weapon.aim": {
+    "calls_per_tick": 0.24,
+    "ms_per_tick": 0.005
+   },
+   "brain/weapon.lanes": {
+    "calls_per_tick": 0.24,
+    "ms_per_tick": 0.005
+   },
+   "brain/weapon.scan": {
+    "calls_per_tick": 3.27,
+    "ms_per_tick": 0.055
+   },
+   "match": {
+    "calls_per_tick": 1.0,
+    "ms_per_tick": 0.285
+   },
+   "match/engagement": {
+    "calls_per_tick": 0.03,
+    "ms_per_tick": 0.02
+   },
+   "match/intel": {
+    "calls_per_tick": 0.33,
+    "ms_per_tick": 0.073
+   },
+   "match/land_rounds": {
+    "calls_per_tick": 1.0,
+    "ms_per_tick": 0.004
+   },
+   "match/resupply_hazards_options_control": {
+    "calls_per_tick": 0.33,
+    "ms_per_tick": 0.117
+   },
+   "match/squads": {
+    "calls_per_tick": 0.33,
+    "ms_per_tick": 0.013
+   },
+   "match/suppression": {
+    "calls_per_tick": 0.5,
+    "ms_per_tick": 0.052
+   },
+   "segment:controllers": {
+    "calls_per_tick": 1.0,
+    "ms_per_tick": 6.296
+   },
+   "segment:elements": {
+    "calls_per_tick": 1.0,
+    "ms_per_tick": 0.001
+   },
+   "segment:order_executor+commanders": {
+    "calls_per_tick": 1.0,
+    "ms_per_tick": 0.003
+   },
+   "shell": {
+    "calls_per_tick": 0.22,
+    "ms_per_tick": 0.006
+   },
+   "shell/hit": {
+    "calls_per_tick": 0.04,
+    "ms_per_tick": 0.004
+   },
+   "tank": {
+    "calls_per_tick": 46.0,
+    "ms_per_tick": 0.758
+   },
+   "tank/drive": {
+    "calls_per_tick": 29.27,
+    "ms_per_tick": 0.486
+   },
+   "tank/drive_parked": {
+    "calls_per_tick": 0.76,
+    "ms_per_tick": 0.0
+   },
+   "tank/fire": {
+    "calls_per_tick": 0.19,
+    "ms_per_tick": 0.02
+   },
+   "tank/publish_state": {
+    "calls_per_tick": 29.27,
+    "ms_per_tick": 0.037
+   },
+   "tank/spray": {
+    "calls_per_tick": 0.01,
+    "ms_per_tick": 0.001
+   }
+  },
+  "tick_ms": 7.434,
+  "ticks": 2700,
+  "unattributed_ms": 0.085
+ },
+ "result": {
+  "army_cost": {
+   "green": 3500,
+   "rust": 3430
+  },
+  "budget": 3500,
+  "control": {
+   "green": 48,
+   "rust": 18
+  },
+  "controls": {
+   "acquisition": true,
+   "crossing": true,
+   "faction_directives": true,
+   "tuning": {}
+  },
+  "duration_seconds": 90.0,
+  "kills_by_unit": {
+   "green": {
+    "syn_artillery": 2
+   },
+   "rust": {
+    "gang_ifv": 9,
+    "gang_scout": 13,
+    "gang_support": 5,
+    "gang_tank": 3
+   }
+  },
+  "losses_by_unit": {
+   "green": {
+    "gang_ifv": 10,
+    "gang_scout": 13,
+    "gang_support": 5,
+    "gang_tank": 3
+   },
+   "rust": {
+    "syn_artillery": 2
+   }
+  },
+  "real_seconds": 23.1,
+  "reason": "time_limit",
+  "score": {
+   "green": 2,
+   "rust": 30
+  },
+  "seed": 3,
+  "sim_seconds": 90.0,
+  "speedup": 3.9,
+  "state_hash": "1ef88ba9268fc689",
+  "stats": {
+   "damage": [
+    462,
+    6146
+   ],
+   "designations": [
+    0,
+    18
+   ],
+   "designators_fielded": [
+    0,
+    3
+   ],
+   "engagement": {
+    "behind_line_kill_share": 0.0,
+    "centroid_travel": [
+     322.8,
+     255.6
+    ],
+    "combat_seconds": 68,
+    "contact_second": 6,
+    "deaths_near_cover_share": 0.281,
+    "direct_contact_second": 6,
+    "engaged_distance_direct_median": 75.0,
+    "engaged_distance_median": 75.0,
+    "flank_rear_kill_share": 0.636,
+    "held_line_share": 0.0,
+    "kill_distance_median": 68.4,
+    "kill_distance_p25": 23.5,
+    "kill_distance_p75": 110.1,
+    "kills": {
+     "front": 8,
+     "indirect": 10,
+     "rear": 7,
+     "side": 7
+    },
+    "kills_by_cover_shooters_share": 0.25,
+    "net_advance": [
+     -12.8,
+     55.7
+    ],
+    "off_axis_kill_share": 0.5,
+    "samples": 90,
+    "separation_at_contact": 102.1,
+    "shots": 508,
+    "shots_direct": 0,
+    "shots_near_cover_share": 0.244,
+    "shots_per_unit_minute": 11.63,
+    "static_share": 0.0,
+    "unit_seconds_near_cover_share": 0.263
+   },
+   "first_kill_seconds": 10.1,
+   "first_shot_seconds": 6.6,
+   "flame_damage": [
+    0,
+    0
+   ],
+   "friendly_damage": [
+    170.0,
+    0.0
+   ],
+   "friendly_hits": [
+    1,
+    0
+   ],
+   "friendly_kills": [
+    1,
+    0
+   ],
+   "gun_idle_samples": [
+    52,
+    114
+   ],
+   "gun_ready_samples": [
+    66,
+    149
+   ],
+   "hazard_damage": [
+    0.0,
+    0.0
+   ],
+   "hazard_kills": [
+    0,
+    0
+   ],
+   "hits": [
+    101,
+    265
+   ],
+   "hits_by_face": {
+    "front": 177,
+    "rear": 20,
+    "side": 169
+   },
+   "hp_mended": [
+    686,
+    0
+   ],
+   "hp_mended_under_fire": [
+    61,
+    0
+   ],
+   "kills": [
+    2,
+    30
+   ],
+   "laser_damage": [
+    18,
+    2690
+   ],
+   "mortar_damage": [
+    0,
+    1822
+   ],
+   "options": [
+    {
+     "CLEAR_LANE": 45,
+     "CONTEST": 4231,
+     "COVER_FIRE": 31,
+     "ENGAGE": 3404,
+     "FLANK": 16,
+     "HOLD": 32,
+     "INVESTIGATE": 850,
+     "REGROUP": 841,
+     "RETREAT": 954,
+     "SPOT": 5898,
+     "TAKE_COVER": 90
+    },
+    {
+     "BOMBARD": 723,
+     "CLEAR_LANE": 306,
+     "CONTEST": 1825,
+     "COVER_FIRE": 193,
+     "ENGAGE": 1296,
+     "RECHARGE": 24,
+     "REGROUP": 57,
+     "SHADOW": 196,
+     "SPOT": 4400,
+     "SUPPRESS": 914,
+     "TAKE_COVER": 9
+    }
+   ],
+   "pinned_samples": [
+    117,
+    51
+   ],
+   "shells_resupplied": [
+    0,
+    10
+   ],
+   "shield_damage": [
+    778.473333671689,
+    0.0
+   ],
+   "shots": [
+    160,
+    348
+   ],
+   "suppression_samples": [
+    24592,
+    14915
+   ],
+   "suppression_total": [
+    464.765927668066,
+    113.290586106116
+   ],
+   "weak_spot_hits": [
+    0,
+    12
+   ]
+  },
+  "tanks": {
+   "green": 34,
+   "rust": 12
+  },
+  "tick": 2701,
+  "units_left": {
+   "green": 3,
+   "rust": 10
+  },
+  "units_lost": {
+   "green": 31,
+   "rust": 2
+  },
+  "winner": "Green"
+ }
+}

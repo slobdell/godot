@@ -53,5 +53,6 @@ run
 rm -rf "$box"; mkdir -p "$box"
 run REMOTE_SEED=0
 ! grep -q "seeding" <<<"$out" && [ ! -e "$box/project.godot" ] && ok "REMOTE_SEED=0 skips it" || bad "seeded with REMOTE_SEED=0" "$out"
+grep -q "'P /.remote-synced'" "$tools/remote.sh" && ok "the --delete sync protects .remote-synced (else every sync re-seeds)" || bad "the main rsync does not protect .remote-synced"
 printf '\nremote-seed: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

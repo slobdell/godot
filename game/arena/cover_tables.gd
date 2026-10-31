@@ -90,6 +90,11 @@ func _build(layout: Dictionary) -> void:
 		if size.y < Perception.EYE_HEIGHT:
 			continue  # a low obstacle does not block a look (arena_report's own rule)
 		_mark(entry, size)
+	# Mapkit P3 (C47.7): sight screens are not obstacles (hulls pass), but they hide what is behind them.
+	if ArenaKit.sight_on:
+		for prop: Dictionary in layout.get("props", []):
+			if ArenaKit.is_kit(String(prop["type"])) and ArenaKit.is_sight(String(prop["type"])):
+				_mark(prop, ArenaKit.size_of(prop))
 	_shadow = []
 	_prefix = []
 	for k in HEADINGS:

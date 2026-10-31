@@ -55,6 +55,84 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-30 ~20:00 PDT). Merge candidate: 46c3b2f3b (full check queued on builder3, synced; a79fc79cb is VOID: it
+carried two parse errors of my tests, its check cancelled).** After it: 7571efb20 (native_esit ON) rides on the next check.
+- **N4 ElementSituation.build DONE, ON (7571efb20):** the member + intel-contact loops in C++ (esit_native.cpp, NativeEsit; the
+  loops moved verbatim into ElementSituation._entries, the reference; R47.19: frozen by the twin, changes through native).
+  EQUAL: test_native_esit 200 / 0 (111 with contacts); his four replays under TANK_NATIVE_ESIT_VERIFY=1 (builder3 light,
+  46c3b2f3b): Crossing 6500+, Locks 5500+, Sumps 7500+, Parade 6000+ calls, 0 mismatches; check's native-verify-scenarios verifies
+  it. Price: his Crossing 112 s, ABBA n 3, placed 0, builder3 light: elements ON 2.869 / 1.884 / 1.790 v OFF 2.962 / 2.992 / 1.692
+  ms a tick: clean pairs -0.09 / +0.10, the middle pair confounded by the box's load (tick 10.9 -> 6.9): **neutral**, under my
+  0.2-0.3 estimate. ON by the ruling (core components in C++).
+- **E7 Amendment 1 twin EQUAL:** pair/native-e7 aa339ab80 = engage 43ed628f1 + c2ddd51fb (o.his_side): 9 / 0, 7521 decisions / 0,
+  27 pressed. Engage freezes on it.
+- **E3 pot-shot twin EQUAL (R47.20, his yes):** pair/native-e3 3c4a3b576 = engage d4a88c4a5 + e232fce63 (+ the test floor): gun_native's
+  apply_weapon runs engage's block after engage() (POT_SHOT read live off the Gunnery script; NativeGun + NativeExec owned share it).
+  builder3 light: 41 / 0; native gun 8223 applies, 4 pot shots fired, every off-aim compared, 0 mismatches.
+- **R47.26/R47.27 the cost cap (his laptop 8-12 fps):** cost-cap Crossing profile (gangs v syndicate 3500, 34 v 12, seed 3, 90 s,
+  builder3 light, n 1): tick 7.43 ms at ~46 crews; per-crew costs: brain/think 3.16 (situation 1.00, poll+rate+incoming 0.84),
+  brain/execute 2.57, tank 0.76 (+ wall_contact 0.31). **Measured laptop ratio ~3.0x builder3** (his Crossing .perf tick_ms 17.0
+  mean v builder3's replay 5.5-5.9). Frame model F = R / (1 - T/33.3) fits orders' read (79 ms, 2.4 ticks a frame); a cap of 2 ticks
+  a frame -> ~71 ms, clock 0.94 (ruled: no change). **(a) prices, same workload, ABBA n 2:** native_scan ON +0.48 / +0.52 ms a tick:
+  SLOWER, stays OFF; native_matchups: one pair confounded by the box's load, the clean one neutral (decide +0.003): second ABBA running.
+  (b) t.poll's prologue port: next (it is TankBrain.think's whole prologue; a large twin).
+- **Backlog:** N1 twins as filed (E7 + E3 done; route's door mask when doors reach an arena); N2 DONE; N3 reader DONE (the Sumps re-read
+  waits on orders' inp rows); N4 DONE; N5 lines_r47 started (no verdict yet); N6 builders healthy (builder3 29 %; builder0 down
+  since ~17:35, the orchestrator told the lead).
+
+**REPORT (2026-10-30 ~19:15 PDT). Merge candidate: a79fc79cb (full check queued on builder3: mapkit / manoeuvre / route / me /
+orders; nothing stale in the queue, N6).** Since: 00147f9a5 (remote.sh protects .remote-synced), 6fcf33ccd (native_place ON),
+131823cff (lines_r47), the E7 twin commits (no-op on main), docs. The next candidate = the tip after a79fc79cb goes green.
+- **N2 place twin DONE, ON (6fcf33ccd):** EQUAL on 4000 random elements x every switch and on every place() of his four recordings
+  (TANK_NATIVE_PLACE_VERIFY=1, builder3 light, a79fc79cb: Crossing 11000+, Locks 7000+, Sumps 12000+, Parade 8000+, 0 mismatches);
+  check's native-verify-scenarios verifies every AI scenario's place() both ways from now on. **Price:** his Crossing 112 s,
+  --sim-profile, builder3 light, a79fc79cb, ABBA n 3 a side, every run REPLAY_SPAWN placed 0: elements ON 1.742 / 1.436 / 1.427 v OFF
+  1.709 / 1.684 / 1.616 ms a tick (paired -0.14 ms, se 0.09, ~8 % of elements); tick -0.14 ms (se 0.33, the box loaded by other
+  checks). Faster or neutral -> ON (the orchestrator's ruling; core components in C++). The one ON run that parted (placed 37/37)
+  was a mis-start of the harness (R47.18), not place().
+- **E7 twin EQUAL (engage's simplified spec):** pair/native-e7 19a38a505 = engage 087d1732a + stream/native 6c757c990 / 7c6ea847e /
+  e4d00c6fb / d6d363ffe: decide_native's obey drops RETREAT for an attack_move under an `attack` element task when TankBrain.PRESS_ON
+  (read live; absent = off). builder3 light, native ON: 46 / 0; native decide 7521 decisions / 0 mismatches, 30 RETREATs pressed.
+- **E2a twin:** built and EQUAL (8189 gun applies, 29 carried, 0 mismatches) then DROPPED with E2a (R47.17); reverted (afab6fb7e).
+- **Bar M:** no twin (confirmed: the station's goal is TankBrain._order_context, GDScript on every path).
+- **R47.18 (army layout):** the live layout is bake-timing dependent at start (CP43.0); a next-round determinism item, not cause 2.
+
+**REPORT (2026-10-30 ~18:30 PDT).** Merged: **dfb6a2567 GREEN builder3** (`make check exited 0`, 3518 / 0, 29 targets ALL JUDGED;
+replay-pytest in check, the remote.sh seed, N3's reader) = main 3f9180d2f. Since: N0 candidate 2, the Xorg DISPLAY line, the place
+twin (WIP), the replay A/B switches; full check of dce3e6a23 running.
+
+**N0 (R47.8, his replays leave his match): cause 1 FIXED (candidate 2, 91f0d9900: tests/replay), cause 2 OPEN, written up (time-box).**
+- Cause 1: his Crossing ctrl+4 over Spears + Wrenches is a control-group save, which writes no row. It left the Wrenches in no
+  squad, so his click sent Spears as a squad task and the Wrenches DIRECT (their row: `source: player`). The replay sent both as
+  squads and laid Spears 3.2 m off his spot (57.7, 25.1 v his 55.7, 22.6); the Wrenches parted at 1 s. Fix: ReplaySetup.merge_clicks
+  marks a group click's direct rows `loose`, and the replay empties a control group whose WHOLE squad is loose before issuing (a
+  partial squad sent direct keeps its group). `--replay-loose=off` = before. builder3 light, Crossing 112 s: the Wrenches 0.0 m to
+  19 s (Wrenches_1-3 0.0 to 25 s), Spears' spot his, every crew exact to tick 330. **Orders: the `inp` row must cover ctrl+N / shift+N.**
+- Cause 2 (open): between tick 330 and 360 several crews part at once (0.1-1 m; the give-way pair Spears_1 / Spears_5 flips who
+  yields), as the syndicate's first lasers land (his first hit tick 382, the replay's 390); Rust's positions still equal at 360.
+  Locks parts at the same tick (manoeuvre: exact to 330). Ruled OUT on builder3: headless v windowed (OpenGL) v frames at the
+  display's rate (REPLAY_WINDOW=1, REPLAY_FREE_FPS=1: three byte-identical tables), the compiler and libm (gcc 13.3, glibc 2.39 on
+  both boxes), wall-clock reads and _process-frame caches in the sim (grep: none), lane-clear (engage: identical on/off).
+  Untested: his laptop itself (no local Godot this round, C47.1), the syndicate laser / shield path across CPUs.
+  **The limit, stated:** a replay of his round-46 matches is his match to 0.0 m through 11 s; by 13 s the worst crew is 8.5 m off,
+  by 15 s 20 m (Crossing, builder3 light, dce3e6a23's replay code). Reads past ~11 s are a staged read, not his match.
+- Terminus (round 45) now parts at 12 s too, but it is no control: it predates round 46's rules (shortfwd, holdway, veto, dry_hop)
+  and only lane_clear is stamped. **Request (mine, next):** stamp every ON rule in `rules`, so old recordings replay their build.
+
+**N0 more (2026-10-30 ~19:30):** the laptop replay (ONE, lock-held, Crossing 14 s, n 1) = builder3's table to the decimal: cause 2 is
+not machine float math; it is in his live session (an input with no row). ec6964f11: the rules stamp carries group_veto, shortfwd,
+holdway with lane_clear (dated by the recording's name when unstamped). a79fc79cb: **his garage fights replay again** (Sumps,
+Parade: `--player` / `--garage-army` / `--enemy` named user:// files only his laptop has; before, `REPLAY_DONE no RtsControls`):
+both armies rebuilt from the header roster (REPLAY_ARMY_REBUILT). Sumps (builder3 light, 40 s): exact to 10 s (Delta parts at 11 s),
+Bravo exact past 23 s.
+
+**N2 place twin: EQUAL so far.** Randomized (test_native_place, 4000 elements x every switch); his replays under
+TANK_NATIVE_PLACE_VERIFY=1 (builder3 light, every place() both ways): Crossing 11000+ calls / 0, Locks 7000+ / 0 (Sumps, Parade
+running). native_place stays OFF (cf598c817) until the four are in and the full check is green; then the price read.
+
+**Queue (twins):** engage E2a lay_carry (gun_native engage(), waits on engage's green hash); route's door mask in pathing_native /
+drive_native path_query (after mapkit's doors reach an arena); manoeuvre's R47.11 transit grounding line if decide grounds natively.
+
 **Plan (2026-10-30 evening, start; from main c789b55a6, code e306ce27f GREEN builder3 3518/0: no baseline check of mine).**
 1. N1 twins: none filed yet (*Bars (round 47)* empty at start); each one jumps the queue when it arrives.
 2. N2 ElementPlan.build: profile INSIDE it first (probe branch probe/native-plan47, wrappers on ~40 functions, not merged), so

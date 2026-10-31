@@ -65,6 +65,31 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### R4 DONE (2026-10-30 ~20:05): his Locks read after engage's E7 — main b96e12e43, builder3 light lane, native on, n = 1 each
+
+`make route-trace RECORDING=references/round46/playtest/2026-10-30T15-49-20-locks.jsonl ROUTE_CREWS=Green_Hunters_4
+STAGE_TICK=1190 REPLAY_SECONDS=40 REPLAY_FLAGS=--press-on=off|on`. The staged start is the same in both (census 1170: 24 placed, 14
+destroyed, 10 orders re-issued). Hunters_4 is at hull 15/220 in both. Its element's task is `attack` on Rust_Lances_3/4. Range = autocannon
+60 m (45 effective). "Time to range" = the first census row (every 1 s) with a live target within that distance.
+
+| | before (`--press-on=off`) | after (`--press-on=on`) |
+|---|---|---|
+| driven | 176.4 m in 39.7 s | 20.0 m in 4.1 s |
+| brain options (trace rows) | RETREAT 97, MOVE 15, ENGAGE 11, HOLD 6 | MOVE 8 (no RETREAT) |
+| path | north to z 112 (away), then back south to z 48 | straight south toward Lances_4 |
+| distance to target | 76 m at 3 s, 186 m at 27 s, 118 m at the end; nearest 73 m | 70.7 m at 1 s, 62.1 m at death |
+| time to 60 m / 45 m | never / never | never / never (died 2 m short) |
+| end | killed tick 1192 (39.7 s) by Rust_Battery_3 | killed tick 122 (4.1 s) by Rust_Battery_3 |
+
+Read: E7 does what was asked of the route. His order wins, it drives straight at the target, and the detour is gone (20 m in a
+straight line instead of 176 m north and back). But at 15 hull it reaches neither 60 m nor 45 m: the Rust battery kills it 2 m short,
+35.6 s sooner than when it fled. In his match it is dead either way. With E7 it dies on his line, and nothing in it is the route's to fix.
+
+**E7 is OFF in the default game on main b96e12e43.** The merge says "--press-on ON", but `TankBrain.PRESS_ON_DEFAULT := false`
+(game/ai/tank_brain.gd:116), and no make target, script or config passes `--press-on=on`. The table's "after" needs the flag. ->
+orchestrator / engage.
+Analyzer (not committed: a one-off): census + trace rows -> driven m, nearest target, first tick within 60/45 m.
+
 ### FINAL REPORT (2026-10-30 ~18:00) — route, round 47
 
 **Merge:** R0 on main (ba53581f7 GREEN builder3, 3520/0, 28 ALL JUDGED). **R2a+R5 GREEN, merge here: d847b77fd** (builder3, `make check

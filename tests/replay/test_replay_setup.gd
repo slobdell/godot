@@ -172,3 +172,30 @@ func test_a_click_given_by_hand_merges_an_old_recordings_group_click() -> void:
 	assert_eq(ReplaySetup.merge_clicks(given).size(), 3, "the 1512 rows merge into one order")
 	assert_eq(ReplaySetup.with_click(rows, ""), rows, "no --click: unchanged")
 	assert_eq(ReplaySetup.with_click(rows, "nonsense"), rows, "a malformed --click: unchanged")
+
+
+## Round 47 (N0, R47.8): the rows of one group click that went out direct (source "player") name the crews to free: his Crossing
+## ctrl+4 over Spears + Wrenches left the Wrenches in no squad (a control-group save writes no row).
+func test_a_group_clicks_direct_rows_name_his_loose_crews() -> void:
+	var rows := [
+		{"t": "order", "tick": 0, "verb": "move", "click": [80.9, 49.5], "to": [55.7, 22.6], "units": ["S_1", "S_2"], "source": ""},
+		{"t": "order", "tick": 0, "verb": "move", "click": [80.9, 49.5], "to": [95.5, 69.0], "units": ["W_1", "W_2"], "source": "player"},
+		{"t": "order", "tick": 9, "verb": "move", "click": [1.0, 2.0], "to": [1.0, 2.0], "units": ["S_1"], "source": "player"},
+	]
+	var merged := ReplaySetup.merge_clicks(rows)
+	assert_eq(merged[0]["loose"], ["W_1", "W_2"], "the direct rows' crews")
+	assert_eq(merged[0]["to"], [80.9, 49.5], "the click is re-laid from his cursor")
+	assert_true(not merged[1].has("loose"), "a single row is no group click: nothing to free")
+
+
+## Round 47 (N0): his garage fights (Sumps, Parade) loaded armies from his own user://; the replay rebuilds them from the header.
+func test_his_garage_army_is_rebuilt_from_the_header_roster() -> void:
+	var header := {"units": [_unit("Green_Bravo_2", "tank", 0), _unit("Green_Alpha_1", "scout", 0), _unit("Green_Bravo_1", "ifv", 0),
+			_unit("Rust_Big_Guns_1", "artillery", 1), _unit("Green_Alpha_2", "scout", 0)]}
+	var green := ReplaySetup.army_from_header(header, 0)
+	assert_eq((green["squads"] as Array).map(func(q: Dictionary) -> String: return q["name"]), ["Bravo", "Alpha"], "first appearance")
+	assert_eq(green["squads"][0]["units"], [{"unit": "ifv"}, {"unit": "tank"}], "by number")
+	assert_eq(ReplaySetup.army_from_header(header, 1)["squads"][0]["name"], "Big_Guns", "a squad name with an underscore")
+	var flags := {"flags": {"player": "user://doctrines/surely_not_here_47.json", "enemy": "res://doctrines/flame_rush.json",
+			"garage-army": "user://doctrines/surely_not_here_47.json"}}
+	assert_eq(ReplaySetup.missing_armies(flags), {"player": 0, "garage-army": 0}, "a res:// army and a present file are his as they are")

@@ -4819,3 +4819,47 @@ held_1-3, pa_1-4, vet_1-2): the text gate is passed, so their voice generation i
    -> R47.22.
 4. **Screenshots on builder3's desktop:** "Yes, use builder3's desktop (Recommended)" — a game window on his logged-in Xorg :1 for ~1 min
    for render targets while builder0 is down. -> R47.23.
+5. **Laptop army size under the cost cap (2026-10-30 evening):** asked with orders' laptop read (UHD 620, his Crossing, n 2 an arm: cost
+   cap = gangs 27 v syndicate 12 vehicles, ~8-12 fps v ~18 today, game clock slipping; most of the cost the HUD / controls with ~7 a
+   squad). **His pick: "Full cost cap now"** — 27 gang vehicles on the laptop right away, even fights, ~10 fps until the controls fix
+   lands. -> R47.26.
+6. **Camera select-pan after Bar K (29 of 33 lines; every deciding line passed; G2 / G3 / G8 / G4b failed):** asked in player terms (far
+   squad framed 0.7 v 4.9 s; selection far off-centre 7 v 12 %; flipping between squads 140 m apart leaves the old squad's fight off screen,
+   hits unseen 5 -> 13 % in that test, attacks no worse; clicks during the ~0.7 s sweep misclick more). **His pick: "Ship it ON
+   (Recommended)".** -> R47.29.
+7. **Group click "columns only at the end" as built (O1 v3: together 14 / 28 m, usually sooner, ~2x the bumping in the last stretch; towns
+   and bridges unchanged):** **his pick: "Ship it, bumping OK (Recommended)"** — Bar O2's contact guard becomes x2.5 + 5, said up front. -> R47.37.
+8. **Snap shots after Bar E3 (D1 missed by 0.006 s; first round 0.8 v 1.6 s; accuracy 79 -> 73 %, corrected from the dev read's 76; the
+   CPU's long guns 83 -> 69 %):** **his pick: "Ship it ON (Recommended)".** -> R47.37.
+9. **Material Maker trial page (mapkit P1b), his picks: TRIM SHEET on all four (traps, monorail, pipes, crane).** His note on the
+   monorail, verbatim:
+   > "Note that we probably need to invest a minimal amount into creating an asset for the monorail train itself, somehow in keeping
+   > with the theme (I don't know what that looks like exactly because presumably a Monorail is for the people, meaning that the
+   > people's monorail will be far from Syndicate quality.)"
+   -> R47.38: a monorail TRAIN asset, minimal investment, a people's train (shabby, nothing like Syndicate polish); directions on the
+   tap-to-approve page first (memory: concept choices), then the 3D.
+10. **The monorail train (mapkit's kit-built directions page, https://claude.ai/artifact/9PNjR9rWKNXQXBWQ9sNsLC): his pick "none", his
+    note verbatim:**
+    > "You misunderstand me. I'm saying generate a meshy asset for the monoreal as a one-off like we did for the blimp.  I'm basically
+    > thinking something run down and rickity."
+    -> R47.39: a ONE-OFF Meshy model of the monorail train, run down and rickety, made the way the round-11 airship was (Meshy
+    text-to-image concepts, 2-3 directions on the tap-to-approve page, then image-to-3D of his pick; ledger rows in
+    `assets/meshy_ledger.md`; production quality, memory). The kit-built A / B / C directions are dropped.
+11. **The Meshy monorail train (https://claude.ai/artifact/8fMQFqbbEFecRG2PsVBUfE): his pick A** — the salvaged metro car (rust, boarded
+    windows, cable-and-tarp roof). No note. Mapkit: image-to-3D, one prop on the beam, laptop read before it ships.
+
+## His ML question (2026-10-30 ~22:40, verbatim)
+
+> "also while we're waiting on other agents, and now that we have builder3 up with a GPU, is it time to start considering training
+> models for CPU opponents? Or perhaps using machine learning to detect things in our game for better development? (i.e. I think
+> you mentioned detecting dumb looking computer behavior)"
+
+The orchestrator's answer (in chat, recorded here; his decision pending): builder3's GPU is an RTX 5060 Ti 16 GB. **Opponents:** not yet,
+and not because of the GPU — the standing ruling (*On machine learning*, above, and the 2026-09-19 re-decision) allows offline search that
+ships as a readable table or decision tree, and keeps neural policies shut; training is bound by the sim's CPU throughput, and this round's
+failures (outranged crews, stuck crews, bumping) are missing behaviours we can write. **Detection: yes, worth starting** — it is dev
+tooling, never shipped, so the readability rule does not bind it. Proposal: a "dumb-moment finder" stream next round: (1) rank the
+oddest crew-seconds from many CPU-v-CPU fights by anomaly scoring over the censuses we already log (no-progress, contact, reversals,
+facing away from fire, fire held in range); (2) render the top moments to short clips on builder3's GPU; (3) a tap-to-judge page for him
+("looks dumb" / "fine"), his labels in its db; (4) once there are a few hundred labels, train a small classifier on builder3's GPU to rank
+new fights. His eye stays the judge; the model only finds candidates faster.

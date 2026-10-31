@@ -172,6 +172,8 @@ func observe(event: Dictionary) -> Array:
 			return _on_element_drill(event, t)
 		"momentum":
 			return _on_momentum(event, t)
+		"door":
+			return _on_door(event, t)
 		"match_end":
 			return _on_end(event, t)
 	return []
@@ -395,6 +397,21 @@ func _break_streak(team: String) -> void:
 	if streak_team != team:
 		streak_team = ""
 		streak = 0
+
+
+## Mapkit P5 (round 47): a blast door. One moment per event, kind door_<kind>; {gate} names it, and a crew that holds
+## it or is caught by it gives its {unit} and its side ({faction}).
+func _on_door(event: Dictionary, t: float) -> Array:
+	var kind := String(event["kind"])
+	var slots := {}
+	if String(event["gate"]) != "":
+		slots["gate"] = String(event["gate"])
+	var team := ""
+	if event.has("unit"):
+		slots["unit"] = String(event["unit"])
+		team = String(event.get("team", ""))
+	return [moment("door_" + kind, t, [], slots, team, "%s %s%s" % [event["door"], kind,
+			(" (%s %s)" % [team, event["unit"]]) if event.has("unit") else ""])]
 
 
 func _on_control(event: Dictionary, t: float) -> Array:

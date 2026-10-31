@@ -90,6 +90,20 @@ func _run() -> void:
 		var parts := extra.trim_prefix("--").split("=", true, 1)
 		if not flags.values.has(parts[0]):  # a switch on the command line wins (an A/B of the replay)
 			wanted.append(extra)
+	# Round 47 (N0): an army file of his this machine does not have (his Sumps and Parade were garage fights) is rebuilt from the
+	# header's roster under user://replay/ and named on the replay's command line in its place (a switch there wins).
+	var missing := ReplaySetup.missing_armies(header)
+	for key: String in missing:
+		if flags.values.has(key):
+			continue
+		var army := ReplaySetup.army_from_header(header, int(missing[key]))
+		var rebuilt := "user://replay/army_%s.json" % ("green" if int(missing[key]) == 0 else "rust")
+		DirAccess.make_dir_recursive_absolute("user://replay")
+		var out := FileAccess.open(rebuilt, FileAccess.WRITE)
+		out.store_string(JSON.stringify(army, "  ", false))
+		out.close()
+		wanted.append("--%s=%s" % [key, rebuilt])
+		print("REPLAY_ARMY_REBUILT " + JSON.stringify({"switch": key, "his": header["flags"][key], "squads": (army["squads"] as Array).size()}))
 	for key: String in ReplaySetup.match_switches(header):
 		if not flags.values.has(key) and not wanted.any(func(w: String) -> bool: return w.begins_with("--%s=" % key) or w == "--" + key):
 			var value := String(header["flags"][key])
@@ -189,6 +203,16 @@ func _issue() -> void:
 		if names.is_empty():
 			print("REPLAY_ORDER " + JSON.stringify({"tick": _match.tick, "skipped": o}))
 			continue
+		if o.has("loose") and not (o["loose"] as Array).is_empty() and _flag("replay-loose", "on") != "off":
+			# Round 47 (N0, R47.8): a whole squad his click found in no squad (ReplaySetup.merge_clicks' `loose`) leaves its group;
+			# part of a squad sent direct (a partial selection: the controls' own "part of a squad" path) keeps it.
+			var freed := 0
+			for number in _controls.groups.numbers():
+				var whole := _controls.groups.members(number)
+				if whole.all(func(n: String) -> bool: return (o["loose"] as Array).has(n)):
+					freed += whole.size()
+					_controls.groups.save(number, [])
+			print("REPLAY_LOOSE " + JSON.stringify({"tick": _match.tick, "units": (o["loose"] as Array).size(), "freed": freed}))
 		_controls.selection.set_units(names)
 		if String(o["verb"]) == "formation":
 			var picked := _controls.set_formation(String(o["formation"]))

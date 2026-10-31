@@ -333,6 +333,42 @@ const PLAN_TRAVEL_OMEGA := 3.0
 ## SNAP_PX (24 px at 60 fps: 1.33 heights/s); 4.0 reached any squad within ~1 s but every pan was 5-10 snaps.
 const URGENT_SCREENS_PER_S := 1.3
 const URGENT_OMEGA_X := 2.5
+## Round 47 (camera K2/K3, his 2026-10-30 Crossing and Parade notes: "a delay between selecting a squad and the camera
+## starting to move", "the squad I was controlling off in the distance at the edge ... the camera position didn't seem to
+## correct"). Round 46's urgent pan began only while a crew of the new selection was OFF the screen, and a squad 150 m
+## ahead sits at the top edge of his 21 deg view, ON it (Parade tick 2911: Bravo 152 m off, "shown"), so the pan crawled at
+## the hand's pace (~4 m/s) or held for his aim. With `select_pan` the planner's own rule is the gap between where the view
+## looks and where the planner wants it: a new selection (or take_vision) pans at once until the look is within
+## PAN_ARRIVE_M of the planner's point, as does a look that has fallen PAN_START_M behind it with no hand on the camera
+## since the selection; while it pans nothing holds it and his hand does not slow it. `--camera-select-pan=off` = round 46.
+const PAN_START_M := 20.0
+## Ends: once the planner's point is this close to the shown look point (the glide, with his aim hold, finishes the
+## last metres), or PAN_MAX_S after it began. Dev 7001-7004 (ebfc3b162): ending on the planner's point within 3 m kept the
+## pan running through his aims (that point moves with every yaw step): clicks on the aimed unit 82 -> 60 %, slip p95 33 -> 173 px.
+const PAN_ARRIVE_M := 12.0
+const PAN_MAX_S := 1.5
+## Drift: a selection already picked whose middle falls this far from the look, with no hand on the camera since.
+const PAN_DRIFT_M := 30.0
+var _pan_until := -1e9
+var _aim_now := false
+var _panned_for := -2e9
+var _turn_pace := 1.0
+## The pan's spring (1/s; critically damped from rest: 90 % of the way in 3.9/omega s, no step in speed) and its top
+## speed in heights of the ground in view per second (the spring alone peaks at gap * omega / e: 150 m at 7.5 -> 414 m/s,
+## ~13 heights/s at 50 m, a jump cut, not a pan; at 4 heights/s a frame moves 1/15 of the screen at 60 fps, 1/7.5 on his
+## laptop's ~30 fps: the eye still follows the ground, so it reads as a fast pan). `--camera-pan-screens=` (dev).
+const PAN_OMEGA := 7.5
+const PAN_SCREENS_PER_S := 4.0
+var pan_screens := PAN_SCREENS_PER_S
+## K3's hard bound: the planner's point stays within this of his selection's middle (or of the frame's own centre when
+## the squad is spread wider than that): the lean toward its path and the wide frame of contacts may not carry the look
+## further (Crossing tick 690: 35 m off at 100 m, his squad at the edge). Part of `select_pan`.
+const SEL_BOUND_M := 20.0
+var select_pan := true
+## OFF (dev 7001-7004 at 4f12af25e: bounding the planner's point clipped its wide frame of the contacts: the rear ambush on
+## screen 1.4 -> 6.3 s, hits on his units off screen 1.2 -> 2.7 %; with no bound both were BASE's). `--camera-sel-bound=M` (dev).
+var sel_bound := 0.0
+var _select_at := -1e9
 
 var _shown_focus := Vector3.ZERO
 var _shown_yaw := 0.0
@@ -466,6 +502,9 @@ func _ready() -> void:
 	danger_on = flags.text("camera-danger", "on") != "off"  # K4.3: ON (Bar K4 v2 passed, 9737-9772); =off = round 41
 	corner_on = flags.text("camera-corner", "off") == "on"  # K5.3: OFF until Bar K5 passes
 	planner_on = flags.text("camera-planner", "on") != "off"  # round 46 (R46.23): ON for his answer; =off = round 45's camera
+	select_pan = flags.text("camera-select-pan", "on") != "off"  # round 47 (K2/K3): ON; =off = round 46's urgent pan
+	pan_screens = float(flags.text("camera-pan-screens", str(PAN_SCREENS_PER_S)))  # dev only: a bar runs at the constant
+	sel_bound = float(flags.text("camera-sel-bound", "0"))  # dev only
 	_plan_log = flags.has("camera-trace")
 	CameraPlanner.override_weights(flags.text("camera-planner-w", ""))  # dev only: a bar runs at the constants
 	# Round 46 (C5): a headless replay frames at his screen's shape (`--camera-screen=1920x1080`; headless roots are 64x64).
@@ -546,8 +585,9 @@ func _process_timed(delta: float) -> void:
 	_update_tracking()
 	HudClock.end(&"cam.tracking", _hc3)
 	if glide:
-		planner_urgent = planner_on and _track == Track.VISION and _clock < _fresh_until and not _selection_shown()
-		holding = aiming_now() and not planner_urgent
+		_aim_now = aiming_now()
+		planner_urgent = _pan_urgent()
+		holding = _aim_now and not planner_urgent
 		_urgency = (1.0 if planner_urgent else 0.0) + (_urgency - (1.0 if planner_urgent else 0.0)) * exp(-PACE_OMEGA * delta)
 		_glide(delta)
 	else:
@@ -586,6 +626,13 @@ func _glide(delta: float) -> void:
 	var weight := 1.0 - exp(-SMOOTHING * delta)
 	var pace_goal := lerpf(hand_pace, 1.0, _urgency) if _clock - _mouse_moved_at < HAND_MOVING_S else 1.0
 	_pace = pace_goal + (_pace - pace_goal) * exp(-PACE_OMEGA * delta)
+	# Round 47 (K2): the selection's pan is a move of the LOOK POINT; the turn and the zoom keep his hand's pace and his aim
+	# hold (dev 7001-7004 at 4f12af25e: lifting them too ran the planner's turns at 45 deg/s under his hand, ~25 px a frame:
+	# 'planner' jerks 1.7 -> 5.0/min, 157 snaps, clicks on the aimed unit 82 -> 69 %).
+	var turn_goal := hand_pace if _clock - _mouse_moved_at < HAND_MOVING_S else 1.0
+	_turn_pace = turn_goal + (_turn_pace - turn_goal) * exp(-PACE_OMEGA * delta)
+	var turn_pace := _turn_pace if select_pan else _pace
+	var turn_hold := (_aim_now if select_pan else holding)
 	var before_focus := _shown_focus
 	if RtsCamera.hand_set(wrote["focus"]):
 		_shown_focus = _shown_focus.lerp(focus, weight)
@@ -594,31 +641,32 @@ func _glide(delta: float) -> void:
 		_focus_velocity *= exp(-GLIDE_STOP_OMEGA * delta)
 		_shown_focus += _focus_velocity * delta
 	else:
-		var next := RtsCamera.spring(_shown_focus, _focus_velocity, focus, focus_omega * lerpf(1.0, URGENT_OMEGA_X, _urgency), delta)
+		var omega := lerpf(focus_omega, PAN_OMEGA, _urgency) if select_pan else focus_omega * lerpf(1.0, URGENT_OMEGA_X, _urgency)
+		var next := RtsCamera.spring(_shown_focus, _focus_velocity, focus, omega, delta)
 		_focus_velocity = (next[1] as Vector3).limit_length(glide_top_speed())
 		_shown_focus = next[0] if (next[1] as Vector3).length() == _focus_velocity.length() else before_focus + _focus_velocity * delta
 	var before_zoom := _shown_zoom
 	if RtsCamera.hand_set(wrote["zoom"]):
 		_shown_zoom = lerpf(_shown_zoom, zoom, weight)
 		_zoom_velocity = (_shown_zoom - before_zoom) / delta
-	elif holding and _shown_zoom <= vision_zoom:
+	elif turn_hold and _shown_zoom <= vision_zoom:
 		_zoom_velocity *= exp(-GLIDE_STOP_OMEGA * delta)
 		_shown_zoom += _zoom_velocity * delta
 	else:
 		var next := RtsCamera.spring(_shown_zoom, _zoom_velocity, zoom, GLIDE_ZOOM_OMEGA, delta)
-		_zoom_velocity = clampf(float(next[1]), -TRACK_ZOOM_SPEED * _pace, TRACK_ZOOM_SPEED * _pace)
+		_zoom_velocity = clampf(float(next[1]), -TRACK_ZOOM_SPEED * turn_pace, TRACK_ZOOM_SPEED * turn_pace)
 		_shown_zoom = float(next[0]) if float(next[1]) == _zoom_velocity else before_zoom + _zoom_velocity * delta
 	var before_yaw := _shown_yaw
 	if RtsCamera.hand_set(wrote["yaw"]):
 		_shown_yaw = lerp_angle(_shown_yaw, yaw, weight)
 		_yaw_velocity = angle_difference(before_yaw, _shown_yaw) / delta
-	elif holding:
+	elif turn_hold:
 		_yaw_velocity *= exp(-GLIDE_STOP_OMEGA * delta)
 		_shown_yaw = wrapf(_shown_yaw + _yaw_velocity * delta, -PI, PI)
 	else:
 		var gap := angle_difference(yaw, _shown_yaw)  # shown - wanted, the short way round
 		var next := RtsCamera.spring(gap, _yaw_velocity, 0.0, GLIDE_YAW_OMEGA, delta)
-		var limit := deg_to_rad(yaw_deg_per_s) * _pace
+		var limit := deg_to_rad(yaw_deg_per_s) * turn_pace
 		_yaw_velocity = clampf(float(next[1]), -limit, limit)
 		_shown_yaw = wrapf(yaw + float(next[0]) if float(next[1]) == _yaw_velocity else before_yaw + _yaw_velocity * delta, -PI, PI)
 	var before_pitch := _shown_pitch
@@ -683,11 +731,18 @@ func aiming_now() -> bool:
 	return still >= DWELL_S or (aiming.is_valid() and bool(aiming.call()))
 
 
+func _normal_top_speed() -> float:
+	var height := 2.0 * RtsCamera.distance_for(_shown_zoom) * tan(deg_to_rad(fov) / 2.0)
+	return minf(screens_per_s * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom))
+
+
 ## The top speed of an automatic focus move (m/s): GLIDE_SCREENS_PER_S heights of the ground in view at the shown
 ## zoom, under round 40's TRACK_SPEED, times the hand's pace.
 func glide_top_speed() -> float:
 	var height := 2.0 * RtsCamera.distance_for(_shown_zoom) * tan(deg_to_rad(fov) / 2.0)
 	var normal := minf(screens_per_s * height, TRACK_SPEED * lerpf(0.3, 1.0, _shown_zoom)) * _pace
+	if select_pan:
+		return lerpf(normal, pan_screens * height, _urgency)  # round 47 (K2): a selection pans at once, as fast as still reads as a pan
 	return lerpf(normal, URGENT_SCREENS_PER_S * height, _urgency)  # round 46: a new selection off screen, in about a second
 
 
@@ -1960,6 +2015,7 @@ func take_vision() -> void:
 	if not vision.is_valid() or not auto_frame:
 		return
 	_manual_at = -1e9
+	_select_at = _clock  # round 47 (K2): his pick, even of the squad already selected, pans to it at once
 	_before_overview = null
 	follow_target = null
 	if _track != Track.VISION:
@@ -2024,6 +2080,7 @@ func _update_planner(points: Array, destination: Variant) -> void:
 	if names != _plan_names:
 		if not _plan_names.is_empty() or _clock > 1.0:
 			_fresh_until = _clock + CameraPlanner.FRESH_S
+			_select_at = _clock
 		_plan_names = names
 		_plan_at = -1e9
 		planner.restart()
@@ -2082,13 +2139,65 @@ func _update_planner(points: Array, destination: Variant) -> void:
 			framed.append(RtsCamera.inside_wall(contact[0] as Vector3, CameraPlanner.WALL_MARGIN_M))
 		var wide := CameraPlanner.fit(framed, null, yaw, world)
 		goal = [(goal[0] as Vector3).lerp(wide[0], _wide_mix), lerpf(float(goal[1]), float(wide[1]), _wide_mix)]
+	if select_pan and sel_bound > 0.0:
+		goal[0] = RtsCamera.bound_to(goal[0], own, sel_bound)
 	zoom = float(goal[1])
 	focus = look_clamp(goal[0])
 	wrote["focus"] = "select" if planner_urgent else "planner"
-	wrote["zoom"] = "planner"
+	wrote["zoom"] = "select" if planner_urgent and select_pan else "planner"  # round 47: the pan's zoom is the pan's
 	if glide:
 		_on_leash()
 	frame_short = RtsCamera.cuts_off(own, focus, yaw, zoom, _aspect(), pitch)
+
+
+## Whether the view pans to the planner's point now, ignoring his aim and his hand's pace (the hold and the pace step aside).
+## Round 46: a new selection (FRESH_S) with a crew off the shown screen. Round 47 (K2/K3, `select_pan`): the gap between
+## the shown look point and the planner's point (which frames his selection): a new selection (FRESH_S) more than PAN_START_M
+## away, or a selection whose frame has drifted PAN_DRIFT_M away with no hand on the camera since he picked it (his own pan is his until he selects
+## again), pans until that gap is PAN_ARRIVE_M or PAN_MAX_S has passed; the glide (and his aim hold) does the rest.
+func _pan_urgent() -> bool:
+	if not planner_on or _track != Track.VISION:
+		return false
+	if not select_pan:
+		return _clock < _fresh_until and not _selection_shown()
+	# The gap to the PLANNER'S point (it frames the squad's bounds: a spread army's mean sits far from a right look, and a
+	# gap to the mean re-fired the pan every PAN_MAX_S: dev 7001-7004 at db75ab282, slip p95 33 -> 254 px).
+	var gap := Vector2(focus.x - _shown_focus.x, focus.z - _shown_focus.z).length()
+	# Arrived: near the planner's point AND slowed to what the glide allows under his hand right now (his hand's pace; ~at rest
+	# while he aims): ending faster left the glide to brake in a frame (dev 7001-7004 at 0927ea3e0 and 8db2073c1: one-frame
+	# 'planner' jerks 0.6-1.0 s after each pick, 1.7 -> 6.8/min). PAN_MAX_S still ends it.
+	var paced := _normal_top_speed() * (_turn_pace if not _aim_now else 0.0)
+	if gap <= PAN_ARRIVE_M and (not planner_urgent or _focus_velocity.length() <= maxf(paced, 1.0)):
+		_pan_until = -1e9
+		return false
+	if planner_urgent:
+		return _clock < _pan_until
+	# The pick's own pan ignores his aim (that hold WAS the delay he felt); any later start (a second within FRESH_S, a drift)
+	# waits until he is not aiming (dev 7001-7004 at b9e28935b: 13 clicks aimed while such a pan started, slip p95 305 px).
+	var first := _clock < _fresh_until and gap > PAN_START_M and _panned_for != _select_at
+	var later := not _aim_now and ((_clock < _fresh_until and gap > PAN_START_M) or (gap > PAN_DRIFT_M and _manual_at <= _select_at))
+	if first or later:
+		_panned_for = _select_at
+		_pan_until = _clock + PAN_MAX_S
+		return true
+	return false
+
+
+## Round 47 (K3): `point` kept within `bound` m of the crews' mean, or of their bounds' centre if that is further (a spread
+## selection keeps its whole frame). Pure, for tests.
+static func bound_to(point: Vector3, crews: Array, bound: float) -> Vector3:
+	if crews.is_empty():
+		return point
+	var mean := Vector3.ZERO
+	var box := AABB(Vector3(crews[0].x, 0.0, crews[0].z), Vector3.ZERO)
+	for at: Vector3 in crews:
+		mean += Vector3(at.x, 0.0, at.z)
+		box = box.expand(Vector3(at.x, 0.0, at.z))
+	mean /= float(crews.size())
+	var centre := box.get_center()
+	var reach := maxf(bound, Vector2(centre.x - mean.x, centre.z - mean.z).length())
+	var away := Vector3(point.x - mean.x, 0.0, point.z - mean.z)
+	return point if away.length() <= reach else mean + away.normalized() * reach
 
 
 ## Round 46 (C2): whether every crew of his selection is on the SHOWN screen (above the command card).
