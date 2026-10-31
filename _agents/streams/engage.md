@@ -72,6 +72,9 @@ Memory: smart AI on both sides; units must look smart and under his control.
    - orders' class D: Crossing support-by-fire #22 creeps at 4 of 10 m/s (transit pace) while it is shot 260 -> 58 hp by an
      enemy it never sees.
    If the night runs out, this is round 48's first item.
+   - **Bar E10 FILED 2026-10-31 ~03:40 PDT** (text in workstreams.md *Bars (round 47)*), before any number on 13025-13120.
+     Code: game/ai/outranged.gd, TankBrain._outranged_act + RETREAT's squad branch, `--outranged` (default OFF); tests
+     tests/engage/test_outranged.gd (7/7 on builder3); probe tests/engage/outranged_probe.gd, `make outranged-bar`.
 
 ## Don't touch
 

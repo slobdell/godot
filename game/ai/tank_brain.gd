@@ -82,6 +82,18 @@ const COVER_QUERY_TOUGHNESS := 0.8
 const MAX_CONTACTS := 8
 ## A retreating tank that's in a gun's sight first breaks line of sight at cover this close (meters), then withdraws.
 const RETREAT_COVER_DISTANCE := 25.0
+## R47.48 (E10): a RETREAT with a squad ends this close to the squad's centre, and backs off (rather than turning to drive)
+## only when its goal is this close.
+const RETREAT_SQUAD_ARRIVE_M := 10.0
+const RETREAT_REVERSE_M := 12.0
+## R47.48 (E10): options an outranged crew's answer replaces (the safety options already break contact; a crew already
+## closing on or flanking a target it can see keeps its own move).
+const OUTRANGED_REPLACES := ["MOVE", "HOLD", "ENGAGE", "ADVANCE", "KEEP_SLOT", "SPOT", "SUPPRESS", "COVER_FIRE", "REGROUP", "INVESTIGATE"]
+## Orders under which closing on the gun is the crew's call: an attack, an attack-move, a CPU crew's own fight.
+const OUTRANGED_CLOSE_VERBS := ["attack", "attack_move", "idle", ""]
+## Closing ends this fraction of its own reach short of where the rounds come from.
+const OUTRANGED_CLOSE_TO := 0.75
+const OUTRANGED_BREAK_M := 25.0
 ## COVER_FIRE is worth nothing to a gun reloading this fast or faster (seconds): decide() scores it 0 there.
 const COVER_FIRE_RELOAD_FLOOR := 0.4
 ## COVER_FIRE (A3): hide and peek spots count as reached within this distance (meters).
@@ -2920,7 +2932,16 @@ func _act(s: Dictionary) -> void:
 			var exposed := (s["contacts"] as Array).any(func(c: Dictionary) -> bool:
 				return c["visible"] and c.get("threatens_me", c["aiming_at_me"]))
 			var cover_spots: Array = s["cover"]
-			if not s.get("features", {}).get("retreat_to_cover", true):
+			if Outranged.ON and s.get("squad_center") != null and not (exposed and not cover_spots.is_empty()
+					and my_position.distance_to(cover_spots[0]) <= RETREAT_COVER_DISTANCE):
+				# R47.48 (E10, spotter's class A): back to the squad, not the spawn, and driven (not backed) unless an enemy in
+				# sight is laying on it close by.
+				why = TankBrain._join(why, "back to its squad")
+				var squad_at: Vector3 = s["squad_center"]
+				var goal := squad_at if my_position.distance_to(squad_at) > RETREAT_SQUAD_ARRIVE_M else my_position
+				_order_move(_move_to(goal, exposed and my_position.distance_to(goal) <= RETREAT_REVERSE_M, 1.0,
+						RETREAT_SQUAD_ARRIVE_M, false, true))
+			elif not s.get("features", {}).get("retreat_to_cover", true):
 				_order_move(_move_to(s["rally"], true, 1.0, OrderController.ARRIVE_RADIUS, false, true))
 			elif exposed and not cover_spots.is_empty() and my_position.distance_to(cover_spots[0]) <= RETREAT_COVER_DISTANCE:
 				why = TankBrain._join(why, "breaking line of sight")
@@ -3271,6 +3292,63 @@ func _act(s: Dictionary) -> void:
 			else:
 				_order_move({"type": "stop"})
 			_order_weapon({"type": "fire_at_will"})
+	# R47.48 (engage E10, `--outranged`): shot from beyond its reach, a crew closes or breaks line of sight.
+	if Outranged.ON:
+		_outranged_act(s)
+
+
+## R47.48 (engage E10, `--outranged`): a crew taking fire from beyond its own reach (Outranged: two hits in 4 s from
+## rounds fired out of its range, or by a gun it cannot see). Where its order lets it fight, it closes on where the rounds
+## come from, by the cover spot that lies that way when one does; otherwise it breaks line of sight. HIS direct order to the
+## unit (a player move / hold / stop) is never replaced: his order wins (as E7).
+func _outranged_act(s: Dictionary) -> void:
+	if not OUTRANGED_REPLACES.has(String(choice.get("option", ""))):
+		return
+	var o: Variant = s.get("order")
+	var verb := String((o as Dictionary).get("verb", "")) if o is Dictionary else ""
+	if o is Dictionary and bool((o as Dictionary).get("player", false)) and verb in ["move", "hold", "stop"]:
+		return
+	var me: Dictionary = s["self"]
+	var my_position: Vector3 = me["position"]
+	var reach := float((me["weapon"] as Dictionary).get("range", 60.0))
+	var seen := {}
+	for c: Dictionary in s["contacts"]:
+		if c["visible"]:
+			seen[String(c["name"])] = true
+	var memory := Outranged.of(game_match)
+	var read := memory.read(String(tank.name), my_position, reach, game_match.tick, seen, float(tank.max_health)) if memory != null else {}
+	if read.is_empty():
+		return
+	var from: Vector3 = read["from"]
+	var to_gun := Vector3(from.x - my_position.x, 0.0, from.z - my_position.z)
+	var distance := to_gun.length()
+	if distance < 0.5:
+		return
+	var element_attacks := s.get("element") != null and String((s["element"] as Dictionary).get("task", "")) == "attack"
+	if OUTRANGED_CLOSE_VERBS.has(verb) or element_attacks:
+		var goal := my_position + to_gun / distance * maxf(distance - OUTRANGED_CLOSE_TO * reach, 0.0)
+		var by_cover := false
+		for spot: Vector3 in s.get("cover", []):
+			# A covered stop on the way: nearer the gun than here, off the straight line by no more than a third of the way.
+			var along := (spot - my_position).dot(to_gun / distance)
+			if along > 5.0 and along < distance and absf((spot - my_position).cross(to_gun / distance).y) < distance / 3.0:
+				goal = spot
+				by_cover = true
+				break
+		why = TankBrain._join(why, "outranged: closing by cover" if by_cover else "outranged: closing")
+		_order_move(_move_to(goal, false, 1.0, OrderController.ARRIVE_RADIUS))
+		_order_weapon({"type": "fire_at_will"})
+		return
+	var cover_spots: Array = s.get("cover", [])
+	if not cover_spots.is_empty() and my_position.distance_to(cover_spots[0]) <= RETREAT_COVER_DISTANCE:
+		why = TankBrain._join(why, "outranged: breaking line of sight")
+		var hide: Vector3 = cover_spots[0]
+		_order_move(_move_to(hide, false, 1.0, SPOT_ARRIVE, false, true))
+	else:
+		why = TankBrain._join(why, "outranged: out of its sight")
+		_order_move(_move_to(my_position - to_gun / distance * OUTRANGED_BREAK_M, false, 1.0, OrderController.ARRIVE_RADIUS,
+				false, true))
+	_order_weapon({"type": "fire_at_will"})
 
 
 ## X3: the ground to hose to hold `contact` down. Laid on it (led a little, so a unit that is moving is walked into

@@ -420,6 +420,45 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar E10 OUTRANGED (engage; filed 2026-10-31 ~03:40 PDT in streams/engage.md and here, BEFORE any number on 13025-13120;
+  R47.48 / R47.50).**
+
+  **The rule:** `--outranged` (default OFF until this bar). `Outranged` (game/ai/outranged.gd) is a per-match memory of the
+  rounds that struck each crew and where they were fired from: what the rounds themselves show. A crew is outranged after 2
+  damaging hits in 4 s, or 1 hit costing >= 15 % of its hull, each fired from beyond its own reach + 5 m or by a gun it cannot
+  see. TankBrain._act, after the chosen option's arm, replaces the move for MOVE / HOLD / ENGAGE / ADVANCE / KEEP_SLOT / SPOT /
+  SUPPRESS / COVER_FIRE / REGROUP / INVESTIGATE. Where its order lets it fight (attack, attack_move, idle, or its element's
+  `attack` task), it CLOSES on where the rounds come from, to 0.75 of its own reach, by a cover spot on the way when one lies
+  within a third of the way off the line. Otherwise it BREAKS LINE OF SIGHT: the nearest cover spot within 25 m, else 25 m
+  straight away. HIS direct move / hold / stop is never replaced. RETREAT with a squad (spotter's class A) goes to the squad's
+  centre, not the spawn, and drives forward unless an enemy in sight lays on it within 12 m of the goal. Scoring is untouched
+  (decide stays native); `_act` is GDScript only. Both sides.
+  **Workloads:** `tests/engage/outranged_probe.gd` (`make outranged-bar`). A squad of 3 crews with short guns (gang_tank,
+  gang_ifv, gang_scout, law_scout by seed) faces 1-2 fixed long guns (syn_lancer x2 weight, syn_tank, syn_ifv) inside the guns'
+  reach and beyond the squad's, on crossing / terminus / locks by seed. The squad's order, by seed: an element `attack` on the
+  first gun (2 in 3) or a `hold` on its spot (1 in 3). 60 s, builder3, native ON, the frozen tree named when frozen after its
+  full check. Arms `--outranged=off` v `--outranged=on`, paired by seed. **W1** (D1): seeds **13025-13072**, healthy,
+  `--his-side=off` (every crew the CPU's, spotter's CPU-v-CPU class E). **W2** (D2): seeds **13073-13120**, `--hurt=0.07
+  --his-side=off` (RETREAT on the table).
+
+  **Deciding (what he saw: a crew shot from out of its reach just takes it):** D1 W1 `out_damage` (damage the squad took from
+  rounds fired beyond the victim's reach or by a gun it could not see, the probe's own count, the same in both arms): paired
+  mean ON - OFF < 0 by >= 1.645 se (one-sided). D2 W2: `reverse_m` (metres driven in reverse while choosing RETREAT) total ON
+  <= 0.5 x OFF, AND `retreat_m_mean` (metres from the squad's other crews when a RETREAT ends), over the runs with a RETREAT in
+  both arms: paired mean ON - OFF < 0 by >= 1.645 se. If fewer than 10 runs pair on retreat_m_mean, that half is REPORTED,
+  not deciding (filed now), and D2 is the reverse half alone.
+
+  **Guards:** G1 crews lost, W1 + W2: total ON <= OFF + max(1, 1.645 sqrt(OFF)). G2 guns killed, W1: total ON >= OFF -
+  max(1, 1.645 sqrt(OFF)). G3 friendly hits, W1 + W2: total ON <= OFF + max(1, 1.645 sqrt(OFF)). G4 his orders untouched: E2's
+  authority probe (`make engage-authority-probe`, seeds 12601-12624, AUTH_ARM=on) with `--outranged` off v on (AUTH_PROBE_FLAGS):
+  24/24 AUTHORITY_PROBE rows identical. G5 OFF is today's game: the frozen tree's full check shows the sim-baseline unmoved.
+
+  **Reported (never deciding):** out_s, dealt, enemy_deaths per order kind (attack / hold); HIS CASE (R47.50 (1)): crossing,
+  3 gang_tank on an element attack v 2 syn_lancer at 79 m, `--his-side=on`, seeds 13025-13034 with `--arena=crossing --hull=gang_tank
+  --shooter=syn_lancer --distance=79 --order=attack`: out_damage, deaths, dealt, both arms. **Dev read (7001-7008, never a bar;
+  f1148bbd5 + E10 uncommitted, builder3, n = 7):** out_damage 3060 -> 1263, crews lost 13 -> 11, guns killed 0 -> 3. Railgun
+  stages are unchanged: one round kills a 57 hp IFV, so nothing is left to answer.
+
 - **Bar E3 VERDICT (2026-10-30 ~21:00 PDT): FAILS on D1 by 0.006 s (z -1.637 v the one-sided 1.645); D2 and every guard pass.**
   Code frozen at **d3b3fe918**, its full check GREEN (builder3 `make check exited 0`, 3526 / 0, 28 ALL JUDGED, sim-baseline
   unmoved); the runs stamped 87840fa1e (= d3b3fe918 + `_agents/` docs only). builder3, native ON, War Rigs, 12649-12696, 48 paired,
