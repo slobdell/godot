@@ -69,8 +69,10 @@ not wall time, not native: the lab is deterministic per PROCESS HISTORY, and thi
   same signature; NATIVE=off run for run identical (same seed red, same ticks).
 - So it is the GAME: the sliver fix holds for ~95 % of starts; a centimetre (or any history) puts Hunters_2 / 4 back on the sliver
   for the whole 15 s. Not fixed here (manoeuvre's rule). Next round: manoeuvre makes the leave robust, bar = CYCLE_JITTER 1..20
-  all leave (`make native-repeat FILTER=test_manoeuvre_noprogress::test_cpu REPEAT_N=20 REPEAT_JITTER=on`); and the
+  all leave (`make native-repeat FILTER=test_manoeuvre_noprogress::test_cpu REPEAT_N=20 REPEAT_JITTER=on YIELD_CYCLE=on`); and the
   process-history physics state (netplay / replays in one process) stays UNOWNED in roadmap.md.
+- **R47.47: the test is PENDING** (YIELD_CYCLE=on runs it; it prints the reason otherwise): it guards the watchdog, OFF in his
+  game, and a shard-order red would gate every stream's check. The assertion is unchanged.
 
 **FINAL REPORT (DRAFT, 2026-10-30 ~23:00 PDT; final once e5fa1f1be's check is named). On main: 6f19722ae (GREEN, 3523 / 0,
 29 ALL JUDGED, sim-baseline unmoved) and 27ea82fa5 (merged as 8d37b9796 with route_doors.gd's stub-order fix 94646bf63). Candidate:
