@@ -175,8 +175,9 @@ func test_a_carried_lay_still_needs_the_new_contacts_own_time() -> void:
 	var needed_near := Engagement.acquire_seconds(tank, null, 30.0)
 	assert_true(needed_far > needed_near + 0.1, "this case rests on the far contact needing longer")
 	var lay: Engagement.Lay = case_[2]
-	assert_true(not lay.engage(tank, far, 58.0, 0.01, false), "carried, but short of the far contact's own lay")
-	assert_true(lay.engage(tank, far, 58.0, needed_far - needed_near, false), "and only the difference is left to lay")
+	# Ordered (a long shot): 58 m is past the band, and discipline is not what this test is about.
+	assert_true(not lay.engage(tank, far, 58.0, 0.01, true), "carried, but short of the far contact's own lay")
+	assert_true(lay.engage(tank, far, 58.0, needed_far - needed_near, true), "and only the difference is left to lay")
 
 
 func test_lay_carry_off_is_todays_reset() -> void:

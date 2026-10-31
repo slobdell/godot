@@ -62,8 +62,9 @@ var _seconds := 0.0
 ## each gate (seen, line of sight, range, aim, lay, discipline, loaded, lane) and the trigger. Reads only; default off.
 static var GUN_TRACE := _gun_trace_flag()
 const GUN_TRACE_EVERY := 15
-var _gun_trace_key := ""
-var _gun_trace_tick := -1000
+## The trace's last key and tick per crew name (static: a Gunnery member would be one more field native's execute state
+## must mirror, tests/test_native_exec_state.gd).
+static var _gun_trace_last := {}
 
 
 static func _gun_trace_flag() -> String:
@@ -249,10 +250,10 @@ func trace_after(cmd: TankCommand) -> void:
 	if nearest != null and nearest_d <= float(tank.weapon["range"]) + 10.0:
 		row["nearest"] = probe.call(nearest)
 	var key := "%s|%s|%s|%s|%s|%s|%s" % [row["wo"], row["wo_name"], row["pick"], row["ready"], row["lane"], row["firing"], row.has("nearest")]
-	if not cmd.fire and key == _gun_trace_key and tick - _gun_trace_tick < GUN_TRACE_EVERY:
+	var last: Array = _gun_trace_last.get(String(tank.name), ["", -1000])
+	if not cmd.fire and key == String(last[0]) and tick - int(last[1]) < GUN_TRACE_EVERY:
 		return
-	_gun_trace_key = key
-	_gun_trace_tick = tick
+	_gun_trace_last[String(tank.name)] = [key, tick]
 	row["t"] = tick
 	row["range"] = float(tank.weapon["range"])
 	print("GUN_TRACE ", JSON.stringify(row))
