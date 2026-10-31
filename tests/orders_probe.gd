@@ -145,6 +145,10 @@ func _run() -> void:
 			"click": _xz(_click), "route": _route.map(func(p: Vector3) -> Array: return _xz(p)),
 			"ground_cap": SelectionSquads.GROUND_CAP, "decks": SlotGround.deck_boxes()}))
 	_before_order(units)
+	# Round 47 (orders O2, Bar O): `--probe-merge=on` saves every squad under one more control-group number first (his "grouped
+	# them into a single squad 4"), so the click is his merged group's; the squads keep their own numbers as he had them.
+	if _flag("probe-merge", "off") == "on":
+		_controls.groups.save(ControlGroups.COUNT, units.duplicate())
 	_controls.selection.set_units(units)
 	await physics_frame
 	var returned: Array = []
@@ -299,6 +303,9 @@ func _run() -> void:
 					if all_in_tick >= 0 else -1.0, "on_deck": rows.filter(func(r: Dictionary) -> bool: return r["deck"]).size(),
 			"crossed": rows.filter(func(r: Dictionary) -> bool: return r["crossed"]).size(),
 			"worst_offset_m": rows.map(func(r: Dictionary) -> float: return r["anchor_offset_m"]).max(),
+			# Bar O (round 47): the farthest two squads' spots for this order (his "two points far apart"), and the merged lay's counters.
+			"spread_m": _spread_of(rows), "merge": _flag("probe-merge", "off"),
+			"merged_laid": _static_or(SelectionSquads, "merged_laid"), "merged_refused": _static_or(SelectionSquads, "merged_refused"),
 			"worst_shuffle_m": rows.map(func(r: Dictionary) -> float: return r["shuffle_m"]).max()}.merged(_run_extra())))
 	quit(0)
 
@@ -328,6 +335,21 @@ func _watch_extra() -> void:
 
 func _run_extra() -> Dictionary:
 	return {}
+
+
+## Bar O: the largest distance between two squads' anchors (m); -1 with fewer than two anchored squads.
+static func _spread_of(rows: Array) -> float:
+	var at: Array = []
+	for r: Dictionary in rows:
+		if r.get("anchor") is Array:
+			at.append(Vector2(float(r["anchor"][0]), float(r["anchor"][1])))
+	if at.size() < 2:
+		return -1.0
+	var far := 0.0
+	for i in at.size():
+		for j in range(i + 1, at.size()):
+			far = maxf(far, (at[i] as Vector2).distance_to(at[j]))
+	return snappedf(far, 0.1)
 
 
 ## Past a deck to the far side from the click: within a deck's span across the river (its x range, widened by
