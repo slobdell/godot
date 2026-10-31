@@ -116,6 +116,26 @@ yield has no mirror yet, so while ON every ask runs the GDScript yield (Traffic.
 before its twin. Replay stamp: MatchRecorder.rules() `heldpost` + tests/replay/rules.py (dated at the commit; re-date at the merge).
 Test: tests/test_manoeuvre_heldpost.gd.
 
+**Plan change (orchestrator, 2026-10-31 ~15:00, from spotter's list-B at df9aacc1a):** 9 of the 11 batch-2 clips he judged B are
+MOVING squadmates jammed for 8 s+, not held crews (held crews are 11.63 of 17.00 B moments a fight, but short). So after Bar B, M2b
+= the moving-squadmates jam (4.55 moments / 29.5 crew-s a fight), ahead of M4 / M5. **First read of list-B's moving rows:** the
+longest ones are a QUEUE BEHIND A CLASS-C HEAD. On crossing 13215 / 13152, Rust_Guns_3 waits on Guns_2, which waits on Guns_1,
+for 180-200 s of a CPU spring-ambush MOVE. Seats are 8-13 m ahead and crews stacked 2.7-5 m apart, and Guns_1 is #18 (`no_path`
+the whole match). Crossing 13175 Green_Guns_3 / Guns_1 and 13206 Rust_Eyes_2 / Eyes_1 are the same shape. So M2b's first candidate
+overlaps M5: the head gives up an unreachable goal to the nearest reachable spot, and a crew blocked by a stuck squadmate within a
+few m of its seat for N s settles there (arrived) instead of pushing forever. To trace first.
+
+**Orders' O2 hand-over (orchestrator, ~15:20): class D's top ten at df9aacc1a are DRIVE stalls on good move orders, mine.**
+Rust_Battery_5 gorge 13147 (speed 0 while `driving` 78 s, 17.5 m short); Rust_Lances_4 crossing 13171 (creeps at 15 m for 21 s);
+Rust_Battery_3 locks 13187 (reverses 17 s); batch 1's #28 (circling, to_go flat at 118 m). Also Rust_Eyes_5 crossing 13174 15-31 s (a reroute points the route behind it; it drives on away (route_off 179, path +57 m in 5 s), then saws -1.6 / +1.3 m/s for 9 s at to_go 74-75 m before it lines up; rows in spotter's list-D.md). Full table in stream/orders' brief
+Status. Artillery stopping short is folded into M2b+M5 where it is the same cause; the rest come after M5. Order: Bar B -> M2b+M5
+(the stuck head gives up its unreachable goal, the queue settles; the drive's safety net, engage makes the spot reachable when
+chosen) -> M4 -> class D drive stalls -> M6.
+
+**M4 staged (not yet committed, scratchpad):** Sumps, Charlie_1 / Charlie_4 parked where his census had them (tick 2940), Alpha_5 on
+his move. OFF and ON are identical: Alpha_5 stops at (-6.2, 29.9) between the batteries and is not past x < -12 in 20 s (blocked
+3 s). heldpost does not fire (no in-place hold in the stage). So his case is not cause 1 in this stage. Trace next.
+
 ### Bar B (heldpost), FILED 2026-10-31 ~14:45 PDT, before any number on 13217-13264
 
 **What he picked it for:** squadmates stop backing and filling around each other; a held crew stays put (his class B, 64/64
@@ -144,4 +164,12 @@ crossing, locks, sumps, gorge, parade), i = 0..47: 8 fights a map. Paired by fig
 - **Read, never a bar (C48.2):** spotter's class B rate at the merged main v its df9aacc1a "before" (17.00 moments / 69.7 crew-s a
   fight; held-crew share 11.63 / 34.3).
 - Amendments: at most two, before the numbers (lesson 345).
+- **R48.11 (orchestrator, arm detail, not an amendment):** the named tree is native's pair = stream/native 1f6559852 (the C++
+  mirror, main's N5, the adopted baseline, FIFO lock) + this stream's fix commit + native's gate lift, with ONE full check there.
+  Both arms add `--brains-off=native_yield`, so both still run the GDScript yield. Every Bar B number comes from that tree (main
+  moved under N5: every fight differs from tick 1).
+- **d6b28827b's own check (builder3, exited 2, 3612 / 21):** 20 native twin asserts fail by construction on this branch alone (the
+  gate forces the GDScript yield; the pair lifts it). The 21st, test_nav_yield_fit, expected a parked rig to give way in place.
+  heldpost refuses that on purpose, so the test now reads both arms (fix commit below; quick-remote builder3 5 / 0).
+
 
