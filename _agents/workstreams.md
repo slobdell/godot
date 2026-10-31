@@ -88,7 +88,7 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 - **C47.10 The laptop is the test bed (memory).** Mapkit's pieces and camera's planner state their laptop cost (UHD 620, under the lock);
   an expensive look ships as a hardware-preset knob.
 - **C47.11 Seeds:** manoeuvre 12401-12496, route 12501-12596, engage 12601-12696, orders 12701-12796, camera 12801-12896, mapkit
-  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). Next free at the close: 13001.
+  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). **Extra blocks (R47.30):** manoeuvre 13001-13024 (Bar H). Next free: 13025.
 
 **Rulings at prep:**
 - **R47.1 (2026-10-30 evening, his pick) Seven streams this round, the map kit included.** He picked it knowing the laptop's RAM is short
@@ -263,6 +263,12 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   rear-ambush 7.08 -> 8.56 s (same latencies, fewer episodes weighting four 20 s nevers), G4b 7 one-frame snaps at the pan's hand-over.
   Clicks 83.4 -> 77.9 % (60 aimed mid-pan, slip p95 464 px). Lesson 339: taken to him the same hour; his yes. Follow-up for camera: the
   one-frame snaps at the hand-over, and K5 (his four recordings, three hand models).
+
+- **R47.30 Manoeuvre's M5a holdyield (round 46's 12328 leftover; df26c0d5f, OFF, `--traffic-on=holdyield`): seeds 13001-13024 for Bar
+  H; native twins `Movement._holdyield_veto` (two vetoes inside `_begin_yield`'s spot loops, mirrored in C++) before it ships ON.** A crew
+  holding his post never takes a yield spot > 0.5 m closer to an enemy hull within 60 m, nor > 8 m from his post. Light lane, builder3,
+  engage's lane probe: 12328 post drift 10.1 -> 0.0 m, gun killed from the post; dev 7001-7012 identical in every line. FYI to engage:
+  HOLD's return to his post arrives at 6.0 m, so other displacements still park his crew up to 6 m short.
 
 ## Bars (round 47)
 
