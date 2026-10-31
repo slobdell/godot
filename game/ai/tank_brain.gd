@@ -112,8 +112,9 @@ const LANE_POST_STEP := 4.0
 ## away from his target again and again. With the switch on, an attack_move on HIS side from an element whose task is `attack`
 ## leaves RETREAT off the menu; every other order, and every CPU crew (its commander's attacks are routine, not direct:
 ## R47.6), keeps the survival rule.
-## `--press-on=on|off`; OFF until native's twin of `_obey` (decide_native.cpp) carries it (C47.6).
-const PRESS_ON_DEFAULT := false
+## `--press-on=on|off`; ON since R47.32 (Bar E7: D1 / D2 / G2-G6 passed, G1 friendly grazes 1 -> 6, shipped under C47.2; native's
+## `_obey` twin EQUAL). `--press-on=off` is today's survival rule.
+const PRESS_ON_DEFAULT := true
 static var PRESS_ON := _press_on_flag()
 
 
