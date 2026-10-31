@@ -103,6 +103,12 @@ _(filed by each stream before any number)_
   spin s, contacts, noprog_s, the group click (orders-probe 13417-13420, ON v nose), authority tests green. Only number seen before
   filing: one dev read (7001, n 1 a map, builder3, 7787853ff) 7.5 v 10.3 s a fight. No twin needed (the station is GDScript); replay
   stamp `follow_travel` in the same commit.
+- **Bar E11 RETREAT DRIVES (engage E2; FILED 2026-10-31 ~14:10 before any number on 13313-13360; full text in stream/engage's
+  workstreams.md).** `--retreat-drive` ON (`=off` = E10's game): a RETREAT move > 12 m drives forward and carries a facing, so
+  `Manoeuvre.choose` routes it nose first; a shorter hop under fire still backs off; destinations E10's; scoring untouched. W1 hurt
+  outranged probe, W2 healthy, seeds 13313-13360; W3 48 spotter fights (6 maps x 13313-13320) read by `tests/engage/class_ae.py`.
+  **Deciding:** D1 W1 reverse_m ON <= 0.5 x OFF; D2 W3 RETREAT reversing crew-s ON <= 0.5 x OFF; D3 W3 class A crew-s ON <= OFF; D4
+  retreat_m_mean no farther from squad. **Guards:** crews lost, out_damage, friendly hits, authority 24/24, E10's D1, full check green.
 
 ## Round 47: seven streams + spotter (prepared 2026-10-30 evening; CLOSED 2026-10-31; briefs in `streams/archive/round47/`)
 
