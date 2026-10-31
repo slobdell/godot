@@ -256,6 +256,8 @@ func trace_after(cmd: TankCommand) -> void:
 	_gun_trace_last[String(tank.name)] = [key, tick]
 	row["t"] = tick
 	row["range"] = float(tank.weapon["range"])
+	row["eff"] = Engagement.effective_range(tank.weapon)
+	row["aim_tol"] = float(tank.weapon.get("aim_tolerance_deg", 0.0))
 	print("GUN_TRACE ", JSON.stringify(row))
 
 ## L2 (X3): fire at a piece of ground. No target, no lead, no line-of-sight-to-an-enemy check — just the gun on the

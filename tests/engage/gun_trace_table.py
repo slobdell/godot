@@ -10,7 +10,9 @@ enemy inside the crew's weapon range is counted ("an enemy close enough to hit")
   unseen    a line but the team has no sight of it (intel)
   laying    a pick and a line: the acquisition lay is building (Engagement gate 2)
   lane      a friend in the line of fire (the lane rule)
-  other     anything else (discipline, aim, order)
+  discipline  fixed and in reach but past the weapon's effective range, no long shot, not suppressed (Engagement gate 3)
+  aim       fixed, inside the band, the turret not yet on (aim error over the weapon's tolerance)
+  other     anything else (the order, a hold_fire, a pick that is not the probed contact)
 """
 import json
 import sys
@@ -53,10 +55,15 @@ def main():
                 total[n]["unseen"] += dt
             elif d.get("pick") and float(d.get("lay", 0)) < max(x["need"] for x in probes if x["los"]) - 0.01:
                 total[n]["laying"] += dt
+            elif d.get("pick") and "eff" in d and not d.get("long_shot") and float(d.get("supp", 0)) < 0.25 \
+                    and min(x["d"] for x in probes if x["los"]) > float(d["eff"]) * (1.12 if d.get("firing") else 1.0):
+                total[n]["discipline"] += dt
+            elif d.get("pick") and "aim_tol" in d and min(abs(float(x["aim_err"])) for x in probes if x["los"]) > float(d["aim_tol"]):
+                total[n]["aim"] += dt
             else:
                 total[n]["other"] += dt
             total[n]["in_range"] += dt
-    keys = ["in_range", "fired", "reload", "no_line", "unseen", "laying", "lane", "other"]
+    keys = ["in_range", "fired", "reload", "no_line", "unseen", "laying", "discipline", "aim", "lane", "other"]
     print("%-18s" % "crew" + "".join("%9s" % k for k in keys))
     sums = defaultdict(float)
     for n in sorted(total):
