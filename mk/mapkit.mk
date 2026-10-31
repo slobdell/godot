@@ -42,3 +42,9 @@ mapkit-trim: ## P1b: render the kit's trim sheet with Material Maker (needs MM_D
 	ls -la $(BUILD_DIR)/mapkit-trim
 mapkit-trim-adopt: ## P1b: copy the rendered trim sheet PNGs from build/mapkit-trim/ into assets/props/trim/
 	cp $(BUILD_DIR)/mapkit-trim/*.png assets/props/trim/
+
+# Bar P (round 47, workstreams.md): the map-kit twins v their maps, native ON, seeds 12901-12932 -> build/bar-p*.json.
+# A JUDGED series: builder3, the orchestrator's slot only (C47.1). make remote T="mapkit-bar-p native" (native built first).
+.PHONY: mapkit-bar-p
+mapkit-bar-p: import ## Mapkit Bar P: parade v parade_traps / parade_rail, crossing v crossing_screens (gangs v syndicate both orders) -> build/bar-p.json [BAR_P_JOBS=10]
+	$(PYTHON) tests/mapkit/bar_p_series.py --godot $(GODOT) --jobs $(or $(BAR_P_JOBS),10) --raw $(BUILD_DIR)/bar-p-raw.json --json $(BUILD_DIR)/bar-p.json

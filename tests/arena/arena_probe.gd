@@ -9,11 +9,15 @@ extends SceneTree
 ##   crossed_share       (round 18, maps) of the vehicles seen, the share that ever got CROSS_M past the centre line
 ##                       toward the enemy's base: brains' "did a CPU element cross?" for the candidate maps
 ##   open_share          (round 18) unit-seconds on the layout's declared `open_ground` regions, contested field only
+##   stall_share         (round 47 mapkit, Bar P guard 2) of every living crew's samples, the share whose move had made no
+##                       progress for STALL_S or more (Movement.stalled_ticks): new things on the map to get stuck on
+##   shots               (round 47, Bar P) rounds fired per side, {"green": n, "rust": n} (the Crossing's 6 v 358)
 ## Prints `ARENA_PROBE <json>` next to the runner's own MATCH_RESULT. Run by tools/arena_series.py.
 
 const FLANK_X := 60.0
 const FIELD_Z := 84.0
 const CROSS_M := 20.0
+const STALL_S := 2.0
 
 var game_match: Match
 var muzzles := {}  # projectile_id → muzzle Vector3
@@ -26,6 +30,9 @@ var open_seconds := 0
 var home_sign := {}  # tank name -> +1 / -1: the side of the centre line it was first seen on
 var crossed := {}
 var reported := false
+var alive_samples := 0
+var stalled_samples := 0
+var shots := {"green": 0, "rust": 0}
 
 
 func _initialize() -> void:
@@ -43,6 +50,9 @@ func _run() -> void:
 
 
 func _on_fired(event: Dictionary) -> void:
+	var shooter := game_match.tanks.get_node_or_null(String(event.get("shooter", ""))) as Tank
+	if shooter != null:
+		shots["green" if shooter.team == 0 else "rust"] += 1
 	var muzzle: Array = event["muzzle"]
 	muzzles[int(event["projectile_id"])] = Vector3(muzzle[0], muzzle[1], muzzle[2])
 
@@ -64,7 +74,15 @@ func _sample() -> void:
 		return
 	for node in game_match.tanks.get_children():
 		var tank := node as Tank
-		if tank == null or not tank.is_alive() or absf(tank.global_position.z) > FIELD_Z:
+		if tank == null or not tank.is_alive():
+			continue
+		alive_samples += 1
+		var controller := game_match.brains.get_node_or_null("Brain_" + String(tank.name)) as OrderController
+		if controller == null:
+			controller = game_match.brains.get_node_or_null("Orders_" + String(tank.name)) as OrderController
+		if controller != null and controller.movement != null and controller.movement.stalled_ticks >= SimClock.ticks(STALL_S):
+			stalled_samples += 1
+		if absf(tank.global_position.z) > FIELD_Z:
 			continue
 		var z := tank.global_position.z
 		if not home_sign.has(tank.name):
@@ -102,4 +120,6 @@ func _on_finished(result: Dictionary) -> void:
 		"flank_share": snappedf(float(flank_seconds) / maxi(unit_seconds, 1), 0.001),
 		"hidden_share": snappedf(float(hidden_seconds) / maxi(unit_seconds, 1), 0.001),
 		"crossed_share": snappedf(float(crossed.size()) / maxi(home_sign.size(), 1), 0.001),
-		"open_share": snappedf(float(open_seconds) / maxi(unit_seconds, 1), 0.001)}))
+		"open_share": snappedf(float(open_seconds) / maxi(unit_seconds, 1), 0.001),
+		"stall_share": snappedf(float(stalled_samples) / maxi(alive_samples, 1), 0.0001), "alive_samples": alive_samples,
+		"shots": shots, "native": NativeBridge.available}))
