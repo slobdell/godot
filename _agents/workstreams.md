@@ -423,6 +423,17 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   would hold the close fight's MG to save ~1 hp a match. Native drops its E9 twin (39635013a). Seeds 13025-13120 move to E10. Main also
   merged E3 (snap shots ON, POT_SHOT_DEFAULT true, grep) as 8d51777cc and the sim-baseline adopted (13 moved, read twice, 2adbd3ac8).
 
+- **R47.50 Engage's E10 OUTRANGED approved; GRANT** tank_brain.gd's `_act` arms (RETREAT / ENGAGE / ADVANCE / HOLD / MOVE) + `withdraw_point`
+  (outranged / retreat branches only), a NEW `game/ai/outranged.gd`, `tests/engage/**`; seeds 13025-13072 (bar), 13073-13120 (reserve).
+  Scoring stays untouched (it runs in C++ decide; native has ended); `_act` is GDScript only (checked by engage). Cause of spotter's class A:
+  `withdraw_point` blends toward `s["rally"]` = the team's SPAWN (with no fresh enemy it returns the spawn), and "angle" hulls back off in
+  reverse the whole way. Plan behind `--outranged` (OFF until its bar), both sides, his direct order untouched (as E7): (1) RETREAT toward
+  the squad / a cover spot near it, reverse only the first ~8 m or while aimed at; (2) hit twice in 4 s from beyond its own reach (rounds
+  observed from there, the projectile_impact shooter position, no fog cheat): close by the cover spot toward the shooter if its order
+  allows, else break line of sight. Bar draft: D1 damage taken while outranged a crew-episode, D2 metres from squad at a RETREAT's end and
+  reverse metres x0.5; guards deaths, kills, friendly hits (2.6), authority probe, the non-outranged CPU sim identical. His Crossing gang
+  tanks at ~79 m staged as the acceptance read. Stamp entry with any ON ship (lesson 354).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
