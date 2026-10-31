@@ -1960,7 +1960,7 @@ func _merged_files(squads: Array, blocks: Array, click: Vector3, ground: Node3D)
 	var why := ""
 	for k in SelectionSquads.MERGED_BACK_STEPS + 1:
 		var at := Vector3(click.x, 0.0, click.z) - flat_heading * (k * SelectionSquads.MERGED_BACK_STEP_M)
-		var heads := SelectionSquads.merged_heads(blocks, at, heading, pitch.x)
+		var heads := SelectionSquads.merged_heads(blocks, at, heading, pitch.x * SelectionSquads.MERGED_GAP_SCALE)
 		why = _merged_refusal(squads, heads, heading, pitch, clearance, ground)
 		if why == "" and not SelectionSquads.veto_failures(heads, blocks, click, heading, Match.team_frame(team)["forward"]).is_empty():
 			why = "veto"

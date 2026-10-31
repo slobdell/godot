@@ -2213,12 +2213,21 @@ static var merged_stepped := 0  # O1 v2: laid after stepping back from the click
 ## only at the end" (ElementPlan.MERGED_ARRIVE_FILE: own shape on the way, a file for the last stretch).
 static var MERGED_TRAVEL_FILE := OS.get_cmdline_user_args().has("--group-merged-travel=file")
 ## O1 v2: how far the double file may step back along his approach to find dry, standable seats.
+## Dev knob (O1 v3's contact read): the files stand this many squad pitches apart (`--group-merged-gap=1.5`); 1 by default.
+static var MERGED_GAP_SCALE := _merged_gap_scale()
 const MERGED_BACK_STEP_M := 4.0
 const MERGED_BACK_STEPS := 10
 
 
 ## OFF since Bar O's first series failed D1 (R47.4; the files bumped 5-20x where laid, Status): `--group-merged=on` /
 ## `GROUP_MERGED=on` opts in; `--group-merged=all` lays every 2-3 squad click so.
+static func _merged_gap_scale() -> float:
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with("--group-merged-gap=") and arg.trim_prefix("--group-merged-gap=").is_valid_float():
+			return maxf(1.0, float(arg.trim_prefix("--group-merged-gap=")))
+	return 1.0
+
+
 static func merged_default() -> bool:
 	return OS.get_cmdline_user_args().has("--group-merged=on") or OS.get_cmdline_user_args().has("--group-merged=all") \
 			or OS.get_environment("GROUP_MERGED") == "on"
