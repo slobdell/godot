@@ -264,7 +264,33 @@ static func _fielded_sides(faction: String, seed_value: int, squad_cap: int) -> 
 	return sides
 
 
+## R47.22 (round 47, orders): the money is the cap. On the laptop preset (4 squads) every side fields every vehicle its budget
+## bought; the player's army on his four number keys, the CPU's in squads of at most five.
+func test_the_laptop_fields_the_whole_army_its_money_bought() -> void:
+	SkirmishMode.COUNT_CAP = false
+	for faction: String in Units.FACTIONS:
+		for seed_value in [1, 7, 92721]:
+			for side: Dictionary in _fielded_sides(faction, seed_value, 4):
+				var label := "%s/%d %s" % [faction, seed_value, "player" if int(side["team"]) == Match.Team.GREEN else "cpu"]
+				assert_eq(String(side["error"]), "", "setup: %s rolls" % label)
+				var fielded: Dictionary = side["fielded"]
+				assert_eq(_vehicles(fielded), _vehicles(side["rolled"]), "%s: every vehicle bought is fielded" % label)
+				var sizes: Array = (fielded["squads"] as Array).map(func(q: Dictionary) -> int: return (q["units"] as Array).size())
+				if int(side["team"]) == Match.Team.GREEN:
+					assert_true(sizes.size() <= 4, "%s: on his four number keys (%s)" % [label, sizes])
+				else:
+					assert_true(sizes.max() <= Formations.MAX_MEMBERS, "%s: the CPU's squads at most five (%s)" % [label, sizes])
+	SkirmishMode.COUNT_CAP = OS.get_cmdline_user_args().has("--army-cap=count")
+
+
+## `--army-cap=count` (C25.6's trim, the laptop knob): as round 26.
 func test_the_laptop_cap_fields_squads_of_at_most_five_on_both_sides() -> void:
+	SkirmishMode.COUNT_CAP = true
+	_count_capped_sides()
+	SkirmishMode.COUNT_CAP = OS.get_cmdline_user_args().has("--army-cap=count")
+
+
+func _count_capped_sides() -> void:
 	for faction: String in [""] + Array(Units.FACTIONS):
 		for seed_value in [1, 7, 42, 4242, 92721]:
 			for side: Dictionary in _fielded_sides(faction, seed_value, 4):
@@ -329,16 +355,24 @@ func test_every_capped_cpu_squad_forms_its_element() -> void:
 	# The live seam: both sides spawned at the laptop's cap, the CPU's commander forms its elements (a refused squad
 	# logs an engine error, which fails this test by itself) and every squad gets one.
 	await ArenaFixture.build(self, "sumps")
-	for faction: String in ["gangs", "condemned", "law", "syndicate"]:
-		var game_match: Match = add_to_tree(MATCH.instantiate())
-		for side: Dictionary in _fielded_sides(faction, 7, 4):
-			assert_eq(game_match.load_doctrine(int(side["team"]), side["fielded"]), "", "setup: %s spawns" % faction)
-		await wait_physics_frames(1)
-		for team: int in [Match.Team.GREEN, Match.Team.RUST]:
-			var commander := ElementCommander.install(game_match, team)
-			var made := commander.form_elements()
-			var squads := game_match.team_squads(team).size()
-			assert_eq(made.size(), squads, "%s team %d: one element per squad" % [faction, team])
-			assert_true(not made.has(null), "%s team %d: no squad refused (%d squads)" % [faction, team, squads])
-		game_match.queue_free()
-		await wait_physics_frames(2)
+	# R47.22: `--army-cap=count`'s seam (every squad at most five, so one element each); the money-capped army below.
+	for count_cap: bool in [true, false]:
+		SkirmishMode.COUNT_CAP = count_cap
+		for faction: String in ["gangs", "condemned", "law", "syndicate"]:
+			var game_match: Match = add_to_tree(MATCH.instantiate())
+			for side: Dictionary in _fielded_sides(faction, 7, 4):
+				assert_eq(game_match.load_doctrine(int(side["team"]), side["fielded"]), "", "setup: %s spawns" % faction)
+			await wait_physics_frames(1)
+			for team: int in [Match.Team.GREEN, Match.Team.RUST]:
+				var commander := ElementCommander.install(game_match, team)
+				var made := commander.form_elements()
+				var squads := game_match.team_squads(team).size()
+				if count_cap:
+					assert_eq(made.size(), squads, "%s team %d: one element per squad" % [faction, team])
+				else:
+					# The player's folded squads past five split into elements of five (R33.6); the CPU's are five already.
+					assert_true(made.size() >= squads, "%s team %d (money cap): every squad formed (%d of %d)" % [faction, team, made.size(), squads])
+				assert_true(not made.has(null), "%s team %d: no squad refused (%d squads)" % [faction, team, squads])
+			game_match.queue_free()
+			await wait_physics_frames(2)
+	SkirmishMode.COUNT_CAP = OS.get_cmdline_user_args().has("--army-cap=count")
