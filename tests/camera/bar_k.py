@@ -4,7 +4,7 @@
 Every line as filed in workstreams.md *Bars (round 47)*: BASE (`--camera-select-pan=off`, round 46's planner as on main) v
 ARM (the default, select_pan ON), each printed with both numbers and PASS / FAIL; then `VERDICT Bar K: PASS|FAIL`.
 
-    python3 tests/camera/bar_k.py <root> [--budget-ms MEAN P99]   (the laptop's frame cost, measured apart)
+    python3 tests/camera/bar_k.py <root> [--budget-ms MEAN P99] [--rig-ms BASE ARM]   (the laptop's frame cost, measured apart)
 """
 import argparse
 import os
@@ -51,7 +51,8 @@ def lane(rs, name):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("root")
-    ap.add_argument("--budget-ms", nargs=2, type=float, default=None)
+    ap.add_argument("--budget-ms", nargs=2, type=float, default=None)  # ARM planner ms/frame mean, step p99 (laptop)
+    ap.add_argument("--rig-ms", nargs=2, type=float, default=None)  # whole rig ms/frame mean, BASE ARM (laptop)
     a = ap.parse_args()
     lines = []
 
@@ -132,9 +133,11 @@ def main():
         staged = sum(1 for x in ra if x.get("staged", {}).get("ok", x.get("scenario") in ("", None, "attack")))
         judge(f"G9 {wl} runs ok + staged", "%d" % len(rb), "%d (%d staged)" % (len(ra), staged),
               len(ra) == len(rb) and len(ra) > 0 and staged == len(ra))
-    if a.budget_ms:
-        judge("G10 laptop rig ms/frame mean <= 0.5 and planner step p99 <= 1.5", "-", "%.3f / %.2f" % tuple(a.budget_ms),
+    if a.budget_ms:  # R47.24 (amendment 1): Bar C1's G8 as the filing named it, plus the whole rig against BASE
+        judge("G10a laptop planner ms/frame mean <= 0.5 and step p99 <= 1.5 (Bar C1's G8)", "-", "%.3f / %.2f" % tuple(a.budget_ms),
               a.budget_ms[0] <= 0.5 and a.budget_ms[1] <= 1.5)
+    if a.rig_ms:
+        judge("G10b laptop whole rig ms/frame mean (ARM <= BASE + 0.05)", a.rig_ms[0], a.rig_ms[1], a.rig_ms[1] <= a.rig_ms[0] + 0.05, "%.3f")
     errors = 0
     for d in os.listdir(a.root):
         p = os.path.join(a.root, d)
