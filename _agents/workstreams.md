@@ -270,6 +270,12 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   engage's lane probe: 12328 post drift 10.1 -> 0.0 m, gun killed from the post; dev 7001-7012 identical in every line. FYI to engage:
   HOLD's return to his post arrives at 6.0 m, so other displacements still park his crew up to 6 m short.
 
+- **R47.31 The laptop's big-army UI cost is the fog-of-war field, not orders' controls: GRANT native `game/match/visibility_field.gd`
+  for its cost (C++ or a laptop-preset refresh rate, output-identical or said).** Orders (laptop UHD 620, lock, 67d09e882, his Crossing
+  seed 101, laptop preset): headless HUD 3.24-3.36 v 2.90-2.94 ms a frame (controls flat: +0.06 / +0.08 / +0.07 / +0.09 ms); windowed
+  layers (n 1 an arm, noisy; arms fight different-sized battles): cost cap, 37 alive, frame 81 ms, VisibilityField off saves 10.6 ms of
+  frame; count cap, 25 alive, 3.4 ms. Orders returns to O1 v3.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
