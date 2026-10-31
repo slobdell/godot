@@ -109,6 +109,19 @@ _(worker keeps this current: report at the top, every number with commit, machin
   seats. All in 22.7 v 8.4 s OFF, contact ticks 1636 v 51. The yard is unread (wedging only, no lateness).
 - **Crossing and Terminus never lay files:** the ground refuses the rear seats (buildings, off the arena), so his Crossing
   merged click files but a box-selected one may not; his Locks click lays as today (39.4 v 39.4 m).
+- **Round 48's first orders item: the follow station swings with the leader's nose (spotter class D, #17).** Reproduced
+  (builder3 light lane, e26a1bf7a, `make spotter-fights SPOT_MAPS=locks SPOT_SEEDS=13216`): Rust_Guns_2 FOLLOWs Rust_Guns_1
+  10-25 m behind at 11 m/s (correct), then at 41-44 s the leader turns north and the follower REVERSES (-2.6 m/s) and spins
+  (87 deg/s): `Orders.goal_of` (game/control/orders.gd, mine) puts the station at the leader's pose + slot turned by the
+  leader's nose that instant, so a pivot swings the station round the leader. Candidate: turn the slot by the leader's
+  smoothed heading of travel, not its nose; it moves every follower (CPU and his), so it needs a bar. NOT a goal handed
+  down wrong: spotter's `to_go 17 -> 76 m` reads brain.order.goal, which a follow never updates (the drive uses the live
+  station); spotter should read `Orders.goal_position` for follows.
+- **Support by fire (class D #13, #22, crossing 13216, same tree): not my order layer.** #13 Green_Sirens_2: the CPU's
+  assault plan (army_plan / element_commander) hands it a firing spot 214 m across the map (-57.9, -30.8); it drives there at
+  speed, backs and fills at (76, -31) 57-60 s, then is re-handed (4.9, -33.4). #22 Green_Sirens_1: 4.0 of 10 m/s (the
+  element's transit pace) while shot 260 -> 58 hp by an enemy it never sees (near_enemy -1): pace = tactics', no answer =
+  engage's E10. O6's battery swap is the PLAYER's screen only; none of these pass through it.
 - **O7, his acceptance read:** not done. It reads the shipped tree: his Crossing / Locks clicks and Hunters_4's order time,
   from his order rows plus the census at the click tick (R47.8: replays diverge).
 

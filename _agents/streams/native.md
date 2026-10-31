@@ -55,6 +55,61 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-31 ~03:40 PDT) — the replay stamp, E9, the tip.**
+- **His round-46 Crossing replay parted at 2-3 s again (mapkit's note): FIXED (ce3a691eb + 44c5e7832).** replay-match did apply
+  rules.py (--army-cap=count); the cause was round 47's other ON sim rules with no stamp entry. RULES + MatchRecorder.rules() gain
+  press_on (b96e12e43), battery_screen (09780edb9), buried (06ba81b45), holdyield (c41ae23bb), group_merged (de3176388), pot_shot
+  (8d51777cc), each dated at its merge (lesson 354: an ON sim rule needs its stamp entry in the same merge). Builder3 light, main
+  8294fbbdd: first_over Green_Guns_1@3 -> Green_Guns_2@13 (R47.16's ~11-12 s limit). Engage's `--halt-cancel=old` (tank.gd), if
+  it lands, is the next entry.
+- **E9 twin DROPPED** (39635013a reverted in c397a3b85): engage's trace refutes the barrel theory; no pot_shot_lane will come.
+- 3be2025e6 (pot_shot_holds) reached main with engage's E3 pair; the merge keeps one copy.
+
+**REPORT (2026-10-31 ~02:30 PDT) — the yield-cycle flake (the orchestrator's ask; GRANT tests/test_manoeuvre_noprogress.gd).**
+test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle red in mapkit's check of 8dc9697b4 (shard 4/7), green elsewhere. **Not load,
+not wall time, not native: the lab is deterministic per PROCESS HISTORY, and this case sits on a knife edge.** All builder3 light,
+155a8fc0e's tree (main c9e6520b3), `make native-repeat` (new: FILTER x REPEAT_N, FILTERS=a;b;c one run each, REPEAT_JITTER=on):
+- Alone, 10 / 10 identical (Hunters_2 leaves at tick 204-205 of the 300 allowed), native ON; the same with NATIVE=off.
+- After the failing shard's 49 preceding files (taken from mapkit's build/check/logs/test.log): red 3 / 3, mapkit's numbers to the
+  digit (Hunters_2 / Hunters_4 never within 8 m). Bisected: test_manoeuvre_face_settle (its 5 tests together, no one alone) is
+  enough; other files move Hunters_2's tick 204-208. Start tick 1, nav wait 1-2 frames in every history (CYCLE_START), so not
+  the lab's start. By tick 30 the same decisions sit a few cm apart: the physics, as roadmap's UNOWNED "a same-process rematch
+  is not deterministic" (round 33: Jolt settles a hull differently after earlier matches; a fresh World3D does not reset it).
+- Robustness, fresh processes, start poses moved <= 1 cm / 0.1 deg (CYCLE_JITTER=1..20): **19 / 20 green, seed 19 red** with the
+  same signature; NATIVE=off run for run identical (same seed red, same ticks).
+- So it is the GAME: the sliver fix holds for ~95 % of starts; a centimetre (or any history) puts Hunters_2 / 4 back on the sliver
+  for the whole 15 s. Not fixed here (manoeuvre's rule). Next round: manoeuvre makes the leave robust, bar = CYCLE_JITTER 1..20
+  all leave (`make native-repeat FILTER=test_manoeuvre_noprogress::test_cpu REPEAT_N=20 REPEAT_JITTER=on YIELD_CYCLE=on`); and the
+  process-history physics state (netplay / replays in one process) stays UNOWNED in roadmap.md.
+- **R47.47: the test is PENDING** (YIELD_CYCLE=on runs it; it prints the reason otherwise): it guards the watchdog, OFF in his
+  game, and a shard-order red would gate every stream's check. The assertion is unchanged.
+
+**FINAL REPORT (2026-10-31 ~04:30 PDT). Last green: 86d8ee035 — builder3 `make native check exited 0`, 3622 / 0, 29 targets ALL
+JUDGED, sim-baseline unmoved on all 13 maps (main 8d51777cc merged). Earlier greens, all merged: dfb6a2567, 6f19722ae, 27ea82fa5
+(as 8d37b9796), e5fa1f1be, 155a8fc0e (3617 / 0). To merge: 86d8ee035 (the commits after e5fa1f1be: native-repeat, the yield-cycle
+test PENDING (R47.47), the replay stamp's six round-47 rules, E9 dropped, Status).**
+In his terms: his game plays the same bit for bit, with three more core pieces in C++ (formation seats, the squad's view of its
+crews and contacts, the matchups). Every rule shipped ON this round that touches the brain, the gun or the drive runs the same in
+C++ (E7 his attack beats RETREAT, E3 snap shots + the short-halt hold, holdyield). Blast doors and sight screens work on the C++ path
+too. His own garage fights replay again, and his replays know every rule his build ran (his round-46 Crossing is exact to ~12 s
+again, not 2-3 s).
+**Backlog:** N1 DONE (E7 + Amendment 1, E3 + pot_shot_holds, holdyield; E2a dropped by R47.17; E9 refuted by engage's trace, twin
+dropped); N2 DONE (place ON); N3 DONE (inp reader); N4 DONE (esit ON); N5 DONE (lines_r47, 25 lines; nothing filed since);
+N6 DONE (seed, .remote-synced, Xorg DISPLAY, the queue watched). Plus N0 (R47.8) cause 1 fixed, the limit stated (R47.16);
+C47.8 doors and R47.36 the eye mask in C++; R47.27 matchups ON / scan OFF; R47.31 / 34 dropped; the yield-cycle flake read
+(R47.47); the replay stamp (lesson 354).
+**Round 48's native list:** (1) contact_prototypes' rebuild in C++ (~0.7 ms a frame on his laptop at the cost cap); (2) the
+same-process physics carry-over: Jolt state left by earlier matches in one process moves a lab by cm (the sliver test is PENDING
+on it; `make native-repeat ... REPEAT_JITTER=on YIELD_CYCLE=on` is the bar's tool; matters for rematches and netplay); (3) the
+laptop fog readers' unexplained ~2 ms (references/round47/native/fogread-laptop); (4) the army layout's bake timing (R47.18:
+ARMY_LAYOUT_UNCHECKED, standable queries before the navmesh); and cause 2 of the replay parting (~11 s) once recordings carry inp rows.
+**Questions for the lead:** none open.
+**Known issues:** the yield-cycle test is PENDING (R47.47: ~95 % of 1 cm jittered starts leave the sliver); replays part at ~11 s.
+**Requests to other streams:** ship every ON sim rule with its MatchRecorder.rules() + tests/replay/rules.py entry in the same
+merge (lesson 354; engage's `--halt-cancel=old` is next). Change ElementSituation.build's loops, TacticsFormation.place, Lay /
+_obey / the pot shot / _holdyield_veto only through native (each is twin-frozen).
+**What to playtest:** nothing new on screen from native. `make playtest-report RECORDING=<his>.jsonl`; `make replay-match ...`.
+
 **REPORT (2026-10-30 ~22:00 PDT) — the round so far, in one place.**
 **Green / merge:** 6f19722ae GREEN builder3 (`make check exited 0`, 3523 / 0, 29 ALL JUDGED, sim-baseline unmoved on all 13 maps;
 named for merge). Next candidate: **27ea82fa5** (= + C47.8 door mask + R47.36 eye mask + main 79cea77e5), its check queued on
