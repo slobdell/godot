@@ -86,7 +86,7 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
 | E2b a line under his attack | code in; `--attack-line`, **OFF** until Bar E. Its hand-built one-crew stage does NOT reach the rule (the element's contact drill hands the lone rig a slot with a line: both arms fire at 6.6 s); a dev read on the six staged windows decides whether the rule fires at all before a new test |
 | E2 dev reads | **no measurable effect from either switch** (below) -> **E2a + E2b DROPPED (R47.17), code removed** (game files byte-identical to e306ce27f; native's twin reverted) |
 | E7 his order beats RETREAT | code + tests GREEN at **14ccc9b91** (builder3 `native test` press_on / native_decide / combat_envelope / native_gun / native_exec_state: 45 passed, 0 failed). `--press-on`, **OFF** until native's `_obey` twin (spec + hash sent). Dev read on route's Locks case (staged 1440) running |
-| E7 Bar E7 | **FILED** (here and workstreams.md *Bars (round 47)*) before any number on 12601-12648; next: full check on the frozen hash, then the series |
+| E7 Bar E7 | **FILED** + **Amendment 1** (his side only; G6 the CPU side untouched), both before any number on 12601-12648. GDScript green at 43ed628f1 for my tests (press_on 6/6); waiting on native's re-twin (his_side), then the full check on the frozen pair hash, then the series |
 | E3 pot shots | in progress: switch (default OFF) + the dev read that gives the orchestrator his question in player terms (R47.17) |
 
 **His "is something broken with our targeting?" — the honest answer (staged, E1 + the gates split):** no. A gang crew is SLOW to its
