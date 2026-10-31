@@ -92,6 +92,11 @@ orchestrator); N6 waits on his `inp` recording; stretch the laptop fps read at t
   stamp entry: his replays teleport every crew to his recorded spawn (R47.18), and his interactive starts already laid checked
   (the sync had landed); it changes headless / same-frame starts only. The sim-baseline may move (headless matches laid
   unchecked before): the full check says; the orchestrator adopts.
+  **N5's check: cc3e962e9 (stream/native-n5) builder3 `make check exited 2`, 3631 / 0, the ONLY failed target sim-baseline (MOVED on
+  all 13 dealt maps, expected; the orchestrator adopts it alone).** LAYOUT_MOVED (round 47's same-frame layout, 20 unchecked, v the
+  synced one): Crossing / Locks / Sumps 0 of 20 crews moved, 0.00 m: the spawns do NOT move; the sim moves because the navigation map
+  is published in the deploy frame (crews path from tick 1 instead of steering straight until the first sync). His game: no visible
+  change (his interactive starts already had the sync); stamp entry `layout_sync`, `--layout-sync=off`.
 - **N2 hypothesis (30 min, the orchestrator's): refuted.** Laptop, lock held, 4c01aa748: build 22.0 v 15.5 ms over 402 tables (C++
   -29 %); READING the tables (duplicate + seven fields, x20, as brains do) 107.7 v 105.4 ms: equal. Not a reader / marshalling cost.
   The in-run A/B gap stays unexplained; native_contacts OFF, written up.
