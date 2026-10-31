@@ -172,27 +172,3 @@ func test_the_planners_point_stays_within_the_bound_of_his_selection() -> void:
 	var strung := [Vector3(0, 0, 0), Vector3(0, 0, -10), Vector3(0, 0, -120)]  # one crew far ahead: the frame's centre is 50 m off the mean
 	var centre := Vector3(0, 0, -60)
 	assert_true(RtsCamera.bound_to(centre, strung, RtsCamera.SEL_BOUND_M).distance_to(centre) < 0.01, "a strung-out squad keeps its frame")
-
-
-## Bar K G4b (e4a614eab: 7 one-frame 'planner' snaps): a pan that runs out of time at full speed (a squad driving away) lands;
-## no frame the glide moves after the hand-over is a snap (CameraTrace.SNAP_PX at 1080 rows).
-func test_a_pan_that_times_out_lands_without_a_snap_at_the_hand_over() -> void:
-	var rig := _rig(_squad(Vector3(0, 0, 40)), ["a"])
-	_settle(rig, 2.0)
-	var start := Vector3(0, 0, -110)
-	rig.set_meta("frame", _squad(start))
-	rig.set_meta("names", ["b"])
-	var handed := false
-	var worst := 0.0
-	var last := rig._shown_focus
-	for i in int(4.0 * FPS):
-		rig.set_meta("frame", _squad(start + Vector3(0, 0, -100.0 * i / FPS)))  # it drives off at 100 m/s: the pan cannot close
-		rig._process(1.0 / FPS)
-		var height := 2.0 * RtsCamera.distance_for(rig._shown_zoom) * tan(deg_to_rad(RtsCamera.fov) / 2.0)
-		var px := rig._shown_focus.distance_to(last) / height * 1080.0
-		last = rig._shown_focus
-		if not rig.planner_urgent and rig._clock > 2.1:
-			handed = true
-			worst = maxf(worst, px)
-	assert_true(handed, "the pan hands over (PAN_MAX_S)")
-	assert_true(worst <= CameraTrace.SNAP_PX, "after the hand-over no frame moves over %.0f px (worst %.1f)" % [CameraTrace.SNAP_PX, worst])

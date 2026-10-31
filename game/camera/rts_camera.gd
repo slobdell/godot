@@ -352,8 +352,6 @@ const PAN_DRIFT_M := 30.0
 var _pan_until := -1e9
 var _aim_now := false
 var _panned_for := -2e9
-var _landing := false
-var _land_at := Vector3.ZERO
 var _turn_pace := 1.0
 ## The pan's spring (1/s; critically damped from rest: 90 % of the way in 3.9/omega s, no step in speed) and its top
 ## speed in heights of the ground in view per second (the spring alone peaks at gap * omega / e: 150 m at 7.5 -> 414 m/s,
@@ -644,7 +642,7 @@ func _glide(delta: float) -> void:
 		_shown_focus += _focus_velocity * delta
 	else:
 		var omega := lerpf(focus_omega, PAN_OMEGA, _urgency) if select_pan else focus_omega * lerpf(1.0, URGENT_OMEGA_X, _urgency)
-		var next := RtsCamera.spring(_shown_focus, _focus_velocity, _land_at if _landing else focus, omega, delta)
+		var next := RtsCamera.spring(_shown_focus, _focus_velocity, focus, omega, delta)
 		_focus_velocity = (next[1] as Vector3).limit_length(glide_top_speed())
 		_shown_focus = next[0] if (next[1] as Vector3).length() == _focus_velocity.length() else before_focus + _focus_velocity * delta
 	var before_zoom := _shown_zoom
@@ -2159,7 +2157,6 @@ func _update_planner(points: Array, destination: Variant) -> void:
 ## again), pans until that gap is PAN_ARRIVE_M or PAN_MAX_S has passed; the glide (and his aim hold) does the rest.
 func _pan_urgent() -> bool:
 	if not planner_on or _track != Track.VISION:
-		_landing = false
 		return false
 	if not select_pan:
 		return _clock < _fresh_until and not _selection_shown()
@@ -2170,24 +2167,11 @@ func _pan_urgent() -> bool:
 	# while he aims): ending faster left the glide to brake in a frame (dev 7001-7004 at 0927ea3e0 and 8db2073c1: one-frame
 	# 'planner' jerks 0.6-1.0 s after each pick, 1.7 -> 6.8/min). PAN_MAX_S still ends it.
 	var paced := _normal_top_speed() * (_turn_pace if not _aim_now else 0.0)
-	var slowed := _focus_velocity.length() <= maxf(paced, 1.0)
-	if gap <= PAN_ARRIVE_M and (not planner_urgent or slowed):
+	if gap <= PAN_ARRIVE_M and (not planner_urgent or _focus_velocity.length() <= maxf(paced, 1.0)):
 		_pan_until = -1e9
-		_landing = false
 		return false
 	if planner_urgent:
-		if _clock < _pan_until:
-			return true
-		# PAN_MAX_S is up (a squad driving away from the pan): it LANDS rather than handing a full-speed move to the glide
-		# (Bar K G4b, e4a614eab: 7 one-frame 'planner' snaps in 72 runs, the glide braking the pan in a frame). The spring
-		# runs on to the point it stops at from this speed, then the glide takes over at its own pace.
-		if not slowed:
-			if not _landing:
-				_landing = true
-				_land_at = _shown_focus + _focus_velocity / PAN_OMEGA
-			return true
-		_landing = false
-		return false
+		return _clock < _pan_until
 	# The pick's own pan ignores his aim (that hold WAS the delay he felt); any later start (a second within FRESH_S, a drift)
 	# waits until he is not aiming (dev 7001-7004 at b9e28935b: 13 clicks aimed while such a pan started, slip p95 305 px).
 	var first := _clock < _fresh_until and gap > PAN_START_M and _panned_for != _select_at
