@@ -70,7 +70,40 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-**REPORT (2026-10-30 ~18:20; newest first).**
+**REPORT (2026-10-30 ~21:00; newest first).**
+
+**Green hashes:** 6282f0fbf (P2 v1; builder3 3532/0, ALL JUDGED); **39c7dba53** (P2 contract + P3 + P5 + P4 traps/monorail/door
+look; builder3 `make check exited 0`, 3548/0, 28 targets ALL JUDGED, 20:23; MERGED to main by the orchestrator). 2bf534df2 was red
+(test_render_multimesh_interpolation: the strip curtain bypassed FxMultiMesh; fixed in 39c7dba53). **c2ff150a2** (470301cc7 + a .uid):
+steam screens, pipes B, crane A, the monorail deck split, P1b's trim sheet, mapkit-gpu -- quick 310/0 builder3; full check queued
+on builder3 since ~20:55 (name it here when it lands).
+
+**Done, by backlog item:**
+- P1 looks page (his picks: door A, screen C, overpass C, traps A, pipes B, crane A; 21 lines kept). P1b trim-sheet page
+  https://claude.ai/artifact/Ko8xyeccqTwz9AcYKoNNVA (waiting on his picks: `trim/<piece>` db).
+- P2 blast doors: rules + colliders + route's contract (C47.8 as built), hold/overstay, doors_dev. On doors_dev ONLY until native
+  passes RouteDoors' mask in C++ route queries (C47.6) -- blocked on native, request sent.
+- P3 sight class: done (C47.7); engage/native told (merge notes on 39c7dba53).
+- P4: all six picks exist as kit types with their looks (tank_trap, monorail + monorail_deck, sight_screen steam/strips, pipeline,
+  gantry_leg, prop.blast_door). Twins (CANDIDATES): parade_traps, parade_rail. Static reads (laptop, arena_report): traps change no
+  view (mean 83.6 -> 82.8 m); the rail cuts views a little (centre sees 0.82 -> 0.78, mean 81.6 m); every lane and corner passes.
+  NOT done: the paired series v parade (C47.1: a bar first), screens/pipes/crane placed on a map, doors on a dealt map (native).
+- P5: the booth calls the doors with his 21 lines, 133 clips voiced (ledger below).
+
+**Laptop (C47.10), `make mapkit-gpu`, 470301cc7, Intel UHD 620 (WHL GT2), laptop preset, his pose 1920x1080, 120 frames, n=1 per row:**
+empty floor 9.47 / 9.50 / 8.80 ms GPU (the noise: about +-0.7 ms). Plain: traps 8.45/8.37, monorail 9.12/9.16, pipes 9.33/9.21,
+crane 8.90/8.31, door 7.78/8.50. Screen steam 8.84 v strips 9.34. Trim: traps 8.38, monorail **10.62** (+1.4 over plain, re-measure
+before it ships), pipes 9.40, crane 8.71. No piece reads above the floor's own spread except that one. (The gallery scene: render
+levers may not all apply outside a match; the read is each piece's cost relative to the same floor.)
+
+**What to playtest:** `make skirmish ARENA=parade_traps` (hedgehog breakwaters in front of each base), `make skirmish
+ARENA=parade_rail` (a monorail over the parade ground), `make skirmish ARENA=doors_dev` (two blast doors on a timer, the booth
+calling them; crews route round by the flank gaps until native passes the door mask). `--kit-sight=off` turns screens back into
+scenery. Steam shows on the high FX tier outside the laptop preset.
+
+**Next steps:** paired series parade v parade_traps / parade_rail (file a bar first); a screened twin (Crossing: gangs v syndicate's
+79 m median is the case screens were for); pipes on Sumps/Locks twins; doors on a dealt map once native passes the mask; the trim
+monorail GPU repeat; his trim picks -> MapkitYard.look default per piece.
 - **P1b Material Maker trial (R47.28), in progress 19:35:** Material Maker pinned at 7d6daae3c (2026-10-24, shallow clone) in
   builder3's `~/tools/material-maker`, outside every repo. Export path read first (parse_args.gd): a local `.ptex` only; nothing is
   fetched unless a `website:` argument is given. **Gotcha:** Godot 4 takes `--export` itself (the Godot 3 flag); use

@@ -1159,7 +1159,10 @@ def use_extent(layout):
 def analyze(layout):
     use_extent(layout)
     boxes = boxes_of(layout)
-    blocked, n = occupancy(boxes)
+    # Mapkit P3/P4 (round 47): a `sight` box (a sight screen) blocks eyes, never a hull: every view measure reads `boxes`,
+    # every drive measure (occupancy, routes, corridors, the lane bar) reads `solid`.
+    solid = [b for b in boxes if KIT.get(b.kind, (None, ""))[1] != "sight"]
+    blocked, n = occupancy(solid)
     # Round 10 (terrain): water and pits are not floor, and rims and bridge rails are walls, grown by the bake
     # radius as the navmesh is. Sight is untouched: all of it is below the eye line. See tools/arena_terrain.py.
     arena_terrain.carve(blocked, n, layout, HALF, GRID, AGENT_RADIUS)
@@ -1178,7 +1181,7 @@ def analyze(layout):
     # S1/round 9: the tightest place on the route a whole army has to file through, against the roster's widest
     # hull. Both halves READ from their owners -- the corridor from the layout's own obstacles, the hull from
     # `game/units/units.gd` via `tools/units_catalog.py` -- so neither can go stale behind a comment.
-    widths = corridor_widths(boxes, direct)
+    widths = corridor_widths(solid, direct)
     if widths:
         tightest = min(widths, key=lambda w: w[2])
         hulls = units_catalog.load()
@@ -1208,7 +1211,7 @@ def analyze(layout):
                           "longest_uncovered_m": round(cover_gap(boxes, path), 1)})
         lanes.append(entry)
     report["lanes"] = lanes
-    report["lane_table"] = lane_table(layout, boxes)
+    report["lane_table"] = lane_table(layout, solid)
     # How doctrine would classify the field (ElementSituation: every obstacle counts), and how it would with only
     # sight-blocking cover counted: drivable points every 8 m in the contested field.
     groups = cover_groups(boxes)

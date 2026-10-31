@@ -71,6 +71,28 @@ def parade_rail():
     return len(rail) // 2
 
 
+def crossing_screens():
+    """crossing_screens: the Crossing with sight screens (his pick C, steam; strips on the laptop): one across the middle of
+    each bridge (a crew on the deck is unseen from the landing until it is through) and two along each side's near bank
+    (cutting the long looks over the water, the 79 m median where the gangs fired 6 shots to the syndicate's 358). Screens are
+    not obstacles: every lane and the bridges' widths are untouched. South half authored, the north its mirror."""
+    base = json.loads((ROOT / "arenas" / "crossing.json").read_text())
+    half = [(-92.0, 14.0, 0.0), (-60.0, 30.0, 0.0), (-30.0, 30.0, 0.0)]
+    screens = [{"type": "sight_screen", "position": [x, z], "rotation_deg": r} for x, z, r in half]
+    screens += [{"type": "sight_screen", "position": [-x, -z], "rotation_deg": (r + 180.0) % 360.0} for x, z, r in half]
+    twin = dict(base)
+    twin["name"] = "crossing_screens"
+    twin["title"] = "The Crossing (sight screens)"
+    twin["fixture"] = True
+    twin["note"] = ("Mapkit P4 twin of the Crossing (tests/mapkit/make_kit_twins.py): sight screens across each bridge and along "
+                    "each near bank. A candidate: judged against crossing first. " + base.get("note", ""))
+    twin["props"] = list(base["props"]) + screens
+    twin.pop("show", None)
+    (ROOT / "arenas" / "crossing_screens.json").write_text(json.dumps(twin, indent=1) + "\n")
+    return len(screens)
+
+
 if __name__ == "__main__":
     print("wrote arenas/parade_traps.json: %d hogs" % parade_traps())
     print("wrote arenas/parade_rail.json: %d pillars" % parade_rail())
+    print("wrote arenas/crossing_screens.json: %d screens" % crossing_screens())
