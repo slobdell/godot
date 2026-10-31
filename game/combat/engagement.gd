@@ -91,6 +91,40 @@ static var acquisition_enabled := true
 ## fights too QUIET rather than too loud. Never set in normal play.
 static var crossing_enabled := true
 
+## Round 47 (engage E2a, R47.13 GRANT): a new contact already this close to the barrel keeps the lay the gunner has. His War
+## Rigs (Crossing, six staged windows) spent 44 % of their held time laying, 40 % of THAT re-laying from zero after the gun
+## swapped to a new name on the same bearing (the old target's squadmate, a few metres beside it). Ten degrees is a hull
+## beside the old one at ~30 m: the sight is already on it, so nothing about "finding a target" is left to do. A real swing
+## (anything wider) still costs the whole lay, and the carry never grants more than the gunner had: the new contact's
+## own acquisition time still applies.
+const LAY_CARRY_DEG := 10.0
+## `--lay-carry=on|off`. OFF until native's twin of Lay.engage carries it too (C47.6): the C++ execute step owns the lay on
+## nearly every tick, and a rule only the GDScript knows would make the native game a different game.
+const LAY_CARRY_DEFAULT := false
+static var lay_carry := _lay_carry_flag()
+
+
+static func _lay_carry_flag() -> bool:
+	for arg in OS.get_cmdline_user_args():
+		if String(arg) == "--lay-carry=on":
+			return true
+		if String(arg) == "--lay-carry=off":
+			return false
+	return LAY_CARRY_DEFAULT
+
+
+## E2a: is `contact` within LAY_CARRY_DEG of where `tank`'s gun points now (flat bearing)? False when either bearing is
+## undefined (a contact on top of the muzzle).
+static func under_the_barrel(tank: Tank, contact: Tank) -> bool:
+	if tank == null or contact == null or tank.turret == null:
+		return false
+	var toward := contact.global_position - tank.turret.global_position
+	toward.y = 0.0
+	if toward.length_squared() < 0.25:
+		return false
+	return tank.turret_forward().dot(toward.normalized()) >= cos(deg_to_rad(LAY_CARRY_DEG))
+
+
 ## Measurement only: how many ticks a gun with a target in front of it was held by each gate. Never read by decisions.
 static var held_by_acquisition := 0
 static var held_by_discipline := 0
@@ -211,8 +245,10 @@ class Lay extends RefCounted:
 	func engage(tank: Tank, contact: Tank, distance: float, seconds: float, ordered: bool) -> bool:
 		var target_name := String(contact.name) if contact != null else ""
 		if target_name != target:
+			# E2a: a new name already under the barrel keeps the lay (never the old target's firing hysteresis).
+			if not (Engagement.lay_carry and target != "" and Engagement.under_the_barrel(tank, contact)):
+				progress = 0.0
 			target = target_name
-			progress = 0.0
 			firing = false
 		if not Engagement.acquisition_enabled:
 			progress = INF

@@ -25,6 +25,7 @@ func _tank(unit_id := "tank", team := 0) -> Tank:
 func teardown() -> void:
 	Engagement.acquisition_enabled = true
 	Engagement.crossing_enabled = true
+	Engagement.lay_carry = Engagement.LAY_CARRY_DEFAULT
 	Units.tuning.clear()
 	Weapons.tuning.clear()
 	super.teardown()
@@ -134,6 +135,54 @@ func test_swinging_onto_a_new_contact_costs_the_lay() -> void:
 	var lay := Engagement.Lay.new()
 	assert_true(lay.engage(tank, first, 10.0, 10.0, false), "acquired and engaging the first contact")
 	assert_true(not lay.engage(tank, second, 10.0, 0.01, false), "a new contact is not a target yet")
+
+
+## Round 47 (engage E2a, R47.13): his War Rigs spent 40 % of their acquisition time re-laying from zero after the gun swapped
+## to a NEW name already under the barrel (a squadmate of the old target, the same bearing). A gunner whose sight is
+## already on the new hull keeps his lay; a real swing still costs it (the test above, and the wide one below).
+func _lay_carry_case(second_at: Vector3) -> Array:
+	Engagement.lay_carry = true
+	var tank := _tank()  # at the origin, turret along -Z
+	var first := _tank("tank", 1)
+	var second := _tank("tank", 1)
+	first.global_position = Vector3(0.0, 0.0, -30.0)
+	second.global_position = second_at
+	var lay := Engagement.Lay.new()
+	var needed := Engagement.acquire_seconds(tank, first, 30.0)
+	assert_true(lay.engage(tank, first, 30.0, needed + 0.01, false), "acquired the first contact")
+	return [tank, second, lay]
+
+
+func test_a_new_contact_already_under_the_barrel_keeps_the_lay() -> void:
+	var case_ := _lay_carry_case(Vector3(3.0, 0.0, -30.0))  # 5.7 deg off the barrel
+	var tank: Tank = case_[0]
+	var lay: Engagement.Lay = case_[2]
+	assert_true(lay.engage(tank, case_[1], 30.1, 0.01, false), "the squadmate beside his target is under the sight: no re-lay")
+	assert_eq(lay.target, String((case_[1] as Tank).name), "the lay is on the new contact now")
+
+
+func test_a_wide_swing_onto_a_new_contact_still_costs_the_lay() -> void:
+	var case_ := _lay_carry_case(Vector3(30.0, 0.0, 0.0))  # 90 deg round
+	assert_true(not (case_[2] as Engagement.Lay).engage(case_[0], case_[1], 30.0, 0.01, false), "a real swing re-lays from scratch")
+
+
+func test_a_carried_lay_still_needs_the_new_contacts_own_time() -> void:
+	# The carry keeps what the gunner has, it does not grant more: a far contact on the same bearing still needs its longer lay.
+	var case_ := _lay_carry_case(Vector3(0.0, 0.0, -58.0))
+	var tank: Tank = case_[0]
+	var far: Tank = case_[1]
+	var needed_far := Engagement.acquire_seconds(tank, far, 58.0)
+	var needed_near := Engagement.acquire_seconds(tank, null, 30.0)
+	assert_true(needed_far > needed_near + 0.1, "this case rests on the far contact needing longer")
+	var lay: Engagement.Lay = case_[2]
+	assert_true(not lay.engage(tank, far, 58.0, 0.01, false), "carried, but short of the far contact's own lay")
+	assert_true(lay.engage(tank, far, 58.0, needed_far - needed_near, false), "and only the difference is left to lay")
+
+
+func test_lay_carry_off_is_todays_reset() -> void:
+	var case_ := _lay_carry_case(Vector3(3.0, 0.0, -30.0))
+	Engagement.lay_carry = false
+	assert_true(not (case_[2] as Engagement.Lay).engage(case_[0], case_[1], 30.1, 0.01, false), "--lay-carry=off: every new name re-lays")
 
 
 func test_a_contact_that_ducks_behind_cover_is_not_found_from_scratch() -> void:
