@@ -2162,9 +2162,11 @@ func _pan_urgent() -> bool:
 	# The gap to the PLANNER'S point (it frames the squad's bounds: a spread army's mean sits far from a right look, and a
 	# gap to the mean re-fired the pan every PAN_MAX_S: dev 7001-7004 at db75ab282, slip p95 33 -> 254 px).
 	var gap := Vector2(focus.x - _shown_focus.x, focus.z - _shown_focus.z).length()
-	# Arrived: near his selection AND slowed to the glide's own pace (ending at full speed left the glide to brake or coast
-	# ~12 m: dev 7001-7004 at 0927ea3e0, 'planner' jerks 1.7 -> 7.3/min).
-	if gap <= PAN_ARRIVE_M and (not planner_urgent or _focus_velocity.length() <= _normal_top_speed()):
+	# Arrived: near the planner's point AND slowed to what the glide allows under his hand right now (his hand's pace; ~at rest
+	# while he aims): ending faster left the glide to brake in a frame (dev 7001-7004 at 0927ea3e0 and 8db2073c1: one-frame
+	# 'planner' jerks 0.6-1.0 s after each pick, 1.7 -> 6.8/min). PAN_MAX_S still ends it.
+	var paced := _normal_top_speed() * (_turn_pace if not _aim_now else 0.0)
+	if gap <= PAN_ARRIVE_M and (not planner_urgent or _focus_velocity.length() <= maxf(paced, 1.0)):
 		_pan_until = -1e9
 		return false
 	if planner_urgent:

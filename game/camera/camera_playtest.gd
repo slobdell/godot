@@ -26,7 +26,9 @@ extends Node
 ##   split    his Crossing case ("I sent half my army west and half my army east"): each group is ordered SPLIT_M out to
 ##            its side (the first half of his groups left, the rest right) and SPLIT_AHEAD_M forward; then, every 1-3 s,
 ##            the hand picks ANOTHER group by its key, and aims and clicks as round 41's hand does (an enemy on screen is
-##            attacked, else a move up-screen). CameraLook's sel_far_s / sel_frames read how the view keeps up.
+##            attacked, else a move up-screen). CameraLook's sel_far_s / sel_frames read how the view keeps up. His hand stays
+##            on the mouse while he waits (drifting 0.6 s of each second: the K1 replay's model), and after a pick his eye waits
+##            up to SPLIT_LOOK_S for the view to reach the squad before he aims (he clicks what he can see).
 
 const AIM_S := 0.5
 ## How long his hand takes to carry the cursor to what he aims at (a Fitts-law reach across a 1080p screen is ~0.25-0.4 s).
@@ -51,6 +53,11 @@ const CORNER_COLUMN_M := 9.0
 ## K4's split: how far out to each side, and forward, his two halves are sent.
 const SPLIT_M := 70.0
 const SPLIT_AHEAD_M := 40.0
+## K4's hand and eye in the split (both arms alike): the hand drifts this much of each second; after a pick the eye waits up to
+## SPLIT_LOOK_S for the view to come within SPLIT_FRAMED_M of the squad before he aims.
+const SPLIT_HAND_MOVE_S := 0.6
+const SPLIT_LOOK_S := 1.5
+const SPLIT_FRAMED_M := 20.0
 
 var trace: CameraTrace
 var look: CameraLook
@@ -475,10 +482,34 @@ func _split() -> void:
 			break
 		current = int(living[_rng.randi_range(0, living.size() - 1)])
 		await _key(KEY_0 + current as Key)
-		await _wait(_rng.randf_range(0.3, 0.8))
+		await _hand_wait(_rng.randf_range(0.3, 0.8))
+		# His eye: he aims at what is near the squad he just picked once the view has reached it (at most SPLIT_LOOK_S).
+		var looked := _clock
+		while _clock - looked < SPLIT_LOOK_S and not _ended and _off_selection() > SPLIT_FRAMED_M:
+			await _hand_wait(1.0 / 30.0)
 		if not await _attack():
 			await _move()
-		await _wait(_rng.randf_range(1.0, 3.0))
+		await _hand_wait(_rng.randf_range(1.0, 3.0))
+
+
+## K4's hand on the mouse while he waits (tests/camera/replay_camera.gd's model): the cursor drifts for SPLIT_HAND_MOVE_S
+## of each second, then rests (under the rig's HOVER_HOLD_S: the aim hold applies, as it did for him).
+func _hand_wait(seconds: float) -> void:
+	var until := _clock + seconds
+	var size := get_viewport().get_visible_rect().size
+	while _clock < until and not _ended:
+		if fmod(_clock, 1.0) < SPLIT_HAND_MOVE_S:
+			var at := _cursor if _cursor.x >= 0.0 else size * 0.5
+			_motion((at + Vector2(_rng.randf_range(-6.0, 6.0), _rng.randf_range(-6.0, 6.0))).clamp(Vector2(80, 80), size - Vector2(80, 80)))
+		await get_tree().process_frame
+
+
+## Metres from the view's look point to the middle of his selection.
+func _off_selection() -> float:
+	var at: Variant = _centre(controls.selection.units)
+	if at == null:
+		return 0.0
+	return Vector2((at as Vector3).x - rig._shown_focus.x, (at as Vector3).z - rig._shown_focus.z).length()
 
 
 ## His scouts drive at a held CPU squad, take fire, and are ordered back to his own edge.
