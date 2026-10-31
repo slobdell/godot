@@ -434,6 +434,15 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   reverse metres x0.5; guards deaths, kills, friendly hits (2.6), authority probe, the non-outranged CPU sim identical. His Crossing gang
   tanks at ~79 m staged as the acceptance read. Stamp entry with any ON ship (lesson 354).
 
+- **R47.51 (overnight, what the orchestrator would recommend to him) Bar E10 FAILS as filed on D2's reverse half alone; SHIPPED ON under
+  C47.2 (ship his fix ON; precedent R47.32).** Frozen d8d4979ca (check exited 0, 3630 / 0, ALL JUDGED, sim-baseline unmoved), builder3,
+  native ON, n 39 paired a workload. D1 PASS out_damage 285.8 -> 223.5 a run (z -2.04); D2 reverse_m 402.6 -> 230.8 = 0.57 x OFF v the
+  0.5 bound FAIL; retreat_m_mean 17.3 -> 11.8 m PASS; guards crews lost 181 -> 180, guns killed 4 -> 5, friendly hits 1 -> 1, authority
+  24/24. **His Crossing case (3 gang tanks v 2 lancers at 79 m, his attack): damage taken 462 -> 219 a run, lost 6 -> 4, lancers killed
+  0 -> 4, damage dealt 0 -> 2250** — the rout he played becomes a fight. Ship commit: OUTRANGED_DEFAULT true (`--outranged=off`), main
+  merged, halt_cancel + outranged stamp entries (lesson 354), its own full check. Round 48: the reverse half (a RETREAT that still backs
+  up while an enemy in sight lays on it within 12 m), its own bar on fresh seeds.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
