@@ -157,7 +157,9 @@ static func rules() -> Dictionary:
 			"press_on": TankBrain.PRESS_ON, "battery_screen": RtsControls.BATTERY_SCREEN, "buried": not Traffic.off("buried"),
 			"holdyield": not Traffic.off("holdyield"), "group_merged": SelectionSquads.merged_mode() == "all",
 			"pot_shot": Gunnery.POT_SHOT, "halt_cancel": not Tank.HALT_CANCEL_OLD,
-			"outranged": Outranged.ON}
+			"outranged": Outranged.ON,
+			# Round 48 (native N5): the army laid on a synced navmesh (`--layout-sync=off` off).
+			"layout_sync": ArmyLayout.LAYOUT_SYNC}
 
 
 ## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the
