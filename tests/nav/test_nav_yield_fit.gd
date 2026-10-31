@@ -86,8 +86,20 @@ func test_a_rig_accepts_only_a_spot_it_fits_and_gives_way_without_the_wall() -> 
 	# The control scrapes >= 10 ticks (the test above); the fix at most a couple (the plant is not the model).
 	assert_true(int(fixed["yield_contacts"]) <= 2, "giving way costs (almost) no wall contact (%s)" % fixed)
 	# Nothing fits here even shortened (the tail is 0.5 m from Block_6, the table's spots all swing an end into a
-	# block), so the rig gives way IN PLACE rather than refuse.
-	assert_true(fixed["accepted"] and fixed["spot"] == "hold", "it gives way in place (%s)" % fixed)
+	# block), so the rig gives way IN PLACE rather than refuse. Round 48 (manoeuvre M2, `heldpost`, ON): a PARKED crew's in-place
+	# hold frees nobody, so the rig (parked on its own spot) refuses instead and the asker goes round it (CP1a2); OFF, as before.
+	if Movement.heldpost_on():
+		assert_true(not fixed["accepted"], "heldpost: the parked rig refuses rather than hold in place (%s)" % fixed)
+	else:
+		assert_true(fixed["accepted"] and fixed["spot"] == "hold", "it gives way in place (%s)" % fixed)
+
+
+func test_off_heldpost_the_parked_rig_gives_way_in_place_as_before() -> void:
+	var was := not Traffic.off("heldpost")
+	Traffic.set_off("heldpost", true)
+	var fixed := await _ask(true)
+	Traffic.set_off("heldpost", not was)
+	assert_true(fixed["accepted"] and fixed["spot"] == "hold", "--traffic-off=heldpost: it gives way in place (%s)" % fixed)
 
 
 func test_the_refusing_build_declines_when_nothing_fits() -> void:

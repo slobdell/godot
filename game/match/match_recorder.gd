@@ -159,7 +159,9 @@ static func rules() -> Dictionary:
 			"pot_shot": Gunnery.POT_SHOT, "halt_cancel": not Tank.HALT_CANCEL_OLD,
 			"outranged": Outranged.ON,
 			# Round 48 (native N5): the army laid on a synced navmesh (`--layout-sync=off` off).
-			"layout_sync": ArmyLayout.LAYOUT_SYNC}
+			"layout_sync": ArmyLayout.LAYOUT_SYNC,
+			# Round 48 (manoeuvre M2): a crew on HOLD never leaves its post to give way; a parked crew never gives way in place.
+			"heldpost": not Traffic.off("heldpost")}
 
 
 ## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the

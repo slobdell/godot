@@ -24,7 +24,8 @@ func test_the_replay_keys_hold_the_cap_the_factions_and_every_spawn_at_full_prec
 	# R46.11: the build's replay-relevant rules (a build without L2 reads lane_clear false).
 	# Round 47 (N0): with the group veto, shortfwd and holdway; R47.22: army_money (tests/replay/rules.py RULES).
 	assert_eq((keys["rules"] as Dictionary).keys(), ["lane_clear", "group_veto", "shortfwd", "holdway", "army_money", "press_on",
-			"battery_screen", "buried", "holdyield", "group_merged", "pot_shot", "halt_cancel", "outranged", "layout_sync"], "the rules stamp")
+			"battery_screen", "buried", "holdyield", "group_merged", "pot_shot", "halt_cancel", "outranged", "layout_sync", "heldpost"], "the rules stamp")
+	assert_eq(keys["rules"]["heldpost"], not Traffic.off("heldpost"), "round 48 M2 as this build has it")
 	assert_eq(keys["rules"]["halt_cancel"], not Tank.HALT_CANCEL_OLD, "R47.44 as this build has it")
 	assert_eq(keys["rules"]["outranged"], Outranged.ON, "E10 as this build has it")
 	assert_eq(keys["rules"]["layout_sync"], ArmyLayout.LAYOUT_SYNC, "N5 as this build has it")

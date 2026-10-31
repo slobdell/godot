@@ -22,7 +22,7 @@ def recording(header):
 
 ROUND47 = ["--press-on=off", "--battery-screen=off", "--traffic-off=buried", "--traffic-off=holdyield", "--group-merged=off",
            "--pot-shot=off", "--halt-cancel=old", "--outranged=off"]
-ROUND48 = ["--layout-sync=off"]
+ROUND48 = ["--layout-sync=off", "--traffic-off=heldpost"]  # round 48 (native N5, manoeuvre M2)
 ALL_OFF = ["--lane-clear=off", "--group-veto=off", "--traffic-off=shortfwd", "--traffic-off=holdway", "--army-cap=count"] + ROUND47 + ROUND48
 ROUND46 = ("crossing", "locks", "sumps", "parade")
 
@@ -44,7 +44,7 @@ class Rules(unittest.TestCase):
     def test_the_stamp_decides(self):
         on = {"lane_clear": True, "group_veto": True, "shortfwd": True, "holdway": True, "army_money": True, "press_on": True,
               "battery_screen": True, "buried": True, "holdyield": True, "group_merged": True, "pot_shot": True,
-              "halt_cancel": True, "outranged": True, "layout_sync": True}
+              "halt_cancel": True, "outranged": True, "layout_sync": True, "heldpost": True}
         self.assertEqual(rules.decide(recording({"rules": on}))[0], [])
         self.assertEqual(rules.decide(recording({"rules": dict(on, holdway=False)}))[0], ["--traffic-off=holdway"], "the web build")
         self.assertEqual(rules.decide(recording({"rules": {"lane_clear": False}}))[0], ALL_OFF, "undated: off")

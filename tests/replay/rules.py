@@ -41,6 +41,8 @@ RULES = {
     "outranged": ("outranged", "off", "2026-10-31T04-17-53"),     # engage E10 (R47.51), this commit's time (no recording falls before the merge)
     # Round 48 (native N5, R47.18): the army is laid on a synced navmesh (an interactive start already was; a same-frame start was not).
     "layout_sync": ("layout-sync", "off", "2026-10-31T13-30-00"),  # native N5, this commit's time (stream/native-n5)
+    # Round 48 (manoeuvre M2): the held post / no in-place hold. Dated at the stream's commit; the orchestrator re-dates it at the merge.
+    "heldpost": ("traffic-off", "heldpost", "2026-10-31T14-30-00"),  # manoeuvre M2
 }
 STAMP = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})")
 

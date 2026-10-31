@@ -398,7 +398,7 @@ static func route_arms() -> Dictionary:
 			"clearance_chords": clearance_chords, "clearance_refused": clearance_refused,
 			"goal_repairs": goal_repairs, "goal_repairs_refused": goal_repairs_refused,
 			"unstick_fires": unstick_fires, "escape": escape_arms(), "circle_reverses": circle_reverses, "circle_reverse_ticks": circle_reverse_ticks,
-			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks, "backout_stalls": backout_stalls, "backout_fallbacks": backout_fallbacks, "shortfwd_ticks": shortfwd_ticks, "parkedpass_refusals": parkedpass_refusals,
+			"kturns": kturns, "kturn_none": kturn_none, "kturn_aborted": kturn_aborted, "kturn_ticks": kturn_ticks, "kturn_goal_moved": kturn_goal_moved, "parkaside_moved": parkaside_moved, "backout_looks": backout_looks, "backout_stalls": backout_stalls, "backout_fallbacks": backout_fallbacks, "shortfwd_ticks": shortfwd_ticks, "parkedpass_refusals": parkedpass_refusals, "heldpost_refusals": heldpost_refusals, "heldpost_holds_refused": heldpost_holds_refused,
 			"kturn_multi": kturn_multi, "kturn_multi_legs": kturn_multi_legs, "kturn_looked": kturn_looked, "kturn_eased": kturn_eased,
 			"yields_started": yields_started, "asks_refused": asks_refused, "underfire_refusals": underfire_refusals, "underfire_holds": underfire_holds, "underfire_aborts": underfire_aborts, "underfire_gives": underfire_gives, "passes": passes, "passes_done": passes_done, "passes_timeout": passes_timeout, "pass_ticks": pass_ticks, "yields_unfinished": yields_unfinished, "yields_unfinished_capped": yields_unfinished_capped, "chain_in_play": chain_in_play, "chain_spots_skipped": chain_spots_skipped, "chain_refusals": chain_refusals, "chain_releases": chain_releases, "chain_settled_passes": chain_settled_passes, "chain_holds_refused": chain_holds_refused, "chain_side_spots": chain_side_spots, "yield_spots_unfit": yield_spots_unfit,
 			"yield_swaps": yield_swaps, "yield_swaps_shorter": yield_swaps_shorter, "parked_refusals": parked_refusals,
@@ -424,6 +424,8 @@ static func reset_route_arms() -> void:
 	backout_fallbacks = 0
 	shortfwd_ticks = 0
 	parkedpass_refusals = 0
+	heldpost_refusals = 0
+	heldpost_holds_refused = 0
 	behind_asked = 0
 	behind_reverses = 0
 	post_faces_kept = 0
@@ -2109,6 +2111,16 @@ func ask(asker: String, from: Vector3, direction: Vector2, via := "asked") -> bo
 	# fire does, and the asker passes beside it; with no lane it gives way as today. Never for a squadmate (its own shape is
 	# forming) nor for an unsticking crew asking for room behind. Counter `parkedpass_refusals` (route_arms). Untwinned: ON runs
 	# the GDScript yield (Traffic._chain_native, native_yield off).
+	# Round 48 (manoeuvre M2, `heldpost`, ON; `--traffic-off=heldpost` the escape): A CREW ON HOLD NEVER LEAVES ITS POST TO GIVE WAY.
+	# Spotter's class B (main df9aacc1a, `make manoeuvre-yield-trace`, crossing / gorge 13215): held crews gave way 5-10 m off their
+	# posts, HOLD drove them back, and on the way back they pushed the next held crew off ITS post (Wrenches / Hunters, ~10 s of
+	# musical chairs). A crew on HOLD standing at its post (verb hold, no move of its own) refuses every ask but an unsticking crew's
+	# room-behind; it offers the pass lane beside it when there is one (T7's `_pass_lane`), and the asker passes or keeps its route
+	# round it (_negotiate's CP1a2). It may still turn. Counter `heldpost_refusals` (route_arms).
+	if heldpost_on() and via != "behind" and held_at_post():
+		heldpost_refusals += 1
+		pass_offer = _pass_lane(asker, from, direction)
+		return false
 	if parkedpass_on() and via != "behind" and _parked_for_pass(asker):
 		var lane := _pass_lane(asker, from, direction)
 		if lane != 0.0:
@@ -2158,6 +2170,26 @@ var _unfinished_since := 0
 
 static func yieldfit2_on() -> bool:
 	return not Traffic.off("yieldfit2")
+
+
+# ---- Round 48 (manoeuvre M2, `heldpost`, ON): see ask() and _begin_yield -----------------------------------------------------
+const HELDPOST_SWITCH := "heldpost"
+## Measurement: asks a held crew at its post refused; in-place holds a parked crew refused.
+static var heldpost_refusals := 0
+static var heldpost_holds_refused := 0
+
+
+static func heldpost_on() -> bool:
+	return not Traffic.off(HELDPOST_SWITCH)
+
+
+## A crew on HOLD at its post: its order's verb is hold (his or its element's) and it has no move of its own (HOLD's return to
+## the post is a move_to: a crew driving back is off its post and is asked as today).
+func held_at_post() -> bool:
+	var brain := ctl as TankBrain
+	if brain == null or String(brain.order.get("verb", "")) != "hold":
+		return false
+	return String(ctl.move_order.get("type", "")) != "move_to"
 
 
 ## Called by _end_yield before yield_to is cleared: true when this give-way must not be recorded as done.
@@ -2633,6 +2665,13 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 		if not chain.is_empty() and chain_release_on() and chain_spots_skipped > chain_skipped:
 			chain_holds_refused += 1
 			chain_refusals += 1
+			return false
+		# Round 48 (M2, `heldpost`): a PARKED crew never gives way in place. Holding still "stops pushing", which only a crew under
+		# way can do; a parked one changes nothing, and the asker sat `blocked` behind a give-way that freed nobody, re-asked every
+		# YIELD_MAX_SECONDS (yieldfit2 does not record it: crossing 13215 Green_Spears_1 10 s+, gorge 13215 Green_Guns_1). It
+		# refuses instead, and the asker treats it as parked (CP1a2: keeps its route; ORCA, the pass and unstick go round it).
+		if heldpost_on() and not is_under_way():
+			heldpost_holds_refused += 1
 			return false
 		yield_holds += 1
 		_start_yield(other, here, along, "hold", via)

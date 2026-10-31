@@ -617,3 +617,53 @@ manoeuvre-bar-h-series: native-fresh import ## manoeuvre Bar H: engage's lane pr
 		BARM_ARMS="base:--noprogress-census hold:--traffic-on=holdyield,--noprogress-census" BARM_DIR=$(BARH_DIR)/group
 	$(PYTHON) tests/manoeuvre/barm_judge.py $(BARH_DIR)/group/logs --arms=base,hold --touched=watch | tee $(BARH_DIR)/group-judge.txt
 	@for s in 13019 13020 13021 13022 13023 13024; do if cmp -s <(grep '^AUTHORITY_PROBE ' $(BARH_DIR)/auth-base/$$s.log) <(grep '^AUTHORITY_PROBE ' $(BARH_DIR)/auth-hold/$$s.log); then echo "G4 seed $$s identical"; else echo "G4 seed $$s DIFFERS"; fi; done | tee $(BARH_DIR)/g4.txt
+
+# ---- round 48 (M1): who waits on whom, tick by tick, in a CPU-v-CPU fight (the spotter's clip fights) ---------------------------
+# tests/manoeuvre/yield_trace.gd: the same match as `make spotter-clip` (--skirmish --demo-match --clean --seed --arena --mute,
+# native), one YTRACE row a tick (YT_EVERY) for each crew in YT_CREWS and the chain it waits on. Measurement only.
+#   make remote LIGHT=1 T="manoeuvre-yield-trace YT_SEED=13215 YT_ARENA=crossing YT_CREWS=Green_Spears_1 YT_WINDOW=450-800"
+YT_DIR := $(BUILD_DIR)/manoeuvre/yield-trace
+YT_EVERY ?= 3
+YT_DEPTH ?= 3
+YT_FLAGS ?=
+.PHONY: manoeuvre-yield-trace
+manoeuvre-yield-trace: native-fresh import ## manoeuvre M1 (round 48): YTRACE rows for YT_CREWS (+ their chain) in YT_WINDOW ticks of a CPU fight YT_SEED x YT_ARENA (YT_FLAGS an arm, YT_TAG names the log)
+	@test -n "$(YT_SEED)" -a -n "$(YT_ARENA)" -a -n "$(YT_CREWS)" || { echo 'usage: make manoeuvre-yield-trace YT_SEED=.. YT_ARENA=.. YT_CREWS=a,b YT_WINDOW=from-to [YT_FLAGS=..] [YT_TAG=x]'; exit 2; }
+	@mkdir -p $(YT_DIR)
+	@log=$(YT_DIR)/$(or $(YT_TAG),$(YT_ARENA)-$(YT_SEED)).log; \
+	timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/manoeuvre/yield_trace.gd -- --skirmish --demo-match \
+		--clean --seed=$(YT_SEED) --arena=$(YT_ARENA) --mute --ytrace="$(YT_CREWS)" --ytrace-window=$(or $(YT_WINDOW),0-999999) \
+		--ytrace-every=$(YT_EVERY) --ytrace-depth=$(YT_DEPTH) $(YT_FLAGS) > $$log 2>&1 || echo "yield-trace: godot exited $$?"; \
+	grep -E 'SCRIPT ERROR|YTRACE_DONE' $$log | head -5; echo "YTRACE rows: $$(grep -c '^YTRACE ' $$log) -> $$log"
+
+# ---- round 48 (M3): Bar B (heldpost) -- W1 the feature-probe fights OFF v ON, then G5 lane 12328, G6 authority, G7 group probe -----
+# Filed in _agents/streams/manoeuvre.md *Bar B* before any number. OFF = --traffic-off=heldpost --brains-off=native_yield (both arms
+# the GDScript yield); ON = the default. W1: seed 13217+i on map i mod 6, i < BARB_N.
+BARB_DIR ?= $(BUILD_DIR)/manoeuvre/bar-b
+BARB_N ?= 48
+BARB_JOBS ?= 6
+BARB_MAPS := terminus crossing locks sumps gorge parade
+BARB_OFF := --traffic-off=heldpost --brains-off=native_yield
+.PHONY: manoeuvre-bar-b-w1 manoeuvre-bar-b-series
+manoeuvre-bar-b-w1: native-fresh import ## manoeuvre Bar B W1: BARB_N feature-probe fights an arm (off / on) -> $(BARB_DIR)/{off,on}/ + barb_judge
+	@mkdir -p $(BARB_DIR)/off $(BARB_DIR)/on
+	@echo ">> bar-b W1 on $$(hostname) | commit $${TANK_SQUAD_COMMIT:-$$(git rev-parse --short HEAD 2>/dev/null)} | n $(BARB_N) | load $$(cut -d' ' -f1-3 /proc/loadavg)" | tee -a $(BARB_DIR)/run.txt
+	@maps="$(BARB_MAPS)"; set -- $$maps; for i in $$(seq 0 $$(( $(BARB_N) - 1 ))); do m=$$(( i % 6 + 1 )); eval arena=\$${$$m}; \
+		for arm in off on; do echo "$$arm $$arena $$(( 13217 + i ))"; done; done | \
+		xargs -r -P $(BARB_JOBS) -L 1 sh -c 'out=$(abspath $(BARB_DIR))/$$0/$$1-$$2; [ -s $$out.jsonl ] && exit 0; fl=""; [ $$0 = off ] && fl="$(BARB_OFF)"; \
+		timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/spotter/feature_probe.gd -- --skirmish --demo-match \
+		--clean --seed=$$2 --arena=$$1 --mute --seconds=240 --spot-out=$$out.jsonl.part $$fl > $$out.log 2>&1; \
+		if grep -q "^SPOT_DONE" $$out.log; then mv $$out.jsonl.part $$out.jsonl; else echo "  MISSING SPOT_DONE $$0 $$1 s$$2"; fi'
+	@echo "SCRIPT ERRORs: $$(cat $(BARB_DIR)/off/*.log $(BARB_DIR)/on/*.log | grep -c 'SCRIPT ERROR' || true)"
+	$(PYTHON) tests/manoeuvre/barb_judge.py $(BARB_DIR)/off $(BARB_DIR)/on | tee $(BARB_DIR)/w1-judge.txt || true
+
+manoeuvre-bar-b-series: native-fresh import ## manoeuvre Bar B: W1, then G5 (lane 12328 ON), G6 (authority 13019-13024 off / on), G7 (group probe off / on) -> $(BARB_DIR)/
+	@$(MAKE) --no-print-directory manoeuvre-bar-b-w1
+	@$(MAKE) --no-print-directory engage-lane-probe LANE_SEEDS="12328" LANE_TAG=barb-on LANE_FLAGS="" > $(BARB_DIR)/g5-lane-on.txt 2>&1; \
+		cp -r $(BUILD_DIR)/engage/lane/barb-on $(BARB_DIR)/g5-lane-on || true
+	@for arm in off on; do fl=""; [ $$arm = off ] && fl="$(BARB_OFF)"; \
+		$(MAKE) --no-print-directory engage-authority-probe AUTH_SEEDS="13019 13020 13021 13022 13023 13024" AUTH_ARM=on AUTH_JOBS=6 AUTH_PROBE_TAG=barb-$$arm AUTH_PROBE_FLAGS="$$fl" > $(BARB_DIR)/g6-auth-$$arm.txt 2>&1; \
+		cp -r $(BUILD_DIR)/engage/authority/barb-$$arm $(BARB_DIR)/g6-auth-$$arm || true; done
+	@$(MAKE) --no-print-directory manoeuvre-bar-m BARM_SEEDS="13001 13002 13003 13004 13005 13006" BARM_HEADINGS=crew BARM_JOBS=6 \
+		BARM_ARMS="off:--traffic-off=heldpost,--brains-off=native_yield,--noprogress-census on:--noprogress-census" BARM_DIR=$(BARB_DIR)/g7-group
+	$(PYTHON) tests/manoeuvre/barm_judge.py $(BARB_DIR)/g7-group/logs --arms=off,on | tee $(BARB_DIR)/g7-judge.txt || true
