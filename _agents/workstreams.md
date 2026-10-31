@@ -288,6 +288,14 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   passed `--press-on` explicitly and the default flip was never committed. E7 is NOT in his default game until engage's E3 freeze tree
   (which flips it; its full check proves it) merges.** Lesson 353.
 
+- **R47.33 Bar M PASSES on every line (G5 vacuous: the rule touched all 96 W1 cells); ships ON with bbd8c1ba6 (`buried` out of
+  Traffic.DEFAULT_OFF; `--traffic-off=buried`) once its check is green; M2b and M5a ride in it OFF.** builder3, frozen 1aa41aeaf's code,
+  W1 12401-12424 (96 paired cells): D1 0.0 s; D2 touched noprog_s -24.9 crew-s a cell, 54 % sooner-or-identical; D3 z -0.87; G1 all_in
+  -0.7 s; G2 never_in 25 -> 23; G3 contact 6589 -> 6249 s (z -0.77); G4 blocked z -0.77, yielding -0.43; G6, G8 (6/6), G9 PASS. W2 (G7,
+  CPU v CPU 12425-12448, 24 paired) identical in every line with **0 swaps** (asked: whether the CPU's squads never meet the case or the
+  rule does not reach them, C47.9). Evidence `streams/references/round47/manoeuvre/barm-builder3-1aa41aeaf/README.md` (stream/manoeuvre).
+  The sim-baseline may move with buried ON: the orchestrator adopts it twice if so.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
