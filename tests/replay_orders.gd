@@ -24,6 +24,8 @@ var _next := 0
 var _until := 0
 ## Where each unit stood at his match's start: name -> [x, z] or [x, z, yaw].
 var _spawn := {}
+## Round 47 (N0, R47.8): his selection changes (the `sel` rows, R46.6), so an order is issued from the selection he had at its frame.
+var _sels: Array = []
 
 
 func _initialize() -> void:
@@ -52,6 +54,8 @@ func _run() -> void:
 			header = row
 		elif row["t"] == "order":
 			_orders.append(row)
+		elif row["t"] == "sel":
+			_sels.append(row)
 		elif row["t"] == "census" and _spawn.is_empty():
 			for unit: Dictionary in row["units"]:
 				_spawn[String(unit["n"])] = unit["pos"]
@@ -189,6 +193,19 @@ func _issue() -> void:
 		if names.is_empty():
 			print("REPLAY_ORDER " + JSON.stringify({"tick": _match.tick, "skipped": o}))
 			continue
+		# Round 47 (N0, R47.8): an order is issued from HIS selection at its frame (the last `sel` row at or before it), not from
+		# the union of the order's rows: his Crossing click at frame 1099 had Spears + Wrenches_1-3 selected (8 crews) and wrote
+		# rows for both whole squads (10), and the group lay of 10 is not his lay of 8 (the replay left his match at tick 30, at
+		# Wrenches). A recording without `sel` rows (before round 46) and `--replay-sel=off` keep the union.
+		var his := ReplaySetup.selection_at(_sels, int(o.get("frame", -1))) if String(o["verb"]) != "formation" \
+				and _flag("replay-sel", "on") != "off" else []
+		if not his.is_empty():
+			var alive: Array = his.filter(func(n: String) -> bool:
+				var t := _match.tanks.get_node_or_null(NodePath(n)) as Tank
+				return t != null and t.is_alive())
+			if not alive.is_empty() and alive != names:
+				print("REPLAY_SELECTION " + JSON.stringify({"tick": _match.tick, "frame": o.get("frame"), "rows": names.size(), "his": alive.size()}))
+				names = alive
 		_controls.selection.set_units(names)
 		if String(o["verb"]) == "formation":
 			var picked := _controls.set_formation(String(o["formation"]))

@@ -137,6 +137,18 @@ static func _roster(rows: Array) -> Array:
 ## and signals each), all on one tick with the same verb, point, target and queue. Replayed one squad at a time it is a
 ## different order (the group click lays the squads out together, an attack shares its target among them), so rows a
 ## hand could only have given in one click are merged back into one order over the union of their units. Pure.
+## Round 47 (N0, R47.8): his selection at `frame`: the units of the last `sel` row at or before it ([] when none, or frame < 0).
+static func selection_at(sels: Array, frame: int) -> Array:
+	if frame < 0:
+		return []
+	var units: Array = []
+	for row: Dictionary in sels:
+		if int(row.get("frame", 0)) > frame:
+			break
+		units = (row.get("units", []) as Array).map(func(n: Variant) -> String: return String(n))
+	return units
+
+
 static func merge_clicks(orders: Array) -> Array:
 	var out: Array = []
 	for row: Dictionary in orders:

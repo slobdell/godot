@@ -169,3 +169,14 @@ func test_a_click_given_by_hand_merges_an_old_recordings_group_click() -> void:
 	assert_eq(ReplaySetup.merge_clicks(given).size(), 3, "the 1512 rows merge into one order")
 	assert_eq(ReplaySetup.with_click(rows, ""), rows, "no --click: unchanged")
 	assert_eq(ReplaySetup.with_click(rows, "nonsense"), rows, "a malformed --click: unchanged")
+
+
+## Round 47 (N0, R47.8): an order is issued from his selection at its frame, the last `sel` row at or before it.
+func test_his_selection_at_a_frame_is_the_last_sel_row_before_it() -> void:
+	var sels := [{"t": "sel", "frame": 701, "units": ["A_1", "A_2"]}, {"t": "sel", "frame": 793, "units": ["A_1", "A_2", "B_1"]}]
+	assert_eq(ReplaySetup.selection_at(sels, 1099), ["A_1", "A_2", "B_1"])
+	assert_eq(ReplaySetup.selection_at(sels, 793), ["A_1", "A_2", "B_1"])
+	assert_eq(ReplaySetup.selection_at(sels, 750), ["A_1", "A_2"])
+	assert_eq(ReplaySetup.selection_at(sels, 100), [])
+	assert_eq(ReplaySetup.selection_at(sels, -1), [], "a row with no frame keeps the union")
+	assert_eq(ReplaySetup.selection_at([], 1099), [], "a recording before round 46 has no sel rows")
