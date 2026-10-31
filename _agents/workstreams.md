@@ -416,6 +416,13 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   Classes B / C are round 48's first manoeuvre items (with the two Sumps plans); D goes to orders now (support-by-fire is O6's).
   Spotter batch 2 = ranks 31-100 + 10 hidden random controls (negatives for S6: ~100 / 100 labels is the floor).
 
+- **R47.49 Engage's E9 (friendly fire on the move) CLOSED as measured, no code.** Dev read on used seeds (builder3, f1148bbd5 + a probe-only
+  launch trace, E7's block, --hurt 0.07, press-on and pot shots ON): 2 friendly hits in 48 seeds, 1 hp each, both stream guns with the
+  barrel on target (0.0 deg), neither a pot shot: spread tails beyond the 2 sigma corridor `Match.friendlies_in_line_of_fire` checks
+  (13.6 deg on the move; 6.4 deg standing). The elements +3 m repro does not reproduce on this tree (0 over 8 offsets). A 3 sigma corridor
+  would hold the close fight's MG to save ~1 hp a match. Native drops its E9 twin (39635013a). Seeds 13025-13120 move to E10. Main also
+  merged E3 (snap shots ON, POT_SHOT_DEFAULT true, grep) as 8d51777cc and the sim-baseline adopted (13 moved, read twice, 2adbd3ac8).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
