@@ -8,21 +8,22 @@ const SHOOTER_AT := Vector3(-100.0, 0.0, 40.0)
 const TARGET_AT := Vector3(-100.0, 0.0, 0.0)
 
 var _native_exec := true
-
-
-func setup() -> void:
-	_native_exec = BrainSwitches.native_exec
-	BrainSwitches.native_exec = false
+var _armed := false
 
 
 func teardown() -> void:
-	BrainSwitches.native_exec = _native_exec
+	if _armed:
+		BrainSwitches.native_exec = _native_exec
 	Gunnery.POT_SHOT = false
 	super.teardown()
 
 
 ## The tick (from the start) of the shooter's first round, or -1 within `seconds`.
 func _first_shot(pot: bool, seconds := 4.0) -> int:
+	if not _armed:
+		_armed = true
+		_native_exec = BrainSwitches.native_exec
+	BrainSwitches.native_exec = false
 	Gunnery.POT_SHOT = pot
 	var lab := TacticsLab.create(self, 7, "")
 	var shooter := lab.gun(Match.Team.GREEN, "Green_Rig", SHOOTER_AT, 0.0, "gang_tank")  # facing -z, at the target
