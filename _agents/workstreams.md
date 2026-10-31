@@ -195,6 +195,12 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   (netplay / determinism):** `ArmyLayout.deploy`'s standable queries in `game/tactics/army_layout.gd` made timing-independent (always
   unchecked, or always after the first sync), with the sim-baseline adopted twice.
 
+- **R47.19 (2026-10-30 evening) Native's N4 approved: ElementSituation.build's member loop + intel-contact loop + centre / heading /
+  strength sums as ONE C++ call behind `BrainSwitches.native_esit`** (GDScript the reference; shots_into, terrain, the lambdas and the
+  return stay GDScript). Profile: his Crossing 112 s, builder3 light (loaded, tick 11.3 ms), probe c22464f11, n 1: build 0.54 ms a tick
+  (0.26 a call), ~0.3 ms its own body. Proof as place (VERIFY on his four + native-verify-scenarios + random); ON if faster or neutral.
+  From its merge those loops are frozen-by-twin: engage / manoeuvre change them through native (told).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
