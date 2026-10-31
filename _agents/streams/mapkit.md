@@ -76,7 +76,16 @@ _(worker keeps this current: report at the top, every number with commit, machin
 look; builder3 `make check exited 0`, 3548/0, 28 targets ALL JUDGED, 20:23; MERGED to main by the orchestrator). 2bf534df2 was red
 (test_render_multimesh_interpolation: the strip curtain bypassed FxMultiMesh; fixed in 39c7dba53). **c2ff150a2** (470301cc7 + a .uid):
 steam screens, pipes B, crane A, the monorail deck split, P1b's trim sheet, mapkit-gpu -- quick 310/0 builder3; full check queued
-on builder3 since ~20:55 (name it here when it lands).
+on builder3 since ~20:55 -> **RED** (3551/0 but the engine-log gate: "ObjectDB instance was leaked at exit" x3 shards; the
+sight screen's member initializer made a strip node the steam branch never used). **04adca907** = the fix + **the trim sheet ON**
+on traps/monorail/pipes/crane (his P1b pick, R47.38; `--kit-look=plain` escapes) + the train concepts; quick 116/0 builder3; full
+check queued on builder3 (name it here). f10081d90 (gallery only) on top.
+
+**His picks so far:** looks (P1, db `picks/*`): door A, screen C, overpass C, traps A, pipes B, crane A; 21 lines kept.
+Trim trial (P1b, db `trim/*`): TRIM on all four. Train (R47.38): page https://claude.ai/artifact/9PNjR9rWKNXQXBWQ9sNsLC,
+db `train/pick`, waiting. **Bar P** (the twin series) filed by the orchestrator; runs after manoeuvre's W/H and orders' O2.
+**Render copy:** builder3 `~/tank_squad/mapkit-render` (a copy of this stream's folder for gallery renders while a check is queued in
+`godot-mapkit`; delete it at the round's close).
 
 **Done, by backlog item:**
 - P1 looks page (his picks: door A, screen C, overpass C, traps A, pipes B, crane A; 21 lines kept). P1b trim-sheet page
