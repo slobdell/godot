@@ -114,7 +114,7 @@ census: 30.5 -> 26.5 crew-s without progress, wall contact 3.5 -> 1.5 s; Burners
 **Crossing** cannot be read on his match (the replay parts at tick 30, native's N0); its staged read: the Hunters lab is identical
 today v shipped (the case needs the Lances' fire to reproduce, M1). The CPU's own sliver case (the watchdog, M2b) is Bar W's.
 
-### REPORT — Bar M FINAL (2026-10-30 ~20:20): PASSES on every line (G5 vacuous in W1, said); ship ON requested
+### REPORT — Bar M FINAL (2026-10-30 ~20:20): PASSES on every line (G5 vacuous in W1, said); SHIPPED ON at bbd8c1ba6 (GREEN builder3 3537 / 0, check exited 0, sim-baseline 13 maps unmoved); merge named to the orchestrator ~21:00
 
 Frozen 1aa41aeaf (check builder3, exited 0, 3522 / 0); series tree 4ab917680 (its code + the series target and a staged test), builder3,
 native ON, seeds 12401-12424, orders' group-order probe (5 squads, crew headings, 180 s) on terminus / crossing / locks / sumps: 96 paired
