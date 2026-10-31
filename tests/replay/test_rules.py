@@ -20,7 +20,8 @@ def recording(header):
     return handle.name
 
 
-ALL_OFF = ["--lane-clear=off", "--group-veto=off", "--traffic-off=shortfwd", "--traffic-off=holdway", "--army-cap=count"]
+ROUND47 = ["--press-on=off", "--battery-screen=off", "--traffic-off=buried", "--traffic-off=holdyield", "--group-merged=off"]
+ALL_OFF = ["--lane-clear=off", "--group-veto=off", "--traffic-off=shortfwd", "--traffic-off=holdway", "--army-cap=count"] + ROUND47
 ROUND46 = ("crossing", "locks", "sumps", "parade")
 
 
@@ -36,10 +37,11 @@ class Rules(unittest.TestCase):
         names = [n for n in sorted(os.listdir(folder)) if n.endswith(".jsonl")]
         self.assertEqual(len(names), 4)
         for name in names:
-            self.assertEqual(rules.decide(os.path.join(folder, name))[0], ["--army-cap=count"], name)
+            self.assertEqual(rules.decide(os.path.join(folder, name))[0], ["--army-cap=count"] + ROUND47, name)
 
     def test_the_stamp_decides(self):
-        on = {"lane_clear": True, "group_veto": True, "shortfwd": True, "holdway": True, "army_money": True}
+        on = {"lane_clear": True, "group_veto": True, "shortfwd": True, "holdway": True, "army_money": True, "press_on": True,
+              "battery_screen": True, "buried": True, "holdyield": True, "group_merged": True}
         self.assertEqual(rules.decide(recording({"rules": on}))[0], [])
         self.assertEqual(rules.decide(recording({"rules": dict(on, holdway=False)}))[0], ["--traffic-off=holdway"], "the web build")
         self.assertEqual(rules.decide(recording({"rules": {"lane_clear": False}}))[0], ALL_OFF, "undated: off")
@@ -47,13 +49,16 @@ class Rules(unittest.TestCase):
 
     def test_a_dated_recording_without_an_entry(self):
         before = recording({"path": "build/recordings/2026-10-30T07-00-00-gorge.jsonl", "rules": {"lane_clear": True}})
-        self.assertEqual(rules.decide(before)[0], ["--traffic-off=shortfwd", "--traffic-off=holdway", "--army-cap=count"])
+        self.assertEqual(rules.decide(before)[0], ["--traffic-off=shortfwd", "--traffic-off=holdway", "--army-cap=count"] + ROUND47)
+        # Between E7 (19:45) and holdyield (00:13): press_on / battery_screen / buried ON, holdyield / group_merged off.
+        evening = recording({"path": "build/recordings/2026-10-30T22-00-00-locks.jsonl", "rules": {"lane_clear": True}})
+        self.assertEqual(rules.decide(evening)[0], ["--traffic-off=holdyield", "--group-merged=off"])
 
     def test_his_own_flag_and_the_replays_flag_are_left_alone(self):
         self.assertEqual(rules.decide(recording({"flags": {"lane-clear": "off"}}))[0], ALL_OFF[1:])
         self.assertEqual(rules.decide(recording({"flags": {"traffic-off": "holdway,backout"}}))[0], ALL_OFF[:3] + ALL_OFF[4:])
         self.assertEqual(rules.decide(recording({}), " --lane-clear=on --traffic-on=shortfwd")[0],
-                         ["--group-veto=off", "--traffic-off=holdway", "--army-cap=count"])
+                         ["--group-veto=off", "--traffic-off=holdway", "--army-cap=count"] + ROUND47)
 
 
 if __name__ == "__main__":

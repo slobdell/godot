@@ -29,6 +29,12 @@ RULES = {
     "holdway": ("traffic-off", "holdway", "2026-10-30T08-40-38"),  # manoeuvre, merge 097f61ccc (native game; OFF on web)
     # R47.22 (round 47, orders): the money is the army's cap; a match played before it had the laptop's count trim.
     "army_money": ("army-cap", "count", "2026-10-30T21-30-05"),  # orders 1c2fc5838, merged by the orchestrator
+    # Round 47 (mapkit's note: his round-46 Crossing parted at 2-3 s): every other sim rule that shipped ON this round.
+    "press_on": ("press-on", "off", "2026-10-30T19-45-51"),       # engage E7, merge b96e12e43 (R47.32)
+    "battery_screen": ("battery-screen", "off", "2026-10-30T20-09-23"),  # orders O6, merge 09780edb9
+    "buried": ("traffic-off", "buried", "2026-10-30T20-54-12"),   # manoeuvre, merge 06ba81b45 (R47.33)
+    "holdyield": ("traffic-off", "holdyield", "2026-10-31T00-13-18"),  # manoeuvre, merge c41ae23bb (R47.42)
+    "group_merged": ("group-merged", "off", "2026-10-31T00-41-40"),  # orders O1 v3, merge de3176388 (R47.41)
 }
 STAMP = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})")
 
