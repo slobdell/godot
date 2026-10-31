@@ -2640,7 +2640,7 @@ func _begin_yield(other: String, from: Vector3, direction: Vector2, via := "self
 	return false
 
 
-## Round 47 (manoeuvre M5, `--traffic-on=holdyield` until judged; engage's Bar L1c seed 12328, Locks): A CREW ON HIS POST NEVER GIVES WAY
+## Round 47 (manoeuvre M5, ON since R47.42 (Bar H), `--traffic-off=holdyield` the escape; engage's Bar L1c seed 12328, Locks): A CREW ON HIS POST NEVER GIVES WAY
 ## TOWARD THE ENEMY. His gang tank held the post his move left it at; a squadmate crossing its lane asked it to give way, the yield took
 ## a spot 10 m south, straight at the enemy gun 12 m off, and HOLD's return (arrival radius 6) parked it 6 m short of his post. With
 ## the rule a crew holding his post (TankBrain._his_post) skips any spot more than HOLDYIELD_SLACK_M closer to an enemy hull within HOLDYIELD_RANGE_M than

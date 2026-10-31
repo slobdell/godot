@@ -94,11 +94,27 @@ _(worker keeps this current: report at the top, every number with commit, machin
   gun's target flickers between shots (both read in the trace), so the veto reads enemy hulls in range; with the near spots refused
   the yield took `spot(24,0)`, 24 m on, hence the 8 m bound. Native: _begin_yield is mirrored in C++, so ON runs the GDScript yield
   (native_yield off) until native twins `_holdyield_veto`. Bar H waits on seeds.
+- **Queued request from mapkit (20:45, via the orchestrator; after Bars W / H):** consume the blast door's `overstay` event (a crew
+  parked 6 s in a closing doorway; the door holds open meanwhile): the crew clears through the yield / give-way. OFF until doors
+  reach a real arena. Doors are on main 39c7dba53 (merged here only after Bars W / H have synced, to keep their tree frozen).
+  Pointers (orchestrator, read from main): a SIGNAL, `ArenaDoors.door_event(event: Dictionary)` (game/arena/arena_doors.gd ~line 178;
+  overstay = {tick, door, group, kind: "overstay", crew}, once per door after HOLD_EVICT_S in the doorway, the `_evicted` latch); the
+  arena's doors instance as at ~line 35 (null without doors); copy the hookup from the announcer's match_event_adapter.gd. Dev arena:
+  arenas/doors_dev.json (`make skirmish ARENA=doors_dev`).
 - **Requests to other streams (19:35, via the orchestrator):** seeds for Bar H (13001+); native: twin `Movement._holdyield_veto`;
   engage (FYI): HOLD's return to his post uses arrive 6.0, so any other displacement still parks him up to 6 m short.
   **Questions for the lead:** none.
 
-### REPORT — Bar M FINAL (2026-10-30 ~20:20): PASSES on every line (G5 vacuous in W1, said); ship ON requested
+### M4 — his acceptance read (2026-10-30 ~20:30): his Locks replay, today v shipped (builder3 light, both runs exited 0)
+
+His Locks match replayed (his match to 0.1 m through tick 330), `--traffic-off=buried` (today) v the shipped default, census on:
+**Burners2_4** (the crew he saw) slow-or-still 1.5 -> 0.3 s (ticks 100-330), wall contact 0.4 -> 0.0 s, and at tick 300 it stands at
+(-49.4, 65.1) with its squad instead of at the block (-21.5, 71.5); **Burners_2** unchanged (0.3 s; a corner, no fault). His side's
+census: 30.5 -> 26.5 crew-s without progress, wall contact 3.5 -> 1.5 s; Burners2_4 (4.0 s, the worst crew) is no longer the worst.
+**Crossing** cannot be read on his match (the replay parts at tick 30, native's N0); its staged read: the Hunters lab is identical
+today v shipped (the case needs the Lances' fire to reproduce, M1). The CPU's own sliver case (the watchdog, M2b) is Bar W's.
+
+### REPORT — Bar M FINAL (2026-10-30 ~20:20): PASSES on every line (G5 vacuous in W1, said); SHIPPED ON at bbd8c1ba6 (GREEN builder3 3537 / 0, check exited 0, sim-baseline 13 maps unmoved); merge named to the orchestrator ~21:00
 
 Frozen 1aa41aeaf (check builder3, exited 0, 3522 / 0); series tree 4ab917680 (its code + the series target and a staged test), builder3,
 native ON, seeds 12401-12424, orders' group-order probe (5 squads, crew headings, 180 s) on terminus / crossing / locks / sumps: 96 paired
@@ -124,6 +140,10 @@ By map (noprog_s): terminus z -2.04, locks -0.86, crossing -0.52, sumps +0.09; s
 
 ### BAR H (FILED 2026-10-30 ~19:40, before any number; `holdyield`, M5a)
 
+**AMENDMENT 1 (2026-10-30 ~20:35, before any number):** native's twin is EQUAL and merged (3493a115c, pair/native-holdyield: 6000
+compared, 0 mismatches; 40 / 0 native tests), so **ON keeps the C++ yield**: both arms run the native yield and differ only by the veto.
+The tree also carries native's `native_matchups` ON (R47.27), equal in both arms: no difference is the matchups'. Frozen tree = the
+first commit at or after 48f620fa0 whose check is green.
 **The change:** `--traffic-on=holdyield` (Movement._holdyield_veto inside _begin_yield's two spot loops), as in df26c0d5f. **Frozen
 tree:** the first commit after 3635507bd whose check is green. **Native:** ON runs the GDScript yield (native_yield off for the rule,
 Traffic._chain_native) until native's twin lands (R47.30); BASE runs today's native yield, so the arms differ in the yield path too:
