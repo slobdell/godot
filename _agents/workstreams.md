@@ -363,6 +363,13 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   Crossing worst (+58.5). The CPU sliver case passes staged but the workload does not. `noprogress` stays in DEFAULT_OFF; R47.25's
   reroute body is inert without it. Next round: why the watchdog's reroutes cost more no-progress than they save on Crossing.
 
+- **R47.43 Doors and his hold: GRANT manoeuvre one line in TankBrain** — when the overstay give-way (09d1a3376 + 6c815959d,
+  `--traffic-on=overstay`, OFF) moves his HELD crew off a door slab, `_his_post_at` moves to the nearest standable point just off the slab
+  (same side, <= ~5 m): his "hold there" kept at the closest spot that exists once the door is a wall. Engage told (its authority code).
+  Bar W's trace (Crossing 12449, ead694538, builder3 light, reproduces the cell 1516.5 crew-s / 151 trips): every trip `blocked: no_path,
+  reachable false`, 145 of them two crews whose SEAT is unreachable (not the sliver); the watchdog re-plans every 1 s for 150 s. Next round:
+  trip only off-island, never on an unreachable goal, with a per-crew cap.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
