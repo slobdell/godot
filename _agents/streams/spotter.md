@@ -35,7 +35,23 @@ Memory: units must look smart and under his control; smart AI on both sides; a h
 - **Recordings:** his round-46 playtests in `references/round46/playtest/` (replays are his match only to ~11 s, R47.16: past that a
   replay is a STAGED read). CPU-v-CPU fights are deterministic per seed and replayable exactly.
 
+## His follow-up (2026-10-30 ~23:40, verbatim)
+
+"Basically we have this builder3 that will end up being idle during night hours or when you're not working, or when we're running low
+on quota. I'd like to put these machine resources to work"
+
+**So the deliverable is a NIGHT SHIFT, not only a session's work:** jobs that run on builder3 by themselves (no Claude session, no
+quota) whenever the box is idle, and leave results a person or a fresh agent can read in the morning.
+
 ## Backlog (in order)
+
+0. **S0 the night shift's frame, first:** a runner on builder3 (`tools/spotter/night.sh` + a systemd USER timer or cron, installed by
+   a make target and removable by one) that, when no full check holds the lock and no judged series is running
+   (`tools/builder_checks.sh`, `.full-check.lock`), runs batches niced (`nice -n 19`, `ionice -c3`), checkpoints after each batch, and
+   STOPS the moment a check or series queues (it yields; it never holds the full-check lock). It pulls main's latest green commit
+   (a named tree, never a dirty one), writes to `~/spotter-night/<date>/` with a one-page `SUMMARY.md`, and keeps disk under a cap
+   (state it). Each night job is one of S1-S3 (fights + features + ranking + clips) and, once labels exist, S6 (training). Prove it
+   on one evening's run before relying on it; say how to stop it.
 
 1. **S1 the feature table:** from N fresh CPU-v-CPU fights (both sides, several maps, the shipped default game, 13121+), a per-crew-
    second table of what a player would see: speed, progress toward the goal, reversing, wall / friendly contact, heading v route,
@@ -53,7 +69,9 @@ Memory: units must look smart and under his control; smart AI on both sides; a h
    for the other streams (the orchestrator relays them as findings, with the clip and its reproduction line).
 6. **S6 a learned ranker (only after a few hundred labels):** a small classifier on builder3's GPU over the features (or clip frames),
    compared with S2 on held-out labels. Report whether it beats the hand ranker; it never ships in the game.
-7. **Stretch:** the same ranking over his own recordings (first ~11 s exact, then staged), and a `make spotter` that runs S1-S3 overnight.
+7. **Stretch (night shift):** an offline PARAMETER SEARCH on idle nights (the ruling allows frozen tables from offline search): a
+   proposal only this round (which behaviour constants, which fights judge them, which owner's file it would touch), for next round's
+   orchestrator. Then: the same ranking over his own recordings (first ~11 s exact, then staged), and a `make spotter` that runs S1-S3 overnight.
 
 ## How to verify
 
