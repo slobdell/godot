@@ -161,7 +161,9 @@ func _run() -> void:
 			break
 		lab = TacticsLab.create(case, seed_value, arena)
 		game_match = lab.game_match
-		game_match.set_meta("player_team", Match.Team.GREEN)
+		# Round 47 (Bar E7 G6): `--his-side=off` stages the crews as nobody's (no player team): the CPU's side of E7's rule.
+		if _flag("his-side", "on") != "off":
+			game_match.set_meta("player_team", Match.Team.GREEN)
 		map = CoverMap.of(game_match)
 		for candidate: Dictionary in _features(map, rng):
 			stage = _stage(map, candidate, rng, crews_n)

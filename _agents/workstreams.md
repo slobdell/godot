@@ -128,6 +128,14 @@ _(filed here BEFORE any number; newest first)_
   **Reported:** hits a minute, shots, accuracy, never_hit, no_shot. **Dev read (7001-7012, never a bar; 102a18395, n = 12):** away
   63.9 -> 20.9 m, first hit 22.5 -> 17.6 s, deaths 30 -> 27, friendly hits 0 -> 0.08 a run.
 
+  **Amendment 1 (2026-10-30 ~19:40, before any number; the orchestrator's scope question):** the CPU commander DOES issue element
+  `attack` tasks (`element_commander.gd` :454, :850, :1024), so the rule as filed reached every CPU attack, not only orders given
+  as direct (R47.6). **Narrowed (the smaller honest change, chosen over a full-fight guard):** RETREAT drops only for a crew on HIS
+  side (the order context's `his_side`, `tank.team == OrderFeed.player_team`); every CPU crew keeps today's survival rule. The
+  native twin re-proves on the narrowed rule before the freeze. **Added guard G6, the CPU side untouched:** the same probe with
+  `--his-side=off` (no player team: every crew is the CPU's), seeds 12601-12648, `--press-on` off v on: 48/48 ENGAGE_PROBE rows
+  identical. Deciding lines, workload and the other guards as filed. (Amendment 1 of at most 2.)
+
 ## Round 46: five streams (prepared 2026-10-30; CLOSED 2026-10-30; briefs in `streams/archive/round46/`)
 
 **Goal: what he saw on his last two playtests changes in his default game.** The camera keeps his selection and its fight on screen

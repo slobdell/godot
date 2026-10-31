@@ -121,6 +121,14 @@ his 145 acquiring seconds were first fixes. Nothing in the gate is broken; the g
   **Reported:** hits a minute, shots, accuracy, never_hit, no_shot. **Dev read (7001-7012, never a bar; 102a18395, n = 12):** away
   63.9 -> 20.9 m, first hit 22.5 -> 17.6 s, deaths 30 -> 27, friendly hits 0 -> 0.08 a run.
 
+  **Amendment 1 (2026-10-30 ~19:40, before any number; the orchestrator's scope question):** the CPU commander DOES issue element
+  `attack` tasks (`element_commander.gd` :454, :850, :1024), so the rule as filed reached every CPU attack, not only orders given
+  as direct (R47.6). **Narrowed (the smaller honest change, chosen over a full-fight guard):** RETREAT drops only for a crew on HIS
+  side (the order context's `his_side`, `tank.team == OrderFeed.player_team`); every CPU crew keeps today's survival rule. The
+  native twin re-proves on the narrowed rule before the freeze. **Added guard G6, the CPU side untouched:** the same probe with
+  `--his-side=off` (no player team: every crew is the CPU's), seeds 12601-12648, `--press-on` off v on: 48/48 ENGAGE_PROBE rows
+  identical. Deciding lines, workload and the other guards as filed. (Amendment 1 of at most 2.)
+
 **E2 dev reads (2026-10-30 ~18:30, builder3, the gun's C++ paths off in EVERY arm (`--brains-off=native_exec,native_gun`: the carry
 has no twin yet), never a bar):**
 - *Six staged windows, four arms* (889aa86b0-era tree, n = 1 a window): his shots 2616 today / 2619 carry / 2685 line / 2599 both;
