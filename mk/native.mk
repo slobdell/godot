@@ -474,6 +474,8 @@ physics-share: import native-for-check ## Stretch (round 39): the physics engine
 #   make replay-match RECORDING=_agents/streams/references/round42/playtest/2026-10-27T20-00-48-locks.jsonl.gz [REPLAY_SECONDS=49 CREWS=all]
 REPLAY_MATCH_DIR := $(BUILD_DIR)/replay-match
 .PHONY: replay-match
+# Round 47 (N0): REPLAY_WINDOW=1 replays in a window (a rendering builder: DISPLAY from remote.sh), as he played it, for a
+# headless v windowed A/B of a parting.
 # R45.24: a match he recorded before engage's E2 reached main (2026-10-29 15:11) replays with --player-authority=off, read from the
 # recording's name stamp (tests/replay/authority.py; the line REPLAY_AUTHORITY says which and why). REPLAY_AUTHORITY=on|off overrides;
 # a --player-authority flag in REPLAY_FLAGS is left alone.
@@ -486,7 +488,7 @@ replay-match: native-fresh import ## Replay a match recording headless (RECORDIN
 	@authority=$$($(PYTHON) tests/replay/authority.py $(REPLAY_MATCH_DIR)/his.jsonl $(or $(REPLAY_AUTHORITY),auto)); flags='$(REPLAY_FLAGS)'; \
 	case "$$flags" in *--player-authority*) ;; *) if [ "$$authority" = off ]; then flags="$$flags --player-authority=off"; fi;; esac; \
 	rules=$$($(PYTHON) tests/replay/rules.py $(REPLAY_MATCH_DIR)/his.jsonl "$$flags"); flags="$$flags $$rules"; \
-	s=0; $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- \
+	s=0; $(GODOT) $(if $(REPLAY_WINDOW),,--headless) --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- \
 		--orders=$(CURDIR)/$(REPLAY_MATCH_DIR)/his.jsonl --seconds=$$(( $(or $(REPLAY_SECONDS),20) + 1 )) --record-dir=$(REPLAY_MATCH_DIR)/out \
 		$$flags > $(REPLAY_MATCH_DIR)/replay.log 2>&1 || s=$$?; \
 	grep -E '^REPLAY_(REEXEC|SETUP|SPAWN|ROSTER|NATIVE|SEED|CLICKS|FORMATIONS|DONE)|^NATIVE_EXEC' $(REPLAY_MATCH_DIR)/replay.log; \
