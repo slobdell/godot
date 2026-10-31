@@ -71,6 +71,12 @@ shift keeps 13121-13216 as its fixed before / after set). Dev 7001-7012 (never a
   E 4 v 16 — E10 already removes class A. Manoeuvre's M1: class B's causes = a parked crew giving way in place, and held crews leaving
   their posts to give way (musical chairs); M2 `heldpost` built.
 
+- **R48.5 GRANT native (N3, the same-process carry-over):** `game/main.gd` `Main._enter_tree()` only (a fresh root World3D per match,
+  `--fresh-world=off` the escape), `game/ui/game_launcher.gd` `GameLauncher.start()` as the fallback site, and `tests/run_tests.gd`'s
+  per-FILE reset (harness only; it removes R47.47's history dependence). Conditions: no engine error lines (check's engine gate), the
+  sim-baseline unmoved (a first match already starts on a fresh world), and a rematch test that is identical tick for tick to a first
+  match. Ships ON when green; the orchestrator tells manoeuvre for M6.
+
 ### Bars (round 48)
 _(filed by each stream before any number)_
 
