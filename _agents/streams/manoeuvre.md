@@ -89,6 +89,29 @@ _(worker keeps this current: report at the top, every number with commit, machin
   not asserted). Its own bar follows Bar M.
 - **Requests to other streams:** none open (route's sliver request answered by the grant). **Questions for the lead:** none.
 
+### BAR W (FILED 2026-10-30 ~19:55, before any number; the watchdog `noprogress` + Pathing.reroute off a sliver)
+
+**The change:** `--traffic-on=noprogress` (game/ai/noprogress_watch.gd) and Pathing.reroute's off-island route (R47.25), as committed
+in 5cacac0af. **Frozen tree:** the first commit after 537fca5ee whose check is green (Bar M's rule as it then stands, both arms).
+**Native:** no twin needed (C47.6): the watchdog is a GDScript sampler outside the execute step; reroute's write is a door that marks
+the mover stale, and its queries are Pathing.query / closest_point (native's own). Both arms native ON. **Machine:** builder3, after
+Bar M's series. **Arms:** BASE v WATCH (`--traffic-on=noprogress`), both `--noprogress-census`; Bar M's `buried` in both arms at
+whatever Bar M decides (OFF if Bar M fails). **Seeds:** W1' = Bar M's W1 workload on **12449-12472**; W2' = route-census on
+**12473-12496** (both sides).
+
+| Line | Statistic | Passes when |
+|---|---|---|
+| **D1 the CPU's case** | staged sliver (test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle) | every crew within 8 m of its seat by 10 s (BASE: Hunters_2 never) |
+| **D2 deciding** | W1' + W2' cells / fights where the watchdog tripped: noprog_s (team 0, and team 1 in W2') paired diff | mean < 0, sooner-or-identical >= 50 % |
+| D3 | W1' + W2' all: noprog_s each team | <= +1.645 se |
+| G1-G4 | W1' all_in_s, never_in, contact_s, blocked_s / yielding_s | as Bar M's G1-G4 |
+| G5 | untouched cells (0 trips) identical in every line | all |
+| G6 | his staged Locks case and the Crossing guard | Bar M's D1 / G6 bounds |
+| G7 | route's pathing tests (test_pathing_reroute, test_native_pathing, test_native_route) | green on the frozen tree |
+| G8 | check; SCRIPT ERROR | exited 0; none |
+
+Ties count as sooner-or-identical (lesson 344). At most two amendments, before numbers.
+
 ### BAR M (FILED 2026-10-30 ~18:55, before any number; frozen tree = the first commit after 482f5e2b3 whose check is named green)
 
 **AMENDMENT 1 (2026-10-30 ~19:40, before any bar number; the lines are unchanged, the rule's trigger is corrected):** a pipeline dry
