@@ -90,7 +90,7 @@ S4's labels.
 
 ## Status
 
-_(updated 2026-10-31 ~03:10 PDT by the spotter worker; every number names its commit, machine, workload and n)_
+_(updated 2026-10-31 ~04:20 PDT by the spotter worker; every number names its commit, machine, workload and n)_
 
 ### Report (top)
 - **Merged to main** by the orchestrator: stream/spotter 213f5d070 (check GREEN at **9858da23f**: builder3, `make check exited 0`,
@@ -103,10 +103,12 @@ _(updated 2026-10-31 ~03:10 PDT by the spotter worker; every number names its co
   seconds, peak tick, per-second context, clip, reproduction line). Routed by the orchestrator (R47.48): A RETREAT abandoning the
   squad and E outranged / no answer -> engage (E10); D -> orders; B give-way loops and C stuck on terrain / no_path -> round 48's
   manoeuvre. Class D's FOLLOW rows were a probe artifact (orders reproduced it; amended in the doc).
-- **Batch 2 (in flight):** main **2fc962aa6**, builder3 (`night.sh batch-now`, nice 19), 24 fresh fights (6 maps x seeds
+- **Batch 2 is UP for him (04:15):** main **2fc962aa6**, builder3 (`night.sh batch-now`, nice 19), 24 fresh fights (6 maps x seeds
   13121-13124, 240 s), 113,636 crew-seconds, 4,002 moments; the page shows **ranks 31-100 + 10 hidden random controls** (ordinary
   windows the ranker did not flag), shuffled, reasons hidden until he taps: https://claude.ai/artifact/JWq9fmZ11eVbx68HoUofA9
-  (clips uploading when rendered). It answers where precision drops and the base rate.
+  80/80 clips reproduced their moment (drift <= 0.07 m), re-ranked with the follow fix before upload. The clips' burned-in caption
+  carried the reasons (it would have given the controls away): batch 2's clips got a black caption band (ffmpeg, NVENC); future
+  blind batches use `clips --blind` / `SPOT_BLIND=1`. It answers where precision drops and the base rate.
 - **S6 waits for negatives:** 30 positives train nothing. Floor: ~100 "fine" and ~100 "dumb" for an 18-feature model's held-out
   AUC to mean anything; 300+ to trust it per class. `tools/spotter/learn.py` is ready (stdlib logistic regression, K-fold by seed,
   v the hand score); a GPU buys nothing at this size (frame models only if it plateaus).
@@ -147,6 +149,6 @@ _(updated 2026-10-31 ~03:10 PDT by the spotter worker; every number names its co
 - Not mine, left untracked: `tests/test_authority_press_on.gd.uid`, `tests/test_gunnery_pot_shot.gd.uid`.
 
 ### Next steps
-1. Upload batch 2's clips + docs (judge_docs --shuffle), message the URL. 2. When he judges: labels.py (precision by rank band,
+1. (done) batch 2 uploaded and messaged. 2. When he judges: labels.py (precision by rank band,
 control base rate), classes for any new causes. 3. Once ~100 fine + 100 dumb exist: learn.py v hand. 4. Watch for the night
 shift's first unattended run (SUMMARY.md in builder3 `~/spotter-night/<date>/`).
