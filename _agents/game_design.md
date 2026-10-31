@@ -4823,3 +4823,7 @@ held_1-3, pa_1-4, vet_1-2): the text gate is passed, so their voice generation i
    cap = gangs 27 v syndicate 12 vehicles, ~8-12 fps v ~18 today, game clock slipping; most of the cost the HUD / controls with ~7 a
    squad). **His pick: "Full cost cap now"** — 27 gang vehicles on the laptop right away, even fights, ~10 fps until the controls fix
    lands. -> R47.26.
+6. **Camera select-pan after Bar K (29 of 33 lines; every deciding line passed; G2 / G3 / G8 / G4b failed):** asked in player terms (far
+   squad framed 0.7 v 4.9 s; selection far off-centre 7 v 12 %; flipping between squads 140 m apart leaves the old squad's fight off screen,
+   hits unseen 5 -> 13 % in that test, attacks no worse; clicks during the ~0.7 s sweep misclick more). **His pick: "Ship it ON
+   (Recommended)".** -> R47.29.

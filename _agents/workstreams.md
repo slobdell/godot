@@ -255,6 +255,15 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   crane a); the looks page shows each piece **plain (flat colour + painted glow) v Material Maker sheet** side by side at his camera, with
   the laptop fps of each, and his pick in its `db`. No paid generation.
 
+- **R47.29 (his pick) Camera select-pan SHIPPED ON: main = + camera 2c60ccd93 (code e4a614eab GREEN builder3 3525/0, 28 ALL JUDGED).**
+  Bar K (series 19:03-19:27 builder3, 72 deciding + 48 guard runs an arm, 0 lost; verdict
+  `references/round47/camera/bark-verdict-builder3-e4a614eab.txt` on stream/camera 67d48c984): D1 11.9 -> 6.9 % (ratio 0.58), D2 mean
+  4.92 -> 0.73 s (p90 0.95), D3 244 -> 21, G10 planner 0.329 ms / p99 0.80, rig 0.852 v 0.839. FAILED: G2 none on screen 61 -> 143 s and
+  G3 hits off screen 5.3 -> 12.6 % (all from SPLIT's 140 m flips: the camera now leaves the squad he left; ATTACK equal or better), G8
+  rear-ambush 7.08 -> 8.56 s (same latencies, fewer episodes weighting four 20 s nevers), G4b 7 one-frame snaps at the pan's hand-over.
+  Clicks 83.4 -> 77.9 % (60 aimed mid-pan, slip p95 464 px). Lesson 339: taken to him the same hour; his yes. Follow-up for camera: the
+  one-frame snaps at the hand-over, and K5 (his four recordings, three hand models).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
