@@ -304,6 +304,15 @@ Array obey(const DecideConsts &c, const DN &k, const Array &candidates, const Di
 			in_reach.push_back(cc[k.name]);
 		}
 	}
+	// Round 47 (engage E7, R47.6): TankBrain.PRESS_ON read live (absent: off): an attack-move on a named target under an ATTACK
+	// task (s.element.task) is pressed home: RETREAT is not a candidate even when critical.
+	static const StringName press_on("PRESS_ON"), element_key("element"), task_key("task");
+	bool pressed = false;
+	if (c.brain_script != nullptr && (bool)c.brain_script->get(press_on) && verb == k.attack_move && target != String()) {
+		const Variant element_context = s.get(element_key, Variant());
+		pressed = element_context.get_type() == Variant::DICTIONARY &&
+				String(((Dictionary)element_context).get(task_key, String())) == String("attack");
+	}
 	Array result;
 	for (int64_t i = 0; i < candidates.size(); i++) {
 		Dictionary cand = candidates[i];
@@ -323,7 +332,7 @@ Array obey(const DecideConsts &c, const DN &k, const Array &candidates, const Di
 			}
 		} else if (verb == k.attack_move) {
 			if (option == k.RETREAT) {
-				if (!critical) {
+				if (!critical || pressed) {
 					continue;
 				}
 				cand[k.score] = 0.99;
