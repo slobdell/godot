@@ -205,6 +205,20 @@ func _run() -> void:
 		if names.has(shooter) and float(event.get("damage", 0.0)) > 0.0 and (String(event.get("target", "")).begins_with("Green_") \
 				or victims.any(func(v: Dictionary) -> bool: return String(v.get("target", "")).begins_with("Green_"))):
 			_friendly_hits += 1
+			if trace:
+				var victim := String(event.get("target", ""))
+				for v: Dictionary in victims:
+					if String(v.get("target", "")).begins_with("Green_"):
+						victim = String(v.get("target", ""))
+				var by_tank := lab.tank_of(shooter)
+				var hit_tank := lab.tank_of(victim)
+				var shooter_brain := game_match.brains.get_node_or_null("Brain_" + shooter) as TankBrain
+				print("ENGAGE_PROBE_FRIENDLY t=%d %s -> %s damage %.1f shooter at %s victim at %s target at %s choice %s why '%s' hp %d" % [
+						game_match.tick, shooter, victim, float(event.get("damage", 0.0)),
+						_flat(by_tank.global_position).snappedf(0.1) if by_tank != null else "-",
+						_flat(hit_tank.global_position).snappedf(0.1) if hit_tank != null else "-", _flat(target.global_position).snappedf(0.1),
+						shooter_brain.choice.get("option", "") if shooter_brain != null else "-", shooter_brain.why if shooter_brain != null else "-",
+						by_tank.health if by_tank != null else -1])
 		if on_target and float(event.get("damage", 0.0)) > 0.0 and names.has(shooter):
 			_hits[shooter] = int(_hits.get(shooter, 0)) + 1
 			if not _first_hit.has(shooter):
