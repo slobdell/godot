@@ -219,6 +219,11 @@ _(filed here BEFORE any number; newest first)_
   never_in, **G3** contact_s, **G4** blocked_s / yielding_s (each <= +1.645 se; G2 total <= BASE); **G5** untouched cells identical;
   **G6** staged Crossing Hunters < 2.5 s each; **G7** W2 both teams' noprog_s; **G8** engage's authority probe 12443-12448 rows identical;
   **G9** frozen tree's check exited 0, no SCRIPT ERROR. Full table in the brief.
+  **AMENDMENT 1 (of 2; 2026-10-30 ~19:30, 1aa41aeaf, before any bar number; lines unchanged, the trigger corrected):** a dev 7001
+  dry run showed the rule acting in every cell (764 swaps on Locks, 609 on the plain > 4 m trigger, median gap 6 m: a routine
+  grounding sliding along a wall). His corner is PINNED, so the > 4 m trigger now also needs the grounded point to have moved <= 1 m
+  while the station moved >= 3 m in >= 1 s. His staged case unchanged (0.0 s); Crossing guard identical. Frozen tree = 1aa41aeaf once
+  green. G3 (contact) named the line at risk.
 
 ## Round 46: five streams (prepared 2026-10-30; CLOSED 2026-10-30; briefs in `streams/archive/round46/`)
 
