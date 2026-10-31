@@ -812,12 +812,13 @@ herringbone-lab: native-for-check import ## Round 36 (orders O1): the herringbon
 # Round 36 (orders, R36.6): one orders-probe run traced (`--probe-trace=N`: squad N's crews every second, position, goal,
 # brain option) per TRACE_CASES entry "map:squads:route:seed:squad" -> build/orders-probe-trace/<entry>.log
 TRACE_CASES ?= terminus:5:route:3624:4
+TRACE_FLAGS ?=  # extra probe args for every case, e.g. --group-merged=off (R47.41: the O1 stall read)
 .PHONY: orders-probe-trace
 orders-probe-trace: native-for-check import ## Round 36 (orders): traced orders-probe runs, TRACE_CASES "map:squads:route:seed:squad" -> build/orders-probe-trace/*.log
 	@rm -rf $(BUILD_DIR)/orders-probe-trace && mkdir -p $(BUILD_DIR)/orders-probe-trace
 	@for c in $(TRACE_CASES); do IFS=: read map n route seed sq <<< "$$c"; \
 		timeout 600 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/orders_probe.gd -- --arena=$$map --seed=$$seed \
-			--probe-squads=$$n --probe-route=$$route --probe-arm=main --probe-trace=$$sq > $(BUILD_DIR)/orders-probe-trace/$$map-$$n-$$route-$$seed-sq$$sq.log 2>&1 || true; \
+			--probe-squads=$$n --probe-route=$$route --probe-arm=main --probe-trace=$$sq $(TRACE_FLAGS) > $(BUILD_DIR)/orders-probe-trace/$$map-$$n-$$route-$$seed-sq$$sq.log 2>&1 || true; \
 		echo "$$c: $$(grep -c '^ORDERS_PROBE_TRACE' $(BUILD_DIR)/orders-probe-trace/$$map-$$n-$$route-$$seed-sq$$sq.log) trace lines"; done
 
 # Round 37 (orders O5, R36.11; measurement): crews holding a seat (screen / support_by_fire / hold) that give way to ANOTHER
