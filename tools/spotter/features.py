@@ -9,6 +9,7 @@ condition has held, this second included) are what make a moment: one second aga
 """
 import csv
 import glob
+import gzip
 import json
 import math
 import os
@@ -51,7 +52,7 @@ HOLD_TICKS = 3 * TICK_RATE  # no shot for this long with a target in range
 
 def load_fight(path):
     header, rows = {}, []
-    with open(path) as handle:
+    with (gzip.open(path, "rt") if path.endswith(".gz") else open(path)) as handle:
         for line in handle:
             line = line.strip()
             if not line:
@@ -125,11 +126,13 @@ def derive(header, rows, fight=""):
 
 def load_dir(fight_dir):
     table = []
-    for path in sorted(glob.glob(os.path.join(fight_dir, "*.jsonl"))):
+    paths = glob.glob(os.path.join(fight_dir, "*.jsonl")) + glob.glob(os.path.join(fight_dir, "*.jsonl.gz"))
+    for path in sorted(paths):
         header, rows = load_fight(path)
         if not header:
             continue
-        table.extend(derive(header, rows, os.path.basename(path)[:-6]))
+        name = os.path.basename(path)
+        table.extend(derive(header, rows, name[: name.index(".jsonl")]))
     return table
 
 
