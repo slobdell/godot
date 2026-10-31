@@ -407,13 +407,14 @@ static func route_arms() -> Dictionary:
 			"turns": ManoeuvreCensus.report(), "behind_asked": behind_asked, "behind_reverses": behind_reverses,
 			"behind": Manoeuvre.report(), "post_faces_kept": post_faces_kept, "face_plans": Manoeuvre.face_plans,
 			"face_plan_legs": Manoeuvre.face_plan_legs, "face_none": Manoeuvre.face_none, "kturn_away": kturn_away,
-			"kturn_circle": kturn_circle, "buried_swaps": buried_swaps, "noprogress": NoProgressWatch.report(), "holdyield_vetoes": holdyield_vetoes}
+			"kturn_circle": kturn_circle, "buried_swaps": buried_swaps, "noprogress": NoProgressWatch.report(), "holdyield_vetoes": holdyield_vetoes, "overstay_moves": DoorOverstay.moves}
 
 
 static func reset_route_arms() -> void:
 	buried_swaps = 0
 	holdyield_vetoes = 0
 	NoProgressWatch.reset()
+	DoorOverstay.reset()
 	ManoeuvreCensus.reset()
 	Manoeuvre.reset()
 	kturn_goal_moved = 0
@@ -655,6 +656,7 @@ func _init(controller: OrderController = null) -> void:
 	ctl = controller
 	if NoProgressCensus.on:
 		NoProgressCensus.install()  # round 47 (Bar M's instrument, measurement only): it samples every mover from the physics frame
+	DoorOverstay.install()  # round 47 (mapkit's request): a crew parked in a closing doorway gives way to the door (returns at once while `overstay` is off)
 	NoProgressWatch.install()  # round 47 (manoeuvre M2): the no-progress watchdog's sampler (returns at once while `noprogress` is off)
 
 
