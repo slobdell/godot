@@ -69,6 +69,13 @@ carried two parse errors of my tests, its check cancelled).** After it: 7571efb2
 - **E3 pot-shot twin EQUAL (R47.20, his yes):** pair/native-e3 3c4a3b576 = engage d4a88c4a5 + e232fce63 (+ the test floor): gun_native's
   apply_weapon runs engage's block after engage() (POT_SHOT read live off the Gunnery script; NativeGun + NativeExec owned share it).
   builder3 light: 41 / 0; native gun 8223 applies, 4 pot shots fired, every off-aim compared, 0 mismatches.
+- **R47.26/R47.27 the cost cap (his laptop 8-12 fps):** cost-cap Crossing profile (gangs v syndicate 3500, 34 v 12, seed 3, 90 s,
+  builder3 light, n 1): tick 7.43 ms at ~46 crews; per-crew costs: brain/think 3.16 (situation 1.00, poll+rate+incoming 0.84),
+  brain/execute 2.57, tank 0.76 (+ wall_contact 0.31). **Measured laptop ratio ~3.0x builder3** (his Crossing .perf tick_ms 17.0
+  mean v builder3's replay 5.5-5.9). Frame model F = R / (1 - T/33.3) fits orders' read (79 ms, 2.4 ticks a frame); a cap of 2 ticks
+  a frame -> ~71 ms, clock 0.94 (ruled: no change). **(a) prices, same workload, ABBA n 2:** native_scan ON +0.48 / +0.52 ms a tick:
+  SLOWER, stays OFF; native_matchups: one pair confounded by the box's load, the clean one neutral (decide +0.003): second ABBA running.
+  (b) t.poll's prologue port: next (it is TankBrain.think's whole prologue; a large twin).
 - **Backlog:** N1 twins as filed (E7 + E3 done; route's door mask when doors reach an arena); N2 DONE; N3 reader DONE (the Sumps re-read
   waits on orders' inp rows); N4 DONE; N5 lines_r47 started (no verdict yet); N6 builders healthy (builder3 29 %; builder0 down
   since ~17:35, the orchestrator told the lead).
