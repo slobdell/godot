@@ -234,39 +234,49 @@ static func contact_prototypes(game_match: Match, team: int) -> Dictionary:
 	if _contacts_bucket != bucket or _match_id != game_match.get_instance_id():
 		_refresh(game_match)
 		_contacts_bucket = bucket
+		# Round 48 (native N2): the table natively when NativeContacts says so (contacts_native.cpp); _contact_table is the reference.
+		var native := NativeContacts.usable()
+		if native:
+			_seen_reset(game_match)
 		for side in 2:
-			var reload_windows: bool = BrainVariants.for_team(side).get("reload_windows", false)
-			var table := {}
-			var intel: Dictionary = game_match.intel[side]
-			for contact_name: String in intel_names(game_match, side):
-				var known: Dictionary = intel[contact_name]
-				var weapon_id := String(known["weapon"])
-				table[contact_name] = {
-					"name": contact_name,
-					"position": known["position"],
-					"velocity": known["velocity"],
-					"forward": known["forward"],
-					"health": known["health"],
-					"shield": known.get("shield", 0),
-					"weapon": weapon_id,
-					"unit": known.get("unit", ""),
-					"turret_forward": known["turret_forward"],
-					"visible": known["visible"],
-					"seen_tick": int(known["seen_tick"]),
-					# X3 reload windows: seconds until its gun is loaded again (0 when loaded, unknown, or fast).
-					"gun_ready_in": _gun_ready_in(game_match, contact_name) if reload_windows else 0.0,
-					# Saves a Weapons.PROFILES lookup per brain per contact ("can it reach me").
-					"weapon_range": float(Weapons.profile(weapon_id)["range"]),
-					# L2 (X3): how hard a crew has its head down. Plainly visible behaviour, so it is read live for a
-					# contact we can actually see and left at 0 for one we are only remembering. (Combat's intel
-					# doesn't carry it; ai asked for it there — see the stream's requests.)
-					"suppression": _suppression_seen(game_match, side, contact_name, known),
-					# Filled in per brain (they need the looker's position): age, exposed_face, facing_ally,
-					# aiming_at_me, watching_me, threatens_me.
-					"age": 0,
-				}
-			_contacts[side] = table
+			_contacts[side] = NativeContacts.table(game_match, side, intel_names(game_match, side), _by_name, _fired,
+					_seen_suppression[side]) if native else _contact_table(game_match, side)
 	return _contacts[team]
+
+
+## One side's prototype table (contact_prototypes' GDScript; NativeContacts' reference). Writes the suppression memory.
+static func _contact_table(game_match: Match, side: int) -> Dictionary:
+	var reload_windows: bool = BrainVariants.for_team(side).get("reload_windows", false)
+	var table := {}
+	var intel: Dictionary = game_match.intel[side]
+	for contact_name: String in intel_names(game_match, side):
+		var known: Dictionary = intel[contact_name]
+		var weapon_id := String(known["weapon"])
+		table[contact_name] = {
+			"name": contact_name,
+			"position": known["position"],
+			"velocity": known["velocity"],
+			"forward": known["forward"],
+			"health": known["health"],
+			"shield": known.get("shield", 0),
+			"weapon": weapon_id,
+			"unit": known.get("unit", ""),
+			"turret_forward": known["turret_forward"],
+			"visible": known["visible"],
+			"seen_tick": int(known["seen_tick"]),
+			# X3 reload windows: seconds until its gun is loaded again (0 when loaded, unknown, or fast).
+			"gun_ready_in": _gun_ready_in(game_match, contact_name) if reload_windows else 0.0,
+			# Saves a Weapons.PROFILES lookup per brain per contact ("can it reach me").
+			"weapon_range": float(Weapons.profile(weapon_id)["range"]),
+			# L2 (X3): how hard a crew has its head down. Plainly visible behaviour, so it is read live for a
+			# contact we can actually see and left at 0 for one we are only remembering. (Combat's intel
+			# doesn't carry it; ai asked for it there — see the stream's requests.)
+			"suppression": _suppression_seen(game_match, side, contact_name, known),
+			# Filled in per brain (they need the looker's position): age, exposed_face, facing_ally,
+			# aiming_at_me, watching_me, threatens_me.
+			"age": 0,
+		}
+	return table
 
 
 ## [team] -> {contact name: [suppression when last seen, tick]} (round-5 X2).
@@ -280,9 +290,7 @@ static var _seen_match := 0
 ## rate. Without it a pinned enemy stopped counting as pinned the instant a unit hid from it to peek — which is the
 ## moment the bonus for going round it mattered. Other variants read 0 for anything out of sight, as before.
 static func _suppression_seen(game_match: Match, side: int, contact_name: String, known: Dictionary) -> float:
-	if _seen_match != game_match.get_instance_id():
-		_seen_match = game_match.get_instance_id()
-		_seen_suppression = [{}, {}]
+	_seen_reset(game_match)
 	if bool(known["visible"]):
 		var live := _suppression_of(game_match, contact_name)
 		(_seen_suppression[side] as Dictionary)[contact_name] = [live, game_match.tick]
@@ -294,6 +302,12 @@ static func _suppression_seen(game_match: Match, side: int, contact_name: String
 		return 0.0
 	var faded := float(seen[0]) - Tank.SUPPRESSION_RECOVER_PER_SECOND * float(game_match.tick - int(seen[1])) / SimClock.TICK_RATE
 	return maxf(faded, 0.0)
+
+
+static func _seen_reset(game_match: Match) -> void:
+	if _seen_match != game_match.get_instance_id():
+		_seen_match = game_match.get_instance_id()
+		_seen_suppression = [{}, {}]
 
 
 static func _suppression_of(game_match: Match, contact_name: String) -> float:

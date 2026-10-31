@@ -23,6 +23,7 @@
 #include "assign_native.h"
 #include "place_native.h"
 #include "esit_native.h"
+#include "contacts_native.h"
 #include "perception_native.h"
 #include "incoming_native.h"
 #include "shell_native.h"
@@ -208,6 +209,26 @@ public:
 		c.HOLD_SPEED_MPS = consts.get("HOLD_SPEED_MPS", c.HOLD_SPEED_MPS);
 		c.KNOWN_M = consts.get("KNOWN_M", c.KNOWN_M);
 		return ::godot::esit_entries(game_match, team, member_names, heading, was_known, roles, c);
+	}
+	// Round 48 (N2): AiTickCache._contact_table (contacts_native.cpp); NativeContacts marshals the caches and the consts.
+	Dictionary contact_table(const Dictionary &intel, const Array &names, const Dictionary &by_name, const Dictionary &fired,
+			const Dictionary &seen, const Dictionary &weapon_ranges, const Dictionary &opts) const {
+		ContactsInput in;
+		in.intel = intel;
+		in.names = names;
+		in.by_name = by_name;
+		in.fired = fired;
+		in.seen = seen;
+		in.weapon_ranges = weapon_ranges;
+		in.default_range = opts.get("default_range", 0.0);
+		in.tick = opts.get("tick", 0);
+		in.physics_frames = opts.get("physics_frames", 0);
+		in.reload_windows = opts.get("reload_windows", false);
+		in.pinned_exposed = opts.get("pinned_exposed", false);
+		in.slow_gun_reload = opts.get("SLOW_GUN_RELOAD", in.slow_gun_reload);
+		in.recover_per_second = opts.get("SUPPRESSION_RECOVER_PER_SECOND", in.recover_per_second);
+		in.tick_rate = opts.get("TICK_RATE", in.tick_rate);
+		return ::godot::contact_table(in);
 	}
 	// Round 47 (N2): TacticsFormation.place (place_native.cpp); NativePlace marshals the catalogue's part and the switches.
 	Array formation_place(const Array &members, const String &formation, const Vector3 &anchor, const Vector3 &heading, double spacing,

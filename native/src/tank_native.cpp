@@ -60,6 +60,8 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("assign_least_total", "centers", "slots"), &TankNative::assign_least_total);
 	ClassDB::bind_method(D_METHOD("esit_entries", "game_match", "team", "member_names", "heading", "was_known", "roles", "consts"),
 			&TankNative::esit_entries);
+	ClassDB::bind_method(D_METHOD("contact_table", "intel", "names", "by_name", "fired", "seen", "weapon_ranges", "opts"),
+			&TankNative::contact_table);
 	ClassDB::bind_method(D_METHOD("formation_place", "members", "formation", "anchor", "heading", "spacing", "opts", "extent", "tough",
 			"roles", "flags", "lateral_floor"), &TankNative::formation_place);
 	ClassDB::bind_method(D_METHOD("perception_configure", "config"), &TankNative::perception_configure);
