@@ -2198,8 +2198,7 @@ const VETO_LINE_STEPS := 10
 ## spots a pitch apart. Only the merged group's plain move / attack-move (no drawn facing, not a shifted leg) and only when every
 ## seat of every file is dry, standable and passes the veto; any other click is byte-identical. And (`split`) a group partly
 ## taken by a smaller group in the same selection keeps its remainder as a squad of its number (Crossing: the Wrenches were
-## ordered loose, without a squad, because his group 4 also held the Spears' group 3). `--group-merged=off` / `GROUP_MERGED=off`
-## is round 46's lay. Symmetric (C47.9): the CPU orders its elements one at a time (C45.5) and has no group click to merge.
+## ordered loose, without a squad, because his group 4 also held the Spears' group 3). OFF (merged_default); `--group-merged=on`. Symmetric (C47.9): the CPU orders its elements one at a time (C45.5) and has no group click to merge.
 static var GROUP_MERGED := merged_default()
 ## `--group-merged=all` (OFF; Bar O's READ arm, amendment 1): every plain click on 2-3 whole squads lays as the double file, merged
 ## or not (his Locks click may have been two squads he box-selected; no key rows said).
@@ -2209,10 +2208,17 @@ const MERGED_FILES_MAX := 3
 ## Measurements (a probe reads them): merged clicks laid as files; merged clicks whose files the ground refused (today's lay).
 static var merged_laid := 0
 static var merged_refused := 0
+static var merged_stepped := 0  # O1 v2: laid after stepping back from the click
+## O1 v2: how far the double file may step back along his approach to find dry, standable seats.
+const MERGED_BACK_STEP_M := 4.0
+const MERGED_BACK_STEPS := 10
 
 
+## OFF since Bar O's first series failed D1 (R47.4; the files bumped 5-20x where laid, Status): `--group-merged=on` /
+## `GROUP_MERGED=on` opts in; `--group-merged=all` lays every 2-3 squad click so.
 static func merged_default() -> bool:
-	return not OS.get_cmdline_user_args().has("--group-merged=off") and OS.get_environment("GROUP_MERGED") != "off"
+	return OS.get_cmdline_user_args().has("--group-merged=on") or OS.get_cmdline_user_args().has("--group-merged=all") \
+			or OS.get_environment("GROUP_MERGED") == "on"
 
 
 ## The files' heads: one per block, side by side across `heading` through the click, `gap` apart, left to right in the order the

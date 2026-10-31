@@ -305,7 +305,7 @@ func _run() -> void:
 			"worst_offset_m": rows.map(func(r: Dictionary) -> float: return r["anchor_offset_m"]).max(),
 			# Bar O (round 47): the farthest two squads' spots for this order (his "two points far apart"), and the merged lay's counters.
 			"spread_m": _spread_of(rows), "merge": _flag("probe-merge", "off"),
-			"merged_laid": _static_or(SelectionSquads, "merged_laid"), "merged_refused": _static_or(SelectionSquads, "merged_refused"),
+			"merged_laid": _static_or(SelectionSquads, "merged_laid"), "merged_refused": _static_or(SelectionSquads, "merged_refused"), "merged_stepped": _static_or(SelectionSquads, "merged_stepped"),
 			"worst_shuffle_m": rows.map(func(r: Dictionary) -> float: return r["shuffle_m"]).max()}.merged(_run_extra())))
 	quit(0)
 

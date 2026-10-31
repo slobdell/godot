@@ -1948,25 +1948,48 @@ func merged_group() -> int:
 	return number
 
 
-## R47.4: the merged group's files at his click: {"heads": [Vector3] in squad order, "heading"} or {} when any seat of any file is
-## wet, a deck, not standable for a hull, or a head the veto refuses (across a gap from his click, or sending a squad back).
+## R47.4: the merged group's files at his click: {"heads": [Vector3] in squad order, "heading"} or {} when no lay is found. O1 v2
+## (Bar O's first series: one wet / deck seat refused 48 of 60 probe clicks short of a bridge): the whole double file steps back
+## along his approach, SelectionSquads.MERGED_BACK_STEP_M at a time up to MERGED_BACK_STEPS, to the first place where every seat
+## of every file is dry, off a deck, on the arena, standable for a hull, and the veto passes every head.
 func _merged_files(squads: Array, blocks: Array, click: Vector3, ground: Node3D) -> Dictionary:
 	var heading := SelectionSquads.approach_of(blocks, click, Match.team_frame(team)["forward"])
 	var pitch := SelectionSquads.merged_pitch(blocks)
-	var heads := SelectionSquads.merged_heads(blocks, click, heading, pitch.x)
 	var clearance := SlotGround.envelope_of((ground as Tank).unit_id) if ground is Tank else 0.0
+	var flat_heading := Vector3(heading.x, 0.0, heading.z).normalized()
+	var why := ""
+	for k in SelectionSquads.MERGED_BACK_STEPS + 1:
+		var at := Vector3(click.x, 0.0, click.z) - flat_heading * (k * SelectionSquads.MERGED_BACK_STEP_M)
+		var heads := SelectionSquads.merged_heads(blocks, at, heading, pitch.x)
+		why = _merged_refusal(squads, heads, heading, pitch, clearance, ground)
+		if why == "" and not SelectionSquads.veto_failures(heads, blocks, click, heading, Match.team_frame(team)["forward"]).is_empty():
+			why = "veto"
+		if why == "":
+			SelectionSquads.merged_laid += 1
+			if k > 0:
+				SelectionSquads.merged_stepped += 1
+			if ORDER_TRACE or order_trace_keep:
+				print("ORDER_TRACE merged files laid %.0f m back from the click" % (k * SelectionSquads.MERGED_BACK_STEP_M))
+			return {"heads": heads, "heading": heading}
+	SelectionSquads.merged_refused += 1
+	if ORDER_TRACE or order_trace_keep:
+		print("ORDER_TRACE merged files refused (last try: %s)" % why)
+	return {}
+
+
+## Why the files headed at `heads` cannot stand ("" = they can): the first seat that is wet / a deck, off the arena, or not
+## standable for a hull.
+func _merged_refusal(squads: Array, heads: Array[Vector3], heading: Vector3, pitch: Vector2, clearance: float, ground: Node3D) -> String:
 	for i in heads.size():
 		for seat: Vector3 in SelectionSquads.merged_file_seats(heads[i], heading, (squads[i]["units"] as Array).size(), pitch.y):
+			if SelectionSquads.wet_or_deck(seat, SelectionSquads.HULL_REACH_M):
+				return "wet or deck at (%.0f, %.0f)" % [seat.x, seat.z]
+			if Orders.clamp_to_arena(seat).distance_to(seat) > 0.5:
+				return "off the arena at (%.0f, %.0f)" % [seat.x, seat.z]
 			var stand := SlotGround.standable_for(ground, seat, clearance)
-			if SelectionSquads.wet_or_deck(seat, SelectionSquads.HULL_REACH_M) or Orders.clamp_to_arena(seat).distance_to(seat) > 0.5 \
-					or Vector2(stand.x - seat.x, stand.z - seat.z).length() > SelectionSquads.PACK_GROUND_SLACK_M:
-				SelectionSquads.merged_refused += 1
-				return {}
-	if not SelectionSquads.veto_failures(heads, blocks, click, heading, Match.team_frame(team)["forward"]).is_empty():
-		SelectionSquads.merged_refused += 1
-		return {}
-	SelectionSquads.merged_laid += 1
-	return {"heads": heads, "heading": heading}
+			if Vector2(stand.x - seat.x, stand.z - seat.z).length() > SelectionSquads.PACK_GROUND_SLACK_M:
+				return "not standable at (%.0f, %.0f)" % [seat.x, seat.z]
+	return ""
 
 
 func _route_key(squads: Array) -> Array:

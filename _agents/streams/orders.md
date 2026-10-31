@@ -79,13 +79,28 @@ _(worker keeps this current: report at the top, every number with commit, machin
 
 | Item | State |
 |---|---|
-| O1 the spread | **built, ON on the branch** (`--group-merged=off`). ff65a5481's check RED (builder3, 3529 / 1: the merged squads drove in as AUTO wedges ~50 m wide toward anchors 14 m apart, arrival slots 3.7 m apart); fixed in 0b1caafa2 (the files drive in as files; AUTO squads only); 0b1caafa2's full check running (log `~/orders-r47/check-c1f5e01ee.log`, misnamed) |
+| O1 the spread | **Bar O FAILED (D1), O1 now OFF** (`--group-merged=on` opts in); v2 dev read: together but 5-20x the bumping; ruling asked of the orchestrator (below) |
 | O2 Bar O | **filed** (`workstreams.md` *Bars (round 47)*, 960edbd67) before any number; amendment 1 (69d6813e6) and 2 (0eb12f551, R47.15: the `all` arm deciding) both before any number; runs on the green freeze |
 | O3 the order lag | **closed: no lag** (below; relayed to route as R1 by the orchestrator) |
 | O4 the `inp` row | **built** (7d41d5061; + group saves 3046343c1; + arm / formation / escape 87eb68b1c); native gets the hash when a check covering 87eb68b1c is green |
 | O5 the recipient cue | built (uncommitted until its tests pass): rings pulse + chip flash |
 | O6 artillery screen | built (uncommitted until its tests pass): a battery's screen = support by fire, ON, `--battery-screen=off` |
 | O7 his acceptance read | after Bar O |
+
+**Bar O, first series (builder3, 0b1caafa2's code, seeds 12701-12712, ~/orders-r47/bar-o-0b1caafa2/; stopped after merged, his_x
+and his_l):** VERDICT FAIL. D1 median spread ON 71.3 v OFF 71.3 m (n 60 three-squad pairs); D1b files laid on 12 of 60, all
+yard_open (28 m); D2 -0.83 s PASS; D2b, G1 (35.5 v 34.2), G2 (42.0 v 36.4), G3 (0 v 0), G5 PASS. **Instrument fault (mine; lesson
+350):** no 2-squad probe army existed (`tests/control/orders_probe_2.json`), so every 2-squad cell (his case) errored, and the part
+check counted the error lines as runs. Fixed: the army is added; a Bar O2 runner must count only rows with `map`.
+**O1 v2 dev read** (builder3, 0b1caafa2 + the step-back (the double file steps back 4 m at a time up to 40 m to dry, standable
+seats) + the 2-squad army; dev seeds 7001-7002, 5 maps x 2 / 3 squads, n 1 a cell, ~/orders-r47/dev-v2/): laid on 7 of 20 cells;
+there 2 squads 14 v 33-41 m, 3 squads 28 v 54-73 m, all-in mostly sooner (yard 6.8 v 9.5 s, locks 4.3 v 28.0 s), but **friendly
+contacts 5-20x** (yard 42 v 6, sumps 60 v 22 / 58 v 5 / 122 v 6): two columns a pitch apart accordion and brush the whole way.
+Crossing and terminus: still refused (rear seats in buildings or off the arena). **In his terms:** "your merged squads end up side
+by side at your click, usually sooner, but rub hulls all the way in; at bridges and in streets nothing changes yet." Not worth a
+series. Options sent to the orchestrator (recommended first): (a) today's abreast lay pulled in by halt clearance instead of GAP_M
+(each squad's own halt; Crossing ~61 -> ~45 m, Locks ~36 -> ~30 m); (b) the files only for the last stretch (element_plan's
+ARRIVE_FILE, D3b: not my code); (c) the bumping to him as a feel question.
 
 **O1 (R47.4) what and why.** Both of his far-apart clicks were a control group he had MERGED: Crossing group 4 = Spears + Wrenches,
 Locks group 2 = Burners + Burners2, 10 vehicles each. A squad holds 5, so the selection is two squads, and `row` laid them ABREAST
