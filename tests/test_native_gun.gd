@@ -108,6 +108,8 @@ func test_gunnery_apply_is_the_live_gdscript() -> void:
 	var engaged := 0
 	var synthetic := 0
 	var types := {}
+	var carried := 0
+	var lay_carry_was: Variant = (Engagement as Object).get("lay_carry")
 	for frame in 420:
 		await wait_physics_frames(1)
 		var enemies_of := [[], []]
@@ -130,6 +132,10 @@ func test_gunnery_apply_is_the_live_gdscript() -> void:
 					gunnery.watch_point = tank.global_position + Vector3(rng.randf_range(-30.0, 30.0), 0.0, 20.0)
 				synthetic += 1
 			types[String(ctl.weapon_order["type"])] = int(types.get(String(ctl.weapon_order["type"]), 0)) + 1
+			# Round 47 (engage E2a): Engagement.lay_carry both ways where the build has it (absent = today's reset, no-op here).
+			var has_carry := (Engagement as Object).get("lay_carry") != null
+			if has_carry:
+				(Engagement as Object).set("lay_carry", rng.randf() < 0.6)
 			var aim_at := gunnery.held_aim_point()
 			var start := _capture(gunnery)
 			var live_cmd := TankCommand.new(0.0, 0.0, aim_at)
@@ -147,6 +153,9 @@ func test_gunnery_apply_is_the_live_gdscript() -> void:
 			ctl.weapon_order = kept_order
 			gunnery.watch_point = kept_watch
 			applied += 1
+			if String(start["l:target"]) != "" and String(live["l:target"]) != String(start["l:target"]) \
+					and float(live["l:progress"]) > seconds + 1e-9:
+				carried += 1
 			fired += 1 if live_cmd.fire else 0
 			engaged += 1 if String(live["g:engaged_target"]) != "" else 0
 			var differ := _diff(live, native)
@@ -161,8 +170,12 @@ func test_gunnery_apply_is_the_live_gdscript() -> void:
 				if first == "":
 					first = "OWNED frame %d %s: command live %s owned %s; %s" % [frame, tank.name, _command(live_cmd),
 							_command(owned_cmd), owned_differ]
-	print("native gun: %d applies (%d synthetic orders, by type %s), %d fired, %d engaged, %d mismatches live members, %d owned state"
-			% [applied, synthetic, types, fired, engaged, mismatches, owned_mismatches])
+	if lay_carry_was != null:
+		(Engagement as Object).set("lay_carry", lay_carry_was)
+	print("native gun: %d applies (%d synthetic orders, by type %s), %d fired, %d engaged, %d lays carried, %d mismatches live members, %d owned state"
+			% [applied, synthetic, types, fired, engaged, carried, mismatches, owned_mismatches])
+	if lay_carry_was != null:
+		assert_true(carried >= 20, "E2a's carry was exercised (%d lays kept across a new name)" % carried)
 	assert_eq(mismatches + owned_mismatches, 0, "the native gun is the live GDScript gun: %s" % first)
 	assert_true(applied >= 3000 and fired >= 50 and engaged >= 300 and synthetic >= 500,
 			"a real sample (%d applies, %d fired, %d engaged, %d synthetic)" % [applied, fired, engaged, synthetic])
