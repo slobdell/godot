@@ -98,6 +98,30 @@ _(worker keeps this current: report at the top, every number with commit, machin
   engage (FYI): HOLD's return to his post uses arrive 6.0, so any other displacement still parks him up to 6 m short.
   **Questions for the lead:** none.
 
+### REPORT — Bar M, W1 + G8 (2026-10-30 ~19:55): every line passes; W2 (G7) running
+
+Frozen 1aa41aeaf (check builder3, exited 0, 3522 / 0); series tree 4ab917680 (its code + the series target and a staged test), builder3,
+native ON, seeds 12401-12424, orders' group-order probe (5 squads, crew headings, 180 s) on terminus / crossing / locks / sumps: 96 paired
+cells, the wrapper `make manoeuvre-bar-m-series` exited 0, no SCRIPT ERROR in 192 logs. Evidence:
+`references/round47/manoeuvre/barm-builder3-1aa41aeaf/`.
+
+| Line | Read | Verdict |
+|---|---|---|
+| D1 his staged Locks case | Burners2_4 0.0 s (BASE 3.47) | PASS |
+| D2 touched cells noprog_s | 57323 -> 54930 crew-s; -24.9 a cell, se 28.5; sooner-or-identical 54 % | PASS |
+| D3 all cells noprog_s | z -0.87 | PASS |
+| G1 all_in_s | 9760 -> 9694 s; z -0.20 | PASS |
+| G2 never_in | 25 -> 23 squads | PASS |
+| G3 contact_s (the line named at risk) | 6589 -> 6249 s; z -0.77 | PASS |
+| G4 blocked_s / yielding_s | z -0.77 / -0.43 | PASS |
+| G5 untouched cells identical | no untouched cell: the rule swapped in all 96 | vacuous (said) |
+| G6 Crossing guard | 1.0 / 0 / 1.97 / 0 s | PASS |
+| G8 engage's authority probe | 6 of 6 identical | PASS |
+| G9 check / SCRIPT ERROR | exited 0 / none | PASS |
+| G7 W2 both sides | running | — |
+
+By map (noprog_s): terminus z -2.04, locks -0.86, crossing -0.52, sumps +0.09; slow_s z -1.96.
+
 ### BAR H (FILED 2026-10-30 ~19:40, before any number; `holdyield`, M5a)
 
 **The change:** `--traffic-on=holdyield` (Movement._holdyield_veto inside _begin_yield's two spot loops), as in df26c0d5f. **Frozen

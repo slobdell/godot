@@ -1,0 +1,35 @@
+crews nose > 90 deg: n 2288  slow_s 4.46  blocked_s 3.73  yield_s 6.09
+crews nose <= 90 deg: n 2512  slow_s 4.48  blocked_s 3.27  yield_s 5.52
+BAR_M cells paired 96, logs missing a line 0 []
+== ALL: 96 cells
+  noprog_s   base 57323.2 -> buried 54929.6 | diff -24.933 a cell, se 28.540, z -0.87, n 96 | buried sooner-or-identical 54 % (strictly 54 %)
+  all_in_s   base 9760.1 -> buried 9693.7 | diff -0.692 a cell, se 3.488, z -0.20, n 96 | buried sooner-or-identical 65 % (strictly 45 %)
+  never_in   base 25.0 -> buried 23.0 | diff -0.021 a cell, se 0.036, z -0.58, n 96 | buried sooner-or-identical 95 % (strictly 7 %)
+  contact_s  base 6588.5 -> buried 6248.9 | diff -3.537 a cell, se 4.622, z -0.77, n 96 | buried sooner-or-identical 64 % (strictly 64 %)
+  blocked_s  base 8820.1 -> buried 7931.0 | diff -9.261 a cell, se 12.072, z -0.77, n 96 | buried sooner-or-identical 54 % (strictly 53 %)
+  yielding_s base 14132.5 -> buried 13660.0 | diff -4.922 a cell, se 11.528, z -0.43, n 96 | buried sooner-or-identical 57 % (strictly 57 %)
+  slow_s     base 11386.1 -> buried 10075.7 | diff -13.650 a cell, se 6.951, z -1.96, n 96 | buried sooner-or-identical 65 % (strictly 65 %)
+== TOUCHED (swaps > 0): 96 cells
+  noprog_s   base 57323.2 -> buried 54929.6 | diff -24.933 a cell, se 28.540, z -0.87, n 96 | buried sooner-or-identical 54 % (strictly 54 %)
+  all_in_s   base 9760.1 -> buried 9693.7 | diff -0.692 a cell, se 3.488, z -0.20, n 96 | buried sooner-or-identical 65 % (strictly 45 %)
+  never_in   base 25.0 -> buried 23.0 | diff -0.021 a cell, se 0.036, z -0.58, n 96 | buried sooner-or-identical 95 % (strictly 7 %)
+  contact_s  base 6588.5 -> buried 6248.9 | diff -3.537 a cell, se 4.622, z -0.77, n 96 | buried sooner-or-identical 64 % (strictly 64 %)
+  blocked_s  base 8820.1 -> buried 7931.0 | diff -9.261 a cell, se 12.072, z -0.77, n 96 | buried sooner-or-identical 54 % (strictly 53 %)
+  yielding_s base 14132.5 -> buried 13660.0 | diff -4.922 a cell, se 11.528, z -0.43, n 96 | buried sooner-or-identical 57 % (strictly 57 %)
+  slow_s     base 11386.1 -> buried 10075.7 | diff -13.650 a cell, se 6.951, z -1.96, n 96 | buried sooner-or-identical 65 % (strictly 65 %)
+  map crossing  noprog_s base 25225.2 -> buried 24417.3 | diff -33.662 a cell, se 64.289, z -0.52, n 24 | buried sooner-or-identical 54 % (strictly 54 %)
+  map locks     noprog_s base 9657.5 -> buried 8868.8 | diff -32.861 a cell, se 38.081, z -0.86, n 24 | buried sooner-or-identical 62 % (strictly 62 %)
+  map sumps     noprog_s base 14786.0 -> buried 14978.5 | diff +8.021 a cell, se 86.039, z +0.09, n 24 | buried sooner-or-identical 33 % (strictly 33 %)
+  map terminus  noprog_s base 7654.5 -> buried 6665.0 | diff -41.229 a cell, se 20.166, z -2.04, n 24 | buried sooner-or-identical 67 % (strictly 67 %)
+UNTOUCHED cells identical in every line: 0 of 0
+== build/engage/authority/barm-base: 6 runs (0 errors)
+== build/engage/authority/barm-buried: 6 runs (0 errors)
+G8 seed 12443 identical
+G8 seed 12444 identical
+G8 seed 12445 identical
+G8 seed 12446 identical
+G8 seed 12447 identical
+G8 seed 12448 identical
+>> remote: make manoeuvre-bar-m-series BARM_SEEDS=12401 12402 12403 12404 12405 12406 12407 12408 12409 12410 12411 12412 12413 12414 12415 12416 12417 12418 12419 12420 12421 12422 12423 12424 BARM_HEADINGS=crew BARM_JOBS=6 exite
+
+[exited with code 0]
