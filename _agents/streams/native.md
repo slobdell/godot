@@ -53,3 +53,18 @@ Nothing at launch.
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**REPORT (2026-10-31 ~13:30 PDT) — N2 built and proven equal; N1 answered for orders' O1; N3 probe started.**
+**Plan (order, one-line reasons):** N1 answered as bars arrive (interrupts); N2 contact_prototypes in C++ (smallest foundation, a
+pure table); N3 the rematch carry-over (a one-file probe first, so it no longer needs another test's history to reproduce); N4 the
+laptop fog read (lock-held laptop time, one read at a time); N5 the layout's bake timing (moves every spawn: sim-baseline for the
+orchestrator); N6 waits on his `inp` recording; stretch the laptop fps read at the cost cap last (it prices N2-N4 together).
+- **N2 contact_prototypes in C++ (4c037bebf, 771635051):** `native/src/contacts_native.cpp`, seam `NativeContacts`
+  (`game/ai/native/native_contacts.gd`), the GDScript loop moved verbatim into `AiTickCache._contact_table` (the reference);
+  `BrainSwitches.native_contacts` OFF until priced. EQUAL: test_native_contacts 402 tables / 1837 contacts (518 remembered, 405
+  reloading, 571 suppressed; green champion, rust a6 so both variant branches run) 0 mismatches (builder3, 4c037bebf); his four
+  round-46 replays under TANK_NATIVE_CONTACTS_VERIFY=1 (builder3, 771635051): Crossing 2000+, Locks 1500+, Sumps 2000+, Parade 2000+
+  tables, 0 mismatches. check's native-verify-scenarios verifies contacts from now on.
+- **N1:** orders' O1 (27cda7b28, follow station by heading of travel) needs NO twin: the follow goal is `Orders.goal_of` /
+  `goal_position`, GDScript on every path (decide_native only proposes FOLLOW; no C++ reads a follow's slot). Its stamp entry
+  `follow_travel` is in its commit (lesson 354). Manoeuvre's Bar B and engage's Bar E11: nothing filed yet.

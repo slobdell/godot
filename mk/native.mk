@@ -220,11 +220,13 @@ native-sizing: import ## The controller band at N a side with leaders: execute v
 # controller band charged per arm) on his Sumps, 25 v 25 and 50 v 50 with leaders both sides, NATIVE_PRICE_RUNS runs
 # each, pinned (NATIVE_PRICE_CPUS=0-3 on builder0), one plain run per workload for the hash. NATIVE_PRICE_SWITCH=native_nav
 # NATIVE_PRICE_SIZES="his 25 50" NATIVE_PRICE_RUNS=3 NATIVE_PRICE_TIME=120 (his Sumps keeps ai-ab-match's 180 s).
+# Round 48 (N2): NATIVE_PRICE_COSTCAP=on makes "his" the cost cap (gangs v syndicate at the garage money, 3500 points; PROF_ARENA=crossing:
+# Crossing), NATIVE_PRICE_HIS_SECS its length.
 native-price: import ## The price of a native switch: BRAINS_AB on his Sumps / 25 v 25 / 50 v 50 with leaders, n runs pinned, hashes equal -> build/native-price/
 	@mkdir -p $(BUILD_DIR)/native-price $(BUILD_DIR)/perf-armies && rm -f $(BUILD_DIR)/native-price/*.log
 	@for size in $(or $(NATIVE_PRICE_SIZES),his 25 50); do [ $$size = his ] || $(PYTHON) tools/perf_armies.py size $$size $(BUILD_DIR)/perf-armies; done
 	@sw=$(or $(NATIVE_PRICE_SWITCH),native); for size in $(or $(NATIVE_PRICE_SIZES),his 25 50); do \
-		if [ $$size = his ]; then army="--green-faction=law --rust-faction=condemned --budget=4600"; secs=180; \
+		if [ $$size = his ]; then army="$(if $(filter on,$(NATIVE_PRICE_COSTCAP)),--green-faction=gangs --rust-faction=syndicate --budget=3500,--green-faction=law --rust-faction=condemned --budget=4600)"; secs=$(or $(NATIVE_PRICE_HIS_SECS),180); \
 		else army="--green-doctrine=res://$(BUILD_DIR)/perf-armies/green_$$size.json --rust-doctrine=res://$(BUILD_DIR)/perf-armies/rust_$$size.json --budget=100000"; secs=$(or $(NATIVE_PRICE_TIME),120); fi; \
 		for i in $$(seq 0 $(or $(NATIVE_PRICE_RUNS),3)); do \
 			if [ $$i = 0 ]; then ab=""; tag=plain; else ab="--brains-ab-run=$$sw"; tag=ab$$i; fi; \
