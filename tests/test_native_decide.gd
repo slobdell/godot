@@ -61,7 +61,7 @@ func _mutate(s: Dictionary, current: Dictionary, n: int, rng: RandomNumberGenera
 				for c: Dictionary in contacts:
 					c["visible"] = true
 				m["order"] = {"verb": "attack_move", "target": first_name if rng.randf() < 0.85 else "",
-						"goal": here + Vector3(20.0, 0.0, -10.0), "target_alive": true}
+						"goal": here + Vector3(20.0, 0.0, -10.0), "target_alive": true, "his_side": rng.randf() < 0.75}
 				if rng.randf() < 0.9:
 					m["element"] = {"task": "attack" if rng.randf() < 0.8 else "move"}
 				else:
