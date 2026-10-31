@@ -108,6 +108,8 @@ func test_gunnery_apply_is_the_live_gdscript() -> void:
 	var engaged := 0
 	var synthetic := 0
 	var types := {}
+	var pot_fired := 0
+	var pot_was: Variant = (Gunnery as Object).get("POT_SHOT")
 	for frame in 420:
 		await wait_physics_frames(1)
 		var enemies_of := [[], []]
@@ -130,19 +132,35 @@ func test_gunnery_apply_is_the_live_gdscript() -> void:
 					gunnery.watch_point = tank.global_position + Vector3(rng.randf_range(-30.0, 30.0), 0.0, 20.0)
 				synthetic += 1
 			types[String(ctl.weapon_order["type"])] = int(types.get(String(ctl.weapon_order["type"]), 0)) + 1
+			# Round 47 (engage E3): Gunnery.POT_SHOT both ways where the build has it (absent = no-op here).
+			var has_pot := (Gunnery as Object).get("POT_SHOT") != null
+			if has_pot:
+				(Gunnery as Object).set("POT_SHOT", rng.randf() < 0.6)
+			var pots_before: int = int((Gunnery as Object).get("pot_shots")) if has_pot else 0
 			var aim_at := gunnery.held_aim_point()
 			var start := _capture(gunnery)
 			var live_cmd := TankCommand.new(0.0, 0.0, aim_at)
 			gunnery.apply(live_cmd, seconds)
 			var live := _capture(gunnery)
+			var live_pots: int = int((Gunnery as Object).get("pot_shots")) - pots_before if has_pot else 0
+			pot_fired += live_pots
 			_restore(gunnery, start)
+			if has_pot:
+				(Gunnery as Object).set("pot_shots", pots_before)
 			var native_cmd := TankCommand.new(0.0, 0.0, aim_at)
 			NativeBridge.impl.gun_apply(gunnery, native_cmd, seconds, false)
 			var native := _capture(gunnery)
+			if has_pot:
+				live["s:pot_shots"] = live_pots
+				native["s:pot_shots"] = int((Gunnery as Object).get("pot_shots")) - pots_before
+				(Gunnery as Object).set("pot_shots", pots_before)
 			_restore(gunnery, start)
 			var owned_cmd := TankCommand.new(0.0, 0.0, aim_at)
 			NativeBridge.impl.gun_apply(gunnery, owned_cmd, seconds, true)
 			var owned := _capture(gunnery)
+			if has_pot:
+				owned["s:pot_shots"] = int((Gunnery as Object).get("pot_shots")) - pots_before
+				(Gunnery as Object).set("pot_shots", pots_before)
 			_restore(gunnery, start)
 			ctl.weapon_order = kept_order
 			gunnery.watch_point = kept_watch
@@ -161,6 +179,10 @@ func test_gunnery_apply_is_the_live_gdscript() -> void:
 				if first == "":
 					first = "OWNED frame %d %s: command live %s owned %s; %s" % [frame, tank.name, _command(live_cmd),
 							_command(owned_cmd), owned_differ]
+	if pot_was != null:
+		(Gunnery as Object).set("POT_SHOT", pot_was)
+		print("native gun: %d pot shots fired (E3)" % pot_fired)
+		assert_true(pot_fired >= 5, "E3's pot shot was exercised (%d fired)" % pot_fired)
 	print("native gun: %d applies (%d synthetic orders, by type %s), %d fired, %d engaged, %d mismatches live members, %d owned state"
 			% [applied, synthetic, types, fired, engaged, mismatches, owned_mismatches])
 	assert_eq(mismatches + owned_mismatches, 0, "the native gun is the live GDScript gun: %s" % first)
