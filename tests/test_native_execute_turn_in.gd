@@ -5,6 +5,8 @@ extends ExecuteTwinCase
 ## (tests/test_manoeuvre_orbit.gd's stop case): a gang_scout brain circled at 15 m by a syn_scout firing at will. Every
 ## tick the scout's execute runs from one snapshot: the live GDScript, then the native call on the live members and on
 ## the C++-owned state. A hand-back must write nothing; an answer must be the live command and state.
+## R47.52 (granted to engage): the stage runs with Outranged off. The syn_scout outranges the gang_scout, and E10 would close
+## it instead of holding the stop this stage exists to test.
 
 const ORBIT_R := 15.0
 const LEAD_DEG := 40.0
@@ -34,6 +36,8 @@ func test_a_wheeled_fixed_gun_at_stop_is_handed_back_under_the_turn_in() -> void
 		print("turn-in: off on this tree, the hand-back is not exercised")
 		return
 	MoverState.world_reset()
+	var was_out := Outranged.ON
+	Outranged.ON = false
 	assert_true(NativeGun.configure() and NativeDrive.configure(), "the native drive and gun take the live constants")
 	var s := AiScenario.create(self, 14)
 	s.game_match.set_meta("player_team", Match.Team.GREEN)
@@ -117,6 +121,7 @@ func test_a_wheeled_fixed_gun_at_stop_is_handed_back_under_the_turn_in() -> void
 	print("native execute (turn-in stop): %d native, %d handed back, %d mismatches; %d stop ticks, %d live stop turn-ins" % [
 			native, handed_back, mismatches, stops, live_turn_ins])
 	s.dispose()
+	Outranged.ON = was_out
 	assert_eq(mismatches, 0, "the native execute is the live compute_command under the turn-in: %s" % first)
 	assert_true(int(counts.get("turn_in_stop", 0)) >= MIN_TURN_IN_STOPS,
 			"the stage hands a turn-in stop back (%d)" % int(counts.get("turn_in_stop", 0)))
