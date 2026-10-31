@@ -58,6 +58,7 @@ const DIRECTIONS := {
 	"train_b": ["train", "_train_cattle", false],
 	"train_c": ["train", "_train_pods", false],
 	"built_train": ["train", "_built_train", false],
+	"built_rail_close": ["train", "_rail", false],  # the same rail without the car: the car's own GPU cost is the difference
 }
 
 var camera := Camera3D.new()
@@ -630,7 +631,7 @@ func _trim_box(root: Node3D, size: Vector3, center: Vector3, band: Vector2, tint
 
 
 ## The built rail the trains ride: pillars every 10 m along x at z = -4, decks on top (trim look).
-func _rail(root: Node3D) -> void:
+func _rail(root: Node3D, _open := false) -> void:
 	MapkitYard.look = "trim"
 	for i in 9:
 		_slot(root, "monorail", Vector3(-40.0 + 10.0 * i, 0.0, RAIL_Z), 90.0)

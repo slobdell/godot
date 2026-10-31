@@ -53,3 +53,16 @@ func test_the_trim_look_wears_the_sheet_and_plain_does_not() -> void:
 	for uv in uvs:
 		in_bands = in_bands and uv.y >= -0.001 and uv.y <= 1.001
 	assert_true(uvs.size() > 0 and in_bands, "every vertex maps into the sheet (v in 0..1)")
+
+
+## C47.10: the trim monorail is a preset knob (plain under the laptop preset); the other trim pieces are not.
+func test_the_monorail_trim_is_a_laptop_preset_knob() -> void:
+	var was := MapkitYard.look
+	MapkitYard.look = "trim"
+	var on_laptop := RenderLevers.preset() == "laptop"
+	assert_eq(MapkitYard.look_of("monorail"), "plain" if on_laptop else "trim", "the monorail: plain on the laptop preset only")
+	assert_eq(MapkitYard.look_of("hedgehog"), "trim", "traps keep the trim everywhere")
+	assert_eq(MapkitYard.look_of("pipeline"), "trim", "pipes keep the trim everywhere")
+	MapkitYard.look = "plain"
+	assert_eq(MapkitYard.look_of("monorail"), "plain", "--kit-look=plain is plain everywhere")
+	MapkitYard.look = was

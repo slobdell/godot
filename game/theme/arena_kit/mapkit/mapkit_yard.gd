@@ -38,6 +38,20 @@ const CRANE_YELLOW := Color(0.62, 0.48, 0.1)
 ## monorail, pipes, crane; the trial page's db, R47.38), so it ships ON; `--kit-look=plain` is the escape. Read when a
 ## kind's mesh is first built.
 static var look := "plain" if OS.get_cmdline_user_args().has("--kit-look=plain") else "trim"
+## C47.10 (the laptop is the test bed): kinds whose trim look is a HARDWARE-PRESET knob -- plain under the laptop render
+## preset. The trim monorail measured +1.4 / +1.5 ms GPU over the empty floor on his UHD 620 (laptop preset, his pose, 120
+## frames, 470301cc7 and 386cdf267) where the plain one read at the floor; traps, pipes and the crane read within the floor's
+## own spread in trim, so they keep it everywhere.
+const LAPTOP_PLAIN := ["monorail", "monorail_beam"]
+## The look the mesh being built wears (mesh_of sets it for the kind in hand).
+static var _building := "trim"
+
+
+## The look `kind` wears here: `look`, except the LAPTOP_PLAIN kinds under the laptop render preset.
+static func look_of(kind: String) -> String:
+	if look == "trim" and kind in LAPTOP_PLAIN and RenderLevers.preset() == "laptop":
+		return "plain"
+	return look
 ## The trim sheet's bands (v ranges, top to bottom; assets/props/trim/trim_sheet.ptex): a box face or prism maps into one.
 const PLATE := Vector2(0.0, 0.40)
 const HAZARD := Vector2(0.40, 0.55)
@@ -127,7 +141,9 @@ func flush() -> void:
 
 
 static func mesh_of(kind: String) -> ArrayMesh:
-	var key := kind + "/" + look
+	var worn := look_of(kind)
+	var key := kind + "/" + worn
+	_building = worn
 	if not _meshes.has(key):
 		_meshes[key] = _build(kind)
 	return _meshes[key]
@@ -152,12 +168,12 @@ static func _build(kind: String) -> ArrayMesh:
 
 
 ## Surface 0 lit (`albedo`), surface 1 neon (`glow`): the two SurfaceTools committed into one mesh.
-## With `look` "trim" the body wears the trim sheet tinted `trim_tint` instead of the flat colour.
+## With the look being built "trim" the body wears the trim sheet tinted `trim_tint` instead of the flat colour.
 static func two_surfaces(body: SurfaceTool, albedo: Color, roughness: float, metallic: float, glow: SurfaceTool, glow_color: Color,
 		trim_tint := Color.WHITE) -> ArrayMesh:
 	body.generate_normals()
 	glow.generate_normals()
-	if look == "trim":
+	if _building == "trim":
 		body.generate_tangents()
 		body.set_material(trim_material(trim_tint))
 	else:
