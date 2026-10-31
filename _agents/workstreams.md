@@ -304,6 +304,10 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   ~3.5x amplifier); hiding the fog sheet and its shader saves nothing (+0.11 ms). Candidates (orders' laptop HUD profile): radar.* ~0.5
   ms, cam.vision + vision_call ~0.46, vis.* ~0.19, edge_markers ~0.10, ctl.fog 0.035 (orders'). Method: longer windows (8 s x 3 cycles),
   then each reader cached / batched / in C++, output-identical; ctl.fog goes to orders if it matters.
+  **AMENDED (native's correction):** none of the three granted readers reads the field per frame (radar draws its texture only when
+  `drawn` changes; the vision callable is RtsControls' and reads intel, not the field; edge markers have no reference). The ~2.1 ms is the
+  field's own picture work as the frame sees it (texture.update's GL upload on UHD 620, FogViewers.apply) or n 2 noise. **Dropped for this
+  round** (~2.5 ms a frame attributable): native goes to R47.27 (b).
 
 ## Bars (round 47)
 
