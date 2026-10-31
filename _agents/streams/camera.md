@@ -87,6 +87,21 @@ guard runs an arm, 0 lost; verdict `references/round47/camera/bark-verdict-build
 | **G8 rear ambush first shot -> on screen (never = 20)** | 7.08 s (14 episodes, 4 never) | 8.56 s (11, 4 never) | **FAIL** |
 | G8 all lanes; retreat | 6.73; 6.33 s | 5.91; 6.04 s | PASS |
 
+**SHIPPED ON (R47.29, his "Ship it ON"): 2c60ccd93 merged into main.**
+
+**K5 his acceptance read (the shipped code e4a614eab, builder3, `make camera-replay CAMK_HAND=model|rest|busy`; main's camera =
+`--camera-select-pan=off`; R47.8's caveat: the replays leave his matches, both arms replay the same match):**
+
+| Recording | his own rows (1 Hz) | > 30 m off, main -> FIX: hand model / rest / busy | far pick framed, median s (max), FIX: model / rest / busy | never, main -> FIX (model) |
+|---|---|---|---|---|
+| Parade | 42.0 % | 26.4 -> **6.2** / 41.9 -> **10.0** / 20.8 -> **6.6** | 0.33 (0.63) / 0.30 (0.63) / 0.35 (0.63) | 7 -> 1 |
+| Crossing | 12.6 % | 13.4 -> **4.5** / 29.5 -> **9.7** / 13.9 -> **4.5** | 0.35 (0.73) / 0.30 (0.73) / 0.35 (0.73) | 3 -> 2 |
+| Sumps | 16.7 % | 13.9 -> **4.3** / 14.9 -> **4.6** / 13.5 -> **4.1** | 0.37 (0.83) / 0.40 (1.27) / 0.37 (0.83) | 6 -> 0 |
+| Locks | 23.5 % | 26.8 -> **4.7** / 27.1 -> **5.0** / 20.2 -> **4.7** | 0.47 (0.53) / 0.47 (0.53) / 0.45 (0.53) | 4 -> 0 |
+
+The finding holds under every hand: main's camera is worst with a resting hand (it holds for his aim), the fix is the same under
+all three. Logs: `~/camera-r47/k5-{model,rest,busy}.log` (laptop).
+
 **In his terms.** ON: when he picks a squad by its key, the camera sets off for it at once and is on it in under a second (main:
 5 s on average, and a quarter of far picks never reached). The cost is the squad he LEAVES: G2 and G3 come entirely from the split
 workload, the one built to flip between squads 140 m apart (ATTACK: none on screen 8.9 -> 7.1 s, hits off screen ~1.3 -> 1.6 %).
