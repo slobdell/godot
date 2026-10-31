@@ -1235,6 +1235,13 @@ var short_halt_seconds := 0.0
 var short_halt_cooldown := 0.0
 ## R47.44 (engage, the E3 ship): the cooldown running follows a halt that ended with no round fired (the shot dropped).
 var short_halt_unfired := false
+## `--halt-cancel=old` (R47.44's escape, so a replay of a match played before it runs its own build): an unfired halt's
+## cooldown lets the long round leave rolling again.
+static var HALT_CANCEL_OLD := _halt_cancel_flag()
+
+
+static func _halt_cancel_flag() -> bool:
+	return OS.get_cmdline_user_args().has("--halt-cancel=old")
 
 
 ## R2: the chance a round from this crew at `distance` (m) hits a hull-sized target, moving at `moving` (0..1).
@@ -1280,7 +1287,7 @@ func _short_halt(cmd: TankCommand, drive_cmd: TankCommand, delta: float) -> void
 	if short_halt_cooldown > 0.0:
 		# R47.44: the cooldown lets an ordered move drive on. After a halt that fired, rounds may go rolling. After one whose
 		# shot dropped (nothing fired), a round worth the halt waits for the next one instead of leaving on the move.
-		if short_halt_unfired and short_halt_worth(distance, moving) and not ShortHalt.plain_player_move(self):
+		if short_halt_unfired and not HALT_CANCEL_OLD and short_halt_worth(distance, moving) and not ShortHalt.plain_player_move(self):
 			cmd.fire = false
 		return
 	if short_halt_worth(distance, moving) and not ShortHalt.plain_player_move(self):  # R37.2 (b): he said drive
