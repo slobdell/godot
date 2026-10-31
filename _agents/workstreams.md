@@ -296,6 +296,15 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   rule does not reach them, C47.9). Evidence `streams/references/round47/manoeuvre/barm-builder3-1aa41aeaf/README.md` (stream/manoeuvre).
   The sim-baseline may move with buried ON: the orchestrator adopts it twice if so.
 
+- **R47.34 The fog's laptop cost is the per-frame GDScript READERS of the field, not the field, its upload or its shader; GRANT native
+  `game/ui/radar.gd`, `game/ui/edge_markers.gd` and camera's vision reader in `game/camera/**` (camera's session has ended) for their
+  per-frame field reads; hold the C++ ray walk.** Native's laptop read (lock, UHD 620, his Crossing seed 101, cost-cap code pair/native-fogread
+  a854eb0ac, measurement-only `--sim-off=visfield_draw`, in-run layer cycling 2 x 4 s, n 2 a layer, ~34 vehicles, frame 79-83 ms, 2.3-2.6
+  ticks a frame): no field saves 9.29 ms a frame, but directly only 2.11 ms of UI / process a frame + 0.17 ms a tick (the rest is the
+  ~3.5x amplifier); hiding the fog sheet and its shader saves nothing (+0.11 ms). Candidates (orders' laptop HUD profile): radar.* ~0.5
+  ms, cam.vision + vision_call ~0.46, vis.* ~0.19, edge_markers ~0.10, ctl.fog 0.035 (orders'). Method: longer windows (8 s x 3 cycles),
+  then each reader cached / batched / in C++, output-identical; ctl.fog goes to orders if it matters.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
