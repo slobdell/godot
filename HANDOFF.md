@@ -4,9 +4,55 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-31 ~03:50 PDT — **ROUND 47 RUNNING OVERNIGHT (the lead asleep; the orchestrator decides; its /loop runs).** **Main 2adbd3ac8 GREEN builder3** (`make check exited 0`, 3622 / 0; the sim-baseline adopted for E3 snap shots ON). ON in his game: camera select-pan, E7 press-on, buried stations, holdyield, battery screen, the recipient cue, the money cap, the group click (`all`), snap shots, native place / esit / matchups, the trim sheet. Finished (worktrees removed, FINAL REPORTs in their briefs on main): route, camera, manoeuvre, mapkit, orders. Live: engage (E10 outranged: Bar E10 filed, frozen d8d4979ca checking), native (86d8ee035 checking, then ends), spotter (batch 2 page https://claude.ai/artifact/JWq9fmZ11eVbx68HoUofA9). Rulings R47.1-R47.50; lessons 353-354 new. Night shift on 2adbd3ac8. builder0 DOWN since ~17:35. Laptop disk 85 %. Main is unpushed (he pushes)._
+_Last updated: 2026-10-31 ~05:40 PDT — **ROUND 47 IS CLOSED (overnight, the lead asleep). NEXT: he plays the shipped game (box below), judges spotter's batch 2, then a fresh orchestrator prepares round 48 from *▶ NEXT: ROUND 48*.** Main df9aacc1a + close docs; its full check is queued on builder3 (log `~/orch-r47/main-check-df9aacc1a.log`): **read its `>> remote: make check exited <N>` line before trusting main** (last confirmed GREEN: 25f2608f8, 3622 / 0). Worktrees: main only. builder0 DOWN since 2026-10-30 ~17:35. Laptop disk 82 %. Main is unpushed (he pushes)._
 
-## ▶ ROUND 47 AS PREPARED (2026-10-30 evening) — read this first
+## 🏁 ROUND 47 IS CLOSED (2026-10-31 ~05:40 PDT, overnight) — read this first
+
+Seven streams + spotter (added mid-round, his ask), all Opus. Rulings R47.1-R47.52 and Bars in `workstreams.md` *Round 47*; briefs and
+FINAL REPORTs in `streams/archive/round47/`; lessons 353 (read the default before calling it ON) and 354 (an ON sim rule needs its replay
+stamp entry in the same merge). Last main checks: 25f2608f8 GREEN (3622 / 0); df9aacc1a (= + engage's E10 + the sim-baseline adopted for it)
+queued at the close: read its result first.
+
+| His ask (2026-10-30 playtest) | What he gets in his default game | Escape |
+|---|---|---|
+| Crews stuck on buildings (Locks burner) | a station buried in a building follows the squad's track (Bar M PASS) | `--traffic-off=buried` |
+| Hurt IFV drove away from his attack (Locks) | his direct attack beats RETREAT (E7) | `--press-on=off` |
+| His held crew pushed toward the enemy | a held crew never gives way toward the enemy (Bar H PASS) | `--traffic-off=holdyield` |
+| His side barely fires / pot shots (Crossing) | snap shots: first round ~0.8 v 1.6 s, accuracy 79 -> 73 % (his yes) + the short-halt fix | `--pot-shot=off`, `--halt-cancel=old` |
+| Outranged gangs routed across the bridge | outranged crews close by cover (under his attack) or break line of sight; retreats head for the squad (E10; his Crossing case: lancers killed 0 -> 4) | `--outranged=off` |
+| Group click splits squads far apart (repeat ask) | 2-3 squads finish side by side ("columns at the end"; Crossing 14 v 39 m; Sumps / yard rear tanks wait a few s) | `--group-merged=off` |
+| Camera lag / not tracking | a new selection pans at once; far off-centre 7 v 12 % (his yes) | `--camera-select-pan=off` |
+| Order went to the wrong squad (Sumps) | every input recorded (`inp` rows); the receiving squad's rings pulse | — |
+| Laptop armies at half strength | both sides 1000 credits, capped by cost (his words); ~10-12 fps as gangs on the laptop | `--army-cap=count` |
+| Artillery screened onto the front | a SCREEN order to artillery = support by fire | `--battery-screen=off` |
+| Map kit | trim sheet ON (monorail plain on the laptop preset), steam screens (desktop high), pipes / crane, his Meshy monorail car; doors + announcer (candidate `terminus_doors`); candidates `parade_traps`, `parade_rail`, `crossing_screens` (Bar P: safe, fights unchanged) | `--kit-look=plain` |
+
+**Also:** native C++ ON for place / esit / matchups; doors and the sight class in C++; the replay stamp carries every round-47 rule; the
+yield-cycle (sliver) test PENDING (R47.47). **Spotter:** batch 1 30/30 "dumb" -> five classes (`streams/references/round47/spotter/
+batch1-classes.md`); the night shift on builder3 (`make spotter-night-status` / `-stop`; morning `~/spotter-night/<date>/SUMMARY.md`,
+`make spotter-night-pull`); after each green main: `make spotter-night-push SHA=<hash>`.
+
+**What he can playtest:** `make skirmish ARENA=crossing` as gangs v syndicate (the outranged fix, snap shots, even armies);
+`make skirmish ARENA=terminus_doors` (doors: a timed gamble on the side streets); select 2-3 squads and click one spot (side by side).
+
+## ▶ NEXT: ROUND 48 — prepare it from here (written at round 47's close)
+
+**For him first (player terms):** judge spotter's batch 2, https://claude.ai/artifact/JWq9fmZ11eVbx68HoUofA9 (80 clips, 10 hidden controls),
+and playtest the boxes above. **Starting items (from the FINAL REPORTs):**
+1. **Manoeuvre:** Sumps Alpha_5 (his move blocked 10 s by his parked battery; a new class); spotter classes B (give-way loops, 9) and C
+   (stuck on terrain / no_path forever, 5); watchdog v2 (trip only off-island, a per-crew cap; Bar W's trace R47.43); the sliver test's
+   20/20 jitter bar (R47.47); the doors' overstay consumer ON once doors reach a dealt map.
+2. **Engage:** E10's reverse half (its own bar); E10 cover use on the close; E8 his post tighter (with R47.43's overstay post).
+3. **Orders:** the follower swinging with its leader's nose (class D, FOLLOW); the Sumps / yard stall in the group click; Crossing /
+   Terminus where the ground refuses the files.
+4. **Native:** contact_prototypes in C++; same-process physics carry-over; the laptop fog readers' ~2 ms; the army layout's bake timing
+   (R47.18); replay cause 2 once his recordings carry `inp` rows.
+5. **Spotter:** batch 2's precision by band and the controls' base rate; S6 when ~100 / 100 labels; re-run batches after fixes ship.
+6. **Map kit:** what would make the pieces change fights (Bar P); doors on a dealt map if he likes `terminus_doors`; camera's overpass
+   deck cutaway (camera's spec in its archived brief).
+**Builds:** builder3 default; builder0 down (power / network check); seeds from 13217.
+
+## (DONE) ▶ ROUND 47 AS PREPARED (2026-10-30 evening) — read this first
 
 **Goal: his units look smart in his default game.** Split, ownership, contracts C47.1-C47.11, rulings R47.1-R47.4 and seeds in
 `workstreams.md` *Round 47*; briefs in `_agents/streams/`. His prep answers (`game_design.md` *His answers at round 47's prep*): **seven

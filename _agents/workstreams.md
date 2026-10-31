@@ -1,8 +1,8 @@
 # Workstreams: the current round
 
-> **ROUND 47 PREPARED 2026-10-30 evening (seven streams, all Opus: his call).** Round 46 CLOSED 2026-10-30 (main 7eec72b37 GREEN builder3 3517/0; shipped ON: V1 veto, L1c lane move, shortfwd, holdway native-only, then the camera planner R46.37).
+> **ROUND 47 CLOSED 2026-10-31 ~05:40 PDT (seven streams + spotter, all Opus; briefs in `streams/archive/round47/`).** Round 46 CLOSED 2026-10-30 (main 7eec72b37 GREEN builder3 3517/0; shipped ON: V1 veto, L1c lane move, shortfwd, holdway native-only, then the camera planner R46.37).
 
-## Round 47: seven streams (prepared 2026-10-30 evening; briefs in `streams/`)
+## Round 47: seven streams + spotter (prepared 2026-10-30 evening; CLOSED 2026-10-31; briefs in `streams/archive/round47/`)
 
 **Goal: his units look smart in his default game.** A crew that makes no progress notices and re-routes; a route takes the short way
 and his direct order takes at once; his side fires when it is close enough to hit; one group click puts squads together; the camera
