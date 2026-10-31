@@ -65,10 +65,14 @@ static func layer_of(slot: int) -> int:
 static func is_open(id: StringName, tick: int) -> bool:
 	if off:
 		return true
+	# A test's stand-in schedule wins (the game never sets one); otherwise mapkit's BlastDoors, once it is in the project, would
+	# shadow every stub and route's shut-door tests would read every door open (round 47 integration, main 79cea77e5 RED 3604/2).
+	if is_open_fn.is_valid():
+		return bool(is_open_fn.call(id, tick))
 	var blast := _blast_doors()
 	if blast != null and blast.has_method("is_open"):
 		return bool(blast.call("is_open", id, tick))
-	return bool(is_open_fn.call(id, tick)) if is_open_fn.is_valid() else true
+	return true
 
 
 ## Mapkit's BlastDoors script class, when it is in the project (looked up by name once, so this file parses without it).
