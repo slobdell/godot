@@ -69,6 +69,40 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### BAR M (FILED 2026-10-30 ~18:55, before any number; frozen tree = the first commit after 482f5e2b3 whose check is named green)
+
+**The change:** `--traffic-on=buried` (Movement.buried_station, the one call in TankBrain's transit block, R47.11): a squad's
+travelling station that the grounding moves > 4 m, or pulls back along the squad's way > 1 m while 6 m further on is > 1.5 m off the
+navmesh, is taken on the squad's own route 8 m on (never behind the crew), sticky while the grounding stays pinned. **Native:** no
+twin needed (C47.6 does not apply): the rule changes only the goal the brain hands the drive, in GDScript on every path (native's
+feed passes the raw station; the drive is untouched). Both arms run native ON. **Machine:** builder3, one series at a time.
+**Arms:** BASE (today) v BURIED; both `--noprogress-census` (game/ai/noprogress_census.gd: crew-seconds a crew with a move order
+is > 15 m from its final seat by ROUTE and has not got 1 m closer in the last second; wall-contact seconds; the rule's swaps).
+**Instrument's own check (lesson 350), done before filing:** his Locks match, replayed (his match to 0.1 m through tick 330, builder3):
+BASE reads Burners2_4 4.0 s, the worst crew on his side (green 30.5 crew-s, contact 3.5 s); the staged lab reads 3.47 s.
+**Workload W1 (deciding):** `make manoeuvre-bar-m` = orders' group-order probe (his group click: five full squads, one click across
+the map, 180 s window), maps terminus crossing locks sumps, headings `crew`, seeds **12401-12424** (96 cells an arm).
+**Workload W2 (both sides, C47.9):** route's `route-census` (CPU v CPU, 150 s) on **12425-12448** once it is on main, both arms,
+my census in each log; if it has not landed when W1 ends, W2 is dropped and said (no substitute after numbers).
+
+| Line | Statistic (tests/manoeuvre/barm_judge.py prints it) | Passes when |
+|---|---|---|
+| **D1 his case** | staged Locks (test_manoeuvre_noprogress), Burners2_4 no-progress s | BURIED <= 1.0 s (BASE 3.47) |
+| **D2 deciding** | W1 TOUCHED cells (swaps > 0): noprog_s paired diff | mean < 0 AND buried sooner-or-identical >= 50 % of touched cells |
+| D3 | W1 ALL cells: noprog_s paired diff | <= +1.645 se |
+| G1 | W1 all_in_s (a never-in squad = the window) | <= +1.645 se |
+| G2 | W1 never_in (squads never in) | BURIED total <= BASE total |
+| G3 | W1 contact_s (wall / prop contact) | <= +1.645 se |
+| G4 | W1 blocked_s and yielding_s, each | <= +1.645 se |
+| G5 | W1 UNTOUCHED cells identical in every line | all of them (by construction; a miss = a leak) |
+| G6 | staged Crossing guard (test_manoeuvre_noprogress), each Hunter | < 2.5 s |
+| G7 | W2 team 0 and team 1 noprog_s, each (CPU both sides) | <= +1.645 se |
+| G8 | engage's authority probe (`engage-authority-probe`, 6 seeds 12443-12448, both arms) | rows identical (a held crew has no transit) |
+| G9 | the frozen tree's check; SCRIPT ERROR in any series log | exited 0; none |
+
+Ties count as "sooner or identical" (lesson 344). If D1/D2 pass and a guard fails, I write what he would see ON v OFF and message the
+orchestrator the same hour (lesson 339). Amendments: at most two, before numbers (lesson 345).
+
 ### M1 REPORT (2026-10-30 ~18:10): the trace, cause per crew
 
 Tools: `tests/manoeuvre/stall_trace.gd` + `make manoeuvre-stall-trace` (his recording replayed as he played; one STALL_TRACE row a tick

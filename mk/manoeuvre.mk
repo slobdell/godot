@@ -564,3 +564,18 @@ NOPROGRESS_ARM ?=
 export NOPROGRESS_ARM
 BURIED_TRACE ?=
 export BURIED_TRACE
+
+# ---- round 47 (M3): Bar M -- his group order (orders' O1 probe: five squads, one click across the map) in two arms --------------
+# BASE v BURIED (`--traffic-on=buried`), both with the no-progress census (game/ai/noprogress_census.gd), on BARM_MAPS x BARM_SEEDS x
+# BARM_HEADINGS; then tests/manoeuvre/barm_judge.py pairs the cells (each line's own statistic printed, lesson 331).
+BARM_MAPS ?= terminus crossing locks sumps
+BARM_SEEDS ?= 7001 7002
+BARM_HEADINGS ?= crew formed
+BARM_ARMS ?= base:--noprogress-census buried:--traffic-on=buried,--noprogress-census
+BARM_DIR ?= $(BUILD_DIR)/manoeuvre/bar-m
+BARM_JOBS ?= 6
+.PHONY: manoeuvre-bar-m
+manoeuvre-bar-m: import ## manoeuvre Bar M (round 47): orders-group in BARM_ARMS on BARM_MAPS x BARM_SEEDS x BARM_HEADINGS (+ the census), then the paired judge -> $(BARM_DIR)/
+	@$(MAKE) --no-print-directory orders-group ORDERS_GROUP_MAPS="$(BARM_MAPS)" ORDERS_GROUP_SEEDS="$(BARM_SEEDS)" \
+		ORDERS_GROUP_HEADINGS="$(BARM_HEADINGS)" ORDERS_GROUP_ARMS="$(BARM_ARMS)" ORDERS_GROUP_DIR=$(BARM_DIR) ORDERS_GROUP_JOBS=$(BARM_JOBS)
+	$(PYTHON) tests/manoeuvre/barm_judge.py $(BARM_DIR)/logs | tee $(BARM_DIR)/judge.txt
