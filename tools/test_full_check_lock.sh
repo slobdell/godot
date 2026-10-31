@@ -181,5 +181,57 @@ wait "$holder_pid"
 out=$(FAKE_HOME=$tmp BUILDER_CHECKS_SSH=$tmp/ssh bash "$here/builder_checks.sh" 2>&1)
 [ "$(head -1 <<<"$out")" = 0 ] && ok "builder_checks: a free lock adds nothing (0)" || bad "builder_checks free" "$out"
 
+# 8. Round 48: waiters claim in ARRIVAL order (builder3: engage's check queued 12:30 waited while manoeuvre's, queued later, took
+# the claim). A holder holds until told; three waiters arrive 0.3 s apart; released, they run in the order they came, 3 rounds.
+export FULL_CHECK_LOCK_QUEUE_POLL=0.1
+fifo_ok=0; fifo_seen=""
+for round in 1 2 3; do
+	: > "$tmp/fifo"; rm -f "$tmp/release8"
+	bash "$fcl" run "$lock" bash -c "while [ ! -e '$tmp/release8' ]; do sleep 0.05; done" 2>/dev/null &
+	h8=$!
+	sleep 0.3
+	for w in 1 2 3; do
+		bash "$fcl" run "$lock" bash -c "echo $w >> '$tmp/fifo'; sleep 0.2" 2>/dev/null &
+		sleep 0.3
+	done
+	q=$(bash "$fcl" queue "$lock" | wc -l)
+	touch "$tmp/release8"; wait
+	order=$(tr '\n' ' ' < "$tmp/fifo")
+	fifo_seen+="round $round: $order(queue showed $q)"$'\n'
+	[ "$order" = "1 2 3 " ] && [ "$q" = 3 ] && fifo_ok=$((fifo_ok + 1))
+done
+[ "$fifo_ok" = 3 ] && ok "three waiters claim in arrival order, 3 rounds (queue lists all three)" || bad "arrival order" "$fifo_seen"
+
+# 9. A dead waiter's ticket (older than everyone, its pid gone) must not block the queue: it is skipped and deleted.
+bash -c 'exit 0' & dead=$!; wait "$dead"
+mkdir -p "$lock.queue"; : > "$lock.queue/$(printf '%020d' 1).$dead"
+rm -f "$tmp/release9"; : > "$tmp/ran9"
+bash "$fcl" run "$lock" bash -c "while [ ! -e '$tmp/release9' ]; do sleep 0.05; done" 2>/dev/null &
+h9=$!
+sleep 0.3
+bash "$fcl" run "$lock" bash -c "echo ran >> '$tmp/ran9'" 2>/dev/null &
+w9=$!
+sleep 0.3; touch "$tmp/release9"
+for _ in $(seq 1 50); do kill -0 "$w9" 2>/dev/null || break; sleep 0.1; done
+wait "$h9" 2>/dev/null
+[ "$(cat "$tmp/ran9")" = ran ] && [ ! -e "$lock.queue/$(printf '%020d' 1).$dead" ] \
+	&& ok "a dead waiter's ticket is skipped and deleted; the live waiter claims" || bad "dead ticket" "ran: $(cat "$tmp/ran9"); queue: $(ls "$lock.queue")"
+
+# 10. A waiter stopped by TERM while queued deletes its own ticket (and runs nothing).
+rm -f "$tmp/release10"; : > "$tmp/ran10"
+bash "$fcl" run "$lock" bash -c "while [ ! -e '$tmp/release10' ]; do sleep 0.05; done" 2>/dev/null &
+h10=$!
+sleep 0.3
+setsid bash "$fcl" run "$lock" bash -c "echo ran >> '$tmp/ran10'" 2>/dev/null &
+w10=$!
+sleep 0.5
+before=$(ls "$lock.queue" | wc -l)
+kill -TERM "$w10"; sleep 0.5
+after=$(ls "$lock.queue" | wc -l)
+touch "$tmp/release10"; wait "$h10" 2>/dev/null; sleep 0.3
+[ "$before" = 1 ] && [ "$after" = 0 ] && [ ! -s "$tmp/ran10" ] && ok "a TERMed waiter deletes its ticket and never runs" \
+	|| bad "TERMed waiter" "tickets before $before after $after; ran: $(cat "$tmp/ran10")"
+unset FULL_CHECK_LOCK_QUEUE_POLL
+
 printf '\nfull-check-lock: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
