@@ -4,6 +4,7 @@
 #include "place_native.h"
 
 #include <godot_cpp/variant/packed_vector2_array.hpp>
+#include <godot_cpp/variant/variant.hpp>
 
 #include <algorithm>
 #include <cmath>
