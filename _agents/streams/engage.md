@@ -81,7 +81,34 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
 
 | Item | State |
 |---|---|
-| E1 the trace | in progress: the full replay is NOT his match (below); his window rebuilt from the census (`make engage-e1-stage`) |
+| E1 the trace | **DONE (STAGED)**: cause named (E1 REPORT below); the full replay is not his match (native's N0) |
+| E2a the lay carry-over | next: tests first; native twin needed (C47.6) |
+| E2b a line under his attack | after E2a |
+| E7 his order beats RETREAT | after E2 (R47.6) |
+
+**E1 REPORT (2026-10-30 ~17:45; every number STAGED from his census, builder3, 8e51344cc = e306ce27f's game code + measurement-only
+traces, native on, lane rule ON = his default game, n = 1 a window; `make engage-e1-windows`, tables `tests/engage/gun_trace_table.py`):**
+- **Not the lane rule** (Crossing 2070, ON v `--lane-clear=off`: identical, 0.0 s held by a lane). The lane HOLD (a friend in the
+  line, fire held) is 23 % of his held time pooled, mostly Locks 390 (53 s); that is the friendly-fire discipline, not round 46's step.
+- **Six windows** (Crossing 600 + 2070, Locks 390, Sumps 450, Parade 330 + 2820, 14 s each), seconds a crew was LOADED with an
+  enemy inside its weapon range and did not fire:
+  | side | in range | firing + reload | held, loaded | no own line | acquiring the fix | friend in lane | unseen | other |
+  |---|---|---|---|---|---|---|---|---|
+  | his (gangs / condemned) | 552 s | 222 s | 330 s | 59 s (18 %) | **145 s (44 %)** | 74 s (23 %) | 11 s (3 %) | 41 s (12 %) |
+  | CPU (syndicate / law) | 698 s | 331 s | 367 s | 136 s (37 %) | 75 s (20 %) | 73 s (20 %) | 4 s (1 %) | 79 s (21 %) |
+- **The class count:** crews with an enemy inside their range > 2 s of a window that never fired in it: **his 23 of 58 (40 %)**,
+  the CPU's 12 of 62 (19 %).
+- **The acquisition fix is his side's biggest share.** Median fix needed 1.69 s (his) v 1.10 s (CPU): `Engagement.acquire_seconds`
+  scales with distance over the crew's OWN sight, and gang sight is short (War Rig 60 m); the syndicate's designators cut it to
+  0.25x (30 designations v 0 in his Crossing match). Both are the design (N5, X5). Suppression is not it (median 0). **The part
+  that is a fault: 58 of his 145 s (40 %) is a fix RESTARTED after the gun swapped targets** (`Lay.engage` zeroes progress on any
+  new name, even a squadmate of the old target on the same bearing); CPU 37 of 75 s. -> **E2a.**
+- **His Guns_3 (Crossing 2070):** no own line behind Container20_21 ~2 s after his attack, fix 1.4 s, fired 2208 (his hit on
+  Hunters_2 at 2212), reload 4 s, then his named target fell out of TEAM sight at 2327 with its own line clear at 37.9 m: the gun
+  swapped to Hunters_3 and restarted the fix (3 s under suppression 0.78). **No own line on that window** (56 % there) is a drive
+  into the cover: ENGAGE's "no line of fire: going round" / "it is running: after it" ask for the TARGET'S OWN SPOT; Guns_4 wedged
+  on Block_1 k-turning ~2.5 s, Guns_1 circling 48-58 m out. -> **E2b** (a nearby spot with a line); the stall itself is manoeuvre's.
+- Evidence: `~/overnight-engage/r47/` (laptop): e1s_logs/, e1w_logs/, gun_trace_table.py.
 
 **E1 so far (2026-10-30 ~17:15, builder3, native on, n = 1 an arm):**
 - **`--gun-trace=<crew|all>`** (gunnery.gd + two call sites in order_controller.gd, measurement only, default off): one GUN_TRACE
