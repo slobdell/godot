@@ -171,6 +171,14 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   2-3 squad click) is a DECIDING arm too, shipped ON if it passes the same lines (spread down AND all-in sooner-or-same; V1 veto and
   street lines as guards), because his ask is per click, not per selection method. A fail on all-in alone goes to him in player terms.
 
+- **R47.16 (2026-10-30 evening) The replay limit: his round-46 matches replay EXACT (0.0 m) through ~11 s; past it a replay is a
+  STAGED read, not his match.** Native N0 (stream/native 91f0d9900; builder3): cause 1 (ctrl+4 squadless) fixed, every Crossing crew
+  exact to tick 330; cause 2 open: crews part between ticks 330-360 on Crossing and Locks as the syndicate's first lasers land (13 s worst
+  crew 8.5 m, 15 s 20 m). Ruled out on builder3: headless v windowed v free frame rate, compiler / libm (gcc 13.3 / glibc 2.39 both),
+  wall-clock reads, frame-keyed caches. Untested: his laptop (ONE lock-held laptop replay allowed) and the laser / shield path across CPUs.
+  Next: the `rules` stamp carries every ON rule (Terminus parts at 12 s because only lane_clear is stamped). `native_place` defaults ON
+  only after its proof is EQUAL on every captured place() call.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
