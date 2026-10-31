@@ -75,3 +75,73 @@ Nothing at launch. His playtest notes on round 47's ships arrive through the orc
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### NOW (2026-10-31 ~13:00): M1 tracing
+
+**Plan (in order, smallest foundation first):** M1 trace every class-B clip at main df9aacc1a (new tool `make manoeuvre-yield-trace`:
+tests/manoeuvre/yield_trace.gd, one YTRACE row a tick for the named crews and the chain they wait on; `tests/manoeuvre/ytrace_table.py`
+prints it as state changes) -> M2 the give-way fix ON, tests first from M1's staged cases -> M3 Bar B filed before numbers -> M4 Sumps
+Alpha_5 -> M5 watchdog v2 / Bar C -> M6 sliver 20/20 -> stretch.
+
+**M1 cause 1 (crossing 13215, Green_Spears_1, main df9aacc1a, builder3 light, ticks 360-800): the in-place "hold" give-way that frees
+nobody.** Green_Spears_1 (HOLD, move `face`, parked) is asked by squadmate Green_Spears II_1 (HOLD verb, returning to its post on a
+move_to, rem 10.2 m, its route through Spears_1). No spot fits in the crowd (a 10-crew Hunters squad drives through the held Spears),
+so `_begin_yield` falls through to `_start_yield(.., here, .., "hold")`: give way IN PLACE. A parked crew holding in place changes
+nothing. The asker sits `blocked` by it, and `_negotiate` returns early on `mover.yield_to != ""`, so the asker never re-negotiates
+or treats it as parked. The hold runs YIELD_MAX_SECONDS 6 s, ends unfinished (yieldfit2: not recorded), and is asked again
+(yleft 14 -> 179 at tick 515). The loop broke at tick 675, only because Spears_1 got a new move of its own: 315+ ticks
+(10.5 s+) with neither crew moving.
+
+**M1 cause 2 (crossing 13215 80-100 s, gorge 13215 7-25 s, locks 13215 15-28 s): held crews play musical chairs.** A crew on HOLD at
+its post is asked by a passing or returning squadmate, gives way 5-10 m off its post (`spot(5,9)`, `spot(5,-9)`, `back(6)`), and
+HOLD's return (a move_to back to the post) drives it into the next held squadmate and asks THAT one off its post. Crossing:
+Wrenches_2 yields 2430, returns 2490, yields 2580, returns 2610; Wrenches_1 / Hunters_2 / Hunters_4 the same, ~10 s. Locks:
+Spears II_6 (HOLD) gives way to Spears_7, whose move ends 2.2 m from II_6's post, where it holds. II_6's return asks Spears_7 to
+`back(6)` toward II_6's own post, and both push for ~7 s (600-810). Gorge: both causes together. Spears II_2 holds in place 4 s for
+returning Spears_1, then the passing Wrenches push it off its post. Guns_4's HOLD return is blocked 10 s by Guns_1 / Guns_2, which
+give way (in place, and to spot(10,0)) to passing Hunters.
+
+**Not class B at main (the clip's moment does not reproduce at df9aacc1a):** sumps 13216 Rust_Battery_1 (arrived on HOLD, nobody
+near); crossing 13216 Rust_Hunters_4 (its order FLAPS move <-> hold every 3 ticks, 1761-1776, and Rust_Hunters_2's with it: an
+element / order flap, relayed to orders through the orchestrator).
+
+**The two causes, named:** (1) a PARKED crew gives way IN PLACE: it frees nobody, and the asker waits on it and is re-asked every
+6 s; (2) a crew on HOLD leaves its post to give way, and HOLD's return starts the next give-way. Mutual yield between two movers
+was NOT the cycle in any clip (the "a crew yielding to one that yields to it" guess).
+
+**M2 built (`heldpost`, ON, `--traffic-off=heldpost`):** Movement.ask: a crew on HOLD at its post (brain verb hold, move order not a
+move_to) refuses every ask but via `behind`, offering T7's pass lane when there is one. Movement._begin_yield: a parked crew
+(not under way) refuses instead of the in-place hold. Counters `heldpost_refusals`, `heldpost_holds_refused` (route_arms). The C++
+yield has no mirror yet, so while ON every ask runs the GDScript yield (Traffic._chain_native, native_yield off), as holdyield did
+before its twin. Replay stamp: MatchRecorder.rules() `heldpost` + tests/replay/rules.py (dated at the commit; re-date at the merge).
+Test: tests/test_manoeuvre_heldpost.gd.
+
+### Bar B (heldpost), FILED 2026-10-31 ~14:45 PDT, before any number on 13217-13264
+
+**What he picked it for:** squadmates stop backing and filling around each other; a held crew stays put (his class B, 64/64
+"dumb"). **Arms:** OFF = `--traffic-off=heldpost --brains-off=native_yield`; ON = the default tree (heldpost ON, which forces the
+GDScript yield). Both arms run the same GDScript yield, so the rule is the only difference. **Machine:** builder3, the full-check
+tree named before the series (C31.1). **Workload W1 (deciding):** 48 CPU-v-CPU showmatch fights an arm, the spotter feature probe
+(tests/spotter/feature_probe.gd, `--skirmish --demo-match --clean --mute`, 240 s, native), seed 13217+i on map i mod 6 (terminus,
+crossing, locks, sumps, gorge, parade), i = 0..47: 8 fights a map. Paired by fight; judge tests/manoeuvre/barb_judge.py
+(`--selftest` is the mutation check: every line fails on a staged pair built to break it, lesson 350).
+- **D1 (deciding): jam_s a fight** (crew-seconds `yielding`, or `blocked` by a friendly crew: class B's own signal): paired mean
+  ON-OFF < 0 and z <= -2.0.
+- **D2 (staged):** tests/test_manoeuvre_heldpost.gd green in the ship check (the held crew stays within 1.5 m of its post and the
+  asker gets past it within 30 s; an unheld parked crew moves exactly as OFF).
+- **G1 the asker's wait on a held crew** (the orchestrator's line: "refuse" can make an asker wait longer when the pass lane fails):
+  heldwait_s a fight (crew-seconds blocked by / yielding to a crew whose order that second is hold): paired mean <= +5 and z < +2.
+- **G2 friendly contacts:** friendtouch_s a fight (crew-seconds touching a friendly hull): z < +2.
+- **G3 wedged / no progress:** noprog_s a fight (on a move, > 15 m to go, < 1 m gained in 5 s): z < +2.
+- **G4 the fights:** crews alive at the end, each team: |paired mean| <= 0.5 and |z| < 2.
+- **G5 holdyield's post drift (Bar H D1):** engage's lane probe on 12328 with the ON arm: post drift <= 1.0 m.
+- **G6 the authority probe (a held crew never moves):** engage-authority-probe 13019-13024, both arms: hold / stop `moved_m`
+  ON <= OFF + 0.5 m on every seed, and `taken_back` unchanged.
+- **G7 orders' group-click probe:** Bar M's group probe (orders-group, 13001-13006 x terminus / crossing / locks / sumps, crew
+  heading), barm_judge: all_in_s z < +2 and never_in not up.
+- **G8 Bar M's buried line and the rest:** the ship tree's full check exits 0 (test_manoeuvre_noprogress and buried's tests in
+  it), no SCRIPT ERROR in either arm's logs.
+- **Read, never a bar (C48.2):** spotter's class B rate at the merged main v its df9aacc1a "before" (17.00 moments / 69.7 crew-s a
+  fight; held-crew share 11.63 / 34.3).
+- Amendments: at most two, before the numbers (lesson 345).
+

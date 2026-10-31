@@ -157,7 +157,9 @@ static func rules() -> Dictionary:
 			"press_on": TankBrain.PRESS_ON, "battery_screen": RtsControls.BATTERY_SCREEN, "buried": not Traffic.off("buried"),
 			"holdyield": not Traffic.off("holdyield"), "group_merged": SelectionSquads.merged_mode() == "all",
 			"pot_shot": Gunnery.POT_SHOT, "halt_cancel": not Tank.HALT_CANCEL_OLD,
-			"outranged": Outranged.ON}
+			"outranged": Outranged.ON,
+			# Round 48 (manoeuvre M2): a crew on HOLD never leaves its post to give way; a parked crew never gives way in place.
+			"heldpost": not Traffic.off("heldpost")}
 
 
 ## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the
