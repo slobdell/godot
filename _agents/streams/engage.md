@@ -67,3 +67,12 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**Plan (2026-10-30 evening, the brief's order):** E1 trace first (a measurement-only `--gun-trace` in gunnery.gd: every gate per
+run of the gun, plus `make engage-e1`, his Crossing replay in both lane arms on builder3) -> E2 the fix ON from what E1 names, a
+staged Guns_3 test first -> E3 the pot-shot design read (switch only if held-fix time is a real share) -> E4 Bar E filed before
+any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touch map's feed line.
+
+| Item | State |
+|---|---|
+| E1 the trace | running: `--gun-trace` + `make engage-e1` (commit 1 of the round) |
