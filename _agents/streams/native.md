@@ -66,7 +66,10 @@ carried two parse errors of my tests, its check cancelled).** After it: 7571efb2
   0.2-0.3 estimate. ON by the ruling (core components in C++).
 - **E7 Amendment 1 twin EQUAL:** pair/native-e7 aa339ab80 = engage 43ed628f1 + c2ddd51fb (o.his_side): 9 / 0, 7521 decisions / 0,
   27 pressed. Engage freezes on it.
-- **Backlog:** N1 twins as filed (E7 done; route's door mask when doors reach an arena); N2 DONE; N3 reader DONE (the Sumps re-read
+- **E3 pot-shot twin EQUAL (R47.20, his yes):** pair/native-e3 3c4a3b576 = engage d4a88c4a5 + e232fce63 (+ the test floor): gun_native's
+  apply_weapon runs engage's block after engage() (POT_SHOT read live off the Gunnery script; NativeGun + NativeExec owned share it).
+  builder3 light: 41 / 0; native gun 8223 applies, 4 pot shots fired, every off-aim compared, 0 mismatches.
+- **Backlog:** N1 twins as filed (E7 + E3 done; route's door mask when doors reach an arena); N2 DONE; N3 reader DONE (the Sumps re-read
   waits on orders' inp rows); N4 DONE; N5 lines_r47 started (no verdict yet); N6 builders healthy (builder3 29 %; builder0 down
   since ~17:35, the orchestrator told the lead).
 
