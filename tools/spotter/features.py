@@ -89,6 +89,10 @@ def derive(header, rows, fight=""):
         runs = {k: 0.0 for k in SIGNALS if k.endswith("_s")}
         prev = None
         for row in seq:
+            if row.get("order") == "follow" and not row.get("follow_live"):
+                # Fights probed before the follow fix carry the follow's frozen order goal, not the station it drives to:
+                # no progress / wrong way are unknowable there (orders, round 47), so those rows carry no goal.
+                row = {k: v for k, v in row.items() if k not in ("to_go", "gain_2", "gain_5", "route_off")}
             moving_order = row.get("move") == "move_to"
             speed = _f(row, "speed")
             still = abs(speed) < SLOW_MPS

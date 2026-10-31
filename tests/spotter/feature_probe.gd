@@ -234,8 +234,12 @@ func _sample(game_match: Match, tick: int) -> void:
 			row["touch_cause"] = String(mover.contact.cause) if mover.contact.touching else ""
 			row["touch_what"] = String(mover.contact.collider) if mover.contact.touching else ""
 			var goal := mover._goal
-			if brain != null and not brain.order.is_empty() and brain.order.get("goal") is Vector3:
+			# A follow's brain.order.goal is set once and never moved; the drive follows the live station (orders, round 47:
+			# batch 1's FOLLOW "goal getting farther" was this). So a follow reads the mover's own goal.
+			var following := brain != null and String(brain.order.get("verb", "")) == "follow"
+			if brain != null and not following and not brain.order.is_empty() and brain.order.get("goal") is Vector3:
 				goal = brain.order["goal"]
+			row["follow_live"] = following
 			var moving_order := String(ctl.move_order.get("type", "")) == "move_to"
 			if goal != Vector3.INF and moving_order:
 				var route := _route_m(tank, goal)
