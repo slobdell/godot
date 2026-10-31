@@ -1,5 +1,5 @@
 extends TestCase
-## Round 47 (engage E3, R47.17): POT SHOTS behind `--pot-shot` (default OFF, his call). A crew whose only held gate is the
+## Round 47 (engage E3, R47.17 / R47.37): POT SHOTS behind `--pot-shot` (default ON since his "Ship it ON"; `=off` is today's). A crew whose only held gate is the
 ## acquisition fix, laid at least POT_SHOT_AFTER_S, its target inside the band, snaps a round off with its aim off by what
 ## is left of the fix. Staged in the open: a gun on standing orders (fire at will) and a still target 30 m off (inside the band), on
 ## whichever execute path the build runs (native's NativeGun / NativeExec twin carries the pot shot, pair/native-e3).
@@ -8,7 +8,7 @@ const SHOOTER_AT := Vector3(-100.0, 0.0, 40.0)
 const TARGET_AT := Vector3(-100.0, 0.0, 10.0)  # 30 m: inside the scrap cannon's 36 m band
 
 func teardown() -> void:
-	Gunnery.POT_SHOT = false
+	Gunnery.POT_SHOT = Gunnery.POT_SHOT_DEFAULT
 	super.teardown()
 
 

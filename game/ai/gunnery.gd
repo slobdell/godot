@@ -62,8 +62,19 @@ var _seconds := 0.0
 ## range; the War Rig sees 60 m, so a target at 40 m costs it ~1.2 s of lay. With the switch on, a crew whose ONLY held gate is
 ## the fix, laid at least POT_SHOT_AFTER_S, its target inside the weapon's effective band, fires anyway with its aim off by up
 ## to POT_SHOT_WANDER_M at the target (the deterministic wander pattern), shrinking to nothing as the fix completes: the round
-## flies where the barrel points. `--pot-shot=on|off`; OFF (his call; the gun's C++ twin would carry it before any ON).
-static var POT_SHOT := OS.get_cmdline_user_args().has("--pot-shot=on")
+## flies where the barrel points. `--pot-shot=on|off`; ON since R47.37 (his "Ship it ON": Bar E3's D2 and every guard passed,
+## D1 missed by 0.006 s; native's NativeGun / NativeExec twin EQUAL). `--pot-shot=off` is today's gate.
+const POT_SHOT_DEFAULT := true
+static var POT_SHOT := _pot_shot_flag()
+
+
+static func _pot_shot_flag() -> bool:
+	for arg in OS.get_cmdline_user_args():
+		if String(arg) == "--pot-shot=on":
+			return true
+		if String(arg) == "--pot-shot=off":
+			return false
+	return POT_SHOT_DEFAULT
 const POT_SHOT_AFTER_S := 0.4
 const POT_SHOT_WANDER_M := 2.5
 ## Measurement only: pot shots taken since the process started.
@@ -247,11 +258,12 @@ func trace_after(cmd: TankCommand) -> void:
 				"aim_err": snappedf(rad_to_deg(Ballistics.aim_error(muzzle, tank.turret_forward(), enemy.global_position)), 0.1),
 				"need": snappedf(Engagement.acquire_seconds(tank, enemy, d), 0.01)}
 		if not los:
-			# What the eye ray hits (Perception's own ray, re-cast), and whether a ray from the muzzle would clear it.
+			# What the eye ray hits (Perception's own ray, re-cast), and whether a ray from the muzzle would clear it (a shell's
+			# path: WORLD_MASK, sight screens do not stop rounds).
 			var space := tank.get_world_3d().direct_space_state
 			var from := tank.global_position + Vector3.UP * Perception.EYE_HEIGHT
 			var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(from,
-					enemy.global_position + Vector3.UP * Perception.EYE_HEIGHT, Perception.WORLD_MASK))
+					enemy.global_position + Vector3.UP * Perception.EYE_HEIGHT, Perception.eye_mask()))  # C47.7: the eye's mask
 			if not hit.is_empty():
 				var collider: Object = hit.get("collider")
 				var at: Vector3 = hit["position"]
