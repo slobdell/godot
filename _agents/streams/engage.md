@@ -100,6 +100,38 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### FINAL REPORT (round 47, 2026-10-31 ~04:30 PDT; engage ends its session per the orchestrator)
+
+**Ship hash: 33aa37af2** (stream/engage). Builder3 (devia) check: `make check exited 2`, 3630 passed / 0 failed, scenarios
+54 / 0 / 3 pending in both ai-scenarios and native-verify. The ONLY red is sim-baseline, which moved on all 13 maps because E10
+changes both sides; the orchestrator adopts it. The first ON check (a5fc4aec9) was red on 3 tests. Two were authority holes:
+his element hold / ambush was moved, and a CPU move order's MOVE was replaced. Both were fixed at dd3c3e9ef. The third was a
+stage premise, test_native_execute_turn_in, pinned under R47.52. The branch head adds only this report (docs). Every earlier ship is merged: E7 (press-on ON), E3 (snap shots ON, with R47.44 and cp2's six-start bar)
+at c0b1a9f6e → main 8d51777cc.
+
+| Item | Final state |
+|---|---|
+| E1 trace | DONE (staged) |
+| E2 | DROPPED (R47.17): no effect from either switch |
+| E3 snap shots | SHIPPED ON (main 8d51777cc). R47.44's bounded halt-cancel and `--halt-cancel=old` (its replay escape) are in 33aa37af2 |
+| E6 army cost | DONE (report). Orders built it (R47.22) |
+| E7 his attack beats RETREAT | SHIPPED ON |
+| E9 friendly fire | CLOSED as measured, no code (R47.49): 2 one-hp grazes in 48 seeds, both stream-spread tails (builder3, f1148bbd5) |
+| E10 outranged | **SHIP ON (R47.51)** at 33aa37af2. Bar E10 failed as filed on D2's reverse half (0.57 x OFF v 0.5). D1 and every guard passed. His Crossing case: lancers killed 0 → 4, damage taken halved |
+| E8 his post, tighter | NOT STARTED (E3 / E9 / E10 took the night by the orchestrator's order). Round 48 |
+| Replay stamps (lesson 354) | halt_cancel + outranged in MatchRecorder.rules() / rules.py, with tests (a5fc4aec9, in 33aa37af2) |
+
+**Round 48, engage's list (in order):**
+1. **E10's reverse half**, with its own bar on fresh seeds. A hurt crew still backs up while choosing RETREAT when an enemy in
+   sight lays on it within 12 m of its goal (W2: 402.6 → 230.8 m, not ≤ 0.5 x). Also read the 9 of 48 probe seeds whose stage
+   doesn't stand (fix the stage draw, never the bar).
+2. **E10 cover use:** the closing move takes a cover spot only when the brain already has `s.cover`, and that list is built for
+   worn crews. Read whether a healthy outranged crew would close better through the cover query.
+3. **E8 his post, tighter** (as in the backlog above, with R47.43's overstay post).
+4. Spotter's other classes stay with their owners (B/C manoeuvre + route, D orders + route). Class D's Crossing support-by-fire
+   #22 creep under unseen fire is E10's shape: re-read it on the shipped tree.
+5. The railgun stage (one round kills a 57 hp IFV) is balance, not brains: a question for the lead, in player terms, if it shows up.
+
 **Plan (2026-10-30 evening, the brief's order):** E1 trace first (a measurement-only `--gun-trace` in gunnery.gd: every gate per
 run of the gun, plus `make engage-e1`, his Crossing replay in both lane arms on builder3) -> E2 the fix ON from what E1 names, a
 staged Guns_3 test first -> E3 the pot-shot design read (switch only if held-fix time is a real share) -> E4 Bar E filed before
