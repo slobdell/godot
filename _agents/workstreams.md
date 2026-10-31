@@ -88,7 +88,7 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 - **C47.10 The laptop is the test bed (memory).** Mapkit's pieces and camera's planner state their laptop cost (UHD 620, under the lock);
   an expensive look ships as a hardware-preset knob.
 - **C47.11 Seeds:** manoeuvre 12401-12496, route 12501-12596, engage 12601-12696, orders 12701-12796, camera 12801-12896, mapkit
-  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). **Extra blocks:** manoeuvre 13001-13024 (Bar H, R47.30); engage 13025-13120 (E9, R47.37). Next free: 13121.
+  12901-12996; native twins run on the owner's. Dev 7001-7012 (never a bar). **Extra blocks:** manoeuvre 13001-13024 (Bar H, R47.30); engage 13025-13120 (E9, R47.37); spotter 13121-13216 (R47.40). Next free: 13217.
 
 **Rulings at prep:**
 - **R47.1 (2026-10-30 evening, his pick) Seven streams this round, the map kit included.** He picked it knowing the laptop's RAM is short
@@ -341,6 +341,12 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   concepts -> 2-3 directions on a tap-to-approve page -> image-to-3D of his pick; every request in `assets/meshy_ledger.md`; production
   quality: memory *production quality over credits*; one asset, so the scope is his). The kit-built directions (A Night Line, B Cattle car,
   C Bucket pods) are dropped. The model rides the monorail beam as one prop; its laptop cost is read before it ships (C47.10).
+
+- **R47.40 (his ask, 2026-10-30 ~22:50) A NEW stream mid-round: spotter (finds the moments units look dumb; dev tooling only).** His words
+  and the plan: `game_design.md` *His ML question*; brief `streams/spotter.md`. Folder `godot-spotter` (offset 8), Opus. Owns
+  `tools/spotter/**`, `tests/spotter/**`, `mk/spotter.mk`, `references/spotter/**`; read-only on every census / recording; no game code.
+  builder3's light lane for fights, its GPU (RTX 5060 Ti 16 GB) for clips and later training; seeds 13121-13216. CPU opponents by ML:
+  not now (the standing ruling; the bottleneck is the CPU sim and missing behaviours we can write).
 
 ## Bars (round 47)
 
