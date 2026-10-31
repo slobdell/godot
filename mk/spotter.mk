@@ -55,7 +55,7 @@ SPOT_CRON := */5 * * * * $$HOME/spotter-night/bin/night.sh tick >> $$HOME/spotte
 
 .PHONY: spotter-night-install spotter-night-push spotter-night-status spotter-night-stop spotter-night-start spotter-night-uninstall spotter-night-pull
 spotter-night-install: ## spotter S0: install the night shift on SPOT_HOST (kit, runner, bare repo, cron every 5 min)
-	ssh -o BatchMode=yes $(SPOT_HOST) 'mkdir -p ~/spotter-night/bin ~/spotter-night/kit/mk ~/spotter-night/state'
+	ssh -o BatchMode=yes $(SPOT_HOST) 'mkdir -p ~/spotter-night/bin ~/spotter-night/kit/mk ~/spotter-night/kit/tools ~/spotter-night/kit/tests ~/spotter-night/state'
 	rsync -az --delete --exclude=__pycache__ tools/spotter/ $(SPOT_HOST):spotter-night/kit/tools/spotter/
 	rsync -az --delete --exclude=__pycache__ tests/spotter/ $(SPOT_HOST):spotter-night/kit/tests/spotter/
 	rsync -az mk/spotter.mk $(SPOT_HOST):spotter-night/kit/mk/spotter.mk
