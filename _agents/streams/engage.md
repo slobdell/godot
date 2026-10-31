@@ -75,4 +75,17 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
 
 | Item | State |
 |---|---|
-| E1 the trace | running: `--gun-trace` + `make engage-e1` (commit 1 of the round) |
+| E1 the trace | in progress: the full replay is NOT his match (below); his window rebuilt from the census (`make engage-e1-stage`) |
+
+**E1 so far (2026-10-30 ~17:15, builder3, native on, n = 1 an arm):**
+- **`--gun-trace=<crew|all>`** (gunnery.gd + two call sites in order_controller.gd, measurement only, default off): one GUN_TRACE
+  line per run of the gun, after it runs on whichever path (GDScript `Gunnery.apply`, `NativeGun`, or the whole C++ execute step
+  `NativeExec`; most of a brain crew's ticks are the last): weapon order, pick, lay, lane, loaded, fired, and for the order's
+  named target and the nearest enemy in reach their distance, team sight, own line of sight, aim error and acquisition time.
+  The lay/lane fields may be stale under NativeExec (not yet confirmed that it writes them back); the probed fields are live.
+- **The full replay is not his match** (`make engage-e1`, 8edebac1e = e306ce27f's code + the trace): `tests/replay/divergence.py
+  --crews=all --seconds=84` FAIL: Wrenches_1 4.3 m off at 1 s, every crew over 3 m by 19 s; Guns_3 dies before tick 1800 in the
+  replay (his: 2457). Identical in both lane arms (the same 6 hits on Rust at the same ticks) and with `--brains-off=native_gun`.
+  `REPLAY_SPAWN {"placed":0,"recorded":37}`. Reported to the orchestrator (native's harness); not engage's code.
+- **Hence E1b:** `make engage-e1-stage` stands every living unit at the census of tick 2070, forms the elements with their tasks,
+  plays his attack task (Guns on Rust_Hunters_2, tick 2093) and the CPU's later tasks at their ticks, both lane arms.
