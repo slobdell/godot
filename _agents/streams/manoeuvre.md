@@ -69,7 +69,132 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
-### NOW (2026-10-30 ~19:15) — where this stream is
+### FINAL REPORT (round 47, 2026-10-31 ~01:00): the stream's close
+
+**Shipped ON (both merged to main):**
+- **`buried`** (M2a, Bar M passed on every line). A squad's travelling station buried in a building follows the squad's own track.
+  His Locks fire truck (Burners2_4) goes from 1.5 s slow / still to 0.3 s in his own replay. Ship bbd8c1ba6 GREEN builder3 3537 / 0.
+- **`holdyield`** (M5a, Bar H passed). A crew holding his post never gives way toward the enemy or > 8 m off it. Seed 12328 post
+  drift 10.1 -> 0.0 m. Native twin merged. Ship **ead694538 GREEN builder3 3609 / 0, sim-baseline unmoved**; merged by the
+  orchestrator.
+
+**Built, OFF (named for merge once the tip is green):**
+- **`noprogress` watchdog** (M2b, Bar W FAILED D2: +24.6 crew-s a touched cell, z +0.81). Stays OFF. Crossing 12449 trace: the trips
+  are crews on the mesh whose SEAT is unreachable, re-planned every second (see REPORT below). Pathing.reroute's off-island body
+  (R47.25) is inert without it.
+- **`overstay`** (mapkit's request + R47.43). A crew parked in a closing blast doorway gives way off the slab. His post moves with
+  it, it keeps holding, and the door seals. One TankBrain line. Staged test 3 / 0 on doors_dev. OFF until doors reach a dealt arena.
+
+**Backlog state:**
+- M1 done.
+- M2 done: buried ON; the watchdog judged and failed.
+- M3 done: Bars M, W, H filed before their numbers and judged as filed.
+- M4 done: his Locks acceptance read.
+- M5: 12328 shipped (holdyield). The other M5 leftovers are not reached: holdway head-on, backout pose 10, the holdway web freeze.
+- Crossing Hunters under fire (M1): open, not reproduced without enemy fire.
+
+**Next round, in order (manoeuvre):**
+1. **Sumps Alpha_5 (his direct move blocked 10 s by his unordered, set-up battery Charlie_1; no go-round).** A new class, the
+   orchestrator's first item. Stage: Charlie_1 set up on a fire post at its tick-3060 pose (1.6 + 6.6 m, his census), Alpha_5 on his
+   move past it. Test: his crew is round the battery within N s. Read Movement.ask's `setup` refusal and why the asker's CP1a2 /
+   ORCA go-round did not happen.
+2. **Sumps Charlie_5 (terrain stall ~17 s on the screen march).** Stage Charlie at its tick-990 poses with the `screen` task, census
+   `noprog_s` per crew with buried ON, and read whether its seat was buried (Bar M's class) or off-island (Bar W's).
+3. **Watchdog v2.** Trip only when the CREW is off-island, never when the goal is unreachable from a crew on the mesh, plus a
+   per-crew trip cap. Re-judge on fresh seeds. Report unreachable seats to orders / brains instead.
+4. **The M5 leftovers:** holdway head-on, backout pose 10, the holdway web freeze. Also his HOLD verb's own goal in a doorway (FYI to
+   engage, which owns the hold order).
+5. Tooling: barm_w2_judge.py counts buried swaps, not watchdog trips. Give it `--touched=watch` like barm_judge.
+
+**Last commit:** adcd31450 GREEN (builder3 full check, make check exited 0, 3612 passed, 0 failed). The FINAL REPORT is docs-only on top of it (2e271ce89 and this line).
+
+### REPORT (2026-10-30 ~23:55): Bars W and H read; holdyield ships ON; the watchdog stays OFF; overstay built (OFF)
+
+**Frozen tree 5a55ccf71** (code = 1cced49dc; everything after it is docs): builder3 check **exited 0**, 29 targets all passed,
+ALL JUDGED. No SCRIPT ERROR in either series log. Raw: `~/overnight-manoeuvre/r47/wh/` (laptop). Both series ran from that tree.
+
+**Bar H (holdyield) PASSES -> SHIPPED ON (R47.42).** Lane probe 13001-13024 + 12328, group probe 13001-13006 x 4 maps, authority
+13019-13024; BASE v HOLD, native yield in both arms (twin merged):
+- **D1 his case 12328:** post drift BASE 10.1 m -> HOLD **0.0 m** (<= 1.0). From its post the crew kills the gun (enemy hp 0.50 ->
+  0.00, shots 1 -> 2).
+- **D2:** every fresh post cell is identical in both arms. That is the filed "no case on fresh seeds" reading, said.
+- G1 / G2: identical in every line outside 12328. G3: group probe identical in 24 / 24 cells. G4: authority rows identical in 6 / 6.
+  G5: test_manoeuvre_noprogress green in the check. G6: check exited 0, no SCRIPT ERROR.
+- **Ship: ead694538** = main 8d37b9796 merged (native's four files taken from main: it carries the same twin as 54a7f91aa plus
+  route's drive_path_query) + `holdyield` out of DEFAULT_OFF (`--traffic-off=holdyield` the escape). **GREEN: builder3, 3609 passed / 0 failed,
+  `make check exited 0`, 29 targets, sim-baseline unmoved on all 13 maps** (`~/overnight-manoeuvre/r47/ship-h.out`).
+
+**Bar W (no-progress watchdog + off-island reroute) FAILS D2 -> `noprogress` STAYS OFF.** W1' 96 cells 12449-12472, W2' 24 fights
+12473-12496, BASE v WATCH:
+- **D1** (the CPU's staged sliver) passes, but **D2** on 54 touched cells (watch > 0): noprog_s **+24.6 crew-s a cell** (se 30.3,
+  z +0.81), 65 % sooner-or-identical. Mean > 0 = **FAIL**.
+- D3 all 96: +13.9 a cell (z +0.82), within bound. contact_s +3.4 (z +0.93). slow_s -20.0 (z -3.16). never_in 28 -> 25.
+  Untouched 42 / 42 identical. Per map noprog_s: crossing +58.5 a cell (n 24), locks +5.9, sumps -8.3, terminus -0.7.
+- W2' judge counts buried swaps (0 touched), not watchdog trips, so W2' has no touched line. It reads team 0 +2.6 (z +0.84) and
+  team 1 +8.6 (z +1.16) a fight, both within bound.
+- Pathing.reroute's off-island body (R47.25) stays on main, inert without the watchdog (its only caller).
+
+**Next round: why the watchdog's reroutes cost no-progress on Crossing (one traced cell).** Crossing 12449, the worst cell (+743
+crew-s: 773.5 -> 1516.5, 151 trips). Re-run on 6c815959d's parent ead694538 (builder3 light, `NOPROGRESS_WATCH_TRACE=on`). It
+reproduces the series cell exactly: 1516.5 crew-s, 151 trips. Trace: `build/light/build/manoeuvre/wtrace/`.
+- **All 157 WATCH trips are `blocked: no_path` with `reachable false`.** 145 of them are two crews: Alpha_1 71, Delta_4 74. It is not
+  the sliver case: **the crew's SEAT is off its island, not the crew.** Delta_4's seat (17.7, 3.2) is unreachable from where it
+  stands, (27.7-29.9, 7.5-9.4), 10.9-13.6 m away. It trips about once a second (the no_path window and cooldown, 1 s) from tick 870
+  to the end. Each reroute rewrites its path, and it rocks forward and back (thr +0.6 / -0.6) in place for 150 s. Alpha_1 trips first
+  at 9 m/s on its approach (to_go 96 m, path 37, unreachable) and from tick 3630 sits at (-30.7, -7.5), 13.8 m from an unreachable
+  seat, re-asked 1 s at a time.
+- The census's worst crew in this cell, Charlie_3 (138.5 crew-s), never tripped. So part of the cost is indirect (the rocking crews
+  in the way), and reading it needs a per-crew BASE v WATCH census row, not taken.
+- **Fix to try next round (not built):** trip only when the CREW is off-island (its own position not on the goal's island, the
+  staged case), never when the GOAL is unreachable from a crew on the mesh. An unreachable seat is the element's or the grounding's
+  problem: report it to orders / brains, don't keep re-planning. Plus a per-crew trip cap.
+
+**Mapkit's overstay consumer built (OFF: `--traffic-on=overstay`), 09d1a3376 + 6c815959d.** game/ai/door_overstay.gd listens to
+`ArenaDoors.live.door_event` (connected from a physics-frame poll that Movement._init installs). On `overstay` it starts a give-way
+(`_start_yield`) for the named crew to a spot straight off the slab along the door's normal, on the side it already stands on, and
+falls back to the other side. It uses the give-way's wheels and free-of-hulls checks. Counter `overstay_moves` in route_arms. Two
+build steps, said:
+- The hull give-way's spot table (`_begin_yield`) picked the crew's own spot, because its spots are offsets from a hull's line.
+- The navmesh outline sweep (`_yield_fits`) refused both ways, because the doorway is carved from the navmesh (C47.8).
+
+tests/test_manoeuvre_overstay.gd on doors_dev: 3 / 0 (builder3 light). The crew stands in the west doorway on HIS hold when the
+door shuts. OFF reproduces today: crew in the doorway, door held. ON: one give-way, off the slab 4.7 m within 4 s, the door never
+sealed on it.
+**R47.43 (the orchestrator's grant, ~00:05): his post moves with the crew.** One line in TankBrain._order_context
+(`_his_post_at = DoorOverstay.post_after(...)`). When the overstay give-way moves his held crew (`_his_post`, the post his
+finished stop or move leaves) off a door slab, his post becomes the give-way's spot, grounded (`SlotGround.standable_for`), on the
+crew's own side. Only a post on that slab moves. Behind `overstay` (OFF): with it off, `_posts` stays empty and the line returns
+the post unchanged.
+- The spot is CLEAR_M 5 m past the slab face. A held crew settles up to SLOT_TOLERANCE 4 m short (at 1.5 m it stopped 0.04 m off
+  the slab and the door stayed held), so it ends 1-5 m off, the grant's range.
+- **Test** (doors_dev, his stop in the west doorway): his crew ends **3.5 m off the slab, still holding** (post (-40, 10.65)), and
+  **the door seals**, never on it. OFF: in the doorway, door held. 3 / 0. The doors / authority / engage / noprogress /
+  native_holdyield / pathing_doors suites: 75 / 0 (builder3 light).
+- **Not covered, said:** his HOLD *verb* (a live order whose goal is in `order["goal"]`, not `_his_post_at`) still returns the crew
+  to the doorway. The grant names his post, and engage owns the hold order.
+
+### Spotter's two Sumps moments (R47.16 relay, 2026-10-31 ~00:30): classified from HIS census; a next-round note, not built
+
+His Sumps match 2026-10-30T15-53-39. The replay is NOT his match here: 40 m off by tick 900 (builder3 light, ead694538, `make
+manoeuvre-stall-trace`), so both moments are read from his own recorded census rows (one a second, every crew's pos / phase /
+blocked / order), never from the replay.
+- **Green_Alpha_5, 101-113 s (ticks 3060-3360): a NEW class for this stream, a parked friend that refuses.** On HIS direct move
+  (`src player`) it stops at (1.6, 23.9), `blocked: Green_Charlie_1`, for 10 s. Charlie_1 is his artillery, ARRIVED with no order of
+  its own, 6.6 m away. It does not give way until tick 3360 (then `yielding Green_Alpha_5`, and Alpha_5 drives at 3420). The likely
+  reading: a set-up battery refusing the ask (Movement.ask's round-30 `setup` rule: a hull set up on a fire post never gives way, and
+  the asker is meant to go round it, CP1a2 / ORCA). Here the asker did not go round, it waited. To stage: Charlie_1 set up on a fire
+  post at its tick-3060 pose and Alpha_5 asked past it. The test is "his crew goes round a set-up battery within N s". Owner:
+  traffic's go-round (this stream), with engage's fire-post rule as given.
+- **Green_Charlie_5, 33-57 s (ticks 990-1710): the no-progress class (Bars M / W), not a friend.** His artillery on its element's
+  march (Charlie's `screen` to (-1.2, 58.6), then a move). It sits within 1 m of (17.7, 53.5) for ~17 s. 14 of the 16 rows from tick
+  1200 read `blocked: terrain`; only 1260-1320 read `blocked: Green_Delta_3`, which was already `yielding Green_Charlie_5`. So it is
+  a terrain stall short of its seat, the class Bar M (`buried`, ON) and Bar W (watchdog, failed) target. The census holds no goal, so
+  whether its seat was buried or off-island needs a staged run (Charlie at its tick-990 poses with the screen task; the census
+  `noprog_s` per crew, buried ON as shipped).
+- Spotter's ranker: its #3 (his Locks Hunters_4 detour) is M1's case, found unprompted, which agrees with it working. Its
+  "blocked by a friendly" label for Charlie_5 is 2 rows of 16; it should read the majority cause.
+
+### NOW (2026-10-30 ~19:15) — where this stream is (superseded by the REPORT above)
 
 - **M1 done** (report below). **M2a `buried` built; Bar M's frozen tree 1aa41aeaf GREEN builder3 (3522 / 0, check exited 0).** From
   that check: **D1 PASS** (his staged Locks case, Burners2_4 0.0 s <= 1.0) and **G6 PASS** (Crossing guard 1.0 / 0 / 1.97 / 0 s < 2.5).
