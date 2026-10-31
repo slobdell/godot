@@ -588,3 +588,5 @@ manoeuvre-bar-m-series: native-fresh import ## manoeuvre Bar M: W1 (manoeuvre-ba
 	@$(MAKE) --no-print-directory engage-authority-probe AUTH_SEEDS="$(BARM_AUTH_SEEDS)" AUTH_ARM=on AUTH_JOBS=6 AUTH_PROBE_TAG=barm-base AUTH_PROBE_FLAGS=
 	@$(MAKE) --no-print-directory engage-authority-probe AUTH_SEEDS="$(BARM_AUTH_SEEDS)" AUTH_ARM=on AUTH_JOBS=6 AUTH_PROBE_TAG=barm-buried AUTH_PROBE_FLAGS=--traffic-on=buried
 	@for s in $(BARM_AUTH_SEEDS); do if cmp -s <(grep '^AUTHORITY_PROBE ' $(BUILD_DIR)/engage/authority/barm-base/$$s.log) <(grep '^AUTHORITY_PROBE ' $(BUILD_DIR)/engage/authority/barm-buried/$$s.log); then echo "G8 seed $$s identical"; else echo "G8 seed $$s DIFFERS"; fi; done
+NOPROGRESS_WATCH_TRACE ?=
+export NOPROGRESS_WATCH_TRACE

@@ -69,6 +69,24 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### NOW (2026-10-30 18:40) — where this stream is
+
+- **M1 done** (report below). **M2a built** (`buried`, 1aa41aeaf; Bar M filed + amendment 1, recorded by the orchestrator). Bar M's
+  frozen tree 1aa41aeaf is in builder3's full-check queue (five checks ahead of / beside it); the series (`make manoeuvre-bar-m-series`,
+  one sync) starts the moment it is green. 482f5e2b3's check: 3522 / 0 but `remote-guard-test` red on the census lint (buried_swaps
+  not on a series line, fixed in c85f828cf): not a tree I name.
+- **M2b, the watchdog, built (WIP, `--traffic-on=noprogress`, game/ai/noprogress_watch.gd):** a GDScript sampler outside the drive
+  (the native execute owns drive + unstick), asking route `Pathing.reroute(crew, &"noprogress")` when a driving / blocked crew makes no
+  progress for 3 s (never a yielding, street-held, planner-held, k-turning, escaping or short-halted crew; a crew he HOLDs has no move
+  order). **Decision:** the brief's "first unstick / backout" is not called from it: those live in the native execute and already fire
+  on their own triggers; the watchdog's job is the case they cannot see (a creep below the press threshold, a path that ends short).
+  Its first staged case, the CPU's Rust_Hunters on his Crossing recording (`test_cpu_ambush_squad_does_not_sit_in_a_yield_cycle`,
+  RED): two crews on a navmesh sliver between the block (-34, -33) and Container40_9 whose path ends 2.9 m away, `blocked: no_path`
+  15 s. The watchdog trips 7 times and asks; route's stub re-plans from the sliver and gets the same path. **Request to route (via the
+  orchestrator, 18:25):** a `noprogress` reroute plans from the nearest point of the goal's connected region. The test goes green when
+  that lands.
+- **Requests to other streams:** route (above). **Questions for the lead:** none.
+
 ### BAR M (FILED 2026-10-30 ~18:55, before any number; frozen tree = the first commit after 482f5e2b3 whose check is named green)
 
 **AMENDMENT 1 (2026-10-30 ~19:40, before any bar number; the lines are unchanged, the rule's trigger is corrected):** a pipeline dry
