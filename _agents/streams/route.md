@@ -65,6 +65,41 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+### FINAL REPORT (2026-10-30 ~18:00) — route, round 47
+
+**Merge:** R0 on main (ba53581f7 GREEN builder3, 3520/0, 28 ALL JUDGED). R2a+R5 = **d847b77fd** (check queued on builder3 at
+the report: see the line below when it lands). The tip (6113a19ec) adds tests/route census + docs only on top; R47.12 ruling: main's
+batch check covers it. **Shared-file edits:** none outside route's paths. `mk/route.mk` is new and picked up by the Makefile's
+`include mk/*.mk` (no Makefile line needed). `game/ai/pathing.gd` (route's) gains `reroute`, `reroutes` and the door mask.
+
+**Done (numbers: builder3, native built unless said):**
+- **R0** `Pathing.reroute(crew, reason) -> bool` (C47.3): forces the next drive to re-plan from where it stands (GDScript and
+  native-owned alike); `tests/test_pathing_reroute.gd` 2/0.
+- **R1** the cause of his Locks detour: **not the route.** Hunters_4 at 15/220 hull: TankBrain RETREAT (0.99 under orders, threats
+  in sight) beat his attack and drove it ~40 m north in 20 m `withdraw_point` hops, then retook it after "straight at it" (staged
+  from his census, `make route-trace STAGE_TICK=1190`). The route was <= 1.036x the shortest to its goal over 298 re-plans; from his
+  click spot the shortest is 135 m over the west bridge. -> engage E7 (R47.12).
+- **R2a** crossing guards `tests/test_pathing_crossings.gd` 7/0 (his Locks click, Crossing both bridges, Gorge both necks, Terminus).
+- **R2b DROPPED by measure** (R47.12): along his attack the lock stayed the shortest crossing (ticks 1860-2220).
+- **R3** moot (nothing ships for his case). **R5** doors, GDScript side: `RouteDoors` + Pathing's mask, `tests/test_pathing_doors.gd`
+  5/0, no door = byte-identical. **R6** census: THE ROUTE p50 1.000 / max 1.057 over 2661 legs, both sides (above).
+
+**Tools left for the next one:** `make route-trace RECORDING= ROUTE_CREWS= [STAGE_TICK=]` (a crew's every route, his match or
+staged from his census when the replay diverges), `make route-census` (route v drive, any seeds/flags; `ROUTE_CENSUS_FLAGS=` for an
+A/B), `tests/route/test_route_locks_probe.gd` (navmesh lengths on his Locks).
+
+**Waiting / not done:**
+- **R4** his Locks acceptance read: after engage's E7 (his order beats RETREAT). Then `make route-trace RECORDING=...locks.jsonl
+  ROUTE_CREWS=Green_Hunters_4 STAGE_TICK=1190 REPLAY_SECONDS=40`: driven metres and time to range for Hunters_4.
+- **Doors in his default game:** native's mask at three sites (request below, relayed); then drop Pathing's
+  `not RouteDoors.any()` step-aside (pathing.gd lines 15, 37). Mapkit: link layer = `RouteDoors.register`'s return;
+  `BlastDoors.is_open(id, tick)` static.
+
+**Questions for the lead:** none. **Known issues:** the plain replay of his Locks match leaves his match at ~12 s (native's
+divergence table FAIL), hence the staged trace. **What to playtest:** nothing new from route in his default game: the route already
+took the short way; what he saw needs engage's E7.
+
+
 ### 2026-10-30 ~17:55 — R6 DONE: the route takes the short way, both sides; the excess metres are the drive's
 
 **R6 (R47.12), `make route-census`, builder3, native on, 48 CPU v CPU fights on fresh 12501-12548 (150 s, six dealt maps, factions
