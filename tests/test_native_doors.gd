@@ -18,8 +18,17 @@ func teardown() -> void:
 	RouteDoors.is_open_fn = Callable()
 
 
+## By key NAME (the native drive keys its reading with StringNames, Pathing.query with Strings; the mover reads both alike).
 func _same(a: Dictionary, b: Dictionary) -> bool:
-	return var_to_bytes(a) == var_to_bytes(b)
+	if a.size() != b.size():
+		return false
+	for key in a:
+		if not b.has(StringName(key)) and not b.has(String(key)):
+			return false
+		var other: Variant = b[StringName(key)] if b.has(StringName(key)) else b[String(key)]
+		if var_to_bytes(a[key]) != var_to_bytes(other):
+			return false
+	return true
 
 
 func test_the_native_drive_query_is_pathing_query_with_and_without_a_door() -> void:

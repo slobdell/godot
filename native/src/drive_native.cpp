@@ -1804,18 +1804,24 @@ struct Drive {
 	// own query, the closest point Pathing.closest_point's (native_nav: N2a's index). The result is the same Dictionary,
 	// keys in the same order: the mover keeps it as `_route_reading`. ----
 	// Round 47 (C47.8, route R5): RouteDoors.any() (game/ai/planner/route_doors.gd; absent on a tree without doors = false).
+	// The script is looked up by its ObjectID, never held: a static Ref outlives the engine at exit (a segfault on unload).
 	static bool route_doors_any() {
-		static Ref<Script> doors;
+		static ObjectID doors_id;
 		static bool tried = false;
-		if (!tried) {
+		static const String path("res://game/ai/planner/route_doors.gd");
+		Object *doors = doors_id.is_valid() ? ObjectDB::get_instance(doors_id) : nullptr;
+		if (doors == nullptr && !tried) {
 			tried = true;
-			static const String path("res://game/ai/planner/route_doors.gd");
 			if (ResourceLoader::get_singleton()->exists(path)) {
-				doors = ResourceLoader::get_singleton()->load(path);
+				const Ref<Resource> loaded = ResourceLoader::get_singleton()->load(path);
+				if (loaded.is_valid()) {
+					doors_id = ObjectID(loaded->get_instance_id());
+					doors = loaded.ptr();
+				}
 			}
 		}
 		static const StringName any("any");
-		return doors.is_valid() && (bool)doors->call(any);
+		return doors != nullptr && (bool)doors->call(any);
 	}
 
 	Dictionary path_query(const Vector3 &from, const Vector3 &to) {
