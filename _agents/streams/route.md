@@ -64,3 +64,79 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+### 2026-10-30 ~17:50 — R2a DONE, R2b DROPPED (R47.12), R5 GDScript side DONE, R6 census running
+
+- **Rulings (orchestrator, R47.12, main 6ac03cd4b):** RETREAT beating his order = engage's E7 (and `withdraw_point` stays engage's);
+  R2b dropped (measured first, see below); R3 moot (nothing ships from route for his case); R4 waits on E7; R6 new (the census).
+- **R2a DONE** (`tests/test_pathing_crossings.gd`, 7/0 builder3): his Locks click 135.2 m over the west bridge (lock 144.6 forced);
+  Crossing west 152.3 / east 153.5 over their own bridges (other 365 m); Gorge west 74.4 / east 86.7 over the near neck; Terminus
+  south approach -> plaza 86.0 m = straight. A future cost term that sends a crew round the long way fails these first.
+- **R2b DROPPED, by measure:** along his attack (his census, ticks 1710-2220; `tests/route/test_route_locks_probe.gd`
+  ROUTE_ALONG, builder3) the lock was the shortest crossing at every tick but 1800-1830 (177.0 west v 181.2 lock, while the
+  retreat still had it parked on the north quay); from 1860 on the lock led by 4-125 m though Lances_3 drifted 35 m west.
+  Movement already re-plans a sliding goal at 10 % of the remaining route (GOAL_TUBE_SHARE).
+- **R5 (doors) GDScript side DONE at 5972e1369** (`game/ai/planner/route_doors.gd` RouteDoors, `Pathing.find_path`/`query`):
+  a door = ONE NavigationLink3D across its wall on its OWN nav layer bit, `RouteDoors.register(id, position)` returns it
+  (`1 << (8 + slot)`, 24 slots); Pathing asks with layer 1 | the doors open NOW and at the crew's estimated arrival (straight
+  metres to the door / (top speed x 0.85)); open/shut from mapkit's `BlastDoors.is_open(id, tick)` once that class exists (looked
+  up by name), else `RouteDoors.is_open_fn` (empty = open). `--route-off=doors`: every door reads open. No door registered: mask 1
+  (= the engine default), the native path as before (byte-identical). `tests/test_pathing_doors.gd` 5/0 (an unregistered link
+  is never used; open = through it, the short way; shut = round by a crossing; shuts before arrival = not taken; off = taken);
+  `FILTER=pathing` 16/0 with native built, builder3.
+  - **For mapkit:** put each door's link on exactly the layer `RouteDoors.register(&"<id>", <link middle>)` returns (no other bit);
+    `BlastDoors.is_open(id: StringName, tick: int) -> bool` static, the id as registered.
+- **R6 census:** `make route-census` (tests/route/route_census.gd + route_census_table.py): CPU v CPU fights, both sides, every
+  crew leg's driven metres v the navmesh's shortest start to end, by side / class / arena / brain option, with goal-moved and
+  re-plans per leg. Dev read (7001-7002, 60 s, builder3, 4d09268e8^): 105 travel legs >= 15 m, p50 1.077, excess 11-12 % of
+  metres. The 48-fight run on 12501-12548 (150 s, all six dealt maps): running.
+
+**Requests to other streams:**
+- **native (C47.6, for doors to work in his default game):** the native route queries ignore doors (they ask layer 1 only, so
+  they never route through a door, the safe default). Three sites need the mask: `pathing_native.cpp` `pathing_query` (line ~97)
+  and `pathing_find_path` (~117), and `drive_native.cpp` `path_query` (~1817, the native drive's own re-plan). Smallest change:
+  when `RouteDoors.doors` is non-empty, pass `navigation_layers = RouteDoors.mask(node, from)` (a GDScript call, only on door
+  arenas; else 1, today's). Then Pathing can drop its `not RouteDoors.any()` step-aside (pathing.gd lines 15 and 37). Twin:
+  `tests/test_pathing_doors.gd`'s five poses with native on must give the same routes.
+
+### 2026-10-30 ~17:30 — R0 GREEN (merge: ba53581f7), R1 DONE: the cause is the brain's RETREAT, not the route
+
+- **R0 GREEN: ba53581f7**, builder3, `make check exited 0`, 3520 passed / 0 failed, 28 targets ALL JUDGED. Orchestrator told.
+- **R1 cause (his Locks, Hunters_4), builder3, code ba53581f7 + the trace tooling, staged from his census:**
+  1. **The 40 m drive north and the ~5 s dither at (-75,95) are `TankBrain` RETREAT**, not a route: hull 15/220 (7 %) under the
+     under-orders critical line with threats in sight, so RETREAT 0.99 beats his attack; `withdraw_point` hands the crew a move_to
+     ~20 m from the threats, over and over (north, away from his target). The element's slot for it stayed right (south, by
+     Lances_3) the whole time. Alone, "after it alone: straight at it" took for ~1 s, then RETREAT took it back (staged tick 668).
+     Brain scoring = engage's (C47.3); sent to the orchestrator as a request.
+  2. **The route takes the short way:** over 298 re-plans in three runs, the driven route was at most **1.036x** the navmesh shortest
+     to its goal. From his click spot (-82.7,62.3), shortest to Lances_3 = **135 m via the WEST bridge** (lock 145 m). From
+     (-77,95), where the retreat left it, west 176.6 v lock 181.4 (a near tie); it took the lock because Lances_3 stood at x ~ -10
+     then, and Lances_3 then drove 35 m west. (`tests/route/test_route_locks_probe.gd`, ROUTE_PROBE lines.)
+  - **Why staged:** the plain replay leaves his match at ~12 s (divergence.py FAIL, first crew over 3 m at s 20), so
+    `make route-trace ... STAGE_TICK=T` places every crew from his census row at T (hull, shield; missing = destroyed), re-issues
+    his standing orders and shifts later ones. What it shows is what the code does from his positions, not his match.
+- **R2 as written already holds** (route <= 1.3x shortest on every re-plan); proposed to the orchestrator: R2 = guard tests only
+  (his Locks geometry, Crossing/Gorge crossing choice, Terminus unchanged), then R5. Waiting on its ruling for whether a retreat's
+  direction under his order is route's or engage's.
+
+### 2026-10-30 ~17:00 — R0 done (check pending), R1 tracing
+
+**Plan (backlog order):** R0 seam -> R1 trace (`make route-trace`, new) -> R2 fix ON + `=off` -> R3 Bar R (filed before numbers,
+seeds 12501-12548) -> R4 his Locks read -> R5 doors (stub `BlastDoors.is_open` until mapkit's lands).
+
+**element_plan.gd functions route claims (C47 ownership line):** `_route_step` (the covered-route waypoint choice) and, through it,
+`game/tactics/covered_route.gd`'s `CoveredRoute.choose` (nobody else's brief names it; claimed here, orchestrator told). Anything in
+element.gd's transit route (`Element` ~1087-1304, nobody's) goes to the orchestrator as a request first.
+
+- **R0 DONE:** `Pathing.reroute(crew: Node, reason: StringName) -> bool` at **ba53581f7** (`game/ai/pathing.gd`): clears the mover's
+  `_path_goal` (the next `_next_waypoint` sees a goal it was never planned for = an event re-plan, GDScript and drive_native.cpp
+  alike), `_repath_left = 0`, `native_stale |= STALE_ALL`; counts `Pathing.reroutes[reason]`; false with no live mover.
+  `tests/test_pathing_reroute.gd` 2/0 (builder3, ba53581f7, `native test`, native built). Full check on ba53581f7: running.
+- **R1 tooling:** `make route-trace RECORDING= ROUTE_CREWS= [REPLAY_SECONDS=]` (`mk/route.mk`, `tests/route/route_replay.gd`, a subclass
+  of `tests/replay_orders.gd`, unchanged): ROUTE_TRACE rows on every change of a crew's order / drive goal / navmesh route / element
+  route, with the shortest drivable length to the same goal and to the target.
+- **Infrastructure note:** a fresh builder3 folder over the laptop's uplink crawled (219 of 804 MB in 22 min with seven streams
+  syncing). Seeded server-side from `~/tank_squad/godot` (7 s); then rsync sends only the diff.
+
+**Questions for the lead:** none yet. **Requests to other streams:** none yet.
+
