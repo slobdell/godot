@@ -1002,7 +1002,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	match key.keycode:
 		KEY_ESCAPE:
-			note_input("escape")
+			note_input("escape", true)
 			if not _attack_press.is_empty() and not bool(_attack_press["armed"]):
 				_clear_attack_press()  # a right drag on an enemy, cancelled; the selection stays
 			elif mode != "":
@@ -2906,6 +2906,7 @@ func set_formation(id: String) -> String:
 	for squad: Dictionary in found["squads"]:
 		_give_formation(squad, id)
 	_squads_changed()  # some picks only reach a group's record, which signals nothing
+	note_input("formation:%s" % id, true)  # C47.4 (native's N0): G, Shift+G and the picker re-task squads without a command
 	formation_changed.emit(id)
 	return ""
 
@@ -3476,6 +3477,7 @@ func arm(p_mode: String) -> void:
 	mode = p_mode
 	_press_at = null
 	_boxing = false
+	note_input("arm:%s" % p_mode, true)  # C47.4: the order mode he armed (his Sumps screen: was E pressed, and when?)
 
 
 func disarm() -> void:

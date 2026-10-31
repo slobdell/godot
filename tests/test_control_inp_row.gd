@@ -128,6 +128,22 @@ func test_saving_a_group_writes_a_row_and_a_same_recall_does_not() -> void:
 		assert_eq(rows[0]["sel_before"], rows[0]["sel_after"], "the selection as it was")
 
 
+## Native's N0 (his Crossing replay drifts from inputs with no row): arming an order mode and a formation pick are rows.
+func test_arming_a_mode_and_picking_a_formation_write_rows() -> void:
+	var f := await _fixture()
+	f.controls.recall_group(1)
+	_key(KEY_E)
+	await tree.process_frame
+	_key(KEY_ESCAPE)
+	await tree.process_frame
+	_key(KEY_G)
+	await tree.process_frame
+	var acts: Array = _rows("inp").map(func(r: Dictionary) -> String: return String(r["act"]))
+	assert_true(acts.has("arm:screen"), "E armed the screen: %s" % [acts])
+	assert_true(acts.has("escape"), "Escape disarmed: %s" % [acts])
+	assert_true(acts.any(func(a: String) -> bool: return a.begins_with("formation:")), "G picked a formation: %s" % [acts])
+
+
 func test_the_input_key_names_a_mouse_click() -> void:
 	var press := InputEventMouseButton.new()
 	press.button_index = MOUSE_BUTTON_LEFT
