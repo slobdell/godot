@@ -1,3 +1,5 @@
+> **ARCHIVED (round 47 closed 2026-10-31).** Final state of this brief; results in `workstreams.md` *Round 47* (R47.1-R47.52, Bars).
+
 # Stream: native (the game stays fast as rules ship; every ON rule has its C++ twin)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 339, 351), `_agents/judging.md`, `_agents/workstreams.md` **Round 47**

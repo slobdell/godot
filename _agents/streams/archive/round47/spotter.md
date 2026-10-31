@@ -1,3 +1,5 @@
+> **ARCHIVED (round 47 closed 2026-10-31).** Final state of this brief; results in `workstreams.md` *Round 47* (R47.1-R47.52, Bars).
+
 # Stream: spotter (find the moments where our units look dumb, so he doesn't have to play to find them)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 350, 352, 353), `_agents/workstreams.md` **Round 47** (C47.1-C47.11 and

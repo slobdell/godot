@@ -1,3 +1,5 @@
+> **ARCHIVED (round 47 closed 2026-10-31).** Final state of this brief; results in `workstreams.md` *Round 47* (R47.1-R47.52, Bars).
+
 # Stream: engage (his side fires when it is close enough to hit)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 339, 344, 345, 352), `_agents/judging.md`, `_agents/workstreams.md`

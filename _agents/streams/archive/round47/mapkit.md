@@ -1,3 +1,5 @@
+> **ARCHIVED (round 47 closed 2026-10-31).** Final state of this brief; results in `workstreams.md` *Round 47* (R47.1-R47.52, Bars).
+
 # Stream: mapkit (blast doors the announcer calls; then sight screens, overpass, tank traps)
 
 > Read `_agents/orchestration.md` (the worker contract; *Lead gates*), `_agents/workstreams.md` **Round 47** (C47.1-C47.11; C47.7, C47.8

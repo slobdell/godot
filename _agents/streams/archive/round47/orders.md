@@ -1,3 +1,5 @@
+> **ARCHIVED (round 47 closed 2026-10-31).** Final state of this brief; results in `workstreams.md` *Round 47* (R47.1-R47.52, Bars).
+
 # Stream: orders (one click puts his squads together; his click takes at once; the order goes to the squad he meant)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 339, 348, 350, 352), `_agents/judging.md`, `_agents/workstreams.md`

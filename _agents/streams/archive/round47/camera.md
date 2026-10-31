@@ -1,3 +1,5 @@
+> **ARCHIVED (round 47 closed 2026-10-31).** Final state of this brief; results in `workstreams.md` *Round 47* (R47.1-R47.52, Bars).
+
 # Stream: camera (a new selection pans at once; his squad stays near the middle of the screen)
 
 > Read `_agents/orchestration.md` (the worker contract; lessons 339, 345, 352), `_agents/workstreams.md` **Round 47** (C47.1-C47.11;

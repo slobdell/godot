@@ -12,13 +12,13 @@ stays on his selection and pans at once; an order reaches the squad he meant; an
 
 | Stream | Folder (offset) | Model | Brief | What he will notice | First item |
 |---|---|---|---|---|---|
-| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/manoeuvre.md](streams/manoeuvre.md) | no crew sits against a building or container; the rear IFV on a bridge drives on when the front ones die | M1 the no-progress trace on Locks Burners2_4 and Crossing Hunters_3/4 |
-| **route** | `godot-route` (1) | Opus | [streams/route.md](streams/route.md) | a crew takes the short way to his target, not 230 m around for a 93 m gap | R1 why Hunters_4's route went round (Locks) |
-| **engage** | `godot-engage` (5) | Opus | [streams/engage.md](streams/engage.md) | his gang tank 16-26 m from its target fires | E1 the silent Guns_3 on Crossing, `--lane-clear=off` replay first |
-| **orders** | `godot-orders` (6) | Opus | [streams/orders.md](streams/orders.md) | one click puts his squads together; his attack click takes at once; the order goes to the squad he meant | O1 the group click's spread (Crossing 58-61 m) |
-| **camera** | `godot-camera` (3) | Opus | [streams/camera.md](streams/camera.md) | a new selection pans at once; his squad stays near the middle of the screen | K1 Parade planner ON v `--camera-planner=off` |
-| **native** | `godot-native` (4) | Opus | [streams/native.md](streams/native.md) | the game stays fast as rules ship; every ON rule has its C++ twin | N1 twins as bars arrive; then ElementPlan.build in C++ |
-| **mapkit** | `godot-mapkit` (7) | Opus | [streams/mapkit.md](streams/mapkit.md) | blast doors the announcer calls; then sight screens, overpass, tank traps | K-page the tap-to-approve looks page (2-3 directions a piece) |
+| **manoeuvre** | `godot-manoeuvre` (2) | Opus | [streams/archive/round47/manoeuvre.md](streams/archive/round47/manoeuvre.md) | no crew sits against a building or container; the rear IFV on a bridge drives on when the front ones die | M1 the no-progress trace on Locks Burners2_4 and Crossing Hunters_3/4 |
+| **route** | `godot-route` (1) | Opus | [streams/archive/round47/route.md](streams/archive/round47/route.md) | a crew takes the short way to his target, not 230 m around for a 93 m gap | R1 why Hunters_4's route went round (Locks) |
+| **engage** | `godot-engage` (5) | Opus | [streams/archive/round47/engage.md](streams/archive/round47/engage.md) | his gang tank 16-26 m from its target fires | E1 the silent Guns_3 on Crossing, `--lane-clear=off` replay first |
+| **orders** | `godot-orders` (6) | Opus | [streams/archive/round47/orders.md](streams/archive/round47/orders.md) | one click puts his squads together; his attack click takes at once; the order goes to the squad he meant | O1 the group click's spread (Crossing 58-61 m) |
+| **camera** | `godot-camera` (3) | Opus | [streams/archive/round47/camera.md](streams/archive/round47/camera.md) | a new selection pans at once; his squad stays near the middle of the screen | K1 Parade planner ON v `--camera-planner=off` |
+| **native** | `godot-native` (4) | Opus | [streams/archive/round47/native.md](streams/archive/round47/native.md) | the game stays fast as rules ship; every ON rule has its C++ twin | N1 twins as bars arrive; then ElementPlan.build in C++ |
+| **mapkit** | `godot-mapkit` (7) | Opus | [streams/archive/round47/mapkit.md](streams/archive/round47/mapkit.md) | blast doors the announcer calls; then sight screens, overpass, tank traps | K-page the tap-to-approve looks page (2-3 directions a piece) |
 
 **His calls at prep (2026-10-30 evening):** seven streams at once, map kit included (R47.1); all Opus (R47.2); S v6 stays OFF (R47.3).
 
@@ -343,7 +343,7 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   C Bucket pods) are dropped. The model rides the monorail beam as one prop; its laptop cost is read before it ships (C47.10).
 
 - **R47.40 (his ask, 2026-10-30 ~22:50) A NEW stream mid-round: spotter (finds the moments units look dumb; dev tooling only).** His words
-  and the plan: `game_design.md` *His ML question*; brief `streams/spotter.md`. Folder `godot-spotter` (offset 8), Opus. Owns
+  and the plan: `game_design.md` *His ML question*; brief `streams/archive/round47/spotter.md`. Folder `godot-spotter` (offset 8), Opus. Owns
   `tools/spotter/**`, `tests/spotter/**`, `mk/spotter.mk`, `references/spotter/**`; read-only on every census / recording; no game code.
   builder3's light lane for fights, its GPU (RTX 5060 Ti 16 GB) for clips and later training; seeds 13121-13216. CPU opponents by ML:
   not now (the standing ruling; the bottleneck is the CPU sim and missing behaviours we can write).
@@ -465,7 +465,7 @@ _(filed here BEFORE any number; newest first)_
   out_damage 462 -> 219 a run, crews lost 6 -> 4, lancers killed 0 -> 4, damage dealt 0 -> 2250. As filed, the fail stands; the
   orchestrator rules. Evidence `~/overnight-engage/r47/barE10/`.
 
-- **Bar E10 OUTRANGED (engage; filed 2026-10-31 ~03:40 PDT in streams/engage.md and here, BEFORE any number on 13025-13120;
+- **Bar E10 OUTRANGED (engage; filed 2026-10-31 ~03:40 PDT in streams/archive/round47/engage.md and here, BEFORE any number on 13025-13120;
   R47.48 / R47.50).**
 
   **The rule:** `--outranged` (default OFF until this bar). `Outranged` (game/ai/outranged.gd) is a per-match memory of the
@@ -525,7 +525,7 @@ _(filed here BEFORE any number; newest first)_
   no-progress / stall events a crew-minute no worse than the base (new things to get stuck on); (3) match length within the base's spread,
   no stalemates; (4) laptop: no piece above the empty floor's GPU spread (trim monorail re-measured). Runs after Bars W / H / O2 on builder3.
 
-- **Bar K A NEW SELECTION PANS AT ONCE; HIS SQUAD STAYS FRAMED (camera; FILED 2026-10-30 ~18:30 in streams/camera.md, stream/camera
+- **Bar K A NEW SELECTION PANS AT ONCE; HIS SQUAD STAYS FRAMED (camera; FILED 2026-10-30 ~18:30 in streams/archive/round47/camera.md, stream/camera
   b1f08cc2d, BEFORE any number on 12801-12848; recorded here by the orchestrator; full text in the brief).** Switch
   `--camera-select-pan` (ON at e4a614eab; `=off` = main's planner byte-identical). The pick's pan starts at once when the planner's
   point is > 20 m from the look point, moves the look point only, a spring capped at 4 view-heights/s, ends at <= 12 m or 1.5 s. K3's
@@ -540,7 +540,7 @@ _(filed here BEFORE any number; newest first)_
   Also reported: his four recordings under three hand models (model / rest / busy). Last dev read (63429985c, n 8): framed 3.82 ->
   0.68 s, never 16 -> 2, > 30 m 7.0 -> 5.2 %, slip p95 28 -> 31 px, clicks 86 -> 81 %.
 
-- **Bar M BURIED STATIONS (manoeuvre; FILED 2026-10-30 ~18:55 in streams/manoeuvre.md, stream/manoeuvre c85f828cf, BEFORE any number;
+- **Bar M BURIED STATIONS (manoeuvre; FILED 2026-10-30 ~18:55 in streams/archive/round47/manoeuvre.md, stream/manoeuvre c85f828cf, BEFORE any number;
   recorded here by the orchestrator).** The change: `--traffic-on=buried` (Movement.buried_station + R47.11's one line): a travelling
   station the grounding moves > 4 m, or pulls back > 1 m along the squad's way while 6 m on is > 1.5 m off the navmesh, is taken on the
   squad's own route 8 m on (never behind the crew), sticky while pinned. **Native:** no twin claimed (the goal is GDScript on every path;
@@ -558,7 +558,7 @@ _(filed here BEFORE any number; newest first)_
   while the station moved >= 3 m in >= 1 s. His staged case unchanged (0.0 s); Crossing guard identical. Frozen tree = 1aa41aeaf once
   green. G3 (contact) named the line at risk.
 
-- **Bar E3 SNAP SHOTS (engage; filed 2026-10-30 ~20:00 PDT in streams/engage.md and here, BEFORE any number on 12649-12696;
+- **Bar E3 SNAP SHOTS (engage; filed 2026-10-30 ~20:00 PDT in streams/archive/round47/engage.md and here, BEFORE any number on 12649-12696;
   his YES, R47.20).**
 
   **The rule:** `--pot-shot` (Gunnery): a crew whose only held gate is the acquisition fix, laid >= POT_SHOT_AFTER_S 0.4 s, its
@@ -597,7 +597,7 @@ _(filed here BEFORE any number; newest first)_
   graze a squadmate (4 under ENGAGE "assault through ... circling", 1 under CLEAR_LANE "E_3 in the line of fire", 1 under SUPPRESS).
   Evidence `~/overnight-engage/r47/barE7/`, `~/overnight-engage/r47/ff_on/` (laptop).
 
-- **Bar E7 HIS ATTACK BEATS RETREAT (engage; filed 2026-10-30 ~19:10 PDT in streams/engage.md and here, BEFORE any number on
+- **Bar E7 HIS ATTACK BEATS RETREAT (engage; filed 2026-10-30 ~19:10 PDT in streams/archive/round47/engage.md and here, BEFORE any number on
   12601-12648; R47.6).**
 
   **The rule:** `--press-on` (TankBrain._obey): an attack-move from an element whose task is `attack` (his click, or a CPU
@@ -629,7 +629,7 @@ _(filed here BEFORE any number; newest first)_
   `--his-side=off` (no player team: every crew is the CPU's), seeds 12601-12648, `--press-on` off v on: 48/48 ENGAGE_PROBE rows
   identical. Deciding lines, workload and the other guards as filed. (Amendment 1 of at most 2.)
 
-- **Bar K A NEW SELECTION PANS AT ONCE; HIS SQUAD STAYS FRAMED (camera; FILED 2026-10-30 ~18:30 in streams/camera.md, stream/camera
+- **Bar K A NEW SELECTION PANS AT ONCE; HIS SQUAD STAYS FRAMED (camera; FILED 2026-10-30 ~18:30 in streams/archive/round47/camera.md, stream/camera
   b1f08cc2d, BEFORE any number on 12801-12848; recorded here by the orchestrator; full text in the brief).** Switch
   `--camera-select-pan` (ON at e4a614eab; `=off` = main's planner byte-identical). The pick's pan starts at once when the planner's
   point is > 20 m from the look point, moves the look point only, a spring capped at 4 view-heights/s, ends at <= 12 m or 1.5 s. K3's
@@ -644,7 +644,7 @@ _(filed here BEFORE any number; newest first)_
   Also reported: his four recordings under three hand models (model / rest / busy). Last dev read (63429985c, n 8): framed 3.82 ->
   0.68 s, never 16 -> 2, > 30 m 7.0 -> 5.2 %, slip p95 28 -> 31 px, clicks 86 -> 81 %.
 
-- **Bar M BURIED STATIONS (manoeuvre; FILED 2026-10-30 ~18:55 in streams/manoeuvre.md, stream/manoeuvre c85f828cf, BEFORE any number;
+- **Bar M BURIED STATIONS (manoeuvre; FILED 2026-10-30 ~18:55 in streams/archive/round47/manoeuvre.md, stream/manoeuvre c85f828cf, BEFORE any number;
   recorded here by the orchestrator).** The change: `--traffic-on=buried` (Movement.buried_station + R47.11's one line): a travelling
   station the grounding moves > 4 m, or pulls back > 1 m along the squad's way while 6 m on is > 1.5 m off the navmesh, is taken on the
   squad's own route 8 m on (never behind the crew), sticky while pinned. **Native:** no twin claimed (the goal is GDScript on every path;
