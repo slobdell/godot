@@ -88,6 +88,13 @@ _(filed by each stream before any number)_
   +5, z < +2; G2 friendly-contact s; G3 noprog_s; G4 survivors each team; G5 holdyield 12328 post drift <= 1.0 m; G6 authority probe
   13019-13024 hold / stop moved_m ON <= OFF + 0.5; G7 group probe all_in_s / never_in; G8 full check green. Judge mutation self-test
   (lesson 350); replay stamp entry in the same commit (lesson 354). Spotter's class B rate is the regression read, never this bar (C48.2).
+- **Bar F (orders O1, the follow station by heading of travel; FILED 2026-10-31 ~12:55 before any number on 13409-13456; full text
+  in stream/orders b50b34aa2's workstreams.md, which merges into this section).** Arms ON default v `--follow-station=nose`; `make
+  follow-bar`, 6 maps x 13409-13416 = 48 paired fights. **Deciding:** D1 follow reverse-or-spin crew-s a fight, mean + 2 se < 0 and
+  >= 20 % of OFF; D2 locks 13216 #17 Rust_Guns_2 36-46 s ON fewer. **Guards:** follow distance, squad distance, every crew's reverse /
+  spin s, contacts, noprog_s, the group click (orders-probe 13417-13420, ON v nose), authority tests green. Only number seen before
+  filing: one dev read (7001, n 1 a map, builder3, 7787853ff) 7.5 v 10.3 s a fight. No twin needed (the station is GDScript); replay
+  stamp `follow_travel` in the same commit.
 
 ## Round 47: seven streams + spotter (prepared 2026-10-30 evening; CLOSED 2026-10-31; briefs in `streams/archive/round47/`)
 
