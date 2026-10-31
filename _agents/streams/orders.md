@@ -102,6 +102,20 @@ series. Options sent to the orchestrator (recommended first): (a) today's abreas
 (each squad's own halt; Crossing ~61 -> ~45 m, Locks ~36 -> ~30 m); (b) the files only for the last stretch (element_plan's
 ARRIVE_FILE, D3b: not my code); (c) the bumping to him as a feel question.
 
+**Laptop windowed runs (C47.1, the lead watches the screen):** only when a read needs one; each is named here while it runs.
+None running at 19:50 PDT. Done today: four perf-play arms (his Crossing, ~3 min each, 19:16-19:21 and 19:41-19:47).
+
+**R47.22 (the money cap, his pick R47.26: ON everywhere).** 99ffb918a + 2a1e36a22: a faction skirmish is fought with the garage's
+2000 CR (3,500 pts) a side, every vehicle bought fielded on every preset (the roll's and fielded()'s count trims are
+`--army-cap=count` only, which is round 46's army whole: 5,200 pts + the 20 trim); the recorder's rules stamp gains `army_money`
+and tests/replay/rules.py replays an older recording with `--army-cap=count`. **His laptop (UHD 620, lock, his Crossing seed
+101, laptop preset, AB + BA, n 2 an arm):** count cap (gangs 20 / 2,490 pts v syndicate 17 / 5,000) 52-57 ms a frame (~18 fps),
+game speed 0.95-0.97; money cap (gangs 27 / 3,435 v 12 / 3,430) 86-123 ms (~8-12 fps), speed 0.79-0.93. **Where it goes** (R47.31):
+headless HUD (HudClock, ABAB, n 2) 3.24-3.36 v 2.90-2.94 ms, my controls' widgets flat (+0.06-0.09 ms each); perf-play's layers
+(windowed, n 1): the fog-of-war field (game/match/visibility_field.gd) costs 10.6 ms of frame / 3.0 ms of UI at the money cap
+v 3.4 / 0.8 at the count cap, the controls nothing measurable. The field went to native (R47.31). Caveat: the arms fight different
+battles (37 v 25-34 alive).
+
 **O1 (R47.4) what and why.** Both of his far-apart clicks were a control group he had MERGED: Crossing group 4 = Spears + Wrenches,
 Locks group 2 = Burners + Burners2, 10 vehicles each. A squad holds 5, so the selection is two squads, and `row` laid them ABREAST
 across his approach, each its halt footprint wide plus GAP_M 14 apart (Crossing: two gang coils, 44 m wide; Locks: two
@@ -137,6 +151,12 @@ the receivers; nothing else new on screen; the ring layer is empty between order
 **O6 (proposal = what is built):** a SCREEN order to a squad that is all artillery is taken as SUPPORT BY FIRE on the same point:
 in his terms, "tell the mortars to screen a line and they stay back where they can shell it, instead of driving onto it". Tank,
 IFV and mixed squads screen as before. ON, `--battery-screen=off`.
+
+**Merge notes (shared files):** `tests/replay/rules.py` (native's): my 2a1e36a22 adds `RULES["army_money"] = ("army-cap",
+"count")`. When native's 46c3b2f3b lands on main (RULES entries become (switch, off value, shipped stamp)), my merge of main
+writes it as `("army-cap", "count", "<R47.22's merge stamp>")`; test_rules: ALL_OFF gains "--army-cap=count" and
+test_his_round46_recordings_ran_every_rule_on expects ["--army-cap=count"]. `game/match/match_recorder.gd`: the inp row and
+the army_money stamp (additive). `game/tactics/element_plan.gd`: one condition at the D3b hook (R47.21, manoeuvre agreed).
 
 **Questions for the lead:** none yet (O1 ships ON on Bar O's verdict; if it fails, the player-terms note goes to the orchestrator).
 **Requests to other streams:** none. **Builders:** a fresh builder3 folder is seeded from `~/tank_squad/godot` server-side first

@@ -453,6 +453,39 @@ _(filed here BEFORE any number; newest first)_
   `--his-side=off` (no player team: every crew is the CPU's), seeds 12601-12648, `--press-on` off v on: 48/48 ENGAGE_PROBE rows
   identical. Deciding lines, workload and the other guards as filed. (Amendment 1 of at most 2.)
 
+- **Bar K A NEW SELECTION PANS AT ONCE; HIS SQUAD STAYS FRAMED (camera; FILED 2026-10-30 ~18:30 in streams/camera.md, stream/camera
+  b1f08cc2d, BEFORE any number on 12801-12848; recorded here by the orchestrator; full text in the brief).** Switch
+  `--camera-select-pan` (ON at e4a614eab; `=off` = main's planner byte-identical). The pick's pan starts at once when the planner's
+  point is > 20 m from the look point, moves the look point only, a spring capped at 4 view-heights/s, ends at <= 12 m or 1.5 s. K3's
+  20 m bound PARKED OFF (it clipped the rear-ambush frame, 1.4 -> 6.3 s in dev). Frozen e4a614eab, builder3, headless 1920x1080 @60,
+  150 s. Workloads SPLIT (his Crossing case; 12801-12848 over Terminus / Locks / Crossing / Gorge), ATTACK, AMBUSH, RETREAT; the eye
+  waits up to 1.5 s for the pan before aiming (a workload choice after dev reads; clicks aimed mid-pan reported). **D1** % of play his
+  selection > 30 m off: ARM <= BASE and <= 10 % (**a 0.6x ratio was drafted and dropped after a dev read showed 0.74x at n 8; the
+  orchestrator notes it as dev-shaped, so the ratio is REPORTED and read beside D1**); **D2** far selection framed: ARM mean <= 1.0 s,
+  <= BASE, p90 <= 1.5 s; **D3** never framed ARM <= BASE. Guards: G1 occlusion, G2 none on screen, G3 hits off screen, G4a/b jerks and
+  snaps, **G4c a pan not a cut** (peak <= 4.5 view-heights/s), G5a-c clicks >= 70 %, slip p95 <= 40 px, held, G6 action share, G7 inside
+  a solid, G8 rear-ambush and retreat turns, G9 clean runs, **G10 laptop** rig mean <= 0.5 ms, planner p99 <= 1.5 ms (UHD 620, lock).
+  Also reported: his four recordings under three hand models (model / rest / busy). Last dev read (63429985c, n 8): framed 3.82 ->
+  0.68 s, never 16 -> 2, > 30 m 7.0 -> 5.2 %, slip p95 28 -> 31 px, clicks 86 -> 81 %.
+
+- **Bar M BURIED STATIONS (manoeuvre; FILED 2026-10-30 ~18:55 in streams/manoeuvre.md, stream/manoeuvre c85f828cf, BEFORE any number;
+  recorded here by the orchestrator).** The change: `--traffic-on=buried` (Movement.buried_station + R47.11's one line): a travelling
+  station the grounding moves > 4 m, or pulls back > 1 m along the squad's way while 6 m on is > 1.5 m off the navmesh, is taken on the
+  squad's own route 8 m on (never behind the crew), sticky while pinned. **Native:** no twin claimed (the goal is GDScript on every path;
+  native's feed passes the raw station) — native confirms. Machine builder3, native ON both arms, frozen tree = the first green commit
+  after 482f5e2b3. Census: noprog_s (crew > 15 m from its seat by route, no 1 m closer in the last second). Instrument checked on his
+  Locks replay (BASE Burners2_4 4.0 s). **W1 deciding:** orders' group-order probe, terminus / crossing / locks / sumps, 12401-12424.
+  **W2:** route-census CPU v CPU on 12425-12448 once on main, else dropped and said. **D1** his staged Locks case <= 1.0 s (BASE 3.47);
+  **D2** touched cells noprog_s paired mean < 0 AND sooner-or-identical >= 50 %; D3 all cells <= +1.645 se; **G1** all_in_s, **G2**
+  never_in, **G3** contact_s, **G4** blocked_s / yielding_s (each <= +1.645 se; G2 total <= BASE); **G5** untouched cells identical;
+  **G6** staged Crossing Hunters < 2.5 s each; **G7** W2 both teams' noprog_s; **G8** engage's authority probe 12443-12448 rows identical;
+  **G9** frozen tree's check exited 0, no SCRIPT ERROR. Full table in the brief.
+  **AMENDMENT 1 (of 2; 2026-10-30 ~19:30, 1aa41aeaf, before any bar number; lines unchanged, the trigger corrected):** a dev 7001
+  dry run showed the rule acting in every cell (764 swaps on Locks, 609 on the plain > 4 m trigger, median gap 6 m: a routine
+  grounding sliding along a wall). His corner is PINNED, so the > 4 m trigger now also needs the grounded point to have moved <= 1 m
+  while the station moved >= 3 m in >= 1 s. His staged case unchanged (0.0 s); Crossing guard identical. Frozen tree = 1aa41aeaf once
+  green. G3 (contact) named the line at risk.
+
 ### Bar O (orders O2, R47.4; filed 2026-10-30 ~17:05 PDT, before any number on its seeds)
 
 **The change:** `--group-merged` (ON; `=off` is round 46's lay): his MERGED group (the selection is exactly one control group of

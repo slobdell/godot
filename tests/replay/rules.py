@@ -27,6 +27,8 @@ RULES = {
     "group_veto": ("group-veto", "off", "2026-10-30T06-42-57"),   # orders V1, merge 8e79c2168
     "shortfwd": ("traffic-off", "shortfwd", "2026-10-30T08-12-12"),  # manoeuvre, merge af9f7bb2b
     "holdway": ("traffic-off", "holdway", "2026-10-30T08-40-38"),  # manoeuvre, merge 097f61ccc (native game; OFF on web)
+    # R47.22 (round 47, orders): the money is the army's cap; a match played before it had the laptop's count trim.
+    "army_money": ("army-cap", "count", "2026-10-30T21-30-05"),  # orders 1c2fc5838, merged by the orchestrator
 }
 STAMP = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})")
 
