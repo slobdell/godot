@@ -129,6 +129,13 @@ Phase `blocked`, blocked_by `terrain` or `no_path`, 0 m/s or reversing into a pr
 
 **Owner:** orders + route (FOLLOW's goal; the support-by-fire move's route and pace).
 
+> **Amended 2026-10-31 ~03:00 after orders reproduced it (builder3 light, seed 13216; R47.48).** The FOLLOW rows' "goal getting
+> farther" (#17, #23, #25) is a PROBE ARTIFACT: the probe read `brain.order.goal`, which a follow never updates, while the drive
+> follows the live station (`Orders.goal_position`). The drive is right. What is really dumb in #17 is the follower reversing and
+> spinning when its leader pivots (round 48, orders). #13 is a CPU assault plan handing a support-by-fire spot 214 m away (orders);
+> #22 is transit pace under fire with no answer (engage E10). The probe now reads the mover's live goal for follows (stream/spotter
+> ef0f44000), and older fights' follow rows carry no goal.
+
 The goal gets FARTHER while the crew drives at speed: FOLLOW crews (#17, #23, #25) whose to_go grows 17 -> 76 m / 64 -> 100 m as they follow a leader the other way; law_suppressors on 'assaulting, support by fire' (#13, #22, #28) crawl at 1.7-4 m/s, circle (#28: to_go fixed at 118 m for 10 s while moving), or drive on 4 m/s while being shot to 58 hp from beyond their 32 m range; #4 shuttles forward / back under fire 72 m from its squad. A player reads: where is it going?
 
 - **#17 Rust_Guns_2** (syn_tank, rust), locks seed 13216, 36-46 s (peak tick 1230): driving away from its route (9 s, rarer than 99.95 %); no progress toward its goal (14 s, rarer than 99.95 %); turning on the spot (87.1 deg/s, rarer than 99.56 %)
