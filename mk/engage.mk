@@ -255,9 +255,8 @@ engage-lane-bar: native-fresh import ## engage Bar L1: engage-lane-probe in both
 # ---- engage (round 47): his side barely fires (Crossing 15:41, seed 101) -----------------------------------------------
 # E1: his match replayed (native's tests/replay_orders.gd) with every Green_Guns crew's gun gates traced (--gun-trace, GUN_TRACE
 # lines) and Guns_3's brain (--crew-trace), in both lane arms: ON = as he played it (rules stamp lane_clear true), OFF =
-# --lane-clear=off. Logs build/engage/e1/<arm>.log, the replay's own recording build/engage/e1/rec_<arm>/. The gun's C++ twin
-# (native_gun, held output-identical to Gunnery on every check) is turned off so the GDScript gates the trace reads are the
-# ones that run.
+# --lane-clear=off. Logs build/engage/e1/<arm>.log, the replay's own recording build/engage/e1/rec_<arm>/. The trace reads the gun's
+# state after it runs (GDScript or C++ twin), so the replay stays his match's native path.
 E1_RECORDING ?= references/round46/playtest/2026-10-30T15-41-59-crossing.jsonl
 E1_SECONDS ?= 84
 E1_GUNS ?= Green_
@@ -269,7 +268,7 @@ engage-e1: native-fresh import ## engage E1: his Crossing replay, gun gates trac
 	@for arm in on off; do flags=""; [ $$arm = off ] && flags="--lane-clear=off"; rm -rf $(BUILD_DIR)/engage/e1/rec_$$arm; mkdir -p $(BUILD_DIR)/engage/e1/rec_$$arm; \
 		echo ">> engage-e1 arm $$arm on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"; \
 		timeout 1200 $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- --orders=$(CURDIR)/$(E1_RECORDING) \
-		--seconds=$(E1_SECONDS) --record-dir=$(BUILD_DIR)/engage/e1/rec_$$arm --gun-trace=$(E1_GUNS) --crew-trace=$(E1_CREW) --brains-off=native_gun $$flags $(ENGAGE_FLAGS) \
+		--seconds=$(E1_SECONDS) --record-dir=$(BUILD_DIR)/engage/e1/rec_$$arm --gun-trace=$(E1_GUNS) --crew-trace=$(E1_CREW) $$flags $(ENGAGE_FLAGS) \
 		> $(BUILD_DIR)/engage/e1/$$arm.log 2>&1 || echo "  arm $$arm: godot exited $$?"; \
 		grep -E '^REPLAY_(SETUP|NATIVE|DONE)|SCRIPT ERROR' $(BUILD_DIR)/engage/e1/$$arm.log | cut -c1-300; \
 		echo "  GUN_TRACE lines: $$(grep -c '^GUN_TRACE' $(BUILD_DIR)/engage/e1/$$arm.log), fires: $$(grep '^GUN_TRACE' $(BUILD_DIR)/engage/e1/$$arm.log | grep -c '"fire":true')"; \
