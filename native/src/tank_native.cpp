@@ -134,6 +134,7 @@ void TankNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drive_profile", "reset"), &TankNative::drive_profile);
 	ClassDB::bind_method(D_METHOD("drive_around_fire", "mover", "waypoint", "goal", "order"), &TankNative::drive_around_fire);
 	ClassDB::bind_method(D_METHOD("drive_pass_lane", "mover", "passer", "from", "direction"), &TankNative::drive_pass_lane);
+	ClassDB::bind_method(D_METHOD("drive_holdyield_veto", "mover", "point"), &TankNative::drive_holdyield_veto);
 	ClassDB::bind_method(D_METHOD("drive_fire_ready"), &TankNative::drive_fire_ready);
 	ClassDB::bind_method(D_METHOD("situation_core", "brain", "my_position", "my_name", "squad_name", "all_allies", "intel",
 			"names", "prototypes", "choice_target", "order_target", "tick", "flank_reach", "cover_map", "constants", "ai_cache",
