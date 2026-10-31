@@ -90,4 +90,61 @@ S4's labels.
 
 ## Status
 
-_(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+_(updated 2026-10-31 ~00:10 PDT by the spotter worker; every number names its commit, machine, workload and n)_
+
+### Plan (smallest foundation first)
+S1 probe (it is what S0 runs) -> S2 ranker -> S0 the night shift -> S3 clips -> S4 judging page (his gate) -> S5 label reader ->
+S6 (after a few hundred labels) -> stretch. S1 came before S0 because the night shift's frame needs a real batch to prove itself on.
+
+### Done so far
+- **S1 the feature table** (1f3d4b517): `tests/spotter/feature_probe.gd` listens to a showmatch fight (`--skirmish --demo-match`,
+  native, the shipped default) and writes one row per live crew per second: position, heading, speed, hp, order / move / weapon
+  order, phase, blocked_by, wall contact (cause, collider), route metres to its goal (NoProgressCensus's navigation query) and
+  its gain over 2 / 5 s, nose v route, visible enemies and the nearest one's distance, shots, ticks since fire, lane blocker,
+  squad centroid distance, incoming damage and how far off the nose / how far away it came from. Read-only. `tools/spotter/
+  features.py` derives eleven signals with words and run lengths (no progress, wall, friend-blocked, reversing, wrong way,
+  holding fire in range, rear fire, outranged, still under fire, far from squad, spinning) and a floor under which each reads 0.
+  Trial: 1209a934f+, builder3 light lane, terminus + crossing seed 13121, 90 s: 6511 crew-seconds, no engine errors; the hull
+  forward (-Z) agrees with the displacement on 98.9 % of 1225 moving samples.
+- **S2 the ranker** (`tools/spotter/rank.py`): per unit class, an empirical tail (-log10 of the share at or above the value: a
+  non-parametric robust z), a crew-second scores its two largest, hot seconds merge into moments, top N with 8 a fight / 1 a
+  crew, each with readable reasons + a reproduction line -> moments.json / moments.md. Trial (same 2 fights): 231 moments; the top
+  ones were crews boxed by squadmates and reversing (terminus Rust_Hunters_1 55-63 s; crossing Rust_Burners2_4 41-47 s).
+- **S0 the night shift** (046082c52 + fixes): `tools/spotter/night.sh` on builder3, cron every 5 min (`crontab -l` there, marked
+  `# spotter-night`). Runs only after the box has been idle 10 min: nobody holds `~/tank_squad/.full-check.lock` and no process of
+  anyone else runs in a `~/tank_squad/<folder>` (checks, queued checks, quick-remotes, series, light runs, renders all do).
+  Batches run `nice -n 19 ionice -c3` in their own process group, never take a slot (TANK_SQUAD_SLOT=night past the Makefile
+  gate) or the lock; a watcher re-asks every 10 s and kills the group the moment the box is busy (yield <= ~15 s). Each finished
+  fight is a checkpoint (killed fights leave .part and re-run). Game = a NAMED commit: `refs/heads/green` in
+  builder3's bare `~/spotter-night/repo.git` (cloned from GitHub once; `make spotter-night-push SHA=` sends only that commit's
+  missing objects), checked out clean in `~/tank_squad/spotter-night` with the spotter kit laid over it (dev tooling only).
+  Output `~/spotter-night/<date>/<commit>/` + one-page `SUMMARY.md`; disk cap 20 GB (oldest days first; builder3 had 152 GB free).
+  `tests/spotter/test_night.sh` 15/0 (idle runs, yield in 6 s at a 1 s poll and the batch's whole group killed, busy never
+  starts, idle wait, lock = busy, STOP). Installed 2026-10-30 23:50; green = **09780edb9** (main, builder3 3569/0). At 00:02 it
+  was correctly waiting (manoeuvre's full check held the lock). **Proof run: pending the first idle window tonight.**
+- **S3 clips** (0641c90a9): `tests/spotter/clip_probe.gd` + `tools/spotter/clips.py`. **The display question, answered:** builder3
+  has no Xvfb and no root, so the distro's xvfb package was fetched with `apt download` and extracted to `~/tools/xvfb` (no root,
+  no missing libs). Godot on it draws with Mesa llvmpipe (NVIDIA's GL needs its own X server): the same gl_compatibility renderer
+  his game uses, rasterized on the CPU; the GPU encodes (h264_nvenc). His desktop :1 is never touched. The fight replays from its
+  seed with rendering off, then every tick is rendered from a near-top-down camera following the crew (a 50-degree view let a
+  building hide the crew), a yellow marker over it, a caption with its reasons. **Each clip checks the crew's position at the
+  moment's peak tick against the table:** 3/3 reproduced, drift 0.02-0.05 m (1209a934f+, builder3 light lane, ~41-98 s a clip).
+- **S4 page** drafted (`references/spotter/judge/index.html`): clips from the page's db, three taps + a note per clip, labels in db.
+- **S5** `tools/spotter/labels.py` (precision overall / top 10-30, signals dumb v fine, the dumb ones as findings with repro lines).
+
+### In flight
+- First judging batch: builder3 light lane, 12 fights (6 maps x seeds 13215-13216, 240 s) + 30 clips -> then the page goes up.
+
+### How to stop / remove the night shift
+`make spotter-night-stop` (or on builder3 `~/spotter-night/bin/night.sh stop`), `make spotter-night-start` to resume,
+`make spotter-night-uninstall` removes the cron line (data stays in `~/spotter-night`; `rm -rf` it to free the disk).
+`make spotter-night-status` says what it is doing and what holds the box.
+
+### Requests / merge notes
+- `mk/spotter.mk` is new; `include mk/*.mk` picks it up (no Makefile edit). **Request (orchestrator):** add `spotter-night-%
+  spotter-test spotter-rank` to the Makefile's LIGHT_GOALS (they are ssh / Python only); until then `TANK_SQUAD_SLOT=1 make ...`.
+- **Request (orchestrator):** after each GREEN main check, `make spotter-night-push SHA=<that hash>` so the night runs the newest
+  green game (otherwise it keeps 09780edb9).
+
+### Questions for the lead
+- (none yet; S4's taps are his gate)
