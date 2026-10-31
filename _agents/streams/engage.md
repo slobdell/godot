@@ -52,6 +52,9 @@ Memory: smart AI on both sides; units must look smart and under his control.
 5. **E5 his acceptance read:** Crossing replay: green's shots and Guns_3's 2160-2457 window on the shipped tree.
 6. **E6 the army_cost read** (report only).
 7. **Leftover:** the touch map's feed line (round 46).
+8. **E8 his post, tighter (R47.30, from manoeuvre; after E7 / E3):** HOLD's way back to HIS post uses arrive 6.0 m, so a crew
+   displaced from where he put it (manoeuvre's holdyield fixes the yield's push, 12328: 10.1 -> 0.0 m) still parks up to 6 m short.
+   A tighter return for his own post (player-authority code, engage's), measured on E2's authority probe.
 
 ## Don't touch
 
