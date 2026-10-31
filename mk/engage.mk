@@ -313,3 +313,22 @@ engage-e1-windows: native-fresh import ## engage E1c: held-fire seconds by gate 
 		--point=0,0 --gun-trace=all $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/e1w/$(E1W_TAG)/$${stem}_$$tick.log 2>&1 || echo "  $$1: godot exited $$?"' _ {}
 	@for f in $(BUILD_DIR)/engage/e1w/$(E1W_TAG)/*.log; do echo "== $$(basename $$f .log) (STAGED, $(E1W_TAG))"; grep -E "ENGAGE_TA_DONE|ENGAGE_TA_COUNTERS|ENGAGE_TA_FIRE|SCRIPT ERROR" $$f | cut -c1-400 | head -4; \
 		for side in Green_ Rust_; do echo "-- $$side"; $(PYTHON) tests/engage/gun_trace_table.py $$f --crews=$$side --end=$$(( $(E1W_SECONDS) * 30 )) | tail -2; done; done
+
+# Round 47 (E10, R47.48/R47.50): the outranged probe over ENGAGE_SEEDS in one arm (OUTRANGED_ARM=on|off) -> build/engage/outranged/<tag>/<seed>.log;
+# both arms then the paired table: `make outranged-bar` (tests/engage/outranged_table.py).
+OUTRANGED_ARM ?= off
+OUTRANGED_TAG ?= $(OUTRANGED_ARM)
+.PHONY: outranged-probe outranged-bar
+outranged-probe: import ## engage E10: the outranged probe over ENGAGE_SEEDS (OUTRANGED_ARM=on|off, ENGAGE_FLAGS, ENGAGE_JOBS) + its table
+	@mkdir -p $(BUILD_DIR)/engage/outranged/$(OUTRANGED_TAG)
+	@echo ">> outranged-probe on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off) | arm $(OUTRANGED_ARM) | flags $(ENGAGE_FLAGS) | seeds $(firstword $(ENGAGE_SEEDS))+ | load $$(cut -d' ' -f1-3 /proc/loadavg)"
+	@for seed in $(ENGAGE_SEEDS); do echo $$seed; done | xargs -r -P $(ENGAGE_JOBS) -I{} sh -c \
+		'timeout 900 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/engage/outranged_probe.gd -- \
+		--seed={} --seconds=$(ENGAGE_PROBE_SECONDS) --outranged=$(OUTRANGED_ARM) $(ENGAGE_FLAGS) > $(BUILD_DIR)/engage/outranged/$(OUTRANGED_TAG)/{}.log 2>&1 || true; \
+		grep -q "^OUTRANGED_PROBE " $(BUILD_DIR)/engage/outranged/$(OUTRANGED_TAG)/{}.log || echo "  MISSING OUTRANGED_PROBE seed {}"'
+	$(PYTHON) tests/engage/outranged_table.py $(BUILD_DIR)/engage/outranged/$(OUTRANGED_TAG)
+
+outranged-bar: import ## engage Bar E10: outranged-probe in both arms on ENGAGE_SEEDS, then the paired table
+	@$(MAKE) --no-print-directory outranged-probe OUTRANGED_ARM=off OUTRANGED_TAG=off$(OUTRANGED_SUFFIX)
+	@$(MAKE) --no-print-directory outranged-probe OUTRANGED_ARM=on OUTRANGED_TAG=on$(OUTRANGED_SUFFIX)
+	$(PYTHON) tests/engage/outranged_table.py --pair $(BUILD_DIR)/engage/outranged/off$(OUTRANGED_SUFFIX) $(BUILD_DIR)/engage/outranged/on$(OUTRANGED_SUFFIX)

@@ -40,6 +40,7 @@ var _hits := {}
 var _shots := {}
 var _first_shot := {}
 var _friendly_hits := 0
+var _launches := {}  # E9 trace: projectile id -> how it left
 var _deaths := {}
 var _target_name := ""
 
@@ -61,6 +62,15 @@ func _r(x: float) -> float:
 
 static func _flat(v: Vector3) -> Vector3:
 	return Vector3(v.x, 0.0, v.z)
+
+
+static func _vec(triple: Array) -> Vector3:
+	return Vector3(float(triple[0]), float(triple[1]), float(triple[2]))
+
+
+## Flat angle between two directions, in degrees (trace only).
+static func _deg(a: Vector3, b: Vector3) -> float:
+	return absf(rad_to_deg(Vector2(a.x, a.z).angle_to(Vector2(b.x, b.z))))
 
 
 ## The cover pieces to fight round, in the rng's order: medium-sized (a container, a small block), well inside the arena.
@@ -193,6 +203,18 @@ func _run() -> void:
 	game_match.weapon_fired.connect(func(event: Dictionary) -> void:
 		var by := String(event.get("shooter", ""))
 		shooters[int(event.get("projectile_id", -1))] = by
+		if trace and names.has(by):
+			# E9: how the round left (its own direction, the barrel, the line to the target) and where the friends stood then.
+			var at := lab.tank_of(by)
+			if at != null:
+				var friends := {}
+				for other in names:
+					var friend := lab.tank_of(other)
+					if friend != null and other != by:
+						friends[other] = friend.global_position
+				_launches[int(event.get("projectile_id", -1))] = {"tick": game_match.tick, "muzzle": at.global_position,
+						"dir": _vec(event.get("direction", [0.0, 0.0, -1.0])), "barrel": at.turret_forward(), "target": target.global_position,
+						"speed": at.speed(), "burst_left": at._burst_rounds_left, "kind": String(event.get("fire_model", "")), "friends": friends}
 		if names.has(by):
 			_shots[by] = int(_shots.get(by, 0)) + 1
 			if not _first_shot.has(by):
@@ -219,6 +241,14 @@ func _run() -> void:
 						_flat(hit_tank.global_position).snappedf(0.1) if hit_tank != null else "-", _flat(target.global_position).snappedf(0.1),
 						shooter_brain.choice.get("option", "") if shooter_brain != null else "-", shooter_brain.why if shooter_brain != null else "-",
 						by_tank.health if by_tank != null else -1])
+				var launch: Dictionary = _launches.get(int(event.get("projectile_id", -1)), {})
+				if not launch.is_empty():
+					var m: Vector3 = launch["muzzle"]
+					var to_t: Vector3 = launch["target"] - m
+					var to_v: Vector3 = launch["friends"].get(victim, hit_tank.global_position if hit_tank != null else m) - m
+					print("ENGAGE_PROBE_FRIENDLY_LAUNCH t=%d fired %s burst_left %d speed %.1f round_v_target %.1f deg barrel_v_target %.1f deg round_v_barrel %.1f deg victim_v_round %.1f deg victim %.1f m target %.1f m" % [
+							launch["tick"], launch["kind"], launch["burst_left"], launch["speed"], _deg(launch["dir"], to_t), _deg(launch["barrel"], to_t),
+							_deg(launch["dir"], launch["barrel"]), _deg(launch["dir"], to_v), Vector2(to_v.x, to_v.z).length(), Vector2(to_t.x, to_t.z).length()])
 		if on_target and float(event.get("damage", 0.0)) > 0.0 and names.has(shooter):
 			_hits[shooter] = int(_hits.get(shooter, 0)) + 1
 			if not _first_hit.has(shooter):

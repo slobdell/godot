@@ -63,3 +63,12 @@ func test_a_flickering_shot_does_not_chain_halts_into_a_stall() -> void:
 	var got := _run(crew, 10 * 30, func(i: int) -> bool: return i % 4 != 3)
 	assert_true(int(got["braked"]) <= 75, "braked %d of 300 ticks (bound 75): the move drives on (%s)" % [got["braked"], got])
 	assert_true(int(got["rolling_long"]) == 0, "no 99 m round on the move (%s)" % [got])
+
+
+## `--halt-cancel=old`, the replay escape: the same dropped tick lets the long round leave rolling, as before R47.44.
+func test_halt_cancel_old_restores_the_rolling_round() -> void:
+	var crew := _crew()
+	Tank.HALT_CANCEL_OLD = true
+	var got := _run(crew, 10 * 30, func(i: int) -> bool: return i != 5)
+	Tank.HALT_CANCEL_OLD = false
+	assert_true(int(got["rolling_long"]) == 1, "the old cancel: the 99 m round leaves on the move (%s)" % [got])
