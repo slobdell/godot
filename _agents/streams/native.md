@@ -55,6 +55,35 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-30 ~22:00 PDT) — the round so far, in one place.**
+**Green / merge:** 6f19722ae GREEN builder3 (`make check exited 0`, 3523 / 0, 29 ALL JUDGED, sim-baseline unmoved on all 13 maps;
+named for merge). Next candidate: **27ea82fa5** (= + C47.8 door mask + R47.36 eye mask + main 79cea77e5), its check queued on
+builder3; named when green.
+**Done (every number: commit, machine, workload, n above in the dated reports):**
+- N1 twins: E7 (+ Amendment 1) EQUAL, E3 pot shot EQUAL, holdyield EQUAL, E2a EQUAL then dropped (R47.17), Bar M needs none.
+- N2 TacticsFormation.place in C++ ON; N4 ElementSituation.build's loops in C++ ON; both VERIFY-guarded in check.
+- N3 the inp reader (playtest-report section (d)); N5 lines_r47 started (no round-47 verdict filed yet); N6 builders: the seed,
+  .remote-synced, the Xorg DISPLAY, the queue watched.
+- N0 (R47.8): cause 1 fixed (his ctrl+N groups), Sumps / Parade replay again (garage armies rebuilt), the rules stamp carries
+  every rule; cause 2 = the limit (R47.16: exact to ~11 s), the laptop itself ruled out; R47.18 (the layout's bake timing) next round.
+- R47.27: matchups ON (neutral), scan OFF (slower); (b) parked (no lump: shared memos + glue); R47.31 / 34: the fog field's
+  split (sim small; the lever is ~2.1 ms of UI not in the granted readers) — dropped; the laptop ratio ~3.0x builder3 (measured).
+- C47.8 the doors in the native drive's route query; R47.36 the eye mask in every C++ eye ray.
+**Questions for the lead:** none open.
+**Requests to other streams:** engage / manoeuvre: change ElementSituation.build's two loops, TacticsFormation.place's body, or
+Lay / _obey / the pot shot / _holdyield_veto only through native (each is twin-frozen, and check's VERIFY or twin test goes red).
+**Known issues:** replays of his round-46 matches part at ~11 s (cause 2: an unrecorded live input; orders' inp row widened);
+place / esit prices were neutral, not faster, at this army size.
+**What to playtest:** nothing new on screen from native. Re-read a match: `make playtest-report RECORDING=<his>.jsonl` (section
+(d) shows what changed each selection once his recordings carry inp rows); `make replay-match RECORDING=... CREWS=all` (garage
+fights replay too now).
+**Next steps:** contact_prototypes' rebuild in C++ (~0.7 ms a frame on his laptop at the cost cap); R47.18 the layout's bake timing;
+the Sumps 601-618 re-read with inp rows.
+**Merge notes (shared files):** mk/core.mk (replay-pytest in check), game/tactics/tactics_formation.gd (place's seam line),
+game/tactics/element_situation.gd (build -> _entries refactor + seam), game/ai/brain_switches.gd (native_place / native_esit /
+native_matchups), game/match/match.gd + visibility_field.gd (eye mask; visfield_draw measurement flag), tests/replay_orders.gd +
+tests/replay/** (loose squads, garage armies, rules), tests/test_match_recorder_replay_keys.gd.
+
 **REPORT (2026-10-30 ~21:00 PDT). Merge candidate: 6f19722ae (still queued on builder3). Since (merged main 5eee3a06d: route's
 RouteDoors, mapkit's doors / sight class):**
 - **C47.8 doors in the native route queries DONE (11fb972a0):** Pathing's own find_path / query already step aside from native while
