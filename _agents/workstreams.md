@@ -443,6 +443,12 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   merged, halt_cancel + outranged stamp entries (lesson 354), its own full check. Round 48: the reverse half (a RETREAT that still backs
   up while an enemy in sight lays on it within 12 m), its own bar on fresh seeds.
 
+- **R47.52 E10's ship check a5fc4aec9 RED (3627/3) found two real authority holes, fixed before shipping:** his hold / ambush given as an
+  ELEMENT task was not read as his order (test_tactics_unanswered), and a CPU MOVE on a plain move order was replaced (scenario_orders).
+  Narrowed: on his side only HIS attack closes; break-LOS never overrides his orders; MOVE is replaced only where closing is the crew's
+  call. The third red is a stage premise (test_native_execute_turn_in keeps an outranged gang scout at stop): GRANT engage two lines
+  pinning Outranged.ON = false for that stage (native's file; native has ended).
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
