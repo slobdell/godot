@@ -6,8 +6,9 @@ extends GameMode
 ##   --enemy=DOCTRINE (default cpu: a seeded budgeted army; cpu:<archetype> picks one, see Army.ARCHETYPES)
 ##   --seed=N (the CPU army's seed; default: the clock)   --no-control (no control point at the center; on by default)
 ##   --player-faction=NAME / --enemy-faction=NAME (L3: condemned | gangs | law | syndicate). Either one turns that
-##     side into a faction army whose SIZE falls out of the faction's costs, and raises the default budget to
-##     Units.BASELINE_BUDGET (~30 a side). The match runner spells these --green-faction / --rust-faction; here
+##     side into a faction army whose SIZE falls out of the faction's costs, and raises the default budget to the
+##     garage's money (round 47: faction_budget(), 2000 CR = 3,500 points a side; it was BASELINE_BUDGET's 5,200). The
+##     money is the cap on every preset (fielded); `--army-cap=count` is the laptop's old 20-a-side trim. The match runner spells these --green-faction / --rust-faction; here
 ##     they follow --player / --enemy so one skirmish command reads consistently.
 ##   --pick-faction / --no-pick-faction  show (or skip) the faction menu before the match. It shows by default on
 ##     an interactive run that named no faction, and never in scripted, playtest or smoke runs.
@@ -67,11 +68,20 @@ func role_name() -> String:
 static func lineup_plan(player: String, enemy: String, player_faction: String, enemy_faction: String,
 		explicit_budget: int) -> Dictionary:
 	var any_faction := player_faction != "" or enemy_faction != ""
-	var budget := explicit_budget if explicit_budget > 0 else (Units.BASELINE_BUDGET if any_faction else Units.DEFAULT_BUDGET)
+	var budget := explicit_budget if explicit_budget > 0 else (faction_budget() if any_faction else Units.DEFAULT_BUDGET)
 	return {"budget": budget,
 			Match.Team.GREEN: {"lineup": "cpu" if player_faction != "" and player == "player_default" else player,
 					"faction": player_faction},
 			Match.Team.RUST: {"lineup": enemy, "faction": enemy_faction}}
+
+
+## Round 47 (orders, R47.22; his words: "the units should be capped based on the actual vehicle costs we've established. make
+## skirmish should assume 1000 credits or whatever the default was in the garage"): a faction skirmish is fought with the
+## garage's money, Credits.GAME_CREDITS (2000 CR = 3,500 points) a side, not BASELINE_BUDGET's 5,200; `--budget` still wins.
+## `--army-cap=count` (COUNT_CAP) is round 46's army whole: BASELINE_BUDGET and the laptop's count trim (his older recordings
+## replay with it, tests/replay/rules.py).
+static func faction_budget() -> int:
+	return Units.BASELINE_BUDGET if COUNT_CAP else Credits.to_points(Credits.GAME_CREDITS)
 
 
 ## C25.6: the planning pause's line, naming the squads' number keys (1-4 on the laptop preset, 1-5 elsewhere).
@@ -183,8 +193,16 @@ static func _room_for(out: Array, from: Dictionary) -> int:
 ## `capped` alike: at most `squad_cap` squads of at most five, so every squad forms an element. At the ceiling the
 ## player's army is folded onto the number keys (SquadConsolidation.for_player) and the CPU's is left as rolled, as
 ## before the cap existed.
+## Round 47 (R47.22): the money is the cap, on every preset. His Crossing match (laptop preset) fielded a gang army of 2,490 of
+## its 5,000 points because the count cap (20 a side) cut it while the syndicate's 17 fit whole. Now every side fields every
+## vehicle its budget bought, laid out as the desktop always has: the player's folded onto his `squad_cap` number keys, the
+## CPU's as rolled (squads of at most five). `--army-cap=count` is round 46's army (BASELINE_BUDGET and C25.6's count trim,
+## `capped`), the laptop knob (C47.10) if a full army is more than his UHD 620 carries.
+static var COUNT_CAP := OS.get_cmdline_user_args().has("--army-cap=count")
+
+
 static func fielded(doctrine: Dictionary, is_player: bool, squad_cap: int) -> Dictionary:
-	if squad_cap < Units.MAX_SQUADS:
+	if COUNT_CAP and squad_cap < Units.MAX_SQUADS:
 		return capped(doctrine, squad_cap)
 	return SquadConsolidation.for_player(doctrine, squad_cap) if is_player else doctrine
 
@@ -331,7 +349,7 @@ func _pick_faction() -> void:
 static func faction_picker_for(p_flags: LaunchFlags) -> FactionPicker:
 	var picker := FactionPicker.new()
 	picker.name = "FactionPicker"
-	picker.budget = p_flags.integer("budget", Units.BASELINE_BUDGET)
+	picker.budget = p_flags.integer("budget", SkirmishMode.faction_budget())  # R47.22: the garage's money
 	picker.player_faction = p_flags.text("player-faction", Units.DEFAULT_FACTION)
 	picker.enemy_faction = p_flags.text("enemy-faction", FactionPicker.RANDOM)
 	picker.seed_value = p_flags.integer("seed", int(Time.get_unix_time_from_system()) % 100000)

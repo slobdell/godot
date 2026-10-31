@@ -4066,3 +4066,10 @@ instrument that cannot lie about load — removal within one run — and let eve
 352. **What he picked a change FOR is its deciding line, not the change itself.** (Round 46, R46.36.) He picked "squads pack closer: the
    whole group is at your click sooner"; packing halved the file but made the last squad 1-2 s LATER. A dev read of the reason he gave
    (arrival) caught it before a series was spent; a bar written on "file length" alone would have shipped the opposite of his ask.
+
+353. **"Shipped ON" means the DEFAULT in the merged tree, read before the merge, not the bar's arm.** (Round 47, R47.32.) Bar E7's arms
+     passed `--press-on` explicitly; the orchestrator merged the green tree and told the lead it shipped ON while `PRESS_ON_DEFAULT := false`
+     sat in `tank_brain.gd`. Engage caught it an hour later. Before merging anything called ON: `git grep` the switch's default in the
+     tree being merged, and ask the worker which line flips it. (Lesson 18's "a flag the default path never passes has not shipped",
+     applied at the merge.)
+

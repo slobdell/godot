@@ -77,6 +77,51 @@ const HIT_SUPPRESSION := 0.6
 
 static func build(game_match: Match, team: int, member_names: PackedStringArray, leader: String,
 		state: Dictionary = {}) -> Dictionary:
+	# Round 47 (native N4, R47.19): the member and contact loops natively (NativeEsit, esit_native.cpp); _entries is the reference.
+	var entries := NativeEsit.entries(game_match, team, member_names, state) if NativeEsit.usable() \
+			else _entries(game_match, team, member_names, state)
+	var members: Array = entries["members"]
+	var contacts: Array = entries["contacts"]
+	var center: Vector3 = entries["center"]
+	var heading: Vector3 = entries["heading"]
+	var strength: float = entries["strength"]
+	var enemy_strength: float = entries["enemy_strength"]
+	var taking_fire: bool = entries["taking_fire"]
+	var known: Dictionary = entries["known"]
+	var tick: int = game_match.tick
+	# Round 42 (engage E2, C42.2): each member's LINE OF FIRE to the contacts within its reach, read here once a plan tick
+	# from the cover map (pure 2D boxes, memoized at CoverMap.QUANTUM), so ElementPlan can say "in range" means a shot
+	# without a physics call. Bounded: SHOT_CONTACTS nearest contacts in reach per member.
+	# Read only under the rule (`--attack-shot`): OFF asks the map for nothing (round 41 to the line).
+	if ElementPlan.ATTACK_SHOT:
+		var cover_map := CoverMap.of(game_match)
+		if cover_map != null:
+			shots_into(members, contacts, cover_map)
+
+	# Round 38 (settle S1): where a seat asked at `point` will stand for a hull of `unit`, grounded as Element.ground
+	# grounds a slot (on its anchor's bank, then pushed out of geometry toward the side the element stands on). The
+	# deploy deals its seats by these drives (ElementPlan._deploy_fit). Not called unless the deploy asks.
+	var ground_node := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
+			and game_match.tanks.get_child_count() > 0 else null
+	var ground_seat := func(point: Vector3, unit: String, anchor: Variant) -> Vector3:
+		var wanted := SlotGround.on_anchor_side(point, anchor) if anchor is Vector3 else point
+		return SlotGround.standable_from(ground_node, wanted, SlotGround.envelope_of(unit), center) if ground_node != null else wanted
+	# Round 39 (settle S1, C39.2): the ground a deploy must keep its seats off (DeployPassers.of), read only when a deploy
+	# under ElementPlan.SEAT_ROUTE_CLEAR asks, once.
+	var passers := func() -> Dictionary: return DeployPassers.of(game_match, team, leader)
+	return {"tick": tick, "team": team, "center": center, "heading": heading, "leader": leader, "ground_seat": ground_seat,
+			"passers": passers,
+			"members": members, "contacts": contacts, "known": known, "terrain": terrain_read(center, state),
+			"threat": threat_from(contacts, taking_fire), "composition": composition_of(members),
+			"strength": strength, "enemy_strength": enemy_strength, "taking_fire": taking_fire,
+			"arrived": bool(state.get("arrived", false)),
+			# X7: what route choice needs — sight lines against the arena, its annotated lanes (M2), how far we see.
+			"cover_map": CoverMap.of(game_match), "lanes": Arena.lanes_of(Arena.active), "sight": _sight_of(members)}
+
+
+## Round 47 (native N4): build's member and intel-contact loops (as they were inline), the C++ twin's reference: {members,
+## contacts, center, heading, strength, enemy_strength, taking_fire, known}. Frozen by the twin (R47.19): change it through native.
+static func _entries(game_match: Match, team: int, member_names: PackedStringArray, state: Dictionary) -> Dictionary:
 	var members: Array = []
 	var center := Vector3.ZERO
 	var heading: Vector3 = state.get("heading", Vector3.FORWARD)
@@ -150,34 +195,8 @@ static func build(game_match: Match, team: int, member_names: PackedStringArray,
 		if absf(float(a["distance"]) - float(b["distance"])) > 0.001:
 			return float(a["distance"]) < float(b["distance"])
 		return String(a["name"]) < String(b["name"]))
-	# Round 42 (engage E2, C42.2): each member's LINE OF FIRE to the contacts within its reach, read here once a plan tick
-	# from the cover map (pure 2D boxes, memoized at CoverMap.QUANTUM), so ElementPlan can say "in range" means a shot
-	# without a physics call. Bounded: SHOT_CONTACTS nearest contacts in reach per member.
-	# Read only under the rule (`--attack-shot`): OFF asks the map for nothing (round 41 to the line).
-	if ElementPlan.ATTACK_SHOT:
-		var cover_map := CoverMap.of(game_match)
-		if cover_map != null:
-			shots_into(members, contacts, cover_map)
-
-	# Round 38 (settle S1): where a seat asked at `point` will stand for a hull of `unit`, grounded as Element.ground
-	# grounds a slot (on its anchor's bank, then pushed out of geometry toward the side the element stands on). The
-	# deploy deals its seats by these drives (ElementPlan._deploy_fit). Not called unless the deploy asks.
-	var ground_node := game_match.tanks.get_child(0) as Node3D if game_match.tanks != null \
-			and game_match.tanks.get_child_count() > 0 else null
-	var ground_seat := func(point: Vector3, unit: String, anchor: Variant) -> Vector3:
-		var wanted := SlotGround.on_anchor_side(point, anchor) if anchor is Vector3 else point
-		return SlotGround.standable_from(ground_node, wanted, SlotGround.envelope_of(unit), center) if ground_node != null else wanted
-	# Round 39 (settle S1, C39.2): the ground a deploy must keep its seats off (DeployPassers.of), read only when a deploy
-	# under ElementPlan.SEAT_ROUTE_CLEAR asks, once.
-	var passers := func() -> Dictionary: return DeployPassers.of(game_match, team, leader)
-	return {"tick": tick, "team": team, "center": center, "heading": heading, "leader": leader, "ground_seat": ground_seat,
-			"passers": passers,
-			"members": members, "contacts": contacts, "known": known, "terrain": terrain_read(center, state),
-			"threat": threat_from(contacts, taking_fire), "composition": composition_of(members),
-			"strength": strength, "enemy_strength": enemy_strength, "taking_fire": taking_fire,
-			"arrived": bool(state.get("arrived", false)),
-			# X7: what route choice needs — sight lines against the arena, its annotated lanes (M2), how far we see.
-			"cover_map": CoverMap.of(game_match), "lanes": Arena.lanes_of(Arena.active), "sight": _sight_of(members)}
+	return {"members": members, "contacts": contacts, "center": center, "heading": heading, "strength": strength,
+			"enemy_strength": enemy_strength, "taking_fire": taking_fire, "known": known}
 
 
 ## Round 42 (engage E2): how many contacts (nearest first) a member's shot read covers.

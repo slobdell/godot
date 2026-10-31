@@ -1,0 +1,71 @@
+{
+  "name": "CPU Syndicate Escort",
+  "archetype": "syndicate_escort",
+  "faction": "syndicate",
+  "cost": 3320,
+  "squads": [
+    {
+      "name": "Guns",
+      "directive": {
+        "role": "assault",
+        "cohesion": 0.7
+      },
+      "units": [
+        {
+          "unit": "syn_tank"
+        },
+        {
+          "unit": "syn_tank"
+        }
+      ]
+    },
+    {
+      "name": "Hunters",
+      "directive": {
+        "role": "assault"
+      },
+      "units": [
+        {
+          "unit": "syn_ifv"
+        },
+        {
+          "unit": "syn_ifv"
+        },
+        {
+          "unit": "syn_ifv"
+        },
+        {
+          "unit": "syn_ifv"
+        }
+      ]
+    },
+    {
+      "name": "Eyes",
+      "directive": {
+        "role": "scout"
+      },
+      "units": [
+        {
+          "unit": "syn_scout"
+        },
+        {
+          "unit": "syn_scout"
+        }
+      ]
+    },
+    {
+      "name": "Battery",
+      "directive": {
+        "role": "support"
+      },
+      "units": [
+        {
+          "unit": "syn_artillery"
+        },
+        {
+          "unit": "syn_artillery"
+        }
+      ]
+    }
+  ]
+}

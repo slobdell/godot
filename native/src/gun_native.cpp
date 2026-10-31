@@ -1,4 +1,5 @@
 #include "gun_native.h"
+#include "eye_mask.h"
 
 #include "exec_view.h"
 #include "execute_native.h"
@@ -278,7 +279,7 @@ struct Gun {
 		PhysicsDirectSpaceState3D *space = viewer->get_world_3d()->get_direct_space_state();
 		const Vector3 up = Vector3(0, 1, 0) * (real_t)g.EYE_HEIGHT;
 		Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(viewer->get_global_position() + up,
-				target->get_global_position() + up, (uint32_t)g.WORLD_MASK);
+				target->get_global_position() + up, eye_mask_live((uint32_t)g.WORLD_MASK)); // Perception.eye_mask() (R47.36)
 		return space->intersect_ray(query).is_empty();
 	}
 
@@ -711,6 +712,29 @@ struct Gun {
 		}
 		const bool aimed = aim_error(muzzle_at, turret_forward(), aim) <= deg_to_rad((double)weapon[k.aim_tolerance_deg]);
 		const bool envelope = engage(target, here.distance_to(target_at), seconds, weapon_order.get(k.long_shot, false));
+		// Round 47 (engage E3, R47.20, --pot-shot): Gunnery.POT_SHOT read live off the script (absent = off): a crew with no fix yet,
+		// laid >= POT_SHOT_AFTER_S on this target, inside its effective band, fires with its aim off by what is left of the lay.
+		static const StringName pot_shot_name("POT_SHOT"), pot_shots_name("pot_shots");
+		Object *gscript = gunnery->get_script().get_validated_object();
+		if (gscript != nullptr && (bool)gscript->get(pot_shot_name) && !envelope && in_range && ready_to_fire()) {
+			const double hull_distance = here.distance_to(target_at);
+			const double needed = acquire_seconds(target, hull_distance);
+			const double laid = v.l_progress();
+			const double effective = (double)weapon.get(k.effective_range, (double)weapon.get(k.range, 0.0));
+			if (v.l_target() == String(target->get_name()) && laid >= 0.4 && laid < needed && hull_distance <= effective) {
+				const int64_t tick = game_match != nullptr ? (int64_t)game_match->get(k.tick) : 0;
+				const Vector3 off_aim = aim + aim_offset(2.5 * (1.0 - laid / needed), tick, tank->get(k.slot), g.WANDER_PERIOD_TICKS);
+				cover(off_aim, cmd);
+				if (aim_error(muzzle_at, turret_forward(), off_aim) <= deg_to_rad((double)weapon[k.aim_tolerance_deg])) {
+					const bool fire = clear_to_fire(true, off_aim);
+					cmd->set(k.fire, fire);
+					if (fire) {
+						sadd(gscript, pot_shots_name, 1);
+					}
+					return;
+				}
+			}
+		}
 		cmd->set(k.fire, clear_to_fire(envelope && in_range && aimed && ready_to_fire(), aim));
 	}
 

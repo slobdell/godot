@@ -56,6 +56,16 @@ func _mutate(s: Dictionary, current: Dictionary, n: int, rng: RandomNumberGenera
 			m["self"]["max_ammo"] = 10
 			m["self"]["in_resupply_zone"] = rng.randf() < 0.5
 			m["self"]["health"] = int(float(m["self"]["max_health"]) * rng.randf_range(0.05, 0.5))
+			# Round 47 (engage E7): a critical crew on an attack-move (named or not) under an ATTACK task (PRESS_ON presses it home).
+			if first_name != "" and rng.randf() < 0.6:
+				for c: Dictionary in contacts:
+					c["visible"] = true
+				m["order"] = {"verb": "attack_move", "target": first_name if rng.randf() < 0.85 else "",
+						"goal": here + Vector3(20.0, 0.0, -10.0), "target_alive": true, "his_side": rng.randf() < 0.75}
+				if rng.randf() < 0.9:
+					m["element"] = {"task": "attack" if rng.randf() < 0.8 else "move"}
+				else:
+					m.erase("element")
 		5:
 			m["control"] = {"center": here + Vector3(5.0, 0.0, 5.0), "radius": 20.0, "owner": rng.randi_range(-1, 1)}
 		6:
@@ -118,6 +128,9 @@ func test_decide_is_the_gdscript() -> void:
 	# Round 46 (engage L2): one case in five with the lane rule off; CLEAR_LANE counted where only L2 can choose it.
 	var lane_saved := TankBrain.LANE_CLEAR
 	var lane_only := 0
+	# Round 47 (engage E7): TankBrain.PRESS_ON both ways where the build has it; `pressed_moved` = cases the rule changes (live).
+	var press_saved: Variant = (TankBrain as Object).get("PRESS_ON")
+	var pressed_moved := 0
 	for frame in 600:
 		await wait_physics_frames(1)
 		if frame % 5 != 4:
@@ -167,6 +180,15 @@ func test_decide_is_the_gdscript() -> void:
 				var pair: Array = cases[ci]
 				TankBrain.SCOUT_FIGHT_BACK = flag_saved and ci != flag_off
 				TankBrain.LANE_CLEAR = lane_saved and (asked + ci) % 5 != 0
+				var unpressed_option := ""
+				if press_saved != null:
+					(TankBrain as Object).set("PRESS_ON", (asked + ci) % 3 != 0)
+					if bool((TankBrain as Object).get("PRESS_ON")):
+						BrainSwitches.native_decide = false
+						(TankBrain as Object).set("PRESS_ON", false)
+						var unpressed: Dictionary = TankBrain.decide((pair[0] as Dictionary).duplicate(true), (pair[1] as Dictionary).duplicate(true))
+						(TankBrain as Object).set("PRESS_ON", true)
+						unpressed_option = String((unpressed.get("choice", {}) as Dictionary).get("option", ""))
 				BrainSwitches.native_decide = false
 				var t0 := Time.get_ticks_usec()
 				var live := TankBrain.decide(pair[0], pair[1])
@@ -177,6 +199,8 @@ func test_decide_is_the_gdscript() -> void:
 				native_usec += Time.get_ticks_usec() - t0
 				asked += 1
 				var option := String(live["choice"]["option"])
+				if unpressed_option == "RETREAT" and option != "RETREAT":
+					pressed_moved += 1
 				options[option] = int(options.get(option, 0)) + 1
 				var o_lane: Dictionary = (pair[0] as Dictionary).get("order", {}) if (pair[0] as Dictionary).get("order") is Dictionary else {}
 				if option == "CLEAR_LANE" and TankBrain.LANE_CLEAR and (String((pair[1] as Dictionary).get("target", "")) == "" \
@@ -190,6 +214,10 @@ func test_decide_is_the_gdscript() -> void:
 	BrainSwitches.native_decide = saved
 	TankBrain.SCOUT_FIGHT_BACK = flag_saved
 	TankBrain.LANE_CLEAR = lane_saved
+	if press_saved != null:
+		(TankBrain as Object).set("PRESS_ON", press_saved)
+		print("native decide: %d RETREATs the press rule turned into a fight (E7)" % pressed_moved)
+		assert_true(pressed_moved >= 5, "E7's press was exercised (%d RETREATs pressed home)" % pressed_moved)
 	print("native decide: %d CLEAR_LANE choices only the lane rule makes (no fight of its own, or his post's lane step)" % lane_only)
 	print("native decide: %d scout cases under fire, %d where the scout fights back, %d it would fight standing still" % [
 			scout_cases, scout_fights, scout_cut_by_forecast])

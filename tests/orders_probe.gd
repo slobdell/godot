@@ -145,6 +145,10 @@ func _run() -> void:
 			"click": _xz(_click), "route": _route.map(func(p: Vector3) -> Array: return _xz(p)),
 			"ground_cap": SelectionSquads.GROUND_CAP, "decks": SlotGround.deck_boxes()}))
 	_before_order(units)
+	# Round 47 (orders O2, Bar O): `--probe-merge=on` saves every squad under one more control-group number first (his "grouped
+	# them into a single squad 4"), so the click is his merged group's; the squads keep their own numbers as he had them.
+	if _flag("probe-merge", "off") == "on":
+		_controls.groups.save(ControlGroups.COUNT, units.duplicate())
 	_controls.selection.set_units(units)
 	await physics_frame
 	var returned: Array = []
@@ -288,6 +292,7 @@ func _run() -> void:
 			# Round 35 (D5, D3): the swaps uncross_paths made and the packs laid (each A/B confirms its own counter first, R35.5)
 			"uncrossed": _static_or(SelectionSquads, "uncrossed"), "packed": _static_or(SelectionSquads, "packed"), "pack_refused": SelectionSquads.pack_refused, "deck_cleared": _static_or(SelectionSquads, "deck_cleared"),
 			"friend_contacts": _contacts, "friend_contacts_foreign": _contacts_foreign, "contact_ticks": _contact_ticks,
+			"contacts_after_in": _contacts_after_in, "contacts_near": _contacts_near,
 			"swapped_whole": SelectionSquads.swapped_whole, "columns_laid": SelectionSquads.columns_laid, "gate_columns": _static_or(RtsControls, "gates_laid_as_columns"), "first_legs_relaid": _static_or(RtsControls, "first_legs_relaid"), "legs_cut_short": _static_or(RtsControls, "legs_cut_short"), "bodies_kept": _static_or(SelectionSquads, "bodies_kept"), "columns_two_sided": _static_or(SelectionSquads, "columns_two_sided"), "places_off_lanes": _static_or(SelectionSquads, "places_off_lanes"), "places_cleared": _static_or(SelectionSquads, "places_cleared"), "cleared_legs_back": _static_or(RtsControls, "cleared_legs_back"), "whole_still_crossed": SelectionSquads.whole_still_crossed, "columns_refused_away": _static_or(SelectionSquads, "columns_refused_away"), "kept_away": _static_or(SelectionSquads, "kept_away"),
 			"untangle": "whole" if SelectionSquads.UNTANGLE_WHOLE else "deal",
 			"parked_hold": "on" if TankBrain.PARKED_HOLD else "off", "parked_refused": TankBrain.parked_refused,
@@ -299,6 +304,9 @@ func _run() -> void:
 					if all_in_tick >= 0 else -1.0, "on_deck": rows.filter(func(r: Dictionary) -> bool: return r["deck"]).size(),
 			"crossed": rows.filter(func(r: Dictionary) -> bool: return r["crossed"]).size(),
 			"worst_offset_m": rows.map(func(r: Dictionary) -> float: return r["anchor_offset_m"]).max(),
+			# Bar O (round 47): the farthest two squads' spots for this order (his "two points far apart"), and the merged lay's counters.
+			"spread_m": _spread_of(rows), "merge": _flag("probe-merge", "off"),
+			"merged_laid": _static_or(SelectionSquads, "merged_laid"), "merged_refused": _static_or(SelectionSquads, "merged_refused"), "merged_stepped": _static_or(SelectionSquads, "merged_stepped"),
 			"worst_shuffle_m": rows.map(func(r: Dictionary) -> float: return r["shuffle_m"]).max()}.merged(_run_extra())))
 	quit(0)
 
@@ -328,6 +336,21 @@ func _watch_extra() -> void:
 
 func _run_extra() -> Dictionary:
 	return {}
+
+
+## Bar O: the largest distance between two squads' anchors (m); -1 with fewer than two anchored squads.
+static func _spread_of(rows: Array) -> float:
+	var at: Array = []
+	for r: Dictionary in rows:
+		if r.get("anchor") is Array:
+			at.append(Vector2(float(r["anchor"][0]), float(r["anchor"][1])))
+	if at.size() < 2:
+		return -1.0
+	var far := 0.0
+	for i in at.size():
+		for j in range(i + 1, at.size()):
+			far = maxf(far, (at[i] as Vector2).distance_to(at[j]))
+	return snappedf(far, 0.1)
 
 
 ## Past a deck to the far side from the click: within a deck's span across the river (its x range, widened by
@@ -393,7 +416,30 @@ func _watch_contacts() -> void:
 			_contacts += 1
 			if squad_of.get(now[key][0], -1) != squad_of.get(now[key][1], -2):
 				_contacts_foreign += 1
+			# Round 47 (orders, O1 v3's contact read): WHERE the contact starts: after every squad is in (the halt opening out or
+			# settling), or both crews within NEAR_ANCHOR_M of their own squad's anchor (the files' last stretch), else on the way.
+			if _squads.all(func(s: Dictionary) -> bool: return int(s.get("arrived_tick", -1)) >= 0):
+				_contacts_after_in += 1
+			elif _near_anchor(now[key][0]) and _near_anchor(now[key][1]):
+				_contacts_near += 1
 	_contact_last = now
+
+
+var _contacts_after_in := 0
+var _contacts_near := 0
+## The files form in the last ElementPlan.INSET_NEAR_M (60 m) of the way.
+const NEAR_ANCHOR_M := 60.0
+
+
+func _near_anchor(unit_name: String) -> bool:
+	var tank := _tank(unit_name)
+	if tank == null:
+		return false
+	for squad: Dictionary in _squads:
+		if (squad["units"] as Array).has(unit_name):
+			var anchor: Variant = squad.get("anchor")
+			return anchor is Vector3 and _flat_d(tank.global_position, anchor) <= NEAR_ANCHOR_M
+	return false
 
 
 ## Every tick: decks crossed, the centre's path, arrival (and the hulls around it then), and the shuffle after it.

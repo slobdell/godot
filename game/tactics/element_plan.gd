@@ -885,7 +885,12 @@ static func _plan_form_up(plan: Dictionary, situation: Dictionary, state: Dictio
 	# `halt_at`, set only by the pack, itself off) travels its last INSET_NEAR_M in a file, which nests as tightly as the
 	# packed halts do, and its halt opens out of the file on its spot (the deploy step). D3's record: packed halts put two
 	# arriving WEDGES' slots 5.7 m apart. `--arrive-file=on` opts in.
-	if ARRIVE_FILE and (state.get("task", {}) as Dictionary).has("halt_at") and center.distance_to(destination) <= INSET_NEAR_M:
+	# Round 47 (orders, R47.21, his pick "columns only at the end"): a squad of his MERGED group (the controls give its task
+	# halt_shape "column", RtsControls' merged lay, `--group-merged`) does the same: it travels in its own shape and files
+	# only for this last stretch, beside its squadmate's file. `--merged-arrive-file=off`.
+	var arrive_task: Dictionary = state.get("task", {})
+	if (ARRIVE_FILE or (MERGED_ARRIVE_FILE and String(arrive_task.get("halt_shape", "")) == "column")) and arrive_task.has("halt_at") \
+			and center.distance_to(destination) <= INSET_NEAR_M:
 		plan["formation"] = "column"
 	plan["anchor"] = destination
 	plan["technique"] = "traveling"
@@ -2216,6 +2221,8 @@ static func _deploy_still(deploy: Dictionary, situation: Dictionary, tick: int) 
 
 ## D3b (R35.41): a packed squad's last stretch in a file (OFF; `--arrive-file=on` / env ARRIVE_FILE=on opts in).
 static var ARRIVE_FILE := OS.get_cmdline_user_args().has("--arrive-file=on") or OS.get_environment("ARRIVE_FILE") == "on"
+## R47.21 (orders): the merged group's files form only for the last stretch (above). ON; reached only through `--group-merged`.
+static var MERGED_ARRIVE_FILE := not OS.get_cmdline_user_args().has("--merged-arrive-file=off")
 
 
 ## The deploy step's state for this update ({} when it does not apply): {"heading", "deployed", "tick", "cause"}.

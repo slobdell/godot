@@ -4381,6 +4381,1410 @@
    "text": "Snatched away! The point flips!",
    "voice": "JR1"
   },
+  "caller.door.caught.01@artillery": {
+   "duration_s": 3.154,
+   "file": "caller/caller.door.caught.01@artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.01@artillery",
+   "request_key": "d1b7cc8c3072d891ad91c62de0e816ae30aea7cd",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The artillery is shut out. That door came down right in front of it",
+   "text": "The artillery is shut out! That door came down right in front of it!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.01@burner": {
+   "duration_s": 2.964,
+   "file": "caller/caller.door.caught.01@burner.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.01@burner",
+   "request_key": "c4d71f9001ee36f35fab4da1cf24c2b0e029cb13",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The burner is shut out. That door came down right in front of it",
+   "text": "The Burner is shut out! That door came down right in front of it!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.01@ifv": {
+   "duration_s": 3.511,
+   "file": "caller/caller.door.caught.01@ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.01@ifv",
+   "request_key": "3e550b48320bd48857b946db0a8348af0d71bb85",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The IFV is shut out. That door came down right in front of it",
+   "text": "The IFV is shut out! That door came down right in front of it!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.01@lancer": {
+   "duration_s": 3.632,
+   "file": "caller/caller.door.caught.01@lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.01@lancer",
+   "request_key": "995a082053272cbcc108d76a9eaecad83e552cdd",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The Lancer is shut out. That door came down right in front of it",
+   "text": "The Lancer is shut out! That door came down right in front of it!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.01@scout": {
+   "duration_s": 3.195,
+   "file": "caller/caller.door.caught.01@scout.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.01@scout",
+   "request_key": "71245ae9b2333d33bb56c93b3622706e1c011126",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The scout is shut out. That door came down right in front of it",
+   "text": "The scout is shut out! That door came down right in front of it!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.01@tank": {
+   "duration_s": 3.015,
+   "file": "caller/caller.door.caught.01@tank.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.01@tank",
+   "request_key": "5f1b3dff05787764ac821bb3e7a2e93c298e1139",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The tank is shut out. That door came down right in front of it",
+   "text": "The tank is shut out! That door came down right in front of it!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@condemned.artillery": {
+   "duration_s": 4.41,
+   "file": "caller/caller.door.caught.02@condemned.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@condemned.artillery",
+   "request_key": "1fb53c5c99fc8ff65687f1883b8191b867a9c459",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the artillery got caught on the wrong side, cut off from the rest of the condemned",
+   "text": "Oh, the artillery got caught on the wrong side! Cut off from the rest of the Condemned!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@condemned.burner": {
+   "duration_s": 3.812,
+   "file": "caller/caller.door.caught.02@condemned.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@condemned.burner",
+   "request_key": "d1167946e352dc53774f0959450d968b710ff948",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the Burner got caught on the wrong side, cut off from the rest of the condemned",
+   "text": "Oh, the Burner got caught on the wrong side! Cut off from the rest of the Condemned!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@condemned.ifv": {
+   "duration_s": 4.474,
+   "file": "caller/caller.door.caught.02@condemned.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@condemned.ifv",
+   "request_key": "d8ffc403fa8c3b084bb10abd55dd66f06b89b77d",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the IFV got caught on the wrong side, cut off from the rest of the condemned",
+   "text": "Oh, the IFV got caught on the wrong side! Cut off from the rest of the Condemned!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@condemned.lancer": {
+   "duration_s": 4.25,
+   "file": "caller/caller.door.caught.02@condemned.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@condemned.lancer",
+   "request_key": "dad7af1495b1c553b9355fb0bf2a68f0364043a9",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the lancer got caught on the wrong side. Cut off from the rest of the condemned",
+   "text": "Oh, the Lancer got caught on the wrong side! Cut off from the rest of the Condemned!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@condemned.scout": {
+   "duration_s": 4.518,
+   "file": "caller/caller.door.caught.02@condemned.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@condemned.scout",
+   "request_key": "8dc5e8f4e600e53dda4a9cc6204f3b8e5c02c9a2",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Whoa, the scout got caught on the wrong side, cut off from the rest of the condemned",
+   "text": "Oh, the scout got caught on the wrong side! Cut off from the rest of the Condemned!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@condemned.tank": {
+   "duration_s": 4.343,
+   "file": "caller/caller.door.caught.02@condemned.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@condemned.tank",
+   "request_key": "d8cf11e55b3b913579a3fed02e7c6c9d62960b9b",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the tank got caught on the wrong side, cut off from the rest of the condemned",
+   "text": "Oh, the tank got caught on the wrong side! Cut off from the rest of the Condemned!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@gangs.artillery": {
+   "duration_s": 3.962,
+   "file": "caller/caller.door.caught.02@gangs.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@gangs.artillery",
+   "request_key": "12bf972b83f34ca6f073b29d888b1a1350dc59a1",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the artillery got caught on the wrong side, cut off from the rest of the Wreckers",
+   "text": "Oh, the artillery got caught on the wrong side! Cut off from the rest of the Wreckers!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@gangs.burner": {
+   "duration_s": 4.137,
+   "file": "caller/caller.door.caught.02@gangs.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@gangs.burner",
+   "request_key": "662ff3d95e4b3d1fb29c40967350a42f1ddac31f",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the burner got caught on the wrong side. Cut off from the rest of the wreckers",
+   "text": "Oh, the Burner got caught on the wrong side! Cut off from the rest of the Wreckers!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@gangs.ifv": {
+   "duration_s": 4.409,
+   "file": "caller/caller.door.caught.02@gangs.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@gangs.ifv",
+   "request_key": "36fcf44bac76f5288d80a9218d37a01c9e1acac1",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the IFV got caught on the wrong side, cut off from the rest of the Wreckers",
+   "text": "Oh, the IFV got caught on the wrong side! Cut off from the rest of the Wreckers!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@gangs.lancer": {
+   "duration_s": 4.062,
+   "file": "caller/caller.door.caught.02@gangs.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@gangs.lancer",
+   "request_key": "8e867e197afb7111321f175d65a10bffcfc0b1ef",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the Lancer got caught on the wrong side, cut off from the rest of the Wreckers",
+   "text": "Oh, the Lancer got caught on the wrong side! Cut off from the rest of the Wreckers!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@gangs.scout": {
+   "duration_s": 4.629,
+   "file": "caller/caller.door.caught.02@gangs.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@gangs.scout",
+   "request_key": "c4cf9d0a89639c68425e506036c30c85f86f602a",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the scout got caught on the wrong side, cut off from the rest of the Wreckers",
+   "text": "Oh, the scout got caught on the wrong side! Cut off from the rest of the Wreckers!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@gangs.tank": {
+   "duration_s": 4.348,
+   "file": "caller/caller.door.caught.02@gangs.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@gangs.tank",
+   "request_key": "5beae31347b1d4f3eb5326e6df0d262ad884be0c",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the tank got caught on the wrong side, cut off from the rest of the wreckers",
+   "text": "Oh, the tank got caught on the wrong side! Cut off from the rest of the Wreckers!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@law.artillery": {
+   "duration_s": 4.024,
+   "file": "caller/caller.door.caught.02@law.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@law.artillery",
+   "request_key": "e0e024b29210560b58358a55e26c83ef58ff3aa1",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the artillery got caught on the wrong side. Cut off from the rest of the law",
+   "text": "Oh, the artillery got caught on the wrong side! Cut off from the rest of the Law!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@law.burner": {
+   "duration_s": 3.907,
+   "file": "caller/caller.door.caught.02@law.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@law.burner",
+   "request_key": "d71f5919734013968893e39b61b0102c8fbb9f64",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the burner got caught on the wrong side, cut off from the rest of the law",
+   "text": "Oh, the Burner got caught on the wrong side! Cut off from the rest of the Law!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@law.ifv": {
+   "duration_s": 4.165,
+   "file": "caller/caller.door.caught.02@law.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@law.ifv",
+   "request_key": "20a3854e7579d58194426b19d80352fafe8b1275",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the IFV got caught on the wrong side, cut off from the rest of the lot",
+   "text": "Oh, the IFV got caught on the wrong side! Cut off from the rest of the Law!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@law.lancer": {
+   "duration_s": 3.827,
+   "file": "caller/caller.door.caught.02@law.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@law.lancer",
+   "request_key": "858f3e35ffc246d53f475fdf6a6ad0084d2b6de7",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the lancer got caught on the wrong side, cut off from the rest of the lot",
+   "text": "Oh, the Lancer got caught on the wrong side! Cut off from the rest of the Law!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@law.scout": {
+   "duration_s": 3.961,
+   "file": "caller/caller.door.caught.02@law.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@law.scout",
+   "request_key": "b36fd1a61a5343a15702578e2250efdb3e389c1c",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the scout got caught on the wrong side. Cut off from the rest of the law",
+   "text": "Oh, the scout got caught on the wrong side! Cut off from the rest of the Law!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@law.tank": {
+   "duration_s": 3.863,
+   "file": "caller/caller.door.caught.02@law.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@law.tank",
+   "request_key": "e27a356f6944194b0520cd42fa674f54f9c59bee",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the tank got caught on the wrong side. Cut off from the rest of the law",
+   "text": "Oh, the tank got caught on the wrong side! Cut off from the rest of the Law!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@syndicate.artillery": {
+   "duration_s": 4.257,
+   "file": "caller/caller.door.caught.02@syndicate.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@syndicate.artillery",
+   "request_key": "a844fe953900ca878835425d5da171134ff1dc21",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the artillery got caught on the wrong side, cut off from the rest of the syndicate",
+   "text": "Oh, the artillery got caught on the wrong side! Cut off from the rest of the Syndicate!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@syndicate.burner": {
+   "duration_s": 3.964,
+   "file": "caller/caller.door.caught.02@syndicate.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@syndicate.burner",
+   "request_key": "876571efde26020fa81610697f3355848922ca68",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the Burner got caught on the wrong side, cut off from the rest of the Syndicate",
+   "text": "Oh, the Burner got caught on the wrong side! Cut off from the rest of the Syndicate!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@syndicate.ifv": {
+   "duration_s": 4.392,
+   "file": "caller/caller.door.caught.02@syndicate.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@syndicate.ifv",
+   "request_key": "1bf4e8cbbf53579ceec019fff829e4b9871e2bc3",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the IFV got caught on the wrong side, cut off from the rest of the syndicate",
+   "text": "Oh, the IFV got caught on the wrong side! Cut off from the rest of the Syndicate!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@syndicate.lancer": {
+   "duration_s": 4.623,
+   "file": "caller/caller.door.caught.02@syndicate.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@syndicate.lancer",
+   "request_key": "a83b497653bc71855825191911460e5b3bda5dd8",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the lancer got caught on the wrong side. Cut off from the rest of the syndicate",
+   "text": "Oh, the Lancer got caught on the wrong side! Cut off from the rest of the Syndicate!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@syndicate.scout": {
+   "duration_s": 4.797,
+   "file": "caller/caller.door.caught.02@syndicate.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@syndicate.scout",
+   "request_key": "ad0b9ceb5e02d28d47eb5eb081ff946a2bc00c30",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the scout got caught on the wrong side. Cut off from the rest of the syndicate",
+   "text": "Oh, the scout got caught on the wrong side! Cut off from the rest of the Syndicate!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.02@syndicate.tank": {
+   "duration_s": 3.948,
+   "file": "caller/caller.door.caught.02@syndicate.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.02@syndicate.tank",
+   "request_key": "4744fc7953fca499d07885b4fef5fa136e7efe35",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Oh, the tank got caught on the wrong side. Cut off from the rest of the syndicate",
+   "text": "Oh, the tank got caught on the wrong side! Cut off from the rest of the Syndicate!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.03@condemned": {
+   "duration_s": 4.157,
+   "file": "caller/caller.door.caught.03@condemned.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.03@condemned",
+   "request_key": "352ec3d9eff066778d5c29f1a3661bf25615817f",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They're split up. Half of the condemned on one side of that door, half on the other",
+   "text": "They're split up! Half of the Condemned on one side of that door, half on the other!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.03@gangs": {
+   "duration_s": 4.301,
+   "file": "caller/caller.door.caught.03@gangs.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.03@gangs",
+   "request_key": "7690ed14394c40640a15ea0ab694c7dbc33f7fef",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "But they're split up. Half of the Wreckers on one side of that door, half on the other",
+   "text": "They're split up! Half of the Wreckers on one side of that door, half on the other!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.03@law": {
+   "duration_s": 3.906,
+   "file": "caller/caller.door.caught.03@law.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.03@law",
+   "request_key": "e58fd1419abe87f5f1ff8e8c80b3f1aaa4a8fd39",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They're split up. Half of the law on one side of that door, half on the other",
+   "text": "They're split up! Half of the Law on one side of that door, half on the other!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.03@syndicate": {
+   "duration_s": 4.289,
+   "file": "caller/caller.door.caught.03@syndicate.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.03@syndicate",
+   "request_key": "6cbf2bee165c9183446f0ec381ac92751e971593",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "They're split up. Half of the syndicate on one side of that door, half on the other",
+   "text": "They're split up! Half of the Syndicate on one side of that door, half on the other!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.04@artillery": {
+   "duration_s": 3.081,
+   "file": "caller/caller.door.caught.04@artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.04@artillery",
+   "request_key": "ba053e1993e6f3005c0f87d2bec5fa3a7d6d2885",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The artillery waited too long, and now it's on its own out there",
+   "text": "The artillery waited too long, and now it's on its own out there!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.04@burner": {
+   "duration_s": 3.047,
+   "file": "caller/caller.door.caught.04@burner.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.04@burner",
+   "request_key": "8b6e998b6a4aae04e1cb9b16a1b1433c0fdf8311",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The burner waited too long, and now it's on its own out there",
+   "text": "The Burner waited too long, and now it's on its own out there!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.04@ifv": {
+   "duration_s": 3.58,
+   "file": "caller/caller.door.caught.04@ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.04@ifv",
+   "request_key": "f5758a34596c9a8c7ceedfb430e2b9d21814f5ef",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The IFV waited too long, and now it's on its own out there",
+   "text": "The IFV waited too long, and now it's on its own out there!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.04@lancer": {
+   "duration_s": 3.135,
+   "file": "caller/caller.door.caught.04@lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.04@lancer",
+   "request_key": "6dd6f227b14b47cc73debf6538b50ad1fdb8bef4",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The lancer waited too long, and now it's on its own out there",
+   "text": "The Lancer waited too long, and now it's on its own out there!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.04@scout": {
+   "duration_s": 3.258,
+   "file": "caller/caller.door.caught.04@scout.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.04@scout",
+   "request_key": "e9d4f88aa391be9ac5e9d1173248ecd1456514ee",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The scout waited too long, and now it's on its own out there",
+   "text": "The scout waited too long, and now it's on its own out there!",
+   "voice": "JR1"
+  },
+  "caller.door.caught.04@tank": {
+   "duration_s": 2.879,
+   "file": "caller/caller.door.caught.04@tank.ogg",
+   "kind": "line",
+   "request": "caller.door.caught.04@tank",
+   "request_key": "499135ddd35ae6e2cd63b32ceacf922700077de5",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The tank waited too long, and now it's on its own out there",
+   "text": "The tank waited too long, and now it's on its own out there!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@east.artillery": {
+   "duration_s": 3.876,
+   "file": "caller/caller.door.held.01@east.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@east.artillery",
+   "request_key": "947760543fbe5645084726aba3d4141b00a1c037",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "But the east gate can't close. The artillery is sitting right in the doorway",
+   "text": "The east gate can't close! The artillery is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@east.burner": {
+   "duration_s": 3.669,
+   "file": "caller/caller.door.held.01@east.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@east.burner",
+   "request_key": "6584aee8efeb73275a017e0504add60808f39170",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The east gate can't close. The burner is sitting right in the doorway",
+   "text": "The east gate can't close! The Burner is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@east.ifv": {
+   "duration_s": 3.926,
+   "file": "caller/caller.door.held.01@east.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@east.ifv",
+   "request_key": "3a097f2a05a94cbd8dfffac6409b8e7bf057c688",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The east gate can't close. The IFV is sitting right in the doorway",
+   "text": "The east gate can't close! The IFV is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@east.lancer": {
+   "duration_s": 3.298,
+   "file": "caller/caller.door.held.01@east.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@east.lancer",
+   "request_key": "2f1cda4650d577ea1671125cfb824b82caf960ba",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The east gate can't close. The lancer is sitting right in the doorway",
+   "text": "The east gate can't close! The Lancer is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@east.scout": {
+   "duration_s": 3.856,
+   "file": "caller/caller.door.held.01@east.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@east.scout",
+   "request_key": "d254278fd799c5ddf01b4b10873a9e5385858c19",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The east gate can't close. The scout is sitting right in the doorway",
+   "text": "The east gate can't close! The scout is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@east.tank": {
+   "duration_s": 3.643,
+   "file": "caller/caller.door.held.01@east.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@east.tank",
+   "request_key": "e492591da98b1590bacd4ac789b1a2b33e5a6224",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The east gate can't close. The tank is sitting right in the doorway",
+   "text": "The east gate can't close! The tank is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@north.artillery": {
+   "duration_s": 3.855,
+   "file": "caller/caller.door.held.01@north.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@north.artillery",
+   "request_key": "febb6f5d0f4085d8a05746fce8d63280ca50402b",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The north gate can't close. The artillery is sitting right in the doorway",
+   "text": "The north gate can't close! The artillery is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@north.burner": {
+   "duration_s": 3.651,
+   "file": "caller/caller.door.held.01@north.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@north.burner",
+   "request_key": "26810439f8172662d291d767e4a8a22c66aa3aae",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The north gate can't close. The burner is sitting right in the doorway",
+   "text": "The north gate can't close! The Burner is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@north.ifv": {
+   "duration_s": 3.71,
+   "file": "caller/caller.door.held.01@north.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@north.ifv",
+   "request_key": "5dbfbb8deccce6c9b5c141e154ca58d7db915584",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The north gate can't close. The IFV is sitting right in the doorway",
+   "text": "The north gate can't close! The IFV is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@north.lancer": {
+   "duration_s": 3.894,
+   "file": "caller/caller.door.held.01@north.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@north.lancer",
+   "request_key": "b7f1b50e69014d568fa542306a84472a4eaa5ad3",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The north gate can't close. The lancer is sitting right in the doorway",
+   "text": "The north gate can't close! The Lancer is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@north.scout": {
+   "duration_s": 3.361,
+   "file": "caller/caller.door.held.01@north.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@north.scout",
+   "request_key": "84d0aa84f0f6830994077847d925665254ef90b3",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The north gate can't close. The scout is sitting right in the doorway",
+   "text": "The north gate can't close! The scout is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@north.tank": {
+   "duration_s": 3.333,
+   "file": "caller/caller.door.held.01@north.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@north.tank",
+   "request_key": "59707fd851f646ad997643ad7c0881a3333934d2",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The north gate can't close. The tank is sitting right in the doorway",
+   "text": "The north gate can't close! The tank is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@south.artillery": {
+   "duration_s": 3.71,
+   "file": "caller/caller.door.held.01@south.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@south.artillery",
+   "request_key": "833f9a56d7c882a4b52ad99588a02b192032baee",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The, the south gate can't close. The artillery is sitting right in the doorway",
+   "text": "The south gate can't close! The artillery is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@south.burner": {
+   "duration_s": 4.094,
+   "file": "caller/caller.door.held.01@south.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@south.burner",
+   "request_key": "9e5e95b9856fb432a825156523004e84707091f9",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The south gate can't close. The burner is sitting right in the doorway",
+   "text": "The south gate can't close! The Burner is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@south.ifv": {
+   "duration_s": 3.896,
+   "file": "caller/caller.door.held.01@south.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@south.ifv",
+   "request_key": "303c170e4a04bb0ed88af9e33b4857c65c3c7b5b",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The south gate can't close. The IFV is sitting right in the doorway",
+   "text": "The south gate can't close! The IFV is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@south.lancer": {
+   "duration_s": 3.767,
+   "file": "caller/caller.door.held.01@south.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@south.lancer",
+   "request_key": "599d433919a6b5acc757266484b3d34648baf278",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The south gate can't close. The Lancer is sitting right in the doorway",
+   "text": "The south gate can't close! The Lancer is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@south.scout": {
+   "duration_s": 3.42,
+   "file": "caller/caller.door.held.01@south.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@south.scout",
+   "request_key": "c96bf8044bf90b43eae2d6e63c85ae2448caffb1",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The south gate can't close. The scout is sitting right in the doorway",
+   "text": "The south gate can't close! The scout is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@south.tank": {
+   "duration_s": 3.765,
+   "file": "caller/caller.door.held.01@south.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@south.tank",
+   "request_key": "e863ca62756420dd483fd25ca54f1b5c3d491b86",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The south gate can't close. The tank is sitting right in the doorway",
+   "text": "The south gate can't close! The tank is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@west.artillery": {
+   "duration_s": 3.942,
+   "file": "caller/caller.door.held.01@west.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@west.artillery",
+   "request_key": "33c3e72f28fbfceff804dbbf19e629966e24b4d5",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The west gate can't close. The artillery is sitting right in the doorway",
+   "text": "The west gate can't close! The artillery is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@west.burner": {
+   "duration_s": 3.791,
+   "file": "caller/caller.door.held.01@west.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@west.burner",
+   "request_key": "5852ea871394a4b442d496283d4858402beff5ef",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The west gate can't close. The burner is sitting right in the doorway",
+   "text": "The west gate can't close! The Burner is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@west.ifv": {
+   "duration_s": 3.864,
+   "file": "caller/caller.door.held.01@west.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@west.ifv",
+   "request_key": "29a5dbd3a576cb9e4b6ad386f82286d5e82c2613",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The west gate can't close. The IFV is sitting right in the doorway",
+   "text": "The west gate can't close! The IFV is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@west.lancer": {
+   "duration_s": 3.662,
+   "file": "caller/caller.door.held.01@west.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@west.lancer",
+   "request_key": "6e80ee605532b1825fdf1298b91f61e6799153f5",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The west gate can't close. The lancer is sitting right in the doorway",
+   "text": "The west gate can't close! The Lancer is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@west.scout": {
+   "duration_s": 3.452,
+   "file": "caller/caller.door.held.01@west.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@west.scout",
+   "request_key": "db73f50866f69fb8c8ece8034d02079232d97398",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The west gate can't close. The scout is sitting right in the doorway",
+   "text": "The west gate can't close! The scout is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.01@west.tank": {
+   "duration_s": 3.594,
+   "file": "caller/caller.door.held.01@west.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.held.01@west.tank",
+   "request_key": "2c3308412903c8f93ca12aac8e278b058cb8ee39",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The west gate can't close. The tank is sitting right in the doorway",
+   "text": "The west gate can't close! The tank is sitting right in the doorway!",
+   "voice": "JR1"
+  },
+  "caller.door.held.02@artillery": {
+   "duration_s": 4.16,
+   "file": "caller/caller.door.held.02@artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.held.02@artillery",
+   "request_key": "35ef706390cda8a1b6fd0a6f94afce6ac5f2e1be",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The artillery is parked in the door, and that gate is not coming down until it moves",
+   "text": "The artillery is parked in the door, and that gate is not coming down until it moves!",
+   "voice": "JR1"
+  },
+  "caller.door.held.02@burner": {
+   "duration_s": 4.534,
+   "file": "caller/caller.door.held.02@burner.ogg",
+   "kind": "line",
+   "request": "caller.door.held.02@burner",
+   "request_key": "15e8e3e58b468a688fe419422b103a4c9e33d8f8",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The burner is parked in the door, and that gate is not coming down until it moves",
+   "text": "The Burner is parked in the door, and that gate is not coming down until it moves!",
+   "voice": "JR1"
+  },
+  "caller.door.held.02@ifv": {
+   "duration_s": 4.685,
+   "file": "caller/caller.door.held.02@ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.held.02@ifv",
+   "request_key": "29351982dbe9c587db87df7233ee6e63c933b566",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The IFV is parked in the door, and that gate is not coming down until it moves",
+   "text": "The IFV is parked in the door, and that gate is not coming down until it moves!",
+   "voice": "JR1"
+  },
+  "caller.door.held.02@lancer": {
+   "duration_s": 4.043,
+   "file": "caller/caller.door.held.02@lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.held.02@lancer",
+   "request_key": "c3bbbe2ecdc2a18f0a0ecb90a6a1cac4cfbaa693",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The Lancer is parked in the door, and that gate is not coming down until it moves",
+   "text": "The Lancer is parked in the door, and that gate is not coming down until it moves!",
+   "voice": "JR1"
+  },
+  "caller.door.held.02@scout": {
+   "duration_s": 4.269,
+   "file": "caller/caller.door.held.02@scout.ogg",
+   "kind": "line",
+   "request": "caller.door.held.02@scout",
+   "request_key": "cafd1ec31147b8445ceba6ae7cb1df6a28874a45",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The scout is parked in the door, and that gate is not coming down until it moves",
+   "text": "The scout is parked in the door, and that gate is not coming down until it moves!",
+   "voice": "JR1"
+  },
+  "caller.door.held.02@tank": {
+   "duration_s": 4.274,
+   "file": "caller/caller.door.held.02@tank.ogg",
+   "kind": "line",
+   "request": "caller.door.held.02@tank",
+   "request_key": "e2d01a1c025fc802b70689f727c642b59ae5e674",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Uh, the tank is parked in the door, and that gate is not coming down until it moves",
+   "text": "The tank is parked in the door, and that gate is not coming down until it moves!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@east.artillery": {
+   "duration_s": 3.908,
+   "file": "caller/caller.door.held.03@east.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@east.artillery",
+   "request_key": "d3b742cb6e90e9b39cd90247fcc39968c75a210c",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this! The artillery is holding the east gate open all by itself",
+   "text": "Look at this! The artillery is holding the east gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@east.burner": {
+   "duration_s": 3.83,
+   "file": "caller/caller.door.held.03@east.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@east.burner",
+   "request_key": "ce17e12145e7fc0d93953a445b196aca84976899",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The burner is holding the east gate open all by itself",
+   "text": "Look at this! The Burner is holding the east gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@east.ifv": {
+   "duration_s": 3.79,
+   "file": "caller/caller.door.held.03@east.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@east.ifv",
+   "request_key": "8a0e9ffbf474845c0dfbe90f50317a6713ce6e9b",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The IFV is holding the east gate open all by itself",
+   "text": "Look at this! The IFV is holding the east gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@east.lancer": {
+   "duration_s": 3.641,
+   "file": "caller/caller.door.held.03@east.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@east.lancer",
+   "request_key": "ba7979614132e510c96de096dacd938c4a83dd82",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The lancer is holding the east gate open all by itself",
+   "text": "Look at this! The Lancer is holding the east gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@east.scout": {
+   "duration_s": 3.7,
+   "file": "caller/caller.door.held.03@east.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@east.scout",
+   "request_key": "8294779ac1869fcf5f0ef39aa1c9aebcf7149438",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The scout is holding the east gate open all by itself",
+   "text": "Look at this! The scout is holding the east gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@east.tank": {
+   "duration_s": 3.605,
+   "file": "caller/caller.door.held.03@east.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@east.tank",
+   "request_key": "fd8bbb20a4c3d047c2e3ec1a48c5b7a83b7433c3",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The tank is holding the east gate open all by itself",
+   "text": "Look at this! The tank is holding the east gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@north.artillery": {
+   "duration_s": 4.421,
+   "file": "caller/caller.door.held.03@north.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@north.artillery",
+   "request_key": "181453a07dd4261e1de5b98a8226cbe0607dc9e6",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The artillery is holding the north gate open all by itself",
+   "text": "Look at this! The artillery is holding the north gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@north.burner": {
+   "duration_s": 3.608,
+   "file": "caller/caller.door.held.03@north.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@north.burner",
+   "request_key": "3f3c03c095929a2a50002b89f0a0f4e87a36f1d0",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The burner is holding the north gate open all by itself",
+   "text": "Look at this! The Burner is holding the north gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@north.ifv": {
+   "duration_s": 4.027,
+   "file": "caller/caller.door.held.03@north.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@north.ifv",
+   "request_key": "6431f0ecfb12cb06af68c8e05a31c6b90291cce3",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The IFV is holding the north gate open all by itself",
+   "text": "Look at this! The IFV is holding the north gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@north.lancer": {
+   "duration_s": 3.799,
+   "file": "caller/caller.door.held.03@north.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@north.lancer",
+   "request_key": "a7a8f9683b9d0c13bba0bd18536f3cfaa5c781c0",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The lancer is holding the north gate open all by itself",
+   "text": "Look at this! The Lancer is holding the north gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@north.scout": {
+   "duration_s": 3.615,
+   "file": "caller/caller.door.held.03@north.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@north.scout",
+   "request_key": "6c548b0d1e8a64ae45abce3b595f5b29538076b2",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The scout is holding the north gate open all by itself",
+   "text": "Look at this! The scout is holding the north gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@north.tank": {
+   "duration_s": 3.556,
+   "file": "caller/caller.door.held.03@north.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@north.tank",
+   "request_key": "1d51c6468ae9655be87bdec92fd0cad07a03cc18",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The tank is holding the north gate open all by itself",
+   "text": "Look at this! The tank is holding the north gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@south.artillery": {
+   "duration_s": 3.845,
+   "file": "caller/caller.door.held.03@south.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@south.artillery",
+   "request_key": "65255dd8fcf0b982f516829d36477759a7455bc2",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The artillery is holding the south gate open all by itself",
+   "text": "Look at this! The artillery is holding the south gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@south.burner": {
+   "duration_s": 3.767,
+   "file": "caller/caller.door.held.03@south.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@south.burner",
+   "request_key": "ec6cf843693997c161cd18d7d395a1b02e9733b6",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The burner is holding the south gate open all by itself",
+   "text": "Look at this! The Burner is holding the south gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@south.ifv": {
+   "duration_s": 3.591,
+   "file": "caller/caller.door.held.03@south.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@south.ifv",
+   "request_key": "3924567877acb762d96cdd4a6eb9d6a4b86f51e5",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The IFV is holding the south gate open all by itself",
+   "text": "Look at this! The IFV is holding the south gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@south.lancer": {
+   "duration_s": 3.841,
+   "file": "caller/caller.door.held.03@south.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@south.lancer",
+   "request_key": "4c384cfdc0cef12059b6a014813b5f4a37056f18",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The lancer's holding the south gate open all by itself",
+   "text": "Look at this! The Lancer is holding the south gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@south.scout": {
+   "duration_s": 3.703,
+   "file": "caller/caller.door.held.03@south.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@south.scout",
+   "request_key": "f2ecaf5f67255624dd3dc6857b030565d19cf9e8",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The scout is holding the south gate open all by itself",
+   "text": "Look at this! The scout is holding the south gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@south.tank": {
+   "duration_s": 3.566,
+   "file": "caller/caller.door.held.03@south.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@south.tank",
+   "request_key": "2cb59035838759594af771c4e498d8a5185a5b28",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The tank is holding the south gate open all by itself",
+   "text": "Look at this! The tank is holding the south gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@west.artillery": {
+   "duration_s": 4.342,
+   "file": "caller/caller.door.held.03@west.artillery.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@west.artillery",
+   "request_key": "cdc7b07411062efcc8a6ae537a9135430817be61",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The artillery is holding the west gate open all by itself",
+   "text": "Look at this! The artillery is holding the west gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@west.burner": {
+   "duration_s": 3.87,
+   "file": "caller/caller.door.held.03@west.burner.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@west.burner",
+   "request_key": "ea2654cc9967240cf1ad5b7112938b25b52675e4",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The burner is holding the west gate open all by itself",
+   "text": "Look at this! The Burner is holding the west gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@west.ifv": {
+   "duration_s": 3.792,
+   "file": "caller/caller.door.held.03@west.ifv.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@west.ifv",
+   "request_key": "86ef1a93fd4ca080eae3d7ed164a736e2628195d",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The IFV is holding the west gate open all by itself",
+   "text": "Look at this! The IFV is holding the west gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@west.lancer": {
+   "duration_s": 3.801,
+   "file": "caller/caller.door.held.03@west.lancer.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@west.lancer",
+   "request_key": "c04e0a4352e6b8fbbe1b90853ce0168b20392398",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The lancer is holding the west gate open all by itself",
+   "text": "Look at this! The Lancer is holding the west gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@west.scout": {
+   "duration_s": 3.847,
+   "file": "caller/caller.door.held.03@west.scout.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@west.scout",
+   "request_key": "04ed2440c9769dae403ee1ad85a0d783e428e2c3",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The scout is holding the west gate open all by itself",
+   "text": "Look at this! The scout is holding the west gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.held.03@west.tank": {
+   "duration_s": 3.845,
+   "file": "caller/caller.door.held.03@west.tank.ogg",
+   "kind": "line",
+   "request": "caller.door.held.03@west.tank",
+   "request_key": "970acf0af12ae73bffe39ed6a83fd85712251bb9",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Look at this. The tank is holding the west gate open all by itself",
+   "text": "Look at this! The tank is holding the west gate open all by itself!",
+   "voice": "JR1"
+  },
+  "caller.door.open.01@east": {
+   "duration_s": 2.89,
+   "file": "caller/caller.door.open.01@east.ogg",
+   "kind": "line",
+   "request": "caller.door.open.01@east",
+   "request_key": "e5853bf2cf0ee892c81f15a003f4febb530651c0",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "There go the gates. The east gate is open, and here they come",
+   "text": "There go the gates! The east gate is open, and here they come!",
+   "voice": "JR1"
+  },
+  "caller.door.open.01@north": {
+   "duration_s": 2.994,
+   "file": "caller/caller.door.open.01@north.ogg",
+   "kind": "line",
+   "request": "caller.door.open.01@north",
+   "request_key": "79cf8f56582cb31053916f2a45494bdb5356c237",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "There go the gates. The north gate is open, and here they come",
+   "text": "There go the gates! The north gate is open, and here they come!",
+   "voice": "JR1"
+  },
+  "caller.door.open.01@south": {
+   "duration_s": 3.725,
+   "file": "caller/caller.door.open.01@south.ogg",
+   "kind": "line",
+   "request": "caller.door.open.01@south",
+   "request_key": "60b7e7401057b50d879609df1a5aa06869d7ab25",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "There go the gates. The south gate is open, and here they come",
+   "text": "There go the gates! The south gate is open, and here they come!",
+   "voice": "JR1"
+  },
+  "caller.door.open.01@west": {
+   "duration_s": 2.934,
+   "file": "caller/caller.door.open.01@west.ogg",
+   "kind": "line",
+   "request": "caller.door.open.01@west",
+   "request_key": "994791a685715f428cc4459748e6046bb44ab9fc",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "There go the gates. The west gate is open and here they come",
+   "text": "There go the gates! The west gate is open, and here they come!",
+   "voice": "JR1"
+  },
+  "caller.door.open.02@east": {
+   "duration_s": 4.278,
+   "file": "caller/caller.door.open.02@east.ogg",
+   "kind": "line",
+   "request": "caller.door.open.02@east",
+   "request_key": "22aa7e3dfab270be79e7d04b12618c5dd9add93f",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Listen to this crowd. The east gate is up and the whole fight just changed",
+   "text": "Listen to this crowd! The east gate is up and the whole fight just changed!",
+   "voice": "JR1"
+  },
+  "caller.door.open.02@north": {
+   "duration_s": 4.419,
+   "file": "caller/caller.door.open.02@north.ogg",
+   "kind": "line",
+   "request": "caller.door.open.02@north",
+   "request_key": "64d89e4cfa06e693e7457ca2d7ecf9e77b7ade06",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Listen to this crowd. The north gate is up and the whole fight just changed",
+   "text": "Listen to this crowd! The north gate is up and the whole fight just changed!",
+   "voice": "JR1"
+  },
+  "caller.door.open.02@south": {
+   "duration_s": 4.444,
+   "file": "caller/caller.door.open.02@south.ogg",
+   "kind": "line",
+   "request": "caller.door.open.02@south",
+   "request_key": "97fecdac8a3aed5ee7fe82e63e2ef2a94b03150b",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Listen to this crowd. The south gate is up and the whole fight just changed",
+   "text": "Listen to this crowd! The south gate is up and the whole fight just changed!",
+   "voice": "JR1"
+  },
+  "caller.door.open.02@west": {
+   "duration_s": 4.104,
+   "file": "caller/caller.door.open.02@west.ogg",
+   "kind": "line",
+   "request": "caller.door.open.02@west",
+   "request_key": "64f3fe375fce56ec7290c9a78decdb6e5bb2a1ed",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Listen to this crowd. The west gate is up and the whole fight just changed",
+   "text": "Listen to this crowd! The west gate is up and the whole fight just changed!",
+   "voice": "JR1"
+  },
+  "caller.door.open.03": {
+   "duration_s": 2.818,
+   "file": "caller/caller.door.open.03.ogg",
+   "kind": "line",
+   "request": "caller.door.open.03",
+   "request_key": "14a7894f182ba9cd798a46aa9d800ee4ffb558f7",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Doors are open. Brand new road, brand new fight",
+   "text": "Doors are open! Brand new road, brand new fight!",
+   "voice": "JR1"
+  },
+  "caller.door.open.04@east": {
+   "duration_s": 3.472,
+   "file": "caller/caller.door.open.04@east.ogg",
+   "kind": "line",
+   "request": "caller.door.open.04@east",
+   "request_key": "f4b9fcf2190fa5db9a28a8eeeb90a8e9eec53b69",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The east gate is open. Somebody is going to make them pay for that",
+   "text": "The east gate is open! Somebody is going to make them pay for that!",
+   "voice": "JR1"
+  },
+  "caller.door.open.04@north": {
+   "duration_s": 2.872,
+   "file": "caller/caller.door.open.04@north.ogg",
+   "kind": "line",
+   "request": "caller.door.open.04@north",
+   "request_key": "62a9eca4d7d0045e6420c56ce3289b2bf8c3c33a",
+   "speaker": "caller",
+   "stt_ok": false,
+   "stt_text": "The north gate is open. Somebody's gonna make them pay for that",
+   "text": "The north gate is open! Somebody is going to make them pay for that!",
+   "voice": "JR1"
+  },
+  "caller.door.open.04@south": {
+   "duration_s": 3.584,
+   "file": "caller/caller.door.open.04@south.ogg",
+   "kind": "line",
+   "request": "caller.door.open.04@south",
+   "request_key": "ba4f4c1e370c4586de236214f8f2d6006d7e3762",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "But the south gate is open. Somebody is going to make them pay for that",
+   "text": "The south gate is open! Somebody is going to make them pay for that!",
+   "voice": "JR1"
+  },
+  "caller.door.open.04@west": {
+   "duration_s": 3.084,
+   "file": "caller/caller.door.open.04@west.ogg",
+   "kind": "line",
+   "request": "caller.door.open.04@west",
+   "request_key": "343a485150fbb428520d462e769f698f39868e37",
+   "speaker": "caller",
+   "stt_ok": false,
+   "stt_text": "The west gate is open. Somebody's gonna make them pay for that",
+   "text": "The west gate is open! Somebody is going to make them pay for that!",
+   "voice": "JR1"
+  },
+  "caller.door.shut.01@east": {
+   "duration_s": 3.024,
+   "file": "caller/caller.door.shut.01@east.ogg",
+   "kind": "line",
+   "request": "caller.door.shut.01@east",
+   "request_key": "4c4a644b61a01077e94b1d95a0e4304677cf5546",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The east gate is coming down. Get through or get shut out",
+   "text": "The east gate is coming down! Get through or get shut out!",
+   "voice": "JR1"
+  },
+  "caller.door.shut.01@north": {
+   "duration_s": 3.26,
+   "file": "caller/caller.door.shut.01@north.ogg",
+   "kind": "line",
+   "request": "caller.door.shut.01@north",
+   "request_key": "9467224d01e515bac7a8fa11ef537a739829ba32",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "Ah, the north gate is coming down. Get through or get shut out",
+   "text": "The north gate is coming down! Get through or get shut out!",
+   "voice": "JR1"
+  },
+  "caller.door.shut.01@south": {
+   "duration_s": 3.298,
+   "file": "caller/caller.door.shut.01@south.ogg",
+   "kind": "line",
+   "request": "caller.door.shut.01@south",
+   "request_key": "c4f6bc0024e59a62c54409c2a27013808d42bfd0",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The south gate is coming down. Get through or get shut out",
+   "text": "The south gate is coming down! Get through or get shut out!",
+   "voice": "JR1"
+  },
+  "caller.door.shut.01@west": {
+   "duration_s": 3.493,
+   "file": "caller/caller.door.shut.01@west.ogg",
+   "kind": "line",
+   "request": "caller.door.shut.01@west",
+   "request_key": "978364b323cc80a48b25b391a0656b5c9a2697b0",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The west gate is coming down. Get through or get shut out",
+   "text": "The west gate is coming down! Get through or get shut out!",
+   "voice": "JR1"
+  },
+  "caller.door.shut.02": {
+   "duration_s": 2.433,
+   "file": "caller/caller.door.shut.02.ogg",
+   "kind": "line",
+   "request": "caller.door.shut.02",
+   "request_key": "89c785dd8eb0c035d66dff1ba0cbe8654e5267a6",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "It's closing. It's closing. Who makes it through?",
+   "text": "It's closing, it's closing! Who makes it through?",
+   "voice": "JR1"
+  },
+  "caller.door.shut.03": {
+   "duration_s": 2.767,
+   "file": "caller/caller.door.shut.03.ogg",
+   "kind": "line",
+   "request": "caller.door.shut.03",
+   "request_key": "3c431307a6716cfa42c23b576930f6357a747bdb",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "And it slams shut. That road is gone",
+   "text": "And it slams shut! That road is gone!",
+   "voice": "JR1"
+  },
+  "caller.door.shut.04@east": {
+   "duration_s": 2.989,
+   "file": "caller/caller.door.shut.04@east.ogg",
+   "kind": "line",
+   "request": "caller.door.shut.04@east",
+   "request_key": "2cbec7f1ba817b2623b9c9bd997e54856d5c12bf",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The east gate is sealed. Now they have to find another way around",
+   "text": "The east gate is sealed! Now they have to find another way around!",
+   "voice": "JR1"
+  },
+  "caller.door.shut.04@north": {
+   "duration_s": 3.189,
+   "file": "caller/caller.door.shut.04@north.ogg",
+   "kind": "line",
+   "request": "caller.door.shut.04@north",
+   "request_key": "4b8cb3d3b36c90bd5581ebf520f4fbc0ae6b0626",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The north gate is sealed. Now they have to find another way around",
+   "text": "The north gate is sealed! Now they have to find another way around!",
+   "voice": "JR1"
+  },
+  "caller.door.shut.04@south": {
+   "duration_s": 3.159,
+   "file": "caller/caller.door.shut.04@south.ogg",
+   "kind": "line",
+   "request": "caller.door.shut.04@south",
+   "request_key": "fc1a84771a86cbfbcd07523ca2cbbce1b345937b",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "The south gate is sealed. Now they have to find another way around",
+   "text": "The south gate is sealed! Now they have to find another way around!",
+   "voice": "JR1"
+  },
+  "caller.door.shut.04@west": {
+   "duration_s": 3.306,
+   "file": "caller/caller.door.shut.04@west.ogg",
+   "kind": "line",
+   "request": "caller.door.shut.04@west",
+   "request_key": "55805763cad4cb06e20951d7f0a159216144592a",
+   "speaker": "caller",
+   "stt_ok": true,
+   "stt_text": "With the west gate is sealed. Now they have to find another way around",
+   "text": "The west gate is sealed! Now they have to find another way around!",
+   "voice": "JR1"
+  },
   "caller.drill.01": {
    "duration_s": 3.028,
    "file": "caller/caller.drill.01.ogg",
@@ -25333,6 +26737,30 @@
    "text": "Everybody wants the point until they're standing on it.",
    "voice": "veteran"
   },
+  "color.door.01": {
+   "duration_s": 2.793,
+   "file": "color/color.door.01.ogg",
+   "kind": "line",
+   "request": "color.door.01",
+   "request_key": "5454399be7a976006c8ed4b7cb813746402c643e",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "You learn the doors. Learn them or they teach you",
+   "text": "You learn the doors. Learn them, or they teach you.",
+   "voice": "veteran"
+  },
+  "color.door.02": {
+   "duration_s": 3.89,
+   "file": "color/color.door.02.ogg",
+   "kind": "line",
+   "request": "color.door.02",
+   "request_key": "baa3fc7ed7318b1c78a565ccf8cc23f057075cf6",
+   "speaker": "color",
+   "stt_ok": true,
+   "stt_text": "Smart crews count the clock. The rest find out where the door is",
+   "text": "Smart crews count the clock. The rest find out where the door is.",
+   "voice": "veteran"
+  },
   "color.drill.01@assault_through": {
    "duration_s": 4.18,
    "file": "color/color.drill.01@assault_through.ogg",
@@ -32653,6 +34081,162 @@
    "text": "Quite so, Joseph. Viewers should note that formation driving on public roads remains an offence.",
    "voice": "corporate2"
   },
+  "pa.door.closing.01@east": {
+   "duration_s": 4.712,
+   "file": "pa/pa.door.closing.01@east.ogg",
+   "kind": "line",
+   "request": "pa.door.closing.01@east",
+   "request_key": "4f9c8a56efe8279dd938d0d05f47914629ebc83f",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The east gate will close in five seconds. Please keep vehicles clear of the doorway",
+   "text": "The east gate will close in five seconds. Please keep vehicles clear of the doorway.",
+   "voice": "corporate2"
+  },
+  "pa.door.closing.01@north": {
+   "duration_s": 4.809,
+   "file": "pa/pa.door.closing.01@north.ogg",
+   "kind": "line",
+   "request": "pa.door.closing.01@north",
+   "request_key": "a3694d0bb04affe25dc3ca94d25322c6e44c767f",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The north gate will close in five seconds. Please keep vehicles clear of the doorway",
+   "text": "The north gate will close in five seconds. Please keep vehicles clear of the doorway.",
+   "voice": "corporate2"
+  },
+  "pa.door.closing.01@south": {
+   "duration_s": 4.918,
+   "file": "pa/pa.door.closing.01@south.ogg",
+   "kind": "line",
+   "request": "pa.door.closing.01@south",
+   "request_key": "a722e6655fff8caa7f145908c9a54d0eab5c2cb7",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The south gate will close in five seconds. Please keep vehicles clear of the doorway",
+   "text": "The south gate will close in five seconds. Please keep vehicles clear of the doorway.",
+   "voice": "corporate2"
+  },
+  "pa.door.closing.01@west": {
+   "duration_s": 4.785,
+   "file": "pa/pa.door.closing.01@west.ogg",
+   "kind": "line",
+   "request": "pa.door.closing.01@west",
+   "request_key": "d13469966ee56f7a312e52eb1fd22f66fcce4fd6",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The west gate will close in five seconds. Please keep vehicles clear of the doorway",
+   "text": "The west gate will close in five seconds. Please keep vehicles clear of the doorway.",
+   "voice": "corporate2"
+  },
+  "pa.door.closing.02": {
+   "duration_s": 4.001,
+   "file": "pa/pa.door.closing.02.ogg",
+   "kind": "line",
+   "request": "pa.door.closing.02",
+   "request_key": "0d57787c806bae9fab97ee71de67d3264f27f813",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Door times are posted at every gate. The schedule is final",
+   "text": "Door times are posted at every gate. The schedule is final.",
+   "voice": "corporate2"
+  },
+  "pa.door.open.01@east": {
+   "duration_s": 4.04,
+   "file": "pa/pa.door.open.01@east.ogg",
+   "kind": "line",
+   "request": "pa.door.open.01@east",
+   "request_key": "8cee3c2a52a7a643fcf06d8418e6f4f2790d612c",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The east gate is now opening. The arena thanks you for your patience",
+   "text": "The east gate is now opening. The arena thanks you for your patience.",
+   "voice": "corporate2"
+  },
+  "pa.door.open.01@north": {
+   "duration_s": 4.121,
+   "file": "pa/pa.door.open.01@north.ogg",
+   "kind": "line",
+   "request": "pa.door.open.01@north",
+   "request_key": "79eb0a3366b59b56e4953de6f3632c6389de4628",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The north gate is now opening. The arena thanks you for your patience",
+   "text": "The north gate is now opening. The arena thanks you for your patience.",
+   "voice": "corporate2"
+  },
+  "pa.door.open.01@south": {
+   "duration_s": 3.932,
+   "file": "pa/pa.door.open.01@south.ogg",
+   "kind": "line",
+   "request": "pa.door.open.01@south",
+   "request_key": "84231f964810a801a539a26b9f7b2dc9c421c213",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The south gate is now opening. The arena thanks you for your patience",
+   "text": "The south gate is now opening. The arena thanks you for your patience.",
+   "voice": "corporate2"
+  },
+  "pa.door.open.01@west": {
+   "duration_s": 4.204,
+   "file": "pa/pa.door.open.01@west.ogg",
+   "kind": "line",
+   "request": "pa.door.open.01@west",
+   "request_key": "8838f9be65276680ececf32f9697d0c4fe20c3c3",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "The west gate is now opening. The arena thanks you for your patience",
+   "text": "The west gate is now opening. The arena thanks you for your patience.",
+   "voice": "corporate2"
+  },
+  "pa.door.shut.01@east": {
+   "duration_s": 4.061,
+   "file": "pa/pa.door.shut.01@east.ogg",
+   "kind": "line",
+   "request": "pa.door.shut.01@east",
+   "request_key": "193b6b83adc9d26d3049a3890861f56b64f2190c",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Crews on the far side of the east gate will be collected at the end of the match",
+   "text": "Crews on the far side of the east gate will be collected at the end of the match.",
+   "voice": "corporate2"
+  },
+  "pa.door.shut.01@north": {
+   "duration_s": 4.426,
+   "file": "pa/pa.door.shut.01@north.ogg",
+   "kind": "line",
+   "request": "pa.door.shut.01@north",
+   "request_key": "a590fb62825077735f512046f6ebb2c80c45167e",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Crews on the far side of the north gate will be collected at the end of the match",
+   "text": "Crews on the far side of the north gate will be collected at the end of the match.",
+   "voice": "corporate2"
+  },
+  "pa.door.shut.01@south": {
+   "duration_s": 4.389,
+   "file": "pa/pa.door.shut.01@south.ogg",
+   "kind": "line",
+   "request": "pa.door.shut.01@south",
+   "request_key": "10bf4b747a9146bbd0c653b7bf06e791fdbfdfa1",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Crews on the far side of the south gate will be collected at the end of the match",
+   "text": "Crews on the far side of the south gate will be collected at the end of the match.",
+   "voice": "corporate2"
+  },
+  "pa.door.shut.01@west": {
+   "duration_s": 4.35,
+   "file": "pa/pa.door.shut.01@west.ogg",
+   "kind": "line",
+   "request": "pa.door.shut.01@west",
+   "request_key": "5f0d4923e178e8dccb1dddd1e602a2ac847eb543",
+   "speaker": "pa",
+   "stt_ok": true,
+   "stt_text": "Crews on the far side of the west gate will be collected at the end of the match",
+   "text": "Crews on the far side of the west gate will be collected at the end of the match.",
+   "voice": "corporate2"
+  },
   "pa.drill.01": {
    "duration_s": 8.997,
    "file": "pa/pa.drill.01.ogg",
@@ -38750,7 +40334,7 @@
    "voice": "corporate2"
   }
  },
- "generated": "2026-10-24",
+ "generated": "2026-10-30",
  "lines": {
   "caller.army.01": {
    "bases": [
@@ -39786,6 +41370,240 @@
    "speaker": "caller",
    "variants": {
     "": "caller.control.16"
+   }
+  },
+  "caller.door.caught.01": {
+   "bases": [
+    "unit"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "artillery": "caller.door.caught.01@artillery",
+    "burner": "caller.door.caught.01@burner",
+    "ifv": "caller.door.caught.01@ifv",
+    "lancer": "caller.door.caught.01@lancer",
+    "scout": "caller.door.caught.01@scout",
+    "tank": "caller.door.caught.01@tank"
+   }
+  },
+  "caller.door.caught.02": {
+   "bases": [
+    "faction",
+    "unit"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "condemned.artillery": "caller.door.caught.02@condemned.artillery",
+    "condemned.burner": "caller.door.caught.02@condemned.burner",
+    "condemned.ifv": "caller.door.caught.02@condemned.ifv",
+    "condemned.lancer": "caller.door.caught.02@condemned.lancer",
+    "condemned.scout": "caller.door.caught.02@condemned.scout",
+    "condemned.tank": "caller.door.caught.02@condemned.tank",
+    "gangs.artillery": "caller.door.caught.02@gangs.artillery",
+    "gangs.burner": "caller.door.caught.02@gangs.burner",
+    "gangs.ifv": "caller.door.caught.02@gangs.ifv",
+    "gangs.lancer": "caller.door.caught.02@gangs.lancer",
+    "gangs.scout": "caller.door.caught.02@gangs.scout",
+    "gangs.tank": "caller.door.caught.02@gangs.tank",
+    "law.artillery": "caller.door.caught.02@law.artillery",
+    "law.burner": "caller.door.caught.02@law.burner",
+    "law.ifv": "caller.door.caught.02@law.ifv",
+    "law.lancer": "caller.door.caught.02@law.lancer",
+    "law.scout": "caller.door.caught.02@law.scout",
+    "law.tank": "caller.door.caught.02@law.tank",
+    "syndicate.artillery": "caller.door.caught.02@syndicate.artillery",
+    "syndicate.burner": "caller.door.caught.02@syndicate.burner",
+    "syndicate.ifv": "caller.door.caught.02@syndicate.ifv",
+    "syndicate.lancer": "caller.door.caught.02@syndicate.lancer",
+    "syndicate.scout": "caller.door.caught.02@syndicate.scout",
+    "syndicate.tank": "caller.door.caught.02@syndicate.tank"
+   }
+  },
+  "caller.door.caught.03": {
+   "bases": [
+    "faction"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "condemned": "caller.door.caught.03@condemned",
+    "gangs": "caller.door.caught.03@gangs",
+    "law": "caller.door.caught.03@law",
+    "syndicate": "caller.door.caught.03@syndicate"
+   }
+  },
+  "caller.door.caught.04": {
+   "bases": [
+    "unit"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "artillery": "caller.door.caught.04@artillery",
+    "burner": "caller.door.caught.04@burner",
+    "ifv": "caller.door.caught.04@ifv",
+    "lancer": "caller.door.caught.04@lancer",
+    "scout": "caller.door.caught.04@scout",
+    "tank": "caller.door.caught.04@tank"
+   }
+  },
+  "caller.door.held.01": {
+   "bases": [
+    "gate",
+    "unit"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "east.artillery": "caller.door.held.01@east.artillery",
+    "east.burner": "caller.door.held.01@east.burner",
+    "east.ifv": "caller.door.held.01@east.ifv",
+    "east.lancer": "caller.door.held.01@east.lancer",
+    "east.scout": "caller.door.held.01@east.scout",
+    "east.tank": "caller.door.held.01@east.tank",
+    "north.artillery": "caller.door.held.01@north.artillery",
+    "north.burner": "caller.door.held.01@north.burner",
+    "north.ifv": "caller.door.held.01@north.ifv",
+    "north.lancer": "caller.door.held.01@north.lancer",
+    "north.scout": "caller.door.held.01@north.scout",
+    "north.tank": "caller.door.held.01@north.tank",
+    "south.artillery": "caller.door.held.01@south.artillery",
+    "south.burner": "caller.door.held.01@south.burner",
+    "south.ifv": "caller.door.held.01@south.ifv",
+    "south.lancer": "caller.door.held.01@south.lancer",
+    "south.scout": "caller.door.held.01@south.scout",
+    "south.tank": "caller.door.held.01@south.tank",
+    "west.artillery": "caller.door.held.01@west.artillery",
+    "west.burner": "caller.door.held.01@west.burner",
+    "west.ifv": "caller.door.held.01@west.ifv",
+    "west.lancer": "caller.door.held.01@west.lancer",
+    "west.scout": "caller.door.held.01@west.scout",
+    "west.tank": "caller.door.held.01@west.tank"
+   }
+  },
+  "caller.door.held.02": {
+   "bases": [
+    "unit"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "artillery": "caller.door.held.02@artillery",
+    "burner": "caller.door.held.02@burner",
+    "ifv": "caller.door.held.02@ifv",
+    "lancer": "caller.door.held.02@lancer",
+    "scout": "caller.door.held.02@scout",
+    "tank": "caller.door.held.02@tank"
+   }
+  },
+  "caller.door.held.03": {
+   "bases": [
+    "gate",
+    "unit"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "east.artillery": "caller.door.held.03@east.artillery",
+    "east.burner": "caller.door.held.03@east.burner",
+    "east.ifv": "caller.door.held.03@east.ifv",
+    "east.lancer": "caller.door.held.03@east.lancer",
+    "east.scout": "caller.door.held.03@east.scout",
+    "east.tank": "caller.door.held.03@east.tank",
+    "north.artillery": "caller.door.held.03@north.artillery",
+    "north.burner": "caller.door.held.03@north.burner",
+    "north.ifv": "caller.door.held.03@north.ifv",
+    "north.lancer": "caller.door.held.03@north.lancer",
+    "north.scout": "caller.door.held.03@north.scout",
+    "north.tank": "caller.door.held.03@north.tank",
+    "south.artillery": "caller.door.held.03@south.artillery",
+    "south.burner": "caller.door.held.03@south.burner",
+    "south.ifv": "caller.door.held.03@south.ifv",
+    "south.lancer": "caller.door.held.03@south.lancer",
+    "south.scout": "caller.door.held.03@south.scout",
+    "south.tank": "caller.door.held.03@south.tank",
+    "west.artillery": "caller.door.held.03@west.artillery",
+    "west.burner": "caller.door.held.03@west.burner",
+    "west.ifv": "caller.door.held.03@west.ifv",
+    "west.lancer": "caller.door.held.03@west.lancer",
+    "west.scout": "caller.door.held.03@west.scout",
+    "west.tank": "caller.door.held.03@west.tank"
+   }
+  },
+  "caller.door.open.01": {
+   "bases": [
+    "gate"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "east": "caller.door.open.01@east",
+    "north": "caller.door.open.01@north",
+    "south": "caller.door.open.01@south",
+    "west": "caller.door.open.01@west"
+   }
+  },
+  "caller.door.open.02": {
+   "bases": [
+    "gate"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "east": "caller.door.open.02@east",
+    "north": "caller.door.open.02@north",
+    "south": "caller.door.open.02@south",
+    "west": "caller.door.open.02@west"
+   }
+  },
+  "caller.door.open.03": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.door.open.03"
+   }
+  },
+  "caller.door.open.04": {
+   "bases": [
+    "gate"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "east": "caller.door.open.04@east",
+    "north": "caller.door.open.04@north",
+    "south": "caller.door.open.04@south",
+    "west": "caller.door.open.04@west"
+   }
+  },
+  "caller.door.shut.01": {
+   "bases": [
+    "gate"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "east": "caller.door.shut.01@east",
+    "north": "caller.door.shut.01@north",
+    "south": "caller.door.shut.01@south",
+    "west": "caller.door.shut.01@west"
+   }
+  },
+  "caller.door.shut.02": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.door.shut.02"
+   }
+  },
+  "caller.door.shut.03": {
+   "bases": [],
+   "speaker": "caller",
+   "variants": {
+    "": "caller.door.shut.03"
+   }
+  },
+  "caller.door.shut.04": {
+   "bases": [
+    "gate"
+   ],
+   "speaker": "caller",
+   "variants": {
+    "east": "caller.door.shut.04@east",
+    "north": "caller.door.shut.04@north",
+    "south": "caller.door.shut.04@south",
+    "west": "caller.door.shut.04@west"
    }
   },
   "caller.drill.01": {
@@ -45388,6 +47206,20 @@
     "": "color.control.03"
    }
   },
+  "color.door.01": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.door.01"
+   }
+  },
+  "color.door.02": {
+   "bases": [],
+   "speaker": "color",
+   "variants": {
+    "": "color.door.02"
+   }
+  },
   "color.drill.01": {
    "bases": [
     "drill"
@@ -48296,6 +50128,49 @@
    "speaker": "pa",
    "variants": {
     "": "pa.correct.14"
+   }
+  },
+  "pa.door.closing.01": {
+   "bases": [
+    "gate"
+   ],
+   "speaker": "pa",
+   "variants": {
+    "east": "pa.door.closing.01@east",
+    "north": "pa.door.closing.01@north",
+    "south": "pa.door.closing.01@south",
+    "west": "pa.door.closing.01@west"
+   }
+  },
+  "pa.door.closing.02": {
+   "bases": [],
+   "speaker": "pa",
+   "variants": {
+    "": "pa.door.closing.02"
+   }
+  },
+  "pa.door.open.01": {
+   "bases": [
+    "gate"
+   ],
+   "speaker": "pa",
+   "variants": {
+    "east": "pa.door.open.01@east",
+    "north": "pa.door.open.01@north",
+    "south": "pa.door.open.01@south",
+    "west": "pa.door.open.01@west"
+   }
+  },
+  "pa.door.shut.01": {
+   "bases": [
+    "gate"
+   ],
+   "speaker": "pa",
+   "variants": {
+    "east": "pa.door.shut.01@east",
+    "north": "pa.door.shut.01@north",
+    "south": "pa.door.shut.01@south",
+    "west": "pa.door.shut.01@west"
    }
   },
   "pa.drill.01": {

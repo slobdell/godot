@@ -319,6 +319,8 @@ func compute_command(delta: float) -> TankCommand:
 		# off its common path (a dead hull, reflexes, giving way, an order that is not a move), and the GDScript runs.
 		var native_cmd: Variant = NativeExec.execute(self, delta)
 		if native_cmd != null:
+			if Gunnery.GUN_TRACE != "":
+				gunnery.trace_after(native_cmd as TankCommand)  # round 47 (engage E1): measurement only
 			return native_cmd
 	else:
 		movement.native_stale |= Movement.STALE_ALL  # the GDScript below writes the state the C++ may own (the A/B's off blocks)
@@ -347,6 +349,8 @@ func compute_command(delta: float) -> TankCommand:
 		NativeGun.apply(gunnery, cmd, _seconds_step())  # round 27 (native E3): the same, as one native call
 	else:
 		gunnery.apply(cmd, _seconds_step())  # after the movement half, in seconds (combat's seam)
+	if Gunnery.GUN_TRACE != "":
+		gunnery.trace_after(cmd)  # round 47 (engage E1): measurement only
 	_stop_turn_in(cmd, delta)
 	movement.note_decision(cmd, move_order)
 	if profiling:

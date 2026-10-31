@@ -177,7 +177,7 @@ func look_from(viewer: Tank, finishing := true) -> void:
 	reach.resize(ray_count)
 	var fan := PackedVector2Array([Vector2(eye.x, eye.z)])
 	var query := PhysicsRayQueryParameters3D.new()
-	query.collision_mask = Perception.WORLD_MASK
+	query.collision_mask = Perception.eye_mask()  # round 47 (R47.36, native's grant): a sight screen blocks the fog's eye too
 	query.from = eye
 	for r in ray_count:
 		var direction := directions[r]
@@ -290,10 +290,14 @@ func _finish_refresh(viewers: Array[Tank]) -> void:
 		if fans_by_viewer.has(String(viewer.name)) and viewer.is_alive():
 			fans.append(fans_by_viewer[String(viewer.name)])
 	# Everything marked this refresh is now SEEN-or-better for good, and the picture is that, lit where marked.
-	_ever.blit_rect_mask(_seen_src, _cur, _full, Vector2i.ZERO)
-	image.copy_from(_ever)
-	image.blit_rect_mask(_lit_src, _cur, _full, Vector2i.ZERO)
-	texture.update(image)
+	# Round 47 (native, R47.31), MEASUREMENT ONLY: `--sim-off=visfield_draw` keeps the field computing (rays, marks, fans,
+	# state_at) and skips its picture (the image blits and the texture upload), to split the render side from the sim side on
+	# his laptop. Never set in play: the fog on screen freezes.
+	if not SimProfile.switched_off("visfield_draw"):
+		_ever.blit_rect_mask(_seen_src, _cur, _full, Vector2i.ZERO)
+		image.copy_from(_ever)
+		image.blit_rect_mask(_lit_src, _cur, _full, Vector2i.ZERO)
+		texture.update(image)
 	var swap := _prev
 	_prev = _cur
 	_cur = swap

@@ -1,0 +1,10 @@
+{
+  "name": "Orders probe, 2 squads",
+  "note": "Round 47 O2 (Bar O2, R47.4): his merged group of ten as two full squads of five (Crossing: Spears + Wrenches; Locks: Burners + Burners2). Formed and holding until ordered.",
+  "squads": [
+    {"name": "Alpha", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "tank"}, {"unit": "tank"}, {"unit": "ifv"}, {"unit": "ifv"}, {"unit": "scout"}]},
+    {"name": "Bravo", "formation": "wedge", "verb": "hold", "directive": {"role": "assault"},
+     "units": [{"unit": "tank"}, {"unit": "ifv"}, {"unit": "ifv"}, {"unit": "scout"}, {"unit": "scout"}]}
+  ]
+}

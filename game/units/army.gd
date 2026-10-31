@@ -306,8 +306,9 @@ static func cpu_army(name: String, seed_value: int, budget: int = Units.DEFAULT_
 		archetype = "balanced"
 	var unit_cap := MAX_ARMY_UNITS if faction != "" else Doctrine.MAX_UNITS
 	# C25.6: under the laptop preset's cap the same purchase order stops at the match's vehicles (20), so the role mix
-	# stays the archetype's; the desktop (and headless) cap is untouched.
-	if Units.max_squads() < Units.MAX_SQUADS:
+	# stays the archetype's; the desktop (and headless) cap is untouched. Round 47 (R47.22): only under `--army-cap=count`
+	# (SkirmishMode.COUNT_CAP, the laptop knob); otherwise the money is the cap on every preset.
+	if Units.max_squads() < Units.MAX_SQUADS and SkirmishMode.COUNT_CAP:
 		unit_cap = mini(unit_cap, Units.max_units())
 	var order: Array = ARCHETYPES[archetype]["units"]
 	var cheapest := INF

@@ -9,6 +9,9 @@ extends RefCounted
 ## - "low" cover (barricades, 0.9 m) stops hulls but not eyes or guns: it shapes movement while leaving fire lanes open,
 ##   and only catches shells aimed low at a vehicle hugging it.
 ## - decoration (`collides: false`) has no gameplay at all, so it is exempt from point symmetry.
+## - "sight" cover (mapkit P3, round 47, C47.7: sight screens) blocks EYES only: a hull drives through it, a shell flies
+##   through it, the navmesh is baked as if it were not there. Arena builds it on its own physics layer (SIGHT_LAYER),
+##   never in `obstacles`; Perception's eye ray and CoverTables read it while `sight_on` (`--kit-sight=off`).
 
 ## type → size [x, height, z] for ONE level (meters, before rotation; long axis along x), cover, and optional
 ## max_stack (stackable), collides (default true), fallback (a visual slot to scale when the theme lacks prop.<type>;
@@ -36,7 +39,26 @@ const PROPS := {
 	# Round 7 (feel, agreed with arena): a city block, theme prop.block (CityBlock). One box of `size`; the art fills its
 	# footprint at ground level and steps in only above the shopfronts, so this box is what you see where it matters.
 	"block": {"size": [40.0, 24.0, 40.0], "cover": "hard"},
+	# Mapkit P3 (round 47): a sight screen, the `sight` class. 14 m along x (a street's span), above the tallest hull's
+	# eye and roof. Its look waits on the lead's pick (the looks page); prop.sight_screen is the strip-curtain direction
+	# until then. On no shipped map until he picks (P4).
+	"sight_screen": {"size": [14.0, 6.0, 0.6], "cover": "sight"},
+	# Mapkit P4 (round 47, the lead's pick: hedgehogs): a tank trap. `low` cover: stops a hull, not a shot or a look.
+	# The box is the barricade's 0.9 m, under the muzzles (1.05-1.27 m), though the drawn hog stands 1.2 m: its open
+	# steel arms are what a round flies between. Fields of them build funnels; 1.6 m is small enough that the bake
+	# carves each one, so hogs closer than a hull's width plus twice the bake radius read as a wall to the navmesh.
+	"tank_trap": {"size": [1.6, 0.9, 1.6], "cover": "low"},
+	# Mapkit P4 (round 47, the lead's pick C: the monorail): ONE pillar and the 10 m of beam it carries at 9 m (along z).
+	# Only the pillar collides (the beam is above the tallest hull, 6.18 m, and the drawn pillar is round inside this
+	# box); pillars 10 m apart make a continuous rail, a thin colonnade across a street. Look key `car`: a lit car on it.
+	"monorail": {"size": [1.4, 9.0, 1.4], "cover": "hard"},
 }
+## The physics layer a `sight` prop's body sits on (layer 5): not the world (1), not the vehicles (2), so nothing that
+## moves or flies tests it; only the eye ray adds it (Perception.eye_mask()).
+const SIGHT_LAYER := 16
+## The kit flag (C47.7): sight screens blind the eye ray and the cover tables. Off (`--kit-sight=off`, read by Arena):
+## they are scenery. A map with no screens is identical either way.
+static var sight_on := true
 ## **Adding a type here is not an additive change.** `test_every_kit_prop_type_has_a_visual_slot` requires a
 ## `prop.<type>` slot in the theme for every entry, with no stand-in — so a new kind must land in the SAME COMMIT
 ## as its slot and its scene, which means whoever owns the art adds both. Round 7: `block` (feel's cityscape kit,
@@ -45,7 +67,7 @@ const PROPS := {
 ##
 ## Keys a prop may carry for its look (read by the visual's setup(prop)); they never affect gameplay or symmetry.
 const LOOK_KEYS := ["faction", "paint", "stencil", "rust", "doors", "channel", "sign", "color", "variant",
-		"tiers", "setback", "neon", "seed", "wall"]  # the last four: a city block's look (CityBlock), never its footprint
+		"tiers", "setback", "neon", "seed", "wall", "car"]  # the last four: a city block's look (CityBlock), never its footprint
 ## Region kinds the AI and the measurements understand (_agents/arenas.md defines each).
 const REGION_KINDS := ["centre", "open_ground", "cover_cluster", "chokepoint", "flank", "overlook"]
 
@@ -70,6 +92,11 @@ static func size_of(prop: Dictionary) -> Vector3:
 
 static func cover_of(type: String) -> String:
 	return String(PROPS[type]["cover"])
+
+
+## A kit type of the `sight` class: blocks eyes only.
+static func is_sight(type: String) -> bool:
+	return PROPS.has(type) and String(PROPS[type]["cover"]) == "sight"
 
 
 ## Distance from `point` (x, z) to the rotated rectangle of an obstacle with ground `center`, `size` (x, _, z) and
