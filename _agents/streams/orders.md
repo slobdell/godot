@@ -79,10 +79,10 @@ _(worker keeps this current: report at the top, every number with commit, machin
 
 | Item | State |
 |---|---|
-| O1 the spread | **built, ON on the branch** (ff65a5481, `--group-merged=off`); full check queued on builder3 |
-| O2 Bar O | **filed** (`workstreams.md` *Bars (round 47)*, 960edbd67) before any number; runs on the green freeze |
+| O1 the spread | **built, ON on the branch** (`--group-merged=off`). ff65a5481's check RED (builder3, 3529 / 1: the merged squads drove in as AUTO wedges ~50 m wide toward anchors 14 m apart, arrival slots 3.7 m apart); fixed in 0b1caafa2 (the files drive in as files; AUTO squads only); 0b1caafa2's full check running (log `~/orders-r47/check-c1f5e01ee.log`, misnamed) |
+| O2 Bar O | **filed** (`workstreams.md` *Bars (round 47)*, 960edbd67) before any number; amendment 1 (69d6813e6) and 2 (0eb12f551, R47.15: the `all` arm deciding) both before any number; runs on the green freeze |
 | O3 the order lag | **closed: no lag** (below; relayed to route as R1 by the orchestrator) |
-| O4 the `inp` row | **built** (7d41d5061); native told the hash when the check is green |
+| O4 the `inp` row | **built** (7d41d5061; + group saves 3046343c1; + arm / formation / escape 87eb68b1c); native gets the hash when a check covering 87eb68b1c is green |
 | O5 the recipient cue | built (uncommitted until its tests pass): rings pulse + chip flash |
 | O6 artillery screen | built (uncommitted until its tests pass): a battery's screen = support by fire, ON, `--battery-screen=off` |
 | O7 his acceptance read | after Bar O |
