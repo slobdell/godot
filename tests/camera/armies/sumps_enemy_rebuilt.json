@@ -1,0 +1,90 @@
+{
+ "name": "Sumps CPU (rebuilt from his recording roster, directives assumed)",
+ "faction": "law",
+ "squads": [
+  {
+   "name": "Guns",
+   "directive": {
+    "role": "assault",
+    "cohesion": 0.7
+   },
+   "units": [
+    {
+     "unit": "law_tank"
+    },
+    {
+     "unit": "law_tank"
+    },
+    {
+     "unit": "law_tank"
+    },
+    {
+     "unit": "law_suppressor"
+    },
+    {
+     "unit": "law_suppressor"
+    }
+   ]
+  },
+  {
+   "name": "Hunters",
+   "directive": {
+    "role": "assault",
+    "cohesion": 0.7
+   },
+   "units": [
+    {
+     "unit": "law_ifv"
+    },
+    {
+     "unit": "law_ifv"
+    },
+    {
+     "unit": "law_ifv"
+    },
+    {
+     "unit": "law_ifv"
+    },
+    {
+     "unit": "law_ifv"
+    }
+   ]
+  },
+  {
+   "name": "Eyes",
+   "directive": {
+    "role": "assault",
+    "cohesion": 0.7
+   },
+   "units": [
+    {
+     "unit": "law_scout"
+    },
+    {
+     "unit": "law_scout"
+    },
+    {
+     "unit": "law_scout"
+    }
+   ]
+  },
+  {
+   "name": "Battery",
+   "directive": {
+    "role": "assault",
+    "cohesion": 0.7
+   },
+   "units": [
+    {
+     "unit": "law_artillery"
+    },
+    {
+     "unit": "law_artillery"
+    },
+    {
+     "unit": "law_artillery"
+    }
+   ]
+  }
+ ]
+}

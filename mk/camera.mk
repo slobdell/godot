@@ -85,7 +85,9 @@ camera-census: import ## Round 46 (camera C1): per-second census of a recording'
 # Round 47 (camera K1/K5): his matches replayed with his SELECTIONS and a model of his hand (tests/camera/replay_camera.gd),
 # once per arm, and the gap from the camera's look point to his selection added up (tests/camera/k1_gap.py; K1_GAP lines;
 # his own recording's line first, `cam` rows once a second). Arms are game switches separated by `;` ("-" = none). Each
-# recording's flags (authority, rules) are worked out as replay-match does.
+# recording's flags (authority, rules) are worked out as replay-match does. His garage armies live in his user:// (not on a
+# builder): tests/camera/armies/<arena>_player.json / <arena>_enemy*.json stand in (copies of his files when the recording's
+# match was the last to write them; `_rebuilt` = rebuilt from the recording's roster, directives assumed).
 #   make camera-replay CAMK_RECORDINGS="references/round46/playtest/X.jsonl ..." CAMK_ARMS="--camera-planner=on;--camera-planner=off"
 CAMK_DIR := $(BUILD_DIR)/camera-replay
 CAMK_RECORDINGS ?= references/round46/playtest/2026-10-30T16-03-40-parade.jsonl
@@ -102,6 +104,8 @@ camera-replay: native-fresh import ## Round 47 (camera K1): his recordings repla
 			tag=$$(echo "$$name $$arm" | tr -c 'A-Za-z0-9=.-' '_'); flags="$$arm"; \
 			if [ "$$authority" = off ]; then flags="$$flags --player-authority=off"; fi; \
 			flags="$$flags $$($(PYTHON) tests/replay/rules.py $$rec "$$flags")"; \
+			arena=$${name##*-}; for f in tests/camera/armies/$${arena}_player.json; do [ -f $$f ] && flags="$$flags --garage-army=res://$$f --player=res://$$f"; done; \
+			for f in tests/camera/armies/$${arena}_enemy*.json; do [ -f $$f ] && flags="$$flags --enemy=res://$$f"; done; \
 			mkdir -p $(CAMK_DIR)/$$tag; \
 			timeout 1800 $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/camera/replay_camera.gd -- \
 				--orders=$(CURDIR)/$$rec --seconds=$$secs --record-dir=$(CAMK_DIR)/$$tag --camera-screen=1920x1080 \
