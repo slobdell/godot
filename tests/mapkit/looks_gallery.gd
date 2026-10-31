@@ -75,7 +75,8 @@ func _ready() -> void:
 	camera.current = true
 	camera.fov = FOV
 	camera.far = 600.0
-	_aim(float(_flags.text("yaw", "0")))
+	_aim(float(_flags.text("yaw", "0")), float(_flags.text("pitch", str(PITCH_DEG))), float(_flags.text("distance", str(DISTANCE))),
+			Vector3(float(_flags.text("look-x", "0")), float(_flags.text("look-y", "0")), float(_flags.text("look-z", "0"))))
 	if _flags.has("kit-look"):
 		MapkitYard.look = _flags.text("kit-look")  # P1b: plain or the Material Maker trim sheet
 	if _flags.has("screen-look"):
@@ -88,11 +89,12 @@ func _ready() -> void:
 		show_direction("door_a_shut")
 
 
-func _aim(yaw_deg: float) -> void:
-	var back := Vector3(0.0, sin(deg_to_rad(PITCH_DEG)), cos(deg_to_rad(PITCH_DEG))) * DISTANCE
+## His pose by default; --pitch/--distance/--look-* frame a reference shot (R47.39: the train side-on for Meshy's proportion).
+func _aim(yaw_deg: float, pitch_deg := PITCH_DEG, distance := DISTANCE, target := Vector3.ZERO) -> void:
+	var back := Vector3(0.0, sin(deg_to_rad(pitch_deg)), cos(deg_to_rad(pitch_deg))) * distance
 	back = back.rotated(Vector3.UP, deg_to_rad(yaw_deg))
-	camera.position = back
-	camera.look_at(Vector3.ZERO, Vector3.UP)
+	camera.position = target + back
+	camera.look_at(target, Vector3.UP)
 
 
 func show_direction(id: String) -> void:
