@@ -53,3 +53,18 @@ mapkit-bar-p: import ## Mapkit Bar P: parade v parade_traps / parade_rail, cross
 .PHONY: mapkit-doors-watch
 mapkit-doors-watch: import ## Mapkit: CPU fights on terminus_doors, each one's door events, booth calls, crossings by side and state, holds -> build/doors-watch.json
 	$(PYTHON) tests/mapkit/doors_watch.py --godot $(GODOT) --json $(BUILD_DIR)/doors-watch.json
+
+# His Crossing match (references/round46/playtest, 15:41) replayed on crossing and on crossing_screens: his own orders, the
+# same seed and armies; the replay's end stats per side (shots, hits, damage, kills). One illustrative pair, not a bar.
+HIS_CROSSING := references/round46/playtest/2026-10-30T15-41-59-crossing.jsonl
+.PHONY: mapkit-screens-replay
+mapkit-screens-replay: ## Mapkit: his Crossing replayed on crossing v crossing_screens -> MAPKIT_REPLAY lines (shots/hits/damage/kills per side)
+	@for rec in $(HIS_CROSSING) tests/mapkit/fixtures/his_crossing_on_screens.jsonl; do \
+		$(MAKE) --no-print-directory replay-match RECORDING=$$rec REPLAY_SECONDS=112 CREWS=all > $(BUILD_DIR)/mapkit-replay.log 2>&1 || true; \
+		out=$$(ls -t $(REPLAY_MATCH_DIR)/out/*.jsonl 2>/dev/null | head -1); \
+		$(PYTHON) -c "import json,sys; rows=[json.loads(l) for l in open(sys.argv[1])]; h=rows[0]; e=[r for r in rows if r.get('t')=='end']; \
+s=e[0]['result']['stats'] if e else {}; r=e[0]['result'] if e else {}; \
+print('MAPKIT_REPLAY '+json.dumps({'arena': h.get('arena'), 'ended': bool(e), 'reason': r.get('reason'), 'seconds': r.get('sim_seconds'), \
+'shots': s.get('shots'), 'hits': s.get('hits'), 'damage': s.get('damage'), 'kills': s.get('kills'), 'first_shot_s': s.get('first_shot_seconds')}))" "$$out"; \
+		grep -E '^REPLAY_(SETUP|NATIVE)' $(BUILD_DIR)/mapkit-replay.log | cut -c1-200; \
+	done
