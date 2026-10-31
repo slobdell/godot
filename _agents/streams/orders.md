@@ -158,6 +158,13 @@ writes it as `("army-cap", "count", "<R47.22's merge stamp>")`; test_rules: ALL_
 test_his_round46_recordings_ran_every_rule_on expects ["--army-cap=count"]. `game/match/match_recorder.gd`: the inp row and
 the army_money stamp (additive). `game/tactics/element_plan.gd`: one condition at the D3b hook (R47.21, manoeuvre agreed).
 
+**The control playtest's stale check (fixed, R47 orchestrator's ask):** `queued_route_has_three_stops` read the crew-order queue
+and `waypoints()`, but a squad's shift-clicks queue its ELEMENT's tasks (round 35's D6, REQUEUE), so it failed on main too:
+`make control-playtest` (headless) on main 6ef3681f7, builder3 light folder: `CONTROL_PLAYTEST_DONE ok=false`,
+queued_route_has_three_stops false (not in make check, so nothing went red). Now a squad's route is its element's task + queued
+tasks (loose crews keep the old read); stream/orders: `ok=true`, exit 0. The windowed recording of the same step
+(2026-10-30T20-19-30) shows the three clicks as three `queue: true` order rows taken as Bravo's element tasks.
+
 **Questions for the lead:** none yet (O1 ships ON on Bar O's verdict; if it fails, the player-terms note goes to the orchestrator).
 **Requests to other streams:** none. **Builders:** a fresh builder3 folder is seeded from `~/tank_squad/godot` server-side first
 (rsync over the laptop uplink ran ~1-2 MB/min tonight); told the orchestrator.

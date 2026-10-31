@@ -297,7 +297,14 @@ func _queued_route() -> void:
 	for stop: Vector3 in stops:
 		await _right_click(_screen(stop), true)
 	var queued: int = controls.orders.queue(members[0]).size()
-	_checks["queued_route_has_three_stops"] = controls.waypoints(members[0]).size() == 3 and queued == 2
+	# Round 47 (orders): a SQUAD's shift-clicks queue its element's tasks (round 35's D6, REQUEUE), not crew orders, so its
+	# route is the element's task plus its queued tasks; loose crews keep the crew-order queue.
+	var holder: Element = controls.elements.of(members[0]) if controls.elements != null else null
+	if holder != null and not holder.task.is_empty():
+		queued = holder.queued_tasks.size()
+		_checks["queued_route_has_three_stops"] = queued == 2
+	else:
+		_checks["queued_route_has_three_stops"] = controls.waypoints(members[0]).size() == 3 and queued == 2
 	# Where the clicks actually landed: a camera pose that puts a stop off screen would order somewhere else.
 	var landed: Array = controls.waypoints(members[0]).map(func(w: Dictionary) -> Array:
 		return [String(w["kind"]), snappedf((w["position"] as Vector3).x, 0.1), snappedf((w["position"] as Vector3).z, 0.1)])
