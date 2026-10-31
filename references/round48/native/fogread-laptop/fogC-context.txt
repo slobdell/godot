@@ -1,0 +1,4 @@
+ 12:35:40 up 1 day, 18:27,  1 user,  load average: 2.94, 1.63, 2.26
+Mem:            7620        3758        1223         283        3239        3861
+2284244 /bin/bash -c source /home/slobdell/.claude/shell-snapshots/snapshot-bash-1793473571667-lugnvr.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || 
+2284245 /bin/bash -c source /home/slobdell/.claude/shell-snapshots/snapshot-bash-1793473571667-lugnvr.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || 

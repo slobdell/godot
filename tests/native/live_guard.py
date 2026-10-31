@@ -25,7 +25,9 @@ ELSEWHERE = {"native_recorder": "tests/test_native_recorder.gd (the tick profile
              # 30-unit click test (test_control_scale), which takes both.
              "native_gate_width": "tests/test_native_gate_width.gd (RtsControls' group click only; none in the profile)",
              "native_untangle": "tests/test_native_untangle.gd (RtsControls' group click only; none in the profile)",
-             "native_assign": "tests/test_native_assign.gd (SelectionSquads' group lays, RtsControls only; none in the profile)"}
+             "native_assign": "tests/test_native_assign.gd (SelectionSquads' group lays, RtsControls only; none in the profile)",
+             # Round 48 (R48.8): the fog field exists only in a skirmish (or --visfield); the profile's match has none.
+             "native_visfield": "tests/test_native_visfield.gd (the fog field's rays: skirmish only; none in the profile)"}
 
 
 def main(path: str) -> int:

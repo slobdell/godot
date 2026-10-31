@@ -24,6 +24,7 @@
 #include "place_native.h"
 #include "esit_native.h"
 #include "contacts_native.h"
+#include "visfield_native.h"
 #include "perception_native.h"
 #include "incoming_native.h"
 #include "shell_native.h"
@@ -209,6 +210,10 @@ public:
 		c.HOLD_SPEED_MPS = consts.get("HOLD_SPEED_MPS", c.HOLD_SPEED_MPS);
 		c.KNOWN_M = consts.get("KNOWN_M", c.KNOWN_M);
 		return ::godot::esit_entries(game_match, team, member_names, heading, was_known, roles, c);
+	}
+	// Round 48 (R48.8): VisibilityField._rays (visfield_native.cpp).
+	Array visfield_rays(Object *viewer, const Vector3 &eye, double radius, const PackedVector3Array &directions, int64_t mask) const {
+		return ::godot::visfield_rays(viewer, eye, radius, directions, mask);
 	}
 	// Round 48 (N2): AiTickCache._contact_table (contacts_native.cpp); NativeContacts marshals the caches and the consts.
 	Dictionary contact_table(const Dictionary &intel, const Array &names, const Dictionary &by_name, const Dictionary &fired,

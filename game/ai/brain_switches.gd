@@ -87,6 +87,7 @@ static var native_assign := true  # Round 45 (R45.16): SelectionSquads._assign's
 static var native_place := true  # Round 47 (N2): TacticsFormation.place natively (place_native.cpp, NativePlace); test_native_place + native-verify-scenarios hold it to the GDScript. ON: his four recordings 38000+ place() calls EQUAL; price his Crossing 112 s, builder3 light, a79fc79cb, ABBA n 3: elements -0.14 ms a tick (se 0.09), tick -0.14 (se 0.33): faster or neutral (R47 ruling)
 static var native_esit := true  # Round 47 (N4, R47.19): ElementSituation.build's member + contact loops natively (esit_native.cpp, NativeEsit); test_native_esit + native-verify-scenarios hold it to the GDScript. ON: his four recordings 25500+ calls EQUAL; price his Crossing 112 s, builder3 light, 46c3b2f3b, ABBA n 3: elements paired -0.09 / +0.10 ms (one pair confounded by the box load): neutral (R47 ruling: ON)
 static var native_contacts := false  # Round 48 (N2): AiTickCache.contact_prototypes' table rebuild natively (contacts_native.cpp, NativeContacts); test_native_contacts + native-verify-scenarios hold it to the GDScript. OFF until proven
+static var native_visfield := true  # Round 48 (R48.8): VisibilityField.look_from's ray fan natively (visfield_native.cpp, NativeVisfield); test_native_visfield holds it to the GDScript. ON (R48.8: EQUAL and faster): laptop, 1200 fans / 245017 rays EQUAL, GDScript 2.01 v C++ 1.81 us a ray (-10 %: the engine's raycast dominates), ~0.04 ms a tick at the cost cap
 static var native_controller := false  # Round 28 (N7.3a): OrderController._physics_process natively (controller_native.cpp: the stride hold, think then execute, the measurement bookkeeping); OFF until its check
 ## Round 31 (brains B8, a CP-H consumer, C31.4; R31.1: OPT-IN): the element's re-seat / make-room clock reads the honest
 ## speed (`Element.reads_slow`). NAMING it (`--brains-off=realslow`) flips it against REALSLOW_DEFAULT, as manoeuvre's
@@ -99,7 +100,7 @@ static var native_move := false  # Movement's geometry: _chord_compute's samples
 
 const NAMES: Array[String] = ["ready_memo", "chord_memo", "closest_memo", "avoid_halves", "avoid_neighbours",
 		"kturn_cap", "kturn_lazy", "lazy_path", "ground_memo", "direct_calls",
-		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el", "native_cb", "native_gun", "native_exec", "native_owned", "native_motion", "native_tank", "native_combat", "native_pathing", "native_perception", "native_incoming", "native_shell", "native_threat", "native_recorder", "native_controller", "native_wall", "native_feed", "native_planner", "native_manoeuvre", "native_yield", "native_gate_width", "native_untangle", "native_assign", "native_place", "native_esit", "native_contacts"]
+		"preview_memo", "narrow_state", "lazy_allies", "native", "native_dodge", "native_avoid", "native_cover", "native_nav", "native_move", "native_record", "native_scan", "native_path", "native_drive", "native_situation", "native_matchups", "native_decide", "native_tq", "native_fire", "native_el", "native_cb", "native_gun", "native_exec", "native_owned", "native_motion", "native_tank", "native_combat", "native_pathing", "native_perception", "native_incoming", "native_shell", "native_threat", "native_recorder", "native_controller", "native_wall", "native_feed", "native_planner", "native_manoeuvre", "native_yield", "native_gate_width", "native_untangle", "native_assign", "native_place", "native_esit", "native_contacts", "native_visfield"]
 ## Switch GROUPS: names `--brains-on=` / `--brains-off=` / an A/B accept that set several switches at once (set_named);
 ## not switches themselves, so set_all and a test reading every switch walk NAMES only.
 const GROUPS: Array[String] = ["native_n4"]
@@ -260,6 +261,8 @@ static func set_named(name: String, on: bool) -> void:
 			native_esit = on
 		"native_contacts":
 			native_contacts = on
+		"native_visfield":
+			native_visfield = on
 		"native_n4":
 			native_situation = on
 			native_tq = on

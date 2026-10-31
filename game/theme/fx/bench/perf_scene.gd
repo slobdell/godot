@@ -727,6 +727,12 @@ func _apply(phase: String) -> void:
 			# within-run toggle the layer method needs.
 			for field in get_tree().root.find_children("*", "VisibilityField", true, false):
 				_override(field, "process_mode", Node.PROCESS_MODE_DISABLED)
+		"no_visdraw":
+			# Round 48 (native N4, R48.7): the field keeps computing; only its picture (image blits + texture upload) is skipped,
+			# so the picture's frame cost is read inside one run. The fog on screen holds its last picture meanwhile.
+			for field in get_tree().root.find_children("*", "VisibilityField", true, false):
+				if field.get("draw_picture") != null:
+					_override(field, "draw_picture", false)
 		"no_visfield_thread":
 			# Sim's S1: the field's cell marks back on the main thread (in-flight looks are joined at the next refresh
 			# either way, so flipping it inside a run is safe).

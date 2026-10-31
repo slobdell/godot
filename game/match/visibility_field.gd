@@ -30,6 +30,10 @@ extends Node
 
 signal updated
 
+## Round 48 (native N4, R48.7), MEASUREMENT ONLY: false skips the picture (the blits and the texture upload) while the field keeps
+## computing, as `--sim-off=visfield_draw` does for a whole run; perf_scene's `no_visdraw` layer flips it inside one run.
+var draw_picture := true
+
 enum State { NEVER, SEEN, VISIBLE }
 
 const CELL_SIZE := 2.0
@@ -173,21 +177,11 @@ func look_from(viewer: Tank, finishing := true) -> void:
 			var angle := TAU * r / ray_count
 			directions[r] = Vector3(cos(angle), 0.0, sin(angle))
 		_directions[ray_count] = directions
-	var reach := PackedFloat32Array()
-	reach.resize(ray_count)
-	var fan := PackedVector2Array([Vector2(eye.x, eye.z)])
-	var query := PhysicsRayQueryParameters3D.new()
-	query.collision_mask = Perception.eye_mask()  # round 47 (R47.36, native's grant): a sight screen blocks the fog's eye too
-	query.from = eye
-	for r in ray_count:
-		var direction := directions[r]
-		query.to = eye + direction * radius
-		var hit := space.intersect_ray(query)
-		var distance := radius
-		if not hit.is_empty():
-			distance = eye.distance_to(hit.position)
-		reach[r] = distance
-		fan.append(Vector2(eye.x + direction.x * distance, eye.z + direction.z * distance))
+	# Round 48 (native, R48.8): the fan natively when NativeVisfield says so (visfield_native.cpp); _rays is the reference.
+	var cast: Array = NativeVisfield.rays(self, viewer, eye, radius, directions, space) if NativeVisfield.usable() \
+			else _rays(eye, radius, directions, space)
+	var reach: PackedFloat32Array = cast[0]
+	var fan: PackedVector2Array = cast[1]
 	fans_by_viewer[viewer_name] = fan
 	_profile("visfield/rays", started)
 	started = _profile_start()
@@ -203,6 +197,27 @@ func look_from(viewer: Tank, finishing := true) -> void:
 	var rects := _mark(Vector2(eye.x, eye.z), radius, reach)
 	_profile("visfield/mark", started)
 	_apply(viewer_name, [eye, radius, fan, rects])
+
+
+## The ray fan of one look: [reach per ray, fan (the eye, then each ray's end)] (look_from's loop; NativeVisfield's reference).
+func _rays(eye: Vector3, radius: float, directions: PackedVector3Array, space: PhysicsDirectSpaceState3D) -> Array:
+	var ray_count := directions.size()
+	var reach := PackedFloat32Array()
+	reach.resize(ray_count)
+	var fan := PackedVector2Array([Vector2(eye.x, eye.z)])
+	var query := PhysicsRayQueryParameters3D.new()
+	query.collision_mask = Perception.eye_mask()  # round 47 (R47.36, native's grant): a sight screen blocks the fog's eye too
+	query.from = eye
+	for r in ray_count:
+		var direction := directions[r]
+		query.to = eye + direction * radius
+		var hit := space.intersect_ray(query)
+		var distance := radius
+		if not hit.is_empty():
+			distance = eye.distance_to(hit.position)
+		reach[r] = distance
+		fan.append(Vector2(eye.x + direction.x * distance, eye.z + direction.z * distance))
+	return [reach, fan]
 
 
 ## Join every look still computing on a worker and apply its marks (any order: a refresh's marks are a union).
@@ -293,7 +308,7 @@ func _finish_refresh(viewers: Array[Tank]) -> void:
 	# Round 47 (native, R47.31), MEASUREMENT ONLY: `--sim-off=visfield_draw` keeps the field computing (rays, marks, fans,
 	# state_at) and skips its picture (the image blits and the texture upload), to split the render side from the sim side on
 	# his laptop. Never set in play: the fog on screen freezes.
-	if not SimProfile.switched_off("visfield_draw"):
+	if draw_picture and not SimProfile.switched_off("visfield_draw"):
 		_ever.blit_rect_mask(_seen_src, _cur, _full, Vector2i.ZERO)
 		image.copy_from(_ever)
 		image.blit_rect_mask(_lit_src, _cur, _full, Vector2i.ZERO)
