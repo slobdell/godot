@@ -100,6 +100,31 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   smallest change that brings the squads' spots together without slowing the arrival. A merged selection (his "grouped them into a single
   squad 4"; the selection row still `["Spears",""]`) is ONE squad to his eye: orders reads whether the merge should lay as one.
 
+- **R47.5 (2026-10-30 evening) Route's R0 seam merged: main 277b353ad = + ba53581f7 (GREEN builder3 3520/0, 28 ALL JUDGED); main
+  INHERITS its check.** `Pathing.reroute(crew: Node, reason: StringName) -> bool`. Manoeuvre merges main for M2.
+- **R47.6 Locks' detour is the brain's RETREAT under his order, not the route (route's R1, builder3, staged from his census at tick
+  1170).** Hunters_4 at 7 % hull (15/220) under CRITICAL_HP with threats seen: RETREAT scores 0.99 and beats his attack; `withdraw_point`
+  hands it a move_to ~20 m from the threats, north, again and again. Its element slot was right all along. The route itself was at most
+  1.036x the navmesh shortest in 298 re-plans; the lock-v-west-bridge choice was a near-tie (176.6 v 181.4 m) chosen while Lances_3 sat at
+  x ~ -10, which then drove 35 m west. Orders' O3: his click took at tick 1462 (a multi-crew element runs attacks as attack_move).
+  **Ruling: his direct order to a crew beats RETREAT (memory: his direct order wins).** Engage's item E7 (ahead of E3), ON with an `=off`
+  escape, symmetric only for orders the CPU's commander gives as "direct"; a crew pressing on hurt may say so through the existing feed
+  (one additive line kind, C47.5). Which way a retreat goes stays engage's (`withdraw_point`).
+- **R47.7 Route's R2 becomes: guard tests (his Locks geometry takes the west bridge; Crossing / Gorge crossing choice; Terminus
+  unchanged) + re-plan a committed route when its goal (a moving target) has moved enough that the route is no longer near-shortest.**
+  Small, ON, `=off`; then R5 doors.
+- **R47.8 Replays leave his match within seconds (engage, builder3, 8edebac1e, n 1 a arm): `REPLAY_SPAWN {"placed":0,"recorded":37}`,
+  divergence FAIL, every crew > 3 m by 19 s on Crossing; same with `--lane-clear` on/off and the gun twin off.** Native's N0, ahead of
+  every other native item: every stream's acceptance read depends on it. Until fixed, acceptance reads are STAGED from his census
+  (route's `make route-trace` STAGE_TICK, engage's `make engage-e1-stage`) and say so.
+- **R47.9 Native's N2 seam = `TacticsFormation.place` (C++ twin behind `BrainSwitches.native_place`, one call site at the top of
+  place(), GDScript the reference), approved if manoeuvre does not change place / seat this round; else after its freeze.** Profile:
+  native probe 128f9b2a9, builder3 light, his Crossing 112 s, native ON, n 1: ElementPlan.build 1.05 ms a tick, no hot body but place
+  (0.39 ms, 3.8 calls a tick). Proof: randomized + every place() call captured from his recordings, EQUAL, the twin test in check.
+- **R47.10 Mapkit's looks page is up for him (P1, his gate):** https://claude.ai/artifact/WSBf2Wmmar3BSocBqqrRpm (picks in its `db`:
+  `picks/<piece>`, `lines/<id>`). An overpass needs a deck cutaway (camera's code, later). builder3 runs Xorg on :1: render targets
+  need `DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority` until native's remote.sh detects it.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
