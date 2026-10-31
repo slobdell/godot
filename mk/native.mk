@@ -535,8 +535,8 @@ native-repeat: _native-ready import ## native: FILTER run REPEAT_N times (determ
 	@[ -n '$(FILTER)' ] || { echo "native-repeat: FILTER= required"; exit 2; }; \
 	good=0; bad=0; \
 	for i in $$(seq 1 $(REPEAT_N)); do \
-		out=$$($(GODOT) --headless $(TEST_FPS_ARGS) --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)' 2>&1); \
-		echo "$$out" | grep -E '^(CYCLE_ROW|NOPROGRESS_ROW|  FAIL|          )' | cut -c1-400 | sed "s/^/run $$i: /"; \
-		res=$$(echo "$$out" | grep -E '^[0-9]+ passed, [0-9]+ failed' | tail -1); echo "run $$i: $$res"; \
+		out=$$($(GODOT) --headless $(TEST_FPS_ARGS) --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)' 2>&1) || true; \
+		{ echo "$$out" | grep -E '^(CYCLE_ROW|NOPROGRESS_ROW|  FAIL|          )' || true; } | cut -c1-400 | sed "s/^/run $$i: /"; \
+		res=$$({ echo "$$out" | grep -E '^[0-9]+ passed, [0-9]+ failed' || echo "no result line"; } | tail -1); echo "run $$i: $$res"; \
 		case "$$res" in *" 0 failed") good=$$((good+1));; *) bad=$$((bad+1));; esac; \
 	done; echo "REPEAT_TALLY native=$(if $(filter off,$(NATIVE)),off,on) runs=$(REPEAT_N) green=$$good red=$$bad"
