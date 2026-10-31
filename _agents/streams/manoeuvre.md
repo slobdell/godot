@@ -97,6 +97,10 @@ _(worker keeps this current: report at the top, every number with commit, machin
 - **Queued request from mapkit (20:45, via the orchestrator; after Bars W / H):** consume the blast door's `overstay` event (a crew
   parked 6 s in a closing doorway; the door holds open meanwhile): the crew clears through the yield / give-way. OFF until doors
   reach a real arena. Doors are on main 39c7dba53 (merged here only after Bars W / H have synced, to keep their tree frozen).
+  Pointers (orchestrator, read from main): a SIGNAL, `ArenaDoors.door_event(event: Dictionary)` (game/arena/arena_doors.gd ~line 178;
+  overstay = {tick, door, group, kind: "overstay", crew}, once per door after HOLD_EVICT_S in the doorway, the `_evicted` latch); the
+  arena's doors instance as at ~line 35 (null without doors); copy the hookup from the announcer's match_event_adapter.gd. Dev arena:
+  arenas/doors_dev.json (`make skirmish ARENA=doors_dev`).
 - **Requests to other streams (19:35, via the orchestrator):** seeds for Bar H (13001+); native: twin `Movement._holdyield_veto`;
   engage (FYI): HOLD's return to his post uses arrive 6.0, so any other displacement still parks him up to 6 m short.
   **Questions for the lead:** none.
