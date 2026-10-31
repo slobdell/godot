@@ -55,6 +55,23 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-30 ~19:15 PDT). Merge candidate: a79fc79cb (full check queued on builder3: mapkit / manoeuvre / route / me /
+orders; nothing stale in the queue, N6).** Since: 00147f9a5 (remote.sh protects .remote-synced), 6fcf33ccd (native_place ON),
+131823cff (lines_r47), the E7 twin commits (no-op on main), docs. The next candidate = the tip after a79fc79cb goes green.
+- **N2 place twin DONE, ON (6fcf33ccd):** EQUAL on 4000 random elements x every switch and on every place() of his four recordings
+  (TANK_NATIVE_PLACE_VERIFY=1, builder3 light, a79fc79cb: Crossing 11000+, Locks 7000+, Sumps 12000+, Parade 8000+, 0 mismatches);
+  check's native-verify-scenarios verifies every AI scenario's place() both ways from now on. **Price:** his Crossing 112 s,
+  --sim-profile, builder3 light, a79fc79cb, ABBA n 3 a side, every run REPLAY_SPAWN placed 0: elements ON 1.742 / 1.436 / 1.427 v OFF
+  1.709 / 1.684 / 1.616 ms a tick (paired -0.14 ms, se 0.09, ~8 % of elements); tick -0.14 ms (se 0.33, the box loaded by other
+  checks). Faster or neutral -> ON (the orchestrator's ruling; core components in C++). The one ON run that parted (placed 37/37)
+  was a mis-start of the harness (R47.18), not place().
+- **E7 twin EQUAL (engage's simplified spec):** pair/native-e7 19a38a505 = engage 087d1732a + stream/native 6c757c990 / 7c6ea847e /
+  e4d00c6fb / d6d363ffe: decide_native's obey drops RETREAT for an attack_move under an `attack` element task when TankBrain.PRESS_ON
+  (read live; absent = off). builder3 light, native ON: 46 / 0; native decide 7521 decisions / 0 mismatches, 30 RETREATs pressed.
+- **E2a twin:** built and EQUAL (8189 gun applies, 29 carried, 0 mismatches) then DROPPED with E2a (R47.17); reverted (afab6fb7e).
+- **Bar M:** no twin (confirmed: the station's goal is TankBrain._order_context, GDScript on every path).
+- **R47.18 (army layout):** the live layout is bake-timing dependent at start (CP43.0); a next-round determinism item, not cause 2.
+
 **REPORT (2026-10-30 ~18:30 PDT).** Merged: **dfb6a2567 GREEN builder3** (`make check exited 0`, 3518 / 0, 29 targets ALL JUDGED;
 replay-pytest in check, the remote.sh seed, N3's reader) = main 3f9180d2f. Since: N0 candidate 2, the Xorg DISPLAY line, the place
 twin (WIP), the replay A/B switches; full check of dce3e6a23 running.
