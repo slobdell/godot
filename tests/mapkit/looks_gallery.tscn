@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/mapkit/looks_gallery.gd" id="1_looks"]
+
+[node name="MapkitLooks" type="Node3D"]
+script = ExtResource("1_looks")

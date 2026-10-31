@@ -69,3 +69,34 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 ## Status
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
+
+**2026-10-30 ~16:55 (start).** Base = main c789b55a6 (code e306ce27f GREEN builder3 3518/0, inherited; no launch check run).
+
+**Plan (in order; smallest foundation first):**
+1. **P1 looks page (his gate):** `tests/mapkit/looks_gallery.gd` (+ `make mapkit-looks`, `mk/mapkit.mk`) builds 2-3 directions per
+   piece from CyberMaterials primitives at his pose (21 deg, FOV 35, 49 m) beside a dozer; doors drawn shut AND open; stretch pieces
+   (pipes, crane) on the same page now, since the scene costs nothing extra. Page = Artifact with `db` for his picks + the door lines.
+   *Decision:* the renders live in `tests/mapkit/` (concept only); the picked direction is rebuilt as a `prop.<type>` MultiMesh scene
+   with its ArenaKit type in one commit (P4).
+2. **P2 `game/match/blast_doors.gd` rules** (independent of the look): schedule from the match seed, `is_open(id, tick)`, events,
+   crew-safe closing (a door waits while a hull is in its swept box), dev arena with two doors. Tests first.
+3. **P3 the `sight` cover class** (C47.7) behind a kit flag; perception's eye ray in one function; tell engage the hour.
+4. **P4** approved pieces into maps after his picks (traps + overpass first).
+5. **P5** door lines in announcer slots as text; audio only after his approval.
+
+**Found on the way:** builder3 runs Xorg on `:1`, not Xwayland, so `tools/remote.sh` exports no DISPLAY there and every rendering
+target fails or draws nowhere on builder3. Workaround: `make remote T="<target> DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority"`.
+
+**Requests to other streams:** native (owns `tools/remote.sh`): teach the DISPLAY probe builder3's Xorg (`ps -C Xorg -o args=` for
+`-auth`, display from `/tmp/.X11-unix/X*`).
+
+**P1 DONE, waiting on his picks (lead gate):** the looks page https://claude.ai/artifact/WSBf2Wmmar3BSocBqqrRpm (published 17:02;
+picks in its db: `picks/<door|screen|overpass|traps|pipes|crane>` = {choice a|b|c|none, note}; `lines/<id>` = {verdict keep|cut}).
+Renders: `make mapkit-looks` on builder3 (DISPLAY :1), 18 shots at his pose (21 deg, FOV 35, 49 m), 1920x1080. Concept frames draw
+53-147 draw calls each in the gallery scene (builder3, the scene's own MAPKIT_LOOKS lines; the hedgehog field is the 147: ~5 boxes a
+hog unbatched; the built prop is one MultiMesh). **Found while looking:** the overpass deck hides the street under it from his camera
+(first render, deck running away from the camera, covered both dozers) -- any overpass needs a deck cutaway like the blocks' (camera's
+`BlockCutaway`); said on the page. Holo screen A needed an opaque scrim (the additive holo alone let the enemy dozer show through).
+Door lines on the page: caller 15 (open 4, close 4, caught 4, held 3), PA 4, Veteran 2 -- text only, audio is his gate.
+
+**Questions for the lead:** (on the looks page) his picks per piece; keep/cut per door line.
