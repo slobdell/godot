@@ -88,6 +88,25 @@ sight screen's member initializer made a strip node the steam branch never used)
 on traps/monorail/pipes/crane (his P1b pick, R47.38; `--kit-look=plain` escapes) + the train concepts; quick 116/0 builder3; full
 check queued on builder3 (name it here). f10081d90 (gallery only) on top.
 
+**2026-10-31 ~01:00: BLAST DOORS IN A REAL ARENA (the orchestrator's next item, after Bar P).** Main merged first (eecdd7c0e:
+native's door mask + eye mask on main). `terminus_doors` (candidate twin): his vault-slab doors across the Terminus's west and east
+streets at z = 0, one schedule (both sides), 16 m slabs in the 20 m street (no hull fits beside a shut slab), each beside a side's
+ring objective. test_terminus_doors: through the door only with its navigation bit; RouteDoors' mask has the bit only while open
+now and at arrival (a crew 120 m off when it shuts in 3 ticks: out). **Watched, 12 CPU fights** (12949-12954 x both base orders,
+native ON, builder3, 9bd2873cc, not a bar; `_agents/streams/references/round47/mapkit/doors-watch.json`): doors opened and shut and
+the booth called every one (its `door` calls = the door events, + a "caught" call in 11/12); green crossed in 12/12 fights, rust in
+7/12, while open / in the warning / held; **crossings through a SEALED door 0/12**; a closing door waited for a crew in its
+doorway in 6 fights, longest 9.0 s, every one sealed once clear (0 left open); `overstay` fired twice. **Without manoeuvre's yield
+(OFF):** a crew parked in a closing doorway keeps that door open until it drives on (it only ever errs open; never sealed on a
+hull); the booth calls it ("held"). Stall share 0.014-0.028 (Bar P's base maps: 0.014 / 0.026). Check of 8dc9697b4 queued.
+
+**His playtest note (player terms):** `make skirmish ARENA=terminus_doors`. The two side streets of the Terminus now have armoured
+gates halfway along. About a minute in, the PA warns ("the west gate will close in five seconds"), the amber beacons flash and the
+gates slide shut with the caller hyping it; they reopen after ~25 s and cycle on a fixed clock both sides share. While a gate is
+shut your crews and the CPU's route round by the ring roads or the avenue; a crew caught in the doorway holds the gate open (the
+caller says so) rather than being crushed. Watch: do the gates make the side streets feel like a timed gamble worth the noise?
+Do your crews look smart around them (not queuing at a shut gate)?
+
 **2026-10-30 23:57: Bar P = FAIL on the deciding line (all three twins), every guard PASSES.** 2ce6fa68b (b9f13f946's game
 code), builder3, 224 matches, native ON, 0 failed; raw and table in `_agents/streams/references/round47/mapkit/bar-p-*-2ce6fa68b*`.
 Paired twin - base (same seed, base order, factions), mean +- se, n:
