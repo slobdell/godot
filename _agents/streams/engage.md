@@ -88,8 +88,8 @@ any number -> E5 his replay on the shipped tree -> E6 army_cost read -> the touc
 | E7 his order beats RETREAT | code + tests GREEN at **14ccc9b91** (builder3 `native test` press_on / native_decide / combat_envelope / native_gun / native_exec_state: 45 passed, 0 failed). `--press-on`, **OFF** until native's `_obey` twin (spec + hash sent). Dev read on route's Locks case (staged 1440) running |
 | E7 Bar E7 | **FILED** + **Amendment 1** (his side only; G6 the CPU side untouched), both before any number on 12601-12648. native's re-twin EQUAL (pair/native-e7 aa339ab80, merged). **FROZEN at d4a88c4a5** (+ the touch-map feed line); full check then the series (D, G4 authority, G6 no player team) running on builder3 |
 | Leftover: touch map feed line | **DONE**: `HudMessages.selected_units` reads the touch map's `selected()` squad; test green (builder3 `native test` lane_line / hud_messages: 13 passed, 0 failed) |
-| E6 army_cost read | **DONE (report only)**: the laptop preset's 20-vehicle cap halves a swarm faction's skirmish army (below); sent to the orchestrator |
-| E3 pot shots | **code behind `--pot-shot` (default OFF, his call)**; test green at 087d1732a (first round 12 v 28 ticks); dev reads below; **his question sent to the orchestrator** (recommended: yes) |
+| E6 army_cost read | **DONE (report only)**: the laptop preset's 20-vehicle cap halves a swarm faction's skirmish army (below); he answered (cap by vehicle cost, skirmish = 1000 credits): orders builds it (R47.22) |
+| E3 pot shots | **HIS YES (R47.20).** Bar E3 **FILED** before any number on 12649-12696; native twin spec sent; then freeze, check, series. Code behind `--pot-shot` (default OFF until the bar); test green at 087d1732a (first round 12 v 28 ticks); dev reads below; **his question sent to the orchestrator** (recommended: yes) |
 | (E3, old row) | in progress: switch (default OFF) + the dev read that gives the orchestrator his question in player terms (R47.17) |
 
 **His "is something broken with our targeting?" — the honest answer (staged, E1 + the gates split):** no. A gang crew is SLOW to its
@@ -97,6 +97,33 @@ first aim at range by design: the fix time grows with the target's distance over
 0.3 s at the muzzle to 1.6 s at the edge of sight, x the crossing penalty), and the War Rig sees only 60 m, so a target at 40 m costs
 it ~1.2 s where a syndicate crew (sight 90-135 m, designators x0.25) pays a fraction. Median fix needed his 1.69 s v CPU 1.10 s; 87 of
 his 145 acquiring seconds were first fixes. Nothing in the gate is broken; the gap is sight and range (balance, which waits).
+
+### Bar E3 (FILED 2026-10-30 ~20:00, before any number on 12649-12696) — the text is in workstreams.md *Bars (round 47)*
+
+**Bar E3 SNAP SHOTS (engage; filed 2026-10-30 ~20:00 PDT in streams/engage.md and here, BEFORE any number on 12649-12696;
+  his YES, R47.20).**
+
+  **The rule:** `--pot-shot` (Gunnery): a crew whose only held gate is the acquisition fix, laid >= POT_SHOT_AFTER_S 0.4 s, its
+  target inside the weapon's effective band, fires with its aim off by up to POT_SHOT_WANDER_M 2.5 m at the target (the
+  deterministic wander pattern), shrinking to nothing as the fix completes; the round flies where the barrel points. Both
+  sides (C47.9). Native's NativeGun / NativeExec twin merged before the freeze (C47.6); arms native ON.
+  **Workload (his case: "my tanks took forever to pick their target and get a shot off"):** round 42's attack-shot probe with
+  `--hull=gang_tank` (War Rigs ordered to attack a target behind cover, the target shooting back), `ENGAGE_ARM=on`, seeds
+  **12649-12696** (48, paired by seed), builder3, native ON, the frozen tree named when frozen after its full check. Arms:
+  `--pot-shot=off` v `--pot-shot=on`.
+
+  **Deciding (what he asked for: a shot off sooner):** D1 `first_shot` (mean over a run's crews of seconds from his order to the
+  crew's first round; never = the window) paired mean ON - OFF < 0 by at least 1.645 se (one-sided). D2 `first_shot` ON sooner or
+  identical in >= 60 % of runs (strictly sooner reported).
+
+  **Guards (what it could break):** G1 friendly hits: total ON <= OFF + max(1, 1.645 sqrt(OFF)). G2 his crews' deaths: total ON <=
+  OFF + max(1, 1.645 sqrt(OFF)). G3 no fewer hits: `hits_per_min` paired mean ON - OFF >= -1.645 se. G4 the lane rule's lines
+  (round 46's lane probe, seeds 12649-12672, LANE_ARM=on): friendly-fire hits total ON <= OFF + max(1, 1.645 sqrt(OFF)) and
+  `held_s` paired mean ON - OFF <= +1.645 se. G5 native EQUAL on the frozen hash (NativeGun / NativeExec with POT_SHOT both ways).
+
+  **Reported (part of what he said yes to):** accuracy (his crews' hits / rounds), shots, the CPU's hit share in his six staged
+  fights on the frozen tree (dev: 83 % -> 69 %). **Dev reads (never a bar):** War Rigs, 7001-7012 (102a18395, gun C++ off, n = 12):
+  first round median 1.45 -> 0.90 s, accuracy 76 -> 79 %, hits a minute 29 -> 38, friendly hits 0.08 -> 0.08 a run.
 
 ### Bar E7 (FILED 2026-10-30 ~19:10, before any number on 12601-12648) — the text is in workstreams.md *Bars (round 47)*
 

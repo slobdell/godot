@@ -104,6 +104,31 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar E3 SNAP SHOTS (engage; filed 2026-10-30 ~20:00 PDT in streams/engage.md and here, BEFORE any number on 12649-12696;
+  his YES, R47.20).**
+
+  **The rule:** `--pot-shot` (Gunnery): a crew whose only held gate is the acquisition fix, laid >= POT_SHOT_AFTER_S 0.4 s, its
+  target inside the weapon's effective band, fires with its aim off by up to POT_SHOT_WANDER_M 2.5 m at the target (the
+  deterministic wander pattern), shrinking to nothing as the fix completes; the round flies where the barrel points. Both
+  sides (C47.9). Native's NativeGun / NativeExec twin merged before the freeze (C47.6); arms native ON.
+  **Workload (his case: "my tanks took forever to pick their target and get a shot off"):** round 42's attack-shot probe with
+  `--hull=gang_tank` (War Rigs ordered to attack a target behind cover, the target shooting back), `ENGAGE_ARM=on`, seeds
+  **12649-12696** (48, paired by seed), builder3, native ON, the frozen tree named when frozen after its full check. Arms:
+  `--pot-shot=off` v `--pot-shot=on`.
+
+  **Deciding (what he asked for: a shot off sooner):** D1 `first_shot` (mean over a run's crews of seconds from his order to the
+  crew's first round; never = the window) paired mean ON - OFF < 0 by at least 1.645 se (one-sided). D2 `first_shot` ON sooner or
+  identical in >= 60 % of runs (strictly sooner reported).
+
+  **Guards (what it could break):** G1 friendly hits: total ON <= OFF + max(1, 1.645 sqrt(OFF)). G2 his crews' deaths: total ON <=
+  OFF + max(1, 1.645 sqrt(OFF)). G3 no fewer hits: `hits_per_min` paired mean ON - OFF >= -1.645 se. G4 the lane rule's lines
+  (round 46's lane probe, seeds 12649-12672, LANE_ARM=on): friendly-fire hits total ON <= OFF + max(1, 1.645 sqrt(OFF)) and
+  `held_s` paired mean ON - OFF <= +1.645 se. G5 native EQUAL on the frozen hash (NativeGun / NativeExec with POT_SHOT both ways).
+
+  **Reported (part of what he said yes to):** accuracy (his crews' hits / rounds), shots, the CPU's hit share in his six staged
+  fights on the frozen tree (dev: 83 % -> 69 %). **Dev reads (never a bar):** War Rigs, 7001-7012 (102a18395, gun C++ off, n = 12):
+  first round median 1.45 -> 0.90 s, accuracy 76 -> 79 %, hits a minute 29 -> 38, friendly hits 0.08 -> 0.08 a run.
+
 - **Bar E7 HIS ATTACK BEATS RETREAT (engage; filed 2026-10-30 ~19:10 PDT in streams/engage.md and here, BEFORE any number on
   12601-12648; R47.6).**
 
