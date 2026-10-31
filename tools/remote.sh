@@ -338,6 +338,16 @@ if [ -z "\$auth" ] && pgrep -x Xwayland >/dev/null 2>&1; then
 	auth=\$(ls -t /run/user/\$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1)
 fi
 if [ -n "\$auth" ]; then export DISPLAY=:0 XAUTHORITY="\$auth"; fi
+# Round 47 (native N6, mapkit's ask): builder3's desktop is a plain Xorg (gdm, -displayfd, display :1), not Xwayland: our uid's
+# running Xorg's -auth file and the display of the X socket that Xorg listens on (ss -xlp). No running Xorg of ours: nothing.
+if [ -z "\$auth" ]; then
+	xorg=\$(pgrep -x -u "\$(id -u)" Xorg 2>/dev/null | head -1)
+	if [ -n "\$xorg" ]; then
+		xauth_f=\$(ps -p "\$xorg" -o args= 2>/dev/null | sed -n 's/.* -auth \\([^ ]*\\).*/\\1/p')
+		xdisp=\$(ss -xlp 2>/dev/null | grep "pid=\$xorg," | grep -o '/tmp/.X11-unix/X[0-9]*' | head -1 | sed 's|.*/X|:|')
+		if [ -n "\$xauth_f" ] && [ -r "\$xauth_f" ] && [ -n "\$xdisp" ]; then export DISPLAY="\$xdisp" XAUTHORITY="\$xauth_f"; fi
+	fi
+fi
 if ! compgen -G ".tools/godot-*/editor_data/export_templates/*/.installed" >/dev/null && [ "\$1" != bootstrap ]; then
 	echo ">> remote: first run here, bootstrapping the toolchain" >&2
 	make bootstrap >&2 || exit \$?
