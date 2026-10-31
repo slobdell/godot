@@ -420,6 +420,18 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
 
 _(filed here BEFORE any number; newest first)_
 
+- **Bar E10 VERDICT (2026-10-31 ~04:25 PDT): FAILS as filed on D2's reverse half (ON 0.57 x OFF v the 0.5 bound); D1, D2's
+  retreat half and every guard pass.** Frozen d8d4979ca, its full check GREEN (builder3 `make check exited 0`, 3630 / 0, ALL
+  JUDGED, sim-baseline unmoved = G5 PASS). builder3 (devia), native ON. 9 of 48 seeds per workload drew no stage that stands
+  (the probe's "no stage stands", the same in both arms), so n = 39 paired each. **D1 PASS** (W1, 13025-13072, CPU side):
+  out_damage 285.8 -> 223.5 a run (-62.3, se 30.6, z -2.04; totals 11146 -> 8715). **D2 FAIL:** (W2, 13073-13120, --hurt=0.07)
+  reverse_m total 402.6 -> 230.8 m = 0.57 x OFF (bound 0.5) FAILS; retreat_m_mean (20 pairs >= 10, so deciding) 17.3 -> 11.8 m
+  (-5.6, se 3.0, z -1.88) PASSES. **G1 PASS** crews lost 181 -> 180. **G2 PASS** guns killed 4 -> 5. **G3 PASS** friendly hits
+  1 -> 1. **G4 PASS** authority probe 24/24 identical. **Reported:** W1 dealt 99 -> 140 a run (z 1.99), out_s 5.9 -> 3.5;
+  W2 dealt 5 -> 9. **His case** (crossing, 3 gang_tank v 2 syn_lancer at 79 m, attack, his side; 13025-13034, 8 stood):
+  out_damage 462 -> 219 a run, crews lost 6 -> 4, lancers killed 0 -> 4, damage dealt 0 -> 2250. As filed, the fail stands; the
+  orchestrator rules. Evidence `~/overnight-engage/r47/barE10/`.
+
 - **Bar E10 OUTRANGED (engage; filed 2026-10-31 ~03:40 PDT in streams/engage.md and here, BEFORE any number on 13025-13120;
   R47.48 / R47.50).**
 

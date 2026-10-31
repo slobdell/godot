@@ -72,6 +72,9 @@ Memory: smart AI on both sides; units must look smart and under his control.
    - orders' class D: Crossing support-by-fire #22 creeps at 4 of 10 m/s (transit pace) while it is shot 260 -> 58 hp by an
      enemy it never sees.
    If the night runs out, this is round 48's first item.
+   - **Bar E10 VERDICT: FAILS as filed on D2's reverse half** (402.6 -> 230.8 m = 0.57 x OFF v 0.5). D1 PASS (out_damage
+     -62 a run, z -2.04), the retreat half PASS (17.3 -> 11.8 m from the squad), every guard PASS. His Crossing case: out_damage
+     462 -> 219 a run, lancers killed 0 -> 4. Full text in workstreams.md; WAITING on the orchestrator's ruling.
    - **Bar E10 FILED 2026-10-31 ~03:40 PDT** (text in workstreams.md *Bars (round 47)*), before any number on 13025-13120.
      Code: game/ai/outranged.gd, TankBrain._outranged_act + RETREAT's squad branch, `--outranged` (default OFF); tests
      tests/engage/test_outranged.gd (7/7 on builder3); probe tests/engage/outranged_probe.gd, `make outranged-bar`.
