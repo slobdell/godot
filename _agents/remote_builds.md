@@ -457,6 +457,12 @@ counts the holder too, so the gate still works as a polite early wait; it is no 
 `REMOTE_FULL_CHECK_LOCK=0 make remote T=check` skips the claim (only with the orchestrator's say-so). Tests:
 `tools/test_full_check_lock.sh` (two claimers at once, 20 races, exactly one wins; a SIGKILLed wrapper; hang-ups; a dead
 session; builder_checks).
+**Round 48 (native, 0a838dafb): waiters claim in ARRIVAL order.** Each waiting check writes a ticket
+`~/tank_squad/.full-check.lock.queue/<ns>.<pid>` and claims only when its ticket is the oldest of a live pid (dead tickets are
+skipped and deleted; a stopped waiter deletes its own). `bash tools/full_check_lock.sh queue ~/tank_squad/.full-check.lock` on the
+builder prints the queue with each waiter's folder. Round 48 confirmed again (native, 4c01aa748): after a local TERM of a QUEUED
+check, the remote waiter can survive; check with the pgrep line above and kill it by its cwd-verified pgid. A folder still on an
+older tree claims with a bare flock, ahead of the queue, until it syncs this script.
 **A smoke reads only its own process's log (round 39, native):** `cmd > log &` returns before the child has truncated the
 log, so a first poll could read the last run's room code (feedback's red relay-smoke at a2b560896). mk/net.mk removes every
 log it waits on before starting its process, and `wait_own_line` reads `/proc/<pid>/fd/1` once it names that log

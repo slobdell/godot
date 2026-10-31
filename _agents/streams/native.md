@@ -115,6 +115,14 @@ orchestrator); N6 waits on his `inp` recording; stretch the laptop fps read at t
   (fogC), 122.8 ms at 39->32 (fogE window): ~8-13 fps, 2.3-2.9 ticks a frame; game speed 0.95. Before / after this round's native
   work: no feelable change (N2 OFF; R48.8 ~0.1 ms; the picture was never the cost). The lever left is the tick's scripts (25 ms of
   the frame at 2.3 ticks): brains and the drive, not the fog.
+- **Tooling (the orchestrator's ask): the full-check lock is FIFO (0a838dafb).** tools/full_check_lock.sh: tickets in
+  `<lock>.queue`, oldest live first, dead tickets skipped; `queue` subcommand; tests 8-10 (25 / 0 laptop; the old script fails
+  all three). remote_builds.md updated.
+- **N1 heldpost twin: EQUAL (pair/native-heldpost 1655e266d** = stream/native f307e8095 + manoeuvre d6b28827b + traffic.gd's
+  gate lifted + test_native_drive_heldpost). Laptop, lock held: held arm 88 drives / 1 refusal on the C++ yield, stop arm 661
+  drives, 0 mismatches; test_manoeuvre_heldpost, test_native_holdyield (6000 / 0), test_native_yield green in the same run. Its
+  full check is queued on builder3; the orchestrator merges it with manoeuvre's heldpost once Bar B passes. E2 (engage, Bar E11)
+  needs no twin: drive_native.cpp's man_choose reads the order's facing / reverse exactly as Manoeuvre.choose (answered).
 - **N1:** orders' O1 (27cda7b28, follow station by heading of travel) needs NO twin: the follow goal is `Orders.goal_of` /
   `goal_position`, GDScript on every path (decide_native only proposes FOLLOW; no C++ reads a follow's slot). Its stamp entry
   `follow_travel` is in its commit (lesson 354). Manoeuvre's Bar B and engage's Bar E11: nothing filed yet.
