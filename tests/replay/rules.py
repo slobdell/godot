@@ -39,6 +39,8 @@ RULES = {
     # R47.44 (engage): an unfired short halt's cooldown holds the long round; ON since the same merge, its escape added later.
     "halt_cancel": ("halt-cancel", "old", "2026-10-31T03-14-17"),  # engage R47.44, merge 8d51777cc
     "outranged": ("outranged", "off", "2026-10-31T04-17-53"),     # engage E10 (R47.51), this commit's time (no recording falls before the merge)
+    # Round 48 (native N5, R47.18): the army is laid on a synced navmesh (an interactive start already was; a same-frame start was not).
+    "layout_sync": ("layout-sync", "off", "2026-10-31T13-30-00"),  # native N5, this commit's time (stream/native-n5)
 }
 STAMP = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})")
 
