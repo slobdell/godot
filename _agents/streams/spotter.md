@@ -132,8 +132,27 @@ S6 (after a few hundred labels) -> stretch. S1 came before S0 because the night 
 - **S4 page** drafted (`references/spotter/judge/index.html`): clips from the page's db, three taps + a note per clip, labels in db.
 - **S5** `tools/spotter/labels.py` (precision overall / top 10-30, signals dumb v fine, the dumb ones as findings with repro lines).
 
+- **S4 the judging page is UP (his gate): https://claude.ai/artifact/DXKpD67u2r49HQrk93ozJD** (URL sent to the orchestrator
+  00:45). Batch 1: stream/spotter tree (1209a934f + spotter), builder3 light lane, 12 fights (6 maps x seeds 13215-13216, 240 s),
+  52,487 crew-seconds, 1,557 moments, top 30 as clips: **30/30 reproduced their moment** (crew 0.02-0.07 m from the table at the
+  peak tick). db: `clips/<arena-seed-crew-from-to>` (write admin; checked: a Contributor's write is refused, a Viewer reads) and
+  `labels/<same id>` {verdict dumb|fine|unsure, note, by, at} written by his taps. Videos are the page's assets. Local copy of
+  the batch: `~/spotter-work/batch1/` (laptop). What the 30 are, by brain choice: RETREAT 5, MOVE 12, HOLD 6, FOLLOW 3, ENGAGE 2,
+  SPOT 2. A RETREAT driving away from its route is by design; his taps will say whether it LOOKS dumb (S5 then down-weights).
+- **Stretch: his recordings** (`tools/spotter/recording.py`, 5020d4dd8): the census rows of a recording ARE his match, so ranking
+  them needs no replay. Over his four round-46 playtests, his side (team 0), 9,879 crew-seconds: #1 Sumps Green_Alpha_5 101-113 s
+  (blocked by a friendly 13 s, no progress 9 s), #2 Sumps Green_Charlie_5 33-57 s (no progress 25 s), **#3 Locks Green_Hunters_4
+  33-56 s (far from its squad 42.5 m, no progress 24 s) = his own Locks complaint (the IFV that drove away from his attack target
+  on the ~230 m detour), found with no hint.** Straight-line goal distance only (the census has no route), no shooter on hits.
+- **Stretch: the parameter search, a proposal** (`references/spotter/param_search_proposal.md`): which constants (Movement STUCK /
+  UNSTICK / REPATH / FOLLOW / WAIT, TankBrain LANE_SEARCH, FOLLOW_DISTANCE), the prerequisite (a behaviour-knob registry on the
+  existing `--tune=` path: owners' edits), objective (dumb-signal seconds paired by seed v the default arm), guards, output (a
+  frozen table as a proposal to the owner). After S5's labels, not before.
+- **Night shift green = 8d37b9796** (pushed 00:20 at the orchestrator's word; the orchestrator pushes each green main from now on).
+
 ### In flight
-- First judging batch: builder3 light lane, 12 fights (6 maps x seeds 13215-13216, 240 s) + 30 clips -> then the page goes up.
+- Full check of **5020d4dd8** on builder3 (queued on the full-check lock since 00:04; several checks ahead of it).
+- The night shift's first idle window (the box has been busy with checks all evening; it starts 10 min after they stop).
 
 ### How to stop / remove the night shift
 `make spotter-night-stop` (or on builder3 `~/spotter-night/bin/night.sh stop`), `make spotter-night-start` to resume,
@@ -141,10 +160,10 @@ S6 (after a few hundred labels) -> stretch. S1 came before S0 because the night 
 `make spotter-night-status` says what it is doing and what holds the box.
 
 ### Requests / merge notes
-- `mk/spotter.mk` is new; `include mk/*.mk` picks it up (no Makefile edit). **Request (orchestrator):** add `spotter-night-%
-  spotter-test spotter-rank` to the Makefile's LIGHT_GOALS (they are ssh / Python only); until then `TANK_SQUAD_SLOT=1 make ...`.
-- **Request (orchestrator):** after each GREEN main check, `make spotter-night-push SHA=<that hash>` so the night runs the newest
-  green game (otherwise it keeps 09780edb9).
+- `mk/spotter.mk` is new; `include mk/*.mk` picks it up. **Makefile: ONE additive line** above `_SLOT_GOALS` (granted R47.46):
+  `LIGHT_GOALS += spotter-night-% spotter-test spotter-rank`.
+- The orchestrator runs `make spotter-night-push SHA=<green>` after each green main check (agreed 00:20).
+- Not mine, left untracked: `tests/test_authority_press_on.gd.uid`, `tests/test_gunnery_pot_shot.gd.uid` (main's tests' .uid).
 
 ### Questions for the lead
 - (none yet; S4's taps are his gate)
