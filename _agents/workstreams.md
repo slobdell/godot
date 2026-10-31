@@ -85,6 +85,12 @@ shift keeps 13121-13216 as its fixed before / after set). Dev 7001-7012 (never a
   moving-squadmates jam (4.55 / 29.5 a fight) ahead of M4 / M5. Candidate classes G (wanders off alone) and H (shot from behind, no turn)
   go on his next ~15-clip page with the controls.
 
+- **R48.7 GRANT native (N4, the laptop fog's ~2 ms):** `game/match/visibility_field.gd` a `draw_picture := true` member read in place of
+  `SimProfile.switched_off("visfield_draw")` in `_finish_refresh` (default behaviour identical), and `game/theme/fx/bench/perf_scene.gd` a
+  `no_visdraw` layer (measurement only). The fix that may follow (dirty-rect texture update or a lower-rate picture on the laptop
+  preset) must be output-identical on screen apart from timing, and a laptop-preset cut ships as a hardware preset (memory). N2
+  (contacts in C++) stays OFF: the in-run A/B reads the C++ arm slower in 11 of 12 blocks though the call is 27 % faster.
+
 ### Bars (round 48)
 _(filed by each stream before any number)_
 
