@@ -214,10 +214,27 @@ func trace_after(cmd: TankCommand) -> void:
 	var muzzle := tank.turret.global_position
 	var probe := func(enemy: Tank) -> Dictionary:
 		var d := tank.global_position.distance_to(enemy.global_position)
-		return {"n": String(enemy.name), "d": snappedf(d, 0.1), "seen": Engagement.is_seen(tank, enemy, spotter),
-				"los": Perception.has_line_of_sight(tank, enemy),
+		var los := Perception.has_line_of_sight(tank, enemy)
+		var out := {"n": String(enemy.name), "d": snappedf(d, 0.1), "seen": Engagement.is_seen(tank, enemy, spotter), "los": los,
 				"aim_err": snappedf(rad_to_deg(Ballistics.aim_error(muzzle, tank.turret_forward(), enemy.global_position)), 0.1),
 				"need": snappedf(Engagement.acquire_seconds(tank, enemy, d), 0.01)}
+		if not los:
+			# What the eye ray hits (Perception's own ray, re-cast), and whether a ray from the muzzle would clear it.
+			var space := tank.get_world_3d().direct_space_state
+			var from := tank.global_position + Vector3.UP * Perception.EYE_HEIGHT
+			var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(from,
+					enemy.global_position + Vector3.UP * Perception.EYE_HEIGHT, Perception.WORLD_MASK))
+			if not hit.is_empty():
+				var collider: Object = hit.get("collider")
+				var at: Vector3 = hit["position"]
+				out["hit"] = [String((collider as Node).name) if collider is Node else "?", snappedf(at.x, 0.1), snappedf(at.y, 0.01),
+						snappedf(at.z, 0.1), snappedf(from.distance_to(at), 0.1)]
+			var high := space.intersect_ray(PhysicsRayQueryParameters3D.create(muzzle, enemy.global_position + Vector3.UP * Perception.EYE_HEIGHT,
+					Perception.WORLD_MASK))
+			out["muzzle_clear"] = high.is_empty()
+			out["muzzle_y"] = snappedf(muzzle.y, 0.01)
+			out["y"] = [snappedf(tank.global_position.y, 0.01), snappedf(enemy.global_position.y, 0.01)]
+		return out
 	var named_name := String(weapon_order.get("name", ""))
 	if named_name != "" and tanks_root != null:
 		var named := _named_tank(named_name)
