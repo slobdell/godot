@@ -273,3 +273,22 @@ engage-e1: native-fresh import ## engage E1: his Crossing replay, gun gates trac
 		grep -E '^REPLAY_(SETUP|NATIVE|DONE)|SCRIPT ERROR' $(BUILD_DIR)/engage/e1/$$arm.log | cut -c1-300; \
 		echo "  GUN_TRACE lines: $$(grep -c '^GUN_TRACE' $(BUILD_DIR)/engage/e1/$$arm.log), fires: $$(grep '^GUN_TRACE' $(BUILD_DIR)/engage/e1/$$arm.log | grep -c '"fire":true')"; \
 	done
+
+# E1b: the replay leaves his match within seconds (tests/replay/divergence.py: every crew over 3 m by 19 s, Wrenches by 1 s), so
+# his window is rebuilt instead: tests/engage/turnaround_probe.gd stands every living unit at the census of E1S_FROM, forms the
+# elements with the tasks they held and plays every later task row (his attack on Rust_Hunters_2 at 2093) at its tick; every
+# Green_Guns gun traced. Both lane arms. Logs build/engage/e1s/<arm>.log.
+E1S_FROM ?= 2070
+E1S_SECONDS ?= 14
+.PHONY: engage-e1-stage
+engage-e1-stage: native-fresh import ## engage E1b: his Crossing window rebuilt from the census at E1S_FROM, guns traced, lane rule ON v off -> build/engage/e1s/<arm>.log
+	@test -f "$(E1_RECORDING)" || { echo "engage-e1-stage: no recording $(E1_RECORDING)"; exit 2; }
+	@mkdir -p $(BUILD_DIR)/engage/e1s
+	@for arm in on off; do flags="--lane-clear=on"; [ $$arm = off ] && flags="--lane-clear=off"; \
+		echo ">> engage-e1-stage arm $$arm from $(E1S_FROM) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"; \
+		timeout 900 $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/engage/turnaround_probe.gd -- --recording=$(CURDIR)/$(E1_RECORDING) \
+		--from=$(E1S_FROM) --seconds=$(E1S_SECONDS) --every=15 --crew=$(E1_CREW) --point=-45.0,-10.0 --gun-trace=Green_Guns $$flags $(ENGAGE_FLAGS) \
+		> $(BUILD_DIR)/engage/e1s/$$arm.log 2>&1 || echo "  arm $$arm: godot exited $$?"; \
+		grep -E '^ENGAGE_TA_(SETUP|SUMMARY|DONE)|SCRIPT ERROR' $(BUILD_DIR)/engage/e1s/$$arm.log | cut -c1-300; \
+		echo "  GUN_TRACE lines: $$(grep -c '^GUN_TRACE' $(BUILD_DIR)/engage/e1s/$$arm.log), fires: $$(grep '^GUN_TRACE' $(BUILD_DIR)/engage/e1s/$$arm.log | grep -c '"fire":true')"; \
+	done
