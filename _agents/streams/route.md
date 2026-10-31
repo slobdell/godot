@@ -67,8 +67,8 @@ _(worker keeps this current: report at the top, every number with commit, machin
 
 ### FINAL REPORT (2026-10-30 ~18:00) — route, round 47
 
-**Merge:** R0 on main (ba53581f7 GREEN builder3, 3520/0, 28 ALL JUDGED). R2a+R5 = **d847b77fd** (check queued on builder3 at
-the report: see the line below when it lands). The tip (6113a19ec) adds tests/route census + docs only on top; R47.12 ruling: main's
+**Merge:** R0 on main (ba53581f7 GREEN builder3, 3520/0, 28 ALL JUDGED). **R2a+R5 GREEN, merge here: d847b77fd** (builder3, `make check
+exited 0`, 3534 passed / 0 failed, 28 targets ALL JUDGED). The tip (6113a19ec) adds tests/route census + docs only on top; R47.12 ruling: main's
 batch check covers it. **Shared-file edits:** none outside route's paths. `mk/route.mk` is new and picked up by the Makefile's
 `include mk/*.mk` (no Makefile line needed). `game/ai/pathing.gd` (route's) gains `reroute`, `reroutes` and the door mask.
 
