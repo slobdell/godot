@@ -155,6 +155,15 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   attack, "no line" goes to a nearby spot WITH a line; then **E7** (R47.6). The gun runs in C++ (NativeExec / NativeGun), so E2a needs
   native's twin before ON (C47.6). Gang sight/range v syndicate is balance (waits; not this round).
 
+- **R47.14 (2026-10-30 evening) Native merged: main 3f9180d2f = + dfb6a2567 (GREEN builder3 3518/0, 29 ALL JUDGED: remote.sh seeds a
+  fresh builder folder from the box's main, `replay-pytest` in make check, playtest-report reads `inp` rows). Main CHECK needed (route's
+  seam + native together): batched with route's R2a+R5 merge.** N0 cause 1 (native, Crossing, builder3 light, candidate unchecked): his
+  "single squad 4" was **ctrl+4, a control-group save that writes no recording row**; it left the Wrenches squadless, so his click sent
+  Spears as a squad task and the Wrenches as direct crew orders (source "player") while the replay sent both as squads. With the fix every
+  crew is exact to tick 330. **Relayed to orders:** C47.4's `inp` must cover control-group save / recall; and before O1 is sized, which
+  of his far-apart clicks were a real multi-squad lay and which this squadless case. Cause 2 (crews part 0.1-1 m at ticks 330-360 as the
+  first laser shots land) open, time-boxed.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
