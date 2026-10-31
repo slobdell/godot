@@ -222,7 +222,7 @@ static var _parsed := false
 const OPT_IN := ["ghost", "ghostself"]
 ## Behaviours OFF unless `--traffic-on=name,...` asks for them. Round 32 (C32.1, his yes): the crossing (`turns`) ships ON
 ## with native's mirror (413252ea, NativeTraffic.avoid_shape), so the list is empty; native's twins key on this const.
-const DEFAULT_OFF := ["givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdroute", "kturngoal", "parkaside", "parkedpass"]  # round 46 (R46.27 / R46.35, Bar A6 v5): holdway ON for the native game, OFF on the web (WEB_OFF); round 46 (R46.25, Bar shortfwd): shortfwd ON by default (his short move to a wheeled crew drives toward his click, not back), `--traffic-off=shortfwd` the escape; round 45 (R45.23, Bar B3): backout ON by default, `--traffic-off=backout` the escape; round 44: parkedpass (M3), until Bar S v3; round 43: holdfar / holdway / holdroute (engage A6, until judged), kturngoal (manoeuvre S3) + parkaside (manoeuvre Bar S v2), all OFF after Bar S / S v2 (R43.42); round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane; round 39-40 givewaychain / chainrelease / chainside / reroute / rerouteany / follow (manoeuvre, until judged)
+const DEFAULT_OFF := ["noprogress", "holdyield", "givewaychain", "chainrelease", "chainside", "chainarriving", "reroute", "rerouteany", "follow", "wait", "holdlane", "deckwait", "nopush", "holdfar", "holdroute", "kturngoal", "parkaside", "parkedpass"]  # round 47 (manoeuvre M5): holdyield (a crew on his post never gives way toward the enemy) OFF until judged; round 47 (manoeuvre M2): noprogress (the no-progress watchdog: a crew that makes no progress asks route for a new route) OFF until its bar; R47.11: buried (a station buried in a building follows the squad's track) OFF until Bar M; round 46 (R46.27 / R46.35, Bar A6 v5): holdway ON for the native game, OFF on the web (WEB_OFF); round 46 (R46.25, Bar shortfwd): shortfwd ON by default (his short move to a wheeled crew drives toward his click, not back), `--traffic-off=shortfwd` the escape; round 45 (R45.23, Bar B3): backout ON by default, `--traffic-off=backout` the escape; round 44: parkedpass (M3), until Bar S v3; round 43: holdfar / holdway / holdroute (engage A6, until judged), kturngoal (manoeuvre S3) + parkaside (manoeuvre Bar S v2), all OFF after Bar S / S v2 (R43.42); round 42 Q6 deckwait (manoeuvre, until judged); round 41 Q2 wait + Q4 holdlane; round 39-40 givewaychain / chainrelease / chainside / reroute / rerouteany / follow (manoeuvre, until judged)
 ## Round 46 (R46.35, his standing "native over browser"): behaviours ON for the native / desktop game but OFF in the web export.
 ## `holdway` (Bar A6 v5, R46.27): the web build froze once after ~11 s of game with it ON (web-match-smoke's screenshot timed out;
 ## native and desktop GDScript cost nothing measurable), a round-47 trace. `--traffic-on=` / `--traffic-off=` still override.
@@ -308,7 +308,8 @@ static func _chain_native() -> void:
 		_reroute_saved_native_drive = null
 	# Round 44 (M3, `parkedpass`): the refusal with a lane in ask() is twinned (native N3, pair/native-m2m3: drive_native.cpp
 	# ask), so ON keeps the C++ yield.
-	if not _off.has("chainside") or not _off.has("holdlane") or not _off.has("chainarriving"):
+	# Round 47 (manoeuvre M5, `holdyield`): the spot veto is inside _begin_yield's C++ mirror: ON runs the GDScript yield until twinned.
+	if not _off.has("chainside") or not _off.has("holdlane") or not _off.has("chainarriving") or not _off.has("holdyield"):
 		if _chain_saved_native_yield == null:
 			_chain_saved_native_yield = BrainSwitches.native_yield
 		BrainSwitches.native_yield = false

@@ -25,6 +25,12 @@ extends Node
 ##   {"t":"sel",    tick, frame, units, squads, inspected}  every change of HIS selection (round 46, R46.6): a selection
 ##                  without an order was invisible (camera's planner reads what he looks after); squads = the element
 ##                  names of the selected units, in selection order, each once ("" for a unit in none)
+##   {"t":"inp",    f, k, act, sel_before, sel_after}  (round 47, C47.4, orders) every key press / mouse button of his that
+##                  (or a control-group save / add, an order mode armed, a formation pick, Escape: act group_save:N /
+##                  group_add:N / arm:<mode> / formation:<id> / escape, written even with nothing else changed)
+##                  changed the selection or issued an order: k = the key ("2", "Ctrl+4", "mouse_left_up"), act = what the
+##                  controls did ("recall_group:2", "chip:3", "edge_marker:3", "portrait:<unit>", "order:move", "?");
+##                  written at the end of the frame, after the `sel` / `order` rows it caused (same frame f)
 ##
 ## `hit` is the row that answers the unkillable-IFV class of report on its own: it separates SHIELD damage from HULL
 ## damage, so "everyone is shooting it and its health bar never moves" is visibly either shots that never land, or
@@ -102,6 +108,9 @@ func _ready() -> void:
 	# `order` row with verb "formation" (an added verb; no `to`, so tools/recording_arrivals.py skips it).
 	if controls != null and controls.has_signal("formation_changed"):
 		controls.formation_changed.connect(_on_formation)
+	# C47.4 (round 47, orders O4): his key or click that changed the selection or gave an order (RtsControls.input_recorded).
+	if controls != null and controls.has_signal("input_recorded"):
+		controls.input_recorded.connect(_write)
 	_watch_selection()
 	print("MATCH_RECORDING %s" % path)
 
@@ -115,7 +124,8 @@ func _ready() -> void:
 ##   flags      the match's launch switches (`--attack-shot=off`, ...), as Main read them
 ##   spawn      {name: [x, z, yaw]} at full precision, where the army layout put every unit
 ##   frame      the physics frame the match started on (an order row's `frame` is counted from the same clock)
-##   rules      (round 46, R46.11) the rule switches a replay must match, as this build had them: {"lane_clear": bool}
+##   rules      (round 46, R46.11) the rule switches a replay must match, as this build had them: {"lane_clear", "group_veto",
+##              "shortfwd", "holdway", "army_money": bool} (round 47 adds the last four; army_money R47.22)
 ##              (engage L2; false on a build without it). tests/replay/rules.py turns a rule this match ran without, or a
 ##              recording older than this key, into its `=off` flag, so his older games replay as he played them.
 static func replay_keys(p_match: Match, flags: LaunchFlags) -> Dictionary:
@@ -136,8 +146,13 @@ static func replay_keys(p_match: Match, flags: LaunchFlags) -> Dictionary:
 
 
 ## R46.11: the replay-relevant rule switches of THIS build, read by name (a build without a rule reads false).
+## Round 47 (N0): every rule round 46 shipped ON that a replay can switch (tests/replay/rules.py RULES): the group veto, shortfwd,
+## holdway (OFF on the web), with lane_clear.
 static func rules() -> Dictionary:
-	return {"lane_clear": (TankBrain as Object).get("LANE_CLEAR") == true}
+	# R47.22 (round 47, orders): "army_money" = the money was the cap (no 20-a-side count trim on the laptop preset); an older
+	# recording has none and replays with `--army-cap=count` (tests/replay/rules.py), as he played it.
+	return {"lane_clear": (TankBrain as Object).get("LANE_CLEAR") == true, "group_veto": SelectionSquads.GROUP_VETO,
+			"shortfwd": not Traffic.off("shortfwd"), "holdway": not Traffic.off("holdway"), "army_money": not SkirmishMode.COUNT_CAP}
 
 
 ## The switches this match was launched with: Main's (a garage FIGHT hands them over in Main.next_flags), else the

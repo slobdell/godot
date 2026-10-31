@@ -1,0 +1,23 @@
+REPLAY_CLICKS_MERGED 16 rows -> 13 orders
+REPLAY_REEXEC --skirmish --enemy=cpu --seed=101 --arena=crossing --no-pick-faction --hints=off --player-faction=gangs --enemy-faction=syndicate --squad-cap=4 --render-preset=laptop
+REPLAY_CLICKS_MERGED 16 rows -> 13 orders
+REPLAY_SETUP {"arena":"crossing","layout":"crossing","objectives":["the west landing","the west landing (far)"],"orders":13,"seed":101.0,"tick":0,"units":37}
+REPLAY_SPAWN {"placed":0,"recorded":37}
+REPLAY_ORDER {"at":0.0,"n":5,"said":"","tick":0,"verb":"move"}
+REPLAY_ORDER {"at":0.0,"formation":"line","n":5,"said":"","tick":0,"verb":"formation"}
+REPLAY_ORDER {"at":0.0,"n":5,"said":"","tick":0,"verb":"move"}
+REPLAY_ORDER {"at":0.0,"n":5,"said":"","tick":0,"verb":"move"}
+REPLAY_ORDER {"at":0.0,"n":5,"said":"","tick":0,"verb":"move"}
+REPLAY_ORDER {"at":0.0,"n":10,"said":"","tick":0,"verb":"move"}
+NATIVE_EXEC 19701 native, 298 handed back (dead 0, reflexes 0, yielding 0, face 214, drive 0, other 0), 244 stale pulls, 1863 part pulls, 0 verified, 0 verify mismatches 
+REPLAY_ORDER {"at":1085.0,"n":8,"said":"","tick":1085,"verb":"move"}
+NATIVE_EXEC 39128 native, 871 handed back (dead 0, reflexes 0, yielding 0, face 529, drive 0, other 0), 433 stale pulls, 4359 part pulls, 0 verified, 0 verify mismatches 
+REPLAY_ORDER {"at":1321.0,"n":7,"said":"","tick":1321,"verb":"attack"}
+REPLAY_ORDER {"skipped":{"click":[-83.4566421508789,-34.0636138916016],"frame":4372.0,"paused":false,"queue":false,"source":"","t":"order","tick":1693.0,"to":[-83.4566421508789,-34.0636138916016],"units":["Green_Guns_1","Green_Guns_3","Green_Guns_4","Green_Guns_5"],"verb":"move"},"tick":1693}
+REPLAY_ORDER {"skipped":{"click":[-77.018310546875,-36.4850006103516],"frame":4398.0,"paused":false,"queue":false,"source":"","t":"order","tick":1719.0,"to":[-77.018310546875,-36.4850006103516],"units":["Green_Guns_1","Green_Guns_3","Green_Guns_4","Green_Guns_5"],"verb":"move"},"tick":1719}
+NATIVE_EXEC 58981 native, 1018 handed back (dead 0, reflexes 0, yielding 0, face 676, drive 0, other 0), 737 stale pulls, 7114 part pulls, 0 verified, 0 verify mismatches 
+REPLAY_ORDER {"skipped":{"click":[-66.1410140991211,-43.7013244628906],"frame":4677.0,"paused":false,"queue":false,"source":"","t":"order","tick":1998.0,"to":[-66.1410140991211,-43.7013244628906],"units":["Green_Guns_1","Green_Guns_3","Green_Guns_4","Green_Guns_5"],"verb":"move"},"tick":1998}
+REPLAY_ORDER {"skipped":{"frame":4771.0,"paused":false,"queue":false,"source":"","t":"order","target":"Rust_Hunters_2","tick":2092.0,"units":["Green_Guns_1","Green_Guns_3","Green_Guns_4","Green_Guns_5"],"verb":"attack"},"tick":2092}
+NATIVE_EXEC 78972 native, 1027 handed back (dead 0, reflexes 0, yielding 0, face 685, drive 0, other 0), 1225 stale pulls, 9440 part pulls, 0 verified, 0 verify mismatches 
+REPLAY_ORDER {"at":3034.0,"n":2,"said":"","tick":3034,"verb":"move"}
+REPLAY_DONE {"tick":3390}

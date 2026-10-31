@@ -185,12 +185,14 @@ native-verify-suite: import ## Stage 1's doors audit: the suite + AI scenarios w
 # gate fails any target whose log shows them): FAIL on a verify mismatch (NativeExec verify), a failing scenario, or a crash.
 native-verify-scenarios: import ## Stage 1's doors guard for check: the AI scenarios with every owned native execute verified (~4 min builder0)
 	@mkdir -p $(BUILD_DIR)
-	@s=0; TANK_NATIVE_EXEC_VERIFY=1 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
+	@s=0; TANK_NATIVE_EXEC_VERIFY=1 TANK_NATIVE_PLACE_VERIFY=1 TANK_NATIVE_ESIT_VERIFY=1 $(GODOT) --headless --fixed-fps $(SIM_HZ) --path . --script res://tests/ai_scenarios/run_scenarios.gd -- \
 		> $(BUILD_DIR)/native-verify-scenarios.log 2>&1 || s=$$?; \
-	v=$$(grep -c "NativeExec verify" $(BUILD_DIR)/native-verify-scenarios.log || true); \
+	v=$$(grep -cE "NativeExec verify|NativePlace verify|NativeEsit verify" $(BUILD_DIR)/native-verify-scenarios.log || true); \
+	grep "^NATIVE_PLACE verified" $(BUILD_DIR)/native-verify-scenarios.log | tail -1 || true; \
+	grep "^NATIVE_ESIT verified" $(BUILD_DIR)/native-verify-scenarios.log | tail -1 || true; \
 	grep -h "^scenarios: " $(BUILD_DIR)/native-verify-scenarios.log || true; \
 	echo "native-verify-scenarios: runner exited $$s, $$v verify mismatches (build/native-verify-scenarios.log)"; \
-	if [ "$$v" != 0 ]; then grep -m3 "NativeExec verify" $(BUILD_DIR)/native-verify-scenarios.log | cut -c1-300; exit 1; fi; \
+	if [ "$$v" != 0 ]; then grep -m3 -E "NativeExec verify|NativePlace verify|NativeEsit verify" $(BUILD_DIR)/native-verify-scenarios.log | cut -c1-300; exit 1; fi; \
 	grep -q "^scenarios: .* 0 failed" $(BUILD_DIR)/native-verify-scenarios.log || { echo "native-verify-scenarios: a scenario failed or the runner did not finish"; exit 1; }; \
 	[ $$s = 0 ] || [ $$s = 1 ] || { echo "native-verify-scenarios: the runner crashed (exit $$s)"; exit 1; }
 
@@ -474,6 +476,8 @@ physics-share: import native-for-check ## Stretch (round 39): the physics engine
 #   make replay-match RECORDING=_agents/streams/references/round42/playtest/2026-10-27T20-00-48-locks.jsonl.gz [REPLAY_SECONDS=49 CREWS=all]
 REPLAY_MATCH_DIR := $(BUILD_DIR)/replay-match
 .PHONY: replay-match
+# Round 47 (N0): REPLAY_WINDOW=1 replays in a window (a rendering builder: DISPLAY from remote.sh), as he played it, for a
+# headless v windowed A/B of a parting; REPLAY_FREE_FPS=1 (with it) draws frames at the display's rate, not one per tick.
 # R45.24: a match he recorded before engage's E2 reached main (2026-10-29 15:11) replays with --player-authority=off, read from the
 # recording's name stamp (tests/replay/authority.py; the line REPLAY_AUTHORITY says which and why). REPLAY_AUTHORITY=on|off overrides;
 # a --player-authority flag in REPLAY_FLAGS is left alone.
@@ -486,10 +490,10 @@ replay-match: native-fresh import ## Replay a match recording headless (RECORDIN
 	@authority=$$($(PYTHON) tests/replay/authority.py $(REPLAY_MATCH_DIR)/his.jsonl $(or $(REPLAY_AUTHORITY),auto)); flags='$(REPLAY_FLAGS)'; \
 	case "$$flags" in *--player-authority*) ;; *) if [ "$$authority" = off ]; then flags="$$flags --player-authority=off"; fi;; esac; \
 	rules=$$($(PYTHON) tests/replay/rules.py $(REPLAY_MATCH_DIR)/his.jsonl "$$flags"); flags="$$flags $$rules"; \
-	s=0; $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/replay_orders.gd -- \
+	s=0; $(GODOT) $(if $(REPLAY_WINDOW),,--headless) $(if $(REPLAY_FREE_FPS),,--fixed-fps 30) --path . --script res://tests/replay_orders.gd -- $(if $(REPLAY_FREE_FPS),--replay-free-fps) \
 		--orders=$(CURDIR)/$(REPLAY_MATCH_DIR)/his.jsonl --seconds=$$(( $(or $(REPLAY_SECONDS),20) + 1 )) --record-dir=$(REPLAY_MATCH_DIR)/out \
 		$$flags > $(REPLAY_MATCH_DIR)/replay.log 2>&1 || s=$$?; \
-	grep -E '^REPLAY_(REEXEC|SETUP|SPAWN|ROSTER|NATIVE|SEED|CLICKS|FORMATIONS|DONE)|^NATIVE_EXEC' $(REPLAY_MATCH_DIR)/replay.log; \
+	grep -E '^REPLAY_(REEXEC|ARMY_REBUILT|SETUP|SPAWN|ROSTER|NATIVE|SEED|CLICKS|FORMATIONS|DONE)|^NATIVE_EXEC' $(REPLAY_MATCH_DIR)/replay.log; \
 	[ $$s -eq 0 ] || { echo "replay: godot exited $$s (log $(REPLAY_MATCH_DIR)/replay.log)"; exit $$s; }; \
 	out=$$(ls $(REPLAY_MATCH_DIR)/out/*.jsonl | head -1); \
 	test -n "$$out" || { echo "replay: no recording written (log $(REPLAY_MATCH_DIR)/replay.log)"; exit 1; }; \
@@ -513,3 +517,11 @@ playtest-report: ## His playtest on one screen (the full report to build/playtes
 	@name=$$(basename "$(RECORDING)" .gz); name=$${name%.jsonl}; \
 	$(PYTHON) tests/replay/playtest_report.py "$(RECORDING)" --replay $(PLAYTEST_REPORT_DIR)/replay.txt \
 		--out $(PLAYTEST_REPORT_DIR)/$$name.txt $(if $(HTML),--html $(HTML))
+
+# Round 47 (N3): the replay tools' own Python tests (tests/replay/test_*.py: rules, divergence, playtest_report's selection
+# section that reads orders' `inp` rows, C47.4). Laptop-safe: no Godot.
+.PHONY: replay-pytest
+replay-pytest: ## native: tests/replay's Python tests (rules, divergence, the playtest report's selection section)
+	@out=$$($(PYTHON) -m unittest discover -s tests/replay -p 'test_*.py' 2>&1); echo "$$out" | tail -3; \
+	echo "$$out" | grep -qE '^Ran [1-9][0-9]* test' || { echo "replay-pytest FAILED: no tests ran"; exit 1; }; \
+	echo "$$out" | tail -1 | grep -qE '^OK' || { echo "$$out"; exit 1; }

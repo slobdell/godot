@@ -20,19 +20,40 @@ def recording(header):
     return handle.name
 
 
+ALL_OFF = ["--lane-clear=off", "--group-veto=off", "--traffic-off=shortfwd", "--traffic-off=holdway", "--army-cap=count"]
+ROUND46 = ("crossing", "locks", "sumps", "parade")
+
+
 class Rules(unittest.TestCase):
-    def test_his_two_recordings_replay_without_the_lane_rule(self):
+    def test_his_older_recordings_replay_without_round_46s_rules(self):
         for name in ("round45/playtest/2026-10-29T22-57-47-terminus.jsonl", "round44/playtest/2026-10-29T09-35-51-gorge.jsonl"):
-            self.assertEqual(rules.decide(os.path.join(REPO, "references", name))[0], ["--lane-clear=off"], name)
+            self.assertEqual(rules.decide(os.path.join(REPO, "references", name))[0], ALL_OFF, name)
+
+    def test_his_round46_recordings_ran_every_rule_on(self):
+        # Round 47 (N0): stamped lane_clear only, recorded after the other three reached main: no flag. R47.22: before
+        # army_money reached main, so the count trim he played with.
+        folder = os.path.join(REPO, "references", "round46", "playtest")
+        names = [n for n in sorted(os.listdir(folder)) if n.endswith(".jsonl")]
+        self.assertEqual(len(names), 4)
+        for name in names:
+            self.assertEqual(rules.decide(os.path.join(folder, name))[0], ["--army-cap=count"], name)
 
     def test_the_stamp_decides(self):
-        self.assertEqual(rules.decide(recording({"rules": {"lane_clear": True}}))[0], [])
-        self.assertEqual(rules.decide(recording({"rules": {"lane_clear": False}}))[0], ["--lane-clear=off"])
-        self.assertEqual(rules.decide(recording({"rules": {}}))[0], ["--lane-clear=off"], "a stamp older than the rule")
+        on = {"lane_clear": True, "group_veto": True, "shortfwd": True, "holdway": True, "army_money": True}
+        self.assertEqual(rules.decide(recording({"rules": on}))[0], [])
+        self.assertEqual(rules.decide(recording({"rules": dict(on, holdway=False)}))[0], ["--traffic-off=holdway"], "the web build")
+        self.assertEqual(rules.decide(recording({"rules": {"lane_clear": False}}))[0], ALL_OFF, "undated: off")
+        self.assertEqual(rules.decide(recording({"rules": {}}))[0], ALL_OFF, "a stamp older than the rules")
+
+    def test_a_dated_recording_without_an_entry(self):
+        before = recording({"path": "build/recordings/2026-10-30T07-00-00-gorge.jsonl", "rules": {"lane_clear": True}})
+        self.assertEqual(rules.decide(before)[0], ["--traffic-off=shortfwd", "--traffic-off=holdway", "--army-cap=count"])
 
     def test_his_own_flag_and_the_replays_flag_are_left_alone(self):
-        self.assertEqual(rules.decide(recording({"flags": {"lane-clear": "off"}}))[0], [])
-        self.assertEqual(rules.decide(recording({}), " --lane-clear=on")[0], [])
+        self.assertEqual(rules.decide(recording({"flags": {"lane-clear": "off"}}))[0], ALL_OFF[1:])
+        self.assertEqual(rules.decide(recording({"flags": {"traffic-off": "holdway,backout"}}))[0], ALL_OFF[:3] + ALL_OFF[4:])
+        self.assertEqual(rules.decide(recording({}), " --lane-clear=on --traffic-on=shortfwd")[0],
+                         ["--group-veto=off", "--traffic-off=holdway", "--army-cap=count"])
 
 
 if __name__ == "__main__":

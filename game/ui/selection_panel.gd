@@ -466,6 +466,7 @@ func press_command(id: String) -> void:
 	if ELEMENT_ONLY.has(id) and not controls.can_task():
 		controls.arm(id)  # refuses, and says why (round 10: a greyed button pressed used to do nothing, silently)
 		return
+	controls.note_input("command_card:%s" % id)  # C47.4 (an order it gives renames the row "order:<verb>")
 	match id:
 		"attack_move", "screen", "support_by_fire", "ambush":
 			controls.arm(id)
@@ -567,6 +568,7 @@ func _gui_input(event: InputEvent) -> void:
 		if not (_portrait_rects[key] as Rect2).has_point(button.position):
 			continue
 		var members := _members_of(String(key))
+		controls.note_input("portrait:%s" % String(key))  # C47.4
 		if button.shift_pressed:
 			controls.selection.remove(members)
 		elif button.ctrl_pressed and members.size() == 1:
