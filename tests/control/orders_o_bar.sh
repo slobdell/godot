@@ -39,9 +39,13 @@ part his_l locks 2 click "$OFF,--probe-click=-81.6/45.7 $ON,--probe-click=-81.6/
 	|| { echo "BAR NOT RUN: his_l"; exit 1; }
 part identity "locks crossing terminus" "2 3" "click route" "off:--group-merged=off on:" "$id_seeds" $((3 * 2 * 2 * 2 * $(n "$id_seeds"))) \
 	|| { echo "BAR NOT RUN: identity"; exit 1; }
-# Amendment 1 (filed before any number): READ only, not a line: the double file on every 2-3 squad click (`--group-merged=all`).
+# Amendment 2 (R47.15, before any number): the `all` arm (the double file on every 2-3 squad click, `--group-merged=all`) is
+# DECIDING on the same lines (G4 does not apply: it changes unmerged clicks by design), on the merged corpus NOT merged, and his
+# Locks click as a box-select (his_l_all, READ beside D1).
 part all "locks crossing terminus yard_open sumps" "2 3" click "off:--group-merged=off all:--group-merged=all" "$merged_seeds" \
-	$((5 * 2 * 2 * $(n "$merged_seeds"))) || echo "PART all NOT COMPLETE (a read only; the verdict stands without it)"
+	$((5 * 2 * 2 * $(n "$merged_seeds"))) || { echo "BAR NOT RUN: all"; exit 1; }
+part his_l_all locks 2 click "off:--group-merged=off,--probe-click=-81.6/45.7 all:--group-merged=all,--probe-click=-81.6/45.7" \
+	"$his_seeds" $((2 * $(n "$his_seeds"))) || { echo "BAR NOT RUN: his_l_all"; exit 1; }
 python3 tests/control/orders_o_judge.py "$out" off on | tee "$out/verdict.txt"
-python3 tests/control/orders_o_judge.py --read-all "$out" off all | tee "$out/read_all.txt"
+python3 tests/control/orders_o_judge.py --all "$out" off all | tee "$out/verdict_all.txt"
 echo "BAR_DONE"

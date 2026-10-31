@@ -41,7 +41,7 @@ def med(xs):
     return statistics.median(xs) if xs else float("nan")
 
 
-def judge(parts, off, on, out=print):
+def judge(parts, off, on, out=print, identity=True):
     ok = True
 
     def line(name, passed, text):
@@ -84,14 +84,19 @@ def judge(parts, off, on, out=print):
          "the veto's lines: places across a gap / sent back ON %d v OFF %d; squads over a deck ON %d v OFF %d (<= OFF)" % (
              across_on, across_off, crossed_on, crossed_off))
     id_runs, id_rows = parts["identity"]
+    if not identity:
+        id_rows = []
     places = {}
     for r in id_rows:
         places.setdefault(r.get("arm"), {})[key(r) + (r["squad"],)] = r.get("anchor")
     a, b = places.get(off, {}), places.get(on, {})
     common = [k for k in a if k in b]
     differ = [k for k in common if a[k] != b[k]]
-    line("G4", bool(common) and not differ,
-         "an unmerged click is byte-identical: %d of %d places differ (0); runs %d" % (len(differ), len(common), len(id_runs)))
+    if identity:
+        line("G4", bool(common) and not differ,
+             "an unmerged click is byte-identical: %d of %d places differ (0); runs %d" % (len(differ), len(common), len(id_runs)))
+    else:
+        out("G4   n/a   the `all` arm changes unmerged clicks by design (R47.15)")
     off_far = [a["worst_offset_m"] for a, _ in pairs]
     on_far = [b["worst_offset_m"] for _, b in pairs]
     line("G5", med(on_far) <= med(off_far), "farthest spot from his click: median ON %.1f m v OFF %.1f m (<= OFF)" % (
@@ -140,30 +145,14 @@ def self_test():
     return not failures
 
 
-def read_all(bar, off, arm):
-    """Amendment 1's READ: the double file on unmerged clicks (`--group-merged=all`); the same numbers as D1, D2, G1, G2."""
-    runs, rows = load("%s/all/runs.jsonl" % bar), load("%s/all/rows.jsonl" % bar)
-    pairs = paired(runs, off, arm)
-    if not pairs:
-        print("READ all: no runs")
-        return
-    both = [(a["all_in_s"], b["all_in_s"]) for a, b in pairs if a["all_in_s"] >= 0 and b["all_in_s"] >= 0]
-    w_off, w_on = wedged(rows, off), wedged(rows, arm)
-    ks = [k for k in w_off if k in w_on]
-    print("READ all (not a line): spread median %.1f v %.1f m; all-in paired mean %+.2f s (n %d); never in %d v %d; "
-          "contacts %.1f v %.1f; wedged crew-s %.1f v %.1f; laid as files %d of %d" % (
-              med([b["spread_m"] for _, b in pairs]), med([a["spread_m"] for a, _ in pairs]),
-              statistics.mean([b - a for a, b in both]) if both else float("nan"), len(both),
-              sum(1 for _, b in pairs if b["all_in_s"] < 0), sum(1 for a, _ in pairs if a["all_in_s"] < 0),
-              statistics.mean([b.get("friend_contacts", 0) for _, b in pairs]), statistics.mean([a.get("friend_contacts", 0) for a, _ in pairs]),
-              statistics.mean([w_on[k] for k in ks]) if ks else 0.0, statistics.mean([w_off[k] for k in ks]) if ks else 0.0,
-              sum(1 for _, b in pairs if b.get("merged_laid", 0) > 0), len(pairs)))
-
-
 if __name__ == "__main__":
-    if sys.argv[1] == "--read-all":
-        read_all(sys.argv[2], sys.argv[3], sys.argv[4])
-        sys.exit(0)
+    if sys.argv[1] == "--all":
+        # R47.15: the `all` arm, deciding on D1-D2b and G1-G3, G5 (G4 is the merged arm's: `all` changes unmerged clicks).
+        bar = sys.argv[2]
+        parts = {"merged": (load("%s/all/runs.jsonl" % bar), load("%s/all/rows.jsonl" % bar)),
+                 "identity": ([], []), "his_x": ([], []),
+                 "his_l": (load("%s/his_l_all/runs.jsonl" % bar), load("%s/his_l_all/rows.jsonl" % bar))}
+        sys.exit(0 if judge(parts, sys.argv[3], sys.argv[4], identity=False) else 1)
     if sys.argv[1:] == ["--self-test"]:
         sys.exit(0 if self_test() else 1)
     sys.exit(0 if judge(read(sys.argv[1]), sys.argv[2], sys.argv[3]) else 1)

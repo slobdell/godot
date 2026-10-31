@@ -131,6 +131,12 @@ Wrenches went as loose crews), but whether his Locks click was a merge cannot be
 and not a line: `--group-merged=all` (OFF by default) lays the double file on every 2-3 squad plain click, on the merged part's
 corpus unmerged (240 runs), reported with D1 / D2 / G1 / G2's numbers. Widening O1 to it is his call in player terms; the verdict
 above is unchanged.
+**Amendment 2 (2026-10-30 ~17:35 PDT, before any number; R47.15, the orchestrator):** part `all` is DECIDING, not a read: his ask
+is one click puts his squads together however he selected them. `--group-merged=all` ships ON if it passes D1, D1b, D2, D2b, G1,
+G2, G3 and G5 on its own corpus (G4 cannot apply: it changes unmerged clicks by design; Terminus's streets are in its corpus);
+plus part `his_l_all` (his Locks click as a box-select, 2 squads x 12 seeds, READ beside D1). Judge: `orders_o_judge.py --all <dir>
+off all`. If it fails only on all-in, the player-terms note ("together, but the last squad in N s later") goes to the orchestrator
+the same hour. The merged arm's verdict stands on its own.
 
 ## Round 46: five streams (prepared 2026-10-30; CLOSED 2026-10-30; briefs in `streams/archive/round46/`)
 
