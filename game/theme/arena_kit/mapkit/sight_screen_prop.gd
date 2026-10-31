@@ -40,7 +40,7 @@ func _build() -> void:
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.use_colors = true
 	multimesh.mesh = strip
-	multimesh.instance_count = STRIPS
+	FxMultiMesh.resize(multimesh, STRIPS)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 47
 	var inner := SIZE.x - 1.0
@@ -52,4 +52,5 @@ func _build() -> void:
 		multimesh.set_instance_color(i, AD_TARP if i % 5 == 2 else TARP)
 	_strips.multimesh = multimesh
 	_strips.name = "Strips"
+	FxMultiMesh.never_interpolated(_strips)
 	add_child(_strips)

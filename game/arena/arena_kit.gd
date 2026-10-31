@@ -43,6 +43,15 @@ const PROPS := {
 	# eye and roof. Its look waits on the lead's pick (the looks page); prop.sight_screen is the strip-curtain direction
 	# until then. On no shipped map until he picks (P4).
 	"sight_screen": {"size": [14.0, 6.0, 0.6], "cover": "sight"},
+	# Mapkit P4 (round 47, the lead's pick: hedgehogs): a tank trap. `low` cover: stops a hull, not a shot or a look.
+	# The box is the barricade's 0.9 m, under the muzzles (1.05-1.27 m), though the drawn hog stands 1.2 m: its open
+	# steel arms are what a round flies between. Fields of them build funnels; 1.6 m is small enough that the bake
+	# carves each one, so hogs closer than a hull's width plus twice the bake radius read as a wall to the navmesh.
+	"tank_trap": {"size": [1.6, 0.9, 1.6], "cover": "low"},
+	# Mapkit P4 (round 47, the lead's pick C: the monorail): ONE pillar and the 10 m of beam it carries at 9 m (along z).
+	# Only the pillar collides (the beam is above the tallest hull, 6.18 m, and the drawn pillar is round inside this
+	# box); pillars 10 m apart make a continuous rail, a thin colonnade across a street. Look key `car`: a lit car on it.
+	"monorail": {"size": [1.4, 9.0, 1.4], "cover": "hard"},
 }
 ## The physics layer a `sight` prop's body sits on (layer 5): not the world (1), not the vehicles (2), so nothing that
 ## moves or flies tests it; only the eye ray adds it (Perception.eye_mask()).
@@ -58,7 +67,7 @@ static var sight_on := true
 ##
 ## Keys a prop may carry for its look (read by the visual's setup(prop)); they never affect gameplay or symmetry.
 const LOOK_KEYS := ["faction", "paint", "stencil", "rust", "doors", "channel", "sign", "color", "variant",
-		"tiers", "setback", "neon", "seed", "wall"]  # the last four: a city block's look (CityBlock), never its footprint
+		"tiers", "setback", "neon", "seed", "wall", "car"]  # the last four: a city block's look (CityBlock), never its footprint
 ## Region kinds the AI and the measurements understand (_agents/arenas.md defines each).
 const REGION_KINDS := ["centre", "open_ground", "cover_cluster", "chokepoint", "flank", "overlook"]
 

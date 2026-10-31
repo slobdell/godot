@@ -71,6 +71,11 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
 **REPORT (2026-10-30 ~18:20; newest first).**
+- **P4 in progress (uncommitted at 18:15, waiting on builder3's queue: 6 full checks deep):** his picks built as kit:
+  `tank_trap` (hedgehogs, `low`, box 0.9 m under the muzzles, hog drawn 1.2 m), `monorail` (overpass C: 1.4 x 9 m pillar, `hard`,
+  carrying 10 m of beam at 9 m; `car` look key), the door look `prop.blast_door` (vault slabs A, leaves glide 1.2 s, red/green
+  header, beacons through the warning; a held door shows its warning). One MultiMesh per kind (`MapkitYard`). Twin
+  `parade_traps` (candidate) + static read: views unchanged, lanes pass. Tests: test_tank_traps, test_monorail.
 - **His picks (read by the orchestrator from the page db, main b8ec444aa):** door A vault slabs, sight screen C vent steam, overpass
   C monorail, tank traps A hedgehogs, extras pipes B and crane A; all 21 door lines KEPT -> voice approved.
 - **P2 first version GREEN: 6282f0fbf** (builder3, `make check exited 0`, 3532 passed / 0 failed, 28 targets ALL JUDGED; waited

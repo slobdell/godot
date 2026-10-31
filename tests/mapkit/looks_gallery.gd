@@ -45,6 +45,12 @@ const DIRECTIONS := {
 	"pipes_a": ["pipes", "_pipes_rack", false],
 	"pipes_b": ["pipes", "_pipes_ground", false],
 	"crane_a": ["crane", "_crane_gantry", false],
+	# P4: the BUILT props (his picks), through their real prop.<type> slots, for the look check.
+	"built_traps": ["traps", "_built_traps", false],
+	"built_monorail": ["overpass", "_built_monorail", false],
+	"built_screen": ["screen", "_built_screen", false],
+	"built_door_shut": ["door", "_built_door", false],
+	"built_door_open": ["door", "_built_door", true],
 }
 
 var camera := Camera3D.new()
@@ -501,3 +507,49 @@ func _crane_gantry(root: Node3D, _open: bool) -> void:
 		body.add_child(visual)
 		visual.invoke("setup", [{"type": stack[i], "position": [-5.0 + 7.0 * i, 0.0], "rotation_deg": 90.0, "stack": 2 - i % 2}])
 	_dozer(root, Vector3(14.0, 0, 9.0), 200.0)
+
+
+# --- P4: the built props through their slots ---------------------------------------------------------------------
+
+func _slot(root: Node3D, type: String, at: Vector3, yaw_deg: float, extra := {}) -> void:
+	var body := Node3D.new()
+	body.position = at
+	body.rotation.y = deg_to_rad(yaw_deg)
+	root.add_child(body)
+	var visual := VisualSlot.new()
+	visual.slot = "prop." + type
+	body.add_child(visual)
+	var prop := {"type": type, "position": [at.x, at.z], "rotation_deg": yaw_deg}
+	prop.merge(extra)
+	visual.invoke("setup", [prop])
+
+
+func _built_traps(root: Node3D, _open: bool) -> void:
+	for p: Vector3 in _field_points():
+		_slot(root, "tank_trap", p, fmod(p.x * 37.0, 90.0))
+	_dozer(root, Vector3(0.0, 0, 9.0), 180.0)
+
+
+func _built_monorail(root: Node3D, _open: bool) -> void:
+	for i in 9:
+		_slot(root, "monorail", Vector3(-40.0 + 10.0 * i, 0.0, -4.0), 90.0, {"car": i == 3})
+	_dozer(root, Vector3(-5.0, 0, 6.0), 180.0)
+	_dozer(root, Vector3(5.0, 0, -12.0), 200.0)
+
+
+func _built_screen(root: Node3D, _open: bool) -> void:
+	_slot(root, "sight_screen", Vector3.ZERO, 0.0)
+	_dozer(root, Vector3(4.0, 0, 7.5), 200.0)
+	_dozer(root, Vector3(-4.0, 0, -6.0), 20.0, 1)
+
+
+func _built_door(root: Node3D, open: bool) -> void:
+	_gate_walls(root)
+	var body := Node3D.new()
+	root.add_child(body)
+	var look := VisualSlot.new()
+	look.slot = "prop.blast_door"
+	body.add_child(look)
+	look.invoke("setup", [{"width": GATE_WIDTH, "height": GATE_HEIGHT, "depth": 1.6}])
+	look.invoke("set_state", ["closing" if open else "shut"])
+	_dozer(root, Vector3(-3.0, 0, 9.0), 160.0)

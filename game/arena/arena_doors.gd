@@ -72,14 +72,12 @@ func setup(layout: Dictionary, match_seed: int) -> void:
 		shape.shape = box
 		shape.position = Vector3(0, size.y / 2.0, 0)
 		body.add_child(shape)
-		var mesh := MeshInstance3D.new()
-		mesh.name = "Slab"
-		var slab := BoxMesh.new()
-		slab.size = size
-		mesh.mesh = slab
-		mesh.position = shape.position
-		mesh.material_override = CyberMaterials.surface(Color(0.2, 0.21, 0.24), 0.4, 0.7)
-		body.add_child(mesh)
+		# The look (his pick A, vault slabs) through its slot: art never touches the rules.
+		var look := VisualSlot.new()
+		look.name = "Look"
+		look.slot = "prop.blast_door"
+		body.add_child(look)
+		look.invoke("setup", [{"width": size.x, "height": size.y, "depth": size.z}])
 		add_child(body)
 		bodies[id] = body
 		var link := NavigationLink3D.new()
@@ -186,6 +184,18 @@ func _apply(tick: int, quiet: bool) -> void:
 			_held.erase(id)
 			_evicted.erase(id)
 		_set_shut(id, shut)
+		_show(id, "closing" if want_shut and not shut else doors.state(id, tick))
+
+
+var _shown := {}  # id -> the state the look was last told
+
+
+## Tells door `id`'s look its state when it changes (a held door shows "closing": open, beacons flashing).
+func _show(id: String, state: String) -> void:
+	if _shown.get(id, "") == state:
+		return
+	_shown[id] = state
+	((bodies[id] as StaticBody3D).get_node("Look") as VisualSlot).invoke("set_state", [state])
 
 
 func _emit(quiet: bool, event: Dictionary) -> void:
@@ -206,8 +216,6 @@ func is_held(id: String) -> bool:
 func _set_shut(id: String, shut: bool) -> void:
 	var body := bodies[id] as StaticBody3D
 	(body.get_child(0) as CollisionShape3D).disabled = not shut
-	# Placeholder look until door A (vault slabs, his pick) is built: the slab stands when shut, hidden when open.
-	(body.get_node("Slab") as MeshInstance3D).visible = shut
 
 
 ## The name of a vehicle whose body overlaps door `id`'s slab (plus HULL_MARGIN), or "" (the first by name: stable).

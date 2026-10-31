@@ -86,7 +86,9 @@ const CUT := ["boulevard", "boneyard", "foundry", "furnace", "scrapyard"]
 ## where a fixture's are not. It joins ROTATION only on his word, in the commit that records its spoken name.
 ## 2026-10-05: round 18's six candidates were DEALT on his word ("just keep all of the maps"), their spoken names
 ## recorded in the same commit; nothing is waiting for a verdict.
-const CANDIDATES := []
+## Round 47 (mapkit P4): parade_traps, the Parade Ground with his picked tank traps (tests/mapkit/make_kit_twins.py),
+## judged against parade before any shipped map changes.
+const CANDIDATES := ["parade_traps"]
 const LAYOUT_DIR := "res://arenas"
 ## Obstacle types with a built-in collision size [x, height, z] (meters, before rotation). Other types need "size".
 const OBSTACLE_SIZES := {"crate": [4.5, 3.0, 4.5], "wall": [18.0, 3.0, 1.5]}

@@ -47,6 +47,12 @@ const DEFAULT_SLOTS := {
 	"prop.sign": "res://game/theme/arena_kit/kit/prop_sign.tscn",
 	# Mapkit P3 (round 47): the `sight` cover class's screen (placeholder look until the lead's pick).
 	"prop.sight_screen": "res://game/theme/arena_kit/mapkit/prop_sight_screen.tscn",
+	# Mapkit P4 (round 47): the lead's picks, one MultiMesh per kind (MapkitYard): tank traps (hedgehogs) and the
+	# overpass (the monorail: a pillar and its span).
+	"prop.tank_trap": "res://game/theme/arena_kit/mapkit/prop_tank_trap.tscn",
+	"prop.monorail": "res://game/theme/arena_kit/mapkit/prop_monorail.tscn",
+	# Mapkit P4: the blast door's look (his pick A, vault slabs); ArenaDoors drives it with set_state.
+	"prop.blast_door": "res://game/theme/arena_kit/mapkit/prop_blast_door.tscn",
 	# Terrain (round 10): water, pits and bridge decks for `ArenaTerrain` (arena_kit/terrain, the terrain stream's).
 	"arena.terrain": "res://game/theme/arena_kit/terrain/terrain_visual.tscn",
 }

@@ -58,6 +58,8 @@ KIT = {  # ArenaKit.PROPS (game/arena/arena_kit.gd): one level [x, height, z], c
     # measure); its route measures would wrongly treat it as a wall -- P4 places screens and fixes that before reading
     # a route number off a screened map.
     "sight_screen": ([14.0, 6.0, 0.6], "sight", True),
+    "tank_trap": ([1.6, 0.9, 1.6], "low", True),  # mapkit P4 (round 47): hedgehogs
+    "monorail": ([1.4, 9.0, 1.4], "hard", True),  # mapkit P4 (round 47): the overpass's pillar (the beam is overhead)
 }
 # ⚠ THIS TABLE IS A SECOND COPY OF `ArenaKit.PROPS` AND NOTHING CHECKS THAT IT AGREES. A comment where a
 # dependency should be -- the same trap combat found in this file's spawn pitch the same day, and it bit here
