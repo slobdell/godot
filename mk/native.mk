@@ -530,13 +530,24 @@ replay-pytest: ## native: tests/replay's Python tests (rules, divergence, the pl
 # FAIL lines and its `N passed, M failed`, then a tally. A staged lab should answer the same every time; a varying
 # answer is a determinism finding. NATIVE=off runs the GDScript paths (make native NATIVE=off first, as check does).
 REPEAT_N ?= 10
+# REPEAT_JITTER=on: run i gets CYCLE_JITTER=i (the yield-cycle test's start poses moved <= 1 cm, 0.1 deg).
+# FILTERS=a;b;c: each filter run once after the REPEAT_N runs of FILTER (a bisection in one remote call); logs build/repeat/<k>.log.
 .PHONY: native-repeat
 native-repeat: _native-ready import ## native: FILTER run REPEAT_N times (determinism of a staged test); a tally of passed/failed runs
-	@[ -n '$(FILTER)' ] || { echo "native-repeat: FILTER= required"; exit 2; }; \
+	@[ -n '$(FILTER)$(FILTERS)' ] || { echo "native-repeat: FILTER= (or FILTERS=a;b;c, each run once) required"; exit 2; }; \
 	good=0; bad=0; \
 	for i in $$(seq 1 $(REPEAT_N)); do \
+		$(if $(filter on,$(REPEAT_JITTER)),export CYCLE_JITTER=$$i;) \
 		out=$$($(GODOT) --headless $(TEST_FPS_ARGS) --path . --script res://tests/run_tests.gd -- '--filter=$(FILTER)' 2>&1) || true; \
 		{ echo "$$out" | grep -E '^(CYCLE_ROW|NOPROGRESS_ROW|  FAIL|          )' || true; } | cut -c1-400 | sed "s/^/run $$i: /"; \
 		res=$$({ echo "$$out" | grep -E '^[0-9]+ passed, [0-9]+ failed' || echo "no result line"; } | tail -1); echo "run $$i: $$res"; \
 		case "$$res" in *" 0 failed") good=$$((good+1));; *) bad=$$((bad+1));; esac; \
-	done; echo "REPEAT_TALLY native=$(if $(filter off,$(NATIVE)),off,on) runs=$(REPEAT_N) green=$$good red=$$bad"
+	done; \
+	if [ -n '$(FILTERS)' ]; then rm -rf $(BUILD_DIR)/repeat && mkdir -p $(BUILD_DIR)/repeat; k=0; \
+		echo '$(FILTERS)' | tr ';' '\n' | while read -r f; do k=$$((k+1)); \
+		out=$$($(GODOT) --headless $(TEST_FPS_ARGS) --path . --script res://tests/run_tests.gd -- "--filter=$$f" 2>&1) || true; \
+		echo "$$out" > $(BUILD_DIR)/repeat/$$k.log; \
+		res=$$({ echo "$$out" | grep -E '^[0-9]+ passed, [0-9]+ failed' || echo "no result line"; } | tail -1); \
+		row=$$({ echo "$$out" | grep -E '^CYCLE_(ROW|START)' || true; } | grep -oE '(left_tick .*|start_tick .*)' | paste -sd' ' || true); \
+		echo "FILTERS_ROW $$res | $$row | $${f:0:160}"; done; fi; \
+	echo "REPEAT_TALLY native=$(if $(filter off,$(NATIVE)),off,on) runs=$(REPEAT_N) green=$$good red=$$bad"
