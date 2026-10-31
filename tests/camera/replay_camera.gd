@@ -9,7 +9,9 @@ extends "res://tests/replay_orders.gd"
 ##     "select Bravo, look, then order") is replayed, which the orders replay alone never sees;
 ##   * `--camera-hand=model` (default) moves the mouse as an RTS hand does: HAND_MOVE_S moving, then HAND_REST_S resting
 ##     (under the rig's HOVER_HOLD_S, so the aim hold applies as it did for him), every cycle; each order is a click (it
-##     spends the aim). `--camera-hand=off`: no mouse at all (round 46's replay: no aim hold, no hand pace).
+##     spends the aim). `--camera-hand=rest`: moving 0.15 s of each second (a hand mostly resting: the aim hold most of the
+##     time); `busy`: 0.95 s (a hand almost never still: the hand's pace all the time). `--camera-hand=off`: no mouse at all
+##     (round 46's replay: no aim hold, no hand pace).
 ## Every SAMPLE_TICKS it prints
 ##   CAMK {"tick", "sel": [names], "centre": [x, z], "look": [x, z] (shown), "goal": [x, z] (wanted), "goal_gap", "gap", "dist", "mode", "holding", "urgent"}
 ## and CAMK_SEL {"tick", "units", "gap"} at each selection change; tests/camera/k1_gap.py adds them up.
@@ -78,8 +80,9 @@ func _move_hand() -> void:
 	if _hand == "off":
 		return
 	var rig := _controls.rig
+	var moving: float = {"model": HAND_MOVE_S, "rest": 0.15, "busy": 0.95}.get(_hand, HAND_MOVE_S)
 	var phase := fmod(rig._clock, HAND_MOVE_S + HAND_REST_S)
-	if phase < HAND_MOVE_S:
+	if phase < moving:
 		rig._mouse_moved_at = rig._clock
 		rig._mouse_at = Vector2(960, 540)
 
