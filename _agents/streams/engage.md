@@ -52,6 +52,9 @@ Memory: smart AI on both sides; units must look smart and under his control.
 5. **E5 his acceptance read:** Crossing replay: green's shots and Guns_3's 2160-2457 window on the shipped tree.
 6. **E6 the army_cost read** (report only).
 7. **Leftover:** the touch map's feed line (round 46).
+7a. **(C47.7, mapkit's `sight` class on main at 39c7dba53):** engage's only own sight ray is the measurement-only GUN_TRACE
+   re-cast (`gunnery.gd` trace_after): its EYE ray moves to `Perception.eye_mask()`, the muzzle ray (a shell's path) stays
+   WORLD_MASK. Every decision already goes through `Perception.has_line_of_sight` / the cover map. After Bar E3's series (frozen).
 7b. **E9 friendly fire in a close fight (R47.32 follow-up, after Bar E3; its own bar on fresh seeds from 13025+, ask the
    orchestrator):** Bar E7's six grazes: SUPPRESS's lane check, and the circling machine-gun burst's re-check.
 8. **E8 his post, tighter (R47.30, from manoeuvre; after E7 / E3):** HOLD's way back to HIS post uses arrive 6.0 m, so a crew
