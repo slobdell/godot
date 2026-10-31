@@ -4875,3 +4875,9 @@ new fights. His eye stays the judge; the model only finds candidates faster.
 Spotter's batch 1 (https://claude.ai/artifact/DXKpD67u2r49HQrk93ozJD; 30 clips from 12 CPU-v-CPU fights, 6 maps): **30 of 30 "dumb"**, no
 notes (dump `streams/references/round47/spotter/batch1-labels/`). The ranker's top 30 are all real: precision 1.0 at 30. Overnight the
 orchestrator decides whatever it would have recommended to him (memory: overnight autonomy).
+
+### His answer on spotter batch 2 (2026-10-31, morning)
+
+> "I see there are 80 "looks dumb" cases for me to review. For 100% cases that I've checked, it does in fact look dumb. THis is too much for me to review. Can we just assume that all of these results are in fact cases of units looking dumb?"
+
+What we did: he had tapped 34 of batch 2's clips, all of them flagged ones (ranks 31-78), and called all 34 dumb. With batch 1 that makes 64 of 64. The 31 remaining flagged clips are now labelled dumb on the page with `by: "assumed"` and `assumed: true`, so the ranker can tell them apart from his own taps. 15 clips stay for him: the 10 random ordinary moments and 5 flagged clips mixed in, so he still can't tell which ones are the ordinary moments. **Rule from here on:** a flagged clip counts as dumb unless he says otherwise. Later pages show him only ordinary moments plus a few flagged ones, about 15 a batch. Whether ordinary moments also look dumb is the only answer we still need from him.
