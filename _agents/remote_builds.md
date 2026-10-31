@@ -449,7 +449,10 @@ make runs on cannot free the box under it. A hang-up or TERM to the wrapper, or 
 a notty ssh sends no hang-up), stops the check's whole process group, queued or running, so **stopping your local unit now
 stops the remote check too** (trees with 7d1078f0d: 0bb755a4f's watchdog died by SIGPIPE on the dead session's stderr and
 a queued waiter could not hear it, so on older trees a stopped unit leaves its check, queued or running, for the
-cwd-verified kill). `builder_checks.sh`
+cwd-verified kill). **Round 47 (spotter, builder3, its stream tree): a TERM to the local wrapper while its check was QUEUED on the
+lock left the remote waiter alive 40+ min (pid 1429285) even on a tree with the watchdog; the orchestrator's own TERMs of a queued
+main check the same night did end the remote side. Not yet explained: after stopping a queued check, ALWAYS confirm on the builder
+(`pgrep -f "full_check_lock.sh run"` and each pid's cwd) and kill a survivor by its cwd-verified pgid.** `builder_checks.sh`
 counts the holder too, so the gate still works as a polite early wait; it is no longer what keeps two checks apart.
 `REMOTE_FULL_CHECK_LOCK=0 make remote T=check` skips the claim (only with the orchestrator's say-so). Tests:
 `tools/test_full_check_lock.sh` (two claimers at once, 20 races, exactly one wins; a SIGKILLed wrapper; hang-ups; a dead
