@@ -127,6 +127,11 @@ _(filed by each stream before any number)_
   contacts -2.0 se 2.4, noprog -4.6 se 8.6). Following is rare on these seeds (~18 follow crew-s a fight). Cause read: leaders crawl at
   0-1.5 m/s while turning 40-70 deg/s, and v1's travel heading followed every crawl. O1 NOT merged; v2 97e70b68a (travel above 3 m/s only,
   heading turn capped at 30 deg/s) goes to amendment 1 on fresh seeds.
+  **Amendment 1 (FILED on stream/orders 462f685a0 before any number on 13421-13452; v2 97e70b68a).** Decider = `make follow-drill`: a
+  leader on pivot / zigzag / turn routes with three brain followers on wedge slots, 3 drills x 13421-13452 = 96 pairs, ON v nose; D1
+  follower reverse-or-spin s a run, mean + 2 se < 0 and <= -20 %. Guards: the turn drill not worse, station distance, the leader's route
+  time, spotter fights 6 maps x 13437-13444 (fix_s <= 0 + 2 se), group click, authority. D2 reported only (#17 no longer follows at main).
+  Dev read before filing on 7001-7006 only (18 pairs, builder3): -5.8 s a run (se 3.1), 10.5 v 16.3; pivot spin 4.0 v 15.0 s.
 - **Bar E11 RETREAT DRIVES (engage E2; FILED 2026-10-31 ~14:10 before any number on 13313-13360; full text in stream/engage's
   workstreams.md).** `--retreat-drive` ON (`=off` = E10's game): a RETREAT move > 12 m drives forward and carries a facing, so
   `Manoeuvre.choose` routes it nose first; a shorter hop under fire still backs off; destinations E10's; scoring untouched. W1 hurt
