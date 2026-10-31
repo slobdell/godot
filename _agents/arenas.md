@@ -809,6 +809,19 @@ New looks go to the tap-to-approve page with 2-3 directions per piece before any
 | 8 | **Raised plazas, ramps, sunken roads** | High ground to hold, hull-down lanes; the unused `overlook` region kind | **Not cheap in code:** the world is flat and the eye ray, cover map, navmesh bake and shells assume it (see *What I'd build next* item 6). A round of its own | Backlog, needs his go |
 | 9 | **Arena blast doors on a timer, called by the announcer** (he likes this one: "can make the game generally more interesting") | Gates between sections open and close mid-match; the caller hypes each one like a gladiator event; changes routes and fights on a schedule both sides can read | Cheap to draw; real rules work: doors that collide when shut, a navmesh that changes (or per-door links), the AI reading open/shut and the schedule, new announcer lines (his paid voice generation, his approval), and determinism for replays. Extends the roadmap's "crushing gates" | **Wanted** — schedule as its own stream once the movement fixes from his 2026-10-30 playtest land |
 
+**Round 47 (mapkit stream; his picks on the looks page https://claude.ai/artifact/WSBf2Wmmar3BSocBqqrRpm, 2026-10-30):**
+doors A (vault slabs), sight screens C (vent steam), overpass C (monorail), tank traps A (hedgehogs), pipes B (ground
+pipeline), crane A (yard gantry); all 21 door lines kept and voiced. What exists (`game/arena/arena_kit.gd` PROPS, looks in
+`game/theme/arena_kit/mapkit/`, one MultiMesh per kind in `MapkitYard`):
+- `tank_trap` (`low`, box 0.9 m under the muzzles, the hog drawn 1.2 m); `monorail` (a 1.4 x 9 m pillar, `hard`, carrying 10 m of
+  beam at 9 m: only the pillar collides; look key `car`); `sight_screen` (the `sight` class: layer 5, never an obstacle, read by
+  `Perception.eye_mask()` and CoverTables while `ArenaKit.sight_on`, `--kit-sight=off`; placeholder strip look until steam is built).
+- Blast doors: `game/match/blast_doors.gd` (the schedule, `BlastDoors.is_open(id, tick)`), `game/arena/arena_doors.gd` (slab,
+  carved doorway, one NavigationLink3D on route's bit, the hold); layout key `doors` [{name, group, position, rotation_deg, call}].
+  On `doors_dev` only until native passes route's mask (C47.8).
+- Twins (CANDIDATES, `tests/mapkit/make_kit_twins.py`): `parade_traps` (two hedgehog breakwaters a side in front of each base).
+  Static read (laptop, arena_report): views unchanged (mean 83.6 -> 82.8 m, centre sees 0.82 -> 0.81), every lane/corner passes.
+
 How to judge any of them: `make arena-report` on the map before and after (sightlines, flank use, hidden time), the paired series
 against the map's twin without the pieces (*How we test that a map delivers*), and his eye on the laptop for the look and the fps.
 

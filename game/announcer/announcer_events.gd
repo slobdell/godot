@@ -28,6 +28,10 @@ const REQUIRED := {
 	"close_call": {"unit_id": "id", "unit": "unit", "team": "team", "hull_left": "ratio"},
 	"control_changed": {"owner": "owner"},
 	"squad_wiped": {"team": "team", "squad": "str"},
+	# Mapkit P5 (round 47): a blast door the booth calls. kind: closing (the warning), shut, open, held (a crew in the
+	# doorway keeps it open), caught (a crew driving at it as it shuts). `gate` is the door's compass word ("" = unnamed);
+	# held/caught also carry the crew's `unit` and `team`.
+	"door": {"door": "str", "gate": "str", "kind": "str"},
 	"momentum": {"army_health": "team_map_ratio"},
 	"match_end": {"winner": "winner", "reason": "reason", "duration_seconds": "num",
 			"units_left": "team_map_int", "kills_by_unit": "special"},

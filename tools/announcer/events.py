@@ -34,6 +34,7 @@ REQUIRED: dict[str, dict[str, str]] = {
     "close_call": {"unit_id": "id", "unit": "unit", "team": "team", "hull_left": "ratio"},
     "control_changed": {"owner": "owner"},
     "squad_wiped": {"team": "team", "squad": "str"},
+    "door": {"door": "str", "gate": "str", "kind": "str"},  # mapkit P5 (round 47): a blast door the booth calls
     "momentum": {"army_health": "team_map_ratio"},
     "match_end": {"winner": "winner", "reason": "reason", "duration_seconds": "num",
                   "units_left": "team_map_int", "kills_by_unit": "special"},

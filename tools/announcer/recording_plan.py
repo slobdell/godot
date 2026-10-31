@@ -34,7 +34,8 @@ SLOT_VOCAB = {"team": "team", "other_team": "team", "team_s": "team_s", "other_t
               "units": "units", "other_units": "units", "arena": "arena",
               "count": "number", "other_count": "number", "streak": "number", "kills": "number",
               "count_over": "count_over", "other_count_over": "count_over",
-              "formation": "formation", "technique": "technique", "drill": "drill"}
+              "formation": "formation", "technique": "technique", "drill": "drill",
+              "gate": "gate"}  # mapkit P5 (round 47): a blast door by its compass word
 NUMBER_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]
 # The number values a match can produce. Numbers are the most expensive slot there is (eleven values), and at
 # thirty units a side an exact count is wrong as often as it is right: the library's rule is to say "half their
