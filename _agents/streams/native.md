@@ -77,6 +77,17 @@ twin (WIP), the replay A/B switches; full check of dce3e6a23 running.
 - Terminus (round 45) now parts at 12 s too, but it is no control: it predates round 46's rules (shortfwd, holdway, veto, dry_hop)
   and only lane_clear is stamped. **Request (mine, next):** stamp every ON rule in `rules`, so old recordings replay their build.
 
+**N0 more (2026-10-30 ~19:30):** the laptop replay (ONE, lock-held, Crossing 14 s, n 1) = builder3's table to the decimal: cause 2 is
+not machine float math; it is in his live session (an input with no row). ec6964f11: the rules stamp carries group_veto, shortfwd,
+holdway with lane_clear (dated by the recording's name when unstamped). a79fc79cb: **his garage fights replay again** (Sumps,
+Parade: `--player` / `--garage-army` / `--enemy` named user:// files only his laptop has; before, `REPLAY_DONE no RtsControls`):
+both armies rebuilt from the header roster (REPLAY_ARMY_REBUILT). Sumps (builder3 light, 40 s): exact to 10 s (Delta parts at 11 s),
+Bravo exact past 23 s.
+
+**N2 place twin: EQUAL so far.** Randomized (test_native_place, 4000 elements x every switch); his replays under
+TANK_NATIVE_PLACE_VERIFY=1 (builder3 light, every place() both ways): Crossing 11000+ calls / 0, Locks 7000+ / 0 (Sumps, Parade
+running). native_place stays OFF (cf598c817) until the four are in and the full check is green; then the price read.
+
 **Queue (twins):** engage E2a lay_carry (gun_native engage(), waits on engage's green hash); route's door mask in pathing_native /
 drive_native path_query (after mapkit's doors reach an arena); manoeuvre's R47.11 transit grounding line if decide grounds natively.
 
