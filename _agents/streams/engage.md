@@ -98,6 +98,11 @@ first aim at range by design: the fix time grows with the target's distance over
 it ~1.2 s where a syndicate crew (sight 90-135 m, designators x0.25) pays a fraction. Median fix needed his 1.69 s v CPU 1.10 s; 87 of
 his 145 acquiring seconds were first fixes. Nothing in the gate is broken; the gap is sight and range (balance, which waits).
 
+**Bar E7's frozen tree and E3 (for the verdict, the orchestrator's check):** on d4a88c4a5 `--pot-shot` is default OFF and inert:
+`Gunnery.POT_SHOT` is true only with `--pot-shot=on`, is read by ONE branch (`gunnery.gd:212`, its first conjunct, so nothing in the
+branch runs while it is off), no native code and no make target reads or sets it, and E7's arms pass only `--hurt`, `--press-on`,
+`--his-side` (`git grep POT_SHOT d4a88c4a5 -- game native mk`).
+
 ### Bar E3 (FILED 2026-10-30 ~20:00, before any number on 12649-12696) — the text is in workstreams.md *Bars (round 47)*
 
 **Bar E3 SNAP SHOTS (engage; filed 2026-10-30 ~20:00 PDT in streams/engage.md and here, BEFORE any number on 12649-12696;
