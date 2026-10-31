@@ -92,12 +92,40 @@ urgent pan only ran while a crew was OFF screen, so it never started: the look c
 normal pace x the hand-moving pace 0.25 = ~4.7 m/s at 50 m) and stopped whenever his hand rested (`aim-hold`). Mode alternated
 `planner`/`aim-hold` for 10 s, 141-152 m off, until he gave up and panned by hand. The Crossing delay is the same rule: a squad
 partly on screen = no urgent pan, and his hand on the mouse holds or slows the rest. The planner's wanted point was on Bravo
-(its fit centres the selection); the glide never got there. (Replay ON v OFF table: pending, `make camera-replay`.)
+(its fit centres the selection); the glide never got there.
+
+**K1 ON v OFF (his matches replayed with his selections; builder3; `make camera-replay`, tests/camera/replay_camera.gd).**
+Arms: **R46** = `--camera-planner=on --camera-select-pan=off` (main's camera, e306ce27f's rule), **R45** = `--camera-planner=off`
+(round 45's camera), **FIX** = the K2(+K3) default. Trees: Crossing and Locks ran ecd0bfcb5 (K2 at 4 heights/s, before K3's
+bound); Parade and Sumps ran ebfc3b162 (K2 + K3). Samples every 5 ticks, n = 380 (Crossing), 362 (Locks), 697 (Parade), 691
+(Sumps) per arm. **Hand model (his real hand is not in the recording):** the mouse moves 0.6 s then rests 0.4 s, every second, all
+match (resting under HOVER_HOLD_S, so the aim hold applies as it did for him); each selection and each order is a click (it spends
+the aim); no hand pans, wheel or rotation (his `manual` rows are not replayed). **Not his exact match (R47.8):** `REPLAY_SPAWN
+placed 0` (native's N0), so the units leave his match within seconds; the camera writes no sim state, so all three arms replay the
+SAME diverged match: a like-for-like A/B, not his screen. Parade's armies are his own files (tests/camera/armies); Sumps' CPU side
+is rebuilt from the roster (directives assumed). "Never" includes selections replaced or killed before framing (same in each arm).
+
+| Recording | > 30 m off: R46 / R45 / FIX | median gap m | far selections framed, median s (max) R46 / R45 / FIX | never R46 / R45 / FIX |
+|---|---|---|---|---|
+| Parade | 26.4 / 42.0 / **4.6 %** | 18.3 / 24.6 / **8.1** | 1.33 (12.3) / 3.77 (4.9) / **0.33 (0.63)** | 7 / 9 / **1** |
+| Sumps | 13.9 / 22.0 / **3.2 %** | 8.0 / 9.7 / **4.1** | 1.27 (6.9) / 1.13 (4.5) / **0.30 (0.63)** | 6 / 6 / **0** |
+| Crossing | 13.4 / 33.2 / **5.5 %** | 9.9 / 11.1 / **7.7** | 1.07 (6.8) / 4.07 (13.1) / **0.33 (0.73)** | 3 / 3 / 2 |
+| Locks | 26.8 / 13.3 / **4.7 %** | 7.6 / 6.1 / **6.5** | 0.73 (0.97) / 0.83 (1.43) / **0.47 (0.53)** | 4 / 5 / **0** |
+
+**Answer to K1:** round 45's camera does NOT track better overall (worse on Parade, Sumps and Crossing; better on Locks: it
+sits closer, 66 v 83 m). Neither old camera pans to a far selection quickly: both slow for his hand and hold for his aim. The
+term that causes round 46's misses is the urgent pan's trigger ("a crew off screen"; a squad far ahead is ON screen at the top
+edge), plus, at 100 m, the planner's lean/wide frame putting his squad 35 m off the look (Crossing tick 690: K3's bound).
+
 
 ### K2/K3: one rule (`RtsCamera._pan_urgent`, `select_pan`, ON)
 The planner's own rule is now the gap between where the view looks and where the planner wants it: a new selection (or a
 re-pick: `take_vision`) pans at once until the look is within 3 m (PAN_ARRIVE_M) of the planner's point; a look that falls 20 m
 (PAN_START_M) behind with no hand on the camera since the selection is caught up the same way (K3: "didn't correct"); while it
 pans neither the aim hold nor the hand's pace applies. The pan is a critically damped spring (omega 7.5, from rest, no step in
-speed) capped at 260 m/s: 150 m within 20 m in ~0.4-0.6 s (tests). His own pan stays his until he selects (no swing back).
+speed) capped at **4 view-heights/s** (260 m/s was tried first: ~8-13 heights/s at his 50 m, a jump cut; at 4 a frame moves 1/15
+of the screen at 60 fps, 1/7.5 at his laptop's ~30: it reads as a fast pan). Replays: a far selection within 20 m in median
+0.3 s, max 0.73. His own pan stays his until he selects (no swing back). **K3's bound:** the planner's point is held within 20 m
+of his selection's middle (`RtsCamera.bound_to`; a strung-out squad keeps its whole frame). Tests: tests/test_camera_select_pan.gd
+(green at 92a0da143, builder3 `make quick` 258/0; K3's test added after).
 
