@@ -731,12 +731,7 @@ struct Gun {
 				Script *gs = Object::cast_to<Script>(gscript);
 				if (aim_error(muzzle_at, turret_forward(), off_aim) <= deg_to_rad((double)weapon[k.aim_tolerance_deg]) ||
 						(gs != nullptr && gs->has_method(pot_shot_holds) && (bool)gscript->call(pot_shot_holds, tank))) {
-					// Round 47 (engage E9): the lane is checked where the barrel points, Gunnery.pot_shot_lane(tank, muzzle, off_aim)
-					// (called; absent on a tree without it = off_aim, today's).
-					static const StringName pot_shot_lane("pot_shot_lane");
-					const Vector3 lane = (gs != nullptr && gs->has_method(pot_shot_lane))
-							? (Vector3)gscript->call(pot_shot_lane, tank, muzzle_at, off_aim) : off_aim;
-					const bool fire = clear_to_fire(true, lane);
+					const bool fire = clear_to_fire(true, off_aim);
 					cmd->set(k.fire, fire);
 					if (fire) {
 						sadd(gscript, pot_shots_name, 1);
