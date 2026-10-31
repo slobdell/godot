@@ -55,6 +55,18 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-30 ~21:00 PDT). Merge candidate: 6f19722ae (still queued on builder3). Since (merged main 5eee3a06d: route's
+RouteDoors, mapkit's doors / sight class):**
+- **C47.8 doors in the native route queries DONE (11fb972a0):** Pathing's own find_path / query already step aside from native while
+  RouteDoors.any(); the gap was the native drive's re-plan (drive_native path_query): with a door registered it hands the query
+  to Pathing.query (RouteDoors.mask), no doors = the native query, byte-identical. test_native_doors (route's stand-in link on Locks,
+  5 crossings x no door / open / shut / off) 20 / 0, 10 through the door; drive + pathing twins 19 / 0 (builder3 light). A static
+  Ref<Script> there segfaulted every drive twin at exit (139): scripts are looked up by ObjectID now.
+- **R47.36 the eye mask DONE (171aa75be):** eye_mask.h (Perception.eye_mask(), ArenaKit.sight_on read live) in perception_native's
+  sight + gun-ready passes, the gun's line of sight, TankNative.line_of_sight; Match._clear_view and VisibilityField's rays ask
+  Perception.eye_mask() (granted). test_native_eye_mask on mapkit's screen fixture 400 / 0, 139 blinded; 18 / 0 with perception,
+  gun, scan, visibility, sight_screens. No shipped map has a screen.
+
 **REPORT (2026-10-30 ~20:45 PDT). Merge candidate: 6f19722ae (full check queued on builder3). 46c3b2f3b was RED (two tests of
 mine: the rules stamp's expected keys; test_native_place asking 'single' of two vehicles) and found a real place bug, fixed: the C++
 laid echelon_left's slot 0 at -0.0 where GDScript lays +0.0 (test_native_place 4000 / 0 since; its message now names the field).**
