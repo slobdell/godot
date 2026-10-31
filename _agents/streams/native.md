@@ -55,6 +55,21 @@ Nothing at launch. If a bar fails, write in player terms what he would see ON v 
 
 _(worker keeps this current: report at the top, every number with commit, machine, workload, n; green hashes named)_
 
+**REPORT (2026-10-30 ~20:00 PDT). Merge candidate: 46c3b2f3b (full check queued on builder3, synced; a79fc79cb is VOID: it
+carried two parse errors of my tests, its check cancelled).** After it: 7571efb20 (native_esit ON) rides on the next check.
+- **N4 ElementSituation.build DONE, ON (7571efb20):** the member + intel-contact loops in C++ (esit_native.cpp, NativeEsit; the
+  loops moved verbatim into ElementSituation._entries, the reference; R47.19: frozen by the twin, changes through native).
+  EQUAL: test_native_esit 200 / 0 (111 with contacts); his four replays under TANK_NATIVE_ESIT_VERIFY=1 (builder3 light,
+  46c3b2f3b): Crossing 6500+, Locks 5500+, Sumps 7500+, Parade 6000+ calls, 0 mismatches; check's native-verify-scenarios verifies
+  it. Price: his Crossing 112 s, ABBA n 3, placed 0, builder3 light: elements ON 2.869 / 1.884 / 1.790 v OFF 2.962 / 2.992 / 1.692
+  ms a tick: clean pairs -0.09 / +0.10, the middle pair confounded by the box's load (tick 10.9 -> 6.9): **neutral**, under my
+  0.2-0.3 estimate. ON by the ruling (core components in C++).
+- **E7 Amendment 1 twin EQUAL:** pair/native-e7 aa339ab80 = engage 43ed628f1 + c2ddd51fb (o.his_side): 9 / 0, 7521 decisions / 0,
+  27 pressed. Engage freezes on it.
+- **Backlog:** N1 twins as filed (E7 done; route's door mask when doors reach an arena); N2 DONE; N3 reader DONE (the Sumps re-read
+  waits on orders' inp rows); N4 DONE; N5 lines_r47 started (no verdict yet); N6 builders healthy (builder3 29 %; builder0 down
+  since ~17:35, the orchestrator told the lead).
+
 **REPORT (2026-10-30 ~19:15 PDT). Merge candidate: a79fc79cb (full check queued on builder3: mapkit / manoeuvre / route / me /
 orders; nothing stale in the queue, N6).** Since: 00147f9a5 (remote.sh protects .remote-synced), 6fcf33ccd (native_place ON),
 131823cff (lines_r47), the E7 twin commits (no-op on main), docs. The next candidate = the tip after a79fc79cb goes green.
