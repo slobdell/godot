@@ -105,7 +105,9 @@ gates halfway along. About a minute in, the PA warns ("the west gate will close 
 gates slide shut with the caller hyping it; they reopen after ~25 s and cycle on a fixed clock both sides share. While a gate is
 shut your crews and the CPU's route round by the ring roads or the avenue; a crew caught in the doorway holds the gate open (the
 caller says so) rather than being crushed. Watch: do the gates make the side streets feel like a timed gamble worth the noise?
-Do your crews look smart around them (not queuing at a shut gate)?
+Do your crews look smart around them (not queuing at a shut gate)? (Both sides get the same gates on the same clock; in the
+watch, how often a side used them followed that army's own plan, not which half it started in: rust's two no-crossing seeds were
+no-crossing from both bases, and in other seeds rust used them more than green.)
 
 **2026-10-30 23:57: Bar P = FAIL on the deciding line (all three twins), every guard PASSES.** 2ce6fa68b (b9f13f946's game
 code), builder3, 224 matches, native ON, 0 failed; raw and table in `_agents/streams/references/round47/mapkit/bar-p-*-2ce6fa68b*`.
