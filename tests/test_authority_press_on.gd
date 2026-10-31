@@ -2,8 +2,7 @@ extends TestCase
 ## Round 47 (engage E7, R47.6): HIS ATTACK BEATS RETREAT. Route's R1 trace (his Locks, Hunters_4, staged from his census):
 ## a crew at 15/220 hull with threats in sight, carrying the attack_move its element dealt it under his attack on
 ## Rust_Lances_3, chose RETREAT (0.99 when critical) over the fight he ordered, and `withdraw_point` drove it north, away
-## from his target, again and again. Under `--press-on` an attack_move naming a target, from an element whose task is
-## ATTACK (his click, or a CPU commander's attack: C47.9), keeps the fight: RETREAT is not on the menu. Any other order
+## from his target, again and again. Under `--press-on` an attack_move from an element whose task is ATTACK (his click, or a CPU commander's attack: C47.9), keeps the fight: RETREAT is not on the menu. Any other order
 ## keeps today's rule (a hurt crew under his move or attack-move still saves itself when it is about to die).
 
 func teardown() -> void:
@@ -51,12 +50,14 @@ func test_under_any_other_task_the_survival_rule_stands() -> void:
 		assert_true(_options(result).has("RETREAT"), "task '%s': a crew about to die may still save itself (%s)" % [task, _options(result)])
 
 
-func test_an_attack_move_that_names_no_target_keeps_the_survival_rule() -> void:
+func test_an_attack_move_with_no_target_under_his_attack_is_still_pressed() -> void:
+	# E7's dev read (his Locks, staged): the element's contact drill re-dealt an attack-move with no target for a tick, and
+	# RETREAT came back on that tick. It is still his attack.
 	TankBrain.PRESS_ON = true
 	var order := _attack_move()
 	order["target"] = ""
 	var result := TankBrain._obey(_candidates(), order, _s("attack"), true, false)
-	assert_true(_options(result).has("RETREAT"), "no named target: not his attack on it (%s)" % [_options(result)])
+	assert_true(not _options(result).has("RETREAT"), "his attack task, no named target: still no RETREAT (%s)" % [_options(result)])
 
 
 func test_not_critical_is_unchanged() -> void:

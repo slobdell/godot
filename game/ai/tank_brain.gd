@@ -109,8 +109,8 @@ static var LANE_CLEAR := not OS.get_cmdline_user_args().has("--lane-clear=off")
 const LANE_POST_STEP := 4.0
 ## Round 47 (engage E7, R47.6): HIS ATTACK BEATS RETREAT. Route's R1 trace (his Locks, Hunters_4): a crew at 7 % hull with
 ## threats in sight, on the attack_move its element dealt it under his attack, took RETREAT (0.99 when critical) and drove
-## away from his target again and again. With the switch on, an attack_move naming a target from an element whose task is
-## `attack` (his, or a CPU commander's attack: C47.9) leaves RETREAT off the menu; every other order keeps the survival rule.
+## away from his target again and again. With the switch on, an attack_move from an element whose task is `attack` (his, or a
+## CPU commander's attack: C47.9) leaves RETREAT off the menu; every other order keeps the survival rule.
 ## `--press-on=on|off`; OFF until native's twin of `_obey` (decide_native.cpp) carries it (C47.6).
 const PRESS_ON_DEFAULT := false
 static var PRESS_ON := _press_on_flag()
@@ -2074,7 +2074,9 @@ static func _obey(candidates: Array, o: Dictionary, s: Dictionary, critical: boo
 			in_reach.append(c["name"])
 	# E7 (PRESS_ON): an attack-move on a named target under an ATTACK task (his, or a commander's) is pressed home.
 	var element_context: Variant = s.get("element")
-	var pressed := PRESS_ON and verb == "attack_move" and target != "" and element_context is Dictionary \
+	# Named or not: the element's contact drill re-deals an attack-move with no target for a tick under his attack (E7's dev
+	# read: one such tick handed RETREAT back, 8 of 30 rows), and it is still his attack.
+	var pressed := PRESS_ON and verb == "attack_move" and element_context is Dictionary \
 			and String((element_context as Dictionary).get("task", "")) == "attack"
 	var result: Array = []
 	for candidate: Dictionary in candidates:
