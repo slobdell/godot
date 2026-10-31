@@ -94,6 +94,9 @@ _(worker keeps this current: report at the top, every number with commit, machin
   gun's target flickers between shots (both read in the trace), so the veto reads enemy hulls in range; with the near spots refused
   the yield took `spot(24,0)`, 24 m on, hence the 8 m bound. Native: _begin_yield is mirrored in C++, so ON runs the GDScript yield
   (native_yield off) until native twins `_holdyield_veto`. Bar H waits on seeds.
+- **Queued request from mapkit (20:45, via the orchestrator; after Bars W / H):** consume the blast door's `overstay` event (a crew
+  parked 6 s in a closing doorway; the door holds open meanwhile): the crew clears through the yield / give-way. OFF until doors
+  reach a real arena. Doors are on main 39c7dba53 (merged here only after Bars W / H have synced, to keep their tree frozen).
 - **Requests to other streams (19:35, via the orchestrator):** seeds for Bar H (13001+); native: twin `Movement._holdyield_veto`;
   engage (FYI): HOLD's return to his post uses arrive 6.0, so any other displacement still parks him up to 6 m short.
   **Questions for the lead:** none.
