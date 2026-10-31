@@ -13,6 +13,8 @@ extends SceneTree
 const CAMERA_BACK := 14.0
 const CAMERA_UP := 52.0
 const FOLLOW := 0.12
+## Rendered but not saved before the clip starts (batch 1's clips opened on one frame of the showmatch's own view).
+const WARM_TICKS := 4
 
 var _camera: Camera3D
 var _marker: MeshInstance3D
@@ -70,13 +72,15 @@ func _run() -> void:
 					"at": [snappedf(tank.global_position.x, 0.1), snappedf(tank.global_position.z, 0.1)]}))
 		if tank != null and not tank.is_alive() and died_at < 0:
 			died_at = rel
-		if rel < from_tick - 1:
+		if rel < from_tick - WARM_TICKS:
 			continue
-		if rel == from_tick - 1 or not RenderingServer.render_loop_enabled:
+		if not RenderingServer.render_loop_enabled:
 			RenderingServer.render_loop_enabled = true
 			_follow(tank, 1.0)
 		_follow(tank, FOLLOW)
 		await RenderingServer.frame_post_draw
+		if rel < from_tick:
+			continue  # the first frames after the render loop wakes can still show the showmatch's own camera
 		root.get_texture().get_image().save_jpg("%s/f%05d.jpg" % [dir, saved], 0.88)
 		saved += 1
 		if rel >= to_tick:
