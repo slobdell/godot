@@ -80,6 +80,19 @@ const POT_SHOT_WANDER_M := 2.5
 ## Measurement only: pot shots taken since the process started.
 static var pot_shots := 0
 
+
+## E3's guard on R2 (the check's find at d4cf542c7): true where the plant's short halt would stop this hull for a round at
+## `aim`, so no pot shot goes there. A pot shot's wandering aim drops the trigger for a tick, the plant reads that as the
+## shot gone and cancels the halt, and its cooldown then let the next pot shot leave on the move. The plant's own test
+## (Tank._short_halt): direct fire, rolling, worth the stop, and not under his plain MOVE. Native's NativeGun calls this.
+static func pot_shot_halts(tank: Tank, aim: Vector3) -> bool:
+	var kind: int = tank.weapon["kind"]
+	if kind != Weapons.Kind.PROJECTILE and kind != Weapons.Kind.BEAM:
+		return false
+	var moving := clampf(absf(tank.speed()) / maxf(tank.max_forward_speed, 0.1), 0.0, 1.0)
+	var distance := Vector2(aim.x - tank.global_position.x, aim.z - tank.global_position.z).length()
+	return tank.short_halt_worth(distance, moving) and not ShortHalt.plain_player_move(tank)
+
 ## Round 47 (engage E1), MEASUREMENT ONLY: `--gun-trace=<name substring|all>` prints one GUN_TRACE line per run of the
 ## gun for the named crews (on every change of its gates, and every GUN_TRACE_EVERY ticks): the weapon order, the pick,
 ## each gate (seen, line of sight, range, aim, lay, discipline, loaded, lane) and the trigger. Reads only; default off.
@@ -224,7 +237,8 @@ func _apply_weapon(cmd: TankCommand) -> void:
 		var needed := Engagement.acquire_seconds(tank, target, tank.global_position.distance_to(target.global_position))
 		var laid := engagement_lay.progress
 		if engagement_lay.target == String(target.name) and laid >= POT_SHOT_AFTER_S and laid < needed \
-				and tank.global_position.distance_to(target.global_position) <= Engagement.effective_range(weapon):
+				and tank.global_position.distance_to(target.global_position) <= Engagement.effective_range(weapon) \
+				and not pot_shot_halts(tank, aim):
 			# E3: a snap shot before the fix: the aim off by what is left of the lay; the trigger once the barrel is on it.
 			var off_aim := aim + Difficulty.aim_offset(POT_SHOT_WANDER_M * (1.0 - laid / needed),
 					brain.game_match.tick if brain != null and brain.game_match != null else 0, tank.slot)
