@@ -139,10 +139,11 @@ func _run() -> void:
 					leg["goal0"] = goal
 					leg["planned"] = _route_m(here, mover._path.slice(mover._path_index))
 					leg["shortest_goal"] = _route_m(here, Pathing.query(t, here, goal)["points"])
-				if leg.has("goal0") and Vector2(here.x - goal.x, here.z - goal.z).length() <= ARRIVED_M:
-					leg["arrived"] = true
-				var goal0: Vector3 = leg["goal0"]
-				leg["goal_moved"] = maxf(float(leg.get("goal_moved", 0.0)), Vector2(goal.x - goal0.x, goal.z - goal0.z).length())
+				if leg.has("goal0"):
+					if Vector2(here.x - goal.x, here.z - goal.z).length() <= ARRIVED_M:
+						leg["arrived"] = true
+					var goal0: Vector3 = leg["goal0"]
+					leg["goal_moved"] = maxf(float(leg.get("goal_moved", 0.0)), Vector2(goal.x - goal0.x, goal.z - goal0.z).length())
 			if mover.last_replan != &"":
 				leg["replans"] = int(leg.get("replans", 0)) + 1
 			var last: Vector3 = leg["last"]
