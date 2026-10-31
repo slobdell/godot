@@ -211,7 +211,8 @@ static func reexec_args(engine_args: PackedStringArray, user_args: PackedStringA
 	var args := PackedStringArray()
 	if headless and not engine_args.has("--headless"):
 		args.append("--headless")
-	if not engine_args.has("--fixed-fps"):
+	# Round 47 (N0): `--replay-free-fps` (REPLAY_FREE_FPS=1) lets frames run at the display's own rate, as his game did.
+	if not engine_args.has("--fixed-fps") and not user_args.has("--replay-free-fps"):
 		args.append_array(["--fixed-fps", "30"])
 	if not engine_args.has("--path"):
 		args.append_array(["--path", project])
