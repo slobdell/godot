@@ -4,14 +4,13 @@
 > (how we work: the orchestrator/worker pattern), [`_agents/game_design.md`](_agents/game_design.md) (what the game is), and if
 > you're a workstream agent, [`_agents/workstreams.md`](_agents/workstreams.md) and your brief in `_agents/streams/`.
 
-_Last updated: 2026-10-31 ~05:40 PDT — **ROUND 47 IS CLOSED (overnight, the lead asleep). NEXT: he plays the shipped game (box below), judges spotter's batch 2, then a fresh orchestrator prepares round 48 from *▶ NEXT: ROUND 48*.** Main df9aacc1a + close docs; its full check is queued on builder3 (log `~/orch-r47/main-check-df9aacc1a.log`): **read its `>> remote: make check exited <N>` line before trusting main** (last confirmed GREEN: 25f2608f8, 3622 / 0). Worktrees: main only. builder0 DOWN since 2026-10-30 ~17:35. Laptop disk 82 %. Main is unpushed (he pushes)._
+_Last updated: 2026-10-31 ~05:40 PDT — **ROUND 47 IS CLOSED (overnight, the lead asleep). NEXT: he plays the shipped game (box below), judges spotter's batch 2, then a fresh orchestrator prepares round 48 from *▶ NEXT: ROUND 48*.** **Main df9aacc1a GREEN builder3** (`make check exited 0`, 3630 passed / 0 failed, sim-baseline unmoved on all 13 maps = the adopted E10 hashes confirmed by a second read); everything after it is docs. Worktrees: main only. builder0 DOWN since 2026-10-30 ~17:35. Laptop disk 82 %. Main is unpushed (he pushes)._
 
 ## 🏁 ROUND 47 IS CLOSED (2026-10-31 ~05:40 PDT, overnight) — read this first
 
 Seven streams + spotter (added mid-round, his ask), all Opus. Rulings R47.1-R47.52 and Bars in `workstreams.md` *Round 47*; briefs and
 FINAL REPORTs in `streams/archive/round47/`; lessons 353 (read the default before calling it ON) and 354 (an ON sim rule needs its replay
-stamp entry in the same merge). Last main checks: 25f2608f8 GREEN (3622 / 0); df9aacc1a (= + engage's E10 + the sim-baseline adopted for it)
-queued at the close: read its result first.
+stamp entry in the same merge). Last main check: **df9aacc1a GREEN builder3 3630 / 0** (+ engage's E10 + its adopted sim-baseline, confirmed).
 
 | His ask (2026-10-30 playtest) | What he gets in his default game | Escape |
 |---|---|---|
