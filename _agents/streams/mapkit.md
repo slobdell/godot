@@ -81,7 +81,24 @@ sight screen's member initializer made a strip node the steam branch never used)
 on traps/monorail/pipes/crane (his P1b pick, R47.38; `--kit-look=plain` escapes) + the train concepts; quick 116/0 builder3; full
 check queued on builder3 (name it here). f10081d90 (gallery only) on top.
 
-**2026-10-31 ~00:00: Bar P series RUNNING on builder3** (the orchestrator's slot): `make remote T="mapkit-bar-p BAR_P_JOBS=10"`
+**2026-10-30 23:57: Bar P = FAIL on the deciding line (all three twins), every guard PASSES.** 2ce6fa68b (b9f13f946's game
+code), builder3, 224 matches, native ON, 0 failed; raw and table in `_agents/streams/references/round47/mapkit/bar-p-*-2ce6fa68b*`.
+Paired twin - base (same seed, base order, factions), mean +- se, n:
+- parade_traps (n 32): range median +1.18 +- 0.95 m, p90 -2.93 +- 2.23, flank +0.025 +- 0.013 (1.9 se), hidden +0.020 +- 0.012,
+  crossed +0.010 +- 0.021. No deciding metric beyond 2 se.
+- parade_rail (n 32): range median +1.62 +- 1.46, p90 -1.60 +- 2.13, flank -0.005 +- 0.011, crossed +0.007 +- 0.015; hidden
+  +0.020 +- 0.009 (2.2 se, NOT a deciding metric).
+- crossing_screens (n 64, gangs v syndicate both orders): range median +2.03 +- 1.06 (1.9 se), p90 +0.80 +- 0.80, flank 0.000 +-
+  0.004, crossed -0.010 +- 0.007; gangs' shots -13.2 +- 9.8 (the line wanted a RISE).
+Guards: stall share (base 0.014 parade / 0.026 crossing) twin - base -0.000 +- 0.001 / +0.000 +- 0.001 / -0.001 +- 0.000;
+fairness south advantage base 0.087 +- 0.048 / twins -0.060 +- 0.046, -0.040 +- 0.045; crossing -0.009 +- 0.101 v 0.034 +- 0.137;
+length -1.9 +- 3.9 / -3.2 +- 5.0 / -3.5 +- 1.9 s; 0 stalemates anywhere; laptop read separately (pass).
+**In player terms:** the pieces as placed are safe (nobody gets stuck more, nothing unfair, no stalemates) but the CPU v CPU fight
+plays the same; on the Crossing the screens did NOT get the gangs firing more. Note: CPU v CPU crossings fight at a 35 m median
+(his recorded match: 79 m), so the gangs' long-range problem he saw is not what these seeds reproduce. **Not shipped to any dealt
+map**; the twins stay candidates for his eye. Next (if wanted): denser placements, or a workload from his recording.
+
+**2026-10-31 ~00:00: Bar P series RAN on builder3** (the orchestrator's slot): `make remote T="mapkit-bar-p BAR_P_JOBS=10"`
 at 2ce6fa68b (b9f13f946's game code + the probe's stall share / shots / native fields + tests/mapkit/bar_p_series.py). 224
 matches native ON to each map's end (420 s cap): parade v parade_traps / parade_rail (condemned v condemned, 12901-12916, both base
 orders), crossing v crossing_screens (gangs v syndicate both faction orders x both base orders, 12917-12932). Paired by (seed,
