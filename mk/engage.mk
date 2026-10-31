@@ -280,11 +280,12 @@ engage-e1: native-fresh import ## engage E1: his Crossing replay, gun gates trac
 # Green_Guns gun traced. Both lane arms. Logs build/engage/e1s/<arm>.log.
 E1S_FROM ?= 2070
 E1S_SECONDS ?= 14
+E1S_ARMS ?= on off
 .PHONY: engage-e1-stage
 engage-e1-stage: native-fresh import ## engage E1b: his Crossing window rebuilt from the census at E1S_FROM, guns traced, lane rule ON v off -> build/engage/e1s/<arm>.log
 	@test -f "$(E1_RECORDING)" || { echo "engage-e1-stage: no recording $(E1_RECORDING)"; exit 2; }
 	@mkdir -p $(BUILD_DIR)/engage/e1s
-	@for arm in on off; do flags="--lane-clear=on"; [ $$arm = off ] && flags="--lane-clear=off"; \
+	@for arm in $(E1S_ARMS); do flags="--lane-clear=on"; [ $$arm = off ] && flags="--lane-clear=off"; \
 		echo ">> engage-e1-stage arm $$arm from $(E1S_FROM) on $$(hostname) | commit $$(git rev-parse --short HEAD 2>/dev/null || echo $${TANK_SQUAD_COMMIT:-unknown}) | native $$([ -e $(NATIVE_GDEXT) ] && echo on || echo off)"; \
 		timeout 900 $(GODOT) --headless --fixed-fps 30 --path . --script res://tests/engage/turnaround_probe.gd -- --recording=$(CURDIR)/$(E1_RECORDING) \
 		--from=$(E1S_FROM) --seconds=$(E1S_SECONDS) --every=15 --crew=$(E1_CREW) --point=-45.0,-10.0 --gun-trace=Green_Guns $$flags $(ENGAGE_FLAGS) \
