@@ -232,6 +232,14 @@ without `df -h ~` and `free -g` first (lesson 341). 81 % disk at prep.**
   ms (~8-12 fps), p95 110-196, speed 0.79-0.93; HUD / controls 10.7-13.9 v 5.7-6.3 ms (squads of ~7), ticks a frame 2.5-2.9 v 1.6-1.9
   (compounding), GPU ~equal. The controls' per-frame cost with squads past five goes ahead of O1 v3 / Bar O2; native may help (C++).
 
+- **R47.27 Native: the big-army sim cost is native's as much as orders' HUD.** Native's sim-profile (gangs v syndicate 3500 a side, 34 v
+  12 at start, Crossing 90 s, seed 3, builder3 light, place ON, native ON, n 1): tick 7.43 ms with ~46 crews; brain/think 3.16 ms
+  (situation 1.00, contacts 0.39; t.poll 0.40 + rate_progress 0.26 + incoming 0.18), brain/execute 2.57 (native exec already), tank 0.76
+  (drive 0.49), wall_contact 0.31. On his laptop (~2.4x, estimated) ~18 ms of sim a tick, ~45-52 ms a frame at 2.5-2.9 ticks: the sim
+  alone caps him near 10 fps. **GO, after bar-blocking twins:** (a) re-price native_matchups / native_scan at ~46 crews (ON if faster or
+  neutral, with proof); (b) t.poll's order-progress pieces into the native controller (twin proof on his four); (c) report-only read of
+  the ticks-a-frame cap.
+
 ## Bars (round 47)
 
 _(filed here BEFORE any number; newest first)_
